@@ -1,7 +1,7 @@
 (()=>{
   'use strict';
 
-  const VERSION='20261017-dashboard2';
+  const VERSION='20261017-dashboard3';
   const SETUP_LOCAL='../../live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json';
   const SETUP_RAW='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json';
   const SETUP_PRIORITY={'PULITO':5,'CON RISCHI':4,'DA CONFERMARE':3,'DA MONITORARE':2,'NON VALUTABILE':1};
@@ -97,6 +97,7 @@
   const loadScript=(src)=>new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.async=false;s.onload=resolve;s.onerror=reject;document.head.appendChild(s);});
   loadScript(`data-adapter.js?v=${VERSION}`).catch(e=>console.warn('[GMFQ data adapter]',e)).finally(()=>{
     repairDashboardSetup();
+    loadScript(`dashboard-policy-layout.js?v=${VERSION}`).catch(e=>console.warn('[GMFQ policy layout]',e));
     loadScript(`market-snapshot.js?v=${VERSION}`).catch(e=>console.warn('[GMFQ market snapshot loader]',e));
   });
 })();
