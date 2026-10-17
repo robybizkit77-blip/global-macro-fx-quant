@@ -73,8 +73,10 @@
       for(const tenor of [2,10]){
         if(tenor===2&&/NOT_SAME_BASIS|WITHHELD|STALE/i.test(String(country.history2_quality||'')))continue;
         const h=rateHistory(country,tenor===2?'history2':'history10');
-        const asof=country.date||h.at(-1)?.date;
-        if(!fresh(asof,RATES_MAX_AGE_DAYS)||h.length<35)continue;
+        const asof=h.at(-1)?.date;
+        // The series itself must be fresh; a newer metadata date cannot revive stale history.
+        if(!fresh(asof,RATES_MAX_AGE_DAYS)||!fresh(country.date,RATES_MAX_AGE_DAYS)||h.length<35)continue;
+        if(String(country.date).slice(0,10)!==String(asof).slice(0,10))continue;
         const d=h.slice(1).map((row,i)=>row.value-h[i].value);
         const base=d.slice(-65,-5);
         if(base.length<20)continue;
