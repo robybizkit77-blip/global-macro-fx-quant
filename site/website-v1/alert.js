@@ -1,1 +1,36 @@
-(()=>{const K='gmfq.website.monitors.v1',R='../../live_data/sections/';let pairs=[];const read=()=>{try{return JSON.parse(localStorage.getItem(K)||'[]')}catch{return[]}},write=x=>localStorage.setItem(K,JSON.stringify(x));const draw=()=>{const a=read();document.querySelector('#status').textContent=`${a.length} monitor · solo storage locale`;document.querySelector('#list').innerHTML=a.map(p=>`<div class="monitor-row"><span>${p} · controlla cutoff e qualità nella Pair Deep Dive</span><button data-p="${p}">Rimuovi</button></div>`).join('')||'<p>Nessun monitor salvato.</p>';document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{write(read().filter(x=>x!==b.dataset.p));draw()})};fetch(R+'PAIR_SETUP_OPERATIONAL_VIEW.json').then(r=>r.json()).then(x=>{pairs=Object.keys(x.pairs||{});document.querySelector('#pair').innerHTML=pairs.map(p=>`<option>${p}</option>`).join('');document.querySelector('#add').onclick=()=>{const p=document.querySelector('#pair').value,a=read();if(!a.includes(p))write([...a,p]);draw()};draw();document.documentElement.dataset.alertPage='READY'}).catch(()=>{document.querySelector('#list').textContent='Monitor non disponibile: universe canonico assente.'})();})();
+(()=>{
+  'use strict';
+  const K='gmfq.website.monitors.v1',R='../../live_data/sections/';
+  let payload=null;
+  const esc=s=>String(s??'—').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const read=()=>{try{const x=JSON.parse(localStorage.getItem(K)||'[]');return Array.isArray(x)?x:[]}catch{return[]}};
+  const write=x=>localStorage.setItem(K,JSON.stringify(x));
+  const ageDays=x=>/^\d{4}-\d{2}-\d{2}$/.test(String(x||''))?Math.floor((Date.now()-Date.parse(`${x}T23:59:59Z`))/86400000):Infinity;
+  const cls=v=>String(v||'').toLowerCase().replace(/[^a-z0-9]+/g,'-');
+  function pairData(key){return payload?.pairs?.[key]||null;}
+  function row(key){
+    const p=pairData(key),s=p?.setup||{},price=s.price||{};
+    const label=p?.canonical_pair||s.pair||key;
+    const fav=s.structuralFav||'—';
+    const quality=s.quality||'WITHHELD';
+    const priceText=price.text||'Prezzo non disponibile';
+    return `<article class="monitor-row"><div class="monitor-main"><div class="monitor-pair">${esc(label)}</div><div class="monitor-meta"><span class="monitor-pill ${cls(quality)}">${esc(quality)}</span><span>Favore strutturale <b>${esc(fav)}</b></span><span>${esc(priceText)}</span></div></div><div class="monitor-actions"><a href="pair.html?pair=${encodeURIComponent(key)}">Apri Deep Dive</a><button data-p="${esc(key)}">Rimuovi</button></div></article>`;
+  }
+  function draw(){
+    const a=read(),status=document.querySelector('#status'),list=document.querySelector('#list');
+    if(status)status.textContent=`${a.length} monitor · price as of ${payload?.price_asof||'—'} · storage locale`;
+    if(list)list.innerHTML=a.map(row).join('')||'<div class="monitor-empty"><b>Nessun monitor salvato.</b><span>Aggiungi una pair per tenere sotto controllo setup e conferma prezzo.</span></div>';
+    document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{write(read().filter(x=>x!==b.dataset.p));draw();});
+  }
+  function withheld(msg){const list=document.querySelector('#list'),status=document.querySelector('#status');if(status)status.textContent='WITHHELD';if(list)list.innerHTML=`<div class="monitor-empty"><b>Monitor non disponibile</b><span>${esc(msg)}</span></div>`;document.documentElement.dataset.alertPage='WITHHELD';}
+  async function main(){
+    try{
+      const r=await fetch(R+'PAIR_SETUP_OPERATIONAL_VIEW.json',{cache:'no-store'});if(!r.ok)throw new Error(`PAIR_SETUP_OPERATIONAL_VIEW: ${r.status}`);payload=await r.json();
+      if(!payload||payload.status!=='CURRENT_CANONICAL_ENGINE'||!payload.pairs||ageDays(payload.price_asof)>5){withheld(`Universe o prezzi non correnti · as of ${payload?.price_asof||'—'}`);return;}
+      const pairs=Object.keys(payload.pairs).sort(),sel=document.querySelector('#pair');if(sel)sel.innerHTML=pairs.map(p=>`<option value="${esc(p)}">${esc(payload.pairs[p]?.canonical_pair||p)}</option>`).join('');
+      const add=document.querySelector('#add');if(add)add.onclick=()=>{const p=sel?.value,a=read();if(p&&!a.includes(p))write([...a,p]);draw();};
+      draw();document.documentElement.dataset.alertPage='READY';window.GMFQ_ALERT_PAGE={status:'READY',schema:'GMFQ_LOCAL_PAIR_MONITOR_V1',price_asof:payload.price_asof,pair_count:pairs.length,remote_notifications:false};
+    }catch(e){console.warn('[GMFQ alert]',e);withheld('Universe canonico assente o non leggibile.');}
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',main,{once:true});else main();
+})();
