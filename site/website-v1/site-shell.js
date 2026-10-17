@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
 if(window.GMFQ_SITE_SHELL?.status==='READY')return;
-const THEME_CSS='no-red.css?v=20261017-purple2';
+const THEME_CSS='no-red.css?v=20261017-riskred1';
 const PAGES=[
   ['Dashboard','index.html','Panoramica operativa'],
   ['Valute','valute.html','Forza relativa G8'],
