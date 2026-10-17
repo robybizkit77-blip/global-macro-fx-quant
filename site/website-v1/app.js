@@ -1,7 +1,7 @@
 (()=>{
   'use strict';
 
-  const VERSION='20261017-finalui1';
+  const VERSION='20261017-renderfix2';
 
   if(!document.querySelector('link[data-control-room-css]')){
     const link=document.createElement('link');
