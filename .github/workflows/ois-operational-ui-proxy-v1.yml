@@ -40,18 +40,18 @@ jobs:
           assert view['schema']=='GMFQ_OIS_OPERATIONAL_VIEW_V1'
           assert view['summary']=={
               'g8_total':8,
-              'operational_green':8,
+              'operational_green':7,
               'green_official':4,
-              'green_estimated':4,
-              'operational_withheld':0,
+              'green_estimated':3,
+              'operational_withheld':1,
           }
           proxy_ccys=[c for c,r in view['currencies'].items() if r.get('market_direction_proxy')]
           assert proxy_ccys==['NZD'], proxy_ccys
           nzd=view['currencies']['NZD']
-          assert nzd['operational_status']=='GREEN_ESTIMATED'
+          assert nzd['operational_status']=='WITHHELD'
           assert nzd['input_mode']=='NATIVE_CB_FALLBACK'
           assert nzd['method_id']=='NATIVE_CB_ESTIMATED_V1'
-          assert nzd['horizons']['3m']['rate']==3.0
+          assert nzd['horizons']['3m']['rate'] is None
           assert nzd['horizons']['6m']['rate'] is None
           assert nzd['horizons']['12m']['rate'] is None
           p=nzd['market_direction_proxy']

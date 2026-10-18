@@ -88,10 +88,10 @@ jobs:
             if(errors.length)throw new Error(label+' console/page errors: '+errors.join(' | '));
             if(result.finalAudit?.status!=='PASS')throw new Error(label+' canonical final audit not PASS');
             if(!result.active)throw new Error(label+' ratesdesk not active');
-            if(result.audit?.ok!==true||result.audit?.summary?.operational_green!==8)throw new Error(label+' OIS UI audit failed: '+JSON.stringify(result.audit));
+            if(result.audit?.ok!==true||result.audit?.summary?.operational_green!==7)throw new Error(label+' OIS UI audit failed: '+JSON.stringify(result.audit));
             if(result.audit?.host_count!==1)throw new Error(label+' OIS host count mismatch');
             if(result.cards!==8||result.rows!==8)throw new Error(label+' expected 8 cards/rows');
-            if(result.hasOfficial!==4||result.hasEstimated!==4)throw new Error(label+' quality split mismatch');
+            if(result.hasOfficial!==4||result.hasEstimated!==3||!result.badges.includes('WITHHELD'))throw new Error(label+' quality split mismatch');
             if(!result.hasAllCurrencies||!result.hasNullPolicy)throw new Error(label+' content integrity failure');
             if(!result.hostBox||result.hostBox.w<=0||result.hostBox.h<=0)throw new Error(label+' OIS host not rendered');
             if(result.hostOverflow!=null&&result.hostOverflow>4)throw new Error(label+' OIS host horizontal overflow '+result.hostOverflow);

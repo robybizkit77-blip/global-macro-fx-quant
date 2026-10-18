@@ -67,12 +67,12 @@ jobs:
               if(STALE.test(snap.text))throw new Error(label+' stale CB pricing narrative '+wanted);
               if(snap.pricingCards!==3)throw new Error(label+' CB pricing cards '+wanted+' '+snap.pricingCards);
               if(wanted==='NZD'){
-                if(snap.kind!=='NON_OIS'||!/NON OIS/.test(snap.quality+' '+snap.why))throw new Error(label+' NZD proxy labeling '+JSON.stringify(snap));
+                if(snap.kind!=='WITHHELD'||!/WITHHELD/.test(snap.quality+' '+snap.why)||!/NON OIS/.test(snap.text))throw new Error(label+' NZD withheld / non-OIS governance '+JSON.stringify(snap));
               }else if(!['OFFICIAL','ESTIMATED'].includes(snap.kind))throw new Error(label+' CB pricing kind '+wanted+' '+snap.kind);
               if(!snap.market||!snap.why)throw new Error(label+' empty CB market narrative '+wanted);
             }
             const final=await page.evaluate(()=>window.gmfqCbDeskOperationalAudit?.());
-            if(final?.policy_integrity?.ok!==true||final?.ois_summary?.operational_green!==8)throw new Error(label+' CB policy/OIS coverage '+JSON.stringify(final));
+            if(final?.policy_integrity?.ok!==true||final?.ois_summary?.operational_green!==7)throw new Error(label+' CB policy/OIS coverage '+JSON.stringify(final));
             const runtimeErr=/\b[A-Za-z_$][\w$]*\s+is\s+not\s+defined\b|ReferenceError/i;
             if(consoleErrors.some(x=>runtimeErr.test(x))||pageErrors.some(x=>runtimeErr.test(x)))throw new Error(label+' runtime scope error '+consoleErrors.concat(pageErrors).join(' | '));
             await browser.close();console.log(label,'CBDESK_OPERATIONAL_UI_PASS');

@@ -5,19 +5,19 @@ const H=['policy','3m','6m','12m'];
 const SRC='live_data/sections/OIS_OPERATIONAL_VIEW.json';
 const state={status:'INIT',data:null,error:null,loaded_at:null};
 window.GMFQ_OIS_OPERATIONAL_UI=state;
-function fmtRate(v){return Number.isFinite(Number(v))?Number(v).toFixed(3).replace(/0+$/,'').replace(/\.$/,'')+'%':'—';}
-function fmtBp(v){if(!Number.isFinite(Number(v)))return '—';const n=Number(v);return `${n>0?'+':''}${n.toFixed(1)} bp`;}
-function clsBp(v){if(!Number.isFinite(Number(v)))return 'neu';return Number(v)>0?'up':Number(v)<0?'down':'neu';}
-function rowRate(r,h){if(h==='policy')return r.policy_rate;return r?.horizons?.[h]?.rate;}
+function fmtRate(v){return v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v))?Number(v).toFixed(3).replace(/0+$/,'').replace(/\.$/,'')+'%':'—';}
+function fmtBp(v){if(v===null||v===undefined||v===''||!Number.isFinite(Number(v)))return '—';const n=Number(v);return `${n>0?'+':''}${n.toFixed(1)} bp`;}
+function clsBp(v){if(v===null||v===undefined||v===''||!Number.isFinite(Number(v)))return 'neu';return Number(v)>0?'up':Number(v)<0?'down':'neu';}
+function rowRate(r,h){if(r.operational_status==='WITHHELD')return null;if(h==='policy')return r.policy_rate;return r?.horizons?.[h]?.rate;}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function validate(d){
  if(!d||d.schema!=='GMFQ_OIS_OPERATIONAL_VIEW_V1')throw new Error('schema OIS operational inatteso');
- if(d.status!=='GREEN_8_OF_8')throw new Error('OIS operational non GREEN_8_OF_8');
- if(d?.summary?.operational_green!==8)throw new Error('copertura OIS operativa diversa da 8/8');
+ if(!['GREEN_8_OF_8','PARTIAL_WITHHELD'].includes(d.status))throw new Error('OIS operational status inatteso');
+ if(d?.summary?.g8_total!==8||d.summary.operational_green+d.summary.operational_withheld!==8)throw new Error('copertura OIS incoerente');
  for(const c of CCYS){
    const r=d?.currencies?.[c];
    if(!r)throw new Error('valuta OIS mancante: '+c);
-   if(!['GREEN_OFFICIAL','GREEN_ESTIMATED'].includes(r.operational_status))throw new Error('status OIS invalido '+c);
+   if(!['GREEN_OFFICIAL','GREEN_ESTIMATED','WITHHELD'].includes(r.operational_status))throw new Error('status OIS invalido '+c);
    const p=r.market_direction_proxy;
    if(p){
      if(c!=='NZD')throw new Error('market direction proxy consentito solo per NZD');
@@ -63,7 +63,7 @@ function style(){
 function pathSvg(r,min,max){
  const vals=H.map(h=>rowRate(r,h));
  const W=220,HGT=72,pad=10,span=Math.max(.01,max-min);const pts=[];
- vals.forEach((v,i)=>{if(!Number.isFinite(Number(v)))return;const x=pad+i*((W-2*pad)/3);const y=pad+(max-Number(v))/span*(HGT-2*pad);pts.push([x,y,i]);});
+ vals.forEach((v,i)=>{if(v===null||v===undefined||!Number.isFinite(Number(v)))return;const x=pad+i*((W-2*pad)/3);const y=pad+(max-Number(v))/span*(HGT-2*pad);pts.push([x,y,i]);});
  const poly=pts.length>1?`<polyline points="${pts.map(p=>p[0]+','+p[1]).join(' ')}" fill="none" stroke="#23b7ff" stroke-width="2"/>`:'';
  const dots=pts.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="#eef7ff" stroke="#23b7ff" stroke-width="1.5"/>`).join('');
  return `<svg viewBox="0 0 ${W} ${HGT}" aria-label="Policy path ${esc(r.operational_status)}"><line x1="10" x2="210" y1="62" y2="62" stroke="#173d55"/>${poly}${dots}</svg>`;
@@ -80,10 +80,10 @@ function render(){
  if(state.status==='ERROR'){host.innerHTML=`<div class="oisFail"><b>OIS operativo non disponibile.</b><br>${esc(state.error)}. Nessun fallback stimato come dato ufficiale.</div>`;return true;}
  if(state.status!=='READY'||!state.data){host.innerHTML='<div class="oisOpSub">Caricamento OIS operativo…</div>';return true;}
  const d=state.data;const rows=CCYS.map(c=>[c,d.currencies[c]]);
- const finite=rows.flatMap(([,r])=>H.map(h=>Number(rowRate(r,h))).filter(Number.isFinite));let min=Math.min(...finite),max=Math.max(...finite);if(!finite.length){min=0;max=1;}const pad=Math.max(.15,(max-min)*.08);min-=pad;max+=pad;
- const cards=rows.map(([c,r])=>{const est=r.operational_status==='GREEN_ESTIMATED';return `<div class="oisPathCard" data-ois-ccy="${c}"><div class="oisPathTop"><span class="oisPathCcy">${c}</span><span class="oisPathMeta ${est?'est':'off'}">${est?'ESTIMATED':'OFFICIAL'}</span></div>${pathSvg(r,min,max)}<div class="oisPathVals">${H.map(h=>`<span>${h==='policy'?'POLICY':h.toUpperCase()}<b>${fmtRate(rowRate(r,h))}</b></span>`).join('')}</div>${proxyHtml(c,r)}<div class="oisAsOf" title="${esc(r.source)}">as-of ${esc(r.as_of||'—')} · conf. ${esc(r.confidence||'—')}</div></div>`;}).join('');
- const trs=rows.map(([c,r])=>{const est=r.operational_status==='GREEN_ESTIMATED';const cells=['3m','6m','12m'].flatMap(h=>[r?.horizons?.[h]?.change_1d_bp,r?.horizons?.[h]?.change_1w_bp]).map(v=>`<td class="${clsBp(v)}">${fmtBp(v)}</td>`).join('');return `<tr><td><b>${c}</b> <span class="oisQuality ${est?'est':'off'}">${est?'EST':'OFF'}</span></td>${cells}<td>${r.change_1d_available?'SI':'NO'}/${r.change_1w_available?'SI':'NO'}</td></tr>`;}).join('');
- host.innerHTML=`<div class="oisOp"><div class="oisOpHead"><div><div class="oisOpTitle">OIS / Policy Pricing — G8 Operational</div><div class="oisOpSub">Policy path comparabile tra le 8 valute. Verde = fonte ufficiale certificata; ambra = stima operativa informativa. Gli estimated non entrano come official OIS nel backtest.</div></div><div class="oisOpBadges"><span class="oisBadge off">4 OFFICIAL</span><span class="oisBadge est">4 ESTIMATED</span><span class="oisBadge">8/8 OPERATIVO</span></div></div><div class="oisPathGrid">${cards}</div><div class="oisReprice"><table><thead><tr><th>Valuta</th><th>3M Δ1D</th><th>3M Δ1W</th><th>6M Δ1D</th><th>6M Δ1W</th><th>12M Δ1D</th><th>12M Δ1W</th><th>Storico 1D/1W</th></tr></thead><tbody>${trs}</tbody></table></div><div class="oisFoot">NULL ≠ 0 bp: “—” significa storico insufficiente o punto non disponibile. Il monitor usa esclusivamente <code>OIS_OPERATIONAL_VIEW.json</code>; il box ASX NZD, quando presente, è un proxy direzionale separato e non viene promosso a OIS.</div></div>`;
+ const finite=rows.flatMap(([,r])=>H.map(h=>rowRate(r,h)).filter(v=>v!==null&&v!==undefined&&Number.isFinite(Number(v))).map(Number));let min=Math.min(...finite),max=Math.max(...finite);if(!finite.length){min=0;max=1;}const pad=Math.max(.15,(max-min)*.08);min-=pad;max+=pad;
+ const cards=rows.map(([c,r])=>{const est=r.operational_status==='GREEN_ESTIMATED';return `<div class="oisPathCard" data-ois-ccy="${c}"><div class="oisPathTop"><span class="oisPathCcy">${c}</span><span class="oisPathMeta ${est?'est':'off'}">${r.operational_status==='WITHHELD'?'WITHHELD':est?'ESTIMATED':'OFFICIAL'}</span></div>${r.operational_status==='WITHHELD'?'<div class="oisOpSub">Curva WITHHELD · dato non valido</div>':pathSvg(r,min,max)}<div class="oisPathVals">${H.map(h=>`<span>${h==='policy'?'POLICY':h.toUpperCase()}<b>${fmtRate(rowRate(r,h))}</b></span>`).join('')}</div>${proxyHtml(c,r)}<div class="oisAsOf" title="${esc(r.source)}">as-of ${esc(r.as_of||'—')} · conf. ${esc(r.confidence||'—')}</div></div>`;}).join('');
+ const trs=rows.map(([c,r])=>{const est=r.operational_status==='GREEN_ESTIMATED';const cells=['3m','6m','12m'].flatMap(h=>r.operational_status==='WITHHELD'?[null,null]:[r?.horizons?.[h]?.change_1d_bp,r?.horizons?.[h]?.change_1w_bp]).map(v=>`<td class="${clsBp(v)}">${fmtBp(v)}</td>`).join('');return `<tr><td><b>${c}</b> <span class="oisQuality ${est?'est':'off'}">${r.operational_status==='WITHHELD'?'WITHHELD':est?'EST':'OFF'}</span></td>${cells}<td>${r.change_1d_available?'SI':'NO'}/${r.change_1w_available?'SI':'NO'}</td></tr>`;}).join('');
+ host.innerHTML=`<div class="oisOp"><div class="oisOpHead"><div><div class="oisOpTitle">OIS / Policy Pricing — G8 Operational</div><div class="oisOpSub">Policy path delle valute validate; quelle non valide restano WITHHELD. Verde = fonte ufficiale certificata; ambra = stima operativa informativa. Gli estimated non entrano come official OIS nel backtest.</div></div><div class="oisOpBadges"><span class="oisBadge off">4 OFFICIAL</span><span class="oisBadge est">${d.summary.green_estimated} ESTIMATED</span><span class="oisBadge">${d.summary.operational_green}/8 OPERATIVO · ${d.summary.operational_withheld} WITHHELD</span></div></div><div class="oisPathGrid">${cards}</div><div class="oisReprice"><table><thead><tr><th>Valuta</th><th>3M Δ1D</th><th>3M Δ1W</th><th>6M Δ1D</th><th>6M Δ1W</th><th>12M Δ1D</th><th>12M Δ1W</th><th>Storico 1D/1W</th></tr></thead><tbody>${trs}</tbody></table></div><div class="oisFoot">NULL ≠ 0 bp: “—” significa storico insufficiente o punto non disponibile. Il monitor usa esclusivamente <code>OIS_OPERATIONAL_VIEW.json</code>; il box ASX NZD, quando presente, è un proxy direzionale separato e non viene promosso a OIS.</div></div>`;
  return true;
 }
 let repairQueued=false;
