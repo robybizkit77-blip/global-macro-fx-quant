@@ -1,7 +1,7 @@
 {
   "schema": "GMFQ_CHATGPT_MARKET_CONTEXT_V1",
-  "generated_at_utc": "2026-10-18T21:27:39Z",
-  "evaluation_date_europe_rome": "2026-10-18",
+  "generated_at_utc": "2026-10-18T22:27:10Z",
+  "evaluation_date_europe_rome": "2026-10-19",
   "reference_only": true,
   "policy": {
     "fail_closed": true,
@@ -26,33 +26,12 @@
       "GBP": {
         "state": "STALE",
         "as_of": "2026-10-14",
-        "reason": "Age 4d exceeds the 3d alert limit."
+        "reason": "Age 5d exceeds the 3d alert limit."
       },
       "JPY": {
-        "state": "AVAILABLE_CERTIFIED",
+        "state": "STALE",
         "as_of": "2026-10-15",
-        "source": "Tokyo Financial Exchange · Three-month TONA Futures",
-        "policy_rate_pct": 1.25,
-        "horizons": {
-          "3m": {
-            "rate_pct": 1.475,
-            "delta_vs_policy_bp": 22.5,
-            "change_1d_bp": 0.0,
-            "change_1w_bp": -2.6
-          },
-          "6m": {
-            "rate_pct": 1.712,
-            "delta_vs_policy_bp": 46.2,
-            "change_1d_bp": 0.0,
-            "change_1w_bp": -2.6
-          },
-          "12m": {
-            "rate_pct": 2.018,
-            "delta_vs_policy_bp": 76.8,
-            "change_1d_bp": -3.7,
-            "change_1w_bp": -2.2
-          }
-        }
+        "reason": "Age 4d exceeds the 3d alert limit."
       },
       "CHF": {
         "state": "UNAVAILABLE",
@@ -60,56 +39,14 @@
         "reason": "Only GBP, JPY, CAD and AUD have the certified OIS contract; estimated/proxy OIS is informational only, never alert-certified."
       },
       "CAD": {
-        "state": "AVAILABLE_CERTIFIED",
+        "state": "STALE",
         "as_of": "2026-10-15",
-        "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
-        "policy_rate_pct": 2.25,
-        "horizons": {
-          "3m": {
-            "rate_pct": 2.615,
-            "delta_vs_policy_bp": 36.5,
-            "change_1d_bp": -0.5,
-            "change_1w_bp": -4.5
-          },
-          "6m": {
-            "rate_pct": 2.915,
-            "delta_vs_policy_bp": 66.5,
-            "change_1d_bp": 0.0,
-            "change_1w_bp": -3.5
-          },
-          "12m": {
-            "rate_pct": 3.275,
-            "delta_vs_policy_bp": 102.5,
-            "change_1d_bp": -0.5,
-            "change_1w_bp": -4.0
-          }
-        }
+        "reason": "Age 4d exceeds the 3d alert limit."
       },
       "AUD": {
-        "state": "AVAILABLE_CERTIFIED",
+        "state": "STALE",
         "as_of": "2026-10-15",
-        "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
-        "policy_rate_pct": 4.6,
-        "horizons": {
-          "3m": {
-            "rate_pct": 4.685,
-            "delta_vs_policy_bp": 8.5,
-            "change_1d_bp": -3.0,
-            "change_1w_bp": -1.0
-          },
-          "6m": {
-            "rate_pct": 4.775,
-            "delta_vs_policy_bp": 17.5,
-            "change_1d_bp": -3.0,
-            "change_1w_bp": -2.5
-          },
-          "12m": {
-            "rate_pct": 4.84,
-            "delta_vs_policy_bp": 24.0,
-            "change_1d_bp": -3.0,
-            "change_1w_bp": -2.0
-          }
-        }
+        "reason": "Age 4d exceeds the 3d alert limit."
       },
       "NZD": {
         "state": "UNAVAILABLE",
@@ -129,59 +66,39 @@
         "change_10y_bp": -18.0
       },
       "EUR": {
-        "state": "AVAILABLE_CERTIFIED",
+        "state": "STALE",
         "as_of": "2026-10-15",
-        "source": "European Central Bank · AAA Svensson spot curve · 2026-10-15",
-        "government_2y_pct": 2.9927,
-        "government_10y_pct": 3.3904,
-        "10y_minus_2y_bp": 39.8,
-        "change_2y_bp": -6.0,
-        "change_10y_bp": -12.8
+        "reason": "Age 4d exceeds the 3d alert limit."
       },
       "GBP": {
-        "state": "AVAILABLE_CERTIFIED",
+        "state": "STALE",
         "as_of": "2026-10-15",
-        "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-10-15",
-        "government_2y_pct": 4.6691,
-        "government_10y_pct": 5.3435,
-        "10y_minus_2y_bp": 67.4,
-        "change_2y_bp": 5.7,
-        "change_10y_bp": -2.4
+        "reason": "Age 4d exceeds the 3d alert limit."
       },
       "JPY": {
-        "state": "AVAILABLE_CERTIFIED",
+        "state": "STALE",
         "as_of": "2026-10-15",
-        "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-10-15",
-        "government_2y_pct": 1.913,
-        "government_10y_pct": 2.948,
-        "10y_minus_2y_bp": 103.5,
-        "change_2y_bp": -1.7,
-        "change_10y_bp": -15.5
+        "reason": "Age 4d exceeds the 3d alert limit."
       },
       "CHF": {
         "state": "STALE",
         "as_of": "2026-09-30",
-        "reason": "Age 18d exceeds the 3d alert limit."
+        "reason": "Age 19d exceeds the 3d alert limit."
       },
       "CAD": {
-        "state": "AVAILABLE_CERTIFIED",
+        "state": "STALE",
         "as_of": "2026-10-15",
-        "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-10-15",
-        "government_2y_pct": 3.2,
-        "government_10y_pct": 3.83,
-        "10y_minus_2y_bp": 63.0,
-        "change_2y_bp": -3.0,
-        "change_10y_bp": -9.0
+        "reason": "Age 4d exceeds the 3d alert limit."
       },
       "AUD": {
         "state": "STALE",
         "as_of": "2026-10-14",
-        "reason": "Age 4d exceeds the 3d alert limit."
+        "reason": "Age 5d exceeds the 3d alert limit."
       },
       "NZD": {
         "state": "STALE",
         "as_of": "2026-10-05",
-        "reason": "Age 13d exceeds the 3d alert limit."
+        "reason": "Age 14d exceeds the 3d alert limit."
       }
     },
     "cot_weekly": {
