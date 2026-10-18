@@ -11,6 +11,14 @@ if(nzdProxy.schema!=='GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1'||
    nzdProxy.status!=='LIVE_DIRECTIONAL_PROXY_READY')throw Error('NZD directional proxy contract failed');
 const dxyDisplayed=Number(dxyFeed.value).toFixed(2);
 const nzdDisplayed=Number(nzdProxy.horizons['6m'].implied_bank_bill_rate).toFixed(2);
+const ratesFeed=JSON.parse(fs.readFileSync(path.join(DATA,'NATIVE_RATES_DATA.json'),'utf8'));
+function commonAnchorDate(target,proxy,tenor='history2'){
+ const dates=new Set(ratesFeed[proxy][tenor].dates);
+ return ratesFeed[target][tenor].dates.filter(d=>d<=ratesFeed[target].date&&dates.has(d)).at(-1);
+}
+const chfAnchor=commonAnchorDate('CHF','EUR');
+const nzdAnchor=commonAnchorDate('NZD','AUD');
+if(!chfAnchor||!nzdAnchor)throw Error('Missing common official rates estimation anchors');
 (async()=>{
  const browser=await chromium.launch({headless:true});
  for(const [label,viewport] of [['desktop',{width:1440,height:950}],['mobile',{width:390,height:844}]]){
@@ -80,6 +88,10 @@ const nzdDisplayed=Number(nzdProxy.horizons['6m'].implied_bank_bill_rate).toFixe
   if(g8.some(c=>!r.rateBarTexts.includes(c)))fatal.push('G8 2Y bars missing currency labels');
   if(r.rateBarTexts.filter(x=>x.endsWith('*')).length<2||!r.rateBarNote.includes('STIMA'))
     fatal.push('Missing or unlabelled model estimates for CHF/NZD');
+  if(!r.rateBarNote.includes('base '+chfAnchor)||!r.rateBarNote.includes('base '+nzdAnchor))
+    fatal.push('Model estimates are not anchored at the last same-date official pair: '+r.rateBarNote);
+  if(!r.rateBarNote.includes('R² ')||!r.rateBarNote.includes('BASSA'))
+    fatal.push('Model confidence/disclaimer is not visible: '+r.rateBarNote);
   if(!r.bars2y||!r.spread||!r.designGlobe)fatal.push('cards/approved design missing');
   if(r.oisPanel.scrollHeight>r.oisPanel.clientHeight+8)fatal.push('OIS clipped');
   if(r.ratesChart.scrollHeight>r.ratesChart.clientHeight+8)fatal.push('Yield panel clipped');
