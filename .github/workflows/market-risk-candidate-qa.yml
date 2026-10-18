@@ -1,0 +1,20 @@
+name: Market Risk Candidate QA
+on:
+  pull_request:
+    paths:
+      - 'validation/build_market_risk_candidate.py'
+      - 'tests/website_v1/test_market_risk_candidate.py'
+      - '.github/workflows/market-risk-candidate-qa.yml'
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test isolated feed parser and freshness
+        run: python tests/website_v1/test_market_risk_candidate.py
