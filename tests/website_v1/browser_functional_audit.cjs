@@ -16,6 +16,16 @@ const names=['index','valute','tassi','banche-centrali','posizionamento','coppie
    if(state.width>state.viewport+16)failures.push({device,name,reason:'horizontal overflow',width:state.width,viewport:state.viewport});
    report.push({device,name,status,errors,state});
   }
+  if(device==='desktop'){
+    await page.goto('http://127.0.0.1:8000/site/website-v1/index.html',{waitUntil:'domcontentloaded'});
+    await page.waitForTimeout(1300);
+    const stale=await page.evaluate(()=>{
+      const tiles=[...document.querySelectorAll('.ois-tile')];
+      return tiles.filter(el=>el.textContent.includes('NZD')).map(el=>({text:el.innerText,svg:!!el.querySelector('svg.ois-mini'),stale:el.classList.contains('stale')}));
+    });
+    if(stale.length && stale.some(x=>!x.stale||x.svg||!x.text.includes('WITHHELD')))failures.push({device,reason:'stale NZD OIS visible as current',stale});
+    report.push({device,check:'NZD stale OIS fail-closed',stale});
+  }
   if(device==='mobile'){
    await page.goto('http://127.0.0.1:8000/site/website-v1/index.html',{waitUntil:'domcontentloaded'});
    await page.waitForTimeout(600);
