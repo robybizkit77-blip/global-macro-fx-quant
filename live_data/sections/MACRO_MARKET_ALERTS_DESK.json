@@ -1,0 +1,52 @@
+{
+  "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
+  "generated_at_utc": "2026-10-18T06:50:27Z",
+  "state": "ACTIVE",
+  "history": [
+    {
+      "event_id": "SRC-f2e0d017e7bc69f348f7",
+      "observed_at_utc": "2026-10-18T04:08:00Z",
+      "headline": "Diplomats attacked in the occupied West Bank, and other Middle East developments",
+      "summary": "AP News riporta: Diplomats attacked in the occupied West Bank, and other Middle East developments. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxOV0tPUGhacDNCd3h5U1ktMS1xbVJUZHhjc1RSU0VwZEN1WThvNDNrc0F3SWFhRHRrRWt5NlBSUFhqc3FOa3VFd2V0RVUxTzZNakJBVXhSZHRvV0tmS3RRZG9pY0lqNGxxcmlTZWk4Ylp2MF8zNlh5OUtMS3AzSmdLWmhYYTByR2VyS21QODB2eV9Mb0FmbVlISE5qaGVtWEU2UG5tanR4dUd0ZlJHb05iWQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-7f76f60d60b0485b9485",
+      "observed_at_utc": "2026-10-18T03:38:00Z",
+      "headline": "Rubio says Trump to take up to 60 days to weigh Russia sanctions",
+      "summary": "Reuters riporta: Rubio says Trump to take up to 60 days to weigh Russia sanctions. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxNRlRkQlBQYXFvck1VQUYxcVpwM2dEVDMwQThIY3ZHRldBd0M0dmV5NXFnZlBXMnpuUnozQlhLbkg4ZjZCT3kzVW5mcnl3RVEwUXRpdUJsZGViRlE1MFdJbHZWZ3pRTXNOUDQtOTRsQU5nSzd4a3d5Z3c2dTkzZWZSNlZsbXZBamFSMS1qVEVnaHc2MTZJUHZ4YU1zS0hfNVM4eVE?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-d5bcdea647d1e054d9bb",
+      "observed_at_utc": "2026-10-18T01:26:57Z",
+      "headline": "Sanctions and embargoes",
+      "summary": "AP News riporta: Sanctions and embargoes. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE9neHo0N290bF92SkhtNnhiWlZYTUJYdTNtcXpmck1OeXdVY0JNXzNQT2l1Q3Y5X3ZLQkE4TGlSWms3d1hVdzJ3LTRRODhYb0RHdV9HOVloQ2J5UQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    }
+  ],
+  "policy": {
+    "source": "CHATGPT_SCHEDULED_DESK_ALERT",
+    "max_history": 100,
+    "deduplicate_by": "event_id",
+    "certification": "DESK_VERIFIED_NOT_GITHUB_CERTIFIED"
+  }
+}
