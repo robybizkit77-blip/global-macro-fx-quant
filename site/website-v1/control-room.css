@@ -49,3 +49,22 @@ body{overflow-y:auto!important;overflow-x:hidden!important}
   .dashboard-flow .decision-row>.card{min-height:unset!important}
 }
 @media(max-width:900px){body{overflow:auto!important}.site{display:block!important;height:auto!important}.sidebar{display:none!important}.main{height:auto!important}.topbar{height:42px!important}.search{display:none!important}.content{height:auto!important;padding:5px!important;display:block!important;overflow:visible!important}.hero{height:150px!important;margin-bottom:8px!important}.row1,.row2,.row3,.row4{grid-template-columns:1fr!important}.row{display:grid!important;margin-bottom:8px!important}.row3>.card,.row4>.card{height:auto!important}.card-head,.row3 .card-head,.row4 .card-head{height:auto!important;min-height:36px!important}.theme-strip,.theme-card,.watch-table{height:auto!important}}
+
+/* Cross-asset risk overview — isolated Home V1 */
+.market-risk-desk{margin:0 0 14px;padding:16px 18px;border:1px solid rgba(139,163,197,.22);border-radius:15px;background:linear-gradient(130deg,rgba(25,43,69,.92),rgba(13,23,40,.97));color:#e7edf8}
+.market-risk-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.market-risk-heading h2{margin:0 0 6px;font-size:16px;font-family:inherit;font-weight:700;letter-spacing:.01em}
+.market-risk-heading p,.market-risk-note{font-size:12px;line-height:1.5;color:#a9b9cf;margin:0}
+.market-risk-heading a{font-size:12px;color:#87bafa;text-decoration:none;white-space:nowrap}
+.market-risk-status{padding:11px 0 12px;margin-top:10px;border-top:1px solid rgba(139,163,197,.14);font-size:13px;color:#bac9dc}
+.market-risk-status strong{margin-left:7px;color:#e1ad6b;font-size:12px;letter-spacing:.03em}
+.market-risk-status span{display:block;font-size:12px;margin-top:4px;color:#8ea2bc}
+.market-risk-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.market-risk-item{padding:11px 12px;border:1px solid rgba(139,163,197,.15);background:rgba(7,16,31,.54);border-radius:9px;min-width:0}
+.market-risk-item span,.market-risk-item strong,.market-risk-item small{display:block}
+.market-risk-item span{font-size:12px;color:#b8c9e2}
+.market-risk-item strong{font-size:14px;margin:8px 0 6px;color:#e1ad6b;letter-spacing:.03em}
+.market-risk-item small{font-size:11px;color:#8799b1;line-height:1.35}
+.market-risk-note{margin-top:10px}
+@media(max-width:800px){.market-risk-heading{flex-wrap:wrap}.market-risk-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.market-risk-desk{padding:14px}}
+@media(max-width:380px){.market-risk-grid{grid-template-columns:1fr}}
