@@ -136,10 +136,10 @@ function ratesAll(raw){
 }
 function yieldChart(doc,all,which='2Y'){
  const key=which==='2Y'?'h2':'h10',currentKey=which==='2Y'?'v2':'v10';
- const data=FX.map(c=>({c,series:all[c][key].slice(-90),now:all[c][currentKey],est:which==='2Y'?all[c].estimate2:all[c].estimate10,latest:which==='2Y'?all[c].estimatedAsOf2:all[c].estimatedAsOf10})).filter(x=>x.series.length>4);
+ const data=FX.map(c=>({c,series:all[c][key].slice(-90),now:all[c][currentKey],est:which==='2Y'?all[c].estimate2:all[c].estimate10,latest:which==='2Y'?(all[c].estimatedAsOf2||all[c].date):(all[c].estimatedAsOf10||all[c].date)})).filter(x=>x.series.length>4);
  if(!data.length)return;
  const allDays=data.flatMap(x=>x.series.map(p=>p.date));
- const min=allDays.sort()[0],max=[...allDays,...data.filter(x=>x.est).map(x=>x.latest)].sort().at(-1);
+ const min=allDays.sort()[0],max=[...allDays,...data.map(x=>x.latest).filter(Boolean)].sort().at(-1);
  let vals=data.flatMap(x=>x.series.map(p=>p.v));vals.push(...data.map(x=>x.now).filter(x=>x!==null));
  const bottom=Math.min(...vals)-.18,top=Math.max(...vals)+.18,W=320,H=176,L=28,R=8,T=12,B=12;
  const td=Date.parse(max)-Date.parse(min)||1,span=top-bottom||1;
@@ -149,7 +149,7 @@ function yieldChart(doc,all,which='2Y'){
  for(const x of data){
    const pts=x.series.map(p=>`${xx(p.date).toFixed(1)},${yy(p.v).toFixed(1)}`).join(' ');
    svg+=`<polyline points="${pts}" fill="none" stroke="${COLOR[x.c]}" stroke-width="1.4"/>`;
-   if(x.est&&x.now!==null){const last=x.series.at(-1);svg+=`<line x1="${xx(last.date)}" y1="${yy(last.v)}" x2="${xx(x.latest)}" y2="${yy(x.now)}" stroke="#e8c46d" stroke-width="1.8" stroke-dasharray="3 3"/><circle cx="${xx(x.latest)}" cy="${yy(x.now)}" r="2.6" fill="#e8c46d"/>`}
+   if(x.now!==null && x.latest && x.latest>x.series.at(-1).date && !x.est){const last=x.series.at(-1);svg+=`<line x1="${xx(last.date)}" y1="${yy(last.v)}" x2="${xx(x.latest)}" y2="${yy(x.now)}" stroke="${COLOR[x.c]}" stroke-width="1.2" stroke-dasharray="2 3"/><circle cx="${xx(x.latest)}" cy="${yy(x.now)}" r="2.2" fill="${COLOR[x.c]}"/>`;}\n   if(x.est&&x.now!==null){const last=x.series.at(-1);svg+=`<line x1="${xx(last.date)}" y1="${yy(last.v)}" x2="${xx(x.latest)}" y2="${yy(x.now)}" stroke="#e8c46d" stroke-width="1.8" stroke-dasharray="3 3"/><circle cx="${xx(x.latest)}" cy="${yy(x.now)}" r="2.6" fill="#e8c46d"/>`}
  }
  svg+=`<text x="${L}" y="${H-2}" fill="#819bad" font-size="9">${min.slice(5)}</text><text x="${W-R}" y="${H-2}" text-anchor="end" fill="#819bad" font-size="9">${max.slice(5)}</text>`;
  const curve=doc.getElementById('curves'),legend=doc.getElementById('ylegend');
@@ -160,7 +160,7 @@ function yieldChart(doc,all,which='2Y'){
  <button type="button" data-gmfq-tenor="2Y" aria-pressed="${chosen==='2Y'}" style="background:transparent;border:0;color:${chosen==='2Y'?'#f1ca6d':'#93b1c3'};cursor:pointer;padding:0 3px">2Y</button>
  <button type="button" data-gmfq-tenor="10Y" aria-pressed="${chosen==='10Y'}" style="background:transparent;border:0;color:${chosen==='10Y'?'#f1ca6d':'#93b1c3'};cursor:pointer;padding:0 3px">10Y</button></div>`;
  const note=curve.parentElement?.querySelector('.gmfq-chart-note')||doc.createElement('div');
- note.className='gmfq-chart-note';note.textContent='* CHF e NZD: tratto finale eventualmente stimato con variazione del mercato EUR/AUD e beta storico; non sostituisce il dato governativo.';
+ note.className='gmfq-chart-note';note.textContent='Serie storiche tutte G8. Linee puntinate: intervallo storico→snapshot ufficiale; oro tratteggiato (*) = stima beta EUR/AUD, solo informativa, mai nel motore.';
  if(!note.isConnected)curve.insertAdjacentElement('afterend',note);
 }
 function rateBar(doc,all,id,spread=false){
