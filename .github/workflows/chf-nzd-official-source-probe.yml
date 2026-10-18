@@ -31,3 +31,20 @@ jobs:
             except Exception as e:
               print('OFFICIAL_PROBE',json.dumps({'source':name,'error':type(e).__name__+': '+str(e)[:150]}))
           PY
+          # Validate observable SNB timestamps, not merely HTTP access.
+          python3 - <<'PY'
+          import csv,io,json,urllib.request,collections,datetime
+          url='https://data.snb.ch/api/cube/rendeiduebd/data/csv/en?fromDate=2026-10-01'
+          try:
+            with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0'}),timeout=20) as r: txt=r.read().decode('utf-8-sig')
+            reader=csv.reader(io.StringIO(txt),delimiter=';')
+            records=[row for row in reader if len(row)==4 and row[0][:4].isdigit()]
+            swiss=[r for r in records if r[1]=='CHF' and r[2] in ('2J','10J')]
+            bydate=collections.defaultdict(dict)
+            for date,ccy,tenor,value in swiss:
+              try:bydate[date][tenor]=float(value)
+              except ValueError:pass
+            complete=[d for d,x in bydate.items() if len(x)==2]
+            print('SNB_CHF_OBSERVATIONS',json.dumps({'rows':len(records),'swiss':len(swiss),'latest_2y':max((r[0] for r in swiss if r[2]=='2J'),default=None),'latest_10y':max((r[0] for r in swiss if r[2]=='10J'),default=None),'latest_same_day':max(complete,default=None),'fresh':bool(complete and (datetime.date.today()-datetime.date.fromisoformat(max(complete))).days<=5)}))
+          except Exception as e:print('SNB_CHF_OBSERVATIONS',json.dumps({'error':type(e).__name__+': '+str(e)[:120]}))
+          PY
