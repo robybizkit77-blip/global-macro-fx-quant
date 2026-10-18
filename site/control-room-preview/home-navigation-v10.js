@@ -163,7 +163,8 @@ function yieldChart(doc,all,which='2Y'){
  for(const x of data){
    const pts=x.series.map(p=>`${xx(p.date).toFixed(1)},${yy(p.v).toFixed(1)}`).join(' ');
    svg+=`<polyline points="${pts}" fill="none" stroke="${COLOR[x.c]}" stroke-width="1.4"/>`;
-   if(x.now!==null && x.latest && x.latest>x.series.at(-1).date && !x.est){const last=x.series.at(-1);svg+=`<line x1="${xx(last.date)}" y1="${yy(last.v)}" x2="${xx(x.latest)}" y2="${yy(x.now)}" stroke="${COLOR[x.c]}" stroke-width="1.2" stroke-dasharray="2 3"/><circle cx="${xx(x.latest)}" cy="${yy(x.now)}" r="2.2" fill="${COLOR[x.c]}"/>`;}\n   if(x.est&&x.now!==null){const last=x.series.at(-1);svg+=`<line x1="${xx(last.date)}" y1="${yy(last.v)}" x2="${xx(x.latest)}" y2="${yy(x.now)}" stroke="#e8c46d" stroke-width="1.8" stroke-dasharray="3 3"/><circle cx="${xx(x.latest)}" cy="${yy(x.now)}" r="2.6" fill="#e8c46d"/>`}
+   if(x.now!==null && x.latest && x.latest>x.series.at(-1).date && !x.est){const last=x.series.at(-1);svg+=`<line x1="${xx(last.date)}" y1="${yy(last.v)}" x2="${xx(x.latest)}" y2="${yy(x.now)}" stroke="${COLOR[x.c]}" stroke-width="1.2" stroke-dasharray="2 3"/><circle cx="${xx(x.latest)}" cy="${yy(x.now)}" r="2.2" fill="${COLOR[x.c]}"/>`;}
+   if(x.est&&x.now!==null){const last=x.series.at(-1);svg+=`<line x1="${xx(last.date)}" y1="${yy(last.v)}" x2="${xx(x.latest)}" y2="${yy(x.now)}" stroke="#e8c46d" stroke-width="1.8" stroke-dasharray="3 3"/><circle cx="${xx(x.latest)}" cy="${yy(x.now)}" r="2.6" fill="#e8c46d"/>`}
  }
  svg+=`<text x="${L}" y="${H-2}" fill="#819bad" font-size="9">${min.slice(5)}</text><text x="${W-R}" y="${H-2}" text-anchor="end" fill="#819bad" font-size="9">${max.slice(5)}</text>`;
  const curve=doc.getElementById('curves'),legend=doc.getElementById('ylegend');
