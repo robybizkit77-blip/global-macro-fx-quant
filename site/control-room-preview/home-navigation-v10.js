@@ -89,20 +89,21 @@ function style(doc){
   .gmfq-dxy-dialog .gmfq-close{float:right}
   /* Eight pricing lanes must fit the original 260px panel without clipping. */
   .gridtop #ois {padding:1px 7px 0}
-  .gridtop #ois .oisrow{grid-template-columns:62px minmax(0,1fr) 47px;gap:5px;
-    margin:2px 0;min-height:18px;font-size:11px}
-  .gridtop #ois .oisrow:first-child{margin-top:3px}
-  .gridtop #ois .oisrow .track{height:14px}
+  .gridtop #ois .oisrow{grid-template-columns:65px minmax(0,1fr) 49px;gap:4px;
+    margin:0;min-height:18px;height:18px;font-size:11px}
+  .gridtop #ois .oisrow:first-child{margin-top:0}
+  .gridtop #ois .oisrow .track{height:12px}
   .gridtop #ois .oisrow strong{font-size:11px}
-  .gridtop #ois .oisrow .miniquality{font-size:9px;line-height:1.1}
-  .gridtop #ois .oisnote{font-size:9px;line-height:1.2;margin-top:3px}
-  .gridtop #ois .gmfq-nzd-proxy{border-top:1px solid #263b49;padding-top:2px}
+  .gridtop #ois .oisrow em{font:8px/1 Arial,sans-serif;color:#b1a17a;font-style:normal}
+  .gridtop #ois .oisrow span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .gridtop #ois .oisnote{font-size:9px;line-height:1.1;margin-top:4px}
+  .gridtop #ois .gmfq-nzd-proxy{border-top:1px solid #263b49;padding-top:0}
   .gridtop #ois .gmfq-nzd-proxy .fill{background:linear-gradient(90deg,#6c5b36,#dabb6c)}
   .gridtop .yieldpanel .legend-y{margin:0 3px}
   .gridtop .yieldpanel .gmfq-legend-row{gap:2px 6px;justify-content:center}
   .gridtop .yieldpanel .gmfq-legend-row .gmfq-legend-item{font-size:9px}
   .gridtop .yieldpanel .gmfq-legend-row span:before{display:none}
-  .gridtop .yieldpanel .yieldplot{height:166px}
+  .gridtop .yieldpanel .yieldplot{height:151px}
   .gridtop .yieldpanel .gmfq-chart-note{margin:1px 10px;font-size:9px;line-height:1.1}
  `;
  doc.head.appendChild(s);
@@ -175,7 +176,7 @@ function yieldChart(doc,all,which='2Y'){
  <button type="button" data-gmfq-tenor="2Y" aria-pressed="${chosen==='2Y'}" style="background:transparent;border:0;color:${chosen==='2Y'?'#f1ca6d':'#93b1c3'};cursor:pointer;padding:0 3px">2Y</button>
  <button type="button" data-gmfq-tenor="10Y" aria-pressed="${chosen==='10Y'}" style="background:transparent;border:0;color:${chosen==='10Y'?'#f1ca6d':'#93b1c3'};cursor:pointer;padding:0 3px">10Y</button></div>`;
  const note=curve.parentElement?.querySelector('.gmfq-chart-note')||doc.createElement('div');
- note.className='gmfq-chart-note';note.textContent='Serie storiche tutte G8. Linee puntinate: intervallo storico→snapshot ufficiale; oro tratteggiato (*) = stima beta EUR/AUD, solo informativa, mai nel motore.';
+ note.className='gmfq-chart-note';note.textContent='* Stima β CHF/EUR · NZD/AUD. Tratteggiato: snapshot/gap; non operativo.';
  if(!note.isConnected)curve.insertAdjacentElement('afterend',note);
 }
 function rateBar(doc,all,id,spread=false){
@@ -216,15 +217,15 @@ function oisAll(doc,ois,proxy){
     const v=ready?num(proxy.horizons?.['6m']?.implied_bank_bill_rate):null;
     const change=ready?num(proxy.horizons?.['6m']?.change_1d_bp):null;
     const msg=v===null?'NESSUN PROXY CORRENTE':`PROXY BB 6M · ${fmt(v,2)}% · Δ1D ${change===null?'—':(change>=0?'+':'')+change} bp`;
-    return `<div class="oisrow gmfq-nzd-proxy" data-ccy="NZD" tabindex="0" role="link" aria-label="Apri RBNZ e proxy futures NZD" title="${htmlEscape(msg)} · ASX ${htmlEscape(proxy?.as_of||'n.d.')}"><span>RBNZ<small class="miniquality">PROXY BB ≠ OIS</small></span><div class="track"><div class="fill" style="width:${change===null?0:Math.min(95,Math.abs(change)*4)}%"></div></div><strong>${v===null?'—':fmt(v,2)+'%'}</strong></div>`;
+    return `<div class="oisrow gmfq-nzd-proxy" data-ccy="NZD" tabindex="0" role="link" aria-label="Apri RBNZ e proxy futures NZD" title="${htmlEscape(msg)} · ASX ${htmlEscape(proxy?.as_of||'n.d.')}"><span>RBNZ <em>PX</em></span><div class="track"><div class="fill" style="width:${change===null?0:Math.min(95,Math.abs(change)*4)}%"></div></div><strong>${v===null?'—':fmt(v,2)+'%'}</strong></div>`;
   }
   const w=x.d===null?0:Math.max(2,Math.abs(x.d)/maximum*100);
   return `<div class="oisrow" data-ccy="${x.k}" tabindex="0" role="link" aria-label="Apri OIS ${x.k}" title="${x.k} · ${x.quality} · ${x.asof||'n.d.'}">
-  <span>${BANK[x.k]}<small class="miniquality">${x.d===null?'WITHHELD':x.quality}</small></span>
+  <span>${BANK[x.k]} <em>${x.d===null?'—':x.quality==='UFFICIALE'?'O':'S'}</em></span>
   <div class="track"><div class="fill ${x.d!==null&&x.d<0?'alt':''}" style="width:${w}%"></div></div>
   <strong>${x.d===null?'—':(x.d>=0?'+':'')+fmt(x.d,0)+' bp'}</strong></div>`;
  }).join('');
- html+='<div class="oisnote">7 dati Δ policy a 6 mesi, distinti per qualità. NZD: futures bancari ASX, proxy direzionale non confrontabile con l\'OIS.</div>';
+ html+='<div class="oisnote">Δ6M policy: O ufficiale, S stima. NZD/PX = PROXY BB ≠ OIS (tasso %).</div>';
  host.innerHTML=html;
 }
 function dxyLine(data){
