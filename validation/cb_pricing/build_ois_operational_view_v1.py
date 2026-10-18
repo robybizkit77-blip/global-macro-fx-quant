@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -172,6 +173,12 @@ def build():
 
 def main():
     out = build()
+    sys.path.insert(0, str(ROOT / 'validation'))
+    from validate_ois_operational_freshness import check
+    from datetime import date
+    issues = check(out, datetime.now(timezone.utc).date())
+    if issues:
+        raise SystemExit('OIS operational candidate rejected before write: ' + json.dumps(issues))
     OUT.write_text(json.dumps(out, ensure_ascii=False, indent=2, sort_keys=True) + '\n', encoding='utf-8')
     print(json.dumps(out['summary'], sort_keys=True))
 
