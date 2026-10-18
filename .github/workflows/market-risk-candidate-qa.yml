@@ -33,3 +33,22 @@ jobs:
           name: market-risk-source-probe
           path: /tmp/market-risk-candidate.json
           if-no-files-found: warn
+      - name: Probe official EIA WTI endpoints (no publishing)
+        shell: bash
+        run: |
+          python - <<'PY'
+          import urllib.request
+          links={
+            'EIA_DAILY_TABLE':'https://www.eia.gov/dnav/pet/PET_PRI_SPT_S1_D.htm',
+            'EIA_WTI_DAILY_HISTORY':'https://www.eia.gov/dnav/pet/hist/RWTCD.htm',
+            'EIA_WTI_SPREADSHEET':'https://www.eia.gov/dnav/pet/hist_xls/RWTCd.xls',
+          }
+          for name,url in links.items():
+              try:
+                  req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0'})
+                  with urllib.request.urlopen(req,timeout=12) as response:
+                      body=response.read(1024)
+                      print('EIA_PROBE',name,'HTTP',response.status,'bytes_first_chunk',len(body),'content_type',response.headers.get('Content-Type'))
+              except Exception as exc:
+                  print('EIA_PROBE',name,'WITHHELD',type(exc).__name__,str(exc)[:180])
+          PY
