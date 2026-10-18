@@ -27,17 +27,44 @@ async function getState(page){
  try {
    for(const [name,viewport] of [['desktop',{width:1440,height:900}],['mobile',{width:390,height:844}]]){
      const page=await browser.newPage({viewport});
-     const errs=[];
+     const errs=[],failedRequests=[],httpErrors=[];
      page.on('pageerror',e=>errs.push(String(e)));
-     const response=await page.goto(BASE,{waitUntil:'domcontentloaded',timeout:120000});
-     if(!response?.ok())throw Error(name+' public site HTTP failure: '+response?.status());
-     await page.waitForFunction(()=>{
-       const d=document.getElementById('gmfq-page')?.contentDocument;
-       return d?.documentElement?.dataset.liveState==='LOADED'
-         && d.querySelectorAll('#ois .oisrow').length===8
-         && d.querySelectorAll('#ylegend .gmfq-legend-item').length===8
-         && d.querySelector('#valute .cc[data-filter="DXY"] .move')?.textContent.includes('STIMA');
-     },null,{timeout:60000});
+     page.on('requestfailed',req=>failedRequests.push({url:req.url(),reason:req.failure()?.errorText}));
+     page.on('response',res=>{if(res.status()>=400)httpErrors.push({url:res.url(),status:res.status()});});
+     // The branch may advance before the Pages deployment/CDN serves the new revision.
+     // Retry a cache-busted public URL until the *actual browser* sees the new note contract.
+     let deployed=false,lastObserved=null;
+     for(let attempt=0;attempt<18;attempt++){
+       const response=await page.goto(BASE+'?qa='+Date.now()+'-'+attempt,{waitUntil:'domcontentloaded',timeout:120000});
+       if(!response?.ok())throw Error(name+' public site HTTP failure: '+response?.status());
+       try{
+         await page.waitForFunction(()=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument;
+           return d?.documentElement?.dataset.liveState==='LOADED'
+             && d.querySelectorAll('#ois .oisrow').length===8
+             && d.querySelectorAll('#ylegend .gmfq-legend-item').length===8
+             && d.querySelector('#valute .cc[data-filter="DXY"] .move')?.textContent.includes('STIMA');
+         },null,{timeout:12000});
+         lastObserved=await getState(page);
+         if(lastObserved.notes?.includes('R²')&&lastObserved.notes?.includes('base ')){
+           deployed=true;break;
+         }
+         console.log('PUBLIC_V10_VERSION_PENDING',name,attempt,lastObserved.notes);
+       }catch(error){
+         const docState=await getState(page).catch(e=>({error:String(e)}));
+         const detail=await page.evaluate(()=>{
+           const f=document.getElementById('gmfq-page'),d=f?.contentDocument;
+           return {outer:document.getElementById('state')?.innerText,frame:!!f,child:!!d,
+             scripts:[...(d?.scripts||[])].slice(-4).map(x=>x.src||'inline'),
+             htmlEnd:d?.body?.innerText?.slice(-250)};
+         }).catch(e=>({error:String(e)}));
+         console.log('PUBLIC_V10_VERSION_PENDING',name,attempt,JSON.stringify({
+           message:String(error).slice(0,160),docState,detail,errs,failedRequests:httpErrors.length?failedRequests.slice(-8):failedRequests.slice(-4),httpErrors:httpErrors.slice(-8)
+         }));
+       }
+       await page.waitForTimeout(6000);
+     }
+     if(!deployed)throw Error(name+' public CDN did not serve the matched-date G8 estimate build: '+JSON.stringify(lastObserved));
      const state=await getState(page);
      console.log('PUBLIC_V10_SMOKE',name,JSON.stringify(state));
      if(state.mode!=='live'||state.chartCount!==8||state.pricingCount!==8||!state.globe||
