@@ -36,34 +36,25 @@ jobs:
           fi
           grep -q '"status": "REJECTED"' /tmp/ois-green-preflight.log
           echo 'OIS_STALE_GREEN_REJECTION_PASS'
-      - name: Validate producer reject and healthy fixture acceptance
+      - name: Verify producer withholds NZD and preserves healthy currencies
         shell: bash
         run: |
           set -euo pipefail
           cp live_data/sections/OIS_OPERATIONAL_VIEW.json /tmp/ois-producer-before.json
-          if python3 validation/cb_pricing/build_ois_operational_view_v1.py >/tmp/ois-producer.log 2>&1; then
-            echo 'ERROR: producer wrote stale-GREEN candidate'
-            exit 1
-          fi
-          grep -q 'OIS operational candidate rejected before write' /tmp/ois-producer.log
-          cmp /tmp/ois-producer-before.json live_data/sections/OIS_OPERATIONAL_VIEW.json
+          python3 validation/cb_pricing/build_ois_operational_view_v1.py
           python3 - <<'PY'
-          import datetime as dt, json,sys
-          sys.path.insert(0,'validation')
-          from validate_ois_operational_freshness import check
-          today=dt.date.today()
-          obj=json.load(open('/tmp/ois-producer-before.json'))
-          for row in obj['currencies'].values():
-              row['as_of']=today.isoformat()
-              for horizon in ('3m','6m','12m'):
-                  h=row['horizons'][horizon]
-                  h['rate']=3.0 if h.get('rate') is None else h['rate']
-                  if row['operational_status']!='GREEN_OFFICIAL':
-                      h['quote_as_of']=today.isoformat()
-          assert not check(obj,today),check(obj,today)
-          print('OIS_VALID_FIXTURE_ACCEPTANCE_PASS (test-only fabricated fixture; never deployed)')
+          import json
+          old=json.load(open('/tmp/ois-producer-before.json'))
+          new=json.load(open('live_data/sections/OIS_OPERATIONAL_VIEW.json'))
+          assert new['summary']=={'g8_total':8,'operational_green':7,'green_official':4,'green_estimated':3,'operational_withheld':1},new['summary']
+          assert new['status']=='PARTIAL_WITHHELD'
+          assert new['currencies']['NZD']['operational_status']=='WITHHELD'
+          assert all(h['rate'] is None for h in new['currencies']['NZD']['horizons'].values())
+          for ccy in ('USD','EUR','GBP','JPY','CHF','CAD','AUD'):
+            assert new['currencies'][ccy]['operational_status']==old['currencies'][ccy]['operational_status'],ccy
+          print('OIS_PRODUCER_SEVEN_GREEN_ONE_WITHHELD_PASS')
           PY
-          echo 'OIS_PRODUCER_FAIL_CLOSED_PASS'
+          python3 validation/cb_pricing/test_ois_operational_view_v1.py
       - name: Probe official SNB and RBNZ feeds (non-mutating)
         shell: bash
         run: |
