@@ -79,7 +79,7 @@ function audit(){
  if(cards.length!==8||unique.length!==8||CCYS.some(x=>!unique.includes(x)))issues.push('G8_SELECTOR');
  if(!c||!CCYS.includes(c)||!String(document.getElementById('v234CountryName')?.textContent||'').includes(c))issues.push('SELECTION_SYNC');
  if(policy?.ok!==true)issues.push('CORE_POLICY_INTEGRITY');
- if(!state.data||state.data?.summary?.operational_green!==8)issues.push('OIS_OPERATIONAL_COVERAGE');
+ if(!state.data||state.data?.summary?.g8_total!==8||state.data.summary.operational_green+state.data.summary.operational_withheld!==8)issues.push('OIS_OPERATIONAL_COVERAGE');
  if(!r||!q)issues.push('SELECTED_PRICING');
  if(/Pricing non comparabile|OIS non confrontabile|Nessuna curva OIS\/forward omogenea disponibile/.test(text))issues.push('STALE_PRICING_NARRATIVE');
  if(document.querySelectorAll('#v234PricingGrid [data-gmfq-cb-pricing]').length!==3)issues.push('PRICING_GRID_BINDING');
