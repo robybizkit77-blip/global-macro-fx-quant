@@ -2,6 +2,17 @@
   'use strict';
   const R='../../live_data/sections/',q=s=>document.querySelector(s),esc=s=>String(s??'—').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
   const QUALITY_RANK={'PULITO':5,'CON RISCHI':4,'DA CONFERMARE':3,'DA MONITORARE':2,'NON VALUTABILE':0};
+  const STRUCTURAL={'CONTRASTO STRUTTURALE FORTE':'FORTE','VANTAGGIO RELATIVO PARZIALE':'PARZIALE','SEPARAZIONE RATES MATERIALE':'PARZIALE','PILASTRI DIVISI':'DIVISA','NESSUN CONTRASTO':'DEBOLE'};
+  function diagnostic(s){
+    if(s.quality==='NON VALUTABILE'||!s.structuralFav)return {thesis:'NON VALUTABILE',trade:'NON VALUTABILE'};
+    const thesis=STRUCTURAL[s.structural?.quality]||'NON VALUTABILE';
+    let trade='CERCA CONFERMA';
+    if(['NON VALUTABILE','DEBOLE','DIVISA'].includes(thesis))trade='ATTENDERE';
+    else if(s.price?.state==='BAD'||s.timing?.state==='ADVERSE')trade='ATTENDERE';
+    else if(s.extension?.state==='ADVANCED')trade='NON INSEGUIRE';
+    else if(s.price?.state==='GOOD'&&['ALIGNED','CONFIRMED','FAVORABLE'].includes(s.timing?.state)&&s.cot?.state!=='DIVERGENT')trade='DA STUDIARE';
+    return {thesis,trade};
+  }
   let setup;
   const load=f=>fetch(R+f,{cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject(new Error(`${f}: ${r.status}`)));
   function validateSetup(x){
@@ -19,7 +30,7 @@
   function render(){
     const qual=q('#quality').value,fav=q('#fav').value;
     const rows=Object.entries(setup.pairs).map(([pair,x])=>({pair,x,s:x.setup||{}})).filter(r=>(qual==='ALL'||r.s.quality===qual)&&(fav==='ALL'||r.s.structuralFav===fav)).sort((a,b)=>(QUALITY_RANK[b.s.quality]||0)-(QUALITY_RANK[a.s.quality]||0)||(a.x.canonical_pair||a.pair).localeCompare(b.x.canonical_pair||b.pair));
-    q('#rows').innerHTML=rows.map(r=>`<div class="screen-row"><b>${esc(r.x.canonical_pair||r.pair)}</b><span><strong>${esc(r.s.quality)}</strong><small style="display:block;margin-top:4px">favorisce ${esc(r.s.structuralFav||'—')}</small></span><p>${esc(r.s.structural?.relation||r.x.decision_frame?.relation||'Struttura non disponibile.')}</p><a href="coppia.html?pair=${esc(r.pair)}">Deep Dive →</a></div>`).join('')||'<p>Nessun setup corrisponde ai filtri.</p>';
+    q('#rows').innerHTML=rows.map(r=>`<div class="screen-row"><b>${esc(r.x.canonical_pair||r.pair)}</b><span><strong>${esc(r.s.quality)}</strong><small style="display:block;margin-top:4px">favorisce ${esc(r.s.structuralFav||'—')}</small></span><p class="screener-diagnostic"><span><small>Tesi</small><strong>${esc(diagnostic(r.s).thesis)}</strong></span><span><small>Trade · diagnostico</small><strong>${esc(diagnostic(r.s).trade)}</strong></span><small>${esc(r.s.structural?.relation||r.x.decision_frame?.relation||'Struttura non disponibile.')}</small></p><a href="coppia.html?pair=${esc(r.pair)}">Deep Dive →</a></div>`).join('')||'<p>Nessun setup corrisponde ai filtri.</p>';
     const distribution=Object.entries(QUALITY_RANK).filter(([name])=>name!=='NON VALUTABILE').map(([name])=>[name,Object.values(setup.pairs).filter(x=>x.setup?.quality===name).length]).filter(x=>x[1]>0).map(([name,count])=>name+': '+count).join(' · ');
     q('#asof').textContent=`${rows.length}/28 pair · prezzi ${setup.price_asof||'—'} · ${distribution}`;
   }
