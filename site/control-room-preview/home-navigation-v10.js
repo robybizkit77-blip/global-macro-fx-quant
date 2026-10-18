@@ -87,9 +87,23 @@ function style(doc){
   .gmfq-dxy-dialog a{color:#e6c778;text-decoration:underline}
   .gmfq-dxy-dialog svg{width:100%;height:145px}
   .gmfq-dxy-dialog .gmfq-close{float:right}
-  #ois .gmfq-nzd-proxy{border-top:1px solid #263b49;margin-top:6px;padding-top:7px}
-  #ois .gmfq-nzd-proxy em{font-style:normal;color:#e4c476;font-size:10px}
-  #ois .gmfq-nzd-proxy .fill{background:linear-gradient(90deg,#6c5b36,#dabb6c)}
+  /* Eight pricing lanes must fit the original 260px panel without clipping. */
+  .gridtop #ois {padding:1px 7px 0}
+  .gridtop #ois .oisrow{grid-template-columns:62px minmax(0,1fr) 47px;gap:5px;
+    margin:2px 0;min-height:18px;font-size:11px}
+  .gridtop #ois .oisrow:first-child{margin-top:3px}
+  .gridtop #ois .oisrow .track{height:14px}
+  .gridtop #ois .oisrow strong{font-size:11px}
+  .gridtop #ois .oisrow .miniquality{font-size:9px;line-height:1.1}
+  .gridtop #ois .oisnote{font-size:9px;line-height:1.2;margin-top:3px}
+  .gridtop #ois .gmfq-nzd-proxy{border-top:1px solid #263b49;padding-top:2px}
+  .gridtop #ois .gmfq-nzd-proxy .fill{background:linear-gradient(90deg,#6c5b36,#dabb6c)}
+  .gridtop .yieldpanel .legend-y{margin:0 3px}
+  .gridtop .yieldpanel .gmfq-legend-row{gap:2px 6px;justify-content:center}
+  .gridtop .yieldpanel .gmfq-legend-row .gmfq-legend-item{font-size:9px}
+  .gridtop .yieldpanel .gmfq-legend-row span:before{display:none}
+  .gridtop .yieldpanel .yieldplot{height:166px}
+  .gridtop .yieldpanel .gmfq-chart-note{margin:1px 10px;font-size:9px;line-height:1.1}
  `;
  doc.head.appendChild(s);
 }
@@ -201,7 +215,7 @@ function oisAll(doc,ois,proxy){
     const v=ready?num(proxy.horizons?.['6m']?.implied_bank_bill_rate):null;
     const change=ready?num(proxy.horizons?.['6m']?.change_1d_bp):null;
     const msg=v===null?'NESSUN PROXY CORRENTE':`PROXY BB 6M · ${fmt(v,2)}% · Δ1D ${change===null?'—':(change>=0?'+':'')+change} bp`;
-    return `<div class="oisrow gmfq-nzd-proxy" data-ccy="NZD" tabindex="0" role="link" aria-label="Apri approfondimento RBNZ"><span>RBNZ<small class="miniquality">NON OIS · STIMA DIREZIONALE</small></span><div class="track"><div class="fill" style="width:${change===null?0:Math.min(95,Math.abs(change)*4)}%"></div></div><strong>${v===null?'—':fmt(v,2)+'%'}</strong><div class="gmfq-quiet-meta">${msg} · ${htmlEscape(proxy?.as_of||'n.d.')}</div></div>`;
+    return `<div class="oisrow gmfq-nzd-proxy" data-ccy="NZD" tabindex="0" role="link" aria-label="Apri RBNZ e proxy futures NZD" title="${htmlEscape(msg)} · ASX ${htmlEscape(proxy?.as_of||'n.d.')}"><span>RBNZ<small class="miniquality">PROXY BB ≠ OIS</small></span><div class="track"><div class="fill" style="width:${change===null?0:Math.min(95,Math.abs(change)*4)}%"></div></div><strong>${v===null?'—':fmt(v,2)+'%'}</strong></div>`;
   }
   const w=x.d===null?0:Math.max(2,Math.abs(x.d)/maximum*100);
   return `<div class="oisrow" data-ccy="${x.k}" tabindex="0" role="link" aria-label="Apri OIS ${x.k}" title="${x.k} · ${x.quality} · ${x.asof||'n.d.'}">
