@@ -13,7 +13,7 @@ items={
 "Eight G8 currencies configured": "['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF']" in s,
 "Missing CHF and NZD 2Y modelled but distinct": "[['CHF','EUR'],['NZD','AUD']]" in s and "estimate2" in s and "STIMA" in s,
 "All G8 OIS/proxy rows": "['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']" in s,
-"NZD is explicitly a bank-bill directional proxy": "NZD_CB_PRICING_DIRECTIONAL_PROXY.json" in s and "NON OIS" in s,
+"NZD is explicitly a bank-bill directional proxy": "NZD_CB_PRICING_DIRECTIONAL_PROXY.json" in s and "PROXY BB ≠ OIS" in s,
 "Known stale pricing stays distinguishable": "fresh(x.as_of,4)" in s and "WITHHELD" in s,
 "Core data not changed": "localStorage.setItem" not in s and "github.com/repos/" not in s,
 }
