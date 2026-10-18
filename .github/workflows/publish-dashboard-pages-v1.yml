@@ -140,3 +140,44 @@ jobs:
           test "$REMOTE_SHA_2" = "$REMOTE_SHA" || { echo 'gh-pages moved during publication' >&2; exit 1; }
           git push --force-with-lease=refs/heads/gh-pages:$REMOTE_SHA origin HEAD:gh-pages
           echo DASHBOARD_PAGES_PUBLISHED
+
+      - name: Verify published files against validated main
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin gh-pages --no-tags
+          python - <<'PY'
+          import hashlib,json,pathlib,subprocess
+          paths=['live_data/sections/OIS_OPERATIONAL_VIEW.json',
+                 'dashboard/ois-operational-monitor-v1.js',
+                 'dashboard/cbdesk-operational-v1.js']
+          rows=[]
+          for name in paths:
+              source=pathlib.Path(name).read_bytes()
+              published=subprocess.check_output(['git','show',f'origin/gh-pages:{name}'])
+              same=hashlib.sha256(source).digest()==hashlib.sha256(published).digest()
+              rows.append({'path':name,'same':same,'sha256':hashlib.sha256(published).hexdigest()})
+          obj=json.loads(pathlib.Path(paths[0]).read_text())
+          assert obj['summary']['g8_total']==8
+          assert obj['summary']['operational_green']+obj['summary']['operational_withheld']==8
+          from datetime import datetime,timezone
+          from validation.validate_ois_operational_freshness import check
+          assert not check(obj,datetime.now(timezone.utc).date()), 'freshness preflight failed'
+          report={'status':'PASS' if all(x['same'] for x in rows) else 'FAIL',
+                  'source_commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
+                  'pages_commit':subprocess.check_output(['git','rev-parse','origin/gh-pages'],text=True).strip(),
+                  'files':rows,'ois_summary':obj['summary'],
+                  'scope':'GIT_BRANCH_CONSISTENCY_ONLY_NOT_PUBLIC_HTTP'}
+          pathlib.Path('/tmp/pages-delivery-proof.json').write_text(json.dumps(report,indent=2))
+          print('PAGES_DELIVERY_PROOF',json.dumps(report))
+          if report['status']!='PASS':raise SystemExit('Published files differ from validated main')
+          PY
+
+      - name: Upload delivery evidence
+        if: always() && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pages-delivery-proof
+          path: /tmp/pages-delivery-proof.json
+          if-no-files-found: warn
