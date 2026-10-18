@@ -6,8 +6,264 @@
   "not_intraday": true,
   "as_of": "2026-10-16",
   "value": 101.7135,
-  "previous_value": null,
+  "previous_value": 102.1129,
   "history": [
+    {
+      "date": "2026-07-20",
+      "value": 100.8288
+    },
+    {
+      "date": "2026-07-21",
+      "value": 100.9965
+    },
+    {
+      "date": "2026-07-22",
+      "value": 101.1354
+    },
+    {
+      "date": "2026-07-23",
+      "value": 101.2854
+    },
+    {
+      "date": "2026-07-24",
+      "value": 101.4226
+    },
+    {
+      "date": "2026-07-27",
+      "value": 101.3449
+    },
+    {
+      "date": "2026-07-28",
+      "value": 101.5456
+    },
+    {
+      "date": "2026-07-29",
+      "value": 101.4479
+    },
+    {
+      "date": "2026-07-30",
+      "value": 100.6823
+    },
+    {
+      "date": "2026-07-31",
+      "value": 100.3524
+    },
+    {
+      "date": "2026-08-03",
+      "value": 99.7168
+    },
+    {
+      "date": "2026-08-04",
+      "value": 99.9389
+    },
+    {
+      "date": "2026-08-05",
+      "value": 99.6947
+    },
+    {
+      "date": "2026-08-06",
+      "value": 99.7468
+    },
+    {
+      "date": "2026-08-07",
+      "value": 99.8615
+    },
+    {
+      "date": "2026-08-10",
+      "value": 99.6863
+    },
+    {
+      "date": "2026-08-11",
+      "value": 99.8248
+    },
+    {
+      "date": "2026-08-12",
+      "value": 99.7749
+    },
+    {
+      "date": "2026-08-13",
+      "value": 99.9174
+    },
+    {
+      "date": "2026-08-14",
+      "value": 99.6113
+    },
+    {
+      "date": "2026-08-17",
+      "value": 99.4538
+    },
+    {
+      "date": "2026-08-18",
+      "value": 99.6442
+    },
+    {
+      "date": "2026-08-19",
+      "value": 99.4047
+    },
+    {
+      "date": "2026-08-20",
+      "value": 98.8192
+    },
+    {
+      "date": "2026-08-21",
+      "value": 98.6669
+    },
+    {
+      "date": "2026-08-24",
+      "value": 98.997
+    },
+    {
+      "date": "2026-08-25",
+      "value": 99.0207
+    },
+    {
+      "date": "2026-08-26",
+      "value": 98.983
+    },
+    {
+      "date": "2026-08-27",
+      "value": 99.1902
+    },
+    {
+      "date": "2026-08-28",
+      "value": 99.2126
+    },
+    {
+      "date": "2026-08-31",
+      "value": 99.5506
+    },
+    {
+      "date": "2026-09-01",
+      "value": 99.6383
+    },
+    {
+      "date": "2026-09-02",
+      "value": 99.7513
+    },
+    {
+      "date": "2026-09-03",
+      "value": 99.1124
+    },
+    {
+      "date": "2026-09-04",
+      "value": 99.0668
+    },
+    {
+      "date": "2026-09-07",
+      "value": 98.973
+    },
+    {
+      "date": "2026-09-08",
+      "value": 98.9589
+    },
+    {
+      "date": "2026-09-09",
+      "value": 98.6088
+    },
+    {
+      "date": "2026-09-10",
+      "value": 98.9869
+    },
+    {
+      "date": "2026-09-11",
+      "value": 99.1678
+    },
+    {
+      "date": "2026-09-14",
+      "value": 99.4824
+    },
+    {
+      "date": "2026-09-15",
+      "value": 99.6222
+    },
+    {
+      "date": "2026-09-16",
+      "value": 99.6825
+    },
+    {
+      "date": "2026-09-17",
+      "value": 100.1639
+    },
+    {
+      "date": "2026-09-18",
+      "value": 100.5198
+    },
+    {
+      "date": "2026-09-21",
+      "value": 100.2299
+    },
+    {
+      "date": "2026-09-22",
+      "value": 100.4024
+    },
+    {
+      "date": "2026-09-23",
+      "value": 100.8819
+    },
+    {
+      "date": "2026-09-24",
+      "value": 101.293
+    },
+    {
+      "date": "2026-09-25",
+      "value": 100.9843
+    },
+    {
+      "date": "2026-09-28",
+      "value": 101.0913
+    },
+    {
+      "date": "2026-09-29",
+      "value": 101.269
+    },
+    {
+      "date": "2026-09-30",
+      "value": 101.2349
+    },
+    {
+      "date": "2026-10-01",
+      "value": 101.7283
+    },
+    {
+      "date": "2026-10-02",
+      "value": 102.0819
+    },
+    {
+      "date": "2026-10-05",
+      "value": 102.2408
+    },
+    {
+      "date": "2026-10-06",
+      "value": 101.8081
+    },
+    {
+      "date": "2026-10-07",
+      "value": 102.4092
+    },
+    {
+      "date": "2026-10-08",
+      "value": 102.3582
+    },
+    {
+      "date": "2026-10-09",
+      "value": 102.1859
+    },
+    {
+      "date": "2026-10-12",
+      "value": 102.3856
+    },
+    {
+      "date": "2026-10-13",
+      "value": 102.2681
+    },
+    {
+      "date": "2026-10-14",
+      "value": 102.2249
+    },
+    {
+      "date": "2026-10-15",
+      "value": 102.1129
+    },
     {
       "date": "2026-10-16",
       "value": 101.7135
@@ -23,9 +279,8 @@
     "CHF": 0.036
   },
   "constant": 50.14348112,
-  "source": "ECB reference rates 16 October 2026: USD 1.1253, JPY 177.82, GBP 0.84385, CAD 1.5935, CHF 0.9272, SEK 11.1450 per EUR; proxy calculated using ICE weights",
-  "source_url": "https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.eu.html",
+  "source": "ECB euro foreign exchange reference rates; official FX fixings used as inputs, derived index is not ICE official",
+  "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist-90d.xml",
   "independent_from_core_engine": true,
-  "usable_as_official_ice_or_trade_signal": false,
-  "seed": "ECB_2026_10_16_SINGLE_VERIFIED_FIXING; full history requires daily refresh workflow"
+  "usable_as_official_ice_or_trade_signal": false
 }
