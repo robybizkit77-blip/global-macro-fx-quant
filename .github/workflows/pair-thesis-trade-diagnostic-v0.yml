@@ -37,6 +37,16 @@ jobs:
           assert all(not r['entry_signal'] for r in obj['rows'].values())
           print('PAIR_DIAGNOSTIC_TEST_PASS', dict(Counter(r['trade'] for r in obj['rows'].values())))
           PY
+          python - <<'PY'
+          import importlib.util
+          spec=importlib.util.spec_from_file_location('diag','validation/pairs/pair_thesis_trade_diagnostic_v0.py')
+          m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+          row={'setup':{'quality':'DA MONITORARE','structuralFav':'USD','structural':{'quality':'VANTAGGIO RELATIVO PARZIALE'},'price':{'state':'GOOD'},'timing':{'state':'PARTIAL'},'extension':{'state':'NORMAL'},'cot':{'state':'MEDIUM'}}}
+          assert m.assess(row)['trade']=='CERCA CONFERMA',m.assess(row)
+          row['setup']['quality']='NON VALUTABILE'
+          assert m.assess(row)['trade']=='NON VALUTABILE'
+          print('PAIR_PARTIAL_TIMING_NOT_PROMOTED_PASS')
+          PY
           sha256sum -c /tmp/pair-source.sha256
       - uses: actions/upload-artifact@v4
         with:
