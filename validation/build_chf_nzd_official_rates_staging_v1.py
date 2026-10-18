@@ -208,8 +208,8 @@ def make_candidate(cur: dict, currency: str, observation: dict, *,
     if changed != [currency]:
         raise AssertionError(f"one-currency staging scope violated: {changed}")
     for tenor,h in (("2Y","history2"),("10Y","history10")):
-        if result[currency][h]["dates"][-1]!=day.isoformat() or
-           abs(result[currency][h]["values"][-1]-result[currency][tenor])>1e-8:
+        if (result[currency][h]["dates"][-1]!=day.isoformat() or
+            abs(result[currency][h]["values"][-1]-result[currency][tenor])>1e-8):
             raise AssertionError("candidate history tail mismatch")
     receipt.update(status="GATED_CANDIDATE_REVIEW_REQUIRED",
                    y2=y2,y10=y10,change_from_snapshot_bp={
