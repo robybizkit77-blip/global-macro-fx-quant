@@ -17,8 +17,15 @@ small{color:#829eb5;display:block;margin-top:10px}
   }));
   const html=parts.join("");
   if(!html.startsWith("<!doctype html>")||!html.includes("const PAGES="))throw new Error("Controllo integrità dell'anteprima non superato");
+  // Activate the existing certified-data adapter on the default Home route.
+  // Explicit #/home?mode=design still preserves the original illustrated view.
+  // Do not rewrite or regenerate any of the 32 design payload parts.
+  const routeMarker="window.__GMFQ_ROUTE_QUERY__=query;";
+  if(html.split(routeMarker).length!==2)throw new Error("Contratto routing Home v10 non riconosciuto");
+  const liveRoute="window.__GMFQ_ROUTE_QUERY__=(name==='home' && !new URLSearchParams(query).has('mode')) ? 'mode=live' : query;";
+  const certifiedDefault=html.replace(routeMarker,liveRoute);
   document.open();
-  document.write(html);
+  document.write(certifiedDefault);
   document.close();
 })().catch(error=>{
   console.error("[GMFQ Preview]",error);
