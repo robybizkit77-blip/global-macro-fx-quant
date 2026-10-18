@@ -282,7 +282,7 @@
       "change_1d_available": false,
       "change_1w_available": false,
       "confidence": "C",
-      "direction_vs_policy": "UP",
+      "direction_vs_policy": null,
       "horizons": {
         "12m": {
           "change_1d_bp": null,
@@ -293,8 +293,8 @@
         "3m": {
           "change_1d_bp": null,
           "change_1w_bp": null,
-          "policy_delta_bp": 25.0,
-          "rate": 3.0
+          "policy_delta_bp": null,
+          "rate": null
         },
         "6m": {
           "change_1d_bp": null,
@@ -354,7 +354,7 @@
       },
       "method_id": "NATIVE_CB_ESTIMATED_V1",
       "official_status": "WITHHELD",
-      "operational_status": "GREEN_ESTIMATED",
+      "operational_status": "WITHHELD",
       "policy_rate": 2.75,
       "quality": "ESTIMATED_INFORMATIONAL",
       "repricing_reference": {
@@ -366,7 +366,8 @@
         "weekly_min_age_days": 5,
         "weekly_reference_captured_at_utc": null
       },
-      "source": "RBNZ Monetary Policy Statement Sep 2026"
+      "source": "RBNZ Monetary Policy Statement Sep 2026",
+      "withheld_reason": "STALE_OR_INCOMPLETE_PRICING"
     },
     "USD": {
       "as_of": "2026-10-16",
@@ -443,12 +444,12 @@
   },
   "official_runtime_untouched": true,
   "schema": "GMFQ_OIS_OPERATIONAL_VIEW_V1",
-  "status": "GREEN_8_OF_8",
+  "status": "PARTIAL_WITHHELD",
   "summary": {
     "g8_total": 8,
-    "green_estimated": 4,
+    "green_estimated": 3,
     "green_official": 4,
-    "operational_green": 8,
-    "operational_withheld": 0
+    "operational_green": 7,
+    "operational_withheld": 1
   }
 }
