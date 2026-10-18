@@ -15,7 +15,7 @@ def assess(row):
  if thesis in ('NON VALUTABILE','DEBOLE','DIVISA'):trade,reason='ATTENDERE','Struttura non sufficientemente definita'
  elif price=='BAD' or timing=='ADVERSE':trade,reason='ATTENDERE','Prezzo o dinamica contrari'
  elif extension=='ADVANCED':trade,reason='NON INSEGUIRE','Movimento già esteso'
- elif price=='GOOD' and timing not in ('ADVERSE','UNCERTAIN','MIXED') and cot!='DIVERGENT':trade,reason='DA STUDIARE','Verificare condizioni di ingresso sul grafico'
+ elif price=='GOOD' and timing in ('ALIGNED','CONFIRMED','FAVORABLE') and cot!='DIVERGENT':trade,reason='DA STUDIARE','Verificare condizioni di ingresso sul grafico'
  else:trade,reason='CERCA CONFERMA','Mancano conferme operative'
  return dict(thesis=thesis,trade=trade,reason=reason,entry_signal=False)
 def main():
