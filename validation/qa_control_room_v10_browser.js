@@ -2,6 +2,15 @@
 'use strict';
 const {chromium}=require('playwright');
 const fs=require('fs'),path=require('path');
+const DATA=path.join(process.cwd(),'live_data/sections');
+const dxyFeed=JSON.parse(fs.readFileSync(path.join(DATA,'DXY_SYNTHETIC_ECB.json'),'utf8'));
+const nzdProxy=JSON.parse(fs.readFileSync(path.join(DATA,'NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),'utf8'));
+if(dxyFeed.schema!=='GMFQ_DXY_SYNTHETIC_ECB_V1'||dxyFeed.not_official_ice!==true||
+   dxyFeed.status!=='ESTIMATED_INFORMATIONAL')throw Error('DXY research provenance contract failed');
+if(nzdProxy.schema!=='GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1'||
+   nzdProxy.status!=='LIVE_DIRECTIONAL_PROXY_READY')throw Error('NZD directional proxy contract failed');
+const dxyDisplayed=Number(dxyFeed.value).toFixed(2);
+const nzdDisplayed=Number(nzdProxy.horizons['6m'].implied_bank_bill_rate).toFixed(2);
 (async()=>{
  const browser=await chromium.launch({headless:true});
  for(const [label,viewport] of [['desktop',{width:1440,height:950}],['mobile',{width:390,height:844}]]){
@@ -49,6 +58,8 @@ const fs=require('fs'),path=require('path');
       dxy:d.querySelector('#valute .cc[data-filter="DXY"] .value')?.innerText,
       noApprofondisci:!d.body.innerText.includes('Approfondisci ↗'),
       rateSeries:[...d.querySelectorAll('#ylegend .gmfq-legend-item')].map(x=>x.innerText),
+      rateBarTexts:[...d.querySelectorAll('#ratesbars svg text')].map(x=>x.textContent.trim()),
+      rateBarNote:d.querySelector('#ratesbars + .gmfq-chart-note')?.textContent.trim()||'',
       ratesChart:box('.gridtop .yieldpanel'),
       oisPanel:box('.gridtop > .panel:nth-child(2)'),
       nzdbb:ois.find(x=>x.ccy==='NZD')?.desc||null,
@@ -61,10 +72,14 @@ const fs=require('fs'),path=require('path');
   });
   console.log(label,JSON.stringify(r));
   const fatal=[];
-  if(!/101\.71/.test(r.dxy||''))fatal.push('DXY synthetic not visible');
+  if((r.dxy||'').trim()!==dxyDisplayed)fatal.push('DXY synthetic not synchronized with its source: '+r.dxy+' != '+dxyDisplayed);
   if(!r.noApprofondisci)fatal.push('old overlay link still shown');
   if(r.rateSeries.length!==8)fatal.push('missing G8 yield lines');
-  if(r.oisCount!==8||!r.nzdbb?.includes('3.83'))fatal.push('NZD proxy missing');
+  if(r.oisCount!==8||!r.nzdbb?.includes(nzdDisplayed))fatal.push('NZD directional proxy missing or stale');
+  const g8=['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'];
+  if(g8.some(c=>!r.rateBarTexts.includes(c)))fatal.push('G8 2Y bars missing currency labels');
+  if(r.rateBarTexts.filter(x=>x.endsWith('*')).length<2||!r.rateBarNote.includes('STIMA'))
+    fatal.push('Missing or unlabelled model estimates for CHF/NZD');
   if(!r.bars2y||!r.spread||!r.designGlobe)fatal.push('cards/approved design missing');
   if(r.oisPanel.scrollHeight>r.oisPanel.clientHeight+8)fatal.push('OIS clipped');
   if(r.ratesChart.scrollHeight>r.ratesChart.clientHeight+8)fatal.push('Yield panel clipped');
