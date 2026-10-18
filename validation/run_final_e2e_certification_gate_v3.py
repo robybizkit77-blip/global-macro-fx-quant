@@ -112,15 +112,22 @@ def main():
     run([sys.executable, "validation/cb_pricing/build_ois_operational_view_v1.py"])
     run([sys.executable, "validation/cb_pricing/test_ois_operational_view_v1.py"])
     operational_ois = load_json("live_data/sections/OIS_OPERATIONAL_VIEW.json")
-    expected_summary = {
-        "g8_total": 8,
-        "operational_green": 7,
-        "green_official": 4,
-        "green_estimated": 3,
-        "operational_withheld": 1,
+    summary = operational_ois.get("summary") or {}
+    rows = operational_ois.get("currencies") or {}
+    if set(rows) != {"USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"}:
+        raise SystemExit("OIS operational G8 currency coverage drift")
+    counts = {
+        "green_official": sum(r.get("operational_status") == "GREEN_OFFICIAL" for r in rows.values()),
+        "green_estimated": sum(r.get("operational_status") == "GREEN_ESTIMATED" for r in rows.values()),
+        "operational_withheld": sum(r.get("operational_status") == "WITHHELD" for r in rows.values()),
     }
-    if operational_ois.get("status") != "PARTIAL_WITHHELD" or operational_ois.get("summary") != expected_summary:
-        raise SystemExit("OIS operational 7 GREEN / 1 WITHHELD coverage drift")
+    green = counts["green_official"] + counts["green_estimated"]
+    expected_status = "PARTIAL_WITHHELD" if counts["operational_withheld"] else "GREEN_8_OF_8"
+    if (sum(counts.values()) != 8 or summary.get("g8_total") != 8
+            or summary.get("operational_green") != green
+            or any(summary.get(key) != value for key, value in counts.items())
+            or operational_ois.get("status") != expected_status):
+        raise SystemExit("OIS operational dynamic G8 status/summary drift")
     if operational_ois.get("official_runtime_untouched") is not True:
         raise SystemExit("OIS operational view no longer preserves official runtime")
     for ccy in ("AUD", "CAD", "GBP", "JPY"):
@@ -130,8 +137,15 @@ def main():
         row = operational_ois["currencies"][ccy]
         if row.get("operational_status") != "GREEN_ESTIMATED" or row.get("backtest_eligible_as_official") is not False:
             raise SystemExit(f"{ccy} estimated operational OIS governance drift")
-    if operational_ois["currencies"]["NZD"].get("operational_status") != "WITHHELD":
-        raise SystemExit("NZD stale OIS must be withheld")
+    nzd = operational_ois["currencies"]["NZD"]
+    if nzd.get("operational_status") == "WITHHELD":
+        if any((nzd.get("horizons") or {}).get(h, {}).get("rate") is not None for h in ("3m", "6m", "12m")):
+            raise SystemExit("NZD withheld OIS has non-null level")
+    elif nzd.get("operational_status") in ("GREEN_OFFICIAL", "GREEN_ESTIMATED"):
+        if any((nzd.get("horizons") or {}).get(h, {}).get("rate") is None for h in ("3m", "6m", "12m")):
+            raise SystemExit("NZD GREEN OIS has incomplete levels")
+        if nzd.get("backtest_eligible_as_official") is not (nzd["operational_status"] == "GREEN_OFFICIAL"):
+            raise SystemExit("NZD official-backtest eligibility drift")
     for ccy in ("USD", "EUR", "CHF"):
         row = operational_ois["currencies"][ccy]
         if row.get("method_id") != "TRADINGVIEW_DATED_FUTURES_SSR_V2":
