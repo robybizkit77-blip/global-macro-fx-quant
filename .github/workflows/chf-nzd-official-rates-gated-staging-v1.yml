@@ -1,0 +1,78 @@
+name: CHF NZD Official Rates Gated Staging V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/build_chf_nzd_official_rates_staging_v1.py'
+      - 'validation/test_chf_nzd_official_rates_staging_v1.py'
+      - '.github/workflows/chf-nzd-official-rates-gated-staging-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/build_chf_nzd_official_rates_staging_v1.py'
+      - 'validation/test_chf_nzd_official_rates_staging_v1.py'
+      - '.github/workflows/chf-nzd-official-rates-gated-staging-v1.yml'
+  schedule:
+    # 17:00 UTC on weekdays: after the existing daily access probe.
+    - cron: '0 17 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gmfq-chf-nzd-rates-gated-staging
+  cancel-in-progress: false
+
+jobs:
+  official-staging-no-production-writes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install official XLSX parser
+        run: python -m pip install --disable-pip-version-check --no-input openpyxl
+      - name: Validate CHF/NZD official staging gates against adversarial fixtures
+        run: |
+          python -m py_compile validation/build_chf_nzd_official_rates_staging_v1.py validation/test_chf_nzd_official_rates_staging_v1.py
+          python validation/probe_chf_nzd_rates_sources_v1.py --self-test
+          python validation/test_chf_nzd_official_rates_staging_v1.py
+      - name: Read official SNB paired 2Y/10Y and stage only if new and current
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/chf-nzd-official-staging
+          python validation/build_chf_nzd_official_rates_staging_v1.py \
+            --currency CHF --live \
+            --output /tmp/chf-nzd-official-staging/CHF_NZD_STAGING_ONLY.json \
+            --receipt /tmp/chf-nzd-official-staging/CHF_receipt.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          receipt=json.loads(Path('/tmp/chf-nzd-official-staging/CHF_receipt.json').read_text())
+          assert receipt['writes_live_data'] is False
+          assert receipt['eligible_for_automatic_promotion'] is False
+          assert receipt['review']=='REQUIRED'
+          assert receipt['status'] in ('GATED_CANDIDATE_REVIEW_REQUIRED','NO_NEW_OFFICIAL_PAIR')
+          if receipt['status']=='NO_NEW_OFFICIAL_PAIR':
+              assert not Path('/tmp/chf-nzd-official-staging/CHF_NZD_STAGING_ONLY.json').exists()
+          print('CHF_OFFICIAL_STAGING_READ_ONLY_PASS',receipt['status'],receipt['as_of'])
+          PY
+      - name: Enforce immutable operational Rates, manifests and entire legacy payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- live_data payload site
+          git ls-files --others --exclude-standard -- live_data payload site | grep . && { echo 'Unexpected production files generated' >&2; exit 1; } || true
+          echo CHF_NZD_STAGING_ZERO_PRODUCTION_MUTATION_PASS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: official-rates-staging-evidence
+          path: /tmp/chf-nzd-official-staging/
+          if-no-files-found: warn
+          retention-days: 30
