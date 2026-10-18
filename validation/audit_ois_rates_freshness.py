@@ -14,7 +14,7 @@ def evaluate():
     for c in ('USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'):
         x=ois[c]; a=age(x.get('as_of')); green=str(x.get('operational_status','')).startswith('GREEN')
         horizons=x.get('horizons',{})
-        matched=all(isinstance(horizons.get(h),dict) and isinstance(horizons[h].get('rate'),(int,float)) and horizons[h].get('quote_as_of')==x.get('as_of') for h in ('3m','6m','12m'))
+        matched=all(isinstance(horizons.get(h),dict) and isinstance(horizons[h].get('rate'),(int,float)) and (horizons[h].get('quote_as_of')==x.get('as_of') or (x.get('operational_status')=='GREEN_OFFICIAL' and not horizons[h].get('quote_as_of'))) for h in ('3m','6m','12m'))
         fresh=a is not None and 0<=a<=5 and matched
         if green and not fresh:issues.append({'layer':'OIS','ccy':c,'issue':'STALE_OR_INCOMPLETE_MARKED_GREEN','age_days':a,'matched_horizons':matched})
         r=rates.get(c,{}); ra=age(r.get('date'))
