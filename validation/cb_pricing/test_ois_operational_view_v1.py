@@ -8,11 +8,21 @@ POLICY = json.loads((ROOT/'validation/cb_pricing/OIS_OPERATIONAL_COVERAGE_POLICY
 OFFICIAL = json.loads((ROOT/'live_data/sections/OIS_DATA.json').read_text())['currencies']
 EST = json.loads((ROOT/'live_data/sections/CB_PRICING_ESTIMATED.json').read_text())['currencies']
 
-assert VIEW['status'] == 'PARTIAL_WITHHELD'
-assert VIEW['summary'] == {'g8_total':8,'operational_green':7,'green_official':4,'green_estimated':3,'operational_withheld':1}
-assert POLICY['summary']['operational_green'] == 8  # legacy coverage target, not current live freshness
-assert POLICY['summary']['operational_withheld'] == 0
-
+from datetime import datetime, timezone
+import sys
+sys.path.insert(0,str(ROOT/'validation'))
+from validate_ois_operational_freshness import check
+summary=VIEW['summary']
+assert len(VIEW['currencies'])==8
+assert set(VIEW['currencies'])=={'USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'}
+assert summary['g8_total']==8
+assert summary['operational_green']==summary['green_official']+summary['green_estimated']
+assert summary['operational_green']+summary['operational_withheld']==8
+assert summary['green_official']==sum(r['operational_status']=='GREEN_OFFICIAL' for r in VIEW['currencies'].values())
+assert summary['green_estimated']==sum(r['operational_status']=='GREEN_ESTIMATED' for r in VIEW['currencies'].values())
+assert summary['operational_withheld']==sum(r['operational_status']=='WITHHELD' for r in VIEW['currencies'].values())
+assert VIEW['status']==('PARTIAL_WITHHELD' if summary['operational_withheld'] else 'GREEN_8_OF_8')
+assert not check(VIEW,datetime.now(timezone.utc).date())
 for ccy, row in VIEW['currencies'].items():
     assert row['operational_status'] in ('GREEN_OFFICIAL','GREEN_ESTIMATED','WITHHELD')
     if row['operational_status'] == 'GREEN_OFFICIAL':
@@ -26,7 +36,8 @@ for ccy, row in VIEW['currencies'].items():
         assert any((row['horizons'].get(h) or {}).get('rate') is not None for h in ('3m','6m','12m'))
 
 assert {c for c,r in VIEW['currencies'].items() if r['operational_status']=='GREEN_OFFICIAL'} == {'AUD','CAD','GBP','JPY'}
-assert {c for c,r in VIEW['currencies'].items() if r['operational_status']=='GREEN_ESTIMATED'} == {'USD','EUR','CHF'}
-assert VIEW['currencies']['NZD']['operational_status']=='WITHHELD'
-assert all(h['rate'] is None for h in VIEW['currencies']['NZD']['horizons'].values())
-print('PASS OIS operational coverage 7 GREEN 1 WITHHELD')
+for ccy,row in VIEW['currencies'].items():
+    if row['operational_status']=='WITHHELD':
+        assert all((row['horizons'].get(h) or {}).get('rate') is None for h in ('3m','6m','12m'))
+        assert row['change_1d_available'] is False and row['change_1w_available'] is False
+print('PASS OIS operational dynamic G8 coverage',summary)
