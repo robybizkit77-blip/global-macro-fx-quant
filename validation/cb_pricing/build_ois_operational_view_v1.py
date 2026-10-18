@@ -190,6 +190,7 @@ def build():
 
 def main():
     out = build()
+    from validate_ois_operational_freshness import check
     assert not check(out, datetime.now(timezone.utc).date()), 'withheld downgrade failed'
     OUT.write_text(json.dumps(out, ensure_ascii=False, indent=2, sort_keys=True) + '\n', encoding='utf-8')
     print(json.dumps(out['summary'], sort_keys=True))
