@@ -47,6 +47,18 @@
     .setup-op-row>i.clean{background:rgba(72,217,160,.12)!important;color:#64e2af!important}.setup-op-row>i.risky{background:rgba(216,169,92,.12)!important;color:#e7bd73!important}.setup-op-row>i.confirm{background:rgba(88,169,231,.12)!important;color:#7dc0ef!important}.setup-op-row>i.watch{background:rgba(201,122,255,.12)!important;color:#d59aff!important}.setup-op-row>i.neutral{background:rgba(145,164,180,.10)!important;color:#9fb1bd!important}
     .setup-operational-subline{padding:0 12px 7px!important}
     @media(max-width:760px){
+      .setup-table.setup-operational>.setup-op-head{display:none!important}
+      .setup-table.setup-operational>.setup-op-row{grid-template-columns:24px minmax(0,1fr) minmax(112px,1fr)!important;column-gap:9px!important;row-gap:6px!important;padding:12px 4px!important;min-height:102px!important}
+      .setup-op-row>span:first-child{grid-column:1;grid-row:1/3;font-size:12px!important}
+      .setup-op-row>b{grid-column:2;grid-row:1;font-size:13px!important}
+      .setup-op-row>strong{grid-column:2;grid-row:2;font-size:11px!important}
+      .setup-op-row>strong::before{content:'Favorisce ';color:#8fa4b4;font-weight:400}
+      .setup-op-row>em{grid-column:2;grid-row:3;font-size:10px!important;white-space:normal!important;overflow:visible!important}
+      .setup-op-row>i{grid-column:3;grid-row:1/3;width:100%!important;max-width:none!important;font-size:10px!important;white-space:normal!important;line-height:1.4!important;padding:8px!important}
+      .setup-op-row>small{grid-column:3;grid-row:3;font-size:10px!important;line-height:1.4!important}
+      .setup-op-row>small>u,.setup-op-row>small>span{white-space:normal!important;overflow:visible!important}
+    }
+    @media(max-width:760px){
       .setup-table.setup-operational>.setup-op-head,.setup-table.setup-operational>.setup-op-row{grid-template-columns:24px 78px 42px minmax(0,1fr) 110px minmax(0,1fr)!important;column-gap:6px!important}
       .setup-op-row>em{font-size:7px!important}.setup-op-row>i{font-size:6.5px!important;padding:4px!important}.setup-op-row>small{font-size:7px!important}
     }
