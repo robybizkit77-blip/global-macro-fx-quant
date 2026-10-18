@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/chf-nzd-official-source-probe.yml'
+      - 'validation/audit_ois_rates_freshness.py'
   workflow_dispatch:
 permissions:
   contents: read
@@ -12,6 +13,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+      - name: Audit all G8 OIS and Rates timestamps (non-mutating)
+        run: python3 validation/audit_ois_rates_freshness.py
       - name: Probe official SNB and RBNZ feeds (non-mutating)
         shell: bash
         run: |
