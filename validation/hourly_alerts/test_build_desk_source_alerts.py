@@ -33,7 +33,26 @@ class SourceWatchTests(unittest.TestCase):
         second, count_again = build(first, [record()], NOW + timedelta(minutes=10))
         self.assertEqual(count_again, 0)
         self.assertEqual(second, first)
-        self.assertEqual(first["policy"], BASE["policy"])
+        self.assertEqual(first["policy"]["max_history"], 100)
+        self.assertEqual(first["policy"]["deduplicate_by"], "event_id")
+        self.assertEqual(first["policy"]["source"], "INDEPENDENT_REUTERS_AP_NEWS_RSS")
+
+    def test_unrelated_geopolitics_and_generic_sanctions_are_withheld(self):
+        self.assertIsNone(make_item(record(title="Sanctions and embargoes"), NOW))
+        self.assertIsNone(make_item(record(title="Diplomats attacked in the occupied West Bank, and other developments"), NOW))
+        self.assertIsNotNone(make_item(record(title="Iran's Guards say two tankers hit mines in Strait of Hormuz"), NOW))
+
+    def test_removes_only_previous_generated_false_positives(self):
+        valid = make_item(record(), NOW)
+        spurious = {"event_id": "SRC-old", "headline": "Sanctions and embargoes",
+                    "verification_level": "PUBLISHER_ATTRIBUTED_ONLY"}
+        external = {"event_id": "EXTERNAL-1", "headline": "Una notizia verificata da un altro processo"}
+        data = {**BASE, "history": [spurious, external, valid]}
+        updated, count = build(data, [record()], NOW)
+        self.assertEqual(count, 0)
+        self.assertEqual(len(updated["history"]), 2)
+        self.assertIn(external, updated["history"])
+        self.assertIn(valid, updated["history"])
 
     def test_invalid_existing_contract_fails_closed(self):
         with self.assertRaises(ValueError):
