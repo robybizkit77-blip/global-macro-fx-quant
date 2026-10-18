@@ -127,7 +127,9 @@ jobs:
             if(freshness.legacy_authority!=='NONE') throw new Error(`${label}: legacy freshness authority ${freshness.legacy_authority}`);
             for(const [id,authority] of Object.entries(AUTH)){
               if(freshness.sections?.[id]?.authority!==authority) throw new Error(`${label}: ${id} freshness authority drift ${JSON.stringify(freshness.sections?.[id])}`);
-              if(freshness.sections?.[id]?.status!=='FRESH') throw new Error(`${label}: ${id} freshness ${JSON.stringify(freshness.sections?.[id])}`);
+              const section=freshness.sections?.[id];
+              const expected=(Number.isFinite(section?.age_days)&&Number.isFinite(section?.max_age_days)&&section.age_days>section.max_age_days)?'STALE':'FRESH';
+              if(section?.status!==expected) throw new Error(`${label}: ${id} freshness status/date mismatch expected ${expected} ${JSON.stringify(section)}`);
             }
             if(errs.length) throw new Error(`${label}: console errors ${errs.join(' | ')}`);
             await browser.close();
