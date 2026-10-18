@@ -1,0 +1,34 @@
+name: ChatGPT Market Context QA V1
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/hourly-certified-alert-readiness-v1.yml'
+      - '.github/workflows/chatgpt-market-context-qa-v1.yml'
+      - 'validation/hourly_alerts/build_chatgpt_market_context.py'
+      - 'validation/hourly_alerts/test_build_chatgpt_market_context.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Existing hourly certification guardrails
+        run: |
+          python validation/hourly_alerts/test_build_certified_alert_snapshot.py
+          python validation/hourly_alerts/test_build_certified_macro_g8_feed.py
+      - name: ChatGPT market context guardrails
+        run: python validation/hourly_alerts/test_build_chatgpt_market_context.py
+      - name: Build compact snapshot without publishing
+        run: |
+          python validation/hourly_alerts/build_certified_alert_snapshot.py --output "$RUNNER_TEMP/hourly-receipt.json"
+          python validation/hourly_alerts/build_chatgpt_market_context.py --receipt "$RUNNER_TEMP/hourly-receipt.json" --output "$RUNNER_TEMP/chatgpt-context.json"
+          python -c 'import json,os; p=os.environ["RUNNER_TEMP"]+"/chatgpt-context.json"; x=json.load(open(p)); assert x["schema"]=="GMFQ_CHATGPT_MARKET_CONTEXT_V1"; assert len(x["sections"]["government_rates"])==8; assert len(x["sections"]["ois_official"])==8'
