@@ -1,0 +1,31 @@
+{
+  "schema": "GMFQ_DXY_SYNTHETIC_ECB_V1",
+  "status": "ESTIMATED_INFORMATIONAL",
+  "index_name": "DXY sintetico ECB (ICE-formula proxy)",
+  "not_official_ice": true,
+  "not_intraday": true,
+  "as_of": "2026-10-16",
+  "value": 101.7135,
+  "previous_value": null,
+  "history": [
+    {
+      "date": "2026-10-16",
+      "value": 101.7135
+    }
+  ],
+  "method": "ICE six-currency geometric weights/constant, ECB matched-date reference FX incl SEK",
+  "weights": {
+    "EUR": -0.576,
+    "JPY": 0.136,
+    "GBP": -0.119,
+    "CAD": 0.091,
+    "SEK": 0.042,
+    "CHF": 0.036
+  },
+  "constant": 50.14348112,
+  "source": "ECB reference rates 16 October 2026: USD 1.1253, JPY 177.82, GBP 0.84385, CAD 1.5935, CHF 0.9272, SEK 11.1450 per EUR; proxy calculated using ICE weights",
+  "source_url": "https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.eu.html",
+  "independent_from_core_engine": true,
+  "usable_as_official_ice_or_trade_signal": false,
+  "seed": "ECB_2026_10_16_SINGLE_VERIFIED_FIXING; full history requires daily refresh workflow"
+}
