@@ -1,0 +1,71 @@
+name: Macro Desk Source Watch V1
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '21 * * * *'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/macro-desk-source-watch-v1.yml'
+      - 'validation/hourly_alerts/build_desk_source_alerts.py'
+      - 'validation/hourly_alerts/test_build_desk_source_alerts.py'
+  pull_request:
+    paths:
+      - '.github/workflows/macro-desk-source-watch-v1.yml'
+      - 'validation/hourly_alerts/build_desk_source_alerts.py'
+      - 'validation/hourly_alerts/test_build_desk_source_alerts.py'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: macro-desk-source-watch-v1
+  cancel-in-progress: false
+
+jobs:
+  source-watch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 1}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Validate source attribution and fail-closed policy
+        run: python validation/hourly_alerts/test_build_desk_source_alerts.py
+      - name: Test only on pull requests
+        if: github.event_name == 'pull_request'
+        run: echo "NO_PUBLICATION_ON_PR"
+      - name: Collect and publish source-attributed desk headlines
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            git fetch origin gh-pages --no-tags
+            git worktree remove --force /tmp/gmfq-source-watch 2>/dev/null || true
+            rm -rf /tmp/gmfq-source-watch
+            git worktree add --detach /tmp/gmfq-source-watch origin/gh-pages
+            target=/tmp/gmfq-source-watch/live_data/sections/MACRO_MARKET_ALERTS_DESK.json
+            if [[ ! -f "$target" ]]; then
+              mkdir -p "$(dirname "$target")"
+              cp live_data/sections/MACRO_MARKET_ALERTS_DESK.json "$target"
+            fi
+            python validation/hourly_alerts/build_desk_source_alerts.py --previous "$target" --output "$RUNNER_TEMP/desk-source-updated.json"
+            cp "$RUNNER_TEMP/desk-source-updated.json" "$target"
+            git -C /tmp/gmfq-source-watch add -- live_data/sections/MACRO_MARKET_ALERTS_DESK.json
+            if git -C /tmp/gmfq-source-watch diff --cached --quiet; then
+              echo "DESK_SOURCE_FEED_ALREADY_CURRENT"
+              exit 0
+            fi
+            git -C /tmp/gmfq-source-watch -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m "Publish source-attributed macro desk feed"
+            if git -C /tmp/gmfq-source-watch push origin HEAD:gh-pages; then
+              echo "DESK_SOURCE_FEED_PUBLISHED"
+              exit 0
+            fi
+            echo "gh-pages moved; retrying without force ($attempt/3)"
+            sleep 4
+          done
+          echo "FAILED_TO_PUBLISH_DESK_SOURCE_FEED" >&2
+          exit 1
