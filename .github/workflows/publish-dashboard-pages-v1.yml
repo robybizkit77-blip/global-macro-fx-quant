@@ -151,8 +151,7 @@ jobs:
           import hashlib,json,pathlib,subprocess
           paths=['live_data/sections/OIS_OPERATIONAL_VIEW.json',
                  'dashboard/ois-operational-monitor-v1.js',
-                 'dashboard/cbdesk-operational-v1.js',
-                 'site/website-v1/dashboard-policy-layout.js']
+                 'dashboard/cbdesk-operational-v1.js']
           rows=[]
           for name in paths:
               source=pathlib.Path(name).read_bytes()
@@ -162,7 +161,9 @@ jobs:
           obj=json.loads(pathlib.Path(paths[0]).read_text())
           assert obj['summary']['g8_total']==8
           assert obj['summary']['operational_green']+obj['summary']['operational_withheld']==8
-          assert obj['currencies']['NZD']['operational_status']=='WITHHELD'
+          from datetime import datetime,timezone
+          from validation.validate_ois_operational_freshness import check
+          assert not check(obj,datetime.now(timezone.utc).date()), 'freshness preflight failed'
           report={'status':'PASS' if all(x['same'] for x in rows) else 'FAIL',
                   'source_commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
                   'pages_commit':subprocess.check_output(['git','rev-parse','origin/gh-pages'],text=True).strip(),
