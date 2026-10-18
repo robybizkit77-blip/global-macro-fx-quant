@@ -1,0 +1,94 @@
+name: Control Room v10 Home Certified Default
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'site/control-room-preview/index.html'
+      - 'validation/check_control_room_home_default_v10.py'
+      - '.github/workflows/publish-control-room-home-v10.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'site/control-room-preview/index.html'
+      - 'validation/check_control_room_home_default_v10.py'
+      - '.github/workflows/publish-control-room-home-v10.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-dashboard-pages-v1
+  cancel-in-progress: false
+
+jobs:
+  validate-and-publish-loader:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+          fetch-depth: 0
+      - name: Check certified Home default and illustrated opt-in
+        run: python validation/check_control_room_home_default_v10.py
+
+      - name: Publish only Control Room v10 preview loader
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin gh-pages --no-tags
+          REMOTE_SHA="$(git rev-parse origin/gh-pages)"
+          WORKTREE="$(mktemp -d)"
+          git worktree add --detach "$WORKTREE" origin/gh-pages
+          python - "$WORKTREE" <<'PY'
+          from pathlib import Path
+          import sys
+          site=Path(sys.argv[1])/'site/control-room-preview'
+          assert site.joinpath('index.html').is_file(), 'existing preview loader missing'
+          parts=[site/'parts'/f'part-{i:02}.txt' for i in range(32)]
+          assert all(p.is_file() and p.stat().st_size > 1000 for p in parts), 'preview parts missing'
+          assert parts[0].read_text(encoding='utf-8').startswith('<!doctype html>'), 'unexpected preview header'
+          assert parts[-1].read_text(encoding='utf-8').count('window.__GMFQ_ROUTE_QUERY__=query;') == 1, 'route marker contract changed'
+          print('CONTROL_ROOM_V10_EXISTING_DESIGN_LOCK_PASS')
+          PY
+          cp site/control-room-preview/index.html "$WORKTREE/site/control-room-preview/index.html"
+          cd "$WORKTREE"
+          python - <<'PY'
+          import subprocess
+          allowed={'site/control-room-preview/index.html'}
+          modified=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          untracked=set(subprocess.check_output(['git','ls-files','--others','--exclude-standard'],text=True).splitlines())
+          assert (modified|untracked) <= allowed, f'unexpected publication changes: {modified|untracked}'
+          print('CONTROL_ROOM_V10_EXACT_SCOPE_PASS')
+          PY
+          git add -- site/control-room-preview/index.html
+          if git diff --cached --quiet; then
+            echo CONTROL_ROOM_V10_LOADER_ALREADY_CURRENT
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "Publish v10 Home certified-data default"
+          STILL_REMOTE="$(git ls-remote origin refs/heads/gh-pages | awk '{print $1}')"
+          test "$STILL_REMOTE" = "$REMOTE_SHA" || { echo 'gh-pages moved during deployment' >&2; exit 1; }
+          git push --force-with-lease=refs/heads/gh-pages:"$REMOTE_SHA" origin HEAD:gh-pages
+          echo CONTROL_ROOM_V10_HOME_LOADER_PUBLISHED
+
+      - name: Verify gh-pages loader equals approved source
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin gh-pages --no-tags
+          python - <<'PY'
+          import hashlib,subprocess
+          from pathlib import Path
+          path='site/control-room-preview/index.html'
+          a=Path(path).read_bytes()
+          b=subprocess.check_output(['git','show',f'origin/gh-pages:{path}'])
+          assert hashlib.sha256(a).digest()==hashlib.sha256(b).digest(), 'published loader mismatches main'
+          print('CONTROL_ROOM_V10_PAGES_BRANCH_PROOF_PASS')
+          PY
