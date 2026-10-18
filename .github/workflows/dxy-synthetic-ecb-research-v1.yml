@@ -1,0 +1,63 @@
+name: DXY Synthetic ECB Research V1
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/build_dxy_synthetic_ecb_v1.py'
+      - 'live_data/sections/DXY_SYNTHETIC_ECB.json'
+      - '.github/workflows/dxy-synthetic-ecb-research-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'live_data/sections/ECB_G8_PRICE_HISTORY.json'
+      - 'validation/build_dxy_synthetic_ecb_v1.py'
+      - '.github/workflows/dxy-synthetic-ecb-research-v1.yml'
+  schedule:
+    - cron: '30 16 * * 1-5'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: gmfq-dxy-synthetic-ecb-research
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate ICE-weight synthetic formula
+        run: python validation/build_dxy_synthetic_ecb_v1.py --self-test
+      - name: Build from official ECB XML with strict same-date G8 match
+        run: python validation/build_dxy_synthetic_ecb_v1.py
+      - name: Assert no claim of official ICE feed
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('live_data/sections/DXY_SYNTHETIC_ECB.json').read_text())
+          assert x['schema']=='GMFQ_DXY_SYNTHETIC_ECB_V1'
+          assert x['not_official_ice'] is True and x['not_intraday'] is True
+          assert x['status']=='ESTIMATED_INFORMATIONAL'
+          assert x['usable_as_official_ice_or_trade_signal'] is False
+          assert len(x['history'])>=3
+          assert x['as_of']==x['history'][-1]['date']
+          print('DXY_ECB_FAIL_CLOSED_DATA_QA_PASS',x['as_of'],x['value'])
+          PY
+      - name: Commit isolated DXY research feed only
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add -- live_data/sections/DXY_SYNTHETIC_ECB.json
+          if git diff --cached --quiet; then echo DXY_ALREADY_CURRENT; exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "Refresh DXY ECB-based synthetic research series"
+          git push origin HEAD:main
