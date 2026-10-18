@@ -81,8 +81,13 @@ jobs:
           assert summary['g8_total']==8
           assert summary['operational_green'] + summary['operational_withheld']==8
           assert summary['green_official'] + summary['green_estimated']==summary['operational_green']
-          assert ois['currencies']['NZD']['operational_status']=='WITHHELD'
-          assert all(point.get('rate') is None for point in ois['currencies']['NZD']['horizons'].values())
+          assert set(ois['currencies'])=={'USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'}
+          assert sum(r['operational_status'].startswith('GREEN_') for r in ois['currencies'].values())==summary['operational_green']
+          assert sum(r['operational_status']=='WITHHELD' for r in ois['currencies'].values())==summary['operational_withheld']
+          for ccy,row in ois['currencies'].items():
+              assert row['operational_status'] in {'GREEN_OFFICIAL','GREEN_ESTIMATED','WITHHELD'},ccy
+              if row['operational_status']=='WITHHELD':
+                  assert all(point.get('rate') is None for point in row['horizons'].values()),ccy
           from validation.validate_ois_operational_freshness import check
           from datetime import datetime, timezone
           assert not check(ois,datetime.now(timezone.utc).date()), 'stale GREEN curve in publication candidate'
