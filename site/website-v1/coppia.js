@@ -23,7 +23,20 @@
   function priceSeed(setup){const pairs=Object.entries(setup?.pairs||{}).map(([code,x])=>({pair:x?.canonical_pair||`${code.slice(0,3)}/${code.slice(3,6)}`}));if(pairs.length!==28)throw new Error(`Expected 28 canonical pairs, found ${pairs.length}`);return {pairs}}
   function validateSetup(x){if(x?.schema!=='GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1'||x?.status!=='CURRENT_CANONICAL_ENGINE')throw new Error('Pair setup contract invalid');if(x?.pair_count!==28||Object.keys(x?.pairs||{}).length!==28)throw new Error('Pair setup coverage invalid');if(x?.thesis_is_not_entry!==true||x?.entry_level_published!==false)throw new Error('Pair setup thesis/entry contract invalid');if(x?.price_audit?.status!=='PASS')throw new Error('Pair setup price audit not PASS')}
   function marketReading(y2,ois,base,quote){if(y2===null||ois===null)return {type:'partial',label:'Rates/pricing parziali',fav:null};if(Math.abs(y2)<5&&Math.abs(ois)<5)return {type:'flat',label:'Poco contrasto rates/pricing',fav:null};if(Math.sign(y2)!==0&&Math.sign(y2)===Math.sign(ois)){const fav=y2>0?base:quote;return {type:'align',label:`Rates/pricing favoriscono ${fav}`,fav}}return {type:'split',label:'Rates e pricing divisi',fav:null}}
-  function qualityClass(q){q=String(q||'').toUpperCase();if(q==='PULITO')return'align';if(q==='CON RISCHI'||q==='DA CONFERMARE')return'split';return''}
+  function explainQuality(s){
+    if(s?.quality==='NON VALUTABILE')return 'Dati insufficienti';
+    if(s?.price?.state==='BAD')return 'Prezzo contrario alla tesi';
+    if(s?.timing?.state==='ADVERSE')return 'Timing contrario';
+    if(s?.extension?.state==='ADVANCED')return 'Prezzo già esteso';
+    if(s?.cot?.state==='DIVERGENT')return 'COT non conferma';
+    if(s?.structural?.quality==='PILASTRI DIVISI')return 'Macro e tassi divergono';
+    if(s?.timing?.state==='UNCERTAIN')return 'Timing non chiaro';
+    if(s?.timing?.state==='MIXED'||s?.timing?.state==='PARTIAL')return 'Timing da confermare';
+    if(s?.price?.state==='NEUTRAL')return 'Prezzo da confermare';
+    if(s?.quality==='PULITO')return 'Driver coerenti';
+    return 'Conferme incomplete';
+  }
+    function qualityClass(q){q=String(q||'').toUpperCase();if(q==='PULITO')return'align';if(q==='CON RISCHI'||q==='DA CONFERMARE')return'split';return''}
   function setMove(id,v){const el=document.getElementById(id);if(!el)return;el.textContent=signed(v,2,'%');el.className=cls(v)}
   function chips(items){return items.map(x=>`<span class="compare-chip ${x.cls||''}">${esc(x.k)}<b>${esc(x.v)}</b></span>`).join('')}
   function render(){
@@ -37,7 +50,7 @@
     const market=marketReading(y2diff,oisdiff,base,quote);
     document.title=`${p} — Global Macro FX Quant`;
     document.getElementById('pair-title').textContent=snap.canonical_pair||`${base}/${quote}`;
-    const st=document.getElementById('pair-state');st.textContent=quality;st.className=`pair-state ${qualityClass(quality)}`;
+    const st=document.getElementById('pair-state');st.textContent=explainQuality(setup);st.className=`pair-state ${qualityClass(quality)}`;
     document.getElementById('pair-last').textContent=n(row?.last)===null?'—':fmt(row.last,p.includes('JPY')?3:5);
     document.getElementById('pair-asof').textContent=`as of ${row?.price_asof||state.price?.price_asof||state.setup?.price_asof||'—'}`;
     setMove('move-1w',row?.ret1w);setMove('move-1m',row?.ret1m);setMove('move-3m',row?.ret3m);
@@ -46,7 +59,7 @@
     document.getElementById('pair-lead').textContent=`${relation} Rates, market pricing, COT e prezzo servono a verificare quanto questa tesi è confermata, divisa o già espressa.`;
 
     document.getElementById('thesis-snapshot').innerHTML=[
-      ['TESI',quality,fav==='—'?'nessun lato favorito':`favorisce ${fav}`,qualityClass(quality)],
+      ['TESI',explainQuality(setup),fav==='—'?'nessun lato favorito':`favorisce ${fav}`,qualityClass(quality)],
       ['2Y DIFFERENTIAL',signed(y2diff,0,' bp'),`${base} ${y2b===null?'—':fmt(y2b,2)+'%'} · ${quote} ${y2q===null?'—':fmt(y2q,2)+'%'}`,cls(y2diff)],
       ['PRICING 3M',signed(oisdiff,0,' bp'),`${base} ${oib===null?'—':fmt(oib,3)+'%'} · ${quote} ${oiq===null?'—':fmt(oiq,3)+'%'}`,cls(oisdiff)],
       ['COT RELATIVO',signed(cotdiff,0),`percentile: ${base} ${cotb===null?'—':fmt(cotb,0)} · ${quote} ${cotq===null?'—':fmt(cotq,0)}`,cls(cotdiff)],
@@ -68,7 +81,7 @@
     const map=[['Tesi',quality,fav==='—'?'—':fav,''],['Macro',mb.status||'—',mq.status||'—',''],['2Y',y2b===null?'—':fmt(y2b,2)+'%',y2q===null?'—':fmt(y2q,2)+'%',signed(y2diff,0,'bp')],['Pricing 3M',oib===null?'—':fmt(oib,3)+'%',oiq===null?'—':fmt(oiq,3)+'%',signed(oisdiff,0,'bp')],['COT percentile',cotb===null?'—':fmt(cotb,0),cotq===null?'—':fmt(cotq,0),signed(cotdiff,0)]];
     document.getElementById('relative-map').innerHTML=`<div class="map-row"><small>Layer</small><b>${base}</b><b>${quote}</b><b>Diff</b></div>`+map.map(([k,a,b,d])=>`<div class="map-row"><small>${esc(k)}</small><b>${esc(a)}</b><b>${esc(b)}</b><b class="${d?cls(parseFloat(d)):''}">${esc(d)}</b></div>`).join('');
 
-    document.getElementById('trade-readiness').innerHTML=`La <strong>tesi relativa</strong> e l'<strong>entrata</strong> restano due cose diverse. Qualità corrente: <strong>${esc(quality)}</strong> · vantaggio strutturale: <strong>${esc(fav)}</strong>.<br><br><span class="status">Nessun livello di ingresso viene inventato.</span>`;
+    document.getElementById('trade-readiness').innerHTML=`La <strong>tesi relativa</strong> e l'<strong>entrata</strong> restano due cose diverse. Qualità corrente: <strong>${esc(explainQuality(setup))}</strong> · vantaggio strutturale: <strong>${esc(fav)}</strong>.<br><br><span class="status">Nessun livello di ingresso viene inventato.</span>`;
     document.getElementById('confirm-title').textContent=fav==='—'?'La tesi acquista un lato chiaro':`${fav} mantiene il vantaggio strutturale`;
     document.getElementById('confirm-copy').textContent=`La lettura si rafforza se i driver indicati nel setup restano coerenti e rates/pricing/prezzo convergono con la tesi. Timing attuale: ${setup.timing?.text||'—'}`;
     document.getElementById('challenge-title').textContent='La struttura relativa perde qualità';
