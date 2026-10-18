@@ -13,6 +13,7 @@
     else if(s.price?.state==='GOOD'&&['ALIGNED','CONFIRMED','FAVORABLE'].includes(s.timing?.state)&&s.cot?.state!=='DIVERGENT')trade='DA STUDIARE';
     return {thesis,trade};
   }
+  const QUALITY_FILTER_LABEL={'CON RISCHI':'Condizioni contrarie o incomplete','DA CONFERMARE':'Serve conferma','DA MONITORARE':'Da osservare','NON VALUTABILE':'Dati insufficienti','PULITO':'Driver coerenti'};
   function plainReason(s){
     if(s.quality==='NON VALUTABILE')return 'Dati insufficienti per valutare questa coppia';
     if(s.price?.state==='BAD')return 'Il prezzo si muove contro la direzione favorita';
@@ -49,7 +50,7 @@
   }
   load('PAIR_SETUP_OPERATIONAL_VIEW.json').then(b=>{
     setup=b;validateSetup(b);
-    for(const v of [...new Set(Object.values(b.pairs).map(x=>x.setup?.quality).filter(Boolean))])q('#quality').insertAdjacentHTML('beforeend',`<option>${esc(v)}</option>`);
+    for(const v of [...new Set(Object.values(b.pairs).map(x=>x.setup?.quality).filter(Boolean))])q('#quality').insertAdjacentHTML('beforeend',`<option value="${esc(v)}">${esc(QUALITY_FILTER_LABEL[v]||v)}</option>`);
     for(const v of [...new Set(Object.values(b.pairs).map(x=>x.setup?.structuralFav).filter(Boolean))].sort())q('#fav').insertAdjacentHTML('beforeend',`<option>${esc(v)}</option>`);
     q('#quality').onchange=q('#fav').onchange=render;
     render();
