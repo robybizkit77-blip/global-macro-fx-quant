@@ -131,9 +131,15 @@ function estimate(target,ref,which){
  const beta=Math.max(-.5,Math.min(2.5,cov/variance));
  const anchor=common.at(-1),rateThen=refMap.get(anchor.date),gap=(Date.parse(ref.date)-Date.parse(target.date))/86400000;
  if(gap<=0||gap>35)return null;
- const value=original+beta*(base-rateThen);
+ // The target and its proxy must be anchored at the SAME observed date;
+ // the last target official snapshot can be later than that common date.
+ const value=anchor.v+beta*(base-rateThen);
  if(!Number.isFinite(value)||Math.abs(value-original)>1.5||value< -3||value>18)return null;
- return {v:value,asof:ref.date,model:'stima β '+(ref===undefined?'':(target===null?'':'fattoriale')),beta:beta,origin:target.date,refDate:anchor.date};
+ const varianceTarget=diffs.reduce((s,x)=>s+(x[1]-ym)**2,0);
+ const r2=varianceTarget>0?Math.min(1,Math.max(0,(cov*cov)/(variance*varianceTarget))):0;
+ const confidence=r2>=.65?'ALTA':r2>=.30?'MEDIA':'BASSA';
+ return {v:value,asof:ref.date,model:'stima β fattoriale',beta,origin:target.date,
+   refDate:anchor.date,anchorValue:anchor.v,refAnchorRate:rateThen,r2,confidence};
 }
 function ratesAll(raw){
  const cur={};
@@ -144,8 +150,8 @@ function ratesAll(raw){
  }
  for(const [k,proxy] of [['CHF','EUR'],['NZD','AUD']]){
    const a=cur[k],ref=raw?.[proxy];
-   if(a.v2===null){const m=estimate(raw?.[k],ref,'history2');if(m){a.v2=m.v2??m.v;a.estimate2=true;a.estimatedAsOf2=m.asof;a.proxy=proxy;a.beta2=m.beta;}}
-   if(a.v10===null){const m=estimate(raw?.[k],ref,'history10');if(m){a.v10=m.v;a.estimate10=true;a.estimatedAsOf10=m.asof;a.proxy=proxy;a.beta10=m.beta;}}
+   if(a.v2===null){const m=estimate(raw?.[k],ref,'history2');if(m){a.v2=m.v;a.estimate2=true;a.estimatedAsOf2=m.asof;a.proxy=proxy;a.beta2=m.beta;a.r2_2=m.r2;a.confidence2=m.confidence;a.anchor2=m.refDate;}}
+   if(a.v10===null){const m=estimate(raw?.[k],ref,'history10');if(m){a.v10=m.v;a.estimate10=true;a.estimatedAsOf10=m.asof;a.proxy=proxy;a.beta10=m.beta;a.r2_10=m.r2;a.confidence10=m.confidence;a.anchor10=m.refDate;}}
  }
  return cur;
 }
@@ -176,15 +182,15 @@ function yieldChart(doc,all,which='2Y'){
  <button type="button" data-gmfq-tenor="2Y" aria-pressed="${chosen==='2Y'}" style="background:transparent;border:0;color:${chosen==='2Y'?'#f1ca6d':'#93b1c3'};cursor:pointer;padding:0 3px">2Y</button>
  <button type="button" data-gmfq-tenor="10Y" aria-pressed="${chosen==='10Y'}" style="background:transparent;border:0;color:${chosen==='10Y'?'#f1ca6d':'#93b1c3'};cursor:pointer;padding:0 3px">10Y</button></div>`;
  const note=curve.parentElement?.querySelector('.gmfq-chart-note')||doc.createElement('div');
- note.className='gmfq-chart-note';note.textContent='* Stima β CHF/EUR · NZD/AUD. Tratteggiato: snapshot/gap; non operativo.';
+ note.className='gmfq-chart-note';note.textContent='* STIMA β su data comune: CHF/EUR '+(all.CHF.confidence2||'N.D.')+'; NZD/AUD '+(all.NZD.confidence2||'N.D.')+'. Tratteggio = indicativo, non operativo.';
  if(!note.isConnected)curve.insertAdjacentElement('afterend',note);
 }
 function rateBar(doc,all,id,spread=false){
  const host=doc.getElementById(id);if(!host)return;
  const items=(spread?FX.filter(x=>x!=='USD'):FX).map(c=>{
- const row=all[c],us=all.USD,est=row.estimate2||(!row.v2&&false);
+ const row=all[c],us=all.USD,est=row.estimate2;
  const value=spread?(num(row.v2)!==null&&num(us.v2)!==null?100*(row.v2-us.v2):null):row.v2;
- return {ccy:c,v:value,estimate:est,asof:row.estimatedAsOf2||row.date};
+ return {ccy:c,v:value,estimate:est,asof:row.estimatedAsOf2||row.date,confidence:row.confidence2,r2:row.r2_2,anchor:row.anchor2,proxy:row.proxy};
  });
  const W=445,H=165,L=36,R=12,T=10,B=22,barW=24,dx=(W-L-R)/items.length;
  const numbers=items.map(x=>x.v).filter(x=>x!==null);if(!numbers.length)return;
@@ -200,7 +206,9 @@ function rateBar(doc,all,id,spread=false){
  });
  host.innerHTML=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Copertura G8 completa; asterisco indica stima modellistica">${svg}</svg>`;
  const note=host.parentElement?.querySelector('.gmfq-chart-note')||doc.createElement('div');
- note.className='gmfq-chart-note';note.textContent=items.some(x=>x.estimate)?'* STIMA 2Y fattoriale: CHF da EUR, NZD da AUD. Il dato stimato non alimenta il motore.':'Rendimenti governativi verificati.';
+ note.className='gmfq-chart-note';note.textContent=items.some(x=>x.estimate)?
+ '* STIMA β (non operativa): '+items.filter(x=>x.estimate).map(x=>x.ccy+'/'+x.proxy+' '+(x.confidence||'NON VALIDATA')+' (R² '+fmt(x.r2,2)+', base '+x.anchor+')').join(' · ')+'.':
+ 'Rendimenti governativi verificati.';
  if(!note.isConnected)host.insertAdjacentElement('afterend',note);
 }
 function oisAll(doc,ois,proxy){
