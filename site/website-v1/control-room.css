@@ -68,3 +68,6 @@ body{overflow-y:auto!important;overflow-x:hidden!important}
 .market-risk-note{margin-top:10px}
 @media(max-width:800px){.market-risk-heading{flex-wrap:wrap}.market-risk-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.market-risk-desk{padding:14px}}
 @media(max-width:380px){.market-risk-grid{grid-template-columns:1fr}}
+
+/* P0: override inherited 1080px desktop minimum in mobile Home */
+@media(max-width:900px){html,body,.site,.main,.content{min-width:0!important;max-width:100%!important}.site,.main,.content{width:100%!important}.content{overflow-x:hidden!important}}
