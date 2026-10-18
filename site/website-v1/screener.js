@@ -13,6 +13,19 @@
     else if(s.price?.state==='GOOD'&&['ALIGNED','CONFIRMED','FAVORABLE'].includes(s.timing?.state)&&s.cot?.state!=='DIVERGENT')trade='DA STUDIARE';
     return {thesis,trade};
   }
+  function plainReason(s){
+    if(s.quality==='NON VALUTABILE')return 'Dati insufficienti per valutare questa coppia';
+    if(s.price?.state==='BAD')return 'Il prezzo si muove contro la direzione favorita';
+    if(s.timing?.state==='ADVERSE')return 'La dinamica recente è contraria alla tesi';
+    if(s.extension?.state==='ADVANCED')return 'Movimento già esteso: non inseguire il prezzo';
+    if(s.cot?.state==='DIVERGENT')return 'Il posizionamento COT non sostiene la direzione favorita';
+    if(s.structural?.quality==='PILASTRI DIVISI')return 'Macro e tassi non indicano la stessa direzione';
+    if(s.timing?.state==='UNCERTAIN')return 'La direzione recente non è ancora abbastanza chiara';
+    if(s.timing?.state==='PARTIAL'||s.timing?.state==='MIXED')return 'Ci sono segnali favorevoli, ma manca conferma nel timing';
+    if(s.price?.state==='NEUTRAL')return 'Il prezzo non conferma ancora il vantaggio macro e tassi';
+    if(s.quality==='PULITO')return 'Driver più coerenti; serve comunque un ingresso verificato';
+    return 'Il quadro non è ancora completo: controlla i fattori nel dettaglio';
+  }
   let setup;
   const load=f=>fetch(R+f,{cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject(new Error(`${f}: ${r.status}`)));
   function validateSetup(x){
@@ -30,8 +43,8 @@
   function render(){
     const qual=q('#quality').value,fav=q('#fav').value;
     const rows=Object.entries(setup.pairs).map(([pair,x])=>({pair,x,s:x.setup||{}})).filter(r=>(qual==='ALL'||r.s.quality===qual)&&(fav==='ALL'||r.s.structuralFav===fav)).sort((a,b)=>(QUALITY_RANK[b.s.quality]||0)-(QUALITY_RANK[a.s.quality]||0)||(a.x.canonical_pair||a.pair).localeCompare(b.x.canonical_pair||b.pair));
-    q('#rows').innerHTML=rows.map(r=>`<div class="screen-row"><b>${esc(r.x.canonical_pair||r.pair)}</b><span><strong>${esc(r.s.quality)}</strong><small style="display:block;margin-top:4px">favorisce ${esc(r.s.structuralFav||'—')}</small></span><p class="screener-diagnostic"><span><small>Tesi</small><strong>${esc(diagnostic(r.s).thesis)}</strong></span><span><small>Trade · diagnostico</small><strong>${esc(diagnostic(r.s).trade)}</strong></span><small>${esc(r.s.structural?.relation||r.x.decision_frame?.relation||'Struttura non disponibile.')}</small></p><a href="coppia.html?pair=${esc(r.pair)}">Deep Dive →</a></div>`).join('')||'<p>Nessun setup corrisponde ai filtri.</p>';
-    const distribution=Object.entries(QUALITY_RANK).filter(([name])=>name!=='NON VALUTABILE').map(([name])=>[name,Object.values(setup.pairs).filter(x=>x.setup?.quality===name).length]).filter(x=>x[1]>0).map(([name,count])=>name+': '+count).join(' · ');
+    q('#rows').innerHTML=rows.map(r=>`<div class="screen-row"><b>${esc(r.x.canonical_pair||r.pair)}</b><span><strong>${esc(plainReason(r.s))}</strong><small style="display:block;margin-top:4px">favorisce ${esc(r.s.structuralFav||'—')}</small></span><p class="screener-diagnostic"><span><small>Tesi</small><strong>${esc(diagnostic(r.s).thesis)}</strong></span><span><small>Trade · diagnostico</small><strong>${esc(diagnostic(r.s).trade)}</strong></span><small>${esc(r.s.structural?.relation||r.x.decision_frame?.relation||'Struttura non disponibile.')}</small></p><a href="coppia.html?pair=${esc(r.pair)}">Deep Dive →</a></div>`).join('')||'<p>Nessuna coppia corrisponde ai filtri selezionati.</p>';
+    const distribution=`${Object.values(setup.pairs).filter(x=>x.setup?.quality==='NON VALUTABILE').length} con dati insufficienti`;
     q('#asof').textContent=`${rows.length}/28 pair · prezzi ${setup.price_asof||'—'} · ${distribution}`;
   }
   load('PAIR_SETUP_OPERATIONAL_VIEW.json').then(b=>{
