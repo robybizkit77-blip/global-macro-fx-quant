@@ -52,3 +52,35 @@ jobs:
               except Exception as exc:
                   print('EIA_PROBE',name,'WITHHELD',type(exc).__name__,str(exc)[:180])
           PY
+      - name: Validate actual official EIA WTI workbook observations
+        shell: bash
+        run: |
+          python -m pip install --disable-pip-version-check xlrd
+          python - <<'PY'
+          import datetime as dt,io,json,urllib.request,xlrd
+          url='https://www.eia.gov/dnav/pet/hist_xls/RWTCd.xls'
+          req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0'})
+          with urllib.request.urlopen(req,timeout=25) as response: raw=response.read()
+          book=xlrd.open_workbook(file_contents=raw)
+          matches=[]
+          for sheet in book.sheets():
+              for row in range(sheet.nrows):
+                  if sheet.ncols<2:continue
+                  datum=sheet.cell_value(row,0)
+                  value=sheet.cell_value(row,1)
+                  try:
+                      date=xlrd.xldate_as_datetime(datum,book.datemode).date() if isinstance(datum,float) else dt.date.fromisoformat(str(datum)[:10])
+                      price=float(value)
+                      if 0<price<500 and date<=dt.datetime.now(dt.timezone.utc).date():matches.append((date.isoformat(),price))
+                  except (ValueError,TypeError,OverflowError): pass
+          matches.sort()
+          evidence={'sheet_names':book.sheet_names(),'observations':len(matches),'latest':matches[-1] if matches else None,'status':'CANDIDATE' if matches and (dt.datetime.now(dt.timezone.utc).date()-dt.date.fromisoformat(matches[-1][0])).days<=7 else 'WITHHELD'}
+          print('EIA_WTI_OBSERVATIONS',json.dumps(evidence))
+          with open('/tmp/wti-official-eia-validation.json','w') as out:json.dump(evidence,out)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eia-wti-observation-validation
+          path: /tmp/wti-official-eia-validation.json
+          if-no-files-found: warn
