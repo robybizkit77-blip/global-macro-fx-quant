@@ -27,8 +27,10 @@ async function getState(page){
  try {
    for(const [name,viewport] of [['desktop',{width:1440,height:900}],['mobile',{width:390,height:844}]]){
      const page=await browser.newPage({viewport});
-     const errs=[];
+     const errs=[],failedRequests=[],httpErrors=[];
      page.on('pageerror',e=>errs.push(String(e)));
+     page.on('requestfailed',req=>failedRequests.push({url:req.url(),reason:req.failure()?.errorText}));
+     page.on('response',res=>{if(res.status()>=400)httpErrors.push({url:res.url(),status:res.status()});});
      // The branch may advance before the Pages deployment/CDN serves the new revision.
      // Retry a cache-busted public URL until the *actual browser* sees the new note contract.
      let deployed=false,lastObserved=null;
@@ -49,7 +51,16 @@ async function getState(page){
          }
          console.log('PUBLIC_V10_VERSION_PENDING',name,attempt,lastObserved.notes);
        }catch(error){
-         console.log('PUBLIC_V10_VERSION_PENDING',name,attempt,String(error).slice(0,160));
+         const docState=await getState(page).catch(e=>({error:String(e)}));
+         const detail=await page.evaluate(()=>{
+           const f=document.getElementById('gmfq-page'),d=f?.contentDocument;
+           return {outer:document.getElementById('state')?.innerText,frame:!!f,child:!!d,
+             scripts:[...(d?.scripts||[])].slice(-4).map(x=>x.src||'inline'),
+             htmlEnd:d?.body?.innerText?.slice(-250)};
+         }).catch(e=>({error:String(e)}));
+         console.log('PUBLIC_V10_VERSION_PENDING',name,attempt,JSON.stringify({
+           message:String(error).slice(0,160),docState,detail,errs,failedRequests:httpErrors.length?failedRequests.slice(-8):failedRequests.slice(-4),httpErrors:httpErrors.slice(-8)
+         }));
        }
        await page.waitForTimeout(6000);
      }
