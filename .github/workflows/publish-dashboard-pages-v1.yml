@@ -179,10 +179,47 @@ jobs:
           if report['status']!='PASS':raise SystemExit('Published files differ from validated main')
           PY
 
+      - name: Verify public Pages HTTP delivery
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib,json,pathlib,time,urllib.error,urllib.request
+          base='https://robybizkit77-blip.github.io/global-macro-fx-quant/'
+          names=['live_data/sections/OIS_OPERATIONAL_VIEW.json','dashboard/ois-operational-monitor-v1.js','dashboard/cbdesk-operational-v1.js']
+          checks=[]
+          for name in names:
+              expected=hashlib.sha256(pathlib.Path(name).read_bytes()).hexdigest()
+              url=base+name
+              error='not checked'
+              for attempt in range(12):
+                  try:
+                      request=urllib.request.Request(url,headers={'User-Agent':'GMFQ-Pages-Delivery-Audit/1.0','Cache-Control':'no-cache'})
+                      with urllib.request.urlopen(request,timeout=15) as response:
+                          actual=hashlib.sha256(response.read()).hexdigest()
+                          status=response.status
+                      if status==200 and actual==expected:
+                          error=None
+                          break
+                      error=f'HTTP {status}; content hash does not match validated main'
+                  except (urllib.error.URLError,TimeoutError,OSError) as exc:
+                      error=type(exc).__name__
+                  if attempt<11:time.sleep(10)
+              checks.append({'path':name,'http_200_and_sha256_match':error is None,'error':error})
+              if error:break
+          report={'status':'PASS' if len(checks)==len(names) and all(x['http_200_and_sha256_match'] for x in checks) else 'FAIL','checks':checks}
+          pathlib.Path('/tmp/pages-public-http-proof.json').write_text(json.dumps(report,indent=2))
+          print('PAGES_PUBLIC_HTTP_PROOF',json.dumps(report))
+          if report['status']!='PASS':raise SystemExit('Public Pages content not yet identical to validated main')
+          PY
+
       - name: Upload delivery evidence
         if: always() && github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: pages-delivery-proof
-          path: /tmp/pages-delivery-proof.json
+          path: |
+            /tmp/pages-delivery-proof.json
+            /tmp/pages-public-http-proof.json
           if-no-files-found: warn
