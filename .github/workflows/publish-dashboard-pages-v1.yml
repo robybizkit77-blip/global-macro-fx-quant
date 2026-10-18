@@ -76,7 +76,16 @@ jobs:
           macro_heat=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())
           d=json.loads(Path('live_data/sections/D.json').read_text())
           residual=json.loads(Path('live_data/sections/ESTIMATED_RESIDUAL_GAPS.json').read_text())
-          assert ois['schema']=='GMFQ_OIS_OPERATIONAL_VIEW_V1' and ois['summary']['operational_green']==8
+          assert ois['schema']=='GMFQ_OIS_OPERATIONAL_VIEW_V1'
+          summary=ois['summary']
+          assert summary['g8_total']==8
+          assert summary['operational_green'] + summary['operational_withheld']==8
+          assert summary['green_official'] + summary['green_estimated']==summary['operational_green']
+          assert ois['currencies']['NZD']['operational_status']=='WITHHELD'
+          assert all(point.get('rate') is None for point in ois['currencies']['NZD']['horizons'].values())
+          from validation.validate_ois_operational_freshness import check
+          from datetime import datetime, timezone
+          assert not check(ois,datetime.now(timezone.utc).date()), 'stale GREEN curve in publication candidate'
           assert cal['schema']=='GMFQ_CALENDAR_OPERATIONAL_VIEW_V3'
           assert cal['status']=='ACTIVE_CB_PLUS_MACRO_OFFICIAL_WITH_SECONDARY_CONTEXT'
           assert cal['coverage']['cb_schedule_available']==8 and cal['coverage']['macro_ccy_coverage']==8 and cal['coverage']['upcoming_macro_events']>=8
