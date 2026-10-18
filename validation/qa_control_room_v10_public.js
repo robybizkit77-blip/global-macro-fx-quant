@@ -29,15 +29,31 @@ async function getState(page){
      const page=await browser.newPage({viewport});
      const errs=[];
      page.on('pageerror',e=>errs.push(String(e)));
-     const response=await page.goto(BASE,{waitUntil:'domcontentloaded',timeout:120000});
-     if(!response?.ok())throw Error(name+' public site HTTP failure: '+response?.status());
-     await page.waitForFunction(()=>{
-       const d=document.getElementById('gmfq-page')?.contentDocument;
-       return d?.documentElement?.dataset.liveState==='LOADED'
-         && d.querySelectorAll('#ois .oisrow').length===8
-         && d.querySelectorAll('#ylegend .gmfq-legend-item').length===8
-         && d.querySelector('#valute .cc[data-filter="DXY"] .move')?.textContent.includes('STIMA');
-     },null,{timeout:60000});
+     // The branch may advance before the Pages deployment/CDN serves the new revision.
+     // Retry a cache-busted public URL until the *actual browser* sees the new note contract.
+     let deployed=false,lastObserved=null;
+     for(let attempt=0;attempt<18;attempt++){
+       const response=await page.goto(BASE+'?qa='+Date.now()+'-'+attempt,{waitUntil:'domcontentloaded',timeout:120000});
+       if(!response?.ok())throw Error(name+' public site HTTP failure: '+response?.status());
+       try{
+         await page.waitForFunction(()=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument;
+           return d?.documentElement?.dataset.liveState==='LOADED'
+             && d.querySelectorAll('#ois .oisrow').length===8
+             && d.querySelectorAll('#ylegend .gmfq-legend-item').length===8
+             && d.querySelector('#valute .cc[data-filter="DXY"] .move')?.textContent.includes('STIMA');
+         },null,{timeout:12000});
+         lastObserved=await getState(page);
+         if(lastObserved.notes?.includes('R²')&&lastObserved.notes?.includes('base ')){
+           deployed=true;break;
+         }
+         console.log('PUBLIC_V10_VERSION_PENDING',name,attempt,lastObserved.notes);
+       }catch(error){
+         console.log('PUBLIC_V10_VERSION_PENDING',name,attempt,String(error).slice(0,160));
+       }
+       await page.waitForTimeout(6000);
+     }
+     if(!deployed)throw Error(name+' public CDN did not serve the matched-date G8 estimate build: '+JSON.stringify(lastObserved));
      const state=await getState(page);
      console.log('PUBLIC_V10_SMOKE',name,JSON.stringify(state));
      if(state.mode!=='live'||state.chartCount!==8||state.pricingCount!==8||!state.globe||
