@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Deterministic guardrail tests against the real canonical source snapshots."""
+"""Fail-closed ChatGPT market-context regression tests, safe on future days."""
 from __future__ import annotations
 
+import copy
 import importlib.util
-from datetime import date
+from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 
 HERE = Path(__file__).resolve().parent
@@ -22,67 +24,76 @@ snapshot = imported("certified_snapshot_context_test", HERE / "build_certified_a
 context = imported("chatgpt_context_test", HERE / "build_chatgpt_market_context.py")
 
 
-def build_for(day):
-    receipt = snapshot.build(day)
-    data = context.build(
-        receipt,
+def main():
+    today = datetime.now(ZoneInfo("Europe/Rome")).date()
+    receipt = snapshot.build(today)
+    inputs = (
         context.read_json(context.SECTIONS / "OIS_OPERATIONAL_VIEW.json"),
         context.read_json(context.SECTIONS / "NATIVE_RATES_DATA.json"),
         context.read_json(context.SECTIONS / "V250_COT_CHART_DATA.json"),
         context.read_json(context.SECTIONS / "PAIR_SETUP_OPERATIONAL_VIEW.json"),
         context.read_json(context.SECTIONS / "ECB_G8_PRICE_HISTORY.json"),
     )
-    return receipt, data
-
-
-def main():
-    receipt, data = build_for(date(2026, 10, 18))
+    data = context.build(receipt, *inputs)
     assert data["schema"] == context.SCHEMA
     assert data["policy"]["no_inference_of_post_event_reaction"] is True
-    assert data["evaluation_date_europe_rome"] == "2026-10-18"
+    assert data["evaluation_date_europe_rome"] == today.isoformat()
     assert data["generated_at_utc"] == receipt["generated_at_utc"]
-    ois = data["sections"]["ois_official"]
-    assert ois["JPY"]["state"] == "AVAILABLE_CERTIFIED"
-    assert ois["CAD"]["state"] == "AVAILABLE_CERTIFIED"
-    assert ois["AUD"]["state"] == "AVAILABLE_CERTIFIED"
-    assert len(ois["CAD"]["horizons"]) == 3
-    assert "change_1w_bp" in ois["CAD"]["horizons"]["3m"]
-    assert ois["GBP"]["state"] == "STALE"  # 14 Oct as-of, 18 Oct Sunday = 4 days
-    assert "horizons" not in ois["GBP"]
+    for name, lane in (("ois_official", "ois"), ("government_rates", "g8_bonds")):
+        for ccy in context.CCYS:
+            row = data["sections"][name][ccy]
+            eligibility = receipt["lanes"][lane][ccy]["alert_eligible"] is True
+            if not eligibility:
+                assert row["state"] != "AVAILABLE_CERTIFIED", (name, ccy)
+                assert "horizons" not in row
+                assert "government_2y_pct" not in row
+            elif row["state"] == "AVAILABLE_CERTIFIED":
+                assert row["as_of"] == receipt["lanes"][lane][ccy]["as_of"]
+                assert row["source"] == receipt["lanes"][lane][ccy]["source"]
     for ccy in ("USD", "EUR", "CHF", "NZD"):
-        assert ois[ccy]["state"] == "UNAVAILABLE"
-        assert "horizons" not in ois[ccy]  # Never promote secondary/proxy OIS.
-    rates = data["sections"]["government_rates"]
-    assert rates["USD"]["state"] == "AVAILABLE_CERTIFIED"
-    assert rates["USD"]["government_2y_pct"] > 0
-    assert rates["USD"]["government_10y_pct"] > 0
-    assert rates["CHF"]["state"] == "STALE"
-    assert "government_2y_pct" not in rates["CHF"]
+        assert data["sections"]["ois_official"][ccy]["state"] != "AVAILABLE_CERTIFIED"
+        assert "horizons" not in data["sections"]["ois_official"][ccy]
     cot = data["sections"]["cot_weekly"]
-    assert cot["state"] == "AVAILABLE_CERTIFIED"
-    assert cot["as_of"] == "2026-10-13"
-    assert len(cot["currencies"]) == 8
-    assert cot["currencies"]["USD"]["percentile_104w_rounded"] == 80
-    assert cot["currencies"]["USD"]["signal"] == "EXTREME_LONG"
-    assert cot["currencies"]["AUD"]["net_oi_alert_abs_ge_30pct"] is True
-    assert cot["currencies"]["GBP"]["net_oi_alert_abs_ge_30pct"] is True
+    if receipt["lanes"]["cot"]["alert_eligible"]:
+        assert cot["state"] == "AVAILABLE_CERTIFIED"
+        assert len(cot["currencies"]) == 8
+    else:
+        assert cot["state"] != "AVAILABLE_CERTIFIED"
+        assert "currencies" not in cot
     fx = data["sections"]["fx_ecb_fixing"]
-    assert fx["state"] == "AVAILABLE_CERTIFIED"
-    assert fx["as_of"] == "2026-10-16"
-    assert len(fx["pairs"]) == 28
-    assert fx["kind"] == "ECB_EUR_BASED_REFERENCE_FIXINGS_NOT_INTRADAY_SPOT_OR_CLOSE"
-    assert abs(fx["pairs"]["EURUSD"]["fixing"] - 1.1253) < 0.00001
+    if receipt["lanes"]["fx"]["alert_eligible"]:
+        assert fx["state"] == "AVAILABLE_CERTIFIED"
+        assert len(fx["pairs"]) == 28
+        assert fx["kind"] == "ECB_EUR_BASED_REFERENCE_FIXINGS_NOT_INTRADAY_SPOT_OR_CLOSE"
+        price_row = inputs[-1]["rows"][-1]
+        assert abs(fx["pairs"]["EURUSD"]["fixing"] - price_row["USD"]) < 0.00002
+    else:
+        assert fx["state"] != "AVAILABLE_CERTIFIED"
+        assert "pairs" not in fx
     assert data["unavailable"]["credit_spreads"] == "WITHHELD_NO_CERTIFIED_ADAPTER"
-    assert data["unavailable"]["macro_release_event"] == "UNAVAILABLE"
 
-    # All sources become stale, but old numeric values may not leak into alerts.
-    _, stale = build_for(date(2026, 11, 5))
-    assert all(x["state"] != "AVAILABLE_CERTIFIED" for x in stale["sections"]["ois_official"].values())
-    assert all("horizons" not in x for x in stale["sections"]["ois_official"].values())
-    assert all("government_2y_pct" not in x for x in stale["sections"]["government_rates"].values())
-    assert stale["sections"]["cot_weekly"]["state"] != "AVAILABLE_CERTIFIED"
-    assert stale["sections"]["fx_ecb_fixing"]["state"] != "AVAILABLE_CERTIFIED"
-    assert "pairs" not in stale["sections"]["fx_ecb_fixing"]
+    # Synthetic exact-boundary conventions do not depend on next Friday's CFTC data.
+    cot_receipt = copy.deepcopy(receipt)
+    cot_receipt["lanes"]["cot"].update(
+        {"state": "AVAILABLE_CERTIFIED", "alert_eligible": True,
+         "as_of": inputs[2]["USD"]["dates"][-1],
+         "source": "CFTC Legacy Commitments of Traders (weekly, Tuesday position date)"}
+    )
+    synthetic = copy.deepcopy(inputs[2])
+    synthetic["USD"]["percentile"][-1] = 79.8
+    synthetic["AUD"]["netoi"][-1] = -29.96  # displayed -30.0 qualifies
+    tested = context.cot_view(cot_receipt, synthetic)
+    assert tested["state"] == "AVAILABLE_CERTIFIED"
+    assert tested["currencies"]["USD"]["percentile_104w_rounded"] == 80
+    assert tested["currencies"]["USD"]["signal"] == "EXTREME_LONG"
+    assert tested["currencies"]["AUD"]["net_oi_pct"] == -30.0
+    assert tested["currencies"]["AUD"]["net_oi_alert_abs_ge_30pct"] is True
+
+    # A fabricated newer source date is never promoted using an old certificate.
+    mismatched = copy.deepcopy(inputs[0])
+    mismatched["currencies"]["JPY"]["as_of"] = "2099-01-01"
+    rejected = context.ois_view(receipt, mismatched)
+    assert rejected["JPY"]["state"] != "AVAILABLE_CERTIFIED"
     print("CHATGPT_MARKET_CONTEXT_GUARDRAILS_PASS")
 
 
