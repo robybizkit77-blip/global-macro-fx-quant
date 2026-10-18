@@ -24,8 +24,13 @@ small{color:#829eb5;display:block;margin-top:10px}
   if(html.split(routeMarker).length!==2)throw new Error("Contratto routing Home v10 non riconosciuto");
   const liveRoute="window.__GMFQ_ROUTE_QUERY__=(name==='home' && !new URLSearchParams(query).has('mode')) ? 'mode=live' : query;";
   const certifiedDefault=html.replace(routeMarker,liveRoute);
+  // Inject only an additive navigation adapter; leave all 32 design parts unchanged.
+  const tail="</body></html>";
+  if(!certifiedDefault.trimEnd().endsWith(tail))throw new Error("Contratto HTML Control Room non riconosciuto");
+  const scriptTag='<script src="./home-navigation-v10.js"><'+'/script>';
+  const withNavigation=certifiedDefault.trimEnd().slice(0,-tail.length)+scriptTag+tail;
   document.open();
-  document.write(certifiedDefault);
+  document.write(withNavigation);
   document.close();
 })().catch(error=>{
   console.error("[GMFQ Preview]",error);
