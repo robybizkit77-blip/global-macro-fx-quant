@@ -74,13 +74,26 @@
     }
     throw new Error('PAIR_SETUP_OPERATIONAL_VIEW unavailable');
   }
-  function setupRows(data){return Object.entries(data?.pairs||{}).map(([code,x])=>({code,pair:x?.canonical_pair||`${code.slice(0,3)}/${code.slice(3,6)}`,setup:x?.setup||{},frame:x?.decision_frame||{}})).sort((a,b)=>{const qa=SETUP_PRIORITY[String(a.setup.quality||'').toUpperCase()]||0,qb=SETUP_PRIORITY[String(b.setup.quality||'').toUpperCase()]||0;return qb-qa||a.pair.localeCompare(b.pair);});}
+  function explainQuality(s){
+    if(s?.quality==='NON VALUTABILE')return 'Dati insufficienti';
+    if(s?.price?.state==='BAD')return 'Prezzo contrario alla tesi';
+    if(s?.timing?.state==='ADVERSE')return 'Timing contrario';
+    if(s?.extension?.state==='ADVANCED')return 'Prezzo già esteso';
+    if(s?.cot?.state==='DIVERGENT')return 'COT non conferma';
+    if(s?.structural?.quality==='PILASTRI DIVISI')return 'Macro e tassi divergono';
+    if(s?.timing?.state==='UNCERTAIN')return 'Timing non chiaro';
+    if(s?.timing?.state==='MIXED'||s?.timing?.state==='PARTIAL')return 'Timing da confermare';
+    if(s?.price?.state==='NEUTRAL')return 'Prezzo da confermare';
+    if(s?.quality==='PULITO')return 'Driver coerenti';
+    return 'Conferme incomplete';
+  }
+    function setupRows(data){return Object.entries(data?.pairs||{}).map(([code,x])=>({code,pair:x?.canonical_pair||`${code.slice(0,3)}/${code.slice(3,6)}`,setup:x?.setup||{},frame:x?.decision_frame||{}})).sort((a,b)=>{const qa=SETUP_PRIORITY[String(a.setup.quality||'').toUpperCase()]||0,qb=SETUP_PRIORITY[String(b.setup.quality||'').toUpperCase()]||0;return qb-qa||a.pair.localeCompare(b.pair);});}
   function renderSetupFallback(data){
     const host=document.querySelector('.setup-table');if(!host)return;
     const current=host.textContent||'';if(!current.includes('Nessun setup disponibile')&&host.querySelectorAll(':scope > div').length>1)return;
     const head='<div class="thead"><span>#</span><span>COPPIA</span><span>FAVORITA</span><span>QUALITÀ</span><span>LETTURA</span></div>';
     const rows=setupRows(data).slice(0,5);
-    host.innerHTML=head+rows.map((x,i)=>{const fav=x.setup.structuralFav||x.frame.fav||'—';const q=x.setup.quality||x.frame.quality||'—';const rel=x.setup.structural?.relation||x.frame.relation||x.setup.price?.text||'—';return `<div><span>${i+1}</span><b><a href="coppia.html?pair=${encodeURIComponent(x.code)}">${esc(x.pair)}</a></b><span>${esc(fav)}</span><em>${esc(q)}</em><small>${esc(trim(rel,55))}</small></div>`;}).join('');
+    host.innerHTML=head+rows.map((x,i)=>{const fav=x.setup.structuralFav||x.frame.fav||'—';const q=explainQuality(x.setup);const rel=x.setup.structural?.relation||x.frame.relation||x.setup.price?.text||'—';return `<div><span>${i+1}</span><b><a href="coppia.html?pair=${encodeURIComponent(x.code)}">${esc(x.pair)}</a></b><span>${esc(fav)}</span><em>${esc(q)}</em><small>${esc(trim(rel,55))}</small></div>`;}).join('');
     document.documentElement.dataset.dashboardSetup='READY_FALLBACK';
   }
   function renderWatchFallback(data){
