@@ -9,6 +9,7 @@ const PAGES=[
   ['Banche centrali','banche-centrali.html','Stance, policy e meeting'],
   ['Posizionamento','posizionamento.html','COT e percentile 104W'],
   ['Coppie','coppie.html','Ranking 28 pair'],
+  ['Market Risk','market-risk.html','VIX, Gold, WTI, Cina e cross-asset'],
   ['Rischio / Eventi','rischio-eventi.html','Calendario macro e CB'],
   ['Top Themes','top-themes.html','Narrative e conferme'],
   ['Library','library.html','Report definitivi'],
