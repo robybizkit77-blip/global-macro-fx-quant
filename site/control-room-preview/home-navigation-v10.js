@@ -128,6 +128,8 @@
       labelLink(doc,doc.querySelector(selector),route,label);
     }
     doc.body.addEventListener('click', event => {
+      const direct = event.target.closest('a.gmfq-open-detail');
+      if (direct) { event.preventDefault(); go(direct.getAttribute('href')); return; }
       if (event.defaultPrevented || event.target.closest('a,button,input,select,textarea')) return;
       const route = cardTarget(doc,event.target);
       if (route) {event.preventDefault();go(route);}
