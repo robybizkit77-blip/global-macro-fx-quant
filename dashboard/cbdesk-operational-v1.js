@@ -7,7 +7,7 @@ const state={status:'INIT',data:null,error:null,selected:null};
 window.GMFQ_CBDESK_OPERATIONAL=state;
 
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function num(v){return Number.isFinite(Number(v))?Number(v):null;}
+function num(v){return v===null||v===undefined||v===''?null:Number.isFinite(Number(v))?Number(v):null;}
 function fmtRate(v){const n=num(v);return n===null?'—':n.toFixed(3).replace(/0+$/,'').replace(/\.$/,'')+'%';}
 function fmtBp(v){const n=num(v);return n===null?'—':`${n>0?'+':''}${n.toFixed(1)} bp`;}
 function selected(){return document.querySelector('#v234CurrencyCards .v234CurrencyCard.active')?.dataset?.c||String(document.getElementById('v234CountryName')?.textContent||'').match(/\b(USD|EUR|GBP|JPY|CHF|CAD|AUD|NZD)\b/)?.[1]||null;}
@@ -15,16 +15,18 @@ function cbData(c){return window.__GMFQ_DATA?.NATIVE_CB_DATA?.[c]||null;}
 function oisData(c){return state.data?.currencies?.[c]||null;}
 function twoY(c){try{const s=window.rate2YSeries?.(c);return {last:s?.values?.at?.(-1)??null,date:s?.dates?.at?.(-1)??null};}catch(e){return {last:null,date:null};}}
 function validate(d){
- if(!d||d.schema!=='GMFQ_OIS_OPERATIONAL_VIEW_V1'||d.status!=='GREEN_8_OF_8'||d?.summary?.operational_green!==8)throw new Error('OIS_OPERATIONAL_NOT_GREEN_8_OF_8');
- for(const c of CCYS){const r=d?.currencies?.[c];if(!r||!['GREEN_OFFICIAL','GREEN_ESTIMATED'].includes(r.operational_status))throw new Error('OIS_OPERATIONAL_INVALID_'+c);}
+ if(!d||d.schema!=='GMFQ_OIS_OPERATIONAL_VIEW_V1'||!['GREEN_8_OF_8','PARTIAL_WITHHELD'].includes(d.status)||d?.summary?.g8_total!==8||d.summary.operational_green+d.summary.operational_withheld!==8)throw new Error('OIS_OPERATIONAL_COVERAGE_INVALID');
+ for(const c of CCYS){const r=d?.currencies?.[c];if(!r||!['GREEN_OFFICIAL','GREEN_ESTIMATED','WITHHELD'].includes(r.operational_status))throw new Error('OIS_OPERATIONAL_INVALID_'+c);}
  return d;
 }
 function quality(r,c){
+ if(r?.operational_status==='WITHHELD')return {label:'OIS WITHHELD · curva non disponibile',cls:'warn',kind:'WITHHELD'};
  if(c==='NZD'&&r?.market_direction_proxy)return {label:'Pricing operativo · NON OIS proxy',cls:'warn',kind:'NON_OIS'};
  if(r?.operational_status==='GREEN_OFFICIAL')return {label:'Pricing operativo · OFFICIAL',cls:'pos',kind:'OFFICIAL'};
  return {label:'Pricing operativo · ESTIMATED',cls:'warn',kind:'ESTIMATED'};
 }
 function pathState(r,c){
+ if(r?.operational_status==='WITHHELD')return {title:'Curva OIS non disponibile',detail:'Dati OIS scaduti o incompleti: nessun percorso di politica monetaria certificabile. Il proxy ASX, se presente, resta separato e non sostituisce la curva OIS.'};
  if(c==='NZD'&&r?.market_direction_proxy){
    const p=r.market_direction_proxy;const vals=['3m','6m','12m'].map(h=>num(p?.horizons?.[h]?.change_1w_bp)).filter(v=>v!==null);
    const avg=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:null;
@@ -77,7 +79,7 @@ function audit(){
  if(cards.length!==8||unique.length!==8||CCYS.some(x=>!unique.includes(x)))issues.push('G8_SELECTOR');
  if(!c||!CCYS.includes(c)||!String(document.getElementById('v234CountryName')?.textContent||'').includes(c))issues.push('SELECTION_SYNC');
  if(policy?.ok!==true)issues.push('CORE_POLICY_INTEGRITY');
- if(!state.data||state.data?.summary?.operational_green!==8)issues.push('OIS_OPERATIONAL_COVERAGE');
+ if(!state.data||state.data?.summary?.g8_total!==8||state.data.summary.operational_green+state.data.summary.operational_withheld!==8)issues.push('OIS_OPERATIONAL_COVERAGE');
  if(!r||!q)issues.push('SELECTED_PRICING');
  if(/Pricing non comparabile|OIS non confrontabile|Nessuna curva OIS\/forward omogenea disponibile/.test(text))issues.push('STALE_PRICING_NARRATIVE');
  if(document.querySelectorAll('#v234PricingGrid [data-gmfq-cb-pricing]').length!==3)issues.push('PRICING_GRID_BINDING');
