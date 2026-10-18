@@ -1,0 +1,93 @@
+name: CHF NZD Official Source Access Probe
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/chf-nzd-official-source-probe.yml'
+      - 'validation/audit_ois_rates_freshness.py'
+      - 'validation/validate_ois_operational_freshness.py'
+      - 'validation/cb_pricing/build_ois_operational_view_v1.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Locate OIS operational producers and publication hooks
+        shell: bash
+        run: |
+          echo 'OIS_REFERENCES_BEGIN'
+          git grep -l -E 'OIS_OPERATIONAL_VIEW|GREEN_ESTIMATED|GMFQ_OIS_OPERATIONAL' -- ':!live_data/sections/OIS_OPERATIONAL_VIEW.json' ':!payload/*' ':!site/website-v1/*' ':!*.html' | head -80 || true
+          echo 'OIS_REFERENCES_END'
+          echo 'OIS_WORKFLOW_REFERENCES_BEGIN'
+          git grep -n 'OIS_OPERATIONAL_VIEW' -- '.github/workflows/*' 'validation/*' | cut -c1-220 | head -90 || true
+          echo 'OIS_WORKFLOW_REFERENCES_END'
+      - name: Audit all G8 OIS and Rates timestamps (non-mutating)
+        run: python3 validation/audit_ois_rates_freshness.py
+      - name: Assert stale OIS GREEN candidate is rejected by update gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          if python3 validation/validate_ois_operational_freshness.py live_data/sections/OIS_OPERATIONAL_VIEW.json >/tmp/ois-green-preflight.log 2>&1; then
+            echo "ERROR: known-stale GREEN candidate was accepted"
+            exit 1
+          fi
+          grep -q '"status": "REJECTED"' /tmp/ois-green-preflight.log
+          echo 'OIS_STALE_GREEN_REJECTION_PASS'
+      - name: Verify producer withholds NZD and preserves healthy currencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp live_data/sections/OIS_OPERATIONAL_VIEW.json /tmp/ois-producer-before.json
+          python3 validation/cb_pricing/build_ois_operational_view_v1.py
+          python3 - <<'PY'
+          import json
+          old=json.load(open('/tmp/ois-producer-before.json'))
+          new=json.load(open('live_data/sections/OIS_OPERATIONAL_VIEW.json'))
+          assert new['summary']=={'g8_total':8,'operational_green':7,'green_official':4,'green_estimated':3,'operational_withheld':1},new['summary']
+          assert new['status']=='PARTIAL_WITHHELD'
+          assert new['currencies']['NZD']['operational_status']=='WITHHELD'
+          assert all(h['rate'] is None for h in new['currencies']['NZD']['horizons'].values())
+          for ccy in ('USD','EUR','GBP','JPY','CHF','CAD','AUD'):
+            assert new['currencies'][ccy]['operational_status']==old['currencies'][ccy]['operational_status'],ccy
+          print('OIS_PRODUCER_SEVEN_GREEN_ONE_WITHHELD_PASS')
+          PY
+          python3 validation/cb_pricing/test_ois_operational_view_v1.py
+      - name: Probe official SNB and RBNZ feeds (non-mutating)
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json,urllib.request,urllib.error
+          urls={
+            'CHF_SNB_DAILY_YIELD_JSON':'https://data.snb.ch/api/cube/rendeiduebd/data/json/en?dimSel=D0(CHF),D1(2J,10J)&fromDate=2026-10-01',
+            'CHF_SNB_DAILY_YIELD_CSV':'https://data.snb.ch/api/cube/rendeiduebd/data/csv/en?fromDate=2026-10-01',
+            'NZD_RBNZ_B2_PAGE':'https://www.rbnz.govt.nz/en/statistics/series/exchange-and-interest-rates/wholesale-interest-rates',
+          }
+          for name,url in urls.items():
+            try:
+              req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 (compatible; GMFQOfficialSourceProbe/1.0)','Accept':'application/json,text/csv,text/html,*/*'})
+              with urllib.request.urlopen(req,timeout=18) as r:
+                body=r.read(250000)
+                print('OFFICIAL_PROBE',json.dumps({'source':name,'status':r.status,'content_type':r.headers.get('content-type'),'bytes_sample':len(body),'head':body[:100].decode('utf-8','replace')},ensure_ascii=False))
+            except Exception as e:
+              print('OFFICIAL_PROBE',json.dumps({'source':name,'error':type(e).__name__+': '+str(e)[:150]}))
+          PY
+          # Validate observable SNB timestamps, not merely HTTP access.
+          python3 - <<'PY'
+          import csv,io,json,urllib.request,collections,datetime
+          url='https://data.snb.ch/api/cube/rendeiduebd/data/csv/en?fromDate=2026-10-01'
+          try:
+            with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0'}),timeout=20) as r: txt=r.read().decode('utf-8-sig')
+            reader=csv.reader(io.StringIO(txt),delimiter=';')
+            records=[row for row in reader if len(row)==4 and row[0][:4].isdigit()]
+            swiss=[r for r in records if r[1]=='CHF' and r[2] in ('2J','10J')]
+            bydate=collections.defaultdict(dict)
+            for date,ccy,tenor,value in swiss:
+              try:bydate[date][tenor]=float(value)
+              except ValueError:pass
+            complete=[d for d,x in bydate.items() if len(x)==2]
+            print('SNB_CHF_OBSERVATIONS',json.dumps({'rows':len(records),'swiss':len(swiss),'latest_2y':max((r[0] for r in swiss if r[2]=='2J'),default=None),'latest_10y':max((r[0] for r in swiss if r[2]=='10J'),default=None),'latest_same_day':max(complete,default=None),'fresh':bool(complete and (datetime.date.today()-datetime.date.fromisoformat(max(complete))).days<=5)}))
+          except Exception as e:print('SNB_CHF_OBSERVATIONS',json.dumps({'error':type(e).__name__+': '+str(e)[:120]}))
+          PY

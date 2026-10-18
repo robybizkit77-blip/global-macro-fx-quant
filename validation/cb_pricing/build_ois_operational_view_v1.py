@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -160,6 +161,23 @@ def build():
                 },
                 'backtest_eligible_as_official': False
             }
+    # Downgrade stale or incomplete operational rows rather than aborting G8 refresh.
+    sys.path.insert(0, str(ROOT / 'validation'))
+    from validate_ois_operational_freshness import check
+    from datetime import date
+    for issue in check(out, datetime.now(timezone.utc).date()):
+        row=out['currencies'][issue['currency']]
+        row['operational_status']='WITHHELD'
+        row['withheld_reason']='STALE_OR_INCOMPLETE_PRICING'
+        row['direction_vs_policy']=None
+        row['change_1d_available']=False
+        row['change_1w_available']=False
+        for horizon in row.get('horizons',{}).values():
+            horizon['rate']=None
+            horizon['policy_delta_bp']=None
+            horizon['change_1d_bp']=None
+            horizon['change_1w_bp']=None
+    out['status']='PARTIAL_WITHHELD' if any(v['operational_status']=='WITHHELD' for v in out['currencies'].values()) else 'GREEN_8_OF_8'
     out['summary'] = {
         'g8_total': 8,
         'operational_green': sum(v['operational_status'].startswith('GREEN_') for v in out['currencies'].values()),
@@ -172,6 +190,8 @@ def build():
 
 def main():
     out = build()
+    from validate_ois_operational_freshness import check
+    assert not check(out, datetime.now(timezone.utc).date()), 'withheld downgrade failed'
     OUT.write_text(json.dumps(out, ensure_ascii=False, indent=2, sort_keys=True) + '\n', encoding='utf-8')
     print(json.dumps(out['summary'], sort_keys=True))
 

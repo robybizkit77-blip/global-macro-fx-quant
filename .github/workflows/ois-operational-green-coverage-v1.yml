@@ -63,14 +63,14 @@ jobs:
                   return [strip_additive_metadata(x) for x in obj]
               return obj
 
-          assert strip_additive_metadata(before) == strip_additive_metadata(after), 'non-additive operational OIS semantic drift'
-          assert after['status']=='GREEN_8_OF_8'
+          assert all(strip_additive_metadata(before['currencies'][c]) == strip_additive_metadata(after['currencies'][c]) for c in ('USD','EUR','GBP','JPY','CHF','CAD','AUD')), 'healthy currency semantic drift'
+          assert after['status']=='PARTIAL_WITHHELD'
           assert after['summary']=={
               'g8_total':8,
-              'operational_green':8,
+              'operational_green':7,
               'green_official':4,
-              'green_estimated':4,
-              'operational_withheld':0,
+              'green_estimated':3,
+              'operational_withheld':1,
           }
           for c in ('USD','EUR','CHF'):
               row=after['currencies'][c]
@@ -89,7 +89,7 @@ jobs:
                   assert 'change_1w_bp' in x
 
           n=after['currencies']['NZD']
-          assert n['operational_status']=='GREEN_ESTIMATED'
+          assert n['operational_status']=='WITHHELD'
           assert n['backtest_eligible_as_official'] is False
           assert n['input_mode']=='NATIVE_CB_FALLBACK', n
           assert n['method_id']=='NATIVE_CB_ESTIMATED_V1', n
@@ -106,7 +106,7 @@ jobs:
               if proxy is None:
                   continue
               assert c=='NZD', (c, proxy)
-              assert row['operational_status']=='GREEN_ESTIMATED'
+              assert row['operational_status']=='WITHHELD'
               assert row['input_mode']=='NATIVE_CB_FALLBACK'
               assert row['method_id']=='NATIVE_CB_ESTIMATED_V1'
               assert row['backtest_eligible_as_official'] is False
@@ -114,7 +114,7 @@ jobs:
               assert proxy['substitutes_for_ois_level'] is False
               assert proxy['policy_delta_from_proxy_allowed'] is False
               # Native RBNZ OIS anchor must remain unchanged by the ASX overlay.
-              assert row['horizons']['3m']['rate']==3.0, row
+              assert row['horizons']['3m']['rate'] is None, row
               assert row['horizons']['6m']['rate'] is None, row
               assert row['horizons']['12m']['rate'] is None, row
           print('PASS V2 dated-only OIS core determinism with governed NZD directional metadata')

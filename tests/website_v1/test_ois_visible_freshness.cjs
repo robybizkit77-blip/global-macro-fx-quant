@@ -1,0 +1,10 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const src=fs.readFileSync('site/website-v1/dashboard-policy-layout.js','utf8');
+const extract=src.match(/function render\(host,data\)\{[^\n]*\}/);
+assert(extract,'render source present');
+assert(src.includes("vals:fresh?vals:[null,null,null,null]"),'withhold stale chart values');
+assert(src.includes("label:'WITHHELD'"),'withhold stale directional badge');
+assert(src.includes("ageDays(x.as_of)>=0"),'reject future dates');
+assert(src.includes("v===null||v===undefined||v===''"),'reject missing numeric values');
+new vm.Script(src);
+console.log('PASS OIS stale display policy guard');

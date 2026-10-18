@@ -95,7 +95,7 @@ jobs:
           from pathlib import Path
           v=json.loads(Path('live_data/sections/OIS_OPERATIONAL_VIEW.json').read_text())
           p=json.loads(Path('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json').read_text())
-          assert v['summary']=={'g8_total':8,'operational_green':8,'green_official':4,'green_estimated':4,'operational_withheld':0}, v['summary']
+          assert v['summary']=={'g8_total':8,'operational_green':7,'green_official':4,'green_estimated':3,'operational_withheld':1}, v['summary']
           for c in ('USD','EUR','CHF'):
               r=v['currencies'][c]
               assert r['operational_status']=='GREEN_ESTIMATED'
@@ -110,11 +110,11 @@ jobs:
                   assert '!' not in str(x.get('symbol')), x
                   assert 'change_1d_bp' in x and 'change_1w_bp' in x
           n=v['currencies']['NZD']
-          assert n['operational_status']=='GREEN_ESTIMATED'
+          assert n['operational_status']=='WITHHELD'
           assert n['input_mode']=='NATIVE_CB_FALLBACK'
           assert n['method_id']=='NATIVE_CB_ESTIMATED_V1'
           assert n['backtest_eligible_as_official'] is False
-          assert n['horizons']['3m']['rate']==3.0, n
+          assert n['horizons']['3m']['rate'] is None, n
           assert n['horizons']['6m']['rate'] is None, n
           assert n['horizons']['12m']['rate'] is None, n
           proxy=n['market_direction_proxy']
