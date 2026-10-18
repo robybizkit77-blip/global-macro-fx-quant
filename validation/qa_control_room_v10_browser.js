@@ -17,13 +17,29 @@ const fs=require('fs'),path=require('path');
   const url='http://127.0.0.1:8818/site/control-room-preview/';
   const response=await page.goto(url,{waitUntil:'domcontentloaded',timeout:120000});
   if(!response||!response.ok())throw Error(label+' home did not load');
-  await page.waitForFunction(()=>{
+  try { await page.waitForFunction(()=>{
     const f=document.getElementById('gmfq-page'),d=f?.contentDocument;
     return d?.documentElement?.getAttribute('data-live-state')==='LOADED'
       && d.querySelectorAll('#ois .oisrow').length===8
       && d.querySelector('#valute .cc[data-filter="DXY"] .value')?.textContent.trim()!=='—'
       && d.querySelectorAll('#ylegend .gmfq-legend-item').length===8;
-  },null,{timeout:120000});
+  },null,{timeout:30000}); } catch(e) {
+    const debug=await page.evaluate(()=>{
+      const f=document.getElementById('gmfq-page'),d=f?.contentDocument;
+      return {outer:document.getElementById('state')?.innerText,
+        pageTitle:document.title,frame:!!f,document:!!d,mode:d?.documentElement?.dataset.marketMode,
+        liveState:d?.documentElement?.dataset.liveState,
+        oisRows:d?.querySelectorAll('#ois .oisrow').length,
+        ratesLabels:d?.querySelectorAll('#ylegend .gmfq-legend-item').length,
+        dxy:d?.querySelector('#valute .cc[data-filter="DXY"] .value')?.textContent,
+        scripts:[...(d?.scripts||[])].map(x=>x.src||'inline').slice(-3),
+        htmlError:d?.body?.innerText?.slice(-500)};
+    });
+    console.error('V10_WAIT_DIAGNOSTIC',label,JSON.stringify({debug,errors}));
+    fs.mkdirSync('v10-qa-images',{recursive:true});
+    await page.screenshot({path:'v10-qa-images/'+label+'-diagnostic.png',fullPage:true});
+    throw e;
+  }
   const r=await page.evaluate(()=>{
     const d=document.getElementById('gmfq-page').contentDocument;
     const box=sel=>{const x=d.querySelector(sel);return {clientHeight:x?.clientHeight,scrollHeight:x?.scrollHeight,clientWidth:x?.clientWidth,scrollWidth:x?.scrollWidth}};
