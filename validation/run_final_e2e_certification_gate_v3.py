@@ -109,26 +109,29 @@ def main():
             raise SystemExit(f"NZD ASX directional proxy missing {horizon}")
 
     # Resolved operational view must cover all G8 while keeping the quality split explicit.
+    run([sys.executable, "validation/cb_pricing/build_ois_operational_view_v1.py"])
     run([sys.executable, "validation/cb_pricing/test_ois_operational_view_v1.py"])
     operational_ois = load_json("live_data/sections/OIS_OPERATIONAL_VIEW.json")
     expected_summary = {
         "g8_total": 8,
-        "operational_green": 8,
+        "operational_green": 7,
         "green_official": 4,
-        "green_estimated": 4,
-        "operational_withheld": 0,
+        "green_estimated": 3,
+        "operational_withheld": 1,
     }
-    if operational_ois.get("status") != "GREEN_8_OF_8" or operational_ois.get("summary") != expected_summary:
-        raise SystemExit("OIS operational 8/8 coverage drift")
+    if operational_ois.get("status") != "PARTIAL_WITHHELD" or operational_ois.get("summary") != expected_summary:
+        raise SystemExit("OIS operational 7 GREEN / 1 WITHHELD coverage drift")
     if operational_ois.get("official_runtime_untouched") is not True:
         raise SystemExit("OIS operational view no longer preserves official runtime")
     for ccy in ("AUD", "CAD", "GBP", "JPY"):
         if operational_ois["currencies"][ccy].get("operational_status") != "GREEN_OFFICIAL":
             raise SystemExit(f"{ccy} official operational OIS status drift")
-    for ccy in ("USD", "EUR", "CHF", "NZD"):
+    for ccy in ("USD", "EUR", "CHF"):
         row = operational_ois["currencies"][ccy]
         if row.get("operational_status") != "GREEN_ESTIMATED" or row.get("backtest_eligible_as_official") is not False:
             raise SystemExit(f"{ccy} estimated operational OIS governance drift")
+    if operational_ois["currencies"]["NZD"].get("operational_status") != "WITHHELD":
+        raise SystemExit("NZD stale OIS must be withheld")
     for ccy in ("USD", "EUR", "CHF"):
         row = operational_ois["currencies"][ccy]
         if row.get("method_id") != "TRADINGVIEW_DATED_FUTURES_SSR_V2":
