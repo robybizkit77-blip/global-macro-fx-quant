@@ -10,12 +10,18 @@
     if(x?.pair_count!==28||Object.keys(x?.pairs||{}).length!==28)throw new Error('Pair setup coverage invalid');
     if(x?.thesis_is_not_entry!==true||x?.entry_level_published!==false)throw new Error('Pair setup thesis/entry contract invalid');
     if(x?.price_audit?.status!=='PASS')throw new Error('Pair setup price audit not PASS');
+    if(x?.price_audit?.as_of!==x?.price_asof || x?.price_audit?.history_asof!==x?.price_asof)throw new Error('Price/history dates inconsistent');
+    const time=Date.parse(String(x.price_asof)+'T00:00:00Z');
+    const now=new Date(),today=Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate());
+    const age=Math.floor((today-time)/86400000);
+    if(!Number.isFinite(age)||age<0||age>5)throw new Error('Pair setup data stale or future-dated');
   }
   function render(){
     const qual=q('#quality').value,fav=q('#fav').value;
     const rows=Object.entries(setup.pairs).map(([pair,x])=>({pair,x,s:x.setup||{}})).filter(r=>(qual==='ALL'||r.s.quality===qual)&&(fav==='ALL'||r.s.structuralFav===fav)).sort((a,b)=>(QUALITY_RANK[b.s.quality]||0)-(QUALITY_RANK[a.s.quality]||0)||(a.x.canonical_pair||a.pair).localeCompare(b.x.canonical_pair||b.pair));
     q('#rows').innerHTML=rows.map(r=>`<div class="screen-row"><b>${esc(r.x.canonical_pair||r.pair)}</b><span><strong>${esc(r.s.quality)}</strong><small style="display:block;margin-top:4px">favorisce ${esc(r.s.structuralFav||'—')}</small></span><p>${esc(r.s.structural?.relation||r.x.decision_frame?.relation||'Struttura non disponibile.')}</p><a href="coppia.html?pair=${esc(r.pair)}">Deep Dive →</a></div>`).join('')||'<p>Nessun setup corrisponde ai filtri.</p>';
-    q('#asof').textContent=`${rows.length}/28 pair · quadro aggiornato al ${setup.price_asof||'—'}`;
+    const distribution=Object.entries(QUALITY_RANK).filter(([name])=>name!=='NON VALUTABILE').map(([name])=>[name,Object.values(setup.pairs).filter(x=>x.setup?.quality===name).length]).filter(x=>x[1]>0).map(([name,count])=>name+': '+count).join(' · ');
+    q('#asof').textContent=`${rows.length}/28 pair · prezzi ${setup.price_asof||'—'} · ${distribution}`;
   }
   load('PAIR_SETUP_OPERATIONAL_VIEW.json').then(b=>{
     setup=b;validateSetup(b);
