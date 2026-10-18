@@ -128,7 +128,27 @@ def build():
             e = estimated.get(ccy) or {}
             usable = any(((e.get('horizons') or {}).get(h) or {}).get('rate') is not None for h in HORIZONS)
             if not usable:
-                raise SystemExit(f'{ccy}: neither official ACTIVE nor usable estimated pricing')
+                out['currencies'][ccy] = {
+                    'operational_status': 'WITHHELD',
+                    'withheld_reason': 'NO_USABLE_OFFICIAL_OR_ESTIMATED_PRICING',
+                    'quality': 'UNAVAILABLE',
+                    'confidence': 'C',
+                    'official_status': o.get('status', 'WITHHELD'),
+                    'input_mode': e.get('input_mode'),
+                    'method_id': e.get('method_id'),
+                    'as_of': e.get('as_of'),
+                    'policy_rate': e.get('policy_rate'),
+                    'source': e.get('source'),
+                    'horizons': {h: {'rate': None, 'policy_delta_bp': None,
+                                     'change_1d_bp': None, 'change_1w_bp': None}
+                                 for h in HORIZONS},
+                    'direction_vs_policy': None,
+                    'market_direction_proxy': e.get('market_direction_proxy'),
+                    'change_1d_available': False,
+                    'change_1w_available': False,
+                    'backtest_eligible_as_official': False
+                }
+                continue
             repricing = _estimated_repricing(ccy, e, history)
             horizons = {}
             for h in HORIZONS:
