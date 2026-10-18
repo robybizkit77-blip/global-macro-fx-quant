@@ -1,0 +1,53 @@
+name: Control Room v10 Full G8 Browser QA
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'site/control-room-preview/index.html'
+      - 'site/control-room-preview/home-navigation-v10.js'
+      - 'live_data/sections/DXY_SYNTHETIC_ECB.json'
+      - 'validation/qa_control_room_v10_browser.js'
+      - '.github/workflows/control-room-v10-full-g8-browser-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  visual-and-navigation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Retrieve unchanged v10 32-part approved visual baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin gh-pages --no-tags
+          mkdir -p site/control-room-preview/parts
+          for i in $(seq -w 0 31); do
+            git show "origin/gh-pages:site/control-room-preview/parts/part-$i.txt" > "site/control-room-preview/parts/part-$i.txt"
+          done
+          test "$(find site/control-room-preview/parts -type f | wc -l)" -eq 32
+          echo V10_REFERENCE_32_PARTS_UNTOUCHED
+      - name: Install browser runner
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Start local preview server
+        run: |
+          python3 -m http.server 8818 --bind 127.0.0.1 >/tmp/gmfq-v10-browser-qa.log 2>&1 &
+          sleep 2
+      - name: Verify native cards, DXY, all G8 data and no panel clipping
+        run: node validation/qa_control_room_v10_browser.js
+      - name: Upload desktop and mobile screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: control-room-v10-g8-visual-evidence
+          path: v10-qa-images/**
+          if-no-files-found: warn
