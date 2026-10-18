@@ -35,7 +35,24 @@ def build(fetch, today):
         entry={"source":meta["source"],"series":meta["id"],"unit":meta["unit"],
                "url":url,"status":"WITHHELD"}
         try:
-            rows=[r for r in parse_csv(fetch(url)) if r[0]<=today]
+            try:
+                rows=[r for r in parse_csv(fetch(url)) if r[0]<=today]
+            except Exception:
+                if name!="VIX": raise
+                # Official Cboe daily history; CLOSE, not an OHLC average.
+                cboe="https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
+                raw=fetch(cboe)
+                reader=csv.DictReader(io.StringIO(raw))
+                rows=[]
+                for item in reader:
+                    try:
+                        d=dt.datetime.strptime(item["DATE"],"%m/%d/%Y").date()
+                        v=float(item["CLOSE"])
+                        if d<=today: rows.append((d,v))
+                    except (ValueError,KeyError,TypeError): continue
+                rows.sort()
+                entry["source"]="Cboe official historical daily close"
+                entry["url"]=cboe
             if not rows:raise ValueError("no observations")
             last=rows[-1][0]; age=(today-last).days
             if age>meta["max_age_days"]:raise ValueError("stale observation")
