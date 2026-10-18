@@ -51,12 +51,12 @@
     .calendar .calendar-table{overflow:hidden!important;padding-left:10px!important;padding-right:10px!important}
     .calendar .calendar-table>.event-head,.calendar .calendar-table>.event-row{display:grid!important;grid-template-columns:58px 66px minmax(0,1.35fr) minmax(0,.95fr) 68px!important;gap:8px!important;align-items:center!important;width:100%!important;box-sizing:border-box!important}
     .calendar .event-head{font-size:8px!important;letter-spacing:.08em;color:#7f9db3;min-height:30px!important}
-    .calendar .event-row{min-height:48px!important;border-top:1px solid rgba(121,164,190,.13)}
+    .calendar .event-row{min-height:56px!important;border-top:1px solid rgba(121,164,190,.13)}
     .calendar .event-row>span,.calendar .event-row>b,.calendar .event-row>small,.calendar .event-row>em,.calendar .event-row>i{min-width:0;box-sizing:border-box}
     .calendar .event-row>span{font-size:9px!important;color:#9ab0bf;white-space:nowrap}
     .calendar .event-row>b{font-size:10px!important;color:#e7f2f8;white-space:nowrap}
-    .calendar .event-row>small{font-size:9px!important;color:#d8e8f1;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .calendar .event-row>em{font-size:8px!important;color:#87a6ba;font-style:normal;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .calendar .event-row>small{font-size:9px!important;color:#d8e8f1;font-weight:700;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.25!important}
+    .calendar .event-row>em{font-size:8px!important;color:#87a6ba;font-style:normal;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.25!important}
     .calendar .event-risk{justify-self:start;font-size:8px!important;font-style:normal;font-weight:800;letter-spacing:.05em;padding:4px 6px;border-radius:6px;background:rgba(127,157,179,.12);color:#a9c1d1;white-space:nowrap}
     .calendar .event-risk.high{background:rgba(201,122,255,.13);color:#d8a2ff}.calendar .event-risk.med{background:rgba(216,169,92,.13);color:#e7bd73}.calendar .event-risk.low{color:#8eb4ca}
     .calendar .event-risk-subline{padding:0 12px 7px!important}
