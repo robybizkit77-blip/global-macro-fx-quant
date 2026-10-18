@@ -1,0 +1,54 @@
+name: Pair Thesis Trade Diagnostic V0
+
+on:
+  pull_request:
+    paths:
+      - 'validation/pairs/pair_thesis_trade_diagnostic_v0.py'
+      - '.github/workflows/pair-thesis-trade-diagnostic-v0.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/pairs/pair_thesis_trade_diagnostic_v0.py'
+      - '.github/workflows/pair-thesis-trade-diagnostic-v0.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate 28 pair diagnostic without mutating canonical data
+        run: |
+          set -euo pipefail
+          sha256sum live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json > /tmp/pair-source.sha256
+          python validation/pairs/pair_thesis_trade_diagnostic_v0.py > /tmp/pair-diagnostic-v0.json
+          python - <<'PY'
+          import json
+          from collections import Counter
+          obj=json.load(open('/tmp/pair-diagnostic-v0.json'))
+          assert obj['diagnostic_only'] is True
+          assert len(obj['rows'])==28
+          assert all(not r['entry_signal'] for r in obj['rows'].values())
+          print('PAIR_DIAGNOSTIC_TEST_PASS', dict(Counter(r['trade'] for r in obj['rows'].values())))
+          PY
+          python - <<'PY'
+          import importlib.util
+          spec=importlib.util.spec_from_file_location('diag','validation/pairs/pair_thesis_trade_diagnostic_v0.py')
+          m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+          row={'setup':{'quality':'DA MONITORARE','structuralFav':'USD','structural':{'quality':'VANTAGGIO RELATIVO PARZIALE'},'price':{'state':'GOOD'},'timing':{'state':'PARTIAL'},'extension':{'state':'NORMAL'},'cot':{'state':'MEDIUM'}}}
+          assert m.assess(row)['trade']=='CERCA CONFERMA',m.assess(row)
+          row['setup']['quality']='NON VALUTABILE'
+          assert m.assess(row)['trade']=='NON VALUTABILE'
+          print('PAIR_PARTIAL_TIMING_NOT_PROMOTED_PASS')
+          PY
+          sha256sum -c /tmp/pair-source.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pair-thesis-trade-diagnostic-v0
+          path: /tmp/pair-diagnostic-v0.json
