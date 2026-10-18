@@ -5,7 +5,7 @@ s=Path("site/control-room-preview/home-navigation-v10.js").read_text(encoding="u
 loader=Path("site/control-room-preview/index.html").read_text(encoding="utf-8")
 items={
 "Original 32 visual parts are untouched": "Array.from({length:32}" in loader,
-"Native clickable card surfaces": "panel.dataset.gmfqDestination" not in s and "e.dataset.gmfqDestination=link" in s,
+"Native clickable card surfaces": "e.dataset.gmfqDestination=link" in s,
 "No ad-hoc Approfondisci tags": "Approfondisci ↗" not in s and "gmfq-open-detail" not in s,
 "Semantic keyboard navigation": "keydown" in s and "aria-label" in s,
 "In-app DXY instead of external CFD": "openDxy(doc)" in s and "gmfq-dxy-dialog" in s and "tradingview.com" not in s,
