@@ -72,6 +72,8 @@ def append_changed_snapshots(view: dict, captured_at_utc: str, path: Path = HIST
     appended = []
     for currency in ESTIMATED:
         row = (view.get("currencies") or {}).get(currency) or {}
+        if row.get("operational_status") == "WITHHELD":
+            continue  # No observation: do not append stale or synthetic history.
         if row.get("operational_status") != "GREEN_ESTIMATED":
             raise SystemExit(f"{currency}: expected GREEN_ESTIMATED")
         rec = make_record(currency, row, captured_at_utc)
