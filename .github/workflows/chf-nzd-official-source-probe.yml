@@ -4,6 +4,7 @@ on:
     paths:
       - '.github/workflows/chf-nzd-official-source-probe.yml'
       - 'validation/audit_ois_rates_freshness.py'
+      - 'validation/update_live_direct_section.py'
   workflow_dispatch:
 permissions:
   contents: read
@@ -15,6 +16,16 @@ jobs:
       - uses: actions/checkout@v4
       - name: Audit all G8 OIS and Rates timestamps (non-mutating)
         run: python3 validation/audit_ois_rates_freshness.py
+      - name: Assert stale OIS GREEN candidate is rejected by update gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          if python3 validation/update_live_direct_section.py --section OIS_OPERATIONAL_VIEW --replacement live_data/sections/OIS_OPERATIONAL_VIEW.json >/tmp/ois-green-preflight.log 2>&1; then
+            echo "ERROR: known-stale GREEN candidate was accepted"
+            exit 1
+          fi
+          grep -q 'OIS GREEN freshness preflight failed' /tmp/ois-green-preflight.log
+          echo 'OIS_STALE_GREEN_REJECTION_PASS'
       - name: Probe official SNB and RBNZ feeds (non-mutating)
         shell: bash
         run: |
