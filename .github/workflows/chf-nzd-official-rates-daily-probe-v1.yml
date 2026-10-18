@@ -1,0 +1,63 @@
+name: CHF NZD Official Rates Daily Access Probe V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/probe_chf_nzd_rates_sources_v1.py'
+      - '.github/workflows/chf-nzd-official-rates-daily-probe-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/probe_chf_nzd_rates_sources_v1.py'
+      - '.github/workflows/chf-nzd-official-rates-daily-probe-v1.yml'
+  schedule:
+    # Weekdays after the European close; RBNZ B2 is on the NZ daily publication cadence.
+    - cron: '45 16 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chf-nzd-official-rates-access-probe
+  cancel-in-progress: false
+
+jobs:
+  official-source-readonly:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install official XLSX parser
+        run: python -m pip install --disable-pip-version-check --no-input openpyxl
+      - name: Fail-closed paired-date and corrupt response self-tests
+        run: python validation/probe_chf_nzd_rates_sources_v1.py --self-test
+      - name: Check SNB and RBNZ official endpoints without updating live data
+        run: |
+          python validation/probe_chf_nzd_rates_sources_v1.py --output /tmp/chf-nzd-official-probe.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('/tmp/chf-nzd-official-probe.json').read_text())
+          assert x['schema']=='GMFQ_CHF_NZD_OFFICIAL_ACCESS_PROBE_V1'
+          assert x['mode']=='READ_ONLY_DIAGNOSTIC'
+          assert set(x['sources'])=={'CHF','NZD'}
+          assert all(v.get('writes_operational_rates') is False for v in x['sources'].values())
+          for c in ('CHF','NZD'):
+              print('OFFICIAL_ACCESS_RESULT',c,x['sources'][c]['status'])
+          print('OFFICIAL_PROBE_NO_PROMOTION_GREEN')
+          PY
+      - name: Fail if monitored production files were altered
+        run: |
+          git diff --exit-code -- live_data/sections/NATIVE_RATES_DATA.json live_data/manifest.v2.json payload/part-00.txt payload/part-15.txt
+          echo CHF_NZD_PROBE_NON_MUTATING_PASS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chf-nzd-official-source-access-diagnostic
+          path: /tmp/chf-nzd-official-probe.json
+          if-no-files-found: warn
