@@ -5,13 +5,17 @@ on:
     branches: [main]
     paths:
       - 'site/control-room-preview/index.html'
+      - 'site/control-room-preview/home-navigation-v10.js'
       - 'validation/check_control_room_home_default_v10.py'
+      - 'validation/check_control_room_navigation_v10.py'
       - '.github/workflows/publish-control-room-home-v10.yml'
   push:
     branches: [main]
     paths:
       - 'site/control-room-preview/index.html'
+      - 'site/control-room-preview/home-navigation-v10.js'
       - 'validation/check_control_room_home_default_v10.py'
+      - 'validation/check_control_room_navigation_v10.py'
       - '.github/workflows/publish-control-room-home-v10.yml'
   workflow_dispatch:
 
@@ -34,7 +38,12 @@ jobs:
       - name: Check certified Home default and illustrated opt-in
         run: python validation/check_control_room_home_default_v10.py
 
-      - name: Publish only Control Room v10 preview loader
+      - name: Validate navigation JavaScript syntax and routes
+        run: |
+          node --check site/control-room-preview/home-navigation-v10.js
+          python validation/check_control_room_navigation_v10.py
+
+      - name: Publish only Control Room v10 preview loader and navigation adapter
         if: github.event_name != 'pull_request'
         shell: bash
         run: |
@@ -55,16 +64,17 @@ jobs:
           print('CONTROL_ROOM_V10_EXISTING_DESIGN_LOCK_PASS')
           PY
           cp site/control-room-preview/index.html "$WORKTREE/site/control-room-preview/index.html"
+          cp site/control-room-preview/home-navigation-v10.js "$WORKTREE/site/control-room-preview/home-navigation-v10.js"
           cd "$WORKTREE"
           python - <<'PY'
           import subprocess
-          allowed={'site/control-room-preview/index.html'}
+          allowed={'site/control-room-preview/index.html','site/control-room-preview/home-navigation-v10.js'}
           modified=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
           untracked=set(subprocess.check_output(['git','ls-files','--others','--exclude-standard'],text=True).splitlines())
           assert (modified|untracked) <= allowed, f'unexpected publication changes: {modified|untracked}'
           print('CONTROL_ROOM_V10_EXACT_SCOPE_PASS')
           PY
-          git add -- site/control-room-preview/index.html
+          git add -- site/control-room-preview/index.html site/control-room-preview/home-navigation-v10.js
           if git diff --cached --quiet; then
             echo CONTROL_ROOM_V10_LOADER_ALREADY_CURRENT
             exit 0
@@ -86,9 +96,9 @@ jobs:
           python - <<'PY'
           import hashlib,subprocess
           from pathlib import Path
-          path='site/control-room-preview/index.html'
-          a=Path(path).read_bytes()
-          b=subprocess.check_output(['git','show',f'origin/gh-pages:{path}'])
-          assert hashlib.sha256(a).digest()==hashlib.sha256(b).digest(), 'published loader mismatches main'
+          for path in ['site/control-room-preview/index.html','site/control-room-preview/home-navigation-v10.js']:
+              a=Path(path).read_bytes()
+              b=subprocess.check_output(['git','show',f'origin/gh-pages:{path}'])
+              assert hashlib.sha256(a).digest()==hashlib.sha256(b).digest(), f'published file mismatches main: {path}'
           print('CONTROL_ROOM_V10_PAGES_BRANCH_PROOF_PASS')
           PY
