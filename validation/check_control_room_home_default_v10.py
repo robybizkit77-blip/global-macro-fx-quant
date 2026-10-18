@@ -18,7 +18,7 @@ def main():
         "unique route marker enforced": 'html.split(routeMarker).length!==2' in html,
         "Home becomes live only absent explicit mode": expected in html,
         "illustrated design remains opt-in": 'mode=design' in html,
-        "read-only certified data adapter remains within original pages": "document.write(certifiedDefault)" in html,
+        "certified Home is kept and navigation is additive": "document.write(withNavigation)" in html and "certifiedDefault=html.replace" in html,
         "no manual demo values added": "106.42" not in html,
         "legacy website is not targeted": "website-v1/" not in html,
     }
