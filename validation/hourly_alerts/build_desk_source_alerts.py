@@ -48,6 +48,42 @@ CCYS = {
     "NZD": re.compile(r'\b(new zealand|rbnz|kiwi)\b', re.I),
 }
 UNCONFIRMED = re.compile(r'\b(say|says|said|claim|claims|allege|alleged|reportedly|unconfirmed|according to)\b', re.I)
+# Source-only feed: publish market-relevant headlines, not arbitrary geopolitical
+# or catalog headlines that happen to contain a broad generic keyword.
+MARKET_RELEVANCE = re.compile(
+    r'\b(hormuz|oil tankers?|tankers?|opec|oil prices?|oil supply|oil exports?|'
+    r'oil sanctions?|energy sanctions?|energy prices?|russia sanctions|'
+    r'fed|federal reserve|ecb|european central bank|bank of england|'
+    r'bank of japan|bank of canada|central bank|monetary policy|'
+    r'interest rates?|rate hikes?|rate cuts?|inflation|cpi|pce|'
+    r'unemployment|payrolls|gdp|recession|bond yields?|treasury yields?|'
+    r'credit spreads?|nasdaq|stocks|stock markets?|semiconductor|'
+    r'brent|crude oil|oil markets?|market volatility)\b', re.I)
+
+
+def relevant(title):
+    if not isinstance(title, str) or len(title.split()) < 5:
+        return False
+    if re.fullmatch(r'(sanctions and embargoes|stock markets|oil prices|inflation)', title.strip(), re.I):
+        return False
+    return bool(MARKET_RELEVANCE.search(title))
+
+
+def priority(item):
+    title = item["headline"].lower()
+    score = 0
+    for expression, weight in (
+        (r'hormuz|oil tanker|tankers|naval mine', 20),
+        (r'inflation|interest rate|rate hike|rate cut|payrolls|gdp', 13),
+        (r'opec|oil supply|energy sanctions|russia sanctions', 12),
+        (r'nasdaq|semiconductor|credit spread|stocks', 8),
+    ):
+        if re.search(expression, title):
+            score += weight
+    if item["source_label"].startswith("Reuters"):
+        score += 1
+    return score
+
 
 
 def iso(dt):
@@ -102,6 +138,8 @@ def make_item(record, now):
     title, observed = record["title"], record["observed"]
     if observed > now + timedelta(minutes=10) or now - observed > timedelta(hours=MAX_AGE_HOURS):
         return None
+    if not relevant(title):
+        return None
     category = next((key for key, rx in PATTERNS.items() if rx.search(title)), None)
     if not category:
         return None
@@ -126,9 +164,15 @@ def build(previous, records, now):
         raise ValueError("Existing Desk feed missing or has an unknown schema")
     if not isinstance(previous.get("history"), list) or not isinstance(previous.get("policy"), dict):
         raise ValueError("Existing Desk history/policy invalid")
+    # Do not silently keep low-quality items introduced by this source watcher.
+    # Never remove external/canonical records (only SOURCE_ATTRIBUTED items).
+    old = [row for row in previous["history"]
+           if not (isinstance(row, dict)
+                   and row.get("verification_level") == "PUBLISHER_ATTRIBUTED_ONLY"
+                   and not relevant(row.get("headline", "")))]
     items = [make_item(r, now) for r in records]
-    items = sorted((x for x in items if x), key=lambda x: x["observed_at_utc"], reverse=True)
-    seen = {x.get("event_id") for x in previous["history"] if isinstance(x, dict)}
+    items = sorted((x for x in items if x), key=lambda x: (priority(x), x["observed_at_utc"]), reverse=True)
+    seen = {x.get("event_id") for x in old if isinstance(x, dict)}
     fresh = []
     for item in items:
         if item["event_id"] not in seen:
@@ -136,14 +180,17 @@ def build(previous, records, now):
             fresh.append(item)
         if len(fresh) >= MAX_NEW_PER_RUN:
             break
-    if not fresh:
-        return previous, 0
     updated = dict(previous)
-    updated["generated_at_utc"] = iso(now)
-    updated["state"] = "ACTIVE"
-    updated["history"] = (fresh + previous["history"])[:MAX_HISTORY]
-    return updated, len(fresh)
-
+    policy = dict(previous["policy"])
+    policy["source"] = "INDEPENDENT_REUTERS_AP_NEWS_RSS"
+    policy["certification"] = "PUBLISHER_ATTRIBUTED_NOT_INDEPENDENTLY_CONFIRMED"
+    updated["policy"] = policy
+    updated["history"] = (fresh + old)[:MAX_HISTORY]
+    updated["state"] = "ACTIVE" if updated["history"] else "EMPTY"
+    if fresh or old != previous["history"] or policy != previous["policy"]:
+        updated["generated_at_utc"] = iso(now)
+        return updated, len(fresh)
+    return previous, 0
 
 def run(output, previous):
     current = datetime.now(timezone.utc)
