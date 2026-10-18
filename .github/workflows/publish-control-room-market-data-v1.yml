@@ -9,6 +9,7 @@ on:
       - 'live_data/sections/V250_COT_CHART_DATA.json'
       - 'live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'
       - 'live_data/sections/ECB_G8_PRICE_HISTORY.json'
+      - 'live_data/sections/DXY_SYNTHETIC_ECB.json'
   workflow_run:
     workflows: ['Rates Persistent Daily V1','COT Persistent Weekly V1','Pair Setup Operational View V1','Price History Persistent Daily V1']
     types: [completed]
@@ -47,6 +48,7 @@ jobs:
             'cot': Path('live_data/sections/V250_COT_CHART_DATA.json'),
             'setup': Path('live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'),
             'prices': Path('live_data/sections/ECB_G8_PRICE_HISTORY.json'),
+            'dxy': Path('live_data/sections/DXY_SYNTHETIC_ECB.json'),
           }
           for name,p in paths.items():
               assert p.is_file() and p.stat().st_size > 1000, f'{name} missing or too small'
@@ -55,6 +57,7 @@ jobs:
           cot=json.loads(paths['cot'].read_text())
           setup=json.loads(paths['setup'].read_text())
           prices=json.loads(paths['prices'].read_text())
+          dxy=json.loads(paths['dxy'].read_text())
 
           g8={'USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'}
           assert set(rates) >= g8
@@ -72,6 +75,10 @@ jobs:
           assert prices.get('status') == 'CURRENT_OFFICIAL_HISTORY'
           assert isinstance(prices.get('rows'), list) and len(prices['rows']) > 100
 
+          assert dxy.get('schema')=='GMFQ_DXY_SYNTHETIC_ECB_V1'
+          assert dxy.get('status')=='ESTIMATED_INFORMATIONAL' and dxy.get('not_official_ice') is True
+          assert dxy.get('usable_as_official_ice_or_trade_signal') is False
+          assert dxy.get('as_of') == prices.get('last_as_of')
           print(
             'CONTROL_ROOM_MARKET_DATA_SOURCE_PASS',
             rates['USD'].get('date'),
@@ -96,6 +103,7 @@ jobs:
             live_data/sections/V250_COT_CHART_DATA.json
             live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
             live_data/sections/ECB_G8_PRICE_HISTORY.json
+            live_data/sections/DXY_SYNTHETIC_ECB.json
           )
           for f in "${FILES[@]}"; do
             cp "$f" "/tmp/gmfq-control-room-data/$f"
@@ -109,6 +117,7 @@ jobs:
             'live_data/sections/V250_COT_CHART_DATA.json',
             'live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json',
             'live_data/sections/ECB_G8_PRICE_HISTORY.json',
+            'live_data/sections/DXY_SYNTHETIC_ECB.json',
           }
           changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines()) | set(subprocess.check_output(['git','ls-files','--others','--exclude-standard'],text=True).splitlines())
           unexpected=changed-allowed
