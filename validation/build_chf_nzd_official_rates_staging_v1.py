@@ -147,8 +147,8 @@ def make_candidate(cur: dict, currency: str, observation: dict, *,
     lower, upper = (-3, 18) if currency=="CHF" else (0, 18)
     if not (lower <= y2 <= upper and lower <= y10 <= upper):
         raise ValueError("official yield outside conservative plausibility range")
-    if day > now or (now-day).days > 5:
-        raise ValueError("official observation is future/stale; no promotion")
+    if day > now:
+        raise ValueError("future official observation; no promotion")
     if day < previous:
         raise ValueError("new official observation predates canonical snapshot")
     old=cur[currency]
@@ -169,7 +169,10 @@ def make_candidate(cur: dict, currency: str, observation: dict, *,
         if abs(old["2Y"]-y2)>1e-8 or abs(old["10Y"]-y10)>1e-8:
             raise ValueError("official same-date observation conflicts with current canonical Rates")
         receipt["status"]="NO_NEW_OFFICIAL_PAIR"
+        receipt["source_age_days"]=(now-day).days
         return None,receipt
+    if (now-day).days>5:
+        raise ValueError("NEW official observation is stale; no candidate promotion")
     gap=(day-previous).days
     if gap>35:
         raise ValueError("official snapshot gap >35 days; must repair history first")
