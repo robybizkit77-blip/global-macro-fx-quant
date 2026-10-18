@@ -23,7 +23,7 @@ const names=['index','valute','tassi','banche-centrali','posizionamento','coppie
       const tiles=[...document.querySelectorAll('.ois-tile')];
       return tiles.filter(el=>el.textContent.includes('NZD')).map(el=>({text:el.innerText,svg:!!el.querySelector('svg.ois-mini'),stale:el.classList.contains('stale')}));
     });
-    if(stale.length && stale.some(x=>!x.stale||x.svg||!x.text.includes('WITHHELD')))failures.push({device,reason:'stale NZD OIS visible as current',stale});
+    if(!stale.length||stale.some(x=>!x.stale||x.svg||!x.text.includes('WITHHELD')))failures.push({device,reason:'stale NZD OIS visible as current',stale});
     report.push({device,check:'NZD stale OIS fail-closed',stale});
   }
   if(device==='mobile'){
