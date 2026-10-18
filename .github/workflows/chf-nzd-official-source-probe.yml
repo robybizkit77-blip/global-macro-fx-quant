@@ -14,6 +14,15 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+      - name: Locate OIS operational producers and publication hooks
+        shell: bash
+        run: |
+          echo 'OIS_REFERENCES_BEGIN'
+          git grep -l -E 'OIS_OPERATIONAL_VIEW|GREEN_ESTIMATED|GMFQ_OIS_OPERATIONAL' -- ':!live_data/sections/OIS_OPERATIONAL_VIEW.json' ':!payload/*' ':!site/website-v1/*' ':!*.html' | head -80 || true
+          echo 'OIS_REFERENCES_END'
+          echo 'OIS_WORKFLOW_REFERENCES_BEGIN'
+          git grep -n 'OIS_OPERATIONAL_VIEW' -- '.github/workflows/*' 'validation/*' | cut -c1-220 | head -90 || true
+          echo 'OIS_WORKFLOW_REFERENCES_END'
       - name: Audit all G8 OIS and Rates timestamps (non-mutating)
         run: python3 validation/audit_ois_rates_freshness.py
       - name: Assert stale OIS GREEN candidate is rejected by update gate
