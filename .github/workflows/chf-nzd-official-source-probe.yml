@@ -30,8 +30,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if python3 validation/validate_ois_operational_freshness.py live_data/sections/OIS_OPERATIONAL_VIEW.json >/tmp/ois-green-preflight.log 2>&1; then
-            echo "ERROR: known-stale GREEN candidate was accepted"
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          o=json.loads(Path('live_data/sections/OIS_OPERATIONAL_VIEW.json').read_text())
+          c='GBP'
+          o['currencies'][c]['as_of']='2000-01-01'
+          Path('/tmp/ois-stale-case.json').write_text(json.dumps(o))
+          PY
+          if python3 validation/validate_ois_operational_freshness.py /tmp/ois-stale-case.json >/tmp/ois-green-preflight.log 2>&1; then
+            echo "ERROR: synthetic stale GREEN case passed"
             exit 1
           fi
           grep -q '"status": "REJECTED"' /tmp/ois-green-preflight.log
