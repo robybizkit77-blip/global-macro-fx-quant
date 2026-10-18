@@ -1,0 +1,38 @@
+name: Site Functional Audit Desktop Mobile
+on:
+  pull_request:
+    paths:
+      - 'site/website-v1/**'
+      - 'tests/website_v1/browser_functional_audit.cjs'
+      - '.github/workflows/site-functional-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser tooling
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Start local website
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/gmfq-browser-audit.log 2>&1 &
+          sleep 2
+      - name: Execute desktop and mobile functional audit
+        run: node tests/website_v1/browser_functional_audit.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: site-functional-audit
+          path: |
+            market-qa-results.json
+            market-qa-mobile-menu.png
+          if-no-files-found: warn
