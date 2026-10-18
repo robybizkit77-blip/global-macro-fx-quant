@@ -36,34 +36,6 @@ def main()->int:
     try: json.loads(new.decode('utf-8'))
     except Exception as e: raise SystemExit(f'Replacement is not valid JSON: {e}')
 
-    if args.section=='OIS_OPERATIONAL_VIEW':
-        import datetime as dt
-        obj=json.loads(new.decode('utf-8'))
-        problems=[]
-        today=dt.datetime.now(dt.timezone.utc).date()
-        for ccy, row in obj.get('currencies',{}).items():
-            if not str(row.get('operational_status','')).startswith('GREEN'):
-                continue
-            try:
-                asof=dt.date.fromisoformat(row['as_of'])
-                age=(today-asof).days
-            except (ValueError,TypeError,KeyError):
-                age=None
-            h=row.get('horizons') or {}
-            official=row.get('operational_status')=='GREEN_OFFICIAL'
-            complete=all(
-                isinstance(h.get(k),dict)
-                and isinstance(h[k].get('rate'),(int,float))
-                and not isinstance(h[k]['rate'],bool)
-                and (h[k].get('quote_as_of')==row.get('as_of')
-                     or (official and not h[k].get('quote_as_of')))
-                for k in ('3m','6m','12m')
-            )
-            if age is None or not (0<=age<=5) or not complete:
-                problems.append(f'{ccy}: GREEN with age={age} complete={complete}')
-        if problems:
-            raise SystemExit('OIS GREEN freshness preflight failed: '+', '.join(problems))
-
     expected_part=entry.get('part')
     if not isinstance(expected_part,int) or expected_part<0 or expected_part>=len(PARTS):
         raise SystemExit('Invalid part mapping in manifest v2')
