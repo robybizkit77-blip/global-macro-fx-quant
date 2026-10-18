@@ -163,14 +163,21 @@ def fx_view(receipt: dict, pair_source: dict, prices: dict) -> dict:
             or not all(num(now.get(c)) and now[c] > 0 for c in CCYS)
             or not all(num(prior.get(c)) and prior[c] > 0 for c in CCYS)):
         return {"state": "WITHHELD", "reason": "ECB FX last fixing or prior fixing incomplete."}
+    # Reuse the canonical 28 market tickers (EURUSD, USDJPY, etc.),
+    # rather than inventing a new alphabetical market orientation.
+    ticker_map = pair_source.get("pairs", {})
+    expected_unordered = {frozenset((a, b)) for i, a in enumerate(CCYS) for b in CCYS[i + 1:]}
+    if (not isinstance(ticker_map, dict) or len(ticker_map) != MAX_PAIRS
+            or {frozenset((k[:3], k[3:])) for k in ticker_map
+                if isinstance(k, str) and len(k) == 6} != expected_unordered):
+        return {"state": "WITHHELD", "reason": "Canonical 28-pair ticker coverage mismatch."}
     pairs = {}
-    for i, base in enumerate(CCYS):
-        for quote in CCYS[i + 1:]:
-            # EUR-based official fixing: currency Q per one unit of currency B.
-            key = base + quote
-            current = now[quote] / now[base]
-            previous = prior[quote] / prior[base]
-            pairs[key] = {"fixing": rounded(current, 5), "change_since_prior_fixing_pct": rounded((current / previous - 1) * 100, 3)}
+    for key in sorted(ticker_map):
+        base, quote = key[:3], key[3:]
+        # EUR-based official fixing: currency Q per one unit of currency B.
+        current = now[quote] / now[base]
+        previous = prior[quote] / prior[base]
+        pairs[key] = {"fixing": rounded(current, 5), "change_since_prior_fixing_pct": rounded((current / previous - 1) * 100, 3)}
     if len(pairs) != MAX_PAIRS:
         return {"state": "WITHHELD", "reason": "ECB FX cross-rate universe incomplete."}
     return {"state": "AVAILABLE_CERTIFIED", "as_of": rec["as_of"], "source": rec["source"],
