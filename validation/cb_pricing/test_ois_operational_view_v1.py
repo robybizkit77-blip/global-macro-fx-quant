@@ -41,3 +41,30 @@ for ccy,row in VIEW['currencies'].items():
         assert all((row['horizons'].get(h) or {}).get('rate') is None for h in ('3m','6m','12m'))
         assert row['change_1d_available'] is False and row['change_1w_available'] is False
 print('PASS OIS operational dynamic G8 coverage',summary)
+
+# Missing estimated levels must withhold only that currency, never abort G8.
+import tempfile
+import importlib.util
+spec = importlib.util.spec_from_file_location('ois_builder_failclosed_case', ROOT/'validation/cb_pricing/build_ois_operational_view_v1.py')
+import sys
+sys.path.insert(0,str(ROOT/'validation/cb_pricing'))
+builder = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(builder)
+original_est = builder.EST
+with tempfile.TemporaryDirectory() as td:
+    est_case=json.loads(original_est.read_text(encoding='utf-8'))
+    missing=est_case['currencies']['NZD']
+    missing['horizons']={h:{'rate':None} for h in ('3m','6m','12m')}
+    case=Path(td)/'estimated_missing_nzd.json'
+    case.write_text(json.dumps(est_case),encoding='utf-8')
+    builder.EST=case
+    try:
+        recovered=builder.build()
+    finally:
+        builder.EST=original_est
+    assert recovered['summary']['g8_total']==8
+    assert recovered['currencies']['NZD']['operational_status']=='WITHHELD'
+    assert recovered['currencies']['NZD']['withheld_reason']=='NO_USABLE_OFFICIAL_OR_ESTIMATED_PRICING'
+    assert all(recovered['currencies']['NZD']['horizons'][h]['rate'] is None for h in ('3m','6m','12m'))
+    assert recovered['summary']['operational_green']+recovered['summary']['operational_withheld']==8
+print('PASS OIS missing-estimate fail-closed recovery')
