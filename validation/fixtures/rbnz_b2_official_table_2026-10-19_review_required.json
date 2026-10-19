@@ -1,0 +1,68 @@
+{
+  "schema": "GMFQ_RBNZ_B2_OFFICIAL_HTML_TABLE_EVIDENCE_V1",
+  "authority": "Reserve Bank of New Zealand",
+  "source_url": "https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates",
+  "publication_date": "2026-10-19",
+  "observed_at_utc_date": "2026-10-19",
+  "basis": "Secondary market government bond closing yields (%pa): benchmark 2 year and 10 year, daily one-business-day lag",
+  "verification": "MANUALLY_RECORDED_FROM_OFFICIAL_PUBLIC_HTML_TABLE; INDEPENDENT_SECOND_REVIEW_REQUIRED",
+  "usable_for_automatic_promotion": false,
+  "columns": {
+    "date": "Date",
+    "two_year": "Government bond 2 year",
+    "ten_year": "Government bond 10 year"
+  },
+  "observations": [
+    {
+      "date": "2026-10-05",
+      "2Y": 3.83,
+      "10Y": 5.04
+    },
+    {
+      "date": "2026-10-06",
+      "2Y": 3.88,
+      "10Y": 5.11
+    },
+    {
+      "date": "2026-10-07",
+      "2Y": 3.88,
+      "10Y": 5.11
+    },
+    {
+      "date": "2026-10-08",
+      "2Y": 3.85,
+      "10Y": 5.11
+    },
+    {
+      "date": "2026-10-09",
+      "2Y": 3.83,
+      "10Y": 5.06
+    },
+    {
+      "date": "2026-10-12",
+      "2Y": 3.82,
+      "10Y": 5.02
+    },
+    {
+      "date": "2026-10-13",
+      "2Y": 3.8,
+      "10Y": 4.98
+    },
+    {
+      "date": "2026-10-14",
+      "2Y": 3.83,
+      "10Y": 4.99
+    },
+    {
+      "date": "2026-10-15",
+      "2Y": 3.81,
+      "10Y": 4.94
+    },
+    {
+      "date": "2026-10-16",
+      "2Y": 3.89,
+      "10Y": 5
+    }
+  ],
+  "caveat": "Manually captured from the official visible HTML table; automatic GitHub-hosted fetch of official RBNZ site returns HTTP 403. This artifact is for staging proof only, not a new live data feed."
+}
