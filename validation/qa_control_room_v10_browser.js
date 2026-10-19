@@ -66,6 +66,49 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
     await page.screenshot({path:'v10-qa-images/'+label+'-diagnostic.png',fullPage:true});
     throw e;
   }
+  // A successful 4/4 HTTP load does NOT mean eight current OIS curves.
+  // Read the same fixture dates and verify the on-screen statement and
+  // keyboard-accessible source details, on desktop AND smartphone.
+  const fxData=JSON.parse(fs.readFileSync(path.join(DATA,'ECB_G8_PRICE_HISTORY.json'),'utf8'));
+  const expectedOis=JSON.parse(fs.readFileSync(path.join(DATA,'OIS_OPERATIONAL_VIEW.json'),'utf8'));
+  const current=(dt,max=5)=>{
+    const diff=(Date.UTC(new Date().getUTCFullYear(),new Date().getUTCMonth(),new Date().getUTCDate())-
+      Date.parse(dt+'T00:00:00Z'))/86400000;
+    return Number.isFinite(diff)&&diff>=0&&diff<=max;
+  };
+  const certified=Object.values(expectedOis.currencies).filter(x=>
+    x.operational_status==='GREEN_OFFICIAL'&&x.quality==='OFFICIAL_CERTIFIED'&&current(x.as_of)&&
+    ['3m','6m','12m'].every(k=>Number.isFinite(x.horizons?.[k]?.rate)&&Number.isFinite(x.horizons?.[k]?.policy_delta_bp))).length;
+  const expectedFx=current(fxData.last_as_of,4);
+  await page.waitForFunction(()=>!!document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-home-data-audit'),
+    null,{timeout:15000});
+  const homeAudit=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page').contentDocument;
+    return {
+      label:d.querySelector('#liveState')?.textContent.trim(),
+      stamp:d.querySelector('#liveAsOf')?.textContent.trim(),
+      role:d.querySelector('.mast .fresh')?.getAttribute('role'),
+      source:d.querySelector('#gmfq-home-data-audit')?.textContent.trim(),
+      documentWidth:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth
+    };
+  });
+  if(homeAudit.role!=='button'||!homeAudit.stamp?.includes('OIS '+certified+'/8')||
+     !(expectedFx?homeAudit.stamp.includes('FX '+fxData.last_as_of.slice(8,10)+'/'+fxData.last_as_of.slice(5,7)):
+       homeAudit.stamp.includes('FX non corr.'))||
+     (certified<8&&homeAudit.label!=='DATI PARZIALI')||
+     !homeAudit.source?.includes('Non è DXY ICE ufficiale')||
+     !homeAudit.source?.includes('futures monetari, non OIS puri')||
+     homeAudit.documentWidth>homeAudit.viewport+16)
+    throw Error(label+' incorrect Home source freshness display '+JSON.stringify(homeAudit));
+  const freshTrigger=page.frameLocator('#gmfq-page').locator('.mast .fresh');
+  await freshTrigger.focus();await freshTrigger.press('Enter');
+  await page.frameLocator('#gmfq-page').locator('dialog#gmfq-home-data-audit[open]').waitFor({timeout:10000});
+  await page.frameLocator('#gmfq-page').locator('.gmfq-audit-close').click();
+  if(await page.frameLocator('#gmfq-page').locator('dialog#gmfq-home-data-audit[open]').count())
+    throw Error(label+' freshness audit dialog did not close');
+  console.log('CONTROL_ROOM_PREVIEW_SOURCE_FRESHNESS_GREEN',label,
+    JSON.stringify({state:homeAudit.label,stamp:homeAudit.stamp,certified,viewport:homeAudit.viewport}));
+
   const r=await page.evaluate(()=>{
     const d=document.getElementById('gmfq-page').contentDocument;
     const box=sel=>{const x=d.querySelector(sel);return {clientHeight:x?.clientHeight,scrollHeight:x?.scrollHeight,clientWidth:x?.clientWidth,scrollWidth:x?.scrollWidth}};
