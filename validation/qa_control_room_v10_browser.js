@@ -115,7 +115,7 @@ if(!chfAnchor||!nzdAnchor)throw Error('Missing common official rates estimation 
     const d=document.getElementById('gmfq-page').contentDocument;
     return {
       currencies:[...d.querySelectorAll('#rates-select button[data-ccy]')].map(x=>x.dataset.ccy),
-      activeSection:d.activeElement?.querySelector('#rates-rows')!==null,
+      activeSection:d.activeElement===d.getElementById('rates-rows')?.closest('.desk-panel'),
       hasPricing:!!d.getElementById('ois-rows')
     };
   });
