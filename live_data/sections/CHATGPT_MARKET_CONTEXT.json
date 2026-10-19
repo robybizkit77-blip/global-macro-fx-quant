@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_CHATGPT_MARKET_CONTEXT_V1",
-  "generated_at_utc": "2026-10-19T05:34:00Z",
+  "generated_at_utc": "2026-10-19T06:45:19Z",
   "evaluation_date_europe_rome": "2026-10-19",
   "reference_only": true,
   "policy": {
@@ -76,9 +76,14 @@
         "reason": "Age 4d exceeds the 3d alert limit."
       },
       "JPY": {
-        "state": "STALE",
-        "as_of": "2026-10-15",
-        "reason": "Age 4d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-10-16",
+        "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-10-16",
+        "government_2y_pct": 1.918,
+        "government_10y_pct": 2.958,
+        "10y_minus_2y_bp": 104.0,
+        "change_2y_bp": -1.2,
+        "change_10y_bp": -14.5
       },
       "CHF": {
         "state": "STALE",
