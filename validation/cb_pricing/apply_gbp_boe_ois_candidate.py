@@ -114,7 +114,7 @@ def main():
 
     changed_ois = [k for k in ois['currencies'] if ois['currencies'][k] != before_ois['currencies'][k]]
     changed_native = [k for k in native if native[k] != before_native[k]]
-    if changed_ois != ['GBP'] or changed_native != ['GBP']:
+    if (changed_ois, changed_native) not in [(['GBP'], ['GBP']), ([], [])]:
         raise SystemExit(f'non-GBP semantic delta: OIS={changed_ois} NATIVE={changed_native}')
 
     raw = PAYLOAD.read_bytes()
