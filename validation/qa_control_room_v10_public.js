@@ -338,6 +338,29 @@ async function getState(page){
          const d=document.getElementById('gmfq-page')?.contentDocument;
          return d?.getElementById('gmfq-pair-research-path')?.dataset.pair==='EURCHF';
        },null,{timeout:14000});
+       if(process.env.GITHUB_EVENT_NAME!=='pull_request'){
+         // New read-only comparative panel ships with this PR. The public
+         // branch may still serve its prior version, but postmerge QA MUST see
+         // Macro side + Tassi/CB labels, CHF stale, and two-date gap policy.
+         const pairMacro=await page.evaluate(()=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument;
+           const c=d?.getElementById('gmfq-pair-macro-rates');
+           return {present:!!c,macro:c?.querySelectorAll('.gmfq-compare-score strong').length,
+             spreadSame:c?.querySelector('.gmfq-compare-spread')?.dataset.sameDate,
+             spreadText:c?.querySelector('.gmfq-compare-spread')?.textContent,
+             text:c?.textContent,
+             width:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth};
+         });
+         if(!pairMacro.present||pairMacro.macro!==2||
+            pairMacro.spreadSame!=='false'||!pairMacro.spreadText?.includes('WITHHELD')||
+            !pairMacro.text?.includes('CHF')||
+            !pairMacro.text?.includes('I giudizi Macro e Tassi/CB sono quelli dello snapshot del motore')||
+            pairMacro.width>pairMacro.viewport+16)
+           throw Error(name+' public pair Macro/Rates source guard absent '+JSON.stringify(pairMacro));
+         console.log('CONTROL_ROOM_PREVIEW_PUBLIC_PAIR_MACRO_RATES_GREEN',name,
+           JSON.stringify({selected:'EURCHF',spread:pairMacro.spreadSame,viewport:pairMacro.viewport}));
+  
+       }
        console.log('CONTROL_ROOM_PREVIEW_PUBLIC_28_PAIR_RESEARCH_GREEN',name,JSON.stringify({
          homePair,opened:'EURCHF',routes:p.buttons,viewport:p.viewport}));
      }
