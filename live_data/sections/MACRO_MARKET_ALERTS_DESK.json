@@ -1,8 +1,49 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-19T03:52:30Z",
+  "generated_at_utc": "2026-10-19T04:51:14Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-6e3fb8d62773c881bf80",
+      "observed_at_utc": "2026-10-19T04:04:00Z",
+      "headline": "Global food inflation is expected to intensify as supply shocks pile up",
+      "summary": "Reuters riporta: Global food inflation is expected to intensify as supply shocks pile up. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxQUVRkb2hsTDU1SE9pWjNla2I5RTYxUFJQZndkWkVIQ05EbzhUOWlfbGp5X2J2SHA0bTJpMGptenRDdXdWZ3E2VkthVVdBY2YxTFQ0SjhPc2xadGJWRFR2dENBZ1luZ1lEOUlsVTFxYnJxYmJ4ck9kZmtaQlg1bzFjemN5Rk1WdFhSb0tpT2c2OVVGd2lRenlBVnRud2E5S2ZsMlRucENKZ0hpLWJBd1dCX0R5VG10YkU?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-55455e0c793c3765ed79",
+      "observed_at_utc": "2026-10-19T03:11:00Z",
+      "headline": "Gold edges higher on softer oil; Fed rate outlook in focus",
+      "summary": "Reuters riporta: Gold edges higher on softer oil; Fed rate outlook in focus. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxOcHBoaXFtRmhELVpxR3BOYzNDX3IzS1Y1UHZaZUlWRnBiY0Y3WWxwa19vSlVRUENyTGtpZVJFSEFSLW9hVWhEaktYRTVhVWpObTFOYThBVXNRX19VY0phaUJjSkdSMjFZQ19FUFZGMm44UnNpZkZGSnNCeUc2SFZ4c1ZZUU9lV2tiUk1odm44Wmc2WGVjSG5pYUU3QnE2NGYx?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-7ac972770a8be82b4056",
+      "observed_at_utc": "2026-10-19T02:25:00Z",
+      "headline": "Indian shares muted as investors assess key earnings against elevated oil prices",
+      "summary": "Reuters riporta: Indian shares muted as investors assess key earnings against elevated oil prices. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "COMMODITIES",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxOcW54YlY3d0RSd1ZZRVhTejMtMGtOWDVCclNUalp3RW1qLV9KaG1uR09VbUdMbnZCbWFoS2d0a1Y1X3FjSnhJUFVTdUNnSjlOM1pQTElIZ1F4MG0tQ0VNdExkbXZGZVV3bjd6MmhhcTQ2Ty1oQ0E5eGVUT3JNVVVnYlBOclQ1UC00Z09OTUVWVnFQQWlqbGl5Q255V0RNS0dZdDYwNnd5dlFpU1k?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-b418836a8d7dfc6099b7",
       "observed_at_utc": "2026-10-18T22:23:00Z",
