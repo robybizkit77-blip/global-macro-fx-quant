@@ -1,6 +1,12 @@
 name: OIS G8 History Persistent Daily V1
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/ois-g8-history-persistent-daily-v1.yml'
+      - 'validation/cb_pricing/ois_g8_history_snapshot_v1.py'
+      - 'validation/cb_pricing/test_ois_g8_history_snapshot_v1.py'
   workflow_dispatch:
   schedule:
     # Europe/Rome target: 08:15 on working days.
