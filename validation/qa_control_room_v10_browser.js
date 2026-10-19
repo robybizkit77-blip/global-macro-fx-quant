@@ -105,6 +105,30 @@ if(!chfAnchor||!nzdAnchor)throw Error('Missing common official rates estimation 
   await page.frameLocator('#gmfq-page').locator('.gmfq-dxy-dialog .gmfq-close').click();
   await page.frameLocator('#gmfq-page').locator('.mid > .panel:nth-child(2)').click();
   if(!page.url().includes('#/tassi?focus=2y'))throw Error('Native card navigation failed: '+page.url());
+  // The approved Rates detail contains a renderer for eight countries.
+  // Check that the additive Preview UI exposes all eight without replacing feeds.
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return d?.getElementById('rates-select')?.querySelectorAll('button[data-ccy]').length===8;
+  },null,{timeout:20000});
+  const ratesDetail=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page').contentDocument;
+    return {
+      currencies:[...d.querySelectorAll('#rates-select button[data-ccy]')].map(x=>x.dataset.ccy),
+      activeSection:d.activeElement?.querySelector('#rates-rows')!==null,
+      hasPricing:!!d.getElementById('ois-rows')
+    };
+  });
+  if(g8.some(c=>!ratesDetail.currencies.includes(c))||!ratesDetail.activeSection||
+     !ratesDetail.hasPricing)throw Error(label+' rates focus/G8 detail failed: '+JSON.stringify(ratesDetail));
+  await page.frameLocator('#gmfq-page').locator('#rates-select button[data-ccy="NZD"]').click();
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return d?.querySelector('#rates-select button[data-ccy="NZD"]')?.getAttribute('aria-pressed')==='true'
+       && d?.getElementById('rates-status')?.textContent.includes('Nuova Zelanda');
+  },null,{timeout:15000});
+  await page.screenshot({path:'v10-qa-images/'+label+'-rates-g8-detail.png',fullPage:true});
+  console.log('CONTROL_ROOM_PREVIEW_G8_DETAIL_FOCUS_GREEN',label,JSON.stringify(ratesDetail));
   await page.close();
  }
  await browser.close();
