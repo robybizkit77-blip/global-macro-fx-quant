@@ -7,11 +7,15 @@ on:
       - price-persistent-daily-v1-2026-10-14
     paths:
       - '.github/workflows/price-persistent-daily-v1.yml'
+      - 'validation/price_schedule_gate_v1.py'
+      - 'validation/test_price_schedule_gate_v1.py'
       - 'validation/refresh_live_manifest_v2.py'
       - 'live_data/manifest.v2.json'
   pull_request:
     paths:
       - '.github/workflows/price-persistent-daily-v1.yml'
+      - 'validation/price_schedule_gate_v1.py'
+      - 'validation/test_price_schedule_gate_v1.py'
       - 'validation/refresh_live_manifest_v2.py'
       - 'live_data/manifest.v2.json'
   workflow_dispatch:
@@ -42,19 +46,22 @@ jobs:
           fetch-depth: 2
           persist-credentials: true
 
-      - name: Rome schedule gate
+      - name: Test ECB Price Rome schedule gate (DST and late GitHub runners)
+        run: python3 validation/test_price_schedule_gate_v1.py
+
+      - name: Resolve Price UTC cron slot with Rome DST and delay-tolerant gate
         id: gate
         shell: bash
+        env:
+          PRICE_TRIGGER_EVENT: ${{ github.event_name }}
+          PRICE_TRIGGER_CRON: ${{ github.event.schedule }}
         run: |
           set -euo pipefail
-          hhmm="$(TZ=Europe/Rome date +'%H:%M')"
-          allowed='17:10 17:40 18:10'
-          if [[ "${{ github.event_name }}" != "schedule" || " $allowed " == *" $hhmm "* ]]; then
-            echo 'should_run=true' >> "$GITHUB_OUTPUT"
-          else
-            echo 'should_run=false' >> "$GITHUB_OUTPUT"
-          fi
-          echo "event=${{ github.event_name }} rome_time=$hhmm"
+          python3 validation/price_schedule_gate_v1.py \
+            --event "$PRICE_TRIGGER_EVENT" \
+            --cron "$PRICE_TRIGGER_CRON" \
+            --output "$GITHUB_OUTPUT" \
+            --summary "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/setup-python@v5
         if: steps.gate.outputs.should_run == 'true'
