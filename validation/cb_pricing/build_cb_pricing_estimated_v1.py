@@ -38,6 +38,10 @@ def _live_usable(ccy: str, live_row: dict | None) -> bool:
         x = hs.get(h) or {}
         if _num(x.get("rate")) is None:
             return False
+        # Legacy TradingView SSR snapshots lack a genuine observation timestamp.
+        # priceValidUntil is an offer expiry; never treat it as quote_as_of.
+        if x.get("quote_timestamp_verified") is not True or not x.get("quote_as_of"):
+            return False
         if "!" in str(x.get("contract") or "") or "!" in str(x.get("symbol") or ""):
             return False
     return True
@@ -163,6 +167,32 @@ def build_currency(ccy, cb_row, ois_row, live_row=None, directional_proxy=None):
             "backtest_eligible_as_official_ois": False,
         },
     }
+    # Preserve unverified dated-futures prices as EXPLICITLY NON-OIS context.
+    # No policy delta, direction, freshness or backtest signals are inferred.
+    if ccy in {"USD", "EUR", "CHF"} and isinstance(live_row, dict):
+        raw = live_row.get("horizons") or {}
+        if all(_num((raw.get(h) or {}).get("futures_price")) is not None
+               and "!" not in str((raw.get(h) or {}).get("contract") or "!")
+               for h in ("3m", "6m", "12m")):
+            result["secondary_futures_context"] = {
+                "status": "INDICATIVE_UNVERIFIED_TIMESTAMP",
+                "source": live_row.get("source"),
+                "source_url": live_row.get("source_url"),
+                "instrument": live_row.get("instrument"),
+                "observation_as_of": None,
+                "quote_timestamp_verified": False,
+                "substitutes_for_ois_level": False,
+                "policy_delta_from_proxy_allowed": False,
+                "repricing_from_proxy_allowed": False,
+                "horizons": {
+                    h: {
+                        "contract": raw[h].get("contract"),
+                        "futures_price": raw[h].get("futures_price"),
+                        "implied_rate_indicative": _num(raw[h].get("rate")),
+                        "offer_valid_until": raw[h].get("price_valid_until"),
+                    } for h in ("3m", "6m", "12m")
+                },
+            }
     proxy = _valid_nzd_directional_proxy(directional_proxy) if ccy == "NZD" else None
     if proxy is not None:
         result["market_direction_proxy"] = {
