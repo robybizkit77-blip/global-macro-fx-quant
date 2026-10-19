@@ -728,9 +728,10 @@ function pairMarketReactionAudit(code,rates,fx){
      Math.abs(h.values[last]-v['2Y'])>0.001)return null;
   const rows=new Map();
   let prev='';
-  // Only recent observation rows are material to this short dated audit.
-  // Older non-ISO legacy dates must not prevent using newer certified rows.
-  for(let i=Math.max(0,h.dates.length-50);i<h.dates.length;i++){
+  // Strictly validate the last five observations. This is a short dated
+  // audit; older legacy JPY history rows can use non-ISO dates and should
+  // neither contaminate nor suppress the RECENT independently certified rows.
+  for(let i=Math.max(0,h.dates.length-5);i<h.dates.length;i++){
    const d=h.dates[i],val=num(h.values[i]);
    if(!/^\d{4}-\d{2}-\d{2}$/.test(d)||d<=prev||val===null||d>v.date)return null;
    rows.set(d,val);prev=d;
