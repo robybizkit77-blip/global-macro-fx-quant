@@ -26,7 +26,7 @@ def main():
  g=n['AUD']; vals={k:r4(h[k]['rate']) for k in ('3m','6m','12m')}
  g['pricing_tier']='COMPLETO_DIRECT_ASX_SETTLEMENT_HISTORY'; g['pricing_status']=f"ASX IB official settlements: Dec-26 {vals['3m']:.3f}%; Mar-27 {vals['6m']:.3f}%; Sep-27 {vals['12m']:.3f}%."; g['market_3m']=f"{vals['3m']:.3f}%"; g['market_6m']=f"{vals['6m']:.3f}%"; g['market_12m']=f"{vals['12m']:.3f}%"; g['market_pricing']={'as_of':c['as_of'],'instrument':'ASX 30 Day Interbank Cash Rate futures (IB)','quality':'COMPLETO_DIRECT_ASX_SETTLEMENT_HISTORY','h3m':vals['3m'],'h6m':vals['6m'],'h12m':vals['12m'],'near_term':'Direct official ASX SFN settlement buckets; 1D and 1W matched history validated.','source':c['source'],'source_url':c['source_url'],'note':f"No interpolation. Weekly reference {c['observations']['weekly_reference']['date']}; T-1 {c['observations']['t_minus_1']['date']}.",'freshness_status':'CURRENT_VALIDATED'}
  co=[k for k in o['currencies'] if o['currencies'][k]!=bo['currencies'][k]]; cn=[k for k in n if n[k]!=bn[k]]
- if co!=['AUD'] or cn!=['AUD']: raise SystemExit(f'non-AUD semantic delta OIS={co} NATIVE={cn}')
+ if (co,cn) not in [(['AUD'],['AUD']),([],[])]: raise SystemExit(f'non-AUD semantic delta OIS={co} NATIVE={cn}')
  raw=PAYLOAD.read_bytes(); ro=extract(raw,OM)[0]; rn=extract(raw,NM)[0]
  if ro!=bo or rn!=bn: raise SystemExit('live sections and payload differ before apply')
  OIS.write_text(json.dumps(o,ensure_ascii=False,separators=(',',':'))); NATIVE.write_text(json.dumps(n,ensure_ascii=False,separators=(',',':'))); PAYLOAD.write_bytes(replace(replace(raw,OM,o),NM,n))

@@ -32,7 +32,7 @@ def main():
     ng=n['JPY']; vals={k:r4(h[k]['rate']) for k in ('3m','6m','12m')}
     ng['pricing_tier']='COMPLETO_OFFICIAL_TFX_TONA_HISTORY'; ng['pricing_status']=f"TFX official TONA futures: 3M {vals['3m']:.4f}%; 6M {vals['6m']:.4f}%; 12M {vals['12m']:.4f}%."; ng['market_3m']=f"{vals['3m']:.4f}%"; ng['market_6m']=f"{vals['6m']:.4f}%"; ng['market_12m']=f"{vals['12m']:.4f}%"; ng['market_pricing']={'as_of':c['as_of'],'instrument':c['instrument'],'quality':'COMPLETO_OFFICIAL_TFX_TONA_HISTORY','h3m':vals['3m'],'h6m':vals['6m'],'h12m':vals['12m'],'near_term':'Official TFX TONA futures settlements; current, 1D and official weekly-reference history validated.','source':c['source'],'source_url':c['source_url'],'note':c['provenance']['method'],'freshness_status':'CURRENT_VALIDATED'}
     co=[k for k in o['currencies'] if o['currencies'][k]!=bo['currencies'][k]]; cn=[k for k in n if n[k]!=bn[k]]
-    if co!=['JPY'] or cn!=['JPY']: raise SystemExit(f'non-JPY semantic delta OIS={co} NATIVE={cn}')
+    if (co,cn) not in [(['JPY'],['JPY']),([],[])]: raise SystemExit(f'non-JPY semantic delta OIS={co} NATIVE={cn}')
     raw=PAYLOAD.read_bytes(); ro=extract(raw,OM)[0]; rn=extract(raw,NM)[0]
     if ro!=bo or rn!=bn: raise SystemExit('live sections and payload differ before apply')
     OIS.write_text(json.dumps(o,ensure_ascii=False,separators=(',',':')),encoding='utf-8'); NATIVE.write_text(json.dumps(n,ensure_ascii=False,separators=(',',':')),encoding='utf-8'); PAYLOAD.write_bytes(replace(replace(raw,OM,o),NM,n))
