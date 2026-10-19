@@ -70,9 +70,19 @@ async function getState(page){
      if(state.mode!=='live'||state.chartCount!==8||state.pricingCount!==8||!state.globe||
         state.badApprofondisci||!state.dxy||state.dxy==='—'||state.width>state.viewport+16||
         !state.notes.includes('R²')||!state.notes.includes('CHF/EUR')||
-        !state.notes.includes('NZD/AUD')||!state.notes.includes('base ')){
+        !state.notes.includes('base ')){
        throw Error(name+' public Home contract failed: '+JSON.stringify(state));
      }
+     // Verify that the actual published Rates file has caught up with the
+     // official, manually verified NZD 16 Oct snapshot. NZD must no longer be
+     // labeled as AUD-proxy STIMA in the rate-bar note.
+     const ratesMirror=await page.evaluate(async()=>{const r=await fetch('/global-macro-fx-quant/live_data/sections/NATIVE_RATES_DATA.json',{cache:'no-store'});if(!r.ok)throw Error('Rates mirror HTTP '+r.status);const x=await r.json();return {date:x.NZD.date,y2:x.NZD['2Y'],y10:x.NZD['10Y'],quality:x.NZD.quality}});
+     if(ratesMirror.date!=='2026-10-16'||ratesMirror.y2!==3.89||ratesMirror.y10!==5.0||
+        ratesMirror.quality!=='FULL_CURRENT_OFFICIAL_MANUAL_VERIFIED'||
+        state.notes.includes('NZD/AUD')){
+       throw Error(name+' public NZD official/mirror contract failed: '+JSON.stringify({ratesMirror,notes:state.notes}));
+     }
+     console.log('PUBLIC_NZD_OFFICIAL_RATES_GREEN',name,JSON.stringify(ratesMirror));
      if(errs.length)throw Error(name+' browser page error: '+errs.join('; '));
      await page.frameLocator('#gmfq-page').locator('#valute .cc[data-filter="DXY"]').click();
      await page.frameLocator('#gmfq-page').locator('dialog#gmfq-dxy-dialog[open]').waitFor({timeout:10000});
