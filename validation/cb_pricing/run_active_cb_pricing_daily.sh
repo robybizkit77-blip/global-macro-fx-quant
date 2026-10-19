@@ -146,13 +146,13 @@ bn=json.loads((root/'NATIVE.baseline.json').read_text())
 an=json.loads(pathlib.Path('live_data/sections/NATIVE_CB_DATA.json').read_text())
 co=[k for k in bo['currencies'] if bo['currencies'][k] != ao['currencies'][k]]
 cn=[k for k in bn if bn[k] != an[k]]
-if co != [c] or cn != [c]:
+if (co,cn) not in [([c],[c]),([],[])]:
     raise SystemExit(f'{c} semantic scope failure OIS={co} NATIVE={cn}')
 changed=sorted(subprocess.check_output(['git','diff','--name-only'], text=True).splitlines())
 expected=sorted(['live_data/manifest.v2.json','live_data/sections/NATIVE_CB_DATA.json','live_data/sections/OIS_DATA.json','payload/part-00.txt'])
-if changed != expected:
+if changed not in (expected, []):
     raise SystemExit(f'{c} file scope failure {changed}')
-print(c, 'ISOLATED_DRY_RUN_PASS')
+print(c, 'ISOLATED_DRY_RUN_PASS', 'NO_CHANGE' if not changed else 'UPDATED')
 PY
   ); then
     echo PASS > "$WORKDIR/$c.dryrun.txt"
