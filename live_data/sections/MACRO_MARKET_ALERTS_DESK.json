@@ -1,8 +1,36 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-19T15:50:07Z",
+  "generated_at_utc": "2026-10-19T16:52:15Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-bd5e814d03fb1d446ec2",
+      "observed_at_utc": "2026-10-19T16:17:44Z",
+      "headline": "Nasdaq climbs over 1% as AI-linked stocks recover ahead of key earnings",
+      "summary": "Reuters riporta: Nasdaq climbs over 1% as AI-linked stocks recover ahead of key earnings. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxPX21SVVhfUjZRQ255YlFzVWVEZ3BFMmt3aWlDdkVPVENFOExuRE9KOXZ6WjNqbzdHelUwdzZudy02TjlyNkxVZWcxQmFzZF9NaUE0SFZYaWI3dmxlYTBVdjdULWhLMkNQNnlMUXFaM1J5T1dPMEo3ajhkb0RQLUM3M0pkYlFqbHNKQ1U1c3k5WlUtdjR1UkNCV0JkdjJZTzdIa2c?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-bbd6bf43dd502e071f4b",
+      "observed_at_utc": "2026-10-19T15:16:52Z",
+      "headline": "AI stocks bounce back after bruising selloff, CoreWeave gets Goldman upgrade",
+      "summary": "Reuters riporta: AI stocks bounce back after bruising selloff, CoreWeave gets Goldman upgrade. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxQQnRpUlhFSVItYXlyM2JtRDAxZFNzc1owV1VBSFM4VERhS3dYOW1wVWtOeERTaDRrWlZyQVJTVVdvNFktdG5oSGpjY0ZwY1hBbnllN2d6Qkg4aExFcWdNT3F3dWlxdTFtbU92WV9WTC1NVEw0QmlWb201cXB6NGJCajVtbmZjYnJ4MWZ3TDZYR1l3ZmZFRFJORzhlNE1Yb0QtNDlyc3ZnY2tuenV1OFgwVQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-c81bb04348329d71e9de",
       "observed_at_utc": "2026-10-18T22:23:00Z",
