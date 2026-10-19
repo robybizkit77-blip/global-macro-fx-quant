@@ -136,9 +136,12 @@ def main() -> None:
     for marker in [
         "CALENDAR_OPERATIONAL_VIEW.generated_at_utc",
         "NEWS_PULSE_OPERATIONAL.content_as_of",
-        "MAX(D.risk.VIX.last_date,D.risk.WTI.last_date,ESTIMATED_RESIDUAL_GAPS.BRENT.proxy_as_of)"
+        "OLDEST_REQUIRED(D.risk.VIX.last_date,D.risk.WTI.last_date,ESTIMATED_RESIDUAL_GAPS.BRENT.proxy_as_of)"
     ]:
         must(marker in freshness, f"freshness authority marker missing: {marker}")
+    must("riskLaneCoverage" in freshness, "risk freshness must audit every required lane")
+    must("entries.sort((a,b)=>a.date-b.date)" in freshness, "risk freshness must use oldest date")
+    must("if(missing.length)return {date:null" in freshness, "risk missing lane must fail closed")
     must("legacy_authority:'NONE'" in freshness, "legacy freshness authority must be NONE")
     must("AUXILIARY_FEED_FRESHNESS" not in freshness, "freshness guard must not read legacy AUXILIARY_FEED_FRESHNESS")
     must("REAL_CALENDAR" not in freshness, "freshness guard must not read legacy REAL_CALENDAR")
