@@ -1,8 +1,37 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-19T19:49:32Z",
+  "generated_at_utc": "2026-10-19T20:49:03Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-7dfe61b59b46e2e4175e",
+      "observed_at_utc": "2026-10-19T10:10:13Z",
+      "headline": "Mapping the Market: Semiconductor stocks may be about to rise",
+      "summary": "Reuters riporta: Mapping the Market: Semiconductor stocks may be about to rise. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNaVJmbTk2QjltaGtJN210eWNBWlMtYmFSY3d3OTg2ZEx6NnZpTDVnRjk5TDRRbW8tWkRHbzNNWXhlbnZCaE51ejhvS3NMM2ZsU3JrTUNxVGFmSnJOMV9xZ3NMdUNOalh5QWxWbldRcjVKcGdValNTTWQ2bFRMR2VjeHFPR3JzZlZOejBPNQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-d0d238f672bd992b9ded",
+      "observed_at_utc": "2026-10-19T01:35:00Z",
+      "headline": "Euro dips on French turmoil, US dollar lifted as stocks rebound",
+      "summary": "Reuters riporta: Euro dips on French turmoil, US dollar lifted as stocks rebound. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD",
+        "EUR"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxNUGwwZHd2R1h3Q1BiZkdpNVVzRFpXZTJEd19TT2tyelhtb21VX0ZOSzN2RVpURkdHMWl5REpraUVJTVRjeFlSQmU4T3V4XzhWV2g0bU1fd0Q0cmhRMFRFbVg5Snhld1owT2IwbmR2d0RwNGNpWEVGWHhYaDRzN3N1UWJwNjhuTXoyc3hsLXIybEt0VEl4VlJOS2JUZTB5TnV2OVFWU2NLYjRiWU5kYnA4?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-1f24530b156709e698d5",
       "observed_at_utc": "2026-10-19T18:28:37Z",
