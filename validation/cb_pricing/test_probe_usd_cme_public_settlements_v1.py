@@ -23,7 +23,7 @@ def run():
     assert dates == (dt.date(2026, 10, 16), dt.date(2026, 10, 15), dt.date(2026, 10, 9)), dates
     good = mod.classify(payload("10/16/2026"), dates[0])
     assert good["state"] == "DATE_EXACT_CONTRACTS_PRESENT", good
-    assert good["rows"] == 12, good
+    assert good["rows"] == 13, good
     assert mod.classify(payload("10/15/2026"), dates[0])["state"] == "DATE_MISMATCH"
     assert mod.classify(payload("10/16/2026", n=5), dates[0])["state"] == "INSUFFICIENT_DATED_CONTRACTS"
     assert mod.classify({"tradeDate": "10/16/2026", "settlements": [{"month": "DEC 26", "settle": "N/A"}]}, dates[0])["state"] == "INSUFFICIENT_DATED_CONTRACTS"
