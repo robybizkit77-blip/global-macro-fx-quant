@@ -141,8 +141,35 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
     return d?.querySelector('#rates-select button[data-ccy="NZD"]')?.getAttribute('aria-pressed')==='true'
        && d?.getElementById('rates-status')?.textContent.includes('Nuova Zelanda');
   },null,{timeout:15000});
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return d?.querySelectorAll('#gmfq-pricing-research .gmfq-research-plot svg polyline').length===4;
+  },null,{timeout:25000});
+  const research=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument,host=d?.getElementById('gmfq-pricing-research');
+    return {
+      fourCurves:host?.querySelectorAll('svg polyline').length,
+      secondary:host?.querySelectorAll('.gmfq-quote-card').length,
+      legend:host?.querySelector('.gmfq-research-legend')?.innerText,
+      disclaimers:host?.innerText,
+      chartWidth:host?.querySelector('.gmfq-research-plot')?.scrollWidth,
+      docWidth:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth
+    };
+  });
+  if(research.fourCurves!==4||research.secondary!==3||
+     !research.legend.includes('GBP')||!research.legend.includes('CAD')||
+     !research.disclaimers.includes('NON curva OIS')&&
+      !research.disclaimers.includes('non sono una curva OIS')||
+     !research.disclaimers.includes('NON curva OIS né policy delta')||
+     !research.disclaimers.includes('CHF 2Y/10Y')||
+     research.docWidth>research.viewport+16)
+     throw Error(label+' Pricing research traceability failed: '+JSON.stringify(research));
+  await page.frameLocator('#gmfq-page').locator('#gmfq-pricing-research button[data-pricing-ccy="GBP"]').click();
+  const selectedCurveCount=await page.frameLocator('#gmfq-page').locator('#gmfq-pricing-research svg polyline').count();
+  if(selectedCurveCount!==1)throw Error(label+' single bank curve filter failed');
+  await page.frameLocator('#gmfq-page').locator('#gmfq-pricing-research button[data-pricing-ccy="ALL"]').click();
   await page.screenshot({path:'v10-qa-images/'+label+'-rates-g8-detail.png',fullPage:true});
-  console.log('CONTROL_ROOM_PREVIEW_G8_DETAIL_FOCUS_GREEN',label,JSON.stringify(ratesDetail));
+  console.log('CONTROL_ROOM_PREVIEW_G8_DETAIL_FOCUS_GREEN',label,JSON.stringify({ratesDetail,researchSummary:{fourCurves:research.fourCurves,secondary:research.secondary,docWidth:research.docWidth,viewport:research.viewport}}));
   await page.close();
  }
  await browser.close();
