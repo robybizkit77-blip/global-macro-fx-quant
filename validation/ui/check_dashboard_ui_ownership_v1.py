@@ -171,7 +171,7 @@ def main() -> None:
             "themes":"NEWS_PULSE_OPERATIONAL.content_as_of",
             "calendar":"CALENDAR_OPERATIONAL_VIEW.generated_at_utc",
             "news":"NEWS_PULSE_OPERATIONAL.content_as_of",
-            "risk":"MAX_RUNTIME_RISK_DATE",
+            "risk":"OLDEST_REQUIRED_RISK_DATE",
             "pairs":"D.prices latest official ECB fixing + derivePairDecisionFrame runtime",
             "legacy":"NONE"
         },
