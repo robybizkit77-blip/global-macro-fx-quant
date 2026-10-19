@@ -190,7 +190,7 @@ def self_test() -> None:
     assert parse_snb_csv(csv_text)["latest_observed_by_tenor"] == {"2Y":"2026-10-16","10Y":"2026-10-16"}
     # Reject all cross-date phantom curves: late official 2Y alone only
     # updates the audit's individual tenor date, never its paired as-of.
-    newer_2y = csv_text + b"2026-10-19;CHF;2J;0.35\\n".replace(b"\\n",b"\n")
+    newer_2y = csv_text + b"2026-10-19;CHF;2J;0.35\n"
     partial = parse_snb_csv(newer_2y)
     assert partial["as_of"]=="2026-10-16" and partial["latest_observed_by_tenor"]["2Y"]=="2026-10-19"
     assert partial["latest_observed_by_tenor"]["10Y"]=="2026-10-16"
