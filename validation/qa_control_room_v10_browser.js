@@ -16,9 +16,16 @@ function commonAnchorDate(target,proxy,tenor='history2'){
  const dates=new Set(ratesFeed[proxy][tenor].dates);
  return ratesFeed[target][tenor].dates.filter(d=>d<=ratesFeed[target].date&&dates.has(d)).at(-1);
 }
+function recentOfficialRate(row){
+ if(!row||!String(row.quality||'').includes('OFFICIAL')||!/^\d{4}-\d{2}-\d{2}$/.test(row.date||''))return false;
+ const now=new Date();
+ const gap=(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate())-Date.parse(row.date+'T00:00:00Z'))/86400000;
+ return gap>=0&&gap<=4;
+}
 const chfAnchor=commonAnchorDate('CHF','EUR');
 const nzdAnchor=commonAnchorDate('NZD','AUD');
-if(!chfAnchor||!nzdAnchor)throw Error('Missing common official rates estimation anchors');
+const nzdOfficial=recentOfficialRate(ratesFeed.NZD);
+if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official rates estimation anchors');
 (async()=>{
  const browser=await chromium.launch({headless:true});
  for(const [label,viewport] of [['desktop',{width:1440,height:950}],['mobile',{width:390,height:844}]]){
@@ -86,10 +93,17 @@ if(!chfAnchor||!nzdAnchor)throw Error('Missing common official rates estimation 
   if(r.oisCount!==8||!r.nzdbb?.includes(nzdDisplayed))fatal.push('NZD directional proxy missing or stale');
   const g8=['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'];
   if(g8.some(c=>!r.rateBarTexts.includes(c)))fatal.push('G8 2Y bars missing currency labels');
-  if(r.rateBarTexts.filter(x=>x.endsWith('*')).length<2||!r.rateBarNote.includes('STIMA'))
-    fatal.push('Missing or unlabelled model estimates for CHF/NZD');
-  if(!r.rateBarNote.includes('base '+chfAnchor)||!r.rateBarNote.includes('base '+nzdAnchor))
-    fatal.push('Model estimates are not anchored at the last same-date official pair: '+r.rateBarNote);
+  // A recently certified NZD yield supersedes the earlier NZD/AUD estimate.
+  // Still enforce an anchored CHF estimate, and an NZD estimate only when missing.
+  const expectedEstimates=nzdOfficial?1:2;
+  if(r.rateBarTexts.filter(x=>x.endsWith('*')).length<expectedEstimates||!r.rateBarNote.includes('STIMA'))
+    fatal.push('Missing or unlabelled model estimate for non-current G8 yields');
+  if(!r.rateBarNote.includes('base '+chfAnchor)||
+     (!nzdOfficial&&!r.rateBarNote.includes('base '+nzdAnchor)))
+    fatal.push('Model estimates are not anchored at a same-date official pair: '+r.rateBarNote);
+  if(nzdOfficial&&(r.rateBarNote.includes('NZD/AUD')||
+       !r.rateBarTexts.includes('NZD')||r.rateBarTexts.includes(Number(ratesFeed.NZD['2Y']).toFixed(2)+'*')))
+    fatal.push('Certified NZD yield incorrectly shown as an estimate');
   if(!r.rateBarNote.includes('R² ')||!r.rateBarNote.includes('BASSA'))
     fatal.push('Model confidence/disclaimer is not visible: '+r.rateBarNote);
   if(!r.bars2y||!r.spread||!r.designGlobe)fatal.push('cards/approved design missing');
@@ -105,6 +119,30 @@ if(!chfAnchor||!nzdAnchor)throw Error('Missing common official rates estimation 
   await page.frameLocator('#gmfq-page').locator('.gmfq-dxy-dialog .gmfq-close').click();
   await page.frameLocator('#gmfq-page').locator('.mid > .panel:nth-child(2)').click();
   if(!page.url().includes('#/tassi?focus=2y'))throw Error('Native card navigation failed: '+page.url());
+  // The approved Rates detail contains a renderer for eight countries.
+  // Check that the additive Preview UI exposes all eight without replacing feeds.
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return d?.getElementById('rates-select')?.querySelectorAll('button[data-ccy]').length===8;
+  },null,{timeout:20000});
+  const ratesDetail=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page').contentDocument;
+    return {
+      currencies:[...d.querySelectorAll('#rates-select button[data-ccy]')].map(x=>x.dataset.ccy),
+      activeSection:d.activeElement===d.getElementById('rates-rows')?.closest('.desk-panel'),
+      hasPricing:!!d.getElementById('ois-rows')
+    };
+  });
+  if(g8.some(c=>!ratesDetail.currencies.includes(c))||!ratesDetail.activeSection||
+     !ratesDetail.hasPricing)throw Error(label+' rates focus/G8 detail failed: '+JSON.stringify(ratesDetail));
+  await page.frameLocator('#gmfq-page').locator('#rates-select button[data-ccy="NZD"]').click();
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return d?.querySelector('#rates-select button[data-ccy="NZD"]')?.getAttribute('aria-pressed')==='true'
+       && d?.getElementById('rates-status')?.textContent.includes('Nuova Zelanda');
+  },null,{timeout:15000});
+  await page.screenshot({path:'v10-qa-images/'+label+'-rates-g8-detail.png',fullPage:true});
+  console.log('CONTROL_ROOM_PREVIEW_G8_DETAIL_FOCUS_GREEN',label,JSON.stringify(ratesDetail));
   await page.close();
  }
  await browser.close();
