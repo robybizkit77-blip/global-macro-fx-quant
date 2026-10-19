@@ -17,7 +17,7 @@
       "source_sheet": "末残（Amounts at end of period）",
       "source_column": 7,
       "source_header_context": "4298428 | 4247068 | 4210409 | 4346010 | 4216365 | 4072435 | 4028129 | 3905362",
-      "fetched_at_utc": "2026-10-19T07:31:21.361808Z",
+      "fetched_at_utc": "2026-10-19T08:44:40.477836Z",
       "official_canonical_untouched": true,
       "original_runtime_validation": {
         "period": "2026-08",
@@ -56,7 +56,7 @@
         "editionDate": "20260921_0900",
         "publicSinceDate": "20260921_0900"
       },
-      "fetched_at_utc": "2026-10-19T07:26:47.954884Z",
+      "fetched_at_utc": "2026-10-19T08:44:13.501183Z",
       "official_canonical_untouched": true
     },
     "CHF.sight_deposits": {
@@ -82,7 +82,7 @@
         "editionDate": "20260921_1029",
         "publicSinceDate": "20260921_1029"
       },
-      "fetched_at_utc": "2026-10-19T07:26:48.696592Z",
+      "fetched_at_utc": "2026-10-19T08:44:14.580843Z",
       "official_canonical_untouched": true
     },
     "BRENT.market_proxy": {
