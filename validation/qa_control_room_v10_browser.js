@@ -12,6 +12,8 @@ if(nzdProxy.schema!=='GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1'||
 const dxyDisplayed=Number(dxyFeed.value).toFixed(2);
 const nzdDisplayed=Number(nzdProxy.horizons['6m'].implied_bank_bill_rate).toFixed(2);
 const ratesFeed=JSON.parse(fs.readFileSync(path.join(DATA,'NATIVE_RATES_DATA.json'),'utf8'));
+const snbSpot=JSON.parse(fs.readFileSync(path.join(DATA,'CHF_SNB_10Y_SPOT_CONTEXT.json'),'utf8'));
+if(snbSpot.tenor!=='10Y'||snbSpot.has_current_2y!==false||snbSpot.eligible_for_curve_spreads!==false)throw Error('Invalid independent SNB 10Y context fixture');
 function commonAnchorDate(target,proxy,tenor='history2'){
  const dates=new Set(ratesFeed[proxy][tenor].dates);
  return ratesFeed[target][tenor].dates.filter(d=>d<=ratesFeed[target].date&&dates.has(d)).at(-1);
@@ -152,6 +154,7 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
       secondary:host?.querySelectorAll('.gmfq-quote-card').length,
       legend:host?.querySelector('.gmfq-research-legend')?.innerText,
       disclaimers:host?.innerText,
+      snbSpot:host?.querySelector('#gmfq-chf-snb-10y-context')?.innerText,
       chartWidth:host?.querySelector('.gmfq-research-plot')?.scrollWidth,
       docWidth:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth
     };
@@ -162,6 +165,9 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
       !research.disclaimers.includes('non sono una curva OIS')||
      !research.disclaimers.includes('NON curva OIS né policy delta')||
      !research.disclaimers.includes('CHF 2Y/10Y')||
+     !research.snbSpot?.includes('CHF 10Y SNB '+Number(snbSpot.value_percent).toFixed(3)+'%')||
+     !research.snbSpot.includes(snbSpot.as_of)||!research.snbSpot.includes('SOLO INFORMATIVO')||
+     !research.snbSpot.includes('nessuno spread o segnale')||
      research.docWidth>research.viewport+16)
      throw Error(label+' Pricing research traceability failed: '+JSON.stringify(research));
   await page.frameLocator('#gmfq-page').locator('#gmfq-pricing-research button[data-pricing-ccy="GBP"]').click();
