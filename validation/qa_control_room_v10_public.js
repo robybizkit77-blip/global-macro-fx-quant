@@ -149,6 +149,30 @@ async function getState(page){
          await page.waitForTimeout(3500);
        }
        if(!visible)throw Error(name+' public Rates research panel never appeared in the canonical Preview');
+       // Main and gh-pages may already agree while the Pages CDN still serves
+       // an older iframe bundle. Require the NEW SNB 10Y read-only panel DOM
+       // before asserting the new feature. Avoid mistaking deploy lag for a
+       // pricing/source regression; do not accept only the old Rates panel.
+       let snbVersionVisible=false;
+       for(let attempt=0;attempt<18;attempt++){
+         snbVersionVisible=await page.evaluate(()=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument;
+           return !!d?.getElementById('gmfq-chf-snb-10y-context');
+         });
+         if(snbVersionVisible)break;
+         await page.goto(BASE+'?snb10qa='+Date.now()+'-'+attempt+'#/tassi?focus=ois',{waitUntil:'domcontentloaded',timeout:120000});
+         try{
+           await page.waitForFunction(()=>{
+             const d=document.getElementById('gmfq-page')?.contentDocument;
+             return !!d?.getElementById('gmfq-chf-snb-10y-context');
+           },null,{timeout:9000});
+         }catch(_){console.log('PUBLIC_V10_SNB_VERSION_PENDING',name,attempt)}
+         await page.waitForTimeout(4000);
+       }
+       if(!snbVersionVisible){
+         snbVersionVisible=await page.evaluate(()=>!!document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-chf-snb-10y-context'));
+       }
+       if(!snbVersionVisible)throw Error(name+' PUBLIC_V10_CDN_STALE_NO_SNB_VERSION after cache-busted retries');
        await page.waitForFunction(()=>{
          const d=document.getElementById('gmfq-page')?.contentDocument;
          return d?.getElementById('gmfq-pricing-research')?.querySelector('.gmfq-research-plot svg, .gmfq-research-plot p');
