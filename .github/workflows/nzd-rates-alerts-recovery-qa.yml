@@ -12,12 +12,13 @@ permissions:
 jobs:
   certified-registry-and-alerts:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check openpyxl
       - name: Validate official NZD registry and alert test
         run: |
           set -euo pipefail
@@ -32,4 +33,17 @@ jobs:
           print('NZD_OFFICIAL_RATES_REGISTRY_PARITY_GREEN')
           PY
           python validation/hourly_alerts/test_build_certified_alert_snapshot.py
+          git diff --exit-code -- live_data payload site
+      - name: Run current official Rates source audit and candidate without publishing
+        run: |
+          set -euo pipefail
+          python validation/run_rates_audit.py > /tmp/recovery-rates-audit.json
+          python - <<'PY'
+          import json
+          a=json.load(open('/tmp/recovery-rates-audit.json'))
+          assert a['status']=='PASS',a.get('summary')
+          assert a['currencies']['NZD']['state']=='NO_CHANGE',a['currencies']['NZD']
+          print('NZD_RATES_LIVE_AUDIT_GREEN',a['summary'])
+          PY
+          python validation/build_rates_candidate_from_audit.py --audit /tmp/recovery-rates-audit.json --output /tmp/recovery-candidate.json
           git diff --exit-code -- live_data payload site
