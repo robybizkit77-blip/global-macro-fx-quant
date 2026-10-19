@@ -19,6 +19,11 @@ items={
 "Rates selection remains wired to the existing data renderer": "b.dataset.ccy=ccy" in s and "focusCurrency(doc)" in s,
 "Home focus links lead to exact Rates sections": "function focusRatesSection(doc)" in s and all(x in s for x in ["curve:'#rates-chart'","'2y':'#rates-rows'","spread:'#rates-rows'","ois:'#ois-rows'","scrollIntoView({block:'start'})"]),
 "Detail adapter does not invent missing yields": "enhanceRatesDetail(doc)" in s and "b.textContent=labels[ccy]" in s,
+"Rates desk curves from certified same-date validated tenors only": "function marketResearchCurves(data)" in s and "GREEN_OFFICIAL" in s and "OFFICIAL_CERTIFIED" in s and "fresh(x.as_of,4)" in s,
+"Research curves cannot use secondary quotes": "function marketResearchSecondary(data)" in s and "ctx.full_curve_usable!==false" in s and "ctx.cross_date_join_allowed!==false" in s and "ctx.policy_delta_allowed!==false" in s,
+"Secondary quotes are informational and individually dated": "SECONDARY_VERIFIED_DAILY_BAR" in s and "quote_as_of" in s and "non sono una curva OIS" in s,
+"NZD bank bills remain separate from OIS": "NON curva OIS né policy delta" in s,
+"CHF staleness is disclosed": "CHF 2Y/10Y" in s and "non corrente" in s,
 "Core data not changed": "localStorage.setItem" not in s and "github.com/repos/" not in s,
 }
 for k,v in items.items(): print(("PASS" if v else "FAIL")+": "+k)

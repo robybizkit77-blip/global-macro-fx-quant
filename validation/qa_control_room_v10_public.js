@@ -138,6 +138,48 @@ async function getState(page){
      await page.frameLocator('#gmfq-page').locator('.mid > .panel:nth-child(2)').click();
      await page.waitForURL(/#\/tassi\?focus=2y$/,{timeout:15000});
      await page.waitForFunction(()=>document.getElementById('gmfq-page')?.contentDocument?.querySelector('#rates-select'),null,{timeout:20000});
+     // In PR the public website still has the previous addon; inspect the
+     // new market-research panel only on main, after the exact deployment.
+     if(process.env.GITHUB_EVENT_NAME!=='pull_request'){
+       let visible=false;
+       for(let attempt=0;attempt<12;attempt++){
+         visible=await page.evaluate(()=>!!document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-pricing-research'));
+         if(visible)break;
+         await page.goto(BASE+'?pricingQA='+Date.now()+'-'+attempt+'#/tassi?focus=ois',{waitUntil:'domcontentloaded',timeout:120000});
+         await page.waitForTimeout(3500);
+       }
+       if(!visible)throw Error(name+' public Rates research panel never appeared in the canonical Preview');
+       await page.waitForFunction(()=>{
+         const d=document.getElementById('gmfq-page')?.contentDocument;
+         return d?.getElementById('gmfq-pricing-research')?.querySelector('.gmfq-research-plot svg, .gmfq-research-plot p');
+       },null,{timeout:20000});
+       const research=await page.evaluate(async()=>{
+         const d=document.getElementById('gmfq-page').contentDocument;
+         const panel=d.getElementById('gmfq-pricing-research');
+         const feed=await fetch('https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/OIS_OPERATIONAL_VIEW.json',{cache:'no-store'}).then(x=>x.json());
+         const days=x=>(Date.UTC(new Date().getUTCFullYear(),new Date().getUTCMonth(),new Date().getUTCDate())-Date.parse(x+'T00:00:00Z'))/86400000;
+         const eligible=['GBP','JPY','AUD','CAD'].filter(k=>{
+           const x=feed.currencies?.[k];
+           return x?.operational_status==='GREEN_OFFICIAL'&&x.quality==='OFFICIAL_CERTIFIED'&&
+             days(x.as_of)>=0&&days(x.as_of)<=4&&['3m','6m','12m'].every(t=>Number.isFinite(x.horizons?.[t]?.policy_delta_bp));
+         });
+         const secondary=['USD','EUR','CHF'].filter(k=>feed.currencies?.[k]?.operational_status==='WITHHELD'&&
+           feed.currencies?.[k]?.secondary_quote_context?.full_curve_usable===false&&
+           feed.currencies?.[k]?.secondary_quote_context?.policy_delta_allowed===false);
+         return {
+           actualCurves:panel.querySelectorAll('svg polyline').length,expectedCurves:eligible.length,
+           secondaryCards:panel.querySelectorAll('.gmfq-quote-card').length,expectedCards:secondary.length,
+           note:panel.innerText,docWidth:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth
+         };
+       });
+       if(research.actualCurves!==research.expectedCurves||research.secondaryCards!==research.expectedCards||
+          !research.note.includes('non sono una curva OIS')||
+          !research.note.includes('NON curva OIS né policy delta')||
+          research.docWidth>research.viewport+16)
+         throw Error(name+' public certified/secondary Rates research fail-closed contract '+JSON.stringify(research));
+       console.log('CONTROL_ROOM_PREVIEW_PUBLIC_PRICING_RESEARCH_GREEN',name,
+         JSON.stringify({curves:research.actualCurves,secondary:research.secondaryCards,viewport:research.viewport}));
+     }
      await page.goto(BASE+'#/home',{waitUntil:'domcontentloaded',timeout:120000});
      await page.waitForFunction(()=>document.getElementById('gmfq-page')?.contentDocument?.querySelectorAll('#pairs tr[data-filter]').length>0,null,{timeout:60000});
      const homePair=await page.frameLocator('#gmfq-page').locator('#pairs tr[data-filter]').first().getAttribute('data-filter');
