@@ -75,6 +75,19 @@ jobs:
           set -euo pipefail
           mkdir -p /tmp/rates-persistent
           python validation/run_rates_audit.py > /tmp/rates-persistent/audit.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          a=json.loads(Path('/tmp/rates-persistent/audit.json').read_text())
+          status=a.get('status')
+          summary=a.get('summary',{})
+          print('RATES_AUDIT_STATUS',status,'SUMMARY',json.dumps(summary,ensure_ascii=False)[:4000])
+          if status!='PASS':
+              for c,v in a.get('currencies',{}).items():
+                  print('RATES_AUDIT_CURRENCY',c,'status',v.get('status'),'coverage_mode',v.get('coverage_mode'),
+                        'reason',str(v.get('reason',v.get('error','')))[:350])
+              raise SystemExit('Rates audit fail-closed: current official source issue. Check uploaded audit.json')
+          PY
           python validation/build_rates_candidate_from_audit.py \
             --audit /tmp/rates-persistent/audit.json \
             --output /tmp/rates-persistent/NATIVE_RATES_DATA.json \
