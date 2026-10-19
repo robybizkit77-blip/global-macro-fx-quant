@@ -584,7 +584,73 @@ async function applyMarketResearch(doc){
 
 /* Pair research journey, added next to (not replacing) the original 28-pair
    deep dive. Source as-of != today's ECB fixing. No derived trade signals. */
-async function mountPairResearch(doc){
+async /* Research-only Macro/2Y/10Y/6M comparator.
+   Structural Macro/Policy sides come ONLY from the 28-pair canonical model,
+   independently dated sovereign yields ONLY from official native Rates.
+   Never derive a curve/spread from mismatched or stale dates. */
+function pairMacroRatesComparison(code,pair,rates,ois,modelDay){
+ const a=code.slice(0,3),b=code.slice(3,6),s=pair?.decision_frame||{};
+ const safeSide=(v)=>v===a||v===b?v:null;
+ const macroSide=safeSide(s.macroSide),policySide=safeSide(s.policySide);
+ const sideText=(v)=>v===a?'Favorisce '+FLAG[a]+' '+a:v===b?'Favorisce '+FLAG[b]+' '+b:
+  'Non distingue chiaramente le due valute';
+ const sovereign=(c)=>{
+   const r=rates?.[c],d=r?.date;
+   const certified=!!r&&String(r.quality||'').includes('OFFICIAL')&&fresh(d,5)&&
+    num(r['2Y'])!==null&&num(r['10Y'])!==null;
+   return {date:d||null,certified, y2:certified?num(r['2Y']):null,y10:certified?num(r['10Y']):null};
+ };
+ const repricing=(c)=>{
+   const o=ois?.currencies?.[c];
+   const ok=o?.operational_status==='GREEN_OFFICIAL'&&o.quality==='OFFICIAL_CERTIFIED'&&
+    o.official_status==='ACTIVE'&&fresh(o.as_of,5)&&
+    num(o.horizons?.['6m']?.policy_delta_bp)!==null;
+   const instrument=c==='GBP'?'OIS BoE':c==='JPY'?'futures TONA':
+    c==='AUD'?'futures IB':c==='CAD'?'futures CORRA':'strumento non certificato';
+   return {ok, date:o?.as_of||null,delta:ok?o.horizons['6m'].policy_delta_bp:null,instrument};
+ };
+ const leg=(c)=>{
+  const r=sovereign(c),p=repricing(c);
+  const ratesLine=r.certified?
+   '2Y '+fmt(r.y2,2)+'% · 10Y '+fmt(r.y10,2)+'% · '+r.date:
+   '2Y / 10Y WITHHELD · ultima data '+(r.date||'non verificata');
+  const fwd=p.ok?('6M '+(p.delta>0?'+':'')+fmt(p.delta,1)+' bp · '+p.instrument+
+   ' · '+p.date):'6M pricing WITHHELD · '+(p.date||'non verificato');
+  return '<div class="gmfq-compare-leg" data-gmfq-compare-ccy="'+c+'"><strong>'+
+   FLAG[c]+' '+c+'</strong><small>'+htmlEscape(ratesLine)+'</small>'+
+   '<small>'+htmlEscape(fwd)+'</small></div>';
+ };
+ const A=sovereign(a),B=sovereign(b);
+ // Same date is mandatory; do not use the latest separately published CHF 10Y
+ // to fill in a missing 2Y. A dated yield gap is NOT a policy prediction.
+ const same=A.certified&&B.certified&&A.date===B.date;
+ const spread=same?Math.round((A.y2-B.y2)*100):null;
+ const spreadMsg=same?
+  'Spread 2Y governativi (base − quotata): '+(spread>0?'+':'')+spread+
+    ' bp · stesso giorno '+A.date+'. Differenza di livello, non segnale FX.':
+  'Spread 2Y osservato: WITHHELD. Le due scadenze devono essere ufficiali, recenti e riferite allo stesso giorno.';
+ const verdict=macroSide&&policySide&&macroSide===policySide?
+  'Macro e Tassi/banche centrali favoriscono la stessa valuta nel modello.':
+  macroSide&&policySide&&macroSide!==policySide?
+   'Macro e Tassi/banche centrali favoriscono valute opposte: nessun allineamento completo.':
+   macroSide||policySide?
+    'Solo un pilastro distingue le valute: vantaggio strutturale parziale, non un ingresso.':
+    'Nessun vantaggio convergente dimostrato dai due pilastri nel modello.';
+ const watch=typeof s.watch==='string'?s.watch:'Non ci sono condizioni sufficienti per una lettura operativa.';
+ return '<section class="gmfq-compare" id="gmfq-pair-macro-rates" aria-label="Confronto Macro Rates delle due valute">'+
+  '<h3>Macro e Rates · confronto '+FLAG[a]+' '+a+' / '+FLAG[b]+' '+b+'</h3>'+
+  '<div class="gmfq-compare-score"><div><span>MACRO · modello '+htmlEscape(modelDay)+'</span>'+
+    '<strong>'+htmlEscape(sideText(macroSide))+'</strong></div>'+
+    '<div><span>TASSI / BANCHE CENTRALI · modello '+htmlEscape(modelDay)+'</span>'+
+    '<strong>'+htmlEscape(sideText(policySide))+'</strong></div></div>'+
+  '<p class="gmfq-compare-explain">'+htmlEscape(verdict)+'</p>'+
+  '<div class="gmfq-compare-legs">'+leg(a)+leg(b)+'</div>'+
+  '<p class="gmfq-compare-spread" data-same-date="'+(same?'true':'false')+'">'+htmlEscape(spreadMsg)+'</p>'+
+  '<p class="gmfq-compare-note"><strong>Cosa controllare:</strong> '+htmlEscape(watch)+'</p>'+
+  '<p class="gmfq-compare-disclaimer">I giudizi Macro e Tassi/CB sono quelli dello snapshot del motore, non vengono ricalcolati con i rendimenti mostrati. Il 6M descrive strumenti OIS/futures differenti: non sottrarre i loro delta e non trasformarli in previsioni di cambio.</p></section>';
+}
+
+function mountPairResearch(doc){
  if(route()!=='coppie'||frame.contentDocument!==doc)return;
  const host=doc.getElementById('pair-detail');
  if(!host)return;
@@ -603,6 +669,7 @@ async function mountPairResearch(doc){
  if(!ok||!host||doc.getElementById('gmfq-pair-research-path'))return;
  const style=doc.createElement('style');style.id='gmfq-pair-path-style';
  style.textContent='#gmfq-pair-research-path{margin-top:12px}#gmfq-pair-research-path .gmfq-path-body{padding:13px 17px 16px}#gmfq-pair-research-path p{color:#b8cad7;font-size:12px;line-height:1.55;margin:7px 0 12px}#gmfq-pair-research-path .gmfq-path-evidence{color:#e0c788;font-size:11px;line-height:1.5}#gmfq-pair-research-path .gmfq-path-legs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}#gmfq-pair-research-path .gmfq-path-leg{border:1px solid #294457;border-radius:6px;background:#0a2232;padding:12px 13px;min-width:0}#gmfq-pair-research-path .gmfq-path-leg strong{color:#ebf2f7;font-size:14px;display:block}#gmfq-pair-research-path .gmfq-path-leg small{display:block;color:#9db6c8;font-size:11px;margin:5px 0 9px;line-height:1.4}#gmfq-pair-research-path .gmfq-path-links{display:flex;flex-wrap:wrap;gap:6px}#gmfq-pair-research-path button{border:1px solid #3a596d;background:#122d40;border-radius:5px;padding:6px 9px;color:#e6edf4;font:11px Arial,sans-serif;cursor:pointer}#gmfq-pair-research-path button:hover{border-color:#e3c57c;color:#f1d894}#gmfq-pair-research-path button:focus-visible{outline:2px solid #e3c57c;outline-offset:2px}#gmfq-pair-research-path .gmfq-path-warning{color:#dfc894;border-top:1px solid #2a4759;padding-top:10px}@media(max-width:600px){#gmfq-pair-research-path .gmfq-path-legs{grid-template-columns:1fr}#gmfq-pair-research-path .gmfq-path-body{padding:11px}}';
+ style.textContent+='.gmfq-compare{border-top:1px solid #2b4757;margin-top:14px;padding-top:13px}.gmfq-compare h3{margin:0 0 11px;font:600 14px/1.3 Arial,sans-serif;color:#e5eff6}.gmfq-compare-score{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.gmfq-compare-score>div{border-left:2px solid #997e4d;padding:7px 10px;background:#0e2534;min-width:0}.gmfq-compare-score span{display:block;font:10px/1.4 Arial,sans-serif;color:#a6bac7}.gmfq-compare-score strong{display:block;font:600 12px/1.5 Arial,sans-serif;color:#e5edf3;margin-top:4px}.gmfq-compare-legs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}.gmfq-compare-leg{min-width:0;padding:10px 12px;border-radius:5px;background:#0a1f2d;border:1px solid #274453}.gmfq-compare-leg strong{display:block;color:#e5eefa;font:600 12px Arial,sans-serif;margin-bottom:5px}.gmfq-compare-leg small{display:block;color:#b2c6d4;font:11px/1.5 Arial,sans-serif;margin:5px 0;overflow-wrap:anywhere}.gmfq-compare p{font:12px/1.55 Arial,sans-serif;margin:10px 0 0}.gmfq-compare .gmfq-compare-spread{color:#e1c990}.gmfq-compare .gmfq-compare-note{color:#cadbe5}.gmfq-compare .gmfq-compare-disclaimer{font-size:10px;color:#9ab4c5}@media(max-width:600px){.gmfq-compare-score,.gmfq-compare-legs{grid-template-columns:1fr}}';
  doc.head.appendChild(style);
  const panel=doc.createElement('section');
  panel.id='gmfq-pair-research-path';panel.className='desk-panel';
@@ -646,7 +713,7 @@ async function mountPairResearch(doc){
    '<div class="gmfq-path-body"><p>Prima confronta Macro e Tassi delle due valute, poi guarda Banche centrali e COT. Torna al Prezzo per verificare conferma o divergenza. Il dettaglio sopra resta la lettura canonica della tesi, non un segnale di ingresso.</p>'+
    '<div class="gmfq-path-evidence">Modello: '+htmlEscape(setup.price_asof)+' · Fixing BCE: '+htmlEscape(fxDay||'non verificato')+
    ' · Valuta favorita dal motore: '+htmlEscape(fav||'nessuna')+'</div>'+
-   '<div class="gmfq-path-legs">'+leg(a)+leg(b)+'</div>'+
+   pairMacroRatesComparison(code,setup.pairs[code],rates,ois,setup.price_asof)+'<div class="gmfq-path-legs">'+leg(a)+leg(b)+'</div>'+
    '<p class="gmfq-path-warning">'+htmlEscape(sourceMsg)+' I futures indicativi non sono curve OIS e non determinano da soli un trade.</p>'+
    '<div class="gmfq-path-links"><button type="button" data-gmfq-study-route="screener">Apri Screener 28 coppie ↗</button></div></div>';
  };
