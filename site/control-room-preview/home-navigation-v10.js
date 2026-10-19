@@ -305,7 +305,7 @@ function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy){
  const dxyCurrent=validDxy(dxy);
  const complete=fxCurrent&&ratesCurrent.length===8&&oisCurrent.length===8&&dxyCurrent;
  state.textContent=complete?'FONTI VERIFICATE':'DATI PARZIALI';
- stamp.textContent=(fxCurrent?'FX '+fxDay:'FX da aggiornare')+' · OIS '+oisCurrent.length+'/8 ⓘ';
+ stamp.textContent=(fxCurrent?'FX '+fxDay.slice(8,10)+'/'+fxDay.slice(5,7):'FX non corr.')+' · OIS '+oisCurrent.length+'/8 ⓘ';
  head.setAttribute('role','button');head.tabIndex=0;
  head.setAttribute('aria-label','Apri verifica fonti: FX, rendimenti, pricing e DXY');
  head.setAttribute('aria-haspopup','dialog');head.setAttribute('aria-controls','gmfq-home-data-audit');
