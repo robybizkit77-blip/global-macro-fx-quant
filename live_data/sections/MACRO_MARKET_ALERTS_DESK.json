@@ -1,8 +1,21 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-19T09:52:41Z",
+  "generated_at_utc": "2026-10-19T10:49:26Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-ff1812e304700275f54c",
+      "observed_at_utc": "2026-10-19T05:59:00Z",
+      "headline": "South African rand gains slightly as traders await budget speech, inflation data",
+      "summary": "Reuters riporta: South African rand gains slightly as traders await budget speech, inflation data. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxQNi1CSlFMVHVjQ1hCYWU0aDlBLXp6cFlwQnRBanBWb0Z2emxXWXlWY1B3THZWNWMteWFsVXhFN1hOLU1qb1RYMWlaNlFjSXVSY1puRERweUxEcFU1OGpvTDVKaGlRcVdnYmZsay16N3JXc0tfLUxxMFNwcmpISm9qc2wxQUdyc1plZS1sRm1SVmhwUjBaNjhjcDZINWo1S1lDUmhHVnE5ckN6OWlnU21rbXVaQjFtNW9rc21XbjNpS3NRaTA?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-6d088a966f262b58703e",
       "observed_at_utc": "2026-10-19T09:45:44Z",
