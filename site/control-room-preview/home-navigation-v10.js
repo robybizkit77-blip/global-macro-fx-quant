@@ -278,10 +278,88 @@ function openDxy(doc){
  dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close()});
  if(typeof dialog.showModal==='function')dialog.showModal();
 }
+/* Home status: a successful network fetch is NOT evidence that every dataset
+   is current or operational. This only explains source coverage; it never
+   mutates market data, rates, policy deltas, biases, sizing or trading signals. */
+function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy){
+ if(!home()||frame.contentDocument!==doc||doc.documentElement.dataset.marketMode!=='live')return;
+ const head=doc.querySelector('.mast .fresh'),state=doc.getElementById('liveState'),
+  stamp=doc.getElementById('liveAsOf');
+ if(!head||!state||!stamp||doc.getElementById('gmfq-home-data-audit'))return;
+ const datePattern=/^\d{4}-\d{2}-\d{2}$/;
+ const fxDay=fx?.schema==='GMFQ_ECB_G8_PRICE_HISTORY_V1'&&
+  fx.status==='CURRENT_OFFICIAL_HISTORY'&&datePattern.test(fx.last_as_of||'')?
+  fx.last_as_of:null;
+ const fxCurrent=fxDay!==null&&fresh(fxDay,4);
+ const ratesCurrent=FX.filter(k=>{
+  const x=rates?.[k];
+  return x&&String(x.quality||'').includes('OFFICIAL')&&fresh(x.date,5)&&
+   num(x['2Y'])!==null&&num(x['10Y'])!==null;
+ });
+ const oisCurrent=FX.filter(k=>{
+  const x=ois?.currencies?.[k];
+  return x?.operational_status==='GREEN_OFFICIAL'&&x.quality==='OFFICIAL_CERTIFIED'&&
+   fresh(x.as_of,5)&&['3m','6m','12m'].every(t=>
+    num(x.horizons?.[t]?.rate)!==null&&num(x.horizons?.[t]?.policy_delta_bp)!==null);
+ });
+ const dxyCurrent=validDxy(dxy);
+ const complete=fxCurrent&&ratesCurrent.length===8&&oisCurrent.length===8&&dxyCurrent;
+ state.textContent=complete?'FONTI VERIFICATE':'DATI PARZIALI';
+ stamp.textContent=(fxCurrent?'FX '+fxDay.slice(8,10)+'/'+fxDay.slice(5,7):'FX non corr.')+' · OIS '+oisCurrent.length+'/8 ⓘ';
+ head.setAttribute('role','button');head.tabIndex=0;
+ head.setAttribute('aria-label','Apri verifica fonti: FX, rendimenti, pricing e DXY');
+ head.setAttribute('aria-haspopup','dialog');head.setAttribute('aria-controls','gmfq-home-data-audit');
+ head.setAttribute('aria-expanded','false');head.title='Apri lo stato e le date delle fonti';
+ head.classList.add('gmfq-data-audit-trigger');
+ // The approved mobile header hides .fresh below 600px. Surface the exact
+ // same audit through a quiet, keyboard-accessible link below the hero eyebrow.
+ const mobile=doc.createElement('button');
+ mobile.type='button';mobile.id='gmfq-mobile-data-audit';
+ mobile.textContent=state.textContent+' · '+stamp.textContent;
+ mobile.setAttribute('aria-haspopup','dialog');
+ mobile.setAttribute('aria-controls','gmfq-home-data-audit');
+ mobile.setAttribute('aria-expanded','false');
+ mobile.setAttribute('aria-label','Apri dettaglio fonti e aggiornamenti');
+ doc.querySelector('.herobody .eyebrow')?.insertAdjacentElement('afterend',mobile);
+ const style=doc.createElement('style');style.id='gmfq-home-data-audit-style';
+ style.textContent='#gmfq-mobile-data-audit{display:none}@media(max-width:600px){#gmfq-mobile-data-audit{display:inline-block;max-width:100%;margin:8px 0 4px;padding:4px 0;background:transparent;color:#dbca9d;font:600 11px/1.45 Arial,sans-serif;white-space:normal;text-align:left;border:0;border-bottom:1px dotted #8d8060;cursor:pointer}#gmfq-mobile-data-audit:focus-visible{outline:2px solid #e3c77b;outline-offset:3px}}.mast .gmfq-data-audit-trigger{cursor:pointer}.mast .gmfq-data-audit-trigger:focus-visible{outline:2px solid #e6cb88;outline-offset:3px;border-radius:4px}.gmfq-home-data-audit{color:#e8f0f7;background:#091b2b;border:1px solid #355468;border-radius:10px;width:min(500px,calc(100vw - 32px));max-height:85vh;overflow:auto;padding:19px 20px;box-shadow:0 25px 70px #000b}.gmfq-home-data-audit::backdrop{background:#010a15be}.gmfq-home-data-audit h2{font:600 20px/1.2 Arial,sans-serif;margin:2px 0 8px}.gmfq-home-data-audit>p{font:12px/1.55 Arial,sans-serif;color:#a9c2d3;margin:8px 0 13px}.gmfq-home-data-audit .gmfq-audit-row{border-top:1px solid #284356;padding:12px 0}.gmfq-home-data-audit .gmfq-audit-row strong{display:block;font:600 13px Arial,sans-serif;color:#eaf0f5}.gmfq-home-data-audit .gmfq-audit-row p{color:#b7c8d7;font:12px/1.5 Arial,sans-serif;margin:5px 0 0}.gmfq-home-data-audit .gmfq-audit-close{float:right;border:1px solid #446378;border-radius:5px;background:#112b3e;color:#e7eef5;cursor:pointer;padding:6px 10px;font-size:12px}.gmfq-home-data-audit .gmfq-audit-close:focus-visible{outline:2px solid #e9cb83}.gmfq-home-data-audit .gmfq-audit-note{color:#d7bf86}';
+ doc.head.appendChild(style);
+ const withheldRates=FX.filter(k=>!ratesCurrent.includes(k));
+ const withheldOis=FX.filter(k=>!oisCurrent.includes(k));
+ const pairedCHF=rates?.CHF?.date;
+ const line=(title,body)=>'<div class="gmfq-audit-row"><strong>'+htmlEscape(title)+'</strong><p>'+htmlEscape(body)+'</p></div>';
+ const dialog=doc.createElement('dialog');dialog.id='gmfq-home-data-audit';dialog.className='gmfq-home-data-audit';
+ dialog.setAttribute('aria-labelledby','gmfq-home-data-audit-title');
+ dialog.innerHTML='<form method="dialog"><button class="gmfq-audit-close" aria-label="Chiudi verifica fonti">Chiudi ×</button></form>'+
+  '<h2 id="gmfq-home-data-audit-title">Stato delle fonti</h2>'+
+  '<p>Ultima osservazione verificata, non quotazioni in tempo reale. “Caricato” non significa necessariamente “aggiornato”.</p>'+
+  line('FX G8 · fixing BCE',fxCurrent?'Ufficiale · '+fxDay+' · fine giornata, non intraday':
+    'Non corrente o non disponibile · ultima data '+(fxDay||'non verificata'))+
+  line('Rendimenti governativi 2Y/10Y',ratesCurrent.length+'/8 valute con 2Y e 10Y ufficiali sufficientemente recenti.'+
+    (withheldRates.length?' Da aggiornare: '+withheldRates.join(', ')+'.':'')+
+    (datePattern.test(pairedCHF||'')?' Ultima coppia CHF: '+pairedCHF+'.':''))+
+  line('Market Pricing · OIS / futures',oisCurrent.length+'/8 valute con curve 3M/6M/12M certificate e recenti.'+
+    (withheldOis.length?' Non certificate o datate: '+withheldOis.join(', ')+'.':'')+
+    ' GBP OIS BoE; JPY, AUD e CAD futures monetari, non OIS puri.')+
+  line('DXY sintetico · fixing BCE',dxyCurrent?
+    'Stima informativa al '+dxy.as_of+'. Non è DXY ICE ufficiale e non è intraday.':
+    'Stima assente o non corrente. Non è DXY ICE ufficiale.')+
+  '<p class="gmfq-audit-note">Questi controlli non modificano bias, punteggi, segnali o backtest. Le date delle diverse fonti non sono intercambiabili.</p>';
+ doc.body.appendChild(dialog);
+ const open=()=>{head.setAttribute('aria-expanded','true');mobile.setAttribute('aria-expanded','true');if(!dialog.open)dialog.showModal()};
+ const close=()=>{head.setAttribute('aria-expanded','false');mobile.setAttribute('aria-expanded','false');(mobile.getClientRects().length?mobile:head).focus()};
+ mobile.addEventListener('click',open);
+ head.addEventListener('click',open);
+ head.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}});
+ dialog.addEventListener('close',close);
+ dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close()});
+}
+
 async function applyHome(doc){
- const [rr,oo,pp,dd]=await Promise.allSettled([
+ const [rr,oo,pp,dd,ff]=await Promise.allSettled([
   feed('NATIVE_RATES_DATA.json'),feed('OIS_OPERATIONAL_VIEW.json'),
-  feed('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),feed('DXY_SYNTHETIC_ECB.json')]);
+  feed('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),feed('DXY_SYNTHETIC_ECB.json'),
+  feed('ECB_G8_PRICE_HISTORY.json')]);
  const d=dd.status==='fulfilled'?dd.value:null;
  dxyFeed=d;
  const rates=rr.status==='fulfilled'?rr.value:null;
@@ -306,6 +384,7 @@ async function applyHome(doc){
    }
    if(ois)oisAll(doc,ois,proxy);
    renderDxy(doc);
+   mountHomeFreshnessAudit(doc,ff.status==='fulfilled'?ff.value:null,rates,ois,d);
    doc.querySelectorAll('#valute .cc').forEach(el=>{
      el.tabIndex=0;el.setAttribute('role','button');
      if(el.dataset.filter!=='DXY')el.setAttribute('aria-label','Apri Valute '+(el.dataset.filter||''));
