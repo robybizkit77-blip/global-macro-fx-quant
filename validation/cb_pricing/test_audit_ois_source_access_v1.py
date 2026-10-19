@@ -29,13 +29,28 @@ def main() -> None:
     assert report["operational_coverage"] == view["summary"]
     assert report["official_coverage"] == 4
     rows = report["blocked_source_decisions"]
-    assert set(rows) == {"USD", "CHF", "NZD"}
+    assert set(rows) == {"USD", "EUR", "CHF", "NZD"}
     assert rows["NZD"]["source_access_status"] == "BENCHMARK_EXISTS_BUT_PAID_SUBSCRIPTION_NOT_CONFIGURED_IN_REPO"
     assert rows["USD"]["source_url"].startswith("https://")
+    assert rows["EUR"]["source_url"].startswith("https://www.eurex.com/")
+    assert rows["EUR"]["candidate"].startswith("Eurex Three-Month Euro STR Futures")
+    assert rows["EUR"]["operational_status"] == view["currencies"]["EUR"]["operational_status"]
     assert rows["CHF"]["source_url"].startswith("https://")
     # These three may change with later official certification; the test
     # enforces truth of live states rather than hardcoding 5/8 forever.
     assert all(r["official_status"] == official["currencies"][c]["status"] for c, r in rows.items())
+
+    mutated_plan = deepcopy(plan)
+    del mutated_plan["blocked_sources"]["EUR"]
+    rejects(mutated_plan, view, official, "missing specific currency source/access plan")
+
+    mutated = deepcopy(view)
+    mutated["currencies"]["EUR"]["horizons"]["3m"]["policy_delta_bp"] = 22.5
+    rejects(plan, mutated, official, "withheld OIS level leak")
+
+    mutated = deepcopy(view)
+    mutated["currencies"]["EUR"]["secondary_quote_context"]["cross_date_join_allowed"] = True
+    rejects(plan, mutated, official, "unsafe promotion flag")
 
     mutated = deepcopy(view)
     mutated["currencies"]["USD"]["horizons"]["3m"]["rate"] = 4.25
