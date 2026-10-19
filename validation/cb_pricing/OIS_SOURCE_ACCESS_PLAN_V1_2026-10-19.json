@@ -1,0 +1,49 @@
+{
+  "schema": "GMFQ_OIS_SOURCE_ACCESS_PLAN_V1",
+  "reviewed_as_of": "2026-10-19",
+  "purpose": "Explain live OIS G8 missing-source readiness without pretending futures, bank-bill instruments or payment-gated feeds are validated OIS curves.",
+  "governance": {
+    "runtime_source": "live_data/sections/OIS_OPERATIONAL_VIEW.json",
+    "official_source": "live_data/sections/OIS_DATA.json",
+    "no_automatic_promotions": true,
+    "no_core_score_effect": true,
+    "no_bias_effect": true,
+    "no_sizing_effect": true,
+    "no_backtest_effect": true,
+    "report_only": true
+  },
+  "blocked_sources": {
+    "USD": {
+      "preferred_source": "CME/CBOT official 30-Day Federal Funds futures settlements (ZQ)",
+      "instrument_class": "FUTURES_POLICY_RATE_PROXY_NOT_SPOT_OIS",
+      "source_url": "https://www.cmegroup.com/markets/interest-rates/stirs/30-day-federal-fund.settlements.html",
+      "access_status": "HOMOGENEOUS_CURRENT_T1_T5_OFFICIAL_SERIES_NOT_CERTIFIED_IN_REPO",
+      "known_problem": "2026-10-08 source registry records historical T-5 CME archive access denied to CI runner; current secondary individual dated-futures quotes do not share a common observation date.",
+      "required_for_activation": "Reproducible CME settlement observations for same contract IDs on current, prior 1D and prior ~5 business days; validate clock, expiry and unit conventions.",
+      "prohibited_shortcut": "Joining secondary single-contract quote dates or treating a forward monthly futures rate as spot OIS."
+    },
+    "CHF": {
+      "preferred_source": "ICE Futures Europe Three-Month SARON futures (SA3) daily settlements",
+      "instrument_class": "THREE_MONTH_COMPOUNDED_SARON_FUTURES_PROXY_NOT_SPOT_OIS",
+      "source_url": "https://www.ice.com/products/72270612/Three-Month-Saron-Index-Futures-Contract/data",
+      "alternative_source_url": "https://www.eurex.com/ex-en/markets/int/mon/saron-futures/saron/3M-SARON-Futures-1410330",
+      "access_status": "SYNCHRONIZED_OFFICIAL_SETTLEMENT_SERIES_NOT_CERTIFIED_IN_REPO",
+      "known_problem": "Public ICE contract metadata do not certify historical daily settlement for 3 maturities; ICE sells EOD csv packages. Eurex lists an alternate SARON contract with separate methodology.",
+      "required_for_activation": "Obtain synchronized dated-contract official ICE SA3 (or separately validated Eurex FSO3) settlement series for current, T-1, T-5 and prove historical reproducibility.",
+      "prohibited_shortcut": "Combining ICE and Eurex quote conventions or dates; assuming price validity is timestamp."
+    },
+    "NZD": {
+      "preferred_source": "NZFBF NZOS OIS Closing Mid-Rates",
+      "meeting_date_source": "NZFBF NZOR OIS RBNZ Meeting Date",
+      "instrument_class": "ACTUAL_OIS_OVER_OCR_EXPECTATIONS",
+      "source_url": "https://www.nzfbf.co.nz/benchmarks/closing-rates/nzos",
+      "meeting_date_source_url": "https://www.nzfbf.co.nz/benchmarks/closing-rates/nzor",
+      "access_terms_url": "https://www.nzfma.org/nzdata/",
+      "access_status": "BENCHMARK_EXISTS_BUT_PAID_SUBSCRIPTION_NOT_CONFIGURED_IN_REPO",
+      "known_problem": "NZFMA classifies NZOS/NZOR distribution as fee-liable; RBNZ B2 bank-bill/swap rates and ASX bank-bill futures are distinct and cannot replace OIS.",
+      "required_for_activation": "Acquire authorized data access (or eligible redistribution license), then ingest dated NZOS tenors 3M/6M/12M on the same observation date with historical 1D/1W.",
+      "prohibited_shortcut": "Promoting ASX 90-Day Bank Bill futures, RBNZ B2, or backward-looking OCR compound index to a prospective OIS curve."
+    }
+  },
+  "source_registry_note": "Operational EUR may be estimated without altering official OIS_DATA status. Official activation always requires separate certification. This is a dated reference, not a live claim of market prices."
+}

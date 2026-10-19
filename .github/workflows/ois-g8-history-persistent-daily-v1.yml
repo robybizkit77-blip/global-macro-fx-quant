@@ -11,6 +11,9 @@ on:
       - 'validation/cb_pricing/test_ois_g8_schedule_gate_v1.py'
       - 'validation/cb_pricing/push_ois_refresh_with_lease_v1.py'
       - 'validation/cb_pricing/test_push_ois_refresh_with_lease_v1.py'
+      - 'validation/cb_pricing/OIS_SOURCE_ACCESS_PLAN_V1_2026-10-19.json'
+      - 'validation/cb_pricing/audit_ois_source_access_v1.py'
+      - 'validation/cb_pricing/test_audit_ois_source_access_v1.py'
   workflow_dispatch:
   schedule:
     # Europe/Rome target: 08:15 on working days.
@@ -28,6 +31,9 @@ on:
       - 'validation/cb_pricing/test_ois_g8_schedule_gate_v1.py'
       - 'validation/cb_pricing/push_ois_refresh_with_lease_v1.py'
       - 'validation/cb_pricing/test_push_ois_refresh_with_lease_v1.py'
+      - 'validation/cb_pricing/OIS_SOURCE_ACCESS_PLAN_V1_2026-10-19.json'
+      - 'validation/cb_pricing/audit_ois_source_access_v1.py'
+      - 'validation/cb_pricing/test_audit_ois_source_access_v1.py'
       - 'validation/cb_pricing/ois_estimated_snapshot_v1.py'
       - 'validation/cb_pricing/build_ois_operational_view_v1.py'
       - 'validation/cb_pricing/build_cb_pricing_estimated_v1.py'
@@ -111,6 +117,16 @@ jobs:
         run: |
           python validation/cb_pricing/build_ois_operational_view_v1.py
           python validation/cb_pricing/test_ois_operational_view_v1.py
+
+      - name: Audit missing OIS sources and licensing (read-only, no promotion)
+        if: steps.gate.outputs.should_run == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/cb_pricing/test_audit_ois_source_access_v1.py
+          python validation/cb_pricing/audit_ois_source_access_v1.py \
+            --summary "$GITHUB_STEP_SUMMARY" \
+            --output /tmp/ois-source-access-audit-v1.json
 
       - name: Persist unified G8 curve history
         if: steps.gate.outputs.should_run == 'true'
