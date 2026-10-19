@@ -465,7 +465,7 @@ function mountMarketResearch(doc,ois,proxy,rates,snb10){
  
  const ch=rates?.CHF;
  host.querySelector('#gmfq-chf-rates-context').textContent=ch?.date&&!fresh(ch.date,4)?
-  '🇨🇭 CHF 2Y/10Y: ultimo dato governativo '+ch.date+'. Data non corrente; la stima della Home è puramente indicativa, non operativa.':
+  '🇨🇭 CHF 2Y/10Y (serie omogenea): ultimo snapshot canonico '+ch.date+'. Non corrente; il 10Y SNB sopra è separato e non completa il 2Y né lo spread. La stima della Home è solo illustrativa.':
   '';
 }
 async function applyMarketResearch(doc){
