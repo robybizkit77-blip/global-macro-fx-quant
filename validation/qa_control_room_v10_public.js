@@ -287,7 +287,7 @@ async function getState(page){
        let current=false;
        for(let attempt=0;attempt<16;attempt++){
          current=await page.evaluate(()=>{
-           return !!document.querySelector('script[src*="home-navigation-v10.js?v=pair-deep-dive-20261019"]');
+           return !!document.querySelector('script[src*="home-navigation-v10.js?v=pair-macro-rates-20261019"]');
          });
          if(current)break;
          console.log('PUBLIC_PAIR_ADDON_CDN_PENDING',name,attempt);
@@ -300,7 +300,7 @@ async function getState(page){
          catch(_){console.log('PUBLIC_PAIR_HOME_FEED_PENDING',name,attempt)}
          await page.waitForTimeout(3000);
        }
-       if(!current)current=await page.evaluate(()=>!!document.querySelector('script[src*="home-navigation-v10.js?v=pair-deep-dive-20261019"]'));
+       if(!current)current=await page.evaluate(()=>!!document.querySelector('script[src*="home-navigation-v10.js?v=pair-macro-rates-20261019"]'));
        if(!current)throw Error(name+' PUBLIC_PAIR_ADDON_VERSION_NOT_DEPLOYED');
      }
      const homePair=await page.frameLocator('#gmfq-page').locator('#pairs tr[data-filter]').first().getAttribute('data-filter');
