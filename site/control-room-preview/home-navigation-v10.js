@@ -329,10 +329,44 @@ function focusCurrency(doc){
  ob.observe(doc.body,{subtree:true,childList:true});
  frame.addEventListener('load',()=>ob.disconnect(),{once:true});
 }
+/* The dedicated Rates page already renders all eight G8 rows, but the original
+   design exposes only four country selectors. Complete the selectors in the
+   additive adapter; a missing verified series still renders WITHHELD. */
+function enhanceRatesDetail(doc){
+ const select=doc.getElementById('rates-select');
+ if(!select)return;
+ const labels={AUD:'🇦🇺 AU',CAD:'🇨🇦 CA',NZD:'🇳🇿 NZ',CHF:'🇨🇭 CH'};
+ for(const ccy of ['AUD','CAD','NZD','CHF']){
+   if(select.querySelector('button[data-ccy="'+ccy+'"]'))continue;
+   const b=doc.createElement('button');
+   b.type='button';b.className='desk-filter';b.dataset.ccy=ccy;
+   b.setAttribute('aria-pressed','false');
+   b.textContent=labels[ccy];
+   select.appendChild(b);
+ }
+}
+/* Home cards with ?focus= must open the actual in-page section, not merely
+   navigate to the generic Rates landing page. Nothing touches the data model. */
+function focusRatesSection(doc){
+ if(route()!=='tassi')return;
+ const focus=new URLSearchParams(location.hash.split('?')[1]||'').get('focus');
+ const sections={curve:'#rates-chart','2y':'#rates-rows',spread:'#rates-rows',ois:'#ois-rows'};
+ const selector=sections[focus];
+ if(!selector)return;
+ const item=doc.querySelector(selector);if(!item)return;
+ const section=item.closest('.desk-panel')||item;
+ section.tabIndex=-1;
+ section.focus({preventScroll:true});
+ section.scrollIntoView({block:'start'});
+}
 function onFrameLoad(){
  let doc;try{doc=frame.contentDocument}catch(_){return}
  if(!doc?.body)return;
- if(!home()){focusCurrency(doc);return}
+ if(!home()){
+   if(route()==='tassi'){enhanceRatesDetail(doc);focusRatesSection(doc)}
+   focusCurrency(doc);
+   return;
+ }
  style(doc);navigation(doc);applyHome(doc).catch(e=>console.warn('[GMFQ home extension WITHHELD]',e));
 }
 frame.addEventListener('load',onFrameLoad);
