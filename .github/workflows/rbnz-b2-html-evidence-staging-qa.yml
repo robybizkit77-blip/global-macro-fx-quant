@@ -1,0 +1,61 @@
+name: RBNZ B2 Official HTML Evidence Staging QA
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/fixtures/rbnz_b2_official_table_2026-10-19_review_required.json'
+      - 'validation/stage_rbnz_b2_official_html_evidence_v1.py'
+      - '.github/workflows/rbnz-b2-html-evidence-staging-qa.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/fixtures/rbnz_b2_official_table_2026-10-19_review_required.json'
+      - 'validation/stage_rbnz_b2_official_html_evidence_v1.py'
+      - '.github/workflows/rbnz-b2-html-evidence-staging-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  stage-reviewed-official-html:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: |
+          python -m py_compile validation/stage_rbnz_b2_official_html_evidence_v1.py
+          python validation/stage_rbnz_b2_official_html_evidence_v1.py --receipt /tmp/rbnz-html/receipt.json --candidate /tmp/rbnz-html/NATIVE_RATES_CANDIDATE_REVIEW_ONLY.json
+          python - <<'PY'
+          import json,sys,copy
+          from pathlib import Path
+          sys.path.insert(0,'validation')
+          from stage_rbnz_b2_official_html_evidence_v1 import verify, EVIDENCE, BASE
+          d=json.loads(EVIDENCE.read_text());r=json.loads(BASE.read_text())
+          receipt=json.loads(Path('/tmp/rbnz-html/receipt.json').read_text())
+          assert receipt['eligible_for_automatic_promotion'] is False
+          assert receipt['writes_live_data'] is False
+          assert receipt['status']=='OFFICIAL_HTML_TABLE_CANDIDATE_SECOND_REVIEW_REQUIRED'
+          c=json.loads(Path('/tmp/rbnz-html/NATIVE_RATES_CANDIDATE_REVIEW_ONLY.json').read_text())
+          assert c['NZD']['date']=='2026-10-16'
+          assert c['NZD']['2Y']==3.89 and c['NZD']['10Y']==5.0
+          assert set(k for k in r if r[k]!=c[k])=={'NZD'}
+          for label,change in (
+              ('fake source',lambda x:x.update(source_url='https://example.org')),
+              ('missing 10Y',lambda x:x['observations'][-1].pop('10Y')),
+              ('conflicting canonical anchor',lambda x:x['observations'][0].update({'2Y':9.99})),
+              ('auto promotion',lambda x:x.update(usable_for_automatic_promotion=True))):
+              bad=copy.deepcopy(d);change(bad)
+              try:verify(bad,r)
+              except ValueError:pass
+              else:raise AssertionError('Fail-closed rejected case was accepted: '+label)
+          print('RBNZ_HTML_OFFICIAL_EVIDENCE_REVIEW_STAGING_QA_GREEN')
+          PY
+          git diff --exit-code -- live_data payload site
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rbnz-b2-html-evidence-candidate-review-only
+          path: /tmp/rbnz-html/
+          if-no-files-found: warn
