@@ -1,7 +1,7 @@
 {
   "schema": "GMFQ_OIS_SOURCE_ACCESS_PLAN_V1",
   "reviewed_as_of": "2026-10-19",
-  "purpose": "Explain live OIS G8 missing-source readiness without pretending futures, bank-bill instruments or payment-gated feeds are validated OIS curves.",
+  "purpose": "Audit all four currently blocked operational OIS source lanes (USD/EUR/CHF/NZD), without treating indicative quotes or spot overnight indices as certified policy curves.",
   "governance": {
     "runtime_source": "live_data/sections/OIS_OPERATIONAL_VIEW.json",
     "official_source": "live_data/sections/OIS_DATA.json",
@@ -36,6 +36,19 @@
         "proof_run_url": "https://github.com/robybizkit77-blip/global-macro-fx-quant/actions/runs/39238809938",
         "note": "Endpoint alone does not prove CME market-data entitlement or permit publishing quoted settlements. T-5 retrieval must be solved or sourced under authorized terms."
       }
+    },
+    "EUR": {
+      "preferred_source": "Eurex Three-Month Euro STR Futures, product FST3, daily exchange settlements",
+      "instrument_class": "THREE_MONTH_COMPOUNDED_ESTR_FUTURES_PROXY_NOT_SPOT_OIS",
+      "source_url": "https://www.eurex.com/ex-en/markets/int/mon/3m-euro-str-futures/estr/Three-Month-Euro-STR-Futures-3402480",
+      "specification_url": "https://www.eurex.com/resource/blob/4150680/fc9ee78c1ddb147acb904e72ff22206b/data/factsheet_ESTR-Futures.pdf",
+      "benchmark_url": "https://www.ecb.europa.eu/stats/financial_markets_and_interest_rates/euro_short-term_rate/html/index.en.html",
+      "access_status": "SYNCHRONIZED_EXCHANGE_SETTLEMENT_T_T1_T5_NOT_CERTIFIED_IN_REPO",
+      "known_problem": "The 2026-10-19 operational EUR OIS is WITHHELD. Secondary dated FST3 quote observations exist, but 3M/6M/12M contract rows are not same-date. Official Eurex exchange settlements with consistent product identity, contracts, as-of dates, histories, and appropriate data-use rights are not validated. ECB official spot overnight €STR does not constitute an OIS forward curve.",
+      "required_for_activation": "Acquire authorized Eurex FST3 dated settlement series for an identical contract basket at T/T-1/T-5; validate monthly-versus-quarterly compounding observation windows, rollover and T+N horizon mapping, provenance and publication rights. Otherwise remain WITHHELD.",
+      "prohibited_shortcut": "Never join mixed-date TradingView FST3 quotes into one policy path, call futures OIS, or use ECB spot €STR as a future 3M/6M/12M OIS quote.",
+      "public_probe_policy": "Public product contract specs establish instrument identity, not a certified curve or feed entitlement.",
+      "reviewed_as_of": "2026-10-19"
     },
     "CHF": {
       "preferred_source": "ICE Futures Europe Three-Month SARON futures (SA3) daily settlements",

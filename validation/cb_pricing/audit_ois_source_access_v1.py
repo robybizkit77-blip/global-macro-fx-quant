@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[2]
 ACCESS = ROOT / "validation/cb_pricing/OIS_SOURCE_ACCESS_PLAN_V1_2026-10-19.json"
 VIEW = ROOT / "live_data/sections/OIS_OPERATIONAL_VIEW.json"
 OFFICIAL = ROOT / "live_data/sections/OIS_DATA.json"
-REQUIRED = ("USD", "CHF", "NZD")
+REQUIRED = ("USD", "EUR", "CHF", "NZD")
 ALL_G8 = frozenset(("USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"))
 H = ("3m", "6m", "12m")
 
@@ -74,6 +74,11 @@ def audit(plan: dict, view: dict, official: dict) -> dict:
                 raise ValueError(f"{c}: estimated source shadowing active official")
             if row.get("backtest_eligible_as_official") is not False:
                 raise ValueError(f"{c}: estimated source must not be official backtest")
+        # All four currently blocked source lanes must be examined. No source
+        # name or access plan upgrades a WITHHELD operational row to GREEN.
+        if c == "EUR" and status == "WITHHELD":
+            if row.get("quality") != "ESTIMATED_INFORMATIONAL":
+                raise ValueError("EUR withheld source quality changed unexpectedly")
         quote_dates = {}
         ctx = row.get("secondary_quote_context")
         if ctx is not None:
