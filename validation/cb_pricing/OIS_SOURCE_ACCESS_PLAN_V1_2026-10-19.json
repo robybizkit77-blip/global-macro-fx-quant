@@ -43,9 +43,17 @@
       "source_url": "https://www.ice.com/products/72270612/Three-Month-Saron-Index-Futures-Contract/data",
       "alternative_source_url": "https://www.eurex.com/ex-en/markets/int/mon/saron-futures/saron/3M-SARON-Futures-1410330",
       "access_status": "SYNCHRONIZED_OFFICIAL_SETTLEMENT_SERIES_NOT_CERTIFIED_IN_REPO",
-      "known_problem": "Public ICE contract metadata do not certify historical daily settlement for 3 maturities; ICE sells EOD csv packages. Eurex lists an alternate SARON contract with separate methodology.",
-      "required_for_activation": "Obtain synchronized dated-contract official ICE SA3 (or separately validated Eurex FSO3) settlement series for current, T-1, T-5 and prove historical reproducibility.",
-      "prohibited_shortcut": "Combining ICE and Eurex quote conventions or dates; assuming price validity is timestamp."
+      "known_problem": "ICE SA3 official daily contract settlement history T/T-1/T-5 not certified; ICE confirms exchange end-of-day report packages are sold via subscription. Eurex legacy FSO3 was delisted in 2021 and replaced with FSR3; a publicly visible FSR3 D. Settle column may show a single stale trading date and zero reported volume/open interest, not 3 coherent historical EOD snapshots.",
+      "required_for_activation": "Secure verified, permitted-use, same-exchange, same-contract T/T-1/T-5 daily settlement series for ICE SA3 OR separately validated Eurex FSR3, then certify chronology, roll convention, 3M/6M/12M and source rights; never mix the two exchanges.",
+      "prohibited_shortcut": "Combining ICE and Eurex quote conventions or dates; assuming price validity is timestamp.",
+      "alternative_current_contract_code": "FSR3",
+      "alternative_retired_contract_code": "FSO3",
+      "alternative_retired_contract_status": "DELISTED_EFFECTIVE_2021",
+      "alternative_source_spec_url": "https://www.eurex.com/ec-en/support/initiatives/archive/saron-futures",
+      "ice_subscription_url": "https://www.ice.com/report-center/data-subscription",
+      "free_eurex_data_terms_url": "https://www.eurex.com/ex-en/data/trading-files",
+      "public_probe_method": "ONE_SHOT_READ_ONLY_PRODUCT_IDENTITY_NOT_PRICE_CAPTURE",
+      "public_probe_policy": "Never infer active settlement history from FSR3 single-page D. Settle or stale Trading Date; zero volume/open interest is an additional liquidity warning, not a price certification."
     },
     "NZD": {
       "preferred_source": "NZFBF NZOS OIS Closing Mid-Rates",
