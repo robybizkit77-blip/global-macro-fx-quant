@@ -1,0 +1,94 @@
+name: CHF SNB 10Y Informational Context V1
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/collect_chf_snb_10y_context_v1.py'
+      - 'validation/test_collect_chf_snb_10y_context_v1.py'
+      - 'live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json'
+      - '.github/workflows/chf-snb-10y-informational-context-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/collect_chf_snb_10y_context_v1.py'
+      - 'validation/test_collect_chf_snb_10y_context_v1.py'
+      - 'live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json'
+      - '.github/workflows/chf-snb-10y-informational-context-v1.yml'
+  schedule:
+    # 18:40 CET / 19:40 CEST: after SNB close, business days only.
+    - cron: '40 17 * * 1-5'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: chf-snb-official-10y-info-only
+  cancel-in-progress: false
+jobs:
+  refresh-informational-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Strict SNB 10Y source and no-core tests
+        run: |
+          python -m py_compile validation/collect_chf_snb_10y_context_v1.py validation/test_collect_chf_snb_10y_context_v1.py
+          python validation/test_collect_chf_snb_10y_context_v1.py
+      - name: Fetch official 10Y or remain fail-closed
+        shell: bash
+        run: |
+          set -euo pipefail
+          if python validation/collect_chf_snb_10y_context_v1.py --output /tmp/gmfq-snb-10y-latest.json; then
+            python - <<'PY'
+          import json
+          from pathlib import Path
+          old=json.loads(Path('live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json').read_text())
+          new=json.loads(Path('/tmp/gmfq-snb-10y-latest.json').read_text())
+          assert old['schema']==new['schema']=='GMFQ_CHF_SNB_10Y_SPOT_CONTEXT_V1'
+          assert new['operational_rates_2y10y_untouched'] is True
+          assert all(new[key] is False for key in ('has_current_2y','eligible_for_curve_spreads','eligible_for_core_signals','eligible_for_backtests','ois_or_saron'))
+          if new['as_of'] < old['as_of']:
+              print('WITHHELD_OLDER_SOURCE_DATE',new['as_of'],old['as_of'])
+          elif new['as_of']==old['as_of'] and new['value_percent']!=old['value_percent']:
+              raise SystemExit('SNB same-date 10Y revision needs independent review')
+          else:
+              Path('live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json').write_text(json.dumps(new,indent=2,ensure_ascii=False,sort_keys=True)+'\n')
+              print('SNB_10Y_INFO_UPDATED',new['as_of'])
+          PY
+          else
+            echo 'SNB_10Y_SOURCE_WITHHELD: no credible new observation; keeping last snapshot.'
+          fi
+      - name: Assert core Rates/OIS and Preview design untouched
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- live_data/sections/NATIVE_RATES_DATA.json live_data/sections/OIS_OPERATIONAL_VIEW.json live_data/sections/OIS_DATA.json
+          git diff --exit-code -- site/control-room-preview payload
+          python - <<'PY'
+          import subprocess
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          assert changed <= {'live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json'},changed
+          print('SNB_10Y_CONTEXT_EXACT_SCOPE_PASS',sorted(changed))
+          PY
+      - name: Persist informational 10Y to main only
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE=live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json
+          if git diff --quiet -- "$FILE"; then echo SNB_10Y_NO_NEW_OBSERVATION; exit 0; fi
+          LOCAL_SHA=$(git rev-parse HEAD)
+          git fetch origin main --quiet
+          test "$(git rev-parse origin/main)" = "$LOCAL_SHA" || { echo 'main moved; no unsafe write' >&2; exit 1; }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- "$FILE"
+          git commit -m 'Refresh SNB CHF 10Y informational-only spot context'
+          git push origin HEAD:main
+          echo SNB_10Y_CONTEXT_PERSISTED_NO_SIGNAL_PROMOTION

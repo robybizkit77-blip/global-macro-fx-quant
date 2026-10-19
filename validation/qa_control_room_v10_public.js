@@ -157,6 +157,7 @@ async function getState(page){
          const d=document.getElementById('gmfq-page').contentDocument;
          const panel=d.getElementById('gmfq-pricing-research');
          const feed=await fetch('https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/OIS_OPERATIONAL_VIEW.json',{cache:'no-store'}).then(x=>x.json());
+         const snb=await fetch('https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json',{cache:'no-store'}).then(x=>x.json());
          const days=x=>(Date.UTC(new Date().getUTCFullYear(),new Date().getUTCMonth(),new Date().getUTCDate())-Date.parse(x+'T00:00:00Z'))/86400000;
          const eligible=['GBP','JPY','AUD','CAD'].filter(k=>{
            const x=feed.currencies?.[k];
@@ -169,13 +170,24 @@ async function getState(page){
          return {
            actualCurves:panel.querySelectorAll('svg polyline').length,expectedCurves:eligible.length,
            secondaryCards:panel.querySelectorAll('.gmfq-quote-card').length,expectedCards:secondary.length,
-           note:panel.innerText,docWidth:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth
+           note:panel.innerText,docWidth:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth,
+           snbBox:panel.querySelector('#gmfq-chf-snb-10y-context')?.innerText,
+           snbExpected:snb?.schema==='GMFQ_CHF_SNB_10Y_SPOT_CONTEXT_V1'&&snb.status==='OFFICIAL_PUBLISHED_10Y_INFORMATIONAL'&&
+             snb.has_current_2y===false&&snb.eligible_for_curve_spreads===false&&snb.eligible_for_core_signals===false&&
+             Number.isFinite(snb.value_percent)&&days(snb.as_of)>=0&&days(snb.as_of)<=4?
+             {value:snb.value_percent.toFixed(3),date:snb.as_of}:null
          };
        });
        if(research.actualCurves!==research.expectedCurves||research.secondaryCards!==research.expectedCards||
           !research.note.includes('non sono una curva OIS')||
           !research.note.includes('NON curva OIS né policy delta')||
-          research.docWidth>research.viewport+16)
+          research.docWidth>research.viewport+16||
+          (research.snbExpected?
+             !research.snbBox?.includes('CHF 10Y SNB '+research.snbExpected.value+'%')||
+             !research.snbBox.includes(research.snbExpected.date)||
+             !research.snbBox.includes('SOLO INFORMATIVO')||
+             !research.snbBox.includes('nessuno spread o segnale'):
+             !research.snbBox?.includes('non disponibile o non corrente')))
          throw Error(name+' public certified/secondary Rates research fail-closed contract '+JSON.stringify(research));
        console.log('CONTROL_ROOM_PREVIEW_PUBLIC_PRICING_RESEARCH_GREEN',name,
          JSON.stringify({curves:research.actualCurves,secondary:research.secondaryCards,viewport:research.viewport}));
