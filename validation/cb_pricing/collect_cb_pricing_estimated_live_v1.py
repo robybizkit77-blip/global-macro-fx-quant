@@ -53,8 +53,8 @@ CONTRACT_RE = re.compile(
 # Only accept a date when daily-bar close equals the specific offer price AND
 # the update clock matches the Offer timestamp independently (<=2 seconds).
 SSR_BAR_RE = re.compile(
-    r'"daily_bar"\\s*:\\s*\\{\\s*"close"\\s*:\\s*"(?P<close>[0-9]+(?:\\.[0-9]+)?)"'
-    r'\\s*,\\s*"data_update_time"\\s*:\\s*"(?P<updated>[0-9]+(?:\\.[0-9]+)?)"'
+    r'"daily_bar"\s*:\s*\{\s*"close"\s*:\s*"(?P<close>[0-9]+(?:\.[0-9]+)?)"'
+    r'\s*,\s*"data_update_time"\s*:\s*"(?P<updated>[0-9]+(?:\.[0-9]+)?)"'
 )
 OFFER_RE = re.compile(
     r'"offers"\s*:\s*\{[^{}]*?"price"\s*:\s*"(?P<price>[0-9]+(?:\.[0-9]+)?)"'
@@ -146,7 +146,7 @@ def parse_quote(html: str, expected_contract: str, today: date) -> dict:
     # priceValidUntil is NOT a quote observation time per Schema.org. Cross-
     # validate independent SSR daily_bar.data_update_time against this offer
     # and price before recording a timestamp. Never use validity alone.
-    normalized = html.replace('\\\"', '"')
+    normalized = html.replace(chr(92) + '"', '"')
     matches = []
     for bar in SSR_BAR_RE.finditer(normalized):
         if abs(float(bar.group("close")) - price) > 0.0000001:
