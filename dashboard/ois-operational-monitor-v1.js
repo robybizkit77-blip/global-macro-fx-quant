@@ -23,7 +23,7 @@ function validate(d){
      if(!['USD','EUR','CHF'].includes(c)||r.operational_status!=='WITHHELD')throw new Error('futures info context non ammesso '+c);
      if(sq.status!=='INDICATIVE_OBSERVATIONS_NON_OIS'||sq.full_curve_usable!==false||sq.cross_date_join_allowed!==false||sq.policy_delta_allowed!==false||sq.repricing_signal_allowed!==false||sq.backtest_eligible_as_official!==false)throw new Error('futures info governance '+c);
      for(const [h,q] of Object.entries(sq.horizons||{})){
-       if(!['3m','6m','12m'].includes(h)||!Number.isFinite(Number(q?.rate_indicative))||!/^\\d{4}-\\d{2}-\\d{2}$/.test(q?.quote_as_of||''))throw new Error('futures quote invalid '+c+'/'+h);
+       if(!['3m','6m','12m'].includes(h)||!Number.isFinite(Number(q?.rate_indicative))||!/^\d{4}-\d{2}-\d{2}$/.test(q?.quote_as_of||''))throw new Error('futures quote invalid '+c+'/'+h);
      }
    }
    const p=r.market_direction_proxy;
