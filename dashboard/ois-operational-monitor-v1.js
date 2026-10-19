@@ -18,6 +18,14 @@ function validate(d){
    const r=d?.currencies?.[c];
    if(!r)throw new Error('valuta OIS mancante: '+c);
    if(!['GREEN_OFFICIAL','GREEN_ESTIMATED','WITHHELD'].includes(r.operational_status))throw new Error('status OIS invalido '+c);
+   const sq=r.secondary_quote_context;
+   if(sq){
+     if(!['USD','EUR','CHF'].includes(c)||r.operational_status!=='WITHHELD')throw new Error('futures info context non ammesso '+c);
+     if(sq.status!=='INDICATIVE_OBSERVATIONS_NON_OIS'||sq.full_curve_usable!==false||sq.cross_date_join_allowed!==false||sq.policy_delta_allowed!==false||sq.repricing_signal_allowed!==false||sq.backtest_eligible_as_official!==false)throw new Error('futures info governance '+c);
+     for(const [h,q] of Object.entries(sq.horizons||{})){
+       if(!['3m','6m','12m'].includes(h)||!Number.isFinite(Number(q?.rate_indicative))||!/^\d{4}-\d{2}-\d{2}$/.test(q?.quote_as_of||''))throw new Error('futures quote invalid '+c+'/'+h);
+     }
+   }
    const p=r.market_direction_proxy;
    if(p){
      if(c!=='NZD')throw new Error('market direction proxy consentito solo per NZD');
@@ -57,6 +65,7 @@ function style(){
  .oisPathGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;min-width:0}.oisPathCard{border:1px solid #173d55;background:#071a28;border-radius:9px;padding:9px;min-width:0}.oisPathTop{display:flex;align-items:center;justify-content:space-between;gap:6px}.oisPathCcy{font-size:14px;font-weight:900}.oisPathMeta{font-size:8px;border-radius:999px;padding:3px 5px;border:1px solid #31536a}.oisPathMeta.off{color:#20df76;border-color:rgba(32,223,118,.4)}.oisPathMeta.est{color:#f2bb49;border-color:rgba(242,187,73,.4)}.oisPathCard svg{width:100%;height:72px;display:block;margin-top:5px}.oisPathVals{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;font-size:8px;color:#7696a8}.oisPathVals b{display:block;color:#dcecf4;font-size:10px;margin-top:2px}.oisAsOf{font-size:8px;color:#6e91a2;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
  .oisProxyBox{margin-top:8px;border:1px solid rgba(35,183,255,.3);background:rgba(35,183,255,.055);border-radius:8px;padding:7px;display:grid;gap:6px}.oisProxyHead{display:flex;justify-content:space-between;gap:6px;align-items:center}.oisProxyTitle{font-size:8px;font-weight:900;letter-spacing:.05em;color:#8fdcff}.oisProxyFlag{font-size:7px;font-weight:900;color:#ffca62;border:1px solid rgba(255,202,98,.45);border-radius:999px;padding:2px 5px;white-space:nowrap}.oisProxyGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.oisProxyCell{min-width:0;border-left:1px solid rgba(49,83,106,.55);padding-left:5px}.oisProxyCell:first-child{border-left:0;padding-left:0}.oisProxyHz{font-size:7px;color:#7899aa}.oisProxyRate{font-size:10px;font-weight:850;color:#dcecf4;margin:1px 0}.oisProxyMove{font-size:7px;color:#86a6b7;line-height:1.35}.oisProxyMove .up{color:#20df76}.oisProxyMove .down{color:#b99aff}.oisProxyNote{font-size:7px;color:#7493a4;line-height:1.35}
  .oisReprice{overflow-x:auto;max-width:100%}.oisReprice table{min-width:760px;width:100%}.oisReprice th,.oisReprice td{font-size:9px;padding:6px 5px}.oisReprice td.up{color:#20df76}.oisReprice td.down{color:#b99aff}.oisReprice td.neu{color:#91aebe}.oisQuality{font-size:8px;font-weight:850;border-radius:999px;padding:3px 5px;border:1px solid #31536a}.oisQuality.off{color:#20df76;border-color:rgba(32,223,118,.4)}.oisQuality.est{color:#f2bb49;border-color:rgba(242,187,73,.4)}.oisFoot{font-size:9px;color:#7899aa;line-height:1.45}.oisFail{border:1px solid rgba(255,82,99,.45);background:rgba(255,82,99,.06);color:#ff929d;border-radius:8px;padding:10px;font-size:11px}
+ .oisResearchQuotes{margin-top:8px;border:1px solid rgba(242,187,73,.32);background:rgba(242,187,73,.045);border-radius:9px;padding:9px;display:grid;gap:8px}.oisResearchHead{font-size:10px;line-height:1.45;font-weight:800;color:#f2cf7b}.oisResearchGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.oisResearchCell{min-width:0;border-left:1px solid rgba(242,187,73,.2);padding-left:6px}.oisResearchCell:first-child{border:0;padding-left:0}.oisResearchHz{font-size:9px;color:#9ab4c2}.oisResearchRate{font-size:12px;font-weight:850;color:#f0f6fa;margin-top:2px}.oisResearchDate{font-size:9px;color:#b3a47f;margin-top:2px;overflow-wrap:anywhere}.oisResearchNote{font-size:10px;line-height:1.45;color:#c9b98d}
  @media(max-width:1050px){.oisPathGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:650px){.oisPathGrid{grid-template-columns:1fr}.oisPathVals{grid-template-columns:repeat(4,minmax(52px,1fr))}.oisProxyGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
  `;document.head.appendChild(s);
 }
@@ -75,13 +84,24 @@ function proxyHtml(c,r){
  const cells=['3m','6m','12m'].map(h=>{const x=p?.horizons?.[h]||{};return `<div class="oisProxyCell"><div class="oisProxyHz">${h.toUpperCase()}</div><div class="oisProxyRate">${fmtRate(x.implied_bank_bill_rate)}</div><div class="oisProxyMove">1D ${proxyMove(x.change_1d_bp)}<br>1W ${proxyMove(x.change_1w_bp)}</div></div>`;}).join('');
  return `<div class="oisProxyBox" data-ois-proxy="NZD_ASX_BB_DIRECTIONAL" title="${esc(p.basis_warning||'Directional market-rates proxy; non OCR/OIS')}"><div class="oisProxyHead"><span class="oisProxyTitle">ASX BB DIRECTIONAL</span><span class="oisProxyFlag">NON OIS</span></div><div class="oisProxyGrid">${cells}</div><div class="oisProxyNote">Bank-bill/FRA proxy · solo direzione di mercato · as-of ${esc(p.as_of||'—')}</div></div>`;
 }
+function secondaryQuotesHtml(c,r){
+ const ctx=r?.secondary_quote_context;
+ if(!ctx||r.operational_status!=='WITHHELD'||!['USD','EUR','CHF'].includes(c))return '';
+ const cells=['3m','6m','12m'].map(h=>{
+   const q=ctx.horizons?.[h];
+   if(!q)return `<div class="oisResearchCell"><div class="oisResearchHz">${h.toUpperCase()}</div><div class="oisResearchRate">—</div></div>`;
+   return `<div class="oisResearchCell" title="${esc(q.contract)}"><div class="oisResearchHz">${h.toUpperCase()} · ${esc(q.contract)}</div><div class="oisResearchRate">${fmtRate(q.rate_indicative)}</div><div class="oisResearchDate">${esc(q.quote_as_of)}</div></div>`;
+ }).join('');
+ const note=ctx.date_mismatch?'Scadenze di sessioni diverse: non unire i punti in una curva.':'Prezzi indicativi dei singoli contratti; nessun percorso OIS certificato.';
+ return `<div class="oisResearchQuotes" data-ois-secondary-ccy="${esc(c)}"><div class="oisResearchHead">FUTURES · QUOTAZIONI INDICATIVE · NON OIS</div><div class="oisResearchGrid">${cells}</div><div class="oisResearchNote">${note} Non producono policy delta, repricing o segnali di trading.</div></div>`;
+}
 function render(){
  const host=ensureHost();if(!host)return false;style();
  if(state.status==='ERROR'){host.innerHTML=`<div class="oisFail"><b>OIS operativo non disponibile.</b><br>${esc(state.error)}. Nessun fallback stimato come dato ufficiale.</div>`;return true;}
  if(state.status!=='READY'||!state.data){host.innerHTML='<div class="oisOpSub">Caricamento OIS operativo…</div>';return true;}
  const d=state.data;const rows=CCYS.map(c=>[c,d.currencies[c]]);
  const finite=rows.flatMap(([,r])=>H.map(h=>rowRate(r,h)).filter(v=>v!==null&&v!==undefined&&Number.isFinite(Number(v))).map(Number));let min=Math.min(...finite),max=Math.max(...finite);if(!finite.length){min=0;max=1;}const pad=Math.max(.15,(max-min)*.08);min-=pad;max+=pad;
- const cards=rows.map(([c,r])=>{const est=r.operational_status==='GREEN_ESTIMATED';return `<div class="oisPathCard" data-ois-ccy="${c}"><div class="oisPathTop"><span class="oisPathCcy">${c}</span><span class="oisPathMeta ${est?'est':'off'}">${r.operational_status==='WITHHELD'?'WITHHELD':est?'ESTIMATED':'OFFICIAL'}</span></div>${r.operational_status==='WITHHELD'?'<div class="oisOpSub">Curva WITHHELD · dato non valido</div>':pathSvg(r,min,max)}<div class="oisPathVals">${H.map(h=>`<span>${h==='policy'?'POLICY':h.toUpperCase()}<b>${fmtRate(rowRate(r,h))}</b></span>`).join('')}</div>${proxyHtml(c,r)}<div class="oisAsOf" title="${esc(r.source)}">as-of ${esc(r.as_of||'—')} · conf. ${esc(r.confidence||'—')}</div></div>`;}).join('');
+ const cards=rows.map(([c,r])=>{const est=r.operational_status==='GREEN_ESTIMATED';return `<div class="oisPathCard" data-ois-ccy="${c}"><div class="oisPathTop"><span class="oisPathCcy">${c}</span><span class="oisPathMeta ${est?'est':'off'}">${r.operational_status==='WITHHELD'?'WITHHELD':est?'ESTIMATED':'OFFICIAL'}</span></div>${r.operational_status==='WITHHELD'?'<div class="oisOpSub">Curva WITHHELD · dato non valido</div>':pathSvg(r,min,max)}<div class="oisPathVals">${H.map(h=>`<span>${h==='policy'?'POLICY':h.toUpperCase()}<b>${fmtRate(rowRate(r,h))}</b></span>`).join('')}</div>${proxyHtml(c,r)}${secondaryQuotesHtml(c,r)}<div class="oisAsOf" title="${esc(r.source)}">as-of ${esc(r.as_of||'—')} · conf. ${esc(r.confidence||'—')}</div></div>`;}).join('');
  const trs=rows.map(([c,r])=>{const est=r.operational_status==='GREEN_ESTIMATED';const cells=['3m','6m','12m'].flatMap(h=>r.operational_status==='WITHHELD'?[null,null]:[r?.horizons?.[h]?.change_1d_bp,r?.horizons?.[h]?.change_1w_bp]).map(v=>`<td class="${clsBp(v)}">${fmtBp(v)}</td>`).join('');return `<tr><td><b>${c}</b> <span class="oisQuality ${est?'est':'off'}">${r.operational_status==='WITHHELD'?'WITHHELD':est?'EST':'OFF'}</span></td>${cells}<td>${r.change_1d_available?'SI':'NO'}/${r.change_1w_available?'SI':'NO'}</td></tr>`;}).join('');
  host.innerHTML=`<div class="oisOp"><div class="oisOpHead"><div><div class="oisOpTitle">OIS / Policy Pricing — G8 Operational</div><div class="oisOpSub">Policy path delle valute validate; quelle non valide restano WITHHELD. Verde = fonte ufficiale certificata; ambra = stima operativa informativa. Gli estimated non entrano come official OIS nel backtest.</div></div><div class="oisOpBadges"><span class="oisBadge off">4 OFFICIAL</span><span class="oisBadge est">${d.summary.green_estimated} ESTIMATED</span><span class="oisBadge">${d.summary.operational_green}/8 OPERATIVO · ${d.summary.operational_withheld} WITHHELD</span></div></div><div class="oisPathGrid">${cards}</div><div class="oisReprice"><table><thead><tr><th>Valuta</th><th>3M Δ1D</th><th>3M Δ1W</th><th>6M Δ1D</th><th>6M Δ1W</th><th>12M Δ1D</th><th>12M Δ1W</th><th>Storico 1D/1W</th></tr></thead><tbody>${trs}</tbody></table></div><div class="oisFoot">NULL ≠ 0 bp: “—” significa storico insufficiente o punto non disponibile. Il monitor usa esclusivamente <code>OIS_OPERATIONAL_VIEW.json</code>; il box ASX NZD, quando presente, è un proxy direzionale separato e non viene promosso a OIS.</div></div>`;
  return true;
@@ -96,7 +116,9 @@ function queueRepair(){
    const cards=host?.querySelectorAll('.oisPathCard')?.length||0;
    const proxyExpected=!!state.data?.currencies?.NZD?.market_direction_proxy;
    const proxyCount=host?.querySelectorAll('[data-ois-proxy="NZD_ASX_BB_DIRECTIONAL"]')?.length||0;
-   if(!host||cards!==8||(proxyExpected&&proxyCount!==1))render();
+   const secondaryExpected=CCYS.filter(c=>!!state.data?.currencies?.[c]?.secondary_quote_context).length;
+   const secondaryCount=host?.querySelectorAll('[data-ois-secondary-ccy]')?.length||0;
+   if(!host||cards!==8||(proxyExpected&&proxyCount!==1)||secondaryCount!==secondaryExpected)render();
  });
 }
 let observer=null;
@@ -112,7 +134,7 @@ async function load(){
  catch(e){state.status='ERROR';state.error=String(e?.message||e);render();}
 }
 window.gmfqRenderOisOperational=render;
-window.gmfqOisOperationalUiAudit=function(){const hosts=document.querySelectorAll('#v401OisBlock');const host=hosts[0]||null;const rows=host?.querySelectorAll('.oisPathCard')?.length||0;const proxyExpected=!!state.data?.currencies?.NZD?.market_direction_proxy;const proxyCount=host?.querySelectorAll('[data-ois-proxy="NZD_ASX_BB_DIRECTIONAL"]')?.length||0;return {status:state.status,host:!!host,host_count:hosts.length,cards:rows,nzd_proxy_expected:proxyExpected,nzd_proxy_count:proxyCount,ok:state.status==='READY'&&hosts.length===1&&rows===8&&(!proxyExpected||proxyCount===1),summary:state.data?.summary||null,error:state.error};};
+window.gmfqOisOperationalUiAudit=function(){const hosts=document.querySelectorAll('#v401OisBlock');const host=hosts[0]||null;const rows=host?.querySelectorAll('.oisPathCard')?.length||0;const proxyExpected=!!state.data?.currencies?.NZD?.market_direction_proxy;const proxyCount=host?.querySelectorAll('[data-ois-proxy="NZD_ASX_BB_DIRECTIONAL"]')?.length||0;const secondaryExpected=CCYS.filter(c=>!!state.data?.currencies?.[c]?.secondary_quote_context).length;const secondaryCount=host?.querySelectorAll('[data-ois-secondary-ccy]')?.length||0;return {status:state.status,host:!!host,host_count:hosts.length,cards:rows,nzd_proxy_expected:proxyExpected,nzd_proxy_count:proxyCount,secondary_expected:secondaryExpected,secondary_count:secondaryCount,ok:state.status==='READY'&&hosts.length===1&&rows===8&&(!proxyExpected||proxyCount===1)&&secondaryExpected===secondaryCount,summary:state.data?.summary||null,error:state.error};};
 const base=window.renderNativeRatesDesk;if(typeof base==='function'){window.renderNativeRatesDesk=function(){const out=base.apply(this,arguments);setTimeout(render,0);return out;};}
 const prev=window.showView;if(typeof prev==='function'){window.showView=function(v){const out=prev.apply(this,arguments);if(v==='ratesdesk')setTimeout(render,0);return out;};}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load();

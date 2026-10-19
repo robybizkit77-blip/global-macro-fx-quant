@@ -13,6 +13,7 @@ OIS = ROOT / 'live_data/sections/OIS_DATA.json'
 EST = ROOT / 'live_data/sections/CB_PRICING_ESTIMATED.json'
 OUT = ROOT / 'live_data/sections/OIS_OPERATIONAL_VIEW.json'
 HISTORY = ROOT / 'validation/cb_pricing/history/OIS_ESTIMATED_SNAPSHOTS_V1.jsonl'
+LIVE_QUOTES = ROOT / 'live_data/sections/CB_PRICING_ESTIMATED_LIVE_QUOTES.json'
 CCYS = ('USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD')
 DAILY_REFERENCE_MIN_AGE = timedelta(hours=18)
 WEEKLY_REFERENCE_MIN_AGE = timedelta(days=5)
@@ -40,6 +41,57 @@ def _empty_repricing():
         'change_1d_available': False,
         'change_1w_available': False,
         'horizon_changes': {h: {'change_1d_bp': None, 'change_1w_bp': None} for h in HORIZONS},
+    }
+
+
+def _secondary_verified_quotes(ccy: str, live: dict, today):
+    """Observation-level research context only; never an OIS/path/pricing signal.
+
+    Non-synchronized contracts are displayed individually, never aggregated.
+    Real daily-bar timestamps are required per observed contract.
+    """
+    raw = ((live.get('currencies') or {}).get(ccy) or {})
+    if raw.get('status') != 'LIVE_SECONDARY_READY':
+        return None
+    tenors = {}
+    for h in HORIZONS:
+        q = (raw.get('horizons') or {}).get(h) or {}
+        day = q.get('quote_as_of')
+        contract = str(q.get('contract') or '')
+        symbol = str(q.get('symbol') or '')
+        try:
+            quote_day = datetime.fromisoformat(day).date()
+            rate = float(q['rate'])
+            if not (-5.0 <= rate <= 25.0):
+                continue
+        except (ValueError, TypeError, KeyError):
+            continue
+        if not (0 <= (today - quote_day).days <= 5):
+            continue
+        if (q.get('quote_timestamp_verified') is not True
+                or q.get('quote_timestamp_source') != 'SSR_DAILY_BAR_DATA_UPDATE_TIME'
+                or not contract or '!' in contract or '!' in symbol):
+            continue
+        tenors[h] = {
+            'contract': contract,
+            'quote_as_of': quote_day.isoformat(),
+            'rate_indicative': rate,
+            'source_quality': 'SECONDARY_VERIFIED_DAILY_BAR',
+        }
+    if not tenors:
+        return None
+    days = {v['quote_as_of'] for v in tenors.values()}
+    return {
+        'status': 'INDICATIVE_OBSERVATIONS_NON_OIS',
+        'source': raw.get('source'),
+        'method_id': 'TRADINGVIEW_DATED_FUTURES_SSR_V2',
+        'full_curve_usable': False,
+        'cross_date_join_allowed': False,
+        'policy_delta_allowed': False,
+        'repricing_signal_allowed': False,
+        'backtest_eligible_as_official': False,
+        'date_mismatch': len(days) > 1,
+        'horizons': tenors,
     }
 
 
@@ -181,6 +233,12 @@ def build():
                 },
                 'backtest_eligible_as_official': False
             }
+    # Read optional secondary source only for provenance of individual non-OIS quotes.
+    try:
+        live_quotes = json.loads(LIVE_QUOTES.read_text(encoding='utf-8'))
+    except (OSError, json.JSONDecodeError):
+        live_quotes = {}
+
     # Downgrade stale or incomplete operational rows rather than aborting G8 refresh.
     sys.path.insert(0, str(ROOT / 'validation'))
     from validate_ois_operational_freshness import check
@@ -197,6 +255,13 @@ def build():
             horizon['policy_delta_bp']=None
             horizon['change_1d_bp']=None
             horizon['change_1w_bp']=None
+    for ccy in ('USD', 'EUR', 'CHF'):
+        row = out['currencies'][ccy]
+        if row['operational_status'] == 'WITHHELD':
+            context = _secondary_verified_quotes(ccy, live_quotes, datetime.now(timezone.utc).date())
+            if context:
+                row['secondary_quote_context'] = context
+
     out['status']='PARTIAL_WITHHELD' if any(v['operational_status']=='WITHHELD' for v in out['currencies'].values()) else 'GREEN_8_OF_8'
     out['summary'] = {
         'g8_total': 8,

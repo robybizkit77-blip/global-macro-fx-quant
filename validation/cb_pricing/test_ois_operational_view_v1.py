@@ -68,3 +68,44 @@ with tempfile.TemporaryDirectory() as td:
     assert all(recovered['currencies']['NZD']['horizons'][h]['rate'] is None for h in ('3m','6m','12m'))
     assert recovered['summary']['operational_green']+recovered['summary']['operational_withheld']==8
 print('PASS OIS missing-estimate fail-closed recovery')
+# Per-tenor verified secondary quotes are observational context ONLY.
+from datetime import date, timedelta
+base_day=date.today()
+sample={'currencies': {'USD': {'status': 'LIVE_SECONDARY_READY', 'source': 'fixture',
+    'horizons': {
+        h: {'rate': 4.0 + n * 0.1, 'contract': 'ZQ' + h, 'symbol': 'CBOT:ZQ' + h,
+            'quote_as_of': (base_day - timedelta(days=(1 if h != '6m' else 0))).isoformat(),
+            'quote_timestamp_verified': True,
+            'quote_timestamp_source': 'SSR_DAILY_BAR_DATA_UPDATE_TIME'}
+        for n, h in enumerate(('3m', '6m', '12m'))
+    }}}}
+ctx=builder._secondary_verified_quotes('USD',sample,base_day)
+assert ctx['status']=='INDICATIVE_OBSERVATIONS_NON_OIS',ctx
+assert ctx['date_mismatch'] is True,ctx
+assert ctx['full_curve_usable'] is False
+assert ctx['cross_date_join_allowed'] is False
+assert ctx['policy_delta_allowed'] is False
+assert ctx['repricing_signal_allowed'] is False
+assert ctx['backtest_eligible_as_official'] is False
+assert all(set(ctx['horizons'][h])=={'contract','quote_as_of','rate_indicative','source_quality'}
+           for h in ('3m','6m','12m'))
+bad=json.loads(json.dumps(sample))
+bad['currencies']['USD']['horizons']['6m']['quote_timestamp_verified']=False
+cut=builder._secondary_verified_quotes('USD',bad,base_day)
+assert '6m' not in cut['horizons'] and len(cut['horizons'])==2
+bad['currencies']['USD']['horizons']['3m']['quote_as_of']=(base_day-timedelta(days=8)).isoformat()
+cut=builder._secondary_verified_quotes('USD',bad,base_day)
+assert set(cut['horizons'])=={'12m'}
+print('PASS OIS individual quote context fail-closed')
+
+# For withheld production currencies a context must NEVER fill the OIS curve.
+for ccy in ('USD','EUR','CHF'):
+    row=VIEW['currencies'][ccy]
+    ctx=row.get('secondary_quote_context')
+    if ctx:
+        assert row['operational_status']=='WITHHELD',row
+        assert row['backtest_eligible_as_official'] is False
+        assert ctx['full_curve_usable'] is False
+        assert all(row['horizons'][h]['rate'] is None for h in ('3m','6m','12m'))
+        assert all(row['horizons'][h]['policy_delta_bp'] is None for h in ('3m','6m','12m'))
+
