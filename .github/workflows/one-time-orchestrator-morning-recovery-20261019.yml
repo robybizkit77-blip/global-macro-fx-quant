@@ -1,0 +1,22 @@
+name: One Time Orchestrator Morning Recovery Trigger
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-time-orchestrator-morning-recovery-20261019.yml'
+permissions:
+  contents: read
+  actions: write
+jobs:
+  dispatch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Dispatch existing morning phase once without changing schedule
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh workflow run daily-data-orchestrator-v2.yml --ref main -f phase=morning
+          echo ORCHESTRATOR_MORNING_RECOVERY_DISPATCHED
