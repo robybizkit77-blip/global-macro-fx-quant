@@ -667,7 +667,7 @@ async function mountPairResearch(doc){
    const code=row.dataset.pair;
    if(pairIds.has(code))history.replaceState(history.state,'','#/coppie?pair='+code);
   }
- });
+ },true); // capture: original pair buttons can stop bubbling after updating the detail
 }
 function mountScreenerPairBridge(doc){
  if(route()!=='screener'||frame.contentDocument!==doc)return;
