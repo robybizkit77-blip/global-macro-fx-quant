@@ -33,6 +33,11 @@ items={
 "Home reports source coverage, not only load success": "function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy)" in s and "DATI PARZIALI" in s and "FONTI VERIFICATE" in s and "ECB_G8_PRICE_HISTORY.json" in s,
 "Home source audit is keyboard accessible and non-operative": "gmfq-home-data-audit" in s and "aria-haspopup" in s and "showModal()" in s and "no trading signal" not in s, 
 "Home explicitly identifies secondary instruments and synthetic DXY": "futures monetari, non OIS puri" in s and "Non è DXY ICE ufficiale" in s,
+"Home Pair links target canonical Deep Dive": "go('#/coppie?pair='+p)" in s and "go('#/coppie?pair='+pair.dataset.filter)" in s,
+"Deep Dive retains original engine judgment": "function mountPairResearch(doc)" in s and "thesis_is_not_entry===true" in s and "entry_level_published===false" in s and "data-pair-state" not in s,
+"Pair leg navigation stays within research pages": "data-gmfq-study-route" in s and "['macro','tassi','banche','cot']" in s,
+"Pair fixing cannot silently update thesis": "Il fixing BCE è più recente dello snapshot della tesi" in s and "non aggiorna automaticamente il giudizio del motore" in s,
+"Cross-pair permalink remains shareable": "history.replaceState(history.state,'','#/coppie?pair='+code)" in s,
 "Core data not changed": "localStorage.setItem" not in s and "github.com/repos/" not in s,
 }
 for k,v in items.items(): print(("PASS" if v else "FAIL")+": "+k)
