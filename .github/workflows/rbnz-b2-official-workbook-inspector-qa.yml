@@ -1,0 +1,30 @@
+name: RBNZ B2 Official Workbook Evidence Inspector QA
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/inspect_rbnz_b2_official_workbook_v1.py'
+      - 'validation/test_rbnz_b2_official_workbook_inspector_v1.py'
+      - '.github/workflows/rbnz-b2-official-workbook-inspector-qa.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/inspect_rbnz_b2_official_workbook_v1.py'
+      - 'validation/test_rbnz_b2_official_workbook_inspector_v1.py'
+      - '.github/workflows/rbnz-b2-official-workbook-inspector-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  read-only-evidence:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check openpyxl
+      - run: |
+          python -m py_compile validation/inspect_rbnz_b2_official_workbook_v1.py
+          python validation/test_rbnz_b2_official_workbook_inspector_v1.py
+          git diff --exit-code -- live_data payload site
