@@ -74,12 +74,19 @@ def parse_snb_csv(payload: bytes) -> dict:
         if tenor in day and day[tenor] != value:
             raise ValueError("conflicting duplicate SNB same-date observation")
         day[tenor] = value
+    # Daily spot tenors may update independently. Retain the latest date per
+    # official tenor as *source diagnostics*, but never join unequal dates.
+    last_by_tenor = {tenor: max((d for d, values in found.items() if tenor in values), default=None)
+                     for tenor in ("2Y", "10Y")}
     paired = sorted((k, v) for k, v in found.items() if set(v) == {"2Y", "10Y"})
     if not paired:
-        raise ValueError(f"no unambiguous same-date CHF 2Y/10Y pair; candidate_rows={candidates}")
+        raise ValueError(f"no unambiguous same-date CHF 2Y/10Y pair; candidate_rows={candidates}; latest_by_tenor={last_by_tenor}")
     date, values = paired[-1]
     return {"as_of": date, "2Y": values["2Y"], "10Y": values["10Y"],
             "paired_days": len(paired), "recognized_rows": candidates,
+            "latest_observed_by_tenor": last_by_tenor,
+            "newer_unpaired_source_observation": any(t is not None and t > date for t in last_by_tenor.values()),
+            "cross_date_join_allowed": False,
             "basis": "SNB rendeiduebd spot Swiss Confederation CHF 2J/10J"}
 
 
@@ -180,6 +187,14 @@ def self_test() -> None:
                 "2026-10-16;CHF;10J;0.62\n").encode()
     assert parse_snb_csv(csv_text)["as_of"] == "2026-10-16"
     assert parse_snb_csv(csv_text)["10Y"] == 0.62
+    assert parse_snb_csv(csv_text)["latest_observed_by_tenor"] == {"2Y":"2026-10-16","10Y":"2026-10-16"}
+    # Reject all cross-date phantom curves: late official 2Y alone only
+    # updates the audit's individual tenor date, never its paired as-of.
+    newer_2y = csv_text + b"2026-10-19;CHF;2J;0.35\\n".replace(b"\\n",b"\n")
+    partial = parse_snb_csv(newer_2y)
+    assert partial["as_of"]=="2026-10-16" and partial["latest_observed_by_tenor"]["2Y"]=="2026-10-19"
+    assert partial["latest_observed_by_tenor"]["10Y"]=="2026-10-16"
+    assert partial["newer_unpaired_source_observation"] is True and partial["cross_date_join_allowed"] is False
     for bad in [b"Date;D0;D1;Value\n2026-10-16;CHF;2J;0.32\n",
                 b"Date;D0;D1;Value\n2026-10-16;CHF;2J;0.32\n2026-10-15;CHF;10J;0.62\n",
                 b"Date;D0;D1;Value\n2026-10-16;CHF;2J;0.32\n2026-10-16;CHF;2J;0.77\n2026-10-16;CHF;10J;0.62\n"]:
