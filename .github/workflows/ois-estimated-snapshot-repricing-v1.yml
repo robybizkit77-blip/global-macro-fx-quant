@@ -103,7 +103,11 @@ jobs:
           assert v['status']==('PARTIAL_WITHHELD' if summary['operational_withheld'] else 'GREEN_8_OF_8')
           for c in ('USD','EUR','CHF'):
               r=v['currencies'][c]
-              assert r['operational_status']=='GREEN_ESTIMATED'
+              if r['operational_status']=='WITHHELD':
+                  assert r['backtest_eligible_as_official'] is False, r
+                  assert all(r['horizons'][h]['rate'] is None for h in ('3m','6m','12m')), r
+                  continue
+              assert r['operational_status']=='GREEN_ESTIMATED', r
               assert r['input_mode']=='LIVE_SECONDARY_OVERLAY', r
               assert r['method_id']=='TRADINGVIEW_DATED_FUTURES_SSR_V2', r
               assert r['backtest_eligible_as_official'] is False
