@@ -268,7 +268,9 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
     const d=document.getElementById('gmfq-page')?.contentDocument;
     return d?.getElementById('gmfq-pair-research-path')?.dataset.pair==='EURCHF';
   },null,{timeout:12000});
-  await page.waitForURL(u=>u.hash==='#/coppie?pair=EURCHF',{timeout:5000});
+  const selectedHash=await page.evaluate(()=>location.hash);
+  if(selectedHash!=='#/coppie?pair=EURCHF')
+    throw Error(label+' EURCHF permalink not updated: '+selectedHash);
   const detail=await page.evaluate(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument;
     return {name:d?.querySelector('#pair-detail .desk-kicker')?.textContent,
