@@ -18,9 +18,24 @@
       "instrument_class": "FUTURES_POLICY_RATE_PROXY_NOT_SPOT_OIS",
       "source_url": "https://www.cmegroup.com/markets/interest-rates/stirs/30-day-federal-fund.settlements.html",
       "access_status": "HOMOGENEOUS_CURRENT_T1_T5_OFFICIAL_SERIES_NOT_CERTIFIED_IN_REPO",
-      "known_problem": "2026-10-08 source registry records historical T-5 CME archive access denied to CI runner; current secondary individual dated-futures quotes do not share a common observation date.",
-      "required_for_activation": "Reproducible CME settlement observations for same contract IDs on current, prior 1D and prior ~5 business days; validate clock, expiry and unit conventions.",
-      "prohibited_shortcut": "Joining secondary single-contract quote dates or treating a forward monthly futures rate as spot OIS."
+      "known_problem": "GitHub Actions probe 2026-10-19 accessed date-exact CME public website ZQ settlement tables for 2026-10-16 and 2026-10-15 (60 dated contracts each), but the T-5 session 2026-10-09 returned zero usable contracts. The official historical API requires OAuth, entitlement and a redistribution licence; public website viewing is not evidence of authorization for unattended ingestion/public redistribution.",
+      "required_for_activation": "Obtain the same contract settlement series with exact dates T, T-1, T-5, independently validate product ID, CME settlement method and permitted internal/redistribution use, then explicitly certify signal eligibility. Never infer T-5 from the public website if not available.",
+      "prohibited_shortcut": "Joining secondary single-contract quote dates or treating a forward monthly futures rate as spot OIS.",
+      "public_website_probe": {
+        "observation_date": "2026-10-19",
+        "method": "CME_PUBLIC_WEBSITE_JSON_READ_ONLY",
+        "website_product_id_candidate": "305",
+        "requested_trade_dates": {
+          "2026-10-16": "HTTP_200_DATE_EXACT_60_CONTRACTS",
+          "2026-10-15": "HTTP_200_DATE_EXACT_60_CONTRACTS",
+          "2026-10-09": "HTTP_200_DATE_EXACT_0_USABLE_CONTRACTS"
+        },
+        "asof_date_alignment_certified_for_all_horizons": false,
+        "homogeneous_current_t1_t5_available": false,
+        "automated_ingestion_or_redistribution_authorized": false,
+        "proof_run_url": "https://github.com/robybizkit77-blip/global-macro-fx-quant/actions/runs/39238809938",
+        "note": "Endpoint alone does not prove CME market-data entitlement or permit publishing quoted settlements. T-5 retrieval must be solved or sourced under authorized terms."
+      }
     },
     "CHF": {
       "preferred_source": "ICE Futures Europe Three-Month SARON futures (SA3) daily settlements",
