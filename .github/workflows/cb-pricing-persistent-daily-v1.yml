@@ -7,9 +7,11 @@ on:
       - cb-pricing-persistent-daily-v1-2026-10-14
     paths:
       - '.github/workflows/cb-pricing-persistent-daily-v1.yml'
+      - 'validation/cb_pricing/run_active_cb_pricing_daily.sh'
   pull_request:
     paths:
       - '.github/workflows/cb-pricing-persistent-daily-v1.yml'
+      - 'validation/cb_pricing/run_active_cb_pricing_daily.sh'
   workflow_dispatch:
   schedule:
     # Europe/Rome retries: 06:00, 06:30, 07:00 on working days.
