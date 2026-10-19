@@ -136,17 +136,16 @@ def parse_quote(html: str, expected_contract: str, today: date) -> dict:
     if not 80.0 < price < 105.0:
         raise RuntimeError(f"implausible futures price {price} for {expected_contract}")
     valid = datetime.fromisoformat(m.group("valid").replace("Z", "+00:00"))
-    as_of = valid.astimezone(timezone.utc).date()
-    lag_bd = business_days_ago(as_of, today)
-    if lag_bd > 3:
-        raise RuntimeError(f"stale quote {expected_contract}: {as_of} ({lag_bd} business days)")
+    # Schema.org Offer.priceValidUntil is an offer-expiry timestamp, NOT
+    # the observation/trade date. Never infer market freshness from it.
     return {
         "price": price,
         "implied_rate": round(100.0 - price, 4),
         "currency": m.group("currency"),
-        "quote_as_of": as_of.isoformat(),
+        "quote_as_of": None,
+        "quote_timestamp_verified": False,
         "price_valid_until": valid.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
-        "business_day_lag": lag_bd,
+        "business_day_lag": None,
     }
 
 
@@ -173,11 +172,11 @@ def collect(today: date | None = None) -> dict:
         contracts = parse_contracts(fetch(spec["chain_url"]), spec)
         selected = select_contracts(contracts, today)
         horizons = {}
-        asofs = []
+        # No verifiable quote timestamp is available from SSR Offer metadata.
         for horizon, row in selected.items():
             url = spec["contract_url"].format(contract=row["contract"])
             q = parse_quote(fetch(url), row["contract"], today)
-            asofs.append(q["quote_as_of"])
+            # Keep illustrative prices, never a fabricated common as-of.
             horizons[horizon] = {
                 "rate": q["implied_rate"],
                 "futures_price": q["price"],
@@ -186,21 +185,22 @@ def collect(today: date | None = None) -> dict:
                 "expiration": row["expiration"].isoformat(),
                 "contract_description": row["description"],
                 "quote_as_of": q["quote_as_of"],
+                "quote_timestamp_verified": q["quote_timestamp_verified"],
                 "price_valid_until": q["price_valid_until"],
                 "business_day_lag": q["business_day_lag"],
                 "mapping": f"nearest dated listed contract expiry to today+{TARGET_DAYS[horizon]}d; no interpolation",
             }
         out["currencies"][ccy] = {
-            "status": "LIVE_SECONDARY_READY",
+            "status": "LIVE_SECONDARY_INDICATIVE_ONLY",
             "confidence_grade": spec["confidence"],
-            "as_of": min(asofs),
+            "as_of": None,
             "instrument": spec["instrument"],
             "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
             "source_url": spec["chain_url"],
             "source_quality": "SECONDARY_PUBLIC_LIVE_PROXY",
-            "freshness_status": "LIVE_OR_RECENT_SESSION",
+            "freshness_status": "QUOTE_TIMESTAMP_UNVERIFIED",
             "horizons": horizons,
-            "note": "Informational futures-implied policy proxy using dated listed contracts only. Contract-expiry mapping is approximate to 3M/6M/12M, without interpolation; continuous futures are forbidden.",
+            "note": "Indicative dated-futures quote levels only. TradingView Offer.priceValidUntil is not the quote observation timestamp; no freshness, synchronized curve, policy delta or repricing is certified. Never substitute this for OIS.",
         }
     return out
 
