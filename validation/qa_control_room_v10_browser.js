@@ -100,10 +100,14 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
      !homeAudit.source?.includes('futures monetari, non OIS puri')||
      homeAudit.documentWidth>homeAudit.viewport+16)
     throw Error(label+' incorrect Home source freshness display '+JSON.stringify(homeAudit));
-  const freshTrigger=page.frameLocator('#gmfq-page').locator('.mast .fresh');
-  await freshTrigger.focus();await freshTrigger.press('Enter');
+  const triggerSelector=label==='mobile'?'#gmfq-mobile-data-audit':'.mast .fresh';
+  const freshTrigger=page.frameLocator('#gmfq-page').locator(triggerSelector);
+  if(label==='mobile'){await freshTrigger.click()}
+  else{await freshTrigger.focus();await freshTrigger.press('Enter')}
   await page.frameLocator('#gmfq-page').locator('dialog#gmfq-home-data-audit[open]').waitFor({timeout:10000});
   await page.frameLocator('#gmfq-page').locator('.gmfq-audit-close').click();
+  if(label==='mobile'&&!(await page.frameLocator('#gmfq-page').locator('#gmfq-mobile-data-audit').isVisible()))
+    throw Error('Mobile source-quality trigger not visible');
   if(await page.frameLocator('#gmfq-page').locator('dialog#gmfq-home-data-audit[open]').count())
     throw Error(label+' freshness audit dialog did not close');
   console.log('CONTROL_ROOM_PREVIEW_SOURCE_FRESHNESS_GREEN',label,
