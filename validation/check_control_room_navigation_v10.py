@@ -46,6 +46,11 @@ items={
 "2Y change must be official matched historical current": "Math.abs(nowValue-item['2Y'])<=0.001" in s and "gap>0&&gap<=5" in s and "latest===date" in s and "WITHHELD" in s,
 "Absent or sparse history is withheld": "intervallo storico troppo lungo" in s and "data-gmfq-yield-change" in s and "status:'WITHHELD'" in s,
 "Qualitative Macro is dated and does not change trade signals": "diagnosi qualitativa, non un nuovo rilascio economico" in s and "Nessun dato cambia la tesi, il sizing o i trigger" in s,
+"Pair FX audit compares 2Y and ECB fixing on EXACT common dates": "function pairMarketReactionAudit(code,rates,fx)" in s and "bh.has(d)&&quotes.has(d)&&fresh(d,5)" in s and "quote/base" in s,
+"Current 2Y from matched official yield histories": "Math.abs(h.values[last]-v['2Y'])>0.001" in s and "v.date" in s and "gap>5" in s,
+"FX versus Rates audit is purely diagnostic": "data-reaction-status" in s and "non prova causalità" in s and "non genera ordini, trigger o livelli" in s,
+"Ambiguous small moves never called confirmed": "deltaSpread>=2" in s and "fxPct>=0.05" in s and "NON_CONCLUSIVO" in s,
+"Audit uses no unlicensed or fabricated FX levels": "fx.schema" not in s and "ECB_G8_PRICE_HISTORY.json" in s and "rates?.[c]" in s,
 "Core data not changed": "localStorage.setItem" not in s and "github.com/repos/" not in s,
 }
 for k,v in items.items(): print(("PASS" if v else "FAIL")+": "+k)
