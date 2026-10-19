@@ -1,0 +1,88 @@
+name: NZD Reviewed Rates Runtime Sandbox Simulation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/nzd-reviewed-rates-runtime-sandbox.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  simulate-without-publishing:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate source evidence and build reviewed candidate
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/nzd-sim/artifacts
+          python validation/preflight_nzd_rates_reviewed_candidate_v1.py \
+            --receipt /tmp/nzd-sim/artifacts/preflight.json \
+            --candidate /tmp/nzd-sim/artifacts/NZD_REVIEW_ONLY.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/nzd-sim/artifacts/preflight.json'))
+          assert r['result']=='PREFLIGHT_PASS_MANUAL_APPROVAL_STILL_REQUIRED',r
+          assert r['automatic_promotion_allowed'] is False
+          assert r['changed_currencies']==['NZD']
+          print('NZD_PREFLIGHT_REVIEW_ONLY_PASS')
+          PY
+      - name: Simulate complete Rates runtime migration only in disposable sandbox
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/nzd-sim/repo
+          cp -a validation live_data payload /tmp/nzd-sim/repo/
+          cd /tmp/nzd-sim/repo
+          python validation/update_live_direct_section.py \
+            --section NATIVE_RATES_DATA \
+            --replacement /tmp/nzd-sim/artifacts/NZD_REVIEW_ONLY.json \
+            --apply > /tmp/nzd-sim/artifacts/direct-update.json
+          python validation/build_rates_audit_metadata.py \
+            --audit-date "$(date -u +%Y-%m-%d)" \
+            --output /tmp/nzd-sim/artifacts/RATES_AUDIT_METADATA.json
+          python validation/update_live_derived_sections.py \
+            --rates /tmp/nzd-sim/artifacts/RATES_AUDIT_METADATA.json \
+            --apply > /tmp/nzd-sim/artifacts/derived-update.json
+          python validation/build_live_manifest_v2.py \
+            --write live_data/manifest.v2.json > /tmp/nzd-sim/artifacts/manifest-build.json
+          python validation/check_live_update_contract.py > /tmp/nzd-sim/artifacts/contract.json
+          python validation/rebuild_live_data_runtime.py --verify-only > /tmp/nzd-sim/artifacts/roundtrip.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          a=Path('/tmp/nzd-sim/artifacts')
+          direct=json.load(open(a/'direct-update.json'))
+          contract=json.load(open(a/'contract.json'))
+          roundtrip=json.load(open(a/'roundtrip.json'))
+          assert direct['status']=='PASS' and direct['section']=='NATIVE_RATES_DATA'
+          assert direct['changed_payload_parts']==[0],direct
+          assert contract['status']=='PASS',contract
+          assert roundtrip['status']=='PASS' and roundtrip['noop_roundtrip_byte_identical'] is True,roundtrip
+          cur=json.load(open('live_data/sections/NATIVE_RATES_DATA.json'))
+          assert cur['NZD']['date']=='2026-10-16'
+          assert cur['NZD']['2Y']==3.89 and cur['NZD']['10Y']==5.0
+          assert cur['NZD']['quality']=='FULL_CURRENT_OFFICIAL_STAGING_REVIEW_REQUIRED'
+          print('NZD_RUNTIME_SANDBOX_END_TO_END_GREEN_NO_PRODUCTION_WRITE')
+          PY
+      - name: Confirm entire checked-out production data untouched
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- live_data payload site
+          echo NZD_PRODUCTION_IMMUTABLE_PASS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nzd-reviewed-rates-sandbox-evidence-only
+          path: /tmp/nzd-sim/artifacts/
+          if-no-files-found: warn
+          retention-days: 30
