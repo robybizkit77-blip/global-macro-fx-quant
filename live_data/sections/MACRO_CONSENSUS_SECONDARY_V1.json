@@ -106,7 +106,7 @@
       "unit": null
     }
   ],
-  "generated_at_utc": "2026-10-19T09:26:46.856845Z",
+  "generated_at_utc": "2026-10-19T17:04:48.454874Z",
   "provider": "FOREX_FACTORY_FAIR_ECONOMY_WEEKLY",
   "provider_endpoint": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
   "provider_field": "forecast",
