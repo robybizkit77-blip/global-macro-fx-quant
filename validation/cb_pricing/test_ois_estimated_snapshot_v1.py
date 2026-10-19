@@ -30,23 +30,25 @@ if estimated:
         rows = load_history(p)
         assert len(rows) == len(estimated)
         changed = json.loads(json.dumps(VIEW))
-        changed['currencies']['USD']['horizons']['3m']['rate'] = 4.05
-        changed['currencies']['USD']['horizons']['3m']['policy_delta_bp'] = 17.5
+        focus=estimated[0]
+    before=float(changed['currencies'][focus]['horizons']['3m']['rate'])
+    changed['currencies'][focus]['horizons']['3m']['rate'] = before + 0.05
+        changed['currencies'][focus]['horizons']['3m']['policy_delta_bp'] = float(changed['currencies'][focus]['horizons']['3m']['policy_delta_bp']) + 5.0
         r3 = append_changed_snapshots(changed, '2026-10-16T08:00:00Z', p)
-        assert r3['appended'] == 1 and r3['currencies'] == ['USD'], r3
+        assert r3['appended'] == 1 and r3['currencies'] == [focus], r3
         rows = load_history(p)
         assert len(rows) == len(estimated)+1
 
     # Any methodology switch must never be interpreted as market repricing.
-    base_row = json.loads(json.dumps(VIEW['currencies']['USD']))
+    base_row = json.loads(json.dumps(VIEW['currencies'][focus]))
     base_row['method_id'] = 'TRADINGVIEW_DATED_FUTURES_SSR_V2'
     base_row['source'] = 'TradingView public server-rendered contract pages · exchange-labelled dated futures'
     legacy_row = json.loads(json.dumps(base_row))
     legacy_row['method_id'] = 'TRADINGVIEW_EXCHANGE_LABELLED_FUTURES_SSR_V1'
     legacy_row['source'] = 'superseded V1 source'
-    legacy_record = make_record('USD', legacy_row, '2026-10-14T08:00:00Z')
+    legacy_record = make_record(focus, legacy_row, '2026-10-14T08:00:00Z')
     live_record = make_record('USD', base_row, '2026-10-15T08:00:00Z')
-    r = _estimated_repricing('USD', base_row, [legacy_record, live_record])
+    r = _estimated_repricing(focus, base_row, [legacy_record, live_record])
     assert r['previous_reference'] is None, r
     assert r['weekly_reference'] is None, r
     assert r['change_1d_available'] is False, r
