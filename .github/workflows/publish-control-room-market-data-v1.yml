@@ -63,6 +63,13 @@ jobs:
           assert set(rates) >= g8
           assert set(cot) >= g8
           assert rates['USD'].get('date')
+          # Release synchronization gate: both NZD tenors must be the reviewed,
+          # same-date RBNZ observation before publishing the Rates mirror.
+          nz=rates['NZD']
+          if nz.get('date') >= '2026-10-16':
+              assert nz.get('date') == '2026-10-16', 'Review required for new NZD dates'
+              assert nz.get('2Y') == 3.89 and nz.get('10Y') == 5.00
+              assert nz.get('quality') == 'FULL_CURRENT_OFFICIAL_MANUAL_VERIFIED'
           assert cot['USD'].get('dates')
 
           assert setup.get('schema') == 'GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1'
