@@ -1,0 +1,66 @@
+{
+  "schema": "GMFQ_RBNZ_B2_INDEPENDENT_WEB_REVIEW_V1",
+  "reviewed_date": "2026-10-19",
+  "authority": "Reserve Bank of New Zealand",
+  "source_url": "https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates",
+  "source_page_release": "2026-10-19",
+  "basis": "Secondary market government bond closing yields (%pa)",
+  "documented_publisher": "NZFMA through RBNZ B2",
+  "status": "SOURCE_TABLE_CROSS_CHECKED_STAGING_ONLY",
+  "review_type": "INDEPENDENT_WEB_PAGE_READ_NOT_MACHINE_FETCHED_IN_GITHUB",
+  "source_rows": [
+    {
+      "date": "2026-10-05",
+      "2Y": 3.83,
+      "10Y": 5.04
+    },
+    {
+      "date": "2026-10-06",
+      "2Y": 3.88,
+      "10Y": 5.11
+    },
+    {
+      "date": "2026-10-07",
+      "2Y": 3.88,
+      "10Y": 5.11
+    },
+    {
+      "date": "2026-10-08",
+      "2Y": 3.85,
+      "10Y": 5.11
+    },
+    {
+      "date": "2026-10-09",
+      "2Y": 3.83,
+      "10Y": 5.06
+    },
+    {
+      "date": "2026-10-12",
+      "2Y": 3.82,
+      "10Y": 5.02
+    },
+    {
+      "date": "2026-10-13",
+      "2Y": 3.8,
+      "10Y": 4.98
+    },
+    {
+      "date": "2026-10-14",
+      "2Y": 3.83,
+      "10Y": 4.99
+    },
+    {
+      "date": "2026-10-15",
+      "2Y": 3.81,
+      "10Y": 4.94
+    },
+    {
+      "date": "2026-10-16",
+      "2Y": 3.89,
+      "10Y": 5
+    }
+  ],
+  "source_page_notes": "RBNZ B2 released 19 Oct 2026; one business day lag. The 16 Oct overnight interbank cash rate is pending due to technical difficulty, unrelated to benchmark government bond close.",
+  "live_data_promotion_allowed": false,
+  "html_source_accessible_in_github_runner": false
+}
