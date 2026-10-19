@@ -1,0 +1,60 @@
+name: Probe CME ZQ Public EOD Settlements V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/probe-cme-zq-public-settlements-v1.yml'
+      - 'validation/cb_pricing/probe_usd_cme_public_settlements_v1.py'
+      - 'validation/cb_pricing/test_probe_usd_cme_public_settlements_v1.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cme-zq-public-access-proof-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  access-check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Prove exact-date and no-promotion contract on fixtures
+        run: python validation/cb_pricing/test_probe_usd_cme_public_settlements_v1.py
+
+      - name: Probe only official CME public website endpoint (never licensed API)
+        run: |
+          python validation/cb_pricing/probe_usd_cme_public_settlements_v1.py \
+            --output /tmp/cme-zq-public-source-proof.json \
+            --summary "$GITHUB_STEP_SUMMARY"
+
+      - name: Enforce zero repository or official runtime mutation
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          git diff --cached --exit-code
+          python - <<'PY'
+          import json
+          a=json.load(open('/tmp/cme-zq-public-source-proof.json'))
+          assert a['official_OIS_status_change_allowed'] is False
+          assert a['automated_price_ingestion_enabled'] is False
+          assert a['price_levels_collected_or_logged'] is False
+          assert a['access_terms_or_redistribution_rights_certified'] is False
+          assert a['status'] in {'PUBLIC_EOD_ACCESS_CANDIDATE_FOUND','PUBLIC_EOD_ACCESS_NOT_PROVEN'}
+          assert len(a['checks'])==3
+          print('CME_ZQ_SOURCE_PROBE_ZERO_MUTATION_PASS')
+          PY
+
+      - name: Attach read-only source availability evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: cme-zq-public-source-proof
+          path: /tmp/cme-zq-public-source-proof.json
+          if-no-files-found: error
