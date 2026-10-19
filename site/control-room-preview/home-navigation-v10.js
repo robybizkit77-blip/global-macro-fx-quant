@@ -409,12 +409,12 @@ function marketResearchSecondary(data){
   '<div class="gmfq-quote-cards">'+cards.join('')+'</div>'+
   '<p class="gmfq-research-note">Quotazioni di contratti futures anche su date differenti: non sono una curva OIS. Vietato collegare i punti, calcolare repricing o utilizzarli per segnali e backtest.</p></div>':'';
 }
-function mountMarketResearch(doc,ois,proxy,rates){
+function mountMarketResearch(doc,ois,proxy,rates,snb10){
  if(route()!=='tassi'||frame.contentDocument!==doc)return;
  const table=doc.getElementById('ois-rows'),original=table?.closest('.desk-panel');
  if(!original||doc.getElementById('gmfq-pricing-research'))return;
  const style=doc.createElement('style');style.id='gmfq-pricing-research-style';
- style.textContent='#gmfq-pricing-research{margin-top:12px}#gmfq-pricing-research .gmfq-research-intro,#gmfq-pricing-research .gmfq-research-note{color:#a9c1d2;font-size:12px;line-height:1.55;margin:9px 0 14px}#gmfq-pricing-research h3{font-size:13px;color:#e5edf5;margin:0 0 10px}#gmfq-pricing-research .gmfq-research-plot{height:225px;max-width:100%;border:1px solid #284456;border-radius:7px;background:#0b2030;overflow:hidden}#gmfq-pricing-research svg{height:100%;width:100%;display:block}#gmfq-pricing-research .gmfq-research-tabs,#gmfq-pricing-research .gmfq-research-legend{display:flex;flex-wrap:wrap;gap:7px 13px;margin:9px 0}#gmfq-pricing-research button{cursor:pointer;background:#122c40;border:1px solid #34546b;padding:6px 12px;border-radius:5px;color:#c0d0e0;font:12px Arial,sans-serif}#gmfq-pricing-research button[aria-pressed=true]{background:#e2c87c;border-color:#e2c87c;color:#102132}#gmfq-pricing-research button:focus-visible{outline:2px solid #f7dfa0}#gmfq-pricing-research .gmfq-research-legend span{font-size:11px;color:#b4c9d8}#gmfq-pricing-research .gmfq-research-legend i{display:inline-block;width:13px;height:3px;margin-right:5px;vertical-align:middle}#gmfq-pricing-research .gmfq-research-separator{border-top:1px solid #294556;margin-top:18px;padding-top:16px}#gmfq-pricing-research .gmfq-quote-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:9px}#gmfq-pricing-research .gmfq-quote-card{background:#0b2232;border:1px solid #294659;border-radius:6px;padding:11px}#gmfq-pricing-research .gmfq-quote-card b{display:block;color:#f0d091;font-size:12px;margin-bottom:8px}#gmfq-pricing-research .gmfq-quote{color:#b6c9d8;font-size:11px;line-height:1.7}#gmfq-pricing-research .gmfq-quote strong{color:#e5eff5}@media(max-width:600px){#gmfq-pricing-research .gmfq-research-plot{height:190px}#gmfq-pricing-research .gmfq-quote-cards{grid-template-columns:1fr}}';
+ style.textContent='#gmfq-pricing-research{margin-top:12px}#gmfq-pricing-research .gmfq-research-intro,#gmfq-pricing-research .gmfq-research-note{color:#a9c1d2;font-size:12px;line-height:1.55;margin:9px 0 14px}#gmfq-pricing-research h3{font-size:13px;color:#e5edf5;margin:0 0 10px}#gmfq-pricing-research .gmfq-research-plot{height:225px;max-width:100%;border:1px solid #284456;border-radius:7px;background:#0b2030;overflow:hidden}#gmfq-pricing-research svg{height:100%;width:100%;display:block}#gmfq-pricing-research .gmfq-research-tabs,#gmfq-pricing-research .gmfq-research-legend{display:flex;flex-wrap:wrap;gap:7px 13px;margin:9px 0}#gmfq-pricing-research button{cursor:pointer;background:#122c40;border:1px solid #34546b;padding:6px 12px;border-radius:5px;color:#c0d0e0;font:12px Arial,sans-serif}#gmfq-pricing-research button[aria-pressed=true]{background:#e2c87c;border-color:#e2c87c;color:#102132}#gmfq-pricing-research button:focus-visible{outline:2px solid #f7dfa0}#gmfq-pricing-research .gmfq-research-legend span{font-size:11px;color:#b4c9d8}#gmfq-pricing-research .gmfq-research-legend i{display:inline-block;width:13px;height:3px;margin-right:5px;vertical-align:middle}#gmfq-pricing-research .gmfq-research-separator{border-top:1px solid #294556;margin-top:18px;padding-top:16px}#gmfq-pricing-research .gmfq-quote-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:9px}#gmfq-pricing-research .gmfq-quote-card{background:#0b2232;border:1px solid #294659;border-radius:6px;padding:11px}#gmfq-pricing-research .gmfq-snb-spot{border:1px solid #315267;background:#0d2637;border-radius:7px;padding:12px 14px;margin:10px 0 12px;color:#aec6d7;font-size:12px;line-height:1.65}#gmfq-pricing-research .gmfq-snb-spot strong{color:#e6f1f8;font-size:20px;font-variant-numeric:tabular-nums}#gmfq-pricing-research .gmfq-snb-spot a{color:#e8cb8b;text-decoration:underline}#gmfq-pricing-research .gmfq-quote-card b{display:block;color:#f0d091;font-size:12px;margin-bottom:8px}#gmfq-pricing-research .gmfq-quote{color:#b6c9d8;font-size:11px;line-height:1.7}#gmfq-pricing-research .gmfq-quote strong{color:#e5eff5}@media(max-width:600px){#gmfq-pricing-research .gmfq-research-plot{height:190px}#gmfq-pricing-research .gmfq-quote-cards{grid-template-columns:1fr}}';
  doc.head.appendChild(style);
  const curves=marketResearchCurves(ois),host=doc.createElement('section');
  host.id='gmfq-pricing-research';host.className='desk-panel';
@@ -424,6 +424,7 @@ function mountMarketResearch(doc,ois,proxy,rates){
   '<div class="gmfq-research-plot"></div><div class="gmfq-research-legend"></div>'+
   '<p class="gmfq-research-note">Certificato significa fonte verificata, non OIS puro: GBP è OIS BoE; JPY, AUD e CAD provengono da futures monetari. Ogni curva mostra punti di mercato per scadenza, non una previsione certa della banca centrale.</p>'+
   marketResearchSecondary(ois)+'<div class="gmfq-research-separator"><h3>Fonti incomplete</h3>'+
+  '<div class="gmfq-snb-spot" id="gmfq-chf-snb-10y-context" role="note"></div>'+
   '<p class="gmfq-research-note" id="gmfq-nzd-pricing-context"></p>'+
   '<p class="gmfq-research-note" id="gmfq-chf-rates-context"></p></div></div>';
  original.insertAdjacentElement('afterend',host);
@@ -446,13 +447,29 @@ function mountMarketResearch(doc,ois,proxy,rates){
  host.querySelector('#gmfq-nzd-pricing-context').textContent=nz===null?
   '🇳🇿 NZD: curva OIS non certificata; proxy Bank Bill non disponibile o fuori data.':
   '🇳🇿 NZD Bank Bill 6M · '+fmt(nz,2)+'% · '+proxy.as_of+' — proxy direzionale, NON curva OIS né policy delta.';
+ const official10=snb10?.schema==='GMFQ_CHF_SNB_10Y_SPOT_CONTEXT_V1'&&
+  snb10.status==='OFFICIAL_PUBLISHED_10Y_INFORMATIONAL'&&snb10.currency==='CHF'&&snb10.tenor==='10Y'&&
+  snb10.yield_type==='SWISS_CONFEDERATION_ZERO_COUPON_SPOT'&&
+  snb10.operational_rates_2y10y_untouched===true&&snb10.has_current_2y===false&&
+  snb10.eligible_for_curve_spreads===false&&snb10.eligible_for_core_signals===false&&
+  snb10.eligible_for_backtests===false&&snb10.ois_or_saron===false&&
+  snb10.source_url==='https://www.snb.ch/en/the-snb/mandates-goals/statistics/statistics-pub/current_interest_exchange_rates'&&
+  fresh(snb10.as_of,4)&&num(snb10.value_percent)!==null&&
+  snb10.value_percent>=-3&&snb10.value_percent<=18;
+ const snbBox=host.querySelector('#gmfq-chf-snb-10y-context');
+ if(official10){
+   snbBox.innerHTML='🇨🇭 <strong>CHF 10Y SNB '+fmt(snb10.value_percent,3)+'%</strong> · spot Confederazione · '+htmlEscape(snb10.as_of)+
+    '. Dato ufficiale singolo, SOLO INFORMATIVO; il 2Y resta privo di aggiornamento omogeneo, nessuno spread o segnale è calcolato. '+
+    '<a target="_blank" rel="noopener noreferrer" href="https://www.snb.ch/en/the-snb/mandates-goals/statistics/statistics-pub/current_interest_exchange_rates">Fonte SNB ↗</a>';
+ }else snbBox.textContent='🇨🇭 CHF 10Y SNB: contesto ufficiale non disponibile o non corrente. Nessuna ricostruzione di 2Y, spread o segnali.';
+ 
  const ch=rates?.CHF;
  host.querySelector('#gmfq-chf-rates-context').textContent=ch?.date&&!fresh(ch.date,4)?
   '🇨🇭 CHF 2Y/10Y: ultimo dato governativo '+ch.date+'. Data non corrente; la stima della Home è puramente indicativa, non operativa.':
   '';
 }
 async function applyMarketResearch(doc){
- const all=await Promise.allSettled([feed('OIS_OPERATIONAL_VIEW.json'),feed('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),feed('NATIVE_RATES_DATA.json')]);
+ const all=await Promise.allSettled([feed('OIS_OPERATIONAL_VIEW.json'),feed('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),feed('NATIVE_RATES_DATA.json'),feed('CHF_SNB_10Y_SPOT_CONTEXT.json')]);
  mountMarketResearch(doc,...all.map(x=>x.status==='fulfilled'?x.value:null));
 }
 
