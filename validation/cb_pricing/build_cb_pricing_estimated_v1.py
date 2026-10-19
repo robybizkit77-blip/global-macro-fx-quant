@@ -169,7 +169,7 @@ def build_currency(ccy, cb_row, ois_row, live_row=None, directional_proxy=None):
     }
     # Preserve unverified dated-futures prices as EXPLICITLY NON-OIS context.
     # No policy delta, direction, freshness or backtest signals are inferred.
-    if ccy in {"USD", "EUR", "CHF"} and isinstance(live_row, dict):
+    if ccy in {"USD", "EUR", "CHF"} and isinstance(live_row, dict) and not _live_usable(ccy, live_row):
         raw = live_row.get("horizons") or {}
         if all(_num((raw.get(h) or {}).get("futures_price")) is not None
                and "!" not in str((raw.get(h) or {}).get("contract") or "!")
