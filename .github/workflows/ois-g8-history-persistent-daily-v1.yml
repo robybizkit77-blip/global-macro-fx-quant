@@ -48,6 +48,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          # When this run waited behind another OIS writer, event SHA is stale.
+          # For production always start from the newest validated main.
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
           fetch-depth: 50
           persist-credentials: true
 
