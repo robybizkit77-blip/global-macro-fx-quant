@@ -8,7 +8,7 @@ on:
     branches: [main]
     paths: ['.github/workflows/publish-dashboard-pages-v1.yml','index.html','payload/**','dashboard/**','live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/D.json','live_data/sections/ESTIMATED_RESIDUAL_GAPS.json','validation/publishing/verify_pages_http_delivery_v1.py','validation/publishing/test_verify_pages_http_delivery_v1.py']
   workflow_run:
-    workflows: ['Macro Persistent Daily V1','CB Pricing Persistent Daily V1','OIS Estimated Snapshot Repricing V1','Calendar News Operational Refresh V1','Price Persistent Daily V1','Rates Persistent Daily V1','COT Persistent Weekly V1','Liquidity JPY M3 Persistent Daily V1','VIX Persistent Apply V1','WTI Persistent Rebuild V1','Brent Market Proxy Refresh V1']
+    workflows: ['Macro Persistent Daily V1','CB Pricing Persistent Daily V1','OIS Estimated Snapshot Repricing V1','OIS G8 History Persistent Daily V1','Calendar News Operational Refresh V1','Price Persistent Daily V1','Rates Persistent Daily V1','COT Persistent Weekly V1','Liquidity JPY M3 Persistent Daily V1','VIX Persistent Apply V1','WTI Persistent Rebuild V1','Brent Market Proxy Refresh V1']
     types: [completed]
   workflow_dispatch:
 
