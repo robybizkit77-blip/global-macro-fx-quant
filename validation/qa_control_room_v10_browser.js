@@ -282,6 +282,75 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
     !detail.text?.includes('CHF')||!detail.text?.includes('non aggiorna automaticamente')||
     detail.g8!==28||detail.width>detail.viewport+16)
     throw Error(label+' EURCHF selected-pair research context failed '+JSON.stringify(detail));
+
+  // Macro/CB labels come from the certified engine, never from reconstructed
+  // government-yield gaps. CHF is stale: its 2Y/10Y and same-day spread
+  // cannot be upgraded by a separate official SNB 10Y observation.
+  const compareCHF=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page').contentDocument,c=d?.getElementById('gmfq-pair-macro-rates');
+    return {title:c?.querySelector('h3')?.textContent,labels:[...c?.querySelectorAll('.gmfq-compare-score strong')||[]].map(x=>x.textContent),
+      dates:[...c?.querySelectorAll('.gmfq-compare-leg')||[]].map(x=>x.textContent),
+      same:c?.querySelector('.gmfq-compare-spread')?.dataset.sameDate,spread:c?.querySelector('.gmfq-compare-spread')?.textContent,
+      disclaimer:c?.querySelector('.gmfq-compare-disclaimer')?.textContent};
+  });
+  if(!compareCHF.title?.includes('EUR /')||compareCHF.labels.length!==2||
+     compareCHF.same!=='false'||!compareCHF.spread.includes('WITHHELD')||
+     !compareCHF.dates.some(x=>x.includes('CHF')&&x.includes('2Y / 10Y WITHHELD'))||
+     !compareCHF.disclaimer.includes('non sottrarre i loro delta'))
+    throw Error(label+' CHF cross-date model/readiness guard broken '+JSON.stringify(compareCHF));
+
+  // EUR and USD currently share an official 2Y/10Y date. An observed
+  // sovereign spread may be calculated from two official SAME-DAY yields,
+  // but must be named a LEVEL gap, never a Fed/ECB policy forecast.
+  await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="EURUSD"]').click();
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return d?.getElementById('gmfq-pair-research-path')?.dataset.pair==='EURUSD';
+  },null,{timeout:10000});
+  const compareEURUSD=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument,c=d?.getElementById('gmfq-pair-macro-rates');
+    return {labels:[...c?.querySelectorAll('.gmfq-compare-score strong')||[]].map(x=>x.textContent),
+      same:c?.querySelector('.gmfq-compare-spread')?.dataset.sameDate,spread:c?.querySelector('.gmfq-compare-spread')?.textContent,
+      dates:[...c?.querySelectorAll('.gmfq-compare-leg')||[]].map(x=>x.textContent),
+      disclaimer:c?.querySelector('.gmfq-compare-disclaimer')?.textContent};
+  });
+  const y2Gap=Math.round((ratesFeed.EUR['2Y']-ratesFeed.USD['2Y'])*100);
+  const sameRatesDay=ratesFeed.EUR.date===ratesFeed.USD.date;
+  if(compareEURUSD.labels[0]!=='Favorisce 🇺🇸 USD'||
+     compareEURUSD.labels[1]!=='Non distingue chiaramente le due valute'||
+     compareEURUSD.same!==(sameRatesDay?'true':'false')||
+     (sameRatesDay&&!compareEURUSD.spread.includes(y2Gap+' bp'))||
+     !compareEURUSD.disclaimer.includes('non vengono ricalcolati'))
+    throw Error(label+' EURUSD canonical macro and observed same-day Rates gap mismatch '+JSON.stringify(compareEURUSD));
+
+  // AUD / CAD are individually certified but published on different dates.
+  // Never combine their most recent independent spot yields into a 2Y spread.
+  await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="AUDCAD"]').click();
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return d?.getElementById('gmfq-pair-research-path')?.dataset.pair==='AUDCAD';
+  },null,{timeout:10000});
+  const compareAUDCAD=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument,c=d?.getElementById('gmfq-pair-macro-rates');
+    return {same:c?.querySelector('.gmfq-compare-spread')?.dataset.sameDate,
+      spread:c?.querySelector('.gmfq-compare-spread')?.textContent,
+      legs:[...c?.querySelectorAll('.gmfq-compare-leg')||[]].map(x=>x.textContent)};
+  });
+  if(ratesFeed.AUD.date!==ratesFeed.CAD.date&&
+     (compareAUDCAD.same!=='false'||!compareAUDCAD.spread?.includes('WITHHELD')))
+    throw Error(label+' AUDCAD mixed-date 2Y spread promoted '+JSON.stringify(compareAUDCAD));
+  if(!compareAUDCAD.legs.some(x=>x.includes('futures IB'))||
+     !compareAUDCAD.legs.some(x=>x.includes('futures CORRA')))
+    throw Error(label+' Official AUD/CAD 6M instrument classes not explicit '+JSON.stringify(compareAUDCAD));
+  await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="EURCHF"]').click();
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return d?.getElementById('gmfq-pair-research-path')?.dataset.pair==='EURCHF';
+  },null,{timeout:10000});
+  console.log('CONTROL_ROOM_PREVIEW_PAIR_MACRO_RATES_GREEN',label,
+    JSON.stringify({chf:compareCHF.same,eurusd:compareEURUSD.same,audcad:compareAUDCAD.same,
+      observedEurUsdBp:sameRatesDay?y2Gap:null,viewport:detail.viewport}));
+
   await page.frameLocator('#gmfq-page').locator('#gmfq-pair-research-path button[data-gmfq-study-route="tassi"][data-gmfq-study-currency="CHF"]').click();
   await page.waitForURL(u=>u.hash==='#/tassi?ccy=CHF',{timeout:15000});
   await page.waitForFunction(()=>{
