@@ -29,7 +29,7 @@ def main() -> None:
     assert result["lanes"]["ois"]["AUD"]["state"] == "AVAILABLE_CERTIFIED"
     assert result["lanes"]["treasury"]["state"] == "AVAILABLE_CERTIFIED"
     assert result["lanes"]["g8_bonds"]["CHF"]["state"] == "STALE"
-    assert result["lanes"]["g8_bonds"]["NZD"]["state"] == "STALE"
+    assert result["lanes"]["g8_bonds"]["NZD"]["state"] == "AVAILABLE_CERTIFIED"
     assert result["lanes"]["cot"]["state"] == "AVAILABLE_CERTIFIED"
     assert result["lanes"]["fx"]["state"] == "AVAILABLE_CERTIFIED"
     assert result["lanes"]["macro"]["state"] == "UNAVAILABLE"
