@@ -158,7 +158,7 @@ def probe_rbnz() -> dict:
         try:
             payload, meta = fetch(url, accept=accept, limit=limit)
             if label.endswith("_xlsx"):
-                if not payload.startswith(b"PK\\x03\\x04"):
+                if not payload.startswith(b"PK\x03\x04"):
                     raise ValueError("not an XLSX signature")
                 meta["xlsx_signature"] = "PASS"
                 meta["sha256"] = __import__("hashlib").sha256(payload).hexdigest()
