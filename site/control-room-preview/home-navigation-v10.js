@@ -707,6 +707,97 @@ function pairWhatChangedEvidence(code,pair,rates,modelDay){
   '</section>';
 }
 
+/* Relative Rates -> FX consistency audit, not event study, attribution, signal
+   or inference from model bias. Select ONLY exactly date-matched published ECB
+   fixing AND official 2Y observations for both currency legs. */
+function pairMarketReactionAudit(code,rates,fx){
+ const a=code.slice(0,3),b=code.slice(3,6);
+ const withheld=(why)=>'<section id="gmfq-pair-market-reaction" class="gmfq-reaction" data-reaction-status="WITHHELD" aria-label="Audit reazione dei mercati">'+
+  '<h3>Il mercato ha reagito come doveva?</h3>'+
+  '<p class="gmfq-reaction-verdict">NON VALUTABILE · '+htmlEscape(why)+'</p>'+
+  '<p class="gmfq-reaction-note">Per un confronto servono due date comuni con rendimenti governativi 2Y ufficiali di entrambe le valute e fixing BCE della coppia. Nessun segnale ricostruito.</p></section>';
+ if(!/^[A-Z]{6}$/.test(code)||!FX.includes(a)||!FX.includes(b)||a===b)
+  return withheld('coppia non riconosciuta');
+ const hist=(c)=>{
+  const v=rates?.[c],h=v?.history2;
+  if(!v||!String(v.quality||'').includes('OFFICIAL')||!fresh(v.date,5)||
+     num(v['2Y'])===null||!Array.isArray(h?.dates)||!Array.isArray(h?.values)||
+     h.dates.length!==h.values.length||h.dates.length<2)return null;
+  const last=h.dates.length-1;
+  if(h.dates[last]!==v.date||num(h.values[last])===null||
+     Math.abs(h.values[last]-v['2Y'])>0.001)return null;
+  const rows=new Map();
+  let prev='';
+  for(let i=0;i<h.dates.length;i++){
+   const d=h.dates[i],val=num(h.values[i]);
+   if(!/^\d{4}-\d{2}-\d{2}$/.test(d)||d<=prev||val===null||d>v.date)return null;
+   rows.set(d,val);prev=d;
+  }
+  return rows;
+ };
+ const ah=hist(a),bh=hist(b);
+ if(!ah||!bh)return withheld('2Y di una o entrambe le valute non attuali o non certificati');
+ if(fx?.schema!=='GMFQ_ECB_G8_PRICE_HISTORY_V1'||
+    fx.status!=='CURRENT_OFFICIAL_HISTORY'||!fresh(fx.last_as_of,5)||
+    !Array.isArray(fx.rows)||fx.pair_count!==28)
+  return withheld('storico fixing BCE non attuale o non verificato');
+ const quotes=new Map();
+ let prev='';
+ for(const row of fx.rows){
+  const d=row?.Date;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(d)||d<=prev||d>fx.last_as_of)
+   return withheld('date dello storico BCE non ordinate o non verificate');
+  prev=d;
+  const base=a==='EUR'?1:num(row?.[a]),quote=b==='EUR'?1:num(row?.[b]);
+  if(base!==null&&quote!==null&&base>0&&quote>0)
+   quotes.set(d,quote/base); // ECB rates are currency units per 1 EUR.
+ }
+ const common=[...ah.keys()].filter(d=>bh.has(d)&&quotes.has(d)&&fresh(d,5)).sort();
+ if(common.length<2)
+  return withheld('meno di due date ufficiali comuni recenti tra FX e rendimenti 2Y');
+ const end=common[common.length-1],start=common[common.length-2];
+ const gap=(Date.parse(end+'T00:00:00Z')-Date.parse(start+'T00:00:00Z'))/86400000;
+ if(!Number.isFinite(gap)||gap<=0||gap>5)
+  return withheld('intervallo tra date comuni troppo lungo · ultima data '+end);
+ // The strongest guard: all THREE observations on each date are official
+ // matched snapshots. Do NOT mix same-week independently dated bond levels.
+ const spread0=(ah.get(start)-bh.get(start))*100;
+ const spread1=(ah.get(end)-bh.get(end))*100;
+ const deltaSpread=spread1-spread0;
+ const q0=quotes.get(start),q1=quotes.get(end);
+ const fxPct=(q1/q0-1)*100;
+ if(![spread0,spread1,deltaSpread,q0,q1,fxPct].every(Number.isFinite)||q0<=0||q1<=0)
+  return withheld('valori delle osservazioni non validi');
+ const rateSign=deltaSpread>=2?1:deltaSpread<=-2?-1:0;
+ const priceSign=fxPct>=0.05?1:fxPct<=-0.05?-1:0;
+ const state=rateSign&&priceSign?(rateSign===priceSign?'COERENTE':'DIVERGENTE'):'NON_CONCLUSIVO';
+ const dir=rateSign>0?FLAG[a]+' '+a:rateSign<0?FLAG[b]+' '+b:'nessuna valuta chiaramente';
+ const interpretation=state==='COERENTE'?
+  'Coerenza direzionale: la coppia si è mossa nella stessa direzione suggerita dalla variazione relativa dei 2Y.':
+  state==='DIVERGENTE'?
+   'Divergenza: il cambio si è mosso in direzione opposta a quella suggerita dalla variazione relativa dei 2Y.':
+   'Movimenti troppo piccoli per una conclusione direzionale con la soglia descrittiva adottata.';
+ const label=state==='COERENTE'?'COERENTE':state==='DIVERGENTE'?'DIVERGE':'NON CONCLUSIVO';
+ const sign=(x,d)=>((x>0?'+':'')+fmt(x,d));
+ const pairLabel=FLAG[a]+' '+a+' / '+FLAG[b]+' '+b;
+ return '<section id="gmfq-pair-market-reaction" class="gmfq-reaction" data-reaction-status="'+state+
+  '" data-window-start="'+start+'" data-window-end="'+end+'" aria-label="Audit reazione dei mercati">'+
+  '<h3>Il mercato ha reagito come doveva?</h3>'+
+  '<p>Controllo di <strong>coerenza direzionale</strong>, non spiegazione causale. Si confronta lo stesso intervallo per i due rendimenti 2Y e per il fixing FX.</p>'+
+  '<div class="gmfq-reaction-window">FONTI UFFICIALI · '+start+' → '+end+' · '+gap+
+   (gap===1?' giorno':' giorni')+' di calendario</div>'+
+  '<div class="gmfq-reaction-metrics"><div><span>VARIAZIONE SPREAD 2Y · '+FLAG[a]+' '+a+' − '+FLAG[b]+' '+b+
+   '</span><strong>'+sign(deltaSpread,1)+' bp</strong><small>Spread osservato '+sign(spread0,1)+' → '+sign(spread1,1)+' bp</small></div>'+
+   '<div><span>CAMBIO · '+pairLabel+'</span><strong>'+sign(fxPct,2)+'%</strong><small>Fixing BCE '+fmt(q0,b==='JPY'?2:4)+
+   ' → '+fmt(q1,b==='JPY'?2:4)+'</small></div></div>'+
+  '<div class="gmfq-reaction-verdict" data-reaction-verdict="'+state+'"><strong>'+label+'</strong> · '+
+   htmlEscape(interpretation)+'</div>'+
+  '<p class="gmfq-reaction-note">Lettura teorica limitata: un aumento dello spread 2Y (base − quotata) tende, a parità di altri fattori, a favorire '+FLAG[a]+' '+a+
+   '; un calo favorirebbe '+FLAG[b]+' '+b+'. Questa volta lo spostamento relativo suggerisce '+htmlEscape(dir)+
+   '. Soglie di lettura: ±2 bp sui rendimenti e ±0,05% sul FX.</p>'+
+  '<p class="gmfq-reaction-warning">Sono fixing BCE e rendimenti governativi di fine giornata, non prezzi intraday sincronizzati né la reazione a una singola notizia. Altri fattori possono dominare il cambio. Questo audit non modifica la tesi, non prova causalità e non genera ordini, trigger o livelli.</p></section>';
+}
+
 async function mountPairResearch(doc){
  if(route()!=='coppie'||frame.contentDocument!==doc)return;
  const host=doc.getElementById('pair-detail');
@@ -728,6 +819,7 @@ async function mountPairResearch(doc){
  style.textContent='#gmfq-pair-research-path{margin-top:12px}#gmfq-pair-research-path .gmfq-path-body{padding:13px 17px 16px}#gmfq-pair-research-path p{color:#b8cad7;font-size:12px;line-height:1.55;margin:7px 0 12px}#gmfq-pair-research-path .gmfq-path-evidence{color:#e0c788;font-size:11px;line-height:1.5}#gmfq-pair-research-path .gmfq-path-legs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}#gmfq-pair-research-path .gmfq-path-leg{border:1px solid #294457;border-radius:6px;background:#0a2232;padding:12px 13px;min-width:0}#gmfq-pair-research-path .gmfq-path-leg strong{color:#ebf2f7;font-size:14px;display:block}#gmfq-pair-research-path .gmfq-path-leg small{display:block;color:#9db6c8;font-size:11px;margin:5px 0 9px;line-height:1.4}#gmfq-pair-research-path .gmfq-path-links{display:flex;flex-wrap:wrap;gap:6px}#gmfq-pair-research-path button{border:1px solid #3a596d;background:#122d40;border-radius:5px;padding:6px 9px;color:#e6edf4;font:11px Arial,sans-serif;cursor:pointer}#gmfq-pair-research-path button:hover{border-color:#e3c57c;color:#f1d894}#gmfq-pair-research-path button:focus-visible{outline:2px solid #e3c57c;outline-offset:2px}#gmfq-pair-research-path .gmfq-path-warning{color:#dfc894;border-top:1px solid #2a4759;padding-top:10px}@media(max-width:600px){#gmfq-pair-research-path .gmfq-path-legs{grid-template-columns:1fr}#gmfq-pair-research-path .gmfq-path-body{padding:11px}}';
  style.textContent+='.gmfq-compare{border-top:1px solid #2b4757;margin-top:14px;padding-top:13px}.gmfq-compare h3{margin:0 0 11px;font:600 14px/1.3 Arial,sans-serif;color:#e5eff6}.gmfq-compare-score{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.gmfq-compare-score>div{border-left:2px solid #997e4d;padding:7px 10px;background:#0e2534;min-width:0}.gmfq-compare-score span{display:block;font:10px/1.4 Arial,sans-serif;color:#a6bac7}.gmfq-compare-score strong{display:block;font:600 12px/1.5 Arial,sans-serif;color:#e5edf3;margin-top:4px}.gmfq-compare-legs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}.gmfq-compare-leg{min-width:0;padding:10px 12px;border-radius:5px;background:#0a1f2d;border:1px solid #274453}.gmfq-compare-leg strong{display:block;color:#e5eefa;font:600 12px Arial,sans-serif;margin-bottom:5px}.gmfq-compare-leg small{display:block;color:#b2c6d4;font:11px/1.5 Arial,sans-serif;margin:5px 0;overflow-wrap:anywhere}.gmfq-compare p{font:12px/1.55 Arial,sans-serif;margin:10px 0 0}.gmfq-compare .gmfq-compare-spread{color:#e1c990}.gmfq-compare .gmfq-compare-note{color:#cadbe5}.gmfq-compare .gmfq-compare-disclaimer{font-size:10px;color:#9ab4c5}@media(max-width:600px){.gmfq-compare-score,.gmfq-compare-legs{grid-template-columns:1fr}}';
  style.textContent+='.gmfq-what-changed{border-top:1px solid #284354;margin-top:16px;padding-top:14px}.gmfq-what-changed h3{margin:0;color:#e9f1f7;font:600 14px/1.4 Arial,sans-serif}.gmfq-what-changed>p{font:12px/1.55 Arial,sans-serif;color:#abc3d2;margin:7px 0 11px}.gmfq-change-legs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.gmfq-change-leg{border-left:2px solid #58718a;padding:9px 11px;background:#0d2332;min-width:0}.gmfq-change-leg strong{display:block;font:600 13px Arial,sans-serif;color:#e8f0f6;margin-bottom:8px}.gmfq-change-leg span{display:block;font:10px/1.4 Arial,sans-serif;color:#a0b6c5;letter-spacing:.02em}.gmfq-change-leg p{font:12px/1.5 Arial,sans-serif;color:#d2e0e9;margin:4px 0 11px;overflow-wrap:anywhere}.gmfq-change-leg .gmfq-change-measured{color:#e1c78a;margin-bottom:0}.gmfq-what-changed .gmfq-change-summary{color:#c5d7e2}.gmfq-what-changed .gmfq-change-warning{color:#93abba;font-size:10px}@media(max-width:600px){.gmfq-change-legs{grid-template-columns:1fr}}';
+ style.textContent+='.gmfq-reaction{border-top:1px solid #294557;margin-top:15px;padding-top:14px}.gmfq-reaction h3{font:600 14px/1.4 Arial,sans-serif;margin:0 0 9px;color:#e6eff5}.gmfq-reaction p{color:#b4c8d5;font:12px/1.55 Arial,sans-serif;margin:7px 0 11px}.gmfq-reaction .gmfq-reaction-window{font:11px/1.5 Arial,sans-serif;color:#dec98f;padding:5px 0}.gmfq-reaction-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:9px 0}.gmfq-reaction-metrics>div{border:1px solid #294554;border-radius:5px;padding:11px 12px;min-width:0;background:#0b2434}.gmfq-reaction-metrics span{display:block;color:#a4bbc9;font:10px/1.45 Arial,sans-serif}.gmfq-reaction-metrics strong{display:block;color:#edf2f7;font:600 21px/1.4 Arial,sans-serif;font-variant-numeric:tabular-nums;margin:3px 0}.gmfq-reaction-metrics small{display:block;color:#b4c7d5;font:11px/1.45 Arial,sans-serif;overflow-wrap:anywhere}.gmfq-reaction .gmfq-reaction-verdict{border-left:2px solid #a08b58;padding:8px 11px;background:#102638;color:#cbdce7}.gmfq-reaction-verdict strong{color:#e6d59c}.gmfq-reaction-verdict[data-reaction-verdict="COERENTE"]{border-color:#3ac998}.gmfq-reaction-verdict[data-reaction-verdict="DIVERGENTE"]{border-color:#e36a79}.gmfq-reaction .gmfq-reaction-note{color:#a9bdcb}.gmfq-reaction .gmfq-reaction-warning{color:#94abbc;font-size:10px}@media(max-width:600px){.gmfq-reaction-metrics{grid-template-columns:1fr}}';
  doc.head.appendChild(style);
  const panel=doc.createElement('section');
  panel.id='gmfq-pair-research-path';panel.className='desk-panel';
@@ -771,7 +863,7 @@ async function mountPairResearch(doc){
    '<div class="gmfq-path-body"><p>Prima confronta Macro e Tassi delle due valute, poi guarda Banche centrali e COT. Torna al Prezzo per verificare conferma o divergenza. Il dettaglio sopra resta la lettura canonica della tesi, non un segnale di ingresso.</p>'+
    '<div class="gmfq-path-evidence">Modello: '+htmlEscape(setup.price_asof)+' · Fixing BCE: '+htmlEscape(fxDay||'non verificato')+
    ' · Valuta favorita dal motore: '+htmlEscape(fav||'nessuna')+'</div>'+
-   pairMacroRatesComparison(code,setup.pairs[code],rates,ois,setup.price_asof)+pairWhatChangedEvidence(code,setup.pairs[code],rates,setup.price_asof)+'<div class="gmfq-path-legs">'+leg(a)+leg(b)+'</div>'+
+   pairMacroRatesComparison(code,setup.pairs[code],rates,ois,setup.price_asof)+pairWhatChangedEvidence(code,setup.pairs[code],rates,setup.price_asof)+pairMarketReactionAudit(code,rates,fx)+'<div class="gmfq-path-legs">'+leg(a)+leg(b)+'</div>'+
    '<p class="gmfq-path-warning">'+htmlEscape(sourceMsg)+' I futures indicativi non sono curve OIS e non determinano da soli un trade.</p>'+
    '<div class="gmfq-path-links"><button type="button" data-gmfq-study-route="screener">Apri Screener 28 coppie ↗</button></div></div>';
  };
