@@ -21,6 +21,8 @@ from pathlib import Path
 SNB_LAST_UPDATE = "https://data.snb.ch/api/cube/rendeiduebd/lastUpdate"
 SNB_CSV = "https://data.snb.ch/api/cube/rendeiduebd/data/csv/en"
 RBNZ_B2 = "https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/b/b2/hb2-daily-close.xlsx"
+RBNZ_B2_ALTERNATE = "https://rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/b/b2/hb2-daily-close.xlsx"
+RBNZ_B2_PUBLIC_PAGE = "https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates"
 DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 TERMS = {"2J": "2Y", "10J": "10Y"}
 UA = "GlobalMacroFXQuant/1.0 (+read-only official source verification)"
@@ -138,6 +140,35 @@ def probe_rbnz() -> dict:
             workbook.close()
     except Exception as exc:
         report["error"] = error_summary(exc)
+    # Verify the official publication's own second hostname and published
+    # page, without evading robots, authentication or blocking controls.
+    # These checks never populate operational yields.
+    report["official_access_routes"] = {}
+    for label, url, accept, limit in (
+        ("canonical_xlsx", RBNZ_B2,
+         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", 10_000_000),
+        ("official_non_www_xlsx", RBNZ_B2_ALTERNATE,
+         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", 10_000_000),
+        ("official_publication_page", RBNZ_B2_PUBLIC_PAGE, "text/html", 2_000_000),
+    ):
+        if label=="canonical_xlsx":
+            report["official_access_routes"][label] = (
+                report.get("access") or {"error": report.get("error", "unavailable")})
+            continue
+        try:
+            payload, meta = fetch(url, accept=accept, limit=limit)
+            if label.endswith("_xlsx"):
+                if not payload.startswith(b"PK\\x03\\x04"):
+                    raise ValueError("not an XLSX signature")
+                meta["xlsx_signature"] = "PASS"
+                meta["sha256"] = __import__("hashlib").sha256(payload).hexdigest()
+            else:
+                meta["contains_B2"] = b"Wholesale interest rates" in payload or b"Wholesale Interest Rates" in payload
+            report["official_access_routes"][label] = meta
+            if label.endswith("_xlsx") and report["status"]=="WITHHELD":
+                report["status"] = "ALTERNATE_OFFICIAL_XLSX_ACCESSIBLE_NOT_CERTIFIED"
+        except Exception as exc:
+            report["official_access_routes"][label] = {"error": error_summary(exc)}
     return report
 
 
