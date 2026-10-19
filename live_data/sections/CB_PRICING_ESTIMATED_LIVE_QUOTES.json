@@ -14,6 +14,8 @@
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
           "price_valid_until": "2026-10-16T16:59:55Z",
           "quote_as_of": "2026-10-16",
+          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
+          "quote_timestamp_verified": true,
           "rate": 0.335,
           "symbol": "ICEEUR:SA3M2027"
         },
@@ -26,6 +28,8 @@
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
           "price_valid_until": "2026-10-16T16:59:16Z",
           "quote_as_of": "2026-10-16",
+          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
+          "quote_timestamp_verified": true,
           "rate": -0.0475,
           "symbol": "ICEEUR:SA3U2026"
         },
@@ -38,12 +42,14 @@
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
           "price_valid_until": "2026-10-19T08:10:11Z",
           "quote_as_of": "2026-10-19",
+          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
+          "quote_timestamp_verified": true,
           "rate": 0.01,
           "symbol": "ICEEUR:SA3Z2026"
         }
       },
       "instrument": "Three Month SARON",
-      "note": "Informational futures-implied policy proxy using dated listed contracts only. Contract-expiry mapping is approximate to 3M/6M/12M, without interpolation; continuous futures are forbidden.",
+      "note": "Indicative dated-futures quote levels only. TradingView Offer.priceValidUntil is not the quote observation timestamp; no freshness, synchronized curve, policy delta or repricing is certified. Never substitute this for OIS.",
       "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
       "source_quality": "SECONDARY_PUBLIC_LIVE_PROXY",
       "source_url": "https://www.tradingview.com/symbols/ICEEUR-SA31%21/contracts/",
@@ -63,6 +69,8 @@
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
           "price_valid_until": "2026-10-16T21:12:07Z",
           "quote_as_of": "2026-10-16",
+          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
+          "quote_timestamp_verified": true,
           "rate": 3.115,
           "symbol": "EUREX:FST3M2027"
         },
@@ -75,6 +83,8 @@
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
           "price_valid_until": "2026-10-16T21:20:26Z",
           "quote_as_of": "2026-10-16",
+          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
+          "quote_timestamp_verified": true,
           "rate": 2.5325,
           "symbol": "EUREX:FST3V2026"
         },
@@ -87,12 +97,14 @@
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
           "price_valid_until": "2026-10-16T21:04:11Z",
           "quote_as_of": "2026-10-16",
+          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
+          "quote_timestamp_verified": true,
           "rate": 2.72,
           "symbol": "EUREX:FST3Z2026"
         }
       },
       "instrument": "Three-Month Euro STR Futures",
-      "note": "Informational futures-implied policy proxy using dated listed contracts only. Contract-expiry mapping is approximate to 3M/6M/12M, without interpolation; continuous futures are forbidden.",
+      "note": "Indicative dated-futures quote levels only. TradingView Offer.priceValidUntil is not the quote observation timestamp; no freshness, synchronized curve, policy delta or repricing is certified. Never substitute this for OIS.",
       "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
       "source_quality": "SECONDARY_PUBLIC_LIVE_PROXY",
       "source_url": "https://www.tradingview.com/symbols/EUREX-FST31%21/contracts/",
@@ -112,6 +124,8 @@
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
           "price_valid_until": "2026-10-16T21:40:23Z",
           "quote_as_of": "2026-10-16",
+          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
+          "quote_timestamp_verified": true,
           "rate": 4.59,
           "symbol": "CBOT:ZQV2027"
         },
@@ -124,6 +138,8 @@
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
           "price_valid_until": "2026-10-16T21:40:22Z",
           "quote_as_of": "2026-10-16",
+          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
+          "quote_timestamp_verified": true,
           "rate": 4.07,
           "symbol": "CBOT:ZQZ2026"
         },
@@ -136,19 +152,21 @@
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
           "price_valid_until": "2026-10-19T03:10:54Z",
           "quote_as_of": "2026-10-19",
+          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
+          "quote_timestamp_verified": true,
           "rate": 4.3,
           "symbol": "CBOT:ZQH2027"
         }
       },
       "instrument": "30 Day Federal Funds Futures",
-      "note": "Informational futures-implied policy proxy using dated listed contracts only. Contract-expiry mapping is approximate to 3M/6M/12M, without interpolation; continuous futures are forbidden.",
+      "note": "Indicative dated-futures quote levels only. TradingView Offer.priceValidUntil is not the quote observation timestamp; no freshness, synchronized curve, policy delta or repricing is certified. Never substitute this for OIS.",
       "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
       "source_quality": "SECONDARY_PUBLIC_LIVE_PROXY",
       "source_url": "https://www.tradingview.com/symbols/CBOT-ZQ1%21/contracts/",
       "status": "LIVE_SECONDARY_READY"
     }
   },
-  "generated_at_utc": "2026-10-19T08:43:13.065347Z",
+  "generated_at_utc": "2026-10-19T09:06:58.112656Z",
   "governance": {
     "backtest_eligible_as_official_ois": false,
     "bias_effect": "NONE",
