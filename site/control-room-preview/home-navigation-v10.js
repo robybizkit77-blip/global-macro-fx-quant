@@ -650,6 +650,63 @@ function pairMacroRatesComparison(code,pair,rates,ois,modelDay){
   '<p class="gmfq-compare-disclaimer">I giudizi Macro e Tassi/CB sono quelli dello snapshot del motore, non vengono ricalcolati con i rendimenti mostrati. Il 6M descrive strumenti OIS/futures differenti: non sottrarre i loro delta e non trasformarli in previsioni di cambio.</p></section>';
 }
 
+/* What Changed = separate historical, measured yield change from the dated,
+   qualitative canonical model diagnosis. An absent/mismatched interval is NOT
+   a 1D, 1W or inferred live CB repricing. Read-only, no model reconstruction. */
+function pairWhatChangedEvidence(code,pair,rates,modelDay){
+ const a=code.slice(0,3),b=code.slice(3,6),dynamic=pair?.relative_dynamics;
+ const modelValid=!!dynamic&&dynamic.a===a&&dynamic.b===b&&
+  dynamic.A?.withheld===false&&dynamic.B?.withheld===false&&
+  Array.isArray(dynamic.A.details)&&Array.isArray(dynamic.B.details)&&
+  fresh(modelDay,5);
+ const observation=(ccy)=>{
+  const item=rates?.[ccy],history=item?.history2,date=item?.date;
+  const base=!!item&&String(item.quality||'').includes('OFFICIAL')&&fresh(date,5)&&
+   num(item['2Y'])!==null;
+  const dates=history?.dates,values=history?.values;
+  if(!base||!Array.isArray(dates)||!Array.isArray(values)||
+     dates.length!==values.length||dates.length<2)
+   return {status:'WITHHELD',text:'2Y: variazione non certificabile · '+(date||'data assente')};
+  const current=dates.length-1;
+  const latest=dates[current],previous=dates[current-1],nowValue=num(values[current]),oldValue=num(values[current-1]);
+  const gap=(Date.parse(latest+'T00:00:00Z')-Date.parse(previous+'T00:00:00Z'))/86400000;
+  const eligible=latest===date&&Number.isFinite(gap)&&gap>0&&gap<=5&&
+   nowValue!==null&&oldValue!==null&&Math.abs(nowValue-item['2Y'])<=0.001;
+  if(!eligible)return {status:'WITHHELD',text:'2Y: variazione non confrontabile · ultima osservazione '+date+
+   (Number.isFinite(gap)&&gap>5?' · intervallo storico troppo lungo':'')};
+  const delta=Math.round((nowValue-oldValue)*1000)/10;
+  const label=delta>0.05?'sale':delta< -0.05?'scende':'stabile';
+  return {status:'MEASURED',delta,prev:previous,latest,description:label,
+   text:'2Y '+label+' '+(delta>0?'+':'')+fmt(delta,1)+' bp · '+previous+' → '+latest+
+   ' · stessa serie ufficiale'};
+ };
+ const modelLeg=(ccy,key)=>{
+  if(!modelValid)return '<p class="gmfq-change-model">Lettura Macro del motore non disponibile o non aggiornata.</p>';
+  const data=dynamic[key],detail=data.details.filter(t=>typeof t==='string'&&
+   /^(Crescita|Lavoro|Rates|Inflazione): /.test(t)).slice(0,4);
+  if(!detail.length)return '<p class="gmfq-change-model">Il motore non identifica una dinamica interpretabile.</p>';
+  return '<p class="gmfq-change-model">'+detail.map(v=>htmlEscape(v)).join(' · ')+'</p>';
+ };
+ const leg=(c,key)=>{
+  const ob=observation(c);
+  return '<div class="gmfq-change-leg" data-gmfq-change-currency="'+c+
+    '" data-gmfq-yield-change="'+ob.status+'"><strong>'+FLAG[c]+' '+c+'</strong>'+
+    '<span>LETTURA MODELLO · '+htmlEscape(modelDay)+'</span>'+
+    modelLeg(c,key)+
+    '<span>VARIAZIONE 2Y · DATI OSSERVATI</span><p class="gmfq-change-measured">'+
+    htmlEscape(ob.text)+'</p></div>';
+ };
+ const phase=modelValid&&typeof pair?.transition?.state==='string'?
+  htmlEscape(pair.transition.state):'Dinamica del motore non verificata';
+ return '<section class="gmfq-what-changed" id="gmfq-pair-what-changed" aria-label="Cosa sta cambiando, modello contro fatti osservati">'+
+  '<h3>Cosa sta cambiando · modello vs dati</h3>'+
+  '<p>Il motore riassume la dinamica Macro dello snapshot; il 2Y misura invece un movimento realmente osservato. Non sono la stessa prova.</p>'+
+  '<div class="gmfq-change-legs">'+leg(a,'A')+leg(b,'B')+'</div>'+
+  '<p class="gmfq-change-summary">Dinamica relativa del modello ('+htmlEscape(modelDay)+'): '+phase+'. È una diagnosi qualitativa, non un nuovo rilascio economico.</p>'+
+  '<p class="gmfq-change-warning">Il confronto 2Y indica la variazione tra due date ufficiali dichiarate, non necessariamente 24 ore; con serie vecchie o intervalli troppo lunghi la variazione resta non confrontabile. Nessun dato cambia la tesi, il sizing o i trigger.</p>'+
+  '</section>';
+}
+
 async function mountPairResearch(doc){
  if(route()!=='coppie'||frame.contentDocument!==doc)return;
  const host=doc.getElementById('pair-detail');
@@ -670,6 +727,7 @@ async function mountPairResearch(doc){
  const style=doc.createElement('style');style.id='gmfq-pair-path-style';
  style.textContent='#gmfq-pair-research-path{margin-top:12px}#gmfq-pair-research-path .gmfq-path-body{padding:13px 17px 16px}#gmfq-pair-research-path p{color:#b8cad7;font-size:12px;line-height:1.55;margin:7px 0 12px}#gmfq-pair-research-path .gmfq-path-evidence{color:#e0c788;font-size:11px;line-height:1.5}#gmfq-pair-research-path .gmfq-path-legs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}#gmfq-pair-research-path .gmfq-path-leg{border:1px solid #294457;border-radius:6px;background:#0a2232;padding:12px 13px;min-width:0}#gmfq-pair-research-path .gmfq-path-leg strong{color:#ebf2f7;font-size:14px;display:block}#gmfq-pair-research-path .gmfq-path-leg small{display:block;color:#9db6c8;font-size:11px;margin:5px 0 9px;line-height:1.4}#gmfq-pair-research-path .gmfq-path-links{display:flex;flex-wrap:wrap;gap:6px}#gmfq-pair-research-path button{border:1px solid #3a596d;background:#122d40;border-radius:5px;padding:6px 9px;color:#e6edf4;font:11px Arial,sans-serif;cursor:pointer}#gmfq-pair-research-path button:hover{border-color:#e3c57c;color:#f1d894}#gmfq-pair-research-path button:focus-visible{outline:2px solid #e3c57c;outline-offset:2px}#gmfq-pair-research-path .gmfq-path-warning{color:#dfc894;border-top:1px solid #2a4759;padding-top:10px}@media(max-width:600px){#gmfq-pair-research-path .gmfq-path-legs{grid-template-columns:1fr}#gmfq-pair-research-path .gmfq-path-body{padding:11px}}';
  style.textContent+='.gmfq-compare{border-top:1px solid #2b4757;margin-top:14px;padding-top:13px}.gmfq-compare h3{margin:0 0 11px;font:600 14px/1.3 Arial,sans-serif;color:#e5eff6}.gmfq-compare-score{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.gmfq-compare-score>div{border-left:2px solid #997e4d;padding:7px 10px;background:#0e2534;min-width:0}.gmfq-compare-score span{display:block;font:10px/1.4 Arial,sans-serif;color:#a6bac7}.gmfq-compare-score strong{display:block;font:600 12px/1.5 Arial,sans-serif;color:#e5edf3;margin-top:4px}.gmfq-compare-legs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}.gmfq-compare-leg{min-width:0;padding:10px 12px;border-radius:5px;background:#0a1f2d;border:1px solid #274453}.gmfq-compare-leg strong{display:block;color:#e5eefa;font:600 12px Arial,sans-serif;margin-bottom:5px}.gmfq-compare-leg small{display:block;color:#b2c6d4;font:11px/1.5 Arial,sans-serif;margin:5px 0;overflow-wrap:anywhere}.gmfq-compare p{font:12px/1.55 Arial,sans-serif;margin:10px 0 0}.gmfq-compare .gmfq-compare-spread{color:#e1c990}.gmfq-compare .gmfq-compare-note{color:#cadbe5}.gmfq-compare .gmfq-compare-disclaimer{font-size:10px;color:#9ab4c5}@media(max-width:600px){.gmfq-compare-score,.gmfq-compare-legs{grid-template-columns:1fr}}';
+ style.textContent+='.gmfq-what-changed{border-top:1px solid #284354;margin-top:16px;padding-top:14px}.gmfq-what-changed h3{margin:0;color:#e9f1f7;font:600 14px/1.4 Arial,sans-serif}.gmfq-what-changed>p{font:12px/1.55 Arial,sans-serif;color:#abc3d2;margin:7px 0 11px}.gmfq-change-legs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.gmfq-change-leg{border-left:2px solid #58718a;padding:9px 11px;background:#0d2332;min-width:0}.gmfq-change-leg strong{display:block;font:600 13px Arial,sans-serif;color:#e8f0f6;margin-bottom:8px}.gmfq-change-leg span{display:block;font:10px/1.4 Arial,sans-serif;color:#a0b6c5;letter-spacing:.02em}.gmfq-change-leg p{font:12px/1.5 Arial,sans-serif;color:#d2e0e9;margin:4px 0 11px;overflow-wrap:anywhere}.gmfq-change-leg .gmfq-change-measured{color:#e1c78a;margin-bottom:0}.gmfq-what-changed .gmfq-change-summary{color:#c5d7e2}.gmfq-what-changed .gmfq-change-warning{color:#93abba;font-size:10px}@media(max-width:600px){.gmfq-change-legs{grid-template-columns:1fr}}';
  doc.head.appendChild(style);
  const panel=doc.createElement('section');
  panel.id='gmfq-pair-research-path';panel.className='desk-panel';
@@ -713,7 +771,7 @@ async function mountPairResearch(doc){
    '<div class="gmfq-path-body"><p>Prima confronta Macro e Tassi delle due valute, poi guarda Banche centrali e COT. Torna al Prezzo per verificare conferma o divergenza. Il dettaglio sopra resta la lettura canonica della tesi, non un segnale di ingresso.</p>'+
    '<div class="gmfq-path-evidence">Modello: '+htmlEscape(setup.price_asof)+' · Fixing BCE: '+htmlEscape(fxDay||'non verificato')+
    ' · Valuta favorita dal motore: '+htmlEscape(fav||'nessuna')+'</div>'+
-   pairMacroRatesComparison(code,setup.pairs[code],rates,ois,setup.price_asof)+'<div class="gmfq-path-legs">'+leg(a)+leg(b)+'</div>'+
+   pairMacroRatesComparison(code,setup.pairs[code],rates,ois,setup.price_asof)+pairWhatChangedEvidence(code,setup.pairs[code],rates,setup.price_asof)+'<div class="gmfq-path-legs">'+leg(a)+leg(b)+'</div>'+
    '<p class="gmfq-path-warning">'+htmlEscape(sourceMsg)+' I futures indicativi non sono curve OIS e non determinano da soli un trade.</p>'+
    '<div class="gmfq-path-links"><button type="button" data-gmfq-study-route="screener">Apri Screener 28 coppie ↗</button></div></div>';
  };

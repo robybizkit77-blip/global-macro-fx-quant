@@ -299,6 +299,21 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
      !compareCHF.disclaimer.includes('non sottrarre i loro delta'))
     throw Error(label+' CHF cross-date model/readiness guard broken '+JSON.stringify(compareCHF));
 
+  const deltaCHF=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument,c=d?.getElementById('gmfq-pair-what-changed');
+    return {exists:!!c,legs:[...c?.querySelectorAll('.gmfq-change-leg')||[]].map(x=>({
+      ccy:x.dataset.gmfqChangeCurrency,status:x.dataset.gmfqYieldChange,
+      model:x.querySelector('.gmfq-change-model')?.textContent,
+      actual:x.querySelector('.gmfq-change-measured')?.textContent})),
+      disclaimer:c?.querySelector('.gmfq-change-warning')?.textContent};
+  });
+  if(!deltaCHF.exists||deltaCHF.legs.length!==2||
+     deltaCHF.legs.find(x=>x.ccy==='CHF')?.status!=='WITHHELD'||
+     !deltaCHF.legs.find(x=>x.ccy==='CHF')?.actual?.includes('2026-09-30')||
+     !deltaCHF.legs.find(x=>x.ccy==='EUR')?.model?.includes('Crescita: peggiora')||
+     !deltaCHF.disclaimer?.includes('non necessariamente 24 ore'))
+    throw Error(label+' CHF what-changed narrative is not fail-closed '+JSON.stringify(deltaCHF));
+
   // EUR and USD currently share an official 2Y/10Y date. An observed
   // sovereign spread may be calculated from two official SAME-DAY yields,
   // but must be named a LEVEL gap, never a Fed/ECB policy forecast.
@@ -323,6 +338,21 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
      !compareEURUSD.disclaimer.includes('non vengono ricalcolati'))
     throw Error(label+' EURUSD canonical macro and observed same-day Rates gap mismatch '+JSON.stringify(compareEURUSD));
 
+  const deltaEURUSD=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument,c=d?.getElementById('gmfq-pair-what-changed');
+    return {text:c?.textContent,legs:[...c?.querySelectorAll('.gmfq-change-leg')||[]].map(x=>({
+      ccy:x.dataset.gmfqChangeCurrency,status:x.dataset.gmfqYieldChange,
+      actual:x.querySelector('.gmfq-change-measured')?.textContent,model:x.querySelector('.gmfq-change-model')?.textContent}))};
+  });
+  const eu=deltaEURUSD.legs.find(x=>x.ccy==='EUR'),us=deltaEURUSD.legs.find(x=>x.ccy==='USD');
+  if(eu?.status!=='MEASURED'||us?.status!=='MEASURED'||
+     !eu.actual?.includes('2026-10-15 → 2026-10-16')||
+     !us.actual?.includes('2026-10-15 → 2026-10-16')||
+     !eu.actual?.includes('+3.7 bp')||!us.actual?.includes('-3.0 bp')||
+     !eu.model?.includes('Rates: migliora')||!us.model?.includes('Rates: peggiora')||
+     !deltaEURUSD.text?.includes('diagnosi qualitativa'))
+    throw Error(label+' EURUSD history-derived 2Y changes vs model not separated '+JSON.stringify(deltaEURUSD));
+
   // AUD / CAD are individually certified but published on different dates.
   // Never combine their most recent independent spot yields into a 2Y spread.
   await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="AUDCAD"]').click();
@@ -342,6 +372,20 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
   if(!compareAUDCAD.legs.some(x=>x.includes('futures IB'))||
      !compareAUDCAD.legs.some(x=>x.includes('futures CORRA')))
     throw Error(label+' Official AUD/CAD 6M instrument classes not explicit '+JSON.stringify(compareAUDCAD));
+  const deltaAUDCAD=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument,c=d?.getElementById('gmfq-pair-what-changed');
+    return [...c?.querySelectorAll('.gmfq-change-leg')||[]].map(x=>({
+      ccy:x.dataset.gmfqChangeCurrency,status:x.dataset.gmfqYieldChange,
+      actual:x.querySelector('.gmfq-change-measured')?.textContent}));
+  });
+  if(deltaAUDCAD.find(x=>x.ccy==='AUD')?.status!=='WITHHELD'||
+     !deltaAUDCAD.find(x=>x.ccy==='AUD')?.actual?.includes('intervallo storico troppo lungo')||
+     deltaAUDCAD.find(x=>x.ccy==='CAD')?.status!=='MEASURED')
+    throw Error(label+' AUDCAD observed 2Y series gaps misclassified '+JSON.stringify(deltaAUDCAD));
+  console.log('CONTROL_ROOM_PREVIEW_PAIR_WHAT_CHANGED_GREEN',label,
+    JSON.stringify({CHF:'WITHHELD',EUR:'MEASURED +3.7',USD:'MEASURED -3.0',
+      AUD:'WITHHELD',CAD:'MEASURED',viewport:detail.viewport}));
+
   await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="EURCHF"]').click();
   await page.waitForFunction(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument;

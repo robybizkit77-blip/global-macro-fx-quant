@@ -287,7 +287,7 @@ async function getState(page){
        let current=false;
        for(let attempt=0;attempt<16;attempt++){
          current=await page.evaluate(()=>{
-           return !!document.querySelector('script[src*="home-navigation-v10.js?v=pair-macro-rates-20261019"]');
+           return !!document.querySelector('script[src*="home-navigation-v10.js?v=pair-what-changed-20261019"]');
          });
          if(current)break;
          console.log('PUBLIC_PAIR_ADDON_CDN_PENDING',name,attempt);
@@ -300,7 +300,7 @@ async function getState(page){
          catch(_){console.log('PUBLIC_PAIR_HOME_FEED_PENDING',name,attempt)}
          await page.waitForTimeout(3000);
        }
-       if(!current)current=await page.evaluate(()=>!!document.querySelector('script[src*="home-navigation-v10.js?v=pair-macro-rates-20261019"]'));
+       if(!current)current=await page.evaluate(()=>!!document.querySelector('script[src*="home-navigation-v10.js?v=pair-what-changed-20261019"]'));
        if(!current)throw Error(name+' PUBLIC_PAIR_ADDON_VERSION_NOT_DEPLOYED');
      }
      const homePair=await page.frameLocator('#gmfq-page').locator('#pairs tr[data-filter]').first().getAttribute('data-filter');
@@ -357,6 +357,25 @@ async function getState(page){
             !pairMacro.text?.includes('I giudizi Macro e Tassi/CB sono quelli dello snapshot del motore')||
             pairMacro.width>pairMacro.viewport+16)
            throw Error(name+' public pair Macro/Rates source guard absent '+JSON.stringify(pairMacro));
+         const change=await page.evaluate(()=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument;
+           const c=d?.getElementById('gmfq-pair-what-changed');
+           return {exists:!!c,legs:[...c?.querySelectorAll('.gmfq-change-leg')||[]].map(x=>({
+             ccy:x.dataset.gmfqChangeCurrency,status:x.dataset.gmfqYieldChange,
+             text:x.querySelector('.gmfq-change-measured')?.textContent,
+             model:x.querySelector('.gmfq-change-model')?.textContent})),
+             note:c?.querySelector('.gmfq-change-warning')?.textContent,
+             width:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth};
+         });
+         if(!change.exists||change.legs.length!==2||
+            change.legs.find(x=>x.ccy==='CHF')?.status!=='WITHHELD'||
+            !change.legs.find(x=>x.ccy==='CHF')?.text?.includes('2026-09-30')||
+            !change.legs.find(x=>x.ccy==='EUR')?.model?.includes('Crescita: peggiora')||
+            !change.note?.includes('non necessariamente 24 ore')||
+            change.width>change.viewport+16)
+           throw Error(name+' public Pair What Changed quality fail-closed '+JSON.stringify(change));
+         console.log('CONTROL_ROOM_PREVIEW_PUBLIC_PAIR_WHAT_CHANGED_GREEN',name,
+           JSON.stringify({selected:'EURCHF',chf:'WITHHELD',viewport:change.viewport}));
          console.log('CONTROL_ROOM_PREVIEW_PUBLIC_PAIR_MACRO_RATES_GREEN',name,
            JSON.stringify({selected:'EURCHF',spread:pairMacro.spreadSame,viewport:pairMacro.viewport}));
   
