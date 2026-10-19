@@ -4,18 +4,10 @@
   "index_name": "DXY sintetico ECB (ICE-formula proxy)",
   "not_official_ice": true,
   "not_intraday": true,
-  "as_of": "2026-10-16",
-  "value": 101.7135,
-  "previous_value": 102.1129,
+  "as_of": "2026-10-19",
+  "value": 101.8263,
+  "previous_value": 101.7135,
   "history": [
-    {
-      "date": "2026-07-20",
-      "value": 100.8288
-    },
-    {
-      "date": "2026-07-21",
-      "value": 100.9965
-    },
     {
       "date": "2026-07-22",
       "value": 101.1354
@@ -267,6 +259,10 @@
     {
       "date": "2026-10-16",
       "value": 101.7135
+    },
+    {
+      "date": "2026-10-19",
+      "value": 101.8263
     }
   ],
   "method": "ICE six-currency geometric weights/constant, ECB matched-date reference FX incl SEK",
