@@ -75,17 +75,17 @@
       "direction_vs_policy": null,
       "horizons": {
         "12m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "SA3M2027",
           "contract_description": "Jun 2027",
           "expiration": "2027-09-14",
-          "futures_price": 99.665,
+          "futures_price": 99.68,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-10-16T16:59:55Z",
-          "quote_as_of": "2026-10-16",
+          "price_valid_until": "2026-10-19T13:11:14Z",
+          "quote_as_of": "2026-10-19",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": null,
@@ -150,8 +150,8 @@
         "horizons": {
           "12m": {
             "contract": "SA3M2027",
-            "quote_as_of": "2026-10-16",
-            "rate_indicative": 0.335,
+            "quote_as_of": "2026-10-19",
+            "rate_indicative": 0.32,
             "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
           },
           "3m": {

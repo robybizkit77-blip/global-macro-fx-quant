@@ -6,17 +6,17 @@
       "freshness_status": "LIVE_OR_RECENT_SESSION",
       "horizons": {
         "12m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "SA3M2027",
           "contract_description": "Jun 2027",
           "expiration": "2027-09-14",
-          "futures_price": 99.665,
+          "futures_price": 99.68,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
-          "price_valid_until": "2026-10-16T16:59:55Z",
-          "quote_as_of": "2026-10-16",
+          "price_valid_until": "2026-10-19T13:11:14Z",
+          "quote_as_of": "2026-10-19",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 0.335,
+          "rate": 0.32,
           "symbol": "ICEEUR:SA3M2027"
         },
         "3m": {
@@ -166,7 +166,7 @@
       "status": "LIVE_SECONDARY_READY"
     }
   },
-  "generated_at_utc": "2026-10-19T11:06:27.641268Z",
+  "generated_at_utc": "2026-10-19T13:43:55.077599Z",
   "governance": {
     "backtest_eligible_as_official_ois": false,
     "bias_effect": "NONE",
