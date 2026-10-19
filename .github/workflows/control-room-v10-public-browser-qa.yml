@@ -1,6 +1,11 @@
 name: Control Room v10 Public Browser QA
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/qa_control_room_v10_public.js'
+      - '.github/workflows/control-room-v10-public-browser-qa.yml'
   push:
     branches: [main]
     paths:
@@ -30,7 +35,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
       - name: Wait for exact published loader and addon from main
         shell: bash
         run: |
@@ -61,5 +66,7 @@ jobs:
           npm init -y >/dev/null 2>&1
           npm install --no-save playwright
           npx playwright install --with-deps chromium
+      - name: Validate Preview browser QA JavaScript syntax
+        run: node --check validation/qa_control_room_v10_public.js
       - name: Check public URL with actual feeds and navigation
         run: node validation/qa_control_room_v10_public.js
