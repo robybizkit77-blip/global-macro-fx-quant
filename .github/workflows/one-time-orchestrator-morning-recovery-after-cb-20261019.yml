@@ -1,0 +1,22 @@
+name: One Time Orchestrator Recovery After CB Gate Fix
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-time-orchestrator-morning-recovery-after-cb-20261019.yml'
+permissions:
+  contents: read
+  actions: write
+jobs:
+  dispatch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Dispatch existing orchestrator morning phase once
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh workflow run daily-data-orchestrator-v2.yml --ref main -f phase=morning
+          echo ORCHESTRATOR_POST_CB_RECOVERY_DISPATCHED
