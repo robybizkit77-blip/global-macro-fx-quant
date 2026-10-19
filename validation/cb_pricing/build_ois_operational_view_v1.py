@@ -144,6 +144,7 @@ def build():
                                  for h in HORIZONS},
                     'direction_vs_policy': None,
                     'market_direction_proxy': e.get('market_direction_proxy'),
+                    'secondary_futures_context': e.get('secondary_futures_context'),
                     'change_1d_available': False,
                     'change_1w_available': False,
                     'backtest_eligible_as_official': False
@@ -168,6 +169,7 @@ def build():
                 'horizons': horizons,
                 'direction_vs_policy': e.get('direction_vs_policy'),
                 'market_direction_proxy': e.get('market_direction_proxy'),
+                'secondary_futures_context': e.get('secondary_futures_context'),
                 'change_1d_available': repricing['change_1d_available'],
                 'change_1w_available': repricing['change_1w_available'],
                 'repricing_reference': {
@@ -188,7 +190,9 @@ def build():
     for issue in check(out, datetime.now(timezone.utc).date()):
         row=out['currencies'][issue['currency']]
         row['operational_status']='WITHHELD'
-        row['withheld_reason']='STALE_OR_INCOMPLETE_PRICING'
+        row['withheld_reason']=('SECONDARY_QUOTE_TIMESTAMP_UNVERIFIED'
+                                if row.get('secondary_futures_context')
+                                else 'STALE_OR_INCOMPLETE_PRICING')
         row['direction_vs_policy']=None
         row['change_1d_available']=False
         row['change_1w_available']=False
