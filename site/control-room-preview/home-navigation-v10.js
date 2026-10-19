@@ -45,7 +45,7 @@ function navigation(doc){
     const pricing=e.target.closest('#ois .oisrow');
     if(pricing){const ccy=pricing.dataset.ccy;if(FX.includes(ccy)){go('#/banche?ccy='+ccy);return}}
     const pair=e.target.closest('#pairs tr[data-filter]');
-    if(pair){const p=(pair.dataset.filter||'').replace(/[^A-Z]/g,'');if(/^[A-Z]{6}$/.test(p)){go('#/screener?pair='+p);return}}
+    if(pair){const p=(pair.dataset.filter||'').replace(/[^A-Z]/g,'');if(/^[A-Z]{6}$/.test(p)){go('#/coppie?pair='+p);return}}
     const panel=e.target.closest('[data-gmfq-destination]');
     if(panel)go(panel.dataset.gmfqDestination);
   });
@@ -56,7 +56,7 @@ function navigation(doc){
     const pricing=e.target.closest('#ois .oisrow');
     if(pricing&&e.target===pricing){e.preventDefault();go('#/banche?ccy='+pricing.dataset.ccy);return}
     const pair=e.target.closest('#pairs tr[data-filter]');
-    if(pair&&e.target===pair){e.preventDefault();go('#/screener?pair='+pair.dataset.filter);return}
+    if(pair&&e.target===pair){e.preventDefault();go('#/coppie?pair='+pair.dataset.filter);return}
     const panel=e.target.closest('[data-gmfq-destination]');
     if(panel&&panel===e.target){e.preventDefault();go(panel.dataset.gmfqDestination)}
   });
@@ -582,11 +582,117 @@ async function applyMarketResearch(doc){
  mountMarketResearch(doc,...all.map(x=>x.status==='fulfilled'?x.value:null));
 }
 
+/* Pair research journey, added next to (not replacing) the original 28-pair
+   deep dive. Source as-of != today's ECB fixing. No derived trade signals. */
+async function mountPairResearch(doc){
+ if(route()!=='coppie'||frame.contentDocument!==doc)return;
+ const host=doc.getElementById('pair-detail');
+ if(!host)return;
+ const inputs=await Promise.allSettled([
+  feed('PAIR_SETUP_OPERATIONAL_VIEW.json'),feed('ECB_G8_PRICE_HISTORY.json'),
+  feed('NATIVE_RATES_DATA.json'),feed('OIS_OPERATIONAL_VIEW.json')]);
+ if(frame.contentDocument!==doc||route()!=='coppie')return;
+ const [setup,fx,rates,ois]=inputs.map(x=>x.status==='fulfilled'?x.value:null);
+ const ok=setup?.schema==='GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1'&&
+  setup.status==='CURRENT_CANONICAL_ENGINE'&&setup.pair_count===28&&
+  Object.keys(setup.pairs||{}).length===28&&setup.price_audit?.status==='PASS'&&
+  setup.price_audit.as_of===setup.price_asof&&setup.thesis_is_not_entry===true&&
+  setup.entry_level_published===false&&fresh(setup.price_asof,5);
+ const fxOk=fx?.schema==='GMFQ_ECB_G8_PRICE_HISTORY_V1'&&
+  fx.status==='CURRENT_OFFICIAL_HISTORY'&&fx.pair_count===28&&fresh(fx.last_as_of,5);
+ if(!ok||!host||doc.getElementById('gmfq-pair-research-path'))return;
+ const style=doc.createElement('style');style.id='gmfq-pair-path-style';
+ style.textContent='#gmfq-pair-research-path{margin-top:12px}#gmfq-pair-research-path .gmfq-path-body{padding:13px 17px 16px}#gmfq-pair-research-path p{color:#b8cad7;font-size:12px;line-height:1.55;margin:7px 0 12px}#gmfq-pair-research-path .gmfq-path-evidence{color:#e0c788;font-size:11px;line-height:1.5}#gmfq-pair-research-path .gmfq-path-legs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}#gmfq-pair-research-path .gmfq-path-leg{border:1px solid #294457;border-radius:6px;background:#0a2232;padding:12px 13px;min-width:0}#gmfq-pair-research-path .gmfq-path-leg strong{color:#ebf2f7;font-size:14px;display:block}#gmfq-pair-research-path .gmfq-path-leg small{display:block;color:#9db6c8;font-size:11px;margin:5px 0 9px;line-height:1.4}#gmfq-pair-research-path .gmfq-path-links{display:flex;flex-wrap:wrap;gap:6px}#gmfq-pair-research-path button{border:1px solid #3a596d;background:#122d40;border-radius:5px;padding:6px 9px;color:#e6edf4;font:11px Arial,sans-serif;cursor:pointer}#gmfq-pair-research-path button:hover{border-color:#e3c57c;color:#f1d894}#gmfq-pair-research-path button:focus-visible{outline:2px solid #e3c57c;outline-offset:2px}#gmfq-pair-research-path .gmfq-path-warning{color:#dfc894;border-top:1px solid #2a4759;padding-top:10px}@media(max-width:600px){#gmfq-pair-research-path .gmfq-path-legs{grid-template-columns:1fr}#gmfq-pair-research-path .gmfq-path-body{padding:11px}}';
+ doc.head.appendChild(style);
+ const panel=doc.createElement('section');
+ panel.id='gmfq-pair-research-path';panel.className='desk-panel';
+ panel.setAttribute('aria-label','Collegamenti analisi delle due valute');
+ host.insertAdjacentElement('afterend',panel);
+ const pairIds=new Set(Object.keys(setup.pairs||{}));
+ const labels={macro:'Macro',tassi:'Tassi / OIS',banche:'Banche centrali',cot:'COT'};
+ const leg=(c)=>{
+  const r=rates?.[c],o=ois?.currencies?.[c];
+  const rateDay=r?.date,rateState=r&&String(r.quality||'').includes('OFFICIAL')&&fresh(rateDay,5) &&
+   num(r['2Y'])!==null&&num(r['10Y'])!==null;
+  const oisDay=o?.as_of,oisState=o?.operational_status==='GREEN_OFFICIAL'&&
+   o.quality==='OFFICIAL_CERTIFIED'&&fresh(oisDay,5);
+  const rateText='2Y/10Y '+(rateState?'ufficiali':'non correnti o incompleti')+
+   ' · '+(rateDay||'n.d.');
+  const oisText='pricing '+(oisState?'certificato':'non certificato')+
+   ' · '+(oisDay||'n.d.');
+  return '<article class="gmfq-path-leg"><strong>'+FLAG[c]+' '+c+' · '+BANK[c]+'</strong>'+
+   '<small>'+htmlEscape(rateText)+'; '+htmlEscape(oisText)+'</small>'+
+   '<div class="gmfq-path-links">'+Object.entries(labels).map(([r,n])=>
+    '<button type="button" data-gmfq-study-route="'+r+'" data-gmfq-study-currency="'+c+
+    '" aria-label="Apri '+htmlEscape(n)+' '+c+'">'+htmlEscape(n)+'</button>').join('')+
+   '</div></article>';
+ };
+ const refresh=()=>{
+  if(frame.contentDocument!==doc||route()!=='coppie')return;
+  if(doc.documentElement.dataset.pairState!=='READY')return;
+  const marker=host.querySelector('.desk-kicker')?.textContent||'';
+  const match=marker.match(/PAIR DEEP DIVE\s*[·:]\s*([A-Z]{6})/);
+  const code=match?.[1];if(!code||!pairIds.has(code))return;
+  if(panel.dataset.pair===code)return;
+  panel.dataset.pair=code;
+  const [a,b]=[code.slice(0,3),code.slice(3,6)];
+  const fav=setup.pairs[code]?.setup?.structuralFav;
+  const fxDay=fxOk?fx.last_as_of:null;
+  const differs=fxDay&&fxDay!==setup.price_asof;
+  const sourceMsg=differs?'Il fixing BCE è più recente dello snapshot della tesi. Il movimento dal '+
+    setup.price_asof+' al '+fxDay+' non aggiorna automaticamente il giudizio del motore.':
+    'La data del fixing e quella del motore coincidono, oppure il fixing più recente non è verificato.';
+  panel.innerHTML='<h2 class="desk-panel-title">Percorso di ricerca · '+FLAG[a]+' '+a+' / '+FLAG[b]+' '+b+'</h2>'+
+   '<div class="gmfq-path-body"><p>Prima confronta Macro e Tassi delle due valute, poi guarda Banche centrali e COT. Torna al Prezzo per verificare conferma o divergenza. Il dettaglio sopra resta la lettura canonica della tesi, non un segnale di ingresso.</p>'+
+   '<div class="gmfq-path-evidence">Modello: '+htmlEscape(setup.price_asof)+' · Fixing BCE: '+htmlEscape(fxDay||'non verificato')+
+   ' · Valuta favorita dal motore: '+htmlEscape(fav||'nessuna')+'</div>'+
+   '<div class="gmfq-path-legs">'+leg(a)+leg(b)+'</div>'+
+   '<p class="gmfq-path-warning">'+htmlEscape(sourceMsg)+' I futures indicativi non sono curve OIS e non determinano da soli un trade.</p>'+
+   '<div class="gmfq-path-links"><button type="button" data-gmfq-study-route="screener">Apri Screener 28 coppie ↗</button></div></div>';
+ };
+ const obs=new MutationObserver(refresh);
+ obs.observe(host,{childList:true});
+ const selected=()=>{const x=host.querySelector('.desk-kicker')?.textContent||'';return x.includes('PAIR DEEP DIVE')};
+ if(selected())refresh();
+ doc.addEventListener('click',e=>{
+  const b=e.target.closest('button[data-gmfq-study-route]');
+  if(b&&panel.contains(b)){
+   const r=b.dataset.gmfqStudyRoute,ccy=b.dataset.gmfqStudyCurrency;
+   if(r==='screener'){go('#/screener');return}
+   if(['macro','tassi','banche','cot'].includes(r)&&FX.includes(ccy))go('#/'+r+'?ccy='+ccy);
+   return;
+  }
+  const row=e.target.closest('button.pair-open[data-pair]');
+  if(row&&doc.getElementById('pair-index')?.contains(row)){
+   const code=row.dataset.pair;
+   if(pairIds.has(code))history.replaceState(history.state,'','#/coppie?pair='+code);
+  }
+ },true); // capture: original pair buttons can stop bubbling after updating the detail
+}
+function mountScreenerPairBridge(doc){
+ if(route()!=='screener'||frame.contentDocument!==doc)return;
+ const code=new URLSearchParams(location.hash.split('?')[1]||'').get('pair')?.toUpperCase();
+ if(!/^[A-Z]{6}$/.test(code||''))return;
+ // No fabricated pair details: link to the existing canonical analysis only.
+ const main=doc.querySelector('.desk-main'),hero=doc.querySelector('.desk-hero');
+ if(!main||!hero||doc.getElementById('gmfq-screener-pair-bridge'))return;
+ const p=doc.createElement('p');
+ p.id='gmfq-screener-pair-bridge';
+ p.style.cssText='margin:10px 0;padding:10px 14px;border:1px solid #2d4b5e;border-radius:5px;color:#c3d2dd;font-size:12px;background:#102639';
+ p.textContent='Coppia selezionata: '+FLAG[code.slice(0,3)]+' '+FLAG[code.slice(3,6)]+' '+code+' · ';
+ const b=doc.createElement('button');b.type='button';b.textContent='Apri Pair Deep Dive ↗';
+ b.style.cssText='cursor:pointer;border:1px solid #587080;border-radius:4px;background:#20394a;color:#f1d28e;padding:5px 8px';
+ b.addEventListener('click',()=>go('#/coppie?pair='+code));p.appendChild(b);
+ hero.insertAdjacentElement('afterend',p);
+}
+
 function onFrameLoad(){
  let doc;try{doc=frame.contentDocument}catch(_){return}
  if(!doc?.body)return;
  if(!home()){
    if(route()==='tassi'){enhanceRatesDetail(doc);focusRatesSection(doc);applyMarketResearch(doc).catch(e=>console.warn('[GMFQ market pricing WITHHELD]',e))}
+   if(route()==='coppie')mountPairResearch(doc).catch(e=>console.warn('[GMFQ pair research WITHHELD]',e));
+   if(route()==='screener')mountScreenerPairBridge(doc);
    focusCurrency(doc);
    return;
  }
