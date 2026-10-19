@@ -146,3 +146,20 @@ jobs:
           test "$REMOTE_SHA_2" = "$REMOTE_SHA" || { echo 'gh-pages moved during Control Room data publication' >&2; exit 1; }
           git push --force-with-lease=refs/heads/gh-pages:$REMOTE_SHA origin HEAD:gh-pages
           echo CONTROL_ROOM_MARKET_DATA_PUBLISHED
+
+      - name: Assert published gh-pages Rates mirror matches current canonical source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin gh-pages --no-tags
+          git show origin/gh-pages:live_data/sections/NATIVE_RATES_DATA.json > /tmp/gmfq-published-rates.json
+          python - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          original=Path('live_data/sections/NATIVE_RATES_DATA.json').read_bytes()
+          mirror=Path('/tmp/gmfq-published-rates.json').read_bytes()
+          assert hashlib.sha256(original).digest()==hashlib.sha256(mirror).digest(), 'STALE_CONTROL_ROOM_RATES_MIRROR'
+          nz=json.loads(mirror)['NZD']
+          assert nz['date']=='2026-10-16' and nz['2Y']==3.89 and nz['10Y']==5.0, nz
+          print('CONTROL_ROOM_NZD_RATES_MIRROR_GREEN',nz['date'],nz['2Y'],nz['10Y'])
+          PY
