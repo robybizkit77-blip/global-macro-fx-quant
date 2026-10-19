@@ -307,7 +307,13 @@ async function getState(page){
      if(!/^[A-Z]{6}$/.test(homePair||''))throw Error(name+' Preview Home invalid pair deep link '+homePair);
      await page.frameLocator('#gmfq-page').locator('#pairs tr[data-filter]').first().click();
      const oldPublic=process.env.GITHUB_EVENT_NAME==='pull_request';
-     await page.waitForURL(url=>url.hash===(oldPublic?'#/screener?pair=':'#/coppie?pair=')+homePair,{timeout:15000});
+     // During a PR the already-published website can legitimately serve
+     // either the old or the newly deployed pair route. Only post-merge
+     // runs demand the NEW route and canonical 28-pair Deep Dive.
+     await page.waitForFunction(({code,pr})=>{
+       const h=location.hash;
+       return h==='#/coppie?pair='+code||(pr&&h==='#/screener?pair='+code);
+     },{code:homePair,pr:oldPublic},{timeout:15000});
      if(!oldPublic){
        await page.waitForFunction(code=>{
          const d=document.getElementById('gmfq-page')?.contentDocument;
