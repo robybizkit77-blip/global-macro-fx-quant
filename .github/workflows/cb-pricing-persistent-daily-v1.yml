@@ -8,10 +8,18 @@ on:
     paths:
       - '.github/workflows/cb-pricing-persistent-daily-v1.yml'
       - 'validation/cb_pricing/run_active_cb_pricing_daily.sh'
+      - 'validation/cb_pricing/apply_aud_asx_ib_candidate.py'
+      - 'validation/cb_pricing/apply_cad_mx_corra_candidate.py'
+      - 'validation/cb_pricing/apply_gbp_boe_ois_candidate.py'
+      - 'validation/cb_pricing/apply_jpy_tfx_tona_candidate.py'
   pull_request:
     paths:
       - '.github/workflows/cb-pricing-persistent-daily-v1.yml'
       - 'validation/cb_pricing/run_active_cb_pricing_daily.sh'
+      - 'validation/cb_pricing/apply_aud_asx_ib_candidate.py'
+      - 'validation/cb_pricing/apply_cad_mx_corra_candidate.py'
+      - 'validation/cb_pricing/apply_gbp_boe_ois_candidate.py'
+      - 'validation/cb_pricing/apply_jpy_tfx_tona_candidate.py'
   workflow_dispatch:
   schedule:
     # Europe/Rome retries: 06:00, 06:30, 07:00 on working days.
