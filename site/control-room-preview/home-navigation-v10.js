@@ -584,7 +584,7 @@ async function applyMarketResearch(doc){
 
 /* Pair research journey, added next to (not replacing) the original 28-pair
    deep dive. Source as-of != today's ECB fixing. No derived trade signals. */
-async /* Research-only Macro/2Y/10Y/6M comparator.
+/* Research-only Macro/2Y/10Y/6M comparator.
    Structural Macro/Policy sides come ONLY from the 28-pair canonical model,
    independently dated sovereign yields ONLY from official native Rates.
    Never derive a curve/spread from mismatched or stale dates. */
@@ -650,7 +650,7 @@ function pairMacroRatesComparison(code,pair,rates,ois,modelDay){
   '<p class="gmfq-compare-disclaimer">I giudizi Macro e Tassi/CB sono quelli dello snapshot del motore, non vengono ricalcolati con i rendimenti mostrati. Il 6M descrive strumenti OIS/futures differenti: non sottrarre i loro delta e non trasformarli in previsioni di cambio.</p></section>';
 }
 
-function mountPairResearch(doc){
+async function mountPairResearch(doc){
  if(route()!=='coppie'||frame.contentDocument!==doc)return;
  const host=doc.getElementById('pair-detail');
  if(!host)return;
