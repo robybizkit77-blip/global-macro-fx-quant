@@ -409,12 +409,42 @@ function marketResearchSecondary(data){
   '<div class="gmfq-quote-cards">'+cards.join('')+'</div>'+
   '<p class="gmfq-research-note">Quotazioni di contratti futures anche su date differenti: non sono una curva OIS. Vietato collegare i punti, calcolare repricing o utilizzarli per segnali e backtest.</p></div>':'';
 }
-function mountMarketResearch(doc,ois,proxy,rates,snb10){
+/* Compact source-unlock map: generated from live operational status and
+   verified source/access audit. Never includes inferred market prices. */
+function marketSourceReadinessHtml(view,operational){
+ const ids=['USD','EUR','CHF','NZD'];
+ const statusOk=view?.schema==='GMFQ_OIS_SOURCE_READINESS_VIEW_V1'&&
+  view.status==='READ_ONLY_SOURCE_READINESS'&&fresh(view.as_of,3)&&
+  view.prices_omitted===true&&view.no_automatic_promotions===true&&
+  view.no_core_score_effect===true&&view.no_bias_effect===true&&
+  view.no_sizing_effect===true&&view.no_backtest_effect===true&&
+  ids.every(k=>view.currencies?.[k]?.status===operational?.currencies?.[k]?.operational_status)&&
+  view.blocked_currency_count===operational?.summary?.operational_withheld;
+ const opening='<details class="gmfq-source-readiness" id="gmfq-source-readiness"><summary>Fonti da sbloccare · situazione e prossimi passi</summary>';
+ if(!statusOk)return opening+'<p class="gmfq-research-note">Stato delle fonti da aggiornare: nessuna curva aggiuntiva viene certificata.</p></details>';
+ const items=ids.filter(k=>view.currencies[k].status==='WITHHELD').map(k=>{
+  const v=view.currencies[k],link=v.source_url;
+  const validUrl=typeof link==='string'&&/^https:\/\/(www\.)?(cmegroup\.com|eurex\.com|ice\.com|nzfbf\.co\.nz)\//.test(link);
+  const anchor=validUrl?'<a href="'+htmlEscape(link)+'" target="_blank" rel="noopener noreferrer">Fonte originale ↗</a>':'Fonte da verificare';
+  return '<div class="gmfq-source-row"><div><b>'+FLAG[k]+' '+k+' · curva non certificata</b>'+
+   '<p>'+htmlEscape(v.obstacle)+'</p><small>Per sbloccare: '+htmlEscape(v.activation_requirement)+'</small></div>'+
+   '<div class="gmfq-source-link">'+anchor+'</div></div>';
+ }).join('');
+ const chf=view.currencies.CHF?.government_rates;
+ const swiss=chf?.has_new_verified_2y===false&&chf.cross_date_spread_allowed===false?
+  '<p class="gmfq-research-note">🇨🇭 CHF governativi: l’ultima coppia 2Y/10Y omogenea nel feed è del '+
+   htmlEscape(chf.last_paired_2y10y_as_of||'—')+
+   '. Il 10Y SNB pubblicato separatamente non completa il 2Y e non permette uno spread aggiornato.</p>':'';
+ return opening+'<p class="gmfq-research-note">Quattro fonti sotto verifica, ciascuna con un requisito preciso. Nessun dato indicativo è promosso a OIS o usato nei segnali. Revisione fonti: '+
+  htmlEscape(view.source_reviewed_as_of)+'.</p>'+items+swiss+'</details>';
+}
+
+function mountMarketResearch(doc,ois,proxy,rates,snb10,sourceReadiness){
  if(route()!=='tassi'||frame.contentDocument!==doc)return;
  const table=doc.getElementById('ois-rows'),original=table?.closest('.desk-panel');
  if(!original||doc.getElementById('gmfq-pricing-research'))return;
  const style=doc.createElement('style');style.id='gmfq-pricing-research-style';
- style.textContent='#gmfq-pricing-research{margin-top:12px}#gmfq-pricing-research .gmfq-research-intro,#gmfq-pricing-research .gmfq-research-note{color:#a9c1d2;font-size:12px;line-height:1.55;margin:9px 0 14px}#gmfq-pricing-research h3{font-size:13px;color:#e5edf5;margin:0 0 10px}#gmfq-pricing-research .gmfq-research-plot{height:225px;max-width:100%;border:1px solid #284456;border-radius:7px;background:#0b2030;overflow:hidden}#gmfq-pricing-research svg{height:100%;width:100%;display:block}#gmfq-pricing-research .gmfq-research-tabs,#gmfq-pricing-research .gmfq-research-legend{display:flex;flex-wrap:wrap;gap:7px 13px;margin:9px 0}#gmfq-pricing-research button{cursor:pointer;background:#122c40;border:1px solid #34546b;padding:6px 12px;border-radius:5px;color:#c0d0e0;font:12px Arial,sans-serif}#gmfq-pricing-research button[aria-pressed=true]{background:#e2c87c;border-color:#e2c87c;color:#102132}#gmfq-pricing-research button:focus-visible{outline:2px solid #f7dfa0}#gmfq-pricing-research .gmfq-research-legend span{font-size:11px;color:#b4c9d8}#gmfq-pricing-research .gmfq-research-legend i{display:inline-block;width:13px;height:3px;margin-right:5px;vertical-align:middle}#gmfq-pricing-research .gmfq-research-separator{border-top:1px solid #294556;margin-top:18px;padding-top:16px}#gmfq-pricing-research .gmfq-quote-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:9px}#gmfq-pricing-research .gmfq-quote-card{background:#0b2232;border:1px solid #294659;border-radius:6px;padding:11px}#gmfq-pricing-research .gmfq-snb-spot{border:1px solid #315267;background:#0d2637;border-radius:7px;padding:12px 14px;margin:10px 0 12px;color:#aec6d7;font-size:12px;line-height:1.65}#gmfq-pricing-research .gmfq-snb-spot strong{color:#e6f1f8;font-size:20px;font-variant-numeric:tabular-nums}#gmfq-pricing-research .gmfq-snb-spot a{color:#e8cb8b;text-decoration:underline}#gmfq-pricing-research .gmfq-quote-card b{display:block;color:#f0d091;font-size:12px;margin-bottom:8px}#gmfq-pricing-research .gmfq-quote{color:#b6c9d8;font-size:11px;line-height:1.7}#gmfq-pricing-research .gmfq-quote strong{color:#e5eff5}@media(max-width:600px){#gmfq-pricing-research .gmfq-research-plot{height:190px}#gmfq-pricing-research .gmfq-quote-cards{grid-template-columns:1fr}}';
+ style.textContent='#gmfq-pricing-research{margin-top:12px}#gmfq-pricing-research .gmfq-research-intro,#gmfq-pricing-research .gmfq-research-note{color:#a9c1d2;font-size:12px;line-height:1.55;margin:9px 0 14px}#gmfq-pricing-research h3{font-size:13px;color:#e5edf5;margin:0 0 10px}#gmfq-pricing-research .gmfq-research-plot{height:225px;max-width:100%;border:1px solid #284456;border-radius:7px;background:#0b2030;overflow:hidden}#gmfq-pricing-research svg{height:100%;width:100%;display:block}#gmfq-pricing-research .gmfq-research-tabs,#gmfq-pricing-research .gmfq-research-legend{display:flex;flex-wrap:wrap;gap:7px 13px;margin:9px 0}#gmfq-pricing-research button{cursor:pointer;background:#122c40;border:1px solid #34546b;padding:6px 12px;border-radius:5px;color:#c0d0e0;font:12px Arial,sans-serif}#gmfq-pricing-research button[aria-pressed=true]{background:#e2c87c;border-color:#e2c87c;color:#102132}#gmfq-pricing-research button:focus-visible{outline:2px solid #f7dfa0}#gmfq-pricing-research .gmfq-research-legend span{font-size:11px;color:#b4c9d8}#gmfq-pricing-research .gmfq-research-legend i{display:inline-block;width:13px;height:3px;margin-right:5px;vertical-align:middle}#gmfq-pricing-research .gmfq-research-separator{border-top:1px solid #294556;margin-top:18px;padding-top:16px}#gmfq-pricing-research .gmfq-quote-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:9px}#gmfq-pricing-research .gmfq-quote-card{background:#0b2232;border:1px solid #294659;border-radius:6px;padding:11px}#gmfq-pricing-research .gmfq-snb-spot{border:1px solid #315267;background:#0d2637;border-radius:7px;padding:12px 14px;margin:10px 0 12px;color:#aec6d7;font-size:12px;line-height:1.65}#gmfq-pricing-research .gmfq-snb-spot strong{color:#e6f1f8;font-size:20px;font-variant-numeric:tabular-nums}#gmfq-pricing-research .gmfq-snb-spot a{color:#e8cb8b;text-decoration:underline}#gmfq-pricing-research .gmfq-quote-card b{display:block;color:#f0d091;font-size:12px;margin-bottom:8px}#gmfq-pricing-research .gmfq-quote{color:#b6c9d8;font-size:11px;line-height:1.7}#gmfq-pricing-research .gmfq-quote strong{color:#e5eff5}#gmfq-pricing-research .gmfq-source-readiness{border-top:1px solid #294556;margin-top:18px;padding-top:14px}#gmfq-pricing-research .gmfq-source-readiness summary{font-size:13px;font-weight:700;color:#e9d192;cursor:pointer;outline-offset:4px}#gmfq-pricing-research .gmfq-source-row{display:flex;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid #203c4d}#gmfq-pricing-research .gmfq-source-row b{font-size:12px;color:#dbe9f3}#gmfq-pricing-research .gmfq-source-row p{font-size:12px;color:#adbfcd;margin:5px 0}#gmfq-pricing-research .gmfq-source-row small{display:block;color:#c4d3dd;line-height:1.45;font-size:11px}#gmfq-pricing-research .gmfq-source-link{flex:0 0 auto;font-size:11px}#gmfq-pricing-research .gmfq-source-link a{color:#e6c57f;text-decoration:underline}@media(max-width:600px){#gmfq-pricing-research .gmfq-source-row{display:block}#gmfq-pricing-research .gmfq-source-link{margin-top:7px}}@media(max-width:600px){#gmfq-pricing-research .gmfq-research-plot{height:190px}#gmfq-pricing-research .gmfq-quote-cards{grid-template-columns:1fr}}';
  doc.head.appendChild(style);
  const curves=marketResearchCurves(ois),host=doc.createElement('section');
  host.id='gmfq-pricing-research';host.className='desk-panel';
@@ -426,7 +456,7 @@ function mountMarketResearch(doc,ois,proxy,rates,snb10){
   marketResearchSecondary(ois)+'<div class="gmfq-research-separator"><h3>Fonti incomplete</h3>'+
   '<div class="gmfq-snb-spot" id="gmfq-chf-snb-10y-context" role="note"></div>'+
   '<p class="gmfq-research-note" id="gmfq-nzd-pricing-context"></p>'+
-  '<p class="gmfq-research-note" id="gmfq-chf-rates-context"></p></div></div>';
+  '<p class="gmfq-research-note" id="gmfq-chf-rates-context"></p></div>'+marketSourceReadinessHtml(sourceReadiness,ois)+'</div>';
  original.insertAdjacentElement('afterend',host);
  const labels=[['ALL','Tutte'],...curves.map(c=>[c.k,FLAG[c.k]+' '+c.k])];
  const tabs=host.querySelector('.gmfq-research-tabs'),plot=host.querySelector('.gmfq-research-plot'),legend=host.querySelector('.gmfq-research-legend');
@@ -469,7 +499,7 @@ function mountMarketResearch(doc,ois,proxy,rates,snb10){
   '';
 }
 async function applyMarketResearch(doc){
- const all=await Promise.allSettled([feed('OIS_OPERATIONAL_VIEW.json'),feed('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),feed('NATIVE_RATES_DATA.json'),feed('CHF_SNB_10Y_SPOT_CONTEXT.json')]);
+ const all=await Promise.allSettled([feed('OIS_OPERATIONAL_VIEW.json'),feed('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),feed('NATIVE_RATES_DATA.json'),feed('CHF_SNB_10Y_SPOT_CONTEXT.json'),feed('OIS_SOURCE_READINESS_VIEW.json')]);
  mountMarketResearch(doc,...all.map(x=>x.status==='fulfilled'?x.value:null));
 }
 
