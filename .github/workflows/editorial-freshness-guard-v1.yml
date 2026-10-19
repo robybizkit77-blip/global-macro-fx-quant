@@ -100,7 +100,7 @@ jobs:
             const dates=laneAudit?.risk_as_of_by_lane||{};
             const allRiskLanes=['VIX','WTI','BRENT'];
             if(allRiskLanes.some(c=>!(c in dates)))throw new Error(label+' missing risk source metadata '+JSON.stringify(laneAudit));
-            const missing=allRiskLanes.filter(c=>!/^20\\d{2}-\\d{2}-\\d{2}$/.test(dates[c]||''));
+            const missing=allRiskLanes.filter(c=>!/^20\d{2}-\d{2}-\d{2}$/.test(dates[c]||''));
             if(missing.length){
               if(laneAudit.status!=='UNVERIFIED'||JSON.stringify(laneAudit.missing_risk_lanes)!==JSON.stringify(missing))
                 throw new Error(label+' incomplete risk lanes not fail-closed '+JSON.stringify(laneAudit));
