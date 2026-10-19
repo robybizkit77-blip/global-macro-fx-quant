@@ -1,0 +1,34 @@
+name: NZD Rates Reviewed Candidate Promotion Preflight
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/preflight_nzd_rates_reviewed_candidate_v1.py'
+      - '.github/workflows/nzd-rates-reviewed-candidate-preflight.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/preflight_nzd_rates_reviewed_candidate_v1.py'
+      - '.github/workflows/nzd-rates-reviewed-candidate-preflight.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  dry-run-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: |
+          python -m py_compile validation/preflight_nzd_rates_reviewed_candidate_v1.py
+          python validation/preflight_nzd_rates_reviewed_candidate_v1.py --receipt /tmp/nzd-preflight/receipt.json --candidate /tmp/nzd-preflight/rates-review-only.json
+          git diff --exit-code -- live_data payload site
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nzd-official-rates-preflight-no-promotion
+          path: /tmp/nzd-preflight/
+          if-no-files-found: warn
