@@ -728,7 +728,9 @@ function pairMarketReactionAudit(code,rates,fx){
      Math.abs(h.values[last]-v['2Y'])>0.001)return null;
   const rows=new Map();
   let prev='';
-  for(let i=0;i<h.dates.length;i++){
+  // Only recent observation rows are material to this short dated audit.
+  // Older non-ISO legacy dates must not prevent using newer certified rows.
+  for(let i=Math.max(0,h.dates.length-50);i<h.dates.length;i++){
    const d=h.dates[i],val=num(h.values[i]);
    if(!/^\d{4}-\d{2}-\d{2}$/.test(d)||d<=prev||val===null||d>v.date)return null;
    rows.set(d,val);prev=d;
