@@ -27,6 +27,9 @@ items={
 "Official CHF 10Y read-only context sourced separately": "CHF_SNB_10Y_SPOT_CONTEXT.json" in s and "GMFQ_CHF_SNB_10Y_SPOT_CONTEXT_V1" in s,
 "CHF 10Y never fills unverified 2Y or spread": "snb10.has_current_2y===false" in s and "snb10.eligible_for_curve_spreads===false" in s and "snb10.eligible_for_core_signals===false" in s,
 "Official CHF context requires valid freshness and provenance": "snb10.source_url===" in s and "fresh(snb10.as_of,4)" in s and "OFFICIAL_PUBLISHED_10Y_INFORMATIONAL" in s,
+"Readiness feed is audited, not market data": "OIS_SOURCE_READINESS_VIEW.json" in s and "GMFQ_OIS_SOURCE_READINESS_VIEW_V1" in s and "sourceReadiness.no_automatic_promotions" not in s,
+"EUR source and Swiss 2Y honesty visible": "function marketSourceReadinessHtml(view,operational)" in s and "non completa il 2Y" in s and "['USD','EUR','CHF','NZD']" in s,
+"No promotional rates from source metadata": "view.prices_omitted===true" in s and "view.no_core_score_effect===true" in s and "view.no_backtest_effect===true" in s and "view.no_automatic_promotions===true" in s,
 "Core data not changed": "localStorage.setItem" not in s and "github.com/repos/" not in s,
 }
 for k,v in items.items(): print(("PASS" if v else "FAIL")+": "+k)

@@ -157,20 +157,20 @@ async function getState(page){
        for(let attempt=0;attempt<18;attempt++){
          snbVersionVisible=await page.evaluate(()=>{
            const d=document.getElementById('gmfq-page')?.contentDocument;
-           return !!d?.getElementById('gmfq-chf-snb-10y-context');
+           return !!d?.getElementById('gmfq-chf-snb-10y-context')&&!!d?.getElementById('gmfq-source-readiness');
          });
          if(snbVersionVisible)break;
          await page.goto(BASE+'?snb10qa='+Date.now()+'-'+attempt+'#/tassi?focus=ois',{waitUntil:'domcontentloaded',timeout:120000});
          try{
            await page.waitForFunction(()=>{
              const d=document.getElementById('gmfq-page')?.contentDocument;
-             return !!d?.getElementById('gmfq-chf-snb-10y-context');
+             return !!d?.getElementById('gmfq-chf-snb-10y-context')&&!!d?.getElementById('gmfq-source-readiness');
            },null,{timeout:9000});
          }catch(_){console.log('PUBLIC_V10_SNB_VERSION_PENDING',name,attempt)}
          await page.waitForTimeout(4000);
        }
        if(!snbVersionVisible){
-         snbVersionVisible=await page.evaluate(()=>!!document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-chf-snb-10y-context'));
+         snbVersionVisible=await page.evaluate(()=>!!document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-source-readiness'));
        }
        if(!snbVersionVisible)throw Error(name+' PUBLIC_V10_CDN_STALE_NO_SNB_VERSION after cache-busted retries');
        await page.waitForFunction(()=>{
@@ -182,6 +182,7 @@ async function getState(page){
          const panel=d.getElementById('gmfq-pricing-research');
          const feed=await fetch('https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/OIS_OPERATIONAL_VIEW.json',{cache:'no-store'}).then(x=>x.json());
          const snb=await fetch('https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json',{cache:'no-store'}).then(x=>x.json());
+         const access=await fetch('https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/OIS_SOURCE_READINESS_VIEW.json',{cache:'no-store'}).then(x=>x.json());
          const days=x=>(Date.UTC(new Date().getUTCFullYear(),new Date().getUTCMonth(),new Date().getUTCDate())-Date.parse(x+'T00:00:00Z'))/86400000;
          const eligible=['GBP','JPY','AUD','CAD'].filter(k=>{
            const x=feed.currencies?.[k];
@@ -195,6 +196,14 @@ async function getState(page){
            actualCurves:panel.querySelectorAll('svg polyline').length,expectedCurves:eligible.length,
            secondaryCards:panel.querySelectorAll('.gmfq-quote-card').length,expectedCards:secondary.length,
            note:panel.innerText,docWidth:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth,
+           readinessCount:panel.querySelectorAll('#gmfq-source-readiness .gmfq-source-row').length,
+           readinessLinks:panel.querySelectorAll('#gmfq-source-readiness a').length,
+           readinessContent:panel.querySelector('#gmfq-source-readiness')?.textContent,
+           readinessExpected:access?.schema==='GMFQ_OIS_SOURCE_READINESS_VIEW_V1'&&
+             access.status==='READ_ONLY_SOURCE_READINESS'&&access.prices_omitted===true&&
+             access.no_automatic_promotions===true&&days(access.as_of)>=0&&days(access.as_of)<=3&&
+             access.operational_summary?.operational_withheld===feed.summary.operational_withheld?
+             Object.values(access.currencies||{}).filter(x=>x.status==='WITHHELD').length:null,
            snbBox:panel.querySelector('#gmfq-chf-snb-10y-context')?.innerText,
            snbExpected:snb?.schema==='GMFQ_CHF_SNB_10Y_SPOT_CONTEXT_V1'&&snb.status==='OFFICIAL_PUBLISHED_10Y_INFORMATIONAL'&&
              snb.has_current_2y===false&&snb.eligible_for_curve_spreads===false&&snb.eligible_for_core_signals===false&&
@@ -205,6 +214,11 @@ async function getState(page){
        if(research.actualCurves!==research.expectedCurves||research.secondaryCards!==research.expectedCards||
           !research.note.includes('non sono una curva OIS')||
           !research.note.includes('NON curva OIS né policy delta')||
+          research.readinessExpected===null||
+          research.readinessCount!==research.readinessExpected||
+          research.readinessLinks!==research.readinessExpected||
+          !research.readinessContent?.includes('Nessun dato indicativo è promosso')||
+          !research.readinessContent?.includes('non completa il 2Y')||
           research.docWidth>research.viewport+16||
           (research.snbExpected?
              !research.snbBox?.includes('CHF 10Y SNB '+research.snbExpected.value+'%')||

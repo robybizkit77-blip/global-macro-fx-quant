@@ -14,6 +14,9 @@ on:
       - 'validation/cb_pricing/OIS_SOURCE_ACCESS_PLAN_V1_2026-10-19.json'
       - 'validation/cb_pricing/audit_ois_source_access_v1.py'
       - 'validation/cb_pricing/test_audit_ois_source_access_v1.py'
+      - 'validation/cb_pricing/build_ois_source_readiness_view_v1.py'
+      - 'validation/cb_pricing/test_build_ois_source_readiness_view_v1.py'
+      - 'live_data/sections/OIS_SOURCE_READINESS_VIEW.json'
   workflow_dispatch:
   schedule:
     # Europe/Rome target: 08:15 on working days.
@@ -34,6 +37,9 @@ on:
       - 'validation/cb_pricing/OIS_SOURCE_ACCESS_PLAN_V1_2026-10-19.json'
       - 'validation/cb_pricing/audit_ois_source_access_v1.py'
       - 'validation/cb_pricing/test_audit_ois_source_access_v1.py'
+      - 'validation/cb_pricing/build_ois_source_readiness_view_v1.py'
+      - 'validation/cb_pricing/test_build_ois_source_readiness_view_v1.py'
+      - 'live_data/sections/OIS_SOURCE_READINESS_VIEW.json'
       - 'validation/cb_pricing/ois_estimated_snapshot_v1.py'
       - 'validation/cb_pricing/build_ois_operational_view_v1.py'
       - 'validation/cb_pricing/build_cb_pricing_estimated_v1.py'
@@ -128,6 +134,28 @@ jobs:
             --summary "$GITHUB_STEP_SUMMARY" \
             --output /tmp/ois-source-access-audit-v1.json
 
+      - name: Generate read-only OIS source readiness for Preview v10
+        if: steps.gate.outputs.should_run == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/cb_pricing/test_build_ois_source_readiness_view_v1.py
+          python validation/cb_pricing/build_ois_source_readiness_view_v1.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('live_data/sections/OIS_SOURCE_READINESS_VIEW.json').read_text())
+          view=json.loads(Path('live_data/sections/OIS_OPERATIONAL_VIEW.json').read_text())
+          assert x['schema']=='GMFQ_OIS_SOURCE_READINESS_VIEW_V1'
+          assert x['operational_summary']==view['summary']
+          assert x['blocked_currency_count']==view['summary']['operational_withheld']
+          assert x['prices_omitted'] and x['no_automatic_promotions']
+          assert x['no_core_score_effect'] and x['no_bias_effect']
+          assert x['no_sizing_effect'] and x['no_backtest_effect']
+          assert set(x['currencies'])=={'USD','EUR','CHF','NZD'}
+          print('OIS_SOURCE_READINESS_PUBLIC_CONTRACT_PASS',x['as_of'],x['blocked_currency_count'])
+          PY
+
       - name: Persist unified G8 curve history
         if: steps.gate.outputs.should_run == 'true'
         run: python validation/cb_pricing/ois_g8_history_snapshot_v1.py
@@ -189,6 +217,7 @@ jobs:
             'live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json',
             'live_data/sections/CB_PRICING_ESTIMATED.json',
             'live_data/sections/OIS_OPERATIONAL_VIEW.json',
+            'live_data/sections/OIS_SOURCE_READINESS_VIEW.json',
             'validation/cb_pricing/history/OIS_ESTIMATED_SNAPSHOTS_V1.jsonl',
             'validation/cb_pricing/history/OIS_G8_SNAPSHOTS_V1.jsonl',
           }

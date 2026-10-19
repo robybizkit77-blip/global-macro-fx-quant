@@ -155,6 +155,10 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
       legend:host?.querySelector('.gmfq-research-legend')?.innerText,
       disclaimers:host?.innerText,
       snbSpot:host?.querySelector('#gmfq-chf-snb-10y-context')?.innerText,
+      sourceCount:host?.querySelectorAll('#gmfq-source-readiness .gmfq-source-row').length,
+      sourceLinks:host?.querySelectorAll('#gmfq-source-readiness .gmfq-source-link a').length,
+      sourceCurrencies:[...host?.querySelectorAll('#gmfq-source-readiness .gmfq-source-row b')||[]].map(x=>x.textContent),
+      sourceDoc:host?.querySelector('#gmfq-source-readiness')?.textContent,
       chartWidth:host?.querySelector('.gmfq-research-plot')?.scrollWidth,
       docWidth:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth
     };
@@ -168,6 +172,10 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
      !research.snbSpot?.includes('CHF 10Y SNB '+Number(snbSpot.value_percent).toFixed(3)+'%')||
      !research.snbSpot.includes(snbSpot.as_of)||!research.snbSpot.includes('SOLO INFORMATIVO')||
      !research.snbSpot.includes('nessuno spread o segnale')||
+     research.sourceCount!==4||research.sourceLinks!==4||
+     !['USD','EUR','CHF','NZD'].every(c=>research.sourceCurrencies.some(x=>x.includes(c)))||
+     !research.sourceDoc.includes('non completa il 2Y')||
+     !research.sourceDoc.includes('Nessun dato indicativo è promosso')||
      research.docWidth>research.viewport+16)
      throw Error(label+' Pricing research traceability failed: '+JSON.stringify(research));
   await page.frameLocator('#gmfq-page').locator('#gmfq-pricing-research button[data-pricing-ccy="GBP"]').click();
