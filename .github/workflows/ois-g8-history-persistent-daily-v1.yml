@@ -113,15 +113,25 @@ jobs:
               latest[row['currency']]=row
           want={'USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'}
           assert set(latest)==want,(set(latest),want)
+          view=json.loads(Path('live_data/sections/OIS_OPERATIONAL_VIEW.json').read_text())
           for c,row in latest.items():
+              current=view['currencies'][c]
               assert row['schema']=='GMFQ_OIS_G8_SNAPSHOT_V1',row
-              assert row['operational_status'] in {'GREEN_OFFICIAL','GREEN_ESTIMATED'},row
-              assert row['quality'] in {'OFFICIAL_CERTIFIED','ESTIMATED_INFORMATIONAL'},row
+              assert row['operational_status']==current['operational_status'],(c,row,current)
               assert row['method_id'],row
-              assert row['source'],row
-              assert row['source_as_of'],row
               assert set(row['horizons'])=={'3m','6m','12m'},row
-          print('OIS_G8_HISTORY_COVERAGE_PASS')
+              if current['operational_status']=='WITHHELD':
+                  assert row['quality']=='UNAVAILABLE',row
+                  assert row['method_id']=='WITHHELD_FAIL_CLOSED_V1',row
+                  assert row['source_as_of'] is None,row
+                  assert row['backtest_eligible_as_official'] is False,row
+                  assert all(v['rate'] is None and v['policy_delta_bp'] is None
+                             for v in row['horizons'].values()),row
+              else:
+                  assert row['quality'] in {'OFFICIAL_CERTIFIED','ESTIMATED_INFORMATIONAL'},row
+                  assert row['source_as_of']==current['as_of'],row
+                  assert all(v['rate'] is not None for v in row['horizons'].values()),row
+          print('OIS_G8_HISTORY_COVERAGE_PASS',view['summary'])
           PY
 
       - name: Enforce official runtime immutability
