@@ -280,6 +280,30 @@ async function getState(page){
      }
      await page.goto(BASE+'#/home',{waitUntil:'domcontentloaded',timeout:120000});
      await page.waitForFunction(()=>document.getElementById('gmfq-page')?.contentDocument?.querySelectorAll('#pairs tr[data-filter]').length>0,null,{timeout:60000});
+     // GitHub Pages can serve the previous add-on after main/gh-pages SHA parity.
+     // Before testing the new Home pair route, require the exact new loader
+     // script version in the ACTUAL public browser, not merely in the repo.
+     if(process.env.GITHUB_EVENT_NAME!=='pull_request'){
+       let current=false;
+       for(let attempt=0;attempt<16;attempt++){
+         current=await page.evaluate(()=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument;
+           return !!d?.querySelector('script[src*="home-navigation-v10.js?v=pair-deep-dive-20261019"]');
+         });
+         if(current)break;
+         console.log('PUBLIC_PAIR_ADDON_CDN_PENDING',name,attempt);
+         await page.goto(BASE+'?pairqa='+Date.now()+'-'+attempt+'#/home',
+           {waitUntil:'domcontentloaded',timeout:120000});
+         try{await page.waitForFunction(()=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument;
+           return d?.documentElement?.dataset.liveState==='LOADED'&&d.querySelectorAll('#pairs tr[data-filter]').length>0;
+         },null,{timeout:12000});}
+         catch(_){console.log('PUBLIC_PAIR_HOME_FEED_PENDING',name,attempt)}
+         await page.waitForTimeout(3000);
+       }
+       if(!current)current=await page.evaluate(()=>!!document.getElementById('gmfq-page')?.contentDocument?.querySelector('script[src*="home-navigation-v10.js?v=pair-deep-dive-20261019"]'));
+       if(!current)throw Error(name+' PUBLIC_PAIR_ADDON_VERSION_NOT_DEPLOYED');
+     }
      const homePair=await page.frameLocator('#gmfq-page').locator('#pairs tr[data-filter]').first().getAttribute('data-filter');
      if(!/^[A-Z]{6}$/.test(homePair||''))throw Error(name+' Preview Home invalid pair deep link '+homePair);
      await page.frameLocator('#gmfq-page').locator('#pairs tr[data-filter]').first().click();
@@ -304,7 +328,7 @@ async function getState(page){
           p.docWidth>p.viewport+16)
           throw Error(name+' public Pair Deep Dive date/routing regression '+JSON.stringify(p));
        await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="EURCHF"]').click();
-       await page.waitForURL(url=>url.hash==='#/coppie?pair=EURCHF',{timeout:10000});
+       await page.waitForFunction(()=>location.hash==='#/coppie?pair=EURCHF',null,{timeout:10000});
        await page.waitForFunction(()=>{
          const d=document.getElementById('gmfq-page')?.contentDocument;
          return d?.getElementById('gmfq-pair-research-path')?.dataset.pair==='EURCHF';
