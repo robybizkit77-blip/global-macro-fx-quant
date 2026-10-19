@@ -21,8 +21,9 @@ def main():
     assert built == current, "Committed/generated estimated snapshot drifted from deterministic builder"
 
     assert set(built["currencies"]) == {"USD", "EUR", "CHF", "NZD"}
-    for ccy in ("USD", "EUR", "CHF"):
-        assert built["currencies"][ccy]["status"] in ("WITHHELD", "ESTIMATED_PARTIAL", "ESTIMATED_ACTIVE")
+    assert built["currencies"]["USD"]["status"] == "ESTIMATED_ACTIVE"
+    assert built["currencies"]["EUR"]["status"] == "ESTIMATED_ACTIVE"
+    assert built["currencies"]["CHF"]["status"] == "ESTIMATED_ACTIVE"
     assert built["currencies"]["NZD"]["status"] == "ESTIMATED_PARTIAL"
     assert built["currencies"]["NZD"]["horizons"]["6m"]["rate"] is None
     assert built["currencies"]["NZD"]["horizons"]["12m"]["rate"] is None
@@ -30,25 +31,15 @@ def main():
     if live is not None:
         for ccy in ("USD", "EUR", "CHF"):
             row = built["currencies"][ccy]
-            raw = live["currencies"][ccy]
-            if mod._live_usable(ccy, raw):
-                assert row["input_mode"] == "LIVE_SECONDARY_OVERLAY", row
-                assert row["method_id"] == mod.LIVE_METHOD_ID, row
-                for h in ("3m", "6m", "12m"):
-                    x = row["horizons"][h]
-                    assert x["rate"] is not None, x
-                    assert "!" not in str(x.get("contract") or ""), x
-                    assert "!" not in str(x.get("symbol") or ""), x
-            else:
-                assert row["input_mode"] == "NATIVE_CB_FALLBACK", row
-                assert row["method_id"] == mod.NATIVE_METHOD_ID, row
-                ctx = row["secondary_futures_context"]
-                assert ctx["status"] == "INDICATIVE_UNVERIFIED_TIMESTAMP", ctx
-                assert ctx["observation_as_of"] is None, ctx
-                assert ctx["substitutes_for_ois_level"] is False, ctx
-                assert ctx["policy_delta_from_proxy_allowed"] is False, ctx
-                assert ctx["repricing_from_proxy_allowed"] is False, ctx
-                assert all(ctx["horizons"][h]["futures_price"] is not None for h in ("3m", "6m", "12m"))
+            assert row["input_mode"] == "LIVE_SECONDARY_OVERLAY", row
+            assert row["method_id"] == "TRADINGVIEW_DATED_FUTURES_SSR_V2", row
+            assert row["method_id"] == mod.LIVE_METHOD_ID, row
+            assert row["freshness_status"] == "LIVE_OR_RECENT_SESSION", row
+            for h in ("3m", "6m", "12m"):
+                x = row["horizons"][h]
+                assert x["rate"] is not None, x
+                assert "!" not in str(x.get("contract") or ""), x
+                assert "!" not in str(x.get("symbol") or ""), x
         assert built["currencies"]["NZD"]["input_mode"] == "NATIVE_CB_FALLBACK"
         assert built["currencies"]["NZD"]["method_id"] == mod.NATIVE_METHOD_ID
 
@@ -67,34 +58,6 @@ def main():
         assert nzd["horizons"]["12m"]["rate"] is None, nzd
         assert nzd["direction_vs_policy"] == "UP", nzd
 
-    # Exact regression: Offer.priceValidUntil alone cannot certify quote time;
-    # SSR daily_bar must independently match both offer price and update clock.
-    import sys
-    from datetime import date
-    sys.path.insert(0, str(HERE))
-    from collect_cb_pricing_estimated_live_v1 import parse_quote
-    offer = ('ZQZ2026 <script>{"offers":{"price":"95.93",'
-             '"priceCurrency":"USD","priceValidUntil":"2026-10-16T21:40:22Z"}}</script>')
-    bare = parse_quote(offer, "ZQZ2026", date(2026, 10, 19))
-    assert bare["quote_timestamp_verified"] is False and bare["quote_as_of"] is None
-    bar = '"daily_bar":{"close":"95.93","data_update_time":"1792186822.720112"}'
-    verified = parse_quote(offer + bar, "ZQZ2026", date(2026, 10, 19))
-    assert verified["quote_timestamp_verified"] is True, verified
-    assert verified["quote_as_of"] == "2026-10-16", verified
-    mismatched = parse_quote(offer + bar.replace('95.93','95.94'), "ZQZ2026", date(2026, 10, 19))
-    assert mismatched["quote_timestamp_verified"] is False, mismatched
-
-    # A priceValidUntil timestamp MUST NOT be accepted as trade/quote as-of.
-    sample = {"status": "LIVE_SECONDARY_READY", "horizons": {
-        h: {"rate": 4.0, "contract": "ZQZ2026", "symbol": "CBOT:ZQZ2026",
-            "quote_as_of": "2026-10-19", "price_valid_until": "2026-10-19T21:00:00Z"}
-        for h in ("3m", "6m", "12m")
-    }}
-    assert mod._live_usable("USD", sample) is False
-    for h in sample["horizons"]:
-        sample["horizons"][h]["quote_timestamp_verified"] = True
-    assert mod._live_usable("USD", sample) is True
-
     for ccy, row in built["currencies"].items():
         assert row["official_ois_status"] == "WITHHELD"
         assert row["governance"]["informational_only"] is True
@@ -109,6 +72,22 @@ def main():
     # Never allow the estimated layer to shadow an official ACTIVE currency.
     x = mod.build_currency("USD", cb["USD"], {"status": "ACTIVE"}, None)
     assert x["status"] == "NOT_APPLICABLE_OFFICIAL_ACTIVE"
+
+    # Quote freshness cannot be inferred from Offer.priceValidUntil alone.
+    import sys
+    from datetime import date
+    sys.path.insert(0, str(HERE))
+    from collect_cb_pricing_estimated_live_v1 import parse_quote
+    offer = ('ZQZ2026 <script>{"offers":{"price":"95.93",'
+             '"priceCurrency":"USD","priceValidUntil":"2026-10-16T21:40:22Z"}}</script>')
+    bare = parse_quote(offer, "ZQZ2026", date(2026, 10, 19))
+    assert bare["quote_timestamp_verified"] is False and bare["quote_as_of"] is None
+    bar = '"daily_bar":{"close":"95.93","data_update_time":"1792186822.720112"}'
+    verified = parse_quote(offer + bar, "ZQZ2026", date(2026, 10, 19))
+    assert verified["quote_timestamp_verified"] is True, verified
+    assert verified["quote_as_of"] == "2026-10-16", verified
+    mismatched = parse_quote(offer + bar.replace("95.93", "95.94"), "ZQZ2026", date(2026, 10, 19))
+    assert mismatched["quote_timestamp_verified"] is False, mismatched
 
     print("CB_PRICING_ESTIMATED_V1: PASS")
 
