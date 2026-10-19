@@ -26,7 +26,7 @@ def main():
  g=n['CAD']; vals={k:r4(h[k]['rate']) for k in ('3m','6m','12m')}; ids=[c['observations'][z]['market_review_id'] for z in ('weekly_reference','t_minus_1','current')]
  g['pricing_tier']='COMPLETO_DIRECT_MX_SETTLEMENT_HISTORY'; g['pricing_status']=f"MX CRA official settlements: Dec-26 {vals['3m']:.3f}%; Mar-27 {vals['6m']:.3f}%; Sep-27 {vals['12m']:.3f}%."; g['market_3m']=f"{vals['3m']:.3f}%"; g['market_6m']=f"{vals['6m']:.3f}%"; g['market_12m']=f"{vals['12m']:.3f}%"; g['market_pricing']={'as_of':c['as_of'],'instrument':'Montréal Exchange Three-Month CORRA Futures (CRA)','quality':'COMPLETO_DIRECT_MX_SETTLEMENT_HISTORY','h3m':vals['3m'],'h6m':vals['6m'],'h12m':vals['12m'],'near_term':'Direct official quarterly CRA settlement buckets; 1D and 1W matched history validated.','source':c['source'],'source_url':c['source_url'],'note':f'No interpolation. Market Review IDs: {ids[0]} (weekly), {ids[1]} (T-1), {ids[2]} (current).','freshness_status':'CURRENT_VALIDATED'}
  co=[k for k in o['currencies'] if o['currencies'][k]!=bo['currencies'][k]]; cn=[k for k in n if n[k]!=bn[k]]
- if co!=['CAD'] or cn!=['CAD']:raise SystemExit(f'non-CAD semantic delta OIS={co} NATIVE={cn}')
+ if (co,cn) not in [(['CAD'],['CAD']),([],[])]:raise SystemExit(f'non-CAD semantic delta OIS={co} NATIVE={cn}')
  raw=PAYLOAD.read_bytes(); ro=extract(raw,OM)[0]; rn=extract(raw,NM)[0]
  if ro!=bo or rn!=bn:raise SystemExit('live sections and payload differ before apply')
  OIS.write_text(json.dumps(o,ensure_ascii=False,separators=(',',':'))); NATIVE.write_text(json.dumps(n,ensure_ascii=False,separators=(',',':'))); PAYLOAD.write_bytes(replace(replace(raw,OM,o),NM,n))
