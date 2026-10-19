@@ -65,6 +65,51 @@ def main() -> None:
         r4 = append_snapshots(v3, "2026-10-18T09:15:00Z", p)
         assert r4["appended"] == 1 and r4["currencies"] == ["EUR"], r4
 
+        # A genuine 5/8 session must never discard good official/estimated
+        # history or leave yesterday's green curve as the latest USD/CHF/NZD.
+        partial = view("2026-10-19")
+        for c in ("USD", "CHF", "NZD"):
+            last = partial["currencies"][c]
+            last["operational_status"] = "WITHHELD"
+            last["official_status"] = "WITHHELD"
+            last["backtest_eligible_as_official"] = False
+            last["withheld_reason"] = "STALE_OR_INCOMPLETE_PRICING"
+            last["horizons"] = {h: {"rate": None, "policy_delta_bp": None}
+                                for h in ("3m", "6m", "12m")}
+        r5 = append_snapshots(partial, "2026-10-19T08:15:00Z", p)
+        assert r5["appended"] == 8, r5
+        history = [json.loads(line) for line in p.read_text(encoding="utf-8").splitlines() if line.strip()]
+        latest = {x["currency"]: x for x in history}
+        assert set(latest) == set(CCYS)
+        assert sum(x["operational_status"] == "WITHHELD" for x in latest.values()) == 3
+        for c in ("USD", "CHF", "NZD"):
+            x = latest[c]
+            assert x["source_as_of"] is None
+            assert x["last_input_as_of"] == "2026-10-19"
+            assert x["quality"] == "UNAVAILABLE"
+            assert x["backtest_eligible_as_official"] is False
+            assert x["policy_rate"] is None
+            assert all(v["rate"] is None and v["policy_delta_bp"] is None for v in x["horizons"].values())
+        assert latest["EUR"]["operational_status"] == "GREEN_ESTIMATED"
+
+        # A replay of the same WITHHELD state is a no-op: append on semantic change.
+        r6 = append_snapshots(partial, "2026-10-19T10:00:00Z", p)
+        assert r6["appended"] == 0, r6
+        # Bad incoming WITHHELD record containing a non-null quote must FAIL CLOSED.
+        bad = json.loads(json.dumps(partial))
+        bad["currencies"]["CHF"]["horizons"]["3m"]["rate"] = 0.05
+        try:
+            append_snapshots(bad, "2026-10-19T12:00:00Z", p)
+            assert False, "WITHHELD rate leak accepted"
+        except SystemExit as exc:
+            assert "null pricing" in str(exc), exc
+
+        # When a currency re-enters GREEN, record restoration as a new regime.
+        restored = json.loads(json.dumps(partial))
+        restored["currencies"]["CHF"] = row("CHF", False, "2026-10-20", 0.02)
+        r7 = append_snapshots(restored, "2026-10-20T08:15:00Z", p)
+        assert r7["currencies"] == ["CHF"], r7
+
         print("OIS_G8_HISTORY_SNAPSHOT_V1_PASS")
 
 

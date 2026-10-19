@@ -38,13 +38,12 @@ jobs:
           js=Path('dashboard/ois-operational-monitor-v1.js').read_text(encoding='utf-8')
           view=json.loads(Path('live_data/sections/OIS_OPERATIONAL_VIEW.json').read_text(encoding='utf-8'))
           assert view['schema']=='GMFQ_OIS_OPERATIONAL_VIEW_V1'
-          assert view['summary']=={
-              'g8_total':8,
-              'operational_green':7,
-              'green_official':4,
-              'green_estimated':3,
-              'operational_withheld':1,
-          }
+          summary=view['summary']
+          assert summary['g8_total']==8, summary
+          assert summary['operational_green']+summary['operational_withheld']==8, summary
+          assert summary['green_official']+summary['green_estimated']==summary['operational_green'], summary
+          assert summary['operational_withheld']==sum(
+              r['operational_status']=='WITHHELD' for r in view['currencies'].values()), summary
           proxy_ccys=[c for c,r in view['currencies'].items() if r.get('market_direction_proxy')]
           assert proxy_ccys==['NZD'], proxy_ccys
           nzd=view['currencies']['NZD']

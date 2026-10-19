@@ -22,10 +22,40 @@ def _method_id(row: dict) -> str:
 
 
 def _payload(currency: str, row: dict) -> dict:
+    status = row.get("operational_status")
     horizons = row.get("horizons") or {}
+    if status not in {"GREEN_OFFICIAL", "GREEN_ESTIMATED", "WITHHELD"}:
+        raise SystemExit(f"{currency}: invalid operational status {status!r}")
+    if status == "WITHHELD":
+        # Tombstone protects point-in-time replay: a previous valid curve must
+        # not remain the latest observation after a downgrade. No synthetic
+        # rates, repricing, official certification, or backtest eligibility.
+        if row.get("backtest_eligible_as_official") is not False:
+            raise SystemExit(f"{currency}: WITHHELD cannot be official/backtest-eligible")
+        if any((horizons.get(h) or {}).get("rate") is not None
+               or (horizons.get(h) or {}).get("policy_delta_bp") is not None
+               for h in HORIZONS):
+            raise SystemExit(f"{currency}: WITHHELD requires null pricing levels")
+        return {
+            "currency": currency,
+            "operational_status": "WITHHELD",
+            "quality": "UNAVAILABLE",
+            "confidence": row.get("confidence"),
+            "official_status": row.get("official_status"),
+            "input_mode": row.get("input_mode"),
+            "method_id": "WITHHELD_FAIL_CLOSED_V1",
+            "source_as_of": None,
+            "last_input_as_of": row.get("as_of"),
+            "source": row.get("source"),
+            "withheld_reason": row.get("withheld_reason") or "UNAVAILABLE",
+            "policy_rate": None,
+            "direction_vs_policy": None,
+            "backtest_eligible_as_official": False,
+            "horizons": {h: {"rate": None, "policy_delta_bp": None} for h in HORIZONS},
+        }
     return {
         "currency": currency,
-        "operational_status": row.get("operational_status"),
+        "operational_status": status,
         "quality": row.get("quality"),
         "confidence": row.get("confidence"),
         "official_status": row.get("official_status"),
@@ -79,7 +109,7 @@ def append_snapshots(view: dict, captured_at_utc: str, path: Path) -> dict:
 
     for c in CCYS:
         status = (currencies[c] or {}).get("operational_status")
-        if status not in {"GREEN_OFFICIAL", "GREEN_ESTIMATED"}:
+        if status not in {"GREEN_OFFICIAL", "GREEN_ESTIMATED", "WITHHELD"}:
             raise SystemExit(f"{c}: unsupported operational status {status!r}")
 
     history = load_history(path)
@@ -118,8 +148,16 @@ def main() -> None:
 
     captured = args.captured_at_utc or datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     view = json.loads(Path(args.view).read_text(encoding="utf-8"))
-    if view.get("status") != "GREEN_8_OF_8":
-        raise SystemExit(f"operational OIS view is not GREEN_8_OF_8: {view.get('status')}")
+    if view.get("status") not in {"GREEN_8_OF_8", "PARTIAL_WITHHELD"}:
+        raise SystemExit(f"invalid operational OIS view status: {view.get('status')}")
+    summary = view.get("summary") or {}
+    ccys = view.get("currencies") or {}
+    if set(ccys) != set(CCYS):
+        raise SystemExit("OIS G8 history requires exactly 8 currency states")
+    green = sum(r.get("operational_status", "").startswith("GREEN_") for r in ccys.values())
+    withheld = sum(r.get("operational_status") == "WITHHELD" for r in ccys.values())
+    if green + withheld != 8 or green != summary.get("operational_green") or withheld != summary.get("operational_withheld"):
+        raise SystemExit("OIS G8 history: coverage mismatch")
     result = append_snapshots(view, captured, Path(args.history))
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
 
