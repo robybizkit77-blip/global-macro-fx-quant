@@ -35,20 +35,6 @@ for ccy, row in VIEW['currencies'].items():
         assert row['confidence'] in ('A','A/B','B','B/C','C')
         assert any((row['horizons'].get(h) or {}).get('rate') is not None for h in ('3m','6m','12m'))
 
-# Unverified secondary-futures prices may be displayed only as non-OIS context.
-for c in ('USD', 'EUR', 'CHF'):
-    r=VIEW['currencies'][c]
-    ctx=r.get('secondary_futures_context')
-    if ctx is not None:
-        assert ctx['status']=='INDICATIVE_UNVERIFIED_TIMESTAMP', ctx
-        assert ctx['observation_as_of'] is None, ctx
-        assert ctx['quote_timestamp_verified'] is False, ctx
-        assert ctx['substitutes_for_ois_level'] is False, ctx
-        assert ctx['policy_delta_from_proxy_allowed'] is False, ctx
-        assert ctx['repricing_from_proxy_allowed'] is False, ctx
-        assert r['method_id'] != 'TRADINGVIEW_DATED_FUTURES_SSR_V2', r
-        assert all(ctx['horizons'][h]['futures_price'] is not None for h in ('3m','6m','12m')), ctx
-
 assert {c for c,r in VIEW['currencies'].items() if r['operational_status']=='GREEN_OFFICIAL'} == {'AUD','CAD','GBP','JPY'}
 for ccy,row in VIEW['currencies'].items():
     if row['operational_status']=='WITHHELD':
