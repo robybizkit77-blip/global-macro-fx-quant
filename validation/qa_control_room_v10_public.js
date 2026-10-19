@@ -287,7 +287,7 @@ async function getState(page){
        let current=false;
        for(let attempt=0;attempt<16;attempt++){
          current=await page.evaluate(()=>{
-           return !!document.querySelector('script[src*="home-navigation-v10.js?v=pair-what-changed-20261019"]');
+           return !!document.querySelector('script[src*="home-navigation-v10.js?v=pair-fx-reaction-20261019"]');
          });
          if(current)break;
          console.log('PUBLIC_PAIR_ADDON_CDN_PENDING',name,attempt);
@@ -300,7 +300,7 @@ async function getState(page){
          catch(_){console.log('PUBLIC_PAIR_HOME_FEED_PENDING',name,attempt)}
          await page.waitForTimeout(3000);
        }
-       if(!current)current=await page.evaluate(()=>!!document.querySelector('script[src*="home-navigation-v10.js?v=pair-what-changed-20261019"]'));
+       if(!current)current=await page.evaluate(()=>!!document.querySelector('script[src*="home-navigation-v10.js?v=pair-fx-reaction-20261019"]'));
        if(!current)throw Error(name+' PUBLIC_PAIR_ADDON_VERSION_NOT_DEPLOYED');
      }
      const homePair=await page.frameLocator('#gmfq-page').locator('#pairs tr[data-filter]').first().getAttribute('data-filter');
@@ -374,6 +374,39 @@ async function getState(page){
             !change.note?.includes('non necessariamente 24 ore')||
             change.width>change.viewport+16)
            throw Error(name+' public Pair What Changed quality fail-closed '+JSON.stringify(change));
+         const reaction=await page.evaluate(()=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument,
+             c=d?.getElementById('gmfq-pair-market-reaction');
+           return {status:c?.dataset.reactionStatus,text:c?.textContent,
+             docWidth:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth};
+         });
+         if(reaction.status!=='WITHHELD'||
+            !reaction.text?.includes('2Y di una o entrambe le valute')||
+            reaction.docWidth>reaction.viewport+16)
+           throw Error(name+' CHF public FX/Rates audit did not fail closed '+JSON.stringify(reaction));
+         await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="EURUSD"]').click();
+         await page.waitForFunction(()=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument;
+           return d?.getElementById('gmfq-pair-research-path')?.dataset.pair==='EURUSD';
+         },null,{timeout:14000});
+         const liveAudit=await page.evaluate(()=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument,
+              c=d?.getElementById('gmfq-pair-market-reaction');
+           return {status:c?.dataset.reactionStatus,dates:[c?.dataset.windowStart,c?.dataset.windowEnd],
+              texts:[...c?.querySelectorAll('.gmfq-reaction-metrics strong')||[]].map(x=>x.textContent),
+              note:c?.querySelector('.gmfq-reaction-warning')?.textContent,
+              viewport:d?.documentElement.clientWidth,width:d?.documentElement.scrollWidth};
+         });
+         if(liveAudit.status!=='COERENTE'||
+             liveAudit.dates.join('/')!=='2026-10-15/2026-10-16'||
+             !liveAudit.texts[0]?.includes('+6.7 bp')||
+             !liveAudit.texts[1]?.includes('+0.40%')||
+             !liveAudit.note?.includes('non prova causalità')||
+             liveAudit.width>liveAudit.viewport+16)
+            throw Error(name+' public EURUSD Rates/FX reaction audit incorrect '+JSON.stringify(liveAudit));
+         console.log('CONTROL_ROOM_PREVIEW_PUBLIC_PAIR_FX_REACTION_GREEN',name,
+           JSON.stringify({eurusd:liveAudit.status,eurusdWindow:liveAudit.dates,
+             eurchf:reaction.status,viewport:liveAudit.viewport}));
          console.log('CONTROL_ROOM_PREVIEW_PUBLIC_PAIR_WHAT_CHANGED_GREEN',name,
            JSON.stringify({selected:'EURCHF',chf:'WITHHELD',viewport:change.viewport}));
          console.log('CONTROL_ROOM_PREVIEW_PUBLIC_PAIR_MACRO_RATES_GREEN',name,

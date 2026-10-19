@@ -353,6 +353,24 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
      !deltaEURUSD.text?.includes('diagnosi qualitativa'))
     throw Error(label+' EURUSD history-derived 2Y changes vs model not separated '+JSON.stringify(deltaEURUSD));
 
+  // Same-day 2Y country spread (EUR - USD) widened +6.7 bp while
+  // ECB EUR/USD fixing rose between EXACTLY 15 and 16 Oct: indicative
+  // directional consistency, not event-study causal proof.
+  const eurReaction=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    const c=d?.getElementById('gmfq-pair-market-reaction');
+    return {state:c?.dataset.reactionStatus,dates:[c?.dataset.windowStart,c?.dataset.windowEnd],
+      values:[...c?.querySelectorAll('.gmfq-reaction-metrics strong')||[]].map(n=>n.textContent),
+      note:c?.querySelector('.gmfq-reaction-warning')?.textContent,parts:c?.textContent,
+      width:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth};
+  });
+  if(eurReaction.state!=='COERENTE'||eurReaction.dates.join('/')!=='2026-10-15/2026-10-16'||
+    !eurReaction.values[0]?.includes('+6.7 bp')||!eurReaction.values[1]?.includes('+0.40%')||
+    !eurReaction.note?.includes('non prezzi intraday')||
+    !eurReaction.parts?.includes('non spiegazione causale')||
+    eurReaction.width>eurReaction.viewport+16)
+     throw Error(label+' EURUSD rates-FX common date reaction audit wrong '+JSON.stringify(eurReaction));
+
   // AUD / CAD are individually certified but published on different dates.
   // Never combine their most recent independent spot yields into a 2Y spread.
   await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="AUDCAD"]').click();
@@ -382,6 +400,45 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
      !deltaAUDCAD.find(x=>x.ccy==='AUD')?.actual?.includes('intervallo storico troppo lungo')||
      deltaAUDCAD.find(x=>x.ccy==='CAD')?.status!=='MEASURED')
     throw Error(label+' AUDCAD observed 2Y series gaps misclassified '+JSON.stringify(deltaAUDCAD));
+  const audReaction=await page.evaluate(()=>{
+    const c=document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-pair-market-reaction');
+    return {status:c?.dataset.reactionStatus,content:c?.textContent};
+  });
+  if(audReaction.status!=='WITHHELD'||
+     !audReaction.content?.includes('meno di due date ufficiali comuni recenti'))
+     throw Error(label+' AUDCAD reaction used unevenly dated historical 2Y '+JSON.stringify(audReaction));
+
+  await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="GBPJPY"]').click();
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return d?.getElementById('gmfq-pair-research-path')?.dataset.pair==='GBPJPY';
+  },null,{timeout:10000});
+  const gbpReaction=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    const c=d?.getElementById('gmfq-pair-market-reaction');
+    return {state:c?.dataset.reactionStatus,dates:[c?.dataset.windowStart,c?.dataset.windowEnd],
+      values:[...c?.querySelectorAll('.gmfq-reaction-metrics strong')||[]].map(n=>n.textContent)};
+  });
+  if(gbpReaction.state!=='DIVERGENTE'||gbpReaction.dates.join('/')!=='2026-10-15/2026-10-16'||
+     !gbpReaction.values[0]?.includes('-3.1 bp')||
+     !gbpReaction.values[1]?.startsWith('+'))
+    throw Error(label+' GBPJPY 2Y versus FX divergence not detected '+JSON.stringify(gbpReaction));
+
+  await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="USDJPY"]').click();
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return d?.getElementById('gmfq-pair-research-path')?.dataset.pair==='USDJPY';
+  },null,{timeout:10000});
+  const jpyReaction=await page.evaluate(()=>{
+    const c=document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-pair-market-reaction');
+    return {status:c?.dataset.reactionStatus,content:c?.textContent};
+  });
+  if(jpyReaction.status!=='NON_CONCLUSIVO'||!jpyReaction.content?.includes('±0,05%'))
+    throw Error(label+' USDJPY subthreshold FX wrongly promoted to clear signal '+JSON.stringify(jpyReaction));
+  console.log('CONTROL_ROOM_PREVIEW_PAIR_FX_REACTION_GREEN',label,
+    JSON.stringify({eurusd:eurReaction.state,gbpjpy:gbpReaction.state,
+      usdjpy:jpyReaction.status,audcad:audReaction.status,viewport:eurReaction.viewport}));
+
   console.log('CONTROL_ROOM_PREVIEW_PAIR_WHAT_CHANGED_GREEN',label,
     JSON.stringify({CHF:'WITHHELD',EUR:'MEASURED +3.7',USD:'MEASURED -3.0',
       AUD:'WITHHELD',CAD:'MEASURED',viewport:detail.viewport}));
@@ -391,6 +448,13 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
     const d=document.getElementById('gmfq-page')?.contentDocument;
     return d?.getElementById('gmfq-pair-research-path')?.dataset.pair==='EURCHF';
   },null,{timeout:10000});
+  const chfReaction=await page.evaluate(()=>{
+    const c=document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-pair-market-reaction');
+    return {status:c?.dataset.reactionStatus,content:c?.textContent};
+  });
+  if(chfReaction.status!=='WITHHELD'||!chfReaction.content?.includes('2Y di una o entrambe le valute'))
+    throw Error(label+' stale CHF rate promoted to FX reaction signal '+JSON.stringify(chfReaction));
+
   console.log('CONTROL_ROOM_PREVIEW_PAIR_MACRO_RATES_GREEN',label,
     JSON.stringify({chf:compareCHF.same,eurusd:compareEURUSD.same,audcad:compareAUDCAD.same,
       observedEurUsdBp:sameRatesDay?y2Gap:null,viewport:detail.viewport}));
