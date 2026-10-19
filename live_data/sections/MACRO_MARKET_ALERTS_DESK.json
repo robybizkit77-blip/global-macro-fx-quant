@@ -1,8 +1,21 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-19T17:46:11Z",
+  "generated_at_utc": "2026-10-19T18:59:03Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-417bde43ed6be7660078",
+      "observed_at_utc": "2026-10-19T15:39:27Z",
+      "headline": "Hungary to cut deficit below 5% of GDP in Magyar's first budget plan",
+      "summary": "Reuters riporta: Hungary to cut deficit below 5% of GDP in Magyar's first budget plan. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxNM0ZpQjBRVUpOMXVEcXoya2N5UnNMRjVzQ24yY2xnMmtQOWVIRHJGOGhVZVRRcEhaS1NzNFI5ZjhZc3NhSkt6LVkteXJWVXRTZHZUM0ZER2xULVYzamFVS3RHZ0NUQ0lodE1SUmt2NjlXSE5Xb1R0MkE0MktFekdzeG1NTXNBbE96c2U0blBvdVBJWXpMcUZaOGFQR3FYQ1ZxYlFRdw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-1602e734881d681743a9",
       "observed_at_utc": "2026-10-19T16:49:19Z",
