@@ -31,8 +31,8 @@ if estimated:
         assert len(rows) == len(estimated)
         changed = json.loads(json.dumps(VIEW))
         focus=estimated[0]
-    before=float(changed['currencies'][focus]['horizons']['3m']['rate'])
-    changed['currencies'][focus]['horizons']['3m']['rate'] = before + 0.05
+        before=float(changed['currencies'][focus]['horizons']['3m']['rate'])
+        changed['currencies'][focus]['horizons']['3m']['rate'] = before + 0.05
         changed['currencies'][focus]['horizons']['3m']['policy_delta_bp'] = float(changed['currencies'][focus]['horizons']['3m']['policy_delta_bp']) + 5.0
         r3 = append_changed_snapshots(changed, '2026-10-16T08:00:00Z', p)
         assert r3['appended'] == 1 and r3['currencies'] == [focus], r3
@@ -47,7 +47,7 @@ if estimated:
     legacy_row['method_id'] = 'TRADINGVIEW_EXCHANGE_LABELLED_FUTURES_SSR_V1'
     legacy_row['source'] = 'superseded V1 source'
     legacy_record = make_record(focus, legacy_row, '2026-10-14T08:00:00Z')
-    live_record = make_record('USD', base_row, '2026-10-15T08:00:00Z')
+    live_record = make_record(focus, base_row, '2026-10-15T08:00:00Z')
     r = _estimated_repricing(focus, base_row, [legacy_record, live_record])
     assert r['previous_reference'] is None, r
     assert r['weekly_reference'] is None, r
@@ -58,8 +58,8 @@ if estimated:
     # A same-method intraday snapshot must NOT be mislabeled as 1D.
     intraday = json.loads(json.dumps(base_row))
     intraday['horizons']['3m']['rate'] = float(base_row['horizons']['3m']['rate']) - 0.02
-    intraday_record = make_record('USD', intraday, '2026-10-15T01:00:00Z')
-    r = _estimated_repricing('USD', base_row, [intraday_record, live_record])
+    intraday_record = make_record(focus, intraday, '2026-10-15T01:00:00Z')
+    r = _estimated_repricing(focus, base_row, [intraday_record, live_record])
     assert r['previous_reference'] is None, r
     assert r['change_1d_available'] is False, r
     assert r['horizon_changes']['3m']['change_1d_bp'] is None, r
@@ -67,8 +67,8 @@ if estimated:
     # Once a prior-session same-method V2 snapshot exists, 1D becomes legal.
     prior_live = json.loads(json.dumps(base_row))
     prior_live['horizons']['3m']['rate'] = float(base_row['horizons']['3m']['rate']) - 0.01
-    prior_live_record = make_record('USD', prior_live, '2026-10-14T09:00:00Z')
-    r = _estimated_repricing('USD', base_row, [legacy_record, prior_live_record, intraday_record, live_record])
+    prior_live_record = make_record(focus, prior_live, '2026-10-14T09:00:00Z')
+    r = _estimated_repricing(focus, base_row, [legacy_record, prior_live_record, intraday_record, live_record])
     assert r['previous_reference'] == '2026-10-14T09:00:00Z', r
     assert r['change_1d_available'] is True, r
     assert r['horizon_changes']['3m']['change_1d_bp'] == 1.0, r
@@ -76,8 +76,8 @@ if estimated:
     # Weekly repricing remains unavailable until a same-method observation is >=5 days old.
     week_row = json.loads(json.dumps(base_row))
     week_row['horizons']['3m']['rate'] = float(base_row['horizons']['3m']['rate']) - 0.03
-    week_record = make_record('USD', week_row, '2026-10-10T08:00:00Z')
-    r = _estimated_repricing('USD', base_row, [week_record, prior_live_record, live_record])
+    week_record = make_record(focus, week_row, '2026-10-10T08:00:00Z')
+    r = _estimated_repricing(focus, base_row, [week_record, prior_live_record, live_record])
     assert r['weekly_reference'] == '2026-10-10T08:00:00Z', r
     assert r['change_1w_available'] is True, r
     assert r['horizon_changes']['3m']['change_1w_bp'] == 3.0, r
