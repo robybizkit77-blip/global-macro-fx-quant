@@ -65,6 +65,54 @@ async function getState(page){
        await page.waitForTimeout(6000);
      }
      if(!deployed)throw Error(name+' public CDN did not serve the matched-date G8 estimate build: '+JSON.stringify(lastObserved));
+     // This UI is introduced in the current PR, so only the post-merge public
+     // run requires it. Bounded CDN retry verifies the actual public website.
+     if(process.env.GITHUB_EVENT_NAME!=='pull_request'){
+       let found=false;
+       for(let attempt=0;attempt<14;attempt++){
+         found=await page.evaluate(()=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument;
+           return !!d?.getElementById('gmfq-home-data-audit')&&
+             d.querySelector('.mast .fresh')?.getAttribute('role')==='button';
+         });
+         if(found)break;
+         await page.goto(BASE+'?freshqa='+Date.now()+'-'+attempt+'#/home',
+           {waitUntil:'domcontentloaded',timeout:120000});
+         try{
+           await page.waitForFunction(()=>{
+             const d=document.getElementById('gmfq-page')?.contentDocument;
+             return d?.documentElement?.dataset.liveState==='LOADED'&&
+               !!d?.getElementById('gmfq-home-data-audit');
+           },null,{timeout:8500});
+         }catch(_){console.log('PUBLIC_V10_FRESHNESS_CDN_PENDING',name,attempt)}
+         await page.waitForTimeout(3000);
+       }
+       if(!found)found=await page.evaluate(()=>!!document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-home-data-audit'));
+       if(!found)throw Error(name+' PUBLIC_HOME_SOURCE_FRESHNESS_VERSION_NOT_DEPLOYED');
+       const audit=await page.evaluate(()=>{
+         const d=document.getElementById('gmfq-page').contentDocument;
+         return {
+           state:d.getElementById('liveState')?.textContent,
+           stamp:d.getElementById('liveAsOf')?.textContent,
+           detail:d.getElementById('gmfq-home-data-audit')?.textContent,
+           documentWidth:d.documentElement.scrollWidth,
+           viewport:d.documentElement.clientWidth
+         };
+       });
+       if(!audit.state?.startsWith('DATI ')&&audit.state!=='FONTI VERIFICATE'||
+          !audit.stamp?.includes('OIS ')||
+          !audit.detail?.includes('Non è DXY ICE ufficiale')||
+          !audit.detail?.includes('futures monetari, non OIS puri')||
+          !audit.detail?.includes('Le date delle diverse fonti non sono intercambiabili')||
+          audit.documentWidth>audit.viewport+16)
+         throw Error(name+' public source-date disclosure missing '+JSON.stringify(audit));
+       if(name==='mobile')await page.frameLocator('#gmfq-page').locator('#gmfq-mobile-data-audit').click();
+       else await page.frameLocator('#gmfq-page').locator('.mast .fresh').press('Enter');
+       await page.frameLocator('#gmfq-page').locator('dialog#gmfq-home-data-audit[open]').waitFor({timeout:10000});
+       await page.frameLocator('#gmfq-page').locator('.gmfq-audit-close').click();
+       console.log('CONTROL_ROOM_PREVIEW_PUBLIC_SOURCE_FRESHNESS_GREEN',name,
+         JSON.stringify({state:audit.state,stamp:audit.stamp,viewport:audit.viewport}));
+     }
      const state=await getState(page);
      console.log('PUBLIC_V10_SMOKE',name,JSON.stringify(state));
      if(state.mode!=='live'||state.chartCount!==8||state.pricingCount!==8||!state.globe||
