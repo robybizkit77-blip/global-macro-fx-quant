@@ -230,6 +230,64 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
   if(selectedCurveCount!==1)throw Error(label+' single bank curve filter failed');
   await page.frameLocator('#gmfq-page').locator('#gmfq-pricing-research button[data-pricing-ccy="ALL"]').click();
   await page.screenshot({path:'v10-qa-images/'+label+'-rates-g8-detail.png',fullPage:true});
+
+  // Home -> canonical Pair Deep Dive (not a generic Screener). Preserve all
+  // 28 canonical G8 pairs and selected-pair permalink across changes.
+  await page.goto(url+'#/home',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return d?.documentElement?.dataset.liveState==='LOADED'&&
+      d.querySelectorAll('#pairs tr[data-filter]').length>0;
+  },null,{timeout:40000});
+  const fromHome=await page.frameLocator('#gmfq-page').locator('#pairs tr[data-filter]').first().getAttribute('data-filter');
+  if(!/^[A-Z]{6}$/.test(fromHome||''))throw Error(label+' invalid home pair');
+  await page.frameLocator('#gmfq-page').locator('#pairs tr[data-filter]').first().click();
+  await page.waitForURL(u=>u.hash==='#/coppie?pair='+fromHome,{timeout:15000});
+  await page.waitForFunction(code=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return d?.documentElement?.dataset.pairState==='READY'&&
+      d.querySelectorAll('#pair-index button.pair-open[data-pair]').length===28&&
+      d.getElementById('gmfq-pair-research-path')?.dataset.pair===code;
+  },fromHome,{timeout:30000});
+  const first=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    const panel=d?.getElementById('gmfq-pair-research-path');
+    return {count:d?.querySelectorAll('#pair-index button.pair-open[data-pair]').length,
+      currencies:d?.querySelectorAll('#gmfq-pair-research-path .gmfq-path-leg').length,
+      links:d?.querySelectorAll('#gmfq-pair-research-path button[data-gmfq-study-currency]').length,
+      model:panel?.textContent.includes('non aggiorna automaticamente il giudizio del motore'),
+      width:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth};
+  });
+  if(first.count!==28||first.currencies!==2||first.links!==8||
+     !first.model||first.width>first.viewport+16)
+    throw Error(label+' pair deep-dive route/model-date guard failed '+JSON.stringify(first));
+  // Selecting a non-USD cross updates both the original detail and our
+  // additive research path; a permalink to the currently selected pair remains.
+  await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="EURCHF"]').click();
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return d?.getElementById('gmfq-pair-research-path')?.dataset.pair==='EURCHF';
+  },null,{timeout:12000});
+  await page.waitForURL(u=>u.hash==='#/coppie?pair=EURCHF',{timeout:5000});
+  const detail=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return {name:d?.querySelector('#pair-detail .desk-kicker')?.textContent,
+      text:d?.getElementById('gmfq-pair-research-path')?.textContent,
+      g8:d?.querySelectorAll('#pair-index button.pair-open[data-pair]').length,
+      width:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth};
+  });
+  if(!detail.name?.includes('EURCHF')||!detail.text?.includes('ECB')||
+    !detail.text?.includes('CHF')||!detail.text?.includes('non aggiorna automaticamente')||
+    detail.g8!==28||detail.width>detail.viewport+16)
+    throw Error(label+' EURCHF selected-pair research context failed '+JSON.stringify(detail));
+  await page.frameLocator('#gmfq-page').locator('#gmfq-pair-research-path button[data-gmfq-study-route="tassi"][data-gmfq-study-currency="CHF"]').click();
+  await page.waitForURL(u=>u.hash==='#/tassi?ccy=CHF',{timeout:15000});
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return d?.getElementById('rates-select')?.querySelector('button[data-ccy="CHF"]')?.getAttribute('aria-pressed')==='true';
+  },null,{timeout:20000});
+  console.log('CONTROL_ROOM_PREVIEW_28_PAIR_RESEARCH_GREEN',label,JSON.stringify({fromHome,selected:'EURCHF',links:first.links,viewport:first.viewport}));
+
   console.log('CONTROL_ROOM_PREVIEW_G8_DETAIL_FOCUS_GREEN',label,JSON.stringify({ratesDetail,researchSummary:{fourCurves:research.fourCurves,secondary:research.secondary,docWidth:research.docWidth,viewport:research.viewport}}));
   await page.close();
  }
