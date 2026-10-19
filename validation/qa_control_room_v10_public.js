@@ -283,7 +283,35 @@ async function getState(page){
      const homePair=await page.frameLocator('#gmfq-page').locator('#pairs tr[data-filter]').first().getAttribute('data-filter');
      if(!/^[A-Z]{6}$/.test(homePair||''))throw Error(name+' Preview Home invalid pair deep link '+homePair);
      await page.frameLocator('#gmfq-page').locator('#pairs tr[data-filter]').first().click();
-     await page.waitForURL(url=>url.hash==='#/screener?pair='+homePair,{timeout:15000});
+     const oldPublic=process.env.GITHUB_EVENT_NAME==='pull_request';
+     await page.waitForURL(url=>url.hash===(oldPublic?'#/screener?pair=':'#/coppie?pair=')+homePair,{timeout:15000});
+     if(!oldPublic){
+       await page.waitForFunction(code=>{
+         const d=document.getElementById('gmfq-page')?.contentDocument;
+         return d?.documentElement?.dataset.pairState==='READY'&&
+           d.querySelectorAll('#pair-index button.pair-open[data-pair]').length===28&&
+           d.getElementById('gmfq-pair-research-path')?.dataset.pair===code;
+       },homePair,{timeout:35000});
+       const p=await page.evaluate(()=>{
+         const d=document.getElementById('gmfq-page')?.contentDocument;
+         return {pairs:d?.querySelectorAll('#pair-index button.pair-open[data-pair]').length,
+           buttons:d?.querySelectorAll('#gmfq-pair-research-path button[data-gmfq-study-currency]').length,
+           content:d?.getElementById('gmfq-pair-research-path')?.textContent,
+           docWidth:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth};
+       });
+       if(p.pairs!==28||p.buttons!==8||
+          !p.content?.includes('non aggiorna automaticamente il giudizio del motore')||
+          p.docWidth>p.viewport+16)
+          throw Error(name+' public Pair Deep Dive date/routing regression '+JSON.stringify(p));
+       await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="EURCHF"]').click();
+       await page.waitForURL(url=>url.hash==='#/coppie?pair=EURCHF',{timeout:10000});
+       await page.waitForFunction(()=>{
+         const d=document.getElementById('gmfq-page')?.contentDocument;
+         return d?.getElementById('gmfq-pair-research-path')?.dataset.pair==='EURCHF';
+       },null,{timeout:14000});
+       console.log('CONTROL_ROOM_PREVIEW_PUBLIC_28_PAIR_RESEARCH_GREEN',name,JSON.stringify({
+         homePair,opened:'EURCHF',routes:p.buttons,viewport:p.viewport}));
+     }
      console.log('CONTROL_ROOM_PREVIEW_PAIR_NAVIGATION_PASS',name,homePair);
      await page.goto(BASE+'#/home',{waitUntil:'domcontentloaded',timeout:120000});
      await page.waitForFunction(()=>document.getElementById('gmfq-page')?.contentDocument?.querySelectorAll('#ois .oisrow').length===8,null,{timeout:60000});
