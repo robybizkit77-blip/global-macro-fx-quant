@@ -65,7 +65,7 @@ def classify(payload: object, requested: dt.date) -> dict:
             continue
         year = 2000 + int(m.group(2))
         month = MONTHS[m.group(1)]
-        if not (2026 <= year <= 2032):
+        if not (requested.year - 1 <= year <= requested.year + 5):
             continue
         settle = str(row.get("settle", "")).replace(",", "").strip()
         try:
