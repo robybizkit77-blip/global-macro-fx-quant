@@ -64,7 +64,7 @@ jobs:
             themes:'NEWS_PULSE_OPERATIONAL.content_as_of',
             calendar:'CALENDAR_OPERATIONAL_VIEW.generated_at_utc',
             news:'NEWS_PULSE_OPERATIONAL.content_as_of',
-            risk:'MAX(D.risk.VIX.last_date,D.risk.WTI.last_date,ESTIMATED_RESIDUAL_GAPS.BRENT.proxy_as_of)'
+            risk:'OLDEST_REQUIRED(D.risk.VIX.last_date,D.risk.WTI.last_date,ESTIMATED_RESIDUAL_GAPS.BRENT.proxy_as_of)'
           };
           async function run(viewport,label){
             const browser=await chromium.launch({headless:true});
@@ -128,7 +128,8 @@ jobs:
             for(const [id,authority] of Object.entries(AUTH)){
               if(freshness.sections?.[id]?.authority!==authority) throw new Error(`${label}: ${id} freshness authority drift ${JSON.stringify(freshness.sections?.[id])}`);
               const section=freshness.sections?.[id];
-              const expected=(Number.isFinite(section?.age_days)&&Number.isFinite(section?.max_age_days)&&section.age_days>section.max_age_days)?'STALE':'FRESH';
+              const incompleteRisk=id==='risk'&&Array.isArray(section?.missing_risk_lanes)&&section.missing_risk_lanes.length>0;
+              const expected=incompleteRisk?'UNVERIFIED':(Number.isFinite(section?.age_days)&&Number.isFinite(section?.max_age_days)&&section.age_days>section.max_age_days)?'STALE':'FRESH';
               if(section?.status!==expected) throw new Error(`${label}: ${id} freshness status/date mismatch expected ${expected} ${JSON.stringify(section)}`);
             }
             if(errs.length) throw new Error(`${label}: console errors ${errs.join(' | ')}`);
