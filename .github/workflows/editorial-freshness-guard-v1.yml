@@ -71,7 +71,7 @@ jobs:
             themes:'NEWS_PULSE_OPERATIONAL.content_as_of',
             calendar:'CALENDAR_OPERATIONAL_VIEW.generated_at_utc',
             news:'NEWS_PULSE_OPERATIONAL.content_as_of',
-            risk:'MAX(D.risk.VIX.last_date,D.risk.WTI.last_date,ESTIMATED_RESIDUAL_GAPS.BRENT.proxy_as_of)'
+            risk:'OLDEST_REQUIRED(D.risk.VIX.last_date,D.risk.WTI.last_date,ESTIMATED_RESIDUAL_GAPS.BRENT.proxy_as_of)'
           };
           async function run(viewport,label){
             const browser=await chromium.launch({headless:true});
@@ -93,6 +93,21 @@ jobs:
             if(!['PASS_FAIL_CLOSED_STALE','PASS_FRESH','PASS_WITH_UNVERIFIED'].includes(audit.status))throw new Error(label+' freshness status '+audit.status);
             for(const [id,authority] of Object.entries(AUTH)){
               if(audit.sections?.[id]?.authority!==authority)throw new Error(label+' '+id+' authority drift '+JSON.stringify(audit.sections?.[id]));
+            }
+            // Risk freshness must be determined by the OLDEST complete lane,
+            // never a newer Brent quote masking a stale VIX or WTI.
+            const laneAudit=audit.sections?.risk;
+            const dates=laneAudit?.risk_as_of_by_lane||{};
+            const allRiskLanes=['VIX','WTI','BRENT'];
+            if(allRiskLanes.some(c=>!(c in dates)))throw new Error(label+' missing risk source metadata '+JSON.stringify(laneAudit));
+            const missing=allRiskLanes.filter(c=>!/^20\d{2}-\d{2}-\d{2}$/.test(dates[c]||''));
+            if(missing.length){
+              if(laneAudit.status!=='UNVERIFIED'||JSON.stringify(laneAudit.missing_risk_lanes)!==JSON.stringify(missing))
+                throw new Error(label+' incomplete risk lanes not fail-closed '+JSON.stringify(laneAudit));
+            }else{
+              const oldest=allRiskLanes.map(c=>({lane:c,date:dates[c]})).sort((a,b)=>a.date.localeCompare(b.date))[0];
+              if(laneAudit.reference_date!==oldest.date||laneAudit.oldest_lane!==oldest.lane)
+                throw new Error(label+' risk stale older lane masked '+JSON.stringify({oldest,laneAudit}));
             }
             for(const id of IDS){
               const s=audit.sections?.[id];

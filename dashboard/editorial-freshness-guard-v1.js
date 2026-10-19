@@ -19,7 +19,7 @@ const state={
     themes:'NEWS_PULSE_OPERATIONAL.content_as_of',
     calendar:'CALENDAR_OPERATIONAL_VIEW.generated_at_utc',
     news:'NEWS_PULSE_OPERATIONAL.content_as_of',
-    risk:'MAX(D.risk.VIX.last_date,D.risk.WTI.last_date,ESTIMATED_RESIDUAL_GAPS.BRENT.proxy_as_of)'
+    risk:'OLDEST_REQUIRED(D.risk.VIX.last_date,D.risk.WTI.last_date,ESTIMATED_RESIDUAL_GAPS.BRENT.proxy_as_of)'
   },
   legacy_authority:'NONE'
 };
@@ -40,10 +40,16 @@ function domReferenceDate(el,spec){
   if(spec.kind==='overview'){const m=text.match(/ULTIMO\s+DATO\s+GLOBALE\s+(20\d{2}-\d{2}-\d{2})/i);if(m)return parseIso(m[1]);}
   const ds=allDates(text);if(!ds.length)return null;return ds.sort((a,b)=>b-a)[0];
 }
-function latestRiskDate(){
-  const r=operational.risk;if(!r)return null;
-  const candidates=[r.vix_date,r.wti_date,r.brent_date].map(parseIso).filter(Boolean).sort((a,b)=>b-a);
-  return candidates[0]||null;
+function riskLaneCoverage(){
+  const r=operational.risk;
+  const raw={VIX:r?.vix_date||null,WTI:r?.wti_date||null,BRENT:r?.brent_date||null};
+  const entries=Object.entries(raw).map(([lane,value])=>({lane,date:parseIso(value)}));
+  const missing=entries.filter(x=>!x.date).map(x=>x.lane);
+  // ALL three visible cards require explicit as-of. A recent secondary Brent
+  // quote cannot rescue older or unavailable official VIX/WTI observations.
+  if(missing.length)return {date:null,oldest_lane:null,missing_lanes:missing,as_of_by_lane:raw};
+  entries.sort((a,b)=>a.date-b.date);
+  return {date:entries[0].date,oldest_lane:entries[0].lane,missing_lanes:[],as_of_by_lane:raw};
 }
 function operationalReference(spec){
   if(spec.kind==='calendar'){
@@ -56,7 +62,8 @@ function operationalReference(spec){
   }
   if(spec.kind==='risk'){
     const x=operational.risk;if(!x)return {date:null,authority:state.authority.risk,status:'UNAVAILABLE'};
-    return {date:latestRiskDate(),authority:state.authority.risk,status:x.status||null,schema:'GMFQ_RISK_FRESHNESS_AUTHORITY_V1'};
+    const coverage=riskLaneCoverage();
+    return {date:coverage.date,authority:state.authority.risk,status:coverage.missing_lanes.length?'INCOMPLETE_RISK_LANES':(x.status||null),schema:'GMFQ_RISK_FRESHNESS_AUTHORITY_V2',...coverage};
   }
   return null;
 }
@@ -72,22 +79,29 @@ function bannerText(spec,result){
   if(result.status==='STALE'){
     if(spec.kind==='calendar')return `${spec.label} NON CORRENTE · build operativa ${result.reference_date}. La sezione resta visibile come archivio, ma non va usata come calendario operativo di oggi.`;
     if(spec.kind==='news')return `${spec.label} NON CORRENTE · ultimo segnale validato ${result.reference_date}. La sintesi resta visibile, ma non rappresenta più il contesto corrente.`;
-    if(spec.kind==='risk')return `${spec.label} NON CORRENTE · ultima superficie risk ${result.reference_date}. I valori restano visibili, ma non vanno letti come snapshot corrente.`;
+    if(spec.kind==='risk')return `${spec.label} NON CORRENTE · il dato più vecchio è ${result.oldest_lane||'una fonte richiesta'} (${result.reference_date}). I valori restano visibili con le rispettive date, ma l'insieme non è uno snapshot corrente.`;
     return `${spec.label} NON CORRENTE · riferimento globale ${result.reference_date}. I layer live/certificati restano validi, ma questa sintesi editoriale non va letta come aggiornata a oggi.`;
   }
-  if(result.status==='UNVERIFIED')return `${spec.label} · freshness operativa non verificabile. La sezione resta fail-closed finché la fonte operativa non è disponibile.`;
+  if(result.status==='UNVERIFIED')return spec.kind==='risk'&&result.missing_risk_lanes?.length
+    ? `${spec.label} · as-of mancante per ${result.missing_risk_lanes.join(', ')}. Nessun dato secondario può certificare l'intero monitor.`
+    : `${spec.label} · freshness operativa non verificabile. La sezione resta fail-closed finché la fonte operativa non è disponibile.`;
   return '';
 }
 function applyOne(id,spec){
   const el=document.getElementById(id);if(!el)return {status:'MISSING_VIEW',reference_date:null,age_days:null,authority:null};
-  let ref=null,authority='VISIBLE_DOM_EXPLICIT_ASOF',sourceStatus=null,sourceSchema=null;
+  let ref=null,authority='VISIBLE_DOM_EXPLICIT_ASOF',sourceStatus=null,sourceSchema=null,sourceDetail=null;
   if(['calendar','news','risk'].includes(spec.kind)){
     if(!operational.loaded){el.dataset.gmfqEditorialFreshness='PENDING_OPERATIONAL';return {status:'PENDING_OPERATIONAL',reference_date:null,age_days:null,max_age_days:spec.maxAgeDays,authority:state.authority[id]};}
-    const op=operationalReference(spec);ref=op.date;authority=op.authority;sourceStatus=op.status;sourceSchema=op.schema;
+    const op=operationalReference(spec);ref=op.date;authority=op.authority;sourceStatus=op.status;sourceSchema=op.schema;sourceDetail=op;
   }else ref=domReferenceDate(el,spec);
   const today=dayFloor(new Date());let status='UNVERIFIED',age=null;
   if(ref){age=Math.floor((today-dayFloor(ref))/86400000);status=age>spec.maxAgeDays?'STALE':'FRESH';}
   const result={status,reference_date:isoDate(ref),age_days:age,max_age_days:spec.maxAgeDays,authority,source_status:sourceStatus,source_schema:sourceSchema};
+  if(spec.kind==='risk'&&sourceDetail){
+    result.oldest_lane=sourceDetail.oldest_lane;
+    result.missing_risk_lanes=sourceDetail.missing_lanes;
+    result.risk_as_of_by_lane=sourceDetail.as_of_by_lane;
+  }
   el.dataset.gmfqEditorialFreshness=status;el.dataset.gmfqFreshnessAuthority=authority;
   let banner=el.querySelector(':scope > .gmfqEditorialFreshnessBanner');
   if(status==='FRESH'||status==='PENDING_OPERATIONAL'){if(banner)banner.remove();}
