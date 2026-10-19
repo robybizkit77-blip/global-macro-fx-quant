@@ -19,11 +19,12 @@ ROME = ZoneInfo("Europe/Rome")
 UTC = dt.timezone.utc
 MAX_QUEUE_DELAY_MINUTES = 240
 SLOTS = {
-    "20 5 * * 1-5": ("07:20", 2),
-    "20 6 * * 1-5": ("07:20", 1),
-    "0 6 * * 1-5": ("08:00", 2),
-    "0 7 * * 1-5": ("08:00", 1),
-    "0 8 * * 1-5": ("09:00", 1),
+    "20 5 * * 1-5": {2: "07:20"},
+    "20 6 * * 1-5": {1: "07:20"},
+    "0 6 * * 1-5": {2: "08:00"},
+    # UTC 07:00 means 09:00 CEST or 08:00 CET.
+    "0 7 * * 1-5": {2: "09:00", 1: "08:00"},
+    "0 8 * * 1-5": {1: "09:00"},
 }
 
 
@@ -47,15 +48,15 @@ def resolve(event: str, cron: str, now: dt.datetime) -> dict:
     if slot is None:
         out["reason"] = "UNKNOWN_CRON_FAIL_CLOSED"
         return out
-    clock, required_offset = slot
-    out["slot_rome"] = clock
     actual_offset = int(local.utcoffset().total_seconds() // 3600)
     if local.weekday() >= 5:
         out["reason"] = "NOT_BUSINESS_DAY"
         return out
-    if actual_offset != required_offset:
+    clock = slot.get(actual_offset)
+    if clock is None:
         out["reason"] = "DUPLICATE_CET_CEST_UTC_SLOT"
         return out
+    out["slot_rome"] = clock
     hh, mm = (int(part) for part in clock.split(":"))
     scheduled = dt.datetime.combine(local.date(), dt.time(hh, mm), tzinfo=ROME)
     elapsed = int((now.astimezone(UTC) - scheduled.astimezone(UTC)).total_seconds() // 60)
