@@ -18,6 +18,11 @@ function validate(d){
    const r=d?.currencies?.[c];
    if(!r)throw new Error('valuta OIS mancante: '+c);
    if(!['GREEN_OFFICIAL','GREEN_ESTIMATED','WITHHELD'].includes(r.operational_status))throw new Error('status OIS invalido '+c);
+   const sc=r.secondary_futures_context;
+   if(sc){
+     if(!['USD','EUR','CHF'].includes(c))throw new Error('secondary futures context invalid '+c);
+     if(sc.status!=='INDICATIVE_UNVERIFIED_TIMESTAMP'||sc.quote_timestamp_verified!==false||sc.observation_as_of!==null||sc.substitutes_for_ois_level!==false||sc.policy_delta_from_proxy_allowed!==false||sc.repricing_from_proxy_allowed!==false)throw new Error('secondary futures governance invalid '+c);
+   }
    const p=r.market_direction_proxy;
    if(p){
      if(c!=='NZD')throw new Error('market direction proxy consentito solo per NZD');
@@ -75,15 +80,24 @@ function proxyHtml(c,r){
  const cells=['3m','6m','12m'].map(h=>{const x=p?.horizons?.[h]||{};return `<div class="oisProxyCell"><div class="oisProxyHz">${h.toUpperCase()}</div><div class="oisProxyRate">${fmtRate(x.implied_bank_bill_rate)}</div><div class="oisProxyMove">1D ${proxyMove(x.change_1d_bp)}<br>1W ${proxyMove(x.change_1w_bp)}</div></div>`;}).join('');
  return `<div class="oisProxyBox" data-ois-proxy="NZD_ASX_BB_DIRECTIONAL" title="${esc(p.basis_warning||'Directional market-rates proxy; non OCR/OIS')}"><div class="oisProxyHead"><span class="oisProxyTitle">ASX BB DIRECTIONAL</span><span class="oisProxyFlag">NON OIS</span></div><div class="oisProxyGrid">${cells}</div><div class="oisProxyNote">Bank-bill/FRA proxy · solo direzione di mercato · as-of ${esc(p.as_of||'—')}</div></div>`;
 }
+function secondaryHtml(c,r){
+ const p=r?.secondary_futures_context;
+ if(!p||!['USD','EUR','CHF'].includes(c))return '';
+ const cells=['3m','6m','12m'].map(h=>{
+   const x=p.horizons?.[h]||{};
+   return `<div class="oisProxyCell"><div class="oisProxyHz">${h.toUpperCase()}</div><div class="oisProxyRate">${fmtRate(x.implied_rate_indicative)}</div><div class="oisProxyMove">${esc(x.contract||'—')} · non certificato</div></div>`;
+ }).join('');
+ return `<div class="oisProxyBox" data-ois-secondary="${esc(c)}"><div class="oisProxyHead"><span class="oisProxyTitle">FUTURES INDICATIVI</span><span class="oisProxyFlag">NON OIS</span></div><div class="oisProxyGrid">${cells}</div><div class="oisProxyNote">Prezzi da contratti datati · ora della quotazione non verificata · non usare per delta policy, curva o variazioni giornaliere</div></div>`;
+}
 function render(){
  const host=ensureHost();if(!host)return false;style();
  if(state.status==='ERROR'){host.innerHTML=`<div class="oisFail"><b>OIS operativo non disponibile.</b><br>${esc(state.error)}. Nessun fallback stimato come dato ufficiale.</div>`;return true;}
  if(state.status!=='READY'||!state.data){host.innerHTML='<div class="oisOpSub">Caricamento OIS operativo…</div>';return true;}
  const d=state.data;const rows=CCYS.map(c=>[c,d.currencies[c]]);
  const finite=rows.flatMap(([,r])=>H.map(h=>rowRate(r,h)).filter(v=>v!==null&&v!==undefined&&Number.isFinite(Number(v))).map(Number));let min=Math.min(...finite),max=Math.max(...finite);if(!finite.length){min=0;max=1;}const pad=Math.max(.15,(max-min)*.08);min-=pad;max+=pad;
- const cards=rows.map(([c,r])=>{const est=r.operational_status==='GREEN_ESTIMATED';return `<div class="oisPathCard" data-ois-ccy="${c}"><div class="oisPathTop"><span class="oisPathCcy">${c}</span><span class="oisPathMeta ${est?'est':'off'}">${r.operational_status==='WITHHELD'?'WITHHELD':est?'ESTIMATED':'OFFICIAL'}</span></div>${r.operational_status==='WITHHELD'?'<div class="oisOpSub">Curva WITHHELD · dato non valido</div>':pathSvg(r,min,max)}<div class="oisPathVals">${H.map(h=>`<span>${h==='policy'?'POLICY':h.toUpperCase()}<b>${fmtRate(rowRate(r,h))}</b></span>`).join('')}</div>${proxyHtml(c,r)}<div class="oisAsOf" title="${esc(r.source)}">as-of ${esc(r.as_of||'—')} · conf. ${esc(r.confidence||'—')}</div></div>`;}).join('');
+ const cards=rows.map(([c,r])=>{const est=r.operational_status==='GREEN_ESTIMATED';return `<div class="oisPathCard" data-ois-ccy="${c}"><div class="oisPathTop"><span class="oisPathCcy">${c}</span><span class="oisPathMeta ${est?'est':'off'}">${r.operational_status==='WITHHELD'?'WITHHELD':est?'ESTIMATED':'OFFICIAL'}</span></div>${r.operational_status==='WITHHELD'?'<div class="oisOpSub">Curva WITHHELD · dato non valido</div>':pathSvg(r,min,max)}<div class="oisPathVals">${H.map(h=>`<span>${h==='policy'?'POLICY':h.toUpperCase()}<b>${fmtRate(rowRate(r,h))}</b></span>`).join('')}</div>${proxyHtml(c,r)}${secondaryHtml(c,r)}<div class="oisAsOf" title="${esc(r.source)}">as-of ${esc(r.as_of||'—')} · conf. ${esc(r.confidence||'—')}</div></div>`;}).join('');
  const trs=rows.map(([c,r])=>{const est=r.operational_status==='GREEN_ESTIMATED';const cells=['3m','6m','12m'].flatMap(h=>r.operational_status==='WITHHELD'?[null,null]:[r?.horizons?.[h]?.change_1d_bp,r?.horizons?.[h]?.change_1w_bp]).map(v=>`<td class="${clsBp(v)}">${fmtBp(v)}</td>`).join('');return `<tr><td><b>${c}</b> <span class="oisQuality ${est?'est':'off'}">${r.operational_status==='WITHHELD'?'WITHHELD':est?'EST':'OFF'}</span></td>${cells}<td>${r.change_1d_available?'SI':'NO'}/${r.change_1w_available?'SI':'NO'}</td></tr>`;}).join('');
- host.innerHTML=`<div class="oisOp"><div class="oisOpHead"><div><div class="oisOpTitle">OIS / Policy Pricing — G8 Operational</div><div class="oisOpSub">Policy path delle valute validate; quelle non valide restano WITHHELD. Verde = fonte ufficiale certificata; ambra = stima operativa informativa. Gli estimated non entrano come official OIS nel backtest.</div></div><div class="oisOpBadges"><span class="oisBadge off">4 OFFICIAL</span><span class="oisBadge est">${d.summary.green_estimated} ESTIMATED</span><span class="oisBadge">${d.summary.operational_green}/8 OPERATIVO · ${d.summary.operational_withheld} WITHHELD</span></div></div><div class="oisPathGrid">${cards}</div><div class="oisReprice"><table><thead><tr><th>Valuta</th><th>3M Δ1D</th><th>3M Δ1W</th><th>6M Δ1D</th><th>6M Δ1W</th><th>12M Δ1D</th><th>12M Δ1W</th><th>Storico 1D/1W</th></tr></thead><tbody>${trs}</tbody></table></div><div class="oisFoot">NULL ≠ 0 bp: “—” significa storico insufficiente o punto non disponibile. Il monitor usa esclusivamente <code>OIS_OPERATIONAL_VIEW.json</code>; il box ASX NZD, quando presente, è un proxy direzionale separato e non viene promosso a OIS.</div></div>`;
+ host.innerHTML=`<div class="oisOp"><div class="oisOpHead"><div><div class="oisOpTitle">OIS / Policy Pricing — G8 Operational</div><div class="oisOpSub">Policy path delle valute validate; quelle non valide restano WITHHELD. Verde = fonte ufficiale certificata; ambra = stima operativa informativa. Gli estimated non entrano come official OIS nel backtest.</div></div><div class="oisOpBadges"><span class="oisBadge off">4 OFFICIAL</span><span class="oisBadge est">${d.summary.green_estimated} ESTIMATED</span><span class="oisBadge">${d.summary.operational_green}/8 OPERATIVO · ${d.summary.operational_withheld} WITHHELD</span></div></div><div class="oisPathGrid">${cards}</div><div class="oisReprice"><table><thead><tr><th>Valuta</th><th>3M Δ1D</th><th>3M Δ1W</th><th>6M Δ1D</th><th>6M Δ1W</th><th>12M Δ1D</th><th>12M Δ1W</th><th>Storico 1D/1W</th></tr></thead><tbody>${trs}</tbody></table></div><div class="oisFoot">NULL ≠ 0 bp: “—” significa storico insufficiente o punto non disponibile. Il monitor usa esclusivamente <code>OIS_OPERATIONAL_VIEW.json</code>; il box ASX NZD è solo direzionale. USD/EUR/CHF possono mostrare futures indicativi senza ora della quotazione validata: non sono curve OIS e non generano segnali.</div></div>`;
  return true;
 }
 let repairQueued=false;
