@@ -9,6 +9,8 @@ on:
       - 'validation/cb_pricing/build_cb_pricing_estimated_v1.py'
       - 'validation/cb_pricing/ois_estimated_snapshot_v1.py'
       - 'validation/cb_pricing/test_ois_estimated_snapshot_v1.py'
+      - 'validation/cb_pricing/push_ois_refresh_with_lease_v1.py'
+      - 'validation/cb_pricing/test_push_ois_refresh_with_lease_v1.py'
       - 'validation/cb_pricing/build_ois_operational_view_v1.py'
       - 'live_data/sections/CB_PRICING_ESTIMATED_LIVE_QUOTES.json'
       - 'live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json'
@@ -23,6 +25,8 @@ on:
       - 'validation/cb_pricing/build_cb_pricing_estimated_v1.py'
       - 'validation/cb_pricing/ois_estimated_snapshot_v1.py'
       - 'validation/cb_pricing/test_ois_estimated_snapshot_v1.py'
+      - 'validation/cb_pricing/push_ois_refresh_with_lease_v1.py'
+      - 'validation/cb_pricing/test_push_ois_refresh_with_lease_v1.py'
       - 'validation/cb_pricing/build_ois_operational_view_v1.py'
       - 'live_data/sections/CB_PRICING_ESTIMATED_LIVE_QUOTES.json'
       - 'live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json'
@@ -39,7 +43,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: ois-estimated-snapshot-repricing-v1
+  group: ${{ github.event_name == 'pull_request' && format('ois-estimated-pr-{0}', github.event.pull_request.number) || 'ois-operational-main-writer-v1' }}
   cancel-in-progress: false
 
 jobs:
@@ -51,12 +55,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
-          fetch-depth: 2
+          fetch-depth: 50
           persist-credentials: true
 
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
+      - name: Test safe unattended OIS main-writer lease
+        run: python validation/cb_pricing/test_push_ois_refresh_with_lease_v1.py
 
       - name: Capture base and official runtime fingerprints
         shell: bash
@@ -140,26 +147,10 @@ jobs:
           PY
           git diff --exit-code -- live_data/sections/OIS_DATA.json live_data/sections/NATIVE_CB_DATA.json
 
-      - name: Persist operational history and view on main
+      - name: Persist operational history and view on main with bounded safe rebase
         if: github.event_name != 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
-          git fetch origin main
-          if [ "$(git rev-parse origin/main)" != "$BASE_SHA" ]; then
-            echo "main moved during run; fail closed"
-            exit 1
-          fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add live_data/sections/CB_PRICING_ESTIMATED_LIVE_QUOTES.json \
-                  live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json \
-                  live_data/sections/CB_PRICING_ESTIMATED.json \
-                  live_data/sections/OIS_OPERATIONAL_VIEW.json \
-                  validation/cb_pricing/history/OIS_ESTIMATED_SNAPSHOTS_V1.jsonl
-          if git diff --cached --quiet; then
-            echo 'No estimated OIS observation change.'
-            exit 0
-          fi
-          git commit -m 'Refresh live estimated OIS operational repricing history'
-          git push origin HEAD:main
+          python validation/cb_pricing/push_ois_refresh_with_lease_v1.py \
+            --base-sha "$BASE_SHA" --mode estimated --attempts 4
