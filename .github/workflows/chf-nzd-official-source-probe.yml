@@ -54,13 +54,22 @@ jobs:
           import json
           old=json.load(open('/tmp/ois-producer-before.json'))
           new=json.load(open('live_data/sections/OIS_OPERATIONAL_VIEW.json'))
-          assert new['summary']=={'g8_total':8,'operational_green':7,'green_official':4,'green_estimated':3,'operational_withheld':1},new['summary']
-          assert new['status']=='PARTIAL_WITHHELD'
-          assert new['currencies']['NZD']['operational_status']=='WITHHELD'
-          assert all(h['rate'] is None for h in new['currencies']['NZD']['horizons'].values())
-          for ccy in ('USD','EUR','GBP','JPY','CHF','CAD','AUD'):
-            assert new['currencies'][ccy]['operational_status']==old['currencies'][ccy]['operational_status'],ccy
-          print('OIS_PRODUCER_SEVEN_GREEN_ONE_WITHHELD_PASS')
+          summary=new['summary']
+          assert summary==old['summary'],(summary,old['summary'])
+          assert summary['g8_total']==8
+          assert summary['operational_green']+summary['operational_withheld']==8
+          assert new['status']==('PARTIAL_WITHHELD' if summary['operational_withheld'] else 'GREEN_8_OF_8')
+          assert set(new['currencies'])==set(old['currencies'])
+          for ccy,row in new['currencies'].items():
+            assert row['operational_status']==old['currencies'][ccy]['operational_status'],ccy
+            if row['operational_status']=='WITHHELD':
+              assert row['backtest_eligible_as_official'] is False,ccy
+              assert all(h['rate'] is None and h['policy_delta_bp'] is None for h in row['horizons'].values()),ccy
+          nzd=new['currencies']['NZD']
+          assert nzd['operational_status']=='WITHHELD'
+          assert nzd['market_direction_proxy']['substitutes_for_ois_level'] is False
+          assert nzd['market_direction_proxy']['policy_delta_from_proxy_allowed'] is False
+          print('OIS_PRODUCER_DYNAMIC_WITHHELD_PASS',summary)
           PY
           python3 validation/cb_pricing/test_ois_operational_view_v1.py
       - name: Probe official SNB and RBNZ feeds (non-mutating)
