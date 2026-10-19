@@ -15,6 +15,10 @@ items={
 "All G8 OIS/proxy rows": "['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']" in s,
 "NZD is explicitly a bank-bill directional proxy": "NZD_CB_PRICING_DIRECTIONAL_PROXY.json" in s and "PROXY BB ≠ OIS" in s,
 "Known stale pricing stays distinguishable": "fresh(x.as_of,4)" in s and "WITHHELD" in s,
+"Rates detail exposes the four missing country selectors": "function enhanceRatesDetail(doc)" in s and "['AUD','CAD','NZD','CHF']" in s and "select.appendChild(b)" in s,
+"Rates selection remains wired to the existing data renderer": "b.dataset.ccy=ccy" in s and "focusCurrency(doc)" in s,
+"Home focus links lead to exact Rates sections": "function focusRatesSection(doc)" in s and all(x in s for x in ["curve:'#rates-chart'","'2y':'#rates-rows'","spread:'#rates-rows'","ois:'#ois-rows'","scrollIntoView({block:'start'})"]),
+"Detail adapter does not invent missing yields": "enhanceRatesDetail(doc)" in s and "b.textContent=labels[ccy]" in s,
 "Core data not changed": "localStorage.setItem" not in s and "github.com/repos/" not in s,
 }
 for k,v in items.items(): print(("PASS" if v else "FAIL")+": "+k)
