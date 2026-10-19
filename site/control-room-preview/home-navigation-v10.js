@@ -359,11 +359,108 @@ function focusRatesSection(doc){
  section.focus({preventScroll:true});
  section.scrollIntoView({block:'start'});
 }
+
+/* Rates research overlay: observed validated curves are distinct from unsynchronised futures quotes.
+   Display-only: no policy path can be inferred from secondary contract observations. */
+function marketResearchCurves(data){
+ const allowed=['GBP','JPY','AUD','CAD'],terms=['3m','6m','12m'];
+ return allowed.flatMap(k=>{
+  const x=data?.currencies?.[k];
+  if(x?.operational_status!=='GREEN_OFFICIAL'||x.quality!=='OFFICIAL_CERTIFIED'||!fresh(x.as_of,4))return [];
+  const pts=terms.map(t=>num(x.horizons?.[t]?.policy_delta_bp));
+  return pts.every(v=>v!==null)?[{k,date:x.as_of,src:x.source||'',pts}]:[];
+ });
+}
+function marketResearchSvg(curves){
+ const vals=curves.flatMap(c=>c.pts);
+ if(!vals.length)return '<p style="padding:24px;color:#e5c782">Curve omogenee non disponibili.</p>';
+ const lo=Math.floor((Math.min(0,...vals)-12)/20)*20,hi=Math.ceil((Math.max(0,...vals)+12)/20)*20;
+ const xs=[85,300,640],yy=v=>20+(170*(hi-v)/(hi-lo||1));
+ let svg='';
+ for(let i=0;i<5;i++){
+  const n=lo+i*(hi-lo)/4,y=yy(n);
+  svg+='<line x1="55" y1="'+y+'" x2="675" y2="'+y+'" stroke="#294658"/><text x="45" y="'+(y+4)+'" fill="#a3b8c8" font-size="12" text-anchor="end">'+n.toFixed(0)+'</text>';
+ }
+ ['3M','6M','12M'].forEach((t,i)=>svg+='<text x="'+xs[i]+'" y="220" text-anchor="middle" fill="#b4cadb" font-size="13">'+t+'</text>');
+ for(const c of curves){
+  svg+='<polyline fill="none" stroke="'+COLOR[c.k]+'" stroke-width="3" points="'+c.pts.map((v,i)=>xs[i]+','+yy(v)).join(' ')+'"/>';
+  c.pts.forEach((v,i)=>svg+='<circle cx="'+xs[i]+'" cy="'+yy(v)+'" r="4" fill="'+COLOR[c.k]+'"/>');
+ }
+ svg+='<text x="678" y="14" text-anchor="end" fill="#a4bfce" font-size="11">Δ policy rate · bp</text>';
+ return '<svg viewBox="0 0 720 234" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Pricing a 3, 6 e 12 mesi, confronto solo dati certificati">'+svg+'</svg>';
+}
+function marketResearchSecondary(data){
+ const terms=['3m','6m','12m'];
+ const cards=['USD','EUR','CHF'].flatMap(k=>{
+  const x=data?.currencies?.[k],ctx=x?.secondary_quote_context;
+  if(x?.operational_status!=='WITHHELD'||ctx?.status!=='INDICATIVE_OBSERVATIONS_NON_OIS'||
+     ctx.full_curve_usable!==false||ctx.cross_date_join_allowed!==false||
+     ctx.policy_delta_allowed!==false||ctx.repricing_signal_allowed!==false)return [];
+  const lines=terms.map(t=>{
+   const p=ctx.horizons?.[t],ok=num(p?.rate_indicative)!==null&&fresh(p?.quote_as_of,5)&&
+     /^[A-Z0-9]+$/.test(p.contract||'')&&p.source_quality==='SECONDARY_VERIFIED_DAILY_BAR';
+   return '<div class="gmfq-quote">'+t.toUpperCase()+' · '+(ok?
+     '<strong>'+fmt(p.rate_indicative,3)+'%</strong> · '+htmlEscape(p.contract)+' · '+htmlEscape(p.quote_as_of):
+     '<span>non verificato</span>')+'</div>';
+  }).join('');
+  return ['<article class="gmfq-quote-card"><b>'+FLAG[k]+' '+k+' · WITHHELD</b>'+lines+'</article>'];
+ });
+ return cards.length?'<div class="gmfq-research-separator"><h3>Quotazioni secondarie · solo contesto</h3>'+
+  '<div class="gmfq-quote-cards">'+cards.join('')+'</div>'+
+  '<p class="gmfq-research-note">Quotazioni di contratti futures anche su date differenti: non sono una curva OIS. Vietato collegare i punti, calcolare repricing o utilizzarli per segnali e backtest.</p></div>':'';
+}
+function mountMarketResearch(doc,ois,proxy,rates){
+ if(route()!=='tassi'||frame.contentDocument!==doc)return;
+ const table=doc.getElementById('ois-rows'),original=table?.closest('.desk-panel');
+ if(!original||doc.getElementById('gmfq-pricing-research'))return;
+ const style=doc.createElement('style');style.id='gmfq-pricing-research-style';
+ style.textContent='#gmfq-pricing-research{margin-top:12px}#gmfq-pricing-research .gmfq-research-intro,#gmfq-pricing-research .gmfq-research-note{color:#a9c1d2;font-size:12px;line-height:1.55;margin:9px 0 14px}#gmfq-pricing-research h3{font-size:13px;color:#e5edf5;margin:0 0 10px}#gmfq-pricing-research .gmfq-research-plot{height:225px;max-width:100%;border:1px solid #284456;border-radius:7px;background:#0b2030;overflow:hidden}#gmfq-pricing-research svg{height:100%;width:100%;display:block}#gmfq-pricing-research .gmfq-research-tabs,#gmfq-pricing-research .gmfq-research-legend{display:flex;flex-wrap:wrap;gap:7px 13px;margin:9px 0}#gmfq-pricing-research button{cursor:pointer;background:#122c40;border:1px solid #34546b;padding:6px 12px;border-radius:5px;color:#c0d0e0;font:12px Arial,sans-serif}#gmfq-pricing-research button[aria-pressed=true]{background:#e2c87c;border-color:#e2c87c;color:#102132}#gmfq-pricing-research button:focus-visible{outline:2px solid #f7dfa0}#gmfq-pricing-research .gmfq-research-legend span{font-size:11px;color:#b4c9d8}#gmfq-pricing-research .gmfq-research-legend i{display:inline-block;width:13px;height:3px;margin-right:5px;vertical-align:middle}#gmfq-pricing-research .gmfq-research-separator{border-top:1px solid #294556;margin-top:18px;padding-top:16px}#gmfq-pricing-research .gmfq-quote-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:9px}#gmfq-pricing-research .gmfq-quote-card{background:#0b2232;border:1px solid #294659;border-radius:6px;padding:11px}#gmfq-pricing-research .gmfq-quote-card b{display:block;color:#f0d091;font-size:12px;margin-bottom:8px}#gmfq-pricing-research .gmfq-quote{color:#b6c9d8;font-size:11px;line-height:1.7}#gmfq-pricing-research .gmfq-quote strong{color:#e5eff5}@media(max-width:600px){#gmfq-pricing-research .gmfq-research-plot{height:190px}#gmfq-pricing-research .gmfq-quote-cards{grid-template-columns:1fr}}';
+ doc.head.appendChild(style);
+ const curves=marketResearchCurves(ois),host=doc.createElement('section');
+ host.id='gmfq-pricing-research';host.className='desk-panel';
+ host.innerHTML='<h2 class="desk-panel-title">Market Pricing · curve comparate e affidabilità</h2>'+
+  '<div class="desk-panel-body"><p class="gmfq-research-intro">Cosa sta prezzando il mercato su 3, 6 e 12 mesi? Il grafico mostra solo le scadenze validate, espresse come differenza dal policy rate. Non sono probabilità per meeting.</p>'+
+  '<div class="gmfq-research-tabs" role="group" aria-label="Filtra pricing certificato"></div>'+
+  '<div class="gmfq-research-plot"></div><div class="gmfq-research-legend"></div>'+
+  '<p class="gmfq-research-note">Certificato significa fonte verificata, non OIS puro: GBP è OIS BoE; JPY, AUD e CAD provengono da futures monetari. Ogni curva mostra punti di mercato per scadenza, non una previsione certa della banca centrale.</p>'+
+  marketResearchSecondary(ois)+'<div class="gmfq-research-separator"><h3>Fonti incomplete</h3>'+
+  '<p class="gmfq-research-note" id="gmfq-nzd-pricing-context"></p>'+
+  '<p class="gmfq-research-note" id="gmfq-chf-rates-context"></p></div></div>';
+ original.insertAdjacentElement('afterend',host);
+ const labels=[['ALL','Tutte'],...curves.map(c=>[c.k,FLAG[c.k]+' '+c.k])];
+ const tabs=host.querySelector('.gmfq-research-tabs'),plot=host.querySelector('.gmfq-research-plot'),legend=host.querySelector('.gmfq-research-legend');
+ let selected='ALL';
+ for(const [key,value] of labels){
+  const b=doc.createElement('button');b.type='button';b.dataset.pricingCcy=key;b.textContent=value;tabs.appendChild(b);
+ }
+ const draw=()=>{
+  const shown=selected==='ALL'?curves:curves.filter(x=>x.k===selected);
+  plot.innerHTML=marketResearchSvg(shown);
+  legend.innerHTML=shown.map(c=>'<span title="'+htmlEscape(c.src)+'"><i style="background:'+COLOR[c.k]+'"></i>'+FLAG[c.k]+' '+c.k+' · '+htmlEscape(c.date)+'</span>').join('');
+  tabs.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.pricingCcy===selected)));
+ };
+ tabs.addEventListener('click',e=>{const b=e.target.closest('button[data-pricing-ccy]');if(b){selected=b.dataset.pricingCcy;draw()}});
+ draw();
+ const nz=proxy?.schema==='GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1'&&proxy.status==='LIVE_DIRECTIONAL_PROXY_READY'&&fresh(proxy.as_of,4)?
+   num(proxy.horizons?.['6m']?.implied_bank_bill_rate):null;
+ host.querySelector('#gmfq-nzd-pricing-context').textContent=nz===null?
+  '🇳🇿 NZD: curva OIS non certificata; proxy Bank Bill non disponibile o fuori data.':
+  '🇳🇿 NZD Bank Bill 6M · '+fmt(nz,2)+'% · '+proxy.as_of+' — proxy direzionale, NON curva OIS né policy delta.';
+ const ch=rates?.CHF;
+ host.querySelector('#gmfq-chf-rates-context').textContent=ch?.date&&!fresh(ch.date,4)?
+  '🇨🇭 CHF 2Y/10Y: ultimo dato governativo '+ch.date+'. Data non corrente; la stima della Home è puramente indicativa, non operativa.':
+  '';
+}
+async function applyMarketResearch(doc){
+ const all=await Promise.allSettled([feed('OIS_OPERATIONAL_VIEW.json'),feed('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),feed('NATIVE_RATES_DATA.json')]);
+ mountMarketResearch(doc,...all.map(x=>x.status==='fulfilled'?x.value:null));
+}
+
 function onFrameLoad(){
  let doc;try{doc=frame.contentDocument}catch(_){return}
  if(!doc?.body)return;
  if(!home()){
-   if(route()==='tassi'){enhanceRatesDetail(doc);focusRatesSection(doc)}
+   if(route()==='tassi'){enhanceRatesDetail(doc);focusRatesSection(doc);applyMarketResearch(doc).catch(e=>console.warn('[GMFQ market pricing WITHHELD]',e))}
    focusCurrency(doc);
    return;
  }
