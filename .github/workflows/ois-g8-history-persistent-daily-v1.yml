@@ -7,10 +7,14 @@ on:
       - '.github/workflows/ois-g8-history-persistent-daily-v1.yml'
       - 'validation/cb_pricing/ois_g8_history_snapshot_v1.py'
       - 'validation/cb_pricing/test_ois_g8_history_snapshot_v1.py'
+      - 'validation/cb_pricing/ois_g8_schedule_gate_v1.py'
+      - 'validation/cb_pricing/test_ois_g8_schedule_gate_v1.py'
+      - 'validation/cb_pricing/push_ois_refresh_with_lease_v1.py'
+      - 'validation/cb_pricing/test_push_ois_refresh_with_lease_v1.py'
   workflow_dispatch:
   schedule:
     # Europe/Rome target: 08:15 on working days.
-    # Duplicate UTC entries cover CET/CEST; local gate accepts only 08:15-08:44.
+    # Duplicate UTC entries cover CET/CEST; accept the correct scheduled slot even if GitHub starts late.
     - cron: '15 6 * * 1-5'
     - cron: '15 7 * * 1-5'
   push:
@@ -20,6 +24,10 @@ on:
       - '.github/workflows/ois-g8-history-persistent-daily-v1.yml'
       - 'validation/cb_pricing/ois_g8_history_snapshot_v1.py'
       - 'validation/cb_pricing/test_ois_g8_history_snapshot_v1.py'
+      - 'validation/cb_pricing/ois_g8_schedule_gate_v1.py'
+      - 'validation/cb_pricing/test_ois_g8_schedule_gate_v1.py'
+      - 'validation/cb_pricing/push_ois_refresh_with_lease_v1.py'
+      - 'validation/cb_pricing/test_push_ois_refresh_with_lease_v1.py'
       - 'validation/cb_pricing/ois_estimated_snapshot_v1.py'
       - 'validation/cb_pricing/build_ois_operational_view_v1.py'
       - 'validation/cb_pricing/build_cb_pricing_estimated_v1.py'
@@ -30,7 +38,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: ois-g8-history-persistent-daily-v1
+  group: ${{ github.event_name == 'pull_request' && format('ois-g8-pr-{0}', github.event.pull_request.number) || 'ois-operational-main-writer-v1' }}
   cancel-in-progress: false
 
 jobs:
@@ -40,38 +48,38 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 50
           persist-credentials: true
 
-      - name: Rome schedule gate
+      - name: Rome schedule gate (DST and GitHub cron delay tolerant)
         id: gate
         shell: bash
+        env:
+          GH_EVENT_NAME: ${{ github.event_name }}
+          GH_EVENT_SCHEDULE: ${{ github.event.schedule }}
         run: |
           set -euo pipefail
-          hh="$(TZ=Europe/Rome date +'%H')"
-          mm="$(TZ=Europe/Rome date +'%M')"
-          should_run=false
-          if [[ "${{ github.event_name }}" != "schedule" ]]; then
-            should_run=true
-          elif [[ "$hh" == "08" && 10#$mm -ge 15 && 10#$mm -le 44 ]]; then
-            should_run=true
-          fi
-          echo "should_run=$should_run" >> "$GITHUB_OUTPUT"
-          echo "event=${{ github.event_name }} rome_time=${hh}:${mm} should_run=$should_run"
+          python3 validation/cb_pricing/ois_g8_schedule_gate_v1.py \
+            --event "$GH_EVENT_NAME" --cron "$GH_EVENT_SCHEDULE" \
+            --output "$GITHUB_OUTPUT" --summary "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/setup-python@v5
         if: steps.gate.outputs.should_run == 'true'
         with:
           python-version: '3.12'
 
-      - name: Test G8 history writer contract
+      - name: Test G8 history, DST gate and safe main-writer lease
         if: steps.gate.outputs.should_run == 'true'
-        run: python validation/cb_pricing/test_ois_g8_history_snapshot_v1.py
+        run: |
+          python validation/cb_pricing/test_ois_g8_history_snapshot_v1.py
+          python validation/cb_pricing/test_ois_g8_schedule_gate_v1.py
+          python validation/cb_pricing/test_push_ois_refresh_with_lease_v1.py
 
       - name: Snapshot protected official runtime
         if: steps.gate.outputs.should_run == 'true'
         shell: bash
         run: |
+          echo "BASE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
           sha256sum live_data/sections/OIS_DATA.json > /tmp/OIS_DATA.before.sha256
           sha256sum live_data/sections/NATIVE_CB_DATA.json > /tmp/NATIVE_CB_DATA.before.sha256
 
@@ -171,30 +179,13 @@ jobs:
           PY
           echo "changed=$(cat /tmp/ois-g8-history-changed.flag)" >> "$GITHUB_OUTPUT"
 
-      - name: Commit validated G8 OIS history to main
+      - name: Commit validated G8 OIS history to main with bounded safe rebase
         if: steps.gate.outputs.should_run == 'true' && steps.scope.outputs.changed == 'yes' && github.ref == 'refs/heads/main'
         shell: bash
-        env:
-          TARGET_BRANCH: main
         run: |
           set -euo pipefail
-          REMOTE_SHA="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
-          test "$REMOTE_SHA" = "$GITHUB_SHA"
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add \
-            live_data/sections/CB_PRICING_ESTIMATED_LIVE_QUOTES.json \
-            live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json \
-            live_data/sections/CB_PRICING_ESTIMATED.json \
-            live_data/sections/OIS_OPERATIONAL_VIEW.json \
-            validation/cb_pricing/history/OIS_ESTIMATED_SNAPSHOTS_V1.jsonl \
-            validation/cb_pricing/history/OIS_G8_SNAPSHOTS_V1.jsonl
-          git diff --cached --quiet && exit 0
-          git commit -m 'Persist daily G8 OIS curve history'
-          REMOTE_SHA_2="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
-          test "$REMOTE_SHA_2" = "$GITHUB_SHA"
-          git push origin "HEAD:$TARGET_BRANCH"
-          echo OIS_G8_HISTORY_MAIN_UPDATE_PUSHED
+          python validation/cb_pricing/push_ois_refresh_with_lease_v1.py \
+            --base-sha "$BASE_SHA" --mode g8 --attempts 4
 
       - name: Confirm clean no-change case
         if: steps.gate.outputs.should_run == 'true' && steps.scope.outputs.changed == 'no'
