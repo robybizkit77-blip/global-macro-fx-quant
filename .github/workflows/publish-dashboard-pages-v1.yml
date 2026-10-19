@@ -36,6 +36,20 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Confirm actual Pages source configuration (read-only PR check)
+        if: github.event_name == 'pull_request'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cfg="$(gh api "repos/${GITHUB_REPOSITORY}/pages")"
+          jq -e '.source.branch == "gh-pages" and .source.path == "/"' <<<"$cfg" > /dev/null
+          echo "PAGES_SOURCE_GH_PAGES_ROOT_CONFIRMED"
+          latest="$(gh api "repos/${GITHUB_REPOSITORY}/pages/builds/latest")"
+          jq -e '.status and .commit' <<<"$latest" > /dev/null
+          echo "PAGES_BUILD_LATEST_READ_OK"
+
       - name: Test bounded public HTTP convergence contract
         run: python validation/publishing/test_verify_pages_http_delivery_v1.py
 
