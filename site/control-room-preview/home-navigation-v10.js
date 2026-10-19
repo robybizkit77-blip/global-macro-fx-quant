@@ -311,8 +311,18 @@ function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy){
  head.setAttribute('aria-haspopup','dialog');head.setAttribute('aria-controls','gmfq-home-data-audit');
  head.setAttribute('aria-expanded','false');head.title='Apri lo stato e le date delle fonti';
  head.classList.add('gmfq-data-audit-trigger');
+ // The approved mobile header hides .fresh below 600px. Surface the exact
+ // same audit through a quiet, keyboard-accessible link below the hero eyebrow.
+ const mobile=doc.createElement('button');
+ mobile.type='button';mobile.id='gmfq-mobile-data-audit';
+ mobile.textContent=state.textContent+' · '+stamp.textContent;
+ mobile.setAttribute('aria-haspopup','dialog');
+ mobile.setAttribute('aria-controls','gmfq-home-data-audit');
+ mobile.setAttribute('aria-expanded','false');
+ mobile.setAttribute('aria-label','Apri dettaglio fonti e aggiornamenti');
+ doc.querySelector('.herobody .eyebrow')?.insertAdjacentElement('afterend',mobile);
  const style=doc.createElement('style');style.id='gmfq-home-data-audit-style';
- style.textContent='.mast .gmfq-data-audit-trigger{cursor:pointer}.mast .gmfq-data-audit-trigger:focus-visible{outline:2px solid #e6cb88;outline-offset:3px;border-radius:4px}.gmfq-home-data-audit{color:#e8f0f7;background:#091b2b;border:1px solid #355468;border-radius:10px;width:min(500px,calc(100vw - 32px));max-height:85vh;overflow:auto;padding:19px 20px;box-shadow:0 25px 70px #000b}.gmfq-home-data-audit::backdrop{background:#010a15be}.gmfq-home-data-audit h2{font:600 20px/1.2 Arial,sans-serif;margin:2px 0 8px}.gmfq-home-data-audit>p{font:12px/1.55 Arial,sans-serif;color:#a9c2d3;margin:8px 0 13px}.gmfq-home-data-audit .gmfq-audit-row{border-top:1px solid #284356;padding:12px 0}.gmfq-home-data-audit .gmfq-audit-row strong{display:block;font:600 13px Arial,sans-serif;color:#eaf0f5}.gmfq-home-data-audit .gmfq-audit-row p{color:#b7c8d7;font:12px/1.5 Arial,sans-serif;margin:5px 0 0}.gmfq-home-data-audit .gmfq-audit-close{float:right;border:1px solid #446378;border-radius:5px;background:#112b3e;color:#e7eef5;cursor:pointer;padding:6px 10px;font-size:12px}.gmfq-home-data-audit .gmfq-audit-close:focus-visible{outline:2px solid #e9cb83}.gmfq-home-data-audit .gmfq-audit-note{color:#d7bf86}';
+ style.textContent='#gmfq-mobile-data-audit{display:none}@media(max-width:600px){#gmfq-mobile-data-audit{display:inline-block;max-width:100%;margin:8px 0 4px;padding:4px 0;background:transparent;color:#dbca9d;font:600 11px/1.45 Arial,sans-serif;white-space:normal;text-align:left;border:0;border-bottom:1px dotted #8d8060;cursor:pointer}#gmfq-mobile-data-audit:focus-visible{outline:2px solid #e3c77b;outline-offset:3px}}.mast .gmfq-data-audit-trigger{cursor:pointer}.mast .gmfq-data-audit-trigger:focus-visible{outline:2px solid #e6cb88;outline-offset:3px;border-radius:4px}.gmfq-home-data-audit{color:#e8f0f7;background:#091b2b;border:1px solid #355468;border-radius:10px;width:min(500px,calc(100vw - 32px));max-height:85vh;overflow:auto;padding:19px 20px;box-shadow:0 25px 70px #000b}.gmfq-home-data-audit::backdrop{background:#010a15be}.gmfq-home-data-audit h2{font:600 20px/1.2 Arial,sans-serif;margin:2px 0 8px}.gmfq-home-data-audit>p{font:12px/1.55 Arial,sans-serif;color:#a9c2d3;margin:8px 0 13px}.gmfq-home-data-audit .gmfq-audit-row{border-top:1px solid #284356;padding:12px 0}.gmfq-home-data-audit .gmfq-audit-row strong{display:block;font:600 13px Arial,sans-serif;color:#eaf0f5}.gmfq-home-data-audit .gmfq-audit-row p{color:#b7c8d7;font:12px/1.5 Arial,sans-serif;margin:5px 0 0}.gmfq-home-data-audit .gmfq-audit-close{float:right;border:1px solid #446378;border-radius:5px;background:#112b3e;color:#e7eef5;cursor:pointer;padding:6px 10px;font-size:12px}.gmfq-home-data-audit .gmfq-audit-close:focus-visible{outline:2px solid #e9cb83}.gmfq-home-data-audit .gmfq-audit-note{color:#d7bf86}';
  doc.head.appendChild(style);
  const withheldRates=FX.filter(k=>!ratesCurrent.includes(k));
  const withheldOis=FX.filter(k=>!oisCurrent.includes(k));
@@ -336,8 +346,9 @@ function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy){
     'Stima assente o non corrente. Non è DXY ICE ufficiale.')+
   '<p class="gmfq-audit-note">Questi controlli non modificano bias, punteggi, segnali o backtest. Le date delle diverse fonti non sono intercambiabili.</p>';
  doc.body.appendChild(dialog);
- const open=()=>{head.setAttribute('aria-expanded','true');if(!dialog.open)dialog.showModal()};
- const close=()=>{head.setAttribute('aria-expanded','false');head.focus()};
+ const open=()=>{head.setAttribute('aria-expanded','true');mobile.setAttribute('aria-expanded','true');if(!dialog.open)dialog.showModal()};
+ const close=()=>{head.setAttribute('aria-expanded','false');mobile.setAttribute('aria-expanded','false');(mobile.getClientRects().length?mobile:head).focus()};
+ mobile.addEventListener('click',open);
  head.addEventListener('click',open);
  head.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}});
  dialog.addEventListener('close',close);
