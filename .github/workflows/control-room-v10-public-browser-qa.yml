@@ -41,16 +41,21 @@ jobs:
         run: |
           set -euo pipefail
           for attempt in $(seq 1 45); do
-            git fetch origin gh-pages --no-tags --quiet
+            # A PR tests the already-published site; its candidate addon is
+            # intentionally NOT on gh-pages yet. Candidate code has a separate
+            # Playwright job. Compare production main -> production gh-pages.
+            git fetch origin main gh-pages --no-tags --quiet
             if python - <<'PY'
-          import hashlib,subprocess,sys
+          import hashlib,os,subprocess,sys
           from pathlib import Path
           files=['site/control-room-preview/index.html','site/control-room-preview/home-navigation-v10.js']
           for path in files:
-              local=Path(path).read_bytes()
-              try: published=subprocess.check_output(['git','show',f'origin/gh-pages:{path}'],stderr=subprocess.DEVNULL)
-              except subprocess.CalledProcessError:sys.exit(1)
-              if hashlib.sha256(local).digest()!=hashlib.sha256(published).digest():sys.exit(1)
+              try:
+                  expected=(subprocess.check_output(['git','show',f'origin/main:{path}'],stderr=subprocess.DEVNULL)
+                      if os.getenv('GITHUB_EVENT_NAME')=='pull_request' else Path(path).read_bytes())
+                  published=subprocess.check_output(['git','show',f'origin/gh-pages:{path}'],stderr=subprocess.DEVNULL)
+              except (subprocess.CalledProcessError,OSError):sys.exit(1)
+              if hashlib.sha256(expected).digest()!=hashlib.sha256(published).digest():sys.exit(1)
           print('PUBLIC_GHPAGES_V10_SOURCE_PARITY_PASS')
           PY
             then break
