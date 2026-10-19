@@ -1,0 +1,66 @@
+name: Probe CHF SARON Public Sources V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/probe-chf-saron-public-sources-v1.yml'
+      - 'validation/cb_pricing/probe_chf_saron_public_sources_v1.py'
+      - 'validation/cb_pricing/test_probe_chf_saron_public_sources_v1.py'
+      - 'validation/cb_pricing/OIS_SOURCE_ACCESS_PLAN_V1_2026-10-19.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chf-saron-source-probe-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  probe-chf:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Test exchange identity and fail-closed quote boundaries
+        run: python validation/cb_pricing/test_probe_chf_saron_public_sources_v1.py
+
+      - name: Probe ICE SA3 and current Eurex FSR3 official product pages
+        run: |
+          python validation/cb_pricing/probe_chf_saron_public_sources_v1.py \
+            --output /tmp/chf-saron-source-proof.json \
+            --summary "$GITHUB_STEP_SUMMARY"
+
+      - name: Enforce no market-price or repository mutation
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          git diff --cached --exit-code
+          python - <<'PY'
+          import json
+          a=json.load(open('/tmp/chf-saron-source-proof.json'))
+          assert a['status'] in {'CONTRACT_IDENTITIES_VISIBLE_BUT_EOD_HISTORY_NOT_CERTIFIED','CONTRACT_IDENTITY_OR_ACCESS_INCOMPLETE'}
+          assert a['legacy_eurex_contract_status']=='DISCONTINUED_2021'
+          assert a['current_eurex_code']=='FSR3'
+          assert a['ice_code']=='SA3'
+          assert a['ice_and_eurex_are_interchangeable'] is False
+          assert a['historical_same_contracts_T_T1_T5_proven'] is False
+          assert a['redistribution_rights_or_subscription_certified'] is False
+          assert a['market_prices_captured_or_exported'] is False
+          assert a['operational_status_promotion_allowed'] is False
+          assert a['official_ois_data_mutation_allowed'] is False
+          assert len(a['source_checks'])==2
+          print('CHF_SARON_SOURCE_PROBE_ZERO_MUTATION_PASS')
+          PY
+
+      - name: Attach source availability evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: chf-saron-readonly-source-proof
+          path: /tmp/chf-saron-source-proof.json
+          if-no-files-found: error
