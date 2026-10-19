@@ -131,6 +131,7 @@ dry_run_currency() {
   script="$(apply_script "$c")"
   if (
     set -euo pipefail
+    exec > >(tee "$WORKDIR/$c.dryrun.log") 2>&1
     python3 "$script" --candidate "$WORKDIR/$c.candidate.json"
     python3 validation/build_live_manifest_v2.py --write live_data/manifest.v2.json >"$WORKDIR/$c.manifest.json"
     python3 validation/check_cb_pricing_source_registry.py >"$WORKDIR/$c.registry.json"
@@ -156,7 +157,9 @@ PY
   ); then
     echo PASS > "$WORKDIR/$c.dryrun.txt"
   else
-    echo 'isolated dry-run failed' > "$WORKDIR/$c.error.txt"
+    echo 'isolated dry-run failed; inspect currency dryrun.log' > "$WORKDIR/$c.error.txt"
+    echo "$c ISOLATED_DRY_RUN_FAILED last logged lines:"
+    tail -n 28 "$WORKDIR/$c.dryrun.log" || true
     touch "$WORKDIR/$c.failed"
   fi
   restore_runtime
