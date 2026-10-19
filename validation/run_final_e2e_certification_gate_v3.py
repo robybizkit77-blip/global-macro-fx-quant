@@ -135,7 +135,12 @@ def main():
             raise SystemExit(f"{ccy} official operational OIS status drift")
     for ccy in ("USD", "EUR", "CHF"):
         row = operational_ois["currencies"][ccy]
-        if row.get("operational_status") != "GREEN_ESTIMATED" or row.get("backtest_eligible_as_official") is not False:
+        if row.get("backtest_eligible_as_official") is not False:
+            raise SystemExit(f"{ccy} estimated operational OIS must never count as official")
+        if row.get("operational_status") == "WITHHELD":
+            if any(row.get("horizons", {}).get(h, {}).get("rate") is not None for h in ("3m", "6m", "12m")):
+                raise SystemExit(f"{ccy} WITHHELD OIS cannot publish rates")
+        elif row.get("operational_status") != "GREEN_ESTIMATED":
             raise SystemExit(f"{ccy} estimated operational OIS governance drift")
     nzd = operational_ois["currencies"]["NZD"]
     if nzd.get("operational_status") == "WITHHELD":
