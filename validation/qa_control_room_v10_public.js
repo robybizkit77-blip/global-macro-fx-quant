@@ -106,7 +106,8 @@ async function getState(page){
           !audit.detail?.includes('Le date delle diverse fonti non sono intercambiabili')||
           audit.documentWidth>audit.viewport+16)
          throw Error(name+' public source-date disclosure missing '+JSON.stringify(audit));
-       await page.frameLocator('#gmfq-page').locator('.mast .fresh').press('Enter');
+       if(name==='mobile')await page.frameLocator('#gmfq-page').locator('#gmfq-mobile-data-audit').click();
+       else await page.frameLocator('#gmfq-page').locator('.mast .fresh').press('Enter');
        await page.frameLocator('#gmfq-page').locator('dialog#gmfq-home-data-audit[open]').waitFor({timeout:10000});
        await page.frameLocator('#gmfq-page').locator('.gmfq-audit-close').click();
        console.log('CONTROL_ROOM_PREVIEW_PUBLIC_SOURCE_FRESHNESS_GREEN',name,
