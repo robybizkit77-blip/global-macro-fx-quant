@@ -72,8 +72,16 @@ jobs:
           assert after['status']==('PARTIAL_WITHHELD' if summary['operational_withheld'] else 'GREEN_8_OF_8')
           for c in ('USD','EUR','CHF'):
               row=after['currencies'][c]
-              assert row['operational_status']=='GREEN_ESTIMATED'
               assert row['backtest_eligible_as_official'] is False
+              if row['operational_status']=='WITHHELD':
+                  # Source freshness/curve completeness must fail closed per currency.
+                  assert row['withheld_reason'] in ('STALE_OR_INCOMPLETE_PRICING',
+                                                    'NO_USABLE_OFFICIAL_OR_ESTIMATED_PRICING'), row
+                  assert all(row['horizons'][h]['rate'] is None for h in ('3m','6m','12m')), row
+                  assert row['change_1d_available'] is False
+                  assert row['change_1w_available'] is False
+                  continue
+              assert row['operational_status']=='GREEN_ESTIMATED', row
               assert row['input_mode']=='LIVE_SECONDARY_OVERLAY', row
               assert row['method_id']=='TRADINGVIEW_DATED_FUTURES_SSR_V2', row
               assert row['repricing_reference']['missing_reference_policy']=='NULL_NOT_ZERO'

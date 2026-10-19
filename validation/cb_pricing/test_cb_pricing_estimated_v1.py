@@ -73,6 +73,22 @@ def main():
     x = mod.build_currency("USD", cb["USD"], {"status": "ACTIVE"}, None)
     assert x["status"] == "NOT_APPLICABLE_OFFICIAL_ACTIVE"
 
+    # Quote freshness cannot be inferred from Offer.priceValidUntil alone.
+    import sys
+    from datetime import date
+    sys.path.insert(0, str(HERE))
+    from collect_cb_pricing_estimated_live_v1 import parse_quote
+    offer = ('ZQZ2026 <script>{"offers":{"price":"95.93",'
+             '"priceCurrency":"USD","priceValidUntil":"2026-10-16T21:40:22Z"}}</script>')
+    bare = parse_quote(offer, "ZQZ2026", date(2026, 10, 19))
+    assert bare["quote_timestamp_verified"] is False and bare["quote_as_of"] is None
+    bar = '"daily_bar":{"close":"95.93","data_update_time":"1792186822.720112"}'
+    verified = parse_quote(offer + bar, "ZQZ2026", date(2026, 10, 19))
+    assert verified["quote_timestamp_verified"] is True, verified
+    assert verified["quote_as_of"] == "2026-10-16", verified
+    mismatched = parse_quote(offer + bar.replace("95.93", "95.94"), "ZQZ2026", date(2026, 10, 19))
+    assert mismatched["quote_timestamp_verified"] is False, mismatched
+
     print("CB_PRICING_ESTIMATED_V1: PASS")
 
 
