@@ -24,6 +24,9 @@ items={
 "Secondary quotes are informational and individually dated": "SECONDARY_VERIFIED_DAILY_BAR" in s and "quote_as_of" in s and "non sono una curva OIS" in s,
 "NZD bank bills remain separate from OIS": "NON curva OIS né policy delta" in s,
 "CHF staleness is disclosed": "CHF 2Y/10Y" in s and "non corrente" in s,
+"Official CHF 10Y read-only context sourced separately": "CHF_SNB_10Y_SPOT_CONTEXT.json" in s and "GMFQ_CHF_SNB_10Y_SPOT_CONTEXT_V1" in s,
+"CHF 10Y never fills unverified 2Y or spread": "snb10.has_current_2y===false" in s and "snb10.eligible_for_curve_spreads===false" in s and "snb10.eligible_for_core_signals===false" in s,
+"Official CHF context requires valid freshness and provenance": "snb10.source_url===" in s and "fresh(snb10.as_of,4)" in s and "OFFICIAL_PUBLISHED_10Y_INFORMATIONAL" in s,
 "Core data not changed": "localStorage.setItem" not in s and "github.com/repos/" not in s,
 }
 for k,v in items.items(): print(("PASS" if v else "FAIL")+": "+k)
