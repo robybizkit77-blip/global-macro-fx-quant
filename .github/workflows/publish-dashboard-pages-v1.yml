@@ -3,10 +3,10 @@ name: Publish Dashboard Pages V1
 on:
   pull_request:
     branches: [main]
-    paths: ['.github/workflows/publish-dashboard-pages-v1.yml','index.html','payload/**','dashboard/**','live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/D.json','live_data/sections/ESTIMATED_RESIDUAL_GAPS.json']
+    paths: ['.github/workflows/publish-dashboard-pages-v1.yml','index.html','payload/**','dashboard/**','live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/D.json','live_data/sections/ESTIMATED_RESIDUAL_GAPS.json','validation/publishing/verify_pages_http_delivery_v1.py','validation/publishing/test_verify_pages_http_delivery_v1.py']
   push:
     branches: [main]
-    paths: ['.github/workflows/publish-dashboard-pages-v1.yml','index.html','payload/**','dashboard/**','live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/D.json','live_data/sections/ESTIMATED_RESIDUAL_GAPS.json']
+    paths: ['.github/workflows/publish-dashboard-pages-v1.yml','index.html','payload/**','dashboard/**','live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/D.json','live_data/sections/ESTIMATED_RESIDUAL_GAPS.json','validation/publishing/verify_pages_http_delivery_v1.py','validation/publishing/test_verify_pages_http_delivery_v1.py']
   workflow_run:
     workflows: ['Macro Persistent Daily V1','CB Pricing Persistent Daily V1','OIS Estimated Snapshot Repricing V1','Calendar News Operational Refresh V1','Price Persistent Daily V1','Rates Persistent Daily V1','COT Persistent Weekly V1','Liquidity JPY M3 Persistent Daily V1','VIX Persistent Apply V1','WTI Persistent Rebuild V1','Brent Market Proxy Refresh V1']
     types: [completed]
@@ -14,6 +14,7 @@ on:
 
 permissions:
   contents: write
+  pages: write
 
 concurrency:
   group: publish-dashboard-pages-v1
@@ -34,6 +35,23 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
+      - name: Confirm actual Pages source configuration (read-only PR check)
+        if: github.event_name == 'pull_request'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cfg="$(gh api "repos/${GITHUB_REPOSITORY}/pages")"
+          jq -e '.source.branch == "gh-pages" and .source.path == "/"' <<<"$cfg" > /dev/null
+          echo "PAGES_SOURCE_GH_PAGES_ROOT_CONFIRMED"
+          latest="$(gh api "repos/${GITHUB_REPOSITORY}/pages/builds/latest")"
+          jq -e '.status and .commit' <<<"$latest" > /dev/null
+          echo "PAGES_BUILD_LATEST_READ_OK"
+
+      - name: Test bounded public HTTP convergence contract
+        run: python validation/publishing/test_verify_pages_http_delivery_v1.py
 
       - name: Verify current dashboard runtime before publication
         shell: bash
@@ -146,6 +164,35 @@ jobs:
           git push --force-with-lease=refs/heads/gh-pages:$REMOTE_SHA origin HEAD:gh-pages
           echo DASHBOARD_PAGES_PUBLISHED
 
+      - name: Ensure actual Pages build follows automated gh-pages push
+        if: github.event_name != 'pull_request'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # A GITHUB_TOKEN git push to gh-pages is NOT a Pages-build trigger.
+          # GitHub Pages must be configured to publish from gh-pages / (root).
+          cfg="$(gh api "repos/${GITHUB_REPOSITORY}/pages")"
+          branch="$(jq -r '.source.branch // empty' <<<"$cfg")"
+          folder="$(jq -r '.source.path // empty' <<<"$cfg")"
+          if [[ "$branch" != "gh-pages" || "$folder" != "/" ]]; then
+            echo "PAGES_SOURCE_UNEXPECTED: expected branch=gh-pages path=/, got branch=$branch path=$folder" >&2
+            exit 1
+          fi
+          target_sha="$(git ls-remote origin refs/heads/gh-pages | awk '{print $1}')"
+          latest="$(gh api "repos/${GITHUB_REPOSITORY}/pages/builds/latest" 2>/dev/null || echo '{}')"
+          latest_sha="$(jq -r '.commit // empty' <<<"$latest")"
+          latest_status="$(jq -r '.status // empty' <<<"$latest")"
+          if [[ "$latest_sha" == "$target_sha" && ( "$latest_status" == "built" || "$latest_status" == "building" || "$latest_status" == "queued" ) ]]; then
+            echo "PAGES_BUILD_ALREADY_TARGETING_SHA $target_sha ($latest_status)"
+          else
+            echo "PAGES_BUILD_REQUIRED latest_build=$latest_sha latest_status=$latest_status target=$target_sha"
+            request="$(gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds")"
+            jq -e '.status == "queued" || .status == "building"' <<<"$request" >/dev/null
+            echo "PAGES_BUILD_EXPLICITLY_QUEUED $target_sha"
+          fi
+
       - name: Verify published files against validated main
         if: github.event_name != 'pull_request'
         shell: bash
@@ -179,40 +226,14 @@ jobs:
           if report['status']!='PASS':raise SystemExit('Published files differ from validated main')
           PY
 
-      - name: Verify public Pages HTTP delivery
+      - name: Verify public Pages HTTP delivery after bounded CDN propagation
         if: github.event_name != 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
-          python - <<'PY'
-          import hashlib,json,pathlib,time,urllib.error,urllib.request
-          base='https://robybizkit77-blip.github.io/global-macro-fx-quant/'
-          names=['live_data/sections/OIS_OPERATIONAL_VIEW.json','dashboard/ois-operational-monitor-v1.js','dashboard/cbdesk-operational-v1.js']
-          checks=[]
-          for name in names:
-              expected=hashlib.sha256(pathlib.Path(name).read_bytes()).hexdigest()
-              url=base+name
-              error='not checked'
-              for attempt in range(12):
-                  try:
-                      request=urllib.request.Request(url,headers={'User-Agent':'GMFQ-Pages-Delivery-Audit/1.0','Cache-Control':'no-cache'})
-                      with urllib.request.urlopen(request,timeout=15) as response:
-                          actual=hashlib.sha256(response.read()).hexdigest()
-                          status=response.status
-                      if status==200 and actual==expected:
-                          error=None
-                          break
-                      error=f'HTTP {status}; content hash does not match validated main'
-                  except (urllib.error.URLError,TimeoutError,OSError) as exc:
-                      error=type(exc).__name__
-                  if attempt<11:time.sleep(10)
-              checks.append({'path':name,'http_200_and_sha256_match':error is None,'error':error})
-              if error:break
-          report={'status':'PASS' if len(checks)==len(names) and all(x['http_200_and_sha256_match'] for x in checks) else 'FAIL','checks':checks}
-          pathlib.Path('/tmp/pages-public-http-proof.json').write_text(json.dumps(report,indent=2))
-          print('PAGES_PUBLIC_HTTP_PROOF',json.dumps(report))
-          if report['status']!='PASS':raise SystemExit('Public Pages content not yet identical to validated main')
-          PY
+          python validation/publishing/verify_pages_http_delivery_v1.py \
+            --budget-seconds 600 --interval-seconds 10 \
+            --output /tmp/pages-public-http-proof.json
 
       - name: Upload delivery evidence
         if: always() && github.event_name != 'pull_request'
