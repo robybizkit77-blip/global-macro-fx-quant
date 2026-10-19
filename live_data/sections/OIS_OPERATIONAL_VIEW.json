@@ -9,20 +9,20 @@
       "direction_vs_policy": "UP",
       "horizons": {
         "12m": {
-          "change_1d_bp": -5,
+          "change_1d_bp": -5.0,
           "change_1w_bp": -6.5,
-          "policy_delta_bp": 19,
+          "policy_delta_bp": 19.0,
           "rate": 4.79
         },
         "3m": {
-          "change_1d_bp": 1,
-          "change_1w_bp": -1,
+          "change_1d_bp": 1.0,
+          "change_1w_bp": -1.0,
           "policy_delta_bp": 9.5,
           "rate": 4.695
         },
         "6m": {
-          "change_1d_bp": -1,
-          "change_1w_bp": -3,
+          "change_1d_bp": -1.0,
+          "change_1w_bp": -3.0,
           "policy_delta_bp": 16.5,
           "rate": 4.765
         }
@@ -43,20 +43,20 @@
       "horizons": {
         "12m": {
           "change_1d_bp": -0.5,
-          "change_1w_bp": 2,
-          "policy_delta_bp": 102,
+          "change_1w_bp": 2.0,
+          "policy_delta_bp": 102.0,
           "rate": 3.27
         },
         "3m": {
-          "change_1d_bp": 1,
-          "change_1w_bp": 2,
+          "change_1d_bp": 1.0,
+          "change_1w_bp": 2.0,
           "policy_delta_bp": 37.5,
           "rate": 2.625
         },
         "6m": {
           "change_1d_bp": -0.5,
           "change_1w_bp": 2.5,
-          "policy_delta_bp": 66,
+          "policy_delta_bp": 66.0,
           "rate": 2.91
         }
       },
@@ -131,7 +131,7 @@
       "method_id": "TRADINGVIEW_DATED_FUTURES_SSR_V2",
       "official_status": "WITHHELD",
       "operational_status": "WITHHELD",
-      "policy_rate": 0,
+      "policy_rate": 0.0,
       "quality": "ESTIMATED_INFORMATIONAL",
       "repricing_reference": {
         "daily_min_age_hours": 18,
@@ -227,7 +227,7 @@
           "expiration": "2027-03-17",
           "futures_price": 97.28,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
-          "policy_delta_bp": 22,
+          "policy_delta_bp": 22.0,
           "price_valid_until": "2026-10-16T21:04:11Z",
           "quote_as_of": "2026-10-16",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
@@ -302,13 +302,13 @@
           "rate": 2.039
         },
         "3m": {
-          "change_1d_bp": 0,
+          "change_1d_bp": 0.0,
           "change_1w_bp": -2.6,
           "policy_delta_bp": 22.5,
           "rate": 1.475
         },
         "6m": {
-          "change_1d_bp": 0,
+          "change_1d_bp": 0.0,
           "change_1w_bp": -2.6,
           "policy_delta_bp": 46.2,
           "rate": 1.712
@@ -354,8 +354,8 @@
         "confidence_grade": "B_FOR_DIRECTION_C_FOR_POLICY_LEVEL",
         "horizons": {
           "12m": {
-            "change_1d_bp": 10,
-            "change_1w_bp": 4,
+            "change_1d_bp": 10.0,
+            "change_1w_bp": 4.0,
             "expiration": "2027-09-15",
             "expiry_label": "Sep 2027",
             "implied_bank_bill_rate": 4.22,
@@ -365,8 +365,8 @@
             "weekly_reference_trade_date": "2026-10-09"
           },
           "3m": {
-            "change_1d_bp": 4,
-            "change_1w_bp": 4,
+            "change_1d_bp": 4.0,
+            "change_1w_bp": 4.0,
             "expiration": "2026-12-16",
             "expiry_label": "Dec 2026",
             "implied_bank_bill_rate": 3.49,
@@ -376,8 +376,8 @@
             "weekly_reference_trade_date": "2026-10-09"
           },
           "6m": {
-            "change_1d_bp": 8,
-            "change_1w_bp": 6,
+            "change_1d_bp": 8.0,
+            "change_1w_bp": 6.0,
             "expiration": "2027-03-10",
             "expiry_label": "Mar 2027",
             "implied_bank_bill_rate": 3.83,
