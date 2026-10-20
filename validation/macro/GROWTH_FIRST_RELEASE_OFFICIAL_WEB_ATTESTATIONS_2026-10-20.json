@@ -1,0 +1,46 @@
+{
+  "schema": "GMFQ_G8_GROWTH_FIRST_RELEASE_ATTESTATIONS_V1",
+  "review_as_of": "2026-10-20",
+  "scope": "LATEST_GROWTH_OBSERVATIONS_OFFICIAL_WEB_EVIDENCE_NOT_FULL_HISTORICAL_PIT",
+  "source_type": "OFFICIAL_PERIOD_SPECIFIC_PUBLISHER_PAGES",
+  "attestation_does_not_certify_historical_vintage": true,
+  "attestation_does_not_recalculate_macro_scores": true,
+  "notes": "Official first-release published values by precisely defined metric and exact period; no web page content hash captured in this registry. No structural FX score changes.",
+  "attestations": [
+    {
+      "currency": "AUD",
+      "series_id": "AU_REAL_GDP_QOQ_ABS_history_value",
+      "observation_period": "2026-06",
+      "metric_definition": "GDP quarter-on-quarter percent change; seasonally adjusted chain-volume measure",
+      "units": "% QoQ, seasonally adjusted chain volume",
+      "first_release_value": 0.4,
+      "release_date": "2026-09-02",
+      "release_timestamp_local": "2026-09-02T11:30:00+10:00",
+      "publisher": "Australian Bureau of Statistics",
+      "official_source_url": "https://www.abs.gov.au/statistics/economy/national-accounts/australian-national-accounts-national-income-expenditure-and-product/jun-2026",
+      "source_locator": "June quarter key figures > Chain volume measures > GDP > Mar 26 to Jun 26 (0.4); Release date and time header 02/09/2026 11:30am AEST",
+      "provenance_level": "OFFICIAL_WEB_PAGE_DATE_VALUE_VERIFIED_NO_ARCHIVED_BYTES",
+      "source_artifact_sha256": null
+    },
+    {
+      "currency": "NZD",
+      "series_id": "NZ_REAL_GDP_Q_history_value",
+      "observation_period": "2026-06",
+      "metric_definition": "GDP percentage change from SAME quarter of previous year (YoY), seasonally adjusted chain volume; NOT annual-average growth",
+      "units": "percent y/y",
+      "first_release_value": 2.6,
+      "comparison_must_not_use": {
+        "metric": "GDP four-quarter annual average growth",
+        "value": 1.7,
+        "reason": "Stats NZ reports a distinct average-annual measure; 1.7 is not the same-quarter YoY metric"
+      },
+      "release_date": "2026-09-17",
+      "release_timestamp_local": null,
+      "publisher": "Stats NZ",
+      "official_source_url": "https://www.stats.govt.nz/information-releases/gross-domestic-product-june-2026-quarter/",
+      "source_locator": "Table 3: New Zealand, June 2026 quarter, % change from same quarter previous year 2.6; published 17 September 2026 10:45am (timezone not encoded as verified timestamp)",
+      "provenance_level": "OFFICIAL_WEB_PAGE_DATE_VALUE_VERIFIED_NO_ARCHIVED_BYTES",
+      "source_artifact_sha256": null
+    }
+  ]
+}
