@@ -207,7 +207,8 @@ jobs:
                  'live_data/sections/D.json',
                  'payload/part-00.txt',
                  'dashboard/risk-operational-v1.js',
-                 'dashboard/editorial-freshness-guard-v1.js']
+                 'dashboard/editorial-freshness-guard-v1.js',
+                 'live_data/sections/ESTIMATED_RESIDUAL_GAPS.json']
           rows=[]
           for name in paths:
               source=pathlib.Path(name).read_bytes()
