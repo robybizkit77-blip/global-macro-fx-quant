@@ -38,7 +38,7 @@ jobs:
             if(js.includes(legacy))throw new Error(`Legacy Macro dependency reintroduced: ${legacy}`);
           }
           if(!js.includes("dataset.macroSource='MACRO_SERIES_THERMOMETER'"))throw new Error('Macro source marker missing');
-          if(!html.includes('operationalbridge1'))throw new Error('Macro bridge cache-bust missing');
+          if(!/macro-data\.js\?v=[^"']+/.test(html))throw new Error('Macro data script cache-bust missing');
           console.log('MACRO_SOURCE_CONTRACT_PASS');
           NODE
       - name: Install Chromium
