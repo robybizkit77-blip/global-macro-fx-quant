@@ -1,0 +1,98 @@
+name: Gold Secondary Market Proxy Refresh V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/estimated/refresh_gold_market_proxy_v1.py'
+      - 'validation/estimated/test_refresh_gold_market_proxy_v1.py'
+      - '.github/workflows/gold-secondary-market-proxy-refresh-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/estimated/refresh_gold_market_proxy_v1.py'
+      - 'validation/estimated/test_refresh_gold_market_proxy_v1.py'
+      - '.github/workflows/gold-secondary-market-proxy-refresh-v1.yml'
+  workflow_dispatch:
+  schedule:
+    # UTC schedules tolerate delayed GitHub runs; Saturday catch-up covers Friday.
+    - cron: '55 22 * * 1-5'
+    - cron: '55 12 * * 1-6'
+
+permissions: {contents: write}
+concurrency: {group: gold-secondary-market-proxy-v1, cancel-in-progress: false}
+
+jobs:
+  refresh-gold-secondary:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Prove secondary-only Gold contract with failure scenarios
+        run: python -m unittest validation.estimated.test_refresh_gold_market_proxy_v1 -v
+      - name: Snapshot Gold canonical and unrelated risk data
+        run: |
+          mkdir -p /tmp/gold-proxy
+          sha256sum live_data/sections/D.json > /tmp/gold-proxy/D.before.sha256
+          sha256sum payload/part-00.txt > /tmp/gold-proxy/part00.before.sha256
+          cp live_data/sections/ESTIMATED_RESIDUAL_GAPS.json /tmp/gold-proxy/residual.before.json
+      - name: Fetch validated GC futures quote in a separate candidate
+        run: |
+          set -euo pipefail
+          python validation/estimated/refresh_gold_market_proxy_v1.py \
+            --as-of "$(date -u +%F)" --out /tmp/gold-proxy/residual.candidate.json \
+            | tee /tmp/gold-proxy/source-receipt.json
+      - name: Prove exact isolated Gold market proxy scope and provenance
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          before=json.load(open('/tmp/gold-proxy/residual.before.json'))
+          after=json.load(open('/tmp/gold-proxy/residual.candidate.json'))
+          br=dict(before['lanes']); ar=dict(after['lanes'])
+          br.pop('GOLD.market_proxy',None)
+          gold=ar.pop('GOLD.market_proxy')
+          assert br==ar and {k:v for k,v in before.items() if k!='lanes'}=={k:v for k,v in after.items() if k!='lanes'}
+          assert gold['status']=='MARKET_PROXY_ACTIVE_SECONDARY'
+          assert gold['vendor_symbol']=='GC=F' and gold['instrument_type']=='FUTURE'
+          assert gold['currency']=='USD' and gold['official_canonical_untouched'] is True
+          assert after['governance']['core_score_effect']=='NONE'
+          assert after['governance']['bias_effect']=='NONE'
+          assert after['governance']['sizing_effect']=='NONE'
+          assert after['governance']['backtest_eligible_as_official'] is False
+          print('GOLD_SECONDARY_GOVERNANCE_PASS',gold['proxy_as_of'],gold['value'])
+          PY
+          sha256sum -c /tmp/gold-proxy/D.before.sha256
+          sha256sum -c /tmp/gold-proxy/part00.before.sha256
+          git diff --exit-code -- live_data payload
+      - name: Persist independently sourced proxy on main only
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: |
+          set -euo pipefail
+          cp /tmp/gold-proxy/residual.candidate.json live_data/sections/ESTIMATED_RESIDUAL_GAPS.json
+          git diff --name-only | sort > /tmp/gold-proxy/changed.txt
+          if cmp -s /tmp/gold-proxy/residual.before.json live_data/sections/ESTIMATED_RESIDUAL_GAPS.json; then
+            echo GOLD_PROXY_CURRENT_NO_CHANGE
+            exit 0
+          fi
+          test "$(cat /tmp/gold-proxy/changed.txt)" = "live_data/sections/ESTIMATED_RESIDUAL_GAPS.json"
+          HEAD="$(git rev-parse HEAD)"
+          git fetch origin main --no-tags
+          test "$(git rev-parse origin/main)" = "$HEAD"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add live_data/sections/ESTIMATED_RESIDUAL_GAPS.json
+          git commit -m 'Refresh informational gold futures market proxy'
+          git push origin HEAD:main
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gold-secondary-market-${{ github.run_id }}
+          path: /tmp/gold-proxy/
+          if-no-files-found: warn
+          retention-days: 14
