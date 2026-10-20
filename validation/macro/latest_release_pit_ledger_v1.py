@@ -15,6 +15,7 @@ import math
 import re
 from datetime import date, datetime, time, timezone
 from pathlib import Path
+from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo
 
 from validation.macro.rebase_readiness_v1 import ROOT, FX, PATHS, DIMS, g8_coverage, period_key
@@ -23,6 +24,10 @@ SCHEMA = "GMFQ_MACRO_PIT_RELEASE_LEDGER_V1"
 ANCHOR_GLOB = "*_historical_anchor_*.json"
 EVIDENCE_GLOB = "*_strict_pit_evidence_*.json"
 RECEIPT_GLOB = "*_strict_pit_receipt_*.json"
+WEB_EVIDENCE_FILE = "CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json"
+WEB_SCHEMA = "GMFQ_G8_CORE_OFFICIAL_WEB_RELEASE_ATTESTATIONS_V1"
+OFFICIAL_HOSTS = {"USD": "bls.gov", "CAD": "statcan.gc.ca", "AUD": "abs.gov.au",
+                  "JPY": "stat.go.jp", "GBP": "ons.gov.uk"}
 
 
 def require(flag, why):
@@ -60,6 +65,74 @@ def anchor_row(entry, path, series_key, kind):
         "source_sha256": hashval, "release_time_utc": entry.get("release_time_utc"),
         "release_time_jst": entry.get("release_time_jst"),
     }
+
+
+def source_web_attestations(core_dir):
+    """Web-sourced latest release facts: NOT archive-vintage provenance."""
+    file = core_dir / WEB_EVIDENCE_FILE
+    if not file.exists():
+        return {"attestations": [], "contradictions": []}
+    data = json.loads(file.read_text(encoding="utf-8"))
+    require(data.get("schema") == WEB_SCHEMA and
+            data.get("evidence_class") ==
+            "OFFICIAL_PUBLISHER_RELEASE_WEB_VALUE_DATE_NOT_IMMUTABLE_BYTES" and
+            data.get("historical_full_PIT_vintage_certified") is False,
+            "invalid web-attestation scope")
+    seen = set()
+    for role in ("attestations", "contradictions"):
+        items = data.get(role)
+        require(isinstance(items, list), "missing web attestation list")
+        for row in items:
+            key = row.get("key")
+            require(isinstance(key, str) and len(key.split(".")) == 2 and
+                    key.split(".")[0] in OFFICIAL_HOSTS and
+                    key.split(".")[1] in DIMS and
+                    key not in seen, "unknown/duplicate official source key")
+            seen.add(key)
+            url = urlsplit(str(row.get("url", "")))
+            root = OFFICIAL_HOSTS[key.split(".")[0]]
+            require(url.scheme == "https" and url.hostname and
+                    (url.hostname == root or url.hostname.endswith("."+root)) and
+                    not url.username and not url.password,
+                    key+": unsupported source publisher URL")
+            iso_day(row.get("release_date"), key)
+            require(isinstance(row.get("observation_period"), str) and
+                    re.fullmatch(r"\d{4}-\d{2}", row["observation_period"]),
+                    key+": missing exact observation period")
+            require(isinstance(row.get("source_locator") or row.get("note"), str) and
+                    len(row.get("source_locator") or row.get("note")) >= 35,
+                    key+": official source detail missing")
+            if role == "attestations":
+                require(finite(row.get("published_value")) and
+                        finite(row.get("raw_series_value")),
+                        key+": nonnumeric official vintage")
+                transformed = row["published_value"]
+                transform = row.get("transform")
+                require(transform in ("yoy_pct_from_index", "derived_yoy_from_index",
+                                      "level"), key+": missing conversion identity")
+                if transform in ("yoy_pct_from_index", "derived_yoy_from_index"):
+                    n, d = row.get("numerator_index"), row.get("denominator_index")
+                    require(finite(n) and finite(d) and d != 0 and
+                            math.isclose((n/d - 1)*100, transformed,
+                                         rel_tol=0.0, abs_tol=1e-9),
+                            key+": official index-to-YoY formula mismatch")
+                else:
+                    require(math.isclose(row["raw_series_value"], transformed,
+                                         rel_tol=0.0, abs_tol=1e-12),
+                            key+": level transform mismatch")
+                stamp = row.get("release_timestamp_local")
+                if stamp is not None:
+                    require(isinstance(stamp, str), key+": invalid local timestamp")
+                    dt = datetime.fromisoformat(stamp)
+                    require(dt.tzinfo is not None and dt.utcoffset() is not None and
+                            dt.date().isoformat() == row["release_date"],
+                            key+": release timestamp not local/offset aware")
+            else:
+                require(finite(row.get("canonical_value")) and
+                        finite(row.get("official_first_release_value")) and
+                        row["canonical_value"] != row["official_first_release_value"],
+                        key+": source contradiction must be real")
+    return data
 
 
 def collect_candidates(core_dir):
@@ -107,10 +180,33 @@ def collect_candidates(core_dir):
                         continue
                     add(key, period, anchor_row(row, path.relative_to(ROOT).as_posix(),
                                                 key, kind+"_"+field.upper()))
+    web = source_web_attestations(core_dir)
+    for row in web["attestations"]:
+        stamp = row.get("release_timestamp_local")
+        instant = (datetime.fromisoformat(stamp).astimezone(timezone.utc).isoformat()
+                   if stamp else None)
+        official = anchor_row({
+            "release_date": row["release_date"],
+            "value": row["published_value"],
+            "official_reference": row["url"],
+        }, f"validation/macro/{WEB_EVIDENCE_FILE}", row["key"],
+           "OFFICIAL_WEB_RELEASE_UNHASHED")
+        official["release_instant_utc"] = instant
+        official["series_value"] = row["raw_series_value"]
+        official["transformation"] = row["transform"]
+        add(row["key"], row["observation_period"], official)
     return candidates
 
 
 def resolved_time(item):
+    if item.get("release_instant_utc"):
+        require(not item.get("release_time_utc") and
+                not item.get("release_time_jst"),
+                "conflicting release clock formats")
+        parsed = datetime.fromisoformat(item["release_instant_utc"])
+        require(parsed.tzinfo is not None and parsed.utcoffset() is not None,
+                "naive official release instant")
+        return parsed.astimezone(timezone.utc).isoformat()
     if item.get("release_time_utc") and item.get("release_time_jst"):
         raise ValueError("MACRO_PIT_RELEASE_LEDGER_REJECTED: conflicting time zones")
     if item.get("release_time_utc"):
@@ -147,7 +243,9 @@ def build_ledger(root, today, items=None):
     candidates = collect_candidates(root / "validation/macro") if items is None else items
     results = {}
     counts = {"FULL_RELEASE_INSTANT": 0, "DATE_ONLY": 0,
-              "WITHHELD_EXACT_PERIOD_EVIDENCE": 0}
+              "WITHHELD_EXACT_PERIOD_EVIDENCE": 0,
+              "WITHHELD_OFFICIAL_SOURCE_VALUE_CONFLICT": 0}
+    conflicting = {r["key"]: r for r in source_web_attestations(root / "validation/macro")["contradictions"]}
     for c in FX:
         for dim in DIMS:
             key = c+"."+dim
@@ -177,6 +275,13 @@ def build_ledger(root, today, items=None):
                 require(math.isclose(r["value"], actual["latest_value"],
                                      rel_tol=0.0, abs_tol=1e-8),
                         key+": conflicting current-period pinned official value")
+                if r.get("series_value") is not None:
+                    require(math.isclose(r["series_value"], row[0]["values"][-1],
+                                         rel_tol=0.0, abs_tol=1e-9),
+                            key+": official raw-index/current series value mismatch")
+                if r.get("transformation") is not None:
+                    require(r["transformation"] == source["transformation"],
+                            key+": official transformation identity drift")
                 match.append(r)
             if match:
                 require(len({v["date"] for v in match}) == 1,
@@ -190,6 +295,7 @@ def build_ledger(root, today, items=None):
                 lines = sorted({r["source_path"] for r in match})
                 result = {
                     "status": status,
+                    "latest_web_release_unhashed": any(r.get("source_kind") == "OFFICIAL_WEB_RELEASE_UNHASHED" for r in match),
                     "first_release_date": match[0]["date"],
                     "first_release_timestamp_utc": timestamp,
                     "release_clock_verified": bool(timestamp),
@@ -203,8 +309,20 @@ def build_ledger(root, today, items=None):
                     "historical_backtest_safe_for_all_periods": False,
                 }
             else:
-                status = "WITHHELD_EXACT_PERIOD_EVIDENCE"
+                review = conflicting.get(key)
+                if review:
+                    require(period_key(review["observation_period"], source["frequency"]) == period and
+                            math.isclose(review["canonical_value"], actual["latest_value"], abs_tol=1e-9, rel_tol=0.0) and
+                            not math.isclose(review["official_first_release_value"], actual["latest_value"], abs_tol=1e-9, rel_tol=0.0),
+                            key+": unsupported release vintage contradiction")
+                status = ("WITHHELD_OFFICIAL_SOURCE_VALUE_CONFLICT" if review else
+                          "WITHHELD_EXACT_PERIOD_EVIDENCE")
                 result = {
+                    "source_disagreement": ({"official_first_release_value": review["official_first_release_value"],
+                                            "official_source_url": review["url"],
+                                            "period": review["observation_period"],
+                                            "note": review["note"]} if review else None),
+                    "latest_web_release_unhashed": False,
                     "status": status, "first_release_date": None,
                     "first_release_timestamp_utc": None,
                     "release_clock_verified": False,
@@ -239,6 +357,7 @@ def build_ledger(root, today, items=None):
                  "Sparse anchor examples do not establish a complete PIT archive. "
                  "Only two-source-clock proofs can support exact timestamps."),
         "observations": results,
+        "unresolved_targets": sorted(k for k, x in results.items() if x["release"]["status"].startswith("WITHHELD")),
     }
 
 
