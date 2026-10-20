@@ -64,6 +64,7 @@ def main():
     assert "payload/part-00.txt" in FILES
     assert "dashboard/risk-operational-v1.js" in FILES
     assert "dashboard/editorial-freshness-guard-v1.js" in FILES
+    assert "live_data/sections/ESTIMATED_RESIDUAL_GAPS.json" in FILES
     success = case(True)
     assert success["status"] == "PASS", success
     assert success["attempts"] >= 2, success
