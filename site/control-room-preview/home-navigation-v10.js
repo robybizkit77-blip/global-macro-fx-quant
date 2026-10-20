@@ -1096,6 +1096,139 @@ async function mountCrossGold(doc){
  doc.defaultView.GMFQ_CROSS_GOLD={status:state,as_of:asof,instrument:'GC=F',core_effect:'NONE',lbma_spot:'WITHHELD'};
 }
 
+
+/* Native v10 Cross-Asset risk / energy. Strictly informational; no FX model inputs. */
+function crossRiskObservation(series,instrument){
+ const ds=series?.dates,vs=series?.values;
+ if(!Array.isArray(ds)||!Array.isArray(vs)||ds.length<2||ds.length!==vs.length)
+   return {state:'WITHHELD',value:null,asof:'—',delta:null};
+ const date=ds.at(-1),value=vs.at(-1);
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(date||'')||
+    series.last_date!==date||
+    typeof value!=='number'||!Number.isFinite(value)||value<=0||
+    typeof series.last_value!=='number'||!Number.isFinite(series.last_value)||
+    series.last_value!==value||
+    (instrument==='WTI'&&(series.source!=='U.S. Energy Information Administration'||
+      series.benchmark_key!=='RWTC')))
+   return {state:'WITHHELD',value:null,asof:'—',delta:null};
+ const day=new Date(date+'T00:00:00Z');
+ if(Number.isNaN(day.getTime())||day.toISOString().slice(0,10)!==date)return {state:'WITHHELD',value:null,asof:'—',delta:null};
+ const age=crossGoldAge(date);
+ if(age<0)return {state:'WITHHELD',value:null,asof:'—',delta:null};
+ const prev=vs.at(-2);
+ const prevDate=ds.at(-2);
+ const change=typeof prev==='number'&&Number.isFinite(prev)&&prev>0&&
+   /^\d{4}-\d{2}-\d{2}$/.test(prevDate||'')&&prevDate<date?(value/prev-1)*100:null;
+ return {state:age<=3?'OFFICIAL_RECENT':'OFFICIAL_HISTORICAL',
+   value,asof:date,delta:change};
+}
+function crossRiskBrent(res){
+ const b=res?.lanes?.['BRENT.market_proxy'],g=res?.governance||{};
+ const governance=res?.schema==='GMFQ_ESTIMATED_RESIDUAL_GAPS_V1'&&
+   res.official_lanes_untouched===true&&
+   g.core_score_effect==='NONE'&&g.bias_effect==='NONE'&&
+   g.sizing_effect==='NONE'&&g.pair_engine_effect==='NONE'&&
+   g.forward_logger_effect==='NONE'&&g.backtest_eligible_as_official===false;
+ const allowed=governance&&b?.status==='MARKET_PROXY_ACTIVE_SECONDARY'&&
+   b.vendor_symbol==='BZ=F'&&b.instrument_type==='FUTURE'&&
+   b.currency==='USD'&&b.official_canonical_untouched===true&&
+   b.source_endpoint==='https://query1.finance.yahoo.com/v8/finance/chart/BZ=F'&&
+   typeof b.value==='number'&&Number.isFinite(b.value)&&b.value>0&&
+   /^\d{4}-\d{2}-\d{2}$/.test(b.proxy_as_of||'');
+ if(!allowed)return {state:'WITHHELD',value:null,asof:'—',delta:null,week:null};
+ const day=new Date(b.proxy_as_of+'T00:00:00Z');
+ if(Number.isNaN(day.getTime())||day.toISOString().slice(0,10)!==b.proxy_as_of)
+   return {state:'WITHHELD',value:null,asof:'—',delta:null,week:null};
+ const age=crossGoldAge(b.proxy_as_of);
+ if(age<0)return {state:'WITHHELD',value:null,asof:'—',delta:null,week:null};
+ return {state:age<=3?'SECONDARY_RECENT':'SECONDARY_HISTORICAL',
+   value:b.value,asof:b.proxy_as_of,delta:b.change_1d_pct,week:b.change_1w_pct};
+}
+function crossRiskCard(code,row,description,source,secondary){
+ const current=['OFFICIAL_RECENT','SECONDARY_RECENT'].includes(row.state);
+ const unavailable=row.state==='WITHHELD';
+ const badge=unavailable?'WITHHELD · non verificato':current?
+   (secondary?'FUTURES INDICATIVO · RECENTE':'FONTE UFFICIALE · ULTIMA OSSERVAZIONE'):
+   (secondary?'FUTURES INDICATIVO · STORICO':'FONTE UFFICIALE · NON CORRENTE');
+ const change=unavailable?'—':crossGoldPct(row.delta);
+ const quoted=unavailable?'—':crossGoldNumber(row.value)+(code==='VIX'?'':' <small>USD/barile</small>');
+ return '<article class="gmfq-cross-risk-card" data-cross-instrument="'+code+
+   '" data-cross-status="'+row.state+'">'+
+   '<div class="gmfq-cross-risk-header"><strong>'+code+'</strong><span class="gmfq-cross-risk-badge" data-state="'+
+   row.state+'">'+badge+'</span></div>'+
+   '<p class="gmfq-cross-risk-source">'+htmlEscape(description)+'</p>'+
+   '<div class="gmfq-cross-risk-value">'+quoted+'</div>'+
+   '<p class="gmfq-cross-risk-source">as-of '+htmlEscape(row.asof)+'</p>'+
+   '<div class="gmfq-cross-risk-changes"><span>Δ '+(secondary?'1D':'oss. prec.')+
+   ' '+change+'</span>'+(secondary?'<span>Δ ~1W '+(unavailable?'—':crossGoldPct(row.week))+'</span>':'')+'</div>'+
+   '<p class="gmfq-cross-risk-source">'+htmlEscape(source)+'</p></article>';
+}
+async function mountCrossRisk(doc){
+ if(route()!=='cross'||frame.contentDocument!==doc)return;
+ const goldPanel=doc.getElementById('gmfq-cross-gold-v10');
+ const main=doc.querySelector('.desk-main'),anchor=main?.querySelector('.desk-grid');
+ if(!anchor||doc.getElementById('gmfq-cross-risk-v10'))return;
+ const panel=doc.createElement('section');
+ panel.id='gmfq-cross-risk-v10';
+ panel.className='desk-panel';
+ panel.dataset.sourceStatus='LOADING';
+ panel.setAttribute('aria-label','VIX, WTI spot EIA e Brent futures indicativo');
+ panel.innerHTML='<h2 class="desk-panel-title">Volatilità e petrolio · verifica delle fonti</h2>'+
+   '<div class="desk-panel-body">Caricamento fonti…</div>';
+ if(goldPanel)goldPanel.insertAdjacentElement('afterend',panel);
+ else anchor.insertAdjacentElement('beforebegin',panel);
+ const style=doc.createElement('style');
+ style.id='gmfq-cross-risk-v10-style';
+ style.textContent=
+  '#gmfq-cross-risk-v10{margin:0 0 14px;min-width:0}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-intro{padding:12px 16px 4px;font:12px/1.55 Arial,sans-serif;color:#abc2d0}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:10px 16px;min-width:0}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-card{min-width:0;padding:13px;background:#0b2333;border:1px solid #254457;border-radius:6px}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-header{display:flex;flex-wrap:wrap;gap:7px;align-items:center;justify-content:space-between}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-header strong{font:650 15px/1.4 Arial,sans-serif;color:#ebf2f6}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-badge{font:600 9px/1.4 Arial,sans-serif;color:#86d6b3}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-badge[data-state*="HISTORICAL"]{color:#e8c080}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-badge[data-state="WITHHELD"]{color:#e9a0af}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-source{font:10px/1.5 Arial,sans-serif;color:#9db6c5;margin:6px 0;overflow-wrap:anywhere}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-value{font:650 26px/1.3 Arial,sans-serif;color:#e9f1f7;margin:11px 0 4px;font-variant-numeric:tabular-nums}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-value small{font:11px Arial,sans-serif;color:#afc2d0}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-changes{color:#dacb9d;font:11px/1.5 Arial,sans-serif;display:flex;flex-wrap:wrap;gap:9px}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-note{border-top:1px solid #213f50;padding:12px 16px;color:#a9c1cf;font:11px/1.6 Arial,sans-serif}'+
+  '@media(max-width:820px){#gmfq-cross-risk-v10 .gmfq-cross-risk-grid{grid-template-columns:1fr}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-intro{padding:12px 12px 4px}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-grid{padding:10px 12px}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-note{padding:12px}}';
+ doc.head.appendChild(style);
+ const title=doc.getElementById('queued-title'),copy=doc.getElementById('queued-copy');
+ if(title)title.textContent='Cross-Asset · Rischio e commodities';
+ if(copy)copy.textContent='Gold, VIX ed energia: dati distinti per fonte e aggiornamento. Altri approfondimenti restano in preparazione.';
+ let d=null,res=null;
+ try{
+  const settled=await Promise.allSettled([feed('D.json'),feed('ESTIMATED_RESIDUAL_GAPS.json')]);
+  if(frame.contentDocument!==doc||route()!=='cross')return;
+  d=settled[0].status==='fulfilled'?settled[0].value:null;
+  res=settled[1].status==='fulfilled'?settled[1].value:null;
+ }catch(e){console.warn('[GMFQ Cross Risk WITHHELD]',String(e))}
+ const v=crossRiskObservation(d?.risk?.VIX,'VIX'),
+   w=crossRiskObservation(d?.risk?.WTI,'WTI'),b=crossRiskBrent(res);
+ const states=[v.state,w.state,b.state];
+ const global=states.every(x=>x==='WITHHELD')?'WITHHELD':
+   states.some(x=>x==='WITHHELD'||x.endsWith('HISTORICAL'))?'PARTIAL':'AVAILABLE';
+ panel.dataset.sourceStatus=global;
+ panel.innerHTML='<h2 class="desk-panel-title">Volatilità e petrolio · stato delle fonti</h2>'+
+  '<p class="gmfq-cross-risk-intro">VIX e WTI sono osservazioni ufficiali con una data di riferimento, NON quotazioni intraday. Brent è un futures indicativo e non sostituisce il prezzo spot certificato.</p>'+
+  '<div class="gmfq-cross-risk-grid">'+
+   crossRiskCard('VIX',v,'Volatilità implicita S&P 500','Cboe · storico ufficiale VIX',false)+
+   crossRiskCard('WTI',w,'Spot Cushing · RWTC','U.S. Energy Information Administration',false)+
+   crossRiskCard('BRENT',b,'Futures BZ=F · non spot','Yahoo Finance · futures secondario',true)+
+  '</div>'+
+  '<div class="gmfq-cross-risk-note"><strong>Come leggere questi dati:</strong> il VIX misura volatilità implicita, non da solo la direzione del mercato. WTI e Brent non sono la stessa serie né lo stesso strumento: domanda, offerta, scadenza dei futures e differenze di rilevazione contano. <strong>Brent spot ufficiale: WITHHELD.</strong> Nessun confronto di spread fra spot e futures; nessun giudizio di risk-on/risk-off, segnale o sizing automatico.</div>';
+ doc.defaultView.GMFQ_CROSS_RISK={status:global,
+   vix:{status:v.state,as_of:v.asof},wti:{status:w.state,as_of:w.asof},
+   brent:{status:b.state,as_of:b.asof},core_effect:'NONE',
+   official_brent:'WITHHELD'};
+}
+
 const mountedDocuments=new WeakSet();
 function onFrameLoad(){
  let doc;try{doc=frame.contentDocument}catch(_){return}
@@ -1103,6 +1236,7 @@ function onFrameLoad(){
  mountedDocuments.add(doc);
  if(!home()){
    if(route()==='cross')mountCrossGold(doc).catch(e=>console.warn('[GMFQ Cross-Asset Gold WITHHELD]',e));
+   if(route()==='cross')mountCrossRisk(doc).catch(e=>console.warn('[GMFQ Cross-Asset Risk WITHHELD]',e));
    if(route()==='tassi'){enhanceRatesDetail(doc);focusRatesSection(doc);applyMarketResearch(doc).catch(e=>console.warn('[GMFQ market pricing WITHHELD]',e))}
    if(route()==='coppie')mountPairResearch(doc).catch(e=>console.warn('[GMFQ pair research WITHHELD]',e));
    if(route()==='screener')mountScreenerPairBridge(doc);
