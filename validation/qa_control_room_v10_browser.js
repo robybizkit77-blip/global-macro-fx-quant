@@ -12,6 +12,15 @@ if(nzdProxy.schema!=='GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1'||
 const dxyDisplayed=Number(dxyFeed.value).toFixed(2);
 const nzdDisplayed=Number(nzdProxy.horizons['6m'].implied_bank_bill_rate).toFixed(2);
 const ratesFeed=JSON.parse(fs.readFileSync(path.join(DATA,'NATIVE_RATES_DATA.json'),'utf8'));
+const operational=JSON.parse(fs.readFileSync(path.join(DATA,'OIS_OPERATIONAL_VIEW.json'),'utf8'));
+const expectedSecondaryQuotes=['USD','EUR','CHF'].filter(k=>{
+  const x=operational.currencies?.[k],ctx=x?.secondary_quote_context;
+  return x?.operational_status==='WITHHELD'&&
+    ctx?.status==='INDICATIVE_OBSERVATIONS_NON_OIS'&&
+    ctx.full_curve_usable===false&&ctx.cross_date_join_allowed===false&&
+    ctx.policy_delta_allowed===false&&ctx.repricing_signal_allowed===false;
+}).length;
+
 const snbSpot=JSON.parse(fs.readFileSync(path.join(DATA,'CHF_SNB_10Y_SPOT_CONTEXT.json'),'utf8'));
 if(snbSpot.tenor!=='10Y'||snbSpot.has_current_2y!==false||snbSpot.eligible_for_curve_spreads!==false)throw Error('Invalid independent SNB 10Y context fixture');
 function commonAnchorDate(target,proxy,tenor='history2'){
@@ -210,7 +219,7 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
       docWidth:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth
     };
   });
-  if(research.fourCurves!==4||research.secondary!==3||
+  if(research.fourCurves!==4||research.secondary!==expectedSecondaryQuotes||
      !research.legend.includes('GBP')||!research.legend.includes('CAD')||
      !research.disclaimers.includes('NON curva OIS')&&
       !research.disclaimers.includes('non sono una curva OIS')||
