@@ -291,7 +291,7 @@ async function getState(page){
        let current=false;
        for(let attempt=0;attempt<16;attempt++){
          current=await page.evaluate(()=>{
-           return !!document.querySelector('script[src*="home-navigation-v10.js?v=cross-gold-20261020"]');
+           return !!document.querySelector('script[src*="home-navigation-v10.js?v=cross-risk-energy-20261020"]');
          });
          if(current)break;
          console.log('PUBLIC_PAIR_ADDON_CDN_PENDING',name,attempt);
@@ -304,7 +304,7 @@ async function getState(page){
          catch(_){console.log('PUBLIC_PAIR_HOME_FEED_PENDING',name,attempt)}
          await page.waitForTimeout(3000);
        }
-       if(!current)current=await page.evaluate(()=>!!document.querySelector('script[src*="home-navigation-v10.js?v=cross-gold-20261020"]'));
+       if(!current)current=await page.evaluate(()=>!!document.querySelector('script[src*="home-navigation-v10.js?v=cross-risk-energy-20261020"]'));
        if(!current)throw Error(name+' PUBLIC_PAIR_ADDON_VERSION_NOT_DEPLOYED');
      }
      const homePair=await page.frameLocator('#gmfq-page').locator('#pairs tr[data-filter]').first().getAttribute('data-filter');
@@ -500,6 +500,35 @@ async function getState(page){
        console.log('CONTROL_ROOM_V10_PUBLIC_CROSS_GOLD_GREEN',name,
          JSON.stringify({status:gold.state,asof:gold.asof,value:gold.quote,
            viewport:gold.viewport}));
+
+       await page.waitForFunction(()=>{
+         const d=document.getElementById('gmfq-page')?.contentDocument;
+         return ['AVAILABLE','PARTIAL','WITHHELD'].includes(
+           d?.getElementById('gmfq-cross-risk-v10')?.dataset.sourceStatus);
+       },null,{timeout:20000});
+       const risk=await page.evaluate(()=>{
+         const d=document.getElementById('gmfq-page')?.contentDocument,
+           panel=d?.getElementById('gmfq-cross-risk-v10');
+         return {status:panel?.dataset.sourceStatus,
+           cards:[...panel?.querySelectorAll('[data-cross-instrument]')||[]]
+             .map(c=>({name:c.dataset.crossInstrument,status:c.dataset.crossStatus,
+               asof:c.textContent,value:c.querySelector('.gmfq-cross-risk-value')?.textContent})),
+           text:panel?.textContent,width:d?.documentElement.scrollWidth,
+           viewport:d?.documentElement.clientWidth};
+       });
+       if(risk.cards.length!==3||
+          !risk.cards.some(c=>c.name==='VIX'&&c.status.startsWith('OFFICIAL_'))||
+          !risk.cards.some(c=>c.name==='WTI'&&c.status.startsWith('OFFICIAL_'))||
+          !risk.cards.some(c=>c.name==='BRENT'&&c.status.startsWith('SECONDARY_'))||
+          !risk.text?.includes('Brent spot ufficiale: WITHHELD')||
+          !risk.text?.includes('Nessun confronto di spread fra spot e futures')||
+          risk.width>risk.viewport+16)
+          throw Error(name+' public Cross-Asset risk/energy not delivered '+JSON.stringify(risk));
+       console.log('CONTROL_ROOM_V10_PUBLIC_CROSS_RISK_GREEN',name,
+         JSON.stringify({status:risk.status,
+           cards:risk.cards.map(c=>({name:c.name,status:c.status,value:c.value})),
+           viewport:risk.viewport}));
+
      }
 
      await page.close();
