@@ -37,7 +37,7 @@ jobs:
           for(const legacy of ["load('D.json')","load('WHAT_CHANGED.json')"]){
             if(js.includes(legacy))throw new Error(`Legacy Macro dependency reintroduced: ${legacy}`);
           }
-          if(!js.includes("dataset.macroSource='MACRO_SERIES'"))throw new Error('Macro source marker missing');
+          if(!js.includes("dataset.macroSource='MACRO_SERIES_THERMOMETER'"))throw new Error('Macro source marker missing');
           if(!html.includes('operationalbridge1'))throw new Error('Macro bridge cache-bust missing');
           console.log('MACRO_SOURCE_CONTRACT_PASS');
           NODE
@@ -74,7 +74,7 @@ jobs:
               overflow:document.documentElement.scrollWidth-window.innerWidth
             }));
             if(x.cards!==8||x.buttons!==8)throw new Error(`${label}: G8 coverage ${x.cards} cards / ${x.buttons} selectors`);
-            if(x.source!=='MACRO_SERIES'||x.coverage!=='8')throw new Error(`${label}: canonical source/coverage ${x.source}/${x.coverage}`);
+            if(x.source!=='MACRO_SERIES_THERMOMETER'||x.coverage!=='8')throw new Error(`${label}: canonical source/coverage ${x.source}/${x.coverage}`);
             if(x.sectors<4)throw new Error(`${label}: sector detail too thin (${x.sectors})`);
             for(const bad of ['undefined','[object Object]','NaN'])if(x.body.includes(bad))throw new Error(`${label}: bad token ${bad}`);
             for(const required of ['Prossimi release','Cosa sta cambiando','Nessuno score ricostruito'])if(!x.body.includes(required))throw new Error(`${label}: missing ${required}`);
