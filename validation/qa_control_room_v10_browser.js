@@ -598,6 +598,85 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
   console.log('CONTROL_ROOM_V10_CROSS_GOLD_SOURCE_PASS',label,
     JSON.stringify({state:gold.state,asof:gold.asof,value:gold.value,viewport:gold.viewport}));
 
+
+  // Cross-Asset risk/energy is an additive v10 route, never the old dashboard.
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return ['AVAILABLE','PARTIAL','WITHHELD'].includes(d?.getElementById('gmfq-cross-risk-v10')?.dataset.sourceStatus);
+  },null,{timeout:25000});
+  const risk=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    const p=d?.getElementById('gmfq-cross-risk-v10');
+    return {status:p?.dataset.sourceStatus,
+      cards:[...p?.querySelectorAll('[data-cross-instrument]')||[]].map(c=>({
+        symbol:c.dataset.crossInstrument,state:c.dataset.crossStatus,
+        text:c.textContent,price:c.querySelector('.gmfq-cross-risk-value')?.textContent})),
+      text:p?.textContent,width:d?.documentElement.scrollWidth,
+      viewport:d?.documentElement.clientWidth};
+  });
+  const riskData=JSON.parse(fs.readFileSync(path.join(DATA,'D.json'),'utf8'));
+  const secondary=JSON.parse(fs.readFileSync(path.join(DATA,'ESTIMATED_RESIDUAL_GAPS.json'),'utf8'));
+  const expected=[
+    {code:'VIX',series:riskData.risk.VIX},
+    {code:'WTI',series:riskData.risk.WTI},
+    {code:'BRENT',series:secondary.lanes['BRENT.market_proxy'],secondary:true},
+  ];
+  if(risk.cards.length!==3||!risk.text.includes('Brent spot ufficiale: WITHHELD')||
+    !risk.text.includes('Nessun confronto di spread fra spot e futures')||
+    risk.width>risk.viewport+16)
+    throw Error(label+' v10 cross risk layout/source disclosure missing '+JSON.stringify(risk));
+  for(const item of expected){
+    const card=risk.cards.find(x=>x.symbol===item.code),day=item.secondary?
+      item.series.proxy_as_of:item.series.last_date;
+    const age=Math.round((Date.UTC(new Date().getUTCFullYear(),new Date().getUTCMonth(),new Date().getUTCDate())-
+      Date.parse(day+'T00:00:00Z'))/86400000);
+    const expectedState=item.secondary?(age<=3?'SECONDARY_RECENT':'SECONDARY_HISTORICAL'):
+      (age<=3?'OFFICIAL_RECENT':'OFFICIAL_HISTORICAL');
+    const price=Number(item.series.value??item.series.last_value).toLocaleString('it-IT',
+      {minimumFractionDigits:2,maximumFractionDigits:2});
+    if(card?.state!==expectedState||!card.text?.includes(day)||!card.price?.includes(price)){
+      throw Error(label+' Cross-Asset '+item.code+' mismatched dated source '+JSON.stringify({card,expectedState,price}));
+    }
+  }
+  console.log('CONTROL_ROOM_V10_CROSS_RISK_SOURCE_PASS',label,
+    JSON.stringify(risk.cards.map(c=>({symbol:c.symbol,state:c.state,price:c.price}))));
+  
+  // Corrupted EIA WTI or mismatched BZ futures metadata must fail closed
+  // independently of a still-valid Cboe VIX and Gold futures quote.
+  await page.route('**/D.json',async route=>{
+    const damaged=JSON.parse(fs.readFileSync(path.join(DATA,'D.json'),'utf8'));
+    damaged.risk.WTI.last_value=null;
+    await route.fulfill({status:200,contentType:'application/json',
+      headers:{'Access-Control-Allow-Origin':'*'},body:JSON.stringify(damaged)});
+  });
+  await page.route('**/ESTIMATED_RESIDUAL_GAPS.json',async route=>{
+    const damaged=JSON.parse(fs.readFileSync(path.join(DATA,'ESTIMATED_RESIDUAL_GAPS.json'),'utf8'));
+    damaged.lanes['BRENT.market_proxy'].vendor_symbol='WRONG';
+    await route.fulfill({status:200,contentType:'application/json',
+      headers:{'Access-Control-Allow-Origin':'*'},body:JSON.stringify(damaged)});
+  });
+  await page.goto(url+'#/home',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.goto(url+'#/cross?riskqa=damaged',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return d?.querySelector('#gmfq-cross-risk-v10 [data-cross-instrument="WTI"]')?.dataset.crossStatus==='WITHHELD'&&
+      d?.querySelector('#gmfq-cross-risk-v10 [data-cross-instrument="BRENT"]')?.dataset.crossStatus==='WITHHELD';
+  },null,{timeout:25000});
+  const negativeRisk=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return [...d?.querySelectorAll('#gmfq-cross-risk-v10 [data-cross-instrument]')||[]]
+      .map(el=>({symbol:el.dataset.crossInstrument,status:el.dataset.crossStatus,
+        value:el.querySelector('.gmfq-cross-risk-value')?.textContent}));
+  });
+  if(negativeRisk.find(x=>x.symbol==='WTI')?.value?.trim()!=='—'||
+     negativeRisk.find(x=>x.symbol==='BRENT')?.value?.trim()!=='—'||
+     !negativeRisk.find(x=>x.symbol==='VIX')?.status?.startsWith('OFFICIAL_')){
+    throw Error(label+' Cross-Asset invalid WTI/Brent failed-closed mismatch '+JSON.stringify(negativeRisk));
+  }
+  await page.unroute('**/D.json');
+  await page.unroute('**/ESTIMATED_RESIDUAL_GAPS.json');
+  console.log('CONTROL_ROOM_V10_CROSS_RISK_WITHHELD_PASS',label);
+
   // Negative fixture: a missing Gold futures quote MUST be WITHHELD rather than 0.00.
   await page.route('**/ESTIMATED_RESIDUAL_GAPS.json',async r=>{
     const obj=JSON.parse(fs.readFileSync(path.join(DATA,'ESTIMATED_RESIDUAL_GAPS.json'),'utf8'));
