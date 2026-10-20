@@ -3905,5 +3905,6 @@
     "DA MONITORARE": 3,
     "NON VALUTABILE": 11
   },
-  "browser_page_errors": []
+  "browser_page_errors": [],
+  "macro_baseline_asof": "2026-09-25"
 }

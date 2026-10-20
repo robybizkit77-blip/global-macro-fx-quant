@@ -56,6 +56,8 @@ try{
       status:'CURRENT_CANONICAL_ENGINE',
       pair_count:canonicalPairs.length,
       price_asof:audit.as_of,
+      // D.asOf is the canonical Macro baseline, not the newer Price overlay.
+      macro_baseline_asof:(typeof D?.asOf==='string'?D.asOf:null),
       price_source:audit.source,
       price_audit:audit,
       rules_source:'derivePairSetupState / derivePairDecisionFrame / pairTransitionState / derivePairRelativeDynamics',
