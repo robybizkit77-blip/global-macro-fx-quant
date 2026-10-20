@@ -1,0 +1,87 @@
+name: Macro G8 Structural Rebase Readiness V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/macro/rebase_readiness_v1.py'
+      - 'validation/macro/test_rebase_readiness_v1.py'
+      - '.github/workflows/macro-g8-rebase-readiness-v1.yml'
+      - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
+      - 'live_data/sections/D.json'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+      - 'live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/macro/rebase_readiness_v1.py'
+      - 'validation/macro/test_rebase_readiness_v1.py'
+      - '.github/workflows/macro-g8-rebase-readiness-v1.yml'
+      - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
+      - 'live_data/sections/D.json'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+      - 'live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'
+  workflow_run:
+    workflows:
+      - 'Macro Persistent Daily V1'
+      - 'Rates Persistent Daily V1'
+      - 'Pair Setup Operational View V1'
+    types: [completed]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 8 * * 1-5'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macro-g8-rebase-readiness-v1
+  cancel-in-progress: false
+
+jobs:
+  source-to-engine-contract:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify G8 lineage, observation PIT, pair coverage and fail-closed no-write
+        run: python -m unittest validation.macro.test_rebase_readiness_v1 -v
+      - name: Produce immutable evidence for all 16 macro sources, Growth and 28 pairs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/macro-g8-rebase
+          python validation/macro/rebase_readiness_v1.py \
+            --out /tmp/macro-g8-rebase/readiness.json \
+            --markdown /tmp/macro-g8-rebase/summary.md
+          cat /tmp/macro-g8-rebase/summary.md >> "$GITHUB_STEP_SUMMARY"
+          python - <<'PY'
+          import json
+          x=json.load(open('/tmp/macro-g8-rebase/readiness.json'))
+          assert x['source_lineage']=='PASS'
+          assert x['structural_rebase']=='BLOCKED_SCORE_CONTRACT'
+          assert x['safe_to_publish_D'] is False
+          assert x['safe_to_update_structural_pair_preferences'] is False
+          assert x['registered_macro_series']==16 and x['tracked_pairs']==28
+          print('MACRO_G8_PIT_LINEAGE_PASS_STRUCTURAL_REBASE_BLOCKED')
+          PY
+          git diff --exit-code -- live_data/sections/D.json \
+            live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
+      - name: Upload independent read-only Macro rebase readiness evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-g8-rebase-readiness-${{ github.run_id }}
+          path: /tmp/macro-g8-rebase/
+          if-no-files-found: warn
+          retention-days: 30
