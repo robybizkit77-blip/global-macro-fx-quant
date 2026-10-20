@@ -1,0 +1,63 @@
+{
+  "schema": "GMFQ_GBP_MGSX_ROLLING_WINDOW_FIRST_RELEASE_MAP_V1",
+  "as_of": "2026-10-20",
+  "series_id": "MGSX",
+  "canonical_macro_series_id": "UK_UNEMP_RATE_history_value",
+  "storage_contract": "THREE_MONTH_LFS_WINDOW_END_MONTH",
+  "source_ons_month_label": "CENTER_MONTH_OF_THREE_MONTH_WINDOW",
+  "value_semantics": "unemployment rate people aged 16 and over seasonally adjusted",
+  "purpose": "Validate original first releases for 2026 UK LFS windows; never auto-recalculate or overwrite D.json or live macro series",
+  "official_periods": [
+    {
+      "source_center_month": "2026-05",
+      "canonical_end_month": "2026-06",
+      "window_start_month": "2026-04",
+      "window_end_month": "2026-06",
+      "unemployment_pct": 4.9,
+      "release_date": "2026-08-18",
+      "source_url": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/bulletins/employmentintheuk/august2026",
+      "source_label": "April to June 2026"
+    },
+    {
+      "source_center_month": "2026-06",
+      "canonical_end_month": "2026-07",
+      "window_start_month": "2026-05",
+      "window_end_month": "2026-07",
+      "unemployment_pct": 4.9,
+      "release_date": "2026-09-15",
+      "source_url": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/bulletins/employmentintheuk/september2026",
+      "source_label": "May to July 2026"
+    },
+    {
+      "source_center_month": "2026-07",
+      "canonical_end_month": "2026-08",
+      "window_start_month": "2026-06",
+      "window_end_month": "2026-08",
+      "unemployment_pct": 4.7,
+      "release_date": "2026-10-20",
+      "source_url": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/bulletins/employmentintheuk/october2026",
+      "source_label": "June to August 2026"
+    }
+  ],
+  "latest_canonical_evidence_on_review": {
+    "last_month": "2026-07",
+    "last_value": 4.7,
+    "release_vintage_conflict": true,
+    "expected_first_release_value_for_july": 4.9,
+    "unrepresented_next_period": "2026-08"
+  },
+  "released_at_timestamps_utc": null,
+  "claim_full_historical_vintage_certified": false,
+  "release_claim": "Period- and value-specific official monthly ONS bulletin anchors; not immutable source snapshots",
+  "source_content_sha256": null,
+  "allowed_actions": [
+    "READ_ONLY_AUDIT",
+    "QUARANTINE_GBP_LABOUR_DAILY_PERSISTENCE",
+    "STAGED_DUAL_PERIOD_REMEDIATION"
+  ],
+  "forbidden_actions": [
+    "AUTOMATIC_REDATE_LEGACY_SERIES",
+    "AUTOMATIC_RECALCULATE_MACRO_SCORES",
+    "AUTOMATIC_PROMOTE_FX_DIRECTION"
+  ]
+}
