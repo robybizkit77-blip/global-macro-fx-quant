@@ -24,6 +24,7 @@ def fixture():
             "status": "CURRENT_CANONICAL_ENGINE",
             "pair_count": 28,
             "price_asof": day,
+            "macro_baseline_asof": day,
             "price_audit": {"status": "PASS", "as_of": day,
                             "no_lookahead": True, "complete_return_values": 140},
             "thesis_is_not_entry": True,
@@ -93,6 +94,11 @@ class CoverageTests(unittest.TestCase):
     def test_future_cot_is_rejected(self):
         self.data["cot"]["JPY"]["dates"][-1] = "2026-10-21"
         with self.assertRaisesRegex(ValueError, "future observation"):
+            analyze(self.data, self.today)
+
+    def test_model_macro_provenance_mismatch_fails_closed(self):
+        self.data["setup"]["macro_baseline_asof"] = "2026-09-25"
+        with self.assertRaisesRegex(ValueError, "Macro baseline as-of"):
             analyze(self.data, self.today)
 
     def test_price_history_cannot_lag_model_price(self):
