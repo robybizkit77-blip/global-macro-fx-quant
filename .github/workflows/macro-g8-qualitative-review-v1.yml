@@ -1,0 +1,87 @@
+name: Macro G8 Qualitative Label Review Queue V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/macro/qualitative_label_review_queue_v1.py'
+      - 'validation/macro/test_qualitative_label_review_queue_v1.py'
+      - 'validation/macro/MACRO_LABEL_SOURCE_CHECKPOINT_2026-10-20.json'
+      - '.github/workflows/macro-g8-qualitative-review-v1.yml'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+      - 'live_data/sections/NATIVE_RATES_DATA.json'
+      - 'live_data/sections/OIS_OPERATIONAL_VIEW.json'
+      - 'live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'
+      - 'live_data/sections/D.json'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/macro/qualitative_label_review_queue_v1.py'
+      - 'validation/macro/test_qualitative_label_review_queue_v1.py'
+      - 'validation/macro/MACRO_LABEL_SOURCE_CHECKPOINT_2026-10-20.json'
+      - '.github/workflows/macro-g8-qualitative-review-v1.yml'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+      - 'live_data/sections/NATIVE_RATES_DATA.json'
+      - 'live_data/sections/OIS_OPERATIONAL_VIEW.json'
+      - 'live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'
+      - 'live_data/sections/D.json'
+  workflow_run:
+    workflows:
+      - 'Macro Persistent Daily V1'
+      - 'Rates Persistent Daily V1'
+      - 'CB Pricing Persistent Daily V1'
+    types: [completed]
+  workflow_dispatch:
+  schedule:
+    - cron: '25 9 * * 1-5'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macro-g8-qualitative-review-v1
+  cancel-in-progress: false
+
+jobs:
+  detect-input-changes-and-affected-pairs:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test real-source change/revision/reapproval safety
+        run: python -m unittest validation.macro.test_qualitative_label_review_queue_v1 -v
+      - name: Build dated Macro/Policy qualitative reapproval queue
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/macro-qualitative-review
+          python validation/macro/qualitative_label_review_queue_v1.py --out /tmp/macro-qualitative-review/reapproval-queue.json --markdown /tmp/macro-qualitative-review/summary.md
+          cat /tmp/macro-qualitative-review/summary.md >> "$GITHUB_STEP_SUMMARY"
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/macro-qualitative-review/reapproval-queue.json'))
+          assert r['source_lineage']=='PASS'
+          assert r['observed_currencies_count']==8 and r['observed_pairs_count']==28
+          assert r['safe_to_publish_new_D'] is False
+          assert r['eligible_for_structural_rebase'] is False
+          print('MACRO_QUALITATIVE_REAPPROVAL_QUEUE_READ_ONLY_PASS')
+          PY
+          git diff --exit-code -- live_data/sections/D.json live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
+      - name: Retain dated source delta and affected pair evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-qualitative-review-${{ github.run_id }}
+          path: /tmp/macro-qualitative-review/
+          if-no-files-found: warn
+          retention-days: 30
