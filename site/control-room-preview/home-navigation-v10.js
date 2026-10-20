@@ -497,16 +497,22 @@ function marketSourceReadinessHtml(view,operational){
   view.prices_omitted===true&&view.no_automatic_promotions===true&&
   view.no_core_score_effect===true&&view.no_bias_effect===true&&
   view.no_sizing_effect===true&&view.no_backtest_effect===true&&
-  ids.every(k=>view.currencies?.[k]?.status===operational?.currencies?.[k]?.operational_status)&&
-  view.blocked_currency_count===operational?.summary?.operational_withheld;
+  ids.every(k=>view.currencies?.[k]?.status==='WITHHELD'&&
+   typeof view.currencies[k].obstacle==='string'&&
+   typeof view.currencies[k].activation_requirement==='string'&&
+   ['WITHHELD','GREEN_ESTIMATED','GREEN_OFFICIAL'].includes(operational?.currencies?.[k]?.operational_status))&&
+  view.blocked_currency_count===ids.length;
  const opening='<details class="gmfq-source-readiness" id="gmfq-source-readiness"><summary>Fonti da sbloccare · situazione e prossimi passi</summary>';
  if(!statusOk)return opening+'<p class="gmfq-research-note">Stato delle fonti da aggiornare: nessuna curva aggiuntiva viene certificata.</p></details>';
  const items=ids.filter(k=>view.currencies[k].status==='WITHHELD').map(k=>{
   const v=view.currencies[k],link=v.source_url;
   const validUrl=typeof link==='string'&&/^https:\/\/(www\.)?(cmegroup\.com|eurex\.com|ice\.com|nzfbf\.co\.nz)\//.test(link);
   const anchor=validUrl?'<a href="'+htmlEscape(link)+'" target="_blank" rel="noopener noreferrer">Fonte originale ↗</a>':'Fonte da verificare';
-  return '<div class="gmfq-source-row"><div><b>'+FLAG[k]+' '+k+' · curva non certificata</b>'+
-   '<p>'+htmlEscape(v.obstacle)+'</p><small>Per sbloccare: '+htmlEscape(v.activation_requirement)+'</small></div>'+
+  const live=operational.currencies[k].operational_status;
+  const state=live==='GREEN_OFFICIAL'?'CERTIFICATA · fonte operativa':
+   live==='GREEN_ESTIMATED'?'SOLO INDICATIVA · non certificata':'WITHHELD · non certificata';
+  return '<div class="gmfq-source-row"><div><b>'+FLAG[k]+' '+k+' · '+htmlEscape(state)+'</b>'+
+   '<p>'+htmlEscape(v.obstacle)+'</p><small>Requisito per accesso ai dati ufficiali: '+htmlEscape(v.activation_requirement)+'</small></div>'+
    '<div class="gmfq-source-link">'+anchor+'</div></div>';
  }).join('');
  const chf=view.currencies.CHF?.government_rates;
@@ -514,7 +520,7 @@ function marketSourceReadinessHtml(view,operational){
   '<p class="gmfq-research-note">🇨🇭 CHF governativi: l’ultima coppia 2Y/10Y omogenea nel feed è del '+
    htmlEscape(chf.last_paired_2y10y_as_of||'—')+
    '. Il 10Y SNB pubblicato separatamente non completa il 2Y e non permette uno spread aggiornato.</p>':'';
- return opening+'<p class="gmfq-research-note">Quattro fonti sotto verifica, ciascuna con un requisito preciso. Nessun dato indicativo è promosso a OIS o usato nei segnali. Revisione fonti: '+
+ return opening+'<p class="gmfq-research-note">Quattro dossier di accesso a fonti ufficiali. Il loro stato di accesso può essere precedente al runtime operativo: le quotazioni GREEN_ESTIMATED restano indicative, mai OIS ufficiali. Nessun dato indicativo è promosso a OIS o usato nei segnali. Revisione fonti: '+
   htmlEscape(view.source_reviewed_as_of)+'.</p>'+items+swiss+'</details>';
 }
 
