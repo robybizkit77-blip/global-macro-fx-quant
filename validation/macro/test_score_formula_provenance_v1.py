@@ -45,6 +45,24 @@ class ScoreProvenanceBoundaryTests(unittest.TestCase):
         self.assertFalse(out["safe_to_update_28_pair_theses"])
         self.assertFalse(out["writes_live_data"])
 
+    def test_finite_but_unauthorized_historical_score_change_is_rejected(self):
+        model = copy.deepcopy(self.model)
+        model["macro"]["USD"]["growth"] = 0.14
+        with self.assertRaisesRegex(ValueError, "frozen historical score or cycle"):
+            self.audit(model=model)
+
+    def test_recognized_but_unauthorized_historical_cycle_change_is_rejected(self):
+        model = copy.deepcopy(self.model)
+        model["macro"]["AUD"]["cycle"] = "GOLDILOCKS"
+        with self.assertRaisesRegex(ValueError, "frozen historical score or cycle"):
+            self.audit(model=model)
+
+    def test_historical_snapshot_provenance_is_explicit(self):
+        out = self.audit()
+        self.assertTrue(out["historical_values_locked_to_first_repo_snapshot"])
+        self.assertEqual(out["historical_snapshot_commit"],
+                         "529acdd6026c88ecee8451e2e5bc36c740eece7d")
+
     def test_pillar_value_missing_or_nonfinite_is_rejected(self):
         for v in (None, True, float("nan"), float("inf")):
             with self.subTest(value=repr(v)):
