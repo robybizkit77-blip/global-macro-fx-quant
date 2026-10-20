@@ -1,0 +1,81 @@
+name: Macro G8 PIT Official Release Ledger V1
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/macro/latest_release_pit_ledger_v1.py'
+      - 'validation/macro/test_latest_release_pit_ledger_v1.py'
+      - 'validation/macro/*_historical_anchor_*.json'
+      - 'validation/macro/*_strict_pit_evidence_*.json'
+      - 'validation/macro/*_strict_pit_receipt_*.json'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+      - '.github/workflows/macro-pit-release-ledger-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/macro/latest_release_pit_ledger_v1.py'
+      - 'validation/macro/test_latest_release_pit_ledger_v1.py'
+      - 'validation/macro/*_historical_anchor_*.json'
+      - 'validation/macro/*_strict_pit_evidence_*.json'
+      - 'validation/macro/*_strict_pit_receipt_*.json'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+      - '.github/workflows/macro-pit-release-ledger-v1.yml'
+  workflow_run:
+    workflows:
+      - 'Macro Persistent Daily V1'
+    types: [completed]
+  workflow_dispatch:
+  schedule:
+    - cron: '45 9 * * 1-5'
+permissions:
+  contents: read
+concurrency:
+  group: macro-pit-release-ledger-v1
+  cancel-in-progress: false
+jobs:
+  verify-release-granularity:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run real-source period-exact release evidence checks
+        run: python -m unittest validation.macro.test_latest_release_pit_ledger_v1 -v
+      - name: Build read-only official release ledger and availability grades
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/macro-pit-ledger
+          python -m validation.macro.latest_release_pit_ledger_v1 \
+            --out /tmp/macro-pit-ledger/release-ledger.json \
+            --markdown /tmp/macro-pit-ledger/summary.md
+          cat /tmp/macro-pit-ledger/summary.md >> "$GITHUB_STEP_SUMMARY"
+          python - <<'PY'
+          import json
+          x=json.load(open('/tmp/macro-pit-ledger/release-ledger.json'))
+          assert x['source_lineage']=='PASS'
+          assert x['observations_checked']==16
+          assert sum(x['counts'].values())==16
+          assert x['safe_to_publish_new_D'] is False
+          assert x['safe_to_promote_macro_labels'] is False
+          assert x['release_dates_not_inferred_from_calendar'] is True
+          print('MACRO_G8_RELEASE_LEDGER_READ_ONLY_PASS')
+          PY
+          git diff --exit-code -- live_data/sections/D.json live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
+      - name: Save PIT official release evidence and unverified exceptions
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-g8-release-ledger-${{ github.run_id }}
+          path: /tmp/macro-pit-ledger/
+          if-no-files-found: warn
+          retention-days: 45
