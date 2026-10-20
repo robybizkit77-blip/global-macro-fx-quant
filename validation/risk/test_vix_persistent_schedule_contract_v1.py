@@ -72,6 +72,19 @@ class VIXScheduleTests(unittest.TestCase):
         self.assertIn("git push --force-with-lease=refs/heads/main:$BASE",workflow)
         self.assertIn("test \"$(git rev-parse origin/main)\" = \"$BASE\"",workflow)
 
+    def test_postapply_certification_runs_after_successful_main_persistence(self):
+        post=(ROOT/".github/workflows/vix-postapply-certification-v1.yml").read_text(
+            encoding="utf-8")
+        self.assertIn("workflow_run:",post)
+        self.assertIn("'VIX Persistent Apply V1'",post)
+        self.assertIn("types: [completed]",post)
+        self.assertIn("github.event.workflow_run.conclusion == 'success'",post)
+        self.assertIn("github.event.workflow_run.head_branch == 'main'",post)
+        self.assertIn("git cat-file -e \"$DATA_COMMIT^\"",post)
+        self.assertIn("v['last_date']==c['latest_date']",post)
+        self.assertIn("VIX_POSTAPPLY_IDEMPOTENCE_PASS",post)
+        self.assertIn("fetch-depth: 0",post)
+
     def test_no_early_source_lag_check_bypass(self):
         source=CANDIDATE.read_text(encoding="utf-8")
         apply=APPLY.read_text(encoding="utf-8")
