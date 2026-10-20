@@ -289,7 +289,9 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
       width:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth};
   });
   if(!detail.name?.includes('EURCHF')||!detail.text?.includes('ECB')||
-    !detail.text?.includes('CHF')||!detail.text?.includes('non aggiorna automaticamente')||
+    !detail.text?.includes('CHF')||
+    !(detail.text?.includes('non aggiorna automaticamente')||
+      detail.text?.includes('La data del fixing e quella del motore coincidono'))||
     detail.g8!==28||detail.width>detail.viewport+16)
     throw Error(label+' EURCHF selected-pair research context failed '+JSON.stringify(detail));
 
