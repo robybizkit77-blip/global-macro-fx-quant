@@ -1,8 +1,49 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-20T11:48:32Z",
+  "generated_at_utc": "2026-10-20T13:01:31Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-49ebe0194b607cbe827d",
+      "observed_at_utc": "2026-10-20T06:09:00Z",
+      "headline": "UK jobs market shows some recovery signs as BoE mulls rate hike",
+      "summary": "Reuters riporta: UK jobs market shows some recovery signs as BoE mulls rate hike. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "GBP"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxNUmZlU01BMnM1M2hmTVcybjZ5RkZFdWRLcnU1cllLaTN4Z0hwRHZnVTdJeEFRQ1hOSFZJb2N0VGpCY0tKVHNlVUZXSERMS2hCcnVuRFhKU1o4SDZsYVpGUFJtQlFLYktRUzFocFBUQVFEVFFSd0JiR2pyZFZvNXU1TTN6RGNfa3RMNEljRlNxVFV6alZOb2lPTUI2UkZYV2pPNmc?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-b4b512b4f512cd8a9474",
+      "observed_at_utc": "2026-10-20T11:55:54Z",
+      "headline": "French bond yields near 24-year high as new protests loom",
+      "summary": "Reuters riporta: French bond yields near 24-year high as new protests loom. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CREDIT",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxOdzNSV1VKT0t1WFIzSE9fT0Mzck9VVWRTWktvUTFOYXM5Q0w3NWZVWGEyWkROMl9FaGQ0Zk1pbU1WS3lwT1FaQkhxM2NsbEQ2cUtOY01RUi1TR3U0YVhPYlo1N2MwRG5IMzdKMjRqUmJLczAxOXJqSTgzRFMyNmZ2TFdIaldhUXRlN0daZmROMXY5SFBfakpTb3F3eWdqRW80MTl3?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-e580581f89a59b6bb498",
+      "observed_at_utc": "2026-10-20T00:42:00Z",
+      "headline": "South Korea central bank to hold rates on October 22, hike in November",
+      "summary": "Reuters riporta: South Korea central bank to hold rates on October 22, hike in November. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxNRlhEb1c1OS1kZy1wc0paMktybGc1SFAxMlZSLWVEUXZQaHdNOTExdXZOMmtWbWZ1LVNzVEVUOTNSUWxwZ3VMaXFNVDd0VUV3SWdRYTZKcXdaQlB6SWpXeFhsMjcxUkZubVB3R1Y3SUhMY1B3Z29lalI2S2FjLVh3TDNmNTVxbTZHa3pxTl83emVjdjQ5MFNJUnd1NEpIZXJUWUh1ODZPekpZTjR6b01DeWxoa1ZGQQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-a1fa76edac2b04dc449e",
       "observed_at_utc": "2026-10-20T08:02:00Z",
