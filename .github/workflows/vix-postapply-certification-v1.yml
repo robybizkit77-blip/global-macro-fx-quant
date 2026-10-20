@@ -10,6 +10,7 @@ on:
       - 'payload/part-00.txt'
       - 'live_data/manifest.v2.json'
       - '.github/workflows/vix-postapply-certification-v1.yml'
+      - 'validation/risk/test_vix_persistent_schedule_contract_v1.py'
   workflow_run:
     workflows:
       - 'VIX Persistent Apply V1'
@@ -33,6 +34,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Prove delayed Cboe checks always trigger independent follow-up certification
+        run: python -m unittest validation.risk.test_vix_persistent_schedule_contract_v1 -v
 
       - name: Resolve the VIX data commit under certification
         shell: bash
