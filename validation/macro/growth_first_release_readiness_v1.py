@@ -240,7 +240,7 @@ def build(root, now, attestations=None, feeds=None, core_ledger=None):
             core_ledger.get("observations_checked") == 16,
             "core G8 release ledger not available")
     core_missing = sorted(k for k, v in core_ledger["observations"].items()
-                          if v["release"]["status"] == "WITHHELD_EXACT_PERIOD_EVIDENCE")
+                          if v["release"]["status"].startswith("WITHHELD"))
     return {
         "schema": RECEIPT, "as_of": now.isoformat(),
         "source_lineage": "PASS",
