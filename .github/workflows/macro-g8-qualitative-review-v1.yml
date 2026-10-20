@@ -65,7 +65,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p /tmp/macro-qualitative-review
-          python validation/macro/qualitative_label_review_queue_v1.py --out /tmp/macro-qualitative-review/reapproval-queue.json --markdown /tmp/macro-qualitative-review/summary.md
+          python -m validation.macro.qualitative_label_review_queue_v1 --out /tmp/macro-qualitative-review/reapproval-queue.json --markdown /tmp/macro-qualitative-review/summary.md
           cat /tmp/macro-qualitative-review/summary.md >> "$GITHUB_STEP_SUMMARY"
           python - <<'PY'
           import json
