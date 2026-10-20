@@ -404,6 +404,23 @@ async function getState(page){
              !liveAudit.note?.includes('non prova causalità')||
              liveAudit.width>liveAudit.viewport+16)
             throw Error(name+' public EURUSD Rates/FX reaction audit incorrect '+JSON.stringify(liveAudit));
+         const decision=await page.evaluate(()=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument,
+             c=d?.getElementById('gmfq-pair-decision-bridge');
+           return {status:c?.dataset.bridgeStatus,
+             cells:[...c?.querySelectorAll('.gmfq-decision-cols>div')||[]].map(x=>x.textContent),
+             content:c?.textContent,documentWidth:d?.documentElement.scrollWidth,
+             viewport:d?.documentElement.clientWidth};
+         });
+         if(decision.status!=='CONTRO_TESI'||decision.cells.length!==3||
+            !decision.cells[0]?.includes('USD')||!decision.cells[1]?.includes('CON RISCHI')||
+            !decision.cells[2]?.includes('Coerente tra 2Y e FX')||
+            !decision.content?.includes('Una coerenza 2Y–FX non equivale a conferma della tesi')||
+            !decision.content?.includes('Non sono disponibili trigger numerici certificati')||
+            decision.documentWidth>decision.viewport+16)
+           throw Error(name+' Public EURUSD bridge conflates Rates/FX agreement with USD thesis '+JSON.stringify(decision));
+         console.log('CONTROL_ROOM_PREVIEW_PUBLIC_PAIR_DECISION_BRIDGE_GREEN',name,
+           JSON.stringify({eurusd:decision.status,viewport:decision.viewport}));
          console.log('CONTROL_ROOM_PREVIEW_PUBLIC_PAIR_FX_REACTION_GREEN',name,
            JSON.stringify({eurusd:liveAudit.status,eurusdWindow:liveAudit.dates,
              eurchf:reaction.status,viewport:liveAudit.viewport}));
