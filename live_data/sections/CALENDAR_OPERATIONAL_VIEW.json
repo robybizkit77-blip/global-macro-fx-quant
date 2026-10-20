@@ -1,36 +1,14 @@
 {
   "coverage": {
     "cb_schedule_available": 8,
-    "consensus_available_events": 5,
+    "consensus_available_events": 4,
     "g8_total": 8,
     "macro_ccy_coverage": 8,
     "previous_only_events": 0,
-    "upcoming_macro_events": 19,
-    "upcoming_total_events": 27
+    "upcoming_macro_events": 18,
+    "upcoming_total_events": 26
   },
   "events": [
-    {
-      "ccy": "CAD",
-      "consensus": "0.2%",
-      "consensus_confidence": "B",
-      "consensus_official_date_overridden": false,
-      "consensus_provider": "FOREX_FACTORY_FAIR_ECONOMY_WEEKLY",
-      "consensus_provider_last_update": null,
-      "consensus_status": "AVAILABLE",
-      "consensus_unit": null,
-      "date": "2026-10-19",
-      "event_type": "INFLATION",
-      "importance": "HIGH",
-      "previous": "-0.1%",
-      "quality": "OFFICIAL_CONFIRMED",
-      "reference_period": "September 2026",
-      "source_family": "Statistics Canada",
-      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
-      "status": "UPCOMING",
-      "time_local": "08:30",
-      "timezone": "America/Toronto",
-      "title": "Consumer Price Index"
-    },
     {
       "ccy": "GBP",
       "consensus": "19.4K",
@@ -442,7 +420,7 @@
       "title": "Gross domestic product"
     }
   ],
-  "generated_at_utc": "2026-10-18T06:47:21.965309Z",
+  "generated_at_utc": "2026-10-20T00:07:32.444873Z",
   "schema": "GMFQ_CALENDAR_OPERATIONAL_VIEW_V3",
   "scope": {
     "central_bank_schedule": "ACTIVE_OFFICIAL",
