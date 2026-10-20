@@ -38,7 +38,7 @@ items={
 "Pair leg navigation stays within research pages": "data-gmfq-study-route" in s and "['macro','tassi','banche','cot']" in s,
 "Pair fixing cannot silently update thesis": "Il fixing BCE è più recente dello snapshot della tesi" in s and "non aggiorna automaticamente il giudizio del motore" in s,
 "Cross-pair permalink remains shareable": "history.replaceState(history.state,'','#/coppie?pair='+code)" in s,
-"Pair Macro/CB side only from canonical engine": "function pairMacroRatesComparison(code,pair,rates,ois,modelDay)" in s and "s.macroSide" in s and "s.policySide" in s,
+"Pair Macro/CB side only from canonical engine": "function pairMacroRatesComparison(code,pair,rates,ois,modelDay,macroDay)" in s and "s.macroSide" in s and "s.policySide" in s,
 "Observed 2Y spread strictly matched-date official": "A.certified&&B.certified&&A.date===B.date" in s and "Spread 2Y osservato: WITHHELD" in s and "r['2Y']" in s,
 "No inferred OIS differential for mismatched instruments": "futures IB" in s and "futures CORRA" in s and "non sottrarre i loro delta" in s,
 "Pair timing and risk preserved": "pairMacroRatesComparison(code,setup.pairs[code],rates,ois,setup.price_asof)" in s and "non vengono ricalcolati con i rendimenti mostrati" in s,
@@ -54,11 +54,12 @@ items={
 "Separate canonical thesis and setup attractiveness from Rates/FX reaction": "function pairThesisReactionBridge(code,pair,modelDay,reactionHtml)" in s and "meta.structuralFav" in s and "meta.quality" in s and "frame.watch" in s,
 "Coherent Rates and FX movement is NOT automatically canonical thesis confirmation": "Una coerenza 2Y–FX non equivale a conferma della tesi" in s and "CONTRO_TESI" in s and "data-reaction-fx-side" in s,
 "No new trade entry or invalidation trigger": "Non sono disponibili trigger numerici certificati" in s and "Nessun livello, stop, score o segnale viene creato" in s,
-"Model decision bridge shown after observed market reaction": "pairThesisReactionBridge(code,setup.pairs[code],setup.price_asof,reaction)" in s and "pairMarketReactionAudit(code,rates,fx)" in s,
-"Qualitative confirm and weaken checks rely on dated model only": "function pairEvidenceChecklist(code,pair,modelDay,reactionHtml)" in s and "frame.missing" in s and "src.structuralFav" in s,
+"Model decision bridge shown after observed market reaction": "pairThesisReactionBridge(code,setup.pairs[code],setup.price_asof,reaction,macroDay)" in s and "pairMarketReactionAudit(code,rates,fx)" in s,
+"Qualitative confirm and weaken checks rely on dated model only": "function pairEvidenceChecklist(code,pair,modelDay,reactionHtml,macroDay)" in s and "frame.missing" in s and "src.structuralFav" in s,
 "Setup blockers reflect native timing, extension, positioning, and liquidity": "src.extension?.state==='ADVANCED'" in s and "src.timing?.text" in s and "src.cot?.state" in s and "src.liquidity?.state" in s,
 "Confirmation conditions cannot automatically generate technical triggers": "Nessun trigger numerico o livello tecnico viene derivato automaticamente" in s and "Domande di ricerca, non condizioni operative già soddisfatte" in s,
 "Evidence checklist belongs inside existing editorial decision frame": "pairEvidenceChecklist(code,pair,modelDay,reactionHtml)+" in s,
+"Explicit Macro baseline provenance distinct from Price": "macro_baseline_asof" in s and "Baseline Macro/Tassi" in s and "NON CORRENTE: tesi da rivalidare" in s,
 "Core data not changed": "localStorage.setItem" not in s and "github.com/repos/" not in s,
 }
 for k,v in items.items(): print(("PASS" if v else "FAIL")+": "+k)
