@@ -594,7 +594,7 @@ async function applyMarketResearch(doc){
    Structural Macro/Policy sides come ONLY from the 28-pair canonical model,
    independently dated sovereign yields ONLY from official native Rates.
    Never derive a curve/spread from mismatched or stale dates. */
-function pairMacroRatesComparison(code,pair,rates,ois,modelDay){
+function pairMacroRatesComparison(code,pair,rates,ois,modelDay,macroDay){
  const a=code.slice(0,3),b=code.slice(3,6),s=pair?.decision_frame||{};
  const safeSide=(v)=>v===a||v===b?v:null;
  const macroSide=safeSide(s.macroSide),policySide=safeSide(s.policySide);
@@ -645,9 +645,9 @@ function pairMacroRatesComparison(code,pair,rates,ois,modelDay){
  const watch=typeof s.watch==='string'?s.watch:'Non ci sono condizioni sufficienti per una lettura operativa.';
  return '<section class="gmfq-compare" id="gmfq-pair-macro-rates" aria-label="Confronto Macro Rates delle due valute">'+
   '<h3>Macro e Rates · confronto '+FLAG[a]+' '+a+' / '+FLAG[b]+' '+b+'</h3>'+
-  '<div class="gmfq-compare-score"><div><span>MACRO · modello '+htmlEscape(modelDay)+'</span>'+
+  '<div class="gmfq-compare-score"><div><span>MACRO · baseline '+htmlEscape(macroDay||'non certificata')+'</span>'+
     '<strong>'+htmlEscape(sideText(macroSide))+'</strong></div>'+
-    '<div><span>TASSI / BANCHE CENTRALI · modello '+htmlEscape(modelDay)+'</span>'+
+    '<div><span>TASSI / BANCHE CENTRALI · baseline '+htmlEscape(macroDay||'non certificata')+'</span>'+
     '<strong>'+htmlEscape(sideText(policySide))+'</strong></div></div>'+
   '<p class="gmfq-compare-explain">'+htmlEscape(verdict)+'</p>'+
   '<div class="gmfq-compare-legs">'+leg(a)+leg(b)+'</div>'+
@@ -813,7 +813,7 @@ function pairMarketReactionAudit(code,rates,fx){
 /* A dated, qualitative set of questions for the next research review,
    using only canonical engine fields and the verified FX/2Y diagnosis.
    These are NOT forecasted triggers, price levels, or executable entries. */
-function pairEvidenceChecklist(code,pair,modelDay,reactionHtml){
+function pairEvidenceChecklist(code,pair,modelDay,reactionHtml,macroDay){
  const a=code.slice(0,3),b=code.slice(3,6),src=pair?.setup||{},frame=pair?.decision_frame||{};
  const fav=[a,b].includes(src.structuralFav)?src.structuralFav:null;
  const other=fav===a?b:fav===b?a:null;
@@ -851,7 +851,7 @@ function pairEvidenceChecklist(code,pair,modelDay,reactionHtml){
  const row=(name,text)=>'<div class="gmfq-evidence-row"><b>'+htmlEscape(name)+'</b><p>'+htmlEscape(text)+'</p></div>';
  return '<section id="gmfq-pair-evidence-checklist" class="gmfq-evidence-checklist" aria-label="Condizioni qualitative da verificare">'+
   '<h4>Cosa controllare al prossimo aggiornamento</h4>'+
-  '<p class="gmfq-evidence-intro">Domande di ricerca, non condizioni operative già soddisfatte. Snapshot del modello: '+htmlEscape(modelDay)+'.</p>'+
+  '<p class="gmfq-evidence-intro">Domande di ricerca, non condizioni operative già soddisfatte. Prezzo del modello: '+htmlEscape(modelDay)+' · baseline Macro/Tassi: '+htmlEscape(macroDay||'non certificata')+(fresh(macroDay,10)?'.':' (NON CORRENTE: tesi da rivalidare).')+'</p>'+
   '<div class="gmfq-evidence-rows">'+
    row('Confermerebbe la direzione',confirm)+
    row('Indebolirebbe la lettura',weakens)+
@@ -862,7 +862,7 @@ function pairEvidenceChecklist(code,pair,modelDay,reactionHtml){
   '</section>';
 }
 
-function pairThesisReactionBridge(code,pair,modelDay,reactionHtml){
+function pairThesisReactionBridge(code,pair,modelDay,reactionHtml,macroDay){
  const base=code.slice(0,3),quote=code.slice(3,6),meta=pair?.setup||{},frame=pair?.decision_frame||{};
  const favored=meta.structuralFav===base||meta.structuralFav===quote?meta.structuralFav:null;
  const status=/data-reaction-status="(COERENTE|DIVERGENTE|NON_CONCLUSIVO|WITHHELD)"/.exec(reactionHtml||'')?.[1]||'WITHHELD';
@@ -890,14 +890,14 @@ function pairThesisReactionBridge(code,pair,modelDay,reactionHtml){
  return '<section id="gmfq-pair-decision-bridge" class="gmfq-decision-bridge" data-bridge-status="'+state+'" aria-label="Tesi, setup e reazione recente">'+
   '<h3>Dalla tesi alla decisione · cosa conta davvero</h3>'+
   '<p>Tre piani distinti. La lettura recente dei 2Y non ricalcola il modello, e la qualità di un setup non significa che sia già il momento di entrare.</p>'+
-  '<div class="gmfq-decision-cols"><div><span>TESI STRUTTURALE · '+htmlEscape(modelDay)+'</span><strong>'+
+  '<div class="gmfq-decision-cols"><div><span>TESI STRUTTURALE · baseline '+htmlEscape(macroDay||'non certificata')+'</span><strong>'+
   structural+'</strong><small>'+htmlEscape(quality)+'</small></div>'+
   '<div><span>OPERABILITÀ · SETUP DEL MODELLO</span><strong>'+htmlEscape(setupQuality)+'</strong><small>'+
   htmlEscape(setupTiming)+'</small></div>'+
   '<div><span>REAZIONE OSSERVATA · RATES / FX</span><strong>'+htmlEscape(label)+'</strong><small>'+
   htmlEscape(trend)+'</small></div></div>'+
   '<div class="gmfq-decision-watch"><strong>Cosa monitorare secondo il modello</strong><p>'+htmlEscape(watch)+'</p></div>'+
-  pairEvidenceChecklist(code,pair,modelDay,reactionHtml)+
+  pairEvidenceChecklist(code,pair,modelDay,reactionHtml,macroDay)+
   '<p class="gmfq-decision-context">Lettura prezzo del modello ('+htmlEscape(modelDay)+'): '+htmlEscape(price)+'</p>'+
   '<p class="gmfq-decision-disclaimer">Non sono disponibili trigger numerici certificati di conferma, invalidazione o ingresso in questo feed. Nessun livello, stop, score o segnale viene creato da questa sezione.</p></section>';
 }
@@ -962,15 +962,17 @@ async function mountPairResearch(doc){
   const fav=setup.pairs[code]?.setup?.structuralFav;
   const fxDay=fxOk?fx.last_as_of:null;
   const differs=fxDay&&fxDay!==setup.price_asof;
+  const macroDay=setup.macro_baseline_asof;
+  const macroWarning=!fresh(macroDay,10)?'Baseline Macro/Tassi del motore ('+(macroDay||'as-of non certificato')+') non corrente: la preferenza strutturale è storica e va rivalidata. ':'';
   const sourceMsg=differs?'Il fixing BCE è più recente dello snapshot della tesi. Il movimento dal '+
     setup.price_asof+' al '+fxDay+' non aggiorna automaticamente il giudizio del motore.':
     'La data del fixing e quella del motore coincidono, oppure il fixing più recente non è verificato.';
   panel.innerHTML='<h2 class="desk-panel-title">Percorso di ricerca · '+FLAG[a]+' '+a+' / '+FLAG[b]+' '+b+'</h2>'+
    '<div class="gmfq-path-body"><p>Prima confronta Macro e Tassi delle due valute, poi guarda Banche centrali e COT. Torna al Prezzo per verificare conferma o divergenza. Il dettaglio sopra resta la lettura canonica della tesi, non un segnale di ingresso.</p>'+
    '<div class="gmfq-path-evidence">Modello: '+htmlEscape(setup.price_asof)+' · Fixing BCE: '+htmlEscape(fxDay||'non verificato')+
-   ' · Valuta favorita dal motore: '+htmlEscape(fav||'nessuna')+'</div>'+
-   pairMacroRatesComparison(code,setup.pairs[code],rates,ois,setup.price_asof)+pairWhatChangedEvidence(code,setup.pairs[code],rates,setup.price_asof)+(reaction=>reaction+pairThesisReactionBridge(code,setup.pairs[code],setup.price_asof,reaction))(pairMarketReactionAudit(code,rates,fx))+'<div class="gmfq-path-legs">'+leg(a)+leg(b)+'</div>'+
-   '<p class="gmfq-path-warning">'+htmlEscape(sourceMsg)+' I futures indicativi non sono curve OIS e non determinano da soli un trade.</p>'+
+   ' · Baseline Macro/Tassi: '+htmlEscape(macroDay||'non certificata')+' · Valuta favorita dal motore: '+htmlEscape(fav||'nessuna')+'</div>'+
+   pairMacroRatesComparison(code,setup.pairs[code],rates,ois,setup.price_asof,macroDay)+pairWhatChangedEvidence(code,setup.pairs[code],rates,setup.price_asof)+(reaction=>reaction+pairThesisReactionBridge(code,setup.pairs[code],setup.price_asof,reaction,macroDay))(pairMarketReactionAudit(code,rates,fx))+'<div class="gmfq-path-legs">'+leg(a)+leg(b)+'</div>'+
+   '<p class="gmfq-path-warning">'+htmlEscape(macroWarning+sourceMsg)+' I futures indicativi non sono curve OIS e non determinano da soli un trade.</p>'+
    '<div class="gmfq-path-links"><button type="button" data-gmfq-study-route="screener">Apri Screener 28 coppie ↗</button></div></div>';
  };
  const obs=new MutationObserver(refresh);
