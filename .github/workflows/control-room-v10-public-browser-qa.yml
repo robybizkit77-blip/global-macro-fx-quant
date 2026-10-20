@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'validation/qa_control_room_v10_public.js'
+      - 'site/control-room-preview/ois-pricing-estimates-v1.js'
       - '.github/workflows/control-room-v10-public-browser-qa.yml'
   push:
     branches: [main]
@@ -12,6 +13,7 @@ on:
       - 'site/control-room-preview/index.html'
       - 'site/control-room-preview/home-navigation-v10.js'
       - 'validation/qa_control_room_v10_public.js'
+      - 'site/control-room-preview/ois-pricing-estimates-v1.js'
       - '.github/workflows/control-room-v10-public-browser-qa.yml'
   workflow_run:
     workflows: ['Publish Control Room Market Data V1']
@@ -49,6 +51,8 @@ jobs:
           import hashlib,os,subprocess,sys
           from pathlib import Path
           files=['site/control-room-preview/index.html','site/control-room-preview/home-navigation-v10.js']
+          if os.getenv('GITHUB_EVENT_NAME') != 'pull_request':
+              files.append('site/control-room-preview/ois-pricing-estimates-v1.js')
           for path in files:
               try:
                   expected=(subprocess.check_output(['git','show',f'origin/main:{path}'],stderr=subprocess.DEVNULL)
