@@ -27,7 +27,7 @@ small{color:#829eb5;display:block;margin-top:10px}
   // Inject only an additive navigation adapter; leave all 32 design parts unchanged.
   const tail="</body></html>";
   if(!certifiedDefault.trimEnd().endsWith(tail))throw new Error("Contratto HTML Control Room non riconosciuto");
-  const scriptTag='<script src="./home-navigation-v10.js?v=pair-evidence-20261020"><'+'/script>';
+  const scriptTag='<script src="./home-navigation-v10.js?v=cross-gold-20261020"><'+'/script>';
   const withNavigation=certifiedDefault.trimEnd().slice(0,-tail.length)+scriptTag+tail;
   document.open();
   document.write(withNavigation);
