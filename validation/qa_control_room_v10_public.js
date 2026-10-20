@@ -422,6 +422,22 @@ async function getState(page){
             !decision.content?.includes('Non sono disponibili trigger numerici certificati')||
             decision.documentWidth>decision.viewport+16)
            throw Error(name+' Public EURUSD bridge conflates Rates/FX agreement with USD thesis '+JSON.stringify(decision));
+         const evidence=await page.evaluate(()=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument,
+             c=d?.getElementById('gmfq-pair-evidence-checklist');
+           return {exists:!!c,rows:[...c?.querySelectorAll('.gmfq-evidence-row')||[]].map(x=>x.textContent),
+             content:c?.textContent,width:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth};
+         });
+         if(!evidence.exists||evidence.rows.length!==3||
+            !evidence.rows[0]?.includes('USD')||
+            !evidence.rows[1]?.includes('EUR')||
+            !evidence.rows[2]?.includes('Estensione del prezzo:')||
+            !evidence.rows[2]?.includes('Posizionamento:')||
+            !evidence.content?.includes('Nessun trigger numerico o livello tecnico viene derivato automaticamente')||
+            evidence.width>evidence.viewport+16)
+           throw Error(name+' published Pair evidence checklist missing or fabricated '+JSON.stringify(evidence));
+         console.log('CONTROL_ROOM_PREVIEW_PUBLIC_PAIR_EVIDENCE_CHECKLIST_GREEN',name,
+           JSON.stringify({eurusd:3,viewport:evidence.viewport}));
          console.log('CONTROL_ROOM_PREVIEW_PUBLIC_PAIR_DECISION_BRIDGE_GREEN',name,
            JSON.stringify({eurusd:decision.status,viewport:decision.viewport}));
          console.log('CONTROL_ROOM_PREVIEW_PUBLIC_PAIR_FX_REACTION_GREEN',name,
