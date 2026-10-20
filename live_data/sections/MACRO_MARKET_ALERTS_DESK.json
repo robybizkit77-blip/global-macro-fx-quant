@@ -1,8 +1,24 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-20T01:01:56Z",
+  "generated_at_utc": "2026-10-20T01:48:45Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-1bcdc9bede07cc389fae",
+      "observed_at_utc": "2026-10-19T00:38:00Z",
+      "headline": "US stocks rebound with AI earnings test ahead, euro falls on France unrest",
+      "summary": "Reuters riporta: US stocks rebound with AI earnings test ahead, euro falls on France unrest. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD",
+        "EUR"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxOLVFWRVZxMkJLTnJJaThPRWdnNTFRbmc2V1FTYW1CbUNZc1hNYkZKd0xCbHJTeUpzYnNzYmx6RS1aZS1FNnBUcGx0VHY5bFZmY2xTMU1nZHlJNTNpWmliOE0tcmJ5d0JpeVJlZmw3Y1RuRnJvQWZSQXJraTNtN1pGOTJ4RQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-d0757556a1020f347815",
       "observed_at_utc": "2026-10-19T17:41:13Z",
