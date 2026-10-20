@@ -25,6 +25,9 @@ FILES = (
     # Assert exact public VIX source and loaded runtime payload, not only OIS/JS.
     "live_data/sections/D.json",
     "payload/part-00.txt",
+    # Risk UI & fail-closed freshness must be delivered, not only risk data.
+    "dashboard/risk-operational-v1.js",
+    "dashboard/editorial-freshness-guard-v1.js",
 )
 
 
