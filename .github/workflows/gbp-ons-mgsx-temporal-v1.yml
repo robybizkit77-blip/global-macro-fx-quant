@@ -61,7 +61,7 @@ jobs:
         run: python validation/test_gbp_ons_source.py
       - name: Prove LFS MGSX centered-month vs canonical end-month and quarantine
         run: python -m unittest validation.macro.test_gbp_ons_temporal_guard_v1 -v
-      - name: Capture read-only observed GBP canonical temporal blocker
+      - name: Certify corrected GBP canonical July/August first-release periods
         shell: bash
         run: |
           set -euo pipefail
@@ -71,38 +71,20 @@ jobs:
           python - <<'PY'
           import json,os
           x=json.load(open('/tmp/gbp-ons-temporal/guard.json'))
-          assert x['status']=='HOLD_UNTIL_EXPLICIT_PERIOD_VINTAGE_REPAIR'
-          assert x['safe_to_persist_gbp_labour'] is False
+          assert x['status']=='ALLOW_GBP_LABOUR_SOURCE_REFRESH',x
+          assert x['safe_to_persist_gbp_labour'] is True
           assert x['historical_rebase_approved'] is False
-          assert x['canonical_source_latest_period']=='2026-07'
-          changes={row['action'] for row in x['issues']}
-          assert 'VINTAGE_OR_PERIOD_VALUE_MISMATCH' in changes
-          assert 'MISSING_FIRST_RELEASE_WINDOW' in changes
+          assert x['structural_fx_label_rebase_approved'] is False
+          assert x['canonical_source_latest_period']=='2026-08'
+          assert x['issues']==[]
           with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as out:
-              out.write('## UK ONS MGSX end-month PIT QA\n')
-              out.write('**GBP labour daily persistence: temporarily quarantined**\n\n')
-              out.write('ONS JUL 2026 center month = June-August window END August. ')
-              out.write('Canonical July currently 4.7 but May-July first release was 4.9. ')
-              out.write('Requires atomic reviewed July/August repair.\n\n')
-              out.write('Other 15 G8 inflation/labour source refreshes remain enabled.\n')
-          print('GBP_LFS_FIRST_RELEASE_MAPPING_PASS_QUARANTINE_ACTIVE')
-          PY
-          python -m validation.macro.stage_gbp_ons_dual_period_repair_v1 --out-dir /tmp/gbp-ons-temporal/staged-repair
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          p=Path('/tmp/gbp-ons-temporal/staged-repair/receipt.json')
-          x=json.loads(p.read_text())
-          assert x['status']=='STAGED_DUAL_PERIOD_NOT_PUBLISHED'
-          assert x['builder_receipt']['prior_revision']['series_value']==4.9
-          assert x['builder_receipt']['series_action']=='APPEND_NEW'
-          assert x['temporal_guard_after_stage']=='ALLOW_GBP_LABOUR_SOURCE_REFRESH'
-          assert x['safe_to_publish_without_archival_PIT'] is False
-          assert x['runtime_files_written'] is False
-          print('GBP_LFS_ATOMIC_TWO_PERIOD_CANDIDATE_STAGED_NO_WRITE_PASS')
+              out.write('## ONS UK LFS first-release source and rolling-month parity\n\n')
+              out.write('**GBP labour daily refresh UNBLOCKED**: source July end-month 4.9%, August end-month 4.7%.\n\n')
+              out.write('Economic Macro scores and the 28 FX structural judgments are NOT re-certified.\n')
+          print('GBP_LFS_FIRST_RELEASE_JULY_AUGUST_RUNTIME_CORRECT_PASS')
           PY
           git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/sections/D.json live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
-      - name: Publish blocker receipt as GitHub Actions artifact only
+      - name: Retain corrected UK source temporal audit
         if: always()
         uses: actions/upload-artifact@v4
         with:
