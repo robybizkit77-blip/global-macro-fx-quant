@@ -8,6 +8,7 @@ on:
       - 'validation/macro/gbp_ons_temporal_guard_v1.py'
       - 'validation/macro/test_gbp_ons_temporal_guard_v1.py'
       - 'validation/macro/GBP_MGSX_ROLLING_WINDOW_FIRST_RELEASE_MAP_2026-10-20.json'
+      - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
       - 'validation/test_gbp_ons_source.py'
       - 'validation/fixtures/gbp_ons_unemployment_contract.json'
       - '.github/workflows/macro-persistent-daily-v1.yml'
@@ -19,6 +20,7 @@ on:
       - 'validation/macro/gbp_ons_temporal_guard_v1.py'
       - 'validation/macro/test_gbp_ons_temporal_guard_v1.py'
       - 'validation/macro/GBP_MGSX_ROLLING_WINDOW_FIRST_RELEASE_MAP_2026-10-20.json'
+      - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
       - 'validation/test_gbp_ons_source.py'
       - 'validation/fixtures/gbp_ons_unemployment_contract.json'
       - '.github/workflows/macro-persistent-daily-v1.yml'
@@ -41,6 +43,18 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Validate registered G8 source identity matches canonical labels
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/macro/check_macro_source_registry.py > /tmp/registry-audit.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/registry-audit.json'))
+          assert d['status']=='PASS',d
+          assert d['historical_replay_certified_count']==16,d
+          print('MACRO_G8_REGISTRY_SOURCE_CONTRACT_PASS')
+          PY
       - name: Verify ONS source parser and builder still respect CPI contract
         run: python validation/test_gbp_ons_source.py
       - name: Prove LFS MGSX centered-month vs canonical end-month and quarantine
