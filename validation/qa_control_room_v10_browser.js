@@ -561,6 +561,64 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
   console.log('CONTROL_ROOM_PREVIEW_28_PAIR_RESEARCH_GREEN',label,JSON.stringify({fromHome,selected:'EURCHF',links:first.links,viewport:first.viewport}));
 
   console.log('CONTROL_ROOM_PREVIEW_G8_DETAIL_FOCUS_GREEN',label,JSON.stringify({ratesDetail,researchSummary:{fourCurves:research.fourCurves,secondary:research.secondary,docWidth:research.docWidth,viewport:research.viewport}}));
+
+  // Gold belongs to the ACTIVE v10 Cross-Asset page, not legacy root Risk UI.
+  await page.goto(url+'#/cross',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.waitForFunction(()=>{
+    const doc=document.getElementById('gmfq-page')?.contentDocument;
+    return ['SECONDARY_CURRENT','SECONDARY_HISTORICAL','WITHHELD'].includes(
+      doc?.getElementById('gmfq-cross-gold-v10')?.dataset.sourceStatus);
+  },null,{timeout:25000});
+  const gold=await page.evaluate(()=>{
+    const doc=document.getElementById('gmfq-page')?.contentDocument;
+    const panel=doc?.getElementById('gmfq-cross-gold-v10');
+    return {state:panel?.dataset.sourceStatus,asof:panel?.dataset.goldAsOf,
+      value:panel?.querySelector('.gmfq-gold-quote')?.textContent,
+      text:panel?.textContent,viewport:doc?.documentElement.clientWidth,
+      width:doc?.documentElement.scrollWidth,legacy:!!doc?.querySelector('[data-gmfq-operational="risk"]')};
+  });
+  const goldFixture=JSON.parse(fs.readFileSync(path.join(DATA,'ESTIMATED_RESIDUAL_GAPS.json'),'utf8'))
+    .lanes['GOLD.market_proxy'];
+  const goldQuote=Number(goldFixture.value).toLocaleString('it-IT',
+    {minimumFractionDigits:2,maximumFractionDigits:2});
+  if(!['SECONDARY_CURRENT','SECONDARY_HISTORICAL'].includes(gold.state)||
+     gold.asof!==goldFixture.proxy_as_of||!gold.value?.includes(goldQuote)||
+     !gold.text?.includes('Gold Price LBMA · WITHHELD')||
+     !gold.text?.includes('futures COMEX indicativo')||
+     !gold.text?.includes('non sono usate in questo confronto')||
+     !gold.text?.includes('non equivale a oro spot')||
+     gold.legacy||gold.width>gold.viewport+16){
+    throw Error(label+' v10 Gold Cross-Asset source or sizing failed '+JSON.stringify(gold));
+  }
+  console.log('CONTROL_ROOM_V10_CROSS_GOLD_SOURCE_PASS',label,
+    JSON.stringify({state:gold.state,asof:gold.asof,value:gold.value,viewport:gold.viewport}));
+
+  // Negative fixture: a missing Gold futures quote MUST be WITHHELD rather than 0.00.
+  await page.route('**/ESTIMATED_RESIDUAL_GAPS.json',async r=>{
+    const obj=JSON.parse(fs.readFileSync(path.join(DATA,'ESTIMATED_RESIDUAL_GAPS.json'),'utf8'));
+    obj.lanes['GOLD.market_proxy'].value=null;
+    await r.fulfill({status:200,contentType:'application/json',
+      headers:{'Access-Control-Allow-Origin':'*'},body:JSON.stringify(obj)});
+  });
+  await page.goto(url+'#/home',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.goto(url+'#/cross?test=invalid',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.waitForFunction(()=>{
+    const doc=document.getElementById('gmfq-page')?.contentDocument;
+    return doc?.getElementById('gmfq-cross-gold-v10')?.dataset.sourceStatus==='WITHHELD';
+  },null,{timeout:25000});
+  const bad=await page.evaluate(()=>{
+    const doc=document.getElementById('gmfq-page')?.contentDocument;
+    const el=doc?.getElementById('gmfq-cross-gold-v10');
+    return {state:el?.dataset.sourceStatus,value:el?.querySelector('.gmfq-gold-quote')?.textContent,
+      spot:el?.textContent?.includes('Gold Price LBMA · WITHHELD'),width:doc?.documentElement.scrollWidth,
+      viewport:doc?.documentElement.clientWidth};
+  });
+  if(bad.state!=='WITHHELD'||bad.value?.trim()!=='—'||!bad.spot||
+     bad.width>bad.viewport+16){
+    throw Error(label+' Gold invalid source not fail-closed '+JSON.stringify(bad));
+  }
+  console.log('CONTROL_ROOM_V10_CROSS_GOLD_WITHHELD_PASS',label,bad.state);
+
   await page.close();
  }
  await browser.close();
