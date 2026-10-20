@@ -1,0 +1,85 @@
+name: Macro FX Structural Rule Replay V1
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/macro-fx-structural-rule-replay-v1.yml'
+      - 'validation/macro/export_structural_rule_trace_v1.mjs'
+      - 'validation/macro/verify_structural_rule_trace_v1.py'
+      - 'validation/macro/test_structural_rule_trace_v1.py'
+      - 'live_data/sections/D.json'
+      - 'live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'
+      - 'payload/part-03.txt'
+      - 'payload/part-05.txt'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/macro-fx-structural-rule-replay-v1.yml'
+      - 'validation/macro/export_structural_rule_trace_v1.mjs'
+      - 'validation/macro/verify_structural_rule_trace_v1.py'
+      - 'validation/macro/test_structural_rule_trace_v1.py'
+      - 'live_data/sections/D.json'
+      - 'live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'
+      - 'payload/part-03.txt'
+      - 'payload/part-05.txt'
+  workflow_dispatch:
+  schedule:
+    - cron: '40 8 * * 1-5'
+permissions:
+  contents: read
+jobs:
+  compare-real-browser-with-independent-oracle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test deterministic pair direction rules
+        run: python -m unittest validation.macro.test_structural_rule_trace_v1 -v
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Start canonical dashboard read-only
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/structural-rule-server.log 2>&1 &
+          sleep 2
+      - name: Export actual G8 currency votes and 28 canonical pair structural frames
+        run: |
+          mkdir -p /tmp/structural-rule-replay
+          node validation/macro/export_structural_rule_trace_v1.mjs /tmp/structural-rule-replay/trace.json
+      - name: Independently replay every Macro/Policy/2Y branch and compare published 28 pairs
+        run: |
+          set -euo pipefail
+          python validation/macro/verify_structural_rule_trace_v1.py \
+            --trace /tmp/structural-rule-replay/trace.json \
+            --output /tmp/structural-rule-replay/receipt.json
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          r=json.load(open('/tmp/structural-rule-replay/receipt.json'))
+          assert r['status']=='PASS_HISTORICAL_RULE_PARITY'
+          assert r['currencies_verified']==8 and r['pairs_verified']==28
+          assert r['macro_scores_recalculated'] is False
+          assert r['dynamic_current_structural_rebase_allowed'] is False
+          print('## Structural FX source-to-rule regression')
+          print('**8/8 G8 currency votes · 28/28 pairs · Independent Python rule oracle: PASS**')
+          print('Macro baseline: '+r['model_asof'])
+          print('**Macro D.json numeric score generation remains BLOCKED**.')
+          for k,v in sorted(r['qualities'].items()):
+            print(f'- {k}: {v}')
+          PY
+          git diff --exit-code -- live_data/sections/D.json live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
+      - name: Retain trace and independent replay audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-fx-structural-rule-replay-${{ github.run_id }}
+          path: /tmp/structural-rule-replay/
+          if-no-files-found: warn
+          retention-days: 30
