@@ -51,6 +51,10 @@ items={
 "FX versus Rates audit is purely diagnostic": "data-reaction-status" in s and "non prova causalità" in s and "non genera ordini, trigger o livelli" in s,
 "Ambiguous small moves never called confirmed": "deltaSpread>=2" in s and "fxPct>=0.05" in s and "NON_CONCLUSIVO" in s,
 "Audit uses no unlicensed or fabricated FX levels": "fx.schema" not in s and "ECB_G8_PRICE_HISTORY.json" in s and "rates?.[c]" in s,
+"Separate canonical thesis and setup attractiveness from Rates/FX reaction": "function pairThesisReactionBridge(code,pair,modelDay,reactionHtml)" in s and "meta.structuralFav" in s and "meta.quality" in s and "frame.watch" in s,
+"Coherent Rates and FX movement is NOT automatically canonical thesis confirmation": "Una coerenza 2Y–FX non equivale a conferma della tesi" in s and "CONTRO_TESI" in s and "data-reaction-fx-side" in s,
+"No new trade entry or invalidation trigger": "Non sono disponibili trigger numerici certificati" in s and "Nessun livello, stop, score o segnale viene creato" in s,
+"Model decision bridge shown after observed market reaction": "pairThesisReactionBridge(code,setup.pairs[code],setup.price_asof,reaction)" in s and "pairMarketReactionAudit(code,rates,fx)" in s,
 "Core data not changed": "localStorage.setItem" not in s and "github.com/repos/" not in s,
 }
 for k,v in items.items(): print(("PASS" if v else "FAIL")+": "+k)

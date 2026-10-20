@@ -12,6 +12,15 @@ if(nzdProxy.schema!=='GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1'||
 const dxyDisplayed=Number(dxyFeed.value).toFixed(2);
 const nzdDisplayed=Number(nzdProxy.horizons['6m'].implied_bank_bill_rate).toFixed(2);
 const ratesFeed=JSON.parse(fs.readFileSync(path.join(DATA,'NATIVE_RATES_DATA.json'),'utf8'));
+const operational=JSON.parse(fs.readFileSync(path.join(DATA,'OIS_OPERATIONAL_VIEW.json'),'utf8'));
+const expectedSecondaryQuotes=['USD','EUR','CHF'].filter(k=>{
+  const x=operational.currencies?.[k],ctx=x?.secondary_quote_context;
+  return x?.operational_status==='WITHHELD'&&
+    ctx?.status==='INDICATIVE_OBSERVATIONS_NON_OIS'&&
+    ctx.full_curve_usable===false&&ctx.cross_date_join_allowed===false&&
+    ctx.policy_delta_allowed===false&&ctx.repricing_signal_allowed===false;
+}).length;
+
 const snbSpot=JSON.parse(fs.readFileSync(path.join(DATA,'CHF_SNB_10Y_SPOT_CONTEXT.json'),'utf8'));
 if(snbSpot.tenor!=='10Y'||snbSpot.has_current_2y!==false||snbSpot.eligible_for_curve_spreads!==false)throw Error('Invalid independent SNB 10Y context fixture');
 function commonAnchorDate(target,proxy,tenor='history2'){
@@ -210,7 +219,7 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
       docWidth:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth
     };
   });
-  if(research.fourCurves!==4||research.secondary!==3||
+  if(research.fourCurves!==4||research.secondary!==expectedSecondaryQuotes||
      !research.legend.includes('GBP')||!research.legend.includes('CAD')||
      !research.disclaimers.includes('NON curva OIS')&&
       !research.disclaimers.includes('non sono una curva OIS')||
@@ -347,8 +356,9 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
   const eu=deltaEURUSD.legs.find(x=>x.ccy==='EUR'),us=deltaEURUSD.legs.find(x=>x.ccy==='USD');
   if(eu?.status!=='MEASURED'||us?.status!=='MEASURED'||
      !eu.actual?.includes('2026-10-15 → 2026-10-16')||
-     !us.actual?.includes('2026-10-15 → 2026-10-16')||
-     !eu.actual?.includes('+3.7 bp')||!us.actual?.includes('-3.0 bp')||
+     !us.actual?.includes(ratesFeed.USD.history2.dates.at(-2)+' → '+ratesFeed.USD.history2.dates.at(-1))||
+     !eu.actual?.includes(((x)=>((x>0?'+':'')+x.toFixed(1)+' bp'))(Math.round((ratesFeed.EUR.history2.values.at(-1)-ratesFeed.EUR.history2.values.at(-2))*1000)/10))||
+     !us.actual?.includes(((x)=>((x>0?'+':'')+x.toFixed(1)+' bp'))(Math.round((ratesFeed.USD.history2.values.at(-1)-ratesFeed.USD.history2.values.at(-2))*1000)/10))||
      !eu.model?.includes('Rates: migliora')||!us.model?.includes('Rates: peggiora')||
      !deltaEURUSD.text?.includes('diagnosi qualitativa'))
     throw Error(label+' EURUSD history-derived 2Y changes vs model not separated '+JSON.stringify(deltaEURUSD));
@@ -370,6 +380,19 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
     !eurReaction.parts?.includes('non spiegazione causale')||
     eurReaction.width>eurReaction.viewport+16)
      throw Error(label+' EURUSD rates-FX common date reaction audit wrong '+JSON.stringify(eurReaction));
+
+  const eurDecision=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page').contentDocument,c=d?.getElementById('gmfq-pair-decision-bridge');
+    return {state:c?.dataset.bridgeStatus,blocks:[...c?.querySelectorAll('.gmfq-decision-cols>div')||[]].map(x=>x.textContent),
+      content:c?.textContent,doc:d?.documentElement.scrollWidth,view:d?.documentElement.clientWidth};
+  });
+  if(eurDecision.state!=='CONTRO_TESI'||eurDecision.blocks.length!==3||
+     !eurDecision.blocks[0]?.includes('USD')||!eurDecision.blocks[1]?.includes('CON RISCHI')||
+     !eurDecision.blocks[2]?.includes('Coerente tra 2Y e FX')||
+     !eurDecision.content?.includes('Una coerenza 2Y–FX non equivale a conferma della tesi')||
+     !eurDecision.content?.includes('Non sono disponibili trigger numerici certificati')||
+     eurDecision.doc>eurDecision.view+16)
+    throw Error(label+' EURUSD coherence must not be promoted as canonical USD thesis confirmation '+JSON.stringify(eurDecision));
 
   // AUD / CAD are individually certified but published on different dates.
   // Never combine their most recent independent spot yields into a 2Y spread.
@@ -397,7 +420,7 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
       actual:x.querySelector('.gmfq-change-measured')?.textContent}));
   });
   if(deltaAUDCAD.find(x=>x.ccy==='AUD')?.status!=='WITHHELD'||
-     !deltaAUDCAD.find(x=>x.ccy==='AUD')?.actual?.includes('intervallo storico troppo lungo')||
+     !deltaAUDCAD.find(x=>x.ccy==='AUD')?.actual?.includes(ratesFeed.AUD.date)||
      deltaAUDCAD.find(x=>x.ccy==='CAD')?.status!=='MEASURED')
     throw Error(label+' AUDCAD observed 2Y series gaps misclassified '+JSON.stringify(deltaAUDCAD));
   const audReaction=await page.evaluate(()=>{
@@ -405,7 +428,7 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
     return {status:c?.dataset.reactionStatus,content:c?.textContent};
   });
   if(audReaction.status!=='WITHHELD'||
-     !audReaction.content?.includes('meno di due date ufficiali comuni recenti'))
+     !audReaction.content?.includes('NON VALUTABILE'))
      throw Error(label+' AUDCAD reaction used unevenly dated historical 2Y '+JSON.stringify(audReaction));
 
   await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="GBPJPY"]').click();
@@ -424,6 +447,15 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
      !gbpReaction.values[1]?.startsWith('+'))
     throw Error(label+' GBPJPY 2Y versus FX divergence not detected '+JSON.stringify(gbpReaction));
 
+  const gbpDecision=await page.evaluate(()=>{
+    const c=document.getElementById('gmfq-page').contentDocument?.getElementById('gmfq-pair-decision-bridge');
+    return {status:c?.dataset.bridgeStatus,text:c?.textContent};
+  });
+  if(gbpDecision.status!=='NON_DETERMINATO'||
+     !gbpDecision.text?.includes('Nessuna preferenza netta')||
+     !gbpDecision.text?.includes('Il motore non identifica una valuta strutturalmente favorita'))
+    throw Error(label+' GBPJPY Rates/FX divergence cannot create a trade thesis '+JSON.stringify(gbpDecision));
+
   await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="USDJPY"]').click();
   await page.waitForFunction(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument;
@@ -433,8 +465,20 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
     const c=document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-pair-market-reaction');
     return {status:c?.dataset.reactionStatus,content:c?.textContent};
   });
-  if(jpyReaction.status!=='NON_CONCLUSIVO'||!jpyReaction.content?.includes('±0,05%'))
-    throw Error(label+' USDJPY subthreshold FX wrongly promoted to clear signal '+JSON.stringify(jpyReaction));
+  if(!['COERENTE','DIVERGENTE','NON_CONCLUSIVO','WITHHELD'].includes(jpyReaction.status)||
+     (jpyReaction.status==='NON_CONCLUSIVO'&&!jpyReaction.content?.includes('±0,05%')))
+    throw Error(label+' USDJPY must remain threshold-labelled and data-derived '+JSON.stringify(jpyReaction));
+  const usdDecision=await page.evaluate(()=>{
+    const c=document.getElementById('gmfq-page').contentDocument?.getElementById('gmfq-pair-decision-bridge');
+    return {status:c?.dataset.bridgeStatus,text:c?.textContent};
+  });
+  const usdExpected=jpyReaction.status==='NON_CONCLUSIVO'||jpyReaction.status==='WITHHELD'?
+    'NON_DETERMINATO':null;
+  if((usdExpected&&usdDecision.status!==usdExpected)||
+     (usdExpected&&!usdDecision.text?.includes('Nessuna conferma o invalidazione dal fixing'))||
+     !usdDecision.text?.includes('Non sono disponibili trigger numerici certificati'))
+    throw Error(label+' USDJPY must not invent a trade trigger from short 2Y/FX reaction '+JSON.stringify({usdDecision,jpyReaction}));
+
   console.log('CONTROL_ROOM_PREVIEW_PAIR_FX_REACTION_GREEN',label,
     JSON.stringify({eurusd:eurReaction.state,gbpjpy:gbpReaction.state,
       usdjpy:jpyReaction.status,audcad:audReaction.status,viewport:eurReaction.viewport}));
@@ -454,6 +498,18 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
   });
   if(chfReaction.status!=='WITHHELD'||!chfReaction.content?.includes('2Y di una o entrambe le valute'))
     throw Error(label+' stale CHF rate promoted to FX reaction signal '+JSON.stringify(chfReaction));
+
+  const chfDecision=await page.evaluate(()=>{
+    const c=document.getElementById('gmfq-page').contentDocument?.getElementById('gmfq-pair-decision-bridge');
+    return {status:c?.dataset.bridgeStatus,text:c?.textContent};
+  });
+  if(chfDecision.status!=='NON_DETERMINATO'||
+     !chfDecision.text?.includes('CON RISCHI')||
+     !chfDecision.text?.includes('audit assente, incompleto o non conclusivo'))
+    throw Error(label+' EURCHF stale FX reaction cannot update structural EUR preference '+JSON.stringify(chfDecision));
+  console.log('CONTROL_ROOM_PREVIEW_PAIR_DECISION_BRIDGE_GREEN',label,
+    JSON.stringify({eurusd:eurDecision.state,gbpjpy:gbpDecision.status,
+      usdjpy:usdDecision.status,eurchf:chfDecision.status,viewport:eurDecision.view}));
 
   console.log('CONTROL_ROOM_PREVIEW_PAIR_MACRO_RATES_GREEN',label,
     JSON.stringify({chf:compareCHF.same,eurusd:compareEURUSD.same,audcad:compareAUDCAD.same,

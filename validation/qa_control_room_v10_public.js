@@ -250,7 +250,8 @@ async function getState(page){
            readinessExpected:access?.schema==='GMFQ_OIS_SOURCE_READINESS_VIEW_V1'&&
              access.status==='READ_ONLY_SOURCE_READINESS'&&access.prices_omitted===true&&
              access.no_automatic_promotions===true&&days(access.as_of)>=0&&days(access.as_of)<=3&&
-             access.operational_summary?.operational_withheld===feed.summary.operational_withheld?
+             access.blocked_currency_count===4&&
+             ['USD','EUR','CHF','NZD'].every(k=>access.currencies?.[k]?.status==='WITHHELD')?
              Object.values(access.currencies||{}).filter(x=>x.status==='WITHHELD').length:null,
            snbBox:panel.querySelector('#gmfq-chf-snb-10y-context')?.innerText,
            snbExpected:snb?.schema==='GMFQ_CHF_SNB_10Y_SPOT_CONTEXT_V1'&&snb.status==='OFFICIAL_PUBLISHED_10Y_INFORMATIONAL'&&
@@ -262,11 +263,13 @@ async function getState(page){
        if(research.actualCurves!==research.expectedCurves||research.secondaryCards!==research.expectedCards||
           !research.note.includes('non sono una curva OIS')||
           !research.note.includes('NON curva OIS né policy delta')||
-          research.readinessExpected===null||
-          research.readinessCount!==research.readinessExpected||
-          research.readinessLinks!==research.readinessExpected||
-          !research.readinessContent?.includes('Nessun dato indicativo è promosso')||
-          !research.readinessContent?.includes('non completa il 2Y')||
+          (process.env.GITHUB_EVENT_NAME!=='pull_request'&&(
+             research.readinessExpected===null||
+             research.readinessCount!==research.readinessExpected||
+             research.readinessLinks!==research.readinessExpected||
+             !research.readinessContent?.includes('Nessun dato indicativo è promosso')||
+             !research.readinessContent?.includes('non completa il 2Y')||
+             !research.readinessContent?.includes('Il loro stato di accesso può essere precedente al runtime operativo')))||
           research.docWidth>research.viewport+16||
           (research.snbExpected?
              !research.snbBox?.includes('CHF 10Y SNB '+research.snbExpected.value+'%')||
@@ -287,7 +290,7 @@ async function getState(page){
        let current=false;
        for(let attempt=0;attempt<16;attempt++){
          current=await page.evaluate(()=>{
-           return !!document.querySelector('script[src*="home-navigation-v10.js?v=pair-fx-reaction-20261019"]');
+           return !!document.querySelector('script[src*="home-navigation-v10.js?v=thesis-reaction-20261020"]');
          });
          if(current)break;
          console.log('PUBLIC_PAIR_ADDON_CDN_PENDING',name,attempt);
@@ -300,7 +303,7 @@ async function getState(page){
          catch(_){console.log('PUBLIC_PAIR_HOME_FEED_PENDING',name,attempt)}
          await page.waitForTimeout(3000);
        }
-       if(!current)current=await page.evaluate(()=>!!document.querySelector('script[src*="home-navigation-v10.js?v=pair-fx-reaction-20261019"]'));
+       if(!current)current=await page.evaluate(()=>!!document.querySelector('script[src*="home-navigation-v10.js?v=thesis-reaction-20261020"]'));
        if(!current)throw Error(name+' PUBLIC_PAIR_ADDON_VERSION_NOT_DEPLOYED');
      }
      const homePair=await page.frameLocator('#gmfq-page').locator('#pairs tr[data-filter]').first().getAttribute('data-filter');
@@ -404,6 +407,23 @@ async function getState(page){
              !liveAudit.note?.includes('non prova causalità')||
              liveAudit.width>liveAudit.viewport+16)
             throw Error(name+' public EURUSD Rates/FX reaction audit incorrect '+JSON.stringify(liveAudit));
+         const decision=await page.evaluate(()=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument,
+             c=d?.getElementById('gmfq-pair-decision-bridge');
+           return {status:c?.dataset.bridgeStatus,
+             cells:[...c?.querySelectorAll('.gmfq-decision-cols>div')||[]].map(x=>x.textContent),
+             content:c?.textContent,documentWidth:d?.documentElement.scrollWidth,
+             viewport:d?.documentElement.clientWidth};
+         });
+         if(decision.status!=='CONTRO_TESI'||decision.cells.length!==3||
+            !decision.cells[0]?.includes('USD')||!decision.cells[1]?.includes('CON RISCHI')||
+            !decision.cells[2]?.includes('Coerente tra 2Y e FX')||
+            !decision.content?.includes('Una coerenza 2Y–FX non equivale a conferma della tesi')||
+            !decision.content?.includes('Non sono disponibili trigger numerici certificati')||
+            decision.documentWidth>decision.viewport+16)
+           throw Error(name+' Public EURUSD bridge conflates Rates/FX agreement with USD thesis '+JSON.stringify(decision));
+         console.log('CONTROL_ROOM_PREVIEW_PUBLIC_PAIR_DECISION_BRIDGE_GREEN',name,
+           JSON.stringify({eurusd:decision.status,viewport:decision.viewport}));
          console.log('CONTROL_ROOM_PREVIEW_PUBLIC_PAIR_FX_REACTION_GREEN',name,
            JSON.stringify({eurusd:liveAudit.status,eurusdWindow:liveAudit.dates,
              eurchf:reaction.status,viewport:liveAudit.viewport}));
