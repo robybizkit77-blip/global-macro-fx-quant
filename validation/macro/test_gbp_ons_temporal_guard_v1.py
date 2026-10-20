@@ -27,33 +27,43 @@ class GBPTemporalGuardTests(unittest.TestCase):
             mutate(data)
         return build(asof=NOW,**data)
 
-    def test_current_canonical_data_quarantined_not_relabelled(self):
+    def old_prepromotion_snapshot(self):
+        """Reconstruct OLD broken July center-month import, never a source rewrite."""
+        d=copy.deepcopy(self.original)
+        row=next(x for x in d["series"]["GBP"] if x["id"]=="UK_UNEMP_RATE_history_value")
+        if str(row["last_date"])[:7]=="2026-08":
+            assert row["dates"][-2:] == ["2026-07-01","2026-08-01"]
+            assert row["values"][-2:] == [4.9,4.7]
+            row["dates"].pop()
+            row["values"].pop()
+            row["values"][-1]=4.7
+            row["last_date"]="2026-07-01"
+            row["last_value"]=4.7
+            h=d["heat"]["currencies"]["GBP"]["labour"]
+            h["history"].pop()
+            h["history"][-1]=4.7
+            h["as_of"]="2026-07-01"
+            h["latest_value"]=4.7
+            d["heat"]["currencies"]["GBP"]["as_of_detail"]["unemployment"]="2026-07-01"
+        return d
+
+    def test_promoted_canonical_data_allows_GBP_refresh_but_not_FX_rebase(self):
         r=self.run_guard()
-        self.assertEqual(r["status"], "HOLD_UNTIL_EXPLICIT_PERIOD_VINTAGE_REPAIR")
-        self.assertFalse(r["safe_to_persist_gbp_labour"])
+        self.assertEqual(r["status"], "ALLOW_GBP_LABOUR_SOURCE_REFRESH")
+        self.assertTrue(r["safe_to_persist_gbp_labour"])
+        self.assertEqual(r["canonical_source_latest_period"],"2026-08")
         self.assertFalse(r["historical_rebase_approved"])
         self.assertFalse(r["structural_fx_label_rebase_approved"])
-        self.assertEqual(r["official_periods_checked"], 3)
-        self.assertEqual(r["canonical_source_latest_period"], "2026-07")
-        self.assertEqual(len(r["issues"]), 2)
-        self.assertIn("VINTAGE_OR_PERIOD_VALUE_MISMATCH", {x["action"] for x in r["issues"]})
-        self.assertIn("MISSING_FIRST_RELEASE_WINDOW", {x["action"] for x in r["issues"]})
-
-    def test_complete_repaired_july_and_august_source_allows_only_refresh(self):
-        def repaired(d):
-            x=next(x for x in d["series"]["GBP"] if x["id"]=="UK_UNEMP_RATE_history_value")
-            self.assertEqual(x["dates"][-1][:7],"2026-07")
-            x["values"][-1]=4.9
-            x["dates"].append("2026-08-01")
-            x["values"].append(4.7)
-            x["last_date"]="2026-08-01"
-            x["last_value"]=4.7
-            d["heat"]["currencies"]["GBP"]["labour"]["as_of"]="2026-08-01"
-        r=self.run_guard(repaired)
-        self.assertEqual(r["status"],"ALLOW_GBP_LABOUR_SOURCE_REFRESH")
-        self.assertTrue(r["safe_to_persist_gbp_labour"])
-        self.assertFalse(r["historical_rebase_approved"])
         self.assertEqual(r["issues"],[])
+
+    def test_pre_promotion_unrepaired_source_still_quarantined(self):
+        r=build(asof=NOW,**self.old_prepromotion_snapshot())
+        self.assertEqual(r["status"],"HOLD_UNTIL_EXPLICIT_PERIOD_VINTAGE_REPAIR")
+        self.assertFalse(r["safe_to_persist_gbp_labour"])
+        self.assertEqual(r["canonical_source_latest_period"],"2026-07")
+        self.assertEqual(len(r["issues"]),2)
+        self.assertEqual({x["action"] for x in r["issues"]},
+                         {"VINTAGE_OR_PERIOD_VALUE_MISMATCH","MISSING_FIRST_RELEASE_WINDOW"})
 
     def test_ons_jul_center_is_not_jul_end(self):
         value=uk_lfs_rolling_window("2026-07-01")
@@ -97,7 +107,7 @@ class GBPTemporalGuardTests(unittest.TestCase):
         self.assertIn("HEATMAP_OBSERVATION_PERIOD_MISMATCH",{x["action"] for x in r["issues"]})
 
     def test_two_period_stage_replays_original_july_and_august(self):
-        r=stage(today=NOW)
+        r=stage(today=NOW,**self.old_prepromotion_snapshot())
         self.assertEqual(r["status"],"STAGED_DUAL_PERIOD_NOT_PUBLISHED")
         self.assertEqual(r["as_of"],"2026-08")
         self.assertEqual(r["builder_receipt"]["series_action"],"APPEND_NEW")
@@ -108,7 +118,7 @@ class GBPTemporalGuardTests(unittest.TestCase):
         self.assertFalse(r["runtime_files_written"])
 
     def test_two_period_stage_fails_on_unknown_canonical_july(self):
-        data=copy.deepcopy(self.original)
+        data=self.old_prepromotion_snapshot()
         x=next(x for x in data["series"]["GBP"] if x["id"]=="UK_UNEMP_RATE_history_value")
         x["values"][-1]=4.8
         with self.assertRaisesRegex(ValueError,"unexpected latest source point"):
