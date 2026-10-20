@@ -92,7 +92,7 @@ class HandoffTests(unittest.TestCase):
             classify(self.candidate, self.prior, self.d, self.ecb, self.today)
 
     def test_reversed_pair_duplicate_rejected(self):
-        self.candidate["pairs"].pop("USDEUR")
+        self.candidate["pairs"].pop("USDGBP")
         self.candidate["pairs"]["EURUSD"] = {
             "canonical_pair": "EUR/USD", "setup": {"structuralFav": "EUR"},
             "decision_frame": {}, "transition": {}, "relative_dynamics": {},
