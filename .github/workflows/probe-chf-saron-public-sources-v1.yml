@@ -8,6 +8,10 @@ on:
       - 'validation/cb_pricing/probe_chf_saron_public_sources_v1.py'
       - 'validation/cb_pricing/test_probe_chf_saron_public_sources_v1.py'
       - 'validation/cb_pricing/OIS_SOURCE_ACCESS_PLAN_V1_2026-10-19.json'
+      - 'validation/cb_pricing/CHF_SIX_SARON_HISTORICAL_CONTEXT_SOURCE_CONTRACT_V1_2026-10-20.json'
+      - 'validation/cb_pricing/audit_chf_six_saron_context_v1.py'
+      - 'validation/cb_pricing/test_audit_chf_six_saron_context_v1.py'
+      - 'validation/cb_pricing/CHF_SIX_SARON_SOURCE_LICENSE_REVIEW_2026-10-20.md'
   workflow_dispatch:
 
 permissions:
@@ -29,6 +33,26 @@ jobs:
 
       - name: Test exchange identity and fail-closed quote boundaries
         run: python validation/cb_pricing/test_probe_chf_saron_public_sources_v1.py
+
+      - name: Test official SIX historical-context semantics and license barriers
+        run: |
+          set -euo pipefail
+          python -m unittest validation.cb_pricing.test_audit_chf_six_saron_context_v1 -v
+          python -m validation.cb_pricing.audit_chf_six_saron_context_v1 --out /tmp/chf-six-saron-context-audit.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/chf-six-saron-context-audit.json'))
+          assert d['status']=='PASS_SOURCE_SEMANTICS__WITHHELD_LICENSE_AND_FETCH'
+          assert len(d['authoritative_symbols'])==4
+          for key in ('forward_policy_curve_available','ois_forward_level_available',
+                      'policy_repricing_1d_1w_available','official_chf_ois_promotion_eligible',
+                      'derived_data_rights_certified','automated_ingestion_authorized',
+                      'numeric_source_pit_snapshot_certified','safe_to_update_live_ois',
+                      'safe_to_change_control_room','writes_live_data'):
+              assert d[key] is False, key
+          assert d['published_market_rates'] is None
+          print('SIX_SARON_CONTEXT_GOVERNANCE_PASS_WITHHELD')
+          PY
 
       - name: Probe ICE SA3 and current Eurex FSR3 official product pages
         run: |
@@ -62,5 +86,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: chf-saron-readonly-source-proof
-          path: /tmp/chf-saron-source-proof.json
+          path: |
+            /tmp/chf-saron-source-proof.json
+            /tmp/chf-six-saron-context-audit.json
           if-no-files-found: error

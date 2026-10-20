@@ -1,0 +1,71 @@
+{
+  "schema": "GMFQ_CHF_SIX_SARON_CONTEXT_CONTRACT_V1",
+  "reviewed_as_of": "2026-10-20",
+  "source": {
+    "authority": "SIX Swiss Exchange / SIX Index AG",
+    "benchmark": "Swiss Reference Rates",
+    "official_page": "https://www.six-group.com/en/market-data/indices/switzerland/saron.html",
+    "licensing_faq": "https://www.six-group.com/dam/download/market-data/indices/swiss-reference-rates/six-saron-faq-en.pdf",
+    "licensing_faq_revision": "2026-07-01"
+  },
+  "usage": {
+    "context_class": "HISTORICAL_REALIZED_MONEY_MARKET_ONLY",
+    "release_latency": "AT_LEAST_ONE_CHF_BUSINESS_DAY_FOR_COMPOUND_HISTORY",
+    "raw_historical_display_right": "CONDITIONAL_DELAYED_REDISTRIBUTION_PER_SIX_FAQ_Q9",
+    "internal_derived_data_right": "WITHHELD_PENDING_APPLICATION_OF_SIX_FAQ_Q11_TO_PERSONAL_RESEARCH",
+    "external_derived_data_right": "WITHHELD_LICENSE_OR_WRITTEN_CLEARANCE_REQUIRED",
+    "automated_download_right": "WITHHELD_NOT_ESTABLISHED",
+    "copyrighted_bulk_data_download_proven": false,
+    "official_numeric_snapshot_attested": false,
+    "public_dashboard_permission_certified": false
+  },
+  "instruments": {
+    "SARON": {
+      "symbol": "SARON",
+      "isin": "CH0049613687",
+      "tenor": "ON",
+      "type": "OVERNIGHT_PAST_FIXING",
+      "direction": "REALIZED",
+      "forward_looking": false
+    },
+    "SAR3MC": {
+      "symbol": "SAR3MC",
+      "isin": "CH0477123902",
+      "tenor": "3M",
+      "type": "SARON_COMPOUND_IN_ARREARS",
+      "direction": "BACKWARD_LOOKING",
+      "forward_looking": false
+    },
+    "SAR6MC": {
+      "symbol": "SAR6MC",
+      "isin": "CH0477123910",
+      "tenor": "6M",
+      "type": "SARON_COMPOUND_IN_ARREARS",
+      "direction": "BACKWARD_LOOKING",
+      "forward_looking": false
+    },
+    "SAR12MC": {
+      "symbol": "SAR12MC",
+      "isin": "CH0477123936",
+      "tenor": "12M",
+      "type": "SARON_COMPOUND_IN_ARREARS",
+      "direction": "BACKWARD_LOOKING",
+      "forward_looking": false
+    }
+  },
+  "deployment": {
+    "sidecar_only": true,
+    "read_only": true,
+    "no_numeric_rates_in_receipt": true,
+    "no_policy_repricing_signal": true,
+    "no_automatic_official_promotion": true,
+    "no_new_live_data_snapshot": true,
+    "no_dashboard_change": true,
+    "no_new_scheduled_workflow": true,
+    "no_new_chatgpt_automation": true,
+    "no_ois_curve_substitution": true
+  },
+  "verdict": "DOCUMENTED_SOURCE_WITHHELD_PENDING_NUMERIC_ACCESS_AND_LICENSE_CLEARANCE",
+  "note": "Source identifiers are grounded in SIX official reference table. FREE delayed historical display is not a blanket automation or derived-analytics license. No official value or acquisition endpoint is certified. Never replace CHF forward OIS with retroactive compound benchmarks.",
+  "currency": "CHF"
+}
