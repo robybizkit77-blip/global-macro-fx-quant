@@ -1,85 +1,131 @@
 name: Pair Setup Operational View V1
 
+# PRICE CONTEXT ONLY: model Macro/CB baseline cannot auto-rebase.
 on:
-  push:
-    branches:
-      - website-reference-lock-2026-10-16
+  pull_request:
+    branches: [main]
     paths:
-      - 'validation/export_pair_setup_operational_view.mjs'
       - '.github/workflows/pair-setup-operational-view-v1.yml'
+      - 'validation/export_pair_setup_operational_view.mjs'
+      - 'validation/pair_price_handoff_contract_v2.py'
+      - 'validation/test_pair_price_handoff_contract_v2.py'
+      - 'live_data/sections/ECB_G8_PRICE_HISTORY.json'
+      - 'live_data/sections/D.json'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/pair-setup-operational-view-v1.yml'
+      - 'validation/export_pair_setup_operational_view.mjs'
+      - 'validation/pair_price_handoff_contract_v2.py'
+      - 'validation/test_pair_price_handoff_contract_v2.py'
+      - 'live_data/sections/ECB_G8_PRICE_HISTORY.json'
+      - 'live_data/sections/D.json'
+  workflow_run:
+    workflows:
+      - 'Price History Persistent Daily V1'
+      - 'Macro Persistent Daily V1'
+      - 'Price Persistent Daily V1'
+    types: [completed]
   workflow_dispatch:
+  schedule:
+    - cron: '20 19 * * 1-5'
 
 permissions:
   contents: write
 
 concurrency:
-  group: pair-setup-operational-view-v1
-  cancel-in-progress: true
+  group: pair-setup-operational-view-main
+  cancel-in-progress: false
 
 jobs:
   export:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 18
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
           fetch-depth: 2
           persist-credentials: true
-
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test PIT Price handoff
+        run: python -m unittest validation.test_pair_price_handoff_contract_v2 -v
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-
       - name: Install Chromium
         run: |
           npm init -y >/dev/null 2>&1
-          npm install --save-dev playwright
+          npm install --no-save playwright
           npx playwright install --with-deps chromium
-
       - name: Start canonical dashboard
         run: |
-          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/gmfq-dashboard.log 2>&1 &
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/gmfq-pair-dashboard.log 2>&1 &
           sleep 2
-
-      - name: Export canonical Pair setup state
+      - name: Export 28 canonical Pair contexts with official ECB Price
+        shell: bash
         run: |
           set -euo pipefail
           mkdir -p /tmp/pair-setup
           node validation/export_pair_setup_operational_view.mjs /tmp/pair-setup/PAIR_SETUP_OPERATIONAL_VIEW.json | tee /tmp/pair-setup/export.log
-          node - <<'NODE'
-          const fs=require('fs');
-          const x=JSON.parse(fs.readFileSync('/tmp/pair-setup/PAIR_SETUP_OPERATIONAL_VIEW.json','utf8'));
-          if(x.schema!=='GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1'||x.status!=='CURRENT_CANONICAL_ENGINE') throw new Error('schema/status');
-          if(x.pair_count!==28||Object.keys(x.pairs||{}).length!==28) throw new Error('pair completeness');
-          if(x.thesis_is_not_entry!==true||x.entry_level_published!==false) throw new Error('entry separation contract');
-          const allowed=new Set(['PULITO','CON RISCHI','DA CONFERMARE','DA MONITORARE','NON VALUTABILE']);
-          for(const [pair,row] of Object.entries(x.pairs)){
-            const q=row.setup?.quality||row.setup?.qualityLabel||row.setup?.label;
-            if(!allowed.has(q)) throw new Error(`${pair}: unsupported quality ${q}`);
-          }
-          console.log('PAIR_SETUP_CONTRACT_PASS',x.price_asof,x.quality_distribution);
-          NODE
-
-      - name: Persist branch snapshot for website integration
+      - name: Reject changed Macro preferences or stale Price
+        id: handoff
+        shell: bash
         run: |
           set -euo pipefail
+          python validation/pair_price_handoff_contract_v2.py \
+            --candidate /tmp/pair-setup/PAIR_SETUP_OPERATIONAL_VIEW.json \
+            --output /tmp/pair-setup/handoff-receipt.json
+          STATUS="$(python3 -c "import json; print(json.load(open('/tmp/pair-setup/handoff-receipt.json'))['status'])")"
+          echo "status=$STATUS" >> "$GITHUB_OUTPUT"
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          x=json.load(open('/tmp/pair-setup/handoff-receipt.json'))
+          print('## Pair Setup — Price handoff')
+          print('- Status: '+x['status'])
+          print('- Macro baseline: '+str(x.get('macro_asof'))+' (not automatically rebased)')
+          print('- Price: '+str(x.get('candidate_price_asof')))
+          print('- No new entries, stops or structural Macro scores')
+          PY
+      - name: Persist validated Price-only Pair context on main
+        if: >-
+          github.event_name != 'pull_request' &&
+          steps.handoff.outputs.status == 'PRICE_CONTEXT_UPDATE'
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE_SHA="$(git rev-parse HEAD)"
+          test "$(git ls-remote origin refs/heads/main | awk '{print $1}')" = "$BASE_SHA" || {
+            echo 'Main moved since validation. Safe retry required.' >&2; exit 1;
+          }
           cp /tmp/pair-setup/PAIR_SETUP_OPERATIONAL_VIEW.json live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
-          if git diff --cached --quiet; then
-            echo PAIR_SETUP_NO_CHANGE
-            exit 0
-          fi
-          git commit -m 'Refresh canonical Pair setup operational view'
-          git push origin HEAD:website-reference-lock-2026-10-16
-          echo PAIR_SETUP_BRANCH_SNAPSHOT_PERSISTED
-
-      - name: Upload Pair setup evidence
+          git diff --cached --quiet && { echo 'No changed canonical Pair dataset'; exit 0; }
+          git commit -m 'Refresh Pair Price context from ECB (Macro baseline frozen)'
+          test "$(git ls-remote origin refs/heads/main | awk '{print $1}')" = "$BASE_SHA" || {
+            echo 'Main moved during Pair persistence. Safe retry required.' >&2; exit 1;
+          }
+          git push origin HEAD:main
+          echo PAIR_PRICE_HANDOFF_MAIN_PERSISTED
+      - name: Verify no write for PR or blocked Macro rebase
+        if: >-
+          github.event_name == 'pull_request' ||
+          steps.handoff.outputs.status != 'PRICE_CONTEXT_UPDATE'
+        run: |
+          git diff --exit-code -- live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
+          echo PAIR_HANDOFF_NO_WRITE
+      - name: Upload Pair Price handoff evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pair-setup-operational-view-${{ github.run_id }}
+          name: pair-setup-price-handoff-${{ github.run_id }}
           path: /tmp/pair-setup/
           if-no-files-found: warn
           retention-days: 30
