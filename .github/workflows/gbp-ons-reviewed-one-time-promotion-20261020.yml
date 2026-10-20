@@ -1,0 +1,86 @@
+name: GBP ONS Reviewed One-Time Atomic Migration 2026-10-20
+
+on:
+  push:
+    branches:
+      - fix/gbp-labour-atomic-source-promotion-20261020
+    paths:
+      - '.github/workflows/gbp-ons-reviewed-one-time-promotion-20261020.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gbp-ons-one-time-reviewed-promotion-v1
+  cancel-in-progress: false
+
+jobs:
+  prove-repair-and-push-review-branch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 24
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Prepare source read-only evidence directory
+        run: mkdir -p /tmp/gbp-reviewed-promotion
+      - name: Verify original September and October ONS page fingerprints then build full atomic Macro runtime correction
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m validation.macro.promote_gbp_ons_first_release_v1 --out-dir /tmp/gbp-reviewed-promotion
+          python -m unittest validation.macro.test_gbp_ons_temporal_guard_v1 validation.macro.test_materialize_gbp_latest_first_release_v1 validation.macro.test_latest_release_pit_ledger_v1 validation.macro.test_growth_first_release_readiness_v1 validation.macro.test_qualitative_label_review_queue_v1 -v
+          python validation/test_gbp_ons_source.py
+          python validation/macro/check_macro_source_registry.py > /tmp/gbp-reviewed-promotion/registry.json
+          python -m validation.macro.latest_release_pit_ledger_v1 --out /tmp/gbp-reviewed-promotion/core-release-ledger.json
+          python -m validation.macro.growth_first_release_readiness_v1 --out /tmp/gbp-reviewed-promotion/growth-review.json
+          python -m validation.macro.qualitative_label_review_queue_v1 --out /tmp/gbp-reviewed-promotion/qualitative-change-queue.json
+          python validation/check_live_update_contract.py > /tmp/gbp-reviewed-promotion/live-update-contract.json
+          python validation/rebuild_live_data_runtime.py --verify-only > /tmp/gbp-reviewed-promotion/runtime-proof.json
+          python - <<'PY'
+          import json,os
+          p='/tmp/gbp-reviewed-promotion'
+          r=json.load(open(p+'/verified_promotion_receipt.json'))
+          q=json.load(open(p+'/qualitative-change-queue.json'))
+          h=json.load(open(p+'/core-release-ledger.json'))
+          assert r['status']=='READY_FOR_ATOMIC_SINGLE_GIT_COMMIT'
+          assert r['source_lineage']=='PASS'
+          assert r['D_macro_rebased'] is False
+          assert r['pair_preferences_rebased'] is False
+          assert r['GBP_labour_july']==4.9 and r['GBP_labour_august']==4.7
+          assert q['changed_currencies']==['GBP'],q
+          assert q['impacted_pairs_count']==7,q
+          assert h['counts']['DATE_ONLY']==12
+          assert h['counts']['WITHHELD_OFFICIAL_SOURCE_VALUE_CONFLICT']==0
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
+              f.write('## UK labour original-first-release reviewed Macro data correction\n\n')
+              f.write('**July end-month 4.9% (May–July), August end-month 4.7% (June–August)**.\n')
+              f.write('Official September/October first-vintage pages SHA-256 matched, 16/16 registered Macro source contracts pass.\n')
+              f.write('Impacted qualitative reapproval: **GBP and 7 FX pairs**, BUT current Macro structural score remains unrebased.\n')
+              f.write('All file writes are within the scoped source/heatmap/live mirror and source-attestation contract.\n')
+          PY
+      - name: Commit and push reviewed canonical source+heatmap+manifest+payload to protected feature branch only
+        shell: bash
+        run: |
+          set -euo pipefail
+          TARGET=fix/gbp-labour-atomic-source-promotion-20261020
+          BASE="$(git rev-parse HEAD)"
+          git fetch origin "$TARGET" --no-tags
+          test "$(git rev-parse origin/$TARGET)" = "$BASE" || { echo 'review branch changed, refuse to promote stale snapshot' >&2; exit 1; }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/manifest.v2.json payload/part-00.txt payload/part-01.txt validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json
+          git diff --cached --quiet && { echo 'Expected reviewed UK Macro correction missing' >&2; exit 1; }
+          git commit -m 'Promote source-verified GBP LFS Jul/Aug 2026 first-release periods atomically'
+          git push --force-with-lease=refs/heads/$TARGET:$BASE origin HEAD:$TARGET
+      - name: Preserve original-first-release and independent promotion receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reviewed-gbp-ons-atomic-pit-migration-${{ github.run_id }}
+          path: /tmp/gbp-reviewed-promotion/
+          if-no-files-found: warn
+          retention-days: 60
