@@ -12,6 +12,7 @@ if(nzdProxy.schema!=='GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1'||
 const dxyDisplayed=Number(dxyFeed.value).toFixed(2);
 const nzdDisplayed=Number(nzdProxy.horizons['6m'].implied_bank_bill_rate).toFixed(2);
 const ratesFeed=JSON.parse(fs.readFileSync(path.join(DATA,'NATIVE_RATES_DATA.json'),'utf8'));
+const setupFeed=JSON.parse(fs.readFileSync(path.join(DATA,'PAIR_SETUP_OPERATIONAL_VIEW.json'),'utf8'));
 const operational=JSON.parse(fs.readFileSync(path.join(DATA,'OIS_OPERATIONAL_VIEW.json'),'utf8'));
 const expectedSecondaryQuotes=['USD','EUR','CHF'].filter(k=>{
   const x=operational.currencies?.[k],ctx=x?.secondary_quote_context;
@@ -264,7 +265,8 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
     return {count:d?.querySelectorAll('#pair-index button.pair-open[data-pair]').length,
       currencies:d?.querySelectorAll('#gmfq-pair-research-path .gmfq-path-leg').length,
       links:d?.querySelectorAll('#gmfq-pair-research-path button[data-gmfq-study-currency]').length,
-      model:panel?.textContent.includes('non aggiorna automaticamente il giudizio del motore'),
+      model:panel?.textContent.includes('non aggiorna automaticamente il giudizio del motore')||
+        panel?.textContent.includes('La data del fixing e quella del motore coincidono'),
       width:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth};
   });
   if(first.count!==28||first.currencies!==2||first.links!==8||
@@ -288,7 +290,9 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
       width:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth};
   });
   if(!detail.name?.includes('EURCHF')||!detail.text?.includes('ECB')||
-    !detail.text?.includes('CHF')||!detail.text?.includes('non aggiorna automaticamente')||
+    !detail.text?.includes('CHF')||
+    !(detail.text?.includes('non aggiorna automaticamente')||
+      detail.text?.includes('La data del fixing e quella del motore coincidono'))||
     detail.g8!==28||detail.width>detail.viewport+16)
     throw Error(label+' EURCHF selected-pair research context failed '+JSON.stringify(detail));
 
@@ -355,11 +359,12 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
   });
   const eu=deltaEURUSD.legs.find(x=>x.ccy==='EUR'),us=deltaEURUSD.legs.find(x=>x.ccy==='USD');
   if(eu?.status!=='MEASURED'||us?.status!=='MEASURED'||
-     !eu.actual?.includes('2026-10-15 → 2026-10-16')||
+     !eu.actual?.includes(ratesFeed.EUR.history2.dates.at(-2)+' → '+ratesFeed.EUR.history2.dates.at(-1))||
      !us.actual?.includes(ratesFeed.USD.history2.dates.at(-2)+' → '+ratesFeed.USD.history2.dates.at(-1))||
      !eu.actual?.includes(((x)=>((x>0?'+':'')+x.toFixed(1)+' bp'))(Math.round((ratesFeed.EUR.history2.values.at(-1)-ratesFeed.EUR.history2.values.at(-2))*1000)/10))||
      !us.actual?.includes(((x)=>((x>0?'+':'')+x.toFixed(1)+' bp'))(Math.round((ratesFeed.USD.history2.values.at(-1)-ratesFeed.USD.history2.values.at(-2))*1000)/10))||
-     !eu.model?.includes('Rates: migliora')||!us.model?.includes('Rates: peggiora')||
+     eu.model!==setupFeed.pairs.EURUSD.relative_dynamics.A.details.filter(x=>/^(Crescita|Lavoro|Rates|Inflazione): /.test(x)).slice(0,4).join(' · ')||
+     us.model!==setupFeed.pairs.EURUSD.relative_dynamics.B.details.filter(x=>/^(Crescita|Lavoro|Rates|Inflazione): /.test(x)).slice(0,4).join(' · ')||
      !deltaEURUSD.text?.includes('diagnosi qualitativa'))
     throw Error(label+' EURUSD history-derived 2Y changes vs model not separated '+JSON.stringify(deltaEURUSD));
 
@@ -561,6 +566,64 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
   console.log('CONTROL_ROOM_PREVIEW_28_PAIR_RESEARCH_GREEN',label,JSON.stringify({fromHome,selected:'EURCHF',links:first.links,viewport:first.viewport}));
 
   console.log('CONTROL_ROOM_PREVIEW_G8_DETAIL_FOCUS_GREEN',label,JSON.stringify({ratesDetail,researchSummary:{fourCurves:research.fourCurves,secondary:research.secondary,docWidth:research.docWidth,viewport:research.viewport}}));
+
+  // Gold belongs to the ACTIVE v10 Cross-Asset page, not legacy root Risk UI.
+  await page.goto(url+'#/cross',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.waitForFunction(()=>{
+    const doc=document.getElementById('gmfq-page')?.contentDocument;
+    return ['SECONDARY_CURRENT','SECONDARY_HISTORICAL','WITHHELD'].includes(
+      doc?.getElementById('gmfq-cross-gold-v10')?.dataset.sourceStatus);
+  },null,{timeout:25000});
+  const gold=await page.evaluate(()=>{
+    const doc=document.getElementById('gmfq-page')?.contentDocument;
+    const panel=doc?.getElementById('gmfq-cross-gold-v10');
+    return {state:panel?.dataset.sourceStatus,asof:panel?.dataset.goldAsOf,
+      value:panel?.querySelector('.gmfq-gold-quote')?.textContent,
+      text:panel?.textContent,viewport:doc?.documentElement.clientWidth,
+      width:doc?.documentElement.scrollWidth,legacy:!!doc?.querySelector('[data-gmfq-operational="risk"]')};
+  });
+  const goldFixture=JSON.parse(fs.readFileSync(path.join(DATA,'ESTIMATED_RESIDUAL_GAPS.json'),'utf8'))
+    .lanes['GOLD.market_proxy'];
+  const goldQuote=Number(goldFixture.value).toLocaleString('it-IT',
+    {minimumFractionDigits:2,maximumFractionDigits:2});
+  if(!['SECONDARY_CURRENT','SECONDARY_HISTORICAL'].includes(gold.state)||
+     gold.asof!==goldFixture.proxy_as_of||!gold.value?.includes(goldQuote)||
+     !gold.text?.includes('Gold Price LBMA · WITHHELD')||
+     !gold.text?.includes('futures COMEX indicativo')||
+     !gold.text?.includes('non sono usate in questo confronto')||
+     !gold.text?.includes('non equivale a oro spot')||
+     gold.legacy||gold.width>gold.viewport+16){
+    throw Error(label+' v10 Gold Cross-Asset source or sizing failed '+JSON.stringify(gold));
+  }
+  console.log('CONTROL_ROOM_V10_CROSS_GOLD_SOURCE_PASS',label,
+    JSON.stringify({state:gold.state,asof:gold.asof,value:gold.value,viewport:gold.viewport}));
+
+  // Negative fixture: a missing Gold futures quote MUST be WITHHELD rather than 0.00.
+  await page.route('**/ESTIMATED_RESIDUAL_GAPS.json',async r=>{
+    const obj=JSON.parse(fs.readFileSync(path.join(DATA,'ESTIMATED_RESIDUAL_GAPS.json'),'utf8'));
+    obj.lanes['GOLD.market_proxy'].value=null;
+    await r.fulfill({status:200,contentType:'application/json',
+      headers:{'Access-Control-Allow-Origin':'*'},body:JSON.stringify(obj)});
+  });
+  await page.goto(url+'#/home',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.goto(url+'#/cross?test=invalid',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.waitForFunction(()=>{
+    const doc=document.getElementById('gmfq-page')?.contentDocument;
+    return doc?.getElementById('gmfq-cross-gold-v10')?.dataset.sourceStatus==='WITHHELD';
+  },null,{timeout:25000});
+  const bad=await page.evaluate(()=>{
+    const doc=document.getElementById('gmfq-page')?.contentDocument;
+    const el=doc?.getElementById('gmfq-cross-gold-v10');
+    return {state:el?.dataset.sourceStatus,value:el?.querySelector('.gmfq-gold-quote')?.textContent,
+      spot:el?.textContent?.includes('Gold Price LBMA · WITHHELD'),width:doc?.documentElement.scrollWidth,
+      viewport:doc?.documentElement.clientWidth};
+  });
+  if(bad.state!=='WITHHELD'||bad.value?.trim()!=='—'||!bad.spot||
+     bad.width>bad.viewport+16){
+    throw Error(label+' Gold invalid source not fail-closed '+JSON.stringify(bad));
+  }
+  console.log('CONTROL_ROOM_V10_CROSS_GOLD_WITHHELD_PASS',label,bad.state);
+
   await page.close();
  }
  await browser.close();

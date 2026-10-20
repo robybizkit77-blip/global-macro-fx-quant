@@ -291,7 +291,7 @@ async function getState(page){
        let current=false;
        for(let attempt=0;attempt<16;attempt++){
          current=await page.evaluate(()=>{
-           return !!document.querySelector('script[src*="home-navigation-v10.js?v=pair-evidence-20261020"]');
+           return !!document.querySelector('script[src*="home-navigation-v10.js?v=cross-gold-20261020"]');
          });
          if(current)break;
          console.log('PUBLIC_PAIR_ADDON_CDN_PENDING',name,attempt);
@@ -304,7 +304,7 @@ async function getState(page){
          catch(_){console.log('PUBLIC_PAIR_HOME_FEED_PENDING',name,attempt)}
          await page.waitForTimeout(3000);
        }
-       if(!current)current=await page.evaluate(()=>!!document.querySelector('script[src*="home-navigation-v10.js?v=pair-evidence-20261020"]'));
+       if(!current)current=await page.evaluate(()=>!!document.querySelector('script[src*="home-navigation-v10.js?v=cross-gold-20261020"]'));
        if(!current)throw Error(name+' PUBLIC_PAIR_ADDON_VERSION_NOT_DEPLOYED');
      }
      const homePair=await page.frameLocator('#gmfq-page').locator('#pairs tr[data-filter]').first().getAttribute('data-filter');
@@ -463,6 +463,45 @@ async function getState(page){
      await page.waitForFunction(()=>document.getElementById('gmfq-page')?.contentDocument?.querySelectorAll('#ois .oisrow').length===8,null,{timeout:60000});
      await page.frameLocator('#gmfq-page').locator('#ois .oisrow[data-ccy="USD"]').click();
      await page.waitForURL(/#\/banche\?ccy=USD$/,{timeout:15000});
+
+     if(process.env.GITHUB_EVENT_NAME!=='pull_request'){
+       // Require actual public v10 Cross-Asset module, not legacy root Risk.
+       let seen=false;
+       for(let attempt=0;attempt<15;attempt++){
+         await page.goto(BASE+'?crossgoldqa='+Date.now()+'-'+attempt+'#/cross',
+           {waitUntil:'domcontentloaded',timeout:120000});
+         try{
+           await page.waitForFunction(()=>{
+             const doc=document.getElementById('gmfq-page')?.contentDocument;
+             return ['SECONDARY_CURRENT','SECONDARY_HISTORICAL','WITHHELD'].includes(
+               doc?.getElementById('gmfq-cross-gold-v10')?.dataset.sourceStatus);
+           },null,{timeout:5000});
+           seen=true;break;
+         }catch(e){console.log('PUBLIC_CROSS_GOLD_CDN_PENDING',name,attempt)}
+         await page.waitForTimeout(2500);
+       }
+       if(!seen)throw Error(name+' public Control Room Cross-Asset Gold module not delivered');
+       const gold=await page.evaluate(()=>{
+         const doc=document.getElementById('gmfq-page')?.contentDocument;
+         const card=doc?.getElementById('gmfq-cross-gold-v10');
+         return {state:card?.dataset.sourceStatus,asof:card?.dataset.goldAsOf,
+           text:card?.textContent,quote:card?.querySelector('.gmfq-gold-quote')?.textContent,
+           docWidth:doc?.documentElement.scrollWidth,viewport:doc?.documentElement.clientWidth,
+           legacy:!!doc?.querySelector('[data-gmfq-operational="risk"]')};
+       });
+       if(!['SECONDARY_CURRENT','SECONDARY_HISTORICAL'].includes(gold.state)||
+          !/^20\d{2}-\d{2}-\d{2}$/.test(gold.asof||'')||
+          !gold.text?.includes('Gold Price LBMA · WITHHELD')||
+          !gold.text?.includes('GC=F · futures COMEX indicativo')||
+          !gold.text?.includes('non equivale a oro spot')||
+          gold.quote==='—'||gold.legacy||gold.docWidth>gold.viewport+16){
+         throw Error(name+' public Cross-Asset Gold not verified '+JSON.stringify(gold));
+       }
+       console.log('CONTROL_ROOM_V10_PUBLIC_CROSS_GOLD_GREEN',name,
+         JSON.stringify({status:gold.state,asof:gold.asof,value:gold.quote,
+           viewport:gold.viewport}));
+     }
+
      await page.close();
    }
    console.log('CONTROL_ROOM_V10_PUBLIC_G8_DXY_NAVIGATION_GREEN');
