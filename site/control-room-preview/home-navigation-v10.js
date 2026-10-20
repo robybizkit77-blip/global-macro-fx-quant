@@ -876,7 +876,9 @@ function pairThesisReactionBridge(code,pair,modelDay,reactionHtml,macroDay){
    (observedSide===favored?'CONFERMA_DIREZIONE':'CONTRO_TESI'):'NON_DETERMINATO';
  const trend=!baselineCurrent?
   'La baseline Macro/Tassi del '+(macroDay||'periodo non verificato')+
-   ' è NON CORRENTE: tesi da rivalidare. I movimenti recenti FX e 2Y restano osservazioni valide ma non confermano né invalidano la tesi storica. Una coerenza 2Y–FX non equivale a conferma della tesi.':
+   ' è NON CORRENTE: tesi da rivalidare. I movimenti recenti FX e 2Y restano osservazioni valide ma non confermano né invalidano la tesi storica. Una coerenza 2Y–FX non equivale a conferma della tesi. '+
+   (!favored?'Il motore non identifica una valuta strutturalmente favorita. ':'')+
+   (!validSide?'Nessuna conferma o invalidazione dal fixing in questa finestra: audit assente, incompleto o non conclusivo. ':''):
   state==='CONTRO_TESI'?
   'Il fixing recente ha favorito '+FLAG[observedSide]+' '+observedSide+
    ', contro la preferenza strutturale '+FLAG[favored]+' '+favored+
