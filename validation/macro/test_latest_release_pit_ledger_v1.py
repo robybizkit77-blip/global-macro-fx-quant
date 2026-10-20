@@ -24,21 +24,39 @@ class LatestReleaseLedgerTests(unittest.TestCase):
         self.assertEqual(out["source_lineage"], "PASS")
         self.assertEqual(out["observations_checked"], 16)
         self.assertEqual(sum(out["counts"].values()), 16)
-        self.assertEqual(out["counts"]["FULL_RELEASE_INSTANT"], 2)
-        self.assertEqual(out["counts"]["WITHHELD_EXACT_PERIOD_EVIDENCE"], 6)
-        self.assertEqual(out["counts"]["DATE_ONLY"], 8)
+        self.assertEqual(out["counts"]["FULL_RELEASE_INSTANT"], 4)
+        self.assertEqual(out["counts"]["WITHHELD_EXACT_PERIOD_EVIDENCE"], 0)
+        self.assertEqual(out["counts"]["WITHHELD_OFFICIAL_SOURCE_VALUE_CONFLICT"], 1)
+        self.assertEqual(out["counts"]["DATE_ONLY"], 11)
         self.assertFalse(out["safe_to_promote_macro_labels"])
         self.assertFalse(out["safe_to_publish_new_D"])
         self.assertFalse(out["historical_vintage_series_available"])
 
-    def test_observation_period_cannot_substitute_release_date(self):
+    def test_new_latest_official_web_anchors_are_current_period_specific(self):
         out = self.run_receipt()
         usd = out["observations"]["USD.inflation"]
         self.assertEqual(usd["current_observation_period"], "2026-09")
-        self.assertIsNone(usd["release"]["first_release_date"])
-        self.assertEqual(usd["release"]["status"], "WITHHELD_EXACT_PERIOD_EVIDENCE")
-        self.assertEqual(out["observations"]["CAD.labour"]["release"]["status"],
-                         "WITHHELD_EXACT_PERIOD_EVIDENCE")
+        self.assertEqual(usd["release"]["first_release_date"], "2026-10-14")
+        self.assertEqual(usd["release"]["first_release_timestamp_utc"],
+                         "2026-10-14T12:30:00+00:00")
+        self.assertTrue(usd["release"]["latest_web_release_unhashed"])
+        self.assertEqual(out["observations"]["CAD.labour"]["release"]["first_release_date"],
+                         "2026-10-09")
+        self.assertEqual(out["observations"]["AUD.labour"]["release"]["first_release_timestamp_utc"],
+                         "2026-10-15T00:30:00+00:00")
+        self.assertEqual(out["observations"]["CAD.inflation"]["release"]["first_release_date"],
+                         "2026-10-19")
+        self.assertEqual(out["observations"]["JPY.labour"]["release"]["first_release_date"],
+                         "2026-10-02")
+
+    def test_gbp_rolling_three_month_vintage_conflict_stays_withheld(self):
+        r = self.run_receipt()["observations"]["GBP.labour"]
+        self.assertEqual(r["current_observation_period"], "2026-07-01")
+        self.assertEqual(r["latest_transformed_observation"], 4.7)
+        self.assertEqual(r["release"]["status"], "WITHHELD_OFFICIAL_SOURCE_VALUE_CONFLICT")
+        self.assertEqual(r["release"]["source_disagreement"]["official_first_release_value"], 4.9)
+        self.assertEqual(r["release"]["source_disagreement"]["period"], "2026-07")
+        self.assertFalse(r["release"]["historical_backtest_safe_for_all_periods"])
 
     def test_date_only_is_never_intraday_eligible(self):
         out = self.run_receipt()
@@ -87,6 +105,43 @@ class LatestReleaseLedgerTests(unittest.TestCase):
             row["date"] = "2026-08-29"
         with self.assertRaisesRegex(ValueError, "publication before reference month"):
             self.run_receipt(data)
+
+
+    def test_web_source_does_not_accept_official_domain_spoofing(self):
+        from validation.macro.latest_release_pit_ledger_v1 import source_web_attestations
+        import json, tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            original = json.loads((ROOT / "validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json").read_text())
+            original["attestations"][0]["url"] = "https://bls.gov.evil.example/release"
+            (directory / "CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json").write_text(json.dumps(original))
+            with self.assertRaisesRegex(ValueError, "unsupported source publisher URL"):
+                source_web_attestations(directory)
+
+    def test_yoy_calculation_cannot_be_rounded_to_headline(self):
+        from validation.macro.latest_release_pit_ledger_v1 import source_web_attestations
+        import json, tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            original = json.loads((ROOT / "validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json").read_text())
+            original["attestations"][0]["published_value"] = 3.7
+            (directory / "CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json").write_text(json.dumps(original))
+            with self.assertRaisesRegex(ValueError, "official index-to-YoY formula mismatch"):
+                source_web_attestations(directory)
+
+    def test_official_source_conflict_cannot_be_silently_resolved(self):
+        from validation.macro.latest_release_pit_ledger_v1 import source_web_attestations
+        import json, tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            original = json.loads((ROOT / "validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json").read_text())
+            original["contradictions"][0]["official_first_release_value"] = 4.7
+            (directory / "CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json").write_text(json.dumps(original))
+            with self.assertRaisesRegex(ValueError, "source contradiction must be real"):
+                source_web_attestations(directory)
 
     def test_missing_release_time_does_not_become_midnight(self):
         rec = {"date": "2026-10-02", "release_time_utc": None, "release_time_jst": None}
