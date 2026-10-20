@@ -72,19 +72,47 @@
       "publisher": "Statistics Bureau of Japan",
       "url": "https://www.stat.go.jp/data/roudou/sokuhou/tsuki/",
       "source_locator": "Labour Force Survey Basic Tabulation August 2026 released 2 October 2026, seasonally adjusted complete unemployment rate 2.5%; page may later change, no content hash"
-    }
-  ],
-  "contradictions": [
+    },
     {
       "key": "GBP.labour",
-      "observation_period": "2026-07",
-      "release_date": "2026-09-15",
-      "canonical_value": 4.7,
-      "official_first_release_value": 4.9,
-      "source_concept": "UK Labour Force Survey unemployment rate age 16+ May–July 2026 rolling three-month period ending July",
+      "observation_period": "2026-08",
+      "release_date": "2026-10-20",
+      "release_timestamp_local": null,
+      "published_value": 4.7,
+      "raw_series_value": 4.7,
+      "transform": "level",
       "publisher": "Office for National Statistics",
-      "url": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/bulletins/employmentintheuk/september2026",
-      "note": "Canonical 4.7 does NOT match the September 15 first published May–July 2026 LFS 4.9; October release 4.7 belongs to different June–August 2026 period. Do not auto-correct, replace period or mark certified."
+      "url": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/bulletins/uklabourmarket/october2026",
+      "source_locator": "ONS first published June to August 2026 16+ unemployment 4.7% on 20 October 2026; official October 2026 bulletin, original page SHA256 pinned separately",
+      "official_source_page_sha256": "6019ef0d20450bc0ce20600dc21af6a0194bdd3b50a43583b2d57b5152ba92d5"
+    }
+  ],
+  "contradictions": [],
+  "resolved_historical_period_errors": [
+    {
+      "key": "GBP.labour",
+      "source_period": "2026-07",
+      "canonical_july_old": 4.7,
+      "canonical_july_repaired": 4.9,
+      "august_new": 4.7,
+      "July_May_to_July_original_release_date": "2026-09-15",
+      "August_June_to_August_original_release_date": "2026-10-20",
+      "official_first_release_page_sha256": {
+        "2026-07": "ff6554989736e5cbd939b8df2c90fe17ca541da9d67e3dcbb14f7f72823f62c9",
+        "2026-08": "6019ef0d20450bc0ce20600dc21af6a0194bdd3b50a43583b2d57b5152ba92d5"
+      },
+      "previously_observed_page_sha256": {
+        "2026-07": "03e892cceeca6897ef4cef3b4d84a3a2bc8cf73c160cc3a5165f3ace48909ceb",
+        "2026-08": "70d2913ddad08cdb19be2c7467beb5e5f992041ae9bbd2763a1f55e70cbac8a2"
+      },
+      "source_html_bytes_changed_since_previous_review": {
+        "2026-07": true,
+        "2026-08": true
+      },
+      "first_release_pages_verified": 2,
+      "source_content_hashes_not_signature_attested": true,
+      "historical_D_baseline_not_rebased": true,
+      "audit_scope": "FIRST_RELEASE_SPECIFIC_2026_JULY_AUGUST_NOT_ALL_HISTORICAL_VINTAGES"
     }
   ]
 }
