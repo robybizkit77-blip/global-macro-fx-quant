@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/gbp-ons-reviewed-one-time-promotion-20261020.yml'
       - 'validation/macro/promote_gbp_ons_first_release_v1.py'
+      - 'validation/macro/test_latest_release_pit_ledger_v1.py'
 
 permissions:
   contents: write
