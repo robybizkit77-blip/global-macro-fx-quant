@@ -12,6 +12,7 @@ if(nzdProxy.schema!=='GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1'||
 const dxyDisplayed=Number(dxyFeed.value).toFixed(2);
 const nzdDisplayed=Number(nzdProxy.horizons['6m'].implied_bank_bill_rate).toFixed(2);
 const ratesFeed=JSON.parse(fs.readFileSync(path.join(DATA,'NATIVE_RATES_DATA.json'),'utf8'));
+const setupFeed=JSON.parse(fs.readFileSync(path.join(DATA,'PAIR_SETUP_OPERATIONAL_VIEW.json'),'utf8'));
 const operational=JSON.parse(fs.readFileSync(path.join(DATA,'OIS_OPERATIONAL_VIEW.json'),'utf8'));
 const expectedSecondaryQuotes=['USD','EUR','CHF'].filter(k=>{
   const x=operational.currencies?.[k],ctx=x?.secondary_quote_context;
@@ -358,11 +359,12 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
   });
   const eu=deltaEURUSD.legs.find(x=>x.ccy==='EUR'),us=deltaEURUSD.legs.find(x=>x.ccy==='USD');
   if(eu?.status!=='MEASURED'||us?.status!=='MEASURED'||
-     !eu.actual?.includes('2026-10-15 → 2026-10-16')||
+     !eu.actual?.includes(ratesFeed.EUR.history2.dates.at(-2)+' → '+ratesFeed.EUR.history2.dates.at(-1))||
      !us.actual?.includes(ratesFeed.USD.history2.dates.at(-2)+' → '+ratesFeed.USD.history2.dates.at(-1))||
      !eu.actual?.includes(((x)=>((x>0?'+':'')+x.toFixed(1)+' bp'))(Math.round((ratesFeed.EUR.history2.values.at(-1)-ratesFeed.EUR.history2.values.at(-2))*1000)/10))||
      !us.actual?.includes(((x)=>((x>0?'+':'')+x.toFixed(1)+' bp'))(Math.round((ratesFeed.USD.history2.values.at(-1)-ratesFeed.USD.history2.values.at(-2))*1000)/10))||
-     !eu.model?.includes('Rates: migliora')||!us.model?.includes('Rates: peggiora')||
+     eu.model!==setupFeed.pairs.EURUSD.relative_dynamics.A.details.filter(x=>/^(Crescita|Lavoro|Rates|Inflazione): /.test(x)).slice(0,4).join(' · ')||
+     us.model!==setupFeed.pairs.EURUSD.relative_dynamics.B.details.filter(x=>/^(Crescita|Lavoro|Rates|Inflazione): /.test(x)).slice(0,4).join(' · ')||
      !deltaEURUSD.text?.includes('diagnosi qualitativa'))
     throw Error(label+' EURUSD history-derived 2Y changes vs model not separated '+JSON.stringify(deltaEURUSD));
 
