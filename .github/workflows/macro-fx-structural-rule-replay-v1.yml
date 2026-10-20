@@ -7,6 +7,8 @@ on:
       - 'validation/macro/export_structural_rule_trace_v1.mjs'
       - 'validation/macro/verify_structural_rule_trace_v1.py'
       - 'validation/macro/test_structural_rule_trace_v1.py'
+      - 'validation/macro/score_formula_provenance_v1.py'
+      - 'validation/macro/test_score_formula_provenance_v1.py'
       - 'live_data/sections/D.json'
       - 'live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'
       - 'payload/part-03.txt'
@@ -38,6 +40,26 @@ jobs:
           python-version: '3.12'
       - name: Test deterministic pair direction rules
         run: python -m unittest validation.macro.test_structural_rule_trace_v1 -v
+      - name: Verify frozen numeric score readers are not formula generators
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/structural-rule-replay
+          python -m unittest validation.macro.test_score_formula_provenance_v1 -v
+          python -m validation.macro.score_formula_provenance_v1 --out /tmp/structural-rule-replay/score-boundary.json
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          r=json.load(open('/tmp/structural-rule-replay/score-boundary.json'))
+          assert r['status']=='PASS_HISTORICAL_SCORE_READERS_IDENTIFIED_NO_SCORE_GENERATOR_CERTIFIED'
+          assert r['historical_scalar_scores']==24 and r['historical_regimes']==8
+          assert r['pairs_in_source_snapshot']==28
+          assert r['ready_for_numeric_macro_rebase'] is False
+          assert r['safe_to_publish_new_D'] is False and r['writes_live_data'] is False
+          print('## Economic score lineage vs directional pair rules')
+          print('**Historical numeric snapshots: 24 scalar pillars, 8 cycles — validated as frozen values**')
+          print('**Structural browser directional rules: checked independently below, NOT numeric score formulas**')
+          print('**New Macro score generation: BLOCKED — no versioned Growth/Labour/Inflation weights/PIT formula**')
+          print('Model date '+r['model_as_of']+'; Price '+r['price_as_of'])
+          PY
       - uses: actions/setup-node@v4
         with:
           node-version: 22
