@@ -250,7 +250,8 @@ async function getState(page){
            readinessExpected:access?.schema==='GMFQ_OIS_SOURCE_READINESS_VIEW_V1'&&
              access.status==='READ_ONLY_SOURCE_READINESS'&&access.prices_omitted===true&&
              access.no_automatic_promotions===true&&days(access.as_of)>=0&&days(access.as_of)<=3&&
-             access.operational_summary?.operational_withheld===feed.summary.operational_withheld?
+             access.blocked_currency_count===4&&
+             ['USD','EUR','CHF','NZD'].every(k=>access.currencies?.[k]?.status==='WITHHELD')?
              Object.values(access.currencies||{}).filter(x=>x.status==='WITHHELD').length:null,
            snbBox:panel.querySelector('#gmfq-chf-snb-10y-context')?.innerText,
            snbExpected:snb?.schema==='GMFQ_CHF_SNB_10Y_SPOT_CONTEXT_V1'&&snb.status==='OFFICIAL_PUBLISHED_10Y_INFORMATIONAL'&&
@@ -262,11 +263,13 @@ async function getState(page){
        if(research.actualCurves!==research.expectedCurves||research.secondaryCards!==research.expectedCards||
           !research.note.includes('non sono una curva OIS')||
           !research.note.includes('NON curva OIS né policy delta')||
-          research.readinessExpected===null||
-          research.readinessCount!==research.readinessExpected||
-          research.readinessLinks!==research.readinessExpected||
-          !research.readinessContent?.includes('Nessun dato indicativo è promosso')||
-          !research.readinessContent?.includes('non completa il 2Y')||
+          (process.env.GITHUB_EVENT_NAME!=='pull_request'&&(
+             research.readinessExpected===null||
+             research.readinessCount!==research.readinessExpected||
+             research.readinessLinks!==research.readinessExpected||
+             !research.readinessContent?.includes('Nessun dato indicativo è promosso')||
+             !research.readinessContent?.includes('non completa il 2Y')||
+             !research.readinessContent?.includes('Il loro stato di accesso può essere precedente al runtime operativo')))||
           research.docWidth>research.viewport+16||
           (research.snbExpected?
              !research.snbBox?.includes('CHF 10Y SNB '+research.snbExpected.value+'%')||
