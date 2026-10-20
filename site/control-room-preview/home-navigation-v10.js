@@ -810,6 +810,58 @@ function pairMarketReactionAudit(code,rates,fx){
 /* Bridging an official SAME-DATE 2Y/FX observation with the canonical
    decision frame. Do not promote a short-term FX move to a model verdict.
    Canonical structural preference & setup quality remain separate. */
+/* A dated, qualitative set of questions for the next research review,
+   using only canonical engine fields and the verified FX/2Y diagnosis.
+   These are NOT forecasted triggers, price levels, or executable entries. */
+function pairEvidenceChecklist(code,pair,modelDay,reactionHtml){
+ const a=code.slice(0,3),b=code.slice(3,6),src=pair?.setup||{},frame=pair?.decision_frame||{};
+ const fav=[a,b].includes(src.structuralFav)?src.structuralFav:null;
+ const other=fav===a?b:fav===b?a:null;
+ const audited=/data-reaction-status="(COERENTE|DIVERGENTE|NON_CONCLUSIVO|WITHHELD)"/.exec(reactionHtml||'')?.[1]||'WITHHELD';
+ const windowEnd=/data-window-end="(\d{4}-\d{2}-\d{2})"/.exec(reactionHtml||'')?.[1]||null;
+ const side=/data-reaction-fx-side="([A-Z]{3})"/.exec(reactionHtml||'')?.[1]||null;
+ const measured=windowEnd&&fresh(windowEnd,5)&&['COERENTE','DIVERGENTE'].includes(audited)&&[a,b].includes(side);
+ const observation=measured?('Ultima finestra confrontabile fino al '+windowEnd+': fixing FX favorevole a '+FLAG[side]+' '+side+'.'):
+  'La finestra recente non dà una verifica direzionale confrontabile: non usare un segnale surrogato.';
+ const partial=!!fav&&(![a,b].includes(frame.macroSide)||![a,b].includes(frame.policySide));
+ const need=typeof frame.missing==='string'&&frame.missing?frame.missing:'Differenziazione Macro/Rates ancora da verificare.';
+ const confirm=fav?
+  'Verificare nuovi fixing BCE nella direzione di '+FLAG[fav]+' '+fav+
+   ', confrontati con i 2Y sulle stesse date. '+
+   (partial?'Controllare se il pilastro Macro o Tassi/CB oggi non decisivo diventa più chiaro.':
+    'Controllare che entrambi i pilastri strutturali restino dalla stessa parte.'):
+  'Prima serve una preferenza Macro/Tassi/CB verificabile e non soltanto uno spread governativo elevato.';
+ const weakens=fav?
+  'Nuovi fixing nella direzione di '+FLAG[other]+' '+other+
+   ' e peggioramento dei driver strutturali renderebbero meno convincente la lettura favorevole a '+
+   fav+'. Da soli non definiscono un livello di invalidazione.':
+  'Se Macro e Tassi/CB restano non discriminanti, eventuali movimenti di prezzo non sono una conferma strutturale.';
+ const blockers=[];
+ if(!fav)blockers.push('Il motore non individua una valuta favorita.');
+ if(src.price?.state==='BAD'||src.price?.state==='NEUTRAL')
+  blockers.push('Prezzo nel modello: '+src.price.text+'.');
+ if(src.extension?.state==='ADVANCED')
+  blockers.push('Estensione del prezzo: '+(src.extension.text||'già avanzato')+'.');
+ if(typeof src.timing?.text==='string')blockers.push('Timing: '+src.timing.text+'.');
+ if(['HIGH','DIVERGENT'].includes(src.cot?.state)&&typeof src.cot.text==='string')
+  blockers.push('Posizionamento: '+src.cot.text+'.');
+ if(src.liquidity?.state==='BAD'&&typeof src.liquidity.text==='string')
+  blockers.push('Liquidità: '+src.liquidity.text+'.');
+ if(!blockers.length)blockers.push('Serve ancora un ingresso tecnico verificato e un rapporto rischio/rendimento definito esternamente al modello.');
+ const row=(name,text)=>'<div class="gmfq-evidence-row"><b>'+htmlEscape(name)+'</b><p>'+htmlEscape(text)+'</p></div>';
+ return '<section id="gmfq-pair-evidence-checklist" class="gmfq-evidence-checklist" aria-label="Condizioni qualitative da verificare">'+
+  '<h4>Cosa controllare al prossimo aggiornamento</h4>'+
+  '<p class="gmfq-evidence-intro">Domande di ricerca, non condizioni operative già soddisfatte. Snapshot del modello: '+htmlEscape(modelDay)+'.</p>'+
+  '<div class="gmfq-evidence-rows">'+
+   row('Confermerebbe la direzione',confirm)+
+   row('Indebolirebbe la lettura',weakens)+
+   row('Prima di valutare il trade',blockers.join(' '))+
+  '</div>'+
+  '<p class="gmfq-evidence-provenance">'+htmlEscape(observation)+' '+htmlEscape(need)+'</p>'+
+  '<p class="gmfq-evidence-caution">Senza aggiornamento verificato di Macro, Tassi/CB e Prezzo queste condizioni restano ipotesi da controllare. Nessun trigger numerico o livello tecnico viene derivato automaticamente.</p>'+
+  '</section>';
+}
+
 function pairThesisReactionBridge(code,pair,modelDay,reactionHtml){
  const base=code.slice(0,3),quote=code.slice(3,6),meta=pair?.setup||{},frame=pair?.decision_frame||{};
  const favored=meta.structuralFav===base||meta.structuralFav===quote?meta.structuralFav:null;
@@ -845,6 +897,7 @@ function pairThesisReactionBridge(code,pair,modelDay,reactionHtml){
   '<div><span>REAZIONE OSSERVATA · RATES / FX</span><strong>'+htmlEscape(label)+'</strong><small>'+
   htmlEscape(trend)+'</small></div></div>'+
   '<div class="gmfq-decision-watch"><strong>Cosa monitorare secondo il modello</strong><p>'+htmlEscape(watch)+'</p></div>'+
+  pairEvidenceChecklist(code,pair,modelDay,reactionHtml)+
   '<p class="gmfq-decision-context">Lettura prezzo del modello ('+htmlEscape(modelDay)+'): '+htmlEscape(price)+'</p>'+
   '<p class="gmfq-decision-disclaimer">Non sono disponibili trigger numerici certificati di conferma, invalidazione o ingresso in questo feed. Nessun livello, stop, score o segnale viene creato da questa sezione.</p></section>';
 }
@@ -872,6 +925,7 @@ async function mountPairResearch(doc){
  style.textContent+='.gmfq-what-changed{border-top:1px solid #284354;margin-top:16px;padding-top:14px}.gmfq-what-changed h3{margin:0;color:#e9f1f7;font:600 14px/1.4 Arial,sans-serif}.gmfq-what-changed>p{font:12px/1.55 Arial,sans-serif;color:#abc3d2;margin:7px 0 11px}.gmfq-change-legs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.gmfq-change-leg{border-left:2px solid #58718a;padding:9px 11px;background:#0d2332;min-width:0}.gmfq-change-leg strong{display:block;font:600 13px Arial,sans-serif;color:#e8f0f6;margin-bottom:8px}.gmfq-change-leg span{display:block;font:10px/1.4 Arial,sans-serif;color:#a0b6c5;letter-spacing:.02em}.gmfq-change-leg p{font:12px/1.5 Arial,sans-serif;color:#d2e0e9;margin:4px 0 11px;overflow-wrap:anywhere}.gmfq-change-leg .gmfq-change-measured{color:#e1c78a;margin-bottom:0}.gmfq-what-changed .gmfq-change-summary{color:#c5d7e2}.gmfq-what-changed .gmfq-change-warning{color:#93abba;font-size:10px}@media(max-width:600px){.gmfq-change-legs{grid-template-columns:1fr}}';
  style.textContent+='.gmfq-reaction{border-top:1px solid #294557;margin-top:15px;padding-top:14px}.gmfq-reaction h3{font:600 14px/1.4 Arial,sans-serif;margin:0 0 9px;color:#e6eff5}.gmfq-reaction p{color:#b4c8d5;font:12px/1.55 Arial,sans-serif;margin:7px 0 11px}.gmfq-reaction .gmfq-reaction-window{font:11px/1.5 Arial,sans-serif;color:#dec98f;padding:5px 0}.gmfq-reaction-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:9px 0}.gmfq-reaction-metrics>div{border:1px solid #294554;border-radius:5px;padding:11px 12px;min-width:0;background:#0b2434}.gmfq-reaction-metrics span{display:block;color:#a4bbc9;font:10px/1.45 Arial,sans-serif}.gmfq-reaction-metrics strong{display:block;color:#edf2f7;font:600 21px/1.4 Arial,sans-serif;font-variant-numeric:tabular-nums;margin:3px 0}.gmfq-reaction-metrics small{display:block;color:#b4c7d5;font:11px/1.45 Arial,sans-serif;overflow-wrap:anywhere}.gmfq-reaction .gmfq-reaction-verdict{border-left:2px solid #a08b58;padding:8px 11px;background:#102638;color:#cbdce7}.gmfq-reaction-verdict strong{color:#e6d59c}.gmfq-reaction-verdict[data-reaction-verdict="COERENTE"]{border-color:#3ac998}.gmfq-reaction-verdict[data-reaction-verdict="DIVERGENTE"]{border-color:#e36a79}.gmfq-reaction .gmfq-reaction-note{color:#a9bdcb}.gmfq-reaction .gmfq-reaction-warning{color:#94abbc;font-size:10px}@media(max-width:600px){.gmfq-reaction-metrics{grid-template-columns:1fr}}';
  style.textContent+='.gmfq-decision-bridge{border-top:1px solid #294456;margin-top:14px;padding-top:13px}.gmfq-decision-bridge h3{font:600 14px/1.4 Arial,sans-serif;margin:0 0 9px;color:#ebf2f6}.gmfq-decision-bridge>p{color:#a8bfcd;font:12px/1.55 Arial,sans-serif;margin:7px 0 10px}.gmfq-decision-cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:11px}.gmfq-decision-cols>div{border-left:2px solid #577a90;background:#0b2231;padding:9px 11px;min-width:0}.gmfq-decision-cols>div:nth-child(2){border-color:#ae935d}.gmfq-decision-cols>div:nth-child(3){border-color:#699cba}.gmfq-decision-cols span{display:block;color:#9db3c3;font:10px/1.4 Arial,sans-serif}.gmfq-decision-cols strong{display:block;color:#e9f1f6;font:600 12px/1.5 Arial,sans-serif;margin:4px 0}.gmfq-decision-cols small{display:block;color:#b7cad6;font:11px/1.5 Arial,sans-serif;overflow-wrap:anywhere}.gmfq-decision-watch{padding:10px 0 0;margin-top:10px;border-top:1px solid #264254}.gmfq-decision-watch strong{color:#e5d199;font:600 12px/1.4 Arial,sans-serif}.gmfq-decision-watch p{color:#bcd0dc;font:12px/1.55 Arial,sans-serif;margin:4px 0 0}.gmfq-decision-bridge .gmfq-decision-context{color:#b1c4d1}.gmfq-decision-bridge .gmfq-decision-disclaimer{font-size:10px;color:#93aabb}@media(max-width:700px){.gmfq-decision-cols{grid-template-columns:1fr}}';
+ style.textContent+='.gmfq-evidence-checklist{border-top:1px solid #294252;margin-top:13px;padding-top:11px}.gmfq-evidence-checklist h4{font:600 13px/1.45 Arial,sans-serif;color:#e8eef5;margin:0 0 6px}.gmfq-evidence-checklist .gmfq-evidence-intro{color:#aebfcd;font:11px/1.5 Arial,sans-serif;margin:0 0 9px}.gmfq-evidence-rows{display:grid;grid-template-columns:1fr;gap:0}.gmfq-evidence-row{padding:8px 0;border-top:1px solid #243f4e}.gmfq-evidence-row b{color:#e3ce95;font:600 11px/1.4 Arial,sans-serif}.gmfq-evidence-row:nth-child(2) b{color:#d7a3ac}.gmfq-evidence-row p{color:#c0d2dc;font:12px/1.5 Arial,sans-serif;margin:4px 0;overflow-wrap:anywhere}.gmfq-evidence-checklist .gmfq-evidence-provenance{color:#d0dfeb;font:11px/1.55 Arial,sans-serif;margin:9px 0 4px}.gmfq-evidence-checklist .gmfq-evidence-caution{color:#91a9b8;font:10px/1.55 Arial,sans-serif;margin:7px 0}';
  doc.head.appendChild(style);
  const panel=doc.createElement('section');
  panel.id='gmfq-pair-research-path';panel.className='desk-panel';
