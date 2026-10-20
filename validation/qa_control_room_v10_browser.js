@@ -264,7 +264,8 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
     return {count:d?.querySelectorAll('#pair-index button.pair-open[data-pair]').length,
       currencies:d?.querySelectorAll('#gmfq-pair-research-path .gmfq-path-leg').length,
       links:d?.querySelectorAll('#gmfq-pair-research-path button[data-gmfq-study-currency]').length,
-      model:panel?.textContent.includes('non aggiorna automaticamente il giudizio del motore'),
+      model:panel?.textContent.includes('non aggiorna automaticamente il giudizio del motore')||
+        panel?.textContent.includes('La data del fixing e quella del motore coincidono'),
       width:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth};
   });
   if(first.count!==28||first.currencies!==2||first.links!==8||
