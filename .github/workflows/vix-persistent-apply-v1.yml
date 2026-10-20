@@ -3,10 +3,10 @@ name: VIX Persistent Apply V1
 on:
   pull_request:
     branches: [main]
-    paths: ['.github/workflows/vix-persistent-apply-v1.yml', 'validation/fetch_cboe_vix_candidate_v2.py', 'validation/apply_cboe_vix_candidate_v1.py']
+    paths: ['.github/workflows/vix-persistent-apply-v1.yml', 'validation/fetch_cboe_vix_candidate_v2.py', 'validation/apply_cboe_vix_candidate_v1.py', 'validation/risk/test_vix_persistent_schedule_contract_v1.py']
   push:
     branches: [main]
-    paths: ['.github/workflows/vix-persistent-apply-v1.yml', 'validation/fetch_cboe_vix_candidate_v2.py', 'validation/apply_cboe_vix_candidate_v1.py']
+    paths: ['.github/workflows/vix-persistent-apply-v1.yml', 'validation/fetch_cboe_vix_candidate_v2.py', 'validation/apply_cboe_vix_candidate_v1.py', 'validation/risk/test_vix_persistent_schedule_contract_v1.py']
   workflow_dispatch:
   schedule:
     # UTC duplicates cover CET/CEST; delayed GitHub runs must still check Cboe.
@@ -38,6 +38,9 @@ jobs:
       - uses: actions/setup-python@v5
         if: steps.gate.outputs.should_run == 'true'
         with: {python-version: '3.12'}
+      - name: Regression-test delayed schedule, strict source/anchor and main push lease
+        if: steps.gate.outputs.should_run == 'true'
+        run: python -m unittest validation.risk.test_vix_persistent_schedule_contract_v1 -v
       - name: Snapshot baseline
         if: steps.gate.outputs.should_run == 'true'
         run: |
