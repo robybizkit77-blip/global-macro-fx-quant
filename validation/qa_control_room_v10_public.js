@@ -190,6 +190,38 @@ async function getState(page){
      // In PR the public website still has the previous addon; inspect the
      // new market-research panel only on main, after the exact deployment.
      if(process.env.GITHUB_EVENT_NAME!=='pull_request'){
+       // Post-merge only: actual PUBLIC hosted 8-currency OIS research overlay.
+       let newResearchVisible=false;
+       for(let attempt=0;attempt<16;attempt++){
+         try{
+           await page.waitForFunction(()=>{
+             const d=document.getElementById('gmfq-page')?.contentDocument;
+             const r=d?.getElementById('gmfq-ois-research-estimates');
+             return r?.dataset.status==='RESEARCH_ONLY'&&
+               r.querySelectorAll('.gmfq-est-row[data-ccy]').length===8;
+           },null,{timeout:7000});
+           newResearchVisible=true;break;
+         }catch(_){
+           await page.goto(BASE+'?oisResearch='+Date.now()+'-'+attempt+'#/tassi?focus=ois',
+             {waitUntil:'domcontentloaded',timeout:120000});
+         }
+       }
+       if(!newResearchVisible)throw Error(name+' public G8 estimated pricing overlay not published');
+       const estimateProof=await page.evaluate(()=>{
+         const d=document.getElementById('gmfq-page').contentDocument;
+         const p=d.getElementById('gmfq-ois-research-estimates');
+         const rows=[...p.querySelectorAll('.gmfq-est-row[data-ccy]')];
+         return {count:rows.length,keys:rows.map(x=>x.dataset.ccy),
+           states:Object.fromEntries(rows.map(x=>[x.dataset.ccy,x.dataset.estimateType])),
+           core:p.dataset.coreEffect,promote:p.dataset.officialPromotion,
+           caveat:p.textContent.includes('non intervallo statistico'),
+           width:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
+       });
+       if(estimateProof.count!==8||!['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'].every(k=>estimateProof.keys.includes(k))||
+          estimateProof.core!=='NONE'||estimateProof.promote!=='false'||!estimateProof.caveat||
+          estimateProof.width>estimateProof.viewport+16)
+         throw Error(name+' public G8 pricing estimate / mobile transparency failed '+JSON.stringify(estimateProof));
+       console.log('CONTROL_ROOM_PUBLIC_G8_PRICING_ESTIMATES_GREEN',name,JSON.stringify(estimateProof));
        let visible=false;
        for(let attempt=0;attempt<12;attempt++){
          visible=await page.evaluate(()=>!!document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-pricing-research'));
