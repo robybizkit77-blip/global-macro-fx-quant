@@ -1,0 +1,59 @@
+{
+  "schema": "GMFQ_MACRO_V2_PIT_FEATURE_INPUT_V1",
+  "as_of": "2024-05-03T12:30:00+00:00",
+  "currency": "USD",
+  "pillar": "labour",
+  "series_id": "LNS14000000",
+  "frequency": "M",
+  "unit": "percent, seasonally adjusted unemployment rate",
+  "max_lag_periods": 2,
+  "source": {
+    "authority": "U.S. Bureau of Labor Statistics",
+    "source_id": "LNS14000000",
+    "transport": "OFFICIAL_DIRECT"
+  },
+  "evidence_provenance": "MANUALLY_CROSSCHECKED_BLS_ARCHIVED_RELEASE_HTML_NO_IMMUTABLE_BYTES",
+  "first_release_only": true,
+  "vintages": [
+    {
+      "observation_period": "2023-12",
+      "value": 3.7,
+      "released_at": "2024-01-05T08:30:00-05:00",
+      "news_release_id": "USDL-24-0006",
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_01052024.htm"
+    },
+    {
+      "observation_period": "2024-01",
+      "value": 3.7,
+      "released_at": "2024-02-02T08:30:00-05:00",
+      "news_release_id": "USDL-24-0148",
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_02022024.htm"
+    },
+    {
+      "observation_period": "2024-02",
+      "value": 3.9,
+      "released_at": "2024-03-08T08:30:00-05:00",
+      "news_release_id": "USDL-24-0451",
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_03082024.htm"
+    },
+    {
+      "observation_period": "2024-03",
+      "value": 3.8,
+      "released_at": "2024-04-05T08:30:00-04:00",
+      "news_release_id": "USDL-24-0629",
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_04052024.htm"
+    },
+    {
+      "observation_period": "2024-04",
+      "value": 3.9,
+      "released_at": "2024-05-03T08:30:00-04:00",
+      "news_release_id": "USDL-24-0796",
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_05032024.htm"
+    }
+  ]
+}
