@@ -203,7 +203,9 @@ jobs:
           import hashlib,json,pathlib,subprocess
           paths=['live_data/sections/OIS_OPERATIONAL_VIEW.json',
                  'dashboard/ois-operational-monitor-v1.js',
-                 'dashboard/cbdesk-operational-v1.js']
+                 'dashboard/cbdesk-operational-v1.js',
+                 'live_data/sections/D.json',
+                 'payload/part-00.txt']
           rows=[]
           for name in paths:
               source=pathlib.Path(name).read_bytes()

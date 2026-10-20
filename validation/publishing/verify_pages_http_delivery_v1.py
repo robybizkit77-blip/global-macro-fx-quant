@@ -22,6 +22,9 @@ FILES = (
     "live_data/sections/OIS_OPERATIONAL_VIEW.json",
     "dashboard/ois-operational-monitor-v1.js",
     "dashboard/cbdesk-operational-v1.js",
+    # Assert exact public VIX source and loaded runtime payload, not only OIS/JS.
+    "live_data/sections/D.json",
+    "payload/part-00.txt",
 )
 
 
