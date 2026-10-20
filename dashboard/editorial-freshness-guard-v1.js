@@ -42,7 +42,7 @@ function domReferenceDate(el,spec){
 }
 function riskLaneCoverage(){
   const r=operational.risk;
-  const raw={VIX:r?.vix_date||null,WTI:r?.wti_date||null,BRENT:r?.brent_date||null};
+  const raw={VIX:r?.vix_valid===true?r.vix_date:null,WTI:r?.wti_valid===true?r.wti_date:null,BRENT:r?.brent_date||null};
   const entries=Object.entries(raw).map(([lane,value])=>({lane,date:parseIso(value)}));
   const missing=entries.filter(x=>!x.date).map(x=>x.lane);
   // ALL three visible cards require explicit as-of. A recent secondary Brent
@@ -126,7 +126,16 @@ async function loadOperationalAuthority(){
   settled.forEach((x,i)=>{if(x.status==='rejected')operational.errors.push(`${specs[i][0]}:${String(x.reason?.message||x.reason)}`);});
   operational.calendar=data.calendar||null;operational.news=data.news||null;
   const vix=data.d?.risk?.VIX||{},wti=data.d?.risk?.WTI||{},brent=data.residual?.lanes?.['BRENT.market_proxy']||{};
-  operational.risk=(data.d||data.residual)?{status:'ACTIVE_IF_ANY_SOURCE',vix_date:vix.last_date||vix.dates?.at?.(-1)||null,wti_date:wti.last_date||wti.dates?.at?.(-1)||null,brent_date:brent.proxy_as_of||null}:null;
+  const validRisk=(x)=>Array.isArray(x?.dates)&&Array.isArray(x?.values)&&x.dates.length>0&&
+    x.dates.length===x.values.length&&x.last_date===x.dates.at(-1)&&
+    x.last_value!==null&&x.last_value!==undefined&&x.last_value!==''&&
+    x.values.at(-1)!==null&&x.values.at(-1)!==undefined&&x.values.at(-1)!==''&&
+    Number.isFinite(Number(x.last_value))&&Number.isFinite(Number(x.values.at(-1)))&&
+    Number(x.last_value)===Number(x.values.at(-1));
+  operational.risk=(data.d||data.residual)?{status:'ACTIVE_IF_ANY_SOURCE',
+    vix_date:vix.last_date||null,vix_valid:validRisk(vix)&&Number(vix.last_value)>0,
+    wti_date:wti.last_date||null,wti_valid:validRisk(wti),
+    brent_date:brent.proxy_as_of||null}:null;
   operational.loaded=true;apply();
 }
 const prev=window.showView;if(typeof prev==='function')window.showView=function(){const out=prev.apply(this,arguments);setTimeout(queue,0);return out;};
