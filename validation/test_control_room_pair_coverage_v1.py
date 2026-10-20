@@ -63,6 +63,7 @@ class CoverageTests(unittest.TestCase):
 
     def test_stale_macro_fails_closed_without_model_changes(self):
         self.data["model"]["asOf"] = "2026-09-25"
+        self.data["setup"]["macro_baseline_asof"] = "2026-09-25"
         r = analyze(self.data, self.today)
         self.assertEqual(r["coverage"], "PARTIAL")
         self.assertEqual(r["fully_supported_pairs"], 0)
