@@ -87,6 +87,17 @@ jobs:
             await page.waitForFunction(()=>window.GMFQ_TOP_THEMES_OPERATIONAL?.status==='ACTIVE',null,{timeout:30000});
             await page.waitForFunction(()=>window.GMFQ_WHAT_CHANGED_OPERATIONAL?.status==='ACTIVE',null,{timeout:30000});
             await page.waitForFunction(()=>window.GMFQ_RISK_OPERATIONAL?.status==='ACTIVE',null,{timeout:30000});
+            const vixCard=await page.evaluate(()=>{
+              const el=document.querySelector('#risk [data-risk="VIX"]');
+              const source=window.GMFQ_RISK_OPERATIONAL||{};
+              return {state:el?.dataset.freshness,label:el?.querySelector('.rkBadge')?.textContent,
+                asof:el?.querySelector('.rkAs')?.textContent,meta:source.vix_freshness};
+            });
+            if(!vixCard.asof||!['FRESH','STALE','UNVERIFIED'].includes(vixCard.state)||
+               vixCard.state!==vixCard.meta||
+               (vixCard.state==='STALE'&&!vixCard.label?.includes('non corrente'))||
+               (vixCard.state==='UNVERIFIED'&&!vixCard.label?.includes('WITHHELD')))
+              throw new Error(label+' VIX per-card freshness mismatch '+JSON.stringify(vixCard));
             const audit=await page.evaluate(()=>window.gmfqEditorialFreshnessAudit?.());
             if(!audit||audit.schema!=='GMFQ_EDITORIAL_FRESHNESS_GUARD_V3_OPERATIONAL_AUTHORITY')throw new Error(label+' freshness schema '+audit?.schema);
             if(audit.legacy_authority!=='NONE')throw new Error(label+' legacy freshness authority '+audit.legacy_authority);
@@ -128,6 +139,30 @@ jobs:
               await page.locator('#'+id).screenshot({path:`editorial-freshness-evidence/${label}-${id}.png`});
             }
             if(errors.length)throw new Error(label+' console/page errors: '+errors.join(' | '));
+            // Regression: a dated but missing VIX value must not be displayed as
+            // 0.00 or considered FRESH by the overall Risk freshness guard.
+            const damaged=await browser.newPage({viewport});
+            await damaged.route('**/live_data/sections/D.json',async route=>{
+              const response=await route.fetch();
+              const body=await response.json();
+              body.risk.VIX.last_value=null;
+              await route.fulfill({response,contentType:'application/json',body:JSON.stringify(body)});
+            });
+            await damaged.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            await damaged.waitForFunction(()=>window.GMFQ_RISK_OPERATIONAL?.status==='ACTIVE'&&
+              window.GMFQ_EDITORIAL_FRESHNESS?.operational_loaded===true,null,{timeout:120000});
+            const negative=await damaged.evaluate(()=>{
+              const card=document.querySelector('#risk [data-risk="VIX"]');
+              const audit=window.gmfqEditorialFreshnessAudit?.().sections?.risk;
+              return {state:card?.dataset.freshness,value:card?.querySelector('.rkValue')?.textContent,
+                badge:card?.querySelector('.rkBadge')?.textContent,aggregate:audit?.status,
+                missing:audit?.missing_risk_lanes};
+            });
+            if(negative.state!=='UNVERIFIED'||negative.value!=='—'||
+              !negative.badge?.includes('WITHHELD')||negative.aggregate!=='UNVERIFIED'||
+              !negative.missing?.includes('VIX'))
+              throw Error(label+' invalid VIX failed to close '+JSON.stringify(negative));
+            await damaged.close();
             fs.writeFileSync(`editorial-freshness-evidence/${label}.json`,JSON.stringify(audit,null,2));
             console.log(label,JSON.stringify(audit,null,2));
             await browser.close();
