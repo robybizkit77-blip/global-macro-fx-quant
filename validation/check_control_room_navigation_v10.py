@@ -64,6 +64,8 @@ items={
 "WTI benchmark and Brent futures are not conflated": "series.benchmark_key!=='RWTC'" in s and "b.vendor_symbol==='BZ=F'" in s and "Brent spot ufficiale: WITHHELD" in s,
 "Missing VIX/WTI/Brent cannot become zero": "series.last_value!==value" in s and "value:null" in s and "data-cross-status=" in s and "Nessun confronto di spread fra spot e futures" in s,
 "Cross-Asset excludes core and risk-on trading recommendations": "g.pair_engine_effect==='NONE'" in s and "nessun giudizio di risk-on/risk-off" in s,
+"Stale Macro thesis cannot be validated by newer Rates/FX": "const baselineCurrent=typeof macroDay==='string'&&fresh(macroDay,10)" in s and "baselineCurrent&&validSide&&favored" in s and "data-baseline-status=" in s and "Preferenza storica" in s,
+"Observed market agreement stays observational with stale Macro": "I movimenti recenti FX e 2Y restano osservazioni valide" in s and "non confermano né invalidano la tesi storica" in s,
 "Core data not changed": "localStorage.setItem" not in s and "github.com/repos/" not in s,
 }
 for k,v in items.items(): print(("PASS" if v else "FAIL")+": "+k)

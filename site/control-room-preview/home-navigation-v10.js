@@ -868,9 +868,18 @@ function pairThesisReactionBridge(code,pair,modelDay,reactionHtml,macroDay){
  const status=/data-reaction-status="(COERENTE|DIVERGENTE|NON_CONCLUSIVO|WITHHELD)"/.exec(reactionHtml||'')?.[1]||'WITHHELD';
  const observedSide=/data-reaction-fx-side="([A-Z]{3})"/.exec(reactionHtml||'')?.[1]||null;
  const validSide=(observedSide===base||observedSide===quote)&&['COERENTE','DIVERGENTE'].includes(status);
- const state=validSide&&favored?(observedSide===favored?'CONFERMA_DIREZIONE':'CONTRO_TESI'):
-  'NON_DETERMINATO';
- const trend=state==='CONTRO_TESI'?
+ // Recent FX/2Y observations can be valid while the structural Macro thesis is stale.
+ // Never upgrade/downgrade that historical thesis from a newer FX movement.
+ const baselineCurrent=typeof macroDay==='string'&&fresh(macroDay,10)&&
+  typeof modelDay==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(modelDay)&&macroDay<=modelDay;
+ const state=baselineCurrent&&validSide&&favored?
+   (observedSide===favored?'CONFERMA_DIREZIONE':'CONTRO_TESI'):'NON_DETERMINATO';
+ const trend=!baselineCurrent?
+  'La baseline Macro/Tassi del '+(macroDay||'periodo non verificato')+
+   ' è NON CORRENTE: tesi da rivalidare. I movimenti recenti FX e 2Y restano osservazioni valide ma non confermano né invalidano la tesi storica. Una coerenza 2Y–FX non equivale a conferma della tesi. '+
+   (!favored?'Il motore non identifica una valuta strutturalmente favorita. ':'')+
+   (!validSide?'Nessuna conferma o invalidazione dal fixing in questa finestra: audit assente, incompleto o non conclusivo. ':''):
+  state==='CONTRO_TESI'?
   'Il fixing recente ha favorito '+FLAG[observedSide]+' '+observedSide+
    ', contro la preferenza strutturale '+FLAG[favored]+' '+favored+
    '. Una coerenza 2Y–FX non equivale a conferma della tesi.':
@@ -879,15 +888,19 @@ function pairThesisReactionBridge(code,pair,modelDay,reactionHtml,macroDay){
    ', nella direzione della tesi. È una conferma di direzione nel periodo, non un nuovo ingresso.':
   favored?'Nessuna conferma o invalidazione dal fixing in questa finestra: audit assente, incompleto o non conclusivo.':
    'Il motore non identifica una valuta strutturalmente favorita: il confronto Rates/FX non crea da solo una tesi.';
- const structural=favored?'Favore '+FLAG[favored]+' '+favored:'Nessuna preferenza netta';
+ const structural=favored?(baselineCurrent?'Favore ':'Preferenza storica · ')+FLAG[favored]+' '+favored:
+  'Nessuna preferenza netta';
  const quality=typeof frame.quality==='string'&&frame.quality?frame.quality:'Non disponibile';
  const setupQuality=typeof meta.quality==='string'&&meta.quality?meta.quality:'Non valutabile';
  const setupTiming=typeof meta.timing?.text==='string'?meta.timing.text:'Timing non certificato';
- const watch=typeof frame.watch==='string'&&frame.watch?frame.watch:'Servono nuove evidenze Macro e Rates certificate.';
+ const watch=!baselineCurrent?
+  'Prima rivalidare la baseline Macro/Tassi e il relativo giudizio sulle due valute. I fixing FX recenti, da soli, non aggiornano la tesi storica.':
+  typeof frame.watch==='string'&&frame.watch?frame.watch:'Servono nuove evidenze Macro e Rates certificate.';
  const price=typeof frame.priceNote==='string'&&frame.priceNote?frame.priceNote:'Prezzo del modello non verificato';
  const label=status==='COERENTE'?'Coerente tra 2Y e FX':status==='DIVERGENTE'?'Divergente tra 2Y e FX':
   status==='NON_CONCLUSIVO'?'Non conclusivo':'Non valutabile';
- return '<section id="gmfq-pair-decision-bridge" class="gmfq-decision-bridge" data-bridge-status="'+state+'" aria-label="Tesi, setup e reazione recente">'+
+ return '<section id="gmfq-pair-decision-bridge" class="gmfq-decision-bridge" data-bridge-status="'+state+
+  '" data-baseline-status="'+(baselineCurrent?'CURRENT':'STALE_OR_UNVERIFIED')+'" aria-label="Tesi, setup e reazione recente">'+
   '<h3>Dalla tesi alla decisione · cosa conta davvero</h3>'+
   '<p>Tre piani distinti. La lettura recente dei 2Y non ricalcola il modello, e la qualità di un setup non significa che sia già il momento di entrare.</p>'+
   '<div class="gmfq-decision-cols"><div><span>TESI STRUTTURALE · baseline '+htmlEscape(macroDay||'non certificata')+'</span><strong>'+
@@ -896,7 +909,9 @@ function pairThesisReactionBridge(code,pair,modelDay,reactionHtml,macroDay){
   htmlEscape(setupTiming)+'</small></div>'+
   '<div><span>REAZIONE OSSERVATA · RATES / FX</span><strong>'+htmlEscape(label)+'</strong><small>'+
   htmlEscape(trend)+'</small></div></div>'+
-  '<div class="gmfq-decision-watch"><strong>Cosa monitorare secondo il modello</strong><p>'+htmlEscape(watch)+'</p></div>'+
+  '<div class="gmfq-decision-watch"><strong>'+
+  (baselineCurrent?'Cosa monitorare secondo il modello':'Prima di considerare valida la tesi')+
+  '</strong><p>'+htmlEscape(watch)+'</p></div>'+
   pairEvidenceChecklist(code,pair,modelDay,reactionHtml,macroDay)+
   '<p class="gmfq-decision-context">Lettura prezzo del modello ('+htmlEscape(modelDay)+'): '+htmlEscape(price)+'</p>'+
   '<p class="gmfq-decision-disclaimer">Non sono disponibili trigger numerici certificati di conferma, invalidazione o ingresso in questo feed. Nessun livello, stop, score o segnale viene creato da questa sezione.</p></section>';
