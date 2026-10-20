@@ -231,8 +231,9 @@ def build(root, now, attestations=None, feeds=None, core_ledger=None):
                 }
                 counters["no_first_release_evidence"] += 1
             rows[ident] = {**row, "official_release": attestation}
-    require(len(rows) == 21 and sum(x["currency"] == c for x in rows.values()) >= 1
-            for c in FX, "21 G8 Growth contract broken")
+    require(len(rows) == 21 and
+            all(sum(x["currency"] == c for x in rows.values()) >= 1 for c in FX),
+            "21 G8 Growth contract broken")
     require(set(mapped).issubset(rows), "attestation for nonexistent/deleted Growth source")
     core_ledger = core_ledger or build_ledger(root, now)
     require(core_ledger.get("source_lineage") == "PASS" and
