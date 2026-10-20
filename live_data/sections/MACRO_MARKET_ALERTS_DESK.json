@@ -1,8 +1,36 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-20T08:52:01Z",
+  "generated_at_utc": "2026-10-20T09:48:54Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-b761ec51ed47d9a35189",
+      "observed_at_utc": "2026-10-20T00:17:00Z",
+      "headline": "South Korean AI firm Elice plunges 32% in market debut as investors dump data centre stocks",
+      "summary": "Reuters riporta: South Korean AI firm Elice plunges 32% in market debut as investors dump data centre stocks. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxNU1JYM3hYdDlsc1JuLWVCVHlKcld3Skc0Y1M0WWgzbk1JNFVJbzhsNU13eVVmSUNTX0hPX1ZGUXotNzVkV3UxTi1yMTlhNm04S2lzODk4NlRhOXFDMUFfb1cxbXd3TzZoZVl3QS00aldHcmNieDZSZ0x1eDlEYjZ5NmRCbWVEeTQwQ2RreWdkb2ljUXB5cDlKalhpTWZ3SnN5ek5pVzlBRWNEQ0d1SVdOREpqMUE1LUZf?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-9756c7d0341d2833fed4",
+      "observed_at_utc": "2026-10-20T09:08:00Z",
+      "headline": "Global shares mostly decline after AI stocks lead a rebound on Wall Street",
+      "summary": "AP News riporta: Global shares mostly decline after AI stocks lead a rebound on Wall Street. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxQTUxwUkw1R0I4c0hwa0lfVGdUQ3ZoMlVlZzZBa1RBTU9hMEZtSTFQY3d3NzVYRlFiN1hubTFWX3JXVnZBbnUxSmFsM05CZ1lyVVVOamlWOXlxUzdaMTcxdFBzY3gzZVdmNjZaTXNPNWtBeTNvMTVETWtwcGxaaE5CQWFUOS0tM1NpS2FkT1pocUlYWGZkX2wyd0d3OTg?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-42050dbf00a6bb54c7e3",
       "observed_at_utc": "2026-10-20T07:09:44Z",
