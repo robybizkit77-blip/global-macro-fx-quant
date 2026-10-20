@@ -1,0 +1,22 @@
+name: Weekly Market Focus Regression
+on:
+  pull_request:
+    paths:
+      - 'site/website-v1/market-snapshot.js'
+      - 'tests/website_v1/test_weekly_market_focus.cjs'
+      - 'live_data/sections/NATIVE_RATES_DATA.json'
+      - 'live_data/sections/ECB_G8_PRICE_HISTORY.json'
+      - '.github/workflows/weekly-market-focus-regression.yml'
+  workflow_dispatch:
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Market Focus fail-closed regression
+        run: node tests/website_v1/test_weekly_market_focus.cjs
