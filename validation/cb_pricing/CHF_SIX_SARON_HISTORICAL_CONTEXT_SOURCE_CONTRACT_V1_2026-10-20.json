@@ -66,5 +66,6 @@
     "no_ois_curve_substitution": true
   },
   "verdict": "DOCUMENTED_SOURCE_WITHHELD_PENDING_NUMERIC_ACCESS_AND_LICENSE_CLEARANCE",
-  "note": "Source identifiers are grounded in SIX official reference table. FREE delayed historical display is not a blanket automation or derived-analytics license. No official value or acquisition endpoint is certified. Never replace CHF forward OIS with retroactive compound benchmarks."
+  "note": "Source identifiers are grounded in SIX official reference table. FREE delayed historical display is not a blanket automation or derived-analytics license. No official value or acquisition endpoint is certified. Never replace CHF forward OIS with retroactive compound benchmarks.",
+  "currency": "CHF"
 }
