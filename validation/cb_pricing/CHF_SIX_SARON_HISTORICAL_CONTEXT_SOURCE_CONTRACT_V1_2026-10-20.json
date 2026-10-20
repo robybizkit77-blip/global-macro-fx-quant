@@ -57,13 +57,13 @@
     "sidecar_only": true,
     "read_only": true,
     "no_numeric_rates_in_receipt": true,
-    "no_ais_ois_curve_substitution": true,
     "no_policy_repricing_signal": true,
     "no_automatic_official_promotion": true,
     "no_new_live_data_snapshot": true,
     "no_dashboard_change": true,
     "no_new_scheduled_workflow": true,
-    "no_new_chatgpt_automation": true
+    "no_new_chatgpt_automation": true,
+    "no_ois_curve_substitution": true
   },
   "verdict": "DOCUMENTED_SOURCE_WITHHELD_PENDING_NUMERIC_ACCESS_AND_LICENSE_CLEARANCE",
   "note": "Source identifiers are grounded in SIX official reference table. FREE delayed historical display is not a blanket automation or derived-analytics license. No official value or acquisition endpoint is certified. Never replace CHF forward OIS with retroactive compound benchmarks."
