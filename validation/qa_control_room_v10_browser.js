@@ -371,6 +371,19 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
     eurReaction.width>eurReaction.viewport+16)
      throw Error(label+' EURUSD rates-FX common date reaction audit wrong '+JSON.stringify(eurReaction));
 
+  const eurDecision=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page').contentDocument,c=d?.getElementById('gmfq-pair-decision-bridge');
+    return {state:c?.dataset.bridgeStatus,blocks:[...c?.querySelectorAll('.gmfq-decision-cols>div')||[]].map(x=>x.textContent),
+      content:c?.textContent,doc:d?.documentElement.scrollWidth,view:d?.documentElement.clientWidth};
+  });
+  if(eurDecision.state!=='CONTRO_TESI'||eurDecision.blocks.length!==3||
+     !eurDecision.blocks[0]?.includes('USD')||!eurDecision.blocks[1]?.includes('CON RISCHI')||
+     !eurDecision.blocks[2]?.includes('Coerente tra 2Y e FX')||
+     !eurDecision.content?.includes('Una coerenza 2Y–FX non equivale a conferma della tesi')||
+     !eurDecision.content?.includes('Non sono disponibili trigger numerici certificati')||
+     eurDecision.doc>eurDecision.view+16)
+    throw Error(label+' EURUSD coherence must not be promoted as canonical USD thesis confirmation '+JSON.stringify(eurDecision));
+
   // AUD / CAD are individually certified but published on different dates.
   // Never combine their most recent independent spot yields into a 2Y spread.
   await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="AUDCAD"]').click();
@@ -424,6 +437,15 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
      !gbpReaction.values[1]?.startsWith('+'))
     throw Error(label+' GBPJPY 2Y versus FX divergence not detected '+JSON.stringify(gbpReaction));
 
+  const gbpDecision=await page.evaluate(()=>{
+    const c=document.getElementById('gmfq-page').contentDocument?.getElementById('gmfq-pair-decision-bridge');
+    return {status:c?.dataset.bridgeStatus,text:c?.textContent};
+  });
+  if(gbpDecision.status!=='NON_DETERMINATO'||
+     !gbpDecision.text?.includes('Nessuna preferenza netta')||
+     !gbpDecision.text?.includes('Il motore non identifica una valuta strutturalmente favorita'))
+    throw Error(label+' GBPJPY Rates/FX divergence cannot create a trade thesis '+JSON.stringify(gbpDecision));
+
   await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="USDJPY"]').click();
   await page.waitForFunction(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument;
@@ -435,6 +457,14 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
   });
   if(jpyReaction.status!=='NON_CONCLUSIVO'||!jpyReaction.content?.includes('±0,05%'))
     throw Error(label+' USDJPY subthreshold FX wrongly promoted to clear signal '+JSON.stringify(jpyReaction));
+  const usdDecision=await page.evaluate(()=>{
+    const c=document.getElementById('gmfq-page').contentDocument?.getElementById('gmfq-pair-decision-bridge');
+    return {status:c?.dataset.bridgeStatus,text:c?.textContent};
+  });
+  if(usdDecision.status!=='NON_DETERMINATO'||
+     !usdDecision.text?.includes('Nessuna conferma o invalidazione dal fixing'))
+    throw Error(label+' USDJPY subthreshold move cannot confirm or invalidate USD view '+JSON.stringify(usdDecision));
+
   console.log('CONTROL_ROOM_PREVIEW_PAIR_FX_REACTION_GREEN',label,
     JSON.stringify({eurusd:eurReaction.state,gbpjpy:gbpReaction.state,
       usdjpy:jpyReaction.status,audcad:audReaction.status,viewport:eurReaction.viewport}));
@@ -454,6 +484,18 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
   });
   if(chfReaction.status!=='WITHHELD'||!chfReaction.content?.includes('2Y di una o entrambe le valute'))
     throw Error(label+' stale CHF rate promoted to FX reaction signal '+JSON.stringify(chfReaction));
+
+  const chfDecision=await page.evaluate(()=>{
+    const c=document.getElementById('gmfq-page').contentDocument?.getElementById('gmfq-pair-decision-bridge');
+    return {status:c?.dataset.bridgeStatus,text:c?.textContent};
+  });
+  if(chfDecision.status!=='NON_DETERMINATO'||
+     !chfDecision.text?.includes('CON RISCHI')||
+     !chfDecision.text?.includes('audit assente, incompleto o non conclusivo'))
+    throw Error(label+' EURCHF stale FX reaction cannot update structural EUR preference '+JSON.stringify(chfDecision));
+  console.log('CONTROL_ROOM_PREVIEW_PAIR_DECISION_BRIDGE_GREEN',label,
+    JSON.stringify({eurusd:eurDecision.state,gbpjpy:gbpDecision.status,
+      usdjpy:usdDecision.status,eurchf:chfDecision.status,viewport:eurDecision.view}));
 
   console.log('CONTROL_ROOM_PREVIEW_PAIR_MACRO_RATES_GREEN',label,
     JSON.stringify({chf:compareCHF.same,eurusd:compareEURUSD.same,audcad:compareAUDCAD.same,
