@@ -7,6 +7,7 @@ on:
       - 'validation/sources/gbp_ons_core.py'
       - 'validation/macro/gbp_ons_temporal_guard_v1.py'
       - 'validation/macro/test_gbp_ons_temporal_guard_v1.py'
+      - 'validation/macro/stage_gbp_ons_dual_period_repair_v1.py'
       - 'validation/macro/GBP_MGSX_ROLLING_WINDOW_FIRST_RELEASE_MAP_2026-10-20.json'
       - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
       - 'validation/test_gbp_ons_source.py'
@@ -19,6 +20,7 @@ on:
       - 'validation/sources/gbp_ons_core.py'
       - 'validation/macro/gbp_ons_temporal_guard_v1.py'
       - 'validation/macro/test_gbp_ons_temporal_guard_v1.py'
+      - 'validation/macro/stage_gbp_ons_dual_period_repair_v1.py'
       - 'validation/macro/GBP_MGSX_ROLLING_WINDOW_FIRST_RELEASE_MAP_2026-10-20.json'
       - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
       - 'validation/test_gbp_ons_source.py'
@@ -84,6 +86,20 @@ jobs:
               out.write('Requires atomic reviewed July/August repair.\n\n')
               out.write('Other 15 G8 inflation/labour source refreshes remain enabled.\n')
           print('GBP_LFS_FIRST_RELEASE_MAPPING_PASS_QUARANTINE_ACTIVE')
+          PY
+          python -m validation.macro.stage_gbp_ons_dual_period_repair_v1 --out-dir /tmp/gbp-ons-temporal/staged-repair
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('/tmp/gbp-ons-temporal/staged-repair/receipt.json')
+          x=json.loads(p.read_text())
+          assert x['status']=='STAGED_DUAL_PERIOD_NOT_PUBLISHED'
+          assert x['builder_receipt']['prior_revision']['series_value']==4.9
+          assert x['builder_receipt']['series_action']=='APPEND_NEW'
+          assert x['temporal_guard_after_stage']=='ALLOW_GBP_LABOUR_SOURCE_REFRESH'
+          assert x['safe_to_publish_without_archival_PIT'] is False
+          assert x['runtime_files_written'] is False
+          print('GBP_LFS_ATOMIC_TWO_PERIOD_CANDIDATE_STAGED_NO_WRITE_PASS')
           PY
           git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/sections/D.json live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
       - name: Publish blocker receipt as GitHub Actions artifact only
