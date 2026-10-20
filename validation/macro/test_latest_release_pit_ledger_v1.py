@@ -106,6 +106,43 @@ class LatestReleaseLedgerTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "publication before reference month"):
             self.run_receipt(data)
 
+
+    def test_web_source_does_not_accept_official_domain_spoofing(self):
+        from validation.macro.latest_release_pit_ledger_v1 import source_web_attestations
+        import json, tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            original = json.loads((ROOT / "validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json").read_text())
+            original["attestations"][0]["url"] = "https://bls.gov.evil.example/release"
+            (directory / "CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json").write_text(json.dumps(original))
+            with self.assertRaisesRegex(ValueError, "unsupported source publisher URL"):
+                source_web_attestations(directory)
+
+    def test_yoy_calculation_cannot_be_rounded_to_headline(self):
+        from validation.macro.latest_release_pit_ledger_v1 import source_web_attestations
+        import json, tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            original = json.loads((ROOT / "validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json").read_text())
+            original["attestations"][0]["published_value"] = 3.7
+            (directory / "CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json").write_text(json.dumps(original))
+            with self.assertRaisesRegex(ValueError, "official index-to-YoY formula mismatch"):
+                source_web_attestations(directory)
+
+    def test_official_source_conflict_cannot_be_silently_resolved(self):
+        from validation.macro.latest_release_pit_ledger_v1 import source_web_attestations
+        import json, tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            original = json.loads((ROOT / "validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json").read_text())
+            original["contradictions"][0]["official_first_release_value"] = 4.7
+            (directory / "CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json").write_text(json.dumps(original))
+            with self.assertRaisesRegex(ValueError, "source contradiction must be real"):
+                source_web_attestations(directory)
+
     def test_missing_release_time_does_not_become_midnight(self):
         rec = {"date": "2026-10-02", "release_time_utc": None, "release_time_jst": None}
         self.assertIsNone(resolved_time(rec))
