@@ -55,6 +55,10 @@ items={
 "Coherent Rates and FX movement is NOT automatically canonical thesis confirmation": "Una coerenza 2Y–FX non equivale a conferma della tesi" in s and "CONTRO_TESI" in s and "data-reaction-fx-side" in s,
 "No new trade entry or invalidation trigger": "Non sono disponibili trigger numerici certificati" in s and "Nessun livello, stop, score o segnale viene creato" in s,
 "Model decision bridge shown after observed market reaction": "pairThesisReactionBridge(code,setup.pairs[code],setup.price_asof,reaction)" in s and "pairMarketReactionAudit(code,rates,fx)" in s,
+"Qualitative confirm and weaken checks rely on dated model only": "function pairEvidenceChecklist(code,pair,modelDay,reactionHtml)" in s and "frame.missing" in s and "src.structuralFav" in s,
+"Setup blockers reflect native timing, extension, positioning, and liquidity": "src.extension?.state==='ADVANCED'" in s and "src.timing?.text" in s and "src.cot?.state" in s and "src.liquidity?.state" in s,
+"Confirmation conditions cannot automatically generate technical triggers": "Nessun trigger numerico o livello tecnico viene derivato automaticamente" in s and "Domande di ricerca, non condizioni operative già soddisfatte" in s,
+"Evidence checklist belongs inside existing editorial decision frame": "pairEvidenceChecklist(code,pair,modelDay,reactionHtml)+" in s,
 "Core data not changed": "localStorage.setItem" not in s and "github.com/repos/" not in s,
 }
 for k,v in items.items(): print(("PASS" if v else "FAIL")+": "+k)

@@ -394,6 +394,21 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
      eurDecision.doc>eurDecision.view+16)
     throw Error(label+' EURUSD coherence must not be promoted as canonical USD thesis confirmation '+JSON.stringify(eurDecision));
 
+  const eurChecklist=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page').contentDocument,c=d?.getElementById('gmfq-pair-evidence-checklist');
+    return {exists:!!c,rows:[...c?.querySelectorAll('.gmfq-evidence-row')||[]].map(x=>x.textContent),
+      text:c?.textContent,width:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth};
+  });
+  if(!eurChecklist.exists||eurChecklist.rows.length!==3||
+     !eurChecklist.rows[0].includes('USD')||!eurChecklist.rows[1].includes('EUR')||
+     !eurChecklist.rows[2].includes('Estensione del prezzo:')||
+     !eurChecklist.rows[2].includes('Timing:')||
+     !eurChecklist.rows[2].includes('Posizionamento:')||
+     !eurChecklist.text.includes('Solo uno dei due pilastri strutturali separa chiaramente le valute')||
+     !eurChecklist.text.includes('Nessun trigger numerico o livello tecnico viene derivato automaticamente')||
+     eurChecklist.width>eurChecklist.viewport+16)
+    throw Error(label+' EURUSD next evidence checklist must expose canonical setup blockers not market-derived entry '+JSON.stringify(eurChecklist));
+
   // AUD / CAD are individually certified but published on different dates.
   // Never combine their most recent independent spot yields into a 2Y spread.
   await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="AUDCAD"]').click();
@@ -456,6 +471,15 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
      !gbpDecision.text?.includes('Il motore non identifica una valuta strutturalmente favorita'))
     throw Error(label+' GBPJPY Rates/FX divergence cannot create a trade thesis '+JSON.stringify(gbpDecision));
 
+  const gbpChecklist=await page.evaluate(()=>{
+    const c=document.getElementById('gmfq-page').contentDocument?.getElementById('gmfq-pair-evidence-checklist');
+    return {rows:[...c?.querySelectorAll('.gmfq-evidence-row')||[]].map(x=>x.textContent)};
+  });
+  if(gbpChecklist.rows.length!==3||
+     !gbpChecklist.rows[0].includes('Prima serve una preferenza Macro/Tassi/CB')||
+     !gbpChecklist.rows[2].includes('Il motore non individua una valuta favorita'))
+    throw Error(label+' GBPJPY cannot infer a thesis from rates level alone '+JSON.stringify(gbpChecklist));
+
   await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="USDJPY"]').click();
   await page.waitForFunction(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument;
@@ -507,6 +531,19 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
      !chfDecision.text?.includes('CON RISCHI')||
      !chfDecision.text?.includes('audit assente, incompleto o non conclusivo'))
     throw Error(label+' EURCHF stale FX reaction cannot update structural EUR preference '+JSON.stringify(chfDecision));
+  const chfChecklist=await page.evaluate(()=>{
+    const c=document.getElementById('gmfq-page').contentDocument?.getElementById('gmfq-pair-evidence-checklist');
+    return {rows:[...c?.querySelectorAll('.gmfq-evidence-row')||[]].map(x=>x.textContent),
+      text:c?.textContent};
+  });
+  if(chfChecklist.rows.length!==3||
+     !chfChecklist.rows[2].includes('Prezzo nel modello: Prezzo diverge')||
+     !chfChecklist.text.includes('La finestra recente non dà una verifica direzionale confrontabile'))
+    throw Error(label+' EURCHF stale CHF cannot assert confirmed FX trigger '+JSON.stringify(chfChecklist));
+  console.log('CONTROL_ROOM_PREVIEW_PAIR_EVIDENCE_CHECKLIST_GREEN',label,
+    JSON.stringify({eurusd:eurChecklist.rows.length,gbpjpy:gbpChecklist.rows.length,
+      eurchf:chfChecklist.rows.length,viewport:eurChecklist.viewport}));
+
   console.log('CONTROL_ROOM_PREVIEW_PAIR_DECISION_BRIDGE_GREEN',label,
     JSON.stringify({eurusd:eurDecision.state,gbpjpy:gbpDecision.status,
       usdjpy:usdDecision.status,eurchf:chfDecision.status,viewport:eurDecision.view}));
