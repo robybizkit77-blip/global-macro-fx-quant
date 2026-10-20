@@ -1,0 +1,69 @@
+name: GBP ONS Two Official First Releases V1
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/macro/materialize_gbp_latest_first_release_v1.py'
+      - 'validation/macro/test_materialize_gbp_latest_first_release_v1.py'
+      - 'validation/materialize_gbp_labour_strict_pit_v1.py'
+      - 'validation/macro/GBP_MGSX_ROLLING_WINDOW_FIRST_RELEASE_MAP_2026-10-20.json'
+      - '.github/workflows/gbp-ons-two-first-releases-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/macro/materialize_gbp_latest_first_release_v1.py'
+      - 'validation/macro/test_materialize_gbp_latest_first_release_v1.py'
+      - 'validation/materialize_gbp_labour_strict_pit_v1.py'
+      - 'validation/macro/GBP_MGSX_ROLLING_WINDOW_FIRST_RELEASE_MAP_2026-10-20.json'
+      - '.github/workflows/gbp-ons-two-first-releases-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prove-publisher-first-vintages:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test strict archived ONS first release semantics and score fail closed
+        run: |
+          python -m unittest validation.macro.test_materialize_gbp_latest_first_release_v1 -v
+          python -m unittest validation.macro.test_gbp_ons_temporal_guard_v1 -v
+      - name: Fetch two dated official first releases directly from ONS and hash exact pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/gbp-ons-two-releases
+          python -m validation.macro.materialize_gbp_latest_first_release_v1 \
+            --out /tmp/gbp-ons-two-releases/first-release-source-audit.json
+          python - <<'PY'
+          import json,os
+          x=json.load(open('/tmp/gbp-ons-two-releases/first-release-source-audit.json'))
+          assert x['status']=='TWO_FIRST_RELEASE_PAGES_VERIFIED'
+          assert x['official_pages_independently_hashed']==2
+          assert x['all_history_vintage_certified'] is False
+          assert x['macro_score_rebase_authorized'] is False
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
+              f.write('## First-published UK LFS two-period source audit\n\n')
+              for r in x['first_release_rows']:
+                  f.write(f"- **{r['reference_month']}**: {r['headline_unemployment_rate_pct']}%")
+                  f.write(f" · ONS {r['release_date']} · SHA-256 `{r['page_sha256']}`")
+                  f.write(f" · [source]({r['source_url']})\n")
+              f.write('\n**Historical D baseline / 28 FX biases remain withheld.**\n')
+          PY
+          git diff --exit-code -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/sections/D.json live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
+      - name: Keep exact official first-publication evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uk-ons-two-vintage-pages-${{ github.run_id }}
+          path: /tmp/gbp-ons-two-releases/
+          if-no-files-found: warn
+          retention-days: 60
