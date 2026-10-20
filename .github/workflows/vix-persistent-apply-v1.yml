@@ -9,7 +9,9 @@ on:
     paths: ['.github/workflows/vix-persistent-apply-v1.yml', 'validation/fetch_cboe_vix_candidate_v2.py', 'validation/apply_cboe_vix_candidate_v1.py']
   workflow_dispatch:
   schedule:
-    # UTC duplicates cover CET/CEST; the local gate admits only 23:15/23:45 Rome time.
+    # UTC duplicates cover CET/CEST; delayed GitHub runs must still check Cboe.
+    # The candidate's official-date, maximum-business-day-lag, and anchored
+    # append/idempotence gates (not wall-clock minutes) decide whether to write.
     - cron: '15 21 * * 1-5'
     - cron: '45 21 * * 1-5'
     - cron: '15 22 * * 1-5'
@@ -25,13 +27,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 2, persist-credentials: true}
-      - name: Rome schedule gate
+      - name: Admit delayed Rome schedule runs (source freshness is the real gate)
         id: gate
         shell: bash
         run: |
           set -euo pipefail
-          hhmm="$(TZ=Europe/Rome date +'%H:%M')"
-          if [[ "${{ github.event_name }}" != schedule || " 23:15 23:45 " == *" $hhmm "* ]]; then echo 'should_run=true' >> "$GITHUB_OUTPUT"; else echo 'should_run=false' >> "$GITHUB_OUTPUT"; fi
+          echo "VIX admission: event=${{ github.event_name }} Rome time=$(TZ=Europe/Rome date +'%Y-%m-%d %H:%M:%S %Z')"
+          echo 'should_run=true' >> "$GITHUB_OUTPUT"
+          echo 'VIX_SCHEDULER_ADMISSION_PASS — every delayed scheduled run checks the official Cboe date and full source anchor'
       - uses: actions/setup-python@v5
         if: steps.gate.outputs.should_run == 'true'
         with: {python-version: '3.12'}
