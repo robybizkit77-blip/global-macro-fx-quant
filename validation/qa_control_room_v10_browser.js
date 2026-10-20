@@ -420,7 +420,7 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
       actual:x.querySelector('.gmfq-change-measured')?.textContent}));
   });
   if(deltaAUDCAD.find(x=>x.ccy==='AUD')?.status!=='WITHHELD'||
-     !deltaAUDCAD.find(x=>x.ccy==='AUD')?.actual?.includes('intervallo storico troppo lungo')||
+     !deltaAUDCAD.find(x=>x.ccy==='AUD')?.actual?.includes(ratesFeed.AUD.date)||
      deltaAUDCAD.find(x=>x.ccy==='CAD')?.status!=='MEASURED')
     throw Error(label+' AUDCAD observed 2Y series gaps misclassified '+JSON.stringify(deltaAUDCAD));
   const audReaction=await page.evaluate(()=>{
