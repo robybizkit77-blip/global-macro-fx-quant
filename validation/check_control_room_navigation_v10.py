@@ -63,7 +63,7 @@ items={
 "Cross-Asset Risk sources are separate and dated": "function mountCrossRisk(doc)" in s and "crossRiskObservation(d?.risk?.VIX,'VIX')" in s and "crossRiskObservation(d?.risk?.WTI,'WTI')" in s and "crossRiskBrent(res)" in s,
 "WTI benchmark and Brent futures are not conflated": "series.benchmark_key!=='RWTC'" in s and "b.vendor_symbol==='BZ=F'" in s and "Brent spot ufficiale: WITHHELD" in s,
 "Missing VIX/WTI/Brent cannot become zero": "series.last_value!==value" in s and "value:null" in s and "data-cross-status=" in s and "Nessun confronto di spread fra spot e futures" in s,
-"Cross-Asset excludes core and risk-on trading recommendations": "g.pair_engine_effect==='NONE'" in s and "Nessun giudizio di risk-on/risk-off" in s,
+"Cross-Asset excludes core and risk-on trading recommendations": "g.pair_engine_effect==='NONE'" in s and "nessun giudizio di risk-on/risk-off" in s,
 "Core data not changed": "localStorage.setItem" not in s and "github.com/repos/" not in s,
 }
 for k,v in items.items(): print(("PASS" if v else "FAIL")+": "+k)
