@@ -8,10 +8,14 @@ on:
       - 'validation/macro/test_rebase_readiness_v1.py'
       - 'validation/macro/rebase_joint_gate_v1.py'
       - 'validation/macro/test_rebase_joint_gate_v1.py'
+      - 'validation/macro/score_formula_provenance_v1.py'
+      - 'validation/macro/test_score_formula_provenance_v1.py'
       - 'validation/macro/latest_release_pit_ledger_v1.py'
       - 'validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json'
       - 'validation/macro/rebase_joint_gate_v1.py'
       - 'validation/macro/test_rebase_joint_gate_v1.py'
+      - 'validation/macro/score_formula_provenance_v1.py'
+      - 'validation/macro/test_score_formula_provenance_v1.py'
       - 'validation/macro/latest_release_pit_ledger_v1.py'
       - 'validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json'
       - '.github/workflows/macro-g8-rebase-readiness-v1.yml'
@@ -64,6 +68,20 @@ jobs:
           python-version: '3.12'
       - name: Verify G8 lineage, observation PIT, pair coverage and fail-closed no-write
         run: python -m unittest validation.macro.test_rebase_readiness_v1 -v
+      - name: Independently verify historical scalar scores vs display/directional code
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/macro-g8-rebase
+          python -m unittest validation.macro.test_score_formula_provenance_v1 -v
+          python -m validation.macro.score_formula_provenance_v1 --out /tmp/macro-g8-rebase/score-boundary.json
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          x=json.load(open('/tmp/macro-g8-rebase/score-boundary.json'))
+          assert x['historical_scalar_scores']==24
+          assert x['ready_for_numeric_macro_rebase'] is False
+          assert x['safe_to_update_28_pair_theses'] is False
+          print('**24 frozen scalar scores are readable, but economic score-generating formulas remain UNCERTIFIED.**')
+          PY
       - name: Produce immutable evidence for all 16 macro sources, Growth and 28 pairs
         shell: bash
         run: |
