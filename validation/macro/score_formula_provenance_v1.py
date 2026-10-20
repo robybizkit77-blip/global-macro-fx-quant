@@ -77,12 +77,12 @@ def inspect(model: dict, setup: dict, parts: dict[str, str], today: date) -> dic
             setup.get("entry_level_published") is False, "thesis / trade contract broken")
     require(setup.get("price_asof") and setup["price_asof"] >= model["asOf"],
             "historical Macro and newer price chronology broken")
-    require(model.get("asOf") == FROZEN_MACRO_ASOF,
-            "historical Macro baseline changed without a reviewed model release")
     baseline = date.fromisoformat(model["asOf"])
     price = date.fromisoformat(setup["price_asof"])
     require(baseline <= price <= today, "future baseline / price snapshot")
     require((today - baseline).days > 10, "historical model no longer stale; re-audit")
+    require(model.get("asOf") == FROZEN_MACRO_ASOF,
+            "historical Macro baseline changed without a reviewed model release")
     scores = {}
     for ccy in FX:
         row = model["macro"][ccy]
