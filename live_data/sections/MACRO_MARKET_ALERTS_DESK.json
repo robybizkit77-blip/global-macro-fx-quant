@@ -1,8 +1,51 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-20T15:49:20Z",
+  "generated_at_utc": "2026-10-20T16:49:25Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-abe19875df9a790d411b",
+      "observed_at_utc": "2026-10-20T16:39:08Z",
+      "headline": "Wall Street gains ground on healthcare stocks rally, oil retreat",
+      "summary": "Reuters riporta: Wall Street gains ground on healthcare stocks rally, oil retreat. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxOT2JsXzZ4YTVKcDJjNE9iTW42aU0wY0VOZXRtdDYxTzJTanBUOGZIT1FLSl9FVTNxQ1RpTVFSWHlsejgyR0Y1b3JQWXRlT0dEMjJPWWpXYlpfdFJQaHZKZG5KdUNMdW53NmlMd2RwUWJKWFB3dE9Xc2ZBbnRfalF3cWNzblhxTGJOTGlKYUh1a0FmWC1vaGQydWZXdTMzemJjSVg5NWZ0bw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-9496928cd8d74a959034",
+      "observed_at_utc": "2026-10-20T16:24:52Z",
+      "headline": "UK stocks slip as banks and commodity-linked stocks weigh",
+      "summary": "Reuters riporta: UK stocks slip as banks and commodity-linked stocks weigh. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "GBP"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxPeUJnNTg4TVpXUEhLRF9SWXZHRlVMY181Nks1THF3VW1RdHRMSjJFR3J1VmJ5YWRaQ0lGRXFyemU5WkxZZzdlVWdwRFJuYXJSTk1PTkxDeldhYWs3VlBFaElmeGtMWm4xOFhkZ2VtMEJ3aVRlcmo0VlNaYUY1UklfcXR1ZWNwV2JvOWFrbmlPXzdRRTZsaFVjcGs3TnctMWtkWGIxZFowSUhKSGJFalNn?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-c974cef7fe8d65a77ac9",
+      "observed_at_utc": "2026-10-20T16:25:12Z",
+      "headline": "French bond yields dip but remain near 24-year high in volatile trading",
+      "summary": "Reuters riporta: French bond yields dip but remain near 24-year high in volatile trading. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CREDIT",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxOdzNSV1VKT0t1WFIzSE9fT0Mzck9VVWRTWktvUTFOYXM5Q0w3NWZVWGEyWkROMl9FaGQ0Zk1pbU1WS3lwT1FaQkhxM2NsbEQ2cUtOY01RUi1TR3U0YVhPYlo1N2MwRG5IMzdKMjRqUmJLczAxOXJqSTgzRFMyNmZ2TFdIaldhUXRlN0daZmROMXY5SFBfakpTb3F3eWdqRW80MTl3?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-2b407b94bff879f784b0",
       "observed_at_utc": "2026-10-20T15:01:00Z",
