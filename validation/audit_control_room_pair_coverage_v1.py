@@ -91,6 +91,8 @@ def analyze(feeds, asof):
         "ecb_fixing": observed_day(history["last_as_of"], asof, "ECB.last_as_of"),
         "macro_baseline": observed_day(model.get("asOf"), asof, "D.asOf"),
     }
+    require(setup.get("macro_baseline_asof") == model.get("asOf"),
+            "published Macro baseline as-of must match D.asOf")
     require(setup["price_asof"] <= history["last_as_of"],
             "pair model Price is ahead of the official ECB history")
     required_rate = {}
