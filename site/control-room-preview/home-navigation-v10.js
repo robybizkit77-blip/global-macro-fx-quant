@@ -1011,9 +1011,11 @@ function mountScreenerPairBridge(doc){
  hero.insertAdjacentElement('afterend',p);
 }
 
+const mountedDocuments=new WeakSet();
 function onFrameLoad(){
  let doc;try{doc=frame.contentDocument}catch(_){return}
- if(!doc?.body)return;
+ if(!doc?.body||!doc.querySelector('.desk-main')||mountedDocuments.has(doc))return;
+ mountedDocuments.add(doc);
  if(!home()){
    if(route()==='tassi'){enhanceRatesDetail(doc);focusRatesSection(doc);applyMarketResearch(doc).catch(e=>console.warn('[GMFQ market pricing WITHHELD]',e))}
    if(route()==='coppie')mountPairResearch(doc).catch(e=>console.warn('[GMFQ pair research WITHHELD]',e));
@@ -1024,4 +1026,7 @@ function onFrameLoad(){
  style(doc);navigation(doc);applyHome(doc).catch(e=>console.warn('[GMFQ home extension WITHHELD]',e));
 }
 frame.addEventListener('load',onFrameLoad);
+// The approved page can load its iframe before this additive script subscribes.
+// Reuse the same guarded mount path; never double-inject into one document.
+try{if(frame.contentDocument?.readyState==='complete')onFrameLoad()}catch(_){/* cross-document transition */}
 })();
