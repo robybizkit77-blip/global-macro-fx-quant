@@ -31,6 +31,22 @@ FUNCTIONS = {
 }
 CYCLES = {"GOLDILOCKS", "SLOWDOWN_DISINFLATION", "STAGFLATION", "REFLATION"}
 
+# Earliest committed D.json snapshot visible in this repository. This pins
+# historical VALUES ONLY; it is not evidence of a source-to-score formula.
+# https://github.com/robybizkit77-blip/global-macro-fx-quant/commit/529acdd6026c88ecee8451e2e5bc36c740eece7d
+FROZEN_MACRO_ASOF = "2026-09-25"
+FROZEN_SNAPSHOT_COMMIT = "529acdd6026c88ecee8451e2e5bc36c740eece7d"
+FROZEN_HISTORICAL_SCORES = {
+    "USD": {"growth": 0.13, "labour": 0.68, "inflation": 1.68, "cycle": "GOLDILOCKS"},
+    "EUR": {"growth": -0.45, "labour": 1.19, "inflation": 0.84, "cycle": "SLOWDOWN_DISINFLATION"},
+    "GBP": {"growth": 0.47, "labour": -0.63, "inflation": 0.14, "cycle": "STAGFLATION"},
+    "JPY": {"growth": 1.37, "labour": 1.45, "inflation": 0.55, "cycle": "REFLATION"},
+    "CHF": {"growth": 0.96, "labour": 0.42, "inflation": 0.09, "cycle": "REFLATION"},
+    "CAD": {"growth": 0.08, "labour": 0.16, "inflation": -0.36, "cycle": "GOLDILOCKS"},
+    "AUD": {"growth": 0.47, "labour": -0.02, "inflation": -0.03, "cycle": "REFLATION"},
+    "NZD": {"growth": 0.24, "labour": -0.37, "inflation": 0.69, "cycle": "REFLATION"},
+}
+
 
 def require(ok: bool, why: str) -> None:
     if not ok:
@@ -61,6 +77,8 @@ def inspect(model: dict, setup: dict, parts: dict[str, str], today: date) -> dic
             setup.get("entry_level_published") is False, "thesis / trade contract broken")
     require(setup.get("price_asof") and setup["price_asof"] >= model["asOf"],
             "historical Macro and newer price chronology broken")
+    require(model.get("asOf") == FROZEN_MACRO_ASOF,
+            "historical Macro baseline changed without a reviewed model release")
     baseline = date.fromisoformat(model["asOf"])
     price = date.fromisoformat(setup["price_asof"])
     require(baseline <= price <= today, "future baseline / price snapshot")
@@ -74,6 +92,8 @@ def inspect(model: dict, setup: dict, parts: dict[str, str], today: date) -> dic
             require(type(x) in (int, float) and math.isfinite(x),
                     ccy + "." + field + ": historical numeric score malformed")
         scores[ccy] = {key: row[key] for key in (*PILLARS, "cycle")}
+    require(scores == FROZEN_HISTORICAL_SCORES,
+            "frozen historical score or cycle changed without certified regeneration")
     pairs = setup["pairs"]
     expected = {frozenset(pair) for pair in itertools.combinations(FX, 2)}
     actual = set()
@@ -129,6 +149,8 @@ def inspect(model: dict, setup: dict, parts: dict[str, str], today: date) -> dic
         "historical_regimes": len(FX),
         "pairs_in_source_snapshot": len(pairs),
         "historical_scores_sha256": hashlib.sha256(frozen.encode("utf-8")).hexdigest(),
+        "historical_snapshot_commit": FROZEN_SNAPSHOT_COMMIT,
+        "historical_values_locked_to_first_repo_snapshot": True,
         "source_files_sha256": source_hashes,
         "runtime_function_sha256": func_hashes,
         "certified_semantics": {
