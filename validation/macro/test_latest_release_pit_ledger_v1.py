@@ -138,7 +138,14 @@ class LatestReleaseLedgerTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             directory = Path(tmp)
             original = json.loads((ROOT / "validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json").read_text())
-            original["contradictions"][0]["official_first_release_value"] = 4.7
+            original["attestations"] = [r for r in original["attestations"] if r["key"] != "GBP.labour"]
+            original["contradictions"].append({
+                "key":"GBP.labour","observation_period":"2026-08",
+                "release_date":"2026-10-20",
+                "canonical_value":4.7,"official_first_release_value":4.7,
+                "url":"https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/bulletins/employmentintheuk/october2026",
+                "note":"Deliberately forged duplicate equal source conflict that should not pass source evidence"
+            })
             (directory / "CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json").write_text(json.dumps(original))
             with self.assertRaisesRegex(ValueError, "source contradiction must be real"):
                 source_web_attestations(directory)
