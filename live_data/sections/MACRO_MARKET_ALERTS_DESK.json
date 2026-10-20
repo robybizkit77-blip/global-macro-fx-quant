@@ -1,8 +1,53 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-20T10:48:42Z",
+  "generated_at_utc": "2026-10-20T11:48:32Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-a1fa76edac2b04dc449e",
+      "observed_at_utc": "2026-10-20T08:02:00Z",
+      "headline": "Sultan of Oman begins state visit to Britain as Gulf state plays pivotal role in Strait of Hormuz",
+      "summary": "AP News riporta: Sultan of Oman begins state visit to Britain as Gulf state plays pivotal role in Strait of Hormuz. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [
+        "GBP"
+      ],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxOaGNHWWFGUlhFYTdmWU5yR1BPRV90ZHVyWWNaWGh2N2FtbXZ4TFFiNFgxNm9VVTVBblA2ajZjMTF4LU02Um5SN3hDTzRnUDFrNzFwSFZVTHRHcWY2aUFJd3d2Z1daR2xWU1NCbHdaTGlNUXFydEV1TjJ6T01RS1ZHZkJmSVhtalFlUFFocTJkS2czbXdWVUt6OHV6TXMyNkZyNVE1blV3?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-1378f7c0587d768a8c5a",
+      "observed_at_utc": "2026-10-20T11:26:25Z",
+      "headline": "Nasdaq futures fall as oil prices jump, key earnings loom",
+      "summary": "Reuters riporta: Nasdaq futures fall as oil prices jump, key earnings loom. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxOT2JsXzZ4YTVKcDJjNE9iTW42aU0wY0VOZXRtdDYxTzJTanBUOGZIT1FLSl9FVTNxQ1RpTVFSWHlsejgyR0Y1b3JQWXRlT0dEMjJPWWpXYlpfdFJQaHZKZG5KdUNMdW53NmlMd2RwUWJKWFB3dE9Xc2ZBbnRfalF3cWNzblhxTGJOTGlKYUh1a0FmWC1vaGQydWZXdTMzemJjSVg5NWZ0bw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-d4454c288c0e74a60ae6",
+      "observed_at_utc": "2026-10-20T06:00:00Z",
+      "headline": "COMMENTARY: Markets' squeal is music to Fed ears — but still too faint",
+      "summary": "Reuters riporta: COMMENTARY: Markets' squeal is music to Fed ears — but still too faint. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxOanNEc3U3RUp6cGJ5a2hycUVSd2ZoYkJfSl9Qd1JEWkx5OFlOMTE5TjVXLUZNLUh0ZkZab0JSN1BHVHAteGI1cFRkckUycldMNHFPbWljOFMxNHVDcFFpMjlvRVpQclZnTWU4cTZVUUlkOExfMDEyVjItaC1GMTlKX0RNRzRGRnpacmo3QXlnclAxNWZsd1lpSUpCQWtqYllaZFhDTkdfRDRsTVhQdmplX1gyVEwzb3ow?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-0cf7ee2c4e4e6e6c4ec3",
       "observed_at_utc": "2026-10-20T01:33:00Z",
