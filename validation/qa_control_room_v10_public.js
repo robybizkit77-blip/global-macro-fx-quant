@@ -154,7 +154,7 @@ async function getState(page){
          last_row_date:history.rows?.at(-1)?.Date,
          setup_schema:setup.schema,setup_status:setup.status,
          setup_pair_count:setup.pair_count,setup_pairs:Object.keys(setup.pairs||{}).length,
-         setup_date:setup.price_asof,setup_audit:setup.price_audit?.status,
+         setup_date:setup.price_asof,setup_macro_asof:setup.macro_baseline_asof,setup_audit:setup.price_audit?.status,
          dxy_schema:dxy.schema,dxy_status:dxy.status,dxy_date:dxy.as_of,
          dxy_latest:dxy.history?.at(-1)?.date,
          dxy_non_official:dxy.not_official_ice===true,
@@ -168,7 +168,8 @@ async function getState(page){
         pricing.setup_schema!=='GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1'||
         pricing.setup_status!=='CURRENT_CANONICAL_ENGINE'||
         pricing.setup_pair_count!==28||pricing.setup_pairs!==28||
-        pricing.setup_audit!=='PASS'||!pricing.setup_date||
+        pricing.setup_audit!=='PASS'||!pricing.setup_date||!pricing.setup_macro_asof||
+        pricing.setup_macro_asof>pricing.setup_date||
         pricing.dxy_schema!=='GMFQ_DXY_SYNTHETIC_ECB_V1'||
         pricing.dxy_status!=='ESTIMATED_INFORMATIONAL'||
         pricing.dxy_date!==pricing.history_date||
@@ -331,8 +332,13 @@ async function getState(page){
            content:d?.getElementById('gmfq-pair-research-path')?.textContent,
            docWidth:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth};
        });
+       // A new certified Price overlay can have exactly the SAME date as the
+       // latest ECB fixing. It must still disclose the old Macro baseline;
+       // the legacy "fixing newer than thesis" sentence is not always true.
        if(p.pairs!==28||p.buttons!==8||
-          !p.content?.includes('non aggiorna automaticamente il giudizio del motore')||
+          !p.content?.includes('Modello: '+pricing.setup_date)||
+          !p.content?.includes('Baseline Macro/Tassi: '+pricing.setup_macro_asof)||
+          !p.content?.includes('Il dettaglio sopra resta la lettura canonica della tesi')||
           p.docWidth>p.viewport+16)
           throw Error(name+' public Pair Deep Dive date/routing regression '+JSON.stringify(p));
        await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="EURCHF"]').click();
