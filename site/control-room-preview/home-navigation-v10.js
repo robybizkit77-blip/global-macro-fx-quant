@@ -1011,12 +1011,98 @@ function mountScreenerPairBridge(doc){
  hero.insertAdjacentElement('afterend',p);
 }
 
+
+/* Additive Cross-Asset Gold readout. Never alters the 32 approved visual parts. */
+function validCrossGold(doc,gold){
+ const govern=doc?.governance||{};
+ if(doc?.schema!=='GMFQ_ESTIMATED_RESIDUAL_GAPS_V1'||doc?.official_lanes_untouched!==true||
+    govern.core_score_effect!=='NONE'||govern.bias_effect!=='NONE'||
+    govern.sizing_effect!=='NONE'||govern.pair_engine_effect!=='NONE'||
+    govern.forward_logger_effect!=='NONE'||govern.backtest_eligible_as_official!==false)return false;
+ if(gold?.status!=='MARKET_PROXY_ACTIVE_SECONDARY'||gold.vendor_symbol!=='GC=F'||
+    gold.currency!=='USD'||gold.instrument_type!=='FUTURE'||
+    gold.official_canonical_untouched!==true||
+    gold.source_endpoint!=='https://query1.finance.yahoo.com/v8/finance/chart/GC=F'||
+    !/^20\d{2}-\d{2}-\d{2}$/.test(gold.proxy_as_of||'')||
+    typeof gold.value!=='number'||!Number.isFinite(gold.value)||gold.value<=0)return false;
+ const date=new Date(gold.proxy_as_of+'T00:00:00Z');
+ if(Number.isNaN(date.getTime())||date.toISOString().slice(0,10)!==gold.proxy_as_of)return false;
+ const today=new Date(),day=Date.UTC(today.getUTCFullYear(),today.getUTCMonth(),today.getUTCDate());
+ const gap=(day-date.getTime())/86400000;
+ return gap>=0;
+}
+function crossGoldAge(iso){
+ const now=new Date(),day=Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate());
+ return Math.round((day-Date.parse(iso+'T00:00:00Z'))/86400000);
+}
+function crossGoldNumber(x){return typeof x==='number'&&Number.isFinite(x)?x.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2}):'—'}
+function crossGoldPct(x){return typeof x==='number'&&Number.isFinite(x)?(x>0?'+':'')+x.toFixed(2)+'%':'—'}
+async function mountCrossGold(doc){
+ if(route()!=='cross'||frame.contentDocument!==doc)return;
+ const main=doc.querySelector('.desk-main'),anchor=main?.querySelector('.desk-grid');
+ if(!anchor||doc.getElementById('gmfq-cross-gold-v10'))return;
+ const style=doc.createElement('style');
+ style.id='gmfq-cross-gold-v10-style';
+ style.textContent=
+  '#gmfq-cross-gold-v10{margin:0 0 14px;min-width:0}'+
+  '#gmfq-cross-gold-v10 .gmfq-gold-body{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:13px;padding:14px 17px 16px;min-width:0}'+
+  '#gmfq-cross-gold-v10 .gmfq-gold-column{min-width:0}'+
+  '#gmfq-cross-gold-v10 .gmfq-gold-quote{font:650 28px/1.2 Arial,sans-serif;color:#e8f0f7;font-variant-numeric:tabular-nums;margin:9px 0}'+
+  '#gmfq-cross-gold-v10 .gmfq-gold-badge{font:600 10px/1.5 Arial,sans-serif;color:#e3ca83}'+
+  '#gmfq-cross-gold-v10 .gmfq-gold-badge[data-state="WITHHELD"]{color:#efa7b1}'+
+  '#gmfq-cross-gold-v10 .gmfq-gold-line{font:11px/1.55 Arial,sans-serif;color:#afc4d2;margin:7px 0}'+
+  '#gmfq-cross-gold-v10 .gmfq-gold-changes{display:flex;gap:15px;flex-wrap:wrap;font:12px Arial,sans-serif;color:#e1d19a;margin:12px 0}'+
+  '#gmfq-cross-gold-v10 .gmfq-gold-spot{padding:12px 14px;border-left:2px solid #90784f;background:#0e2534;min-width:0}'+
+  '#gmfq-cross-gold-v10 .gmfq-gold-spot strong{display:block;font:600 13px/1.4 Arial,sans-serif;color:#d5e3ee;margin-bottom:7px}'+
+  '#gmfq-cross-gold-v10 .gmfq-gold-fine{padding:0 17px 13px;color:#8fa8b9;font:10px/1.55 Arial,sans-serif}'+
+  '@media(max-width:700px){#gmfq-cross-gold-v10 .gmfq-gold-body{grid-template-columns:1fr;padding:12px;gap:10px}'+
+  '#gmfq-cross-gold-v10 .gmfq-gold-quote{font-size:25px}#gmfq-cross-gold-v10 .gmfq-gold-fine{padding:0 12px 12px}}';
+ doc.head.appendChild(style);
+ const title=doc.getElementById('queued-title'),copy=doc.getElementById('queued-copy');
+ if(title)title.textContent='Cross-Asset · Metalli';
+ if(copy)copy.textContent='Primo layer informativo attivo: oro futures. Gli altri approfondimenti Cross-Asset restano in preparazione.';
+ const panel=doc.createElement('section');
+ panel.id='gmfq-cross-gold-v10';panel.className='desk-panel';
+ panel.setAttribute('aria-label','Gold futures e disponibilità del fixing spot ufficiale');
+ panel.dataset.sourceStatus='LOADING';
+ panel.innerHTML='<h2 class="desk-panel-title">Gold · contesto di rischio</h2><div class="desk-panel-body">Verifica della fonte in corso…</div>';
+ anchor.insertAdjacentElement('beforebegin',panel);
+ let gold=null,valid=false;
+ try{
+  const data=await feed('ESTIMATED_RESIDUAL_GAPS.json');
+  if(frame.contentDocument!==doc||route()!=='cross')return;
+  gold=data?.lanes?.['GOLD.market_proxy'];
+  valid=validCrossGold(data,gold);
+ }catch(e){console.warn('[GMFQ Gold secondary WITHHELD]',String(e))}
+ const current=valid&&crossGoldAge(gold.proxy_as_of)<=3;
+ const state=!valid?'WITHHELD':current?'SECONDARY_CURRENT':'SECONDARY_HISTORICAL';
+ const asof=valid?gold.proxy_as_of:'—';
+ const headline=current?'FUTURES INDICATIVO · RECENTE':state==='SECONDARY_HISTORICAL'?'FUTURES INDICATIVO · NON CORRENTE':'FUTURES · DATI NON VERIFICABILI';
+ panel.dataset.sourceStatus=state;
+ panel.dataset.goldAsOf=asof;
+ panel.innerHTML='<h2 class="desk-panel-title">Gold · contesto di rischio</h2>'+
+  '<div class="gmfq-gold-body"><div class="gmfq-gold-column">'+
+  '<div class="gmfq-gold-badge" data-state="'+state+'">'+headline+'</div>'+
+  '<div class="gmfq-gold-quote">'+(valid?crossGoldNumber(gold.value)+' <small style="font-size:12px">USD/oz</small>':'—')+'</div>'+
+  '<div class="gmfq-gold-line">GC=F · futures COMEX indicativo · as-of '+htmlEscape(asof)+'</div>'+
+  '<div class="gmfq-gold-changes"><span>Δ 1D: '+(valid?crossGoldPct(gold.change_1d_pct):'—')+
+  '</span><span>Δ ~1W: '+(valid?crossGoldPct(gold.change_1w_pct):'—')+'</span></div>'+
+  '<div class="gmfq-gold-line">Fonte: Yahoo Finance, quotazione futures secondaria'+
+   (state==='SECONDARY_HISTORICAL'?'. Dato storico, non utilizzabile come prezzo corrente.':'.')+'</div></div>'+
+  '<div class="gmfq-gold-spot"><strong>Gold Price LBMA · WITHHELD</strong>'+
+  '<p class="gmfq-gold-line">Nessuna quotazione spot ufficiale certificata in questo feed. Le tre osservazioni Gold legacy non hanno provenienza verificata e non sono usate in questo confronto.</p>'+
+  '<p class="gmfq-gold-line">Un futures indicativo non equivale a oro spot o fixing LBMA: non confondere strumenti, orari di rilevazione e metodologie.</p></div></div>'+
+  '<div class="gmfq-gold-fine">Solo contesto cross-asset · Non è un prezzo di regolamento certificato, un segnale, un livello operativo o un input per Macro/FX, bias, sizing e backtest.</div>';
+ doc.defaultView.GMFQ_CROSS_GOLD={status:state,as_of:asof,instrument:'GC=F',core_effect:'NONE',lbma_spot:'WITHHELD'};
+}
+
 const mountedDocuments=new WeakSet();
 function onFrameLoad(){
  let doc;try{doc=frame.contentDocument}catch(_){return}
  if(!doc?.body||mountedDocuments.has(doc))return;
  mountedDocuments.add(doc);
  if(!home()){
+   if(route()==='cross')mountCrossGold(doc).catch(e=>console.warn('[GMFQ Cross-Asset Gold WITHHELD]',e));
    if(route()==='tassi'){enhanceRatesDetail(doc);focusRatesSection(doc);applyMarketResearch(doc).catch(e=>console.warn('[GMFQ market pricing WITHHELD]',e))}
    if(route()==='coppie')mountPairResearch(doc).catch(e=>console.warn('[GMFQ pair research WITHHELD]',e));
    if(route()==='screener')mountScreenerPairBridge(doc);
