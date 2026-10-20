@@ -65,27 +65,6 @@
     },
     {
       "actual_ignored_for_pre_release_consensus": true,
-      "ccy": "CAD",
-      "confidence_grade": "B",
-      "consensus": "0.2%",
-      "date_match_gap_days": 0,
-      "event_key": "CAD|2026-10-19|INFLATION|Consumer Price Index",
-      "event_type": "INFLATION",
-      "impact": "High",
-      "official_date": "2026-10-19",
-      "official_date_overridden": false,
-      "official_title": "Consumer Price Index",
-      "previous": "-0.1%",
-      "provider": "FOREX_FACTORY_FAIR_ECONOMY_WEEKLY",
-      "provider_country": null,
-      "provider_date": "2026-10-19",
-      "provider_event": "CPI m/m",
-      "provider_url": null,
-      "status": "AVAILABLE",
-      "unit": null
-    },
-    {
-      "actual_ignored_for_pre_release_consensus": true,
       "ccy": "NZD",
       "confidence_grade": "C",
       "consensus": "0.8%",
@@ -106,7 +85,7 @@
       "unit": null
     }
   ],
-  "generated_at_utc": "2026-10-19T23:13:44.341736Z",
+  "generated_at_utc": "2026-10-20T06:51:11.245571Z",
   "provider": "FOREX_FACTORY_FAIR_ECONOMY_WEEKLY",
   "provider_endpoint": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
   "provider_field": "forecast",
