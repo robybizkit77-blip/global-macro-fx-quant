@@ -10,6 +10,10 @@ on:
       - 'payload/part-00.txt'
       - 'live_data/manifest.v2.json'
       - '.github/workflows/vix-postapply-certification-v1.yml'
+  workflow_run:
+    workflows:
+      - 'VIX Persistent Apply V1'
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -17,6 +21,13 @@ permissions:
 
 jobs:
   certify-vix-current:
+    # A GitHub Actions-authored source commit can suppress a normal push
+    # workflow trigger. workflow_run fires once the parent VIX refresh ends,
+    # then checkout resolves the CURRENT main including its guarded data commit.
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
