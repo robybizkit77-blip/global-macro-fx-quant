@@ -7,6 +7,7 @@ from datetime import date
 
 from validation.macro.gbp_ons_temporal_guard_v1 import ROOT, CONTRACT, SERIES, HEAT, build
 from validation.sources.gbp_ons_core import uk_lfs_rolling_window
+from validation.macro.stage_gbp_ons_dual_period_repair_v1 import stage
 
 NOW = date(2026, 10, 20)
 
@@ -94,6 +95,24 @@ class GBPTemporalGuardTests(unittest.TestCase):
         r=self.run_guard(mutate)
         self.assertFalse(r["safe_to_persist_gbp_labour"])
         self.assertIn("HEATMAP_OBSERVATION_PERIOD_MISMATCH",{x["action"] for x in r["issues"]})
+
+    def test_two_period_stage_replays_original_july_and_august(self):
+        r=stage(today=NOW)
+        self.assertEqual(r["status"],"STAGED_DUAL_PERIOD_NOT_PUBLISHED")
+        self.assertEqual(r["as_of"],"2026-08")
+        self.assertEqual(r["builder_receipt"]["series_action"],"APPEND_NEW")
+        self.assertEqual(r["builder_receipt"]["prior_revision"]["series_value"],4.9)
+        self.assertEqual(r["temporal_guard_after_stage"],"ALLOW_GBP_LABOUR_SOURCE_REFRESH")
+        self.assertFalse(r["safe_to_publish_without_archival_PIT"])
+        self.assertFalse(r["safe_to_rebase_structural_FX_scores"])
+        self.assertFalse(r["runtime_files_written"])
+
+    def test_two_period_stage_fails_on_unknown_canonical_july(self):
+        data=copy.deepcopy(self.original)
+        x=next(x for x in data["series"]["GBP"] if x["id"]=="UK_UNEMP_RATE_history_value")
+        x["values"][-1]=4.8
+        with self.assertRaisesRegex(ValueError,"unexpected latest source point"):
+            stage(today=NOW,**data)
 
     def test_quarantine_if_duplicate_observation_month(self):
         def mutate(d):
