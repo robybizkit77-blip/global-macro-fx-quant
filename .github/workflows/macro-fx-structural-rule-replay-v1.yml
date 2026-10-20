@@ -11,17 +11,21 @@ on:
       - 'validation/macro/test_score_formula_provenance_v1.py'
       - 'live_data/sections/D.json'
       - 'live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'
+      - 'payload/part-02.txt'
       - 'payload/part-03.txt'
       - 'payload/part-05.txt'
   push:
     branches: [main]
     paths:
       - '.github/workflows/macro-fx-structural-rule-replay-v1.yml'
+      - 'validation/macro/score_formula_provenance_v1.py'
+      - 'validation/macro/test_score_formula_provenance_v1.py'
       - 'validation/macro/export_structural_rule_trace_v1.mjs'
       - 'validation/macro/verify_structural_rule_trace_v1.py'
       - 'validation/macro/test_structural_rule_trace_v1.py'
       - 'live_data/sections/D.json'
       - 'live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'
+      - 'payload/part-02.txt'
       - 'payload/part-03.txt'
       - 'payload/part-05.txt'
   workflow_dispatch:
