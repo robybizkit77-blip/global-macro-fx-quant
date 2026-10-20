@@ -83,11 +83,7 @@ jobs:
                 # reconciling July first release 4.9 and August first release 4.7.
                 python -m validation.macro.gbp_ons_temporal_guard_v1 \
                   --receipt "$work/temporal-guard.json" > "$work/temporal-guard.log"
-                decision="$(python - <<PY
-import json
-print(json.load(open('$work/temporal-guard.json'))['status'])
-PY
-)"
+                decision="$(python -c "import json; print(json.load(open('$work/temporal-guard.json'))['status'])")"
                 if [ "$decision" != "ALLOW_GBP_LABOUR_SOURCE_REFRESH" ]; then
                   echo "GBP_labour $decision; quarantined only this source, continue other currencies"
                   echo "- GBP labour: $decision — correction requires reviewed July/August first-release PIT replay; other Macro series run normally" >> "$GITHUB_STEP_SUMMARY"
