@@ -7,6 +7,10 @@ on:
       - 'validation/macro/v2_shadow_features_v1.py'
       - 'validation/macro/test_v2_shadow_features_v1.py'
       - 'validation/macro/MACRO_V2_SHADOW_PHASE1_SPEC_2026-10-20.md'
+      - 'validation/macro/v2_bls_unrate_first_release_pilot_v1.py'
+      - 'validation/macro/test_v2_bls_unrate_first_release_pilot_v1.py'
+      - 'validation/macro/fixtures/v2_bls_us_unrate_first_release_2023_12_2024_04.json'
+      - 'validation/macro/MACRO_V2_BLS_UNRATE_PILOT_2026-10-20.md'
   workflow_dispatch:
 
 permissions:
@@ -23,6 +27,27 @@ jobs:
           python-version: '3.12'
       - name: Test first-release and revision PIT guardrails (synthetic)
         run: python -m unittest validation.macro.test_v2_shadow_features_v1 -v
+      - name: Replay five official BLS first-release web attestations without future leakage
+        run: |
+          set -euo pipefail
+          python -m unittest validation.macro.test_v2_bls_unrate_first_release_pilot_v1 -v
+          mkdir -p /tmp/macro-v2-shadow
+          python -m validation.macro.v2_bls_unrate_first_release_pilot_v1 \
+            --asof 2024-05-03T12:30:00Z \
+            --out /tmp/macro-v2-shadow/bls-unrate-pilot.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/macro-v2-shadow/bls-unrate-pilot.json'))
+          assert r['raw_features']['latest_period']=='2024-04'
+          assert r['illustrative_normalization']['training_observations']==4
+          assert r['archival_source_bytes_hashed'] is False
+          assert r['full_historical_pit_certified'] is False
+          assert r['ready_for_macro_scoring'] is False
+          assert r['safe_to_publish_new_D'] is False
+          assert r['safe_to_update_pair_theses'] is False
+          assert r['writes_live_data'] is False
+          print('BLS_FIRST_RELEASE_SHADOW_PILOT_GREEN_NOT_MODEL_CERTIFIED')
+          PY
       - name: Inventory G8 observed sources without live model publication
         run: |
           set -euo pipefail
