@@ -336,7 +336,7 @@
         "value": 4.9
       },
       "series_id": "MGSX",
-      "source": "ONS",
+      "source": "Office for National Statistics",
       "source_adapter_status": "READY",
       "transformation": "level",
       "transport_class": "OFFICIAL_DIRECT",
