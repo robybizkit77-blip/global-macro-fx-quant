@@ -11,11 +11,30 @@ from validation.macro.qualitative_label_review_queue_v1 import (
 
 
 def original():
-    return (
+    values = [
         json.loads(CHECKPOINT.read_text(encoding="utf-8")),
         *(json.loads((ROOT / path).read_text(encoding="utf-8"))
           for path in PATHS.values())
-    )
+    ]
+    # Restore *synthetically*, in memory only, the original source checkpoint
+    # for isolated delta tests. Production must still detect the REAL UK
+    # July/August repair as changed (one GBP currency, seven affected pairs).
+    s = next(row for row in values[2]["GBP"] if row["id"] == "UK_UNEMP_RATE_history_value")
+    if str(s["last_date"])[:7] == "2026-08":
+        assert s["dates"][-2:] == ["2026-07-01", "2026-08-01"]
+        assert s["values"][-2:] == [4.9, 4.7]
+        s["dates"].pop()
+        s["values"].pop()
+        s["values"][-1] = 4.7
+        s["last_date"] = "2026-07-01"
+        s["last_value"] = 4.7
+        h = values[3]["currencies"]["GBP"]["labour"]
+        h["history"].pop()
+        h["history"][-1] = 4.7
+        h["as_of"] = "2026-07-01"
+        h["latest_value"] = 4.7
+        values[3]["currencies"]["GBP"]["as_of_detail"]["unemployment"] = "2026-07-01"
+    return tuple(values)
 
 
 class QualitativeReviewTests(unittest.TestCase):

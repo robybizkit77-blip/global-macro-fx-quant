@@ -26,8 +26,8 @@ class LatestReleaseLedgerTests(unittest.TestCase):
         self.assertEqual(sum(out["counts"].values()), 16)
         self.assertEqual(out["counts"]["FULL_RELEASE_INSTANT"], 4)
         self.assertEqual(out["counts"]["WITHHELD_EXACT_PERIOD_EVIDENCE"], 0)
-        self.assertEqual(out["counts"]["WITHHELD_OFFICIAL_SOURCE_VALUE_CONFLICT"], 1)
-        self.assertEqual(out["counts"]["DATE_ONLY"], 11)
+        self.assertEqual(out["counts"]["WITHHELD_OFFICIAL_SOURCE_VALUE_CONFLICT"], 0)
+        self.assertEqual(out["counts"]["DATE_ONLY"], 12)
         self.assertFalse(out["safe_to_promote_macro_labels"])
         self.assertFalse(out["safe_to_publish_new_D"])
         self.assertFalse(out["historical_vintage_series_available"])
@@ -49,13 +49,13 @@ class LatestReleaseLedgerTests(unittest.TestCase):
         self.assertEqual(out["observations"]["JPY.labour"]["release"]["first_release_date"],
                          "2026-10-02")
 
-    def test_gbp_rolling_three_month_vintage_conflict_stays_withheld(self):
+    def test_gbp_two_period_first_release_corrected_without_promoting_macro_score(self):
         r = self.run_receipt()["observations"]["GBP.labour"]
-        self.assertEqual(r["current_observation_period"], "2026-07-01")
+        self.assertEqual(r["current_observation_period"], "2026-08-01")
         self.assertEqual(r["latest_transformed_observation"], 4.7)
-        self.assertEqual(r["release"]["status"], "WITHHELD_OFFICIAL_SOURCE_VALUE_CONFLICT")
-        self.assertEqual(r["release"]["source_disagreement"]["official_first_release_value"], 4.9)
-        self.assertEqual(r["release"]["source_disagreement"]["period"], "2026-07")
+        self.assertEqual(r["release"]["first_release_date"], "2026-10-20")
+        self.assertEqual(r["release"]["status"], "DATE_ONLY")
+        self.assertTrue(r["release"]["date_only_not_eligible_for_intraday_PIT"])
         self.assertFalse(r["release"]["historical_backtest_safe_for_all_periods"])
 
     def test_date_only_is_never_intraday_eligible(self):
@@ -138,7 +138,14 @@ class LatestReleaseLedgerTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             directory = Path(tmp)
             original = json.loads((ROOT / "validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json").read_text())
-            original["contradictions"][0]["official_first_release_value"] = 4.7
+            original["attestations"] = [r for r in original["attestations"] if r["key"] != "GBP.labour"]
+            original["contradictions"].append({
+                "key":"GBP.labour","observation_period":"2026-08",
+                "release_date":"2026-10-20",
+                "canonical_value":4.7,"official_first_release_value":4.7,
+                "url":"https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/bulletins/employmentintheuk/october2026",
+                "note":"Deliberately forged duplicate equal source conflict that should not pass source evidence"
+            })
             (directory / "CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json").write_text(json.dumps(original))
             with self.assertRaisesRegex(ValueError, "source contradiction must be real"):
                 source_web_attestations(directory)
