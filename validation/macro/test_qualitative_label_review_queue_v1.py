@@ -88,7 +88,7 @@ class QualitativeReviewTests(unittest.TestCase):
 
     def test_estimated_ois_status_change_never_promotes_a_policy_vote(self):
         def modify(x):
-            x[6]["USD"]["as_of"] = "2026-10-20"
+            x[6]["currencies"]["USD"]["as_of"] = "2026-10-20"
         r = self.run_review(modify)
         self.assertEqual(r["changed_currencies"], ["USD"])
         self.assertEqual(r["impacted_pairs_count"], 7)
