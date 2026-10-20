@@ -428,7 +428,7 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
     return {status:c?.dataset.reactionStatus,content:c?.textContent};
   });
   if(audReaction.status!=='WITHHELD'||
-     !audReaction.content?.includes('meno di due date ufficiali comuni recenti'))
+     !audReaction.content?.includes('NON VALUTABILE'))
      throw Error(label+' AUDCAD reaction used unevenly dated historical 2Y '+JSON.stringify(audReaction));
 
   await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="GBPJPY"]').click();
