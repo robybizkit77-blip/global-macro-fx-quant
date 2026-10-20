@@ -16,6 +16,12 @@ on:
     - cron: '45 21 * * 1-5'
     - cron: '15 22 * * 1-5'
     - cron: '45 22 * * 1-5'
+    # Cboe's historical CSV is updated daily without a fixed publication hour.
+    # If all four overnight probes precede that upload, resume the next day.
+    # Saturday probes catch Friday's close without waiting for Monday evening.
+    # 07:45 / 12:45 UTC = 09:45 / 14:45 CEST or 08:45 / 13:45 CET.
+    - cron: '45 7 * * 1-6'
+    - cron: '45 12 * * 1-6'
 
 permissions: {contents: write}
 concurrency: {group: vix-persistent-apply-v1, cancel-in-progress: false}
@@ -86,6 +92,15 @@ jobs:
           python validation/rebuild_live_data_runtime.py --verify-only
           cmp -s live_data/sections/D.json /tmp/vix-persistent/D.replacement.json
           git diff --exit-code -- live_data payload
+          python - <<'PY'
+          import json
+          c=json.load(open('/tmp/vix-persistent/candidate.json'))
+          d=json.load(open('live_data/sections/D.json'))['risk']['VIX']
+          assert d['last_date']==c['latest_date']
+          assert float(d['last_value'])==float(c['latest_value'])
+          state='VIX_SOURCE_PUBLICATION_PENDING' if c['business_day_lag']>0 else 'VIX_RUNTIME_ALREADY_CURRENT'
+          print(state, 'official_date='+c['latest_date'], 'runtime_date='+d['last_date'], 'business_day_lag='+str(c['business_day_lag']))
+          PY
       - name: Validation branch restores runtime
         if: steps.gate.outputs.should_run == 'true' && steps.candidate.outputs.status == 'UPDATE_AVAILABLE' && github.ref != 'refs/heads/main'
         run: |
