@@ -28,6 +28,8 @@ FILES = (
     # Risk UI & fail-closed freshness must be delivered, not only risk data.
     "dashboard/risk-operational-v1.js",
     "dashboard/editorial-freshness-guard-v1.js",
+    # Brent's secondary futures proxy is a separate displayed Risk input.
+    "live_data/sections/ESTIMATED_RESIDUAL_GAPS.json",
 )
 
 
