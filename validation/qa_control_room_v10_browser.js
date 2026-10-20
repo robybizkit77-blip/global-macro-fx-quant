@@ -388,13 +388,17 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
 
   const eurDecision=await page.evaluate(()=>{
     const d=document.getElementById('gmfq-page').contentDocument,c=d?.getElementById('gmfq-pair-decision-bridge');
-    return {state:c?.dataset.bridgeStatus,blocks:[...c?.querySelectorAll('.gmfq-decision-cols>div')||[]].map(x=>x.textContent),
+    return {state:c?.dataset.bridgeStatus,baseline:c?.dataset.baselineStatus,blocks:[...c?.querySelectorAll('.gmfq-decision-cols>div')||[]].map(x=>x.textContent),
       content:c?.textContent,doc:d?.documentElement.scrollWidth,view:d?.documentElement.clientWidth};
   });
-  if(eurDecision.state!=='CONTRO_TESI'||eurDecision.blocks.length!==3||
+  if(eurDecision.state!=='NON_DETERMINATO'||eurDecision.baseline!=='STALE_OR_UNVERIFIED'||
+     eurDecision.blocks.length!==3||
      !eurDecision.blocks[0]?.includes('USD')||!eurDecision.blocks[1]?.includes('CON RISCHI')||
      !eurDecision.blocks[2]?.includes('Coerente tra 2Y e FX')||
      !eurDecision.content?.includes('Una coerenza 2Y–FX non equivale a conferma della tesi')||
+     !eurDecision.blocks[0]?.includes('Preferenza storica')||
+     !eurDecision.content?.includes('I movimenti recenti FX e 2Y restano osservazioni valide ma non confermano né invalidano la tesi storica')||
+     !eurDecision.content?.includes('Prima rivalidare la baseline Macro/Tassi')||
      !eurDecision.content?.includes('Non sono disponibili trigger numerici certificati')||
      eurDecision.doc>eurDecision.view+16)
     throw Error(label+' EURUSD coherence must not be promoted as canonical USD thesis confirmation '+JSON.stringify(eurDecision));
