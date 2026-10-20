@@ -174,11 +174,10 @@ def build_ledger(root, today, items=None):
                 require(pub <= today, key+": future official release metadata")
                 require(pub >= date.fromisoformat(period+"-01"),
                         key+": publication before reference month")
-                if math.isclose(r["value"], actual["latest_value"],
-                                rel_tol=0.0, abs_tol=1e-8):
-                    match.append(r)
-            require(not raw or match,
-                    key+": anchored period matches but published value conflicts with latest")
+                require(math.isclose(r["value"], actual["latest_value"],
+                                     rel_tol=0.0, abs_tol=1e-8),
+                        key+": conflicting current-period pinned official value")
+                match.append(r)
             if match:
                 require(len({v["date"] for v in match}) == 1,
                         key+": incompatible official first-release dates")
