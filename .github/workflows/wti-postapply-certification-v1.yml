@@ -10,6 +10,11 @@ on:
       - 'payload/part-00.txt'
       - 'live_data/manifest.v2.json'
       - '.github/workflows/wti-postapply-certification-v1.yml'
+      - 'validation/risk/test_wti_persistent_schedule_contract_v1.py'
+  workflow_run:
+    workflows:
+      - 'WTI Persistent Rebuild V1'
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -17,11 +22,19 @@ permissions:
 
 jobs:
   certify-wti-current:
+    # Bot-created WTI commits can suppress on:push; verify latest main on workflow_run.
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Check scheduled recovery and postapply workflow contract
+        run: python -m unittest validation.risk.test_wti_persistent_schedule_contract_v1 -v
 
       - name: Install XLS reader
         run: |

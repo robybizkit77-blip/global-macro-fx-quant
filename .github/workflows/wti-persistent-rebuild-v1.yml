@@ -3,17 +3,20 @@ name: WTI Persistent Rebuild V1
 on:
   pull_request:
     branches: [main]
-    paths: ['.github/workflows/wti-persistent-rebuild-v1.yml', 'validation/fetch_eia_direct_wti_candidate_v1.py', 'validation/apply_eia_direct_wti_candidate_v1.py']
+    paths: ['.github/workflows/wti-persistent-rebuild-v1.yml', 'validation/fetch_eia_direct_wti_candidate_v1.py', 'validation/apply_eia_direct_wti_candidate_v1.py', 'validation/risk/test_wti_persistent_schedule_contract_v1.py']
   push:
     branches: [main]
-    paths: ['.github/workflows/wti-persistent-rebuild-v1.yml', 'validation/fetch_eia_direct_wti_candidate_v1.py', 'validation/apply_eia_direct_wti_candidate_v1.py']
+    paths: ['.github/workflows/wti-persistent-rebuild-v1.yml', 'validation/fetch_eia_direct_wti_candidate_v1.py', 'validation/apply_eia_direct_wti_candidate_v1.py', 'validation/risk/test_wti_persistent_schedule_contract_v1.py']
   workflow_dispatch:
   schedule:
-    # UTC duplicates cover CET/CEST; the local gate admits only 00:15/00:45 Rome time.
+    # UTC duplicates cover CET/CEST; delayed scheduled runs must still check EIA.
+    # Additional daytime/Saturday probes catch EIA uploads after the night slots.
     - cron: '15 22 * * 1-5'
     - cron: '45 22 * * 1-5'
     - cron: '15 23 * * 1-5'
     - cron: '45 23 * * 1-5'
+    - cron: '45 7 * * 1-6'
+    - cron: '45 12 * * 1-6'
 
 permissions: {contents: write}
 concurrency: {group: wti-persistent-rebuild-v1, cancel-in-progress: false}
@@ -25,13 +28,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 2, persist-credentials: true}
-      - name: Rome schedule gate
+      - name: Admit delayed EIA checks independent of exact Rome start minute
         id: gate
         shell: bash
         run: |
           set -euo pipefail
-          hhmm="$(TZ=Europe/Rome date +'%H:%M')"
-          if [[ "${{ github.event_name }}" != schedule || " 00:15 00:45 " == *" $hhmm "* ]]; then echo 'should_run=true' >> "$GITHUB_OUTPUT"; else echo 'should_run=false' >> "$GITHUB_OUTPUT"; fi
+          echo "WTI admission: event=${{ github.event_name }} Rome time=$(TZ=Europe/Rome date +'%Y-%m-%d %H:%M:%S %Z')"
+          echo 'should_run=true' >> "$GITHUB_OUTPUT"
+          echo 'WTI_SCHEDULER_ADMISSION_PASS'
+      - name: Regression-test delayed EIA checks and independent postapply certification
+        if: steps.gate.outputs.should_run == 'true'
+        run: python -m unittest validation.risk.test_wti_persistent_schedule_contract_v1 -v
       - uses: actions/setup-python@v5
         if: steps.gate.outputs.should_run == 'true'
         with: {python-version: '3.12'}
@@ -83,6 +90,16 @@ jobs:
           python validation/rebuild_live_data_runtime.py --verify-only
           cmp -s live_data/sections/D.json /tmp/wti-persistent/D.replacement.json
           git diff --exit-code -- live_data payload
+          python - <<'PY'
+          import datetime as dt,json
+          c=json.load(open('/tmp/wti-persistent/candidate.json'))
+          w=json.load(open('live_data/sections/D.json'))['risk']['WTI']
+          assert w['last_date']==c['last_date'] and float(w['last_value'])==float(c['last_value'])
+          lag=(dt.date.fromisoformat(c['as_of'])-dt.date.fromisoformat(c['last_date'])).days
+          assert lag>=0, 'EIA candidate is from the future'
+          state='WTI_EIA_SOURCE_PUBLICATION_PENDING' if lag>0 else 'WTI_RUNTIME_ALREADY_CURRENT'
+          print(state,'official_date='+c['last_date'],'runtime_date='+w['last_date'],'calendar_day_lag='+str(lag))
+          PY
       - name: Validation branch restores runtime
         if: steps.gate.outputs.should_run == 'true' && steps.candidate.outputs.status == 'UPDATE_AVAILABLE' && github.ref != 'refs/heads/main'
         run: |
