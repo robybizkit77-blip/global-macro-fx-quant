@@ -1,8 +1,39 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-19T20:49:03Z",
+  "generated_at_utc": "2026-10-20T01:01:56Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-d0757556a1020f347815",
+      "observed_at_utc": "2026-10-19T17:41:13Z",
+      "headline": "Canadian dollar notches nearly four-week high on BoC rate hike bets",
+      "summary": "Reuters riporta: Canadian dollar notches nearly four-week high on BoC rate hike bets. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD",
+        "CAD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQejFjMHFhbTY3RGNrb3ZLNnZvd2QtWjl4eDg5cG9vRmR3Qk9zbGNBWXM1VXE5Z0ZWamFZYUptd0RwTmdieTRjQXVjWE5YVEhlVzFOUEo3WnF4aVRqSmNvUUFTZnVwVHo2aHVuTXZybk5UT0ZqSmtGNHdfRXZhNWdzVnpDRWRja2ExdFFHNTYwUDg2bmxzWjdRekRHeUtKU3RuY1Z3M2FZSktjdXliQlpZZjBn?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-2ec744a2116845fe4adb",
+      "observed_at_utc": "2026-10-19T20:49:44Z",
+      "headline": "Oil stocks in US strategic petroleum reserve fall to lowest level since 1982",
+      "summary": "Reuters riporta: Oil stocks in US strategic petroleum reserve fall to lowest level since 1982. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxOTS1qZEVDSUY0Z2dXY0l6TzZCaGpGRnJOMF9Wb0Q1Q0pCVTI5YjN2Q2VyVXJKVnlQa1RuOEdYWWdZc3dQYjRxTVQ5RUVpZzUtc2hJMU50NlA2aUFhcHZCd3o1TFZ4c0hmdnZPckxSTHduS0JNN05CRWdKVUJBSzdkYm10U2pCSFIyLTlvT2NrRWVVOVhYSnpGSEdjSVJTZnJXbGhaXy1GUDBjVGttZl9BUkpzd0tYNDBGUUh4cUt4cw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-7dfe61b59b46e2e4175e",
       "observed_at_utc": "2026-10-19T10:10:13Z",
