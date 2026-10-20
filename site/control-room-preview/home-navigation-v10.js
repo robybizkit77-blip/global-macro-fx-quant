@@ -1014,7 +1014,7 @@ function mountScreenerPairBridge(doc){
 const mountedDocuments=new WeakSet();
 function onFrameLoad(){
  let doc;try{doc=frame.contentDocument}catch(_){return}
- if(!doc?.body||!doc.querySelector('.desk-main')||mountedDocuments.has(doc))return;
+ if(!doc?.body||doc.URL==='about:blank'||mountedDocuments.has(doc))return;
  mountedDocuments.add(doc);
  if(!home()){
    if(route()==='tassi'){enhanceRatesDetail(doc);focusRatesSection(doc);applyMarketResearch(doc).catch(e=>console.warn('[GMFQ market pricing WITHHELD]',e))}
