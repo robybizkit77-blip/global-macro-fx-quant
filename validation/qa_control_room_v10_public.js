@@ -291,7 +291,7 @@ async function getState(page){
        let current=false;
        for(let attempt=0;attempt<16;attempt++){
          current=await page.evaluate(()=>{
-           return !!document.querySelector('script[src*="home-navigation-v10.js?v=cross-risk-energy-20261020"]');
+           return !!document.querySelector('script[src*="home-navigation-v10.js?v=macro-thesis-guard-20261020"]');
          });
          if(current)break;
          console.log('PUBLIC_PAIR_ADDON_CDN_PENDING',name,attempt);
@@ -304,7 +304,7 @@ async function getState(page){
          catch(_){console.log('PUBLIC_PAIR_HOME_FEED_PENDING',name,attempt)}
          await page.waitForTimeout(3000);
        }
-       if(!current)current=await page.evaluate(()=>!!document.querySelector('script[src*="home-navigation-v10.js?v=cross-risk-energy-20261020"]'));
+       if(!current)current=await page.evaluate(()=>!!document.querySelector('script[src*="home-navigation-v10.js?v=macro-thesis-guard-20261020"]'));
        if(!current)throw Error(name+' PUBLIC_PAIR_ADDON_VERSION_NOT_DEPLOYED');
      }
      const homePair=await page.frameLocator('#gmfq-page').locator('#pairs tr[data-filter]').first().getAttribute('data-filter');
@@ -416,15 +416,21 @@ async function getState(page){
          const decision=await page.evaluate(()=>{
            const d=document.getElementById('gmfq-page')?.contentDocument,
              c=d?.getElementById('gmfq-pair-decision-bridge');
-           return {status:c?.dataset.bridgeStatus,
+           return {status:c?.dataset.bridgeStatus,baseline:c?.dataset.baselineStatus,
              cells:[...c?.querySelectorAll('.gmfq-decision-cols>div')||[]].map(x=>x.textContent),
              content:c?.textContent,documentWidth:d?.documentElement.scrollWidth,
              viewport:d?.documentElement.clientWidth};
          });
-         if(decision.status!=='CONTRO_TESI'||decision.cells.length!==3||
+         const candidateOnPublic=process.env.GITHUB_EVENT_NAME==='pull_request';
+         const expectedBridge=candidateOnPublic?'CONTRO_TESI':'NON_DETERMINATO';
+         if(decision.status!==expectedBridge||decision.cells.length!==3||
             !decision.cells[0]?.includes('USD')||!decision.cells[1]?.includes('CON RISCHI')||
             !decision.cells[2]?.includes('Coerente tra 2Y e FX')||
             !decision.content?.includes('Una coerenza 2Y–FX non equivale a conferma della tesi')||
+            (!candidateOnPublic&&(decision.baseline!=='STALE_OR_UNVERIFIED'||
+               !decision.cells[0]?.includes('Preferenza storica')||
+               !decision.content?.includes('Prima rivalidare la baseline Macro/Tassi')||
+               !decision.content?.includes('I movimenti recenti FX e 2Y restano osservazioni valide')))||
             !decision.content?.includes('Non sono disponibili trigger numerici certificati')||
             decision.documentWidth>decision.viewport+16)
            throw Error(name+' Public EURUSD bridge conflates Rates/FX agreement with USD thesis '+JSON.stringify(decision));
