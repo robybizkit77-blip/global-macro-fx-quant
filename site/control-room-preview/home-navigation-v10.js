@@ -1199,6 +1199,8 @@ async function mountCrossRisk(doc){
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-grid{padding:10px 12px}'+
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-note{padding:12px}}';
  doc.head.appendChild(style);
+ const kicker=doc.querySelector('.desk-hero .desk-kicker');
+ if(kicker)kicker.textContent='CROSS-ASSET · RESEARCH DESK';
  const title=doc.getElementById('queued-title'),copy=doc.getElementById('queued-copy');
  if(title)title.textContent='Cross-Asset · Rischio e commodities';
  if(copy)copy.textContent='Gold, VIX ed energia: dati distinti per fonte e aggiornamento. Altri approfondimenti restano in preparazione.';
