@@ -54,10 +54,17 @@ def check_dimension(dimension: str, root: Path) -> dict:
     else:
         assert c["series_id"] == "MGSX", c
         assert c["transformation"] == "level", c
-        assert c["observation_date"] == "2026-07-01", c
+        assert c["observation_date"] == "2026-08-01", c
         assert abs(float(c["value"]) - 5.0) < 1e-12, c
         assert a["upstream_series_id"] == "MGSX" and a["dataset"] == "LMS", a
-        assert a["prior_period"] == "2026-06-01" and abs(float(a["prior_value"]) - 4.9) < 1e-12, a
+        assert a["prior_period"] == "2026-07-01" and abs(float(a["prior_value"]) - 4.9) < 1e-12, a
+        assert a["source_period_center_month"] == "2026-07-01", a
+        assert a["canonical_period_semantics"] == "ROLLING_LFS_WINDOW_END_MONTH", a
+        assert a["latest_rolling_window"]["window_start_month"] == "2026-06-01", a
+        assert a["latest_rolling_window"]["canonical_end_month"] == "2026-08-01", a
+        assert a["prior_rolling_window"]["window_start_month"] == "2026-05-01", a
+        assert a["prior_rolling_window"]["canonical_end_month"] == "2026-07-01", a
+        assert a["structural_macro_score_promotion"] is False, a
     run(str(BUILDER), "--candidate", str(candidate), "--output-dir", str(built))
     summary = json.loads((built / "summary.json").read_text())
     assert summary["status"] == "PASS" and summary["live_data_modified"] is False, summary

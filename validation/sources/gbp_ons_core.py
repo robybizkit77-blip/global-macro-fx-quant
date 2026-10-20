@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import argparse
+import calendar
 import json
+from datetime import date
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -62,6 +64,34 @@ def parse_month(row: dict[str, Any]) -> str:
     if year.isdigit() and month in MONTHS:
         return f"{int(year):04d}-{MONTHS[month]:02d}-01"
     raise ValueError(f"cannot parse ONS monthly period from row: {row}")
+
+
+
+def month_shift(month_date: str, delta: int) -> str:
+    """Shift canonical YYYY-MM-01 by whole months without a timezone guess."""
+    dt = date.fromisoformat(month_date)
+    if dt.day != 1:
+        raise ValueError("ONS period must represent first day of month")
+    absmonth = dt.year * 12 + dt.month - 1 + delta
+    if absmonth < 12:
+        raise ValueError("ONS out-of-range three-month period")
+    year, month = divmod(absmonth, 12)
+    return f"{year:04d}-{month + 1:02d}-01"
+
+
+def uk_lfs_rolling_window(middle_month: str) -> dict[str, str]:
+    """ONS MGSX MONTH is the CENTER month; canonical replay uses END month."""
+    first = month_shift(middle_month, -1)
+    last = month_shift(middle_month, 1)
+    return {
+        "source_center_month": middle_month,
+        "window_start_month": first,
+        "window_end_month": last,
+        "canonical_end_month": last,
+        "ons_period_label": (f"{calendar.month_abbr[int(first[5:7])].upper()}-"
+                             f"{calendar.month_abbr[int(last[5:7])].upper()} "
+                             f"{last[:4]}"),
+    }
 
 
 def extract_months(payload: dict[str, Any]) -> list[tuple[str, float]]:
@@ -153,6 +183,19 @@ def build_candidate(dimension: str, payload: dict[str, Any]) -> tuple[dict[str, 
     observations = extract_months(payload)
     latest_period, latest_value = observations[-1]
     prior_period, prior_value = observations[-2]
+    # ONS MGSX reports rolling UK LFS windows by CENTER month (e.g. JUL
+    # 2026 = June-August) while the historical canonical first-release
+    # materializer stores the WINDOW END month. CPI is calendar-month based.
+    if dimension == "labour":
+        latest_window = uk_lfs_rolling_window(latest_period)
+        prior_window = uk_lfs_rolling_window(prior_period)
+        source_latest_center_month = latest_period
+        source_prior_center_month = prior_period
+        latest_period = latest_window["canonical_end_month"]
+        prior_period = prior_window["canonical_end_month"]
+    else:
+        latest_window = prior_window = None
+        source_latest_center_month = source_prior_center_month = None
     heat_series_id, frequency, transformation = resolve_heatmap_contract(dimension)
     macro_series_id = resolve_macro_series_id(dimension, heat_series_id)
     candidate = {
@@ -166,6 +209,12 @@ def build_candidate(dimension: str, payload: dict[str, Any]) -> tuple[dict[str, 
         "api_url": build_api_url(dimension), "latest_period": latest_period, "latest_value": latest_value,
         "prior_period": prior_period, "prior_value": prior_value, "delta": latest_value - prior_value,
         "candidate_only": True, "live_data_written": False,
+        "source_period_center_month": source_latest_center_month,
+        "prior_source_period_center_month": source_prior_center_month,
+        "latest_rolling_window": latest_window,
+        "prior_rolling_window": prior_window,
+        "canonical_period_semantics": ("ROLLING_LFS_WINDOW_END_MONTH" if dimension == "labour" else "CALENDAR_MONTH"),
+        "structural_macro_score_promotion": False,
     }
     return candidate, audit
 
