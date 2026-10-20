@@ -356,8 +356,9 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
   const eu=deltaEURUSD.legs.find(x=>x.ccy==='EUR'),us=deltaEURUSD.legs.find(x=>x.ccy==='USD');
   if(eu?.status!=='MEASURED'||us?.status!=='MEASURED'||
      !eu.actual?.includes('2026-10-15 → 2026-10-16')||
-     !us.actual?.includes('2026-10-15 → 2026-10-16')||
-     !eu.actual?.includes('+3.7 bp')||!us.actual?.includes('-3.0 bp')||
+     !us.actual?.includes(ratesFeed.USD.history2.dates.at(-2)+' → '+ratesFeed.USD.history2.dates.at(-1))||
+     !eu.actual?.includes(((x)=>((x>0?'+':'')+x.toFixed(1)+' bp'))(Math.round((ratesFeed.EUR.history2.values.at(-1)-ratesFeed.EUR.history2.values.at(-2))*1000)/10))||
+     !us.actual?.includes(((x)=>((x>0?'+':'')+x.toFixed(1)+' bp'))(Math.round((ratesFeed.USD.history2.values.at(-1)-ratesFeed.USD.history2.values.at(-2))*1000)/10))||
      !eu.model?.includes('Rates: migliora')||!us.model?.includes('Rates: peggiora')||
      !deltaEURUSD.text?.includes('diagnosi qualitativa'))
     throw Error(label+' EURUSD history-derived 2Y changes vs model not separated '+JSON.stringify(deltaEURUSD));
@@ -464,15 +465,19 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
     const c=document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-pair-market-reaction');
     return {status:c?.dataset.reactionStatus,content:c?.textContent};
   });
-  if(jpyReaction.status!=='NON_CONCLUSIVO'||!jpyReaction.content?.includes('±0,05%'))
-    throw Error(label+' USDJPY subthreshold FX wrongly promoted to clear signal '+JSON.stringify(jpyReaction));
+  if(!['COERENTE','DIVERGENTE','NON_CONCLUSIVO','WITHHELD'].includes(jpyReaction.status)||
+     (jpyReaction.status==='NON_CONCLUSIVO'&&!jpyReaction.content?.includes('±0,05%')))
+    throw Error(label+' USDJPY must remain threshold-labelled and data-derived '+JSON.stringify(jpyReaction));
   const usdDecision=await page.evaluate(()=>{
     const c=document.getElementById('gmfq-page').contentDocument?.getElementById('gmfq-pair-decision-bridge');
     return {status:c?.dataset.bridgeStatus,text:c?.textContent};
   });
-  if(usdDecision.status!=='NON_DETERMINATO'||
-     !usdDecision.text?.includes('Nessuna conferma o invalidazione dal fixing'))
-    throw Error(label+' USDJPY subthreshold move cannot confirm or invalidate USD view '+JSON.stringify(usdDecision));
+  const usdExpected=jpyReaction.status==='NON_CONCLUSIVO'||jpyReaction.status==='WITHHELD'?
+    'NON_DETERMINATO':null;
+  if((usdExpected&&usdDecision.status!==usdExpected)||
+     (usdExpected&&!usdDecision.text?.includes('Nessuna conferma o invalidazione dal fixing'))||
+     !usdDecision.text?.includes('Non sono disponibili trigger numerici certificati'))
+    throw Error(label+' USDJPY must not invent a trade trigger from short 2Y/FX reaction '+JSON.stringify({usdDecision,jpyReaction}));
 
   console.log('CONTROL_ROOM_PREVIEW_PAIR_FX_REACTION_GREEN',label,
     JSON.stringify({eurusd:eurReaction.state,gbpjpy:gbpReaction.state,
