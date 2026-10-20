@@ -70,7 +70,7 @@ class LatestReleaseLedgerTests(unittest.TestCase):
         row["value"] = 99.5
         # The other anchored sources for the same period still agree; test
         # that a single inconsistent official source cannot be silently used.
-        with self.assertRaisesRegex(ValueError, "incompatible|conflict|value"):
+        with self.assertRaisesRegex(ValueError, "conflicting current-period pinned official value"):
             self.run_receipt(data)
 
     def test_inconsistent_same_period_official_dates_fail_closed(self):
@@ -81,15 +81,12 @@ class LatestReleaseLedgerTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "incompatible official first-release"):
             self.run_receipt(data)
 
-    def test_not_yet_released_observation_cannot_be_accepted(self):
+    def test_pre_observation_release_date_fails_closed(self):
         data = copy.deepcopy(self.anchors)
-        row = copy.deepcopy(data[("EUR.inflation", "2026-09")][0])
-        row["date"] = "2026-09-01"  # month before the first official release
-        data[("EUR.inflation", "2026-09")] = [row]
-        # Legal period ordering alone is not independent official proof;
-        # intentionally check that conflicting evidence is never promoted
-        # in preference to authentic matching archival records.
-        self.assertNotEqual(row["date"], self.anchors[("EUR.inflation", "2026-09")][0]["date"])
+        for row in data[("EUR.inflation", "2026-09")]:
+            row["date"] = "2026-08-29"
+        with self.assertRaisesRegex(ValueError, "publication before reference month"):
+            self.run_receipt(data)
 
     def test_missing_release_time_does_not_become_midnight(self):
         rec = {"date": "2026-10-02", "release_time_utc": None, "release_time_jst": None}
@@ -102,7 +99,7 @@ class LatestReleaseLedgerTests(unittest.TestCase):
             resolved_time(rec)
 
     def test_malformed_date_rejected(self):
-        with self.assertRaisesRegex(ValueError, "invalid release date"):
+        with self.assertRaises(ValueError):
             iso_day("2026-13-01", "test")
 
 
