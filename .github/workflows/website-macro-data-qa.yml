@@ -77,7 +77,7 @@ jobs:
             if(x.source!=='MACRO_SERIES_THERMOMETER'||x.coverage!=='8')throw new Error(`${label}: canonical source/coverage ${x.source}/${x.coverage}`);
             if(x.sectors<4)throw new Error(`${label}: sector detail too thin (${x.sectors})`);
             for(const bad of ['undefined','[object Object]','NaN'])if(x.body.includes(bad))throw new Error(`${label}: bad token ${bad}`);
-            for(const required of ['Prossimi release','Cosa sta cambiando','Nessuno score ricostruito'])if(!x.body.includes(required))throw new Error(`${label}: missing ${required}`);
+            for(const required of ['Prossime pubblicazioni','Cosa sta cambiando','Se un dato non è sufficientemente aggiornato'])if(!x.body.includes(required))throw new Error(`${label}: missing ${required}`);
             if(x.body.includes('Score Macro WITHHELD · D.json'))throw new Error(`${label}: legacy D.json UI still visible`);
             if(x.overflow>12)throw new Error(`${label}: hard horizontal overflow ${x.overflow}px`);
             if(errors.length)throw new Error(`${label}: browser errors ${errors.join(' | ')}`);
