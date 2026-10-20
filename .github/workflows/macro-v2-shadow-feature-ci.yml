@@ -1,0 +1,53 @@
+name: Macro V2 Shadow Feature Contract CI (unscheduled)
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/macro-v2-shadow-feature-ci.yml'
+      - 'validation/macro/v2_shadow_features_v1.py'
+      - 'validation/macro/test_v2_shadow_features_v1.py'
+      - 'validation/macro/MACRO_V2_SHADOW_PHASE1_SPEC_2026-10-20.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pure-pit-feature-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test first-release and revision PIT guardrails (synthetic)
+        run: python -m unittest validation.macro.test_v2_shadow_features_v1 -v
+      - name: Inventory G8 observed sources without live model publication
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/macro-v2-shadow
+          python -m validation.macro.v2_shadow_features_v1 --out /tmp/macro-v2-shadow/inventory.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/macro-v2-shadow/inventory.json'))
+          assert r['currency_count']==8 and r['inflation_labour_registered']==16
+          assert r['growth_observation_series_total'] > 0
+          for key in ('ready_for_live_feature_replay','ready_for_scoring',
+                      'safe_to_publish_new_D','safe_to_update_pair_theses',
+                      'writes_live_data'):
+              assert r[key] is False, key
+          print('V2_SHADOW_FEATURE_CONTRACT_PASS__NO_LIVE_SCORE_OR_PAIR_UPDATE')
+          PY
+      - name: Confirm no runtime or website files were changed by tests
+        run: |
+          git diff --exit-code -- live_data site payload dashboard
+          test -z "$(git status --porcelain -- live_data site payload dashboard)"
+      - name: Retain read-only input inventory receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-v2-shadow-feature-audit-${{ github.run_id }}
+          path: /tmp/macro-v2-shadow/
+          if-no-files-found: warn
+          retention-days: 30
