@@ -49,6 +49,25 @@ class VIXScheduleTests(unittest.TestCase):
             self.assertTrue(any((hour,minute)==(23,15) for hour,minute in times))
             self.assertTrue(any((hour,minute)==(23,45) for hour,minute in times))
 
+    def test_next_day_and_saturday_official_source_catchup(self):
+        text=policy_text()
+        retries=re.findall(r"^\\s+- cron: '(\\d+) (\\d+) \\* \\* 1-6'$",text,re.MULTILINE)
+        self.assertEqual({(int(h),int(m)) for m,h in retries},
+                         {(7,45),(12,45)})
+        rome=ZoneInfo("Europe/Rome")
+        for day,expected in [((2026,7,21),[(9,45),(14,45)]),
+                             ((2026,11,17),[(8,45),(13,45)]),
+                             ((2026,10,24),[(9,45),(14,45)]),
+                             ((2026,11,21),[(8,45),(13,45)])]:
+            observed=sorted((datetime(*day,int(h),int(m),tzinfo=timezone.utc)
+                             .astimezone(rome).hour,
+                             datetime(*day,int(h),int(m),tzinfo=timezone.utc)
+                             .astimezone(rome).minute) for m,h in retries)
+            self.assertEqual(observed,expected)
+        self.assertIn("VIX_SOURCE_PUBLICATION_PENDING",text)
+        self.assertIn("VIX_RUNTIME_ALREADY_CURRENT",text)
+        self.assertIn("assert d['last_date']==c['latest_date']",text)
+
     def test_every_admitted_run_rechecks_official_Cboe_freshness(self):
         workflow=policy_text()
         fetch=CANDIDATE.read_text(encoding="utf-8")
