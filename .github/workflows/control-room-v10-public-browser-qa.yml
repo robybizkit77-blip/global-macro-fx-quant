@@ -50,7 +50,9 @@ jobs:
             if python - <<'PY'
           import hashlib,os,subprocess,sys
           from pathlib import Path
-          files=['site/control-room-preview/index.html','site/control-room-preview/home-navigation-v10.js','site/control-room-preview/ois-pricing-estimates-v1.js']
+          files=['site/control-room-preview/index.html','site/control-room-preview/home-navigation-v10.js']
+          if os.getenv('GITHUB_EVENT_NAME') != 'pull_request':
+              files.append('site/control-room-preview/ois-pricing-estimates-v1.js')
           for path in files:
               try:
                   expected=(subprocess.check_output(['git','show',f'origin/main:{path}'],stderr=subprocess.DEVNULL)
