@@ -51,7 +51,7 @@ class VIXScheduleTests(unittest.TestCase):
 
     def test_next_day_and_saturday_official_source_catchup(self):
         text=policy_text()
-        retries=re.findall(r"^\\s+- cron: '(\\d+) (\\d+) \\* \\* 1-6'$",text,re.MULTILINE)
+        retries=re.findall(r"^\s+- cron: '(\d+) (\d+) \* \* 1-6'$",text,re.MULTILINE)
         self.assertEqual({(int(h),int(m)) for m,h in retries},
                          {(7,45),(12,45)})
         rome=ZoneInfo("Europe/Rome")
