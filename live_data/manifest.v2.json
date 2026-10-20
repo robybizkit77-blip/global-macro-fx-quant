@@ -1,8 +1,8 @@
 {
   "schema": "GMFQ_LIVE_DATA_MANIFEST_V2",
   "generated_from_current_payload": true,
-  "runtime_sha256": "2c42af994a2f4c8a97ecf65bb41334aaa35834a54e6587b8d82d27683491156a",
-  "runtime_bytes": 2756676,
+  "runtime_sha256": "573ed6d4318d8fb556a5fb0137ae9680bc8e33fbd3b171bf616b4599cb266a35",
+  "runtime_bytes": 2756761,
   "part_count": 16,
   "direct_section_count": 12,
   "derived_section_count": 2,
@@ -71,8 +71,8 @@
       "key": "MACRO_THERMOMETER_DATA",
       "file": "MACRO_THERMOMETER_DATA.json",
       "mode": "DIRECT_SINGLE_PART",
-      "bytes": 17677,
-      "sha256": "b4c34b1f6bfe88e26556dcfc699013b20eec35b8351e48797bae261d1669655a",
+      "bytes": 17720,
+      "sha256": "51d92811201168a8b7ada266d89f42d6fd4660894017284520758e05ad882df6",
       "occurrences_in_payload": 1,
       "part": 0,
       "direct_update_allowed": true
@@ -131,8 +131,8 @@
       "key": "MACRO_SERIES",
       "file": "MACRO_SERIES.json",
       "mode": "DIRECT_SINGLE_PART",
-      "bytes": 339299,
-      "sha256": "ac21e950825d109f1adb3b210deeb73867bbca24c4b09fe1e4664de69afc7e46",
+      "bytes": 339341,
+      "sha256": "3f623938742d4ee42a42288db40fb0049379b676b1f2d50c2bc65ee755eb2c0f",
       "occurrences_in_payload": 1,
       "part": 1,
       "direct_update_allowed": true
