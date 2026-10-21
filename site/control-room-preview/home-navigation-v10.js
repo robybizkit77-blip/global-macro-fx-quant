@@ -1150,7 +1150,7 @@ function pairThesisReactionBridge(code,pair,modelDay,reactionHtml,macroDay){
  return '<section id="gmfq-pair-decision-bridge" class="gmfq-decision-bridge" data-bridge-status="'+state+
   '" data-baseline-status="'+(baselineCurrent?'CURRENT':'STALE_OR_UNVERIFIED')+'" aria-label="Tesi, setup e reazione recente">'+
   '<h3>Dalla tesi alla decisione · cosa conta davvero</h3>'+
-  '<p>Tre piani distinti. La lettura recente dei 2Y non ricalcola il modello, e la qualità di un setup non significa che sia già il momento di entrare.</p>'+
+  '<p>I fixing e i 2Y recenti non aggiornano la tesi Macro né rendono automaticamente operabile il setup.</p>'+
   '<div class="gmfq-decision-cols"><div><span>TESI STRUTTURALE · baseline '+htmlEscape(modelState.verified?macroDay:'non certificata')+'</span><strong>'+
   structural+'</strong><small>'+htmlEscape(quality)+'</small></div>'+
   '<div><span>OPERABILITÀ · SETUP DEL MODELLO'+(modelState.historical?' · STORICO':'')+'</span><strong>'+htmlEscape(setupQuality)+'</strong><small>'+
@@ -1197,6 +1197,7 @@ async function mountPairResearch(doc){
   '#gmfq-pair-full-research[open]>summary{border-bottom:1px solid #294454;margin-bottom:10px}'+
   '#gmfq-pair-research-path>.gmfq-path-body>.gmfq-path-links{margin-top:12px}';
  style.textContent+='.gmfq-evidence-checklist{border-top:1px solid #294252;margin-top:13px;padding-top:11px}.gmfq-evidence-checklist h4{font:600 13px/1.45 Arial,sans-serif;color:#e8eef5;margin:0 0 6px}.gmfq-evidence-checklist .gmfq-evidence-intro{color:#aebfcd;font:11px/1.5 Arial,sans-serif;margin:0 0 9px}.gmfq-evidence-rows{display:grid;grid-template-columns:1fr;gap:0}.gmfq-evidence-row{padding:8px 0;border-top:1px solid #243f4e}.gmfq-evidence-row b{color:#e3ce95;font:600 11px/1.4 Arial,sans-serif}.gmfq-evidence-row:nth-child(2) b{color:#d7a3ac}.gmfq-evidence-row p{color:#c0d2dc;font:12px/1.5 Arial,sans-serif;margin:4px 0;overflow-wrap:anywhere}.gmfq-evidence-checklist .gmfq-evidence-provenance{color:#d0dfeb;font:11px/1.55 Arial,sans-serif;margin:9px 0 4px}.gmfq-evidence-checklist .gmfq-evidence-caution{color:#91a9b8;font:10px/1.55 Arial,sans-serif;margin:7px 0}';
+ style.textContent+="/* Pair first reading · research-ledger hierarchy. No template changes.\n   Three provenance labels instead of a long undifferentiated metadata line;\n   lighter columns retain all evidence, disclosure and responsive behavior. */\n #gmfq-pair-research-path .gmfq-path-evidence{display:flex;flex-wrap:wrap;gap:5px 17px;\n   align-items:baseline;padding:9px 0 11px;border-bottom:1px solid #294454;\n   color:#b4cad8;font:11px/1.55 Arial,sans-serif}\n #gmfq-pair-research-path .gmfq-path-evidence span{min-width:0;overflow-wrap:anywhere}\n #gmfq-pair-research-path .gmfq-path-evidence b{font-weight:600;color:#c9d9e3}\n #gmfq-pair-research-path .gmfq-path-evidence[data-macro-state=\"HISTORICAL\"] [data-source=\"macro\"],\n #gmfq-pair-research-path .gmfq-path-evidence[data-macro-state=\"UNVERIFIED\"] [data-source=\"macro\"]{color:#e3c885}\n #gmfq-pair-research-path .gmfq-decision-bridge{border-top:0;margin-top:11px;padding-top:0}\n #gmfq-pair-research-path .gmfq-decision-bridge h3{font-size:15px}\n #gmfq-pair-research-path .gmfq-decision-cols{gap:0;border-top:1px solid #2b4656;\n   border-bottom:1px solid #2b4656}\n #gmfq-pair-research-path .gmfq-decision-cols>div{border-left:0;\n   border-right:1px solid #2b4656;background:transparent;padding:13px 15px 13px 12px}\n #gmfq-pair-research-path .gmfq-decision-cols>div:last-child{border-right:0}\n #gmfq-pair-research-path .gmfq-decision-cols strong{font-size:14px;line-height:1.45}\n #gmfq-pair-research-path .gmfq-decision-cols small{font-size:11px}\n @media(max-width:700px){\n   #gmfq-pair-research-path .gmfq-path-evidence{gap:3px 10px}\n   #gmfq-pair-research-path .gmfq-path-evidence span{width:100%}\n   #gmfq-pair-research-path .gmfq-decision-cols>div{border-right:0;\n     border-bottom:1px solid #2b4656;padding:12px 4px}\n   #gmfq-pair-research-path .gmfq-decision-cols>div:last-child{border-bottom:0}\n }";
  doc.head.appendChild(style);
  const panel=doc.createElement('section');
  panel.id='gmfq-pair-research-path';panel.className='desk-panel';
@@ -1261,9 +1262,14 @@ async function mountPairResearch(doc){
   const decision=pairThesisReactionBridge(code,setup.pairs[code],setup.price_asof,reaction,macroDay);
   panel.innerHTML='<h2 class="desk-panel-title">Percorso di ricerca · '+FLAG[a]+' '+a+' / '+FLAG[b]+' '+b+'</h2>'+
    '<div class="gmfq-path-body">'+
-   '<p class="gmfq-first-intro">Prima la tesi, i rischi e ciò che manca per valutarla. Il dettaglio sopra resta la lettura canonica della tesi, non un segnale di ingresso. Le evidenze complete restano consultabili sotto.</p>'+
-   '<div class="gmfq-path-evidence">Modello: '+htmlEscape(setup.price_asof)+' · Fixing BCE: '+htmlEscape(fxDay||'non verificato')+
-   ' · Baseline Macro/Tassi: '+htmlEscape(macroDay||'non verificata')+' · Valuta favorita dal motore: '+htmlEscape(fav||'nessuna')+'</div>'+
+   '<p class="gmfq-first-intro">Sintesi di ricerca: prima la tesi, poi il setup e la reazione osservata. Il dettaglio sopra resta la lettura canonica della tesi.</p>'+
+   '<div class="gmfq-path-evidence" data-macro-state="'+
+   (!macroDay?'UNVERIFIED':fresh(macroDay,10)?'DATED':'HISTORICAL')+
+   '" aria-label="Date e provenienza delle evidenze">'+
+   '<span data-source="macro"><b>Baseline Macro/Tassi:</b> '+htmlEscape(macroDay||'non verificata')+
+   (macroDay?(fresh(macroDay,10)?' · DATATA':' · STORICA'):' · WITHHELD')+'</span>'+
+   '<span data-source="price"><b>Prezzo del modello:</b> '+htmlEscape(setup.price_asof)+'</span>'+
+   '<span data-source="fixing"><b>Fixing BCE:</b> '+htmlEscape(fxDay||'non verificato')+'</span></div>'+
    decision+
    '<details id="gmfq-pair-full-research" class="gmfq-pair-full-research"'+(analysisExpanded?' open':'')+'>'+
    '<summary>Apri analisi completa · Macro/Rates, variazioni 2Y, audit prezzo e fonti</summary>'+
