@@ -319,10 +319,13 @@ function expectedReactionFromMetrics(row){
     await r.fulfill({status:200,contentType:'application/json',
       headers:{'Access-Control-Allow-Origin':'*'},body:JSON.stringify(invalid)});
   });
+  await page.goto(url+'#/home',{waitUntil:'domcontentloaded',timeout:120000});
   await page.goto(url+'#/macro?ccy=USD&test=invalid',{waitUntil:'domcontentloaded',timeout:120000});
   await page.waitForFunction(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument;
-    return d?.getElementById('gmfq-macro-source-lens')?.dataset.auditStatus==='READ_ONLY';
+    const p=d?.getElementById('gmfq-macro-source-lens');
+    return p?.dataset.auditStatus==='READ_ONLY'&&p?.dataset.selectedCurrency==='USD'&&
+      p.querySelector('#gmfq-macro-source-details')?.textContent.includes('Inflazione · dato WITHHELD');
   },null,{timeout:40000});
   const invalidMacro=await page.evaluate(()=>{
     const p=document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-macro-source-lens');
