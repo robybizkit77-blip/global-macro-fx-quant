@@ -1391,7 +1391,15 @@ async function mountScreenerBlockers(doc){
  style.textContent=
  '#gmfq-screener-blockers{margin:0 0 14px;min-width:0}'+
  '#gmfq-screener-blockers .gmfq-blocker-intro{margin:0;padding:11px 16px 5px;font:12px/1.6 Arial,sans-serif;color:#bfd0dd}'+
+ '#gmfq-screener-blockers .gmfq-blocker-overview{display:flex;gap:6px 17px;flex-wrap:wrap;margin:0;padding:6px 16px;color:#d9e3eb;font:600 12px/1.55 Arial,sans-serif}'+
+ '#gmfq-screener-blockers .gmfq-blocker-overview span{min-width:0;overflow-wrap:anywhere}'+
+ '#gmfq-screener-blockers #gmfq-blocker-details{margin:7px 0 0;border-top:1px solid #324b59;padding:10px 0 0;min-width:0}'+
+ '#gmfq-screener-blockers #gmfq-blocker-details>summary{cursor:pointer;color:#e0c78c;font:600 12px/1.5 Arial,sans-serif;padding:5px 16px;outline-offset:4px}'+
+ '#gmfq-screener-blockers #gmfq-blocker-details:not([open])>:not(summary){display:none!important}'+
+ 
  '#gmfq-screener-blockers .gmfq-blocker-date{padding:0 16px 10px;color:#d7bf87;font:11px/1.5 Arial,sans-serif}'+
+ '#gmfq-screener-blockers .gmfq-blocker-brief{padding:0 16px 7px;color:#9eb4c4;font:11px/1.5 Arial,sans-serif}'+
+ 
  '#gmfq-screener-blockers .gmfq-blocker-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:5px 16px 13px}'+
  '#gmfq-screener-blockers .gmfq-blocker-group{min-width:0;border-top:1px solid #3a5363;padding-top:9px}'+
  '#gmfq-screener-blockers .gmfq-blocker-group h3{font:600 12px/1.5 Arial,sans-serif;color:#e4edf2;margin:0 0 4px}'+
@@ -1407,6 +1415,10 @@ async function mountScreenerBlockers(doc){
  '@media(max-width:600px){#gmfq-screener-blockers .gmfq-blocker-intro{padding:10px 12px 4px}'+
  '#gmfq-screener-blockers .gmfq-blocker-date{padding:0 12px 9px}'+
  '#gmfq-screener-blockers .gmfq-blocker-grid{padding:5px 12px 10px}'+
+ '#gmfq-screener-blockers .gmfq-blocker-overview{padding:7px 12px;gap:5px 12px}'+
+ '#gmfq-screener-blockers .gmfq-blocker-brief{padding:0 12px 7px}'+
+ '#gmfq-screener-blockers #gmfq-blocker-details>summary{padding:5px 12px}'+
+ 
  '#gmfq-screener-blockers .gmfq-blocker-note{padding:9px 12px}}';
  doc.head.appendChild(style);
  const categories=[
@@ -1427,12 +1439,18 @@ async function mountScreenerBlockers(doc){
  panel.dataset.modelPriceAsOf=setup.price_asof||'';
  panel.innerHTML='<h2 class="desk-panel-title">Setup NON VALUTABILE · '+rows.length+
   '/28 · cause documentate</h2>'+
-  '<p class="gmfq-blocker-intro">I giudizi provengono dal motore canonico: non sono errori automaticamente correggibili. Apri una coppia per leggere Macro, Rates, Positioning e Prezzo.</p>'+
+  '<p class="gmfq-blocker-intro">Queste coppie non hanno una preferenza strutturale sufficientemente chiara. Nessuna è promossa a opportunità di trade.</p>'+
+  '<div class="gmfq-blocker-overview" aria-label="Cause delle coppie non valutabili">'+
+  '<span>Macro vs Tassi/CB: '+groups.CONFLICT.length+'</span>'+
+  '<span>Differenziale 2Y senza tesi: '+groups.RATES_ONLY.length+'</span>'+
+  '<span>Vantaggio insufficiente: '+groups.INSUFFICIENT.length+'</span></div>'+
   '<p class="gmfq-blocker-date">Baseline Macro/Tassi: '+htmlEscape(setup.macro_baseline_asof)+
   (baselineFresh?' · data entro il limite di freschezza':' · NON CORRENTE, tesi da rivalidare')+
   ' · Prezzi del motore: '+htmlEscape(setup.price_asof||'non verificati')+'</p>'+
+  '<p class="gmfq-blocker-brief">Motivi e confronto Macro/Rates disponibili per ciascuna delle '+rows.length+' coppie, con collegamento alla Pair Deep Dive.</p>'+
+  '<details id="gmfq-blocker-details"><summary>Apri le '+rows.length+' coppie e le motivazioni complete</summary>'+
   '<div class="gmfq-blocker-grid">'+categories.map(card).join('')+'</div>'+
-  '<p class="gmfq-blocker-note">Lettura descrittiva e storica, non graduatoria di trade. Lo spread 2Y è solo contesto di livello: non crea da solo una preferenza FX. Nessuna promozione di fonte, ricalcolo di score, modifica dei 28 setup o segnale operativo.</p>';
+  '<p class="gmfq-blocker-note">Lettura descrittiva e storica, non graduatoria di trade. Lo spread 2Y è solo contesto di livello: non crea da solo una preferenza FX. Nessuna promozione di fonte, ricalcolo di score, modifica dei 28 setup o segnale operativo.</p></details>';
  panel.addEventListener('click',event=>{
   const button=event.target.closest('button.gmfq-blocker-pair[data-pair]');
   if(button&&panel.contains(button)&&records[button.dataset.pair])
