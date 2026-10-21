@@ -297,8 +297,15 @@ function expectedReactionFromMetrics(row){
       docWidth:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth
     };
   });
-  if(research.sourceStatus!=='READ_ONLY'||research.visibleCount!=='4'||
-     research.estimated!=='2'||research.withheld!=='2'||
+  // The verified official count stays independent of mixed-date futures.
+  // Secondary coverage may legitimately move GREEN_ESTIMATED -> WITHHELD;
+  // never pin today's 2/2 split or treat the downgrade as data loss.
+  const expectedOfficial=operational.summary.green_official;
+  const expectedEstimated=operational.summary.green_estimated;
+  const expectedWithheld=operational.summary.operational_withheld;
+  if(research.sourceStatus!=='READ_ONLY'||research.visibleCount!==String(expectedOfficial)||
+     research.estimated!==String(expectedEstimated)||
+     research.withheld!==String(expectedWithheld)||
      !research.disclosureClosed||!research.secondaryHidden||!research.plotVisible||
      !research.readingText?.includes('4/8')||
      !research.readingText.includes('GBP')||
@@ -360,8 +367,9 @@ function expectedReactionFromMetrics(row){
       width:p.scrollWidth,client:p.clientWidth,
       doc:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
   });
-  if(cbFirst.status!=='READ_ONLY'||cbFirst.certified!=='4'||cbFirst.estimated!=='2'||
-     cbFirst.withheld!=='2'||cbFirst.first!==Object.values(cbFixture).map(x=>x.last_date).sort()[0]||
+  if(cbFirst.status!=='READ_ONLY'||cbFirst.certified!==String(operational.summary.green_official)||
+     cbFirst.estimated!==String(operational.summary.green_estimated)||
+     cbFirst.withheld!==String(operational.summary.operational_withheld)||cbFirst.first!==Object.values(cbFixture).map(x=>x.last_date).sort()[0]||
      cbFirst.last!==Object.values(cbFixture).map(x=>x.last_date).sort().at(-1)||
      !cbFirst.closed||!cbFirst.chart||!cbFirst.table||
      !cbFirst.text.includes('futures monetari')||!cbFirst.text.includes('Repricing ≠ probabilità')||
