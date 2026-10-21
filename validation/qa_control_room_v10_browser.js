@@ -236,6 +236,10 @@ function expectedReactionFromMetrics(row){
   console.log('CONTROL_ROOM_PREVIEW_SOURCE_FRESHNESS_GREEN',label,
     JSON.stringify({state:homeAudit.label,stamp:homeAudit.stamp,certified,viewport:homeAudit.viewport}));
 
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return ['RECENT_VALIDATED','WITHHELD'].includes(d?.getElementById('gmfq-market-pulse')?.dataset.pulseStatus);
+  },null,{timeout:26000});
   const r=await page.evaluate(()=>{
     const d=document.getElementById('gmfq-page').contentDocument;
     const box=sel=>{const x=d.querySelector(sel);return {clientHeight:x?.clientHeight,scrollHeight:x?.scrollHeight,clientWidth:x?.clientWidth,scrollWidth:x?.scrollWidth}};
@@ -251,6 +255,21 @@ function expectedReactionFromMetrics(row){
       oisPanel:box('.gridtop > .panel:nth-child(2)'),
       nzdbb:ois.find(x=>x.ccy==='NZD')?.desc||null,
       oisCount:ois.length,
+      flags:[...d.querySelectorAll('#valute .cc[data-filter]')].map(x=>({
+        symbol:x.dataset.filter,flag:x.querySelector('.tickerhead .flag')?.textContent,
+        visible:!!x.querySelector('.tickerhead .flag')?.getClientRects().length,
+        caption:x.querySelector('.gmfq-home-dxy-origin')?.textContent
+      })),
+      pricing:ois.map(x=>({ccy:x.ccy,status:d.querySelector('#ois .oisrow[data-ccy="'+x.ccy+'"]')?.dataset.pricingState,
+        allowed:d.querySelector('#ois .oisrow[data-ccy="'+x.ccy+'"]')?.dataset.policyDeltaAllowed,
+        content:x.desc})),
+      pulse:{state:d.getElementById('gmfq-market-pulse')?.dataset.pulseStatus,
+        asof:d.getElementById('gmfq-market-pulse')?.dataset.asOf,
+        articles:d.querySelectorAll('#gmfq-market-pulse .gmfq-pulse-item').length,
+        text:d.getElementById('gmfq-market-pulse')?.innerText,
+        newsLink:d.querySelector('#gmfq-market-pulse a[href="https://www.reuters.com/markets/"]')?.href,
+        width:d.getElementById('gmfq-market-pulse')?.scrollWidth,
+        client:d.getElementById('gmfq-market-pulse')?.clientWidth},
       bars2y:d.querySelector('#ratesbars svg')!==null,
       spread:d.querySelector('#spreads svg')!==null,
       designGlobe:!!d.querySelector('.hero .globe'),
@@ -259,6 +278,23 @@ function expectedReactionFromMetrics(row){
   });
   console.log(label,JSON.stringify(r));
   const fatal=[];
+  const currencies=['DXY','EUR','JPY','GBP','AUD','CAD','NZD','CHF'];
+  if(r.flags.length!==8||JSON.stringify(r.flags.map(x=>x.symbol))!==JSON.stringify(currencies)||
+     r.flags.some(x=>!x.visible||!x.flag)||!r.flags.find(x=>x.symbol==='DXY')?.caption?.includes('SINTETICO'))
+    fatal.push('Home flagged currency tiles or DXY disclosure missing '+JSON.stringify(r.flags));
+  if(r.pricing.length!==8||new Set(r.pricing.map(x=>x.ccy)).size!==8||
+     r.pricing.filter(x=>x.status==='OFFICIAL_REPRICING').length!==4||
+     r.pricing.some(x=>!['OFFICIAL_REPRICING','FUTURES_LEVEL_ONLY','BANK_BILL_PROXY','WITHHELD'].includes(x.status)||
+       (x.allowed==='true')!==(x.status==='OFFICIAL_REPRICING'))||
+     r.pricing.some(x=>x.status==='FUTURES_LEVEL_ONLY'&&!x.content.includes('PX'))||
+     r.pricing.some(x=>x.status==='BANK_BILL_PROXY'&&!x.content.includes('BB')))
+    fatal.push('6M pricing source tiers wrong: '+JSON.stringify(r.pricing));
+  if(!['RECENT_VALIDATED','WITHHELD'].includes(r.pulse.state)||
+     !r.pulse.text.includes('non titoli giornalistici in tempo reale')||
+     !r.pulse.newsLink||r.pulse.width>r.pulse.client+2||
+     (r.pulse.state==='RECENT_VALIDATED'&&(r.pulse.articles<1||
+       !/^20\d{2}-\d{2}-\d{2}$/.test(r.pulse.asof))))
+    fatal.push('Market Pulse source-date/fail-closed contract failed '+JSON.stringify(r.pulse));
   if((r.dxy||'').trim()!==dxyDisplayed)fatal.push('DXY synthetic not synchronized with its source: '+r.dxy+' != '+dxyDisplayed);
   if(!r.noApprofondisci)fatal.push('old overlay link still shown');
   if(r.rateSeries.length!==8)fatal.push('missing G8 yield lines');

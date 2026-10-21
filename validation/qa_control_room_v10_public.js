@@ -208,6 +208,21 @@ async function getState(page){
              chartsHeight:d.getElementById('ratesbars')?.clientHeight,
              messages:d.querySelectorAll('.bottom .messagebox .msg').length
            },
+           newHome:{
+             flags:[...d.querySelectorAll('#valute .cc[data-filter]')].map(x=>({
+               code:x.dataset.filter,flag:x.querySelector('.tickerhead .flag')?.textContent,
+               dxyTag:x.querySelector('.gmfq-home-dxy-origin')?.textContent
+             })),
+             pricing:[...d.querySelectorAll('#ois .oisrow')].map(x=>({
+               code:x.dataset.ccy,status:x.dataset.pricingState,allowed:x.dataset.policyDeltaAllowed,
+               text:x.textContent
+             })),
+             pulsePresent:!!d.getElementById('gmfq-market-pulse'),
+             pulseState:d.getElementById('gmfq-market-pulse')?.dataset.pulseStatus,
+             pulseText:d.getElementById('gmfq-market-pulse')?.innerText,
+             pulseNewsHref:d.querySelector('#gmfq-market-pulse a[href="https://www.reuters.com/markets/"]')?.href,
+             dxyChartFuture:!!d.querySelector('.gmfq-dxy-dialog')
+           },
            priorityTarget:rail?.dataset.priorityTarget,
            priorityState:rail?.dataset.priorityState,
            priorityText:rail?.querySelector('.gmfq-reading-priority')?.textContent,
@@ -226,6 +241,13 @@ async function getState(page){
            !reading.layout.marketCards||
            reading.layout.columns!==(name==='mobile'?1:2)||
            reading.layout.railColumns!==(name==='mobile'?1:2)||
+           reading.newHome.flags.length!==8||
+           reading.newHome.flags.some(x=>!x.flag)||
+           !reading.newHome.flags.find(x=>x.code==='DXY')?.dxyTag?.includes('SINTETICO')||
+           reading.newHome.pricing.length!==8||
+           reading.newHome.pricing.filter(x=>x.status==='OFFICIAL_REPRICING').length!==4||
+           reading.newHome.pricing.some(x=>(x.allowed==='true')!==(x.status==='OFFICIAL_REPRICING'))||
+           !reading.newHome.pulsePresent||!reading.newHome.pulseNewsHref||
            !reading.lower.market||!reading.lower.pair||
            !reading.lower.marketBefore||!reading.lower.pairBefore||
            reading.lower.midCols!==(name==='mobile'?1:3)||
