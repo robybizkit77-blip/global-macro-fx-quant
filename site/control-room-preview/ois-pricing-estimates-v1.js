@@ -128,7 +128,9 @@ function matrix(ois,bb,today){
      if(checked)points[t]=checked;
     }
     if(Object.keys(points).length){tier='PROXY';source=x.source||'';}
-  }else if(ccy==='EUR'&&x.operational_status==='WITHHELD'){
+  }else if(['USD','EUR','CHF'].includes(ccy)&&x.operational_status==='WITHHELD'&&
+    x.official_status==='WITHHELD'&&x.quality==='ESTIMATED_INFORMATIONAL'&&
+    x.backtest_eligible_as_official===false){
     const q=x.secondary_quote_context||{};
     if(q.status==='INDICATIVE_OBSERVATIONS_NON_OIS'&&q.full_curve_usable===false&&
        q.cross_date_join_allowed===false&&q.policy_delta_allowed===false&&
@@ -186,7 +188,7 @@ function indicativeSixMonth(ois,today){
   approved[row.ccy]=Object.freeze({
     type:row.tier,currency:row.ccy,value:p.value,
     quote_as_of:p.date,contract:p.contract,expiry:p.expires,
-    label:row.tier==='MIXED'?'FUTURES DATATO · EUR non sincronizzato':'FUTURES INDICATIVO',
+    label:row.tier==='MIXED'?'FUTURES DATATO · '+row.ccy+' non sincronizzato':'FUTURES INDICATIVO',
     is_official_ois:false,policy_delta_allowed:false,pair_effect:'NONE',core_effect:'NONE'
   });
  }
@@ -314,7 +316,7 @@ function view(rows,moves=[]){
  '<div><strong>'+flags[r.ccy]+' '+r.ccy+'</strong><small>'+labels[r.tier]+'</small></div>'+
  tenors.map(t=>'<div>'+cell(r,t)+'</div>').join('')+
  '<div class="gmfq-est-source">'+esc(r.source||'Fonte non corrente')+'</div></div>').join('')+'</div>'+
- matchedResearchHtml(moves)+'<p class="gmfq-est-note"><b>Metodo:</b> GBP OIS BoE; AUD/CAD/JPY futures monetari ufficiali; USD/CHF futures indicativi. EUR usa giorni diversi e non forma una curva sincronizzata. Su USD/EUR/CHF vengono verificati prezzo, contratto, data e scadenza; lo scarto in giorni è visibile, <b>senza inventare una correzione OIS</b>. NZD: scenario empirico su Bank Bill 90 giorni − OCR RBNZ (19 mesi, due regimi): sconto stimato 24 bp, fascia prudenziale 10–50 bp, ampliata dopo un test su luglio–settembre 2026 (errore medio del punto centrale circa 16 bp). <b>non è uno spread OIS misurato e non intervallo statistico</b>. Sono futures trimestrali, non una curva OIS spot. Nessuna stima produce variazioni OIS 1D/1W, segnali FX o backtest.</p></div>';
+ matchedResearchHtml(moves)+'<p class="gmfq-est-note"><b>Metodo:</b> GBP OIS BoE; AUD/CAD/JPY futures monetari ufficiali; USD/EUR/CHF: ogni contratto è datato separatamente; se le date non coincidono, sono solo osservazioni individuali e non una curva sincronizzata. Su USD/EUR/CHF vengono verificati prezzo, contratto, data e scadenza; lo scarto in giorni è visibile, <b>senza inventare una correzione OIS</b>. NZD: scenario empirico su Bank Bill 90 giorni − OCR RBNZ (19 mesi, due regimi): sconto stimato 24 bp, fascia prudenziale 10–50 bp, ampliata dopo un test su luglio–settembre 2026 (errore medio del punto centrale circa 16 bp). <b>non è uno spread OIS misurato e non intervallo statistico</b>. Sono futures trimestrali, non una curva OIS spot. Nessuna stima produce variazioni OIS 1D/1W, segnali FX o backtest.</p></div>';
 }
 const css=[
  '#gmfq-ois-research-estimates{margin:12px 0;min-width:0}',
