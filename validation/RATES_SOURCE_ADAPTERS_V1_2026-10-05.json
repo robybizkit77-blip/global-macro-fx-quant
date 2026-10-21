@@ -66,7 +66,11 @@
       "current_2Y": 3.89,
       "current_10Y": 5,
       "source_url": "https://rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/b/b2/hb2-daily-close.xlsx",
-      "reason": "RBNZ B2 official public-table same-date 2Y 3.89% and 10Y 5.00% for 16 Oct 2026, independently cross-checked, manually approved and published under PR #382. RBNZ B2 XLSX and public page remain HTTP 403 in GitHub-hosted runners: manual official verification only; never auto-promote or use secondary/estimated values."
+      "reason": "RBNZ B2 official public-table same-date 2Y 3.89% and 10Y 5.00% for 16 Oct 2026, independently cross-checked, manually approved and published under PR #382. RBNZ B2 XLSX and public page remain HTTP 403 in GitHub-hosted runners: manual official verification only; never auto-promote or use secondary/estimated values.",
+      "first_review_evidence": "validation/fixtures/rbnz_b2_official_table_2026-10-19_review_required.json",
+      "independent_review_evidence": "validation/fixtures/rbnz_b2_independent_source_review_2026-10-19.json",
+      "manual_approval_reference": "https://github.com/robybizkit77-blip/global-macro-fx-quant/pull/382",
+      "automatic_promotion_allowed": false
     }
   },
   "summary": {
