@@ -5,7 +5,7 @@
   const clone=x=>JSON.parse(JSON.stringify(x));
   const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
   const threshold=(name,fallback)=>Number((typeof MODEL_RULES!=='undefined'&&MODEL_RULES?.cot?.[name])??fallback);
-  const stateLabel=p=>p>=threshold('extremeHigh',80)?'EXTREME LONG':p<=threshold('extremeLow',20)?'EXTREME SHORT':'NEUTRALE';
+  const stateLabel=p=>{const r=Math.round(p);return r>=threshold('extremeHigh',80)?'EXTREME LONG':r<=threshold('extremeLow',20)?'EXTREME SHORT':'NEUTRALE'};
   const crowdLabel=n=>Math.abs(n)>=threshold('netOiConcentration',30)?'⚠ Squilibrio ≥30%':'Nessun squilibrio ≥30%';
   const flowLabel=(dNet,dLong,dShort)=>{
     if(dLong>0&&dShort>0) return dShort>dLong?'Nuovi short dominanti':'Nuovi long dominanti';
