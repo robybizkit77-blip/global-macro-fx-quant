@@ -623,6 +623,16 @@ function pairMacroRatesComparison(code,pair,rates,ois,modelDay,macroDay){
  const a=code.slice(0,3),b=code.slice(3,6),s=pair?.decision_frame||{};
  const safeSide=(v)=>v===a||v===b?v:null;
  const macroSide=safeSide(s.macroSide),policySide=safeSide(s.policySide);
+ // Reuse the exact futures date/price/provenance guard from Rates research.
+ // This does NOT change the official 6M monetary-policy delta.
+ let indicative6m={};
+ if(ois?.schema==='GMFQ_OIS_OPERATIONAL_VIEW_V1'&&
+    typeof window.GMFQ_OIS_RESEARCH_V1?.indicativeSixMonth==='function'){
+   try{
+     indicative6m=window.GMFQ_OIS_RESEARCH_V1.indicativeSixMonth(
+       ois,new Date().toISOString().slice(0,10))||{};
+   }catch(e){console.warn('[GMFQ Pair indicative 6M unavailable]',String(e))}
+ }
  const sideText=(v)=>v===a?'Favorisce '+FLAG[a]+' '+a:v===b?'Favorisce '+FLAG[b]+' '+b:
   'Non distingue chiaramente le due valute';
  const sovereign=(c)=>{
@@ -645,8 +655,18 @@ function pairMacroRatesComparison(code,pair,rates,ois,modelDay,macroDay){
   const ratesLine=r.certified?
    '2Y '+fmt(r.y2,2)+'% · 10Y '+fmt(r.y10,2)+'% · '+r.date:
    '2Y / 10Y WITHHELD · ultima data '+(r.date||'non verificata');
+  const context=!p.ok?indicative6m[c]:null;
+  const contextValid=context&&context.currency===c&&
+   ['USD','EUR','CHF'].includes(c)&&['PROXY','MIXED'].includes(context.type)&&
+   context.is_official_ois===false&&context.policy_delta_allowed===false&&
+   context.pair_effect==='NONE'&&context.core_effect==='NONE'&&
+   num(context.value)!==null&&fresh(context.quote_as_of,5);
   const fwd=p.ok?('6M '+(p.delta>0?'+':'')+fmt(p.delta,1)+' bp · '+p.instrument+
-   ' · '+p.date):'6M pricing WITHHELD · '+(p.date||'non verificato');
+   ' · '+p.date):contextValid?
+   '6M repricing policy non certificato · '+context.label+
+     ' ≈ '+fmt(context.value,3)+'% · '+context.contract+
+     ' · '+context.quote_as_of+' · NON ΔOIS, solo contesto':
+   '6M pricing WITHHELD · '+(p.date||'non verificato');
   return '<div class="gmfq-compare-leg" data-gmfq-compare-ccy="'+c+'"><strong>'+
    FLAG[c]+' '+c+'</strong><small>'+htmlEscape(ratesLine)+'</small>'+
    '<small>'+htmlEscape(fwd)+'</small></div>';
@@ -981,8 +1001,17 @@ async function mountPairResearch(doc){
    o.quality==='OFFICIAL_CERTIFIED'&&fresh(oisDay,5);
   const rateText='2Y/10Y '+(rateState?'ufficiali':'non correnti o incompleti')+
    ' · '+(rateDay||'n.d.');
+  const indicative=(!oisState&&
+    typeof window.GMFQ_OIS_RESEARCH_V1?.indicativeSixMonth==='function')?
+    window.GMFQ_OIS_RESEARCH_V1.indicativeSixMonth(
+      ois,new Date().toISOString().slice(0,10))[c]:null;
+  const contextHint=indicative&&indicative.is_official_ois===false&&
+    indicative.policy_delta_allowed===false&&indicative.pair_effect==='NONE'&&
+    num(indicative.value)!==null?
+    ' · futures 6M ≈ '+fmt(indicative.value,3)+'% · '+indicative.quote_as_of+
+    ' (contesto, non Δ policy)':'';
   const oisText='pricing '+(oisState?'certificato':'non certificato')+
-   ' · '+(oisDay||'n.d.');
+   ' · '+(oisDay||'n.d.')+contextHint;
   return '<article class="gmfq-path-leg"><strong>'+FLAG[c]+' '+c+' · '+BANK[c]+'</strong>'+
    '<small>'+htmlEscape(rateText)+'; '+htmlEscape(oisText)+'</small>'+
    '<div class="gmfq-path-links">'+Object.entries(labels).map(([r,n])=>
