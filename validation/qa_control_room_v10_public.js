@@ -472,13 +472,20 @@ async function getState(page){
               note:c?.querySelector('.gmfq-reaction-warning')?.textContent,
               viewport:d?.documentElement.clientWidth,width:d?.documentElement.scrollWidth};
          });
-         if(liveAudit.status!=='COERENTE'||
-             liveAudit.dates.join('/')!=='2026-10-15/2026-10-16'||
-             !liveAudit.texts[0]?.includes('+6.7 bp')||
-             !liveAudit.texts[1]?.includes('+0.40%')||
-             !liveAudit.note?.includes('non prova causalità')||
-             liveAudit.width>liveAudit.viewport+16)
-            throw Error(name+' public EURUSD Rates/FX reaction audit incorrect '+JSON.stringify(liveAudit));
+         // Public 2Y and ECB fixing data advance every session: derive the
+         // correct descriptive verdict from observed magnitudes, not a pinned date.
+         const spreadBp=Number.parseFloat(liveAudit.texts[0]);
+         const fxMovePct=Number.parseFloat(liveAudit.texts[1]);
+         const observedSpan=(Date.parse(liveAudit.dates[1]+'T00:00:00Z')-
+           Date.parse(liveAudit.dates[0]+'T00:00:00Z'))/86400000;
+         const expectedReaction=!Number.isFinite(spreadBp)||!Number.isFinite(fxMovePct)?
+           'WITHHELD':Math.abs(spreadBp)<2||Math.abs(fxMovePct)<0.05?
+           'NON_CONCLUSIVO':Math.sign(spreadBp)===Math.sign(fxMovePct)?'COERENTE':'DIVERGENTE';
+         if(liveAudit.status!==expectedReaction||
+            !Number.isFinite(observedSpan)||observedSpan<=0||observedSpan>5||
+            !liveAudit.note?.includes('non prova causalità')||
+            liveAudit.width>liveAudit.viewport+16)
+           throw Error(name+' public EURUSD threshold audit wrong '+JSON.stringify({liveAudit,expectedReaction}));
          const decision=await page.evaluate(()=>{
            const d=document.getElementById('gmfq-page')?.contentDocument,
              c=d?.getElementById('gmfq-pair-decision-bridge');
@@ -491,7 +498,7 @@ async function getState(page){
          const expectedBridge=candidateOnPublic?'CONTRO_TESI':'NON_DETERMINATO';
          if(decision.status!==expectedBridge||decision.cells.length!==3||
             !decision.cells[0]?.includes('USD')||!decision.cells[1]?.includes('CON RISCHI')||
-            !decision.cells[2]?.includes('Coerente tra 2Y e FX')||
+            !decision.cells[2]?.includes(liveAudit.status==='COERENTE'?'Coerente tra 2Y e FX':liveAudit.status==='DIVERGENTE'?'Divergente tra 2Y e FX':liveAudit.status==='NON_CONCLUSIVO'?'Non conclusivo':'Non valutabile')||
             !decision.content?.includes('Una coerenza 2Y–FX non equivale a conferma della tesi')||
             (!candidateOnPublic&&(decision.baseline!=='STALE_OR_UNVERIFIED'||
                !decision.cells[0]?.includes('Preferenza storica')||
