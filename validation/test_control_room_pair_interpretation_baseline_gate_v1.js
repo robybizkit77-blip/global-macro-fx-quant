@@ -12,6 +12,9 @@ const b=source.indexOf('/* What Changed =',a);
 const c=source.indexOf('function pairEvidenceChecklist(');
 const d=source.indexOf('async function mountPairResearch(',c);
 assert(a>0&&b>a&&c>b&&d>c,'Canonical Pair source-function spans missing');
+const g=source.indexOf('function officialPricingCurrent(x){');
+const h=source.indexOf('function htmlEscape(',g);
+assert(g>0&&h>g,'Canonical OIS certification guard missing');
 const FX=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
 const FLAG=Object.fromEntries(FX.map(k=>[k,k]));
 const htmlEscape=x=>String(x??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&gt;');
@@ -27,7 +30,7 @@ const num=x=>typeof x==='number'&&Number.isFinite(x)?x:null;
 const fmt=(x,n=1)=>num(x)===null?'—':Number(x).toFixed(n);
 const window={};
 const funcs=new Function('romeCalendarAge','fresh','num','fmt','FLAG','htmlEscape','window','romeTodayIso',
- source.slice(a,b)+'\n'+source.slice(c,d)+
+ source.slice(g,h)+'\n'+source.slice(a,b)+'\n'+source.slice(c,d)+
  ';return {pairModelEvidenceState,pairMacroRatesComparison,pairEvidenceChecklist,pairThesisReactionBridge};')(
  romeCalendarAge,fresh,num,fmt,FLAG,htmlEscape,window,()=>today);
 const code='AUDCHF',pair=setup.pairs[code];
