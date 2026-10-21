@@ -44,7 +44,27 @@ def main():
     if state in {'SOURCE_OLDER_THAN_CURRENT','SAME_DATE_VALUE_MISMATCH'}: failures.append('CAD')
     aud=load_module('rates_aud',VAL/'fetch_rates_aud.py'); a=aud.latest(); state=compare(rates['AUD'],a['date'],a['2Y'],a['10Y']); out['currencies']['AUD']={'state':state,'coverage_mode':'LIVE_FETCH','authority':a['authority'],'official':{'date':a['date'],'2Y':a['2Y'],'10Y':a['10Y'],'series_2Y':a['series_2Y'],'series_10Y':a['series_10Y']},'current':{'date':rates['AUD']['date'],'2Y':rates['AUD']['2Y'],'10Y':rates['AUD']['10Y']},'publication_cadence':a['publication_cadence']}
     if state in {'SOURCE_OLDER_THAN_CURRENT','SAME_DATE_VALUE_MISMATCH'}: failures.append('AUD')
-    meta=reg['currencies']['NZD']; expected=meta['current_snapshot']; state='NO_CHANGE' if str(rates['NZD']['date'])==expected else 'CURRENT_SNAPSHOT_REGISTRY_MISMATCH'; out['currencies']['NZD']={'state':state,'coverage_mode':'OFFICIAL_SOURCE_LAG_ASSERTION','authority':meta['authority'],'official_contract_snapshot':expected,'current':{'date':rates['NZD']['date'],'2Y':rates['NZD']['2Y'],'10Y':rates['NZD']['10Y']},'reason':meta.get('reason'),'runner_access':'RBNZ B2 official page and canonical XLSX return HTTP 403 to GitHub-hosted runner; no secondary fallback permitted'}
+    # Manual-only RBNZ source: verify reviewed registry AND both independent
+    # published-table records. An advancing date is never auto-approved.
+    from check_nzd_rates_reviewed_snapshot_v1 import validate as validate_nzd
+    meta=reg['currencies']['NZD']
+    try:
+        nz_review=validate_nzd(rates,reg)
+        state='NO_CHANGE'
+        nz_reason=meta.get('reason')
+    except (ValueError, KeyError, TypeError, OSError) as exc:
+        state='CURRENT_SNAPSHOT_REGISTRY_MISMATCH'
+        nz_review=None
+        nz_reason=str(exc)
+    out['currencies']['NZD']={
+        'state':state,'coverage_mode':'OFFICIAL_SOURCE_LAG_ASSERTION',
+        'authority':meta['authority'],
+        'official_contract_snapshot':meta['current_snapshot'],
+        'current':{'date':rates['NZD']['date'],'2Y':rates['NZD']['2Y'],'10Y':rates['NZD']['10Y']},
+        'review_contract':nz_review,
+        'reason':nz_reason,
+        'runner_access':'RBNZ B2 source blocked in GitHub runner; manual two-review evidence required, no secondary fallback permitted',
+    }
     if state!='NO_CHANGE': failures.append('NZD')
     chf=reg['currencies']['CHF']; out['currencies']['CHF']={'state':'WITHHOLD','coverage_mode':'SOURCE_EXPORT_BLOCKED','authority':chf['authority'],'last_validated_snapshot':chf['last_validated_snapshot'],'current':{'date':rates['CHF']['date'],'2Y':rates['CHF']['2Y'],'10Y':rates['CHF']['10Y']},'reason':chf['reason']}
     states={c:v['state'] for c,v in out['currencies'].items()}; out['summary']={'live_fetch_count':sum(v['coverage_mode']=='LIVE_FETCH' for v in out['currencies'].values()),'cadence_or_lag_assertion_count':sum(v['coverage_mode'] in {'OFFICIAL_CADENCE_ASSERTION','OFFICIAL_SOURCE_LAG_ASSERTION'} for v in out['currencies'].values()),'withheld_count':sum(v['state']=='WITHHOLD' for v in out['currencies'].values()),'updates_available':[c for c,s in states.items() if s=='UPDATE_AVAILABLE'],'no_change':[c for c,s in states.items() if s=='NO_CHANGE'],'withheld':[c for c,s in states.items() if s=='WITHHOLD'],'failures':failures}
