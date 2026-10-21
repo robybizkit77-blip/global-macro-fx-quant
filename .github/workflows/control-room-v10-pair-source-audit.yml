@@ -6,6 +6,8 @@ on:
     paths:
       - 'validation/audit_control_room_pair_coverage_v1.py'
       - 'validation/test_control_room_pair_coverage_v1.py'
+      - 'validation/test_control_room_pair_official_pricing_age_v1.js'
+      - 'site/control-room-preview/home-navigation-v10.js'
       - '.github/workflows/control-room-v10-pair-source-audit.yml'
       - 'live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'
       - 'live_data/sections/ECB_G8_PRICE_HISTORY.json'
@@ -18,6 +20,8 @@ on:
     paths:
       - 'validation/audit_control_room_pair_coverage_v1.py'
       - 'validation/test_control_room_pair_coverage_v1.py'
+      - 'validation/test_control_room_pair_official_pricing_age_v1.js'
+      - 'site/control-room-preview/home-navigation-v10.js'
       - '.github/workflows/control-room-v10-pair-source-audit.yml'
       - 'live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'
       - 'live_data/sections/ECB_G8_PRICE_HISTORY.json'

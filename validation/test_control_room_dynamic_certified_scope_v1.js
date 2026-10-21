@@ -12,7 +12,12 @@ const age=s=>(Date.parse(DAY+'T00:00:00Z')-Date.parse(s+'T00:00:00Z'))/86400000;
 const fresh=(day,max)=>typeof day==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(day)&&
  Number.isFinite(age(day))&&age(day)>=0&&age(day)<=max;
 const num=x=>typeof x==='number'&&Number.isFinite(x)?x:null;
-const curves=new Function('FX','fresh','num',source.slice(a,b)+';return marketResearchCurves;')(FX,fresh,num);
+const guardStart=source.indexOf('function officialPricingCurrent(x){');
+const guardEnd=source.indexOf('function htmlEscape(',guardStart);
+assert(guardStart>=0&&guardEnd>guardStart,'Canonical shared OIS source guard not found');
+const guard=source.slice(guardStart,guardEnd);
+const curves=new Function('FX','fresh','num',guard+source.slice(a,b)+
+ ';return marketResearchCurves;')(FX,fresh,num);
 const real=JSON.parse(fs.readFileSync('live_data/sections/OIS_OPERATIONAL_VIEW.json','utf8'));
 const official=Object.entries(real.currencies).filter(([c,r])=>
  r.operational_status==='GREEN_OFFICIAL'&&r.official_status==='ACTIVE'&&

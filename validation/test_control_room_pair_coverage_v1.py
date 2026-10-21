@@ -42,7 +42,9 @@ def fixture():
         "ois": {"currencies": {c: {
             "as_of": day, "operational_status": "GREEN_OFFICIAL",
             "quality": "OFFICIAL_CERTIFIED", "official_status": "ACTIVE",
-            "horizons": {"6m": {"policy_delta_bp": 0.0}},
+            "backtest_eligible_as_official": True,
+            "horizons": {t: {"rate": 4.0, "policy_delta_bp": 0.0}
+                         for t in ("3m", "6m", "12m")},
         } for c in FX}},
         "cot": {c: {"dates": ["2026-10-06", "2026-10-13"],
                     "net": [0, 1]} for c in FX},
@@ -79,6 +81,35 @@ class CoverageTests(unittest.TestCase):
         self.assertEqual(r["fully_supported_pairs"], 21)
         self.assertIn("CHF_RATES_WITHHELD", r["pairs"]["NZDCHF"]["gaps"])
         self.assertIn("CHF_OIS_NOT_OFFICIAL_CURRENT", r["pairs"]["NZDCHF"]["gaps"])
+
+    def test_fifth_day_official_pricing_is_historical_for_all_pairs(self):
+        # Price/Macro and 2Y remain current, but the official OIS curve on
+        # the fifth calendar day is NOT an operational input for any pair.
+        for c in FX:
+            self.data["ois"]["currencies"][c]["as_of"] = "2026-10-15"
+        r = analyze(self.data, self.today)
+        self.assertEqual(r["fully_supported_pairs"], 0)
+        self.assertEqual(r["current_source_counts"]["ois_official"], 0)
+        self.assertIn("USD_OIS_NOT_OFFICIAL_CURRENT", r["pairs"]["USDEUR"]["gaps"])
+        # Exactly 4 days old remains eligible under the established contract.
+        for c in FX:
+            self.data["ois"]["currencies"][c]["as_of"] = "2026-10-16"
+        r = analyze(self.data, self.today)
+        self.assertEqual(r["fully_supported_pairs"], 28)
+
+    def test_source_certificate_requires_backtest_flag_and_all_horizons(self):
+        row = self.data["ois"]["currencies"]["USD"]
+        row["backtest_eligible_as_official"] = False
+        with self.assertRaisesRegex(ValueError, "falsely promoted"):
+            analyze(self.data, self.today)
+        row["backtest_eligible_as_official"] = True
+        row["horizons"]["12m"]["rate"] = None
+        with self.assertRaisesRegex(ValueError, "falsely promoted"):
+            analyze(self.data, self.today)
+        row["horizons"]["12m"]["rate"] = 4.0
+        row["horizons"]["3m"]["policy_delta_bp"] = float("nan")
+        with self.assertRaisesRegex(ValueError, "falsely promoted"):
+            analyze(self.data, self.today)
 
     def test_fake_official_ois_is_rejected(self):
         self.data["ois"]["currencies"]["USD"]["quality"] = "ESTIMATED_INFORMATIONAL"

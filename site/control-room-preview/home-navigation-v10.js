@@ -40,6 +40,17 @@ function romeCalendarAge(date,now=new Date()){
  return (Date.parse(romeTodayIso(now)+'T00:00:00Z')-t)/86400000;
 }
 function fresh(date,max=4){const days=romeCalendarAge(date);return days!==null&&days>=0&&days<=max}
+/* Same approved operational pricing eligibility in Home, Rates, Pair.
+   Rates 2Y/10Y have their own distinct 5-day observation contract.
+   The backend's 28-pair source coverage audit also uses 4 days for OIS. */
+function officialPricingCurrent(x){
+ return !!x&&x.operational_status==='GREEN_OFFICIAL'&&
+  x.official_status==='ACTIVE'&&x.quality==='OFFICIAL_CERTIFIED'&&
+  x.backtest_eligible_as_official===true&&fresh(x.as_of,4)&&
+  ['3m','6m','12m'].every(t=>num(x.horizons?.[t]?.rate)!==null&&
+   num(x.horizons?.[t]?.policy_delta_bp)!==null);
+}
+
 function htmlEscape(x){return String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function go(url){if(url&&url.startsWith('#/')&&location.hash!==url)location.hash=url}
 async function feed(file){const c=new AbortController(),t=setTimeout(()=>c.abort(),12000);try{const r=await fetch(ROOT+file,{cache:'no-store',signal:c.signal});if(!r.ok)throw Error('HTTP '+r.status);return await r.json()}finally{clearTimeout(t)}}
@@ -402,9 +413,7 @@ function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy,proxy,model,setup){
  });
  const oisCurrent=FX.filter(k=>{
   const x=ois?.currencies?.[k];
-  return x?.operational_status==='GREEN_OFFICIAL'&&x.quality==='OFFICIAL_CERTIFIED'&&
-   fresh(x.as_of,5)&&['3m','6m','12m'].every(t=>
-    num(x.horizons?.[t]?.rate)!==null&&num(x.horizons?.[t]?.policy_delta_bp)!==null);
+  return officialPricingCurrent(x);
  });
  // Independent read-only research coverage, computed from the same dated
  // per-tenor source guards as the G8 Rates matrix (never as official OIS).
@@ -584,9 +593,7 @@ function marketResearchCurves(data){
  // source must appear without enabling any proxy or inferred policy path.
  return FX.flatMap(k=>{
   const x=data?.currencies?.[k];
-  if(x?.operational_status!=='GREEN_OFFICIAL'||x.official_status!=='ACTIVE'||
-     x.quality!=='OFFICIAL_CERTIFIED'||x.backtest_eligible_as_official!==true||
-     !fresh(x.as_of,4))return [];
+  if(!officialPricingCurrent(x))return [];
   const pts=terms.map(t=>num(x.horizons?.[t]?.policy_delta_bp));
   return pts.every(v=>v!==null)?[{k,date:x.as_of,src:x.source||'',pts}]:[];
  });
@@ -690,7 +697,7 @@ function mountMarketResearch(doc,ois,proxy,rates,snb10,sourceReadiness){
  const withheld=statusesComplete?FX.filter(c=>ois.currencies[c].operational_status==='WITHHELD'):[];
  const officialEligible=statusesComplete?FX.filter(c=>{
   const r=ois.currencies[c];
-  return r.operational_status==='GREEN_OFFICIAL'&&fresh(r.as_of,4);
+  return officialPricingCurrent(r);
  }):[];
  const curvesVerified=statusesComplete&&curves.length===officialEligible.length&&
   curves.every(c=>officialEligible.includes(c.k));
@@ -792,9 +799,7 @@ function pairMacroRatesComparison(code,pair,rates,ois,modelDay,macroDay){
  };
  const repricing=(c)=>{
    const o=ois?.currencies?.[c];
-   const ok=o?.operational_status==='GREEN_OFFICIAL'&&o.quality==='OFFICIAL_CERTIFIED'&&
-    o.official_status==='ACTIVE'&&fresh(o.as_of,5)&&
-    num(o.horizons?.['6m']?.policy_delta_bp)!==null;
+   const ok=officialPricingCurrent(o);
    const instrument=c==='GBP'?'OIS BoE':c==='JPY'?'futures TONA':
     c==='AUD'?'futures IB':c==='CAD'?'futures CORRA':'strumento non certificato';
    return {ok, date:o?.as_of||null,delta:ok?o.horizons['6m'].policy_delta_bp:null,instrument};
@@ -1154,8 +1159,7 @@ async function mountPairResearch(doc){
   const r=rates?.[c],o=ois?.currencies?.[c];
   const rateDay=r?.date,rateState=r&&String(r.quality||'').includes('OFFICIAL')&&fresh(rateDay,5) &&
    num(r['2Y'])!==null&&num(r['10Y'])!==null;
-  const oisDay=o?.as_of,oisState=o?.operational_status==='GREEN_OFFICIAL'&&
-   o.quality==='OFFICIAL_CERTIFIED'&&fresh(oisDay,5);
+  const oisDay=o?.as_of,oisState=officialPricingCurrent(o);
   const rateText='2Y/10Y '+(rateState?'ufficiali':'non correnti o incompleti')+
    ' · '+(rateDay||'n.d.');
   const indicative=(!oisState&&
