@@ -28,7 +28,7 @@ function normalized(nz) {
   tenor2:tenor('2Y'),tenor10:tenor('10Y')};
 }
 function utcAgeDays(iso,now=new Date()) {
- if(typeof iso!=='string'||!/^\\d{4}-\\d{2}-\\d{2}$/.test(iso))throw Error('invalid NZD as-of');
+ if(typeof iso!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(iso))throw Error('invalid NZD as-of');
  const v=new Date(iso+'T00:00:00Z');
  if(!Number.isFinite(v.getTime())||v.toISOString().slice(0,10)!==iso)throw Error('invalid NZD calendar date');
  const nowUtc=Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate());
