@@ -1063,6 +1063,119 @@ async function mountPairResearch(doc){
   }
  },true); // capture: original pair buttons can stop bubbling after updating the detail
 }
+/* Read-only Screener diagnosis of canonical NON VALUTABILE decisions.
+   No score, pair ranking, official rates, OIS or trading judgment is recalculated. */
+function screenerBlockerReason(code,record){
+ const src=record?.setup,frame=record?.decision_frame;
+ if(!/^[A-Z]{6}$/.test(code)||!src||!frame||
+    src.quality!=='NON VALUTABILE'||src.structuralFav!==null)return null;
+ const sides=[code.slice(0,3),code.slice(3,6)];
+ const macro=frame.macroSide,policy=frame.policySide,gap=frame.structural?.ratesGap;
+ if(frame.quality==='PILASTRI DIVISI'&&sides.includes(macro)&&
+    sides.includes(policy)&&macro!==policy)
+   return {category:'CONFLICT',
+    explanation:'Macro: '+(FLAG[macro]||'')+' '+macro+
+    ' · Tassi/CB: '+(FLAG[policy]||'')+' '+policy};
+ if(frame.quality==='SEPARAZIONE RATES MATERIALE'&&
+    macro===null&&policy===null&&gap?.material===true&&
+    sides.includes(gap.side)&&num(gap.bp)!==null)
+   return {category:'RATES_ONLY',
+    explanation:'Spread 2Y ≈ '+fmt(Math.abs(gap.bp),0)+' pb verso '+gap.side+
+    ' · livello, non bias'};
+ if(frame.quality==='NESSUN CONTRASTO'&&macro===null&&policy===null)
+   return {category:'INSUFFICIENT',
+    explanation:'Macro e Tassi/CB non distinguono chiaramente le valute'};
+ return null; // fail closed on unknown or inconsistent model semantics
+}
+async function mountScreenerBlockers(doc){
+ if(route()!=='screener'||frame.contentDocument!==doc)return;
+ const main=doc.querySelector('.desk-main'),hero=doc.querySelector('.desk-hero');
+ if(!main||!hero||doc.getElementById('gmfq-screener-blockers'))return;
+ const panel=doc.createElement('section');
+ panel.id='gmfq-screener-blockers';panel.className='desk-panel';
+ panel.dataset.diagnosisStatus='LOADING';
+ panel.setAttribute('aria-label','Motivi dei setup FX non valutabili');
+ panel.innerHTML='<h2 class="desk-panel-title">Perché alcune coppie non sono valutabili</h2>'+
+  '<p class="gmfq-blocker-message">Verifica dei giudizi canonici…</p>';
+ hero.insertAdjacentElement('afterend',panel);
+ let setup=null;
+ try{setup=await feed('PAIR_SETUP_OPERATIONAL_VIEW.json')}
+ catch(e){console.warn('[GMFQ Screener diagnoses unavailable]',String(e))}
+ if(route()!=='screener'||frame.contentDocument!==doc)return;
+ const records=setup?.pairs;
+ const valid=setup?.schema==='GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1'&&
+  setup?.status==='CURRENT_CANONICAL_ENGINE'&&setup.pair_count===28&&
+  records&&Object.keys(records).length===28&&
+  /^\d{4}-\d{2}-\d{2}$/.test(setup.macro_baseline_asof||'')&&
+  setup.thesis_is_not_entry===true&&setup.entry_level_published===false;
+ const unknown=()=>{
+  panel.dataset.diagnosisStatus='WITHHELD';
+  panel.innerHTML='<h2 class="desk-panel-title">Motivi dei setup non valutabili</h2>'+
+   '<p class="gmfq-blocker-message">Classificazione non verificabile dal feed canonico. Nessun giudizio ricostruito.</p>';
+ };
+ if(!valid){unknown();return}
+ const rows=Object.entries(records).filter(([,r])=>r?.setup?.quality==='NON VALUTABILE');
+ if(rows.length!==setup.quality_distribution?.['NON VALUTABILE']){unknown();return}
+ const groups={CONFLICT:[],RATES_ONLY:[],INSUFFICIENT:[]};
+ for(const [code,record] of rows){
+  const explanation=screenerBlockerReason(code,record);
+  if(!explanation||!groups[explanation.category]){unknown();return}
+  groups[explanation.category].push({code,...explanation});
+ }
+ const style=doc.createElement('style');
+ style.id='gmfq-screener-blockers-css';
+ style.textContent=
+ '#gmfq-screener-blockers{margin:0 0 14px;min-width:0}'+
+ '#gmfq-screener-blockers .gmfq-blocker-intro{margin:0;padding:11px 16px 5px;font:12px/1.6 Arial,sans-serif;color:#bfd0dd}'+
+ '#gmfq-screener-blockers .gmfq-blocker-date{padding:0 16px 10px;color:#d7bf87;font:11px/1.5 Arial,sans-serif}'+
+ '#gmfq-screener-blockers .gmfq-blocker-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:5px 16px 13px}'+
+ '#gmfq-screener-blockers .gmfq-blocker-group{min-width:0;border-top:1px solid #3a5363;padding-top:9px}'+
+ '#gmfq-screener-blockers .gmfq-blocker-group h3{font:600 12px/1.5 Arial,sans-serif;color:#e4edf2;margin:0 0 4px}'+
+ '#gmfq-screener-blockers .gmfq-blocker-group p{color:#9eb6c5;font:11px/1.5 Arial,sans-serif;margin:0 0 7px}'+
+ '#gmfq-screener-blockers .gmfq-blocker-pair{display:flex;align-items:flex-start;gap:8px;width:100%;text-align:left;background:transparent;border:0;border-top:1px solid #243d4b;color:#bfcfdb;padding:9px 1px;cursor:pointer}'+
+ '#gmfq-screener-blockers .gmfq-blocker-pair:hover,#gmfq-screener-blockers .gmfq-blocker-pair:focus-visible{background:#193448;outline-offset:2px}'+
+ '#gmfq-screener-blockers .gmfq-blocker-code{color:#eef2f6;font:600 12px/1.4 Arial,sans-serif;min-width:79px}'+
+ '#gmfq-screener-blockers .gmfq-blocker-explain{flex:1;min-width:0;font:11px/1.45 Arial,sans-serif;overflow-wrap:anywhere}'+
+ '#gmfq-screener-blockers .gmfq-blocker-link{color:#d9c38d}'+
+ '#gmfq-screener-blockers .gmfq-blocker-note{margin:0;border-top:1px solid #29404f;padding:10px 16px;color:#91aabc;font:10px/1.55 Arial,sans-serif}'+
+ '#gmfq-screener-blockers .gmfq-blocker-message{padding:10px 16px;font:12px/1.55 Arial,sans-serif;color:#d2c396}'+
+ '@media(max-width:950px){#gmfq-screener-blockers .gmfq-blocker-grid{grid-template-columns:1fr}}'+
+ '@media(max-width:600px){#gmfq-screener-blockers .gmfq-blocker-intro{padding:10px 12px 4px}'+
+ '#gmfq-screener-blockers .gmfq-blocker-date{padding:0 12px 9px}'+
+ '#gmfq-screener-blockers .gmfq-blocker-grid{padding:5px 12px 10px}'+
+ '#gmfq-screener-blockers .gmfq-blocker-note{padding:9px 12px}}';
+ doc.head.appendChild(style);
+ const categories=[
+  ['CONFLICT','Pilastri in conflitto','Macro e Tassi/CB favoriscono valute opposte'],
+  ['RATES_ONLY','Differenziale 2Y, tesi non validata','Il livello dei rendimenti non basta per assegnare un bias'],
+  ['INSUFFICIENT','Differenziazione insufficiente','Nessun vantaggio strutturale robusto']
+ ];
+ const card=([id,title,note])=>'<section class="gmfq-blocker-group" data-reason="'+id+'">'+
+  '<h3>'+title+' · '+groups[id].length+'</h3><p>'+note+'</p>'+
+  groups[id].map(x=>'<button type="button" class="gmfq-blocker-pair" data-pair="'+x.code+
+   '" aria-label="Apri analisi '+x.code+'"><span class="gmfq-blocker-code">'+
+   FLAG[x.code.slice(0,3)]+' '+FLAG[x.code.slice(3,6)]+' '+x.code+
+   '</span><span class="gmfq-blocker-explain">'+htmlEscape(x.explanation)+
+   '</span><span class="gmfq-blocker-link">↗</span></button>').join('')+'</section>';
+ const baselineFresh=fresh(setup.macro_baseline_asof,10);
+ panel.dataset.diagnosisStatus='READ_ONLY';
+ panel.dataset.macroBaselineAsOf=setup.macro_baseline_asof;
+ panel.dataset.modelPriceAsOf=setup.price_asof||'';
+ panel.innerHTML='<h2 class="desk-panel-title">Setup NON VALUTABILE · '+rows.length+
+  '/28 · cause documentate</h2>'+
+  '<p class="gmfq-blocker-intro">I giudizi provengono dal motore canonico: non sono errori automaticamente correggibili. Apri una coppia per leggere Macro, Rates, Positioning e Prezzo.</p>'+
+  '<p class="gmfq-blocker-date">Baseline Macro/Tassi: '+htmlEscape(setup.macro_baseline_asof)+
+  (baselineFresh?' · data entro il limite di freschezza':' · NON CORRENTE, tesi da rivalidare')+
+  ' · Prezzi del motore: '+htmlEscape(setup.price_asof||'non verificati')+'</p>'+
+  '<div class="gmfq-blocker-grid">'+categories.map(card).join('')+'</div>'+
+  '<p class="gmfq-blocker-note">Lettura descrittiva e storica, non graduatoria di trade. Lo spread 2Y è solo contesto di livello: non crea da solo una preferenza FX. Nessuna promozione di fonte, ricalcolo di score, modifica dei 28 setup o segnale operativo.</p>';
+ panel.addEventListener('click',event=>{
+  const button=event.target.closest('button.gmfq-blocker-pair[data-pair]');
+  if(button&&panel.contains(button)&&records[button.dataset.pair])
+   go('#/coppie?pair='+button.dataset.pair);
+ });
+}
+
 function mountScreenerPairBridge(doc){
  if(route()!=='screener'||frame.contentDocument!==doc)return;
  const code=new URLSearchParams(location.hash.split('?')[1]||'').get('pair')?.toUpperCase();
@@ -1310,7 +1423,10 @@ function onFrameLoad(){
    if(route()==='cross')mountCrossRisk(doc).catch(e=>console.warn('[GMFQ Cross-Asset Risk WITHHELD]',e));
    if(route()==='tassi'){enhanceRatesDetail(doc);focusRatesSection(doc);applyMarketResearch(doc).catch(e=>console.warn('[GMFQ market pricing WITHHELD]',e))}
    if(route()==='coppie')mountPairResearch(doc).catch(e=>console.warn('[GMFQ pair research WITHHELD]',e));
-   if(route()==='screener')mountScreenerPairBridge(doc);
+   if(route()==='screener'){
+    mountScreenerPairBridge(doc);
+    mountScreenerBlockers(doc).catch(e=>console.warn('[GMFQ Screener blockers WITHHELD]',e));
+   }
    focusCurrency(doc);
    return;
  }
