@@ -38,6 +38,17 @@ const chfAnchor=commonAnchorDate('CHF','EUR');
 const nzdAnchor=commonAnchorDate('NZD','AUD');
 const nzdOfficial=recentOfficialRate(ratesFeed.NZD);
 if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official rates estimation anchors');
+/* Market series are refreshed every day. Determine the expected descriptive
+   verdict from the displayed rates/FX magnitudes and pre-registered thresholds,
+   never from a hardcoded historical date or fixed EURUSD/GBPJPY outcome. */
+function expectedReactionFromMetrics(row){
+ const vals=row?.values||[];
+ if(vals.length<2)return 'WITHHELD';
+ const bp=Number.parseFloat(vals[0]),fx=Number.parseFloat(vals[1]);
+ if(!Number.isFinite(bp)||!Number.isFinite(fx))return 'WITHHELD';
+ if(Math.abs(bp)<2||Math.abs(fx)<0.05)return 'NON_CONCLUSIVO';
+ return Math.sign(bp)===Math.sign(fx)?'COERENTE':'DIVERGENTE';
+}
 (async()=>{
  const browser=await chromium.launch({headless:true});
  for(const [label,viewport] of [['desktop',{width:1440,height:950}],['mobile',{width:390,height:844}]]){
@@ -388,13 +399,15 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
       note:c?.querySelector('.gmfq-reaction-warning')?.textContent,parts:c?.textContent,
       width:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth};
   });
-  if(eurReaction.state!=='COERENTE'||eurReaction.dates.join('/')!=='2026-10-15/2026-10-16'||
-    !eurReaction.values[0]?.includes('+6.7 bp')||!eurReaction.values[1]?.includes('+0.40%')||
-    !eurReaction.note?.includes('non prezzi intraday')||
-    !eurReaction.parts?.includes('non spiegazione causale')||
-    eurReaction.width>eurReaction.viewport+16)
-     throw Error(label+' EURUSD rates-FX common date reaction audit wrong '+JSON.stringify(eurReaction));
-
+  const expectedEurState=expectedReactionFromMetrics(eurReaction);
+  const eurDates=eurReaction.dates||[];
+  const eurGap=(Date.parse(eurDates[1]+'T00:00:00Z')-Date.parse(eurDates[0]+'T00:00:00Z'))/86400000;
+  if(eurReaction.state!==expectedEurState||!Number.isFinite(eurGap)||eurGap<=0||eurGap>5||
+     !eurReaction.note?.includes('non prezzi intraday')||
+     !eurReaction.parts?.includes('non spiegazione causale')||
+     eurReaction.width>eurReaction.viewport+16)
+    throw Error(label+' EURUSD dated 2Y/FX reaction must respect thresholds '+JSON.stringify({eurReaction,expectedEurState}));
+  
   const eurDecision=await page.evaluate(()=>{
     const d=document.getElementById('gmfq-page').contentDocument,c=d?.getElementById('gmfq-pair-decision-bridge');
     return {state:c?.dataset.bridgeStatus,baseline:c?.dataset.baselineStatus,blocks:[...c?.querySelectorAll('.gmfq-decision-cols>div')||[]].map(x=>x.textContent),
@@ -403,7 +416,7 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
   if(eurDecision.state!=='NON_DETERMINATO'||eurDecision.baseline!=='STALE_OR_UNVERIFIED'||
      eurDecision.blocks.length!==3||
      !eurDecision.blocks[0]?.includes('USD')||!eurDecision.blocks[1]?.includes('CON RISCHI')||
-     !eurDecision.blocks[2]?.includes('Coerente tra 2Y e FX')||
+     !eurDecision.blocks[2]?.includes(expectedEurState==='COERENTE'?'Coerente tra 2Y e FX':expectedEurState==='DIVERGENTE'?'Divergente tra 2Y e FX':expectedEurState==='NON_CONCLUSIVO'?'Non conclusivo':'Non valutabile')||
      !eurDecision.content?.includes('Una coerenza 2Y–FX non equivale a conferma della tesi')||
      !eurDecision.blocks[0]?.includes('Preferenza storica')||
      !eurDecision.content?.includes('I movimenti recenti FX e 2Y restano osservazioni valide ma non confermano né invalidano la tesi storica')||
@@ -475,11 +488,12 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
     return {state:c?.dataset.reactionStatus,dates:[c?.dataset.windowStart,c?.dataset.windowEnd],
       values:[...c?.querySelectorAll('.gmfq-reaction-metrics strong')||[]].map(n=>n.textContent)};
   });
-  if(gbpReaction.state!=='DIVERGENTE'||gbpReaction.dates.join('/')!=='2026-10-15/2026-10-16'||
-     !gbpReaction.values[0]?.includes('-3.1 bp')||
-     !gbpReaction.values[1]?.startsWith('+'))
-    throw Error(label+' GBPJPY 2Y versus FX divergence not detected '+JSON.stringify(gbpReaction));
-
+  const expectedGbpState=expectedReactionFromMetrics(gbpReaction);
+  const gbpGap=(Date.parse(gbpReaction.dates[1]+'T00:00:00Z')-Date.parse(gbpReaction.dates[0]+'T00:00:00Z'))/86400000;
+  if(gbpReaction.state!==expectedGbpState||
+     (expectedGbpState!=='WITHHELD'&&(!Number.isFinite(gbpGap)||gbpGap<=0||gbpGap>5)))
+    throw Error(label+' GBPJPY 2Y/FX verdict must follow actual observed thresholds '+JSON.stringify({gbpReaction,expectedGbpState}));
+ 
   const gbpDecision=await page.evaluate(()=>{
     const c=document.getElementById('gmfq-page').contentDocument?.getElementById('gmfq-pair-decision-bridge');
     return {status:c?.dataset.bridgeStatus,text:c?.textContent};
