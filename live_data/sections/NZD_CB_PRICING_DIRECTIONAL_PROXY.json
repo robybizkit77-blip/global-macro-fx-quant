@@ -1,0 +1,60 @@
+{
+  "as_of": "2026-10-20",
+  "basis_warning": "Bank-bill/FRA rates contain bank-credit and term/basis components. Do not treat these levels as OCR OIS and do not compute OCR policy deltas from them.",
+  "confidence_grade": "B_FOR_DIRECTION_C_FOR_POLICY_LEVEL",
+  "currency": "NZD",
+  "generated_at_utc": "2026-10-21T08:27:40.869141Z",
+  "governance": {
+    "backtest_eligible_as_official_ois": false,
+    "bias_effect": "NONE",
+    "core_score_effect": "NONE",
+    "informational_only": true,
+    "pair_engine_effect": "NONE",
+    "policy_delta_from_proxy_allowed": false,
+    "sizing_effect": "NONE",
+    "substitutes_for_ois_level": false
+  },
+  "horizons": {
+    "12m": {
+      "change_1d_bp": null,
+      "change_1w_bp": 9.0,
+      "expiration": "2027-09-15",
+      "expiry_label": "Sep 2027",
+      "implied_bank_bill_rate": 4.24,
+      "mapping": "nearest listed expiry to trade_date+365d; no interpolation",
+      "settlement_change": null,
+      "settlement_price": 95.76,
+      "weekly_reference_trade_date": "2026-10-13"
+    },
+    "3m": {
+      "change_1d_bp": null,
+      "change_1w_bp": 5.0,
+      "expiration": "2026-12-16",
+      "expiry_label": "Dec 2026",
+      "implied_bank_bill_rate": 3.49,
+      "mapping": "nearest listed expiry to trade_date+90d; no interpolation",
+      "settlement_change": null,
+      "settlement_price": 96.51,
+      "weekly_reference_trade_date": "2026-10-13"
+    },
+    "6m": {
+      "change_1d_bp": null,
+      "change_1w_bp": 7.0,
+      "expiration": "2027-03-10",
+      "expiry_label": "Mar 2027",
+      "implied_bank_bill_rate": 3.83,
+      "mapping": "nearest listed expiry to trade_date+180d; no interpolation",
+      "settlement_change": null,
+      "settlement_price": 96.17,
+      "weekly_reference_trade_date": "2026-10-13"
+    }
+  },
+  "instrument": "ASX New Zealand 90 Day Bank Accepted Bill Futures (BB)",
+  "mapping_policy": "Directional market-rates proxy only; 3M/6M/12M use nearest listed expiry with no interpolation. 1W compares the same contract expiry only.",
+  "schema": "GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1",
+  "source": "ASX official NZ futures end-of-day total traded report",
+  "source_quality": "OFFICIAL_EXCHANGE_DIRECTIONAL_PROXY",
+  "source_url": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261020ZFT.htm",
+  "status": "LIVE_DIRECTIONAL_PROXY_READY",
+  "weekly_reference_source_url": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261013ZFT.htm"
+}
