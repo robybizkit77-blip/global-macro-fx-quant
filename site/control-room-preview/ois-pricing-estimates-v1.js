@@ -186,7 +186,57 @@ function coverage(ois,bb,today){
   pair_effect:'NONE',backtest_estimated_as_official:false
  };
 }
-function view(rows){
+
+/* Only compare two verified source days of the SAME listed futures contract.
+   Never bridge a roll, relabel it as OIS, or infer future policy probabilities. */
+function matchedResearchMoves(text, rows, today){
+ if(typeof text!=='string'||text.length>3000000)return [];
+ const parsed=[],ids=new Set();
+ try{
+  for(const line of text.split('\n')){
+   if(!line.trim())continue;
+   const x=JSON.parse(line);
+   if(x.schema!=='GMFQ_OIS_SAME_CONTRACT_QUOTE_V1'||
+      !['USD','EUR','CHF'].includes(x.currency)||
+      x.source_timestamp_evidence!=='SSR_DAILY_BAR_DATA_UPDATE_TIME'||
+      x.source_method!=='TRADINGVIEW_DATED_FUTURES_SSR_V2'||
+      x.official_ois_quote!==false||x.policy_delta_eligible!==false||
+      !/^\d{4}-\d{2}-\d{2}$/.test(x.observation_date||'')||
+      number(x.futures_price)===null||number(x.implied_rate)===null||
+      Math.abs(100-x.futures_price-x.implied_rate)>0.0002)return [];
+   const key=[x.currency,x.contract,x.observation_date].join('|');
+   if(ids.has(key))return [];
+   ids.add(key);parsed.push(x);
+  }
+ }catch(_){return [];}
+ const result=[];
+ for(const ccy of ['USD','EUR','CHF']){
+  const p=rows.find(x=>x.ccy===ccy)?.points?.['3m'];
+  if(!p?.source_quote_verified||!p.contract||!p.expires||!fresh(p.date,today))continue;
+  const bars=parsed.filter(x=>x.currency===ccy&&x.contract===p.contract&&
+    x.symbol===({USD:'CBOT:',EUR:'EUREX:',CHF:'ICEEUR:'}[ccy]+p.contract)&&
+    x.expiration===p.expires).sort((a,b)=>a.observation_date.localeCompare(b.observation_date));
+  if(bars.length<2)continue;
+  const latest=bars[bars.length-1],prior=bars[bars.length-2];
+  if(latest.observation_date!==p.date||
+     Math.abs(latest.implied_rate-p.value)>0.0002)continue;
+  const gap=(Date.parse(latest.observation_date+'T00:00:00Z')-
+   Date.parse(prior.observation_date+'T00:00:00Z'))/86400000;
+  if(!Number.isInteger(gap)||gap<=0||gap>7)continue;
+  result.push({ccy,contract:p.contract,from:prior.observation_date,to:latest.observation_date,
+    delta_bp:Math.round((latest.implied_rate-prior.implied_rate)*10000)/100,
+    research_only:true,policy_delta_allowed:false,official_ois:false});
+ }
+ return result;
+}
+function matchedResearchHtml(moves){
+ if(!moves.length)return '<p class="gmfq-est-note">Variazioni dello stesso contratto: insufficienti osservazioni verificate. Nessun ΔOIS dedotto.</p>';
+ return '<div class="gmfq-est-note" data-same-contract="RESEARCH_ONLY"><b>Variazioni osservate · stesso contratto futures (3M indicativo)</b>'+
+ moves.map(x=>'<p style="margin:4px 0"><b>'+flags[x.ccy]+' '+x.ccy+'</b> · '+esc(x.contract)+
+  ' · '+esc(x.from)+' → '+esc(x.to)+' · <b>'+(x.delta_bp>0?'+':'')+fmt(x.delta_bp)+' bp</b></p>').join('')+
+ '<small>Solo stessi contratti e date di quotazione verificate. Non è ΔOIS ufficiale, né un segnale FX.</small></div>';
+}
+function view(rows,moves=[]){
  const cell=(r,t)=>{const x=r.points[t];return x?
   '<b>'+(r.tier==='OFFICIAL'?'':'≈')+fmt(x.value)+'%</b><small>'+esc(x.date)+'</small>'+
    (x.source_quote_verified?'<small>scad. '+(x.tenor_gap_days>0?'+':'')+x.tenor_gap_days+'gg vs target</small>':'')+
@@ -199,7 +249,7 @@ function view(rows){
  '<div><strong>'+flags[r.ccy]+' '+r.ccy+'</strong><small>'+labels[r.tier]+'</small></div>'+
  tenors.map(t=>'<div>'+cell(r,t)+'</div>').join('')+
  '<div class="gmfq-est-source">'+esc(r.source||'Fonte non corrente')+'</div></div>').join('')+'</div>'+
- '<p class="gmfq-est-note"><b>Metodo:</b> GBP OIS BoE; AUD/CAD/JPY futures monetari ufficiali; USD/CHF futures indicativi. EUR usa giorni diversi e non forma una curva sincronizzata. Su USD/EUR/CHF vengono verificati prezzo, contratto, data e scadenza; lo scarto in giorni è visibile, <b>senza inventare una correzione OIS</b>. NZD: scenario empirico su Bank Bill 90 giorni − OCR RBNZ (19 mesi, due regimi): sconto stimato 24 bp, fascia prudenziale 10–50 bp, ampliata dopo un test su luglio–settembre 2026 (errore medio del punto centrale circa 16 bp). <b>non è uno spread OIS misurato e non intervallo statistico</b>. Sono futures trimestrali, non una curva OIS spot. Nessuna stima produce variazioni OIS 1D/1W, segnali FX o backtest.</p></div>';
+ matchedResearchHtml(moves)+'<p class="gmfq-est-note"><b>Metodo:</b> GBP OIS BoE; AUD/CAD/JPY futures monetari ufficiali; USD/CHF futures indicativi. EUR usa giorni diversi e non forma una curva sincronizzata. Su USD/EUR/CHF vengono verificati prezzo, contratto, data e scadenza; lo scarto in giorni è visibile, <b>senza inventare una correzione OIS</b>. NZD: scenario empirico su Bank Bill 90 giorni − OCR RBNZ (19 mesi, due regimi): sconto stimato 24 bp, fascia prudenziale 10–50 bp, ampliata dopo un test su luglio–settembre 2026 (errore medio del punto centrale circa 16 bp). <b>non è uno spread OIS misurato e non intervallo statistico</b>. Sono futures trimestrali, non una curva OIS spot. Nessuna stima produce variazioni OIS 1D/1W, segnali FX o backtest.</p></div>';
 }
 const css=[
  '#gmfq-ois-research-estimates{margin:12px 0;min-width:0}',
@@ -215,7 +265,7 @@ const css=[
  '#gmfq-ois-research-estimates .gmfq-est-note{margin-top:12px;color:#b1c5d2}',
  '@media(max-width:600px){#gmfq-ois-research-estimates .gmfq-est-body{padding:9px}#gmfq-ois-research-estimates .gmfq-est-row{grid-template-columns:minmax(78px,1.1fr) repeat(3,minmax(0,1fr))}#gmfq-ois-research-estimates .gmfq-est-row>div,#gmfq-ois-research-estimates .gmfq-est-row>span{padding:6px 4px}#gmfq-ois-research-estimates .gmfq-est-row b{font-size:12px}#gmfq-ois-research-estimates .gmfq-est-row small{font-size:9px}}'
 ].join('');
-if(typeof module!=='undefined'&&module.exports)module.exports={matrix,view,fresh,coverage,auditDatedFuture,calibratedNzdCarry,NZD_REFERENCE_ROWS,NZD_RECENT_ROWS,NZD_HOLDOUT_ROWS};
+if(typeof module!=='undefined'&&module.exports)module.exports={matrix,view,matchedResearchMoves,fresh,coverage,auditDatedFuture,calibratedNzdCarry,NZD_REFERENCE_ROWS,NZD_RECENT_ROWS,NZD_HOLDOUT_ROWS};
 if(typeof window!=='undefined')window.GMFQ_OIS_RESEARCH_V1=Object.freeze({coverage});
 if(typeof document==='undefined')return;
 const frame=document.getElementById('gmfq-page');if(!frame)return;
@@ -223,6 +273,12 @@ const ROOT='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-
 let mounted=null;
 function active(){return(location.hash||'#/home').split('?')[0]==='#/tassi';}
 async function get(p){const r=await fetch(ROOT+p,{cache:'no-store'});if(!r.ok)throw Error('feed '+p);return r.json();}
+async function loadSameContractArchive(){
+ const url='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/validation/cb_pricing/history/OIS_SAME_CONTRACT_QUOTES_V1.jsonl';
+ const response=await fetch(url,{cache:'no-store'});
+ if(!response.ok)throw Error('same-contract source history unavailable');
+ return response.text();
+}
 async function mount(doc){
  if(!active()||frame.contentDocument!==doc||mounted===doc)return;
  const anchor=doc.getElementById('ois-rows')?.closest('.desk-panel');if(!anchor)return;
@@ -232,13 +288,13 @@ async function mount(doc){
  box.innerHTML='<h2 class="desk-panel-title">G8 · tassi monetari</h2>';
  anchor.insertAdjacentElement('afterend',box);
  const st=doc.createElement('style');st.textContent=css;doc.head.appendChild(st);
- try{const [a,b]=await Promise.allSettled([get('OIS_OPERATIONAL_VIEW.json'),get('NZD_CB_PRICING_DIRECTIONAL_PROXY.json')]);
+ try{const [a,b,h]=await Promise.allSettled([get('OIS_OPERATIONAL_VIEW.json'),get('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),loadSameContractArchive()]);
   if(frame.contentDocument!==doc||!active())return;
   const o=a.status==='fulfilled'?a.value:null,p=b.status==='fulfilled'?b.value:null;
   if(o?.schema!=='GMFQ_OIS_OPERATIONAL_VIEW_V1'||!o.currencies)throw Error('invalid feed');
   const rows=matrix(o,p,new Date().toISOString().slice(0,10));
   box.dataset.status='RESEARCH_ONLY';box.dataset.officalSources=''+rows.filter(r=>r.tier==='OFFICIAL').length;
-  box.innerHTML=view(rows);
+  box.innerHTML=view(rows,matchedResearchMoves(h.status==='fulfilled'?h.value:'',rows,new Date().toISOString().slice(0,10)));
  }catch(e){box.dataset.status='WITHHELD';box.innerHTML='<h2 class="desk-panel-title">G8 · dati non disponibili</h2>';
   console.warn('[GMFQ OIS research withheld]',String(e));}
 }
