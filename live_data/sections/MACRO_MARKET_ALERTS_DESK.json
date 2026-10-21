@@ -1,8 +1,51 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-21T09:50:44Z",
+  "generated_at_utc": "2026-10-21T10:49:55Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-9067b554121f2f70602b",
+      "observed_at_utc": "2026-10-21T09:39:00Z",
+      "headline": "World shares are mostly higher after US stocks rally on strong earnings",
+      "summary": "AP News riporta: World shares are mostly higher after US stocks rally on strong earnings. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNUGV1X1dKd0F3eTZSZ0F5ellKQVJuc3B1cEFzVGl4dFlSbVU3eFRJZm9lOXJjNDFHN1g4VGpZZlczQUdVR3ZRQ2h0VlpqaW0zU05LelZEb0I4eGJoVC1oZ0M5WktyVGJUZTZrbVBtdnRuNmpud1Y3WkF4bUI4R2xXQ3lTZnZMX09zOVZHOFhndWh0dWtyQ0VDakh0X24?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-068b907d5479da5bab80",
+      "observed_at_utc": "2026-10-21T09:44:40Z",
+      "headline": "French 10-year bond yields hit 5%, highest since 2002",
+      "summary": "Reuters riporta: French 10-year bond yields hit 5%, highest since 2002. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CREDIT",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxOYXc5VF91b3J6TjJpdkR6VFR1SUtTX1VUY1ZTUFBTNXFIT3ZZQ3RBMTVPaDNjMVNZbzRqcGdqRjRXcFhEQjRZd0V6R2ZRZVJwOHdmeHl5LWhva0Y3c285ZUNuaG80bWxBNUMyczhxWWdPd0NZZlNUTVJmUEszM1dCMzU2dU43ZzJ0bHNMQVF5cjgzZWZMUWViWE5aeWc3NUYwSkE?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-59cd4274197271094577",
+      "observed_at_utc": "2026-10-21T09:02:41Z",
+      "headline": "ECB says AI, greener economy help euro zone weather energy shock",
+      "summary": "Reuters riporta: ECB says AI, greener economy help euro zone weather energy shock. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "EUR"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxNNVE1WFlPV043OWhlQ0E3TXFCSnNmQmhLaVBsS0l5TTlRSFNGNlUwY3pqZllBVDQ1alFzdXFuTEowN0RlRU5jMkdmNjFzU3hRM01XdGc4TVVvQWhOdWp5aGQtNm9sdUhzWWUzWkN6VTUzeHFtWjk4aFlTdzllSGZtZTFYX0gzb2k0TkFyRUZrYnRJTmF4d2JJZWwtN0s5RzVaRDhLYmgxS3pqRERvSTFzM2VxVVZubDQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-50087b65f5ac39238bec",
       "observed_at_utc": "2026-10-21T06:04:00Z",
@@ -1367,47 +1410,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxPMmVLc19hd0VSYXIydVNTWENKZ2J5WVNvVDRQUjRfTUJXWGhjOGxGZkFHVm9SNnZzeU9TWUhrYnJTRU1sVFRnX1BwZVd3NHB5a0NLdThkbDRldlg2eHdhTll2b3RnQTJ4U3dHVGczM25FdjJHRGQ5WGJDV2Qxd1hzLV9EcjNWaUQ4cXEzbWVHRzNuS1dGVVNBSmdXWGR6THN1dXhvSUdFS0dMMTJZTnBBZEFfZ2JoYVVFSWNMZw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-3f63104560df8ec36be6",
-      "observed_at_utc": "2026-10-19T05:48:00Z",
-      "headline": "Asian shares are mixed with tech stocks volatile, and oil falls on Trump's Russian sanctions waiver",
-      "summary": "AP News riporta: Asian shares are mixed with tech stocks volatile, and oil falls on Trump's Russian sanctions waiver. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "AP News · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxPVXpsQTBIVTFZNVR4LVdWd2pmbHBUa18tWGRnZmFqVXFvN1dCaW9vTmRxcXNOVVZFNENxTjl2d3lTTXV3TU9aRkxhUzJSNWI5SlFyY1ZoazVBakQwN2VWVzdvYnQ3RU0zQWFjYzA5ZFJ2bFFQeHhYQTRHUTBxcFlHUXQzMV8xMEpTMmR6bA?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-b9063e38542cca3f9ffa",
-      "observed_at_utc": "2026-10-19T00:17:00Z",
-      "headline": "BOJ chief says underlying inflation 'quite close' to price goal",
-      "summary": "Reuters riporta: BOJ chief says underlying inflation 'quite close' to price goal. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "JPY"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxOOUlPaThzNFplTl9JQ0oxQjlBY1VFT0N4ZnBGY09mTXZRaG9yeko1M1pzXzNfZ0Zla1RpZlNrVUd1dHRDMzY2cGNmUU13VzNmY2RFTW1VTW5kdDI1NEJsZTBxZ2Y0MHcxTTQweThkSUpZbmRyV1pLMEtpcXc3VWxmd3FqWmhmbzYya1lvSnEwa0J3QXQtMllSTjlfMWlIWVlpQV9KZnFBcDVaRkMtM2R1M1hVb2VJejdUYWRR?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-b50def396816dffbe626",
-      "observed_at_utc": "2026-10-19T04:37:00Z",
-      "headline": "India sugar stocks slide as government halts sugar diversion to ethanol",
-      "summary": "Reuters riporta: India sugar stocks slide as government halts sugar diversion to ethanol. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxOMlFmT0M5dG0wX2EyLUlXVzJHNlFjRjJGMUZ3dC1rUGpMbDFGRllfNlJlR2dTbEM0eV9sOUptaEZtTXYtS0RyQVozT2JkMjVxay0wT0hyT2c5Y09rZ3k0dHNfNFY4MVZaREVUdWk2eVVWTldqRGZqVVlmSkFnaks1UFBEMTNQSk9YV0NsQWZISGp0MjVNX1p1WE9oVmg4cDlXLW10ODN5WDVBVl9jQnZOUnZUVQ?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
