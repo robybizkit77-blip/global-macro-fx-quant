@@ -14,6 +14,13 @@ from ois_same_contract_history_v1 import (
 
 LIVE = json.loads(SOURCE.read_text(encoding="utf-8"))
 seed = load_history()
+# The first 23 signed-off observations are the immutable October replay.
+# Production history grows by append-only validated bars: later observations
+# must not change the historical fixture or make CI demand exactly 23 rows.
+assert len(seed) >= 23, len(seed)
+bootstrap = seed[:23]
+assert len({(x["currency"], x["contract"], x["observation_date"]) for x in seed}) == len(seed)
+assert all(validate_row(x) is x for x in seed)
 # Build a dated, immutable replay from the archived 2026-10-16/19/20 bars.
 # Daily source feeds are allowed to move on: tests must not demand that 2026-10-21
 # quote dates remain the latest on every future scheduled execution.
@@ -21,7 +28,7 @@ BASE = copy.deepcopy(LIVE)
 BASE["generated_at_utc"] = "2026-10-21T06:57:19Z"
 for code in ("USD", "EUR", "CHF"):
     for term in ("3m", "6m", "12m"):
-        observed = [r for r in seed if r["currency"] == code and
+        observed = [r for r in bootstrap if r["currency"] == code and
                     r["observed_under_horizon"] == term]
         assert observed
         row = max(observed, key=lambda r: r["observation_date"])
@@ -35,18 +42,18 @@ for code in ("USD", "EUR", "CHF"):
             "mapping": "nearest dated listed contract expiry to today+" +
              str({"3m": 90, "6m": 180, "12m": 365}[term]) + "d; no interpolation",
         })
-assert len(seed) == 23, len(seed)
-assert len({(x["currency"], x["contract"], x["observation_date"]) for x in seed}) == 23
-assert {x["currency"] for x in seed} == {"USD", "EUR", "CHF"}
-assert {x["observation_date"] for x in seed} == {
+assert len(bootstrap) == 23, len(bootstrap)
+assert len({(x["currency"], x["contract"], x["observation_date"]) for x in bootstrap}) == 23
+assert {x["currency"] for x in bootstrap} == {"USD", "EUR", "CHF"}
+assert {x["observation_date"] for x in bootstrap} == {
     "2026-10-16", "2026-10-19", "2026-10-20"
 }
 assert all(x["official_ois_quote"] is False and
            x["policy_delta_eligible"] is False and
-           x["backtest_eligible_as_official"] is False for x in seed)
-assert len({x["source_commit"] for x in seed}) == 3
+           x["backtest_eligible_as_official"] is False for x in bootstrap)
+assert len({x["source_commit"] for x in bootstrap}) == 3
 
-deltas = matched_moves(seed)
+deltas = matched_moves(bootstrap)
 def find(ccy, code, initial, final):
     data = [r for r in deltas if r["currency"] == ccy and
             r["symbol"].endswith(":" + code) and
@@ -87,7 +94,11 @@ def find_from(rows, ccy, contract, a, b):
 
 with tempfile.TemporaryDirectory() as td:
     p = Path(td) / "bars.jsonl"
-    p.write_text(HISTORY.read_text(encoding="utf-8"), encoding="utf-8")
+    # Replay tests start from the fixed 23-row research seed rather than
+    # copying today's mutable production history (which may include the
+    # deliberately synthetic 21 October scenario used below).
+    p.write_text("".join(json.dumps(x, ensure_ascii=False, sort_keys=True) + "\n"
+                         for x in bootstrap), encoding="utf-8")
     initial_bytes = p.read_bytes()
     first = append_verified(copy.deepcopy(BASE), p, write=True)
     assert first["status"] == "PASS_SOURCE_GOVERNANCE_RESEARCH_ONLY"
@@ -109,7 +120,7 @@ with tempfile.TemporaryDirectory() as td:
     USD["rate"] = 4.08
     out = append_verified(newer, p, write=True)
     assert out["eligible"] == 1 and out["written"] == 1, out
-    assert len(load_history(p)) == len(seed) + 1
+    assert len(load_history(p)) == len(bootstrap) + 1
     assert find_from(load_history(p), "USD", "ZQZ2026", "2026-10-20", "2026-10-21") == 1.0
     assert append_verified(newer, p, write=True)["written"] == 0
 
@@ -153,7 +164,7 @@ with tempfile.TemporaryDirectory() as td:
     except ValueError as e:
         assert "duplicate archive" in str(e), e
 
-    forged = copy.deepcopy(seed[0])
+    forged = copy.deepcopy(bootstrap[0])
     forged["official_ois_quote"] = True
     try:
         validate_row(forged)
@@ -164,11 +175,12 @@ with tempfile.TemporaryDirectory() as td:
 def _same_contract_current_only():
     """All historic source dates in this dataset are real, not capture run dates."""
     out = {}
-    for row in seed:
+    for row in bootstrap:
         out.setdefault(row["currency"], set()).add(row["contract"])
     assert all(len(x) >= 3 for x in out.values())
-    assert all(row["source_timestamp_evidence"] == "SSR_DAILY_BAR_DATA_UPDATE_TIME" for row in seed)
+    assert all(row["source_timestamp_evidence"] == "SSR_DAILY_BAR_DATA_UPDATE_TIME" for row in bootstrap)
 
 
 _same_contract_current_only()
-print("OIS_SAME_CONTRACT_HISTORY_V1_PASS: 23 verified bars, matched changes, no roll, fail closed")
+print(f"OIS_SAME_CONTRACT_HISTORY_V1_PASS: immutable 23-row replay; "
+      f"production {len(seed)} verified rows; matched changes, no roll, fail closed")
