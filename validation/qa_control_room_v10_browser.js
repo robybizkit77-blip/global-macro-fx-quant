@@ -137,8 +137,7 @@ function expectedReactionFromMetrics(row){
       macro:rail?.dataset.macroAsOf,macroStatus:rail?.dataset.macroStatus,
       ois:rail?.dataset.oisCertified,screener:rail?.dataset.screenerCount,
       fx:rail?.dataset.fxAsOf,sourceEffect:rail?.dataset.sourceEffect,
-      positioned:!!rail&&!!hero&&!!grid&&
-       !!(hero.compareDocumentPosition(rail)&Node.DOCUMENT_POSITION_FOLLOWING)&&
+      positioned:!!rail&&!!hero&&!!grid&&grid.contains(hero)&&
        !!(rail.compareDocumentPosition(grid)&Node.DOCUMENT_POSITION_FOLLOWING),
       positions:{hero:hero?.getBoundingClientRect().top,rail:rail?.getBoundingClientRect().top,grid:grid?.getBoundingClientRect().top,heroFollowsGrid:!!(grid?.compareDocumentPosition(hero)&Node.DOCUMENT_POSITION_FOLLOWING),heroFollowsRail:!!(rail?.compareDocumentPosition(hero)&Node.DOCUMENT_POSITION_FOLLOWING),parentHero:hero?.parentElement?.className,parentGrid:grid?.parentElement?.className},
       globe:!!d.querySelector('.hero .globe'),
