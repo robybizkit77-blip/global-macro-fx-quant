@@ -1014,6 +1014,12 @@ async function mountPairResearch(doc){
  style.textContent+='.gmfq-what-changed{border-top:1px solid #284354;margin-top:16px;padding-top:14px}.gmfq-what-changed h3{margin:0;color:#e9f1f7;font:600 14px/1.4 Arial,sans-serif}.gmfq-what-changed>p{font:12px/1.55 Arial,sans-serif;color:#abc3d2;margin:7px 0 11px}.gmfq-change-legs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.gmfq-change-leg{border-left:2px solid #58718a;padding:9px 11px;background:#0d2332;min-width:0}.gmfq-change-leg strong{display:block;font:600 13px Arial,sans-serif;color:#e8f0f6;margin-bottom:8px}.gmfq-change-leg span{display:block;font:10px/1.4 Arial,sans-serif;color:#a0b6c5;letter-spacing:.02em}.gmfq-change-leg p{font:12px/1.5 Arial,sans-serif;color:#d2e0e9;margin:4px 0 11px;overflow-wrap:anywhere}.gmfq-change-leg .gmfq-change-measured{color:#e1c78a;margin-bottom:0}.gmfq-what-changed .gmfq-change-summary{color:#c5d7e2}.gmfq-what-changed .gmfq-change-warning{color:#93abba;font-size:10px}@media(max-width:600px){.gmfq-change-legs{grid-template-columns:1fr}}';
  style.textContent+='.gmfq-reaction{border-top:1px solid #294557;margin-top:15px;padding-top:14px}.gmfq-reaction h3{font:600 14px/1.4 Arial,sans-serif;margin:0 0 9px;color:#e6eff5}.gmfq-reaction p{color:#b4c8d5;font:12px/1.55 Arial,sans-serif;margin:7px 0 11px}.gmfq-reaction .gmfq-reaction-window{font:11px/1.5 Arial,sans-serif;color:#dec98f;padding:5px 0}.gmfq-reaction-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:9px 0}.gmfq-reaction-metrics>div{border:1px solid #294554;border-radius:5px;padding:11px 12px;min-width:0;background:#0b2434}.gmfq-reaction-metrics span{display:block;color:#a4bbc9;font:10px/1.45 Arial,sans-serif}.gmfq-reaction-metrics strong{display:block;color:#edf2f7;font:600 21px/1.4 Arial,sans-serif;font-variant-numeric:tabular-nums;margin:3px 0}.gmfq-reaction-metrics small{display:block;color:#b4c7d5;font:11px/1.45 Arial,sans-serif;overflow-wrap:anywhere}.gmfq-reaction .gmfq-reaction-verdict{border-left:2px solid #a08b58;padding:8px 11px;background:#102638;color:#cbdce7}.gmfq-reaction-verdict strong{color:#e6d59c}.gmfq-reaction-verdict[data-reaction-verdict="COERENTE"]{border-color:#3ac998}.gmfq-reaction-verdict[data-reaction-verdict="DIVERGENTE"]{border-color:#e36a79}.gmfq-reaction .gmfq-reaction-note{color:#a9bdcb}.gmfq-reaction .gmfq-reaction-warning{color:#94abbc;font-size:10px}@media(max-width:600px){.gmfq-reaction-metrics{grid-template-columns:1fr}}';
  style.textContent+='.gmfq-decision-bridge{border-top:1px solid #294456;margin-top:14px;padding-top:13px}.gmfq-decision-bridge h3{font:600 14px/1.4 Arial,sans-serif;margin:0 0 9px;color:#ebf2f6}.gmfq-decision-bridge>p{color:#a8bfcd;font:12px/1.55 Arial,sans-serif;margin:7px 0 10px}.gmfq-decision-cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:11px}.gmfq-decision-cols>div{border-left:2px solid #577a90;background:#0b2231;padding:9px 11px;min-width:0}.gmfq-decision-cols>div:nth-child(2){border-color:#ae935d}.gmfq-decision-cols>div:nth-child(3){border-color:#699cba}.gmfq-decision-cols span{display:block;color:#9db3c3;font:10px/1.4 Arial,sans-serif}.gmfq-decision-cols strong{display:block;color:#e9f1f6;font:600 12px/1.5 Arial,sans-serif;margin:4px 0}.gmfq-decision-cols small{display:block;color:#b7cad6;font:11px/1.5 Arial,sans-serif;overflow-wrap:anywhere}.gmfq-decision-watch{padding:10px 0 0;margin-top:10px;border-top:1px solid #264254}.gmfq-decision-watch strong{color:#e5d199;font:600 12px/1.4 Arial,sans-serif}.gmfq-decision-watch p{color:#bcd0dc;font:12px/1.55 Arial,sans-serif;margin:4px 0 0}.gmfq-decision-bridge .gmfq-decision-context{color:#b1c4d1}.gmfq-decision-bridge .gmfq-decision-disclaimer{font-size:10px;color:#93aabb}@media(max-width:700px){.gmfq-decision-cols{grid-template-columns:1fr}}';
+ style.textContent+='#gmfq-pair-research-path .gmfq-first-intro{margin:3px 0 8px;font-size:12px}'+
+  '#gmfq-pair-full-research{border-top:1px solid #2b4857;margin:14px 0 12px;padding-top:12px;min-width:0}'+
+  '#gmfq-pair-full-research>summary{font:600 12px/1.5 Arial,sans-serif;color:#e3ca8b;cursor:pointer;outline-offset:4px;list-style-position:inside;padding:6px 3px;overflow-wrap:anywhere}'+
+  '#gmfq-pair-full-research>summary:hover{color:#f3dfae}'+
+  '#gmfq-pair-full-research[open]>summary{border-bottom:1px solid #294454;margin-bottom:10px}'+
+  '#gmfq-pair-research-path>.gmfq-path-body>.gmfq-path-links{margin-top:12px}';
  style.textContent+='.gmfq-evidence-checklist{border-top:1px solid #294252;margin-top:13px;padding-top:11px}.gmfq-evidence-checklist h4{font:600 13px/1.45 Arial,sans-serif;color:#e8eef5;margin:0 0 6px}.gmfq-evidence-checklist .gmfq-evidence-intro{color:#aebfcd;font:11px/1.5 Arial,sans-serif;margin:0 0 9px}.gmfq-evidence-rows{display:grid;grid-template-columns:1fr;gap:0}.gmfq-evidence-row{padding:8px 0;border-top:1px solid #243f4e}.gmfq-evidence-row b{color:#e3ce95;font:600 11px/1.4 Arial,sans-serif}.gmfq-evidence-row:nth-child(2) b{color:#d7a3ac}.gmfq-evidence-row p{color:#c0d2dc;font:12px/1.5 Arial,sans-serif;margin:4px 0;overflow-wrap:anywhere}.gmfq-evidence-checklist .gmfq-evidence-provenance{color:#d0dfeb;font:11px/1.55 Arial,sans-serif;margin:9px 0 4px}.gmfq-evidence-checklist .gmfq-evidence-caution{color:#91a9b8;font:10px/1.55 Arial,sans-serif;margin:7px 0}';
  doc.head.appendChild(style);
  const panel=doc.createElement('section');
@@ -1048,6 +1054,10 @@ async function mountPairResearch(doc){
     '" aria-label="Apri '+htmlEscape(n)+' '+c+'">'+htmlEscape(n)+'</button>').join('')+
    '</div></article>';
  };
+ let analysisExpanded=false;
+ panel.addEventListener('toggle',event=>{
+  if(event.target?.id==='gmfq-pair-full-research')analysisExpanded=event.target.open;
+ },true);
  const refresh=()=>{
   if(frame.contentDocument!==doc||route()!=='coppie')return;
   if(doc.documentElement.dataset.pairState!=='READY')return;
@@ -1068,12 +1078,24 @@ async function mountPairResearch(doc){
   const sourceMsg=differs?'Il fixing BCE è più recente dello snapshot della tesi. Il movimento dal '+
     setup.price_asof+' al '+fxDay+' non aggiorna automaticamente il giudizio del motore.':
     'La data del fixing e quella del motore coincidono, oppure il fixing più recente non è verificato.';
+  // All diagnostics remain verbatim and source-derived; only reading order and
+  // disclosure state change. The canonical model and 28 pair states are untouched.
+  const comparison=pairMacroRatesComparison(code,setup.pairs[code],rates,ois,setup.price_asof,macroDay);
+  const changes=pairWhatChangedEvidence(code,setup.pairs[code],rates,setup.price_asof);
+  const reaction=pairMarketReactionAudit(code,rates,fxOk?fx:null);
+  const decision=pairThesisReactionBridge(code,setup.pairs[code],setup.price_asof,reaction,macroDay);
   panel.innerHTML='<h2 class="desk-panel-title">Percorso di ricerca · '+FLAG[a]+' '+a+' / '+FLAG[b]+' '+b+'</h2>'+
-   '<div class="gmfq-path-body"><p>Prima confronta Macro e Tassi delle due valute, poi guarda Banche centrali e COT. Torna al Prezzo per verificare conferma o divergenza. Il dettaglio sopra resta la lettura canonica della tesi, non un segnale di ingresso.</p>'+
+   '<div class="gmfq-path-body">'+
+   '<p class="gmfq-first-intro">Prima la tesi, i rischi e ciò che manca per valutarla. Le evidenze complete restano consultabili sotto.</p>'+
    '<div class="gmfq-path-evidence">Modello: '+htmlEscape(setup.price_asof)+' · Fixing BCE: '+htmlEscape(fxDay||'non verificato')+
    ' · Baseline Macro/Tassi: '+htmlEscape(macroDay||'non verificata')+' · Valuta favorita dal motore: '+htmlEscape(fav||'nessuna')+'</div>'+
-   pairMacroRatesComparison(code,setup.pairs[code],rates,ois,setup.price_asof,macroDay)+pairWhatChangedEvidence(code,setup.pairs[code],rates,setup.price_asof)+(reaction=>reaction+pairThesisReactionBridge(code,setup.pairs[code],setup.price_asof,reaction,macroDay))(pairMarketReactionAudit(code,rates,fxOk?fx:null))+'<div class="gmfq-path-legs">'+leg(a)+leg(b)+'</div>'+
+   decision+
+   '<details id="gmfq-pair-full-research" class="gmfq-pair-full-research"'+(analysisExpanded?' open':'')+'>'+
+   '<summary>Apri analisi completa · Macro/Rates, variazioni 2Y, audit prezzo e fonti</summary>'+
+   comparison+changes+reaction+
+   '<div class="gmfq-path-legs">'+leg(a)+leg(b)+'</div>'+
    '<p class="gmfq-path-warning">'+htmlEscape(macroWarning+sourceMsg)+' I futures indicativi non sono curve OIS e non determinano da soli un trade.</p>'+
+   '</details>'+
    '<div class="gmfq-path-links"><button type="button" data-gmfq-study-route="screener">Apri Screener 28 coppie ↗</button></div></div>';
  };
  const obs=new MutationObserver(refresh);
