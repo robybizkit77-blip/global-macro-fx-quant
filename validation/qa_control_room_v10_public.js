@@ -848,7 +848,7 @@ async function getState(page){
             (pageName==='banche'?
                reading.status!=='READ_ONLY'||reading.certified!=='4'||
                reading.estimated!=='2'||reading.withheld!=='2':
-               !['SOURCE_DIVERGENCE','READ_ONLY'].includes(reading.status)||
+               reading.status!=='READ_ONLY'||reading.conflicts!==''||
                !/^20\d{2}-\d{2}-\d{2}$/.test(reading.asof||'')||
                !reading.heading?.includes('Percentile')&&!reading.heading?.includes('Estremi percentile')))
            throw Error(name+' public '+pageName+' read-only source summary failed '+JSON.stringify(reading));

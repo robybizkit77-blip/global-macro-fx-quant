@@ -12,8 +12,12 @@ def sign_int(v:int)->str:
 def fmt_num(v:int)->str:
     return f'{v:,d}'
 def signal_from_percentile(p:float)->str:
-    if p>=80: return 'EXTREME LONG'
-    if p<=20: return 'EXTREME SHORT'
+    # Classify the displayed 104W percentile, rounded half-up for nonnegative ranks.
+    # Raw precision is preserved in the quantitative source and prose.
+    if not 0 <= p <= 100: raise ValueError('Invalid 104W percentile')
+    rounded=int(p+0.5)
+    if rounded>=80: return 'EXTREME LONG'
+    if rounded<=20: return 'EXTREME SHORT'
     return 'NEUTRALE'
 def build_one(ccy:str,s:dict)->dict:
     required=['dates','net','long','short','percentile','netoi']

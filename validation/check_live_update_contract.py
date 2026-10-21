@@ -95,6 +95,25 @@ def main() -> int:
     if derived_count!=2:
         failures.append('expected exactly two derived sections')
 
+    # Permanently enforce parity between official CFTC numerical history,
+    # narrative labels and the root runtime's derived COT assignment.
+    # This fails closed on any future weekly release that reintroduces a
+    # non-rounded percentile classifier or forgets to rebuild the payload.
+    try:
+        from check_cot_story_integrity import main as check_cot_story_integrity
+        import contextlib, io
+        # Keep the parent gate JSON-only: nested audit prints its own receipt
+        # when executed directly, but must not corrupt this contract's JSON.
+        cot_audit_output=io.StringIO()
+        with contextlib.redirect_stdout(cot_audit_output):
+            cot_rc=check_cot_story_integrity()
+        if cot_rc!=0:
+            failures.append('COT numerical-story-runtime integrity failed')
+        else:
+            details['cot_story_runtime_parity']='PASS'
+    except Exception as e:
+        failures.append(f'COT numerical-story-runtime integrity: {type(e).__name__} {e}')
+
     if not T0.exists():
         failures.append('canonical OOS T0 missing')
     else:
