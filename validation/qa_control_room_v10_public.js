@@ -385,7 +385,7 @@ async function getState(page){
          const feed=await fetch('https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/OIS_OPERATIONAL_VIEW.json',{cache:'no-store'}).then(x=>x.json());
          const snb=await fetch('https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json',{cache:'no-store'}).then(x=>x.json());
          const access=await fetch('https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/OIS_SOURCE_READINESS_VIEW.json',{cache:'no-store'}).then(x=>x.json());
-         const days=x=>(Date.UTC(new Date().getUTCFullYear(),new Date().getUTCMonth(),new Date().getUTCDate())-Date.parse(x+'T00:00:00Z'))/86400000;
+         const days=x=>(Date.parse(window.GMFQ_OIS_RESEARCH_V1.romeTodayIso()+'T00:00:00Z')-Date.parse(x+'T00:00:00Z'))/86400000;
          const eligible=['GBP','JPY','AUD','CAD'].filter(k=>{
            const x=feed.currencies?.[k];
            return x?.operational_status==='GREEN_OFFICIAL'&&x.quality==='OFFICIAL_CERTIFIED'&&
