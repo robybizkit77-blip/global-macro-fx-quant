@@ -18,7 +18,10 @@ const operational=JSON.parse(fs.readFileSync(path.join(DATA,'OIS_OPERATIONAL_VIE
 const sourceReadiness=JSON.parse(fs.readFileSync(path.join(DATA,'OIS_SOURCE_READINESS_VIEW.json'),'utf8'));
 const sourceIds=Object.keys(sourceReadiness.currencies||{});
 const g8=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
-if(!sourceIds.length||sourceIds.some(c=>!g8.includes(c))||
+if(sourceIds.some(c=>!g8.includes(c))||
+   sourceIds.some(c=>!['WITHHELD','GREEN_ESTIMATED'].includes(sourceReadiness.currencies[c].status))||
+   sourceIds.length!==g8.filter(c=>
+     operational.currencies[c].operational_status!=='GREEN_OFFICIAL').length||
    sourceReadiness.blocked_currency_count!==sourceIds.filter(c=>
      sourceReadiness.currencies[c].status==='WITHHELD').length)
   throw Error('Readiness source registry count/status mismatch');
@@ -277,11 +280,11 @@ function expectedReactionFromMetrics(row){
   // render. Wait for all four individually linked source-readiness rows rather
   // than racing the still-loading "Stato fonti da aggiornare" placeholder.
   // Timeout still FAILS if the actual read-only source context is missing.
-  await page.waitForFunction(()=>{
+  await page.waitForFunction(expected=>{
     const d=document.getElementById('gmfq-page')?.contentDocument;
-    return d?.querySelectorAll('#gmfq-source-readiness .gmfq-source-row').length===4&&
-           d?.querySelectorAll('#gmfq-source-readiness .gmfq-source-link a').length===4;
-  },null,{timeout:25000});
+    return d?.querySelectorAll('#gmfq-source-readiness .gmfq-source-row').length===expected&&
+           d?.querySelectorAll('#gmfq-source-readiness .gmfq-source-link a').length===expected;
+  },sourceIds.length,{timeout:25000});
   const research=await page.evaluate(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument,host=d?.getElementById('gmfq-pricing-research');
     return {

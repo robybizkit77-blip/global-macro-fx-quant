@@ -7,6 +7,7 @@ on:
       - 'site/control-room-preview/home-navigation-v10.js'
       - 'live_data/sections/DXY_SYNTHETIC_ECB.json'
       - 'validation/qa_control_room_v10_browser.js'
+      - 'validation/test_control_room_pending_source_dossiers_v1.js'
       - '.github/workflows/control-room-v10-full-g8-browser-qa.yml'
   workflow_dispatch:
 permissions:

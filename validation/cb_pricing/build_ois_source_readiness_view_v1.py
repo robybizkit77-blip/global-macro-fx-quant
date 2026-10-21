@@ -38,12 +38,22 @@ def build(plan: dict, operational: dict, official: dict, rates: dict, chf10: dic
     decisions = evidence["blocked_source_decisions"]
     if set(decisions) != set(BLOCKED):
         raise ValueError("readiness currency universe must be USD EUR CHF NZD")
+    # The access registry is an immutable catalogue of reviewed source
+    # candidates. Dossiers shown as *pending* depend on actual operational
+    # certification: a separately approved official source must leave this
+    # pending list without the audit itself certifying any data.
     items = {}
     for ccy in BLOCKED:
         row = decisions[ccy]
         actual = operational["currencies"][ccy]
         if row["operational_status"] != actual["operational_status"]:
             raise ValueError(f"{ccy}: operational source mismatch")
+        if actual["operational_status"] == "GREEN_OFFICIAL":
+            # The source audit already requires corresponding ACTIVE canonical
+            # OIS and official backtest qualification. This dossier is resolved.
+            continue
+        if actual["operational_status"] not in ("WITHHELD", "GREEN_ESTIMATED"):
+            raise ValueError(f"{ccy}: unknown pending operational status")
         source = row["source_url"]
         if not source.startswith("https://"):
             raise ValueError(f"{ccy}: non-HTTPS source link")
@@ -57,14 +67,14 @@ def build(plan: dict, operational: dict, official: dict, rates: dict, chf10: dic
             "source_reviewed_as_of": evidence["source_reviewed_as_of"],
             "source_title": row["candidate"],
             "source_url": source,
-            "obstacle": EXPLANATION[ccy] if row["operational_status"] == "WITHHELD" else "Fonte già attiva: riconfermare licenza e omogeneità.",
-            "activation_requirement": NEXT_STEP[ccy] if row["operational_status"] == "WITHHELD" else "Mantenere monitoraggio e verifiche.",
+            "obstacle": EXPLANATION[ccy] if row["operational_status"] == "WITHHELD" else "Fonte indicativa: manca certificazione operativa.",
+            "activation_requirement": NEXT_STEP[ccy],
             "indicative_quote_dates": quoted,
             "dates_joinable": False,
-            "usable_for_policy_pricing": row["operational_status"] == "GREEN_OFFICIAL",
+            "usable_for_policy_pricing": False,
             "operational_as_of": actual.get("as_of"),
             "price_or_curve_embedded": False,
-            "backtest_eligible_as_official": row["operational_status"] == "GREEN_OFFICIAL",
+            "backtest_eligible_as_official": False,
         }
     chf = rates.get("CHF") or {}
     try:
@@ -84,13 +94,14 @@ def build(plan: dict, operational: dict, official: dict, rates: dict, chf10: dic
         candidate = datetime.strptime(chf10["as_of"], "%Y-%m-%d").date()
         if 0 <= (date-candidate).days <= 5:
             single_day = candidate.isoformat()
-    items["CHF"]["government_rates"] = {
+    if "CHF" in items:
+        items["CHF"]["government_rates"] = {
         "last_paired_2y10y_as_of": paired_date.isoformat(),
         "paired_current": 0 <= (date-paired_date).days <= 5,
         "separate_10y_snb_as_of": single_day,
         "has_new_verified_2y": False,
         "cross_date_spread_allowed": False,
-    }
+        }
     return {
         "schema": "GMFQ_OIS_SOURCE_READINESS_VIEW_V1",
         "status": "READ_ONLY_SOURCE_READINESS",

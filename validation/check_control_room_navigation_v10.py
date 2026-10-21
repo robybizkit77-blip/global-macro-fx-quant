@@ -31,7 +31,7 @@ items={
 "CHF 10Y never fills unverified 2Y or spread": "snb10.has_current_2y===false" in s and "snb10.eligible_for_curve_spreads===false" in s and "snb10.eligible_for_core_signals===false" in s,
 "Official CHF context requires valid freshness and provenance": "snb10.source_url===" in s and "fresh(snb10.as_of,4)" in s and "OFFICIAL_PUBLISHED_10Y_INFORMATIONAL" in s,
 "Readiness feed is audited, not market data": "OIS_SOURCE_READINESS_VIEW.json" in s and "GMFQ_OIS_SOURCE_READINESS_VIEW_V1" in s and "sourceReadiness.no_automatic_promotions" not in s,
-"EUR source and Swiss 2Y honesty visible": "function marketSourceReadinessHtml(view,operational)" in s and "non completa il 2Y" in s and "['USD','EUR','CHF','NZD']" in s,
+"EUR source and Swiss 2Y honesty visible": "function marketSourceReadinessHtml(view,operational)" in s and "non completa il 2Y" in s and "registryKeys.length===ids.length" in s and 'data-source-ccy' in s,
 "No promotional rates from source metadata": "view.prices_omitted===true" in s and "view.no_core_score_effect===true" in s and "view.no_backtest_effect===true" in s and "view.no_automatic_promotions===true" in s,
 "Home reports certified and research coverage, not merely load success": "function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy,proxy,model,setup)" in s and "api.coverage(ois,proxy," in s and "OIS '+oisCurrent.length" in s and "Contesto " in s and "DATI PARZIALI" in s and "FONTI VERIFICATE" in s and "ECB_G8_PRICE_HISTORY.json" in s,
 "Shared ECB fixing integrity across Home Valute and Pair": "function valuteFxSourceStatus(fx)" in s and "const fxStatus=valuteFxSourceStatus(fx)" in s and "const fxOk=valuteFxSourceStatus(fx).status" in s,

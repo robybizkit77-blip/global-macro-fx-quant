@@ -382,39 +382,57 @@ async function getState(page){
          snbVersionVisible=await page.evaluate(()=>!!document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-source-readiness'));
        }
        if(!snbVersionVisible)throw Error(name+' PUBLIC_V10_CDN_STALE_NO_SNB_VERSION after cache-busted retries');
-       // The public CDN may serve an older Home navigation script after the
-       // new main / gh-pages source SHAs already agree. Verify the deployed
-       // canonical version AND all four source-readiness rows before auditing.
+       // A source's audit dossier must vanish only after a separately
+       // certified official transition. The number is source-derived, not four.
+       const pendingDossiers=await page.evaluate(async()=>{
+         const root='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/';
+         const [access,op]=await Promise.all(['OIS_SOURCE_READINESS_VIEW.json','OIS_OPERATIONAL_VIEW.json'].map(async f=>{
+           const response=await fetch(root+f,{cache:'no-store'});
+           if(!response.ok)throw Error('public source-readiness HTTP '+response.status);
+           return response.json();
+         }));
+         const keys=Object.keys(access.currencies||{}).sort();
+         const pending=Object.keys(op.currencies||{}).filter(c=>
+           op.currencies[c].operational_status!=='GREEN_OFFICIAL').sort();
+         if(pending.length!==keys.length||
+            !keys.every((c,i)=>c===pending[i]&&
+              ['WITHHELD','GREEN_ESTIMATED'].includes(access.currencies[c]?.status))||
+            access.blocked_currency_count!==keys.filter(c=>access.currencies[c].status==='WITHHELD').length)
+           throw Error('source-readiness pending/official identity divergence');
+         return {count:keys.length,codes:keys};
+       });
+       // GitHub Pages CDN may serve a former addon temporarily. Require the
+       // exact approved adapter and the currently outstanding source dossiers.
        if(process.env.GITHUB_EVENT_NAME!=='pull_request'){
          let realReadiness=false;
          for(let probe=0;probe<15;probe++){
-           realReadiness=await page.evaluate(expected=>{
+           realReadiness=await page.evaluate(arg=>{
              const frame=document.getElementById('gmfq-page')?.contentDocument;
              return [...document.scripts].some(el=>
-               el.src.endsWith('home-navigation-v10.js?v='+expected))&&
-               frame?.querySelectorAll('#gmfq-source-readiness .gmfq-source-row').length===4&&
-               frame?.querySelectorAll('#gmfq-source-readiness .gmfq-source-link a').length===4;
-           },navigationVersion);
+               el.src.endsWith('home-navigation-v10.js?v='+arg.version))&&
+               frame?.querySelectorAll('#gmfq-source-readiness .gmfq-source-row').length===arg.count&&
+               frame?.querySelectorAll('#gmfq-source-readiness .gmfq-source-link a').length===arg.count;
+           },{version:navigationVersion,count:pendingDossiers.count});
            if(realReadiness)break;
            await page.goto(BASE+'?readinessQA='+Date.now()+'-'+probe+'#/tassi?focus=ois',
              {waitUntil:'domcontentloaded',timeout:120000});
            try{
-             await page.waitForFunction(expected=>{
+             await page.waitForFunction(arg=>{
                const d=document.getElementById('gmfq-page')?.contentDocument;
                return [...document.scripts].some(el=>
-                 el.src.endsWith('home-navigation-v10.js?v='+expected))&&
-                 d?.querySelectorAll('#gmfq-source-readiness .gmfq-source-row').length===4&&
-                 d?.querySelectorAll('#gmfq-source-readiness .gmfq-source-link a').length===4;
-             },navigationVersion,{timeout:9000});
+                 el.src.endsWith('home-navigation-v10.js?v='+arg.version))&&
+                 d?.querySelectorAll('#gmfq-source-readiness .gmfq-source-row').length===arg.count&&
+                 d?.querySelectorAll('#gmfq-source-readiness .gmfq-source-link a').length===arg.count;
+             },{version:navigationVersion,count:pendingDossiers.count},{timeout:9000});
            }catch(_){console.log('PUBLIC_SOURCE_READINESS_CDN_PENDING',name,probe)}
            await page.waitForTimeout(2000);
          }
-         if(!realReadiness)realReadiness=await page.evaluate(expected=>{
+         if(!realReadiness)realReadiness=await page.evaluate(arg=>{
            const d=document.getElementById('gmfq-page')?.contentDocument;
-           return [...document.scripts].some(x=>x.src.endsWith('home-navigation-v10.js?v='+expected))&&
-              d?.querySelectorAll('#gmfq-source-readiness .gmfq-source-row').length===4&&
-              d?.querySelectorAll('#gmfq-source-readiness .gmfq-source-link a').length===4;
-         },navigationVersion);
+           return [...document.scripts].some(x=>x.src.endsWith('home-navigation-v10.js?v='+arg.version))&&
+              d?.querySelectorAll('#gmfq-source-readiness .gmfq-source-row').length===arg.count&&
+              d?.querySelectorAll('#gmfq-source-readiness .gmfq-source-link a').length===arg.count;
+         },{version:navigationVersion,count:pendingDossiers.count});
          if(!realReadiness)throw Error(name+' PUBLIC_READINESS_VERSION_NOT_DEPLOYED_OR_UNAVAILABLE');
        }
        await page.waitForFunction(()=>{
@@ -428,9 +446,10 @@ async function getState(page){
          const snb=await fetch('https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json',{cache:'no-store'}).then(x=>x.json());
          const access=await fetch('https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/OIS_SOURCE_READINESS_VIEW.json',{cache:'no-store'}).then(x=>x.json());
          const days=x=>(Date.parse(window.GMFQ_OIS_RESEARCH_V1.romeTodayIso()+'T00:00:00Z')-Date.parse(x+'T00:00:00Z'))/86400000;
-         const eligible=['GBP','JPY','AUD','CAD'].filter(k=>{
+         const eligible=Object.keys(feed.currencies||{}).filter(k=>{
            const x=feed.currencies?.[k];
-           return x?.operational_status==='GREEN_OFFICIAL'&&x.quality==='OFFICIAL_CERTIFIED'&&
+           return x?.operational_status==='GREEN_OFFICIAL'&&x.official_status==='ACTIVE'&&
+             x.quality==='OFFICIAL_CERTIFIED'&&x.backtest_eligible_as_official===true&&
              days(x.as_of)>=0&&days(x.as_of)<=4&&['3m','6m','12m'].every(t=>Number.isFinite(x.horizons?.[t]?.policy_delta_bp));
          });
          const secondary=['USD','EUR','CHF'].filter(k=>feed.currencies?.[k]?.operational_status==='WITHHELD'&&
@@ -442,18 +461,21 @@ async function getState(page){
            note:panel.textContent,docWidth:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth,
            readinessCount:panel.querySelectorAll('#gmfq-source-readiness .gmfq-source-row').length,
            readinessLinks:panel.querySelectorAll('#gmfq-source-readiness a').length,
+           readinessCodes:[...panel.querySelectorAll('#gmfq-source-readiness .gmfq-source-row')].map(x=>x.dataset.sourceCcy).sort(),
            readinessContent:panel.querySelector('#gmfq-source-readiness')?.textContent,
            readinessExpected:access?.schema==='GMFQ_OIS_SOURCE_READINESS_VIEW_V1'&&
              access.status==='READ_ONLY_SOURCE_READINESS'&&access.prices_omitted===true&&
              access.no_automatic_promotions===true&&days(access.as_of)>=0&&days(access.as_of)<=3&&
-             ['USD','EUR','CHF','NZD'].every(k=>
-               ['WITHHELD','GREEN_ESTIMATED','GREEN_OFFICIAL'].includes(access.currencies?.[k]?.status)&&
+             Object.keys(access.currencies||{}).length===
+               Object.values(feed.currencies||{}).filter(x=>x.operational_status!=='GREEN_OFFICIAL').length&&
+             Object.keys(access.currencies||{}).every(k=>
+               ['WITHHELD','GREEN_ESTIMATED'].includes(access.currencies?.[k]?.status)&&
                access.currencies[k].status===feed.currencies?.[k]?.operational_status&&
                access.currencies[k].usable_for_policy_pricing===false&&
                access.currencies[k].backtest_eligible_as_official===false)&&
              access.blocked_currency_count===
-               ['USD','EUR','CHF','NZD'].filter(k=>access.currencies[k].status==='WITHHELD').length?
-             4:null,
+               Object.values(access.currencies||{}).filter(x=>x.status==='WITHHELD').length?
+             Object.keys(access.currencies||{}).length:null,
            snbBox:panel.querySelector('#gmfq-chf-snb-10y-context')?.textContent,
            snbExpected:snb?.schema==='GMFQ_CHF_SNB_10Y_SPOT_CONTEXT_V1'&&snb.status==='OFFICIAL_PUBLISHED_10Y_INFORMATIONAL'&&
              snb.has_current_2y===false&&snb.eligible_for_curve_spreads===false&&snb.eligible_for_core_signals===false&&
@@ -468,6 +490,7 @@ async function getState(page){
              research.readinessExpected===null||
              research.readinessCount!==research.readinessExpected||
              research.readinessLinks!==research.readinessExpected||
+             JSON.stringify(research.readinessCodes)!==JSON.stringify(pendingDossiers.codes)||
              !research.readinessContent?.includes('Nessun dato indicativo è promosso')||
              !research.readinessContent?.includes('non completa il 2Y')||
              !research.readinessContent?.includes('Il loro stato di accesso può essere precedente al runtime operativo')))||
