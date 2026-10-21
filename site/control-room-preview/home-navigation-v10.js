@@ -358,7 +358,9 @@ function mountHomeReadingPath(doc,context){
    '<button type="button" data-reading-target="'+x.key+'" aria-label="Apri '+htmlEscape(x.description)+'">'+
     htmlEscape(x.description)+'</button>').join('')+'</div>'+
    '<span class="gmfq-reading-trust">Ricerca, non segnali: '+(fxCurrent?'fixing BCE '+htmlEscape(fxDay):'fixing BCE non verificato')+'</span>';
- hero.insertAdjacentElement('afterend',rail);
+ // The native globe HERO is the first child of .gridtop. Keep the 3-column
+ // original grid intact: position the editorial path BEFORE that entire grid.
+ grid.insertAdjacentElement('beforebegin',rail);
  rail.addEventListener('click',event=>{
   const button=event.target.closest('button[data-reading-target]');
   if(!button||!rail.contains(button))return;
