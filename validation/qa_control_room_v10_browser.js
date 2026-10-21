@@ -340,6 +340,103 @@ function expectedReactionFromMetrics(row){
   await page.frameLocator('#gmfq-page').locator('#gmfq-pricing-research button[data-pricing-ccy="ALL"]').click();
   await page.screenshot({path:'v10-qa-images/'+label+'-rates-g8-detail.png',fullPage:true});
 
+  // Central banks: same operational source semantics as Rates; policy
+  // decision dates are historical snapshots, NOT live bank decisions.
+  const cbFixture=JSON.parse(fs.readFileSync(path.join(DATA,'NATIVE_CB_DATA.json'),'utf8'));
+  await page.goto(url+'#/banche?ccy=USD',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return ['READ_ONLY','WITHHELD'].includes(
+      d?.getElementById('gmfq-cb-reading-first')?.dataset.readingStatus);
+  },null,{timeout:35000});
+  const cbFirst=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page').contentDocument,
+      p=d.getElementById('gmfq-cb-reading-first'),det=p.querySelector('details');
+    return {status:p.dataset.readingStatus,first:p.dataset.policyEarliest,
+      last:p.dataset.policyLatest,certified:p.dataset.certified,
+      estimated:p.dataset.estimated,withheld:p.dataset.withheld,
+      text:p.textContent,closed:det.open===false,
+      chart:!!d.getElementById('cb-chart'),table:!!d.getElementById('cb-table'),
+      width:p.scrollWidth,client:p.clientWidth,
+      doc:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
+  });
+  if(cbFirst.status!=='READ_ONLY'||cbFirst.certified!=='4'||cbFirst.estimated!=='2'||
+     cbFirst.withheld!=='2'||cbFirst.first!==Object.values(cbFixture).map(x=>x.last_date).sort()[0]||
+     cbFirst.last!==Object.values(cbFixture).map(x=>x.last_date).sort().at(-1)||
+     !cbFirst.closed||!cbFirst.chart||!cbFirst.table||
+     !cbFirst.text.includes('futures monetari')||!cbFirst.text.includes('Repricing ≠ probabilità')||
+     cbFirst.width>cbFirst.client+2||cbFirst.doc>cbFirst.viewport+16)
+    throw Error(label+' CB first reading or native chart not intact '+JSON.stringify(cbFirst));
+  await page.frameLocator('#gmfq-page').locator('#gmfq-cb-reading-first details>summary').press('Enter');
+  const cbFull=await page.frameLocator('#gmfq-page').locator('#gmfq-cb-reading-first details p').last().isVisible();
+  if(!cbFull)throw Error(label+' CB provenance not keyboard accessible');
+  await page.screenshot({path:'v10-qa-images/'+label+'-cb-reading-first.png',fullPage:true});
+  // Negative policy fixture: future meeting missing MUST invalidate the first
+  // reading rather than silently label the last policy snapshot current.
+  await page.route('**/NATIVE_CB_DATA.json',async r=>{
+    const x=JSON.parse(fs.readFileSync(path.join(DATA,'NATIVE_CB_DATA.json'),'utf8'));
+    x.USD.next_meeting='2099-13-50';
+    await r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(x),
+      headers:{'Access-Control-Allow-Origin':'*'}});
+  });
+  await page.goto(url+'#/home',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.goto(url+'#/banche?ccy=EUR&bad=meeting',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return d?.getElementById('gmfq-cb-reading-first')?.dataset.readingStatus==='WITHHELD';
+  },null,{timeout:35000});
+  await page.unroute('**/NATIVE_CB_DATA.json');
+
+  // CFTC: all eight 104W series must be internally consistent. USD 79.8077
+  // rounds to 80th, while the historical narrative still says NEUTRALE;
+  // display this conflict openly, never alter the canonical source.
+  const cotFixture=JSON.parse(fs.readFileSync(path.join(DATA,'V250_COT_CHART_DATA.json'),'utf8'));
+  await page.goto(url+'#/home',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.goto(url+'#/cot?ccy=USD',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return ['SOURCE_DIVERGENCE','READ_ONLY','WITHHELD'].includes(
+      d?.getElementById('gmfq-cot-reading-first')?.dataset.readingStatus);
+  },null,{timeout:35000});
+  const cotFirst=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page').contentDocument,
+      p=d.getElementById('gmfq-cot-reading-first');
+    return {status:p.dataset.readingStatus,asof:p.dataset.cftcAsOf,
+      extremes:p.dataset.extremes,crowding:p.dataset.crowding,conflicts:p.dataset.conflicts,
+      text:p.textContent,closed:p.querySelector('details').open===false,
+      chart:!!d.getElementById('cot-chart'),table:!!d.getElementById('cot-table'),
+      width:p.scrollWidth,client:p.clientWidth,
+      doc:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
+  });
+  if(cotFirst.status!=='SOURCE_DIVERGENCE'||cotFirst.conflicts!=='USD'||
+     cotFirst.asof!==cotFixture.USD.dates.at(-1)||
+     cotFirst.extremes!=='5'||cotFirst.crowding!=='3'||
+     !cotFirst.closed||!cotFirst.chart||!cotFirst.table||
+     !cotFirst.text.includes('Prezzo FX: WITHHELD')||
+     !cotFirst.text.includes('narrativo incoerente: USD')||
+     cotFirst.width>cotFirst.client+2||cotFirst.doc>cotFirst.viewport+16)
+    throw Error(label+' COT quantitative/narrative divergence guard '+JSON.stringify(cotFirst));
+  await page.frameLocator('#gmfq-page').locator('#gmfq-cot-reading-first details>summary').press('Enter');
+  if(!(await page.frameLocator('#gmfq-page').locator('#gmfq-cot-reading-first details p').last().isVisible()))
+    throw Error(label+' COT CFTC provenance not keyboard accessible');
+  await page.screenshot({path:'v10-qa-images/'+label+'-cot-reading-first.png',fullPage:true});
+  await page.route('**/V250_COT_CHART_DATA.json',async r=>{
+    const x=JSON.parse(fs.readFileSync(path.join(DATA,'V250_COT_CHART_DATA.json'),'utf8'));
+    x.GBP.net[x.GBP.net.length-1]+=1; // breaks long-short = net contract
+    await r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(x),
+      headers:{'Access-Control-Allow-Origin':'*'}});
+  });
+  await page.goto(url+'#/home',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.goto(url+'#/cot?ccy=GBP&bad=net',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return d?.getElementById('gmfq-cot-reading-first')?.dataset.readingStatus==='WITHHELD';
+  },null,{timeout:35000});
+  await page.unroute('**/V250_COT_CHART_DATA.json');
+  console.log('CONTROL_ROOM_V10_CB_COT_FIRST_READING_GREEN',label,{
+    policy:cbFirst.status,ois:cbFirst.certified,cot:cotFirst.asof,
+    extremes:cotFirst.extremes,crowding:cotFirst.crowding,conflict:cotFirst.conflicts});
+
   // Macro provenance: historical model scores cannot be refreshed by newer,
   // independently dated Inflation/Labour observations.
   const oldModel=JSON.parse(fs.readFileSync(path.join(DATA,'D.json'),'utf8'));
