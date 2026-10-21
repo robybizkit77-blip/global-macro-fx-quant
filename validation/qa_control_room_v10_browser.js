@@ -157,6 +157,17 @@ function expectedReactionFromMetrics(row){
        !!(rail.compareDocumentPosition(grid)&Node.DOCUMENT_POSITION_FOLLOWING),
       positions:{hero:hero?.getBoundingClientRect().top,rail:rail?.getBoundingClientRect().top,grid:grid?.getBoundingClientRect().top,heroFollowsGrid:!!(grid?.compareDocumentPosition(hero)&Node.DOCUMENT_POSITION_FOLLOWING),heroFollowsRail:!!(rail?.compareDocumentPosition(hero)&Node.DOCUMENT_POSITION_FOLLOWING),parentHero:hero?.parentElement?.className,parentGrid:grid?.parentElement?.className},
       globe:!!d.querySelector('.hero .globe'),
+      visualEdition:rail?.dataset.visualEdition,
+      layout:{
+        gridColumns:getComputedStyle(grid).gridTemplateColumns.trim().split(/\s+/).length,
+        heroFullWidth:Math.abs(hero.getBoundingClientRect().width-grid.getBoundingClientRect().width)<=2,
+        globePreserved:getComputedStyle(hero.querySelector('.globe')).backgroundImage.includes('data:image/png;base64'),
+        globeRatio:getComputedStyle(hero.querySelector('.globe')).backgroundSize==='auto 100%',
+        priorityColumns:getComputedStyle(rail).gridTemplateColumns.trim().split(/\s+/).length,
+        firstPanel:!!grid.querySelector('.panel:nth-child(2) .oisrow'),
+        secondPanel:!!grid.querySelector('.yieldpanel #curves svg'),
+        styleMounted:!!d.getElementById('gmfq-home-visual-edition-css')
+      },
       railScroll:rail?.scrollWidth,railWidth:rail?.clientWidth,
       bodyScroll:d.documentElement.scrollWidth,bodyWidth:d.documentElement.clientWidth};
   });
@@ -167,6 +178,12 @@ function expectedReactionFromMetrics(row){
   if(!homeReading.exists||homeReading.count!==3||
      JSON.stringify(homeReading.routes)!==JSON.stringify(['macro','pricing','pairs'])||
      !homeReading.positioned||!homeReading.globe||homeReading.sourceEffect!=='NONE'||
+     homeReading.visualEdition!=='home-composition-v1'||
+     !homeReading.layout.styleMounted||!homeReading.layout.heroFullWidth||
+     !homeReading.layout.globePreserved||!homeReading.layout.globeRatio||
+     !homeReading.layout.firstPanel||!homeReading.layout.secondPanel||
+     homeReading.layout.gridColumns!==(label==='mobile'?1:2)||
+     homeReading.layout.priorityColumns!==(label==='mobile'?1:2)||
      homeReading.macro!==setupFeed.macro_baseline_asof||
      homeReading.macroStatus!==(correctMacro?'DATED_SNAPSHOT':'HISTORICAL')||
      homeReading.ois!==String(certified)||homeReading.screener!==String(countNot)||
