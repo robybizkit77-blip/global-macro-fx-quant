@@ -4,7 +4,7 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const root=path.resolve(__dirname,'..');
-const {matrix,view,fresh,coverage}=require(path.join(root,'site/control-room-preview/ois-pricing-estimates-v1.js'));
+const {matrix,view,fresh,coverage,calibratedNzdCarry,NZD_REFERENCE_ROWS,NZD_RECENT_ROWS}=require(path.join(root,'site/control-room-preview/ois-pricing-estimates-v1.js'));
 const liveOis=JSON.parse(fs.readFileSync(path.join(root,'live_data/sections/OIS_OPERATIONAL_VIEW.json'),'utf8'));
 const liveBb=JSON.parse(fs.readFileSync(path.join(root,'live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),'utf8'));
 const ois=structuredClone(liveOis),bb=structuredClone(liveBb);
@@ -25,6 +25,24 @@ assert.equal(ois.currencies.EUR.operational_status,'WITHHELD');
 assert.equal(ctx.status,'INDICATIVE_OBSERVATIONS_NON_OIS');
 for(const t of tenors)ctx.horizons[t].quote_as_of=t==='12m'?FRESH:EARLIER;
 bb.as_of=FRESH;
+const manifest=JSON.parse(fs.readFileSync(path.join(root,
+ 'validation/cb_pricing/NZD_BB_CASH_RESEARCH_CALIBRATION_V1_2026-10-21.json'),'utf8'));
+const stored=part=>part.rows.map(x=>[x.month,x.ocr_pct,x.bank_bill_90d_pct]);
+assert.equal(manifest.schema,'GMFQ_NZD_BB_VS_CASH_EMPIRICAL_CALIBRATION_RESEARCH_V1');
+assert.deepEqual(NZD_REFERENCE_ROWS,stored(manifest.reference_plateau));
+assert.deepEqual(NZD_RECENT_ROWS,stored(manifest.recent_plateau));
+const cal=calibratedNzdCarry();
+assert.equal(cal.basis_bp,24);
+assert.equal(cal.low_bp,10);
+assert.equal(cal.high_bp,45);
+assert.equal(cal.observations,19);
+assert.equal(cal.reference_median_bp,14);
+assert.equal(cal.recent_median_bp,28.5);
+assert.equal(cal.direct_nzbo_ois_quote,false);
+assert.equal(cal.forward_ois_curve,false);
+assert.equal(cal.statistical_confidence_interval,false);
+assert.equal(cal.policy_delta_allowed,false);
+assert.equal(cal.core_effect,'NONE');
 const result=matrix(ois,bb,TODAY),rows=Object.fromEntries(result.map(x=>[x.ccy,x]));
 assert.equal(result.length,8);
 for(const code of ['GBP','JPY','CAD','AUD'])assert.equal(rows[code].tier,'OFFICIAL',code);
@@ -35,9 +53,9 @@ assert.equal(rows.EUR.points['12m'].date,FRESH);
 assert.equal(rows.NZD.tier,'SCENARIO');
 for(const t of tenors){
  const raw=bb.horizons[t].implied_bank_bill_rate;
- assert.equal(rows.NZD.points[t].value,Math.round((raw-.5)*100)/100);
+ assert.equal(rows.NZD.points[t].value,Math.round((raw-cal.basis_bp/100)*100)/100);
  assert.deepEqual(rows.NZD.points[t].range,
-  [Math.round((raw-.75)*100)/100,Math.round((raw-.25)*100)/100]);
+  [Math.round((raw-cal.high_bp/100)*100)/100,Math.round((raw-cal.low_bp/100)*100)/100]);
 }
 for(const row of result){
  assert.equal(row.allow_official_promotion,false);

@@ -1,0 +1,139 @@
+{
+  "schema": "GMFQ_NZD_BB_VS_CASH_EMPIRICAL_CALIBRATION_RESEARCH_V1",
+  "reviewed_as_of": "2026-10-21",
+  "source": {
+    "authority": "Reserve Bank of New Zealand",
+    "title": "90-day Bank Bill Rate (monthly average) and OCR (end of month)",
+    "url": "https://www.rbnz.govt.nz/statistics/key-statistics/exchange-rates-and-wholesale-interest-rates",
+    "source_file": "B2 wholesale interest rates — official RBNZ",
+    "data_type": "MANUALLY_TRANSCRIBED_OFFICIAL_PUBLIC_TABLE_NOT_SOURCE_BYTES_HASHED"
+  },
+  "reference_plateau": {
+    "label": "2023-06_to_2024-06_OCR_5_50",
+    "month_count": 13,
+    "rows": [
+      {
+        "month": "2023-06",
+        "ocr_pct": 5.5,
+        "bank_bill_90d_pct": 5.68
+      },
+      {
+        "month": "2023-07",
+        "ocr_pct": 5.5,
+        "bank_bill_90d_pct": 5.67
+      },
+      {
+        "month": "2023-08",
+        "ocr_pct": 5.5,
+        "bank_bill_90d_pct": 5.64
+      },
+      {
+        "month": "2023-09",
+        "ocr_pct": 5.5,
+        "bank_bill_90d_pct": 5.68
+      },
+      {
+        "month": "2023-10",
+        "ocr_pct": 5.5,
+        "bank_bill_90d_pct": 5.68
+      },
+      {
+        "month": "2023-11",
+        "ocr_pct": 5.5,
+        "bank_bill_90d_pct": 5.63
+      },
+      {
+        "month": "2023-12",
+        "ocr_pct": 5.5,
+        "bank_bill_90d_pct": 5.63
+      },
+      {
+        "month": "2024-01",
+        "ocr_pct": 5.5,
+        "bank_bill_90d_pct": 5.64
+      },
+      {
+        "month": "2024-02",
+        "ocr_pct": 5.5,
+        "bank_bill_90d_pct": 5.71
+      },
+      {
+        "month": "2024-03",
+        "ocr_pct": 5.5,
+        "bank_bill_90d_pct": 5.64
+      },
+      {
+        "month": "2024-04",
+        "ocr_pct": 5.5,
+        "bank_bill_90d_pct": 5.63
+      },
+      {
+        "month": "2024-05",
+        "ocr_pct": 5.5,
+        "bank_bill_90d_pct": 5.62
+      },
+      {
+        "month": "2024-06",
+        "ocr_pct": 5.5,
+        "bank_bill_90d_pct": 5.62
+      }
+    ]
+  },
+  "recent_plateau": {
+    "label": "2026-01_to_2026-06_OCR_2_25",
+    "month_count": 6,
+    "rows": [
+      {
+        "month": "2026-01",
+        "ocr_pct": 2.25,
+        "bank_bill_90d_pct": 2.5
+      },
+      {
+        "month": "2026-02",
+        "ocr_pct": 2.25,
+        "bank_bill_90d_pct": 2.49
+      },
+      {
+        "month": "2026-03",
+        "ocr_pct": 2.25,
+        "bank_bill_90d_pct": 2.51
+      },
+      {
+        "month": "2026-04",
+        "ocr_pct": 2.25,
+        "bank_bill_90d_pct": 2.56
+      },
+      {
+        "month": "2026-05",
+        "ocr_pct": 2.25,
+        "bank_bill_90d_pct": 2.63
+      },
+      {
+        "month": "2026-06",
+        "ocr_pct": 2.25,
+        "bank_bill_90d_pct": 2.68
+      }
+    ]
+  },
+  "method": {
+    "basis_quantity": "90-day Bank Bill observed monthly-average yield minus OCR end-of-month, in basis points; empirical cash carry premium NOT a Bills/OIS market quote",
+    "weighted_reference_median": 0.3,
+    "weighted_recent_median": 0.7,
+    "base_basis_bp_precision": 1,
+    "scenario_range_rule": "floor(min(all training basis bp)-2 bp) and ceil(max(all training basis bp)+2 bp); descriptive WHAT-IF envelope, not confidence interval",
+    "all_contract_horizons_same_basis_assumption": true,
+    "tenor_warning": "NZ ASX BB futures are separate 90-day bank bill contracts chosen by proximity to 3m/6m/12m expiration targets. Their implied yields are NOT spot 3m/6m/12m OIS rates. Applying one carry premium to all is a rough assumption.",
+    "regime_warning": "Monthly historical spot bank bill vs OCR gaps also include expectations of future OCR changes, market term premium and credit/liquidity effects. They are NOT a clean estimate of contractual Bills/OIS swap basis.",
+    "source_span_handpicked_not_full_history": true,
+    "allow_bias_core_signals": false,
+    "allow_official_ois": false
+  },
+  "provenance": {
+    "license": "Public RBNZ monthly summary manually read; no private NZFMA/NZBO/NZOS data downloaded",
+    "historical_pit_certified": false,
+    "not_a_direct_ois_observation": true,
+    "not_a_statistically_valid_forecast_interval": true,
+    "not_an_automated_live_feed": true,
+    "no_distribution_of_market_ois_prices": true
+  }
+}
