@@ -75,7 +75,7 @@ items={
 "Observed 2Y spread strictly matched-date official": "A.certified&&B.certified&&A.date===B.date" in s and "Spread 2Y osservato: WITHHELD" in s and "r['2Y']" in s,
 "No inferred OIS differential for mismatched instruments": "futures IB" in s and "futures CORRA" in s and "non sottrarre i loro delta" in s,
 "Pair timing and risk preserved": "pairMacroRatesComparison(code,setup.pairs[code],rates,ois,setup.price_asof,macroDay)" in s and "non vengono ricalcolati con i rendimenti mostrati" in s,
-"What Changed distinguishes model diagnosis from measured yield moves": "function pairWhatChangedEvidence(code,pair,rates,modelDay)" in s and "LETTURA MODELLO" in s and "VARIAZIONE 2Y" in s and "relative_dynamics" in s,
+"What Changed distinguishes model diagnosis from measured yield moves": "function pairWhatChangedEvidence(code,pair,rates,modelDay,macroDay)" in s and "data-macro-baseline-as-of" in s and "LETTURA MODELLO" in s and "VARIAZIONE 2Y" in s and "relative_dynamics" in s,
 "2Y change must be official matched historical current": "Math.abs(nowValue-item['2Y'])<=0.001" in s and "gap>0&&gap<=5" in s and "latest===date" in s and "WITHHELD" in s,
 "Absent or sparse history is withheld": "intervallo storico troppo lungo" in s and "data-gmfq-yield-change" in s and "status:'WITHHELD'" in s,
 "Qualitative Macro is dated and does not change trade signals": "diagnosi qualitativa, non un nuovo rilascio economico" in s and "Nessun dato cambia la tesi, il sizing o i trigger" in s,
