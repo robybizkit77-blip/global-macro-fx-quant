@@ -38,6 +38,11 @@ items={
 "Pair leg navigation stays within research pages": "data-gmfq-study-route" in s and "['macro','tassi','banche','cot']" in s,
 "Pair fixing cannot silently update thesis": "Il fixing BCE è più recente dello snapshot della tesi" in s and "non aggiorna automaticamente il giudizio del motore" in s,
 "Cross-pair permalink remains shareable": "history.replaceState(history.state,'','#/coppie?pair='+code)" in s,
+"Screener classifications come only from existing engine reasons": "function screenerBlockerReason(code,record)" in s and "PILASTRI DIVISI" in s and "SEPARAZIONE RATES MATERIALE" in s and "NESSUN CONTRASTO" in s,
+"Screener classification enforces canonical source guards": "setup.quality_distribution?.['NON VALUTABILE']" in s and "setup.thesis_is_not_entry===true" in s and "entry_level_published===false" in s,
+"Screener explains stale Macro baseline and respects no-signal policy": "macro_baseline_asof" in s and "NON CORRENTE, tesi da rivalidare" in s and "nessun" in s.lower() if False else "Screener explains stale Macro baseline and keeps no signal": "NON CORRENTE, tesi da rivalidare" in s and "Nessuna promozione di fonte" in s,
+"Screener diagnostic navigates to canonical Deep Dive": "mountScreenerBlockers(doc).catch" in s and "go('#/coppie?pair='+button.dataset.pair)" in s,
+
 "Pair Macro/CB side only from canonical engine": "function pairMacroRatesComparison(code,pair,rates,ois,modelDay,macroDay)" in s and "s.macroSide" in s and "s.policySide" in s,
 "Observed 2Y spread strictly matched-date official": "A.certified&&B.certified&&A.date===B.date" in s and "Spread 2Y osservato: WITHHELD" in s and "r['2Y']" in s,
 "No inferred OIS differential for mismatched instruments": "futures IB" in s and "futures CORRA" in s and "non sottrarre i loro delta" in s,
