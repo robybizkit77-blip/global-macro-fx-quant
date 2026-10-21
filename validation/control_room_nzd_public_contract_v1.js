@@ -5,6 +5,7 @@
  */
 const fs=require('node:fs');
 const path=require('node:path');
+const {romeTodayIso}=require('../site/control-room-preview/ois-pricing-estimates-v1.js');
 
 const RATES='live_data/sections/NATIVE_RATES_DATA.json';
 const REGISTRY='validation/RATES_SOURCE_ADAPTERS_V1_2026-10-05.json';
@@ -27,12 +28,11 @@ function normalized(nz) {
   history2:hist('history2'),history10:hist('history10'),
   tenor2:tenor('2Y'),tenor10:tenor('10Y')};
 }
-function utcAgeDays(iso,now=new Date()) {
+function romeAgeDays(iso,now=new Date()) {
  if(typeof iso!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(iso))throw Error('invalid NZD as-of');
  const v=new Date(iso+'T00:00:00Z');
  if(!Number.isFinite(v.getTime())||v.toISOString().slice(0,10)!==iso)throw Error('invalid NZD calendar date');
- const nowUtc=Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate());
- return (nowUtc-v.getTime())/86400000;
+ return (Date.parse(romeTodayIso(now)+'T00:00:00Z')-v.getTime())/86400000;
 }
 function verifyPublicNzd(mirror,approved,canonical,notes='',now=new Date()) {
  const x=normalized(mirror),y=normalized(canonical);
@@ -53,7 +53,7 @@ function verifyPublicNzd(mirror,approved,canonical,notes='',now=new Date()) {
        JSON.stringify(x[t])!==JSON.stringify(y[t]))
        throw Error('NZD public '+tenor+' history/tenor source mismatch');
  }
- const age=utcAgeDays(x.date,now);
+ const age=romeAgeDays(x.date,now);
  if(age<0)throw Error('NZD future snapshot');
  const recent=age<=4; // matches the approved v10 ratesAll freshness contract
  if(recent&&String(notes).includes('NZD/AUD'))
@@ -64,4 +64,4 @@ function verifyPublicNzd(mirror,approved,canonical,notes='',now=new Date()) {
   official_manual_verified:true,operationally_recent:recent,
   aud_proxy_allowed:!recent,automatic_promotion:false};
 }
-module.exports={readApproved,normalized,utcAgeDays,verifyPublicNzd};
+module.exports={readApproved,normalized,romeAgeDays,verifyPublicNzd};
