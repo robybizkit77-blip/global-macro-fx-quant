@@ -154,15 +154,24 @@ if(!chfAnchor||(!nzdOfficial&&!nzdAnchor))throw Error('Missing common official r
   if(g8.some(c=>!r.rateBarTexts.includes(c)))fatal.push('G8 2Y bars missing currency labels');
   // A recently certified NZD yield supersedes the earlier NZD/AUD estimate.
   // Still enforce an anchored CHF estimate, and an NZD estimate only when missing.
-  const expectedEstimates=nzdOfficial?1:2;
-  if(r.rateBarTexts.filter(x=>x.endsWith('*')).length<expectedEstimates||!r.rateBarNote.includes('STIMA'))
-    fatal.push('Missing or unlabelled model estimate for non-current G8 yields');
+  // WITHHELD is the correct outcome when neither a fresh NZD official rate
+  // nor a properly anchored NZD proxy estimate is available.
+  const nzIndex=r.rateBarTexts.indexOf('NZD'),nzDisplayed=nzIndex>0?r.rateBarTexts[nzIndex-1]:'';
+  const nzWithheld=nzDisplayed==='—';
+  const nzEstimated=!nzdOfficial&&!nzWithheld&&nzDisplayed.endsWith('*');
+  const expectedEstimates=1+(nzEstimated?1:0);
+  if(r.rateBarTexts.filter(x=>x.endsWith('*')).length<expectedEstimates||
+     !r.rateBarNote.includes('STIMA'))
+    fatal.push('Unlabelled or absent CHF anchored model estimate');
   if(!r.rateBarNote.includes('base '+chfAnchor)||
-     (!nzdOfficial&&!r.rateBarNote.includes('base '+nzdAnchor)))
-    fatal.push('Model estimates are not anchored at a same-date official pair: '+r.rateBarNote);
-  if(nzdOfficial&&(r.rateBarNote.includes('NZD/AUD')||
-       !r.rateBarTexts.includes('NZD')||r.rateBarTexts.includes(Number(ratesFeed.NZD['2Y']).toFixed(2)+'*')))
-    fatal.push('Certified NZD yield incorrectly shown as an estimate');
+     (nzEstimated&&!r.rateBarNote.includes('base '+nzdAnchor)))
+    fatal.push('Displayed model estimates must have common-date anchors: '+r.rateBarNote);
+  if(!nzdOfficial&&!nzWithheld&&!nzEstimated)
+    fatal.push('NZD without current official data must be estimated or WITHHELD: '+nzDisplayed);
+  if(nzdOfficial&&(r.rateBarNote.includes('NZD/AUD')||nzWithheld||
+      !r.rateBarTexts.includes('NZD')||
+      r.rateBarTexts.includes(Number(ratesFeed.NZD['2Y']).toFixed(2)+'*')))
+    fatal.push('Certified NZD yield incorrectly shown as estimate/WITHHELD');
   if(!r.rateBarNote.includes('R² ')||!r.rateBarNote.includes('BASSA'))
     fatal.push('Model confidence/disclaimer is not visible: '+r.rateBarNote);
   if(!r.bars2y||!r.spread||!r.designGlobe)fatal.push('cards/approved design missing');
