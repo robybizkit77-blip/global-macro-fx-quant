@@ -1,8 +1,51 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-21T15:52:12Z",
+  "generated_at_utc": "2026-10-21T16:50:32Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-1270950aa103e5a8c76e",
+      "observed_at_utc": "2026-10-21T16:18:30Z",
+      "headline": "Nasdaq climbs over 1% as SpaceX, Super Micro improve AI sentiment",
+      "summary": "Reuters riporta: Nasdaq climbs over 1% as SpaceX, Super Micro improve AI sentiment. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxQZUJTOXdaa0JmVzZubm12MGt4VnNSemsyOW1fQXpCMnhEc25HSVJRZk93d2NYUXQ3eHBuQklaNE1FT1QyQ1NqdTFkdExDbmoxY2JtOWhLQkVtYXczMHh3a3VsZmhub1JFc0FIZHN1eEcwc3FRZVZWQnBoSjFjekFYTUN6X2d5WHJUWGpDU2paekhhU24zenhNbWpXUmtfdmo5cTFIZVZwTXdiRzZoeUtiazhHWkJEWEVZLTVmQmRMcw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-b90a7937265dca46d7cd",
+      "observed_at_utc": "2026-10-21T00:50:00Z",
+      "headline": "Oil prices steady as investors weigh progress on Russia-Ukraine talks against falling US oil stocks",
+      "summary": "Reuters riporta: Oil prices steady as investors weigh progress on Russia-Ukraine talks against falling US oil stocks. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMikgFBVV95cUxPNTdIRmp3MTB3c3JZNGxXMUl1Wk5haXFwcjdJNXgtQnJkOEM4aWVVWG5tai03TmhHSWZidkliV1VlRkRvOVJCX3Q3QXhCWVdZeXlYQmViOUdOaU85anVWMXpSWFNCOHAtVU5id3Fad1BhX1BzVEt6S1A4N2s1YjJocFh6QXFTVXhHdDJJVzZBX21WUQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-02d2d46d37e91e07d3be",
+      "observed_at_utc": "2026-10-21T10:22:00Z",
+      "headline": "Hungarian police arrest Orbán-era central bank governor on suspicion of fraud and abuse",
+      "summary": "AP News riporta: Hungarian police arrest Orbán-era central bank governor on suspicion of fraud and abuse. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxPVTJvYlRkcXVBTnJYV1VuNnNCNnN0RHhjXzhVQTdWMDN5MGgwajQ3M0tjU1YzWlpnVnRfcVZaWkJWemg3Q2VpbGs0RXN4b0tkb1JXZi0tZFdJUXNNSTM2a0RGb2Z1MXppZGVDZllIUUgyZkpTbENRSXlXZmdIeEJXUUk2bHhIa0J4REJZdFNkUnlXU0JGZjVkTV9mYmdSUzJITkJGcQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-e47363d3c2913894ff17",
       "observed_at_utc": "2026-10-21T14:28:37Z",
@@ -1367,51 +1410,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxQQkZxcExIWnlGa1B2TFhUcjFWNDlzOWxQUUJnZkp3NlpJX3lwZXBvN05BN0xoRzhucmFJTWZwTUpDWUVPTzhpTWNnSGxYMDNCRjdYT0RacU1DWFEyclZHS3I2SDFUdWRkRE0wS0M2N1ZuZ3B6YjBENGlDU2R1R1FrMTdTWnJ1Z2pCUnVnM0FHWVh5X0dpRWxhbjJYS2J4X29CaEtLQWJaNFVWbEdRUG1fMEFRWlp4YmFOM0NDRkRlM0NjaE0?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-bfa0b57bfe09c09fc015",
-      "observed_at_utc": "2026-10-19T03:11:00Z",
-      "headline": "Gold steady ahead of Fed meeting, lower oil prices limit downside",
-      "summary": "Reuters riporta: Gold steady ahead of Fed meeting, lower oil prices limit downside. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxOcHBoaXFtRmhELVpxR3BOYzNDX3IzS1Y1UHZaZUlWRnBiY0Y3WWxwa19vSlVRUENyTGtpZVJFSEFSLW9hVWhEaktYRTVhVWpObTFOYThBVXNRX19VY0phaUJjSkdSMjFZQ19FUFZGMm44UnNpZkZGSnNCeUc2SFZ4c1ZZUU9lV2tiUk1odm44Wmc2WGVjSG5pYUU3QnE2NGYx?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-a960357e053ea47a92b0",
-      "observed_at_utc": "2026-10-19T14:15:43Z",
-      "headline": "Iran's Araqchi blames US for Strait of Hormuz tensions, calls for diplomacy",
-      "summary": "Reuters riporta: Iran's Araqchi blames US for Strait of Hormuz tensions, calls for diplomacy. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxOOWRmbXRhcWgxQnNOQXZOQlB1VFpyQnVNX20yYUdCbmw1SUlLU0k1NzFVdGJ0MENQcGhGT3YtYzBHdHBZcW10UUtlVGFVZlFCMm80d0tadjV4bjZPODlHTXhpTnFrOXBmMGlvaDlQdGVIUnRtbmZEaGtONlE4ajBIQlNMdUhuUjV5UlFJejZoLXJuVnFxN0NPQnRmVjFNSlM3R1hqV09pT0kwVDBPSjAtV1BfYzl3Nllp?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-5039baff20dfbc58b48e",
-      "observed_at_utc": "2026-10-19T13:35:35Z",
-      "headline": "S&P 500, Nasdaq open higher as AI stocks rebound ahead of major earnings",
-      "summary": "Reuters riporta: S&P 500, Nasdaq open higher as AI stocks rebound ahead of major earnings. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxPX21SVVhfUjZRQ255YlFzVWVEZ3BFMmt3aWlDdkVPVENFOExuRE9KOXZ6WjNqbzdHelUwdzZudy02TjlyNkxVZWcxQmFzZF9NaUE0SFZYaWI3dmxlYTBVdjdULWhLMkNQNnlMUXFaM1J5T1dPMEo3ajhkb0RQLUM3M0pkYlFqbHNKQ1U1c3k5WlUtdjR1UkNCV0JkdjJZTzdIa2c?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
