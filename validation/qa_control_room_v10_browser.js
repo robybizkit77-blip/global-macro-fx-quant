@@ -148,6 +148,11 @@ function expectedReactionFromMetrics(row){
       macro:rail?.dataset.macroAsOf,macroStatus:rail?.dataset.macroStatus,
       ois:rail?.dataset.oisCertified,screener:rail?.dataset.screenerCount,
       fx:rail?.dataset.fxAsOf,sourceEffect:rail?.dataset.sourceEffect,
+      priorityTarget:rail?.dataset.priorityTarget,
+      priorityState:rail?.dataset.priorityState,
+      priorityText:rail?.querySelector('.gmfq-reading-priority')?.textContent,
+      priorityFirst:!!(rail?.querySelector('.gmfq-reading-priority')?.compareDocumentPosition(rail.querySelector('.gmfq-reading-steps'))&Node.DOCUMENT_POSITION_FOLLOWING),
+      emphasized:btn.filter(b=>b.dataset.readingPriority==='true').map(b=>b.dataset.readingTarget),
       positioned:!!rail&&!!hero&&!!grid&&grid.contains(hero)&&
        !!(rail.compareDocumentPosition(grid)&Node.DOCUMENT_POSITION_FOLLOWING),
       positions:{hero:hero?.getBoundingClientRect().top,rail:rail?.getBoundingClientRect().top,grid:grid?.getBoundingClientRect().top,heroFollowsGrid:!!(grid?.compareDocumentPosition(hero)&Node.DOCUMENT_POSITION_FOLLOWING),heroFollowsRail:!!(rail?.compareDocumentPosition(hero)&Node.DOCUMENT_POSITION_FOLLOWING),parentHero:hero?.parentElement?.className,parentGrid:grid?.parentElement?.className},
@@ -157,12 +162,20 @@ function expectedReactionFromMetrics(row){
   });
   const countNot=Object.values(setupFeed.pairs).filter(x=>x?.setup?.quality==='NON VALUTABILE').length;
   const correctMacro=current(setupFeed.macro_baseline_asof,10);
+  const priorityExpected=!correctMacro?'macro':certified<8?'pricing':'pairs';
+  const priorityStateExpected=!correctMacro?'HISTORICAL':certified<8?'PARTIAL':'RESEARCH_ONLY';
   if(!homeReading.exists||homeReading.count!==3||
      JSON.stringify(homeReading.routes)!==JSON.stringify(['macro','pricing','pairs'])||
      !homeReading.positioned||!homeReading.globe||homeReading.sourceEffect!=='NONE'||
      homeReading.macro!==setupFeed.macro_baseline_asof||
      homeReading.macroStatus!==(correctMacro?'DATED_SNAPSHOT':'HISTORICAL')||
      homeReading.ois!==String(certified)||homeReading.screener!==String(countNot)||
+     homeReading.priorityTarget!==priorityExpected||homeReading.priorityState!==priorityStateExpected||
+     !homeReading.priorityFirst||homeReading.emphasized.length!==1||
+     homeReading.emphasized[0]!==priorityExpected||
+     (priorityExpected==='macro'&&!homeReading.priorityText?.includes(setupFeed.macro_baseline_asof))||
+     (priorityExpected==='pricing'&&!homeReading.priorityText?.includes(certified+'/8'))||
+     (priorityExpected==='pairs'&&!homeReading.priorityText?.includes(countNot+'/28'))||
      !homeReading.labels[0].includes(setupFeed.macro_baseline_asof)||
      !homeReading.labels[1].includes(certified+'/8 fonti certificate')||
      !homeReading.labels[2].includes(countNot+'/28 non valutabili')||
