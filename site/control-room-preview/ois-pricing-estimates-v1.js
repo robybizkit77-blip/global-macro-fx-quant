@@ -4,7 +4,7 @@
 'use strict';
 const fx=['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'],tenors=['3m','6m','12m'];
 const flags={USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',AUD:'🇦🇺',CAD:'🇨🇦',NZD:'🇳🇿',CHF:'🇨🇭'};
-const labels={OFFICIAL:'CERTIFICATA',PROXY:'FUTURES INDICATIVI',MIXED:'DATE NON SINCRONIZZATE',SCENARIO:'SCENARIO BB − 50 bp',WITHHELD:'NON DISPONIBILE'};
+const labels={OFFICIAL:'CERTIFICATA',PROXY:'FUTURES INDICATIVI',MIXED:'DATE NON SINCRONIZZATE',SCENARIO:'SCENARIO · RBNZ B2',WITHHELD:'NON DISPONIBILE'};
 const number=x=>typeof x==='number'&&Number.isFinite(x)?x:null;
 const fmt=x=>number(x)===null?'—':x.toFixed(2);
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -12,6 +12,40 @@ function fresh(date,today){
  if(!/^\d{4}-\d{2}-\d{2}$/.test(date||'')||!/^\d{4}-\d{2}-\d{2}$/.test(today||''))return false;
  const d=(Date.parse(today+'T00:00:00Z')-Date.parse(date+'T00:00:00Z'))/86400000;
  return Number.isInteger(d)&&d>=0&&d<=5;
+}
+/* Research empirical NZD bank-bill cash-carry calibration, NOT NZBO/OIS quotes.
+   Arrays must match validation/cb_pricing/NZD_BB_CASH_RESEARCH_CALIBRATION_V1_2026-10-21.json.
+   Public RBNZ monthly averages / month-end OCR manually pinned 2026-10-21. */
+const NZD_REFERENCE_ROWS=[["2023-06",5.5,5.68],["2023-07",5.5,5.67],["2023-08",5.5,5.64],["2023-09",5.5,5.68],["2023-10",5.5,5.68],["2023-11",5.5,5.63],["2023-12",5.5,5.63],["2024-01",5.5,5.64],["2024-02",5.5,5.71],["2024-03",5.5,5.64],["2024-04",5.5,5.63],["2024-05",5.5,5.62],["2024-06",5.5,5.62]];
+const NZD_RECENT_ROWS=[["2026-01",2.25,2.5],["2026-02",2.25,2.49],["2026-03",2.25,2.51],["2026-04",2.25,2.56],["2026-05",2.25,2.63],["2026-06",2.25,2.68]];
+function empiricalMedian(values){
+ const s=[...values].sort((a,b)=>a-b),k=Math.floor(s.length/2);
+ return s.length%2?s[k]:(s[k-1]+s[k])/2;
+}
+function calibratedNzdCarry(){
+ const basis=(input,expectedOCR)=>{
+  if(!Array.isArray(input)||input.length<5)return null;
+  const out=[];
+  for(const [month,ocr,bill] of input){
+   if(!/^\d{4}-\d{2}$/.test(month)||number(ocr)===null||
+      number(bill)===null||ocr!==expectedOCR||bill<0||bill>25)return null;
+   out.push(Math.round((bill-ocr)*10000)/100);
+  }
+  return out;
+ };
+ const old=basis(NZD_REFERENCE_ROWS,5.50),recent=basis(NZD_RECENT_ROWS,2.25);
+ if(!old||!recent)return null;
+ const all=old.concat(recent),mOld=empiricalMedian(old),mRecent=empiricalMedian(recent);
+ const estimated=Math.round(0.30*mOld+0.70*mRecent);
+ const lo=Math.floor(Math.min(...all)-2),hi=Math.ceil(Math.max(...all)+2);
+ if(!Number.isFinite(estimated)||estimated<=0||estimated>=100||lo<0||hi>100||
+    !(lo<estimated&&estimated<hi))return null;
+ return {schema:'GMFQ_NZD_EMPIRICAL_CASH_CARRY_SCENARIO_V1',
+  basis_bp:estimated,low_bp:lo,high_bp:hi,observations:all.length,
+  reference_median_bp:mOld,recent_median_bp:mRecent,
+  source:'RBNZ B2 monthly 90-day bills and OCR',reviewed_as_of:'2026-10-21',
+  direct_nzbo_ois_quote:false,statistical_confidence_interval:false,
+  forward_ois_curve:false,policy_delta_allowed:false,core_effect:'NONE'};
 }
 function matrix(ois,bb,today){
  return fx.map(ccy=>{
@@ -46,11 +80,26 @@ function matrix(ois,bb,today){
     bb.currency==='NZD'&&bb.status==='LIVE_DIRECTIONAL_PROXY_READY'&&
     bb.governance?.substitutes_for_ois_level===false&&
     bb.governance?.policy_delta_from_proxy_allowed===false&&fresh(bb.as_of,today)){
-    for(const t of tenors){const p=bb.horizons?.[t]||{},raw=number(p.implied_bank_bill_rate);
-     if(raw!==null&&raw>=-5&&raw<=25&&/^\d{4}-\d{2}-\d{2}$/.test(p.expiration||'')){
-      points[t]={value:Math.round((raw-0.50)*100)/100,date:bb.as_of,
-       range:[Math.round((raw-0.75)*100)/100,Math.round((raw-0.25)*100)/100]};}}
-    if(Object.keys(points).length){tier='SCENARIO';source=bb.source||'';}
+    const calibration=calibratedNzdCarry();
+    if(calibration&&bb.governance?.backtest_eligible_as_official_ois===false){
+     for(const t of tenors){
+      const p=bb.horizons?.[t]||{},raw=number(p.implied_bank_bill_rate);
+      if(raw!==null&&raw>=-5&&raw<=25&&
+         /^\d{4}-\d{2}-\d{2}$/.test(p.expiration||'')&&
+         typeof p.mapping==='string'&&p.mapping.includes('nearest listed expiry')){
+       points[t]={
+        value:Math.round((raw-calibration.basis_bp/100)*100)/100,date:bb.as_of,
+        range:[Math.round((raw-calibration.high_bp/100)*100)/100,
+               Math.round((raw-calibration.low_bp/100)*100)/100]
+       };
+      }
+     }
+     if(Object.keys(points).length){
+      tier='SCENARIO';source=(bb.source||'')+
+        ' · '+calibration.source+' ('+calibration.observations+
+        ' mesi; sconto empirico '+calibration.basis_bp+' bp)';
+     }
+    }
   }
   return {ccy,tier,points,source,official_ois:ccy==='GBP'&&tier==='OFFICIAL',
     allow_official_promotion:false,allow_repricing:false,
@@ -91,7 +140,7 @@ function view(rows){
  '<div><strong>'+flags[r.ccy]+' '+r.ccy+'</strong><small>'+labels[r.tier]+'</small></div>'+
  tenors.map(t=>'<div>'+cell(r,t)+'</div>').join('')+
  '<div class="gmfq-est-source">'+esc(r.source||'Fonte non corrente')+'</div></div>').join('')+'</div>'+
- '<p class="gmfq-est-note"><b>Metodo:</b> GBP OIS BoE; AUD/CAD/JPY futures monetari ufficiali; USD/CHF futures indicativi. EUR usa giorni diversi e non forma una curva sincronizzata. NZD: scenario non calibrato = futures Bank Bill meno 50 bp ipotetici, con fascia 25–75 bp di differenziale, <b>non intervallo statistico</b>. Nessuna stima produce variazioni OIS 1D/1W, segnali FX o backtest.</p></div>';
+ '<p class="gmfq-est-note"><b>Metodo:</b> GBP OIS BoE; AUD/CAD/JPY futures monetari ufficiali; USD/CHF futures indicativi. EUR usa giorni diversi e non forma una curva sincronizzata. NZD: scenario empirico su Bank Bill 90 giorni − OCR RBNZ (19 mesi, due regimi): sconto stimato 24 bp, fascia prudenziale 10–45 bp. <b>non è uno spread OIS misurato e non intervallo statistico</b>. Sono futures trimestrali, non una curva OIS spot. Nessuna stima produce variazioni OIS 1D/1W, segnali FX o backtest.</p></div>';
 }
 const css=[
  '#gmfq-ois-research-estimates{margin:12px 0;min-width:0}',
@@ -107,7 +156,7 @@ const css=[
  '#gmfq-ois-research-estimates .gmfq-est-note{margin-top:12px;color:#b1c5d2}',
  '@media(max-width:600px){#gmfq-ois-research-estimates .gmfq-est-body{padding:9px}#gmfq-ois-research-estimates .gmfq-est-row{grid-template-columns:minmax(78px,1.1fr) repeat(3,minmax(0,1fr))}#gmfq-ois-research-estimates .gmfq-est-row>div,#gmfq-ois-research-estimates .gmfq-est-row>span{padding:6px 4px}#gmfq-ois-research-estimates .gmfq-est-row b{font-size:12px}#gmfq-ois-research-estimates .gmfq-est-row small{font-size:9px}}'
 ].join('');
-if(typeof module!=='undefined'&&module.exports)module.exports={matrix,view,fresh,coverage};
+if(typeof module!=='undefined'&&module.exports)module.exports={matrix,view,fresh,coverage,calibratedNzdCarry,NZD_REFERENCE_ROWS,NZD_RECENT_ROWS};
 if(typeof window!=='undefined')window.GMFQ_OIS_RESEARCH_V1=Object.freeze({coverage});
 if(typeof document==='undefined')return;
 const frame=document.getElementById('gmfq-page');if(!frame)return;
