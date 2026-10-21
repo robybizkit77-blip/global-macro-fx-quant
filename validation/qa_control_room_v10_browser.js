@@ -270,6 +270,74 @@ function expectedReactionFromMetrics(row){
   await page.frameLocator('#gmfq-page').locator('#gmfq-pricing-research button[data-pricing-ccy="ALL"]').click();
   await page.screenshot({path:'v10-qa-images/'+label+'-rates-g8-detail.png',fullPage:true});
 
+  // Macro provenance: historical model scores cannot be refreshed by newer,
+  // independently dated Inflation/Labour observations.
+  const oldModel=JSON.parse(fs.readFileSync(path.join(DATA,'D.json'),'utf8'));
+  const macroThermo=JSON.parse(fs.readFileSync(path.join(DATA,'MACRO_THERMOMETER_DATA.json'),'utf8'));
+  await page.goto(url+'#/macro?ccy=EUR',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return d?.getElementById('gmfq-macro-source-lens')?.dataset.auditStatus==='READ_ONLY';
+  },null,{timeout:40000});
+  const macroLens=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    const p=d.getElementById('gmfq-macro-source-lens');
+    const w=p.scrollWidth,c=p.clientWidth;
+    p.style.display='none';
+    const nativeWidth=d.documentElement.scrollWidth;
+    p.style.display='';
+    return {status:p.dataset.auditStatus,baseline:p.dataset.baselineAsOf,
+      selected:p.dataset.selectedCurrency,
+      observations:p.querySelectorAll('.gmfq-macro-observation').length,
+      description:p.textContent,
+      innerScroll:w,innerClient:c,nativeWidth,
+      docWidth:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
+  });
+  if(macroLens.baseline!==oldModel.asOf||macroLens.selected!=='EUR'||
+     macroLens.observations!==2||
+     !macroLens.description.includes('NON CORRENTE, da rivalidare')||
+     !macroLens.description.includes(macroThermo.currencies.EUR.inflation.as_of)||
+     !macroLens.description.includes(macroThermo.currencies.EUR.labour.as_of)||
+     !macroLens.description.includes('non aggiornano i 24 score')||
+     macroLens.innerScroll>macroLens.innerClient+2||
+     macroLens.docWidth>Math.max(macroLens.viewport+16,macroLens.nativeWidth+2))
+   throw Error(label+' Macro data-provenance guard failed '+JSON.stringify(macroLens));
+  await page.frameLocator('#gmfq-page').locator('#gmfq-macro-provenance-currency').selectOption('JPY');
+  const switched=await page.evaluate(()=>{
+    const p=document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-macro-source-lens');
+    return {ccy:p?.dataset.selectedCurrency,text:p?.textContent,hash:location.hash};
+  });
+  if(switched.ccy!=='JPY'||!switched.text.includes(macroThermo.currencies.JPY.inflation.as_of)||
+     !switched.text.includes(macroThermo.currencies.JPY.labour.as_of)||
+     switched.hash!=='#/macro?ccy=JPY')
+    throw Error(label+' Macro currency synchronization failed '+JSON.stringify(switched));
+  await page.screenshot({path:'v10-qa-images/'+label+'-macro-provenance.png',fullPage:true});
+  // Negative fixture: invalid reference period cannot become current data.
+  await page.route('**/MACRO_THERMOMETER_DATA.json',async r=>{
+    const invalid=JSON.parse(fs.readFileSync(path.join(DATA,'MACRO_THERMOMETER_DATA.json'),'utf8'));
+    invalid.currencies.USD.inflation.as_of='2099-12';
+    await r.fulfill({status:200,contentType:'application/json',
+      headers:{'Access-Control-Allow-Origin':'*'},body:JSON.stringify(invalid)});
+  });
+  await page.goto(url+'#/home',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.goto(url+'#/macro?ccy=USD&test=invalid',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    const p=d?.getElementById('gmfq-macro-source-lens');
+    return p?.dataset.auditStatus==='READ_ONLY'&&p?.dataset.selectedCurrency==='USD'&&
+      p.querySelector('#gmfq-macro-source-details')?.textContent.includes('Inflazione · dato WITHHELD');
+  },null,{timeout:40000});
+  const invalidMacro=await page.evaluate(()=>{
+    const p=document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-macro-source-lens');
+    return {html:p?.querySelector('#gmfq-macro-source-details')?.textContent,ccy:p?.dataset.selectedCurrency};
+  });
+  if(invalidMacro.ccy!=='USD'||!invalidMacro.html.includes('Inflazione · dato WITHHELD')||
+     !invalidMacro.html.includes(macroThermo.currencies.USD.labour.as_of))
+    throw Error(label+' invalid Macro thermometer did not fail closed '+JSON.stringify(invalidMacro));
+  await page.unroute('**/MACRO_THERMOMETER_DATA.json');
+  console.log('CONTROL_ROOM_V10_MACRO_PROVENANCE_GREEN',label,{
+    baseline:macroLens.baseline,selected:'EUR / JPY',missing:'WITHHELD'});
+
   // Read-only Screener: all NON VALUTABILE reasons must come from the canonical
   // decision_frame, without changing its judgments or layout on mobile.
   await page.goto(url+'#/screener',{waitUntil:'domcontentloaded',timeout:120000});
