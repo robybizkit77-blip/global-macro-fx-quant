@@ -67,8 +67,8 @@ assert.equal(rows.NZD.tier,'SCENARIO');
 // Source-level 100-price identity and expiry-proximity: same dated contract,
 // not an observed OIS basis or a truly synchronized 3M/6M/12M cash curve.
 const expectedGap={USD:{'3m':-15,'6m':14,'12m':11},
- CHF:{'3m':-36,'6m':-34,'12m':-37},
- EUR:{'3m':0,'6m':30,'12m':-36}};
+ CHF:{'3m':-35,'6m':-34,'12m':-37},
+ EUR:{'3m':1,'6m':30,'12m':-36}};
 for(const ccy of ['USD','EUR','CHF']){
  const src=ois.currencies[ccy];
  for(const t of tenors){
@@ -82,6 +82,7 @@ for(const ccy of ['USD','EUR','CHF']){
   assert.equal(research.expires,p.expiration);
   assert(Math.abs(100-p.futures_price-research.value)<=0.0002);
   assert(Math.abs(research.tenor_gap_days)<=45);
+  assert.equal(research.tenor_gap_days,expectedGap[ccy][t]);
   const displayDay=ccy==='EUR'?src.secondary_quote_context.horizons[t].quote_as_of:p.quote_as_of;
   assert.equal(research.date,displayDay);
  }
