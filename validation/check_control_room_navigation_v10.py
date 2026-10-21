@@ -38,7 +38,7 @@ items={
 "Home research order is source-derived and non-operational": "function mountHomeReadingPath(doc,context)" in s and "dataset.sourceEffect='NONE'" in s and "mountHomeReadingPath(doc,{macroDay:pairMacroDay" in s,
 "Home research rail validates all 28 canonical pair statuses": "pairCounts['NON VALUTABILE']" in s and "Object.values(rows||{}).filter" in s and "Object.values(pairCounts).reduce((a,b)=>a+b,0)===28" in s,
 "Home priorities never upgrade Macro or pricing": "macroSeriesPeriod(macroDay)" in s and "Macro · baseline non verificabile" in s and "Pricing · copertura non verificabile" in s and "Screener · giudizi non verificabili" in s,
-"Native globe and chart remain the primary design": "hero.insertAdjacentElement('afterend',rail)" in s and "doc.querySelector('.gridtop')" in s and "doc.querySelector('.herobody')" in s,
+"Native globe and chart remain the primary design": "grid.insertAdjacentElement('beforebegin',rail)" in s and "doc.querySelector('.gridtop')" in s and "doc.querySelector('.herobody')" in s,
 "Home path links to existing canonical sections": "url:'#/macro'" in s and "url:'#/tassi?focus=ois'" in s and "url:'#/screener'" in s,
 "Home source audit is keyboard accessible and non-operative": "gmfq-home-data-audit" in s and "aria-haspopup" in s and "showModal()" in s and "no trading signal" not in s, 
 "Home explicitly identifies secondary instruments and synthetic DXY": "futures monetari, non OIS puri" in s and "Non è DXY ICE ufficiale" in s,
