@@ -1759,6 +1759,123 @@ async function mountCrossRisk(doc){
 }
 
 const mountedDocuments=new WeakSet();
+/* Central Banks/COT: additive first-reading strip. Preserve the approved
+   policy/CFTC charts, 8-row tables, selection controls and all raw feeds. */
+function researchFirstStrip(doc,id,title,summary,details,state){
+ const hero=doc.querySelector('.desk-hero');
+ if(!hero||doc.getElementById(id))return null;
+ const style=doc.createElement('style');style.id=id+'-style';
+ style.textContent=
+  '#'+id+'{margin:0 0 12px;min-width:0;border-top:1px solid #385469;border-bottom:1px solid #284454;padding:11px 15px;color:#c0d0dc}'+
+  '#'+id+' .gmfq-first-title{font:600 10px/1.55 Arial,sans-serif;letter-spacing:.08em;color:#d8c48d;margin-bottom:3px}'+
+  '#'+id+' .gmfq-first-claim{font:600 13px/1.55 Arial,sans-serif;color:#e5edf3;overflow-wrap:anywhere}'+
+  '#'+id+' .gmfq-first-explainer{font:11px/1.65 Arial,sans-serif;color:#a9becd;margin:5px 0 0;overflow-wrap:anywhere}'+
+  '#'+id+' details{border-top:1px solid #274455;margin-top:9px;padding-top:6px}'+
+  '#'+id+' details summary{cursor:pointer;color:#e1c992;font:600 11px/1.55 Arial,sans-serif;outline-offset:4px}'+
+  '#'+id+' details:not([open])>:not(summary){display:none!important}'+
+  '#'+id+' details p{font:11px/1.65 Arial,sans-serif;color:#afc0ce;margin:7px 0 0;overflow-wrap:anywhere}'+
+  '@media(max-width:600px){#'+id+'{padding:10px 11px}#'+id+' .gmfq-first-claim{font-size:12px}}';
+ doc.head.appendChild(style);
+ const rail=doc.createElement('section');rail.id=id;rail.dataset.readingStatus=state;
+ rail.setAttribute('aria-label',title);
+ rail.innerHTML='<div class="gmfq-first-title">'+htmlEscape(title)+'</div>'+
+  '<div class="gmfq-first-claim">'+htmlEscape(summary)+'</div>'+
+  '<p class="gmfq-first-explainer">'+htmlEscape(details.intro)+'</p>'+
+  '<details><summary>Apri provenienza e limiti di questa lettura</summary>'+
+  '<p>'+htmlEscape(details.sources)+'</p><p>'+htmlEscape(details.guard)+'</p></details>';
+ hero.insertAdjacentElement('afterend',rail);
+ return rail;
+}
+async function mountCentralBankFirstReading(doc){
+ if(route()!=='banche'||frame.contentDocument!==doc)return;
+ const hero=doc.querySelector('.desk-hero'),table=doc.getElementById('cb-table');
+ if(!hero||!table||doc.getElementById('gmfq-cb-reading-first'))return;
+ const inputs=await Promise.allSettled([feed('NATIVE_CB_DATA.json'),feed('OIS_OPERATIONAL_VIEW.json')]);
+ if(route()!=='banche'||frame.contentDocument!==doc)return;
+ const cb=inputs[0].status==='fulfilled'?inputs[0].value:null;
+ const ois=inputs[1].status==='fulfilled'?inputs[1].value:null;
+ const core=cb&&Object.keys(cb).length===8&&FX.every(c=>{
+  const x=cb[c];return x&&num(x.rate)!==null&&macroSeriesPeriod(x.last_date)===x.last_date&&
+    macroSeriesPeriod(x.next_meeting)===x.next_meeting&&x.bank&&x.action;
+ });
+ const acceptable=['GREEN_OFFICIAL','GREEN_ESTIMATED','WITHHELD'];
+ const operational=ois?.schema==='GMFQ_OIS_OPERATIONAL_VIEW_V1'&&
+  FX.every(c=>acceptable.includes(ois.currencies?.[c]?.operational_status));
+ const certified=operational?marketResearchCurves(ois):[];
+ const expectedOfficial=operational?FX.filter(c=>ois.currencies[c].operational_status==='GREEN_OFFICIAL'):[];
+ const reconciled=core&&operational&&certified.length===expectedOfficial.length&&
+  expectedOfficial.every(c=>certified.some(v=>v.k===c));
+ const estimated=operational?FX.filter(c=>ois.currencies[c].operational_status==='GREEN_ESTIMATED'):[];
+ const withheld=operational?FX.filter(c=>ois.currencies[c].operational_status==='WITHHELD'):[];
+ const dates=core?FX.map(c=>cb[c].last_date).sort():[];
+ const rail=researchFirstStrip(doc,'gmfq-cb-reading-first','BANCHE CENTRALI · DOVE INIZIARE',
+  reconciled?
+   'Decisioni archiviate '+dates[0]+' → '+dates.at(-1)+' · Pricing 6M certificato '+certified.length+'/8':
+   'Decisioni o pricing non riconciliabili · lettura sospesa',
+  {intro:reconciled?
+    'GBP: OIS BoE; JPY, AUD, CAD: futures monetari. '+estimated.length+' valute stimate; '+
+    withheld.length+' senza curva certificata. Repricing ≠ probabilità di meeting.':
+    'Dati o copertura insufficienti: non è possibile dichiarare un quadro aggiornato delle banche centrali.',
+   sources:'Policy rate e decisioni: NATIVE_CB_DATA, date individuali dell’ultima decisione; prezzi: OIS_OPERATIONAL_VIEW, as-of separato per valuta. I dati del policy book non rappresentano dichiarazioni appena rilasciate.',
+   guard:'Le quattro curve certificate sono strumenti differenti; futures monetari non sono OIS puri. Snapshot policy storico, nessun nuovo giudizio hawkish/dovish, probabilità implicita o segnale FX inferiti.'},
+  reconciled?'READ_ONLY':'WITHHELD');
+ if(!rail)return;
+ rail.dataset.policyEarliest=dates[0]||'';rail.dataset.policyLatest=dates.at(-1)||'';
+ rail.dataset.certified=reconciled?String(certified.length):'';
+ rail.dataset.estimated=reconciled?String(estimated.length):'';
+ rail.dataset.withheld=reconciled?String(withheld.length):'';
+}
+function cotQuantitativeAudit(chart,story){
+ if(!chart||!story||Object.keys(chart).length!==8||
+    !FX.every(c=>Object.hasOwn(chart,c)&&Object.hasOwn(story,c)))return null;
+ const series={},dates=new Set(),mismatched=[];
+ for(const c of FX){
+  const t=chart[c],st=story[c];
+  if(!t||!st||!['dates','net','long','short','netoi','percentile'].every(k=>Array.isArray(t[k])&&t[k].length===104)||
+     t.dates.some((date,i)=>macroSeriesPeriod(date)!==date||(i>0&&date<=t.dates[i-1])))return null;
+  const n=103,net=num(t.net[n]),long=num(t.long[n]),short=num(t.short[n]),
+   ratio=num(t.netoi[n]),percent=num(t.percentile[n]),date=t.dates[n];
+  if([net,long,short,ratio,percent].some(v=>v===null)||long<0||short<0||long-short!==net||
+     Math.abs(ratio)>100||percent<0||percent>100||!['WITHHELD'].includes(st.price))return null;
+  const rounded=Math.round(percent),q=rounded>=80?'EXTREME LONG':rounded<=20?'EXTREME SHORT':'NEUTRALE';
+  if(st.signal!==q)mismatched.push(c);
+  dates.add(date);
+  series[c]={net,ratio,rounded,q,date};
+ }
+ if(dates.size!==1)return null;
+ const extremes=FX.filter(c=>series[c].q!=='NEUTRALE');
+ const crowding=FX.filter(c=>Math.abs(series[c].ratio)>=30);
+ return {asof:series.USD.date,extremes,crowding,mismatched,
+   extremeLong:extremes.filter(c=>series[c].q==='EXTREME LONG'),
+   extremeShort:extremes.filter(c=>series[c].q==='EXTREME SHORT')};
+}
+async function mountCotFirstReading(doc){
+ if(route()!=='cot'||frame.contentDocument!==doc)return;
+ const hero=doc.querySelector('.desk-hero'),table=doc.getElementById('cot-table');
+ if(!hero||!table||doc.getElementById('gmfq-cot-reading-first'))return;
+ const inputs=await Promise.allSettled([feed('V250_COT_CHART_DATA.json'),feed('V247_COT_STORIES.json')]);
+ if(route()!=='cot'||frame.contentDocument!==doc)return;
+ const result=cotQuantitativeAudit(inputs[0].status==='fulfilled'?inputs[0].value:null,
+   inputs[1].status==='fulfilled'?inputs[1].value:null);
+ const rail=researchFirstStrip(doc,'gmfq-cot-reading-first','COT · COSA CONTA',
+  result?
+   'CFTC '+result.asof+' · Estremi percentile 104W: '+result.extremes.length+'/8 · Crowding |Net/OI| ≥30%: '+result.crowding.length+'/8':
+   'COT non riconciliabile · nessun estremo certificato',
+  {intro:result?
+   'Classificazione dopo arrotondamento: '+result.extremeLong.length+' EXTREME LONG, '+result.extremeShort.length+
+   ' EXTREME SHORT. Prezzo FX: WITHHELD (nessuna conferma ricostruita).'+
+   (result.mismatched.length?' ⚠ Testo narrativo incoerente: '+result.mismatched.join(', ')+'.':''):
+   'Serie o racconti CFTC non riconciliabili: non sono pubblicate nuove classificazioni.',
+   sources:'CFTC Legacy Non-Commercial Futures Only: V250_COT_CHART_DATA (104 osservazioni per valuta) e V247_COT_STORIES. Ultima data di posizione martedì CFTC, non quotazione di mercato corrente.',
+   guard:'Un percentile estremo indica il rango nella finestra storica, NON la direzione assoluta del Net. Uno short netto può coesistere con EXTREME LONG. Le etichette narrative divergenti sono segnalate, non corrette silenziosamente; nessun segnale operativo dal solo COT.'},
+  result?(result.mismatched.length?'SOURCE_DIVERGENCE':'READ_ONLY'):'WITHHELD');
+ if(!rail)return;
+ rail.dataset.cftcAsOf=result?.asof||'';
+ rail.dataset.extremes=result?String(result.extremes.length):'';
+ rail.dataset.crowding=result?String(result.crowding.length):'';
+ rail.dataset.conflicts=result?result.mismatched.join(','):'';
+}
+
 function onFrameLoad(){
  let doc;try{doc=frame.contentDocument}catch(_){return}
  if(!doc?.body||mountedDocuments.has(doc))return;
@@ -1767,6 +1884,8 @@ function onFrameLoad(){
    if(route()==='cross')mountCrossGold(doc).catch(e=>console.warn('[GMFQ Cross-Asset Gold WITHHELD]',e));
    if(route()==='cross')mountCrossRisk(doc).catch(e=>console.warn('[GMFQ Cross-Asset Risk WITHHELD]',e));
    if(route()==='tassi'){enhanceRatesDetail(doc);focusRatesSection(doc);applyMarketResearch(doc).catch(e=>console.warn('[GMFQ market pricing WITHHELD]',e))}
+   if(route()==='banche')mountCentralBankFirstReading(doc).catch(e=>console.warn('[GMFQ CB first reading WITHHELD]',e));
+   if(route()==='cot')mountCotFirstReading(doc).catch(e=>console.warn('[GMFQ COT first reading WITHHELD]',e));
    if(route()==='macro')mountMacroSourceLens(doc).catch(e=>console.warn('[GMFQ Macro source lens WITHHELD]',e));
    if(route()==='valute')mountValuteSourceCompass(doc).catch(e=>console.warn('[GMFQ Valute source compass WITHHELD]',e));
    if(route()==='coppie')mountPairResearch(doc).catch(e=>console.warn('[GMFQ pair research WITHHELD]',e));
