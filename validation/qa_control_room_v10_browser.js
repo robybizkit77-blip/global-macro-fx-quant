@@ -270,6 +270,45 @@ function expectedReactionFromMetrics(row){
   await page.frameLocator('#gmfq-page').locator('#gmfq-pricing-research button[data-pricing-ccy="ALL"]').click();
   await page.screenshot({path:'v10-qa-images/'+label+'-rates-g8-detail.png',fullPage:true});
 
+  // Read-only Screener: all NON VALUTABILE reasons must come from the canonical
+  // decision_frame, without changing its judgments or layout on mobile.
+  await page.goto(url+'#/screener',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return d?.getElementById('gmfq-screener-blockers')?.dataset.diagnosisStatus==='READ_ONLY';
+  },null,{timeout:40000});
+  const reasons=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    const p=d.getElementById('gmfq-screener-blockers');
+    return {baseline:p?.dataset.macroBaselineAsOf,
+      count:p?.querySelectorAll('button.gmfq-blocker-pair[data-pair]').length,
+      groups:Object.fromEntries(['CONFLICT','RATES_ONLY','INSUFFICIENT'].map(k=>[
+        k,[...(p.querySelector('[data-reason="'+k+'"]')?.querySelectorAll('button[data-pair]')||[])].map(b=>b.dataset.pair)
+      ])),
+      stale:p?.textContent.includes('NON CORRENTE, tesi da rivalidare'),
+      descriptive:p?.textContent.includes('non crea da solo una preferenza FX'),
+      width:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
+  });
+  const nonVal=Object.entries(setupFeed.pairs).filter(([,r])=>r.setup.quality==='NON VALUTABILE');
+  const expectedGroups={CONFLICT:[],RATES_ONLY:[],INSUFFICIENT:[]};
+  for(const [code,row] of nonVal){
+    const k={'PILASTRI DIVISI':'CONFLICT','SEPARAZIONE RATES MATERIALE':'RATES_ONLY',
+      'NESSUN CONTRASTO':'INSUFFICIENT'}[row.decision_frame.quality];
+    if(!k)throw Error(label+' fixture reason unknown '+code);
+    expectedGroups[k].push(code);
+  }
+  for(const k of Object.keys(expectedGroups)){
+    if(JSON.stringify(reasons.groups[k])!==JSON.stringify(expectedGroups[k].sort()))
+      throw Error(label+' screener '+k+' reason mismatch '+JSON.stringify(reasons));
+  }
+  if(reasons.count!==nonVal.length||
+     reasons.baseline!==setupFeed.macro_baseline_asof||
+     !reasons.descriptive||reasons.width>reasons.viewport+16)
+    throw Error(label+' screener reason contract failed '+JSON.stringify(reasons));
+  await page.screenshot({path:'v10-qa-images/'+label+'-screener-reasons.png',fullPage:true});
+  await page.frameLocator('#gmfq-page').locator('#gmfq-screener-blockers button[data-pair="GBPJPY"]').click();
+  await page.waitForURL(u=>u.hash==='#/coppie?pair=GBPJPY',{timeout:20000});
+
   // Home -> canonical Pair Deep Dive (not a generic Screener). Preserve all
   // 28 canonical G8 pairs and selected-pair permalink across changes.
   await page.goto(url+'#/home',{waitUntil:'domcontentloaded',timeout:120000});
