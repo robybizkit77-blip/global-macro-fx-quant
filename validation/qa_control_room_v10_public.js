@@ -641,7 +641,10 @@ async function getState(page){
          const change=await page.evaluate(()=>{
            const d=document.getElementById('gmfq-page')?.contentDocument;
            const c=d?.getElementById('gmfq-pair-what-changed');
-           return {exists:!!c,legs:[...c?.querySelectorAll('.gmfq-change-leg')||[]].map(x=>({
+           return {exists:!!c,baseline:c?.dataset.macroBaselineAsOf,
+             price:c?.dataset.pairPriceAsOf,baselineState:c?.dataset.macroBaselineState,
+             summary:c?.querySelector('.gmfq-change-summary')?.textContent,
+             legs:[...c?.querySelectorAll('.gmfq-change-leg')||[]].map(x=>({
              ccy:x.dataset.gmfqChangeCurrency,status:x.dataset.gmfqYieldChange,
              text:x.querySelector('.gmfq-change-measured')?.textContent,
              model:x.querySelector('.gmfq-change-model')?.textContent})),
@@ -649,6 +652,10 @@ async function getState(page){
              width:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth};
          });
          if(!change.exists||change.legs.length!==2||
+            change.baseline!==pricing.setup_macro_asof||
+            change.price!==pricing.setup_date||
+            change.baselineState!=='HISTORICAL'||
+            !change.summary?.includes('baseline Macro/Tassi '+pricing.setup_macro_asof)||
             change.legs.find(x=>x.ccy==='CHF')?.status!=='WITHHELD'||
             !change.legs.find(x=>x.ccy==='CHF')?.text?.includes('2026-09-30')||
             !change.legs.find(x=>x.ccy==='EUR')?.model?.includes('Crescita: peggiora')||

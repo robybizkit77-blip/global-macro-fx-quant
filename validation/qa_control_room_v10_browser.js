@@ -843,9 +843,17 @@ function expectedReactionFromMetrics(row){
       ccy:x.dataset.gmfqChangeCurrency,status:x.dataset.gmfqYieldChange,
       model:x.querySelector('.gmfq-change-model')?.textContent,
       actual:x.querySelector('.gmfq-change-measured')?.textContent})),
+      baseline:c?.dataset.macroBaselineAsOf,
+      price:c?.dataset.pairPriceAsOf,
+      baselineState:c?.dataset.macroBaselineState,
+      modelSummary:c?.querySelector('.gmfq-change-summary')?.textContent,
       disclaimer:c?.querySelector('.gmfq-change-warning')?.textContent};
   });
   if(!deltaCHF.exists||deltaCHF.legs.length!==2||
+     deltaCHF.baseline!==setupFeed.macro_baseline_asof||
+     deltaCHF.price!==setupFeed.price_asof||
+     deltaCHF.baselineState!==(current(setupFeed.macro_baseline_asof,10)?'DATED_SNAPSHOT':'HISTORICAL')||
+     !deltaCHF.modelSummary?.includes('baseline Macro/Tassi '+setupFeed.macro_baseline_asof)||
      deltaCHF.legs.find(x=>x.ccy==='CHF')?.status!=='WITHHELD'||
      !deltaCHF.legs.find(x=>x.ccy==='CHF')?.actual?.includes('2026-09-30')||
      !deltaCHF.legs.find(x=>x.ccy==='EUR')?.model?.includes('Crescita: peggiora')||
@@ -878,12 +886,20 @@ function expectedReactionFromMetrics(row){
 
   const deltaEURUSD=await page.evaluate(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument,c=d?.getElementById('gmfq-pair-what-changed');
-    return {text:c?.textContent,legs:[...c?.querySelectorAll('.gmfq-change-leg')||[]].map(x=>({
+    return {text:c?.textContent,baseline:c?.dataset.macroBaselineAsOf,
+      price:c?.dataset.pairPriceAsOf,baselineState:c?.dataset.macroBaselineState,
+      legs:[...c?.querySelectorAll('.gmfq-change-leg')||[]].map(x=>({
       ccy:x.dataset.gmfqChangeCurrency,status:x.dataset.gmfqYieldChange,
       actual:x.querySelector('.gmfq-change-measured')?.textContent,model:x.querySelector('.gmfq-change-model')?.textContent}))};
   });
   const eu=deltaEURUSD.legs.find(x=>x.ccy==='EUR'),us=deltaEURUSD.legs.find(x=>x.ccy==='USD');
-  if(eu?.status!=='MEASURED'||us?.status!=='MEASURED'||
+  if(deltaEURUSD.baseline!==setupFeed.macro_baseline_asof||
+     deltaEURUSD.price!==setupFeed.price_asof||
+     deltaEURUSD.baselineState!==(current(setupFeed.macro_baseline_asof,10)?'DATED_SNAPSHOT':'HISTORICAL')||
+     !deltaEURUSD.text?.includes('baseline Macro/Tassi '+setupFeed.macro_baseline_asof)||
+     !deltaEURUSD.text?.includes('Il feed Prezzo/Pair del '+setupFeed.price_asof)||
+     deltaEURUSD.text?.includes('LETTURA MODELLO · '+setupFeed.price_asof)||
+     eu?.status!=='MEASURED'||us?.status!=='MEASURED'||
      !eu.actual?.includes(ratesFeed.EUR.history2.dates.at(-2)+' → '+ratesFeed.EUR.history2.dates.at(-1))||
      !us.actual?.includes(ratesFeed.USD.history2.dates.at(-2)+' → '+ratesFeed.USD.history2.dates.at(-1))||
      !eu.actual?.includes(((x)=>((x>0?'+':'')+x.toFixed(1)+' bp'))(Math.round((ratesFeed.EUR.history2.values.at(-1)-ratesFeed.EUR.history2.values.at(-2))*1000)/10))||
