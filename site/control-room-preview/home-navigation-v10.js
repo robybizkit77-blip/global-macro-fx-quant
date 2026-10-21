@@ -1857,18 +1857,20 @@ function researchFirstStrip(doc,id,title,summary,details,state){
  style.textContent=
   '#'+id+'{margin:0 0 12px;min-width:0;border-top:1px solid #385469;border-bottom:1px solid #284454;padding:11px 15px;color:#c0d0dc}'+
   '#'+id+' .gmfq-first-title{font:600 10px/1.55 Arial,sans-serif;letter-spacing:.08em;color:#d8c48d;margin-bottom:3px}'+
-  '#'+id+' .gmfq-first-claim{font:600 13px/1.55 Arial,sans-serif;color:#e5edf3;overflow-wrap:anywhere}'+
+  '#'+id+' .gmfq-first-priority{font:600 13px/1.5 Arial,sans-serif;color:#e5edf3;margin:3px 0 9px;overflow-wrap:anywhere}'+
+  '#'+id+' .gmfq-first-claim{font:600 11px/1.55 Arial,sans-serif;color:#c5d5df;border-top:1px solid #294454;padding-top:9px;overflow-wrap:anywhere}'+
   '#'+id+' .gmfq-first-explainer{font:11px/1.65 Arial,sans-serif;color:#a9becd;margin:5px 0 0;overflow-wrap:anywhere}'+
   '#'+id+' details{border-top:1px solid #274455;margin-top:9px;padding-top:6px}'+
   '#'+id+' details summary{cursor:pointer;color:#e1c992;font:600 11px/1.55 Arial,sans-serif;outline-offset:4px}'+
   '#'+id+' details:not([open])>:not(summary){display:none!important}'+
   '#'+id+' details p{font:11px/1.65 Arial,sans-serif;color:#afc0ce;margin:7px 0 0;overflow-wrap:anywhere}'+
-  '@media(max-width:600px){#'+id+'{padding:10px 11px}#'+id+' .gmfq-first-claim{font-size:12px}}';
+  '@media(max-width:600px){#'+id+'{padding:10px 11px}#'+id+' .gmfq-first-priority{font-size:12px}#'+id+' .gmfq-first-claim{font-size:11px}}';
  doc.head.appendChild(style);
  const rail=doc.createElement('section');rail.id=id;rail.dataset.readingStatus=state;
  rail.setAttribute('aria-label',title);
  rail.innerHTML='<div class="gmfq-first-title">'+htmlEscape(title)+'</div>'+
-  '<div class="gmfq-first-claim">'+htmlEscape(summary)+'</div>'+
+  '<p class="gmfq-first-priority">'+htmlEscape(details.takeaway||summary)+'</p>'+
+  '<div class="gmfq-first-claim" aria-label="Evidenze quantitative e date">'+htmlEscape(summary)+'</div>'+
   '<p class="gmfq-first-explainer">'+htmlEscape(details.intro)+'</p>'+
   '<details><summary>Apri provenienza e limiti di questa lettura</summary>'+
   '<p>'+htmlEscape(details.sources)+'</p><p>'+htmlEscape(details.guard)+'</p></details>';
@@ -1904,7 +1906,10 @@ async function mountCentralBankFirstReading(doc){
   reconciled?
    'Decisioni archiviate '+dates[0]+' → '+dates.at(-1)+' · Pricing 6M certificato '+certified.length+'/8':
    'Decisioni o pricing non riconciliabili · lettura sospesa',
-  {intro:reconciled?
+  {takeaway:reconciled?
+    'Le ultime decisioni sono snapshot storici; il pricing è un layer separato e non indica nuove decisioni di politica monetaria.':
+    'La sintesi resta sospesa finché decisioni e copertura del pricing non sono riconciliate.',
+   intro:reconciled?
     'GBP: OIS BoE; JPY, AUD, CAD: futures monetari. '+estimated.length+' valute stimate; '+
     withheld.length+' senza curva certificata. Repricing ≠ probabilità di meeting.':
     'Dati o copertura insufficienti: non è possibile dichiarare un quadro aggiornato delle banche centrali.',
@@ -1953,7 +1958,12 @@ async function mountCotFirstReading(doc){
   result?
    'CFTC '+result.asof+' · Estremi percentile 104W: '+result.extremes.length+'/8 · Crowding |Net/OI| ≥30%: '+result.crowding.length+'/8':
    'COT non riconciliabile · nessun estremo certificato',
-  {intro:result?
+  {takeaway:result?
+   (result.mismatched.length?
+     'Dati COT e narrativa divergono per '+result.mismatched.join(', ')+'. La discrepanza non viene corretta automaticamente.':
+     'Gli estremi COT descrivono il positioning relativo, non confermano la direzione del cambio né un setup di ingresso.'):
+   'La lettura resta sospesa: le serie CFTC non sono riconciliabili.',
+   intro:result?
    'Classificazione dopo arrotondamento: '+result.extremeLong.length+' EXTREME LONG, '+result.extremeShort.length+
    ' EXTREME SHORT. Prezzo FX: WITHHELD (nessuna conferma ricostruita).'+
    (result.mismatched.length?' ⚠ Testo narrativo incoerente: '+result.mismatched.join(', ')+'.':''):
