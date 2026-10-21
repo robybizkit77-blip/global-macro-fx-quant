@@ -30,7 +30,7 @@ items={
 "Readiness feed is audited, not market data": "OIS_SOURCE_READINESS_VIEW.json" in s and "GMFQ_OIS_SOURCE_READINESS_VIEW_V1" in s and "sourceReadiness.no_automatic_promotions" not in s,
 "EUR source and Swiss 2Y honesty visible": "function marketSourceReadinessHtml(view,operational)" in s and "non completa il 2Y" in s and "['USD','EUR','CHF','NZD']" in s,
 "No promotional rates from source metadata": "view.prices_omitted===true" in s and "view.no_core_score_effect===true" in s and "view.no_backtest_effect===true" in s and "view.no_automatic_promotions===true" in s,
-"Home reports source coverage, not only load success": "function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy)" in s and "DATI PARZIALI" in s and "FONTI VERIFICATE" in s and "ECB_G8_PRICE_HISTORY.json" in s,
+"Home reports certified and research coverage, not merely load success": "function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy,proxy)" in s and "api.coverage(ois,proxy," in s and "OIS '+oisCurrent.length" in s and "Contesto " in s and "DATI PARZIALI" in s and "FONTI VERIFICATE" in s and "ECB_G8_PRICE_HISTORY.json" in s,
 "Home source audit is keyboard accessible and non-operative": "gmfq-home-data-audit" in s and "aria-haspopup" in s and "showModal()" in s and "no trading signal" not in s, 
 "Home explicitly identifies secondary instruments and synthetic DXY": "futures monetari, non OIS puri" in s and "Non è DXY ICE ufficiale" in s,
 "Home Pair links target canonical Deep Dive": "go('#/coppie?pair='+p)" in s and "go('#/coppie?pair='+pair.dataset.filter)" in s,

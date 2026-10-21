@@ -1,57 +1,109 @@
-/* Deterministic fixture/guard validation for the view-only G8 estimates. */
+/* Stable, deterministic PR QA for the additive OIS research readout.
+   Mutable market feeds are copied and given synthetic, explicitly dated QA cutoffs.
+   No fixture observations are written back into production files. */
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const root=path.resolve(__dirname,'..');
-const modulePath=path.join(root,'site/control-room-preview/ois-pricing-estimates-v1.js');
-const {matrix,view,fresh}=require(modulePath);
-const ois=JSON.parse(fs.readFileSync(path.join(root,'live_data/sections/OIS_OPERATIONAL_VIEW.json'),'utf8'));
-const proxy=JSON.parse(fs.readFileSync(path.join(root,'live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),'utf8'));
-const v=matrix(ois,proxy,'2026-10-20'),m=Object.fromEntries(v.map(r=>[r.ccy,r]));
-assert.equal(v.length,8);
-for(const code of ['GBP','JPY','CAD','AUD'])assert.equal(m[code].tier,'OFFICIAL',code);
-for(const code of ['USD','CHF'])assert.equal(m[code].tier,'PROXY',code);
-assert.equal(m.EUR.tier,'MIXED');
-assert.equal(m.EUR.points['3m'].date,'2026-10-16');
-assert.equal(m.EUR.points['12m'].date,'2026-10-19');
-assert.equal(m.NZD.tier,'SCENARIO');
-assert.equal(m.NZD.points['3m'].value,2.99);
-assert.equal(m.NZD.points['6m'].value,3.33);
-assert.equal(m.NZD.points['12m'].value,3.74);
-assert.deepEqual(m.NZD.points['6m'].range,[3.08,3.58]);
-for(const row of v){
+const {matrix,view,fresh,coverage}=require(path.join(root,'site/control-room-preview/ois-pricing-estimates-v1.js'));
+const liveOis=JSON.parse(fs.readFileSync(path.join(root,'live_data/sections/OIS_OPERATIONAL_VIEW.json'),'utf8'));
+const liveBb=JSON.parse(fs.readFileSync(path.join(root,'live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),'utf8'));
+const ois=structuredClone(liveOis),bb=structuredClone(liveBb);
+const TODAY='2026-10-21',FRESH='2026-10-20',EARLIER='2026-10-19';
+const tenors=['3m','6m','12m'];
+// Convert moving input dates to synthetic cutoff dates without changing source
+// status/identities, values, contract mappings or policy restrictions.
+for(const ccy of ['GBP','JPY','AUD','CAD']){
+ assert.equal(ois.currencies[ccy].operational_status,'GREEN_OFFICIAL');
+ ois.currencies[ccy].as_of=FRESH;
+}
+for(const ccy of ['USD','CHF']){
+ assert.equal(ois.currencies[ccy].operational_status,'GREEN_ESTIMATED');
+ for(const t of tenors)ois.currencies[ccy].horizons[t].quote_as_of=FRESH;
+}
+const ctx=ois.currencies.EUR.secondary_quote_context;
+assert.equal(ois.currencies.EUR.operational_status,'WITHHELD');
+assert.equal(ctx.status,'INDICATIVE_OBSERVATIONS_NON_OIS');
+for(const t of tenors)ctx.horizons[t].quote_as_of=t==='12m'?FRESH:EARLIER;
+bb.as_of=FRESH;
+const result=matrix(ois,bb,TODAY),rows=Object.fromEntries(result.map(x=>[x.ccy,x]));
+assert.equal(result.length,8);
+for(const code of ['GBP','JPY','CAD','AUD'])assert.equal(rows[code].tier,'OFFICIAL',code);
+for(const code of ['USD','CHF'])assert.equal(rows[code].tier,'PROXY',code);
+assert.equal(rows.EUR.tier,'MIXED');
+assert.equal(rows.EUR.points['3m'].date,EARLIER);
+assert.equal(rows.EUR.points['12m'].date,FRESH);
+assert.equal(rows.NZD.tier,'SCENARIO');
+for(const t of tenors){
+ const raw=bb.horizons[t].implied_bank_bill_rate;
+ assert.equal(rows.NZD.points[t].value,Math.round((raw-.5)*100)/100);
+ assert.deepEqual(rows.NZD.points[t].range,
+  [Math.round((raw-.75)*100)/100,Math.round((raw-.25)*100)/100]);
+}
+for(const row of result){
  assert.equal(row.allow_official_promotion,false);
  assert.equal(row.allow_repricing,false);
  assert.equal(row.bias_effect,'NONE');
  assert.equal(row.pair_effect,'NONE');
  assert.equal(row.backtest_official,false);
 }
-assert.equal(m.GBP.official_ois,true);
-for(const code of ['USD','EUR','CHF','NZD'])assert.equal(m[code].official_ois,false);
-assert.equal(fresh('2026-10-19','2026-10-20'),true);
-assert.equal(fresh('2026-10-22','2026-10-20'),false);
-assert.equal(fresh('2026-10-10','2026-10-20'),false);
-assert.equal(fresh('not-a-date','2026-10-20'),false);
-// No auto-refresh of stale research levels, and no interpolation of missing official tenors.
-const stale=matrix(ois,proxy,'2026-11-12');
-assert.equal(stale.filter(x=>x.tier!=='WITHHELD').length,0);
-const noFuture=structuredClone(ois);
-noFuture.currencies.EUR.secondary_quote_context.cross_date_join_allowed=true;
-assert.equal(matrix(noFuture,proxy,'2026-10-20').find(r=>r.ccy==='EUR').tier,'WITHHELD');
-const noQuote=structuredClone(ois);
-noQuote.currencies.CHF.horizons['6m'].quote_timestamp_verified=false;
-assert.equal(matrix(noQuote,proxy,'2026-10-20').find(r=>r.ccy==='CHF').points['6m'],undefined);
-const noBB=structuredClone(proxy);
-noBB.governance.substitutes_for_ois_level=true;
-assert.equal(matrix(ois,noBB,'2026-10-20').find(r=>r.ccy==='NZD').tier,'WITHHELD');
-const escaped=view(matrix(ois,proxy,'2026-10-20'));
-assert(escaped.includes('data-ccy="NZD"'));
-assert(escaped.includes('DATE NON SINCRONIZZATE'));
-assert(escaped.includes('non intervallo statistico'));
-assert(!escaped.includes('GREEN_OFFICIAL'));
-// The loader and publisher must explicitly list the addon, never a legacy page.
+assert.equal(rows.GBP.official_ois,true);
+for(const code of ['USD','EUR','CHF','NZD'])assert.equal(rows[code].official_ois,false);
+assert.equal(fresh(FRESH,TODAY),true);
+assert.equal(fresh('2026-10-22',TODAY),false);
+assert.equal(fresh('2026-10-10',TODAY),false);
+assert.equal(fresh('invalid',TODAY),false);
+// Home research coverage is complete ONLY with 3 dated tenors, and never
+// upgrades the actual 4/8 certified source count.
+const home=coverage(ois,bb,TODAY);
+assert.equal(home.schema,'GMFQ_OIS_G8_RESEARCH_COVERAGE_V1');
+assert.equal(home.official_count,4);
+assert.equal(home.context_count,4);
+assert.equal(home.covered_count,8);
+assert.deepEqual(home.official_codes.sort(),['AUD','CAD','GBP','JPY']);
+assert.deepEqual(home.context_codes.sort(),['CHF','EUR','NZD','USD']);
+assert.deepEqual(home.incomplete_codes,[]);
+assert.equal(home.currency_tiers.NZD,'SCENARIO');
+assert.equal(home.currency_tiers.EUR,'MIXED');
+assert.equal(home.no_ois_official_promotion,true);
+assert.equal(home.core_effect,'NONE');
+assert.equal(home.pair_effect,'NONE');
+assert.equal(home.backtest_estimated_as_official,false);
+// Partial or stale quotes never count as whole G8 research curves.
+const partial=structuredClone(ois);
+partial.currencies.CHF.horizons['6m'].quote_timestamp_verified=false;
+const missing=coverage(partial,bb,TODAY);
+assert.equal(missing.covered_count,7);
+assert(missing.incomplete_codes.includes('CHF'));
+assert.equal(missing.currency_tiers.CHF,'INCOMPLETE_OR_STALE');
+const late=coverage(ois,bb,'2026-11-12');
+assert.equal(late.covered_count,0);
+assert.equal(late.official_count,0);
+assert.equal(late.context_count,0);
+assert.equal(matrix(ois,bb,'2026-11-12').filter(x=>x.tier!=='WITHHELD').length,0);
+// EUR cannot join mismatched first-party futures quotes into a fake OIS curve.
+const invalidEUR=structuredClone(ois);
+invalidEUR.currencies.EUR.secondary_quote_context.cross_date_join_allowed=true;
+assert.equal(matrix(invalidEUR,bb,TODAY).find(x=>x.ccy==='EUR').tier,'WITHHELD');
+// Missing verification disqualifies the individual tenor, never falls back to an old quote.
+const invalidCHF=structuredClone(ois);
+invalidCHF.currencies.CHF.horizons['6m'].quote_timestamp_verified=false;
+assert.equal(matrix(invalidCHF,bb,TODAY).find(x=>x.ccy==='CHF').points['6m'],undefined);
+// No unlicensed conversion of NZD Bank Bill levels into policy deltas.
+const invalidBB=structuredClone(bb);
+invalidBB.governance.substitutes_for_ois_level=true;
+assert.equal(matrix(ois,invalidBB,TODAY).find(x=>x.ccy==='NZD').tier,'WITHHELD');
+const html=view(result);
+assert(html.includes('data-ccy="NZD"'));
+assert(html.includes('DATE NON SINCRONIZZATE'));
+assert(html.includes('non intervallo statistico'));
+assert(!html.includes('GREEN_OFFICIAL'));
+const navigation=fs.readFileSync(path.join(root,'site/control-room-preview/home-navigation-v10.js'),'utf8');
 const loader=fs.readFileSync(path.join(root,'site/control-room-preview/index.html'),'utf8');
-const pub=fs.readFileSync(path.join(root,'.github/workflows/publish-control-room-home-v10.yml'),'utf8');
-assert(loader.includes('ois-pricing-estimates-v1.js'));
-assert(pub.includes('cp site/control-room-preview/ois-pricing-estimates-v1.js'));
-assert(!/\\bcron:/.test(pub));
-console.log('GMFQ_OIS_G8_RESEARCH_MATRIX_PASS 8/8 grouped official/proxy/mixed/scenario, zero core effect');
+const publisher=fs.readFileSync(path.join(root,'.github/workflows/publish-control-room-home-v10.yml'),'utf8');
+assert(navigation.includes('api.coverage(ois,proxy,'));
+assert(navigation.includes('Contesto '));
+assert(loader.indexOf('./ois-pricing-estimates-v1.js')<loader.indexOf('./home-navigation-v10.js'));
+assert(publisher.includes('cp site/control-room-preview/ois-pricing-estimates-v1.js'));
+assert(!/\bcron:/.test(publisher));
+assert.deepEqual(liveBb,JSON.parse(fs.readFileSync(path.join(root,'live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),'utf8')));
+console.log('GMFQ_OIS_G8_HOME_DUAL_PROVENANCE_PASS: certified 4, context 4, stale fail-closed, no trade effect');
