@@ -35,7 +35,17 @@ for ccy, row in VIEW['currencies'].items():
         assert row['confidence'] in ('A','A/B','B','B/C','C')
         assert any((row['horizons'].get(h) or {}).get('rate') is not None for h in ('3m','6m','12m'))
 
-assert {c for c,r in VIEW['currencies'].items() if r['operational_status']=='GREEN_OFFICIAL'} == {'AUD','CAD','GBP','JPY'}
+# Derive approved official scope from canonical OIS, never a frozen currency list.
+# An unauthorized estimated/secondary row cannot count as a certified source.
+approved={c for c,o in OFFICIAL.items() if o.get('status')=='ACTIVE'}
+displayed={c for c,r in VIEW['currencies'].items()
+           if r['operational_status']=='GREEN_OFFICIAL'}
+assert displayed==approved, (displayed,approved)
+for c in approved:
+    assert VIEW['currencies'][c]['quality']=='OFFICIAL_CERTIFIED'
+    assert VIEW['currencies'][c]['official_status']=='ACTIVE'
+    assert VIEW['currencies'][c]['as_of']==OFFICIAL[c]['as_of']
+    assert VIEW['currencies'][c]['horizons']==OFFICIAL[c]['horizons']
 for ccy,row in VIEW['currencies'].items():
     if row['operational_status']=='WITHHELD':
         assert all((row['horizons'].get(h) or {}).get('rate') is None for h in ('3m','6m','12m'))
