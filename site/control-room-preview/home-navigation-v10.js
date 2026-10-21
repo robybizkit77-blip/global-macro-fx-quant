@@ -717,7 +717,7 @@ function mountMarketResearch(doc,ois,proxy,rates,snb10,sourceReadiness){
   '<p class="gmfq-research-intro">Cosa sta prezzando il mercato su 3, 6 e 12 mesi? Il grafico mostra solo le scadenze validate, espresse come differenza dal policy rate. Non sono probabilità per meeting.</p>'+
   '<div class="gmfq-research-tabs" role="group" aria-label="Filtra pricing certificato"></div>'+
   '<div class="gmfq-research-plot"></div><div class="gmfq-research-legend"></div>'+
-  '<p class="gmfq-research-note">Certificato significa fonte verificata, non OIS puro: GBP è OIS BoE; JPY, AUD e CAD provengono da futures monetari. Ogni curva mostra punti di mercato per scadenza, non una previsione certa della banca centrale.</p>'+
+  '<p class="gmfq-research-note">Le curve sintetizzano prezzi per scadenza, non un percorso certo della banca centrale. Strumenti, date e limiti delle fonti restano consultabili nell’analisi completa.</p>'+
   '<details id="gmfq-pricing-evidence-details"><summary>Apri analisi completa · fonti, proxy e casi incompleti</summary>'+
   marketResearchSecondary(ois)+'<div class="gmfq-research-separator"><h3>Fonti incomplete</h3>'+
   '<div class="gmfq-snb-spot" id="gmfq-chf-snb-10y-context" role="note"></div>'+
@@ -1680,11 +1680,11 @@ async function mountCrossGold(doc){
   '#gmfq-cross-gold-v10 .gmfq-gold-badge[data-state="WITHHELD"]{color:#efa7b1}'+
   '#gmfq-cross-gold-v10 .gmfq-gold-line{font:11px/1.55 Arial,sans-serif;color:#afc4d2;margin:7px 0}'+
   '#gmfq-cross-gold-v10 .gmfq-gold-changes{display:flex;gap:15px;flex-wrap:wrap;font:12px Arial,sans-serif;color:#e1d19a;margin:12px 0}'+
-  '#gmfq-cross-gold-v10 .gmfq-gold-spot{padding:12px 14px;border-left:2px solid #90784f;background:#0e2534;min-width:0}'+
+  '#gmfq-cross-gold-v10 .gmfq-gold-spot{padding:12px 2px 12px 16px;border-left:1px solid #294454;background:transparent;min-width:0}'+
   '#gmfq-cross-gold-v10 .gmfq-gold-spot strong{display:block;font:600 13px/1.4 Arial,sans-serif;color:#d5e3ee;margin-bottom:7px}'+
   '#gmfq-cross-gold-v10 .gmfq-gold-fine{padding:0 17px 13px;color:#8fa8b9;font:10px/1.55 Arial,sans-serif}'+
   '@media(max-width:700px){#gmfq-cross-gold-v10 .gmfq-gold-body{grid-template-columns:1fr;padding:12px;gap:10px}'+
-  '#gmfq-cross-gold-v10 .gmfq-gold-quote{font-size:25px}#gmfq-cross-gold-v10 .gmfq-gold-fine{padding:0 12px 12px}}';
+  '#gmfq-cross-gold-v10 .gmfq-gold-quote{font-size:25px}#gmfq-cross-gold-v10 .gmfq-gold-spot{border-left:0;border-top:1px solid #294454;padding:12px 2px 0}#gmfq-cross-gold-v10 .gmfq-gold-fine{padding:0 12px 12px}}';
  doc.head.appendChild(style);
  const title=doc.getElementById('queued-title'),copy=doc.getElementById('queued-copy');
  if(title)title.textContent='Cross-Asset · Metalli';
@@ -1810,9 +1810,13 @@ async function mountCrossRisk(doc){
  style.id='gmfq-cross-risk-v10-style';
  style.textContent=
   '#gmfq-cross-risk-v10{margin:0 0 14px;min-width:0}'+
-  '#gmfq-cross-risk-v10 .gmfq-cross-risk-intro{padding:12px 16px 4px;font:12px/1.55 Arial,sans-serif;color:#abc2d0}'+
-  '#gmfq-cross-risk-v10 .gmfq-cross-risk-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:10px 16px;min-width:0}'+
-  '#gmfq-cross-risk-v10 .gmfq-cross-risk-card{min-width:0;padding:13px;background:#0b2333;border:1px solid #254457;border-radius:6px}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-intro{padding:12px 16px 5px;margin:0;font:600 13px/1.55 Arial,sans-serif;color:#e3edf4;overflow-wrap:anywhere}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-evidence{display:flex;flex-wrap:wrap;gap:4px 15px;padding:6px 16px 12px;color:#aac0cd;font:11px/1.55 Arial,sans-serif;min-width:0}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-evidence span{min-width:0;overflow-wrap:anywhere}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-evidence .gmfq-risk-sync{flex-basis:100%;color:#91a9b9;font-size:10px}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;padding:0 16px;min-width:0;border-top:1px solid #294454;border-bottom:1px solid #294454}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-card{min-width:0;padding:13px 16px 13px 12px;background:transparent;border:0;border-right:1px solid #294454;border-radius:0}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-card:last-child{border-right:0}'+
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-header{display:flex;flex-wrap:wrap;gap:7px;align-items:center;justify-content:space-between}'+
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-header strong{font:650 15px/1.4 Arial,sans-serif;color:#ebf2f6}'+
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-badge{font:600 9px/1.4 Arial,sans-serif;color:#86d6b3}'+
@@ -1826,8 +1830,12 @@ async function mountCrossRisk(doc){
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-note summary{cursor:pointer;color:#d8c58e;font-weight:600;outline-offset:3px}'+
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-note p{margin:7px 0 0}'+
   '@media(max-width:820px){#gmfq-cross-risk-v10 .gmfq-cross-risk-grid{grid-template-columns:1fr}'+
-  '#gmfq-cross-risk-v10 .gmfq-cross-risk-intro{padding:12px 12px 4px}'+
-  '#gmfq-cross-risk-v10 .gmfq-cross-risk-grid{padding:10px 12px}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-intro{padding:11px 12px 4px;font-size:12px}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-evidence{padding:7px 12px 11px;gap:3px 8px}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-evidence span{width:100%}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-grid{padding:0 12px}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-card{border-right:0;border-bottom:1px solid #294454;padding:12px 2px}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-card:last-child{border-bottom:0}'+
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-note{padding:12px}}';
  doc.head.appendChild(style);
  const kicker=doc.querySelector('.desk-hero .desk-kicker');
@@ -1849,7 +1857,12 @@ async function mountCrossRisk(doc){
    states.some(x=>x==='WITHHELD'||x.endsWith('HISTORICAL'))?'PARTIAL':'AVAILABLE';
  panel.dataset.sourceStatus=global;
  panel.innerHTML='<h2 class="desk-panel-title">Volatilità e petrolio · stato delle fonti</h2>'+
-  '<p class="gmfq-cross-risk-intro">Prima la qualità: VIX Cboe '+htmlEscape(v.asof)+ ' · '+(v.state==='OFFICIAL_RECENT'?'ultimo dato recente':'dato storico/non verificato')+'; WTI EIA '+htmlEscape(w.asof)+' · '+(w.state==='OFFICIAL_RECENT'?'ultimo dato recente':'non corrente/non verificato')+'; Brent futures BZ=F '+htmlEscape(b.asof)+' · '+(b.state==='SECONDARY_RECENT'?'indicativo recente':'non corrente/non verificato')+'. <strong>Non sono quotazioni intraday sincronizzate.</strong></p>'+
+  '<p class="gmfq-cross-risk-intro">VIX misura volatilità implicita, WTI è spot EIA, Brent è futures: strumenti diversi, non un unico segnale risk-on/risk-off.</p>'+
+  '<div class="gmfq-cross-risk-evidence" aria-label="Date e provenienza VIX WTI Brent">'+
+  '<span data-source="vix">VIX Cboe '+htmlEscape(v.asof)+' · '+(v.state==='OFFICIAL_RECENT'?'ultimo dato recente':'dato storico/non verificato')+'</span>'+
+  '<span data-source="wti">WTI EIA '+htmlEscape(w.asof)+' · '+(w.state==='OFFICIAL_RECENT'?'ultimo dato recente':'non corrente/non verificato')+'</span>'+
+  '<span data-source="brent">Brent futures BZ=F '+htmlEscape(b.asof)+' · '+(b.state==='SECONDARY_RECENT'?'indicativo recente':'non corrente/non verificato')+'</span>'+
+  '<span class="gmfq-risk-sync">Non sono quotazioni intraday sincronizzate.</span></div>'+
   '<div class="gmfq-cross-risk-grid">'+
    crossRiskCard('VIX',v,'Volatilità implicita S&P 500','Cboe · storico ufficiale VIX',false)+
    crossRiskCard('WTI',w,'Spot Cushing · RWTC','U.S. Energy Information Administration',false)+
