@@ -270,6 +270,27 @@ function dxyLine(data){
  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Storico del DXY sintetico da cambi giornalieri ECB"><polyline points="${points}" fill="none" stroke="#e6c675" stroke-width="2"/><line x1="10" x2="${W-15}" y1="${H-12}" y2="${H-12}" stroke="#31485b"/><text x="10" y="${H-1}" fill="#98b0c3" font-size="10">${arr[0].date}</text><text x="${W-15}" y="${H-1}" text-anchor="end" fill="#98b0c3" font-size="10">${arr.at(-1).date}</text></svg>`;
 }
 function validDxy(x){return x?.schema==='GMFQ_DXY_SYNTHETIC_ECB_V1'&&x.status==='ESTIMATED_INFORMATIONAL'&&x.not_official_ice===true&&x.usable_as_official_ice_or_trade_signal===false&&fresh(x.as_of,4)&&num(x.value)!==null&&Array.isArray(x.history)&&x.history.at(-1)?.date===x.as_of}
+function mountHomeCurrencyFlags(doc){
+ const tiles=[...doc.querySelectorAll('#valute .cc[data-filter]')];
+ for(const tile of tiles){
+  const c=tile.dataset.filter,flag=c==='DXY'?'🇺🇸':FLAG[c];
+  if(!flag)continue;
+  const head=tile.querySelector('.tickerhead');if(!head)continue;
+  let node=head.querySelector('.flag');
+  if(!node){node=doc.createElement('span');node.className='flag';head.insertBefore(node,head.firstChild)}
+  node.textContent=flag;
+  node.setAttribute('aria-label',c==='DXY'?'Indice dollaro sintetico':c);
+  node.dataset.gmfqFlag=c;
+  node.style.cssText='font-family:"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif;font-size:21px;line-height:1.1;display:inline-flex;align-items:center;justify-content:center;min-width:25px;opacity:1;filter:none';
+  if(c==='DXY'&&!tile.querySelector('.gmfq-home-dxy-origin')){
+   const label=doc.createElement('small');
+   label.className='gmfq-home-dxy-origin';
+   label.textContent='INDICE SINTETICO · BCE';
+   label.title='DXY ricostruito da fixing BCE; non è l’indice ICE ufficiale';
+   tile.appendChild(label);
+  }
+ }
+}
 function renderDxy(doc){
  const tile=doc.querySelector('#valute .cc[data-filter="DXY"]');
  if(!tile)return;
@@ -399,6 +420,8 @@ function mountHomeReadingPath(doc,context){
  visual.textContent=
   '#gmfq-home-reading-path{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(285px,.85fr);gap:18px;align-items:center;min-width:0;margin:11px 0 15px;padding:16px 19px;border:1px solid #344f62;border-left:3px solid #d7b76e;border-radius:7px;background:linear-gradient(110deg,#0d293b 0%,#091a29 82%);box-sizing:border-box}'+
   '#gmfq-home-reading-path .gmfq-reading-main,#gmfq-home-reading-path .gmfq-reading-side{min-width:0}'+
+  '#valute .cc .tickerhead .flag{display:inline-flex!important;align-items:center;justify-content:center;min-width:25px;opacity:1!important}'+
+  '#valute .cc .gmfq-home-dxy-origin{display:block;font:600 9px/1.3 Arial,sans-serif;letter-spacing:.04em;color:#d4bd86;margin:2px 0 0;white-space:normal}'+
   '#gmfq-home-reading-path .gmfq-reading-heading{display:block;font:600 10px/1.55 Arial,sans-serif;letter-spacing:.09em;color:#d9c48b;margin-bottom:7px}'+
   '#gmfq-home-reading-path .gmfq-reading-priority{font:600 17px/1.48 Arial,sans-serif;color:#f0f3f7;max-width:670px;margin:0 0 9px;overflow-wrap:anywhere}'+
   '#gmfq-home-reading-path .gmfq-reading-trust{display:block;font:11px/1.5 Arial,sans-serif;color:#9eb8c9}'+
@@ -654,6 +677,7 @@ async function applyHome(doc){
      rateBar(doc,all,'ratesbars');rateBar(doc,all,'spreads',true);
    }
    if(ois)oisAll(doc,ois,proxy);
+   mountHomeCurrencyFlags(doc);
    renderDxy(doc);
    mountHomeFreshnessAudit(doc,ff.status==='fulfilled'?ff.value:null,rates,ois,d,proxy,
      mm.status==='fulfilled'?mm.value:null,ss.status==='fulfilled'?ss.value:null);
