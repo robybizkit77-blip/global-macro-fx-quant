@@ -1,9 +1,9 @@
 {
   "as_of": "2026-10-21",
-  "blocked_currency_count": 2,
+  "blocked_currency_count": 4,
   "currencies": {
     "CHF": {
-      "activation_requirement": "Mantenere monitoraggio e verifiche.",
+      "activation_requirement": "Validare ICE SA3 oppure Eurex FSR3, senza unire exchange o date differenti.",
       "backtest_eligible_as_official": false,
       "currency": "CHF",
       "dates_joinable": false,
@@ -14,14 +14,18 @@
         "paired_current": false,
         "separate_10y_snb_as_of": "2026-10-20"
       },
-      "indicative_quote_dates": {},
-      "obstacle": "Fonte già attiva: riconfermare licenza e omogeneità.",
+      "indicative_quote_dates": {
+        "12m": "2026-10-21",
+        "3m": "2026-10-20",
+        "6m": "2026-10-21"
+      },
+      "obstacle": "Settlement futures SARON ICE/Eurex non certificati in una stessa serie storica.",
       "operational_as_of": "2026-10-20",
       "price_or_curve_embedded": false,
       "source_reviewed_as_of": "2026-10-19",
       "source_title": "ICE Futures Europe Three-Month SARON futures (SA3) daily settlements",
       "source_url": "https://www.ice.com/products/72270612/Three-Month-Saron-Index-Futures-Contract/data",
-      "status": "GREEN_ESTIMATED",
+      "status": "WITHHELD",
       "usable_for_policy_pricing": false
     },
     "EUR": {
@@ -30,12 +34,12 @@
       "currency": "EUR",
       "dates_joinable": false,
       "indicative_quote_dates": {
-        "12m": "2026-10-20",
-        "3m": "2026-10-19",
-        "6m": "2026-10-19"
+        "12m": "2026-10-21",
+        "3m": "2026-10-20",
+        "6m": "2026-10-20"
       },
       "obstacle": "Settlement Eurex €STR FST3 non sincronizzati e non certificati per 3, 6 e 12 mesi.",
-      "operational_as_of": "2026-10-19",
+      "operational_as_of": "2026-10-20",
       "price_or_curve_embedded": false,
       "source_reviewed_as_of": "2026-10-19",
       "source_title": "Eurex Three-Month Euro STR Futures, product FST3, daily exchange settlements",
@@ -59,18 +63,22 @@
       "usable_for_policy_pricing": false
     },
     "USD": {
-      "activation_requirement": "Mantenere monitoraggio e verifiche.",
+      "activation_requirement": "Ottenere CME ZQ T, T−1, T−5 per gli stessi contratti e verificarne la licenza.",
       "backtest_eligible_as_official": false,
       "currency": "USD",
       "dates_joinable": false,
-      "indicative_quote_dates": {},
-      "obstacle": "Fonte già attiva: riconfermare licenza e omogeneità.",
+      "indicative_quote_dates": {
+        "12m": "2026-10-20",
+        "3m": "2026-10-21",
+        "6m": "2026-10-20"
+      },
+      "obstacle": "Settlement CME Fed Funds incompleti (manca una serie storica sincronizzata con diritti d'uso verificati).",
       "operational_as_of": "2026-10-20",
       "price_or_curve_embedded": false,
       "source_reviewed_as_of": "2026-10-19",
       "source_title": "CME/CBOT official 30-Day Federal Funds futures settlements (ZQ)",
       "source_url": "https://www.cmegroup.com/markets/interest-rates/stirs/30-day-federal-fund.settlements.html",
-      "status": "GREEN_ESTIMATED",
+      "status": "WITHHELD",
       "usable_for_policy_pricing": false
     }
   },
@@ -82,10 +90,10 @@
   "note": "Stato accesso alle fonti; non è una previsione, non certifica nuovi prezzi.",
   "operational_summary": {
     "g8_total": 8,
-    "green_estimated": 2,
+    "green_estimated": 0,
     "green_official": 4,
-    "operational_green": 6,
-    "operational_withheld": 2
+    "operational_green": 4,
+    "operational_withheld": 4
   },
   "prices_omitted": true,
   "schema": "GMFQ_OIS_SOURCE_READINESS_VIEW_V1",
