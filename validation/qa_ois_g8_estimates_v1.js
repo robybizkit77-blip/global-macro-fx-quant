@@ -3,7 +3,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const root=path.resolve(__dirname,'..');
 const modulePath=path.join(root,'site/control-room-preview/ois-pricing-estimates-v1.js');
-const {matrix,view,fresh}=require(modulePath);
+const {matrix,view,fresh,coverage}=require(modulePath);
 const ois=JSON.parse(fs.readFileSync(path.join(root,'live_data/sections/OIS_OPERATIONAL_VIEW.json'),'utf8'));
 const proxy=JSON.parse(fs.readFileSync(path.join(root,'live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),'utf8'));
 const v=matrix(ois,proxy,'2026-10-20'),m=Object.fromEntries(v.map(r=>[r.ccy,r]));
@@ -31,6 +31,43 @@ assert.equal(fresh('2026-10-19','2026-10-20'),true);
 assert.equal(fresh('2026-10-22','2026-10-20'),false);
 assert.equal(fresh('2026-10-10','2026-10-20'),false);
 assert.equal(fresh('not-a-date','2026-10-20'),false);
+// Home coverage is deliberately not synonymous with official OIS certification.
+const home=coverage(ois,proxy,'2026-10-21');
+assert.equal(home.schema,'GMFQ_OIS_G8_RESEARCH_COVERAGE_V1');
+assert.equal(home.official_count,4);
+assert.equal(home.context_count,4);
+assert.equal(home.covered_count,8);
+assert.deepEqual(home.official_codes.sort(),['AUD','CAD','GBP','JPY']);
+assert.deepEqual(home.context_codes.sort(),['CHF','EUR','NZD','USD']);
+assert.deepEqual(home.incomplete_codes,[]);
+assert.equal(home.currency_tiers.NZD,'SCENARIO');
+assert.equal(home.currency_tiers.EUR,'MIXED');
+assert.equal(home.no_ois_official_promotion,true);
+assert.equal(home.core_effect,'NONE');
+assert.equal(home.pair_effect,'NONE');
+assert.equal(home.backtest_estimated_as_official,false);
+// A missing tenor must not count as complete research even if one quote remains.
+const partial=structuredClone(ois);
+partial.currencies.CHF.horizons['6m'].quote_timestamp_verified=false;
+const incomplete=coverage(partial,proxy,'2026-10-21');
+assert.equal(incomplete.covered_count,7);
+assert(incomplete.incomplete_codes.includes('CHF'));
+assert.equal(incomplete.currency_tiers.CHF,'INCOMPLETE_OR_STALE');
+// Time expiration removes context, never silently reuses the old 8/8 figure.
+const old=coverage(ois,proxy,'2026-11-12');
+assert.equal(old.covered_count,0);
+assert.equal(old.context_count,0);
+assert.equal(old.official_count,0);
+// Read-only addon loads first, Home audit consumes its exact shared guard.
+const nav=fs.readFileSync(path.join(root,'site/control-room-preview/home-navigation-v10.js'),'utf8');
+const loaderHtml=fs.readFileSync(path.join(root,'site/control-room-preview/index.html'),'utf8');
+assert(nav.includes('api.coverage(ois,proxy,'));
+assert(nav.includes('Contexto')===false);
+assert(nav.includes('Contesto '));
+assert(nav.includes('OIS '+String.fromCharCode(39)));
+// Ensure the guard is defined before the Home navigation code executes.
+assert(loaderHtml.indexOf('./ois-pricing-estimates-v1.js') <
+       loaderHtml.indexOf('./home-navigation-v10.js'));
 // No auto-refresh of stale research levels, and no interpolation of missing official tenors.
 const stale=matrix(ois,proxy,'2026-11-12');
 assert.equal(stale.filter(x=>x.tier!=='WITHHELD').length,0);
