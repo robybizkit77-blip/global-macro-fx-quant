@@ -1063,6 +1063,120 @@ async function mountPairResearch(doc){
   }
  },true); // capture: original pair buttons can stop bubbling after updating the detail
 }
+/* Macro provenance lens: the 24 historical scores are NOT refreshed by more
+   recent, individually dated Inflation/Labour thermometers. Read-only. */
+function macroSeriesPeriod(raw){
+ if(typeof raw!=='string'||!/^(20\d{2})-(0[1-9]|1[0-2])(?:-([0-2]\d|3[01]))?$/.test(raw))return null;
+ const normalized=raw.length===7?raw+'-01':raw,day=new Date(normalized+'T00:00:00Z');
+ if(!Number.isFinite(day.getTime())||day.toISOString().slice(0,10)!==normalized)return null;
+ const now=new Date(),nowMonth=now.toISOString().slice(0,7);
+ if(raw.length===7){if(raw>nowMonth)return null}
+ else if(day.getTime()>Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()))return null;
+ return raw;
+}
+function macroThermometerObservation(src){
+ if(!src||typeof src!=='object'||!macroSeriesPeriod(src.as_of)||
+    !src.validation||!['source','history','latest','transformation'].every(k=>src.validation[k]===true)||
+    !src.source||!src.series_id||!src.label||
+    num(src.latest_value)===null)return null;
+ return {period:src.as_of,label:src.label,source:src.source,series:src.series_id,
+   value:src.latest_value};
+}
+function macroBaselineValid(model,therm){
+ return model?.asOf&&macroSeriesPeriod(model.asOf)===model.asOf&&
+  Array.isArray(model.currencies)&&model.currencies.length===8&&
+  FX.every(c=>model.currencies.includes(c)&&
+   ['growth','labour','inflation'].every(k=>num(model.macro?.[c]?.[k])!==null))&&
+  therm?.schema_version==='GMFQ_MACRO_HEATMAP_V1'&&therm.status==='ACTIVE'&&
+  therm.freshness_rule==='Use per-series as_of only; no single currency as_of is authoritative when inflation and unemployment release dates differ.'&&
+  FX.every(c=>therm.currencies?.[c]?.status==='ACTIVE');
+}
+async function mountMacroSourceLens(doc){
+ if(route()!=='macro'||frame.contentDocument!==doc)return;
+ const hero=doc.querySelector('.desk-hero'),main=doc.querySelector('.desk-main');
+ if(!hero||!main||doc.getElementById('gmfq-macro-source-lens'))return;
+ const panel=doc.createElement('section');
+ panel.id='gmfq-macro-source-lens';panel.className='desk-panel';
+ panel.dataset.auditStatus='LOADING';
+ panel.setAttribute('aria-label','Provenienza e data delle evidenze Macro');
+ panel.innerHTML='<h2 class="desk-panel-title">Macro · origine delle evidenze</h2>'+
+  '<p class="gmfq-macro-provenance-fallback">Controllo delle date dei dati...</p>';
+ hero.insertAdjacentElement('afterend',panel);
+ const inputs=await Promise.allSettled([feed('D.json'),feed('MACRO_THERMOMETER_DATA.json')]);
+ if(route()!=='macro'||frame.contentDocument!==doc)return;
+ const model=inputs[0].status==='fulfilled'?inputs[0].value:null;
+ const thermometer=inputs[1].status==='fulfilled'?inputs[1].value:null;
+ const fail=()=>{
+  panel.dataset.auditStatus='WITHHELD';
+  panel.innerHTML='<h2 class="desk-panel-title">Macro · origine delle evidenze</h2>'+
+   '<p class="gmfq-macro-provenance-fallback">Date o dati del modello e dei termometri non verificabili. Non è possibile dichiarare aggiornati gli score né ricostruire nuove valutazioni.</p>';
+ };
+ if(!macroBaselineValid(model,thermometer)){fail();return}
+ const style=doc.createElement('style');style.id='gmfq-macro-source-lens-style';
+ style.textContent=
+  '#gmfq-macro-source-lens{margin:0 0 14px;min-width:0}'+
+  '#gmfq-macro-source-lens .gmfq-macro-body{padding:12px 16px 14px;min-width:0}'+
+  '#gmfq-macro-source-lens .gmfq-macro-state{display:flex;align-items:center;gap:7px;flex-wrap:wrap;color:#e2c383;font:600 11px/1.5 Arial,sans-serif}'+
+  '#gmfq-macro-source-lens .gmfq-macro-intro{color:#c0cfdb;font:12px/1.6 Arial,sans-serif;margin:7px 0 10px}'+
+  '#gmfq-macro-source-lens .gmfq-macro-choice{display:flex;align-items:center;gap:9px;flex-wrap:wrap;color:#a9bfce;font:11px Arial,sans-serif;margin:0 0 9px}'+
+  '#gmfq-macro-source-lens .gmfq-macro-choice select{background:#122c3b;border:1px solid #3a5367;border-radius:5px;color:#e7edf3;font:12px Arial,sans-serif;padding:7px;max-width:100%}'+
+  '#gmfq-macro-source-lens .gmfq-macro-measures{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}'+
+  '#gmfq-macro-source-lens .gmfq-macro-observation{min-width:0;border-top:1px solid #2c485a;padding:9px 0 0}'+
+  '#gmfq-macro-source-lens .gmfq-macro-observation strong{display:block;color:#e3edf4;font:600 12px/1.5 Arial,sans-serif}'+
+  '#gmfq-macro-source-lens .gmfq-macro-observation p{color:#a8bdcb;font:11px/1.5 Arial,sans-serif;margin:4px 0;overflow-wrap:anywhere}'+
+  '#gmfq-macro-source-lens .gmfq-macro-guard{color:#91a9bb;font:10px/1.6 Arial,sans-serif;margin:9px 0 0}'+
+  '#gmfq-macro-source-lens .gmfq-macro-provenance-fallback{padding:10px 16px;color:#d8c48d;font:12px/1.55 Arial,sans-serif}'+
+  '@media(max-width:650px){#gmfq-macro-source-lens .gmfq-macro-body{padding:11px 12px}'+
+  '#gmfq-macro-source-lens .gmfq-macro-measures{grid-template-columns:1fr}'+
+  '#gmfq-macro-source-lens .gmfq-macro-observation{padding-top:7px}}';
+ doc.head.appendChild(style);
+ const baselineDate=model.asOf;
+ const baselineFresh=fresh(baselineDate,10);
+ const currentQuery=new URLSearchParams(location.hash.split('?')[1]||'').get('ccy');
+ const options=FX.map(c=>'<option value="'+c+'">'+FLAG[c]+' '+c+'</option>').join('');
+ panel.dataset.auditStatus='READ_ONLY';
+ panel.dataset.baselineAsOf=baselineDate;
+ panel.innerHTML='<h2 class="desk-panel-title">Macro · modello storico vs osservazioni</h2>'+
+  '<div class="gmfq-macro-body"><div class="gmfq-macro-state">'+
+  '24 score Growth/Labour/Inflation · baseline '+htmlEscape(baselineDate)+
+  (baselineFresh?' · snapshot datato':' · NON CORRENTE, da rivalidare')+'</div>'+
+  '<p class="gmfq-macro-intro">I giudizi Macro del modello appartengono allo snapshot indicato. Inflazione e Lavoro sotto riportano soltanto le ultime osservazioni presenti nei termometri, ciascuna con il proprio periodo: non aggiornano i 24 score, i cicli economici o i bias FX.</p>'+
+  '<label class="gmfq-macro-choice" for="gmfq-macro-provenance-currency">Valuta <select id="gmfq-macro-provenance-currency" aria-label="Valuta delle osservazioni Macro">'+options+'</select></label>'+
+  '<div id="gmfq-macro-source-details" class="gmfq-macro-measures" aria-live="polite"></div>'+
+  '<p class="gmfq-macro-guard">Le date dei termometri sono periodi di riferimento, non necessariamente date di pubblicazione o prove point-in-time. Eventuali etichette legacy «CORRENTE COMPLETO» non certificano la freschezza degli score al giorno di oggi. Crescita: nessun nuovo score certificato.</p></div>';
+ const select=panel.querySelector('select'),details=panel.querySelector('#gmfq-macro-source-details');
+ const measure=(label,obs)=>{
+  if(!obs)return '<div class="gmfq-macro-observation"><strong>'+label+' · dato WITHHELD</strong>'+
+    '<p>Osservazione non verificabile nel termometro, nessun livello ricostruito.</p></div>';
+  return '<div class="gmfq-macro-observation"><strong>'+htmlEscape(label)+
+   ' · '+htmlEscape(obs.label)+'</strong><p>Valore dataset: '+fmt(obs.value,2)+
+   ' · periodo '+htmlEscape(obs.period)+'</p><p>Fonte '+htmlEscape(obs.source)+
+   ' · serie '+htmlEscape(obs.series)+'</p></div>';
+ };
+ function show(ccy){
+  if(!FX.includes(ccy))return;
+  select.value=ccy;
+  panel.dataset.selectedCurrency=ccy;
+  const t=thermometer.currencies[ccy];
+  details.innerHTML=measure('Inflazione',macroThermometerObservation(t.inflation))+
+   measure('Lavoro',macroThermometerObservation(t.labour));
+ }
+ show(FX.includes(currentQuery)?currentQuery:'USD');
+ select.addEventListener('change',()=>{
+  const c=select.value;if(!FX.includes(c))return;
+  show(c);
+  const native=doc.querySelector('button[data-ccy="'+c+'"]');
+  if(native)native.click();
+  history.replaceState(history.state,'','#/macro?ccy='+c);
+ });
+ // Keep the provenance with the native G8 country selection.
+ doc.addEventListener('click',event=>{
+  if(panel.contains(event.target))return;
+  const native=event.target.closest('button[data-ccy]');
+  if(native&&FX.includes(native.dataset.ccy))show(native.dataset.ccy);
+ });
+}
+
 /* Read-only Screener diagnosis of canonical NON VALUTABILE decisions.
    No score, pair ranking, official rates, OIS or trading judgment is recalculated. */
 function screenerBlockerReason(code,record){
@@ -1422,6 +1536,7 @@ function onFrameLoad(){
    if(route()==='cross')mountCrossGold(doc).catch(e=>console.warn('[GMFQ Cross-Asset Gold WITHHELD]',e));
    if(route()==='cross')mountCrossRisk(doc).catch(e=>console.warn('[GMFQ Cross-Asset Risk WITHHELD]',e));
    if(route()==='tassi'){enhanceRatesDetail(doc);focusRatesSection(doc);applyMarketResearch(doc).catch(e=>console.warn('[GMFQ market pricing WITHHELD]',e))}
+   if(route()==='macro')mountMacroSourceLens(doc).catch(e=>console.warn('[GMFQ Macro source lens WITHHELD]',e));
    if(route()==='coppie')mountPairResearch(doc).catch(e=>console.warn('[GMFQ pair research WITHHELD]',e));
    if(route()==='screener'){
     mountScreenerPairBridge(doc);
