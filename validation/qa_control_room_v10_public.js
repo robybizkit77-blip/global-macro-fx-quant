@@ -513,13 +513,15 @@ async function getState(page){
              estimated:p?.dataset.estimatedLanes,withheld:p?.dataset.withheldLanes,
              closed:det?.open===false,
              heading:p?.querySelector('.gmfq-pricing-core-status')?.textContent,
+              note:p?.querySelector('.gmfq-research-note')?.textContent,
              plotVisible:!!p?.querySelector('.gmfq-research-plot')?.getClientRects().length,
              secondaryHidden:!(p?.querySelector('.gmfq-quote-card')?.getClientRects().length),
              sourcePresent:!!p?.querySelector('#gmfq-source-readiness')};
          });
          if(reading.status!=='READ_ONLY'||Number(reading.curves)!==research.expectedCurves||
             !reading.closed||!reading.plotVisible||!reading.secondaryHidden||
-            !reading.sourcePresent||!reading.heading?.includes('/8'))
+            !reading.sourcePresent||!reading.heading?.includes('/8')||
+             !reading.note?.startsWith('Le curve sintetizzano prezzi per scadenza'))
            throw Error(name+' public Rates decision-first not visible '+JSON.stringify(reading));
          await page.frameLocator('#gmfq-page').locator('#gmfq-pricing-evidence-details>summary').press('Enter');
          const disclosure=await page.evaluate(()=>{
@@ -812,6 +814,8 @@ async function getState(page){
          const card=doc?.getElementById('gmfq-cross-gold-v10');
          return {state:card?.dataset.sourceStatus,asof:card?.dataset.goldAsOf,
            text:card?.textContent,quote:card?.querySelector('.gmfq-gold-quote')?.textContent,
+            spotBackground:card?.querySelector('.gmfq-gold-spot')?doc.defaultView.getComputedStyle(card.querySelector('.gmfq-gold-spot')).backgroundColor:null,
+            spotBorder:card?.querySelector('.gmfq-gold-spot')?(doc.documentElement.clientWidth<=700?doc.defaultView.getComputedStyle(card.querySelector('.gmfq-gold-spot')).borderTopWidth:doc.defaultView.getComputedStyle(card.querySelector('.gmfq-gold-spot')).borderLeftWidth):null,
            docWidth:doc?.documentElement.scrollWidth,viewport:doc?.documentElement.clientWidth,
            legacy:!!doc?.querySelector('[data-gmfq-operational="risk"]')};
        });
@@ -820,7 +824,9 @@ async function getState(page){
           !gold.text?.includes('Gold Price LBMA · WITHHELD')||
           !gold.text?.includes('GC=F · futures COMEX indicativo')||
           !gold.text?.includes('non equivale a oro spot')||
-          gold.quote==='—'||gold.legacy||gold.docWidth>gold.viewport+16){
+          gold.quote==='—'||gold.legacy||
+           !['transparent','rgba(0, 0, 0, 0)'].includes(gold.spotBackground)||
+           gold.spotBorder!=='1px'||gold.docWidth>gold.viewport+16){
          throw Error(name+' public Cross-Asset Gold not verified '+JSON.stringify(gold));
        }
        console.log('CONTROL_ROOM_V10_PUBLIC_CROSS_GOLD_GREEN',name,
@@ -836,6 +842,11 @@ async function getState(page){
          const d=document.getElementById('gmfq-page')?.contentDocument,
            panel=d?.getElementById('gmfq-cross-risk-v10');
          return {status:panel?.dataset.sourceStatus,
+           priority:panel?.querySelector('.gmfq-cross-risk-intro')?.textContent,
+           sourceKeys:[...panel?.querySelectorAll('.gmfq-cross-risk-evidence span[data-source]')||[]].map(x=>x.dataset.source),
+           priorityFirst:!!(panel?.querySelector('.gmfq-cross-risk-intro')?.compareDocumentPosition(panel.querySelector('.gmfq-cross-risk-evidence'))&Node.DOCUMENT_POSITION_FOLLOWING),
+           grid:panel?.querySelector('.gmfq-cross-risk-grid')?d.defaultView.getComputedStyle(panel.querySelector('.gmfq-cross-risk-grid')).gridTemplateColumns.trim().split(/\s+/).length:null,
+           cardBg:panel?.querySelector('.gmfq-cross-risk-card')?d.defaultView.getComputedStyle(panel.querySelector('.gmfq-cross-risk-card')).backgroundColor:null,
            cards:[...panel?.querySelectorAll('[data-cross-instrument]')||[]]
              .map(c=>({name:c.dataset.crossInstrument,status:c.dataset.crossStatus,
                asof:c.textContent,value:c.querySelector('.gmfq-cross-risk-value')?.textContent})),
@@ -843,6 +854,11 @@ async function getState(page){
            viewport:d?.documentElement.clientWidth};
        });
        if(risk.cards.length!==3||
+          !risk.priority?.startsWith('VIX misura volatilità implicita')||
+          !risk.priorityFirst||
+          JSON.stringify(risk.sourceKeys)!==JSON.stringify(['vix','wti','brent'])||
+          risk.grid!==(risk.viewport<=820?1:3)||
+          !['transparent','rgba(0, 0, 0, 0)'].includes(risk.cardBg)||
           !risk.cards.some(c=>c.name==='VIX'&&c.status.startsWith('OFFICIAL_'))||
           !risk.cards.some(c=>c.name==='WTI'&&c.status.startsWith('OFFICIAL_'))||
           !risk.cards.some(c=>c.name==='BRENT'&&c.status.startsWith('SECONDARY_'))||
