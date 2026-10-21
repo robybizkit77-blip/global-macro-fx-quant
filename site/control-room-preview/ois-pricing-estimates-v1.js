@@ -164,6 +164,26 @@ function matrix(ois,bb,today){
     core_score_effect:'NONE',bias_effect:'NONE',pair_effect:'NONE',backtest_official:false};
  });
 }
+/* Exposes individually audited 6M informational levels on Pair pages.
+   This is NOT 6M policy repricing: no derivative pair impact, no core promotion. */
+function indicativeSixMonth(ois,today){
+ const observations=matrix(ois,null,today),approved={};
+ for(const row of observations){
+  if(!['USD','EUR','CHF'].includes(row.ccy)||
+     !['PROXY','MIXED'].includes(row.tier))continue;
+  const p=row.points?.['6m'];
+  if(!p||!p.source_quote_verified||!p.contract||!p.expires||
+     !fresh(p.date,today)||number(p.value)===null||
+     p.policy_repricing_allowed!==false||p.direct_ois_quote!==false)continue;
+  approved[row.ccy]=Object.freeze({
+    type:row.tier,currency:row.ccy,value:p.value,
+    quote_as_of:p.date,contract:p.contract,expiry:p.expires,
+    label:row.tier==='MIXED'?'FUTURES DATATO · EUR non sincronizzato':'FUTURES INDICATIVO',
+    is_official_ois:false,policy_delta_allowed:false,pair_effect:'NONE',core_effect:'NONE'
+  });
+ }
+ return Object.freeze(approved);
+}
 /* A full G8 research row requires three valid dated levels. A single
    observed contract must NOT count as complete 3M/6M/12M coverage. */
 function coverage(ois,bb,today){
@@ -309,8 +329,8 @@ const css=[
  '@media(max-width:600px){#gmfq-ois-research-estimates .gmfq-same-line{grid-template-columns:minmax(55px,.7fr) repeat(3,minmax(0,1fr))}#gmfq-ois-research-estimates .gmfq-same-line>*{padding:6px 3px}#gmfq-ois-research-estimates .gmfq-same-value b{font-size:11px}#gmfq-ois-research-estimates .gmfq-same-value small{font-size:8px}}',
  '@media(max-width:600px){#gmfq-ois-research-estimates .gmfq-est-body{padding:9px}#gmfq-ois-research-estimates .gmfq-est-row{grid-template-columns:minmax(78px,1.1fr) repeat(3,minmax(0,1fr))}#gmfq-ois-research-estimates .gmfq-est-row>div,#gmfq-ois-research-estimates .gmfq-est-row>span{padding:6px 4px}#gmfq-ois-research-estimates .gmfq-est-row b{font-size:12px}#gmfq-ois-research-estimates .gmfq-est-row small{font-size:9px}}'
 ].join('');
-if(typeof module!=='undefined'&&module.exports)module.exports={matrix,view,matchedResearchMoves,fresh,coverage,auditDatedFuture,calibratedNzdCarry,NZD_REFERENCE_ROWS,NZD_RECENT_ROWS,NZD_HOLDOUT_ROWS};
-if(typeof window!=='undefined')window.GMFQ_OIS_RESEARCH_V1=Object.freeze({coverage});
+if(typeof module!=='undefined'&&module.exports)module.exports={matrix,view,matchedResearchMoves,fresh,coverage,indicativeSixMonth,auditDatedFuture,calibratedNzdCarry,NZD_REFERENCE_ROWS,NZD_RECENT_ROWS,NZD_HOLDOUT_ROWS};
+if(typeof window!=='undefined')window.GMFQ_OIS_RESEARCH_V1=Object.freeze({coverage,indicativeSixMonth});
 if(typeof document==='undefined')return;
 const frame=document.getElementById('gmfq-page');if(!frame)return;
 const ROOT='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/';
