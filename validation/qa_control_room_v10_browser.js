@@ -506,6 +506,8 @@ function expectedReactionFromMetrics(row){
     p.style.display='';
     return {status:p.dataset.auditStatus,baseline:p.dataset.baselineAsOf,
       selected:p.dataset.selectedCurrency,
+      priority:p.querySelector('.gmfq-macro-takeaway')?.textContent,
+      priorityFirst:!!(p.querySelector('.gmfq-macro-takeaway')?.compareDocumentPosition(p.querySelector('.gmfq-macro-state'))&Node.DOCUMENT_POSITION_FOLLOWING),
       observations:p.querySelectorAll('.gmfq-macro-observation').length,
       description:p.textContent,
       preview:p.querySelector('#gmfq-macro-reading')?.textContent,
@@ -515,6 +517,7 @@ function expectedReactionFromMetrics(row){
       docWidth:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
   });
   if(macroLens.baseline!==oldModel.asOf||macroLens.selected!=='EUR'||
+     !macroLens.priority?.startsWith('Gli score sono uno snapshot del modello')||!macroLens.priorityFirst||
      macroLens.observations!==2||!macroLens.fullClosed||!macroLens.observationsHidden||
      !macroLens.preview?.includes(macroThermo.currencies.EUR.inflation.as_of)||
      !macroLens.preview?.includes(macroThermo.currencies.EUR.labour.as_of)||
@@ -589,10 +592,15 @@ function expectedReactionFromMetrics(row){
     p.style.display='none';const nativeWidth=d.documentElement.scrollWidth;p.style.display='';
     return {fx:p.dataset.fxAsOf,dxy:p.dataset.dxyStatus,macro:p.dataset.macroAsOf,
       text:p.textContent,detail:!!p.querySelector('details summary'),
+      priority:p.querySelector('.gmfq-vsc-priority')?.textContent,
+      sourceKeys:[...p.querySelectorAll('.gmfq-vsc-ledger span[data-source]')].map(x=>x.dataset.source),
+      priorityFirst:!!(p.querySelector('.gmfq-vsc-priority')?.compareDocumentPosition(p.querySelector('.gmfq-vsc-ledger'))&Node.DOCUMENT_POSITION_FOLLOWING),
       innerWidth,innerClient,nativeWidth,width:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
   });
   if(valute.fx!==fxHistory.last_as_of||valute.macro!==legacy.asOf||
      valute.dxy!=='SYNTHETIC_ECB'||!valute.detail||
+     !valute.priority?.startsWith('Fixing giornaliero, DXY sintetico')||!valute.priorityFirst||
+     JSON.stringify(valute.sourceKeys)!==JSON.stringify(['fixing','dxy','macro'])||
      !valute.text.includes('non il DXY ICE ufficiale')||
      !valute.text.includes('non un nuovo ranking di forza relativa')||
      valute.innerWidth>valute.innerClient+2||
@@ -694,6 +702,9 @@ function expectedReactionFromMetrics(row){
       stale:p?.textContent.includes('NON CORRENTE, tesi da rivalidare'),
       descriptive:p?.textContent.includes('non crea da solo una preferenza FX'),
       summary:p?.querySelector('.gmfq-blocker-overview')?.textContent,
+      priority:p?.querySelector('.gmfq-blocker-priority')?.textContent,
+      priorityFirst:!!(p.querySelector('.gmfq-blocker-priority')?.compareDocumentPosition(p.querySelector('.gmfq-blocker-overview'))&Node.DOCUMENT_POSITION_FOLLOWING),
+      sources:[...p.querySelectorAll('.gmfq-blocker-date span[data-source]')].map(x=>x.dataset.source),
       detailsClosed:p?.querySelector('#gmfq-blocker-details')?.open===false,
       pairButtonsHidden:![...p?.querySelectorAll('.gmfq-blocker-pair')||[]].some(x=>x.getClientRects().length>0),
       width:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
@@ -711,6 +722,8 @@ function expectedReactionFromMetrics(row){
       throw Error(label+' screener '+k+' reason mismatch '+JSON.stringify(reasons));
   }
   if(reasons.count!==nonVal.length||
+     !reasons.priority?.startsWith('Le coppie senza una tesi coerente')||!reasons.priorityFirst||
+     JSON.stringify(reasons.sources)!==JSON.stringify(['macro','price'])||
      !reasons.detailsClosed||!reasons.pairButtonsHidden||
      !reasons.summary?.includes('Macro vs Tassi/CB: '+expectedGroups.CONFLICT.length)||
      !reasons.summary?.includes('Differenziale 2Y senza tesi: '+expectedGroups.RATES_ONLY.length)||
