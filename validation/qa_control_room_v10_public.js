@@ -810,6 +810,62 @@ async function getState(page){
        console.log('CONTROL_ROOM_V10_MACRO_SCREENER_READING_PUBLIC_GREEN',name,
          {baseline:macroFirst.baseline,groups:screenerFirst.summary,blocked:screenerFirst.count});
      }
+     // Post-deploy: check the real two desk pages without mocked feeds. Public
+     // CDN must serve the new read-only additive script; no old build passes.
+     if(process.env.GITHUB_EVENT_NAME!=='pull_request'){
+       for(const pageName of ['banche','cot']){
+         let ready=false;
+         for(let probe=0;probe<12;probe++){
+           await page.goto(BASE+'?researchFirst='+Date.now()+'-'+probe+'#/'+pageName,
+             {waitUntil:'domcontentloaded',timeout:120000});
+           try{await page.waitForFunction(({expected,id})=>{
+             const doc=document.getElementById('gmfq-page')?.contentDocument;
+             return [...document.scripts].some(x=>x.src.endsWith('home-navigation-v10.js?v='+expected))&&
+               ['READ_ONLY','SOURCE_DIVERGENCE','WITHHELD'].includes(
+                 doc?.getElementById(id)?.dataset.readingStatus);
+           },{expected:navigationVersion,id:pageName==='banche'?'gmfq-cb-reading-first':'gmfq-cot-reading-first'},
+           {timeout:10000});ready=true;break}catch(_){}
+         }
+         if(!ready)throw Error(name+' PUBLIC_CB_COT_VERSION_NOT_DEPLOYED '+pageName);
+         const reading=await page.evaluate(section=>{
+           const d=document.getElementById('gmfq-page').contentDocument;
+           const p=d.getElementById(section==='banche'?'gmfq-cb-reading-first':'gmfq-cot-reading-first');
+           const detail=p.querySelector('details'),nativeId=section==='banche'?'cb-chart':'cot-chart';
+           const pageWidth=d.documentElement.scrollWidth;
+           p.style.display='none';const originalWidth=d.documentElement.scrollWidth;p.style.display='';
+           return {status:p.dataset.readingStatus,asof:p.dataset.cftcAsOf,
+             certified:p.dataset.certified,estimated:p.dataset.estimated,withheld:p.dataset.withheld,
+             conflicts:p.dataset.conflicts,extremes:p.dataset.extremes,crowding:p.dataset.crowding,
+             heading:p.querySelector('.gmfq-first-claim')?.textContent,
+             closed:detail.open===false,originalChart:!!d.getElementById(nativeId),
+             originalTable:!!d.getElementById(section==='banche'?'cb-table':'cot-table'),
+             panelScroll:p.scrollWidth,panelWidth:p.clientWidth,pageWidth,originalWidth,
+             viewport:d.documentElement.clientWidth};
+         },pageName);
+         if(!reading.originalChart||!reading.originalTable||!reading.closed||
+            reading.panelScroll>reading.panelWidth+2||
+            reading.pageWidth>Math.max(reading.viewport+16,reading.originalWidth+2)||
+            (pageName==='banche'?
+               reading.status!=='READ_ONLY'||reading.certified!=='4'||
+               reading.estimated!=='2'||reading.withheld!=='2':
+               !['SOURCE_DIVERGENCE','READ_ONLY'].includes(reading.status)||
+               !/^20\d{2}-\d{2}-\d{2}$/.test(reading.asof||'')||
+               !reading.heading?.includes('Percentile')&&!reading.heading?.includes('Estremi percentile')))
+           throw Error(name+' public '+pageName+' read-only source summary failed '+JSON.stringify(reading));
+         await page.frameLocator('#gmfq-page')
+           .locator('#'+(pageName==='banche'?'gmfq-cb-reading-first':'gmfq-cot-reading-first')+' details>summary')
+           .press('Enter');
+         const open=await page.evaluate(section=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument,
+             p=d?.getElementById(section==='banche'?'gmfq-cb-reading-first':'gmfq-cot-reading-first');
+           return {open:p?.querySelector('details')?.open,
+             visible:[...p?.querySelectorAll('details p')||[]].every(x=>x.getClientRects().length>0)};
+         },pageName);
+         if(!open.open||!open.visible)
+           throw Error(name+' public '+pageName+' source evidence not keyboard accessible');
+         console.log('CONTROL_ROOM_V10_CB_COT_READING_PUBLIC_GREEN',name,pageName,reading);
+       }
+     }
      await page.close();
    }
    console.log('CONTROL_ROOM_V10_PUBLIC_G8_DXY_NAVIGATION_GREEN');
