@@ -15,6 +15,8 @@ on:
       - 'validation/cb_pricing/audit_ois_source_access_v1.py'
       - 'validation/cb_pricing/test_audit_ois_source_access_v1.py'
       - 'validation/cb_pricing/build_ois_source_readiness_view_v1.py'
+      - 'validation/cb_pricing/check_ois_readiness_parity_v1.py'
+      - 'validation/cb_pricing/test_check_ois_readiness_parity_v1.py'
       - 'validation/cb_pricing/test_build_ois_source_readiness_view_v1.py'
       - 'live_data/sections/OIS_SOURCE_READINESS_VIEW.json'
   workflow_dispatch:
@@ -38,6 +40,8 @@ on:
       - 'validation/cb_pricing/audit_ois_source_access_v1.py'
       - 'validation/cb_pricing/test_audit_ois_source_access_v1.py'
       - 'validation/cb_pricing/build_ois_source_readiness_view_v1.py'
+      - 'validation/cb_pricing/check_ois_readiness_parity_v1.py'
+      - 'validation/cb_pricing/test_check_ois_readiness_parity_v1.py'
       - 'validation/cb_pricing/test_build_ois_source_readiness_view_v1.py'
       - 'live_data/sections/OIS_SOURCE_READINESS_VIEW.json'
       - 'validation/cb_pricing/ois_estimated_snapshot_v1.py'
@@ -150,6 +154,8 @@ jobs:
           set -euo pipefail
           python validation/cb_pricing/test_build_ois_source_readiness_view_v1.py
           python validation/cb_pricing/build_ois_source_readiness_view_v1.py
+          python validation/cb_pricing/check_ois_readiness_parity_v1.py
+          python validation/cb_pricing/test_check_ois_readiness_parity_v1.py
           python - <<'PY'
           import json
           from pathlib import Path
@@ -161,7 +167,9 @@ jobs:
           assert x['prices_omitted'] and x['no_automatic_promotions']
           assert x['no_core_score_effect'] and x['no_bias_effect']
           assert x['no_sizing_effect'] and x['no_backtest_effect']
-          assert set(x['currencies'])=={'USD','EUR','CHF','NZD'}
+          pending={k for k,row in view['currencies'].items()
+                   if row['operational_status'] in {'WITHHELD','GREEN_ESTIMATED'}}
+          assert set(x['currencies'])==pending
           print('OIS_SOURCE_READINESS_PUBLIC_CONTRACT_PASS',x['as_of'],x['blocked_currency_count'])
           PY
 
