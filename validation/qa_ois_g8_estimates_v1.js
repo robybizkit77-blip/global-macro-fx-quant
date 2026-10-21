@@ -10,21 +10,72 @@ const liveBb=JSON.parse(fs.readFileSync(path.join(root,'live_data/sections/NZD_C
 const ois=structuredClone(liveOis),bb=structuredClone(liveBb);
 const TODAY='2026-10-21',FRESH='2026-10-20',EARLIER='2026-10-19';
 const tenors=['3m','6m','12m'];
-// Convert moving input dates to synthetic cutoff dates without changing source
-// status/identities, values, contract mappings or policy restrictions.
+// The first 23 source-verified research bars are a deterministic 16/19/20 Oct
+// replay. The production append-only archive can grow without altering this QA.
+const observedHistory=fs.readFileSync(path.join(root,
+ 'validation/cb_pricing/history/OIS_SAME_CONTRACT_QUOTES_V1.jsonl'),'utf8')
+ .split('\n').filter(Boolean).map(x=>JSON.parse(x));
+assert(observedHistory.length>=23);
+const fixedBars=observedHistory.slice(0,23);
+assert.equal(new Set(fixedBars.map(x=>[x.currency,x.contract,x.observation_date].join('|'))).size,23);
+// Freeze official scope, never alter source files or production Rates.
 for(const ccy of ['GBP','JPY','AUD','CAD']){
  assert.equal(ois.currencies[ccy].operational_status,'GREEN_OFFICIAL');
  ois.currencies[ccy].as_of=FRESH;
 }
-for(const ccy of ['USD','CHF']){
- assert.equal(ois.currencies[ccy].operational_status,'GREEN_ESTIMATED');
- for(const t of tenors)ois.currencies[ccy].horizons[t].quote_as_of=FRESH;
+for(const ccy of ['USD','EUR','CHF']){
+ const row=ois.currencies[ccy];
+ // Exercise the historical synchronized proxy path using verified original
+ // quotes, even when today's real operational runtime is appropriately WITHHELD.
+ if(ccy!=='EUR'){
+   assert(['WITHHELD','GREEN_ESTIMATED'].includes(row.operational_status));
+   row.operational_status='GREEN_ESTIMATED';
+   row.quality='ESTIMATED_INFORMATIONAL';
+   row.official_status='WITHHELD';
+   row.backtest_eligible_as_official=false;
+   row.method_id='TRADINGVIEW_DATED_FUTURES_SSR_V2';
+   row.as_of=FRESH;
+ }else{
+   assert.equal(row.operational_status,'WITHHELD');
+   assert.equal(row.secondary_quote_context?.status,'INDICATIVE_OBSERVATIONS_NON_OIS');
+ }
+ for(const t of tenors){
+   const history=fixedBars.filter(x=>x.currency===ccy&&x.observed_under_horizon===t)
+     .sort((a,b)=>a.observation_date.localeCompare(b.observation_date));
+   const bar=history.at(-1);
+   assert(bar,'missing frozen futures source '+ccy+' '+t);
+   const h=row.horizons[t];
+   Object.assign(h,{contract:bar.contract,symbol:bar.symbol,
+     expiration:bar.expiration,futures_price:bar.futures_price,
+     rate:ccy==='EUR'?null:bar.implied_rate,
+     quote_as_of:bar.observation_date,
+     quote_timestamp_verified:true,
+     quote_timestamp_source:'SSR_DAILY_BAR_DATA_UPDATE_TIME'});
+   if(ccy==='EUR'){
+     Object.assign(row.secondary_quote_context.horizons[t],{
+       contract:bar.contract,rate_indicative:bar.implied_rate,
+       quote_as_of:bar.observation_date,source_quality:'SECONDARY_VERIFIED_DAILY_BAR'});
+   }
+ }
 }
-const ctx=ois.currencies.EUR.secondary_quote_context;
-assert.equal(ois.currencies.EUR.operational_status,'WITHHELD');
-assert.equal(ctx.status,'INDICATIVE_OBSERVATIONS_NON_OIS');
-for(const t of tenors)ctx.horizons[t].quote_as_of=t==='12m'?FRESH:EARLIER;
 bb.as_of=FRESH;
+// Verify current PUBLIC inputs remain purely individual, independently dated
+// information whenever a live quote mismatch withholds a complete curve.
+const current=matrix(liveOis,liveBb,TODAY);
+for(const ccy of ['USD','EUR','CHF']){
+ const source=liveOis.currencies[ccy],item=current.find(r=>r.ccy===ccy);
+ if(source.operational_status==='WITHHELD'&&
+    source.secondary_quote_context?.status==='INDICATIVE_OBSERVATIONS_NON_OIS'){
+   assert.equal(item.tier,'MIXED',ccy+' dates should remain visible only as context');
+   assert.equal(item.official_ois,false);
+   assert(tenors.every(t=>item.points[t]?.source_quote_verified===true));
+   const six=indicativeSixMonth(liveOis,TODAY)[ccy];
+   assert.equal(six?.type,'MIXED');
+   assert.equal(six?.policy_delta_allowed,false);
+   assert.equal(six?.core_effect,'NONE');
+   assert(six?.label.includes(ccy));
+ }
+}
 const manifest=JSON.parse(fs.readFileSync(path.join(root,
  'validation/cb_pricing/NZD_BB_CASH_RESEARCH_CALIBRATION_V1_2026-10-21.json'),'utf8'));
 const stored=part=>part.rows.map(x=>[x.month,x.ocr_pct,x.bank_bill_90d_pct]);
@@ -202,17 +253,14 @@ invalidBB.governance.substitutes_for_ois_level=true;
 assert.equal(matrix(ois,invalidBB,TODAY).find(x=>x.ccy==='NZD').tier,'WITHHELD');
 // Deterministic verified same-contract archive: never join futures rolls or
 // synthesize daily OIS deltas from method-only operational snapshots.
-const fullArchive=fs.readFileSync(path.join(root,
-  'validation/cb_pricing/history/OIS_SAME_CONTRACT_QUOTES_V1.jsonl'),'utf8');
-const historicalRows=fullArchive.split('\n').filter(Boolean).map(x=>JSON.parse(x));
+const historicalRows=observedHistory;
 assert(historicalRows.length>=23,'The 23 verified initial source bars must be preserved');
 assert(['e5a3cede0df','a611277716c','195ab3c45d9'].every(
   sha=>historicalRows.some(r=>r.source_commit===sha)));
 assert(historicalRows.every(r=>r.official_ois_quote===false &&
   r.backtest_eligible_as_official===false &&
   r.policy_delta_eligible===false));
-const archive=historicalRows.filter(r=>r.observation_date<='2026-10-20')
-  .map(x=>JSON.stringify(x)).join('\n')+'\n'; // Frozen PIT replay: future appends cannot change QA.
+const archive=fixedBars.map(x=>JSON.stringify(x)).join('\n')+'\n'; // Frozen PIT replay.
 const moves=matchedResearchMoves(archive,result,TODAY);
 assert.equal(moves.length,9,JSON.stringify(moves));
 const expectation={
