@@ -522,6 +522,9 @@ function expectedReactionFromMetrics(row){
         !!(decision.compareDocumentPosition(details)&Node.DOCUMENT_POSITION_FOLLOWING),
       decisionVisible:!!decision?.getClientRects().length,
       technicalHidden:!!comparison&&!comparison.getClientRects().length,
+      comparePresent:!!comparison,compareInDisclosure:!!comparison&&!!details?.contains(comparison),
+      technicalRects:comparison?.getClientRects().length,
+      detailsHtmlStart:details?.innerHTML?.slice(0,350),
       sourcePresent:!!p?.querySelector('#gmfq-pair-market-reaction')&&
         !!p?.querySelector('#gmfq-pair-what-changed')&&
         p.querySelectorAll('button[data-gmfq-study-currency]').length===8};
