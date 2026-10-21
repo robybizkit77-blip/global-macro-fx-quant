@@ -4,7 +4,7 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const root=path.resolve(__dirname,'..');
-const {matrix,view,fresh,coverage,auditDatedFuture,calibratedNzdCarry,NZD_REFERENCE_ROWS,NZD_RECENT_ROWS,NZD_HOLDOUT_ROWS}=require(path.join(root,'site/control-room-preview/ois-pricing-estimates-v1.js'));
+const {matrix,view,matchedResearchMoves,fresh,coverage,auditDatedFuture,calibratedNzdCarry,NZD_REFERENCE_ROWS,NZD_RECENT_ROWS,NZD_HOLDOUT_ROWS}=require(path.join(root,'site/control-room-preview/ois-pricing-estimates-v1.js'));
 const liveOis=JSON.parse(fs.readFileSync(path.join(root,'live_data/sections/OIS_OPERATIONAL_VIEW.json'),'utf8'));
 const liveBb=JSON.parse(fs.readFileSync(path.join(root,'live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),'utf8'));
 const ois=structuredClone(liveOis),bb=structuredClone(liveBb);
@@ -165,6 +165,40 @@ assert.equal(matrix(invalidCHF,bb,TODAY).find(x=>x.ccy==='CHF').points['6m'],und
 const invalidBB=structuredClone(bb);
 invalidBB.governance.substitutes_for_ois_level=true;
 assert.equal(matrix(ois,invalidBB,TODAY).find(x=>x.ccy==='NZD').tier,'WITHHELD');
+// Deterministic verified same-contract archive: never join futures rolls or
+// synthesize daily OIS deltas from method-only operational snapshots.
+const archive=fs.readFileSync(path.join(root,
+  'validation/cb_pricing/history/OIS_SAME_CONTRACT_QUOTES_V1.jsonl'),'utf8');
+const moves=matchedResearchMoves(archive,result,TODAY);
+assert.equal(moves.length,3,JSON.stringify(moves));
+const byMove=Object.fromEntries(moves.map(x=>[x.ccy,x]));
+assert.equal(byMove.USD.contract,'ZQZ2026');
+assert.equal(byMove.USD.delta_bp,-1);
+assert.equal(byMove.USD.from,'2026-10-19');
+assert.equal(byMove.USD.to,'2026-10-20');
+assert.equal(byMove.EUR.contract,'FST3V2026');
+assert.equal(byMove.EUR.delta_bp,0.25);
+assert.equal(byMove.CHF.contract,'SA3U2026');
+assert.equal(byMove.CHF.delta_bp,0.25);
+for(const m of moves){
+ assert.equal(m.research_only,true);
+ assert.equal(m.policy_delta_allowed,false);
+ assert.equal(m.official_ois,false);
+}
+const sameContractHtml=view(result,moves);
+assert(sameContractHtml.includes('data-same-contract="RESEARCH_ONLY"'));
+assert(sameContractHtml.includes('stesso contratto futures'));
+assert(sameContractHtml.includes('−1')===false||sameContractHtml.includes('-1.00'));
+// Malicious history identity duplicates, old quote date and same-contract
+// official promotion must NOT become a research delta.
+assert.deepEqual(matchedResearchMoves(archive+archive.split('\n')[0]+'\n',result,TODAY),[]);
+assert.deepEqual(matchedResearchMoves(archive.replace('"official_ois_quote":false',
+  '"official_ois_quote":true'),result,TODAY),[]);
+assert.deepEqual(matchedResearchMoves(archive,result,'2026-11-10'),[]);
+const rolled=structuredClone(result);
+rolled.find(x=>x.ccy==='USD').points['3m'].contract='ZQH2027';
+assert(!matchedResearchMoves(archive,rolled,TODAY).some(x=>x.ccy==='USD'));
+
 const html=view(result);
 assert(html.includes('data-ccy="NZD"'));
 assert(html.includes('DATE NON SINCRONIZZATE'));
