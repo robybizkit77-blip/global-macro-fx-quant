@@ -115,7 +115,10 @@ def analyze(feeds, asof):
         official = (status == "GREEN_OFFICIAL" and
                     o.get("quality") == "OFFICIAL_CERTIFIED" and
                     o.get("official_status") == "ACTIVE" and
-                    metric((o.get("horizons") or {}).get("6m", {}).get("policy_delta_bp")))
+                    o.get("backtest_eligible_as_official") is True and
+                    all(metric((o.get("horizons") or {}).get(t, {}).get(k))
+                        for t in ("3m", "6m", "12m")
+                        for k in ("rate", "policy_delta_bp")))
         if status == "GREEN_OFFICIAL":
             require(official, f"{c}: falsely promoted OIS official status")
         required_ois[c] = bool(official and oage <= LIMITS["ois"])
