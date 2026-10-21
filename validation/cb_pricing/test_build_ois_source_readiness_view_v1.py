@@ -87,6 +87,11 @@ def main():
     # without the separately active, certified canonical OIS runtime.
     forged=deepcopy(view)
     forged['currencies']['USD']=deepcopy(us_view['currencies']['USD'])
+    # Preserve a coherent derived summary so the negative test reaches the
+    # actual official-runtime gate, not an unrelated summary mismatch.
+    forged['summary']['green_official']+=1
+    forged['summary']['operational_green']+=1
+    forged['summary']['operational_withheld']-=1
     try:build(plan,forged,official,rates,chf10,today=today)
     except ValueError as e:assert 'promotion bypassed official runtime' in str(e)
     else:raise AssertionError('Forged USD official source accepted')
