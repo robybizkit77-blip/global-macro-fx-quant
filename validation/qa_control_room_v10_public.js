@@ -287,6 +287,41 @@ async function getState(page){
          snbVersionVisible=await page.evaluate(()=>!!document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-source-readiness'));
        }
        if(!snbVersionVisible)throw Error(name+' PUBLIC_V10_CDN_STALE_NO_SNB_VERSION after cache-busted retries');
+       // The public CDN may serve an older Home navigation script after the
+       // new main / gh-pages source SHAs already agree. Verify the deployed
+       // canonical version AND all four source-readiness rows before auditing.
+       if(process.env.GITHUB_EVENT_NAME!=='pull_request'){
+         let realReadiness=false;
+         for(let probe=0;probe<15;probe++){
+           realReadiness=await page.evaluate(expected=>{
+             const frame=document.getElementById('gmfq-page')?.contentDocument;
+             return [...document.scripts].some(el=>
+               el.src.endsWith('home-navigation-v10.js?v='+expected))&&
+               frame?.querySelectorAll('#gmfq-source-readiness .gmfq-source-row').length===4&&
+               frame?.querySelectorAll('#gmfq-source-readiness .gmfq-source-link a').length===4;
+           },navigationVersion);
+           if(realReadiness)break;
+           await page.goto(BASE+'?readinessQA='+Date.now()+'-'+probe+'#/tassi?focus=ois',
+             {waitUntil:'domcontentloaded',timeout:120000});
+           try{
+             await page.waitForFunction(expected=>{
+               const d=document.getElementById('gmfq-page')?.contentDocument;
+               return [...document.scripts].some(el=>
+                 el.src.endsWith('home-navigation-v10.js?v='+expected))&&
+                 d?.querySelectorAll('#gmfq-source-readiness .gmfq-source-row').length===4&&
+                 d?.querySelectorAll('#gmfq-source-readiness .gmfq-source-link a').length===4;
+             },navigationVersion,{timeout:9000});
+           }catch(_){console.log('PUBLIC_SOURCE_READINESS_CDN_PENDING',name,probe)}
+           await page.waitForTimeout(2000);
+         }
+         if(!realReadiness)realReadiness=await page.evaluate(expected=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument;
+           return [...document.scripts].some(x=>x.src.endsWith('home-navigation-v10.js?v='+expected))&&
+              d?.querySelectorAll('#gmfq-source-readiness .gmfq-source-row').length===4&&
+              d?.querySelectorAll('#gmfq-source-readiness .gmfq-source-link a').length===4;
+         },navigationVersion);
+         if(!realReadiness)throw Error(name+' PUBLIC_READINESS_VERSION_NOT_DEPLOYED_OR_UNAVAILABLE');
+       }
        await page.waitForFunction(()=>{
          const d=document.getElementById('gmfq-page')?.contentDocument;
          return d?.getElementById('gmfq-pricing-research')?.querySelector('.gmfq-research-plot svg, .gmfq-research-plot p');
@@ -316,9 +351,14 @@ async function getState(page){
            readinessExpected:access?.schema==='GMFQ_OIS_SOURCE_READINESS_VIEW_V1'&&
              access.status==='READ_ONLY_SOURCE_READINESS'&&access.prices_omitted===true&&
              access.no_automatic_promotions===true&&days(access.as_of)>=0&&days(access.as_of)<=3&&
-             access.blocked_currency_count===4&&
-             ['USD','EUR','CHF','NZD'].every(k=>access.currencies?.[k]?.status==='WITHHELD')?
-             Object.values(access.currencies||{}).filter(x=>x.status==='WITHHELD').length:null,
+             ['USD','EUR','CHF','NZD'].every(k=>
+               ['WITHHELD','GREEN_ESTIMATED','GREEN_OFFICIAL'].includes(access.currencies?.[k]?.status)&&
+               access.currencies[k].status===feed.currencies?.[k]?.operational_status&&
+               access.currencies[k].usable_for_policy_pricing===false&&
+               access.currencies[k].backtest_eligible_as_official===false)&&
+             access.blocked_currency_count===
+               ['USD','EUR','CHF','NZD'].filter(k=>access.currencies[k].status==='WITHHELD').length?
+             4:null,
            snbBox:panel.querySelector('#gmfq-chf-snb-10y-context')?.innerText,
            snbExpected:snb?.schema==='GMFQ_CHF_SNB_10Y_SPOT_CONTEXT_V1'&&snb.status==='OFFICIAL_PUBLISHED_10Y_INFORMATIONAL'&&
              snb.has_current_2y===false&&snb.eligible_for_curve_spreads===false&&snb.eligible_for_core_signals===false&&
