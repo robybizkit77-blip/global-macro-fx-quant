@@ -1794,9 +1794,12 @@ async function mountCentralBankFirstReading(doc){
  if(route()!=='banche'||frame.contentDocument!==doc)return;
  const cb=inputs[0].status==='fulfilled'?inputs[0].value:null;
  const ois=inputs[1].status==='fulfilled'?inputs[1].value:null;
+ const validCalendarDay=d=>typeof d==='string'&&/^20\d{2}-\d{2}-\d{2}$/.test(d)&&
+  Number.isFinite(Date.parse(d+'T00:00:00Z'))&&
+  new Date(d+'T00:00:00Z').toISOString().slice(0,10)===d;
  const core=cb&&Object.keys(cb).length===8&&FX.every(c=>{
   const x=cb[c];return x&&num(x.rate)!==null&&macroSeriesPeriod(x.last_date)===x.last_date&&
-    macroSeriesPeriod(x.next_meeting)===x.next_meeting&&x.bank&&x.action;
+    validCalendarDay(x.next_meeting)&&x.bank&&x.action;
  });
  const acceptable=['GREEN_OFFICIAL','GREEN_ESTIMATED','WITHHELD'];
  const operational=ois?.schema==='GMFQ_OIS_OPERATIONAL_VIEW_V1'&&
