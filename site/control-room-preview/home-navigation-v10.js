@@ -34,7 +34,7 @@ function romeTodayIso(now=new Date()){
  return val('year')+'-'+val('month')+'-'+val('day');
 }
 function romeCalendarAge(date,now=new Date()){
- if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(date||''))return null;
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(date||''))return null;
  const t=Date.parse(date+'T00:00:00Z');
  if(!Number.isFinite(t)||new Date(t).toISOString().slice(0,10)!==date)return null;
  return (Date.parse(romeTodayIso(now)+'T00:00:00Z')-t)/86400000;
