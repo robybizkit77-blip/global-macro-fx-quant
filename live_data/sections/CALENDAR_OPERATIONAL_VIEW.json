@@ -1,36 +1,14 @@
 {
   "coverage": {
     "cb_schedule_available": 8,
-    "consensus_available_events": 4,
+    "consensus_available_events": 3,
     "g8_total": 8,
     "macro_ccy_coverage": 8,
     "previous_only_events": 0,
-    "upcoming_macro_events": 18,
-    "upcoming_total_events": 26
+    "upcoming_macro_events": 17,
+    "upcoming_total_events": 25
   },
   "events": [
-    {
-      "ccy": "GBP",
-      "consensus": "19.4K",
-      "consensus_confidence": "B",
-      "consensus_official_date_overridden": false,
-      "consensus_provider": "FOREX_FACTORY_FAIR_ECONOMY_WEEKLY",
-      "consensus_provider_last_update": null,
-      "consensus_status": "AVAILABLE",
-      "consensus_unit": null,
-      "date": "2026-10-20",
-      "event_type": "LABOUR",
-      "importance": "HIGH",
-      "previous": "27.8K",
-      "quality": "OFFICIAL_CONFIRMED",
-      "reference_period": "October 2026 release",
-      "source_family": "ONS",
-      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
-      "status": "UPCOMING",
-      "time_local": "07:00",
-      "timezone": "Europe/London",
-      "title": "UK Labour Market"
-    },
     {
       "ccy": "GBP",
       "consensus": "3.4%",
@@ -420,7 +398,7 @@
       "title": "Gross domestic product"
     }
   ],
-  "generated_at_utc": "2026-10-20T06:51:11.296738Z",
+  "generated_at_utc": "2026-10-21T00:06:18.563378Z",
   "schema": "GMFQ_CALENDAR_OPERATIONAL_VIEW_V3",
   "scope": {
     "central_bank_schedule": "ACTIVE_OFFICIAL",
