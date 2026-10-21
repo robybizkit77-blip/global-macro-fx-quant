@@ -1178,6 +1178,8 @@ function expectedReactionFromMetrics(row){
     const panel=doc?.getElementById('gmfq-cross-gold-v10');
     return {state:panel?.dataset.sourceStatus,asof:panel?.dataset.goldAsOf,
       value:panel?.querySelector('.gmfq-gold-quote')?.textContent,
+      spotBackground:panel?.querySelector('.gmfq-gold-spot')?doc.defaultView.getComputedStyle(panel.querySelector('.gmfq-gold-spot')).backgroundColor:null,
+      spotBorderSide:panel?.querySelector('.gmfq-gold-spot')?(doc.documentElement.clientWidth<=700?doc.defaultView.getComputedStyle(panel.querySelector('.gmfq-gold-spot')).borderTopWidth:doc.defaultView.getComputedStyle(panel.querySelector('.gmfq-gold-spot')).borderLeftWidth):null,
       text:panel?.textContent,viewport:doc?.documentElement.clientWidth,
       width:doc?.documentElement.scrollWidth,legacy:!!doc?.querySelector('[data-gmfq-operational="risk"]')};
   });
@@ -1207,6 +1209,11 @@ function expectedReactionFromMetrics(row){
     const d=document.getElementById('gmfq-page')?.contentDocument;
     const p=d?.getElementById('gmfq-cross-risk-v10');
     return {status:p?.dataset.sourceStatus,
+      lead:p?.querySelector('.gmfq-cross-risk-intro')?.textContent,
+      provenance:[...p?.querySelectorAll('.gmfq-cross-risk-evidence span[data-source]')||[]].map(x=>x.dataset.source),
+      leadFirst:!!(p?.querySelector('.gmfq-cross-risk-intro')?.compareDocumentPosition(p.querySelector('.gmfq-cross-risk-evidence'))&Node.DOCUMENT_POSITION_FOLLOWING),
+      gridCols:p?.querySelector('.gmfq-cross-risk-grid')?d.defaultView.getComputedStyle(p.querySelector('.gmfq-cross-risk-grid')).gridTemplateColumns.trim().split(/\s+/).length:null,
+      firstBg:p?.querySelector('.gmfq-cross-risk-card')?d.defaultView.getComputedStyle(p.querySelector('.gmfq-cross-risk-card')).backgroundColor:null,
       cards:[...p?.querySelectorAll('[data-cross-instrument]')||[]].map(c=>({
         symbol:c.dataset.crossInstrument,state:c.dataset.crossStatus,
         text:c.textContent,price:c.querySelector('.gmfq-cross-risk-value')?.textContent})),
@@ -1220,7 +1227,11 @@ function expectedReactionFromMetrics(row){
     {code:'WTI',series:riskData.risk.WTI},
     {code:'BRENT',series:secondary.lanes['BRENT.market_proxy'],secondary:true},
   ];
-  if(risk.cards.length!==3||!risk.text.includes('Brent spot ufficiale: WITHHELD')||
+  if(risk.cards.length!==3||!risk.lead?.startsWith('VIX misura volatilità implicita')||
+    !risk.leadFirst||JSON.stringify(risk.provenance)!==JSON.stringify(['vix','wti','brent'])||
+    risk.gridCols!==(risk.viewport<=820?1:3)||
+    !['transparent','rgba(0, 0, 0, 0)'].includes(risk.firstBg)||
+    !risk.text.includes('Brent spot ufficiale: WITHHELD')||
     !risk.text.includes('Nessun confronto di spread fra spot e futures')||
     risk.width>risk.viewport+16)
     throw Error(label+' v10 cross risk layout/source disclosure missing '+JSON.stringify(risk));
