@@ -139,8 +139,33 @@ async function getState(page){
           !audit.detail?.includes('Le date delle diverse fonti non sono intercambiabili')||
           audit.documentWidth>audit.viewport+16)
          throw Error(name+' public source-date disclosure missing '+JSON.stringify(audit));
+       // GitHub Pages deployment and its edge cache are not atomic. Read the
+       // actual new script version and mounted rail on the PUBLIC browser before
+       // testing its layout; never treat an older published build as GREEN.
+       let readingReady=false;
+       for(let attempt=0;attempt<16;attempt++){
+         readingReady=await page.evaluate(expected=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument;
+           return [...document.scripts].some(x=>
+              x.src.endsWith('home-navigation-v10.js?v='+expected))&&
+              d?.getElementById('gmfq-home-reading-path')?.dataset.sourceEffect==='NONE';
+         },navigationVersion);
+         if(readingReady)break;
+         await page.goto(BASE+'?homeReadingQa='+Date.now()+'-'+attempt+'#/home',
+           {waitUntil:'domcontentloaded',timeout:120000});
+         try{
+           await page.waitForFunction(expected=>{
+             const d=document.getElementById('gmfq-page')?.contentDocument;
+             return [...document.scripts].some(x=>
+               x.src.endsWith('home-navigation-v10.js?v='+expected))&&
+               d?.getElementById('gmfq-home-reading-path')?.dataset.sourceEffect==='NONE';
+           },navigationVersion,{timeout:12000});
+           readingReady=true;
+         }catch(_){console.log('PUBLIC_HOME_READING_CDN_PENDING',name,attempt)}
+       }
+       if(!readingReady)throw Error(name+' PUBLIC_HOME_READING_VERSION_NOT_DEPLOYED '+navigationVersion);
        // Verify the published Home puts the source-led research sequence
-       // immediately after the protected world hero, with no extra dashboard.
+       // before the protected globe/grid, without an extra dashboard.
        const reading=await page.evaluate(()=>{
          const d=document.getElementById('gmfq-page').contentDocument;
          const rail=d.getElementById('gmfq-home-reading-path'),
@@ -150,7 +175,7 @@ async function getState(page){
          return {present:!!rail,keys,macro:rail?.dataset.macroStatus,
            ois:rail?.dataset.oisCertified,screener:rail?.dataset.screenerCount,
            sourceEffect:rail?.dataset.sourceEffect,
-           nextToGlobe:!!hero&&!!grid&&!!d.querySelector('.hero .globe')&&
+           nextToGlobe:!!rail&&!!hero&&!!grid&&!!d.querySelector('.hero .globe')&&
              grid.contains(hero)&&
              !!(rail.compareDocumentPosition(grid)&Node.DOCUMENT_POSITION_FOLLOWING),
            width:rail?.scrollWidth,client:rail?.clientWidth,
