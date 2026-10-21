@@ -279,7 +279,7 @@ function oisAll(doc,ois,proxy){
    state==='FUTURES_LEVEL_ONLY'?'≈'+fmt(x.indicative.value,2)+'% PX':
    state==='BANK_BILL_PROXY'?'≈'+fmt(x.bill,2)+'% BB':'NON CERT.';
   const w=x.official?Math.max(2,Math.abs(x.delta)/max*100):0;
-  return '<div class="oisrow gmfq-six-month-row" data-ccy="'+x.k+'" data-pricing-state="'+state+
+  return '<div class="oisrow gmfq-six-month-row'+(x.k==='NZD'?' gmfq-nzd-proxy':'')+'" data-ccy="'+x.k+'" data-pricing-state="'+state+
    '" data-policy-delta-allowed="'+(x.official?'true':'false')+
    '" tabindex="0" role="link" aria-label="Apri '+x.k+' '+htmlEscape(subtitle)+'"'+
    ' title="'+htmlEscape(x.k+' · '+subtitle+' · '+day)+'">'+
@@ -289,7 +289,7 @@ function oisAll(doc,ois,proxy){
    '<strong>'+readable+'</strong></div>';
  }).join('')+
  '<div class="oisnote">Δ bp = repricing 6M certificato (OIS o futures monetari verificati). '+
- 'PX = livello futures indicativo, non Δ policy. BB = Bank Bill NZD, non OIS. '+
+ 'PX = livello futures indicativo, non Δ policy. PROXY BB ≠ OIS: Bank Bill NZD, non Δ OCR. '+
  'NON CERT. = nessun livello comparabile verificato.</div>';
 }
 function dxyLine(data){
