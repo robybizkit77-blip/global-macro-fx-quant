@@ -1261,6 +1261,10 @@ async function mountMacroSourceLens(doc){
   '#gmfq-macro-source-lens .gmfq-macro-intro{color:#c0cfdb;font:12px/1.6 Arial,sans-serif;margin:7px 0 10px}'+
   '#gmfq-macro-source-lens .gmfq-macro-choice{display:flex;align-items:center;gap:9px;flex-wrap:wrap;color:#a9bfce;font:11px Arial,sans-serif;margin:0 0 9px}'+
   '#gmfq-macro-source-lens .gmfq-macro-choice select{background:#122c3b;border:1px solid #3a5367;border-radius:5px;color:#e7edf3;font:12px Arial,sans-serif;padding:7px;max-width:100%}'+
+  '#gmfq-macro-source-lens .gmfq-macro-reading{color:#e4cf9a;font:600 12px/1.6 Arial,sans-serif;margin:8px 0 5px;overflow-wrap:anywhere}'+
+  '#gmfq-macro-source-lens #gmfq-macro-observation-details{border-top:1px solid #304b5a;padding-top:8px;margin-top:10px}'+
+  '#gmfq-macro-source-lens #gmfq-macro-observation-details>summary{cursor:pointer;color:#dec58d;font:600 12px/1.5 Arial,sans-serif;padding:4px 0;outline-offset:4px}'+
+  '#gmfq-macro-source-lens #gmfq-macro-observation-details:not([open])>:not(summary){display:none!important}'+
   '#gmfq-macro-source-lens .gmfq-macro-measures{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}'+
   '#gmfq-macro-source-lens .gmfq-macro-observation{min-width:0;border-top:1px solid #2c485a;padding:9px 0 0}'+
   '#gmfq-macro-source-lens .gmfq-macro-observation strong{display:block;color:#e3edf4;font:600 12px/1.5 Arial,sans-serif}'+
@@ -1281,11 +1285,14 @@ async function mountMacroSourceLens(doc){
   '<div class="gmfq-macro-body"><div class="gmfq-macro-state">'+
   '24 score Growth/Labour/Inflation · baseline '+htmlEscape(baselineDate)+
   (baselineFresh?' · snapshot datato':' · NON CORRENTE, da rivalidare')+'</div>'+
-  '<p class="gmfq-macro-intro">I giudizi Macro del modello appartengono allo snapshot indicato. Inflazione e Lavoro sotto riportano soltanto le ultime osservazioni presenti nei termometri, ciascuna con il proprio periodo: non aggiornano i 24 score, i cicli economici o i bias FX.</p>'+
+  '<p class="gmfq-macro-intro">Il modello resta storico e da rivalidare. Inflazione e Lavoro sono osservazioni con periodi distinti: non aggiornano i 24 score, i cicli economici o i bias FX.</p>'+
   '<label class="gmfq-macro-choice" for="gmfq-macro-provenance-currency">Valuta <select id="gmfq-macro-provenance-currency" aria-label="Valuta delle osservazioni Macro">'+options+'</select></label>'+
+  '<p class="gmfq-macro-reading" id="gmfq-macro-reading" aria-live="polite">Periodi in verifica…</p>'+
+  '<details id="gmfq-macro-observation-details"><summary>Apri osservazioni e fonti · Inflazione e Lavoro</summary>'+
   '<div id="gmfq-macro-source-details" class="gmfq-macro-measures" aria-live="polite"></div>'+
-  '<p class="gmfq-macro-guard">Le date dei termometri sono periodi di riferimento, non necessariamente date di pubblicazione o prove point-in-time. Eventuali etichette legacy «CORRENTE COMPLETO» non certificano la freschezza degli score al giorno di oggi. Crescita: nessun nuovo score certificato.</p></div>';
- const select=panel.querySelector('select'),details=panel.querySelector('#gmfq-macro-source-details');
+  '<p class="gmfq-macro-guard">Le date dei termometri sono periodi di riferimento, non necessariamente date di pubblicazione o prove point-in-time. Eventuali etichette legacy «CORRENTE COMPLETO» non certificano la freschezza degli score al giorno di oggi. Crescita: nessun nuovo score certificato.</p></details></div>';
+ const select=panel.querySelector('select'),details=panel.querySelector('#gmfq-macro-source-details'),
+  reading=panel.querySelector('#gmfq-macro-reading');
  const measure=(label,obs)=>{
   if(!obs)return '<div class="gmfq-macro-observation"><strong>'+label+' · dato WITHHELD</strong>'+
     '<p>Osservazione non verificabile nel termometro, nessun livello ricostruito.</p></div>';
@@ -1299,8 +1306,10 @@ async function mountMacroSourceLens(doc){
   select.value=ccy;
   panel.dataset.selectedCurrency=ccy;
   const t=thermometer.currencies[ccy];
-  details.innerHTML=measure('Inflazione',macroThermometerObservation(t.inflation))+
-   measure('Lavoro',macroThermometerObservation(t.labour));
+  const inflation=macroThermometerObservation(t.inflation),labour=macroThermometerObservation(t.labour);
+  reading.textContent=FLAG[ccy]+' '+ccy+' · Inflazione: '+(inflation?'periodo '+inflation.period:'WITHHELD')+
+   ' · Lavoro: '+(labour?'periodo '+labour.period:'WITHHELD');
+  details.innerHTML=measure('Inflazione',inflation)+measure('Lavoro',labour);
  }
  show(FX.includes(currentQuery)?currentQuery:'USD');
  select.addEventListener('change',()=>{
@@ -1382,7 +1391,15 @@ async function mountScreenerBlockers(doc){
  style.textContent=
  '#gmfq-screener-blockers{margin:0 0 14px;min-width:0}'+
  '#gmfq-screener-blockers .gmfq-blocker-intro{margin:0;padding:11px 16px 5px;font:12px/1.6 Arial,sans-serif;color:#bfd0dd}'+
+ '#gmfq-screener-blockers .gmfq-blocker-overview{display:flex;gap:6px 17px;flex-wrap:wrap;margin:0;padding:6px 16px;color:#d9e3eb;font:600 12px/1.55 Arial,sans-serif}'+
+ '#gmfq-screener-blockers .gmfq-blocker-overview span{min-width:0;overflow-wrap:anywhere}'+
+ '#gmfq-screener-blockers #gmfq-blocker-details{margin:7px 0 0;border-top:1px solid #324b59;padding:10px 0 0;min-width:0}'+
+ '#gmfq-screener-blockers #gmfq-blocker-details>summary{cursor:pointer;color:#e0c78c;font:600 12px/1.5 Arial,sans-serif;padding:5px 16px;outline-offset:4px}'+
+ '#gmfq-screener-blockers #gmfq-blocker-details:not([open])>:not(summary){display:none!important}'+
+ 
  '#gmfq-screener-blockers .gmfq-blocker-date{padding:0 16px 10px;color:#d7bf87;font:11px/1.5 Arial,sans-serif}'+
+ '#gmfq-screener-blockers .gmfq-blocker-brief{padding:0 16px 7px;color:#9eb4c4;font:11px/1.5 Arial,sans-serif}'+
+ 
  '#gmfq-screener-blockers .gmfq-blocker-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:5px 16px 13px}'+
  '#gmfq-screener-blockers .gmfq-blocker-group{min-width:0;border-top:1px solid #3a5363;padding-top:9px}'+
  '#gmfq-screener-blockers .gmfq-blocker-group h3{font:600 12px/1.5 Arial,sans-serif;color:#e4edf2;margin:0 0 4px}'+
@@ -1398,6 +1415,10 @@ async function mountScreenerBlockers(doc){
  '@media(max-width:600px){#gmfq-screener-blockers .gmfq-blocker-intro{padding:10px 12px 4px}'+
  '#gmfq-screener-blockers .gmfq-blocker-date{padding:0 12px 9px}'+
  '#gmfq-screener-blockers .gmfq-blocker-grid{padding:5px 12px 10px}'+
+ '#gmfq-screener-blockers .gmfq-blocker-overview{padding:7px 12px;gap:5px 12px}'+
+ '#gmfq-screener-blockers .gmfq-blocker-brief{padding:0 12px 7px}'+
+ '#gmfq-screener-blockers #gmfq-blocker-details>summary{padding:5px 12px}'+
+ 
  '#gmfq-screener-blockers .gmfq-blocker-note{padding:9px 12px}}';
  doc.head.appendChild(style);
  const categories=[
@@ -1418,12 +1439,18 @@ async function mountScreenerBlockers(doc){
  panel.dataset.modelPriceAsOf=setup.price_asof||'';
  panel.innerHTML='<h2 class="desk-panel-title">Setup NON VALUTABILE · '+rows.length+
   '/28 · cause documentate</h2>'+
-  '<p class="gmfq-blocker-intro">I giudizi provengono dal motore canonico: non sono errori automaticamente correggibili. Apri una coppia per leggere Macro, Rates, Positioning e Prezzo.</p>'+
+  '<p class="gmfq-blocker-intro">Queste coppie non hanno una preferenza strutturale sufficientemente chiara. Nessuna è promossa a opportunità di trade.</p>'+
+  '<div class="gmfq-blocker-overview" aria-label="Cause delle coppie non valutabili">'+
+  '<span>Macro vs Tassi/CB: '+groups.CONFLICT.length+'</span>'+
+  '<span>Differenziale 2Y senza tesi: '+groups.RATES_ONLY.length+'</span>'+
+  '<span>Vantaggio insufficiente: '+groups.INSUFFICIENT.length+'</span></div>'+
   '<p class="gmfq-blocker-date">Baseline Macro/Tassi: '+htmlEscape(setup.macro_baseline_asof)+
   (baselineFresh?' · data entro il limite di freschezza':' · NON CORRENTE, tesi da rivalidare')+
   ' · Prezzi del motore: '+htmlEscape(setup.price_asof||'non verificati')+'</p>'+
+  '<p class="gmfq-blocker-brief">Motivi e confronto Macro/Rates disponibili per ciascuna delle '+rows.length+' coppie, con collegamento alla Pair Deep Dive.</p>'+
+  '<details id="gmfq-blocker-details"><summary>Apri le '+rows.length+' coppie e le motivazioni complete</summary>'+
   '<div class="gmfq-blocker-grid">'+categories.map(card).join('')+'</div>'+
-  '<p class="gmfq-blocker-note">Lettura descrittiva e storica, non graduatoria di trade. Lo spread 2Y è solo contesto di livello: non crea da solo una preferenza FX. Nessuna promozione di fonte, ricalcolo di score, modifica dei 28 setup o segnale operativo.</p>';
+  '<p class="gmfq-blocker-note">Lettura descrittiva e storica, non graduatoria di trade. Lo spread 2Y è solo contesto di livello: non crea da solo una preferenza FX. Nessuna promozione di fonte, ricalcolo di score, modifica dei 28 setup o segnale operativo.</p></details>';
  panel.addEventListener('click',event=>{
   const button=event.target.closest('button.gmfq-blocker-pair[data-pair]');
   if(button&&panel.contains(button)&&records[button.dataset.pair])
