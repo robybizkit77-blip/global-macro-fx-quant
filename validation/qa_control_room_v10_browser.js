@@ -354,7 +354,7 @@ function expectedReactionFromMetrics(row){
       Number.isInteger(deltaDate)&&deltaDate>=0&&deltaDate<=5&&
       Math.abs(100-p.futures_price-rate)<=0.0002;
     if(!valid)continue;
-    const leg=compareCHF.dates.find(x=>x.startsWith(code)||x.includes(' '+code+' '));
+    const leg=compareCHF.dates.find(x=>x.includes(code));
     if(!leg?.includes('6M repricing policy non certificato')||
        !leg?.includes(p.contract)||!leg?.includes('NON ΔOIS, solo contesto'))
       throw Error(label+' '+code+' dated 6M context missing or misrepresented '+JSON.stringify({leg,quote}));
