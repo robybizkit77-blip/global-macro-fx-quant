@@ -68,6 +68,11 @@ items={
 "Screener diagnostic navigates to canonical Deep Dive": "mountScreenerBlockers(doc).catch" in s and "go('#/coppie?pair='+button.dataset.pair)" in s,
 
 "Decision-first UI precedes technical audit": "const decision=pairThesisReactionBridge" in s and "   decision+" in s and "   comparison+changes+reaction+" in s,
+"Pair first reading displays separate Macro Price ECB source labels": all(x in s for x in [
+    'data-source="macro"', 'data-source="price"', 'data-source="fixing"',
+    'data-macro-state=', 'Prezzo del modello:', 'Baseline Macro/Tassi:', 'Fixing BCE:'
+ ]) and 'Valuta favorita dal motore:' not in s,
+"Pair visual simplification retains source detail in disclosure": "gmfq-pair-full-research" in s and "gmfq-decision-cols" in s and "border-bottom:1px solid #2b4656" in s,
 "Full Pair evidence uses accessible native disclosure": "gmfq-pair-full-research" in s and "Apri analisi completa" in s and "gmfq-pair-full-research>summary" in s,
 "Full Pair evidence remains source-derived": "const comparison=pairMacroRatesComparison" in s and "const reaction=pairMarketReactionAudit" in s and "pairMarketReactionAudit(code,rates,fxOk?fx:null)" in s,
 "Progressive state survives pair selection": "let analysisExpanded=false" in s and "analysisExpanded=event.target.open" in s and "analysisExpanded?' open':''" in s,
