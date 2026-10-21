@@ -185,6 +185,11 @@ async function getState(page){
          return {present:!!rail,keys,macro:rail?.dataset.macroStatus,
            ois:rail?.dataset.oisCertified,screener:rail?.dataset.screenerCount,
            sourceEffect:rail?.dataset.sourceEffect,
+           priorityTarget:rail?.dataset.priorityTarget,
+           priorityState:rail?.dataset.priorityState,
+           priorityText:rail?.querySelector('.gmfq-reading-priority')?.textContent,
+           priorityFirst:!!(rail?.querySelector('.gmfq-reading-priority')?.compareDocumentPosition(rail.querySelector('.gmfq-reading-steps'))&Node.DOCUMENT_POSITION_FOLLOWING),
+           emphasized:[...rail?.querySelectorAll('button[data-reading-priority="true"]')||[]].map(x=>x.dataset.readingTarget),
            nextToGlobe:!!rail&&!!hero&&!!grid&&!!d.querySelector('.hero .globe')&&
              grid.contains(hero)&&
              !!(rail.compareDocumentPosition(grid)&Node.DOCUMENT_POSITION_FOLLOWING),
@@ -193,6 +198,11 @@ async function getState(page){
        });
        if(!reading.present||!reading.nextToGlobe||reading.sourceEffect!=='NONE'||
           JSON.stringify(reading.keys)!==JSON.stringify(['macro','pricing','pairs'])||
+          reading.priorityTarget!==(reading.macro!=='DATED_SNAPSHOT'?'macro':Number(reading.ois)<8?'pricing':'pairs')||
+          reading.priorityState!==(reading.macro==='HISTORICAL'?'HISTORICAL':reading.macro==='WITHHELD'?'WITHHELD':Number(reading.ois)<8?'PARTIAL':'RESEARCH_ONLY')||
+          reading.emphasized?.length!==1||reading.emphasized[0]!==reading.priorityTarget||
+          !reading.priorityFirst||
+          !(reading.priorityText?.startsWith('Prima ')||reading.priorityText?.startsWith('Passa allo Screener'))||
           !['HISTORICAL','DATED_SNAPSHOT','WITHHELD'].includes(reading.macro)||
           !Number.isInteger(Number(reading.ois))||Number(reading.ois)>8||
           !Number.isInteger(Number(reading.screener))||Number(reading.screener)>28||

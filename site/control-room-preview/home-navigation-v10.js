@@ -348,6 +348,26 @@ function mountHomeReadingPath(doc,context){
    fresh(setup.price_asof,5);
  const macroVerified=typeof macroDay==='string'&&macroSeriesPeriod(macroDay)===macroDay;
  const macroCurrent=macroVerified&&fresh(macroDay,10);
+ // Editorial research-navigation priority, never a trade ranking or model score.
+ // Use exactly the validated/fail-closed source states shown by the Home audit.
+ const sourceCountVerified=Number.isInteger(oisCount)&&oisCount>=0&&oisCount<=8;
+ const priority=!macroVerified?
+  {key:'macro',state:'WITHHELD',
+   text:'Prima verifica la baseline Macro: lo snapshot non è riconciliato con il modello delle coppie.'}:
+  !macroCurrent?
+  {key:'macro',state:'HISTORICAL',
+   text:'Prima rivalida la tesi Macro: la baseline del '+macroDay+' è storica. I setup non sono segnali correnti.'}:
+  !sourceCountVerified?
+  {key:'pricing',state:'WITHHELD',
+   text:'Prima verifica il Market Pricing: la copertura delle fonti non è certificabile.'}:
+  oisCount<8?
+  {key:'pricing',state:'PARTIAL',
+   text:'Prima confronta il Market Pricing: '+oisCount+'/8 valute con fonti certificate. La copertura incompleta limita le conclusioni.'}:
+  !validSetup?
+  {key:'pairs',state:'WITHHELD',
+   text:'Prima verifica lo Screener: i giudizi sulle 28 coppie non sono riconciliati.'}:
+  {key:'pairs',state:'RESEARCH_ONLY',
+   text:'Passa allo Screener: '+pairCounts['NON VALUTABILE']+'/28 coppie senza tesi robusta. Poi approfondisci le altre, senza dedurre ingressi.'};
  const steps=[
   {key:'macro',url:'#/macro',description:!macroVerified?'Macro · baseline non verificabile':
    'Macro · '+macroDay+(macroCurrent?' · snapshot':' · da rivalidare')},
@@ -358,14 +378,18 @@ function mountHomeReadingPath(doc,context){
    'Screener · giudizi non verificabili'}
  ];
  const style=doc.createElement('style');style.id='gmfq-home-reading-path-style';
- style.textContent='#gmfq-home-reading-path{display:flex;align-items:center;gap:7px 14px;flex-wrap:wrap;min-width:0;margin:8px 0 14px;padding:9px 10px;border-top:1px solid #2d4659;border-bottom:1px solid #294253;color:#a8bccb;font:11px/1.45 Arial,sans-serif}'+
+ style.textContent='#gmfq-home-reading-path{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:0;margin:8px 0 14px;padding:10px 11px;border-top:1px solid #2d4659;border-bottom:1px solid #294253;color:#a8bccb;font:11px/1.45 Arial,sans-serif}'+
+ '#gmfq-home-reading-path .gmfq-reading-priority{margin:0 0 3px;font:600 13px/1.55 Arial,sans-serif;color:#e3edf4;overflow-wrap:anywhere}'+
+ '#gmfq-home-reading-path[data-priority-state="HISTORICAL"] .gmfq-reading-priority,#gmfq-home-reading-path[data-priority-state="WITHHELD"] .gmfq-reading-priority{color:#e2c98d}'+
  '#gmfq-home-reading-path .gmfq-reading-heading{font:600 10px/1.45 Arial,sans-serif;letter-spacing:.07em;color:#d2bd87;white-space:nowrap}'+
  '#gmfq-home-reading-path .gmfq-reading-steps{display:flex;align-items:center;gap:5px 12px;flex-wrap:wrap;min-width:0}'+
  '#gmfq-home-reading-path button{border:0;border-bottom:1px solid transparent;background:transparent;padding:3px 0;color:#c2d2df;font:11px/1.5 Arial,sans-serif;cursor:pointer;text-align:left;max-width:100%;overflow-wrap:anywhere}'+
+ '#gmfq-home-reading-path button[data-reading-priority="true"]{color:#efd99e;border-color:#88764f;font-weight:600}'+
  '#gmfq-home-reading-path button:hover,#gmfq-home-reading-path button:focus-visible{color:#f1dcac;border-color:#e2c98c;outline-offset:3px}'+
  '#gmfq-home-reading-path .gmfq-reading-arrow{color:#718da1;font:11px Arial,sans-serif}'+
  '#gmfq-home-reading-path .gmfq-reading-trust{color:#8da5b5;font-size:10px;white-space:normal}'+
- '@media(max-width:600px){#gmfq-home-reading-path{margin:8px 0 12px;padding:9px 7px;align-items:flex-start}'+
+ '@media(max-width:600px){#gmfq-home-reading-path{margin:8px 0 12px;padding:9px 8px}'+
+ '#gmfq-home-reading-path .gmfq-reading-priority{font-size:12px;line-height:1.55}'+
  '#gmfq-home-reading-path .gmfq-reading-steps{gap:5px 9px}'+
  '#gmfq-home-reading-path button{font-size:10px}#gmfq-home-reading-path .gmfq-reading-trust{flex-basis:100%}}';
  doc.head.appendChild(style);
@@ -377,10 +401,13 @@ function mountHomeReadingPath(doc,context){
  rail.dataset.screenerCount=validSetup?String(pairCounts['NON VALUTABILE']):'';
  rail.dataset.fxAsOf=fxCurrent?fxDay:'';
  rail.dataset.sourceEffect='NONE';
+ rail.dataset.priorityTarget=priority.key;
+ rail.dataset.priorityState=priority.state;
  rail.innerHTML='<span class="gmfq-reading-heading">DA DOVE INIZIARE</span>'+
+  '<p class="gmfq-reading-priority" aria-label="Prima verifica da effettuare">'+htmlEscape(priority.text)+'</p>'+
   '<div class="gmfq-reading-steps">'+steps.map((x,i)=>
    (i?'<span class="gmfq-reading-arrow" aria-hidden="true">→</span>':'')+
-   '<button type="button" data-reading-target="'+x.key+'" aria-label="Apri '+htmlEscape(x.description)+'">'+
+   '<button type="button" data-reading-target="'+x.key+'" data-reading-priority="'+(x.key===priority.key?'true':'false')+'" aria-label="Apri '+htmlEscape(x.description)+'">'+
     htmlEscape(x.description)+'</button>').join('')+'</div>'+
    '<span class="gmfq-reading-trust">Ricerca, non segnali: '+(fxCurrent?'fixing BCE '+htmlEscape(fxDay):'fixing BCE non verificato')+'</span>';
  // The native globe HERO is the first child of .gridtop. Keep the 3-column
