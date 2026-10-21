@@ -195,6 +195,19 @@ async function getState(page){
              marketCards:grid.querySelectorAll(':scope>.panel:not(.hero)').length===2,
              styleMounted:!!d.getElementById('gmfq-home-visual-edition-css')
            },
+           lower:{
+             market:!!d.getElementById('gmfq-home-market-chapter'),
+             pair:!!d.getElementById('gmfq-home-pair-chapter'),
+             marketBefore:!!(d.getElementById('gmfq-home-market-chapter')?.compareDocumentPosition(d.querySelector('.mid'))&Node.DOCUMENT_POSITION_FOLLOWING),
+             pairBefore:!!(d.getElementById('gmfq-home-pair-chapter')?.compareDocumentPosition(d.querySelector('.bottom'))&Node.DOCUMENT_POSITION_FOLLOWING),
+             midCols:d.querySelector('.mid')?d.defaultView.getComputedStyle(d.querySelector('.mid')).gridTemplateColumns.trim().split(/\s+/).length:null,
+             bottomCols:d.querySelector('.bottom')?d.defaultView.getComputedStyle(d.querySelector('.bottom')).gridTemplateColumns.trim().split(/\s+/).length:null,
+             messagesCols:d.querySelector('.bottom .messagebox')?d.defaultView.getComputedStyle(d.querySelector('.bottom .messagebox')).gridTemplateColumns.trim().split(/\s+/).length:null,
+             fullWidthTable:Math.abs((d.querySelector('.bottom>.panel:first-child')?.getBoundingClientRect().width||0)-(d.querySelector('.bottom')?.getBoundingClientRect().width||0))<=2,
+             allCharts:['strength','ratesbars','spreads'].every(k=>!!d.getElementById(k)?.querySelector('svg')),
+             chartsHeight:d.getElementById('ratesbars')?.clientHeight,
+             messages:d.querySelectorAll('.bottom .messagebox .msg').length
+           },
            priorityTarget:rail?.dataset.priorityTarget,
            priorityState:rail?.dataset.priorityState,
            priorityText:rail?.querySelector('.gmfq-reading-priority')?.textContent,
@@ -213,6 +226,13 @@ async function getState(page){
            !reading.layout.marketCards||
            reading.layout.columns!==(name==='mobile'?1:2)||
            reading.layout.railColumns!==(name==='mobile'?1:2)||
+           !reading.lower.market||!reading.lower.pair||
+           !reading.lower.marketBefore||!reading.lower.pairBefore||
+           reading.lower.midCols!==(name==='mobile'?1:3)||
+           reading.lower.bottomCols!==1||
+           reading.lower.messagesCols!==(name==='mobile'?1:2)||
+           !reading.lower.fullWidthTable||!reading.lower.allCharts||
+           reading.lower.chartsHeight<190||reading.lower.messages<1||
           JSON.stringify(reading.keys)!==JSON.stringify(['macro','pricing','pairs'])||
           reading.priorityTarget!==(reading.macro!=='DATED_SNAPSHOT'?'macro':Number(reading.ois)<8?'pricing':'pairs')||
           reading.priorityState!==(reading.macro==='HISTORICAL'?'HISTORICAL':reading.macro==='WITHHELD'?'WITHHELD':Number(reading.ois)<8?'PARTIAL':'RESEARCH_ONLY')||

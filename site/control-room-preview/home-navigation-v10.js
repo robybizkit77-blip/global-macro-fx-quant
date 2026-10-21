@@ -444,6 +444,40 @@ function mountHomeReadingPath(doc,context){
   '.gridtop .prob{padding:0 12px 10px}'+
   '.gridtop .oisrow{grid-template-columns:minmax(68px,92px) minmax(0,1fr) 62px;gap:7px;font-size:11px}'+
   '.gridtop .yieldplot{height:175px}}';
+ // The second half of Home is also visually composed, not just annotated:
+ // bigger analytical charts; full-width pair table, then the full messages feed.
+ visual.textContent+=
+  '.gmfq-home-chapter{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:5px 16px;padding:8px 2px 10px;margin:0;min-width:0}'+
+  '.gmfq-home-chapter h2{font:600 17px/1.35 Arial,sans-serif;color:#e8f1f6;margin:0}'+
+  '.gmfq-home-chapter .gmfq-home-chapter-number{color:#d8c08b;font:600 11px/1.4 Arial,sans-serif;margin-right:10px}'+
+  '.gmfq-home-chapter p{margin:0;color:#9fb7c7;font:11px/1.55 Arial,sans-serif;overflow-wrap:anywhere}'+
+  '.mid{height:auto;grid-template-columns:minmax(0,.96fr) minmax(0,1.36fr) minmax(0,1.06fr);gap:12px;margin-bottom:13px}'+
+  '.mid>.panel{height:auto;min-height:286px;min-width:0}'+
+  '.mid>.panel:nth-child(2){border-color:#476173;background:linear-gradient(145deg,#0b2536,#071825)}'+
+  '.mid>.panel:nth-child(2) .heading{color:#f0d79c}'+
+  '.mid .heading{font:600 15px/1.3 Arial,sans-serif;padding:11px 14px;min-height:45px;height:auto}'+
+  '.mid .chartbody{height:211px;padding:8px 10px 13px;box-sizing:content-box}'+
+  '.mid .chartbody svg{width:100%;height:100%;display:block}'+
+  '.bottom{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;min-height:0;margin-bottom:13px}'+
+  '.bottom>.panel{min-width:0}'+
+  '.bottom>.panel:first-child .heading{min-height:45px;height:auto;padding:11px 15px;font:600 16px/1.35 Arial,sans-serif;gap:10px}'+
+  '.bottom>.panel:last-child .heading{min-height:43px;height:auto;padding:10px 15px;font:600 15px/1.35 Arial,sans-serif}'+
+  '.bottom .messagebox{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 20px;padding:4px 16px 11px}'+
+  '.bottom .msg{min-width:0;line-height:1.45;min-height:56px;padding:11px 0}'+
+  '@media(max-width:900px){.mid{grid-template-columns:repeat(2,minmax(0,1fr))}'+
+  '.mid>.panel:last-child{grid-column:1/-1}'+
+  '.gmfq-home-chapter{display:block}.gmfq-home-chapter p{margin-top:4px}}'+
+  '@media(max-width:600px){.gmfq-home-chapter{padding:6px 2px 9px}'+
+  '.gmfq-home-chapter h2{font-size:15px}'+
+  '.gmfq-home-chapter p{font-size:10px}'+
+  '.mid{grid-template-columns:1fr;gap:11px;margin-bottom:13px}'+
+  '.mid>.panel,.mid>.panel:last-child{grid-column:1;min-height:275px;height:auto}'+
+  '.mid .heading{min-height:43px;font-size:15px;padding:10px 12px}'+
+  '.mid .chartbody{height:205px;padding:7px 9px 11px}'+
+  '.bottom{grid-template-columns:1fr;gap:11px}'+
+  '.bottom .messagebox{grid-template-columns:1fr;padding:3px 13px 10px}'+
+  '.bottom .msg{min-height:51px;padding:9px 0}'+
+  '.bottom>.panel:first-child .heading,.bottom>.panel:last-child .heading{padding:10px 12px;font-size:14px}}';
  doc.head.appendChild(visual);
  const rail=doc.createElement('nav');
  rail.id='gmfq-home-reading-path';rail.setAttribute('aria-label','Da dove iniziare la lettura Macro FX');
@@ -466,6 +500,19 @@ function mountHomeReadingPath(doc,context){
  // The native globe HERO is the first child of .gridtop. Keep the 3-column
  // original grid intact: position the editorial path BEFORE that entire grid.
  grid.insertAdjacentElement('beforebegin',rail);
+ const mid=doc.querySelector('.mid'),bottom=doc.querySelector('.bottom');
+ if(mid&&bottom&&mid.parentElement===bottom.parentElement){
+  const chapter=(id,number,title,note)=>{
+   const section=doc.createElement('header');section.id=id;section.className='gmfq-home-chapter';
+   section.innerHTML='<h2><span class="gmfq-home-chapter-number">'+number+'</span>'+title+'</h2>'+
+    '<p>'+note+'</p>';
+   return section;
+  };
+  mid.insertAdjacentElement('beforebegin',chapter('gmfq-home-market-chapter','01','Mercati · come si muovono i fattori',
+   'Forza FX, tassi 2Y e spread: misure diverse. Le stime restano contrassegnate.'));
+  bottom.insertAdjacentElement('beforebegin',chapter('gmfq-home-pair-chapter','02','Coppie FX · dalla tesi alla verifica',
+   'Tesi e condizioni del modello: contesto per approfondire, non segnali di ingresso.'));
+ }
  rail.addEventListener('click',event=>{
   const button=event.target.closest('button[data-reading-target]');
   if(!button||!rail.contains(button))return;
