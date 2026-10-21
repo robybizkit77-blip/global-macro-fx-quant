@@ -340,6 +340,26 @@ function expectedReactionFromMetrics(row){
      !compareCHF.dates.some(x=>x.includes('CHF')&&x.includes('2Y / 10Y WITHHELD'))||
      !compareCHF.disclaimer.includes('non sottrarre i loro delta'))
     throw Error(label+' CHF cross-date model/readiness guard broken '+JSON.stringify(compareCHF));
+  // An unofficial 6M future can be shown as a dated LEVEL while the certified
+  // monetary-policy delta remains unavailable. Test the separation in-browser.
+  for(const code of ['CHF','EUR']){
+    const op=operational.currencies[code],p=op?.horizons?.['6m'];
+    const quote=code==='EUR'?op.secondary_quote_context?.horizons?.['6m']:p;
+    const deltaDate=(Date.UTC(new Date().getUTCFullYear(),new Date().getUTCMonth(),new Date().getUTCDate())-
+       Date.parse((quote?.quote_as_of||'')+'T00:00:00Z'))/86400000;
+    const rate=code==='EUR'?quote?.rate_indicative:p?.rate;
+    const valid=p?.quote_timestamp_verified===true&&
+      p.quote_timestamp_source==='SSR_DAILY_BAR_DATA_UPDATE_TIME'&&
+      p.quote_as_of===quote?.quote_as_of&&
+      Number.isInteger(deltaDate)&&deltaDate>=0&&deltaDate<=5&&
+      Math.abs(100-p.futures_price-rate)<=0.0002;
+    if(!valid)continue;
+    const leg=compareCHF.dates.find(x=>x.startsWith(code)||x.includes(' '+code+' '));
+    if(!leg?.includes('6M repricing policy non certificato')||
+       !leg?.includes(p.contract)||!leg?.includes('NON ΔOIS, solo contesto'))
+      throw Error(label+' '+code+' dated 6M context missing or misrepresented '+JSON.stringify({leg,quote}));
+  }
+
 
   const deltaCHF=await page.evaluate(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument,c=d?.getElementById('gmfq-pair-what-changed');
