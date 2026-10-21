@@ -125,6 +125,43 @@ function expectedReactionFromMetrics(row){
      !homeAudit.source?.includes('futures monetari, non OIS puri')||
      homeAudit.documentWidth>homeAudit.viewport+16)
     throw Error(label+' incorrect Home source freshness display '+JSON.stringify(homeAudit));
+  // Reading order, not another dashboard. All three facts share the already
+  // certified source audit. Native hero/globe and the original grid remain.
+  const homeReading=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page').contentDocument;
+    const rail=d.getElementById('gmfq-home-reading-path'),
+      hero=d.querySelector('.hero'),grid=d.querySelector('.gridtop'),
+      btn=[...rail?.querySelectorAll('button[data-reading-target]')||[]];
+    return {exists:!!rail,count:btn.length,labels:btn.map(b=>b.textContent.trim()),
+      routes:btn.map(b=>b.dataset.readingTarget),
+      macro:rail?.dataset.macroAsOf,macroStatus:rail?.dataset.macroStatus,
+      ois:rail?.dataset.oisCertified,screener:rail?.dataset.screenerCount,
+      fx:rail?.dataset.fxAsOf,sourceEffect:rail?.dataset.sourceEffect,
+      positioned:!!rail&&!!hero&&!!grid&&grid.contains(hero)&&
+       !!(rail.compareDocumentPosition(grid)&Node.DOCUMENT_POSITION_FOLLOWING),
+      positions:{hero:hero?.getBoundingClientRect().top,rail:rail?.getBoundingClientRect().top,grid:grid?.getBoundingClientRect().top,heroFollowsGrid:!!(grid?.compareDocumentPosition(hero)&Node.DOCUMENT_POSITION_FOLLOWING),heroFollowsRail:!!(rail?.compareDocumentPosition(hero)&Node.DOCUMENT_POSITION_FOLLOWING),parentHero:hero?.parentElement?.className,parentGrid:grid?.parentElement?.className},
+      globe:!!d.querySelector('.hero .globe'),
+      railScroll:rail?.scrollWidth,railWidth:rail?.clientWidth,
+      bodyScroll:d.documentElement.scrollWidth,bodyWidth:d.documentElement.clientWidth};
+  });
+  const countNot=Object.values(setupFeed.pairs).filter(x=>x?.setup?.quality==='NON VALUTABILE').length;
+  const correctMacro=current(setupFeed.macro_baseline_asof,10);
+  if(!homeReading.exists||homeReading.count!==3||
+     JSON.stringify(homeReading.routes)!==JSON.stringify(['macro','pricing','pairs'])||
+     !homeReading.positioned||!homeReading.globe||homeReading.sourceEffect!=='NONE'||
+     homeReading.macro!==setupFeed.macro_baseline_asof||
+     homeReading.macroStatus!==(correctMacro?'DATED_SNAPSHOT':'HISTORICAL')||
+     homeReading.ois!==String(certified)||homeReading.screener!==String(countNot)||
+     !homeReading.labels[0].includes(setupFeed.macro_baseline_asof)||
+     !homeReading.labels[1].includes(certified+'/8 fonti certificate')||
+     !homeReading.labels[2].includes(countNot+'/28 non valutabili')||
+     homeReading.railScroll>homeReading.railWidth+2||
+     homeReading.bodyScroll>homeReading.bodyWidth+16)
+    throw Error(label+' Home reading hierarchy or provenance failed '+JSON.stringify(homeReading));
+  await page.screenshot({path:'v10-qa-images/'+label+'-home-reading-priorities.png',fullPage:true});
+  console.log('CONTROL_ROOM_V10_HOME_READING_PATH_GREEN',label,{
+    macro:homeReading.macro,ois:homeReading.ois,screener:homeReading.screener});
+
   const triggerSelector=label==='mobile'?'#gmfq-mobile-data-audit':'.mast .fresh';
   const freshTrigger=page.frameLocator('#gmfq-page').locator(triggerSelector);
   if(label==='mobile'){await freshTrigger.click()}
@@ -402,6 +439,13 @@ function expectedReactionFromMetrics(row){
     return {stamp:d?.querySelector('#liveAsOf')?.textContent,
       source:d?.getElementById('gmfq-home-data-audit')?.textContent};
   });
+  const badRail=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    const x=d?.getElementById('gmfq-home-reading-path');
+    return {fx:x?.dataset.fxAsOf,text:x?.textContent};
+  });
+  if(badRail.fx!==''||!badRail.text.includes('fixing BCE non verificato'))
+    throw Error(label+' invalid FX fixing wrongly promoted in Home priorities '+JSON.stringify(badRail));
   if(!homeNegative.stamp.includes('FX non corr.')||
      !homeNegative.source.includes('Non corrente o non disponibile'))
     throw Error(label+' Home did not mirror Valute FX WITHHELD '+JSON.stringify(homeNegative));
