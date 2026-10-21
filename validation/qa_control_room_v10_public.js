@@ -748,6 +748,60 @@ async function getState(page){
 
      }
 
+     // Post-merge only: source-first Macro and Screener must be visible on the
+     // actually deployed release; the older public CDN build is not accepted.
+     if(process.env.GITHUB_EVENT_NAME!=='pull_request'){
+       await page.goto(BASE+'?macroReading='+Date.now()+'#/macro?ccy=EUR',{waitUntil:'domcontentloaded',timeout:120000});
+       await page.waitForFunction(()=>{
+         const d=document.getElementById('gmfq-page')?.contentDocument;
+         return d?.getElementById('gmfq-macro-source-lens')?.dataset.auditStatus==='READ_ONLY';
+       },null,{timeout:25000});
+       const macroFirst=await page.evaluate(()=>{
+         const d=document.getElementById('gmfq-page')?.contentDocument;
+         const panel=d.getElementById('gmfq-macro-source-lens');
+         const detail=panel.querySelector('#gmfq-macro-observation-details');
+         return {baseline:panel.dataset.baselineAsOf,
+           preview:panel.querySelector('#gmfq-macro-reading')?.textContent,
+           closed:detail?.open===false,
+           hidden:![...panel.querySelectorAll('.gmfq-macro-observation')].some(x=>x.getClientRects().length>0),
+           count:panel.querySelectorAll('.gmfq-macro-observation').length,
+           width:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
+       });
+       if(!macroFirst.baseline||!macroFirst.preview?.includes('Inflazione: periodo ')||
+          !macroFirst.preview.includes('Lavoro: periodo ')||
+          !macroFirst.closed||!macroFirst.hidden||macroFirst.count!==2||
+          macroFirst.width>macroFirst.viewport+16)
+         throw Error(name+' public Macro reading not deployed '+JSON.stringify(macroFirst));
+       await page.frameLocator('#gmfq-page').locator('#gmfq-macro-observation-details>summary').press('Enter');
+       if(!(await page.frameLocator('#gmfq-page').locator('.gmfq-macro-observation').first().isVisible()))
+         throw Error(name+' public Macro source detail not accessible');
+       await page.goto(BASE+'?screenerReading='+Date.now()+'#/screener',{waitUntil:'domcontentloaded',timeout:120000});
+       await page.waitForFunction(()=>{
+         const d=document.getElementById('gmfq-page')?.contentDocument;
+         return d?.getElementById('gmfq-screener-blockers')?.dataset.diagnosisStatus==='READ_ONLY';
+       },null,{timeout:25000});
+       const screenerFirst=await page.evaluate(()=>{
+         const d=document.getElementById('gmfq-page')?.contentDocument;
+         const p=d.getElementById('gmfq-screener-blockers');
+         const details=p.querySelector('#gmfq-blocker-details');
+         return {summary:p.querySelector('.gmfq-blocker-overview')?.textContent,
+           count:p.querySelectorAll('.gmfq-blocker-pair').length,
+           closed:details?.open===false,
+           hidden:![...p.querySelectorAll('.gmfq-blocker-pair')].some(x=>x.getClientRects().length>0),
+           width:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
+       });
+       if(!screenerFirst.summary?.includes('Macro vs Tassi/CB: ')||
+          !screenerFirst.summary.includes('Differenziale 2Y senza tesi: ')||
+          !screenerFirst.summary.includes('Vantaggio insufficiente: ')||
+          screenerFirst.count!==11||!screenerFirst.closed||!screenerFirst.hidden||
+          screenerFirst.width>screenerFirst.viewport+16)
+         throw Error(name+' public Screener source-first reading not deployed '+JSON.stringify(screenerFirst));
+       await page.frameLocator('#gmfq-page').locator('#gmfq-blocker-details>summary').press('Enter');
+       if(!(await page.frameLocator('#gmfq-page').locator('#gmfq-screener-blockers button[data-pair="GBPJPY"]').isVisible()))
+         throw Error(name+' public Screener individual reasons inaccessible');
+       console.log('CONTROL_ROOM_V10_MACRO_SCREENER_READING_PUBLIC_GREEN',name,
+         {baseline:macroFirst.baseline,groups:screenerFirst.summary,blocked:screenerFirst.count});
+     }
      await page.close();
    }
    console.log('CONTROL_ROOM_V10_PUBLIC_G8_DXY_NAVIGATION_GREEN');
