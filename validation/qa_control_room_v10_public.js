@@ -1,6 +1,12 @@
 /* Public URL smoke QA. No mocked feeds: validates what the actual GitHub Pages website serves. */
 'use strict';
 const {chromium}=require('playwright');
+const fs=require('node:fs');
+const loader=fs.readFileSync('site/control-room-preview/index.html','utf8');
+// The correct public browser check is the version specified by canonical main,
+// not the previous hardcoded query token. Verify its actual deployed bytes.
+const navigationVersion=/\.\/home-navigation-v10\.js\?v=([a-z0-9-]+)/i.exec(loader)?.[1];
+if(!navigationVersion)throw Error('Canonical Preview navigation version absent');
 const BASE='https://robybizkit77-blip.github.io/global-macro-fx-quant/site/control-room-preview/';
 async function getState(page){
  return page.evaluate(()=>{
@@ -349,9 +355,9 @@ async function getState(page){
      if(process.env.GITHUB_EVENT_NAME!=='pull_request'){
        let current=false;
        for(let attempt=0;attempt<16;attempt++){
-         current=await page.evaluate(()=>{
-           return !!document.querySelector('script[src*="home-navigation-v10.js?v=macro-thesis-guard-20261020"]');
-         });
+         current=await page.evaluate(expected=>{
+           return [...document.scripts].some(x=>x.src.endsWith('home-navigation-v10.js?v='+expected));
+         },navigationVersion);
          if(current)break;
          console.log('PUBLIC_PAIR_ADDON_CDN_PENDING',name,attempt);
          await page.goto(BASE+'?pairqa='+Date.now()+'-'+attempt+'#/home',
@@ -363,7 +369,8 @@ async function getState(page){
          catch(_){console.log('PUBLIC_PAIR_HOME_FEED_PENDING',name,attempt)}
          await page.waitForTimeout(3000);
        }
-       if(!current)current=await page.evaluate(()=>!!document.querySelector('script[src*="home-navigation-v10.js?v=macro-thesis-guard-20261020"]'));
+       if(!current)current=await page.evaluate(expected=>
+         [...document.scripts].some(x=>x.src.endsWith('home-navigation-v10.js?v='+expected)),navigationVersion);
        if(!current)throw Error(name+' PUBLIC_PAIR_ADDON_VERSION_NOT_DEPLOYED');
      }
      const homePair=await page.frameLocator('#gmfq-page').locator('#pairs tr[data-filter]').first().getAttribute('data-filter');
