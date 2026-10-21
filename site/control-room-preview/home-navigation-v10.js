@@ -615,6 +615,66 @@ function mountHomeReadingPath(doc,context){
  });
 }
 
+async function mountHomeMarketPulse(doc){
+ if(!home()||frame.contentDocument!==doc||doc.documentElement.dataset.marketMode!=='live'||
+   doc.getElementById('gmfq-market-pulse'))return;
+ const grid=doc.querySelector('.gridtop');if(!grid)return;
+ const style=doc.createElement('style');style.id='gmfq-market-pulse-style';
+ style.textContent=
+ '#gmfq-market-pulse{background:linear-gradient(135deg,#0b2030,#081a27);border:1px solid #2c4659;border-radius:7px;margin:0 0 14px;padding:15px 17px;color:#e4edf3;font-family:Arial,sans-serif;min-width:0}'+
+ '#gmfq-market-pulse .gmfq-pulse-head{display:flex;gap:9px 16px;justify-content:space-between;align-items:baseline;flex-wrap:wrap;border-bottom:1px solid #2a4354;padding-bottom:10px}'+
+ '#gmfq-market-pulse h2{font:600 16px/1.4 Arial,sans-serif;margin:0;color:#f0f4f8}'+
+ '#gmfq-market-pulse .gmfq-pulse-date{font:600 11px/1.5 Arial,sans-serif;color:#dfc689}'+
+ '#gmfq-market-pulse .gmfq-pulse-caption{font:11px/1.6 Arial,sans-serif;color:#a4bdcc;margin:9px 0 3px}'+
+ '#gmfq-market-pulse .gmfq-pulse-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 20px}'+
+ '#gmfq-market-pulse .gmfq-pulse-item{padding:12px 2px;border-bottom:1px solid #264153;min-width:0}'+
+ '#gmfq-market-pulse .gmfq-pulse-item strong{display:block;font:600 12px/1.45 Arial,sans-serif;color:#e8eef5;overflow-wrap:anywhere}'+
+ '#gmfq-market-pulse .gmfq-pulse-item p{margin:4px 0;font:11px/1.55 Arial,sans-serif;color:#b7cbd8;overflow-wrap:anywhere}'+
+ '#gmfq-market-pulse .gmfq-pulse-item small{display:block;font:10px/1.45 Arial,sans-serif;color:#99afbf;overflow-wrap:anywhere}'+
+ '#gmfq-market-pulse .gmfq-pulse-links{display:flex;gap:10px 20px;flex-wrap:wrap;margin-top:12px;font:600 11px/1.45 Arial,sans-serif}'+
+ '#gmfq-market-pulse a{color:#e2c784;text-decoration:underline;text-underline-offset:3px}'+
+ '#gmfq-market-pulse a:focus-visible{outline:2px solid #e9cc88;outline-offset:3px}'+
+ '@media(max-width:600px){#gmfq-market-pulse{padding:12px 13px}#gmfq-market-pulse .gmfq-pulse-grid{grid-template-columns:1fr}#gmfq-market-pulse h2{font-size:15px}}';
+ doc.head.appendChild(style);
+ const host=doc.createElement('section');host.id='gmfq-market-pulse';
+ host.dataset.sourceEffect='NONE';host.dataset.pulseStatus='LOADING';
+ host.setAttribute('aria-label','Market Pulse: movimenti di mercato verificati e collegamenti alle notizie');
+ host.innerHTML='<div class="gmfq-pulse-head"><h2>Market Pulse · le ultime evidenze</h2><span class="gmfq-pulse-date">Verifica fonti in corso</span></div>'+
+  '<p class="gmfq-pulse-caption">Segnali ricavati dai dati ufficiali, non titoli giornalistici in tempo reale.</p>'+
+  '<div class="gmfq-pulse-grid"></div>'+
+  '<div class="gmfq-pulse-links"><a href="https://www.reuters.com/markets/" target="_blank" rel="noopener noreferrer">Notizie dei mercati · Reuters ↗</a>'+
+  '<a href="https://www.ecb.europa.eu/press/html/index.en.html" target="_blank" rel="noopener noreferrer">Comunicati BCE ↗</a></div>';
+ grid.insertAdjacentElement('afterend',host);
+ const date=host.querySelector('.gmfq-pulse-date'),box=host.querySelector('.gmfq-pulse-grid');
+ try{
+  const feedData=await feed('NEWS_PULSE_OPERATIONAL.json');
+  if(!host.isConnected||frame.contentDocument!==doc)return;
+  const isValid=feedData?.schema==='GMFQ_NEWS_PULSE_OPERATIONAL_V1'&&
+   feedData.status==='ACTIVE_DETERMINISTIC_LAYERS'&&
+   feedData.scope?.claim==='LATEST_VALIDATED_SIGNALS_NOT_GENERIC_HEADLINES'&&
+   Array.isArray(feedData.items)&&fresh(feedData.content_as_of,2)&&
+   Number.isFinite(Date.parse(feedData.generated_at_utc))&&
+   Date.parse(feedData.generated_at_utc)<=Date.now()+3600000&&
+   fresh(feedData.generated_at_utc.slice(0,10),2);
+  const items=isValid?feedData.items.filter(x=>x&&x.quality==='OFFICIAL_CERTIFIED'&&
+    FX.includes(x.ccy)&&x.as_of===feedData.content_as_of&&fresh(x.as_of,2)&&
+    typeof x.title==='string'&&x.title.length<=190&&
+    typeof x.detail==='string'&&x.detail.length<=350&&
+    typeof x.source==='string'&&x.source.length<=230).slice(0,4):[];
+  host.dataset.pulseStatus=items.length?'RECENT_VALIDATED':'WITHHELD';
+  host.dataset.asOf=items.length?feedData.content_as_of:'';
+  date.textContent=items.length?'Dati '+feedData.content_as_of+' · non intraday':'Nessun segnale recente certificato';
+  box.innerHTML=items.length?items.map(x=>
+   '<article class="gmfq-pulse-item" data-pulse-ccy="'+x.ccy+'"><strong>'+FLAG[x.ccy]+' '+htmlEscape(x.title)+'</strong>'+
+   '<p>'+htmlEscape(x.detail)+'</p><small>'+htmlEscape(x.source)+' · '+htmlEscape(x.as_of)+'</small></article>').join(''):
+   '<p class="gmfq-pulse-caption">Il feed non contiene nuove evidenze sufficientemente aggiornate; nessuna notizia datata viene presentata come corrente.</p>';
+ }catch(e){
+  if(!host.isConnected)return;
+  host.dataset.pulseStatus='WITHHELD';
+  date.textContent='Aggiornamento non disponibile';
+  box.innerHTML='<p class="gmfq-pulse-caption">Fonti non verificabili al momento; le notizie esterne restano accessibili dai collegamenti.</p>';
+ }
+}
 function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy,proxy,model,setup){
  if(!home()||frame.contentDocument!==doc||doc.documentElement.dataset.marketMode!=='live')return;
  const head=doc.querySelector('.mast .fresh'),state=doc.getElementById('liveState'),
@@ -750,6 +810,7 @@ async function applyHome(doc){
    if(ois)oisAll(doc,ois,proxy);
    mountHomeCurrencyFlags(doc);
    renderDxy(doc);
+   mountHomeMarketPulse(doc).catch(e=>console.warn('[GMFQ Market Pulse]',String(e)));
    mountHomeFreshnessAudit(doc,ff.status==='fulfilled'?ff.value:null,rates,ois,d,proxy,
      mm.status==='fulfilled'?mm.value:null,ss.status==='fulfilled'?ss.value:null);
    doc.querySelectorAll('#valute .cc').forEach(el=>{
