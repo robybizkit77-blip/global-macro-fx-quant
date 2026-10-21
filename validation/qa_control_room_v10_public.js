@@ -2,6 +2,8 @@
 'use strict';
 const {chromium}=require('playwright');
 const fs=require('node:fs');
+const {readApproved,verifyPublicNzd}=require('./control_room_nzd_public_contract_v1.js');
+const approvedNzdrates=readApproved('.');
 const loader=fs.readFileSync('site/control-room-preview/index.html','utf8');
 // The correct public browser check is the version specified by canonical main,
 // not the previous hardcoded query token. Verify its actual deployed bytes.
@@ -204,16 +206,17 @@ async function getState(page){
         !state.notes.includes('base ')){
        throw Error(name+' public Home contract failed: '+JSON.stringify(state));
      }
-     // Verify that the actual published Rates file has caught up with the
-     // official, manually verified NZD 16 Oct snapshot. NZD must no longer be
-     // labeled as AUD-proxy STIMA in the rate-bar note.
-     const ratesMirror=await page.evaluate(async()=>{const r=await fetch('/global-macro-fx-quant/live_data/sections/NATIVE_RATES_DATA.json',{cache:'no-store'});if(!r.ok)throw Error('Rates mirror HTTP '+r.status);const x=await r.json();return {date:x.NZD.date,y2:x.NZD['2Y'],y10:x.NZD['10Y'],quality:x.NZD.quality}});
-     if(ratesMirror.date!=='2026-10-16'||ratesMirror.y2!==3.89||ratesMirror.y10!==5.0||
-        ratesMirror.quality!=='FULL_CURRENT_OFFICIAL_MANUAL_VERIFIED'||
-        state.notes.includes('NZD/AUD')){
-       throw Error(name+' public NZD official/mirror contract failed: '+JSON.stringify({ratesMirror,notes:state.notes}));
-     }
-     console.log('PUBLIC_NZD_OFFICIAL_RATES_GREEN',name,JSON.stringify(ratesMirror));
+     // The manually reviewed RBNZ B2 snapshot can advance through the registry.
+     // Once its observation is historical, an explicitly labelled AUD proxy
+     // may appear. That is not a retroactive loss of source certification.
+     const ratesMirror=await page.evaluate(async()=>{
+       const r=await fetch('/global-macro-fx-quant/live_data/sections/NATIVE_RATES_DATA.json',{cache:'no-store'});
+       if(!r.ok)throw Error('Rates mirror HTTP '+r.status);
+       const x=await r.json();return x.NZD;
+     });
+     const nzdProof=verifyPublicNzd(ratesMirror,approvedNzdrates.approved,
+       approvedNzdrates.canonical,state.notes);
+     console.log('PUBLIC_NZD_REVIEWED_RATES_MIRROR_GREEN',name,JSON.stringify(nzdProof));
      // This is the active Control Room Preview, not the legacy root dashboard.
      // Verify the three real, publicly delivered FX inputs of the active Preview:
      // official ECB 28-pair price history, the 28 canonical pair setups, and the

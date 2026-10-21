@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - 'validation/qa_control_room_v10_public.js'
+      - 'validation/control_room_nzd_public_contract_v1.js'
+      - 'validation/test_control_room_nzd_public_contract_v1.js'
+      - 'validation/check_nzd_rates_reviewed_snapshot_v1.py'
       - 'site/control-room-preview/ois-pricing-estimates-v1.js'
       - '.github/workflows/control-room-v10-public-browser-qa.yml'
   push:
@@ -13,6 +16,9 @@ on:
       - 'site/control-room-preview/index.html'
       - 'site/control-room-preview/home-navigation-v10.js'
       - 'validation/qa_control_room_v10_public.js'
+      - 'validation/control_room_nzd_public_contract_v1.js'
+      - 'validation/test_control_room_nzd_public_contract_v1.js'
+      - 'validation/check_nzd_rates_reviewed_snapshot_v1.py'
       - 'site/control-room-preview/ois-pricing-estimates-v1.js'
       - '.github/workflows/control-room-v10-public-browser-qa.yml'
   workflow_run:
@@ -75,6 +81,12 @@ jobs:
           npm init -y >/dev/null 2>&1
           npm install --no-save playwright
           npx playwright install --with-deps chromium
+      - name: Check NZD reviewed source and recent vs historical public QA fixtures
+        run: |
+          python validation/check_nzd_rates_reviewed_snapshot_v1.py
+          node --check validation/control_room_nzd_public_contract_v1.js
+          node --check validation/test_control_room_nzd_public_contract_v1.js
+          node validation/test_control_room_nzd_public_contract_v1.js
       - name: Validate Preview browser QA JavaScript syntax
         run: node --check validation/qa_control_room_v10_public.js
       - name: Check public URL with actual feeds and navigation
