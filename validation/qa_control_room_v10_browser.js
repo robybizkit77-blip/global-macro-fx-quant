@@ -380,6 +380,9 @@ function expectedReactionFromMetrics(row){
     return {status:p.dataset.readingStatus,first:p.dataset.policyEarliest,
       last:p.dataset.policyLatest,certified:p.dataset.certified,
       estimated:p.dataset.estimated,withheld:p.dataset.withheld,
+      priority:p.querySelector('.gmfq-first-priority')?.textContent,
+      evidence:p.querySelector('.gmfq-first-claim')?.textContent,
+      order:!!(p.querySelector('.gmfq-first-priority')?.compareDocumentPosition(p.querySelector('.gmfq-first-claim'))&Node.DOCUMENT_POSITION_FOLLOWING),
       text:p.textContent,closed:det.open===false,
       chart:!!d.getElementById('cb-chart'),table:!!d.getElementById('cb-table'),
       width:p.scrollWidth,client:p.clientWidth,
@@ -391,6 +394,8 @@ function expectedReactionFromMetrics(row){
      cbFirst.last!==Object.values(cbFixture).map(x=>x.last_date).sort().at(-1)||
      !cbFirst.closed||!cbFirst.chart||!cbFirst.table||
      !cbFirst.text.includes('futures monetari')||!cbFirst.text.includes('Repricing ≠ probabilità')||
+     !cbFirst.priority?.startsWith('Le ultime decisioni sono snapshot storici')||
+     !cbFirst.evidence?.includes('Pricing 6M certificato')||!cbFirst.order||
      cbFirst.width>cbFirst.client+2||cbFirst.doc>cbFirst.viewport+16)
     throw Error(label+' CB first reading or native chart not intact '+JSON.stringify(cbFirst));
   await page.frameLocator('#gmfq-page').locator('#gmfq-cb-reading-first details>summary').press('Enter');
@@ -429,6 +434,9 @@ function expectedReactionFromMetrics(row){
       p=d.getElementById('gmfq-cot-reading-first');
     return {status:p.dataset.readingStatus,asof:p.dataset.cftcAsOf,
       extremes:p.dataset.extremes,crowding:p.dataset.crowding,conflicts:p.dataset.conflicts,
+      priority:p.querySelector('.gmfq-first-priority')?.textContent,
+      evidence:p.querySelector('.gmfq-first-claim')?.textContent,
+      order:!!(p.querySelector('.gmfq-first-priority')?.compareDocumentPosition(p.querySelector('.gmfq-first-claim'))&Node.DOCUMENT_POSITION_FOLLOWING),
       text:p.textContent,closed:p.querySelector('details').open===false,
       chart:!!d.getElementById('cot-chart'),table:!!d.getElementById('cot-table'),
       width:p.scrollWidth,client:p.clientWidth,
@@ -439,6 +447,8 @@ function expectedReactionFromMetrics(row){
      cotFirst.extremes!=='5'||cotFirst.crowding!=='3'||
      !cotFirst.closed||!cotFirst.chart||!cotFirst.table||
      !cotFirst.text.includes('Prezzo FX: WITHHELD')||
+     !cotFirst.priority?.startsWith('Gli estremi COT descrivono')||
+     !cotFirst.evidence?.includes('Estremi percentile 104W')||!cotFirst.order||
      cotFirst.text.includes('narrativo incoerente')||
      cotFirst.width>cotFirst.client+2||cotFirst.doc>cotFirst.viewport+16)
     throw Error(label+' COT quantitative/narrative divergence guard '+JSON.stringify(cotFirst));

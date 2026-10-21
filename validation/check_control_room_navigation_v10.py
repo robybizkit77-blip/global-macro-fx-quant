@@ -58,6 +58,7 @@ items={
 "Macro lens validates per-series periods and source": "function macroThermometerObservation(src)" in s and "macroSeriesPeriod(src.as_of)" in s and "num(src.latest_value)===null" in s,
 "Macro lens is explicitly read-only and fails closed": "auditStatus='WITHHELD'" in s and "24 score" in s and "nessun nuovo score certificato" in s,
 "Macro lens links native G8 currency selector": "if(route()==='macro')mountMacroSourceLens(doc).catch" in s and "native.click()" in s,
+"CB/COT lead comes before dated and quantitative evidence": "gmfq-first-priority" in s and "details.takeaway||summary" in s and "Evidenze quantitative e date" in s and "Gli estremi COT descrivono" in s and "Le ultime decisioni sono snapshot storici" in s,
 "CB/COT first reading preserves canonical native visuals": "function mountCentralBankFirstReading(doc)" in s and "function mountCotFirstReading(doc)" in s and "hero.insertAdjacentElement('afterend',rail)" in s,
 "CB 8 country policy snapshots and mixed OIS/futures fail closed": "FX.every(c=>acceptable.includes" in s and "marketResearchCurves(ois)" in s and "reconciled?'READ_ONLY':'WITHHELD'" in s,
 "COT 104 week integrity and post-rounding extremes": "function cotQuantitativeAudit(chart,story)" in s and "t[k].length===104" in s and "Math.round(percent)" in s and "Math.abs(series[c].ratio)>=30" in s,

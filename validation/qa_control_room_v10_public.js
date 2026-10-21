@@ -946,6 +946,8 @@ async function getState(page){
              certified:p.dataset.certified,estimated:p.dataset.estimated,withheld:p.dataset.withheld,
              conflicts:p.dataset.conflicts,extremes:p.dataset.extremes,crowding:p.dataset.crowding,
              heading:p.querySelector('.gmfq-first-claim')?.textContent,
+             priority:p.querySelector('.gmfq-first-priority')?.textContent,
+             priorityFirst:!!(p.querySelector('.gmfq-first-priority')?.compareDocumentPosition(p.querySelector('.gmfq-first-claim'))&Node.DOCUMENT_POSITION_FOLLOWING),
              closed:detail.open===false,originalChart:!!d.getElementById(nativeId),
              originalTable:!!d.getElementById(section==='banche'?'cb-table':'cot-table'),
              panelScroll:p.scrollWidth,panelWidth:p.clientWidth,pageWidth,originalWidth,
@@ -966,6 +968,10 @@ async function getState(page){
              return summary;
            }):null;
          if(!reading.originalChart||!reading.originalTable||!reading.closed||
+            !reading.priorityFirst||
+            (pageName==='banche'?
+               !reading.priority?.startsWith('Le ultime decisioni sono snapshot storici'):
+               !reading.priority?.startsWith('Gli estremi COT descrivono'))||
             reading.panelScroll>reading.panelWidth+2||
             reading.pageWidth>Math.max(reading.viewport+16,reading.originalWidth+2)||
             (pageName==='banche'?
