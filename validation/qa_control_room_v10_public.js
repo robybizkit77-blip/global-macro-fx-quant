@@ -871,6 +871,8 @@ async function getState(page){
          const detail=panel.querySelector('#gmfq-macro-observation-details');
          return {baseline:panel.dataset.baselineAsOf,
            preview:panel.querySelector('#gmfq-macro-reading')?.textContent,
+            priority:panel.querySelector('.gmfq-macro-takeaway')?.textContent,
+            priorityFirst:!!(panel.querySelector('.gmfq-macro-takeaway')?.compareDocumentPosition(panel.querySelector('.gmfq-macro-state'))&Node.DOCUMENT_POSITION_FOLLOWING),
            closed:detail?.open===false,
            hidden:![...panel.querySelectorAll('.gmfq-macro-observation')].some(x=>x.getClientRects().length>0),
            count:panel.querySelectorAll('.gmfq-macro-observation').length,
@@ -878,7 +880,9 @@ async function getState(page){
        });
        if(!macroFirst.baseline||!macroFirst.preview?.includes('Inflazione: periodo ')||
           !macroFirst.preview.includes('Lavoro: periodo ')||
-          !macroFirst.closed||!macroFirst.hidden||macroFirst.count!==2||
+          !macroFirst.priority?.startsWith('Gli score sono uno snapshot del modello')||
+           !macroFirst.priorityFirst||
+           !macroFirst.closed||!macroFirst.hidden||macroFirst.count!==2||
           macroFirst.width>macroFirst.viewport+16)
          throw Error(name+' public Macro reading not deployed '+JSON.stringify(macroFirst));
        await page.frameLocator('#gmfq-page').locator('#gmfq-macro-observation-details>summary').press('Enter');
@@ -901,12 +905,18 @@ async function getState(page){
          p.style.display='';
          return {nativeWidth,panelWidth,panelClient,
            summary:p.querySelector('.gmfq-blocker-overview')?.textContent,
+            priority:p.querySelector('.gmfq-blocker-priority')?.textContent,
+            priorityFirst:!!(p.querySelector('.gmfq-blocker-priority')?.compareDocumentPosition(p.querySelector('.gmfq-blocker-overview'))&Node.DOCUMENT_POSITION_FOLLOWING),
+            sources:[...p.querySelectorAll('.gmfq-blocker-date span[data-source]')].map(x=>x.dataset.source),
            count:p.querySelectorAll('.gmfq-blocker-pair').length,
            closed:details?.open===false,
            hidden:![...p.querySelectorAll('.gmfq-blocker-pair')].some(x=>x.getClientRects().length>0),
            width:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
        });
-       if(!screenerFirst.summary?.includes('Macro vs Tassi/CB: ')||
+       if(!screenerFirst.priority?.startsWith('Le coppie senza una tesi coerente')||
+           !screenerFirst.priorityFirst||
+           JSON.stringify(screenerFirst.sources)!==JSON.stringify(['macro','price'])||
+           !screenerFirst.summary?.includes('Macro vs Tassi/CB: ')||
           !screenerFirst.summary.includes('Differenziale 2Y senza tesi: ')||
           !screenerFirst.summary.includes('Vantaggio insufficiente: ')||
           screenerFirst.count!==11||!screenerFirst.closed||!screenerFirst.hidden||
@@ -916,6 +926,31 @@ async function getState(page){
        await page.frameLocator('#gmfq-page').locator('#gmfq-blocker-details>summary').press('Enter');
        if(!(await page.frameLocator('#gmfq-page').locator('#gmfq-screener-blockers button[data-pair="GBPJPY"]').isVisible()))
          throw Error(name+' public Screener individual reasons inaccessible');
+       // Valute: same first-reading order and three source identities on public Pages.
+       await page.goto(BASE+'?valuteReading='+Date.now()+'#/valute?ccy=EUR',{waitUntil:'domcontentloaded',timeout:120000});
+       await page.waitForFunction(()=>{
+         const d=document.getElementById('gmfq-page')?.contentDocument;
+         return !!d?.querySelector('#gmfq-valute-source-compass .gmfq-vsc-ledger');
+       },null,{timeout:25000});
+       const valuteFirst=await page.evaluate(()=>{
+         const d=document.getElementById('gmfq-page')?.contentDocument;
+         const panel=d.getElementById('gmfq-valute-source-compass');
+         const lead=panel.querySelector('.gmfq-vsc-priority'),ledger=panel.querySelector('.gmfq-vsc-ledger');
+         const panelWidth=panel.scrollWidth,panelClient=panel.clientWidth;
+         panel.style.display='none';const nativeWidth=d.documentElement.scrollWidth;panel.style.display='';
+         return {lead:lead?.textContent,
+           first:!!(lead?.compareDocumentPosition(ledger)&Node.DOCUMENT_POSITION_FOLLOWING),
+           keys:[...ledger.querySelectorAll('span[data-source]')].map(x=>x.dataset.source),
+           disclosure:!!panel.querySelector('.gmfq-vsc-details summary'),
+           panelWidth,panelClient,nativeWidth,
+           width:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
+       });
+       if(!valuteFirst.lead?.startsWith('Fixing giornaliero, DXY sintetico')||
+          !valuteFirst.first||
+          JSON.stringify(valuteFirst.keys)!==JSON.stringify(['fixing','dxy','macro'])||
+          !valuteFirst.disclosure||valuteFirst.panelWidth>valuteFirst.panelClient+2||
+          valuteFirst.width>Math.max(valuteFirst.viewport+16,valuteFirst.nativeWidth+2))
+         throw Error(name+' public Valute editorial source ledger failed '+JSON.stringify(valuteFirst));
        console.log('CONTROL_ROOM_V10_MACRO_SCREENER_READING_PUBLIC_GREEN',name,
          {baseline:macroFirst.baseline,groups:screenerFirst.summary,blocked:screenerFirst.count});
      }
