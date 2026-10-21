@@ -25,7 +25,21 @@ function route(){return (location.hash||'#/home').replace(/^#\/?/,'').split('?')
 function home(){return ['home','index.html'].includes(route())}
 function num(v){return typeof v==='number'&&Number.isFinite(v)?v:null}
 function fmt(v,d=2){return num(v)===null?'—':v.toFixed(d)}
-function fresh(date,max=4){if(!/^\d{4}-\d{2}-\d{2}$/.test(date||''))return false;const today=new Date();const days=(Date.UTC(today.getUTCFullYear(),today.getUTCMonth(),today.getUTCDate())-Date.parse(date+'T00:00:00Z'))/86400000;return days>=0&&days<=max}
+/* Italy-facing research day, independent of viewer timezone and CET/CEST.
+   Source as-of dates stay unchanged; this function is display eligibility only. */
+function romeTodayIso(now=new Date()){
+ const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Europe/Rome',
+   year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(now);
+ const val=k=>parts.find(p=>p.type===k)?.value;
+ return val('year')+'-'+val('month')+'-'+val('day');
+}
+function romeCalendarAge(date,now=new Date()){
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(date||''))return null;
+ const t=Date.parse(date+'T00:00:00Z');
+ if(!Number.isFinite(t)||new Date(t).toISOString().slice(0,10)!==date)return null;
+ return (Date.parse(romeTodayIso(now)+'T00:00:00Z')-t)/86400000;
+}
+function fresh(date,max=4){const days=romeCalendarAge(date);return days!==null&&days>=0&&days<=max}
 function htmlEscape(x){return String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function go(url){if(url&&url.startsWith('#/')&&location.hash!==url)location.hash=url}
 async function feed(file){const c=new AbortController(),t=setTimeout(()=>c.abort(),12000);try{const r=await fetch(ROOT+file,{cache:'no-store',signal:c.signal});if(!r.ok)throw Error('HTTP '+r.status);return await r.json()}finally{clearTimeout(t)}}
@@ -399,7 +413,7 @@ function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy,proxy,model,setup){
  if(ois?.schema==='GMFQ_OIS_OPERATIONAL_VIEW_V1'&&
     api&&typeof api.coverage==='function'){
    try{
-     const r=api.coverage(ois,proxy,new Date().toISOString().slice(0,10));
+     const r=api.coverage(ois,proxy,romeTodayIso());
      if(r?.schema==='GMFQ_OIS_G8_RESEARCH_COVERAGE_V1'&&r.total===8&&
         r.official_count===oisCurrent.length&&
         r.no_ois_official_promotion===true&&r.core_effect==='NONE'&&
@@ -747,7 +761,7 @@ function pairMacroRatesComparison(code,pair,rates,ois,modelDay,macroDay){
     typeof window.GMFQ_OIS_RESEARCH_V1?.indicativeSixMonth==='function'){
    try{
      indicative6m=window.GMFQ_OIS_RESEARCH_V1.indicativeSixMonth(
-       ois,new Date().toISOString().slice(0,10))||{};
+       ois,romeTodayIso())||{};
    }catch(e){console.warn('[GMFQ Pair indicative 6M unavailable]',String(e))}
  }
  const sideText=(v)=>v===a?'Favorisce '+FLAG[a]+' '+a:v===b?'Favorisce '+FLAG[b]+' '+b:
@@ -1129,7 +1143,7 @@ async function mountPairResearch(doc){
   const indicative=(!oisState&&
     typeof window.GMFQ_OIS_RESEARCH_V1?.indicativeSixMonth==='function')?
     window.GMFQ_OIS_RESEARCH_V1.indicativeSixMonth(
-      ois,new Date().toISOString().slice(0,10))[c]:null;
+      ois,romeTodayIso())[c]:null;
   const contextHint=indicative&&indicative.is_official_ois===false&&
     indicative.policy_delta_allowed===false&&indicative.pair_effect==='NONE'&&
     num(indicative.value)!==null?
@@ -1213,9 +1227,9 @@ function macroSeriesPeriod(raw){
  if(typeof raw!=='string'||!/^(20\d{2})-(0[1-9]|1[0-2])(?:-([0-2]\d|3[01]))?$/.test(raw))return null;
  const normalized=raw.length===7?raw+'-01':raw,day=new Date(normalized+'T00:00:00Z');
  if(!Number.isFinite(day.getTime())||day.toISOString().slice(0,10)!==normalized)return null;
- const now=new Date(),nowMonth=now.toISOString().slice(0,7);
+ const today=romeTodayIso(),nowMonth=today.slice(0,7);
  if(raw.length===7){if(raw>nowMonth)return null}
- else if(day.getTime()>Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()))return null;
+ else if(normalized>today)return null;
  return raw;
 }
 function macroThermometerObservation(src){
@@ -1552,13 +1566,11 @@ function validCrossGold(doc,gold){
     typeof gold.value!=='number'||!Number.isFinite(gold.value)||gold.value<=0)return false;
  const date=new Date(gold.proxy_as_of+'T00:00:00Z');
  if(Number.isNaN(date.getTime())||date.toISOString().slice(0,10)!==gold.proxy_as_of)return false;
- const today=new Date(),day=Date.UTC(today.getUTCFullYear(),today.getUTCMonth(),today.getUTCDate());
- const gap=(day-date.getTime())/86400000;
- return gap>=0;
+ const gap=romeCalendarAge(gold.proxy_as_of);
+ return gap!==null&&gap>=0;
 }
 function crossGoldAge(iso){
- const now=new Date(),day=Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate());
- return Math.round((day-Date.parse(iso+'T00:00:00Z'))/86400000);
+ return romeCalendarAge(iso);
 }
 function crossGoldNumber(x){return typeof x==='number'&&Number.isFinite(x)?x.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2}):'—'}
 function crossGoldPct(x){return typeof x==='number'&&Number.isFinite(x)?(x>0?'+':'')+x.toFixed(2)+'%':'—'}
@@ -1599,7 +1611,8 @@ async function mountCrossGold(doc){
   gold=data?.lanes?.['GOLD.market_proxy'];
   valid=validCrossGold(data,gold);
  }catch(e){console.warn('[GMFQ Gold secondary WITHHELD]',String(e))}
- const current=valid&&crossGoldAge(gold.proxy_as_of)<=3;
+ const age=valid?crossGoldAge(gold.proxy_as_of):null;
+ const current=valid&&age!==null&&age>=0&&age<=3;
  const state=!valid?'WITHHELD':current?'SECONDARY_CURRENT':'SECONDARY_HISTORICAL';
  const asof=valid?gold.proxy_as_of:'—';
  const headline=current?'FUTURES INDICATIVO · RECENTE':state==='SECONDARY_HISTORICAL'?'FUTURES INDICATIVO · NON CORRENTE':'FUTURES · DATI NON VERIFICABILI';

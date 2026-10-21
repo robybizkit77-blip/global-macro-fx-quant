@@ -2,9 +2,14 @@
 'use strict';
 const {chromium}=require('playwright');
 const fs=require('node:fs');
+const {execFileSync}=require('node:child_process');
 const {readApproved,verifyPublicNzd}=require('./control_room_nzd_public_contract_v1.js');
 const approvedNzdrates=readApproved('.');
-const loader=fs.readFileSync('site/control-room-preview/index.html','utf8');
+// PR browser QA targets the *currently published* main; its new loader
+// and version token will appear on GitHub Pages only after merge.
+const loader=process.env.GITHUB_EVENT_NAME==='pull_request'?
+ execFileSync('git',['show','origin/main:site/control-room-preview/index.html'],{encoding:'utf8'}):
+ fs.readFileSync('site/control-room-preview/index.html','utf8');
 // The correct public browser check is the version specified by canonical main,
 // not the previous hardcoded query token. Verify its actual deployed bytes.
 const navigationVersion=/\.\/home-navigation-v10\.js\?v=([a-z0-9-]+)/i.exec(loader)?.[1];
@@ -385,7 +390,7 @@ async function getState(page){
          const feed=await fetch('https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/OIS_OPERATIONAL_VIEW.json',{cache:'no-store'}).then(x=>x.json());
          const snb=await fetch('https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json',{cache:'no-store'}).then(x=>x.json());
          const access=await fetch('https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/OIS_SOURCE_READINESS_VIEW.json',{cache:'no-store'}).then(x=>x.json());
-         const days=x=>(Date.UTC(new Date().getUTCFullYear(),new Date().getUTCMonth(),new Date().getUTCDate())-Date.parse(x+'T00:00:00Z'))/86400000;
+         const days=x=>(Date.parse(window.GMFQ_OIS_RESEARCH_V1.romeTodayIso()+'T00:00:00Z')-Date.parse(x+'T00:00:00Z'))/86400000;
          const eligible=['GBP','JPY','AUD','CAD'].filter(k=>{
            const x=feed.currencies?.[k];
            return x?.operational_status==='GREEN_OFFICIAL'&&x.quality==='OFFICIAL_CERTIFIED'&&
