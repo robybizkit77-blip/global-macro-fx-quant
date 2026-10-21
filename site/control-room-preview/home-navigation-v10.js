@@ -540,6 +540,38 @@ function mountHomeReadingPath(doc,context){
   '.bottom .messagebox{grid-template-columns:1fr;padding:3px 13px 10px}'+
   '.bottom .msg{min-height:51px;padding:9px 0}'+
   '.bottom>.panel:first-child .heading,.bottom>.panel:last-child .heading{padding:10px 12px;font-size:14px}}';
+ // Source-safe G8 card and premium chart polish. Values and datasets untouched.
+ visual.textContent+=
+  '.gridtop>.panel:nth-child(2){min-height:322px}'+
+  '.gridtop #ois{padding:4px 14px 10px}'+
+  '.gridtop #ois .gmfq-six-month-row{height:auto;min-height:29px;margin:0;display:grid;grid-template-columns:115px minmax(0,1fr) 100px;gap:9px;align-items:center;border-top:1px solid #1b3547;font:11px/1.4 Arial,sans-serif}'+
+  '.gridtop #ois .gmfq-six-month-row:first-child{border-top:0}'+
+  '.gridtop #ois .gmfq-six-month-name{display:flex;gap:6px;align-items:center;min-width:0;white-space:nowrap}'+
+  '.gridtop #ois .gmfq-six-month-name i{font-family:"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif;font-style:normal;font-size:16px;flex-shrink:0}'+
+  '.gridtop #ois .gmfq-six-month-name b{font:700 11px/1.4 Arial,sans-serif;color:#e8f0f6}'+
+  '.gridtop #ois .gmfq-six-month-name small{font:10px/1.4 Arial,sans-serif;color:#8faec1}'+
+  '.gridtop #ois .gmfq-six-month-row strong{text-align:right;font:600 11px/1.4 Arial,sans-serif;white-space:nowrap;color:#e6eff7}'+
+  '.gridtop #ois .gmfq-six-month-row[data-pricing-state="FUTURES_LEVEL_ONLY"] strong{color:#e4c58a}'+
+  '.gridtop #ois .gmfq-six-month-row[data-pricing-state="BANK_BILL_PROXY"] strong{color:#d6c28e}'+
+  '.gridtop #ois .gmfq-six-month-row[data-pricing-state="WITHHELD"] strong{color:#b39bab}'+
+  '.gridtop #ois .gmfq-six-month-row[data-pricing-state="FUTURES_LEVEL_ONLY"] .track,'+
+    '.gridtop #ois .gmfq-six-month-row[data-pricing-state="BANK_BILL_PROXY"] .track,'+
+    '.gridtop #ois .gmfq-six-month-row[data-pricing-state="WITHHELD"] .track{background:repeating-linear-gradient(90deg,#253f51 0px,#253f51 3px,#102637 3px,#102637 8px);opacity:.75}'+
+  '.gridtop #ois .gmfq-six-month-row .track{height:10px;border-radius:5px;overflow:hidden}'+
+  '.gridtop #ois .gmfq-six-month-row .fill{height:100%;border-radius:5px}'+
+  '.gridtop #ois .oisnote{font:10px/1.4 Arial,sans-serif;color:#9eb5c6;margin-top:10px}'+
+  '.gridtop .yieldplot svg,.mid .chartbody svg{border-radius:6px;overflow:visible}'+
+  '.gridtop .yieldplot,.mid .chartbody{background:linear-gradient(160deg,#0b2231 0%,#071923 100%)}'+
+  '.mid .chartbody svg rect{transition:opacity .15s ease}'+
+  '.mid .chartbody svg rect:hover{opacity:.8}'+
+  '.mid .chartbody svg text{paint-order:stroke fill;stroke:#061a27;stroke-width:.45px}'+
+  '@media(max-width:600px){.gridtop>.panel:nth-child(2){min-height:330px}'+
+  '.gridtop #ois{padding:3px 10px 10px}'+
+  '.gridtop #ois .gmfq-six-month-row{grid-template-columns:102px minmax(0,1fr) 90px;gap:5px;min-height:30px}'+
+  '.gridtop #ois .gmfq-six-month-name i{font-size:15px}'+
+  '.gridtop #ois .gmfq-six-month-name small{font-size:9px}'+
+  '.gridtop #ois .gmfq-six-month-row strong{font-size:10px}'+
+  '.gridtop #ois .oisnote{font-size:9px}}';
  doc.head.appendChild(visual);
  const rail=doc.createElement('nav');
  rail.id='gmfq-home-reading-path';rail.setAttribute('aria-label','Da dove iniziare la lettura Macro FX');
