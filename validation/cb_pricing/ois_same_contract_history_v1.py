@@ -127,8 +127,9 @@ def candidates(quote_feed: dict) -> tuple[list[dict], list[str]]:
                 ccy + ": secondary source identity drift")
         for tenor in TENORS:
             p = (entry.get("horizons") or {}).get(tenor) or {}
-            if p.get("quote_timestamp_verified") is not True or
-               p.get("quote_timestamp_source") != QUOTE_EVIDENCE or not p.get("quote_as_of"):
+            if (p.get("quote_timestamp_verified") is not True or
+                    p.get("quote_timestamp_source") != QUOTE_EVIDENCE or
+                    not p.get("quote_as_of")):
                 excluded.append(ccy + "/" + tenor + ": unverified bar timestamp")
                 continue
             rec = {
