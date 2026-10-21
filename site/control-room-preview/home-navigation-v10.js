@@ -1246,7 +1246,6 @@ async function mountPairResearch(doc){
   const fxDay=fxOk?fx.last_as_of:null;
   const differs=fxDay&&fxDay!==setup.price_asof;
   const macroDay=macroVerified?setup.macro_baseline_asof:null;
-  const fav=macroDay?setup.pairs[code]?.setup?.structuralFav:null;
   const macroWarning=!macroVerified?
     'Integrità baseline Macro/Tassi NON VERIFICABILE tra D.json e motore: non usare la tesi come aggiornata. ':
     !fresh(macroDay,10)?
