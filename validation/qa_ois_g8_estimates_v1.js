@@ -228,9 +228,9 @@ assert(!matchedResearchMoves(archive,rolled,TODAY).some(x=>x.ccy==='USD'&&x.teno
 const badMaturity=structuredClone(result);
 badMaturity.find(x=>x.ccy==='CHF').points['12m'].expires='2028-12-31';
 assert(!matchedResearchMoves(archive,badMaturity,TODAY).some(x=>x.ccy==='CHF'&&x.tenor==='12m'));
-const partial=structuredClone(result);
-delete partial.find(x=>x.ccy==='EUR').points['6m'];
-const partialMoves=matchedResearchMoves(archive,partial,TODAY);
+const partialResearchFixture=structuredClone(result);
+delete partialResearchFixture.find(x=>x.ccy==='EUR').points['6m'];
+const partialMoves=matchedResearchMoves(archive,partialResearchFixture,TODAY);
 assert.equal(partialMoves.length,8);
 assert(!partialMoves.some(x=>x.ccy==='EUR'&&x.tenor==='6m'));
 const absent=view(result,[]);
