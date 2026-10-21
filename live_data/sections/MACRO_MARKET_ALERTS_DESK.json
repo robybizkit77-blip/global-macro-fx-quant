@@ -1,8 +1,23 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-21T22:48:11Z",
+  "generated_at_utc": "2026-10-21T23:45:54Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-fe170eeebb6f56327437",
+      "observed_at_utc": "2026-10-21T18:11:00Z",
+      "headline": "UK inflation rises to highest in almost a year as Iran war drives fuel prices higher",
+      "summary": "AP News riporta: UK inflation rises to highest in almost a year as Iran war drives fuel prices higher. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [
+        "GBP"
+      ],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxPb0tld3hpUGx6Vmd1S2dvem5sS2hjTTJwSG9TRkNVMEpzemp5MFh0MlZPY21RMHd2V0JyZG9nNWU0TTZLUURkYVJRRnZoZ1JKSWVaSkc1cFlDa2MyWmNrQmUxOS1ycGZjYW9SVjNUZnE0UUV2dEFIZDNEdElOV3FIYng1ZzN1UzVRTVM5V1FWTzhKWTY1SVpKU045TEdjR1Ja?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-cb5779a3bb176ecbf690",
       "observed_at_utc": "2026-10-21T21:04:00Z",
@@ -1402,19 +1417,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxOLVJCYm9CRFhWY01aUkRqYnVXb0RzRC1RUnhfOEFicHItalFBMnRMc0ZjcWRVcGNnZVg3ZXQ3WXNXeUZLN183enN0NFAtdmxuUHJhRU5jOHlQbTg1TldhNVdtbF9IWU1GZ1BfOEZvTnJpUEhGTE5xUkRSbl9FZVR4NlFJMEE2V1VYZ1hVRzk3SmpJMi1qelE?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-855eb67c2c5865bddbb9",
-      "observed_at_utc": "2026-10-20T00:17:00Z",
-      "headline": "South Korea's Elice shares plunge 28% in market debut as data centre stocks shunned",
-      "summary": "Reuters riporta: South Korea's Elice shares plunge 28% in market debut as data centre stocks shunned. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxNU1JYM3hYdDlsc1JuLWVCVHlKcld3Skc0Y1M0WWgzbk1JNFVJbzhsNU13eVVmSUNTX0hPX1ZGUXotNzVkV3UxTi1yMTlhNm04S2lzODk4NlRhOXFDMUFfb1cxbXd3TzZoZVl3QS00aldHcmNieDZSZ0x1eDlEYjZ5NmRCbWVEeTQwQ2RreWdkb2ljUXB5cDlKalhpTWZ3SnN5ek5pVzlBRWNEQ0d1SVdOREpqMUE1LUZf?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
