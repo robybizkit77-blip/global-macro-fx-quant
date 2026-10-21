@@ -151,7 +151,7 @@ async function getState(page){
            ois:rail?.dataset.oisCertified,screener:rail?.dataset.screenerCount,
            sourceEffect:rail?.dataset.sourceEffect,
            nextToGlobe:!!hero&&!!grid&&!!d.querySelector('.hero .globe')&&
-             !!(hero.compareDocumentPosition(rail)&Node.DOCUMENT_POSITION_FOLLOWING)&&
+             grid.contains(hero)&&
              !!(rail.compareDocumentPosition(grid)&Node.DOCUMENT_POSITION_FOLLOWING),
            width:rail?.scrollWidth,client:rail?.clientWidth,
            page:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
