@@ -64,6 +64,10 @@ def main():
     assert "payload/part-00.txt" in FILES
     assert "live_data/sections/V247_COT_STORIES.json" in FILES
     assert "live_data/manifest.v2.json" in FILES
+    assert "live_data/sections/NATIVE_CB_DATA.json" in FILES
+    assert "live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json" in FILES
+    assert "live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json" in FILES
+    assert "live_data/sections/OIS_SOURCE_READINESS_VIEW.json" in FILES
     assert "dashboard/risk-operational-v1.js" in FILES
     assert "dashboard/editorial-freshness-guard-v1.js" in FILES
     assert "live_data/sections/ESTIMATED_RESIDUAL_GAPS.json" in FILES
