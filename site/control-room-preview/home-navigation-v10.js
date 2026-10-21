@@ -858,12 +858,20 @@ function pairMacroRatesComparison(code,pair,rates,ois,modelDay,macroDay){
 /* What Changed = separate historical, measured yield change from the dated,
    qualitative canonical model diagnosis. An absent/mismatched interval is NOT
    a 1D, 1W or inferred live CB repricing. Read-only, no model reconstruction. */
-function pairWhatChangedEvidence(code,pair,rates,modelDay){
+function pairWhatChangedEvidence(code,pair,rates,modelDay,macroDay){
  const a=code.slice(0,3),b=code.slice(3,6),dynamic=pair?.relative_dynamics;
- const modelValid=!!dynamic&&dynamic.a===a&&dynamic.b===b&&
+ // The model's qualitative Growth/Labour/Rates diagnosis comes from D.json
+ // (macro baseline), NOT the newer ECB price overlay in the Pair export.
+ // Caller passes only the verified D.json/Pair metadata matched baseline;
+ // a missing/future/mismatched baseline must NEVER inherit the price date.
+ const baselineAge=romeCalendarAge(macroDay);
+ const baselineVerified=baselineAge!==null&&baselineAge>=0&&
+  typeof modelDay==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(modelDay)&&
+  macroDay<=modelDay;
+ const baselineCurrent=baselineVerified&&baselineAge<=10;
+ const modelValid=baselineVerified&&!!dynamic&&dynamic.a===a&&dynamic.b===b&&
   dynamic.A?.withheld===false&&dynamic.B?.withheld===false&&
-  Array.isArray(dynamic.A.details)&&Array.isArray(dynamic.B.details)&&
-  fresh(modelDay,5);
+  Array.isArray(dynamic.A.details)&&Array.isArray(dynamic.B.details);
  const observation=(ccy)=>{
   const item=rates?.[ccy],history=item?.history2,date=item?.date;
   const base=!!item&&String(item.quality||'').includes('OFFICIAL')&&fresh(date,5)&&
@@ -896,18 +904,28 @@ function pairWhatChangedEvidence(code,pair,rates,modelDay){
   const ob=observation(c);
   return '<div class="gmfq-change-leg" data-gmfq-change-currency="'+c+
     '" data-gmfq-yield-change="'+ob.status+'"><strong>'+FLAG[c]+' '+c+'</strong>'+
-    '<span>LETTURA MODELLO · '+htmlEscape(modelDay)+'</span>'+
+    '<span>LETTURA MODELLO · BASELINE MACRO/TASSI '+htmlEscape(baselineVerified?macroDay:'NON VERIFICATA')+
+    (baselineVerified?(baselineCurrent?' · SNAPSHOT DATATO':' · STORICA, DA RIVALIDARE'):' · WITHHELD')+'</span>'+
     modelLeg(c,key)+
     '<span>VARIAZIONE 2Y · DATI OSSERVATI</span><p class="gmfq-change-measured">'+
     htmlEscape(ob.text)+'</p></div>';
  };
  const phase=modelValid&&typeof pair?.transition?.state==='string'?
   htmlEscape(pair.transition.state):'Dinamica del motore non verificata';
- return '<section class="gmfq-what-changed" id="gmfq-pair-what-changed" aria-label="Cosa sta cambiando, modello contro fatti osservati">'+
+ return '<section class="gmfq-what-changed" id="gmfq-pair-what-changed" data-macro-baseline-as-of="'+htmlEscape(baselineVerified?macroDay:'')+
+  '" data-pair-price-as-of="'+htmlEscape(modelDay||'')+
+  '" data-macro-baseline-state="'+(baselineCurrent?'DATED_SNAPSHOT':baselineVerified?'HISTORICAL':'WITHHELD')+
+  '" aria-label="Cosa sta cambiando, modello contro fatti osservati">'+
   '<h3>Cosa sta cambiando · modello vs dati</h3>'+
-  '<p>Il motore riassume la dinamica Macro dello snapshot; il 2Y misura invece un movimento realmente osservato. Non sono la stessa prova.</p>'+
+  '<p>La lettura Crescita/Lavoro/Rates usa la baseline Macro/Tassi del '+htmlEscape(baselineVerified?macroDay:'periodo non verificato')+
+  (baselineCurrent?' (snapshot datato).':baselineVerified?' (STORICA, da rivalidare).':' (WITHHELD).')+
+  ' Il feed Prezzo/Pair del '+htmlEscape(modelDay||'periodo non verificato')+
+  ' non aggiorna automaticamente quelle dinamiche. Il 2Y sotto è un movimento osservato separatamente.</p>'+
   '<div class="gmfq-change-legs">'+leg(a,'A')+leg(b,'B')+'</div>'+
-  '<p class="gmfq-change-summary">Dinamica relativa del modello ('+htmlEscape(modelDay)+'): '+phase+'. È una diagnosi qualitativa, non un nuovo rilascio economico.</p>'+
+  '<p class="gmfq-change-summary">Dinamica relativa del modello (baseline Macro/Tassi '+htmlEscape(baselineVerified?macroDay:'non verificata')+
+  '; prezzo Pair '+htmlEscape(modelDay||'non verificato')+'): '+phase+
+  '. È una diagnosi qualitativa '+(baselineCurrent?'dello snapshot datato':'STORICA, da rivalidare')+
+  ', non un nuovo rilascio economico.</p>'+
   '<p class="gmfq-change-warning">Il confronto 2Y indica la variazione tra due date ufficiali dichiarate, non necessariamente 24 ore; con serie vecchie o intervalli troppo lunghi la variazione resta non confrontabile. Nessun dato cambia la tesi, il sizing o i trigger.</p>'+
   '</section>';
 }
@@ -1207,7 +1225,7 @@ async function mountPairResearch(doc){
   // All diagnostics remain verbatim and source-derived; only reading order and
   // disclosure state change. The canonical model and 28 pair states are untouched.
   const comparison=pairMacroRatesComparison(code,setup.pairs[code],rates,ois,setup.price_asof,macroDay);
-  const changes=pairWhatChangedEvidence(code,setup.pairs[code],rates,setup.price_asof);
+  const changes=pairWhatChangedEvidence(code,setup.pairs[code],rates,setup.price_asof,macroDay);
   const reaction=pairMarketReactionAudit(code,rates,fxOk?fx:null);
   const decision=pairThesisReactionBridge(code,setup.pairs[code],setup.price_asof,reaction,macroDay);
   panel.innerHTML='<h2 class="desk-panel-title">Percorso di ricerca · '+FLAG[a]+' '+a+' / '+FLAG[b]+' '+b+'</h2>'+
