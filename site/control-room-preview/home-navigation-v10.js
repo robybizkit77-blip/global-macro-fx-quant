@@ -520,14 +520,16 @@ function marketSourceReadinessHtml(view,operational){
   view.prices_omitted===true&&view.no_automatic_promotions===true&&
   view.no_core_score_effect===true&&view.no_bias_effect===true&&
   view.no_sizing_effect===true&&view.no_backtest_effect===true&&
-  ids.every(k=>view.currencies?.[k]?.status==='WITHHELD'&&
+  ids.every(k=>['WITHHELD','GREEN_ESTIMATED','GREEN_OFFICIAL'].includes(view.currencies?.[k]?.status)&&
+   view.currencies[k].status===operational?.currencies?.[k]?.operational_status&&
+   view.currencies[k].usable_for_policy_pricing===false&&
+   view.currencies[k].backtest_eligible_as_official===false&&
    typeof view.currencies[k].obstacle==='string'&&
-   typeof view.currencies[k].activation_requirement==='string'&&
-   ['WITHHELD','GREEN_ESTIMATED','GREEN_OFFICIAL'].includes(operational?.currencies?.[k]?.operational_status))&&
-  view.blocked_currency_count===ids.length;
+   typeof view.currencies[k].activation_requirement==='string')&&
+  view.blocked_currency_count===ids.filter(k=>view.currencies?.[k]?.status==='WITHHELD').length;
  const opening='<details class="gmfq-source-readiness" id="gmfq-source-readiness"><summary>Fonti da sbloccare · situazione e prossimi passi</summary>';
  if(!statusOk)return opening+'<p class="gmfq-research-note">Stato delle fonti da aggiornare: nessuna curva aggiuntiva viene certificata.</p></details>';
- const items=ids.filter(k=>view.currencies[k].status==='WITHHELD').map(k=>{
+ const items=ids.map(k=>{
   const v=view.currencies[k],link=v.source_url;
   const validUrl=typeof link==='string'&&/^https:\/\/(www\.)?(cmegroup\.com|eurex\.com|ice\.com|nzfbf\.co\.nz)\//.test(link);
   const anchor=validUrl?'<a href="'+htmlEscape(link)+'" target="_blank" rel="noopener noreferrer">Fonte originale ↗</a>':'Fonte da verificare';
