@@ -510,6 +510,30 @@ function expectedReactionFromMetrics(row){
   if(first.count!==28||first.currencies!==2||first.links!==8||
      !first.model||first.width>first.viewport+16)
     throw Error(label+' pair deep-dive route/model-date guard failed '+JSON.stringify(first));
+  // Decision-first: show thesis/setup/reaction, keep all analytical DOM intact.
+  const reading=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    const p=d?.getElementById('gmfq-pair-research-path');
+    const details=p?.querySelector('#gmfq-pair-full-research');
+    const decision=p?.querySelector('#gmfq-pair-decision-bridge');
+    const comparison=p?.querySelector('#gmfq-pair-macro-rates');
+    return {closed:details?.open===false,
+      before:!!decision&&!!details&&
+        !!(decision.compareDocumentPosition(details)&Node.DOCUMENT_POSITION_FOLLOWING),
+      decisionVisible:!!decision?.getClientRects().length,
+      technicalHidden:!!comparison&&!comparison.getClientRects().length,
+      comparePresent:!!comparison,compareInDisclosure:!!comparison&&!!details?.contains(comparison),
+      technicalRects:comparison?.getClientRects().length,
+      detailsHtmlStart:details?.innerHTML?.slice(0,350),
+      sourcePresent:!!p?.querySelector('#gmfq-pair-market-reaction')&&
+        !!p?.querySelector('#gmfq-pair-what-changed')&&
+        p.querySelectorAll('button[data-gmfq-study-currency]').length===8};
+  });
+  if(!reading.closed||!reading.before||!reading.decisionVisible||
+     !reading.technicalHidden||!reading.sourcePresent)
+    throw Error(label+' Pair decision-first reading failed '+JSON.stringify(reading));
+  console.log('CONTROL_ROOM_V10_DECISION_FIRST_GREEN',label,reading);
+
   // Selecting a non-USD cross updates both the original detail and our
   // additive research path; a permalink to the currently selected pair remains.
   await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="EURCHF"]').click();
@@ -822,6 +846,14 @@ function expectedReactionFromMetrics(row){
     JSON.stringify({chf:compareCHF.same,eurusd:compareEURUSD.same,audcad:compareAUDCAD.same,
       observedEurUsdBp:sameRatesDay?y2Gap:null,viewport:detail.viewport}));
 
+  // Technical evidence remains accessible by click and keyboard after switching
+  // pairs; no original 28-pair row is removed by the disclosure.
+  const fullResearch=page.frameLocator('#gmfq-page').locator('#gmfq-pair-full-research');
+  if(!(await fullResearch.evaluate(el=>el.open))){
+    await page.frameLocator('#gmfq-page').locator('#gmfq-pair-full-research > summary').click();
+  }
+  if(!(await page.frameLocator('#gmfq-page').locator('#gmfq-pair-macro-rates').isVisible()))
+    throw Error(label+' Pair full research failed to expand');
   await page.frameLocator('#gmfq-page').locator('#gmfq-pair-research-path button[data-gmfq-study-route="tassi"][data-gmfq-study-currency="CHF"]').click();
   await page.waitForURL(u=>u.hash==='#/tassi?ccy=CHF',{timeout:15000});
   await page.waitForFunction(()=>{

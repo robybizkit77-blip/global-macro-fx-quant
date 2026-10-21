@@ -52,6 +52,10 @@ items={
 "Screener explains stale Macro baseline and keeps no signal": "macro_baseline_asof" in s and "NON CORRENTE, tesi da rivalidare" in s and "Nessuna promozione di fonte" in s,
 "Screener diagnostic navigates to canonical Deep Dive": "mountScreenerBlockers(doc).catch" in s and "go('#/coppie?pair='+button.dataset.pair)" in s,
 
+"Decision-first UI precedes technical audit": "const decision=pairThesisReactionBridge" in s and "   decision+" in s and "   comparison+changes+reaction+" in s,
+"Full Pair evidence uses accessible native disclosure": "gmfq-pair-full-research" in s and "Apri analisi completa" in s and "gmfq-pair-full-research>summary" in s,
+"Full Pair evidence remains source-derived": "const comparison=pairMacroRatesComparison" in s and "const reaction=pairMarketReactionAudit" in s and "pairMarketReactionAudit(code,rates,fxOk?fx:null)" in s,
+"Progressive state survives pair selection": "let analysisExpanded=false" in s and "analysisExpanded=event.target.open" in s and "analysisExpanded?' open':''" in s,
 "Pair Macro/CB side only from canonical engine": "function pairMacroRatesComparison(code,pair,rates,ois,modelDay,macroDay)" in s and "s.macroSide" in s and "s.policySide" in s,
 "Observed 2Y spread strictly matched-date official": "A.certified&&B.certified&&A.date===B.date" in s and "Spread 2Y osservato: WITHHELD" in s and "r['2Y']" in s,
 "No inferred OIS differential for mismatched instruments": "futures IB" in s and "futures CORRA" in s and "non sottrarre i loro delta" in s,

@@ -431,6 +431,22 @@ async function getState(page){
            d.querySelectorAll('#pair-index button.pair-open[data-pair]').length===28&&
            d.getElementById('gmfq-pair-research-path')?.dataset.pair===code;
        },homePair,{timeout:35000});
+       // Published Preview: the reader should see the canonical decision first,
+       // with optional detailed research present but not overwhelming the page.
+       const firstRead=await page.evaluate(()=>{
+         const d=document.getElementById('gmfq-page')?.contentDocument;
+         const p=d?.getElementById('gmfq-pair-research-path');
+         const decision=p?.querySelector('#gmfq-pair-decision-bridge');
+         const details=p?.querySelector('#gmfq-pair-full-research');
+         return {before:!!decision&&!!details&&
+             !!(decision.compareDocumentPosition(details)&Node.DOCUMENT_POSITION_FOLLOWING),
+           decisionVisible:!!decision?.getClientRects().length,
+           closed:details?.open===false,
+           sourcePresent:!!p?.querySelector('#gmfq-pair-macro-rates')};
+       });
+       if(!firstRead.before||!firstRead.decisionVisible||
+          !firstRead.closed||!firstRead.sourcePresent)
+         throw Error(name+' public Pair decision-first layout not deployed '+JSON.stringify(firstRead));
        const p=await page.evaluate(()=>{
          const d=document.getElementById('gmfq-page')?.contentDocument;
          return {pairs:d?.querySelectorAll('#pair-index button.pair-open[data-pair]').length,
