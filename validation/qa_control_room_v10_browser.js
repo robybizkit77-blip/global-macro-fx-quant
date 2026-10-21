@@ -113,6 +113,10 @@ function expectedReactionFromMetrics(row){
       documentWidth:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth
     };
   });
+  if(!homeAudit.source?.includes('Macro/Tassi · baseline strutturale')||
+     !homeAudit.source?.includes(setupFeed.macro_baseline_asof)||
+     !homeAudit.stamp?.includes('Macro stor./n.v.'))
+    throw Error(label+' Home Macro provenance missing '+JSON.stringify(homeAudit));
   if(homeAudit.role!=='button'||!homeAudit.stamp?.includes('OIS '+certified+'/8')||
      !(expectedFx?homeAudit.stamp.includes('FX '+fxData.last_as_of.slice(8,10)+'/'+fxData.last_as_of.slice(5,7)):
        homeAudit.stamp.includes('FX non corr.'))||
@@ -385,8 +389,51 @@ function expectedReactionFromMetrics(row){
   });
   if(invalidFx.fx!==''||!invalidFx.text.includes('FX BCE non corrente o non verificabile'))
     throw Error(label+' Valute invalid FX not withheld '+JSON.stringify(invalidFx));
+  // SAME invalid ECB fixture must be WITHHELD in the Home audit and Pair
+  // Deep Dive, not only in Valute. No canonical engine field is modified.
+  await page.goto(url+'#/home?source-parity-test=1',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return !!d?.getElementById('gmfq-home-data-audit')&&
+      d.getElementById('gmfq-home-data-audit').textContent.includes('FX G8 · fixing BCE');
+  },null,{timeout:30000});
+  const homeNegative=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return {stamp:d?.querySelector('#liveAsOf')?.textContent,
+      source:d?.getElementById('gmfq-home-data-audit')?.textContent};
+  });
+  if(!homeNegative.stamp.includes('FX non corr.')||
+     !homeNegative.source.includes('Non corrente o non disponibile'))
+    throw Error(label+' Home did not mirror Valute FX WITHHELD '+JSON.stringify(homeNegative));
+  await page.goto(url+'#/coppie?pair=EURUSD&source-parity-test=1',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    const p=d?.getElementById('gmfq-pair-research-path');
+    return p?.dataset.pair==='EURUSD'&&p.textContent.includes('Fixing BCE: non verificato');
+  },null,{timeout:30000});
+  const pairNegative=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument,p=d?.getElementById('gmfq-pair-research-path');
+    return {path:p?.textContent?.slice(0,1200),
+      reaction:d?.getElementById('gmfq-pair-reaction-audit')?.dataset.reactionStatus||
+        p?.querySelector('.gmfq-reaction')?.getAttribute('data-reaction-status')};
+  });
+  if(!pairNegative.path.includes('Fixing BCE: non verificato'))
+    throw Error(label+' Pair did not mirror Valute FX WITHHELD '+JSON.stringify(pairNegative));
+  console.log('CONTROL_ROOM_V10_CROSS_PAGE_FX_WITHHELD_GREEN',label,{
+    home:'WITHHELD',valute:'WITHHELD',pair:'WITHHELD'});
+
   await page.unroute('**/ECB_G8_PRICE_HISTORY.json');
   console.log('CONTROL_ROOM_V10_VALUTE_SOURCE_SEPARATION_GREEN',label,{fixing:valute.fx,baseline:valute.macro,negative:'WITHHELD'});
+
+  // Reconcile the three independently rendered dates on the four research
+  // surfaces. The score's baseline is not made current by a newer fixing.
+  if(valute.macro!==oldModel.asOf||macroLens.baseline!==valute.macro||
+     valute.fx!==fxData.last_as_of||
+     setupFeed.macro_baseline_asof!==valute.macro)
+    throw Error(label+' cross-page date divergence: '+JSON.stringify({
+      macro:macroLens.baseline,valute:valute.macro,fixing:valute.fx,setup:setupFeed.macro_baseline_asof}));
+  console.log('CONTROL_ROOM_V10_CROSS_PAGE_SOURCE_PARITY_GREEN',label,{
+    macro:valute.macro,fixing:valute.fx,setup:setupFeed.price_asof});
 
   // Read-only Screener: all NON VALUTABILE reasons must come from the canonical
   // decision_frame, without changing its judgments or layout on mobile.

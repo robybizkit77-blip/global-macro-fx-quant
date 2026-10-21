@@ -281,16 +281,36 @@ function openDxy(doc){
 /* Home status: a successful network fetch is NOT evidence that every dataset
    is current or operational. This only explains source coverage; it never
    mutates market data, rates, policy deltas, biases, sizing or trading signals. */
-function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy,proxy){
+/* One source contract for Home, Valute, Macro and Pair Deep Dive.
+   Only source labels and read-only decisions; never alters source payloads. */
+function canonicalMacroBaselineAsOf(model){
+ const d=model?.asOf;
+ if(!d||macroSeriesPeriod(d)!==d||
+    !Array.isArray(model.currencies)||model.currencies.length!==8||
+    !FX.every(c=>model.currencies.includes(c)&&
+      ['growth','labour','inflation'].every(k=>num(model.macro?.[c]?.[k])!==null)))
+   return null;
+ return d;
+}
+function canonicalPairMacroBaseline(setup,model){
+ const d=canonicalMacroBaselineAsOf(model);
+ return setup?.schema==='GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1'&&
+  setup?.pair_count===28&&setup?.status==='CURRENT_CANONICAL_ENGINE'&&
+  d!==null&&setup.macro_baseline_asof===d?d:null;
+}
+
+function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy,proxy,model,setup){
  if(!home()||frame.contentDocument!==doc||doc.documentElement.dataset.marketMode!=='live')return;
  const head=doc.querySelector('.mast .fresh'),state=doc.getElementById('liveState'),
   stamp=doc.getElementById('liveAsOf');
  if(!head||!state||!stamp||doc.getElementById('gmfq-home-data-audit'))return;
  const datePattern=/^\d{4}-\d{2}-\d{2}$/;
- const fxDay=fx?.schema==='GMFQ_ECB_G8_PRICE_HISTORY_V1'&&
-  fx.status==='CURRENT_OFFICIAL_HISTORY'&&datePattern.test(fx.last_as_of||'')?
-  fx.last_as_of:null;
- const fxCurrent=fxDay!==null&&fresh(fxDay,4);
+ const fxStatus=valuteFxSourceStatus(fx);
+ const fxDay=fxStatus.asof;
+ const fxCurrent=fxStatus.status==='OFFICIAL_FIXING_RECENT';
+ const macroDay=canonicalMacroBaselineAsOf(model);
+ const pairMacroDay=canonicalPairMacroBaseline(setup,model);
+ const macroCurrent=pairMacroDay!==null&&fresh(pairMacroDay,10);
  const ratesCurrent=FX.filter(k=>{
   const x=rates?.[k];
   return x&&String(x.quality||'').includes('OFFICIAL')&&fresh(x.date,5)&&
@@ -320,9 +340,9 @@ function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy,proxy){
  const contextCodes=research?.context_codes||[];
  const incompleteCodes=research?.incomplete_codes||[];
  const dxyCurrent=validDxy(dxy);
- const complete=fxCurrent&&ratesCurrent.length===8&&oisCurrent.length===8&&dxyCurrent;
+ const complete=fxCurrent&&ratesCurrent.length===8&&oisCurrent.length===8&&dxyCurrent&&macroCurrent;
  state.textContent=complete?'FONTI VERIFICATE':'DATI PARZIALI';
- stamp.textContent=(fxCurrent?'FX '+fxDay.slice(8,10)+'/'+fxDay.slice(5,7):'FX non corr.')+' · OIS '+oisCurrent.length+'/8 cert. · Contesto '+(contextCount===null?'n.d.':contextCount+'/8')+' ⓘ';
+ stamp.textContent=(fxCurrent?'FX '+fxDay.slice(8,10)+'/'+fxDay.slice(5,7):'FX non corr.')+' · OIS '+oisCurrent.length+'/8 cert. · Contesto '+(contextCount===null?'n.d.':contextCount+'/8')+' · Macro '+(macroCurrent?'verif.':'stor./n.v.')+' ⓘ';
  head.setAttribute('role','button');head.tabIndex=0;
  head.setAttribute('aria-label','Apri verifica fonti: FX, rendimenti, pricing e DXY');
  head.setAttribute('aria-haspopup','dialog');head.setAttribute('aria-controls','gmfq-home-data-audit');
@@ -364,6 +384,13 @@ function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy,proxy){
     (incompleteCodes.length?'Non completi o datati: '+incompleteCodes.join(', ')+'. ':'')+
     'EUR: osservazioni con date separate, non una curva OIS sincronizzata. NZD: proxy Bank Bill−cash calibrato su 19 osservazioni RBNZ (24 bp), non OIS osservato. Nessun impatto sulle 28 coppie.':
     'Copertura ricerca non verificabile. Non viene promossa alcuna stima a dato ufficiale.')+
+  line('Macro/Tassi · baseline strutturale',pairMacroDay?
+    'Snapshot verificato tra D.json e motore 28 coppie: '+pairMacroDay+
+    (macroCurrent?'. Data entro il limite di freschezza; non è una nuova lettura.':
+      '. NON CORRENTE: i 24 score e i bias strutturali sono storici, da rivalidare.'):
+    'Baseline NON VERIFICABILE tra snapshot Macro e setup delle 28 coppie. D.json: '+
+    (macroDay||'non certificato')+'; Pair: '+(setup?.macro_baseline_asof||'non certificato')+
+    '. Non promuovere score o tesi senza riconciliazione.')+
   line('DXY sintetico · fixing BCE',dxyCurrent?
     'Stima informativa al '+dxy.as_of+'. Non è DXY ICE ufficiale e non è intraday.':
     'Stima assente o non corrente. Non è DXY ICE ufficiale.')+
@@ -379,10 +406,10 @@ function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy,proxy){
 }
 
 async function applyHome(doc){
- const [rr,oo,pp,dd,ff]=await Promise.allSettled([
+ const [rr,oo,pp,dd,ff,mm,ss]=await Promise.allSettled([
   feed('NATIVE_RATES_DATA.json'),feed('OIS_OPERATIONAL_VIEW.json'),
   feed('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),feed('DXY_SYNTHETIC_ECB.json'),
-  feed('ECB_G8_PRICE_HISTORY.json')]);
+  feed('ECB_G8_PRICE_HISTORY.json'),feed('D.json'),feed('PAIR_SETUP_OPERATIONAL_VIEW.json')]);
  const d=dd.status==='fulfilled'?dd.value:null;
  dxyFeed=d;
  const rates=rr.status==='fulfilled'?rr.value:null;
@@ -407,7 +434,8 @@ async function applyHome(doc){
    }
    if(ois)oisAll(doc,ois,proxy);
    renderDxy(doc);
-   mountHomeFreshnessAudit(doc,ff.status==='fulfilled'?ff.value:null,rates,ois,d,proxy);
+   mountHomeFreshnessAudit(doc,ff.status==='fulfilled'?ff.value:null,rates,ois,d,proxy,
+     mm.status==='fulfilled'?mm.value:null,ss.status==='fulfilled'?ss.value:null);
    doc.querySelectorAll('#valute .cc').forEach(el=>{
      el.tabIndex=0;el.setAttribute('role','button');
      if(el.dataset.filter!=='DXY')el.setAttribute('aria-label','Apri Valute '+(el.dataset.filter||''));
@@ -968,16 +996,17 @@ async function mountPairResearch(doc){
  if(!host)return;
  const inputs=await Promise.allSettled([
   feed('PAIR_SETUP_OPERATIONAL_VIEW.json'),feed('ECB_G8_PRICE_HISTORY.json'),
-  feed('NATIVE_RATES_DATA.json'),feed('OIS_OPERATIONAL_VIEW.json')]);
+  feed('NATIVE_RATES_DATA.json'),feed('OIS_OPERATIONAL_VIEW.json'),
+  feed('D.json')]);
  if(frame.contentDocument!==doc||route()!=='coppie')return;
- const [setup,fx,rates,ois]=inputs.map(x=>x.status==='fulfilled'?x.value:null);
+ const [setup,fx,rates,ois,model]=inputs.map(x=>x.status==='fulfilled'?x.value:null);
  const ok=setup?.schema==='GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1'&&
   setup.status==='CURRENT_CANONICAL_ENGINE'&&setup.pair_count===28&&
   Object.keys(setup.pairs||{}).length===28&&setup.price_audit?.status==='PASS'&&
   setup.price_audit.as_of===setup.price_asof&&setup.thesis_is_not_entry===true&&
   setup.entry_level_published===false&&fresh(setup.price_asof,5);
- const fxOk=fx?.schema==='GMFQ_ECB_G8_PRICE_HISTORY_V1'&&
-  fx.status==='CURRENT_OFFICIAL_HISTORY'&&fx.pair_count===28&&fresh(fx.last_as_of,5);
+ const fxOk=valuteFxSourceStatus(fx).status==='OFFICIAL_FIXING_RECENT';
+ const macroVerified=canonicalPairMacroBaseline(setup,model)!==null;
  if(!ok||!host||doc.getElementById('gmfq-pair-research-path'))return;
  const style=doc.createElement('style');style.id='gmfq-pair-path-style';
  style.textContent='#gmfq-pair-research-path{margin-top:12px}#gmfq-pair-research-path .gmfq-path-body{padding:13px 17px 16px}#gmfq-pair-research-path p{color:#b8cad7;font-size:12px;line-height:1.55;margin:7px 0 12px}#gmfq-pair-research-path .gmfq-path-evidence{color:#e0c788;font-size:11px;line-height:1.5}#gmfq-pair-research-path .gmfq-path-legs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}#gmfq-pair-research-path .gmfq-path-leg{border:1px solid #294457;border-radius:6px;background:#0a2232;padding:12px 13px;min-width:0}#gmfq-pair-research-path .gmfq-path-leg strong{color:#ebf2f7;font-size:14px;display:block}#gmfq-pair-research-path .gmfq-path-leg small{display:block;color:#9db6c8;font-size:11px;margin:5px 0 9px;line-height:1.4}#gmfq-pair-research-path .gmfq-path-links{display:flex;flex-wrap:wrap;gap:6px}#gmfq-pair-research-path button{border:1px solid #3a596d;background:#122d40;border-radius:5px;padding:6px 9px;color:#e6edf4;font:11px Arial,sans-serif;cursor:pointer}#gmfq-pair-research-path button:hover{border-color:#e3c57c;color:#f1d894}#gmfq-pair-research-path button:focus-visible{outline:2px solid #e3c57c;outline-offset:2px}#gmfq-pair-research-path .gmfq-path-warning{color:#dfc894;border-top:1px solid #2a4759;padding-top:10px}@media(max-width:600px){#gmfq-pair-research-path .gmfq-path-legs{grid-template-columns:1fr}#gmfq-pair-research-path .gmfq-path-body{padding:11px}}';
@@ -1031,16 +1060,19 @@ async function mountPairResearch(doc){
   const fav=setup.pairs[code]?.setup?.structuralFav;
   const fxDay=fxOk?fx.last_as_of:null;
   const differs=fxDay&&fxDay!==setup.price_asof;
-  const macroDay=setup.macro_baseline_asof;
-  const macroWarning=!fresh(macroDay,10)?'Baseline Macro/Tassi del motore ('+(macroDay||'as-of non certificato')+') non corrente: la preferenza strutturale è storica e va rivalidata. ':'';
+  const macroDay=macroVerified?setup.macro_baseline_asof:null;
+  const macroWarning=!macroVerified?
+    'Integrità baseline Macro/Tassi NON VERIFICABILE tra D.json e motore: non usare la tesi come aggiornata. ':
+    !fresh(macroDay,10)?
+    'Baseline Macro/Tassi del motore ('+macroDay+') non corrente: la preferenza strutturale è storica e va rivalidata. ':'';
   const sourceMsg=differs?'Il fixing BCE è più recente dello snapshot della tesi. Il movimento dal '+
     setup.price_asof+' al '+fxDay+' non aggiorna automaticamente il giudizio del motore.':
     'La data del fixing e quella del motore coincidono, oppure il fixing più recente non è verificato.';
   panel.innerHTML='<h2 class="desk-panel-title">Percorso di ricerca · '+FLAG[a]+' '+a+' / '+FLAG[b]+' '+b+'</h2>'+
    '<div class="gmfq-path-body"><p>Prima confronta Macro e Tassi delle due valute, poi guarda Banche centrali e COT. Torna al Prezzo per verificare conferma o divergenza. Il dettaglio sopra resta la lettura canonica della tesi, non un segnale di ingresso.</p>'+
    '<div class="gmfq-path-evidence">Modello: '+htmlEscape(setup.price_asof)+' · Fixing BCE: '+htmlEscape(fxDay||'non verificato')+
-   ' · Baseline Macro/Tassi: '+htmlEscape(macroDay||'non certificata')+' · Valuta favorita dal motore: '+htmlEscape(fav||'nessuna')+'</div>'+
-   pairMacroRatesComparison(code,setup.pairs[code],rates,ois,setup.price_asof,macroDay)+pairWhatChangedEvidence(code,setup.pairs[code],rates,setup.price_asof)+(reaction=>reaction+pairThesisReactionBridge(code,setup.pairs[code],setup.price_asof,reaction,macroDay))(pairMarketReactionAudit(code,rates,fx))+'<div class="gmfq-path-legs">'+leg(a)+leg(b)+'</div>'+
+   ' · Baseline Macro/Tassi: '+htmlEscape(macroDay||'non verificata')+' · Valuta favorita dal motore: '+htmlEscape(fav||'nessuna')+'</div>'+
+   pairMacroRatesComparison(code,setup.pairs[code],rates,ois,setup.price_asof,macroDay)+pairWhatChangedEvidence(code,setup.pairs[code],rates,setup.price_asof)+(reaction=>reaction+pairThesisReactionBridge(code,setup.pairs[code],setup.price_asof,reaction,macroDay))(pairMarketReactionAudit(code,rates,fxOk?fx:null))+'<div class="gmfq-path-legs">'+leg(a)+leg(b)+'</div>'+
    '<p class="gmfq-path-warning">'+htmlEscape(macroWarning+sourceMsg)+' I futures indicativi non sono curve OIS e non determinano da soli un trade.</p>'+
    '<div class="gmfq-path-links"><button type="button" data-gmfq-study-route="screener">Apri Screener 28 coppie ↗</button></div></div>';
  };
@@ -1083,10 +1115,7 @@ function macroThermometerObservation(src){
    value:src.latest_value};
 }
 function macroBaselineValid(model,therm){
- return model?.asOf&&macroSeriesPeriod(model.asOf)===model.asOf&&
-  Array.isArray(model.currencies)&&model.currencies.length===8&&
-  FX.every(c=>model.currencies.includes(c)&&
-   ['growth','labour','inflation'].every(k=>num(model.macro?.[c]?.[k])!==null))&&
+ return canonicalMacroBaselineAsOf(model)!==null&&
   therm?.schema_version==='GMFQ_MACRO_HEATMAP_V1'&&therm.status==='ACTIVE'&&
   therm.freshness_rule==='Use per-series as_of only; no single currency as_of is authoritative when inflation and unemployment release dates differ.'&&
   FX.every(c=>therm.currencies?.[c]?.status==='ACTIVE');
@@ -1340,9 +1369,7 @@ async function mountValuteSourceCompass(doc){
  const dxy=inputs[1].status==='fulfilled'?inputs[1].value:null;
  const model=inputs[2].status==='fulfilled'?inputs[2].value:null;
  const prices=valuteFxSourceStatus(fx),synthetic=validDxy(dxy);
- const baseline=macroSeriesPeriod(model?.asOf)===model?.asOf&&
-  FX.every(c=>['growth','labour','inflation'].every(k=>num(model?.macro?.[c]?.[k])!==null))?
-  model.asOf:null;
+ const baseline=canonicalMacroBaselineAsOf(model);
  const css=doc.createElement('style');css.id='gmfq-valute-source-compass-style';
  css.textContent=
   '#gmfq-valute-source-compass{margin:0 0 13px;border-top:1px solid #355065;border-bottom:1px solid #294558;padding:9px 12px;color:#bcd0dc;min-width:0}'+
