@@ -53,6 +53,14 @@ assert not excluded, excluded
 assert len(source_rows) == 9
 assert all(validate_row(x) is x for x in source_rows)
 
+def find_from(rows, ccy, contract, a, b):
+    matches = [x for x in matched_moves(rows)
+               if x["currency"] == ccy and x["symbol"].endswith(":" + contract)
+               and x["from_date"] == a and x["to_date"] == b]
+    assert len(matches) == 1
+    return matches[0]["observed_change_bp"]
+
+
 with tempfile.TemporaryDirectory() as td:
     p = Path(td) / "bars.jsonl"
     p.write_text(HISTORY.read_text(encoding="utf-8"), encoding="utf-8")
@@ -137,12 +145,6 @@ def _same_contract_current_only():
     assert all(len(x) >= 3 for x in out.values())
     assert all(row["source_timestamp_evidence"] == "SSR_DAILY_BAR_DATA_UPDATE_TIME" for row in seed)
 
-def find_from(rows, ccy, contract, a, b):
-    matches = [x for x in matched_moves(rows)
-               if x["currency"] == ccy and x["symbol"].endswith(":" + contract)
-               and x["from_date"] == a and x["to_date"] == b]
-    assert len(matches) == 1
-    return matches[0]["observed_change_bp"]
 
 _same_contract_current_only()
 print("OIS_SAME_CONTRACT_HISTORY_V1_PASS: 23 verified bars, matched changes, no roll, fail closed")
