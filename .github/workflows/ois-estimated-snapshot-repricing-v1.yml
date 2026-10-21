@@ -9,6 +9,9 @@ on:
       - 'validation/cb_pricing/build_cb_pricing_estimated_v1.py'
       - 'validation/cb_pricing/ois_estimated_snapshot_v1.py'
       - 'validation/cb_pricing/test_ois_estimated_snapshot_v1.py'
+      - 'validation/cb_pricing/ois_same_contract_history_v1.py'
+      - 'validation/cb_pricing/test_ois_same_contract_history_v1.py'
+      - 'validation/cb_pricing/history/OIS_SAME_CONTRACT_QUOTES_V1.jsonl'
       - 'validation/cb_pricing/push_ois_refresh_with_lease_v1.py'
       - 'validation/cb_pricing/test_push_ois_refresh_with_lease_v1.py'
       - 'validation/cb_pricing/build_ois_operational_view_v1.py'
@@ -25,6 +28,9 @@ on:
       - 'validation/cb_pricing/build_cb_pricing_estimated_v1.py'
       - 'validation/cb_pricing/ois_estimated_snapshot_v1.py'
       - 'validation/cb_pricing/test_ois_estimated_snapshot_v1.py'
+      - 'validation/cb_pricing/ois_same_contract_history_v1.py'
+      - 'validation/cb_pricing/test_ois_same_contract_history_v1.py'
+      - 'validation/cb_pricing/history/OIS_SAME_CONTRACT_QUOTES_V1.jsonl'
       - 'validation/cb_pricing/push_ois_refresh_with_lease_v1.py'
       - 'validation/cb_pricing/test_push_ois_refresh_with_lease_v1.py'
       - 'validation/cb_pricing/build_ois_operational_view_v1.py'
@@ -83,6 +89,15 @@ jobs:
           python validation/cb_pricing/build_cb_pricing_estimated_v1.py
           python validation/cb_pricing/build_ois_operational_view_v1.py
 
+      - name: Validate same-dated-contract history and existing source evidence
+        run: |
+          python validation/cb_pricing/test_ois_same_contract_history_v1.py
+          python validation/cb_pricing/ois_same_contract_history_v1.py
+
+      - name: Append same-contract bar observations (existing schedule, no new job)
+        if: github.event_name != 'pull_request'
+        run: python validation/cb_pricing/ois_same_contract_history_v1.py --write
+
       - name: Record changed estimated snapshots
         if: github.event_name != 'pull_request'
         run: python validation/cb_pricing/ois_estimated_snapshot_v1.py
@@ -95,6 +110,7 @@ jobs:
           python validation/cb_pricing/test_cb_pricing_estimated_v1.py
           python validation/cb_pricing/test_ois_operational_view_v1.py
           python validation/cb_pricing/test_ois_estimated_snapshot_v1.py
+          python validation/cb_pricing/test_ois_same_contract_history_v1.py
           sha256sum -c /tmp/ois.before.sha256
           sha256sum -c /tmp/native.before.sha256
           python - <<'PY'

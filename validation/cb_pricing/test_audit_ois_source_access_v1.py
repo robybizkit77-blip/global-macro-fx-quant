@@ -52,21 +52,45 @@ def main() -> None:
     mutated["currencies"]["EUR"]["secondary_quote_context"]["cross_date_join_allowed"] = True
     rejects(plan, mutated, official, "unsafe promotion flag")
 
-    mutated = deepcopy(view)
-    mutated["currencies"]["USD"]["horizons"]["3m"]["rate"] = 4.25
-    rejects(plan, mutated, official, "withheld OIS level leak")
+    # USD/CHF have estimated futures levels today; a changed estimated rate
+    # is NOT a WITHHELD level leak. Assert the actual governance boundary:
+    # never official backtest-eligible and never shadow an active official feed.
+    for ccy in ("USD", "CHF"):
+        state = view["currencies"][ccy]["operational_status"]
+        if state == "WITHHELD":
+            altered = deepcopy(view)
+            altered["currencies"][ccy]["horizons"]["3m"]["rate"] = 4.25
+            rejects(plan, altered, official, "withheld OIS level leak")
+        elif state == "GREEN_ESTIMATED":
+            altered = deepcopy(view)
+            altered["currencies"][ccy]["backtest_eligible_as_official"] = True
+            rejects(plan, altered, official, "estimated source must not be official backtest")
+            altered_official = deepcopy(official)
+            altered_official["currencies"][ccy]["status"] = "ACTIVE"
+            rejects(plan, view, altered_official, "estimated source shadowing active official")
+        else:
+            assert state == "GREEN_OFFICIAL"
+            altered_official = deepcopy(official)
+            altered_official["currencies"][ccy]["status"] = "WITHHELD"
+            rejects(plan, view, altered_official, "official promotion bypassed official runtime")
 
-    mutated = deepcopy(view)
-    mutated["currencies"]["USD"]["horizons"]["3m"]["policy_delta_bp"] = 1
-    rejects(plan, mutated, official, "withheld OIS level leak")
-
-    mutated = deepcopy(view)
-    mutated["currencies"]["CHF"]["secondary_quote_context"]["cross_date_join_allowed"] = True
-    rejects(plan, mutated, official, "unsafe promotion flag")
-
-    mutated = deepcopy(view)
-    mutated["currencies"]["CHF"]["secondary_quote_context"]["date_mismatch"] = False
-    rejects(plan, mutated, official, "date mismatch incorrectly reported")
+    if view["currencies"]["CHF"].get("secondary_quote_context"):
+        altered = deepcopy(view)
+        altered["currencies"]["CHF"]["secondary_quote_context"]["cross_date_join_allowed"] = True
+        rejects(plan, altered, official, "unsafe promotion flag")
+        altered = deepcopy(view)
+        altered["currencies"]["CHF"]["secondary_quote_context"]["date_mismatch"] = False
+        rejects(plan, altered, official, "date mismatch incorrectly reported")
+    else:
+        altered = deepcopy(view)
+        altered["currencies"]["CHF"]["secondary_quote_context"] = {
+            "full_curve_usable": False,
+            "cross_date_join_allowed": False,
+            "policy_delta_allowed": False,
+            "repricing_signal_allowed": False,
+            "backtest_eligible_as_official": False,
+        }
+        rejects(plan, altered, official, "secondary quote context not allowed")
 
     mutated = deepcopy(view)
     mutated["currencies"]["NZD"]["market_direction_proxy"]["policy_delta_from_proxy_allowed"] = True

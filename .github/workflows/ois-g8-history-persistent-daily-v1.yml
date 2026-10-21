@@ -41,6 +41,9 @@ on:
       - 'validation/cb_pricing/test_build_ois_source_readiness_view_v1.py'
       - 'live_data/sections/OIS_SOURCE_READINESS_VIEW.json'
       - 'validation/cb_pricing/ois_estimated_snapshot_v1.py'
+      - 'validation/cb_pricing/ois_same_contract_history_v1.py'
+      - 'validation/cb_pricing/test_ois_same_contract_history_v1.py'
+      - 'validation/cb_pricing/history/OIS_SAME_CONTRACT_QUOTES_V1.jsonl'
       - 'validation/cb_pricing/build_ois_operational_view_v1.py'
       - 'validation/cb_pricing/build_cb_pricing_estimated_v1.py'
       - 'validation/cb_pricing/collect_cb_pricing_estimated_live_v1.py'
@@ -112,6 +115,12 @@ jobs:
         run: |
           python validation/cb_pricing/build_cb_pricing_estimated_v1.py
           python validation/cb_pricing/test_cb_pricing_estimated_v1.py
+
+      - name: Verify same-contract quote lineage
+        if: steps.gate.outputs.should_run == 'true'
+        run: |
+          python validation/cb_pricing/test_ois_same_contract_history_v1.py
+          python validation/cb_pricing/ois_same_contract_history_v1.py --write
 
       - name: Persist estimated homogeneous snapshots
         if: steps.gate.outputs.should_run == 'true'
@@ -219,6 +228,7 @@ jobs:
             'live_data/sections/OIS_OPERATIONAL_VIEW.json',
             'live_data/sections/OIS_SOURCE_READINESS_VIEW.json',
             'validation/cb_pricing/history/OIS_ESTIMATED_SNAPSHOTS_V1.jsonl',
+            'validation/cb_pricing/history/OIS_SAME_CONTRACT_QUOTES_V1.jsonl',
             'validation/cb_pricing/history/OIS_G8_SNAPSHOTS_V1.jsonl',
           }
           assert set(changed).issubset(allowed),(changed,sorted(allowed))
