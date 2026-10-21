@@ -185,6 +185,16 @@ async function getState(page){
          return {present:!!rail,keys,macro:rail?.dataset.macroStatus,
            ois:rail?.dataset.oisCertified,screener:rail?.dataset.screenerCount,
            sourceEffect:rail?.dataset.sourceEffect,
+           visualEdition:rail?.dataset.visualEdition,
+           layout:{
+             columns:getComputedStyle(grid).gridTemplateColumns.trim().split(/\s+/).length,
+             heroFullWidth:Math.abs(hero.getBoundingClientRect().width-grid.getBoundingClientRect().width)<=2,
+             globeSameImage:getComputedStyle(hero.querySelector('.globe')).backgroundImage.includes('data:image/png;base64'),
+             backgroundRatio:getComputedStyle(hero.querySelector('.globe')).backgroundSize==='auto 100%',
+             railColumns:getComputedStyle(rail).gridTemplateColumns.trim().split(/\s+/).length,
+             marketCards:grid.querySelectorAll(':scope>.panel:not(.hero)').length===2,
+             styleMounted:!!d.getElementById('gmfq-home-visual-edition-css')
+           },
            priorityTarget:rail?.dataset.priorityTarget,
            priorityState:rail?.dataset.priorityState,
            priorityText:rail?.querySelector('.gmfq-reading-priority')?.textContent,
@@ -197,6 +207,12 @@ async function getState(page){
            page:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
        });
        if(!reading.present||!reading.nextToGlobe||reading.sourceEffect!=='NONE'||
+           reading.visualEdition!=='home-composition-v1'||
+           !reading.layout.styleMounted||!reading.layout.heroFullWidth||
+           !reading.layout.globeSameImage||!reading.layout.backgroundRatio||
+           !reading.layout.marketCards||
+           reading.layout.columns!==(name==='mobile'?1:2)||
+           reading.layout.railColumns!==(name==='mobile'?1:2)||
           JSON.stringify(reading.keys)!==JSON.stringify(['macro','pricing','pairs'])||
           reading.priorityTarget!==(reading.macro!=='DATED_SNAPSHOT'?'macro':Number(reading.ois)<8?'pricing':'pairs')||
           reading.priorityState!==(reading.macro==='HISTORICAL'?'HISTORICAL':reading.macro==='WITHHELD'?'WITHHELD':Number(reading.ois)<8?'PARTIAL':'RESEARCH_ONLY')||
