@@ -101,7 +101,13 @@ def main() -> int:
     # non-rounded percentile classifier or forgets to rebuild the payload.
     try:
         from check_cot_story_integrity import main as check_cot_story_integrity
-        if check_cot_story_integrity()!=0:
+        import contextlib, io
+        # Keep the parent gate JSON-only: nested audit prints its own receipt
+        # when executed directly, but must not corrupt this contract's JSON.
+        cot_audit_output=io.StringIO()
+        with contextlib.redirect_stdout(cot_audit_output):
+            cot_rc=check_cot_story_integrity()
+        if cot_rc!=0:
             failures.append('COT numerical-story-runtime integrity failed')
         else:
             details['cot_story_runtime_parity']='PASS'
