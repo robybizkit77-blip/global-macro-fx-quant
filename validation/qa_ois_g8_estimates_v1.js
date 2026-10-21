@@ -179,34 +179,62 @@ assert(historicalRows.every(r=>r.official_ois_quote===false &&
 const archive=historicalRows.filter(r=>r.observation_date<='2026-10-20')
   .map(x=>JSON.stringify(x)).join('\n')+'\n'; // Frozen PIT replay: future appends cannot change QA.
 const moves=matchedResearchMoves(archive,result,TODAY);
-assert.equal(moves.length,3,JSON.stringify(moves));
-const byMove=Object.fromEntries(moves.map(x=>[x.ccy,x]));
-assert.equal(byMove.USD.contract,'ZQZ2026');
-assert.equal(byMove.USD.delta_bp,-1);
-assert.equal(byMove.USD.from,'2026-10-19');
-assert.equal(byMove.USD.to,'2026-10-20');
-assert.equal(byMove.EUR.contract,'FST3V2026');
-assert.equal(byMove.EUR.delta_bp,0.25);
-assert.equal(byMove.CHF.contract,'SA3U2026');
-assert.equal(byMove.CHF.delta_bp,0.25);
-for(const m of moves){
- assert.equal(m.research_only,true);
- assert.equal(m.policy_delta_allowed,false);
- assert.equal(m.official_ois,false);
+assert.equal(moves.length,9,JSON.stringify(moves));
+const expectation={
+ USD:{'3m':{code:'ZQZ2026',bp:-1,from:'2026-10-19',to:'2026-10-20'},
+      '6m':{code:'ZQJ2027',bp:0,from:'2026-10-19',to:'2026-10-20'},
+      '12m':{code:'ZQV2027',bp:2.5,from:'2026-10-19',to:'2026-10-20'}},
+ EUR:{'3m':{code:'FST3V2026',bp:0.25,from:'2026-10-16',to:'2026-10-19'},
+      '6m':{code:'FST3G2027',bp:-1,from:'2026-10-16',to:'2026-10-19'},
+      '12m':{code:'FST3M2027',bp:-1,from:'2026-10-19',to:'2026-10-20'}},
+ CHF:{'3m':{code:'SA3U2026',bp:0.25,from:'2026-10-19',to:'2026-10-20'},
+      '6m':{code:'SA3Z2026',bp:0,from:'2026-10-19',to:'2026-10-20'},
+      '12m':{code:'SA3M2027',bp:1.5,from:'2026-10-19',to:'2026-10-20'}}
+};
+for(const [ccy,terms] of Object.entries(expectation)){
+ for(const [term,expected] of Object.entries(terms)){
+  const matches=moves.filter(x=>x.ccy===ccy&&x.tenor===term);
+  assert.equal(matches.length,1,ccy+' '+term);
+  const r=matches[0];
+  assert.equal(r.contract,expected.code);
+  assert.equal(r.from,expected.from);
+  assert.equal(r.to,expected.to);
+  assert.equal(r.delta_bp,expected.bp);
+  assert(r.calendar_gap_days>=1&&r.calendar_gap_days<=7);
+  assert.equal(r.research_only,true);
+  assert.equal(r.policy_delta_allowed,false);
+  assert.equal(r.official_ois,false);
+ }
 }
 const sameContractHtml=view(result,moves);
 assert(sameContractHtml.includes('data-same-contract="RESEARCH_ONLY"'));
-assert(sameContractHtml.includes('stesso contratto futures'));
-assert(sameContractHtml.includes('−1')===false||sameContractHtml.includes('-1.00'));
-// Malicious history identity duplicates, old quote date and same-contract
-// official promotion must NOT become a research delta.
+assert(sameContractHtml.includes('stessi contratti futures'));
+assert.equal((sameContractHtml.match(/class="gmfq-same-value" data-term=/g)||[]).length,9);
+assert(sameContractHtml.includes('FST3G2027'));
+assert(sameContractHtml.includes('SA3M2027'));
+assert(sameContractHtml.includes('Non sono ΔOIS ufficiali'));
+assert(!sameContractHtml.includes('GREEN_OFFICIAL'));
+// Reject duplicate, official-promotion, fake futures price, fake listed symbol,
+// mismatched roll and stale date; a missing tenor cannot borrow another tenor.
 assert.deepEqual(matchedResearchMoves(archive+archive.split('\n')[0]+'\n',result,TODAY),[]);
 assert.deepEqual(matchedResearchMoves(archive.replace('"official_ois_quote":false',
   '"official_ois_quote":true'),result,TODAY),[]);
+assert.deepEqual(matchedResearchMoves(archive.replace('"backtest_eligible_as_official":false',
+  '"backtest_eligible_as_official":true'),result,TODAY),[]);
 assert.deepEqual(matchedResearchMoves(archive,result,'2026-11-10'),[]);
 const rolled=structuredClone(result);
-rolled.find(x=>x.ccy==='USD').points['3m'].contract='ZQH2027';
-assert(!matchedResearchMoves(archive,rolled,TODAY).some(x=>x.ccy==='USD'));
+rolled.find(x=>x.ccy==='USD').points['6m'].contract='ZQH2027';
+assert(!matchedResearchMoves(archive,rolled,TODAY).some(x=>x.ccy==='USD'&&x.tenor==='6m'));
+const badMaturity=structuredClone(result);
+badMaturity.find(x=>x.ccy==='CHF').points['12m'].expires='2028-12-31';
+assert(!matchedResearchMoves(archive,badMaturity,TODAY).some(x=>x.ccy==='CHF'&&x.tenor==='12m'));
+const partialResearchFixture=structuredClone(result);
+delete partialResearchFixture.find(x=>x.ccy==='EUR').points['6m'];
+const partialMoves=matchedResearchMoves(archive,partialResearchFixture,TODAY);
+assert.equal(partialMoves.length,8);
+assert(!partialMoves.some(x=>x.ccy==='EUR'&&x.tenor==='6m'));
+const absent=view(result,[]);
+assert(absent.includes('osservazioni confrontabili non disponibili'));
 
 const html=view(result);
 assert(html.includes('data-ccy="NZD"'));

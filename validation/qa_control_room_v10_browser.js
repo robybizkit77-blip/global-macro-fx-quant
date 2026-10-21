@@ -224,6 +224,15 @@ function expectedReactionFromMetrics(row){
     const d=document.getElementById('gmfq-page')?.contentDocument;
     return d?.querySelectorAll('#gmfq-pricing-research .gmfq-research-plot svg polyline').length===4;
   },null,{timeout:25000});
+  // Sources are fetched asynchronously AFTER the four core pricing curves
+  // render. Wait for all four individually linked source-readiness rows rather
+  // than racing the still-loading "Stato fonti da aggiornare" placeholder.
+  // Timeout still FAILS if the actual read-only source context is missing.
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return d?.querySelectorAll('#gmfq-source-readiness .gmfq-source-row').length===4&&
+           d?.querySelectorAll('#gmfq-source-readiness .gmfq-source-link a').length===4;
+  },null,{timeout:25000});
   const research=await page.evaluate(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument,host=d?.getElementById('gmfq-pricing-research');
     return {

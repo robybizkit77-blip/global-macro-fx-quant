@@ -187,54 +187,91 @@ function coverage(ois,bb,today){
  };
 }
 
-/* Only compare two verified source days of the SAME listed futures contract.
-   Never bridge a roll, relabel it as OIS, or infer future policy probabilities. */
-function matchedResearchMoves(text, rows, today){
+/* Pure, source-dated SAME futures-contract comparisons for each approximate
+   3M/6M/12M label. No OIS repricing, no smoothing and never compare a roll. */
+function matchedResearchMoves(text,rows,today){
  if(typeof text!=='string'||text.length>3000000)return [];
- const parsed=[],ids=new Set();
+ const parsed=[],seen=new Set();
+ const exchange={USD:'CBOT:',EUR:'EUREX:',CHF:'ICEEUR:'};
+ const roots={USD:'ZQ',EUR:'FST3',CHF:'SA3'};
+ const validDay=x=>/^\d{4}-\d{2}-\d{2}$/.test(x||'')&&
+   Number.isFinite(Date.parse(x+'T00:00:00Z'))&&
+   new Date(Date.parse(x+'T00:00:00Z')).toISOString().slice(0,10)===x;
  try{
   for(const line of text.split('\n')){
    if(!line.trim())continue;
-   const x=JSON.parse(line);
+   const x=JSON.parse(line),ccy=x.currency;
    if(x.schema!=='GMFQ_OIS_SAME_CONTRACT_QUOTE_V1'||
-      !['USD','EUR','CHF'].includes(x.currency)||
+      !Object.prototype.hasOwnProperty.call(exchange,ccy)||
       x.source_timestamp_evidence!=='SSR_DAILY_BAR_DATA_UPDATE_TIME'||
       x.source_method!=='TRADINGVIEW_DATED_FUTURES_SSR_V2'||
       x.official_ois_quote!==false||x.policy_delta_eligible!==false||
-      !/^\d{4}-\d{2}-\d{2}$/.test(x.observation_date||'')||
+      x.backtest_eligible_as_official!==false||
+      !['3m','6m','12m'].includes(x.observed_under_horizon)||
+      typeof x.contract!=='string'||
+      !(new RegExp('^'+roots[ccy]+'[FGHJKMNQUVXZ][0-9]{4}$')).test(x.contract)||
+      x.symbol!==exchange[ccy]+x.contract||
+      !validDay(x.observation_date)||!validDay(x.expiration)||
+      x.expiration<=x.observation_date||
+      typeof x.first_seen_at_utc!=='string'||
+      !/^\d{4}-\d{2}-\d{2}T/.test(x.first_seen_at_utc)||
+      !validDay(x.first_seen_at_utc.slice(0,10))||
+      x.first_seen_at_utc.slice(0,10)<x.observation_date||
       number(x.futures_price)===null||number(x.implied_rate)===null||
       Math.abs(100-x.futures_price-x.implied_rate)>0.0002)return [];
-   const key=[x.currency,x.contract,x.observation_date].join('|');
-   if(ids.has(key))return [];
-   ids.add(key);parsed.push(x);
+   const identity=[ccy,x.contract,x.observation_date].join('|');
+   if(seen.has(identity))return [];
+   seen.add(identity);parsed.push(x);
   }
  }catch(_){return [];}
  const result=[];
  for(const ccy of ['USD','EUR','CHF']){
-  const p=rows.find(x=>x.ccy===ccy)?.points?.['3m'];
-  if(!p?.source_quote_verified||!p.contract||!p.expires||!fresh(p.date,today))continue;
-  const bars=parsed.filter(x=>x.currency===ccy&&x.contract===p.contract&&
-    x.symbol===({USD:'CBOT:',EUR:'EUREX:',CHF:'ICEEUR:'}[ccy]+p.contract)&&
-    x.expiration===p.expires).sort((a,b)=>a.observation_date.localeCompare(b.observation_date));
-  if(bars.length<2)continue;
-  const latest=bars[bars.length-1],prior=bars[bars.length-2];
-  if(latest.observation_date!==p.date||
-     Math.abs(latest.implied_rate-p.value)>0.0002)continue;
-  const gap=(Date.parse(latest.observation_date+'T00:00:00Z')-
-   Date.parse(prior.observation_date+'T00:00:00Z'))/86400000;
-  if(!Number.isInteger(gap)||gap<=0||gap>7)continue;
-  result.push({ccy,contract:p.contract,from:prior.observation_date,to:latest.observation_date,
-    delta_bp:Math.round((latest.implied_rate-prior.implied_rate)*10000)/100,
-    research_only:true,policy_delta_allowed:false,official_ois:false});
+  const row=rows.find(x=>x.ccy===ccy);
+  if(!row||!['PROXY','MIXED'].includes(row.tier))continue;
+  for(const tenor of ['3m','6m','12m']){
+   const p=row.points?.[tenor];
+   if(!p?.source_quote_verified||!p.contract||!p.expires||!validDay(p.date)||
+      !fresh(p.date,today))continue;
+   const bars=parsed.filter(x=>x.currency===ccy&&
+     x.contract===p.contract&&x.symbol===exchange[ccy]+p.contract&&
+     x.expiration===p.expires&&x.observed_under_horizon===tenor&&
+     x.observation_date<=p.date)
+    .sort((a,b)=>a.observation_date.localeCompare(b.observation_date));
+   if(bars.length<2)continue;
+   const last=bars[bars.length-1],prior=bars[bars.length-2];
+   if(last.observation_date!==p.date||
+      Math.abs(last.implied_rate-p.value)>0.0002)continue;
+   const dayGap=(Date.parse(last.observation_date+'T00:00:00Z')-
+     Date.parse(prior.observation_date+'T00:00:00Z'))/86400000;
+   if(!Number.isInteger(dayGap)||dayGap<1||dayGap>7)continue;
+   result.push({ccy,tenor,contract:p.contract,from:prior.observation_date,
+     to:last.observation_date,calendar_gap_days:dayGap,
+     delta_bp:Math.round((last.implied_rate-prior.implied_rate)*10000)/100,
+     research_only:true,policy_delta_allowed:false,official_ois:false});
+  }
  }
  return result;
 }
 function matchedResearchHtml(moves){
- if(!moves.length)return '<p class="gmfq-est-note">Variazioni dello stesso contratto: insufficienti osservazioni verificate. Nessun ΔOIS dedotto.</p>';
- return '<div class="gmfq-est-note" data-same-contract="RESEARCH_ONLY"><b>Variazioni osservate · stesso contratto futures (3M indicativo)</b>'+
- moves.map(x=>'<p style="margin:4px 0"><b>'+flags[x.ccy]+' '+x.ccy+'</b> · '+esc(x.contract)+
-  ' · '+esc(x.from)+' → '+esc(x.to)+' · <b>'+(x.delta_bp>0?'+':'')+fmt(x.delta_bp)+' bp</b></p>').join('')+
- '<small>Solo stessi contratti e date di quotazione verificate. Non è ΔOIS ufficiale, né un segnale FX.</small></div>';
+ const currencies=['USD','EUR','CHF'],terms=['3m','6m','12m'];
+ if(!moves?.length)return '<p class="gmfq-est-note">Movimenti degli stessi contratti: osservazioni confrontabili non disponibili. Nessun ΔOIS ricostruito.</p>';
+ const cells=new Map(moves.map(x=>[x.ccy+'|'+x.tenor,x]));
+ const td=(ccy,t)=>{
+  const r=cells.get(ccy+'|'+t);
+  return r?'<div class="gmfq-same-value" data-term="'+t+'" data-contract="'+esc(r.contract)+'"><b>'+
+   (r.delta_bp>0?'+':'')+fmt(r.delta_bp)+' bp</b>'+
+   '<small>'+esc(r.contract)+'</small><small>'+esc(r.from)+' → '+esc(r.to)+'</small></div>':
+   '<div class="gmfq-same-value"><b>—</b><small>Non confrontabile</small></div>';
+ };
+ return '<section class="gmfq-est-note gmfq-same-contract" data-same-contract="RESEARCH_ONLY">'+
+  '<strong>Variazioni osservate · stessi contratti futures</strong>'+
+  '<p>Confronto su ciascuna scadenza indicativa: 3M / 6M / 12M. Date e contratto verificati singolarmente.</p>'+
+  '<div class="gmfq-same-table" role="table" aria-label="Variazioni futures per contratto">'+
+  '<div role="row" class="gmfq-same-line gmfq-same-head"><span>Valuta</span><span>3M</span><span>6M</span><span>12M</span></div>'+
+  currencies.map(ccy=>'<div role="row" class="gmfq-same-line" data-same-ccy="'+ccy+'">'+
+   '<div><strong>'+flags[ccy]+' '+ccy+'</strong></div>'+
+   terms.map(t=>td(ccy,t)).join('')+'</div>').join('')+'</div>'+
+  '<small>Variazioni dello <b>stesso futures</b> su intervalli osservati anche diversi da una seduta. Non sono ΔOIS ufficiali, curve sincronizzate o segnali FX.</small></section>';
 }
 function view(rows,moves=[]){
  const cell=(r,t)=>{const x=r.points[t];return x?
@@ -263,6 +300,13 @@ const css=[
  '#gmfq-ois-research-estimates .gmfq-est-head{color:#adbecc;background:#142c3d;font:600 10px Arial,sans-serif}',
  '#gmfq-ois-research-estimates [data-estimate-type="SCENARIO"] b,#gmfq-ois-research-estimates [data-estimate-type="MIXED"] b{color:#e3c681}',
  '#gmfq-ois-research-estimates .gmfq-est-note{margin-top:12px;color:#b1c5d2}',
+ '#gmfq-ois-research-estimates .gmfq-same-table{border:1px solid #2c495a;background:#0a2132;border-radius:6px;margin:8px 0;overflow:hidden}',
+ '#gmfq-ois-research-estimates .gmfq-same-line{display:grid;grid-template-columns:minmax(72px,.75fr) repeat(3,minmax(0,1fr));border-bottom:1px solid #254153}',
+ '#gmfq-ois-research-estimates .gmfq-same-line>*{padding:7px 5px;min-width:0;overflow-wrap:anywhere}',
+ '#gmfq-ois-research-estimates .gmfq-same-head{background:#142c3d;color:#adbecc;font-weight:600}',
+ '#gmfq-ois-research-estimates .gmfq-same-value b{color:#e6eff5;display:block;font-size:12px;font-variant-numeric:tabular-nums}',
+ '#gmfq-ois-research-estimates .gmfq-same-value small{color:#a4bccc;display:block;font-size:9px;line-height:1.35}',
+ '@media(max-width:600px){#gmfq-ois-research-estimates .gmfq-same-line{grid-template-columns:minmax(55px,.7fr) repeat(3,minmax(0,1fr))}#gmfq-ois-research-estimates .gmfq-same-line>*{padding:6px 3px}#gmfq-ois-research-estimates .gmfq-same-value b{font-size:11px}#gmfq-ois-research-estimates .gmfq-same-value small{font-size:8px}}',
  '@media(max-width:600px){#gmfq-ois-research-estimates .gmfq-est-body{padding:9px}#gmfq-ois-research-estimates .gmfq-est-row{grid-template-columns:minmax(78px,1.1fr) repeat(3,minmax(0,1fr))}#gmfq-ois-research-estimates .gmfq-est-row>div,#gmfq-ois-research-estimates .gmfq-est-row>span{padding:6px 4px}#gmfq-ois-research-estimates .gmfq-est-row b{font-size:12px}#gmfq-ois-research-estimates .gmfq-est-row small{font-size:9px}}'
 ].join('');
 if(typeof module!=='undefined'&&module.exports)module.exports={matrix,view,matchedResearchMoves,fresh,coverage,auditDatedFuture,calibratedNzdCarry,NZD_REFERENCE_ROWS,NZD_RECENT_ROWS,NZD_HOLDOUT_ROWS};

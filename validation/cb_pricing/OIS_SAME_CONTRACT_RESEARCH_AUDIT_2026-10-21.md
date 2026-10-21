@@ -29,9 +29,23 @@ This archive **does not claim** to reconstruct full official market settlements,
 
 ## User-facing reading
 
-On the existing `#/tassi` research-only section, three compact lines may show **the latest comparable previous quote for the same 3M-labeled contract** (USD/EUR/CHF), each with both market source dates and observed basis-point difference. They are only displayed when the current validated listed contract, expiry, rate and source date match the latest archival observation, and the previous source observation is within seven calendar days. No matches or outdated archives produce an explicit unavailable/insufficient-data notice — **never simulated 1D/1W OIS changes**.
+On the existing `#/tassi` research-only section, a **compact 3 × 3 matrix** may show the latest comparable previous quote for the same **3M, 6M and 12M-labeled contracts** (USD/EUR/CHF). Each cell has its own source dates, contract code and observed change in basis points. The nine labels correspond to selected dated futures, not spot OIS tenors; both dates are preserved even when not successive sessions. They are only displayed when the current validated listed contract, expiry, rate and source date match the latest archival observation, and the previous source observation is within seven calendar days. No matches or outdated archives produce an explicit unavailable/insufficient-data notice — **never simulated 1D/1W OIS changes**.
 
 The general 'OIS 4/8 certified · 8/8 context' counter remains unchanged. The additional comparison is never used in Macro scores, bank stance, FX bias, sizing, 28 pair rankings, backtests, alerts or official OIS policy repricing.
+
+## Nine held-out source-linked comparisons available on 21 October 2026
+
+The source archive has two distinct valid observations for **all nine currently selected** indicative futures horizons:
+
+| FX | 3M-labeled current contract | 6M-labeled current contract | 12M-labeled current contract |
+|---|---|---|---|
+| USD | ZQZ2026: **−1.00 bp** (19→20 Oct) | ZQJ2027: **0.00 bp** (19→20 Oct) | ZQV2027: **+2.50 bp** (19→20 Oct) |
+| EUR | FST3V2026: **+0.25 bp** (16→19 Oct) | FST3G2027: **−1.00 bp** (16→19 Oct) | FST3M2027: **−1.00 bp** (19→20 Oct) |
+| CHF | SA3U2026: **+0.25 bp** (19→20 Oct) | SA3Z2026: **0.00 bp** (19→20 Oct) | SA3M2027: **+1.50 bp** (19→20 Oct) |
+
+A **zero** is an observed unchanged futures implied rate across two verified dates, not a missing quote. If a contract has rolled, one source date is missing, its expiry/price differs from the certified displayed quote, or the archive is stale, the cell is **— / non confrontabile**, never an inferred or interpolated number.
+
+The tested app continues to show only the latest matching two market days for each exact contract and tenor, independent of job execution time. A source-date gap may include weekend or illiquid sessions; consequently these values are **observed multi-date differences**, not necessarily certified 1-day changes.
 
 ## Limitations
 
