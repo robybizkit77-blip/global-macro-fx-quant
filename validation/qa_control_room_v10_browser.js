@@ -333,6 +333,7 @@ function expectedReactionFromMetrics(row){
       !research.disclaimers.includes('non sono una curva OIS')||
      !research.disclaimers.includes('NON curva OIS né policy delta')||
      !research.disclaimers.includes('CHF 2Y/10Y')||
+     !research.disclaimers.includes('Le curve sintetizzano prezzi per scadenza')||
      !research.snbSpot?.includes('CHF 10Y SNB '+Number(snbSpot.value_percent).toFixed(3)+'%')||
      !research.snbSpot.includes(snbSpot.as_of)||!research.snbSpot.includes('SOLO INFORMATIVO')||
      !research.snbSpot.includes('nessuno spread o segnale')||
@@ -1189,6 +1190,8 @@ function expectedReactionFromMetrics(row){
     {minimumFractionDigits:2,maximumFractionDigits:2});
   if(!['SECONDARY_CURRENT','SECONDARY_HISTORICAL'].includes(gold.state)||
      gold.asof!==goldFixture.proxy_as_of||!gold.value?.includes(goldQuote)||
+     !['transparent','rgba(0, 0, 0, 0)'].includes(gold.spotBackground)||
+     gold.spotBorderSide!=='1px'||
      !gold.text?.includes('Gold Price LBMA · WITHHELD')||
      !gold.text?.includes('futures COMEX indicativo')||
      !gold.text?.includes('non sono usate in questo confronto')||
