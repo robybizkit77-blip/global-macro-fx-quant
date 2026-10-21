@@ -139,6 +139,31 @@ async function getState(page){
           !audit.detail?.includes('Le date delle diverse fonti non sono intercambiabili')||
           audit.documentWidth>audit.viewport+16)
          throw Error(name+' public source-date disclosure missing '+JSON.stringify(audit));
+       // Verify the published Home puts the source-led research sequence
+       // immediately after the protected world hero, with no extra dashboard.
+       const reading=await page.evaluate(()=>{
+         const d=document.getElementById('gmfq-page').contentDocument;
+         const rail=d.getElementById('gmfq-home-reading-path'),
+           hero=d.querySelector('.hero'),grid=d.querySelector('.gridtop');
+         const keys=[...rail?.querySelectorAll('button[data-reading-target]')||[]]
+           .map(x=>x.dataset.readingTarget);
+         return {present:!!rail,keys,macro:rail?.dataset.macroStatus,
+           ois:rail?.dataset.oisCertified,screener:rail?.dataset.screenerCount,
+           sourceEffect:rail?.dataset.sourceEffect,
+           nextToGlobe:!!hero&&!!grid&&!!d.querySelector('.hero .globe')&&
+             !!(hero.compareDocumentPosition(rail)&Node.DOCUMENT_POSITION_FOLLOWING)&&
+             !!(rail.compareDocumentPosition(grid)&Node.DOCUMENT_POSITION_FOLLOWING),
+           width:rail?.scrollWidth,client:rail?.clientWidth,
+           page:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
+       });
+       if(!reading.present||!reading.nextToGlobe||reading.sourceEffect!=='NONE'||
+          JSON.stringify(reading.keys)!==JSON.stringify(['macro','pricing','pairs'])||
+          !['HISTORICAL','DATED_SNAPSHOT','WITHHELD'].includes(reading.macro)||
+          !Number.isInteger(Number(reading.ois))||Number(reading.ois)>8||
+          !Number.isInteger(Number(reading.screener))||Number(reading.screener)>28||
+          reading.width>reading.client+2||reading.page>reading.viewport+16)
+         throw Error(name+' public Home decision-first research path wrong '+JSON.stringify(reading));
+       console.log('CONTROL_ROOM_V10_HOME_READING_PUBLIC_GREEN',name,reading);
        if(name==='mobile')await page.frameLocator('#gmfq-page').locator('#gmfq-mobile-data-audit').click();
        else await page.frameLocator('#gmfq-page').locator('.mast .fresh').press('Enter');
        await page.frameLocator('#gmfq-page').locator('dialog#gmfq-home-data-audit[open]').waitFor({timeout:10000});
