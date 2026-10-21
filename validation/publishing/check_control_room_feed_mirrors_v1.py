@@ -16,6 +16,7 @@ SITE = ROOT / "site/control-room-preview/home-navigation-v10.js"
 DASH = ROOT / ".github/workflows/publish-dashboard-pages-v1.yml"
 MARKET = ROOT / ".github/workflows/publish-control-room-market-data-v1.yml"
 PUBLIC = ROOT / "validation/publishing/verify_pages_http_delivery_v1.py"
+MARKET_PUBLIC = ROOT / "validation/publishing/verify_control_room_market_delivery_v1.py"
 
 DASH_OWNED = {
     "D.json", "ESTIMATED_RESIDUAL_GAPS.json",
@@ -37,6 +38,7 @@ def main() -> int:
     dash = DASH.read_text(encoding="utf-8")
     market = MARKET.read_text(encoding="utf-8")
     public = PUBLIC.read_text(encoding="utf-8")
+    market_public = MARKET_PUBLIC.read_text(encoding="utf-8")
     called = set(re.findall(r"\bfeed\('([^']+\.json)'\)", site))
     all_owned = DASH_OWNED | MARKET_OWNED
     assert not (DASH_OWNED & MARKET_OWNED), "duplicate feed owners"
@@ -64,6 +66,18 @@ def main() -> int:
         assert market.count("live_data/sections/" + name) >= 3, (
             "Market mirror trigger/copy/allowlist incomplete", name
         )
+        assert '"' + "live_data/sections/" + name + '"' in market_public, (
+            "Market feed missing from exact SHA+HTTP verification", name
+        )
+    assert "verify_control_room_market_delivery_v1.py" in market, (
+        "Market publisher does not execute five-feed proof"
+    )
+    assert "test_control_room_market_delivery_v1.py" in market, (
+        "Market publisher does not exercise missing/stale mirror regressions"
+    )
+    assert "public_http" in market_public and "branch_parity" in market_public, (
+        "Market proof no longer covers both branch and public HTTP"
+    )
     # Legacy narrative is source-derived, not a fresh policy/OIS view.
     assert "const ROOT='https://raw.githubusercontent.com/" in site
     assert "/main/live_data/sections/';" in site
