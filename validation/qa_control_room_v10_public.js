@@ -607,12 +607,46 @@ async function getState(page){
        // A new certified Price overlay can have exactly the SAME date as the
        // latest ECB fixing. It must still disclose the old Macro baseline;
        // the legacy "fixing newer than thesis" sentence is not always true.
+       const expectedPriceLabel=process.env.GITHUB_EVENT_NAME==='pull_request'?
+         'Modello: ':'Prezzo del modello: ';
        if(p.pairs!==28||p.buttons!==8||
-          !p.content?.includes('Modello: '+pricing.setup_date)||
+          !p.content?.includes(expectedPriceLabel+pricing.setup_date)||
           !p.content?.includes('Baseline Macro/Tassi: '+pricing.setup_macro_asof)||
           !p.content?.includes('Il dettaglio sopra resta la lettura canonica della tesi')||
           p.docWidth>p.viewport+16)
           throw Error(name+' public Pair Deep Dive date/routing regression '+JSON.stringify(p));
+       // On PR, public Pages still serves approved main. Post-merge, verify
+       // the actual published research-ledger layout and its mobile stacking.
+       if(process.env.GITHUB_EVENT_NAME!=='pull_request'){
+         const visual=await page.evaluate(()=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument;
+           const path=d?.getElementById('gmfq-pair-research-path');
+           const stamps=path?.querySelector('.gmfq-path-evidence');
+           const cols=path?.querySelector('.gmfq-decision-cols');
+           const win=d?.defaultView;
+           return {
+             keys:[...stamps?.querySelectorAll('span[data-source]')||[]].map(x=>x.dataset.source),
+             sourceText:stamps?.textContent,
+             macroState:stamps?.dataset.macroState,
+             gridCols:cols?win.getComputedStyle(cols).gridTemplateColumns.trim().split(/\\s+/).length:0,
+             background:cols?.firstElementChild?
+               win.getComputedStyle(cols.firstElementChild).backgroundColor:null,
+             width:d?.documentElement.scrollWidth,
+             viewport:d?.documentElement.clientWidth
+           };
+         });
+         if(JSON.stringify(visual.keys)!==JSON.stringify(['macro','price','fixing'])||
+            visual.macroState!=='HISTORICAL'||
+            !visual.sourceText?.includes('Prezzo del modello: '+pricing.setup_date)||
+            !visual.sourceText?.includes('Baseline Macro/Tassi: '+pricing.setup_macro_asof)||
+            visual.sourceText?.includes('Valuta favorita dal motore:')||
+            visual.gridCols!==(visual.viewport<=700?1:3)||
+            !['transparent','rgba(0, 0, 0, 0)'].includes(visual.background)||
+            visual.width>visual.viewport+16)
+           throw Error(name+' published Pair first reading visual hierarchy drift '+JSON.stringify(visual));
+         console.log('CONTROL_ROOM_PAIR_EDITORIAL_SOURCE_LEDGER_PUBLIC_GREEN',name,
+           JSON.stringify({keys:visual.keys,gridCols:visual.gridCols,viewport:visual.viewport}));
+       }
        await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="EURCHF"]').click();
        await page.waitForFunction(()=>location.hash==='#/coppie?pair=EURCHF',null,{timeout:10000});
        await page.waitForFunction(()=>{
