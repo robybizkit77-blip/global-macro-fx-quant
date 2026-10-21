@@ -775,9 +775,22 @@ async function applyMarketResearch(doc){
    Structural Macro/Policy sides come ONLY from the 28-pair canonical model,
    independently dated sovereign yields ONLY from official native Rates.
    Never derive a curve/spread from mismatched or stale dates. */
+/* The single verified historical-model gate across all Pair interpretations.
+   D.json certification is checked by the caller through
+   canonicalPairMacroBaseline(). This guard also rejects malformed, future or
+   Price-inconsistent dates. A historical but certified model stays visible
+   WITH its historic label; an unverified one cannot give a favored side. */
+function pairModelEvidenceState(macroDay,priceDay){
+ const age=romeCalendarAge(macroDay);
+ const priceAge=romeCalendarAge(priceDay);
+ const verified=age!==null&&age>=0&&priceAge!==null&&priceAge>=0&&
+   macroDay<=priceDay;
+ return {verified,current:verified&&age<=10,historical:verified&&age>10};
+}
 function pairMacroRatesComparison(code,pair,rates,ois,modelDay,macroDay){
  const a=code.slice(0,3),b=code.slice(3,6),s=pair?.decision_frame||{};
- const safeSide=(v)=>v===a||v===b?v:null;
+ const modelState=pairModelEvidenceState(macroDay,modelDay);
+ const safeSide=(v)=>modelState.verified&&(v===a||v===b)?v:null;
  const macroSide=safeSide(s.macroSide),policySide=safeSide(s.policySide);
  // Reuse the exact futures date/price/provenance guard from Rates research.
  // This does NOT change the official 6M monetary-policy delta.
@@ -834,20 +847,30 @@ function pairMacroRatesComparison(code,pair,rates,ois,modelDay,macroDay){
   'Spread 2Y governativi (base − quotata): '+(spread>0?'+':'')+spread+
     ' bp · stesso giorno '+A.date+'. Differenza di livello, non segnale FX.':
   'Spread 2Y osservato: WITHHELD. Le due scadenze devono essere ufficiali, recenti e riferite allo stesso giorno.';
- const verdict=macroSide&&policySide&&macroSide===policySide?
+ const verdict=!modelState.verified?
+  'Baseline Macro/Tassi non verificata: preferenza e convergenza strutturale WITHHELD. I rendimenti ufficiali restano osservazioni separate.':
+  macroSide&&policySide&&macroSide===policySide?
   'Macro e Tassi/banche centrali favoriscono la stessa valuta nel modello.':
   macroSide&&policySide&&macroSide!==policySide?
    'Macro e Tassi/banche centrali favoriscono valute opposte: nessun allineamento completo.':
    macroSide||policySide?
     'Solo un pilastro distingue le valute: vantaggio strutturale parziale, non un ingresso.':
     'Nessun vantaggio convergente dimostrato dai due pilastri nel modello.';
- const watch=typeof s.watch==='string'?s.watch:'Non ci sono condizioni sufficienti per una lettura operativa.';
- return '<section class="gmfq-compare" id="gmfq-pair-macro-rates" aria-label="Confronto Macro Rates delle due valute">'+
+ const watch=!modelState.verified?
+  'Prima verificare la provenienza della baseline Macro/Tassi, senza inferire una tesi dai soli rendimenti.':
+  modelState.historical?
+   'Baseline strutturale storica, da rivalidare. '+(typeof s.watch==='string'?s.watch:'Nessuna condizione verificata.'):
+   typeof s.watch==='string'?s.watch:'Non ci sono condizioni sufficienti per una lettura operativa.';
+ const modelSideText=v=>modelState.verified?sideText(v):'WITHHELD · modello non verificato';
+ const modelStamp=(macroDay&&modelState.verified?macroDay+' · '+(modelState.historical?'STORICA':'SNAPSHOT DATATO'):'non verificata');
+ return '<section class="gmfq-compare" id="gmfq-pair-macro-rates" data-model-evidence="'+
+   (modelState.verified?modelState.historical?'HISTORICAL':'CURRENT':'WITHHELD')+
+   '" aria-label="Confronto Macro Rates delle due valute">'+
   '<h3>Macro e Rates · confronto '+FLAG[a]+' '+a+' / '+FLAG[b]+' '+b+'</h3>'+
-  '<div class="gmfq-compare-score"><div><span>MACRO · baseline '+htmlEscape(macroDay||'non certificata')+'</span>'+
-    '<strong>'+htmlEscape(sideText(macroSide))+'</strong></div>'+
-    '<div><span>TASSI / BANCHE CENTRALI · baseline '+htmlEscape(macroDay||'non certificata')+'</span>'+
-    '<strong>'+htmlEscape(sideText(policySide))+'</strong></div></div>'+
+  '<div class="gmfq-compare-score"><div><span>MACRO · baseline '+htmlEscape(modelStamp)+'</span>'+
+    '<strong>'+htmlEscape(modelSideText(macroSide))+'</strong></div>'+
+    '<div><span>TASSI / BANCHE CENTRALI · baseline '+htmlEscape(modelStamp)+'</span>'+
+    '<strong>'+htmlEscape(modelSideText(policySide))+'</strong></div></div>'+
   '<p class="gmfq-compare-explain">'+htmlEscape(verdict)+'</p>'+
   '<div class="gmfq-compare-legs">'+leg(a)+leg(b)+'</div>'+
   '<p class="gmfq-compare-spread" data-same-date="'+(same?'true':'false')+'">'+htmlEscape(spreadMsg)+'</p>'+
@@ -1032,7 +1055,8 @@ function pairMarketReactionAudit(code,rates,fx){
    These are NOT forecasted triggers, price levels, or executable entries. */
 function pairEvidenceChecklist(code,pair,modelDay,reactionHtml,macroDay){
  const a=code.slice(0,3),b=code.slice(3,6),src=pair?.setup||{},frame=pair?.decision_frame||{};
- const fav=[a,b].includes(src.structuralFav)?src.structuralFav:null;
+ const modelState=pairModelEvidenceState(macroDay,modelDay);
+ const fav=modelState.verified&&[a,b].includes(src.structuralFav)?src.structuralFav:null;
  const other=fav===a?b:fav===b?a:null;
  const audited=/data-reaction-status="(COERENTE|DIVERGENTE|NON_CONCLUSIVO|WITHHELD)"/.exec(reactionHtml||'')?.[1]||'WITHHELD';
  const windowEnd=/data-window-end="(\d{4}-\d{2}-\d{2})"/.exec(reactionHtml||'')?.[1]||null;
@@ -1041,28 +1065,34 @@ function pairEvidenceChecklist(code,pair,modelDay,reactionHtml,macroDay){
  const observation=measured?('Ultima finestra confrontabile fino al '+windowEnd+': fixing FX favorevole a '+FLAG[side]+' '+side+'.'):
   'La finestra recente non dà una verifica direzionale confrontabile: non usare un segnale surrogato.';
  const partial=!!fav&&(![a,b].includes(frame.macroSide)||![a,b].includes(frame.policySide));
- const need=typeof frame.missing==='string'&&frame.missing?frame.missing:'Differenziazione Macro/Rates ancora da verificare.';
- const confirm=fav?
+ const need=modelState.verified&&typeof frame.missing==='string'&&frame.missing?
+  frame.missing:'Differenziazione Macro/Rates ancora da verificare.';
+ const confirm=!modelState.verified?
+  'La baseline Macro/Tassi non è verificata: prima certificare il modello, poi definire cosa potrebbe confermare una direzione.':
+  fav?
   'Verificare nuovi fixing BCE nella direzione di '+FLAG[fav]+' '+fav+
    ', confrontati con i 2Y sulle stesse date. '+
    (partial?'Controllare se il pilastro Macro o Tassi/CB oggi non decisivo diventa più chiaro.':
     'Controllare che entrambi i pilastri strutturali restino dalla stessa parte.'):
   'Prima serve una preferenza Macro/Tassi/CB verificabile e non soltanto uno spread governativo elevato.';
- const weakens=fav?
+ const weakens=!modelState.verified?
+  'Senza una baseline verificata non esiste una preferenza strutturale certificata da indebolire o invalidare.':
+  fav?
   'Nuovi fixing nella direzione di '+FLAG[other]+' '+other+
    ' e peggioramento dei driver strutturali renderebbero meno convincente la lettura favorevole a '+
    fav+'. Da soli non definiscono un livello di invalidazione.':
   'Se Macro e Tassi/CB restano non discriminanti, eventuali movimenti di prezzo non sono una conferma strutturale.';
  const blockers=[];
- if(!fav)blockers.push('Il motore non individua una valuta favorita.');
- if(src.price?.state==='BAD'||src.price?.state==='NEUTRAL')
+ if(!modelState.verified)blockers.push('Baseline Macro/Tassi non verificata: qualità, timing e posizionamento del setup WITHHELD.');
+ else if(!fav)blockers.push('Il motore non individua una valuta favorita.');
+ if(modelState.verified&&(src.price?.state==='BAD'||src.price?.state==='NEUTRAL'))
   blockers.push('Prezzo nel modello: '+src.price.text+'.');
- if(src.extension?.state==='ADVANCED')
+ if(modelState.verified&&src.extension?.state==='ADVANCED')
   blockers.push('Estensione del prezzo: '+(src.extension.text||'già avanzato')+'.');
- if(typeof src.timing?.text==='string')blockers.push('Timing: '+src.timing.text+'.');
- if(['HIGH','DIVERGENT'].includes(src.cot?.state)&&typeof src.cot.text==='string')
+ if(modelState.verified&&typeof src.timing?.text==='string')blockers.push('Timing: '+src.timing.text+'.');
+ if(modelState.verified&&['HIGH','DIVERGENT'].includes(src.cot?.state)&&typeof src.cot.text==='string')
   blockers.push('Posizionamento: '+src.cot.text+'.');
- if(src.liquidity?.state==='BAD'&&typeof src.liquidity.text==='string')
+ if(modelState.verified&&src.liquidity?.state==='BAD'&&typeof src.liquidity.text==='string')
   blockers.push('Liquidità: '+src.liquidity.text+'.');
  if(!blockers.length)blockers.push('Serve ancora un ingresso tecnico verificato e un rapporto rischio/rendimento definito esternamente al modello.');
  const row=(name,text)=>'<div class="gmfq-evidence-row"><b>'+htmlEscape(name)+'</b><p>'+htmlEscape(text)+'</p></div>';
@@ -1081,14 +1111,14 @@ function pairEvidenceChecklist(code,pair,modelDay,reactionHtml,macroDay){
 
 function pairThesisReactionBridge(code,pair,modelDay,reactionHtml,macroDay){
  const base=code.slice(0,3),quote=code.slice(3,6),meta=pair?.setup||{},frame=pair?.decision_frame||{};
- const favored=meta.structuralFav===base||meta.structuralFav===quote?meta.structuralFav:null;
+ const modelState=pairModelEvidenceState(macroDay,modelDay);
+ const favored=modelState.verified&&(meta.structuralFav===base||meta.structuralFav===quote)?meta.structuralFav:null;
  const status=/data-reaction-status="(COERENTE|DIVERGENTE|NON_CONCLUSIVO|WITHHELD)"/.exec(reactionHtml||'')?.[1]||'WITHHELD';
  const observedSide=/data-reaction-fx-side="([A-Z]{3})"/.exec(reactionHtml||'')?.[1]||null;
  const validSide=(observedSide===base||observedSide===quote)&&['COERENTE','DIVERGENTE'].includes(status);
  // Recent FX/2Y observations can be valid while the structural Macro thesis is stale.
  // Never upgrade/downgrade that historical thesis from a newer FX movement.
- const baselineCurrent=typeof macroDay==='string'&&fresh(macroDay,10)&&
-  typeof modelDay==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(modelDay)&&macroDay<=modelDay;
+ const baselineCurrent=modelState.current;
  const state=baselineCurrent&&validSide&&favored?
    (observedSide===favored?'CONFERMA_DIREZIONE':'CONTRO_TESI'):'NON_DETERMINATO';
  const trend=!baselineCurrent?
@@ -1105,24 +1135,25 @@ function pairThesisReactionBridge(code,pair,modelDay,reactionHtml,macroDay){
    ', nella direzione della tesi. È una conferma di direzione nel periodo, non un nuovo ingresso.':
   favored?'Nessuna conferma o invalidazione dal fixing in questa finestra: audit assente, incompleto o non conclusivo.':
    'Il motore non identifica una valuta strutturalmente favorita: il confronto Rates/FX non crea da solo una tesi.';
- const structural=favored?(baselineCurrent?'Favore ':'Preferenza storica · ')+FLAG[favored]+' '+favored:
+ const structural=!modelState.verified?'WITHHELD · baseline non verificata':
+  favored?(baselineCurrent?'Favore ':'Preferenza storica · ')+FLAG[favored]+' '+favored:
   'Nessuna preferenza netta';
- const quality=typeof frame.quality==='string'&&frame.quality?frame.quality:'Non disponibile';
- const setupQuality=typeof meta.quality==='string'&&meta.quality?meta.quality:'Non valutabile';
- const setupTiming=typeof meta.timing?.text==='string'?meta.timing.text:'Timing non certificato';
+ const quality=modelState.verified&&typeof frame.quality==='string'&&frame.quality?frame.quality:'WITHHELD · modello non verificato';
+ const setupQuality=modelState.verified&&typeof meta.quality==='string'&&meta.quality?meta.quality:'WITHHELD · modello non verificato';
+ const setupTiming=modelState.verified&&typeof meta.timing?.text==='string'?meta.timing.text:'Timing non certificato';
  const watch=!baselineCurrent?
   'Prima rivalidare la baseline Macro/Tassi e il relativo giudizio sulle due valute. I fixing FX recenti, da soli, non aggiornano la tesi storica.':
   typeof frame.watch==='string'&&frame.watch?frame.watch:'Servono nuove evidenze Macro e Rates certificate.';
- const price=typeof frame.priceNote==='string'&&frame.priceNote?frame.priceNote:'Prezzo del modello non verificato';
+ const price=modelState.verified&&typeof frame.priceNote==='string'&&frame.priceNote?frame.priceNote:'Prezzo del modello non verificato';
  const label=status==='COERENTE'?'Coerente tra 2Y e FX':status==='DIVERGENTE'?'Divergente tra 2Y e FX':
   status==='NON_CONCLUSIVO'?'Non conclusivo':'Non valutabile';
  return '<section id="gmfq-pair-decision-bridge" class="gmfq-decision-bridge" data-bridge-status="'+state+
   '" data-baseline-status="'+(baselineCurrent?'CURRENT':'STALE_OR_UNVERIFIED')+'" aria-label="Tesi, setup e reazione recente">'+
   '<h3>Dalla tesi alla decisione · cosa conta davvero</h3>'+
   '<p>Tre piani distinti. La lettura recente dei 2Y non ricalcola il modello, e la qualità di un setup non significa che sia già il momento di entrare.</p>'+
-  '<div class="gmfq-decision-cols"><div><span>TESI STRUTTURALE · baseline '+htmlEscape(macroDay||'non certificata')+'</span><strong>'+
+  '<div class="gmfq-decision-cols"><div><span>TESI STRUTTURALE · baseline '+htmlEscape(modelState.verified?macroDay:'non certificata')+'</span><strong>'+
   structural+'</strong><small>'+htmlEscape(quality)+'</small></div>'+
-  '<div><span>OPERABILITÀ · SETUP DEL MODELLO</span><strong>'+htmlEscape(setupQuality)+'</strong><small>'+
+  '<div><span>OPERABILITÀ · SETUP DEL MODELLO'+(modelState.historical?' · STORICO':'')+'</span><strong>'+htmlEscape(setupQuality)+'</strong><small>'+
   htmlEscape(setupTiming)+'</small></div>'+
   '<div><span>REAZIONE OSSERVATA · RATES / FX</span><strong>'+htmlEscape(label)+'</strong><small>'+
   htmlEscape(trend)+'</small></div></div>'+
@@ -1211,10 +1242,10 @@ async function mountPairResearch(doc){
   if(panel.dataset.pair===code)return;
   panel.dataset.pair=code;
   const [a,b]=[code.slice(0,3),code.slice(3,6)];
-  const fav=setup.pairs[code]?.setup?.structuralFav;
   const fxDay=fxOk?fx.last_as_of:null;
   const differs=fxDay&&fxDay!==setup.price_asof;
   const macroDay=macroVerified?setup.macro_baseline_asof:null;
+  const fav=macroDay?setup.pairs[code]?.setup?.structuralFav:null;
   const macroWarning=!macroVerified?
     'Integrità baseline Macro/Tassi NON VERIFICABILE tra D.json e motore: non usare la tesi come aggiornata. ':
     !fresh(macroDay,10)?
