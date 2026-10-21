@@ -167,8 +167,17 @@ invalidBB.governance.substitutes_for_ois_level=true;
 assert.equal(matrix(ois,invalidBB,TODAY).find(x=>x.ccy==='NZD').tier,'WITHHELD');
 // Deterministic verified same-contract archive: never join futures rolls or
 // synthesize daily OIS deltas from method-only operational snapshots.
-const archive=fs.readFileSync(path.join(root,
+const fullArchive=fs.readFileSync(path.join(root,
   'validation/cb_pricing/history/OIS_SAME_CONTRACT_QUOTES_V1.jsonl'),'utf8');
+const historicalRows=fullArchive.split('\n').filter(Boolean).map(x=>JSON.parse(x));
+assert(historicalRows.length>=23,'The 23 verified initial source bars must be preserved');
+assert(['e5a3cede0df','a611277716c','195ab3c45d9'].every(
+  sha=>historicalRows.some(r=>r.source_commit===sha)));
+assert(historicalRows.every(r=>r.official_ois_quote===false &&
+  r.backtest_eligible_as_official===false &&
+  r.policy_delta_eligible===false));
+const archive=historicalRows.filter(r=>r.observation_date<='2026-10-20')
+  .map(x=>JSON.stringify(x)).join('\n')+'\n'; // Frozen PIT replay: future appends cannot change QA.
 const moves=matchedResearchMoves(archive,result,TODAY);
 assert.equal(moves.length,3,JSON.stringify(moves));
 const byMove=Object.fromEntries(moves.map(x=>[x.ccy,x]));
