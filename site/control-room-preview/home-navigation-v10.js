@@ -1086,7 +1086,7 @@ async function mountPairResearch(doc){
   const decision=pairThesisReactionBridge(code,setup.pairs[code],setup.price_asof,reaction,macroDay);
   panel.innerHTML='<h2 class="desk-panel-title">Percorso di ricerca · '+FLAG[a]+' '+a+' / '+FLAG[b]+' '+b+'</h2>'+
    '<div class="gmfq-path-body">'+
-   '<p class="gmfq-first-intro">Prima la tesi, i rischi e ciò che manca per valutarla. Le evidenze complete restano consultabili sotto.</p>'+
+   '<p class="gmfq-first-intro">Prima la tesi, i rischi e ciò che manca per valutarla. Il dettaglio sopra resta la lettura canonica della tesi, non un segnale di ingresso. Le evidenze complete restano consultabili sotto.</p>'+
    '<div class="gmfq-path-evidence">Modello: '+htmlEscape(setup.price_asof)+' · Fixing BCE: '+htmlEscape(fxDay||'non verificato')+
    ' · Baseline Macro/Tassi: '+htmlEscape(macroDay||'non verificata')+' · Valuta favorita dal motore: '+htmlEscape(fav||'nessuna')+'</div>'+
    decision+
