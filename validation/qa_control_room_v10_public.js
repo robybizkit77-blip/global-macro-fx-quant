@@ -784,7 +784,14 @@ async function getState(page){
          const d=document.getElementById('gmfq-page')?.contentDocument;
          const p=d.getElementById('gmfq-screener-blockers');
          const details=p.querySelector('#gmfq-blocker-details');
-         return {summary:p.querySelector('.gmfq-blocker-overview')?.textContent,
+         // Do not blame the research addon for an existing native Screener
+         // overflow: compare the full page width to the same page without it.
+         const panelWidth=p.scrollWidth,panelClient=p.clientWidth;
+         p.style.display='none';
+         const nativeWidth=d.documentElement.scrollWidth;
+         p.style.display='';
+         return {nativeWidth,panelWidth,panelClient,
+           summary:p.querySelector('.gmfq-blocker-overview')?.textContent,
            count:p.querySelectorAll('.gmfq-blocker-pair').length,
            closed:details?.open===false,
            hidden:![...p.querySelectorAll('.gmfq-blocker-pair')].some(x=>x.getClientRects().length>0),
@@ -794,7 +801,8 @@ async function getState(page){
           !screenerFirst.summary.includes('Differenziale 2Y senza tesi: ')||
           !screenerFirst.summary.includes('Vantaggio insufficiente: ')||
           screenerFirst.count!==11||!screenerFirst.closed||!screenerFirst.hidden||
-          screenerFirst.width>screenerFirst.viewport+16)
+          screenerFirst.panelWidth>screenerFirst.panelClient+2||
+          screenerFirst.width>Math.max(screenerFirst.viewport+16,screenerFirst.nativeWidth+2))
          throw Error(name+' public Screener source-first reading not deployed '+JSON.stringify(screenerFirst));
        await page.frameLocator('#gmfq-page').locator('#gmfq-blocker-details>summary').press('Enter');
        if(!(await page.frameLocator('#gmfq-page').locator('#gmfq-screener-blockers button[data-pair="GBPJPY"]').isVisible()))
