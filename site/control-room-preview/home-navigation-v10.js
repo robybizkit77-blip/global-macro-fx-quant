@@ -1490,7 +1490,8 @@ async function mountScreenerBlockers(doc){
  '#gmfq-screener-blockers #gmfq-blocker-details>summary{cursor:pointer;color:#e0c78c;font:600 12px/1.5 Arial,sans-serif;padding:5px 16px;outline-offset:4px}'+
  '#gmfq-screener-blockers #gmfq-blocker-details:not([open])>:not(summary){display:none!important}'+
  
- '#gmfq-screener-blockers .gmfq-blocker-date{padding:0 16px 10px;color:#d7bf87;font:11px/1.5 Arial,sans-serif}'+
+ '#gmfq-screener-blockers .gmfq-blocker-date{display:flex;flex-wrap:wrap;gap:4px 17px;border-top:1px solid #2c4656;margin:6px 16px 0;padding:9px 0 10px;color:#d7bf87;font:11px/1.5 Arial,sans-serif}'+
+ '#gmfq-screener-blockers .gmfq-blocker-date span{min-width:0;overflow-wrap:anywhere}'+
  '#gmfq-screener-blockers .gmfq-blocker-brief{padding:0 16px 7px;color:#9eb4c4;font:11px/1.5 Arial,sans-serif}'+
  
  '#gmfq-screener-blockers .gmfq-blocker-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:5px 16px 13px}'+
@@ -1505,8 +1506,10 @@ async function mountScreenerBlockers(doc){
  '#gmfq-screener-blockers .gmfq-blocker-note{margin:0;border-top:1px solid #29404f;padding:10px 16px;color:#91aabc;font:10px/1.55 Arial,sans-serif}'+
  '#gmfq-screener-blockers .gmfq-blocker-message{padding:10px 16px;font:12px/1.55 Arial,sans-serif;color:#d2c396}'+
  '@media(max-width:950px){#gmfq-screener-blockers .gmfq-blocker-grid{grid-template-columns:1fr}}'+
- '@media(max-width:600px){#gmfq-screener-blockers .gmfq-blocker-intro{padding:10px 12px 4px}'+
- '#gmfq-screener-blockers .gmfq-blocker-date{padding:0 12px 9px}'+
+ '@media(max-width:600px){#gmfq-screener-blockers .gmfq-blocker-priority{padding:10px 12px 3px;font-size:12px}'+
+ '#gmfq-screener-blockers .gmfq-blocker-intro{padding:2px 12px 7px}'+
+ '#gmfq-screener-blockers .gmfq-blocker-date{margin:6px 12px 0;padding:8px 0 9px;gap:4px}'+
+ '#gmfq-screener-blockers .gmfq-blocker-date span{width:100%}'+
  '#gmfq-screener-blockers .gmfq-blocker-grid{padding:5px 12px 10px}'+
  '#gmfq-screener-blockers .gmfq-blocker-overview{padding:7px 12px;gap:5px 12px}'+
  '#gmfq-screener-blockers .gmfq-blocker-brief{padding:0 12px 7px}'+
@@ -1538,10 +1541,11 @@ async function mountScreenerBlockers(doc){
   '<span>Macro vs Tassi/CB: '+groups.CONFLICT.length+'</span>'+
   '<span>Differenziale 2Y senza tesi: '+groups.RATES_ONLY.length+'</span>'+
   '<span>Vantaggio insufficiente: '+groups.INSUFFICIENT.length+'</span></div>'+
-  '<p class="gmfq-blocker-date">Baseline Macro/Tassi: '+htmlEscape(setup.macro_baseline_asof)+
-  (baselineFresh?' · data entro il limite di freschezza':' · NON CORRENTE, tesi da rivalidare')+
-  ' · Prezzi del motore: '+htmlEscape(setup.price_asof||'non verificati')+'</p>'+
-  '<p class="gmfq-blocker-brief">Motivi e confronto Macro/Rates disponibili per ciascuna delle '+rows.length+' coppie, con collegamento alla Pair Deep Dive.</p>'+
+  '<div class="gmfq-blocker-date" aria-label="Provenienza e date del modello">'+
+  '<span data-source="macro">Baseline Macro/Tassi: '+htmlEscape(setup.macro_baseline_asof)+
+  (baselineFresh?' · data entro il limite di freschezza':' · NON CORRENTE, tesi da rivalidare')+'</span>'+
+  '<span data-source="price">Prezzi del motore: '+htmlEscape(setup.price_asof||'non verificati')+'</span></div>'+
+  '<p class="gmfq-blocker-brief">Motivazioni individuali e accesso alle Pair Deep Dive nel dettaglio espandibile.</p>'+
   '<details id="gmfq-blocker-details"><summary>Apri le '+rows.length+' coppie e le motivazioni complete</summary>'+
   '<div class="gmfq-blocker-grid">'+categories.map(card).join('')+'</div>'+
   '<p class="gmfq-blocker-note">Lettura descrittiva e storica, non graduatoria di trade. Lo spread 2Y è solo contesto di livello: non crea da solo una preferenza FX. Nessuna promozione di fonte, ricalcolo di score, modifica dei 28 setup o segnale operativo.</p></details>';
@@ -1615,7 +1619,8 @@ async function mountValuteSourceCompass(doc){
   '#gmfq-valute-source-compass .gmfq-vsc-details summary{cursor:pointer;color:#d9c18b;outline-offset:3px}'+
   '#gmfq-valute-source-compass .gmfq-vsc-details p{margin:7px 0 0}'+
   '@media(max-width:600px){#gmfq-valute-source-compass{padding:9px 8px}'+
-  '#gmfq-valute-source-compass .gmfq-vsc-status{font-size:11px}}';
+  '#gmfq-valute-source-compass .gmfq-vsc-status{font-size:11px}'+
+ '#gmfq-valute-source-compass .gmfq-vsc-ledger span{width:100%}}';
  doc.head.appendChild(css);
  const fxText=prices.status==='OFFICIAL_FIXING_RECENT'?
   'FX BCE '+prices.asof:'FX BCE non corrente o non verificabile';
