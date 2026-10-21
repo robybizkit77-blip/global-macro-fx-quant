@@ -89,6 +89,30 @@ async function getState(page){
        }
        if(!found)found=await page.evaluate(()=>!!document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-home-data-audit'));
        if(!found)throw Error(name+' PUBLIC_HOME_SOURCE_FRESHNESS_VERSION_NOT_DEPLOYED');
+       // SHA parity alone does not guarantee that the public Pages CDN has
+       // served this new dual source-label build. Retry only the public URL.
+       let dualReady=false;
+       for(let attempt=0;attempt<22;attempt++){
+         dualReady=await page.evaluate(()=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument;
+           const stamp=d?.getElementById('liveAsOf')?.textContent||'';
+           const source=d?.getElementById('gmfq-home-data-audit')?.textContent||'';
+           return stamp.includes('cert. · Contesto ')&&
+                  source.includes('Contesto monetario G8 · ricerca');
+         });
+         if(dualReady)break;
+         await page.goto(BASE+'?dualOisQA='+Date.now()+'-'+attempt+'#/home',
+           {waitUntil:'domcontentloaded',timeout:120000});
+         try{
+           await page.waitForFunction(()=>{
+             const d=document.getElementById('gmfq-page')?.contentDocument;
+             return d?.documentElement?.dataset.liveState==='LOADED'&&
+                    !!d.getElementById('gmfq-home-data-audit');
+           },null,{timeout:9000});
+         }catch(_){console.log('PUBLIC_DUAL_OIS_CDN_PENDING',name,attempt)}
+         await page.waitForTimeout(3500);
+       }
+       if(!dualReady)throw Error(name+' PUBLIC_CDN_STALE_NO_DUAL_OIS_PROVENANCE');
        const audit=await page.evaluate(()=>{
          const d=document.getElementById('gmfq-page').contentDocument;
          return {
