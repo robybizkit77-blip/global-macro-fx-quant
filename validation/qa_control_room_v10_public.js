@@ -394,7 +394,7 @@ async function getState(page){
          return {
            actualCurves:panel.querySelectorAll('svg polyline').length,expectedCurves:eligible.length,
            secondaryCards:panel.querySelectorAll('.gmfq-quote-card').length,expectedCards:secondary.length,
-           note:panel.innerText,docWidth:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth,
+           note:panel.textContent,docWidth:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth,
            readinessCount:panel.querySelectorAll('#gmfq-source-readiness .gmfq-source-row').length,
            readinessLinks:panel.querySelectorAll('#gmfq-source-readiness a').length,
            readinessContent:panel.querySelector('#gmfq-source-readiness')?.textContent,
@@ -409,7 +409,7 @@ async function getState(page){
              access.blocked_currency_count===
                ['USD','EUR','CHF','NZD'].filter(k=>access.currencies[k].status==='WITHHELD').length?
              4:null,
-           snbBox:panel.querySelector('#gmfq-chf-snb-10y-context')?.innerText,
+           snbBox:panel.querySelector('#gmfq-chf-snb-10y-context')?.textContent,
            snbExpected:snb?.schema==='GMFQ_CHF_SNB_10Y_SPOT_CONTEXT_V1'&&snb.status==='OFFICIAL_PUBLISHED_10Y_INFORMATIONAL'&&
              snb.has_current_2y===false&&snb.eligible_for_curve_spreads===false&&snb.eligible_for_core_signals===false&&
              Number.isFinite(snb.value_percent)&&days(snb.as_of)>=0&&days(snb.as_of)<=4?
@@ -434,6 +434,38 @@ async function getState(page){
              !research.snbBox.includes('nessuno spread o segnale'):
              !research.snbBox?.includes('non disponibile o non corrente')))
          throw Error(name+' public certified/secondary Rates research fail-closed contract '+JSON.stringify(research));
+       // The deployed version must show the conclusion first while retaining
+       // the old certified curves and sources in accessible details.
+       if(process.env.GITHUB_EVENT_NAME!=='pull_request'){
+         const reading=await page.evaluate(()=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument,
+             p=d?.getElementById('gmfq-pricing-research'),
+             det=p?.querySelector('#gmfq-pricing-evidence-details');
+           return {status:p?.dataset.sourceStatus,curves:p?.dataset.verifiedCurves,
+             estimated:p?.dataset.estimatedLanes,withheld:p?.dataset.withheldLanes,
+             closed:det?.open===false,
+             heading:p?.querySelector('.gmfq-pricing-core-status')?.textContent,
+             plotVisible:!!p?.querySelector('.gmfq-research-plot')?.getClientRects().length,
+             secondaryHidden:!(p?.querySelector('.gmfq-quote-card')?.getClientRects().length),
+             sourcePresent:!!p?.querySelector('#gmfq-source-readiness')};
+         });
+         if(reading.status!=='READ_ONLY'||Number(reading.curves)!==research.expectedCurves||
+            !reading.closed||!reading.plotVisible||!reading.secondaryHidden||
+            !reading.sourcePresent||!reading.heading?.includes('/8'))
+           throw Error(name+' public Rates decision-first not visible '+JSON.stringify(reading));
+         await page.frameLocator('#gmfq-page').locator('#gmfq-pricing-evidence-details>summary').press('Enter');
+         const disclosure=await page.evaluate(()=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument,
+             p=d?.getElementById('gmfq-pricing-research');
+           return {open:p?.querySelector('#gmfq-pricing-evidence-details')?.open,
+             secondaryVisible:!!p?.querySelector('.gmfq-quote-card')?.getClientRects().length,
+             chfVisible:!!p?.querySelector('#gmfq-chf-snb-10y-context')?.getClientRects().length};
+         });
+         if(!disclosure.open||!disclosure.chfVisible||
+            (research.expectedCards>0&&!disclosure.secondaryVisible))
+           throw Error(name+' public source drilldown lost '+JSON.stringify(disclosure));
+         console.log('CONTROL_ROOM_V10_RATES_RESEARCH_FIRST_PUBLIC_GREEN',name,reading);
+       }
        console.log('CONTROL_ROOM_PREVIEW_PUBLIC_PRICING_RESEARCH_GREEN',name,
          JSON.stringify({curves:research.actualCurves,secondary:research.secondaryCards,viewport:research.viewport}));
      }

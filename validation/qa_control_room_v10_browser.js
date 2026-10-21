@@ -280,8 +280,15 @@ function expectedReactionFromMetrics(row){
       fourCurves:host?.querySelectorAll('svg polyline').length,
       secondary:host?.querySelectorAll('.gmfq-quote-card').length,
       legend:host?.querySelector('.gmfq-research-legend')?.innerText,
-      disclaimers:host?.innerText,
-      snbSpot:host?.querySelector('#gmfq-chf-snb-10y-context')?.innerText,
+      disclaimers:host?.textContent,
+      snbSpot:host?.querySelector('#gmfq-chf-snb-10y-context')?.textContent,
+      sourceStatus:host?.dataset.sourceStatus,
+      visibleCount:host?.dataset.verifiedCurves,
+      estimated:host?.dataset.estimatedLanes,withheld:host?.dataset.withheldLanes,
+      readingText:host?.querySelector('.gmfq-pricing-core-status')?.textContent,
+      disclosureClosed:host?.querySelector('#gmfq-pricing-evidence-details')?.open===false,
+      secondaryHidden:!(host?.querySelector('.gmfq-quote-card')?.getClientRects().length),
+      plotVisible:!!host?.querySelector('.gmfq-research-plot')?.getClientRects().length,
       sourceCount:host?.querySelectorAll('#gmfq-source-readiness .gmfq-source-row').length,
       sourceLinks:host?.querySelectorAll('#gmfq-source-readiness .gmfq-source-link a').length,
       sourceCurrencies:[...host?.querySelectorAll('#gmfq-source-readiness .gmfq-source-row b')||[]].map(x=>x.textContent),
@@ -290,6 +297,13 @@ function expectedReactionFromMetrics(row){
       docWidth:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth
     };
   });
+  if(research.sourceStatus!=='READ_ONLY'||research.visibleCount!=='4'||
+     research.estimated!=='2'||research.withheld!=='2'||
+     !research.disclosureClosed||!research.secondaryHidden||!research.plotVisible||
+     !research.readingText?.includes('4/8')||
+     !research.readingText.includes('GBP')||
+     !research.readingText.includes('CAD'))
+    throw Error(label+' Rates/OIS decision-first evidence failed '+JSON.stringify(research));
   if(research.fourCurves!==4||research.secondary!==expectedSecondaryQuotes||
      !research.legend.includes('GBP')||!research.legend.includes('CAD')||
      !research.disclaimers.includes('NON curva OIS')&&
@@ -305,6 +319,21 @@ function expectedReactionFromMetrics(row){
      !research.sourceDoc.includes('Nessun dato indicativo è promosso')||
      research.docWidth>research.viewport+16)
      throw Error(label+' Pricing research traceability failed: '+JSON.stringify(research));
+  // Both technical research and official Swiss context remain accessible
+  // behind the native summary without changing the four certified curves.
+  await page.frameLocator('#gmfq-page').locator('#gmfq-pricing-evidence-details > summary').click();
+  const expanded=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    const p=d?.getElementById('gmfq-pricing-research');
+    return {open:p?.querySelector('#gmfq-pricing-evidence-details')?.open,
+      secondaryVisible:!!p?.querySelector('.gmfq-quote-card')?.getClientRects().length,
+      swissVisible:!!p?.querySelector('#gmfq-chf-snb-10y-context')?.getClientRects().length,
+      sourceDetailPresent:!!p?.querySelector('#gmfq-source-readiness')};
+  });
+  if(!expanded.open||!expanded.secondaryVisible||!expanded.swissVisible||
+     !expanded.sourceDetailPresent)
+    throw Error(label+' Rates full source research unavailable '+JSON.stringify(expanded));
+  console.log('CONTROL_ROOM_V10_RATES_DECISION_FIRST_GREEN',label,{status:research.sourceStatus,sourceCount:research.fourCurves,withheld:research.withheld});
   await page.frameLocator('#gmfq-page').locator('#gmfq-pricing-research button[data-pricing-ccy="GBP"]').click();
   const selectedCurveCount=await page.frameLocator('#gmfq-page').locator('#gmfq-pricing-research svg polyline').count();
   if(selectedCurveCount!==1)throw Error(label+' single bank curve filter failed');
