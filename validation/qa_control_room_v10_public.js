@@ -133,7 +133,7 @@ async function getState(page){
           !audit.stamp?.includes('OIS ')||
           !audit.stamp?.includes('cert. · Contesto ')||
           !audit.detail?.includes('Contesto monetario G8 · ricerca')||
-          !audit.detail?.includes('scenario BB−OIS ipotetico, non calibrato')||
+          !audit.detail?.includes('proxy Bank Bill−cash calibrato su 19 osservazioni RBNZ')||
           !audit.detail?.includes('Non è DXY ICE ufficiale')||
           !audit.detail?.includes('futures monetari, non OIS puri')||
           !audit.detail?.includes('Le date delle diverse fonti non sono intercambiabili')||
