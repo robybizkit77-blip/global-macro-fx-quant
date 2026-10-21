@@ -4,7 +4,7 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const root=path.resolve(__dirname,'..');
-const {matrix,view,matchedResearchMoves,fresh,coverage,auditDatedFuture,calibratedNzdCarry,NZD_REFERENCE_ROWS,NZD_RECENT_ROWS,NZD_HOLDOUT_ROWS}=require(path.join(root,'site/control-room-preview/ois-pricing-estimates-v1.js'));
+const {matrix,view,matchedResearchMoves,fresh,coverage,indicativeSixMonth,auditDatedFuture,calibratedNzdCarry,NZD_REFERENCE_ROWS,NZD_RECENT_ROWS,NZD_HOLDOUT_ROWS}=require(path.join(root,'site/control-room-preview/ois-pricing-estimates-v1.js'));
 const liveOis=JSON.parse(fs.readFileSync(path.join(root,'live_data/sections/OIS_OPERATIONAL_VIEW.json'),'utf8'));
 const liveBb=JSON.parse(fs.readFileSync(path.join(root,'live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),'utf8'));
 const ois=structuredClone(liveOis),bb=structuredClone(liveBb);
@@ -63,6 +63,41 @@ assert.equal(rows.EUR.tier,'MIXED');
 assert.equal(rows.EUR.points['3m'].date,EARLIER);
 assert.equal(rows.EUR.points['12m'].date,FRESH);
 assert.equal(rows.NZD.tier,'SCENARIO');
+
+// Distinguish an unavailable official policy delta from a verified, explicitly
+// non-operative futures level. Reuse the exact Rates addon provenance guard.
+const pair6m=indicativeSixMonth(ois,TODAY);
+assert.deepEqual(Object.keys(pair6m).sort(),['CHF','EUR','USD']);
+assert.equal(pair6m.USD.type,'PROXY');
+assert.equal(pair6m.USD.value,ois.currencies.USD.horizons['6m'].rate);
+assert.equal(pair6m.CHF.type,'PROXY');
+assert.equal(pair6m.CHF.value,ois.currencies.CHF.horizons['6m'].rate);
+assert.equal(pair6m.EUR.type,'MIXED');
+assert.equal(pair6m.EUR.value,ois.currencies.EUR.secondary_quote_context.horizons['6m'].rate_indicative);
+for(const x of Object.values(pair6m)){
+ assert.equal(x.is_official_ois,false);
+ assert.equal(x.policy_delta_allowed,false);
+ assert.equal(x.core_effect,'NONE');
+ assert.equal(x.pair_effect,'NONE');
+ assert(x.contract&&x.expiry);
+}
+assert.equal(pair6m.GBP,undefined);
+assert.equal(pair6m.NZD,undefined);
+const altered6m=structuredClone(ois);
+altered6m.currencies.USD.horizons['6m'].quote_timestamp_verified=false;
+assert.equal(indicativeSixMonth(altered6m,TODAY).USD,undefined);
+const alteredPrice6m=structuredClone(ois);
+alteredPrice6m.currencies.CHF.horizons['6m'].futures_price+=0.1;
+assert.equal(indicativeSixMonth(alteredPrice6m,TODAY).CHF,undefined);
+const alteredEUR=structuredClone(ois);
+alteredEUR.currencies.EUR.secondary_quote_context.cross_date_join_allowed=true;
+assert.equal(indicativeSixMonth(alteredEUR,TODAY).EUR,undefined);
+assert.deepEqual(indicativeSixMonth(ois,'2026-11-12'),{});
+const pairAdapter=fs.readFileSync(path.join(root,'site/control-room-preview/home-navigation-v10.js'),'utf8');
+assert(pairAdapter.includes('indicativeSixMonth('));
+assert(pairAdapter.includes('NON ΔOIS, solo contesto'));
+assert(pairAdapter.includes('6M pricing WITHHELD'));
+
 
 // Source-level 100-price identity and expiry-proximity: same dated contract,
 // not an observed OIS basis or a truly synchronized 3M/6M/12M cash curve.
