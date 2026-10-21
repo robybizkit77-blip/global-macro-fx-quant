@@ -25,6 +25,10 @@ FILES = (
     # Assert exact public VIX source and loaded runtime payload, not only OIS/JS.
     "live_data/sections/D.json",
     "payload/part-00.txt",
+    # Keep the public derived COT story and manifest in exact-byte lockstep
+    # with the runtime payload. A stale standalone file fails the release.
+    "live_data/sections/V247_COT_STORIES.json",
+    "live_data/manifest.v2.json",
     # Risk UI & fail-closed freshness must be delivered, not only risk data.
     "dashboard/risk-operational-v1.js",
     "dashboard/editorial-freshness-guard-v1.js",
