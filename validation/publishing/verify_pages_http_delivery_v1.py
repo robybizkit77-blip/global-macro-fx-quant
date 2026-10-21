@@ -29,6 +29,11 @@ FILES = (
     # with the runtime payload. A stale standalone file fails the release.
     "live_data/sections/V247_COT_STORIES.json",
     "live_data/manifest.v2.json",
+    # Previously missing/obsolete standalone reference feeds must converge too.
+    "live_data/sections/NATIVE_CB_DATA.json",
+    "live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json",
+    "live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json",
+    "live_data/sections/OIS_SOURCE_READINESS_VIEW.json",
     # Risk UI & fail-closed freshness must be delivered, not only risk data.
     "dashboard/risk-operational-v1.js",
     "dashboard/editorial-freshness-guard-v1.js",
