@@ -46,11 +46,11 @@ const {approved,canonical}=readApproved('.');
 const onRomeMidnight=new Date('2026-10-20T22:30:00Z'); // 00:30 CEST on 21 Oct
 assert.equal(oisRomeToday(onRomeMidnight),'2026-10-21');
 assert.equal(romeAgeDays('2026-10-16',onRomeMidnight),5);
-assert.equal(verifyPublicNzd(canonical.NZD,approved,canonical.NZD,'',onRomeMidnight).operationally_recent,false);
+assert.equal(verifyPublicNzd(canonical,approved,canonical,'',onRomeMidnight).operationally_recent,false);
 assert.equal(navAt('2026-10-20T22:30:00Z').fresh('2026-10-16',4),false);
 const stillPriorDay=new Date('2026-10-20T21:30:00Z'); // 23:30 CEST 20 Oct
 assert.equal(romeAgeDays('2026-10-16',stillPriorDay),4);
-assert.equal(verifyPublicNzd(canonical.NZD,approved,canonical.NZD,'',stillPriorDay).operationally_recent,true);
+assert.equal(verifyPublicNzd(canonical,approved,canonical,'',stillPriorDay).operationally_recent,true);
 assert.equal(navAt('2026-10-20T21:30:00Z').fresh('2026-10-16',4),true);
 assert(nav.includes('const today=romeTodayIso(),nowMonth=today.slice(0,7)'));
 assert(nav.includes('function crossGoldAge(iso){\n return romeCalendarAge(iso);'));
