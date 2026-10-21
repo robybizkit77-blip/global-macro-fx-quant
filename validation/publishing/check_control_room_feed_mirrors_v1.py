@@ -49,13 +49,14 @@ def main() -> int:
         assert path.is_file(), f"Missing canonical feed {name}"
         obj = json.loads(path.read_text(encoding="utf-8"))
         assert isinstance(obj, dict) and obj, f"Invalid feed {name}"
+    copy_loop = next(line for line in dash.splitlines()
+                     if line.strip().startswith("for f in OIS_OPERATIONAL_VIEW.json "))
+    copied = set(copy_loop.strip().split("; do", 1)[0].split()[3:])
     for name in sorted(DASH_OWNED):
         assert dash.count("live_data/sections/" + name) >= 3, (
             "Pages mirror trigger/allowlist/stage/proof incomplete", name
         )
-        assert name in dash.split("for f in OIS_OPERATIONAL_VIEW.json")[1].split(
-            "; do cp", 1
-        )[0], f"Dashboard publisher does not copy {name}"
+        assert name in copied, f"Dashboard publisher does not copy {name}"
         assert '"' + "live_data/sections/" + name + '"' in public, (
             "Missing standalone public SHA proof", name
         )
