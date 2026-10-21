@@ -1,8 +1,49 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-21T13:55:27Z",
+  "generated_at_utc": "2026-10-21T14:50:50Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-99656d6046d46716c685",
+      "observed_at_utc": "2026-10-21T10:40:09Z",
+      "headline": "UK's FTSE 100 pauses as hot inflation report outweighs energy boost",
+      "summary": "Reuters riporta: UK's FTSE 100 pauses as hot inflation report outweighs energy boost. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [
+        "GBP"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxOMG9KdWFSdV90N2s0bHM3d0xsTVlOMGduRE1RZ1FvSi1SbnU4MFlRQUIteDlZTC03TmNHVFl3Z2lhV2FrN1NwQjV5Wk1rU096X1pUNXB4M2c2bS1MdXlSeEZHaTJobmFsQzlvYTN6WHpyd2FkRzFqOFdkbzZUdjZoNzJCa1B6c2RxMzBmemg3RnBWdldpM0x0VEtCR0F0YXE3N3V2YXppNnN6ejBs?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-718c7638f17fc2934f9c",
+      "observed_at_utc": "2026-10-21T03:45:00Z",
+      "headline": "Gold steadies near one-week low as oil-driven inflation fears grow",
+      "summary": "Reuters riporta: Gold steadies near one-week low as oil-driven inflation fears grow. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxNY2dJZXdfdnptbDVvajUtNHBONy13T1Z5aEtVc3d2d2VDYUNpUEpTM1JxNGVZRFhiQmh1b1U2RWpOaW0zVndyQk9uSFZ6b0pQXzVvNUhRMFVXeEMzS3BrU1FkdE9tNEYxY21PdDFEWGplNkkwMkJ2Rkk5VVg2VUVDcXFIUmp4cUR4SnhqQ2h6b3hYTExtTkhCNGtqZWt6WUtUYURrc3owUUptdw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-89de536d6047e7ba8774",
+      "observed_at_utc": "2026-10-21T10:12:15Z",
+      "headline": "Jio Platforms' IPO-linked inflows boost rupee; elevated oil prices spur caution",
+      "summary": "Reuters riporta: Jio Platforms' IPO-linked inflows boost rupee; elevated oil prices spur caution. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "COMMODITIES",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPMFFMSF9nLXRwYy1COGJKYnBBYXkzOTFESWIxSnROTmJGa2hQZ3BTTExjMEUtTXhrUVFka3kzdXBjQXBqV1d6WW9wcDV0Z2NHbEhnellaWHpwMEx0d19NOHdaaGxyTUd5NEV0VHozczYxeVlVNU1NMjNRaEc0ZVFEMTFpamJVNWl1N0swSkdRbERORjN2c3dlVGhMMXVTQjFJUDVWZnhhMnY4MzZvMW1kQ25QSGY5dmhLc1d5aTNrRGR6N2c?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-2ca3c941142d3672e4f8",
       "observed_at_utc": "2026-10-21T13:34:36Z",
@@ -1364,49 +1405,6 @@
       "observed_at_utc": "2026-10-19T13:04:21Z",
       "headline": "S&P 500, Nasdaq set to open higher as AI stocks rebound ahead of earnings rush",
       "summary": "Reuters riporta: S&P 500, Nasdaq set to open higher as AI stocks rebound ahead of earnings rush. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxPX21SVVhfUjZRQ255YlFzVWVEZ3BFMmt3aWlDdkVPVENFOExuRE9KOXZ6WjNqbzdHelUwdzZudy02TjlyNkxVZWcxQmFzZF9NaUE0SFZYaWI3dmxlYTBVdjdULWhLMkNQNnlMUXFaM1J5T1dPMEo3ajhkb0RQLUM3M0pkYlFqbHNKQ1U1c3k5WlUtdjR1UkNCV0JkdjJZTzdIa2c?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-4b647041aa814bdd8628",
-      "observed_at_utc": "2026-10-19T12:41:23Z",
-      "headline": "US chip stocks rise after steepest weekly selloff in months",
-      "summary": "Reuters riporta: US chip stocks rise after steepest weekly selloff in months. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxQQnRpUlhFSVItYXlyM2JtRDAxZFNzc1owV1VBSFM4VERhS3dYOW1wVWtOeERTaDRrWlZyQVJTVVdvNFktdG5oSGpjY0ZwY1hBbnllN2d6Qkg4aExFcWdNT3F3dWlxdTFtbU92WV9WTC1NVEw0QmlWb201cXB6NGJCajVtbmZjYnJ4MWZ3TDZYR1l3ZmZFRFJORzhlNE1Yb0QtNDlyc3ZnY2tuenV1OFgwVQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-8629146b0d26f36b4b9a",
-      "observed_at_utc": "2026-10-19T11:36:11Z",
-      "headline": "Trump's Russia sanctions waiver eases India's energy woes, lifts trade deal chances",
-      "summary": "Reuters riporta: Trump's Russia sanctions waiver eases India's energy woes, lifts trade deal chances. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxPX1JDdGd6aEZHMGQ5OXppVnA5d3FlSzNmbDdjOURNajl2Sjg3T0VrRzRLSC1DdVpLekQ5ZHBVdjQ1eV9UcF81anZNVklVYjZnQlNfQUlWRVMtNzEwVVVDQWlYTmQtU29FOU5xTFlGYTFUVV90bXI3dXU5UU5IUG9ZNjNYVHNUdzNjT3JXb244bm84d240TG56ZDVLbXNhMWpucjVTZXdtaTZQYjViOFU3bDZnZlFEQjduUDBfMWdwMVBXUFl3VFRJ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-e45310624ac494f2eac0",
-      "observed_at_utc": "2026-10-19T11:41:00Z",
-      "headline": "S&P 500, Nasdaq futures rise as AI stocks rebound ahead of key earnings",
-      "summary": "Reuters riporta: S&P 500, Nasdaq futures rise as AI stocks rebound ahead of key earnings. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
       "category": "EQUITY",
       "currencies": [
         "USD"
