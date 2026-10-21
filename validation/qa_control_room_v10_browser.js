@@ -408,18 +408,33 @@ function expectedReactionFromMetrics(row){
       width:p.scrollWidth,client:p.clientWidth,
       doc:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
   });
-  if(cotFirst.status!=='SOURCE_DIVERGENCE'||cotFirst.conflicts!=='USD'||
+  if(cotFirst.status!=='READ_ONLY'||cotFirst.conflicts!==''||
      cotFirst.asof!==cotFixture.USD.dates.at(-1)||
      cotFirst.extremes!=='5'||cotFirst.crowding!=='3'||
      !cotFirst.closed||!cotFirst.chart||!cotFirst.table||
      !cotFirst.text.includes('Prezzo FX: WITHHELD')||
-     !cotFirst.text.includes('narrativo incoerente: USD')||
+     cotFirst.text.includes('narrativo incoerente')||
      cotFirst.width>cotFirst.client+2||cotFirst.doc>cotFirst.viewport+16)
     throw Error(label+' COT quantitative/narrative divergence guard '+JSON.stringify(cotFirst));
   await page.frameLocator('#gmfq-page').locator('#gmfq-cot-reading-first details>summary').press('Enter');
   if(!(await page.frameLocator('#gmfq-page').locator('#gmfq-cot-reading-first details p').last().isVisible()))
     throw Error(label+' COT CFTC provenance not keyboard accessible');
   await page.screenshot({path:'v10-qa-images/'+label+'-cot-reading-first.png',fullPage:true});
+  // Negative fixture: intentionally regress just the USD narrative,
+  // preserving all numeric CFTC evidence; the cross-source audit MUST flag it.
+  await page.route('**/V247_COT_STORIES.json',async r=>{
+    const x=JSON.parse(fs.readFileSync(path.join(DATA,'V247_COT_STORIES.json'),'utf8'));
+    x.USD.signal='NEUTRALE';
+    await r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(x),
+      headers:{'Access-Control-Allow-Origin':'*'}});
+  });
+  await page.goto(url+'#/home',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.goto(url+'#/cot?ccy=USD&bad=story',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument,p=d?.getElementById('gmfq-cot-reading-first');
+    return p?.dataset.readingStatus==='SOURCE_DIVERGENCE'&&p.dataset.conflicts==='USD';
+  },null,{timeout:35000});
+  await page.unroute('**/V247_COT_STORIES.json');
   await page.route('**/V250_COT_CHART_DATA.json',async r=>{
     const x=JSON.parse(fs.readFileSync(path.join(DATA,'V250_COT_CHART_DATA.json'),'utf8'));
     x.GBP.net[x.GBP.net.length-1]+=1; // breaks long-short = net contract
