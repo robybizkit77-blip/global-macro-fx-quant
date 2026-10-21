@@ -2,6 +2,7 @@
 'use strict';
 const {chromium}=require('playwright');
 const fs=require('fs'),path=require('path');
+const {romeTodayIso}=require('../site/control-room-preview/ois-pricing-estimates-v1.js');
 const DATA=path.join(process.cwd(),'live_data/sections');
 const dxyFeed=JSON.parse(fs.readFileSync(path.join(DATA,'DXY_SYNTHETIC_ECB.json'),'utf8'));
 const nzdProxy=JSON.parse(fs.readFileSync(path.join(DATA,'NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),'utf8'));
@@ -14,6 +15,14 @@ const nzdDisplayed=Number(nzdProxy.horizons['6m'].implied_bank_bill_rate).toFixe
 const ratesFeed=JSON.parse(fs.readFileSync(path.join(DATA,'NATIVE_RATES_DATA.json'),'utf8'));
 const setupFeed=JSON.parse(fs.readFileSync(path.join(DATA,'PAIR_SETUP_OPERATIONAL_VIEW.json'),'utf8'));
 const operational=JSON.parse(fs.readFileSync(path.join(DATA,'OIS_OPERATIONAL_VIEW.json'),'utf8'));
+const sourceReadiness=JSON.parse(fs.readFileSync(path.join(DATA,'OIS_SOURCE_READINESS_VIEW.json'),'utf8'));
+const sourceIds=Object.keys(sourceReadiness.currencies||{});
+const g8=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+if(!sourceIds.length||sourceIds.some(c=>!g8.includes(c))||
+   sourceReadiness.blocked_currency_count!==sourceIds.filter(c=>
+     sourceReadiness.currencies[c].status==='WITHHELD').length)
+  throw Error('Readiness source registry count/status mismatch');
+
 const expectedSecondaryQuotes=['USD','EUR','CHF'].filter(k=>{
   const x=operational.currencies?.[k],ctx=x?.secondary_quote_context;
   return x?.operational_status==='WITHHELD'&&
@@ -30,8 +39,7 @@ function commonAnchorDate(target,proxy,tenor='history2'){
 }
 function recentOfficialRate(row){
  if(!row||!String(row.quality||'').includes('OFFICIAL')||!/^\d{4}-\d{2}-\d{2}$/.test(row.date||''))return false;
- const now=new Date();
- const gap=(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate())-Date.parse(row.date+'T00:00:00Z'))/86400000;
+ const gap=(Date.parse(romeTodayIso()+'T00:00:00Z')-Date.parse(row.date+'T00:00:00Z'))/86400000;
  return gap>=0&&gap<=4;
 }
 const chfAnchor=commonAnchorDate('CHF','EUR');
@@ -93,7 +101,7 @@ function expectedReactionFromMetrics(row){
   const fxData=JSON.parse(fs.readFileSync(path.join(DATA,'ECB_G8_PRICE_HISTORY.json'),'utf8'));
   const expectedOis=JSON.parse(fs.readFileSync(path.join(DATA,'OIS_OPERATIONAL_VIEW.json'),'utf8'));
   const current=(dt,max=5)=>{
-    const diff=(Date.UTC(new Date().getUTCFullYear(),new Date().getUTCMonth(),new Date().getUTCDate())-
+    const diff=(Date.parse(romeTodayIso()+'T00:00:00Z')-
       Date.parse(dt+'T00:00:00Z'))/86400000;
     return Number.isFinite(diff)&&diff>=0&&diff<=max;
   };
@@ -303,16 +311,21 @@ function expectedReactionFromMetrics(row){
   const expectedOfficial=operational.summary.green_official;
   const expectedEstimated=operational.summary.green_estimated;
   const expectedWithheld=operational.summary.operational_withheld;
+  const plottedOfficial=Object.entries(operational.currencies).filter(([c,r])=>
+    r.operational_status==='GREEN_OFFICIAL'&&r.official_status==='ACTIVE'&&
+    r.quality==='OFFICIAL_CERTIFIED'&&r.backtest_eligible_as_official===true&&
+    current(r.as_of,4)&&
+    ['3m','6m','12m'].every(t=>Number.isFinite(r.horizons?.[t]?.policy_delta_bp)))
+    .map(([c])=>c);
   if(research.sourceStatus!=='READ_ONLY'||research.visibleCount!==String(expectedOfficial)||
      research.estimated!==String(expectedEstimated)||
      research.withheld!==String(expectedWithheld)||
      !research.disclosureClosed||!research.secondaryHidden||!research.plotVisible||
-     !research.readingText?.includes('4/8')||
-     !research.readingText.includes('GBP')||
-     !research.readingText.includes('CAD'))
+     !research.readingText?.includes(plottedOfficial.length+'/8')||
+     !plottedOfficial.every(c=>research.readingText.includes(c)))
     throw Error(label+' Rates/OIS decision-first evidence failed '+JSON.stringify(research));
-  if(research.fourCurves!==4||research.secondary!==expectedSecondaryQuotes||
-     !research.legend.includes('GBP')||!research.legend.includes('CAD')||
+  if(research.fourCurves!==plottedOfficial.length||research.secondary!==expectedSecondaryQuotes||
+     !plottedOfficial.every(c=>research.legend.includes(c))||
      !research.disclaimers.includes('NON curva OIS')&&
       !research.disclaimers.includes('non sono una curva OIS')||
      !research.disclaimers.includes('NON curva OIS né policy delta')||
@@ -320,8 +333,8 @@ function expectedReactionFromMetrics(row){
      !research.snbSpot?.includes('CHF 10Y SNB '+Number(snbSpot.value_percent).toFixed(3)+'%')||
      !research.snbSpot.includes(snbSpot.as_of)||!research.snbSpot.includes('SOLO INFORMATIVO')||
      !research.snbSpot.includes('nessuno spread o segnale')||
-     research.sourceCount!==4||research.sourceLinks!==4||
-     !['USD','EUR','CHF','NZD'].every(c=>research.sourceCurrencies.some(x=>x.includes(c)))||
+     research.sourceCount!==sourceIds.length||research.sourceLinks!==sourceIds.length||
+     !sourceIds.every(c=>research.sourceCurrencies.some(x=>x.includes(c)))||
      !research.sourceDoc.includes('non completa il 2Y')||
      !research.sourceDoc.includes('Nessun dato indicativo è promosso')||
      research.docWidth>research.viewport+16)
@@ -341,7 +354,9 @@ function expectedReactionFromMetrics(row){
      !expanded.sourceDetailPresent)
     throw Error(label+' Rates full source research unavailable '+JSON.stringify(expanded));
   console.log('CONTROL_ROOM_V10_RATES_DECISION_FIRST_GREEN',label,{status:research.sourceStatus,sourceCount:research.fourCurves,withheld:research.withheld});
-  await page.frameLocator('#gmfq-page').locator('#gmfq-pricing-research button[data-pricing-ccy="GBP"]').click();
+  if(!plottedOfficial.length)throw Error(label+' no valid official curve to filter');
+  await page.frameLocator('#gmfq-page').locator(
+    '#gmfq-pricing-research button[data-pricing-ccy="'+plottedOfficial[0]+'"]').click();
   const selectedCurveCount=await page.frameLocator('#gmfq-page').locator('#gmfq-pricing-research svg polyline').count();
   if(selectedCurveCount!==1)throw Error(label+' single bank curve filter failed');
   await page.frameLocator('#gmfq-page').locator('#gmfq-pricing-research button[data-pricing-ccy="ALL"]').click();
