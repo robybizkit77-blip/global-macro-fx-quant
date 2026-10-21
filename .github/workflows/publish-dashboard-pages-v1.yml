@@ -3,10 +3,10 @@ name: Publish Dashboard Pages V1
 on:
   pull_request:
     branches: [main]
-    paths: ['.github/workflows/publish-dashboard-pages-v1.yml','index.html','payload/**','dashboard/**','live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/D.json','live_data/sections/ESTIMATED_RESIDUAL_GAPS.json','live_data/sections/V247_COT_STORIES.json','live_data/manifest.v2.json','validation/publishing/verify_pages_http_delivery_v1.py','validation/publishing/test_verify_pages_http_delivery_v1.py']
+    paths: ['.github/workflows/publish-dashboard-pages-v1.yml','index.html','payload/**','dashboard/**','live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/D.json','live_data/sections/ESTIMATED_RESIDUAL_GAPS.json','live_data/sections/V247_COT_STORIES.json','live_data/manifest.v2.json','live_data/sections/NATIVE_CB_DATA.json','live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json','live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json','live_data/sections/OIS_SOURCE_READINESS_VIEW.json','validation/publishing/verify_pages_http_delivery_v1.py','validation/publishing/test_verify_pages_http_delivery_v1.py']
   push:
     branches: [main]
-    paths: ['.github/workflows/publish-dashboard-pages-v1.yml','index.html','payload/**','dashboard/**','live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/D.json','live_data/sections/ESTIMATED_RESIDUAL_GAPS.json','live_data/sections/V247_COT_STORIES.json','live_data/manifest.v2.json','validation/publishing/verify_pages_http_delivery_v1.py','validation/publishing/test_verify_pages_http_delivery_v1.py']
+    paths: ['.github/workflows/publish-dashboard-pages-v1.yml','index.html','payload/**','dashboard/**','live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/D.json','live_data/sections/ESTIMATED_RESIDUAL_GAPS.json','live_data/sections/V247_COT_STORIES.json','live_data/manifest.v2.json','live_data/sections/NATIVE_CB_DATA.json','live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json','live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json','live_data/sections/OIS_SOURCE_READINESS_VIEW.json','validation/publishing/verify_pages_http_delivery_v1.py','validation/publishing/test_verify_pages_http_delivery_v1.py']
   workflow_run:
     workflows: ['Macro Persistent Daily V1','CB Pricing Persistent Daily V1','OIS Estimated Snapshot Repricing V1','OIS G8 History Persistent Daily V1','Calendar News Operational Refresh V1','Price Persistent Daily V1','Rates Persistent Daily V1','COT Persistent Weekly V1','Liquidity JPY M3 Persistent Daily V1','VIX Persistent Apply V1','WTI Persistent Rebuild V1','Brent Market Proxy Refresh V1','Gold Secondary Market Proxy Refresh V1']
     types: [completed]
@@ -107,6 +107,29 @@ jobs:
           if story['USD']['today'].startswith('CFTC al 2026-10-13:'):
               assert story['USD']['signal']=='EXTREME LONG'
           print('COT_PAGES_ATOMIC_PREFLIGHT_GREEN')
+          # Protect mirror semantics before making additional public copies.
+          cb=json.loads(Path('live_data/sections/NATIVE_CB_DATA.json').read_text())
+          g8={'USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'}
+          assert set(cb)==g8 and all(isinstance(cb[c].get('rate'),(int,float))
+            and cb[c].get('last_date') and cb[c].get('next_meeting')
+            and cb[c].get('market_pricing',{}).get('as_of') for c in g8)
+          chf=json.loads(Path('live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json').read_text())
+          assert chf['schema']=='GMFQ_CHF_SNB_10Y_SPOT_CONTEXT_V1'
+          assert chf['status']=='OFFICIAL_PUBLISHED_10Y_INFORMATIONAL'
+          assert chf['ois_or_saron'] is False and chf['has_current_2y'] is False
+          assert chf['eligible_for_core_signals'] is False
+          assert chf['eligible_for_curve_spreads'] is False
+          nzd=json.loads(Path('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json').read_text())
+          assert nzd['schema']=='GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1'
+          assert nzd['status']=='LIVE_DIRECTIONAL_PROXY_READY'
+          assert nzd['currency']=='NZD' and 'B_FOR_DIRECTION' in nzd['confidence_grade']
+          readiness=json.loads(Path('live_data/sections/OIS_SOURCE_READINESS_VIEW.json').read_text())
+          assert readiness['schema']=='GMFQ_OIS_SOURCE_READINESS_VIEW_V1'
+          assert readiness['status']=='READ_ONLY_SOURCE_READINESS'
+          assert all(readiness[x] is True for x in
+            ('no_automatic_promotions','no_backtest_effect','no_bias_effect',
+             'no_core_score_effect','no_sizing_effect','prices_omitted'))
+          print('CONTROL_ROOM_FOUR_REFERENCE_FEEDS_READ_ONLY_GREEN')
           assert ois['schema']=='GMFQ_OIS_OPERATIONAL_VIEW_V1'
           summary=ois['summary']
           assert summary['g8_total']==8
@@ -154,7 +177,7 @@ jobs:
           cp index.html /tmp/gmfq-pages/index.html
           cp payload/part-*.txt /tmp/gmfq-pages/payload/
           for f in ois-operational-monitor-v1.js calendar-news-operational-v1.js top-themes-operational-v1.js what-changed-operational-v1.js risk-operational-v1.js cotdesk-operational-v1.js pairs-operational-v1.js overview-asof-operational-v1.js currencies-operational-v1.js macro-operational-v1.js ratesdesk-operational-v1.js cbdesk-operational-v1.js liquiditydesk-operational-v1.js forwarddesk-operational-v1.js editorial-freshness-guard-v1.js premium-shell-v1.js product-language-v1.js overview-hierarchy-v1.js inflationlabour-hierarchy-v1.js calendar-hierarchy-v1.js themes-hierarchy-v1.js currencies-hierarchy-v1.js; do cp "dashboard/$f" "/tmp/gmfq-pages/dashboard/$f"; done
-          for f in OIS_OPERATIONAL_VIEW.json CALENDAR_OPERATIONAL_VIEW.json NEWS_PULSE_OPERATIONAL.json MACRO_THERMOMETER_DATA.json D.json ESTIMATED_RESIDUAL_GAPS.json V247_COT_STORIES.json; do cp "live_data/sections/$f" "/tmp/gmfq-pages/live_data/sections/$f"; done
+          for f in OIS_OPERATIONAL_VIEW.json CALENDAR_OPERATIONAL_VIEW.json NEWS_PULSE_OPERATIONAL.json MACRO_THERMOMETER_DATA.json D.json ESTIMATED_RESIDUAL_GAPS.json V247_COT_STORIES.json NATIVE_CB_DATA.json CHF_SNB_10Y_SPOT_CONTEXT.json NZD_CB_PRICING_DIRECTIONAL_PROXY.json OIS_SOURCE_READINESS_VIEW.json; do cp "live_data/sections/$f" "/tmp/gmfq-pages/live_data/sections/$f"; done
           cp live_data/manifest.v2.json /tmp/gmfq-pages/live_data/manifest.v2.json
           cd /tmp/gmfq-pages
           python - <<'PY'
@@ -164,12 +187,16 @@ jobs:
             'dashboard/ois-operational-monitor-v1.js','dashboard/calendar-news-operational-v1.js','dashboard/top-themes-operational-v1.js','dashboard/what-changed-operational-v1.js','dashboard/risk-operational-v1.js','dashboard/cotdesk-operational-v1.js','dashboard/pairs-operational-v1.js','dashboard/overview-asof-operational-v1.js','dashboard/currencies-operational-v1.js','dashboard/macro-operational-v1.js','dashboard/ratesdesk-operational-v1.js','dashboard/cbdesk-operational-v1.js','dashboard/liquiditydesk-operational-v1.js','dashboard/forwarddesk-operational-v1.js','dashboard/editorial-freshness-guard-v1.js','dashboard/premium-shell-v1.js','dashboard/product-language-v1.js','dashboard/overview-hierarchy-v1.js','dashboard/inflationlabour-hierarchy-v1.js','dashboard/calendar-hierarchy-v1.js','dashboard/themes-hierarchy-v1.js','dashboard/currencies-hierarchy-v1.js',
             'live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/D.json','live_data/sections/ESTIMATED_RESIDUAL_GAPS.json',
             'live_data/sections/V247_COT_STORIES.json','live_data/manifest.v2.json',
+            'live_data/sections/NATIVE_CB_DATA.json',
+            'live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json',
+            'live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json',
+            'live_data/sections/OIS_SOURCE_READINESS_VIEW.json',
             *[f'payload/part-{i:02d}.txt' for i in range(16)]}
           unexpected={p for p in changed if p not in allowed}
           if unexpected: raise SystemExit(f'Pages exact-scope violation: {sorted(unexpected)}')
           print('DASHBOARD_PAGES_SCOPE_PASS',sorted(changed)) if changed else print('DASHBOARD_PAGES_ALREADY_CURRENT')
           PY
-          git add -- index.html payload/part-*.txt dashboard/*.js live_data/sections/OIS_OPERATIONAL_VIEW.json live_data/sections/CALENDAR_OPERATIONAL_VIEW.json live_data/sections/NEWS_PULSE_OPERATIONAL.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/sections/D.json live_data/sections/ESTIMATED_RESIDUAL_GAPS.json live_data/sections/V247_COT_STORIES.json live_data/manifest.v2.json
+          git add -- index.html payload/part-*.txt dashboard/*.js live_data/sections/OIS_OPERATIONAL_VIEW.json live_data/sections/CALENDAR_OPERATIONAL_VIEW.json live_data/sections/NEWS_PULSE_OPERATIONAL.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/sections/D.json live_data/sections/ESTIMATED_RESIDUAL_GAPS.json live_data/sections/V247_COT_STORIES.json live_data/manifest.v2.json live_data/sections/NATIVE_CB_DATA.json live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json live_data/sections/OIS_SOURCE_READINESS_VIEW.json
           if git diff --cached --quiet; then echo DASHBOARD_PAGES_ALREADY_CURRENT; exit 0; fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
@@ -223,6 +250,10 @@ jobs:
                  'payload/part-00.txt',
                  'live_data/sections/V247_COT_STORIES.json',
                  'live_data/manifest.v2.json',
+                 'live_data/sections/NATIVE_CB_DATA.json',
+                 'live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json',
+                 'live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json',
+                 'live_data/sections/OIS_SOURCE_READINESS_VIEW.json',
                  'dashboard/risk-operational-v1.js',
                  'dashboard/editorial-freshness-guard-v1.js',
                  'live_data/sections/ESTIMATED_RESIDUAL_GAPS.json']
