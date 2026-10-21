@@ -362,7 +362,7 @@ function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy,proxy){
     contextCount+'/8 valute con tre orizzonti verificati entro cinque giorni. '+
     (contextCodes.length?'Futures indicativi/scenari: '+contextCodes.join(', ')+'. ':'')+
     (incompleteCodes.length?'Non completi o datati: '+incompleteCodes.join(', ')+'. ':'')+
-    'EUR: osservazioni con date separate, non una curva OIS sincronizzata. NZD: scenario BB−OIS ipotetico, non calibrato. Nessun impatto sulle 28 coppie.':
+    'EUR: osservazioni con date separate, non una curva OIS sincronizzata. NZD: proxy Bank Bill−cash calibrato su 19 osservazioni RBNZ (24 bp), non OIS osservato. Nessun impatto sulle 28 coppie.':
     'Copertura ricerca non verificabile. Non viene promossa alcuna stima a dato ufficiale.')+
   line('DXY sintetico · fixing BCE',dxyCurrent?
     'Stima informativa al '+dxy.as_of+'. Non è DXY ICE ufficiale e non è intraday.':
