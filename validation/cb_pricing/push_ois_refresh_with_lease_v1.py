@@ -18,12 +18,15 @@ ESTIMATED_PATHS = (
     "live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json",
     "live_data/sections/CB_PRICING_ESTIMATED.json",
     "live_data/sections/OIS_OPERATIONAL_VIEW.json",
+    # Publishing the operational view without its matching pending-source
+    # dossier can leave Home and Rates contradictory until the next G8 job.
+    # Both writers share the existing exclusive concurrency group and lease.
+    "live_data/sections/OIS_SOURCE_READINESS_VIEW.json",
     "validation/cb_pricing/history/OIS_ESTIMATED_SNAPSHOTS_V1.jsonl",
     "validation/cb_pricing/history/OIS_SAME_CONTRACT_QUOTES_V1.jsonl",
 )
 G8_PATHS = ESTIMATED_PATHS + (
     "validation/cb_pricing/history/OIS_G8_SNAPSHOTS_V1.jsonl",
-    "live_data/sections/OIS_SOURCE_READINESS_VIEW.json",
 )
 # Changing any of these upstream invalidates the observations or the producer
 # contract. They require a NEW refresh rather than a blind rebase.
