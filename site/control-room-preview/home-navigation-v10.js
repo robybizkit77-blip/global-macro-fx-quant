@@ -578,10 +578,15 @@ function focusRatesSection(doc){
 /* Rates research overlay: observed validated curves are distinct from unsynchronised futures quotes.
    Display-only: no policy path can be inferred from secondary contract observations. */
 function marketResearchCurves(data){
- const allowed=['GBP','JPY','AUD','CAD'],terms=['3m','6m','12m'];
- return allowed.flatMap(k=>{
+ const terms=['3m','6m','12m'];
+ // Only source-certified, CURRENT official rows may enter the chart.
+ // Never hard-code today's four active currency codes: a fifth approved
+ // source must appear without enabling any proxy or inferred policy path.
+ return FX.flatMap(k=>{
   const x=data?.currencies?.[k];
-  if(x?.operational_status!=='GREEN_OFFICIAL'||x.quality!=='OFFICIAL_CERTIFIED'||!fresh(x.as_of,4))return [];
+  if(x?.operational_status!=='GREEN_OFFICIAL'||x.official_status!=='ACTIVE'||
+     x.quality!=='OFFICIAL_CERTIFIED'||x.backtest_eligible_as_official!==true||
+     !fresh(x.as_of,4))return [];
   const pts=terms.map(t=>num(x.horizons?.[t]?.policy_delta_bp));
   return pts.every(v=>v!==null)?[{k,date:x.as_of,src:x.source||'',pts}]:[];
  });
@@ -675,7 +680,12 @@ function mountMarketResearch(doc,ois,proxy,rates,snb10,sourceReadiness){
   FX.every(c=>classes.includes(ois.currencies?.[c]?.operational_status));
  const estimated=statusesComplete?FX.filter(c=>ois.currencies[c].operational_status==='GREEN_ESTIMATED'):[];
  const withheld=statusesComplete?FX.filter(c=>ois.currencies[c].operational_status==='WITHHELD'):[];
- const curvesVerified=statusesComplete&&curves.every(c=>ois.currencies[c.k]?.operational_status==='GREEN_OFFICIAL');
+ const officialEligible=statusesComplete?FX.filter(c=>{
+  const r=ois.currencies[c];
+  return r.operational_status==='GREEN_OFFICIAL'&&fresh(r.as_of,4);
+ }):[];
+ const curvesVerified=statusesComplete&&curves.length===officialEligible.length&&
+  curves.every(c=>officialEligible.includes(c.k));
  host.id='gmfq-pricing-research';host.className='desk-panel';
  host.dataset.sourceStatus=curvesVerified?'READ_ONLY':'WITHHELD';
  host.dataset.verifiedCurves=curvesVerified?String(curves.length):'';
@@ -1833,7 +1843,7 @@ async function mountCentralBankFirstReading(doc){
     withheld.length+' senza curva certificata. Repricing ≠ probabilità di meeting.':
     'Dati o copertura insufficienti: non è possibile dichiarare un quadro aggiornato delle banche centrali.',
    sources:'Policy rate e decisioni: NATIVE_CB_DATA, date individuali dell’ultima decisione; prezzi: OIS_OPERATIONAL_VIEW, as-of separato per valuta. I dati del policy book non rappresentano dichiarazioni appena rilasciate.',
-   guard:'Le quattro curve certificate sono strumenti differenti; futures monetari non sono OIS puri. Snapshot policy storico, nessun nuovo giudizio hawkish/dovish, probabilità implicita o segnale FX inferiti.'},
+   guard:'Le curve certificate possono riferirsi a strumenti differenti; futures monetari non sono OIS puri. Snapshot policy storico, nessun nuovo giudizio hawkish/dovish, probabilità implicita o segnale FX inferiti.'},
   reconciled?'READ_ONLY':'WITHHELD');
  if(!rail)return;
  rail.dataset.policyEarliest=dates[0]||'';rail.dataset.policyLatest=dates.at(-1)||'';
