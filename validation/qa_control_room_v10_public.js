@@ -2,9 +2,14 @@
 'use strict';
 const {chromium}=require('playwright');
 const fs=require('node:fs');
+const {execFileSync}=require('node:child_process');
 const {readApproved,verifyPublicNzd}=require('./control_room_nzd_public_contract_v1.js');
 const approvedNzdrates=readApproved('.');
-const loader=fs.readFileSync('site/control-room-preview/index.html','utf8');
+// PR browser QA targets the *currently published* main; its new loader
+// and version token will appear on GitHub Pages only after merge.
+const loader=process.env.GITHUB_EVENT_NAME==='pull_request'?
+ execFileSync('git',['show','origin/main:site/control-room-preview/index.html'],{encoding:'utf8'}):
+ fs.readFileSync('site/control-room-preview/index.html','utf8');
 // The correct public browser check is the version specified by canonical main,
 // not the previous hardcoded query token. Verify its actual deployed bytes.
 const navigationVersion=/\.\/home-navigation-v10\.js\?v=([a-z0-9-]+)/i.exec(loader)?.[1];
