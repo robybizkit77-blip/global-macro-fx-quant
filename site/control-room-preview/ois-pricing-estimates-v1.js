@@ -18,6 +18,9 @@ function fresh(date,today){
    Public RBNZ monthly averages / month-end OCR manually pinned 2026-10-21. */
 const NZD_REFERENCE_ROWS=[["2023-06",5.5,5.68],["2023-07",5.5,5.67],["2023-08",5.5,5.64],["2023-09",5.5,5.68],["2023-10",5.5,5.68],["2023-11",5.5,5.63],["2023-12",5.5,5.63],["2024-01",5.5,5.64],["2024-02",5.5,5.71],["2024-03",5.5,5.64],["2024-04",5.5,5.63],["2024-05",5.5,5.62],["2024-06",5.5,5.62]];
 const NZD_RECENT_ROWS=[["2026-01",2.25,2.5],["2026-02",2.25,2.49],["2026-03",2.25,2.51],["2026-04",2.25,2.56],["2026-05",2.25,2.63],["2026-06",2.25,2.68]];
+/* Distinct July–September 2026 observations, never used to fit the 24bp point.
+   Source: same public RBNZ 90-day bank bill / month-end OCR table. */
+const NZD_HOLDOUT_ROWS=[["2026-07",2.5,2.85],["2026-08",2.5,2.98],["2026-09",2.75,3.13]];
 function empiricalMedian(values){
  const s=[...values].sort((a,b)=>a-b),k=Math.floor(s.length/2);
  return s.length%2?s[k]:(s[k-1]+s[k])/2;
@@ -37,12 +40,36 @@ function calibratedNzdCarry(){
  if(!old||!recent)return null;
  const all=old.concat(recent),mOld=empiricalMedian(old),mRecent=empiricalMedian(recent);
  const estimated=Math.round(0.30*mOld+0.70*mRecent);
- const lo=Math.floor(Math.min(...all)-2),hi=Math.ceil(Math.max(...all)+2);
+ // Holdout months are EXCLUDED from the 24bp central point estimate. They
+ // reveal a previously underestimated upper error band (Aug 2026 = 48bp).
+ const originalLo=Math.floor(Math.min(...all)-2);
+ const originalHi=Math.ceil(Math.max(...all)+2);
+ const holdout=[];
+ for(const [month,ocr,bill] of NZD_HOLDOUT_ROWS){
+  if(!/^\d{4}-\d{2}$/.test(month)||number(ocr)===null||number(bill)===null||
+     !(ocr>0&&bill>0&&bill<25))return null;
+  holdout.push(Math.round((bill-ocr)*10000)/100);
+ }
+ if(holdout.length!==3||NZD_HOLDOUT_ROWS.map(x=>x[0]).join(',')!==
+    '2026-07,2026-08,2026-09')return null;
+ const errors=holdout.map(x=>Math.abs(x-estimated));
+ const mae=Math.round((errors.reduce((a,b)=>a+b,0)/errors.length)*100)/100;
+ const lo=originalLo;
+ const hi=Math.max(originalHi,Math.ceil(Math.max(...holdout)+2));
+ const originalCovered=holdout.filter(x=>x>=originalLo&&x<=originalHi).length;
+ const expandedCovered=holdout.filter(x=>x>=lo&&x<=hi).length;
  if(!Number.isFinite(estimated)||estimated<=0||estimated>=100||lo<0||hi>100||
-    !(lo<estimated&&estimated<hi))return null;
+    !(lo<estimated&&estimated<hi)||originalCovered!==2||expandedCovered!==3||
+    mae<0||mae>100)return null;
  return {schema:'GMFQ_NZD_EMPIRICAL_CASH_CARRY_SCENARIO_V1',
   basis_bp:estimated,low_bp:lo,high_bp:hi,observations:all.length,
   reference_median_bp:mOld,recent_median_bp:mRecent,
+  holdout_months:3,holdout_point_mae_bp:mae,
+  holdout_max_absolute_error_bp:Math.max(...errors),
+  holdout_original_band_coverage:originalCovered,
+  holdout_expanded_band_coverage:expandedCovered,
+  expanded_band_selected_after_observing_holdout:true,
+  holdout_is_real_ois_spread:false,
   source:'RBNZ B2 monthly 90-day bills and OCR',reviewed_as_of:'2026-10-21',
   direct_nzbo_ois_quote:false,statistical_confidence_interval:false,
   forward_ois_curve:false,policy_delta_allowed:false,core_effect:'NONE'};
@@ -140,7 +167,7 @@ function view(rows){
  '<div><strong>'+flags[r.ccy]+' '+r.ccy+'</strong><small>'+labels[r.tier]+'</small></div>'+
  tenors.map(t=>'<div>'+cell(r,t)+'</div>').join('')+
  '<div class="gmfq-est-source">'+esc(r.source||'Fonte non corrente')+'</div></div>').join('')+'</div>'+
- '<p class="gmfq-est-note"><b>Metodo:</b> GBP OIS BoE; AUD/CAD/JPY futures monetari ufficiali; USD/CHF futures indicativi. EUR usa giorni diversi e non forma una curva sincronizzata. NZD: scenario empirico su Bank Bill 90 giorni − OCR RBNZ (19 mesi, due regimi): sconto stimato 24 bp, fascia prudenziale 10–45 bp. <b>non è uno spread OIS misurato e non intervallo statistico</b>. Sono futures trimestrali, non una curva OIS spot. Nessuna stima produce variazioni OIS 1D/1W, segnali FX o backtest.</p></div>';
+ '<p class="gmfq-est-note"><b>Metodo:</b> GBP OIS BoE; AUD/CAD/JPY futures monetari ufficiali; USD/CHF futures indicativi. EUR usa giorni diversi e non forma una curva sincronizzata. NZD: scenario empirico su Bank Bill 90 giorni − OCR RBNZ (19 mesi, due regimi): sconto stimato 24 bp, fascia prudenziale 10–50 bp, ampliata dopo un test su luglio–settembre 2026 (errore medio del punto centrale circa 16 bp). <b>non è uno spread OIS misurato e non intervallo statistico</b>. Sono futures trimestrali, non una curva OIS spot. Nessuna stima produce variazioni OIS 1D/1W, segnali FX o backtest.</p></div>';
 }
 const css=[
  '#gmfq-ois-research-estimates{margin:12px 0;min-width:0}',
@@ -156,7 +183,7 @@ const css=[
  '#gmfq-ois-research-estimates .gmfq-est-note{margin-top:12px;color:#b1c5d2}',
  '@media(max-width:600px){#gmfq-ois-research-estimates .gmfq-est-body{padding:9px}#gmfq-ois-research-estimates .gmfq-est-row{grid-template-columns:minmax(78px,1.1fr) repeat(3,minmax(0,1fr))}#gmfq-ois-research-estimates .gmfq-est-row>div,#gmfq-ois-research-estimates .gmfq-est-row>span{padding:6px 4px}#gmfq-ois-research-estimates .gmfq-est-row b{font-size:12px}#gmfq-ois-research-estimates .gmfq-est-row small{font-size:9px}}'
 ].join('');
-if(typeof module!=='undefined'&&module.exports)module.exports={matrix,view,fresh,coverage,calibratedNzdCarry,NZD_REFERENCE_ROWS,NZD_RECENT_ROWS};
+if(typeof module!=='undefined'&&module.exports)module.exports={matrix,view,fresh,coverage,calibratedNzdCarry,NZD_REFERENCE_ROWS,NZD_RECENT_ROWS,NZD_HOLDOUT_ROWS};
 if(typeof window!=='undefined')window.GMFQ_OIS_RESEARCH_V1=Object.freeze({coverage});
 if(typeof document==='undefined')return;
 const frame=document.getElementById('gmfq-page');if(!frame)return;
