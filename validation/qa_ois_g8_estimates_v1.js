@@ -4,7 +4,7 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const root=path.resolve(__dirname,'..');
-const {matrix,view,fresh,coverage,calibratedNzdCarry,NZD_REFERENCE_ROWS,NZD_RECENT_ROWS,NZD_HOLDOUT_ROWS}=require(path.join(root,'site/control-room-preview/ois-pricing-estimates-v1.js'));
+const {matrix,view,fresh,coverage,auditDatedFuture,calibratedNzdCarry,NZD_REFERENCE_ROWS,NZD_RECENT_ROWS,NZD_HOLDOUT_ROWS}=require(path.join(root,'site/control-room-preview/ois-pricing-estimates-v1.js'));
 const liveOis=JSON.parse(fs.readFileSync(path.join(root,'live_data/sections/OIS_OPERATIONAL_VIEW.json'),'utf8'));
 const liveBb=JSON.parse(fs.readFileSync(path.join(root,'live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),'utf8'));
 const ois=structuredClone(liveOis),bb=structuredClone(liveBb);
@@ -63,6 +63,48 @@ assert.equal(rows.EUR.tier,'MIXED');
 assert.equal(rows.EUR.points['3m'].date,EARLIER);
 assert.equal(rows.EUR.points['12m'].date,FRESH);
 assert.equal(rows.NZD.tier,'SCENARIO');
+
+// Source-level 100-price identity and expiry-proximity: same dated contract,
+// not an observed OIS basis or a truly synchronized 3M/6M/12M cash curve.
+const expectedGap={USD:{'3m':-15,'6m':14,'12m':11},
+ CHF:{'3m':-36,'6m':-34,'12m':-37},
+ EUR:{'3m':0,'6m':30,'12m':-36}};
+for(const ccy of ['USD','EUR','CHF']){
+ const src=ois.currencies[ccy];
+ for(const t of tenors){
+  const p=src.horizons[t];
+  const research=rows[ccy].points[t];
+  assert(research,'missing '+ccy+' '+t);
+  assert.equal(research.source_quote_verified,true);
+  assert.equal(research.policy_repricing_allowed,false);
+  assert.equal(research.direct_ois_quote,false);
+  assert.equal(research.contract,p.contract);
+  assert.equal(research.expires,p.expiration);
+  assert(Math.abs(100-p.futures_price-research.value)<=0.0002);
+  assert(Math.abs(research.tenor_gap_days)<=45);
+  const displayDay=ccy==='EUR'?src.secondary_quote_context.horizons[t].quote_as_of:p.quote_as_of;
+  assert.equal(research.date,displayDay);
+ }
+}
+const invalidPrice=structuredClone(ois);
+invalidPrice.currencies.USD.horizons['3m'].futures_price+=0.025;
+assert.equal(matrix(invalidPrice,bb,TODAY).find(r=>r.ccy==='USD').points['3m'],undefined);
+const spoof=structuredClone(ois);
+spoof.currencies.CHF.horizons['6m'].symbol='FAKE:SA3Z2026';
+assert.equal(matrix(spoof,bb,TODAY).find(r=>r.ccy==='CHF').points['6m'],undefined);
+const expiredHorizon=structuredClone(ois);
+expiredHorizon.currencies.USD.horizons['12m'].expiration='2028-12-15';
+assert.equal(matrix(expiredHorizon,bb,TODAY).find(r=>r.ccy==='USD').points['12m'],undefined);
+const quoteDay=structuredClone(ois);
+quoteDay.currencies.EUR.secondary_quote_context.horizons['3m'].quote_as_of='2026-10-18';
+assert.equal(matrix(quoteDay,bb,TODAY).find(r=>r.ccy==='EUR').points['3m'],undefined);
+const spoofTicker=structuredClone(ois);
+spoofTicker.currencies.EUR.secondary_quote_context.horizons['12m'].contract='FST3U2027';
+assert.equal(matrix(spoofTicker,bb,TODAY).find(r=>r.ccy==='EUR').points['12m'],undefined);
+const dollarQuote=ois.currencies.USD.horizons['3m'];
+assert.equal(auditDatedFuture('USD','3m',dollarQuote,dollarQuote.rate,
+  dollarQuote.quote_as_of,TODAY)?.source_quote_verified,true);
+
 for(const t of tenors){
  const raw=bb.horizons[t].implied_bank_bill_rate;
  assert.equal(rows.NZD.points[t].value,Math.round((raw-cal.basis_bp/100)*100)/100);
