@@ -393,8 +393,61 @@ function mountHomeReadingPath(doc,context){
  '#gmfq-home-reading-path .gmfq-reading-steps{gap:5px 9px}'+
  '#gmfq-home-reading-path button{font-size:10px}#gmfq-home-reading-path .gmfq-reading-trust{flex-basis:100%}}';
  doc.head.appendChild(style);
+ // Genuine first-screen composition: the original 32-part artwork and Home
+ // data remain untouched. Only the live Home layout changes, responsively.
+ const visual=doc.createElement('style');visual.id='gmfq-home-visual-edition-css';
+ visual.textContent=
+  '#gmfq-home-reading-path{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(285px,.85fr);gap:18px;align-items:center;min-width:0;margin:11px 0 15px;padding:16px 19px;border:1px solid #344f62;border-left:3px solid #d7b76e;border-radius:7px;background:linear-gradient(110deg,#0d293b 0%,#091a29 82%);box-sizing:border-box}'+
+  '#gmfq-home-reading-path .gmfq-reading-main,#gmfq-home-reading-path .gmfq-reading-side{min-width:0}'+
+  '#gmfq-home-reading-path .gmfq-reading-heading{display:block;font:600 10px/1.55 Arial,sans-serif;letter-spacing:.09em;color:#d9c48b;margin-bottom:7px}'+
+  '#gmfq-home-reading-path .gmfq-reading-priority{font:600 17px/1.48 Arial,sans-serif;color:#f0f3f7;max-width:670px;margin:0 0 9px;overflow-wrap:anywhere}'+
+  '#gmfq-home-reading-path .gmfq-reading-trust{display:block;font:11px/1.5 Arial,sans-serif;color:#9eb8c9}'+
+  '#gmfq-home-reading-path .gmfq-reading-side{padding-left:17px;border-left:1px solid #355163}'+
+  '#gmfq-home-reading-path .gmfq-reading-side-title{font:600 10px/1.5 Arial,sans-serif;letter-spacing:.08em;color:#8caaba}'+
+  '#gmfq-home-reading-path .gmfq-reading-steps{display:grid;grid-template-columns:1fr;gap:0;margin-top:5px;counter-reset:gmfq-steps}'+
+  '#gmfq-home-reading-path .gmfq-reading-steps button{counter-increment:gmfq-steps;display:block;width:100%;padding:7px 2px;border-bottom:1px solid #304c5d;text-align:left;font:12px/1.4 Arial,sans-serif;color:#d3e0e9}'+
+  '#gmfq-home-reading-path .gmfq-reading-steps button:last-child{border-bottom:0}'+
+  '#gmfq-home-reading-path .gmfq-reading-steps button:before{content:"0" counter(gmfq-steps);display:inline-block;min-width:29px;color:#799aaf;font:600 10px/1.4 Arial,sans-serif}'+
+  '#gmfq-home-reading-path .gmfq-reading-steps button[data-reading-priority="true"]{color:#f0d48b;font-weight:600}'+
+  '#gmfq-home-reading-path .gmfq-reading-steps button:focus-visible{outline:2px solid #e4c77f;outline-offset:2px}'+
+  '.gridtop{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:minmax(285px,auto) minmax(270px,auto);height:auto;gap:12px;margin-bottom:14px}'+
+  '.gridtop>.hero{grid-column:1/-1;grid-row:1;min-height:285px;height:auto;padding:25px 30px}'+
+  '.gridtop>.hero .globe{width:62%;background-size:auto 100%;background-position:right center;opacity:1}'+
+  '.gridtop>.hero .herobody{max-width:630px}'+
+  '.gridtop>.hero h1{font-size:32px;line-height:1.17;max-width:650px}'+
+  '.gridtop>.panel:not(.hero){grid-row:2;min-width:0;min-height:270px;height:auto}'+
+  '.gridtop>.panel:nth-child(2){grid-column:1}'+
+  '.gridtop>.yieldpanel{grid-column:2;display:block}'+
+  '.gridtop>.panel:not(.hero) .heading{font:600 16px/1.25 Arial,sans-serif;min-height:42px;height:auto;padding:11px 15px;white-space:normal}'+
+  '.gridtop .prob{padding:0 15px 10px}'+
+  '.gridtop .oisrow{grid-template-columns:minmax(75px,110px) minmax(0,1fr) 67px;gap:9px;margin:5px 0;font-size:12px}'+
+  '.gridtop .oisrow:first-child{margin-top:6px}'+
+  '.gridtop .oisrow .track{height:13px}'+
+  '.gridtop .oisrow strong{font-size:12px}'+
+  '.gridtop .yieldplot{height:167px}'+
+  '@media(max-width:850px){#gmfq-home-reading-path{grid-template-columns:1fr;gap:13px;padding:14px 15px}'+
+  '#gmfq-home-reading-path .gmfq-reading-side{padding:10px 0 0;border-left:0;border-top:1px solid #355163}'+
+  '#gmfq-home-reading-path .gmfq-reading-steps{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}'+
+  '#gmfq-home-reading-path .gmfq-reading-steps button{padding:6px 0}'+
+  '.gridtop>.hero{padding:20px 22px}.gridtop>.hero h1{font-size:28px}}'+
+  '@media(max-width:600px){#gmfq-home-reading-path{padding:13px 12px;gap:10px;margin:10px 0 13px}'+
+  '#gmfq-home-reading-path .gmfq-reading-priority{font-size:15px;line-height:1.48}'+
+  '#gmfq-home-reading-path .gmfq-reading-steps{grid-template-columns:1fr;gap:0}'+
+  '#gmfq-home-reading-path .gmfq-reading-steps button{font-size:11px;padding:6px 1px}'+
+  '.gridtop{grid-template-columns:1fr;grid-template-rows:none;gap:11px;margin-bottom:13px}'+
+  '.gridtop>.hero{grid-column:1;grid-row:auto;min-height:315px;height:auto;padding:18px 16px}'+
+  '.gridtop>.hero .globe{width:90%;background-size:auto 100%;opacity:.64}'+
+  '.gridtop>.hero .herobody{max-width:100%}'+
+  '.gridtop>.hero h1{font-size:23px;line-height:1.2}'+
+  '.gridtop>.panel:not(.hero){grid-column:1;grid-row:auto;min-height:265px}'+
+  '.gridtop>.panel:not(.hero) .heading{font-size:15px;padding:11px 13px}'+
+  '.gridtop .prob{padding:0 12px 10px}'+
+  '.gridtop .oisrow{grid-template-columns:minmax(68px,92px) minmax(0,1fr) 62px;gap:7px;font-size:11px}'+
+  '.gridtop .yieldplot{height:175px}}';
+ doc.head.appendChild(visual);
  const rail=doc.createElement('nav');
  rail.id='gmfq-home-reading-path';rail.setAttribute('aria-label','Da dove iniziare la lettura Macro FX');
+ rail.dataset.visualEdition='home-composition-v1';
  rail.dataset.macroAsOf=macroVerified?macroDay:'';
  rail.dataset.macroStatus=macroVerified?(macroCurrent?'DATED_SNAPSHOT':'HISTORICAL'):'WITHHELD';
  rail.dataset.oisCertified=Number.isInteger(oisCount)?String(oisCount):'';
@@ -403,13 +456,13 @@ function mountHomeReadingPath(doc,context){
  rail.dataset.sourceEffect='NONE';
  rail.dataset.priorityTarget=priority.key;
  rail.dataset.priorityState=priority.state;
- rail.innerHTML='<span class="gmfq-reading-heading">DA DOVE INIZIARE</span>'+
+ rail.innerHTML='<div class="gmfq-reading-main"><span class="gmfq-reading-heading">PRIORITÀ DEL RESEARCH DESK</span>'+
   '<p class="gmfq-reading-priority" aria-label="Prima verifica da effettuare">'+htmlEscape(priority.text)+'</p>'+
-  '<div class="gmfq-reading-steps">'+steps.map((x,i)=>
-   (i?'<span class="gmfq-reading-arrow" aria-hidden="true">→</span>':'')+
+  '<span class="gmfq-reading-trust">Ricerca, non segnali: '+(fxCurrent?'fixing BCE '+htmlEscape(fxDay):'fixing BCE non verificato')+'</span></div>'+
+  '<div class="gmfq-reading-side"><span class="gmfq-reading-side-title">PERCORSO DI VERIFICA</span>'+
+  '<div class="gmfq-reading-steps">'+steps.map(x=>
    '<button type="button" data-reading-target="'+x.key+'" data-reading-priority="'+(x.key===priority.key?'true':'false')+'" aria-label="Apri '+htmlEscape(x.description)+'">'+
-    htmlEscape(x.description)+'</button>').join('')+'</div>'+
-   '<span class="gmfq-reading-trust">Ricerca, non segnali: '+(fxCurrent?'fixing BCE '+htmlEscape(fxDay):'fixing BCE non verificato')+'</span>';
+    htmlEscape(x.description)+'</button>').join('')+'</div></div>';
  // The native globe HERO is the first child of .gridtop. Keep the 3-column
  // original grid intact: position the editorial path BEFORE that entire grid.
  grid.insertAdjacentElement('beforebegin',rail);
