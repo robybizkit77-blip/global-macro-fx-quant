@@ -233,7 +233,7 @@ function oisAll(doc,ois,proxy){
   <div class="track"><div class="fill ${x.d!==null&&x.d<0?'alt':''}" style="width:${w}%"></div></div>
   <strong>${x.d===null?'—':(x.d>=0?'+':'')+fmt(x.d,0)+' bp'}</strong></div>`;
  }).join('');
- html+='<div class="oisnote">O = fonte certificata (anche futures), S = stima. NZD/PX = Bank Bill ≠ OIS.</div>';
+ html+='<div class="oisnote">O = fonte certificata (anche futures), S = stima. NZD/PX = PROXY BB ≠ OIS.</div>';
  host.innerHTML=html;
 }
 function dxyLine(data){
@@ -357,7 +357,7 @@ function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy,proxy){
     (datePattern.test(pairedCHF||'')?' Ultima coppia CHF: '+pairedCHF+'.':''))+
   line('Market Pricing · fonti certificate',oisCurrent.length+'/8 valute con pricing 3M/6M/12M certificato e recente.'+
     (withheldOis.length?' Non certificate o datate: '+withheldOis.join(', ')+'.':'')+
-    ' GBP OIS BoE; JPY, AUD e CAD futures monetari certificati, non OIS puri.')+
+    ' GBP OIS BoE; JPY, AUD e CAD futures monetari, non OIS puri (fonti certificate).')+
   line('Contesto monetario G8 · ricerca',research?
     contextCount+'/8 valute con tre orizzonti verificati entro cinque giorni. '+
     (contextCodes.length?'Futures indicativi/scenari: '+contextCodes.join(', ')+'. ':'')+
