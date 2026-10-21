@@ -280,7 +280,11 @@ function expectedReactionFromMetrics(row){
   const reasons=await page.evaluate(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument;
     const p=d.getElementById('gmfq-screener-blockers');
-    return {baseline:p?.dataset.macroBaselineAsOf,
+    const innerScroll=p.scrollWidth,innerClient=p.clientWidth;
+    p.style.display='none';
+    const nativeWidth=d.documentElement.scrollWidth;
+    p.style.display='';
+    return {nativeWidth,innerScroll,innerClient,baseline:p?.dataset.macroBaselineAsOf,
       count:p?.querySelectorAll('button.gmfq-blocker-pair[data-pair]').length,
       groups:Object.fromEntries(['CONFLICT','RATES_ONLY','INSUFFICIENT'].map(k=>[
         k,[...(p.querySelector('[data-reason="'+k+'"]')?.querySelectorAll('button[data-pair]')||[])].map(b=>b.dataset.pair)
@@ -303,7 +307,8 @@ function expectedReactionFromMetrics(row){
   }
   if(reasons.count!==nonVal.length||
      reasons.baseline!==setupFeed.macro_baseline_asof||
-     !reasons.descriptive||reasons.width>reasons.viewport+16)
+     !reasons.descriptive||reasons.innerScroll>reasons.innerClient+2||
+     reasons.width>Math.max(reasons.viewport+16,reasons.nativeWidth+2))
     throw Error(label+' screener reason contract failed '+JSON.stringify(reasons));
   await page.screenshot({path:'v10-qa-images/'+label+'-screener-reasons.png',fullPage:true});
   await page.frameLocator('#gmfq-page').locator('#gmfq-screener-blockers button[data-pair="GBPJPY"]').click();
