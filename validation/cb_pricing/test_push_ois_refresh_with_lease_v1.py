@@ -84,6 +84,36 @@ def test_refuse_protected(mode: str, upstream_path: str):
         assert git("--git-dir", str(origin), "show", "main:" + ESTIMATED_PATHS[0]) != "new validated observation"
 
 
+def test_g8_readiness_writer_scope():
+    readiness = "live_data/sections/OIS_SOURCE_READINESS_VIEW.json"
+    same_contract = "validation/cb_pricing/history/OIS_SAME_CONTRACT_QUOTES_V1.jsonl"
+    assert readiness in G8_PATHS and readiness not in ESTIMATED_PATHS
+    assert same_contract in G8_PATHS and same_contract in ESTIMATED_PATHS
+    # New output must be authorized only in the existing G8 writer mode.
+    with tempfile.TemporaryDirectory() as td:
+        origin, writer, other = fixture(Path(td))
+        base = git("rev-parse", "HEAD", cwd=writer)
+        write(writer, readiness, "new reviewed readiness\n")
+        try:
+            persist(base, "estimated", cwd=writer)
+            raise AssertionError("estimated writer accepted G8 readiness update")
+        except LeaseError as e:
+            assert "REFUSED_OUT_OF_SCOPE" in str(e), e
+        assert persist(base, "g8", cwd=writer)["status"] == "PUSHED"
+        assert git("--git-dir", str(origin), "show", "main:" + readiness) == "new reviewed readiness"
+    # A concurrent readiness change must block stale G8 rebase, not overwrite it.
+    with tempfile.TemporaryDirectory() as td:
+        _, writer, other = fixture(Path(td))
+        base = git("rev-parse", "HEAD", cwd=writer)
+        write(writer, same_contract, "future append\n")
+        other_commit(other, readiness, "other writer update\n")
+        try:
+            persist(base, "g8", cwd=writer)
+            raise AssertionError("readiness rebase risk was not refused")
+        except LeaseError as e:
+            assert "REFUSED_PROTECTED_OIS_CHANGE" in str(e), e
+
+
 def test_noop_scope():
     with tempfile.TemporaryDirectory() as td:
         _, writer, _ = fixture(Path(td))
@@ -102,5 +132,6 @@ if __name__ == "__main__":
     test_refuse_protected("estimated", "live_data/sections/OIS_DATA.json")
     test_refuse_protected("g8", ESTIMATED_PATHS[0])
     test_refuse_protected("g8", "validation/cb_pricing/ois_g8_history_snapshot_v1.py")
+    test_g8_readiness_writer_scope()
     test_noop_scope()
     print("OIS_SAFE_PUSH_LEASE_V1: PASS (unrelated rebase, protected refusal, no-change, scope)")
