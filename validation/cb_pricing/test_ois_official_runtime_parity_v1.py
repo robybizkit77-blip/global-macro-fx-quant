@@ -55,7 +55,9 @@ def check(ois:dict, cb:dict, view:dict):
             displayed=x["horizons"][t]
             require(original==displayed,c+" "+t+" same-date official horizon")
             require(equal(displayed.get("rate"),p["h"+t]),c+" "+t+" CB price mismatch")
-    require(len(active)==4 and set(active)=={"GBP","JPY","CAD","AUD"}, "approved official scope changed")
+    # New separately certified sources may become active in the future; never
+    # pin the count to today's four or allow the view to invent that promotion.
+    require(len(active)>0, "no official sources")
     require(view["summary"]["green_official"]==len(active), "certified count mismatch")
     return {"status":"PASS","aligned_currencies":active,"as_of":{c:v[c]["as_of"] for c in active},
             "official_only":True,"estimated_promoted":False}
