@@ -12,8 +12,29 @@ from ois_same_contract_history_v1 import (
     quote_fingerprint, validate_row,
 )
 
-BASE = json.loads(SOURCE.read_text(encoding="utf-8"))
+LIVE = json.loads(SOURCE.read_text(encoding="utf-8"))
 seed = load_history()
+# Build a dated, immutable replay from the archived 2026-10-16/19/20 bars.
+# Daily source feeds are allowed to move on: tests must not demand that 2026-10-21
+# quote dates remain the latest on every future scheduled execution.
+BASE = copy.deepcopy(LIVE)
+BASE["generated_at_utc"] = "2026-10-21T06:57:19Z"
+for code in ("USD", "EUR", "CHF"):
+    for term in ("3m", "6m", "12m"):
+        observed = [r for r in seed if r["currency"] == code and
+                    r["observed_under_horizon"] == term]
+        assert observed
+        row = max(observed, key=lambda r: r["observation_date"])
+        raw = BASE["currencies"][code]["horizons"][term]
+        raw.update({
+            "contract": row["contract"], "symbol": row["symbol"],
+            "expiration": row["expiration"], "quote_as_of": row["observation_date"],
+            "futures_price": row["futures_price"], "rate": row["implied_rate"],
+            "quote_timestamp_verified": True,
+            "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
+            "mapping": "nearest dated listed contract expiry to today+" +
+             str({"3m": 90, "6m": 180, "12m": 365}[term]) + "d; no interpolation",
+        })
 assert len(seed) == 23, len(seed)
 assert len({(x["currency"], x["contract"], x["observation_date"]) for x in seed}) == 23
 assert {x["currency"] for x in seed} == {"USD", "EUR", "CHF"}
@@ -48,6 +69,9 @@ assert not [x for x in deltas if x["symbol"] in ("CBOT:ZQH2027", "CBOT:ZQJ2027")
 assert not [x for x in deltas if x["symbol"] == "CBOT:ZQH2027" and
             x["to_date"] == "2026-10-20"]
 
+live_eligible, live_excluded = candidates(LIVE)
+assert len(live_eligible) + len(live_excluded) == 9, (
+    live_eligible, live_excluded)
 source_rows, excluded = candidates(BASE)
 assert not excluded, excluded
 assert len(source_rows) == 9
