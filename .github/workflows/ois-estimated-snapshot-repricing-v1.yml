@@ -13,6 +13,11 @@ on:
       - 'validation/cb_pricing/test_ois_same_contract_history_v1.py'
       - 'validation/cb_pricing/test_ois_operational_view_v1.py'
       - 'validation/cb_pricing/test_ois_official_runtime_parity_v1.py'
+      - 'validation/cb_pricing/build_ois_source_readiness_view_v1.py'
+      - 'validation/cb_pricing/audit_ois_source_access_v1.py'
+      - 'validation/cb_pricing/check_ois_readiness_parity_v1.py'
+      - 'validation/cb_pricing/test_check_ois_readiness_parity_v1.py'
+      - 'validation/cb_pricing/test_build_ois_source_readiness_view_v1.py'
       - 'validation/cb_pricing/history/OIS_SAME_CONTRACT_QUOTES_V1.jsonl'
       - 'validation/cb_pricing/push_ois_refresh_with_lease_v1.py'
       - 'validation/cb_pricing/test_push_ois_refresh_with_lease_v1.py'
@@ -34,6 +39,11 @@ on:
       - 'validation/cb_pricing/test_ois_same_contract_history_v1.py'
       - 'validation/cb_pricing/test_ois_operational_view_v1.py'
       - 'validation/cb_pricing/test_ois_official_runtime_parity_v1.py'
+      - 'validation/cb_pricing/build_ois_source_readiness_view_v1.py'
+      - 'validation/cb_pricing/audit_ois_source_access_v1.py'
+      - 'validation/cb_pricing/check_ois_readiness_parity_v1.py'
+      - 'validation/cb_pricing/test_check_ois_readiness_parity_v1.py'
+      - 'validation/cb_pricing/test_build_ois_source_readiness_view_v1.py'
       - 'validation/cb_pricing/history/OIS_SAME_CONTRACT_QUOTES_V1.jsonl'
       - 'validation/cb_pricing/push_ois_refresh_with_lease_v1.py'
       - 'validation/cb_pricing/test_push_ois_refresh_with_lease_v1.py'
@@ -109,11 +119,21 @@ jobs:
       - name: Rebuild repricing-aware operational view
         run: python validation/cb_pricing/build_ois_operational_view_v1.py
 
+      - name: Rebuild matching read-only source readiness from this exact OIS view
+        run: |
+          python validation/cb_pricing/test_audit_ois_source_access_v1.py
+          python validation/cb_pricing/audit_ois_source_access_v1.py --output /tmp/ois-estimated-source-audit-v1.json
+          python validation/cb_pricing/build_ois_source_readiness_view_v1.py
+          python validation/cb_pricing/test_build_ois_source_readiness_view_v1.py
+          python validation/cb_pricing/check_ois_readiness_parity_v1.py
+          python validation/cb_pricing/test_check_ois_readiness_parity_v1.py
+
       - name: Self-test and governance checks
         run: |
           python validation/cb_pricing/test_cb_pricing_estimated_v1.py
           python validation/cb_pricing/test_ois_operational_view_v1.py
           python validation/cb_pricing/test_ois_official_runtime_parity_v1.py
+          python validation/cb_pricing/check_ois_readiness_parity_v1.py
           python validation/cb_pricing/test_ois_estimated_snapshot_v1.py
           python validation/cb_pricing/test_ois_same_contract_history_v1.py
           sha256sum -c /tmp/ois.before.sha256
