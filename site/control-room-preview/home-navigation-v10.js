@@ -1308,6 +1308,69 @@ function mountScreenerPairBridge(doc){
 }
 
 
+/* Valute source compass: one quiet, read-only disclosure line above the native
+   currency study. Never recompute G8 strength, price ranks or ICE DXY. */
+function valuteFxSourceStatus(fx){
+ const currencies=fx?.currencies||[];
+ const row=fx?.rows?.at(-1);
+ const day=fx?.last_as_of;
+ const ok=fx?.schema==='GMFQ_ECB_G8_PRICE_HISTORY_V1'&&
+   fx.status==='CURRENT_OFFICIAL_HISTORY'&&fx.pair_count===28&&
+   Array.isArray(fx.rows)&&fx.rows.length>1&&
+   currencies.length===8&&FX.every(c=>currencies.includes(c)&&num(row?.[c])!==null&&row[c]>0)&&
+   row?.Date===day&&/^\d{4}-\d{2}-\d{2}$/.test(day||'')&&
+   row.EUR===1&&fresh(day,4);
+ return ok?{status:'OFFICIAL_FIXING_RECENT',asof:day}:
+   {status:'WITHHELD',asof:null};
+}
+async function mountValuteSourceCompass(doc){
+ if(route()!=='valute'||frame.contentDocument!==doc)return;
+ const hero=doc.querySelector('.desk-hero'),main=doc.querySelector('.desk-main');
+ if(!hero||!main||doc.getElementById('gmfq-valute-source-compass'))return;
+ const strip=doc.createElement('section');
+ strip.id='gmfq-valute-source-compass';strip.setAttribute('aria-label','Provenienza dei dati valutari');
+ strip.dataset.sourceStatus='LOADING';
+ strip.innerHTML='<p class="gmfq-vsc-status">Verifica fonti FX…</p>';
+ hero.insertAdjacentElement('afterend',strip);
+ const inputs=await Promise.allSettled([
+   feed('ECB_G8_PRICE_HISTORY.json'),feed('DXY_SYNTHETIC_ECB.json'),feed('D.json')
+ ]);
+ if(route()!=='valute'||frame.contentDocument!==doc)return;
+ const fx=inputs[0].status==='fulfilled'?inputs[0].value:null;
+ const dxy=inputs[1].status==='fulfilled'?inputs[1].value:null;
+ const model=inputs[2].status==='fulfilled'?inputs[2].value:null;
+ const prices=valuteFxSourceStatus(fx),synthetic=validDxy(dxy);
+ const baseline=macroSeriesPeriod(model?.asOf)===model?.asOf&&
+  FX.every(c=>['growth','labour','inflation'].every(k=>num(model?.macro?.[c]?.[k])!==null))?
+  model.asOf:null;
+ const css=doc.createElement('style');css.id='gmfq-valute-source-compass-style';
+ css.textContent=
+  '#gmfq-valute-source-compass{margin:0 0 13px;border-top:1px solid #355065;border-bottom:1px solid #294558;padding:9px 12px;color:#bcd0dc;min-width:0}'+
+  '#gmfq-valute-source-compass .gmfq-vsc-status{font:12px/1.6 Arial,sans-serif;margin:0;overflow-wrap:anywhere}'+
+  '#gmfq-valute-source-compass strong{color:#e6ecf2;font-weight:600}'+
+  '#gmfq-valute-source-compass .gmfq-vsc-details{font:11px/1.6 Arial,sans-serif;color:#9eb7c8;margin-top:5px}'+
+  '#gmfq-valute-source-compass .gmfq-vsc-details summary{cursor:pointer;color:#d9c18b;outline-offset:3px}'+
+  '#gmfq-valute-source-compass .gmfq-vsc-details p{margin:7px 0 0}'+
+  '@media(max-width:600px){#gmfq-valute-source-compass{padding:9px 8px}'+
+  '#gmfq-valute-source-compass .gmfq-vsc-status{font-size:11px}}';
+ doc.head.appendChild(css);
+ const fxText=prices.status==='OFFICIAL_FIXING_RECENT'?
+  'FX BCE '+prices.asof:'FX BCE non corrente o non verificabile';
+ const dxyText=synthetic?'DXY sintetico BCE '+dxy.as_of:'DXY sintetico non corrente';
+ const modelText=baseline?
+  'Macro baseline '+baseline+(!fresh(baseline,10)?' (storica)':' (snapshot)'):
+  'Macro baseline non verificabile';
+ strip.dataset.sourceStatus=prices.status;
+ strip.dataset.fxAsOf=prices.asof||'';
+ strip.dataset.dxyStatus=synthetic?'SYNTHETIC_ECB':'WITHHELD';
+ strip.dataset.macroAsOf=baseline||'';
+ strip.innerHTML='<p class="gmfq-vsc-status"><strong>Fonti delle letture valutarie</strong> · '+
+  htmlEscape(fxText)+' · '+htmlEscape(dxyText)+' · '+htmlEscape(modelText)+'</p>'+
+  '<details class="gmfq-vsc-details"><summary>Cosa misurano, e cosa non misurano</summary>'+
+  '<p>I fixing BCE sono riferimenti ufficiali giornalieri rispetto all’euro, non prezzi intraday e non un nuovo ranking di forza relativa. Il DXY sintetico è una stima informativa ricostruita da fixing BCE, non il DXY ICE ufficiale. Gli score Macro e i giudizi strutturali appartengono alla baseline storica e non vengono aggiornati da queste osservazioni.</p>'+
+  '<p>Qualsiasi dato assente o datato resta dichiarato: nessun prezzo, bias, COT, policy path o segnale viene ricostruito automaticamente.</p></details>';
+}
+
 /* Additive Cross-Asset Gold readout. Never alters the 32 approved visual parts. */
 function validCrossGold(doc,gold){
  const govern=doc?.governance||{};
@@ -1386,7 +1449,7 @@ async function mountCrossGold(doc){
   '<div class="gmfq-gold-line">Fonte: Yahoo Finance, quotazione futures secondaria'+
    (state==='SECONDARY_HISTORICAL'?'. Dato storico, non utilizzabile come prezzo corrente.':'.')+'</div></div>'+
   '<div class="gmfq-gold-spot"><strong>Gold Price LBMA · WITHHELD</strong>'+
-  '<p class="gmfq-gold-line">Nessuna quotazione spot ufficiale certificata in questo feed. Le tre osservazioni Gold legacy non hanno provenienza verificata e non sono usate in questo confronto.</p>'+
+  '<details class="gmfq-gold-line"><summary>Perché lo spot non è disponibile</summary><p>Nessuna quotazione spot ufficiale certificata in questo feed. Le tre osservazioni Gold legacy non hanno provenienza verificata e non sono usate in questo confronto.</p></details>'+
   '<p class="gmfq-gold-line">Un futures indicativo non equivale a oro spot o fixing LBMA: non confondere strumenti, orari di rilevazione e metodologie.</p></div></div>'+
   '<div class="gmfq-gold-fine">Solo contesto cross-asset · Non è un prezzo di regolamento certificato, un segnale, un livello operativo o un input per Macro/FX, bias, sizing e backtest.</div>';
  doc.defaultView.GMFQ_CROSS_GOLD={status:state,as_of:asof,instrument:'GC=F',core_effect:'NONE',lbma_spot:'WITHHELD'};
@@ -1490,6 +1553,8 @@ async function mountCrossRisk(doc){
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-value small{font:11px Arial,sans-serif;color:#afc2d0}'+
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-changes{color:#dacb9d;font:11px/1.5 Arial,sans-serif;display:flex;flex-wrap:wrap;gap:9px}'+
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-note{border-top:1px solid #213f50;padding:12px 16px;color:#a9c1cf;font:11px/1.6 Arial,sans-serif}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-note summary{cursor:pointer;color:#d8c58e;font-weight:600;outline-offset:3px}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-note p{margin:7px 0 0}'+
   '@media(max-width:820px){#gmfq-cross-risk-v10 .gmfq-cross-risk-grid{grid-template-columns:1fr}'+
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-intro{padding:12px 12px 4px}'+
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-grid{padding:10px 12px}'+
@@ -1514,13 +1579,13 @@ async function mountCrossRisk(doc){
    states.some(x=>x==='WITHHELD'||x.endsWith('HISTORICAL'))?'PARTIAL':'AVAILABLE';
  panel.dataset.sourceStatus=global;
  panel.innerHTML='<h2 class="desk-panel-title">Volatilità e petrolio · stato delle fonti</h2>'+
-  '<p class="gmfq-cross-risk-intro">VIX e WTI sono osservazioni ufficiali con una data di riferimento, NON quotazioni intraday. Brent è un futures indicativo e non sostituisce il prezzo spot certificato.</p>'+
+  '<p class="gmfq-cross-risk-intro">Prima la qualità: VIX Cboe '+htmlEscape(v.asof)+ ' · '+(v.state==='OFFICIAL_RECENT'?'ultimo dato recente':'dato storico/non verificato')+'; WTI EIA '+htmlEscape(w.asof)+' · '+(w.state==='OFFICIAL_RECENT'?'ultimo dato recente':'non corrente/non verificato')+'; Brent futures BZ=F '+htmlEscape(b.asof)+' · '+(b.state==='SECONDARY_RECENT'?'indicativo recente':'non corrente/non verificato')+'. <strong>Non sono quotazioni intraday sincronizzate.</strong></p>'+
   '<div class="gmfq-cross-risk-grid">'+
    crossRiskCard('VIX',v,'Volatilità implicita S&P 500','Cboe · storico ufficiale VIX',false)+
    crossRiskCard('WTI',w,'Spot Cushing · RWTC','U.S. Energy Information Administration',false)+
    crossRiskCard('BRENT',b,'Futures BZ=F · non spot','Yahoo Finance · futures secondario',true)+
   '</div>'+
-  '<div class="gmfq-cross-risk-note"><strong>Come leggere questi dati:</strong> il VIX misura volatilità implicita, non da solo la direzione del mercato. WTI e Brent non sono la stessa serie né lo stesso strumento: domanda, offerta, scadenza dei futures e differenze di rilevazione contano. <strong>Brent spot ufficiale: WITHHELD.</strong> Nessun confronto di spread fra spot e futures; nessun giudizio di risk-on/risk-off, segnale o sizing automatico.</div>';
+  '<details class="gmfq-cross-risk-note"><summary>Come leggere VIX, WTI e Brent</summary><p><strong>Limiti delle fonti:</strong> il VIX misura volatilità implicita, non da solo la direzione del mercato. WTI e Brent non sono la stessa serie né lo stesso strumento: domanda, offerta, scadenza dei futures e differenze di rilevazione contano. <strong>Brent spot ufficiale: WITHHELD.</strong> Nessun confronto di spread fra spot e futures; nessun giudizio di risk-on/risk-off, segnale o sizing automatico.</p></details>';
  doc.defaultView.GMFQ_CROSS_RISK={status:global,
    vix:{status:v.state,as_of:v.asof},wti:{status:w.state,as_of:w.asof},
    brent:{status:b.state,as_of:b.asof},core_effect:'NONE',
@@ -1537,6 +1602,7 @@ function onFrameLoad(){
    if(route()==='cross')mountCrossRisk(doc).catch(e=>console.warn('[GMFQ Cross-Asset Risk WITHHELD]',e));
    if(route()==='tassi'){enhanceRatesDetail(doc);focusRatesSection(doc);applyMarketResearch(doc).catch(e=>console.warn('[GMFQ market pricing WITHHELD]',e))}
    if(route()==='macro')mountMacroSourceLens(doc).catch(e=>console.warn('[GMFQ Macro source lens WITHHELD]',e));
+   if(route()==='valute')mountValuteSourceCompass(doc).catch(e=>console.warn('[GMFQ Valute source compass WITHHELD]',e));
    if(route()==='coppie')mountPairResearch(doc).catch(e=>console.warn('[GMFQ pair research WITHHELD]',e));
    if(route()==='screener'){
     mountScreenerPairBridge(doc);
