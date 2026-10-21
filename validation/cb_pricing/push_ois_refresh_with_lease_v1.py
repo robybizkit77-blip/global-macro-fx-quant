@@ -23,6 +23,7 @@ ESTIMATED_PATHS = (
 )
 G8_PATHS = ESTIMATED_PATHS + (
     "validation/cb_pricing/history/OIS_G8_SNAPSHOTS_V1.jsonl",
+    "live_data/sections/OIS_SOURCE_READINESS_VIEW.json",
 )
 # Changing any of these upstream invalidates the observations or the producer
 # contract. They require a NEW refresh rather than a blind rebase.
@@ -34,6 +35,7 @@ PROTECTED = (
     "live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json",
     "live_data/sections/CB_PRICING_ESTIMATED.json",
     "live_data/sections/OIS_OPERATIONAL_VIEW.json",
+    "live_data/sections/OIS_SOURCE_READINESS_VIEW.json",
     ".github/workflows/ois-estimated-snapshot-repricing-v1.yml",
     ".github/workflows/ois-g8-history-persistent-daily-v1.yml",
 )
