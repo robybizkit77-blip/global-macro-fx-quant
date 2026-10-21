@@ -24,6 +24,7 @@ FILES = (
     "dashboard/cbdesk-operational-v1.js",
     # Assert exact public VIX source and loaded runtime payload, not only OIS/JS.
     "live_data/sections/D.json",
+    "live_data/sections/MACRO_THERMOMETER_DATA.json",
     "payload/part-00.txt",
     # Keep the public derived COT story and manifest in exact-byte lockstep
     # with the runtime payload. A stale standalone file fails the release.
