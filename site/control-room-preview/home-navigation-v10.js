@@ -233,7 +233,7 @@ function oisAll(doc,ois,proxy){
   <div class="track"><div class="fill ${x.d!==null&&x.d<0?'alt':''}" style="width:${w}%"></div></div>
   <strong>${x.d===null?'—':(x.d>=0?'+':'')+fmt(x.d,0)+' bp'}</strong></div>`;
  }).join('');
- html+='<div class="oisnote">Δ6M policy: O ufficiale, S stima. NZD/PX = PROXY BB ≠ OIS (tasso %).</div>';
+ html+='<div class="oisnote">O = fonte certificata (anche futures), S = stima. NZD/PX = PROXY BB ≠ OIS.</div>';
  host.innerHTML=html;
 }
 function dxyLine(data){
@@ -281,7 +281,7 @@ function openDxy(doc){
 /* Home status: a successful network fetch is NOT evidence that every dataset
    is current or operational. This only explains source coverage; it never
    mutates market data, rates, policy deltas, biases, sizing or trading signals. */
-function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy){
+function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy,proxy){
  if(!home()||frame.contentDocument!==doc||doc.documentElement.dataset.marketMode!=='live')return;
  const head=doc.querySelector('.mast .fresh'),state=doc.getElementById('liveState'),
   stamp=doc.getElementById('liveAsOf');
@@ -302,10 +302,27 @@ function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy){
    fresh(x.as_of,5)&&['3m','6m','12m'].every(t=>
     num(x.horizons?.[t]?.rate)!==null&&num(x.horizons?.[t]?.policy_delta_bp)!==null);
  });
+ // Independent read-only research coverage, computed from the same dated
+ // per-tenor source guards as the G8 Rates matrix (never as official OIS).
+ let research=null;
+ const api=window.GMFQ_OIS_RESEARCH_V1;
+ if(ois?.schema==='GMFQ_OIS_OPERATIONAL_VIEW_V1'&&
+    api&&typeof api.coverage==='function'){
+   try{
+     const r=api.coverage(ois,proxy,new Date().toISOString().slice(0,10));
+     if(r?.schema==='GMFQ_OIS_G8_RESEARCH_COVERAGE_V1'&&r.total===8&&
+        r.official_count===oisCurrent.length&&
+        r.no_ois_official_promotion===true&&r.core_effect==='NONE'&&
+        r.pair_effect==='NONE'&&r.backtest_estimated_as_official===false)research=r;
+   }catch(e){console.warn('[GMFQ OIS coverage WITHHELD]',String(e))}
+ }
+ const contextCount=research?.covered_count??null;
+ const contextCodes=research?.context_codes||[];
+ const incompleteCodes=research?.incomplete_codes||[];
  const dxyCurrent=validDxy(dxy);
  const complete=fxCurrent&&ratesCurrent.length===8&&oisCurrent.length===8&&dxyCurrent;
  state.textContent=complete?'FONTI VERIFICATE':'DATI PARZIALI';
- stamp.textContent=(fxCurrent?'FX '+fxDay.slice(8,10)+'/'+fxDay.slice(5,7):'FX non corr.')+' · OIS '+oisCurrent.length+'/8 ⓘ';
+ stamp.textContent=(fxCurrent?'FX '+fxDay.slice(8,10)+'/'+fxDay.slice(5,7):'FX non corr.')+' · OIS '+oisCurrent.length+'/8 cert. · Contesto '+(contextCount===null?'n.d.':contextCount+'/8')+' ⓘ';
  head.setAttribute('role','button');head.tabIndex=0;
  head.setAttribute('aria-label','Apri verifica fonti: FX, rendimenti, pricing e DXY');
  head.setAttribute('aria-haspopup','dialog');head.setAttribute('aria-controls','gmfq-home-data-audit');
@@ -338,9 +355,15 @@ function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy){
   line('Rendimenti governativi 2Y/10Y',ratesCurrent.length+'/8 valute con 2Y e 10Y ufficiali sufficientemente recenti.'+
     (withheldRates.length?' Da aggiornare: '+withheldRates.join(', ')+'.':'')+
     (datePattern.test(pairedCHF||'')?' Ultima coppia CHF: '+pairedCHF+'.':''))+
-  line('Market Pricing · OIS / futures',oisCurrent.length+'/8 valute con curve 3M/6M/12M certificate e recenti.'+
+  line('Market Pricing · fonti certificate',oisCurrent.length+'/8 valute con pricing 3M/6M/12M certificato e recente.'+
     (withheldOis.length?' Non certificate o datate: '+withheldOis.join(', ')+'.':'')+
-    ' GBP OIS BoE; JPY, AUD e CAD futures monetari, non OIS puri.')+
+    ' GBP OIS BoE; JPY, AUD e CAD futures monetari, non OIS puri (fonti certificate).')+
+  line('Contesto monetario G8 · ricerca',research?
+    contextCount+'/8 valute con tre orizzonti verificati entro cinque giorni. '+
+    (contextCodes.length?'Futures indicativi/scenari: '+contextCodes.join(', ')+'. ':'')+
+    (incompleteCodes.length?'Non completi o datati: '+incompleteCodes.join(', ')+'. ':'')+
+    'EUR: osservazioni con date separate, non una curva OIS sincronizzata. NZD: scenario BB−OIS ipotetico, non calibrato. Nessun impatto sulle 28 coppie.':
+    'Copertura ricerca non verificabile. Non viene promossa alcuna stima a dato ufficiale.')+
   line('DXY sintetico · fixing BCE',dxyCurrent?
     'Stima informativa al '+dxy.as_of+'. Non è DXY ICE ufficiale e non è intraday.':
     'Stima assente o non corrente. Non è DXY ICE ufficiale.')+
@@ -384,7 +407,7 @@ async function applyHome(doc){
    }
    if(ois)oisAll(doc,ois,proxy);
    renderDxy(doc);
-   mountHomeFreshnessAudit(doc,ff.status==='fulfilled'?ff.value:null,rates,ois,d);
+   mountHomeFreshnessAudit(doc,ff.status==='fulfilled'?ff.value:null,rates,ois,d,proxy);
    doc.querySelectorAll('#valute .cc').forEach(el=>{
      el.tabIndex=0;el.setAttribute('role','button');
      if(el.dataset.filter!=='DXY')el.setAttribute('aria-label','Apri Valute '+(el.dataset.filter||''));

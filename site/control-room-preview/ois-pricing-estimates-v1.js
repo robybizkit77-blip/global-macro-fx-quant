@@ -57,6 +57,28 @@ function matrix(ois,bb,today){
     core_score_effect:'NONE',bias_effect:'NONE',pair_effect:'NONE',backtest_official:false};
  });
 }
+/* A full G8 research row requires three valid dated levels. A single
+   observed contract must NOT count as complete 3M/6M/12M coverage. */
+function coverage(ois,bb,today){
+ const rows=matrix(ois,bb,today);
+ const complete=rows.filter(x=>x.tier!=='WITHHELD'&&
+   tenors.every(t=>number(x.points[t]?.value)!==null&&fresh(x.points[t]?.date,today)));
+ const official=complete.filter(x=>x.tier==='OFFICIAL');
+ const context=complete.filter(x=>x.tier!=='OFFICIAL');
+ return {
+  schema:'GMFQ_OIS_G8_RESEARCH_COVERAGE_V1',
+  date:today,total:8,official_count:official.length,
+  context_count:context.length,covered_count:complete.length,
+  official_codes:official.map(x=>x.ccy),
+  context_codes:context.map(x=>x.ccy),
+  incomplete_codes:rows.filter(x=>!complete.includes(x)).map(x=>x.ccy),
+  currency_tiers:Object.fromEntries(rows.map(x=>[x.ccy,
+   complete.includes(x)?x.tier:'INCOMPLETE_OR_STALE'])),
+  unverified_are_not_official:true,
+  no_ois_official_promotion:true,core_effect:'NONE',
+  pair_effect:'NONE',backtest_estimated_as_official:false
+ };
+}
 function view(rows){
  const cell=(r,t)=>{const x=r.points[t];return x?
   '<b>'+(r.tier==='OFFICIAL'?'':'≈')+fmt(x.value)+'%</b><small>'+esc(x.date)+'</small>'+
@@ -85,7 +107,8 @@ const css=[
  '#gmfq-ois-research-estimates .gmfq-est-note{margin-top:12px;color:#b1c5d2}',
  '@media(max-width:600px){#gmfq-ois-research-estimates .gmfq-est-body{padding:9px}#gmfq-ois-research-estimates .gmfq-est-row{grid-template-columns:minmax(78px,1.1fr) repeat(3,minmax(0,1fr))}#gmfq-ois-research-estimates .gmfq-est-row>div,#gmfq-ois-research-estimates .gmfq-est-row>span{padding:6px 4px}#gmfq-ois-research-estimates .gmfq-est-row b{font-size:12px}#gmfq-ois-research-estimates .gmfq-est-row small{font-size:9px}}'
 ].join('');
-if(typeof module!=='undefined'&&module.exports)module.exports={matrix,view,fresh};
+if(typeof module!=='undefined'&&module.exports)module.exports={matrix,view,fresh,coverage};
+if(typeof window!=='undefined')window.GMFQ_OIS_RESEARCH_V1=Object.freeze({coverage});
 if(typeof document==='undefined')return;
 const frame=document.getElementById('gmfq-page');if(!frame)return;
 const ROOT='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/';
