@@ -338,6 +338,56 @@ function expectedReactionFromMetrics(row){
   console.log('CONTROL_ROOM_V10_MACRO_PROVENANCE_GREEN',label,{
     baseline:macroLens.baseline,selected:'EUR / JPY',missing:'WITHHELD'});
 
+  // Read-only Valute compass: ECB official fixing, synthesized DXY and historic
+  // Macro snapshot keep separate semantics even with all eight country views.
+  const fxHistory=JSON.parse(fs.readFileSync(path.join(DATA,'ECB_G8_PRICE_HISTORY.json'),'utf8'));
+  const legacy=JSON.parse(fs.readFileSync(path.join(DATA,'D.json'),'utf8'));
+  await page.goto(url+'#/valute?ccy=GBP',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return ['OFFICIAL_FIXING_RECENT','WITHHELD'].includes(
+      d?.getElementById('gmfq-valute-source-compass')?.dataset.sourceStatus);
+  },null,{timeout:30000});
+  const valute=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument,
+      p=d.getElementById('gmfq-valute-source-compass');
+    const innerWidth=p.scrollWidth,innerClient=p.clientWidth;
+    p.style.display='none';const nativeWidth=d.documentElement.scrollWidth;p.style.display='';
+    return {fx:p.dataset.fxAsOf,dxy:p.dataset.dxyStatus,macro:p.dataset.macroAsOf,
+      text:p.textContent,detail:!!p.querySelector('details summary'),
+      innerWidth,innerClient,nativeWidth,width:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
+  });
+  if(valute.fx!==fxHistory.last_as_of||valute.macro!==legacy.asOf||
+     valute.dxy!=='SYNTHETIC_ECB'||!valute.detail||
+     !valute.text.includes('non il DXY ICE ufficiale')||
+     !valute.text.includes('non un nuovo ranking di forza relativa')||
+     valute.innerWidth>valute.innerClient+2||
+     valute.width>Math.max(valute.viewport+16,valute.nativeWidth+2))
+    throw Error(label+' Valute provenance contract '+JSON.stringify(valute));
+  await page.screenshot({path:'v10-qa-images/'+label+'-valute-sources.png',fullPage:true});
+  // Negative ECB fixture: missing one G8 spot leg invalidates the aggregate
+  // official-fixing claim, without altering underlying ranking/bias.
+  await page.route('**/ECB_G8_PRICE_HISTORY.json',async r=>{
+    const x=JSON.parse(fs.readFileSync(path.join(DATA,'ECB_G8_PRICE_HISTORY.json'),'utf8'));
+    x.rows[x.rows.length-1].CHF=null;
+    await r.fulfill({status:200,contentType:'application/json',
+      headers:{'Access-Control-Allow-Origin':'*'},body:JSON.stringify(x)});
+  });
+  await page.goto(url+'#/home',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.goto(url+'#/valute?ccy=CHF&invalid=1',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return d?.getElementById('gmfq-valute-source-compass')?.dataset.sourceStatus==='WITHHELD';
+  },null,{timeout:30000});
+  const invalidFx=await page.evaluate(()=>{
+    const p=document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-valute-source-compass');
+    return {status:p.dataset.sourceStatus,fx:p.dataset.fxAsOf,text:p.textContent};
+  });
+  if(invalidFx.fx!==''||!invalidFx.text.includes('FX BCE non corrente o non verificabile'))
+    throw Error(label+' Valute invalid FX not withheld '+JSON.stringify(invalidFx));
+  await page.unroute('**/ECB_G8_PRICE_HISTORY.json');
+  console.log('CONTROL_ROOM_V10_VALUTE_SOURCE_SEPARATION_GREEN',label,{fixing:valute.fx,baseline:valute.macro,negative:'WITHHELD'});
+
   // Read-only Screener: all NON VALUTABILE reasons must come from the canonical
   // decision_frame, without changing its judgments or layout on mobile.
   await page.goto(url+'#/screener',{waitUntil:'domcontentloaded',timeout:120000});
