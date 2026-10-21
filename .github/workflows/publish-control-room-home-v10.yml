@@ -12,6 +12,7 @@ on:
       - 'validation/check_control_room_navigation_v10.py'
       - 'validation/test_control_room_rome_calendar_v1.js'
       - 'validation/test_control_room_dynamic_certified_scope_v1.js'
+      - 'validation/test_control_room_pair_official_pricing_age_v1.js'
       - 'validation/test_control_room_pending_source_dossiers_v1.js'
       - 'validation/cb_pricing/build_ois_source_readiness_view_v1.py'
       - 'validation/cb_pricing/test_build_ois_source_readiness_view_v1.py'
@@ -28,6 +29,7 @@ on:
       - 'validation/check_control_room_navigation_v10.py'
       - 'validation/test_control_room_rome_calendar_v1.js'
       - 'validation/test_control_room_dynamic_certified_scope_v1.js'
+      - 'validation/test_control_room_pair_official_pricing_age_v1.js'
       - 'validation/test_control_room_pending_source_dossiers_v1.js'
       - 'validation/cb_pricing/build_ois_source_readiness_view_v1.py'
       - 'validation/cb_pricing/test_build_ois_source_readiness_view_v1.py'
@@ -62,6 +64,7 @@ jobs:
           node validation/qa_ois_g8_estimates_v1.js
           node validation/test_control_room_rome_calendar_v1.js
           node validation/test_control_room_dynamic_certified_scope_v1.js
+          node validation/test_control_room_pair_official_pricing_age_v1.js
           node validation/test_control_room_pending_source_dossiers_v1.js
           python validation/cb_pricing/test_build_ois_source_readiness_view_v1.py
 
