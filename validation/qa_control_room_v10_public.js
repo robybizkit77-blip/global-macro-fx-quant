@@ -4,6 +4,7 @@ const {chromium}=require('playwright');
 const fs=require('node:fs');
 const {execFileSync}=require('node:child_process');
 const {readApproved,verifyPublicNzd}=require('./control_room_nzd_public_contract_v1.js');
+const {matrix:expectedOisResearchMatrix,romeTodayIso}=require('../site/control-room-preview/ois-pricing-estimates-v1.js');
 const approvedNzdrates=readApproved('.');
 // PR browser QA targets the *currently published* main; its new loader
 // and version token will appear on GitHub Pages only after merge.
@@ -14,6 +15,8 @@ const loader=process.env.GITHUB_EVENT_NAME==='pull_request'?
 // not the previous hardcoded query token. Verify its actual deployed bytes.
 const navigationVersion=/\.\/home-navigation-v10\.js\?v=([a-z0-9-]+)/i.exec(loader)?.[1];
 if(!navigationVersion)throw Error('Canonical Preview navigation version absent');
+const addonVersion=/\.\/ois-pricing-estimates-v1\.js\?v=([a-z0-9-]+)/i.exec(loader)?.[1];
+if(!addonVersion)throw Error('Canonical Preview OIS research addon version absent');
 const BASE='https://robybizkit77-blip.github.io/global-macro-fx-quant/site/control-room-preview/';
 async function getState(page){
  return page.evaluate(()=>{
@@ -281,8 +284,23 @@ async function getState(page){
      // In PR the public website still has the previous addon; inspect the
      // new market-research panel only on main, after the exact deployment.
      if(process.env.GITHUB_EVENT_NAME!=='pull_request'){
-       // Post-merge only: actual PUBLIC hosted 8-currency OIS research overlay.
-       let newResearchVisible=false;
+       // Source-derived independent expectation from the same public
+       // canonical feeds. A previous CDN script can render eight rows yet
+       // incorrectly suppress valid individually dated USD/CHF contracts.
+       const actualFeeds=await page.evaluate(async()=>{
+         const base='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/';
+         const [o,n]=await Promise.all(['OIS_OPERATIONAL_VIEW.json','NZD_CB_PRICING_DIRECTIONAL_PROXY.json'].map(async file=>{
+           const response=await fetch(base+file,{cache:'no-store'});
+           if(!response.ok)throw Error('public research source HTTP '+response.status+' '+file);
+           return response.json();
+         }));
+         return {ois:o,nzd:n};
+       });
+       const expectedTiers=Object.fromEntries(
+         expectedOisResearchMatrix(actualFeeds.ois,actualFeeds.nzd,romeTodayIso())
+           .map(x=>[x.ccy,x.tier]));
+       const expectedKeys=['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'];
+       let newResearchVisible=false,latestResearch=null;
        for(let attempt=0;attempt<16;attempt++){
          try{
            await page.waitForFunction(()=>{
@@ -291,13 +309,32 @@ async function getState(page){
              return r?.dataset.status==='RESEARCH_ONLY'&&
                r.querySelectorAll('.gmfq-est-row[data-ccy]').length===8;
            },null,{timeout:7000});
-           newResearchVisible=true;break;
-         }catch(_){
-           await page.goto(BASE+'?oisResearch='+Date.now()+'-'+attempt+'#/tassi?focus=ois',
-             {waitUntil:'domcontentloaded',timeout:120000});
+           latestResearch=await page.evaluate(expected=>{
+             const d=document.getElementById('gmfq-page').contentDocument,
+               panel=d.getElementById('gmfq-ois-research-estimates'),
+               rows=[...panel.querySelectorAll('.gmfq-est-row[data-ccy]')];
+             return {
+               exactAddon:[...document.scripts].some(x=>
+                 x.src.endsWith('ois-pricing-estimates-v1.js?v='+expected)),
+               states:Object.fromEntries(rows.map(x=>[x.dataset.ccy,x.dataset.estimateType]))
+             };
+           },addonVersion);
+           const exactStates=latestResearch.exactAddon&&
+             expectedKeys.every(k=>latestResearch.states[k]===expectedTiers[k]);
+           if(exactStates){newResearchVisible=true;break;}
+           console.log('PUBLIC_OIS_ADDON_CDN_PENDING',name,attempt,
+             JSON.stringify({expectedVersion:addonVersion,expectedTiers,observed:latestResearch}));
+         }catch(error){
+           console.log('PUBLIC_OIS_RESEARCH_WAIT',name,attempt,String(error).slice(0,180));
          }
+         await page.goto(BASE+'?oisResearch='+Date.now()+'-'+attempt+'#/tassi?focus=ois',
+           {waitUntil:'domcontentloaded',timeout:120000});
        }
-       if(!newResearchVisible)throw Error(name+' public G8 estimated pricing overlay not published');
+       if(!newResearchVisible)throw Error(name+
+         ' public OIS addon version or source classification not converged '+
+         JSON.stringify({expectedVersion:addonVersion,expectedTiers,observed:latestResearch}));
+       console.log('PUBLIC_OIS_ADDON_VERSION_AND_DYNAMIC_SOURCE_TIERS_GREEN',
+         name,JSON.stringify({version:addonVersion,tiers:expectedTiers}));
        const estimateProof=await page.evaluate(()=>{
          const d=document.getElementById('gmfq-page').contentDocument;
          const p=d.getElementById('gmfq-ois-research-estimates');
@@ -850,12 +887,28 @@ async function getState(page){
              panelScroll:p.scrollWidth,panelWidth:p.clientWidth,pageWidth,originalWidth,
              viewport:d.documentElement.clientWidth};
          },pageName);
+         const publicPricingSummary=pageName==='banche'?
+           await page.evaluate(async()=>{
+             const url='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/OIS_OPERATIONAL_VIEW.json';
+             const response=await fetch(url,{cache:'no-store'});
+             if(!response.ok)throw Error('public CB pricing source HTTP '+response.status);
+             const live=await response.json();
+             const summary=live.summary,ccys=Object.values(live.currencies||{});
+             if(ccys.length!==8||
+                summary.green_official!==ccys.filter(x=>x.operational_status==='GREEN_OFFICIAL').length||
+                summary.green_estimated!==ccys.filter(x=>x.operational_status==='GREEN_ESTIMATED').length||
+                summary.operational_withheld!==ccys.filter(x=>x.operational_status==='WITHHELD').length)
+               throw Error('public CB pricing summary not source-reconciled');
+             return summary;
+           }):null;
          if(!reading.originalChart||!reading.originalTable||!reading.closed||
             reading.panelScroll>reading.panelWidth+2||
             reading.pageWidth>Math.max(reading.viewport+16,reading.originalWidth+2)||
             (pageName==='banche'?
-               reading.status!=='READ_ONLY'||reading.certified!=='4'||
-               reading.estimated!=='2'||reading.withheld!=='2':
+               reading.status!=='READ_ONLY'||
+               reading.certified!==String(publicPricingSummary.green_official)||
+               reading.estimated!==String(publicPricingSummary.green_estimated)||
+               reading.withheld!==String(publicPricingSummary.operational_withheld):
                reading.status!=='READ_ONLY'||reading.conflicts!==''||
                !/^20\d{2}-\d{2}-\d{2}$/.test(reading.asof||'')||
                !reading.heading?.includes('Percentile')&&!reading.heading?.includes('Estremi percentile')))
