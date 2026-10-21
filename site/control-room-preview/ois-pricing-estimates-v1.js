@@ -74,6 +74,35 @@ function calibratedNzdCarry(){
   direct_nzbo_ois_quote:false,statistical_confidence_interval:false,
   forward_ois_curve:false,policy_delta_allowed:false,core_effect:'NONE'};
 }
+/* Read-only futures provenance: checked dated ticker, verified trading day,
+   price 100 minus rate, proximity of expiry to labelled 90/180/365d targets.
+   This cannot construct a forward OIS cash curve, basis or 1D/1W repricing. */
+const FUTURE_SPEC={USD:['CBOT:','ZQ'],EUR:['EUREX:','FST3'],CHF:['ICEEUR:','SA3']};
+const TENOR_TARGET={'3m':90,'6m':180,'12m':365};
+function dayIndex(v){
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(v||''))return null;
+ const t=Date.parse(v+'T00:00:00Z');
+ return Number.isFinite(t)&&new Date(t).toISOString().slice(0,10)===v?t/86400000:null;
+}
+function auditDatedFuture(ccy,term,primary,rate,quoteDate,today){
+ const spec=FUTURE_SPEC[ccy],target=TENOR_TARGET[term];
+ if(!spec||!target||!primary||number(primary.futures_price)===null||
+    number(rate)===null||!fresh(quoteDate,today)||primary.quote_as_of!==quoteDate||
+    primary.quote_timestamp_verified!==true||
+    primary.quote_timestamp_source!=='SSR_DAILY_BAR_DATA_UPDATE_TIME')return null;
+ const code=String(primary.contract||''),pattern=new RegExp('^'+spec[1]+'[FGHJKMNQUVXZ][0-9]{4}$');
+ if(!pattern.test(code)||primary.symbol!==spec[0]+code||
+    primary.mapping!=='nearest dated listed contract expiry to today+'+target+'d; no interpolation')return null;
+ const expiry=dayIndex(primary.expiration),todayIndex=dayIndex(today);
+ if(expiry===null||todayIndex===null||expiry<todayIndex)return null;
+ const gap=expiry-todayIndex-target;
+ if(Math.abs(gap)>45)return null;
+ const implied=100-primary.futures_price;
+ if(Math.abs(implied-rate)>0.0002||implied<-5||implied>25)return null;
+ return {value:rate,date:quoteDate,contract:code,expires:primary.expiration,
+  tenor_gap_days:gap,mapping_quality:Math.abs(gap)<=21?'NEAR_TARGET':'APPROXIMATE_EXPIRY',
+  source_quote_verified:true,direct_ois_quote:false,policy_repricing_allowed:false};
+}
 function matrix(ois,bb,today){
  return fx.map(ccy=>{
   const x=ois?.currencies?.[ccy]||{},points={};let tier='WITHHELD',source='';
@@ -86,20 +115,22 @@ function matrix(ois,bb,today){
   }else if(['USD','CHF'].includes(ccy)&&x.operational_status==='GREEN_ESTIMATED'&&
     x.official_status==='WITHHELD'&&x.quality==='ESTIMATED_INFORMATIONAL'&&
     x.backtest_eligible_as_official===false&&x.method_id==='TRADINGVIEW_DATED_FUTURES_SSR_V2'){
-    for(const t of tenors){const p=x.horizons?.[t]||{};
-     if(number(p.rate)!==null&&fresh(p.quote_as_of,today)&&p.quote_timestamp_verified===true&&
-        p.quote_timestamp_source==='SSR_DAILY_BAR_DATA_UPDATE_TIME'&&/^[A-Z0-9]+$/.test(p.contract||''))
-      points[t]={value:p.rate,date:p.quote_as_of};}
+    for(const t of tenors){
+     const p=x.horizons?.[t]||{},checked=auditDatedFuture(ccy,t,p,p.rate,p.quote_as_of,today);
+     if(checked)points[t]=checked;
+    }
     if(Object.keys(points).length){tier='PROXY';source=x.source||'';}
   }else if(ccy==='EUR'&&x.operational_status==='WITHHELD'){
     const q=x.secondary_quote_context||{};
     if(q.status==='INDICATIVE_OBSERVATIONS_NON_OIS'&&q.full_curve_usable===false&&
        q.cross_date_join_allowed===false&&q.policy_delta_allowed===false&&
        q.repricing_signal_allowed===false&&q.backtest_eligible_as_official===false){
-      for(const t of tenors){const p=q.horizons?.[t]||{};
-       if(number(p.rate_indicative)!==null&&fresh(p.quote_as_of,today)&&
-          p.source_quality==='SECONDARY_VERIFIED_DAILY_BAR'&&/^[A-Z0-9]+$/.test(p.contract||''))
-        points[t]={value:p.rate_indicative,date:p.quote_as_of};}
+      for(const t of tenors){
+       const p=q.horizons?.[t]||{},primary=x.horizons?.[t]||{};
+       if(p.source_quality!=='SECONDARY_VERIFIED_DAILY_BAR'||p.contract!==primary.contract)continue;
+       const checked=auditDatedFuture(ccy,t,primary,p.rate_indicative,p.quote_as_of,today);
+       if(checked)points[t]=checked;
+      }
       if(Object.keys(points).length){tier='MIXED';source=q.source||'';}
     }
   }else if(ccy==='NZD'&&x.official_status==='WITHHELD'&&
@@ -158,6 +189,7 @@ function coverage(ois,bb,today){
 function view(rows){
  const cell=(r,t)=>{const x=r.points[t];return x?
   '<b>'+(r.tier==='OFFICIAL'?'':'≈')+fmt(x.value)+'%</b><small>'+esc(x.date)+'</small>'+
+   (x.source_quote_verified?'<small>scad. '+(x.tenor_gap_days>0?'+':'')+x.tenor_gap_days+'gg vs target</small>':'')+
    (x.range?'<small>'+fmt(x.range[0])+'–'+fmt(x.range[1])+'%</small>':''):
   '<b>—</b><small>n.d.</small>';};
  return '<h2 class="desk-panel-title">G8 · Pricing monetario 3M / 6M / 12M</h2>'+
@@ -167,7 +199,7 @@ function view(rows){
  '<div><strong>'+flags[r.ccy]+' '+r.ccy+'</strong><small>'+labels[r.tier]+'</small></div>'+
  tenors.map(t=>'<div>'+cell(r,t)+'</div>').join('')+
  '<div class="gmfq-est-source">'+esc(r.source||'Fonte non corrente')+'</div></div>').join('')+'</div>'+
- '<p class="gmfq-est-note"><b>Metodo:</b> GBP OIS BoE; AUD/CAD/JPY futures monetari ufficiali; USD/CHF futures indicativi. EUR usa giorni diversi e non forma una curva sincronizzata. NZD: scenario empirico su Bank Bill 90 giorni − OCR RBNZ (19 mesi, due regimi): sconto stimato 24 bp, fascia prudenziale 10–50 bp, ampliata dopo un test su luglio–settembre 2026 (errore medio del punto centrale circa 16 bp). <b>non è uno spread OIS misurato e non intervallo statistico</b>. Sono futures trimestrali, non una curva OIS spot. Nessuna stima produce variazioni OIS 1D/1W, segnali FX o backtest.</p></div>';
+ '<p class="gmfq-est-note"><b>Metodo:</b> GBP OIS BoE; AUD/CAD/JPY futures monetari ufficiali; USD/CHF futures indicativi. EUR usa giorni diversi e non forma una curva sincronizzata. Su USD/EUR/CHF vengono verificati prezzo, contratto, data e scadenza; lo scarto in giorni è visibile, <b>senza inventare una correzione OIS</b>. NZD: scenario empirico su Bank Bill 90 giorni − OCR RBNZ (19 mesi, due regimi): sconto stimato 24 bp, fascia prudenziale 10–50 bp, ampliata dopo un test su luglio–settembre 2026 (errore medio del punto centrale circa 16 bp). <b>non è uno spread OIS misurato e non intervallo statistico</b>. Sono futures trimestrali, non una curva OIS spot. Nessuna stima produce variazioni OIS 1D/1W, segnali FX o backtest.</p></div>';
 }
 const css=[
  '#gmfq-ois-research-estimates{margin:12px 0;min-width:0}',
@@ -183,7 +215,7 @@ const css=[
  '#gmfq-ois-research-estimates .gmfq-est-note{margin-top:12px;color:#b1c5d2}',
  '@media(max-width:600px){#gmfq-ois-research-estimates .gmfq-est-body{padding:9px}#gmfq-ois-research-estimates .gmfq-est-row{grid-template-columns:minmax(78px,1.1fr) repeat(3,minmax(0,1fr))}#gmfq-ois-research-estimates .gmfq-est-row>div,#gmfq-ois-research-estimates .gmfq-est-row>span{padding:6px 4px}#gmfq-ois-research-estimates .gmfq-est-row b{font-size:12px}#gmfq-ois-research-estimates .gmfq-est-row small{font-size:9px}}'
 ].join('');
-if(typeof module!=='undefined'&&module.exports)module.exports={matrix,view,fresh,coverage,calibratedNzdCarry,NZD_REFERENCE_ROWS,NZD_RECENT_ROWS,NZD_HOLDOUT_ROWS};
+if(typeof module!=='undefined'&&module.exports)module.exports={matrix,view,fresh,coverage,auditDatedFuture,calibratedNzdCarry,NZD_REFERENCE_ROWS,NZD_RECENT_ROWS,NZD_HOLDOUT_ROWS};
 if(typeof window!=='undefined')window.GMFQ_OIS_RESEARCH_V1=Object.freeze({coverage});
 if(typeof document==='undefined')return;
 const frame=document.getElementById('gmfq-page');if(!frame)return;
