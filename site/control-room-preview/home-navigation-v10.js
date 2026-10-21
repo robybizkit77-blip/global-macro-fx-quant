@@ -194,7 +194,7 @@ function yieldChart(doc,all,which='2Y'){
  for(let i=0;i<=3;i++){const y=T+i*(H-T-B)/3;svg+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="#243c4c" stroke-width=".8"/><text x="${L-4}" y="${y+3}" text-anchor="end" fill="#8fa8bb" font-size="9">${(top-i*span/3).toFixed(1)}</text>`;}
  for(const x of data){
    const pts=x.series.map(p=>`${xx(p.date).toFixed(1)},${yy(p.v).toFixed(1)}`).join(' ');
-   svg+=`<polyline points="${pts}" fill="none" stroke="${COLOR[x.c]}" stroke-width="1.4"/>`;
+   svg+=`<polyline points="${pts}" fill="none" stroke="${COLOR[x.c]}" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" opacity=".94"><title>${x.c} · rendimento ${which} · storico</title></polyline>`;
    if(x.now!==null && x.latest && x.latest>x.series.at(-1).date && !x.est){const last=x.series.at(-1);svg+=`<line x1="${xx(last.date)}" y1="${yy(last.v)}" x2="${xx(x.latest)}" y2="${yy(x.now)}" stroke="${COLOR[x.c]}" stroke-width="1.2" stroke-dasharray="2 3"/><circle cx="${xx(x.latest)}" cy="${yy(x.now)}" r="2.2" fill="${COLOR[x.c]}"/>`;}
    if(x.est&&x.now!==null){const last=x.series.at(-1);svg+=`<line x1="${xx(last.date)}" y1="${yy(last.v)}" x2="${xx(x.latest)}" y2="${yy(x.now)}" stroke="#e8c46d" stroke-width="1.8" stroke-dasharray="3 3"/><circle cx="${xx(x.latest)}" cy="${yy(x.now)}" r="2.6" fill="#e8c46d"/>`}
  }
@@ -222,10 +222,15 @@ function rateBar(doc,all,id,spread=false){
  const hi=Math.max(spread?50:0,...numbers)+(.1*(Math.max(...numbers)-Math.min(...numbers))||.5),
  lo=Math.min(0,...numbers)-(.1*(Math.max(...numbers)-Math.min(...numbers))||.5),
  yy=v=>T+(H-T-B)*(hi-v)/(hi-lo||1),zero=yy(0);
- let svg=`<line x1="${L}" x2="${W-R}" y1="${zero}" y2="${zero}" stroke="#35536a" stroke-width="1"/>`;
+ let svg='<defs><linearGradient id="gmfq-bars-sheen" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff" stop-opacity=".10"/><stop offset="100%" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>';
+ for(let i=0;i<=4;i++){
+  const guide=T+(H-T-B)*i/4;
+  svg+=`<line x1="${L}" x2="${W-R}" y1="${guide}" y2="${guide}" stroke="#294659" stroke-width=".7" stroke-dasharray="2 5" opacity=".7"/>`;
+ }
+ svg+=`<line x1="${L}" x2="${W-R}" y1="${zero}" y2="${zero}" stroke="#56758a" stroke-width="1.15"/>`;
  items.forEach((x,i)=>{
    const cx=L+dx*(i+.5),X=cx-barW/2,v=x.v;
-   if(v!==null){const y=yy(v),h=Math.max(1,Math.abs(y-zero));svg+=`<rect x="${X}" y="${Math.min(y,zero)}" width="${barW}" height="${h}" rx="1" fill="${x.estimate?'#debd6d':COLOR[x.ccy]}" ${x.estimate?'opacity=".9"':''}/>`;}
+   if(v!==null){const y=yy(v),h=Math.max(1,Math.abs(y-zero));svg+=`<rect x="${X}" y="${Math.min(y,zero)}" width="${barW}" height="${h}" rx="3" fill="${x.estimate?'#debd6d':COLOR[x.ccy]}" ${x.estimate?'opacity=".9"':''}/>`;}
    const ytext=v!==null&&v>=0?yy(v)-5:Math.min(H-B-7,zero+(v!==null?Math.abs(yy(v)-zero):0)+11);
    svg+=`<text x="${cx}" y="${ytext}" text-anchor="middle" fill="${x.estimate?'#e7c775':'#dae6f0'}" font-size="10">${v===null?'—':spread?Math.round(v):fmt(v,2)}${x.estimate?'*':''}</text><text x="${cx}" y="${H-3}" text-anchor="middle" fill="#acc3d4" font-size="11">${x.ccy}</text>`;
  });
@@ -293,7 +298,15 @@ function dxyLine(data){
  if(arr.length<3)return'';
  const W=540,H=145,lo=Math.min(...arr.map(x=>x.value))-.15,hi=Math.max(...arr.map(x=>x.value))+.15,span=hi-lo||1;
  const points=arr.map((x,i)=>`${(i/(arr.length-1)*(W-25)+10).toFixed(1)},${(10+(H-25)*(hi-x.value)/span).toFixed(1)}`).join(' ');
- return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Storico del DXY sintetico da cambi giornalieri ECB"><polyline points="${points}" fill="none" stroke="#e6c675" stroke-width="2"/><line x1="10" x2="${W-15}" y1="${H-12}" y2="${H-12}" stroke="#31485b"/><text x="10" y="${H-1}" fill="#98b0c3" font-size="10">${arr[0].date}</text><text x="${W-15}" y="${H-1}" text-anchor="end" fill="#98b0c3" font-size="10">${arr.at(-1).date}</text></svg>`;
+ const last=points.split(' ').at(-1)?.split(',')||[0,0];
+ const area='10,'+(H-12)+' '+points+' '+(W-15)+','+(H-12);
+ return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Storico del DXY sintetico da cambi giornalieri ECB"><defs><linearGradient id="gmfq-dxy-fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#dabd76" stop-opacity=".24"/><stop offset="100%" stop-color="#dabd76" stop-opacity="0"/></linearGradient></defs>
+ <polygon points="${area}" fill="url(#gmfq-dxy-fill)"/>
+ <line x1="10" x2="${W-15}" y1="${H-12}" y2="${H-12}" stroke="#31485b"/>
+ <polyline points="${points}" fill="none" stroke="#e6c675" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+ <circle cx="${last[0]}" cy="${last[1]}" r="4.1" fill="#e6c675" stroke="#091b2b" stroke-width="2"/>
+ <text x="10" y="${H-1}" fill="#98b0c3" font-size="10">${arr[0].date}</text>
+ <text x="${W-15}" y="${H-1}" text-anchor="end" fill="#98b0c3" font-size="10">${arr.at(-1).date}</text></svg>`;
 }
 function validDxy(x){return x?.schema==='GMFQ_DXY_SYNTHETIC_ECB_V1'&&x.status==='ESTIMATED_INFORMATIONAL'&&x.not_official_ice===true&&x.usable_as_official_ice_or_trade_signal===false&&fresh(x.as_of,4)&&num(x.value)!==null&&Array.isArray(x.history)&&x.history.at(-1)?.date===x.as_of}
 function mountHomeCurrencyFlags(doc){
