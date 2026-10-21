@@ -628,7 +628,7 @@ async function getState(page){
              keys:[...stamps?.querySelectorAll('span[data-source]')||[]].map(x=>x.dataset.source),
              sourceText:stamps?.textContent,
              macroState:stamps?.dataset.macroState,
-             gridCols:cols?win.getComputedStyle(cols).gridTemplateColumns.trim().split(/\\s+/).length:0,
+             gridCols:cols?win.getComputedStyle(cols).gridTemplateColumns.trim().split(/\s+/).length:0,
              background:cols?.firstElementChild?
                win.getComputedStyle(cols.firstElementChild).backgroundColor:null,
              width:d?.documentElement.scrollWidth,
