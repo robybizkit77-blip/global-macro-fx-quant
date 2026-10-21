@@ -367,8 +367,9 @@ function expectedReactionFromMetrics(row){
       width:p.scrollWidth,client:p.clientWidth,
       doc:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
   });
-  if(cbFirst.status!=='READ_ONLY'||cbFirst.certified!=='4'||cbFirst.estimated!=='2'||
-     cbFirst.withheld!=='2'||cbFirst.first!==Object.values(cbFixture).map(x=>x.last_date).sort()[0]||
+  if(cbFirst.status!=='READ_ONLY'||cbFirst.certified!==String(operational.summary.green_official)||
+     cbFirst.estimated!==String(operational.summary.green_estimated)||
+     cbFirst.withheld!==String(operational.summary.operational_withheld)||cbFirst.first!==Object.values(cbFixture).map(x=>x.last_date).sort()[0]||
      cbFirst.last!==Object.values(cbFixture).map(x=>x.last_date).sort().at(-1)||
      !cbFirst.closed||!cbFirst.chart||!cbFirst.table||
      !cbFirst.text.includes('futures monetari')||!cbFirst.text.includes('Repricing ≠ probabilità')||
