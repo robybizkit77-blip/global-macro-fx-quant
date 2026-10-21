@@ -1347,7 +1347,8 @@ async function mountMacroSourceLens(doc){
  style.textContent=
   '#gmfq-macro-source-lens{margin:0 0 14px;min-width:0}'+
   '#gmfq-macro-source-lens .gmfq-macro-body{padding:12px 16px 14px;min-width:0}'+
-  '#gmfq-macro-source-lens .gmfq-macro-state{display:flex;align-items:center;gap:7px;flex-wrap:wrap;color:#e2c383;font:600 11px/1.5 Arial,sans-serif}'+
+  '#gmfq-macro-source-lens .gmfq-macro-takeaway{color:#e4edf4;font:600 13px/1.55 Arial,sans-serif;margin:0 0 10px;overflow-wrap:anywhere}'+
+ '#gmfq-macro-source-lens .gmfq-macro-state{display:flex;align-items:center;gap:7px;flex-wrap:wrap;color:#e2c383;font:600 11px/1.5 Arial,sans-serif;border-top:1px solid #2c485a;padding-top:9px}'+
   '#gmfq-macro-source-lens .gmfq-macro-intro{color:#c0cfdb;font:12px/1.6 Arial,sans-serif;margin:7px 0 10px}'+
   '#gmfq-macro-source-lens .gmfq-macro-choice{display:flex;align-items:center;gap:9px;flex-wrap:wrap;color:#a9bfce;font:11px Arial,sans-serif;margin:0 0 9px}'+
   '#gmfq-macro-source-lens .gmfq-macro-choice select{background:#122c3b;border:1px solid #3a5367;border-radius:5px;color:#e7edf3;font:12px Arial,sans-serif;padding:7px;max-width:100%}'+
@@ -1372,10 +1373,11 @@ async function mountMacroSourceLens(doc){
  panel.dataset.auditStatus='READ_ONLY';
  panel.dataset.baselineAsOf=baselineDate;
  panel.innerHTML='<h2 class="desk-panel-title">Macro · modello storico vs osservazioni</h2>'+
-  '<div class="gmfq-macro-body"><div class="gmfq-macro-state">'+
+  '<div class="gmfq-macro-body"><p class="gmfq-macro-takeaway">Gli score sono uno snapshot del modello: i periodi di Inflazione e Lavoro non aggiornano i 24 score, i cicli economici o i bias FX.</p>'+
+   '<div class="gmfq-macro-state">'+
   '24 score Growth/Labour/Inflation · baseline '+htmlEscape(baselineDate)+
   (baselineFresh?' · snapshot datato':' · NON CORRENTE, da rivalidare')+'</div>'+
-  '<p class="gmfq-macro-intro">Il modello resta storico e da rivalidare. Inflazione e Lavoro sono osservazioni con periodi distinti: non aggiornano i 24 score, i cicli economici o i bias FX.</p>'+
+  '<p class="gmfq-macro-intro">Seleziona la valuta per verificare i periodi osservati. Valori e fonti restano consultabili nel dettaglio; per Growth non è disponibile un nuovo score certificato.</p>'+
   '<label class="gmfq-macro-choice" for="gmfq-macro-provenance-currency">Valuta <select id="gmfq-macro-provenance-currency" aria-label="Valuta delle osservazioni Macro">'+options+'</select></label>'+
   '<p class="gmfq-macro-reading" id="gmfq-macro-reading" aria-live="polite">Periodi in verifica…</p>'+
   '<details id="gmfq-macro-observation-details"><summary>Apri osservazioni e fonti · Inflazione e Lavoro</summary>'+
@@ -1480,14 +1482,16 @@ async function mountScreenerBlockers(doc){
  style.id='gmfq-screener-blockers-css';
  style.textContent=
  '#gmfq-screener-blockers{margin:0 0 14px;min-width:0}'+
- '#gmfq-screener-blockers .gmfq-blocker-intro{margin:0;padding:11px 16px 5px;font:12px/1.6 Arial,sans-serif;color:#bfd0dd}'+
+ '#gmfq-screener-blockers .gmfq-blocker-priority{margin:0;padding:11px 16px 3px;font:600 13px/1.55 Arial,sans-serif;color:#e5edf3;overflow-wrap:anywhere}'+
+ '#gmfq-screener-blockers .gmfq-blocker-intro{margin:0;padding:2px 16px 8px;font:11px/1.6 Arial,sans-serif;color:#bfd0dd}'+
  '#gmfq-screener-blockers .gmfq-blocker-overview{display:flex;gap:6px 17px;flex-wrap:wrap;margin:0;padding:6px 16px;color:#d9e3eb;font:600 12px/1.55 Arial,sans-serif}'+
  '#gmfq-screener-blockers .gmfq-blocker-overview span{min-width:0;overflow-wrap:anywhere}'+
  '#gmfq-screener-blockers #gmfq-blocker-details{margin:7px 0 0;border-top:1px solid #324b59;padding:10px 0 0;min-width:0}'+
  '#gmfq-screener-blockers #gmfq-blocker-details>summary{cursor:pointer;color:#e0c78c;font:600 12px/1.5 Arial,sans-serif;padding:5px 16px;outline-offset:4px}'+
  '#gmfq-screener-blockers #gmfq-blocker-details:not([open])>:not(summary){display:none!important}'+
  
- '#gmfq-screener-blockers .gmfq-blocker-date{padding:0 16px 10px;color:#d7bf87;font:11px/1.5 Arial,sans-serif}'+
+ '#gmfq-screener-blockers .gmfq-blocker-date{display:flex;flex-wrap:wrap;gap:4px 17px;border-top:1px solid #2c4656;margin:6px 16px 0;padding:9px 0 10px;color:#d7bf87;font:11px/1.5 Arial,sans-serif}'+
+ '#gmfq-screener-blockers .gmfq-blocker-date span{min-width:0;overflow-wrap:anywhere}'+
  '#gmfq-screener-blockers .gmfq-blocker-brief{padding:0 16px 7px;color:#9eb4c4;font:11px/1.5 Arial,sans-serif}'+
  
  '#gmfq-screener-blockers .gmfq-blocker-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:5px 16px 13px}'+
@@ -1502,8 +1506,10 @@ async function mountScreenerBlockers(doc){
  '#gmfq-screener-blockers .gmfq-blocker-note{margin:0;border-top:1px solid #29404f;padding:10px 16px;color:#91aabc;font:10px/1.55 Arial,sans-serif}'+
  '#gmfq-screener-blockers .gmfq-blocker-message{padding:10px 16px;font:12px/1.55 Arial,sans-serif;color:#d2c396}'+
  '@media(max-width:950px){#gmfq-screener-blockers .gmfq-blocker-grid{grid-template-columns:1fr}}'+
- '@media(max-width:600px){#gmfq-screener-blockers .gmfq-blocker-intro{padding:10px 12px 4px}'+
- '#gmfq-screener-blockers .gmfq-blocker-date{padding:0 12px 9px}'+
+ '@media(max-width:600px){#gmfq-screener-blockers .gmfq-blocker-priority{padding:10px 12px 3px;font-size:12px}'+
+ '#gmfq-screener-blockers .gmfq-blocker-intro{padding:2px 12px 7px}'+
+ '#gmfq-screener-blockers .gmfq-blocker-date{margin:6px 12px 0;padding:8px 0 9px;gap:4px}'+
+ '#gmfq-screener-blockers .gmfq-blocker-date span{width:100%}'+
  '#gmfq-screener-blockers .gmfq-blocker-grid{padding:5px 12px 10px}'+
  '#gmfq-screener-blockers .gmfq-blocker-overview{padding:7px 12px;gap:5px 12px}'+
  '#gmfq-screener-blockers .gmfq-blocker-brief{padding:0 12px 7px}'+
@@ -1529,15 +1535,17 @@ async function mountScreenerBlockers(doc){
  panel.dataset.modelPriceAsOf=setup.price_asof||'';
  panel.innerHTML='<h2 class="desk-panel-title">Setup NON VALUTABILE · '+rows.length+
   '/28 · cause documentate</h2>'+
-  '<p class="gmfq-blocker-intro">Queste coppie non hanno una preferenza strutturale sufficientemente chiara. Nessuna è promossa a opportunità di trade.</p>'+
+  '<p class="gmfq-blocker-priority">Le coppie senza una tesi coerente restano NON VALUTABILI: Macro e Tassi/CB non bastano a renderle operative.</p>'+
+   '<p class="gmfq-blocker-intro">Classificazione del motore canonico, non graduatoria di opportunità di trade.</p>'+
   '<div class="gmfq-blocker-overview" aria-label="Cause delle coppie non valutabili">'+
   '<span>Macro vs Tassi/CB: '+groups.CONFLICT.length+'</span>'+
   '<span>Differenziale 2Y senza tesi: '+groups.RATES_ONLY.length+'</span>'+
   '<span>Vantaggio insufficiente: '+groups.INSUFFICIENT.length+'</span></div>'+
-  '<p class="gmfq-blocker-date">Baseline Macro/Tassi: '+htmlEscape(setup.macro_baseline_asof)+
-  (baselineFresh?' · data entro il limite di freschezza':' · NON CORRENTE, tesi da rivalidare')+
-  ' · Prezzi del motore: '+htmlEscape(setup.price_asof||'non verificati')+'</p>'+
-  '<p class="gmfq-blocker-brief">Motivi e confronto Macro/Rates disponibili per ciascuna delle '+rows.length+' coppie, con collegamento alla Pair Deep Dive.</p>'+
+  '<div class="gmfq-blocker-date" aria-label="Provenienza e date del modello">'+
+  '<span data-source="macro">Baseline Macro/Tassi: '+htmlEscape(setup.macro_baseline_asof)+
+  (baselineFresh?' · data entro il limite di freschezza':' · NON CORRENTE, tesi da rivalidare')+'</span>'+
+  '<span data-source="price">Prezzi del motore: '+htmlEscape(setup.price_asof||'non verificati')+'</span></div>'+
+  '<p class="gmfq-blocker-brief">Motivazioni individuali e accesso alle Pair Deep Dive nel dettaglio espandibile.</p>'+
   '<details id="gmfq-blocker-details"><summary>Apri le '+rows.length+' coppie e le motivazioni complete</summary>'+
   '<div class="gmfq-blocker-grid">'+categories.map(card).join('')+'</div>'+
   '<p class="gmfq-blocker-note">Lettura descrittiva e storica, non graduatoria di trade. Lo spread 2Y è solo contesto di livello: non crea da solo una preferenza FX. Nessuna promozione di fonte, ricalcolo di score, modifica dei 28 setup o segnale operativo.</p></details>';
@@ -1602,13 +1610,17 @@ async function mountValuteSourceCompass(doc){
  const css=doc.createElement('style');css.id='gmfq-valute-source-compass-style';
  css.textContent=
   '#gmfq-valute-source-compass{margin:0 0 13px;border-top:1px solid #355065;border-bottom:1px solid #294558;padding:9px 12px;color:#bcd0dc;min-width:0}'+
-  '#gmfq-valute-source-compass .gmfq-vsc-status{font:12px/1.6 Arial,sans-serif;margin:0;overflow-wrap:anywhere}'+
+  '#gmfq-valute-source-compass .gmfq-vsc-priority{font:600 12px/1.55 Arial,sans-serif;color:#e4edf3;margin:0 0 8px;overflow-wrap:anywhere}'+
+ '#gmfq-valute-source-compass .gmfq-vsc-status{font:11px/1.55 Arial,sans-serif;margin:0;overflow-wrap:anywhere}'+
+ '#gmfq-valute-source-compass .gmfq-vsc-ledger{display:flex;flex-wrap:wrap;gap:4px 16px;border-top:1px solid #2b4555;padding-top:9px}'+
+ '#gmfq-valute-source-compass .gmfq-vsc-ledger span{min-width:0;overflow-wrap:anywhere}'+
   '#gmfq-valute-source-compass strong{color:#e6ecf2;font-weight:600}'+
   '#gmfq-valute-source-compass .gmfq-vsc-details{font:11px/1.6 Arial,sans-serif;color:#9eb7c8;margin-top:5px}'+
   '#gmfq-valute-source-compass .gmfq-vsc-details summary{cursor:pointer;color:#d9c18b;outline-offset:3px}'+
   '#gmfq-valute-source-compass .gmfq-vsc-details p{margin:7px 0 0}'+
   '@media(max-width:600px){#gmfq-valute-source-compass{padding:9px 8px}'+
-  '#gmfq-valute-source-compass .gmfq-vsc-status{font-size:11px}}';
+  '#gmfq-valute-source-compass .gmfq-vsc-status{font-size:11px}'+
+ '#gmfq-valute-source-compass .gmfq-vsc-ledger span{width:100%}}';
  doc.head.appendChild(css);
  const fxText=prices.status==='OFFICIAL_FIXING_RECENT'?
   'FX BCE '+prices.asof:'FX BCE non corrente o non verificabile';
@@ -1620,8 +1632,11 @@ async function mountValuteSourceCompass(doc){
  strip.dataset.fxAsOf=prices.asof||'';
  strip.dataset.dxyStatus=synthetic?'SYNTHETIC_ECB':'WITHHELD';
  strip.dataset.macroAsOf=baseline||'';
- strip.innerHTML='<p class="gmfq-vsc-status"><strong>Fonti delle letture valutarie</strong> · '+
-  htmlEscape(fxText)+' · '+htmlEscape(dxyText)+' · '+htmlEscape(modelText)+'</p>'+
+ strip.innerHTML='<p class="gmfq-vsc-priority">Fixing giornaliero, DXY sintetico e score Macro hanno origini e tempi diversi: non sono una singola lettura intraday.</p>'+
+  '<div class="gmfq-vsc-status gmfq-vsc-ledger" aria-label="Date e provenienza delle letture valutarie">'+
+  '<span data-source="fixing"><strong>Fixing:</strong> '+htmlEscape(fxText)+'</span>'+
+  '<span data-source="dxy"><strong>Indice sintetico:</strong> '+htmlEscape(dxyText)+'</span>'+
+  '<span data-source="macro"><strong>Modello:</strong> '+htmlEscape(modelText)+'</span></div>'+
   '<details class="gmfq-vsc-details"><summary>Cosa misurano, e cosa non misurano</summary>'+
   '<p>I fixing BCE sono riferimenti ufficiali giornalieri rispetto all’euro, non prezzi intraday e non un nuovo ranking di forza relativa. Il DXY sintetico è una stima informativa ricostruita da fixing BCE, non il DXY ICE ufficiale. Gli score Macro e i giudizi strutturali appartengono alla baseline storica e non vengono aggiornati da queste osservazioni.</p>'+
   '<p>Qualsiasi dato assente o datato resta dichiarato: nessun prezzo, bias, COT, policy path o segnale viene ricostruito automaticamente.</p></details>';
