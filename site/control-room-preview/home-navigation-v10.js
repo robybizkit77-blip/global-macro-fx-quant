@@ -299,6 +299,76 @@ function canonicalPairMacroBaseline(setup,model){
   d!==null&&setup.macro_baseline_asof===d?d:null;
 }
 
+/* Home research order — one compact editorial rail, never a new scorecard.
+   Reuses the SAME certified-source decisions used by the Home source audit. */
+function mountHomeReadingPath(doc,context){
+ if(!home()||frame.contentDocument!==doc||
+    doc.documentElement.dataset.marketMode!=='live'||doc.getElementById('gmfq-home-reading-path'))return;
+ const hero=doc.querySelector('.hero'),grid=doc.querySelector('.gridtop');
+ if(!hero||!grid||!hero.contains(doc.querySelector('.herobody')))return;
+ const {macroDay,fxCurrent,fxDay,oisCount,setup}=context;
+ const pairCounts=setup?.quality_distribution,rows=setup?.pairs;
+ const validSetup=setup?.schema==='GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1'&&
+   setup.status==='CURRENT_CANONICAL_ENGINE'&&setup.pair_count===28&&
+   Object.keys(rows||{}).length===28&&setup.price_audit?.status==='PASS'&&
+   setup.price_audit.as_of===setup.price_asof&&
+   setup.thesis_is_not_entry===true&&setup.entry_level_published===false&&
+   typeof pairCounts?.['NON VALUTABILE']==='number'&&
+   Number.isInteger(pairCounts['NON VALUTABILE'])&&pairCounts['NON VALUTABILE']>=0&&
+   pairCounts['NON VALUTABILE']<=28&&
+   Object.values(rows||{}).filter(x=>x?.setup?.quality==='NON VALUTABILE').length===
+     pairCounts['NON VALUTABILE']&&
+   Object.values(pairCounts).every(x=>Number.isInteger(x)&&x>=0)&&
+   Object.values(pairCounts).reduce((a,b)=>a+b,0)===28&&
+   fresh(setup.price_asof,5);
+ const macroVerified=typeof macroDay==='string'&&macroSeriesPeriod(macroDay)===macroDay;
+ const macroCurrent=macroVerified&&fresh(macroDay,10);
+ const steps=[
+  {key:'macro',url:'#/macro',description:!macroVerified?'Macro · baseline non verificabile':
+   'Macro · '+macroDay+(macroCurrent?' · snapshot':' · da rivalidare')},
+  {key:'pricing',url:'#/tassi?focus=ois',description:Number.isInteger(oisCount)&&oisCount>=0&&oisCount<=8?
+   'Pricing · '+oisCount+'/8 fonti certificate':'Pricing · copertura non verificabile'},
+  {key:'pairs',url:'#/screener',description:validSetup?
+   'Screener · '+pairCounts['NON VALUTABILE']+'/28 non valutabili':
+   'Screener · giudizi non verificabili'}
+ ];
+ const style=doc.createElement('style');style.id='gmfq-home-reading-path-style';
+ style.textContent='#gmfq-home-reading-path{display:flex;align-items:center;gap:7px 14px;flex-wrap:wrap;min-width:0;margin:8px 0 14px;padding:9px 10px;border-top:1px solid #2d4659;border-bottom:1px solid #294253;color:#a8bccb;font:11px/1.45 Arial,sans-serif}'+
+ '#gmfq-home-reading-path .gmfq-reading-heading{font:600 10px/1.45 Arial,sans-serif;letter-spacing:.07em;color:#d2bd87;white-space:nowrap}'+
+ '#gmfq-home-reading-path .gmfq-reading-steps{display:flex;align-items:center;gap:5px 12px;flex-wrap:wrap;min-width:0}'+
+ '#gmfq-home-reading-path button{border:0;border-bottom:1px solid transparent;background:transparent;padding:3px 0;color:#c2d2df;font:11px/1.5 Arial,sans-serif;cursor:pointer;text-align:left;max-width:100%;overflow-wrap:anywhere}'+
+ '#gmfq-home-reading-path button:hover,#gmfq-home-reading-path button:focus-visible{color:#f1dcac;border-color:#e2c98c;outline-offset:3px}'+
+ '#gmfq-home-reading-path .gmfq-reading-arrow{color:#718da1;font:11px Arial,sans-serif}'+
+ '#gmfq-home-reading-path .gmfq-reading-trust{color:#8da5b5;font-size:10px;white-space:normal}'+
+ '@media(max-width:600px){#gmfq-home-reading-path{margin:8px 0 12px;padding:9px 7px;align-items:flex-start}'+
+ '#gmfq-home-reading-path .gmfq-reading-steps{gap:5px 9px}'+
+ '#gmfq-home-reading-path button{font-size:10px}#gmfq-home-reading-path .gmfq-reading-trust{flex-basis:100%}}';
+ doc.head.appendChild(style);
+ const rail=doc.createElement('nav');
+ rail.id='gmfq-home-reading-path';rail.setAttribute('aria-label','Da dove iniziare la lettura Macro FX');
+ rail.dataset.macroAsOf=macroVerified?macroDay:'';
+ rail.dataset.macroStatus=macroVerified?(macroCurrent?'DATED_SNAPSHOT':'HISTORICAL'):'WITHHELD';
+ rail.dataset.oisCertified=Number.isInteger(oisCount)?String(oisCount):'';
+ rail.dataset.screenerCount=validSetup?String(pairCounts['NON VALUTABILE']):'';
+ rail.dataset.fxAsOf=fxCurrent?fxDay:'';
+ rail.dataset.sourceEffect='NONE';
+ rail.innerHTML='<span class="gmfq-reading-heading">DA DOVE INIZIARE</span>'+
+  '<div class="gmfq-reading-steps">'+steps.map((x,i)=>
+   (i?'<span class="gmfq-reading-arrow" aria-hidden="true">→</span>':'')+
+   '<button type="button" data-reading-target="'+x.key+'" aria-label="Apri '+htmlEscape(x.description)+'">'+
+    htmlEscape(x.description)+'</button>').join('')+'</div>'+
+   '<span class="gmfq-reading-trust">Ricerca, non segnali: '+(fxCurrent?'fixing BCE '+htmlEscape(fxDay):'fixing BCE non verificato')+'</span>';
+ // The native globe HERO is the first child of .gridtop. Keep the 3-column
+ // original grid intact: position the editorial path BEFORE that entire grid.
+ grid.insertAdjacentElement('beforebegin',rail);
+ rail.addEventListener('click',event=>{
+  const button=event.target.closest('button[data-reading-target]');
+  if(!button||!rail.contains(button))return;
+  const target=steps.find(x=>x.key===button.dataset.readingTarget);
+  if(target)go(target.url);
+ });
+}
+
 function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy,proxy,model,setup){
  if(!home()||frame.contentDocument!==doc||doc.documentElement.dataset.marketMode!=='live')return;
  const head=doc.querySelector('.mast .fresh'),state=doc.getElementById('liveState'),
@@ -341,6 +411,7 @@ function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy,proxy,model,setup){
  const incompleteCodes=research?.incomplete_codes||[];
  const dxyCurrent=validDxy(dxy);
  const complete=fxCurrent&&ratesCurrent.length===8&&oisCurrent.length===8&&dxyCurrent&&macroCurrent;
+ mountHomeReadingPath(doc,{macroDay:pairMacroDay,fxCurrent,fxDay,oisCount:oisCurrent.length,setup});
  state.textContent=complete?'FONTI VERIFICATE':'DATI PARZIALI';
  stamp.textContent=(fxCurrent?'FX '+fxDay.slice(8,10)+'/'+fxDay.slice(5,7):'FX non corr.')+' · OIS '+oisCurrent.length+'/8 cert. · Contesto '+(contextCount===null?'n.d.':contextCount+'/8')+' · Macro '+(macroCurrent?'verif.':'stor./n.v.')+' ⓘ';
  head.setAttribute('role','button');head.tabIndex=0;
