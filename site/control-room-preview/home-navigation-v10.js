@@ -632,13 +632,21 @@ function marketResearchSecondary(data){
 /* Compact source-unlock map: generated from live operational status and
    verified source/access audit. Never includes inferred market prices. */
 function marketSourceReadinessHtml(view,operational){
- const ids=['USD','EUR','CHF','NZD'];
- const statusOk=view?.schema==='GMFQ_OIS_SOURCE_READINESS_VIEW_V1'&&
+ // A dossier documents an unresolved source-access decision, NOT an official
+ // currency list. Reconcile pending G8 lanes with the audited registry and
+ // hide a dossier only after the separately certified runtime is active.
+ const ids=FX.filter(c=>['WITHHELD','GREEN_ESTIMATED'].includes(
+   operational?.currencies?.[c]?.operational_status));
+ const knownStatuses=FX.every(c=>['GREEN_OFFICIAL','GREEN_ESTIMATED','WITHHELD']
+   .includes(operational?.currencies?.[c]?.operational_status));
+ const registryKeys=Object.keys(view?.currencies||{});
+ const statusOk=knownStatuses&&view?.schema==='GMFQ_OIS_SOURCE_READINESS_VIEW_V1'&&
   view.status==='READ_ONLY_SOURCE_READINESS'&&fresh(view.as_of,3)&&
   view.prices_omitted===true&&view.no_automatic_promotions===true&&
   view.no_core_score_effect===true&&view.no_bias_effect===true&&
   view.no_sizing_effect===true&&view.no_backtest_effect===true&&
-  ids.every(k=>['WITHHELD','GREEN_ESTIMATED','GREEN_OFFICIAL'].includes(view.currencies?.[k]?.status)&&
+  registryKeys.length===ids.length&&registryKeys.every(k=>ids.includes(k))&&
+  ids.every(k=>['WITHHELD','GREEN_ESTIMATED'].includes(view.currencies?.[k]?.status)&&
    view.currencies[k].status===operational?.currencies?.[k]?.operational_status&&
    view.currencies[k].usable_for_policy_pricing===false&&
    view.currencies[k].backtest_eligible_as_official===false&&
@@ -654,7 +662,7 @@ function marketSourceReadinessHtml(view,operational){
   const live=operational.currencies[k].operational_status;
   const state=live==='GREEN_OFFICIAL'?'CERTIFICATA · fonte operativa':
    live==='GREEN_ESTIMATED'?'SOLO INDICATIVA · non certificata':'WITHHELD · non certificata';
-  return '<div class="gmfq-source-row"><div><b>'+FLAG[k]+' '+k+' · '+htmlEscape(state)+'</b>'+
+  return '<div class="gmfq-source-row" data-source-ccy="'+k+'"><div><b>'+FLAG[k]+' '+k+' · '+htmlEscape(state)+'</b>'+
    '<p>'+htmlEscape(v.obstacle)+'</p><small>Requisito per accesso ai dati ufficiali: '+htmlEscape(v.activation_requirement)+'</small></div>'+
    '<div class="gmfq-source-link">'+anchor+'</div></div>';
  }).join('');
@@ -663,7 +671,7 @@ function marketSourceReadinessHtml(view,operational){
   '<p class="gmfq-research-note">🇨🇭 CHF governativi: l’ultima coppia 2Y/10Y omogenea nel feed è del '+
    htmlEscape(chf.last_paired_2y10y_as_of||'—')+
    '. Il 10Y SNB pubblicato separatamente non completa il 2Y e non permette uno spread aggiornato.</p>':'';
- return opening+'<p class="gmfq-research-note">Quattro dossier di accesso a fonti ufficiali. Il loro stato di accesso può essere precedente al runtime operativo: le quotazioni GREEN_ESTIMATED restano indicative, mai OIS ufficiali. Nessun dato indicativo è promosso a OIS o usato nei segnali. Revisione fonti: '+
+ return opening+'<p class="gmfq-research-note">'+(ids.length?ids.length+' dossier di accesso a fonti ufficiali ancora da sbloccare. ':'Nessuna fonte aggiuntiva da sbloccare. ')+'Il loro stato di accesso può essere precedente al runtime operativo: le quotazioni GREEN_ESTIMATED restano indicative, mai OIS ufficiali. Nessun dato indicativo è promosso a OIS o usato nei segnali. Revisione fonti: '+
   htmlEscape(view.source_reviewed_as_of)+'.</p>'+items+swiss+'</details>';
 }
 
