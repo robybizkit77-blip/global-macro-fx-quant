@@ -10,12 +10,21 @@ on:
       - 'live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'
       - 'live_data/sections/ECB_G8_PRICE_HISTORY.json'
       - 'live_data/sections/DXY_SYNTHETIC_ECB.json'
+      - 'validation/RATES_SOURCE_ADAPTERS_V1_2026-10-05.json'
+      - 'validation/fixtures/rbnz_b2_official_table_2026-10-19_review_required.json'
+      - 'validation/fixtures/rbnz_b2_independent_source_review_2026-10-19.json'
   pull_request:
     branches: [main]
     paths:
       - '.github/workflows/publish-control-room-market-data-v1.yml'
       - 'validation/publishing/verify_control_room_market_delivery_v1.py'
       - 'validation/publishing/test_control_room_market_delivery_v1.py'
+      - 'validation/check_nzd_rates_reviewed_snapshot_v1.py'
+      - 'validation/test_nzd_rates_reviewed_snapshot_v1.py'
+      - 'validation/RATES_SOURCE_ADAPTERS_V1_2026-10-05.json'
+      - 'validation/fixtures/rbnz_b2_official_table_2026-10-19_review_required.json'
+      - 'validation/fixtures/rbnz_b2_independent_source_review_2026-10-19.json'
+      - 'validation/run_rates_audit.py'
   workflow_run:
     workflows: ['Rates Persistent Daily V1','COT Persistent Weekly V1','Pair Setup Operational View V1','Price History Persistent Daily V1']
     types: [completed]
@@ -69,13 +78,13 @@ jobs:
           assert set(rates) >= g8
           assert set(cot) >= g8
           assert rates['USD'].get('date')
-          # Release synchronization gate: both NZD tenors must be the reviewed,
-          # same-date RBNZ observation before publishing the Rates mirror.
-          nz=rates['NZD']
-          if nz.get('date') >= '2026-10-16':
-              assert nz.get('date') == '2026-10-16', 'Review required for new NZD dates'
-              assert nz.get('2Y') == 3.89 and nz.get('10Y') == 5.00
-              assert nz.get('quality') == 'FULL_CURRENT_OFFICIAL_MANUAL_VERIFIED'
+          # Allow ONLY the NZD source snapshot explicitly reconciled across
+          # registry, 2Y/10Y history, and two independent official B2 reviews.
+          # A new date alone NEVER authorizes publication or a live fetch.
+          from validation.check_nzd_rates_reviewed_snapshot_v1 import validate as validate_nzd
+          registry=json.loads(Path('validation/RATES_SOURCE_ADAPTERS_V1_2026-10-05.json').read_text())
+          verified_nzd=validate_nzd(rates,registry)
+          print('NZD_RATES_TWO_REVIEW_REGISTRY_GATE_PASS',verified_nzd)
           assert cot['USD'].get('dates')
 
           assert setup.get('schema') == 'GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1'
@@ -104,6 +113,7 @@ jobs:
       - name: Test market SHA parity and bounded CDN verifier
         run: |
           python validation/publishing/test_control_room_market_delivery_v1.py
+          python validation/test_nzd_rates_reviewed_snapshot_v1.py
           python validation/publishing/test_verify_pages_http_delivery_v1.py
 
       - name: Publish exact feed scope to gh-pages with lease
