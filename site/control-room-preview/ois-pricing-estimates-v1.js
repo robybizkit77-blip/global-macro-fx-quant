@@ -46,7 +46,7 @@ function calibratedNzdCarry(){
  const originalHi=Math.ceil(Math.max(...all)+2);
  const holdout=[];
  for(const [month,ocr,bill] of NZD_HOLDOUT_ROWS){
-  if(!/^\\d{4}-\\d{2}$/.test(month)||number(ocr)===null||number(bill)===null||
+  if(!/^\d{4}-\d{2}$/.test(month)||number(ocr)===null||number(bill)===null||
      !(ocr>0&&bill>0&&bill<25))return null;
   holdout.push(Math.round((bill-ocr)*10000)/100);
  }
