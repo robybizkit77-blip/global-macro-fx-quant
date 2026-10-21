@@ -61,6 +61,7 @@ def case(delayed: bool) -> dict:
 def main():
     # VIX must stay in the public HTTP proof after future refactors.
     assert "live_data/sections/D.json" in FILES
+    assert "live_data/sections/MACRO_THERMOMETER_DATA.json" in FILES
     assert "payload/part-00.txt" in FILES
     assert "live_data/sections/V247_COT_STORIES.json" in FILES
     assert "live_data/manifest.v2.json" in FILES
