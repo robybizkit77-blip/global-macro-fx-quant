@@ -237,29 +237,55 @@ function rateBar(doc,all,id,spread=false){
  if(!note.isConnected)host.insertAdjacentElement('afterend',note);
 }
 function oisAll(doc,ois,proxy){
- const host=doc.getElementById('ois');if(!host||!ois?.currencies)return;
- const names=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'],rows=names.map(k=>{
- const x=ois.currencies[k],d=num(x?.horizons?.['6m']?.policy_delta_bp);
- const valid=x&&fresh(x.as_of,4)&&x.operational_status!=='WITHHELD'&&d!==null;
- return {k,d:valid?d:null,asof:x?.as_of,quality:x?.quality==='OFFICIAL_CERTIFIED'?'UFFICIALE':'STIMA'};
+ const host=doc.getElementById('ois');if(!host)return;
+ // Exactly eight currencies. Uncertified futures are NOT policy deltas.
+ const names=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+ const api=window.GMFQ_OIS_RESEARCH_V1;
+ let indicative={};
+ if(ois?.schema==='GMFQ_OIS_OPERATIONAL_VIEW_V1'&&
+    typeof api?.indicativeSixMonth==='function'){
+  try{indicative=api.indicativeSixMonth(ois,romeTodayIso())||{}}
+  catch(e){console.warn('[GMFQ 6M indicative WITHHELD]',String(e))}
+ }
+ const nzReady=proxy?.schema==='GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1'&&
+  proxy.status==='LIVE_DIRECTIONAL_PROXY_READY'&&fresh(proxy.as_of,4)&&
+  proxy.governance?.substitutes_for_ois_level===false&&
+  proxy.governance?.policy_delta_from_proxy_allowed===false&&
+  proxy.governance?.pair_engine_effect==='NONE';
+ const rows=names.map(k=>{
+  const x=ois?.currencies?.[k];
+  const official=officialPricingCurrent(x),delta=official?num(x.horizons['6m'].policy_delta_bp):null;
+  const p=indicative[k],v=p&&p.is_official_ois===false&&p.policy_delta_allowed===false&&
+    p.pair_effect==='NONE'&&num(p.value)!==null&&fresh(p.quote_as_of,4)?p:null;
+  const bill=k==='NZD'&&nzReady?num(proxy.horizons?.['6m']?.implied_bank_bill_rate):null;
+  return {k,delta,official,indicative:v,bill};
  });
- const maximum=Math.max(65,...rows.map(x=>Math.abs(x.d||0)));
- let html=rows.map(x=>{
-  if(x.k==='NZD'){
-    const ready=proxy?.schema==='GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1'&&proxy.status==='LIVE_DIRECTIONAL_PROXY_READY'&&fresh(proxy.as_of,4);
-    const v=ready?num(proxy.horizons?.['6m']?.implied_bank_bill_rate):null;
-    const change=ready?num(proxy.horizons?.['6m']?.change_1d_bp):null;
-    const msg=v===null?'NESSUN PROXY CORRENTE':`PROXY BB 6M · ${fmt(v,2)}% · Δ1D ${change===null?'—':(change>=0?'+':'')+change} bp`;
-    return `<div class="oisrow gmfq-nzd-proxy" data-ccy="NZD" tabindex="0" role="link" aria-label="Apri RBNZ e proxy futures NZD" title="${htmlEscape(msg)} · ASX ${htmlEscape(proxy?.as_of||'n.d.')}"><span>RBNZ <em>PX</em></span><div class="track"><div class="fill" style="width:${change===null?0:Math.min(95,Math.abs(change)*4)}%"></div></div><strong>${v===null?'—':fmt(v,2)+'%'}</strong></div>`;
-  }
-  const w=x.d===null?0:Math.max(2,Math.abs(x.d)/maximum*100);
-  return `<div class="oisrow" data-ccy="${x.k}" tabindex="0" role="link" aria-label="Apri OIS ${x.k}" title="${x.k} · ${x.quality} · ${x.asof||'n.d.'}">
-  <span>${BANK[x.k]} <em>${x.d===null?'—':x.quality==='UFFICIALE'?'O':'S'}</em></span>
-  <div class="track"><div class="fill ${x.d!==null&&x.d<0?'alt':''}" style="width:${w}%"></div></div>
-  <strong>${x.d===null?'—':(x.d>=0?'+':'')+fmt(x.d,0)+' bp'}</strong></div>`;
- }).join('');
- html+='<div class="oisnote">O = fonte certificata (anche futures), S = stima. NZD/PX = PROXY BB ≠ OIS.</div>';
- host.innerHTML=html;
+ const max=Math.max(65,...rows.map(x=>Math.abs(x.delta||0)));
+ host.innerHTML=rows.map(x=>{
+  const state=x.official?'OFFICIAL_REPRICING':x.indicative?'FUTURES_LEVEL_ONLY':
+   x.k==='NZD'&&x.bill!==null?'BANK_BILL_PROXY':'WITHHELD';
+  const day=x.official?ois.currencies[x.k].as_of:
+   x.indicative?x.indicative.quote_as_of:state==='BANK_BILL_PROXY'?proxy.as_of:'—';
+  const subtitle=state==='OFFICIAL_REPRICING'?'Δ 6M da fonte certificata':
+   state==='FUTURES_LEVEL_ONLY'?'Futures indicativo · solo livello':
+   state==='BANK_BILL_PROXY'?'Bank Bill · non OIS':'OIS/6M non certificato';
+  const readable=state==='OFFICIAL_REPRICING'?
+   ((x.delta>=0?'+':'')+fmt(x.delta,0)+' bp'):
+   state==='FUTURES_LEVEL_ONLY'?'≈'+fmt(x.indicative.value,2)+'% PX':
+   state==='BANK_BILL_PROXY'?'≈'+fmt(x.bill,2)+'% BB':'NON CERT.';
+  const w=x.official?Math.max(2,Math.abs(x.delta)/max*100):0;
+  return '<div class="oisrow gmfq-six-month-row" data-ccy="'+x.k+'" data-pricing-state="'+state+
+   '" data-policy-delta-allowed="'+(x.official?'true':'false')+
+   '" tabindex="0" role="link" aria-label="Apri '+x.k+' '+htmlEscape(subtitle)+'"'+
+   ' title="'+htmlEscape(x.k+' · '+subtitle+' · '+day)+'">'+
+   '<span class="gmfq-six-month-name"><i aria-hidden="true">'+FLAG[x.k]+'</i><b>'+x.k+'</b><small>'+BANK[x.k]+'</small></span>'+
+   '<div class="track"><div class="fill'+(x.official&&x.delta<0?' alt':'')+
+   '" style="width:'+w+'%"></div></div>'+
+   '<strong>'+readable+'</strong></div>';
+ }).join('')+
+ '<div class="oisnote">Δ bp = repricing 6M certificato (OIS o futures monetari verificati). '+
+ 'PX = livello futures indicativo, non Δ policy. BB = Bank Bill NZD, non OIS. '+
+ 'NON CERT. = nessun livello comparabile verificato.</div>';
 }
 function dxyLine(data){
  if(!Array.isArray(data?.history)||data.history.length<3)return'<div class="gmfq-chart-note">Storico in fase di costruzione dal fixing ECB.</div>';
