@@ -194,7 +194,7 @@ function yieldChart(doc,all,which='2Y'){
  for(let i=0;i<=3;i++){const y=T+i*(H-T-B)/3;svg+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="#243c4c" stroke-width=".8"/><text x="${L-4}" y="${y+3}" text-anchor="end" fill="#8fa8bb" font-size="9">${(top-i*span/3).toFixed(1)}</text>`;}
  for(const x of data){
    const pts=x.series.map(p=>`${xx(p.date).toFixed(1)},${yy(p.v).toFixed(1)}`).join(' ');
-   svg+=`<polyline points="${pts}" fill="none" stroke="${COLOR[x.c]}" stroke-width="1.4"/>`;
+   svg+=`<polyline points="${pts}" fill="none" stroke="${COLOR[x.c]}" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" opacity=".94"><title>${x.c} · rendimento ${which} · storico</title></polyline>`;
    if(x.now!==null && x.latest && x.latest>x.series.at(-1).date && !x.est){const last=x.series.at(-1);svg+=`<line x1="${xx(last.date)}" y1="${yy(last.v)}" x2="${xx(x.latest)}" y2="${yy(x.now)}" stroke="${COLOR[x.c]}" stroke-width="1.2" stroke-dasharray="2 3"/><circle cx="${xx(x.latest)}" cy="${yy(x.now)}" r="2.2" fill="${COLOR[x.c]}"/>`;}
    if(x.est&&x.now!==null){const last=x.series.at(-1);svg+=`<line x1="${xx(last.date)}" y1="${yy(last.v)}" x2="${xx(x.latest)}" y2="${yy(x.now)}" stroke="#e8c46d" stroke-width="1.8" stroke-dasharray="3 3"/><circle cx="${xx(x.latest)}" cy="${yy(x.now)}" r="2.6" fill="#e8c46d"/>`}
  }
@@ -222,10 +222,15 @@ function rateBar(doc,all,id,spread=false){
  const hi=Math.max(spread?50:0,...numbers)+(.1*(Math.max(...numbers)-Math.min(...numbers))||.5),
  lo=Math.min(0,...numbers)-(.1*(Math.max(...numbers)-Math.min(...numbers))||.5),
  yy=v=>T+(H-T-B)*(hi-v)/(hi-lo||1),zero=yy(0);
- let svg=`<line x1="${L}" x2="${W-R}" y1="${zero}" y2="${zero}" stroke="#35536a" stroke-width="1"/>`;
+ let svg='<defs><linearGradient id="gmfq-bars-sheen" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff" stop-opacity=".10"/><stop offset="100%" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>';
+ for(let i=0;i<=4;i++){
+  const guide=T+(H-T-B)*i/4;
+  svg+=`<line x1="${L}" x2="${W-R}" y1="${guide}" y2="${guide}" stroke="#294659" stroke-width=".7" stroke-dasharray="2 5" opacity=".7"/>`;
+ }
+ svg+=`<line x1="${L}" x2="${W-R}" y1="${zero}" y2="${zero}" stroke="#56758a" stroke-width="1.15"/>`;
  items.forEach((x,i)=>{
    const cx=L+dx*(i+.5),X=cx-barW/2,v=x.v;
-   if(v!==null){const y=yy(v),h=Math.max(1,Math.abs(y-zero));svg+=`<rect x="${X}" y="${Math.min(y,zero)}" width="${barW}" height="${h}" rx="1" fill="${x.estimate?'#debd6d':COLOR[x.ccy]}" ${x.estimate?'opacity=".9"':''}/>`;}
+   if(v!==null){const y=yy(v),h=Math.max(1,Math.abs(y-zero));svg+=`<rect x="${X}" y="${Math.min(y,zero)}" width="${barW}" height="${h}" rx="3" fill="${x.estimate?'#debd6d':COLOR[x.ccy]}" ${x.estimate?'opacity=".9"':''}/>`;}
    const ytext=v!==null&&v>=0?yy(v)-5:Math.min(H-B-7,zero+(v!==null?Math.abs(yy(v)-zero):0)+11);
    svg+=`<text x="${cx}" y="${ytext}" text-anchor="middle" fill="${x.estimate?'#e7c775':'#dae6f0'}" font-size="10">${v===null?'—':spread?Math.round(v):fmt(v,2)}${x.estimate?'*':''}</text><text x="${cx}" y="${H-3}" text-anchor="middle" fill="#acc3d4" font-size="11">${x.ccy}</text>`;
  });
@@ -237,29 +242,55 @@ function rateBar(doc,all,id,spread=false){
  if(!note.isConnected)host.insertAdjacentElement('afterend',note);
 }
 function oisAll(doc,ois,proxy){
- const host=doc.getElementById('ois');if(!host||!ois?.currencies)return;
- const names=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'],rows=names.map(k=>{
- const x=ois.currencies[k],d=num(x?.horizons?.['6m']?.policy_delta_bp);
- const valid=x&&fresh(x.as_of,4)&&x.operational_status!=='WITHHELD'&&d!==null;
- return {k,d:valid?d:null,asof:x?.as_of,quality:x?.quality==='OFFICIAL_CERTIFIED'?'UFFICIALE':'STIMA'};
+ const host=doc.getElementById('ois');if(!host)return;
+ // Exactly eight currencies. Uncertified futures are NOT policy deltas.
+ const names=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+ const api=window.GMFQ_OIS_RESEARCH_V1;
+ let indicative={};
+ if(ois?.schema==='GMFQ_OIS_OPERATIONAL_VIEW_V1'&&
+    typeof api?.indicativeSixMonth==='function'){
+  try{indicative=api.indicativeSixMonth(ois,romeTodayIso())||{}}
+  catch(e){console.warn('[GMFQ 6M indicative WITHHELD]',String(e))}
+ }
+ const nzReady=proxy?.schema==='GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1'&&
+  proxy.status==='LIVE_DIRECTIONAL_PROXY_READY'&&fresh(proxy.as_of,4)&&
+  proxy.governance?.substitutes_for_ois_level===false&&
+  proxy.governance?.policy_delta_from_proxy_allowed===false&&
+  proxy.governance?.pair_engine_effect==='NONE';
+ const rows=names.map(k=>{
+  const x=ois?.currencies?.[k];
+  const official=officialPricingCurrent(x),delta=official?num(x.horizons['6m'].policy_delta_bp):null;
+  const p=indicative[k],v=p&&p.is_official_ois===false&&p.policy_delta_allowed===false&&
+    p.pair_effect==='NONE'&&num(p.value)!==null&&fresh(p.quote_as_of,4)?p:null;
+  const bill=k==='NZD'&&nzReady?num(proxy.horizons?.['6m']?.implied_bank_bill_rate):null;
+  return {k,delta,official,indicative:v,bill};
  });
- const maximum=Math.max(65,...rows.map(x=>Math.abs(x.d||0)));
- let html=rows.map(x=>{
-  if(x.k==='NZD'){
-    const ready=proxy?.schema==='GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1'&&proxy.status==='LIVE_DIRECTIONAL_PROXY_READY'&&fresh(proxy.as_of,4);
-    const v=ready?num(proxy.horizons?.['6m']?.implied_bank_bill_rate):null;
-    const change=ready?num(proxy.horizons?.['6m']?.change_1d_bp):null;
-    const msg=v===null?'NESSUN PROXY CORRENTE':`PROXY BB 6M · ${fmt(v,2)}% · Δ1D ${change===null?'—':(change>=0?'+':'')+change} bp`;
-    return `<div class="oisrow gmfq-nzd-proxy" data-ccy="NZD" tabindex="0" role="link" aria-label="Apri RBNZ e proxy futures NZD" title="${htmlEscape(msg)} · ASX ${htmlEscape(proxy?.as_of||'n.d.')}"><span>RBNZ <em>PX</em></span><div class="track"><div class="fill" style="width:${change===null?0:Math.min(95,Math.abs(change)*4)}%"></div></div><strong>${v===null?'—':fmt(v,2)+'%'}</strong></div>`;
-  }
-  const w=x.d===null?0:Math.max(2,Math.abs(x.d)/maximum*100);
-  return `<div class="oisrow" data-ccy="${x.k}" tabindex="0" role="link" aria-label="Apri OIS ${x.k}" title="${x.k} · ${x.quality} · ${x.asof||'n.d.'}">
-  <span>${BANK[x.k]} <em>${x.d===null?'—':x.quality==='UFFICIALE'?'O':'S'}</em></span>
-  <div class="track"><div class="fill ${x.d!==null&&x.d<0?'alt':''}" style="width:${w}%"></div></div>
-  <strong>${x.d===null?'—':(x.d>=0?'+':'')+fmt(x.d,0)+' bp'}</strong></div>`;
- }).join('');
- html+='<div class="oisnote">O = fonte certificata (anche futures), S = stima. NZD/PX = PROXY BB ≠ OIS.</div>';
- host.innerHTML=html;
+ const max=Math.max(65,...rows.map(x=>Math.abs(x.delta||0)));
+ host.innerHTML=rows.map(x=>{
+  const state=x.official?'OFFICIAL_REPRICING':x.indicative?'FUTURES_LEVEL_ONLY':
+   x.k==='NZD'&&x.bill!==null?'BANK_BILL_PROXY':'WITHHELD';
+  const day=x.official?ois.currencies[x.k].as_of:
+   x.indicative?x.indicative.quote_as_of:state==='BANK_BILL_PROXY'?proxy.as_of:'—';
+  const subtitle=state==='OFFICIAL_REPRICING'?'Δ 6M da fonte certificata':
+   state==='FUTURES_LEVEL_ONLY'?'Futures indicativo · solo livello':
+   state==='BANK_BILL_PROXY'?'Bank Bill · non OIS':'OIS/6M non certificato';
+  const readable=state==='OFFICIAL_REPRICING'?
+   ((x.delta>=0?'+':'')+fmt(x.delta,0)+' bp'):
+   state==='FUTURES_LEVEL_ONLY'?'≈'+fmt(x.indicative.value,2)+'% PX':
+   state==='BANK_BILL_PROXY'?'≈'+fmt(x.bill,2)+'% BB':'NON CERT.';
+  const w=x.official?Math.max(2,Math.abs(x.delta)/max*100):0;
+  return '<div class="oisrow gmfq-six-month-row'+(x.k==='NZD'?' gmfq-nzd-proxy':'')+'" data-ccy="'+x.k+'" data-pricing-state="'+state+
+   '" data-policy-delta-allowed="'+(x.official?'true':'false')+
+   '" tabindex="0" role="link" aria-label="Apri '+x.k+' '+htmlEscape(subtitle)+'"'+
+   ' title="'+htmlEscape(x.k+' · '+subtitle+' · '+day)+'">'+
+   '<span class="gmfq-six-month-name"><i aria-hidden="true">'+FLAG[x.k]+'</i><b>'+x.k+'</b><small>'+BANK[x.k]+'</small></span>'+
+   '<div class="track"><div class="fill'+(x.official&&x.delta<0?' alt':'')+
+   '" style="width:'+w+'%"></div></div>'+
+   '<strong>'+readable+'</strong></div>';
+ }).join('')+
+ '<div class="oisnote">Δ bp = repricing 6M certificato (OIS o futures monetari verificati). '+
+ 'PX = livello futures indicativo, non Δ policy. PROXY BB ≠ OIS: Bank Bill NZD, non Δ OCR. '+
+ 'NON CERT. = nessun livello comparabile verificato.</div>';
 }
 function dxyLine(data){
  if(!Array.isArray(data?.history)||data.history.length<3)return'<div class="gmfq-chart-note">Storico in fase di costruzione dal fixing ECB.</div>';
@@ -267,9 +298,38 @@ function dxyLine(data){
  if(arr.length<3)return'';
  const W=540,H=145,lo=Math.min(...arr.map(x=>x.value))-.15,hi=Math.max(...arr.map(x=>x.value))+.15,span=hi-lo||1;
  const points=arr.map((x,i)=>`${(i/(arr.length-1)*(W-25)+10).toFixed(1)},${(10+(H-25)*(hi-x.value)/span).toFixed(1)}`).join(' ');
- return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Storico del DXY sintetico da cambi giornalieri ECB"><polyline points="${points}" fill="none" stroke="#e6c675" stroke-width="2"/><line x1="10" x2="${W-15}" y1="${H-12}" y2="${H-12}" stroke="#31485b"/><text x="10" y="${H-1}" fill="#98b0c3" font-size="10">${arr[0].date}</text><text x="${W-15}" y="${H-1}" text-anchor="end" fill="#98b0c3" font-size="10">${arr.at(-1).date}</text></svg>`;
+ const last=points.split(' ').at(-1)?.split(',')||[0,0];
+ const area='10,'+(H-12)+' '+points+' '+(W-15)+','+(H-12);
+ return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Storico del DXY sintetico da cambi giornalieri ECB"><defs><linearGradient id="gmfq-dxy-fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#dabd76" stop-opacity=".24"/><stop offset="100%" stop-color="#dabd76" stop-opacity="0"/></linearGradient></defs>
+ <polygon points="${area}" fill="url(#gmfq-dxy-fill)"/>
+ <line x1="10" x2="${W-15}" y1="${H-12}" y2="${H-12}" stroke="#31485b"/>
+ <polyline points="${points}" fill="none" stroke="#e6c675" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+ <circle cx="${last[0]}" cy="${last[1]}" r="4.1" fill="#e6c675" stroke="#091b2b" stroke-width="2"/>
+ <text x="10" y="${H-1}" fill="#98b0c3" font-size="10">${arr[0].date}</text>
+ <text x="${W-15}" y="${H-1}" text-anchor="end" fill="#98b0c3" font-size="10">${arr.at(-1).date}</text></svg>`;
 }
 function validDxy(x){return x?.schema==='GMFQ_DXY_SYNTHETIC_ECB_V1'&&x.status==='ESTIMATED_INFORMATIONAL'&&x.not_official_ice===true&&x.usable_as_official_ice_or_trade_signal===false&&fresh(x.as_of,4)&&num(x.value)!==null&&Array.isArray(x.history)&&x.history.at(-1)?.date===x.as_of}
+function mountHomeCurrencyFlags(doc){
+ const tiles=[...doc.querySelectorAll('#valute .cc[data-filter]')];
+ for(const tile of tiles){
+  const c=tile.dataset.filter,flag=c==='DXY'?'🇺🇸':FLAG[c];
+  if(!flag)continue;
+  const head=tile.querySelector('.tickerhead');if(!head)continue;
+  let node=head.querySelector('.flag');
+  if(!node){node=doc.createElement('span');node.className='flag';head.insertBefore(node,head.firstChild)}
+  node.textContent=flag;
+  node.setAttribute('aria-label',c==='DXY'?'Indice dollaro sintetico':c);
+  node.dataset.gmfqFlag=c;
+  node.style.cssText='font-family:"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif;font-size:21px;line-height:1.1;display:inline-flex;align-items:center;justify-content:center;min-width:25px;opacity:1;filter:none';
+  if(c==='DXY'&&!tile.querySelector('.gmfq-home-dxy-origin')){
+   const label=doc.createElement('small');
+   label.className='gmfq-home-dxy-origin';
+   label.textContent='INDICE SINTETICO · BCE';
+   label.title='DXY ricostruito da fixing BCE; non è l’indice ICE ufficiale';
+   tile.appendChild(label);
+  }
+ }
+}
 function renderDxy(doc){
  const tile=doc.querySelector('#valute .cc[data-filter="DXY"]');
  if(!tile)return;
@@ -399,6 +459,8 @@ function mountHomeReadingPath(doc,context){
  visual.textContent=
   '#gmfq-home-reading-path{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(285px,.85fr);gap:18px;align-items:center;min-width:0;margin:11px 0 15px;padding:16px 19px;border:1px solid #344f62;border-left:3px solid #d7b76e;border-radius:7px;background:linear-gradient(110deg,#0d293b 0%,#091a29 82%);box-sizing:border-box}'+
   '#gmfq-home-reading-path .gmfq-reading-main,#gmfq-home-reading-path .gmfq-reading-side{min-width:0}'+
+  '#valute .cc .tickerhead .flag{display:inline-flex!important;align-items:center;justify-content:center;min-width:25px;opacity:1!important}'+
+  '#valute .cc .gmfq-home-dxy-origin{display:block;font:600 9px/1.3 Arial,sans-serif;letter-spacing:.04em;color:#d4bd86;margin:2px 0 0;white-space:normal}'+
   '#gmfq-home-reading-path .gmfq-reading-heading{display:block;font:600 10px/1.55 Arial,sans-serif;letter-spacing:.09em;color:#d9c48b;margin-bottom:7px}'+
   '#gmfq-home-reading-path .gmfq-reading-priority{font:600 17px/1.48 Arial,sans-serif;color:#f0f3f7;max-width:670px;margin:0 0 9px;overflow-wrap:anywhere}'+
   '#gmfq-home-reading-path .gmfq-reading-trust{display:block;font:11px/1.5 Arial,sans-serif;color:#9eb8c9}'+
@@ -478,6 +540,38 @@ function mountHomeReadingPath(doc,context){
   '.bottom .messagebox{grid-template-columns:1fr;padding:3px 13px 10px}'+
   '.bottom .msg{min-height:51px;padding:9px 0}'+
   '.bottom>.panel:first-child .heading,.bottom>.panel:last-child .heading{padding:10px 12px;font-size:14px}}';
+ // Source-safe G8 card and premium chart polish. Values and datasets untouched.
+ visual.textContent+=
+  '.gridtop>.panel:nth-child(2){min-height:322px}'+
+  '.gridtop #ois{padding:4px 14px 10px}'+
+  '.gridtop #ois .gmfq-six-month-row{height:auto;min-height:29px;margin:0;display:grid;grid-template-columns:115px minmax(0,1fr) 100px;gap:9px;align-items:center;border-top:1px solid #1b3547;font:11px/1.4 Arial,sans-serif}'+
+  '.gridtop #ois .gmfq-six-month-row:first-child{border-top:0}'+
+  '.gridtop #ois .gmfq-six-month-name{display:flex;gap:6px;align-items:center;min-width:0;white-space:nowrap}'+
+  '.gridtop #ois .gmfq-six-month-name i{font-family:"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif;font-style:normal;font-size:16px;flex-shrink:0}'+
+  '.gridtop #ois .gmfq-six-month-name b{font:700 11px/1.4 Arial,sans-serif;color:#e8f0f6}'+
+  '.gridtop #ois .gmfq-six-month-name small{font:10px/1.4 Arial,sans-serif;color:#8faec1}'+
+  '.gridtop #ois .gmfq-six-month-row strong{text-align:right;font:600 11px/1.4 Arial,sans-serif;white-space:nowrap;color:#e6eff7}'+
+  '.gridtop #ois .gmfq-six-month-row[data-pricing-state="FUTURES_LEVEL_ONLY"] strong{color:#e4c58a}'+
+  '.gridtop #ois .gmfq-six-month-row[data-pricing-state="BANK_BILL_PROXY"] strong{color:#d6c28e}'+
+  '.gridtop #ois .gmfq-six-month-row[data-pricing-state="WITHHELD"] strong{color:#b39bab}'+
+  '.gridtop #ois .gmfq-six-month-row[data-pricing-state="FUTURES_LEVEL_ONLY"] .track,'+
+    '.gridtop #ois .gmfq-six-month-row[data-pricing-state="BANK_BILL_PROXY"] .track,'+
+    '.gridtop #ois .gmfq-six-month-row[data-pricing-state="WITHHELD"] .track{background:repeating-linear-gradient(90deg,#253f51 0px,#253f51 3px,#102637 3px,#102637 8px);opacity:.75}'+
+  '.gridtop #ois .gmfq-six-month-row .track{height:10px;border-radius:5px;overflow:hidden}'+
+  '.gridtop #ois .gmfq-six-month-row .fill{height:100%;border-radius:5px}'+
+  '.gridtop #ois .oisnote{font:10px/1.4 Arial,sans-serif;color:#9eb5c6;margin-top:10px}'+
+  '.gridtop .yieldplot svg,.mid .chartbody svg{border-radius:6px;overflow:visible}'+
+  '.gridtop .yieldplot,.mid .chartbody{background:linear-gradient(160deg,#0b2231 0%,#071923 100%)}'+
+  '.mid .chartbody svg rect{transition:opacity .15s ease}'+
+  '.mid .chartbody svg rect:hover{opacity:.8}'+
+  '.mid .chartbody svg text{paint-order:stroke fill;stroke:#061a27;stroke-width:.45px}'+
+  '@media(max-width:600px){.gridtop>.panel:nth-child(2){min-height:330px}'+
+  '.gridtop #ois{padding:3px 10px 10px}'+
+  '.gridtop #ois .gmfq-six-month-row{grid-template-columns:102px minmax(0,1fr) 90px;gap:5px;min-height:30px}'+
+  '.gridtop #ois .gmfq-six-month-name i{font-size:15px}'+
+  '.gridtop #ois .gmfq-six-month-name small{font-size:9px}'+
+  '.gridtop #ois .gmfq-six-month-row strong{font-size:10px}'+
+  '.gridtop #ois .oisnote{font-size:9px}}';
  doc.head.appendChild(visual);
  const rail=doc.createElement('nav');
  rail.id='gmfq-home-reading-path';rail.setAttribute('aria-label','Da dove iniziare la lettura Macro FX');
@@ -521,6 +615,66 @@ function mountHomeReadingPath(doc,context){
  });
 }
 
+async function mountHomeMarketPulse(doc){
+ if(!home()||frame.contentDocument!==doc||doc.documentElement.dataset.marketMode!=='live'||
+   doc.getElementById('gmfq-market-pulse'))return;
+ const grid=doc.querySelector('.gridtop');if(!grid)return;
+ const style=doc.createElement('style');style.id='gmfq-market-pulse-style';
+ style.textContent=
+ '#gmfq-market-pulse{background:linear-gradient(135deg,#0b2030,#081a27);border:1px solid #2c4659;border-radius:7px;margin:0 0 14px;padding:15px 17px;color:#e4edf3;font-family:Arial,sans-serif;min-width:0}'+
+ '#gmfq-market-pulse .gmfq-pulse-head{display:flex;gap:9px 16px;justify-content:space-between;align-items:baseline;flex-wrap:wrap;border-bottom:1px solid #2a4354;padding-bottom:10px}'+
+ '#gmfq-market-pulse h2{font:600 16px/1.4 Arial,sans-serif;margin:0;color:#f0f4f8}'+
+ '#gmfq-market-pulse .gmfq-pulse-date{font:600 11px/1.5 Arial,sans-serif;color:#dfc689}'+
+ '#gmfq-market-pulse .gmfq-pulse-caption{font:11px/1.6 Arial,sans-serif;color:#a4bdcc;margin:9px 0 3px}'+
+ '#gmfq-market-pulse .gmfq-pulse-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 20px}'+
+ '#gmfq-market-pulse .gmfq-pulse-item{padding:12px 2px;border-bottom:1px solid #264153;min-width:0}'+
+ '#gmfq-market-pulse .gmfq-pulse-item strong{display:block;font:600 12px/1.45 Arial,sans-serif;color:#e8eef5;overflow-wrap:anywhere}'+
+ '#gmfq-market-pulse .gmfq-pulse-item p{margin:4px 0;font:11px/1.55 Arial,sans-serif;color:#b7cbd8;overflow-wrap:anywhere}'+
+ '#gmfq-market-pulse .gmfq-pulse-item small{display:block;font:10px/1.45 Arial,sans-serif;color:#99afbf;overflow-wrap:anywhere}'+
+ '#gmfq-market-pulse .gmfq-pulse-links{display:flex;gap:10px 20px;flex-wrap:wrap;margin-top:12px;font:600 11px/1.45 Arial,sans-serif}'+
+ '#gmfq-market-pulse a{color:#e2c784;text-decoration:underline;text-underline-offset:3px}'+
+ '#gmfq-market-pulse a:focus-visible{outline:2px solid #e9cc88;outline-offset:3px}'+
+ '@media(max-width:600px){#gmfq-market-pulse{padding:12px 13px}#gmfq-market-pulse .gmfq-pulse-grid{grid-template-columns:1fr}#gmfq-market-pulse h2{font-size:15px}}';
+ doc.head.appendChild(style);
+ const host=doc.createElement('section');host.id='gmfq-market-pulse';
+ host.dataset.sourceEffect='NONE';host.dataset.pulseStatus='LOADING';
+ host.setAttribute('aria-label','Market Pulse: movimenti di mercato verificati e collegamenti alle notizie');
+ host.innerHTML='<div class="gmfq-pulse-head"><h2>Market Pulse · le ultime evidenze</h2><span class="gmfq-pulse-date">Verifica fonti in corso</span></div>'+
+  '<p class="gmfq-pulse-caption">Segnali ricavati dai dati ufficiali, non titoli giornalistici in tempo reale.</p>'+
+  '<div class="gmfq-pulse-grid"></div>'+
+  '<div class="gmfq-pulse-links"><a href="https://www.reuters.com/markets/" target="_blank" rel="noopener noreferrer">Notizie dei mercati · Reuters ↗</a>'+
+  '<a href="https://www.ecb.europa.eu/press/html/index.en.html" target="_blank" rel="noopener noreferrer">Comunicati BCE ↗</a></div>';
+ grid.insertAdjacentElement('afterend',host);
+ const date=host.querySelector('.gmfq-pulse-date'),box=host.querySelector('.gmfq-pulse-grid');
+ try{
+  const feedData=await feed('NEWS_PULSE_OPERATIONAL.json');
+  if(!host.isConnected||frame.contentDocument!==doc)return;
+  const isValid=feedData?.schema==='GMFQ_NEWS_PULSE_OPERATIONAL_V1'&&
+   feedData.status==='ACTIVE_DETERMINISTIC_LAYERS'&&
+   feedData.scope?.claim==='LATEST_VALIDATED_SIGNALS_NOT_GENERIC_HEADLINES'&&
+   Array.isArray(feedData.items)&&fresh(feedData.content_as_of,2)&&
+   Number.isFinite(Date.parse(feedData.generated_at_utc))&&
+   Date.parse(feedData.generated_at_utc)<=Date.now()+3600000&&
+   fresh(feedData.generated_at_utc.slice(0,10),2);
+  const items=isValid?feedData.items.filter(x=>x&&x.quality==='OFFICIAL_CERTIFIED'&&
+    FX.includes(x.ccy)&&x.as_of===feedData.content_as_of&&fresh(x.as_of,2)&&
+    typeof x.title==='string'&&x.title.length<=190&&
+    typeof x.detail==='string'&&x.detail.length<=350&&
+    typeof x.source==='string'&&x.source.length<=230).slice(0,4):[];
+  host.dataset.pulseStatus=items.length?'RECENT_VALIDATED':'WITHHELD';
+  host.dataset.asOf=items.length?feedData.content_as_of:'';
+  date.textContent=items.length?'Dati '+feedData.content_as_of+' · non intraday':'Nessun segnale recente certificato';
+  box.innerHTML=items.length?items.map(x=>
+   '<article class="gmfq-pulse-item" data-pulse-ccy="'+x.ccy+'"><strong>'+FLAG[x.ccy]+' '+htmlEscape(x.title)+'</strong>'+
+   '<p>'+htmlEscape(x.detail)+'</p><small>'+htmlEscape(x.source)+' · '+htmlEscape(x.as_of)+'</small></article>').join(''):
+   '<p class="gmfq-pulse-caption">Il feed non contiene nuove evidenze sufficientemente aggiornate; nessuna notizia datata viene presentata come corrente.</p>';
+ }catch(e){
+  if(!host.isConnected)return;
+  host.dataset.pulseStatus='WITHHELD';
+  date.textContent='Aggiornamento non disponibile';
+  box.innerHTML='<p class="gmfq-pulse-caption">Fonti non verificabili al momento; le notizie esterne restano accessibili dai collegamenti.</p>';
+ }
+}
 function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy,proxy,model,setup){
  if(!home()||frame.contentDocument!==doc||doc.documentElement.dataset.marketMode!=='live')return;
  const head=doc.querySelector('.mast .fresh'),state=doc.getElementById('liveState'),
@@ -654,7 +808,9 @@ async function applyHome(doc){
      rateBar(doc,all,'ratesbars');rateBar(doc,all,'spreads',true);
    }
    if(ois)oisAll(doc,ois,proxy);
+   mountHomeCurrencyFlags(doc);
    renderDxy(doc);
+   mountHomeMarketPulse(doc).catch(e=>console.warn('[GMFQ Market Pulse]',String(e)));
    mountHomeFreshnessAudit(doc,ff.status==='fulfilled'?ff.value:null,rates,ois,d,proxy,
      mm.status==='fulfilled'?mm.value:null,ss.status==='fulfilled'?ss.value:null);
    doc.querySelectorAll('#valute .cc').forEach(el=>{
