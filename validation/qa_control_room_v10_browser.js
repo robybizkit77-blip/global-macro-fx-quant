@@ -360,11 +360,16 @@ function expectedReactionFromMetrics(row){
       selected:p.dataset.selectedCurrency,
       observations:p.querySelectorAll('.gmfq-macro-observation').length,
       description:p.textContent,
+      preview:p.querySelector('#gmfq-macro-reading')?.textContent,
+      fullClosed:p.querySelector('#gmfq-macro-observation-details')?.open===false,
+      observationsHidden:![...p.querySelectorAll('.gmfq-macro-observation')].some(x=>x.getClientRects().length>0),
       innerScroll:w,innerClient:c,nativeWidth,
       docWidth:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
   });
   if(macroLens.baseline!==oldModel.asOf||macroLens.selected!=='EUR'||
-     macroLens.observations!==2||
+     macroLens.observations!==2||!macroLens.fullClosed||!macroLens.observationsHidden||
+     !macroLens.preview?.includes(macroThermo.currencies.EUR.inflation.as_of)||
+     !macroLens.preview?.includes(macroThermo.currencies.EUR.labour.as_of)||
      !macroLens.description.includes('NON CORRENTE, da rivalidare')||
      !macroLens.description.includes(macroThermo.currencies.EUR.inflation.as_of)||
      !macroLens.description.includes(macroThermo.currencies.EUR.labour.as_of)||
@@ -381,6 +386,17 @@ function expectedReactionFromMetrics(row){
      !switched.text.includes(macroThermo.currencies.JPY.labour.as_of)||
      switched.hash!=='#/macro?ccy=JPY')
     throw Error(label+' Macro currency synchronization failed '+JSON.stringify(switched));
+  // Expand full values and provenance with keyboard, without changing any score.
+  await page.frameLocator('#gmfq-page').locator('#gmfq-macro-observation-details>summary').press('Enter');
+  const macroExpanded=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    const p=d.getElementById('gmfq-macro-source-lens');
+    return {open:p.querySelector('#gmfq-macro-observation-details').open,
+      visible:[...p.querySelectorAll('.gmfq-macro-observation')].every(x=>x.getClientRects().length>0),
+      sources:p.querySelector('#gmfq-macro-source-details')?.textContent.includes('Fonte ')};
+  });
+  if(!macroExpanded.open||!macroExpanded.visible||!macroExpanded.sources)
+    throw Error(label+' Macro detailed observations inaccessible '+JSON.stringify(macroExpanded));
   await page.screenshot({path:'v10-qa-images/'+label+'-macro-provenance.png',fullPage:true});
   // Negative fixture: invalid reference period cannot become current data.
   await page.route('**/MACRO_THERMOMETER_DATA.json',async r=>{
@@ -529,6 +545,9 @@ function expectedReactionFromMetrics(row){
       ])),
       stale:p?.textContent.includes('NON CORRENTE, tesi da rivalidare'),
       descriptive:p?.textContent.includes('non crea da solo una preferenza FX'),
+      summary:p?.querySelector('.gmfq-blocker-overview')?.textContent,
+      detailsClosed:p?.querySelector('#gmfq-blocker-details')?.open===false,
+      pairButtonsHidden:![...p?.querySelectorAll('.gmfq-blocker-pair')||[]].some(x=>x.getClientRects().length>0),
       width:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
   });
   const nonVal=Object.entries(setupFeed.pairs).filter(([,r])=>r.setup.quality==='NON VALUTABILE');
@@ -544,11 +563,24 @@ function expectedReactionFromMetrics(row){
       throw Error(label+' screener '+k+' reason mismatch '+JSON.stringify(reasons));
   }
   if(reasons.count!==nonVal.length||
+     !reasons.detailsClosed||!reasons.pairButtonsHidden||
+     !reasons.summary?.includes('Macro vs Tassi/CB: '+expectedGroups.CONFLICT.length)||
+     !reasons.summary?.includes('Differenziale 2Y senza tesi: '+expectedGroups.RATES_ONLY.length)||
+     !reasons.summary?.includes('Vantaggio insufficiente: '+expectedGroups.INSUFFICIENT.length)||
      reasons.baseline!==setupFeed.macro_baseline_asof||
      !reasons.descriptive||reasons.innerScroll>reasons.innerClient+2||
      reasons.width>Math.max(reasons.viewport+16,reasons.nativeWidth+2))
     throw Error(label+' screener reason contract failed '+JSON.stringify(reasons));
   await page.screenshot({path:'v10-qa-images/'+label+'-screener-reasons.png',fullPage:true});
+  await page.frameLocator('#gmfq-page').locator('#gmfq-blocker-details>summary').press('Enter');
+  const openedReasons=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    const p=d?.getElementById('gmfq-screener-blockers');
+    return {open:p?.querySelector('#gmfq-blocker-details')?.open,
+      visible:p?.querySelector('button[data-pair="GBPJPY"]')?.getClientRects().length>0};
+  });
+  if(!openedReasons.open||!openedReasons.visible)
+    throw Error(label+' Screener detailed reasons inaccessible '+JSON.stringify(openedReasons));
   await page.frameLocator('#gmfq-page').locator('#gmfq-screener-blockers button[data-pair="GBPJPY"]').click();
   await page.waitForURL(u=>u.hash==='#/coppie?pair=GBPJPY',{timeout:20000});
 
