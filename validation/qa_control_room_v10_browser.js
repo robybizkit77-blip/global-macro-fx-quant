@@ -297,8 +297,15 @@ function expectedReactionFromMetrics(row){
       docWidth:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth
     };
   });
-  if(research.sourceStatus!=='READ_ONLY'||research.visibleCount!=='4'||
-     research.estimated!=='2'||research.withheld!=='2'||
+  // The verified official count stays independent of mixed-date futures.
+  // Secondary coverage may legitimately move GREEN_ESTIMATED -> WITHHELD;
+  // never pin today's 2/2 split or treat the downgrade as data loss.
+  const expectedOfficial=operational.summary.green_official;
+  const expectedEstimated=operational.summary.green_estimated;
+  const expectedWithheld=operational.summary.operational_withheld;
+  if(research.sourceStatus!=='READ_ONLY'||research.visibleCount!==String(expectedOfficial)||
+     research.estimated!==String(expectedEstimated)||
+     research.withheld!==String(expectedWithheld)||
      !research.disclosureClosed||!research.secondaryHidden||!research.plotVisible||
      !research.readingText?.includes('4/8')||
      !research.readingText.includes('GBP')||
