@@ -760,6 +760,12 @@ function expectedReactionFromMetrics(row){
     const details=p?.querySelector('#gmfq-pair-full-research');
     const decision=p?.querySelector('#gmfq-pair-decision-bridge');
     const comparison=p?.querySelector('#gmfq-pair-macro-rates');
+    const stamps=p?.querySelector('.gmfq-path-evidence');
+    const cols=decision?.querySelector('.gmfq-decision-cols');
+    const col=cols?.firstElementChild;
+    const win=d?.defaultView;
+    const gridCols=cols?win.getComputedStyle(cols).gridTemplateColumns.trim().split(/\s+/).length:0;
+    const cleanBg=col?win.getComputedStyle(col).backgroundColor:null;
     return {closed:details?.open===false,
       before:!!decision&&!!details&&
         !!(decision.compareDocumentPosition(details)&Node.DOCUMENT_POSITION_FOLLOWING),
@@ -770,11 +776,25 @@ function expectedReactionFromMetrics(row){
       detailsHtmlStart:details?.innerHTML?.slice(0,350),
       sourcePresent:!!p?.querySelector('#gmfq-pair-market-reaction')&&
         !!p?.querySelector('#gmfq-pair-what-changed')&&
-        p.querySelectorAll('button[data-gmfq-study-currency]').length===8};
+        p.querySelectorAll('button[data-gmfq-study-currency]').length===8,
+      sourceKeys:[...stamps?.querySelectorAll('span[data-source]')||[]].map(x=>x.dataset.source),
+      sourceText:stamps?.textContent,
+      macroSource:stamps?.dataset.macroState,
+      decisionGrid:gridCols,
+      decisionBackground:cleanBg,
+      innerWidth:d?.documentElement.clientWidth};
   });
   if(!reading.closed||!reading.before||!reading.decisionVisible||
-     !reading.technicalHidden||!reading.sourcePresent)
-    throw Error(label+' Pair decision-first reading failed '+JSON.stringify(reading));
+     !reading.technicalHidden||!reading.sourcePresent||
+     JSON.stringify(reading.sourceKeys)!==JSON.stringify(['macro','price','fixing'])||
+     reading.macroSource!=='HISTORICAL'||
+     !reading.sourceText?.includes('Baseline Macro/Tassi: '+setupFeed.macro_baseline_asof)||
+     !reading.sourceText.includes('Prezzo del modello: '+setupFeed.price_asof)||
+     !reading.sourceText.includes('Fixing BCE:')||
+     reading.sourceText.includes('Valuta favorita dal motore:')||
+     reading.decisionGrid!==(reading.innerWidth<=700?1:3)||
+     !['transparent','rgba(0, 0, 0, 0)'].includes(reading.decisionBackground))
+    throw Error(label+' Pair decision-first editorial hierarchy failed '+JSON.stringify(reading));
   console.log('CONTROL_ROOM_V10_DECISION_FIRST_GREEN',label,reading);
 
   // Selecting a non-USD cross updates both the original detail and our
