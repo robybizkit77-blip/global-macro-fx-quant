@@ -1,8 +1,51 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-21T20:50:12Z",
+  "generated_at_utc": "2026-10-21T21:50:51Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-87c5b226e6a169625815",
+      "observed_at_utc": "2026-10-21T20:37:58Z",
+      "headline": "Nasdaq leads Wall Street gains as SpaceX, Super Micro boost AI sentiment",
+      "summary": "Reuters riporta: Nasdaq leads Wall Street gains as SpaceX, Super Micro boost AI sentiment. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxQZUJTOXdaa0JmVzZubm12MGt4VnNSemsyOW1fQXpCMnhEc25HSVJRZk93d2NYUXQ3eHBuQklaNE1FT1QyQ1NqdTFkdExDbmoxY2JtOWhLQkVtYXczMHh3a3VsZmhub1JFc0FIZHN1eEcwc3FRZVZWQnBoSjFjekFYTUN6X2d5WHJUWGpDU2paekhhU24zenhNbWpXUmtfdmo5cTFIZVZwTXdiRzZoeUtiazhHWkJEWEVZLTVmQmRMcw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-f42c65ebe29a337980c7",
+      "observed_at_utc": "2026-10-21T00:50:00Z",
+      "headline": "Oil prices steady as investors weigh geopolitics, lower US stockpiles",
+      "summary": "Reuters riporta: Oil prices steady as investors weigh geopolitics, lower US stockpiles. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "COMMODITIES",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMikgFBVV95cUxPNTdIRmp3MTB3c3JZNGxXMUl1Wk5haXFwcjdJNXgtQnJkOEM4aWVVWG5tai03TmhHSWZidkliV1VlRkRvOVJCX3Q3QXhCWVdZeXlYQmViOUdOaU85anVWMXpSWFNCOHAtVU5id3Fad1BhX1BzVEt6S1A4N2s1YjJocFh6QXFTVXhHdDJJVzZBX21WUQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-a7eca3742a11ade27619",
+      "observed_at_utc": "2026-10-21T20:59:00Z",
+      "headline": "Hungarian police arrest Orbán-era central bank governor on suspicion of fraud and other crimes",
+      "summary": "AP News riporta: Hungarian police arrest Orbán-era central bank governor on suspicion of fraud and other crimes. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxPVTJvYlRkcXVBTnJYV1VuNnNCNnN0RHhjXzhVQTdWMDN5MGgwajQ3M0tjU1YzWlpnVnRfcVZaWkJWemg3Q2VpbGs0RXN4b0tkb1JXZi0tZFdJUXNNSTM2a0RGb2Z1MXppZGVDZllIUUgyZkpTbENRSXlXZmdIeEJXUUk2bHhIa0J4REJZdFNkUnlXU0JGZjVkTV9mYmdSUzJITkJGcQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-299b0a5ed7dbc1ed4f04",
       "observed_at_utc": "2026-10-21T10:44:00Z",
@@ -1372,53 +1415,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxOLVJCYm9CRFhWY01aUkRqYnVXb0RzRC1RUnhfOEFicHItalFBMnRMc0ZjcWRVcGNnZVg3ZXQ3WXNXeUZLN183enN0NFAtdmxuUHJhRU5jOHlQbTg1TldhNVdtbF9IWU1GZ1BfOEZvTnJpUEhGTE5xUkRSbl9FZVR4NlFJMEE2V1VYZ1hVRzk3SmpJMi1qelE?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-1bcdc9bede07cc389fae",
-      "observed_at_utc": "2026-10-19T00:38:00Z",
-      "headline": "US stocks rebound with AI earnings test ahead, euro falls on France unrest",
-      "summary": "Reuters riporta: US stocks rebound with AI earnings test ahead, euro falls on France unrest. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD",
-        "EUR"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxOLVFWRVZxMkJLTnJJaThPRWdnNTFRbmc2V1FTYW1CbUNZc1hNYkZKd0xCbHJTeUpzYnNzYmx6RS1aZS1FNnBUcGx0VHY5bFZmY2xTMU1nZHlJNTNpWmliOE0tcmJ5d0JpeVJlZmw3Y1RuRnJvQWZSQXJraTNtN1pGOTJ4RQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-d0757556a1020f347815",
-      "observed_at_utc": "2026-10-19T17:41:13Z",
-      "headline": "Canadian dollar notches nearly four-week high on BoC rate hike bets",
-      "summary": "Reuters riporta: Canadian dollar notches nearly four-week high on BoC rate hike bets. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD",
-        "CAD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQejFjMHFhbTY3RGNrb3ZLNnZvd2QtWjl4eDg5cG9vRmR3Qk9zbGNBWXM1VXE5Z0ZWamFZYUptd0RwTmdieTRjQXVjWE5YVEhlVzFOUEo3WnF4aVRqSmNvUUFTZnVwVHo2aHVuTXZybk5UT0ZqSmtGNHdfRXZhNWdzVnpDRWRja2ExdFFHNTYwUDg2bmxzWjdRekRHeUtKU3RuY1Z3M2FZSktjdXliQlpZZjBn?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-2ec744a2116845fe4adb",
-      "observed_at_utc": "2026-10-19T20:49:44Z",
-      "headline": "Oil stocks in US strategic petroleum reserve fall to lowest level since 1982",
-      "summary": "Reuters riporta: Oil stocks in US strategic petroleum reserve fall to lowest level since 1982. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxOTS1qZEVDSUY0Z2dXY0l6TzZCaGpGRnJOMF9Wb0Q1Q0pCVTI5YjN2Q2VyVXJKVnlQa1RuOEdYWWdZc3dQYjRxTVQ5RUVpZzUtc2hJMU50NlA2aUFhcHZCd3o1TFZ4c0hmdnZPckxSTHduS0JNN05CRWdKVUJBSzdkYm10U2pCSFIyLTlvT2NrRWVVOVhYSnpGSEdjSVJTZnJXbGhaXy1GUDBjVGttZl9BUkpzd0tYNDBGUUh4cUt4cw?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
