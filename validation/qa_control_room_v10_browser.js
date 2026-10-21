@@ -293,7 +293,7 @@ function expectedReactionFromMetrics(row){
      !r.pulse.text.includes('non titoli giornalistici in tempo reale')||
      !r.pulse.newsLink||r.pulse.width>r.pulse.client+2||
      (r.pulse.state==='RECENT_VALIDATED'&&(r.pulse.articles<1||
-       !/^20\\d{2}-\\d{2}-\\d{2}$/.test(r.pulse.asof))))
+       !/^20\d{2}-\d{2}-\d{2}$/.test(r.pulse.asof))))
     fatal.push('Market Pulse source-date/fail-closed contract failed '+JSON.stringify(r.pulse));
   if((r.dxy||'').trim()!==dxyDisplayed)fatal.push('DXY synthetic not synchronized with its source: '+r.dxy+' != '+dxyDisplayed);
   if(!r.noApprofondisci)fatal.push('old overlay link still shown');
