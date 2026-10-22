@@ -1231,6 +1231,77 @@ function expectedReactionFromMetrics(row){
       d.querySelectorAll('#pair-index button.pair-open[data-pair]').length===28&&
       d.getElementById('gmfq-pair-research-path')?.dataset.pair===code;
   },fromHome,{timeout:30000});
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument,p=d?.getElementById('gmfq-pair-rank');
+    return p?.dataset.status==='READ_ONLY'&&
+      d.querySelectorAll('#pair-index tr[data-research-rank]').length===28;
+  },null,{timeout:30000});
+  const readRank=()=>page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page').contentDocument,p=d.getElementById('gmfq-pair-rank'),
+      rows=[...d.querySelectorAll('#pair-index tr[data-research-rank]')];
+    return {status:p?.dataset.status,count:p?.dataset.count,mode:p?.dataset.sortMode,
+      trade:p?.dataset.hasTradeRanking,baseline:p?.dataset.macroAsOf,price:p?.dataset.priceAsOf,
+      panelWidth:p?.scrollWidth,panelClient:p?.clientWidth,
+      docWidth:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth,
+      modes:[...p.querySelectorAll('button[data-rank-mode]')].map(x=>({
+        mode:x.dataset.rankMode,pressed:x.getAttribute('aria-pressed')})),
+      descriptions:rows.map(x=>({
+        code:x.querySelector('button.pair-open')?.dataset.pair,rank:Number(x.dataset.researchRank),
+        why:x.querySelector('.gmfq-row-why')?.textContent,
+        label:x.querySelector('.gmfq-row-rank')?.textContent,mode:x.dataset.researchMode
+      }))};
+  });
+  const rankSetup=await readRank();
+  if(rankSetup.status!=='READ_ONLY'||rankSetup.count!=='28'||rankSetup.trade!=='false'||
+     rankSetup.baseline!==setupFeed.macro_baseline_asof||rankSetup.price!==setupFeed.price_asof||
+     rankSetup.mode!=='setup'||rankSetup.panelWidth>rankSetup.panelClient+2||
+     rankSetup.docWidth>rankSetup.viewport+16||
+     rankSetup.descriptions.length!==28||
+     rankSetup.descriptions.some((x,i)=>x.rank!==i+1||
+       x.label!==String(i+1).padStart(2,'0')||
+       x.mode!=='setup'||!x.why?.length||
+       !setupFeed.pairs[x.code])||
+     JSON.stringify(rankSetup.modes)!==JSON.stringify([
+       {mode:'setup',pressed:'true'},{mode:'thesis',pressed:'false'}]))
+    throw Error(label+' Pair ranked setup first reading failed '+JSON.stringify(rankSetup));
+  const rankedCodes=rankSetup.descriptions.map(x=>x.code);
+  const unranked=rankedCodes.findIndex(x=>setupFeed.pairs[x].setup.quality==='NON VALUTABILE');
+  if(unranked<0||rankedCodes.slice(unranked).some(x=>
+      setupFeed.pairs[x].setup.quality!=='NON VALUTABILE'))
+    throw Error(label+' pair without a thesis incorrectly outranks canonical thesis');
+  const meaningfulRisk=rankSetup.descriptions.find(x=>x.code==='AUDCHF');
+  const extendedRisk=rankSetup.descriptions.find(x=>x.code==='EURUSD');
+  if(!meaningfulRisk?.why?.includes('Timing contrario')||
+     !extendedRisk?.why?.includes('Prezzo già avanzato'))
+    throw Error(label+' CON RISCHI still lacks a concrete source-based explanation');
+  await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-rank-mode="thesis"]').click();
+  const rankThesis=await readRank();
+  if(rankThesis.mode!=='thesis'||rankThesis.descriptions.length!==28||
+     rankThesis.modes[1]?.pressed!=='true'||
+     rankThesis.descriptions.some((x,i)=>x.rank!==i+1||x.mode!=='thesis')||
+     rankThesis.descriptions[0]?.code!=='USDCHF')
+    throw Error(label+' strength-of-thesis order failed '+JSON.stringify(rankThesis));
+  await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-rank-mode="setup"]').click();
+  await page.frameLocator('#gmfq-page').locator('#pair-search').fill('USDCHF');
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument,
+      x=d?.querySelectorAll('#pair-index tr[data-research-rank]')||[];
+    return x.length===1&&x[0].querySelector('button.pair-open')?.dataset.pair==='USDCHF';
+  },null,{timeout:20000});
+  const filteredRank=await readRank();
+  if(filteredRank.descriptions.length!==1||
+     filteredRank.descriptions[0].rank!==rankedCodes.indexOf('USDCHF')+1)
+    throw Error(label+' native pair search loses rank or source label '+JSON.stringify(filteredRank));
+  await page.frameLocator('#gmfq-page').locator('#pair-search').fill('');
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return d?.querySelectorAll('#pair-index tr[data-research-rank]').length===28;
+  },null,{timeout:20000});
+  const restored=await readRank();
+  if(JSON.stringify(restored.descriptions.map(x=>x.code))!==JSON.stringify(rankedCodes))
+    throw Error(label+' native pair search/reset broke comparative ordering');
+  console.log('CONTROL_ROOM_PAIR_28_DUAL_RANKING_GREEN',label,{
+    firstSetup:rankedCodes[0],firstThesis:rankThesis.descriptions[0]?.code});
   const first=await page.evaluate(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument;
     const panel=d?.getElementById('gmfq-pair-research-path');
