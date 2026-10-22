@@ -1163,6 +1163,18 @@ async function getState(page){
                visible:!!x.getClientRects().length})),
              focusNote:p.querySelector('.gmfq-cot-focus-note')?.textContent,
              focusAsOf:p.querySelector('.gmfq-cot-focus')?.dataset.cftcAsOf,
+             extremeAudit:(()=>{
+               const node=p.querySelector('.gmfq-cot-percentile'),det=node?.querySelector('.gmfq-cot-percentile-details');
+               return {asof:node?.dataset.cftcAsOf,sep:node?.dataset.relativeVsNet,
+                 inversions:node?.dataset.inversionCount,closed:det?.open===false,
+                 count:det?.querySelectorAll('.gmfq-cot-percentile-list li').length,
+                 note:node?.querySelector('.gmfq-cot-rank-note')?.textContent,
+                 rows:[...det?.querySelectorAll('.gmfq-cot-percentile-list li')||[]].map(x=>({
+                   ccy:x.dataset.extremeCcy,pct:Number(x.dataset.extremeRank),
+                   cls:x.dataset.extremeClass,net:Number(x.dataset.extremeNet),
+                   relation:x.dataset.rankVsNet}))};
+             })(),
+             percentileCount:p.dataset.percentileCount,rankVsNet:p.dataset.rankVsNet,
              weeklyAsOf:p.dataset.weeklyAsOf,weeklyCount:p.dataset.weeklyCount,
              weekly:(()=>{
                const details=p.querySelector('.gmfq-cot-weekly-details');
@@ -1194,7 +1206,7 @@ async function getState(page){
                throw Error('public CB pricing summary not source-reconciled');
              return summary;
            }):null;
-         if(pageName==='cot'&&['cot-crowding-focus-20261022','cot-weekly-position-20261022'].includes(navigationVersion)){
+         if(pageName==='cot'&&['cot-crowding-focus-20261022','cot-weekly-position-20261022','cot-percentile-vs-net-20261022'].includes(navigationVersion)){
            const n=Math.min(3,Number(reading.crowding));
            if(reading.focusRows.length!==n||reading.focusAsOf!==reading.asof||
              !reading.focusNote?.includes('non direzione del prezzo')||
@@ -1203,7 +1215,7 @@ async function getState(page){
                (i>0&&Math.abs(x.ratio)>Math.abs(reading.focusRows[i-1].ratio))))
               throw Error(name+' public CFTC focused crowding incorrect '+JSON.stringify(reading));
          }
-         if(pageName==='cot'&&navigationVersion==='cot-weekly-position-20261022'){
+         if(pageName==='cot'&&['cot-weekly-position-20261022','cot-percentile-vs-net-20261022'].includes(navigationVersion)){
            if(!reading.weekly?.present||!reading.weekly.closed||
               reading.weeklyCount!=='8'||reading.weekly.count!==8||
               reading.weeklyAsOf!==reading.weekly.previous||
@@ -1221,6 +1233,31 @@ async function getState(page){
              throw Error(name+' public COT full G8 weekly detail inaccessible '+JSON.stringify(weeklyExpanded));
            await page.frameLocator('#gmfq-page')
              .locator('#gmfq-cot-reading-first .gmfq-cot-weekly-details>summary').press('Enter');
+         }
+         if(pageName==='cot'&&navigationVersion==='cot-percentile-vs-net-20261022'){
+           const ext=reading.extremeAudit;
+           if(!ext||ext.asof!==reading.asof||ext.sep!=='SEPARATE'||!ext.closed||
+              reading.percentileCount!==String(ext.count)||ext.count!==Number(reading.extremes)||
+              reading.rankVsNet!==ext.inversions||
+              !ext.note?.includes('Percentile ≠ segno del Net')||
+              ext.rows.some(x=>!['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'].includes(x.ccy)||
+                x.pct<0||x.pct>100||!['EXTREME LONG','EXTREME SHORT'].includes(x.cls)||
+                (x.pct>=80&&x.cls!=='EXTREME LONG')||
+                (x.pct<=20&&x.cls!=='EXTREME SHORT')||
+                x.relation!==((x.cls==='EXTREME LONG'&&x.net<0)||
+                               (x.cls==='EXTREME SHORT'&&x.net>0)?'OPPOSED':'ALIGNED')))
+              throw Error(name+' public COT rank vs signed Net invalid '+JSON.stringify(reading));
+           const rankToggle=page.frameLocator('#gmfq-page')
+             .locator('#gmfq-cot-reading-first .gmfq-cot-percentile-details>summary');
+           await rankToggle.press('Enter');
+           const rankExpanded=await page.evaluate(()=>{
+             const p=document.getElementById('gmfq-page').contentDocument.getElementById('gmfq-cot-reading-first');
+             const det=p.querySelector('.gmfq-cot-percentile-details');
+             return {open:det?.open,visible:[...det?.querySelectorAll('.gmfq-cot-percentile-list li')||[]].filter(x=>x.getClientRects().length).length};
+           });
+           if(!rankExpanded.open||rankExpanded.visible!==ext.count)
+              throw Error(name+' public COT 104W detail inaccessible '+JSON.stringify(rankExpanded));
+           await rankToggle.press('Enter');
          }
          if(!reading.originalChart||!reading.originalTable||!reading.closed||
             !reading.priorityFirst||
