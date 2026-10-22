@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """PIT-date evidence negative tests from pinned official G8 source records."""
 import copy
+import json
 import unittest
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from validation.macro.latest_release_pit_ledger_v1 import (
-    ROOT, build_ledger, collect_candidates, resolved_time, iso_day,
+    ROOT, WEB_EVIDENCE_FILE, build_ledger, collect_candidates, resolved_time, iso_day,
 )
 
 TODAY = datetime.now(ZoneInfo('Europe/Rome')).date()
@@ -86,6 +87,59 @@ class LatestReleaseLedgerTests(unittest.TestCase):
         self.assertEqual(jpy["status"], "FULL_RELEASE_INSTANT")
         self.assertEqual(jpy["first_release_timestamp_utc"], "2026-09-17T23:30:00+00:00")
 
+    def test_september_uk_nz_headline_cpi_has_publisher_date_only_proof(self):
+        from validation.macro.latest_release_pit_ledger_v1 import source_web_attestations
+        evidence = source_web_attestations(ROOT / "validation/macro")
+        by_key = {row["key"]: row for row in evidence["attestations"]}
+        expected = (
+            ("GBP.inflation", "2026-10-21", 3.5, "Office for National Statistics"),
+            ("NZD.inflation", "2026-10-22", 3.7, "Stats NZ"),
+        )
+        out = self.run_receipt()
+        for key, release_day, value, publisher in expected:
+            with self.subTest(key=key):
+                row = by_key[key]
+                self.assertEqual(row["observation_period"], "2026-09")
+                self.assertEqual(row["release_date"], release_day)
+                self.assertEqual(row["published_value"], value)
+                self.assertEqual(row["raw_series_value"], value)
+                self.assertEqual(row["transform"], "reported_yoy_rate")
+                self.assertEqual(row["publisher"], publisher)
+                self.assertIsNone(row["release_timestamp_local"])
+                # Once later official releases arrive, September's immutable
+                # attestation stays in the archive but no longer proves the
+                # current period. Do not redate stale evidence.
+                rec = out["observations"][key]
+                if rec["current_observation_period"][:7] == "2026-09":
+                    self.assertEqual(rec["release"]["status"], "DATE_ONLY")
+                    self.assertEqual(rec["release"]["first_release_date"], release_day)
+                    self.assertIsNone(rec["release"]["first_release_timestamp_utc"])
+                    self.assertFalse(rec["release"]["historical_backtest_safe_for_all_periods"])
+
+    def test_swiss_rounded_seco_press_release_cannot_certify_exact_snb_value(self):
+        out = self.run_receipt()
+        rec = out["observations"]["CHF.labour"]
+        if rec["current_observation_period"][:7] == "2026-09":
+            # Official SECO September headline is rounded to 3.1%; the
+            # canonical SNB portal stores a much more precise figure.
+            # Do not infer the exact official initial-release value from 3.1.
+            self.assertAlmostEqual(rec["latest_transformed_observation"], 3.1249882357461)
+            self.assertEqual(rec["release"]["status"], "WITHHELD_EXACT_PERIOD_EVIDENCE")
+            self.assertIsNone(rec["release"]["first_release_date"])
+            self.assertFalse(rec["release"]["historical_backtest_safe_for_all_periods"])
+
+    def test_nzd_official_source_url_cannot_use_spoofed_hostname(self):
+        from validation.macro.latest_release_pit_ledger_v1 import source_web_attestations
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as temp:
+            d = json.loads((ROOT / "validation/macro" / WEB_EVIDENCE_FILE).read_text())
+            nz = next(r for r in d["attestations"] if r["key"] == "NZD.inflation")
+            nz["url"] = "https://stats.govt.nz.evil.example/news/cpi"
+            (Path(temp) / WEB_EVIDENCE_FILE).write_text(json.dumps(d))
+            with self.assertRaisesRegex(ValueError, "unsupported source publisher URL"):
+                source_web_attestations(Path(temp))
+
     def test_future_release_in_evidence_fails_closed(self):
         data = copy.deepcopy(self.anchors)
         row = data[("EUR.inflation", "2026-09")][0]
@@ -126,7 +180,7 @@ class LatestReleaseLedgerTests(unittest.TestCase):
             directory = Path(tmp)
             original = json.loads((ROOT / "validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json").read_text())
             original["attestations"][0]["url"] = "https://bls.gov.evil.example/release"
-            (directory / "CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json").write_text(json.dumps(original))
+            (directory / WEB_EVIDENCE_FILE).write_text(json.dumps(original))
             with self.assertRaisesRegex(ValueError, "unsupported source publisher URL"):
                 source_web_attestations(directory)
 
@@ -138,7 +192,7 @@ class LatestReleaseLedgerTests(unittest.TestCase):
             directory = Path(tmp)
             original = json.loads((ROOT / "validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json").read_text())
             original["attestations"][0]["published_value"] = 3.7
-            (directory / "CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json").write_text(json.dumps(original))
+            (directory / WEB_EVIDENCE_FILE).write_text(json.dumps(original))
             with self.assertRaisesRegex(ValueError, "official index-to-YoY formula mismatch"):
                 source_web_attestations(directory)
 
@@ -157,7 +211,7 @@ class LatestReleaseLedgerTests(unittest.TestCase):
                 "url":"https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/bulletins/employmentintheuk/october2026",
                 "note":"Deliberately forged duplicate equal source conflict that should not pass source evidence"
             })
-            (directory / "CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json").write_text(json.dumps(original))
+            (directory / WEB_EVIDENCE_FILE).write_text(json.dumps(original))
             with self.assertRaisesRegex(ValueError, "source contradiction must be real"):
                 source_web_attestations(directory)
 
