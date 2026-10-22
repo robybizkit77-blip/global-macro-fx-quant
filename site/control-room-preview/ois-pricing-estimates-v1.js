@@ -309,17 +309,33 @@ function view(rows,moves=[]){
    (x.source_quote_verified?'<small>scad. '+(x.tenor_gap_days>0?'+':'')+x.tenor_gap_days+'gg vs target</small>':'')+
    (x.range?'<small>'+fmt(x.range[0])+'–'+fmt(x.range[1])+'%</small>':''):
   '<b>—</b><small>n.d.</small>';};
+ const counts=Object.fromEntries(['OFFICIAL','PROXY','MIXED','SCENARIO','WITHHELD'].map(t=>[t,rows.filter(r=>r.tier===t).length]));
+ // Preserve all 8 rows and source provenance behind an accessible disclosure.
+ // No estimate becomes a certified OIS or an official policy delta.
+ const brief=counts.OFFICIAL+'/8 fonti certificate (OIS e futures monetari) · '+
+   counts.PROXY+' futures indicativi · '+counts.MIXED+' con date non sincronizzate · '+
+   counts.SCENARIO+' scenario · '+counts.WITHHELD+' non disponibili';
  return '<h2 class="desk-panel-title">G8 · Pricing monetario 3M / 6M / 12M</h2>'+
+ '<p class="gmfq-est-quick-read"><strong>Copertura G8 · </strong>'+esc(brief)+
+ '. Tutte le valute sono consultabili; le stime non diventano segnali.</p>'+
+ '<details class="gmfq-est-disclosure" data-default="CLOSED"><summary>Apri tabella 3M / 6M / 12M, dati e fonti delle 8 valute</summary>'+
  '<div class="gmfq-est-body"><p>Valori <b>certificati, indicativi e scenari</b> distinti. Date per singola scadenza; non tutte le serie sono OIS.</p>'+
  '<div role="table" class="gmfq-est-table"><div class="gmfq-est-row gmfq-est-head" role="row"><span>Valuta</span><span>3M</span><span>6M</span><span>12M</span></div>'+
  rows.map(r=>'<div role="row" class="gmfq-est-row" data-ccy="'+r.ccy+'" data-estimate-type="'+r.tier+'">'+
  '<div><strong>'+flags[r.ccy]+' '+r.ccy+'</strong><small>'+labels[r.tier]+'</small></div>'+
  tenors.map(t=>'<div>'+cell(r,t)+'</div>').join('')+
  '<div class="gmfq-est-source">'+esc(r.source||'Fonte non corrente')+'</div></div>').join('')+'</div>'+
- matchedResearchHtml(moves)+'<p class="gmfq-est-note"><b>Metodo:</b> GBP OIS BoE; AUD/CAD/JPY futures monetari ufficiali; USD/EUR/CHF: ogni contratto è datato separatamente; se le date non coincidono, sono solo osservazioni individuali e non una curva sincronizzata. Su USD/EUR/CHF vengono verificati prezzo, contratto, data e scadenza; lo scarto in giorni è visibile, <b>senza inventare una correzione OIS</b>. NZD: scenario empirico su Bank Bill 90 giorni − OCR RBNZ (19 mesi, due regimi): sconto stimato 24 bp, fascia prudenziale 10–50 bp, ampliata dopo un test su luglio–settembre 2026 (errore medio del punto centrale circa 16 bp). <b>non è uno spread OIS misurato e non intervallo statistico</b>. Sono futures trimestrali, non una curva OIS spot. Nessuna stima produce variazioni OIS 1D/1W, segnali FX o backtest.</p></div>';
+ matchedResearchHtml(moves)+'<p class="gmfq-est-note"><b>Metodo:</b> GBP OIS BoE; AUD/CAD/JPY futures monetari ufficiali; USD/EUR/CHF: ogni contratto è datato separatamente; se le date non coincidono, sono solo osservazioni individuali e non una curva sincronizzata. Su USD/EUR/CHF vengono verificati prezzo, contratto, data e scadenza; lo scarto in giorni è visibile, <b>senza inventare una correzione OIS</b>. NZD: scenario empirico su Bank Bill 90 giorni − OCR RBNZ (19 mesi, due regimi): sconto stimato 24 bp, fascia prudenziale 10–50 bp, ampliata dopo un test su luglio–settembre 2026 (errore medio del punto centrale circa 16 bp). <b>non è uno spread OIS misurato e non intervallo statistico</b>. Sono futures trimestrali, non una curva OIS spot. Nessuna stima produce variazioni OIS 1D/1W, segnali FX o backtest.</p></div></details>';
 }
 const css=[
  '#gmfq-ois-research-estimates{margin:12px 0;min-width:0}',
+ '#gmfq-ois-research-estimates .gmfq-est-quick-read{padding:4px 15px 2px;margin:5px 0;color:#b7cbd8;font:12px/1.55 Arial,sans-serif;overflow-wrap:anywhere}',
+ '#gmfq-ois-research-estimates .gmfq-est-quick-read strong{color:#e4edf5}',
+ '#gmfq-ois-research-estimates .gmfq-est-disclosure{padding:0 15px 12px;margin-top:5px}',
+ '#gmfq-ois-research-estimates .gmfq-est-disclosure>summary{color:#e0c88b;font:600 12px/1.55 Arial,sans-serif;cursor:pointer;padding:10px 0;border-top:1px solid #274355;outline-offset:3px}',
+ '#gmfq-ois-research-estimates .gmfq-est-disclosure>summary:focus-visible{outline:2px solid #e0c88b}',
+ '#gmfq-ois-research-estimates .gmfq-est-disclosure:not([open])>:not(summary){display:none!important}',
+ '@media(max-width:600px){#gmfq-ois-research-estimates .gmfq-est-quick-read{padding:4px 10px 1px;font-size:11px}#gmfq-ois-research-estimates .gmfq-est-disclosure{padding:0 10px 10px}#gmfq-ois-research-estimates .gmfq-est-disclosure>summary{font-size:11px}}',
  '#gmfq-ois-research-estimates .gmfq-est-body{padding:12px 15px;color:#bacedd;font:12px/1.5 Arial,sans-serif}',
  '#gmfq-ois-research-estimates .gmfq-est-table{border:1px solid #2c495a;background:#0a2132;border-radius:6px;overflow:hidden}',
  '#gmfq-ois-research-estimates .gmfq-est-row{display:grid;grid-template-columns:minmax(115px,1.3fr) repeat(3,minmax(75px,1fr));border-bottom:1px solid #254153}',
