@@ -649,7 +649,7 @@ function expectedReactionFromMetrics(row){
   if(!meetingVisible.opened||meetingVisible.rows!==8)
     throw Error(label+' CB 8-bank detail keyboard disclosure failed '+JSON.stringify(meetingVisible));
   await meetingToggle.press('Enter');
-  await page.frameLocator('#gmfq-page').locator('#gmfq-cb-reading-first details>summary').press('Enter');
+  await page.frameLocator('#gmfq-page').locator('#gmfq-cb-reading-first>details:not(.gmfq-cb-meeting-details)>summary').press('Enter');
   const cbFull=await page.frameLocator('#gmfq-page').locator('#gmfq-cb-reading-first>details:not(.gmfq-cb-meeting-details) p').last().isVisible();
   if(!cbFull)throw Error(label+' CB provenance not keyboard accessible');
   await page.screenshot({path:'v10-qa-images/'+label+'-cb-reading-first.png',fullPage:true});
