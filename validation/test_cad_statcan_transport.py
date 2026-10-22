@@ -35,7 +35,7 @@ class Response:
         return self.content
 
 
-def archive(name="18100004.csv", data=b"REF_DATE,VALUE\\n2026-09,100\\n"):
+def archive(name="18100004.csv", data=b"REF_DATE,VALUE\n2026-09,100\n"):
     result = io.BytesIO()
     with zipfile.ZipFile(result, mode="w") as z:
         z.writestr(name, data)
@@ -71,7 +71,7 @@ class StatCanTransportTests(unittest.TestCase):
 
     def test_corrupt_zip_is_unavailable_but_mismatched_pid_is_hard_failure(self):
         with patch.object(module.urllib.request, "urlopen",
-                          return_value=Response(b"PK\\x03\\x04BROKEN")), \
+                          return_value=Response(b"PK\x03\x04BROKEN")), \
              patch.object(module.time, "sleep"):
             with self.assertRaises(module.StatCanTransportUnavailable):
                 module.download_csv("18100004")
