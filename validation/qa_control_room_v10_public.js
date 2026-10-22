@@ -1028,6 +1028,12 @@ async function getState(page){
          const detail=panel.querySelector('#gmfq-macro-observation-details');
          return {baseline:panel.dataset.baselineAsOf,
            preview:panel.querySelector('#gmfq-macro-reading')?.textContent,
+           dynamics:[...panel.querySelectorAll('.gmfq-macro-dynamic')].map(x=>({
+             metric:x.dataset.macroMetric,status:x.dataset.dynamicStatus,
+             direction:x.dataset.direction,acc:x.dataset.acceleration,
+             date:x.dataset.asOf,visible:!!x.getClientRects().length
+           })),
+           dynamicNote:panel.querySelector('.gmfq-macro-dynamics-note')?.textContent,
             priority:panel.querySelector('.gmfq-macro-takeaway')?.textContent,
             priorityFirst:!!(panel.querySelector('.gmfq-macro-takeaway')?.compareDocumentPosition(panel.querySelector('.gmfq-macro-state'))&Node.DOCUMENT_POSITION_FOLLOWING),
            closed:detail?.open===false,
@@ -1042,6 +1048,14 @@ async function getState(page){
            !macroFirst.closed||!macroFirst.hidden||macroFirst.count!==2||
           macroFirst.width>macroFirst.viewport+16)
          throw Error(name+' public Macro reading not deployed '+JSON.stringify(macroFirst));
+       if(navigationVersion==='macro-observed-dynamics-20261022'){
+          if(macroFirst.dynamics.length!==2||
+             !macroFirst.dynamicNote?.includes('non alla forza della valuta')||
+             macroFirst.dynamics.some(x=>x.status!=='OBSERVED'||!x.visible||
+               !['SALE','SCENDE','STABILE'].includes(x.direction)||
+               !['ACCELERA','RALLENTA','STABILE'].includes(x.acc)||!x.date))
+            throw Error(name+' public Macro sourced dynamics incorrect '+JSON.stringify(macroFirst));
+       }
        await page.frameLocator('#gmfq-page').locator('#gmfq-macro-observation-details>summary').press('Enter');
        if(!(await page.frameLocator('#gmfq-page').locator('.gmfq-macro-observation').first().isVisible()))
          throw Error(name+' public Macro source detail not accessible');

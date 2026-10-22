@@ -889,6 +889,12 @@ function expectedReactionFromMetrics(row){
       selected:p.dataset.selectedCurrency,
       priority:p.querySelector('.gmfq-macro-takeaway')?.textContent,
       priorityFirst:!!(p.querySelector('.gmfq-macro-takeaway')?.compareDocumentPosition(p.querySelector('.gmfq-macro-state'))&Node.DOCUMENT_POSITION_FOLLOWING),
+      dynamics:[...p.querySelectorAll('.gmfq-macro-dynamic')].map(x=>({
+        metric:x.dataset.macroMetric,status:x.dataset.dynamicStatus,
+        direction:x.dataset.direction,acceleration:x.dataset.acceleration,
+        date:x.dataset.asOf,visible:!!x.getClientRects().length
+      })),
+      dynamicNote:p.querySelector('.gmfq-macro-dynamics-note')?.textContent,
       observations:p.querySelectorAll('.gmfq-macro-observation').length,
       description:p.textContent,
       preview:p.querySelector('#gmfq-macro-reading')?.textContent,
@@ -909,6 +915,17 @@ function expectedReactionFromMetrics(row){
      macroLens.innerScroll>macroLens.innerClient+2||
      macroLens.docWidth>Math.max(macroLens.viewport+16,macroLens.nativeWidth+2))
    throw Error(label+' Macro data-provenance guard failed '+JSON.stringify(macroLens));
+  const expectedDynamics=['inflation','labour'].map((key,i)=>({
+    metric:i===0?'Inflazione':'Lavoro',source:macroThermo.currencies.EUR[key]
+  }));
+  if(macroLens.dynamics.length!==2||
+     !macroLens.dynamicNote?.includes('non alla forza della valuta')||
+     !macroLens.dynamicNote?.includes('Nessun aggiornamento dei 24 score')||
+     macroLens.dynamics.some((x,i)=>x.metric!==expectedDynamics[i].metric||
+       x.status!=='OBSERVED'||x.direction!==expectedDynamics[i].source.direction||
+       x.acceleration!==expectedDynamics[i].source.acceleration||
+       x.date!==expectedDynamics[i].source.as_of||!x.visible))
+    throw Error(label+' Macro validated dynamics missing '+JSON.stringify(macroLens.dynamics));
   await page.frameLocator('#gmfq-page').locator('#gmfq-macro-provenance-currency').selectOption('JPY');
   const switched=await page.evaluate(()=>{
     const p=document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-macro-source-lens');
@@ -949,6 +966,13 @@ function expectedReactionFromMetrics(row){
     const p=document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-macro-source-lens');
     return {html:p?.querySelector('#gmfq-macro-source-details')?.textContent,ccy:p?.dataset.selectedCurrency};
   });
+  const invalidDynamics=await page.evaluate(()=>{
+    const p=document.getElementById('gmfq-page').contentDocument.getElementById('gmfq-macro-source-lens');
+    return [...p.querySelectorAll('.gmfq-macro-dynamic')].map(x=>({metric:x.dataset.macroMetric,status:x.dataset.dynamicStatus}));
+  });
+  if(invalidDynamics[0]?.metric!=='Inflazione'||invalidDynamics[0]?.status!=='WITHHELD'||
+     invalidDynamics[1]?.metric!=='Lavoro'||invalidDynamics[1]?.status!=='OBSERVED')
+    throw Error(label+' invalid Macro period incorrectly promoted to dynamics');
   if(invalidMacro.ccy!=='USD'||!invalidMacro.html.includes('Inflazione · dato WITHHELD')||
      !invalidMacro.html.includes(macroThermo.currencies.USD.labour.as_of))
     throw Error(label+' invalid Macro thermometer did not fail closed '+JSON.stringify(invalidMacro));
