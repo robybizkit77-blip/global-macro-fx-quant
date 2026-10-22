@@ -344,6 +344,31 @@ function expectedReactionFromMetrics(row){
   if(tenor!=='10Y')throw Error('10Y yield tenor failed: '+tenor);
   await page.frameLocator('#gmfq-page').locator('#valute .cc[data-filter="DXY"]').click();
   if(!await page.frameLocator('#gmfq-page').locator('dialog#gmfq-dxy-dialog[open]').count())throw Error('In-app DXY dialog did not open');
+  const expectedDxy=(()=>{
+    const h=dxyFeed.history,t=h.slice(-20),last=t.at(-1),prior=t.at(-2),base=t.at(-6);
+    return {day:100*(last.value/prior.value-1),five:100*(last.value/base.value-1),
+      low:Math.min(...t.map(x=>x.value)),high:Math.max(...t.map(x=>x.value)),
+      sample:t.length};
+  })();
+  const dxyEvidence=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page').contentDocument,
+      modal=d.getElementById('gmfq-dxy-dialog'),metric=modal?.querySelector('.gmfq-dxy-metrics');
+    return {open:modal?.open,metrics:metric?.textContent,metricCount:metric?.querySelectorAll('strong').length,
+      notIce:metric?.dataset.iceOfficial,notes:modal?.textContent,chart:!!modal?.querySelector('svg polyline'),
+      plotWidth:modal?.querySelector('svg')?.getBoundingClientRect().width,
+      modalWidth:modal?.getBoundingClientRect().width,
+      viewport:d.documentElement.clientWidth};
+  });
+  const pct=v=>(v>0?'+':'')+v.toFixed(2)+'%';
+  if(!dxyEvidence.open||dxyEvidence.metricCount!==3||
+    dxyEvidence.notIce!=='false'||!dxyEvidence.chart||
+    !dxyEvidence.metrics?.includes(pct(expectedDxy.day))||
+    !dxyEvidence.metrics?.includes(pct(expectedDxy.five))||
+    !dxyEvidence.metrics?.includes(expectedDxy.low.toFixed(2))||
+    !dxyEvidence.metrics?.includes(expectedDxy.high.toFixed(2))||
+    !dxyEvidence.notes?.includes('non sull’indice ICE')||
+    dxyEvidence.modalWidth>dxyEvidence.viewport+2)
+    throw Error('DXY verified source context, visual and non-ICE provenance failed '+JSON.stringify(dxyEvidence));
   await page.frameLocator('#gmfq-page').locator('.gmfq-dxy-dialog .gmfq-close').click();
   await page.frameLocator('#gmfq-page').locator('.mid > .panel:nth-child(2)').click();
   if(!page.url().includes('#/tassi?focus=2y'))throw Error('Native card navigation failed: '+page.url());
