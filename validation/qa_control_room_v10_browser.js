@@ -240,6 +240,10 @@ function expectedReactionFromMetrics(row){
     const d=document.getElementById('gmfq-page')?.contentDocument;
     return ['RECENT_VALIDATED','WITHHELD'].includes(d?.getElementById('gmfq-market-pulse')?.dataset.pulseStatus);
   },null,{timeout:26000});
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return ['FUTURE_VERIFIED_AGENDA','WITHHELD'].includes(d?.getElementById('gmfq-event-radar')?.dataset.calendarStatus);
+  },null,{timeout:25000});
   const r=await page.evaluate(()=>{
     const d=document.getElementById('gmfq-page').contentDocument;
     const box=sel=>{const x=d.querySelector(sel);return {clientHeight:x?.clientHeight,scrollHeight:x?.scrollHeight,clientWidth:x?.clientWidth,scrollWidth:x?.scrollWidth}};
@@ -263,6 +267,18 @@ function expectedReactionFromMetrics(row){
       pricing:ois.map(x=>({ccy:x.ccy,status:d.querySelector('#ois .oisrow[data-ccy="'+x.ccy+'"]')?.dataset.pricingState,
         allowed:d.querySelector('#ois .oisrow[data-ccy="'+x.ccy+'"]')?.dataset.policyDeltaAllowed,
         content:x.desc})),
+      eventRadar:(()=>{
+        const h=d.getElementById('gmfq-event-radar');
+        return {state:h?.dataset.calendarStatus,asof:h?.dataset.asOf,signal:h?.dataset.signalEffect,
+          title:h?.querySelector('h2')?.textContent,text:h?.textContent,
+          count:h?.querySelectorAll('li[data-event-date]').length,
+          dates:[...h?.querySelectorAll('li[data-event-date]')||[]].map(e=>e.dataset.eventDate),
+          rows:[...h?.querySelectorAll('li[data-event-date]')||[]].map(e=>({
+            code:e.dataset.eventCcy,quality:e.dataset.eventQuality,visible:!!e.getClientRects().length
+          })),
+          detailsOpen:h?.querySelector('details')?.open,
+          width:h?.scrollWidth,client:h?.clientWidth};
+      })(),
       pulse:{state:d.getElementById('gmfq-market-pulse')?.dataset.pulseStatus,
         asof:d.getElementById('gmfq-market-pulse')?.dataset.asOf,
         articles:d.querySelectorAll('#gmfq-market-pulse .gmfq-pulse-item').length,
@@ -314,6 +330,20 @@ function expectedReactionFromMetrics(row){
        !/^[-+]?[0-9]+\.[0-9] bp$/.test(x.week||'')||
        !x.detailsClosed||x.researchOnly!=='true')))
     fatal.push('Market Pulse instrument hierarchy/market vs news contract failed '+JSON.stringify(r.pulse));
+  const today=romeTodayIso();
+  if(!['FUTURE_VERIFIED_AGENDA','WITHHELD'].includes(r.eventRadar.state)||
+     r.eventRadar.signal!=='NONE'||
+     r.eventRadar.title!=='Event Risk · prossime pubblicazioni'||
+     !r.eventRadar.text?.includes('non notizie né risultati già pubblicati')||
+     r.eventRadar.width>r.eventRadar.client+2||
+     (r.eventRadar.state==='FUTURE_VERIFIED_AGENDA'&&
+       (r.eventRadar.count<1||r.eventRadar.count>6||
+        r.eventRadar.dates.some(d=>d<=today)||
+        r.eventRadar.rows.some(x=>!g8.includes(x.code)||!x.quality?.startsWith('OFFICIAL_'))||
+        r.eventRadar.rows.filter(x=>x.visible).length!==Math.min(2,r.eventRadar.count)||
+        (r.eventRadar.count>2&&r.eventRadar.detailsOpen!==false)))||
+     (r.eventRadar.state==='WITHHELD'&&r.eventRadar.count!==0))
+    fatal.push('Event Risk future-only/preview contract failed '+JSON.stringify(r.eventRadar));
   if((r.dxy||'').trim()!==dxyDisplayed)fatal.push('DXY synthetic not synchronized with its source: '+r.dxy+' != '+dxyDisplayed);
   if(!r.noApprofondisci)fatal.push('old overlay link still shown');
   if(r.rateSeries.length!==8)fatal.push('missing G8 yield lines');
@@ -348,6 +378,18 @@ function expectedReactionFromMetrics(row){
   if(r.pageWidth>r.viewWidth+16)fatal.push('Horizontal overflow');
   if(errors.length)fatal.push('JS '+errors.join(' | '));
   if(fatal.length)throw Error(label+': '+fatal.join('; '));
+  if(r.eventRadar.state==='FUTURE_VERIFIED_AGENDA'&&r.eventRadar.count>2){
+    const toggle=page.frameLocator('#gmfq-page').locator('#gmfq-event-radar .gmfq-event-radar-more > summary');
+    await toggle.click();
+    const expandedRadar=await page.evaluate(()=>{
+      const h=document.getElementById('gmfq-page').contentDocument.getElementById('gmfq-event-radar');
+      return {open:h.querySelector('details')?.open,
+        visible:[...h.querySelectorAll('li[data-event-date]')].filter(x=>x.getClientRects().length).length};
+    });
+    if(!expandedRadar.open||expandedRadar.visible!==r.eventRadar.count)
+      throw Error('Event Risk full rows inaccessible '+JSON.stringify(expandedRadar));
+    await toggle.click();
+  }
   fs.mkdirSync('v10-qa-images',{recursive:true});
   await page.screenshot({path:'v10-qa-images/'+label+'-home.png',fullPage:true});
   // Chart interaction is research-only; every G8 series remains selectable.
