@@ -620,6 +620,35 @@ function expectedReactionFromMetrics(row){
      !cbFirst.evidence?.includes('Pricing 6M certificato')||!cbFirst.order||
      cbFirst.width>cbFirst.client+2||cbFirst.doc>cbFirst.viewport+16)
     throw Error(label+' CB first reading or native chart not intact '+JSON.stringify(cbFirst));
+  const today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  const expectedCb=Object.entries(cbFixture).map(([ccy,x])=>({ccy,date:x.next_meeting,last:x.last_date}))
+    .sort((a,b)=>a.date.localeCompare(b.date));
+  const futureCb=expectedCb.filter(x=>x.date>today),days=[...new Set(futureCb.map(x=>x.date))].slice(0,3);
+  const goodMeeting=cbFirst.meeting?.source==='NATIVE_CB_DATA'&&
+    cbFirst.meeting.status==='HISTORICAL_SNAPSHOT'&&cbFirst.meeting.asof===cbFirst.last&&
+    cbFirst.meeting.note?.includes('non sono annunci né meeting confermati in tempo reale')&&
+    cbFirst.meetingDateGroups===String(days.length)&&
+    cbFirst.meetingUpcomingCount===String(futureCb.length)&&
+    cbFirst.meeting.closed&&cbFirst.meeting.total===8&&cbFirst.meeting.rows.length===8&&
+    cbFirst.meeting.rows.every((x,i)=>{
+      const expected=expectedCb[i],status=operational.currencies[x.ccy].operational_status;
+      return x.ccy===expected.ccy&&x.date===expected.date&&x.last===expected.last&&
+        x.tier===(status==='GREEN_OFFICIAL'?'CERTIFIED':status==='GREEN_ESTIMATED'?'ESTIMATED':'WITHHELD');
+    })&&cbFirst.meeting.groups.length===days.length&&
+    cbFirst.meeting.groups.every((x,i)=>x.date===days[i]&&
+      JSON.stringify(x.ccys)===JSON.stringify(futureCb.filter(y=>y.date===x.date).map(y=>y.ccy)));
+  if(!goodMeeting)throw Error(label+' CB G8 source calendar/provenance broken '+JSON.stringify(cbFirst.meeting));
+  const meetingToggle=page.frameLocator('#gmfq-page').locator('#gmfq-cb-reading-first .gmfq-cb-meeting-details>summary');
+  await meetingToggle.press('Enter');
+  const meetingVisible=await page.evaluate(()=>{
+    const panel=document.getElementById('gmfq-page').contentDocument.getElementById('gmfq-cb-reading-first'),
+      det=panel.querySelector('.gmfq-cb-meeting-details');
+    return {opened:det?.open,rows:[...det?.querySelectorAll('.gmfq-cb-meeting-all li')||[]]
+      .filter(x=>x.getClientRects().length).length};
+  });
+  if(!meetingVisible.opened||meetingVisible.rows!==8)
+    throw Error(label+' CB 8-bank detail keyboard disclosure failed '+JSON.stringify(meetingVisible));
+  await meetingToggle.press('Enter');
   await page.frameLocator('#gmfq-page').locator('#gmfq-cb-reading-first details>summary').press('Enter');
   const cbFull=await page.frameLocator('#gmfq-page').locator('#gmfq-cb-reading-first>details:not(.gmfq-cb-meeting-details) p').last().isVisible();
   if(!cbFull)throw Error(label+' CB provenance not keyboard accessible');
