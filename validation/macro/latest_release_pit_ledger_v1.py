@@ -24,10 +24,10 @@ SCHEMA = "GMFQ_MACRO_PIT_RELEASE_LEDGER_V1"
 ANCHOR_GLOB = "*_historical_anchor_*.json"
 EVIDENCE_GLOB = "*_strict_pit_evidence_*.json"
 RECEIPT_GLOB = "*_strict_pit_receipt_*.json"
-WEB_EVIDENCE_FILE = "CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json"
+WEB_EVIDENCE_FILE = "CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-22.json"
 WEB_SCHEMA = "GMFQ_G8_CORE_OFFICIAL_WEB_RELEASE_ATTESTATIONS_V1"
 OFFICIAL_HOSTS = {"USD": "bls.gov", "CAD": "statcan.gc.ca", "AUD": "abs.gov.au",
-                  "JPY": "stat.go.jp", "GBP": "ons.gov.uk"}
+                  "JPY": "stat.go.jp", "GBP": "ons.gov.uk", "NZD": "stats.govt.nz"}
 
 
 def require(flag, why):
@@ -109,7 +109,7 @@ def source_web_attestations(core_dir):
                 transformed = row["published_value"]
                 transform = row.get("transform")
                 require(transform in ("yoy_pct_from_index", "derived_yoy_from_index",
-                                      "level"), key+": missing conversion identity")
+                                      "level", "reported_yoy_rate"), key+": missing conversion identity")
                 if transform in ("yoy_pct_from_index", "derived_yoy_from_index"):
                     n, d = row.get("numerator_index"), row.get("denominator_index")
                     require(finite(n) and finite(d) and d != 0 and
@@ -119,7 +119,7 @@ def source_web_attestations(core_dir):
                 else:
                     require(math.isclose(row["raw_series_value"], transformed,
                                          rel_tol=0.0, abs_tol=1e-12),
-                            key+": level transform mismatch")
+                            key+": reported direct percentage/level identity mismatch")
                 stamp = row.get("release_timestamp_local")
                 if stamp is not None:
                     require(isinstance(stamp, str), key+": invalid local timestamp")
