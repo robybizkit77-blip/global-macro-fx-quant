@@ -793,6 +793,126 @@ async function mountHomeMarketPulse(doc){
   box.innerHTML='<p class="gmfq-pulse-caption">Pricing non verificabile al momento; le notizie esterne restano accessibili separatamente.</p>';
  }
 }
+
+/* Home Event Risk uses existing official Calendar seed only. It does NOT
+   claim a release already happened, infer surprises or schedule anything.
+   Same-day rows are excluded because many source times are absent; their
+   availability cannot be verified without a timestamped release feed. */
+function eventRadarRows(data,now=new Date()){
+ const day=romeTodayIso(now),today=Date.parse(day+'T00:00:00Z');
+ if(data?.schema!=='GMFQ_CALENDAR_OPERATIONAL_VIEW_V3'||
+    data.status!=='ACTIVE_CB_PLUS_MACRO_OFFICIAL_WITH_SECONDARY_CONTEXT'||
+    data.scope?.central_bank_schedule!=='ACTIVE_OFFICIAL'||
+    data.scope?.macro_release_schedule!=='ACTIVE_OFFICIAL_VERIFIED_SEED'||
+    data.scope?.consensus_context_only!==true||
+    data.scope?.core_score_impact!==0||
+    !Array.isArray(data.events)||
+    !Number.isFinite(Date.parse(data.generated_at_utc))||
+    Date.parse(data.generated_at_utc)>now.getTime()+3600000||
+    !fresh(data.generated_at_utc.slice(0,10),3))return [];
+ const allowed=new Set(['OFFICIAL_CONFIRMED','OFFICIAL_CALENDAR',
+   'OFFICIAL_SCHEDULE_RULE','OFFICIAL_PROVISIONAL','OFFICIAL_SCHEDULE_FROM_CERTIFIED_CB_LAYER']);
+ const result=[],seen=new Set;
+ for(const e of data.events){
+   if(!e||!FX.includes(e.ccy)||typeof e.title!=='string'||e.title.length<3||e.title.length>160||
+      typeof e.date!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(e.date)||
+      !allowed.has(e.quality)||
+      !['CENTRAL_BANK_DECISION','INFLATION','LABOUR','LABOUR_COST','GROWTH'].includes(e.event_type))continue;
+   const at=Date.parse(e.date+'T00:00:00Z');
+   // Strictly future Rome calendar dates: never show today's potentially
+   // already-published data as if it were still upcoming.
+   if(!Number.isFinite(at)||new Date(at).toISOString().slice(0,10)!==e.date||
+      at<=today||at-today>21*86400000)continue;
+   const isCB=e.event_type==='CENTRAL_BANK_DECISION';
+   const source=isCB?e.source_layer:e.source_family;
+   if(isCB ? e.source_layer!=='NATIVE_CB_DATA'||
+        e.quality!=='OFFICIAL_SCHEDULE_FROM_CERTIFIED_CB_LAYER'
+     :e.source_layer!=='MACRO_RELEASE_OFFICIAL_SEED_V1'||
+       typeof source!=='string'||source.length>100)continue;
+   const key=e.ccy+'|'+e.date+'|'+e.event_type+'|'+e.title;
+   if(seen.has(key))continue;
+   seen.add(key);
+   const validTime=typeof e.time_local==='string'&&/^([01]\d|2[0-3]):[0-5]\d$/.test(e.time_local)&&
+     typeof e.timezone==='string'&&e.timezone.length<=70;
+   const consensus=e.consensus_status==='AVAILABLE'&&
+     typeof e.consensus==='string'&&e.consensus.length<=40&&
+     e.consensus_provider==='FOREX_FACTORY_FAIR_ECONOMY_WEEKLY';
+   result.push({ccy:e.ccy,date:e.date,eventType:e.event_type,title:e.title,
+     quality:e.quality,importance:e.importance==='HIGH'?'HIGH':'STANDARD',
+     timeLocal:validTime?e.time_local:null,timezone:validTime?e.timezone:null,
+     source:isCB?(e.bank||e.source_layer):source,
+     consensus:consensus?e.consensus:null,consensusProvider:consensus?e.consensus_provider:null,
+     isCB});
+ }
+ result.sort((a,b)=>a.date.localeCompare(b.date)||
+   (a.importance==='HIGH'?0:1)-(b.importance==='HIGH'?0:1)||
+   FX.indexOf(a.ccy)-FX.indexOf(b.ccy)||a.title.localeCompare(b.title));
+ return result.slice(0,6);
+}
+async function mountHomeEventRadar(doc){
+ if(!home()||frame.contentDocument!==doc||doc.documentElement.dataset.marketMode!=='live'||
+    doc.getElementById('gmfq-event-radar'))return;
+ const grid=doc.querySelector('.gridtop');if(!grid)return;
+ const host=doc.createElement('section');host.id='gmfq-event-radar';
+ host.dataset.calendarStatus='LOADING';host.dataset.signalEffect='NONE';
+ host.setAttribute('aria-label','Event Risk: prossime pubblicazioni ufficiali e decisioni G8');
+ host.innerHTML='<div class="gmfq-event-radar-head"><h2>Event Risk · prossime pubblicazioni</h2>'+
+  '<span class="gmfq-event-radar-asof">Calendario in verifica</span></div>'+
+  '<p class="gmfq-event-radar-intro">Agenda ufficiale, non notizie né risultati già pubblicati. Consenso separato dalle fonti.</p>'+
+  '<div class="gmfq-event-radar-content"></div>';
+ const pulse=doc.getElementById('gmfq-market-pulse');
+ (pulse||grid).insertAdjacentElement('afterend',host);
+ if(!doc.getElementById('gmfq-event-radar-style')){
+  const st=doc.createElement('style');st.id='gmfq-event-radar-style';
+  st.textContent='#gmfq-event-radar{margin:-2px 0 14px;padding:12px 15px;border:1px solid #284758;border-radius:6px;background:#091d2b;color:#d9e7f0;min-width:0;font-family:Arial,sans-serif}'+
+   '#gmfq-event-radar .gmfq-event-radar-head{display:flex;justify-content:space-between;align-items:baseline;gap:6px 16px;flex-wrap:wrap}'+
+   '#gmfq-event-radar h2{font:600 13px/1.4 Arial,sans-serif;margin:0;color:#e5edf3}'+
+   '#gmfq-event-radar .gmfq-event-radar-asof{font:10px/1.4 Arial,sans-serif;color:#dfc689}'+
+   '#gmfq-event-radar .gmfq-event-radar-intro{margin:4px 0 8px;font:10px/1.5 Arial,sans-serif;color:#a5bbca}'+
+   '#gmfq-event-radar .gmfq-event-radar-list{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 20px}'+
+   '#gmfq-event-radar .gmfq-event-radar-list li{min-width:0;padding:8px 0;border-top:1px solid #284454}'+
+   '#gmfq-event-radar .gmfq-event-line{display:flex;gap:6px 12px;justify-content:space-between;align-items:baseline}'+
+   '#gmfq-event-radar .gmfq-event-line strong{font:600 11px/1.45 Arial,sans-serif;color:#e1eaf1;overflow-wrap:anywhere}'+
+   '#gmfq-event-radar .gmfq-event-line time{flex-shrink:0;white-space:nowrap;color:#d6bd87;font:600 10px Arial,sans-serif}'+
+   '#gmfq-event-radar .gmfq-event-meta{font:10px/1.5 Arial,sans-serif;color:#9fb8c9;overflow-wrap:anywhere}'+
+   '#gmfq-event-radar .gmfq-event-secondary{display:block;color:#c2b39b;font:10px/1.5 Arial,sans-serif}'+
+   '#gmfq-event-radar details{margin-top:8px}#gmfq-event-radar summary{cursor:pointer;color:#e2c785;font:600 10px/1.6 Arial,sans-serif;outline-offset:3px}'+
+   '#gmfq-event-radar summary:focus-visible{outline:2px solid #e2c785}'+
+   '#gmfq-event-radar .gmfq-event-method{font:10px/1.5 Arial,sans-serif;color:#9fb8c9;margin:6px 0 2px}'+
+   '@media(max-width:600px){#gmfq-event-radar{padding:11px 12px}#gmfq-event-radar .gmfq-event-radar-list{grid-template-columns:1fr}}';
+  doc.head.appendChild(st);
+ }
+ const content=host.querySelector('.gmfq-event-radar-content'),stamp=host.querySelector('.gmfq-event-radar-asof');
+ try{
+  const calendar=await feed('CALENDAR_OPERATIONAL_VIEW.json');
+  if(!host.isConnected||frame.contentDocument!==doc)return;
+  const rows=eventRadarRows(calendar);
+  host.dataset.calendarStatus=rows.length?'FUTURE_VERIFIED_AGENDA':'WITHHELD';
+  host.dataset.asOf=rows.length?calendar.generated_at_utc.slice(0,10):'';
+  stamp.textContent=rows.length?'Calendario generato '+calendar.generated_at_utc.slice(0,10):'Agenda non disponibile';
+  if(!rows.length){
+   content.innerHTML='<p class="gmfq-event-radar-intro">Nessun evento futuro con copertura e data sufficientemente verificate.</p>';return;
+  }
+  const item=e=>'<li data-event-ccy="'+e.ccy+'" data-event-date="'+e.date+'" data-event-quality="'+e.quality+'">'+
+   '<div class="gmfq-event-line"><strong>'+FLAG[e.ccy]+' '+e.ccy+' · '+htmlEscape(e.title)+'</strong>'+
+   '<time datetime="'+e.date+'">'+e.date.slice(8,10)+'/'+e.date.slice(5,7)+'</time></div>'+
+   '<div class="gmfq-event-meta">'+(e.isCB?'Decisione banca centrale':'Dato macro')+
+   ' · '+(e.timeLocal?htmlEscape(e.timeLocal+' · '+e.timezone)+' (ora locale)':'Orario non certificato')+
+   ' · '+htmlEscape(e.source)+'</div>'+
+   (e.quality==='OFFICIAL_PROVISIONAL'?'<small class="gmfq-event-secondary">Data ufficiale provvisoria</small>':'')+
+   (e.consensus?'<small class="gmfq-event-secondary">Consenso SECONDARIO: '+htmlEscape(e.consensus)+' · Forecast Forex Factory, non dato effettivo</small>':'')+
+   '</li>';
+  content.innerHTML='<ul class="gmfq-event-radar-list">'+rows.slice(0,2).map(item).join('')+'</ul>'+
+   (rows.length>2?'<details class="gmfq-event-radar-more"><summary>Altri '+(rows.length-2)+' eventi G8 nel calendario</summary>'+
+    '<ul class="gmfq-event-radar-list">'+rows.slice(2).map(item).join('')+'</ul></details>':'')+
+   '<p class="gmfq-event-method">Date future secondo il calendario ufficiale caricato; gli eventi della giornata non sono mostrati come “ancora da pubblicare” senza conferma dell’orario. Nessuna sorpresa, bias o segnale dedotto.</p>';
+ }catch(_){
+  if(!host.isConnected)return;
+  host.dataset.calendarStatus='WITHHELD';
+  stamp.textContent='Agenda non disponibile';
+  content.innerHTML='<p class="gmfq-event-radar-intro">Calendario non verificabile: nessuna data presentata come imminente.</p>';
+ }
+}
 function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy,proxy,model,setup){
  if(!home()||frame.contentDocument!==doc||doc.documentElement.dataset.marketMode!=='live')return;
  const head=doc.querySelector('.mast .fresh'),state=doc.getElementById('liveState'),
@@ -931,6 +1051,7 @@ async function applyHome(doc){
    mountHomeCurrencyFlags(doc);
    renderDxy(doc);
    mountHomeMarketPulse(doc).catch(e=>console.warn('[GMFQ Market Pulse]',String(e)));
+   mountHomeEventRadar(doc).catch(e=>console.warn('[GMFQ Event Risk]',String(e)));
    mountHomeFreshnessAudit(doc,ff.status==='fulfilled'?ff.value:null,rates,ois,d,proxy,
      mm.status==='fulfilled'?mm.value:null,ss.status==='fulfilled'?ss.value:null);
    doc.querySelectorAll('#valute .cc').forEach(el=>{

@@ -228,6 +228,13 @@ async function getState(page){
                 note:x.querySelector('.gmfq-pulse-instrument')?.textContent
              })),
              pulseNewsHref:d.querySelector('#gmfq-market-pulse a[href="https://www.reuters.com/markets/"]')?.href,
+             eventRadar:(()=>{
+               const h=d.getElementById('gmfq-event-radar');
+               return {present:!!h,status:h?.dataset.calendarStatus,
+                 sourceEffect:h?.dataset.signalEffect,text:h?.textContent,
+                 rows:[...h?.querySelectorAll('li[data-event-date]')||[]].map(x=>({ccy:x.dataset.eventCcy,date:x.dataset.eventDate})),
+                 width:h?.scrollWidth,client:h?.clientWidth};
+             })(),
              dxyChartFuture:!!d.querySelector('.gmfq-dxy-dialog')
            },
            priorityTarget:rail?.dataset.priorityTarget,
@@ -255,6 +262,15 @@ async function getState(page){
            reading.newHome.pricing.filter(x=>x.status==='OFFICIAL_REPRICING').length!==4||
            reading.newHome.pricing.some(x=>(x.allowed==='true')!==(x.status==='OFFICIAL_REPRICING'))||
            !reading.newHome.pulsePresent||!reading.newHome.pulseNewsHref||
+           (process.env.GITHUB_EVENT_NAME!=='pull_request'&&navigationVersion==='event-risk-radar-20261022'&&
+             (!reading.newHome.eventRadar.present||
+              !['FUTURE_VERIFIED_AGENDA','WITHHELD'].includes(reading.newHome.eventRadar.status)||
+              reading.newHome.eventRadar.sourceEffect!=='NONE'||
+              !reading.newHome.eventRadar.text?.includes('non notizie né risultati già pubblicati')||
+              reading.newHome.eventRadar.width>reading.newHome.eventRadar.client+2||
+              reading.newHome.eventRadar.rows.some(x=>!['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'].includes(x.ccy)||
+                x.date<=romeTodayIso())||
+              (reading.newHome.eventRadar.status==='WITHHELD'&&reading.newHome.eventRadar.rows.length>0)))||
            (process.env.GITHUB_EVENT_NAME!=='pull_request'&&navigationVersion==='market-pulse-pricing-20261022'&&
             (reading.newHome.pulseTitle!=='Market Pulse · tassi impliciti'||
              !reading.newHome.pulseExternal?.includes('Notizie esterne')||
