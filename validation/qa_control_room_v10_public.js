@@ -1156,6 +1156,13 @@ async function getState(page){
            return {status:p.dataset.readingStatus,asof:p.dataset.cftcAsOf,
              certified:p.dataset.certified,estimated:p.dataset.estimated,withheld:p.dataset.withheld,
              conflicts:p.dataset.conflicts,extremes:p.dataset.extremes,crowding:p.dataset.crowding,
+             focusRows:[...p.querySelectorAll('.gmfq-cot-focus-list li')].map(x=>({
+               ccy:x.dataset.cotFocusCcy,ratio:Number(x.dataset.netoi),
+               percentile:Number(x.dataset.percentileRounded),
+               hasLabel:x.textContent.includes(x.dataset.percentileRounded+'°/104W'),
+               visible:!!x.getClientRects().length})),
+             focusNote:p.querySelector('.gmfq-cot-focus-note')?.textContent,
+             focusAsOf:p.querySelector('.gmfq-cot-focus')?.dataset.cftcAsOf,
              heading:p.querySelector('.gmfq-first-claim')?.textContent,
              priority:p.querySelector('.gmfq-first-priority')?.textContent,
              priorityFirst:!!(p.querySelector('.gmfq-first-priority')?.compareDocumentPosition(p.querySelector('.gmfq-first-claim'))&Node.DOCUMENT_POSITION_FOLLOWING),
@@ -1178,6 +1185,15 @@ async function getState(page){
                throw Error('public CB pricing summary not source-reconciled');
              return summary;
            }):null;
+         if(pageName==='cot'&&navigationVersion==='cot-crowding-focus-20261022'){
+           const n=Math.min(3,Number(reading.crowding));
+           if(reading.focusRows.length!==n||reading.focusAsOf!==reading.asof||
+             !reading.focusNote?.includes('non direzione del prezzo')||
+             reading.focusRows.some((x,i)=>!['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'].includes(x.ccy)||
+               !x.visible||!x.hasLabel||Math.abs(x.ratio)<30||x.percentile<0||x.percentile>100||
+               (i>0&&Math.abs(x.ratio)>Math.abs(reading.focusRows[i-1].ratio))))
+              throw Error(name+' public CFTC focused crowding incorrect '+JSON.stringify(reading));
+         }
          if(!reading.originalChart||!reading.originalTable||!reading.closed||
             !reading.priorityFirst||
             (pageName==='banche'?
