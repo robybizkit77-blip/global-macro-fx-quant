@@ -3,7 +3,8 @@
 import copy
 import json
 import unittest
-from datetime import date
+from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from validation.macro.qualitative_label_review_queue_v1 import (
     CHECKPOINT, ROOT, PATHS, build, history_delta,
@@ -41,7 +42,7 @@ class QualitativeReviewTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.data = original()
-        cls.today = date(2026, 10, 20)
+        cls.today = datetime.now(ZoneInfo('Europe/Rome')).date()
 
     def run_review(self, changed=None):
         values = list(copy.deepcopy(self.data))
@@ -131,10 +132,10 @@ class QualitativeReviewTests(unittest.TestCase):
     def test_future_core_observation_rejected(self):
         def modify(x):
             row = next(t for t in x[2]["USD"] if t.get("id") == "US_UNRATE_history_value")
-            row["dates"].append("2026-11-01")
+            row["dates"].append((self.today + timedelta(days=90)).isoformat())
             row["values"].append(row["values"][-1])
             h = x[3]["currencies"]["USD"]["labour"]
-            h["as_of"] = "2026-11-01"
+            h["as_of"] = (self.today + timedelta(days=90)).isoformat()
         with self.assertRaisesRegex(ValueError, "future observation"):
             self.run_review(modify)
 
