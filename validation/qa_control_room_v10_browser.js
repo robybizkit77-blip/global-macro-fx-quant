@@ -470,7 +470,7 @@ function expectedReactionFromMetrics(row){
   // Both technical research and official Swiss context remain accessible
   // behind the native summary without changing the four certified curves.
   await page.frameLocator('#gmfq-page').locator('#gmfq-pricing-evidence-details > summary').click();
-  const expanded=await page.evaluate(()=>{
+  const expandedSourceDetail=await page.evaluate(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument;
     const p=d?.getElementById('gmfq-pricing-research');
     return {open:p?.querySelector('#gmfq-pricing-evidence-details')?.open,
@@ -478,9 +478,9 @@ function expectedReactionFromMetrics(row){
       swissVisible:!!p?.querySelector('#gmfq-chf-snb-10y-context')?.getClientRects().length,
       sourceDetailPresent:!!p?.querySelector('#gmfq-source-readiness')};
   });
-  if(!expanded.open||!expanded.secondaryVisible||!expanded.swissVisible||
-     !expanded.sourceDetailPresent)
-    throw Error(label+' Rates full source research unavailable '+JSON.stringify(expanded));
+  if(!expandedSourceDetail.open||!expandedSourceDetail.secondaryVisible||!expandedSourceDetail.swissVisible||
+     !expandedSourceDetail.sourceDetailPresent)
+    throw Error(label+' Rates full source research unavailable '+JSON.stringify(expandedSourceDetail));
   console.log('CONTROL_ROOM_V10_RATES_DECISION_FIRST_GREEN',label,{status:research.sourceStatus,sourceCount:research.fourCurves,withheld:research.withheld});
   if(!plottedOfficial.length)throw Error(label+' no valid official curve to filter');
   await page.frameLocator('#gmfq-page').locator(
