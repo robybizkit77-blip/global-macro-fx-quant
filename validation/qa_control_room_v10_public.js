@@ -220,6 +220,13 @@ async function getState(page){
              pulsePresent:!!d.getElementById('gmfq-market-pulse'),
              pulseState:d.getElementById('gmfq-market-pulse')?.dataset.pulseStatus,
              pulseText:d.getElementById('gmfq-market-pulse')?.innerText,
+             pulseTitle:d.querySelector('#gmfq-market-pulse h2')?.textContent,
+             pulseExternal:d.querySelector('#gmfq-market-pulse .gmfq-pulse-links > span')?.textContent,
+             pulseItems:[...d.querySelectorAll('#gmfq-market-pulse .gmfq-pulse-item')].map(x=>({
+                code:x.dataset.pulseCcy,instrument:x.dataset.instrumentType,
+                detailClosed:x.querySelector('details')?.open===false,
+                note:x.querySelector('.gmfq-pulse-instrument')?.textContent
+             })),
              pulseNewsHref:d.querySelector('#gmfq-market-pulse a[href="https://www.reuters.com/markets/"]')?.href,
              dxyChartFuture:!!d.querySelector('.gmfq-dxy-dialog')
            },
@@ -248,6 +255,13 @@ async function getState(page){
            reading.newHome.pricing.filter(x=>x.status==='OFFICIAL_REPRICING').length!==4||
            reading.newHome.pricing.some(x=>(x.allowed==='true')!==(x.status==='OFFICIAL_REPRICING'))||
            !reading.newHome.pulsePresent||!reading.newHome.pulseNewsHref||
+           (process.env.GITHUB_EVENT_NAME!=='pull_request'&&navigationVersion==='market-pulse-pricing-20261022'&&
+            (reading.newHome.pulseTitle!=='Market Pulse · tassi impliciti'||
+             !reading.newHome.pulseExternal?.includes('Notizie esterne')||
+             reading.newHome.pulseItems.some(x=>!['GBP','CAD','JPY','AUD'].includes(x.code)||
+               x.instrument!==(x.code==='GBP'?'OIS':'FUTURES')||
+               x.detailClosed!==true||
+               !x.note?.includes(x.code==='GBP'?'OIS BoE':'Futures'))))||
            !reading.lower.market||!reading.lower.pair||
            !reading.lower.marketBefore||!reading.lower.pairBefore||
            reading.lower.midCols!==(name==='mobile'?1:3)||
