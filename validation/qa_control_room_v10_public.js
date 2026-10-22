@@ -724,6 +724,42 @@ async function getState(page){
            d.querySelectorAll('#pair-index button.pair-open[data-pair]').length===28&&
            d.getElementById('gmfq-pair-research-path')?.dataset.pair===code;
        },homePair,{timeout:35000});
+       if(navigationVersion==='pairs-explained-ranking-20261022'){
+         await page.waitForFunction(()=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument,p=d?.getElementById('gmfq-pair-rank');
+           return p?.dataset.status==='READ_ONLY'&&
+             d.querySelectorAll('#pair-index tr[data-research-rank]').length===28;
+         },null,{timeout:30000});
+         const capture=()=>page.evaluate(()=>{
+           const d=document.getElementById('gmfq-page').contentDocument,p=d.getElementById('gmfq-pair-rank'),
+             rows=[...d.querySelectorAll('#pair-index tr[data-research-rank]')];
+           return {source:p?.dataset.status,mode:p?.dataset.sortMode,signals:p?.dataset.hasTradeRanking,
+             count:p?.dataset.count,baseline:p?.dataset.macroAsOf,model:p?.dataset.priceAsOf,
+             overflow:p?.scrollWidth>p?.clientWidth+2,
+             docWidth:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth,
+             rows:rows.map(x=>({code:x.querySelector('button.pair-open')?.dataset.pair,
+               rank:Number(x.dataset.researchRank),reason:x.querySelector('.gmfq-row-why')?.textContent}))};
+         });
+         const rankedSetup=await capture();
+         if(rankedSetup.source!=='READ_ONLY'||rankedSetup.signals!=='false'||rankedSetup.count!=='28'||
+            rankedSetup.baseline!==pricing.setup_macro_asof||rankedSetup.model!==pricing.setup_date||
+            rankedSetup.overflow||rankedSetup.docWidth>rankedSetup.viewport+16||
+            rankedSetup.rows.length!==28||
+            rankedSetup.rows.some((x,i)=>x.rank!==i+1||!x.reason)||
+            new Set(rankedSetup.rows.map(x=>x.code)).size!==28||
+            !rankedSetup.rows.find(x=>x.code==='AUDCHF')?.reason.includes('Timing contrario')||
+            !rankedSetup.rows.find(x=>x.code==='EURUSD')?.reason.includes('Prezzo già avanzato'))
+           throw Error(name+' public ranked pairs or named CON RISCHI constraint absent '+JSON.stringify(rankedSetup));
+         await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-rank-mode="thesis"]').click();
+         const rankedThesis=await capture();
+         if(rankedThesis.mode!=='thesis'||rankedThesis.rows.length!==28||
+            rankedThesis.rows[0].code!=='USDCHF'||
+            rankedThesis.rows.some((x,i)=>x.rank!==i+1))
+           throw Error(name+' public thesis ordering absent '+JSON.stringify(rankedThesis));
+         await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-rank-mode="setup"]').click();
+         console.log('CONTROL_ROOM_PUBLIC_PAIR_28_ORDER_GREEN',name,{
+           setup:rankedSetup.rows[0].code,thesis:rankedThesis.rows[0].code});
+       }
        // Published Preview: the reader should see the canonical decision first,
        // with optional detailed research present but not overwhelming the page.
        const firstRead=await page.evaluate(()=>{
