@@ -2493,21 +2493,29 @@ async function mountCentralBankFirstReading(doc){
 function cotQuantitativeAudit(chart,story){
  if(!chart||!story||Object.keys(chart).length!==8||
     !FX.every(c=>Object.hasOwn(chart,c)&&Object.hasOwn(story,c)))return null;
- const series={},dates=new Set(),mismatched=[];
+ const series={},dates=new Set(),previousDates=new Set(),mismatched=[];
  for(const c of FX){
   const t=chart[c],st=story[c];
   if(!t||!st||!['dates','net','long','short','netoi','percentile'].every(k=>Array.isArray(t[k])&&t[k].length===104)||
      t.dates.some((date,i)=>macroSeriesPeriod(date)!==date||(i>0&&date<=t.dates[i-1])))return null;
   const n=103,net=num(t.net[n]),long=num(t.long[n]),short=num(t.short[n]),
-   ratio=num(t.netoi[n]),percent=num(t.percentile[n]),date=t.dates[n];
-  if([net,long,short,ratio,percent].some(v=>v===null)||long<0||short<0||long-short!==net||
-     Math.abs(ratio)>100||percent<0||percent>100||!['WITHHELD'].includes(st.price))return null;
+   prevNet=num(t.net[n-1]),prevLong=num(t.long[n-1]),prevShort=num(t.short[n-1]),
+   ratio=num(t.netoi[n]),percent=num(t.percentile[n]),date=t.dates[n],previousDate=t.dates[n-1];
+  // Weekly delta is net contracts in the SAME market, not normalized FX price.
+  // Reject a shifted/partial prior week rather than calculate an invented move.
+  if([net,long,short,ratio,percent,prevNet,prevLong,prevShort].some(v=>v===null)||
+     ![net,long,short,prevNet,prevLong,prevShort].every(Number.isInteger)||
+     long<0||short<0||long-short!==net||
+     prevLong<0||prevShort<0||prevLong-prevShort!==prevNet||
+     Math.abs(ratio)>100||percent<0||percent>100||!['WITHHELD'].includes(st.price)||
+     macroSeriesPeriod(previousDate)!==previousDate||
+     Date.parse(date+'T00:00:00Z')-Date.parse(previousDate+'T00:00:00Z')!==7*86400000)return null;
   const rounded=Math.round(percent),q=rounded>=80?'EXTREME LONG':rounded<=20?'EXTREME SHORT':'NEUTRALE';
   if(st.signal!==q)mismatched.push(c);
-  dates.add(date);
-  series[c]={net,ratio,rounded,q,date};
+  dates.add(date);previousDates.add(previousDate);
+  series[c]={net,prevNet,deltaNet:net-prevNet,ratio,rounded,q,date,previousDate};
  }
- if(dates.size!==1)return null;
+ if(dates.size!==1||previousDates.size!==1)return null;
  const extremes=FX.filter(c=>series[c].q!=='NEUTRALE');
  const crowding=FX.filter(c=>Math.abs(series[c].ratio)>=30);
  // Prioritize by absolute Net/OI, *not* by FX view or rounded percentile.
@@ -2516,9 +2524,16 @@ function cotQuantitativeAudit(chart,story){
    FX.indexOf(a)-FX.indexOf(b)).slice(0,3).map(c=>({
      ccy:c,netoi:series[c].ratio,percentile:series[c].rounded,
      netSign:series[c].net>0?'NET_LONG':series[c].net<0?'NET_SHORT':'NET_FLAT',
-     percentileClass:series[c].q
+     percentileClass:series[c].q,
+     net:series[c].net,prevNet:series[c].prevNet,deltaNet:series[c].deltaNet
    }));
- return {asof:series.USD.date,extremes,crowding,mismatched,crowdingFocus,
+ const weeklyPositions=FX.map(ccy=>({
+   ccy,net:series[ccy].net,prevNet:series[ccy].prevNet,
+   deltaNet:series[ccy].deltaNet,netSign:series[ccy].net>0?'NET_LONG':
+     series[ccy].net<0?'NET_SHORT':'NET_FLAT'
+ }));
+ return {asof:series.USD.date,priorAsOf:series.USD.previousDate,
+   weeklyPositions,extremes,crowding,mismatched,crowdingFocus,
    extremeLong:extremes.filter(c=>series[c].q==='EXTREME LONG'),
    extremeShort:extremes.filter(c=>series[c].q==='EXTREME SHORT')};
 }
@@ -2561,21 +2576,42 @@ async function mountCotFirstReading(doc){
      '#gmfq-cot-reading-first .gmfq-cot-focus-list{display:flex;gap:5px 16px;flex-wrap:wrap;list-style:none;padding:0;margin:0}'+
      '#gmfq-cot-reading-first .gmfq-cot-focus-list li{font:11px/1.55 Arial,sans-serif;color:#cddce6;min-width:0;white-space:normal}'+
      '#gmfq-cot-reading-first .gmfq-cot-focus-list strong{font-weight:600;color:#f1b4af}'+
+     '#gmfq-cot-reading-first .gmfq-cot-weekly-delta{font:10px/1.45 Arial,sans-serif;color:#a9c4d6;white-space:nowrap;margin-left:4px}'+
+     '#gmfq-cot-reading-first .gmfq-cot-weekly-details{margin:7px 0 0;border-top:1px solid #284455;padding-top:6px}'+
+     '#gmfq-cot-reading-first .gmfq-cot-weekly-details>summary{cursor:pointer;color:#dbc58d;font:600 10px/1.55 Arial,sans-serif;outline-offset:3px}'+
+     '#gmfq-cot-reading-first .gmfq-cot-weekly-details:not([open])>:not(summary){display:none!important}'+
+     '#gmfq-cot-reading-first .gmfq-cot-weekly-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding:0;margin:8px 0 3px;list-style:none;gap:3px 16px}'+
+     '#gmfq-cot-reading-first .gmfq-cot-weekly-list li{font:10px/1.65 Arial,sans-serif;color:#bacedd;white-space:normal;overflow-wrap:anywhere}'+
+     '#gmfq-cot-reading-first .gmfq-cot-weekly-method{font:10px/1.5 Arial,sans-serif;color:#9db5c5;margin:7px 0 2px}'+
+     '@media(max-width:600px){#gmfq-cot-reading-first .gmfq-cot-weekly-list{grid-template-columns:1fr}}'+
      '#gmfq-cot-reading-first .gmfq-cot-focus-note{display:block;font:10px/1.5 Arial,sans-serif;color:#9bb5c6;margin:4px 0 0}'+
      '@media(max-width:600px){#gmfq-cot-reading-first .gmfq-cot-focus-list{gap:4px 12px}#gmfq-cot-reading-first .gmfq-cot-focus-list li{font-size:10px}}';
    doc.head.appendChild(st);
    const box=doc.createElement('div');box.className='gmfq-cot-focus';
    box.dataset.cftcAsOf=result.asof;
    const pct=v=>(v>0?'+':'')+v.toFixed(1)+'%';
+   const signedInt=v=>(v>0?'+':'')+v.toLocaleString('it-IT');
    box.innerHTML='<p class="gmfq-cot-focus-title">⚠ CONCENTRAZIONE NET/OI ≥30% · '+htmlEscape(result.asof)+'</p>'+
      '<ul class="gmfq-cot-focus-list">'+result.crowdingFocus.map(x=>
        '<li data-cot-focus-ccy="'+x.ccy+'" data-netoi="'+x.netoi+'" data-percentile-rounded="'+x.percentile+
        '" data-net-direction="'+x.netSign+'" data-percentile-class="'+x.percentileClass+'">'+
        FLAG[x.ccy]+' '+x.ccy+' <strong>'+pct(x.netoi)+'</strong> · '+
-       x.percentile+'°/104W</li>').join('')+'</ul>'+
-     '<small class="gmfq-cot-focus-note">Net/OI = esposizione netta sul totale open interest; percentile = rango storico, non direzione del prezzo. COT non intraday.</small>';
+       x.percentile+'°/104W <span class="gmfq-cot-weekly-delta" data-weekly-net="'+x.deltaNet+
+       '">ΔNet 1W '+signedInt(x.deltaNet)+' contratti</span></li>').join('')+'</ul>'+
+     '<small class="gmfq-cot-focus-note">Net/OI = esposizione netta sul totale open interest; percentile = rango storico, non direzione del prezzo. COT non intraday.</small>'+
+     '<details class="gmfq-cot-weekly-details" data-prior-asof="'+result.priorAsOf+
+     '" data-current-asof="'+result.asof+'"><summary>Apri ΔNet settimanale delle 8 valute ('+
+     result.priorAsOf+' → '+result.asof+')</summary>'+
+     '<ul class="gmfq-cot-weekly-list">'+result.weeklyPositions.map(x=>
+       '<li data-weekly-ccy="'+x.ccy+'" data-weekly-net="'+x.net+'" data-weekly-prev-net="'+
+       x.prevNet+'" data-weekly-delta="'+x.deltaNet+'" data-net-direction="'+x.netSign+'">'+
+       FLAG[x.ccy]+' '+x.ccy+' · Net '+signedInt(x.net)+' · ΔNet '+signedInt(x.deltaNet)+
+       ' contratti</li>').join('')+'</ul>'+
+     '<p class="gmfq-cot-weekly-method">ΔNet = Net della settimana CFTC più recente meno Net della precedente, nella stessa valuta future. Positivo significa più verso long (o meno short); negativo più verso short (o meno long). Non confrontare direttamente il numero di contratti tra mercati: dimensioni contrattuali diverse. Nessun segnale FX.</p></details>';
    rail.querySelector('.gmfq-first-claim')?.insertAdjacentElement('afterend',box);
    rail.dataset.focusCount=String(result.crowdingFocus.length);
+   rail.dataset.weeklyAsOf=result.priorAsOf;
+   rail.dataset.weeklyCount=String(result.weeklyPositions.length);
  }
 }
 
