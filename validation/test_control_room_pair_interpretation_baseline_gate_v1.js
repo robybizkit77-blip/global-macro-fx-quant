@@ -18,7 +18,11 @@ assert(g>0&&h>g,'Canonical OIS certification guard missing');
 const FX=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
 const FLAG=Object.fromEntries(FX.map(k=>[k,k]));
 const htmlEscape=x=>String(x??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&gt;');
-const today='2026-10-21';
+// Freeze the test clock at the source-verified pair observation date.
+ // A hard-coded previous day makes a freshly published fixing look 'future'
+ // and falsely marks a historical, otherwise-valid Macro baseline unverified.
+const today=setup.price_asof;
+assert(/^20\d{2}-\d{2}-\d{2}$/.test(today),'pair as-of must be ISO date');
 const romeCalendarAge=d=>{
  if(typeof d!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(d))return null;
  const ts=Date.parse(d+'T00:00:00Z');
@@ -48,8 +52,8 @@ assert(bridgeOld.includes('Preferenza storica · AUD'));
 assert(bridgeOld.includes('SETUP DEL MODELLO · STORICO'));
 assert(bridgeOld.includes('data-bridge-status="NON_DETERMINATO"'));
 assert(bridgeOld.includes('NON CORRENTE: tesi da rivalidare'));
-for(const bad of [null,'2026-10-22','2026-13-50','2026-09-24']){
- // This pair has 2026-10-21 price. 24 Sep is a valid *older* baseline,
+for(const bad of [null,'2099-01-01','2026-13-50','2026-09-24']){
+ // The pair price date advances daily. 24 Sep is a valid *older* baseline,
  // so only verify-null and future/invalid branches here.
  if(bad==='2026-09-24')continue;
  assert.equal(funcs.pairModelEvidenceState(bad,modelDay).verified,false);
