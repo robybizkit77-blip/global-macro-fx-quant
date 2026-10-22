@@ -2527,13 +2527,20 @@ function cotQuantitativeAudit(chart,story){
      percentileClass:series[c].q,
      net:series[c].net,prevNet:series[c].prevNet,deltaNet:series[c].deltaNet
    }));
+ const extremeSnapshots=extremes.map(ccy=>{
+   const x=series[ccy];
+   return {ccy,net:x.net,deltaNet:x.deltaNet,netoi:x.ratio,
+     percentile:x.rounded,percentileClass:x.q,
+     netSign:x.net>0?'NET_LONG':x.net<0?'NET_SHORT':'NET_FLAT',
+     rankOpposesNet:(x.q==='EXTREME LONG'&&x.net<0)||(x.q==='EXTREME SHORT'&&x.net>0)};
+ });
  const weeklyPositions=FX.map(ccy=>({
    ccy,net:series[ccy].net,prevNet:series[ccy].prevNet,
    deltaNet:series[ccy].deltaNet,netSign:series[ccy].net>0?'NET_LONG':
      series[ccy].net<0?'NET_SHORT':'NET_FLAT'
  }));
  return {asof:series.USD.date,priorAsOf:series.USD.previousDate,
-   weeklyPositions,extremes,crowding,mismatched,crowdingFocus,
+   weeklyPositions,extremes,crowding,mismatched,crowdingFocus,extremeSnapshots,
    extremeLong:extremes.filter(c=>series[c].q==='EXTREME LONG'),
    extremeShort:extremes.filter(c=>series[c].q==='EXTREME SHORT')};
 }
@@ -2567,6 +2574,49 @@ async function mountCotFirstReading(doc){
  rail.dataset.extremes=result?String(result.extremes.length):'';
  rail.dataset.crowding=result?String(result.crowding.length):'';
  rail.dataset.conflicts=result?result.mismatched.join(','):'';
+ // A relative historical percentile is not the absolute signed Net. This
+ // source-verified case deserves one explanatory line, not a second dashboard.
+ // Any narrative-vs-source mismatch disables this authoritative interpretation.
+ if(result&&!result.mismatched.length&&result.extremeSnapshots.length){
+   const st=doc.createElement('style');st.id='gmfq-cot-percentile-style';
+   st.textContent='#gmfq-cot-reading-first .gmfq-cot-percentile{border-top:1px solid #284455;margin:9px 0 0;padding:8px 0 0}'+
+     '#gmfq-cot-reading-first .gmfq-cot-rank-note{font:11px/1.55 Arial,sans-serif;color:#d3dfe8;margin:0 0 6px;overflow-wrap:anywhere}'+
+     '#gmfq-cot-reading-first .gmfq-cot-rank-note strong{color:#e4cb8a;font-weight:600}'+
+     '#gmfq-cot-reading-first .gmfq-cot-percentile-details{margin:4px 0 0;border-top:0;padding-top:0}'+
+     '#gmfq-cot-reading-first .gmfq-cot-percentile-details>summary{font:600 10px/1.5 Arial,sans-serif;color:#ddc58b;cursor:pointer;outline-offset:3px}'+
+     '#gmfq-cot-reading-first .gmfq-cot-percentile-list{padding:0;margin:7px 0 0;list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 17px}'+
+     '#gmfq-cot-reading-first .gmfq-cot-percentile-list li{font:10px/1.55 Arial,sans-serif;color:#c3d6e0;overflow-wrap:anywhere}'+
+     '#gmfq-cot-reading-first .gmfq-cot-rank-footnote{font:10px/1.5 Arial,sans-serif;color:#a7bdcc;margin:7px 0 0}'+
+     '@media(max-width:600px){#gmfq-cot-reading-first .gmfq-cot-percentile-list{grid-template-columns:1fr}}';
+   doc.head.appendChild(st);
+   const signed=v=>(v>0?'+':'')+v.toLocaleString('it-IT');
+   const inversions=result.extremeSnapshots.filter(x=>x.rankOpposesNet);
+   const box=doc.createElement('div');box.className='gmfq-cot-percentile';
+   box.dataset.cftcAsOf=result.asof;
+   box.dataset.relativeVsNet='SEPARATE';
+   box.dataset.inversionCount=String(inversions.length);
+   box.innerHTML=(inversions.length?
+     '<p class="gmfq-cot-rank-note"><strong>Percentile ≠ segno del Net.</strong> '+
+     inversions.map(x=>FLAG[x.ccy]+' '+x.ccy+' '+x.percentile+'° · '+
+       x.percentileClass+', ma Net '+signed(x.net)+' ('+
+       (x.net<0?'short':'long')+' netto)').join('; ')+
+     '. È un rango rispetto alle 104 settimane, non una posizione net long.</p>':
+     '<p class="gmfq-cot-rank-note"><strong>Percentile ≠ segno del Net.</strong> '+
+     'Le etichette EXTREME LONG / SHORT indicano il rango storico del posizionamento, non il segno assoluto.</p>')+
+     '<details class="gmfq-cot-percentile-details" data-cftc-asof="'+result.asof+
+     '"><summary>Apri '+result.extremeSnapshots.length+' estremi: percentile, Net e variazione 1W</summary>'+
+     '<ul class="gmfq-cot-percentile-list">'+result.extremeSnapshots.map(x=>
+       '<li data-extreme-ccy="'+x.ccy+'" data-extreme-rank="'+x.percentile+
+       '" data-extreme-class="'+x.percentileClass+'" data-extreme-net="'+x.net+
+       '" data-extreme-week="'+x.deltaNet+'" data-rank-vs-net="'+
+       (x.rankOpposesNet?'OPPOSED':'ALIGNED')+'">'+
+       FLAG[x.ccy]+' '+x.ccy+' · '+x.percentile+'° · '+x.percentileClass+
+       ' · Net '+signed(x.net)+' · ΔNet '+signed(x.deltaNet)+'</li>').join('')+
+     '</ul><p class="gmfq-cot-rank-footnote">Percentile 104W arrotondato (≥80 EXTREME LONG; ≤20 EXTREME SHORT). Il Net è il saldo long meno short in contratti futures. “Opposto” non significa errore o inversione di prezzo: indica solo un rango storico elevato/basso mentre il saldo assoluto ha segno diverso.</p></details>';
+   rail.querySelector('.gmfq-first-explainer')?.insertAdjacentElement('afterend',box);
+   rail.dataset.percentileCount=String(result.extremeSnapshots.length);
+   rail.dataset.rankVsNet=String(inversions.length);
+ }
  // A small source-reconciled shortlist is the only extra first-screen layer.
  // All 8 CFTC currencies remain in the approved native chart and table.
  if(result&&result.crowdingFocus.length){
