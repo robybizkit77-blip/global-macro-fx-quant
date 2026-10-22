@@ -2134,12 +2134,14 @@ async function mountValuteSourceCompass(doc){
  const css=doc.createElement('style');css.id='gmfq-valute-source-compass-style';
  css.textContent=
   '#gmfq-valute-source-compass{margin:0 0 13px;border-top:1px solid #355065;border-bottom:1px solid #294558;padding:9px 12px;color:#bcd0dc;min-width:0}'+
-  '#gmfq-valute-source-compass .gmfq-vsc-priority{font:600 12px/1.55 Arial,sans-serif;color:#e4edf3;margin:0 0 8px;overflow-wrap:anywhere}'+
+  '#gmfq-valute-source-compass .gmfq-vsc-priority{font:600 13px/1.55 Arial,sans-serif;color:#e4edf3;margin:0 0 7px;overflow-wrap:anywhere}'+
  '#gmfq-valute-source-compass .gmfq-vsc-status{font:11px/1.55 Arial,sans-serif;margin:0;overflow-wrap:anywhere}'+
- '#gmfq-valute-source-compass .gmfq-vsc-ledger{display:flex;flex-wrap:wrap;gap:4px 16px;border-top:1px solid #2b4555;padding-top:9px}'+
+ '#gmfq-valute-source-compass .gmfq-vsc-ledger{display:flex;flex-wrap:wrap;gap:4px 16px;border-top:1px solid #2b4555;padding-top:9px;margin-top:7px}'+
  '#gmfq-valute-source-compass .gmfq-vsc-ledger span{min-width:0;overflow-wrap:anywhere}'+
   '#gmfq-valute-source-compass strong{color:#e6ecf2;font-weight:600}'+
   '#gmfq-valute-source-compass .gmfq-vsc-details{font:11px/1.6 Arial,sans-serif;color:#9eb7c8;margin-top:5px}'+
+  '#gmfq-valute-source-compass .gmfq-vsc-details:not([open])>:not(summary){display:none!important}'+
+  '#gmfq-valute-source-compass .gmfq-vsc-details[open]>summary{border-bottom:1px solid #284455;padding-bottom:7px}'+
   '#gmfq-valute-source-compass .gmfq-vsc-details summary{cursor:pointer;color:#d9c18b;outline-offset:3px}'+
   '#gmfq-valute-source-compass .gmfq-vsc-details p{margin:7px 0 0}'+
   '@media(max-width:600px){#gmfq-valute-source-compass{padding:9px 8px}'+
@@ -2152,16 +2154,30 @@ async function mountValuteSourceCompass(doc){
  const modelText=baseline?
   'Macro baseline '+baseline+(!fresh(baseline,10)?' (storica)':' (snapshot)'):
   'Macro baseline non verificabile';
+ const macroCurrent=baseline!==null&&fresh(baseline,10);
+ const readingState=prices.status!=='OFFICIAL_FIXING_RECENT'?'FX_WITHHELD':
+   baseline===null?'MACRO_WITHHELD':!macroCurrent?'MACRO_HISTORICAL':
+   !synthetic?'DXY_WITHHELD':'SEPARATE_SOURCES';
+ const priorityText=readingState==='FX_WITHHELD'?
+   'Prima verifica: fixing BCE FX non corrente o incompleto. Nessuna lettura di forza basata su prezzi recenti può essere certificata.':
+   readingState==='MACRO_WITHHELD'?
+   'Prima verifica: prezzi BCE recenti, ma baseline Macro non verificabile. Non interpretare gli score come aggiornati.':
+   readingState==='MACRO_HISTORICAL'?
+   'Prezzo BCE '+prices.asof+' recente; tesi Macro ancora alla baseline '+baseline+'. I nuovi fixing non aggiornano lo score.':
+   readingState==='DXY_WITHHELD'?
+   'Prezzi BCE e Macro con date distinte; il DXY sintetico non è corrente. Nessuna equivalenza con l’indice ICE.':
+   'Prezzi BCE, DXY sintetico e score Macro: fonti diverse anche se tutte recenti. Non sono una lettura intraday unica.';
  strip.dataset.sourceStatus=prices.status;
+ strip.dataset.readingState=readingState;
  strip.dataset.fxAsOf=prices.asof||'';
  strip.dataset.dxyStatus=synthetic?'SYNTHETIC_ECB':'WITHHELD';
  strip.dataset.macroAsOf=baseline||'';
- strip.innerHTML='<p class="gmfq-vsc-priority">Fixing giornaliero, DXY sintetico e score Macro hanno origini e tempi diversi: non sono una singola lettura intraday.</p>'+
+ strip.innerHTML='<p class="gmfq-vsc-priority">'+htmlEscape(priorityText)+'</p>'+
+  '<details class="gmfq-vsc-details"><summary>Apri date, tre fonti e metodo</summary>'+
   '<div class="gmfq-vsc-status gmfq-vsc-ledger" aria-label="Date e provenienza delle letture valutarie">'+
   '<span data-source="fixing"><strong>Fixing:</strong> '+htmlEscape(fxText)+'</span>'+
   '<span data-source="dxy"><strong>Indice sintetico:</strong> '+htmlEscape(dxyText)+'</span>'+
   '<span data-source="macro"><strong>Modello:</strong> '+htmlEscape(modelText)+'</span></div>'+
-  '<details class="gmfq-vsc-details"><summary>Cosa misurano, e cosa non misurano</summary>'+
   '<p>I fixing BCE sono riferimenti ufficiali giornalieri rispetto all’euro, non prezzi intraday e non un nuovo ranking di forza relativa. Il DXY sintetico è una stima informativa ricostruita da fixing BCE, non il DXY ICE ufficiale. Gli score Macro e i giudizi strutturali appartengono alla baseline storica e non vengono aggiornati da queste osservazioni.</p>'+
   '<p>Qualsiasi dato assente o datato resta dichiarato: nessun prezzo, bias, COT, policy path o segnale viene ricostruito automaticamente.</p></details>';
 }
