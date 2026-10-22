@@ -5,13 +5,14 @@ from __future__ import annotations
 import copy
 import json
 import unittest
-from datetime import date
+from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from validation.macro.score_formula_provenance_v1 import (
     ROOT, PARTS, inspect, run,
 )
 
-AUDIT_DATE = date(2026, 10, 20)
+AUDIT_DATE = datetime.now(ZoneInfo("Europe/Rome")).date()
 
 
 class ScoreProvenanceBoundaryTests(unittest.TestCase):
@@ -33,7 +34,7 @@ class ScoreProvenanceBoundaryTests(unittest.TestCase):
         self.assertEqual(out["historical_regimes"], 8)
         self.assertEqual(out["pairs_in_source_snapshot"], 28)
         self.assertEqual(out["model_as_of"], "2026-09-25")
-        self.assertEqual(out["price_as_of"], "2026-10-20")
+        self.assertEqual(out["price_as_of"], self.setup["price_asof"])
         self.assertEqual(out["certified_semantics"]["macroSimpleScore"],
                          "DISPLAY_LABELS_FROM_ALREADY_STORED_NUMBER")
         self.assertEqual(out["certified_semantics"]["derivePairDecisionFrame"],
@@ -81,7 +82,7 @@ class ScoreProvenanceBoundaryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "not identical"):
             self.audit(setup=setup)
         setup = copy.deepcopy(self.setup)
-        setup["price_asof"] = "2026-10-21"
+        setup["price_asof"] = (AUDIT_DATE + timedelta(days=1)).isoformat()
         with self.assertRaisesRegex(ValueError, "future baseline"):
             self.audit(setup=setup)
 
@@ -112,8 +113,10 @@ class ScoreProvenanceBoundaryTests(unittest.TestCase):
 
     def test_stale_baseline_is_mandatory_for_this_evidence(self):
         with self.assertRaisesRegex(ValueError, "no longer stale"):
-            self.audit(model={**self.model, "asOf": "2026-10-20"},
-                       setup={**self.setup, "macro_baseline_asof": "2026-10-20"})
+            recently_rebased = (AUDIT_DATE - timedelta(days=9)).isoformat()
+            self.audit(model={**self.model, "asOf": recently_rebased},
+                       setup={**self.setup, "macro_baseline_asof": recently_rebased,
+                              "price_asof": AUDIT_DATE.isoformat()})
 
     def test_read_only_run_has_no_runtime_mutations(self):
         result = run(today=AUDIT_DATE)
