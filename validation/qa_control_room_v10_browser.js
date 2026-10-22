@@ -1297,8 +1297,8 @@ function expectedReactionFromMetrics(row){
     const d=document.getElementById('gmfq-page')?.contentDocument;
     return d?.querySelectorAll('#pair-index tr[data-research-rank]').length===28;
   },null,{timeout:20000});
-  const restored=await readRank();
-  if(JSON.stringify(restored.descriptions.map(x=>x.code))!==JSON.stringify(rankedCodes))
+  const restoredPairRank=await readRank();
+  if(JSON.stringify(restoredPairRank.descriptions.map(x=>x.code))!==JSON.stringify(rankedCodes))
     throw Error(label+' native pair search/reset broke comparative ordering');
   console.log('CONTROL_ROOM_PAIR_28_DUAL_RANKING_GREEN',label,{
     firstSetup:rankedCodes[0],firstThesis:rankThesis.descriptions[0]?.code});
