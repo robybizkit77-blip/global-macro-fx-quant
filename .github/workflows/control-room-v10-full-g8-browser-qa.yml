@@ -34,6 +34,11 @@ jobs:
           done
           test "$(find site/control-room-preview/parts -type f | wc -l)" -eq 32
           echo V10_REFERENCE_32_PARTS_UNTOUCHED
+      - name: Fast JavaScript syntax preflight
+        run: |
+          node --check validation/qa_control_room_v10_browser.js
+          node --check site/control-room-preview/home-navigation-v10.js
+          node --check site/control-room-preview/ois-pricing-estimates-v1.js
       - name: Install browser runner
         run: |
           npm init -y >/dev/null 2>&1
