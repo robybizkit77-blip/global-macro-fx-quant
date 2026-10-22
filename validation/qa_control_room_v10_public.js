@@ -343,6 +343,14 @@ async function getState(page){
         throw Error(name+' Preview pair setups too old for ECB price history '+JSON.stringify(pricing));
      console.log('CONTROL_ROOM_PREVIEW_PUBLIC_FX_28_PAIR_DXY_FEED_PASS',name,JSON.stringify(pricing));
      if(errs.length)throw Error(name+' browser page error: '+errs.join('; '));
+     // Chart interaction is research-only; every G8 series remains selectable.
+  const focusButton=page.frameLocator('#gmfq-page').locator('#ylegend button[data-gmfq-ccy-focus="EUR"]');
+     await focusButton.click();
+     const selected=await page.evaluate(()=>document.getElementById('gmfq-page').contentDocument.getElementById('curves')?.dataset.gmfqYieldFocus);
+     if(selected!=='EUR')throw Error('EUR yield focus failed: '+selected);
+     await focusButton.click();
+     const restored=await page.evaluate(()=>document.getElementById('gmfq-page').contentDocument.getElementById('curves')?.dataset.gmfqYieldFocus);
+     if(restored!=='ALL')throw Error('G8 yield restore failed: '+restored);
      await page.frameLocator('#gmfq-page').locator('#valute .cc[data-filter="DXY"]').click();
      await page.frameLocator('#gmfq-page').locator('dialog#gmfq-dxy-dialog[open]').waitFor({timeout:10000});
      await page.frameLocator('#gmfq-page').locator('.gmfq-dxy-dialog .gmfq-close').click();
