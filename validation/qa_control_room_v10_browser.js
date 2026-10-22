@@ -1480,6 +1480,7 @@ function expectedReactionFromMetrics(row){
   // EUR and USD currently share an official 2Y/10Y date. An observed
   // sovereign spread may be calculated from two official SAME-DAY yields,
   // but must be named a LEVEL gap, never a Fed/ECB policy forecast.
+  await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-pair-view="all"]').click();
   await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="EURUSD"]').click();
   await page.waitForFunction(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument;
@@ -1580,6 +1581,7 @@ function expectedReactionFromMetrics(row){
 
   // AUD / CAD are individually certified but published on different dates.
   // Never combine their most recent independent spot yields into a 2Y spread.
+  await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-pair-view="all"]').click();
   await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="AUDCAD"]').click();
   await page.waitForFunction(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument;
@@ -1615,6 +1617,7 @@ function expectedReactionFromMetrics(row){
      !audReaction.content?.includes('NON VALUTABILE'))
      throw Error(label+' AUDCAD reaction used unevenly dated historical 2Y '+JSON.stringify(audReaction));
 
+  await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-pair-view="all"]').click();
   await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="GBPJPY"]').click();
   await page.waitForFunction(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument;
@@ -1650,6 +1653,7 @@ function expectedReactionFromMetrics(row){
      !gbpChecklist.rows[2].includes('Il motore non individua una valuta favorita'))
     throw Error(label+' GBPJPY cannot infer a thesis from rates level alone '+JSON.stringify(gbpChecklist));
 
+  await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-pair-view="all"]').click();
   await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="USDJPY"]').click();
   await page.waitForFunction(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument;
