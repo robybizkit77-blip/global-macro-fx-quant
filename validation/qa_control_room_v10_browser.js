@@ -801,22 +801,42 @@ function expectedReactionFromMetrics(row){
       p=d.getElementById('gmfq-valute-source-compass');
     const innerWidth=p.scrollWidth,innerClient=p.clientWidth;
     p.style.display='none';const nativeWidth=d.documentElement.scrollWidth;p.style.display='';
+    const detail=p.querySelector('.gmfq-vsc-details');
     return {fx:p.dataset.fxAsOf,dxy:p.dataset.dxyStatus,macro:p.dataset.macroAsOf,
-      text:p.textContent,detail:!!p.querySelector('details summary'),
+      readingState:p.dataset.readingState,
+      text:p.textContent,detail:!!detail?.querySelector('summary'),
+      initiallyClosed:detail?.open===false,
+      ledgerInitiallyHidden:!p.querySelector('.gmfq-vsc-ledger')?.getClientRects().length,
       priority:p.querySelector('.gmfq-vsc-priority')?.textContent,
       sourceKeys:[...p.querySelectorAll('.gmfq-vsc-ledger span[data-source]')].map(x=>x.dataset.source),
-      priorityFirst:!!(p.querySelector('.gmfq-vsc-priority')?.compareDocumentPosition(p.querySelector('.gmfq-vsc-ledger'))&Node.DOCUMENT_POSITION_FOLLOWING),
+      priorityFirst:!!(p.querySelector('.gmfq-vsc-priority')?.compareDocumentPosition(detail)&Node.DOCUMENT_POSITION_FOLLOWING),
       innerWidth,innerClient,nativeWidth,width:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
   });
   if(valute.fx!==fxHistory.last_as_of||valute.macro!==legacy.asOf||
      valute.dxy!=='SYNTHETIC_ECB'||!valute.detail||
-     !valute.priority?.startsWith('Fixing giornaliero, DXY sintetico')||!valute.priorityFirst||
+     !valute.initiallyClosed||!valute.ledgerInitiallyHidden||
+     valute.readingState!=='MACRO_HISTORICAL'||
+     !valute.priority?.includes('tesi Macro ancora alla baseline '+legacy.asOf)||
+     !valute.priority?.includes('I nuovi fixing non aggiornano lo score')||
+     !valute.priorityFirst||
      JSON.stringify(valute.sourceKeys)!==JSON.stringify(['fixing','dxy','macro'])||
      !valute.text.includes('non il DXY ICE ufficiale')||
      !valute.text.includes('non un nuovo ranking di forza relativa')||
      valute.innerWidth>valute.innerClient+2||
      valute.width>Math.max(valute.viewport+16,valute.nativeWidth+2))
     throw Error(label+' Valute provenance contract '+JSON.stringify(valute));
+  const valuteToggle=page.frameLocator('#gmfq-page').locator('#gmfq-valute-source-compass .gmfq-vsc-details > summary');
+  await valuteToggle.click();
+  const expandedValute=await page.evaluate(()=>{
+    const p=document.getElementById('gmfq-page').contentDocument.getElementById('gmfq-valute-source-compass');
+    return {open:p.querySelector('.gmfq-vsc-details')?.open,
+      ledgerVisible:!!p.querySelector('.gmfq-vsc-ledger')?.getClientRects().length,
+      keys:[...p.querySelectorAll('.gmfq-vsc-ledger span[data-source]')].map(x=>x.dataset.source)};
+  });
+  if(!expandedValute.open||!expandedValute.ledgerVisible||
+      JSON.stringify(expandedValute.keys)!==JSON.stringify(['fixing','dxy','macro']))
+    throw Error(label+' Valute full source ledger inaccessible '+JSON.stringify(expandedValute));
+  await valuteToggle.click();
   await page.screenshot({path:'v10-qa-images/'+label+'-valute-sources.png',fullPage:true});
   // Negative ECB fixture: missing one G8 spot leg invalidates the aggregate
   // official-fixing claim, without altering underlying ranking/bias.
@@ -836,7 +856,8 @@ function expectedReactionFromMetrics(row){
     const p=document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-valute-source-compass');
     return {status:p.dataset.sourceStatus,fx:p.dataset.fxAsOf,text:p.textContent};
   });
-  if(invalidFx.fx!==''||!invalidFx.text.includes('FX BCE non corrente o non verificabile'))
+  if(invalidFx.fx!==''||!invalidFx.text.includes('FX BCE non corrente o non verificabile')||
+     !invalidFx.text.includes('Prima verifica: fixing BCE FX non corrente'))
     throw Error(label+' Valute invalid FX not withheld '+JSON.stringify(invalidFx));
   // SAME invalid ECB fixture must be WITHHELD in the Home audit and Pair
   // Deep Dive, not only in Valute. No canonical engine field is modified.
