@@ -1387,11 +1387,20 @@ function expectedReactionFromMetrics(row){
 
   // Selecting a non-USD cross updates both the original detail and our
   // additive research path; a permalink to the currently selected pair remains.
+  await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-pair-view="all"]').click();
   await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="EURCHF"]').click();
   await page.waitForFunction(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument;
     return d?.getElementById('gmfq-pair-research-path')?.dataset.pair==='EURCHF';
   },null,{timeout:12000});
+  await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-pair-view="focus"]').click();
+  const selectedCompact=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page').contentDocument,p=d.getElementById('gmfq-pair-rank'),
+      row=d.querySelector('#pair-index tr.pair-current button.pair-open[data-pair="EURCHF"]');
+    return {view:p?.dataset.viewMode,visible:!!row?.getClientRects().length};
+  });
+  if(selectedCompact.view!=='focus'||!selectedCompact.visible)
+    throw Error(label+' selected deep-linked EURCHF hidden by compact view '+JSON.stringify(selectedCompact));
   const selectedHash=await page.evaluate(()=>location.hash);
   if(selectedHash!=='#/coppie?pair=EURCHF')
     throw Error(label+' EURCHF permalink not updated: '+selectedHash);
@@ -1672,6 +1681,7 @@ function expectedReactionFromMetrics(row){
     JSON.stringify({CHF:'WITHHELD',EUR:'MEASURED +3.7',USD:'MEASURED -3.0',
       AUD:'WITHHELD',CAD:'MEASURED',viewport:detail.viewport}));
 
+  await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-pair-view="all"]').click();
   await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="EURCHF"]').click();
   await page.waitForFunction(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument;
