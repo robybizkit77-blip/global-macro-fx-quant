@@ -1877,6 +1877,12 @@ async function mountMacroSourceLens(doc){
   '#gmfq-macro-source-lens .gmfq-macro-choice{display:flex;align-items:center;gap:9px;flex-wrap:wrap;color:#a9bfce;font:11px Arial,sans-serif;margin:0 0 9px}'+
   '#gmfq-macro-source-lens .gmfq-macro-choice select{background:#122c3b;border:1px solid #3a5367;border-radius:5px;color:#e7edf3;font:12px Arial,sans-serif;padding:7px;max-width:100%}'+
   '#gmfq-macro-source-lens .gmfq-macro-reading{color:#e4cf9a;font:600 12px/1.6 Arial,sans-serif;margin:8px 0 5px;overflow-wrap:anywhere}'+
+  '#gmfq-macro-source-lens .gmfq-macro-dynamics{display:flex;gap:5px 16px;flex-wrap:wrap;margin:7px 0 5px;border-top:1px solid #2a4557;padding-top:8px}'+
+  '#gmfq-macro-source-lens .gmfq-macro-dynamic{font:11px/1.55 Arial,sans-serif;color:#ccdae4;min-width:0;overflow-wrap:anywhere}'+
+  '#gmfq-macro-source-lens .gmfq-macro-dynamic strong{color:#e6edf3;font-weight:600}'+
+  '#gmfq-macro-source-lens .gmfq-macro-dynamic b{color:#dec58e;font-weight:600}'+
+  '#gmfq-macro-source-lens .gmfq-macro-dynamics-note{font:10px/1.5 Arial,sans-serif;color:#9eb7c8;margin:4px 0 2px}'+
+  '@media(max-width:650px){#gmfq-macro-source-lens .gmfq-macro-dynamics{display:block}#gmfq-macro-source-lens .gmfq-macro-dynamic{display:block;margin-bottom:3px}}'+
   '#gmfq-macro-source-lens #gmfq-macro-observation-details{border-top:1px solid #304b5a;padding-top:8px;margin-top:10px}'+
   '#gmfq-macro-source-lens #gmfq-macro-observation-details>summary{cursor:pointer;color:#dec58d;font:600 12px/1.5 Arial,sans-serif;padding:4px 0;outline-offset:4px}'+
   '#gmfq-macro-source-lens #gmfq-macro-observation-details:not([open])>:not(summary){display:none!important}'+
@@ -1904,11 +1910,14 @@ async function mountMacroSourceLens(doc){
   '<p class="gmfq-macro-intro">Seleziona la valuta per verificare i periodi osservati. Valori e fonti restano consultabili nel dettaglio; per Growth non è disponibile un nuovo score certificato.</p>'+
   '<label class="gmfq-macro-choice" for="gmfq-macro-provenance-currency">Valuta <select id="gmfq-macro-provenance-currency" aria-label="Valuta delle osservazioni Macro">'+options+'</select></label>'+
   '<p class="gmfq-macro-reading" id="gmfq-macro-reading" aria-live="polite">Periodi in verifica…</p>'+
+  '<div id="gmfq-macro-dynamics" class="gmfq-macro-dynamics" aria-label="Direzione e accelerazione delle osservazioni validate"></div>'+
+  '<p class="gmfq-macro-dynamics-note">Direzione e accelerazione si riferiscono alla singola serie osservata e al suo periodo, non alla forza della valuta. Nessun aggiornamento dei 24 score.</p>'+
   '<details id="gmfq-macro-observation-details"><summary>Apri osservazioni e fonti · Inflazione e Lavoro</summary>'+
   '<div id="gmfq-macro-source-details" class="gmfq-macro-measures" aria-live="polite"></div>'+
   '<p class="gmfq-macro-guard">Le date dei termometri sono periodi di riferimento, non necessariamente date di pubblicazione o prove point-in-time. Eventuali etichette legacy «CORRENTE COMPLETO» non certificano la freschezza degli score al giorno di oggi. Crescita: nessun nuovo score certificato.</p></details></div>';
  const select=panel.querySelector('select'),details=panel.querySelector('#gmfq-macro-source-details'),
-  reading=panel.querySelector('#gmfq-macro-reading');
+  reading=panel.querySelector('#gmfq-macro-reading'),
+  dynamics=panel.querySelector('#gmfq-macro-dynamics');
  const measure=(label,obs)=>{
   if(!obs)return '<div class="gmfq-macro-observation"><strong>'+label+' · dato WITHHELD</strong>'+
     '<p>Osservazione non verificabile nel termometro, nessun livello ricostruito.</p></div>';
@@ -1925,6 +1934,22 @@ async function mountMacroSourceLens(doc){
   const inflation=macroThermometerObservation(t.inflation),labour=macroThermometerObservation(t.labour);
   reading.textContent=FLAG[ccy]+' '+ccy+' · Inflazione: '+(inflation?'periodo '+inflation.period:'WITHHELD')+
    ' · Lavoro: '+(labour?'periodo '+labour.period:'WITHHELD');
+  // Display only the dynamics of an already validated observation. Unknown
+  // direction/acceleration terms are WITHHELD, not inferred.
+  const direction={SALE:'sale',SCENDE:'scende',STABILE:'stabile'},
+    speed={ACCELERA:'accelera',RALLENTA:'rallenta',STABILE:'stabile'};
+  const dynamic=(title,obs,raw)=>{
+    const dir=obs&&direction[raw?.direction],acc=obs&&speed[raw?.acceleration];
+    if(!dir||!acc)return '<span class="gmfq-macro-dynamic" data-macro-metric="'+title+
+      '" data-dynamic-status="WITHHELD"><strong>'+title+'</strong> · dinamica non verificabile</span>';
+    return '<span class="gmfq-macro-dynamic" data-macro-metric="'+title+
+      '" data-dynamic-status="OBSERVED" data-direction="'+raw.direction+
+      '" data-acceleration="'+raw.acceleration+'" data-as-of="'+htmlEscape(obs.period)+'">'+
+      '<strong>'+title+'</strong> · <b>'+dir+'</b> · ritmo '+acc+
+      ' · periodo '+htmlEscape(obs.period)+'</span>';
+  };
+  dynamics.innerHTML=dynamic('Inflazione',inflation,t.inflation)+
+    dynamic('Lavoro',labour,t.labour);
   details.innerHTML=measure('Inflazione',inflation)+measure('Lavoro',labour);
  }
  show(FX.includes(currentQuery)?currentQuery:'USD');
