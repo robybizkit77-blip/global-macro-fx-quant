@@ -33,8 +33,14 @@ class GrowthReleaseTests(unittest.TestCase):
         self.assertEqual(result["counts"]["missing_frequency_declared"], 4)
         self.assertEqual(result["counts"]["missing_unit_declared"], 4)
         self.assertEqual(result["counts"]["archival_first_release_vintage_certified"], 0)
-        self.assertEqual(result["unresolved_core_latest_release_target_count"], 0)
-        self.assertEqual(result["unresolved_core_latest_release_targets"], [])
+        unresolved = result["unresolved_core_latest_release_targets"]
+        self.assertEqual(result["unresolved_core_latest_release_target_count"], len(unresolved))
+        # When any core source advances without independent first-release
+        # evidence, the gate must expose its name instead of claiming zero
+        # missing proofs. A numeric Macro rebase remains forbidden.
+        self.assertEqual(unresolved, sorted(set(unresolved)))
+        self.assertTrue(all(key.count(".") == 1 for key in unresolved))
+        self.assertFalse(result["safe_to_publish_D"])
         self.assertFalse(result["safe_to_refresh_growth_score"])
         self.assertFalse(result["safe_to_refresh_qualitative_macro_labels"])
         self.assertFalse(result["safe_to_publish_D"])
