@@ -645,6 +645,15 @@ function expectedReactionFromMetrics(row){
       p=d.getElementById('gmfq-cot-reading-first');
     return {status:p.dataset.readingStatus,asof:p.dataset.cftcAsOf,
       extremes:p.dataset.extremes,crowding:p.dataset.crowding,conflicts:p.dataset.conflicts,
+      focusCount:p.dataset.focusCount,
+      focusTitle:p.querySelector('.gmfq-cot-focus-title')?.textContent,
+      focusNote:p.querySelector('.gmfq-cot-focus-note')?.textContent,
+      focusRows:[...p.querySelectorAll('.gmfq-cot-focus-list li')].map(x=>({
+        ccy:x.dataset.cotFocusCcy,netoi:Number(x.dataset.netoi),
+        pct:Number(x.dataset.percentileRounded),netSign:x.dataset.netDirection,
+        class:x.dataset.percentileClass,visible:!!x.getClientRects().length,
+        label:x.textContent
+      })),
       priority:p.querySelector('.gmfq-first-priority')?.textContent,
       evidence:p.querySelector('.gmfq-first-claim')?.textContent,
       order:!!(p.querySelector('.gmfq-first-priority')?.compareDocumentPosition(p.querySelector('.gmfq-first-claim'))&Node.DOCUMENT_POSITION_FOLLOWING),
@@ -653,6 +662,22 @@ function expectedReactionFromMetrics(row){
       width:p.scrollWidth,client:p.clientWidth,
       doc:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
   });
+  const expectedCrowding=g8.map(ccy=>({
+    ccy,netoi:cotFixture[ccy].netoi.at(-1),pct:Math.round(cotFixture[ccy].percentile.at(-1)),
+    netSign:cotFixture[ccy].net.at(-1)>0?'NET_LONG':cotFixture[ccy].net.at(-1)<0?'NET_SHORT':'NET_FLAT'
+  })).filter(x=>Math.abs(x.netoi)>=30).sort((a,b)=>Math.abs(b.netoi)-Math.abs(a.netoi)).slice(0,3);
+  const sourceFocusOk=cotFirst.focusRows.length===expectedCrowding.length&&
+   cotFirst.focusRows.every((x,i)=>{
+     const expected=expectedCrowding[i];
+     return x.ccy===expected.ccy&&Math.abs(x.netoi-expected.netoi)<0.00001&&
+       x.pct===expected.pct&&x.netSign===expected.netSign&&x.visible&&
+       x.label.includes(x.pct+'°/104W')&&
+       x.class===(x.pct>=80?'EXTREME LONG':x.pct<=20?'EXTREME SHORT':'NEUTRALE');
+   });
+  if(!sourceFocusOk||cotFirst.focusCount!==String(expectedCrowding.length)||
+     !cotFirst.focusTitle?.includes('CONCENTRAZIONE NET/OI ≥30%')||
+     !cotFirst.focusNote?.includes('non direzione del prezzo'))
+    throw Error(label+' COT focused crowding does not match 104W source '+JSON.stringify({cotFirst,expectedCrowding}));
   if(cotFirst.status!=='READ_ONLY'||cotFirst.conflicts!==''||
      cotFirst.asof!==cotFixture.USD.dates.at(-1)||
      cotFirst.extremes!=='5'||cotFirst.crowding!=='3'||
