@@ -591,6 +591,17 @@ function expectedReactionFromMetrics(row){
     return {status:p.dataset.readingStatus,first:p.dataset.policyEarliest,
       last:p.dataset.policyLatest,certified:p.dataset.certified,
       estimated:p.dataset.estimated,withheld:p.dataset.withheld,
+      meeting:(()=>{
+        const box=p.querySelector('.gmfq-cb-meeting-focus'),det=p.querySelector('.gmfq-cb-meeting-details');
+        return {source:box?.dataset.source,asof:box?.dataset.asOf,status:box?.dataset.calendarStatus,
+          note:box?.textContent,closed:det?.open===false,total:Number(det?.dataset.count),
+          groups:[...box?.querySelectorAll('.gmfq-cb-meeting-dates li')||[]].map(x=>({
+            date:x.dataset.meetingDay,ccys:[...x.querySelectorAll('[data-meeting-ccy]')].map(y=>y.dataset.meetingCcy)
+          })),
+          rows:[...det?.querySelectorAll('.gmfq-cb-meeting-all li')||[]].map(x=>({
+            ccy:x.dataset.meetingCcy,date:x.dataset.meetingDate,last:x.dataset.policyAsof,tier:x.dataset.meetingTier
+          }))};
+      })(),meetingDateGroups:p.dataset.meetingDateGroups,meetingUpcomingCount:p.dataset.meetingUpcomingCount,
       priority:p.querySelector('.gmfq-first-priority')?.textContent,
       evidence:p.querySelector('.gmfq-first-claim')?.textContent,
       order:!!(p.querySelector('.gmfq-first-priority')?.compareDocumentPosition(p.querySelector('.gmfq-first-claim'))&Node.DOCUMENT_POSITION_FOLLOWING),
@@ -609,8 +620,37 @@ function expectedReactionFromMetrics(row){
      !cbFirst.evidence?.includes('Pricing 6M certificato')||!cbFirst.order||
      cbFirst.width>cbFirst.client+2||cbFirst.doc>cbFirst.viewport+16)
     throw Error(label+' CB first reading or native chart not intact '+JSON.stringify(cbFirst));
-  await page.frameLocator('#gmfq-page').locator('#gmfq-cb-reading-first details>summary').press('Enter');
-  const cbFull=await page.frameLocator('#gmfq-page').locator('#gmfq-cb-reading-first details p').last().isVisible();
+  const cbMeetingToday=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  const expectedCb=Object.entries(cbFixture).map(([ccy,x])=>({ccy,date:x.next_meeting,last:x.last_date}))
+    .sort((a,b)=>a.date.localeCompare(b.date));
+  const futureCb=expectedCb.filter(x=>x.date>cbMeetingToday),days=[...new Set(futureCb.map(x=>x.date))].slice(0,3);
+  const goodMeeting=cbFirst.meeting?.source==='NATIVE_CB_DATA'&&
+    cbFirst.meeting.status==='HISTORICAL_SNAPSHOT'&&cbFirst.meeting.asof===cbFirst.last&&
+    cbFirst.meeting.note?.includes('non sono annunci né meeting confermati in tempo reale')&&
+    cbFirst.meetingDateGroups===String(days.length)&&
+    cbFirst.meetingUpcomingCount===String(futureCb.length)&&
+    cbFirst.meeting.closed&&cbFirst.meeting.total===8&&cbFirst.meeting.rows.length===8&&
+    cbFirst.meeting.rows.every((x,i)=>{
+      const expected=expectedCb[i],status=operational.currencies[x.ccy].operational_status;
+      return x.ccy===expected.ccy&&x.date===expected.date&&x.last===expected.last&&
+        x.tier===(status==='GREEN_OFFICIAL'?'CERTIFIED':status==='GREEN_ESTIMATED'?'ESTIMATED':'WITHHELD');
+    })&&cbFirst.meeting.groups.length===days.length&&
+    cbFirst.meeting.groups.every((x,i)=>x.date===days[i]&&
+      JSON.stringify(x.ccys)===JSON.stringify(futureCb.filter(y=>y.date===x.date).map(y=>y.ccy)));
+  if(!goodMeeting)throw Error(label+' CB G8 source calendar/provenance broken '+JSON.stringify(cbFirst.meeting));
+  const meetingToggle=page.frameLocator('#gmfq-page').locator('#gmfq-cb-reading-first .gmfq-cb-meeting-details>summary');
+  await meetingToggle.press('Enter');
+  const meetingVisible=await page.evaluate(()=>{
+    const panel=document.getElementById('gmfq-page').contentDocument.getElementById('gmfq-cb-reading-first'),
+      det=panel.querySelector('.gmfq-cb-meeting-details');
+    return {opened:det?.open,rows:[...det?.querySelectorAll('.gmfq-cb-meeting-all li')||[]]
+      .filter(x=>x.getClientRects().length).length};
+  });
+  if(!meetingVisible.opened||meetingVisible.rows!==8)
+    throw Error(label+' CB 8-bank detail keyboard disclosure failed '+JSON.stringify(meetingVisible));
+  await meetingToggle.press('Enter');
+  await page.frameLocator('#gmfq-page').locator('#gmfq-cb-reading-first>details:not(.gmfq-cb-meeting-details)>summary').press('Enter');
+  const cbFull=await page.frameLocator('#gmfq-page').locator('#gmfq-cb-reading-first>details:not(.gmfq-cb-meeting-details) p').last().isVisible();
   if(!cbFull)throw Error(label+' CB provenance not keyboard accessible');
   await page.screenshot({path:'v10-qa-images/'+label+'-cb-reading-first.png',fullPage:true});
   // Negative policy fixture: future meeting missing MUST invalidate the first
