@@ -724,7 +724,7 @@ async function getState(page){
            d.querySelectorAll('#pair-index button.pair-open[data-pair]').length===28&&
            d.getElementById('gmfq-pair-research-path')?.dataset.pair===code;
        },homePair,{timeout:35000});
-       if(navigationVersion==='pairs-explained-ranking-20261022'){
+       if(['pairs-explained-ranking-20261022','pairs-focus-eight-20261022'].includes(navigationVersion)){
          await page.waitForFunction(()=>{
            const d=document.getElementById('gmfq-page')?.contentDocument,p=d?.getElementById('gmfq-pair-rank');
            return p?.dataset.status==='READ_ONLY'&&
@@ -735,10 +735,13 @@ async function getState(page){
              rows=[...d.querySelectorAll('#pair-index tr[data-research-rank]')];
            return {source:p?.dataset.status,mode:p?.dataset.sortMode,signals:p?.dataset.hasTradeRanking,
              count:p?.dataset.count,baseline:p?.dataset.macroAsOf,model:p?.dataset.priceAsOf,
+             view:p?.dataset.viewMode,visibleCount:Number(p?.dataset.visibleCount),
+             viewToggles:[...p.querySelectorAll('button[data-pair-view]')].map(x=>({
+               value:x.dataset.pairView,pressed:x.getAttribute('aria-pressed')})),
              overflow:p?.scrollWidth>p?.clientWidth+2,
              docWidth:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth,
              rows:rows.map(x=>({code:x.querySelector('button.pair-open')?.dataset.pair,
-               rank:Number(x.dataset.researchRank),reason:x.querySelector('.gmfq-row-why')?.textContent}))};
+               rank:Number(x.dataset.researchRank),reason:x.querySelector('.gmfq-row-why')?.textContent,visible:!!x.getClientRects().length,selected:x.classList.contains('pair-current')}))};
          });
          const rankedSetup=await capture();
          if(rankedSetup.source!=='READ_ONLY'||rankedSetup.signals!=='false'||rankedSetup.count!=='28'||
@@ -750,6 +753,20 @@ async function getState(page){
             !rankedSetup.rows.find(x=>x.code==='AUDCHF')?.reason.includes('Timing contrario')||
             !rankedSetup.rows.find(x=>x.code==='EURUSD')?.reason.includes('Prezzo già avanzato'))
            throw Error(name+' public ranked pairs or named CON RISCHI constraint absent '+JSON.stringify(rankedSetup));
+         if(navigationVersion==='pairs-focus-eight-20261022'){
+           const shown=rankedSetup.rows.filter(x=>x.visible);
+           if(rankedSetup.view!=='focus'||rankedSetup.visibleCount!==shown.length||
+             shown.length<8||shown.length>9||
+             rankedSetup.rows.slice(0,8).some(x=>!x.visible)||
+             rankedSetup.rows.some(x=>x.rank>8&&x.visible&&!x.selected)||
+             rankedSetup.viewToggles[0]?.pressed!=='true')
+              throw Error(name+' public compact pair view not source-safe '+JSON.stringify(rankedSetup));
+           await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-pair-view="all"]').click();
+           const expanded=await capture();
+           if(expanded.view!=='all'||expanded.visibleCount!==28||expanded.rows.some(x=>!x.visible))
+              throw Error(name+' public original 28-pair expansion failed '+JSON.stringify(expanded));
+           await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-pair-view="focus"]').click();
+         }
          await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-rank-mode="thesis"]').click();
          const rankedThesis=await capture();
          if(rankedThesis.mode!=='thesis'||rankedThesis.rows.length!==28||
