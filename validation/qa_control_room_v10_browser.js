@@ -363,6 +363,33 @@ function expectedReactionFromMetrics(row){
   });
   if(g8.some(c=>!ratesDetail.currencies.includes(c))||!ratesDetail.activeSection||
      !ratesDetail.hasPricing)throw Error(label+' rates focus/G8 detail failed: '+JSON.stringify(ratesDetail));
+  
+  // Rates must show decision-first coverage, not eight additional rows by default.
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return d?.querySelector('#gmfq-ois-research-estimates[data-status="RESEARCH_ONLY"] .gmfq-est-disclosure');
+  },null,{timeout:20000});
+  const compact=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page').contentDocument,
+      p=d.getElementById('gmfq-ois-research-estimates'),details=p.querySelector('.gmfq-est-disclosure');
+    return {closed:!details.open,hidden:!p.querySelector('.gmfq-est-table')?.getClientRects().length,
+      note:p.querySelector('.gmfq-est-quick-read')?.textContent,
+      sourceRows:p.querySelectorAll('.gmfq-est-row[data-ccy]').length};
+  });
+  if(!compact.closed||!compact.hidden||compact.sourceRows!==8||!compact.note?.includes('fonti certificate'))
+    throw Error('G8 Rates research too dense or data missing: '+JSON.stringify(compact));
+  const toggle=page.frameLocator('#gmfq-page').locator('#gmfq-ois-research-estimates .gmfq-est-disclosure > summary');
+  await toggle.click();
+  const expanded=await page.evaluate(()=>{
+    const p=document.getElementById('gmfq-page').contentDocument.getElementById('gmfq-ois-research-estimates');
+    return {open:p.querySelector('.gmfq-est-disclosure').open,
+      visible:!!p.querySelector('.gmfq-est-table')?.getClientRects().length,
+      currencies:[...p.querySelectorAll('.gmfq-est-row[data-ccy]')].map(x=>x.dataset.ccy),
+      method:p.textContent.includes('non intervallo statistico')};
+  });
+  if(!expanded.open||!expanded.visible||expanded.currencies.length!==8||!expanded.method)
+    throw Error('G8 Rates expanded detail/source loss: '+JSON.stringify(expanded));
+  await toggle.click();
   await page.frameLocator('#gmfq-page').locator('#rates-select button[data-ccy="NZD"]').click();
   await page.waitForFunction(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument;

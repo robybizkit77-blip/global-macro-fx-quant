@@ -428,6 +428,23 @@ async function getState(page){
           estimateProof.width>estimateProof.viewport+16)
          throw Error(name+' public G8 pricing estimate / mobile transparency failed '+JSON.stringify(estimateProof));
        console.log('CONTROL_ROOM_PUBLIC_G8_PRICING_ESTIMATES_GREEN',name,JSON.stringify(estimateProof));
+        if(process.env.GITHUB_EVENT_NAME!=='pull_request'){
+          const compact=await page.evaluate(()=>{
+            const p=document.getElementById('gmfq-page').contentDocument.getElementById('gmfq-ois-research-estimates');
+            const details=p?.querySelector('.gmfq-est-disclosure');
+            return {closed:details?.open===false,hidden:!p?.querySelector('.gmfq-est-table')?.getClientRects().length,
+              note:p?.querySelector('.gmfq-est-quick-read')?.textContent,
+              count:p?.querySelectorAll('.gmfq-est-row[data-ccy]').length};
+          });
+          if(!compact.closed||!compact.hidden||compact.count!==8||!compact.note?.includes('fonti certificate'))
+            throw Error('Public G8 Rates research not decision first: '+JSON.stringify(compact));
+          await page.frameLocator('#gmfq-page').locator('#gmfq-ois-research-estimates .gmfq-est-disclosure > summary').click();
+          const open=await page.evaluate(()=>{
+            const p=document.getElementById('gmfq-page').contentDocument.getElementById('gmfq-ois-research-estimates');
+            return !!p?.querySelector('.gmfq-est-disclosure')?.open&&!!p?.querySelector('.gmfq-est-table')?.getClientRects().length;
+          });
+          if(!open)throw Error('Public full G8 pricing detail inaccessible');
+        }
        let visible=false;
        for(let attempt=0;attempt<12;attempt++){
          visible=await page.evaluate(()=>!!document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-pricing-research'));
