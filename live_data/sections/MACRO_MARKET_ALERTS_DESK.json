@@ -1,8 +1,49 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-22T16:50:52Z",
+  "generated_at_utc": "2026-10-22T17:46:19Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-4e1228f7ff64f39a14e1",
+      "observed_at_utc": "2026-10-22T16:50:19Z",
+      "headline": "Blackstone sees widening credit spreads as a chance to capture higher returns",
+      "summary": "Reuters riporta: Blackstone sees widening credit spreads as a chance to capture higher returns. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CREDIT",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxORldGZFBnWFM0UnNpZTVWZE95SkdVdVFyVjhpU3E0Sl9ucFhTTXJsX3NWVkZvOWd6TmhJRVZOQjhKb1dES3B2YUFHT0hJdWZIdk9VaFhmS2xub0dOVWsxMUxCV2wwVTdkcFV0TzFQSUhkMURBQ1BIMHViUVNxUXYydG94ajVNNWNEQmpZZDZBYi0wYWpKYklaeUlIWnpLSFhIdnd6WGtaQk9JUG1fWVg0b2cxTGJxWWxFeFZz?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-9d00f1debccc388047dd",
+      "observed_at_utc": "2026-10-22T16:44:51Z",
+      "headline": "Wall Street sinks as Nasdaq falls over 2% on AI cost worries",
+      "summary": "Reuters riporta: Wall Street sinks as Nasdaq falls over 2% on AI cost worries. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxNTWxDZDg5X0padGNvb2k2V2ZkX2tEWW9YWkdjeVdMZHNUTlg1MXY4TmUyTDZHdUhNTHFRNWRPRjc2VFlEN3RXTDhNSjhDYmRfTWZGXzdKYXdLejRHNGgwRVdNbmZRUkFhSm9GakxMek56UUZ2OUtqajd6NVkzRkR1VzBNWlo5VWp5NUFkX2phUjlSSFlndUlNNGxvUXlHSm1wMlpTbkRR?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-f1bdfcf72fe325c05ae3",
+      "observed_at_utc": "2026-10-22T16:00:49Z",
+      "headline": "Libya's eastern parliament approves in principle central bank governor's resignation, spokesperson says",
+      "summary": "Reuters riporta: Libya's eastern parliament approves in principle central bank governor's resignation, spokesperson says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxQUmZZVFpPdHR0ZXM0QllwRldsMlJCd3lxcU9BTHY5RE1IOTNNUFdMbTd1cVFzWG1ZUURydWpVU0NJM0M5a1BKZEw2cklMV25udUlqUk9WMkJXd1RHZEVuODBSMlJwNm1tekNVTWwwdzdsVEw1eHJyYzdVQ3E3czNFSnE5NzByUi1XY1g3aUZBaGtGRC04LUlQaXlZYjExRV8xMEFpb1dBVnhRLTNJdHBYVTJxdy1sSmRtWkhQa1JEU1hnaDNsVWNleA?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-dc9ad8db029f9d58ca56",
       "observed_at_utc": "2026-10-21T23:19:00Z",
@@ -1359,47 +1400,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxPaHdteV9meHVjc2dvbmd1WjNPa1FHR2lwTFlEcmJPWE5zZnhHSFNjQndCeHptVW1NaEpsbms3QS1oSHRiTmZyUVp2ZVR0SlMwT1kxVnM2UFdyenVSblJHVW4ySjA3aTFUcGxvbV9iaHZZMzJVZTRQV1ZtM3BZMVd4RHFsaw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-8911dda133e2351e44df",
-      "observed_at_utc": "2026-10-20T00:58:00Z",
-      "headline": "Brent slips as Iran president discusses mediation with Pakistan army chief",
-      "summary": "Reuters riporta: Brent slips as Iran president discusses mediation with Pakistan army chief. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "COMMODITIES",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxPZlA3RXBMd0lXRU1feWpodXpZQ2tnUERkUHFQSlFGX2hCMjdrOVdhRVd2eVk3dmhLYklUdVM1WGtoXzc0cUt2OG44WjBYVFVZazFvQWo1UmJWRlliNzJHWlZBU1hScTU1RU9sVEdDVllsSWE4UXh5b0ZHX0VlU01fNDc3ckpxRkw3ZGdaM0xxMW1qOEhWck1XYUlSVkJWeVZyZWRRSkpqdTFQSmZhejlBRmkxZUJmMGtPVWx6Ym82SnNTcElaWGc?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-e400371b02a3a2a49b43",
-      "observed_at_utc": "2026-10-20T16:57:00Z",
-      "headline": "US stocks rise after companies deliver strong profits and oil prices retreat",
-      "summary": "AP News riporta: US stocks rise after companies deliver strong profits and oil prices retreat. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "AP News · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxQTUxwUkw1R0I4c0hwa0lfVGdUQ3ZoMlVlZzZBa1RBTU9hMEZtSTFQY3d3NzVYRlFiN1hubTFWX3JXVnZBbnUxSmFsM05CZ1lyVVVOamlWOXlxUzdaMTcxdFBzY3gzZVdmNjZaTXNPNWtBeTNvMTVETWtwcGxaaE5CQWFUOS0tM1NpS2FkT1pocUlYWGZkX2wyd0d3OTg?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-db5bd06df5f9c1ffd32a",
-      "observed_at_utc": "2026-10-20T10:02:09Z",
-      "headline": "Brazil central bank looks to encourage responsible lending in consumer debt crackdown, sources say",
-      "summary": "Reuters riporta: Brazil central bank looks to encourage responsible lending in consumer debt crackdown, sources say. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxNbVNIX1FUZlA3bUZzWWJoT3VRSXRxTUtQZnE3akZ1T05ZRGVQdXBPY0RYVGhjWXRMUWctcGx3akhycVJQT1VPSXRXalRsUi1ET0J4SDdsLWZMNmNRZU9KSmQ0cU5NOGNFcDRkb0JQTDZDNWJwOFNTM0J5Z2FkOU0zTWExcUNObEctaWsyRDFfaUJ0UDlpcnQ2MHlQc3ExVVFjejRzdEZQNjVxWGx4Y0JNVUZuOS1PU1IydmVKcDN1RGFvNHFSc3VHUkRn?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
