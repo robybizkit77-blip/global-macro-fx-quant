@@ -1,8 +1,36 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-22T19:49:14Z",
+  "generated_at_utc": "2026-10-22T20:48:42Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-c8045b97f5f06ca8188b",
+      "observed_at_utc": "2026-10-22T20:01:06Z",
+      "headline": "S&P 500, Nasdaq end sharply lower as revived AI doubts ignite tech selloff",
+      "summary": "Reuters riporta: S&P 500, Nasdaq end sharply lower as revived AI doubts ignite tech selloff. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxNTWxDZDg5X0padGNvb2k2V2ZkX2tEWW9YWkdjeVdMZHNUTlg1MXY4TmUyTDZHdUhNTHFRNWRPRjc2VFlEN3RXTDhNSjhDYmRfTWZGXzdKYXdLejRHNGgwRVdNbmZRUkFhSm9GakxMek56UUZ2OUtqajd6NVkzRkR1VzBNWlo5VWp5NUFkX2phUjlSSFlndUlNNGxvUXlHSm1wMlpTbkRR?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-57cec65990496ee8b549",
+      "observed_at_utc": "2026-10-22T00:46:00Z",
+      "headline": "Oil prices hit five-month high as Houthi attacks stoke Middle East supply fears",
+      "summary": "Reuters riporta: Oil prices hit five-month high as Houthi attacks stoke Middle East supply fears. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxOYzBEdGVKYmZ3VVpJajg0TW5DN2VHVEM2aDVTcFJKQVduMnVMTU5NbVcyMGxBanBHY3VvMzJQR1VrQWM4b0hLeG1YaTFWcldTeU9yTlBXc3FiR1FtcUp0SmxhRkJkWmpmZ2x6X3VGZHZEUDNLTE9LTFZNSlBWWjNJVGtaV3YwWkc4QVhxbHozYkx5THpZMVlYVDAtd0dqbUMyOUcyVk91NEYxaFFCZklRWWhjQm5qN2NvVHdWdnZIQVJSMk0?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-ed1fc6997fd7d7af4683",
       "observed_at_utc": "2026-10-22T16:02:09Z",
@@ -1363,36 +1391,6 @@
       "related_pairs": [],
       "source_label": "AP News · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxQTUxwUkw1R0I4c0hwa0lfVGdUQ3ZoMlVlZzZBa1RBTU9hMEZtSTFQY3d3NzVYRlFiN1hubTFWX3JXVnZBbnUxSmFsM05CZ1lyVVVOamlWOXlxUzdaMTcxdFBzY3gzZVdmNjZaTXNPNWtBeTNvMTVETWtwcGxaaE5CQWFUOS0tM1NpS2FkT1pocUlYWGZkX2wyd0d3OTg?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-04dbe8e7272f521f6470",
-      "observed_at_utc": "2026-10-20T23:30:21Z",
-      "headline": "COMMENTARY: Fed sneezes, but emerging markets aren't catching a cold yet: McGeever",
-      "summary": "Reuters riporta: COMMENTARY: Fed sneezes, but emerging markets aren't catching a cold yet: McGeever. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxQS1daQTg5d2lOVXV0UWliMmhhb1R0c0MtbVFIRDRTSFBQWmZub2dmNFRTZmJWSDB3ME4xS1U3WnZ3MEtCamNScWNyYy13R25hSEdqOFdCcVZUNFRsTU1MMGxLWVRpSHB5NWxKTkR3d01Bb2ZheGg2WUtRTmZKZTJ4WHJKNG8tc0ZpSEZWUDNYLU5wUTJObmhqTU9wV3dWMVR4NXNqNVBpMUZGejV6M2hSZWZCUVZ5TGFJQUpNcUFkUnZ1dnVoajdBay1B?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-3dcbf5de84ccec0edb15",
-      "observed_at_utc": "2026-10-20T21:14:47Z",
-      "headline": "Dow outperforms as Wall Street rises, healthcare stocks lead gains",
-      "summary": "Reuters riporta: Dow outperforms as Wall Street rises, healthcare stocks lead gains. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxOT2JsXzZ4YTVKcDJjNE9iTW42aU0wY0VOZXRtdDYxTzJTanBUOGZIT1FLSl9FVTNxQ1RpTVFSWHlsejgyR0Y1b3JQWXRlT0dEMjJPWWpXYlpfdFJQaHZKZG5KdUNMdW53NmlMd2RwUWJKWFB3dE9Xc2ZBbnRfalF3cWNzblhxTGJOTGlKYUh1a0FmWC1vaGQydWZXdTMzemJjSVg5NWZ0bw?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
