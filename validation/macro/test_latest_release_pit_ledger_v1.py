@@ -2,13 +2,14 @@
 """PIT-date evidence negative tests from pinned official G8 source records."""
 import copy
 import unittest
-from datetime import date
+from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from validation.macro.latest_release_pit_ledger_v1 import (
     ROOT, build_ledger, collect_candidates, resolved_time, iso_day,
 )
 
-TODAY = date(2026, 10, 20)
+TODAY = datetime.now(ZoneInfo('Europe/Rome')).date()
 
 
 class LatestReleaseLedgerTests(unittest.TestCase):
@@ -78,7 +79,7 @@ class LatestReleaseLedgerTests(unittest.TestCase):
     def test_future_release_in_evidence_fails_closed(self):
         data = copy.deepcopy(self.anchors)
         row = data[("EUR.inflation", "2026-09")][0]
-        row["date"] = "2026-10-21"
+        row["date"] = (TODAY + timedelta(days=1)).isoformat()
         with self.assertRaisesRegex(ValueError, "future official release metadata"):
             self.run_receipt(data)
 
