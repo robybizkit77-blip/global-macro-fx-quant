@@ -26,9 +26,19 @@ class LatestReleaseLedgerTests(unittest.TestCase):
         self.assertEqual(out["observations_checked"], 16)
         self.assertEqual(sum(out["counts"].values()), 16)
         self.assertEqual(out["counts"]["FULL_RELEASE_INSTANT"], 4)
-        self.assertEqual(out["counts"]["WITHHELD_EXACT_PERIOD_EVIDENCE"], 0)
-        self.assertEqual(out["counts"]["WITHHELD_OFFICIAL_SOURCE_VALUE_CONFLICT"], 0)
-        self.assertEqual(out["counts"]["DATE_ONLY"], 12)
+        withheld = [key for key, record in out["observations"].items()
+                    if record["release"]["status"].startswith("WITHHELD")]
+        self.assertEqual(out["unresolved_targets"], sorted(withheld))
+        self.assertEqual(
+            len(withheld), out["counts"]["WITHHELD_EXACT_PERIOD_EVIDENCE"]
+            + out["counts"]["WITHHELD_OFFICIAL_SOURCE_VALUE_CONFLICT"])
+        self.assertEqual(sum(out["counts"].values()), 16)
+        for key in withheld:
+            row = out["observations"][key]["release"]
+            self.assertIsNone(row["first_release_date"], key)
+            self.assertIsNone(row["first_release_timestamp_utc"], key)
+            self.assertFalse(row["historical_backtest_safe_for_all_periods"], key)
+        self.assertGreater(out["counts"]["DATE_ONLY"], 0)
         self.assertFalse(out["safe_to_promote_macro_labels"])
         self.assertFalse(out["safe_to_publish_new_D"])
         self.assertFalse(out["historical_vintage_series_available"])
