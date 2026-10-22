@@ -1,8 +1,47 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-22T09:52:29Z",
+  "generated_at_utc": "2026-10-22T10:49:53Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-f845006254e002a0077d",
+      "observed_at_utc": "2026-10-22T09:42:00Z",
+      "headline": "World shares retreat as report of damage to oil tankers pushes oil prices higher",
+      "summary": "AP News riporta: World shares retreat as report of damage to oil tankers pushes oil prices higher. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxNbG9Bb3haUmhvOWFmQ0t6bWoyLThHN0pFV21XNjVOVXpsVmFBUEFhSk9HcC1ZYkV3eFhqT2d1SEFSQldtdm16YVM5UW1nRU5yc1JGRVkteEhNZmx0eEpOck1HdnNXNW1TSnh4YmRHU3dyeGdXdzdUZ3JsdFNHVUZwWEZrQVRXUWtrbHlJbDh1eDBSVU9iOUJScQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-2349b0ff5bd9f29fa044",
+      "observed_at_utc": "2026-10-22T04:03:00Z",
+      "headline": "Gold hits over two-week low as oil rally fuels inflation worries",
+      "summary": "Reuters riporta: Gold hits over two-week low as oil rally fuels inflation worries. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxPdWF1N1NOek9pQi1IYkRUMll1bHRXOFluVmtuYm9LR1dtMThlWlZDYXB5RlVwYko2MVFRS01SSnIwRGhMRnFULTZvdURKV0MxOHk1clF4NW1wTkJUOWkyMng4b2J5QjI4X2tLRkVMSGxDcTIxV0xXTThnZkxvQjVUajZBMmY4RURVTzQtcFN1T2gybVJWRkMwX0RCdkxGTVpLbUdlT0paVU80cWc0VS0xenk0QnZRYS1B?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-d74355a79f7355f8b8b9",
+      "observed_at_utc": "2026-10-22T02:33:00Z",
+      "headline": "Indian shares extend losses as high oil prices heighten inflation worries",
+      "summary": "Reuters riporta: Indian shares extend losses as high oil prices heighten inflation worries. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxQZDhVMWdGc0J2bURPNnV2YnBaRXlMSkVqcXRGX1FBZ2lUOXQ4eVJyd3RsTE1CckJ4cjRuVEdPQVJLaGVXaVA5clJIZ0lQSTBsMm1iQ0xfeTZkNXhqWUtoX2ExQkNlRFVfSVhKckRtenZfWW41bDlxWWc0WVFuRTVTTHlIdEtPcEI2Z2hWR2pyd2NGOGRiNXNMUkM3OE5qcFV5VUxQUkVDem1HdXN4X0pKY3RrejhKeHcxRjdV?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-ec75aceb64cabb6893d2",
       "observed_at_utc": "2026-10-22T08:58:00Z",
@@ -1371,51 +1410,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxNRlhEb1c1OS1kZy1wc0paMktybGc1SFAxMlZSLWVEUXZQaHdNOTExdXZOMmtWbWZ1LVNzVEVUOTNSUWxwZ3VMaXFNVDd0VUV3SWdRYTZKcXdaQlB6SWpXeFhsMjcxUkZubVB3R1Y3SUhMY1B3Z29lalI2S2FjLVh3TDNmNTVxbTZHa3pxTl83emVjdjQ5MFNJUnd1NEpIZXJUWUh1ODZPekpZTjR6b01DeWxoa1ZGQQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-a1fa76edac2b04dc449e",
-      "observed_at_utc": "2026-10-20T08:02:00Z",
-      "headline": "Sultan of Oman begins state visit to Britain as Gulf state plays pivotal role in Strait of Hormuz",
-      "summary": "AP News riporta: Sultan of Oman begins state visit to Britain as Gulf state plays pivotal role in Strait of Hormuz. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [
-        "GBP"
-      ],
-      "related_pairs": [],
-      "source_label": "AP News · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxOaGNHWWFGUlhFYTdmWU5yR1BPRV90ZHVyWWNaWGh2N2FtbXZ4TFFiNFgxNm9VVTVBblA2ajZjMTF4LU02Um5SN3hDTzRnUDFrNzFwSFZVTHRHcWY2aUFJd3d2Z1daR2xWU1NCbHdaTGlNUXFydEV1TjJ6T01RS1ZHZkJmSVhtalFlUFFocTJkS2czbXdWVUt6OHV6TXMyNkZyNVE1blV3?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-1378f7c0587d768a8c5a",
-      "observed_at_utc": "2026-10-20T11:26:25Z",
-      "headline": "Nasdaq futures fall as oil prices jump, key earnings loom",
-      "summary": "Reuters riporta: Nasdaq futures fall as oil prices jump, key earnings loom. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxOT2JsXzZ4YTVKcDJjNE9iTW42aU0wY0VOZXRtdDYxTzJTanBUOGZIT1FLSl9FVTNxQ1RpTVFSWHlsejgyR0Y1b3JQWXRlT0dEMjJPWWpXYlpfdFJQaHZKZG5KdUNMdW53NmlMd2RwUWJKWFB3dE9Xc2ZBbnRfalF3cWNzblhxTGJOTGlKYUh1a0FmWC1vaGQydWZXdTMzemJjSVg5NWZ0bw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-d4454c288c0e74a60ae6",
-      "observed_at_utc": "2026-10-20T06:00:00Z",
-      "headline": "COMMENTARY: Markets' squeal is music to Fed ears — but still too faint",
-      "summary": "Reuters riporta: COMMENTARY: Markets' squeal is music to Fed ears — but still too faint. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxOanNEc3U3RUp6cGJ5a2hycUVSd2ZoYkJfSl9Qd1JEWkx5OFlOMTE5TjVXLUZNLUh0ZkZab0JSN1BHVHAteGI1cFRkckUycldMNHFPbWljOFMxNHVDcFFpMjlvRVpQclZnTWU4cTZVUUlkOExfMDEyVjItaC1GMTlKX0RNRzRGRnpacmo3QXlnclAxNWZsd1lpSUpCQWtqYllaZFhDTkdfRDRsTVhQdmplX1gyVEwzb3ow?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
