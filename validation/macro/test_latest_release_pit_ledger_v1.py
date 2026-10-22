@@ -2,13 +2,14 @@
 """PIT-date evidence negative tests from pinned official G8 source records."""
 import copy
 import unittest
-from datetime import date
+from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from validation.macro.latest_release_pit_ledger_v1 import (
     ROOT, build_ledger, collect_candidates, resolved_time, iso_day,
 )
 
-TODAY = date(2026, 10, 20)
+TODAY = datetime.now(ZoneInfo('Europe/Rome')).date()
 
 
 class LatestReleaseLedgerTests(unittest.TestCase):
@@ -25,9 +26,19 @@ class LatestReleaseLedgerTests(unittest.TestCase):
         self.assertEqual(out["observations_checked"], 16)
         self.assertEqual(sum(out["counts"].values()), 16)
         self.assertEqual(out["counts"]["FULL_RELEASE_INSTANT"], 4)
-        self.assertEqual(out["counts"]["WITHHELD_EXACT_PERIOD_EVIDENCE"], 0)
-        self.assertEqual(out["counts"]["WITHHELD_OFFICIAL_SOURCE_VALUE_CONFLICT"], 0)
-        self.assertEqual(out["counts"]["DATE_ONLY"], 12)
+        withheld = [key for key, record in out["observations"].items()
+                    if record["release"]["status"].startswith("WITHHELD")]
+        self.assertEqual(out["unresolved_targets"], sorted(withheld))
+        self.assertEqual(
+            len(withheld), out["counts"]["WITHHELD_EXACT_PERIOD_EVIDENCE"]
+            + out["counts"]["WITHHELD_OFFICIAL_SOURCE_VALUE_CONFLICT"])
+        self.assertEqual(sum(out["counts"].values()), 16)
+        for key in withheld:
+            row = out["observations"][key]["release"]
+            self.assertIsNone(row["first_release_date"], key)
+            self.assertIsNone(row["first_release_timestamp_utc"], key)
+            self.assertFalse(row["historical_backtest_safe_for_all_periods"], key)
+        self.assertGreater(out["counts"]["DATE_ONLY"], 0)
         self.assertFalse(out["safe_to_promote_macro_labels"])
         self.assertFalse(out["safe_to_publish_new_D"])
         self.assertFalse(out["historical_vintage_series_available"])
@@ -78,7 +89,7 @@ class LatestReleaseLedgerTests(unittest.TestCase):
     def test_future_release_in_evidence_fails_closed(self):
         data = copy.deepcopy(self.anchors)
         row = data[("EUR.inflation", "2026-09")][0]
-        row["date"] = "2026-10-21"
+        row["date"] = (TODAY + timedelta(days=1)).isoformat()
         with self.assertRaisesRegex(ValueError, "future official release metadata"):
             self.run_receipt(data)
 

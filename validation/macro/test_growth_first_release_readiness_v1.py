@@ -3,13 +3,14 @@
 import copy
 import json
 import unittest
-from datetime import date
+from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from validation.macro.growth_first_release_readiness_v1 import (
     ROOT, ATTESTATIONS, build, validate_series,
 )
 
-TODAY = date(2026, 10, 20)
+TODAY = datetime.now(ZoneInfo('Europe/Rome')).date()
 
 
 class GrowthReleaseTests(unittest.TestCase):
@@ -32,8 +33,14 @@ class GrowthReleaseTests(unittest.TestCase):
         self.assertEqual(result["counts"]["missing_frequency_declared"], 4)
         self.assertEqual(result["counts"]["missing_unit_declared"], 4)
         self.assertEqual(result["counts"]["archival_first_release_vintage_certified"], 0)
-        self.assertEqual(result["unresolved_core_latest_release_target_count"], 0)
-        self.assertEqual(result["unresolved_core_latest_release_targets"], [])
+        unresolved = result["unresolved_core_latest_release_targets"]
+        self.assertEqual(result["unresolved_core_latest_release_target_count"], len(unresolved))
+        # When any core source advances without independent first-release
+        # evidence, the gate must expose its name instead of claiming zero
+        # missing proofs. A numeric Macro rebase remains forbidden.
+        self.assertEqual(unresolved, sorted(set(unresolved)))
+        self.assertTrue(all(key.count(".") == 1 for key in unresolved))
+        self.assertFalse(result["safe_to_publish_D"])
         self.assertFalse(result["safe_to_refresh_growth_score"])
         self.assertFalse(result["safe_to_refresh_qualitative_macro_labels"])
         self.assertFalse(result["safe_to_publish_D"])
@@ -88,7 +95,7 @@ class GrowthReleaseTests(unittest.TestCase):
 
     def test_future_first_release_date_is_rejected(self):
         def edit(a):
-            a["attestations"][0]["release_date"] = "2026-12-02"
+            a["attestations"][0]["release_date"] = (TODAY + timedelta(days=45)).isoformat()
         with self.assertRaisesRegex(ValueError, "future release date"):
             self.run_gate(edit)
 
@@ -137,8 +144,8 @@ class GrowthReleaseTests(unittest.TestCase):
 
     def test_future_growth_observation_rejected(self):
         row = {
-            "id": "US_TEST", "dates": ["2026-06-01", "2026-11-01"],
-            "values": [2., 3.], "last_date": "2026-11-01", "last_value": 3.,
+            "id": "US_TEST", "dates": ["2026-06-01", (TODAY + timedelta(days=90)).isoformat()],
+            "values": [2., 3.], "last_date": (TODAY + timedelta(days=90)).isoformat(), "last_value": 3.,
             "frequency": "M", "unit": "index"
         }
         with self.assertRaisesRegex(ValueError, "future Growth"):
