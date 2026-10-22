@@ -1,8 +1,47 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-22T15:50:51Z",
+  "generated_at_utc": "2026-10-22T16:50:52Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-dc9ad8db029f9d58ca56",
+      "observed_at_utc": "2026-10-21T23:19:00Z",
+      "headline": "Trump lashes out at reporters pressing him on Russia sanctions waiver",
+      "summary": "AP News riporta: Trump lashes out at reporters pressing him on Russia sanctions waiver. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxOSEVqOVZjRDRpREp4em9RdWgxZ1ZnaGNSYUtlWWM0NVhvbTJpelJKNmFnVlRIbHFyaHAzQjR5b21JRF9kQmdHSlBjampfYTVaRlcwVXZRU0t3WGQtcC1rSVRhUjVFZi15UkJ3UXRIN2pXNDhkVG5ueVVydFlNUjd6UmpOdDFCRmw0Qkl1VTZ2TUpqaXJOdW9wNGZSMGtkWFl2czMySld4cUlLSzkxdFZiTEllV0pnWllXeHpySW1zSlRtXzNNcUE?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-4bff94bf1dd95741f600",
+      "observed_at_utc": "2026-10-22T03:08:00Z",
+      "headline": "Indonesian sovereign fund Danantara says it has bought stocks after market rout",
+      "summary": "Reuters riporta: Indonesian sovereign fund Danantara says it has bought stocks after market rout. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMizwFBVV95cUxOdmtKSk9BTE9RNjJhbWZ2dVdFZlAyQzhnUHBXT2RGS3JHb3ltcmpyanlwQ2RJZmJvaHhvaHRTelQtdVdfY29USi0tRnRQdmw2enFWSzBSSzMwZEVkRGtldGhmV2tnbFVmLXFaY1NpNzdKN0xMN1dDSTVUdHNGOGtBazgzTkRDQmh2RjNFNW5HNkg1UkdUb3hndFZDRnUzRncwSzNGX185LU9yV0IxZjkzenhTWTNpMDBWWC13Z3Q4ZWFEc1FUVElJb3k0TnI1Nmc?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-41bd6ca994a97ddb1804",
+      "observed_at_utc": "2026-10-22T16:10:00Z",
+      "headline": "Sinking AI stocks undercut markets worldwide as oil climbs to its highest price since May",
+      "summary": "AP News riporta: Sinking AI stocks undercut markets worldwide as oil climbs to its highest price since May. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxNbG9Bb3haUmhvOWFmQ0t6bWoyLThHN0pFV21XNjVOVXpsVmFBUEFhSk9HcC1ZYkV3eFhqT2d1SEFSQldtdm16YVM5UW1nRU5yc1JGRVkteEhNZmx0eEpOck1HdnNXNW1TSnh4YmRHU3dyeGdXdzdUZ3JsdFNHVUZwWEZrQVRXUWtrbHlJbDh1eDBSVU9iOUJScQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-aa792d21c1bf6d0414a9",
       "observed_at_utc": "2026-10-22T14:59:00Z",
@@ -1361,51 +1400,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxNbVNIX1FUZlA3bUZzWWJoT3VRSXRxTUtQZnE3akZ1T05ZRGVQdXBPY0RYVGhjWXRMUWctcGx3akhycVJQT1VPSXRXalRsUi1ET0J4SDdsLWZMNmNRZU9KSmQ0cU5NOGNFcDRkb0JQTDZDNWJwOFNTM0J5Z2FkOU0zTWExcUNObEctaWsyRDFfaUJ0UDlpcnQ2MHlQc3ExVVFjejRzdEZQNjVxWGx4Y0JNVUZuOS1PU1IydmVKcDN1RGFvNHFSc3VHUkRn?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-123e029c46802d033a8d",
-      "observed_at_utc": "2026-10-20T01:33:00Z",
-      "headline": "Gold steady as investors await fed rate signals",
-      "summary": "Reuters riporta: Gold steady as investors await fed rate signals. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxOLVJCYm9CRFhWY01aUkRqYnVXb0RzRC1RUnhfOEFicHItalFBMnRMc0ZjcWRVcGNnZVg3ZXQ3WXNXeUZLN183enN0NFAtdmxuUHJhRU5jOHlQbTg1TldhNVdtbF9IWU1GZ1BfOEZvTnJpUEhGTE5xUkRSbl9FZVR4NlFJMEE2V1VYZ1hVRzk3SmpJMi1qelE?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-abe19875df9a790d411b",
-      "observed_at_utc": "2026-10-20T16:39:08Z",
-      "headline": "Wall Street gains ground on healthcare stocks rally, oil retreat",
-      "summary": "Reuters riporta: Wall Street gains ground on healthcare stocks rally, oil retreat. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxOT2JsXzZ4YTVKcDJjNE9iTW42aU0wY0VOZXRtdDYxTzJTanBUOGZIT1FLSl9FVTNxQ1RpTVFSWHlsejgyR0Y1b3JQWXRlT0dEMjJPWWpXYlpfdFJQaHZKZG5KdUNMdW53NmlMd2RwUWJKWFB3dE9Xc2ZBbnRfalF3cWNzblhxTGJOTGlKYUh1a0FmWC1vaGQydWZXdTMzemJjSVg5NWZ0bw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-9496928cd8d74a959034",
-      "observed_at_utc": "2026-10-20T16:24:52Z",
-      "headline": "UK stocks slip as banks and commodity-linked stocks weigh",
-      "summary": "Reuters riporta: UK stocks slip as banks and commodity-linked stocks weigh. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "GBP"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxPeUJnNTg4TVpXUEhLRF9SWXZHRlVMY181Nks1THF3VW1RdHRMSjJFR3J1VmJ5YWRaQ0lGRXFyemU5WkxZZzdlVWdwRFJuYXJSTk1PTkxDeldhYWs3VlBFaElmeGtMWm4xOFhkZ2VtMEJ3aVRlcmo0VlNaYUY1UklfcXR1ZWNwV2JvOWFrbmlPXzdRRTZsaFVjcGs3TnctMWtkWGIxZFowSUhKSGJFalNn?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
