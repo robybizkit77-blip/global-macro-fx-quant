@@ -2510,7 +2510,15 @@ function cotQuantitativeAudit(chart,story){
  if(dates.size!==1)return null;
  const extremes=FX.filter(c=>series[c].q!=='NEUTRALE');
  const crowding=FX.filter(c=>Math.abs(series[c].ratio)>=30);
- return {asof:series.USD.date,extremes,crowding,mismatched,
+ // Prioritize by absolute Net/OI, *not* by FX view or rounded percentile.
+ // A crowded non-extreme percentile (e.g., NZD) remains clearly distinct.
+ const crowdingFocus=crowding.slice().sort((a,b)=>Math.abs(series[b].ratio)-Math.abs(series[a].ratio)||
+   FX.indexOf(a)-FX.indexOf(b)).slice(0,3).map(c=>({
+     ccy:c,netoi:series[c].ratio,percentile:series[c].rounded,
+     netSign:series[c].net>0?'NET_LONG':series[c].net<0?'NET_SHORT':'NET_FLAT',
+     percentileClass:series[c].q
+   }));
+ return {asof:series.USD.date,extremes,crowding,mismatched,crowdingFocus,
    extremeLong:extremes.filter(c=>series[c].q==='EXTREME LONG'),
    extremeShort:extremes.filter(c=>series[c].q==='EXTREME SHORT')};
 }
@@ -2544,6 +2552,31 @@ async function mountCotFirstReading(doc){
  rail.dataset.extremes=result?String(result.extremes.length):'';
  rail.dataset.crowding=result?String(result.crowding.length):'';
  rail.dataset.conflicts=result?result.mismatched.join(','):'';
+ // A small source-reconciled shortlist is the only extra first-screen layer.
+ // All 8 CFTC currencies remain in the approved native chart and table.
+ if(result&&result.crowdingFocus.length){
+   const st=doc.createElement('style');st.id='gmfq-cot-focus-style';
+   st.textContent='#gmfq-cot-reading-first .gmfq-cot-focus{margin:8px 0 3px;border-top:1px solid #294657;padding-top:9px;min-width:0}'+
+     '#gmfq-cot-reading-first .gmfq-cot-focus-title{margin:0 0 5px;font:600 10px/1.45 Arial,sans-serif;color:#d8c48d}'+
+     '#gmfq-cot-reading-first .gmfq-cot-focus-list{display:flex;gap:5px 16px;flex-wrap:wrap;list-style:none;padding:0;margin:0}'+
+     '#gmfq-cot-reading-first .gmfq-cot-focus-list li{font:11px/1.55 Arial,sans-serif;color:#cddce6;min-width:0;white-space:normal}'+
+     '#gmfq-cot-reading-first .gmfq-cot-focus-list strong{font-weight:600;color:#f1b4af}'+
+     '#gmfq-cot-reading-first .gmfq-cot-focus-note{display:block;font:10px/1.5 Arial,sans-serif;color:#9bb5c6;margin:4px 0 0}'+
+     '@media(max-width:600px){#gmfq-cot-reading-first .gmfq-cot-focus-list{gap:4px 12px}#gmfq-cot-reading-first .gmfq-cot-focus-list li{font-size:10px}}';
+   doc.head.appendChild(st);
+   const box=doc.createElement('div');box.className='gmfq-cot-focus';
+   box.dataset.cftcAsOf=result.asof;
+   const pct=v=>(v>0?'+':'')+v.toFixed(1)+'%';
+   box.innerHTML='<p class="gmfq-cot-focus-title">⚠ CONCENTRAZIONE NET/OI ≥30% · '+htmlEscape(result.asof)+'</p>'+
+     '<ul class="gmfq-cot-focus-list">'+result.crowdingFocus.map(x=>
+       '<li data-cot-focus-ccy="'+x.ccy+'" data-netoi="'+x.netoi+'" data-percentile-rounded="'+x.percentile+
+       '" data-net-direction="'+x.netSign+'" data-percentile-class="'+x.percentileClass+'">'+
+       FLAG[x.ccy]+' '+x.ccy+' <strong>'+pct(x.netoi)+'</strong> · '+
+       x.percentile+'°/104W</li>').join('')+'</ul>'+
+     '<small class="gmfq-cot-focus-note">Net/OI = esposizione netta sul totale open interest; percentile = rango storico, non direzione del prezzo. COT non intraday.</small>';
+   rail.querySelector('.gmfq-first-claim')?.insertAdjacentElement('afterend',box);
+   rail.dataset.focusCount=String(result.crowdingFocus.length);
+ }
 }
 
 function onFrameLoad(){
