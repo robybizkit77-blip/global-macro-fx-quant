@@ -1128,6 +1128,17 @@ function expectedReactionFromMetrics(row){
       stale:p?.textContent.includes('NON CORRENTE, tesi da rivalidare'),
       descriptive:p?.textContent.includes('non crea da solo una preferenza FX'),
       summary:p?.querySelector('.gmfq-blocker-overview')?.textContent,
+      qualityCoverage:p.dataset.qualityCoverage,reviewCount:p.dataset.reviewCount,
+      quality:[...p.querySelectorAll('.gmfq-screener-quality span[data-quality]')].map(x=>({
+        tier:x.dataset.quality,count:Number(x.querySelector('b')?.textContent)})),
+      reviewState:(()=>{
+        const box=p.querySelector('.gmfq-screener-review');
+        return {rank:box?.dataset.ranking,signal:box?.dataset.tradeSignals,
+          text:box?.textContent,
+          pairs:[...box?.querySelectorAll('button.gmfq-review-pair[data-pair]')||[]].map(x=>({
+            code:x.dataset.pair,tier:x.dataset.quality,visible:!!x.getClientRects().length
+          }))};
+      })(),
       priority:p?.querySelector('.gmfq-blocker-priority')?.textContent,
       priorityFirst:!!(p.querySelector('.gmfq-blocker-priority')?.compareDocumentPosition(p.querySelector('.gmfq-blocker-overview'))&Node.DOCUMENT_POSITION_FOLLOWING),
       sources:[...p.querySelectorAll('.gmfq-blocker-date span[data-source]')].map(x=>x.dataset.source),
@@ -1143,6 +1154,24 @@ function expectedReactionFromMetrics(row){
     if(!k)throw Error(label+' fixture reason unknown '+code);
     expectedGroups[k].push(code);
   }
+  const knownTiers=['DA CONFERMARE','DA MONITORARE','CON RISCHI','NON VALUTABILE'];
+  const expectedQuality=Object.fromEntries(knownTiers.map(k=>[k,
+    Object.values(setupFeed.pairs).filter(x=>x.setup.quality===k).length]));
+  const expectedReview=Object.entries(setupFeed.pairs)
+    .filter(([,x])=>['DA MONITORARE','DA CONFERMARE'].includes(x.setup.quality))
+    .map(([code,x])=>({code,tier:x.setup.quality})).sort((a,b)=>a.code.localeCompare(b.code));
+  const reviewValid=reasons.qualityCoverage==='28'&&
+    reasons.reviewCount===String(expectedReview.length)&&
+    reasons.reviewState?.rank==='NONE'&&reasons.reviewState?.signal==='NONE'&&
+    reasons.reviewState.text?.includes('non proposte di ingresso')&&
+    reasons.reviewState.text?.includes(setupFeed.macro_baseline_asof)&&
+    reasons.quality.length===knownTiers.length&&
+    reasons.quality.every((x,i)=>x.tier===knownTiers[i]&&x.count===expectedQuality[x.tier])&&
+    reasons.reviewState.pairs.length===expectedReview.length&&
+    reasons.reviewState.pairs.every((x,i)=>x.code===expectedReview[i].code&&
+      x.tier===expectedReview[i].tier&&x.visible);
+  if(!reviewValid)
+    throw Error(label+' canonical 28-quality Screener coverage/review-only grouping failed '+JSON.stringify(reasons));
   for(const k of Object.keys(expectedGroups)){
     if(JSON.stringify(reasons.groups[k])!==JSON.stringify(expectedGroups[k].sort()))
       throw Error(label+' screener '+k+' reason mismatch '+JSON.stringify(reasons));
@@ -1170,6 +1199,19 @@ function expectedReactionFromMetrics(row){
     throw Error(label+' Screener detailed reasons inaccessible '+JSON.stringify(openedReasons));
   await page.frameLocator('#gmfq-page').locator('#gmfq-screener-blockers button[data-pair="GBPJPY"]').click();
   await page.waitForURL(u=>u.hash==='#/coppie?pair=GBPJPY',{timeout:20000});
+
+  // Research-only shortcuts must land at the canonical Pair Deep Dive
+  // without creating a signal, entry, rank or secondary pair calculation.
+  if(expectedReview.length){
+    const link=expectedReview.find(x=>x.code==='USDCAD')||expectedReview[0];
+    await page.goto(url+'#/screener',{waitUntil:'domcontentloaded',timeout:120000});
+    await page.waitForFunction(()=>{
+      const d=document.getElementById('gmfq-page')?.contentDocument;
+      return d?.getElementById('gmfq-screener-blockers')?.dataset.diagnosisStatus==='READ_ONLY';
+    },null,{timeout:30000});
+    await page.frameLocator('#gmfq-page').locator('#gmfq-screener-blockers button.gmfq-review-pair[data-pair="'+link.code+'"]').click();
+    await page.waitForURL(u=>u.hash==='#/coppie?pair='+link.code,{timeout:20000});
+  }
 
   // Home -> canonical Pair Deep Dive (not a generic Screener). Preserve all
   // 28 canonical G8 pairs and selected-pair permalink across changes.
