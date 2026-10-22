@@ -1689,6 +1689,195 @@ function pairThesisReactionBridge(code,pair,modelDay,reactionHtml,macroDay){
   '<p class="gmfq-decision-disclaimer">Non sono disponibili trigger numerici certificati di conferma, invalidazione o ingresso in questo feed. Nessun livello, stop, score o segnale viene creato da questa sezione.</p></section>';
 }
 
+/* Comparative editorial reading of ALL 28 existing canonical pairs.
+   The 1–28 order is a transparent lexicographic checklist, not a model score,
+   estimated return, actual entry signal or update to the historical thesis.
+   The native sortable/filterable pair TABLE and click listeners are retained. */
+function pairDeskOrdering(feedData,model){
+ if(feedData?.schema!=='GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1'||
+    feedData.status!=='CURRENT_CANONICAL_ENGINE'||feedData.pair_count!==28||
+    !feedData.thesis_is_not_entry||feedData.entry_level_published!==false||
+    feedData.price_audit?.status!=='PASS'||
+    feedData.price_audit.as_of!==feedData.price_asof||
+    !fresh(feedData.price_asof,5)||
+    !canonicalPairMacroBaseline(feedData,model))return null;
+ const book=feedData.pairs;
+ const ids=Object.keys(book||{});
+ if(ids.length!==28||!ids.every(x=>/^[A-Z]{6}$/.test(x)&&
+    FX.includes(x.slice(0,3))&&FX.includes(x.slice(3))&&x.slice(0,3)!==x.slice(3)))return null;
+ const dist={'DA CONFERMARE':0,'DA MONITORARE':0,'CON RISCHI':0,'NON VALUTABILE':0};
+ const timingRank={ALIGNED:4,PARTIAL:3,MIXED:2,UNCERTAIN:1,ADVERSE:0};
+ const sourceRows=[];
+ for(const code of ids){
+   const p=book[code],x=p?.setup||{},f=p?.decision_frame||{};
+   const quality=x.quality,struct=f.quality;
+   if(!Object.hasOwn(dist,quality)||!['CONTRASTO STRUTTURALE FORTE',
+       'VANTAGGIO RELATIVO PARZIALE','PILASTRI DIVISI',
+       'SEPARAZIONE RATES MATERIALE','NESSUN CONTRASTO'].includes(struct)||
+      struct!==x.structural?.quality)return null;
+   dist[quality]++;
+   const fav=x.structuralFav;
+   const eligible=quality!=='NON VALUTABILE';
+   if(eligible&&(![code.slice(0,3),code.slice(3)].includes(fav)||
+     !['GOOD','BAD','NEUTRAL'].includes(x.price?.state)||
+     !['ADVANCED','NORMAL'].includes(x.extension?.state)||
+     !Object.hasOwn(timingRank,x.timing?.state)||
+     !['GOOD','NEUTRAL','BAD'].includes(x.liquidity?.state)||
+     !['HIGH','MEDIUM','DIVERGENT','CONTEXT'].includes(x.cot?.state)||
+     !['DINAMICA RELATIVA ALLINEATA','DIVERGENZA RELATIVA DA MONITORARE',
+       'NESSUNA DIVERGENZA RELATIVA CHIARA'].includes(p.transition?.state)))
+      return null;
+   if(!eligible&&(fav!==null||!['PILASTRI DIVISI',
+      'SEPARAZIONE RATES MATERIALE','NESSUN CONTRASTO'].includes(struct)))
+      return null;
+   const structure=struct==='CONTRASTO STRUTTURALE FORTE'?3:
+      struct==='VANTAGGIO RELATIVO PARZIALE'?2:0;
+   const price={GOOD:2,NEUTRAL:1,BAD:0}[x.price?.state]??0;
+   const timing=timingRank[x.timing?.state]??-1;
+   const extension=x.extension?.state==='NORMAL'?1:0;
+   const transition=p.transition?.state==='DINAMICA RELATIVA ALLINEATA'?2:
+     p.transition?.state==='NESSUNA DIVERGENZA RELATIVA CHIARA'?1:0;
+   const liquidity={GOOD:2,NEUTRAL:1,BAD:0}[x.liquidity?.state]??0;
+   const cot={MEDIUM:3,CONTEXT:2,HIGH:1,DIVERGENT:0}[x.cot?.state]??0;
+   const reasons=[];
+   if(!eligible)reasons.push(struct==='PILASTRI DIVISI'?'Macro e Tassi/CB in conflitto':
+     struct==='SEPARAZIONE RATES MATERIALE'?'Solo spread 2Y; tesi assente':
+     'Nessuna preferenza Macro/Tassi');
+   else {
+     if(x.price?.state==='BAD')reasons.push('Prezzo contro la tesi');
+     else if(x.price?.state==='NEUTRAL')reasons.push('Prezzo non conferma');
+     if(x.timing?.state==='ADVERSE')reasons.push('Timing contrario');
+     if(x.extension?.state==='ADVANCED')reasons.push('Prezzo già avanzato');
+     if(p.transition?.state==='DIVERGENZA RELATIVA DA MONITORARE')
+       reasons.push('Dinamica relativa divergente');
+     if(x.timing?.state==='UNCERTAIN')reasons.push('Timing incerto');
+     if(x.timing?.state==='MIXED')reasons.push('Timing misto');
+     if(x.timing?.state==='PARTIAL')reasons.push('Timing solo parziale');
+     if(x.cot?.state==='HIGH')reasons.push('COT affollato/estremo');
+     if(x.cot?.state==='DIVERGENT')reasons.push('COT contrario');
+     if(x.liquidity?.state==='BAD')reasons.push('Liquidità sfavorevole');
+     if(struct==='VANTAGGIO RELATIVO PARZIALE')
+       reasons.push('Tesi sorretta da un solo pilastro');
+   }
+   if(!reasons.length)reasons.push('Servono trigger e rapporto rischio/rendimento esterni al modello');
+   sourceRows.push({code,quality,fav:eligible?fav:null,
+     thesis:structure===3?'Tesi forte':structure===2?'Tesi parziale':'Senza tesi',
+     why:reasons.slice(0,2).join(' · '),
+     thesisKey:[Number(eligible),structure,transition,price,timing,extension,liquidity,cot],
+     setupKey:[Number(eligible),price,extension,timing,structure,transition,liquidity,cot]});
+ }
+ if(Object.keys(dist).some(k=>dist[k]!==feedData.quality_distribution?.[k])||
+    Object.values(dist).reduce((a,b)=>a+b,0)!==28)return null;
+ const compare=(key)=>(a,b)=>{
+   for(let i=0;i<a[key].length;i++){
+     const d=b[key][i]-a[key][i];
+     if(d)return d;
+   }
+   return a.code.localeCompare(b.code);
+ };
+ return {
+   setup:sourceRows.slice().sort(compare('setupKey')),
+   thesis:sourceRows.slice().sort(compare('thesisKey')),
+   count:28,priceAsOf:feedData.price_asof,macroAsOf:feedData.macro_baseline_asof,
+   source:'PAIR_SETUP_OPERATIONAL_VIEW',baselineHistorical:!fresh(feedData.macro_baseline_asof,10)
+ };
+}
+async function mountPairRankedList(doc){
+ if(route()!=='coppie'||frame.contentDocument!==doc||doc.getElementById('gmfq-pair-rank'))return;
+ const tbody=doc.getElementById('pair-index'),table=tbody?.closest('table');
+ const holder=table?.closest('.desk-panel');
+ if(!holder)return;
+ const panel=doc.createElement('section');panel.id='gmfq-pair-rank';
+ panel.className='desk-panel';panel.dataset.status='LOADING';panel.dataset.sortMode='setup';
+ panel.setAttribute('aria-label','Ordine comparativo delle 28 coppie G8');
+ panel.innerHTML='<h2 class="desk-panel-title">28 coppie · ordine di lettura</h2>'+
+  '<p class="gmfq-rank-explain">Confronto delle evidenze del modello in verifica…</p>';
+ holder.insertAdjacentElement('beforebegin',panel);
+ const [setupRes,modelRes]=await Promise.allSettled([feed('PAIR_SETUP_OPERATIONAL_VIEW.json'),feed('D.json')]);
+ if(route()!=='coppie'||frame.contentDocument!==doc||!panel.isConnected)return;
+ const data=setupRes.status==='fulfilled'?setupRes.value:null,
+       model=modelRes.status==='fulfilled'?modelRes.value:null,
+       ranked=pairDeskOrdering(data,model);
+ if(!ranked){
+   panel.dataset.status='WITHHELD';
+   panel.innerHTML='<h2 class="desk-panel-title">Ordine delle 28 coppie · non verificabile</h2>'+
+    '<p class="gmfq-rank-explain">Feed o baseline Macro/Tassi non riconciliati: non ordino arbitrariamente le coppie. Rimane consultabile la tabella originale.</p>';
+   return;
+ }
+ const st=doc.createElement('style');st.id='gmfq-pair-rank-style';
+ st.textContent='#gmfq-pair-rank{margin:0 0 13px;padding:13px 16px;min-width:0;background:linear-gradient(135deg,#0b2030,#081b2b)}'+
+ '#gmfq-pair-rank .gmfq-rank-switch{display:flex;gap:7px;flex-wrap:wrap;margin:9px 0}'+
+ '#gmfq-pair-rank .gmfq-rank-switch button{border:1px solid #466073;border-radius:5px;background:#10293a;color:#c8d9e6;cursor:pointer;font:600 12px/1.45 Arial,sans-serif;padding:7px 12px}'+
+ '#gmfq-pair-rank .gmfq-rank-switch button[aria-pressed="true"]{border-color:#d5bc7e;color:#f1d9a4;background:#283547}'+
+ '#gmfq-pair-rank .gmfq-rank-switch button:focus-visible{outline:2px solid #dec787;outline-offset:2px}'+
+ '#gmfq-pair-rank .gmfq-rank-explain{color:#c0d1de;font:12px/1.55 Arial,sans-serif;margin:5px 0;overflow-wrap:anywhere}'+
+ '#gmfq-pair-rank .gmfq-rank-method{color:#9db6c8;font:11px/1.55 Arial,sans-serif;margin:7px 0 2px}'+
+ '#gmfq-pair-rank .gmfq-rank-lead{color:#e5c98d;font:600 12px/1.55 Arial,sans-serif;margin:6px 0 4px}'+
+ '#gmfq-pair-rank .gmfq-rank-source{font:10px/1.5 Arial,sans-serif;color:#91abbb}'+
+ '#pair-index .gmfq-row-rank{display:inline-block;min-width:22px;color:#dfc891;font:600 12px/1.5 Arial,sans-serif;margin-right:7px;font-variant-numeric:tabular-nums}'+
+ '#pair-index .gmfq-row-why{display:block;margin-top:3px;color:#a8bfcd;font:10px/1.45 Arial,sans-serif;max-width:280px;overflow-wrap:anywhere}'+
+ '#pair-index tr[data-research-rank] td:nth-child(4){min-width:170px}'+
+ '@media(max-width:600px){#gmfq-pair-rank{padding:12px}#gmfq-pair-rank .gmfq-rank-switch button{font-size:11px}#pair-index .gmfq-row-why{max-width:190px}}';
+ doc.head.appendChild(st);
+ panel.dataset.status='READ_ONLY';panel.dataset.count='28';
+ panel.dataset.macroAsOf=ranked.macroAsOf;panel.dataset.priceAsOf=ranked.priceAsOf;
+ panel.dataset.hasTradeRanking='false';
+ panel.innerHTML='<h2 class="desk-panel-title">28 coppie · dalla più coerente alla meno coerente</h2>'+
+  '<p class="gmfq-rank-explain"><strong>«CON RISCHI» da sola non basta:</strong> il primo ostacolo è scritto accanto a ogni coppia, senza cambiare il verdetto del motore.</p>'+
+  '<div class="gmfq-rank-switch" role="group" aria-label="Criterio di ordinamento delle coppie">'+
+  '<button type="button" data-rank-mode="setup" aria-pressed="true">Condizioni del setup</button>'+
+  '<button type="button" data-rank-mode="thesis" aria-pressed="false">Forza della tesi</button></div>'+
+  '<p class="gmfq-rank-lead" aria-live="polite"></p>'+
+  '<p class="gmfq-rank-method">Ordine editoriale, NON probabilità, score quantitativo o segnale. Setup: presenza della tesi → prezzo → estensione → timing → coerenza Macro/Tassi → dinamica → liquidità/COT. Tesi: coerenza Macro/Tassi → dinamica → altre conferme. Le 11 senza preferenza strutturale sono in fondo.</p>'+
+  '<p class="gmfq-rank-source">Fonte '+htmlEscape(ranked.source)+' · prezzo del modello '+htmlEscape(ranked.priceAsOf)+
+  ' · baseline Macro/Tassi '+htmlEscape(ranked.macroAsOf)+(ranked.baselineHistorical?' (STORICA, NON AGGIORNATA)':'')+
+  '. La prima coppia non è necessariamente un trade eseguibile.</p>';
+ const lead=panel.querySelector('.gmfq-rank-lead'),head=table.tHead?.querySelectorAll('th');
+ if(head?.[3])head[3].textContent='Valutazione e principale cautela';
+ let mode='setup';
+ const apply=()=>{
+   if(!panel.isConnected||frame.contentDocument!==doc||route()!=='coppie')return;
+   const order=ranked[mode],indexed=new Map(order.map((r,i)=>[r.code,{...r,rank:i+1}]));
+   const existing=[...tbody.querySelectorAll(':scope > tr')];
+   const pairs=existing.filter(x=>x.querySelector('button.pair-open[data-pair]'));
+   if(!pairs.length)return; // Native filters can show zero rows.
+   const codes=pairs.map(tr=>tr.querySelector('button.pair-open').dataset.pair);
+   if(new Set(codes).size!==codes.length||codes.some(x=>!indexed.has(x)))return;
+   for(const row of pairs){
+     const code=row.querySelector('button.pair-open').dataset.pair,r=indexed.get(code);
+     row.dataset.researchRank=String(r.rank);
+     row.dataset.researchMode=mode;
+     const first=row.cells[0],verdict=row.cells[3];
+     let label=first.querySelector('.gmfq-row-rank');
+     if(!label){label=doc.createElement('span');label.className='gmfq-row-rank';first.insertBefore(label,first.firstChild)}
+     label.textContent=String(r.rank).padStart(2,'0');
+     let why=verdict.querySelector('.gmfq-row-why');
+     if(!why){why=doc.createElement('small');why.className='gmfq-row-why';verdict.appendChild(why)}
+     why.textContent=(r.fav?'Favore '+r.fav+' · ':'Nessuna direzione · ')+r.why;
+   }
+   const sorted=pairs.slice().sort((a,b)=>indexed.get(a.querySelector('button.pair-open').dataset.pair).rank-
+     indexed.get(b.querySelector('button.pair-open').dataset.pair).rank);
+   if(sorted.some((tr,i)=>tr!==pairs[i]))tbody.append(...sorted);
+ };
+ const headline=()=>{
+   const first=ranked[mode][0];
+   lead.textContent=(mode==='setup'?'Priorità di verifica del setup':'Solidità della tesi storica')+
+     ' · primo nell’ordine: '+FLAG[first.code.slice(0,3)]+' '+FLAG[first.code.slice(3)]+' '+first.code+
+     ' · '+first.thesis+' · '+first.why+'. Non è un ingresso.';
+ };
+ panel.addEventListener('click',e=>{
+   const b=e.target.closest('button[data-rank-mode]');
+   if(!b||!panel.contains(b))return;
+   if(!['setup','thesis'].includes(b.dataset.rankMode))return;
+   mode=b.dataset.rankMode;panel.dataset.sortMode=mode;
+   panel.querySelectorAll('button[data-rank-mode]').forEach(x=>
+     x.setAttribute('aria-pressed',String(x.dataset.rankMode===mode)));
+   headline();apply();
+ });
+ const obs=new MutationObserver(()=>apply());
+ obs.observe(tbody,{childList:true}); // Native text search & selecting a pair both re-render the same tbody.
+ headline();apply();
+}
 async function mountPairResearch(doc){
  if(route()!=='coppie'||frame.contentDocument!==doc)return;
  const host=doc.getElementById('pair-detail');
@@ -2805,6 +2994,7 @@ function onFrameLoad(){
    if(route()==='macro')mountMacroSourceLens(doc).catch(e=>console.warn('[GMFQ Macro source lens WITHHELD]',e));
    if(route()==='valute')mountValuteSourceCompass(doc).catch(e=>console.warn('[GMFQ Valute source compass WITHHELD]',e));
    if(route()==='coppie')mountPairResearch(doc).catch(e=>console.warn('[GMFQ pair research WITHHELD]',e));
+   if(route()==='coppie')mountPairRankedList(doc).catch(e=>console.warn('[GMFQ pair ranking WITHHELD]',e));
    if(route()==='screener'){
     mountScreenerPairBridge(doc);
     mountScreenerBlockers(doc).catch(e=>console.warn('[GMFQ Screener blockers WITHHELD]',e));
