@@ -66,14 +66,24 @@ def main():
         for c in codes:
             future_official['currencies'][c]=deepcopy(official['currencies']['GBP'])
             future_view['currencies'][c]=deepcopy(view['currencies']['GBP'])
+        # Recompute the simulated source states, rather than presuming that
+        # every newly certified currency was previously WITHHELD. Some can
+        # already be GREEN_ESTIMATED, which must not count as an OIS promotion.
+        states=[row['operational_status'] for row in future_view['currencies'].values()]
         v=future_view['summary']
-        v['green_official']+=len(codes)
-        v['operational_green']+=len(codes)
-        v['operational_withheld']-=len(codes)
+        v.update(
+            g8_total=8,
+            green_official=states.count('GREEN_OFFICIAL'),
+            green_estimated=states.count('GREEN_ESTIMATED'),
+            operational_green=sum(x.startswith('GREEN_') for x in states),
+            operational_withheld=states.count('WITHHELD'),
+        )
         result=build(plan,future_view,future_official,rates,chf10,today=today)
         assert not (set(codes)&set(result['currencies'])),codes
         assert set(result['currencies'])==set(report['currencies'])-set(codes)
-        assert result['blocked_currency_count']==report['blocked_currency_count']-len(codes)
+        assert result['blocked_currency_count']==sum(
+            future_view['currencies'][c]['operational_status']=='WITHHELD'
+            for c in result['currencies'])
         assert result['no_automatic_promotions'] and result['prices_omitted']
         return result,future_view
     us_approved,us_view=activate('USD')
@@ -89,9 +99,13 @@ def main():
     forged['currencies']['USD']=deepcopy(us_view['currencies']['USD'])
     # Preserve a coherent derived summary so the negative test reaches the
     # actual official-runtime gate, not an unrelated summary mismatch.
-    forged['summary']['green_official']+=1
-    forged['summary']['operational_green']+=1
-    forged['summary']['operational_withheld']-=1
+    forged_states=[r['operational_status'] for r in forged['currencies'].values()]
+    forged['summary'].update(
+        green_official=forged_states.count('GREEN_OFFICIAL'),
+        green_estimated=forged_states.count('GREEN_ESTIMATED'),
+        operational_green=sum(x.startswith('GREEN_') for x in forged_states),
+        operational_withheld=forged_states.count('WITHHELD'),
+    )
     try:build(plan,forged,official,rates,chf10,today=today)
     except ValueError as e:assert 'promotion bypassed official runtime' in str(e)
     else:raise AssertionError('Forged USD official source accepted')
