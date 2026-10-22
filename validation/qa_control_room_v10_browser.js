@@ -331,6 +331,17 @@ function expectedReactionFromMetrics(row){
   if(fatal.length)throw Error(label+': '+fatal.join('; '));
   fs.mkdirSync('v10-qa-images',{recursive:true});
   await page.screenshot({path:'v10-qa-images/'+label+'-home.png',fullPage:true});
+  // Chart interaction is research-only; every G8 series remains selectable.
+  const focusButton=page.frameLocator('#gmfq-page').locator('#ylegend button[data-gmfq-ccy-focus="CHF"]');
+  await focusButton.click();
+  const selected=await page.evaluate(()=>document.getElementById('gmfq-page').contentDocument.getElementById('curves')?.dataset.gmfqYieldFocus);
+  if(selected!=='CHF')throw Error('CHF yield focus failed: '+selected);
+  await focusButton.click();
+  const restored=await page.evaluate(()=>document.getElementById('gmfq-page').contentDocument.getElementById('curves')?.dataset.gmfqYieldFocus);
+  if(restored!=='ALL')throw Error('G8 yield restore failed: '+restored);
+  await page.frameLocator('#gmfq-page').locator('#ylegend button[data-gmfq-tenor="10Y"]').click();
+  const tenor=await page.evaluate(()=>document.getElementById('gmfq-page').contentDocument.getElementById('curves')?.dataset.gmfqYieldTenor);
+  if(tenor!=='10Y')throw Error('10Y yield tenor failed: '+tenor);
   await page.frameLocator('#gmfq-page').locator('#valute .cc[data-filter="DXY"]').click();
   if(!await page.frameLocator('#gmfq-page').locator('dialog#gmfq-dxy-dialog[open]').count())throw Error('In-app DXY dialog did not open');
   await page.frameLocator('#gmfq-page').locator('.gmfq-dxy-dialog .gmfq-close').click();
