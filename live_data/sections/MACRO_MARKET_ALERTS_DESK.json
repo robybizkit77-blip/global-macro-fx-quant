@@ -1,8 +1,49 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-22T14:51:18Z",
+  "generated_at_utc": "2026-10-22T15:50:51Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-aa792d21c1bf6d0414a9",
+      "observed_at_utc": "2026-10-22T14:59:00Z",
+      "headline": "Iran says 7 tankers damaged in Strait of Hormuz, and other Mideast news",
+      "summary": "AP News riporta: Iran says 7 tankers damaged in Strait of Hormuz, and other Mideast news. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxPcmxkSUw3N3BIRncxYTA1MkE4Y1JuX0dKaG1kSU1jZElzcFVoWFk4REluNnd2VjZZMFo2S0c4U1k4VG9QaC03RF9zakxFQWpZQURfRTdLazEyaXFETmtNS2Q0TjJHamY2cTVPQ3JaRlBZZHhoRS11ZHFLblp3am05aGpaT2hUcW5UZDQ5bFJ4SGpjd0k0NVpiLTZFQlA2RVpFaHJZMA?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-683822e27ee8d5f8b5e8",
+      "observed_at_utc": "2026-10-22T14:20:56Z",
+      "headline": "Nasdaq leads Wall Street lower on AI spending jitters; oil prices rebound",
+      "summary": "Reuters riporta: Nasdaq leads Wall Street lower on AI spending jitters; oil prices rebound. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxNTWxDZDg5X0padGNvb2k2V2ZkX2tEWW9YWkdjeVdMZHNUTlg1MXY4TmUyTDZHdUhNTHFRNWRPRjc2VFlEN3RXTDhNSjhDYmRfTWZGXzdKYXdLejRHNGgwRVdNbmZRUkFhSm9GakxMek56UUZ2OUtqajd6NVkzRkR1VzBNWlo5VWp5NUFkX2phUjlSSFlndUlNNGxvUXlHSm1wMlpTbkRR?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-1a59e26c8177ee6fc542",
+      "observed_at_utc": "2026-10-22T15:02:00Z",
+      "headline": "AI stocks undercut markets worldwide as oil climbs to its highest price since May",
+      "summary": "AP News riporta: AI stocks undercut markets worldwide as oil climbs to its highest price since May. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxNbG9Bb3haUmhvOWFmQ0t6bWoyLThHN0pFV21XNjVOVXpsVmFBUEFhSk9HcC1ZYkV3eFhqT2d1SEFSQldtdm16YVM5UW1nRU5yc1JGRVkteEhNZmx0eEpOck1HdnNXNW1TSnh4YmRHU3dyeGdXdzdUZ3JsdFNHVUZwWEZrQVRXUWtrbHlJbDh1eDBSVU9iOUJScQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-d324cdb4687c09e1ff76",
       "observed_at_utc": "2026-10-22T08:24:09Z",
@@ -1365,49 +1406,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxPeUJnNTg4TVpXUEhLRF9SWXZHRlVMY181Nks1THF3VW1RdHRMSjJFR3J1VmJ5YWRaQ0lGRXFyemU5WkxZZzdlVWdwRFJuYXJSTk1PTkxDeldhYWs3VlBFaElmeGtMWm4xOFhkZ2VtMEJ3aVRlcmo0VlNaYUY1UklfcXR1ZWNwV2JvOWFrbmlPXzdRRTZsaFVjcGs3TnctMWtkWGIxZFowSUhKSGJFalNn?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-c974cef7fe8d65a77ac9",
-      "observed_at_utc": "2026-10-20T16:25:12Z",
-      "headline": "French bond yields dip but remain near 24-year high in volatile trading",
-      "summary": "Reuters riporta: French bond yields dip but remain near 24-year high in volatile trading. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CREDIT",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxOdzNSV1VKT0t1WFIzSE9fT0Mzck9VVWRTWktvUTFOYXM5Q0w3NWZVWGEyWkROMl9FaGQ0Zk1pbU1WS3lwT1FaQkhxM2NsbEQ2cUtOY01RUi1TR3U0YVhPYlo1N2MwRG5IMzdKMjRqUmJLczAxOXJqSTgzRFMyNmZ2TFdIaldhUXRlN0daZmROMXY5SFBfakpTb3F3eWdqRW80MTl3?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-2b407b94bff879f784b0",
-      "observed_at_utc": "2026-10-20T15:01:00Z",
-      "headline": "US stocks rise after oil prices retreat and companies deliver strong profits",
-      "summary": "AP News riporta: US stocks rise after oil prices retreat and companies deliver strong profits. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "AP News · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxQTUxwUkw1R0I4c0hwa0lfVGdUQ3ZoMlVlZzZBa1RBTU9hMEZtSTFQY3d3NzVYRlFiN1hubTFWX3JXVnZBbnUxSmFsM05CZ1lyVVVOamlWOXlxUzdaMTcxdFBzY3gzZVdmNjZaTXNPNWtBeTNvMTVETWtwcGxaaE5CQWFUOS0tM1NpS2FkT1pocUlYWGZkX2wyd0d3OTg?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-7af7f29f3eec0afb64eb",
-      "observed_at_utc": "2026-10-20T13:05:00Z",
-      "headline": "COMMENTARY: Fed sneezes, but emerging markets aren't catching a cold yet",
-      "summary": "Reuters riporta: COMMENTARY: Fed sneezes, but emerging markets aren't catching a cold yet. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxQS1daQTg5d2lOVXV0UWliMmhhb1R0c0MtbVFIRDRTSFBQWmZub2dmNFRTZmJWSDB3ME4xS1U3WnZ3MEtCamNScWNyYy13R25hSEdqOFdCcVZUNFRsTU1MMGxLWVRpSHB5NWxKTkR3d01Bb2ZheGg2WUtRTmZKZTJ4WHJKNG8tc0ZpSEZWUDNYLU5wUTJObmhqTU9wV3dWMVR4NXNqNVBpMUZGejV6M2hSZWZCUVZ5TGFJQUpNcUFkUnZ1dnVoajdBay1B?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
