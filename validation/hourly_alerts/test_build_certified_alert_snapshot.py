@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import importlib.util
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 from pathlib import Path
 
 
@@ -12,41 +13,94 @@ assert spec.loader is not None
 spec.loader.exec_module(module)
 
 
+def expected_state(as_of, today, limit, certified, source):
+    """Independent eligibility expectation; preserve future, stale and absent."""
+    try:
+        day = date.fromisoformat(as_of[:10])
+        age = (today - day).days
+    except (ValueError, TypeError, KeyError):
+        age = None
+    if not certified or not isinstance(source, str) or not source.strip() or age is None or age < 0:
+        return "UNAVAILABLE"
+    if age > limit:
+        return "STALE"
+    return "AVAILABLE_CERTIFIED"
+
+
 def main() -> None:
-    result = module.build(date(2026, 10, 17))
+    # Unit tests must use the same Rome-local civil day as the scheduled
+    # classifier. A pinned 17 October date makes newly certified quotes look
+    # future-dated and blocks every scheduled run before the outbox is built.
+    today = datetime.now(ZoneInfo("Europe/Rome")).date()
+    result = module.build(today)
     assert result["schema"] == "GMFQ_HOURLY_ALERT_CERTIFIED_SNAPSHOT_V1"
+    assert result["as_of_evaluation_date"] == today.isoformat()
     assert result["policy"]["fail_closed"] is True
     assert result["policy"]["government_bond_2y_is_not_ois"] is True
     assert result["policy"]["last_verified_value_is_not_post_event_reaction"] is True
     assert result["summary"]["green"] is False
-    assert result["lanes"]["ois"]["NZD"]["state"] == "UNAVAILABLE"
-    assert result["lanes"]["ois"]["EUR"]["state"] == "UNAVAILABLE"
-    assert result["lanes"]["ois"]["USD"]["state"] == "UNAVAILABLE"
-    assert result["lanes"]["ois"]["CHF"]["state"] == "UNAVAILABLE"
-    assert result["lanes"]["ois"]["GBP"]["state"] == "AVAILABLE_CERTIFIED"
-    assert result["lanes"]["ois"]["JPY"]["state"] == "AVAILABLE_CERTIFIED"
-    assert result["lanes"]["ois"]["CAD"]["state"] == "AVAILABLE_CERTIFIED"
-    assert result["lanes"]["ois"]["AUD"]["state"] == "AVAILABLE_CERTIFIED"
-    assert result["lanes"]["treasury"]["state"] == "AVAILABLE_CERTIFIED"
-    assert result["lanes"]["g8_bonds"]["CHF"]["state"] == "STALE"
-    assert result["lanes"]["g8_bonds"]["NZD"]["state"] == "AVAILABLE_CERTIFIED"
-    assert result["lanes"]["cot"]["state"] == "AVAILABLE_CERTIFIED"
-    assert result["lanes"]["fx"]["state"] == "AVAILABLE_CERTIFIED"
+    assert result["summary"]["state"] == "WITHHELD"
+
+    official = module.load("OIS_OPERATIONAL_VIEW.json")["currencies"]
+    for ccy in module.CCYS:
+        row = official[ccy]
+        certified = (ccy in module.CERTIFIED_OIS_CCYS
+                     and row.get("operational_status") == "GREEN_OFFICIAL"
+                     and row.get("official_status") == "ACTIVE"
+                     and row.get("quality") == "OFFICIAL_CERTIFIED"
+                     and row.get("backtest_eligible_as_official") is True)
+        receipt = result["lanes"]["ois"][ccy]
+        expected = expected_state(row.get("as_of"), today, 3, certified, row.get("source"))
+        assert receipt["state"] == expected, (ccy, receipt, expected)
+        assert receipt["alert_eligible"] is (expected == "AVAILABLE_CERTIFIED")
+        if ccy not in module.CERTIFIED_OIS_CCYS:
+            assert receipt["state"] == "UNAVAILABLE", (ccy, receipt)
+            assert receipt["alert_eligible"] is False
+
+    rates = module.load("NATIVE_RATES_DATA.json")
+    for ccy in module.CCYS:
+        row = rates[ccy]
+        certified = (row.get("freshness_status") in module.OFFICIAL_RATE_FRESHNESS
+                     and row.get("quality") in module.OFFICIAL_RATE_QUALITY)
+        receipt = result["lanes"]["g8_bonds"][ccy]
+        expected = expected_state(row.get("date"), today, 3, certified, row.get("source"))
+        assert receipt["state"] == expected, (ccy, receipt, expected)
+        assert receipt["alert_eligible"] is (expected == "AVAILABLE_CERTIFIED")
+
+    assert result["lanes"]["treasury"]["state"] == result["lanes"]["g8_bonds"]["USD"]["state"]
+    assert result["lanes"]["treasury"]["value_scope"] == "LAST_VERIFIED_OBSERVATION_NOT_POST_EVENT_REACTION"
+    cot = module.load("V250_COT_CHART_DATA.json")
+    cot_day = module.latest_cot_date(cot)
+    cot_receipt = result["lanes"]["cot"]
+    assert cot_receipt["as_of"] == cot_day
+    assert cot_receipt["state"] == expected_state(
+        cot_day, today, 10, cot_day is not None, cot_receipt["source"])
+    pairs = module.load("PAIR_SETUP_OPERATIONAL_VIEW.json")
+    fx = result["lanes"]["fx"]
+    assert fx["as_of"] == pairs["price_asof"]
+    assert fx["source"] == pairs["price_source"]
+    assert fx["state"] == expected_state(
+        pairs["price_asof"], today, 3,
+        pairs.get("schema") == "GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1"
+        and pairs.get("status") == "CURRENT_CANONICAL_ENGINE"
+        and isinstance(pairs.get("price_source"), str)
+        and "ECB" in pairs["price_source"],
+        pairs.get("price_source"))
     assert result["lanes"]["macro"]["state"] == "UNAVAILABLE"
     assert result["lanes"]["credit_liquidity"]["USD"]["state"] == "UNAVAILABLE"
     assert result["lanes"]["equity_sectors"]["state"] == "UNAVAILABLE"
-    assert result["summary"]["state"] == "WITHHELD"
-    assert result["lanes"]["cot"]["as_of"] == "2026-10-13"
-    assert result["lanes"]["fx"]["as_of"] == "2026-10-16"
-    assert result["lanes"]["fx"]["source"] == "ECB euro foreign exchange reference rates"
-    assert result["lanes"]["treasury"]["value_scope"] == "LAST_VERIFIED_OBSERVATION_NOT_POST_EVENT_REACTION"
 
-    missing_source = module.record(
-        name="TEST", as_of="2026-10-17", today=date(2026, 10, 17),
-        max_age_days=3, certified=True, source=None,
-    )
-    assert missing_source["state"] == "UNAVAILABLE"
-    assert missing_source["alert_eligible"] is False
+    for label, as_of, certified, source, expected in (
+        ("positive", today.isoformat(), True, "certified fixture", "AVAILABLE_CERTIFIED"),
+        ("stale", (today - timedelta(days=4)).isoformat(), True, "certified fixture", "STALE"),
+        ("future", (today + timedelta(days=1)).isoformat(), True, "certified fixture", "UNAVAILABLE"),
+        ("missing source", today.isoformat(), True, None, "UNAVAILABLE"),
+        ("unapproved proxy", today.isoformat(), False, "proxy fixture", "UNAVAILABLE"),
+    ):
+        row = module.record(name=label, as_of=as_of, today=today,
+                            max_age_days=3, certified=certified, source=source)
+        assert row["state"] == expected, (label, row)
+        assert row["alert_eligible"] is (expected == "AVAILABLE_CERTIFIED")
 
     feed_spec = importlib.util.spec_from_file_location("macro_feed", Path(__file__).with_name("build_certified_macro_g8_feed.py"))
     feed_module = importlib.util.module_from_spec(feed_spec)
