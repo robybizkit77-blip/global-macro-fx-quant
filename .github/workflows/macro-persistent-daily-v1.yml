@@ -6,6 +6,8 @@ on:
     paths:
       - '.github/workflows/macro-persistent-daily-v1.yml'
       - 'validation/macro_adapter_pit_handoff.py'
+      - 'validation/sources/cad_statcan_core.py'
+      - 'validation/test_cad_statcan_transport.py'
       - 'validation/macro_pit_anchor_contract.py'
       - 'validation/build_macro_candidate.py'
       - 'validation/update_live_direct_section.py'
@@ -46,6 +48,9 @@ jobs:
 
       - name: Install adapter dependencies
         run: python -m pip install --disable-pip-version-check requests pandas openpyxl beautifulsoup4 lxml
+
+      - name: Verify CAD official ZIP transport quarantine (offline)
+        run: python validation/test_cad_statcan_transport.py
 
       - name: Snapshot baseline and registry contract
         shell: bash
@@ -91,10 +96,26 @@ jobs:
                 fi
               fi
 
+              # A returned 75 is exclusively the registered StatCan transport
+              # outage after bounded retries: no data candidate was emitted.
+              # Keep CAD's canonical snapshot untouched; continue other G8.
+              # Any parser, provenance or PIT error (other exit code) is fatal.
+              set +e
               python validation/macro_adapter_pit_handoff.py \
                 --currency "$ccy" --dimension "$dim" \
                 --output "$work/candidate.json" \
                 --audit-output "$work/adapter-audit.json"
+              adapter_rc=$?
+              set -e
+              if [ "$ccy" = "CAD" ] && [ "$adapter_rc" -eq 75 ]; then
+                test ! -e "$work/candidate.json" || { echo "$key produced an uncertified candidate" >&2; exit 1; }
+                echo "$key SOURCE_TRANSPORT_WITHHELD_NO_CANDIDATE"
+                echo "- CAD $dim: official StatCan ZIP transport unavailable; canonical data unchanged and no fabricated candidate" >> "$GITHUB_STEP_SUMMARY"
+                printf '%s\n' "$key" >> /tmp/macro-persistent/transport-withheld.txt
+                continue
+              fi
+              test "$adapter_rc" -eq 0 || exit "$adapter_rc"
+              test -s "$work/candidate.json" && test -s "$work/adapter-audit.json"
 
               series_id="$(python - <<PY
           import json
