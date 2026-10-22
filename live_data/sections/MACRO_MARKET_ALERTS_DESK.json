@@ -1,8 +1,49 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-22T11:49:13Z",
+  "generated_at_utc": "2026-10-22T13:02:28Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-66fbec503e6489a4a7d0",
+      "observed_at_utc": "2026-10-22T11:59:00Z",
+      "headline": "Iran says 7 oil tankers attacked in the Strait of Hormuz as fears grow of a return to war",
+      "summary": "AP News riporta: Iran says 7 oil tankers attacked in the Strait of Hormuz as fears grow of a return to war. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxPOVo5NGVvb09wSzBSTFVOa21PVVRNWWlEYUd1ZEU2U0tjTm55R3hYQ2Ezd1lUWUYwbFNpVUhJVDBxNlZaamJKaDJvblV1dl83LVhSX21rMkZuUXQtWFZmZmpZbXRrMkwwRzloVnA0QUs0cjN5MXNiZDBKR2MwaW9Sa1BKUGlaRUlQeG5PYnNPcTQ3YXZFc3QybjE1ZmVCYVJmY0doag?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-9b7bc2ba170e4fa47102",
+      "observed_at_utc": "2026-10-22T06:35:00Z",
+      "headline": "Philippine central bank delivers larger-than-expected 50 bps hike to combat inflation",
+      "summary": "Reuters riporta: Philippine central bank delivers larger-than-expected 50 bps hike to combat inflation. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxQMDBOS21jdVJsMGxUU1c0VTdmeWNURDhMbC03djhPeHZHMi1rR045dXpfWThxYkdFYzJhSlJkM1ZYRGRzYk5SSS1uNE5kMnl1Wkhra0tZdUlSdHRsQUhINUgxWUNQMWZuZG9YVTlyb2VyMzFfNU5QYWtRUVpCbVp2eXlFN2txZ0JRX1JqQ3MwaG85ZHFkMVVSUnktTWp2dDUyMWtsMDdVV3lGY1o0RHo0NkxiRE9tLTd1d0E5NF9MOA?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-6591c8f2a5a9195c0668",
+      "observed_at_utc": "2026-10-22T11:39:59Z",
+      "headline": "Nasdaq futures sink as AI doubts resurface, oil jumps",
+      "summary": "Reuters riporta: Nasdaq futures sink as AI doubts resurface, oil jumps. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxNTWxDZDg5X0padGNvb2k2V2ZkX2tEWW9YWkdjeVdMZHNUTlg1MXY4TmUyTDZHdUhNTHFRNWRPRjc2VFlEN3RXTDhNSjhDYmRfTWZGXzdKYXdLejRHNGgwRVdNbmZRUkFhSm9GakxMek56UUZ2OUtqajd6NVkzRkR1VzBNWlo5VWp5NUFkX2phUjlSSFlndUlNNGxvUXlHSm1wMlpTbkRR?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-a1e6799a17b019762de8",
       "observed_at_utc": "2026-10-22T06:04:00Z",
@@ -1369,47 +1410,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxPeUJnNTg4TVpXUEhLRF9SWXZHRlVMY181Nks1THF3VW1RdHRMSjJFR3J1VmJ5YWRaQ0lGRXFyemU5WkxZZzdlVWdwRFJuYXJSTk1PTkxDeldhYWs3VlBFaElmeGtMWm4xOFhkZ2VtMEJ3aVRlcmo0VlNaYUY1UklfcXR1ZWNwV2JvOWFrbmlPXzdRRTZsaFVjcGs3TnctMWtkWGIxZFowSUhKSGJFalNn?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-48bc50f56a9cc1d8b66c",
-      "observed_at_utc": "2026-10-20T10:31:31Z",
-      "headline": "Sterling rises as strong labour market data reinforces rate hike bets",
-      "summary": "Reuters riporta: Sterling rises as strong labour market data reinforces rate hike bets. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "GBP"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxOeVc2VlJwWldpcmYtQ0FXa2JtemMzSXJtTTM4T01kRl9sTmNTUDk4Sldrc0xONWZEY0ZQcVlWYjhwWjg3Ql9KQWJxQ0psYXlhTXhiZEVvVmVyOE5sSVAyc19JY084LVhLWjNCN3dzV2pPd0RnN3paMTlxdEhYdGl1WmNoWW9BUlRoMTZRMlE3YnM5RkNfYVlULXZydkhFVUt1d1RTUjNwV0JxbHdTTVVkSQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-8553c5132ebd4e2fc8cb",
-      "observed_at_utc": "2026-10-20T01:33:00Z",
-      "headline": "Gold eases as oil-driven inflation worries weigh",
-      "summary": "Reuters riporta: Gold eases as oil-driven inflation worries weigh. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxOLVJCYm9CRFhWY01aUkRqYnVXb0RzRC1RUnhfOEFicHItalFBMnRMc0ZjcWRVcGNnZVg3ZXQ3WXNXeUZLN183enN0NFAtdmxuUHJhRU5jOHlQbTg1TldhNVdtbF9IWU1GZ1BfOEZvTnJpUEhGTE5xUkRSbl9FZVR4NlFJMEE2V1VYZ1hVRzk3SmpJMi1qelE?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-1a81febfa8252dfe3403",
-      "observed_at_utc": "2026-10-20T13:38:59Z",
-      "headline": "Wall St opens lower as AI stocks decline, oil prices rise",
-      "summary": "Reuters riporta: Wall St opens lower as AI stocks decline, oil prices rise. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxOT2JsXzZ4YTVKcDJjNE9iTW42aU0wY0VOZXRtdDYxTzJTanBUOGZIT1FLSl9FVTNxQ1RpTVFSWHlsejgyR0Y1b3JQWXRlT0dEMjJPWWpXYlpfdFJQaHZKZG5KdUNMdW53NmlMd2RwUWJKWFB3dE9Xc2ZBbnRfalF3cWNzblhxTGJOTGlKYUh1a0FmWC1vaGQydWZXdTMzemJjSVg5NWZ0bw?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
