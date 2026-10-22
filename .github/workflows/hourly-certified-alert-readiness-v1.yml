@@ -1,6 +1,12 @@
 name: Hourly Certified Alert Readiness V1
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/hourly_alerts/test_build_certified_alert_snapshot.py'
+      - 'validation/hourly_alerts/build_certified_alert_snapshot.py'
+      - '.github/workflows/hourly-certified-alert-readiness-v1.yml'
   workflow_dispatch:
   schedule:
     # Every day, including weekends.  The classifier itself remains fail-closed.
@@ -19,7 +25,30 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # PR verification runs the exact classifier tests but cannot publish an
+  # outbox or push to gh-pages. The schedule remains unchanged.
+  validate-classifier:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify fail-closed classifier on current certified fixtures
+        run: |
+          python validation/hourly_alerts/test_build_certified_alert_snapshot.py
+          python validation/hourly_alerts/test_build_certified_macro_g8_feed.py
+          python validation/hourly_alerts/test_build_chatgpt_market_context.py
+
   certify:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
