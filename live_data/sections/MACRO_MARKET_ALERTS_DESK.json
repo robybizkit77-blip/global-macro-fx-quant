@@ -1,8 +1,36 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-22T01:00:38Z",
+  "generated_at_utc": "2026-10-22T03:51:18Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-fb147ca363e792442899",
+      "observed_at_utc": "2026-10-22T02:10:00Z",
+      "headline": "Dip in the dollar takes a breather with Fed in focus",
+      "summary": "Reuters riporta: Dip in the dollar takes a breather with Fed in focus. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxPeE9SaFExZHZyS2plVTA2NHNkbDFpcGpBSVVhc3J2NmZrRmtMRW1uY0FUU0JDMGtFQncxcnB3bUlFY21oa3V2VTZtOWsxcEVrWFhfOWZOd2oxY09XaWtpQ2ltWnE2NFFTYmg0OVNhaHJLVFdocG9NdGh1N3hjVzRPZUJlVW8wRFU3N24zR0tZbjk2bkNGVFhXaE1qbw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-2a48f42a0560f20534b3",
+      "observed_at_utc": "2026-10-21T23:04:00Z",
+      "headline": "From groceries to home loans, high oil prices permeate daily life",
+      "summary": "Reuters riporta: From groceries to home loans, high oil prices permeate daily life. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "COMMODITIES",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxPam52bzA3TTBVZjZQOC1ISHZJal8xZmcyc3hYZVJEYXpTZ1VUWHBvUVBQZDlKUUlwSFIwWFYtMUxucy1lS1ZRRDZEaW0tZmd5WndsSnNDNVUycTJVYWUyaFVVNDJIZnlfb0tMNGY5dW9BNkU1R0lVOWY0czhfN3pxcUhzejl5SUdLaGlMWFpjWnhWekJ4TWxzM3E2YXo3VVZzbGdCdi1CblkyTzRP?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-0ab6817f8c9e3718e7e0",
       "observed_at_utc": "2026-10-21T02:10:00Z",
@@ -1389,32 +1417,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxQbV9XZGNnZHlLZFV0MS00Z3hLOWhxNmxkSFBtYl9pY1N3YTlPQnhhRlJKemJmbnlmY3lXZWNRWE1ua2ZTMmVPVXF0Mk9RMDlhOHk1QW9OS3VhdDI2TmN3X004WG5iUll1dUh6WUNqclhFU2FhSTMwTXVqUmgzeGlxNU1XbGpMNDBUSF9NYUF4bTVkUU1Fa19RVGU5QzBtT3B2cVhVVXQxMk5QU3lx?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-7f5d7f7a66b7f66cd8de",
-      "observed_at_utc": "2026-10-19T09:12:00Z",
-      "headline": "POLL Bank Indonesia narrowly expected to hold interest rates despite market turmoil",
-      "summary": "Reuters riporta: POLL Bank Indonesia narrowly expected to hold interest rates despite market turmoil. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxNTklTTEZCYlRSNmVCNVNkb0Nybkd0cUNtNGpDQ28wT0lnclBoMlAxUlNPd3BycE5KRzZjTU1aOFcyWDJTbUhtcmVCWWVPdEs1d05GWHZJdnl2WHdSS1YxQ3E3ajNvLVB6a3RUcVpJTVUzdEZGMEgxaGZmLXdwV2R5QkEtWlltOXVoTGZZZDI5Y3pzS1dpcWJGM3UtYzQ2VDVPS1oyNzgyYm1RUmctOXR2eVN1YzJ2UzhjM1prV2xMd2FMeU45cmlpdk5n?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-e07e8fc773a5c055a9b7",
-      "observed_at_utc": "2026-10-20T00:17:00Z",
-      "headline": "South Korea's Elice plunges 30% in market debut as data centre stocks shunned",
-      "summary": "Reuters riporta: South Korea's Elice plunges 30% in market debut as data centre stocks shunned. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxNU1JYM3hYdDlsc1JuLWVCVHlKcld3Skc0Y1M0WWgzbk1JNFVJbzhsNU13eVVmSUNTX0hPX1ZGUXotNzVkV3UxTi1yMTlhNm04S2lzODk4NlRhOXFDMUFfb1cxbXd3TzZoZVl3QS00aldHcmNieDZSZ0x1eDlEYjZ5NmRCbWVEeTQwQ2RreWdkb2ljUXB5cDlKalhpTWZ3SnN5ek5pVzlBRWNEQ0d1SVdOREpqMUE1LUZf?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
