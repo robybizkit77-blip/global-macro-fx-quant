@@ -274,7 +274,7 @@ function expectedReactionFromMetrics(row){
           count:h?.querySelectorAll('li[data-event-date]').length,
           dates:[...h?.querySelectorAll('li[data-event-date]')||[]].map(e=>e.dataset.eventDate),
           rows:[...h?.querySelectorAll('li[data-event-date]')||[]].map(e=>({
-            code:e.dataset.eventCcy,quality:e.dataset.eventQuality,visible:!!e.getClientRects().length
+            code:e.dataset.eventCcy,quality:e.dataset.eventQuality,visible:e.closest('details')?.open!==false
           })),
           detailsOpen:h?.querySelector('details')?.open,
           width:h?.scrollWidth,client:h?.clientWidth};
@@ -339,7 +339,7 @@ function expectedReactionFromMetrics(row){
      (r.eventRadar.state==='FUTURE_VERIFIED_AGENDA'&&
        (r.eventRadar.count<1||r.eventRadar.count>6||
         r.eventRadar.dates.some(d=>d<=today)||
-        r.eventRadar.rows.some(x=>!g8.includes(x.code)||!x.quality?.startsWith('OFFICIAL_'))||
+        r.eventRadar.rows.some(x=>!['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'].includes(x.code)||!x.quality?.startsWith('OFFICIAL_'))||
         r.eventRadar.rows.filter(x=>x.visible).length!==Math.min(2,r.eventRadar.count)||
         (r.eventRadar.count>2&&r.eventRadar.detailsOpen!==false)))||
      (r.eventRadar.state==='WITHHELD'&&r.eventRadar.count!==0))
