@@ -1881,6 +1881,8 @@ async function mountPairRankedList(doc){
      indexed.get(b.querySelector('button.pair-open').dataset.pair).rank);
    if(sorted.some((tr,i)=>tr!==pairs[i]))tbody.append(...sorted);
    panel.dataset.visibleCount=String(showing);
+   const nativeCount=doc.getElementById('pair-visible');
+   if(nativeCount&&unfiltered)nativeCount.textContent=showing+'/28 coppie in evidenza · '+(28-showing)+' ulteriori disponibili';
    if(visibilityLabel)visibilityLabel.textContent=view==='all'?
      'Tutte le '+pairs.length+' coppie attualmente filtrate, ordine conservato':
      unfiltered?String(showing)+' coppie in evidenza · altre '+(pairs.length-showing)+
