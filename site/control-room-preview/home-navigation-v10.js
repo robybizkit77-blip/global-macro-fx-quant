@@ -2489,6 +2489,63 @@ async function mountCentralBankFirstReading(doc){
  rail.dataset.certified=reconciled?String(certified.length):'';
  rail.dataset.estimated=reconciled?String(estimated.length):'';
  rail.dataset.withheld=reconciled?String(withheld.length):'';
+ if(!reconciled)return;
+ // Historical bank-decision snapshots supply meeting dates, NOT live release
+ // confirmation. Keep same-day/past meetings out of "upcoming" summaries.
+ const today=romeTodayIso();
+ const meetings=FX.map(ccy=>{
+   const policy=cb[ccy],pricing=ois.currencies[ccy];
+   const status=pricing.operational_status;
+   return {ccy,bank:String(policy.bank),date:policy.next_meeting,last:policy.last_date,
+     rateText:String(policy.rate_text||fmt(policy.rate,2)+'%'),
+     tier:status==='GREEN_OFFICIAL'?'CERTIFIED':status==='GREEN_ESTIMATED'?'ESTIMATED':'WITHHELD',
+     proxy:status==='WITHHELD'&&Boolean(pricing.market_direction_proxy||pricing.secondary_quote_context)};
+ }).sort((a,b)=>a.date.localeCompare(b.date)||FX.indexOf(a.ccy)-FX.indexOf(b.ccy));
+ const future=meetings.filter(x=>x.date>today);
+ const focusDates=[...new Set(future.map(x=>x.date))].slice(0,3);
+ rail.dataset.meetingSnapshotAsOf=dates.at(-1)||'';
+ rail.dataset.meetingDateGroups=String(focusDates.length);
+ rail.dataset.meetingUpcomingCount=String(future.length);
+ const st=doc.createElement('style');st.id='gmfq-cb-meeting-focus-style';
+ st.textContent='#gmfq-cb-reading-first .gmfq-cb-meeting-focus{margin:9px 0 0;padding:8px 0 0;border-top:1px solid #294657}'+
+  '#gmfq-cb-reading-first .gmfq-cb-meeting-kicker{font:600 10px/1.5 Arial,sans-serif;color:#e1c38d;margin:0 0 4px}'+
+  '#gmfq-cb-reading-first .gmfq-cb-meeting-dates{list-style:none;margin:0;padding:0;display:flex;gap:5px 17px;flex-wrap:wrap}'+
+  '#gmfq-cb-reading-first .gmfq-cb-meeting-dates li{font:11px/1.55 Arial,sans-serif;color:#e1e9f0;min-width:0}'+
+  '#gmfq-cb-reading-first .gmfq-cb-meeting-dates time{font-weight:600;color:#d8c28a;margin-right:3px}'+
+  '#gmfq-cb-reading-first .gmfq-cb-meeting-foot{font:10px/1.55 Arial,sans-serif;color:#a8bfcd;margin:5px 0 0}'+
+  '#gmfq-cb-reading-first .gmfq-cb-meeting-all{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 13px;list-style:none;margin:8px 0 0;padding:0}'+
+  '#gmfq-cb-reading-first .gmfq-cb-meeting-all li{font:10px/1.6 Arial,sans-serif;color:#bbcfdd;overflow-wrap:anywhere}'+
+  '#gmfq-cb-reading-first .gmfq-cb-meeting-all strong{font-weight:600;color:#e8d09b}'+
+  '@media(max-width:600px){#gmfq-cb-reading-first .gmfq-cb-meeting-dates{display:block}#gmfq-cb-reading-first .gmfq-cb-meeting-all{grid-template-columns:1fr}}';
+ doc.head.appendChild(st);
+ const node=doc.createElement('div');node.className='gmfq-cb-meeting-focus';
+ node.dataset.source='NATIVE_CB_DATA';node.dataset.calendarStatus='HISTORICAL_SNAPSHOT';
+ node.dataset.asOf=dates.at(-1)||'';
+ node.innerHTML='<p class="gmfq-cb-meeting-kicker">AGENDA DALLO SNAPSHOT CB · 3 PROSSIME DATE</p>'+
+ (focusDates.length?'<ul class="gmfq-cb-meeting-dates">'+focusDates.map(date=>
+   '<li data-meeting-day="'+date+'"><time datetime="'+date+'">'+date.slice(8,10)+'/'+date.slice(5,7)+'</time> '+
+   future.filter(x=>x.date===date).map(x=>
+     '<span data-meeting-ccy="'+x.ccy+'">'+FLAG[x.ccy]+' '+htmlEscape(x.bank)+'</span>').join(' · ')+
+   '</li>').join('')+'</ul>':
+   '<p class="gmfq-cb-meeting-foot">Nessuna futura riunione nello snapshot: calendario da riconfermare.</p>')+
+ '<p class="gmfq-cb-meeting-foot">Ultima decisione nello snapshot '+htmlEscape(dates.at(-1))+
+ '. Date archiviate, da riconfermare alla fonte: non sono annunci né meeting confermati in tempo reale.</p>';
+ rail.querySelector('.gmfq-first-explainer')?.insertAdjacentElement('afterend',node);
+ // Original provenance details stays FIRST to preserve existing keyboard tests.
+ const detail=doc.createElement('details');detail.className='gmfq-cb-meeting-details';
+ detail.dataset.count='8';detail.dataset.source='NATIVE_CB_DATA';
+ detail.innerHTML='<summary>Apri tutte le 8 banche, tassi e qualità del pricing</summary>'+
+ '<ul class="gmfq-cb-meeting-all">'+meetings.map(x=>
+  '<li data-meeting-ccy="'+x.ccy+'" data-meeting-date="'+x.date+
+  '" data-meeting-tier="'+x.tier+'" data-policy-asof="'+x.last+'">'+
+  FLAG[x.ccy]+' <strong>'+x.ccy+' · '+htmlEscape(x.bank)+'</strong> · '+htmlEscape(x.date)+
+  ' · tasso '+htmlEscape(x.rateText)+' · '+
+  (x.tier==='CERTIFIED'?'6M: fonte certificata':
+   x.tier==='ESTIMATED'?'6M: futures indicativi':
+   '6M: WITHHELD'+(x.proxy?' (proxy/contesto separato)':''))+
+  (x.date<=today?' · DATA PASSATA NELLO SNAPSHOT':'')+'</li>').join('')+
+ '</ul><p>Tassi policy: ultima decisione nello snapshot storico, NON valore aggiornato da questo pannello. Pricing: fonti certificate, futures indicativi e WITHHELD sono categorie distinte. Non attribuire probabilità di rialzo/taglio a una riunione.</p>';
+ rail.appendChild(detail);
 }
 function cotQuantitativeAudit(chart,story){
  if(!chart||!story||Object.keys(chart).length!==8||
