@@ -2,27 +2,6 @@
   "events": [
     {
       "actual_ignored_for_pre_release_consensus": true,
-      "ccy": "GBP",
-      "confidence_grade": "B",
-      "consensus": "3.4%",
-      "date_match_gap_days": 0,
-      "event_key": "GBP|2026-10-21|INFLATION|Consumer price inflation, UK",
-      "event_type": "INFLATION",
-      "impact": "High",
-      "official_date": "2026-10-21",
-      "official_date_overridden": false,
-      "official_title": "Consumer price inflation, UK",
-      "previous": "3.1%",
-      "provider": "FOREX_FACTORY_FAIR_ECONOMY_WEEKLY",
-      "provider_country": null,
-      "provider_date": "2026-10-21",
-      "provider_event": "CPI y/y",
-      "provider_url": null,
-      "status": "AVAILABLE",
-      "unit": null
-    },
-    {
-      "actual_ignored_for_pre_release_consensus": true,
       "ccy": "JPY",
       "confidence_grade": "C",
       "consensus": "2.1%",
@@ -64,7 +43,7 @@
       "unit": null
     }
   ],
-  "generated_at_utc": "2026-10-21T23:12:21.880546Z",
+  "generated_at_utc": "2026-10-22T06:52:38.967176Z",
   "provider": "FOREX_FACTORY_FAIR_ECONOMY_WEEKLY",
   "provider_endpoint": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
   "provider_field": "forecast",
