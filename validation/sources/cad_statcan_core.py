@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse,csv,html,io,json,re,urllib.request,zipfile
+import argparse,csv,html,io,json,re,sys,time,urllib.error,urllib.request,zipfile
 from pathlib import Path
 from typing import Any
 
@@ -10,7 +10,12 @@ HEATMAP_PATH=ROOT/'live_data/sections/MACRO_THERMOMETER_DATA.json'
 SOURCE='Statistics Canada'
 STATIC_CSV='https://www150.statcan.gc.ca/n1/en/tbl/csv'
 PRICE_PORTAL='https://www.statcan.gc.ca/en/subjects-start/prices_and_price_indexes'
-HTTP_HEADERS={'User-Agent':'Mozilla/5.0 (compatible; global-macro-fx-quant/1.0)','Accept':'text/html,application/zip,application/octet-stream,*/*'}
+HTTP_HEADERS={'User-Agent':'Mozilla/5.0 (compatible; global-macro-fx-quant/1.0)','Accept':'application/zip,application/octet-stream;q=0.9,*/*;q=0.1'}
+TRANSPORT_UNAVAILABLE_EXIT=75
+MAX_DOWNLOAD_ATTEMPTS=3
+
+class StatCanTransportUnavailable(RuntimeError):
+ """Official table transport did not deliver a usable ZIP. Never a data candidate."""
 CONFIG={
  'inflation':{'pid':'1810000402','download_pid':'18100004','unit':'% YoY','transformation':'derived_yoy_from_index'},
  'labour':{'pid':'14100287','download_pid':'14100287','unit':'%','transformation':'level'},
@@ -44,12 +49,38 @@ def http_get_text(url:str)->str:
  with urllib.request.urlopen(req,timeout=90) as r:return r.read().decode('utf-8','replace')
 
 def download_csv(download_pid:str)->str:
- url=f'{STATIC_CSV}/{download_pid}-eng.zip';req=urllib.request.Request(url,headers=HTTP_HEADERS)
- with urllib.request.urlopen(req,timeout=90) as r:data=r.read()
- with zipfile.ZipFile(io.BytesIO(data)) as z:
-  names=[n for n in z.namelist() if n.lower().endswith('.csv') and 'meta' not in n.lower()]
-  if not names:raise ValueError('StatCan ZIP contains no data CSV')
-  return z.read(names[0]).decode('utf-8-sig')
+ url=f'{STATIC_CSV}/{download_pid}-eng.zip'
+ req=urllib.request.Request(url,headers=HTTP_HEADERS)
+ last_error=None
+ for attempt in range(MAX_DOWNLOAD_ATTEMPTS):
+  try:
+   with urllib.request.urlopen(req,timeout=90) as response:
+    data=response.read()
+    content_type=response.headers.get('Content-Type','unknown')[:110]
+   # Sometimes a CDN returns HTTP 200 with an HTML challenge/error page.
+   # Only ZIP bytes from the official full-table URL may be parsed.
+   if not data.startswith(b'PK\\x03\\x04'):
+    raise StatCanTransportUnavailable(
+     f'official ZIP unavailable (Content-Type={content_type}; ZIP signature absent)')
+   try:
+    with zipfile.ZipFile(io.BytesIO(data)) as archive:
+     # The expected table must be present. Do not accept an unrelated CSV
+     # or metadata sheet supplied by an unexpected archive.
+     names=[n for n in archive.namelist()
+            if n.rsplit('/',1)[-1].lower()==f'{download_pid}.csv']
+     if len(names)!=1:
+      raise ValueError('StatCan official ZIP does not contain exactly its expected table CSV')
+     return archive.read(names[0]).decode('utf-8-sig')
+   except zipfile.BadZipFile as exc:
+    raise StatCanTransportUnavailable('official ZIP failed integrity validation') from exc
+  except (urllib.error.URLError,TimeoutError,ConnectionError) as exc:
+   last_error=StatCanTransportUnavailable(
+    f'official download failed ({type(exc).__name__})')
+  except StatCanTransportUnavailable as exc:
+   last_error=exc
+  if attempt+1<MAX_DOWNLOAD_ATTEMPTS:
+   time.sleep(0.5*(attempt+1))
+ raise last_error or StatCanTransportUnavailable('official ZIP unavailable')
 
 def rows_from_text(text:str):return list(csv.DictReader(io.StringIO(text)))
 
@@ -135,8 +166,14 @@ def build_live_candidate(dim:str):
 
 def main():
  ap=argparse.ArgumentParser();ap.add_argument('--dimension',choices=CONFIG,required=True);ap.add_argument('--fixture',type=Path);ap.add_argument('--output',type=Path,required=True);ap.add_argument('--audit-output',type=Path);args=ap.parse_args()
- if args.fixture:c,a=build_fixture_candidate(args.dimension,args.fixture.read_text(encoding='utf-8'));a['mode']='fixture'
- else:c,a=build_live_candidate(args.dimension);a['mode']='live'
+ try:
+  if args.fixture:c,a=build_fixture_candidate(args.dimension,args.fixture.read_text(encoding='utf-8'));a['mode']='fixture'
+  else:c,a=build_live_candidate(args.dimension);a['mode']='live'
+ except StatCanTransportUnavailable as exc:
+  # Distinct from a parser/PIT failure. Produces NO candidate. The daily
+  # orchestrator may quarantine this ONE upstream source and continue G8.
+  print(f'CAD_STATCAN_TRANSPORT_WITHHELD: {exc}',file=sys.stderr)
+  return TRANSPORT_UNAVAILABLE_EXIT
  args.output.parent.mkdir(parents=True,exist_ok=True);args.output.write_text(json.dumps(c,indent=2)+'\n')
  if args.audit_output:args.audit_output.write_text(json.dumps(a,indent=2)+'\n')
  print(json.dumps({'status':'PASS','candidate':c,'audit':a},indent=2));return 0
