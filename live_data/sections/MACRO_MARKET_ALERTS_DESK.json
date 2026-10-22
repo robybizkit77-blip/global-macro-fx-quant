@@ -1,8 +1,49 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-22T17:46:19Z",
+  "generated_at_utc": "2026-10-22T18:58:18Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-64d0701614765d395e4e",
+      "observed_at_utc": "2026-10-22T17:13:00Z",
+      "headline": "Inflation at the movies: Runtimes are longer, from ‘The Odyssey’ to ‘You Can See Everything’",
+      "summary": "AP News riporta: Inflation at the movies: Runtimes are longer, from ‘The Odyssey’ to ‘You Can See Everything’. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxQN0NQUHFNdkI2OHRsSktYTFNOZGpGVDRLMk96MkpjMkZrVnlXYURSUG44UG9xc3pCR3VqbzVPOGVWU05GSUh3YVZ3RG5qZnA4Qkh0MmtHNXUycGQ1RFF6WFl2YlFhajdJU0s5RUc4WWdLd18wQmNHZk1LckwwNWcwU1Z2aUl1V0NCVXc?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-1715d331a00baddf8512",
+      "observed_at_utc": "2026-10-22T02:15:00Z",
+      "headline": "Stocks drop as Meta dampens AI optimism; Treasury yields fall",
+      "summary": "Reuters riporta: Stocks drop as Meta dampens AI optimism; Treasury yields fall. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CREDIT",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxQNmlzbXFUNWNXc3U3RHRac2lYVEhXNjZmZGw0Q19yNVRORUEtak91QlJnTEVqcGhWT2xuT2RmOHdTVHlyN1JmSHRVZEpfMzgtNEVMT1RCWk1VNGswaVFYTXI4WlFpUE95aEJid1NxNVNBdzBGX0pzOUQwMnZnQ25kOVNXQQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-72a4551f65a4dc9c019e",
+      "observed_at_utc": "2026-10-22T15:44:37Z",
+      "headline": "P&G warns of bigger cost hit from oil prices, even as consumer demand holds up",
+      "summary": "Reuters riporta: P&G warns of bigger cost hit from oil prices, even as consumer demand holds up. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMi2AFBVV95cUxOeXZkVkhTMUxoaW8wOXZWUC1TbzdCbXlXbUVoWWVZdGZSN1FzdGdrb0VjcW1IZWtLR0JuUWx1RWdGNFpVTHgzYXVjeURmX3RPUVlxYVlNT1hvREZSLWVOR2NVN0sxZTZFMzNDcXFLbUQ2bjJVZUhzdGRSaFY4MTRKeGhuQ09fTFlfVVVVZmo3c24wTnBhZVlGckVPdXBodjF5UnR1RFFhRUtFXzZKVG56LTRoYlFja0pVbUV3OFFyX05zUTE4djJYUTYzQXVBY0s3TjlkdFk2cjA?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-4e1228f7ff64f39a14e1",
       "observed_at_utc": "2026-10-22T16:50:19Z",
@@ -1356,50 +1397,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxOLVJCYm9CRFhWY01aUkRqYnVXb0RzRC1RUnhfOEFicHItalFBMnRMc0ZjcWRVcGNnZVg3ZXQ3WXNXeUZLN183enN0NFAtdmxuUHJhRU5jOHlQbTg1TldhNVdtbF9IWU1GZ1BfOEZvTnJpUEhGTE5xUkRSbl9FZVR4NlFJMEE2V1VYZ1hVRzk3SmpJMi1qelE?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-326a5d3d42d69c409031",
-      "observed_at_utc": "2026-10-20T18:53:28Z",
-      "headline": "Wall Street rises with investors rotating into healthcare and value stocks",
-      "summary": "Reuters riporta: Wall Street rises with investors rotating into healthcare and value stocks. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxOT2JsXzZ4YTVKcDJjNE9iTW42aU0wY0VOZXRtdDYxTzJTanBUOGZIT1FLSl9FVTNxQ1RpTVFSWHlsejgyR0Y1b3JQWXRlT0dEMjJPWWpXYlpfdFJQaHZKZG5KdUNMdW53NmlMd2RwUWJKWFB3dE9Xc2ZBbnRfalF3cWNzblhxTGJOTGlKYUh1a0FmWC1vaGQydWZXdTMzemJjSVg5NWZ0bw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-06a21d0cdfb5208e36ea",
-      "observed_at_utc": "2026-10-20T00:58:00Z",
-      "headline": "Brent falls as Iran's president discusses mediation with Pakistani army chief",
-      "summary": "Reuters riporta: Brent falls as Iran's president discusses mediation with Pakistani army chief. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "COMMODITIES",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxPZlA3RXBMd0lXRU1feWpodXpZQ2tnUERkUHFQSlFGX2hCMjdrOVdhRVd2eVk3dmhLYklUdVM1WGtoXzc0cUt2OG44WjBYVFVZazFvQWo1UmJWRlliNzJHWlZBU1hScTU1RU9sVEdDVllsSWE4UXh5b0ZHX0VlU01fNDc3ckpxRkw3ZGdaM0xxMW1qOEhWck1XYUlSVkJWeVZyZWRRSkpqdTFQSmZhejlBRmkxZUJmMGtPVWx6Ym82SnNTcElaWGc?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-f7e9443262e2c7f9c30e",
-      "observed_at_utc": "2026-10-20T02:09:00Z",
-      "headline": "Stocks mostly rise as oil, US yields ease; euro edges up",
-      "summary": "Reuters riporta: Stocks mostly rise as oil, US yields ease; euro edges up. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD",
-        "EUR"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxPaHdteV9meHVjc2dvbmd1WjNPa1FHR2lwTFlEcmJPWE5zZnhHSFNjQndCeHptVW1NaEpsbms3QS1oSHRiTmZyUVp2ZVR0SlMwT1kxVnM2UFdyenVSblJHVW4ySjA3aTFUcGxvbV9iaHZZMzJVZTRQV1ZtM3BZMVd4RHFsaw?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
