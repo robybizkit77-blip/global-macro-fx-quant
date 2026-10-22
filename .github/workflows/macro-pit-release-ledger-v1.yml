@@ -5,6 +5,7 @@ on:
     paths:
       - 'validation/macro/latest_release_pit_ledger_v1.py'
       - 'validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json'
+      - 'validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-22.json'
       - 'validation/macro/test_latest_release_pit_ledger_v1.py'
       - 'validation/macro/*_historical_anchor_*.json'
       - 'validation/macro/*_strict_pit_evidence_*.json'
@@ -17,6 +18,7 @@ on:
     paths:
       - 'validation/macro/latest_release_pit_ledger_v1.py'
       - 'validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json'
+      - 'validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-22.json'
       - 'validation/macro/test_latest_release_pit_ledger_v1.py'
       - 'validation/macro/*_historical_anchor_*.json'
       - 'validation/macro/*_strict_pit_evidence_*.json'
