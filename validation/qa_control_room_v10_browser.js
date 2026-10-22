@@ -652,8 +652,20 @@ function expectedReactionFromMetrics(row){
         ccy:x.dataset.cotFocusCcy,netoi:Number(x.dataset.netoi),
         pct:Number(x.dataset.percentileRounded),netSign:x.dataset.netDirection,
         class:x.dataset.percentileClass,visible:!!x.getClientRects().length,
+        weeklyNet:Number(x.querySelector('[data-weekly-net]')?.dataset.weeklyNet),
         label:x.textContent
       })),
+      weeklyAsOf:p.dataset.weeklyAsOf,weeklyCount:p.dataset.weeklyCount,
+      weeklyDetail:(()=>{
+        const detail=p.querySelector('.gmfq-cot-weekly-details');
+        return {closed:detail?.open===false,previous:detail?.dataset.priorAsof,
+          latest:detail?.dataset.currentAsof,
+          currencies:[...detail?.querySelectorAll('.gmfq-cot-weekly-list li')||[]].map(x=>({
+            ccy:x.dataset.weeklyCcy,net:Number(x.dataset.weeklyNet),
+            previousNet:Number(x.dataset.weeklyPrevNet),delta:Number(x.dataset.weeklyDelta),
+            text:x.textContent
+          })),method:detail?.querySelector('.gmfq-cot-weekly-method')?.textContent};
+      })(),
       priority:p.querySelector('.gmfq-first-priority')?.textContent,
       evidence:p.querySelector('.gmfq-first-claim')?.textContent,
       order:!!(p.querySelector('.gmfq-first-priority')?.compareDocumentPosition(p.querySelector('.gmfq-first-claim'))&Node.DOCUMENT_POSITION_FOLLOWING),
@@ -674,6 +686,24 @@ function expectedReactionFromMetrics(row){
        x.label.includes(x.pct+'°/104W')&&
        x.class===(x.pct>=80?'EXTREME LONG':x.pct<=20?'EXTREME SHORT':'NEUTRALE');
    });
+  const weeklyExpected=g8.map(ccy=>{
+    const t=cotFixture[ccy],net=t.net.at(-1),previousNet=t.net.at(-2);
+    return {ccy,net,previousNet,delta:net-previousNet};
+  });
+  const weeklyFocusOk=cotFirst.focusRows.every(row=>
+    row.weeklyNet===weeklyExpected.find(x=>x.ccy===row.ccy)?.delta);
+  const weeklyDetailOk=cotFirst.weeklyAsOf===cotFixture.USD.dates.at(-2)&&
+    cotFirst.weeklyCount==='8'&&cotFirst.weeklyDetail?.closed===true&&
+    cotFirst.weeklyDetail.previous===cotFixture.USD.dates.at(-2)&&
+    cotFirst.weeklyDetail.latest===cotFixture.USD.dates.at(-1)&&
+    cotFirst.weeklyDetail.currencies.length===8&&
+    cotFirst.weeklyDetail.currencies.every((x,i)=>x.ccy===weeklyExpected[i].ccy&&
+      x.net===weeklyExpected[i].net&&x.previousNet===weeklyExpected[i].previousNet&&
+      x.delta===weeklyExpected[i].delta)&&
+    cotFirst.weeklyDetail.method?.includes('Non confrontare direttamente il numero di contratti');
+  if(!weeklyFocusOk||!weeklyDetailOk)
+    throw Error(label+' COT weekly Net changes do not match official weekly positions '+
+      JSON.stringify({cotFirst,weeklyExpected}));
   if(!sourceFocusOk||cotFirst.focusCount!==String(expectedCrowding.length)||
      !cotFirst.focusTitle?.includes('CONCENTRAZIONE NET/OI ≥30%')||
      !cotFirst.focusNote?.includes('non direzione del prezzo'))
@@ -688,7 +718,17 @@ function expectedReactionFromMetrics(row){
      cotFirst.text.includes('narrativo incoerente')||
      cotFirst.width>cotFirst.client+2||cotFirst.doc>cotFirst.viewport+16)
     throw Error(label+' COT quantitative/narrative divergence guard '+JSON.stringify(cotFirst));
-  await page.frameLocator('#gmfq-page').locator('#gmfq-cot-reading-first details>summary').press('Enter');
+  const weeklyToggle=page.frameLocator('#gmfq-page').locator('#gmfq-cot-reading-first .gmfq-cot-weekly-details>summary');
+  await weeklyToggle.press('Enter');
+  const weeklyExpanded=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page').contentDocument,
+      p=d.getElementById('gmfq-cot-reading-first'),detail=p.querySelector('.gmfq-cot-weekly-details');
+    return {open:detail.open,rows:[...detail.querySelectorAll('.gmfq-cot-weekly-list li')].filter(x=>x.getClientRects().length).length};
+  });
+  if(!weeklyExpanded.open||weeklyExpanded.rows!==8)
+    throw Error(label+' COT weekly 8 G8 observations inaccessible '+JSON.stringify(weeklyExpanded));
+  await weeklyToggle.press('Enter');
+  await page.frameLocator('#gmfq-page').locator('#gmfq-cot-reading-first>details>summary').press('Enter');
   if(!(await page.frameLocator('#gmfq-page').locator('#gmfq-cot-reading-first details p').last().isVisible()))
     throw Error(label+' COT CFTC provenance not keyboard accessible');
   await page.screenshot({path:'v10-qa-images/'+label+'-cot-reading-first.png',fullPage:true});
@@ -718,6 +758,20 @@ function expectedReactionFromMetrics(row){
   await page.waitForFunction(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument;
     return d?.getElementById('gmfq-cot-reading-first')?.dataset.readingStatus==='WITHHELD';
+  },null,{timeout:35000});
+  await page.unroute('**/V250_COT_CHART_DATA.json');
+  // A corrupted prior-week contract cannot produce an apparently valid ΔNet.
+  await page.route('**/V250_COT_CHART_DATA.json',async r=>{
+    const x=JSON.parse(fs.readFileSync(path.join(DATA,'V250_COT_CHART_DATA.json'),'utf8'));
+    x.GBP.net[x.GBP.net.length-2]+=1; // previous long-short does not match net
+    await r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(x),
+      headers:{'Access-Control-Allow-Origin':'*'}});
+  });
+  await page.goto(url+'#/home',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.goto(url+'#/cot?ccy=GBP&bad=previous-net',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument,p=d?.getElementById('gmfq-cot-reading-first');
+    return p?.dataset.readingStatus==='WITHHELD'&&!p.querySelector('.gmfq-cot-weekly-details');
   },null,{timeout:35000});
   await page.unroute('**/V250_COT_CHART_DATA.json');
   console.log('CONTROL_ROOM_V10_CB_COT_FIRST_READING_GREEN',label,{
