@@ -266,6 +266,15 @@ function expectedReactionFromMetrics(row){
       pulse:{state:d.getElementById('gmfq-market-pulse')?.dataset.pulseStatus,
         asof:d.getElementById('gmfq-market-pulse')?.dataset.asOf,
         articles:d.querySelectorAll('#gmfq-market-pulse .gmfq-pulse-item').length,
+        instruments:[...d.querySelectorAll('#gmfq-market-pulse .gmfq-pulse-item')].map(x=>({
+          ccy:x.dataset.pulseCcy,type:x.dataset.instrumentType,
+          name:x.querySelector('.gmfq-pulse-instrument')?.textContent,
+          one:x.querySelector('.gmfq-pulse-metrics span:nth-child(1) b')?.textContent,
+          week:x.querySelector('.gmfq-pulse-metrics span:nth-child(2) b')?.textContent,
+          detailsClosed:x.querySelector('details')?.open===false,
+          researchOnly:x.dataset.researchOnly})),
+        externalSeparation:d.querySelector('#gmfq-market-pulse .gmfq-pulse-links>span')?.textContent,
+        title:d.querySelector('#gmfq-market-pulse h2')?.textContent,
         text:d.getElementById('gmfq-market-pulse')?.innerText,
         newsLink:d.querySelector('#gmfq-market-pulse a[href="https://www.reuters.com/markets/"]')?.href,
         width:d.getElementById('gmfq-market-pulse')?.scrollWidth,
@@ -295,6 +304,16 @@ function expectedReactionFromMetrics(row){
      (r.pulse.state==='RECENT_VALIDATED'&&(r.pulse.articles<1||
        !/^20\d{2}-\d{2}-\d{2}$/.test(r.pulse.asof))))
     fatal.push('Market Pulse source-date/fail-closed contract failed '+JSON.stringify(r.pulse));
+  if(r.pulse.title!=='Market Pulse · tassi impliciti'||
+     !r.pulse.externalSeparation?.includes('Notizie esterne')||
+     (r.pulse.state==='RECENT_VALIDATED'&&r.pulse.instruments.some(x=>
+       !['GBP','CAD','JPY','AUD'].includes(x.ccy)||
+       x.type!==(x.ccy==='GBP'?'OIS':'FUTURES')||
+       !x.name?.includes(x.ccy==='GBP'?'OIS BoE':'Futures')||
+       !/^[-+]?[0-9]+\.[0-9] bp$/.test(x.one||'')||
+       !/^[-+]?[0-9]+\.[0-9] bp$/.test(x.week||'')||
+       !x.detailsClosed||x.researchOnly!=='true')))
+    fatal.push('Market Pulse instrument hierarchy/market vs news contract failed '+JSON.stringify(r.pulse));
   if((r.dxy||'').trim()!==dxyDisplayed)fatal.push('DXY synthetic not synchronized with its source: '+r.dxy+' != '+dxyDisplayed);
   if(!r.noApprofondisci)fatal.push('old overlay link still shown');
   if(r.rateSeries.length!==8)fatal.push('missing G8 yield lines');
