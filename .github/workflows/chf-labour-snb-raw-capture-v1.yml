@@ -1,0 +1,61 @@
+name: CHF Labour SNB Raw Capture V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/macro/capture_chf_labour_snb_vintage_v1.py'
+      - 'validation/macro/test_capture_chf_labour_snb_vintage_v1.py'
+      - '.github/workflows/chf-labour-snb-raw-capture-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deterministic-validation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run fail-closed read-only capture contract tests
+        run: python -m unittest validation.macro.test_capture_chf_labour_snb_vintage_v1 -v
+      - name: No canonical payload changed
+        run: git diff --exit-code -- live_data/sections/D.json live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
+
+  capture-current-snb:
+    if: github.event_name == 'workflow_dispatch'
+    needs: deterministic-validation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Capture current official SNB/SECO source bytes read-only
+        run: |
+          python -m validation.macro.capture_chf_labour_snb_vintage_v1 --output-dir /tmp/gmfq-chf-snb-vintage
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          p=Path('/tmp/gmfq-chf-snb-vintage')
+          m=json.loads((p/'capture_manifest.json').read_text())
+          assert hashlib.sha256((p/'snb_amarbma_raw.json').read_bytes()).hexdigest()==m['raw_payload_sha256']
+          assert m['first_release_instant_utc'] is None
+          assert not m['first_release_exact_value_certified'] and not m['historical_vintages_certified']
+          assert not m['safe_to_publish_new_D'] and not m['live_data_written']
+          print('CHF_LABOUR_SNB_CONTEMPORANEOUS_CAPTURE_ONLY_PASS')
+          PY
+          git diff --exit-code -- live_data/sections/D.json live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
+      - name: Save source bytes and capture manifest for manual review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chf-labour-snb-source-capture-${{ github.run_id }}
+          path: /tmp/gmfq-chf-snb-vintage/
+          if-no-files-found: warn
+          retention-days: 90
