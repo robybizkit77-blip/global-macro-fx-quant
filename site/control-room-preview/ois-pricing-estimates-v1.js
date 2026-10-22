@@ -312,7 +312,7 @@ function view(rows,moves=[]){
  const counts=Object.fromEntries(['OFFICIAL','PROXY','MIXED','SCENARIO','WITHHELD'].map(t=>[t,rows.filter(r=>r.tier===t).length]));
  // Preserve all 8 rows and source provenance behind an accessible disclosure.
  // No estimate becomes a certified OIS or an official policy delta.
- const brief=counts.OFFICIAL+'/8 certificate (OIS e futures monetari) · '+
+ const brief=counts.OFFICIAL+'/8 fonti certificate (OIS e futures monetari) · '+
    counts.PROXY+' futures indicativi · '+counts.MIXED+' con date non sincronizzate · '+
    counts.SCENARIO+' scenario · '+counts.WITHHELD+' non disponibili';
  return '<h2 class="desk-panel-title">G8 · Pricing monetario 3M / 6M / 12M</h2>'+
