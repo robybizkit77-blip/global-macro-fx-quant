@@ -1163,6 +1163,15 @@ async function getState(page){
                visible:!!x.getClientRects().length})),
              focusNote:p.querySelector('.gmfq-cot-focus-note')?.textContent,
              focusAsOf:p.querySelector('.gmfq-cot-focus')?.dataset.cftcAsOf,
+             weeklyAsOf:p.dataset.weeklyAsOf,weeklyCount:p.dataset.weeklyCount,
+             weekly:(()=>{
+               const details=p.querySelector('.gmfq-cot-weekly-details');
+               return {present:!!details,closed:details?.open===false,
+                 previous:details?.dataset.priorAsof,
+                 latest:details?.dataset.currentAsof,
+                 count:details?.querySelectorAll('.gmfq-cot-weekly-list li').length,
+                 method:details?.querySelector('.gmfq-cot-weekly-method')?.textContent};
+             })(),
              heading:p.querySelector('.gmfq-first-claim')?.textContent,
              priority:p.querySelector('.gmfq-first-priority')?.textContent,
              priorityFirst:!!(p.querySelector('.gmfq-first-priority')?.compareDocumentPosition(p.querySelector('.gmfq-first-claim'))&Node.DOCUMENT_POSITION_FOLLOWING),
@@ -1185,7 +1194,7 @@ async function getState(page){
                throw Error('public CB pricing summary not source-reconciled');
              return summary;
            }):null;
-         if(pageName==='cot'&&navigationVersion==='cot-crowding-focus-20261022'){
+         if(pageName==='cot'&&['cot-crowding-focus-20261022','cot-weekly-position-20261022'].includes(navigationVersion)){
            const n=Math.min(3,Number(reading.crowding));
            if(reading.focusRows.length!==n||reading.focusAsOf!==reading.asof||
              !reading.focusNote?.includes('non direzione del prezzo')||
@@ -1193,6 +1202,25 @@ async function getState(page){
                !x.visible||!x.hasLabel||Math.abs(x.ratio)<30||x.percentile<0||x.percentile>100||
                (i>0&&Math.abs(x.ratio)>Math.abs(reading.focusRows[i-1].ratio))))
               throw Error(name+' public CFTC focused crowding incorrect '+JSON.stringify(reading));
+         }
+         if(pageName==='cot'&&navigationVersion==='cot-weekly-position-20261022'){
+           if(!reading.weekly?.present||!reading.weekly.closed||
+              reading.weeklyCount!=='8'||reading.weekly.count!==8||
+              reading.weeklyAsOf!==reading.weekly.previous||
+              reading.asof!==reading.weekly.latest||
+              !reading.weekly.method?.includes('dimensioni contrattuali diverse'))
+             throw Error(name+' public COT historical 1W provenance error '+JSON.stringify(reading));
+           await page.frameLocator('#gmfq-page')
+             .locator('#gmfq-cot-reading-first .gmfq-cot-weekly-details>summary').press('Enter');
+           const weeklyExpanded=await page.evaluate(()=>{
+             const p=document.getElementById('gmfq-page').contentDocument.getElementById('gmfq-cot-reading-first');
+             const det=p.querySelector('.gmfq-cot-weekly-details');
+             return {open:det?.open,visible:[...det?.querySelectorAll('.gmfq-cot-weekly-list li')||[]].filter(x=>x.getClientRects().length).length};
+           });
+           if(!weeklyExpanded.open||weeklyExpanded.visible!==8)
+             throw Error(name+' public COT full G8 weekly detail inaccessible '+JSON.stringify(weeklyExpanded));
+           await page.frameLocator('#gmfq-page')
+             .locator('#gmfq-cot-reading-first .gmfq-cot-weekly-details>summary').press('Enter');
          }
          if(!reading.originalChart||!reading.originalTable||!reading.closed||
             !reading.priorityFirst||
