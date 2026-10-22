@@ -1095,19 +1095,38 @@ async function getState(page){
          const lead=panel.querySelector('.gmfq-vsc-priority'),ledger=panel.querySelector('.gmfq-vsc-ledger');
          const panelWidth=panel.scrollWidth,panelClient=panel.clientWidth;
          panel.style.display='none';const nativeWidth=d.documentElement.scrollWidth;panel.style.display='';
-         return {lead:lead?.textContent,
+         return {lead:lead?.textContent,state:panel.dataset.readingState,
            first:!!(lead?.compareDocumentPosition(ledger)&Node.DOCUMENT_POSITION_FOLLOWING),
            keys:[...ledger.querySelectorAll('span[data-source]')].map(x=>x.dataset.source),
            disclosure:!!panel.querySelector('.gmfq-vsc-details summary'),
+           closed:panel.querySelector('.gmfq-vsc-details')?.open===false,
+           ledgerHidden:!ledger?.getClientRects().length,
            panelWidth,panelClient,nativeWidth,
            width:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
        });
-       if(!valuteFirst.lead?.startsWith('Fixing giornaliero, DXY sintetico')||
-          !valuteFirst.first||
+       const newValute=process.env.GITHUB_EVENT_NAME!=='pull_request'&&navigationVersion==='valute-source-focus-20261022';
+       const validLead=newValute?
+         (['FX_WITHHELD','MACRO_WITHHELD','MACRO_HISTORICAL','DXY_WITHHELD','SEPARATE_SOURCES'].includes(valuteFirst.state)&&
+          (valuteFirst.state==='MACRO_HISTORICAL'?valuteFirst.lead?.includes('tesi Macro ancora alla baseline'):
+           valuteFirst.state.endsWith('_WITHHELD')?valuteFirst.lead?.startsWith('Prima verifica:')||
+              (valuteFirst.state==='DXY_WITHHELD'&&valuteFirst.lead?.includes('DXY sintetico non è corrente')):
+           valuteFirst.lead?.startsWith('Prezzi BCE, DXY sintetico'))&&
+          valuteFirst.closed&&valuteFirst.ledgerHidden):
+         valuteFirst.lead?.startsWith('Fixing giornaliero, DXY sintetico');
+       if(!validLead||!valuteFirst.first||
           JSON.stringify(valuteFirst.keys)!==JSON.stringify(['fixing','dxy','macro'])||
           !valuteFirst.disclosure||valuteFirst.panelWidth>valuteFirst.panelClient+2||
           valuteFirst.width>Math.max(valuteFirst.viewport+16,valuteFirst.nativeWidth+2))
          throw Error(name+' public Valute editorial source ledger failed '+JSON.stringify(valuteFirst));
+       if(newValute){
+         await page.frameLocator('#gmfq-page').locator('#gmfq-valute-source-compass .gmfq-vsc-details > summary').press('Enter');
+         const valuteOpen=await page.evaluate(()=>{
+           const p=document.getElementById('gmfq-page').contentDocument.getElementById('gmfq-valute-source-compass');
+           return {opened:p.querySelector('.gmfq-vsc-details')?.open,shown:!!p.querySelector('.gmfq-vsc-ledger')?.getClientRects().length};
+         });
+         if(!valuteOpen.opened||!valuteOpen.shown)
+            throw Error(name+' Valute source drilldown missing '+JSON.stringify(valuteOpen));
+       }
        console.log('CONTROL_ROOM_V10_MACRO_SCREENER_READING_PUBLIC_GREEN',name,
          {baseline:macroFirst.baseline,groups:screenerFirst.summary,blocked:screenerFirst.count});
      }
