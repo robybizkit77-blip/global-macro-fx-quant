@@ -2021,6 +2021,21 @@ async function mountScreenerBlockers(doc){
  if(!valid){unknown();return}
  const rows=Object.entries(records).filter(([,r])=>r?.setup?.quality==='NON VALUTABILE');
  if(rows.length!==setup.quality_distribution?.['NON VALUTABILE']){unknown();return}
+ // Reconcile all 28 source judgments before presenting any "what to review".
+ // Review-only states are not trade candidates and are never re-ranked here.
+ const categoriesKnown=['DA CONFERMARE','DA MONITORARE','CON RISCHI','NON VALUTABILE'];
+ const counts=Object.fromEntries(categoriesKnown.map(q=>[q,0]));
+ for(const record of Object.values(records)){
+   const quality=record?.setup?.quality;
+   if(!categoriesKnown.includes(quality)){unknown();return}
+   counts[quality]++;
+ }
+ if(categoriesKnown.some(k=>counts[k]!==setup.quality_distribution?.[k])||
+    categoriesKnown.reduce((v,k)=>v+counts[k],0)!==28){unknown();return}
+ const reviewPairs=Object.entries(records)
+   .filter(([,record])=>['DA CONFERMARE','DA MONITORARE'].includes(record.setup.quality))
+   .map(([code,record])=>({code,quality:record.setup.quality}))
+   .sort((a,b)=>a.code.localeCompare(b.code));
  const groups={CONFLICT:[],RATES_ONLY:[],INSUFFICIENT:[]};
  for(const [code,record] of rows){
   const explanation=screenerBlockerReason(code,record);
@@ -2034,6 +2049,16 @@ async function mountScreenerBlockers(doc){
  '#gmfq-screener-blockers .gmfq-blocker-priority{margin:0;padding:11px 16px 3px;font:600 13px/1.55 Arial,sans-serif;color:#e5edf3;overflow-wrap:anywhere}'+
  '#gmfq-screener-blockers .gmfq-blocker-intro{margin:0;padding:2px 16px 8px;font:11px/1.6 Arial,sans-serif;color:#bfd0dd}'+
  '#gmfq-screener-blockers .gmfq-blocker-overview{display:flex;gap:6px 17px;flex-wrap:wrap;margin:0;padding:6px 16px;color:#d9e3eb;font:600 12px/1.55 Arial,sans-serif}'+
+ '#gmfq-screener-blockers .gmfq-screener-quality{display:flex;flex-wrap:wrap;gap:4px 16px;margin:3px 16px 7px;padding:8px 0;border-top:1px solid #294657;border-bottom:1px solid #294657;font:11px/1.5 Arial,sans-serif;color:#a9c5d2}'+
+ '#gmfq-screener-blockers .gmfq-screener-quality span{min-width:0}'+
+ '#gmfq-screener-blockers .gmfq-screener-quality b{color:#e2edf4;font-weight:600;font-variant-numeric:tabular-nums}'+
+ '#gmfq-screener-blockers .gmfq-screener-review{padding:4px 16px 10px;min-width:0}'+
+ '#gmfq-screener-blockers .gmfq-screener-review-title{font:600 11px/1.45 Arial,sans-serif;color:#e0ca95;margin:0 0 5px}'+
+ '#gmfq-screener-blockers .gmfq-screener-review-line{display:flex;gap:6px 15px;flex-wrap:wrap;align-items:baseline}'+
+ '#gmfq-screener-blockers .gmfq-review-pair{font:600 11px/1.5 Arial,sans-serif;color:#e4edf4;cursor:pointer;white-space:normal;text-align:left;background:transparent;border:0;border-bottom:1px dotted #607a89;padding:2px 0;outline-offset:3px}'+
+ '#gmfq-screener-blockers .gmfq-review-pair small{font:10px/1.45 Arial,sans-serif;color:#a8bac8;margin-left:4px}'+
+ '#gmfq-screener-blockers .gmfq-review-pair:hover,#gmfq-screener-blockers .gmfq-review-pair:focus-visible{color:#e4c887;outline:2px solid #dfc58c;outline-offset:3px}'+
+ '#gmfq-screener-blockers .gmfq-screener-review-note{font:10px/1.5 Arial,sans-serif;color:#9cb4c3;margin:6px 0 0}'+
  '#gmfq-screener-blockers .gmfq-blocker-overview span{min-width:0;overflow-wrap:anywhere}'+
  '#gmfq-screener-blockers #gmfq-blocker-details{margin:7px 0 0;border-top:1px solid #324b59;padding:10px 0 0;min-width:0}'+
  '#gmfq-screener-blockers #gmfq-blocker-details>summary{cursor:pointer;color:#e0c78c;font:600 12px/1.5 Arial,sans-serif;padding:5px 16px;outline-offset:4px}'+
@@ -2061,6 +2086,9 @@ async function mountScreenerBlockers(doc){
  '#gmfq-screener-blockers .gmfq-blocker-date span{width:100%}'+
  '#gmfq-screener-blockers .gmfq-blocker-grid{padding:5px 12px 10px}'+
  '#gmfq-screener-blockers .gmfq-blocker-overview{padding:7px 12px;gap:5px 12px}'+
+ '#gmfq-screener-blockers .gmfq-screener-quality{margin:3px 12px 7px;gap:3px 12px}'+
+ '#gmfq-screener-blockers .gmfq-screener-review{padding:4px 12px 10px}'+
+ '#gmfq-screener-blockers .gmfq-screener-review-line{gap:4px 12px}'+
  '#gmfq-screener-blockers .gmfq-blocker-brief{padding:0 12px 7px}'+
  '#gmfq-screener-blockers #gmfq-blocker-details>summary{padding:5px 12px}'+
  
@@ -2082,10 +2110,27 @@ async function mountScreenerBlockers(doc){
  panel.dataset.diagnosisStatus='READ_ONLY';
  panel.dataset.macroBaselineAsOf=setup.macro_baseline_asof;
  panel.dataset.modelPriceAsOf=setup.price_asof||'';
- panel.innerHTML='<h2 class="desk-panel-title">Setup NON VALUTABILE · '+rows.length+
-  '/28 · cause documentate</h2>'+
+ panel.dataset.reviewCount=String(reviewPairs.length);
+ panel.dataset.qualityCoverage=String(categoriesKnown.reduce((v,k)=>v+counts[k],0));
+ panel.innerHTML='<h2 class="desk-panel-title">Screener G8 · 28 coppie · lettura del motore</h2>'+
   '<p class="gmfq-blocker-priority">Le coppie senza una tesi coerente restano NON VALUTABILI: Macro e Tassi/CB non bastano a renderle operative.</p>'+
    '<p class="gmfq-blocker-intro">Classificazione del motore canonico, non graduatoria di opportunità di trade.</p>'+
+  '<div class="gmfq-screener-quality" aria-label="Distribuzione esatta dei 28 setup FX">'+
+   '<span data-quality="DA CONFERMARE"><b>'+counts['DA CONFERMARE']+'</b> da confermare</span>'+
+   '<span data-quality="DA MONITORARE"><b>'+counts['DA MONITORARE']+'</b> da monitorare</span>'+
+   '<span data-quality="CON RISCHI"><b>'+counts['CON RISCHI']+'</b> con rischi</span>'+
+   '<span data-quality="NON VALUTABILE"><b>'+counts['NON VALUTABILE']+'</b> non valutabili</span></div>'+
+  '<div class="gmfq-screener-review" data-ranking="NONE" data-trade-signals="NONE">'+
+   '<p class="gmfq-screener-review-title">Stati da verificare nel motore · '+reviewPairs.length+' coppie</p>'+
+   '<div class="gmfq-screener-review-line">'+reviewPairs.map(x=>
+     '<button type="button" class="gmfq-review-pair" data-pair="'+x.code+
+     '" data-quality="'+x.quality+'" aria-label="Apri analisi '+x.code+
+     ', stato '+x.quality+'">'+
+     FLAG[x.code.slice(0,3)]+' '+FLAG[x.code.slice(3,6)]+' '+x.code+
+     ' <small>'+x.quality.toLowerCase()+' ↗</small></button>').join('')+'</div>'+
+   '<p class="gmfq-screener-review-note">Solo stati da rivalutare, non proposte di ingresso. La baseline Macro resta storica: '+
+   htmlEscape(setup.macro_baseline_asof)+'. Nessun ordine di attrattività, segnale o timing.</p></div>'+
+  '<p class="gmfq-blocker-intro">Restano NON VALUTABILI '+rows.length+' coppie: principali motivi sotto.</p>'+
   '<div class="gmfq-blocker-overview" aria-label="Cause delle coppie non valutabili">'+
   '<span>Macro vs Tassi/CB: '+groups.CONFLICT.length+'</span>'+
   '<span>Differenziale 2Y senza tesi: '+groups.RATES_ONLY.length+'</span>'+
@@ -2099,7 +2144,7 @@ async function mountScreenerBlockers(doc){
   '<div class="gmfq-blocker-grid">'+categories.map(card).join('')+'</div>'+
   '<p class="gmfq-blocker-note">Lettura descrittiva e storica, non graduatoria di trade. Lo spread 2Y è solo contesto di livello: non crea da solo una preferenza FX. Nessuna promozione di fonte, ricalcolo di score, modifica dei 28 setup o segnale operativo.</p></details>';
  panel.addEventListener('click',event=>{
-  const button=event.target.closest('button.gmfq-blocker-pair[data-pair]');
+  const button=event.target.closest('button.gmfq-blocker-pair[data-pair],button.gmfq-review-pair[data-pair]');
   if(button&&panel.contains(button)&&records[button.dataset.pair])
    go('#/coppie?pair='+button.dataset.pair);
  });

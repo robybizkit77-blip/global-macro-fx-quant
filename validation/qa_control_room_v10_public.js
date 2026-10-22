@@ -1076,6 +1076,18 @@ async function getState(page){
          p.style.display='';
          return {nativeWidth,panelWidth,panelClient,
            summary:p.querySelector('.gmfq-blocker-overview')?.textContent,
+           qualityCoverage:p.dataset.qualityCoverage,reviewCount:p.dataset.reviewCount,
+           quality:[...p.querySelectorAll('.gmfq-screener-quality span[data-quality]')].map(x=>({
+             tier:x.dataset.quality,count:Number(x.querySelector('b')?.textContent)
+           })),
+           review:(()=>{
+             const box=p.querySelector('.gmfq-screener-review');
+             return {rank:box?.dataset.ranking,signals:box?.dataset.tradeSignals,
+               note:box?.querySelector('.gmfq-screener-review-note')?.textContent,
+               pairs:[...box?.querySelectorAll('button.gmfq-review-pair')||[]].map(x=>({
+                 code:x.dataset.pair,tier:x.dataset.quality,visible:!!x.getClientRects().length
+               }))};
+           })(),
             priority:p.querySelector('.gmfq-blocker-priority')?.textContent,
             priorityFirst:!!(p.querySelector('.gmfq-blocker-priority')?.compareDocumentPosition(p.querySelector('.gmfq-blocker-overview'))&Node.DOCUMENT_POSITION_FOLLOWING),
             sources:[...p.querySelectorAll('.gmfq-blocker-date span[data-source]')].map(x=>x.dataset.source),
@@ -1094,6 +1106,31 @@ async function getState(page){
           screenerFirst.panelWidth>screenerFirst.panelClient+2||
           screenerFirst.width>Math.max(screenerFirst.viewport+16,screenerFirst.nativeWidth+2))
          throw Error(name+' public Screener source-first reading not deployed '+JSON.stringify(screenerFirst));
+       if(navigationVersion==='screener-review-28-20261022'){
+          const expectedTiers=['DA CONFERMARE','DA MONITORARE','CON RISCHI','NON VALUTABILE'];
+          const review=screenerFirst.review;
+          if(screenerFirst.qualityCoverage!=='28'||
+             Number(screenerFirst.reviewCount)!==review?.pairs.length||
+             screenerFirst.quality.length!==4||
+             screenerFirst.quality.some((x,i)=>x.tier!==expectedTiers[i]||
+               !Number.isInteger(x.count)||x.count<0)||
+             screenerFirst.quality.reduce((n,x)=>n+x.count,0)!==28||
+             review.rank!=='NONE'||review.signals!=='NONE'||
+             !review.note?.includes('non proposte di ingresso')||
+             review.pairs.some(x=>!['DA CONFERMARE','DA MONITORARE'].includes(x.tier)||
+               !/^[A-Z]{6}$/.test(x.code)||!x.visible))
+            throw Error(name+' public Screener source-quality first reading failed '+JSON.stringify(screenerFirst));
+          if(review.pairs.length){
+            const pair=review.pairs.find(x=>x.code==='USDCAD')||review.pairs[0];
+            await page.frameLocator('#gmfq-page').locator('#gmfq-screener-blockers button.gmfq-review-pair[data-pair="'+pair.code+'"]').click();
+            await page.waitForURL(u=>u.hash==='#/coppie?pair='+pair.code,{timeout:20000});
+            await page.goto(BASE+'?screenerBack='+Date.now()+'#/screener',{waitUntil:'domcontentloaded',timeout:120000});
+            await page.waitForFunction(()=>{
+              const d=document.getElementById('gmfq-page')?.contentDocument;
+              return d?.getElementById('gmfq-screener-blockers')?.dataset.diagnosisStatus==='READ_ONLY';
+            },null,{timeout:30000});
+          }
+       }
        await page.frameLocator('#gmfq-page').locator('#gmfq-blocker-details>summary').press('Enter');
        if(!(await page.frameLocator('#gmfq-page').locator('#gmfq-screener-blockers button[data-pair="GBPJPY"]').isVisible()))
          throw Error(name+' public Screener individual reasons inaccessible');
