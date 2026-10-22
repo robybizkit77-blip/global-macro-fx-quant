@@ -1814,6 +1814,12 @@ async function mountPairRankedList(doc){
  '#gmfq-pair-rank .gmfq-rank-method{color:#9db6c8;font:11px/1.55 Arial,sans-serif;margin:7px 0 2px}'+
  '#gmfq-pair-rank .gmfq-rank-lead{color:#e5c98d;font:600 12px/1.55 Arial,sans-serif;margin:6px 0 4px}'+
  '#gmfq-pair-rank .gmfq-rank-source{font:10px/1.5 Arial,sans-serif;color:#91abbb}'+
+ '#gmfq-pair-rank .gmfq-rank-view{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:5px 0 8px}'+
+ '#gmfq-pair-rank .gmfq-rank-view button{cursor:pointer;border:1px solid #496274;background:transparent;border-radius:4px;padding:5px 9px;color:#c9d9e5;font:600 11px/1.5 Arial,sans-serif}'+
+ '#gmfq-pair-rank .gmfq-rank-view button[aria-pressed="true"]{color:#e7cd93;border-color:#c2a76c;background:#243647}'+
+ '#gmfq-pair-rank .gmfq-rank-view button:focus-visible{outline:2px solid #e2c98f;outline-offset:2px}'+
+ '#gmfq-pair-rank .gmfq-rank-visibility{font:11px/1.45 Arial,sans-serif;color:#9fbacb}'+
+ '#pair-index tr.gmfq-research-hidden{display:none!important}'+
  '#pair-index .gmfq-row-rank{display:inline-block;min-width:22px;color:#dfc891;font:600 12px/1.5 Arial,sans-serif;margin-right:7px;font-variant-numeric:tabular-nums}'+
  '#pair-index .gmfq-row-why{display:block;margin-top:3px;color:#a8bfcd;font:10px/1.45 Arial,sans-serif;max-width:280px;overflow-wrap:anywhere}'+
  '#pair-index tr[data-research-rank] td:nth-child(4){min-width:170px}'+
@@ -1827,6 +1833,10 @@ async function mountPairRankedList(doc){
   '<div class="gmfq-rank-switch" role="group" aria-label="Criterio di ordinamento delle coppie">'+
   '<button type="button" data-rank-mode="setup" aria-pressed="true">Condizioni del setup</button>'+
   '<button type="button" data-rank-mode="thesis" aria-pressed="false">Forza della tesi</button></div>'+
+  '<div class="gmfq-rank-view" role="group" aria-label="Quante coppie mostrare">'+
+   '<button type="button" data-pair-view="focus" aria-pressed="true">Prime 8</button>'+
+   '<button type="button" data-pair-view="all" aria-pressed="false">Tutte le 28</button>'+
+   '<span class="gmfq-rank-visibility" role="status" aria-live="polite">Prime 8 · altre coppie disponibili</span></div>'+
   '<p class="gmfq-rank-lead" aria-live="polite"></p>'+
   '<p class="gmfq-rank-method">Ordine editoriale, NON probabilità, score quantitativo o segnale. Setup: presenza della tesi → prezzo → estensione → timing → coerenza Macro/Tassi → dinamica → liquidità/COT. Tesi: coerenza Macro/Tassi → dinamica → altre conferme. Le 11 senza preferenza strutturale sono in fondo.</p>'+
   '<p class="gmfq-rank-source">Fonte '+htmlEscape(ranked.source)+' · prezzo del modello '+htmlEscape(ranked.priceAsOf)+
@@ -1834,7 +1844,9 @@ async function mountPairRankedList(doc){
   '. La prima coppia non è necessariamente un trade eseguibile.</p>';
  const lead=panel.querySelector('.gmfq-rank-lead'),head=table.tHead?.querySelectorAll('th');
  if(head?.[3])head[3].textContent='Valutazione e principale cautela';
- let mode='setup';
+ let mode='setup',view='focus';
+ panel.dataset.viewMode=view;panel.dataset.displayLimit='8';
+ const visibilityLabel=panel.querySelector('.gmfq-rank-visibility');
  const apply=()=>{
    if(!panel.isConnected||frame.contentDocument!==doc||route()!=='coppie')return;
    const order=ranked[mode],indexed=new Map(order.map((r,i)=>[r.code,{...r,rank:i+1}]));
@@ -1843,8 +1855,18 @@ async function mountPairRankedList(doc){
    if(!pairs.length)return; // Native filters can show zero rows.
    const codes=pairs.map(tr=>tr.querySelector('button.pair-open').dataset.pair);
    if(new Set(codes).size!==codes.length||codes.some(x=>!indexed.has(x)))return;
+   const search=doc.getElementById('pair-search')?.value?.trim()||'',
+         cross=!!doc.getElementById('pair-cross')?.checked;
+   const unfiltered=!search&&!cross;
+   // Search matches and deep-linked selection remain visible beyond the first eight.
+   let showing=0;
    for(const row of pairs){
      const code=row.querySelector('button.pair-open').dataset.pair,r=indexed.get(code);
+     const selectedRow=row.classList.contains('pair-current');
+     const visible=view==='all'||!unfiltered||r.rank<=8||selectedRow;
+     row.classList.toggle('gmfq-research-hidden',!visible);
+     row.dataset.researchVisible=String(visible);
+     if(visible)showing++;
      row.dataset.researchRank=String(r.rank);
      row.dataset.researchMode=mode;
      const first=row.cells[0],verdict=row.cells[3];
@@ -1858,6 +1880,14 @@ async function mountPairRankedList(doc){
    const sorted=pairs.slice().sort((a,b)=>indexed.get(a.querySelector('button.pair-open').dataset.pair).rank-
      indexed.get(b.querySelector('button.pair-open').dataset.pair).rank);
    if(sorted.some((tr,i)=>tr!==pairs[i]))tbody.append(...sorted);
+   panel.dataset.visibleCount=String(showing);
+   const nativeCount=doc.getElementById('pair-visible');
+   if(nativeCount&&unfiltered)nativeCount.textContent=showing+'/28 coppie in evidenza · '+(28-showing)+' ulteriori disponibili';
+   if(visibilityLabel)visibilityLabel.textContent=view==='all'?
+     'Tutte le '+pairs.length+' coppie attualmente filtrate, ordine conservato':
+     unfiltered?String(showing)+' coppie in evidenza · altre '+(pairs.length-showing)+
+       ' apribili · coppia selezionata sempre visibile':
+       String(showing)+' risultati del filtro · la ricerca include tutte le 28 coppie';
  };
  const headline=()=>{
    const first=ranked[mode][0];
@@ -1866,8 +1896,15 @@ async function mountPairRankedList(doc){
      ' · '+first.thesis+' · '+first.why+'. Non è un ingresso.';
  };
  panel.addEventListener('click',e=>{
-   const b=e.target.closest('button[data-rank-mode]');
+   const b=e.target.closest('button[data-rank-mode],button[data-pair-view]');
    if(!b||!panel.contains(b))return;
+   if(b.hasAttribute('data-pair-view')){
+     if(!['focus','all'].includes(b.dataset.pairView))return;
+     view=b.dataset.pairView;panel.dataset.viewMode=view;
+     panel.querySelectorAll('button[data-pair-view]').forEach(x=>
+       x.setAttribute('aria-pressed',String(x.dataset.pairView===view)));
+     apply();return;
+   }
    if(!['setup','thesis'].includes(b.dataset.rankMode))return;
    mode=b.dataset.rankMode;panel.dataset.sortMode=mode;
    panel.querySelectorAll('button[data-rank-mode]').forEach(x=>
