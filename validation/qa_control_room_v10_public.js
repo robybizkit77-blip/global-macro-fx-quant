@@ -355,6 +355,22 @@ async function getState(page){
      }else console.log('G8_FOCUS_NOT_YET_DEPLOYED: PR public QA is checking prior main; local browser QA checks new code');
      await page.frameLocator('#gmfq-page').locator('#valute .cc[data-filter="DXY"]').click();
      await page.frameLocator('#gmfq-page').locator('dialog#gmfq-dxy-dialog[open]').waitFor({timeout:10000});
+     if(process.env.GITHUB_EVENT_NAME!=='pull_request'&&navigationVersion==='dxy-context-20261022'){
+       const ctx=await page.evaluate(()=>{
+         const d=document.getElementById('gmfq-page').contentDocument,
+           box=d.getElementById('gmfq-dxy-dialog'),metrics=box?.querySelector('.gmfq-dxy-metrics');
+         return {visible:!!metrics?.getClientRects().length,
+           count:metrics?.querySelectorAll('strong').length,
+           notIce:metrics?.dataset.iceOfficial==='false',
+           disclaimer:box?.textContent.includes('non sull’indice ICE'),
+           chart:!!box?.querySelector('svg polyline'),
+           modalWidth:box?.getBoundingClientRect().width,
+           viewport:d.documentElement.clientWidth};
+       });
+       if(!ctx.visible||ctx.count!==3||!ctx.notIce||!ctx.disclaimer||!ctx.chart||
+          ctx.modalWidth>ctx.viewport+2)
+         throw Error('Public DXY source-safe context not present '+JSON.stringify(ctx));
+     }
      await page.frameLocator('#gmfq-page').locator('.gmfq-dxy-dialog .gmfq-close').click();
      await page.frameLocator('#gmfq-page').locator('.mid > .panel:nth-child(2)').click();
      await page.waitForURL(/#\/tassi\?focus=2y$/,{timeout:15000});
