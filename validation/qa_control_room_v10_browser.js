@@ -1241,6 +1241,10 @@ function expectedReactionFromMetrics(row){
       rows=[...d.querySelectorAll('#pair-index tr[data-research-rank]')];
     return {status:p?.dataset.status,count:p?.dataset.count,mode:p?.dataset.sortMode,
       trade:p?.dataset.hasTradeRanking,baseline:p?.dataset.macroAsOf,price:p?.dataset.priceAsOf,
+      view:p?.dataset.viewMode,visibleCount:Number(p?.dataset.visibleCount),
+      nativeSummary:d.getElementById('pair-visible')?.textContent,
+      viewModes:[...p.querySelectorAll('button[data-pair-view]')].map(x=>({
+        mode:x.dataset.pairView,pressed:x.getAttribute('aria-pressed')})),
       panelWidth:p?.scrollWidth,panelClient:p?.clientWidth,
       docWidth:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth,
       modes:[...p.querySelectorAll('button[data-rank-mode]')].map(x=>({
@@ -1248,7 +1252,8 @@ function expectedReactionFromMetrics(row){
       descriptions:rows.map(x=>({
         code:x.querySelector('button.pair-open')?.dataset.pair,rank:Number(x.dataset.researchRank),
         why:x.querySelector('.gmfq-row-why')?.textContent,
-        label:x.querySelector('.gmfq-row-rank')?.textContent,mode:x.dataset.researchMode
+        label:x.querySelector('.gmfq-row-rank')?.textContent,mode:x.dataset.researchMode,
+        visible:!!x.getClientRects().length,selected:x.classList.contains('pair-current')
       }))};
   });
   const rankSetup=await readRank();
@@ -1264,6 +1269,24 @@ function expectedReactionFromMetrics(row){
      JSON.stringify(rankSetup.modes)!==JSON.stringify([
        {mode:'setup',pressed:'true'},{mode:'thesis',pressed:'false'}]))
     throw Error(label+' Pair ranked setup first reading failed '+JSON.stringify(rankSetup));
+  const initialVisible=rankSetup.descriptions.filter(x=>x.visible);
+  if(rankSetup.view!=='focus'||rankSetup.visibleCount!==initialVisible.length||
+     initialVisible.length<8||initialVisible.length>9||
+     rankSetup.descriptions.slice(0,8).some(x=>!x.visible)||
+     rankSetup.descriptions.some(x=>x.visible&&x.rank>8&&!x.selected)||
+     rankSetup.viewModes.length!==2||
+     rankSetup.viewModes[0].pressed!=='true'||rankSetup.viewModes[1].pressed!=='false'||
+     !rankSetup.nativeSummary?.includes(initialVisible.length+'/28'))
+    throw Error(label+' pair first view not compact or selected pair hidden '+JSON.stringify(rankSetup));
+  await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-pair-view="all"]').click();
+  const expandedPairs=await readRank();
+  if(expandedPairs.view!=='all'||expandedPairs.visibleCount!==28||
+     expandedPairs.descriptions.some(x=>!x.visible)||expandedPairs.viewModes[1].pressed!=='true')
+    throw Error(label+' cannot inspect all 28 original pairs '+JSON.stringify(expandedPairs));
+  await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-pair-view="focus"]').click();
+  const focusAgain=await readRank();
+  if(focusAgain.view!=='focus'||focusAgain.descriptions.filter(x=>x.visible).length!==initialVisible.length)
+    throw Error(label+' compact pair first view not restored '+JSON.stringify(focusAgain));
   const rankedCodes=rankSetup.descriptions.map(x=>x.code);
   const unranked=rankedCodes.findIndex(x=>setupFeed.pairs[x].setup.quality==='NON VALUTABILE');
   if(unranked<0||rankedCodes.slice(unranked).some(x=>
@@ -1276,7 +1299,9 @@ function expectedReactionFromMetrics(row){
     throw Error(label+' CON RISCHI still lacks a concrete source-based explanation');
   await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-rank-mode="thesis"]').click();
   const rankThesis=await readRank();
-  if(rankThesis.mode!=='thesis'||rankThesis.descriptions.length!==28||
+  if(rankThesis.mode!=='thesis'||rankThesis.view!=='focus'||
+     rankThesis.descriptions.slice(0,8).some(x=>!x.visible)||
+     rankThesis.descriptions.length!==28||
      rankThesis.modes[1]?.pressed!=='true'||
      rankThesis.descriptions.some((x,i)=>x.rank!==i+1||x.mode!=='thesis')||
      rankThesis.descriptions[0]?.code!=='USDCHF')
@@ -1289,7 +1314,8 @@ function expectedReactionFromMetrics(row){
     return x.length===1&&x[0].querySelector('button.pair-open')?.dataset.pair==='USDCHF';
   },null,{timeout:20000});
   const filteredRank=await readRank();
-  if(filteredRank.descriptions.length!==1||
+  if(filteredRank.descriptions.length!==1||!filteredRank.descriptions[0].visible||
+     filteredRank.visibleCount!==1||
      filteredRank.descriptions[0].rank!==rankedCodes.indexOf('USDCHF')+1)
     throw Error(label+' native pair search loses rank or source label '+JSON.stringify(filteredRank));
   await page.frameLocator('#gmfq-page').locator('#pair-search').fill('');
