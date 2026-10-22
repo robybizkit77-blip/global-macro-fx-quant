@@ -220,8 +220,8 @@ function yieldChart(doc,all,which='2Y'){
  <button type="button" data-gmfq-tenor="10Y" aria-pressed="${chosen==='10Y'}" style="background:transparent;border:0;color:${chosen==='10Y'?'#f1ca6d':'#93b1c3'};cursor:pointer;padding:0 3px">10Y</button></div>`;
  const note=curve.parentElement?.querySelector('.gmfq-chart-note')||doc.createElement('div');
  note.className='gmfq-chart-note';
- const chosen=data.length===1?data[0]:null;
- note.textContent=(chosen?FLAG[chosen.c]+' '+chosen.c+' · '+which+' '+fmt(chosen.now!==null?chosen.now:chosen.series.at(-1).v,2)+'% · '+(chosen.latest||chosen.series.at(-1).date)+(chosen.est?' · STIMA':' · rilevato'):'G8 · '+which+' · confronto tra tutte le valute')+
+ const picked=data.length===1?data[0]:null;
+ note.textContent=(picked?FLAG[picked.c]+' '+picked.c+' · '+which+' '+fmt(picked.now!==null?picked.now:picked.series.at(-1).v,2)+'% · '+(picked.latest||picked.series.at(-1).date)+(picked.est?' · STIMA':' · rilevato'):'G8 · '+which+' · confronto tra tutte le valute')+
   '. Tocca una bandierina per isolare la valuta o tornare al confronto. * Il tratteggio oro indica stime β: non sono segnali.';
  if(!note.isConnected)curve.insertAdjacentElement('afterend',note);
 }
