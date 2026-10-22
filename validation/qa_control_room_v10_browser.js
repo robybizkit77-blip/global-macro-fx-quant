@@ -591,6 +591,17 @@ function expectedReactionFromMetrics(row){
     return {status:p.dataset.readingStatus,first:p.dataset.policyEarliest,
       last:p.dataset.policyLatest,certified:p.dataset.certified,
       estimated:p.dataset.estimated,withheld:p.dataset.withheld,
+      meeting:(()=>{
+        const box=p.querySelector('.gmfq-cb-meeting-focus'),det=p.querySelector('.gmfq-cb-meeting-details');
+        return {source:box?.dataset.source,asof:box?.dataset.asOf,status:box?.dataset.calendarStatus,
+          note:box?.textContent,closed:det?.open===false,total:Number(det?.dataset.count),
+          groups:[...box?.querySelectorAll('.gmfq-cb-meeting-dates li')||[]].map(x=>({
+            date:x.dataset.meetingDay,ccys:[...x.querySelectorAll('[data-meeting-ccy]')].map(y=>y.dataset.meetingCcy)
+          })),
+          rows:[...det?.querySelectorAll('.gmfq-cb-meeting-all li')||[]].map(x=>({
+            ccy:x.dataset.meetingCcy,date:x.dataset.meetingDate,last:x.dataset.policyAsof,tier:x.dataset.meetingTier
+          }))};
+      })(),meetingDateGroups:p.dataset.meetingDateGroups,meetingUpcomingCount:p.dataset.meetingUpcomingCount,
       priority:p.querySelector('.gmfq-first-priority')?.textContent,
       evidence:p.querySelector('.gmfq-first-claim')?.textContent,
       order:!!(p.querySelector('.gmfq-first-priority')?.compareDocumentPosition(p.querySelector('.gmfq-first-claim'))&Node.DOCUMENT_POSITION_FOLLOWING),
@@ -610,7 +621,7 @@ function expectedReactionFromMetrics(row){
      cbFirst.width>cbFirst.client+2||cbFirst.doc>cbFirst.viewport+16)
     throw Error(label+' CB first reading or native chart not intact '+JSON.stringify(cbFirst));
   await page.frameLocator('#gmfq-page').locator('#gmfq-cb-reading-first details>summary').press('Enter');
-  const cbFull=await page.frameLocator('#gmfq-page').locator('#gmfq-cb-reading-first details p').last().isVisible();
+  const cbFull=await page.frameLocator('#gmfq-page').locator('#gmfq-cb-reading-first>details:not(.gmfq-cb-meeting-details) p').last().isVisible();
   if(!cbFull)throw Error(label+' CB provenance not keyboard accessible');
   await page.screenshot({path:'v10-qa-images/'+label+'-cb-reading-first.png',fullPage:true});
   // Negative policy fixture: future meeting missing MUST invalidate the first
