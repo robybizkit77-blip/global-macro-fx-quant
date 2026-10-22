@@ -4,13 +4,14 @@ from __future__ import annotations
 import copy
 import json
 import unittest
-from datetime import date
+from datetime import date, datetime
+from zoneinfo import ZoneInfo
 
 from validation.macro.rebase_joint_gate_v1 import combine, run
 from validation.macro.rebase_readiness_v1 import ROOT, PATHS, g8_coverage
 from validation.macro.latest_release_pit_ledger_v1 import build_ledger
 
-ASOF = date(2026, 10, 20)
+ASOF = datetime.now(ZoneInfo("Europe/Rome")).date()
 
 
 class JointMacroGateTests(unittest.TestCase):

@@ -3,7 +3,8 @@
 import copy
 import json
 import unittest
-from datetime import date
+from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from validation.macro.rebase_readiness_v1 import ROOT, PATHS, g8_coverage
 
@@ -19,7 +20,10 @@ class RebaseReadinessTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.inputs = load()
-        cls.today = date(2026, 10, 20)
+        # Read-only readiness is a rolling daily audit, not an October 20
+        # historical replay. Keep the test clock aligned with the production
+        # Europe/Rome run date as new official Rates observations arrive.
+        cls.today = datetime.now(ZoneInfo("Europe/Rome")).date()
 
     def run_audit(self, **overrides):
         d = dict(self.inputs)
@@ -59,9 +63,10 @@ class RebaseReadinessTests(unittest.TestCase):
     def test_future_observation_rejected(self):
         s = copy.deepcopy(self.inputs["series"])
         target = next(x for x in s["USD"] if x["id"] == "US_UNRATE_history_value")
-        target["dates"][-1] = "2026-11-01"
+        future_day = (self.today + timedelta(days=65)).isoformat()
+        target["dates"][-1] = future_day
         h = copy.deepcopy(self.inputs["heat"])
-        h["currencies"]["USD"]["labour"]["as_of"] = "2026-11-01"
+        h["currencies"]["USD"]["labour"]["as_of"] = future_day
         with self.assertRaisesRegex(ValueError, "future observation"):
             self.run_audit(series=s, heat=h)
 
@@ -89,9 +94,31 @@ class RebaseReadinessTests(unittest.TestCase):
 
     def test_macro_date_mismatch_rejected(self):
         p = copy.deepcopy(self.inputs["pair_setup"])
-        p["macro_baseline_asof"] = "2026-10-19"
+        p["macro_baseline_asof"] = (
+            date.fromisoformat(self.inputs["model"]["asOf"]) + timedelta(days=1)
+        ).isoformat()
         with self.assertRaisesRegex(ValueError, "Macro provenance inconsistent"):
             self.run_audit(pair_setup=p)
+
+    def test_future_usd_rates_date_rejected(self):
+        rates = copy.deepcopy(self.inputs["rates"])
+        rates["USD"]["date"] = (self.today + timedelta(days=1)).isoformat()
+        with self.assertRaisesRegex(ValueError, "USD: invalid Rates date"):
+            self.run_audit(rates=rates)
+
+    def test_stale_usd_rates_withheld_not_promoted(self):
+        rates = copy.deepcopy(self.inputs["rates"])
+        rates["USD"]["date"] = (self.today - timedelta(days=10)).isoformat()
+        out = self.run_audit(rates=rates)
+        self.assertEqual(out["currencies"]["USD"]["rates_2y_10y"]["status"], "WITHHELD")
+        self.assertIs(out["currencies"]["USD"]["rates_2y_10y"]["official_current"], False)
+        self.assertIs(out["safe_to_publish_D"], False)
+
+    def test_future_official_ois_date_rejected(self):
+        ois = copy.deepcopy(self.inputs["ois"])
+        ois["currencies"]["GBP"]["as_of"] = (self.today + timedelta(days=1)).isoformat()
+        with self.assertRaisesRegex(ValueError, "GBP: invalid OIS date"):
+            self.run_audit(ois=ois)
 
     def test_no_rate_or_estimated_pricing_promotion(self):
         out = self.run_audit()
