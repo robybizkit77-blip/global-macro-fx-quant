@@ -1306,7 +1306,7 @@ async function getState(page){
                !reading.heading?.includes('Percentile')&&!reading.heading?.includes('Estremi percentile')))
            throw Error(name+' public '+pageName+' read-only source summary failed '+JSON.stringify(reading));
          await page.frameLocator('#gmfq-page')
-           .locator('#'+(pageName==='banche'?'gmfq-cb-reading-first':'gmfq-cot-reading-first')+' details>summary')
+           .locator('#'+(pageName==='banche'?'gmfq-cb-reading-first':'gmfq-cot-reading-first')+'>details:first-of-type>summary')
            .press('Enter');
          const open=await page.evaluate(section=>{
            const d=document.getElementById('gmfq-page')?.contentDocument,
