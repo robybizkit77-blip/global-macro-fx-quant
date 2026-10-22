@@ -1184,6 +1184,17 @@ async function getState(page){
                  count:details?.querySelectorAll('.gmfq-cot-weekly-list li').length,
                  method:details?.querySelector('.gmfq-cot-weekly-method')?.textContent};
              })(),
+             meeting:(()=>{
+               const box=p.querySelector('.gmfq-cb-meeting-focus'),det=p.querySelector('.gmfq-cb-meeting-details');
+               return {status:box?.dataset.calendarStatus,asof:box?.dataset.asOf,source:box?.dataset.source,
+                 groups:[...box?.querySelectorAll('.gmfq-cb-meeting-dates li')||[]].map(x=>({
+                   day:x.dataset.meetingDay,ccys:[...x.querySelectorAll('[data-meeting-ccy]')].map(y=>y.dataset.meetingCcy)
+                 })),
+                 closed:det?.open===false,total:Number(det?.dataset.count),
+                 rows:[...det?.querySelectorAll('.gmfq-cb-meeting-all li')||[]].map(x=>({
+                   ccy:x.dataset.meetingCcy,date:x.dataset.meetingDate,tier:x.dataset.meetingTier
+                 }))};
+             })(),
              heading:p.querySelector('.gmfq-first-claim')?.textContent,
              priority:p.querySelector('.gmfq-first-priority')?.textContent,
              priorityFirst:!!(p.querySelector('.gmfq-first-priority')?.compareDocumentPosition(p.querySelector('.gmfq-first-claim'))&Node.DOCUMENT_POSITION_FOLLOWING),
@@ -1259,6 +1270,25 @@ async function getState(page){
               throw Error(name+' public COT 104W detail inaccessible '+JSON.stringify(rankExpanded));
            await rankToggle.press('Enter');
          }
+         if(pageName==='banche'&&navigationVersion==='cb-meeting-calendar-20261022'){
+           const m=reading.meeting;
+           if(!m||m.status!=='HISTORICAL_SNAPSHOT'||m.source!=='NATIVE_CB_DATA'||
+              !m.closed||m.total!==8||m.rows.length!==8||
+              m.rows.some(x=>!['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'].includes(x.ccy)||
+                 !['CERTIFIED','ESTIMATED','WITHHELD'].includes(x.tier))||
+              m.groups.some(x=>!/^20\d{2}-\d{2}-\d{2}$/.test(x.day)||
+                x.ccys.length<1||x.ccys.length>8))
+             throw Error(name+' public G8 CB snapshot/tier summary invalid '+JSON.stringify(m));
+           const toggle=page.frameLocator('#gmfq-page').locator('#gmfq-cb-reading-first .gmfq-cb-meeting-details>summary');
+           await toggle.press('Enter');
+           const opened=await page.evaluate(()=>{
+             const p=document.getElementById('gmfq-page').contentDocument.getElementById('gmfq-cb-reading-first'),
+               det=p.querySelector('.gmfq-cb-meeting-details');
+             return det?.open&&[...det.querySelectorAll('.gmfq-cb-meeting-all li')].every(x=>x.getClientRects().length>0);
+           });
+           if(!opened)throw Error(name+' public G8 CB meeting details inaccessible');
+           await toggle.press('Enter');
+         }
          if(!reading.originalChart||!reading.originalTable||!reading.closed||
             !reading.priorityFirst||
             (pageName==='banche'?
@@ -1281,8 +1311,9 @@ async function getState(page){
          const open=await page.evaluate(section=>{
            const d=document.getElementById('gmfq-page')?.contentDocument,
              p=d?.getElementById(section==='banche'?'gmfq-cb-reading-first':'gmfq-cot-reading-first');
-           return {open:p?.querySelector('details')?.open,
-             visible:[...p?.querySelectorAll('details p')||[]].every(x=>x.getClientRects().length>0)};
+           const sourceDetail=p?.querySelector('details');
+           return {open:sourceDetail?.open,
+             visible:[...sourceDetail?.querySelectorAll('p')||[]].every(x=>x.getClientRects().length>0)};
          },pageName);
          if(!open.open||!open.visible)
            throw Error(name+' public '+pageName+' source evidence not keyboard accessible');
