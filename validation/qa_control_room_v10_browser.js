@@ -655,6 +655,18 @@ function expectedReactionFromMetrics(row){
         weeklyNet:Number(x.querySelector('[data-weekly-net]')?.dataset.weeklyNet),
         label:x.textContent
       })),
+      percentileCount:p.dataset.percentileCount,rankVsNet:p.dataset.rankVsNet,
+      extremeAudit:(()=>{
+        const node=p.querySelector('.gmfq-cot-percentile'),detail=p.querySelector('.gmfq-cot-percentile-details');
+        return {asof:node?.dataset.cftcAsOf,sep:node?.dataset.relativeVsNet,
+          inversions:node?.dataset.inversionCount,closed:detail?.open===false,
+          note:node?.querySelector('.gmfq-cot-rank-note')?.textContent,
+          rows:[...detail?.querySelectorAll('.gmfq-cot-percentile-list li')||[]].map(x=>({
+            ccy:x.dataset.extremeCcy,pct:Number(x.dataset.extremeRank),
+            cls:x.dataset.extremeClass,net:Number(x.dataset.extremeNet),
+            delta:Number(x.dataset.extremeWeek),relation:x.dataset.rankVsNet
+          }))};
+      })(),
       weeklyAsOf:p.dataset.weeklyAsOf,weeklyCount:p.dataset.weeklyCount,
       weeklyDetail:(()=>{
         const detail=p.querySelector('.gmfq-cot-weekly-details');
@@ -674,6 +686,29 @@ function expectedReactionFromMetrics(row){
       width:p.scrollWidth,client:p.clientWidth,
       doc:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
   });
+  const expectedExtremes=g8.map(ccy=>{
+    const t=cotFixture[ccy],pct=Math.round(t.percentile.at(-1)),net=t.net.at(-1),
+      cls=pct>=80?'EXTREME LONG':pct<=20?'EXTREME SHORT':'NEUTRALE';
+    return {ccy,pct,net,delta:net-t.net.at(-2),cls,
+      relation:(cls==='EXTREME LONG'&&net<0)||(cls==='EXTREME SHORT'&&net>0)?'OPPOSED':'ALIGNED'};
+  }).filter(x=>x.cls!=='NEUTRALE');
+  const opposedExpected=expectedExtremes.filter(x=>x.relation==='OPPOSED');
+  if(cotFirst.percentileCount!==String(expectedExtremes.length)||
+     cotFirst.rankVsNet!==String(opposedExpected.length)||
+     cotFirst.extremeAudit?.asof!==cotFixture.USD.dates.at(-1)||
+     cotFirst.extremeAudit.sep!=='SEPARATE'||
+     cotFirst.extremeAudit.inversions!==String(opposedExpected.length)||
+     !cotFirst.extremeAudit.closed||
+     cotFirst.extremeAudit.rows.length!==expectedExtremes.length||
+     !cotFirst.extremeAudit.note?.includes('Percentile ≠ segno del Net')||
+     !cotFirst.extremeAudit.note?.includes('CHF 95° · EXTREME LONG, ma Net')||
+     cotFirst.extremeAudit.rows.some((x,i)=>{
+       const expected=expectedExtremes[i];return !expected||
+         x.ccy!==expected.ccy||x.pct!==expected.pct||x.net!==expected.net||
+         x.delta!==expected.delta||x.cls!==expected.cls||x.relation!==expected.relation;
+     }))
+    throw Error(label+' COT relative-percentile vs signed-net evidence failed '+
+      JSON.stringify({got:cotFirst.extremeAudit,expectedExtremes}));
   const expectedCrowding=g8.map(ccy=>({
     ccy,netoi:cotFixture[ccy].netoi.at(-1),pct:Math.round(cotFixture[ccy].percentile.at(-1)),
     netSign:cotFixture[ccy].net.at(-1)>0?'NET_LONG':cotFixture[ccy].net.at(-1)<0?'NET_SHORT':'NET_FLAT'
@@ -718,6 +753,16 @@ function expectedReactionFromMetrics(row){
      cotFirst.text.includes('narrativo incoerente')||
      cotFirst.width>cotFirst.client+2||cotFirst.doc>cotFirst.viewport+16)
     throw Error(label+' COT quantitative/narrative divergence guard '+JSON.stringify(cotFirst));
+  const extremeToggle=page.frameLocator('#gmfq-page').locator('#gmfq-cot-reading-first .gmfq-cot-percentile-details>summary');
+  await extremeToggle.press('Enter');
+  const extremeVisible=await page.evaluate(()=>{
+    const p=document.getElementById('gmfq-page').contentDocument.getElementById('gmfq-cot-reading-first');
+    const detail=p.querySelector('.gmfq-cot-percentile-details');
+    return {opened:detail?.open,visible:[...detail?.querySelectorAll('.gmfq-cot-percentile-list li')||[]].filter(x=>x.getClientRects().length).length};
+  });
+  if(!extremeVisible.opened||extremeVisible.visible!==expectedExtremes.length)
+     throw Error(label+' COT historical percentile extremes detail inaccessible '+JSON.stringify(extremeVisible));
+  await extremeToggle.press('Enter');
   const weeklyToggle=page.frameLocator('#gmfq-page').locator('#gmfq-cot-reading-first .gmfq-cot-weekly-details>summary');
   await weeklyToggle.press('Enter');
   const weeklyExpanded=await page.evaluate(()=>{
@@ -746,6 +791,12 @@ function expectedReactionFromMetrics(row){
     const d=document.getElementById('gmfq-page')?.contentDocument,p=d?.getElementById('gmfq-cot-reading-first');
     return p?.dataset.readingStatus==='SOURCE_DIVERGENCE'&&p.dataset.conflicts==='USD';
   },null,{timeout:35000});
+  const narrativeNoPromotion=await page.evaluate(()=>{
+    const p=document.getElementById('gmfq-page').contentDocument.getElementById('gmfq-cot-reading-first');
+    return {rankStatus:p.dataset.rankVsNet,hasSourceRank:!!p.querySelector('.gmfq-cot-percentile')};
+  });
+  if(narrativeNoPromotion.hasSourceRank||narrativeNoPromotion.rankStatus)
+    throw Error(label+' COT rank interpretation promoted conflicting stories '+JSON.stringify(narrativeNoPromotion));
   await page.unroute('**/V247_COT_STORIES.json');
   await page.route('**/V250_COT_CHART_DATA.json',async r=>{
     const x=JSON.parse(fs.readFileSync(path.join(DATA,'V250_COT_CHART_DATA.json'),'utf8'));
