@@ -99,6 +99,12 @@ function style(doc){
   .gmfq-legend-item{font:10px/1.3 Arial,sans-serif;white-space:nowrap;color:#c5d2df}
   .gmfq-legend-item i{display:inline-block;width:10px;height:2px;vertical-align:middle;margin-right:3px}
   .gmfq-legend-item.est{color:#e7c27a}
+  #ylegend .gmfq-legend-item{background:transparent;border:1px solid transparent;border-radius:4px;padding:1px 3px;cursor:pointer;white-space:nowrap}
+  #ylegend .gmfq-legend-item[aria-pressed=true]{background:#1b3a4b;border-color:#648199;color:#f2e4c2}
+  #ylegend .gmfq-legend-item:focus-visible{outline:2px solid #edcf8b;outline-offset:2px}
+  #ylegend .gmfq-tiny-flag{font-family:"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif;font-size:12px;vertical-align:middle;margin-right:2px}
+  .gridtop .yieldpanel #ylegend .gmfq-legend-row{justify-content:center;gap:2px 4px}
+  @media(max-width:600px){#ylegend .gmfq-legend-item{font-size:9px;padding:1px}#ylegend .gmfq-tiny-flag{font-size:11px}}
   .gmfq-chart-note{color:#93a7b8;font:10px/1.35 Arial,sans-serif;margin-top:5px}
   .gmfq-est-note{color:#e0bb6c}
   .gmfq-dxy-dialog{border:1px solid #29465b;border-radius:10px;color:#e4edf5;background:#071827;
@@ -182,7 +188,12 @@ function ratesAll(raw){
 }
 function yieldChart(doc,all,which='2Y'){
  const key=which==='2Y'?'h2':'h10',currentKey=which==='2Y'?'v2':'v10';
- const data=FX.map(c=>({c,series:all[c][key].slice(-90),now:all[c][currentKey],est:which==='2Y'?all[c].estimate2:all[c].estimate10,latest:which==='2Y'?(all[c].estimatedAsOf2||all[c].date):(all[c].estimatedAsOf10||all[c].date)})).filter(x=>x.series.length>4);
+ const allData=FX.map(c=>({c,series:all[c][key].slice(-90),now:all[c][currentKey],est:which==='2Y'?all[c].estimate2:all[c].estimate10,latest:which==='2Y'?(all[c].estimatedAsOf2||all[c].date):(all[c].estimatedAsOf10||all[c].date)})).filter(x=>x.series.length>4);
+ const legendNode=doc.getElementById('ylegend');
+ const wanted=legendNode?.dataset.gmfqCurrencyFocus||'USD';
+ const focus=wanted==='ALL'||allData.some(x=>x.c===wanted)?wanted:'ALL';
+ const data=focus==='ALL'?allData:allData.filter(x=>x.c===focus);
+ if(legendNode)legendNode.dataset.gmfqCurrencyFocus=focus;
  if(!data.length)return;
  const allDays=data.flatMap(x=>x.series.map(p=>p.date));
  const min=allDays.sort()[0],max=[...allDays,...data.map(x=>x.latest).filter(Boolean)].sort().at(-1);
@@ -194,20 +205,24 @@ function yieldChart(doc,all,which='2Y'){
  for(let i=0;i<=3;i++){const y=T+i*(H-T-B)/3;svg+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="#243c4c" stroke-width=".8"/><text x="${L-4}" y="${y+3}" text-anchor="end" fill="#8fa8bb" font-size="9">${(top-i*span/3).toFixed(1)}</text>`;}
  for(const x of data){
    const pts=x.series.map(p=>`${xx(p.date).toFixed(1)},${yy(p.v).toFixed(1)}`).join(' ');
-   svg+=`<polyline points="${pts}" fill="none" stroke="${COLOR[x.c]}" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" opacity=".94"><title>${x.c} · rendimento ${which} · storico</title></polyline>`;
+   svg+=`<polyline points="${pts}" fill="none" stroke="${COLOR[x.c]}" stroke-width="${focus==='ALL'?'1.85':'2.9'}" stroke-linecap="round" stroke-linejoin="round" opacity=".98"><title>${x.c} · rendimento ${which} · storico</title></polyline>`;
    if(x.now!==null && x.latest && x.latest>x.series.at(-1).date && !x.est){const last=x.series.at(-1);svg+=`<line x1="${xx(last.date)}" y1="${yy(last.v)}" x2="${xx(x.latest)}" y2="${yy(x.now)}" stroke="${COLOR[x.c]}" stroke-width="1.2" stroke-dasharray="2 3"/><circle cx="${xx(x.latest)}" cy="${yy(x.now)}" r="2.2" fill="${COLOR[x.c]}"/>`;}
    if(x.est&&x.now!==null){const last=x.series.at(-1);svg+=`<line x1="${xx(last.date)}" y1="${yy(last.v)}" x2="${xx(x.latest)}" y2="${yy(x.now)}" stroke="#e8c46d" stroke-width="1.8" stroke-dasharray="3 3"/><circle cx="${xx(x.latest)}" cy="${yy(x.now)}" r="2.6" fill="#e8c46d"/>`}
  }
  svg+=`<text x="${L}" y="${H-2}" fill="#819bad" font-size="9">${min.slice(5)}</text><text x="${W-R}" y="${H-2}" text-anchor="end" fill="#819bad" font-size="9">${max.slice(5)}</text>`;
  const curve=doc.getElementById('curves'),legend=doc.getElementById('ylegend');
  if(!curve||!legend)return;
+ curve.dataset.gmfqYieldFocus=focus;curve.dataset.gmfqYieldTenor=which;
  curve.innerHTML=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Serie ${which} di tutte le otto valute G8; eventuali tratti stimati tratteggiati">${svg}</svg>`;
  const chosen=legend.dataset.gmfqYieldMode||'2Y';
- legend.innerHTML=`<div class="gmfq-legend-row">${data.map(x=>`<span class="gmfq-legend-item ${x.est?'est':''}" title="${x.est?'Tratto terminale stimato':''}"><i style="background:${COLOR[x.c]}"></i>${x.c}${x.est?'*':''}</span>`).join('')}
+ legend.innerHTML=`<div class="gmfq-legend-row">${allData.map(x=>`<button type="button" data-gmfq-ccy-focus="${x.c}" aria-pressed="${focus===x.c}" class="gmfq-legend-item ${x.est?'est':''}" title="Isola ${x.c}; tocca ancora per mostrare tutto il G8"><span class="gmfq-tiny-flag" aria-hidden="true">${FLAG[x.c]}</span><i style="background:${COLOR[x.c]}"></i>${x.c}${x.est?'*':''}</button>`).join('')}
  <button type="button" data-gmfq-tenor="2Y" aria-pressed="${chosen==='2Y'}" style="background:transparent;border:0;color:${chosen==='2Y'?'#f1ca6d':'#93b1c3'};cursor:pointer;padding:0 3px">2Y</button>
  <button type="button" data-gmfq-tenor="10Y" aria-pressed="${chosen==='10Y'}" style="background:transparent;border:0;color:${chosen==='10Y'?'#f1ca6d':'#93b1c3'};cursor:pointer;padding:0 3px">10Y</button></div>`;
  const note=curve.parentElement?.querySelector('.gmfq-chart-note')||doc.createElement('div');
- note.className='gmfq-chart-note';note.textContent='* STIMA β su data comune: CHF/EUR '+(all.CHF.confidence2||'N.D.')+'; NZD/AUD '+(all.NZD.confidence2||'N.D.')+'. Tratteggio = indicativo, non operativo.';
+ note.className='gmfq-chart-note';
+ const chosen=data.length===1?data[0]:null;
+ note.textContent=(chosen?FLAG[chosen.c]+' '+chosen.c+' · '+which+' '+fmt(chosen.now!==null?chosen.now:chosen.series.at(-1).v,2)+'% · '+(chosen.latest||chosen.series.at(-1).date)+(chosen.est?' · STIMA':' · rilevato'):'G8 · '+which+' · confronto tra tutte le valute')+
+  '. Tocca una bandierina per isolare la valuta o tornare al confronto. * Il tratteggio oro indica stime β: non sono segnali.';
  if(!note.isConnected)curve.insertAdjacentElement('afterend',note);
 }
 function rateBar(doc,all,id,spread=false){
@@ -800,9 +815,11 @@ async function applyHome(doc){
      if(legend){
        legend.addEventListener('click',ev=>{
          const b=ev.target.closest('button[data-gmfq-tenor]');
-         if(!b)return;
-         legend.dataset.gmfqYieldMode=b.dataset.gmfqTenor;
-         yieldChart(doc,all,b.dataset.gmfqTenor);
+         if(b){legend.dataset.gmfqYieldMode=b.dataset.gmfqTenor;yieldChart(doc,all,b.dataset.gmfqTenor);return;}
+         const c=ev.target.closest('button[data-gmfq-ccy-focus]')?.dataset.gmfqCcyFocus;
+         if(!FX.includes(c))return;
+         legend.dataset.gmfqCurrencyFocus=legend.dataset.gmfqCurrencyFocus===c?'ALL':c;
+         yieldChart(doc,all,legend.dataset.gmfqYieldMode||'2Y');
        });
      }
      rateBar(doc,all,'ratesbars');rateBar(doc,all,'spreads',true);
