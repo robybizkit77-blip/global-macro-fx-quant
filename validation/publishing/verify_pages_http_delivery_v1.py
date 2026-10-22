@@ -25,6 +25,8 @@ FILES = (
     # Assert exact public VIX source and loaded runtime payload, not only OIS/JS.
     "live_data/sections/D.json",
     "live_data/sections/MACRO_THERMOMETER_DATA.json",
+    # Home Market Pulse: exact public bytes, not just network HTTP 200.
+    "live_data/sections/NEWS_PULSE_OPERATIONAL.json",
     "payload/part-00.txt",
     # Keep the public derived COT story and manifest in exact-byte lockstep
     # with the runtime payload. A stale standalone file fails the release.

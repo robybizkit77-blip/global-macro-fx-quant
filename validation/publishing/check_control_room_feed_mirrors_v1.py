@@ -21,6 +21,7 @@ MARKET_PUBLIC = ROOT / "validation/publishing/verify_control_room_market_deliver
 DASH_OWNED = {
     "D.json", "ESTIMATED_RESIDUAL_GAPS.json",
     "MACRO_THERMOMETER_DATA.json", "OIS_OPERATIONAL_VIEW.json",
+    "NEWS_PULSE_OPERATIONAL.json",
     "V247_COT_STORIES.json", "NATIVE_CB_DATA.json",
     "CHF_SNB_10Y_SPOT_CONTEXT.json",
     "NZD_CB_PRICING_DIRECTIONAL_PROXY.json",
@@ -81,7 +82,7 @@ def main() -> int:
     # Legacy narrative is source-derived, not a fresh policy/OIS view.
     assert "const ROOT='https://raw.githubusercontent.com/" in site
     assert "/main/live_data/sections/';" in site
-    print("CONTROL_ROOM_ALL_14_FEED_MIRRORS_OWNED_GREEN", json.dumps({
+    print("CONTROL_ROOM_ALL_15_FEED_MIRRORS_OWNED_GREEN", json.dumps({
         "mode": "READ_ONLY_NO_SCORE_EFFECT",
         "total": len(all_owned),
         "dashboard_publisher": sorted(DASH_OWNED),

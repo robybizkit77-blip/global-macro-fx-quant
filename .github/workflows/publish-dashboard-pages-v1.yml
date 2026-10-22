@@ -50,7 +50,7 @@ jobs:
           jq -e '.status and .commit' <<<"$latest" > /dev/null
           echo "PAGES_BUILD_LATEST_READ_OK"
 
-      - name: Verify all 14 Control Room sources have a single Pages mirror owner
+      - name: Verify all 15 Control Room sources have a single Pages mirror owner
         run: python validation/publishing/check_control_room_feed_mirrors_v1.py
 
       - name: Test bounded public HTTP convergence contract
