@@ -26,7 +26,7 @@ for(const mode of ['setup','thesis']){
  const rows=result[mode];
  assert.equal(rows.length,28);
  assert.equal(new Set(rows.map(x=>x.code)).size,28);
- assert.deepEqual(rows.map(x=>x.code).slice().sort(),Object.keys(setup.pairs).sort());
+ assert.equal(JSON.stringify(Array.from(rows,x=>x.code).sort()),JSON.stringify(Object.keys(setup.pairs).sort()));
  assert(rows.every(x=>x.quality===setup.pairs[x.code].setup.quality));
  assert(rows.every(x=>x.why.length>3));
  assert(rows.some(x=>x.quality==='CON RISCHI'&&x.why.includes('Timing')));
