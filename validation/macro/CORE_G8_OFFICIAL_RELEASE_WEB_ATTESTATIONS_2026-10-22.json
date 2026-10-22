@@ -1,0 +1,142 @@
+{
+  "schema": "GMFQ_G8_CORE_OFFICIAL_WEB_RELEASE_ATTESTATIONS_V1",
+  "review_as_of": "2026-10-22",
+  "evidence_class": "OFFICIAL_PUBLISHER_RELEASE_WEB_VALUE_DATE_NOT_IMMUTABLE_BYTES",
+  "historical_full_PIT_vintage_certified": false,
+  "metadata": {
+    "scope": "ONLY_LATEST_INFLATION_LABOUR_SOURCE_PERIOD_AT_TIME_OF_AUDIT",
+    "basis": "exact reference period, official published numeric value and same-identity transformation where needed",
+    "guardrail": "This source document is not a replacement of runtime Macro historical scores and cannot upgrade qualitative currency labels"
+  },
+  "attestations": [
+    {
+      "key": "USD.inflation",
+      "observation_period": "2026-09",
+      "release_date": "2026-10-14",
+      "release_timestamp_local": "2026-10-14T08:30:00-04:00",
+      "published_value": 3.7172508442689933,
+      "raw_series_value": 336.298,
+      "transform": "yoy_pct_from_index",
+      "numerator_index": 336.298,
+      "denominator_index": 324.245,
+      "publisher": "U.S. Bureau of Labor Statistics",
+      "url": "https://www.bls.gov/news.release/archives/realer_10142026.htm",
+      "source_locator": "Real Earnings September 2026 published Oct 14 08:30 ET; Table A-1 CPI-U seasonally adjusted September 2025 324.245 and September 2026 336.298; YoY from same SA index basis; NOT unadjusted headline 3.7"
+    },
+    {
+      "key": "CAD.inflation",
+      "observation_period": "2026-09",
+      "release_date": "2026-10-19",
+      "release_timestamp_local": null,
+      "published_value": 3.092783505154628,
+      "raw_series_value": 3.092783505154628,
+      "transform": "derived_yoy_from_index",
+      "numerator_index": 170,
+      "denominator_index": 164.9,
+      "publisher": "Statistics Canada",
+      "url": "https://www150.statcan.gc.ca/n1/daily-quotidien/261019/t001a-eng.htm",
+      "source_locator": "Consumer Price Index September 2026 Table 1 all-items not seasonally adjusted: Sep 2025 164.9, Sep 2026 170.0, reported YoY 3.1 rounded; preserve exact index-ratio derived 3.0927835"
+    },
+    {
+      "key": "AUD.labour",
+      "observation_period": "2026-09",
+      "release_date": "2026-10-15",
+      "release_timestamp_local": "2026-10-15T11:30:00+11:00",
+      "published_value": 4.7,
+      "raw_series_value": 4.7,
+      "transform": "level",
+      "publisher": "Australian Bureau of Statistics",
+      "url": "https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/sep-2026",
+      "source_locator": "Labour Force Australia September 2026, seasonally adjusted headline unemployment rate 4.7%, released 15 Oct 2026 11:30 AEDT (UTC+11)"
+    },
+    {
+      "key": "CAD.labour",
+      "observation_period": "2026-09",
+      "release_date": "2026-10-09",
+      "release_timestamp_local": null,
+      "published_value": 6.5,
+      "raw_series_value": 6.5,
+      "transform": "level",
+      "publisher": "Statistics Canada",
+      "url": "https://www150.statcan.gc.ca/n1/daily-quotidien/261009/dq261009a-eng.htm",
+      "source_locator": "Labour Force Survey September 2026 released Oct 9; seasonally adjusted Canada unemployment rate 6.5%, official The Daily release"
+    },
+    {
+      "key": "JPY.labour",
+      "observation_period": "2026-08",
+      "release_date": "2026-10-02",
+      "release_timestamp_local": null,
+      "published_value": 2.5,
+      "raw_series_value": 2.5,
+      "transform": "level",
+      "publisher": "Statistics Bureau of Japan",
+      "url": "https://www.stat.go.jp/data/roudou/sokuhou/tsuki/",
+      "source_locator": "Labour Force Survey Basic Tabulation August 2026 released 2 October 2026, seasonally adjusted complete unemployment rate 2.5%; page may later change, no content hash"
+    },
+    {
+      "key": "GBP.labour",
+      "observation_period": "2026-08",
+      "release_date": "2026-10-20",
+      "release_timestamp_local": null,
+      "published_value": 4.7,
+      "raw_series_value": 4.7,
+      "transform": "level",
+      "publisher": "Office for National Statistics",
+      "url": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/bulletins/uklabourmarket/october2026",
+      "source_locator": "ONS first published June to August 2026 16+ unemployment 4.7% on 20 October 2026; official October 2026 bulletin, original page SHA256 pinned separately",
+      "official_source_page_sha256": "6019ef0d20450bc0ce20600dc21af6a0194bdd3b50a43583b2d57b5152ba92d5"
+    },
+    {
+      "key": "GBP.inflation",
+      "observation_period": "2026-09",
+      "release_date": "2026-10-21",
+      "release_timestamp_local": null,
+      "published_value": 3.5,
+      "raw_series_value": 3.5,
+      "transform": "reported_yoy_rate",
+      "publisher": "Office for National Statistics",
+      "url": "https://www.ons.gov.uk/economy/inflationandpriceindices/bulletins/consumerpriceinflation/september2026",
+      "source_locator": "ONS Consumer price inflation, UK: September 2026, released 21 October 2026. Main points and table 1 explicitly give Consumer Prices Index (CPI, excluding owner-occupier housing) twelve-month rate 3.5% for September 2026, distinct from CPIH 3.6%. Release clock intentionally unspecified."
+    },
+    {
+      "key": "NZD.inflation",
+      "observation_period": "2026-09",
+      "release_date": "2026-10-22",
+      "release_timestamp_local": null,
+      "published_value": 3.7,
+      "raw_series_value": 3.7,
+      "transform": "reported_yoy_rate",
+      "publisher": "Stats NZ",
+      "url": "https://www.stats.govt.nz/news/annual-inflation-at-3-7-percent-in-september-2026/",
+      "source_locator": "Stats NZ official release Consumers price index: September 2026 quarter, dated 22 October 2026; official related news 'Annual inflation at 3.7 percent in September 2026' names annual headline CPI 3.7%, not a quarter-on-quarter change. No archived first-release bytes or intraday clock claimed."
+    }
+  ],
+  "contradictions": [],
+  "resolved_historical_period_errors": [
+    {
+      "key": "GBP.labour",
+      "source_period": "2026-07",
+      "canonical_july_old": 4.7,
+      "canonical_july_repaired": 4.9,
+      "august_new": 4.7,
+      "July_May_to_July_original_release_date": "2026-09-15",
+      "August_June_to_August_original_release_date": "2026-10-20",
+      "official_first_release_page_sha256": {
+        "2026-07": "ff6554989736e5cbd939b8df2c90fe17ca541da9d67e3dcbb14f7f72823f62c9",
+        "2026-08": "6019ef0d20450bc0ce20600dc21af6a0194bdd3b50a43583b2d57b5152ba92d5"
+      },
+      "previously_observed_page_sha256": {
+        "2026-07": "03e892cceeca6897ef4cef3b4d84a3a2bc8cf73c160cc3a5165f3ace48909ceb",
+        "2026-08": "70d2913ddad08cdb19be2c7467beb5e5f992041ae9bbd2763a1f55e70cbac8a2"
+      },
+      "source_html_bytes_changed_since_previous_review": {
+        "2026-07": true,
+        "2026-08": true
+      },
+      "first_release_pages_verified": 2,
+      "source_content_hashes_not_signature_attested": true,
+      "historical_D_baseline_not_rebased": true,
+      "audit_scope": "FIRST_RELEASE_SPECIFIC_2026_JULY_AUGUST_NOT_ALL_HISTORICAL_VINTAGES"
+    }
+  ]
+}
