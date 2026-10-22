@@ -140,7 +140,17 @@ def main() -> int:
 
     work = args.output.parent / ".adapter-pit-work"
     work.mkdir(parents=True, exist_ok=True)
-    raw, adapter_audit = run_adapter(ROOT / route["adapter"], currency, args.dimension, fixture, work)
+    try:
+        raw, adapter_audit = run_adapter(ROOT / route["adapter"], currency, args.dimension, fixture, work)
+    except subprocess.CalledProcessError as exc:
+        # Quarantine only an explicit *transport* failure from the registered
+        # CAD StatCan adapter. Parser, identity and PIT mismatches still fail.
+        if (currency == "CAD" and fixture is None and
+                route["adapter"] == "validation/sources/cad_statcan_core.py" and
+                exc.returncode == 75):
+            print(f"CAD_STATCAN_TRANSPORT_WITHHELD: {args.dimension}; no PIT candidate",file=sys.stderr)
+            return 75
+        raise
 
     required = ("currency", "dimension", "macro_series_id", "observation_date", "value", "source", "series_id", "frequency", "transformation")
     missing = [key for key in required if key not in raw]
