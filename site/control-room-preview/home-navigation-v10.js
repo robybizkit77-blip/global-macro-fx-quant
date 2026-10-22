@@ -108,7 +108,7 @@ function style(doc){
   .gmfq-chart-note{color:#93a7b8;font:10px/1.35 Arial,sans-serif;margin-top:5px}
   .gmfq-est-note{color:#e0bb6c}
   .gmfq-dxy-dialog{border:1px solid #29465b;border-radius:10px;color:#e4edf5;background:#071827;
-    max-width:min(590px,94vw);width:94vw;padding:22px 23px;box-shadow:0 24px 65px #000a}
+    max-width:590px;width:calc(100vw - 24px);box-sizing:border-box;padding:22px 23px;box-shadow:0 24px 65px #000a}
   .gmfq-dxy-dialog::backdrop{background:#020a14be}
   .gmfq-dxy-dialog h2{font:600 20px/1.2 Arial,sans-serif;color:#f2f7fb;margin:0 0 10px}
   .gmfq-dxy-dialog p{font:13px/1.5 Arial,sans-serif;color:#b0c3d2;margin:7px 0}
@@ -116,7 +116,16 @@ function style(doc){
   .gmfq-dxy-dialog button{border:1px solid #435f73;border-radius:6px;color:#dce9f3;background:#12283b;padding:8px 14px;cursor:pointer}
   .gmfq-dxy-dialog .gmfq-source{color:#e6c778;font-size:12px}
   .gmfq-dxy-dialog a{color:#e6c778;text-decoration:underline}
-  .gmfq-dxy-dialog svg{width:100%;height:145px}
+  .gmfq-dxy-dialog svg{width:100%;height:174px;display:block;margin:8px 0 11px}
+  .gmfq-dxy-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border-top:1px solid #29465b;border-bottom:1px solid #29465b;margin:12px 0 8px}
+  .gmfq-dxy-metrics>div{min-width:0;padding:11px 8px 10px;border-right:1px solid #29465b}
+  .gmfq-dxy-metrics>div:first-child{padding-left:0}
+  .gmfq-dxy-metrics>div:last-child{border-right:0}
+  .gmfq-dxy-metrics small{display:block;color:#9cb2c2;font:10px/1.4 Arial,sans-serif}
+  .gmfq-dxy-metrics strong{display:block;color:#e9d092;font:600 15px/1.35 Arial,sans-serif;margin-top:3px;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .gmfq-dxy-dialog .gmfq-dxy-context-limit{color:#9fb6c6;font:11px/1.45 Arial,sans-serif}
+  @media(max-width:600px){.gmfq-dxy-dialog .gmfq-dxy-metrics strong{font-size:12px}.gmfq-dxy-dialog .gmfq-dxy-metrics>div{padding:9px 5px}}
+
   .gmfq-dxy-dialog .gmfq-close{float:right}
   /* Eight pricing lanes must fit the original 260px panel without clipping. */
   .gridtop #ois {padding:1px 7px 0}
@@ -308,22 +317,62 @@ function oisAll(doc,ois,proxy){
  'NON CERT. = nessun livello comparabile verificato.</div>';
 }
 function dxyLine(data){
- if(!Array.isArray(data?.history)||data.history.length<3)return'<div class="gmfq-chart-note">Storico in fase di costruzione dal fixing ECB.</div>';
+ if(!Array.isArray(data?.history)||data.history.length<3)
+   return '<div class="gmfq-chart-note">Storico in fase di costruzione dal fixing BCE.</div>';
  const arr=data.history.slice(-90).filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x.date)&&num(x.value)!==null);
  if(arr.length<3)return'';
- const W=540,H=145,lo=Math.min(...arr.map(x=>x.value))-.15,hi=Math.max(...arr.map(x=>x.value))+.15,span=hi-lo||1;
- const points=arr.map((x,i)=>`${(i/(arr.length-1)*(W-25)+10).toFixed(1)},${(10+(H-25)*(hi-x.value)/span).toFixed(1)}`).join(' ');
- const last=points.split(' ').at(-1)?.split(',')||[0,0];
- const area='10,'+(H-12)+' '+points+' '+(W-15)+','+(H-12);
- return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Storico del DXY sintetico da cambi giornalieri ECB"><defs><linearGradient id="gmfq-dxy-fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#dabd76" stop-opacity=".24"/><stop offset="100%" stop-color="#dabd76" stop-opacity="0"/></linearGradient></defs>
- <polygon points="${area}" fill="url(#gmfq-dxy-fill)"/>
- <line x1="10" x2="${W-15}" y1="${H-12}" y2="${H-12}" stroke="#31485b"/>
- <polyline points="${points}" fill="none" stroke="#e6c675" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
- <circle cx="${last[0]}" cy="${last[1]}" r="4.1" fill="#e6c675" stroke="#091b2b" stroke-width="2"/>
- <text x="10" y="${H-1}" fill="#98b0c3" font-size="10">${arr[0].date}</text>
- <text x="${W-15}" y="${H-1}" text-anchor="end" fill="#98b0c3" font-size="10">${arr.at(-1).date}</text></svg>`;
+ const W=540,H=174,L=43,R=13,T=11,B=25;
+ const lo=Math.min(...arr.map(x=>x.value))-.16,hi=Math.max(...arr.map(x=>x.value))+.16,span=hi-lo||1;
+ const xx=i=>L+i/(arr.length-1)*(W-L-R),yy=v=>T+(H-T-B)*(hi-v)/span;
+ const points=arr.map((x,i)=>xx(i).toFixed(1)+','+yy(x.value).toFixed(1)).join(' ');
+ const last=arr.at(-1),xLast=xx(arr.length-1).toFixed(1),yLast=yy(last.value).toFixed(1);
+ const area=L+','+(H-B)+' '+points+' '+xLast+','+(H-B);
+ const grid=[hi,(hi+lo)/2,lo].map(v=>{
+   const y=yy(v).toFixed(1);
+   return '<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y+'" y2="'+y+
+    '" stroke="#315166" stroke-width=".8" opacity=".7"/><text x="'+(L-8)+
+    '" y="'+(+y+3)+'" text-anchor="end" fill="#9db7c8" font-size="10">'+
+    v.toFixed(2)+'</text>';
+ }).join('');
+ return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" role="img" aria-label="DXY sintetico, storico BCE: valori ricostruiti dal fixing giornaliero, non ICE intraday">'+
+ '<defs><linearGradient id="gmfq-dxy-fill" x1="0" x2="0" y1="0" y2="1">'+
+ '<stop offset="0%" stop-color="#dabd76" stop-opacity=".22"/>'+
+ '<stop offset="100%" stop-color="#dabd76" stop-opacity="0"/></linearGradient></defs>'+
+ grid+'<polygon points="'+area+'" fill="url(#gmfq-dxy-fill)"/>'+
+ '<polyline points="'+points+'" fill="none" stroke="#e7c675" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>'+
+ '<circle cx="'+xLast+'" cy="'+yLast+'" r="4" fill="#e7c675" stroke="#091b2b" stroke-width="2"/>'+
+ '<text x="'+L+'" y="'+(H-4)+'" fill="#98b0c3" font-size="10">'+htmlEscape(arr[0].date)+'</text>'+
+ '<text x="'+(W-R)+'" y="'+(H-4)+'" text-anchor="end" fill="#98b0c3" font-size="10">'+htmlEscape(last.date)+'</text></svg>';
 }
 function validDxy(x){return x?.schema==='GMFQ_DXY_SYNTHETIC_ECB_V1'&&x.status==='ESTIMATED_INFORMATIONAL'&&x.not_official_ice===true&&x.usable_as_official_ice_or_trade_signal===false&&fresh(x.as_of,4)&&num(x.value)!==null&&Array.isArray(x.history)&&x.history.at(-1)?.date===x.as_of}
+function dxyResearchContext(data){
+ // Only draw derivative returns when all input fixing observations reconcile.
+ // This never creates an ICE DXY quote, a trade signal, or a backtest series.
+ if(!validDxy(data)||data.history.length<6)return null;
+ const h=data.history,tail=h.slice(-20);
+ if(tail.length<6||tail.some((x,i)=>!x||!/^\d{4}-\d{2}-\d{2}$/.test(x.date)||
+    num(x.value)===null||x.value<=0||(i>0&&x.date<=tail[i-1].date)))return null;
+ const latest=tail.at(-1),prior=tail.at(-2),base5=tail.at(-6);
+ if(Math.abs(latest.value-data.value)>0.00011||
+    num(data.previous_value)===null||
+    Math.abs(prior.value-data.previous_value)>0.00011)return null;
+ const vals=tail.map(x=>x.value);
+ return {oneSessionPct:100*(latest.value/prior.value-1),
+   fiveSessionPct:100*(latest.value/base5.value-1),
+   low:Math.min(...vals),high:Math.max(...vals),
+   count:tail.length,firstDate:tail[0].date,asOf:latest.date,
+   officialIce:false,signalsAllowed:false};
+}
+function dxyContextHtml(data){
+ const x=dxyResearchContext(data);
+ if(!x)return '<p class="gmfq-dxy-context-limit">Confronti temporali non verificabili con il fixing disponibile.</p>';
+ const pct=v=>(v>0?'+':'')+fmt(v,2)+'%';
+ return '<div class="gmfq-dxy-metrics" data-research-only="true" data-ice-official="false" aria-label="Variazioni e intervallo del DXY sintetico">'+
+ '<div><small>Ultima seduta</small><strong>'+pct(x.oneSessionPct)+'</strong></div>'+
+ '<div><small>5 sedute</small><strong>'+pct(x.fiveSessionPct)+'</strong></div>'+
+ '<div><small>Intervallo '+x.count+' sedute</small><strong>'+fmt(x.low,2)+' – '+fmt(x.high,2)+'</strong></div>'+
+ '</div><p class="gmfq-dxy-context-limit">Variazioni calcolate sulla serie sintetica BCE, non sull’indice ICE né su prezzi intraday. Ultimo fixing '+htmlEscape(x.asOf)+'.</p>';
+}
 function mountHomeCurrencyFlags(doc){
  const tiles=[...doc.querySelectorAll('#valute .cc[data-filter]')];
  for(const tile of tiles){
@@ -370,7 +419,8 @@ function openDxy(doc){
  const ok=validDxy(dxyFeed);
  dialog.innerHTML=`<button type="button" class="gmfq-close">Chiudi ×</button><h2>DXY · Dollar Index</h2>
  <div class="gmfq-dxy-val">${ok?fmt(dxyFeed.value,2):'—'}</div>
- <p class="gmfq-source">SINTETICO ECB · ${ok?htmlEscape(dxyFeed.as_of):'NON DISPONIBILE'} · non ICE ufficiale</p>
+ <p class="gmfq-source">INPUT: FIXING BCE · INDICE: STIMA SINTETICA · ${ok?htmlEscape(dxyFeed.as_of):'NON DISPONIBILE'} · non ICE</p>
+ ${ok?dxyContextHtml(dxyFeed):''}
  ${ok?dxyLine(dxyFeed):'<p>Fonte non sufficientemente aggiornata: valore non pubblicato.</p>'}
  <p>Ricostruito dai fixing giornalieri BCE di EUR, JPY, GBP, CAD, SEK e CHF con pesi e costante del paniere ICE. Non è una quotazione intraday né un dato utilizzato dai motori operativi.</p>
  <p><a href="https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.eu.html" target="_blank" rel="noopener noreferrer">Fonte ECB ↗</a></p>`;
