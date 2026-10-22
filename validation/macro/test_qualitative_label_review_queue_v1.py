@@ -11,32 +11,55 @@ from validation.macro.qualitative_label_review_queue_v1 import (
 )
 
 
-def original():
-    values = [
+def live_inputs():
+    """Actual frozen October checkpoint compared with latest canonical sources."""
+    return (
         json.loads(CHECKPOINT.read_text(encoding="utf-8")),
         *(json.loads((ROOT / path).read_text(encoding="utf-8"))
-          for path in PATHS.values())
-    ]
-    # Restore *synthetically*, in memory only, the original source checkpoint
-    # for isolated delta tests. Production must still detect the REAL UK
-    # July/August repair as changed (one GBP currency, seven affected pairs).
-    s = next(row for row in values[2]["GBP"] if row["id"] == "UK_UNEMP_RATE_history_value")
-    if str(s["last_date"])[:7] == "2026-08":
-        assert s["dates"][-2:] == ["2026-07-01", "2026-08-01"]
-        assert s["values"][-2:] == [4.9, 4.7]
-        s["dates"].pop()
-        s["values"].pop()
-        s["values"][-1] = 4.7
-        s["last_date"] = "2026-07-01"
-        s["last_value"] = 4.7
-        h = values[3]["currencies"]["GBP"]["labour"]
-        h["history"].pop()
-        h["history"][-1] = 4.7
-        h["as_of"] = "2026-07-01"
-        h["latest_value"] = 4.7
-        values[3]["currencies"]["GBP"]["as_of_detail"]["unemployment"] = "2026-07-01"
-    return tuple(values)
+          for path in PATHS.values()),
+    )
 
+
+def original():
+    """Synthetic no-delta fixture for isolating *one* source mutation.
+
+    Do not rewrite the real checkpoint or live source data. Advancing Rates,
+    OIS and New Zealand inflation can all legitimately affect the real
+    reapproval queue, so a 2026-10-20 checkpoint is not a no-delta fixture.
+    """
+    values = list(live_inputs())
+    checkpoint, _model, series, heat, _registry, rates, ois, _setup = values
+    checkpoint = copy.deepcopy(checkpoint)
+    for ccy, frozen in checkpoint["currencies"].items():
+        rows = {row["id"]: row for row in series[ccy]}
+        for dim in ("inflation", "labour"):
+            target = frozen["core"][dim]
+            row = rows[target["id"]]
+            current = heat["currencies"][ccy][dim]
+            target["dates"] = list(row["dates"])
+            target["values"] = list(row["values"])
+            target["heat_asof"] = current["as_of"]
+            target["heat_value"] = current["latest_value"]
+        for row_id, target in frozen["growth"].items():
+            row = rows[row_id]
+            target["dates"] = list(row["dates"])
+            target["values"] = list(row["values"])
+            target["frequency"] = row.get("frequency") or "M"
+            target["source_file"] = row.get("source_file") or None
+        rate = rates[ccy]
+        frozen["rates"] = {
+            "date": rate["date"], "quality": rate["quality"],
+            "two_y": rate.get("2Y"), "ten_y": rate.get("10Y"),
+        }
+        pricing = ois["currencies"][ccy]
+        frozen["ois"] = {
+            "date": pricing["as_of"],
+            "operational": pricing["operational_status"],
+            "official_status": pricing["official_status"],
+            "quality": pricing["quality"],
+        }
+    values[0] = checkpoint
+    return tuple(values)
 
 class QualitativeReviewTests(unittest.TestCase):
     @classmethod
@@ -50,7 +73,26 @@ class QualitativeReviewTests(unittest.TestCase):
             changed(values)
         return build(*values, self.today)
 
+    def test_actual_checkpoint_detects_source_changes_without_promotion(self):
+        # In particular, September NZD CPI moved from 4.1% to 3.7%;
+        # the pinned October 20 checkpoint must not be silently rebased.
+        actual = build(*live_inputs(), self.today)
+        self.assertEqual(actual["status"], "REVIEW_REQUIRED")
+        self.assertIn("NZD", actual["changed_currencies"])
+        nz_events = actual["currencies"]["NZD"]["changed_inputs"]
+        self.assertTrue(any(
+            e["category"] == "CORE" and e.get("dimension") == "inflation"
+            and "NEW_OBSERVATION" in e["flags"]
+            for e in nz_events), nz_events)
+        self.assertEqual(
+            sum("NZD" in (pair[:3], pair[3:]) for pair in actual["impacted_pairs"]), 7)
+        self.assertFalse(actual["safe_to_publish_new_D"])
+        self.assertFalse(actual["eligible_for_structural_rebase"])
+        self.assertTrue(all(
+            not row["bias_promoted"] for row in actual["currencies"].values()))
+
     def test_baseline_has_no_new_alert_but_macro_model_remains_stale(self):
+        # Synthetic *source-equal* baseline for adversarial single-change tests.
         r = self.run_review()
         self.assertEqual(r["status"], "NO_SOURCE_DELTA_SINCE_CHECKPOINT")
         self.assertEqual(r["changed_currencies_count"], 0)
@@ -108,7 +150,8 @@ class QualitativeReviewTests(unittest.TestCase):
 
     def test_estimated_ois_status_change_never_promotes_a_policy_vote(self):
         def modify(x):
-            x[6]["currencies"]["USD"]["as_of"] = "2026-10-20"
+            prior = date.fromisoformat(x[6]["currencies"]["USD"]["as_of"])
+            x[6]["currencies"]["USD"]["as_of"] = (prior - timedelta(days=1)).isoformat()
         r = self.run_review(modify)
         self.assertEqual(r["changed_currencies"], ["USD"])
         self.assertEqual(r["impacted_pairs_count"], 7)
