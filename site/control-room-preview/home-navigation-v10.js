@@ -108,7 +108,7 @@ function style(doc){
   .gmfq-chart-note{color:#93a7b8;font:10px/1.35 Arial,sans-serif;margin-top:5px}
   .gmfq-est-note{color:#e0bb6c}
   .gmfq-dxy-dialog{border:1px solid #29465b;border-radius:10px;color:#e4edf5;background:#071827;
-    max-width:min(590px,94vw);width:94vw;padding:22px 23px;box-shadow:0 24px 65px #000a}
+    max-width:590px;width:calc(100vw - 24px);box-sizing:border-box;padding:22px 23px;box-shadow:0 24px 65px #000a}
   .gmfq-dxy-dialog::backdrop{background:#020a14be}
   .gmfq-dxy-dialog h2{font:600 20px/1.2 Arial,sans-serif;color:#f2f7fb;margin:0 0 10px}
   .gmfq-dxy-dialog p{font:13px/1.5 Arial,sans-serif;color:#b0c3d2;margin:7px 0}
