@@ -1,8 +1,8 @@
 {
   "schema": "GMFQ_LIVE_DATA_MANIFEST_V2",
   "generated_from_current_payload": true,
-  "runtime_sha256": "191fcc4005f4becdb2b305a985f19bc09059f4628837c282665fb948e13e6358",
-  "runtime_bytes": 2757173,
+  "runtime_sha256": "325e375ded38db95a480c66692ca4cd0fbb298ab4c8a42650550586b1cc009b4",
+  "runtime_bytes": 2757495,
   "part_count": 16,
   "direct_section_count": 12,
   "derived_section_count": 2,
@@ -11,8 +11,8 @@
       "key": "D",
       "file": "D.json",
       "mode": "DIRECT_SINGLE_PART",
-      "bytes": 762785,
-      "sha256": "33fb2d3944fcc7ad915f1b0d92feb502e1f52bf97b4f06ef2934c804697b4eeb",
+      "bytes": 762882,
+      "sha256": "0e10fbca274805e76b2deb4f1053ee2c96ba1e8b6b7a9c837014ec162ec2a7bc",
       "occurrences_in_payload": 1,
       "part": 0,
       "direct_update_allowed": true
@@ -51,8 +51,8 @@
       "key": "NATIVE_RATES_DATA",
       "file": "NATIVE_RATES_DATA.json",
       "mode": "DIRECT_SINGLE_PART",
-      "bytes": 130938,
-      "sha256": "bddb49f6c1445ac3ac1b12e5bd49bf7eb765085ab53fcac83f77b61b23901049",
+      "bytes": 131155,
+      "sha256": "c771faa774298722e89a645fdc9f22d0b4c32a727eb8cc1cb25adbe5947f14e4",
       "occurrences_in_payload": 1,
       "part": 0,
       "direct_update_allowed": true
@@ -61,8 +61,8 @@
       "key": "OIS_DATA",
       "file": "OIS_DATA.json",
       "mode": "DIRECT_SINGLE_PART",
-      "bytes": 13752,
-      "sha256": "e91c60ca83183a864949eedf3df56b01af37d13ad0b064aa42ac8d38e603b39d",
+      "bytes": 13760,
+      "sha256": "9447133dc6167478424c24b2ce3595fcb46e4965c0aca425f344a959857583ca",
       "occurrences_in_payload": 1,
       "part": 0,
       "direct_update_allowed": true
@@ -92,7 +92,7 @@
       "file": "NATIVE_CB_DATA.json",
       "mode": "DIRECT_SINGLE_PART",
       "bytes": 10303,
-      "sha256": "2595e825a30d8ee58f204f87dcc644923606bd5027f010de671946b1b1f9f3a2",
+      "sha256": "373fa7e082b6dcc9719b3ec522b811e23d334dbb39449673d5e393045c2aaa7d",
       "occurrences_in_payload": 1,
       "part": 0,
       "direct_update_allowed": true
@@ -142,7 +142,7 @@
       "file": "RATES_AUDIT_METADATA.json",
       "mode": "DERIVED_BUILDER_REQUIRED",
       "bytes": 1696,
-      "sha256": "ee7943c944e59714cc50bf9b2fdfb5fe166aac384e8c33a8cf15899e4385a04e",
+      "sha256": "53c0fefd3ec43a7ff48efb1fa7558b637ce7bb2a852994763f903083e8ea98f1",
       "occurrences_in_payload": 0,
       "part": null,
       "direct_update_allowed": false
