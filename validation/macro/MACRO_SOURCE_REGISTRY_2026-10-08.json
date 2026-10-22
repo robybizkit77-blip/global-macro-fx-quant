@@ -306,7 +306,7 @@
         "value": 3.1
       },
       "series_id": "D7G7",
-      "source": "ONS",
+      "source": "Office for National Statistics",
       "source_adapter_status": "READY",
       "transformation": "reported_yoy_rate",
       "transport_class": "OFFICIAL_DIRECT",
