@@ -59,7 +59,7 @@ def download_csv(download_pid:str)->str:
     content_type=response.headers.get('Content-Type','unknown')[:110]
    # Sometimes a CDN returns HTTP 200 with an HTML challenge/error page.
    # Only ZIP bytes from the official full-table URL may be parsed.
-   if not data.startswith(b'PK\\x03\\x04'):
+   if not data.startswith(b'PK\x03\x04'):
     raise StatCanTransportUnavailable(
      f'official ZIP unavailable (Content-Type={content_type}; ZIP signature absent)')
    try:
