@@ -320,6 +320,13 @@ const absent=view(result,[]);
 assert(absent.includes('osservazioni confrontabili non disponibili'));
 
 const html=view(result);
+assert(html.includes('<details class="gmfq-est-disclosure" data-default="CLOSED">'));
+assert(html.includes('<summary>Apri tabella 3M / 6M / 12M'));
+assert(html.includes('4/8 fonti certificate (OIS e futures monetari)'));
+assert(html.includes('1 scenario'));
+assert(html.includes('0 non disponibili'));
+assert.equal((html.match(/class="gmfq-est-row" data-ccy=/g)||[]).length,8);
+assert(html.includes('</div></details>'));
 assert(html.includes('data-ccy="NZD"'));
 assert(html.includes('DATE NON SINCRONIZZATE'));
 assert(html.includes('non intervallo statistico'));
