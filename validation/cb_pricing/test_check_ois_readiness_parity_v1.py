@@ -47,12 +47,21 @@ def main():
     v,r,o,p=copy.deepcopy(originals)
     v["currencies"]["USD"]=copy.deepcopy(v["currencies"]["GBP"])
     o["currencies"]["USD"]=copy.deepcopy(o["currencies"]["GBP"])
-    v["summary"]["green_official"]+=1
-    v["summary"]["operational_green"]+=1
-    v["summary"]["operational_withheld"]-=1
+    # A pending USD may already be GREEN_ESTIMATED, so promote only the
+    # simulated official certification and count all source states anew.
+    states=[row["operational_status"] for row in v["currencies"].values()]
+    v["summary"].update(
+        g8_total=8,
+        green_official=states.count("GREEN_OFFICIAL"),
+        green_estimated=states.count("GREEN_ESTIMATED"),
+        operational_green=sum(x.startswith("GREEN_") for x in states),
+        operational_withheld=states.count("WITHHELD"),
+    )
     r["operational_summary"]=copy.deepcopy(v["summary"])
     r["currencies"].pop("USD")
-    r["blocked_currency_count"]-=1
+    r["blocked_currency_count"]=sum(
+        v["currencies"][c]["operational_status"]=="WITHHELD"
+        for c in r["currencies"])
     future=validate(v,r,o,p)
     assert future["certified"]==5 and future["pending"]==3
     stale=copy.deepcopy(originals[1])
