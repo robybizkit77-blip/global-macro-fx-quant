@@ -1121,6 +1121,9 @@ async function getState(page){
          const d=document.getElementById('gmfq-page')?.contentDocument,
            panel=d?.getElementById('gmfq-cross-risk-v10');
          return {status:panel?.dataset.sourceStatus,
+           references:panel?.dataset.studyReferences,official:panel?.dataset.studyOfficial,
+           secondary:panel?.dataset.studySecondary,effect:panel?.dataset.studyEffect,
+           snapshot:panel?.querySelector('.gmfq-cross-coverage')?.textContent,
            priority:panel?.querySelector('.gmfq-cross-risk-intro')?.textContent,
            sourceKeys:[...panel?.querySelectorAll('.gmfq-cross-risk-evidence span[data-source]')||[]].map(x=>x.dataset.source),
            priorityFirst:!!(panel?.querySelector('.gmfq-cross-risk-intro')?.compareDocumentPosition(panel.querySelector('.gmfq-cross-risk-evidence'))&Node.DOCUMENT_POSITION_FOLLOWING),
@@ -1132,7 +1135,10 @@ async function getState(page){
            text:panel?.textContent,width:d?.documentElement.scrollWidth,
            viewport:d?.documentElement.clientWidth};
        });
-       if(risk.cards.length!==3||
+       const coverageValid=process.env.GITHUB_EVENT_NAME==='pull_request'||
+         (risk.references==='4'&&risk.official==='2'&&risk.secondary==='2'&&
+          risk.effect==='NONE'&&risk.snapshot?.includes('4/4 riferimenti numerici per lo studio'));
+       if(!coverageValid||risk.cards.length!==3||
           !risk.priority?.startsWith('VIX misura volatilità implicita')||
           !risk.priorityFirst||
           JSON.stringify(risk.sourceKeys)!==JSON.stringify(['vix','wti','brent'])||
