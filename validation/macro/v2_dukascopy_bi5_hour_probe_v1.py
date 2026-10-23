@@ -1,13 +1,42 @@
 #!/usr/bin/env python3
-"""One-hour Dukascopy BI5 EURUSD probe; never promotes research to FX scores."""
-import argparse,hashlib,json,lzma,math,struct,urllib.request
+"""Bounded, read-only Dukascopy BI5 EUR/USD hour probe.
+
+This is not a feed, scheduler or production importer. It decodes one chosen
+hour and keeps transport evidence separate from a licence or market claim.
+"""
+import argparse,hashlib,json,lzma,math,re,struct,urllib.request
 from datetime import datetime,timezone,timedelta
 from pathlib import Path
 URL="https://datafeed.dukascopy.com/datafeed/EURUSD/2026/09/02/12h_ticks.bi5"
-BASE=datetime(2026,10,2,12,0,tzinfo=timezone.utc)
 FMT=struct.Struct(">IIIff")
-def summarize(data):
-    if not data or len(data)>10000000: raise ValueError("empty/oversized source")
+MAX_SOURCE_BYTES=10_000_000
+URL_RE=re.compile(r"^https://datafeed\.dukascopy\.com/datafeed/EURUSD/(?P<year>\d{4})/(?P<month0>\d{2})/(?P<day>\d{2})/(?P<hour>\d{2})h_ticks\.bi5$")
+def source_clock(source_url):
+    """Parse the canonical BI5 path, whose month is zero-based."""
+    m=URL_RE.fullmatch(source_url)
+    if not m:raise ValueError("expected canonical HTTPS Dukascopy EURUSD BI5 hour URL")
+    p={k:int(v) for k,v in m.groupdict().items()}
+    if not 0<=p["month0"]<=11 or not 0<=p["hour"]<=23:raise ValueError("invalid zero-based month or hour in BI5 URL")
+    try:base=datetime(p["year"],p["month0"]+1,p["day"],p["hour"],tzinfo=timezone.utc)
+    except ValueError as e:raise ValueError("invalid calendar date in BI5 URL") from e
+    return base,p
+def fetch(source_url,timeout_s):
+    """Fetch one bounded hour and retain HTTP provenance metadata."""
+    source_clock(source_url)
+    req=urllib.request.Request(source_url,headers={"User-Agent":"GMFQ-Research-Source-Audit/1.0"})
+    with urllib.request.urlopen(req,timeout=timeout_s) as response:
+        if response.status!=200:raise ValueError("unavailable source status")
+        size=response.headers.get("Content-Length")
+        if size is None or not size.isdigit():raise ValueError("source did not provide a bounded Content-Length")
+        size=int(size)
+        if not 0<size<=MAX_SOURCE_BYTES:raise ValueError("source Content-Length outside BI5 research bound")
+        data=response.read(size+1)
+        if len(data)!=size:raise ValueError("source byte count does not match Content-Length")
+        return data,{"http_status":response.status,"content_type":response.headers.get("Content-Type"),"content_length":size,"etag":response.headers.get("ETag"),"last_modified":response.headers.get("Last-Modified"),"effective_url":response.geturl()}
+def summarize(data,*,source_url=URL,transport_receipt=None):
+    BASE,parts=source_clock(source_url)
+    if not data or len(data)>MAX_SOURCE_BYTES: raise ValueError("empty/oversized source")
+    if transport_receipt and transport_receipt.get("content_length")!=len(data):raise ValueError("transport receipt content length does not match source bytes")
     dec=lzma.LZMADecompressor(format=lzma.FORMAT_AUTO,memlimit=100000000)
     raw=dec.decompress(data,max_length=75000001)
     if not dec.eof or len(raw)>75000000 or len(raw)%20: raise ValueError("incomplete/invalid BI5")
@@ -23,17 +52,20 @@ def summarize(data):
         candidates=[t for t in ticks if target-120000<=t[0]<=target]
         if not candidates:return None
         ms,bid,ask=candidates[-1]
-        return {"utc":(BASE+timedelta(milliseconds=ms)).isoformat(),
+        return {"observed_at_utc":(BASE+timedelta(milliseconds=ms)).isoformat(),
           "bid":bid,"ask":ask,"mid":round((bid+ask)/2,7),
           "spread_pips":round((ask-bid)*10000,3),"age_s":round((target-ms)/1000,3)}
     p,q=pick(25),pick(35)
-    return {"schema":"GMFQ_DUKASCOPY_EURUSD_BI5_ONE_HOUR_PROBE_V1",
-     "source":URL,"sha256":hashlib.sha256(data).hexdigest(),"tick_count":len(ticks),
+    return {"schema":"GMFQ_DUKASCOPY_EURUSD_BI5_ONE_HOUR_PROBE_V2",
+     "source_declared":"Dukascopy public datafeed BI5 binary","source_url":source_url,
+     "source_path_calendar_utc":BASE.isoformat(),"bi5_month_index_zero_based":parts["month0"],
+     "source_sha256":hashlib.sha256(data).hexdigest(),"source_bytes_n":len(data),
+     "transport_receipt":transport_receipt,"source_bytes_externally_retrieved":transport_receipt is not None,"tick_count":len(ticks),
      "release_at":"2026-10-02T12:30:00+00:00",
      "pre_0825_new_york":p,"post_0835_new_york":q,
      "fx_window_complete":p is not None and q is not None,
      "mid_move_pips":round((q["mid"]-p["mid"])*10000,3) if p and q else None,
-     "source_license_independently_certified":False,"causal_attribution":False,
+     "source_license_independently_certified":False,"usage_authorization_not_established":True,"causal_attribution":False,
      "ois_window_available":False,"treasury_window_available":False,
      "pre_release_consensus_available":False,"eligible_for_backtest":False,
      "safe_to_publish_new_D":False,"safe_to_update_pair_theses":False,
@@ -41,17 +73,17 @@ def summarize(data):
 def main():
     ap=argparse.ArgumentParser()
     ap.add_argument("--offline-bi5",type=Path)
+    ap.add_argument("--source-url",default=URL)
+    ap.add_argument("--timeout-s",type=int,default=45)
     ap.add_argument("--out",type=Path)
     args=ap.parse_args()
     if args.out and not args.out.resolve().is_relative_to(Path("/tmp")):raise ValueError("only /tmp allowed")
+    if not 1<=args.timeout_s<=60:raise ValueError("timeout must be between 1 and 60 seconds")
     if args.offline_bi5:
-        buf=args.offline_bi5.read_bytes()
+        buf=args.offline_bi5.read_bytes();receipt=None
     else:
-        req=urllib.request.Request(URL,headers={"User-Agent":"GMFQ-Research-Source-Audit/1.0"})
-        with urllib.request.urlopen(req,timeout=12) as response:
-            if response.status!=200:raise ValueError("unavailable source status")
-            buf=response.read(10000001)
-    r=summarize(buf)
+        buf,receipt=fetch(args.source_url,args.timeout_s)
+    r=summarize(buf,source_url=args.source_url,transport_receipt=receipt)
     if args.out:
         args.out.parent.mkdir(parents=True,exist_ok=True)
         args.out.write_text(json.dumps(r,indent=2)+"\n")

@@ -38,6 +38,7 @@ on:
       - 'validation/macro/test_v2_eurusd_intraday_csv_research_v1.py'
       - 'validation/macro/v2_dukascopy_bi5_hour_probe_v1.py'
       - 'validation/macro/test_v2_dukascopy_bi5_hour_probe_v1.py'
+      - 'validation/macro/MACRO_V2_EURUSD_INTRADAY_IMPORT_GATE_2026-10-23.md'
       - 'validation/macro/MACRO_V2_BLS_INTRADAY_EVIDENCE_ACQUISITION_2026-10-23.md'
   workflow_dispatch:
 
@@ -266,7 +267,8 @@ jobs:
         continue-on-error: true
         run: |
           timeout 35s python -m validation.macro.v2_dukascopy_bi5_hour_probe_v1 \
-            --out /tmp/macro-v2-shadow/eurusd-bi5-oct02-first-real-hour.json
+            --source-url https://datafeed.dukascopy.com/datafeed/EURUSD/2026/09/02/12h_ticks.bi5 \
+            --timeout-s 30 --out /tmp/macro-v2-shadow/eurusd-bi5-oct02-first-real-hour.json
       - name: Report whether source bytes were actually acquired
         if: always()
         run: |
@@ -275,10 +277,16 @@ jobs:
           import json
           from pathlib import Path
           r=json.loads(Path('/tmp/macro-v2-shadow/eurusd-bi5-oct02-first-real-hour.json').read_text())
+          assert r['schema']=='GMFQ_DUKASCOPY_EURUSD_BI5_ONE_HOUR_PROBE_V2',r
+          assert r['source_path_calendar_utc']=='2026-10-02T12:00:00+00:00',r
+          assert r['bi5_month_index_zero_based']==9,r
+          assert r['source_bytes_externally_retrieved'] is True,r
+          assert r['transport_receipt']['content_length']==r['source_bytes_n'],r
+          assert r['source_license_independently_certified'] is False,r
           print('EXTERNAL_SOURCE_ACQUIRED',
                 'ticks',r['tick_count'],
                 'window_complete',r['fx_window_complete'],
-                'hash',r['sha256'])
+                'hash',r['source_sha256'])
           PY
           else
             echo "EXTERNAL_SOURCE_NOT_ACQUIRED: no valid hourly source receipt; no quote is claimed"
