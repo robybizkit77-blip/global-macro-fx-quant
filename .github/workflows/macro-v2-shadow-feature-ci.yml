@@ -32,6 +32,9 @@ on:
       - 'validation/macro/v2_us_labour_market_association_audit_v1.py'
       - 'validation/macro/test_v2_us_labour_market_association_audit_v1.py'
       - 'validation/macro/MACRO_V2_US_LABOUR_2Y_FX_REACTION_READINESS_2026-10-23.md'
+      - 'validation/macro/v2_bls_intraday_evidence_gate_v1.py'
+      - 'validation/macro/test_v2_bls_intraday_evidence_gate_v1.py'
+      - 'validation/macro/MACRO_V2_BLS_INTRADAY_EVIDENCE_ACQUISITION_2026-10-23.md'
   workflow_dispatch:
 
 permissions:
@@ -234,6 +237,22 @@ jobs:
                       'safe_to_update_pair_theses','writes_live_data'):
               assert r[key] is False,key
           print('BLS_US_U3_9_EVENT_TREASURY_ECB_NO_FALSE_OIS_OR_CAUSAL_CLAIM_GREEN')
+          PY
+      - name: Enforce no fabricated event-time consensus, Treasury OIS or FX quotes
+        run: |
+          set -euo pipefail
+          python -m unittest validation.macro.test_v2_bls_intraday_evidence_gate_v1 -v
+          python -m validation.macro.v2_bls_intraday_evidence_gate_v1 --json-out /tmp/macro-v2-shadow/event-evidence-gap.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('/tmp/macro-v2-shadow/event-evidence-gap.json').read_text())['audit']
+          assert r['events']==9
+          assert r['complete_event_windows']==0
+          assert r['research_readiness']=='DATA_GAP'
+          assert r['predictive_edge_validated'] is False
+          assert r['safe_to_publish_new_D'] is False
+          print('BLS_INTRADAY_9_EVENTS_ZERO_COMPLETE_WINDOWS_NO_PROMOTION_PASS')
           PY
       - name: Confirm no runtime or website files were changed by tests
         run: |
