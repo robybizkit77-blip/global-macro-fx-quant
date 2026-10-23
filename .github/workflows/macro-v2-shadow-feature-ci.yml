@@ -11,6 +11,9 @@ on:
       - 'validation/macro/test_v2_bls_unrate_first_release_pilot_v1.py'
       - 'validation/macro/fixtures/v2_bls_us_unrate_first_release_2023_12_2024_04.json'
       - 'validation/macro/MACRO_V2_BLS_UNRATE_PILOT_2026-10-20.md'
+      - 'validation/macro/v2_shadow_intensity_v1.py'
+      - 'validation/macro/test_v2_shadow_intensity_v1.py'
+      - 'validation/macro/MACRO_V2_SHADOW_INTENSITY_PHASE2_SPEC_2026-10-23.md'
   workflow_dispatch:
 
 permissions:
@@ -63,6 +66,28 @@ jobs:
                       'writes_live_data'):
               assert r[key] is False, key
           print('V2_SHADOW_FEATURE_CONTRACT_PASS__NO_LIVE_SCORE_OR_PAIR_UPDATE')
+          PY
+      - name: Verify phase-2 PIT research normalization, leakage and missing-window controls
+        run: |
+          set -euo pipefail
+          python -m unittest validation.macro.test_v2_shadow_intensity_v1 -v
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from validation.macro.test_v2_shadow_intensity_v1 import fixture
+          from validation.macro.v2_shadow_intensity_v1 import build_shadow_intensity
+          r=build_shadow_intensity(fixture())
+          assert r['schema']=='GMFQ_MACRO_V2_SHADOW_INTENSITY_V1'
+          assert r['training_first_releases']==24
+          assert r['economic_dimension']=='LABOUR_TIGHTNESS'
+          assert r['source_evidence_is_independently_certified'] is False
+          for key in ('ready_for_macro_scoring','usable_for_backtest',
+                      'safe_to_publish_new_D','safe_to_update_pair_theses','writes_live_data'):
+              assert r[key] is False,key
+          p=Path('/tmp/macro-v2-shadow/phase2-synthetic-receipt.json')
+          p.parent.mkdir(parents=True,exist_ok=True)
+          p.write_text(json.dumps(r,indent=2)+'\\n')
+          print('MACRO_V2_SHADOW_PHASE2_NO_LIVE_SCORE_GREEN',r['latest_period'])
           PY
       - name: Confirm no runtime or website files were changed by tests
         run: |
