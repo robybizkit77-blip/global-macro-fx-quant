@@ -1760,7 +1760,28 @@ function pairDeskOrdering(feedData,model){
        reasons.push('Tesi sorretta da un solo pilastro');
    }
    if(!reasons.length)reasons.push('Servono trigger e rapporto rischio/rendimento esterni al modello');
-   sourceRows.push({code,quality,fav:eligible?fav:null,
+   // One source-derived first research check; no automatic triggers or scores.
+   const checks={
+     'Macro e Tassi/CB in conflitto':'Rivedere se Macro e Tassi/CB convergono sulla stessa valuta',
+     'Solo spread 2Y; tesi assente':'Cercare una tesi Macro/Tassi; lo spread 2Y non basta',
+     'Nessuna preferenza Macro/Tassi':'Attendere un contrasto strutturale verificabile',
+     'Prezzo contro la tesi':'Verificare se il prezzo smette di opporsi alla tesi',
+     'Prezzo non conferma':'Cercare conferma del prezzo nella direzione favorita',
+     'Timing contrario':'Controllare se la dinamica relativa smette di essere contraria',
+     'Prezzo già avanzato':'Controllare consolidamento o retest, senza inseguire',
+     'Dinamica relativa divergente':'Verificare se la divergenza relativa rientra',
+     'Timing incerto':'Attendere dinamica relativa più leggibile',
+     'Timing misto':'Controllare se il timing diventa coerente',
+     'Timing solo parziale':'Verificare un miglioramento del timing relativo',
+     'COT affollato/estremo':'Controllare se il crowding COT si riduce',
+     'COT contrario':'Controllare se il posizionamento COT smette di opporsi',
+     'Liquidità sfavorevole':'Verificare se il contesto di liquidità migliora',
+     'Tesi sorretta da un solo pilastro':'Cercare conferma dal pilastro Macro o Tassi/CB mancante',
+     'Servono trigger e rapporto rischio/rendimento esterni al modello':'Definire trigger e rischio/rendimento separatamente'
+   };
+   const firstCheck=checks[reasons[0]];
+   if(!firstCheck)return null;
+   sourceRows.push({code,quality,fav:eligible?fav:null,firstCheck,
      thesis:structure===3?'Tesi forte':structure===2?'Tesi parziale':'Senza tesi',
      priceReading:!eligible?'Prezzo non valutabile':
        x.price.state==='GOOD'?'Prezzo conferma':
@@ -1831,6 +1852,7 @@ async function mountPairRankedList(doc){
  '#pair-index .gmfq-row-rank{display:inline-block;min-width:22px;color:#dfc891;font:600 12px/1.5 Arial,sans-serif;margin-right:7px;font-variant-numeric:tabular-nums}'+
  '#pair-index .gmfq-row-lenses{display:block;margin-top:3px;color:#e3d19f;font:10px/1.45 Arial,sans-serif;max-width:300px;overflow-wrap:anywhere}'+
  '#pair-index .gmfq-row-why{display:block;margin-top:3px;color:#a8bfcd;font:10px/1.45 Arial,sans-serif;max-width:300px;overflow-wrap:anywhere}'+
+ '#pair-index .gmfq-row-next{display:block;margin-top:4px;color:#d1dbc7;font:10px/1.5 Arial,sans-serif;max-width:330px;overflow-wrap:anywhere}'+
  '#pair-index tr[data-research-rank] td:nth-child(4){min-width:170px}'+
  '@media(max-width:600px){#gmfq-pair-rank{padding:12px}#gmfq-pair-rank .gmfq-rank-switch button{font-size:11px}#pair-index .gmfq-row-why{max-width:190px}}';
  doc.head.appendChild(st);
@@ -1838,7 +1860,7 @@ async function mountPairRankedList(doc){
  panel.dataset.macroAsOf=ranked.macroAsOf;panel.dataset.priceAsOf=ranked.priceAsOf;
  panel.dataset.hasTradeRanking='false';
  panel.innerHTML='<h2 class="desk-panel-title">28 coppie · dalla più coerente alla meno coerente</h2>'+
-  '<p class="gmfq-rank-explain"><strong>«CON RISCHI» da sola non basta:</strong> il primo ostacolo è scritto accanto a ogni coppia, senza cambiare il verdetto del motore.</p>'+
+  '<p class="gmfq-rank-explain"><strong>Ogni coppia mostra l’ostacolo e il primo controllo:</strong> una verifica da fare, non una condizione soddisfatta o un ingresso.</p>'+
   '<div class="gmfq-rank-switch" role="group" aria-label="Criterio di ordinamento delle coppie">'+
   '<button type="button" data-rank-mode="setup" aria-pressed="true">Condizioni del setup</button>'+
   '<button type="button" data-rank-mode="thesis" aria-pressed="false">Forza della tesi</button></div>'+
@@ -1889,6 +1911,10 @@ async function mountPairRankedList(doc){
      let why=verdict.querySelector('.gmfq-row-why');
      if(!why){why=doc.createElement('small');why.className='gmfq-row-why';verdict.appendChild(why)}
      why.textContent=(r.fav?'Favore '+r.fav+' · ':'Nessuna direzione · ')+r.why;
+     let check=verdict.querySelector('.gmfq-row-next');
+     if(!check){check=doc.createElement('small');check.className='gmfq-row-next';verdict.appendChild(check)}
+     check.textContent='Primo controllo · '+r.firstCheck;
+     check.dataset.source='PAIR_SETUP_OPERATIONAL_VIEW';
    }
    const sorted=pairs.slice().sort((a,b)=>indexed.get(a.querySelector('button.pair-open').dataset.pair).rank-
      indexed.get(b.querySelector('button.pair-open').dataset.pair).rank);
