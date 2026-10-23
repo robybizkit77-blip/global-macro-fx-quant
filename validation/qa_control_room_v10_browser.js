@@ -1301,6 +1301,8 @@ function expectedReactionFromMetrics(row){
       descriptions:rows.map(x=>({
         code:x.querySelector('button.pair-open')?.dataset.pair,rank:Number(x.dataset.researchRank),
         why:x.querySelector('.gmfq-row-why')?.textContent,
+        firstCheck:x.querySelector('.gmfq-row-next')?.textContent,
+        checkSource:x.querySelector('.gmfq-row-next')?.dataset.source,
         lenses:x.querySelector('.gmfq-row-lenses')?.textContent,
         lensSource:x.querySelector('.gmfq-row-lenses')?.dataset.source,
         label:x.querySelector('.gmfq-row-rank')?.textContent,mode:x.dataset.researchMode,
@@ -1315,7 +1317,8 @@ function expectedReactionFromMetrics(row){
      rankSetup.descriptions.length!==28||
      rankSetup.descriptions.some((x,i)=>x.rank!==i+1||
        x.label!==String(i+1).padStart(2,'0')||
-       x.mode!=='setup'||!x.why?.length||
+       x.mode!=='setup'||!x.why?.length||!x.firstCheck?.startsWith('Primo controllo · ')||
+       x.checkSource!=='PAIR_SETUP_OPERATIONAL_VIEW'||
        !setupFeed.pairs[x.code])||
      JSON.stringify(rankSetup.modes)!==JSON.stringify([
        {mode:'setup',pressed:'true'},{mode:'thesis',pressed:'false'}]))
@@ -1352,6 +1355,16 @@ function expectedReactionFromMetrics(row){
        row.lensSource!=='PAIR_SETUP_OPERATIONAL_VIEW')
        throw Error(label+' pair three source lenses differ from canonical feed '+JSON.stringify(row));
   }
+  // Narrative risk gates are inspection prompts, not new signals.
+  const firstChecks=rankSetup.descriptions;
+  if(firstChecks.some(x=>x.firstCheck.includes('ingresso immediato')||
+       x.firstCheck.includes('stop loss')||!x.firstCheck?.length))
+     throw Error(label+' new first checks imply actionable trade levels');
+  const audRisk=firstChecks.find(x=>x.code==='AUDCHF'),
+        eurRisk=firstChecks.find(x=>x.code==='EURUSD');
+  if(!audRisk?.firstCheck||!eurRisk?.firstCheck)
+     throw Error(label+' source examples lack a research-check line');
+
   const rankedCodes=rankSetup.descriptions.map(x=>x.code);
   const unranked=rankedCodes.findIndex(x=>setupFeed.pairs[x].setup.quality==='NON VALUTABILE');
   if(unranked<0||rankedCodes.slice(unranked).some(x=>
