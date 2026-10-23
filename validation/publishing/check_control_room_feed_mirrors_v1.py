@@ -21,12 +21,13 @@ MARKET_PUBLIC = ROOT / "validation/publishing/verify_control_room_market_deliver
 DASH_OWNED = {
     "D.json", "ESTIMATED_RESIDUAL_GAPS.json",
     "MACRO_THERMOMETER_DATA.json", "OIS_OPERATIONAL_VIEW.json",
-    "NEWS_PULSE_OPERATIONAL.json",
+    "NEWS_PULSE_OPERATIONAL.json", "CALENDAR_OPERATIONAL_VIEW.json",
     "V247_COT_STORIES.json", "NATIVE_CB_DATA.json",
     "CHF_SNB_10Y_SPOT_CONTEXT.json",
     "NZD_CB_PRICING_DIRECTIONAL_PROXY.json",
     "OIS_SOURCE_READINESS_VIEW.json",
 }
+DERIVED_SIDECARS = {"RATES_AUDIT_METADATA.json"}  # Not fetched by v10 Home directly.
 MARKET_OWNED = {
     "NATIVE_RATES_DATA.json", "V250_COT_CHART_DATA.json",
     "PAIR_SETUP_OPERATIONAL_VIEW.json", "ECB_G8_PRICE_HISTORY.json",
@@ -63,6 +64,14 @@ def main() -> int:
         assert '"' + "live_data/sections/" + name + '"' in public, (
             "Missing standalone public SHA proof", name
         )
+    for name in sorted(DERIVED_SIDECARS):
+        assert name in copied, f"Derived sidecar not mirrored to Pages: {name}"
+        assert dash.count("live_data/sections/" + name) >= 3, (
+            "Derived sidecar missing from trigger/stage/scope", name
+        )
+        assert '"' + "live_data/sections/" + name + '"' in public, (
+            "Derived sidecar not HTTP hash-verified", name
+        )
     for name in sorted(MARKET_OWNED):
         assert market.count("live_data/sections/" + name) >= 3, (
             "Market mirror trigger/copy/allowlist incomplete", name
@@ -82,11 +91,12 @@ def main() -> int:
     # Legacy narrative is source-derived, not a fresh policy/OIS view.
     assert "const ROOT='https://raw.githubusercontent.com/" in site
     assert "/main/live_data/sections/';" in site
-    print("CONTROL_ROOM_ALL_15_FEED_MIRRORS_OWNED_GREEN", json.dumps({
+    print("CONTROL_ROOM_ALL_16_FEED_MIRRORS_OWNED_GREEN", json.dumps({
         "mode": "READ_ONLY_NO_SCORE_EFFECT",
         "total": len(all_owned),
         "dashboard_publisher": sorted(DASH_OWNED),
         "market_publisher": sorted(MARKET_OWNED),
+        "derived_sidecars": sorted(DERIVED_SIDECARS),
         "missing": [], "duplicate_owners": [],
     }, sort_keys=True))
     return 0

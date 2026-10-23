@@ -27,10 +27,12 @@ FILES = (
     "live_data/sections/MACRO_THERMOMETER_DATA.json",
     # Home Market Pulse: exact public bytes, not just network HTTP 200.
     "live_data/sections/NEWS_PULSE_OPERATIONAL.json",
+    "live_data/sections/CALENDAR_OPERATIONAL_VIEW.json",
     "payload/part-00.txt",
     # Keep the public derived COT story and manifest in exact-byte lockstep
     # with the runtime payload. A stale standalone file fails the release.
     "live_data/sections/V247_COT_STORIES.json",
+    "live_data/sections/RATES_AUDIT_METADATA.json",
     "live_data/manifest.v2.json",
     # Previously missing/obsolete standalone reference feeds must converge too.
     "live_data/sections/NATIVE_CB_DATA.json",
