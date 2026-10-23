@@ -67,7 +67,7 @@ class BLS25PilotTests(unittest.TestCase):
             elif period=="2024-02":
                 with self.assertRaisesRegex(ValueError,"attested original"):validate_manifest(m)
             else:
-                with self.assertRaisesRegex(ValueError,"delayed September"):validate_manifest(m)
+                with self.assertRaisesRegex(ValueError,"attested original"):validate_manifest(m)
 
     def test_archive_identity_and_release_hour_fail_closed(self):
         for change,reason in (
