@@ -119,6 +119,71 @@ jobs:
           python validation/rebuild_live_data_runtime.py --verify-only > /tmp/rates-persistent/runtime-roundtrip.json
           git diff --exit-code -- live_data payload
 
+      # An unchanged 2Y/10Y snapshot can still become stale overnight.
+      # Refresh source-age metadata without writing or inventing Rates levels.
+      - name: Preview dated Rates source-age metadata with no new observation
+        if: steps.gate.outputs.should_run == 'true' && steps.candidate.outputs.status == 'NO_UPDATES'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/build_rates_audit_metadata.py \
+            --audit-date "$(TZ=Europe/Rome date +%F)" \
+            --output /tmp/rates-persistent/RATES_AUDIT_METADATA.json
+          python validation/update_live_derived_sections.py \
+            --rates /tmp/rates-persistent/RATES_AUDIT_METADATA.json \
+            > /tmp/rates-persistent/derived-metadata-preview.json
+          python - <<'PY'
+          import json
+          x=json.load(open('/tmp/rates-persistent/RATES_AUDIT_METADATA.json'))
+          assert x['rates']['CHF']['status']=='VALIDATED_HISTORICAL_SOURCE_BLOCKED', x['rates']['CHF']
+          assert x['rates']['NZD']['source_access']=='RBNZ_B2_MANUAL_DOUBLE_REVIEW', x['rates']['NZD']
+          actual=json.load(open('live_data/sections/NATIVE_RATES_DATA.json'))
+          assert all(x['rates'][c]['current_as_of']==actual[c]['date'] for c in actual)
+          assert x['rates']['CHF']['action']=='SOURCE_EXPORT_RECOVERY_REQUIRED'
+          assert x['rates']['NZD']['status'].startswith('MANUAL_REVIEWED_')
+          print('RATES_METADATA_SOURCE_AGE_PREVIEW_PASS')
+          PY
+
+      - name: Persist date-only Rates metadata on main even without new yields
+        if: steps.gate.outputs.should_run == 'true' && steps.candidate.outputs.status == 'NO_UPDATES' && github.ref == 'refs/heads/main'
+        shell: bash
+        env:
+          TARGET_BRANCH: main
+        run: |
+          set -euo pipefail
+          python validation/update_live_derived_sections.py \
+            --rates /tmp/rates-persistent/RATES_AUDIT_METADATA.json \
+            --apply > /tmp/rates-persistent/derived-metadata-apply.json
+          python validation/build_live_manifest_v2.py \
+            --write live_data/manifest.v2.json > /tmp/rates-persistent/metadata-manifest.json
+          python validation/check_live_update_contract.py > /tmp/rates-persistent/metadata-live-contract.json
+          python validation/rebuild_live_data_runtime.py --verify-only > /tmp/rates-persistent/metadata-roundtrip.json
+          python - <<'PY'
+          import json,subprocess
+          c=json.load(open('/tmp/rates-persistent/metadata-live-contract.json'))
+          r=json.load(open('/tmp/rates-persistent/metadata-roundtrip.json'))
+          assert c['status']=='PASS' and r['status']=='PASS' and r.get('noop_roundtrip_byte_identical') is True
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          allowed={'live_data/sections/RATES_AUDIT_METADATA.json','live_data/manifest.v2.json','payload/part-15.txt'}
+          assert changed <= allowed, f'Metadata-only diff escaped scope: {changed-allowed}'
+          assert 'live_data/sections/NATIVE_RATES_DATA.json' not in changed
+          print('RATES_METADATA_NO_OBSERVATION_CHANGE_PASS',sorted(changed))
+          PY
+          REMOTE_SHA="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
+          test "$REMOTE_SHA" = "$GITHUB_SHA"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- live_data/sections/RATES_AUDIT_METADATA.json live_data/manifest.v2.json payload/part-15.txt
+          if git diff --cached --quiet; then
+            echo 'Source-age metadata already up to date'
+            exit 0
+          fi
+          git commit -m 'Refresh dated G8 Rates source-age metadata without new yields'
+          REMOTE_SHA_2="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
+          test "$REMOTE_SHA_2" = "$GITHUB_SHA"
+          git push origin "HEAD:$TARGET_BRANCH"
+          echo RATES_SOURCE_AGE_ONLY_MAIN_UPDATE_PUSHED
+
       - name: Apply validated Rates candidate
         if: steps.gate.outputs.should_run == 'true' && steps.candidate.outputs.status == 'CANDIDATE_READY'
         shell: bash
@@ -129,7 +194,7 @@ jobs:
             --replacement /tmp/rates-persistent/NATIVE_RATES_DATA.json \
             --apply > /tmp/rates-persistent/direct-apply.json
           python validation/build_rates_audit_metadata.py \
-            --audit-date "$(date -u +%Y-%m-%d)" \
+            --audit-date "$(TZ=Europe/Rome date +%F)" \
             --output /tmp/rates-persistent/RATES_AUDIT_METADATA.json
           python validation/update_live_derived_sections.py \
             --rates /tmp/rates-persistent/RATES_AUDIT_METADATA.json \
