@@ -724,7 +724,7 @@ async function getState(page){
            d.querySelectorAll('#pair-index button.pair-open[data-pair]').length===28&&
            d.getElementById('gmfq-pair-research-path')?.dataset.pair===code;
        },homePair,{timeout:35000});
-       if(['pairs-explained-ranking-20261022','pairs-focus-eight-20261022','pairs-first-risk-check-20261023','pairs-top8-overlap-20261023'].includes(navigationVersion)){
+       if(['pairs-explained-ranking-20261022','pairs-focus-eight-20261022','pairs-first-risk-check-20261023','pairs-top8-overlap-20261023','pairs-dense-first-read-20261023'].includes(navigationVersion)){
          await page.waitForFunction(()=>{
            const d=document.getElementById('gmfq-page')?.contentDocument,p=d?.getElementById('gmfq-pair-rank');
            return p?.dataset.status==='READ_ONLY'&&
@@ -747,12 +747,39 @@ async function getState(page){
                value:x.dataset.pairView,pressed:x.getAttribute('aria-pressed')})),
              overflow:p?.scrollWidth>p?.clientWidth+2,
              docWidth:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth,
+             readingMode:p?.dataset.readingMode,
+             methodClosed:p?.querySelector('.gmfq-rank-method-detail')?.open===false,
+             readingState:(()=>{
+               const tb=d.getElementById('pair-index'),row=rows[0],w=d.defaultView;
+               return {level:tb?.dataset.researchReading,
+                 whyVisible:!!row?.querySelector('.gmfq-row-why')?.getClientRects().length,
+                 lensDisplay:row?.querySelector('.gmfq-row-lenses')?
+                   w.getComputedStyle(row.querySelector('.gmfq-row-lenses')).display:null,
+                 checkDisplay:row?.querySelector('.gmfq-row-next')?
+                   w.getComputedStyle(row.querySelector('.gmfq-row-next')).display:null};
+             })(),
              rows:rows.map(x=>({code:x.querySelector('button.pair-open')?.dataset.pair,
                rank:Number(x.dataset.researchRank),reason:x.querySelector('.gmfq-row-why')?.textContent,firstCheck:x.querySelector('.gmfq-row-next')?.textContent,checkSource:x.querySelector('.gmfq-row-next')?.dataset.source,visible:!!x.getClientRects().length,selected:x.classList.contains('pair-current')}))};
          });
          const rankedSetup=await capture();
+         if(navigationVersion==='pairs-dense-first-read-20261023'){
+           if(rankedSetup.readingMode!=='compact'||rankedSetup.readingState.level!=='compact'||
+              !rankedSetup.methodClosed||!rankedSetup.readingState.whyVisible||
+              rankedSetup.readingState.lensDisplay!=='none'||
+              rankedSetup.readingState.checkDisplay!=='none')
+             throw Error(name+' public compact pair reading failed '+JSON.stringify(rankedSetup));
+           await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-pair-reading="details"]').click();
+           const detailed=await capture();
+           if(detailed.readingMode!=='details'||detailed.readingState.level!=='details'||
+              detailed.readingState.lensDisplay==='none'||
+              detailed.readingState.checkDisplay==='none'||
+              JSON.stringify(detailed.rows.map(x=>x.code))!==JSON.stringify(rankedSetup.rows.map(x=>x.code)))
+             throw Error(name+' public first controls not discoverable '+JSON.stringify(detailed));
+           await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-pair-reading="compact"]').click();
+         }
+
          const checkPublicOverlap=state=>{
-           if(navigationVersion!=='pairs-top8-overlap-20261023')return;
+           if(!['pairs-top8-overlap-20261023','pairs-dense-first-read-20261023'].includes(navigationVersion))return;
            const rows=state.rows.slice(0,8),frequency={};
            if(rows.length!==8)throw Error(name+' first-eight overlap needs eight original records');
            for(const item of rows){
@@ -782,11 +809,11 @@ async function getState(page){
             !rankedSetup.rows.find(x=>x.code==='AUDCHF')?.reason.includes('Timing contrario')||
             !rankedSetup.rows.find(x=>x.code==='EURUSD')?.reason.includes('Prezzo già avanzato'))
            throw Error(name+' public ranked pairs or named CON RISCHI constraint absent '+JSON.stringify(rankedSetup));
-         if(['pairs-first-risk-check-20261023','pairs-top8-overlap-20261023'].includes(navigationVersion)&&
+         if(['pairs-first-risk-check-20261023','pairs-top8-overlap-20261023','pairs-dense-first-read-20261023'].includes(navigationVersion)&&
             rankedSetup.rows.some(x=>!x.firstCheck?.startsWith('Primo controllo · ')||
               x.checkSource!=='PAIR_SETUP_OPERATIONAL_VIEW'))
            throw Error(name+' public source-derived first pair risk checks missing '+JSON.stringify(rankedSetup));
-         if(['pairs-focus-eight-20261022','pairs-first-risk-check-20261023','pairs-top8-overlap-20261023'].includes(navigationVersion)){
+         if(['pairs-focus-eight-20261022','pairs-first-risk-check-20261023','pairs-top8-overlap-20261023','pairs-dense-first-read-20261023'].includes(navigationVersion)){
            const shown=rankedSetup.rows.filter(x=>x.visible);
            if(rankedSetup.view!=='focus'||rankedSetup.visibleCount!==shown.length||
              shown.length<8||shown.length>9||

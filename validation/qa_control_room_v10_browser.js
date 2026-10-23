@@ -1292,6 +1292,19 @@ function expectedReactionFromMetrics(row){
       trade:p?.dataset.hasTradeRanking,baseline:p?.dataset.macroAsOf,price:p?.dataset.priceAsOf,
       view:p?.dataset.viewMode,visibleCount:Number(p?.dataset.visibleCount),
       nativeSummary:d.getElementById('pair-visible')?.textContent,
+      readingMode:p?.dataset.readingMode,
+      rowReading:d.getElementById('pair-index')?.dataset.researchReading,
+      readingButtons:[...p.querySelectorAll('button[data-pair-reading]')].map(x=>({
+        level:x.dataset.pairReading,pressed:x.getAttribute('aria-pressed')})),
+      methodClosed:p.querySelector('.gmfq-rank-method-detail')?.open===false,
+      readingSample:(()=>{
+        const r=rows[0],w=d.defaultView;
+        return {rank:r?.dataset.researchRank,whyVisible:!!r?.querySelector('.gmfq-row-why')?.getClientRects().length,
+          lensDisplay:r?.querySelector('.gmfq-row-lenses')?w.getComputedStyle(r.querySelector('.gmfq-row-lenses')).display:null,
+          checkDisplay:r?.querySelector('.gmfq-row-next')?w.getComputedStyle(r.querySelector('.gmfq-row-next')).display:null,
+          sourceLens:r?.querySelector('.gmfq-row-lenses')?.dataset.source,
+          sourceCheck:r?.querySelector('.gmfq-row-next')?.dataset.source};
+      })(),
       overlap:(()=>{
         const n=p.querySelector('.gmfq-rank-overlap');
         return {status:n?.dataset.status,source:n?.dataset.source,text:n?.textContent,
@@ -1330,6 +1343,38 @@ function expectedReactionFromMetrics(row){
      JSON.stringify(rankSetup.modes)!==JSON.stringify([
        {mode:'setup',pressed:'true'},{mode:'thesis',pressed:'false'}]))
     throw Error(label+' Pair ranked setup first reading failed '+JSON.stringify(rankSetup));
+  // Verify the first viewport shows one named obstacle per native row;
+  // source-detail layers remain mounted and accessible one click away.
+  if(rankSetup.readingMode!=='compact'||rankSetup.rowReading!=='compact'||
+     !rankSetup.methodClosed||!rankSetup.readingSample.whyVisible||
+     rankSetup.readingSample.lensDisplay!=='none'||
+     rankSetup.readingSample.checkDisplay!=='none'||
+     rankSetup.readingSample.sourceLens!=='PAIR_SETUP_OPERATIONAL_VIEW'||
+     rankSetup.readingSample.sourceCheck!=='PAIR_SETUP_OPERATIONAL_VIEW'||
+     JSON.stringify(rankSetup.readingButtons)!==JSON.stringify([
+       {level:'compact',pressed:'true'},{level:'details',pressed:'false'}]))
+    throw Error(label+' first pair viewport is too dense or hides source risk '+JSON.stringify(rankSetup));
+  await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-pair-reading="details"]').click();
+  const detailedRead=await readRank();
+  if(detailedRead.readingMode!=='details'||detailedRead.rowReading!=='details'||
+     detailedRead.readingSample.lensDisplay==='none'||
+     detailedRead.readingSample.checkDisplay==='none'||
+     !detailedRead.readingSample.whyVisible||
+     detailedRead.readingButtons[1]?.pressed!=='true'||
+     JSON.stringify(detailedRead.descriptions.map(x=>x.code))!==
+       JSON.stringify(rankSetup.descriptions.map(x=>x.code)))
+    throw Error(label+' full pair checks lost or native rank changed '+JSON.stringify(detailedRead));
+  await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank .gmfq-rank-method-detail>summary').press('Enter');
+  const methodExpanded=await readRank();
+  if(methodExpanded.methodClosed)
+    throw Error(label+' disclosed pair ordering method cannot be opened');
+  await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank .gmfq-rank-method-detail>summary').press('Enter');
+  await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-pair-reading="compact"]').click();
+  const compactRestored=await readRank();
+  if(compactRestored.readingMode!=='compact'||compactRestored.rowReading!=='compact'||
+     !compactRestored.methodClosed||compactRestored.readingSample.lensDisplay!=='none'||
+     compactRestored.readingSample.checkDisplay!=='none')
+    throw Error(label+' pair concise first reading not restored '+JSON.stringify(compactRestored));
   // 8-row currency recurrence is a transparent watchlist warning,
   // calculated from exact source pair legs, not a portfolio risk score.
   const verifyOverlap=(state)=>{
@@ -1409,6 +1454,8 @@ function expectedReactionFromMetrics(row){
   await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-rank-mode="thesis"]').click();
   const rankThesis=await readRank();
   verifyOverlap(rankThesis);
+  if(rankThesis.readingMode!=='compact'||rankThesis.readingSample.checkDisplay!=='none')
+    throw Error(label+' changing sort unexpectedly expands pair row details');
   if(rankThesis.mode!=='thesis'||rankThesis.view!=='focus'||
      rankThesis.descriptions.slice(0,8).some(x=>!x.visible)||
      rankThesis.descriptions.length!==28||

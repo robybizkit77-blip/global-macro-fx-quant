@@ -116,6 +116,22 @@ assert(source.includes('MutationObserver(()=>apply())'),'native search/re-render
 assert(source.includes("check.textContent='Primo controllo · '+r.firstCheck"),'each native pair risk has a visible first research check');
 assert(source.includes("tbody.append(...sorted)"),'native 28-row table, not a new duplicative list');
 assert(source.includes("hasTradeRanking='false'"),'must never claim score or trade signal');
+assert(source.includes("panel.dataset.readingMode=reading"),
+  'source-agnostic reading level must be a presentation setting only');
+assert(source.includes("tbody.dataset.researchReading=reading"),
+  'reading mode must survive native pair row redraw and native filters');
+assert(source.includes('data-pair-reading="compact" aria-pressed="true"'),
+  'compact native first reading must be the default');
+assert(source.includes('data-pair-reading="details" aria-pressed="false"'),
+  'verification lenses and next check remain one click away');
+assert(source.includes('data-research-reading=\\"compact\\"')||
+  source.includes('data-research-reading="compact"'),
+  'compact CSS should collapse secondary lines, not delete canonical source data');
+assert(source.includes("gmfq-row-why"),
+  'source-derived first obstacle must remain visible even in compact mode');
+assert(source.includes('<details class="gmfq-rank-method-detail">'),
+  'lengthy model method is disclosed without overwhelming first viewport');
+
 assert(source.includes('Sovrapposizione valutaria, non correlazione né rischio portafoglio stimati.'),
   'currency overlap must never be presented as statistical or portfolio risk');
 assert(source.includes("overlap.dataset.status='OBSERVED'"),
