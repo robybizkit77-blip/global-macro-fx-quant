@@ -1053,6 +1053,11 @@ function expectedReactionFromMetrics(row){
       rows:[...p?.querySelectorAll('ol li')||[]].map(x=>({
         ccy:x.dataset.vsmCcy,n:Number(x.dataset.vsmRank),text:x.textContent.trim()})),
       note:p?.querySelector('.gmfq-vsm-caution')?.textContent,
+      firstRead:{
+        source:p?.querySelector('.gmfq-vsm-reading')?.dataset.source,
+        status:p?.dataset.comparisonStatus,ccy:p?.dataset.comparisonCurrency,
+        otherRank:p?.dataset.comparisonOtherRank,
+        text:p?.querySelector('.gmfq-vsm-reading')?.textContent},
       width:p?.scrollWidth,client:p?.clientWidth,
       doc:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
   });
@@ -1064,6 +1069,15 @@ function expectedReactionFromMetrics(row){
   };
   const checkRank=(actual,h)=>{
     const expected=expectedRank(h);
+    const leader=expected[0],alternate=expectedRank(h===5?20:5),
+          leaderOtherRank=alternate.indexOf(leader)+1,
+          reading=actual.firstRead;
+    if(reading.source!=='ECB_G8_PRICE_HISTORY'||reading.status!=='OBSERVED'||
+       reading.ccy!==leader||reading.otherRank!==String(leaderOtherRank)||
+       !reading.text.includes('Lettura rapida')||
+       !reading.text.includes('Le due finestre si sovrappongono: non prova una svolta.')||
+       !reading.text.includes(h===5?'20 sedute':'5 sedute'))
+      throw Error(label+' G8 '+h+'-session reading contradicts source ranking '+JSON.stringify({reading,expected,alternate}));
     if(actual.status!=='OBSERVED'||actual.source!=='ECB_G8_PRICE_HISTORY'||
        actual.signals!=='NONE'||actual.horizon!==String(h)||
        actual.asof!==fxHistory.last_as_of||actual.from!==fxHistory.rows.at(-h-1).Date||

@@ -1292,6 +1292,35 @@ async function getState(page){
          if(!valuteOpen.opened||!valuteOpen.shown)
             throw Error(name+' Valute source drilldown missing '+JSON.stringify(valuteOpen));
        }
+       if(process.env.GITHUB_EVENT_NAME!=='pull_request'&&navigationVersion==='valute-cross-horizon-20261023'){
+         await page.waitForFunction(()=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument;
+           return d?.getElementById('gmfq-vsc-momentum')?.dataset.comparisonStatus==='OBSERVED';
+         },null,{timeout:30000});
+         const read=()=>page.evaluate(()=>{
+           const p=document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-vsc-momentum');
+           return {status:p?.dataset.status,asof:p?.dataset.asof,
+             days:p?.dataset.horizon,currency:p?.dataset.comparisonCurrency,
+             other:p?.dataset.comparisonOtherRank,
+             source:p?.querySelector('.gmfq-vsm-reading')?.dataset.source,
+             text:p?.querySelector('.gmfq-vsm-reading')?.textContent,
+             count:p?.querySelectorAll('ol li').length,
+             width:p?.scrollWidth,client:p?.clientWidth};
+         });
+         const five=await read();
+         if(five.status!=='OBSERVED'||five.days!=='5'||five.currency!=='AUD'||
+            five.other!=='7'||five.source!=='ECB_G8_PRICE_HISTORY'||
+            five.count!==8||five.width>five.client+2||
+            !five.text.includes('Le due finestre si sovrappongono: non prova una svolta.'))
+           throw Error(name+' public 5-session horizon reading disagrees with official FX snapshot '+JSON.stringify(five));
+         await page.frameLocator('#gmfq-page').locator('#gmfq-vsc-momentum button[data-vsm-days="20"]').click();
+         const twenty=await read();
+         if(twenty.status!=='OBSERVED'||twenty.days!=='20'||
+            twenty.currency!=='GBP'||twenty.other!=='5'||
+            twenty.source!=='ECB_G8_PRICE_HISTORY'||twenty.count!==8||
+            !twenty.text.includes('Le due finestre si sovrappongono: non prova una svolta.'))
+           throw Error(name+' public 20-session horizon reading disagrees with official FX snapshot '+JSON.stringify(twenty));
+       }
        console.log('CONTROL_ROOM_V10_MACRO_SCREENER_READING_PUBLIC_GREEN',name,
          {baseline:macroFirst.baseline,groups:screenerFirst.summary,blocked:screenerFirst.count});
      }

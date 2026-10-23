@@ -2550,6 +2550,25 @@ function valuteRelativeFixingRanks(fx,lookback){
  return {items,from:older.Date,asof:recent.Date,lookback,
    source:'ECB_G8_PRICE_HISTORY',basis:'EQUAL_WEIGHT_G8'};
 }
+/* Comparing overlapping ECB fixing horizons does not establish a
+   momentum turning point, macro change or a trade recommendation. */
+function valuteHorizonFirstRead(fx,days){
+ if(![5,20].includes(days))return null;
+ const primary=valuteRelativeFixingRanks(fx,days),
+       otherDays=days===5?20:5,
+       comparison=valuteRelativeFixingRanks(fx,otherDays);
+ if(!primary||!comparison||primary.asof!==comparison.asof||
+    primary.items.length!==8||comparison.items.length!==8)return null;
+ const leader=primary.items[0];
+ if(!leader)return null;
+ const otherIndex=comparison.items.findIndex(x=>x.ccy===leader.ccy);
+ if(otherIndex<0||otherIndex>=8)return null;
+ const other=comparison.items[otherIndex];
+ if(!Number.isFinite(leader.percent)||!Number.isFinite(other.percent))return null;
+ return {ccy:leader.ccy,percent:leader.percent,days,
+   otherDays,otherRank:otherIndex+1,otherPercent:other.percent,
+   asof:primary.asof,source:'ECB_G8_PRICE_HISTORY'};
+}
 function mountValuteRelativeRanking(doc,strip,fx){
  const initial=valuteRelativeFixingRanks(fx,5);
  if(!initial||!strip.isConnected)return; // The provenance notice already explains WITHHELD.
@@ -2566,7 +2585,8 @@ function mountValuteRelativeRanking(doc,strip,fx){
  '#gmfq-vsc-momentum .gmfq-vsm-switch button{font:600 11px/1.4 Arial,sans-serif;padding:5px 9px;border:1px solid #4b6576;background:#142d3e;color:#c5d6e3;border-radius:5px;cursor:pointer}'+
  '#gmfq-vsc-momentum .gmfq-vsm-switch button[aria-pressed="true"]{border-color:#d3bb83;background:#2d3a45;color:#f2d79e}'+
  '#gmfq-vsc-momentum button:focus-visible{outline:2px solid #e6cf9c;outline-offset:2px}'+
- '#gmfq-vsc-momentum .gmfq-vsm-period{font:11px/1.5 Arial,sans-serif;color:#aabfce;margin:7px 0 9px}'+
+ '#gmfq-vsc-momentum .gmfq-vsm-period{font:11px/1.5 Arial,sans-serif;color:#aabfce;margin:7px 0 6px}'+
+ '#gmfq-vsc-momentum .gmfq-vsm-reading{font:600 12px/1.5 Arial,sans-serif;color:#dce9f0;padding:7px 9px;margin:0 0 9px;border-left:2px solid #c9b480;background:#102739;overflow-wrap:anywhere}'+
  '#gmfq-vsc-momentum ol{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 18px;list-style:none;margin:0;padding:0}'+
  '#gmfq-vsc-momentum li{min-width:0;border-top:1px solid #2a4353}'+
  '#gmfq-vsc-momentum li button{display:flex;gap:9px;align-items:center;text-align:left;width:100%;min-width:0;border:0;background:transparent;color:#dce7ee;cursor:pointer;padding:7px 1px;font:600 12px/1.45 Arial,sans-serif}'+
@@ -2580,7 +2600,9 @@ function mountValuteRelativeRanking(doc,strip,fx){
  '<div class="gmfq-vsm-switch" role="group" aria-label="Orizzonte del ranking FX">'+
  '<button type="button" data-vsm-days="5" aria-pressed="true">5 sedute</button>'+
  '<button type="button" data-vsm-days="20" aria-pressed="false">20 sedute</button></div></div>'+
- '<p class="gmfq-vsm-period" aria-live="polite"></p><ol aria-label="Classifica osservata delle otto valute G8"></ol>'+
+ '<p class="gmfq-vsm-period" aria-live="polite"></p>'+
+ '<p class="gmfq-vsm-reading" aria-live="polite" data-source="ECB_G8_PRICE_HISTORY"></p>'+
+ '<ol aria-label="Classifica osservata delle otto valute G8"></ol>'+
  '<p class="gmfq-vsm-caution">Movimento percentuale contro un paniere G8 equiponderato costruito dai fixing BCE; non è forza Macro/Tassi, DXY ICE, aspettativa di rendimento o graduatoria di trade.</p>';
  strip.insertAdjacentElement('afterend',rank);
  const paint=days=>{
@@ -2590,6 +2612,23 @@ function mountValuteRelativeRanking(doc,strip,fx){
    rank.dataset.asof=data.asof;rank.dataset.from=data.from;
    rank.querySelector('.gmfq-vsm-period').textContent=
       days+' sedute BCE · '+data.from+' → '+data.asof+' · forza relativa al paniere, non variazione EUR/USD';
+   const read=valuteHorizonFirstRead(fx,days),
+         note=rank.querySelector('.gmfq-vsm-reading');
+   if(!read){
+     note.textContent='Confronto con l’altro orizzonte non verificabile: restano valide soltanto le '+days+' sedute mostrate.';
+     rank.dataset.comparisonStatus='WITHHELD';
+     delete rank.dataset.comparisonOtherRank;
+     delete rank.dataset.comparisonCurrency;
+   }else{
+     rank.dataset.comparisonStatus='OBSERVED';
+     rank.dataset.comparisonOtherRank=String(read.otherRank);
+     rank.dataset.comparisonCurrency=read.ccy;
+     note.textContent='Lettura rapida · '+FLAG[read.ccy]+' '+read.ccy+
+       ' guida sulle '+days+' sedute ('+(read.percent>=0?'+':'')+fmt(read.percent,2)+'% rispetto al G8); '+
+       (read.otherRank===1?'è prima anche sulle ':'è '+read.otherRank+'ª sulle ')+read.otherDays+
+       ' sedute ('+(read.otherPercent>=0?'+':'')+fmt(read.otherPercent,2)+'%). '+
+       'Le due finestre si sovrappongono: non prova una svolta.';
+   }
    list.innerHTML=data.items.map((x,i)=>
      '<li data-vsm-ccy="'+x.ccy+'" data-vsm-rank="'+(i+1)+'">'+
      '<button type="button" data-vsm-open="'+x.ccy+'" aria-label="Apri analisi '+x.ccy+'">'+
