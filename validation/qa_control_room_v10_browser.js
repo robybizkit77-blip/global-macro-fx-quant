@@ -1252,6 +1252,8 @@ function expectedReactionFromMetrics(row){
       descriptions:rows.map(x=>({
         code:x.querySelector('button.pair-open')?.dataset.pair,rank:Number(x.dataset.researchRank),
         why:x.querySelector('.gmfq-row-why')?.textContent,
+        lenses:x.querySelector('.gmfq-row-lenses')?.textContent,
+        lensSource:x.querySelector('.gmfq-row-lenses')?.dataset.source,
         label:x.querySelector('.gmfq-row-rank')?.textContent,mode:x.dataset.researchMode,
         visible:!!x.getClientRects().length,selected:x.classList.contains('pair-current')
       }))};
@@ -1287,6 +1289,20 @@ function expectedReactionFromMetrics(row){
   const focusAgain=await readRank();
   if(focusAgain.view!=='focus'||focusAgain.descriptions.filter(x=>x.visible).length!==initialVisible.length)
     throw Error(label+' compact pair first view not restored '+JSON.stringify(focusAgain));
+  for(const row of rankSetup.descriptions){
+    const p=setupFeed.pairs[row.code],q=p.setup.quality==='NON VALUTABILE';
+    const expectedThesis=p.decision_frame.quality==='CONTRASTO STRUTTURALE FORTE'?'Tesi forte':
+       p.decision_frame.quality==='VANTAGGIO RELATIVO PARZIALE'?'Tesi parziale':'Senza tesi';
+    const expectedPrice=q?'Prezzo non valutabile':
+       p.setup.price.state==='GOOD'?'Prezzo conferma':
+       p.setup.price.state==='NEUTRAL'?'Prezzo neutro':'Prezzo contrario';
+    const expectedTiming=q?'Timing non valutabile':
+       ({ALIGNED:'Timing allineato',PARTIAL:'Timing parziale',ADVERSE:'Timing contrario',
+         MIXED:'Timing misto',UNCERTAIN:'Timing incerto'})[p.setup.timing.state];
+    if(row.lenses!==[expectedThesis,expectedPrice,expectedTiming].join(' · ')||
+       row.lensSource!=='PAIR_SETUP_OPERATIONAL_VIEW')
+       throw Error(label+' pair three source lenses differ from canonical feed '+JSON.stringify(row));
+  }
   const rankedCodes=rankSetup.descriptions.map(x=>x.code);
   const unranked=rankedCodes.findIndex(x=>setupFeed.pairs[x].setup.quality==='NON VALUTABILE');
   if(unranked<0||rankedCodes.slice(unranked).some(x=>

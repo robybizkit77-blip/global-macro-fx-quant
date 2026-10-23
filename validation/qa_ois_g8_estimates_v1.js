@@ -68,12 +68,20 @@ for(const ccy of ['USD','EUR','CHF']){
     source.secondary_quote_context?.status==='INDICATIVE_OBSERVATIONS_NON_OIS'){
    assert.equal(item.tier,'MIXED',ccy+' dates should remain visible only as context');
    assert.equal(item.official_ois,false);
-   assert(tenors.every(t=>item.points[t]?.source_quote_verified===true));
+   // The live secondary contract archive can legitimately become partial:
+   // audit each available quote, never manufacture a complete 3-tenor curve.
+   const available=tenors.filter(t=>item.points[t]);
+   assert(available.length>0,ccy+' MIXED requires at least one audited observation');
+   assert(available.every(t=>item.points[t].source_quote_verified===true));
    const six=indicativeSixMonth(liveOis,TODAY)[ccy];
-   assert.equal(six?.type,'MIXED');
-   assert.equal(six?.policy_delta_allowed,false);
-   assert.equal(six?.core_effect,'NONE');
-   assert(six?.label.includes(ccy));
+   if(item.points['6m']?.source_quote_verified===true){
+     assert.equal(six?.type,'MIXED');
+     assert.equal(six?.policy_delta_allowed,false);
+     assert.equal(six?.core_effect,'NONE');
+     assert(six?.label.includes(ccy));
+   }else{
+     assert.equal(six,undefined,ccy+' must not promote unverified 6M quote');
+   }
  }
 }
 const manifest=JSON.parse(fs.readFileSync(path.join(root,
@@ -215,12 +223,26 @@ assert.equal(fresh('invalid',TODAY),false);
 // upgrades the actual 4/8 certified source count.
 const home=coverage(ois,bb,TODAY);
 assert.equal(home.schema,'GMFQ_OIS_G8_RESEARCH_COVERAGE_V1');
-assert.equal(home.official_count,4);
-assert.equal(home.context_count,4);
-assert.equal(home.covered_count,8);
-assert.deepEqual(home.official_codes.sort(),['AUD','CAD','GBP','JPY']);
-assert.deepEqual(home.context_codes.sort(),['CHF','EUR','NZD','USD']);
-assert.deepEqual(home.incomplete_codes,[]);
+// Input rates for certified instruments can be legitimately WITHHELD
+// independently of the original four-source provenance. Require three actual
+// tenors for every reported full curve; an incomplete official feed is never
+// counted as a complete, fresh curve or silently supplied from a future.
+const expectedComplete=result.filter(x=>x.tier!=='WITHHELD'&&
+  tenors.every(t=>typeof x.points[t]?.value==='number'&&
+    Number.isFinite(x.points[t].value)&&fresh(x.points[t].date,TODAY)));
+const expectedOfficial=expectedComplete.filter(x=>x.tier==='OFFICIAL');
+const expectedOther=expectedComplete.filter(x=>x.tier!=='OFFICIAL');
+assert.equal(home.official_count,expectedOfficial.length);
+assert.equal(home.context_count,expectedOther.length);
+assert.equal(home.covered_count,expectedComplete.length);
+assert.deepEqual(home.official_codes.sort(),expectedOfficial.map(x=>x.ccy).sort());
+assert.deepEqual(home.context_codes.sort(),expectedOther.map(x=>x.ccy).sort());
+assert.deepEqual(home.incomplete_codes.sort(),
+  result.filter(x=>!expectedComplete.includes(x)).map(x=>x.ccy).sort());
+for(const ccy of ['GBP','JPY','CAD','AUD']){
+  if(!tenors.every(t=>typeof ois.currencies[ccy].horizons[t]?.rate==='number'))
+    assert(home.incomplete_codes.includes(ccy),ccy+' incomplete official curve must be visible as incomplete');
+}
 assert.equal(home.currency_tiers.NZD,'SCENARIO');
 assert.equal(home.currency_tiers.EUR,'MIXED');
 assert.equal(home.no_ois_official_promotion,true);
