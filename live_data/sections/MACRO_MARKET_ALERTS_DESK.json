@@ -1,8 +1,51 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-23T15:53:23Z",
+  "generated_at_utc": "2026-10-23T16:51:34Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-b714f21f79b1a7e32bee",
+      "observed_at_utc": "2026-10-23T14:59:43Z",
+      "headline": "Ship attacks in Strait of Hormuz hit record high in October",
+      "summary": "Reuters riporta: Ship attacks in Strait of Hormuz hit record high in October. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxOT0p6ZElVazFhVWJxRy15cXJ6X2VJZlBZbkp6dTFNUGNzb1pCbjYyenA2UE5ERXBYMnMya2tYNkNfcGN3U3FGZ3V2MzdaN0RWUng5VFJHVl9jVk9LLVJGOVFVRFNKR21sc0pULWQ0Vm9uQk9tODlWTGs0U3BSeFd2MC15X2RIakQ2Mkw0eFhMa1Y2UUVWYVBsZkhrZHowVnlaWUpKZA?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-d407b72a3e00e19b546e",
+      "observed_at_utc": "2026-10-23T04:14:00Z",
+      "headline": "Gold set for steep weekly loss as rising oil prices bolster Fed rate hike bets",
+      "summary": "Reuters riporta: Gold set for steep weekly loss as rising oil prices bolster Fed rate hike bets. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxOWE1LcUgzRWRwVDZmX3FEaWszVHF0cFQ1ekt6M1pyQ0lfc05PQm9DekdZcXprdm1vQk00SlNEZjEwQllCd1VwMUJySnIxcF9ZblFaRHFsV3BzSU52SlJSSi1TeWxoTmdYc1h6UHhPQTFQYU41ZEdQTFRNY3l0N1Q2bnRDV2x1MjlveGtxTk1oQWlGd3ExcUZEd2QzdF9TUkVKcXotUlIycUgtb1RrZjJ3?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-13c49a8d3f2ef29ae41f",
+      "observed_at_utc": "2026-10-23T16:29:02Z",
+      "headline": "Nasdaq ticks up as tech stocks steady; SpaceX worries hit telecoms",
+      "summary": "Reuters riporta: Nasdaq ticks up as tech stocks steady; SpaceX worries hit telecoms. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMingFBVV95cUxQR01KeXBjdXBubVRzTlJfWWJTMHctb2hFS2pVT21ydWtZNzBaMldxd1c2ZUJGNWhIeGV6MUxvQVZvSl9GdFh5QThQbFpuT0IwYi02Y3JGM19YSWJ3LXMtb29RbS1WZUljdGtsS2dockxHVm5SWnBSMzJpM0Y4RFItdW5SMzFsdXg2LWtrYWE1SC1TQlkxOERJZHNtQVREdw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-c61e9f115c35df58ffb9",
       "observed_at_utc": "2026-10-23T11:03:44Z",
@@ -1351,47 +1394,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxPdUNZdWpoUHRuMm9NQkFzanljSGhwblpRaW5fcFBscEtiOHkwYWJKZXNmSFllcWNNZkNKR3doSkItZ0k0dkE4RFdReDRhTHRaaXZOVENkRnhFaTVKa0s0RV9nS1Q0SHpkbWl2eENqT0dpSE92LTFtSU1tcDR0TkdvYVE0UDZXZWJWMHU3R3FHbTBOWlZjNmZfeE53RG9WMk8xWXlZT01FY1FZNnBOb2JTd0doMXpEdklNY0dPUkc3cGNuUQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-99656d6046d46716c685",
-      "observed_at_utc": "2026-10-21T10:40:09Z",
-      "headline": "UK's FTSE 100 pauses as hot inflation report outweighs energy boost",
-      "summary": "Reuters riporta: UK's FTSE 100 pauses as hot inflation report outweighs energy boost. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [
-        "GBP"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxOMG9KdWFSdV90N2s0bHM3d0xsTVlOMGduRE1RZ1FvSi1SbnU4MFlRQUIteDlZTC03TmNHVFl3Z2lhV2FrN1NwQjV5Wk1rU096X1pUNXB4M2c2bS1MdXlSeEZHaTJobmFsQzlvYTN6WHpyd2FkRzFqOFdkbzZUdjZoNzJCa1B6c2RxMzBmemg3RnBWdldpM0x0VEtCR0F0YXE3N3V2YXppNnN6ejBs?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-718c7638f17fc2934f9c",
-      "observed_at_utc": "2026-10-21T03:45:00Z",
-      "headline": "Gold steadies near one-week low as oil-driven inflation fears grow",
-      "summary": "Reuters riporta: Gold steadies near one-week low as oil-driven inflation fears grow. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxNY2dJZXdfdnptbDVvajUtNHBONy13T1Z5aEtVc3d2d2VDYUNpUEpTM1JxNGVZRFhiQmh1b1U2RWpOaW0zVndyQk9uSFZ6b0pQXzVvNUhRMFVXeEMzS3BrU1FkdE9tNEYxY21PdDFEWGplNkkwMkJ2Rkk5VVg2VUVDcXFIUmp4cUR4SnhqQ2h6b3hYTExtTkhCNGtqZWt6WUtUYURrc3owUUptdw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-89de536d6047e7ba8774",
-      "observed_at_utc": "2026-10-21T10:12:15Z",
-      "headline": "Jio Platforms' IPO-linked inflows boost rupee; elevated oil prices spur caution",
-      "summary": "Reuters riporta: Jio Platforms' IPO-linked inflows boost rupee; elevated oil prices spur caution. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "COMMODITIES",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPMFFMSF9nLXRwYy1COGJKYnBBYXkzOTFESWIxSnROTmJGa2hQZ3BTTExjMEUtTXhrUVFka3kzdXBjQXBqV1d6WW9wcDV0Z2NHbEhnellaWHpwMEx0d19NOHdaaGxyTUd5NEV0VHozczYxeVlVNU1NMjNRaEc0ZVFEMTFpamJVNWl1N0swSkdRbERORjN2c3dlVGhMMXVTQjFJUDVWZnhhMnY4MzZvMW1kQ25QSGY5dmhLc1d5aTNrRGR6N2c?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
