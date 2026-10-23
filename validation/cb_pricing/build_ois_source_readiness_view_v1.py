@@ -20,15 +20,15 @@ OUT = ROOT / "live_data/sections/OIS_SOURCE_READINESS_VIEW.json"
 BLOCKED = ("USD", "EUR", "CHF", "NZD")
 EXPLANATION = {
     "USD": "Settlement CME Fed Funds incompleti (manca una serie storica sincronizzata con diritti d'uso verificati).",
-    "EUR": "Settlement Eurex €STR FST3 non sincronizzati e non certificati per 3, 6 e 12 mesi.",
+    "EUR": "Eurex FST3: settlement ufficiali non accessibili con il percorso privato richiesto; contratti secondari su date diverse, non curva OIS.",
     "CHF": "Settlement futures SARON ICE/Eurex non certificati in una stessa serie storica.",
-    "NZD": "Il benchmark NZOS ufficiale richiede accesso autorizzato; Bank Bill non equivale a OIS.",
+    "NZD": "NZOS/NZOR ufficiali richiedono licenza NZdata; nessun accesso certificato attivo. ASX Bank Bill indica solo direzione, non OIS.",
 }
 NEXT_STEP = {
     "USD": "Ottenere CME ZQ T, T−1, T−5 per gli stessi contratti e verificarne la licenza.",
-    "EUR": "Verificare Eurex FST3 con date T, T−1, T−5, convenzioni e permessi d'uso.",
+    "EUR": "Accordo dati istituzionale/vendor autorizzato, poi settlement FST3 T/T−1/T−5 stessa scadenza e verifica diritti, roll e convenzioni.",
     "CHF": "Validare ICE SA3 oppure Eurex FSR3, senza unire exchange o date differenti.",
-    "NZD": "Attivare fonte NZOS/NZOR autorizzata e certificare 3M, 6M, 12M.",
+    "NZD": "Attivare licenza NZOS/NZOR e diritti di uso/visualizzazione; certificare curva 3M/6M/12M e storico T/T−1/T−5.",
 }
 
 def build(plan: dict, operational: dict, official: dict, rates: dict, chf10: dict,
