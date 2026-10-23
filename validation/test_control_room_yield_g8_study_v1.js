@@ -8,7 +8,7 @@ const FX=['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'];
 const num=x=>typeof x==='number'&&Number.isFinite(x)?x:null;
 const now=Date.parse('2026-10-23T00:00:00Z');
 const age=iso=>{
- if(!/^20\\d{2}-\\d{2}-\\d{2}$/.test(iso||''))return null;
+ if(!/^20\d{2}-\d{2}-\d{2}$/.test(iso||''))return null;
  const d=Date.parse(iso+'T00:00:00Z');
  return Number.isFinite(d)?Math.round((now-d)/86400000):null;
 };
