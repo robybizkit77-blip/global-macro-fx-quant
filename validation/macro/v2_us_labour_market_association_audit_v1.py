@@ -29,9 +29,12 @@ SOURCE_OIS = "validation/cb_pricing/history/OIS_G8_SNAPSHOTS_V1.jsonl"
 SOURCE_QUOTES = "validation/cb_pricing/history/OIS_SAME_CONTRACT_QUOTES_V1.jsonl"
 ECBFIX = "https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html"
 UST = "https://home.treasury.gov/policy-issues/financing-the-government/interest-rate-statistics"
-SIFMA = "https://www.newyorkfed.org/markets/opolicy/operating_policy_260312"
+SIFMA = "https://www.sifma.org/resources/general/holiday-schedule"
 WINDOW_END = date(2026, 10, 23)
-BAD_MARKET_SESSION = {"2026-04-03": "GOOD_FRIDAY_TREASURY_REDUCED_ACTIVITY"}
+BAD_MARKET_SESSION = {
+    "2026-04-03": "GOOD_FRIDAY_US_BOND_EARLY_CLOSE",
+    "2026-07-02": "INDEPENDENCE_DAY_US_BOND_EARLY_CLOSE",
+}
 MIN_SOURCE_RATES = date(2026, 1, 1)
 
 
