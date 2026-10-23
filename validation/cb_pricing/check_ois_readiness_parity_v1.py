@@ -77,6 +77,44 @@ def validate(operational,readiness,official,plan):
         need(isinstance(p.get("obstacle"),str) and bool(p["obstacle"]) and
              isinstance(p.get("activation_requirement"),str) and bool(p["activation_requirement"]),
              k+" missing access explanation")
+    # EUR/NZD contextual dates are informational, not OIS policy curves.
+    if "EUR" in pending:
+        x=rows["EUR"].get("research_context") or {}
+        quotes=((states["EUR"].get("secondary_quote_context") or {}).get("horizons") or {})
+        actual_dates={h:r.get("quote_as_of") for h,r in quotes.items()}
+        need(x.get("kind")=="DATED_ESTR_FUTURES_QUOTES_NOT_OIS" and
+             x.get("quote_dates")==actual_dates and
+             x.get("full_horizon_set")==(set(actual_dates)=={"3m","6m","12m"}) and
+             x.get("same_date_across_horizons")==(bool(actual_dates) and len(set(actual_dates.values()))==1),
+             "EUR dated-contract research source mismatch")
+        expected=("MIXED_DATE_QUOTES" if len(set(actual_dates.values()))>1 else
+                  "PARTIAL_QUOTES" if len(actual_dates)<3 else "CONTRACT_DATES_MATCH_UNLICENSED")
+        need(x.get("status")==expected and
+             all(x.get(k) is False for k in ("rates_embedded","cross_date_join_allowed",
+                                            "policy_delta_allowed","eligible_as_ois")),
+             "EUR mixed-date futures cannot become OIS")
+    if "NZD" in pending:
+        x=rows["NZD"].get("research_context") or {}
+        raw=states["NZD"].get("market_direction_proxy")
+        is_ok=(isinstance(raw,dict) and
+               raw.get("status")=="LIVE_DIRECTIONAL_PROXY_READY" and
+               raw.get("source_quality")=="OFFICIAL_EXCHANGE_DIRECTIONAL_PROXY" and
+               raw.get("substitutes_for_ois_level") is False and
+               raw.get("policy_delta_from_proxy_allowed") is False)
+        need(x.get("kind")=="ASX_NZD_BANK_BILL_DIRECTION_NOT_OIS" and
+             x.get("proxy_as_of")==(raw.get("as_of") if is_ok else None) and
+             all(x.get(k) is False for k in ("rates_embedded","policy_delta_allowed",
+                                            "eligible_as_ois","substitutes_for_ois_level")),
+             "NZD bank bill source may only inform direction")
+        if not is_ok:
+            need(x.get("status")=="NO_VALID_DIRECTIONAL_SOURCE","NZD unavailable ASX must not appear current")
+        else:
+            try:
+                days=(stamp-date.fromisoformat(raw["as_of"])).days
+            except (ValueError,TypeError,KeyError) as exc:
+                raise ValueError("OIS_READINESS_OPERATIONAL_PARITY_FAIL: NZD proxy invalid day") from exc
+            need(days>=0 and x.get("status")==("RECENT_DIRECTIONAL" if days<=5 else "HISTORICAL_DIRECTIONAL"),
+                 "NZD ASX proxy age improperly classified")
     return {"status":"PASS","certified":len(active),"pending":len(pending),
             "withheld":readiness["blocked_currency_count"],"as_of":readiness["as_of"],
             "official_ois_promoted":False}
