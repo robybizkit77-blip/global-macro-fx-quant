@@ -1,8 +1,21 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-23T03:50:09Z",
+  "generated_at_utc": "2026-10-23T04:48:57Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-ffd71e3a7cd151516d1d",
+      "observed_at_utc": "2026-10-23T02:43:00Z",
+      "headline": "UAE says tanker oil spill affects beaches in Umm Al Quwain",
+      "summary": "Reuters riporta: UAE says tanker oil spill affects beaches in Umm Al Quwain. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxONDVzb2o2bVZpMzFTRjc2dENKTUhpalRtLTA2bkprdkwxdWRBdXVVU0xWTHNYcmJLeEJTeV82SXhtN24wWUstUm9QV09Qcm5OSWF3dk5BVU93RmkyeWVuVVJnYloxNTZzajBhanlNNmZvUDJaRXdWbTFia1MycXpJTUtsUDRRSFVHcUJLSmlaNUY1Tk1qXy14SFRxczBUUTVJcGlaZk5FSzRvLUlJdWtWNTJB?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-219ca2176841a5cd2ffa",
       "observed_at_utc": "2026-10-23T01:50:00Z",
@@ -1372,21 +1385,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxNU193TGxnbzVMbkRsVTJCOXcwbTBZcTJQdzAzSmdCQ1IzbFhLaHYwc1pCR25TTFY0Yi1BTmJreDJHR010NW1fT3NSX2N5UXpCRjlqM2VhNmRsTk1ycG5FcUg4ZUxXUDl6NTJLVmMwR2thMmdMQnFjVjA5N2txZFI0ZHptaXNFRjQxb3lsWk5JYURrdzFtclROVl9rX0lNU3g0cld4QURkYVRfMWxhSzBUd2RrZjhOZFd6V05HLVhB?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-7c0b7d8d8eb91fa87029",
-      "observed_at_utc": "2026-10-21T06:04:00Z",
-      "headline": "UK inflation jumps to highest in nearly a year at 3.5%",
-      "summary": "Reuters riporta: UK inflation jumps to highest in nearly a year at 3.5%. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [
-        "GBP"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMinwFBVV95cUxNOURnbmVSYmVXLUUxTlpGWGFUbXplMlVvWTlhVlpKTkZKb1E1Q0pSTGthMmVLRkt0VTc0ZHllSnd0X2J6c1M2ajRXWGEzbUgyUHhLWlF5RVk2QktQWHU5eXFKQmxzVWdnQ0N3RkhXZXlKemNkZ3hWd2JIR1N1SW5ZeW4wWjAyOVBNLXVDWklIZEZaeHVHM1lzOUNHN2x1aEk?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
