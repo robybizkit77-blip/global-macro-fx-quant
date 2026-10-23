@@ -66,7 +66,7 @@ def main():
         'runner_access':'RBNZ B2 source blocked in GitHub runner; manual two-review evidence required, no secondary fallback permitted',
     }
     if state!='NO_CHANGE': failures.append('NZD')
-    chf=reg['currencies']['CHF']; out['currencies']['CHF']={'state':'WITHHOLD','coverage_mode':'SOURCE_EXPORT_BLOCKED','authority':chf['authority'],'last_validated_snapshot':chf['last_validated_snapshot'],'current':{'date':rates['CHF']['date'],'2Y':rates['CHF']['2Y'],'10Y':rates['CHF']['10Y']},'reason':chf['reason']}
+    chf=reg['currencies']['CHF']; out['currencies']['CHF']={'state':'WITHHOLD','coverage_mode':'OFFICIAL_CUBE_LAST_PUBLISHED_DATE_NO_ADVANCE','authority':chf['authority'],'last_validated_snapshot':chf['last_validated_snapshot'],'current':{'date':rates['CHF']['date'],'2Y':rates['CHF']['2Y'],'10Y':rates['CHF']['10Y']},'reason':chf['reason']}
     states={c:v['state'] for c,v in out['currencies'].items()}; out['summary']={'live_fetch_count':sum(v['coverage_mode']=='LIVE_FETCH' for v in out['currencies'].values()),'cadence_or_lag_assertion_count':sum(v['coverage_mode'] in {'OFFICIAL_CADENCE_ASSERTION','OFFICIAL_SOURCE_LAG_ASSERTION'} for v in out['currencies'].values()),'withheld_count':sum(v['state']=='WITHHOLD' for v in out['currencies'].values()),'updates_available':[c for c,s in states.items() if s=='UPDATE_AVAILABLE'],'no_change':[c for c,s in states.items() if s=='NO_CHANGE'],'withheld':[c for c,s in states.items() if s=='WITHHOLD'],'failures':failures}
     if failures: out['status']='FAIL'
     OUT.write_text(json.dumps(out,indent=2,ensure_ascii=False)+'\n'); print(json.dumps(out,indent=2,ensure_ascii=False)); return 2 if failures else 0
