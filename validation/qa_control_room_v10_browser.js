@@ -57,8 +57,15 @@ function expectedReactionFromMetrics(row){
  if(vals.length<2)return 'WITHHELD';
  const bp=Number.parseFloat(vals[0]),fx=Number.parseFloat(vals[1]);
  if(!Number.isFinite(bp)||!Number.isFinite(fx))return 'WITHHELD';
+ const directional=Math.sign(bp)===Math.sign(fx)?'COERENTE':'DIVERGENTE';
+ // Display rounds 2Y to 0.1bp and FX to 0.01%. Near either
+ // cut-off raw values cannot be reconstructed from rounded labels.
+ if(Math.abs(Math.abs(bp)-2)<=0.05000001||
+    Math.abs(Math.abs(fx)-0.05)<=0.00500001)
+   return row?.state==='NON_CONCLUSIVO'||row?.state===directional?
+     row.state:'INVALID_ROUNDED_THRESHOLD_VERDICT';
  if(Math.abs(bp)<2||Math.abs(fx)<0.05)return 'NON_CONCLUSIVO';
- return Math.sign(bp)===Math.sign(fx)?'COERENTE':'DIVERGENTE';
+ return directional;
 }
 (async()=>{
  const browser=await chromium.launch({headless:true});
@@ -1585,9 +1592,9 @@ function expectedReactionFromMetrics(row){
      !deltaEURUSD.text?.includes('diagnosi qualitativa'))
     throw Error(label+' EURUSD history-derived 2Y changes vs model not separated '+JSON.stringify(deltaEURUSD));
 
-  // Same-day 2Y country spread (EUR - USD) widened +6.7 bp while
-  // ECB EUR/USD fixing rose between EXACTLY 15 and 16 Oct: indicative
-  // directional consistency, not event-study causal proof.
+  // Compare the actual common-date 2Y spreads and ECB EUR/USD fixing.
+  // Rounded display values cannot resolve a borderline raw threshold;
+  // this remains descriptive consistency, not event-study causality.
   const eurReaction=await page.evaluate(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument;
     const c=d?.getElementById('gmfq-pair-market-reaction');
