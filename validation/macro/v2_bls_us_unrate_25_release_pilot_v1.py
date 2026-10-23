@@ -26,6 +26,24 @@ FIRST = "2023-09"
 LAST = "2025-09"
 EXACT_ASOF = "2025-11-20T13:30:00+00:00"
 
+# Independently transcribed FIRST-release headline checks (period order is fixed).
+# This protects every month, not just the five earlier research anchors.
+PINNED_FIRST_RELEASES = (
+    ("2023-10-06", 3.8), ("2023-11-03", 3.9),
+    ("2023-12-08", 3.7), ("2024-01-05", 3.7),
+    ("2024-02-02", 3.7), ("2024-03-08", 3.9),
+    ("2024-04-05", 3.8), ("2024-05-03", 3.9),
+    ("2024-06-07", 4.0), ("2024-07-05", 4.1),
+    ("2024-08-02", 4.3), ("2024-09-06", 4.2),
+    ("2024-10-04", 4.1), ("2024-11-01", 4.1),
+    ("2024-12-06", 4.2), ("2025-01-10", 4.1),
+    ("2025-02-07", 4.0), ("2025-03-07", 4.1),
+    ("2025-04-04", 4.2), ("2025-05-02", 4.2),
+    ("2025-06-06", 4.2), ("2025-07-03", 4.1),
+    ("2025-08-01", 4.2), ("2025-09-05", 4.3),
+    ("2025-11-20", 4.4),
+)
+
 
 def read_fixture() -> dict:
     return json.loads(PATH.read_text(encoding="utf-8"))
@@ -94,6 +112,8 @@ def validate_manifest(m: dict) -> None:
         require(clock.date() >= datetime.fromisoformat(period + "-01").date()
                 and clock <= timestamp(m["as_of"]),
                 "BLS release chronology / cutoff")
+        require((local.date().isoformat(), row["value"]) == PINNED_FIRST_RELEASES[i],
+                "attested original BLS date/value has drifted")
         d = local.strftime("%m%d%Y")
         url = row.get("evidence_ref")
         require(isinstance(url, str) and
