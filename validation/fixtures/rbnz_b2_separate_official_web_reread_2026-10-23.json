@@ -1,0 +1,78 @@
+{
+  "schema": "GMFQ_RBNZ_B2_SEPARATE_OFFICIAL_WEB_REREAD_V1",
+  "reviewed_date": "2026-10-23",
+  "authority": "Reserve Bank of New Zealand",
+  "source_url": "https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates",
+  "retrieval_path": "https://www.rbnz.govt.nz/en/statistics/series/exchange-and-interest-rates/wholesale-interest-rates",
+  "source_page_release": "2026-10-23",
+  "source_evidence": "Separate direct public webpage retrieval with visible dated B2 table; does not independently download the B2 XLSX and is not a separate human institution's review.",
+  "retrieval_method": "SEPARATE_OFFICIAL_WEB_PAGE_TEXT_INSPECTION",
+  "evidence_reference": "https://www.rbnz.govt.nz/en/statistics/series/exchange-and-interest-rates/wholesale-interest-rates",
+  "column_group": "Secondary market government bond closing yields (%pa)",
+  "column_locations": {
+    "date": 0,
+    "two_year": 8,
+    "ten_year": 10
+  },
+  "basis": "Benchmark 2-year and 10-year government bond closing yields, not swap rates",
+  "publisher": "RBNZ sourced from NZFMA, previous business-day 5:10pm NZ closing yields",
+  "status": "SECOND_OFFICIAL_WEB_READ_MATCHES_FIRST_REVIEW__MANUAL_APPROVAL_PENDING",
+  "independent_xlsx_review_completed": false,
+  "independent_human_reviewer_confirmed": false,
+  "manual_approval_reference": null,
+  "live_data_promotion_allowed": false,
+  "automatic_promotion_allowed": false,
+  "source_rows": [
+    {
+      "date": "2026-10-09",
+      "2Y": 3.83,
+      "10Y": 5.06
+    },
+    {
+      "date": "2026-10-12",
+      "2Y": 3.82,
+      "10Y": 5.02
+    },
+    {
+      "date": "2026-10-13",
+      "2Y": 3.8,
+      "10Y": 4.98
+    },
+    {
+      "date": "2026-10-14",
+      "2Y": 3.83,
+      "10Y": 4.99
+    },
+    {
+      "date": "2026-10-15",
+      "2Y": 3.81,
+      "10Y": 4.94
+    },
+    {
+      "date": "2026-10-16",
+      "2Y": 3.89,
+      "10Y": 5
+    },
+    {
+      "date": "2026-10-19",
+      "2Y": 3.91,
+      "10Y": 5.01
+    },
+    {
+      "date": "2026-10-20",
+      "2Y": 3.94,
+      "10Y": 5.06
+    },
+    {
+      "date": "2026-10-21",
+      "2Y": 3.93,
+      "10Y": 5.03
+    },
+    {
+      "date": "2026-10-22",
+      "2Y": 3.91,
+      "10Y": 4.98
+    }
+  ],
+  "note": "Separately retrieved published HTML B2 table as of Oct 23. Exact match is a second retrieval, NOT independent XLSX reconciliation or an externally approved human review. Explicit manual source approval is required to update published NZD."
+}
