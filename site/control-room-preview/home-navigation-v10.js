@@ -3133,6 +3133,23 @@ function crossRiskBrent(res){
  return {state:age<=3?'SECONDARY_RECENT':'SECONDARY_HISTORICAL',
    value:b.value,asof:b.proxy_as_of,delta:b.change_1d_pct,week:b.change_1w_pct};
 }
+/* Cross-Asset research coverage: count actual dated observable instruments,
+   not missing LBMA/Brent spots as if they were zero, and never imply synchronized
+   or homogeneous market closes. */
+function crossStudyCoverage(rows){
+ const codes=['GOLD','VIX','WTI','BRENT'];
+ const allowed=['OFFICIAL_RECENT','OFFICIAL_HISTORICAL','SECONDARY_RECENT','SECONDARY_HISTORICAL'];
+ const checked=codes.map(code=>{
+  const x=rows?.[code],valid=allowed.includes(x?.state)&&num(x?.value)!==null&&
+   x.value>0&&Number.isInteger(romeCalendarAge(x.asof))&&romeCalendarAge(x.asof)>=0;
+  return {code,state:valid?x.state:'UNAVAILABLE'};
+ });
+ return {total:4,covered:checked.filter(x=>x.state!=='UNAVAILABLE').length,
+  official:checked.filter(x=>x.state.startsWith('OFFICIAL_')).length,
+  secondary:checked.filter(x=>x.state.startsWith('SECONDARY_')).length,
+  historical:checked.filter(x=>x.state.endsWith('_HISTORICAL')).length,
+  checked};
+}
 function crossRiskCard(code,row,description,source,secondary){
  const current=['OFFICIAL_RECENT','SECONDARY_RECENT'].includes(row.state);
  const unavailable=row.state==='WITHHELD';
@@ -3171,6 +3188,8 @@ async function mountCrossRisk(doc){
  style.textContent=
   '#gmfq-cross-risk-v10{margin:0 0 14px;min-width:0}'+
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-intro{padding:12px 16px 5px;margin:0;font:600 13px/1.55 Arial,sans-serif;color:#e3edf4;overflow-wrap:anywhere}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-coverage{padding:0 16px;margin:7px 0 5px;font:600 12px/1.55 Arial,sans-serif;color:#e3cb94;overflow-wrap:anywhere}'+
+  '@media(max-width:600px){#gmfq-cross-risk-v10 .gmfq-cross-coverage{padding:0 12px;font-size:11px}}'+
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-evidence{display:flex;flex-wrap:wrap;gap:4px 15px;padding:6px 16px 12px;color:#aac0cd;font:11px/1.55 Arial,sans-serif;min-width:0}'+
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-evidence span{min-width:0;overflow-wrap:anywhere}'+
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-evidence .gmfq-risk-sync{flex-basis:100%;color:#91a9b9;font-size:10px}'+
@@ -3212,12 +3231,25 @@ async function mountCrossRisk(doc){
  }catch(e){console.warn('[GMFQ Cross Risk WITHHELD]',String(e))}
  const v=crossRiskObservation(d?.risk?.VIX,'VIX'),
    w=crossRiskObservation(d?.risk?.WTI,'WTI'),b=crossRiskBrent(res);
+ const gold=res?.lanes?.['GOLD.market_proxy'];
+ const goldOk=validCrossGold(res,gold),goldAge=goldOk?crossGoldAge(gold.proxy_as_of):null;
+ const goldRow={state:!goldOk?'UNAVAILABLE':goldAge<=3?'SECONDARY_RECENT':'SECONDARY_HISTORICAL',
+   value:goldOk?gold.value:null,asof:goldOk?gold.proxy_as_of:null};
+ const coverage=crossStudyCoverage({GOLD:goldRow,VIX:v,WTI:w,BRENT:b});
  const states=[v.state,w.state,b.state];
  const global=states.every(x=>x==='WITHHELD')?'WITHHELD':
    states.some(x=>x==='WITHHELD'||x.endsWith('HISTORICAL'))?'PARTIAL':'AVAILABLE';
  panel.dataset.sourceStatus=global;
+ panel.dataset.studyReferences=String(coverage.covered);
+ panel.dataset.studyOfficial=String(coverage.official);
+ panel.dataset.studySecondary=String(coverage.secondary);
+ panel.dataset.studyEffect='NONE';
  panel.innerHTML='<h2 class="desk-panel-title">Volatilità e petrolio · stato delle fonti</h2>'+
   '<p class="gmfq-cross-risk-intro">VIX misura volatilità implicita, WTI è spot EIA, Brent è futures: strumenti diversi, non un unico segnale risk-on/risk-off.</p>'+
+  '<p class="gmfq-cross-coverage" data-study-coverage="'+coverage.covered+'">'+coverage.covered+'/4 riferimenti numerici per lo studio · '+
+  coverage.official+' ufficiali (VIX/WTI) · '+coverage.secondary+' futures indicativi (Gold/Brent)'+
+  (coverage.historical?' · '+coverage.historical+' osservazioni storiche':' · riferimenti recenti')+
+  '. Non equivalenti a quotazioni sincronizzate.</p>'+
   '<div class="gmfq-cross-risk-evidence" aria-label="Date e provenienza VIX WTI Brent">'+
   '<span data-source="vix">VIX Cboe '+htmlEscape(v.asof)+' · '+(v.state==='OFFICIAL_RECENT'?'ultimo dato recente':'dato storico/non verificato')+'</span>'+
   '<span data-source="wti">WTI EIA '+htmlEscape(w.asof)+' · '+(w.state==='OFFICIAL_RECENT'?'ultimo dato recente':'non corrente/non verificato')+'</span>'+
