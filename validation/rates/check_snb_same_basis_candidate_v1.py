@@ -41,7 +41,8 @@ def parse_candidate(payload:object, *, certified_date:str, certified_2y:float,
             raise ValueError("SNB tenor unit not independently verified as percent")
         frequency=str(meta.get("frequency") or "")
         if frequency not in ("P1D","P1BD"):
-            raise ValueError("SNB tenor not a daily official spot series")
+            raise ValueError("SNB official reported frequency " + repr(frequency) +
+                             " for " + str(key) + "; source cadence requires investigation")
         data=entry.get("values")
         if not isinstance(data,list) or not data:
             raise ValueError("SNB official tenor returned metadata without observations")
