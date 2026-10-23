@@ -1158,10 +1158,26 @@ async function getState(page){
            closed:detail?.open===false,
            hidden:![...panel.querySelectorAll('.gmfq-macro-observation')].some(x=>x.getClientRects().length>0),
            count:panel.querySelectorAll('.gmfq-macro-observation').length,
+           observedCount:panel.dataset.observedStudyCount,
+           overviewCount:panel.querySelector('#gmfq-macro-g8-study')?.dataset.observationCount,
+           overviewRows:[...panel.querySelectorAll('#gmfq-macro-g8-study [data-g8-ccy]')].map(x=>({
+             ccy:x.dataset.g8Ccy,inflation:x.dataset.inflationStatus,
+             labour:x.dataset.labourStatus,visible:!!x.getClientRects().length
+           })),
+           noEffect:panel.querySelector('#gmfq-macro-g8-study')?.dataset.coreEffect==='NONE'&&
+             panel.querySelector('#gmfq-macro-g8-study')?.dataset.biasEffect==='NONE',
            width:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
        });
-       if(!macroFirst.baseline||!macroFirst.preview?.includes('Inflazione: periodo ')||
-          !macroFirst.preview.includes('Lavoro: periodo ')||
+       const macroNew=process.env.GITHUB_EVENT_NAME!=='pull_request';
+       const studyValid=macroNew?
+         macroFirst.preview?.includes('Inflazione: ')&&macroFirst.preview.includes('Disoccupazione: ')&&
+         macroFirst.observedCount==='16'&&macroFirst.overviewCount==='16'&&
+         macroFirst.overviewRows.length===8&&macroFirst.overviewRows.every(x=>
+           ['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'].includes(x.ccy)&&
+           x.inflation==='OBSERVED'&&x.labour==='OBSERVED'&&x.visible)&&macroFirst.noEffect:
+         macroFirst.preview?.includes('Inflazione: periodo ')&&
+         macroFirst.preview.includes('Lavoro: periodo ');
+       if(!macroFirst.baseline||!studyValid||
           !macroFirst.priority?.startsWith('Gli score sono uno snapshot del modello')||
            !macroFirst.priorityFirst||
            !macroFirst.closed||!macroFirst.hidden||macroFirst.count!==2||
@@ -1274,7 +1290,9 @@ async function getState(page){
            panelWidth,panelClient,nativeWidth,
            width:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
        });
-       const newValute=process.env.GITHUB_EVENT_NAME!=='pull_request'&&navigationVersion==='valute-source-focus-20261022';
+       const newValute=process.env.GITHUB_EVENT_NAME!=='pull_request'&&
+         ['FX_WITHHELD','MACRO_WITHHELD','MACRO_HISTORICAL','DXY_WITHHELD','SEPARATE_SOURCES'].includes(valuteFirst.state)&&
+         valuteFirst.disclosure===true;
        const validLead=newValute?
          (['FX_WITHHELD','MACRO_WITHHELD','MACRO_HISTORICAL','DXY_WITHHELD','SEPARATE_SOURCES'].includes(valuteFirst.state)&&
           (valuteFirst.state==='MACRO_HISTORICAL'?valuteFirst.lead?.includes('tesi Macro ancora alla baseline'):
