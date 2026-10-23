@@ -109,6 +109,7 @@ jobs:
           echo "Resolved phase: $phase"
 
       - name: Run serialized refresh sequence
+        id: refresh
         if: ${{ steps.phase.outputs.phase != 'skip' }}
         shell: bash
         env:
@@ -233,19 +234,22 @@ jobs:
       # Re-check the LATEST main commit after the dispatched child workflows
       # have updated it; the orchestration runner itself did not mutate data.
       - name: Checkout refreshed production sources for 08:00 audit
-        if: ${{ steps.phase.outputs.phase == 'prebrief' || steps.phase.outputs.phase == 'premorning' }}
+        if: ${{ always() && (steps.phase.outputs.phase == 'prebrief' || steps.phase.outputs.phase == 'premorning') }}
         uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 1
 
       - name: Audit true source dates for the morning study
-        if: ${{ steps.phase.outputs.phase == 'prebrief' || steps.phase.outputs.phase == 'premorning' }}
+        if: ${{ always() && (steps.phase.outputs.phase == 'prebrief' || steps.phase.outputs.phase == 'premorning') }}
         shell: bash
+        env:
+          REFRESH_OUTCOME: ${{ steps.refresh.outcome }}
         run: |
           set -euo pipefail
           python3 validation/orchestration/test_check_morning_readiness_v1.py
           python3 validation/orchestration/check_morning_readiness_v1.py \
+            --pipeline-outcome "$REFRESH_OUTCOME" \
             --output /tmp/morning-readiness-v1.json > /tmp/morning-readiness-v1.log
           python3 - <<'PY'
           import json,os
@@ -255,6 +259,7 @@ jobs:
           lines=[
             '## Control Room · 08:00 morning source readiness',
             '- Status: **'+d['operational_state']+'**',
+            '- Refresh pipeline outcome: **'+d['refresh_pipeline_outcome']+'**',
             '- Expected last weekday session: '+d['expected_previous_weekday'],
             '- Checked at Europe/Rome: '+d['checked_at_rome'],
             '- Daily source exceptions: '+(', '.join(problems) if problems else 'none'),
