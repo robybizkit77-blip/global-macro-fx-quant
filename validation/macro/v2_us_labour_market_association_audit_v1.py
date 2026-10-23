@@ -122,10 +122,16 @@ def inventory(*, rates: dict, fx: dict, ois: list[dict],
                 "future-dated contract in history")
     for row in ois:
         require(row.get("schema")=="GMFQ_OIS_G8_SNAPSHOT_V1" and
-                row.get("backtest_eligible_as_official") is False and
+                row.get("currency") in
+                {"USD","EUR","GBP","JPY","CHF","CAD","AUD","NZD"} and
                 (row.get("source_as_of") is None or
                  parse_day(row["source_as_of"])<=as_of),
-                "OIS operational snapshot cannot be used as certified backtest")
+                "OIS history source/date contract mismatch")
+        # Some non-USD G8 contracts are already audited and backtest-eligible.
+        # This audit concerns USD only; never downgrade other source families.
+        if row["currency"]=="USD":
+            require(row.get("backtest_eligible_as_official") is False,
+                    "USD OIS study must not promote estimated snapshots as official")
     first_contract=min((parse_day(x["observation_date"]) for x in contracts),
                        default=None)
     first_ois=min((parse_day(x["source_as_of"]) for x in ois
