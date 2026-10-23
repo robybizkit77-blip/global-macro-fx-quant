@@ -9,11 +9,15 @@ on:
       - '.github/workflows/rates-persistent-daily-v1.yml'
       - 'validation/rates_schedule_gate_v2.py'
       - 'validation/test_rates_schedule_gate_v2.py'
+      - 'validation/build_rates_audit_metadata.py'
+      - 'validation/test_rates_source_age_metadata_v1.py'
   pull_request:
     paths:
       - '.github/workflows/rates-persistent-daily-v1.yml'
       - 'validation/rates_schedule_gate_v2.py'
       - 'validation/test_rates_schedule_gate_v2.py'
+      - 'validation/build_rates_audit_metadata.py'
+      - 'validation/test_rates_source_age_metadata_v1.py'
   workflow_dispatch:
   schedule:
     # Europe/Rome target windows: 07:20-07:39, 08:00-08:19, 09:00-09:19 on working days.
@@ -43,6 +47,8 @@ jobs:
 
       - name: Test delayed DST-safe Rates schedule gate
         run: python3 validation/test_rates_schedule_gate_v2.py
+      - name: Test source-age status labels for blocked/manual Rates
+        run: python3 validation/test_rates_source_age_metadata_v1.py
 
       - name: Resolve Rates schedule from UTC cron and Rome offset
         id: gate
