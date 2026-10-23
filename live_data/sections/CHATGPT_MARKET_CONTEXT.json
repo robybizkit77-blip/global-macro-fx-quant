@@ -1,7 +1,7 @@
 {
   "schema": "GMFQ_CHATGPT_MARKET_CONTEXT_V1",
-  "generated_at_utc": "2026-10-23T21:32:01Z",
-  "evaluation_date_europe_rome": "2026-10-23",
+  "generated_at_utc": "2026-10-23T22:31:28Z",
+  "evaluation_date_europe_rome": "2026-10-24",
   "reference_only": true,
   "policy": {
     "fail_closed": true,
@@ -182,7 +182,7 @@
       "CHF": {
         "state": "STALE",
         "as_of": "2026-09-30",
-        "reason": "Age 23d exceeds the 3d alert limit."
+        "reason": "Age 24d exceeds the 3d alert limit."
       },
       "CAD": {
         "state": "AVAILABLE_CERTIFIED",
@@ -207,95 +207,95 @@
       "NZD": {
         "state": "STALE",
         "as_of": "2026-10-16",
-        "reason": "Age 7d exceeds the 3d alert limit."
+        "reason": "Age 8d exceeds the 3d alert limit."
       }
     },
     "cot_weekly": {
       "state": "AVAILABLE_CERTIFIED",
-      "as_of": "2026-10-13",
+      "as_of": "2026-10-20",
       "source": "CFTC Legacy Commitments of Traders (weekly, Tuesday position date)",
       "percentile_rule": "Display rounded integer; classify on rounded percentile: >=80 extreme long, <=20 extreme short.",
       "net_oi_rule": "Display one decimal; alert inclusive if abs(displayed Net/OI)>=30.0%",
       "currencies": {
         "USD": {
-          "net_noncommercial": 12919,
-          "delta_net_1w": 908,
-          "long": 32596,
-          "short": 19677,
-          "net_oi_pct": 24.9,
-          "net_oi_alert_abs_ge_30pct": false,
-          "percentile_104w_rounded": 80,
+          "net_noncommercial": 15044,
+          "delta_net_1w": 2125,
+          "long": 32422,
+          "short": 17378,
+          "net_oi_pct": 30.5,
+          "net_oi_alert_abs_ge_30pct": true,
+          "percentile_104w_rounded": 88,
           "signal": "EXTREME_LONG"
         },
         "EUR": {
-          "net_noncommercial": -137573,
-          "delta_net_1w": -38241,
-          "long": 222929,
-          "short": 360502,
-          "net_oi_pct": -15.7,
+          "net_noncommercial": -134524,
+          "delta_net_1w": 3049,
+          "long": 226421,
+          "short": 360945,
+          "net_oi_pct": -15.3,
           "net_oi_alert_abs_ge_30pct": false,
-          "percentile_104w_rounded": 1,
+          "percentile_104w_rounded": 2,
           "signal": "EXTREME_SHORT"
         },
         "GBP": {
-          "net_noncommercial": -106964,
-          "delta_net_1w": -9353,
-          "long": 44185,
-          "short": 151149,
-          "net_oi_pct": -39.8,
+          "net_noncommercial": -80420,
+          "delta_net_1w": 26544,
+          "long": 54228,
+          "short": 134648,
+          "net_oi_pct": -31.7,
           "net_oi_alert_abs_ge_30pct": true,
-          "percentile_104w_rounded": 1,
+          "percentile_104w_rounded": 11,
           "signal": "EXTREME_SHORT"
         },
         "JPY": {
-          "net_noncommercial": 50207,
-          "delta_net_1w": -12118,
-          "long": 191256,
-          "short": 141049,
-          "net_oi_pct": 13.4,
+          "net_noncommercial": 69878,
+          "delta_net_1w": 19671,
+          "long": 200186,
+          "short": 130308,
+          "net_oi_pct": 18.4,
           "net_oi_alert_abs_ge_30pct": false,
-          "percentile_104w_rounded": 61,
+          "percentile_104w_rounded": 68,
           "signal": "NEUTRAL"
         },
         "CHF": {
-          "net_noncommercial": -22078,
-          "delta_net_1w": 1662,
-          "long": 27447,
-          "short": 49525,
-          "net_oi_pct": -16.1,
+          "net_noncommercial": -18150,
+          "delta_net_1w": 3928,
+          "long": 29938,
+          "short": 48088,
+          "net_oi_pct": -13.3,
           "net_oi_alert_abs_ge_30pct": false,
-          "percentile_104w_rounded": 95,
+          "percentile_104w_rounded": 100,
           "signal": "EXTREME_LONG"
         },
         "CAD": {
-          "net_noncommercial": -94765,
-          "delta_net_1w": -4602,
-          "long": 89986,
-          "short": 184751,
-          "net_oi_pct": -25.1,
+          "net_noncommercial": -74709,
+          "delta_net_1w": 20056,
+          "long": 101653,
+          "short": 176362,
+          "net_oi_pct": -19.5,
           "net_oi_alert_abs_ge_30pct": false,
-          "percentile_104w_rounded": 56,
+          "percentile_104w_rounded": 67,
           "signal": "NEUTRAL"
         },
         "AUD": {
-          "net_noncommercial": -117299,
-          "delta_net_1w": -18711,
-          "long": 98389,
-          "short": 215688,
-          "net_oi_pct": -34.6,
+          "net_noncommercial": -127292,
+          "delta_net_1w": -9993,
+          "long": 98419,
+          "short": 225711,
+          "net_oi_pct": -38.2,
           "net_oi_alert_abs_ge_30pct": true,
           "percentile_104w_rounded": 1,
           "signal": "EXTREME_SHORT"
         },
         "NZD": {
-          "net_noncommercial": -47001,
-          "delta_net_1w": -17655,
-          "long": 24619,
-          "short": 71620,
-          "net_oi_pct": -37.6,
+          "net_noncommercial": -58149,
+          "delta_net_1w": -11148,
+          "long": 21725,
+          "short": 79874,
+          "net_oi_pct": -44.2,
           "net_oi_alert_abs_ge_30pct": true,
-          "percentile_104w_rounded": 27,
-          "signal": "NEUTRAL"
+          "percentile_104w_rounded": 4,
+          "signal": "EXTREME_SHORT"
         }
       }
     },
