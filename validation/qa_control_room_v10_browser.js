@@ -131,6 +131,46 @@ function expectedReactionFromMetrics(row){
       documentWidth:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth
     };
   });
+  const morning=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page').contentDocument,
+      p=d.getElementById('gmfq-morning-study-readiness'),
+      rail=d.getElementById('gmfq-home-reading-path');
+    return {present:!!p,state:p?.dataset.state,verified:Number(p?.dataset.verified),
+      prior:p?.dataset.priorSession,sourceEffect:p?.dataset.sourceEffect,
+      tags:['fx','pairs','vix','news','calendar'].map(x=>p?.dataset[x]),
+      rates:p?.dataset.lagRates,ois:p?.dataset.withheldOis,
+      text:p?.textContent,insideOriginalRail:!!rail?.contains(p),
+      clipped:d.documentElement.scrollWidth>d.documentElement.clientWidth+16};
+  });
+  const previousWeekday=(()=>{
+    const x=new Date(romeTodayIso()+'T00:00:00Z');
+    do{x.setUTCDate(x.getUTCDate()-1)}while([0,6].includes(x.getUTCDay()));
+    return x.toISOString().slice(0,10);
+  })();
+  const newsSnapshot=JSON.parse(fs.readFileSync(path.join(DATA,'NEWS_PULSE_OPERATIONAL.json'),'utf8'));
+  const calendarSnapshot=JSON.parse(fs.readFileSync(path.join(DATA,'CALENDAR_OPERATIONAL_VIEW.json'),'utf8'));
+  const toRomeDate=stamp=>new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Rome',
+      year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(stamp));
+  const g8History=JSON.parse(fs.readFileSync(path.join(DATA,'ECB_G8_PRICE_HISTORY.json'),'utf8'));
+  const baselineVix=JSON.parse(fs.readFileSync(path.join(DATA,'D.json'),'utf8')).risk.VIX;
+  const expectedDaily=[
+    g8History.last_as_of>=previousWeekday&&g8History.last_as_of<=romeTodayIso(),
+    setupFeed.price_asof===g8History.last_as_of&&setupFeed.price_audit?.status==='PASS'&&
+      setupFeed.price_asof>=previousWeekday&&setupFeed.price_asof<=romeTodayIso(),
+    baselineVix.last_date>=previousWeekday&&baselineVix.last_date<=romeTodayIso()&&
+      baselineVix.dates.at(-1)===baselineVix.last_date,
+    toRomeDate(newsSnapshot.generated_at_utc)===romeTodayIso(),
+    toRomeDate(calendarSnapshot.generated_at_utc)===romeTodayIso(),
+  ];
+  if(!morning.present||!morning.insideOriginalRail||morning.clipped||
+     morning.sourceEffect!=='NONE'||morning.prior!==previousWeekday||
+     morning.verified!==expectedDaily.filter(Boolean).length||
+     morning.tags.some((v,i)=>v!==String(expectedDaily[i]))||
+     morning.state!==(expectedDaily.every(Boolean)?'DAILY_VERIFIED_WITH_GAPS':'DAILY_INCOMPLETE')||
+     !morning.text.includes('Macro '+setupFeed.macro_baseline_asof+' (baseline storica)')||
+     !morning.text.includes('OIS ufficiali')||
+     !homeAudit.source?.includes('Studio delle 08:00 · ultime fonti giornaliere'))
+    throw Error(label+' morning 08:00 study source status mismatches canonical feeds '+JSON.stringify({morning,expectedDaily}));
   if(!homeAudit.source?.includes('Macro/Tassi · baseline strutturale')||
      !homeAudit.source?.includes(setupFeed.macro_baseline_asof)||
      !homeAudit.stamp?.includes('Macro stor./n.v.'))
