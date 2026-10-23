@@ -23,9 +23,9 @@ assert set(out['expected_rates'])=={'USD','EUR','GBP','JPY','CHF','CAD','AUD','N
 assert out['audit_date']=='2026-10-23'
 assert out['rates']['CHF']['current_as_of']=='2026-09-30'
 assert out['rates']['CHF']['age_calendar_days']==23
-assert out['rates']['CHF']['status']=='VALIDATED_HISTORICAL_SOURCE_BLOCKED'
-assert out['rates']['CHF']['action']=='SOURCE_EXPORT_RECOVERY_REQUIRED'
-assert out['rates']['CHF']['source_access']=='SNB_EXPORT_BLOCKED'
+assert out['rates']['CHF']['status']=='VALIDATED_HISTORICAL_OFFICIAL_SNAPSHOT'
+assert out['rates']['CHF']['action']=='CHECK_NEXT_SOURCE_PUBLICATION'
+assert out['rates']['CHF']['source_access']=='SNB_OFFICIAL_CUBE_REACHABLE_SNAPSHOT_VERIFIED'
 assert out['rates']['NZD']['current_as_of']=='2026-10-16'
 assert out['rates']['NZD']['age_calendar_days']==7
 assert out['rates']['NZD']['status']=='MANUAL_REVIEWED_LAGGING'
@@ -45,12 +45,12 @@ z=build(new,'2026-10-23')
 assert z['rates']['NZD']['status']=='MANUAL_REVIEWED_RECENT'
 assert z['rates']['NZD']['source_access']=='RBNZ_B2_MANUAL_DOUBLE_REVIEW'
 assert z['rates']['NZD']['action']=='MANUAL_SOURCE_VERIFIED'
-# SNB source block persists; moving a date without fixing the adapter
-# cannot magically make the source LIVE_FETCH.
+# Verified SNB source access is not permission to auto-promote yields:
+# changing the date without validating the actual next published pair is insufficient.
 new['CHF']['date']='2026-10-22'
 z=build(new,'2026-10-23')
-assert z['rates']['CHF']['status']=='VALIDATED_HISTORICAL_SOURCE_BLOCKED'
-assert z['rates']['CHF']['action']=='SOURCE_EXPORT_RECOVERY_REQUIRED'
+assert z['rates']['CHF']['status']=='VALIDATED_HISTORICAL_OFFICIAL_SNAPSHOT'
+assert z['rates']['CHF']['action']=='CHECK_NEXT_SOURCE_PUBLICATION'
 assert source_status('EUR','2026-10-01','2026-10-23')['status']=='OFFICIAL_OBSERVATION_LAGGING'
 assert source_status('AUD','2026-10-01','2026-10-23')['status']=='SOURCE_CADENCE_LAGGING'
 for fn in (lambda: build(src,'2026-10-01'),lambda: build({},'2026-10-23')):
