@@ -24,7 +24,7 @@ def main():
         ("outdated status",lambda v,r,o,p:r["currencies"]["EUR"].update(status="GREEN_ESTIMATED")),
         ("outdated date",lambda v,r,o,p:r["currencies"]["USD"].update(operational_as_of="2026-10-01")),
         ("wrong source URL",lambda v,r,o,p:r["currencies"]["NZD"].update(source_url="https://invalid.example")),
-        ("wrong count",lambda v,r,o,p:r.update(blocked_currency_count=3)),
+        ("wrong count",lambda v,r,o,p:r.update(blocked_currency_count=r["blocked_currency_count"]+1)),
         ("promoted backtest",lambda v,r,o,p:r["currencies"]["USD"].update(backtest_eligible_as_official=True)),
         ("promoted price",lambda v,r,o,p:r["currencies"]["EUR"].update(usable_for_policy_pricing=True)),
         ("embedded rate",lambda v,r,o,p:r["currencies"]["CHF"].update(price_or_curve_embedded=True)),
