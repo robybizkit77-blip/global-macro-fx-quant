@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_CHATGPT_MARKET_CONTEXT_V1",
-  "generated_at_utc": "2026-10-23T03:33:42Z",
+  "generated_at_utc": "2026-10-23T04:33:02Z",
   "evaluation_date_europe_rome": "2026-10-23",
   "reference_only": true,
   "policy": {
@@ -15,43 +15,43 @@
     "ois_official": {
       "USD": {
         "state": "UNAVAILABLE",
-        "as_of": "2026-10-21",
+        "as_of": "2026-10-22",
         "reason": "Only GBP, JPY, CAD and AUD have the certified OIS contract; estimated/proxy OIS is informational only, never alert-certified."
       },
       "EUR": {
         "state": "UNAVAILABLE",
-        "as_of": "2026-10-20",
+        "as_of": "2026-10-21",
         "reason": "Only GBP, JPY, CAD and AUD have the certified OIS contract; estimated/proxy OIS is informational only, never alert-certified."
       },
       "GBP": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-10-20",
+        "as_of": "2026-10-21",
         "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
         "policy_rate_pct": 3.75,
         "horizons": {
           "3m": {
-            "rate_pct": 4.1586,
-            "delta_vs_policy_bp": 40.9,
-            "change_1d_bp": 1.7,
-            "change_1w_bp": 2.6
+            "rate_pct": 4.1415,
+            "delta_vs_policy_bp": 39.1,
+            "change_1d_bp": -1.7,
+            "change_1w_bp": 1.2
           },
           "6m": {
-            "rate_pct": 4.5217,
-            "delta_vs_policy_bp": 77.2,
-            "change_1d_bp": 3.4,
-            "change_1w_bp": 4.3
+            "rate_pct": 4.4857,
+            "delta_vs_policy_bp": 73.6,
+            "change_1d_bp": -3.6,
+            "change_1w_bp": 2.3
           },
           "12m": {
-            "rate_pct": 4.9384,
-            "delta_vs_policy_bp": 118.8,
-            "change_1d_bp": 6.7,
-            "change_1w_bp": 5.6
+            "rate_pct": 4.8868,
+            "delta_vs_policy_bp": 113.7,
+            "change_1d_bp": -5.2,
+            "change_1w_bp": 3.9
           }
         }
       },
       "JPY": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-10-21",
+        "as_of": "2026-10-22",
         "source": "Tokyo Financial Exchange · Three-month TONA Futures",
         "policy_rate_pct": 1.25,
         "horizons": {
@@ -68,67 +68,67 @@
             "change_1w_bp": 0.0
           },
           "12m": {
-            "rate_pct": 2.025,
-            "delta_vs_policy_bp": 77.5,
-            "change_1d_bp": 1.6,
-            "change_1w_bp": -1.4
+            "rate_pct": 2.019,
+            "delta_vs_policy_bp": 76.9,
+            "change_1d_bp": -0.6,
+            "change_1w_bp": -2.0
           }
         }
       },
       "CHF": {
         "state": "UNAVAILABLE",
-        "as_of": "2026-10-21",
+        "as_of": "2026-10-22",
         "reason": "Only GBP, JPY, CAD and AUD have the certified OIS contract; estimated/proxy OIS is informational only, never alert-certified."
       },
       "CAD": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-10-21",
+        "as_of": "2026-10-22",
         "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
         "policy_rate_pct": 2.25,
         "horizons": {
           "3m": {
-            "rate_pct": 2.745,
-            "delta_vs_policy_bp": 49.5,
-            "change_1d_bp": 1.5,
-            "change_1w_bp": 12.5
+            "rate_pct": 2.695,
+            "delta_vs_policy_bp": 44.5,
+            "change_1d_bp": -5.0,
+            "change_1w_bp": 8.0
           },
           "6m": {
-            "rate_pct": 3.025,
-            "delta_vs_policy_bp": 77.5,
-            "change_1d_bp": 0.5,
-            "change_1w_bp": 11.0
+            "rate_pct": 2.95,
+            "delta_vs_policy_bp": 70.0,
+            "change_1d_bp": -7.5,
+            "change_1w_bp": 3.5
           },
           "12m": {
-            "rate_pct": 3.385,
-            "delta_vs_policy_bp": 113.5,
-            "change_1d_bp": 0.0,
-            "change_1w_bp": 10.5
+            "rate_pct": 3.27,
+            "delta_vs_policy_bp": 102.0,
+            "change_1d_bp": -11.5,
+            "change_1w_bp": -0.5
           }
         }
       },
       "AUD": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-10-21",
+        "as_of": "2026-10-22",
         "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
         "policy_rate_pct": 4.6,
         "horizons": {
           "3m": {
-            "rate_pct": 4.77,
-            "delta_vs_policy_bp": 17.0,
-            "change_1d_bp": 6.5,
-            "change_1w_bp": 5.5
+            "rate_pct": 4.795,
+            "delta_vs_policy_bp": 19.5,
+            "change_1d_bp": 2.5,
+            "change_1w_bp": 11.0
           },
           "6m": {
-            "rate_pct": 4.85,
-            "delta_vs_policy_bp": 25.0,
-            "change_1d_bp": 6.0,
-            "change_1w_bp": 4.5
+            "rate_pct": 4.885,
+            "delta_vs_policy_bp": 28.5,
+            "change_1d_bp": 3.5,
+            "change_1w_bp": 11.0
           },
           "12m": {
-            "rate_pct": 4.87,
-            "delta_vs_policy_bp": 27.0,
-            "change_1d_bp": 7.5,
-            "change_1w_bp": 0.0
+            "rate_pct": 4.885,
+            "delta_vs_policy_bp": 28.5,
+            "change_1d_bp": 1.5,
+            "change_1w_bp": 4.5
           }
         }
       },
