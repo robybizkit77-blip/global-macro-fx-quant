@@ -29,6 +29,31 @@ for(const mode of ['setup','thesis']){
  assert.equal(JSON.stringify(Array.from(rows,x=>x.code).sort()),JSON.stringify(Object.keys(setup.pairs).sort()));
  assert(rows.every(x=>x.quality===setup.pairs[x.code].setup.quality));
  assert(rows.every(x=>x.why.length>3));
+ assert(rows.every(x=>x.firstCheck?.length>16));
+ assert(rows.every(x=>!x.firstCheck.includes('previsione')&&!x.firstCheck.includes('compra')));
+ const expectedFirstCheck={
+  'Macro e Tassi/CB in conflitto':'Rivedere se Macro e Tassi/CB convergono sulla stessa valuta',
+  'Solo spread 2Y; tesi assente':'Cercare una tesi Macro/Tassi; lo spread 2Y non basta',
+  'Nessuna preferenza Macro/Tassi':'Attendere un contrasto strutturale verificabile',
+  'Prezzo contro la tesi':'Verificare se il prezzo smette di opporsi alla tesi',
+  'Prezzo non conferma':'Cercare conferma del prezzo nella direzione favorita',
+  'Timing contrario':'Controllare se la dinamica relativa smette di essere contraria',
+  'Prezzo già avanzato':'Controllare consolidamento o retest, senza inseguire',
+  'Dinamica relativa divergente':'Verificare se la divergenza relativa rientra',
+  'Timing incerto':'Attendere dinamica relativa più leggibile',
+  'Timing misto':'Controllare se il timing diventa coerente',
+  'Timing solo parziale':'Verificare un miglioramento del timing relativo',
+  'COT affollato/estremo':'Controllare se il crowding COT si riduce',
+  'COT contrario':'Controllare se il posizionamento COT smette di opporsi',
+  'Liquidità sfavorevole':'Verificare se il contesto di liquidità migliora',
+  'Tesi sorretta da un solo pilastro':'Cercare conferma dal pilastro Macro o Tassi/CB mancante',
+  'Servono trigger e rapporto rischio/rendimento esterni al modello':'Definire trigger e rischio/rendimento separatamente'
+ };
+ for(const x of rows){
+   const first=x.why.split(' · ')[0];
+   assert.equal(x.firstCheck,expectedFirstCheck[first],'first actionable research check must correspond to first sourced concern: '+x.code);
+ }
+
  assert(rows.some(x=>x.quality==='CON RISCHI'&&x.why.includes('Timing')));
  let seenNotEligible=false;
  for(const x of rows){
@@ -59,6 +84,7 @@ assert.equal(mutate(x=>{x.entry_level_published=true}),null);
 assert.equal(mutate(x=>{x.price_audit.status='FAIL'}),null);
 assert.equal(rank(setup,{asOf:'2026-09-24'}),null);
 assert(source.includes('MutationObserver(()=>apply())'),'native search/re-render reordering contract');
+assert(source.includes("check.textContent='Primo controllo · '+r.firstCheck"),'each native pair risk has a visible first research check');
 assert(source.includes("tbody.append(...sorted)"),'native 28-row table, not a new duplicative list');
 assert(source.includes("hasTradeRanking='false'"),'must never claim score or trade signal');
 console.log('CONTROL_ROOM_V10_PAIR_ORDERING_28_SOURCE_GUARDS_PASS');
