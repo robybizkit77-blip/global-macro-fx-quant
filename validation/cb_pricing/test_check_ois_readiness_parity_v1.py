@@ -31,6 +31,14 @@ def main():
         ("unsafe governance",lambda v,r,o,p:r.update(no_automatic_promotions=False)),
         ("old review",lambda v,r,o,p:r.update(source_reviewed_as_of="2026-10-18")),
         ("wrong source stamp",lambda v,r,o,p:r.update(as_of="2026-10-17")),
+        ("EUR futures cross-date joined",lambda v,r,o,p:
+             r["currencies"]["EUR"]["research_context"].update(cross_date_join_allowed=True)),
+        ("EUR falsely equal dates",lambda v,r,o,p:
+             r["currencies"]["EUR"]["research_context"].update(same_date_across_horizons=True)),
+        ("NZD bank bill policy pricing",lambda v,r,o,p:
+             r["currencies"]["NZD"]["research_context"].update(policy_delta_allowed=True)),
+        ("NZD false bank bill asof",lambda v,r,o,p:
+             r["currencies"]["NZD"]["research_context"].update(proxy_as_of="2026-10-01")),
         ("faked certified",lambda v,r,o,p:(v["currencies"]["USD"].update(
             operational_status="GREEN_OFFICIAL",official_status="ACTIVE",
             quality="OFFICIAL_CERTIFIED",backtest_eligible_as_official=True),
