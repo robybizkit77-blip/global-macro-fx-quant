@@ -1,8 +1,49 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-23T07:02:50Z",
+  "generated_at_utc": "2026-10-23T08:51:24Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-3b20336c3608832143d5",
+      "observed_at_utc": "2026-10-23T07:42:53Z",
+      "headline": "AI trade meets the Fed",
+      "summary": "Reuters riporta: AI trade meets the Fed. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNOWlIdzFDR0xNQ01RZzhsaXVtMXYtbWU3U3RvejE4NzV3TFZPXzI5SUpGTG9jLUxxbEhiNGFVMTZyUU84MVhTZGJaWkxtZ2cwaG9OTlJiYmFLTzFLLXZFQURzNUE5M05Lcjc5UXQ4Q1RIaVNWOFZlSlA2MTBLUFYtSVdLcGI3V3lCN216QQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-763cc3b21b0d518f5fdc",
+      "observed_at_utc": "2026-10-23T03:00:00Z",
+      "headline": "Rupee weakens on risk-off sentiment from oil prices, global AI jitters",
+      "summary": "Reuters riporta: Rupee weakens on risk-off sentiment from oil prices, global AI jitters. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "COMMODITIES",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMingFBVV95cUxQWXBDSi1qd2lxU2sxdVRIV3lWb3NuS1pkRFc0V2FYZnJESXNXcTBsYVhBYXd5ZGRUYTFJeXRzQzgxR2xRTjNaVjd6aG0zeklOTXJjRmloODdYM2pVV2ZqYmpEbFJuZEs0YlZpSGsyYWZlbXgxVFJCMWExSlJqMGVKOWJnUnN0NU1XYXFGQy1rV2xxUHlNY1RCMDVhbDN2dw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-065373e4e7602dd1c786",
+      "observed_at_utc": "2026-10-23T02:43:00Z",
+      "headline": "Oil spill from tanker hits Umm Al Quwain coast, beaches shut",
+      "summary": "Reuters riporta: Oil spill from tanker hits Umm Al Quwain coast, beaches shut. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxONDVzb2o2bVZpMzFTRjc2dENKTUhpalRtLTA2bkprdkwxdWRBdXVVU0xWTHNYcmJLeEJTeV82SXhtN24wWUstUm9QV09Qcm5OSWF3dk5BVU93RmkyeWVuVVJnYloxNTZzajBhanlNNmZvUDJaRXdWbTFia1MycXpJTUtsUDRRSFVHcUJLSmlaNUY1Tk1qXy14SFRxczBUUTVJcGlaZk5FSzRvLUlJdWtWNTJB?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-7ec8c8ab1c44cc1e9322",
       "observed_at_utc": "2026-10-23T04:14:00Z",
@@ -1348,45 +1389,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxPMXhrSmpaMk8tc0RERnBieWlyRThFeDE5X25hNy1JYTZxX2o5Q0wyMlJ0RFZheXM0S1VPUUVVcTBobHlJR3hSa3prRjhjaUVGdXBNcGNybmU5anZLOU0zdXg2TmFoYXNqSnVuRXpxQ2dwTnBYTWpOZEdIQUtVVEVqN0h6TQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-acbe444cd680b0f04b90",
-      "observed_at_utc": "2026-10-21T09:02:46Z",
-      "headline": "Former Hungarian central bank chief Matolcsy detained in foundations probe",
-      "summary": "Reuters riporta: Former Hungarian central bank chief Matolcsy detained in foundations probe. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxOMkxqQkdiOXBuOUE1R0tpenMtMFdRM2lDRzkweHB5cm93clBRM2h4dEI3M1pFZ0V4QlVyNXA1dzZPWGFiOThtbUVGQTBNVmJfZ2F0UXQyOTRXa3FiS0RMSGxpZ1duMVdGQW84cEd3NkxRQ25IajVnbTdmakFJUnFPb0ZwOWRLZTl6VmVFWVp6OXc0RlhYZFRxcEpvN1N5clJKTzAtNUtrNGJ5bVRPNm1nczgtbDJxQVlQWVFNOXRmbDVTckVDN0E?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-4ca348dbfe75b1b6eec4",
-      "observed_at_utc": "2026-10-20T10:30:09Z",
-      "headline": "Stocks in the MSCI Indonesia index",
-      "summary": "Reuters riporta: Stocks in the MSCI Indonesia index. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMikgFBVV95cUxOMGc5OGMxR0djVEtpcUUyUDVzWUdZNXZFUXdTVERqUkZaUWViV1d6TERCWGRkT1Yyd2p5YWgwdm5EdFo4bkY1NnhmNlJuWW5QamJQbFVwR1hMYllJUGdqcG1iNVR4YnhBTlVIOVpHR1ZFbkF4V2pOTHU5ZkxXTGVoRU9mNXFsWThlRjBtZHhIWmd2QQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-9c4bc4cc48519a0e4118",
-      "observed_at_utc": "2026-10-21T07:53:44Z",
-      "headline": "Former Hungarian central bank chief Matolcsy detained, news site Telex says",
-      "summary": "Reuters riporta: Former Hungarian central bank chief Matolcsy detained, news site Telex says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxOMkxqQkdiOXBuOUE1R0tpenMtMFdRM2lDRzkweHB5cm93clBRM2h4dEI3M1pFZ0V4QlVyNXA1dzZPWGFiOThtbUVGQTBNVmJfZ2F0UXQyOTRXa3FiS0RMSGxpZ1duMVdGQW84cEd3NkxRQ25IajVnbTdmakFJUnFPb0ZwOWRLZTl6VmVFWVp6OXc0RlhYZFRxcEpvN1N5clJKTzAtNUtrNGJ5bVRPNm1nczgtbDJxQVlQWVFNOXRmbDVTckVDN0E?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
