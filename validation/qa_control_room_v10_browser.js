@@ -2037,6 +2037,9 @@ function expectedReactionFromMetrics(row){
     const d=document.getElementById('gmfq-page')?.contentDocument;
     const p=d?.getElementById('gmfq-cross-risk-v10');
     return {status:p?.dataset.sourceStatus,
+      study:p?.querySelector('.gmfq-cross-coverage')?.textContent,
+      references:p?.dataset.studyReferences,official:p?.dataset.studyOfficial,
+      secondary:p?.dataset.studySecondary,effect:p?.dataset.studyEffect,
       lead:p?.querySelector('.gmfq-cross-risk-intro')?.textContent,
       provenance:[...p?.querySelectorAll('.gmfq-cross-risk-evidence span[data-source]')||[]].map(x=>x.dataset.source),
       leadFirst:!!(p?.querySelector('.gmfq-cross-risk-intro')?.compareDocumentPosition(p.querySelector('.gmfq-cross-risk-evidence'))&Node.DOCUMENT_POSITION_FOLLOWING),
@@ -2055,7 +2058,9 @@ function expectedReactionFromMetrics(row){
     {code:'WTI',series:riskData.risk.WTI},
     {code:'BRENT',series:secondary.lanes['BRENT.market_proxy'],secondary:true},
   ];
-  if(risk.cards.length!==3||!risk.lead?.startsWith('VIX misura volatilità implicita')||
+  if(risk.references!=='4'||risk.official!=='2'||risk.secondary!=='2'||risk.effect!=='NONE'||
+    !risk.study?.includes('4/4 riferimenti numerici per lo studio')||
+    risk.cards.length!==3||!risk.lead?.startsWith('VIX misura volatilità implicita')||
     !risk.leadFirst||JSON.stringify(risk.provenance)!==JSON.stringify(['vix','wti','brent'])||
     risk.gridCols!==(risk.viewport<=820?1:3)||
     !['transparent','rgba(0, 0, 0, 0)'].includes(risk.firstBg)||

@@ -9,6 +9,7 @@ on:
       - 'validation/test_control_room_event_radar_v1.js'
       - 'validation/test_control_room_macro_g8_study_v1.js'
       - 'validation/test_control_room_yield_g8_study_v1.js'
+      - 'validation/test_control_room_cross_study_coverage_v1.js'
       - 'site/control-room-preview/ois-pricing-estimates-v1.js'
       - 'validation/qa_ois_g8_estimates_v1.js'
       - 'validation/check_control_room_home_default_v10.py'
@@ -34,6 +35,7 @@ on:
       - 'validation/test_control_room_event_radar_v1.js'
       - 'validation/test_control_room_macro_g8_study_v1.js'
       - 'validation/test_control_room_yield_g8_study_v1.js'
+      - 'validation/test_control_room_cross_study_coverage_v1.js'
       - 'site/control-room-preview/ois-pricing-estimates-v1.js'
       - 'validation/qa_ois_g8_estimates_v1.js'
       - 'validation/check_control_room_home_default_v10.py'
@@ -81,6 +83,7 @@ jobs:
           node validation/test_control_room_event_radar_v1.js
           node validation/test_control_room_macro_g8_study_v1.js
           node validation/test_control_room_yield_g8_study_v1.js
+          node validation/test_control_room_cross_study_coverage_v1.js
           node validation/test_control_room_rome_calendar_v1.js
           node validation/test_control_room_dynamic_certified_scope_v1.js
           node validation/test_control_room_pair_official_pricing_age_v1.js
