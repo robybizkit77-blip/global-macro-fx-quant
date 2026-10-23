@@ -68,12 +68,20 @@ for(const ccy of ['USD','EUR','CHF']){
     source.secondary_quote_context?.status==='INDICATIVE_OBSERVATIONS_NON_OIS'){
    assert.equal(item.tier,'MIXED',ccy+' dates should remain visible only as context');
    assert.equal(item.official_ois,false);
-   assert(tenors.every(t=>item.points[t]?.source_quote_verified===true));
+   // The live secondary contract archive can legitimately become partial:
+   // audit each available quote, never manufacture a complete 3-tenor curve.
+   const available=tenors.filter(t=>item.points[t]);
+   assert(available.length>0,ccy+' MIXED requires at least one audited observation');
+   assert(available.every(t=>item.points[t].source_quote_verified===true));
    const six=indicativeSixMonth(liveOis,TODAY)[ccy];
-   assert.equal(six?.type,'MIXED');
-   assert.equal(six?.policy_delta_allowed,false);
-   assert.equal(six?.core_effect,'NONE');
-   assert(six?.label.includes(ccy));
+   if(item.points['6m']?.source_quote_verified===true){
+     assert.equal(six?.type,'MIXED');
+     assert.equal(six?.policy_delta_allowed,false);
+     assert.equal(six?.core_effect,'NONE');
+     assert(six?.label.includes(ccy));
+   }else{
+     assert.equal(six,undefined,ccy+' must not promote unverified 6M quote');
+   }
  }
 }
 const manifest=JSON.parse(fs.readFileSync(path.join(root,
