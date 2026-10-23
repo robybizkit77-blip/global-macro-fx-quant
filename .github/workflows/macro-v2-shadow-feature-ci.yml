@@ -14,6 +14,9 @@ on:
       - 'validation/macro/v2_shadow_intensity_v1.py'
       - 'validation/macro/test_v2_shadow_intensity_v1.py'
       - 'validation/macro/MACRO_V2_SHADOW_INTENSITY_PHASE2_SPEC_2026-10-23.md'
+      - 'validation/macro/v2_pit_coverage_readiness_v1.py'
+      - 'validation/macro/test_v2_pit_coverage_readiness_v1.py'
+      - 'validation/macro/MACRO_V2_PIT_COVERAGE_PHASE3_2026-10-23.md'
   workflow_dispatch:
 
 permissions:
@@ -88,6 +91,30 @@ jobs:
           p.parent.mkdir(parents=True,exist_ok=True)
           p.write_text(json.dumps(r,indent=2)+'\\n')
           print('MACRO_V2_SHADOW_PHASE2_NO_LIVE_SCORE_GREEN',r['latest_period'])
+          PY
+      - name: Audit actual G8 24-pillar PIT-readiness without inventing release timestamps
+        run: |
+          set -euo pipefail
+          python -m unittest validation.macro.test_v2_pit_coverage_readiness_v1 -v
+          python -m validation.macro.v2_pit_coverage_readiness_v1 \
+            --asof 2026-10-23 \
+            --json-out /tmp/macro-v2-shadow/pit-readiness-g8.json \
+            --markdown-out /tmp/macro-v2-shadow/pit-readiness-g8.md
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('/tmp/macro-v2-shadow/pit-readiness-g8.json')
+          x=json.loads(p.read_text())
+          assert x['schema']=='GMFQ_MACRO_V2_G8_PIT_COVERAGE_READINESS_V1'
+          assert x['summary']['observed_pillar_slots']==24
+          assert x['summary']['registered_core_series']==16
+          assert x['summary']['latest_core_official_web_anchors']==8
+          assert x['summary']['latest_growth_official_web_anchors']==2
+          assert x['summary']['certified_full_first_release_histories']==0
+          assert x['summary']['eligible_live_macro_pillars']==0
+          assert all(x[k] is False for k in
+            ('safe_to_publish_new_D','safe_to_update_pair_theses','writes_live_data'))
+          print('MACRO_V2_G8_24_OBSERVED_0_PIT_SCORE_CERTIFIED_PASS')
           PY
       - name: Confirm no runtime or website files were changed by tests
         run: |
