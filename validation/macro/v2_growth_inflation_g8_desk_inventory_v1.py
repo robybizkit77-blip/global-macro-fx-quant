@@ -22,21 +22,26 @@ def inspect(data,*,as_of=AS_OF):
                 v=x.get("last_value")
                 if type(v) not in (int,float) or not math.isfinite(v) or dt>as_of:continue
                 selected.append((dt,x))
-            require(selected,ccy+" "+pillar+" has no dated numeric observation")
-            dt,x=max(selected,key=lambda p:(p[0],p[1]["id"]))
-            age=(as_of-dt).days
-            rows.append({"currency":ccy,"pillar":pillar,"series_id":x["id"],
-              "latest_observed_on":dt.isoformat(),"latest_observed_value":x["last_value"],
-              "unit":x.get("unit") or "SOURCE_UNIT_NOT_DECLARED",
+            if selected:
+                dt,x=max(selected,key=lambda p:(p[0],p[1]["id"]))
+                age=(as_of-dt).days
+            else:
+                dt,x,age=None,None,None
+            rows.append({"currency":ccy,"pillar":pillar,"series_id":x["id"] if x else None,
+              "latest_observed_on":dt.isoformat() if dt else None,
+              "latest_observed_value":x["last_value"] if x else None,
+              "unit":(x.get("unit") or "SOURCE_UNIT_NOT_DECLARED") if x else None,
               "candidate_series_count":len(candidates),"observation_age_days":age,
-              "research_freshness":"OBSERVATION_WITHIN_60_DAYS" if age<=60 else "STALE_OBSERVATION_GT_60_DAYS",
+              "research_freshness":("OBSERVATION_WITHIN_60_DAYS" if age<=60 else
+                  "STALE_OBSERVATION_GT_60_DAYS") if age is not None else "NO_VALID_DATED_VALUE",
               "release_timestamp_first_vintage_verified":False,
               "source_consensus_verified":False,"growth_or_inflation_macro_score":None,
               "note":"Latest observed date is not a first-release timestamp and may be revised"})
     return {"schema":"GMFQ_MACRO_V2_G8_GROWTH_INFLATION_DESK_INVENTORY_V1",
       "as_of":as_of.isoformat(),"status":"OBSERVED_SERIES_RESEARCH_ONLY_NOT_PIT",
       "rows":rows,"currencies":8,"pillars":16,
-      "stale_slots_gt_60_days":sum(r["observation_age_days"]>60 for r in rows),
+      "stale_slots_gt_60_days":sum(r["observation_age_days"] is not None and r["observation_age_days"]>60 for r in rows),
+      "missing_valid_dated_value_slots":sum(r["observation_age_days"] is None for r in rows),
       "certified_first_release_slots":0,"observational_selection_method":
       "latest_date_among_currently_available_source_series_not_model_selection",
       "source_selection_validated_for_scoring":False,
