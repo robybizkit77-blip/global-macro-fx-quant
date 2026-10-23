@@ -1221,6 +1221,114 @@ function focusRatesSection(doc){
  section.scrollIntoView({block:'start'});
 }
 
+/* Date-coherent 2Y/10Y G8 snapshot for research only. Stale but audited
+   observations are displayed as historical; beta scenarios never become spread
+   data or a policy repricing input. Source alignment is verified per tenor. */
+function yieldStudySnapshot(raw,derived){
+ const rows=FX.map(ccy=>{
+  const source=raw?.[ccy],day=source?.date,age=romeCalendarAge(day);
+  const valid=source&&typeof source.quality==='string'&&source.quality.includes('OFFICIAL')&&
+   Number.isInteger(age)&&age>=0&&
+   ['2Y','10Y'].every((term)=>{
+    const h=term==='2Y'?source.history2:source.history10;
+    return Array.isArray(h?.dates)&&Array.isArray(h?.values)&&h.dates.length>=20&&
+      h.dates.length===h.values.length&&h.dates.at(-1)===day&&
+      num(h.values.at(-1))!==null&&num(source[term])!==null&&
+      Math.abs(h.values.at(-1)-source[term])<=0.00001&&
+      source[term]>-5&&source[term]<25;
+   });
+  const historic=!!valid&&age>4;
+  let scenario=null;
+  const model=derived?.[ccy],expected=ccy==='CHF'?'EUR':ccy==='NZD'?'AUD':null;
+  if(historic&&expected&&model?.estimate2===true&&model?.estimate10===true&&
+     model.proxy===expected&&model.estimatedAsOf2===model.estimatedAsOf10&&
+     model.estimatedAsOf2===raw?.[expected]?.date&&
+     Number.isInteger(romeCalendarAge(model.estimatedAsOf2))&&
+     romeCalendarAge(model.estimatedAsOf2)>=0&&romeCalendarAge(model.estimatedAsOf2)<=4&&
+     num(model.v2)!==null&&num(model.v10)!==null&&
+     num(model.r2_2)!==null&&num(model.r2_10)!==null&&
+     model.r2_2>=0&&model.r2_2<=1&&model.r2_10>=0&&model.r2_10<=1&&
+     ['ALTA','MEDIA','BASSA'].includes(model.confidence2)&&
+     ['ALTA','MEDIA','BASSA'].includes(model.confidence10)){
+   scenario={v2:model.v2,v10:model.v10,proxy:expected,date:model.estimatedAsOf2,
+     confidence2:model.confidence2,confidence10:model.confidence10};
+  }
+  return {ccy,asof:valid?day:null,v2:valid?source['2Y']:null,v10:valid?source['10Y']:null,
+   status:!valid?'UNAVAILABLE':historic?'HISTORICAL':'RECENT',
+   // Historical slope is real only at the historical same-date snapshot.
+   slopeBp:valid?Math.round(100*(source['10Y']-source['2Y'])*10)/10:null,
+   scenario};
+ });
+ return {rows,covered:rows.filter(r=>r.status!=='UNAVAILABLE').length,
+  recent:rows.filter(r=>r.status==='RECENT').length,
+  scenarios:rows.filter(r=>r.scenario).length};
+}
+function renderYieldStudy(doc,rates,snb){
+ if(route()!=='tassi'||frame.contentDocument!==doc||doc.getElementById('gmfq-yields-study'))return;
+ const anchor=doc.getElementById('rates-rows')?.closest('.desk-panel');
+ if(!anchor)return;
+ const derived=ratesAll(rates),out=yieldStudySnapshot(rates,derived);
+ const host=doc.createElement('section');
+ host.id='gmfq-yields-study';host.className='desk-panel';
+ host.dataset.coverage=String(out.covered);host.dataset.recent=String(out.recent);
+ host.dataset.scenarioCount=String(out.scenarios);
+ host.dataset.coreEffect='NONE';host.dataset.pairEffect='NONE';
+ host.setAttribute('aria-label','Rendimenti G8 2 e 10 anni osservati e scenari separati');
+ const css=doc.createElement('style');css.id='gmfq-yields-study-style';
+ css.textContent=
+  '#gmfq-yields-study{margin:0 0 13px;min-width:0}'+
+  '#gmfq-yields-study .gmfq-yields-intro,#gmfq-yields-study .gmfq-yields-note{padding:0 15px;color:#a8becd;font:11px/1.6 Arial,sans-serif;margin:10px 0}'+
+  '#gmfq-yields-study .gmfq-yields-count{color:#e6c98d;font:600 12px/1.6 Arial,sans-serif;padding:10px 15px 0}'+
+  '#gmfq-yields-study .gmfq-yields-grid{padding:0 15px 13px}'+
+  '#gmfq-yields-study .gmfq-yield-row{display:grid;grid-template-columns:minmax(90px,1.25fr) minmax(70px,1fr) minmax(70px,1fr);gap:4px 9px;align-items:center;padding:9px 2px;border-top:1px solid #294455;min-width:0}'+
+  '#gmfq-yields-study .gmfq-yield-row strong{font:600 13px/1.5 Arial,sans-serif;color:#e9f0f5;font-variant-numeric:tabular-nums}'+
+  '#gmfq-yields-study .gmfq-yield-row small{display:block;font:10px/1.4 Arial,sans-serif;color:#9ab4c6}'+
+  '#gmfq-yields-study .gmfq-yield-row .gmfq-yield-meta,#gmfq-yields-study .gmfq-yield-row .gmfq-yield-scenario{grid-column:1/-1;color:#a9c2d2;font:10px/1.5 Arial,sans-serif;overflow-wrap:anywhere}'+
+  '#gmfq-yields-study .gmfq-yield-row .gmfq-yield-scenario{color:#dfc78b}'+
+  '#gmfq-yields-study .gmfq-yield-row[data-state="HISTORICAL"]>div:first-child small{color:#e0c486}'+
+  '#gmfq-yields-study .gmfq-yield-head{color:#a9c1d0;font:600 11px/1.6 Arial,sans-serif}'+
+  '@media(max-width:520px){#gmfq-yields-study .gmfq-yields-grid{padding:0 9px 10px}'+
+  '#gmfq-yields-study .gmfq-yield-row{grid-template-columns:minmax(68px,1.05fr) repeat(2,minmax(65px,1fr));gap:3px 5px}'+
+  '#gmfq-yields-study .gmfq-yield-row strong{font-size:12px}'+
+  '#gmfq-yields-study .gmfq-yields-intro,#gmfq-yields-study .gmfq-yields-note{padding:0 9px}'+
+  '#gmfq-yields-study .gmfq-yields-count{padding:8px 9px 0}}';
+ doc.head.appendChild(css);
+ const elements=out.rows.map(x=>{
+  const percent=n=>num(n)===null?'—':fmt(n,3)+'%';
+  const label=x.status==='RECENT'?'osservazione recente':
+    x.status==='HISTORICAL'?'ultima osservazione storica':'non verificabile';
+  return '<div class="gmfq-yield-row" data-ccy="'+x.ccy+'" data-state="'+x.status+
+   '" data-asof="'+htmlEscape(x.asof||'')+'" data-scenario="'+(x.scenario?'true':'false')+'">'+
+   '<div><strong>'+FLAG[x.ccy]+' '+x.ccy+'</strong><small>'+label+'</small></div>'+
+   '<div><strong>'+percent(x.v2)+'</strong></div><div><strong>'+percent(x.v10)+'</strong></div>'+
+   '<div class="gmfq-yield-meta">Fonte governativa · '+htmlEscape(x.asof||'n.d.')+
+   (x.slopeBp!==null?' · 10Y−2Y '+(x.slopeBp>=0?'+':'')+fmt(x.slopeBp,1)+' bp (stessa data)':'')+'</div>'+
+   (x.scenario?'<div class="gmfq-yield-scenario">Scenario β informativo '+FLAG[x.scenario.proxy]+
+    ' '+x.scenario.proxy+' · '+x.scenario.date+' · 2Y ≈'+percent(x.scenario.v2)+
+    ' ('+x.scenario.confidence2+') · 10Y ≈'+percent(x.scenario.v10)+
+    ' ('+x.scenario.confidence10+'). Non è un nuovo spread osservato.</div>':'')+'</div>';
+ }).join('');
+ const chf=snb?.schema==='GMFQ_CHF_SNB_10Y_SPOT_CONTEXT_V1'&&
+  snb.status==='OFFICIAL_PUBLISHED_10Y_INFORMATIONAL'&&snb.currency==='CHF'&&
+  snb.tenor==='10Y'&&snb.yield_type==='SWISS_CONFEDERATION_ZERO_COUPON_SPOT'&&
+  snb.has_current_2y===false&&snb.eligible_for_curve_spreads===false&&
+  snb.eligible_for_core_signals===false&&snb.eligible_for_backtests===false&&
+  snb.ois_or_saron===false&&num(snb.value_percent)!==null&&
+  snb.value_percent>-5&&snb.value_percent<25&&
+  Number.isInteger(romeCalendarAge(snb.as_of))&&romeCalendarAge(snb.as_of)>=0&&
+  romeCalendarAge(snb.as_of)<=4;
+ host.innerHTML='<h2 class="desk-panel-title">Governativi G8 · livelli 2Y e 10Y</h2>'+
+  '<div class="gmfq-yields-count">'+out.covered+'/8 coppie di rendimenti verificabili · '+out.recent+
+  ' recenti · '+(out.covered-out.recent)+' storiche · '+out.scenarios+' scenari β separati</div>'+
+  '<p class="gmfq-yields-intro">Tasso 2Y = breve periodo; 10Y = componente lunga. La pendenza confronta due rendimenti della stessa valuta e data, non strumenti monetari OIS.</p>'+
+  '<div class="gmfq-yields-grid"><div class="gmfq-yield-row gmfq-yield-head" aria-hidden="true">'+
+  '<div>Valuta</div><div>2Y</div><div>10Y</div></div>'+elements+'</div>'+
+  (chf?'<p class="gmfq-yields-note" data-snb-10y="SEPARATE">🇨🇭 CHF: SNB Confederazione 10Y spot '+fmt(snb.value_percent,3)+'% · '+
+     htmlEscape(snb.as_of)+'. Fonte e strumento separati dalla coppia 2Y/10Y storica: non calcolare spread misti.</p>':'')+
+  '<p class="gmfq-yields-note">Stato e date non si trasferiscono tra paesi. Gli scenari β sono modelli illustrativi con R² diversi, non prezzi ufficiali, intervalli di confidenza o segnali. Prezzi e score delle 28 coppie restano invariati.</p>';
+ anchor.insertAdjacentElement('beforebegin',host);
+}
+
 /* Rates research overlay: observed validated curves are distinct from unsynchronised futures quotes.
    Display-only: no policy path can be inferred from secondary contract observations. */
 function marketResearchCurves(data){
@@ -1403,7 +1511,9 @@ function mountMarketResearch(doc,ois,proxy,rates,snb10,sourceReadiness){
 }
 async function applyMarketResearch(doc){
  const all=await Promise.allSettled([feed('OIS_OPERATIONAL_VIEW.json'),feed('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),feed('NATIVE_RATES_DATA.json'),feed('CHF_SNB_10Y_SPOT_CONTEXT.json'),feed('OIS_SOURCE_READINESS_VIEW.json')]);
- mountMarketResearch(doc,...all.map(x=>x.status==='fulfilled'?x.value:null));
+ const feeds=all.map(x=>x.status==='fulfilled'?x.value:null);
+ renderYieldStudy(doc,feeds[2],feeds[3]);
+ mountMarketResearch(doc,...feeds);
 }
 
 /* Pair research journey, added next to (not replacing) the original 28-pair
