@@ -1,0 +1,62 @@
+{
+  "schema": "GMFQ_BLS_U3_SHUTDOWN_GAP_RESEARCH_V1",
+  "currency": "USD",
+  "pillar": "labour",
+  "series_id": "LNS14000000",
+  "canonical_alias": "UNRATE",
+  "status": "OFFICIAL_WEB_FIRST_RELEASE_VALUE_DATE__UNHASHED_SOURCE_BYTES",
+  "source_publisher": "U.S. Bureau of Labor Statistics",
+  "source_methodology_url": "https://www.bls.gov/cps/methods/2025-federal-government-shutdown-impact-cps.htm",
+  "source_release_calendar_url": "https://www.bls.gov/bls/2025-lapse-revised-release-dates.htm",
+  "source_archive_url": "https://www.bls.gov/bls/news-release/empsit.htm",
+  "pre_gap_manifest": "validation/macro/fixtures/v2_bls_us_unrate_25_first_releases_2023_09_2025_09.json",
+  "missing_observations": [
+    {
+      "reference_period": "2025-10",
+      "status": "NOT_COLLECTED_NOT_PUBLISHED_NO_CPS_UNEMPLOYMENT_RATE",
+      "survey": "CURRENT_POPULATION_SURVEY_HOUSEHOLD",
+      "reported_first_release": null,
+      "published_value": null,
+      "evidence_ref": "https://www.bls.gov/cps/methods/2025-federal-government-shutdown-impact-cps.htm",
+      "permitted_imputation": false,
+      "permitted_backfill": false,
+      "continue_monthly_derivative_across_gap": false
+    }
+  ],
+  "resumed_first_releases": [
+    {
+      "observation_period": "2025-11",
+      "released_at": "2025-12-16T08:30:00-05:00",
+      "value": 4.6,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_12162025.htm"
+    },
+    {
+      "observation_period": "2025-12",
+      "released_at": "2026-01-09T08:30:00-05:00",
+      "value": 4.4,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_01092026.htm"
+    }
+  ],
+  "source_evidence_independently_hashed": false,
+  "complete_revision_vintage_history_certified": false,
+  "methodological_policy": {
+    "strict_monthly_model_remains_fail_closed": true,
+    "sparse_observation_window_is_event_based_only": true,
+    "latest_observation_excluded_from_robust_training": true,
+    "rolling_previous_releases": 24,
+    "monthly_velocity": null,
+    "monthly_acceleration": null,
+    "monthly_turning_point": null,
+    "gap_backfill_allowed": false,
+    "source_release_time_enforced": "08:30 America/New_York",
+    "cutoff_time_semantics": "release information enters only at UTC instant released_at",
+    "normalized_index_is_descriptive_not_predictive": true,
+    "safe_to_publish_new_D": false,
+    "safe_to_update_pair_theses": false,
+    "permitted_live_macro_score": false,
+    "permitted_backtest": false,
+    "writes_live_data": false
+  }
+}
