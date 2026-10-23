@@ -9,9 +9,19 @@ assert(a>=0&&b>a,'Pair What Changed source not found');
 const model=JSON.parse(fs.readFileSync('live_data/sections/D.json','utf8'));
 const pairs=JSON.parse(fs.readFileSync('live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json','utf8'));
 const rates=JSON.parse(fs.readFileSync('live_data/sections/NATIVE_RATES_DATA.json','utf8'));
+/* Synthetic two-session official date fixture: the negative provenance test
+   must not depend on whether today's REAL EUR/USD rates have advanced since
+   this test was written. Only pair/model as-of metadata stays canonical. */
+for(const c of ['EUR','USD']){
+  const y=rates[c]['2Y'];
+  rates[c].date='2026-10-22';
+  rates[c].history2={dates:['2026-10-21','2026-10-22'],
+    values:[y-0.01,y],last_date:'2026-10-22',last_value:y};
+}
+
 assert.equal(model.asOf,pairs.macro_baseline_asof,'PIT macro source must match canonical model');
 assert.notEqual(pairs.price_asof,model.asOf,'Fixture requires separate modern ECB price and historical Macro baseline');
-const today='2026-10-21';
+const today='2026-10-23';
 const dateAge=d=>(Date.parse(today+'T00:00:00Z')-Date.parse(d+'T00:00:00Z'))/86400000;
 const romeCalendarAge=d=>typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&
  !Number.isNaN(Date.parse(d+'T00:00:00Z'))&&new Date(d+'T00:00:00Z').toISOString().slice(0,10)===d?dateAge(d):null;
@@ -42,7 +52,7 @@ assert(withheld.includes('Lettura Macro del motore non disponibile o non aggiorn
 assert(!withheld.includes('>'+pair.relative_dynamics.A.details[0]+'<'));
 assert(withheld.includes('data-gmfq-yield-change="MEASURED"'),
  'Absent Macro must not suppress independently observed and dated official 2Y');
-const future=render('EURUSD',pair,rates,pairs.price_asof,'2026-10-22');
+const future=render('EURUSD',pair,rates,pairs.price_asof,'2099-01-01');
 assert(future.includes('data-macro-baseline-state="WITHHELD"'));
 const ahead=render('EURUSD',pair,rates,'2026-09-20','2026-09-25');
 assert(ahead.includes('data-macro-baseline-state="WITHHELD"'));
