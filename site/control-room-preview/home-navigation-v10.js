@@ -1818,6 +1818,7 @@ function pairDeskOrdering(feedData,model){
 function pairDeskFocusOverlap(ranked,mode){
  const rows=ranked?.[mode]?.slice(0,8);
  if(!Array.isArray(rows)||rows.length!==8||!['setup','thesis'].includes(mode)||
+    rows.some(r=>!r||typeof r.code!=='string')||
     new Set(rows.map(r=>r.code)).size!==8)return null;
  const count=Object.fromEntries(FX.map(c=>[c,0])),
        favCount=Object.fromEntries(FX.map(c=>[c,0]));
@@ -1981,7 +1982,7 @@ async function mountPairRankedList(doc){
    overlap.dataset.favoredCount=fav;
    overlap.textContent='Prime 8 · '+focus.withRisks+'/8 CON RISCHI · '+
      (c.length===1?'Valuta più ricorrente: ':'Valute più ricorrenti: ')+
-     names+' in '+focus.max+'/8 coppie (favorite dalla tesi storica in '+fav+'/8). '+
+     names+' in '+focus.max+'/8 coppie (valuta favorita dal modello storico in '+fav+'/8). '+
      'Sovrapposizione valutaria, non correlazione né rischio portafoglio stimati.';
  };
  panel.addEventListener('click',e=>{
