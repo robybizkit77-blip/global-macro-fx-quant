@@ -724,7 +724,7 @@ async function getState(page){
            d.querySelectorAll('#pair-index button.pair-open[data-pair]').length===28&&
            d.getElementById('gmfq-pair-research-path')?.dataset.pair===code;
        },homePair,{timeout:35000});
-       if(['pairs-explained-ranking-20261022','pairs-focus-eight-20261022'].includes(navigationVersion)){
+       if(['pairs-explained-ranking-20261022','pairs-focus-eight-20261022','pairs-first-risk-check-20261023'].includes(navigationVersion)){
          await page.waitForFunction(()=>{
            const d=document.getElementById('gmfq-page')?.contentDocument,p=d?.getElementById('gmfq-pair-rank');
            return p?.dataset.status==='READ_ONLY'&&
@@ -741,7 +741,7 @@ async function getState(page){
              overflow:p?.scrollWidth>p?.clientWidth+2,
              docWidth:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth,
              rows:rows.map(x=>({code:x.querySelector('button.pair-open')?.dataset.pair,
-               rank:Number(x.dataset.researchRank),reason:x.querySelector('.gmfq-row-why')?.textContent,visible:!!x.getClientRects().length,selected:x.classList.contains('pair-current')}))};
+               rank:Number(x.dataset.researchRank),reason:x.querySelector('.gmfq-row-why')?.textContent,firstCheck:x.querySelector('.gmfq-row-next')?.textContent,checkSource:x.querySelector('.gmfq-row-next')?.dataset.source,visible:!!x.getClientRects().length,selected:x.classList.contains('pair-current')}))};
          });
          const rankedSetup=await capture();
          if(rankedSetup.source!=='READ_ONLY'||rankedSetup.signals!=='false'||rankedSetup.count!=='28'||
@@ -753,7 +753,11 @@ async function getState(page){
             !rankedSetup.rows.find(x=>x.code==='AUDCHF')?.reason.includes('Timing contrario')||
             !rankedSetup.rows.find(x=>x.code==='EURUSD')?.reason.includes('Prezzo già avanzato'))
            throw Error(name+' public ranked pairs or named CON RISCHI constraint absent '+JSON.stringify(rankedSetup));
-         if(navigationVersion==='pairs-focus-eight-20261022'){
+         if(navigationVersion==='pairs-first-risk-check-20261023'&&
+            rankedSetup.rows.some(x=>!x.firstCheck?.startsWith('Primo controllo · ')||
+              x.checkSource!=='PAIR_SETUP_OPERATIONAL_VIEW'))
+           throw Error(name+' public source-derived first pair risk checks missing '+JSON.stringify(rankedSetup));
+         if(['pairs-focus-eight-20261022','pairs-first-risk-check-20261023'].includes(navigationVersion)){
            const shown=rankedSetup.rows.filter(x=>x.visible);
            if(rankedSetup.view!=='focus'||rankedSetup.visibleCount!==shown.length||
              shown.length<8||shown.length>9||
