@@ -101,7 +101,7 @@ jobs:
                            (' (HTTP '+str(info['http_status'])+')' if info['http_status'] else ' (transport unavailable)'))
           lines.append('No yield data were ingested, estimated or promoted.')
           with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as out:
-              out.write('\\n'.join(lines)+'\\n')
+              out.write('\n'.join(lines)+'\n')
           PY
 
       - name: Build official Rates candidate
