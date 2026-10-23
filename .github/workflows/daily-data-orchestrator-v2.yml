@@ -7,12 +7,16 @@ on:
       - '.github/workflows/daily-data-orchestrator-v2.yml'
       - 'validation/orchestration/DAILY_DATA_ORCHESTRATOR_V2_2026-10-15.json'
       - 'validation/orchestration/check_daily_data_orchestrator_v2.py'
+      - 'validation/orchestration/check_morning_readiness_v1.py'
+      - 'validation/orchestration/test_check_morning_readiness_v1.py'
   push:
     branches: [main]
     paths:
       - '.github/workflows/daily-data-orchestrator-v2.yml'
       - 'validation/orchestration/DAILY_DATA_ORCHESTRATOR_V2_2026-10-15.json'
       - 'validation/orchestration/check_daily_data_orchestrator_v2.py'
+      - 'validation/orchestration/check_morning_readiness_v1.py'
+      - 'validation/orchestration/test_check_morning_readiness_v1.py'
   workflow_dispatch:
     inputs:
       phase:
@@ -68,6 +72,8 @@ jobs:
           python-version: '3.12'
       - name: Verify orchestration contract
         run: python validation/orchestration/check_daily_data_orchestrator_v2.py
+      - name: Test morning freshness and DST-aware source windows
+        run: python validation/orchestration/test_check_morning_readiness_v1.py
 
   orchestrate:
     needs: contract
@@ -223,6 +229,61 @@ jobs:
               ;;
             *) echo "Nothing to run for phase=${PHASE}" ;;
           esac
+
+      # Re-check the LATEST main commit after the dispatched child workflows
+      # have updated it; the orchestration runner itself did not mutate data.
+      - name: Checkout refreshed production sources for 08:00 audit
+        if: ${{ steps.phase.outputs.phase == 'prebrief' || steps.phase.outputs.phase == 'premorning' }}
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Audit true source dates for the morning study
+        if: ${{ steps.phase.outputs.phase == 'prebrief' || steps.phase.outputs.phase == 'premorning' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/orchestration/test_check_morning_readiness_v1.py
+          python3 validation/orchestration/check_morning_readiness_v1.py \
+            --output /tmp/morning-readiness-v1.json > /tmp/morning-readiness-v1.log
+          python3 - <<'PY'
+          import json,os
+          d=json.load(open('/tmp/morning-readiness-v1.json', encoding='utf-8'))
+          problems=d['critical_daily_problems']
+          evidence=d['evidence']
+          lines=[
+            '## Control Room · 08:00 morning source readiness',
+            '- Status: **'+d['operational_state']+'**',
+            '- Expected last weekday session: '+d['expected_previous_weekday'],
+            '- Checked at Europe/Rome: '+d['checked_at_rome'],
+            '- Daily source exceptions: '+(', '.join(problems) if problems else 'none'),
+            '- FX official: '+str(evidence['FX_OFFICIAL_FIXING']['as_of']),
+            '- Pair price: '+str(evidence['PAIR_PRICE']['as_of']),
+            '- VIX official close: '+str(evidence['VIX_OFFICIAL_CLOSE']['as_of']),
+            '- Macro score: **'+str(evidence['MACRO_BASELINE']['as_of'])+' (historical, not automatically recalculated)**',
+            '- Rates missing previous-session freshness: '+', '.join(c for c,v in evidence['RATES_2Y_10Y'].items() if v['status']!='RECENT_OFFICIAL'),
+            '- OIS official: '+', '.join(evidence['OIS_G8']['official']),
+            '- OIS estimated: '+', '.join(evidence['OIS_G8']['estimated']),
+            '- OIS withheld: '+', '.join(evidence['OIS_G8']['withheld']),
+            '- Weekly COT is assessed on its own release cadence, not as a daily price.',
+            '- Publication date lag can reflect a legitimate official market holiday; investigate before overriding.',
+          ]
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as out:
+              out.write('\n'.join(lines)+'\n')
+          print('MORNING_READINESS',d['operational_state'],'PROBLEMS',problems)
+          if problems:
+              raise SystemExit('Daily inputs not ready: do not report all-green source freshness')
+          PY
+
+      - name: Retain morning source readiness evidence
+        if: ${{ always() && (steps.phase.outputs.phase == 'prebrief' || steps.phase.outputs.phase == 'premorning') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: control-room-morning-readiness-${{ github.run_id }}
+          path: /tmp/morning-readiness-v1.json
+          if-no-files-found: warn
+          retention-days: 21
 
       - name: Record skipped duplicate DST schedule
         if: ${{ steps.phase.outputs.phase == 'skip' }}
