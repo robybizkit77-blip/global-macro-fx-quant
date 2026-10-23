@@ -913,7 +913,59 @@ async function mountHomeEventRadar(doc){
   content.innerHTML='<p class="gmfq-event-radar-intro">Calendario non verificabile: nessuna data presentata come imminente.</p>';
  }
 }
-function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy,proxy,model,setup){
+/* Pure 08:00 study readout. Previous completed weekday session, not the
+   wall-clock date, is the expected date for ECB/VIX market observations.
+   Source publication holidays are flagged for review, never guessed. */
+function romePreviousWeekday(now=new Date()){
+ const d=romeTodayIso(now),utc=new Date(d+'T00:00:00Z');
+ if(!Number.isFinite(utc.getTime()))return null;
+ do{utc.setUTCDate(utc.getUTCDate()-1)}while([0,6].includes(utc.getUTCDay()));
+ return utc.toISOString().slice(0,10);
+}
+function homeMorningStudySources(fx,model,setup,rates,ois,news,calendar,now=new Date()){
+ const today=romeTodayIso(now),prior=romePreviousWeekday(now);
+ if(!prior)return null;
+ const dateOk=d=>/^\d{4}-\d{2}-\d{2}$/.test(d||'')&&d>=prior&&d<=today;
+ const marketObs=d=>dateOk(d);
+ const fxOk=fx?.status==='CURRENT_OFFICIAL_HISTORY'&&Array.isArray(fx?.rows)&&
+   fx.rows.length>=21&&fx.row_count===fx.rows.length&&
+   fx.rows[fx.rows.length-1]?.Date===fx.last_as_of&&marketObs(fx.last_as_of)&&
+   FX.every(c=>num(fx.rows[fx.rows.length-1]?.[c])!==null&&fx.rows[fx.rows.length-1][c]>0);
+ const pairOk=setup?.status==='CURRENT_CANONICAL_ENGINE'&&setup.pair_count===28&&
+   setup.price_audit?.status==='PASS'&&setup.price_asof===fx?.last_as_of&&
+   marketObs(setup.price_asof);
+ const vix=model?.risk?.VIX;
+ const vixOk=!!vix&&Array.isArray(vix.dates)&&vix.dates.length>0&&
+   vix.dates[vix.dates.length-1]===vix.last_date&&num(vix.last_value)!==null&&
+   marketObs(vix.last_date);
+ const builtToday=feed=>{
+   const stamp=feed?.generated_at_utc;
+   if(typeof stamp!=='string')return false;
+   const x=new Date(stamp);
+   return Number.isFinite(x.getTime())&&romeTodayIso(x)===today;
+ };
+ const checks={
+   fx:!!fxOk,pairs:!!pairOk,vix:!!vixOk,
+   news:builtToday(news),calendar:builtToday(calendar)
+ };
+ const confirmed=Object.values(checks).filter(Boolean).length;
+ const rateRecent=FX.filter(c=>{
+   const x=rates?.[c];
+   return x&&String(x.quality||'').includes('OFFICIAL')&&fresh(x.date,5)&&
+      num(x['2Y'])!==null&&num(x['10Y'])!==null;
+ });
+ const official=FX.filter(c=>officialPricingCurrent(ois?.currencies?.[c]));
+ const estimated=FX.filter(c=>ois?.currencies?.[c]?.operational_status==='GREEN_ESTIMATED'&&
+   !official.includes(c)&&fresh(ois.currencies[c].as_of,5));
+ const withoutOis=FX.filter(c=>!official.includes(c)&&!estimated.includes(c));
+ const macroDay=canonicalPairMacroBaseline(setup,model);
+ return {checks,confirmed,total:5,prior,fxDay:fxOk?fx.last_as_of:null,
+   vixDay:vixOk?vix.last_date:null,rateRecent,rateLag:FX.filter(c=>!rateRecent.includes(c)),
+   official,estimated,withoutOis,macroDay,
+   mode:confirmed===5?'DAILY_VERIFIED_WITH_GAPS':'DAILY_INCOMPLETE',
+   sourceEffect:'NONE'};
+}
+function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy,proxy,model,setup,news,calendar){
  if(!home()||frame.contentDocument!==doc||doc.documentElement.dataset.marketMode!=='live')return;
  const head=doc.querySelector('.mast .fresh'),state=doc.getElementById('liveState'),
   stamp=doc.getElementById('liveAsOf');
@@ -953,7 +1005,40 @@ function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy,proxy,model,setup){
  const incompleteCodes=research?.incomplete_codes||[];
  const dxyCurrent=validDxy(dxy);
  const complete=fxCurrent&&ratesCurrent.length===8&&oisCurrent.length===8&&dxyCurrent&&macroCurrent;
+ const morning=homeMorningStudySources(fx,model,setup,rates,ois,news,calendar);
  mountHomeReadingPath(doc,{macroDay:pairMacroDay,fxCurrent,fxDay,oisCount:oisCurrent.length,setup});
+ // One editorial source line, not another card or a new reliability score.
+ const rail=doc.getElementById('gmfq-home-reading-path');
+ if(rail&&morning){
+   const note=doc.createElement('p');
+   note.id='gmfq-morning-study-readiness';
+   note.setAttribute('role','status');
+   note.dataset.state=morning.mode;
+   note.dataset.sourceEffect='NONE';
+   note.dataset.priorSession=morning.prior;
+   note.dataset.verified=String(morning.confirmed);
+   note.dataset.fx=String(morning.checks.fx);
+   note.dataset.pairs=String(morning.checks.pairs);
+   note.dataset.vix=String(morning.checks.vix);
+   note.dataset.news=String(morning.checks.news);
+   note.dataset.calendar=String(morning.checks.calendar);
+   note.dataset.lagRates=morning.rateLag.join(',');
+   note.dataset.withheldOis=morning.withoutOis.join(',');
+   note.textContent='STUDIO MATTUTINO · '+morning.confirmed+'/5 fonti giornaliere verificate '+
+     '(ultima seduta '+morning.prior+'). '+
+     (morning.confirmed===5?'Prezzi FX, coppie, VIX e notizie/calendario verificati.':
+     'Da verificare: '+Object.keys(morning.checks).filter(c=>!morning.checks[c]).join(', ')+'.')+
+     ' Rendimenti recenti '+morning.rateRecent.length+'/8; OIS ufficiali '+
+     morning.official.length+'/8, stime '+morning.estimated.length+'/8; '+
+     'Macro '+(morning.macroDay||'non verificato')+' (baseline storica).';
+   rail.querySelector('.gmfq-reading-main')?.appendChild(note);
+   const st=doc.createElement('style');st.id='gmfq-morning-study-style';
+   st.textContent='#gmfq-morning-study-readiness{color:#b7c7d1;font:11px/1.55 Arial,sans-serif;'+
+     'margin:9px 0 0;padding:7px 0 0;border-top:1px solid #375366;max-width:700px;overflow-wrap:anywhere}'+
+     '#gmfq-morning-study-readiness[data-state="DAILY_INCOMPLETE"]{color:#e7c187}'+
+     '@media(max-width:600px){#gmfq-morning-study-readiness{font-size:10px}}';
+   doc.head.appendChild(st);
+ }
  state.textContent=complete?'FONTI VERIFICATE':'DATI PARZIALI';
  stamp.textContent=(fxCurrent?'FX '+fxDay.slice(8,10)+'/'+fxDay.slice(5,7):'FX non corr.')+' · OIS '+oisCurrent.length+'/8 cert. · Contesto '+(contextCount===null?'n.d.':contextCount+'/8')+' · Macro '+(macroCurrent?'verif.':'stor./n.v.')+' ⓘ';
  head.setAttribute('role','button');head.tabIndex=0;
@@ -983,6 +1068,15 @@ function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy,proxy,model,setup){
  dialog.innerHTML='<form method="dialog"><button class="gmfq-audit-close" aria-label="Chiudi verifica fonti">Chiudi ×</button></form>'+
   '<h2 id="gmfq-home-data-audit-title">Stato delle fonti</h2>'+
   '<p>Ultima osservazione verificata, non quotazioni in tempo reale. “Caricato” non significa necessariamente “aggiornato”.</p>'+
+  line('Studio delle 08:00 · ultime fonti giornaliere',
+    morning?morning.confirmed+'/5 verifiche rispetto alla seduta '+morning.prior+'. '+
+      'FX '+(morning.checks.fx?'OK':'DA VERIFICARE')+
+      '; coppie '+(morning.checks.pairs?'OK':'DA VERIFICARE')+
+      '; VIX '+(morning.checks.vix?'OK':'DA VERIFICARE')+
+      '; News Pulse '+(morning.checks.news?'OK':'DA VERIFICARE')+
+      '; calendario '+(morning.checks.calendar?'OK':'DA VERIFICARE')+
+      '. Restano distinti i ritardi dei rendimenti, i proxy OIS e gli score Macro storici.':
+      'Impossibile verificare la sessione precedente: non attribuire lo stato GREEN ai dati.')+
   line('FX G8 · fixing BCE',fxCurrent?'Ufficiale · '+fxDay+' · fine giornata, non intraday':
     'Non corrente o non disponibile · ultima data '+(fxDay||'non verificata'))+
   line('Rendimenti governativi 2Y/10Y',ratesCurrent.length+'/8 valute con 2Y e 10Y ufficiali sufficientemente recenti.'+
@@ -1019,10 +1113,11 @@ function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy,proxy,model,setup){
 }
 
 async function applyHome(doc){
- const [rr,oo,pp,dd,ff,mm,ss]=await Promise.allSettled([
+ const [rr,oo,pp,dd,ff,mm,ss,nn,cc]=await Promise.allSettled([
   feed('NATIVE_RATES_DATA.json'),feed('OIS_OPERATIONAL_VIEW.json'),
   feed('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),feed('DXY_SYNTHETIC_ECB.json'),
-  feed('ECB_G8_PRICE_HISTORY.json'),feed('D.json'),feed('PAIR_SETUP_OPERATIONAL_VIEW.json')]);
+  feed('ECB_G8_PRICE_HISTORY.json'),feed('D.json'),feed('PAIR_SETUP_OPERATIONAL_VIEW.json'),
+  feed('NEWS_PULSE_OPERATIONAL.json'),feed('CALENDAR_OPERATIONAL_VIEW.json')]);
  const d=dd.status==='fulfilled'?dd.value:null;
  dxyFeed=d;
  const rates=rr.status==='fulfilled'?rr.value:null;
@@ -1053,7 +1148,8 @@ async function applyHome(doc){
    mountHomeMarketPulse(doc).catch(e=>console.warn('[GMFQ Market Pulse]',String(e)));
    mountHomeEventRadar(doc).catch(e=>console.warn('[GMFQ Event Risk]',String(e)));
    mountHomeFreshnessAudit(doc,ff.status==='fulfilled'?ff.value:null,rates,ois,d,proxy,
-     mm.status==='fulfilled'?mm.value:null,ss.status==='fulfilled'?ss.value:null);
+     mm.status==='fulfilled'?mm.value:null,ss.status==='fulfilled'?ss.value:null,
+     nn.status==='fulfilled'?nn.value:null,cc.status==='fulfilled'?cc.value:null);
    doc.querySelectorAll('#valute .cc').forEach(el=>{
      el.tabIndex=0;el.setAttribute('role','button');
      if(el.dataset.filter!=='DXY')el.setAttribute('aria-label','Apri Valute '+(el.dataset.filter||''));
