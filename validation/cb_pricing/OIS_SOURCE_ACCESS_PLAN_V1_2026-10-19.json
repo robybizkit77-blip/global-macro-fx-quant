@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_OIS_SOURCE_ACCESS_PLAN_V1",
-  "reviewed_as_of": "2026-10-19",
+  "reviewed_as_of": "2026-10-23",
   "purpose": "Audit all four currently blocked operational OIS source lanes (USD/EUR/CHF/NZD), without treating indicative quotes or spot overnight indices as certified policy curves.",
   "governance": {
     "runtime_source": "live_data/sections/OIS_OPERATIONAL_VIEW.json",
@@ -43,12 +43,20 @@
       "source_url": "https://www.eurex.com/ex-en/markets/int/mon/3m-euro-str-futures/estr/Three-Month-Euro-STR-Futures-3402480",
       "specification_url": "https://www.eurex.com/resource/blob/4150680/fc9ee78c1ddb147acb904e72ff22206b/data/factsheet_ESTR-Futures.pdf",
       "benchmark_url": "https://www.ecb.europa.eu/stats/financial_markets_and_interest_rates/euro_short-term_rate/html/index.en.html",
-      "access_status": "SYNCHRONIZED_EXCHANGE_SETTLEMENT_T_T1_T5_NOT_CERTIFIED_IN_REPO",
-      "known_problem": "The 2026-10-19 operational EUR OIS is WITHHELD. Secondary dated FST3 quote observations exist, but 3M/6M/12M contract rows are not same-date. Official Eurex exchange settlements with consistent product identity, contracts, as-of dates, histories, and appropriate data-use rights are not validated. ECB official spot overnight €STR does not constitute an OIS forward curve.",
-      "required_for_activation": "Acquire authorized Eurex FST3 dated settlement series for an identical contract basket at T/T-1/T-5; validate monthly-versus-quarterly compounding observation windows, rollover and T+N horizon mapping, provenance and publication rights. Otherwise remain WITHHELD.",
+      "access_status": "OFFICIAL_EUREX_SETTLEMENT_INSTITUTIONAL_DATA_SERVICE_NOT_APPROVED_FOR_PRIVATE_USE",
+      "known_problem": "Public FST3 secondary contract quotes have different observation dates. The official exchange EOD settlement service is not available through the requested private-user route; a business/institutional contractual entitlement and full T/T-1/T-5 synchronized series would need separate approval. €STR spot is not an OIS forward curve.",
+      "required_for_activation": "Secure legal institutional/vendor access to official dated Eurex FST3 settlements and historical same-contract T/T-1/T-5 records, then separately validate licensing, compounding conventions, contract roll and 3M/6M/12M mapping. Otherwise WITHHELD.",
       "prohibited_shortcut": "Never join mixed-date TradingView FST3 quotes into one policy path, call futures OIS, or use ECB spot €STR as a future 3M/6M/12M OIS quote.",
       "public_probe_policy": "Public product contract specs establish instrument identity, not a certified curve or feed entitlement.",
-      "reviewed_as_of": "2026-10-19"
+      "reviewed_as_of": "2026-10-23",
+      "access_requirements": {
+        "access_route": "INSTITUTIONAL_OR_AUTHORIZED_VENDOR_ONLY",
+        "eligible_personal_settlement_feed_confirmed": false,
+        "licence_and_internal_use_cleared": false,
+        "market_data_settlement_available": false,
+        "secondary_quote_cross_date_join_allowed": false,
+        "source_terms_url": "https://www.eurex.com/ex-en/data/trading-files"
+      }
     },
     "CHF": {
       "preferred_source": "ICE Futures Europe Three-Month SARON futures (SA3) daily settlements",
@@ -75,11 +83,18 @@
       "source_url": "https://www.nzfbf.co.nz/benchmarks/closing-rates/nzos",
       "meeting_date_source_url": "https://www.nzfbf.co.nz/benchmarks/closing-rates/nzor",
       "access_terms_url": "https://www.nzfma.org/nzdata/",
-      "access_status": "BENCHMARK_EXISTS_BUT_PAID_SUBSCRIPTION_NOT_CONFIGURED_IN_REPO",
-      "known_problem": "NZFMA classifies NZOS/NZOR distribution as fee-liable; RBNZ B2 bank-bill/swap rates and ASX bank-bill futures are distinct and cannot replace OIS.",
-      "required_for_activation": "Acquire authorized data access (or eligible redistribution license), then ingest dated NZOS tenors 3M/6M/12M on the same observation date with historical 1D/1W.",
-      "prohibited_shortcut": "Promoting ASX 90-Day Bank Bill futures, RBNZ B2, or backward-looking OCR compound index to a prospective OIS curve."
+      "access_status": "NZOS_NZOR_LICENSE_REQUIRED_NO_ENTITLEMENT",
+      "known_problem": "NZFBF NZOS/NZOR are actual OCR OIS benchmark closes distributed under NZFMA NZdata fee-liable licensing. No authorized machine-access entitlement is configured. ASX NZ bank-bill futures, RBNZ government bond yields and NZ OCR Compound Index cannot replace the prospective OIS 3M/6M/12M curve.",
+      "required_for_activation": "Obtain documented NZdata NZOS/NZOR subscription and permitted internal/non-display/derived-publication rights, with same-date 3M/6M/12M closing observations, historical T/T-1/T-5 and authorized access. Otherwise WITHHELD, preserve ASX bank-bill proxy as direction only.",
+      "prohibited_shortcut": "Promoting ASX 90-Day Bank Bill futures, RBNZ B2, or backward-looking OCR compound index to a prospective OIS curve.",
+      "access_requirements": {
+        "access_route": "LICENSED_NZDATA_OR_AUTHORIZED_DATA_VENDOR",
+        "license_configured": false,
+        "market_data_settlement_available": false,
+        "proxy_substitutes_for_ois": false,
+        "source_terms_url": "https://www.nzfma.org/nzdata/"
+      }
     }
   },
-  "source_registry_note": "Operational EUR may be estimated without altering official OIS_DATA status. Official activation always requires separate certification. This is a dated reference, not a live claim of market prices."
+  "source_registry_note": "Updated source entitlement information on 2026-10-23. Neither private-service eligibility nor a vendor licence is in place for EUR/NZD official OIS. Secondary Eurex FST3 individual dated quotes and ASX bank-bill futures provide separate, explicitly non-OIS research context. Official OIS_DATA remains WITHHELD until approved from licensed same-basis dated records. Do not place private email correspondence or contact details in the public source plan."
 }
