@@ -1274,7 +1274,9 @@ async function getState(page){
            panelWidth,panelClient,nativeWidth,
            width:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
        });
-       const newValute=process.env.GITHUB_EVENT_NAME!=='pull_request'&&navigationVersion==='valute-source-focus-20261022';
+       const newValute=process.env.GITHUB_EVENT_NAME!=='pull_request'&&
+         ['FX_WITHHELD','MACRO_WITHHELD','MACRO_HISTORICAL','DXY_WITHHELD','SEPARATE_SOURCES'].includes(valuteFirst.state)&&
+         valuteFirst.disclosure===true;
        const validLead=newValute?
          (['FX_WITHHELD','MACRO_WITHHELD','MACRO_HISTORICAL','DXY_WITHHELD','SEPARATE_SOURCES'].includes(valuteFirst.state)&&
           (valuteFirst.state==='MACRO_HISTORICAL'?valuteFirst.lead?.includes('tesi Macro ancora alla baseline'):
