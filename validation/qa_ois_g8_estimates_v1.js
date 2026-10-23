@@ -66,13 +66,15 @@ for(const ccy of ['USD','EUR','CHF']){
  const source=liveOis.currencies[ccy],item=current.find(r=>r.ccy===ccy);
  if(source.operational_status==='WITHHELD'&&
     source.secondary_quote_context?.status==='INDICATIVE_OBSERVATIONS_NON_OIS'){
-   assert.equal(item.tier,'MIXED',ccy+' dates should remain visible only as context');
+   // Real input dates advance independently of this fixed 21 Oct QA replay.
+   // If the individual public quote is future-dated or too old for the
+   // replay, the correct result is no published research estimate.
+   assert(['MIXED','WITHHELD'].includes(item.tier),ccy+' research source not approved');
    assert.equal(item.official_ois,false);
-   // The live secondary contract archive can legitimately become partial:
-   // audit each available quote, never manufacture a complete 3-tenor curve.
    const available=tenors.filter(t=>item.points[t]);
-   assert(available.length>0,ccy+' MIXED requires at least one audited observation');
    assert(available.every(t=>item.points[t].source_quote_verified===true));
+   if(item.tier==='MIXED')assert(available.length>0,ccy+' MIXED requires audited observations');
+   else assert.equal(available.length,0,'WITHHELD cannot show fake quotes');
    const six=indicativeSixMonth(liveOis,TODAY)[ccy];
    if(item.points['6m']?.source_quote_verified===true){
      assert.equal(six?.type,'MIXED');
