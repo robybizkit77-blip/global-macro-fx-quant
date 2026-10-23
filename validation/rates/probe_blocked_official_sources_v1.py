@@ -38,7 +38,7 @@ def classify(*,code:int|None,content_type:str="",prefix:bytes=b"",error:str|None
         return "UNEXPECTED_HTTP_STATUS"
     ct=content_type.lower()
     if kind=="xlsx":
-        return "REACHABLE_UNVERIFIED_CONTENT" if prefix.startswith(b"PK\\x03\\x04") else "UNEXPECTED_FORMAT"
+        return "REACHABLE_UNVERIFIED_CONTENT" if prefix.startswith(b"PK\x03\x04") else "UNEXPECTED_FORMAT"
     if kind=="metadata":
         return ("REACHABLE_UNVERIFIED_CONTENT"
                 if ("json" in ct or "xml" in ct or "text/plain" in ct) and prefix.strip() else "UNEXPECTED_FORMAT")
@@ -89,7 +89,7 @@ def main():
     parser.add_argument("--output",default="/tmp/blocked-rates-source-access.json")
     args=parser.parse_args()
     result=build()
-    Path(args.output).write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\\n",encoding="utf-8")
+    Path(args.output).write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
     print(json.dumps(result,ensure_ascii=False))
     return 0
 
