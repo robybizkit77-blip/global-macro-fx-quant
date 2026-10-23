@@ -25,6 +25,10 @@ on:
       - 'validation/macro/v2_bls_shutdown_sparse_reentry_v1.py'
       - 'validation/macro/test_v2_bls_shutdown_sparse_reentry_v1.py'
       - 'validation/macro/MACRO_V2_BLS_SHUTDOWN_GAP_REENTRY_2026-10-23.md'
+      - 'validation/macro/fixtures/v2_bls_us_u3_2026_jan_sep_first_release_web_evidence.json'
+      - 'validation/macro/v2_bls_us_u3_2026_shadow_replay_v1.py'
+      - 'validation/macro/test_v2_bls_us_u3_2026_shadow_replay_v1.py'
+      - 'validation/macro/MACRO_V2_US_U3_NINE_2026_FIRST_RELEASES_STUDY_2026-10-23.md'
   workflow_dispatch:
 
 permissions:
@@ -173,6 +177,31 @@ jobs:
                     'eligible_for_live_scoring','eligible_for_backtest','writes_live_data'):
               assert r[k] is False,k
           print('BLS_OCT_2025_STRUCTURAL_CPS_GAP_NOV_DEC_REENTRY_RESEARCH_ONLY_PASS')
+          PY
+      - name: Audit nine original BLS U3 2026 first releases and historical PIT event cutoffs
+        run: |
+          set -euo pipefail
+          python -m unittest validation.macro.test_v2_bls_us_u3_2026_shadow_replay_v1 -v
+          python -m validation.macro.v2_bls_us_u3_2026_shadow_replay_v1 \
+            --asof 2026-10-23T12:00:00Z \
+            --out /tmp/macro-v2-shadow/us-u3-2026-nine-first-releases.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('/tmp/macro-v2-shadow/us-u3-2026-nine-first-releases.json').read_text())
+          assert r['releases_2026_visible_at_cutoff']==9
+          assert r['first_release_rows_visible_at_cutoff']==36
+          assert r['latest_reference_period']=='2026-09'
+          assert r['latest_rate_first_release_percent']==4.2
+          assert r['latest_released_at']=='2026-10-02T12:30:00+00:00'
+          assert abs(r['latest_research_descriptive_labour_intensity'])<1e-9
+          assert r['consecutive_month_normalizer_eligible'] is False
+          assert r['has_2025_10_missing_CPS_observation'] is True
+          assert r['source_evidence_archive_bytes_hashed'] is False
+          for key in ('eligible_for_current_macro_scoring','eligible_for_backtest',
+                      'safe_to_publish_new_D','safe_to_update_pair_theses','writes_live_data'):
+              assert r[key] is False,key
+          print('BLS_US_U3_2026_JAN_SEP_FIRST_RELEASE_CUTOFF_GUARD_RESEARCH_ONLY_PASS')
           PY
       - name: Confirm no runtime or website files were changed by tests
         run: |
