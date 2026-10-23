@@ -27,5 +27,9 @@ class G8GrowthInflationInventoryTests(unittest.TestCase):
   for v in x["USD"]:
    if v.get("category")=="Crescita":
     v["last_date"]="2099-01-01"
-  with self.assertRaises(ValueError):inspect(x)
+  r=inspect(x)
+  row=next(q for q in r["rows"] if q["currency"]=="USD" and q["pillar"]=="growth")
+  self.assertEqual(row["research_freshness"],"NO_VALID_DATED_VALUE")
+  self.assertIsNone(row["latest_observed_value"])
+  self.assertGreaterEqual(r["missing_valid_dated_value_slots"],1)
 if __name__=="__main__":unittest.main()
