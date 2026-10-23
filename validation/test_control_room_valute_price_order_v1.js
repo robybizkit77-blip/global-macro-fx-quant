@@ -14,6 +14,8 @@ vm.createContext(context);
 vm.runInContext(source.slice(start,end),context);
 const rank=context.valuteRelativeFixingRanks;
 assert.equal(typeof rank,'function');
+const firstRead=context.valuteHorizonFirstRead;
+assert.equal(typeof firstRead,'function','compared horizons use only verified ECB ranks');
 assert.equal(data.currencies.length,8);
 for(const h of [5,20]){
  const r=rank(data,h);
@@ -42,6 +44,29 @@ for(const h of [5,20]){
  assert.equal(recent.EUR,1);
  assert.equal(old.EUR,1);
 }
+for(const days of [5,20]){
+ const x=firstRead(data,days),primary=rank(data,days),
+       other=rank(data,days===5?20:5),ccy=primary.items[0].ccy;
+ const idx=other.items.findIndex(r=>r.ccy===ccy);
+ assert(x,'horizon first reading must be source derived');
+ assert.equal(x.ccy,ccy);
+ assert.equal(x.days,days);
+ assert.equal(x.asof,data.last_as_of);
+ assert.equal(x.source,'ECB_G8_PRICE_HISTORY');
+ assert.equal(x.otherDays,days===5?20:5);
+ assert.equal(x.otherRank,idx+1);
+ assert(Math.abs(x.percent-primary.items[0].percent)<1e-11);
+ assert(Math.abs(x.otherPercent-other.items[idx].percent)<1e-11);
+}
+assert.equal(firstRead(data,5).ccy,'AUD','AUD leads only the current recent 5-session window');
+assert.equal(firstRead(data,5).otherRank,7,'AUD is seventh on the longer overlapping 20-session window');
+assert.equal(firstRead(data,20).ccy,'GBP','GBP leads 20-day price momentum');
+assert.equal(firstRead(data,20).otherRank,5,'GBP ranks fifth on 5-day relative price momentum');
+assert.equal(firstRead(data,1),null,'cannot compare unsupported windows');
+const missingOld=structuredClone(data);
+missingOld.rows.at(-21).AUD=null;
+assert(rank(missingOld,5),'short source horizon remains valid with a missing 20-session observation');
+assert.equal(firstRead(missingOld,5),null,'no invented cross-horizon comparison for missing long history');
 assert.equal(rank(data,1),null,'unsupported periods must not fabricate rankings');
 assert.equal(rank(data,60),null);
 function altered(fn){const x=structuredClone(data);fn(x);return rank(x,5);}
@@ -55,6 +80,10 @@ assert(source.includes("data-vsm-days=\"5\"")&&source.includes("data-vsm-days=\"
   'both sourced horizons must be available in currency UI');
 assert(source.includes("mountValuteRelativeRanking(doc,strip,fx);"),
   'ranking should mount adjacent to validated currency provenance');
+assert(source.includes("rank.dataset.comparisonStatus='WITHHELD'"),
+ 'invalid longer horizon must not be labeled as a verified comparison');
+assert(source.includes('Le due finestre si sovrappongono: non prova una svolta.'),
+ 'never extrapolate an FX macro turning point from overlapping observed horizons');
 assert(source.includes("rank.dataset.tradeSignals='NONE'"),
   'never promote price ranking as executable trade signal');
 console.log('CONTROL_ROOM_V10_VALUTE_ECB_5_20_SESSION_RANKING_PASS');
