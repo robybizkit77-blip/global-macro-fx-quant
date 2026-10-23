@@ -19,6 +19,11 @@ assert x["status"]=="REVIEWABLE_NEW_OFFICIAL_PAIR"
 assert x["source_as_of"]=="2026-10-20"
 assert abs(x["curve_bp"]-30.9)<0.01
 assert x["eligible_for_automatic_promotion"] is False
+reported_frequency=copy.deepcopy(base)
+for row in reported_frequency["timeseries"]:
+    row["metadata"]["frequency"]="P1D_L"  # Observed on SNB official daily cube, 2026-10-23
+assert verify(reported_frequency)["status"]=="REVIEWABLE_NEW_OFFICIAL_PAIR"
+
 no_update=copy.deepcopy(base)
 for row in no_update["timeseries"]: row["values"].pop()
 assert verify(no_update)["status"]=="CURRENT_CANONICAL_DATE_RECONCILED"
