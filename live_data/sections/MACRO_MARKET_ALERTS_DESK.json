@@ -1,8 +1,51 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-23T21:47:53Z",
+  "generated_at_utc": "2026-10-23T22:46:21Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-c2cc6de27e5edcd9dcd2",
+      "observed_at_utc": "2026-10-23T16:56:57Z",
+      "headline": "Breakingviews - COMMENTARY: Tech stocks sound an uncomfortable 2008 echo",
+      "summary": "Reuters riporta: Breakingviews - COMMENTARY: Tech stocks sound an uncomfortable 2008 echo. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxQUXN1ZVNIZC1VU0lUMGpNbDJPcm56STFrWHZhdWVudXlDcnVOa3hTdDlickpNbjlES3hOUDVpNW44dGw5VEhGYXNJSkZZbVpFN3RodUFpQzZkNU5ITW1RWTNRbnNlaFRTRFNxWEpyVHdhaDhXcXRBU0ZuckM2NE9ENmhpVWJJUlo5bjdRNTNNS2NTbGtUaFNtTXppV3BqQm5nUk4tbVZLZ2E?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-bd60064e9bdb8f05d517",
+      "observed_at_utc": "2026-10-23T22:21:31Z",
+      "headline": "Bank of Canada to raise rates to 2.50% on October 28 and once again by end-March: Reuters poll",
+      "summary": "Reuters riporta: Bank of Canada to raise rates to 2.50% on October 28 and once again by end-March: Reuters poll. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "CAD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxNcXBVcldURXc1c3hRcmpNWXdhcWRVR1hibkVqNF9YM1V4NzIzdmlDUzlGZHpjaVJWQlp3M1N2ckpRMzlSdlZZRTRJcVloUTNnR0l4UE1fSXlhTXpZWFlqVGdYWEljWG9DdWpXRGQyaUlvVkdyNUlhZjF0TS1iRWNLYTZjZjNZZXc0Zi1fUzdvWm0xYWk4VmNiaU9WdHhVUno5WTBxMGhkNWpkZWVJUXA4bVdtYw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-ad1cbcd3c57b17e2a0d2",
+      "observed_at_utc": "2026-10-23T21:21:32Z",
+      "headline": "Wall St Week Ahead Earnings flood, Fed meeting will test rickety AI market rally",
+      "summary": "Reuters riporta: Wall St Week Ahead Earnings flood, Fed meeting will test rickety AI market rally. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxPR3FjeUJFd2Z6ZFBxOEFlLUx4anZlN1BqeFkxQ1pFcTdXTENYc0tMdW9RbjJ1Vk91Y2tmSXVoRDFCTmZoQ2cxN3BaSlFfTXplZUNZTFIzVmR3OTVmUVYzWnBXVkxRNXAtOEpBSUpIVjlBMnJ6cVViYnFSSHZoaC1CbkR5TnBzZndWNEo5aFlkWTVKY0hSYzRuOTlzUjYwcGlrcFJKQXhlbmFOMHNWLTRiRHZaM21fWEF1SDl1Mg?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-62e123f9be6435213cc0",
       "observed_at_utc": "2026-10-23T20:17:00Z",
@@ -1344,49 +1387,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxNY2dJZXdfdnptbDVvajUtNHBONy13T1Z5aEtVc3d2d2VDYUNpUEpTM1JxNGVZRFhiQmh1b1U2RWpOaW0zVndyQk9uSFZ6b0pQXzVvNUhRMFVXeEMzS3BrU1FkdE9tNEYxY21PdDFEWGplNkkwMkJ2Rkk5VVg2VUVDcXFIUmp4cUR4SnhqQ2h6b3hYTExtTkhCNGtqZWt6WUtUYURrc3owUUptdw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-0271c7731832584c7f87",
-      "observed_at_utc": "2026-10-21T02:10:00Z",
-      "headline": "Stocks rise with upbeat earnings; France's 10-year bond yield hits 5% mark",
-      "summary": "Reuters riporta: Stocks rise with upbeat earnings; France's 10-year bond yield hits 5% mark. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CREDIT",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxPMXhrSmpaMk8tc0RERnBieWlyRThFeDE5X25hNy1JYTZxX2o5Q0wyMlJ0RFZheXM0S1VPUUVVcTBobHlJR3hSa3prRjhjaUVGdXBNcGNybmU5anZLOU0zdXg2TmFoYXNqSnVuRXpxQ2dwTnBYTWpOZEdIQUtVVEVqN0h6TQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-3fc6ad8dbc00a17d2c46",
-      "observed_at_utc": "2026-10-21T18:11:00Z",
-      "headline": "Wall Street gains ground after SpaceX helps lift AI stocks",
-      "summary": "AP News riporta: Wall Street gains ground after SpaceX helps lift AI stocks. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "AP News · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNUGV1X1dKd0F3eTZSZ0F5ellKQVJuc3B1cEFzVGl4dFlSbVU3eFRJZm9lOXJjNDFHN1g4VGpZZlczQUdVR3ZRQ2h0VlpqaW0zU05LelZEb0I4eGJoVC1oZ0M5WktyVGJUZTZrbVBtdnRuNmpud1Y3WkF4bUI4R2xXQ3lTZnZMX09zOVZHOFhndWh0dWtyQ0VDakh0X24?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-7d5cd862259d994b660c",
-      "observed_at_utc": "2026-10-21T17:20:10Z",
-      "headline": "Brookings paper offers broad plan to shrink Fed balance sheet",
-      "summary": "Reuters riporta: Brookings paper offers broad plan to shrink Fed balance sheet. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxQOWJYd0NERVlESGhjUzBFQm1tQkdDMVZtbnZxXzByQkxIS29abXpTRXZqYXhyamV2b19FbUpCR2RoWW9aUGVvenh5Q20tVWpWQzhRYnQzTk1iaEtQZWxPTnJUZU5kUHR2NUxvMHlLS1JRR0g2dFktUEhCbDVvTGRUU2YybEk5SzFYRjRpZjFqUVhKQ0JQaElseUI2QjhGMmY1R3d1NGZxcmYwMVlyQ1dvWQ?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
