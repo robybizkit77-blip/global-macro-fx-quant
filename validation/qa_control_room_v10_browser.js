@@ -504,6 +504,26 @@ function expectedReactionFromMetrics(row){
   if(g8.some(c=>!ratesDetail.currencies.includes(c))||!ratesDetail.activeSection||
      !ratesDetail.hasPricing)throw Error(label+' rates focus/G8 detail failed: '+JSON.stringify(ratesDetail));
   
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return d?.getElementById('gmfq-yields-study')?.dataset.coverage==='8';
+  },null,{timeout:20000});
+  const yieldStudy=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page').contentDocument,
+      p=d.getElementById('gmfq-yields-study');
+    return {count:p.querySelectorAll('.gmfq-yield-row[data-ccy]').length,
+      recent:p.dataset.recent,historical:[...p.querySelectorAll('.gmfq-yield-row[data-state="HISTORICAL"]')].map(x=>x.dataset.ccy),
+      dates:[...p.querySelectorAll('.gmfq-yield-row[data-ccy]')].map(x=>x.dataset.asof),
+      snb:p.querySelector('[data-snb-10y="SEPARATE"]')?.textContent,
+      noCore:p.dataset.coreEffect==='NONE'&&p.dataset.pairEffect==='NONE',
+      width:p.scrollWidth,client:p.clientWidth};
+  });
+  if(yieldStudy.count!==8||yieldStudy.recent!=='6'||
+     JSON.stringify(yieldStudy.historical.slice().sort())!==JSON.stringify(['CHF','NZD'])||
+     !yieldStudy.snb?.includes('non calcolare spread misti')||!yieldStudy.noCore||
+     yieldStudy.width>yieldStudy.client+2)
+    throw Error(label+' G8 observed sovereign yield study not ready '+JSON.stringify(yieldStudy));
+
   // Explicit requirement: all eight currency estimates and certified sources
   // must be visible at first read. Method and sources remain accessible.
   await page.waitForFunction(()=>{

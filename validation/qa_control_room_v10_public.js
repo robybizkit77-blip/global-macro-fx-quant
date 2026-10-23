@@ -581,6 +581,25 @@ async function getState(page){
          const d=document.getElementById('gmfq-page')?.contentDocument;
          return d?.getElementById('gmfq-pricing-research')?.querySelector('.gmfq-research-plot svg, .gmfq-research-plot p');
        },null,{timeout:20000});
+       if(process.env.GITHUB_EVENT_NAME!=='pull_request'){
+         const y=await page.evaluate(()=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument,
+             p=d?.getElementById('gmfq-yields-study');
+           return {present:!!p,count:p?.querySelectorAll('.gmfq-yield-row[data-ccy]').length,
+             verified:p?.dataset.coverage,core:p?.dataset.coreEffect,pair:p?.dataset.pairEffect,
+             historical:[...p?.querySelectorAll('.gmfq-yield-row[data-state="HISTORICAL"]')||[]].map(x=>x.dataset.ccy),
+             snb:p?.querySelector('[data-snb-10y="SEPARATE"]')?.textContent,
+             width:p?.scrollWidth,client:p?.clientWidth};
+         });
+         if(!y.present||y.verified!=='8'||y.count!==8||
+            y.core!=='NONE'||y.pair!=='NONE'||
+            JSON.stringify(y.historical.sort())!==JSON.stringify(['CHF','NZD'])||
+            !y.snb?.includes('non calcolare spread misti')||
+            y.width>y.client+2)
+            throw Error(name+' G8 dated yields missing from public Rates research '+JSON.stringify(y));
+         console.log('CONTROL_ROOM_PUBLIC_G8_DATED_YIELDS_STUDY_GREEN',name,
+           JSON.stringify({count:y.count,historical:y.historical,noModelPromotion:true}));
+       }
        const research=await page.evaluate(async()=>{
          const d=document.getElementById('gmfq-page').contentDocument;
          const panel=d.getElementById('gmfq-pricing-research');
