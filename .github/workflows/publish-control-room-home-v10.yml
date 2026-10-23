@@ -18,6 +18,7 @@ on:
       - 'validation/test_control_room_pair_model_date_provenance_v1.js'
       - 'validation/test_control_room_pair_interpretation_baseline_gate_v1.js'
       - 'validation/test_control_room_pair_ordering_v1.js'
+      - 'validation/test_control_room_valute_price_order_v1.js'
       - 'validation/cb_pricing/build_ois_source_readiness_view_v1.py'
       - 'validation/cb_pricing/test_build_ois_source_readiness_view_v1.py'
       - 'validation/control_room_nzd_public_contract_v1.js'
@@ -39,6 +40,7 @@ on:
       - 'validation/test_control_room_pair_model_date_provenance_v1.js'
       - 'validation/test_control_room_pair_interpretation_baseline_gate_v1.js'
       - 'validation/test_control_room_pair_ordering_v1.js'
+      - 'validation/test_control_room_valute_price_order_v1.js'
       - 'validation/cb_pricing/build_ois_source_readiness_view_v1.py'
       - 'validation/cb_pricing/test_build_ois_source_readiness_view_v1.py'
       - 'validation/control_room_nzd_public_contract_v1.js'
@@ -78,6 +80,7 @@ jobs:
           node validation/test_control_room_pair_model_date_provenance_v1.js
           node validation/test_control_room_pair_interpretation_baseline_gate_v1.js
           node validation/test_control_room_pair_ordering_v1.js
+          node validation/test_control_room_valute_price_order_v1.js
           python validation/cb_pricing/test_build_ois_source_readiness_view_v1.py
 
       - name: Publish only Control Room v10 preview loader and navigation adapter

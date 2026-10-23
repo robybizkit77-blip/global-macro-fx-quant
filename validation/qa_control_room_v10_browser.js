@@ -57,8 +57,15 @@ function expectedReactionFromMetrics(row){
  if(vals.length<2)return 'WITHHELD';
  const bp=Number.parseFloat(vals[0]),fx=Number.parseFloat(vals[1]);
  if(!Number.isFinite(bp)||!Number.isFinite(fx))return 'WITHHELD';
+ const directional=Math.sign(bp)===Math.sign(fx)?'COERENTE':'DIVERGENTE';
+ // Display rounds 2Y to 0.1bp and FX to 0.01%. Near either
+ // cut-off raw values cannot be reconstructed from rounded labels.
+ if(Math.abs(Math.abs(bp)-2)<=0.05000001||
+    Math.abs(Math.abs(fx)-0.05)<=0.00500001)
+   return row?.state==='NON_CONCLUSIVO'||row?.state===directional?
+     row.state:'INVALID_ROUNDED_THRESHOLD_VERDICT';
  if(Math.abs(bp)<2||Math.abs(fx)<0.05)return 'NON_CONCLUSIVO';
- return Math.sign(bp)===Math.sign(fx)?'COERENTE':'DIVERGENTE';
+ return directional;
 }
 (async()=>{
  const browser=await chromium.launch({headless:true});
@@ -1015,7 +1022,7 @@ function expectedReactionFromMetrics(row){
      !valute.priorityFirst||
      JSON.stringify(valute.sourceKeys)!==JSON.stringify(['fixing','dxy','macro'])||
      !valute.text.includes('non il DXY ICE ufficiale')||
-     !valute.text.includes('non un nuovo ranking di forza relativa')||
+     !valute.text.includes('Il ranking momentum G8 qui sotto è calcolato separatamente')||
      valute.innerWidth>valute.innerClient+2||
      valute.width>Math.max(valute.viewport+16,valute.nativeWidth+2))
     throw Error(label+' Valute provenance contract '+JSON.stringify(valute));
@@ -1032,6 +1039,46 @@ function expectedReactionFromMetrics(row){
     throw Error(label+' Valute full source ledger inaccessible '+JSON.stringify(expandedValute));
   await valuteToggle.click();
   await page.screenshot({path:'v10-qa-images/'+label+'-valute-sources.png',fullPage:true});
+  // Relative price ranking: two explicit horizons, all eight currencies, no
+  // reinterpretation of the frozen Macro baseline or trade readiness.
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return d?.getElementById('gmfq-vsc-momentum')?.dataset.status==='OBSERVED';
+  },null,{timeout:30000});
+  const readValuteMomentumRank=async()=>page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page').contentDocument,
+      p=d.getElementById('gmfq-vsc-momentum');
+    return {status:p?.dataset.status,source:p?.dataset.source,signals:p?.dataset.tradeSignals,
+      horizon:p?.dataset.horizon,asof:p?.dataset.asof,from:p?.dataset.from,
+      rows:[...p?.querySelectorAll('ol li')||[]].map(x=>({
+        ccy:x.dataset.vsmCcy,n:Number(x.dataset.vsmRank),text:x.textContent.trim()})),
+      note:p?.querySelector('.gmfq-vsm-caution')?.textContent,
+      width:p?.scrollWidth,client:p?.clientWidth,
+      doc:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
+  });
+  const expectedRank=h=>{
+    const old=fxHistory.rows.at(-h-1),recent=fxHistory.rows.at(-1);
+    return g8.map(ccy=>({ccy,change:-Math.log(recent[ccy]/old[ccy])}))
+      .sort((a,b)=>b.change-a.change||a.ccy.localeCompare(b.ccy))
+      .map(x=>x.ccy);
+  };
+  const checkRank=(actual,h)=>{
+    const expected=expectedRank(h);
+    if(actual.status!=='OBSERVED'||actual.source!=='ECB_G8_PRICE_HISTORY'||
+       actual.signals!=='NONE'||actual.horizon!==String(h)||
+       actual.asof!==fxHistory.last_as_of||actual.from!==fxHistory.rows.at(-h-1).Date||
+       actual.rows.length!==8||
+       actual.rows.some((x,i)=>x.ccy!==expected[i]||x.n!==i+1||!x.text.includes('%'))||
+       !actual.note?.includes('non è forza Macro/Tassi')||
+       actual.width>actual.client+2||actual.doc>actual.viewport+16)
+      throw Error(label+' G8 '+h+'-session momentum/source semantics failed '+JSON.stringify({actual,expected}));
+  };
+  checkRank(await readValuteMomentumRank(),5);
+  await page.frameLocator('#gmfq-page').locator('#gmfq-vsc-momentum button[data-vsm-days="20"]').click();
+  checkRank(await readValuteMomentumRank(),20);
+  await page.frameLocator('#gmfq-page').locator('#gmfq-vsc-momentum button[data-vsm-days="5"]').click();
+  checkRank(await readValuteMomentumRank(),5);
+  console.log('CONTROL_ROOM_V10_VALUTE_ECB_MOMENTUM_RANK_GREEN',label);
   // Negative ECB fixture: missing one G8 spot leg invalidates the aggregate
   // official-fixing claim, without altering underlying ranking/bias.
   await page.route('**/ECB_G8_PRICE_HISTORY.json',async r=>{
@@ -1053,6 +1100,8 @@ function expectedReactionFromMetrics(row){
   if(invalidFx.fx!==''||!invalidFx.text.includes('FX BCE non corrente o non verificabile')||
      !invalidFx.text.includes('Prima verifica: fixing BCE FX non corrente'))
     throw Error(label+' Valute invalid FX not withheld '+JSON.stringify(invalidFx));
+  const rankingAbsent=await page.evaluate(()=>!document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-vsc-momentum'));
+  if(!rankingAbsent)throw Error(label+' unverified ECB observations must never produce a momentum ranking');
   // SAME invalid ECB fixture must be WITHHELD in the Home audit and Pair
   // Deep Dive, not only in Valute. No canonical engine field is modified.
   await page.goto(url+'#/home?source-parity-test=1',{waitUntil:'domcontentloaded',timeout:120000});
@@ -1543,9 +1592,9 @@ function expectedReactionFromMetrics(row){
      !deltaEURUSD.text?.includes('diagnosi qualitativa'))
     throw Error(label+' EURUSD history-derived 2Y changes vs model not separated '+JSON.stringify(deltaEURUSD));
 
-  // Same-day 2Y country spread (EUR - USD) widened +6.7 bp while
-  // ECB EUR/USD fixing rose between EXACTLY 15 and 16 Oct: indicative
-  // directional consistency, not event-study causal proof.
+  // Compare the actual common-date 2Y spreads and ECB EUR/USD fixing.
+  // Rounded display values cannot resolve a borderline raw threshold;
+  // this remains descriptive consistency, not event-study causality.
   const eurReaction=await page.evaluate(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument;
     const c=d?.getElementById('gmfq-pair-market-reaction');
