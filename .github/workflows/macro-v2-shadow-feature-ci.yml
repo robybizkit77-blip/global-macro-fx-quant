@@ -36,6 +36,8 @@ on:
       - 'validation/macro/test_v2_bls_intraday_evidence_gate_v1.py'
       - 'validation/macro/v2_eurusd_intraday_csv_research_v1.py'
       - 'validation/macro/test_v2_eurusd_intraday_csv_research_v1.py'
+      - 'validation/macro/v2_dukascopy_bi5_hour_probe_v1.py'
+      - 'validation/macro/test_v2_dukascopy_bi5_hour_probe_v1.py'
       - 'validation/macro/MACRO_V2_BLS_INTRADAY_EVIDENCE_ACQUISITION_2026-10-23.md'
   workflow_dispatch:
 
@@ -258,6 +260,29 @@ jobs:
           PY
       - name: Verify offline FX tick research gate, no real feed assumed
         run: python -m unittest validation.macro.test_v2_eurusd_intraday_csv_research_v1 -v
+      - name: Validate BI5 hour decoding and bounded event-window selection
+        run: python -m unittest validation.macro.test_v2_dukascopy_bi5_hour_probe_v1 -v
+      - name: Try original October 2 Dukascopy BI5 hourly source (external availability)
+        continue-on-error: true
+        run: |
+          timeout 35s python -m validation.macro.v2_dukascopy_bi5_hour_probe_v1 \
+            --out /tmp/macro-v2-shadow/eurusd-bi5-oct02-first-real-hour.json
+      - name: Report whether source bytes were actually acquired
+        if: always()
+        run: |
+          if [ -f /tmp/macro-v2-shadow/eurusd-bi5-oct02-first-real-hour.json ]; then
+            python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('/tmp/macro-v2-shadow/eurusd-bi5-oct02-first-real-hour.json').read_text())
+          print('EXTERNAL_SOURCE_ACQUIRED',
+                'ticks',r['tick_count'],
+                'window_complete',r['fx_window_complete'],
+                'hash',r['sha256'])
+          PY
+          else
+            echo "EXTERNAL_SOURCE_NOT_ACQUIRED: no valid hourly source receipt; no quote is claimed"
+          fi
       - name: Confirm no runtime or website files were changed by tests
         run: |
           git diff --exit-code -- live_data site payload dashboard
