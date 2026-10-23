@@ -2,7 +2,7 @@
 'use strict';
 const {chromium}=require('playwright');
 const fs=require('fs'),path=require('path');
-const {romeTodayIso}=require('../site/control-room-preview/ois-pricing-estimates-v1.js');
+const {romeTodayIso,scenarioSixMonth}=require('../site/control-room-preview/ois-pricing-estimates-v1.js');
 const DATA=path.join(process.cwd(),'live_data/sections');
 const dxyFeed=JSON.parse(fs.readFileSync(path.join(DATA,'DXY_SYNTHETIC_ECB.json'),'utf8'));
 const nzdProxy=JSON.parse(fs.readFileSync(path.join(DATA,'NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),'utf8'));
@@ -11,7 +11,10 @@ if(dxyFeed.schema!=='GMFQ_DXY_SYNTHETIC_ECB_V1'||dxyFeed.not_official_ice!==true
 if(nzdProxy.schema!=='GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1'||
    nzdProxy.status!=='LIVE_DIRECTIONAL_PROXY_READY')throw Error('NZD directional proxy contract failed');
 const dxyDisplayed=Number(dxyFeed.value).toFixed(2);
-const nzdDisplayed=Number(nzdProxy.horizons['6m'].implied_bank_bill_rate).toFixed(2);
+const nzdScenario=scenarioSixMonth(
+ JSON.parse(fs.readFileSync(path.join(DATA,'OIS_OPERATIONAL_VIEW.json'),'utf8')),
+ nzdProxy,romeTodayIso()).NZD;
+const nzdDisplayed=Number(nzdScenario?.value??nzdProxy.horizons['6m'].implied_bank_bill_rate).toFixed(2);
 const ratesFeed=JSON.parse(fs.readFileSync(path.join(DATA,'NATIVE_RATES_DATA.json'),'utf8'));
 const setupFeed=JSON.parse(fs.readFileSync(path.join(DATA,'PAIR_SETUP_OPERATIONAL_VIEW.json'),'utf8'));
 const operational=JSON.parse(fs.readFileSync(path.join(DATA,'OIS_OPERATIONAL_VIEW.json'),'utf8'));
@@ -356,10 +359,12 @@ function expectedReactionFromMetrics(row){
     fatal.push('Home flagged currency tiles or DXY disclosure missing '+JSON.stringify(r.flags));
   if(r.pricing.length!==8||new Set(r.pricing.map(x=>x.ccy)).size!==8||
      r.pricing.filter(x=>x.status==='OFFICIAL_REPRICING').length!==4||
-     r.pricing.some(x=>!['OFFICIAL_REPRICING','FUTURES_LEVEL_ONLY','BANK_BILL_PROXY','WITHHELD'].includes(x.status)||
+     r.pricing.some(x=>!['OFFICIAL_REPRICING','FUTURES_LEVEL_ONLY','CASH_CARRY_SCENARIO','BANK_BILL_PROXY','WITHHELD'].includes(x.status)||
        (x.allowed==='true')!==(x.status==='OFFICIAL_REPRICING'))||
      r.pricing.some(x=>x.status==='FUTURES_LEVEL_ONLY'&&!x.content.includes('PX'))||
-     r.pricing.some(x=>x.status==='BANK_BILL_PROXY'&&!x.content.includes('BB')))
+     r.pricing.some(x=>x.status==='BANK_BILL_PROXY'&&!x.content.includes('BB'))||
+     r.pricing.some(x=>x.status==='CASH_CARRY_SCENARIO'&&
+       (x.ccy!=='NZD'||!nzdScenario||!x.content.includes(nzdDisplayed+'% ST')||x.allowed!=='false')))
     fatal.push('6M pricing source tiers wrong: '+JSON.stringify(r.pricing));
   if(!['RECENT_VALIDATED','WITHHELD'].includes(r.pulse.state)||
      !r.pulse.text.includes('non titoli giornalistici in tempo reale')||
@@ -394,7 +399,9 @@ function expectedReactionFromMetrics(row){
   if((r.dxy||'').trim()!==dxyDisplayed)fatal.push('DXY synthetic not synchronized with its source: '+r.dxy+' != '+dxyDisplayed);
   if(!r.noApprofondisci)fatal.push('old overlay link still shown');
   if(r.rateSeries.length!==8)fatal.push('missing G8 yield lines');
-  if(r.oisCount!==8||!r.nzdbb?.includes(nzdDisplayed))fatal.push('NZD directional proxy missing or stale');
+  if(r.oisCount!==8||(nzdScenario&&!r.nzdbb?.includes(nzdDisplayed))||
+     (!nzdScenario&&r.pricing.some(x=>x.ccy==='NZD'&&x.status==='CASH_CARRY_SCENARIO')))
+    fatal.push('NZD dated scenario / directional proxy mismatch');
   const g8=['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'];
   if(g8.some(c=>!r.rateBarTexts.includes(c)))fatal.push('G8 2Y bars missing currency labels');
   // A recently certified NZD yield supersedes the earlier NZD/AUD estimate.
