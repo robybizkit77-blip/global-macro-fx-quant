@@ -16,12 +16,41 @@ vm.createContext(context);
 vm.runInContext(source.slice(start,end),context);
 const rank=context.pairDeskOrdering;
 assert.equal(typeof rank,'function');
+const overlap=context.pairDeskFocusOverlap;
+assert.equal(typeof overlap,'function','top-eight overlap uses same canonical source order');
 const result=rank(setup,model);
 assert(result,'canonical source ordering must be available');
 assert.equal(result.count,28);
 assert.equal(result.priceAsOf,setup.price_asof);
 assert.equal(result.macroAsOf,setup.macro_baseline_asof);
 assert.equal(result.baselineHistorical,true);
+for(const mode of ['setup','thesis']){
+ const o=overlap(result,mode);
+ assert(o,'valid top-eight overlap is available');
+ assert.equal(o.total,8);
+ assert.equal(Object.values(o.frequencies).reduce((a,b)=>a+b,0),16,'eight pair rows carry 16 currency legs');
+ assert.equal(new Set(o.repeated).size,o.repeated.length);
+ const first=result[mode].slice(0,8);
+ for(const c of FX){
+   const occ=first.filter(x=>x.code.slice(0,3)===c||x.code.slice(3)===c).length;
+   assert.equal(o.frequencies[c],occ,'currency overlap must be recomputed from exact canonical pair legs');
+   assert.equal(o.favored[c],first.filter(x=>x.fav===c).length,
+     'favorite recurrence must be from canonical source, not an inferred trading direction');
+ }
+ assert.equal(o.withRisks,first.filter(x=>x.quality==='CON RISCHI').length);
+ assert.equal(o.max,Math.max(...Object.values(o.frequencies)));
+}
+assert.equal(overlap(result,'setup').withRisks,7,'seven current top setups still have explicit risk');
+assert.equal(overlap(result,'setup').frequencies.USD,4);
+assert.equal(overlap(result,'setup').favored.USD,4);
+assert.equal(overlap(result,'thesis').frequencies.USD,5);
+assert.equal(overlap(result,'thesis').favored.USD,5);
+assert.equal(overlap(result,'unapproved'),null);
+assert.equal(overlap({setup:[{code:'EURUSD'}]},'setup'),null);
+const invalidFocus=structuredClone(result);
+invalidFocus.setup[0].fav='CAD';
+assert.equal(overlap(invalidFocus,'setup'),null,'a source-contradicting favored currency fails closed');
+
 for(const mode of ['setup','thesis']){
  const rows=result[mode];
  assert.equal(rows.length,28);
@@ -87,4 +116,8 @@ assert(source.includes('MutationObserver(()=>apply())'),'native search/re-render
 assert(source.includes("check.textContent='Primo controllo · '+r.firstCheck"),'each native pair risk has a visible first research check');
 assert(source.includes("tbody.append(...sorted)"),'native 28-row table, not a new duplicative list');
 assert(source.includes("hasTradeRanking='false'"),'must never claim score or trade signal');
+assert(source.includes('Sovrapposizione valutaria, non correlazione né rischio portafoglio stimati.'),
+  'currency overlap must never be presented as statistical or portfolio risk');
+assert(source.includes("overlap.dataset.status='OBSERVED'"),
+  'first-reading overlap should show source provenance in native pair panel');
 console.log('CONTROL_ROOM_V10_PAIR_ORDERING_28_SOURCE_GUARDS_PASS');
