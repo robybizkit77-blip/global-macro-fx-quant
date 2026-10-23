@@ -276,6 +276,12 @@ function oisAll(doc,ois,proxy){
   try{indicative=api.indicativeSixMonth(ois,romeTodayIso())||{}}
   catch(e){console.warn('[GMFQ 6M indicative WITHHELD]',String(e))}
  }
+ let scenarios={};
+ if(ois?.schema==='GMFQ_OIS_OPERATIONAL_VIEW_V1'&&
+    typeof api?.scenarioSixMonth==='function'){
+  try{scenarios=api.scenarioSixMonth(ois,proxy,romeTodayIso())||{};}
+  catch(e){console.warn('[GMFQ Home NZD scenario unavailable]',String(e))}
+ }
  const nzReady=proxy?.schema==='GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1'&&
   proxy.status==='LIVE_DIRECTIONAL_PROXY_READY'&&fresh(proxy.as_of,4)&&
   proxy.governance?.substitutes_for_ois_level===false&&
@@ -286,21 +292,32 @@ function oisAll(doc,ois,proxy){
   const official=officialPricingCurrent(x),delta=official?num(x.horizons['6m'].policy_delta_bp):null;
   const p=indicative[k],v=p&&p.is_official_ois===false&&p.policy_delta_allowed===false&&
     p.pair_effect==='NONE'&&num(p.value)!==null&&fresh(p.quote_as_of,4)?p:null;
+  const q=k==='NZD'?scenarios.NZD:null;
+  const sc=q&&q.currency==='NZD'&&q.type==='SCENARIO'&&
+   q.is_official_ois===false&&q.policy_delta_allowed===false&&
+   q.pair_effect==='NONE'&&q.core_effect==='NONE'&&
+   q.backtest_eligible_as_official===false&&fresh(q.quote_as_of,5)&&
+   Array.isArray(q.range)&&q.range.length===2&&
+   num(q.value)!==null&&num(q.range[0])!==null&&num(q.range[1])!==null&&
+   q.range[0]<q.value&&q.value<q.range[1]?q:null;
   const bill=k==='NZD'&&nzReady?num(proxy.horizons?.['6m']?.implied_bank_bill_rate):null;
-  return {k,delta,official,indicative:v,bill};
+  return {k,delta,official,indicative:v,scenario:sc,bill};
  });
  const max=Math.max(65,...rows.map(x=>Math.abs(x.delta||0)));
  host.innerHTML=rows.map(x=>{
   const state=x.official?'OFFICIAL_REPRICING':x.indicative?'FUTURES_LEVEL_ONLY':
-   x.k==='NZD'&&x.bill!==null?'BANK_BILL_PROXY':'WITHHELD';
+   x.scenario?'CASH_CARRY_SCENARIO':x.k==='NZD'&&x.bill!==null?'BANK_BILL_PROXY':'WITHHELD';
   const day=x.official?ois.currencies[x.k].as_of:
-   x.indicative?x.indicative.quote_as_of:state==='BANK_BILL_PROXY'?proxy.as_of:'—';
+   x.indicative?x.indicative.quote_as_of:x.scenario?x.scenario.quote_as_of:
+   state==='BANK_BILL_PROXY'?proxy.as_of:'—';
   const subtitle=state==='OFFICIAL_REPRICING'?'Δ 6M da fonte certificata':
    state==='FUTURES_LEVEL_ONLY'?'Futures indicativo · solo livello':
+   state==='CASH_CARRY_SCENARIO'?'Stima Bank Bill–OCR · fascia '+fmt(x.scenario.range[0],2)+'–'+fmt(x.scenario.range[1],2)+'% · NON ΔOIS':
    state==='BANK_BILL_PROXY'?'Bank Bill · non OIS':'OIS/6M non certificato';
   const readable=state==='OFFICIAL_REPRICING'?
    ((x.delta>=0?'+':'')+fmt(x.delta,0)+' bp'):
    state==='FUTURES_LEVEL_ONLY'?'≈'+fmt(x.indicative.value,2)+'% PX':
+   state==='CASH_CARRY_SCENARIO'?'≈'+fmt(x.scenario.value,2)+'% ST':
    state==='BANK_BILL_PROXY'?'≈'+fmt(x.bill,2)+'% BB':'NON CERT.';
   const w=x.official?Math.max(2,Math.abs(x.delta)/max*100):0;
   return '<div class="oisrow gmfq-six-month-row'+(x.k==='NZD'?' gmfq-nzd-proxy':'')+'" data-ccy="'+x.k+'" data-pricing-state="'+state+
@@ -313,7 +330,7 @@ function oisAll(doc,ois,proxy){
    '<strong>'+readable+'</strong></div>';
  }).join('')+
  '<div class="oisnote">Δ bp = repricing 6M certificato (OIS o futures monetari verificati). '+
- 'PX = livello futures indicativo, non Δ policy. PROXY BB ≠ OIS: Bank Bill NZD, non Δ OCR. '+
+ 'PX = livello futures indicativo, non Δ policy. ST = scenario empirico NZD (Bank Bill corretto per basis, fascia in tooltip), non OIS e non Δ OCR. PROXY BB ≠ OIS: Bank Bill NZD, non Δ OCR. '+
  'NON CERT. = nessun livello comparabile verificato.</div>';
 }
 function dxyLine(data){
@@ -1407,7 +1424,7 @@ function pairModelEvidenceState(macroDay,priceDay){
    macroDay<=priceDay;
  return {verified,current:verified&&age<=10,historical:verified&&age>10};
 }
-function pairMacroRatesComparison(code,pair,rates,ois,modelDay,macroDay){
+function pairMacroRatesComparison(code,pair,rates,ois,modelDay,macroDay,proxy){
  const a=code.slice(0,3),b=code.slice(3,6),s=pair?.decision_frame||{};
  const modelState=pairModelEvidenceState(macroDay,modelDay);
  const safeSide=(v)=>modelState.verified&&(v===a||v===b)?v:null;
@@ -1421,6 +1438,12 @@ function pairMacroRatesComparison(code,pair,rates,ois,modelDay,macroDay){
      indicative6m=window.GMFQ_OIS_RESEARCH_V1.indicativeSixMonth(
        ois,romeTodayIso())||{};
    }catch(e){console.warn('[GMFQ Pair indicative 6M unavailable]',String(e))}
+ }
+ let scenario6m={};
+ if(ois?.schema==='GMFQ_OIS_OPERATIONAL_VIEW_V1'&&
+    typeof window.GMFQ_OIS_RESEARCH_V1?.scenarioSixMonth==='function'){
+  try{scenario6m=window.GMFQ_OIS_RESEARCH_V1.scenarioSixMonth(ois,proxy,romeTodayIso())||{};}
+  catch(e){console.warn('[GMFQ Pair NZD scenario unavailable]',String(e))}
  }
  const sideText=(v)=>v===a?'Favorisce '+FLAG[a]+' '+a:v===b?'Favorisce '+FLAG[b]+' '+b:
   'Non distingue chiaramente le due valute';
@@ -1448,11 +1471,22 @@ function pairMacroRatesComparison(code,pair,rates,ois,modelDay,macroDay){
    context.is_official_ois===false&&context.policy_delta_allowed===false&&
    context.pair_effect==='NONE'&&context.core_effect==='NONE'&&
    num(context.value)!==null&&fresh(context.quote_as_of,5);
+  const sc=!p.ok&&c==='NZD'?scenario6m.NZD:null;
+  const scValid=sc&&sc.currency==='NZD'&&sc.type==='SCENARIO'&&
+   sc.is_official_ois===false&&sc.policy_delta_allowed===false&&
+   sc.pair_effect==='NONE'&&sc.core_effect==='NONE'&&
+   sc.backtest_eligible_as_official===false&&
+   Array.isArray(sc.range)&&sc.range.length===2&&
+   num(sc.value)!==null&&num(sc.range[0])!==null&&num(sc.range[1])!==null&&
+   sc.range[0]<sc.value&&sc.value<sc.range[1]&&fresh(sc.quote_as_of,5);
   const fwd=p.ok?('6M '+(p.delta>0?'+':'')+fmt(p.delta,1)+' bp · '+p.instrument+
    ' · '+p.date):contextValid?
    '6M repricing policy non certificato · '+context.label+
      ' ≈ '+fmt(context.value,3)+'% · '+context.contract+
-     ' · '+context.quote_as_of+' · NON ΔOIS, solo contesto':
+     ' · '+context.quote_as_of+' · NON ΔOIS, solo contesto':scValid?
+   '6M scenario empirico ≈'+fmt(sc.value,2)+'% · fascia '+
+   fmt(sc.range[0],2)+'–'+fmt(sc.range[1],2)+'% · Bank Bill 90gg con basis RBNZ · '+
+   sc.quote_as_of+' · NON ΔOIS, solo contesto':
    '6M pricing WITHHELD · '+(p.date||'non verificato');
   return '<div class="gmfq-compare-leg" data-gmfq-compare-ccy="'+c+'"><strong>'+
    FLAG[c]+' '+c+'</strong><small>'+htmlEscape(ratesLine)+'</small>'+
@@ -2131,9 +2165,9 @@ async function mountPairResearch(doc){
  const inputs=await Promise.allSettled([
   feed('PAIR_SETUP_OPERATIONAL_VIEW.json'),feed('ECB_G8_PRICE_HISTORY.json'),
   feed('NATIVE_RATES_DATA.json'),feed('OIS_OPERATIONAL_VIEW.json'),
-  feed('D.json')]);
+  feed('D.json'),feed('NZD_CB_PRICING_DIRECTIONAL_PROXY.json')]);
  if(frame.contentDocument!==doc||route()!=='coppie')return;
- const [setup,fx,rates,ois,model]=inputs.map(x=>x.status==='fulfilled'?x.value:null);
+ const [setup,fx,rates,ois,model,proxy]=inputs.map(x=>x.status==='fulfilled'?x.value:null);
  const ok=setup?.schema==='GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1'&&
   setup.status==='CURRENT_CANONICAL_ENGINE'&&setup.pair_count===28&&
   Object.keys(setup.pairs||{}).length===28&&setup.price_audit?.status==='PASS'&&
@@ -2214,7 +2248,7 @@ async function mountPairResearch(doc){
     'La data del fixing e quella del motore coincidono, oppure il fixing più recente non è verificato.';
   // All diagnostics remain verbatim and source-derived; only reading order and
   // disclosure state change. The canonical model and 28 pair states are untouched.
-  const comparison=pairMacroRatesComparison(code,setup.pairs[code],rates,ois,setup.price_asof,macroDay);
+  const comparison=pairMacroRatesComparison(code,setup.pairs[code],rates,ois,setup.price_asof,macroDay,proxy);
   const changes=pairWhatChangedEvidence(code,setup.pairs[code],rates,setup.price_asof,macroDay);
   const reaction=pairMarketReactionAudit(code,rates,fxOk?fx:null);
   const decision=pairThesisReactionBridge(code,setup.pairs[code],setup.price_asof,reaction,macroDay);
