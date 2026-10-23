@@ -1,0 +1,103 @@
+{
+  "schema": "GMFQ_BLS_U3_2026_FIRST_RELEASE_SHADOW_EVIDENCE_V1",
+  "status": "OFFICIAL_BLS_ARCHIVED_HEADLINE_READS_NOT_IMMUTABLE_BYTES_CERTIFIED",
+  "currency": "USD",
+  "pillar": "labour",
+  "series_id": "LNS14000000",
+  "fred_alias": "UNRATE",
+  "method": "BLS_CPS_U3_SEASONALLY_ADJUSTED_FIRST_PUBLICATION_HEADLINE",
+  "source_archive": "https://www.bls.gov/bls/news-release/empsit.htm",
+  "source_release_calendar": "https://www.bls.gov/cps/publications/release-calendar.htm",
+  "pre_gap_manifest": "validation/macro/fixtures/v2_bls_us_unrate_25_first_releases_2023_09_2025_09.json",
+  "shutdown_manifest": "validation/macro/fixtures/v2_bls_us_unemployment_shutdown_2025_gap_resumption.json",
+  "structural_missing_cps_period": "2025-10",
+  "coverage_first_period": "2026-01",
+  "coverage_last_period": "2026-09",
+  "latest_observation_first_published_utc": "2026-10-02T12:30:00+00:00",
+  "next_release_not_yet_published_at_asof": {
+    "reference_period": "2026-10",
+    "scheduled": "2026-11-06T08:30:00-05:00"
+  },
+  "evidence_independently_hashed": false,
+  "full_vintage_revision_chain_certified": false,
+  "first_release_values": [
+    {
+      "observation_period": "2026-01",
+      "released_at": "2026-02-11T08:30:00-05:00",
+      "value": 4.3,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_02112026.htm"
+    },
+    {
+      "observation_period": "2026-02",
+      "released_at": "2026-03-06T08:30:00-05:00",
+      "value": 4.4,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_03062026.htm"
+    },
+    {
+      "observation_period": "2026-03",
+      "released_at": "2026-04-03T08:30:00-04:00",
+      "value": 4.3,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_04032026.htm"
+    },
+    {
+      "observation_period": "2026-04",
+      "released_at": "2026-05-08T08:30:00-04:00",
+      "value": 4.3,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_05082026.htm"
+    },
+    {
+      "observation_period": "2026-05",
+      "released_at": "2026-06-05T08:30:00-04:00",
+      "value": 4.3,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_06052026.htm"
+    },
+    {
+      "observation_period": "2026-06",
+      "released_at": "2026-07-02T08:30:00-04:00",
+      "value": 4.2,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_07022026.htm"
+    },
+    {
+      "observation_period": "2026-07",
+      "released_at": "2026-08-07T08:30:00-04:00",
+      "value": 4.1,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_08072026.htm"
+    },
+    {
+      "observation_period": "2026-08",
+      "released_at": "2026-09-04T08:30:00-04:00",
+      "value": 4.1,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_09042026.htm"
+    },
+    {
+      "observation_period": "2026-09",
+      "released_at": "2026-10-02T08:30:00-04:00",
+      "value": 4.2,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_10022026.htm"
+    }
+  ],
+  "governance": {
+    "model": "SPARSE_EVENT_DESCRIPTIVE_LEVEL_ONLY",
+    "training_window_previous_first_releases": 24,
+    "previous_2025_10_cps_hole_imputed": false,
+    "strict_monthly_macro_v2_still_fails_gap": true,
+    "monthly_velocity_through_missing_period": null,
+    "monthly_acceleration_through_missing_period": null,
+    "current_2026_g8_macro_score_not_certified": true,
+    "force_no_forex_strength": true,
+    "live_data_promotion_allowed": false,
+    "allow_backtest": false,
+    "allow_pair_mutation": false,
+    "safe_to_publish_new_D": false,
+    "writes_live_data": false
+  }
+}
