@@ -2309,6 +2309,36 @@ function macroThermometerObservation(src){
  return {period:src.as_of,label:src.label,source:src.source,series:src.series_id,
    value:src.latest_value};
 }
+/* G8 Macro observed levels: research-only; independently dated data, no new scores. */
+function macroStudyOverview(therm){
+ const rows=FX.map(ccy=>{
+  const record=therm?.currencies?.[ccy];
+  const get=(key)=>{
+   const raw=record?.[key],obs=macroThermometerObservation(raw);
+   const validTransforms=key==='inflation'?
+    ['reported_yoy_rate','yoy_pct_from_index','derived_yoy_from_index']:['level'];
+   if(record?.status!=='ACTIVE'||!obs||!validTransforms.includes(raw.transformation)||
+      !['M','Q'].includes(raw.frequency)||!Array.isArray(raw.history)||raw.history.length<24||
+      num(raw.history.at(-1))===null||
+      Math.abs(raw.history.at(-1)-obs.value)>0.00001||
+      obs.value < -5||obs.value > 40)return null;
+   return {value:obs.value,period:obs.period,frequency:raw.frequency};
+  };
+  return {ccy,inflation:get('inflation'),labour:get('labour')};
+ });
+ const count=rows.reduce((n,r)=>n+Number(!!r.inflation)+Number(!!r.labour),0);
+ const cell=x=>x?'<strong>'+fmt(x.value,2)+'%</strong><small>'+htmlEscape(x.period)+
+  ' · '+(x.frequency==='Q'?'trimestrale':'mensile')+'</small>':
+  '<strong>—</strong><small>non verificabile</small>';
+ const html='<div class="gmfq-macro-g8-table" role="table" aria-label="G8 inflazione e disoccupazione, livelli e periodi">'+
+  '<div class="gmfq-macro-g8-row gmfq-macro-g8-head" role="row"><span>Valuta</span><span>Inflazione YoY</span><span>Disoccupazione</span></div>'+
+  rows.map(r=>'<div class="gmfq-macro-g8-row" role="row" data-g8-ccy="'+r.ccy+
+   '" data-inflation-status="'+(r.inflation?'OBSERVED':'MISSING')+
+   '" data-labour-status="'+(r.labour?'OBSERVED':'MISSING')+'"><div><strong>'+
+   FLAG[r.ccy]+' '+r.ccy+'</strong></div><div>'+cell(r.inflation)+
+   '</div><div>'+cell(r.labour)+'</div></div>').join('')+'</div>';
+ return {rows,count,html};
+}
 function macroBaselineValid(model,therm){
  return canonicalMacroBaselineAsOf(model)!==null&&
   therm?.schema_version==='GMFQ_MACRO_HEATMAP_V1'&&therm.status==='ACTIVE'&&
@@ -2345,6 +2375,16 @@ async function mountMacroSourceLens(doc){
   '#gmfq-macro-source-lens .gmfq-macro-intro{color:#c0cfdb;font:12px/1.6 Arial,sans-serif;margin:7px 0 10px}'+
   '#gmfq-macro-source-lens .gmfq-macro-choice{display:flex;align-items:center;gap:9px;flex-wrap:wrap;color:#a9bfce;font:11px Arial,sans-serif;margin:0 0 9px}'+
   '#gmfq-macro-source-lens .gmfq-macro-choice select{background:#122c3b;border:1px solid #3a5367;border-radius:5px;color:#e7edf3;font:12px Arial,sans-serif;padding:7px;max-width:100%}'+
+  '#gmfq-macro-source-lens .gmfq-macro-g8-table{border:1px solid #2c485a;border-radius:6px;overflow:hidden;margin:10px 0}'+
+  '#gmfq-macro-source-lens .gmfq-macro-g8-row{display:grid;grid-template-columns:minmax(62px,.65fr) repeat(2,minmax(0,1fr));border-bottom:1px solid #294455}'+
+  '#gmfq-macro-source-lens .gmfq-macro-g8-row:last-child{border-bottom:0}'+
+  '#gmfq-macro-source-lens .gmfq-macro-g8-row>div,#gmfq-macro-source-lens .gmfq-macro-g8-row>span{min-width:0;padding:7px 9px;overflow-wrap:anywhere}'+
+  '#gmfq-macro-source-lens .gmfq-macro-g8-row strong{display:block;color:#e6edf4;font:600 12px/1.45 Arial,sans-serif;font-variant-numeric:tabular-nums}'+
+  '#gmfq-macro-source-lens .gmfq-macro-g8-row small{display:block;color:#a2b9c8;font:10px/1.4 Arial,sans-serif}'+
+  '#gmfq-macro-source-lens .gmfq-macro-g8-head{background:#122c3d;color:#b9cede;font:600 11px/1.4 Arial,sans-serif}'+
+  '@media(max-width:600px){#gmfq-macro-source-lens .gmfq-macro-g8-row{grid-template-columns:minmax(52px,.6fr) repeat(2,minmax(0,1fr))}'+
+  '#gmfq-macro-source-lens .gmfq-macro-g8-row>div,#gmfq-macro-source-lens .gmfq-macro-g8-row>span{padding:7px 4px}'+
+  '#gmfq-macro-source-lens .gmfq-macro-g8-row strong{font-size:11px}#gmfq-macro-source-lens .gmfq-macro-g8-row small{font-size:9px}}'+
   '#gmfq-macro-source-lens .gmfq-macro-reading{color:#e4cf9a;font:600 12px/1.6 Arial,sans-serif;margin:8px 0 5px;overflow-wrap:anywhere}'+
   '#gmfq-macro-source-lens .gmfq-macro-dynamics{display:flex;gap:5px 16px;flex-wrap:wrap;margin:7px 0 5px;border-top:1px solid #2a4557;padding-top:8px}'+
   '#gmfq-macro-source-lens .gmfq-macro-dynamic{font:11px/1.55 Arial,sans-serif;color:#ccdae4;min-width:0;overflow-wrap:anywhere}'+
@@ -2369,6 +2409,8 @@ async function mountMacroSourceLens(doc){
  const baselineFresh=fresh(baselineDate,10);
  const currentQuery=new URLSearchParams(location.hash.split('?')[1]||'').get('ccy');
  const options=FX.map(c=>'<option value="'+c+'">'+FLAG[c]+' '+c+'</option>').join('');
+ const overview=macroStudyOverview(thermometer);
+ panel.dataset.observedStudyCount=String(overview.count);
  panel.dataset.auditStatus='READ_ONLY';
  panel.dataset.baselineAsOf=baselineDate;
  panel.innerHTML='<h2 class="desk-panel-title">Macro · modello storico vs osservazioni</h2>'+
@@ -2376,7 +2418,9 @@ async function mountMacroSourceLens(doc){
    '<div class="gmfq-macro-state">'+
   '24 score Growth/Labour/Inflation · baseline '+htmlEscape(baselineDate)+
   (baselineFresh?' · snapshot datato':' · NON CORRENTE, da rivalidare')+'</div>'+
-  '<p class="gmfq-macro-intro">Seleziona la valuta per verificare i periodi osservati. Valori e fonti restano consultabili nel dettaglio; per Growth non è disponibile un nuovo score certificato.</p>'+
+  '<p class="gmfq-macro-intro">G8: livelli osservati nelle serie disponibili, con date e frequenze indipendenti. Non sono nuove pubblicazioni sincronizzate, revisioni point-in-time certificate o nuovi score Growth.</p>'+
+  '<div id="gmfq-macro-g8-study" data-core-effect="NONE" data-bias-effect="NONE" data-observation-count="'+overview.count+'">'+overview.html+'</div>'+
+  '<p class="gmfq-macro-intro">Seleziona la valuta per direzione, accelerazione e fonti delle osservazioni.</p>'+
   '<label class="gmfq-macro-choice" for="gmfq-macro-provenance-currency">Valuta <select id="gmfq-macro-provenance-currency" aria-label="Valuta delle osservazioni Macro">'+options+'</select></label>'+
   '<p class="gmfq-macro-reading" id="gmfq-macro-reading" aria-live="polite">Periodi in verifica…</p>'+
   '<div id="gmfq-macro-dynamics" class="gmfq-macro-dynamics" aria-label="Direzione e accelerazione delle osservazioni validate"></div>'+
@@ -2401,8 +2445,8 @@ async function mountMacroSourceLens(doc){
   panel.dataset.selectedCurrency=ccy;
   const t=thermometer.currencies[ccy];
   const inflation=macroThermometerObservation(t.inflation),labour=macroThermometerObservation(t.labour);
-  reading.textContent=FLAG[ccy]+' '+ccy+' · Inflazione: '+(inflation?'periodo '+inflation.period:'WITHHELD')+
-   ' · Lavoro: '+(labour?'periodo '+labour.period:'WITHHELD');
+  reading.textContent=FLAG[ccy]+' '+ccy+' · Inflazione: '+(inflation?fmt(inflation.value,2)+'% · '+inflation.period:'non verificabile')+
+   ' · Disoccupazione: '+(labour?fmt(labour.value,2)+'% · '+labour.period:'non verificabile');
   // Display only the dynamics of an already validated observation. Unknown
   // direction/acceleration terms are WITHHELD, not inferred.
   const direction={SALE:'sale',SCENDE:'scende',STABILE:'stabile'},
