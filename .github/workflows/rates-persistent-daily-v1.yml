@@ -18,6 +18,9 @@ on:
       - 'validation/fixtures/rbnz_b2_official_table_2026-10-23_first_review_ONLY.json'
       - 'validation/rates/check_nzd_b2_oct22_first_review_v1.py'
       - 'validation/rates/test_check_nzd_b2_oct22_first_review_v1.py'
+      - 'validation/fixtures/rbnz_b2_separate_official_web_reread_2026-10-23.json'
+      - 'validation/rates/build_nzd_b2_oct22_review_candidate_v1.py'
+      - 'validation/rates/test_build_nzd_b2_oct22_review_candidate_v1.py'
   pull_request:
     paths:
       - '.github/workflows/rates-persistent-daily-v1.yml'
@@ -32,6 +35,9 @@ on:
       - 'validation/fixtures/rbnz_b2_official_table_2026-10-23_first_review_ONLY.json'
       - 'validation/rates/check_nzd_b2_oct22_first_review_v1.py'
       - 'validation/rates/test_check_nzd_b2_oct22_first_review_v1.py'
+      - 'validation/fixtures/rbnz_b2_separate_official_web_reread_2026-10-23.json'
+      - 'validation/rates/build_nzd_b2_oct22_review_candidate_v1.py'
+      - 'validation/rates/test_build_nzd_b2_oct22_review_candidate_v1.py'
   workflow_dispatch:
   schedule:
     # Europe/Rome target windows: 07:20-07:39, 08:00-08:19, 09:00-09:19 on working days.
@@ -138,12 +144,38 @@ jobs:
                         'No automatically promoted rates or Macro scores.\n')
           PY
 
-      - name: Test RBNZ B2 official 22 Oct first review (still NOT approved)
+      # This dated candidate is only meaningful while the live approved
+      # NZD snapshot is 2026-10-16. Once the independent review is approved
+      # and the live source advances, never let an obsolete staging fixture
+      # break future 05:00 and daily Rates workflows.
+      - name: Decide whether fixed 22 Oct NZD candidate is still pending
+        id: nzd_stage_gate
         if: steps.gate.outputs.should_run == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,os
+          from datetime import date
+          live=json.load(open('live_data/sections/NATIVE_RATES_DATA.json'))
+          day=live['NZD']['date']
+          if day=='2026-10-16':
+              active='true'
+          elif date.fromisoformat(day)>=date(2026,10,22):
+              active='false'
+          else:
+              raise SystemExit('Unexpected intermediate NZD live source date: '+day)
+          with open(os.environ['GITHUB_OUTPUT'],'a') as out:
+              out.write('active='+active+'\n')
+          print('NZD_B2_OCT22_STAGING_ACTIVE',active,'CURRENT_LIVE',day)
+          PY
+
+      - name: Test RBNZ B2 official 22 Oct first review (still NOT approved)
+        if: steps.gate.outputs.should_run == 'true' && steps.nzd_stage_gate.outputs.active == 'true'
         run: python3 validation/rates/test_check_nzd_b2_oct22_first_review_v1.py
 
       - name: Preserve 22 Oct RBNZ public source first-review staging receipt
-        if: ${{ always() && steps.gate.outputs.should_run == 'true' }}
+        if: ${{ always() && steps.gate.outputs.should_run == 'true' && steps.nzd_stage_gate.outputs.active == 'true' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -159,6 +191,30 @@ jobs:
               out.write('\nRBNZ B2 new observed snapshot **'+d['latest_staged_as_of']+
                        '**: 2Y '+str(d['staged_2Y'])+'%, 10Y '+str(d['staged_10Y'])+
                        '%. **First official-page review only. Independent review REQUIRED before live NZD.**\n')
+          PY
+
+      - name: Test second official web read and full G8 NZD draft no-promotion guards
+        if: steps.gate.outputs.should_run == 'true' && steps.nzd_stage_gate.outputs.active == 'true'
+        run: python3 validation/rates/test_build_nzd_b2_oct22_review_candidate_v1.py
+
+      - name: Generate NZD reviewed data draft in artifact only
+        if: ${{ always() && steps.gate.outputs.should_run == 'true' && steps.nzd_stage_gate.outputs.active == 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/rates-persistent
+          python3 validation/rates/build_nzd_b2_oct22_review_candidate_v1.py \
+            --candidate /tmp/rates-persistent/NZD_B2_OCT22_DRAFT_ONLY.json \
+            --receipt /tmp/rates-persistent/NZD_B2_OCT22_REVIEW_ONLY.json
+          python3 - <<'PY'
+          import json,os
+          r=json.load(open('/tmp/rates-persistent/NZD_B2_OCT22_REVIEW_ONLY.json'))
+          assert r['status']=='PREVIEW_VALIDATED_NOT_APPROVED'
+          assert r['live_promotion_allowed'] is False and r['production_effect']=='NONE'
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as out:
+              out.write('\nNZD B2 latest staged **'+r['draft_as_of']+
+                        '**, 2Y **'+str(r['draft_2Y'])+'%**, 10Y **'+str(r['draft_10Y'])+
+                        '%**. Separate RBNZ public-page reread matched; **XLSX and independent human approval remain unverified; NOT published.**\n')
           PY
 
       - name: Build official Rates candidate
