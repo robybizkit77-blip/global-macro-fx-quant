@@ -1762,6 +1762,14 @@ function pairDeskOrdering(feedData,model){
    if(!reasons.length)reasons.push('Servono trigger e rapporto rischio/rendimento esterni al modello');
    sourceRows.push({code,quality,fav:eligible?fav:null,
      thesis:structure===3?'Tesi forte':structure===2?'Tesi parziale':'Senza tesi',
+     priceReading:!eligible?'Prezzo non valutabile':
+       x.price.state==='GOOD'?'Prezzo conferma':
+       x.price.state==='NEUTRAL'?'Prezzo neutro':'Prezzo contrario',
+     timingReading:!eligible?'Timing non valutabile':
+       x.timing.state==='ALIGNED'?'Timing allineato':
+       x.timing.state==='PARTIAL'?'Timing parziale':
+       x.timing.state==='ADVERSE'?'Timing contrario':
+       x.timing.state==='MIXED'?'Timing misto':'Timing incerto',
      why:reasons.slice(0,2).join(' · '),
      thesisKey:[Number(eligible),structure,transition,price,timing,extension,liquidity,cot],
      setupKey:[Number(eligible),price,extension,timing,structure,transition,liquidity,cot]});
@@ -1821,7 +1829,8 @@ async function mountPairRankedList(doc){
  '#gmfq-pair-rank .gmfq-rank-visibility{font:11px/1.45 Arial,sans-serif;color:#9fbacb}'+
  '#pair-index tr.gmfq-research-hidden{display:none!important}'+
  '#pair-index .gmfq-row-rank{display:inline-block;min-width:22px;color:#dfc891;font:600 12px/1.5 Arial,sans-serif;margin-right:7px;font-variant-numeric:tabular-nums}'+
- '#pair-index .gmfq-row-why{display:block;margin-top:3px;color:#a8bfcd;font:10px/1.45 Arial,sans-serif;max-width:280px;overflow-wrap:anywhere}'+
+ '#pair-index .gmfq-row-lenses{display:block;margin-top:3px;color:#e3d19f;font:10px/1.45 Arial,sans-serif;max-width:300px;overflow-wrap:anywhere}'+
+ '#pair-index .gmfq-row-why{display:block;margin-top:3px;color:#a8bfcd;font:10px/1.45 Arial,sans-serif;max-width:300px;overflow-wrap:anywhere}'+
  '#pair-index tr[data-research-rank] td:nth-child(4){min-width:170px}'+
  '@media(max-width:600px){#gmfq-pair-rank{padding:12px}#gmfq-pair-rank .gmfq-rank-switch button{font-size:11px}#pair-index .gmfq-row-why{max-width:190px}}';
  doc.head.appendChild(st);
@@ -1873,6 +1882,10 @@ async function mountPairRankedList(doc){
      let label=first.querySelector('.gmfq-row-rank');
      if(!label){label=doc.createElement('span');label.className='gmfq-row-rank';first.insertBefore(label,first.firstChild)}
      label.textContent=String(r.rank).padStart(2,'0');
+     let lenses=verdict.querySelector('.gmfq-row-lenses');
+     if(!lenses){lenses=doc.createElement('small');lenses.className='gmfq-row-lenses';verdict.appendChild(lenses)}
+     lenses.textContent=r.thesis+' · '+r.priceReading+' · '+r.timingReading;
+     lenses.dataset.source='PAIR_SETUP_OPERATIONAL_VIEW';
      let why=verdict.querySelector('.gmfq-row-why');
      if(!why){why=doc.createElement('small');why.className='gmfq-row-why';verdict.appendChild(why)}
      why.textContent=(r.fav?'Favore '+r.fav+' · ':'Nessuna direzione · ')+r.why;
