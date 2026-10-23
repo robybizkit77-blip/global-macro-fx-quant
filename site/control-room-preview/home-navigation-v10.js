@@ -1302,76 +1302,12 @@ function marketSourceReadinessHtml(view,operational){
   htmlEscape(view.source_reviewed_as_of)+'.</p>'+items+swiss+'</details>';
 }
 
-/* Always show available per-tenor EUR/NZD research observations, without
-   changing the canonical official OIS status or forging a policy curve.
-   These are DIFFERENT instruments, not interpolated OIS estimates. */
-function marketResearchFallbackProxies(ois,proxy){
- const H=['3m','6m','12m'],rows=[];
- const eur=ois?.currencies?.EUR,ctx=eur?.secondary_quote_context;
- const eurReady=eur?.operational_status==='WITHHELD'&&
-   ctx?.status==='INDICATIVE_OBSERVATIONS_NON_OIS'&&
-   ctx?.full_curve_usable===false&&ctx?.cross_date_join_allowed===false&&
-   ctx?.policy_delta_allowed===false&&ctx?.repricing_signal_allowed===false&&
-   ctx?.backtest_eligible_as_official===false;
- const eurParts=H.map(h=>{
-  const q=ctx?.horizons?.[h],v=num(q?.rate_indicative),age=romeCalendarAge(q?.quote_as_of);
-  return eurReady&&v!==null&&v>=-5&&v<=25&&age!==null&&age>=0&&age<=10&&
-   q?.source_quality==='SECONDARY_VERIFIED_DAILY_BAR'&&
-   /^[A-Z0-9]+$/.test(q?.contract||'')?
-   {h,v,date:q.quote_as_of,contract:q.contract,stale:age>5}:null;
- });
- if(eur?.operational_status==='WITHHELD'){
-  const valid=eurParts.every(Boolean),dates=new Set(eurParts.filter(Boolean).map(x=>x.date));
-  rows.push({currency:'EUR',label:'€STR futures · quotazioni indicative',
-   origin:'TradingView · contratti Eurex FST3, singole barre datate',
-   warning:'Non sono OIS. Date diverse: non unire i punti, non sottrarre il tasso BCE e non stimare tagli/rialzi.',
-   state:valid?(dates.size===1?'PROXY_DATATO':'PROXY_DATE_DIVERSE'):'FONTI_PARZIALI',
-   parts:eurParts,usable:valid});
- }
- const nzd=ois?.currencies?.NZD,gov=proxy?.governance;
- const nzdReady=nzd?.operational_status==='WITHHELD'&&
-   proxy?.schema==='GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1'&&
-   proxy?.status==='LIVE_DIRECTIONAL_PROXY_READY'&&
-   proxy?.currency==='NZD'&&
-   proxy?.source_quality==='OFFICIAL_EXCHANGE_DIRECTIONAL_PROXY'&&
-   gov?.informational_only===true&&gov?.substitutes_for_ois_level===false&&
-   gov?.policy_delta_from_proxy_allowed===false;
- const age=romeCalendarAge(proxy?.as_of);
- const nzdParts=H.map(h=>{
-  const q=proxy?.horizons?.[h],v=num(q?.implied_bank_bill_rate);
-  return nzdReady&&age!==null&&age>=0&&age<=10&&v!==null&&v>=-5&&v<=25&&
-   typeof q?.expiry_label==='string'&&q.expiry_label.length>0?
-   {h,v,date:proxy.as_of,contract:q.expiry_label,stale:age>5}:null;
- });
- if(nzd?.operational_status==='WITHHELD')rows.push({currency:'NZD',
-   label:'ASX Bank Bill · proxy di tasso, non OIS',
-   origin:'ASX · New Zealand 90 Day Bank Bill futures, settlement ufficiale',
-   warning:'I futures Bank Bill incorporano spread di credito e di base: il loro livello NON equivale all’OIS sull’OCR. Nessun policy delta o probabilità di meeting.',
-   state:nzdParts.every(Boolean)?(age>5?'PROXY_DATATO':'PROXY_RECENTE'):'FONTI_PARZIALI',
-   parts:nzdParts,usable:nzdParts.every(Boolean)});
- const cards=rows.map(r=>'<article class="gmfq-fallback-card" data-pricing-research-currency="'+r.currency+
-  '" data-research-source="'+r.state+'"><div class="gmfq-fallback-heading"><strong>'+FLAG[r.currency]+' '+r.currency+
-  '</strong><span>PROXY · NON OIS</span></div>'+
-  '<p class="gmfq-fallback-label">'+htmlEscape(r.label)+'</p>'+
-  '<div class="gmfq-fallback-grid">'+r.parts.map((q,i)=>'<div><small>'+H[i].toUpperCase()+'</small>'+
-   '<strong>'+(q?fmt(q.v,3)+'%':'Non stimabile')+'</strong>'+
-   '<small>'+(q?htmlEscape(q.date)+' · '+htmlEscape(q.contract)+(q.stale?' · DATATO':''):'Fonte insufficiente')+'</small></div>').join('')+'</div>'+
-  '<p class="gmfq-fallback-origin">'+htmlEscape(r.origin)+'</p>'+
-  '<p class="gmfq-fallback-warning">'+htmlEscape(r.warning)+'</p></article>').join('');
- const complete=rows.length===2&&rows.every(r=>r.usable);
- return '<section class="gmfq-research-separator gmfq-fallback-coverage" id="gmfq-fallback-coverage"'+
-  ' data-research-proxy-coverage="'+(complete?'COMPLETE_2_OF_2':'PARTIAL')+'">'+
-  '<h3>EUR e NZD · riferimenti numerici al posto del vuoto</h3>'+
-  '<p class="gmfq-research-note">Sono quotazioni di strumenti collegati ai tassi, NON una curva OIS stimata o certificata. Ogni numero conserva fonte, scadenza e data reali. L’assenza di fonti aggiornate resta visibile, mai riempita artificialmente.</p>'+
-  '<div class="gmfq-fallback-cards">'+cards+'</div></section>';
-}
-
 function mountMarketResearch(doc,ois,proxy,rates,snb10,sourceReadiness){
  if(route()!=='tassi'||frame.contentDocument!==doc)return;
  const table=doc.getElementById('ois-rows'),original=table?.closest('.desk-panel');
  if(!original||doc.getElementById('gmfq-pricing-research'))return;
  const style=doc.createElement('style');style.id='gmfq-pricing-research-style';
- style.textContent='#gmfq-pricing-research{margin-top:12px}#gmfq-pricing-research .gmfq-research-intro,#gmfq-pricing-research .gmfq-research-note{color:#a9c1d2;font-size:12px;line-height:1.55;margin:9px 0 14px}#gmfq-pricing-research h3{font-size:13px;color:#e5edf5;margin:0 0 10px}#gmfq-pricing-research .gmfq-research-plot{height:225px;max-width:100%;border:1px solid #284456;border-radius:7px;background:#0b2030;overflow:hidden}#gmfq-pricing-research svg{height:100%;width:100%;display:block}#gmfq-pricing-research .gmfq-research-tabs,#gmfq-pricing-research .gmfq-research-legend{display:flex;flex-wrap:wrap;gap:7px 13px;margin:9px 0}#gmfq-pricing-research button{cursor:pointer;background:#122c40;border:1px solid #34546b;padding:6px 12px;border-radius:5px;color:#c0d0e0;font:12px Arial,sans-serif}#gmfq-pricing-research button[aria-pressed=true]{background:#e2c87c;border-color:#e2c87c;color:#102132}#gmfq-pricing-research button:focus-visible{outline:2px solid #f7dfa0}#gmfq-pricing-research .gmfq-research-legend span{font-size:11px;color:#b4c9d8}#gmfq-pricing-research .gmfq-research-legend i{display:inline-block;width:13px;height:3px;margin-right:5px;vertical-align:middle}#gmfq-pricing-research .gmfq-research-separator{border-top:1px solid #294556;margin-top:18px;padding-top:16px}#gmfq-pricing-research .gmfq-pricing-core-status{margin:8px 0 7px;padding:8px 0 9px;border-bottom:1px solid #2c4759;color:#d8c895;font:600 12px/1.5 Arial,sans-serif;overflow-wrap:anywhere}#gmfq-pricing-research .gmfq-pricing-core-explanation{color:#aabfce;font:11px/1.6 Arial,sans-serif;margin:0 0 12px}#gmfq-pricing-research #gmfq-pricing-evidence-details{border-top:1px solid #2d4858;margin-top:15px;padding-top:10px;min-width:0}#gmfq-pricing-research #gmfq-pricing-evidence-details>summary{cursor:pointer;color:#e3cb93;font:600 12px/1.55 Arial,sans-serif;outline-offset:4px;padding:6px 1px;overflow-wrap:anywhere}#gmfq-pricing-research #gmfq-pricing-evidence-details:not([open])>:not(summary){display:none!important}#gmfq-pricing-research .gmfq-fallback-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;margin-top:10px}#gmfq-pricing-research .gmfq-fallback-card{background:#0b2232;border:1px solid #34576b;border-radius:8px;padding:14px;min-width:0}#gmfq-pricing-research .gmfq-fallback-heading{display:flex;justify-content:space-between;align-items:center;gap:8px}#gmfq-pricing-research .gmfq-fallback-heading strong{font-size:15px;color:#edf5fa}#gmfq-pricing-research .gmfq-fallback-heading span{font-size:10px;letter-spacing:.04em;color:#e0bd78;font-weight:700}#gmfq-pricing-research .gmfq-fallback-label{font-size:12px;color:#cadbe8;margin:10px 0}#gmfq-pricing-research .gmfq-fallback-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}#gmfq-pricing-research .gmfq-fallback-grid>div{background:#112e42;border:1px solid #25475b;border-radius:5px;padding:9px 6px;min-width:0}#gmfq-pricing-research .gmfq-fallback-grid small{display:block;font-size:9px;color:#adc3d3;line-height:1.5;overflow-wrap:anywhere}#gmfq-pricing-research .gmfq-fallback-grid strong{display:block;font-size:17px;color:#f2d498;line-height:1.7;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}#gmfq-pricing-research .gmfq-fallback-origin,#gmfq-pricing-research .gmfq-fallback-warning{font-size:11px;line-height:1.6;color:#aec8da;margin:8px 0 0}#gmfq-pricing-research .gmfq-fallback-warning{color:#e4ca9e}@media(max-width:600px){#gmfq-pricing-research .gmfq-fallback-grid strong{font-size:15px}}#gmfq-pricing-research .gmfq-quote-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:9px}#gmfq-pricing-research .gmfq-quote-card{background:#0b2232;border:1px solid #294659;border-radius:6px;padding:11px}#gmfq-pricing-research .gmfq-snb-spot{border:1px solid #315267;background:#0d2637;border-radius:7px;padding:12px 14px;margin:10px 0 12px;color:#aec6d7;font-size:12px;line-height:1.65}#gmfq-pricing-research .gmfq-snb-spot strong{color:#e6f1f8;font-size:20px;font-variant-numeric:tabular-nums}#gmfq-pricing-research .gmfq-snb-spot a{color:#e8cb8b;text-decoration:underline}#gmfq-pricing-research .gmfq-quote-card b{display:block;color:#f0d091;font-size:12px;margin-bottom:8px}#gmfq-pricing-research .gmfq-quote{color:#b6c9d8;font-size:11px;line-height:1.7}#gmfq-pricing-research .gmfq-quote strong{color:#e5eff5}#gmfq-pricing-research .gmfq-source-readiness{border-top:1px solid #294556;margin-top:18px;padding-top:14px}#gmfq-pricing-research .gmfq-source-readiness summary{font-size:13px;font-weight:700;color:#e9d192;cursor:pointer;outline-offset:4px}#gmfq-pricing-research .gmfq-source-row{display:flex;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid #203c4d}#gmfq-pricing-research .gmfq-source-row b{font-size:12px;color:#dbe9f3}#gmfq-pricing-research .gmfq-source-row p{font-size:12px;color:#adbfcd;margin:5px 0}#gmfq-pricing-research .gmfq-source-row small{display:block;color:#c4d3dd;line-height:1.45;font-size:11px}#gmfq-pricing-research .gmfq-source-link{flex:0 0 auto;font-size:11px}#gmfq-pricing-research .gmfq-source-link a{color:#e6c57f;text-decoration:underline}@media(max-width:600px){#gmfq-pricing-research .gmfq-source-row{display:block}#gmfq-pricing-research .gmfq-source-link{margin-top:7px}}@media(max-width:600px){#gmfq-pricing-research .gmfq-research-plot{height:190px}#gmfq-pricing-research .gmfq-quote-cards{grid-template-columns:1fr}}';
+ style.textContent='#gmfq-pricing-research{margin-top:12px}#gmfq-pricing-research .gmfq-research-intro,#gmfq-pricing-research .gmfq-research-note{color:#a9c1d2;font-size:12px;line-height:1.55;margin:9px 0 14px}#gmfq-pricing-research h3{font-size:13px;color:#e5edf5;margin:0 0 10px}#gmfq-pricing-research .gmfq-research-plot{height:225px;max-width:100%;border:1px solid #284456;border-radius:7px;background:#0b2030;overflow:hidden}#gmfq-pricing-research svg{height:100%;width:100%;display:block}#gmfq-pricing-research .gmfq-research-tabs,#gmfq-pricing-research .gmfq-research-legend{display:flex;flex-wrap:wrap;gap:7px 13px;margin:9px 0}#gmfq-pricing-research button{cursor:pointer;background:#122c40;border:1px solid #34546b;padding:6px 12px;border-radius:5px;color:#c0d0e0;font:12px Arial,sans-serif}#gmfq-pricing-research button[aria-pressed=true]{background:#e2c87c;border-color:#e2c87c;color:#102132}#gmfq-pricing-research button:focus-visible{outline:2px solid #f7dfa0}#gmfq-pricing-research .gmfq-research-legend span{font-size:11px;color:#b4c9d8}#gmfq-pricing-research .gmfq-research-legend i{display:inline-block;width:13px;height:3px;margin-right:5px;vertical-align:middle}#gmfq-pricing-research .gmfq-research-separator{border-top:1px solid #294556;margin-top:18px;padding-top:16px}#gmfq-pricing-research .gmfq-pricing-core-status{margin:8px 0 7px;padding:8px 0 9px;border-bottom:1px solid #2c4759;color:#d8c895;font:600 12px/1.5 Arial,sans-serif;overflow-wrap:anywhere}#gmfq-pricing-research .gmfq-pricing-core-explanation{color:#aabfce;font:11px/1.6 Arial,sans-serif;margin:0 0 12px}#gmfq-pricing-research #gmfq-pricing-evidence-details{border-top:1px solid #2d4858;margin-top:15px;padding-top:10px;min-width:0}#gmfq-pricing-research #gmfq-pricing-evidence-details>summary{cursor:pointer;color:#e3cb93;font:600 12px/1.55 Arial,sans-serif;outline-offset:4px;padding:6px 1px;overflow-wrap:anywhere}#gmfq-pricing-research #gmfq-pricing-evidence-details:not([open])>:not(summary){display:none!important}#gmfq-pricing-research .gmfq-quote-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:9px}#gmfq-pricing-research .gmfq-quote-card{background:#0b2232;border:1px solid #294659;border-radius:6px;padding:11px}#gmfq-pricing-research .gmfq-snb-spot{border:1px solid #315267;background:#0d2637;border-radius:7px;padding:12px 14px;margin:10px 0 12px;color:#aec6d7;font-size:12px;line-height:1.65}#gmfq-pricing-research .gmfq-snb-spot strong{color:#e6f1f8;font-size:20px;font-variant-numeric:tabular-nums}#gmfq-pricing-research .gmfq-snb-spot a{color:#e8cb8b;text-decoration:underline}#gmfq-pricing-research .gmfq-quote-card b{display:block;color:#f0d091;font-size:12px;margin-bottom:8px}#gmfq-pricing-research .gmfq-quote{color:#b6c9d8;font-size:11px;line-height:1.7}#gmfq-pricing-research .gmfq-quote strong{color:#e5eff5}#gmfq-pricing-research .gmfq-source-readiness{border-top:1px solid #294556;margin-top:18px;padding-top:14px}#gmfq-pricing-research .gmfq-source-readiness summary{font-size:13px;font-weight:700;color:#e9d192;cursor:pointer;outline-offset:4px}#gmfq-pricing-research .gmfq-source-row{display:flex;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid #203c4d}#gmfq-pricing-research .gmfq-source-row b{font-size:12px;color:#dbe9f3}#gmfq-pricing-research .gmfq-source-row p{font-size:12px;color:#adbfcd;margin:5px 0}#gmfq-pricing-research .gmfq-source-row small{display:block;color:#c4d3dd;line-height:1.45;font-size:11px}#gmfq-pricing-research .gmfq-source-link{flex:0 0 auto;font-size:11px}#gmfq-pricing-research .gmfq-source-link a{color:#e6c57f;text-decoration:underline}@media(max-width:600px){#gmfq-pricing-research .gmfq-source-row{display:block}#gmfq-pricing-research .gmfq-source-link{margin-top:7px}}@media(max-width:600px){#gmfq-pricing-research .gmfq-research-plot{height:190px}#gmfq-pricing-research .gmfq-quote-cards{grid-template-columns:1fr}}';
  doc.head.appendChild(style);
  const curves=marketResearchCurves(ois),host=doc.createElement('section');
  const classes=['GREEN_OFFICIAL','GREEN_ESTIMATED','WITHHELD'];
@@ -1396,9 +1332,8 @@ function mountMarketResearch(doc,ois,proxy,rates,snb10,sourceReadiness){
  host.innerHTML='<h2 class="desk-panel-title">Market Pricing · curve comparate e affidabilità</h2>'+
   '<div class="desk-panel-body"><p class="gmfq-pricing-core-status">'+htmlEscape(headline)+'</p>'+
   '<p class="gmfq-pricing-core-explanation">GBP: OIS BoE; JPY, AUD e CAD: futures monetari. Certificazione della fonte ≠ OIS puro. '+
-   (curvesVerified?estimated.length+' valute con curve indicative; '+withheld.length+' con riferimenti proxy separati, senza OIS ufficiale. ':'Riconciliazione delle fonti incompleta. ')+
+   (curvesVerified?estimated.length+' valute indicative/stimate; '+withheld.length+' senza curva certificata (WITHHELD). ':'Riconciliazione delle fonti incompleta. ')+
    'I rendimenti governativi 2Y/10Y sono un layer distinto e non dimostrano da soli il percorso dei tassi.</p>'+
-  marketResearchFallbackProxies(ois,proxy)+
   '<p class="gmfq-research-intro">Cosa sta prezzando il mercato su 3, 6 e 12 mesi? Il grafico mostra solo le scadenze validate, espresse come differenza dal policy rate. Non sono probabilità per meeting.</p>'+
   '<div class="gmfq-research-tabs" role="group" aria-label="Filtra pricing certificato"></div>'+
   '<div class="gmfq-research-plot"></div><div class="gmfq-research-legend"></div>'+
