@@ -11,6 +11,12 @@ from build_rates_audit_metadata import build, source_status
 
 ROOT=Path(__file__).resolve().parents[1]
 src=json.loads((ROOT/'live_data/sections/NATIVE_RATES_DATA.json').read_text())
+# Pin only source dates for reproducible future runs; the live snapshot
+# may naturally advance on the next release.
+fixture_dates={'USD':'2026-10-22','EUR':'2026-10-21','GBP':'2026-10-21',
+  'JPY':'2026-10-22','CHF':'2026-09-30','CAD':'2026-10-21',
+  'AUD':'2026-10-21','NZD':'2026-10-16'}
+for c,d in fixture_dates.items(): src[c]['date']=d
 out=build(src,'2026-10-23')
 assert out['schema']=='GMFQ_RATES_AUDIT_METADATA_V1'
 assert set(out['expected_rates'])=={'USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'}
