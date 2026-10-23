@@ -3,7 +3,7 @@
 import copy
 import datetime as dt
 from zoneinfo import ZoneInfo
-from check_morning_readiness_v1 import read_feeds, inspect, prior_weekday
+from check_morning_readiness_v1 import read_feeds, inspect, prior_weekday, rome_build_day
 
 ROME = ZoneInfo("Europe/Rome")
 data = read_feeds()
@@ -40,6 +40,24 @@ assert sorted(out["evidence"]["OIS_G8"]["withheld"]) == ["EUR", "NZD"]
 assert "CHF" not in [k for k,v in out["evidence"]["RATES_2Y_10Y"].items() if v["status"] == "RECENT_OFFICIAL"]
 assert "NZD" not in [k for k,v in out["evidence"]["RATES_2Y_10Y"].items() if v["status"] == "RECENT_OFFICIAL"]
 assert out["core_effect"] == "NONE"
+assert out["refresh_pipeline_outcome"] == "success"
+assert rome_build_day("2026-10-22T22:30:00Z") == "2026-10-23"
+assert rome_build_day("2026-10-22T21:30:00+00:00") == "2026-10-22"
+assert rome_build_day("2026-10-25T23:30:00Z") == "2026-10-26"
+assert rome_build_day("2026-10-23T08:00:00") is None
+assert rome_build_day("invalid") is None
+# A failed collector must still be visible even when all surviving feeds are fresh.
+partial = inspect(data, asof, pipeline_outcome="failure")
+assert partial["operational_state"] == "DAILY_INPUTS_INCOMPLETE"
+assert partial["critical_daily_problems"] == ["REFRESH_PIPELINE_NOT_SUCCESS"]
+assert partial["refresh_pipeline_outcome"] == "failure"
+
+midnight_news = copy.deepcopy(data)
+midnight_news["NEWS_PULSE_OPERATIONAL.json"]["generated_at_utc"] = "2026-10-22T22:30:00Z"
+assert "NEWS_PULSE_REFRESH" not in inspect(midnight_news, asof)["critical_daily_problems"]
+midnight_cal = copy.deepcopy(data)
+midnight_cal["CALENDAR_OPERATIONAL_VIEW.json"]["generated_at_utc"] = "2026-10-22T22:30:00Z"
+assert "CALENDAR_REFRESH" not in inspect(midnight_cal, asof)["critical_daily_problems"]
 
 broken = copy.deepcopy(data)
 broken["ECB_G8_PRICE_HISTORY.json"]["last_as_of"] = "2026-10-21"
