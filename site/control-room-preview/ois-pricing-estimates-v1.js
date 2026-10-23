@@ -310,15 +310,18 @@ function view(rows,moves=[]){
    (x.range?'<small>'+fmt(x.range[0])+'–'+fmt(x.range[1])+'%</small>':''):
   '<b>—</b><small>n.d.</small>';};
  const counts=Object.fromEntries(['OFFICIAL','PROXY','MIXED','SCENARIO','WITHHELD'].map(t=>[t,rows.filter(r=>r.tier===t).length]));
- // Preserve all 8 rows and source provenance behind an accessible disclosure.
+ // The user needs all eight dated 3M/6M/12M references at first glance.
+ // Preserve full source provenance and leave methodology collapsible.
  // No estimate becomes a certified OIS or an official policy delta.
- const brief=counts.OFFICIAL+'/8 fonti certificate (OIS e futures monetari) · '+
-   counts.PROXY+' futures indicativi · '+counts.MIXED+' con date non sincronizzate · '+
-   counts.SCENARIO+' scenario · '+counts.WITHHELD+' non disponibili';
+ const usable=8-counts.WITHHELD;
+ const brief=usable+'/8 valute con riferimenti numerici (ufficiali, proxy o scenari) · '+
+   counts.OFFICIAL+' fonti certificate · '+counts.PROXY+' futures indicativi · '+
+   counts.MIXED+' con date diverse · '+counts.SCENARIO+' scenario NZD'+
+   (counts.WITHHELD?' · '+counts.WITHHELD+' senza fonte attendibile':'');
  return '<h2 class="desk-panel-title">G8 · Pricing monetario 3M / 6M / 12M</h2>'+
  '<p class="gmfq-est-quick-read"><strong>Copertura G8 · </strong>'+esc(brief)+
  '. Tutte le valute sono consultabili; le stime non diventano segnali.</p>'+
- '<details class="gmfq-est-disclosure" data-default="CLOSED"><summary>Apri tabella 3M / 6M / 12M, dati e fonti delle 8 valute</summary>'+
+ '<details class="gmfq-est-disclosure" open data-default="OPEN"><summary>Tabella G8 · 3M / 6M / 12M, dati e fonti (tocca per nascondere)</summary>'+
  '<div class="gmfq-est-body"><p>Valori <b>certificati, indicativi e scenari</b> distinti. Date per singola scadenza; non tutte le serie sono OIS.</p>'+
  '<div role="table" class="gmfq-est-table"><div class="gmfq-est-row gmfq-est-head" role="row"><span>Valuta</span><span>3M</span><span>6M</span><span>12M</span></div>'+
  rows.map(r=>'<div role="row" class="gmfq-est-row" data-ccy="'+r.ccy+'" data-estimate-type="'+r.tier+'">'+
