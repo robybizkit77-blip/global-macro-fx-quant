@@ -7,6 +7,25 @@ from check_morning_readiness_v1 import read_feeds, inspect, prior_weekday
 
 ROME = ZoneInfo("Europe/Rome")
 data = read_feeds()
+# A fixed validated as-of fixture: future production refreshes must not
+# make these deterministic gate tests depend on today's latest close.
+data["ECB_G8_PRICE_HISTORY.json"]["status"] = "CURRENT_OFFICIAL_HISTORY"
+data["ECB_G8_PRICE_HISTORY.json"]["last_as_of"] = "2026-10-22"
+data["ECB_G8_PRICE_HISTORY.json"]["rows"][-1]["Date"] = "2026-10-22"
+data["PAIR_SETUP_OPERATIONAL_VIEW.json"].update(
+    status="CURRENT_CANONICAL_ENGINE", pair_count=28,
+    price_asof="2026-10-22", macro_baseline_asof="2026-09-25")
+data["PAIR_SETUP_OPERATIONAL_VIEW.json"]["price_audit"]["status"] = "PASS"
+data["D.json"]["asOf"] = "2026-09-25"
+data["D.json"]["risk"]["VIX"]["last_date"] = "2026-10-22"
+data["D.json"]["risk"]["VIX"]["dates"][-1] = "2026-10-22"
+data["D.json"]["risk"]["VIX"]["last_value"] = 19.03
+data["NEWS_PULSE_OPERATIONAL.json"]["generated_at_utc"] = "2026-10-23T06:52:00Z"
+data["CALENDAR_OPERATIONAL_VIEW.json"]["generated_at_utc"] = "2026-10-23T06:52:00Z"
+data["NATIVE_RATES_DATA.json"]["CHF"]["date"] = "2026-09-30"
+data["NATIVE_RATES_DATA.json"]["NZD"]["date"] = "2026-10-16"
+data["OIS_OPERATIONAL_VIEW.json"]["currencies"]["EUR"]["operational_status"] = "WITHHELD"
+data["OIS_OPERATIONAL_VIEW.json"]["currencies"]["NZD"]["operational_status"] = "WITHHELD"
 asof = dt.datetime.fromisoformat("2026-10-23T08:00:00+02:00")
 out = inspect(data, asof)
 assert out["schema"] == "GMFQ_MORNING_READINESS_V1"
@@ -47,12 +66,20 @@ monday = dt.datetime.fromisoformat("2026-10-26T08:00:00+01:00")
 assert prior_weekday(monday.date()).isoformat() == "2026-10-23"
 monday_feed = copy.deepcopy(data)
 monday_feed["ECB_G8_PRICE_HISTORY.json"]["last_as_of"] = "2026-10-23"
+monday_feed["ECB_G8_PRICE_HISTORY.json"]["rows"][-1]["Date"] = "2026-10-23"
 monday_feed["PAIR_SETUP_OPERATIONAL_VIEW.json"]["price_asof"] = "2026-10-23"
 monday_feed["D.json"]["risk"]["VIX"]["last_date"] = "2026-10-23"
+monday_feed["D.json"]["risk"]["VIX"]["dates"][-1] = "2026-10-23"
 monday_feed["NEWS_PULSE_OPERATIONAL.json"]["generated_at_utc"] = "2026-10-26T05:10:00Z"
 monday_feed["CALENDAR_OPERATIONAL_VIEW.json"]["generated_at_utc"] = "2026-10-26T05:10:00Z"
 assert not inspect(monday_feed, monday)["critical_daily_problems"]
 
+broken = copy.deepcopy(data)
+broken["ECB_G8_PRICE_HISTORY.json"]["rows"][-1]["Date"] = "2026-10-21"
+assert "FX_SOURCE_INTEGRITY" in inspect(broken, asof)["critical_daily_problems"]
+broken = copy.deepcopy(data)
+broken["D.json"]["risk"]["VIX"]["dates"][-1] = "2026-10-21"
+assert "VIX_SOURCE_INTEGRITY" in inspect(broken, asof)["critical_daily_problems"]
 # Saturday is not a weekday market session: Friday is the correct comparison.
 assert prior_weekday(dt.date(2026,10,24)).isoformat() == "2026-10-23"
 print("GMFQ_MORNING_READINESS_SOURCE_AND_DST_GUARDS_PASS")
