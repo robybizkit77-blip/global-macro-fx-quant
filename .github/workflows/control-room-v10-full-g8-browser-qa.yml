@@ -8,6 +8,9 @@ on:
       - 'live_data/sections/DXY_SYNTHETIC_ECB.json'
       - 'validation/qa_control_room_v10_browser.js'
       - 'validation/test_control_room_pending_source_dossiers_v1.js'
+      - 'site/control-room-preview/ois-pricing-estimates-v1.js'
+      - 'validation/test_control_room_g8_visible_pricing_v1.js'
+      - 'validation/qa_ois_g8_estimates_v1.js'
       - '.github/workflows/control-room-v10-full-g8-browser-qa.yml'
   workflow_dispatch:
 permissions:
@@ -39,6 +42,8 @@ jobs:
           node --check validation/qa_control_room_v10_browser.js
           node --check site/control-room-preview/home-navigation-v10.js
           node --check site/control-room-preview/ois-pricing-estimates-v1.js
+          node validation/test_control_room_g8_visible_pricing_v1.js
+          node validation/qa_ois_g8_estimates_v1.js
       - name: Install browser runner
         run: |
           npm init -y >/dev/null 2>&1
