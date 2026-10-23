@@ -905,6 +905,10 @@ async function getState(page){
          console.log('CONTROL_ROOM_PAIR_EDITORIAL_SOURCE_LEDGER_PUBLIC_GREEN',name,
            JSON.stringify({keys:visual.keys,gridCols:visual.gridCols,viewport:visual.viewport}));
        }
+       // The approved Pair ranking starts in the compact Top-8 view.
+       // EUR/CHF may be below rank 8; reveal all rows through the real user control
+       // before testing navigation. Do not bypass visibility with a forced click.
+       await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-pair-view="all"]').click();
        await page.frameLocator('#gmfq-page').locator('#pair-index button.pair-open[data-pair="EURCHF"]').click();
        await page.waitForFunction(()=>location.hash==='#/coppie?pair=EURCHF',null,{timeout:10000});
        await page.waitForFunction(()=>{
