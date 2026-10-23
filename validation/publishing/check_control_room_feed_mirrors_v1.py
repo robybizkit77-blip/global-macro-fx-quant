@@ -54,7 +54,7 @@ def main() -> int:
         obj = json.loads(path.read_text(encoding="utf-8"))
         assert isinstance(obj, dict) and obj, f"Invalid feed {name}"
     copy_loop = next(line for line in dash.splitlines()
-                     if line.strip().startswith("for f in OIS_OPERATIONAL_VIEW.json "))
+                     if line.strip().startswith("for f in ") and "OIS_OPERATIONAL_VIEW.json" in line and "OIS_DATA.json" in line)
     copied = set(copy_loop.strip().split("; do", 1)[0].split()[3:])
     for name in sorted(DASH_OWNED):
         assert dash.count("live_data/sections/" + name) >= 3, (
