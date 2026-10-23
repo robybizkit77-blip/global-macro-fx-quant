@@ -14,7 +14,7 @@ from datetime import date
 ORDERED_LIVE={'USD','EUR','GBP','JPY','CAD'}
 AUD_SOURCE='RESERVE_BANK_OF_AUSTRALIA_F2_WEEKLY_FILE'
 NZD_SOURCE='RBNZ_B2_MANUAL_DOUBLE_REVIEW'
-CHF_SOURCE='SNB_EXPORT_BLOCKED'
+CHF_SOURCE='SNB_OFFICIAL_CUBE_REACHABLE_SNAPSHOT_VERIFIED'
 RECENT_MAX_CALENDAR_DAYS=5
 
 def source_status(ccy: str, observation: str, audited: str) -> dict:
@@ -25,10 +25,10 @@ def source_status(ccy: str, observation: str, audited: str) -> dict:
         raise ValueError(f'{ccy}: observation date is after audit date')
     if ccy=='CHF':
         return {
-            'status':'VALIDATED_HISTORICAL_SOURCE_BLOCKED',
-            'action':'SOURCE_EXPORT_RECOVERY_REQUIRED',
+            'status':'VALIDATED_HISTORICAL_OFFICIAL_SNAPSHOT',
+            'action':'CHECK_NEXT_SOURCE_PUBLICATION',
             'source_access':CHF_SOURCE,
-            'reason':'SNB 2Y/10Y same-basis source export blocked. Last verified observation retained, NOT current.'
+            'reason':'Official SNB daily CHF 2Y/10Y cube readable in 2026-10-23 audit; last published common-date pair matched certified 2026-09-30 values. The observation is historical, not a live October rate; future source changes require review.'
         }
     if ccy=='NZD':
         return {
