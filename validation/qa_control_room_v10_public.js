@@ -754,15 +754,13 @@ async function getState(page){
          const checkPublicOverlap=state=>{
            if(navigationVersion!=='pairs-top8-overlap-20261023')return;
            const rows=state.rows.slice(0,8),frequency={};
-           let risks=0;
+           if(rows.length!==8)throw Error(name+' first-eight overlap needs eight original records');
            for(const item of rows){
+             if(!/^[A-Z]{6}$/.test(item.code||''))
+               throw Error(name+' invalid published pair code in overlap');
              const a=item.code.slice(0,3),b=item.code.slice(3);
              frequency[a]=(frequency[a]||0)+1;
              frequency[b]=(frequency[b]||0)+1;
-             if(item.reason&&item.code&&item.code.length!==6)throw Error('bad pair code');
-             if(item.code&&item.code.length===6&&item.reason){
-               // canonical quality is not overwritten by the overlap summary
-             }
            }
            const max=Math.max(...Object.values(frequency));
            const tied=Object.keys(frequency).filter(c=>frequency[c]===max).sort();
