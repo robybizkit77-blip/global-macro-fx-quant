@@ -72,7 +72,7 @@
       "change_1d_available": false,
       "change_1w_available": false,
       "confidence": "B",
-      "direction_vs_policy": "UP",
+      "direction_vs_policy": null,
       "horizons": {
         "12m": {
           "business_day_lag": 1,
@@ -83,12 +83,12 @@
           "expiration": "2027-09-14",
           "futures_price": 99.76,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
-          "policy_delta_bp": 24.0,
+          "policy_delta_bp": null,
           "price_valid_until": "2026-10-22T16:59:54Z",
           "quote_as_of": "2026-10-22",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 0.24,
+          "rate": null,
           "symbol": "ICEEUR:SA3M2027"
         },
         "3m": {
@@ -100,16 +100,16 @@
           "expiration": "2026-12-15",
           "futures_price": 100.0475,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
-          "policy_delta_bp": -4.8,
+          "policy_delta_bp": null,
           "price_valid_until": "2026-10-22T16:28:15Z",
           "quote_as_of": "2026-10-22",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": -0.0475,
+          "rate": null,
           "symbol": "ICEEUR:SA3U2026"
         },
         "6m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "SA3Z2026",
@@ -117,12 +117,12 @@
           "expiration": "2027-03-16",
           "futures_price": 100.01,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
-          "policy_delta_bp": -1.0,
-          "price_valid_until": "2026-10-22T11:13:09Z",
-          "quote_as_of": "2026-10-22",
+          "policy_delta_bp": null,
+          "price_valid_until": "2026-10-23T11:13:37Z",
+          "quote_as_of": "2026-10-23",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": -0.01,
+          "rate": null,
           "symbol": "ICEEUR:SA3Z2026"
         }
       },
@@ -130,7 +130,7 @@
       "market_direction_proxy": null,
       "method_id": "TRADINGVIEW_DATED_FUTURES_SSR_V2",
       "official_status": "WITHHELD",
-      "operational_status": "GREEN_ESTIMATED",
+      "operational_status": "WITHHELD",
       "policy_rate": 0.0,
       "quality": "ESTIMATED_INFORMATIONAL",
       "repricing_reference": {
@@ -142,7 +142,39 @@
         "weekly_min_age_days": 5,
         "weekly_reference_captured_at_utc": null
       },
-      "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures"
+      "secondary_quote_context": {
+        "backtest_eligible_as_official": false,
+        "cross_date_join_allowed": false,
+        "date_mismatch": true,
+        "full_curve_usable": false,
+        "horizons": {
+          "12m": {
+            "contract": "SA3M2027",
+            "quote_as_of": "2026-10-22",
+            "rate_indicative": 0.24,
+            "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
+          },
+          "3m": {
+            "contract": "SA3U2026",
+            "quote_as_of": "2026-10-22",
+            "rate_indicative": -0.0475,
+            "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
+          },
+          "6m": {
+            "contract": "SA3Z2026",
+            "quote_as_of": "2026-10-23",
+            "rate_indicative": -0.01,
+            "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
+          }
+        },
+        "method_id": "TRADINGVIEW_DATED_FUTURES_SSR_V2",
+        "policy_delta_allowed": false,
+        "repricing_signal_allowed": false,
+        "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+        "status": "INDICATIVE_OBSERVATIONS_NON_OIS"
+      },
+      "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+      "withheld_reason": "STALE_OR_INCOMPLETE_PRICING"
     },
     "EUR": {
       "as_of": "2026-10-21",
@@ -497,9 +529,9 @@
   "status": "PARTIAL_WITHHELD",
   "summary": {
     "g8_total": 8,
-    "green_estimated": 2,
+    "green_estimated": 1,
     "green_official": 4,
-    "operational_green": 6,
-    "operational_withheld": 2
+    "operational_green": 5,
+    "operational_withheld": 3
   }
 }

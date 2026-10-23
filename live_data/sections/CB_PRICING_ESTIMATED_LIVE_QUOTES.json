@@ -34,14 +34,14 @@
           "symbol": "ICEEUR:SA3U2026"
         },
         "6m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "SA3Z2026",
           "contract_description": "Dec 2026",
           "expiration": "2027-03-16",
           "futures_price": 100.01,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
-          "price_valid_until": "2026-10-22T11:13:09Z",
-          "quote_as_of": "2026-10-22",
+          "price_valid_until": "2026-10-23T11:13:37Z",
+          "quote_as_of": "2026-10-23",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": -0.01,
@@ -166,7 +166,7 @@
       "status": "LIVE_SECONDARY_READY"
     }
   },
-  "generated_at_utc": "2026-10-23T06:59:46.301612Z",
+  "generated_at_utc": "2026-10-23T11:24:43.801879Z",
   "governance": {
     "backtest_eligible_as_official_ois": false,
     "bias_effect": "NONE",

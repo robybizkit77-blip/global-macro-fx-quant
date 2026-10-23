@@ -1,6 +1,6 @@
 {
   "as_of": "2026-10-23",
-  "blocked_currency_count": 2,
+  "blocked_currency_count": 3,
   "currencies": {
     "CHF": {
       "activation_requirement": "Validare ICE SA3 oppure Eurex FSR3, senza unire exchange o date differenti.",
@@ -14,14 +14,18 @@
         "paired_current": false,
         "separate_10y_snb_as_of": "2026-10-22"
       },
-      "indicative_quote_dates": {},
-      "obstacle": "Fonte indicativa: manca certificazione operativa.",
+      "indicative_quote_dates": {
+        "12m": "2026-10-22",
+        "3m": "2026-10-22",
+        "6m": "2026-10-23"
+      },
+      "obstacle": "Settlement futures SARON ICE/Eurex non certificati in una stessa serie storica.",
       "operational_as_of": "2026-10-22",
       "price_or_curve_embedded": false,
       "source_reviewed_as_of": "2026-10-23",
       "source_title": "ICE Futures Europe Three-Month SARON futures (SA3) daily settlements",
       "source_url": "https://www.ice.com/products/72270612/Three-Month-Saron-Index-Futures-Contract/data",
-      "status": "GREEN_ESTIMATED",
+      "status": "WITHHELD",
       "usable_for_policy_pricing": false
     },
     "EUR": {
@@ -37,27 +41,27 @@
       "obstacle": "Eurex FST3: settlement ufficiali non accessibili con il percorso privato richiesto; contratti secondari su date diverse, non curva OIS.",
       "operational_as_of": "2026-10-21",
       "price_or_curve_embedded": false,
-      "source_reviewed_as_of": "2026-10-23",
-      "source_title": "Eurex Three-Month Euro STR Futures, product FST3, daily exchange settlements",
-      "source_url": "https://www.eurex.com/ex-en/markets/int/mon/3m-euro-str-futures/estr/Three-Month-Euro-STR-Futures-3402480",
-      "status": "WITHHELD",
-      "usable_for_policy_pricing": false,
       "research_context": {
-        "kind": "DATED_ESTR_FUTURES_QUOTES_NOT_OIS",
+        "cross_date_join_allowed": false,
+        "eligible_as_ois": false,
+        "full_horizon_set": true,
         "instrument": "Eurex FST3 individual dated secondary contract observations",
+        "kind": "DATED_ESTR_FUTURES_QUOTES_NOT_OIS",
+        "policy_delta_allowed": false,
         "quote_dates": {
           "12m": "2026-10-22",
           "3m": "2026-10-21",
           "6m": "2026-10-21"
         },
-        "full_horizon_set": true,
-        "same_date_across_horizons": false,
-        "status": "MIXED_DATE_QUOTES",
         "rates_embedded": false,
-        "cross_date_join_allowed": false,
-        "policy_delta_allowed": false,
-        "eligible_as_ois": false
-      }
+        "same_date_across_horizons": false,
+        "status": "MIXED_DATE_QUOTES"
+      },
+      "source_reviewed_as_of": "2026-10-23",
+      "source_title": "Eurex Three-Month Euro STR Futures, product FST3, daily exchange settlements",
+      "source_url": "https://www.eurex.com/ex-en/markets/int/mon/3m-euro-str-futures/estr/Three-Month-Euro-STR-Futures-3402480",
+      "status": "WITHHELD",
+      "usable_for_policy_pricing": false
     },
     "NZD": {
       "activation_requirement": "Attivare licenza NZOS/NZOR e diritti di uso/visualizzazione; certificare curva 3M/6M/12M e storico T/T−1/T−5.",
@@ -68,21 +72,21 @@
       "obstacle": "NZOS/NZOR ufficiali richiedono licenza NZdata; nessun accesso certificato attivo. ASX Bank Bill indica solo direzione, non OIS.",
       "operational_as_of": "2026-09-02",
       "price_or_curve_embedded": false,
+      "research_context": {
+        "eligible_as_ois": false,
+        "instrument": "ASX NZ 90-Day Bank Bill futures",
+        "kind": "ASX_NZD_BANK_BILL_DIRECTION_NOT_OIS",
+        "policy_delta_allowed": false,
+        "proxy_as_of": "2026-10-22",
+        "rates_embedded": false,
+        "status": "RECENT_DIRECTIONAL",
+        "substitutes_for_ois_level": false
+      },
       "source_reviewed_as_of": "2026-10-23",
       "source_title": "NZFBF NZOS OIS Closing Mid-Rates",
       "source_url": "https://www.nzfbf.co.nz/benchmarks/closing-rates/nzos",
       "status": "WITHHELD",
-      "usable_for_policy_pricing": false,
-      "research_context": {
-        "kind": "ASX_NZD_BANK_BILL_DIRECTION_NOT_OIS",
-        "instrument": "ASX NZ 90-Day Bank Bill futures",
-        "proxy_as_of": "2026-10-22",
-        "status": "RECENT_DIRECTIONAL",
-        "rates_embedded": false,
-        "policy_delta_allowed": false,
-        "eligible_as_ois": false,
-        "substitutes_for_ois_level": false
-      }
+      "usable_for_policy_pricing": false
     },
     "USD": {
       "activation_requirement": "Ottenere CME ZQ T, T−1, T−5 per gli stessi contratti e verificarne la licenza.",
@@ -108,10 +112,10 @@
   "note": "Stato accesso alle fonti; non è una previsione, non certifica nuovi prezzi.",
   "operational_summary": {
     "g8_total": 8,
-    "green_estimated": 2,
+    "green_estimated": 1,
     "green_official": 4,
-    "operational_green": 6,
-    "operational_withheld": 2
+    "operational_green": 5,
+    "operational_withheld": 3
   },
   "prices_omitted": true,
   "schema": "GMFQ_OIS_SOURCE_READINESS_VIEW_V1",
