@@ -18,6 +18,7 @@ def main() -> None:
     assert c["schema"] == "GMFQ_DAILY_DATA_ORCHESTRATOR_V2"
     assert c["timezone"] == "Europe/Rome"
     assert c["target_local_times"] == {
+        "prebrief": "05:00",
         "premorning": "07:45",
         "morning": "09:10",
         "close": "18:30",
@@ -35,7 +36,7 @@ def main() -> None:
         "final-e2e-certification-gate-v3.yml",
         "publish-dashboard-pages-v1.yml",
     ]
-    for phase in ("premorning", "morning", "close", "night"):
+    for phase in ("prebrief", "premorning", "morning", "close", "night"):
         items = c["phases"][phase]
         assert items[-2:] == expected_suffix, (phase, items)
         assert len(items) == len(set(items)), (phase, items)
@@ -48,6 +49,18 @@ def main() -> None:
             if "workflow_dispatch:" not in text:
                 fail(f"child workflow is not dispatchable: {child}")
 
+    assert c["phases"]["prebrief"] == [
+        "macro-persistent-daily-v1.yml",
+        "rates-persistent-daily-v1.yml",
+        "cb-pricing-persistent-daily-v1.yml",
+        "ois-estimated-snapshot-repricing-v1.yml",
+        "calendar-news-operational-refresh-v1.yml",
+        "final-e2e-certification-gate-v3.yml",
+        "publish-dashboard-pages-v1.yml",
+    ]
+    assert c["rules"]["prebrief_target_before_study"] == "08:00"
+    assert c["rules"]["prebrief_never_fabricates_missing_publications"] is True
+    assert c["rules"]["morning_0910_is_catch_up_not_first_refresh"] is True
     assert c["phases"]["premorning"] == [
         "rates-persistent-daily-v1.yml",
         "cb-pricing-persistent-daily-v1.yml",
@@ -65,6 +78,9 @@ def main() -> None:
         "actions: write",
         "Europe/Rome",
         "dispatch_and_wait",
+        "0 3 * * 1-5",
+        "0 4 * * 1-5",
+        "phase=prebrief",
         "45 5 * * 1-5",
         "45 6 * * 1-5",
         "phase=premorning",
