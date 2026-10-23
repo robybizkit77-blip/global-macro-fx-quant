@@ -1879,6 +1879,15 @@ async function mountPairRankedList(doc){
  '#gmfq-pair-rank .gmfq-rank-view button[aria-pressed="true"]{color:#e7cd93;border-color:#c2a76c;background:#243647}'+
  '#gmfq-pair-rank .gmfq-rank-view button:focus-visible{outline:2px solid #e2c98f;outline-offset:2px}'+
  '#gmfq-pair-rank .gmfq-rank-visibility{font:11px/1.45 Arial,sans-serif;color:#9fbacb}'+
+ '#gmfq-pair-rank .gmfq-reading-switch{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:2px 0 6px}'+
+ '#gmfq-pair-rank .gmfq-reading-switch button{cursor:pointer;border:1px solid #496274;background:transparent;border-radius:4px;padding:5px 9px;color:#c9d9e5;font:600 11px/1.5 Arial,sans-serif}'+
+ '#gmfq-pair-rank .gmfq-reading-switch button[aria-pressed="true"]{color:#e7cd93;border-color:#c2a76c;background:#243647}'+
+ '#gmfq-pair-rank .gmfq-reading-switch button:focus-visible{outline:2px solid #e2c98f;outline-offset:2px}'+
+ '#gmfq-pair-rank .gmfq-reading-switch span{font:11px/1.5 Arial,sans-serif;color:#9fb6c6}'+
+ '#pair-index[data-research-reading="compact"] .gmfq-row-lenses,#pair-index[data-research-reading="compact"] .gmfq-row-next{display:none!important}'+
+ '#gmfq-pair-rank .gmfq-rank-method-detail{margin:6px 0}'+
+ '#gmfq-pair-rank .gmfq-rank-method-detail summary{cursor:pointer;color:#a8c1d0;font:11px/1.5 Arial,sans-serif;padding:4px 0;outline-offset:3px}'+
+ '#gmfq-pair-rank .gmfq-rank-method-detail summary:focus-visible{outline:2px solid #e2c98f}'+
  '#pair-index tr.gmfq-research-hidden{display:none!important}'+
  '#pair-index .gmfq-row-rank{display:inline-block;min-width:22px;color:#dfc891;font:600 12px/1.5 Arial,sans-serif;margin-right:7px;font-variant-numeric:tabular-nums}'+
  '#pair-index .gmfq-row-lenses{display:block;margin-top:3px;color:#e3d19f;font:10px/1.45 Arial,sans-serif;max-width:300px;overflow-wrap:anywhere}'+
@@ -1891,7 +1900,7 @@ async function mountPairRankedList(doc){
  panel.dataset.macroAsOf=ranked.macroAsOf;panel.dataset.priceAsOf=ranked.priceAsOf;
  panel.dataset.hasTradeRanking='false';
  panel.innerHTML='<h2 class="desk-panel-title">28 coppie · dalla più coerente alla meno coerente</h2>'+
-  '<p class="gmfq-rank-explain"><strong>Ogni coppia mostra l’ostacolo e il primo controllo:</strong> una verifica da fare, non una condizione soddisfatta o un ingresso.</p>'+
+  '<p class="gmfq-rank-explain"><strong>Prima lettura:</strong> verdetto e ostacolo principale. Apri «Verifiche» per tesi, prezzo, timing e primo controllo; nessun ingresso implicito.</p>'+
   '<div class="gmfq-rank-switch" role="group" aria-label="Criterio di ordinamento delle coppie">'+
   '<button type="button" data-rank-mode="setup" aria-pressed="true">Condizioni del setup</button>'+
   '<button type="button" data-rank-mode="thesis" aria-pressed="false">Forza della tesi</button></div>'+
@@ -1899,16 +1908,22 @@ async function mountPairRankedList(doc){
    '<button type="button" data-pair-view="focus" aria-pressed="true">Prime 8</button>'+
    '<button type="button" data-pair-view="all" aria-pressed="false">Tutte le 28</button>'+
    '<span class="gmfq-rank-visibility" role="status" aria-live="polite">Prime 8 · altre coppie disponibili</span></div>'+
+  '<div class="gmfq-reading-switch" role="group" aria-label="Livello di approfondimento delle righe">'+
+   '<button type="button" data-pair-reading="compact" aria-pressed="true">Sintesi</button>'+
+   '<button type="button" data-pair-reading="details" aria-pressed="false">Verifiche</button>'+
+   '<span>Il giudizio del modello non cambia</span></div>'+
   '<p class="gmfq-rank-lead" aria-live="polite"></p>'+
   '<p class="gmfq-rank-overlap" aria-live="polite" data-source="PAIR_SETUP_OPERATIONAL_VIEW"></p>'+
-  '<p class="gmfq-rank-method">Ordine editoriale, NON probabilità, score quantitativo o segnale. Setup: presenza della tesi → prezzo → estensione → timing → coerenza Macro/Tassi → dinamica → liquidità/COT. Tesi: coerenza Macro/Tassi → dinamica → altre conferme. Le 11 senza preferenza strutturale sono in fondo.</p>'+
+  '<details class="gmfq-rank-method-detail"><summary>Metodo e limiti del ranking</summary>'+
+   '<p class="gmfq-rank-method">Ordine editoriale, NON probabilità, score quantitativo o segnale. Setup: presenza della tesi → prezzo → estensione → timing → coerenza Macro/Tassi → dinamica → liquidità/COT. Tesi: coerenza Macro/Tassi → dinamica → altre conferme. Le 11 senza preferenza strutturale sono in fondo.</p></details>'+
   '<p class="gmfq-rank-source">Fonte '+htmlEscape(ranked.source)+' · prezzo del modello '+htmlEscape(ranked.priceAsOf)+
   ' · baseline Macro/Tassi '+htmlEscape(ranked.macroAsOf)+(ranked.baselineHistorical?' (STORICA, NON AGGIORNATA)':'')+
   '. La prima coppia non è necessariamente un trade eseguibile.</p>';
  const lead=panel.querySelector('.gmfq-rank-lead'),overlap=panel.querySelector('.gmfq-rank-overlap'),head=table.tHead?.querySelectorAll('th');
  if(head?.[3])head[3].textContent='Valutazione e principale cautela';
- let mode='setup',view='focus';
- panel.dataset.viewMode=view;panel.dataset.displayLimit='8';
+ let mode='setup',view='focus',reading='compact';
+ panel.dataset.viewMode=view;panel.dataset.displayLimit='8';panel.dataset.readingMode=reading;
+ tbody.dataset.researchReading=reading;
  const visibilityLabel=panel.querySelector('.gmfq-rank-visibility');
  const apply=()=>{
    if(!panel.isConnected||frame.contentDocument!==doc||route()!=='coppie')return;
@@ -1986,8 +2001,16 @@ async function mountPairRankedList(doc){
      'Sovrapposizione valutaria, non correlazione né rischio portafoglio stimati.';
  };
  panel.addEventListener('click',e=>{
-   const b=e.target.closest('button[data-rank-mode],button[data-pair-view]');
+   const b=e.target.closest('button[data-rank-mode],button[data-pair-view],button[data-pair-reading]');
    if(!b||!panel.contains(b))return;
+   if(b.hasAttribute('data-pair-reading')){
+     if(!['compact','details'].includes(b.dataset.pairReading))return;
+     reading=b.dataset.pairReading;panel.dataset.readingMode=reading;
+     tbody.dataset.researchReading=reading;
+     panel.querySelectorAll('button[data-pair-reading]').forEach(x=>
+       x.setAttribute('aria-pressed',String(x.dataset.pairReading===reading)));
+     return;
+   }
    if(b.hasAttribute('data-pair-view')){
      if(!['focus','all'].includes(b.dataset.pairView))return;
      view=b.dataset.pairView;panel.dataset.viewMode=view;
