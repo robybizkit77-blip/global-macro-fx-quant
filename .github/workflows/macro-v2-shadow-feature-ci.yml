@@ -17,6 +17,10 @@ on:
       - 'validation/macro/v2_pit_coverage_readiness_v1.py'
       - 'validation/macro/test_v2_pit_coverage_readiness_v1.py'
       - 'validation/macro/MACRO_V2_PIT_COVERAGE_PHASE3_2026-10-23.md'
+      - 'validation/macro/fixtures/v2_bls_us_unrate_25_first_releases_2023_09_2025_09.json'
+      - 'validation/macro/v2_bls_us_unrate_25_release_pilot_v1.py'
+      - 'validation/macro/test_v2_bls_us_unrate_25_release_pilot_v1.py'
+      - 'validation/macro/MACRO_V2_US_BLS_25_FIRST_RELEASE_PILOT_2026-10-23.md'
   workflow_dispatch:
 
 permissions:
@@ -115,6 +119,30 @@ jobs:
           assert all(x[k] is False for k in
             ('safe_to_publish_new_D','safe_to_update_pair_theses','writes_live_data'))
           print('MACRO_V2_G8_24_OBSERVED_0_PIT_SCORE_CERTIFIED_PASS')
+          PY
+      - name: Validate 25 actual archived BLS U-3 first releases and compute historical shadow-only intensity
+        run: |
+          set -euo pipefail
+          python -m unittest validation.macro.test_v2_bls_us_unrate_25_release_pilot_v1 -v
+          python -m validation.macro.v2_bls_us_unrate_25_release_pilot_v1 \
+            --out /tmp/macro-v2-shadow/us-labour-25-first-release-historical-pilot.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('/tmp/macro-v2-shadow/us-labour-25-first-release-historical-pilot.json')
+          x=json.loads(p.read_text())
+          assert x['historical_cutoff']=='2025-11-20T13:30:00Z'
+          assert x['training_releases']==24
+          assert x['first_release_dates_officially_attested_in_archived_web_pages']==25
+          assert x['october_2025_release_gap'] is True
+          assert x['not_a_current_2026_macro_score'] is True
+          assert x['current_first_release']==4.4
+          assert abs(x['labour_tightness_intensity_not_currency_strength']+2.0234722784)<1e-6
+          for key in ('independent_full_pit_certified','eligible_for_live_macro',
+                      'eligible_for_backtest','safe_to_publish_new_D',
+                      'safe_to_update_pair_theses','writes_live_data'):
+              assert x[key] is False,key
+          print('BLS_25_ACTUAL_FIRST_RELEASES_HISTORICAL_RESEARCH_PASS_NOT_LIVE_FX_SCORE')
           PY
       - name: Confirm no runtime or website files were changed by tests
         run: |

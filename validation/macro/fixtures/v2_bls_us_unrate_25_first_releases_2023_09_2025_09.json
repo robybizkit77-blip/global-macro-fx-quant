@@ -1,0 +1,210 @@
+{
+  "schema": "GMFQ_MACRO_V2_PIT_FEATURE_INPUT_V1",
+  "as_of": "2025-11-20T13:30:00Z",
+  "currency": "USD",
+  "pillar": "labour",
+  "series_id": "LNS14000000",
+  "canonical_alias": "UNRATE",
+  "variable_type": "unemployment_rate",
+  "frequency": "M",
+  "unit": "percent",
+  "max_lag_periods": 2,
+  "source": {
+    "authority": "U.S. Bureau of Labor Statistics",
+    "source_id": "LNS14000000",
+    "transport": "OFFICIAL_DIRECT"
+  },
+  "evidence_provenance": "PRIMARY_BLS_ARCHIVED_WEB_RELEASE_HEADLINE_ATTESTED__NO_IMMUTABLE_ARCHIVE_BYTES",
+  "source_evidence_is_independently_certified": false,
+  "archive_index": "https://www.bls.gov/bls/news-release/empsit.htm",
+  "alias_explanation": "FRED UNRATE is sourced from the BLS Current Population Survey U-3 LNS14000000; no cross-dataset row overwrite.",
+  "alias_reference": "https://fred.stlouisfed.org/series/UNRATE",
+  "training_window_from": "2023-09",
+  "training_window_to": "2025-08",
+  "latest_first_release_period": "2025-09",
+  "latest_first_release_date": "2025-11-20",
+  "source_break_after_pilot": "2025-10_EMPLOYMENT_SITUATION_NEVER_PUBLISHED_SHUTDOWN",
+  "release_clock": "08:30 America/New_York on all archived release days, offset checked against historical DST",
+  "vintage_type": "FIRST_ONLY",
+  "archive_bytes_sha256": null,
+  "complete_revision_vintage_history_certified": false,
+  "eligible_for_current_2026_macro_scoring": false,
+  "writes_live_data": false,
+  "vintages": [
+    {
+      "observation_period": "2023-09",
+      "released_at": "2023-10-06T08:30:00-04:00",
+      "value": 3.8,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_10062023.htm"
+    },
+    {
+      "observation_period": "2023-10",
+      "released_at": "2023-11-03T08:30:00-04:00",
+      "value": 3.9,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_11032023.htm"
+    },
+    {
+      "observation_period": "2023-11",
+      "released_at": "2023-12-08T08:30:00-05:00",
+      "value": 3.7,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_12082023.htm"
+    },
+    {
+      "observation_period": "2023-12",
+      "released_at": "2024-01-05T08:30:00-05:00",
+      "value": 3.7,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_01052024.htm"
+    },
+    {
+      "observation_period": "2024-01",
+      "released_at": "2024-02-02T08:30:00-05:00",
+      "value": 3.7,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_02022024.htm"
+    },
+    {
+      "observation_period": "2024-02",
+      "released_at": "2024-03-08T08:30:00-05:00",
+      "value": 3.9,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_03082024.htm"
+    },
+    {
+      "observation_period": "2024-03",
+      "released_at": "2024-04-05T08:30:00-04:00",
+      "value": 3.8,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_04052024.htm"
+    },
+    {
+      "observation_period": "2024-04",
+      "released_at": "2024-05-03T08:30:00-04:00",
+      "value": 3.9,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_05032024.htm"
+    },
+    {
+      "observation_period": "2024-05",
+      "released_at": "2024-06-07T08:30:00-04:00",
+      "value": 4,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_06072024.htm"
+    },
+    {
+      "observation_period": "2024-06",
+      "released_at": "2024-07-05T08:30:00-04:00",
+      "value": 4.1,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_07052024.htm"
+    },
+    {
+      "observation_period": "2024-07",
+      "released_at": "2024-08-02T08:30:00-04:00",
+      "value": 4.3,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_08022024.htm"
+    },
+    {
+      "observation_period": "2024-08",
+      "released_at": "2024-09-06T08:30:00-04:00",
+      "value": 4.2,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_09062024.htm"
+    },
+    {
+      "observation_period": "2024-09",
+      "released_at": "2024-10-04T08:30:00-04:00",
+      "value": 4.1,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_10042024.htm"
+    },
+    {
+      "observation_period": "2024-10",
+      "released_at": "2024-11-01T08:30:00-04:00",
+      "value": 4.1,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_11012024.htm"
+    },
+    {
+      "observation_period": "2024-11",
+      "released_at": "2024-12-06T08:30:00-05:00",
+      "value": 4.2,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_12062024.htm"
+    },
+    {
+      "observation_period": "2024-12",
+      "released_at": "2025-01-10T08:30:00-05:00",
+      "value": 4.1,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_01102025.htm"
+    },
+    {
+      "observation_period": "2025-01",
+      "released_at": "2025-02-07T08:30:00-05:00",
+      "value": 4,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_02072025.htm"
+    },
+    {
+      "observation_period": "2025-02",
+      "released_at": "2025-03-07T08:30:00-05:00",
+      "value": 4.1,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_03072025.htm"
+    },
+    {
+      "observation_period": "2025-03",
+      "released_at": "2025-04-04T08:30:00-04:00",
+      "value": 4.2,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_04042025.htm"
+    },
+    {
+      "observation_period": "2025-04",
+      "released_at": "2025-05-02T08:30:00-04:00",
+      "value": 4.2,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_05022025.htm"
+    },
+    {
+      "observation_period": "2025-05",
+      "released_at": "2025-06-06T08:30:00-04:00",
+      "value": 4.2,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_06062025.htm"
+    },
+    {
+      "observation_period": "2025-06",
+      "released_at": "2025-07-03T08:30:00-04:00",
+      "value": 4.1,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_07032025.htm"
+    },
+    {
+      "observation_period": "2025-07",
+      "released_at": "2025-08-01T08:30:00-04:00",
+      "value": 4.2,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_08012025.htm"
+    },
+    {
+      "observation_period": "2025-08",
+      "released_at": "2025-09-05T08:30:00-04:00",
+      "value": 4.3,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_09052025.htm"
+    },
+    {
+      "observation_period": "2025-09",
+      "released_at": "2025-11-20T08:30:00-05:00",
+      "value": 4.4,
+      "kind": "FIRST",
+      "evidence_ref": "https://www.bls.gov/news.release/archives/empsit_11202025.htm"
+    }
+  ]
+}
