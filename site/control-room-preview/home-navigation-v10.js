@@ -2422,6 +2422,93 @@ function valuteFxSourceStatus(fx){
  return ok?{status:'OFFICIAL_FIXING_RECENT',asof:day}:
    {status:'WITHHELD',asof:null};
 }
+
+/* Relative performance of the eight currencies, using only two official ECB
+   fixing observations per horizon. This is observed FX momentum, NOT the frozen
+   Macro model, a COT/rates composite, an estimate of expected return or a signal. */
+function valuteRelativeFixingRanks(fx,lookback){
+ if(![5,20].includes(lookback)||
+    valuteFxSourceStatus(fx).status!=='OFFICIAL_FIXING_RECENT'||
+    !Array.isArray(fx.rows)||fx.row_count!==fx.rows.length||
+    fx.rows.length<=lookback)return null;
+ const older=fx.rows.at(-lookback-1),recent=fx.rows.at(-1);
+ if(!older||!recent||!/^20\d{2}-\d{2}-\d{2}$/.test(older.Date||'')||
+    recent.Date!==fx.last_as_of||older.Date>=recent.Date)return null;
+ const changes=[];
+ for(const c of FX){
+   const start=num(older[c]),finish=num(recent[c]);
+   if(start===null||finish===null||start<=0||finish<=0)return null;
+   // ECB fixing: currency units per 1 EUR. Invert to express currency value.
+   changes.push({ccy:c,logChange:-Math.log(finish/start)});
+ }
+ const basket=changes.reduce((total,x)=>total+x.logChange,0)/changes.length;
+ const items=changes.map(x=>({ccy:x.ccy,
+   percent:(Math.exp(x.logChange-basket)-1)*100})).sort((a,b)=>
+     b.percent-a.percent||a.ccy.localeCompare(b.ccy));
+ if(items.length!==8||new Set(items.map(x=>x.ccy)).size!==8||
+    items.some(x=>!Number.isFinite(x.percent)))return null;
+ return {items,from:older.Date,asof:recent.Date,lookback,
+   source:'ECB_G8_PRICE_HISTORY',basis:'EQUAL_WEIGHT_G8'};
+}
+function mountValuteRelativeRanking(doc,strip,fx){
+ const initial=valuteRelativeFixingRanks(fx,5);
+ if(!initial||!strip.isConnected)return; // The provenance notice already explains WITHHELD.
+ const rank=doc.createElement('section');rank.id='gmfq-vsc-momentum';
+ rank.setAttribute('aria-label','Valute G8 ordinate per momentum osservato');
+ rank.dataset.source='ECB_G8_PRICE_HISTORY';
+ rank.dataset.tradeSignals='NONE';
+ const css=doc.createElement('style');css.id='gmfq-vsc-momentum-style';
+ css.textContent=
+ '#gmfq-vsc-momentum{margin:0 0 13px;padding:10px 12px 11px;border-bottom:1px solid #304c60;color:#d4e2eb;min-width:0}'+
+ '#gmfq-vsc-momentum .gmfq-vsm-top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}'+
+ '#gmfq-vsc-momentum h2{font:600 14px/1.45 Arial,sans-serif;margin:0;color:#e6eef6}'+
+ '#gmfq-vsc-momentum .gmfq-vsm-switch{display:flex;gap:6px;flex-wrap:wrap}'+
+ '#gmfq-vsc-momentum .gmfq-vsm-switch button{font:600 11px/1.4 Arial,sans-serif;padding:5px 9px;border:1px solid #4b6576;background:#142d3e;color:#c5d6e3;border-radius:5px;cursor:pointer}'+
+ '#gmfq-vsc-momentum .gmfq-vsm-switch button[aria-pressed="true"]{border-color:#d3bb83;background:#2d3a45;color:#f2d79e}'+
+ '#gmfq-vsc-momentum button:focus-visible{outline:2px solid #e6cf9c;outline-offset:2px}'+
+ '#gmfq-vsc-momentum .gmfq-vsm-period{font:11px/1.5 Arial,sans-serif;color:#aabfce;margin:7px 0 9px}'+
+ '#gmfq-vsc-momentum ol{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 18px;list-style:none;margin:0;padding:0}'+
+ '#gmfq-vsc-momentum li{min-width:0;border-top:1px solid #2a4353}'+
+ '#gmfq-vsc-momentum li button{display:flex;gap:9px;align-items:center;text-align:left;width:100%;min-width:0;border:0;background:transparent;color:#dce7ee;cursor:pointer;padding:7px 1px;font:600 12px/1.45 Arial,sans-serif}'+
+ '#gmfq-vsc-momentum .gmfq-vsm-position{min-width:21px;color:#bda877;font-variant-numeric:tabular-nums}'+
+ '#gmfq-vsc-momentum .gmfq-vsm-name{flex:1;min-width:0}'+
+ '#gmfq-vsc-momentum .gmfq-vsm-move{font-variant-numeric:tabular-nums;white-space:nowrap;color:#c7dce9}'+
+ '#gmfq-vsc-momentum .gmfq-vsm-caution{font:10px/1.5 Arial,sans-serif;color:#90adbf;margin:8px 0 0}'+
+ '@media(max-width:600px){#gmfq-vsc-momentum{padding:9px 8px}#gmfq-vsc-momentum ol{grid-template-columns:minmax(0,1fr)}}';
+ doc.head.appendChild(css);
+ rank.innerHTML='<div class="gmfq-vsm-top"><h2>Momentum FX · dalla più forte alla più debole</h2>'+
+ '<div class="gmfq-vsm-switch" role="group" aria-label="Orizzonte del ranking FX">'+
+ '<button type="button" data-vsm-days="5" aria-pressed="true">5 sedute</button>'+
+ '<button type="button" data-vsm-days="20" aria-pressed="false">20 sedute</button></div></div>'+
+ '<p class="gmfq-vsm-period" aria-live="polite"></p><ol aria-label="Classifica osservata delle otto valute G8"></ol>'+
+ '<p class="gmfq-vsm-caution">Movimento percentuale contro un paniere G8 equiponderato costruito dai fixing BCE; non è forza Macro/Tassi, DXY ICE, aspettativa di rendimento o graduatoria di trade.</p>';
+ strip.insertAdjacentElement('afterend',rank);
+ const paint=days=>{
+   const data=valuteRelativeFixingRanks(fx,days),list=rank.querySelector('ol');
+   if(!data){rank.dataset.status='WITHHELD';list.textContent='Orizzonte non verificabile';return}
+   rank.dataset.status='OBSERVED';rank.dataset.horizon=String(days);
+   rank.dataset.asof=data.asof;rank.dataset.from=data.from;
+   rank.querySelector('.gmfq-vsm-period').textContent=
+      days+' sedute BCE · '+data.from+' → '+data.asof+' · forza relativa al paniere, non variazione EUR/USD';
+   list.innerHTML=data.items.map((x,i)=>
+     '<li data-vsm-ccy="'+x.ccy+'" data-vsm-rank="'+(i+1)+'">'+
+     '<button type="button" data-vsm-open="'+x.ccy+'" aria-label="Apri analisi '+x.ccy+'">'+
+     '<span class="gmfq-vsm-position">'+String(i+1).padStart(2,'0')+'</span>'+
+     '<span class="gmfq-vsm-name">'+FLAG[x.ccy]+' '+x.ccy+'</span>'+
+     '<span class="gmfq-vsm-move">'+(x.percent>=0?'+':'')+fmt(x.percent,2)+'%</span>'+
+     '</button></li>').join('');
+   rank.querySelectorAll('[data-vsm-days]').forEach(x=>
+      x.setAttribute('aria-pressed',String(Number(x.dataset.vsmDays)===days)));
+ };
+ rank.addEventListener('click',e=>{
+   const days=e.target.closest('button[data-vsm-days]');
+   if(days){paint(Number(days.dataset.vsmDays));return}
+   const open=e.target.closest('button[data-vsm-open]');
+   if(open&&FX.includes(open.dataset.vsmOpen))go('#/valute?ccy='+open.dataset.vsmOpen);
+ });
+ paint(5);
+}
+
 async function mountValuteSourceCompass(doc){
  if(route()!=='valute'||frame.contentDocument!==doc)return;
  const hero=doc.querySelector('.desk-hero'),main=doc.querySelector('.desk-main');
@@ -2489,6 +2576,7 @@ async function mountValuteSourceCompass(doc){
   '<span data-source="macro"><strong>Modello:</strong> '+htmlEscape(modelText)+'</span></div>'+
   '<p>I fixing BCE sono riferimenti ufficiali giornalieri rispetto all’euro, non prezzi intraday e non un nuovo ranking di forza relativa. Il DXY sintetico è una stima informativa ricostruita da fixing BCE, non il DXY ICE ufficiale. Gli score Macro e i giudizi strutturali appartengono alla baseline storica e non vengono aggiornati da queste osservazioni.</p>'+
   '<p>Qualsiasi dato assente o datato resta dichiarato: nessun prezzo, bias, COT, policy path o segnale viene ricostruito automaticamente.</p></details>';
+ mountValuteRelativeRanking(doc,strip,fx);
 }
 
 /* Additive Cross-Asset Gold readout. Never alters the 32 approved visual parts. */
