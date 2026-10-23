@@ -19,6 +19,7 @@ from datetime import datetime, timezone
 
 BASE_URL = "https://robybizkit77-blip.github.io/global-macro-fx-quant/"
 FILES = (
+    "live_data/sections/OIS_DATA.json",
     "live_data/sections/OIS_OPERATIONAL_VIEW.json",
     "dashboard/ois-operational-monitor-v1.js",
     "dashboard/cbdesk-operational-v1.js",
