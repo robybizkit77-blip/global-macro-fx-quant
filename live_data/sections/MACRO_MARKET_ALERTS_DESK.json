@@ -1,8 +1,34 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-23T10:47:44Z",
+  "generated_at_utc": "2026-10-23T11:49:51Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-c6d0cba43e3393561574",
+      "observed_at_utc": "2026-10-23T04:14:00Z",
+      "headline": "Gold off three-month lows as oil rally fans inflation worries",
+      "summary": "Reuters riporta: Gold off three-month lows as oil rally fans inflation worries. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxOWE1LcUgzRWRwVDZmX3FEaWszVHF0cFQ1ekt6M1pyQ0lfc05PQm9DekdZcXprdm1vQk00SlNEZjEwQllCd1VwMUJySnIxcF9ZblFaRHFsV3BzSU52SlJSSi1TeWxoTmdYc1h6UHhPQTFQYU41ZEdQTFRNY3l0N1Q2bnRDV2x1MjlveGtxTk1oQWlGd3ExcUZEd2QzdF9TUkVKcXotUlIycUgtb1RrZjJ3?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-32ed5d64d6b92b5139ae",
+      "observed_at_utc": "2026-10-23T02:17:00Z",
+      "headline": "Surging oil prices drag Indian shares to weekly losses",
+      "summary": "Reuters riporta: Surging oil prices drag Indian shares to weekly losses. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "COMMODITIES",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxOeVk5bXN2THRVWVBubnpudHpPQ2dreFhuVUxXSUFqZWJLa2psTU1rbjl3UktXTlVabEpvVEM0YUpuZVBUWkJQSjB4X1o1QlI5OEZYNE1fNE5QREZ1RjZqeURTcEFZSm5DbkFGYkFCLVNVYkpRNXRCQ3RMTDExMGVJdS1lUjUtdlBFVkJQY1VXdVBZTF9qVklpbU1YRXp6dHpXNWhqcHVFVFNsZUtQeXV6SGNBTnJYaHBzWlE5SF9EeFpiYllha3c?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-655d7284af305507638e",
       "observed_at_utc": "2026-10-23T00:06:00Z",
@@ -1359,36 +1385,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxOampUMVFEMmRCN2JXOXg1dTR6aGdjaFVmRF9IeGF4Q3J4a05MQ2hpdmk3ZU04MU01dTFVQzZ6dGoxUGxTRktfbUpURUxtZmdMdWdid054OFJHWGVYVmI4eTdvWUlCak1LM0JZNjJTRDB5NWllNlI0TUZfOTZEMlhUbV9PMW1nWE5hNTV5ZUVHQjNnVkw5UU5oTUkzNVZPSWhNVkZPMV9fcTc?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-73d886fae3cffe8f1492",
-      "observed_at_utc": "2026-10-21T09:54:38Z",
-      "headline": "Pound gains against dollar, euro as inflation data cements future rate hike bets",
-      "summary": "Reuters riporta: Pound gains against dollar, euro as inflation data cements future rate hike bets. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD",
-        "EUR",
-        "GBP"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxONEtnY2tIVF9OZTdBSTNUOHpQWjFKYzlBd1JYdEx6eXBBTGV3M0U1RGVQT08tT1o2NEdXTzUzZ3d4eGV4OVN2Ukc3c0h1RjRMNy02VHNpd3hiSl9fcFNnV2tyUjNyaVpzeWc0akVmVk94Z3VTU3VFZi1TMlp6S2xUR2habU5BYkVhWWtoMVhCNGlDMmFCa245OUJPWlFvRl9PcFdFdWo4VGEwVFNPalVITEkzYWZtT3pBMUNrT0hR?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-047d92c0f7e36adc89d2",
-      "observed_at_utc": "2026-10-21T03:45:00Z",
-      "headline": "Gold hits near one-week low on elevated oil prices",
-      "summary": "Reuters riporta: Gold hits near one-week low on elevated oil prices. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "COMMODITIES",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxNY2dJZXdfdnptbDVvajUtNHBONy13T1Z5aEtVc3d2d2VDYUNpUEpTM1JxNGVZRFhiQmh1b1U2RWpOaW0zVndyQk9uSFZ6b0pQXzVvNUhRMFVXeEMzS3BrU1FkdE9tNEYxY21PdDFEWGplNkkwMkJ2Rkk5VVg2VUVDcXFIUmp4cUR4SnhqQ2h6b3hYTExtTkhCNGtqZWt6WUtUYURrc3owUUptdw?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
