@@ -1,0 +1,73 @@
+{
+  "schema": "GMFQ_RBNZ_B2_OFFICIAL_HTML_TABLE_EVIDENCE_V1",
+  "status": "FIRST_REVIEW_COMPLETE_SECOND_INDEPENDENT_REVIEW_PENDING",
+  "authority": "Reserve Bank of New Zealand",
+  "source_url": "https://www.rbnz.govt.nz/en/statistics/series/exchange-and-interest-rates/wholesale-interest-rates",
+  "source_release_date": "2026-10-23",
+  "observed_at_rome_date": "2026-10-23",
+  "basis": "Secondary market government bond closing yields (%pa): benchmark 2 year and 10 year, official B2 public daily summary, one-business-day publication lag",
+  "verification": "FIRST_SOURCE_READ_FROM_OFFICIAL_PUBLIC_HTML_TABLE; INDEPENDENT_SECOND_REVIEW_REQUIRED",
+  "usable_for_automatic_promotion": false,
+  "live_data_promotion_allowed": false,
+  "snapshot_previously_certified": "2026-10-16",
+  "columns": {
+    "date": "Date",
+    "two_year": "Secondary market government bond closing yields (%pa) / 2 year",
+    "ten_year": "Secondary market government bond closing yields (%pa) / 10 year"
+  },
+  "observations": [
+    {
+      "date": "2026-10-09",
+      "2Y": 3.83,
+      "10Y": 5.06
+    },
+    {
+      "date": "2026-10-12",
+      "2Y": 3.82,
+      "10Y": 5.02
+    },
+    {
+      "date": "2026-10-13",
+      "2Y": 3.8,
+      "10Y": 4.98
+    },
+    {
+      "date": "2026-10-14",
+      "2Y": 3.83,
+      "10Y": 4.99
+    },
+    {
+      "date": "2026-10-15",
+      "2Y": 3.81,
+      "10Y": 4.94
+    },
+    {
+      "date": "2026-10-16",
+      "2Y": 3.89,
+      "10Y": 5
+    },
+    {
+      "date": "2026-10-19",
+      "2Y": 3.91,
+      "10Y": 5.01
+    },
+    {
+      "date": "2026-10-20",
+      "2Y": 3.94,
+      "10Y": 5.06
+    },
+    {
+      "date": "2026-10-21",
+      "2Y": 3.93,
+      "10Y": 5.03
+    },
+    {
+      "date": "2026-10-22",
+      "2Y": 3.91,
+      "10Y": 4.98
+    }
+  ],
+  "independent_approval_reference": null,
+  "candidate_only": true,
+  "caveat": "Official RBNZ summary was readable through public web retrieval on 2026-10-23, but direct XLSX and webpage requests to GitHub runners received HTTP 403. This single evidence capture is not the second independent review required by the existing reviewed-NZD contract. Do not edit native Rates, registry, COT, Macro scores or pair ranks without independent review and explicit approval."
+}
