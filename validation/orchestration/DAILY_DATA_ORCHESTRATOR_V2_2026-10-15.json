@@ -17,6 +17,7 @@
       "rates-persistent-daily-v1.yml",
       "cb-pricing-persistent-daily-v1.yml",
       "ois-estimated-snapshot-repricing-v1.yml",
+      "vix-persistent-apply-v1.yml",
       "calendar-news-operational-refresh-v1.yml",
       "final-e2e-certification-gate-v3.yml",
       "publish-dashboard-pages-v1.yml"
@@ -71,6 +72,7 @@
     "premorning_avoids_not_yet_ready_sources": true,
     "prebrief_target_before_study": "08:00",
     "prebrief_never_fabricates_missing_publications": true,
-    "morning_0910_is_catch_up_not_first_refresh": true
+    "morning_0910_is_catch_up_not_first_refresh": true,
+    "prebrief_recovers_official_previous_close_vix": true
   }
 }
