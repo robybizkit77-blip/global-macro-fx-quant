@@ -137,8 +137,10 @@ jobs:
           x=json.load(open('/tmp/rates-persistent/RATES_AUDIT_METADATA.json'))
           assert x['rates']['CHF']['status']=='VALIDATED_HISTORICAL_SOURCE_BLOCKED', x['rates']['CHF']
           assert x['rates']['NZD']['source_access']=='RBNZ_B2_MANUAL_DOUBLE_REVIEW', x['rates']['NZD']
-          assert x['rates']['CHF']['current_as_of']=='2026-09-30', x['rates']['CHF']
-          assert x['rates']['NZD']['current_as_of']=='2026-10-16', x['rates']['NZD']
+          actual=json.load(open('live_data/sections/NATIVE_RATES_DATA.json'))
+          assert all(x['rates'][c]['current_as_of']==actual[c]['date'] for c in actual)
+          assert x['rates']['CHF']['action']=='SOURCE_EXPORT_RECOVERY_REQUIRED'
+          assert x['rates']['NZD']['status'].startswith('MANUAL_REVIEWED_')
           print('RATES_METADATA_SOURCE_AGE_PREVIEW_PASS')
           PY
 
