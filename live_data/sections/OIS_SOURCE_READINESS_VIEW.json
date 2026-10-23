@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-10-22",
+  "as_of": "2026-10-23",
   "blocked_currency_count": 2,
   "currencies": {
     "CHF": {
@@ -12,11 +12,11 @@
         "has_new_verified_2y": false,
         "last_paired_2y10y_as_of": "2026-09-30",
         "paired_current": false,
-        "separate_10y_snb_as_of": "2026-10-21"
+        "separate_10y_snb_as_of": "2026-10-22"
       },
       "indicative_quote_dates": {},
       "obstacle": "Fonte indicativa: manca certificazione operativa.",
-      "operational_as_of": "2026-10-21",
+      "operational_as_of": "2026-10-22",
       "price_or_curve_embedded": false,
       "source_reviewed_as_of": "2026-10-19",
       "source_title": "ICE Futures Europe Three-Month SARON futures (SA3) daily settlements",
@@ -30,12 +30,12 @@
       "currency": "EUR",
       "dates_joinable": false,
       "indicative_quote_dates": {
-        "12m": "2026-10-21",
-        "3m": "2026-10-20",
-        "6m": "2026-10-20"
+        "12m": "2026-10-22",
+        "3m": "2026-10-21",
+        "6m": "2026-10-21"
       },
       "obstacle": "Settlement Eurex €STR FST3 non sincronizzati e non certificati per 3, 6 e 12 mesi.",
-      "operational_as_of": "2026-10-20",
+      "operational_as_of": "2026-10-21",
       "price_or_curve_embedded": false,
       "source_reviewed_as_of": "2026-10-19",
       "source_title": "Eurex Three-Month Euro STR Futures, product FST3, daily exchange settlements",
@@ -65,7 +65,7 @@
       "dates_joinable": false,
       "indicative_quote_dates": {},
       "obstacle": "Fonte indicativa: manca certificazione operativa.",
-      "operational_as_of": "2026-10-21",
+      "operational_as_of": "2026-10-22",
       "price_or_curve_embedded": false,
       "source_reviewed_as_of": "2026-10-19",
       "source_title": "CME/CBOT official 30-Day Federal Funds futures settlements (ZQ)",

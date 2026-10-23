@@ -17,7 +17,7 @@
       "source_sheet": "末残（Amounts at end of period）",
       "source_column": 7,
       "source_header_context": "4298428 | 4247068 | 4210409 | 4346010 | 4216365 | 4072435 | 4028129 | 3905362",
-      "fetched_at_utc": "2026-10-22T07:28:58.376021Z",
+      "fetched_at_utc": "2026-10-23T07:27:52.173337Z",
       "official_canonical_untouched": true,
       "original_runtime_validation": {
         "period": "2026-08",
@@ -56,7 +56,7 @@
         "editionDate": "20261021_0900",
         "publicSinceDate": "20261021_0900"
       },
-      "fetched_at_utc": "2026-10-22T07:23:57.417832Z",
+      "fetched_at_utc": "2026-10-23T07:22:25.308997Z",
       "official_canonical_untouched": true
     },
     "CHF.sight_deposits": {
@@ -82,33 +82,33 @@
         "editionDate": "20261021_0942",
         "publicSinceDate": "20261021_0942"
       },
-      "fetched_at_utc": "2026-10-22T07:23:58.521573Z",
+      "fetched_at_utc": "2026-10-23T07:22:25.852862Z",
       "official_canonical_untouched": true
     },
     "BRENT.market_proxy": {
       "status": "MARKET_PROXY_ACTIVE_SECONDARY",
       "confidence": "B_FOR_DIRECTION_ONLY",
-      "value": 110.05,
-      "change_1d_pct": 1.1582,
-      "change_1w_pct": 3.762,
+      "value": 112.8,
+      "change_1d_pct": 3.6574,
+      "change_1w_pct": 6.4955,
       "source": "Yahoo Finance public chart JSON · Brent Crude Oil Last Day Financial Futures (BZ=F)",
       "interpretation": "Secondary futures market proxy for live Brent level/direction only. It does not replace canonical EIA Brent spot, does not certify ICE history, and has no Core/backtest effect.",
-      "proxy_as_of": "2026-10-21",
+      "proxy_as_of": "2026-10-22",
       "source_endpoint": "https://query1.finance.yahoo.com/v8/finance/chart/BZ=F",
       "vendor_symbol": "BZ=F",
       "currency": "USD",
       "exchange_name": "NYM",
       "instrument_type": "FUTURE",
-      "fetched_at_utc": "2026-10-21T23:12:03.071403Z",
+      "fetched_at_utc": "2026-10-22T23:14:07.815868Z",
       "official_canonical_untouched": true
     },
     "GOLD.market_proxy": {
       "status": "MARKET_PROXY_ACTIVE_SECONDARY",
       "confidence": "B_FOR_DIRECTION_ONLY",
-      "proxy_as_of": "2026-10-21",
-      "value": 4149.2002,
-      "change_1d_pct": 0.1593,
-      "change_1w_pct": 1.0054,
+      "proxy_as_of": "2026-10-22",
+      "value": 4039.3,
+      "change_1d_pct": -2.6675,
+      "change_1w_pct": -3.1366,
       "source": "Yahoo Finance public chart JSON · COMEX Gold Futures (GC=F)",
       "source_endpoint": "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
       "vendor_symbol": "GC=F",
@@ -117,7 +117,7 @@
       "exchange_name": "CMX",
       "instrument_type": "FUTURE",
       "observation_count_1mo": 23,
-      "fetched_at_utc": "2026-10-21T23:12:55.975603Z",
+      "fetched_at_utc": "2026-10-22T23:15:40.566929Z",
       "official_canonical_untouched": true,
       "interpretation": "Informational delayed futures market proxy, not LBMA Gold Price, not physical spot, not certified exchange settlement, and not eligible for canonical Gold history, core, signals, sizing or official backtests."
     }

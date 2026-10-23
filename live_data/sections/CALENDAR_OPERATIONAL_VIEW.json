@@ -1,36 +1,14 @@
 {
   "coverage": {
     "cb_schedule_available": 8,
-    "consensus_available_events": 2,
+    "consensus_available_events": 1,
     "g8_total": 8,
     "macro_ccy_coverage": 8,
     "previous_only_events": 0,
-    "upcoming_macro_events": 16,
-    "upcoming_total_events": 24
+    "upcoming_macro_events": 15,
+    "upcoming_total_events": 23
   },
   "events": [
-    {
-      "ccy": "NZD",
-      "consensus": "0.8%",
-      "consensus_confidence": "C",
-      "consensus_official_date_overridden": false,
-      "consensus_provider": "FOREX_FACTORY_FAIR_ECONOMY_WEEKLY",
-      "consensus_provider_last_update": null,
-      "consensus_status": "AVAILABLE",
-      "consensus_unit": null,
-      "date": "2026-10-22",
-      "event_type": "INFLATION",
-      "importance": "HIGH",
-      "previous": "1.5%",
-      "quality": "OFFICIAL_CONFIRMED",
-      "reference_period": "September 2026 quarter",
-      "source_family": "Stats NZ",
-      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
-      "status": "UPCOMING",
-      "time_local": null,
-      "timezone": "Pacific/Auckland",
-      "title": "Consumers price index"
-    },
     {
       "ccy": "JPY",
       "consensus": "2.1%",
@@ -376,7 +354,7 @@
       "title": "Gross domestic product"
     }
   ],
-  "generated_at_utc": "2026-10-22T06:52:39.021895Z",
+  "generated_at_utc": "2026-10-23T06:52:00.898541Z",
   "schema": "GMFQ_CALENDAR_OPERATIONAL_VIEW_V3",
   "scope": {
     "central_bank_schedule": "ACTIVE_OFFICIAL",
