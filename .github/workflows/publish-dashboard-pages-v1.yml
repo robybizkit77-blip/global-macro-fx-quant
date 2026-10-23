@@ -96,7 +96,11 @@ jobs:
           for asset in assets:
               assert asset in index, asset
               p=Path(asset); assert p.is_file() and p.stat().st_size>1000, asset
-          ois=json.loads(Path('live_data/sections/OIS_DATA.json','live_data/sections/OIS_OPERATIONAL_VIEW.json').read_text())
+          ois_official=json.loads(Path('live_data/sections/OIS_DATA.json').read_text())
+          ois=json.loads(Path('live_data/sections/OIS_OPERATIONAL_VIEW.json').read_text())
+          assert ois_official['schema_version'] and set(ois_official['currencies'])=={'USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'}
+          assert {c for c,v in ois_official['currencies'].items() if v['status']=='ACTIVE'}=={
+            c for c,v in ois['currencies'].items() if v['operational_status']=='GREEN_OFFICIAL'}
           cal=json.loads(Path('live_data/sections/CALENDAR_OPERATIONAL_VIEW.json').read_text())
           news=json.loads(Path('live_data/sections/NEWS_PULSE_OPERATIONAL.json').read_text())
           macro_heat=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())
