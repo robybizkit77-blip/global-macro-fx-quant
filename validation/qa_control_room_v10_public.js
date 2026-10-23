@@ -724,7 +724,7 @@ async function getState(page){
            d.querySelectorAll('#pair-index button.pair-open[data-pair]').length===28&&
            d.getElementById('gmfq-pair-research-path')?.dataset.pair===code;
        },homePair,{timeout:35000});
-       if(['pairs-explained-ranking-20261022','pairs-focus-eight-20261022','pairs-first-risk-check-20261023'].includes(navigationVersion)){
+       if(['pairs-explained-ranking-20261022','pairs-focus-eight-20261022','pairs-first-risk-check-20261023','pairs-top8-overlap-20261023'].includes(navigationVersion)){
          await page.waitForFunction(()=>{
            const d=document.getElementById('gmfq-page')?.contentDocument,p=d?.getElementById('gmfq-pair-rank');
            return p?.dataset.status==='READ_ONLY'&&
@@ -735,6 +735,13 @@ async function getState(page){
              rows=[...d.querySelectorAll('#pair-index tr[data-research-rank]')];
            return {source:p?.dataset.status,mode:p?.dataset.sortMode,signals:p?.dataset.hasTradeRanking,
              count:p?.dataset.count,baseline:p?.dataset.macroAsOf,model:p?.dataset.priceAsOf,
+             overlap:(()=>{
+               const n=p.querySelector('.gmfq-rank-overlap');
+               return {status:n?.dataset.status,source:n?.dataset.source,
+                 total:n?.dataset.topCount,risks:n?.dataset.withRisks,
+                 max:n?.dataset.frequency,repeated:n?.dataset.mostRepeated,
+                 favored:n?.dataset.favoredCount,text:n?.textContent};
+             })(),
              view:p?.dataset.viewMode,visibleCount:Number(p?.dataset.visibleCount),
              viewToggles:[...p.querySelectorAll('button[data-pair-view]')].map(x=>({
                value:x.dataset.pairView,pressed:x.getAttribute('aria-pressed')})),
@@ -744,6 +751,28 @@ async function getState(page){
                rank:Number(x.dataset.researchRank),reason:x.querySelector('.gmfq-row-why')?.textContent,firstCheck:x.querySelector('.gmfq-row-next')?.textContent,checkSource:x.querySelector('.gmfq-row-next')?.dataset.source,visible:!!x.getClientRects().length,selected:x.classList.contains('pair-current')}))};
          });
          const rankedSetup=await capture();
+         const checkPublicOverlap=state=>{
+           if(navigationVersion!=='pairs-top8-overlap-20261023')return;
+           const rows=state.rows.slice(0,8),frequency={};
+           if(rows.length!==8)throw Error(name+' first-eight overlap needs eight original records');
+           for(const item of rows){
+             if(!/^[A-Z]{6}$/.test(item.code||''))
+               throw Error(name+' invalid published pair code in overlap');
+             const a=item.code.slice(0,3),b=item.code.slice(3);
+             frequency[a]=(frequency[a]||0)+1;
+             frequency[b]=(frequency[b]||0)+1;
+           }
+           const max=Math.max(...Object.values(frequency));
+           const tied=Object.keys(frequency).filter(c=>frequency[c]===max).sort();
+           const o=state.overlap;
+           if(o?.status!=='OBSERVED'||o?.source!=='PAIR_SETUP_OPERATIONAL_VIEW'||
+              o?.total!=='8'||o?.max!==String(max)||o?.repeated!==tied.join(',')||
+              !o?.text?.includes('Sovrapposizione valutaria, non correlazione né rischio portafoglio stimati')||
+              !/^\d+$/.test(o?.risks||'')||Number(o.risks)>8)
+             throw Error(name+' published top-eight overlap missing or incorrectly sourced '+JSON.stringify({o,frequency}));
+         };
+         checkPublicOverlap(rankedSetup);
+
          if(rankedSetup.source!=='READ_ONLY'||rankedSetup.signals!=='false'||rankedSetup.count!=='28'||
             rankedSetup.baseline!==pricing.setup_macro_asof||rankedSetup.model!==pricing.setup_date||
             rankedSetup.overflow||rankedSetup.docWidth>rankedSetup.viewport+16||
@@ -753,11 +782,11 @@ async function getState(page){
             !rankedSetup.rows.find(x=>x.code==='AUDCHF')?.reason.includes('Timing contrario')||
             !rankedSetup.rows.find(x=>x.code==='EURUSD')?.reason.includes('Prezzo già avanzato'))
            throw Error(name+' public ranked pairs or named CON RISCHI constraint absent '+JSON.stringify(rankedSetup));
-         if(navigationVersion==='pairs-first-risk-check-20261023'&&
+         if(['pairs-first-risk-check-20261023','pairs-top8-overlap-20261023'].includes(navigationVersion)&&
             rankedSetup.rows.some(x=>!x.firstCheck?.startsWith('Primo controllo · ')||
               x.checkSource!=='PAIR_SETUP_OPERATIONAL_VIEW'))
            throw Error(name+' public source-derived first pair risk checks missing '+JSON.stringify(rankedSetup));
-         if(['pairs-focus-eight-20261022','pairs-first-risk-check-20261023'].includes(navigationVersion)){
+         if(['pairs-focus-eight-20261022','pairs-first-risk-check-20261023','pairs-top8-overlap-20261023'].includes(navigationVersion)){
            const shown=rankedSetup.rows.filter(x=>x.visible);
            if(rankedSetup.view!=='focus'||rankedSetup.visibleCount!==shown.length||
              shown.length<8||shown.length>9||
@@ -773,6 +802,7 @@ async function getState(page){
          }
          await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-rank-mode="thesis"]').click();
          const rankedThesis=await capture();
+         checkPublicOverlap(rankedThesis);
          if(rankedThesis.mode!=='thesis'||rankedThesis.rows.length!==28||
             rankedThesis.rows[0].code!=='USDCHF'||
             rankedThesis.rows.some((x,i)=>x.rank!==i+1))

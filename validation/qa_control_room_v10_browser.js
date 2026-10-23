@@ -1292,6 +1292,13 @@ function expectedReactionFromMetrics(row){
       trade:p?.dataset.hasTradeRanking,baseline:p?.dataset.macroAsOf,price:p?.dataset.priceAsOf,
       view:p?.dataset.viewMode,visibleCount:Number(p?.dataset.visibleCount),
       nativeSummary:d.getElementById('pair-visible')?.textContent,
+      overlap:(()=>{
+        const n=p.querySelector('.gmfq-rank-overlap');
+        return {status:n?.dataset.status,source:n?.dataset.source,text:n?.textContent,
+          total:n?.dataset.topCount,risks:n?.dataset.withRisks,
+          repeated:n?.dataset.mostRepeated,max:n?.dataset.frequency,
+          favored:n?.dataset.favoredCount};
+      })(),
       viewModes:[...p.querySelectorAll('button[data-pair-view]')].map(x=>({
         mode:x.dataset.pairView,pressed:x.getAttribute('aria-pressed')})),
       panelWidth:p?.scrollWidth,panelClient:p?.clientWidth,
@@ -1323,6 +1330,29 @@ function expectedReactionFromMetrics(row){
      JSON.stringify(rankSetup.modes)!==JSON.stringify([
        {mode:'setup',pressed:'true'},{mode:'thesis',pressed:'false'}]))
     throw Error(label+' Pair ranked setup first reading failed '+JSON.stringify(rankSetup));
+  // 8-row currency recurrence is a transparent watchlist warning,
+  // calculated from exact source pair legs, not a portfolio risk score.
+  const verifyOverlap=(state)=>{
+    const first8=state.descriptions.slice(0,8),frequency=Object.fromEntries(g8.map(c=>[c,0]));
+    const favored=Object.fromEntries(g8.map(c=>[c,0]));
+    for(const row of first8){
+      const a=row.code.slice(0,3),b=row.code.slice(3);
+      frequency[a]++;frequency[b]++;
+      const fav=setupFeed.pairs[row.code].setup.structuralFav;
+      if(fav)favored[fav]++;
+    }
+    const m=Math.max(...Object.values(frequency));
+    const tied=Object.keys(frequency).filter(c=>frequency[c]===m).sort();
+    const overlap=state.overlap;
+    if(overlap.status!=='OBSERVED'||overlap.source!=='PAIR_SETUP_OPERATIONAL_VIEW'||
+       overlap.total!=='8'||overlap.max!==String(m)||
+       overlap.risks!==String(first8.filter(r=>setupFeed.pairs[r.code].setup.quality==='CON RISCHI').length)||
+       overlap.repeated!==tied.join(',')||
+       overlap.favored!==tied.map(c=>favored[c]).join(' / ')||
+       !overlap.text?.includes('Sovrapposizione valutaria, non correlazione né rischio portafoglio stimati'))
+       throw Error(label+' pair top-eight overlap differs from source '+JSON.stringify({state,frequency,favored}));
+  };
+  verifyOverlap(rankSetup);
   const initialVisible=rankSetup.descriptions.filter(x=>x.visible);
   if(rankSetup.view!=='focus'||rankSetup.visibleCount!==initialVisible.length||
      initialVisible.length<8||initialVisible.length>9||
@@ -1339,6 +1369,7 @@ function expectedReactionFromMetrics(row){
     throw Error(label+' cannot inspect all 28 original pairs '+JSON.stringify(expandedPairs));
   await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-pair-view="focus"]').click();
   const focusAgain=await readRank();
+  verifyOverlap(focusAgain);
   if(focusAgain.view!=='focus'||focusAgain.descriptions.filter(x=>x.visible).length!==initialVisible.length)
     throw Error(label+' compact pair first view not restored '+JSON.stringify(focusAgain));
   for(const row of rankSetup.descriptions){
@@ -1377,6 +1408,7 @@ function expectedReactionFromMetrics(row){
     throw Error(label+' CON RISCHI still lacks a concrete source-based explanation');
   await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-rank-mode="thesis"]').click();
   const rankThesis=await readRank();
+  verifyOverlap(rankThesis);
   if(rankThesis.mode!=='thesis'||rankThesis.view!=='focus'||
      rankThesis.descriptions.slice(0,8).some(x=>!x.visible)||
      rankThesis.descriptions.length!==28||

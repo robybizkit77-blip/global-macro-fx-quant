@@ -1811,6 +1811,36 @@ function pairDeskOrdering(feedData,model){
    source:'PAIR_SETUP_OPERATIONAL_VIEW',baselineHistorical:!fresh(feedData.macro_baseline_asof,10)
  };
 }
+
+/* The first eight are a research watchlist, not a diversified portfolio.
+   Currency recurrence and quality counts use the SAME canonical 28-pair
+   records and current editorial ordering; no statistical risk is inferred. */
+function pairDeskFocusOverlap(ranked,mode){
+ const rows=ranked?.[mode]?.slice(0,8);
+ if(!Array.isArray(rows)||rows.length!==8||!['setup','thesis'].includes(mode)||
+    rows.some(r=>!r||typeof r.code!=='string')||
+    new Set(rows.map(r=>r.code)).size!==8)return null;
+ const count=Object.fromEntries(FX.map(c=>[c,0])),
+       favCount=Object.fromEntries(FX.map(c=>[c,0]));
+ let withRisks=0;
+ for(const r of rows){
+   if(!/^[A-Z]{6}$/.test(r.code||'')||
+      !['DA CONFERMARE','DA MONITORARE','CON RISCHI','NON VALUTABILE'].includes(r.quality))return null;
+   const a=r.code.slice(0,3),b=r.code.slice(3);
+   if(!FX.includes(a)||!FX.includes(b)||a===b)return null;
+   count[a]++;count[b]++;
+   if(r.fav!==null){
+     if(![a,b].includes(r.fav))return null;
+     favCount[r.fav]++;
+   }
+   if(r.quality==='CON RISCHI')withRisks++;
+ }
+ const sorted=Object.entries(count).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));
+ const max=sorted[0]?.[1];
+ if(!Number.isInteger(max)||max<1)return null;
+ const repeated=sorted.filter(x=>x[1]===max).map(x=>x[0]);
+ return {total:8,withRisks,max,repeated,frequencies:count,favored:favCount};
+}
 async function mountPairRankedList(doc){
  if(route()!=='coppie'||frame.contentDocument!==doc||doc.getElementById('gmfq-pair-rank'))return;
  const tbody=doc.getElementById('pair-index'),table=tbody?.closest('table');
@@ -1842,6 +1872,7 @@ async function mountPairRankedList(doc){
  '#gmfq-pair-rank .gmfq-rank-explain{color:#c0d1de;font:12px/1.55 Arial,sans-serif;margin:5px 0;overflow-wrap:anywhere}'+
  '#gmfq-pair-rank .gmfq-rank-method{color:#9db6c8;font:11px/1.55 Arial,sans-serif;margin:7px 0 2px}'+
  '#gmfq-pair-rank .gmfq-rank-lead{color:#e5c98d;font:600 12px/1.55 Arial,sans-serif;margin:6px 0 4px}'+
+ '#gmfq-pair-rank .gmfq-rank-overlap{color:#b7ccd9;font:11px/1.55 Arial,sans-serif;margin:4px 0 8px;overflow-wrap:anywhere}'+
  '#gmfq-pair-rank .gmfq-rank-source{font:10px/1.5 Arial,sans-serif;color:#91abbb}'+
  '#gmfq-pair-rank .gmfq-rank-view{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:5px 0 8px}'+
  '#gmfq-pair-rank .gmfq-rank-view button{cursor:pointer;border:1px solid #496274;background:transparent;border-radius:4px;padding:5px 9px;color:#c9d9e5;font:600 11px/1.5 Arial,sans-serif}'+
@@ -1869,11 +1900,12 @@ async function mountPairRankedList(doc){
    '<button type="button" data-pair-view="all" aria-pressed="false">Tutte le 28</button>'+
    '<span class="gmfq-rank-visibility" role="status" aria-live="polite">Prime 8 · altre coppie disponibili</span></div>'+
   '<p class="gmfq-rank-lead" aria-live="polite"></p>'+
+  '<p class="gmfq-rank-overlap" aria-live="polite" data-source="PAIR_SETUP_OPERATIONAL_VIEW"></p>'+
   '<p class="gmfq-rank-method">Ordine editoriale, NON probabilità, score quantitativo o segnale. Setup: presenza della tesi → prezzo → estensione → timing → coerenza Macro/Tassi → dinamica → liquidità/COT. Tesi: coerenza Macro/Tassi → dinamica → altre conferme. Le 11 senza preferenza strutturale sono in fondo.</p>'+
   '<p class="gmfq-rank-source">Fonte '+htmlEscape(ranked.source)+' · prezzo del modello '+htmlEscape(ranked.priceAsOf)+
   ' · baseline Macro/Tassi '+htmlEscape(ranked.macroAsOf)+(ranked.baselineHistorical?' (STORICA, NON AGGIORNATA)':'')+
   '. La prima coppia non è necessariamente un trade eseguibile.</p>';
- const lead=panel.querySelector('.gmfq-rank-lead'),head=table.tHead?.querySelectorAll('th');
+ const lead=panel.querySelector('.gmfq-rank-lead'),overlap=panel.querySelector('.gmfq-rank-overlap'),head=table.tHead?.querySelectorAll('th');
  if(head?.[3])head[3].textContent='Valutazione e principale cautela';
  let mode='setup',view='focus';
  panel.dataset.viewMode=view;panel.dataset.displayLimit='8';
@@ -1933,6 +1965,25 @@ async function mountPairRankedList(doc){
    lead.textContent=(mode==='setup'?'Priorità di verifica del setup':'Solidità della tesi storica')+
      ' · primo nell’ordine: '+FLAG[first.code.slice(0,3)]+' '+FLAG[first.code.slice(3)]+' '+first.code+
      ' · '+first.thesis+' · '+first.why+'. Non è un ingresso.';
+   const focus=pairDeskFocusOverlap(ranked,mode);
+   if(!focus){
+     overlap.textContent='Sovrapposizione delle prime 8 non verificabile.';
+     overlap.dataset.status='WITHHELD';
+     return;
+   }
+   const c=focus.repeated;
+   const names=c.map(x=>FLAG[x]+' '+x).join(' / ');
+   const fav=c.map(x=>focus.favored[x]).join(' / ');
+   overlap.dataset.status='OBSERVED';
+   overlap.dataset.topCount=String(focus.total);
+   overlap.dataset.withRisks=String(focus.withRisks);
+   overlap.dataset.mostRepeated=c.join(',');
+   overlap.dataset.frequency=String(focus.max);
+   overlap.dataset.favoredCount=fav;
+   overlap.textContent='Prime 8 · '+focus.withRisks+'/8 CON RISCHI · '+
+     (c.length===1?'Valuta più ricorrente: ':'Valute più ricorrenti: ')+
+     names+' in '+focus.max+'/8 coppie (valuta favorita dal modello storico in '+fav+'/8). '+
+     'Sovrapposizione valutaria, non correlazione né rischio portafoglio stimati.';
  };
  panel.addEventListener('click',e=>{
    const b=e.target.closest('button[data-rank-mode],button[data-pair-view]');
