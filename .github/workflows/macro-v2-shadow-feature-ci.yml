@@ -21,6 +21,10 @@ on:
       - 'validation/macro/v2_bls_us_unrate_25_release_pilot_v1.py'
       - 'validation/macro/test_v2_bls_us_unrate_25_release_pilot_v1.py'
       - 'validation/macro/MACRO_V2_US_BLS_25_FIRST_RELEASE_PILOT_2026-10-23.md'
+      - 'validation/macro/fixtures/v2_bls_us_unemployment_shutdown_2025_gap_resumption.json'
+      - 'validation/macro/v2_bls_shutdown_sparse_reentry_v1.py'
+      - 'validation/macro/test_v2_bls_shutdown_sparse_reentry_v1.py'
+      - 'validation/macro/MACRO_V2_BLS_SHUTDOWN_GAP_REENTRY_2026-10-23.md'
   workflow_dispatch:
 
 permissions:
@@ -143,6 +147,32 @@ jobs:
                       'safe_to_update_pair_theses','writes_live_data'):
               assert x[key] is False,key
           print('BLS_25_ACTUAL_FIRST_RELEASES_HISTORICAL_RESEARCH_PASS_NOT_LIVE_FX_SCORE')
+          PY
+      - name: Check missing October 2025 CPS observation and timestamped Nov-Dec research-only reentry
+        run: |
+          set -euo pipefail
+          python -m unittest validation.macro.test_v2_bls_shutdown_sparse_reentry_v1 -v
+          python -m validation.macro.v2_bls_shutdown_sparse_reentry_v1 \
+            --asof 2026-01-09T13:30:00Z \
+            --out /tmp/macro-v2-shadow/bls-shutdown-gap-reentry.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('/tmp/macro-v2-shadow/bls-shutdown-gap-reentry.json').read_text())
+          assert r['first_release_periods_available']==27
+          assert r['reentered_first_releases']==2
+          assert r['missing_2025_10_CPS_reference_period'] is True
+          assert r['missing_2025_10_observation_imputed'] is False
+          assert r['missing_2025_10_first_release_invented'] is False
+          assert [x['reference_period'] for x in r['historical_reentry_snapshots']] == ['2025-11','2025-12']
+          for x in r['historical_reentry_snapshots']:
+              assert x['velocity_per_month'] is None
+              assert x['acceleration_per_month_squared'] is None
+              assert x['turning_point_per_month'] is None
+          for k in ('safe_to_publish_new_D','safe_to_update_pair_theses',
+                    'eligible_for_live_scoring','eligible_for_backtest','writes_live_data'):
+              assert r[k] is False,k
+          print('BLS_OCT_2025_STRUCTURAL_CPS_GAP_NOV_DEC_REENTRY_RESEARCH_ONLY_PASS')
           PY
       - name: Confirm no runtime or website files were changed by tests
         run: |
