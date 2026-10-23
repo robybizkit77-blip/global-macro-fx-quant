@@ -42,6 +42,8 @@ on:
       - 'validation/macro/test_v2_bls_eight_fx_bi5_probe_v1.py'
       - 'validation/macro/MACRO_V2_EURUSD_INTRADAY_IMPORT_GATE_2026-10-23.md'
       - 'validation/macro/MACRO_V2_BLS_INTRADAY_EVIDENCE_ACQUISITION_2026-10-23.md'
+      - 'validation/macro/v2_usd_labour_research_desk_brief_v1.py'
+      - 'validation/macro/test_v2_usd_labour_research_desk_brief_v1.py'
   workflow_dispatch:
 
 permissions:
@@ -319,6 +321,10 @@ jobs:
               for event in r['events']:
                   print(event['period'],event['status'],event['error_type'])
           PY
+      - name: Generate safe USD Labour desk research synthesis
+        run: |
+          python -m unittest validation.macro.test_v2_usd_labour_research_desk_brief_v1 -v
+          python -m validation.macro.v2_usd_labour_research_desk_brief_v1 --out /tmp/macro-v2-shadow/usd-labour-research-brief.json
       - name: Confirm no runtime or website files were changed by tests
         run: |
           git diff --exit-code -- live_data site payload dashboard
