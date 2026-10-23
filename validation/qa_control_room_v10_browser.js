@@ -1038,7 +1038,7 @@ function expectedReactionFromMetrics(row){
     const d=document.getElementById('gmfq-page')?.contentDocument;
     return d?.getElementById('gmfq-vsc-momentum')?.dataset.status==='OBSERVED';
   },null,{timeout:30000});
-  const readRank=async()=>page.evaluate(()=>{
+  const readValuteMomentumRank=async()=>page.evaluate(()=>{
     const d=document.getElementById('gmfq-page').contentDocument,
       p=d.getElementById('gmfq-vsc-momentum');
     return {status:p?.dataset.status,source:p?.dataset.source,signals:p?.dataset.tradeSignals,
@@ -1066,11 +1066,11 @@ function expectedReactionFromMetrics(row){
        actual.width>actual.client+2||actual.doc>actual.viewport+16)
       throw Error(label+' G8 '+h+'-session momentum/source semantics failed '+JSON.stringify({actual,expected}));
   };
-  checkRank(await readRank(),5);
+  checkRank(await readValuteMomentumRank(),5);
   await page.frameLocator('#gmfq-page').locator('#gmfq-vsc-momentum button[data-vsm-days="20"]').click();
-  checkRank(await readRank(),20);
+  checkRank(await readValuteMomentumRank(),20);
   await page.frameLocator('#gmfq-page').locator('#gmfq-vsc-momentum button[data-vsm-days="5"]').click();
-  checkRank(await readRank(),5);
+  checkRank(await readValuteMomentumRank(),5);
   console.log('CONTROL_ROOM_V10_VALUTE_ECB_MOMENTUM_RANK_GREEN',label);
   // Negative ECB fixture: missing one G8 spot leg invalidates the aggregate
   // official-fixing claim, without altering underlying ranking/bias.
