@@ -15,6 +15,9 @@ on:
       - 'validation/rates/test_probe_blocked_official_sources_v1.py'
       - 'validation/rates/check_snb_same_basis_candidate_v1.py'
       - 'validation/rates/test_check_snb_same_basis_candidate_v1.py'
+      - 'validation/fixtures/rbnz_b2_official_table_2026-10-23_first_review_ONLY.json'
+      - 'validation/rates/check_nzd_b2_oct22_first_review_v1.py'
+      - 'validation/rates/test_check_nzd_b2_oct22_first_review_v1.py'
   pull_request:
     paths:
       - '.github/workflows/rates-persistent-daily-v1.yml'
@@ -26,6 +29,9 @@ on:
       - 'validation/rates/test_probe_blocked_official_sources_v1.py'
       - 'validation/rates/check_snb_same_basis_candidate_v1.py'
       - 'validation/rates/test_check_snb_same_basis_candidate_v1.py'
+      - 'validation/fixtures/rbnz_b2_official_table_2026-10-23_first_review_ONLY.json'
+      - 'validation/rates/check_nzd_b2_oct22_first_review_v1.py'
+      - 'validation/rates/test_check_nzd_b2_oct22_first_review_v1.py'
   workflow_dispatch:
   schedule:
     # Europe/Rome target windows: 07:20-07:39, 08:00-08:19, 09:00-09:19 on working days.
@@ -130,6 +136,29 @@ jobs:
           with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as out:
               out.write('\nSNB CHF 2Y/10Y source candidate: **'+c['status']+'**. '+
                         'No automatically promoted rates or Macro scores.\n')
+          PY
+
+      - name: Test RBNZ B2 official 22 Oct first review (still NOT approved)
+        if: steps.gate.outputs.should_run == 'true'
+        run: python3 validation/rates/test_check_nzd_b2_oct22_first_review_v1.py
+
+      - name: Preserve 22 Oct RBNZ public source first-review staging receipt
+        if: ${{ always() && steps.gate.outputs.should_run == 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/rates-persistent
+          python3 validation/rates/check_nzd_b2_oct22_first_review_v1.py \
+            --output /tmp/rates-persistent/nzd-b2-first-review-only.json
+          python3 - <<'PY'
+          import json,os
+          d=json.load(open('/tmp/rates-persistent/nzd-b2-first-review-only.json'))
+          assert d['status']=='PENDING_INDEPENDENT_SECOND_REVIEW'
+          assert d['automatic_promotion_allowed'] is False
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as out:
+              out.write('\nRBNZ B2 new observed snapshot **'+d['latest_staged_as_of']+
+                       '**: 2Y '+str(d['staged_2Y'])+'%, 10Y '+str(d['staged_10Y'])+
+                       '%. **First official-page review only. Independent review REQUIRED before live NZD.**\n')
           PY
 
       - name: Build official Rates candidate
