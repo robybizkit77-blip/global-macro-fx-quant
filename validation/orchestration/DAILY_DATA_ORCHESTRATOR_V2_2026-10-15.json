@@ -17,8 +17,8 @@
       "rates-persistent-daily-v1.yml",
       "cb-pricing-persistent-daily-v1.yml",
       "ois-estimated-snapshot-repricing-v1.yml",
-      "vix-persistent-apply-v1.yml",
       "calendar-news-operational-refresh-v1.yml",
+      "vix-persistent-apply-v1.yml",
       "final-e2e-certification-gate-v3.yml",
       "publish-dashboard-pages-v1.yml"
     ],
