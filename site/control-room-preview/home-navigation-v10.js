@@ -2574,7 +2574,7 @@ async function mountValuteSourceCompass(doc){
   '<span data-source="fixing"><strong>Fixing:</strong> '+htmlEscape(fxText)+'</span>'+
   '<span data-source="dxy"><strong>Indice sintetico:</strong> '+htmlEscape(dxyText)+'</span>'+
   '<span data-source="macro"><strong>Modello:</strong> '+htmlEscape(modelText)+'</span></div>'+
-  '<p>I fixing BCE sono riferimenti ufficiali giornalieri rispetto all’euro, non prezzi intraday e non un nuovo ranking di forza relativa. Il DXY sintetico è una stima informativa ricostruita da fixing BCE, non il DXY ICE ufficiale. Gli score Macro e i giudizi strutturali appartengono alla baseline storica e non vengono aggiornati da queste osservazioni.</p>'+
+  '<p>I fixing BCE sono riferimenti ufficiali giornalieri rispetto all’euro, non prezzi intraday né un giudizio Macro/Tassi. Il ranking momentum G8 qui sotto è calcolato separatamente da queste osservazioni. Il DXY sintetico è una stima informativa ricostruita da fixing BCE, non il DXY ICE ufficiale. Gli score Macro e i giudizi strutturali appartengono alla baseline storica e non vengono aggiornati da queste osservazioni.</p>'+
   '<p>Qualsiasi dato assente o datato resta dichiarato: nessun prezzo, bias, COT, policy path o segnale viene ricostruito automaticamente.</p></details>';
  mountValuteRelativeRanking(doc,strip,fx);
 }
