@@ -1,16 +1,26 @@
 {
   "schema": "GMFQ_DAILY_DATA_ORCHESTRATOR_V2",
-  "version": "2026-10-15",
-  "status": "PREMERGE_CONTRACT",
-  "purpose": "Serialize production refresh workflows without duplicating collector/apply logic.",
+  "version": "2026-10-23",
+  "status": "ACTIVE_SCHEDULE_CONTRACT",
+  "purpose": "Attempt data preparation before 08:00 Europe/Rome, then reverify at 07:45 and catch up at 09:10; never invent unavailable official observations.",
   "timezone": "Europe/Rome",
   "target_local_times": {
+    "prebrief": "05:00",
     "premorning": "07:45",
     "morning": "09:10",
     "close": "18:30",
     "night": "00:50"
   },
   "phases": {
+    "prebrief": [
+      "macro-persistent-daily-v1.yml",
+      "rates-persistent-daily-v1.yml",
+      "cb-pricing-persistent-daily-v1.yml",
+      "ois-estimated-snapshot-repricing-v1.yml",
+      "calendar-news-operational-refresh-v1.yml",
+      "final-e2e-certification-gate-v3.yml",
+      "publish-dashboard-pages-v1.yml"
+    ],
     "premorning": [
       "rates-persistent-daily-v1.yml",
       "cb-pricing-persistent-daily-v1.yml",
@@ -58,6 +68,9 @@
     "cot_remains_weekly": true,
     "final_certification_required_per_phase": true,
     "pages_publish_required_per_phase": true,
-    "premorning_avoids_not_yet_ready_sources": true
+    "premorning_avoids_not_yet_ready_sources": true,
+    "prebrief_target_before_study": "08:00",
+    "prebrief_never_fabricates_missing_publications": true,
+    "morning_0910_is_catch_up_not_first_refresh": true
   }
 }
