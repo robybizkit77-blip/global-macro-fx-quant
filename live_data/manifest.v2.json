@@ -1,8 +1,8 @@
 {
   "schema": "GMFQ_LIVE_DATA_MANIFEST_V2",
   "generated_from_current_payload": true,
-  "runtime_sha256": "4a308a1bab656cb84a8bbeb079f7227d8701900270265c5e1c9c04f961fc401f",
-  "runtime_bytes": 2757731,
+  "runtime_sha256": "3faa40d915668fbd0b7ceb9793d6bf39786ff083904828c5455a2eacbec0bdf3",
+  "runtime_bytes": 2757750,
   "part_count": 16,
   "direct_section_count": 12,
   "derived_section_count": 2,
@@ -11,8 +11,8 @@
       "key": "D",
       "file": "D.json",
       "mode": "DIRECT_SINGLE_PART",
-      "bytes": 762882,
-      "sha256": "0e10fbca274805e76b2deb4f1053ee2c96ba1e8b6b7a9c837014ec162ec2a7bc",
+      "bytes": 762901,
+      "sha256": "f7c315239736aeabe2812aad516512b660e1898c7f05faa16272f65e6d201c71",
       "occurrences_in_payload": 1,
       "part": 0,
       "direct_update_allowed": true
