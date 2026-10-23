@@ -13,6 +13,8 @@ on:
       - 'validation/test_rates_source_age_metadata_v1.py'
       - 'validation/rates/probe_blocked_official_sources_v1.py'
       - 'validation/rates/test_probe_blocked_official_sources_v1.py'
+      - 'validation/rates/check_snb_same_basis_candidate_v1.py'
+      - 'validation/rates/test_check_snb_same_basis_candidate_v1.py'
   pull_request:
     paths:
       - '.github/workflows/rates-persistent-daily-v1.yml'
@@ -22,6 +24,8 @@ on:
       - 'validation/test_rates_source_age_metadata_v1.py'
       - 'validation/rates/probe_blocked_official_sources_v1.py'
       - 'validation/rates/test_probe_blocked_official_sources_v1.py'
+      - 'validation/rates/check_snb_same_basis_candidate_v1.py'
+      - 'validation/rates/test_check_snb_same_basis_candidate_v1.py'
   workflow_dispatch:
   schedule:
     # Europe/Rome target windows: 07:20-07:39, 08:00-08:19, 09:00-09:19 on working days.
@@ -102,6 +106,30 @@ jobs:
           lines.append('No yield data were ingested, estimated or promoted.')
           with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as out:
               out.write('\n'.join(lines)+'\n')
+          PY
+
+      - name: Test strict SNB same-basis 2Y/10Y candidate (no auto-promote)
+        if: steps.gate.outputs.should_run == 'true'
+        run: python3 validation/rates/test_check_snb_same_basis_candidate_v1.py
+
+      - name: Read-only official Swiss source candidate
+        if: ${{ always() && steps.gate.outputs.should_run == 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/rates-persistent
+          python3 validation/rates/check_snb_same_basis_candidate_v1.py \
+            --output /tmp/rates-persistent/snb-chf-source-candidate.json
+          python3 - <<'PY'
+          import json,os
+          p='/tmp/rates-persistent/snb-chf-source-candidate.json'
+          r=json.load(open(p))
+          c=r['candidate']
+          assert c['eligible_for_automatic_promotion'] is False
+          assert r['auto_promotion'] is False and r['changed_native_rates'] is False
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as out:
+              out.write('\nSNB CHF 2Y/10Y source candidate: **'+c['status']+'**. '+
+                        'No automatically promoted rates or Macro scores.\n')
           PY
 
       - name: Build official Rates candidate
