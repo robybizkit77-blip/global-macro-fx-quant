@@ -65,7 +65,7 @@ class BLS25PilotTests(unittest.TestCase):
             if period=="2023-11":
                 with self.assertRaises(ValueError):validate_manifest(m)
             elif period=="2024-02":
-                with self.assertRaisesRegex(ValueError,"first-five"):validate_manifest(m)
+                with self.assertRaisesRegex(ValueError,"attested original"):validate_manifest(m)
             else:
                 with self.assertRaisesRegex(ValueError,"delayed September"):validate_manifest(m)
 
