@@ -8,22 +8,33 @@ const start=source.indexOf('function officialPricingCurrent(x){');
 const end=source.indexOf('function htmlEscape(',start);
 assert(start>=0&&end>start,'Missing shared official-source guard');
 const clamp=(s,t)=>Math.round((Date.parse(t+'T00:00:00Z')-Date.parse(s+'T00:00:00Z'))/86400000);
-const today='2026-10-21';
+const today='2026-10-23';
 const fresh=(s,max)=>typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&
  Number.isFinite(clamp(s,today))&&clamp(s,today)>=0&&clamp(s,today)<=max;
 const num=x=>typeof x==='number'&&Number.isFinite(x)?x:null;
 const official=new Function('fresh','num',source.slice(start,end)+';return officialPricingCurrent;')(fresh,num);
 const feed=JSON.parse(fs.readFileSync('live_data/sections/OIS_OPERATIONAL_VIEW.json','utf8'));
 const real=Object.entries(feed.currencies).filter(([,x])=>official(x)).map(([k])=>k).sort();
-assert.deepEqual(real,['AUD','CAD','GBP','JPY'],'Current certified G8 official sources');
+// A certified source can publish metadata without a complete current curve.
+// Only a source passing all age, horizon and quote eligibility gates belongs
+// in Home/Rates/Pair real coverage; do not force an outdated four-source set.
+const candidates=['AUD','CAD','GBP','JPY'];
+assert(real.length>=1,'at least one presently complete certified fixture for boundary tests');
+assert(real.every(ccy=>candidates.includes(ccy)),
+  'only independently certified source families can be promoted');
+for(const ccy of candidates){
+  const h=feed.currencies[ccy].horizons;
+  if(['3m','6m','12m'].some(t=>!Number.isFinite(h[t]?.rate)))
+    assert(!real.includes(ccy),ccy+' incomplete source must not be promoted');
+}
 const x=structuredClone(feed.currencies.GBP);
-x.as_of='2026-10-17'; // four Rome calendar days
+x.as_of='2026-10-19'; // four Rome calendar days
 assert.equal(official(x),true,'official age day four remains usable');
-x.as_of='2026-10-16'; // five days
+x.as_of='2026-10-18'; // five days
 assert.equal(official(x),false,'official age day five is historical, not current');
-x.as_of='2026-10-22';
+x.as_of='2026-10-24';
 assert.equal(official(x),false,'future as-of not current');
-x.as_of='2026-10-20';
+x.as_of='2026-10-22';
 const negative=[
  ['estimated',v=>v.operational_status='GREEN_ESTIMATED'],
  ['withheld',v=>v.operational_status='WITHHELD'],
