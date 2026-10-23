@@ -104,11 +104,11 @@ def validate_manifest(m: dict) -> None:
                 "historical unemployment headline value/first-release contract")
         clock = timestamp(row.get("released_at"))
         local = clock.astimezone(ny)
-        require((local.hour, local.minute, local.second) == (8, 30, 0),
-                "BLS archived employment release must be 08:30 New York")
         require(datetime.fromisoformat(row["released_at"]).utcoffset()
                 == local.utcoffset(),
                 "offset not consistent with America/New_York DST")
+        require((local.hour, local.minute, local.second) == (8, 30, 0),
+                "BLS archived employment release must be 08:30 New York")
         require(clock.date() >= datetime.fromisoformat(period + "-01").date()
                 and clock <= timestamp(m["as_of"]),
                 "BLS release chronology / cutoff")
