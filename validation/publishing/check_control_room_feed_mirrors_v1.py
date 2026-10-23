@@ -27,7 +27,7 @@ DASH_OWNED = {
     "NZD_CB_PRICING_DIRECTIONAL_PROXY.json",
     "OIS_SOURCE_READINESS_VIEW.json",
 }
-DERIVED_SIDECARS = {"RATES_AUDIT_METADATA.json"}  # Not fetched by v10 Home directly.
+DERIVED_SIDECARS = {"RATES_AUDIT_METADATA.json","OIS_DATA.json"}  # Non-Home-direct metadata and official OIS canonical source requiring strict public parity.
 MARKET_OWNED = {
     "NATIVE_RATES_DATA.json", "V250_COT_CHART_DATA.json",
     "PAIR_SETUP_OPERATIONAL_VIEW.json", "ECB_G8_PRICE_HISTORY.json",
