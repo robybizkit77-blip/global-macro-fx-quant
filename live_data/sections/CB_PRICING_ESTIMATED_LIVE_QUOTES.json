@@ -1,7 +1,7 @@
 {
   "currencies": {
     "CHF": {
-      "as_of": "2026-10-21",
+      "as_of": "2026-10-22",
       "confidence_grade": "B",
       "freshness_status": "LIVE_OR_RECENT_SESSION",
       "horizons": {
@@ -10,13 +10,13 @@
           "contract": "SA3M2027",
           "contract_description": "Jun 2027",
           "expiration": "2027-09-14",
-          "futures_price": 99.69,
+          "futures_price": 99.76,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
-          "price_valid_until": "2026-10-21T14:33:48Z",
-          "quote_as_of": "2026-10-21",
+          "price_valid_until": "2026-10-22T16:59:54Z",
+          "quote_as_of": "2026-10-22",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 0.31,
+          "rate": 0.24,
           "symbol": "ICEEUR:SA3M2027"
         },
         "3m": {
@@ -24,13 +24,13 @@
           "contract": "SA3U2026",
           "contract_description": "Sep 2026",
           "expiration": "2026-12-15",
-          "futures_price": 100.045,
+          "futures_price": 100.0475,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
-          "price_valid_until": "2026-10-21T15:08:15Z",
-          "quote_as_of": "2026-10-21",
+          "price_valid_until": "2026-10-22T16:28:15Z",
+          "quote_as_of": "2026-10-22",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": -0.045,
+          "rate": -0.0475,
           "symbol": "ICEEUR:SA3U2026"
         },
         "6m": {
@@ -38,13 +38,13 @@
           "contract": "SA3Z2026",
           "contract_description": "Dec 2026",
           "expiration": "2027-03-16",
-          "futures_price": 99.995,
+          "futures_price": 100.01,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
-          "price_valid_until": "2026-10-21T10:28:01Z",
-          "quote_as_of": "2026-10-21",
+          "price_valid_until": "2026-10-22T11:13:09Z",
+          "quote_as_of": "2026-10-22",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 0.005,
+          "rate": -0.01,
           "symbol": "ICEEUR:SA3Z2026"
         }
       },
@@ -56,7 +56,7 @@
       "status": "LIVE_SECONDARY_READY"
     },
     "EUR": {
-      "as_of": "2026-10-20",
+      "as_of": "2026-10-21",
       "confidence_grade": "B",
       "freshness_status": "LIVE_OR_RECENT_SESSION",
       "horizons": {
@@ -65,13 +65,13 @@
           "contract": "FST3M2027",
           "contract_description": "Jun 2027",
           "expiration": "2027-09-15",
-          "futures_price": 96.9075,
+          "futures_price": 96.97,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
-          "price_valid_until": "2026-10-21T12:29:40Z",
-          "quote_as_of": "2026-10-21",
+          "price_valid_until": "2026-10-22T18:11:01Z",
+          "quote_as_of": "2026-10-22",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 3.0925,
+          "rate": 3.03,
           "symbol": "EUREX:FST3M2027"
         },
         "3m": {
@@ -79,13 +79,13 @@
           "contract": "FST3V2026",
           "contract_description": "Oct 2026",
           "expiration": "2027-01-20",
-          "futures_price": 97.4725,
+          "futures_price": 97.4775,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
-          "price_valid_until": "2026-10-20T21:10:21Z",
-          "quote_as_of": "2026-10-20",
+          "price_valid_until": "2026-10-21T21:09:35Z",
+          "quote_as_of": "2026-10-21",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 2.5275,
+          "rate": 2.5225,
           "symbol": "EUREX:FST3V2026"
         },
         "6m": {
@@ -93,13 +93,13 @@
           "contract": "FST3G2027",
           "contract_description": "Feb 2027",
           "expiration": "2027-05-19",
-          "futures_price": 97.1325,
+          "futures_price": 97.1575,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
-          "price_valid_until": "2026-10-20T21:22:26Z",
-          "quote_as_of": "2026-10-20",
+          "price_valid_until": "2026-10-21T21:23:30Z",
+          "quote_as_of": "2026-10-21",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 2.8675,
+          "rate": 2.8425,
           "symbol": "EUREX:FST3G2027"
         }
       },
@@ -111,7 +111,7 @@
       "status": "LIVE_SECONDARY_READY"
     },
     "USD": {
-      "as_of": "2026-10-21",
+      "as_of": "2026-10-22",
       "confidence_grade": "B",
       "freshness_status": "LIVE_OR_RECENT_SESSION",
       "horizons": {
@@ -120,13 +120,13 @@
           "contract": "ZQV2027",
           "contract_description": "Oct 2027",
           "expiration": "2027-11-01",
-          "futures_price": 95.32,
+          "futures_price": 95.52,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
-          "price_valid_until": "2026-10-21T17:46:21Z",
-          "quote_as_of": "2026-10-21",
+          "price_valid_until": "2026-10-22T18:04:02Z",
+          "quote_as_of": "2026-10-22",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 4.68,
+          "rate": 4.48,
           "symbol": "CBOT:ZQV2027"
         },
         "3m": {
@@ -134,13 +134,13 @@
           "contract": "ZQZ2026",
           "contract_description": "Dec 2026",
           "expiration": "2027-01-04",
-          "futures_price": 95.925,
+          "futures_price": 95.955,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
-          "price_valid_until": "2026-10-21T14:28:08Z",
-          "quote_as_of": "2026-10-21",
+          "price_valid_until": "2026-10-22T14:29:41Z",
+          "quote_as_of": "2026-10-22",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 4.075,
+          "rate": 4.045,
           "symbol": "CBOT:ZQZ2026"
         },
         "6m": {
@@ -148,13 +148,13 @@
           "contract": "ZQJ2027",
           "contract_description": "Apr 2027",
           "expiration": "2027-05-03",
-          "futures_price": 95.565,
+          "futures_price": 95.71,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
-          "price_valid_until": "2026-10-21T17:26:51Z",
-          "quote_as_of": "2026-10-21",
+          "price_valid_until": "2026-10-22T17:52:27Z",
+          "quote_as_of": "2026-10-22",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 4.435,
+          "rate": 4.29,
           "symbol": "CBOT:ZQJ2027"
         }
       },
@@ -166,7 +166,7 @@
       "status": "LIVE_SECONDARY_READY"
     }
   },
-  "generated_at_utc": "2026-10-22T09:03:40.401399Z",
+  "generated_at_utc": "2026-10-23T04:24:33.730043Z",
   "governance": {
     "backtest_eligible_as_official_ois": false,
     "bias_effect": "NONE",
