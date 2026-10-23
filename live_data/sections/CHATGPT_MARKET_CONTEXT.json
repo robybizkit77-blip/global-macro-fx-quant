@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_CHATGPT_MARKET_CONTEXT_V1",
-  "generated_at_utc": "2026-10-23T05:32:21Z",
+  "generated_at_utc": "2026-10-23T06:40:06Z",
   "evaluation_date_europe_rome": "2026-10-23",
   "reference_only": true,
   "policy": {
@@ -141,43 +141,43 @@
     "government_rates": {
       "USD": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-10-21",
-        "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-10-21",
-        "government_2y_pct": 4.81,
-        "government_10y_pct": 5.13,
-        "10y_minus_2y_bp": 32.0,
-        "change_2y_bp": 2.0,
-        "change_10y_bp": -8.0
+        "as_of": "2026-10-22",
+        "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-10-22",
+        "government_2y_pct": 4.65,
+        "government_10y_pct": 4.96,
+        "10y_minus_2y_bp": 31.0,
+        "change_2y_bp": -12.0,
+        "change_10y_bp": -14.0
       },
       "EUR": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-10-20",
-        "source": "European Central Bank · AAA Svensson spot curve · 2026-10-20",
-        "government_2y_pct": 3.0281,
-        "government_10y_pct": 3.4401,
-        "10y_minus_2y_bp": 41.2,
-        "change_2y_bp": -5.3,
-        "change_10y_bp": -5.2
+        "as_of": "2026-10-21",
+        "source": "European Central Bank · AAA Svensson spot curve · 2026-10-21",
+        "government_2y_pct": 3.0282,
+        "government_10y_pct": 3.4292,
+        "10y_minus_2y_bp": 40.1,
+        "change_2y_bp": -6.1,
+        "change_10y_bp": -8.2
       },
       "GBP": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-10-20",
-        "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-10-20",
-        "government_2y_pct": 4.7203,
-        "government_10y_pct": 5.3841,
-        "10y_minus_2y_bp": 66.4,
-        "change_2y_bp": 0.2,
-        "change_10y_bp": -4.4
+        "as_of": "2026-10-21",
+        "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-10-21",
+        "government_2y_pct": 4.7108,
+        "government_10y_pct": 5.3682,
+        "10y_minus_2y_bp": 65.7,
+        "change_2y_bp": 1.1,
+        "change_10y_bp": -5.2
       },
       "JPY": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-10-21",
-        "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-10-21",
+        "as_of": "2026-10-22",
+        "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-10-22",
         "government_2y_pct": 1.914,
-        "government_10y_pct": 2.923,
-        "10y_minus_2y_bp": 100.9,
-        "change_2y_bp": -1.4,
-        "change_10y_bp": -9.6
+        "government_10y_pct": 2.914,
+        "10y_minus_2y_bp": 100.0,
+        "change_2y_bp": 0.1,
+        "change_10y_bp": -3.4
       },
       "CHF": {
         "state": "STALE",
@@ -186,18 +186,23 @@
       },
       "CAD": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-10-20",
-        "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-10-20",
+        "as_of": "2026-10-21",
+        "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-10-21",
         "government_2y_pct": 3.32,
         "government_10y_pct": 3.9,
         "10y_minus_2y_bp": 58.0,
-        "change_2y_bp": 13.0,
-        "change_10y_bp": 3.0
+        "change_2y_bp": 11.0,
+        "change_10y_bp": 5.0
       },
       "AUD": {
-        "state": "STALE",
-        "as_of": "2026-10-14",
-        "reason": "Age 9d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-10-21",
+        "source": "Reserve Bank of Australia · F2 Capital Market Yields – Government Bonds – Daily · 2026-10-21",
+        "government_2y_pct": 4.917,
+        "government_10y_pct": 5.277,
+        "10y_minus_2y_bp": 36.0,
+        "change_2y_bp": -0.2,
+        "change_10y_bp": -3.7
       },
       "NZD": {
         "state": "STALE",
