@@ -194,6 +194,22 @@ function indicativeSixMonth(ois,today){
  }
  return Object.freeze(approved);
 }
+/* Study-only NZD 6M bridge: reuse the same audited 3/6/12 Rates matrix. */
+function scenarioSixMonth(ois,bb,today){
+ const r=matrix(ois,bb,today).find(x=>x.ccy==='NZD'&&x.tier==='SCENARIO');
+ const p=r?.points?.['6m'],range=p?.range;
+ if(!p||number(p.value)===null||!fresh(p.date,today)||
+    !Array.isArray(range)||range.length!==2||
+    number(range[0])===null||number(range[1])===null||
+    !(range[0]<p.value&&p.value<range[1])||p.date!==bb?.as_of||
+    r.allow_repricing!==false||r.allow_official_promotion!==false)return Object.freeze({});
+ return Object.freeze({NZD:Object.freeze({
+  currency:'NZD',type:'SCENARIO',value:p.value,
+  range:Object.freeze([...range]),quote_as_of:p.date,
+  is_official_ois:false,policy_delta_allowed:false,
+  backtest_eligible_as_official:false,pair_effect:'NONE',core_effect:'NONE'
+ })});
+}
 /* A full G8 research row requires three valid dated levels. A single
    observed contract must NOT count as complete 3M/6M/12M coverage. */
 function coverage(ois,bb,today){
@@ -358,8 +374,8 @@ const css=[
  '@media(max-width:600px){#gmfq-ois-research-estimates .gmfq-same-line{grid-template-columns:minmax(55px,.7fr) repeat(3,minmax(0,1fr))}#gmfq-ois-research-estimates .gmfq-same-line>*{padding:6px 3px}#gmfq-ois-research-estimates .gmfq-same-value b{font-size:11px}#gmfq-ois-research-estimates .gmfq-same-value small{font-size:8px}}',
  '@media(max-width:600px){#gmfq-ois-research-estimates .gmfq-est-body{padding:9px}#gmfq-ois-research-estimates .gmfq-est-row{grid-template-columns:minmax(78px,1.1fr) repeat(3,minmax(0,1fr))}#gmfq-ois-research-estimates .gmfq-est-row>div,#gmfq-ois-research-estimates .gmfq-est-row>span{padding:6px 4px}#gmfq-ois-research-estimates .gmfq-est-row b{font-size:12px}#gmfq-ois-research-estimates .gmfq-est-row small{font-size:9px}}'
 ].join('');
-if(typeof module!=='undefined'&&module.exports)module.exports={romeTodayIso,matrix,view,matchedResearchMoves,fresh,coverage,indicativeSixMonth,auditDatedFuture,calibratedNzdCarry,NZD_REFERENCE_ROWS,NZD_RECENT_ROWS,NZD_HOLDOUT_ROWS};
-if(typeof window!=='undefined')window.GMFQ_OIS_RESEARCH_V1=Object.freeze({romeTodayIso,coverage,indicativeSixMonth});
+if(typeof module!=='undefined'&&module.exports)module.exports={romeTodayIso,matrix,view,matchedResearchMoves,fresh,coverage,indicativeSixMonth,scenarioSixMonth,auditDatedFuture,calibratedNzdCarry,NZD_REFERENCE_ROWS,NZD_RECENT_ROWS,NZD_HOLDOUT_ROWS};
+if(typeof window!=='undefined')window.GMFQ_OIS_RESEARCH_V1=Object.freeze({romeTodayIso,coverage,indicativeSixMonth,scenarioSixMonth});
 if(typeof document==='undefined')return;
 const frame=document.getElementById('gmfq-page');if(!frame)return;
 const ROOT='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/';
