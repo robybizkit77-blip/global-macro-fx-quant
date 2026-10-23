@@ -1263,16 +1263,49 @@ function yieldStudySnapshot(raw,derived){
   recent:rows.filter(r=>r.status==='RECENT').length,
   scenarios:rows.filter(r=>r.scenario).length};
 }
-function renderYieldStudy(doc,rates,snb){
+/* Two matching RBNZ B2 HTML reads: display-only, not independent XLSX review. */
+function nzdWebReviewCandidate(canonical,c){
+ const r=canonical?.NZD,g=c?.governance||{},e=c?.evidence||{};
+ const age=romeCalendarAge(c?.as_of);
+ if(c?.schema!=='GMFQ_NZD_B2_GOVT_WEB_REVIEW_CONTEXT_V1'||
+   c.status!=='TWO_WEB_READS_MATCH__UNAPPROVED_RESEARCH_ONLY'||
+   c.currency!=='NZD'||c.source!=='Reserve Bank of New Zealand'||
+   c.instrument!=='RBNZ B2 NZFMA benchmark government bond indicative close'||
+   c.source_url!=='https://www.rbnz.govt.nz/en/statistics/series/exchange-and-interest-rates/wholesale-interest-rates'||
+   c.released_on!=='2026-10-23'||r?.date!=='2026-10-16'||
+   c.canonical_at_review?.as_of!==r.date||
+   num(c.canonical_at_review?.['2Y'])===null||num(c.canonical_at_review?.['10Y'])===null||
+   Math.abs(c.canonical_at_review['2Y']-r['2Y'])>0.00001||
+   Math.abs(c.canonical_at_review['10Y']-r['10Y'])>0.00001||
+   !(c.as_of>r.date)||!Number.isInteger(age)||age<0||age>14||
+   num(c['2Y'])===null||num(c['10Y'])===null||
+   !(c['2Y']>0&&c['2Y']<20&&c['10Y']>0&&c['10Y']<20)||
+   num(c.curve_bp)===null||
+   Math.abs(c.curve_bp-Math.round((c['10Y']-c['2Y'])*1000)/10)>0.001||
+   e.first_web_review!=='FIRST_REVIEW_COMPLETE_SECOND_INDEPENDENT_REVIEW_PENDING'||
+   e.second_web_review!=='SECOND_OFFICIAL_WEB_READ_MATCHES_FIRST_REVIEW__MANUAL_APPROVAL_PENDING'||
+   e.matched_rows!==10||e.independent_xlsx_review_completed!==false||
+   e.independent_human_reviewer_confirmed!==false||
+   g.official_canonical_untouched!==true||g.eligible_for_rate_spreads!==false||
+   g.core_score_effect!=='NONE'||g.pair_engine_effect!=='NONE'||
+   g.bias_effect!=='NONE'||g.sizing_effect!=='NONE'||
+   g.eligible_for_backtests!==false||g.eligible_for_automatic_promotion!==false||
+   g.live_data_promotion_allowed!==false)return null;
+ return {date:c.as_of,v2:c['2Y'],v10:c['10Y'],slopeBp:c.curve_bp,
+   historical:age>4,source:c.source_url,approval:'PENDING'};
+}
+function renderYieldStudy(doc,rates,snb,webReview){
  if(route()!=='tassi'||frame.contentDocument!==doc||doc.getElementById('gmfq-yields-study'))return;
  const anchor=doc.getElementById('rates-rows')?.closest('.desk-panel');
  if(!anchor)return;
  const derived=ratesAll(rates),out=yieldStudySnapshot(rates,derived);
+ const nzWeb=nzdWebReviewCandidate(rates,webReview);
  const host=doc.createElement('section');
  host.id='gmfq-yields-study';host.className='desk-panel';
  host.dataset.coverage=String(out.covered);host.dataset.recent=String(out.recent);
  host.dataset.scenarioCount=String(out.scenarios);
  host.dataset.coreEffect='NONE';host.dataset.pairEffect='NONE';
+ host.dataset.nzdWebReview=nzWeb?'RESEARCH_UNAPPROVED':'UNAVAILABLE';
  host.setAttribute('aria-label','Rendimenti G8 2 e 10 anni osservati e scenari separati');
  const css=doc.createElement('style');css.id='gmfq-yields-study-style';
  css.textContent=
@@ -1285,6 +1318,8 @@ function renderYieldStudy(doc,rates,snb){
   '#gmfq-yields-study .gmfq-yield-row small{display:block;font:10px/1.4 Arial,sans-serif;color:#9ab4c6}'+
   '#gmfq-yields-study .gmfq-yield-row .gmfq-yield-meta,#gmfq-yields-study .gmfq-yield-row .gmfq-yield-scenario{grid-column:1/-1;color:#a9c2d2;font:10px/1.5 Arial,sans-serif;overflow-wrap:anywhere}'+
   '#gmfq-yields-study .gmfq-yield-row .gmfq-yield-scenario{color:#dfc78b}'+
+  '#gmfq-yields-study .gmfq-yield-row .gmfq-yield-web-candidate{grid-column:1/-1;font:11px/1.6 Arial,sans-serif;color:#e8cb92;margin:3px 0;overflow-wrap:anywhere}'+
+  '#gmfq-yields-study .gmfq-yield-web-candidate a{color:#ebd49f;text-decoration:underline}'+
   '#gmfq-yields-study .gmfq-yield-row[data-state="HISTORICAL"]>div:first-child small{color:#e0c486}'+
   '#gmfq-yields-study .gmfq-yield-head{color:#a9c1d0;font:600 11px/1.6 Arial,sans-serif}'+
   '@media(max-width:520px){#gmfq-yields-study .gmfq-yields-grid{padding:0 9px 10px}'+
@@ -1303,6 +1338,12 @@ function renderYieldStudy(doc,rates,snb){
    '<div><strong>'+percent(x.v2)+'</strong></div><div><strong>'+percent(x.v10)+'</strong></div>'+
    '<div class="gmfq-yield-meta">Fonte governativa · '+htmlEscape(x.asof||'n.d.')+
    (x.slopeBp!==null?' · 10Y−2Y '+(x.slopeBp>=0?'+':'')+fmt(x.slopeBp,1)+' bp (stessa data)':'')+'</div>'+
+   (x.ccy==='NZD'&&nzWeb?'<div class="gmfq-yield-web-candidate" data-nzd-web-review="RESEARCH_UNAPPROVED">'+
+     'RBNZ B2 · '+htmlEscape(nzWeb.date)+(nzWeb.historical?' · dato storico':' · dato recente')+
+     ' · 2Y '+percent(nzWeb.v2)+' · 10Y '+percent(nzWeb.v10)+
+     ' · 10Y−2Y +'+fmt(nzWeb.slopeBp,1)+' bp. Doppia lettura HTML, '+
+     '<strong>NON APPROVATO</strong> (XLSX e revisore mancanti). Solo studio, non motore né spread FX. '+
+     '<a href="'+htmlEscape(nzWeb.source)+'" target="_blank" rel="noopener noreferrer">Fonte RBNZ ↗</a></div>':'')+
    (x.scenario?'<div class="gmfq-yield-scenario">Scenario β informativo '+FLAG[x.scenario.proxy]+
     ' '+x.scenario.proxy+' · '+x.scenario.date+' · 2Y ≈'+percent(x.scenario.v2)+
     ' ('+x.scenario.confidence2+') · 10Y ≈'+percent(x.scenario.v10)+
@@ -1510,10 +1551,10 @@ function mountMarketResearch(doc,ois,proxy,rates,snb10,sourceReadiness){
   '';
 }
 async function applyMarketResearch(doc){
- const all=await Promise.allSettled([feed('OIS_OPERATIONAL_VIEW.json'),feed('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),feed('NATIVE_RATES_DATA.json'),feed('CHF_SNB_10Y_SPOT_CONTEXT.json'),feed('OIS_SOURCE_READINESS_VIEW.json')]);
+ const all=await Promise.allSettled([feed('OIS_OPERATIONAL_VIEW.json'),feed('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),feed('NATIVE_RATES_DATA.json'),feed('CHF_SNB_10Y_SPOT_CONTEXT.json'),feed('OIS_SOURCE_READINESS_VIEW.json'),feed('NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json')]);
  const feeds=all.map(x=>x.status==='fulfilled'?x.value:null);
- renderYieldStudy(doc,feeds[2],feeds[3]);
- mountMarketResearch(doc,...feeds);
+ renderYieldStudy(doc,feeds[2],feeds[3],feeds[5]);
+ mountMarketResearch(doc,...feeds.slice(0,5));
 }
 
 /* Pair research journey, added next to (not replacing) the original 28-pair
