@@ -65,7 +65,11 @@ def inspect(feeds: dict, now: dt.datetime) -> dict:
     cot = feeds["V250_COT_CHART_DATA.json"]
 
     if (fx.get("status") != "CURRENT_OFFICIAL_HISTORY" or
-        not isinstance(fx.get("rows"), list) or len(fx["rows"]) < 21):
+        not isinstance(fx.get("rows"), list) or len(fx["rows"]) < 21 or
+        fx.get("row_count") != len(fx["rows"]) or
+        fx["rows"][-1].get("Date") != fx.get("last_as_of") or
+        any(not isinstance(fx["rows"][-1].get(c), (int, float)) or
+                fx["rows"][-1][c] <= 0 for c in G8)):
         problems.append("FX_SOURCE_INTEGRITY")
     if (pair.get("status") != "CURRENT_CANONICAL_ENGINE" or pair.get("pair_count") != 28 or
         pair.get("price_audit", {}).get("status") != "PASS"):
@@ -76,6 +80,9 @@ def inspect(feeds: dict, now: dt.datetime) -> dict:
         problems.append("PAIR_FX_SOURCE_DATE_DIVERGENCE")
 
     vix = model.get("risk", {}).get("VIX", {})
+    if (not vix.get("dates") or vix["dates"][-1] != vix.get("last_date") or
+        not isinstance(vix.get("last_value"), (int, float))):
+        problems.append("VIX_SOURCE_INTEGRITY")
     session("VIX_OFFICIAL_CLOSE", vix.get("last_date"))
     for name, row in (("CALENDAR_REFRESH", calendar), ("NEWS_PULSE_REFRESH", news)):
         stamp = row.get("generated_at_utc")
