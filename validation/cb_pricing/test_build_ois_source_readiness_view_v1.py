@@ -19,6 +19,19 @@ def main():
     assert report['blocked_currency_count']==sum(
         row['operational_status']=='WITHHELD'
         for c,row in view['currencies'].items() if c in pending)
+    assert 'EUR' in report['currencies'] and 'NZD' in report['currencies']
+    eur=report['currencies']['EUR']['research_context']
+    assert eur['kind']=='DATED_ESTR_FUTURES_QUOTES_NOT_OIS'
+    assert eur['quote_dates']=={
+      h:q['quote_as_of'] for h,q in
+      (view['currencies']['EUR'].get('secondary_quote_context') or {}).get('horizons',{}).items()}
+    assert eur['rates_embedded'] is False and eur['policy_delta_allowed'] is False
+    assert eur['cross_date_join_allowed'] is False and eur['eligible_as_ois'] is False
+    nzd=report['currencies']['NZD']['research_context']
+    assert nzd['kind']=='ASX_NZD_BANK_BILL_DIRECTION_NOT_OIS'
+    assert nzd['rates_embedded'] is False and nzd['policy_delta_allowed'] is False
+    assert nzd['eligible_as_ois'] is False and nzd['substitutes_for_ois_level'] is False
+    assert nzd['proxy_as_of']==view['currencies']['NZD']['market_direction_proxy']['as_of']
     assert report['prices_omitted'] is True
     assert all(report[k] is True for k in (
         'no_core_score_effect','no_bias_effect','no_sizing_effect',

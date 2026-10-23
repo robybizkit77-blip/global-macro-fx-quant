@@ -24,13 +24,21 @@ def main():
         ("outdated status",lambda v,r,o,p:r["currencies"]["EUR"].update(status="GREEN_ESTIMATED")),
         ("outdated date",lambda v,r,o,p:r["currencies"]["USD"].update(operational_as_of="2026-10-01")),
         ("wrong source URL",lambda v,r,o,p:r["currencies"]["NZD"].update(source_url="https://invalid.example")),
-        ("wrong count",lambda v,r,o,p:r.update(blocked_currency_count=3)),
+        ("wrong count",lambda v,r,o,p:r.update(blocked_currency_count=r["blocked_currency_count"]+1)),
         ("promoted backtest",lambda v,r,o,p:r["currencies"]["USD"].update(backtest_eligible_as_official=True)),
         ("promoted price",lambda v,r,o,p:r["currencies"]["EUR"].update(usable_for_policy_pricing=True)),
         ("embedded rate",lambda v,r,o,p:r["currencies"]["CHF"].update(price_or_curve_embedded=True)),
         ("unsafe governance",lambda v,r,o,p:r.update(no_automatic_promotions=False)),
         ("old review",lambda v,r,o,p:r.update(source_reviewed_as_of="2026-10-18")),
         ("wrong source stamp",lambda v,r,o,p:r.update(as_of="2026-10-17")),
+        ("EUR futures cross-date joined",lambda v,r,o,p:
+             r["currencies"]["EUR"]["research_context"].update(cross_date_join_allowed=True)),
+        ("EUR falsely equal dates",lambda v,r,o,p:
+             r["currencies"]["EUR"]["research_context"].update(same_date_across_horizons=True)),
+        ("NZD bank bill policy pricing",lambda v,r,o,p:
+             r["currencies"]["NZD"]["research_context"].update(policy_delta_allowed=True)),
+        ("NZD false bank bill asof",lambda v,r,o,p:
+             r["currencies"]["NZD"]["research_context"].update(proxy_as_of="2026-10-01")),
         ("faked certified",lambda v,r,o,p:(v["currencies"]["USD"].update(
             operational_status="GREEN_OFFICIAL",official_status="ACTIVE",
             quality="OFFICIAL_CERTIFIED",backtest_eligible_as_official=True),

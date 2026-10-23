@@ -30,7 +30,7 @@ def main() -> None:
     assert report["official_coverage"] == 4
     rows = report["blocked_source_decisions"]
     assert set(rows) == {"USD", "EUR", "CHF", "NZD"}
-    assert rows["NZD"]["source_access_status"] == "BENCHMARK_EXISTS_BUT_PAID_SUBSCRIPTION_NOT_CONFIGURED_IN_REPO"
+    assert rows["NZD"]["source_access_status"] == "NZOS_NZOR_LICENSE_REQUIRED_NO_ENTITLEMENT"
     assert rows["USD"]["source_url"].startswith("https://")
     assert rows["EUR"]["source_url"].startswith("https://www.eurex.com/")
     assert rows["EUR"]["candidate"].startswith("Eurex Three-Month Euro STR Futures")
