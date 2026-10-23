@@ -1,0 +1,73 @@
+/* Research proxy visibility without canonical OIS promotion or invented prices. */
+'use strict';
+const fs=require('node:fs');
+const assert=require('node:assert/strict');
+const js=fs.readFileSync('site/control-room-preview/home-navigation-v10.js','utf8');
+const a=js.indexOf('function marketResearchFallbackProxies(');
+const b=js.indexOf('\nfunction mountMarketResearch(',a);
+assert(a>=0&&b>a,'numeric research coverage module absent');
+const raw=new Function('num','fmt','htmlEscape','romeCalendarAge','FLAG',
+ js.slice(a,b)+';return marketResearchFallbackProxies;');
+const num=x=>typeof x==='number'&&Number.isFinite(x)?x:null;
+const fmt=(x,n=2)=>num(x)===null?'—':x.toFixed(n);
+const htmlEscape=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today='2026-10-23';
+const romeCalendarAge=x=>{
+ if(typeof x!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(x))return null;
+ const d=Date.parse(x+'T00:00:00Z');
+ if(!Number.isFinite(d)||new Date(d).toISOString().slice(0,10)!==x)return null;
+ return (Date.parse(today+'T00:00:00Z')-d)/86400000;
+};
+const render=raw(num,fmt,htmlEscape,romeCalendarAge,{EUR:'🇪🇺',NZD:'🇳🇿'});
+const operational=JSON.parse(fs.readFileSync('live_data/sections/OIS_OPERATIONAL_VIEW.json','utf8'));
+const proxy=JSON.parse(fs.readFileSync('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json','utf8'));
+assert.equal(operational.currencies.EUR.operational_status,'WITHHELD');
+assert.equal(operational.currencies.NZD.operational_status,'WITHHELD');
+const out=render(operational,proxy);
+assert(out.includes('data-research-proxy-coverage="COMPLETE_2_OF_2"'));
+assert(out.includes('data-pricing-research-currency="EUR"'));
+assert(out.includes('data-pricing-research-currency="NZD"'));
+assert(out.includes('data-research-source="PROXY_DATE_DIVERSE"'));
+for(const v of [2.5225,2.8425,3.03])
+ assert(out.includes(fmt(v,3)+'%'),'Missing real EUR individual dated futures quote '+v);
+for(const v of [3.51,3.81,4.18])
+ assert(out.includes(fmt(v,3)+'%'),'Missing official ASX bank bill observation '+v);
+for(const d of ['2026-10-21','2026-10-22'])assert(out.includes(d));
+assert(out.includes('NON OIS'));
+assert(out.includes('Date diverse'));
+assert(out.includes('non stimare tagli/rialzi'));
+assert(out.includes('spread di credito'));
+assert(!out.includes('POLICY_DELTA_BP'));
+assert(operational.currencies.EUR.horizons['6m'].rate===null);
+assert(operational.currencies.NZD.horizons['6m'].rate===null);
+
+const copy=x=>JSON.parse(JSON.stringify(x));
+let er=copy(operational);
+er.currencies.EUR.secondary_quote_context.horizons['3m'].quote_as_of='2026-10-01';
+let v=render(er,proxy);
+assert(v.includes('data-research-proxy-coverage="PARTIAL"'));
+assert(v.includes('Non stimabile'));
+assert(!v.includes('2.523%'),'Expired quote must not masquerade as present research estimate');
+er=copy(operational);
+er.currencies.EUR.secondary_quote_context.cross_date_join_allowed=true;
+v=render(er,proxy);
+assert(v.includes('data-research-proxy-coverage="PARTIAL"'));
+assert(!v.includes('3.030%'),'Illicit EUR date joining must be withheld');
+let nz=copy(proxy);nz.governance.substitutes_for_ois_level=true;
+v=render(operational,nz);
+assert(v.includes('data-research-proxy-coverage="PARTIAL"'));
+assert(!v.includes('4.180%'),'ASX proxy cannot be treated as OIS');
+nz=copy(proxy);nz.horizons['12m'].implied_bank_bill_rate=null;
+v=render(operational,nz);
+assert(v.includes('Non stimabile'));
+assert(!v.includes('4.180%'),'Missing 12M is never interpolated from 3M/6M');
+nz=copy(proxy);nz.as_of='2026-09-02';
+v=render(operational,nz);
+assert(v.includes('Non stimabile'),'Stale proxy must not become live');
+er=copy(operational);
+er.currencies.EUR.operational_status='GREEN_OFFICIAL';
+er.currencies.NZD.operational_status='GREEN_OFFICIAL';
+assert(!render(er,proxy).includes('data-pricing-research-currency="EUR"'));
+assert(!render(er,proxy).includes('data-pricing-research-currency="NZD"'));
+assert(js.includes('marketResearchFallbackProxies(ois,proxy)'),'UI must show estimates before buried methodology');
+console.log('CONTROL_ROOM_EUR_NZD_NUMERIC_RESEARCH_PROXIES_FAIL_CLOSED_PASS');
