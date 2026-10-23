@@ -1,8 +1,23 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-23T01:04:23Z",
+  "generated_at_utc": "2026-10-23T01:51:52Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-c9a2b39e7ae321172e54",
+      "observed_at_utc": "2026-10-22T21:57:00Z",
+      "headline": "SK Hynix says Solidigm suspends review of US IPO, citing market volatility",
+      "summary": "Reuters riporta: SK Hynix says Solidigm suspends review of US IPO, citing market volatility. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNakIxS1gtNjFlNDJKUVl5cUZZTGlsamY3UG5ST0Y5UjEyU1RUSmx2Skh3aXZIRE95MjFUdHdXOFhVZVpRZmVUclRwSVJMNUVnYWFSOXFRRzdYWXNBbDJxZlBMbXlmVGYtQ09KOWtrWnJZTXdEQmRzeHNDUi0tMGJoWXVmaHNqZTkyRm1CQmFUcUE4OEN3YnJWQ2M1cEo0d1hNQ3BzVVVLakd2SXVo?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-4e2c5e69498bf2c3eb16",
       "observed_at_utc": "2026-10-22T02:15:00Z",
@@ -1372,21 +1387,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxNY2dJZXdfdnptbDVvajUtNHBONy13T1Z5aEtVc3d2d2VDYUNpUEpTM1JxNGVZRFhiQmh1b1U2RWpOaW0zVndyQk9uSFZ6b0pQXzVvNUhRMFVXeEMzS3BrU1FkdE9tNEYxY21PdDFEWGplNkkwMkJ2Rkk5VVg2VUVDcXFIUmp4cUR4SnhqQ2h6b3hYTExtTkhCNGtqZWt6WUtUYURrc3owUUptdw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-8800158d56f25f45bdfe",
-      "observed_at_utc": "2026-10-21T00:54:00Z",
-      "headline": "Japan shifting to wage-driven inflation phase, finance minister says",
-      "summary": "Reuters riporta: Japan shifting to wage-driven inflation phase, finance minister says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [
-        "JPY"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxOM0Fielo1REtWUHdnb2xnMDZvaHhmc1BWQjg4NS1YYlZJYWJLelVpTUQ1a2xuRk8yNkw2R1RiSE5kbVVEMW84ZjZMQmlxalZ3WG02ODJBb1BsSXR3b2tiUlNVc3dGV1ZWZF8yM2Z4SUhqRURzTGNqcC1BcHdacG1fV1NLQnpVOXZFTVRQWVdlWUdyV1k2Zmh2ZDlKWlNHZU03MDA0RjhZeDBwWnF6bFpQS1dzWmJYdEx0NTJJ?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
