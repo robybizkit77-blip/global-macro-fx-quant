@@ -76,6 +76,55 @@ def build(plan: dict, operational: dict, official: dict, rates: dict, chf10: dic
             "price_or_curve_embedded": False,
             "backtest_eligible_as_official": False,
         }
+    # The user must see the useful non-OIS research context without
+    # accidentally interpreting a secondary future or bank-bill contract as
+    # an official policy curve. Export dates and provenance only, no levels.
+    if "EUR" in items:
+        q=decisions["EUR"]["individual_verified_quote_dates"]
+        if any(h not in ("3m","6m","12m") for h in q):
+            raise ValueError("EUR unapproved source tenor")
+        days=set(q.values())
+        items["EUR"]["research_context"]={
+            "kind":"DATED_ESTR_FUTURES_QUOTES_NOT_OIS",
+            "instrument":"Eurex FST3 individual dated secondary contract observations",
+            "quote_dates":dict(q),
+            "full_horizon_set":set(q)=={"3m","6m","12m"},
+            "same_date_across_horizons":bool(q) and len(days)==1,
+            "status":"MIXED_DATE_QUOTES" if len(days)>1 else
+                     "PARTIAL_QUOTES" if len(q)<3 else "CONTRACT_DATES_MATCH_UNLICENSED",
+            "rates_embedded":False,"cross_date_join_allowed":False,
+            "policy_delta_allowed":False,"eligible_as_ois":False,
+        }
+    if "NZD" in items:
+        p=operational["currencies"]["NZD"].get("market_direction_proxy")
+        proxy_ok=(isinstance(p,dict) and
+                  p.get("status")=="LIVE_DIRECTIONAL_PROXY_READY" and
+                  p.get("source_quality")=="OFFICIAL_EXCHANGE_DIRECTIONAL_PROXY" and
+                  p.get("substitutes_for_ois_level") is False and
+                  p.get("policy_delta_from_proxy_allowed") is False)
+        if proxy_ok:
+            asof=p.get("as_of")
+            try:
+                proxy_day=datetime.strptime(asof,"%Y-%m-%d").date()
+            except (TypeError,ValueError) as exc:
+                raise ValueError("NZD invalid exchange observation date") from exc
+            if proxy_day>date:
+                raise ValueError("NZD future-dated bank-bill proxy")
+            items["NZD"]["research_context"]={
+                "kind":"ASX_NZD_BANK_BILL_DIRECTION_NOT_OIS",
+                "instrument":"ASX NZ 90-Day Bank Bill futures",
+                "proxy_as_of":asof,
+                "status":"RECENT_DIRECTIONAL" if (date-proxy_day).days<=5 else "HISTORICAL_DIRECTIONAL",
+                "rates_embedded":False,"policy_delta_allowed":False,
+                "eligible_as_ois":False,"substitutes_for_ois_level":False,
+            }
+        else:
+            items["NZD"]["research_context"]={
+                "kind":"ASX_NZD_BANK_BILL_DIRECTION_NOT_OIS",
+                "proxy_as_of":None,"status":"NO_VALID_DIRECTIONAL_SOURCE",
+                "rates_embedded":False,"policy_delta_allowed":False,
+                "eligible_as_ois":False,"substitutes_for_ois_level":False,
+            }
     chf = rates.get("CHF") or {}
     try:
         paired_date = datetime.strptime(chf["date"], "%Y-%m-%d").date()
