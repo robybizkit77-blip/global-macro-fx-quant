@@ -1,8 +1,21 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-23T04:48:57Z",
+  "generated_at_utc": "2026-10-23T05:48:11Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-8789d9eb0e94ccdcd555",
+      "observed_at_utc": "2026-10-23T03:54:00Z",
+      "headline": "Asian shares slip as sharp drops for AI stocks overwhelm markets worldwide and oil prices jump",
+      "summary": "AP News riporta: Asian shares slip as sharp drops for AI stocks overwhelm markets worldwide and oil prices jump. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxPNWpGTk1fbkF2SWY0S1Q2MHN6WjRqQ1R3VWp4WXFKd3VQUG5WSlI1ZXFDY1pSUGJyampWMGtwZ3dRQmxGRzlTbERHSnlraUZ4WmFCSXM4U3J1Z1VSdV81eTB2ck1lWElpSnR2Qi1FbWUwUmJBT1l5enVZLVpsYmMySnBhZ0FDWHZBTElJVEhGYl9tN2tXblE?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-ffd71e3a7cd151516d1d",
       "observed_at_utc": "2026-10-23T02:43:00Z",
@@ -1372,19 +1385,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxQdjNITnczLXgyWGppRkFrTDc1dE9MOWM3aENNVGVKRkFJWU9XT0RUcWM4WTFUaVlxanNvVVZQV0E3OGFZWEM4UDFLSXFuV3psVEFxOGtqVFgxdGpVWDRILWJxS1IwUW1PU0FDSGg4ZUNjQnlUeG54aDI5TTREMDIwWXJHdXU5WW1ndEp2YTBVejl3UW5YeXpVRUItV2NKbGdqb2ZwNlV3Wm8xWThfRU9xVQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-99579532bb7a9c94b846",
-      "observed_at_utc": "2026-10-21T01:01:00Z",
-      "headline": "Lutnick announces investment to boost semiconductor production in North Carolina",
-      "summary": "Reuters riporta: Lutnick announces investment to boost semiconductor production in North Carolina. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxNU193TGxnbzVMbkRsVTJCOXcwbTBZcTJQdzAzSmdCQ1IzbFhLaHYwc1pCR25TTFY0Yi1BTmJreDJHR010NW1fT3NSX2N5UXpCRjlqM2VhNmRsTk1ycG5FcUg4ZUxXUDl6NTJLVmMwR2thMmdMQnFjVjA5N2txZFI0ZHptaXNFRjQxb3lsWk5JYURrdzFtclROVl9rX0lNU3g0cld4QURkYVRfMWxhSzBUd2RrZjhOZFd6V05HLVhB?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
