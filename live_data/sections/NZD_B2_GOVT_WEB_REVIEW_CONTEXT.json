@@ -1,0 +1,37 @@
+{
+  "schema": "GMFQ_NZD_B2_GOVT_WEB_REVIEW_CONTEXT_V1",
+  "status": "TWO_WEB_READS_MATCH__UNAPPROVED_RESEARCH_ONLY",
+  "currency": "NZD",
+  "instrument": "RBNZ B2 NZFMA benchmark government bond indicative close",
+  "source": "Reserve Bank of New Zealand",
+  "source_url": "https://www.rbnz.govt.nz/en/statistics/series/exchange-and-interest-rates/wholesale-interest-rates",
+  "released_on": "2026-10-23",
+  "as_of": "2026-10-22",
+  "2Y": 3.91,
+  "10Y": 4.98,
+  "curve_bp": 107,
+  "canonical_at_review": {
+    "as_of": "2026-10-16",
+    "2Y": 3.89,
+    "10Y": 5
+  },
+  "evidence": {
+    "first_web_review": "FIRST_REVIEW_COMPLETE_SECOND_INDEPENDENT_REVIEW_PENDING",
+    "second_web_review": "SECOND_OFFICIAL_WEB_READ_MATCHES_FIRST_REVIEW__MANUAL_APPROVAL_PENDING",
+    "matched_rows": 10,
+    "independent_xlsx_review_completed": false,
+    "independent_human_reviewer_confirmed": false
+  },
+  "governance": {
+    "official_canonical_untouched": true,
+    "eligible_for_rate_spreads": false,
+    "core_score_effect": "NONE",
+    "pair_engine_effect": "NONE",
+    "bias_effect": "NONE",
+    "sizing_effect": "NONE",
+    "eligible_for_backtests": false,
+    "eligible_for_automatic_promotion": false,
+    "live_data_promotion_allowed": false
+  },
+  "note": "Doppia lettura della tabella HTML B2, non riconciliazione indipendente XLSX; solo contesto di studio. 2Y e 10Y sono benchmark government bond indicativi, non OIS o swap."
+}

@@ -599,6 +599,25 @@ async function getState(page){
             throw Error(name+' G8 dated yields missing from public Rates research '+JSON.stringify(y));
          console.log('CONTROL_ROOM_PUBLIC_G8_DATED_YIELDS_STUDY_GREEN',name,
            JSON.stringify({count:y.count,historical:y.historical,noModelPromotion:true}));
+         const webReview=await page.evaluate(async()=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument,
+             p=d?.getElementById('gmfq-yields-study'),
+             note=p?.querySelector('[data-nzd-web-review="RESEARCH_UNAPPROVED"]'),
+             raw=await fetch('https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/NATIVE_RATES_DATA.json',{cache:'no-store'}).then(x=>x.json());
+           return {liveNZD:raw.NZD?.date,status:p?.dataset.nzdWebReview,
+             note:note?.textContent,noteDate:note?.textContent?.includes('2026-10-22'),
+             noteLink:note?.querySelector('a')?.getAttribute('href'),core:p?.dataset.coreEffect,pair:p?.dataset.pairEffect};
+         });
+         const noteExpected=webReview.liveNZD==='2026-10-16';
+         if(webReview.core!=='NONE'||webReview.pair!=='NONE'||
+            (noteExpected&&(webReview.status!=='RESEARCH_UNAPPROVED'||!webReview.noteDate||
+              !webReview.note?.includes('3.910%')||!webReview.note?.includes('4.980%')||
+              !webReview.note?.includes('NON APPROVATO')||
+              !webReview.noteLink?.startsWith('https://www.rbnz.govt.nz/')))||
+            (!noteExpected&&webReview.status!=='UNAVAILABLE'))
+           throw Error(name+' RBNZ web-review must remain study only '+JSON.stringify(webReview));
+         console.log('CONTROL_ROOM_PUBLIC_NZD_B2_UNAPPROVED_STUDY_GREEN',name,
+           JSON.stringify({reviewStatus:webReview.status,liveNZD:webReview.liveNZD}));
        }
        const research=await page.evaluate(async()=>{
          const d=document.getElementById('gmfq-page').contentDocument;

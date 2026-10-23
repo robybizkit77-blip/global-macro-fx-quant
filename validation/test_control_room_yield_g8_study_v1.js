@@ -48,5 +48,5 @@ estim.CHF.estimatedAsOf10='2026-10-21';
 assert.equal(f(live,estim).rows.find(x=>x.ccy==='CHF').scenario,null,
  'mismatched scenario dates must not create a mixed-date estimate');
 assert(src.includes("host.dataset.coreEffect='NONE'")&&src.includes("host.dataset.pairEffect='NONE'"));
-assert(src.includes('renderYieldStudy(doc,feeds[2],feeds[3])'));
+assert(src.includes('renderYieldStudy(doc,feeds[2],feeds[3],feeds[5])'),'RBNZ web-review is a separate sixth feed, not canonical Rates');
 console.log('G8_YIELD_DATED_STUDY_NO_PROMOTION_PASS',JSON.stringify({covered:8,recent:6,historical:2,no_core_effect:true}));
