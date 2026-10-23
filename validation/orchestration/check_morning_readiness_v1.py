@@ -42,7 +42,20 @@ def valid_date(value: object) -> str | None:
     return day.isoformat() if value == day.isoformat() else None
 
 
-def inspect(feeds: dict, now: dt.datetime) -> dict:
+def rome_build_day(stamp: object) -> str | None:
+    """Interpret UTC publication timestamps in Europe/Rome, including midnight rollover."""
+    if not isinstance(stamp, str):
+        return None
+    try:
+        time = dt.datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if time.tzinfo is None or time.utcoffset() is None:
+        return None
+    return time.astimezone(ROME).date().isoformat()
+
+
+def inspect(feeds: dict, now: dt.datetime, pipeline_outcome: str = "success") -> dict:
     now = now.astimezone(ROME)
     today = now.date()
     expected = prior_weekday(today).isoformat()
@@ -86,9 +99,9 @@ def inspect(feeds: dict, now: dt.datetime) -> dict:
     session("VIX_OFFICIAL_CLOSE", vix.get("last_date"))
     for name, row in (("CALENDAR_REFRESH", calendar), ("NEWS_PULSE_REFRESH", news)):
         stamp = row.get("generated_at_utc")
-        stamp_day = stamp[:10] if isinstance(stamp, str) else None
-        status = "TODAY_BUILT" if valid_date(stamp_day) == today.isoformat() else "NOT_BUILT_TODAY"
-        evidence[name] = {"generated_at_utc": stamp, "status": status}
+        stamp_day = rome_build_day(stamp)
+        status = "TODAY_BUILT" if stamp_day == today.isoformat() else "NOT_BUILT_TODAY"
+        evidence[name] = {"generated_at_utc": stamp, "generated_date_rome": stamp_day, "status": status}
         if status != "TODAY_BUILT":
             problems.append(name)
 
@@ -115,9 +128,12 @@ def inspect(feeds: dict, now: dt.datetime) -> dict:
         if cot.get(c, {}).get("dates") else None for c in G8}
     if pair.get("macro_baseline_asof") != model.get("asOf"):
         problems.append("PAIR_MACRO_BASELINE_DIVERGENCE")
+    if pipeline_outcome != "success":
+        problems.append("REFRESH_PIPELINE_NOT_SUCCESS")
     return {
         "schema": "GMFQ_MORNING_READINESS_V1",
         "checked_at_rome": now.isoformat(timespec="seconds"),
+        "refresh_pipeline_outcome": pipeline_outcome,
         "expected_previous_weekday": expected,
         "operational_state": "DAILY_READY_WITH_DOCUMENTED_GAPS" if not problems else "DAILY_INPUTS_INCOMPLETE",
         "critical_daily_problems": sorted(set(problems)),
@@ -136,11 +152,13 @@ def main() -> int:
     ap.add_argument("--as-of", help="Override current instant using ISO-8601 timezone-aware timestamp")
     ap.add_argument("--output")
     ap.add_argument("--strict-daily", action="store_true")
+    ap.add_argument("--pipeline-outcome", default="success",
+                    choices=("success", "failure", "cancelled", "skipped", "unknown"))
     args = ap.parse_args()
     now = dt.datetime.fromisoformat(args.as_of) if args.as_of else dt.datetime.now(ROME)
     if now.tzinfo is None or now.utcoffset() is None:
         ap.error("as-of must include a timezone offset")
-    report = inspect(read_feeds(), now)
+    report = inspect(read_feeds(), now, pipeline_outcome=args.pipeline_outcome)
     if args.output:
         Path(args.output).write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(json.dumps(report, indent=2, ensure_ascii=False))
