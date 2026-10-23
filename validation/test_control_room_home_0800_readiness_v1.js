@@ -39,8 +39,11 @@ assert.equal(result.sourceEffect,'NONE');
 assert.equal(result.rateRecent.length,6);
 assert.equal(result.rateLag.join(','),'NZD,CHF');
 assert.equal(result.official.length,4);
-assert.equal(result.estimated.length,2);
-assert.equal(result.withoutOis.join(','),'EUR,NZD');
+const liveOis=inputs[4].currencies;
+assert.equal(result.estimated.length,FX.filter(c=>liveOis[c].operational_status==='GREEN_ESTIMATED').length);
+assert.deepEqual([...result.withoutOis].sort(),
+  FX.filter(c=>liveOis[c].operational_status==='WITHHELD').sort(),
+  'Morning readout must not disguise expired or incomplete pricing as estimated.');
 assert.equal(result.macroDay,'2026-09-25');
 
 function altered(index,mutate){
