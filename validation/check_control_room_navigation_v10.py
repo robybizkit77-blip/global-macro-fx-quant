@@ -113,7 +113,7 @@ items={
 "Evidence checklist belongs inside existing editorial decision frame": "pairEvidenceChecklist(code,pair,modelDay,reactionHtml,macroDay)+" in s,
 "Explicit Macro baseline provenance distinct from Price": "macro_baseline_asof" in s and "Baseline Macro/Tassi" in s and "NON CORRENTE: tesi da rivalidare" in s,
 "Valute source status requires current complete ECB fixing": "function valuteFxSourceStatus(fx)" in s and "fx.pair_count===28" in s and "row?.Date===day" in s and "fresh(day,4)" in s,
-"Valute separates ECB fixing DXY synthetic and historical Macro": "function mountValuteSourceCompass(doc)" in s and "DXY sintetico BCE" in s and "Macro baseline" in s and "non un nuovo ranking di forza relativa" in s,
+"Valute separates ECB fixing DXY synthetic and historical Macro": "function mountValuteSourceCompass(doc)" in s and "DXY sintetico BCE" in s and "Macro baseline" in s and "Il ranking momentum G8 qui sotto è calcolato separatamente" in s,
 "Valute lens fails closed and keeps native study": "if(route()==='valute')mountValuteSourceCompass(doc).catch" in s and "FX BCE non corrente o non verificabile" in s and "gmfq-valute-source-compass" in s,
 "Cross-Asset editorial ledger separates interpretation and VIX WTI Brent provenance": "gmfq-cross-risk-evidence" in s and "gmfq-cross-risk-intro" in s and all(k in s for k in ['data-source="vix"','data-source="wti"','data-source="brent"']) and "Non sono quotazioni intraday sincronizzate" in s,
 "Cross-Asset visual consistency retains native instruments": "background:transparent;border:0;border-right:1px solid #294454" in s and "gmfq-cross-risk-card:last-child" in s and "gmfq-gold-spot{border-left:0;border-top:1px" in s,
