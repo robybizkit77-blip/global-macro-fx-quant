@@ -1528,7 +1528,7 @@ async function getState(page){
          const open=await page.evaluate(section=>{
            const d=document.getElementById('gmfq-page')?.contentDocument,
              p=d?.getElementById(section==='banche'?'gmfq-cb-reading-first':'gmfq-cot-reading-first');
-           const sourceDetail=p?.querySelector('details');
+           const sourceDetail=p?.querySelector(':scope > details');
            return {open:sourceDetail?.open,
              visible:[...sourceDetail?.querySelectorAll('p')||[]].every(x=>x.getClientRects().length>0)};
          },pageName);
