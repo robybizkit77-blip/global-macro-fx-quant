@@ -2,19 +2,19 @@
   "schema": "GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1",
   "status": "CURRENT_CANONICAL_ENGINE",
   "pair_count": 28,
-  "price_asof": "2026-10-22",
+  "price_asof": "2026-10-23",
   "macro_baseline_asof": "2026-09-25",
   "price_source": "ECB euro foreign exchange reference rates",
   "price_audit": {
     "status": "PASS",
-    "as_of": "2026-10-22",
+    "as_of": "2026-10-23",
     "source": "ECB euro foreign exchange reference rates",
     "current_row_source": "official history snapshot",
-    "overlay_asof": "2026-10-22",
+    "overlay_asof": "2026-10-23",
     "history_status": "CURRENT_OFFICIAL_HISTORY",
-    "history_asof": "2026-10-22",
+    "history_asof": "2026-10-23",
     "history_rows": 561,
-    "first_asof": "2024-08-13",
+    "first_asof": "2024-08-14",
     "pair_count": 28,
     "complete_pair_count": 28,
     "complete_return_values": 140,
@@ -48,9 +48,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 8.534322820037106,
-          "move1m": -1.4551584411877094,
-          "text": "Estensione non elevata · 1M -1.5% · P9 storico"
+          "pct": 10.946196660482375,
+          "move1m": -1.2972472573144267,
+          "text": "Estensione non elevata · 1M -1.3% · P11 storico"
         },
         "timing": {
           "state": "ADVERSE",
@@ -108,7 +108,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 159.89999999999998,
+              "bp": 159.7,
               "material": true,
               "side": "AUD"
             }
@@ -138,7 +138,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 159.89999999999998,
+            "bp": 159.7,
             "material": true,
             "side": "AUD"
           }
@@ -201,9 +201,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 20.964749536178108,
-          "move1m": -1.0662201914002245,
-          "text": "Estensione non elevata · 1M -1.1% · P21 storico"
+          "pct": 31.16883116883117,
+          "move1m": -0.45973196132942373,
+          "text": "Estensione non elevata · 1M -0.5% · P31 storico"
         },
         "timing": {
           "state": "ADVERSE",
@@ -261,7 +261,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 463.2,
+              "bp": 463,
               "material": true,
               "side": "AUD"
             }
@@ -291,7 +291,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 463.2,
+            "bp": 463,
             "material": true,
             "side": "AUD"
           }
@@ -353,9 +353,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 19.48051948051948,
-          "move1m": -1.4632356327631824,
-          "text": "Estensione non elevata · 1M -1.5% · P19 storico"
+          "pct": 20.77922077922078,
+          "move1m": -1.3377632356544766,
+          "text": "Estensione non elevata · 1M -1.3% · P21 storico"
         },
         "timing": {
           "state": "ADVERSE",
@@ -413,7 +413,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 300.5,
+              "bp": 300.3,
               "material": true,
               "side": "AUD"
             }
@@ -443,7 +443,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 300.5,
+            "bp": 300.3,
             "material": true,
             "side": "AUD"
           }
@@ -475,12 +475,11 @@
         "B": {
           "positive": 1,
           "negative": 1,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Crescita: turning point",
-            "Lavoro: peggiora",
-            "Rates: turning point"
+            "Lavoro: peggiora"
           ],
           "withheld": false
         },
@@ -505,9 +504,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 18.367346938775512,
-          "move1m": -0.518574278939532,
-          "text": "Estensione non elevata · 1M -0.5% · P18 storico"
+          "pct": 17.810760667903526,
+          "move1m": -0.5555868641309303,
+          "text": "Estensione non elevata · 1M -0.6% · P18 storico"
         },
         "timing": {
           "state": "MIXED",
@@ -565,7 +564,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 102.89999999999995,
+              "bp": 102.69999999999997,
               "material": true,
               "side": "AUD"
             }
@@ -595,7 +594,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 102.89999999999995,
+            "bp": 102.69999999999997,
             "material": true,
             "side": "AUD"
           }
@@ -668,7 +667,7 @@
           "fav": "—",
           "quality": "NESSUN CONTRASTO",
           "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
-          "timing": "AUD: RATES AVANTI · USD: TURNING RECENTE",
+          "timing": "AUD: RATES AVANTI · USD: NESSUN TIMING CHIARO",
           "priceReading": "PREZZO NON RISOLUTIVO",
           "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
           "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
@@ -685,7 +684,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 10.899999999999999,
+              "bp": 26.699999999999946,
               "material": false,
               "side": "—"
             }
@@ -698,7 +697,7 @@
         "fav": "—",
         "quality": "NESSUN CONTRASTO",
         "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
-        "timing": "AUD: RATES AVANTI · USD: TURNING RECENTE",
+        "timing": "AUD: RATES AVANTI · USD: NESSUN TIMING CHIARO",
         "priceReading": "PREZZO NON RISOLUTIVO",
         "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
         "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
@@ -715,7 +714,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 10.899999999999999,
+            "bp": 26.699999999999946,
             "material": false,
             "side": "—"
           }
@@ -745,19 +744,18 @@
           "withheld": false
         },
         "B": {
-          "positive": 3,
-          "negative": 0,
-          "turns": 1,
+          "positive": 2,
+          "negative": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
             "Lavoro: migliora",
-            "Rates: migliora",
-            "Rates: turning point"
+            "Rates: peggiora"
           ],
           "withheld": false
         },
         "aNet": -1,
-        "bNet": 3,
+        "bNet": 1,
         "state": "DINAMICA FAVOREVOLE B",
         "fav": "USD"
       },
@@ -777,9 +775,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 66.04823747680891,
-          "move1m": 0.39468149081691717,
-          "text": "Estensione non elevata · 1M +0.4% · P66 storico"
+          "pct": 78.4786641929499,
+          "move1m": 0.8485227338779655,
+          "text": "Estensione non elevata · 1M +0.8% · P78 storico"
         },
         "timing": {
           "state": "PARTIAL",
@@ -1018,12 +1016,11 @@
         "B": {
           "positive": 1,
           "negative": 1,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Crescita: turning point",
-            "Lavoro: peggiora",
-            "Rates: turning point"
+            "Lavoro: peggiora"
           ],
           "withheld": false
         },
@@ -1048,9 +1045,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 67.53246753246754,
-          "move1m": 0.4012941203004994,
-          "text": "Estensione non elevata · 1M +0.4% · P68 storico"
+          "pct": 76.62337662337663,
+          "move1m": 0.8820865079285922,
+          "text": "Estensione non elevata · 1M +0.9% · P77 storico"
         },
         "timing": {
           "state": "UNCERTAIN",
@@ -1169,12 +1166,11 @@
         "B": {
           "positive": 1,
           "negative": 1,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Crescita: turning point",
-            "Lavoro: peggiora",
-            "Rates: turning point"
+            "Lavoro: peggiora"
           ],
           "withheld": false
         },
@@ -1199,20 +1195,20 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 68.46011131725417,
-          "move1m": 0.8807840218335139,
-          "text": "Estensione non elevata · 1M +0.9% · P68 storico"
+          "pct": 77.73654916512059,
+          "move1m": 1.2820512820512775,
+          "text": "Estensione non elevata · 1M +1.3% · P78 storico"
         },
         "timing": {
-          "state": "MIXED",
-          "text": "Timing misto · EUR sta peggiorando · AUD sta peggiorando",
+          "state": "ADVERSE",
+          "text": "Timing contrario · AUD sta peggiorando",
           "favChange": {
             "side": "NEG",
             "text": "AUD sta peggiorando"
           },
           "otherChange": {
-            "side": "NEG",
-            "text": "EUR sta peggiorando"
+            "side": "TRANSITION",
+            "text": "EUR è in possibile svolta"
           }
         },
         "cot": {
@@ -1259,7 +1255,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -189.09249966999994,
+              "bp": -190.95048617999998,
               "material": true,
               "side": "AUD"
             }
@@ -1289,7 +1285,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -189.09249966999994,
+            "bp": -190.95048617999998,
             "material": true,
             "side": "AUD"
           }
@@ -1298,21 +1294,21 @@
         "policySide": null
       },
       "transition": {
-        "state": "DINAMICA RELATIVA ALLINEATA",
-        "cls": "transConfirm",
-        "note": "la dinamica relativa è allineata al driver strutturale (AUD); il backtest la mantiene diagnostica, non autonoma"
+        "state": "DIVERGENZA RELATIVA DA MONITORARE",
+        "cls": "transWatch",
+        "note": "il driver strutturale favorisce AUD, ma la dinamica relativa favorisce EUR: divergenza da monitorare, non segnale automatico"
       },
       "relative_dynamics": {
         "a": "EUR",
         "b": "AUD",
         "A": {
-          "positive": 0,
-          "negative": 2,
+          "positive": 1,
+          "negative": 1,
           "turns": 1,
           "details": [
             "Crescita: peggiora",
             "Crescita: turning point",
-            "Rates: peggiora"
+            "Rates: migliora"
           ],
           "withheld": false
         },
@@ -1329,10 +1325,10 @@
           ],
           "withheld": false
         },
-        "aNet": -2,
+        "aNet": 0,
         "bNet": -1,
-        "state": "DINAMICA FAVOREVOLE B",
-        "fav": "AUD"
+        "state": "DINAMICA FAVOREVOLE A",
+        "fav": "EUR"
       },
       "price_state": null
     },
@@ -1377,7 +1373,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": -29.19249966999997,
+              "bp": -31.250486179999992,
               "material": false,
               "side": "—"
             }
@@ -1407,7 +1403,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": -29.19249966999997,
+            "bp": -31.250486179999992,
             "material": false,
             "side": "—"
           }
@@ -1424,13 +1420,13 @@
         "a": "EUR",
         "b": "CAD",
         "A": {
-          "positive": 0,
-          "negative": 2,
+          "positive": 1,
+          "negative": 1,
           "turns": 1,
           "details": [
             "Crescita: peggiora",
             "Crescita: turning point",
-            "Rates: peggiora"
+            "Rates: migliora"
           ],
           "withheld": false
         },
@@ -1447,7 +1443,7 @@
           ],
           "withheld": false
         },
-        "aNet": -2,
+        "aNet": 0,
         "bNet": 1,
         "state": "DINAMICA FAVOREVOLE B",
         "fav": "CAD"
@@ -1468,16 +1464,16 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 3.5250463821892395,
-          "move1m": -1.9376131161503274,
-          "text": "Estensione non elevata · 1M -1.9% · P4 storico"
+          "pct": 5.380333951762523,
+          "move1m": -1.735889243876465,
+          "text": "Estensione non elevata · 1M -1.7% · P5 storico"
         },
         "timing": {
-          "state": "ADVERSE",
-          "text": "Timing contrario · EUR sta peggiorando",
+          "state": "UNCERTAIN",
+          "text": "Timing da monitorare · EUR è in possibile svolta · CHF è in possibile svolta",
           "favChange": {
-            "side": "NEG",
-            "text": "EUR sta peggiorando"
+            "side": "TRANSITION",
+            "text": "EUR è in possibile svolta"
           },
           "otherChange": {
             "side": "TRANSITION",
@@ -1528,7 +1524,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 274.10750033,
+              "bp": 272.04951382,
               "material": true,
               "side": "EUR"
             }
@@ -1558,7 +1554,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 274.10750033,
+            "bp": 272.04951382,
             "material": true,
             "side": "EUR"
           }
@@ -1575,13 +1571,13 @@
         "a": "EUR",
         "b": "CHF",
         "A": {
-          "positive": 0,
-          "negative": 2,
+          "positive": 1,
+          "negative": 1,
           "turns": 1,
           "details": [
             "Crescita: peggiora",
             "Crescita: turning point",
-            "Rates: peggiora"
+            "Rates: migliora"
           ],
           "withheld": false
         },
@@ -1597,7 +1593,7 @@
           ],
           "withheld": false
         },
-        "aNet": -2,
+        "aNet": 0,
         "bNet": 1,
         "state": "DINAMICA FAVOREVOLE B",
         "fav": "CHF"
@@ -1627,7 +1623,7 @@
         "structural": {
           "fav": "—",
           "quality": "SEPARAZIONE RATES MATERIALE",
-          "relation": "Il differenziale 2Y osservato è -158 pb verso GBP. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+          "relation": "Il differenziale 2Y osservato è -160 pb verso GBP. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
           "timing": "EUR: TURNING RECENTE · GBP: TURNING RECENTE",
           "priceReading": "PREZZO NON RISOLUTIVO",
           "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
@@ -1645,7 +1641,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -158.4407279404806,
+              "bp": -160.49871445048063,
               "material": true,
               "side": "GBP"
             }
@@ -1657,7 +1653,7 @@
       "decision_frame": {
         "fav": "—",
         "quality": "SEPARAZIONE RATES MATERIALE",
-        "relation": "Il differenziale 2Y osservato è -158 pb verso GBP. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+        "relation": "Il differenziale 2Y osservato è -160 pb verso GBP. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
         "timing": "EUR: TURNING RECENTE · GBP: TURNING RECENTE",
         "priceReading": "PREZZO NON RISOLUTIVO",
         "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
@@ -1675,7 +1671,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -158.4407279404806,
+            "bp": -160.49871445048063,
             "material": true,
             "side": "GBP"
           }
@@ -1692,13 +1688,13 @@
         "a": "EUR",
         "b": "GBP",
         "A": {
-          "positive": 0,
-          "negative": 2,
+          "positive": 1,
+          "negative": 1,
           "turns": 1,
           "details": [
             "Crescita: peggiora",
             "Crescita: turning point",
-            "Rates: peggiora"
+            "Rates: migliora"
           ],
           "withheld": false
         },
@@ -1713,7 +1709,7 @@
           ],
           "withheld": false
         },
-        "aNet": -2,
+        "aNet": 0,
         "bNet": 2,
         "state": "DINAMICA FAVOREVOLE B",
         "fav": "GBP"
@@ -1743,7 +1739,7 @@
         "structural": {
           "fav": "—",
           "quality": "SEPARAZIONE RATES MATERIALE",
-          "relation": "Il differenziale 2Y osservato è +111 pb verso EUR. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+          "relation": "Il differenziale 2Y osservato è +109 pb verso EUR. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
           "timing": "EUR: TURNING RECENTE · JPY: TURNING RECENTE",
           "priceReading": "PREZZO NON RISOLUTIVO",
           "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
@@ -1761,7 +1757,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 111.40750033000002,
+              "bp": 109.34951382,
               "material": true,
               "side": "EUR"
             }
@@ -1773,7 +1769,7 @@
       "decision_frame": {
         "fav": "—",
         "quality": "SEPARAZIONE RATES MATERIALE",
-        "relation": "Il differenziale 2Y osservato è +111 pb verso EUR. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+        "relation": "Il differenziale 2Y osservato è +109 pb verso EUR. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
         "timing": "EUR: TURNING RECENTE · JPY: TURNING RECENTE",
         "priceReading": "PREZZO NON RISOLUTIVO",
         "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
@@ -1791,7 +1787,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 111.40750033000002,
+            "bp": 109.34951382,
             "material": true,
             "side": "EUR"
           }
@@ -1808,32 +1804,31 @@
         "a": "EUR",
         "b": "JPY",
         "A": {
-          "positive": 0,
-          "negative": 2,
+          "positive": 1,
+          "negative": 1,
           "turns": 1,
           "details": [
             "Crescita: peggiora",
             "Crescita: turning point",
-            "Rates: peggiora"
+            "Rates: migliora"
           ],
           "withheld": false
         },
         "B": {
           "positive": 1,
           "negative": 1,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Crescita: turning point",
-            "Lavoro: peggiora",
-            "Rates: turning point"
+            "Lavoro: peggiora"
           ],
           "withheld": false
         },
-        "aNet": -2,
+        "aNet": 0,
         "bNet": 0,
-        "state": "DINAMICA FAVOREVOLE B",
-        "fav": "JPY"
+        "state": "MISTO",
+        "fav": "—"
       },
       "price_state": null
     },
@@ -1860,7 +1855,7 @@
         "structural": {
           "fav": "—",
           "quality": "SEPARAZIONE RATES MATERIALE",
-          "relation": "Il differenziale 2Y osservato è -86 pb verso NZD. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+          "relation": "Il differenziale 2Y osservato è -88 pb verso NZD. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
           "timing": "EUR: TURNING RECENTE · NZD: RATES AVANTI",
           "priceReading": "PREZZO NON RISOLUTIVO",
           "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
@@ -1878,7 +1873,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -86.19249967,
+              "bp": -88.25048618000002,
               "material": true,
               "side": "NZD"
             }
@@ -1890,7 +1885,7 @@
       "decision_frame": {
         "fav": "—",
         "quality": "SEPARAZIONE RATES MATERIALE",
-        "relation": "Il differenziale 2Y osservato è -86 pb verso NZD. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+        "relation": "Il differenziale 2Y osservato è -88 pb verso NZD. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
         "timing": "EUR: TURNING RECENTE · NZD: RATES AVANTI",
         "priceReading": "PREZZO NON RISOLUTIVO",
         "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
@@ -1908,7 +1903,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -86.19249967,
+            "bp": -88.25048618000002,
             "material": true,
             "side": "NZD"
           }
@@ -1925,13 +1920,13 @@
         "a": "EUR",
         "b": "NZD",
         "A": {
-          "positive": 0,
-          "negative": 2,
+          "positive": 1,
+          "negative": 1,
           "turns": 1,
           "details": [
             "Crescita: peggiora",
             "Crescita: turning point",
-            "Rates: peggiora"
+            "Rates: migliora"
           ],
           "withheld": false
         },
@@ -1948,10 +1943,10 @@
           ],
           "withheld": false
         },
-        "aNet": -2,
+        "aNet": 0,
         "bNet": -1,
-        "state": "DINAMICA FAVOREVOLE B",
-        "fav": "NZD"
+        "state": "DINAMICA FAVOREVOLE A",
+        "fav": "EUR"
       },
       "price_state": null
     },
@@ -1965,24 +1960,24 @@
         "qualityCode": "RISKY",
         "price": {
           "state": "GOOD",
-          "text": "Prezzo conferma, ma è già avanzato · Prezzo già avanzato · 1M +2.3% · P87 storico"
+          "text": "Prezzo conferma, ma è già avanzato · Prezzo già avanzato · 1M +1.9% · P82 storico"
         },
         "extension": {
           "state": "ADVANCED",
-          "pct": 87.38404452690168,
-          "move1m": 2.25071970688302,
-          "text": "Prezzo già avanzato · 1M +2.3% · P87 storico"
+          "pct": 82.3747680890538,
+          "move1m": 1.9104372973446693,
+          "text": "Prezzo già avanzato · 1M +1.9% · P82 storico"
         },
         "timing": {
-          "state": "ALIGNED",
-          "text": "Timing favorevole · USD sta migliorando · EUR sta peggiorando",
+          "state": "UNCERTAIN",
+          "text": "Timing da monitorare · EUR è in possibile svolta",
           "favChange": {
-            "side": "POS",
-            "text": "USD sta migliorando"
+            "side": "NEUTRAL",
+            "text": "USD è stabile"
           },
           "otherChange": {
-            "side": "NEG",
-            "text": "EUR sta peggiorando"
+            "side": "TRANSITION",
+            "text": "EUR è in possibile svolta"
           }
         },
         "cot": {
@@ -2012,7 +2007,7 @@
           "fav": "USD",
           "quality": "VANTAGGIO RELATIVO PARZIALE",
           "relation": "La Macro favorisce USD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
-          "timing": "EUR: TURNING RECENTE · USD: TURNING RECENTE",
+          "timing": "EUR: TURNING RECENTE · USD: NESSUN TIMING CHIARO",
           "priceReading": "MERCATO GIÀ ALLINEATO",
           "priceNote": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione.",
           "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -2029,7 +2024,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -178.19249966999996,
+              "bp": -164.25048618000005,
               "material": true,
               "side": "USD"
             }
@@ -2042,7 +2037,7 @@
         "fav": "USD",
         "quality": "VANTAGGIO RELATIVO PARZIALE",
         "relation": "La Macro favorisce USD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
-        "timing": "EUR: TURNING RECENTE · USD: TURNING RECENTE",
+        "timing": "EUR: TURNING RECENTE · USD: NESSUN TIMING CHIARO",
         "priceReading": "MERCATO GIÀ ALLINEATO",
         "priceNote": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione.",
         "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -2059,7 +2054,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -178.19249966999996,
+            "bp": -164.25048618000005,
             "material": true,
             "side": "USD"
           }
@@ -2076,30 +2071,29 @@
         "a": "EUR",
         "b": "USD",
         "A": {
-          "positive": 0,
-          "negative": 2,
+          "positive": 1,
+          "negative": 1,
           "turns": 1,
           "details": [
             "Crescita: peggiora",
             "Crescita: turning point",
-            "Rates: peggiora"
+            "Rates: migliora"
           ],
           "withheld": false
         },
         "B": {
-          "positive": 3,
-          "negative": 0,
-          "turns": 1,
+          "positive": 2,
+          "negative": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
             "Lavoro: migliora",
-            "Rates: migliora",
-            "Rates: turning point"
+            "Rates: peggiora"
           ],
           "withheld": false
         },
-        "aNet": -2,
-        "bNet": 3,
+        "aNet": 0,
+        "bNet": 1,
         "state": "DINAMICA FAVOREVOLE B",
         "fav": "USD"
       },
@@ -2119,9 +2113,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 16.512059369202227,
-          "move1m": -1.4975092110196986,
-          "text": "Estensione non elevata · 1M -1.5% · P17 storico"
+          "pct": 18.738404452690165,
+          "move1m": -1.3377566919990036,
+          "text": "Estensione non elevata · 1M -1.3% · P19 storico"
         },
         "timing": {
           "state": "ADVERSE",
@@ -2179,7 +2173,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -30.65177172951934,
+              "bp": -30.45177172951936,
               "material": false,
               "side": "—"
             }
@@ -2209,7 +2203,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -30.65177172951934,
+            "bp": -30.45177172951936,
             "material": false,
             "side": "—"
           }
@@ -2388,9 +2382,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 56.58627087198516,
-          "move1m": 0.41532227404350586,
-          "text": "Estensione non elevata · 1M +0.4% · P57 storico"
+          "pct": 70.68645640074212,
+          "move1m": 0.8718746355916629,
+          "text": "Estensione non elevata · 1M +0.9% · P71 storico"
         },
         "timing": {
           "state": "PARTIAL",
@@ -2625,12 +2619,11 @@
         "B": {
           "positive": 1,
           "negative": 1,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Crescita: turning point",
-            "Lavoro: peggiora",
-            "Rates: turning point"
+            "Lavoro: peggiora"
           ],
           "withheld": false
         },
@@ -2773,16 +2766,16 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 51.20593692022263,
-          "move1m": -0.09470291922615282,
-          "text": "Estensione non elevata · 1M -0.1% · P51 storico"
+          "pct": 40.63079777365492,
+          "move1m": -0.6926943709777644,
+          "text": "Estensione non elevata · 1M -0.7% · P41 storico"
         },
         "timing": {
-          "state": "MIXED",
-          "text": "Timing misto · USD sta migliorando · GBP sta migliorando",
+          "state": "ADVERSE",
+          "text": "Timing contrario · GBP sta migliorando",
           "favChange": {
-            "side": "POS",
-            "text": "USD sta migliorando"
+            "side": "NEUTRAL",
+            "text": "USD è stabile"
           },
           "otherChange": {
             "side": "POS",
@@ -2816,7 +2809,7 @@
           "fav": "USD",
           "quality": "VANTAGGIO RELATIVO PARZIALE",
           "relation": "La Macro favorisce USD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
-          "timing": "GBP: TURNING RECENTE · USD: TURNING RECENTE",
+          "timing": "GBP: TURNING RECENTE · USD: NESSUN TIMING CHIARO",
           "priceReading": "MERCATO GIÀ ALLINEATO",
           "priceNote": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione.",
           "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -2833,7 +2826,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -19.75177172951934,
+              "bp": -3.7517717295194153,
               "material": false,
               "side": "—"
             }
@@ -2846,7 +2839,7 @@
         "fav": "USD",
         "quality": "VANTAGGIO RELATIVO PARZIALE",
         "relation": "La Macro favorisce USD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
-        "timing": "GBP: TURNING RECENTE · USD: TURNING RECENTE",
+        "timing": "GBP: TURNING RECENTE · USD: NESSUN TIMING CHIARO",
         "priceReading": "MERCATO GIÀ ALLINEATO",
         "priceNote": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione.",
         "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -2863,7 +2856,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -19.75177172951934,
+            "bp": -3.7517717295194153,
             "material": false,
             "side": "—"
           }
@@ -2872,9 +2865,9 @@
         "policySide": null
       },
       "transition": {
-        "state": "DINAMICA RELATIVA ALLINEATA",
-        "cls": "transConfirm",
-        "note": "la dinamica relativa è allineata al driver strutturale (USD); il backtest la mantiene diagnostica, non autonoma"
+        "state": "DIVERGENZA RELATIVA DA MONITORARE",
+        "cls": "transWatch",
+        "note": "il driver strutturale favorisce USD, ma la dinamica relativa favorisce GBP: divergenza da monitorare, non segnale automatico"
       },
       "relative_dynamics": {
         "a": "GBP",
@@ -2891,21 +2884,20 @@
           "withheld": false
         },
         "B": {
-          "positive": 3,
-          "negative": 0,
-          "turns": 1,
+          "positive": 2,
+          "negative": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
             "Lavoro: migliora",
-            "Rates: migliora",
-            "Rates: turning point"
+            "Rates: peggiora"
           ],
           "withheld": false
         },
         "aNet": 2,
-        "bNet": 3,
-        "state": "DINAMICA FAVOREVOLE B",
-        "fav": "USD"
+        "bNet": 1,
+        "state": "DINAMICA FAVOREVOLE A",
+        "fav": "GBP"
       },
       "price_state": null
     },
@@ -3043,9 +3035,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 48.23747680890538,
-          "move1m": -0.5505006673268475,
-          "text": "Estensione non elevata · 1M -0.6% · P48 storico"
+          "pct": 63.07977736549165,
+          "move1m": 0.09639043539888537,
+          "text": "Estensione non elevata · 1M +0.1% · P63 storico"
         },
         "timing": {
           "state": "ADVERSE",
@@ -3284,12 +3276,11 @@
         "B": {
           "positive": 1,
           "negative": 1,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Crescita: turning point",
-            "Lavoro: peggiora",
-            "Rates: turning point"
+            "Lavoro: peggiora"
           ],
           "withheld": false
         },
@@ -3314,16 +3305,16 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 58.8126159554731,
-          "move1m": 0.8680362146005094,
-          "text": "Estensione non elevata · 1M +0.9% · P59 storico"
+          "pct": 45.083487940630796,
+          "move1m": 0.08141232468567017,
+          "text": "Estensione non elevata · 1M +0.1% · P45 storico"
         },
         "timing": {
           "state": "ALIGNED",
-          "text": "Timing favorevole · USD sta migliorando · NZD sta peggiorando",
+          "text": "Timing favorevole · NZD sta peggiorando",
           "favChange": {
-            "side": "POS",
-            "text": "USD sta migliorando"
+            "side": "NEUTRAL",
+            "text": "USD è stabile"
           },
           "otherChange": {
             "side": "NEG",
@@ -3357,7 +3348,7 @@
           "fav": "USD",
           "quality": "VANTAGGIO RELATIVO PARZIALE",
           "relation": "La Macro favorisce USD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
-          "timing": "NZD: RATES AVANTI · USD: TURNING RECENTE",
+          "timing": "NZD: RATES AVANTI · USD: NESSUN TIMING CHIARO",
           "priceReading": "MERCATO GIÀ ALLINEATO",
           "priceNote": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione.",
           "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -3374,7 +3365,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -91.99999999999994,
+              "bp": -76.00000000000003,
               "material": true,
               "side": "USD"
             }
@@ -3387,7 +3378,7 @@
         "fav": "USD",
         "quality": "VANTAGGIO RELATIVO PARZIALE",
         "relation": "La Macro favorisce USD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
-        "timing": "NZD: RATES AVANTI · USD: TURNING RECENTE",
+        "timing": "NZD: RATES AVANTI · USD: NESSUN TIMING CHIARO",
         "priceReading": "MERCATO GIÀ ALLINEATO",
         "priceNote": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione.",
         "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -3404,7 +3395,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -91.99999999999994,
+            "bp": -76.00000000000003,
             "material": true,
             "side": "USD"
           }
@@ -3434,19 +3425,18 @@
           "withheld": false
         },
         "B": {
-          "positive": 3,
-          "negative": 0,
-          "turns": 1,
+          "positive": 2,
+          "negative": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
             "Lavoro: migliora",
-            "Rates: migliora",
-            "Rates: turning point"
+            "Rates: peggiora"
           ],
           "withheld": false
         },
         "aNet": -1,
-        "bNet": 3,
+        "bNet": 1,
         "state": "DINAMICA FAVOREVOLE B",
         "fav": "USD"
       },
@@ -3466,16 +3456,16 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 42.857142857142854,
-          "move1m": -0.07407313166781782,
-          "text": "Estensione non elevata · 1M -0.1% · P43 storico"
+          "pct": 29.128014842300555,
+          "move1m": -0.6649329948634763,
+          "text": "Estensione non elevata · 1M -0.7% · P29 storico"
         },
         "timing": {
-          "state": "MIXED",
-          "text": "Timing misto · USD sta migliorando · CAD sta migliorando",
+          "state": "ADVERSE",
+          "text": "Timing contrario · CAD sta migliorando",
           "favChange": {
-            "side": "POS",
-            "text": "USD sta migliorando"
+            "side": "NEUTRAL",
+            "text": "USD è stabile"
           },
           "otherChange": {
             "side": "POS",
@@ -3509,7 +3499,7 @@
           "fav": "USD",
           "quality": "VANTAGGIO RELATIVO PARZIALE",
           "relation": "Tassi/CB favoriscono USD, mentre la Macro non separa le due valute: vantaggio presente ma incompleto.",
-          "timing": "USD: TURNING RECENTE · CAD: RATES AVANTI",
+          "timing": "USD: NESSUN TIMING CHIARO · CAD: RATES AVANTI",
           "priceReading": "MERCATO GIÀ ALLINEATO",
           "priceNote": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione.",
           "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -3526,7 +3516,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 148.99999999999997,
+              "bp": 133.00000000000006,
               "material": true,
               "side": "USD"
             }
@@ -3539,7 +3529,7 @@
         "fav": "USD",
         "quality": "VANTAGGIO RELATIVO PARZIALE",
         "relation": "Tassi/CB favoriscono USD, mentre la Macro non separa le due valute: vantaggio presente ma incompleto.",
-        "timing": "USD: TURNING RECENTE · CAD: RATES AVANTI",
+        "timing": "USD: NESSUN TIMING CHIARO · CAD: RATES AVANTI",
         "priceReading": "MERCATO GIÀ ALLINEATO",
         "priceNote": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione.",
         "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -3556,7 +3546,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 148.99999999999997,
+            "bp": 133.00000000000006,
             "material": true,
             "side": "USD"
           }
@@ -3565,22 +3555,21 @@
         "policySide": "USD"
       },
       "transition": {
-        "state": "DINAMICA RELATIVA ALLINEATA",
-        "cls": "transConfirm",
-        "note": "la dinamica relativa è allineata al driver strutturale (USD); il backtest la mantiene diagnostica, non autonoma"
+        "state": "DIVERGENZA RELATIVA DA MONITORARE",
+        "cls": "transWatch",
+        "note": "il driver strutturale favorisce USD, ma la dinamica relativa favorisce CAD: divergenza da monitorare, non segnale automatico"
       },
       "relative_dynamics": {
         "a": "USD",
         "b": "CAD",
         "A": {
-          "positive": 3,
-          "negative": 0,
-          "turns": 1,
+          "positive": 2,
+          "negative": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
             "Lavoro: migliora",
-            "Rates: migliora",
-            "Rates: turning point"
+            "Rates: peggiora"
           ],
           "withheld": false
         },
@@ -3597,10 +3586,10 @@
           ],
           "withheld": false
         },
-        "aNet": 3,
+        "aNet": 1,
         "bNet": 1,
-        "state": "DINAMICA FAVOREVOLE A",
-        "fav": "USD"
+        "state": "TURNING POINT ASIMMETRICO",
+        "fav": "CAD"
       },
       "price_state": null
     },
@@ -3618,16 +3607,16 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 53.98886827458256,
-          "move1m": 0.3203160062087207,
-          "text": "Estensione non elevata · 1M +0.3% · P54 storico"
+          "pct": 51.76252319109462,
+          "move1m": 0.17794763138798686,
+          "text": "Estensione non elevata · 1M +0.2% · P52 storico"
         },
         "timing": {
-          "state": "PARTIAL",
-          "text": "Timing da monitorare · USD sta migliorando · CHF è in possibile svolta",
+          "state": "UNCERTAIN",
+          "text": "Timing da monitorare · CHF è in possibile svolta",
           "favChange": {
-            "side": "POS",
-            "text": "USD sta migliorando"
+            "side": "NEUTRAL",
+            "text": "USD è stabile"
           },
           "otherChange": {
             "side": "TRANSITION",
@@ -3661,7 +3650,7 @@
           "fav": "USD",
           "quality": "CONTRASTO STRUTTURALE FORTE",
           "relation": "Macro e Tassi/CB favoriscono entrambi USD: contrasto strutturale pieno.",
-          "timing": "USD: TURNING RECENTE · CHF: TURNING RECENTE",
+          "timing": "USD: NESSUN TIMING CHIARO · CHF: TURNING RECENTE",
           "priceReading": "MERCATO GIÀ ALLINEATO",
           "priceNote": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione.",
           "missing": "Macro e Tassi/CB sono allineati sulla stessa valuta.",
@@ -3678,7 +3667,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 452.29999999999995,
+              "bp": 436.30000000000007,
               "material": true,
               "side": "USD"
             }
@@ -3691,7 +3680,7 @@
         "fav": "USD",
         "quality": "CONTRASTO STRUTTURALE FORTE",
         "relation": "Macro e Tassi/CB favoriscono entrambi USD: contrasto strutturale pieno.",
-        "timing": "USD: TURNING RECENTE · CHF: TURNING RECENTE",
+        "timing": "USD: NESSUN TIMING CHIARO · CHF: TURNING RECENTE",
         "priceReading": "MERCATO GIÀ ALLINEATO",
         "priceNote": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione.",
         "missing": "Macro e Tassi/CB sono allineati sulla stessa valuta.",
@@ -3708,7 +3697,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 452.29999999999995,
+            "bp": 436.30000000000007,
             "material": true,
             "side": "USD"
           }
@@ -3717,22 +3706,21 @@
         "policySide": "USD"
       },
       "transition": {
-        "state": "DINAMICA RELATIVA ALLINEATA",
-        "cls": "transConfirm",
-        "note": "la dinamica relativa è allineata al driver strutturale (USD); il backtest la mantiene diagnostica, non autonoma"
+        "state": "DIVERGENZA RELATIVA DA MONITORARE",
+        "cls": "transWatch",
+        "note": "il driver strutturale favorisce USD, ma la dinamica relativa favorisce CHF: divergenza da monitorare, non segnale automatico"
       },
       "relative_dynamics": {
         "a": "USD",
         "b": "CHF",
         "A": {
-          "positive": 3,
-          "negative": 0,
-          "turns": 1,
+          "positive": 2,
+          "negative": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
             "Lavoro: migliora",
-            "Rates: migliora",
-            "Rates: turning point"
+            "Rates: peggiora"
           ],
           "withheld": false
         },
@@ -3748,10 +3736,10 @@
           ],
           "withheld": false
         },
-        "aNet": 3,
+        "aNet": 1,
         "bNet": 1,
-        "state": "DINAMICA FAVOREVOLE A",
-        "fav": "USD"
+        "state": "TURNING POINT ASIMMETRICO",
+        "fav": "CHF"
       },
       "price_state": null
     },
@@ -3769,16 +3757,16 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 40.25974025974026,
-          "move1m": -0.08226352339106846,
-          "text": "Estensione non elevata · 1M -0.1% · P40 storico"
+          "pct": 32.6530612244898,
+          "move1m": -0.7057085285882447,
+          "text": "Estensione non elevata · 1M -0.7% · P33 storico"
         },
         "timing": {
-          "state": "PARTIAL",
-          "text": "Timing da monitorare · USD sta migliorando · JPY è in possibile svolta",
+          "state": "UNCERTAIN",
+          "text": "Timing da monitorare · JPY è in possibile svolta",
           "favChange": {
-            "side": "POS",
-            "text": "USD sta migliorando"
+            "side": "NEUTRAL",
+            "text": "USD è stabile"
           },
           "otherChange": {
             "side": "TRANSITION",
@@ -3812,7 +3800,7 @@
           "fav": "USD",
           "quality": "VANTAGGIO RELATIVO PARZIALE",
           "relation": "La Macro favorisce USD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
-          "timing": "USD: TURNING RECENTE · JPY: TURNING RECENTE",
+          "timing": "USD: NESSUN TIMING CHIARO · JPY: TURNING RECENTE",
           "priceReading": "DIVERGENZA DA MONITORARE",
           "priceNote": "La struttura Macro + Tassi/CB favorisce USD, ma il Prezzo favorisce JPY.",
           "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -3829,7 +3817,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 289.59999999999997,
+              "bp": 273.6000000000001,
               "material": true,
               "side": "USD"
             }
@@ -3842,7 +3830,7 @@
         "fav": "USD",
         "quality": "VANTAGGIO RELATIVO PARZIALE",
         "relation": "La Macro favorisce USD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
-        "timing": "USD: TURNING RECENTE · JPY: TURNING RECENTE",
+        "timing": "USD: NESSUN TIMING CHIARO · JPY: TURNING RECENTE",
         "priceReading": "DIVERGENZA DA MONITORARE",
         "priceNote": "La struttura Macro + Tassi/CB favorisce USD, ma il Prezzo favorisce JPY.",
         "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -3859,7 +3847,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 289.59999999999997,
+            "bp": 273.6000000000001,
             "material": true,
             "side": "USD"
           }
@@ -3876,30 +3864,28 @@
         "a": "USD",
         "b": "JPY",
         "A": {
-          "positive": 3,
-          "negative": 0,
-          "turns": 1,
+          "positive": 2,
+          "negative": 1,
+          "turns": 0,
           "details": [
             "Crescita: migliora",
             "Lavoro: migliora",
-            "Rates: migliora",
-            "Rates: turning point"
+            "Rates: peggiora"
           ],
           "withheld": false
         },
         "B": {
           "positive": 1,
           "negative": 1,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Crescita: turning point",
-            "Lavoro: peggiora",
-            "Rates: turning point"
+            "Lavoro: peggiora"
           ],
           "withheld": false
         },
-        "aNet": 3,
+        "aNet": 1,
         "bNet": 0,
         "state": "DINAMICA FAVOREVOLE A",
         "fav": "USD"
