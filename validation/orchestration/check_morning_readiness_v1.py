@@ -1,0 +1,144 @@
+#!/usr/bin/env python3
+"""Read-only morning FX readiness gate: publication freshness != job SUCCESS.
+
+The date check is for the most recent *prior* weekday session in Europe/Rome.
+Official source holidays may legitimately trigger a review; no observations
+are invented and structural/weekly data cannot masquerade as daily data.
+"""
+from __future__ import annotations
+
+import argparse
+import datetime as dt
+import json
+from pathlib import Path
+from zoneinfo import ZoneInfo
+
+ROOT = Path(__file__).resolve().parents[2]
+FEEDS = ROOT / "live_data" / "sections"
+ROME = ZoneInfo("Europe/Rome")
+G8 = ("USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD")
+REQUIRED = (
+    "ECB_G8_PRICE_HISTORY.json", "PAIR_SETUP_OPERATIONAL_VIEW.json",
+    "D.json", "NEWS_PULSE_OPERATIONAL.json", "CALENDAR_OPERATIONAL_VIEW.json",
+    "NATIVE_RATES_DATA.json", "OIS_OPERATIONAL_VIEW.json",
+    "V250_COT_CHART_DATA.json",
+)
+
+
+def prior_weekday(today: dt.date) -> dt.date:
+    d = today - dt.timedelta(days=1)
+    while d.weekday() >= 5:
+        d -= dt.timedelta(days=1)
+    return d
+
+
+def valid_date(value: object) -> str | None:
+    if not isinstance(value, str):
+        return None
+    try:
+        day = dt.date.fromisoformat(value)
+    except ValueError:
+        return None
+    return day.isoformat() if value == day.isoformat() else None
+
+
+def inspect(feeds: dict, now: dt.datetime) -> dict:
+    now = now.astimezone(ROME)
+    today = now.date()
+    expected = prior_weekday(today).isoformat()
+    problems: list[str] = []
+    evidence = {}
+    def session(name: str, date: object) -> None:
+        actual = valid_date(date)
+        status = "PREVIOUS_SESSION" if actual and expected <= actual <= today.isoformat() else "NEEDS_SOURCE_REVIEW"
+        evidence[name] = {"as_of": actual, "expected_not_before": expected, "status": status}
+        if status != "PREVIOUS_SESSION":
+            problems.append(name)
+
+    fx = feeds["ECB_G8_PRICE_HISTORY.json"]
+    pair = feeds["PAIR_SETUP_OPERATIONAL_VIEW.json"]
+    model = feeds["D.json"]
+    news = feeds["NEWS_PULSE_OPERATIONAL.json"]
+    calendar = feeds["CALENDAR_OPERATIONAL_VIEW.json"]
+    rates = feeds["NATIVE_RATES_DATA.json"]
+    ois = feeds["OIS_OPERATIONAL_VIEW.json"]
+    cot = feeds["V250_COT_CHART_DATA.json"]
+
+    if (fx.get("status") != "CURRENT_OFFICIAL_HISTORY" or
+        not isinstance(fx.get("rows"), list) or len(fx["rows"]) < 21):
+        problems.append("FX_SOURCE_INTEGRITY")
+    if (pair.get("status") != "CURRENT_CANONICAL_ENGINE" or pair.get("pair_count") != 28 or
+        pair.get("price_audit", {}).get("status") != "PASS"):
+        problems.append("PAIR_SOURCE_INTEGRITY")
+    session("FX_OFFICIAL_FIXING", fx.get("last_as_of"))
+    session("PAIR_PRICE", pair.get("price_asof"))
+    if pair.get("price_asof") != fx.get("last_as_of"):
+        problems.append("PAIR_FX_SOURCE_DATE_DIVERGENCE")
+
+    vix = model.get("risk", {}).get("VIX", {})
+    session("VIX_OFFICIAL_CLOSE", vix.get("last_date"))
+    for name, row in (("CALENDAR_REFRESH", calendar), ("NEWS_PULSE_REFRESH", news)):
+        stamp = row.get("generated_at_utc")
+        stamp_day = stamp[:10] if isinstance(stamp, str) else None
+        status = "TODAY_BUILT" if valid_date(stamp_day) == today.isoformat() else "NOT_BUILT_TODAY"
+        evidence[name] = {"generated_at_utc": stamp, "status": status}
+        if status != "TODAY_BUILT":
+            problems.append(name)
+
+    rate_rows = {}
+    for c in G8:
+        row = rates.get(c, {})
+        as_of = valid_date(row.get("date"))
+        status = ("RECENT_OFFICIAL" if as_of and expected <= as_of <= today.isoformat() and
+                  "OFFICIAL" in str(row.get("quality") or "") else "PUBLISHED_LAG_OR_SOURCE_BLOCKED")
+        rate_rows[c] = {"as_of": as_of, "status": status}
+    evidence["RATES_2Y_10Y"] = rate_rows
+
+    op = {c: ois.get("currencies", {}).get(c, {}).get("operational_status") for c in G8}
+    evidence["OIS_G8"] = {
+        "official": sorted(c for c in G8 if op[c] == "GREEN_OFFICIAL"),
+        "estimated": sorted(c for c in G8 if op[c] == "GREEN_ESTIMATED"),
+        "withheld": sorted(c for c in G8 if op[c] not in {"GREEN_OFFICIAL", "GREEN_ESTIMATED"}),
+    }
+    # Macro cycle scores are a separate frozen baseline; weekly COT is not
+    # expected to acquire today's date before the new official release.
+    evidence["MACRO_BASELINE"] = {"as_of": valid_date(model.get("asOf")),
+        "state": "HISTORICAL_NOT_AUTO_RECALCULATED"}
+    evidence["COT_WEEKLY"] = {c: valid_date(cot.get(c, {}).get("dates", [None])[-1])
+        if cot.get(c, {}).get("dates") else None for c in G8}
+    if pair.get("macro_baseline_asof") != model.get("asOf"):
+        problems.append("PAIR_MACRO_BASELINE_DIVERGENCE")
+    return {
+        "schema": "GMFQ_MORNING_READINESS_V1",
+        "checked_at_rome": now.isoformat(timespec="seconds"),
+        "expected_previous_weekday": expected,
+        "operational_state": "DAILY_READY_WITH_DOCUMENTED_GAPS" if not problems else "DAILY_INPUTS_INCOMPLETE",
+        "critical_daily_problems": sorted(set(problems)),
+        "evidence": evidence,
+        "caution": "This does not certify official release holidays, OIS proxies, COT weekly cadence or recompute structural Macro scores.",
+        "core_effect": "NONE",
+    }
+
+
+def read_feeds() -> dict:
+    return {p: json.loads((FEEDS / p).read_text(encoding="utf-8")) for p in REQUIRED}
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--as-of", help="Override current instant using ISO-8601 timezone-aware timestamp")
+    ap.add_argument("--output")
+    ap.add_argument("--strict-daily", action="store_true")
+    args = ap.parse_args()
+    now = dt.datetime.fromisoformat(args.as_of) if args.as_of else dt.datetime.now(ROME)
+    if now.tzinfo is None or now.utcoffset() is None:
+        ap.error("as-of must include a timezone offset")
+    report = inspect(read_feeds(), now)
+    if args.output:
+        Path(args.output).write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(json.dumps(report, indent=2, ensure_ascii=False))
+    return int(args.strict_daily and bool(report["critical_daily_problems"]))
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
