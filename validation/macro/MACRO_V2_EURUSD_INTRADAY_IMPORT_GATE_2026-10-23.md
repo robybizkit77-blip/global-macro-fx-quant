@@ -8,6 +8,24 @@ This is a research-only, **offline** importer, not a scheduled downloader or a c
 - [CME DataMine](https://www.cmegroup.com/datamine.html) includes historical BrokerTec Treasury and EBS Spot FX datasets but requires appropriate access and licenses. **No CME historical tick data is included.**
 - No BLS-surprise consensus nor same-contract USD OIS intraday quotes have been sourced or certified.
 
+## Verified one-hour transport path (not a licence certification)
+
+The direct public BI5 path for **EUR/USD, 2 October 2026, 12:00–12:59 UTC** is:
+
+`https://datafeed.dukascopy.com/datafeed/EURUSD/2026/09/02/12h_ticks.bi5`
+
+The `09` is Dukascopy's zero-based October month index; it must not be read as 2 September. On 23 October 2026 the endpoint returned HTTP 200 with `Content-Type: application/octet-stream`, `Content-Length: 58963`, `ETag: "6abfab26-e653"`, and `Last-Modified: Fri, 02 Oct 2026 13:01:26 GMT`. This is an auditable transport observation, not a price assertion.
+
+`v2_dukascopy_bi5_hour_probe_v1.py` is the alternative bounded route: it obtains one exact binary hour, verifies the HTTP byte count, decodes the documented 20-byte BI5 records, derives timestamps from the URL rather than a hard-coded date, hashes the bytes, and selects only the last quote no more than two minutes before 12:25 and 12:35 UTC. Its receipt includes the HTTP metadata and byte hash. It remains read-only and never stores source ticks in the repository.
+
+Public reachability, a response hash, and an HTTP receipt do **not** establish redistribution rights or a research/trading licence. The module therefore records `source_license_independently_certified: false` and `usage_authorization_not_established: true`; it does not convert the decoded observations into an approved historical dataset.
+
+```bash
+python -m validation.macro.v2_dukascopy_bi5_hour_probe_v1 \
+  --source-url https://datafeed.dukascopy.com/datafeed/EURUSD/2026/09/02/12h_ticks.bi5 \
+  --timeout-s 45 --out /tmp/macro-v2-shadow/eurusd-bi5-oct02-hour.json
+```
+
 ## Import gate
 
 `validation/macro/v2_eurusd_intraday_csv_research_v1.py` accepts a caller-provided CSV with `timestamp,bidPrice,askPrice`, original UTC time or timestamp with explicit offset (or Unix milliseconds). It **does not download anything**. Each release is mapped to exactly 08:30 New York on the original BLS announcement, and a pre/post reference is taken no more than two minutes before each target at 08:25/08:35.
