@@ -24,8 +24,24 @@ data["NEWS_PULSE_OPERATIONAL.json"]["generated_at_utc"] = "2026-10-23T06:52:00Z"
 data["CALENDAR_OPERATIONAL_VIEW.json"]["generated_at_utc"] = "2026-10-23T06:52:00Z"
 data["NATIVE_RATES_DATA.json"]["CHF"]["date"] = "2026-09-30"
 data["NATIVE_RATES_DATA.json"]["NZD"]["date"] = "2026-10-16"
-data["OIS_OPERATIONAL_VIEW.json"]["currencies"]["EUR"]["operational_status"] = "WITHHELD"
-data["OIS_OPERATIONAL_VIEW.json"]["currencies"]["NZD"]["operational_status"] = "WITHHELD"
+# Pin the entire OIS test-state fixture: this is a *deterministic synthetic
+# readiness test*, not a copy of whatever live OIS statuses happen to exist
+# when the GitHub Actions runner checks out the repository. In particular,
+# CHF's informational futures proxy is NOT an authenticated official OIS
+# curve and must remain in the unverified/withheld bucket.
+ois_test_status = {
+    "AUD": "GREEN_OFFICIAL",
+    "CAD": "GREEN_OFFICIAL",
+    "CHF": "WITHHELD",
+    "EUR": "WITHHELD",
+    "GBP": "GREEN_OFFICIAL",
+    "JPY": "GREEN_OFFICIAL",
+    "NZD": "WITHHELD",
+    "USD": "GREEN_ESTIMATED",
+}
+assert set(ois_test_status) == set(data["OIS_OPERATIONAL_VIEW.json"]["currencies"])
+for ccy, state in ois_test_status.items():
+    data["OIS_OPERATIONAL_VIEW.json"]["currencies"][ccy]["operational_status"] = state
 asof = dt.datetime.fromisoformat("2026-10-23T08:00:00+02:00")
 out = inspect(data, asof)
 assert out["schema"] == "GMFQ_MORNING_READINESS_V1"
@@ -36,7 +52,11 @@ assert out["evidence"]["FX_OFFICIAL_FIXING"]["as_of"] == "2026-10-22"
 assert out["evidence"]["VIX_OFFICIAL_CLOSE"]["as_of"] == "2026-10-22"
 assert out["evidence"]["MACRO_BASELINE"]["as_of"] == "2026-09-25"
 assert out["evidence"]["MACRO_BASELINE"]["state"] == "HISTORICAL_NOT_AUTO_RECALCULATED"
-assert sorted(out["evidence"]["OIS_G8"]["withheld"]) == ["EUR", "NZD"]
+assert sorted(out["evidence"]["OIS_G8"]["withheld"]) == ["CHF", "EUR", "NZD"]
+assert out["evidence"]["OIS_G8"]["official"] == ["AUD", "CAD", "GBP", "JPY"]
+assert out["evidence"]["OIS_G8"]["estimated"] == ["USD"]
+assert "CHF" not in out["evidence"]["OIS_G8"]["estimated"]
+assert "CHF" not in out["evidence"]["OIS_G8"]["official"]
 assert "CHF" not in [k for k,v in out["evidence"]["RATES_2Y_10Y"].items() if v["status"] == "RECENT_OFFICIAL"]
 assert "NZD" not in [k for k,v in out["evidence"]["RATES_2Y_10Y"].items() if v["status"] == "RECENT_OFFICIAL"]
 assert out["core_effect"] == "NONE"
