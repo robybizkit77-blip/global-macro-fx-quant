@@ -52,6 +52,10 @@ on:
       - 'validation/macro/MACRO_V2_AUD_EUR_OFFICIAL_FRESHNESS_GAPS_2026-10-24.json'
       - 'validation/macro/v2_source_freshness_aud_eur_v1.py'
       - 'validation/macro/test_v2_source_freshness_aud_eur_v1.py'
+      - 'validation/macro/fixtures/v2_abs_eurostat_2026_official_event_pilot.json'
+      - 'validation/macro/v2_abs_eurostat_publication_event_replay_v1.py'
+      - 'validation/macro/test_v2_abs_eurostat_publication_event_replay_v1.py'
+      - 'validation/macro/MACRO_V2_ABS_EUROSTAT_OFFICIAL_EVENT_REPLAY_2026-10-24.md'
   workflow_dispatch:
 
 permissions:
@@ -345,6 +349,11 @@ jobs:
         run: |
           python -m unittest validation.macro.test_v2_source_freshness_aud_eur_v1 -v
           python -m validation.macro.v2_source_freshness_aud_eur_v1 --out /tmp/macro-v2-shadow/g8-official-freshness-gaps-aud-eur.json
+      - name: Replay bounded ABS and Eurostat original web release events with strict as-of cutoff
+        run: |
+          python -m unittest validation.macro.test_v2_abs_eurostat_publication_event_replay_v1 -v
+          python -m validation.macro.v2_abs_eurostat_publication_event_replay_v1 --asof 2026-10-02T23:59:59Z --out /tmp/macro-v2-shadow/abs-eurostat-before-eurostat-safe-gate.json
+          python -m validation.macro.v2_abs_eurostat_publication_event_replay_v1 --asof 2026-10-24T00:00:00Z --out /tmp/macro-v2-shadow/abs-eurostat-official-event-replay.json
       - name: Confirm no runtime or website files were changed by tests
         run: |
           git diff --exit-code -- live_data site payload dashboard
