@@ -120,7 +120,7 @@ jobs:
           dispatch_and_wait() {
             local wf="$1"
             local api="repos/${GITHUB_REPOSITORY}/actions/workflows/${wf}"
-            local before run_id status conclusion json
+            local before run_id status conclusion json child_event child_branch child_sha child_url
 
             before=$(gh api "${api}/runs?branch=main&event=workflow_dispatch&per_page=20" | jq '[.workflow_runs[].id] | max // 0')
             echo "Dispatching ${wf} (after run id ${before})"
@@ -141,7 +141,21 @@ jobs:
               status=$(jq -r '.status' <<<"$json")
               conclusion=$(jq -r '.conclusion // empty' <<<"$json")
               if [[ "$status" == "completed" ]]; then
-                echo "${wf} -> ${conclusion}"
+                # A child SUCCESS is meaningful only if it belongs to the
+                # dispatched workflow on main. Preserve exact run evidence,
+                # including failures, before deciding whether to proceed.
+                child_event=$(jq -r '.event // empty' <<<"$json")
+                child_branch=$(jq -r '.head_branch // empty' <<<"$json")
+                child_sha=$(jq -r '.head_sha // empty' <<<"$json")
+                child_url=$(jq -r '.html_url // empty' <<<"$json")
+                if [[ "$child_event" != "workflow_dispatch" || "$child_branch" != "main" ||
+                      ! "$child_sha" =~ ^[0-9a-f]{40}$ ||
+                      "$child_url" != "https://github.com/${GITHUB_REPOSITORY}/actions/runs/${run_id}" ]]; then
+                  echo "Child run identity failed: ${wf} #${run_id}, event=${child_event}, branch=${child_branch}, sha=${child_sha}" >&2
+                  return 1
+                fi
+                echo "${wf} -> ${conclusion} (run #${run_id}; sha ${child_sha})"
+                echo "- [${wf} · run #${run_id}](${child_url}) — **${conclusion}**, main commit \`${child_sha}\`" >> "$GITHUB_STEP_SUMMARY"
                 [[ "$conclusion" == "success" ]] || return 1
                 return 0
               fi
@@ -216,7 +230,6 @@ jobs:
             echo "## Daily Data Orchestrator V2 — ${phase}" >> "$GITHUB_STEP_SUMMARY"
             for wf in "${workflows[@]}"; do
               dispatch_and_wait "$wf"
-              echo "- ✅ ${wf}" >> "$GITHUB_STEP_SUMMARY"
             done
           }
 
