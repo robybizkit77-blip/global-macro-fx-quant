@@ -30,7 +30,7 @@ class G8LatestPublisherAnchorTests(unittest.TestCase):
         self.assertEqual(len(self.core),7)
         self.assertEqual(len(self.growth),2)
         self.assertEqual(len(self.streams),18)
-        self.assertEqual(len({(x["currency"],x["pillar"]) for x in self.streams}),13)
+        self.assertEqual(len({(x["currency"],x["pillar"]) for x in self.streams}),18)
         expected={("USD","inflation"),("CAD","inflation"),("AUD","labour"),
                   ("CAD","labour"),("JPY","labour"),("GBP","inflation"),
                   ("NZD","inflation")}
