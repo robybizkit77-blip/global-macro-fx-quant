@@ -1,36 +1,14 @@
 {
   "coverage": {
     "cb_schedule_available": 8,
-    "consensus_available_events": 1,
+    "consensus_available_events": 0,
     "g8_total": 8,
     "macro_ccy_coverage": 8,
     "previous_only_events": 0,
-    "upcoming_macro_events": 15,
-    "upcoming_total_events": 23
+    "upcoming_macro_events": 14,
+    "upcoming_total_events": 22
   },
   "events": [
-    {
-      "ccy": "JPY",
-      "consensus": "2.1%",
-      "consensus_confidence": "C",
-      "consensus_official_date_overridden": false,
-      "consensus_provider": "FOREX_FACTORY_FAIR_ECONOMY_WEEKLY",
-      "consensus_provider_last_update": null,
-      "consensus_status": "AVAILABLE",
-      "consensus_unit": null,
-      "date": "2026-10-23",
-      "event_type": "INFLATION",
-      "importance": "HIGH",
-      "previous": "1.7%",
-      "quality": "OFFICIAL_SCHEDULE_RULE",
-      "reference_period": "September 2026",
-      "source_family": "Statistics Bureau of Japan",
-      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
-      "status": "UPCOMING",
-      "time_local": "08:30",
-      "timezone": "Asia/Tokyo",
-      "title": "Japan Consumer Price Index"
-    },
     {
       "bank": "Federal Reserve",
       "ccy": "USD",
@@ -354,11 +332,11 @@
       "title": "Gross domestic product"
     }
   ],
-  "generated_at_utc": "2026-10-23T06:52:00.898541Z",
+  "generated_at_utc": "2026-10-24T06:49:03.637454Z",
   "schema": "GMFQ_CALENDAR_OPERATIONAL_VIEW_V3",
   "scope": {
     "central_bank_schedule": "ACTIVE_OFFICIAL",
-    "consensus": "SECONDARY_ACTIVE_PARTIAL",
+    "consensus": "SECONDARY_PROVIDER_READY_NO_VALUES",
     "consensus_context_only": true,
     "consensus_never_changes_official_date": true,
     "consensus_provider": "FOREX_FACTORY_FAIR_ECONOMY_WEEKLY",
