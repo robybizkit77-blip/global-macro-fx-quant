@@ -131,7 +131,7 @@ jobs:
           assert chf['ois_or_saron'] is False and chf['has_current_2y'] is False
           assert chf['eligible_for_core_signals'] is False
           assert chf['eligible_for_curve_spreads'] is False
-          nzd=json.loads(Path('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json','live_data/sections/NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json').read_text())
+          nzd=json.loads(Path('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json').read_text())
           assert nzd['schema']=='GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1'
           # B2 is a two-web-read research context, not an official
           # production rates feed and never an authorized scoring input.
@@ -218,7 +218,7 @@ jobs:
           if unexpected: raise SystemExit(f'Pages exact-scope violation: {sorted(unexpected)}')
           print('DASHBOARD_PAGES_SCOPE_PASS',sorted(changed)) if changed else print('DASHBOARD_PAGES_ALREADY_CURRENT')
           PY
-          git add -- index.html payload/part-*.txt dashboard/*.js live_data/sections/OIS_DATA.json live_data/sections/OIS_OPERATIONAL_VIEW.json live_data/sections/CALENDAR_OPERATIONAL_VIEW.json live_data/sections/NEWS_PULSE_OPERATIONAL.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/sections/D.json live_data/sections/ESTIMATED_RESIDUAL_GAPS.json live_data/sections/V247_COT_STORIES.json live_data/sections/RATES_AUDIT_METADATA.json live_data/manifest.v2.json live_data/sections/NATIVE_CB_DATA.json live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json live_data/sections/OIS_SOURCE_READINESS_VIEW.json
+          git add -- index.html payload/part-*.txt dashboard/*.js live_data/sections/OIS_DATA.json live_data/sections/OIS_OPERATIONAL_VIEW.json live_data/sections/CALENDAR_OPERATIONAL_VIEW.json live_data/sections/NEWS_PULSE_OPERATIONAL.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/sections/D.json live_data/sections/ESTIMATED_RESIDUAL_GAPS.json live_data/sections/V247_COT_STORIES.json live_data/sections/RATES_AUDIT_METADATA.json live_data/manifest.v2.json live_data/sections/NATIVE_CB_DATA.json live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json live_data/sections/NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json live_data/sections/OIS_SOURCE_READINESS_VIEW.json
           if git diff --cached --quiet; then echo DASHBOARD_PAGES_ALREADY_CURRENT; exit 0; fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
