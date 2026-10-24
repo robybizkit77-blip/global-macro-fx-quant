@@ -57,6 +57,35 @@ def certified_adapter_contract(key: str, row: dict) -> tuple[str | None, dict | 
     return str(certified.get("transport_class")), certified
 
 
+def checked_public_source_label(key: str, registry_row: dict, heatmap_row: dict,
+                                certified: dict | None) -> str:
+    """Preserve legacy source transport separate from certified official adapter.
+
+    E.g. NZD.inflation's legacy raw source is "Stats NZ via Figure.NZ
+    mirror", while its separately reviewed direct official adapter and
+    live macro thermometer both correctly show "Stats NZ". A label drift
+    does not itself establish data recency or certify a historical PIT chain.
+    """
+    original = registry_row.get("source")
+    presented = heatmap_row.get("source")
+    if original == presented and isinstance(original, str) and original:
+        return "CANONICAL_SOURCE_LABEL"
+    # Only the separately registered, strong, read-only, dynamic, READY
+    # official transport may explain why the heatmap's source label differs
+    # from the legacy/secondary canonical transport description.
+    if (registry_row.get("source_adapter_status") == "READY"
+            and registry_row.get("transport_class") in WEAK_TRANSPORT
+            and isinstance(certified, dict)
+            and certified.get("transport_class") in STRONG_ADAPTER_TRANSPORT
+            and certified.get("dynamic_release_discovery") is True
+            and certified.get("read_only") is True
+            and presented == certified.get("source")
+            and isinstance(presented, str) and presented):
+        return "CERTIFIED_OFFICIAL_ADAPTER_LABEL_LEGACY_TRANSPORT_RETAINED"
+    fail(f"{key} source drift without independently registered official adapter: "
+         f"registry={original!r} heatmap={presented!r}")
+
+
 def historical_replay_contract(key: str, row: dict) -> None:
     if row.get("historical_replay_certified") is not True:
         if row.get("historical_replay_evidence") is not None:
@@ -130,7 +159,7 @@ def main() -> int:
         h = heat.get("currencies", {}).get(currency, {}).get(dimension)
         if not isinstance(h, dict):
             fail(f"heatmap entry missing for {key}")
-        for field in ("series_id", "source", "frequency", "transformation"):
+        for field in ("series_id", "frequency", "transformation"):
             if r.get(field) != h.get(field):
                 fail(f"{key} {field} drift registry={r.get(field)!r} heatmap={h.get(field)!r}")
         if not h.get("as_of"):
@@ -142,6 +171,7 @@ def main() -> int:
 
         canonical_transport = r.get("transport_class")
         effective_transport, certified = certified_adapter_contract(key, r)
+        source_label_status = checked_public_source_label(key, r, h, certified)
         if status == "READY":
             if effective_transport in WEAK_TRANSPORT or effective_transport not in STRONG_ADAPTER_TRANSPORT:
                 fail(f"{key} READY requires a strong effective adapter transport: {effective_transport}")
@@ -164,6 +194,9 @@ def main() -> int:
             "authority": r.get("authority"),
             "canonical_transport_class": canonical_transport,
             "effective_adapter_transport_class": effective_transport,
+            "legacy_registry_source": r.get("source"),
+            "operational_source_label": h.get("source"),
+            "source_label_alignment": source_label_status,
             "source_adapter_status": status,
             "historical_replay_certified": bool(r.get("historical_replay_certified")),
             "heatmap_as_of": h.get("as_of"),
