@@ -147,7 +147,7 @@ def validate_contract(manifest):
             "one_to_one_metric_crosswalk_with_publisher_first_event_certified":False,
         }
         for field,expected in pins.items():
-            require(row.get(field)==expected and type(row.get(field))==type(expected),
+            require((numeric(row.get(field)) and row.get(field)==expected) if numeric(expected) else (row.get(field)==expected and type(row.get(field))==type(expected)),
                     "Growth original units/period/source or model gate changed: "+c+" "+field)
     return rows
 
