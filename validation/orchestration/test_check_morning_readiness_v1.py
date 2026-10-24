@@ -15,7 +15,9 @@ data["ECB_G8_PRICE_HISTORY.json"]["rows"][-1]["Date"] = "2026-10-22"
 data["PAIR_SETUP_OPERATIONAL_VIEW.json"].update(
     status="CURRENT_CANONICAL_ENGINE", pair_count=28,
     price_asof="2026-10-22", macro_baseline_asof="2026-09-25")
-data["PAIR_SETUP_OPERATIONAL_VIEW.json"]["price_audit"]["status"] = "PASS"
+data["PAIR_SETUP_OPERATIONAL_VIEW.json"]["price_audit"].update(
+    status="PASS", as_of="2026-10-22", history_asof="2026-10-22",
+    overlay_asof="2026-10-22")
 data["D.json"]["asOf"] = "2026-09-25"
 data["D.json"]["risk"]["VIX"]["last_date"] = "2026-10-22"
 data["D.json"]["risk"]["VIX"]["dates"][-1] = "2026-10-22"
@@ -121,6 +123,42 @@ midnight_cal = copy.deepcopy(data)
 midnight_cal["CALENDAR_OPERATIONAL_VIEW.json"]["generated_at_utc"] = "2026-10-22T22:30:00Z"
 assert "CALENDAR_REFRESH" not in inspect(midnight_cal, asof)["critical_daily_problems"]
 
+# A declared 28-pair count does not certify 28 distinct G8 crosses.
+# All 28 actual keys and the corresponding official fixing audit must agree.
+for mutation in (
+    lambda x: x["PAIR_SETUP_OPERATIONAL_VIEW.json"]["pairs"].pop("EURUSD"),
+    lambda x: x["PAIR_SETUP_OPERATIONAL_VIEW.json"]["price_audit"].update(as_of="2026-10-21"),
+    lambda x: x["PAIR_SETUP_OPERATIONAL_VIEW.json"]["price_audit"].update(history_asof="2026-10-21"),
+    lambda x: x["PAIR_SETUP_OPERATIONAL_VIEW.json"]["price_audit"].update(complete_pair_count=27),
+    lambda x: x["PAIR_SETUP_OPERATIONAL_VIEW.json"]["price_audit"].update(no_lookahead=False),
+):
+    broken_pair = copy.deepcopy(data)
+    mutation(broken_pair)
+    result_bad = inspect(broken_pair, asof)
+    assert "PAIR_SOURCE_INTEGRITY" in result_bad["critical_daily_problems"], result_bad["critical_daily_problems"]
+    assert result_bad["operational_state"] == "DAILY_INPUTS_INCOMPLETE"
+
+# At 08:00 local, a current-day ECB close or VIX close cannot be
+# represented as a verified already-published previous session.
+for target in ("FX", "PAIR", "VIX"):
+    impossible = copy.deepcopy(data)
+    if target == "FX":
+        impossible["ECB_G8_PRICE_HISTORY.json"]["last_as_of"] = "2026-10-23"
+        impossible["ECB_G8_PRICE_HISTORY.json"]["rows"][-1]["Date"] = "2026-10-23"
+        impossible["PAIR_SETUP_OPERATIONAL_VIEW.json"]["price_asof"] = "2026-10-23"
+        impossible["PAIR_SETUP_OPERATIONAL_VIEW.json"]["price_audit"].update(as_of="2026-10-23",history_asof="2026-10-23",overlay_asof="2026-10-23")
+        expected_problem = "FX_OFFICIAL_FIXING"
+    elif target == "PAIR":
+        impossible["PAIR_SETUP_OPERATIONAL_VIEW.json"]["price_asof"] = "2026-10-23"
+        impossible["PAIR_SETUP_OPERATIONAL_VIEW.json"]["price_audit"].update(as_of="2026-10-23",overlay_asof="2026-10-23")
+        expected_problem = "PAIR_PRICE"
+    else:
+        impossible["D.json"]["risk"]["VIX"]["last_date"] = "2026-10-23"
+        impossible["D.json"]["risk"]["VIX"]["dates"][-1] = "2026-10-23"
+        expected_problem = "VIX_OFFICIAL_CLOSE"
+    morning_out = inspect(impossible, asof)
+    assert expected_problem in morning_out["critical_daily_problems"], morning_out["critical_daily_problems"]
+
 broken = copy.deepcopy(data)
 broken["ECB_G8_PRICE_HISTORY.json"]["last_as_of"] = "2026-10-21"
 x = inspect(broken,asof)
@@ -148,6 +186,7 @@ monday_feed = copy.deepcopy(data)
 monday_feed["ECB_G8_PRICE_HISTORY.json"]["last_as_of"] = "2026-10-23"
 monday_feed["ECB_G8_PRICE_HISTORY.json"]["rows"][-1]["Date"] = "2026-10-23"
 monday_feed["PAIR_SETUP_OPERATIONAL_VIEW.json"]["price_asof"] = "2026-10-23"
+monday_feed["PAIR_SETUP_OPERATIONAL_VIEW.json"]["price_audit"].update(as_of="2026-10-23",history_asof="2026-10-23",overlay_asof="2026-10-23")
 monday_feed["D.json"]["risk"]["VIX"]["last_date"] = "2026-10-23"
 monday_feed["D.json"]["risk"]["VIX"]["dates"][-1] = "2026-10-23"
 monday_feed["NEWS_PULSE_OPERATIONAL.json"]["generated_at_utc"] = "2026-10-26T05:10:00Z"
