@@ -2702,7 +2702,12 @@ async function mountScreenerBlockers(doc){
    if(!categoriesKnown.includes(quality)){unknown();return}
    counts[quality]++;
  }
- if(categoriesKnown.some(k=>counts[k]!==setup.quality_distribution?.[k])||
+ const distribution=setup.quality_distribution;
+ if(!distribution||typeof distribution!=='object'||Array.isArray(distribution)||
+    Object.entries(distribution).some(([k,v])=>
+      !categoriesKnown.includes(k)||!Number.isInteger(v)||v<0)||
+    categoriesKnown.some(k=>counts[k]!==
+      (Object.hasOwn(distribution,k)?distribution[k]:0))||
     categoriesKnown.reduce((v,k)=>v+counts[k],0)!==28){unknown();return}
  const reviewPairs=Object.entries(records)
    .filter(([,record])=>['DA CONFERMARE','DA MONITORARE'].includes(record.setup.quality))
