@@ -40,7 +40,7 @@ Concrete example: September 2025 first appears as **101.4** (December 3), then *
 
 The **3m/3m** research transformation from the earlier prototype now becomes arithmetically computable on the six first-published reference periods **September 2025–February 2026** at **16 March 2026, 13:15 UTC**. At that precise cutoff, based on all publisher one-decimal source levels **as known then**, it gives **+0.7887%**; calculating once using each month's earliest preliminary reading only yields **+0.7874%**. This difference is the actual effect of the intervening publisher revisions included in the dated-page evidence, **not proof of broader GDP growth or FX strength**.
 
-The code freezes an illustrative 3m/3m research feature separately at **each original edition's cutoff** after enough observations are present. On October 24, there are **seven snapshots of descriptive features**, not 25 earlier *frozen monthly* values needed for rolling normalization. Even a correct initial sample length of six levels cannot support a country-calibrated historical z-score yet.
+The code freezes an illustrative 3m/3m research feature separately at **each original edition's cutoff** after enough observations are present. On October 24, there are **eight snapshots of descriptive features**, not 25 earlier *frozen monthly* values needed for rolling normalization. Even a correct initial sample length of six levels cannot support a country-calibrated historical z-score yet.
 
 ## What is—and is not—certified
 
