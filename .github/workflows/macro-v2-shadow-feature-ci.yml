@@ -60,6 +60,10 @@ on:
       - 'validation/macro/v2_abs_complete_monthly_cpi_11_release_replay_v1.py'
       - 'validation/macro/test_v2_abs_complete_monthly_cpi_11_release_replay_v1.py'
       - 'validation/macro/MACRO_V2_ABS_11_COMPLETE_MONTHLY_CPI_RELEASES_2026-10-24.md'
+      - 'validation/macro/fixtures/v2_abs_trimmed_cross_publication_2026_v1.json'
+      - 'validation/macro/v2_abs_trimmed_cross_publication_v1.py'
+      - 'validation/macro/test_v2_abs_trimmed_cross_publication_v1.py'
+      - 'validation/macro/MACRO_V2_ABS_TRIMMED_CROSS_PUBLICATION_VINTAGES_2026-10-24.md'
   workflow_dispatch:
 
 permissions:
@@ -363,6 +367,11 @@ jobs:
           python -m unittest validation.macro.test_v2_abs_complete_monthly_cpi_11_release_replay_v1 -v
           python -m validation.macro.v2_abs_complete_monthly_cpi_11_release_replay_v1 --asof 2026-02-25T00:30:00Z --out /tmp/macro-v2-shadow/abs-jan-original-release.json
           python -m validation.macro.v2_abs_complete_monthly_cpi_11_release_replay_v1 --asof 2026-10-24T00:00:00Z --out /tmp/macro-v2-shadow/abs-11-releases-audit.json
+      - name: Audit ABS January and May trimmed cross-publication vintage evidence without future leakage
+        run: |
+          python -m unittest validation.macro.test_v2_abs_trimmed_cross_publication_v1 -v
+          python -m validation.macro.v2_abs_trimmed_cross_publication_v1 --asof 2026-03-25T00:29:59Z --out /tmp/macro-v2-shadow/abs-jan-before-retrospective.json
+          python -m validation.macro.v2_abs_trimmed_cross_publication_v1 --asof 2026-10-24T00:00:00Z --out /tmp/macro-v2-shadow/abs-trimmed-cross-report-2026.json
       - name: Confirm no runtime or website files were changed by tests
         run: |
           git diff --exit-code -- live_data site payload dashboard
