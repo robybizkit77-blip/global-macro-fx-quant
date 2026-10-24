@@ -1,0 +1,120 @@
+{
+  "schema": "GMFQ_MACRO_V2_US_FED_G17_SEVEN_DATED_PUBLISHER_TABLE_SNAPSHOTS_V1",
+  "review_as_of": "2026-10-24",
+  "publisher": "Federal Reserve Board",
+  "metric": "Seasonally adjusted industrial production Total index",
+  "unit": "index 2017=100 rounded to 1 decimal by dated G.17 HTML summary",
+  "observation_series_candidate_id": "US_G17_IP_2017_BASE_PUBLISHED_ONE_DECIMAL",
+  "canonical_G8_growth_series_selected": false,
+  "archived_release_day_original_page_bytes_verified": false,
+  "publisher_dated_pages_retrieved_after_publication_not_immutable_release_day_bytes": true,
+  "exact_unrounded_original_indpro_transport_verified": false,
+  "complete_historical_revision_chain_certified": false,
+  "research_only": true,
+  "snapshots": [
+    {
+      "release_date": "2026-04-16",
+      "release_clock_et": "2026-04-16T09:15:00-04:00",
+      "release_utc": "2026-04-16T13:15:00Z",
+      "new_preliminary_period": "2026-03",
+      "total_index_sa_2017_100_by_observation_period": {
+        "2026-03": 101.8
+      },
+      "publisher_url": "https://www.federalreserve.gov/releases/g17/20260416/table0.htm",
+      "source_table": "G.17 Summary | Industrial production | Total index | first six monthly levels, 2017=100, SA",
+      "all_table_values_from_dated_publisher_page_not_first_releases": true
+    },
+    {
+      "release_date": "2026-05-15",
+      "release_clock_et": "2026-05-15T09:15:00-04:00",
+      "release_utc": "2026-05-15T13:15:00Z",
+      "new_preliminary_period": "2026-04",
+      "total_index_sa_2017_100_by_observation_period": {
+        "2026-03": 101.8,
+        "2026-04": 102.5
+      },
+      "publisher_url": "https://www.federalreserve.gov/releases/g17/20260515/table0.htm",
+      "source_table": "G.17 Summary | Industrial production | Total index | first six monthly levels, 2017=100, SA",
+      "all_table_values_from_dated_publisher_page_not_first_releases": true
+    },
+    {
+      "release_date": "2026-06-15",
+      "release_clock_et": "2026-06-15T09:15:00-04:00",
+      "release_utc": "2026-06-15T13:15:00Z",
+      "new_preliminary_period": "2026-05",
+      "total_index_sa_2017_100_by_observation_period": {
+        "2026-03": 101.6,
+        "2026-04": 102.5,
+        "2026-05": 102.6
+      },
+      "publisher_url": "https://www.federalreserve.gov/releases/g17/20260615/table0.htm",
+      "source_table": "G.17 Summary | Industrial production | Total index | first six monthly levels, 2017=100, SA",
+      "all_table_values_from_dated_publisher_page_not_first_releases": true
+    },
+    {
+      "release_date": "2026-07-17",
+      "release_clock_et": "2026-07-17T09:15:00-04:00",
+      "release_utc": "2026-07-17T13:15:00Z",
+      "new_preliminary_period": "2026-06",
+      "total_index_sa_2017_100_by_observation_period": {
+        "2026-03": 101.6,
+        "2026-04": 102.4,
+        "2026-05": 102.6,
+        "2026-06": 102.6
+      },
+      "publisher_url": "https://www.federalreserve.gov/releases/g17/20260717/table0.htm",
+      "source_table": "G.17 Summary | Industrial production | Total index | first six monthly levels, 2017=100, SA",
+      "all_table_values_from_dated_publisher_page_not_first_releases": true
+    },
+    {
+      "release_date": "2026-08-18",
+      "release_clock_et": "2026-08-18T09:15:00-04:00",
+      "release_utc": "2026-08-18T13:15:00Z",
+      "new_preliminary_period": "2026-07",
+      "total_index_sa_2017_100_by_observation_period": {
+        "2026-03": 101.8,
+        "2026-04": 102.5,
+        "2026-05": 102.5,
+        "2026-06": 102.8,
+        "2026-07": 103
+      },
+      "publisher_url": "https://www.federalreserve.gov/releases/g17/20260818/table0.htm",
+      "source_table": "G.17 Summary | Industrial production | Total index | first six monthly levels, 2017=100, SA",
+      "all_table_values_from_dated_publisher_page_not_first_releases": true
+    },
+    {
+      "release_date": "2026-09-18",
+      "release_clock_et": "2026-09-18T09:15:00-04:00",
+      "release_utc": "2026-09-18T13:15:00Z",
+      "new_preliminary_period": "2026-08",
+      "total_index_sa_2017_100_by_observation_period": {
+        "2026-03": 101.7,
+        "2026-04": 102.6,
+        "2026-05": 102.6,
+        "2026-06": 102.8,
+        "2026-07": 103,
+        "2026-08": 103.1
+      },
+      "publisher_url": "https://www.federalreserve.gov/releases/g17/20260918/table0.htm",
+      "source_table": "G.17 Summary | Industrial production | Total index | first six monthly levels, 2017=100, SA",
+      "all_table_values_from_dated_publisher_page_not_first_releases": true
+    },
+    {
+      "release_date": "2026-10-16",
+      "release_clock_et": "2026-10-16T09:15:00-04:00",
+      "release_utc": "2026-10-16T13:15:00Z",
+      "new_preliminary_period": "2026-09",
+      "total_index_sa_2017_100_by_observation_period": {
+        "2026-04": 102.6,
+        "2026-05": 102.7,
+        "2026-06": 103,
+        "2026-07": 103.2,
+        "2026-08": 103.3,
+        "2026-09": 104
+      },
+      "publisher_url": "https://www.federalreserve.gov/releases/g17/20261016/table0.htm",
+      "source_table": "G.17 Summary | Industrial production | Total index | first six monthly levels, 2017=100, SA",
+      "all_table_values_from_dated_publisher_page_not_first_releases": true
+    }
+  ]
+}

@@ -109,6 +109,10 @@ on:
       - 'validation/macro/v2_g8_growth_rolling_pit_normalization_v1.py'
       - 'validation/macro/test_v2_g8_growth_rolling_pit_normalization_v1.py'
       - 'validation/macro/MACRO_V2_G8_GROWTH_ROLLING_PIT_NORMALIZATION_2026-10-24.md'
+      - 'validation/macro/fixtures/v2_us_fed_g17_seven_dated_total_ip_2026_v1.json'
+      - 'validation/macro/v2_us_fed_g17_seven_release_growth_replay_v1.py'
+      - 'validation/macro/test_v2_us_fed_g17_seven_release_growth_replay_v1.py'
+      - 'validation/macro/MACRO_V2_US_FED_G17_SEVEN_OFFICIAL_RELEASE_VINTAGES_2026-10-24.md'
   workflow_dispatch:
 
 permissions:
@@ -123,7 +127,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Fast fail on G8 PIT source, Growth transform and frozen as-of normalization gates
+      - name: Fast fail on G8 Growth PIT, normalization and Fed seven real published-release vintages
         run: |
           python -m unittest validation.macro.test_v2_pit_g8_control_plane_v1 -v
           python -m unittest validation.macro.test_v2_pit_g8_latest_web_adapters_v1 -v
@@ -131,6 +135,7 @@ jobs:
           python -m unittest validation.macro.test_v2_pit_g8_growth_web_bridges_v1 -v
           python -m unittest validation.macro.test_v2_g8_growth_transform_proposal_gate_v1 -v
           python -m unittest validation.macro.test_v2_g8_growth_rolling_pit_normalization_v1 -v
+          python -m unittest validation.macro.test_v2_us_fed_g17_seven_release_growth_replay_v1 -v
       - name: Test first-release and revision PIT guardrails (synthetic)
         run: python -m unittest validation.macro.test_v2_shadow_features_v1 -v
       - name: Replay five official BLS first-release web attestations without future leakage
@@ -484,6 +489,12 @@ jobs:
         run: |
           python -m unittest validation.macro.test_v2_g8_growth_rolling_pit_normalization_v1 -v
           python -m validation.macro.v2_g8_growth_rolling_pit_normalization_v1 --out /tmp/macro-v2-shadow/g8-growth-frozen-normalization-comparability.json
+      - name: Verify Fed seven dated industrial-output release tables and thirteen revisions without future leakage
+        run: |
+          python -m unittest validation.macro.test_v2_us_fed_g17_seven_release_growth_replay_v1 -v
+          python -m validation.macro.v2_us_fed_g17_seven_release_growth_replay_v1 --asof 2026-09-18T13:14:59Z --out /tmp/macro-v2-shadow/us-g17-before-aug-release.json
+          python -m validation.macro.v2_us_fed_g17_seven_release_growth_replay_v1 --asof 2026-09-18T13:15:00Z --out /tmp/macro-v2-shadow/us-g17-at-aug-release.json
+          python -m validation.macro.v2_us_fed_g17_seven_release_growth_replay_v1 --asof 2026-10-16T13:15:00Z --out /tmp/macro-v2-shadow/us-g17-at-sep-release.json
       - name: Confirm no runtime or website files were changed by tests
         run: |
           git diff --exit-code -- live_data site payload dashboard
