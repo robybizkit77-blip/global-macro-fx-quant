@@ -33,28 +33,25 @@ class G8SharedPITControlPlaneTests(unittest.TestCase):
         self.assertTrue(all(x["eligible_for_macro_score"] is False
                             for x in r["rows"]))
 
-    def test_eighteen_sources_and_six_growth_slots_unselected(self):
+    def test_twenty_four_candidate_adapters_without_growth_canonical_selection(self):
         r=self.audit()
+        expected=[(c,p) for c in CURRENCIES for p in PILLAR_ORDER]
         actual=[(x["currency"],x["pillar"]) for x in r["rows"]
                 if x["candidate_evidence_source_id"]]
-        expected=[(c,p) for c in CURRENCIES for p in PILLAR_ORDER
-                  if (c,p) not in {(g,"growth") for g in
-                                    ("USD","EUR","GBP","JPY","CHF","CAD")}]
         self.assertEqual(actual,expected)
-        self.assertEqual(r["summary"]["candidate_source_streams_loaded"],18)
-        self.assertEqual(r["summary"]["slots_without_shared_candidate_stream"],6)
-        self.assertEqual(r["summary"]["candidate_first_release_reference_periods_visible"],69)
-        self.assertEqual(r["summary"]["candidate_web_publication_stage_events_visible"],80)
+        self.assertEqual(r["summary"]["candidate_source_streams_loaded"],24)
+        self.assertEqual(r["summary"]["slots_without_shared_candidate_stream"],0)
+        self.assertEqual(r["summary"]["candidate_first_release_reference_periods_visible"],75)
+        self.assertEqual(r["summary"]["candidate_web_publication_stage_events_visible"],87)
         self.assertEqual(r["summary"]["growth_source_selection_unresolved"],8)
-        self.assertEqual(self.slot(r,"EUR","inflation")["candidate_documented_first_periods_visible"],10)
-        self.assertEqual(self.slot(r,"AUD","inflation")["candidate_documented_first_periods_visible"],11)
-        self.assertEqual(self.slot(r,"USD","labour")["candidate_documented_first_periods_visible"],25)
-        self.assertEqual(self.slot(r,"GBP","labour")["candidate_documented_first_periods_visible"],3)
-        self.assertEqual(self.slot(r,"NZD","labour")["candidate_documented_first_periods_visible"],2)
+        for cc in CURRENCIES:
+            self.assertIsNotNone(self.slot(r,cc,"growth")["candidate_evidence_source_id"])
+            self.assertEqual(self.slot(r,cc,"growth")["candidate_documented_first_periods_visible"],1)
+            self.assertIsNone(self.slot(r,cc,"growth")["canonical_series_id"])
+            self.assertFalse(self.slot(r,cc,"growth")["canonical_first_release_chain_certified"])
         self.assertEqual(self.slot(r,"NZD","labour")["candidate_revision_events_visible"],1)
-        for cc in ("USD","EUR","GBP","JPY","CHF","CAD"):
-            self.assertIsNone(self.slot(r,cc,"growth")["candidate_evidence_source_id"])
-            self.assertEqual(self.slot(r,cc,"growth")["candidate_documented_first_periods_visible"],0)
+        self.assertEqual(self.slot(r,"EUR","growth")["candidate_revision_events_visible"],1)
+        self.assertEqual(r["summary"]["slots_eligible_for_new_live_scores"],0)
 
     def test_bls_25_first_release_web_records_do_not_override_unrate(self):
         r = self.audit()
