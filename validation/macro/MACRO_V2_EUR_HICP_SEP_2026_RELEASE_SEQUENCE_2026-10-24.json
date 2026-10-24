@@ -1,0 +1,35 @@
+{
+  "schema": "GMFQ_MACRO_V2_EUR_HICP_SEP_2026_OFFICIAL_WEB_RELEASE_SEQUENCE_V1",
+  "review_as_of": "2026-10-24",
+  "currency": "EUR",
+  "pillar": "inflation",
+  "series_id": "EA_HICP_HEADLINE_YOY_history_value",
+  "reference_period": "2026-09",
+  "unit": "Percent YoY",
+  "publisher": "Eurostat",
+  "metric": "Euro area all-items HICP annual inflation",
+  "geographic_coverage_warning": "Euro area EA21 from January 2026, compared with EA20 through December 2025; historical comparison may require composition-aware metadata.",
+  "evidence_scope": "OFFICIAL_PUBLISHER_WEB_EVENT_DATE_AND_VALUE_NO_ARCHIVED_BYTES",
+  "observations": [
+    {
+      "event_type": "FLASH_ESTIMATE",
+      "published_on": "2026-10-02",
+      "published_at_local_verified": null,
+      "value": 3.8,
+      "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-02102026-ap"
+    },
+    {
+      "event_type": "DETAILED_RELEASE",
+      "published_on": "2026-10-16",
+      "published_at_local_verified": null,
+      "value": 3.8,
+      "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-16102026-ap"
+    }
+  ],
+  "official_page_bytes_archived": false,
+  "full_historical_first_release_chain_certified": false,
+  "economically_selected_for_new_score": false,
+  "eligible_for_backtest": false,
+  "writes_live_data": false,
+  "note": "A flash estimate and a detailed release are distinct information events, even if the reported YoY value is unchanged. Do not infer timestamps, surprises or market response."
+}
