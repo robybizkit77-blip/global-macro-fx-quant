@@ -46,6 +46,9 @@ on:
       - 'validation/macro/test_v2_usd_labour_research_desk_brief_v1.py'
       - 'validation/macro/v2_growth_inflation_g8_desk_inventory_v1.py'
       - 'validation/macro/test_v2_growth_inflation_g8_desk_inventory_v1.py'
+      - 'validation/macro/MACRO_V2_EUR_HICP_SEP_2026_RELEASE_SEQUENCE_2026-10-24.json'
+      - 'validation/macro/v2_growth_inflation_release_crosswalk_v1.py'
+      - 'validation/macro/test_v2_growth_inflation_release_crosswalk_v1.py'
   workflow_dispatch:
 
 permissions:
@@ -331,6 +334,10 @@ jobs:
         run: |
           python -m unittest validation.macro.test_v2_growth_inflation_g8_desk_inventory_v1 -v
           python -m validation.macro.v2_growth_inflation_g8_desk_inventory_v1 --out /tmp/macro-v2-shadow/g8-growth-inflation-desk-inventory.json
+      - name: Reconcile G8 Growth Inflation official release web anchors without PIT promotion
+        run: |
+          python -m unittest validation.macro.test_v2_growth_inflation_release_crosswalk_v1 -v
+          python -m validation.macro.v2_growth_inflation_release_crosswalk_v1 --out /tmp/macro-v2-shadow/g8-growth-inflation-release-crosswalk.json
       - name: Confirm no runtime or website files were changed by tests
         run: |
           git diff --exit-code -- live_data site payload dashboard
