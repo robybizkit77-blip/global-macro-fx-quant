@@ -14,7 +14,7 @@ import json
 import math
 from pathlib import Path
 
-from validation.macro.v2_shadow_features_v1 import require, timestamp, period_index
+from validation.macro.v2_shadow_features_v1 import require, timestamp, period_index, period_start
 from validation.macro.v2_g8_growth_transform_proposal_gate_v1 import (
     audit as prior_growth_audit,
     PINNED,
@@ -81,6 +81,8 @@ def _check_snapshot(x, expected, *, asof, current=False):
     p=x.get("reference_period")
     pi=period_index(p,expected["frequency"])
     t=timestamp(x.get("frozen_at_utc"))
+    require(t.date()>=period_start(p,expected["frequency"]),
+            "source feature freeze date cannot predate its economic reference period")
     require(t<=asof, "research future event leakage")
     require(finite(x.get("feature_percent")),
             "finite and purely descriptive growth feature % needed")
@@ -149,7 +151,11 @@ def rolling_research_normalization(proposal, current, history, *, as_of):
         "research_rolling_mean_pct":mean,
         "research_rolling_std_pct":std,
         "research_rolling_z":z,
-        "historical_train_reference_periods":[history_entry[0] for history_entry in relevant],
+        "historical_train_reference_periods":[
+            x["reference_period"] for x in sorted(history,
+                key=lambda rec:period_index(rec["reference_period"],p["frequency"]))
+            if cur_i-required<=period_index(x["reference_period"],p["frequency"])<cur_i
+        ],
         "status":"RESEARCH_ROLLING_Z_MATH_ONLY_UNVERIFIED_VINTAGES",
     })
     return result
