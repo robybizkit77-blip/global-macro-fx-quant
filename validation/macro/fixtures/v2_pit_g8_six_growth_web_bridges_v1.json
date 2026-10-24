@@ -1,0 +1,182 @@
+{
+  "schema": "GMFQ_MACRO_V2_SIX_G8_GROWTH_PUBLISHER_WEB_BRIDGES_V1",
+  "review_as_of": "2026-10-24",
+  "research_only": true,
+  "archived_original_publication_day_bytes_certified": false,
+  "canonical_growth_series_selected": false,
+  "eligible_for_macro_scoring": false,
+  "streams": [
+    {
+      "currency": "USD",
+      "candidate_series_id": "US_G17_IP_2017_BASE_PUBLISHED_ONE_DECIMAL",
+      "frequency": "M",
+      "unit": "index 2017=100, SA, published 0.1 index rounding",
+      "period_semantics": "TOTAL_INDUSTRIAL_PRODUCTION_MONTHLY_SA_INDEX_NOT_CANONICAL_EXACT_VALUE",
+      "publisher": "Federal Reserve Board",
+      "canonical_observed_source_id": "US_INDPRO_history_value",
+      "canonical_observed_frequency": "M",
+      "canonical_observed_period": "2026-08",
+      "canonical_observed_value": 103.0682,
+      "canonical_observed_unit": "Index 2017=100",
+      "events": [
+        {
+          "observation_period": "2026-08",
+          "kind": "FIRST_WEB",
+          "reported_value": 103.1,
+          "source_url": "https://www.federalreserve.gov/RELEASES/g17/20260918/table0.htm",
+          "published_on": "2026-09-18",
+          "source_clock": "2026-09-18T09:15:00-04:00",
+          "conservative_visible_from_utc": "2026-09-18T13:15:00Z",
+          "publication_stage": "PRELIMINARY_ROUNDED"
+        }
+      ],
+      "metric_relation": "SAME_INDUSTRY_INDEX_CONCEPT_BUT_DIFFERENT_NUMERICAL_PRECISION_OR_POSSIBLY_REVISION",
+      "original_day_html_bytes_proven": false
+    },
+    {
+      "currency": "EUR",
+      "candidate_series_id": "EA_IP_MOM_CHANGE_OFFICIAL_RELEASE_PCT",
+      "frequency": "M",
+      "unit": "percent month-on-month, SA industrial production",
+      "period_semantics": "EA21_INDUSTRIAL_PRODUCTION_MOM_PERCENT_NOT_2021_BASE_INDEX",
+      "publisher": "Eurostat",
+      "canonical_observed_source_id": "EA_IP_history_value",
+      "canonical_observed_frequency": "M",
+      "canonical_observed_period": "2026-07",
+      "canonical_observed_value": 98.3,
+      "canonical_observed_unit": "Index 2021=100",
+      "events": [
+        {
+          "observation_period": "2026-07",
+          "kind": "FIRST_WEB",
+          "reported_value": -0.1,
+          "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/4-16092026-ap",
+          "published_on": "2026-09-16",
+          "source_clock": null,
+          "conservative_visible_from_utc": "2026-09-17T00:00:00Z",
+          "publication_stage": "FIRST_ESTIMATE_MOM"
+        },
+        {
+          "observation_period": "2026-07",
+          "kind": "REVISION_WEB",
+          "reported_value": -0.3,
+          "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/4-15102026-ap",
+          "published_on": "2026-10-15",
+          "source_clock": null,
+          "conservative_visible_from_utc": "2026-10-16T00:00:00Z",
+          "publication_stage": "RETROSPECTIVE_REVISION_MOM"
+        }
+      ],
+      "metric_relation": "MISMATCH_INDEX_LEVEL_VERSUS_MOM_PERCENT_NO_SUBSTITUTION",
+      "original_day_html_bytes_proven": false
+    },
+    {
+      "currency": "GBP",
+      "candidate_series_id": "UK_IOP_3M3M_GROWTH_RATE_OFFICIAL",
+      "frequency": "M",
+      "unit": "percent three-month-on-three-month UK production output",
+      "period_semantics": "ROLLING_THREE_MONTH_VOLUME_CHANGE_ENDING_JULY_NOT_MONTHLY_INDEX",
+      "publisher": "UK Office for National Statistics",
+      "canonical_observed_source_id": "UK_PRODUCTION_history_value",
+      "canonical_observed_frequency": "M",
+      "canonical_observed_period": "2026-07",
+      "canonical_observed_value": 98.5,
+      "canonical_observed_unit": "Index",
+      "events": [
+        {
+          "observation_period": "2026-07",
+          "kind": "FIRST_WEB",
+          "reported_value": -0.5,
+          "source_url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/bulletins/indexofproduction/july2026",
+          "published_on": "2026-09-11",
+          "source_clock": "2026-09-11T07:00:00+01:00",
+          "conservative_visible_from_utc": "2026-09-11T06:00:00Z",
+          "publication_stage": "FIRST_ROLLING_THREE_MONTH_ESTIMATE"
+        }
+      ],
+      "metric_relation": "MISMATCH_INDEX_LEVEL_VERSUS_3M3M_PERCENT_NO_SUBSTITUTION",
+      "original_day_html_bytes_proven": false
+    },
+    {
+      "currency": "JPY",
+      "candidate_series_id": "JP_METI_IIP_MAY_2026_SA_2020_INDEX",
+      "frequency": "M",
+      "unit": "index 2020=100, SA industrial production",
+      "period_semantics": "METI_MAY_2026_INDEX_SOURCE_PAGE_NOT_PERIOD_SPECIFIC_IMMUTABLE_HTML",
+      "publisher": "Ministry of Economy, Trade and Industry Japan",
+      "canonical_observed_source_id": "JP_IIP_history_value",
+      "canonical_observed_frequency": "M",
+      "canonical_observed_period": "2026-07",
+      "canonical_observed_value": 104.4,
+      "canonical_observed_unit": "Index 2020=100",
+      "events": [
+        {
+          "observation_period": "2026-05",
+          "kind": "FIRST_WEB",
+          "reported_value": 103,
+          "source_url": "https://www.meti.go.jp/english/statistics/tyo/iip/",
+          "published_on": "2026-06-30",
+          "source_clock": null,
+          "conservative_visible_from_utc": "2026-07-01T00:00:00Z",
+          "publication_stage": "MAY_PRELIMINARY_AS_DESCRIBED_BY_DATED_PUBLISHER_WEB_INDEX"
+        }
+      ],
+      "metric_relation": "SAME_2020_INDEX_CONCEPT_DIFFERENT_REFERENCE_MONTH_NO_BACKFILL",
+      "original_day_html_bytes_proven": false
+    },
+    {
+      "currency": "CHF",
+      "candidate_series_id": "CH_SECO_SPORTS_ADJUSTED_GDP_QOQ",
+      "frequency": "Q",
+      "unit": "percent quarterly real GDP adjusted for sporting events",
+      "period_semantics": "SPECIALLY_SPORTS_ADJUSTED_QUARTERLY_GDP_NOT_MONTHLY_INDUSTRIAL_INDEX",
+      "publisher": "Swiss State Secretariat for Economic Affairs",
+      "canonical_observed_source_id": "CH_PRODUCTION_history_value",
+      "canonical_observed_frequency": "M",
+      "canonical_observed_period": "2026-06",
+      "canonical_observed_value": 122,
+      "canonical_observed_unit": "Index 2021=100",
+      "events": [
+        {
+          "observation_period": "2026Q2",
+          "kind": "FIRST_WEB",
+          "reported_value": 1.5,
+          "source_url": "https://www.seco.admin.ch/en/gross-domestic-product",
+          "published_on": "2026-09-03",
+          "source_clock": null,
+          "conservative_visible_from_utc": "2026-09-04T00:00:00Z",
+          "publication_stage": "SEPTEMBER_QUARTERLY_GDP_2026Q2_REPORT"
+        }
+      ],
+      "metric_relation": "MISMATCH_DIFFERENT_INDICATOR_GDP_Q_VS_INDUSTRIAL_PRODUCTION_M",
+      "original_day_html_bytes_proven": false
+    },
+    {
+      "currency": "CAD",
+      "candidate_series_id": "STATCAN_GDP_INDUSTRY_36_10_0434_01_LEVEL",
+      "frequency": "M",
+      "unit": "million chained 2017 CAD, SAAR real GDP by industry",
+      "period_semantics": "MONTHLY_GDP_INDUSTRY_CHAINED_VOLUME_SAAR_LEVEL_NOT_QOQ_PERCENT",
+      "publisher": "Statistics Canada",
+      "canonical_observed_source_id": "CA_REAL_GDP_M_history_value",
+      "canonical_observed_frequency": "M",
+      "canonical_observed_period": "2026-06",
+      "canonical_observed_value": 2369309,
+      "canonical_observed_unit": "million chained 2017 CAD SAAR",
+      "events": [
+        {
+          "observation_period": "2026-06",
+          "kind": "FIRST_WEB",
+          "reported_value": 2369309,
+          "source_url": "https://www150.statcan.gc.ca/n1/daily-quotidien/260828/t001b-eng.htm",
+          "published_on": "2026-08-28",
+          "source_clock": null,
+          "conservative_visible_from_utc": "2026-08-29T00:00:00Z",
+          "publication_stage": "PUBLISHER_JUNE_MONTHLY_GDP_INDUSTRY_LEVEL"
+        }
+      ],
+      "metric_relation": "SOURCE_LEVEL_NUMERICALLY_MATCHES_CANONICAL_BUT_SERIES_ID_NOT_APPROVED",
+      "original_day_html_bytes_proven": false
+    }
+  ]
+}
