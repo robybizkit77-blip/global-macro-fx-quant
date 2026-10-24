@@ -1,8 +1,23 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-24T08:49:09Z",
+  "generated_at_utc": "2026-10-24T10:46:49Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-641281ff5fab22ed9275",
+      "observed_at_utc": "2026-10-24T08:00:00Z",
+      "headline": "Inflation, earnings reports and the mood of consumers and the Federal Reserve fill out a busy week",
+      "summary": "AP News riporta: Inflation, earnings reports and the mood of consumers and the Federal Reserve fill out a busy week. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQMWxOT1R0TTM5dHVRNlg1d1Q3dy1QbF9DZHpaejlCRlJIQjUxRDlmTTBWXzlXSnM3M2dWVWhtbF9YRml0SUtfU180amRQZGVITTdFSlYxak9vTGctV1lKXzZVekZ5WmpnZ25Rd2o1UjdITHc3d3FqY1ZpV0lnTkhmQzRtbXBuY2hTNTVmeFJmTXBITy04NVhkRVUzUUd2Xy1NbEkxaURjYw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-dbb94bbe4893a6facc0b",
       "observed_at_utc": "2026-10-23T08:48:49Z",
@@ -1364,21 +1379,6 @@
       "related_pairs": [],
       "source_label": "AP News · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxPb0tld3hpUGx6Vmd1S2dvem5sS2hjTTJwSG9TRkNVMEpzemp5MFh0MlZPY21RMHd2V0JyZG9nNWU0TTZLUURkYVJRRnZoZ1JKSWVaSkc1cFlDa2MyWmNrQmUxOS1ycGZjYW9SVjNUZnE0UUV2dEFIZDNEdElOV3FIYng1ZzN1UzVRTVM5V1FWTzhKWTY1SVpKU045TEdjR1Ja?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-cb5779a3bb176ecbf690",
-      "observed_at_utc": "2026-10-21T21:04:00Z",
-      "headline": "A strong profit report from SpaceX helps lift tech stocks and Wall Street",
-      "summary": "AP News riporta: A strong profit report from SpaceX helps lift tech stocks and Wall Street. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "AP News · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNUGV1X1dKd0F3eTZSZ0F5ellKQVJuc3B1cEFzVGl4dFlSbVU3eFRJZm9lOXJjNDFHN1g4VGpZZlczQUdVR3ZRQ2h0VlpqaW0zU05LelZEb0I4eGJoVC1oZ0M5WktyVGJUZTZrbVBtdnRuNmpud1Y3WkF4bUI4R2xXQ3lTZnZMX09zOVZHOFhndWh0dWtyQ0VDakh0X24?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
