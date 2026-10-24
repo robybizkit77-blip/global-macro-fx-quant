@@ -1,0 +1,161 @@
+{
+  "schema": "GMFQ_MACRO_V2_EUROSTAT_MAR_APR_2026_HICP_AND_MARCH_SERVICES_LINEAGE_V1",
+  "reviewed_on": "2026-10-24",
+  "publisher": "Eurostat",
+  "currency": "EUR",
+  "region": "EA21",
+  "annual_rate_unit": "percent YoY (one decimal) NOT index level or contribution",
+  "source_class": "PERIOD_SPECIFIC_OFFICIAL_WEB_PAGES_NO_RELEASE_DAY_BYTE_CERTIFICATION",
+  "months": [
+    {
+      "reference_period": "2026-03",
+      "flash": {
+        "release_date": "2026-03-31",
+        "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-31032026-ap",
+        "confirmed_intraday_clock": null,
+        "conservative_visible_from_utc": "2026-04-01T00:00:00Z"
+      },
+      "detailed": {
+        "release_date": "2026-04-16",
+        "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-16042026-ap",
+        "confirmed_intraday_clock": null,
+        "conservative_visible_from_utc": "2026-04-17T00:00:00Z"
+      },
+      "rate_components": [
+        {
+          "component_id": "ALL_ITEMS_HICP",
+          "flash_percent_yoy": 2.5,
+          "detailed_percent_yoy": 2.6
+        },
+        {
+          "component_id": "CORE_HICP",
+          "flash_percent_yoy": 2.3,
+          "detailed_percent_yoy": 2.3
+        },
+        {
+          "component_id": "ENERGY",
+          "flash_percent_yoy": 4.9,
+          "detailed_percent_yoy": 5.1
+        },
+        {
+          "component_id": "FOOD_ALCOHOL_TOBACCO",
+          "flash_percent_yoy": 2.4,
+          "detailed_percent_yoy": 2.4
+        },
+        {
+          "component_id": "NON_ENERGY_INDUSTRIAL_GOODS",
+          "flash_percent_yoy": 0.5,
+          "detailed_percent_yoy": 0.5
+        },
+        {
+          "component_id": "SERVICES",
+          "flash_percent_yoy": 3.2,
+          "detailed_percent_yoy": 3.2
+        }
+      ]
+    },
+    {
+      "reference_period": "2026-04",
+      "flash": {
+        "release_date": "2026-04-30",
+        "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-30042026-ap",
+        "confirmed_intraday_clock": null,
+        "conservative_visible_from_utc": "2026-05-01T00:00:00Z"
+      },
+      "detailed": {
+        "release_date": "2026-05-20",
+        "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-20052026-ap",
+        "confirmed_intraday_clock": null,
+        "conservative_visible_from_utc": "2026-05-21T00:00:00Z"
+      },
+      "rate_components": [
+        {
+          "component_id": "ALL_ITEMS_HICP",
+          "flash_percent_yoy": 3,
+          "detailed_percent_yoy": 3
+        },
+        {
+          "component_id": "CORE_HICP",
+          "flash_percent_yoy": 2.2,
+          "detailed_percent_yoy": 2.2
+        },
+        {
+          "component_id": "ENERGY",
+          "flash_percent_yoy": 10.9,
+          "detailed_percent_yoy": 10.8
+        },
+        {
+          "component_id": "FOOD_ALCOHOL_TOBACCO",
+          "flash_percent_yoy": 2.5,
+          "detailed_percent_yoy": 2.4
+        },
+        {
+          "component_id": "NON_ENERGY_INDUSTRIAL_GOODS",
+          "flash_percent_yoy": 0.8,
+          "detailed_percent_yoy": 0.8
+        },
+        {
+          "component_id": "SERVICES",
+          "flash_percent_yoy": 3,
+          "detailed_percent_yoy": 3
+        }
+      ]
+    }
+  ],
+  "march_services_cross_report_history": [
+    {
+      "reference_period": "2026-03",
+      "report_period": "2026-03",
+      "publication_stage": "DETAILED",
+      "release_day": "2026-04-16",
+      "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-16042026-ap",
+      "reported_services_percent_yoy": 3.2,
+      "conservative_visible_from_utc": "2026-04-17T00:00:00Z",
+      "role": "ORIGINAL_MARCH_DETAILED_SERVICES_RATE_NOT_PROVEN_FIRST_PUBLISHED_RELEASE_WEB_BYTES"
+    },
+    {
+      "reference_period": "2026-03",
+      "report_period": "2026-04",
+      "publication_stage": "DETAILED",
+      "release_day": "2026-05-20",
+      "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-20052026-ap",
+      "reported_services_percent_yoy": 3.3,
+      "conservative_visible_from_utc": "2026-05-21T00:00:00Z",
+      "role": "LATER_APRIL_DETAILED_REPORTED_MARCH_SERVICES_RATE"
+    },
+    {
+      "reference_period": "2026-03",
+      "report_period": "2026-05",
+      "publication_stage": "DETAILED",
+      "release_day": "2026-06-17",
+      "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-17062026-ap",
+      "reported_services_percent_yoy": 3.3,
+      "conservative_visible_from_utc": "2026-06-18T00:00:00Z",
+      "role": "LATER_MAY_DETAILED_REPORTED_MARCH_SERVICES_RATE"
+    },
+    {
+      "reference_period": "2026-03",
+      "report_period": "2026-06",
+      "publication_stage": "FLASH",
+      "release_day": "2026-07-01",
+      "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-01072026-ap",
+      "reported_services_percent_yoy": 3.2,
+      "conservative_visible_from_utc": "2026-07-02T00:00:00Z",
+      "role": "LATER_JUNE_FLASH_REPORTED_MARCH_SERVICES_RATE_WITH_R_MARKER",
+      "revision_marker_on_source": true
+    }
+  ],
+  "footnotes": [
+    "March 2026 headline revised up from 2.5 flash to 2.6 detailed.",
+    "March services cross-publication sequence observed: 3.2 in own detailed, 3.3 in April detailed, 3.3 in May detailed, 3.2 in June flash marked revised. Earlier missing stages and actual revision effective times not established.",
+    "The July 1 revised marker could refer to any revised cells or methodologies; presence is not proof of exact revision timestamp.",
+    "Eurostat intraday release hour unverified: next UTC calendar day used as conservative visibility gate."
+  ],
+  "publication_day_byte_archive_certified": false,
+  "actual_intraday_release_times_verified": false,
+  "full_historical_vintage_chain_certified": false,
+  "backtest_eligible": false,
+  "safe_to_publish_new_D": false,
+  "safe_to_update_pair_theses": false,
+  "writes_live_data": false
+}
