@@ -88,6 +88,10 @@ on:
       - 'validation/macro/v2_eurostat_dec2025_regime_bridge_replay_v1.py'
       - 'validation/macro/test_v2_eurostat_dec2025_regime_bridge_replay_v1.py'
       - 'validation/macro/MACRO_V2_EUROSTAT_DEC2025_EA20_EA21_PIT_BRIDGE_2026-10-24.md'
+      - 'validation/macro/v2_pit_g8_evidence_adapters_v1.py'
+      - 'validation/macro/v2_pit_g8_control_plane_v1.py'
+      - 'validation/macro/test_v2_pit_g8_control_plane_v1.py'
+      - 'validation/macro/MACRO_V2_G8_SHARED_PIT_CONTROL_PLANE_2026-10-24.md'
   workflow_dispatch:
 
 permissions:
@@ -426,6 +430,11 @@ jobs:
           python -m unittest validation.macro.test_v2_eurostat_dec2025_regime_bridge_replay_v1 -v
           python -m validation.macro.v2_eurostat_dec2025_regime_bridge_replay_v1 --asof 2026-02-04T23:59:59Z --out /tmp/macro-v2-shadow/dec-before-later-retrospective.json
           python -m validation.macro.v2_eurostat_dec2025_regime_bridge_replay_v1 --asof 2026-10-24T00:00:00Z --out /tmp/macro-v2-shadow/dec2025-sep2026-boundary-web-replay.json
+      - name: Audit common G8 24-slot PIT evidence gateway and four period-safe country adapters
+        run: |
+          python -m unittest validation.macro.test_v2_pit_g8_control_plane_v1 -v
+          python -m validation.macro.v2_pit_g8_control_plane_v1 --asof 2026-01-19T23:59:59Z --json-out /tmp/macro-v2-shadow/g8-asof-december-before-detailed.json
+          python -m validation.macro.v2_pit_g8_control_plane_v1 --asof 2026-10-24T00:00:00Z --json-out /tmp/macro-v2-shadow/g8-common-control-plane.json --markdown-out /tmp/macro-v2-shadow/g8-common-control-plane.md
       - name: Confirm no runtime or website files were changed by tests
         run: |
           git diff --exit-code -- live_data site payload dashboard
