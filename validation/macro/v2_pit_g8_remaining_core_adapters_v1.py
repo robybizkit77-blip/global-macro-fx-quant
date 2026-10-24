@@ -101,7 +101,7 @@ def verified_strict(key):
             "underlying independent official archival PIT receipt drift: "+key)
     count=d.get("coverage",{}).get("materialized_months",
                                 d.get("coverage",{}).get("materialized_quarters"))
-    require(count==total and d.get("revised_fallback_used") is False
+    require(count==total and d.get("revised_fallback_used", d.get("strict_rules",{}).get("revised_history_fallback_used")) is False
             and not d.get("missing") and not d.get("errors"),
             "archival source receipt no longer passing: "+key)
     return d
