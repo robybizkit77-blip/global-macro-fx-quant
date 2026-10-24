@@ -26,7 +26,14 @@ class LatestReleaseLedgerTests(unittest.TestCase):
         self.assertEqual(out["source_lineage"], "PASS")
         self.assertEqual(out["observations_checked"], 16)
         self.assertEqual(sum(out["counts"].values()), 16)
-        self.assertEqual(out["counts"]["FULL_RELEASE_INSTANT"], 4)
+        # The live canonical period advances independently of archival release
+        # attestations. Never require a stale August release to prove September.
+        for key, record in out["observations"].items():
+            release = record["release"]
+            if release["status"] == "FULL_RELEASE_INSTANT":
+                self.assertIsNotNone(release["first_release_date"], key)
+                self.assertIsNotNone(release["first_release_timestamp_utc"], key)
+                self.assertTrue(release["release_clock_verified"], key)
         withheld = [key for key, record in out["observations"].items()
                     if record["release"]["status"].startswith("WITHHELD")]
         self.assertEqual(out["unresolved_targets"], sorted(withheld))
@@ -83,9 +90,22 @@ class LatestReleaseLedgerTests(unittest.TestCase):
         self.assertEqual(chf["first_release_timestamp_utc"], "2026-10-01T06:30:00+00:00")
 
     def test_jpy_release_jst_crosses_previous_utc_day(self):
-        jpy = self.run_receipt()["observations"]["JPY.inflation"]["release"]
-        self.assertEqual(jpy["status"], "FULL_RELEASE_INSTANT")
-        self.assertEqual(jpy["first_release_timestamp_utc"], "2026-09-17T23:30:00+00:00")
+        # Preserve the original, immutable August 2026 Tokyo release evidence.
+        # The production series may now show a later month; August's official
+        # timestamp cannot be reused as September's first-release timestamp.
+        august_records = self.anchors[("JPY.inflation", "2026-08")]
+        self.assertTrue(any(resolved_time(record) == "2026-09-17T23:30:00+00:00"
+                            for record in august_records))
+        live = self.run_receipt()["observations"]["JPY.inflation"]
+        if live["current_observation_period"][:7] == "2026-08":
+            self.assertEqual(live["release"]["status"], "FULL_RELEASE_INSTANT")
+            self.assertEqual(live["release"]["first_release_timestamp_utc"],
+                             "2026-09-17T23:30:00+00:00")
+        elif live["current_observation_period"][:7] == "2026-09":
+            self.assertEqual(live["release"]["status"], "WITHHELD_EXACT_PERIOD_EVIDENCE")
+            self.assertIsNone(live["release"]["first_release_date"])
+            self.assertIsNone(live["release"]["first_release_timestamp_utc"])
+            self.assertFalse(live["release"]["historical_backtest_safe_for_all_periods"])
 
     def test_september_uk_nz_headline_cpi_has_publisher_date_only_proof(self):
         from validation.macro.latest_release_pit_ledger_v1 import source_web_attestations
