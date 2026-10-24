@@ -20,8 +20,8 @@ data["D.json"]["asOf"] = "2026-09-25"
 data["D.json"]["risk"]["VIX"]["last_date"] = "2026-10-22"
 data["D.json"]["risk"]["VIX"]["dates"][-1] = "2026-10-22"
 data["D.json"]["risk"]["VIX"]["last_value"] = 19.03
-data["NEWS_PULSE_OPERATIONAL.json"]["generated_at_utc"] = "2026-10-23T06:52:00Z"
-data["CALENDAR_OPERATIONAL_VIEW.json"]["generated_at_utc"] = "2026-10-23T06:52:00Z"
+data["NEWS_PULSE_OPERATIONAL.json"]["generated_at_utc"] = "2026-10-23T05:52:00Z"
+data["CALENDAR_OPERATIONAL_VIEW.json"]["generated_at_utc"] = "2026-10-23T05:52:00Z"
 data["NATIVE_RATES_DATA.json"]["CHF"]["date"] = "2026-09-30"
 data["NATIVE_RATES_DATA.json"]["NZD"]["date"] = "2026-10-16"
 # Pin the entire OIS test-state fixture: this is a *deterministic synthetic
@@ -98,6 +98,21 @@ partial = inspect(data, asof, pipeline_outcome="failure")
 assert partial["operational_state"] == "DAILY_INPUTS_INCOMPLETE"
 assert partial["critical_daily_problems"] == ["REFRESH_PIPELINE_NOT_SUCCESS"]
 assert partial["refresh_pipeline_outcome"] == "failure"
+
+# A future time on the same Rome date must NOT certify the 08:00 briefing.
+for feed_name,problem in (
+    ("NEWS_PULSE_OPERATIONAL.json", "NEWS_PULSE_REFRESH"),
+    ("CALENDAR_OPERATIONAL_VIEW.json", "CALENDAR_REFRESH"),
+):
+    future = copy.deepcopy(data)
+    future[feed_name]["generated_at_utc"] = "2026-10-23T06:52:00Z"  # 08:52 CEST
+    future_state = inspect(future, asof)
+    assert future_state["evidence"][problem]["status"] == "FUTURE_DATED"
+    assert problem in future_state["critical_daily_problems"]
+    assert future_state["operational_state"] == "DAILY_INPUTS_INCOMPLETE"
+    missing_timezone = copy.deepcopy(data)
+    missing_timezone[feed_name]["generated_at_utc"] = "2026-10-23T05:52:00"
+    assert problem in inspect(missing_timezone, asof)["critical_daily_problems"]
 
 midnight_news = copy.deepcopy(data)
 midnight_news["NEWS_PULSE_OPERATIONAL.json"]["generated_at_utc"] = "2026-10-22T22:30:00Z"
