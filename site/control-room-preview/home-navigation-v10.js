@@ -957,9 +957,10 @@ function homeMorningStudySources(fx,model,setup,rates,ois,news,calendar,now=new 
    marketObs(vix.last_date);
  const builtToday=feed=>{
    const stamp=feed?.generated_at_utc;
-   if(typeof stamp!=='string')return false;
+   // Do not promote an unzoned or future-dated source as available at 08:00.
+   if(typeof stamp!=='string'||!/(Z|[+-]\\d{2}:\\d{2})$/i.test(stamp))return false;
    const x=new Date(stamp);
-   return Number.isFinite(x.getTime())&&romeTodayIso(x)===today;
+   return Number.isFinite(x.getTime())&&x.getTime()<=now.getTime()&&romeTodayIso(x)===today;
  };
  const checks={
    fx:!!fxOk,pairs:!!pairOk,vix:!!vixOk,
