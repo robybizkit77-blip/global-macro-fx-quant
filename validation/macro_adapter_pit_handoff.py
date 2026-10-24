@@ -150,6 +150,13 @@ def main() -> int:
                 exc.returncode == 75):
             print(f"CAD_STATCAN_TRANSPORT_WITHHELD: {args.dimension}; no PIT candidate",file=sys.stderr)
             return 75
+        # Official BLS HTTP 429/5xx only, after bounded adapter retries.
+        # All schema, source identity and PIT violations must remain fatal.
+        if (currency == "USD" and fixture is None and
+                route["adapter"] == "validation/sources/us_bls_core_macro.py" and
+                exc.returncode == 76):
+            print(f"USD_BLS_TRANSPORT_WITHHELD: {args.dimension}; no PIT candidate", file=sys.stderr)
+            return 76
         raise
 
     required = ("currency", "dimension", "macro_series_id", "observation_date", "value", "source", "series_id", "frequency", "transformation")
