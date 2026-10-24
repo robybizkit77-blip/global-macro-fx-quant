@@ -68,6 +68,10 @@ on:
       - 'validation/macro/v2_eurostat_hicp_component_event_replay_v1.py'
       - 'validation/macro/test_v2_eurostat_hicp_component_event_replay_v1.py'
       - 'validation/macro/MACRO_V2_EUROSTAT_HICP_SEP_2026_COMPONENT_FLASH_FINAL_AUDIT.md'
+      - 'validation/macro/fixtures/v2_eurostat_hicp_jul_sep_2026_flash_detailed_v1.json'
+      - 'validation/macro/v2_eurostat_hicp_three_month_replay_v1.py'
+      - 'validation/macro/test_v2_eurostat_hicp_three_month_replay_v1.py'
+      - 'validation/macro/MACRO_V2_EUROSTAT_HICP_JUL_SEP_2026_SIX_RELEASE_WEB_REPLAY.md'
   workflow_dispatch:
 
 permissions:
@@ -381,6 +385,11 @@ jobs:
           python -m unittest validation.macro.test_v2_eurostat_hicp_component_event_replay_v1 -v
           python -m validation.macro.v2_eurostat_hicp_component_event_replay_v1 --asof 2026-10-16T23:59:59Z --out /tmp/macro-v2-shadow/eur-hicp-before-detailed-safe-gate.json
           python -m validation.macro.v2_eurostat_hicp_component_event_replay_v1 --asof 2026-10-24T00:00:00Z --out /tmp/macro-v2-shadow/eur-hicp-sep-components-audit.json
+      - name: Verify three-month Eurostat HICP flash/detail vintage anti-leakage and August revision
+        run: |
+          python -m unittest validation.macro.test_v2_eurostat_hicp_three_month_replay_v1 -v
+          python -m validation.macro.v2_eurostat_hicp_three_month_replay_v1 --asof 2026-09-17T23:59:59Z --out /tmp/macro-v2-shadow/eur-aug-flash-before-detailed-gate.json
+          python -m validation.macro.v2_eurostat_hicp_three_month_replay_v1 --asof 2026-10-24T00:00:00Z --out /tmp/macro-v2-shadow/eur-hicp-jul-sep-web-pit-replay.json
       - name: Confirm no runtime or website files were changed by tests
         run: |
           git diff --exit-code -- live_data site payload dashboard
