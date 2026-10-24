@@ -129,6 +129,17 @@ def main() -> None:
     assert text.count(child_receipt) == 1
     assert text.count(required_success_gate) == 1
     assert text.index(child_receipt) < text.index(required_success_gate)
+    # The parent must never dispatch its explicit 05:00/07:45 Pages job
+    # before checking source freshness on the latest main checkout.
+    assert 'Checkout main for pre-publication source audit' in text
+    assert 'if [[ "$wf" == "publish-dashboard-pages-v1.yml" ]] &&' in text
+    assert 'git fetch origin --no-tags --depth=1' in text
+    assert 'git reset --hard origin/main' in text
+    assert 'python3 validation/orchestration/check_morning_readiness_v1.py' in text
+    assert '--strict-daily --pipeline-outcome success' in text
+    assert 'Main changed after pre-publication readiness audit' in text
+    assert 'path: /tmp/morning-readiness*.json' in text
+    assert text.index('if [[ "$wf" == "publish-dashboard-pages-v1.yml" ]] &&') < text.index('dispatch_and_wait "$wf"')
     # Feb 2026 GitHub API returns the exact dispatched run ID, instead of
     # guessing from adjacent/manual dispatches or relying on polling order.
     assert '"${api}/dispatches" -f ref=main -F return_run_details=true' in text
