@@ -246,5 +246,6 @@ def collect():
     # here, and only adds separately attested single-release candidates.
     from validation.macro.v2_pit_g8_latest_web_adapters_v1 import collect_latest
     from validation.macro.v2_pit_g8_remaining_core_adapters_v1 import collect_remaining_core
+    from validation.macro.v2_pit_g8_growth_web_bridges_v1 import collect_growth_bridges
     return ([eurostat(), abs_monthly(), bls_unemployment(), ons_labour_windows()]
-            + collect_latest() + collect_remaining_core())
+            + collect_latest() + collect_remaining_core() + collect_growth_bridges())
