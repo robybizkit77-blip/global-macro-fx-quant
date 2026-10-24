@@ -25,6 +25,7 @@ DASH_OWNED = {
     "V247_COT_STORIES.json", "NATIVE_CB_DATA.json",
     "CHF_SNB_10Y_SPOT_CONTEXT.json",
     "NZD_CB_PRICING_DIRECTIONAL_PROXY.json",
+    "NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json",
     "OIS_SOURCE_READINESS_VIEW.json",
 }
 DERIVED_SIDECARS = {"RATES_AUDIT_METADATA.json","OIS_DATA.json"}  # Non-Home-direct metadata and official OIS canonical source requiring strict public parity.
