@@ -45,7 +45,7 @@ def descriptor(proposal):
         "candidate_web_series_id":web,
         "frequency":freq,
         "proposal_transform":transform,
-        "underlying_economic_family":family,
+        "economic_family":family,
         "comparable_growth_horizon":HORIZONS[transform],
         "canonical_growth_source_selected":False,
         "training_window_certified":False,
