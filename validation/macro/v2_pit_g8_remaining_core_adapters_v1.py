@@ -165,7 +165,7 @@ def japan_inflation():
         require(anchor["rate"]==val and anchor["release_date"]==day,
                 "Japan original archived first publication figure/date altered")
         local=day+"T08:30:00+09:00"
-        ev.append(event(period,"FIRST_WEB",timestamp(local),val,url))
+        ev.append(event(period,"FIRST_WEB",local,val,url))
     return source(cc,dimension,sid,freq,unit,publisher,
         period_semantics=sem,evidence="JPY_104_MONTH_ESTAT_ARCHIVE_RECEIPT_TWO_LOCAL_TIME_WEB_HEADLINES",
         notes=[
