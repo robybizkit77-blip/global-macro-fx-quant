@@ -871,7 +871,9 @@ function expectedReactionFromMetrics(row){
     throw Error(label+' COT focused crowding does not match 104W source '+JSON.stringify({cotFirst,expectedCrowding}));
   if(cotFirst.status!=='READ_ONLY'||cotFirst.conflicts!==''||
      cotFirst.asof!==cotFixture.USD.dates.at(-1)||
-     cotFirst.extremes!=='5'||cotFirst.crowding!=='3'||
+     cotFirst.extremes!==String(expectedExtremes.length)||
+     cotFirst.crowding!==String(g8.filter(ccy=>
+       Math.abs(cotFixture[ccy].netoi.at(-1))>=30).length)||
      !cotFirst.closed||!cotFirst.chart||!cotFirst.table||
      !cotFirst.text.includes('Prezzo FX: WITHHELD')||
      !cotFirst.priority?.startsWith('Gli estremi COT descrivono')||
