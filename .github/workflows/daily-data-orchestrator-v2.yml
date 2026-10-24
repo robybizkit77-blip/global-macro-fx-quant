@@ -108,6 +108,15 @@ jobs:
           echo "phase=$phase" >> "$GITHUB_OUTPUT"
           echo "Resolved phase: $phase"
 
+      # The 05:00/07:45 pipeline must inspect the refreshed main tree
+      # before it explicitly dispatches the Pages publisher.
+      - name: Checkout main for pre-publication source audit
+        if: ${{ steps.phase.outputs.phase == 'prebrief' || steps.phase.outputs.phase == 'premorning' }}
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
       - name: Run serialized refresh sequence
         id: refresh
         if: ${{ steps.phase.outputs.phase != 'skip' }}
@@ -231,6 +240,25 @@ jobs:
 
             echo "## Daily Data Orchestrator V2 — ${phase}" >> "$GITHUB_STEP_SUMMARY"
             for wf in "${workflows[@]}"; do
+              # Final E2E is a structural check, not proof that dated
+              # market sources are ready. Refuse the explicit 05:00/07:45
+              # Pages dispatch unless the actual refreshed main feeds pass.
+              if [[ "$wf" == "publish-dashboard-pages-v1.yml" ]] &&
+                 [[ "$phase" == "prebrief" || "$phase" == "premorning" ]]; then
+                git fetch origin --no-tags --depth=1 '+refs/heads/main:refs/remotes/origin/main'
+                git reset --hard origin/main
+                audited_sha=$(git rev-parse HEAD)
+                python3 validation/orchestration/check_morning_readiness_v1.py \
+                  --strict-daily --pipeline-outcome success \
+                  --output /tmp/morning-readiness-prepublish.json \
+                  > /tmp/morning-readiness-prepublish.log
+                latest_main_sha=$(git ls-remote origin refs/heads/main | awk '{print $1}')
+                if [[ "$latest_main_sha" != "$audited_sha" ]]; then
+                  echo "Main changed after pre-publication readiness audit; refusing stale approval" >&2
+                  return 1
+                fi
+                echo "- Pre-publication source readiness **PASS** on main \`${audited_sha}\` for ${phase}" >> "$GITHUB_STEP_SUMMARY"
+              fi
               dispatch_and_wait "$wf"
             done
           }
@@ -313,7 +341,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: control-room-morning-readiness-${{ github.run_id }}
-          path: /tmp/morning-readiness-v1.json
+          path: /tmp/morning-readiness*.json
           if-no-files-found: warn
           retention-days: 21
 
