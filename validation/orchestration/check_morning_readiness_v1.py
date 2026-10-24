@@ -10,6 +10,8 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import math
+import re
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -22,6 +24,7 @@ REQUIRED = (
     "D.json", "NEWS_PULSE_OPERATIONAL.json", "CALENDAR_OPERATIONAL_VIEW.json",
     "NATIVE_RATES_DATA.json", "OIS_OPERATIONAL_VIEW.json",
     "V250_COT_CHART_DATA.json",
+    "MACRO_THERMOMETER_DATA.json",
 )
 
 
@@ -76,6 +79,7 @@ def inspect(feeds: dict, now: dt.datetime, pipeline_outcome: str = "success") ->
     rates = feeds["NATIVE_RATES_DATA.json"]
     ois = feeds["OIS_OPERATIONAL_VIEW.json"]
     cot = feeds["V250_COT_CHART_DATA.json"]
+    thermometer = feeds["MACRO_THERMOMETER_DATA.json"]
 
     if (fx.get("status") != "CURRENT_OFFICIAL_HISTORY" or
         not isinstance(fx.get("rows"), list) or len(fx["rows"]) < 21 or
@@ -120,6 +124,58 @@ def inspect(feeds: dict, now: dt.datetime, pipeline_outcome: str = "success") ->
         "estimated": sorted(c for c in G8 if op[c] == "GREEN_ESTIMATED"),
         "withheld": sorted(c for c in G8 if op[c] not in {"GREEN_OFFICIAL", "GREEN_ESTIMATED"}),
     }
+    # Raw observation periods are not official release timestamps, PIT release
+    # vintages, nor current structural model scores. Explicitly separate them.
+    macro_rows = {}
+    macro_invalid = []
+    dimensions = thermometer.get("currencies")
+    if (not isinstance(dimensions, dict) or set(dimensions) != set(G8)):
+        macro_invalid.append("G8_COVERAGE")
+        dimensions = dimensions if isinstance(dimensions, dict) else {}
+    for c in G8:
+        observations = dimensions.get(c, {})
+        for pillar in ("inflation", "labour"):
+            row = observations.get(pillar, {}) if isinstance(observations, dict) else {}
+            if not isinstance(row, dict):
+                row = {}
+            period = row.get("as_of")
+            source = row.get("source")
+            value = row.get("latest_value")
+            history = row.get("history")
+            value_ok = (type(value) in (int, float) and math.isfinite(value)
+                        and isinstance(history, list) and len(history) > 0
+                        and type(history[-1]) in (int, float)
+                        and math.isfinite(history[-1])
+                        and abs(value - history[-1]) < 1e-8)
+            period_ok = (isinstance(period, str) and
+                         re.fullmatch(r"\\d{4}-\\d{2}(?:-01)?", period) is not None and
+                         valid_date(period[:7] + "-01") is not None and
+                         period[:7] <= today.strftime("%Y-%m"))
+            source_ok = isinstance(source, str) and bool(source.strip())
+            ok = bool(period_ok and source_ok and value_ok)
+            key = f"{c}.{pillar}"
+            macro_rows[key] = {
+                "reference_period": period if period_ok else None,
+                "value": value if value_ok else None,
+                "source_label": source if source_ok else None,
+                "state": "OBSERVED_PERIOD_ONLY_NOT_RELEASE_DATE" if ok
+                         else "INVALID_OBSERVATION",
+            }
+            if not ok:
+                macro_invalid.append(key)
+    evidence["MACRO_OBSERVATIONS_G8"] = {
+        "observed": sum(row["state"] == "OBSERVED_PERIOD_ONLY_NOT_RELEASE_DATE"
+                        for row in macro_rows.values()),
+        "expected": 16,
+        "invalid": macro_invalid,
+        "rows": macro_rows,
+        "release_timestamps_verified": False,
+        "full_first_release_pit_certified": False,
+        "scores_recomputed": False,
+    }
+    if macro_invalid:
+        problems.append("MACRO_OBSERVATION_SOURCE_INTEGRITY")
+
     # Macro cycle scores are a separate frozen baseline; weekly COT is not
     # expected to acquire today's date before the new official release.
     evidence["MACRO_BASELINE"] = {"as_of": valid_date(model.get("asOf")),
@@ -138,7 +194,7 @@ def inspect(feeds: dict, now: dt.datetime, pipeline_outcome: str = "success") ->
         "operational_state": "DAILY_READY_WITH_DOCUMENTED_GAPS" if not problems else "DAILY_INPUTS_INCOMPLETE",
         "critical_daily_problems": sorted(set(problems)),
         "evidence": evidence,
-        "caution": "This does not certify official release holidays, OIS proxies, COT weekly cadence or recompute structural Macro scores.",
+        "caution": "Macro observations are raw dated reference periods, not release timestamps, full PIT vintages or current scores. This does not certify official release holidays, OIS proxies or COT weekly cadence.",
         "core_effect": "NONE",
     }
 
