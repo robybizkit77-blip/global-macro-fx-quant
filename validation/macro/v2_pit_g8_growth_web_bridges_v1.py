@@ -140,7 +140,7 @@ def _check_event(row,pin,*,currency,is_revision=False):
             and row.get("published_on")==day
             and row.get("source_clock")==clock
             and row.get("source_url")==url
-            and row.get("conservative_visible_from_utc")==_visible(day,clock)
+            and timestamp(row.get("conservative_visible_from_utc"))==timestamp(_visible(day,clock))
             and row.get("publication_stage")==stage
             and row.get("kind")==("REVISION_WEB" if is_revision else "FIRST_WEB"),
             "official Growth publication event/metric/vintage tampered: "+currency)
