@@ -80,6 +80,12 @@ def main() -> None:
         "actions: write",
         "Europe/Rome",
         "dispatch_and_wait",
+        "child_event=$(jq -r '.event // empty'",
+        "child_branch=$(jq -r '.head_branch // empty'",
+        "child_sha=$(jq -r '.head_sha // empty'",
+        "child_url=$(jq -r '.html_url // empty'",
+        'Child run identity failed:',
+        'actions/runs/${run_id}',
         "0 3 * * 1-5",
         "0 4 * * 1-5",
         "phase=prebrief",
@@ -109,6 +115,17 @@ def main() -> None:
     for marker in required_markers:
         if marker not in text:
             fail(f"orchestrator missing marker: {marker}")
+
+    # Audit evidence must retain the exact downstream run identity, including
+    # failures, BEFORE the existing fail-closed gate allows the next child.
+    child_receipt = 'echo "- [${wf} · run #${run_id}]('
+    required_success_gate = '[[ "$conclusion" == "success" ]] || return 1'
+    assert text.count(child_receipt) == 1
+    assert text.count(required_success_gate) == 1
+    assert text.index(child_receipt) < text.index(required_success_gate)
+    assert 'gh api --method POST "${api}/dispatches" -f ref=main' in text
+    assert '[[ "$child_event" != "workflow_dispatch"' in text
+    assert '"$child_branch" != "main"' in text
 
     print(json.dumps({
         "status": "PASS",
