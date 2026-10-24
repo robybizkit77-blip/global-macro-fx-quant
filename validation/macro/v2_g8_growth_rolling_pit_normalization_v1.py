@@ -40,16 +40,21 @@ def descriptor(proposal):
     c=proposal.get("currency")
     require(c in PINNED, "unknown FX Growth currency")
     sid,freq,unit,period,value,n,web,transform,family,relation=PINNED[c]
-    require(proposal.get("observed_series_id")==sid
-            and proposal.get("candidate_web_series_id")==web
-            and proposal.get("frequency")==freq
-            and proposal.get("proposal_transform")==transform
-            and proposal.get("underlying_economic_family")==family
-            and proposal.get("comparable_growth_horizon")==HORIZONS[transform]
-            and proposal.get("canonical_growth_source_selected") is False
-            and proposal.get("training_window_certified") is False
-            and proposal.get("one_to_one_metric_crosswalk_with_publisher_first_event_certified") is False,
-            "proposed Growth family/horizon/source contract drift")
+    checks={
+        "observed_series_id":sid,
+        "candidate_web_series_id":web,
+        "frequency":freq,
+        "proposal_transform":transform,
+        "underlying_economic_family":family,
+        "comparable_growth_horizon":HORIZONS[transform],
+        "canonical_growth_source_selected":False,
+        "training_window_certified":False,
+        "one_to_one_metric_crosswalk_with_publisher_first_event_certified":False,
+    }
+    for field,expected in checks.items():
+        require(proposal.get(field)==expected and
+                (type(proposal.get(field)) is bool if type(expected) is bool else True),
+                "proposed Growth contract mismatch: "+c+"."+field)
     require(family in FAMILIES, "unreviewed macro family")
     return {"currency":c,"source_series_id":sid,"frequency":freq,
             "economic_family":family,"transform":transform,"horizon":HORIZONS[transform],
