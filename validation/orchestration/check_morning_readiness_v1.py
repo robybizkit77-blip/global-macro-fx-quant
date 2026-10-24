@@ -104,7 +104,18 @@ def inspect(feeds: dict, now: dt.datetime, pipeline_outcome: str = "success") ->
     for name, row in (("CALENDAR_REFRESH", calendar), ("NEWS_PULSE_REFRESH", news)):
         stamp = row.get("generated_at_utc")
         stamp_day = rome_build_day(stamp)
-        status = "TODAY_BUILT" if stamp_day == today.isoformat() else "NOT_BUILT_TODAY"
+        try:
+            build_instant = dt.datetime.fromisoformat(stamp.replace("Z", "+00:00")) if isinstance(stamp, str) else None
+            if build_instant is None or build_instant.tzinfo is None or build_instant.utcoffset() is None:
+                build_instant = None
+        except ValueError:
+            build_instant = None
+        if build_instant is not None and build_instant > now:
+            status = "FUTURE_DATED"
+        elif stamp_day == today.isoformat() and build_instant is not None:
+            status = "TODAY_BUILT"
+        else:
+            status = "NOT_BUILT_TODAY"
         evidence[name] = {"generated_at_utc": stamp, "generated_date_rome": stamp_day, "status": status}
         if status != "TODAY_BUILT":
             problems.append(name)
