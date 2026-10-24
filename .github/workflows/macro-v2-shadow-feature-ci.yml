@@ -76,6 +76,10 @@ on:
       - 'validation/macro/v2_eurostat_hicp_five_month_replay_v1.py'
       - 'validation/macro/test_v2_eurostat_hicp_five_month_replay_v1.py'
       - 'validation/macro/MACRO_V2_EUROSTAT_HICP_MAY_SEP_FIVE_MONTH_REPLAY_2026-10-24.md'
+      - 'validation/macro/fixtures/v2_eurostat_hicp_mar_apr_2026_release_addendum_v1.json'
+      - 'validation/macro/v2_eurostat_hicp_seven_month_replay_v1.py'
+      - 'validation/macro/test_v2_eurostat_hicp_seven_month_replay_v1.py'
+      - 'validation/macro/MACRO_V2_EUROSTAT_HICP_MAR_SEP_SEVEN_MONTH_REPLAY_2026-10-24.md'
   workflow_dispatch:
 
 permissions:
@@ -399,6 +403,11 @@ jobs:
           python -m unittest validation.macro.test_v2_eurostat_hicp_five_month_replay_v1 -v
           python -m validation.macro.v2_eurostat_hicp_five_month_replay_v1 --asof 2026-07-01T23:59:59Z --out /tmp/macro-v2-shadow/eurostat-before-june-flash-gate.json
           python -m validation.macro.v2_eurostat_hicp_five_month_replay_v1 --asof 2026-10-24T00:00:00Z --out /tmp/macro-v2-shadow/eurostat-may-sep-five-month-replay.json
+      - name: Verify Eurostat March-Sept seven-month stage-vintage replay and historical services cross-report chronology
+        run: |
+          python -m unittest validation.macro.test_v2_eurostat_hicp_seven_month_replay_v1 -v
+          python -m validation.macro.v2_eurostat_hicp_seven_month_replay_v1 --asof 2026-05-20T23:59:59Z --out /tmp/macro-v2-shadow/eurostat-before-april-final-gate.json
+          python -m validation.macro.v2_eurostat_hicp_seven_month_replay_v1 --asof 2026-10-24T00:00:00Z --out /tmp/macro-v2-shadow/eurostat-march-september-seven-month-replay.json
       - name: Confirm no runtime or website files were changed by tests
         run: |
           git diff --exit-code -- live_data site payload dashboard
