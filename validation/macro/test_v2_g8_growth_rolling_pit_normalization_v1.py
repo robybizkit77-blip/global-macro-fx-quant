@@ -130,6 +130,7 @@ class FrozenAsOfRollingGrowthNormalizationTests(unittest.TestCase):
         self.assertIsNone(r["research_rolling_z"])
         other=copy.deepcopy(hist)
         other[5]["reference_period"]="2019Q2"
+        other[5]["frozen_at_utc"]="2019-08-01T00:00:00Z"
         r=rolling_research_normalization(self.proposals["AUD"],cur,other,as_of=cutoff)
         self.assertEqual(r["status"],"INSUFFICIENT_CONSECUTIVE_FROZEN_PRIOR_FEATURES")
         self.assertIsNone(r["research_rolling_z"])
