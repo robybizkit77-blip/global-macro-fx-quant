@@ -87,7 +87,8 @@ def audit(series, dossier, *, as_of=date(2026, 10, 24)):
                     "do not manufacture August Eurostat level from MoM change")
         else:
             require(item["official_metric_unit"] == "percent YoY"
-                    and observed["unit"] == "percent YoY", "CPI metric unit mismatch")
+                    and observed["unit"] == ("percent YoY SA" if "TRIMMED" in sid else "percent YoY"),
+                    "CPI metric unit mismatch")
         require(observed_period <= release_period, "snapshot newer than pinned release")
         observed_value_agrees = (type(observed.get("last_value")) in (int, float)
                                  and math.isfinite(observed["last_value"])
