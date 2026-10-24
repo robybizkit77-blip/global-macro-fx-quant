@@ -1,6 +1,13 @@
 name: Macro Source Registry Audit
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/macro/check_macro_source_registry.py'
+      - 'validation/macro/test_macro_source_registry_source_label_parity_v1.py'
+      - 'validation/macro/test_macro_source_registry_source_label_parity_v1.py'
+      - '.github/workflows/macro-source-registry-audit.yml'
   push:
     branches:
       - validation-macro-source-registry-2026-10-08
@@ -37,6 +44,9 @@ jobs:
         run: |
           set -euo pipefail
           sha256sum live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/manifest.v2.json > /tmp/macro-registry-before.sha256
+
+      - name: Fail fast on official NZD adapter versus historical Figure.NZ source-label parity
+        run: python3 -m unittest validation.macro.test_macro_source_registry_source_label_parity_v1 -v
 
       - name: Audit canonical macro source registry
         shell: bash
