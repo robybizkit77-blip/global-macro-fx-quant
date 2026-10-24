@@ -2076,7 +2076,15 @@ function pairDeskOrdering(feedData,model){
      thesisKey:[Number(eligible),structure,transition,price,timing,extension,liquidity,cot],
      setupKey:[Number(eligible),price,extension,timing,structure,transition,liquidity,cot]});
  }
- if(Object.keys(dist).some(k=>dist[k]!==feedData.quality_distribution?.[k])||
+ // Source quality buckets with zero members may be legitimately omitted.
+ // Normalize ONLY absent zero-count buckets; contradictory, unknown or
+ // non-integer counts still fail closed before displaying a 1-28 ranking.
+ const published=feedData.quality_distribution;
+ if(!published||typeof published!=='object'||Array.isArray(published)||
+    Object.entries(published).some(([key,value])=>
+      !Object.hasOwn(dist,key)||!Number.isInteger(value)||value<0)||
+    Object.keys(dist).some(key=>dist[key]!==
+      (Object.hasOwn(published,key)?published[key]:0))||
     Object.values(dist).reduce((a,b)=>a+b,0)!==28)return null;
  const compare=(key)=>(a,b)=>{
    for(let i=0;i<a[key].length;i++){
@@ -2694,7 +2702,12 @@ async function mountScreenerBlockers(doc){
    if(!categoriesKnown.includes(quality)){unknown();return}
    counts[quality]++;
  }
- if(categoriesKnown.some(k=>counts[k]!==setup.quality_distribution?.[k])||
+ const distribution=setup.quality_distribution;
+ if(!distribution||typeof distribution!=='object'||Array.isArray(distribution)||
+    Object.entries(distribution).some(([k,v])=>
+      !categoriesKnown.includes(k)||!Number.isInteger(v)||v<0)||
+    categoriesKnown.some(k=>counts[k]!==
+      (Object.hasOwn(distribution,k)?distribution[k]:0))||
     categoriesKnown.reduce((v,k)=>v+counts[k],0)!==28){unknown();return}
  const reviewPairs=Object.entries(records)
    .filter(([,record])=>['DA CONFERMARE','DA MONITORARE'].includes(record.setup.quality))

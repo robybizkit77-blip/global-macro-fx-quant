@@ -816,6 +816,9 @@ function expectedReactionFromMetrics(row){
       relation:(cls==='EXTREME LONG'&&net<0)||(cls==='EXTREME SHORT'&&net>0)?'OPPOSED':'ALIGNED'};
   }).filter(x=>x.cls!=='NEUTRALE');
   const opposedExpected=expectedExtremes.filter(x=>x.relation==='OPPOSED');
+  const opposedCHF=opposedExpected.find(x=>x.ccy==='CHF');
+  const expectedCHFNote=opposedCHF?
+    'CHF '+opposedCHF.pct+'° · '+opposedCHF.cls+', ma Net':null;
   if(cotFirst.percentileCount!==String(expectedExtremes.length)||
      cotFirst.rankVsNet!==String(opposedExpected.length)||
      cotFirst.extremeAudit?.asof!==cotFixture.USD.dates.at(-1)||
@@ -824,7 +827,7 @@ function expectedReactionFromMetrics(row){
      !cotFirst.extremeAudit.closed||
      cotFirst.extremeAudit.rows.length!==expectedExtremes.length||
      !cotFirst.extremeAudit.note?.includes('Percentile ≠ segno del Net')||
-     !cotFirst.extremeAudit.note?.includes('CHF 95° · EXTREME LONG, ma Net')||
+     (expectedCHFNote&&!cotFirst.extremeAudit.note?.includes(expectedCHFNote))||
      cotFirst.extremeAudit.rows.some((x,i)=>{
        const expected=expectedExtremes[i];return !expected||
          x.ccy!==expected.ccy||x.pct!==expected.pct||x.net!==expected.net||
@@ -868,7 +871,9 @@ function expectedReactionFromMetrics(row){
     throw Error(label+' COT focused crowding does not match 104W source '+JSON.stringify({cotFirst,expectedCrowding}));
   if(cotFirst.status!=='READ_ONLY'||cotFirst.conflicts!==''||
      cotFirst.asof!==cotFixture.USD.dates.at(-1)||
-     cotFirst.extremes!=='5'||cotFirst.crowding!=='3'||
+     cotFirst.extremes!==String(expectedExtremes.length)||
+     cotFirst.crowding!==String(g8.filter(ccy=>
+       Math.abs(cotFixture[ccy].netoi.at(-1))>=30).length)||
      !cotFirst.closed||!cotFirst.chart||!cotFirst.table||
      !cotFirst.text.includes('Prezzo FX: WITHHELD')||
      !cotFirst.priority?.startsWith('Gli estremi COT descrivono')||

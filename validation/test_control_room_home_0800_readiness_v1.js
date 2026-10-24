@@ -28,13 +28,21 @@ vm.createContext(ctx);
 vm.runInContext(source.slice(start,end),ctx);
 const date=new Date('2026-10-23T06:00:00Z');
 const inspect=(a=inputs,t=date)=>ctx.homeMorningStudySources(...a,t);
-const result=inspect();
-assert.equal(result.total,5);
+// Real 24 October agenda must NOT validate a frozen 23 October study.
+const observed=inspect();
+assert.equal(observed.total,5);
+assert.equal(observed.checks.calendar,false,'future calendar cannot certify a past briefing');
+assert.equal(observed.confirmed,4);
+assert.equal(observed.mode,'DAILY_INCOMPLETE');
+// Positive PIT fixture: a separately generated same-day calendar at 23 October.
+const verifiedFixture=structuredClone(inputs);
+verifiedFixture[6].generated_at_utc='2026-10-23T05:52:00Z';
+const result=inspect(verifiedFixture);
 assert.equal(result.confirmed,5,JSON.stringify(result));
 assert.equal(result.mode,'DAILY_VERIFIED_WITH_GAPS');
 assert.equal(result.prior,'2026-10-22');
-assert.equal(result.fxDay,'2026-10-22');
-assert.equal(result.vixDay,'2026-10-22');
+assert.equal(result.fxDay,'2026-10-23');
+assert.equal(result.vixDay,'2026-10-23');
 assert.equal(result.sourceEffect,'NONE');
 assert.equal(result.rateRecent.length,6);
 assert.equal(result.rateLag.join(','),'NZD,CHF');
@@ -47,7 +55,7 @@ assert.deepEqual([...result.withoutOis].sort(),
 assert.equal(result.macroDay,'2026-09-25');
 
 function altered(index,mutate){
- const x=structuredClone(inputs);mutate(x[index]);return inspect(x);
+ const x=structuredClone(verifiedFixture);mutate(x[index]);return inspect(x);
 }
 assert.equal(altered(0,x=>{x.last_as_of='2026-10-21'}).checks.fx,false);
 assert.equal(altered(0,x=>{x.rows.at(-1).USD=null}).checks.fx,false);
