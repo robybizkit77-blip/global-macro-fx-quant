@@ -96,7 +96,7 @@ class EurostatHICPFiveMonthReplayTests(unittest.TestCase):
 
     def test_pin_tamper_rejected_and_full_certification_still_false(self):
         alterations=(
-            (0,0,"CORE_HICP","flash_percent_yoy",2.6),
+            (0,1,"CORE_HICP","flash_percent_yoy",2.6),
             (0,2,"ENERGY","detailed_percent_yoy",10.9),
             (1,4,"NON_ENERGY_INDUSTRIAL_GOODS","detailed_percent_yoy",0.9),
         )
