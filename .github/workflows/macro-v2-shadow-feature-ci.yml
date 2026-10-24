@@ -113,6 +113,10 @@ on:
       - 'validation/macro/v2_us_fed_g17_seven_release_growth_replay_v1.py'
       - 'validation/macro/test_v2_us_fed_g17_seven_release_growth_replay_v1.py'
       - 'validation/macro/MACRO_V2_US_FED_G17_SEVEN_OFFICIAL_RELEASE_VINTAGES_2026-10-24.md'
+      - 'validation/macro/fixtures/v2_us_fed_g17_2025_shutdown_2026_12_editions_v1.json'
+      - 'validation/macro/v2_us_fed_g17_shutdown_13_month_replay_v1.py'
+      - 'validation/macro/test_v2_us_fed_g17_shutdown_13_month_replay_v1.py'
+      - 'validation/macro/MACRO_V2_US_FED_SHUTDOWN_13_MONTH_GROWTH_PUBLISHER_VINTAGES_2026-10-24.md'
   workflow_dispatch:
 
 permissions:
@@ -127,7 +131,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Fast fail on G8 Growth PIT, normalization and Fed seven real published-release vintages
+      - name: Fast fail on G8 Growth and Fed 2025 shutdown thirteen first-published month evidence
         run: |
           python -m unittest validation.macro.test_v2_pit_g8_control_plane_v1 -v
           python -m unittest validation.macro.test_v2_pit_g8_latest_web_adapters_v1 -v
@@ -136,6 +140,7 @@ jobs:
           python -m unittest validation.macro.test_v2_g8_growth_transform_proposal_gate_v1 -v
           python -m unittest validation.macro.test_v2_g8_growth_rolling_pit_normalization_v1 -v
           python -m unittest validation.macro.test_v2_us_fed_g17_seven_release_growth_replay_v1 -v
+          python -m unittest validation.macro.test_v2_us_fed_g17_shutdown_13_month_replay_v1 -v
       - name: Test first-release and revision PIT guardrails (synthetic)
         run: python -m unittest validation.macro.test_v2_shadow_features_v1 -v
       - name: Replay five official BLS first-release web attestations without future leakage
@@ -495,6 +500,13 @@ jobs:
           python -m validation.macro.v2_us_fed_g17_seven_release_growth_replay_v1 --asof 2026-09-18T13:14:59Z --out /tmp/macro-v2-shadow/us-g17-before-aug-release.json
           python -m validation.macro.v2_us_fed_g17_seven_release_growth_replay_v1 --asof 2026-09-18T13:15:00Z --out /tmp/macro-v2-shadow/us-g17-at-aug-release.json
           python -m validation.macro.v2_us_fed_g17_seven_release_growth_replay_v1 --asof 2026-10-16T13:15:00Z --out /tmp/macro-v2-shadow/us-g17-at-sep-release.json
+      - name: Verify Fed 2025 shutdown and March to October 2026 13 original months and revision chronology
+        run: |
+          python -m unittest validation.macro.test_v2_us_fed_g17_shutdown_13_month_replay_v1 -v
+          python -m validation.macro.v2_us_fed_g17_shutdown_13_month_replay_v1 --asof 2025-12-23T14:14:59Z --out /tmp/macro-v2-shadow/us-ip-before-double-first.json
+          python -m validation.macro.v2_us_fed_g17_shutdown_13_month_replay_v1 --asof 2025-12-23T14:15:00Z --out /tmp/macro-v2-shadow/us-ip-after-double-first.json
+          python -m validation.macro.v2_us_fed_g17_shutdown_13_month_replay_v1 --asof 2026-03-16T13:15:00Z --out /tmp/macro-v2-shadow/us-ip-first-real-six-month-growth.json
+          python -m validation.macro.v2_us_fed_g17_shutdown_13_month_replay_v1 --asof 2026-10-24T00:00:00Z --out /tmp/macro-v2-shadow/us-ip-thirteen-month-replay.json
       - name: Confirm no runtime or website files were changed by tests
         run: |
           git diff --exit-code -- live_data site payload dashboard
