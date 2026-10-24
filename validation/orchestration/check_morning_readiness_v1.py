@@ -66,7 +66,10 @@ def inspect(feeds: dict, now: dt.datetime, pipeline_outcome: str = "success") ->
     evidence = {}
     def session(name: str, date: object) -> None:
         actual = valid_date(date)
-        status = "PREVIOUS_SESSION" if actual and expected <= actual <= today.isoformat() else "NEEDS_SOURCE_REVIEW"
+        # Before the morning briefing, an ECB fixing / VIX CLOSE dated today
+        # has not been officially published yet. Require the previous weekday;
+        # official market holidays remain an explicit source-review exception.
+        status = "PREVIOUS_SESSION" if actual == expected else "NEEDS_SOURCE_REVIEW"
         evidence[name] = {"as_of": actual, "expected_not_before": expected, "status": status}
         if status != "PREVIOUS_SESSION":
             problems.append(name)
@@ -88,8 +91,28 @@ def inspect(feeds: dict, now: dt.datetime, pipeline_outcome: str = "success") ->
         any(not isinstance(fx["rows"][-1].get(c), (int, float)) or
                 fx["rows"][-1][c] <= 0 for c in G8)):
         problems.append("FX_SOURCE_INTEGRITY")
-    if (pair.get("status") != "CURRENT_CANONICAL_ENGINE" or pair.get("pair_count") != 28 or
-        pair.get("price_audit", {}).get("status") != "PASS"):
+    # A successful producer label is not proof that all 28 unordered G8
+    # currency crosses are actually present, priced and anchored to the same
+    # official fixing vintage. No fabricated or duplicate inverse crosses.
+    pair_rows = pair.get("pairs")
+    pair_keys = list(pair_rows) if isinstance(pair_rows, dict) else []
+    expected_crosses = {frozenset((a, b)) for i, a in enumerate(G8)
+                        for b in G8[i + 1:]}
+    observed_crosses = {frozenset((key[:3], key[3:])) for key in pair_keys
+                        if isinstance(key, str) and len(key) == 6 and
+                        key[:3] in G8 and key[3:] in G8 and key[:3] != key[3:]}
+    audit = pair.get("price_audit", {})
+    if (pair.get("status") != "CURRENT_CANONICAL_ENGINE" or
+        pair.get("pair_count") != 28 or len(pair_keys) != 28 or
+        len(observed_crosses) != 28 or observed_crosses != expected_crosses or
+        not isinstance(audit, dict) or audit.get("status") != "PASS" or
+        audit.get("as_of") != pair.get("price_asof") or
+        audit.get("history_asof") != fx.get("last_as_of") or
+        audit.get("overlay_asof") != pair.get("price_asof") or
+        audit.get("pair_count") != 28 or
+        audit.get("complete_pair_count") != 28 or
+        audit.get("no_lookahead") is not True or
+        audit.get("returns_complete") is not True):
         problems.append("PAIR_SOURCE_INTEGRITY")
     session("FX_OFFICIAL_FIXING", fx.get("last_as_of"))
     session("PAIR_PRICE", pair.get("price_asof"))
