@@ -29,8 +29,8 @@ class G8LatestPublisherAnchorTests(unittest.TestCase):
     def test_eight_core_latest_releases_seven_new_streams_and_duplicate_gbp_reconciled(self):
         self.assertEqual(len(self.core),7)
         self.assertEqual(len(self.growth),2)
-        self.assertEqual(len(self.streams),18)
-        self.assertEqual(len({(x["currency"],x["pillar"]) for x in self.streams}),18)
+        self.assertEqual(len(self.streams),24)
+        self.assertEqual(len({(x["currency"],x["pillar"]) for x in self.streams}),24)
         expected={("USD","inflation"),("CAD","inflation"),("AUD","labour"),
                   ("CAD","labour"),("JPY","labour"),("GBP","inflation"),
                   ("NZD","inflation")}
@@ -146,15 +146,15 @@ class G8LatestPublisherAnchorTests(unittest.TestCase):
         self.assertEqual(GROWTH_PINS["NZD"][5],2.6)
         self.assertEqual(CORE_REFERENCE["USD.inflation"][-2:],(324.245,336.298))
         self.assertEqual(CORE_REFERENCE["CAD.inflation"][-2:],(164.9,170.0))
-        bad=copy.deepcopy(self.streams[-1])
+        bad=copy.deepcopy(next(s for s in self.streams if (s["currency"],s["pillar"])==("NZD","growth")))
         bad["events"][0]["observation_period"]="2026-09"
         with self.assertRaises(ValueError):
             normalize(bad)
-        bad=copy.deepcopy(self.streams[-1])
+        bad=copy.deepcopy(next(s for s in self.streams if (s["currency"],s["pillar"])==("NZD","growth")))
         bad["events"][0]["visible_from_utc"]="2026-09-17T10:45:00"
         with self.assertRaises(ValueError):
             normalize(bad)
-        bad=copy.deepcopy(self.streams[-1])
+        bad=copy.deepcopy(next(s for s in self.streams if (s["currency"],s["pillar"])==("NZD","growth")))
         bad["events"][0]["source_url"]="https://not-official.example/release"
         with self.assertRaises(ValueError):
             normalize(bad)
