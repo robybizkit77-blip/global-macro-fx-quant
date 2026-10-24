@@ -1,0 +1,131 @@
+{
+  "schema": "GMFQ_MACRO_V2_ABS_COMPLETE_MONTHLY_CPI_2025_10_TO_2026_08_RELEASE_LEDGER_V1",
+  "review_as_of": "2026-10-24",
+  "authority": "Australian Bureau of Statistics",
+  "data_regime": "COMPLETE_MONTHLY_CPI_FIRST_REGULAR_RELEASE_OCT_2025_REFERENCE_PUBLISHED_NOV_26",
+  "first_full_monthly_period": "2025-10",
+  "monthly_backcast_reference_period_start": "2024-04",
+  "backcast_may_have_been_published_in_2025_but_not_as_2024_first_monthly_releases": true,
+  "official_migration_document": "https://www.abs.gov.au/media-centre/media-statements/abs-announces-monthly-cpi-start-november-2025",
+  "official_rba_methodology": "https://www.rba.gov.au/publications/technical-notes/2025/the-transition-to-a-complete-monthly-cpi.html",
+  "ledger": [
+    {
+      "reference_period": "2025-10",
+      "release_timestamp_local": "2025-11-26T11:30:00+11:00",
+      "headline_annual_percent": 3.8,
+      "trimmed_mean_annual_percent": 3.3,
+      "source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/oct-2025",
+      "source_evidence": "PERIOD_SPECIFIC_OFFICIAL_WEB_HEADLINE_METRIC_WITH_RELEASE_CLOCK",
+      "immutable_original_release_html_bytes_preserved": false
+    },
+    {
+      "reference_period": "2025-11",
+      "release_timestamp_local": "2026-01-07T11:30:00+11:00",
+      "headline_annual_percent": 3.4,
+      "trimmed_mean_annual_percent": 3.2,
+      "source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/nov-2025",
+      "source_evidence": "PERIOD_SPECIFIC_OFFICIAL_WEB_HEADLINE_METRIC_WITH_RELEASE_CLOCK",
+      "immutable_original_release_html_bytes_preserved": false
+    },
+    {
+      "reference_period": "2025-12",
+      "release_timestamp_local": "2026-01-28T11:30:00+11:00",
+      "headline_annual_percent": 3.8,
+      "trimmed_mean_annual_percent": 3.3,
+      "source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/dec-2025",
+      "source_evidence": "PERIOD_SPECIFIC_OFFICIAL_WEB_HEADLINE_METRIC_WITH_RELEASE_CLOCK",
+      "immutable_original_release_html_bytes_preserved": false
+    },
+    {
+      "reference_period": "2026-01",
+      "release_timestamp_local": "2026-02-25T11:30:00+11:00",
+      "headline_annual_percent": 3.8,
+      "trimmed_mean_annual_percent": 3.4,
+      "source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/jan-2026",
+      "source_evidence": "PERIOD_SPECIFIC_OFFICIAL_WEB_HEADLINE_METRIC_WITH_RELEASE_CLOCK",
+      "immutable_original_release_html_bytes_preserved": false
+    },
+    {
+      "reference_period": "2026-02",
+      "release_timestamp_local": "2026-03-25T11:30:00+11:00",
+      "headline_annual_percent": 3.7,
+      "trimmed_mean_annual_percent": 3.3,
+      "source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/feb-2026",
+      "source_evidence": "PERIOD_SPECIFIC_OFFICIAL_WEB_HEADLINE_METRIC_WITH_RELEASE_CLOCK",
+      "immutable_original_release_html_bytes_preserved": false
+    },
+    {
+      "reference_period": "2026-03",
+      "release_timestamp_local": "2026-04-29T11:30:00+10:00",
+      "headline_annual_percent": 4.6,
+      "trimmed_mean_annual_percent": 3.3,
+      "source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/mar-2026",
+      "source_evidence": "PERIOD_SPECIFIC_OFFICIAL_WEB_HEADLINE_METRIC_WITH_RELEASE_CLOCK",
+      "immutable_original_release_html_bytes_preserved": false
+    },
+    {
+      "reference_period": "2026-04",
+      "release_timestamp_local": "2026-05-27T11:30:00+10:00",
+      "headline_annual_percent": 4.2,
+      "trimmed_mean_annual_percent": 3.4,
+      "source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/apr-2026",
+      "source_evidence": "PERIOD_SPECIFIC_OFFICIAL_WEB_HEADLINE_METRIC_WITH_RELEASE_CLOCK",
+      "immutable_original_release_html_bytes_preserved": false
+    },
+    {
+      "reference_period": "2026-05",
+      "release_timestamp_local": "2026-06-24T11:30:00+10:00",
+      "headline_annual_percent": 4,
+      "trimmed_mean_annual_percent": 3.6,
+      "source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/may-2026",
+      "source_evidence": "PERIOD_SPECIFIC_OFFICIAL_WEB_HEADLINE_METRIC_WITH_RELEASE_CLOCK",
+      "immutable_original_release_html_bytes_preserved": false
+    },
+    {
+      "reference_period": "2026-06",
+      "release_timestamp_local": "2026-07-29T11:30:00+10:00",
+      "headline_annual_percent": 3.8,
+      "trimmed_mean_annual_percent": 3.6,
+      "source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/jun-2026",
+      "source_evidence": "PERIOD_SPECIFIC_OFFICIAL_WEB_HEADLINE_METRIC_WITH_RELEASE_CLOCK",
+      "immutable_original_release_html_bytes_preserved": false
+    },
+    {
+      "reference_period": "2026-07",
+      "release_timestamp_local": "2026-08-26T11:30:00+10:00",
+      "headline_annual_percent": 3.5,
+      "trimmed_mean_annual_percent": 3.6,
+      "source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/jul-2026",
+      "source_evidence": "PERIOD_SPECIFIC_OFFICIAL_WEB_HEADLINE_METRIC_WITH_RELEASE_CLOCK",
+      "immutable_original_release_html_bytes_preserved": false
+    },
+    {
+      "reference_period": "2026-08",
+      "release_timestamp_local": "2026-09-30T11:30:00+10:00",
+      "headline_annual_percent": 4,
+      "trimmed_mean_annual_percent": 3.6,
+      "source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/aug-2026",
+      "source_evidence": "PERIOD_SPECIFIC_OFFICIAL_WEB_HEADLINE_METRIC_WITH_RELEASE_CLOCK",
+      "immutable_original_release_html_bytes_preserved": false
+    }
+  ],
+  "cross_publication_discrepancy": {
+    "series_id": "AU_CPI_TRIMMED_MEAN_M_YOY_context_value",
+    "reference_period": "2026-01",
+    "own_period_original_web_reported_value": 3.4,
+    "later_february_web_reported_january_value": 3.3,
+    "earlier_source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/jan-2026",
+    "later_source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/feb-2026",
+    "later_reference_visible_from": "2026-03-25T11:30:00+11:00",
+    "status": "CONFLICT_REQUIRES_REVISION_AND_METHOD_REVIEW_NOT_CERTIFIED",
+    "numerical_revision_confirmed": false,
+    "historical_january_first_value_not_overwritten": true
+  },
+  "original_release_day_raw_bytes_certified": false,
+  "complete_revision_vintages_certified": false,
+  "sufficient_first_releases_for_25_month_training": false,
+  "eligible_for_backtest": false,
+  "safe_to_publish_new_D": false,
+  "safe_to_update_pair_theses": false,
+  "writes_live_data": false
+}
