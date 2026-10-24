@@ -1,8 +1,49 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-23T23:43:51Z",
+  "generated_at_utc": "2026-10-24T01:07:16Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-d6b4cfc92b3833ffde81",
+      "observed_at_utc": "2026-10-23T16:44:43Z",
+      "headline": "European stocks post weekly loss as France turmoil, oil prices dent earnings optimism",
+      "summary": "Reuters riporta: European stocks post weekly loss as France turmoil, oil prices dent earnings optimism. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMinwFBVV95cUxNeE42eUNJVTNrLXFneFVQa3JlcXBiWHMtWkhrN0RXV1hEekVIU3V1SHZ5dEhHVHBUV0VpUGVNYVE3V0VlYm96bmRDOHpBWkVwQ1J6aWdjeHQxSkJTeW4zeEdwTmNXOFNDYjd2dUNSNVJ6dllMRnZQUEZhTFpJd2tVQ1JhZnNxQklGYU01MUo3YXhyZ2NFa2pFRG1MaFUxQ1E?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-cff203a868b29803cfa9",
+      "observed_at_utc": "2026-10-23T01:50:00Z",
+      "headline": "Stocks fall, but tech shares steady after selloff; oil hits highest in nearly six months",
+      "summary": "Reuters riporta: Stocks fall, but tech shares steady after selloff; oil hits highest in nearly six months. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxQMG5uTk9BQ2lzbUtHT1k4Nlp4RlRCcXFvVXR5YUhCamhubGQ1SlB0c2FYczVLdl9ESzJBRzdkNmVuYU1ISVc2MndXWnBZTzBDNFdzeHBEQTNPTGU2SGhBTmtKM3Z1SWUxR2szN20yYWIySGIzUXlZcXVhdGNtTlJNMGN1WQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-99ae2d6f59e890b7c80c",
+      "observed_at_utc": "2026-10-23T20:44:00Z",
+      "headline": "Wall Street loses ground under pressure from rising oil prices",
+      "summary": "AP News riporta: Wall Street loses ground under pressure from rising oil prices. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "COMMODITIES",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxPNWpGTk1fbkF2SWY0S1Q2MHN6WjRqQ1R3VWp4WXFKd3VQUG5WSlI1ZXFDY1pSUGJyampWMGtwZ3dRQmxGRzlTbERHSnlraUZ4WmFCSXM4U3J1Z1VSdV81eTB2ck1lWElpSnR2Qi1FbWUwUmJBT1l5enVZLVpsYmMySnBhZ0FDWHZBTElJVEhGYl9tN2tXblE?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-ff979e193dc94f2ba9e5",
       "observed_at_utc": "2026-10-23T19:17:47Z",
@@ -1340,52 +1381,6 @@
       "related_pairs": [],
       "source_label": "AP News · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxPVTJvYlRkcXVBTnJYV1VuNnNCNnN0RHhjXzhVQTdWMDN5MGgwajQ3M0tjU1YzWlpnVnRfcVZaWkJWemg3Q2VpbGs0RXN4b0tkb1JXZi0tZFdJUXNNSTM2a0RGb2Z1MXppZGVDZllIUUgyZkpTbENRSXlXZmdIeEJXUUk2bHhIa0J4REJZdFNkUnlXU0JGZjVkTV9mYmdSUzJITkJGcQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-299b0a5ed7dbc1ed4f04",
-      "observed_at_utc": "2026-10-21T10:44:00Z",
-      "headline": "UK inflation rise to highest in almost a year as Iran war drives fuel prices higher",
-      "summary": "AP News riporta: UK inflation rise to highest in almost a year as Iran war drives fuel prices higher. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [
-        "GBP"
-      ],
-      "related_pairs": [],
-      "source_label": "AP News · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxPb0tld3hpUGx6Vmd1S2dvem5sS2hjTTJwSG9TRkNVMEpzemp5MFh0MlZPY21RMHd2V0JyZG9nNWU0TTZLUURkYVJRRnZoZ1JKSWVaSkc1cFlDa2MyWmNrQmUxOS1ycGZjYW9SVjNUZnE0UUV2dEFIZDNEdElOV3FIYng1ZzN1UzVRTVM5V1FWTzhKWTY1SVpKU045TEdjR1Ja?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-26b0522332193a1c4f0e",
-      "observed_at_utc": "2026-10-21T20:01:09Z",
-      "headline": "Nasdaq leads Wall Street to higher close as SpaceX, Super Micro boost AI sentiment",
-      "summary": "Reuters riporta: Nasdaq leads Wall Street to higher close as SpaceX, Super Micro boost AI sentiment. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxQZUJTOXdaa0JmVzZubm12MGt4VnNSemsyOW1fQXpCMnhEc25HSVJRZk93d2NYUXQ3eHBuQklaNE1FT1QyQ1NqdTFkdExDbmoxY2JtOWhLQkVtYXczMHh3a3VsZmhub1JFc0FIZHN1eEcwc3FRZVZWQnBoSjFjekFYTUN6X2d5WHJUWGpDU2paekhhU24zenhNbWpXUmtfdmo5cTFIZVZwTXdiRzZoeUtiazhHWkJEWEVZLTVmQmRMcw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-4eca01ed8f1d87b173d5",
-      "observed_at_utc": "2026-10-21T01:20:00Z",
-      "headline": "Dollar dips as traders wait on Fed; Aussie gains",
-      "summary": "Reuters riporta: Dollar dips as traders wait on Fed; Aussie gains. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD",
-        "AUD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxQMmhtRnJCbDhIc08yUUUxQnBOU0tmczBNT3JOTjBKVy1LY0VCUW1pdk9hNW83QXdqM3pKOGthelR0NldvLUx6ZHdfUWpTTnpHOVhVeG9nR0tUWjVqNlUyT09jbVp3eUZDb1RLbjhLakZYUXZfcXNoVndFSG50cUw5alpFRHVpNWdUMWtxLWpXMUZsdFE1RVhtX0RWVkVLazFFNUlIZi1fcHRJUjZYY090OVBwaTZMUnJ4TmdtbWFR?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
