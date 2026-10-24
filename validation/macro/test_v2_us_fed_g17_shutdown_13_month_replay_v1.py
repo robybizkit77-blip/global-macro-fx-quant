@@ -85,7 +85,7 @@ class FedG17ShutdownAndThirteenMonthPublisherVintageTests(unittest.TestCase):
         self.assertEqual(full["revised_source_value_events_visible"],35)
         self.assertEqual(full["first_periods_missing_to_research_minimum_25"],12)
         self.assertEqual(full["last_first_economic_month_visible"],"2026-09")
-        self.assertEqual(len(full["frozen_asof_release_features"]),7)
+        self.assertEqual(len(full["frozen_asof_release_features"]),8)
 
     def test_september_and_october_results_match_prior_seven_month_source_pilot(self):
         for at in ("2026-09-18T13:15:00Z","2026-10-16T13:15:00Z",
@@ -117,7 +117,7 @@ class FedG17ShutdownAndThirteenMonthPublisherVintageTests(unittest.TestCase):
         self.assertEqual(frozen,later["frozen_asof_release_features"][0])
         self.assertEqual(later["frozen_asof_release_features"][-1][
             "latest_reference_period"],"2026-09")
-        self.assertEqual(len(later["frozen_asof_release_features"]),7)
+        self.assertEqual(len(later["frozen_asof_release_features"]),8)
         self.assertTrue(all(f["frozen_at_own_publisher_cutoff_not_recomputed_later"]
                             for f in later["frozen_asof_release_features"]))
 
