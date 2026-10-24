@@ -19,6 +19,8 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/macro-persistent-daily-v1.yml'
+      # Registry preflight fixes must be exercised by the actual production child.
+      - 'validation/macro/check_macro_source_registry.py'
   workflow_dispatch:
   schedule:
     - cron: '35 6 * * 1-5'
