@@ -37,8 +37,10 @@ PUBLISHER_HOSTS = {
     "Statistics Canada": {"www150.statcan.gc.ca"},
     "Statistics Bureau of Japan": {"www.stat.go.jp"},
     "Stats NZ": {"www.stats.govt.nz"},
+    "Swiss Federal Statistical Office": {"dam-api.bfs.admin.ch"},
+    "Swiss State Secretariat for Economic Affairs": {"www.seco.admin.ch"},
 }
-SOURCE_KINDS = {"FIRST_WEB", "DETAILED_WEB"}
+SOURCE_KINDS = {"FIRST_WEB", "DETAILED_WEB", "REVISION_WEB"}
 RESEARCH_REVIEW_ASOF = date(2026, 10, 24)
 
 
@@ -84,7 +86,7 @@ def normalize(source):
     seen = set()
     for e in events:
         require(isinstance(e, dict) and e.get("kind") in SOURCE_KINDS,
-                "only initial-web or detailed-web rates in standardized metric replay")
+                "only official first/revised web rate events in standardized metric replay")
         period = e.get("observation_period")
         idx = period_index(period, freq)
         when = timestamp(e.get("visible_from_utc"))
@@ -186,6 +188,7 @@ def build(readiness, sources, *, as_of):
                        if timestamp(e["visible_from_utc"]) <= cutoff]
             first = [e for e in visible if e["stage"] == "FIRST_WEB"]
             detail = [e for e in visible if e["stage"] == "DETAILED_WEB"]
+            historical_revision = [e for e in visible if e["stage"] == "REVISION_WEB"]
             latest = max(first, key=lambda e: e["reference_period_index"]) if first else None
             # A publisher stage may be later than the first event for the same
             # reference period. Select last visible per metric/period without
@@ -232,6 +235,9 @@ def build(readiness, sources, *, as_of):
                 "candidate_stage_events_in_full_dossier": len(events),
                 "candidate_documented_first_periods_visible": first_count,
                 "candidate_detailed_events_visible": len(detail),
+                "candidate_revision_events_visible": len(historical_revision),
+                "candidate_revised_reference_periods_visible":
+                    len({e["reference_period"] for e in historical_revision}),
                 "candidate_reference_range_gaps_in_dossier": missing,
                 "candidate_first_periods_are_contiguous_in_dossier":
                     candidate["candidate_history_periods_contiguous"] if candidate else None,
@@ -271,7 +277,8 @@ def build(readiness, sources, *, as_of):
             r["candidate_documented_first_periods_visible"] for r in rows),
         "candidate_web_publication_stage_events_visible": sum(
             r["candidate_documented_first_periods_visible"]+
-            r["candidate_detailed_events_visible"] for r in rows),
+            r["candidate_detailed_events_visible"]+
+            r["candidate_revision_events_visible"] for r in rows),
         "slots_with_full_canonical_first_release_pit_training_certified": 0,
         "slots_eligible_for_new_live_scores": 0,
     }

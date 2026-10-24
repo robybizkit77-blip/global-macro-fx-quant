@@ -95,6 +95,9 @@ on:
       - 'validation/macro/v2_pit_g8_latest_web_adapters_v1.py'
       - 'validation/macro/test_v2_pit_g8_latest_web_adapters_v1.py'
       - 'validation/macro/MACRO_V2_G8_OFFICIAL_WEB_LATEST_ADAPTERS_2026-10-24.md'
+      - 'validation/macro/v2_pit_g8_remaining_core_adapters_v1.py'
+      - 'validation/macro/test_v2_pit_g8_remaining_core_adapters_v1.py'
+      - 'validation/macro/MACRO_V2_G8_FIVE_REMAINING_CORE_ADAPTERS_2026-10-24.md'
   workflow_dispatch:
 
 permissions:
@@ -109,6 +112,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Fast fail on 18-stream G8 contracts before external FX source availability probes
+        run: |
+          python -m unittest validation.macro.test_v2_pit_g8_control_plane_v1 -v
+          python -m unittest validation.macro.test_v2_pit_g8_latest_web_adapters_v1 -v
+          python -m unittest validation.macro.test_v2_pit_g8_remaining_core_adapters_v1 -v
       - name: Test first-release and revision PIT guardrails (synthetic)
         run: python -m unittest validation.macro.test_v2_shadow_features_v1 -v
       - name: Replay five official BLS first-release web attestations without future leakage
@@ -443,6 +451,12 @@ jobs:
           python -m unittest validation.macro.test_v2_pit_g8_control_plane_v1 -v
           python -m unittest validation.macro.test_v2_pit_g8_latest_web_adapters_v1 -v
           python -m validation.macro.v2_pit_g8_control_plane_v1 --asof 2026-10-24T00:00:00Z --json-out /tmp/macro-v2-shadow/g8-common-13-source-anchors.json --markdown-out /tmp/macro-v2-shadow/g8-common-13-source-anchors.md
+      - name: Audit all sixteen G8 Labour Inflation slots, five remaining source adapters and NZ revised quarter
+        run: |
+          python -m unittest validation.macro.test_v2_pit_g8_control_plane_v1 -v
+          python -m unittest validation.macro.test_v2_pit_g8_latest_web_adapters_v1 -v
+          python -m unittest validation.macro.test_v2_pit_g8_remaining_core_adapters_v1 -v
+          python -m validation.macro.v2_pit_g8_control_plane_v1 --asof 2026-10-24T00:00:00Z --json-out /tmp/macro-v2-shadow/g8-18-source-control-plane.json --markdown-out /tmp/macro-v2-shadow/g8-18-source-control-plane.md
       - name: Confirm no runtime or website files were changed by tests
         run: |
           git diff --exit-code -- live_data site payload dashboard
