@@ -1,0 +1,129 @@
+{
+  "schema": "GMFQ_MACRO_V2_EUROSTAT_HICP_MAY_JUNE_ADDENDUM_V1",
+  "review_as_of": "2026-10-24",
+  "publisher": "Eurostat",
+  "currency": "EUR",
+  "geography": "EA21",
+  "source_measure": "ANNUAL_PERCENT_CHANGE_NOT_INDEX_OR_CONTRIBUTION",
+  "evidence_class": "PERIOD_SPECIFIC_PUBLISHER_WEB_AS_CURRENTLY_RETRIEVED_NOT_ORIGINAL_BYTE_ARCHIVE",
+  "months": [
+    {
+      "reference_period": "2026-05",
+      "flash": {
+        "published_on": "2026-06-02",
+        "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-02062026-ap",
+        "actual_intraday_release_clock_certified": false,
+        "conservative_visibility_from_utc": "2026-06-03T00:00:00Z"
+      },
+      "detailed": {
+        "published_on": "2026-06-17",
+        "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-17062026-ap",
+        "actual_intraday_release_clock_certified": false,
+        "conservative_visibility_from_utc": "2026-06-18T00:00:00Z"
+      },
+      "annual_rate_components": [
+        {
+          "component_id": "ALL_ITEMS_HICP",
+          "flash_percent_yoy": 3.2,
+          "detailed_percent_yoy": 3.2
+        },
+        {
+          "component_id": "CORE_HICP",
+          "flash_percent_yoy": 2.5,
+          "detailed_percent_yoy": 2.6
+        },
+        {
+          "component_id": "ENERGY",
+          "flash_percent_yoy": 10.9,
+          "detailed_percent_yoy": 10.8
+        },
+        {
+          "component_id": "FOOD_ALCOHOL_TOBACCO",
+          "flash_percent_yoy": 2,
+          "detailed_percent_yoy": 1.9
+        },
+        {
+          "component_id": "NON_ENERGY_INDUSTRIAL_GOODS",
+          "flash_percent_yoy": 0.9,
+          "detailed_percent_yoy": 0.9
+        },
+        {
+          "component_id": "SERVICES",
+          "flash_percent_yoy": 3.5,
+          "detailed_percent_yoy": 3.5
+        }
+      ]
+    },
+    {
+      "reference_period": "2026-06",
+      "flash": {
+        "published_on": "2026-07-01",
+        "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-01072026-ap",
+        "actual_intraday_release_clock_certified": false,
+        "conservative_visibility_from_utc": "2026-07-02T00:00:00Z"
+      },
+      "detailed": {
+        "published_on": "2026-07-17",
+        "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-17072026-ap",
+        "actual_intraday_release_clock_certified": false,
+        "conservative_visibility_from_utc": "2026-07-18T00:00:00Z"
+      },
+      "annual_rate_components": [
+        {
+          "component_id": "ALL_ITEMS_HICP",
+          "flash_percent_yoy": 2.8,
+          "detailed_percent_yoy": 2.8
+        },
+        {
+          "component_id": "CORE_HICP",
+          "flash_percent_yoy": 2.4,
+          "detailed_percent_yoy": 2.4
+        },
+        {
+          "component_id": "ENERGY",
+          "flash_percent_yoy": 8.7,
+          "detailed_percent_yoy": 8.5
+        },
+        {
+          "component_id": "FOOD_ALCOHOL_TOBACCO",
+          "flash_percent_yoy": 1.6,
+          "detailed_percent_yoy": 1.5
+        },
+        {
+          "component_id": "NON_ENERGY_INDUSTRIAL_GOODS",
+          "flash_percent_yoy": 0.9,
+          "detailed_percent_yoy": 0.7
+        },
+        {
+          "component_id": "SERVICES",
+          "flash_percent_yoy": 3.2,
+          "detailed_percent_yoy": 3.2
+        }
+      ]
+    }
+  ],
+  "retrospective_prior_month_observation": {
+    "reference_period": "2026-03",
+    "series_component": "SERVICES",
+    "earlier_report_period": "2026-05",
+    "earlier_report_released_on": "2026-06-17",
+    "earlier_reported_percent_yoy": 3.3,
+    "earlier_report_source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-17062026-ap",
+    "later_report_period": "2026-06",
+    "later_report_released_on": "2026-07-01",
+    "later_reported_percent_yoy": 3.2,
+    "later_report_has_explicit_r_marker": true,
+    "later_report_source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-01072026-ap",
+    "later_report_conservative_visible_from_utc": "2026-07-02T00:00:00Z",
+    "exact_revision_effective_time_verified": false,
+    "original_release_day_page_bytes_certified": false,
+    "interpretation": "CROSS_PUBLICATION_MARCH_SERVICES_REVISION_INDICATED_BY_R_NOT_FULL_VINTAGE"
+  },
+  "first_release_day_byte_archive_certified": false,
+  "full_historical_first_and_revised_vintage_chain_certified": false,
+  "live_score_or_backtest_eligible": false,
+  "writes_live_data": false,
+  "safe_to_publish_new_D": false,
+  "safe_to_update_pair_theses": false,
+  "metadata_note": "May/June addendum only; July-Sept prior validated replay remains unchanged. 2 months, 4 distinct publication dates, 24 stage-specific annual-rate values, and one separately cited March services retrospective rate discrepancy."
+}
