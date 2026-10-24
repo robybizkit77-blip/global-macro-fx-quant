@@ -1,7 +1,7 @@
 {
   "schema": "GMFQ_CHATGPT_MARKET_CONTEXT_V1",
-  "generated_at_utc": "2026-10-24T21:28:29Z",
-  "evaluation_date_europe_rome": "2026-10-24",
+  "generated_at_utc": "2026-10-24T22:27:08Z",
+  "evaluation_date_europe_rome": "2026-10-25",
   "reference_only": true,
   "policy": {
     "fail_closed": true,
@@ -24,30 +24,9 @@
         "reason": "Only GBP, JPY, CAD and AUD have the certified OIS contract; estimated/proxy OIS is informational only, never alert-certified."
       },
       "GBP": {
-        "state": "AVAILABLE_CERTIFIED",
+        "state": "STALE",
         "as_of": "2026-10-21",
-        "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
-        "policy_rate_pct": 3.75,
-        "horizons": {
-          "3m": {
-            "rate_pct": 4.1415,
-            "delta_vs_policy_bp": 39.1,
-            "change_1d_bp": -1.7,
-            "change_1w_bp": 1.2
-          },
-          "6m": {
-            "rate_pct": 4.4857,
-            "delta_vs_policy_bp": 73.6,
-            "change_1d_bp": -3.6,
-            "change_1w_bp": 2.3
-          },
-          "12m": {
-            "rate_pct": 4.8868,
-            "delta_vs_policy_bp": 113.7,
-            "change_1d_bp": -5.2,
-            "change_1w_bp": 3.9
-          }
-        }
+        "reason": "Age 4d exceeds the 3d alert limit."
       },
       "JPY": {
         "state": "AVAILABLE_CERTIFIED",
@@ -182,32 +161,22 @@
       "CHF": {
         "state": "STALE",
         "as_of": "2026-09-30",
-        "reason": "Age 24d exceeds the 3d alert limit."
+        "reason": "Age 25d exceeds the 3d alert limit."
       },
       "CAD": {
-        "state": "AVAILABLE_CERTIFIED",
+        "state": "STALE",
         "as_of": "2026-10-21",
-        "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-10-21",
-        "government_2y_pct": 3.32,
-        "government_10y_pct": 3.9,
-        "10y_minus_2y_bp": 58.0,
-        "change_2y_bp": 11.0,
-        "change_10y_bp": 5.0
+        "reason": "Age 4d exceeds the 3d alert limit."
       },
       "AUD": {
-        "state": "AVAILABLE_CERTIFIED",
+        "state": "STALE",
         "as_of": "2026-10-21",
-        "source": "Reserve Bank of Australia · F2 Capital Market Yields – Government Bonds – Daily · 2026-10-21",
-        "government_2y_pct": 4.917,
-        "government_10y_pct": 5.277,
-        "10y_minus_2y_bp": 36.0,
-        "change_2y_bp": -0.2,
-        "change_10y_bp": -3.7
+        "reason": "Age 4d exceeds the 3d alert limit."
       },
       "NZD": {
         "state": "STALE",
         "as_of": "2026-10-16",
-        "reason": "Age 8d exceeds the 3d alert limit."
+        "reason": "Age 9d exceeds the 3d alert limit."
       }
     },
     "cot_weekly": {
