@@ -84,6 +84,10 @@ on:
       - 'validation/macro/v2_eurostat_hicp_nine_month_corrigendum_replay_v1.py'
       - 'validation/macro/test_v2_eurostat_hicp_nine_month_corrigendum_replay_v1.py'
       - 'validation/macro/MACRO_V2_EUROSTAT_JAN_SEP_NINE_MONTH_CORRIGENDA_2026-10-24.md'
+      - 'validation/macro/fixtures/v2_eurostat_hicp_dec2025_ea20_transition_v1.json'
+      - 'validation/macro/v2_eurostat_dec2025_regime_bridge_replay_v1.py'
+      - 'validation/macro/test_v2_eurostat_dec2025_regime_bridge_replay_v1.py'
+      - 'validation/macro/MACRO_V2_EUROSTAT_DEC2025_EA20_EA21_PIT_BRIDGE_2026-10-24.md'
   workflow_dispatch:
 
 permissions:
@@ -417,6 +421,11 @@ jobs:
           python -m unittest validation.macro.test_v2_eurostat_hicp_nine_month_corrigendum_replay_v1 -v
           python -m validation.macro.v2_eurostat_hicp_nine_month_corrigendum_replay_v1 --asof 2026-03-04T23:59:59Z --out /tmp/macro-v2-shadow/feb-flash-before-corrigendum.json
           python -m validation.macro.v2_eurostat_hicp_nine_month_corrigendum_replay_v1 --asof 2026-10-24T00:00:00Z --out /tmp/macro-v2-shadow/eurostat-jan-sep-nine-month.json
+      - name: Validate Eurostat December 2025 EA20 to 2026 EA21 vintage and ECOICOP transition guard
+        run: |
+          python -m unittest validation.macro.test_v2_eurostat_dec2025_regime_bridge_replay_v1 -v
+          python -m validation.macro.v2_eurostat_dec2025_regime_bridge_replay_v1 --asof 2026-02-04T23:59:59Z --out /tmp/macro-v2-shadow/dec-before-later-retrospective.json
+          python -m validation.macro.v2_eurostat_dec2025_regime_bridge_replay_v1 --asof 2026-10-24T00:00:00Z --out /tmp/macro-v2-shadow/dec2025-sep2026-boundary-web-replay.json
       - name: Confirm no runtime or website files were changed by tests
         run: |
           git diff --exit-code -- live_data site payload dashboard
