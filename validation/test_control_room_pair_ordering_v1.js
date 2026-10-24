@@ -42,11 +42,8 @@ for(const mode of ['setup','thesis']){
  assert.equal(o.withRisks,first.filter(x=>x.quality==='CON RISCHI').length);
  assert.equal(o.max,Math.max(...Object.values(o.frequencies)));
 }
-assert.equal(overlap(result,'setup').withRisks,7,'seven current top setups still have explicit risk');
-assert.equal(overlap(result,'setup').frequencies.USD,4);
-assert.equal(overlap(result,'setup').favored.USD,4);
-assert.equal(overlap(result,'thesis').frequencies.USD,5);
-assert.equal(overlap(result,'thesis').favored.USD,5);
+// Exact source-derived top-eight counts are asserted above for every currency.
+// Never pin a dated snapshot's risk count or currency recurrence in a live-feed test.
 assert.equal(overlap(result,'unapproved'),null);
 assert.equal(overlap({setup:[{code:'EURUSD'}]},'setup'),null);
 const invalidFocus=structuredClone(result);
