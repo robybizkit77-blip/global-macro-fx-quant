@@ -58,10 +58,13 @@ for(const days of [5,20]){
  assert(Math.abs(x.percent-primary.items[0].percent)<1e-11);
  assert(Math.abs(x.otherPercent-other.items[idx].percent)<1e-11);
 }
-assert.equal(firstRead(data,5).ccy,'AUD','AUD leads only the current recent 5-session window');
-assert.equal(firstRead(data,5).otherRank,7,'AUD is seventh on the longer overlapping 20-session window');
-assert.equal(firstRead(data,20).ccy,'GBP','GBP leads 20-day price momentum');
-assert.equal(firstRead(data,20).otherRank,5,'GBP ranks fifth on 5-day relative price momentum');
+// Recent ECB fixing releases legitimately rotate the strongest currency.
+// Assert the lead and cross-horizon rank against the same official observations,
+// never against last week's pinned AUD/GBP snapshot.
+const shortLead=firstRead(data,5),longLead=firstRead(data,20);
+assert(shortLead&&longLead,'both official fixing horizons must resolve');
+assert.equal(shortLead.otherRank,rank(data,20).items.findIndex(x=>x.ccy===shortLead.ccy)+1);
+assert.equal(longLead.otherRank,rank(data,5).items.findIndex(x=>x.ccy===longLead.ccy)+1);
 assert.equal(firstRead(data,1),null,'cannot compare unsupported windows');
 const missingOld=structuredClone(data);
 missingOld.rows.at(-21).AUD=null;
