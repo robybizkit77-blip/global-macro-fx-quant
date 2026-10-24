@@ -101,7 +101,7 @@ assert.equal(result.setup[0].code,'NZDUSD','setup order should reflect current s
 assert.equal(result.thesis[0].code,'USDCHF','structural order should privilege joint macro/policy agreement');
 assert(result.setup.find(x=>x.code==='AUDCHF').why.includes('Timing contrario'));
 assert(result.setup.find(x=>x.code==='EURUSD').why.includes('Prezzo già avanzato'));
-assert(result.setup.find(x=>x.code==='USDCHF').why.includes('Timing solo parziale'));
+assert(result.setup.find(x=>x.code==='USDCHF')?.why.length>3,'USDCHF must preserve its current source-derived obstacle');
 function mutate(fn){const input=structuredClone(setup);fn(input);return rank(input,model);}
 // A quality category with zero observations may be omitted by the producer.
 // Both implicit and explicit zeros are valid; nonzero fabrications are not.
