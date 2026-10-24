@@ -124,7 +124,7 @@ jobs:
                 test ! -e "$work/adapter-audit.json" || { echo "$key unexpectedly produced an adapter audit" >&2; exit 1; }
                 echo "$key BLS_OFFICIAL_TRANSPORT_WITHHELD_NO_CANDIDATE"
                 echo "- USD $dim: BLS official public API temporarily unavailable (bounded HTTP retries exhausted); canonical value retained, not marked fresh, no fabricated candidate" >> "$GITHUB_STEP_SUMMARY"
-                printf '%s\\n' "$key" >> /tmp/macro-persistent/transport-withheld.txt
+                printf '%s\n' "$key" >> /tmp/macro-persistent/transport-withheld.txt
                 continue
               fi
               test "$adapter_rc" -eq 0 || exit "$adapter_rc"
