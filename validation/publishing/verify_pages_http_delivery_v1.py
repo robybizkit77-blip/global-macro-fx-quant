@@ -39,6 +39,9 @@ FILES = (
     "live_data/sections/NATIVE_CB_DATA.json",
     "live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json",
     "live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json",
+    # Source-to-UI exact-byte parity for RBNZ B2 context, never auto-promote
+    # into the official NZD rate/OIS data source.
+    "live_data/sections/NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json",
     "live_data/sections/OIS_SOURCE_READINESS_VIEW.json",
     # Risk UI & fail-closed freshness must be delivered, not only risk data.
     "dashboard/risk-operational-v1.js",
