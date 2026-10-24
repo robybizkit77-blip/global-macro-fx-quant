@@ -1,0 +1,63 @@
+{
+  "schema": "GMFQ_MACRO_V2_ABS_TRIMMED_CROSS_PUBLICATION_EVIDENCE_V1",
+  "review_as_of": "2026-10-24",
+  "publisher": "Australian Bureau of Statistics",
+  "series_id": "AU_CPI_TRIMMED_MEAN_M_YOY_context_value",
+  "economic_metric": "Trimmed mean CPI annual growth",
+  "unit": "percent YoY seasonally adjusted",
+  "evidence_class": "PERIOD_SPECIFIC_OFFICIAL_WEB_STATEMENTS_NOT_RELEASE_DAY_IMMUTABLE_SOURCE_BYTES",
+  "observations": [
+    {
+      "reference_period": "2026-01",
+      "report_period": "2026-01",
+      "reported_value": 3.4,
+      "source_section": "JANUARY_OWN_PERIOD_KEY_STATISTICS",
+      "reported_at_local": "2026-02-25T11:30:00+11:00",
+      "source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/jan-2026",
+      "page_capture_at_first_release_proven": false
+    },
+    {
+      "reference_period": "2026-01",
+      "report_period": "2026-02",
+      "reported_value": 3.3,
+      "source_section": "FEBRUARY_RELEASE_RETROSPECTIVE_JANUARY_KEY_STATISTICS",
+      "reported_at_local": "2026-03-25T11:30:00+11:00",
+      "source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/feb-2026",
+      "page_capture_at_first_release_proven": false
+    },
+    {
+      "reference_period": "2026-05",
+      "report_period": "2026-05",
+      "reported_value": 3.6,
+      "source_section": "MAY_OWN_PERIOD_KEY_STATISTICS",
+      "reported_at_local": "2026-06-24T11:30:00+10:00",
+      "source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/may-2026",
+      "page_capture_at_first_release_proven": false
+    },
+    {
+      "reference_period": "2026-05",
+      "report_period": "2026-06",
+      "reported_value": 3.6,
+      "source_section": "JUNE_RELEASE_RETROSPECTIVE_MAY_KEY_STATISTICS",
+      "reported_at_local": "2026-07-29T11:30:00+10:00",
+      "source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/jun-2026",
+      "page_capture_at_first_release_proven": false
+    },
+    {
+      "reference_period": "2026-05",
+      "report_period": "2026-07",
+      "reported_value": 3.5,
+      "source_section": "JULY_RELEASE_RETROSPECTIVE_MAY_HISTORICAL_CHART",
+      "reported_at_local": "2026-08-26T11:30:00+10:00",
+      "source_url": "https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/jul-2026",
+      "page_capture_at_first_release_proven": false
+    }
+  ],
+  "interpretation": "TWO_CROSS_REPORT_DIFFERENCES_CAUSE_AND_FULL_REVISION_VINTAGE_UNCERTIFIED",
+  "count_as_independent_initial_release_events": false,
+  "complete_revision_chain_certified": false,
+  "independent_original_day_byte_archive_verified": false,
+  "backtest_allowed": false,
+  "live_score_update_allowed": false,
+  "writes_live_data": false
+}
