@@ -3,10 +3,10 @@ name: Publish Dashboard Pages V1
 on:
   pull_request:
     branches: [main]
-    paths: ['.github/workflows/publish-dashboard-pages-v1.yml','index.html','payload/**','dashboard/**','live_data/sections/OIS_DATA.json','live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/D.json','live_data/sections/ESTIMATED_RESIDUAL_GAPS.json','live_data/sections/V247_COT_STORIES.json','live_data/sections/RATES_AUDIT_METADATA.json','live_data/manifest.v2.json','live_data/sections/NATIVE_CB_DATA.json','live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json','live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json','live_data/sections/NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json','live_data/sections/OIS_SOURCE_READINESS_VIEW.json','validation/publishing/verify_pages_http_delivery_v1.py','validation/publishing/test_verify_pages_http_delivery_v1.py','validation/publishing/check_control_room_feed_mirrors_v1.py','validation/cb_pricing/check_ois_readiness_parity_v1.py','validation/cb_pricing/test_check_ois_readiness_parity_v1.py']
+    paths: ['.github/workflows/publish-dashboard-pages-v1.yml','index.html','payload/**','dashboard/**','live_data/sections/OIS_DATA.json','live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/D.json','live_data/sections/ESTIMATED_RESIDUAL_GAPS.json','live_data/sections/V247_COT_STORIES.json','live_data/sections/RATES_AUDIT_METADATA.json','live_data/manifest.v2.json','live_data/sections/NATIVE_CB_DATA.json','live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json','live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json','live_data/sections/NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json','live_data/sections/OIS_SOURCE_READINESS_VIEW.json','validation/publishing/verify_pages_http_delivery_v1.py','validation/publishing/test_verify_pages_http_delivery_v1.py','validation/publishing/test_pages_operational_ois_summary_source_v1.py','validation/publishing/check_control_room_feed_mirrors_v1.py','validation/cb_pricing/check_ois_readiness_parity_v1.py','validation/cb_pricing/test_check_ois_readiness_parity_v1.py']
   push:
     branches: [main]
-    paths: ['.github/workflows/publish-dashboard-pages-v1.yml','index.html','payload/**','dashboard/**','live_data/sections/OIS_DATA.json','live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/D.json','live_data/sections/ESTIMATED_RESIDUAL_GAPS.json','live_data/sections/V247_COT_STORIES.json','live_data/sections/RATES_AUDIT_METADATA.json','live_data/manifest.v2.json','live_data/sections/NATIVE_CB_DATA.json','live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json','live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json','live_data/sections/NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json','live_data/sections/OIS_SOURCE_READINESS_VIEW.json','validation/publishing/verify_pages_http_delivery_v1.py','validation/publishing/test_verify_pages_http_delivery_v1.py','validation/publishing/check_control_room_feed_mirrors_v1.py','validation/cb_pricing/check_ois_readiness_parity_v1.py','validation/cb_pricing/test_check_ois_readiness_parity_v1.py']
+    paths: ['.github/workflows/publish-dashboard-pages-v1.yml','index.html','payload/**','dashboard/**','live_data/sections/OIS_DATA.json','live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/D.json','live_data/sections/ESTIMATED_RESIDUAL_GAPS.json','live_data/sections/V247_COT_STORIES.json','live_data/sections/RATES_AUDIT_METADATA.json','live_data/manifest.v2.json','live_data/sections/NATIVE_CB_DATA.json','live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json','live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json','live_data/sections/NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json','live_data/sections/OIS_SOURCE_READINESS_VIEW.json','validation/publishing/verify_pages_http_delivery_v1.py','validation/publishing/test_verify_pages_http_delivery_v1.py','validation/publishing/test_pages_operational_ois_summary_source_v1.py','validation/publishing/check_control_room_feed_mirrors_v1.py','validation/cb_pricing/check_ois_readiness_parity_v1.py','validation/cb_pricing/test_check_ois_readiness_parity_v1.py']
   workflow_run:
     workflows: ['Macro Persistent Daily V1','CB Pricing Persistent Daily V1','OIS Estimated Snapshot Repricing V1','OIS G8 History Persistent Daily V1','Calendar News Operational Refresh V1','Price Persistent Daily V1','Rates Persistent Daily V1','COT Persistent Weekly V1','Liquidity JPY M3 Persistent Daily V1','VIX Persistent Apply V1','WTI Persistent Rebuild V1','Brent Market Proxy Refresh V1','Gold Secondary Market Proxy Refresh V1']
     types: [completed]
@@ -49,6 +49,9 @@ jobs:
           latest="$(gh api "repos/${GITHUB_REPOSITORY}/pages/builds/latest")"
           jq -e '.status and .commit' <<<"$latest" > /dev/null
           echo "PAGES_BUILD_LATEST_READ_OK"
+
+      - name: Assert exact operational OIS summary source before publishing (not canonical OIS_DATA)
+        run: python validation/publishing/test_pages_operational_ois_summary_source_v1.py
 
       - name: Verify all 15 Control Room sources have a single Pages mirror owner
         run: python validation/publishing/check_control_room_feed_mirrors_v1.py
@@ -286,7 +289,11 @@ jobs:
               published=subprocess.check_output(['git','show',f'origin/gh-pages:{name}'])
               same=hashlib.sha256(source).digest()==hashlib.sha256(published).digest()
               rows.append({'path':name,'same':same,'sha256':hashlib.sha256(published).hexdigest()})
-          obj=json.loads(pathlib.Path(paths[0]).read_text())
+          # This gate checks the operational G8 OIS mix, NOT OIS_DATA.json.
+          # OIS_DATA is the canonical official dataset and has no 'summary'.
+          operational=pathlib.Path('live_data/sections/OIS_OPERATIONAL_VIEW.json')
+          obj=json.loads(operational.read_text())
+          assert obj['schema']=='GMFQ_OIS_OPERATIONAL_VIEW_V1', obj.get('schema')
           assert obj['summary']['g8_total']==8
           assert obj['summary']['operational_green']+obj['summary']['operational_withheld']==8
           from datetime import datetime,timezone
