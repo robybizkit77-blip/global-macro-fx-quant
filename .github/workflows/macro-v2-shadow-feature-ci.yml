@@ -106,6 +106,9 @@ on:
       - 'validation/macro/v2_g8_growth_transform_proposal_gate_v1.py'
       - 'validation/macro/test_v2_g8_growth_transform_proposal_gate_v1.py'
       - 'validation/macro/MACRO_V2_G8_GROWTH_TRANSFORM_CONTRACT_2026-10-24.md'
+      - 'validation/macro/v2_g8_growth_rolling_pit_normalization_v1.py'
+      - 'validation/macro/test_v2_g8_growth_rolling_pit_normalization_v1.py'
+      - 'validation/macro/MACRO_V2_G8_GROWTH_ROLLING_PIT_NORMALIZATION_2026-10-24.md'
   workflow_dispatch:
 
 permissions:
@@ -120,13 +123,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Fast fail on G8 24 source streams and no-score Growth feature math contracts
+      - name: Fast fail on G8 PIT source, Growth transform and frozen as-of normalization gates
         run: |
           python -m unittest validation.macro.test_v2_pit_g8_control_plane_v1 -v
           python -m unittest validation.macro.test_v2_pit_g8_latest_web_adapters_v1 -v
           python -m unittest validation.macro.test_v2_pit_g8_remaining_core_adapters_v1 -v
           python -m unittest validation.macro.test_v2_pit_g8_growth_web_bridges_v1 -v
           python -m unittest validation.macro.test_v2_g8_growth_transform_proposal_gate_v1 -v
+          python -m unittest validation.macro.test_v2_g8_growth_rolling_pit_normalization_v1 -v
       - name: Test first-release and revision PIT guardrails (synthetic)
         run: python -m unittest validation.macro.test_v2_shadow_features_v1 -v
       - name: Replay five official BLS first-release web attestations without future leakage
@@ -476,6 +480,10 @@ jobs:
         run: |
           python -m unittest validation.macro.test_v2_g8_growth_transform_proposal_gate_v1 -v
           python -m validation.macro.v2_g8_growth_transform_proposal_gate_v1 --json-out /tmp/macro-v2-shadow/g8-growth-feature-proposal.json --markdown-out /tmp/macro-v2-shadow/g8-growth-feature-proposal.md
+      - name: Validate Growth four-cohort comparability and frozen trailing PIT math without using revised live history
+        run: |
+          python -m unittest validation.macro.test_v2_g8_growth_rolling_pit_normalization_v1 -v
+          python -m validation.macro.v2_g8_growth_rolling_pit_normalization_v1 --out /tmp/macro-v2-shadow/g8-growth-frozen-normalization-comparability.json
       - name: Confirm no runtime or website files were changed by tests
         run: |
           git diff --exit-code -- live_data site payload dashboard
