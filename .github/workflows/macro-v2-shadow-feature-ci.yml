@@ -112,6 +112,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Fast fail on 18-stream G8 contracts before external FX source availability probes
+        run: |
+          python -m unittest validation.macro.test_v2_pit_g8_control_plane_v1 -v
+          python -m unittest validation.macro.test_v2_pit_g8_latest_web_adapters_v1 -v
+          python -m unittest validation.macro.test_v2_pit_g8_remaining_core_adapters_v1 -v
       - name: Test first-release and revision PIT guardrails (synthetic)
         run: python -m unittest validation.macro.test_v2_shadow_features_v1 -v
       - name: Replay five official BLS first-release web attestations without future leakage
