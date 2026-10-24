@@ -52,6 +52,20 @@ assert out["evidence"]["FX_OFFICIAL_FIXING"]["as_of"] == "2026-10-22"
 assert out["evidence"]["VIX_OFFICIAL_CLOSE"]["as_of"] == "2026-10-22"
 assert out["evidence"]["MACRO_BASELINE"]["as_of"] == "2026-09-25"
 assert out["evidence"]["MACRO_BASELINE"]["state"] == "HISTORICAL_NOT_AUTO_RECALCULATED"
+# All 16 observed periods are visible, but their labels are not release instants
+# or newly computed Macro scores. Quarterly observations need not be daily-fresh.
+macro = out["evidence"]["MACRO_OBSERVATIONS_G8"]
+assert macro["observed"] == 16 and macro["expected"] == 16 and macro["invalid"] == []
+assert len(macro["rows"]) == 16
+assert not macro["release_timestamps_verified"]
+assert not macro["full_first_release_pit_certified"]
+assert not macro["scores_recomputed"]
+assert macro["rows"]["JPY.inflation"]["reference_period"] == "2026-09"
+assert macro["rows"]["AUD.inflation"]["reference_period"] == "2026-06"
+assert macro["rows"]["NZD.labour"]["reference_period"] == "2026-06"
+assert "mirror" in macro["rows"]["NZD.labour"]["source_label"]
+assert all(x["state"] == "OBSERVED_PERIOD_ONLY_NOT_RELEASE_DATE"
+           for x in macro["rows"].values())
 assert sorted(out["evidence"]["OIS_G8"]["withheld"]) == ["CHF", "EUR", "NZD"]
 assert out["evidence"]["OIS_G8"]["official"] == ["AUD", "CAD", "GBP", "JPY"]
 assert out["evidence"]["OIS_G8"]["estimated"] == ["USD"]
@@ -66,6 +80,19 @@ assert rome_build_day("2026-10-22T21:30:00+00:00") == "2026-10-22"
 assert rome_build_day("2026-10-25T23:30:00Z") == "2026-10-26"
 assert rome_build_day("2026-10-23T08:00:00") is None
 assert rome_build_day("invalid") is None
+# Corrupt or future economic periods must fail closed without inventing a release.
+for mutation in (
+    lambda x: x["MACRO_THERMOMETER_DATA.json"]["currencies"]["USD"]["inflation"].update(source=""),
+    lambda x: x["MACRO_THERMOMETER_DATA.json"]["currencies"]["EUR"]["labour"].update(as_of="2026-12"),
+    lambda x: x["MACRO_THERMOMETER_DATA.json"]["currencies"]["AUD"]["inflation"].update(latest_value=999.0),
+):
+    bad = copy.deepcopy(data)
+    mutation(bad)
+    invalid = inspect(bad, asof)
+    assert "MACRO_OBSERVATION_SOURCE_INTEGRITY" in invalid["critical_daily_problems"]
+    assert invalid["evidence"]["MACRO_OBSERVATIONS_G8"]["observed"] == 15
+    assert invalid["operational_state"] == "DAILY_INPUTS_INCOMPLETE"
+
 # A failed collector must still be visible even when all surviving feeds are fresh.
 partial = inspect(data, asof, pipeline_outcome="failure")
 assert partial["operational_state"] == "DAILY_INPUTS_INCOMPLETE"
