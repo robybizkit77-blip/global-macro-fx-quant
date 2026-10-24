@@ -32,7 +32,8 @@ const inspect=(a=inputs,t=date)=>ctx.homeMorningStudySources(...a,t);
 const observed=inspect();
 assert.equal(observed.total,5);
 assert.equal(observed.checks.calendar,false,'future calendar cannot certify a past briefing');
-assert.equal(observed.confirmed,4);
+assert.equal(observed.checks.news,false,'08:52 CEST news cannot certify 08:00 CEST');
+assert.equal(observed.confirmed,3);
 assert.equal(observed.mode,'DAILY_INCOMPLETE');
 // Positive PIT fixture: a separately generated same-day calendar at 23 October.
 const verifiedFixture=structuredClone(inputs);
