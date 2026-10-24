@@ -10,7 +10,9 @@ const FX=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
 const setup=JSON.parse(fs.readFileSync('live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json','utf8'));
 const model=JSON.parse(fs.readFileSync('live_data/sections/D.json','utf8'));
 const context={FX,
- fresh:(d,days)=>days===5?d==='2026-10-22':days===10?false:false,
+ // Unit test the source contract independent of wall-clock expiry.
+ // The browser QA still enforces real five-day freshness.
+ fresh:(d,days)=>days===5?d===setup.price_asof:days===10?false:false,
  canonicalPairMacroBaseline:(s,m)=>m?.asOf===s.macro_baseline_asof?s.macro_baseline_asof:null};
 vm.createContext(context);
 vm.runInContext(source.slice(start,end),context);
@@ -104,6 +106,22 @@ assert(result.setup.find(x=>x.code==='AUDCHF').why.includes('Timing contrario'))
 assert(result.setup.find(x=>x.code==='EURUSD').why.includes('Prezzo già avanzato'));
 assert(result.setup.find(x=>x.code==='USDCHF').why.includes('Timing solo parziale'));
 function mutate(fn){const input=structuredClone(setup);fn(input);return rank(input,model);}
+// A quality category with zero observations may be omitted by the producer.
+// Both implicit and explicit zeros are valid; nonzero fabrications are not.
+const allBuckets=['DA CONFERMARE','DA MONITORARE','CON RISCHI','NON VALUTABILE'];
+const counts=Object.fromEntries(allBuckets.map(k=>[k,Object.values(setup.pairs)
+  .filter(p=>p.setup.quality===k).length]));
+const zeroBucket=allBuckets.find(k=>counts[k]===0);
+assert(zeroBucket,'fixture must exercise an empty quality bucket');
+const withExplicitZero=structuredClone(setup);
+withExplicitZero.quality_distribution[zeroBucket]=0;
+assert(rank(withExplicitZero,model),'explicit zero count must equal omitted zero');
+assert.equal(mutate(x=>{x.quality_distribution[zeroBucket]=1}),null,
+  'invented positive count in empty bucket must be rejected');
+assert.equal(mutate(x=>{x.quality_distribution.UNKNOWN=0}),null,
+  'unknown category cannot be treated as a certified bucket');
+assert.equal(mutate(x=>{x.quality_distribution[zeroBucket]=-1}),null,
+  'negative counts are rejected');
 assert.equal(mutate(x=>{x.quality_distribution['CON RISCHI']+=1}),null);
 assert.equal(mutate(x=>{x.pairs.AUDCHF.setup.price.state='UNVERIFIED'}),null);
 assert.equal(mutate(x=>{x.pairs.AUDCHF.setup.structural.quality='NOISE'}),null);
