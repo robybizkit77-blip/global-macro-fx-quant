@@ -1,28 +1,6 @@
 {
-  "events": [
-    {
-      "actual_ignored_for_pre_release_consensus": true,
-      "ccy": "JPY",
-      "confidence_grade": "C",
-      "consensus": "2.1%",
-      "date_match_gap_days": 1,
-      "event_key": "JPY|2026-10-23|INFLATION|Japan Consumer Price Index",
-      "event_type": "INFLATION",
-      "impact": "Low",
-      "official_date": "2026-10-23",
-      "official_date_overridden": false,
-      "official_title": "Japan Consumer Price Index",
-      "previous": "1.7%",
-      "provider": "FOREX_FACTORY_FAIR_ECONOMY_WEEKLY",
-      "provider_country": null,
-      "provider_date": "2026-10-22",
-      "provider_event": "National Core CPI y/y",
-      "provider_url": null,
-      "status": "AVAILABLE",
-      "unit": null
-    }
-  ],
-  "generated_at_utc": "2026-10-23T06:52:00.854324Z",
+  "events": [],
+  "generated_at_utc": "2026-10-24T06:49:03.589124Z",
   "provider": "FOREX_FACTORY_FAIR_ECONOMY_WEEKLY",
   "provider_endpoint": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
   "provider_field": "forecast",
@@ -40,5 +18,5 @@
     "weekly_feed_scope": true
   },
   "schema": "GMFQ_MACRO_CONSENSUS_SECONDARY_V1",
-  "status": "ACTIVE_PARTIAL"
+  "status": "PROVIDER_ACTIVE_NO_MATCHED_VALUES"
 }
