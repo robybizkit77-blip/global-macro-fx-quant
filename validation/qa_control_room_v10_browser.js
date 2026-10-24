@@ -816,6 +816,9 @@ function expectedReactionFromMetrics(row){
       relation:(cls==='EXTREME LONG'&&net<0)||(cls==='EXTREME SHORT'&&net>0)?'OPPOSED':'ALIGNED'};
   }).filter(x=>x.cls!=='NEUTRALE');
   const opposedExpected=expectedExtremes.filter(x=>x.relation==='OPPOSED');
+  const opposedCHF=opposedExpected.find(x=>x.ccy==='CHF');
+  const expectedCHFNote=opposedCHF?
+    'CHF '+opposedCHF.pct+'° · '+opposedCHF.cls+', ma Net':null;
   if(cotFirst.percentileCount!==String(expectedExtremes.length)||
      cotFirst.rankVsNet!==String(opposedExpected.length)||
      cotFirst.extremeAudit?.asof!==cotFixture.USD.dates.at(-1)||
@@ -824,7 +827,7 @@ function expectedReactionFromMetrics(row){
      !cotFirst.extremeAudit.closed||
      cotFirst.extremeAudit.rows.length!==expectedExtremes.length||
      !cotFirst.extremeAudit.note?.includes('Percentile ≠ segno del Net')||
-     !cotFirst.extremeAudit.note?.includes('CHF 95° · EXTREME LONG, ma Net')||
+     (expectedCHFNote&&!cotFirst.extremeAudit.note?.includes(expectedCHFNote))||
      cotFirst.extremeAudit.rows.some((x,i)=>{
        const expected=expectedExtremes[i];return !expected||
          x.ccy!==expected.ccy||x.pct!==expected.pct||x.net!==expected.net||
