@@ -1,0 +1,220 @@
+{
+  "schema": "GMFQ_MACRO_V2_US_FED_G17_SHUTDOWN_AND_2026_TWELVE_DATED_EDITION_SOURCE_TABLES_V1",
+  "reviewed_at": "2026-10-24",
+  "metric": "Federal Reserve G17 industrial production TOTAL index SA 2017=100 published one decimal",
+  "source_precision_decimals": 1,
+  "historical_publish_day_source_bytes_archived_and_verified": false,
+  "official_dated_publisher_webpage_attestation": true,
+  "canonical_unrounded_US_INDPRO_history_value_matched": false,
+  "historical_full_PIT_certified": false,
+  "model_score_eligible": false,
+  "release_context": "Fall 2025 delayed by federal shutdown: September released December 3; October and November both first released December 23 2025, NOT in different earlier events",
+  "release_editions": [
+    {
+      "date": "2025-12-03",
+      "official_url": "https://www.federalreserve.gov/releases/g17/20251203/table0.htm",
+      "publisher_release_local": "2025-12-03T09:15:00-05:00",
+      "release_utc": "2025-12-03T14:15:00Z",
+      "new_preliminary_economic_periods": [
+        "2025-09"
+      ],
+      "total_index_sa_2017_100_rounded_table_subset": {
+        "2025-09": 101.4
+      },
+      "historical_table_older_month_cells_are_revision_stage_not_first_release": true
+    },
+    {
+      "date": "2025-12-23",
+      "official_url": "https://www.federalreserve.gov/releases/g17/20251223/table0.htm",
+      "publisher_release_local": "2025-12-23T09:15:00-05:00",
+      "release_utc": "2025-12-23T14:15:00Z",
+      "new_preliminary_economic_periods": [
+        "2025-10",
+        "2025-11"
+      ],
+      "total_index_sa_2017_100_rounded_table_subset": {
+        "2025-09": 101.7,
+        "2025-10": 101.6,
+        "2025-11": 101.8
+      },
+      "historical_table_older_month_cells_are_revision_stage_not_first_release": true
+    },
+    {
+      "date": "2026-01-16",
+      "official_url": "https://www.federalreserve.gov/releases/g17/20260116/table0.htm",
+      "publisher_release_local": "2026-01-16T09:15:00-05:00",
+      "release_utc": "2026-01-16T14:15:00Z",
+      "new_preliminary_economic_periods": [
+        "2025-12"
+      ],
+      "total_index_sa_2017_100_rounded_table_subset": {
+        "2025-09": 101.8,
+        "2025-10": 101.5,
+        "2025-11": 102,
+        "2025-12": 102.3
+      },
+      "historical_table_older_month_cells_are_revision_stage_not_first_release": true
+    },
+    {
+      "date": "2026-02-18",
+      "official_url": "https://www.federalreserve.gov/releases/g17/20260218/table0.htm",
+      "publisher_release_local": "2026-02-18T09:15:00-05:00",
+      "release_utc": "2026-02-18T14:15:00Z",
+      "new_preliminary_economic_periods": [
+        "2026-01"
+      ],
+      "total_index_sa_2017_100_rounded_table_subset": {
+        "2025-09": 101.7,
+        "2025-10": 101.3,
+        "2025-11": 101.4,
+        "2025-12": 101.6,
+        "2026-01": 102.3
+      },
+      "historical_table_older_month_cells_are_revision_stage_not_first_release": true
+    },
+    {
+      "date": "2026-03-16",
+      "official_url": "https://www.federalreserve.gov/releases/g17/20260316/table0.htm",
+      "publisher_release_local": "2026-03-16T09:15:00-04:00",
+      "release_utc": "2026-03-16T13:15:00Z",
+      "new_preliminary_economic_periods": [
+        "2026-02"
+      ],
+      "total_index_sa_2017_100_rounded_table_subset": {
+        "2025-09": 101.7,
+        "2025-10": 101.2,
+        "2025-11": 101.4,
+        "2025-12": 101.7,
+        "2026-01": 102.4,
+        "2026-02": 102.6
+      },
+      "historical_table_older_month_cells_are_revision_stage_not_first_release": true
+    },
+    {
+      "date": "2026-04-16",
+      "official_url": "https://www.federalreserve.gov/releases/g17/20260416/table0.htm",
+      "publisher_release_local": "2026-04-16T09:15:00-04:00",
+      "release_utc": "2026-04-16T13:15:00Z",
+      "new_preliminary_economic_periods": [
+        "2026-03"
+      ],
+      "total_index_sa_2017_100_rounded_table_subset": {
+        "2025-10": 101.2,
+        "2025-11": 101.1,
+        "2025-12": 101.6,
+        "2026-01": 101.6,
+        "2026-02": 102.3,
+        "2026-03": 101.8
+      },
+      "historical_table_older_month_cells_are_revision_stage_not_first_release": true
+    },
+    {
+      "date": "2026-05-15",
+      "official_url": "https://www.federalreserve.gov/releases/g17/20260515/table0.htm",
+      "publisher_release_local": "2026-05-15T09:15:00-04:00",
+      "release_utc": "2026-05-15T13:15:00Z",
+      "new_preliminary_economic_periods": [
+        "2026-04"
+      ],
+      "total_index_sa_2017_100_rounded_table_subset": {
+        "2025-11": 101,
+        "2025-12": 101.5,
+        "2026-01": 101.5,
+        "2026-02": 102.1,
+        "2026-03": 101.8,
+        "2026-04": 102.5
+      },
+      "historical_table_older_month_cells_are_revision_stage_not_first_release": true
+    },
+    {
+      "date": "2026-06-15",
+      "official_url": "https://www.federalreserve.gov/releases/g17/20260615/table0.htm",
+      "publisher_release_local": "2026-06-15T09:15:00-04:00",
+      "release_utc": "2026-06-15T13:15:00Z",
+      "new_preliminary_economic_periods": [
+        "2026-05"
+      ],
+      "total_index_sa_2017_100_rounded_table_subset": {
+        "2025-12": 101.5,
+        "2026-01": 101.1,
+        "2026-02": 101.9,
+        "2026-03": 101.6,
+        "2026-04": 102.5,
+        "2026-05": 102.6
+      },
+      "historical_table_older_month_cells_are_revision_stage_not_first_release": true
+    },
+    {
+      "date": "2026-07-17",
+      "official_url": "https://www.federalreserve.gov/releases/g17/20260717/table0.htm",
+      "publisher_release_local": "2026-07-17T09:15:00-04:00",
+      "release_utc": "2026-07-17T13:15:00Z",
+      "new_preliminary_economic_periods": [
+        "2026-06"
+      ],
+      "total_index_sa_2017_100_rounded_table_subset": {
+        "2026-01": 101,
+        "2026-02": 101.9,
+        "2026-03": 101.6,
+        "2026-04": 102.4,
+        "2026-05": 102.6,
+        "2026-06": 102.6
+      },
+      "historical_table_older_month_cells_are_revision_stage_not_first_release": true
+    },
+    {
+      "date": "2026-08-18",
+      "official_url": "https://www.federalreserve.gov/releases/g17/20260818/table0.htm",
+      "publisher_release_local": "2026-08-18T09:15:00-04:00",
+      "release_utc": "2026-08-18T13:15:00Z",
+      "new_preliminary_economic_periods": [
+        "2026-07"
+      ],
+      "total_index_sa_2017_100_rounded_table_subset": {
+        "2026-02": 101.9,
+        "2026-03": 101.8,
+        "2026-04": 102.5,
+        "2026-05": 102.5,
+        "2026-06": 102.8,
+        "2026-07": 103
+      },
+      "historical_table_older_month_cells_are_revision_stage_not_first_release": true
+    },
+    {
+      "date": "2026-09-18",
+      "official_url": "https://www.federalreserve.gov/releases/g17/20260918/table0.htm",
+      "publisher_release_local": "2026-09-18T09:15:00-04:00",
+      "release_utc": "2026-09-18T13:15:00Z",
+      "new_preliminary_economic_periods": [
+        "2026-08"
+      ],
+      "total_index_sa_2017_100_rounded_table_subset": {
+        "2026-03": 101.7,
+        "2026-04": 102.6,
+        "2026-05": 102.6,
+        "2026-06": 102.8,
+        "2026-07": 103,
+        "2026-08": 103.1
+      },
+      "historical_table_older_month_cells_are_revision_stage_not_first_release": true
+    },
+    {
+      "date": "2026-10-16",
+      "official_url": "https://www.federalreserve.gov/releases/g17/20261016/table0.htm",
+      "publisher_release_local": "2026-10-16T09:15:00-04:00",
+      "release_utc": "2026-10-16T13:15:00Z",
+      "new_preliminary_economic_periods": [
+        "2026-09"
+      ],
+      "total_index_sa_2017_100_rounded_table_subset": {
+        "2026-04": 102.6,
+        "2026-05": 102.7,
+        "2026-06": 103,
+        "2026-07": 103.2,
+        "2026-08": 103.3,
+        "2026-09": 104
+      },
+      "historical_table_older_month_cells_are_revision_stage_not_first_release": true
+    }
+  ]
+}
