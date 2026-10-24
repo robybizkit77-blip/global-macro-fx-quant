@@ -56,6 +56,10 @@ on:
       - 'validation/macro/v2_abs_eurostat_publication_event_replay_v1.py'
       - 'validation/macro/test_v2_abs_eurostat_publication_event_replay_v1.py'
       - 'validation/macro/MACRO_V2_ABS_EUROSTAT_OFFICIAL_EVENT_REPLAY_2026-10-24.md'
+      - 'validation/macro/fixtures/v2_abs_complete_monthly_cpi_11_release_web_ledger_2026-10-24.json'
+      - 'validation/macro/v2_abs_complete_monthly_cpi_11_release_replay_v1.py'
+      - 'validation/macro/test_v2_abs_complete_monthly_cpi_11_release_replay_v1.py'
+      - 'validation/macro/MACRO_V2_ABS_11_COMPLETE_MONTHLY_CPI_RELEASES_2026-10-24.md'
   workflow_dispatch:
 
 permissions:
@@ -354,6 +358,11 @@ jobs:
           python -m unittest validation.macro.test_v2_abs_eurostat_publication_event_replay_v1 -v
           python -m validation.macro.v2_abs_eurostat_publication_event_replay_v1 --asof 2026-10-02T23:59:59Z --out /tmp/macro-v2-shadow/abs-eurostat-before-eurostat-safe-gate.json
           python -m validation.macro.v2_abs_eurostat_publication_event_replay_v1 --asof 2026-10-24T00:00:00Z --out /tmp/macro-v2-shadow/abs-eurostat-official-event-replay.json
+      - name: Validate 11 ABS complete monthly CPI first web-release events and cross-regime PIT exclusions
+        run: |
+          python -m unittest validation.macro.test_v2_abs_complete_monthly_cpi_11_release_replay_v1 -v
+          python -m validation.macro.v2_abs_complete_monthly_cpi_11_release_replay_v1 --asof 2026-02-25T00:30:00Z --out /tmp/macro-v2-shadow/abs-jan-original-release.json
+          python -m validation.macro.v2_abs_complete_monthly_cpi_11_release_replay_v1 --asof 2026-10-24T00:00:00Z --out /tmp/macro-v2-shadow/abs-11-releases-audit.json
       - name: Confirm no runtime or website files were changed by tests
         run: |
           git diff --exit-code -- live_data site payload dashboard
