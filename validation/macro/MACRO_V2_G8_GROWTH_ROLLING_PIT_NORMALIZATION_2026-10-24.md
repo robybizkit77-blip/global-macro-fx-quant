@@ -40,7 +40,7 @@ z^{research}_t=rac{f_t-mu_{t-1}}{sigma_{t-1}}.
 
 ### Historical revisions: the key PIT rule
 
-Suppose the 2026-04 period was initially known as one industrial-production reading. A later revision published in July may update the value *from July onward*. A historical `f_{April}` frozen at its April publication remains the **April-era feature vintage** when normalizing a June event. Replacing that old training observation with a new present-day replay would create an artificial historical signal.
+Suppose the 2026-04 period was initially known as one industrial-production reading. A later revision published in July may update the value *from July onward*. A historical `f_{April}` frozen at its **initial subsequent release cutoff** remains that historical feature vintage when normalizing a later event. Replacing that old training observation with a new present-day replay would create an artificial historical signal.
 
 The source-specific `shadow_math` calculation in PR #593 handles **current as-of visible monthly level revisions**. This PR adds the **separate frozen feature history** to prevent a rolling historical z-score from re-fitting earlier feature inputs with future knowledge. True publisher first-release data and independent recorded snapshots must ultimately back both steps.
 
