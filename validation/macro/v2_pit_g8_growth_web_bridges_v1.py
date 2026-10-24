@@ -155,8 +155,9 @@ def _check_event(row,pin,*,currency,is_revision=False):
                  _visible(day,clock),value,url)
 
 
-def collect_growth_bridges():
-    raw=json.loads(FIXTURE.read_text(encoding="utf-8"))
+def collect_growth_bridges(*, evidence=None, current=None):
+    raw=(json.loads(FIXTURE.read_text(encoding="utf-8"))
+         if evidence is None else evidence)
     require(raw.get("schema")==SCHEMA and raw.get("review_as_of")=="2026-10-24"
             and raw.get("research_only") is True
             and raw.get("archived_original_publication_day_bytes_certified") is False
@@ -167,7 +168,8 @@ def collect_growth_bridges():
     require(isinstance(entries,list) and len(entries)==6
             and [x.get("currency") for x in entries]==list(PINS),
             "six exact Growth official publisher candidates required")
-    observed=json.loads(OBSERVED.read_text(encoding="utf-8"))
+    observed=(json.loads(OBSERVED.read_text(encoding="utf-8"))
+              if current is None else current)
     require(set(observed)=={"USD","EUR","GBP","JPY","CHF","CAD","AUD","NZD"},
             "G8 current series observation inventory unexpectedly changed")
     result=[]
