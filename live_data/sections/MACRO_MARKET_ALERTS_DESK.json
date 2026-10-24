@@ -1,8 +1,21 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-24T10:46:49Z",
+  "generated_at_utc": "2026-10-24T12:56:02Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-89b7185350d53c8d057e",
+      "observed_at_utc": "2026-10-24T10:11:00Z",
+      "headline": "Oil spill washes over Umm Al Quwain beaches in UAE following tanker strike",
+      "summary": "AP News riporta: Oil spill washes over Umm Al Quwain beaches in UAE following tanker strike. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxNT3hYbk05V0JLVHZnaTBLSm83ZWZ6MTh4ODdvRWVIb3ZvUEhUT2lGVUY5cWFFSlpmYXJud25STEpHQ0J2RHdwb204TmgzTTJHRS12WnlGemc1NTAzRWdzZWZpbGdkUXgwdzNJWEcwR2RhY3g1VDJROElwYnZlNjNfcnBDUUp4b0JXNWU4SWgtWllkcXRwNWFhdjFLVGJZTkJnTDFsZjFtQXRlWGFWS3hjTko1UGY5YUhoM194SktBN3hWd1RLLVFTempaUGQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-641281ff5fab22ed9275",
       "observed_at_utc": "2026-10-24T08:00:00Z",
@@ -1364,21 +1377,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxPMXhrSmpaMk8tc0RERnBieWlyRThFeDE5X25hNy1JYTZxX2o5Q0wyMlJ0RFZheXM0S1VPUUVVcTBobHlJR3hSa3prRjhjaUVGdXBNcGNybmU5anZLOU0zdXg2TmFoYXNqSnVuRXpxQ2dwTnBYTWpOZEdIQUtVVEVqN0h6TQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-fe170eeebb6f56327437",
-      "observed_at_utc": "2026-10-21T18:11:00Z",
-      "headline": "UK inflation rises to highest in almost a year as Iran war drives fuel prices higher",
-      "summary": "AP News riporta: UK inflation rises to highest in almost a year as Iran war drives fuel prices higher. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [
-        "GBP"
-      ],
-      "related_pairs": [],
-      "source_label": "AP News · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxPb0tld3hpUGx6Vmd1S2dvem5sS2hjTTJwSG9TRkNVMEpzemp5MFh0MlZPY21RMHd2V0JyZG9nNWU0TTZLUURkYVJRRnZoZ1JKSWVaSkc1cFlDa2MyWmNrQmUxOS1ycGZjYW9SVjNUZnE0UUV2dEFIZDNEdElOV3FIYng1ZzN1UzVRTVM5V1FWTzhKWTY1SVpKU045TEdjR1Ja?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
