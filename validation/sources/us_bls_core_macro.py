@@ -4,6 +4,9 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import sys
+import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 from typing import Any
@@ -18,6 +21,13 @@ AUTHORITY = "U.S. Bureau of Labor Statistics"
 TRANSPORT = "BLS Public Data API v2"
 SOURCE_URL = "https://www.bls.gov/developers/"
 MISSING_VALUE_MARKERS = {"", "-", "--", ".", "NA", "N/A"}
+RETRYABLE_HTTP_CODES = frozenset({429, 500, 502, 503, 504})
+HTTP_ATTEMPTS = 3
+
+
+class BlsTransportUnavailable(RuntimeError):
+    """Registered BLS network transport exhausted; no candidate was produced."""
+
 
 CANONICAL_CONTRACT = {
     "labour": {
@@ -132,8 +142,21 @@ def fetch_payload(start_year: int, end_year: int) -> dict[str, Any]:
         headers={"Content-Type": "application/json", "User-Agent": "global-macro-fx-quant/1.0"},
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        return json.load(resp)
+    # Bounded retry applies ONLY to transient HTTP transport responses.
+    # JSON shape, source identity, transformation and PIT failures stay fatal.
+    for attempt in range(1, HTTP_ATTEMPTS + 1):
+        try:
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                return json.load(resp)
+        except urllib.error.HTTPError as exc:
+            if exc.code not in RETRYABLE_HTTP_CODES:
+                raise
+            if attempt == HTTP_ATTEMPTS:
+                raise BlsTransportUnavailable(
+                    f"official BLS API HTTP {exc.code} after {HTTP_ATTEMPTS} attempts"
+                ) from exc
+            time.sleep(2 ** (attempt - 1))
+    raise AssertionError("unreachable HTTP retry state")
 
 
 def build(payload: dict[str, Any]) -> tuple[dict[str, dict[str, Any]], dict[str, Any]]:
@@ -223,7 +246,13 @@ def main() -> int:
         start_year = args.start_year or (end_year - 2)
         if end_year - start_year > 9:
             raise SystemExit("unregistered BLS live fetch is intentionally limited to a <=10-year span")
-        payload = fetch_payload(start_year, end_year)
+        try:
+            payload = fetch_payload(start_year, end_year)
+        except BlsTransportUnavailable as exc:
+            # Distinct from any parser, source identity, numerical or PIT failure.
+            # Output candidates and source audit are intentionally NOT written.
+            print(f"BLS_OFFICIAL_TRANSPORT_WITHHELD_NO_CANDIDATE: {exc}", file=sys.stderr)
+            return 76
         mode = "live"
 
     candidates, audit = build(payload)
