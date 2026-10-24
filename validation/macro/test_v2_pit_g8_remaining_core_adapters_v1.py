@@ -31,13 +31,13 @@ class RemainingG8LabourInflationAnchorTests(unittest.TestCase):
         self.assertEqual({(e["currency"],e["pillar"]) for e in self.latest},
                          {("EUR","labour"),("JPY","inflation"),("CHF","inflation"),
                           ("CHF","labour"),("NZD","labour")})
-        self.assertEqual(len(self.sources),18)
-        self.assertEqual(len({(s["currency"],s["pillar"]) for s in self.sources}),18)
+        self.assertEqual(len(self.sources),24)
+        self.assertEqual(len({(s["currency"],s["pillar"]) for s in self.sources}),24)
         r=self.receipt("2026-10-24T00:00:00Z")
-        self.assertEqual(r["summary"]["candidate_source_streams_loaded"],18)
-        self.assertEqual(r["summary"]["slots_without_shared_candidate_stream"],6)
-        self.assertEqual(r["summary"]["candidate_first_release_reference_periods_visible"],69)
-        self.assertEqual(r["summary"]["candidate_web_publication_stage_events_visible"],80)
+        self.assertEqual(r["summary"]["candidate_source_streams_loaded"],24)
+        self.assertEqual(r["summary"]["slots_without_shared_candidate_stream"],0)
+        self.assertEqual(r["summary"]["candidate_first_release_reference_periods_visible"],75)
+        self.assertEqual(r["summary"]["candidate_web_publication_stage_events_visible"],87)
         self.assertEqual(r["summary"]["slots_with_full_canonical_first_release_pit_training_certified"],0)
         self.assertEqual(r["summary"]["slots_eligible_for_new_live_scores"],0)
 
