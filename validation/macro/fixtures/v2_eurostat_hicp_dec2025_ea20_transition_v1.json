@@ -1,0 +1,103 @@
+{
+  "schema": "GMFQ_MACRO_V2_EUROSTAT_DEC_2025_EA20_TRANSITION_ADDENDUM_V1",
+  "reviewed_on": "2026-10-24",
+  "publisher": "Eurostat",
+  "reference_period": "2025-12",
+  "period_geography": "EA20",
+  "source_metric": "HICP_ANNUAL_RATE_PERCENT_YOY_ONE_DECIMAL",
+  "source_component_classification": "PRE_ECOICOP_V2",
+  "source_index_reference_period": "2015=100",
+  "source_vintage_status": "PERIOD_SPECIFIC_PUBLISHER_WEB_PAGES_NO_IMMUTABLE_RELEASE_DAY_BYTES",
+  "stage_publications": [
+    {
+      "stage": "FLASH",
+      "published_on": "2026-01-07",
+      "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-07012026-ap",
+      "independent_intraday_clock_certified": false,
+      "conservative_visible_from_utc": "2026-01-08T00:00:00Z"
+    },
+    {
+      "stage": "DETAILED",
+      "published_on": "2026-01-19",
+      "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-19012026-ap",
+      "independent_intraday_clock_certified": false,
+      "conservative_visible_from_utc": "2026-01-20T00:00:00Z"
+    }
+  ],
+  "components": [
+    {
+      "component_id": "ALL_ITEMS_HICP",
+      "flash_percent_yoy": 2,
+      "detailed_percent_yoy": 1.9
+    },
+    {
+      "component_id": "CORE_HICP",
+      "flash_percent_yoy": 2.3,
+      "detailed_percent_yoy": 2.3
+    },
+    {
+      "component_id": "ENERGY",
+      "flash_percent_yoy": -1.9,
+      "detailed_percent_yoy": -1.9
+    },
+    {
+      "component_id": "FOOD_ALCOHOL_TOBACCO",
+      "flash_percent_yoy": 2.6,
+      "detailed_percent_yoy": 2.5
+    },
+    {
+      "component_id": "NON_ENERGY_INDUSTRIAL_GOODS",
+      "flash_percent_yoy": 0.4,
+      "detailed_percent_yoy": 0.4
+    },
+    {
+      "component_id": "SERVICES",
+      "flash_percent_yoy": 3.4,
+      "detailed_percent_yoy": 3.4
+    }
+  ],
+  "later_2026_report_references": [
+    {
+      "report_reference_period": "2026-01",
+      "report_stage": "FLASH_POST_CORRIGENDUM_AS_CURRENTLY_SERVED",
+      "report_date": "2026-02-04",
+      "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-04022026-ap",
+      "publisher_reported_december_2025_headline_percent": 2,
+      "report_conservative_visible_from_utc": "2026-02-05T00:00:00Z",
+      "original_2026_flash_page_immutable": false
+    },
+    {
+      "report_reference_period": "2026-01",
+      "report_stage": "DETAILED",
+      "report_date": "2026-02-25",
+      "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-25022026-ap",
+      "publisher_reported_december_2025_headline_percent": 2,
+      "report_conservative_visible_from_utc": "2026-02-26T00:00:00Z",
+      "original_2026_flash_page_immutable": false
+    }
+  ],
+  "transition": {
+    "membership_change_effective": "2026-01-01",
+    "membership_2025": "EA20",
+    "membership_2026": "EA21",
+    "newly_joined_country": "Bulgaria",
+    "technical_method_2025": "ECOICOP_V1_BASE_2015_100",
+    "technical_method_2026": "ECOICOP_V2_BASE_2025_100",
+    "hicp_first_ecoicop_v2_publication": "2026-02-04",
+    "eurostat_all_items_historical_unaffected_by_ecoicop_reclassification_alone": true,
+    "eurostat_chain_index_for_evolving_member_states": true,
+    "no_assumption_aggregate_components_weights_homogeneous": true,
+    "no_automatic_cross_regime_normalized_macro_signal": true,
+    "eurostat_methodology_url": "https://ec.europa.eu/eurostat/documents/272892/11336726/HICP%2Bimprovements%2B-%2BQuestions%2Band%2BAnswers-2026-EN.pdf/dff14a89-9f65-8371-e143-488231305710?t=1766052045691",
+    "eurostat_membership_url": "https://economy-finance.ec.europa.eu/euro/eu-countries-and-euro/bulgaria-and-euro_en"
+  },
+  "original_december_flash_html_release_day_bytes_certified": false,
+  "intraday_publication_time_certified": false,
+  "december_historical_retroactive_2point0_causal_reason_certified": false,
+  "complete_first_release_pit_training_certified": false,
+  "backtest_eligible": false,
+  "score_eligible": false,
+  "safe_to_publish_new_D": false,
+  "safe_to_update_pair_theses": false,
+  "writes_live_data": false
+}
