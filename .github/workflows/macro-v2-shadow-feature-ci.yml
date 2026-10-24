@@ -80,6 +80,10 @@ on:
       - 'validation/macro/v2_eurostat_hicp_seven_month_replay_v1.py'
       - 'validation/macro/test_v2_eurostat_hicp_seven_month_replay_v1.py'
       - 'validation/macro/MACRO_V2_EUROSTAT_HICP_MAR_SEP_SEVEN_MONTH_REPLAY_2026-10-24.md'
+      - 'validation/macro/fixtures/v2_eurostat_hicp_jan_feb_2026_corrigenda_v1.json'
+      - 'validation/macro/v2_eurostat_hicp_nine_month_corrigendum_replay_v1.py'
+      - 'validation/macro/test_v2_eurostat_hicp_nine_month_corrigendum_replay_v1.py'
+      - 'validation/macro/MACRO_V2_EUROSTAT_JAN_SEP_NINE_MONTH_CORRIGENDA_2026-10-24.md'
   workflow_dispatch:
 
 permissions:
@@ -408,6 +412,11 @@ jobs:
           python -m unittest validation.macro.test_v2_eurostat_hicp_seven_month_replay_v1 -v
           python -m validation.macro.v2_eurostat_hicp_seven_month_replay_v1 --asof 2026-05-20T23:59:59Z --out /tmp/macro-v2-shadow/eurostat-before-april-final-gate.json
           python -m validation.macro.v2_eurostat_hicp_seven_month_replay_v1 --asof 2026-10-24T00:00:00Z --out /tmp/macro-v2-shadow/eurostat-march-september-seven-month-replay.json
+      - name: Validate Eurostat nine-month HICP release replay and two distinct official corrigenda
+        run: |
+          python -m unittest validation.macro.test_v2_eurostat_hicp_nine_month_corrigendum_replay_v1 -v
+          python -m validation.macro.v2_eurostat_hicp_nine_month_corrigendum_replay_v1 --asof 2026-03-04T23:59:59Z --out /tmp/macro-v2-shadow/feb-flash-before-corrigendum.json
+          python -m validation.macro.v2_eurostat_hicp_nine_month_corrigendum_replay_v1 --asof 2026-10-24T00:00:00Z --out /tmp/macro-v2-shadow/eurostat-jan-sep-nine-month.json
       - name: Confirm no runtime or website files were changed by tests
         run: |
           git diff --exit-code -- live_data site payload dashboard

@@ -1,0 +1,147 @@
+{
+  "schema": "GMFQ_MACRO_V2_EUROSTAT_JAN_FEB_2026_FLASH_CORRIGENDA_DETAILED_V1",
+  "review_as_of": "2026-10-24",
+  "publisher": "Eurostat",
+  "currency": "EUR",
+  "coverage": "EA21",
+  "metric": "Annual inflation percentage YoY, not HICP index or contributions",
+  "classification": "ECOICOP_V2_FROM_2026-02-04",
+  "index_reference_period": "2025=100",
+  "break_warning": "Jan 2026 EA21 with Bulgaria; previous year EA20; classification and base change 4 Feb 2026",
+  "source_evidence_quality": "PERIOD_SPECIFIC_OFFICIAL_WEB_PAGES_ALREADY_CORRIGENDED_NOT_ORIGINAL_PUBLICATION_BYTES",
+  "months": [
+    {
+      "reference_period": "2026-01",
+      "flash": {
+        "publication_day": "2026-02-04",
+        "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-04022026-ap",
+        "intraday_release_hour_independently_certified": false,
+        "conservative_visible_from_utc": "2026-02-05T00:00:00Z",
+        "current_web_page_contains_subsequent_corrigendum": true
+      },
+      "corrigendum": {
+        "publication_day": "2026-02-05",
+        "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-04022026-ap",
+        "intraday_release_hour_independently_certified": false,
+        "conservative_visible_from_utc": "2026-02-06T00:00:00Z",
+        "publisher_reported_wall_clock": "11:00 AM",
+        "publisher_wall_clock_timezone_certified": false,
+        "incident": "PROCESSING_ERROR",
+        "affected_annual_rate_component_count": 1,
+        "affected_monthly_rate_component_count": 4,
+        "corrected_annual_component_outside_selected_six": "UNPROCESSED_FOOD",
+        "headline_yoy_changed": false
+      },
+      "detailed": {
+        "publication_day": "2026-02-25",
+        "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-25022026-ap",
+        "intraday_release_hour_independently_certified": false,
+        "conservative_visible_from_utc": "2026-02-26T00:00:00Z"
+      },
+      "annual_rate_components": [
+        {
+          "component_id": "ALL_ITEMS_HICP",
+          "flash_percent_yoy": 1.7,
+          "detailed_percent_yoy": 1.7
+        },
+        {
+          "component_id": "CORE_HICP",
+          "flash_percent_yoy": 2.2,
+          "detailed_percent_yoy": 2.2
+        },
+        {
+          "component_id": "ENERGY",
+          "flash_percent_yoy": -4.1,
+          "detailed_percent_yoy": -4
+        },
+        {
+          "component_id": "FOOD_ALCOHOL_TOBACCO",
+          "flash_percent_yoy": 2.7,
+          "detailed_percent_yoy": 2.6
+        },
+        {
+          "component_id": "NON_ENERGY_INDUSTRIAL_GOODS",
+          "flash_percent_yoy": 0.4,
+          "detailed_percent_yoy": 0.4
+        },
+        {
+          "component_id": "SERVICES",
+          "flash_percent_yoy": 3.2,
+          "detailed_percent_yoy": 3.2
+        }
+      ],
+      "original_uncorrected_component_monthly_data_available": false
+    },
+    {
+      "reference_period": "2026-02",
+      "flash": {
+        "publication_day": "2026-03-03",
+        "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-03032026-ap",
+        "intraday_release_hour_independently_certified": false,
+        "conservative_visible_from_utc": "2026-03-04T00:00:00Z",
+        "current_web_page_contains_subsequent_corrigendum": true
+      },
+      "corrigendum": {
+        "publication_day": "2026-03-04",
+        "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-03032026-ap",
+        "intraday_release_hour_independently_certified": false,
+        "conservative_visible_from_utc": "2026-03-05T00:00:00Z",
+        "publisher_reported_wall_clock": "6:00 PM",
+        "publisher_wall_clock_timezone_certified": false,
+        "incident": "COMPONENT_WEIGHT_TECHNICAL_ERROR",
+        "maximum_absolute_weight_correction_per_thousand": 1.4,
+        "corrected_metric": "COMPONENT_WEIGHTS_NOT_SIX_ANNUAL_RATE_HEADLINES",
+        "headline_yoy_changed": false
+      },
+      "detailed": {
+        "publication_day": "2026-03-18",
+        "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-18032026-ap",
+        "intraday_release_hour_independently_certified": false,
+        "conservative_visible_from_utc": "2026-03-19T00:00:00Z"
+      },
+      "annual_rate_components": [
+        {
+          "component_id": "ALL_ITEMS_HICP",
+          "flash_percent_yoy": 1.9,
+          "detailed_percent_yoy": 1.9
+        },
+        {
+          "component_id": "CORE_HICP",
+          "flash_percent_yoy": 2.4,
+          "detailed_percent_yoy": 2.4
+        },
+        {
+          "component_id": "ENERGY",
+          "flash_percent_yoy": -3.2,
+          "detailed_percent_yoy": -3.1
+        },
+        {
+          "component_id": "FOOD_ALCOHOL_TOBACCO",
+          "flash_percent_yoy": 2.6,
+          "detailed_percent_yoy": 2.5
+        },
+        {
+          "component_id": "NON_ENERGY_INDUSTRIAL_GOODS",
+          "flash_percent_yoy": 0.7,
+          "detailed_percent_yoy": 0.7
+        },
+        {
+          "component_id": "SERVICES",
+          "flash_percent_yoy": 3.4,
+          "detailed_percent_yoy": 3.4
+        }
+      ],
+      "original_uncorrected_component_monthly_data_available": false
+    }
+  ],
+  "publisher_flash_pages_might_be_edited_after_publication": true,
+  "original_page_bytes_archived_at_release": false,
+  "first_uncorrected_all_metrics_certified": false,
+  "full_revision_history_certified": false,
+  "backtest_ready": false,
+  "macro_score_ready": false,
+  "safe_to_publish_new_D": false,
+  "safe_to_update_pair_theses": false,
+  "writes_live_data": false,
+  "note": "Two reference months, four ordinary flash/detail events plus two official corrigenda, 24 year-on-year metric-stage rows. Never reconstruct unknown pre-corrigendum unprocessed-food annual rates or weights."
+}
