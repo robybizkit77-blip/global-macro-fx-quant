@@ -148,7 +148,7 @@ def inspect(feeds: dict, now: dt.datetime, pipeline_outcome: str = "success") ->
                         and math.isfinite(history[-1])
                         and abs(value - history[-1]) < 1e-8)
             period_ok = (isinstance(period, str) and
-                         re.fullmatch(r"\\d{4}-\\d{2}(?:-01)?", period) is not None and
+                         re.fullmatch(r"\d{4}-\d{2}(?:-01)?", period) is not None and
                          valid_date(period[:7] + "-01") is not None and
                          period[:7] <= today.strftime("%Y-%m"))
             source_ok = isinstance(source, str) and bool(source.strip())
