@@ -242,4 +242,8 @@ def collect():
     record without altering the G8 control plane. No candidate is a model input
     until an independent canonical series and source-vintage review passes.
     """
-    return [eurostat(), abs_monthly(), bls_unemployment(), ons_labour_windows()]
+    # Import lazily: the latest-source adapter reuses source()/event() defined
+    # here, and only adds separately attested single-release candidates.
+    from validation.macro.v2_pit_g8_latest_web_adapters_v1 import collect_latest
+    return ([eurostat(), abs_monthly(), bls_unemployment(), ons_labour_windows()]
+            + collect_latest())
