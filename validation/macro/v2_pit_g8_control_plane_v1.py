@@ -39,6 +39,8 @@ PUBLISHER_HOSTS = {
     "Stats NZ": {"www.stats.govt.nz"},
     "Swiss Federal Statistical Office": {"dam-api.bfs.admin.ch"},
     "Swiss State Secretariat for Economic Affairs": {"www.seco.admin.ch"},
+    "Federal Reserve Board": {"www.federalreserve.gov"},
+    "Ministry of Economy, Trade and Industry Japan": {"www.meti.go.jp"},
 }
 SOURCE_KINDS = {"FIRST_WEB", "DETAILED_WEB", "REVISION_WEB"}
 RESEARCH_REVIEW_ASOF = date(2026, 10, 24)
