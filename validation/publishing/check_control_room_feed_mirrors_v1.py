@@ -25,6 +25,7 @@ DASH_OWNED = {
     "V247_COT_STORIES.json", "NATIVE_CB_DATA.json",
     "CHF_SNB_10Y_SPOT_CONTEXT.json",
     "NZD_CB_PRICING_DIRECTIONAL_PROXY.json",
+    "NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json",
     "OIS_SOURCE_READINESS_VIEW.json",
 }
 DERIVED_SIDECARS = {"RATES_AUDIT_METADATA.json","OIS_DATA.json"}  # Non-Home-direct metadata and official OIS canonical source requiring strict public parity.
@@ -91,7 +92,7 @@ def main() -> int:
     # Legacy narrative is source-derived, not a fresh policy/OIS view.
     assert "const ROOT='https://raw.githubusercontent.com/" in site
     assert "/main/live_data/sections/';" in site
-    print("CONTROL_ROOM_ALL_16_FEED_MIRRORS_OWNED_GREEN", json.dumps({
+    print("CONTROL_ROOM_ALL_FETCHED_FEED_MIRRORS_OWNED_GREEN", json.dumps({
         "mode": "READ_ONLY_NO_SCORE_EFFECT",
         "total": len(all_owned),
         "dashboard_publisher": sorted(DASH_OWNED),
