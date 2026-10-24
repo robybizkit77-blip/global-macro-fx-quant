@@ -36,6 +36,7 @@ assert.equal(observed.confirmed,4);
 assert.equal(observed.mode,'DAILY_INCOMPLETE');
 // Positive PIT fixture: a separately generated same-day calendar at 23 October.
 const verifiedFixture=structuredClone(inputs);
+verifiedFixture[5].generated_at_utc='2026-10-23T05:52:00Z';
 verifiedFixture[6].generated_at_utc='2026-10-23T05:52:00Z';
 const result=inspect(verifiedFixture);
 assert.equal(result.confirmed,5,JSON.stringify(result));
@@ -64,6 +65,10 @@ assert.equal(altered(2,x=>{x.price_asof='2026-10-21'}).checks.pairs,false);
 assert.equal(altered(1,x=>{x.risk.VIX.last_date='2026-10-21'}).checks.vix,false);
 assert.equal(altered(5,x=>{x.generated_at_utc='2026-10-22T06:52:00Z'}).checks.news,false);
 assert.equal(altered(6,x=>{x.generated_at_utc=null}).checks.calendar,false);
+// A later 08:52 CEST build cannot certify an 08:00 CEST decision.
+assert.equal(altered(5,x=>{x.generated_at_utc='2026-10-23T06:52:00Z'}).checks.news,false);
+assert.equal(altered(6,x=>{x.generated_at_utc='2026-10-23T06:52:00Z'}).checks.calendar,false);
+assert.equal(altered(5,x=>{x.generated_at_utc='2026-10-23T05:52:00'}).checks.news,false);
 // Local 00:30 Rome Friday is still Thu UTC: do not call calendar stale.
 assert.equal(altered(5,x=>{x.generated_at_utc='2026-10-22T22:30:00Z'}).checks.news,true);
 assert.equal(ctx.romePreviousWeekday(new Date('2026-10-26T07:00:00Z')),'2026-10-23');
