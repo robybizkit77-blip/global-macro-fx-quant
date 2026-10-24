@@ -22,7 +22,7 @@ from datetime import date
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from validation.macro.v2_shadow_features_v1 import ROOT, FX, PILLARS, period_index, require, timestamp
+from validation.macro.v2_shadow_features_v1 import ROOT, FX, PILLARS, period_index, period_start, require, timestamp
 from validation.macro.v2_pit_coverage_readiness_v1 import run as readiness_run
 from validation.macro.v2_pit_g8_evidence_adapters_v1 import collect, PROVENANCE
 
@@ -34,6 +34,9 @@ PUBLISHER_HOSTS = {
     "Australian Bureau of Statistics": {"www.abs.gov.au"},
     "U.S. Bureau of Labor Statistics": {"www.bls.gov"},
     "UK Office for National Statistics": {"www.ons.gov.uk"},
+    "Statistics Canada": {"www150.statcan.gc.ca"},
+    "Statistics Bureau of Japan": {"www.stat.go.jp"},
+    "Stats NZ": {"www.stats.govt.nz"},
 }
 SOURCE_KINDS = {"FIRST_WEB", "DETAILED_WEB"}
 RESEARCH_REVIEW_ASOF = date(2026, 10, 24)
@@ -85,7 +88,7 @@ def normalize(source):
         period = e.get("observation_period")
         idx = period_index(period, freq)
         when = timestamp(e.get("visible_from_utc"))
-        require(when.date() >= date.fromisoformat(period[:7] + "-01"),
+        require(when.date() >= period_start(period, freq),
                 "reported publication before observation period")
         require(numeric(e.get("reported_value")), "finite metric value required")
         url = e.get("source_url")
