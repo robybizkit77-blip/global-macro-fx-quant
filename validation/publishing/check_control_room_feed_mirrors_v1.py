@@ -92,7 +92,7 @@ def main() -> int:
     # Legacy narrative is source-derived, not a fresh policy/OIS view.
     assert "const ROOT='https://raw.githubusercontent.com/" in site
     assert "/main/live_data/sections/';" in site
-    print("CONTROL_ROOM_ALL_16_FEED_MIRRORS_OWNED_GREEN", json.dumps({
+    print("CONTROL_ROOM_ALL_FETCHED_FEED_MIRRORS_OWNED_GREEN", json.dumps({
         "mode": "READ_ONLY_NO_SCORE_EFFECT",
         "total": len(all_owned),
         "dashboard_publisher": sorted(DASH_OWNED),
