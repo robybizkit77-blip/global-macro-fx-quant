@@ -257,6 +257,7 @@ jobs:
           d=json.load(open('/tmp/morning-readiness-v1.json', encoding='utf-8'))
           problems=d['critical_daily_problems']
           evidence=d['evidence']
+          macro=evidence['MACRO_OBSERVATIONS_G8']
           lines=[
             '## Control Room · 08:00 morning source readiness',
             '- Status: **'+d['operational_state']+'**',
@@ -275,6 +276,16 @@ jobs:
             '- Weekly COT is assessed on its own release cadence, not as a daily price.',
             '- Publication date lag can reflect a legitimate official market holiday; investigate before overriding.',
           ]
+          lines.append('- Macro observed reference periods: '+str(macro['observed'])+
+                       '/'+str(macro['expected'])+'; historical Macro score is separate')
+          lines.append('- Macro source exceptions: '+
+                       (', '.join(macro['invalid']) if macro['invalid'] else 'none'))
+          for ccy in ('USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'):
+              inflation=macro['rows'][ccy+'.inflation']
+              labour=macro['rows'][ccy+'.labour']
+              lines.append('- '+ccy+' observed periods (NOT release dates): Inflation '+
+                           str(inflation['reference_period'])+'; Labour '+
+                           str(labour['reference_period']))
           with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as out:
               out.write('\n'.join(lines)+'\n')
           print('MORNING_READINESS',d['operational_state'],'PROBLEMS',problems)
