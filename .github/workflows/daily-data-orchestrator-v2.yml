@@ -120,22 +120,24 @@ jobs:
           dispatch_and_wait() {
             local wf="$1"
             local api="repos/${GITHUB_REPOSITORY}/actions/workflows/${wf}"
-            local before run_id status conclusion json child_event child_branch child_sha child_url
+            local dispatch_result run_id response_run_url response_html_url
+            local status conclusion json child_event child_branch child_sha child_url
 
-            before=$(gh api "${api}/runs?branch=main&event=workflow_dispatch&per_page=20" | jq '[.workflow_runs[].id] | max // 0')
-            echo "Dispatching ${wf} (after run id ${before})"
-            gh api --method POST "${api}/dispatches" -f ref=main >/dev/null
-
-            run_id=""
-            for _ in $(seq 1 120); do
-              json=$(gh api "${api}/runs?branch=main&event=workflow_dispatch&per_page=20")
-              run_id=$(jq -r --argjson b "$before" '[.workflow_runs[] | select(.id > $b)] | sort_by(.id) | .[0].id // empty' <<<"$json")
-              [[ -n "$run_id" ]] && break
-              sleep 5
-            done
-            [[ -n "$run_id" ]] || { echo "No dispatched run found for ${wf}" >&2; return 1; }
-
-            echo "${wf} -> run ${run_id}"
+            # GitHub workflow_dispatch API (2026) now provides the exact run
+            # identity. Do NOT scan recent runs or pick an unrelated manual
+            # dispatch if two executions of this workflow occur together.
+            dispatch_result=$(gh api --method POST \
+              -H 'X-GitHub-Api-Version: 2026-03-10' \
+              "${api}/dispatches" -f ref=main -F return_run_details=true)
+            run_id=$(jq -er '.workflow_run_id | select(type=="number" and .>0)' <<<"$dispatch_result")
+            response_run_url=$(jq -er '.run_url | select(type=="string")' <<<"$dispatch_result")
+            response_html_url=$(jq -er '.html_url | select(type=="string")' <<<"$dispatch_result")
+            if [[ "$response_run_url" != "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}" ||
+                  "$response_html_url" != "https://github.com/${GITHUB_REPOSITORY}/actions/runs/${run_id}" ]]; then
+              echo "Workflow dispatch response did not identify the expected run: ${wf}" >&2
+              return 1
+            fi
+            echo "${wf} -> directly dispatched run #${run_id}"
             for _ in $(seq 1 360); do
               json=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}")
               status=$(jq -r '.status' <<<"$json")

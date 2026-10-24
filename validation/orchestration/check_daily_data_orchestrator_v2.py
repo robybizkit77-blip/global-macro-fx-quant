@@ -80,6 +80,12 @@ def main() -> None:
         "actions: write",
         "Europe/Rome",
         "dispatch_and_wait",
+        "return_run_details=true",
+        "X-GitHub-Api-Version: 2026-03-10",
+        "run_id=$(jq -er '.workflow_run_id",
+        "response_run_url=$(jq -er '.run_url",
+        "response_html_url=$(jq -er '.html_url",
+        "Workflow dispatch response did not identify the expected run",
         "child_event=$(jq -r '.event // empty'",
         "child_branch=$(jq -r '.head_branch // empty'",
         "child_sha=$(jq -r '.head_sha // empty'",
@@ -123,7 +129,16 @@ def main() -> None:
     assert text.count(child_receipt) == 1
     assert text.count(required_success_gate) == 1
     assert text.index(child_receipt) < text.index(required_success_gate)
-    assert 'gh api --method POST "${api}/dispatches" -f ref=main' in text
+    # Feb 2026 GitHub API returns the exact dispatched run ID, instead of
+    # guessing from adjacent/manual dispatches or relying on polling order.
+    assert '"${api}/dispatches" -f ref=main -F return_run_details=true' in text
+    assert 'run_id=$(jq -er' in text
+    assert '"$response_run_url" != "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}"' in text
+    assert '"$response_html_url" != "https://github.com/${GITHUB_REPOSITORY}/actions/runs/${run_id}"' in text
+    assert 'sort_by(.id)' not in text
+    assert 'before=$(gh api' not in text
+    assert '/runs?branch=main&event=workflow_dispatch' not in text
+    assert text.index('run_id=$(jq -er') < text.index('for _ in $(seq 1 360); do')
     assert '[[ "$child_event" != "workflow_dispatch"' in text
     assert '"$child_branch" != "main"' in text
 
