@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import json,re
+import json,re,math
 from datetime import date,datetime,timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -20,33 +20,107 @@ def parse_asof(raw):
 
 def iso(d): return d.isoformat() if d else None
 
-def ois_items(data):
-    out=[]
-    for ccy,row in (data.get('currencies') or {}).items():
-        moves=[]
-        for h in ('3m','6m','12m'):
-            v=((row.get('horizons') or {}).get(h) or {}).get('change_1d_bp')
-            if v is not None:moves.append((abs(float(v)),h,float(v)))
-        if not moves: continue
-        _,h,v=max(moves); hrow=(row.get('horizons') or {}).get(h) or {}; weekly=hrow.get('change_1w_bp')
-        tone='più hawkish' if v>0 else 'più dovish' if v<0 else 'invariato'
-        detail=f"Movimento 1D {v:+.1f} bp sul bucket {h.upper()}"+(f"; variazione 1W {float(weekly):+.1f} bp." if weekly is not None else '; riferimento 1W non disponibile.')
-        out.append({'category':'OIS_REPRICING','ccy':ccy,'as_of':row.get('as_of'),'title':f'{ccy}: repricing OIS {tone} ({v:+.1f} bp {h.upper()} in 1D)','detail':detail,'quality':row.get('quality'),'confidence':row.get('confidence'),'source':row.get('source'),'importance':'HIGH' if abs(v)>=2 else 'MEDIUM','_date':parse_asof(row.get('as_of'))})
+def finite_number(value):
+    # bool, NaN, infinity and strings must not become market signals.
+    return type(value) in (int, float) and math.isfinite(value)
+
+
+def ois_items(data, today=None):
+    today = today or datetime.now(timezone.utc).date()
+    out = []
+    for ccy, row in (data.get('currencies') or {}).items():
+        if ccy not in ORDER or not isinstance(row, dict):
+            continue
+        status = row.get('operational_status')
+        quality = row.get('quality')
+        # WITHHELD/uncertified feeds must not become headlines even if a
+        # future source accidentally contains non-null 1D changes.
+        if not ((status == 'GREEN_OFFICIAL' and quality == 'OFFICIAL_CERTIFIED') or
+                (status == 'GREEN_ESTIMATED' and quality == 'ESTIMATED_INFORMATIONAL')):
+            continue
+        as_of = row.get('as_of')
+        source = row.get('source')
+        try:
+            vintage = date.fromisoformat(as_of) if isinstance(as_of, str) else None
+        except ValueError:
+            vintage = None
+        if not vintage or vintage > today or not isinstance(source, str) or not source.strip():
+            continue
+        moves = []
+        for h in ('3m', '6m', '12m'):
+            v = ((row.get('horizons') or {}).get(h) or {}).get('change_1d_bp')
+            if finite_number(v):
+                moves.append((abs(v), h, float(v)))
+        if not moves:
+            continue
+        _, h, v = max(moves)
+        hrow = (row.get('horizons') or {}).get(h) or {}
+        weekly = hrow.get('change_1w_bp')
+        tone = 'più hawkish' if v > 0 else 'più dovish' if v < 0 else 'invariato'
+        indicative = status == 'GREEN_ESTIMATED'
+        prefix = 'repricing proxy indicativo' if indicative else 'repricing OIS'
+        detail = f"Movimento 1D {v:+.1f} bp sul bucket {h.upper()}"
+        detail += (f"; variazione 1W {float(weekly):+.1f} bp."
+                   if finite_number(weekly) else '; riferimento 1W non disponibile.')
+        if indicative:
+            detail += ' Stima informativa: non è una curva OIS ufficiale.'
+        out.append({
+            'category': 'OIS_PROXY_REPRICING' if indicative else 'OIS_REPRICING',
+            'ccy': ccy, 'as_of': as_of,
+            'title': f'{ccy}: {prefix} {tone} ({v:+.1f} bp {h.upper()} in 1D)',
+            'detail': detail, 'quality': quality, 'confidence': row.get('confidence'),
+            'source': source, 'importance': 'HIGH' if abs(v) >= 2 else 'MEDIUM',
+            '_date': vintage,
+        })
     return out
 
-def macro_items(data):
-    today=date.today();out=[]
-    for ccy,row in (data.get('currencies') or {}).items():
-        candidates=[]
-        for layer in ('inflation','labour'):
-            x=row.get(layer) or {}; d=parse_asof(x.get('as_of'))
-            if d:candidates.append((d,layer,x))
-        if not candidates: continue
-        d,layer,x=max(candidates,key=lambda z:z[0])
-        if (today-d).days>45: continue
-        label=x.get('label') or layer.title(); val=x.get('latest_value'); direction=x.get('direction') or 'N/D'; acceleration=x.get('acceleration') or 'N/D'
-        out.append({'category':'MACRO_UPDATE','ccy':ccy,'as_of':x.get('as_of'),'title':f'{ccy}: {label} {direction.lower()} · {acceleration.lower()}','detail':f"Ultimo valore {val}; percentile storico {x.get('percentile')}%; stato {x.get('temperature_label')}.",'quality':'CERTIFIED_MACRO_LAYER','confidence':'A','source':x.get('source'),'importance':'HIGH' if x.get('temperature_label') in ('MOLTO_CALDO','MOLTO_FREDDO') else 'MEDIUM','_date':d})
+
+def macro_items(data, today=None):
+    today = today or datetime.now(timezone.utc).date()
+    out = []
+    for ccy, row in (data.get('currencies') or {}).items():
+        if ccy not in ORDER or not isinstance(row, dict):
+            continue
+        candidates = []
+        for layer in ('inflation', 'labour'):
+            x = row.get(layer) or {}
+            if not isinstance(x, dict):
+                continue
+            # as_of is the OBSERVED REFERENCE PERIOD, not the release date.
+            # Only a separately certified release timestamp makes it news.
+            if x.get('release_date_verified') is not True:
+                continue
+            release = x.get('release_date')
+            try:
+                published = date.fromisoformat(release) if isinstance(release, str) else None
+            except ValueError:
+                published = None
+            period = parse_asof(x.get('as_of'))
+            if (not period or not published or published < period or
+                    published > today or (today - published).days > 45 or
+                    not finite_number(x.get('latest_value')) or
+                    not isinstance(x.get('source'), str) or not x['source'].strip()):
+                continue
+            candidates.append((published, layer, x))
+        if not candidates:
+            continue
+        published, layer, x = max(candidates, key=lambda z: z[0])
+        label = x.get('label') or layer.title()
+        val = x['latest_value']
+        direction = x.get('direction') or 'N/D'
+        acceleration = x.get('acceleration') or 'N/D'
+        out.append({
+            'category': 'MACRO_UPDATE', 'ccy': ccy, 'as_of': published.isoformat(),
+            'reference_period': x.get('as_of'),
+            'title': f'{ccy}: {label} {direction.lower()} · {acceleration.lower()}',
+            'detail': f"Pubblicato il {published.isoformat()} (periodo {x.get('as_of')}). Ultimo valore {val}; percentile storico {x.get('percentile')}%; stato {x.get('temperature_label')}.",
+            'quality': 'VERIFIED_RELEASE_DATE_MACRO_OBSERVATION', 'confidence': 'A',
+            'source': x['source'],
+            'importance': 'HIGH' if x.get('temperature_label') in ('MOLTO_CALDO','MOLTO_FREDDO') else 'MEDIUM',
+            '_date': published,
+        })
     return out
+
 
 def stable_write(core, now=None):
     """Preserve content vintage while recording a separate successful daily check.
