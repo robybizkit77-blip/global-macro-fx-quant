@@ -24,6 +24,9 @@ data["D.json"]["risk"]["VIX"]["dates"][-1] = "2026-10-22"
 data["D.json"]["risk"]["VIX"]["last_value"] = 19.03
 data["NEWS_PULSE_OPERATIONAL.json"]["generated_at_utc"] = "2026-10-23T05:52:00Z"
 data["CALENDAR_OPERATIONAL_VIEW.json"]["generated_at_utc"] = "2026-10-23T05:52:00Z"
+# A daily successful recheck is distinct from content modification time.
+for name in ("NEWS_PULSE_OPERATIONAL.json", "CALENDAR_OPERATIONAL_VIEW.json"):
+    data[name]["last_checked_at_utc"] = "2026-10-23T05:52:00Z"
 data["NATIVE_RATES_DATA.json"]["CHF"]["date"] = "2026-09-30"
 data["NATIVE_RATES_DATA.json"]["NZD"]["date"] = "2026-10-16"
 # Pin the entire OIS test-state fixture: this is a *deterministic synthetic
@@ -111,6 +114,28 @@ for mutation in (
     assert "NEWS_CONTENT_VINTAGE_INTEGRITY" in news_bad["critical_daily_problems"]
     assert news_bad["evidence"]["NEWS_CONTENT_VINTAGE"]["status"] == "INVALID_OR_FUTURE_VINTAGE"
 
+# A successful check today of unchanged older news/calendar must pass, but
+# a checked time from yesterday remains a genuine missed-refresh problem.
+for feed_name,problem in (
+    ("NEWS_PULSE_OPERATIONAL.json", "NEWS_PULSE_REFRESH"),
+    ("CALENDAR_OPERATIONAL_VIEW.json", "CALENDAR_REFRESH"),
+):
+    verified_today = copy.deepcopy(data)
+    verified_today[feed_name]["generated_at_utc"] = "2026-10-22T05:52:00Z"
+    verified_today[feed_name]["last_checked_at_utc"] = "2026-10-23T05:52:00Z"
+    rechecked = inspect(verified_today, asof)
+    assert problem not in rechecked["critical_daily_problems"], rechecked
+    assert rechecked["evidence"][problem]["status"] == "TODAY_RECHECKED"
+    assert rechecked["evidence"][problem]["generated_date_rome"] == "2026-10-22"
+    assert rechecked["evidence"][problem]["checked_date_rome"] == "2026-10-23"
+    assert rechecked["evidence"][problem]["freshness_basis"] == "LAST_CHECKED_AT"
+
+    skipped_check = copy.deepcopy(data)
+    skipped_check[feed_name]["last_checked_at_utc"] = "2026-10-22T05:52:00Z"
+    skipped = inspect(skipped_check, asof)
+    assert problem in skipped["critical_daily_problems"]
+    assert skipped["evidence"][problem]["status"] == "NOT_RECHECKED_TODAY"
+
 # A failed collector must still be visible even when all surviving feeds are fresh.
 partial = inspect(data, asof, pipeline_outcome="failure")
 assert partial["operational_state"] == "DAILY_INPUTS_INCOMPLETE"
@@ -125,7 +150,7 @@ for feed_name,problem in (
     future = copy.deepcopy(data)
     future[feed_name]["generated_at_utc"] = "2026-10-23T06:52:00Z"  # 08:52 CEST
     future_state = inspect(future, asof)
-    assert future_state["evidence"][problem]["status"] == "FUTURE_DATED"
+    assert future_state["evidence"][problem]["status"] == "FUTURE_OR_INVALID_SOURCE_CLOCK"
     assert problem in future_state["critical_daily_problems"]
     assert future_state["operational_state"] == "DAILY_INPUTS_INCOMPLETE"
     missing_timezone = copy.deepcopy(data)
@@ -207,6 +232,12 @@ monday_feed["D.json"]["risk"]["VIX"]["last_date"] = "2026-10-23"
 monday_feed["D.json"]["risk"]["VIX"]["dates"][-1] = "2026-10-23"
 monday_feed["NEWS_PULSE_OPERATIONAL.json"]["generated_at_utc"] = "2026-10-26T05:10:00Z"
 monday_feed["CALENDAR_OPERATIONAL_VIEW.json"]["generated_at_utc"] = "2026-10-26T05:10:00Z"
+# Keep the original economic signal modification dates while confirming
+# today's successful source verification on Monday (CET).
+monday_feed["NEWS_PULSE_OPERATIONAL.json"]["generated_at_utc"] = "2026-10-23T06:52:00Z"
+monday_feed["CALENDAR_OPERATIONAL_VIEW.json"]["generated_at_utc"] = "2026-10-25T06:49:34Z"
+for name in ("NEWS_PULSE_OPERATIONAL.json", "CALENDAR_OPERATIONAL_VIEW.json"):
+    monday_feed[name]["last_checked_at_utc"] = "2026-10-26T05:10:00Z"
 monday_check = inspect(monday_feed, monday)
 assert not monday_check["critical_daily_problems"]
 assert monday_check["evidence"]["NEWS_CONTENT_VINTAGE"]["status"] == "OLDER_THAN_PREVIOUS_TRADING_SESSION"
