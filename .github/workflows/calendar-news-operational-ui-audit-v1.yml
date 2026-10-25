@@ -99,6 +99,11 @@ jobs:
                   cw:document.querySelector('#news [data-gmfq-operational="news"]')?.clientWidth};
               });
               if(news.cards<4)throw new Error(`${name} news cards ${news.cards}`);
+              const officialReceipt=await page.evaluate(async()=>(
+                await (await fetch('live_data/sections/NEWS_PULSE_OPERATIONAL.json',{cache:'no-store'})).json()
+              ).official_releases);
+              if(!officialReceipt||news.officialCards!==officialReceipt.headlines.length)
+                throw new Error(`${name} official UI/receipt mismatch ${news.officialCards}/${officialReceipt?.headlines?.length}`);
               if(!news.sections.includes('Comunicazioni ufficiali')||!news.sections.includes('Segnali quantitativi'))
                 throw new Error(`${name} official and quantitative News Pulse lanes not separated`);
               if(news.sourceLinks.length!==news.officialCards||news.sourceLinks.some(u=>!/^https:\/\/(www\.)?(federalreserve\.gov|ecb\.europa\.eu|ecb\.int)\//.test(u)))
