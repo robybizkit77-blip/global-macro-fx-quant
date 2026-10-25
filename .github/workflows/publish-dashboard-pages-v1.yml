@@ -204,6 +204,22 @@ jobs:
           set -euo pipefail
           python3 validation/publishing/check_pages_morning_readiness_v1.py \
             --output /tmp/pages-morning-readiness.json
+          python3 - <<'PY'
+          import json,os
+          report=json.load(open('/tmp/pages-morning-readiness.json', encoding='utf-8'))
+          news=report.get('news_content_vintage') or {}
+          gaps=report.get('documented_nonblocking_gaps') or []
+          if report.get('morning_gate_required'):
+              lines=[
+                  '### Pages 08:00 market-content provenance',
+                  '- Source-readiness: **'+report['status']+'**',
+                  '- News market content: '+str(news.get('content_as_of') or 'not verified'),
+                  '- News content classification: '+str(news.get('status') or 'not verified'),
+                  '- Non-blocking caveats: '+(', '.join(gaps) if gaps else 'none'),
+              ]
+              with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as output:
+                  output.write('\n'.join(lines)+'\n')
+          PY
 
       - name: Retain cross-trigger morning Pages gate receipt
         if: always() && github.event_name != 'pull_request'
