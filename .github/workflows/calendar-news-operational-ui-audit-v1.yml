@@ -42,6 +42,8 @@ jobs:
           node-version: '22'
       - name: Build Calendar V3
         run: python3 validation/build_calendar_operational_v1.py
+      - name: Build dated official News Pulse for browser QA
+        run: python3 validation/build_news_pulse_operational_v1.py
       - name: Install Chromium
         run: |
           npm init -y >/dev/null 2>&1
@@ -86,13 +88,21 @@ jobs:
                 const signal=ref?new Date(ref+'T00:00:00'):null;
                 const age=signal?Math.floor((now-signal)/86400000):null;
                 const expected=age===null?'UNVERIFIED':age>2?'STALE':'FRESH';
+                const officialCards=[...document.querySelectorAll('#news .opCard[data-kind="official-release"]')];
+                const sourceLinks=officialCards.map(card=>card.querySelector('a[href]')?.href||'');
                 return {cards:document.querySelectorAll('#news .opCard').length,
+                  officialCards:officialCards.length,sourceLinks,
+                  sections:(document.querySelector('#news [data-gmfq-operational="news"]')?.innerText||''),
                   fresh:node?.dataset.gmfqEditorialFreshness,expected,content_as_of:ref,
                   banner:node?.querySelector(':scope > .gmfqEditorialFreshnessBanner')?.innerText||'',
                   w:document.querySelector('#news [data-gmfq-operational="news"]')?.scrollWidth,
                   cw:document.querySelector('#news [data-gmfq-operational="news"]')?.clientWidth};
               });
               if(news.cards<4)throw new Error(`${name} news cards ${news.cards}`);
+              if(!news.sections.includes('Comunicazioni ufficiali')||!news.sections.includes('Segnali quantitativi'))
+                throw new Error(`${name} official and quantitative News Pulse lanes not separated`);
+              if(news.sourceLinks.length!==news.officialCards||news.sourceLinks.some(u=>!/^https:\/\/(www\.)?(federalreserve\.gov|ecb\.europa\.eu|ecb\.int)\//.test(u)))
+                throw new Error(`${name} unauthorised official RSS links ${JSON.stringify(news.sourceLinks)}`);
               if(news.fresh!==news.expected)throw new Error(`${name} News signal vintage freshness ${JSON.stringify(news)}`);
               if(news.fresh==='STALE'&&!news.banner.includes(news.content_as_of))
                 throw new Error(`${name} dated News signals not visibly caveated ${JSON.stringify(news)}`);
