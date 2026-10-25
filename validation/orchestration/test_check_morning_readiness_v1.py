@@ -131,10 +131,16 @@ for feed_name,problem in (
     assert rechecked["evidence"][problem]["freshness_basis"] == "LAST_CHECKED_AT"
 
     skipped_check = copy.deepcopy(data)
+    skipped_check[feed_name]["generated_at_utc"] = "2026-10-21T05:52:00Z"
     skipped_check[feed_name]["last_checked_at_utc"] = "2026-10-22T05:52:00Z"
     skipped = inspect(skipped_check, asof)
     assert problem in skipped["critical_daily_problems"]
     assert skipped["evidence"][problem]["status"] == "NOT_RECHECKED_TODAY"
+    # A check timestamp preceding content creation is a distinct integrity fault.
+    inconsistent = copy.deepcopy(data)
+    inconsistent[feed_name]["last_checked_at_utc"] = "2026-10-22T05:52:00Z"
+    result = inspect(inconsistent, asof)
+    assert result["evidence"][problem]["status"] == "FUTURE_OR_INVALID_SOURCE_CLOCK"
 
 # A failed collector must still be visible even when all surviving feeds are fresh.
 partial = inspect(data, asof, pipeline_outcome="failure")
