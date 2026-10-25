@@ -4,6 +4,7 @@ from datetime import date,datetime,timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 from collect_official_news_rss_v1 import collect as collect_official_releases
+from news_reaction_evidence_v1 import annotate as annotate_reaction_proof
 
 ROOT=Path(__file__).resolve().parents[1]
 OIS=ROOT/'live_data/sections/OIS_OPERATIONAL_VIEW.json'
@@ -182,7 +183,11 @@ def main():
     items=items[:12]
     latest=max((parse_asof(x.get('as_of')) for x in items if parse_asof(x.get('as_of'))),default=None)
     now=datetime.now(timezone.utc)
-    official=collect_official_releases(now)
+    official=annotate_reaction_proof(
+        collect_official_releases(now), ois,
+        json.loads((ROOT/'live_data/sections/NATIVE_RATES_DATA.json').read_text(encoding='utf-8')),
+        now=now,
+    )
     # Keep the established deterministic market signal vintage independent of
     # external official statements. Never backfill a failed RSS feed or claim
     # that a press announcement proves a market move.
