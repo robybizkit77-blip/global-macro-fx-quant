@@ -11,6 +11,7 @@ from unittest.mock import patch
 import build_calendar_operational_v1 as calendar
 import build_news_pulse_operational_v1 as news
 import collect_official_news_rss_v1 as officialrss
+import news_reaction_evidence_v1 as proof
 from refresh_macro_consensus_secondary_v1 import series_compatible
 
 UTC = dt.timezone.utc
@@ -362,3 +363,77 @@ assert officialrss.desk_context(
 assert all("desk_context" in x and x["desk_context"]["analysis_basis"] ==
            "SOURCE_HEADLINE_ONLY" for x in stories["headlines"])
 print("NEWS_HEADLINE_RELEVANCE_CONTEXT_NO_UNVERIFIED_DIRECTION_PASS")
+
+
+# News Pulse must not claim a release caused a daily OIS, yield or FX move.
+published_at = "2026-10-23T10:00:00Z"
+headline = {"ccy": "GBP", "published_at_utc": published_at}
+ois_sample = {"currencies": {"GBP": {
+    "as_of": "2026-10-23",
+    "source": "Bank of England · estimated sterling OIS yield curves",
+    "operational_status": "GREEN_OFFICIAL", "quality": "OFFICIAL_CERTIFIED",
+    "horizons": {"6m": {"rate": 4.5, "change_1d_bp": -12}},
+}}}
+rates_sample = {"GBP": {
+    "date": "2026-10-23", "2Y": 4.75,
+    "quality": "FULL_CURRENT_OFFICIAL",
+    "source": "Bank of England 2Y official daily curve", "chg2_bp": -15,
+}}
+audit = proof.assess(headline, ois_sample, rates_sample,
+                     now=at("2026-10-25T17:00:00+00:00"))
+assert audit["status"] == "NOT_VERIFIABLE_INTRADAY"
+assert audit["ois_or_futures"]["status"] == "DAILY_CONTEXT_ONLY"
+assert audit["ois_or_futures"]["relative_to_release_day"] == "SAME_CALENDAR_DATE_DAILY_ONLY"
+assert audit["ois_or_futures"]["event_window_proof"] is False
+assert audit["yield_2y"]["yield_2y_pct"] == 4.75
+assert audit["yield_2y"]["event_window_proof"] is False
+assert audit["fx"]["status"] == "NO_CERTIFIED_EVENT_WINDOW"
+assert audit["market_reaction"] == "NOT_MEASURED"
+assert audit["direction"] == "NOT_DETERMINED"
+assert audit["causal_attribution"] == "NOT_ESTABLISHED"
+
+# Existing daily numbers can be *before* or *after* a release date but do
+# not prove the event reaction even when their calendar date is later.
+for released, expected in [
+    ("2026-10-24T12:00:00Z", "PRIOR_CALENDAR_DATE"),
+    ("2026-10-20T12:00:00Z", "LATER_CALENDAR_DATE"),
+]:
+    a = proof.assess({"ccy": "GBP", "published_at_utc": released},
+                     ois_sample, rates_sample,
+                     now=at("2026-10-25T17:00:00Z"))
+    assert a["status"] == "NOT_VERIFIABLE_INTRADAY"
+    assert a["ois_or_futures"]["relative_to_release_day"] == expected
+    assert a["yield_2y"]["relative_to_release_day"] == expected
+
+# Withheld OIS, malformed/estimated daily rates or non-finite values must
+# not appear as certified daily context or as news-reaction evidence.
+bad_ois = json.loads(json.dumps(ois_sample))
+bad_ois["currencies"]["GBP"]["operational_status"] = "WITHHELD"
+assert proof.assess(headline, bad_ois, rates_sample)["ois_or_futures"]["status"] == "NOT_VALIDATED_DAILY_CONTEXT"
+bad_rates = json.loads(json.dumps(rates_sample))
+bad_rates["GBP"]["quality"] = "MANUAL_UNVERIFIED"
+assert proof.assess(headline, ois_sample, bad_rates)["yield_2y"]["status"] == "NOT_VALIDATED_DAILY_CONTEXT"
+bad_rates = json.loads(json.dumps(rates_sample))
+bad_rates["GBP"]["2Y"] = float("inf")
+assert proof.assess(headline, ois_sample, bad_rates)["yield_2y"]["status"] == "NOT_VALIDATED_DAILY_CONTEXT"
+for bad_timestamp in ["invalid", "2026-10-26T12:00:00Z", "2026-10-23T12:00:00"]:
+    failed = proof.assess({"ccy": "GBP", "published_at_utc": bad_timestamp},
+                          ois_sample, rates_sample,
+                          now=at("2026-10-25T17:00:00Z"))
+    assert failed["status"] == "INVALID_EVENT_TIMESTAMP"
+
+energy = proof.assess({"ccy": "ENERGY", "published_at_utc": published_at},
+                      ois_sample, rates_sample)
+assert energy["status"] == "NOT_VERIFIABLE_INTRADAY"
+assert energy["wti"]["status"] == "NO_CERTIFIED_EVENT_WINDOW"
+assert "ois_or_futures" not in energy and "yield_2y" not in energy
+assert "energy_supply_context" in energy
+
+all_proof = proof.annotate({"headlines": [
+    headline, {"ccy": "ENERGY", "published_at_utc": published_at}
+]}, ois_sample, rates_sample, now=at("2026-10-25T17:00:00Z"))
+assert all_proof["reaction_proof_contract"]["verified_event_reactions"] == 0
+assert len(all_proof["headlines"]) == 2
+assert all(x["reaction_evidence"]["market_reaction"] == "NOT_MEASURED"
+           for x in all_proof["headlines"])
+print("NEWS_REACTION_EVENT_WINDOW_FAIL_CLOSED_PASS")
