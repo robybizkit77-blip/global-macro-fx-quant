@@ -1,39 +1,39 @@
 {
   "content_as_of": "2026-10-22",
-  "generated_at_utc": "2026-10-23T06:52:00.918149Z",
+  "generated_at_utc": "2026-10-25T15:54:17.802510Z",
   "items": [
     {
       "as_of": "2026-10-22",
-      "category": "OIS_REPRICING",
+      "category": "FUTURES_IMPLIED_REPRICING",
       "ccy": "CAD",
       "confidence": "A",
-      "detail": "Movimento 1D -11.5 bp sul bucket 12M; variazione 1W -0.5 bp.",
+      "detail": "Movimento 1D -11.5 bp sul bucket 12M; variazione 1W -0.5 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
       "importance": "HIGH",
       "quality": "OFFICIAL_CERTIFIED",
       "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
-      "title": "CAD: repricing OIS più dovish (-11.5 bp 12M in 1D)"
+      "title": "CAD: repricing implicito da futures più dovish (-11.5 bp 12M in 1D)"
     },
     {
       "as_of": "2026-10-22",
-      "category": "OIS_REPRICING",
+      "category": "FUTURES_IMPLIED_REPRICING",
       "ccy": "AUD",
       "confidence": "A",
-      "detail": "Movimento 1D +3.5 bp sul bucket 6M; variazione 1W +11.0 bp.",
+      "detail": "Movimento 1D +3.5 bp sul bucket 6M; variazione 1W +11.0 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
       "importance": "HIGH",
       "quality": "OFFICIAL_CERTIFIED",
       "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
-      "title": "AUD: repricing OIS più hawkish (+3.5 bp 6M in 1D)"
+      "title": "AUD: repricing implicito da futures più hawkish (+3.5 bp 6M in 1D)"
     },
     {
       "as_of": "2026-10-22",
-      "category": "OIS_REPRICING",
+      "category": "FUTURES_IMPLIED_REPRICING",
       "ccy": "JPY",
       "confidence": "A",
-      "detail": "Movimento 1D -0.6 bp sul bucket 12M; variazione 1W -2.0 bp.",
+      "detail": "Movimento 1D -0.6 bp sul bucket 12M; variazione 1W -2.0 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
       "importance": "MEDIUM",
       "quality": "OFFICIAL_CERTIFIED",
       "source": "Tokyo Financial Exchange · Three-month TONA Futures",
-      "title": "JPY: repricing OIS più dovish (-0.6 bp 12M in 1D)"
+      "title": "JPY: repricing implicito da futures più dovish (-0.6 bp 12M in 1D)"
     },
     {
       "as_of": "2026-10-21",
@@ -47,7 +47,7 @@
       "title": "GBP: repricing OIS più dovish (-5.2 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-10-25T10:28:43.871973Z",
+  "last_checked_at_utc": "2026-10-25T15:54:17.802510Z",
   "schema": "GMFQ_NEWS_PULSE_OPERATIONAL_V1",
   "scope": {
     "claim": "LATEST_VALIDATED_SIGNALS_NOT_GENERIC_HEADLINES",
