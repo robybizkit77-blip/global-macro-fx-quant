@@ -134,7 +134,7 @@ def main() -> None:
     for source in ["CALENDAR_OPERATIONAL_VIEW.json","NEWS_PULSE_OPERATIONAL.json","live_data/sections/D.json","ESTIMATED_RESIDUAL_GAPS.json"]:
         must(source in freshness, f"freshness operational source missing: {source}")
     for marker in [
-        "CALENDAR_OPERATIONAL_VIEW.generated_at_utc",
+        "CALENDAR_OPERATIONAL_VIEW.last_checked_at_utc",
         "NEWS_PULSE_OPERATIONAL.content_as_of",
         "OLDEST_REQUIRED(D.risk.VIX.last_date,D.risk.WTI.last_date,ESTIMATED_RESIDUAL_GAPS.BRENT.proxy_as_of)"
     ]:
@@ -169,7 +169,7 @@ def main() -> None:
             "forwarddesk":"forwardValidationSummary + forwardLedgerIntegrity + helper chain; observational only",
             "wow":"NEWS_PULSE_OPERATIONAL.content_as_of",
             "themes":"NEWS_PULSE_OPERATIONAL.content_as_of",
-            "calendar":"CALENDAR_OPERATIONAL_VIEW.generated_at_utc",
+            "calendar":"CALENDAR_OPERATIONAL_VIEW.last_checked_at_utc",
             "news":"NEWS_PULSE_OPERATIONAL.content_as_of",
             "risk":"OLDEST_REQUIRED_RISK_DATE",
             "pairs":"D.prices latest official ECB fixing + derivePairDecisionFrame runtime",
