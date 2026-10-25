@@ -138,3 +138,66 @@ with tempfile.TemporaryDirectory() as tmp:
             assert "consensus" not in event and "previous" not in event
 
 print("MACRO_CONSENSUS_EXACT_SERIES_AND_REGION_GUARDS_PASS")
+
+
+# News Pulse is a market signal receipt, not a substitute for dated news.
+# A WITHHELD source must never be promoted because it contains a numeric
+# movement; source, quality and date must all certify the same observation.
+ois_base = {
+    'currencies': {
+        'CAD': {
+            'operational_status': 'GREEN_OFFICIAL',
+            'quality': 'OFFICIAL_CERTIFIED',
+            'confidence': 'A',
+            'as_of': '2026-10-23',
+            'source': 'Verified test source',
+            'horizons': {
+                '6m': {'change_1d_bp': -3.0, 'change_1w_bp': 1.0}
+            },
+        }
+    }
+}
+news_day = dt.date(2026, 10, 25)
+assert len(news.ois_items(ois_base, today=news_day)) == 1
+for change in (
+    {'operational_status': 'WITHHELD'},
+    {'operational_status': 'GREEN_ESTIMATED'},
+    {'source': ''},
+    {'as_of': '2026-10-26'},
+    {'as_of': 'invalid'},
+    {'horizons': {'6m': {'change_1d_bp': float('nan')}}},
+    {'horizons': {'6m': {'change_1d_bp': float('inf')}}},
+    {'horizons': {'6m': {'change_1d_bp': '3.0'}}},
+):
+    x = json.loads(json.dumps(ois_base))
+    x['currencies']['CAD'].update(change)
+    assert news.ois_items(x, today=news_day) == [], change
+
+proxy = json.loads(json.dumps(ois_base))
+proxy['currencies']['CAD'].update(
+    operational_status='GREEN_ESTIMATED', quality='ESTIMATED_INFORMATIONAL'
+)
+proxy_item = news.ois_items(proxy, today=news_day)[0]
+assert proxy_item['category'] == 'OIS_PROXY_REPRICING'
+assert 'non è una curva OIS ufficiale' in proxy_item['detail']
+assert proxy_item['source'] == 'Verified test source'
+
+# A monthly observation period can never be mistaken for its release date.
+macro_base = {'currencies': {'USD': {'inflation': {
+    'as_of': '2026-10', 'label': 'Inflazione',
+    'source': 'BLS', 'latest_value': 3.2, 'direction': 'SALE',
+    'acceleration': 'ACCELERA', 'temperature_label': 'CALDO',
+    'percentile': 70.0,
+}}}}
+assert news.macro_items(macro_base, today=news_day) == []
+macro = json.loads(json.dumps(macro_base))
+macro['currencies']['USD']['inflation'].update(
+    release_date='2026-10-23', release_date_verified=False
+)
+assert news.macro_items(macro, today=news_day) == []
+macro['currencies']['USD']['inflation']['release_date_verified'] = True
+verified_item = news.macro_items(macro, today=news_day)[0]
+assert verified_item['as_of'] == '2026-10-23'
+assert verified_item['reference_period'] == '2026-10'
+assert verified_item['quality'] == 'VERIFIED_RELEASE_DATE_MACRO_OBSERVATION'
+print('NEWS_PULSE_SOURCE_VINTAGE_AND_QUALITY_FAIL_CLOSED_PASS')
