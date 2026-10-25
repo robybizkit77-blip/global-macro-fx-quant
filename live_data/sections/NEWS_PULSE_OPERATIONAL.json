@@ -47,6 +47,7 @@
       "title": "GBP: repricing OIS più dovish (-5.2 bp 12M in 1D)"
     }
   ],
+  "last_checked_at_utc": "2026-10-25T10:28:43.871973Z",
   "schema": "GMFQ_NEWS_PULSE_OPERATIONAL_V1",
   "scope": {
     "claim": "LATEST_VALIDATED_SIGNALS_NOT_GENERIC_HEADLINES",
