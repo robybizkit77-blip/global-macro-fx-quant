@@ -140,6 +140,18 @@ def main() -> None:
     assert 'Main changed after pre-publication readiness audit' in text
     assert 'path: /tmp/morning-readiness*.json' in text
     assert text.index('if [[ "$wf" == "publish-dashboard-pages-v1.yml" ]] &&') < text.index('dispatch_and_wait "$wf"')
+    # A workflow may end successfully after the user starts studying.
+    # Never mistake late-but-valid public files for an on-time 08:00 delivery.
+    assert 'Test 08:00 Rome delivery SLA and failure receipts' in text
+    assert 'Certify 08:00 morning delivery deadline' in text
+    assert 'check_morning_delivery_sla_v1.py' in text
+    assert 'test_check_morning_delivery_sla_v1.py' in text
+    assert '--readiness /tmp/morning-readiness-v1.json' in text
+    assert '--output /tmp/morning-delivery-sla-v1.json' in text
+    assert 'MORNING_0800_SLA_RESULT' in text
+    assert '/tmp/morning-delivery-sla-v1.json' in text
+    assert text.index('Audit true source dates for the morning study') < text.index('Certify 08:00 morning delivery deadline') < text.index('Retain morning source readiness evidence')
+
     # Feb 2026 GitHub API returns the exact dispatched run ID, instead of
     # guessing from adjacent/manual dispatches or relying on polling order.
     assert '"${api}/dispatches" -f ref=main -F return_run_details=true' in text
