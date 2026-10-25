@@ -125,22 +125,44 @@ def inspect(feeds: dict, now: dt.datetime, pipeline_outcome: str = "success") ->
         problems.append("VIX_SOURCE_INTEGRITY")
     session("VIX_OFFICIAL_CLOSE", vix.get("last_date"))
     for name, row in (("CALENDAR_REFRESH", calendar), ("NEWS_PULSE_REFRESH", news)):
-        stamp = row.get("generated_at_utc")
-        stamp_day = rome_build_day(stamp)
-        try:
-            build_instant = dt.datetime.fromisoformat(stamp.replace("Z", "+00:00")) if isinstance(stamp, str) else None
-            if build_instant is None or build_instant.tzinfo is None or build_instant.utcoffset() is None:
-                build_instant = None
-        except ValueError:
-            build_instant = None
-        if build_instant is not None and build_instant > now:
-            status = "FUTURE_DATED"
-        elif stamp_day == today.isoformat() and build_instant is not None:
-            status = "TODAY_BUILT"
+        # generated_at_utc dates the last CONTENT change. A successful
+        # daily rebuild can validate identical sources without changing the
+        # underlying economic news or forward calendar. Use a separate
+        # last_checked_at_utc for refresh admission, never fake signal dates.
+        generated = row.get("generated_at_utc")
+        checked = row.get("last_checked_at_utc") or generated
+        generated_day = rome_build_day(generated)
+        checked_day = rome_build_day(checked)
+
+        def aware_instant(value: object) -> dt.datetime | None:
+            try:
+                parsed = dt.datetime.fromisoformat(value.replace("Z", "+00:00")) if isinstance(value, str) else None
+                if parsed is None or parsed.tzinfo is None or parsed.utcoffset() is None:
+                    return None
+                return parsed
+            except ValueError:
+                return None
+
+        generated_instant = aware_instant(generated)
+        checked_instant = aware_instant(checked)
+        if (generated_instant is None or checked_instant is None
+            or generated_instant > now or checked_instant > now
+            or checked_instant < generated_instant):
+            status = "FUTURE_OR_INVALID_SOURCE_CLOCK"
+        elif checked_day == today.isoformat():
+            status = "TODAY_RECHECKED"
         else:
-            status = "NOT_BUILT_TODAY"
-        evidence[name] = {"generated_at_utc": stamp, "generated_date_rome": stamp_day, "status": status}
-        if status != "TODAY_BUILT":
+            status = "NOT_RECHECKED_TODAY"
+        evidence[name] = {
+            "generated_at_utc": generated,
+            "generated_date_rome": generated_day,
+            "last_checked_at_utc": checked,
+            "checked_date_rome": checked_day,
+            "freshness_basis": "LAST_CHECKED_AT" if row.get("last_checked_at_utc") else "LEGACY_GENERATED_AT",
+            "status": status,
+            "content_modification_is_not_source_recheck": True,
+        }
+        if status != "TODAY_RECHECKED":
             problems.append(name)
 
     # A freshly GENERATED News Pulse is not proof that its MARKET CONTENT
