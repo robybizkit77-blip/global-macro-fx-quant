@@ -37,14 +37,9 @@ class DukascopyBI5Tests(unittest.TestCase):
   r=summarize(data,transport_receipt={"content_length":len(data),"http_status":200})
   self.assertTrue(r["source_bytes_externally_retrieved"])
   self.assertEqual(r["transport_receipt"]["http_status"],200)
- def test_fetch_rejects_mismatched_http_response(self):
-  class Response:
-   status=200
-   headers={"Content-Length":"4","Content-Type":"application/octet-stream"}
-   def read(self,_):return b"abc"
-   def geturl(self):return URL
-   def __enter__(self):return self
-   def __exit__(self,*_):return False
-  with patch("urllib.request.urlopen",return_value=Response()):
-   with self.assertRaisesRegex(ValueError,"byte count"):fetch(URL,10)
+ def test_network_fetch_is_blocked_before_any_io(self):
+  with patch("urllib.request.urlopen",side_effect=AssertionError("network must never be used")) as network:
+   with self.assertRaisesRegex(PermissionError,"DUKASCOPY_AUTOMATED_ACCESS_BLOCKED"):
+    fetch(URL,10)
+   network.assert_not_called()
 if __name__=="__main__":unittest.main()
