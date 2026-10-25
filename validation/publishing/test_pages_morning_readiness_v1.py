@@ -63,6 +63,7 @@ vix["last_date"] = "2026-10-23"
 vix["dates"][-1] = "2026-10-23"
 for name in ("NEWS_PULSE_OPERATIONAL.json", "CALENDAR_OPERATIONAL_VIEW.json"):
     good[name]["generated_at_utc"] = "2026-10-26T05:30:00Z"
+    good[name]["last_checked_at_utc"] = "2026-10-26T05:30:00Z"
 for c in good["MACRO_THERMOMETER_DATA.json"]["currencies"].values():
     for key in ("inflation", "labour"):
         c[key]["as_of"] = "2026-09"
@@ -75,6 +76,13 @@ assert passed["evidence_as_of"] == {
     "VIX_OFFICIAL_CLOSE": "2026-10-23",
 }
 assert passed["critical_daily_problems"] == []
+assert passed["status"] == "PASS_MORNING_SOURCES_VERIFIED"
+# The source was checked today even if its meaningful news content is older.
+for name in ("NEWS_PULSE_OPERATIONAL.json", "CALENDAR_OPERATIONAL_VIEW.json"):
+    unchanged = copy.deepcopy(good)
+    unchanged[name]["generated_at_utc"] = "2026-10-23T06:52:00Z"
+    assert evaluate(monday, unchanged)["status"] == "PASS_MORNING_SOURCES_VERIFIED"
+
 # Monday's file was regenerated for this test, but its newest underlying
 # market signal is still from Thursday. The Pages receipt must not erase it.
 assert passed["news_content_vintage"]["content_as_of"] == "2026-10-22", passed
