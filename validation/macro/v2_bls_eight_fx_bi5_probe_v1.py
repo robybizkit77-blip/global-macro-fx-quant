@@ -60,7 +60,7 @@ def main():
     p.add_argument("--attempts",type=int,default=2)
     x=p.parse_args()
     require(x.out.resolve().is_relative_to(Path("/tmp")),"temporary receipt only")
-    result=run(timeout=x.timeout,max_attempts=x.attempts)
+    p.error("Automated Dukascopy eight-event acquisition is disabled without independently verified prior written consent; synthetic in-memory tests are permitted")
     x.out.parent.mkdir(parents=True,exist_ok=True)
     x.out.write_text(json.dumps(result,indent=2)+"\n")
     print(json.dumps({"attempted":8,"validated":result["validated_source_hours"],

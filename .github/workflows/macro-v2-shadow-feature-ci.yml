@@ -350,60 +350,22 @@ jobs:
         run: python -m unittest validation.macro.test_v2_eurusd_intraday_csv_research_v1 -v
       - name: Validate BI5 hour decoding and bounded event-window selection
         run: python -m unittest validation.macro.test_v2_dukascopy_bi5_hour_probe_v1 -v
-      - name: Try original October 2 Dukascopy BI5 hourly source (external availability)
-        continue-on-error: true
-        run: |
-          timeout 35s python -m validation.macro.v2_dukascopy_bi5_hour_probe_v1 \
-            --source-url https://datafeed.dukascopy.com/datafeed/EURUSD/2026/09/02/12h_ticks.bi5 \
-            --timeout-s 30 --out /tmp/macro-v2-shadow/eurusd-bi5-oct02-first-real-hour.json
-      - name: Report whether source bytes were actually acquired
-        if: always()
-        run: |
-          if [ -f /tmp/macro-v2-shadow/eurusd-bi5-oct02-first-real-hour.json ]; then
-            python - <<'PY'
-          import json
-          from pathlib import Path
-          r=json.loads(Path('/tmp/macro-v2-shadow/eurusd-bi5-oct02-first-real-hour.json').read_text())
-          assert r['schema']=='GMFQ_DUKASCOPY_EURUSD_BI5_ONE_HOUR_PROBE_V2',r
-          assert r['source_path_calendar_utc']=='2026-10-02T12:00:00+00:00',r
-          assert r['bi5_month_index_zero_based']==9,r
-          assert r['source_bytes_externally_retrieved'] is True,r
-          assert r['transport_receipt']['content_length']==r['source_bytes_n'],r
-          assert r['source_license_independently_certified'] is False,r
-          print('EXTERNAL_SOURCE_ACQUIRED',
-                'ticks',r['tick_count'],
-                'window_complete',r['fx_window_complete'],
-                'hash',r['source_sha256'])
-          PY
-          else
-            echo "EXTERNAL_SOURCE_NOT_ACQUIRED: no valid hourly source receipt; no quote is claimed"
-          fi
-      - name: Audit eight historical BLS event URLs, DST and synthetic window controls
-        run: python -m unittest validation.macro.test_v2_bls_eight_fx_bi5_probe_v1 -v
-      - name: Probe eight real source hours without false acquisition claims
-        continue-on-error: true
-        run: |
-          timeout 200s python -m validation.macro.v2_bls_eight_fx_bi5_probe_v1 \
-            --timeout 12 --attempts 1 \
-            --out /tmp/macro-v2-shadow/eurusd-eight-bls-bi5-hour-receipts.json
-      - name: Report real source-hour validation coverage
-        if: always()
+      - name: Verify no automatic Dukascopy network acquisition
         run: |
           python - <<'PY'
-          import json
-          from pathlib import Path
-          p=Path('/tmp/macro-v2-shadow/eurusd-eight-bls-bi5-hour-receipts.json')
-          if not p.is_file():
-              print('EIGHT_REAL_SOURCE_RECEIPT_NOT_AVAILABLE')
+          from validation.macro.v2_dukascopy_bi5_hour_probe_v1 import URL, fetch
+          try:
+              fetch(URL, 10)
+          except PermissionError as exc:
+              assert 'DUKASCOPY_AUTOMATED_ACCESS_BLOCKED' in str(exc)
+              print('DUKASCOPY_EXTERNAL_ACQUISITION_DISABLED_BY_TERMS_GATE')
           else:
-              r=json.loads(p.read_text())
-              assert r['attempted_events']==8
-              assert r['validated_source_hours']+r['unavailable_hours']==8
-              assert r['safe_to_publish_new_D'] is False
-              print('EIGHT_REAL_SOURCE_VALIDATION',r['validated_source_hours'],'of',8)
-              for event in r['events']:
-                  print(event['period'],event['status'],event['error_type'])
+              raise AssertionError('External Dukascopy requests must remain blocked')
           PY
+      - name: Audit eight historical BLS event URLs, DST and synthetic window controls
+        run: python -m unittest validation.macro.test_v2_bls_eight_fx_bi5_probe_v1 -v
+      - name: Maintain eight-window synthetic tests only, no real Dukascopy network
+        run: echo EIGHT_BLS_EVENT_WINDOWS_SYNTHETIC_ONLY_NO_AUTOMATED_DOWNLOAD
       - name: Generate safe USD Labour desk research synthesis
         run: |
           python -m unittest validation.macro.test_v2_usd_labour_research_desk_brief_v1 -v

@@ -38,7 +38,7 @@ jobs:
           assert d['causal_attribution']=='NOT_ESTABLISHED'
           assert not d['eligible_for_live_data'] and not d['eligible_for_backtest']
           assert not d['actual_first_public_delivery_verified']
-          assert len(d['blocked_by']) == 6
+          assert len(d['blocked_by']) == 7
           print('EVENT_SOURCE_CLOCK_FX_RATES_RESEARCH_BLOCKED_CORRECTLY')
           PY
       - name: Strict production non-impact

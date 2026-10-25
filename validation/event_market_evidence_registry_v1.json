@@ -29,7 +29,12 @@
       "publication_rights": "NOT_ESTABLISHED",
       "raw_ticks_authorized_retained": false,
       "cross_event_quote_receipt_independently_verified": false,
-      "note": "A successful BI5 transport probe is not a licensed production feed or causal proof"
+      "note": "Prior 2026-10-23 transport test DOES NOT constitute permission to automate, store, commercially reuse, or redistribute quotes.",
+      "automation_access_policy": "PRIOR_EXPRESS_WRITTEN_CONSENT_REQUIRED",
+      "automation_permission_verified": false,
+      "automated_fetch_enabled": false,
+      "terms_of_use_url": "https://www.dukascopy.com/swiss/english/legal-pages/terms-of-use/",
+      "terms_scope_note": "Website Terms of Use sections 3 and 4 restrict automated website collection and commercial redistribution unless consent or a separate agreement applies. BI5 service-specific rights require written clarification."
     },
     {
       "id": "CME_DATAMINE_SR3_TNS",
@@ -77,6 +82,9 @@
     "source_links_are_public_product_descriptions_not_signed_entitlements": true,
     "no_scores_changed": true,
     "no_beta_or_forward_test_changed": true,
-    "no_live_data_changed": true
+    "no_live_data_changed": true,
+    "cme_datamine_support_faq": "https://cmegroupclientsite.atlassian.net/wiki/spaces/EPICSANDBOX/pages/457319709/CME+DataMine+Support",
+    "cme_time_and_sales_redistribution_note": "CME FAQ says redistribution of historical Time & Sales may be allowed with vendor registration; use remains agreement and dataset-specific; BBO/market depth outward redistribution restricted.",
+    "no_automated_dukascopy_download_until_independent_written_consent": true
   }
 }

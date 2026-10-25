@@ -87,6 +87,14 @@ class SourceReadinessTests(unittest.TestCase):
         self.check_invalid(lambda d: d["providers"][2].update(
             source_url="https://evil.example@cmegroupclientsite.atlassian.net/foo"))
 
+    def test_unlicensed_automated_fetch_stays_blocked(self):
+        result = audit(self.reference)
+        self.assertFalse(result["dukascopy_automated_access_enabled"])
+        self.assertFalse(result["dukascopy_prior_written_consent_verified"])
+        self.assertIn("DUKASCOPY_AUTOMATED_ACCESS_PRIOR_WRITTEN_CONSENT_ABSENT", result["blocked_by"])
+        self.check_invalid(lambda d: d["providers"][0].update(automated_fetch_enabled=True))
+        self.check_invalid(lambda d: d["providers"][0].update(automation_permission_verified=True))
+
     def test_original_three_catalog_sources_unacquired(self):
         results = [p["acquisition_state"] for p in self.reference["providers"]]
         self.assertEqual(results.count("CATALOG_ONLY_NOT_ACQUIRED"), 3)

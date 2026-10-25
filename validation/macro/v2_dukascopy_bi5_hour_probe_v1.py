@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Bounded, read-only Dukascopy BI5 EUR/USD hour probe.
+"""Offline-only Dukascopy BI5 EUR/USD decoder; network blocked without written authorization.
 
 This is not a feed, scheduler or production importer. It decodes one chosen
 hour and keeps transport evidence separate from a licence or market claim.
 """
-import argparse,hashlib,json,lzma,math,re,struct,urllib.request
+import argparse,hashlib,json,lzma,math,re,struct
 from datetime import datetime,timezone,timedelta
 from pathlib import Path
 URL="https://datafeed.dukascopy.com/datafeed/EURUSD/2026/09/02/12h_ticks.bi5"
@@ -21,18 +21,12 @@ def source_clock(source_url):
     except ValueError as e:raise ValueError("invalid calendar date in BI5 URL") from e
     return base,p
 def fetch(source_url,timeout_s):
-    """Fetch one bounded hour and retain HTTP provenance metadata."""
+    """No network access: Dukascopy automated acquisition requires prior express written consent."""
     source_clock(source_url)
-    req=urllib.request.Request(source_url,headers={"User-Agent":"GMFQ-Research-Source-Audit/1.0"})
-    with urllib.request.urlopen(req,timeout=timeout_s) as response:
-        if response.status!=200:raise ValueError("unavailable source status")
-        size=response.headers.get("Content-Length")
-        if size is None or not size.isdigit():raise ValueError("source did not provide a bounded Content-Length")
-        size=int(size)
-        if not 0<size<=MAX_SOURCE_BYTES:raise ValueError("source Content-Length outside BI5 research bound")
-        data=response.read(size+1)
-        if len(data)!=size:raise ValueError("source byte count does not match Content-Length")
-        return data,{"http_status":response.status,"content_type":response.headers.get("Content-Type"),"content_length":size,"etag":response.headers.get("ETag"),"last_modified":response.headers.get("Last-Modified"),"effective_url":response.geturl()}
+    raise PermissionError(
+        "DUKASCOPY_AUTOMATED_ACCESS_BLOCKED: independent prior written consent "
+        "is not documented; use only authorized offline fixtures"
+    )
 def summarize(data,*,source_url=URL,transport_receipt=None):
     BASE,parts=source_clock(source_url)
     if not data or len(data)>MAX_SOURCE_BYTES: raise ValueError("empty/oversized source")
@@ -77,12 +71,11 @@ def main():
     ap.add_argument("--timeout-s",type=int,default=45)
     ap.add_argument("--out",type=Path)
     args=ap.parse_args()
+    if not args.offline_bi5:
+        ap.error("Automated network acquisition prohibited pending independently verified prior written consent; pass --offline-bi5")
     if args.out and not args.out.resolve().is_relative_to(Path("/tmp")):raise ValueError("only /tmp allowed")
     if not 1<=args.timeout_s<=60:raise ValueError("timeout must be between 1 and 60 seconds")
-    if args.offline_bi5:
-        buf=args.offline_bi5.read_bytes();receipt=None
-    else:
-        buf,receipt=fetch(args.source_url,args.timeout_s)
+    buf=args.offline_bi5.read_bytes();receipt=None
     r=summarize(buf,source_url=args.source_url,transport_receipt=receipt)
     if args.out:
         args.out.parent.mkdir(parents=True,exist_ok=True)
