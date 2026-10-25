@@ -168,6 +168,16 @@ def main() -> None:
     step_gate_call = 'if python3 validation/orchestration/check_child_execution_steps_v1.py'
     assert text.index('[[ "$conclusion" == "success" ]] || return 1') < text.index(step_gate_call)
     assert text.index(step_gate_call) < text.index('return 0', text.index(step_gate_call))
+    # Retry read-only run and job lookups on transient API transport failure,
+    # but never repeat the ambiguous workflow-dispatch POST.
+    assert text.count('dispatch_result=$(gh api --method POST') == 1
+    assert 'if ! json=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}"); then' in text
+    assert 'CHILD_RUN_API_TRANSIENT' in text
+    assert 'if gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/jobs?per_page=100" > "$child_jobs_file"; then' in text
+    assert 'CHILD_JOBS_API_TRANSIENT' in text
+    assert 'rm -f "$child_jobs_file"' in text
+    assert 'Test transient GitHub run/job reads without duplicate dispatch' in text
+
     # Feb 2026 GitHub API returns the exact dispatched run ID, instead of
     # guessing from adjacent/manual dispatches or relying on polling order.
     assert '"${api}/dispatches" -f ref=main -F return_run_details=true' in text
