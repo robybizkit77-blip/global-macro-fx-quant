@@ -75,8 +75,8 @@
     "cme_license_reference": "https://www.cmegroup.com/market-data/files/information-license-agreement.pdf",
     "cme_distribution_guidelines": "https://www.cmegroup.com/market-data/distributor/files/cme-group-data-licensing-policy-guidelines-historical-information-distribution.pdf",
     "source_links_are_public_product_descriptions_not_signed_entitlements": true,
-    "no_live_data": false,
     "no_scores_changed": true,
-    "no_beta_or_forward_test_changed": true
+    "no_beta_or_forward_test_changed": true,
+    "no_live_data_changed": true
   }
 }
