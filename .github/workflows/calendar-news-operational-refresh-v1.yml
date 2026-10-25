@@ -7,6 +7,7 @@ on:
       - 'validation/build_calendar_operational_v1.py'
       - 'validation/refresh_macro_consensus_secondary_v1.py'
       - 'validation/build_news_pulse_operational_v1.py'
+      - 'validation/test_calendar_news_daily_recheck_v1.py'
       - 'validation/calendar/MACRO_RELEASE_SOURCE_REGISTRY_V1.json'
       - 'live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json'
       - 'live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json'
@@ -20,6 +21,7 @@ on:
       - 'validation/build_calendar_operational_v1.py'
       - 'validation/refresh_macro_consensus_secondary_v1.py'
       - 'validation/build_news_pulse_operational_v1.py'
+      - 'validation/test_calendar_news_daily_recheck_v1.py'
       - 'validation/calendar/MACRO_RELEASE_SOURCE_REGISTRY_V1.json'
       - 'live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json'
       - 'live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json'
@@ -54,6 +56,8 @@ jobs:
         run: |
           set -euo pipefail
           python validation/refresh_macro_consensus_secondary_v1.py
+      - name: Test source recheck distinct from content modification
+        run: python validation/test_calendar_news_daily_recheck_v1.py
       - name: Build operational Calendar and News Pulse
         run: |
           set -euo pipefail
