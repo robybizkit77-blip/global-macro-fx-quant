@@ -1,0 +1,47 @@
+name: Event Market Source Clock Readiness V1 (unscheduled)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/event_market_evidence_registry_v1.json'
+      - 'validation/news_event_source_readiness_gate_v1.py'
+      - 'validation/test_news_event_source_readiness_gate_v1.py'
+      - 'validation/EVENT_MARKET_SOURCE_CLOCK_READINESS_2026-10-25.md'
+      - '.github/workflows/event-market-source-clock-readiness-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-clock-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile offline source governance gate
+        run: python -m py_compile validation/news_event_source_readiness_gate_v1.py validation/test_news_event_source_readiness_gate_v1.py
+      - name: Verify event clock and untrusted entitlement protections
+        run: python -m unittest validation.test_news_event_source_readiness_gate_v1 -v
+      - name: Derive blocked readiness receipt without external access
+        run: |
+          python -m validation.news_event_source_readiness_gate_v1 --out /tmp/gmfq-event-source-readiness.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/gmfq-event-source-readiness.json'))
+          assert d['scheduled_embargo_utc']=='2026-10-02T12:30:00Z'
+          assert d['state']=='BLOCKED_NOT_CERTIFIED'
+          assert d['causal_attribution']=='NOT_ESTABLISHED'
+          assert not d['eligible_for_live_data'] and not d['eligible_for_backtest']
+          assert not d['actual_first_public_delivery_verified']
+          assert len(d['blocked_by']) == 6
+          print('EVENT_SOURCE_CLOCK_FX_RATES_RESEARCH_BLOCKED_CORRECTLY')
+          PY
+      - name: Strict production non-impact
+        run: |
+          test -z "$(git status --porcelain -- live_data site dashboard payload)"
+          echo EVENT_SOURCE_READINESS_NO_PRODUCTION_MUTATION
