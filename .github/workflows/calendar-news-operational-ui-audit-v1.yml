@@ -92,6 +92,9 @@ jobs:
                 const sourceLinks=officialCards.map(card=>card.querySelector('a[href]')?.href||'');
                 return {cards:document.querySelectorAll('#news .opCard').length,
                   officialCards:officialCards.length,sourceLinks,
+                  tiers:officialCards.map(card=>card.dataset.relevance),
+                  monitorQuestions:officialCards.filter(card=>card.dataset.relevance==='MONITOR'&&
+                    card.textContent.includes('Perché conta')&&card.textContent.includes('Cosa verificare')).length,
                   sections:[...document.querySelectorAll('#news [data-gmfq-operational="news"] .opSection')].map(el=>el.textContent.trim()),
                   fresh:node?.dataset.gmfqEditorialFreshness,expected,content_as_of:ref,
                   banner:node?.querySelector(':scope > .gmfqEditorialFreshnessBanner')?.innerText||'',
@@ -104,8 +107,16 @@ jobs:
               ).official_releases);
               if(!officialReceipt||news.officialCards!==officialReceipt.headlines.length)
                 throw new Error(`${name} official UI/receipt mismatch ${news.officialCards}/${officialReceipt?.headlines?.length}`);
-              if(!news.sections.some(x=>x.startsWith('Comunicazioni ufficiali'))||!news.sections.some(x=>x.startsWith('Segnali quantitativi')))
+              if(!news.sections.some(x=>x.startsWith('Comunicazioni ufficiali'))||
+                 !news.sections.some(x=>x.startsWith('Da monitorare'))||
+                 !news.sections.some(x=>x.startsWith('Da approfondire'))||
+                 !news.sections.some(x=>x.startsWith('Segnali quantitativi')))
                 throw new Error(`${name} official and quantitative News Pulse lanes not separated ${JSON.stringify(news.sections)}`);
+              const expectedMonitor=officialReceipt.headlines.filter(x=>x.desk_context?.operational_relevance==='MONITOR').length;
+              if(news.tiers.some(t=>!['MONITOR','REVIEW','CONTEXT'].includes(t))||
+                 news.tiers.filter(t=>t==='MONITOR').length!==expectedMonitor||
+                 news.monitorQuestions!==expectedMonitor)
+                throw new Error(`${name} desk context tier/questions mismatch ${JSON.stringify(news)}`);
               if(news.sourceLinks.length!==news.officialCards||news.sourceLinks.some(u=>!/^https:\/\/(www\.)?(federalreserve\.gov|ecb\.europa\.eu|ecb\.int|bankofengland\.co\.uk|boj\.or\.jp|snb\.ch|bankofcanada\.ca|rba\.gov\.au|rbnz\.govt\.nz|eia\.gov)\//.test(u)))
                 throw new Error(`${name} unauthorised official RSS links ${JSON.stringify(news.sourceLinks)}`);
               if(news.fresh!==news.expected)throw new Error(`${name} News signal vintage freshness ${JSON.stringify(news)}`);
