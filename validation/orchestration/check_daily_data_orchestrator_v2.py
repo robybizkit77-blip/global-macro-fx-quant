@@ -138,7 +138,9 @@ def main() -> None:
     assert 'python3 validation/orchestration/check_morning_readiness_v1.py' in text
     assert '--strict-daily --pipeline-outcome success' in text
     assert 'Main changed after pre-publication readiness audit' in text
-    assert 'path: /tmp/morning-readiness*.json' in text
+    assert 'path: |' in text
+    assert '/tmp/morning-readiness*.json' in text
+    assert '/tmp/morning-delivery-sla-v1.json' in text
     assert text.index('if [[ "$wf" == "publish-dashboard-pages-v1.yml" ]] &&') < text.index('dispatch_and_wait "$wf"')
     # A workflow may end successfully after the user starts studying.
     # Never mistake late-but-valid public files for an on-time 08:00 delivery.
