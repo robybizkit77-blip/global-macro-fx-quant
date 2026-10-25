@@ -27,6 +27,7 @@ for phase in ("prebrief", "premorning"):
     ontime = evaluate(phase, good, at("2026-10-26T07:59:59+01:00"))
     assert ontime["status"] == "PASS_DELIVERED_BY_0800", ontime
     assert ontime["on_time"] is True
+    assert ontime["weekday_delivery_window"] is True
     assert ontime["target_rome"] == "2026-10-26T08:00:00+01:00"
     late = evaluate(phase, good, at("2026-10-26T08:00:01+01:00"))
     assert late["status"] == "LATE_SOURCES_READY_AFTER_DEADLINE"
@@ -38,6 +39,19 @@ warning = dict(good, documented_nonblocking_gaps=["NEWS_CONTENT_OLDER_THAN_PREVI
 warning_result = evaluate("premorning", warning, at("2026-10-26T07:59:59+01:00"))
 assert warning_result["status"] == "PASS_DELIVERED_BY_0800"
 assert warning_result["documented_nonblocking_gaps"] == ["NEWS_CONTENT_OLDER_THAN_PREVIOUS_SESSION"]
+
+# A manual or delayed workflow on the weekend must not claim the
+# weekday 08:00 study-briefing SLA, even with otherwise valid daily evidence.
+for weekend, checked_at in (
+    ("2026-10-24T07:59:00+02:00", "2026-10-24T07:44:00+02:00"),
+    ("2026-10-25T07:59:00+01:00", "2026-10-25T07:44:00+01:00"),
+):
+    weekend_report = dict(good, checked_at_rome=checked_at)
+    result = evaluate("prebrief", weekend_report, at(weekend))
+    assert result["status"] == "FAIL_OUTSIDE_WEEKDAY_DELIVERY_WINDOW"
+    assert result["weekday_delivery_window"] is False
+    assert result["source_and_publication_sequence_successful"] is True
+    assert result["on_time"] is False
 
 # 25 October CEST->CET: the previous Friday is not a reason to shift 08:00.
 before_dst = copy.deepcopy(good)
