@@ -187,15 +187,23 @@ def collect(now: dt.datetime | None = None, transport=None) -> dict:
         try:
             payload = transport(source)
             observations = extract_items(payload, source, now)
-            state = "OK_RECENT_ITEMS" if observations else "OK_NO_RECENT_ITEMS"
+            root = ET.fromstring(payload)
+            entries_seen = sum(local_name(e.tag) in ("item", "entry") for e in root.iter())
+            state = "OK_RECENT_ITEMS" if observations else "NO_VERIFIED_RECENT_ITEMS"
             failure_type = None
         except Exception as exc:
             observations = []
+            entries_seen = None
             state = "FETCH_OR_PARSE_FAILED"
             failure_type = type(exc).__name__
         info = {
             "source_id": source["id"], "source": source["name"], "ccy": source["ccy"],
             "feed_url": source["url"], "status": state, "accepted_items": len(observations),
+            # Zero accepted items is NOT proof that the publisher issued no
+            # releases. Its feed may lack usable timestamps or HTTPS links.
+            "feed_entries_seen": entries_seen,
+            "entries_rejected": (entries_seen - len(observations)
+                                 if entries_seen is not None else None),
         }
         if failure_type:
             info["failure_type"] = failure_type
