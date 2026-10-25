@@ -1,0 +1,34 @@
+name: News EURUSD Event-Window Research Gate V1 (unscheduled)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/news_event_window_research_pilot_v1.py'
+      - 'validation/test_news_event_window_research_pilot_v1.py'
+      - 'validation/NEWS_EVENT_WINDOW_RESEARCH_PILOT_V1.md'
+      - '.github/workflows/news-event-window-research-pilot-v1.yml'
+      - 'validation/macro/v2_dukascopy_bi5_hour_probe_v1.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pure-receipt-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile candidate and original BI5 importer
+        run: |
+          python -m py_compile validation/news_event_window_research_pilot_v1.py validation/test_news_event_window_research_pilot_v1.py validation/macro/v2_dukascopy_bi5_hour_probe_v1.py
+      - name: Adversarial release and quote clock tests (no external downloads)
+        run: python -m unittest validation.test_news_event_window_research_pilot_v1 -v
+      - name: Confirm no production path is modified by the test workflow
+        run: |
+          test -z "$(git status --porcelain -- live_data site dashboard payload)"
+          echo EVENT_WINDOW_RESEARCH_ONLY_NO_PRODUCTION_MUTATION
