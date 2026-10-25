@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-10-22",
-  "generated_at_utc": "2026-10-25T17:25:25.865878Z",
+  "generated_at_utc": "2026-10-25T17:42:35.467512Z",
   "items": [
     {
       "as_of": "2026-10-22",
@@ -47,13 +47,22 @@
       "title": "GBP: repricing OIS più dovish (-5.2 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-10-25T17:25:25.865878Z",
+  "last_checked_at_utc": "2026-10-25T17:42:35.467512Z",
   "official_releases": {
     "core_effect": "NONE",
     "headlines": [
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "EUR",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "REVIEW",
+          "topic": "CB_COMMUNICATION",
+          "verify_next": "Esaminare il testo integrale; identificare eventuali novità rispetto alla posizione precedente e verificare la reazione del mercato.",
+          "why_watch": "Intervento di una banca centrale: il solo titolo non permette di classificare il tono hawkish o dovish."
+        },
         "id": "ECB_PRESS:https://www.ecb.europa.eu//press/inter/date/2026/html/ecb.in261024~ee2ba73cf3.en.html",
         "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
         "published_at_utc": "2026-10-24T06:00:00Z",
@@ -66,6 +75,15 @@
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "EUR",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "MONITOR",
+          "topic": "MACRO_EXPECTATIONS",
+          "verify_next": "Leggere i numeri e confrontarli con precedente e consenso quando disponibili; poi controllare OIS/futures, 2Y e cambio.",
+          "why_watch": "Pubblicazione collegata alle aspettative o allo scenario macro; il titolo non rivela sorpresa né variazioni dei valori."
+        },
         "id": "ECB_PRESS:https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr261023~a3d201c97c.en.html",
         "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
         "published_at_utc": "2026-10-23T08:00:00Z",
@@ -78,6 +96,15 @@
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "GBP",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
         "id": "BOE_NEWS:https://www.bankofengland.co.uk/news/2026/october/regulators-unveil-plans-to-simplify-senior-manager-and-certification-regime",
         "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
         "published_at_utc": "2026-10-22T20:00:00Z",
@@ -90,6 +117,15 @@
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "GBP",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
         "id": "BOE_NEWS:https://www.bankofengland.co.uk/minutes/2026/september/securities-lending-committee-meeting-september-2026",
         "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
         "published_at_utc": "2026-10-22T15:35:53Z",
@@ -102,6 +138,15 @@
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "ENERGY",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "MONITOR",
+          "topic": "ENERGY_FUNDAMENTALS",
+          "verify_next": "Verificare dati EIA, scorte di greggio e prodotti, margini di raffinazione e prezzo WTI con date compatibili.",
+          "why_watch": "Titolo relativo a disponibilità, lavorazione o scorte energetiche: possibile contesto per il mercato petrolifero, non prova di un movimento WTI."
+        },
         "id": "EIA_ENERGY:https://www.eia.gov/todayinenergy/detail.php?id=68344",
         "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
         "published_at_utc": "2026-10-22T14:00:00Z",
@@ -114,6 +159,15 @@
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "ENERGY",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "ENERGY_STRUCTURE",
+          "verify_next": "Leggere la pubblicazione originale; valutare soltanto dopo l'eventuale rilevanza per domanda, offerta e prezzi.",
+          "why_watch": "Approfondimento energetico o strutturale: dal titolo non emerge un nuovo segnale sul prezzo del petrolio."
+        },
         "id": "EIA_ENERGY:https://www.eia.gov/todayinenergy/detail.php?id=68325",
         "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
         "published_at_utc": "2026-10-19T14:00:00Z",
@@ -126,6 +180,15 @@
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "CAD",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "MONITOR",
+          "topic": "MACRO_EXPECTATIONS",
+          "verify_next": "Leggere i numeri e confrontarli con precedente e consenso quando disponibili; poi controllare OIS/futures, 2Y e cambio.",
+          "why_watch": "Pubblicazione collegata alle aspettative o allo scenario macro; il titolo non rivela sorpresa né variazioni dei valori."
+        },
         "id": "BOC_PRESS:https://www.bankofcanada.ca/2026/10/the-bank-of-canada-releases-the-third-quarter-issues-of-the-business-outlook-survey-and-the-canadian-survey-of-consumer-expectations/",
         "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
         "published_at_utc": "2026-10-19T11:00:48Z",
@@ -138,6 +201,15 @@
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "NZD",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
         "id": "RBNZ_NEWS:https://www.rbnz.govt.nz/news-and-events/news/2026/10/new-framework-supports-access-to-basic-transaction-services",
         "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
         "published_at_utc": "2026-10-18T11:00:00Z",
@@ -150,6 +222,15 @@
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "CAD",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "REVIEW",
+          "topic": "CB_COMMUNICATION",
+          "verify_next": "Esaminare il testo integrale; identificare eventuali novità rispetto alla posizione precedente e verificare la reazione del mercato.",
+          "why_watch": "Intervento di una banca centrale: il solo titolo non permette di classificare il tono hawkish o dovish."
+        },
         "id": "BOC_PRESS:https://www.bankofcanada.ca/2026/10/media-roundtable-governor-macklem-2026-10-17/",
         "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
         "published_at_utc": "2026-10-17T09:00:36Z",
@@ -162,6 +243,15 @@
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "USD",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
         "id": "FED_PRESS:https://www.federalreserve.gov/newsevents/pressreleases/enforcement20261016a.htm",
         "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
         "published_at_utc": "2026-10-16T15:00:00Z",
@@ -275,7 +365,7 @@
   "schema": "GMFQ_NEWS_PULSE_OPERATIONAL_V1",
   "scope": {
     "claim": "LATEST_VALIDATED_SIGNALS_NOT_GENERIC_HEADLINES",
-    "external_news_feed": "OFFICIAL_FED_ECB_RSS_SEPARATE",
+    "external_news_feed": "OFFICIAL_G8_CB_EIA_RSS_SEPARATE_HEADLINE_ONLY",
     "inputs": [
       "OIS_OPERATIONAL_VIEW",
       "MACRO_THERMOMETER_DATA"
