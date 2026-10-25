@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""OFFLINE ONLY Dukascopy BI5 EUR/USD one-hour decoder; network blocked pending written consent.
+"""Offline-only Dukascopy BI5 EUR/USD decoder; network blocked without written authorization.
 
 This is not a feed, scheduler or production importer. It decodes one chosen
 hour and keeps transport evidence separate from a licence or market claim.
@@ -20,19 +20,14 @@ def source_clock(source_url):
     try:base=datetime(p["year"],p["month0"]+1,p["day"],p["hour"],tzinfo=timezone.utc)
     except ValueError as e:raise ValueError("invalid calendar date in BI5 URL") from e
     return base,p
-def fetch(sourcdef fetch(source_url,timeout_s):
-    """Do NOT automate Dukascopy access without prior express written consent.
-
-    Dukascopy website terms prohibit scraping, robots and automated acquisition
-    absent prior express written consent. This entrypoint intentionally has no
-    network implementation or self-attestation override.
-    """
+def fetch(source_url,timeout_s):
+    """No network access: Dukascopy automated acquisition requires prior express written consent."""
     source_clock(source_url)
     raise PermissionError(
-        "DUKASCOPY_AUTOMATED_ACCESS_BLOCKED: prior express written consent "
-        "has not been independently verified; offline fixtures only"
+        "DUKASCOPY_AUTOMATED_ACCESS_BLOCKED: independent prior written consent "
+        "is not documented; use only authorized offline fixtures"
     )
-ata,*,source_url=URL,transport_receipt=None):
+def summarize(data,*,source_url=URL,transport_receipt=None):
     BASE,parts=source_clock(source_url)
     if not data or len(data)>MAX_SOURCE_BYTES: raise ValueError("empty/oversized source")
     if transport_receipt and transport_receipt.get("content_length")!=len(data):raise ValueError("transport receipt content length does not match source bytes")
@@ -76,14 +71,9 @@ def main():
     ap.add_argument("--timeout-s",type=int,default=45)
     ap.add_argument("--out",type=Path)
     args=ap.parse_args()
-    if not args.offline_bi5:
-        ap.error("Automated BI5 network download disabled pending independent written permission; use --offline-bi5 with authorized local bytes")
-    if args.out and not args.out.resolve().is_relative_to(Path("/tmp")):raise ValueError("only /tmp allowed")
+    if not args.offline_bi5:\n        ap.error("Automated network acquisition prohibited pending independently verified prior written consent; pass --offline-bi5")\n    if args.out and not args.out.resolve().is_relative_to(Path("/tmp")):raise ValueError("only /tmp allowed")
     if not 1<=args.timeout_s<=60:raise ValueError("timeout must be between 1 and 60 seconds")
-    if args.offline_bi5:
-        buf=args.offline_bi5.read_bytes();receipt=None
-    else:
-        buf,receipt=fetch(args.source_url,args.timeout_s)
+    buf=args.offline_bi5.read_bytes();receipt=None
     r=summarize(buf,source_url=args.source_url,transport_receipt=receipt)
     if args.out:
         args.out.parent.mkdir(parents=True,exist_ok=True)
