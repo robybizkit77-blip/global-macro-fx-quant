@@ -58,14 +58,23 @@ def ois_items(data, today=None):
         weekly = hrow.get('change_1w_bp')
         tone = 'più hawkish' if v > 0 else 'più dovish' if v < 0 else 'invariato'
         indicative = status == 'GREEN_ESTIMATED'
-        prefix = 'repricing proxy indicativo' if indicative else 'repricing OIS'
+        futures_based = 'futures' in source.lower()
+        if futures_based:
+            prefix = ('repricing indicativo da futures' if indicative
+                      else 'repricing implicito da futures')
+            category = 'FUTURES_IMPLIED_REPRICING'
+        else:
+            prefix = 'repricing OIS stimato' if indicative else 'repricing OIS'
+            category = 'OIS_PROXY_REPRICING' if indicative else 'OIS_REPRICING'
         detail = f"Movimento 1D {v:+.1f} bp sul bucket {h.upper()}"
         detail += (f"; variazione 1W {float(weekly):+.1f} bp."
                    if finite_number(weekly) else '; riferimento 1W non disponibile.')
-        if indicative:
+        if futures_based:
+            detail += ' Indicazione tratta da futures: non equivale a una curva OIS osservata.'
+        elif indicative:
             detail += ' Stima informativa: non è una curva OIS ufficiale.'
         out.append({
-            'category': 'OIS_PROXY_REPRICING' if indicative else 'OIS_REPRICING',
+            'category': category,
             'ccy': ccy, 'as_of': as_of,
             'title': f'{ccy}: {prefix} {tone} ({v:+.1f} bp {h.upper()} in 1D)',
             'detail': detail, 'quality': quality, 'confidence': row.get('confidence'),
