@@ -71,7 +71,9 @@ def main():
     ap.add_argument("--timeout-s",type=int,default=45)
     ap.add_argument("--out",type=Path)
     args=ap.parse_args()
-    if not args.offline_bi5:\n        ap.error("Automated network acquisition prohibited pending independently verified prior written consent; pass --offline-bi5")\n    if args.out and not args.out.resolve().is_relative_to(Path("/tmp")):raise ValueError("only /tmp allowed")
+    if not args.offline_bi5:
+        ap.error("Automated network acquisition prohibited pending independently verified prior written consent; pass --offline-bi5")
+    if args.out and not args.out.resolve().is_relative_to(Path("/tmp")):raise ValueError("only /tmp allowed")
     if not 1<=args.timeout_s<=60:raise ValueError("timeout must be between 1 and 60 seconds")
     buf=args.offline_bi5.read_bytes();receipt=None
     r=summarize(buf,source_url=args.source_url,transport_receipt=receipt)
