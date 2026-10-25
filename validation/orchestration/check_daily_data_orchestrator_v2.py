@@ -165,7 +165,9 @@ def main() -> None:
     assert 'CHILD_REQUIRED_STEPS_NOT_EXECUTED' in text
     assert 'Retain exact child-step proof for all orchestration phases' in text
     assert 'path: /tmp/orchestration-child-step-evidence/*-proof.json' in text
-    assert text.index('[[ "$conclusion" == "success" ]] || return 1') < text.index('check_child_execution_steps_v1.py') < text.index('return 0', text.index('check_child_execution_steps_v1.py'))
+    step_gate_call = 'if python3 validation/orchestration/check_child_execution_steps_v1.py'
+    assert text.index('[[ "$conclusion" == "success" ]] || return 1') < text.index(step_gate_call)
+    assert text.index(step_gate_call) < text.index('return 0', text.index(step_gate_call))
     # Feb 2026 GitHub API returns the exact dispatched run ID, instead of
     # guessing from adjacent/manual dispatches or relying on polling order.
     assert '"${api}/dispatches" -f ref=main -F return_run_details=true' in text
