@@ -309,21 +309,10 @@ jobs:
           git fetch origin gh-pages --no-tags
           python - <<'PY'
           import hashlib,json,pathlib,subprocess
-          paths=['live_data/sections/OIS_DATA.json','live_data/sections/OIS_OPERATIONAL_VIEW.json',
-                 'dashboard/ois-operational-monitor-v1.js',
-                 'dashboard/cbdesk-operational-v1.js',
-                 'live_data/sections/D.json',
-                 'payload/part-00.txt',
-                 'live_data/sections/V247_COT_STORIES.json',
-                 'live_data/sections/RATES_AUDIT_METADATA.json',
-                 'live_data/manifest.v2.json',
-                 'live_data/sections/NATIVE_CB_DATA.json',
-                 'live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json',
-                 'live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json','live_data/sections/NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json',
-                 'live_data/sections/OIS_SOURCE_READINESS_VIEW.json',
-                 'dashboard/risk-operational-v1.js',
-                 'dashboard/editorial-freshness-guard-v1.js',
-                 'live_data/sections/ESTIMATED_RESIDUAL_GAPS.json']
+          # Share one manifest with the public HTTP proof: no partial
+          # gh-pages GREEN when another runtime segment is stale.
+          from validation.publishing.verify_pages_http_delivery_v1 import FILES
+          paths=list(FILES)
           rows=[]
           for name in paths:
               source=pathlib.Path(name).read_bytes()
