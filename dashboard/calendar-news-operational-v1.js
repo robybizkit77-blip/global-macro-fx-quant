@@ -63,6 +63,16 @@ function releaseContext(item){
  return {tier,why:c.analysis_basis==='SOURCE_HEADLINE_ONLY'?(c.why_watch||''):'',
          next:c.analysis_basis==='SOURCE_HEADLINE_ONLY'?(c.verify_next||''):''};
 }
+function proofSummary(item){
+ const p=item.reaction_evidence||{};
+ if(p.status!=='NOT_VERIFIABLE_INTRADAY')return 'Reazione di mercato: non certificata.';
+ const oi=p.ois_or_futures||{};
+ const y=p.yield_2y||{};
+ const a=(oi.status==='DAILY_CONTEXT_ONLY'&&oi.event_window_proof===false)?'Tassi attesi giornalieri al '+String(oi.date||'—'):'Tassi attesi non validati';
+ const b=(y.status==='DAILY_CONTEXT_ONLY'&&y.event_window_proof===false)?'2Y giornaliero al '+String(y.date||'—'):'2Y non validato';
+ return item.ccy==='ENERGY'?'Reazione non certificata: WTI pre/post evento non disponibile.':
+   'Reazione non certificata: '+a+'; '+b+'; prezzi FX pre/post evento non disponibili.';
+}
 function renderOfficialRelease(item){
  const url=verifiedOfficialLink(item);
  if(item.quality!=='OFFICIAL_RSS_DATED_LINK'||!url)return '';
@@ -74,7 +84,7 @@ function renderOfficialRelease(item){
  return '<article class="opCard" data-kind="official-release" data-relevance="'+esc(c.tier)+'">'+
    '<div class="opTop"><div class="opCcy">'+(FLAGS[item.ccy]||'')+' '+esc(item.source)+'</div><div class="opDate">'+esc(fmtOfficialInstant(item.published_at_utc))+'</div></div>'+
    '<h3>'+esc(item.title)+'</h3><div class="opMeta"><span class="opTag">'+esc(label)+'</span> <span class="opTag">COMUNICAZIONE UFFICIALE · '+esc(item.ccy==='ENERGY'?'ENERGIA':item.ccy)+
-   '</span>'+note+'<br><span class="opTag">NESSUNA REAZIONE PREZZI CERTIFICATA</span><br>'+
+   '</span>'+note+(c.tier==='MONITOR'?'<div class="opConsensus">'+esc(proofSummary(item))+'</div>':'')+'<br><span class="opTag">NESSUNA REAZIONE PREZZI CERTIFICATA</span><br>'+
    '<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" style="color:#9ec5ff">Leggi sulla fonte originale</a></div></article>';
 }
 function newsHtml(data){
