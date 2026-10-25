@@ -67,6 +67,19 @@ for name in ("NEWS_PULSE_OPERATIONAL.json", "CALENDAR_OPERATIONAL_VIEW.json"):
 for c in good["MACRO_THERMOMETER_DATA.json"]["currencies"].values():
     for key in ("inflation", "labour"):
         c[key]["as_of"] = "2026-09"
+# Pin independent research coverage gaps so this remains deterministic.
+for ccy in ("USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"):
+    good["NATIVE_RATES_DATA.json"][ccy]["date"] = "2026-10-23"
+    good["NATIVE_RATES_DATA.json"][ccy]["quality"] = "FULL_CURRENT_OFFICIAL"
+good["NATIVE_RATES_DATA.json"]["CHF"]["date"] = "2026-09-30"
+good["NATIVE_RATES_DATA.json"]["NZD"]["date"] = "2026-10-16"
+for ccy, status in {
+    "USD": "GREEN_ESTIMATED", "EUR": "WITHHELD",
+    "GBP": "GREEN_OFFICIAL", "JPY": "GREEN_OFFICIAL",
+    "CHF": "WITHHELD", "CAD": "GREEN_OFFICIAL",
+    "AUD": "GREEN_OFFICIAL", "NZD": "WITHHELD",
+}.items():
+    good["OIS_OPERATIONAL_VIEW.json"]["currencies"][ccy]["operational_status"] = status
 
 passed = evaluate(monday, good)
 assert passed["status"] == "PASS_MORNING_SOURCES_VERIFIED", passed
@@ -87,7 +100,11 @@ for name in ("NEWS_PULSE_OPERATIONAL.json", "CALENDAR_OPERATIONAL_VIEW.json"):
 # market signal is still from Thursday. The Pages receipt must not erase it.
 assert passed["news_content_vintage"]["content_as_of"] == "2026-10-22", passed
 assert passed["news_content_vintage"]["status"] == "OLDER_THAN_PREVIOUS_TRADING_SESSION", passed
-assert passed["documented_nonblocking_gaps"] == ["NEWS_CONTENT_OLDER_THAN_PREVIOUS_SESSION"], passed
+assert passed["documented_nonblocking_gaps"] == [
+    "NEWS_CONTENT_OLDER_THAN_PREVIOUS_SESSION",
+    "RATES_2Y_10Y_LAG_OR_BLOCKED:CHF,NZD",
+    "OIS_G8_UNAVAILABLE:CHF,EUR,NZD",
+], passed
 
 
 missing_pair = copy.deepcopy(good)
