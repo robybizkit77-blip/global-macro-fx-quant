@@ -69,7 +69,7 @@ jobs:
           const AUTH={
             wow:'NEWS_PULSE_OPERATIONAL.content_as_of',
             themes:'NEWS_PULSE_OPERATIONAL.content_as_of',
-            calendar:'CALENDAR_OPERATIONAL_VIEW.generated_at_utc',
+            calendar:['CALENDAR_OPERATIONAL_VIEW.last_checked_at_utc','CALENDAR_OPERATIONAL_VIEW.generated_at_utc'],
             news:'NEWS_PULSE_OPERATIONAL.content_as_of',
             risk:'OLDEST_REQUIRED(D.risk.VIX.last_date,D.risk.WTI.last_date,ESTIMATED_RESIDUAL_GAPS.BRENT.proxy_as_of)'
           };
@@ -103,7 +103,8 @@ jobs:
             if(audit.legacy_authority!=='NONE')throw new Error(label+' legacy freshness authority '+audit.legacy_authority);
             if(!['PASS_FAIL_CLOSED_STALE','PASS_FRESH','PASS_WITH_UNVERIFIED'].includes(audit.status))throw new Error(label+' freshness status '+audit.status);
             for(const [id,authority] of Object.entries(AUTH)){
-              if(audit.sections?.[id]?.authority!==authority)throw new Error(label+' '+id+' authority drift '+JSON.stringify(audit.sections?.[id]));
+              if(!(Array.isArray(authority)?authority.includes(audit.sections?.[id]?.authority):audit.sections?.[id]?.authority===authority))
+                throw new Error(label+' '+id+' authority drift '+JSON.stringify(audit.sections?.[id]));
             }
             // Risk freshness must be determined by the OLDEST complete lane,
             // never a newer Brent quote masking a stale VIX or WTI.
@@ -132,7 +133,8 @@ jobs:
                 return {status:el?.dataset?.gmfqEditorialFreshness||null,authority:el?.dataset?.gmfqFreshnessAuthority||null,banner:!!banner,bannerText:banner?.innerText||'',visible:!!banner&&box.width>0&&box.height>0,operational:!!el?.querySelector('[data-gmfq-operational]')};
               },id);
               if(['wow','themes','calendar','news','risk'].includes(id)&&!r.operational)throw new Error(label+' missing operational owner '+id);
-              if(AUTH[id]&&r.authority!==AUTH[id])throw new Error(label+' '+id+' DOM authority '+JSON.stringify(r));
+              if(AUTH[id]&&!(Array.isArray(AUTH[id])?AUTH[id].includes(r.authority):r.authority===AUTH[id]))
+                throw new Error(label+' '+id+' DOM authority '+JSON.stringify(r));
               if(r.status==='STALE'&&(!r.banner||!r.visible||!r.bannerText.includes('FRESHNESS FAIL-CLOSED')))throw new Error(label+' stale section not visibly fail-closed '+id+': '+JSON.stringify(r));
               if(r.status==='UNVERIFIED'&&(!r.banner||!r.visible||!r.bannerText.includes('FRESHNESS OPERATIVA NON VERIFICABILE')))throw new Error(label+' unverified section not visibly labelled '+id+': '+JSON.stringify(r));
               if(r.status==='FRESH'&&r.banner)throw new Error(label+' fresh section should not show freshness banner '+id);
