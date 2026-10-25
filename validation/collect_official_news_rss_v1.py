@@ -131,6 +131,50 @@ def clean_title(value: str) -> str:
     return re.sub(r"\s+", " ", re.sub(r"<[^>]*>", "", value)).strip()[:190]
 
 
+
+def desk_context(title: str, source: dict) -> dict:
+    """Headline-only *watch questions*, never inferred monetary stance.
+
+    Titles are publisher supplied but do not establish the actual policy
+    decision, measured macro surprise, direction or asset-price response.
+    Prefer an explicit low-priority institutional classification on ambiguity.
+    """
+    t = title.lower()
+    is_energy = source["id"] == "EIA_ENERGY"
+    if is_energy:
+        if re.search(r"\b(crude oil|oil inventories|petroleum|refiner(?:y|ies)|refining|gasoline|diesel|natural gas storag\w*)\b", t):
+            relevance, topic = "MONITOR", "ENERGY_FUNDAMENTALS"
+            why = "Titolo relativo a disponibilità, lavorazione o scorte energetiche: possibile contesto per il mercato petrolifero, non prova di un movimento WTI."
+            check = "Verificare dati EIA, scorte di greggio e prodotti, margini di raffinazione e prezzo WTI con date compatibili."
+        else:
+            relevance, topic = "CONTEXT", "ENERGY_STRUCTURE"
+            why = "Approfondimento energetico o strutturale: dal titolo non emerge un nuovo segnale sul prezzo del petrolio."
+            check = "Leggere la pubblicazione originale; valutare soltanto dopo l'eventuale rilevanza per domanda, offerta e prezzi."
+    elif re.search(r"\b(monetary policy decision|interest rate decision|bank rate decision|policy rate decision|official cash rate|cash rate target|monetary policy statement|snb policy rate)\b", t):
+        relevance, topic = "MONITOR", "CB_POLICY"
+        why = "Annuncio potenzialmente relativo a una decisione o comunicazione di politica monetaria; direzione della decisione non identificata dal titolo."
+        check = "Verificare testo della decisione, confronto con consenso, repricing OIS/futures, rendimento 2Y e variazione FX dopo la pubblicazione."
+    elif re.search(r"\b(consumer expectations survey|business outlook survey|inflation expectations|survey of consumer expectations|monetary policy report|inflation report|financial stability report)\b", t):
+        relevance, topic = "MONITOR", "MACRO_EXPECTATIONS"
+        why = "Pubblicazione collegata alle aspettative o allo scenario macro; il titolo non rivela sorpresa né variazioni dei valori."
+        check = "Leggere i numeri e confrontarli con precedente e consenso quando disponibili; poi controllare OIS/futures, 2Y e cambio."
+    elif re.search(r"\b(interview|speech|remarks|media roundtable|press conference|testimony)\b", t):
+        relevance, topic = "REVIEW", "CB_COMMUNICATION"
+        why = "Intervento di una banca centrale: il solo titolo non permette di classificare il tono hawkish o dovish."
+        check = "Esaminare il testo integrale; identificare eventuali novità rispetto alla posizione precedente e verificare la reazione del mercato."
+    else:
+        relevance, topic = "CONTEXT", "INSTITUTIONAL"
+        why = "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        check = "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato."
+    return {
+        "operational_relevance": relevance, "topic": topic,
+        "why_watch": why, "verify_next": check,
+        "analysis_basis": "SOURCE_HEADLINE_ONLY",
+        "market_direction": "NOT_DETERMINED",
+        "market_reaction": "NOT_MEASURED",
+    }
+
+
 def extract_items(payload: bytes, source: dict, now: dt.datetime) -> list[dict]:
     if len(payload) > MAX_BYTES:
         raise ValueError("RSS_FEED_OVERSIZE")
@@ -160,6 +204,7 @@ def extract_items(payload: bytes, source: dict, now: dt.datetime) -> list[dict]:
             "url": link,
             "quality": "OFFICIAL_RSS_DATED_LINK",
             "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+            "desk_context": desk_context(title, source),
         })
     return observations
 

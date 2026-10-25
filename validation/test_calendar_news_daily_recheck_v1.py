@@ -321,3 +321,44 @@ assert officialrss.trustworthy_url("https://www.federalreserve.gov.evil.example/
 assert officialrss.trustworthy_url("http://www.federalreserve.gov/x",source) is None
 assert officialrss.trustworthy_url("https://fake.invalid/www.federalreserve.gov/x",source) is None
 print("OFFICIAL_NEWS_RSS_SOURCE_DATE_AND_OUTAGE_FAIL_CLOSED_PASS")
+
+
+# Headline-only desk interpretation: useful questions, never an inferred
+# monetary stance, actual/consensus surprise, observed WTI or FX reaction.
+cases = [
+    ("ECB_PRESS", "ECB Consumer Expectations Survey results - September 2026",
+     "MONITOR", "MACRO_EXPECTATIONS"),
+    ("BOC_PRESS", "Bank of Canada releases the Business Outlook Survey",
+     "MONITOR", "MACRO_EXPECTATIONS"),
+    ("EIA_ENERGY", "U.S. refineries have been running at high rates",
+     "MONITOR", "ENERGY_FUNDAMENTALS"),
+    ("EIA_ENERGY", "Hybrid sales rise after tax credit expiration",
+     "CONTEXT", "ENERGY_STRUCTURE"),
+    ("FED_PRESS", "Federal Reserve Board terminates an enforcement action",
+     "CONTEXT", "INSTITUTIONAL"),
+    ("ECB_PRESS", "Interview with a member of the Executive Board",
+     "REVIEW", "CB_COMMUNICATION"),
+    ("BOE_NEWS", "Regulators simplify Senior Managers regime",
+     "CONTEXT", "INSTITUTIONAL"),
+    ("RBA_PRESS", "Monetary Policy Decision - October 2026",
+     "MONITOR", "CB_POLICY"),
+    ("BOC_PRESS", "Interest rate decision",
+     "MONITOR", "CB_POLICY"),
+]
+source_lookup = {x["id"]: x for x in officialrss.RSS_SOURCES}
+for source_id, title, expected_tier, expected_topic in cases:
+    context = officialrss.desk_context(title, source_lookup[source_id])
+    assert (context["operational_relevance"], context["topic"]) == (
+        expected_tier, expected_topic), (source_id, title, context)
+    assert context["analysis_basis"] == "SOURCE_HEADLINE_ONLY"
+    assert context["market_direction"] == "NOT_DETERMINED"
+    assert context["market_reaction"] == "NOT_MEASURED"
+    assert context["why_watch"] and context["verify_next"]
+# In particular, EIA's 'high rates' is refinery utilisation, not a policy hike.
+assert officialrss.desk_context(
+    "Refineries operating at very high rates", source_lookup["EIA_ENERGY"]
+)["topic"] == "ENERGY_FUNDAMENTALS"
+
+assert all("desk_context" in x and x["desk_context"]["analysis_basis"] ==
+           "SOURCE_HEADLINE_ONLY" for x in stories["headlines"])
+print("NEWS_HEADLINE_RELEVANCE_CONTEXT_NO_UNVERIFIED_DIRECTION_PASS")

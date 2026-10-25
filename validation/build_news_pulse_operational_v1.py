@@ -186,7 +186,7 @@ def main():
     # Keep the established deterministic market signal vintage independent of
     # external official statements. Never backfill a failed RSS feed or claim
     # that a press announcement proves a market move.
-    core={'schema':'GMFQ_NEWS_PULSE_OPERATIONAL_V1','status':'ACTIVE_DETERMINISTIC_LAYERS','content_as_of':iso(latest),'scope':{'external_news_feed':'OFFICIAL_FED_ECB_RSS_SEPARATE','inputs':['OIS_OPERATIONAL_VIEW','MACRO_THERMOMETER_DATA'],'claim':'LATEST_VALIDATED_SIGNALS_NOT_GENERIC_HEADLINES'},'items':items,'official_releases':official}
+    core={'schema':'GMFQ_NEWS_PULSE_OPERATIONAL_V1','status':'ACTIVE_DETERMINISTIC_LAYERS','content_as_of':iso(latest),'scope':{'external_news_feed':'OFFICIAL_G8_CB_EIA_RSS_SEPARATE_HEADLINE_ONLY','inputs':['OIS_OPERATIONAL_VIEW','MACRO_THERMOMETER_DATA'],'claim':'LATEST_VALIDATED_SIGNALS_NOT_GENERIC_HEADLINES'},'items':items,'official_releases':official}
     changed=stable_write(core, now=now)
     print(json.dumps({'status':'PASS','changed':changed,'items':len(items),'content_as_of':iso(latest),'official_headlines':len(official['headlines']),'official_source_status':[{'id':x['source_id'],'status':x['status'],'count':x['accepted_items']} for x in official['sources']],'output':str(OUT.relative_to(ROOT))}))
 
