@@ -98,8 +98,8 @@ jobs:
           assert news['items']
           external=news['official_releases']
           assert external['schema']=='GMFQ_OFFICIAL_RSS_HEADLINES_V1'
-          assert external['source_count']==2
-          assert external['source_failures'] in (0,1,2)
+          assert external['source_count']==9
+          assert 0 <= external['source_failures'] <= external['source_count']
           assert external['status'] in {
             'SOURCES_UNAVAILABLE','PARTIAL_SOURCES',
             'VERIFIED_NO_RECENT_RELEASES','VERIFIED_OFFICIAL_RELEASES'
