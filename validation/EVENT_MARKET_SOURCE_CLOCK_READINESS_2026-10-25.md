@@ -2,6 +2,15 @@
 
 **Audit as of 25 October 2026. Research only; no licensed intraday dataset has been added.**
 
+## Source terms update — 25 October 2026
+
+**Dukascopy:** https://www.dukascopy.com/swiss/english/legal-pages/terms-of-use/
+Sections 3/4 describe website materials as personal non-commercial use except written agreement, prohibit automated robots/scraping without prior express written consent, and restrict database creation and redistribution. The [historical export page](https://www.dukascopy.com/swiss/english/marketwatch/historical/) says that downloads are free and may support backtests, but **free availability does not override these website Terms of Use**. The separate legal applicability of these conditions to direct BI5 endpoints must be clarified with Dukascopy in writing. Pending that clarification: **all direct automated Dukascopy downloads in our repository are disabled**. We do not claim permission has been obtained.
+
+**CME DataMine:** The [official dataset FAQ](https://cmegroupclientsite.atlassian.net/wiki/spaces/EPICSANDBOX/pages/457319709/CME+DataMine+Support) differentiates EOD/Time & Sales from BBO/Market Depth external redistribution: historical EOD/T&S may be distributed with vendor registration, while BBO/MD external redistribution is restricted. [Historical-data distribution guidance](https://www.cmegroup.com/market-data/distributor/files/cme-group-data-licensing-policy-guidelines-historical-information-distribution.pdf) and the particular data license govern access, end-user rights, website display and downloads. **The FAQ is not itself our license**. A [CME SR3 T&S catalog listing](https://datamine.new.cmegroup.com/catalog/dataset/86e3685d5cf1a886dc98baa696357cfe) is a commercial option; it does not certify that any historical quote has been purchased.
+
+The immediate action is to request written answers from the providers concerning private systematic research, scheduled acquisition/API, keeping raw tick quotes, converting to public derived statistics, dashboard display, and possible commercial publication. **No purchase or data transfer should be initiated based only on a catalogue entry.**
+
 ## One official event clock we can ground
 
 The BLS archived September 2026 Employment Situation:
