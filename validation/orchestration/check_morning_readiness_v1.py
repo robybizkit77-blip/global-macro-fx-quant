@@ -219,6 +219,16 @@ def inspect(feeds: dict, now: dt.datetime, pipeline_outcome: str = "success") ->
         "estimated": sorted(c for c in G8 if op[c] == "GREEN_ESTIMATED"),
         "withheld": sorted(c for c in G8 if op[c] not in {"GREEN_OFFICIAL", "GREEN_ESTIMATED"}),
     }
+    # A delivery can meet the 08:00 SLA while some research sources remain
+    # lagging or unavailable. Surface those gaps in the same compact receipt
+    # used by Pages and the orchestrator, without inventing estimates or
+    # changing the daily blocking rules for differently scheduled releases.
+    lagging_rates = sorted(c for c in G8 if rate_rows[c]["status"] != "RECENT_OFFICIAL")
+    missing_ois = evidence["OIS_G8"]["withheld"]
+    if lagging_rates:
+        documented_gaps.append("RATES_2Y_10Y_LAG_OR_BLOCKED:" + ",".join(lagging_rates))
+    if missing_ois:
+        documented_gaps.append("OIS_G8_UNAVAILABLE:" + ",".join(missing_ois))
     # Raw observation periods are not official release timestamps, PIT release
     # vintages, nor current structural model scores. Explicitly separate them.
     macro_rows = {}
