@@ -6,6 +6,7 @@ on:
     paths:
       - 'validation/build_calendar_operational_v1.py'
       - 'validation/build_news_pulse_operational_v1.py'
+      - 'validation/news_reaction_evidence_v1.py'
       - 'validation/collect_official_news_rss_v1.py'
       - 'dashboard/editorial-freshness-guard-v1.js'
       - 'dashboard/calendar-news-operational-v1.js'
@@ -20,6 +21,7 @@ on:
     paths:
       - 'validation/build_calendar_operational_v1.py'
       - 'validation/build_news_pulse_operational_v1.py'
+      - 'validation/news_reaction_evidence_v1.py'
       - 'validation/collect_official_news_rss_v1.py'
       - 'dashboard/editorial-freshness-guard-v1.js'
       - 'dashboard/calendar-news-operational-v1.js'
@@ -92,6 +94,7 @@ jobs:
                 const sourceLinks=officialCards.map(card=>card.querySelector('a[href]')?.href||'');
                 return {cards:document.querySelectorAll('#news .opCard').length,
                   officialCards:officialCards.length,sourceLinks,
+                  proofLabelCount:officialCards.filter(c=>c.dataset.relevance==='MONITOR' && c.textContent.includes('Reazione non certificata')).length,
                   tiers:officialCards.map(card=>card.dataset.relevance),
                   monitorQuestions:officialCards.filter(card=>card.dataset.relevance==='MONITOR'&&
                     card.textContent.includes('Perché conta')&&card.textContent.includes('Cosa verificare')).length,
@@ -119,6 +122,7 @@ jobs:
                 throw new Error(`${name} desk context tier/questions mismatch ${JSON.stringify(news)}`);
               if(news.sourceLinks.length!==news.officialCards||news.sourceLinks.some(u=>!/^https:\/\/(www\.)?(federalreserve\.gov|ecb\.europa\.eu|ecb\.int|bankofengland\.co\.uk|boj\.or\.jp|snb\.ch|bankofcanada\.ca|rba\.gov\.au|rbnz\.govt\.nz|eia\.gov)\//.test(u)))
                 throw new Error(`${name} unauthorised official RSS links ${JSON.stringify(news.sourceLinks)}`);
+              if(news.proofLabelCount!==officialReceipt.headlines.filter(h=>h.desk_context?.operational_relevance==='MONITOR').length)throw new Error('News proof labels not visible');
               if(news.fresh!==news.expected)throw new Error(`${name} News signal vintage freshness ${JSON.stringify(news)}`);
               if(news.fresh==='STALE'&&!news.banner.includes(news.content_as_of))
                 throw new Error(`${name} dated News signals not visibly caveated ${JSON.stringify(news)}`);
