@@ -242,15 +242,32 @@ ecb_rss = b"""<?xml version="1.0" encoding="utf-8"?>
 <link>https://www.ecb.europa.eu/press/key/date/2026/html/example.en.html</link>
 <pubDate>Sat, 24 Oct 2026 12:00:00 GMT</pubDate></item>
 </channel></rss>"""
-def good_transport(source):
-    return fed_rss if source["id"] == "FED_PRESS" else ecb_rss
+# One publisher-controlled item per approved source is accepted; no
+# cross-host links are admitted. An EIA entry is an energy publication,
+# never presented as currency-specific macro news or WTI-price movement.
+def rss_item_for_source(source):
+    if source["id"] == "FED_PRESS":
+        return fed_rss
+    if source["id"] == "ECB_PRESS":
+        return ecb_rss
+    host = source["hosts"][0]
+    return (
+        '<rss><channel><item><title>Official research and policy update ' +
+        source["id"] + '</title><link>https://' + host +
+        '/news/test-' + source["id"].lower() + '.html</link>' +
+        '<pubDate>Fri, 23 Oct 2026 14:00:00 GMT</pubDate></item></channel></rss>'
+    ).encode("utf-8")
 
-stories = officialrss.collect(rss_now, good_transport)
+stories = officialrss.collect(rss_now, rss_item_for_source)
 assert stories["status"] == "VERIFIED_OFFICIAL_RELEASES"
+assert stories["source_count"] == 9
 assert stories["source_failures"] == 0
-assert len(stories["headlines"]) == 2
+assert len(stories["headlines"]) == 9
+assert {x["source_id"] for x in stories["headlines"]} == {
+    source["id"] for source in officialrss.RSS_SOURCES
+}
+assert sum(x["ccy"] == "ENERGY" for x in stories["headlines"]) == 1
 assert stories["headlines"][0]["source_id"] == "ECB_PRESS"
-assert stories["headlines"][1]["source_id"] == "FED_PRESS"
 assert all(x["quality"] == "OFFICIAL_RSS_DATED_LINK" for x in stories["headlines"])
 assert all(x["interpretation"] == "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM"
            for x in stories["headlines"])
@@ -260,12 +277,12 @@ assert stories["last_attempt_day_rome"] == "2026-10-25"
 def partial_transport(source):
     if source["id"] == "FED_PRESS":
         raise TimeoutError("test network outage")
-    return ecb_rss
+    return rss_item_for_source(source)
 
 partial_headlines = officialrss.collect(rss_now, partial_transport)
 assert partial_headlines["status"] == "PARTIAL_SOURCES"
 assert partial_headlines["source_failures"] == 1
-assert len(partial_headlines["headlines"]) == 1
+assert len(partial_headlines["headlines"]) == 8
 assert any(x["status"] == "FETCH_OR_PARSE_FAILED"
            for x in partial_headlines["sources"])
 
@@ -274,7 +291,7 @@ failed = officialrss.collect(rss_now,
 assert failed["status"] == "SOURCES_UNAVAILABLE"
 assert failed["headlines"] == []
 assert failed["latest_published_at_utc"] is None
-assert failed["source_failures"] == 2
+assert failed["source_failures"] == 9
 
 old_rss = fed_rss.replace(b"23 Oct 2026", b"01 Oct 2026")
 old = officialrss.collect(rss_now,
@@ -282,6 +299,20 @@ old = officialrss.collect(rss_now,
     else b"<rss><channel /></rss>")
 assert old["status"] == "VERIFIED_NO_RECENT_RELEASES"
 assert old["headlines"] == []
+
+# A single active publisher with 10 valid articles cannot monopolise the
+# cross-country headline page. Keep newest two per source, at most 18 total.
+spam = b"<rss><channel>" + b"".join(
+    (b"<item><title>Federal Reserve long-form policy update %d</title>"
+     b"<link>https://www.federalreserve.gov/news/policy%d.html</link>"
+     b"<pubDate>Fri, 23 Oct 2026 14:00:00 GMT</pubDate></item>") % (i, i)
+    for i in range(10)
+) + b"</channel></rss>"
+many = officialrss.collect(rss_now,
+    lambda source: spam if source["id"] == "FED_PRESS"
+    else rss_item_for_source(source))
+assert len([x for x in many["headlines"] if x["source_id"] == "FED_PRESS"]) == 2
+assert len(many["headlines"]) <= officialrss.MAX_ITEMS
 
 # Verify strict host/scheme matching; a name in a path or subdomain is
 # insufficient to establish original-publisher provenance.

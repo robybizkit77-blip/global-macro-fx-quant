@@ -8,6 +8,7 @@ A failed feed never becomes an empty verified feed.
 from __future__ import annotations
 
 import datetime as dt
+from concurrent.futures import ThreadPoolExecutor
 import html
 import re
 import urllib.parse
@@ -32,11 +33,54 @@ RSS_SOURCES = (
         "hosts": ("www.ecb.europa.eu", "ecb.europa.eu", "www.ecb.int", "ecb.int"),
         "ccy": "EUR",
     },
+    {
+        "id": "BOE_NEWS", "name": "Bank of England",
+        "url": "https://www.bankofengland.co.uk/rss/news",
+        "hosts": ("www.bankofengland.co.uk", "bankofengland.co.uk"),
+        "ccy": "GBP",
+    },
+    {
+        "id": "BOJ_NEWS", "name": "Bank of Japan",
+        "url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
+        "hosts": ("www.boj.or.jp", "boj.or.jp"),
+        "ccy": "JPY",
+    },
+    {
+        "id": "SNB_POLICY", "name": "Swiss National Bank",
+        "url": "https://www.snb.ch/public/rss/en/mopo",
+        "hosts": ("www.snb.ch", "snb.ch"),
+        "ccy": "CHF",
+    },
+    {
+        "id": "BOC_PRESS", "name": "Bank of Canada",
+        "url": "https://www.bankofcanada.ca/content_type/press/feed/",
+        "hosts": ("www.bankofcanada.ca", "bankofcanada.ca"),
+        "ccy": "CAD",
+    },
+    {
+        "id": "RBA_PRESS", "name": "Reserve Bank of Australia",
+        "url": "https://www.rba.gov.au/rss/rss-cb-media-releases.xml",
+        "hosts": ("www.rba.gov.au", "rba.gov.au"),
+        "ccy": "AUD",
+    },
+    {
+        "id": "RBNZ_NEWS", "name": "Reserve Bank of New Zealand",
+        "url": "https://www.rbnz.govt.nz/feeds/news",
+        "hosts": ("www.rbnz.govt.nz", "rbnz.govt.nz"),
+        "ccy": "NZD",
+    },
+    {
+        "id": "EIA_ENERGY", "name": "U.S. Energy Information Administration",
+        "url": "https://www.eia.gov/rss/todayinenergy.xml",
+        "hosts": ("www.eia.gov", "eia.gov"),
+        "ccy": "ENERGY",
+    },
 )
 USER_AGENT = "GMFQ-official-news/1.0 (public RSS; source attribution)"
 MAX_BYTES = 2_000_000
 MAX_DAYS = 10
-MAX_ITEMS = 10
+MAX_ITEMS = 18
+MAX_ITEMS_PER_SOURCE = 2
 
 
 def local_name(tag: str) -> str:
@@ -131,28 +175,47 @@ def collect(now: dt.datetime | None = None, transport=None) -> dict:
                 "User-Agent": USER_AGENT, "Accept": "application/rss+xml,application/xml,text/xml",
             })
             with urllib.request.urlopen(req, timeout=8) as response:
+                final = urllib.parse.urlsplit(response.geturl())
+                # Redirects to a different origin must not be accepted as an
+                # official publisher feed (even if its XML is well formed).
+                if final.scheme != "https" or final.hostname not in source["hosts"]:
+                    raise ValueError("RSS_UNTRUSTED_FEED_REDIRECT")
                 # Bounded read, never include articles or full copyrighted text.
                 return response.read(MAX_BYTES + 1)
 
-    stories = []
-    source_status = []
-    for source in RSS_SOURCES:
+    def read_one(source):
         try:
             payload = transport(source)
-            items = extract_items(payload, source, now)
-            state = "OK_RECENT_ITEMS" if items else "OK_NO_RECENT_ITEMS"
-            stories.extend(items)
+            observations = extract_items(payload, source, now)
+            root = ET.fromstring(payload)
+            entries_seen = sum(local_name(e.tag) in ("item", "entry") for e in root.iter())
+            state = "OK_RECENT_ITEMS" if observations else "NO_VERIFIED_RECENT_ITEMS"
+            failure_type = None
         except Exception as exc:
-            items = []
+            observations = []
+            entries_seen = None
             state = "FETCH_OR_PARSE_FAILED"
             failure_type = type(exc).__name__
         info = {
             "source_id": source["id"], "source": source["name"], "ccy": source["ccy"],
-            "feed_url": source["url"], "status": state, "accepted_items": len(items),
+            "feed_url": source["url"], "status": state, "accepted_items": len(observations),
+            # Zero accepted items is NOT proof that the publisher issued no
+            # releases. Its feed may lack usable timestamps or HTTPS links.
+            "feed_entries_seen": entries_seen,
+            "entries_rejected": (entries_seen - len(observations)
+                                 if entries_seen is not None else None),
         }
-        if state == "FETCH_OR_PARSE_FAILED":
+        if failure_type:
             info["failure_type"] = failure_type
-        source_status.append(info)
+        observations.sort(key=lambda x: (x["published_at_utc"], x["url"]), reverse=True)
+        return observations[:MAX_ITEMS_PER_SOURCE], info
+
+    # Independent publisher requests run concurrently: one inaccessible feed
+    # cannot serially delay the mandatory daily prebrief by 8 seconds per bank.
+    with ThreadPoolExecutor(max_workers=9) as pool:
+        fetched = list(pool.map(read_one, RSS_SOURCES))
+    stories = [story for accepted, _ in fetched for story in accepted]
+    source_status = [receipt for _, receipt in fetched]
     unique = {item["url"]: item for item in stories}
     items = sorted(unique.values(),
                    key=lambda x: (x["published_at_utc"], x["source_id"], x["url"]),
@@ -175,6 +238,6 @@ def collect(now: dt.datetime | None = None, transport=None) -> dict:
         "sources": source_status,
         "headlines": items,
         "latest_published_at_utc": items[0]["published_at_utc"] if items else None,
-        "scope": "OFFICIAL_FED_ECB_PRESS_ONLY_NOT_GENERAL_MARKET_NEWS",
+        "scope": "G8_CENTRAL_BANK_AND_EIA_OFFICIAL_RELEASES_NOT_GENERAL_MARKET_NEWS",
         "core_effect": "NONE",
     }
