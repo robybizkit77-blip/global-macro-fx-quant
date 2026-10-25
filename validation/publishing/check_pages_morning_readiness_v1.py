@@ -41,6 +41,8 @@ def evaluate(instant: dt.datetime, feeds: dict | None = None) -> dict:
         "morning_gate_required": active,
         "status": "PASS_OUTSIDE_MORNING_WINDOW",
         "critical_daily_problems": [],
+        "documented_nonblocking_gaps": [],
+        "news_content_vintage": None,
         "authority": "MORNING_SOURCE_READINESS" if active else "STANDARD_PAGES_PREFLIGHT",
     }
     if not active:
@@ -53,6 +55,8 @@ def evaluate(instant: dt.datetime, feeds: dict | None = None) -> dict:
         receipt["error"] = str(exc)[:240]
         return receipt
     receipt["critical_daily_problems"] = report["critical_daily_problems"]
+    receipt["documented_nonblocking_gaps"] = report.get("documented_nonblocking_gaps", [])
+    receipt["news_content_vintage"] = report["evidence"].get("NEWS_CONTENT_VINTAGE")
     receipt["operational_state"] = report["operational_state"]
     receipt["expected_previous_weekday"] = report["expected_previous_weekday"]
     receipt["evidence_as_of"] = {
