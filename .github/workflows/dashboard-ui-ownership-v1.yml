@@ -62,7 +62,7 @@ jobs:
           const AUTH={
             wow:'NEWS_PULSE_OPERATIONAL.content_as_of',
             themes:'NEWS_PULSE_OPERATIONAL.content_as_of',
-            calendar:'CALENDAR_OPERATIONAL_VIEW.generated_at_utc',
+            calendar:'CALENDAR_OPERATIONAL_VIEW.last_checked_at_utc',
             news:'NEWS_PULSE_OPERATIONAL.content_as_of',
             risk:'OLDEST_REQUIRED(D.risk.VIX.last_date,D.risk.WTI.last_date,ESTIMATED_RESIDUAL_GAPS.BRENT.proxy_as_of)'
           };
