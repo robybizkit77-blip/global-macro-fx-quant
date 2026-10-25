@@ -75,6 +75,12 @@ assert passed["evidence_as_of"] == {
     "VIX_OFFICIAL_CLOSE": "2026-10-23",
 }
 assert passed["critical_daily_problems"] == []
+# Monday's file was regenerated for this test, but its newest underlying
+# market signal is still from Thursday. The Pages receipt must not erase it.
+assert passed["news_content_vintage"]["content_as_of"] == "2026-10-22", passed
+assert passed["news_content_vintage"]["status"] == "OLDER_THAN_PREVIOUS_TRADING_SESSION", passed
+assert passed["documented_nonblocking_gaps"] == ["NEWS_CONTENT_OLDER_THAN_PREVIOUS_SESSION"], passed
+
 
 missing_pair = copy.deepcopy(good)
 missing_pair["PAIR_SETUP_OPERATIONAL_VIEW.json"]["pairs"].pop(
@@ -97,6 +103,9 @@ assert evaluate(monday, bad_source)["status"] == "BLOCK_SOURCE_AUDIT_EXCEPTION"
 # Out-of-window publications continue under their existing structural gates.
 assert evaluate(at("2026-10-26T11:00:00+01:00"), bad_source)["status"] == "PASS_OUTSIDE_MORNING_WINDOW"
 assert evaluate(at("2026-10-25T07:45:00+01:00"), bad_source)["status"] == "PASS_OUTSIDE_MORNING_WINDOW"
+assert evaluate(at("2026-10-25T07:45:00+01:00"), bad_source)["documented_nonblocking_gaps"] == []
+assert evaluate(at("2026-10-25T07:45:00+01:00"), bad_source)["news_content_vintage"] is None
+
 
 print("PAGES_ALL_TRIGGER_MORNING_READINESS_POLICY_PASS")
 
