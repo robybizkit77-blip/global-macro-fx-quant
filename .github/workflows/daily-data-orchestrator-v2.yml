@@ -11,6 +11,8 @@ on:
       - 'validation/orchestration/test_check_morning_readiness_v1.py'
       - 'validation/orchestration/check_morning_delivery_sla_v1.py'
       - 'validation/orchestration/test_check_morning_delivery_sla_v1.py'
+      - 'validation/orchestration/check_child_execution_steps_v1.py'
+      - 'validation/orchestration/test_check_child_execution_steps_v1.py'
   push:
     branches: [main]
     paths:
@@ -21,6 +23,8 @@ on:
       - 'validation/orchestration/test_check_morning_readiness_v1.py'
       - 'validation/orchestration/check_morning_delivery_sla_v1.py'
       - 'validation/orchestration/test_check_morning_delivery_sla_v1.py'
+      - 'validation/orchestration/check_child_execution_steps_v1.py'
+      - 'validation/orchestration/test_check_child_execution_steps_v1.py'
   workflow_dispatch:
     inputs:
       phase:
@@ -80,6 +84,8 @@ jobs:
         run: python validation/orchestration/test_check_morning_readiness_v1.py
       - name: Test 08:00 Rome delivery SLA and failure receipts
         run: python validation/orchestration/test_check_morning_delivery_sla_v1.py
+      - name: Test fail-closed evidence for all orchestrated child steps
+        run: python validation/orchestration/test_check_child_execution_steps_v1.py
 
   orchestrate:
     needs: contract
@@ -174,7 +180,27 @@ jobs:
                 echo "${wf} -> ${conclusion} (run #${run_id}; sha ${child_sha})"
                 echo "- [${wf} · run #${run_id}](${child_url}) — **${conclusion}**, main commit \`${child_sha}\`" >> "$GITHUB_STEP_SUMMARY"
                 [[ "$conclusion" == "success" ]] || return 1
-                return 0
+                # Workflow-level SUCCESS can hide a skipped job or the
+                # acquisition step never running (especially with schedule
+                # admission gates). Confirm the exact child run's actual job
+                # and required steps before allowing the next workflow.
+                local child_jobs_file child_proof_file
+                mkdir -p /tmp/orchestration-child-step-evidence
+                child_jobs_file="/tmp/orchestration-child-step-evidence/run-${run_id}-jobs.json"
+                child_proof_file="/tmp/orchestration-child-step-evidence/run-${run_id}-proof.json"
+                for attempt in 1 2 3 4 5; do
+                  gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/jobs?per_page=100" > "$child_jobs_file"
+                  if python3 validation/orchestration/check_child_execution_steps_v1.py \
+                    --workflow "$wf" \
+                    --jobs-file "$child_jobs_file" \
+                    --output "$child_proof_file"; then
+                    echo "- Required source steps for ${wf} #${run_id}: **EXECUTED** (including legitimate no-change runs)" >> "$GITHUB_STEP_SUMMARY"
+                    return 0
+                  fi
+                  if [[ "$attempt" -lt 5 ]]; then sleep 3; fi
+                done
+                echo "CHILD_REQUIRED_STEPS_NOT_EXECUTED: ${wf} run #${run_id}; see ${child_proof_file}" >&2
+                return 1
               fi
               sleep 10
             done
@@ -280,6 +306,15 @@ jobs:
               ;;
             *) echo "Nothing to run for phase=${PHASE}" ;;
           esac
+
+      - name: Retain exact child-step proof for all orchestration phases
+        if: ${{ always() && steps.phase.outputs.phase != 'skip' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: orchestrator-child-step-proof-${{ github.run_id }}
+          path: /tmp/orchestration-child-step-evidence/*-proof.json
+          if-no-files-found: warn
+          retention-days: 21
 
       # Re-check the LATEST main commit after the dispatched child workflows
       # have updated it; the orchestration runner itself did not mutate data.
