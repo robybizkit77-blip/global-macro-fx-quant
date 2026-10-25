@@ -1,0 +1,82 @@
+{
+  "schema": "GMFQ_EVENT_MARKET_EVIDENCE_REGISTRY_V1",
+  "audited_as_of": "2026-10-25",
+  "scope": "RESEARCH_ONLY_NOT_PRODUCTION_ENTITLEMENT_OR_CAUSAL_PROOF",
+  "event": {
+    "event_id": "BLS_EMPLOYMENT_SITUATION_SEPT_2026",
+    "reference_period": "2026-09",
+    "source": "U.S. Bureau of Labor Statistics",
+    "official_archived_release_url": "https://www.bls.gov/news.release/archives/empsit_10022026.htm",
+    "official_release_id": "USDL-26-1549",
+    "embargo_calendar_date": "2026-10-02",
+    "embargo_wall_clock": "08:30:00",
+    "timezone": "America/New_York",
+    "expected_scheduled_utc": "2026-10-02T12:30:00Z",
+    "timing_evidence": "PUBLISHER_ARCHIVED_EMBARGO_LABEL_NOT_DELIVERY_RECEIPT",
+    "independently_verified_first_public_delivery_utc": null,
+    "first_public_delivery_receipt": null,
+    "independence_caveat": "Embargo schedule is not proof of exchange dissemination milliseconds"
+  },
+  "providers": [
+    {
+      "id": "DUKASCOPY_BI5_EURUSD",
+      "market": "EURUSD_SPOT_FX",
+      "product": "EURUSD Dukascopy BI5 historical ticks",
+      "source_url": "https://www.dukascopy.com/swiss/english/marketwatch/historical/",
+      "evidence": "2026-10-23 repository PR #573 transport receipt; no independent rights attestation",
+      "acquisition_state": "TRANSPORT_PROBED_RESEARCH_ONLY",
+      "commercial_use_rights": "NOT_ESTABLISHED",
+      "publication_rights": "NOT_ESTABLISHED",
+      "raw_ticks_authorized_retained": false,
+      "cross_event_quote_receipt_independently_verified": false,
+      "note": "A successful BI5 transport probe is not a licensed production feed or causal proof"
+    },
+    {
+      "id": "CME_DATAMINE_SR3_TNS",
+      "market": "USD_SHORT_RATE_FUTURES_PROXY",
+      "product": "Three-month SOFR futures (SR3) Time & Sales",
+      "source_url": "https://datamine.new.cmegroup.com/catalog/dataset/86e3685d5cf1a886dc98baa696357cfe",
+      "evidence": "CME DataMine catalogue lists historical SR3 Time & Sales and licensing conditions",
+      "acquisition_state": "CATALOG_ONLY_NOT_ACQUIRED",
+      "commercial_use_rights": "NOT_ESTABLISHED",
+      "publication_rights": "NOT_ESTABLISHED",
+      "raw_ticks_authorized_retained": false,
+      "cross_event_quote_receipt_independently_verified": false,
+      "note": "Contract/month/roll mapping required; SR3 futures are not an observed USD OIS curve"
+    },
+    {
+      "id": "CME_BROKERTEC_UST2Y",
+      "market": "USD_TREASURY_2Y_CASH_PROXIES",
+      "product": "BrokerTec U.S. Treasury 2Y Top of Book / Depth of Book",
+      "source_url": "https://cmegroupclientsite.atlassian.net/wiki/spaces/EPICSANDBOX/pages/457421032",
+      "evidence": "CME BrokerTec product reference lists historical two-year instruments",
+      "acquisition_state": "CATALOG_ONLY_NOT_ACQUIRED",
+      "commercial_use_rights": "NOT_ESTABLISHED",
+      "publication_rights": "NOT_ESTABLISHED",
+      "raw_ticks_authorized_retained": false,
+      "cross_event_quote_receipt_independently_verified": false,
+      "note": "Specific benchmark bond and clean price to yield mapping needed; not a daily 2Y yield"
+    },
+    {
+      "id": "CME_EBS_SPOTFX",
+      "market": "EURUSD_SPOT_FX",
+      "product": "EBS Spot FX historical cash market data",
+      "source_url": "https://www.cmegroup.com/datamine.html",
+      "evidence": "CME DataMine describes EBS Spot FX market history",
+      "acquisition_state": "CATALOG_ONLY_NOT_ACQUIRED",
+      "commercial_use_rights": "NOT_ESTABLISHED",
+      "publication_rights": "NOT_ESTABLISHED",
+      "raw_ticks_authorized_retained": false,
+      "cross_event_quote_receipt_independently_verified": false,
+      "note": "Alternative to Dukascopy; no specific entitlement or acquisition observed"
+    }
+  ],
+  "meta": {
+    "cme_license_reference": "https://www.cmegroup.com/market-data/files/information-license-agreement.pdf",
+    "cme_distribution_guidelines": "https://www.cmegroup.com/market-data/distributor/files/cme-group-data-licensing-policy-guidelines-historical-information-distribution.pdf",
+    "source_links_are_public_product_descriptions_not_signed_entitlements": true,
+    "no_live_data": false,
+    "no_scores_changed": true,
+    "no_beta_or_forward_test_changed": true
+  }
+}
