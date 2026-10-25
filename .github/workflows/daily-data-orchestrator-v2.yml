@@ -9,6 +9,8 @@ on:
       - 'validation/orchestration/check_daily_data_orchestrator_v2.py'
       - 'validation/orchestration/check_morning_readiness_v1.py'
       - 'validation/orchestration/test_check_morning_readiness_v1.py'
+      - 'validation/orchestration/check_morning_delivery_sla_v1.py'
+      - 'validation/orchestration/test_check_morning_delivery_sla_v1.py'
   push:
     branches: [main]
     paths:
@@ -17,6 +19,8 @@ on:
       - 'validation/orchestration/check_daily_data_orchestrator_v2.py'
       - 'validation/orchestration/check_morning_readiness_v1.py'
       - 'validation/orchestration/test_check_morning_readiness_v1.py'
+      - 'validation/orchestration/check_morning_delivery_sla_v1.py'
+      - 'validation/orchestration/test_check_morning_delivery_sla_v1.py'
   workflow_dispatch:
     inputs:
       phase:
@@ -74,6 +78,8 @@ jobs:
         run: python validation/orchestration/check_daily_data_orchestrator_v2.py
       - name: Test morning freshness and DST-aware source windows
         run: python validation/orchestration/test_check_morning_readiness_v1.py
+      - name: Test 08:00 Rome delivery SLA and failure receipts
+        run: python validation/orchestration/test_check_morning_delivery_sla_v1.py
 
   orchestrate:
     needs: contract
@@ -336,12 +342,42 @@ jobs:
               raise SystemExit('Daily inputs not ready: do not report all-green source freshness')
           PY
 
+      # All child refreshes, the Pages publish step and public HTTP proof
+      # have finished before this receipt is evaluated. A late success must
+      # remain LATE; it must not count as an 08:00 delivery.
+      - name: Certify 08:00 morning delivery deadline
+        if: ${{ always() && (steps.phase.outputs.phase == 'prebrief' || steps.phase.outputs.phase == 'premorning') }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          outcome=0
+          python3 validation/orchestration/check_morning_delivery_sla_v1.py \
+            --phase "${{ steps.phase.outputs.phase }}" \
+            --readiness /tmp/morning-readiness-v1.json \
+            --output /tmp/morning-delivery-sla-v1.json \
+            > /tmp/morning-delivery-sla-v1.log || outcome=$?
+          python3 - <<'PY'
+          import json, os
+          d=json.load(open('/tmp/morning-delivery-sla-v1.json',encoding='utf-8'))
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as out:
+              out.write('\n## 08:00 Europe/Rome delivery deadline\n')
+              out.write('- Result: **'+d['status']+'**\n')
+              out.write('- Target: '+d['target_rome']+'\n')
+              out.write('- Evaluated: '+d['evaluated_at_rome']+'\n')
+              out.write('- Source + publication sequence passed: '+str(d['source_and_publication_sequence_successful'])+'\n')
+              out.write('- On-time: **'+str(d['on_time'])+'**\n')
+          print('MORNING_0800_SLA_RESULT', d['status'], 'ON_TIME', d['on_time'])
+          PY
+          exit "$outcome"
+
       - name: Retain morning source readiness evidence
         if: ${{ always() && (steps.phase.outputs.phase == 'prebrief' || steps.phase.outputs.phase == 'premorning') }}
         uses: actions/upload-artifact@v4
         with:
           name: control-room-morning-readiness-${{ github.run_id }}
-          path: /tmp/morning-readiness*.json
+          path: |
+            /tmp/morning-readiness*.json
+            /tmp/morning-delivery-sla-v1.json
           if-no-files-found: warn
           retention-days: 21
 
