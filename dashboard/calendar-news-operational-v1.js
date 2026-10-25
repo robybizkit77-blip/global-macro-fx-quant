@@ -53,7 +53,7 @@ function newsHtml(data){
  const announcements=(external.headlines||[]).map(item=>{
    const url=verifiedOfficialLink(item);
    if(item.quality!=='OFFICIAL_RSS_DATED_LINK'||!url)return '';
-   return '<article class="opCard"><div class="opTop"><div class="opCcy">'+(FLAGS[item.ccy]||'')+' '+esc(item.source)+'</div><div class="opDate">'+esc(fmtOfficialInstant(item.published_at_utc))+'</div></div><h3>'+esc(item.title)+'</h3><div class="opMeta"><span class="opTag">COMUNICAZIONE UFFICIALE · '+esc(item.ccy)+'</span> <span class="opTag">NESSUNA REAZIONE PREZZI CERTIFICATA</span><br><a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" style="color:#9ec5ff">Leggi sulla fonte originale</a></div></article>';
+   return '<article class="opCard" data-kind="official-release"><div class="opTop"><div class="opCcy">'+(FLAGS[item.ccy]||'')+' '+esc(item.source)+'</div><div class="opDate">'+esc(fmtOfficialInstant(item.published_at_utc))+'</div></div><h3>'+esc(item.title)+'</h3><div class="opMeta"><span class="opTag">COMUNICAZIONE UFFICIALE · '+esc(item.ccy)+'</span> <span class="opTag">NESSUNA REAZIONE PREZZI CERTIFICATA</span><br><a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" style="color:#9ec5ff">Leggi sulla fonte originale</a></div></article>';
  }).join('');
  const desc=state==='VERIFIED_OFFICIAL_RELEASES'?'Comunicazioni con data di pubblicazione verificata':
    state==='PARTIAL_SOURCES'?'Copertura parziale: una fonte non risponde':
