@@ -106,7 +106,7 @@ jobs:
                 throw new Error(`${name} official UI/receipt mismatch ${news.officialCards}/${officialReceipt?.headlines?.length}`);
               if(!news.sections.some(x=>x.startsWith('Comunicazioni ufficiali'))||!news.sections.some(x=>x.startsWith('Segnali quantitativi')))
                 throw new Error(`${name} official and quantitative News Pulse lanes not separated ${JSON.stringify(news.sections)}`);
-              if(news.sourceLinks.length!==news.officialCards||news.sourceLinks.some(u=>!/^https:\/\/(www\.)?(federalreserve\.gov|ecb\.europa\.eu|ecb\.int)\//.test(u)))
+              if(news.sourceLinks.length!==news.officialCards||news.sourceLinks.some(u=>!/^https:\/\/(www\.)?(federalreserve\.gov|ecb\.europa\.eu|ecb\.int|bankofengland\.co\.uk|boj\.or\.jp|snb\.ch|bankofcanada\.ca|rba\.gov\.au|rbnz\.govt\.nz|eia\.gov)\//.test(u)))
                 throw new Error(`${name} unauthorised official RSS links ${JSON.stringify(news.sourceLinks)}`);
               if(news.fresh!==news.expected)throw new Error(`${name} News signal vintage freshness ${JSON.stringify(news)}`);
               if(news.fresh==='STALE'&&!news.banner.includes(news.content_as_of))
