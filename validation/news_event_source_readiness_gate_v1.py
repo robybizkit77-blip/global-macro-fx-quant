@@ -92,6 +92,13 @@ def audit(registry):
         if source.get("cross_event_quote_receipt_independently_verified") is not False:
             raise ValueError("independent event-window receipt has not been audited")
     lookup = {source["id"]: source for source in sources}
+    duk = lookup["DUKASCOPY_BI5_EURUSD"]
+    if (duk.get("automation_access_policy") != "PRIOR_EXPRESS_WRITTEN_CONSENT_REQUIRED"
+            or duk.get("automation_permission_verified") is not False
+            or duk.get("automated_fetch_enabled") is not False
+            or duk.get("terms_of_use_url")
+               != "https://www.dukascopy.com/swiss/english/legal-pages/terms-of-use/"):
+        raise ValueError("Dukascopy automated access must stay disabled pending written consent")
     if lookup["DUKASCOPY_BI5_EURUSD"]["acquisition_state"] != "TRANSPORT_PROBED_RESEARCH_ONLY":
         raise ValueError("incorrect probe history")
     if any(lookup[s]["acquisition_state"] != "CATALOG_ONLY_NOT_ACQUIRED"
@@ -107,7 +114,7 @@ def audit(registry):
         "actual_first_public_delivery_verified": False,
         "publisher_wall_clock_is_actual_delivery_proof": False,
         "fx_source_transport_previously_probed": True,
-        "fx_source_usage_rights_verified": False,
+        "fx_source_usage_rights_verified": False,\n        "dukascopy_automated_access_enabled": False,\n        "dukascopy_prior_written_consent_verified": False,
         "fx_price_window_independently_rehashed": False,
         "short_rate_futures_intraday_acquired": False,
         "sofr_futures_is_not_direct_ois": True,
@@ -121,7 +128,7 @@ def audit(registry):
         "eligible_for_score": False,
         "eligible_for_backtest": False,
         "safe_to_update_pair_theses": False,
-        "blocked_by": [
+        "blocked_by": [\n            "DUKASCOPY_AUTOMATED_ACCESS_PRIOR_WRITTEN_CONSENT_ABSENT",
             "NO_INDEPENDENT_ACTUAL_PUBLIC_DELIVERY_TIMESTAMP",
             "NO_ATTESTED_MARKET_DATA_LICENSE_OR_PUBLIC_DISTRIBUTION_RIGHTS",
             "NO_AUTHORIZED_INDEPENDENTLY_REHASHED_FX_EVENT_WINDOW",
