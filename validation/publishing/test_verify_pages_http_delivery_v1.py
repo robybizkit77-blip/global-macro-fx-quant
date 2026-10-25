@@ -18,18 +18,21 @@ def case(delayed: bool) -> dict:
             p = root / name
             p.parent.mkdir(parents=True, exist_ok=True)
             p.write_bytes(f"source-{idx}".encode())
-        requests = {"n": 0}
+        requests = {"n": 0, "by_name": {}}
 
         class Handler(BaseHTTPRequestHandler):
             def do_GET(self):
                 requests["n"] += 1
                 name = self.path.lstrip("/")
+                requests["by_name"][name] = requests["by_name"].get(name, 0) + 1
                 if name not in FILES:
                     self.send_error(404)
                     return
                 # One outdated CDN reply, then the verified bytes; or a
                 # permanently outdated endpoint if delayed=False.
-                outdated = name == FILES[0] and (requests["n"] == 1 if delayed else True)
+                outdated = name == "payload/part-15.txt" and (
+                    requests["by_name"][name] == 1 if delayed else True
+                )
                 payload = b"old-cdn-copy" if outdated else (root / name).read_bytes()
                 self.send_response(200)
                 self.send_header("Content-Type", "application/octet-stream")
@@ -65,7 +68,11 @@ def main():
     assert "live_data/sections/NEWS_PULSE_OPERATIONAL.json" in FILES
     assert "live_data/sections/CALENDAR_OPERATIONAL_VIEW.json" in FILES
     assert "live_data/sections/NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json" in FILES
-    assert "payload/part-00.txt" in FILES
+    assert set(f"payload/part-{i:02d}.txt" for i in range(16)) <= set(FILES)
+    assert "index.html" in FILES
+    for module in ("pairs", "forwarddesk", "currencies", "macro", "ratesdesk"):
+        assert f"dashboard/{module}-operational-v1.js" in FILES
+    assert len(FILES) == len(set(FILES))
     assert "live_data/sections/V247_COT_STORIES.json" in FILES
     assert "live_data/sections/RATES_AUDIT_METADATA.json" in FILES
     assert "live_data/sections/OIS_DATA.json" in FILES
@@ -85,7 +92,8 @@ def main():
     assert failure["status"] == "FAIL", failure
     assert failure["attempts"] == 1
     assert failure["conclusion"] == "DELIVERY_NOT_CONVERGED"
-    assert failure["checks"][0]["public_sha256"] != failure["checks"][0]["expected_sha256"]
+    stale = next(row for row in failure["checks"] if row["path"] == "payload/part-15.txt")
+    assert stale["public_sha256"] != stale["expected_sha256"]
     print("PAGES_PUBLIC_HTTP_BOUNDED_CONVERGENCE_V1_PASS", json.dumps({
         "eventual_consistency_attempts": success["attempts"],
         "permanent_failure": failure["conclusion"],
