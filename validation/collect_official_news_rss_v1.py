@@ -175,6 +175,11 @@ def collect(now: dt.datetime | None = None, transport=None) -> dict:
                 "User-Agent": USER_AGENT, "Accept": "application/rss+xml,application/xml,text/xml",
             })
             with urllib.request.urlopen(req, timeout=8) as response:
+                final = urllib.parse.urlsplit(response.geturl())
+                # Redirects to a different origin must not be accepted as an
+                # official publisher feed (even if its XML is well formed).
+                if final.scheme != "https" or final.hostname not in source["hosts"]:
+                    raise ValueError("RSS_UNTRUSTED_FEED_REDIRECT")
                 # Bounded read, never include articles or full copyrighted text.
                 return response.read(MAX_BYTES + 1)
 
