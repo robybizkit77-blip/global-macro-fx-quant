@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 import build_calendar_operational_v1 as calendar
 import build_news_pulse_operational_v1 as news
+import collect_official_news_rss_v1 as officialrss
 from refresh_macro_consensus_secondary_v1 import series_compatible
 
 UTC = dt.timezone.utc
@@ -217,3 +218,75 @@ assert verified_item['as_of'] == '2026-10-23'
 assert verified_item['reference_period'] == '2026-10'
 assert verified_item['quality'] == 'VERIFIED_RELEASE_DATE_MACRO_OBSERVATION'
 print('NEWS_PULSE_SOURCE_VINTAGE_AND_QUALITY_FAIL_CLOSED_PASS')
+
+
+# Official headlines: strictly sourced Fed/ECB RSS, dated article URL, no
+# cross-host injection, false publication date, cached old story or fake impact.
+rss_now = at("2026-10-25T15:00:00+00:00")
+fed_rss = b"""<?xml version="1.0" encoding="utf-8"?>
+<rss><channel>
+<item><title>Federal Reserve Board publishes an announcement</title>
+<link>https://www.federalreserve.gov/newsevents/pressreleases/monetary20261023a.htm</link>
+<pubDate>Fri, 23 Oct 2026 14:00:00 GMT</pubDate></item>
+<item><title>Untrusted market commentary injected into feed</title>
+<link>https://example.com/market-news</link>
+<pubDate>Fri, 23 Oct 2026 14:00:00 GMT</pubDate></item>
+<item><title>Federal Reserve future dated item</title>
+<link>https://www.federalreserve.gov/newsevents/pressreleases/future.htm</link>
+<pubDate>Mon, 26 Oct 2026 14:00:00 GMT</pubDate></item>
+<item><title>Federal Reserve item without a date</title>
+<link>https://www.federalreserve.gov/newsevents/pressreleases/undated.htm</link></item>
+</channel></rss>"""
+ecb_rss = b"""<?xml version="1.0" encoding="utf-8"?>
+<rss><channel><item><title>European Central Bank publishes a policy speech</title>
+<link>https://www.ecb.europa.eu/press/key/date/2026/html/example.en.html</link>
+<pubDate>Sat, 24 Oct 2026 12:00:00 GMT</pubDate></item>
+</channel></rss>"""
+def good_transport(source):
+    return fed_rss if source["id"] == "FED_PRESS" else ecb_rss
+
+stories = officialrss.collect(rss_now, good_transport)
+assert stories["status"] == "VERIFIED_OFFICIAL_RELEASES"
+assert stories["source_failures"] == 0
+assert len(stories["headlines"]) == 2
+assert stories["headlines"][0]["source_id"] == "ECB_PRESS"
+assert stories["headlines"][1]["source_id"] == "FED_PRESS"
+assert all(x["quality"] == "OFFICIAL_RSS_DATED_LINK" for x in stories["headlines"])
+assert all(x["interpretation"] == "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM"
+           for x in stories["headlines"])
+assert stories["latest_published_at_utc"] == "2026-10-24T12:00:00Z"
+assert stories["last_attempt_day_rome"] == "2026-10-25"
+
+def partial_transport(source):
+    if source["id"] == "FED_PRESS":
+        raise TimeoutError("test network outage")
+    return ecb_rss
+
+partial_headlines = officialrss.collect(rss_now, partial_transport)
+assert partial_headlines["status"] == "PARTIAL_SOURCES"
+assert partial_headlines["source_failures"] == 1
+assert len(partial_headlines["headlines"]) == 1
+assert any(x["status"] == "FETCH_OR_PARSE_FAILED"
+           for x in partial_headlines["sources"])
+
+failed = officialrss.collect(rss_now,
+    lambda source: (_ for _ in ()).throw(TimeoutError("offline")))
+assert failed["status"] == "SOURCES_UNAVAILABLE"
+assert failed["headlines"] == []
+assert failed["latest_published_at_utc"] is None
+assert failed["source_failures"] == 2
+
+old_rss = fed_rss.replace(b"23 Oct 2026", b"01 Oct 2026")
+old = officialrss.collect(rss_now,
+    lambda source: old_rss if source["id"] == "FED_PRESS"
+    else b"<rss><channel /></rss>")
+assert old["status"] == "VERIFIED_NO_RECENT_RELEASES"
+assert old["headlines"] == []
+
+# Verify strict host/scheme matching; a name in a path or subdomain is
+# insufficient to establish original-publisher provenance.
+source = officialrss.RSS_SOURCES[0]
+assert officialrss.trustworthy_url("https://www.federalreserve.gov.evil.example/x",source) is None
+assert officialrss.trustworthy_url("http://www.federalreserve.gov/x",source) is None
+assert officialrss.trustworthy_url("https://fake.invalid/www.federalreserve.gov/x",source) is None
+print("OFFICIAL_NEWS_RSS_SOURCE_DATE_AND_OUTAGE_FAIL_CLOSED_PASS")

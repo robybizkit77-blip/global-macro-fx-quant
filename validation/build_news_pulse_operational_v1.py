@@ -3,6 +3,7 @@ import json,re,math
 from datetime import date,datetime,timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
+from collect_official_news_rss_v1 import collect as collect_official_releases
 
 ROOT=Path(__file__).resolve().parents[1]
 OIS=ROOT/'live_data/sections/OIS_OPERATIONAL_VIEW.json'
@@ -180,8 +181,13 @@ def main():
     for x in items:x.pop('_date',None)
     items=items[:12]
     latest=max((parse_asof(x.get('as_of')) for x in items if parse_asof(x.get('as_of'))),default=None)
-    core={'schema':'GMFQ_NEWS_PULSE_OPERATIONAL_V1','status':'ACTIVE_DETERMINISTIC_LAYERS','content_as_of':iso(latest),'scope':{'external_news_feed':'NOT_REQUIRED','inputs':['OIS_OPERATIONAL_VIEW','MACRO_THERMOMETER_DATA'],'claim':'LATEST_VALIDATED_SIGNALS_NOT_GENERIC_HEADLINES'},'items':items}
-    changed=stable_write(core)
-    print(json.dumps({'status':'PASS','changed':changed,'items':len(items),'content_as_of':iso(latest),'output':str(OUT.relative_to(ROOT))}))
+    now=datetime.now(timezone.utc)
+    official=collect_official_releases(now)
+    # Keep the established deterministic market signal vintage independent of
+    # external official statements. Never backfill a failed RSS feed or claim
+    # that a press announcement proves a market move.
+    core={'schema':'GMFQ_NEWS_PULSE_OPERATIONAL_V1','status':'ACTIVE_DETERMINISTIC_LAYERS','content_as_of':iso(latest),'scope':{'external_news_feed':'OFFICIAL_FED_ECB_RSS_SEPARATE','inputs':['OIS_OPERATIONAL_VIEW','MACRO_THERMOMETER_DATA'],'claim':'LATEST_VALIDATED_SIGNALS_NOT_GENERIC_HEADLINES'},'items':items,'official_releases':official}
+    changed=stable_write(core, now=now)
+    print(json.dumps({'status':'PASS','changed':changed,'items':len(items),'content_as_of':iso(latest),'official_headlines':len(official['headlines']),'official_source_status':[{'id':x['source_id'],'status':x['status'],'count':x['accepted_items']} for x in official['sources']],'output':str(OUT.relative_to(ROOT))}))
 
 if __name__=='__main__':main()
