@@ -182,6 +182,22 @@ assert proxy_item['category'] == 'OIS_PROXY_REPRICING'
 assert 'non è una curva OIS ufficiale' in proxy_item['detail']
 assert proxy_item['source'] == 'Verified test source'
 
+# An exchange futures contract is an official underlying source, but not an
+# observed OIS curve. Never use the same label for the two instruments.
+futures = json.loads(json.dumps(ois_base))
+futures['currencies']['CAD']['source'] = 'Montréal Exchange · CORRA futures'
+futures_item = news.ois_items(futures, today=news_day)[0]
+assert futures_item['category'] == 'FUTURES_IMPLIED_REPRICING'
+assert 'repricing implicito da futures' in futures_item['title']
+assert 'non equivale a una curva OIS osservata' in futures_item['detail']
+futures['currencies']['CAD'].update(
+    operational_status='GREEN_ESTIMATED',
+    quality='ESTIMATED_INFORMATIONAL'
+)
+estimated_futures_item = news.ois_items(futures, today=news_day)[0]
+assert estimated_futures_item['category'] == 'FUTURES_IMPLIED_REPRICING'
+assert 'indicativo da futures' in estimated_futures_item['title']
+
 # A monthly observation period can never be mistaken for its release date.
 macro_base = {'currencies': {'USD': {'inflation': {
     'as_of': '2026-10', 'label': 'Inflazione',
