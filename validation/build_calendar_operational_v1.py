@@ -2,6 +2,7 @@
 import json
 from datetime import date, datetime, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 ROOT=Path(__file__).resolve().parents[1]
 CB=ROOT/'live_data/sections/NATIVE_CB_DATA.json'
@@ -10,19 +11,47 @@ CONSENSUS=ROOT/'live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json'
 OUT=ROOT/'live_data/sections/CALENDAR_OPERATIONAL_VIEW.json'
 ORDER=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']
 
-def stable_write(core):
-    old=None
+def stable_write(core, now=None):
+    """Preserve content vintage while recording a separate successful daily check.
+
+    The check stamp is refreshed at most once per Rome calendar date if the
+    source content is identical, avoiding repeated commits and publication
+    churn. No unchanged market signal is presented as newly generated.
+    """
+    now = now or datetime.now(timezone.utc)
+    if now.tzinfo is None or now.utcoffset() is None:
+        raise ValueError("aware UTC check instant required")
+    now = now.astimezone(timezone.utc)
+    now_str = now.isoformat().replace('+00:00', 'Z')
+    prior = None
     if OUT.exists():
-        try: old=json.loads(OUT.read_text(encoding='utf-8'))
-        except Exception: old=None
-    old_core=dict(old or {}); old_core.pop('generated_at_utc',None)
-    if old_core==core and old and old.get('generated_at_utc'):
-        generated=old['generated_at_utc']; changed=False
-    else:
-        generated=datetime.now(timezone.utc).isoformat().replace('+00:00','Z'); changed=True
-    out=dict(core); out['generated_at_utc']=generated
-    OUT.write_text(json.dumps(out,ensure_ascii=False,indent=2,sort_keys=True)+'\n',encoding='utf-8')
-    return changed
+        try:
+            prior = json.loads(OUT.read_text(encoding='utf-8'))
+        except (ValueError, OSError):
+            prior = None
+    prior_core = dict(prior or {})
+    prior_core.pop('generated_at_utc', None)
+    prior_core.pop('last_checked_at_utc', None)
+    content_changed = prior_core != core or not (prior or {}).get('generated_at_utc')
+    generated = now_str if content_changed else prior['generated_at_utc']
+    prev_check = (prior or {}).get('last_checked_at_utc')
+    try:
+        parsed = datetime.fromisoformat(prev_check.replace('Z', '+00:00'))
+        prior_checked_today = (
+            parsed.tzinfo is not None
+            and parsed.astimezone(ZoneInfo('Europe/Rome')).date()
+            == now.astimezone(ZoneInfo('Europe/Rome')).date()
+            and parsed <= now
+        )
+    except (AttributeError, TypeError, ValueError):
+        prior_checked_today = False
+    checked = prev_check if (not content_changed and prior_checked_today) else now_str
+    out = dict(core)
+    out['generated_at_utc'] = generated
+    out['last_checked_at_utc'] = checked
+    OUT.parent.mkdir(parents=True, exist_ok=True)
+    OUT.write_text(json.dumps(out, ensure_ascii=False, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+    return content_changed
 
 def main():
     cb=json.loads(CB.read_text(encoding='utf-8'))
