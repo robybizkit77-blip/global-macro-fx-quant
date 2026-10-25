@@ -3,6 +3,7 @@ import json
 from datetime import date, datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
+from refresh_macro_consensus_secondary_v1 import series_compatible
 
 ROOT=Path(__file__).resolve().parents[1]
 CB=ROOT/'live_data/sections/NATIVE_CB_DATA.json'
@@ -73,6 +74,11 @@ def main():
         if d<today: continue
         key='|'.join([str(e.get('ccy','')),str(e.get('date','')),str(e.get('event_type','')),str(e.get('title',''))])
         c=cmap.get(key)
+        # The persisted secondary JSON may predate an improved matcher.
+        # Revalidate its original provider indicator when publishing, so a
+        # national or unrelated same-day statistic cannot leak into Pages.
+        if c and not series_compatible(e, {'event':c.get('provider_event')}):
+            c=None
         cstatus=(c or {}).get('status','NOT_PRESENT')
         if cstatus=='AVAILABLE': consensus_available+=1
         elif cstatus=='PREVIOUS_ONLY': previous_only+=1
