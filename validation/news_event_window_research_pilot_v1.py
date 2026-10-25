@@ -146,3 +146,32 @@ def audit(probe, event):
         "comparability": "SAME_SPOT_FX_PAIR_SAME_SOURCE_HOUR",
     })
     return out
+
+
+def main():
+    """Convert an existing audit receipt into a research-only local JSON record."""
+    import argparse
+    import json
+    from pathlib import Path
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--probe", type=Path, required=True)
+    ap.add_argument("--release-utc", required=True)
+    ap.add_argument("--official-event-url", required=True)
+    ap.add_argument("--out", type=Path, required=True)
+    args = ap.parse_args()
+    if not args.out.resolve().is_relative_to(Path("/tmp")):
+        ap.error("research-only output must remain under /tmp")
+    probe = json.loads(args.probe.read_text(encoding="utf-8"))
+    result = audit(probe, {
+        "scheduled_release_utc": args.release_utc,
+        "official_event_source_url": args.official_event_url,
+    })
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(json.dumps(result, sort_keys=True, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps(result, sort_keys=True))
+    if not result["intraday_fx_descriptive_window"]:
+        raise SystemExit(2)
+
+
+if __name__ == "__main__":
+    main()
