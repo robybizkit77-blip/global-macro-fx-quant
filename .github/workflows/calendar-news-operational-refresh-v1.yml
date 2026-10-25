@@ -7,6 +7,7 @@ on:
       - 'validation/build_calendar_operational_v1.py'
       - 'validation/refresh_macro_consensus_secondary_v1.py'
       - 'validation/build_news_pulse_operational_v1.py'
+      - 'validation/news_reaction_evidence_v1.py'
       - 'validation/collect_official_news_rss_v1.py'
       - 'validation/test_calendar_news_daily_recheck_v1.py'
       - 'validation/calendar/MACRO_RELEASE_SOURCE_REGISTRY_V1.json'
@@ -22,6 +23,7 @@ on:
       - 'validation/build_calendar_operational_v1.py'
       - 'validation/refresh_macro_consensus_secondary_v1.py'
       - 'validation/build_news_pulse_operational_v1.py'
+      - 'validation/news_reaction_evidence_v1.py'
       - 'validation/collect_official_news_rss_v1.py'
       - 'validation/test_calendar_news_daily_recheck_v1.py'
       - 'validation/calendar/MACRO_RELEASE_SOURCE_REGISTRY_V1.json'
@@ -105,6 +107,12 @@ jobs:
             'VERIFIED_NO_RECENT_RELEASES','VERIFIED_OFFICIAL_RELEASES'
           }
           assert external['core_effect']=='NONE'
+          assert external['reaction_proof_contract']['verified_event_reactions']==0
+          assert external['reaction_proof_contract']['daily_rates_are_not_event_window_proof'] is True
+          assert all(x.get('reaction_evidence',{}).get('market_reaction')=='NOT_MEASURED'
+                     and x['reaction_evidence']['causal_attribution']=='NOT_ESTABLISHED'
+                     and x['reaction_evidence']['status']=='NOT_VERIFIABLE_INTRADAY'
+                     for x in external['headlines'])
           assert all(x['quality']=='OFFICIAL_RSS_DATED_LINK' and x.get('url') and x.get('published_at_utc') for x in external['headlines'])
           assert all(x.get('desk_context',{}).get('operational_relevance') in {'MONITOR','REVIEW','CONTEXT'} and
                      x['desk_context']['analysis_basis']=='SOURCE_HEADLINE_ONLY' and
