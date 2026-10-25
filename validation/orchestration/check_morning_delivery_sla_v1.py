@@ -47,6 +47,11 @@ def evaluate(phase: str, report: dict | None, now: dt.datetime) -> dict:
         and report.get("critical_daily_problems") == []
         and same_date_and_not_future
     )
+    documented_gaps = (
+        report.get("documented_nonblocking_gaps", [])
+        if isinstance(report, dict) and isinstance(report.get("documented_nonblocking_gaps"), list)
+        else []
+    )
     if not source_ok:
         status = "FAIL_INCOMPLETE_OR_UNVERIFIED"
     elif not time_met:
@@ -63,6 +68,7 @@ def evaluate(phase: str, report: dict | None, now: dt.datetime) -> dict:
         "source_evidence_current_day": same_date_and_not_future,
         "source_and_publication_sequence_successful": source_ok,
         "on_time": bool(source_ok and time_met),
+        "documented_nonblocking_gaps": documented_gaps,
         "seconds_from_deadline": int((local - deadline).total_seconds()),
         "status": status,
         "data_policy": "READ_ONLY_NO_SOURCE_MUTATION",
