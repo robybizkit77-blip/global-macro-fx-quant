@@ -143,6 +143,45 @@ def inspect(feeds: dict, now: dt.datetime, pipeline_outcome: str = "success") ->
         if status != "TODAY_BUILT":
             problems.append(name)
 
+    # A freshly GENERATED News Pulse is not proof that its MARKET CONTENT
+    # describes the latest session. Report the actual signal vintage
+    # separately; do not fabricate news to fill a quiet-market gap.
+    declared_news_vintage = valid_date(news.get("content_as_of"))
+    news_items = news.get("items")
+    item_vintages = ([valid_date(row.get("as_of"))
+                      if isinstance(row, dict) else None for row in news_items]
+                     if isinstance(news_items, list) else [])
+    news_integrity_ok = bool(
+        declared_news_vintage and isinstance(news_items, list)
+        and news_items and all(item_vintages)
+        and max(item_vintages) == declared_news_vintage
+        and declared_news_vintage <= today.isoformat()
+    )
+    if not news_integrity_ok:
+        problems.append("NEWS_CONTENT_VINTAGE_INTEGRITY")
+    if not news_integrity_ok:
+        content_status = "INVALID_OR_FUTURE_VINTAGE"
+    elif declared_news_vintage < expected:
+        content_status = "OLDER_THAN_PREVIOUS_TRADING_SESSION"
+    else:
+        content_status = "PREVIOUS_TRADING_SESSION_OR_NEWER"
+    evidence["NEWS_CONTENT_VINTAGE"] = {
+        "content_as_of": declared_news_vintage,
+        "newest_item_as_of": max(item_vintages) if item_vintages and all(item_vintages) else None,
+        "expected_previous_weekday": expected,
+        "item_count": len(news_items) if isinstance(news_items, list) else None,
+        "status": content_status,
+        "generated_at_is_not_content_as_of": True,
+    }
+    # A previous-session mismatch is informative rather than a fabricated
+    # official datum or a total Pages outage. It must nonetheless be visible
+    # in the same morning receipt as the otherwise-green data checks.
+    documented_gaps = (
+        ["NEWS_CONTENT_OLDER_THAN_PREVIOUS_SESSION"]
+        if content_status == "OLDER_THAN_PREVIOUS_TRADING_SESSION"
+        else []
+    )
+
     rate_rows = {}
     for c in G8:
         row = rates.get(c, {})
@@ -227,6 +266,7 @@ def inspect(feeds: dict, now: dt.datetime, pipeline_outcome: str = "success") ->
         "expected_previous_weekday": expected,
         "operational_state": "DAILY_READY_WITH_DOCUMENTED_GAPS" if not problems else "DAILY_INPUTS_INCOMPLETE",
         "critical_daily_problems": sorted(set(problems)),
+        "documented_nonblocking_gaps": documented_gaps,
         "evidence": evidence,
         "caution": "Macro observations are raw dated reference periods, not release timestamps, full PIT vintages or current scores. This does not certify official release holidays, OIS proxies or COT weekly cadence.",
         "core_effect": "NONE",

@@ -95,6 +95,22 @@ for mutation in (
     assert invalid["evidence"]["MACRO_OBSERVATIONS_G8"]["observed"] == 15
     assert invalid["operational_state"] == "DAILY_INPUTS_INCOMPLETE"
 
+# News build date and economic signal date are independent.
+assert out["evidence"]["NEWS_CONTENT_VINTAGE"]["content_as_of"] == "2026-10-22"
+assert out["evidence"]["NEWS_CONTENT_VINTAGE"]["status"] == "PREVIOUS_TRADING_SESSION_OR_NEWER"
+assert out["documented_nonblocking_gaps"] == []
+
+for mutation in (
+    lambda x: x["NEWS_PULSE_OPERATIONAL.json"].update(content_as_of="2026-12-01"),
+    lambda x: x["NEWS_PULSE_OPERATIONAL.json"]["items"][0].update(as_of="2026-12-01"),
+    lambda x: x["NEWS_PULSE_OPERATIONAL.json"].update(content_as_of="invalid"),
+):
+    bad = copy.deepcopy(data)
+    mutation(bad)
+    news_bad = inspect(bad, asof)
+    assert "NEWS_CONTENT_VINTAGE_INTEGRITY" in news_bad["critical_daily_problems"]
+    assert news_bad["evidence"]["NEWS_CONTENT_VINTAGE"]["status"] == "INVALID_OR_FUTURE_VINTAGE"
+
 # A failed collector must still be visible even when all surviving feeds are fresh.
 partial = inspect(data, asof, pipeline_outcome="failure")
 assert partial["operational_state"] == "DAILY_INPUTS_INCOMPLETE"
@@ -191,7 +207,10 @@ monday_feed["D.json"]["risk"]["VIX"]["last_date"] = "2026-10-23"
 monday_feed["D.json"]["risk"]["VIX"]["dates"][-1] = "2026-10-23"
 monday_feed["NEWS_PULSE_OPERATIONAL.json"]["generated_at_utc"] = "2026-10-26T05:10:00Z"
 monday_feed["CALENDAR_OPERATIONAL_VIEW.json"]["generated_at_utc"] = "2026-10-26T05:10:00Z"
-assert not inspect(monday_feed, monday)["critical_daily_problems"]
+monday_check = inspect(monday_feed, monday)
+assert not monday_check["critical_daily_problems"]
+assert monday_check["evidence"]["NEWS_CONTENT_VINTAGE"]["status"] == "OLDER_THAN_PREVIOUS_TRADING_SESSION"
+assert monday_check["documented_nonblocking_gaps"] == ["NEWS_CONTENT_OLDER_THAN_PREVIOUS_SESSION"]
 
 broken = copy.deepcopy(data)
 broken["ECB_G8_PRICE_HISTORY.json"]["rows"][-1]["Date"] = "2026-10-21"

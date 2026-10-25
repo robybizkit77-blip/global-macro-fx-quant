@@ -33,6 +33,12 @@ for phase in ("prebrief", "premorning"):
     assert late["source_and_publication_sequence_successful"] is True
     assert late["on_time"] is False
 
+# Meeting the clock SLA does not erase dated market content caveats.
+warning = dict(good, documented_nonblocking_gaps=["NEWS_CONTENT_OLDER_THAN_PREVIOUS_SESSION"])
+warning_result = evaluate("premorning", warning, at("2026-10-26T07:59:59+01:00"))
+assert warning_result["status"] == "PASS_DELIVERED_BY_0800"
+assert warning_result["documented_nonblocking_gaps"] == ["NEWS_CONTENT_OLDER_THAN_PREVIOUS_SESSION"]
+
 # 25 October CEST->CET: the previous Friday is not a reason to shift 08:00.
 before_dst = copy.deepcopy(good)
 before_dst["checked_at_rome"] = "2026-10-23T07:44:00+02:00"

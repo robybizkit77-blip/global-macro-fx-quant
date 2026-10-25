@@ -327,6 +327,11 @@ jobs:
           ]
           lines.append('- Macro observed reference periods: '+str(macro['observed'])+
                        '/'+str(macro['expected'])+'; historical Macro score is separate')
+          news_vintage=evidence['NEWS_CONTENT_VINTAGE']
+          lines.append('- News Pulse market content: '+str(news_vintage['content_as_of'])+
+                       ' ('+news_vintage['status']+'); build date is separate')
+          lines.append('- Documented non-blocking source gaps: '+
+                       (', '.join(d.get('documented_nonblocking_gaps',[])) or 'none'))
           lines.append('- Macro source exceptions: '+
                        (', '.join(macro['invalid']) if macro['invalid'] else 'none'))
           for ccy in ('USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'):
@@ -366,6 +371,8 @@ jobs:
               out.write('- Evaluated: '+d['evaluated_at_rome']+'\n')
               out.write('- Source + publication sequence passed: '+str(d['source_and_publication_sequence_successful'])+'\n')
               out.write('- On-time: **'+str(d['on_time'])+'**\n')
+              out.write('- Non-blocking data caveats: '+
+                        (', '.join(d.get('documented_nonblocking_gaps',[])) or 'none')+'\n')
           print('MORNING_0800_SLA_RESULT', d['status'], 'ON_TIME', d['on_time'])
           PY
           exit "$outcome"
