@@ -17,7 +17,7 @@ const state={
     overview:'VISIBLE_DOM_EXPLICIT_ASOF',
     wow:'NEWS_PULSE_OPERATIONAL.content_as_of',
     themes:'NEWS_PULSE_OPERATIONAL.content_as_of',
-    calendar:'CALENDAR_OPERATIONAL_VIEW.generated_at_utc',
+    calendar:'CALENDAR_OPERATIONAL_VIEW.last_checked_at_utc',
     news:'NEWS_PULSE_OPERATIONAL.content_as_of',
     risk:'OLDEST_REQUIRED(D.risk.VIX.last_date,D.risk.WTI.last_date,ESTIMATED_RESIDUAL_GAPS.BRENT.proxy_as_of)'
   },
@@ -54,7 +54,9 @@ function riskLaneCoverage(){
 function operationalReference(spec){
   if(spec.kind==='calendar'){
     const x=operational.calendar;if(!x)return {date:null,authority:state.authority.calendar,status:'UNAVAILABLE'};
-    return {date:parseIso(x.generated_at_utc),authority:state.authority.calendar,status:x.status||null,schema:x.schema||null};
+    const stamp=x.last_checked_at_utc||x.generated_at_utc;
+    const authority=x.last_checked_at_utc?state.authority.calendar:'CALENDAR_OPERATIONAL_VIEW.generated_at_utc';
+    return {date:parseIso(stamp),authority,status:x.status||null,schema:x.schema||null,content_modified_at:x.generated_at_utc||null};
   }
   if(spec.kind==='news'){
     const x=operational.news;if(!x)return {date:null,authority:'NEWS_PULSE_OPERATIONAL.content_as_of',status:'UNAVAILABLE'};
