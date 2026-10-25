@@ -154,6 +154,20 @@ def main() -> None:
     assert '/tmp/morning-delivery-sla-v1.json' in text
     assert text.index('Audit true source dates for the morning study') < text.index('Certify 08:00 morning delivery deadline') < text.index('Retain morning source readiness evidence')
 
+    # A green child workflow can still skip the essential scheduled-work
+    # step. Inspect the exact run's jobs and steps before dispatching the next
+    # child. Legitimate no-change data is not a failed acquisition.
+    assert 'Test fail-closed evidence for all orchestrated child steps' in text
+    assert 'check_child_execution_steps_v1.py' in text
+    assert 'test_check_child_execution_steps_v1.py' in text
+    assert 'actions/runs/${run_id}/jobs?per_page=100' in text
+    assert '--workflow "$wf"' in text
+    assert 'CHILD_REQUIRED_STEPS_NOT_EXECUTED' in text
+    assert 'Retain exact child-step proof for all orchestration phases' in text
+    assert 'path: /tmp/orchestration-child-step-evidence/*-proof.json' in text
+    step_gate_call = 'if python3 validation/orchestration/check_child_execution_steps_v1.py'
+    assert text.index('[[ "$conclusion" == "success" ]] || return 1') < text.index(step_gate_call)
+    assert text.index(step_gate_call) < text.index('return 0', text.index(step_gate_call))
     # Feb 2026 GitHub API returns the exact dispatched run ID, instead of
     # guessing from adjacent/manual dispatches or relying on polling order.
     assert '"${api}/dispatches" -f ref=main -F return_run_details=true' in text
