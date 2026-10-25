@@ -25,6 +25,7 @@ def evaluate(phase: str, report: dict | None, now: dt.datetime) -> dict:
         raise ValueError("now must be timezone-aware")
     local = now.astimezone(ROME)
     deadline = dt.datetime.combine(local.date(), TARGET, tzinfo=ROME)
+    weekday_delivery = local.weekday() < 5
     time_met = local <= deadline
     checked_at = report.get("checked_at_rome") if isinstance(report, dict) else None
     try:
@@ -52,7 +53,9 @@ def evaluate(phase: str, report: dict | None, now: dt.datetime) -> dict:
         if isinstance(report, dict) and isinstance(report.get("documented_nonblocking_gaps"), list)
         else []
     )
-    if not source_ok:
+    if not weekday_delivery:
+        status = "FAIL_OUTSIDE_WEEKDAY_DELIVERY_WINDOW"
+    elif not source_ok:
         status = "FAIL_INCOMPLETE_OR_UNVERIFIED"
     elif not time_met:
         status = "LATE_SOURCES_READY_AFTER_DEADLINE"
@@ -67,7 +70,8 @@ def evaluate(phase: str, report: dict | None, now: dt.datetime) -> dict:
         "morning_source_checked_at_rome": checked_local.isoformat(timespec="seconds") if checked_local else None,
         "source_evidence_current_day": same_date_and_not_future,
         "source_and_publication_sequence_successful": source_ok,
-        "on_time": bool(source_ok and time_met),
+        "weekday_delivery_window": weekday_delivery,
+        "on_time": bool(source_ok and time_met and weekday_delivery),
         "documented_nonblocking_gaps": documented_gaps,
         "seconds_from_deadline": int((local - deadline).total_seconds()),
         "status": status,
