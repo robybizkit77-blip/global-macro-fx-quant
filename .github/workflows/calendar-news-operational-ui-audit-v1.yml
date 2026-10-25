@@ -6,6 +6,7 @@ on:
     paths:
       - 'validation/build_calendar_operational_v1.py'
       - 'validation/build_news_pulse_operational_v1.py'
+      - 'validation/news_reaction_evidence_v1.py'
       - 'validation/collect_official_news_rss_v1.py'
       - 'dashboard/editorial-freshness-guard-v1.js'
       - 'dashboard/calendar-news-operational-v1.js'
@@ -20,6 +21,7 @@ on:
     paths:
       - 'validation/build_calendar_operational_v1.py'
       - 'validation/build_news_pulse_operational_v1.py'
+      - 'validation/news_reaction_evidence_v1.py'
       - 'validation/collect_official_news_rss_v1.py'
       - 'dashboard/editorial-freshness-guard-v1.js'
       - 'dashboard/calendar-news-operational-v1.js'
