@@ -34,9 +34,19 @@ function calendarHtml(data){
  return `<div class="opDesk" data-gmfq-operational="calendar"><div class="opHero"><div class="opEyebrow">Event Risk · G8</div><div class="opTitle">Calendar operativo</div><div class="opSub">Date e release restano ufficiali. Consensus e previous sono un layer secondary separato: non correggono mai data, source o score del Core.</div></div><div class="opSection">Central Banks</div><div class="opGrid">${cb||'<div class="opCard">Nessun meeting futuro disponibile.</div>'}</div><div class="opSection">Macro releases</div><div class="opGrid">${macro||'<div class="opCard">Nessuna release macro ufficiale disponibile.</div>'}</div><div class="opFoot">Coverage CB: ${esc(data.coverage?.cb_schedule_available||0)}/8 · Macro currencies: ${esc(data.coverage?.macro_ccy_coverage||0)}/8 · Upcoming macro events: ${esc(data.coverage?.upcoming_macro_events||0)} · Consensus available: ${esc(data.coverage?.consensus_available_events||0)} · Secondary layer: ${esc(data.scope?.consensus||'NOT PRESENT')} · Core impact: 0</div></div>`;
 }
 function verifiedOfficialLink(item){
- const allowed=item.source_id==='FED_PRESS'?['www.federalreserve.gov','federalreserve.gov']:
-   item.source_id==='ECB_PRESS'?['www.ecb.europa.eu','ecb.europa.eu','www.ecb.int','ecb.int']:[];
- try{const u=new URL(item.url);return u.protocol==='https:'&&allowed.includes(u.hostname)&&!u.username&&!u.password?u.href:null;}catch(e){return null;}
+ const hosts={
+   FED_PRESS:['www.federalreserve.gov','federalreserve.gov'],
+   ECB_PRESS:['www.ecb.europa.eu','ecb.europa.eu','www.ecb.int','ecb.int'],
+   BOE_NEWS:['www.bankofengland.co.uk','bankofengland.co.uk'],
+   BOJ_NEWS:['www.boj.or.jp','boj.or.jp'],
+   SNB_POLICY:['www.snb.ch','snb.ch'],
+   BOC_PRESS:['www.bankofcanada.ca','bankofcanada.ca'],
+   RBA_PRESS:['www.rba.gov.au','rba.gov.au'],
+   RBNZ_NEWS:['www.rbnz.govt.nz','rbnz.govt.nz'],
+   EIA_ENERGY:['www.eia.gov','eia.gov']
+ };
+ const allowed=hosts[item.source_id]||[];
+ try{const u=new URL(item.url);return u.protocol==='https:'&&allowed.includes(u.hostname)&&!u.username&&!u.password&&(u.port===''||u.port==='443')?u.href:null;}catch(e){return null;}
 }
 function fmtOfficialInstant(utc){
  if(typeof utc!=='string'||!/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/.test(utc))return '—';
@@ -53,19 +63,19 @@ function newsHtml(data){
  const announcements=(external.headlines||[]).map(item=>{
    const url=verifiedOfficialLink(item);
    if(item.quality!=='OFFICIAL_RSS_DATED_LINK'||!url)return '';
-   return '<article class="opCard" data-kind="official-release"><div class="opTop"><div class="opCcy">'+(FLAGS[item.ccy]||'')+' '+esc(item.source)+'</div><div class="opDate">'+esc(fmtOfficialInstant(item.published_at_utc))+'</div></div><h3>'+esc(item.title)+'</h3><div class="opMeta"><span class="opTag">COMUNICAZIONE UFFICIALE · '+esc(item.ccy)+'</span> <span class="opTag">NESSUNA REAZIONE PREZZI CERTIFICATA</span><br><a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" style="color:#9ec5ff">Leggi sulla fonte originale</a></div></article>';
+   return '<article class="opCard" data-kind="official-release"><div class="opTop"><div class="opCcy">'+(FLAGS[item.ccy]||'')+' '+esc(item.source)+'</div><div class="opDate">'+esc(fmtOfficialInstant(item.published_at_utc))+'</div></div><h3>'+esc(item.title)+'</h3><div class="opMeta"><span class="opTag">COMUNICAZIONE UFFICIALE · '+esc(item.ccy==='ENERGY'?'ENERGIA':item.ccy)+'</span> <span class="opTag">NESSUNA REAZIONE PREZZI CERTIFICATA</span><br><a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" style="color:#9ec5ff">Leggi sulla fonte originale</a></div></article>';
  }).join('');
- const desc=state==='VERIFIED_OFFICIAL_RELEASES'?'Comunicazioni con data di pubblicazione verificata':
-   state==='PARTIAL_SOURCES'?'Copertura parziale: una fonte non risponde':
+ const desc=state==='VERIFIED_OFFICIAL_RELEASES'?'Pubblicazioni datate da fonti ufficiali; copertura per fonte consultabile sotto':
+   state==='PARTIAL_SOURCES'?'Copertura parziale: una o più fonti non rispondono':
    state==='VERIFIED_NO_RECENT_RELEASES'?'Fonti verificate, nessuna comunicazione nei dieci giorni esaminati':
    'Fonti non verificate: nessuna notizia esterna viene presentata come corrente';
  return '<div class="opDesk" data-gmfq-operational="news">'+
- '<div class="opHero"><div class="opEyebrow">What changed · source-verified research desk</div><div class="opTitle">News Pulse operativo</div><div class="opSub">Due livelli distinti: comunicazioni ufficiali Fed/BCE e movimenti misurati da fonti operative. Non è ancora un notiziario finanziario globale. Non attribuiamo causalmente i movimenti ai comunicati.</div></div>'+
- '<div class="opSection">Comunicazioni ufficiali · Fed e BCE</div><div class="opMeta">'+esc(desc)+' · Ultimo controllo (Roma): '+esc(external.last_attempt_day_rome||'—')+' · '+(sources||'Nessun controllo disponibile')+'</div><div class="opGrid">'+
+ '<div class="opHero"><div class="opEyebrow">What changed · source-verified research desk</div><div class="opTitle">News Pulse operativo</div><div class="opSub">Due livelli distinti: pubblicazioni ufficiali delle banche centrali G8 e dell’EIA, e movimenti misurati da fonti operative. Non è ancora un notiziario finanziario globale. Non attribuiamo causalmente i movimenti ai comunicati.</div></div>'+
+ '<div class="opSection">Comunicazioni ufficiali · banche centrali G8 ed energia EIA</div><div class="opMeta">'+esc(desc)+' · Ultimo controllo (Roma): '+esc(external.last_attempt_day_rome||'—')+' · '+(sources||'Nessun controllo disponibile')+'</div><div class="opGrid">'+
  (announcements||'<div class="opCard">Nessuna comunicazione ufficiale recente verificata. Non vengono mostrati titoli ricostruiti o notizie inventate.</div>')+
  '</div><div class="opSection">Segnali quantitativi · OIS e futures</div><div class="opSub">Ultima osservazione di mercato: <b>'+esc(data.content_as_of||'—')+'</b>. Il giorno dell’ultimo controllo delle fonti non cambia la data economica di un segnale.</div><div class="opGrid">'+
  (items||'<div class="opCard">Nessun nuovo segnale validato disponibile.</div>')+
- '</div><div class="opFoot">Inputs quantitativi: '+esc((data.scope?.inputs||[]).join(' · '))+'. Notizie esterne limitate a feed ufficiali Fed/BCE: solo titoli, orari e collegamenti originali, senza interpretazioni non verificate. NULL non diventa mai 0 bp.</div></div>';
+ '</div><div class="opFoot">Inputs quantitativi: '+esc((data.scope?.inputs||[]).join(' · '))+'. Fonti esterne limitate ai feed ufficiali di banche centrali G8 ed EIA: solo titoli, orari e collegamenti originali, senza interpretazioni non verificate. NULL non diventa mai 0 bp.</div></div>';
 }
 let cache=null;
 async function load(){if(cache)return cache;const [c,n]=await Promise.all([fetch('live_data/sections/CALENDAR_OPERATIONAL_VIEW.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('calendar '+r.status);return r.json()}),fetch('live_data/sections/NEWS_PULSE_OPERATIONAL.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('news '+r.status);return r.json()})]);cache={c,n};return cache;}
