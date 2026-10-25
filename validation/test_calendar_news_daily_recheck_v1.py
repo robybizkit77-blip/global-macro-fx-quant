@@ -120,7 +120,8 @@ with tempfile.TemporaryDirectory() as tmp:
     cb_file.write_text(json.dumps({}, indent=2))
     official_file.write_text(json.dumps({"events": macro_rows}, indent=2))
     consensus_file.write_text(json.dumps({"events": consensus_rows}, indent=2))
-    with (patch.object(calendar, "CB", cb_file),
+    with (patch.object(calendar, "ROOT", root),
+          patch.object(calendar, "CB", cb_file),
           patch.object(calendar, "MACRO", official_file),
           patch.object(calendar, "CONSENSUS", consensus_file),
           patch.object(calendar, "OUT", public_file)):
