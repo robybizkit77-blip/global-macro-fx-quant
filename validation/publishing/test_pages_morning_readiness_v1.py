@@ -99,3 +99,16 @@ assert evaluate(at("2026-10-26T11:00:00+01:00"), bad_source)["status"] == "PASS_
 assert evaluate(at("2026-10-25T07:45:00+01:00"), bad_source)["status"] == "PASS_OUTSIDE_MORNING_WINDOW"
 
 print("PAGES_ALL_TRIGGER_MORNING_READINESS_POLICY_PASS")
+
+# The policy must be executed inside the writer itself, before gh-pages push;
+# covering only the parent orchestrator would leave push/workflow_run open.
+workflow = (Path(__file__).resolve().parents[2] /
+            ".github/workflows/publish-dashboard-pages-v1.yml").read_text()
+marker = "Block incomplete morning sources before any Pages write"
+publish = "Publish dashboard runtime and operational assets to gh-pages with lease"
+assert workflow.count(marker) == 1
+assert workflow.index(marker) < workflow.index(publish)
+assert "check_pages_morning_readiness_v1.py \\" in workflow
+assert "if: github.event_name != 'pull_request'" in workflow
+for trigger in ("push:", "workflow_run:", "workflow_dispatch:"):
+    assert trigger in workflow
