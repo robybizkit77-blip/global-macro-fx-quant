@@ -36,7 +36,7 @@ def relation(observed, event_day):
     return "SAME_CALENDAR_DATE_DAILY_ONLY"
 
 
-def daily_ois(ccy, event_day, ois):
+def daily_ois(ccy, event_day, ois, check_day=None):
     r = (ois.get("currencies") or {}).get(ccy, {})
     if not isinstance(r, dict):
         r = {}
@@ -46,7 +46,7 @@ def daily_ois(ccy, event_day, ois):
     rate6 = ((r.get("horizons") or {}).get("6m") or {}).get("rate")
     if status not in (OIS_OFFICIAL, OIS_ESTIMATED) or not as_of or (
         not isinstance(source, str) or not source.strip()
-    ) or not finite(rate6):
+    ) or not finite(rate6) or (check_day is not None and as_of > check_day):
         return {"status": "NOT_VALIDATED_DAILY_CONTEXT"}
     instrument = "FUTURES_IMPLIED" if "futures" in source.lower() else (
         "OIS_ESTIMATED" if status == OIS_ESTIMATED else "OIS_OBSERVED"
@@ -60,7 +60,7 @@ def daily_ois(ccy, event_day, ois):
     }
 
 
-def daily_2y(ccy, event_day, rates):
+def daily_2y(ccy, event_day, rates, check_day=None):
     r = rates.get(ccy, {})
     if not isinstance(r, dict):
         r = {}
@@ -70,7 +70,8 @@ def daily_2y(ccy, event_day, rates):
     quality = r.get("quality")
     if not as_of or not finite(y2) or not isinstance(source, str) or (
         not source.strip() or
-        not isinstance(quality, str) or not quality.startswith("FULL_CURRENT_OFFICIAL")
+        not isinstance(quality, str) or not quality.startswith("FULL_CURRENT_OFFICIAL") or
+        (check_day is not None and as_of > check_day)
     ):
         return {"status": "NOT_VALIDATED_DAILY_CONTEXT"}
     return {
@@ -111,8 +112,8 @@ def assess(event, ois, rates, now=None):
     ccy = event.get("ccy")
     event_day = instant.astimezone(timezone.utc).date()
     if ccy in FX_G8:
-        base["ois_or_futures"] = daily_ois(ccy, event_day, ois)
-        base["yield_2y"] = daily_2y(ccy, event_day, rates)
+        base["ois_or_futures"] = daily_ois(ccy, event_day, ois, check_day=now.date())
+        base["yield_2y"] = daily_2y(ccy, event_day, rates, check_day=now.date())
         base["fx"] = {
             "status": "NO_CERTIFIED_EVENT_WINDOW",
             "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
