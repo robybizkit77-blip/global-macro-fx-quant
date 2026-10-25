@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 import build_calendar_operational_v1 as calendar
 import build_news_pulse_operational_v1 as news
+from refresh_macro_consensus_secondary_v1 import series_compatible
 
 UTC = dt.timezone.utc
 
@@ -60,3 +61,80 @@ for builder in (calendar, news):
     test_builder(builder)
 
 print("CALENDAR_NEWS_TRUE_RECHECK_VINTAGE_CET_CEST_PASS")
+
+
+# The same country and date do not make two macro indicators the same
+# economic series. Regressions documented from the 25 October public feed.
+bad_pairs = [
+    ("AUD", "INFLATION", "Consumer Price Index, Australia", "Import Prices q/q"),
+    ("EUR", "GROWTH", "Euro area preliminary flash GDP", "French Flash GDP q/q"),
+    ("EUR", "LABOUR", "Euro area unemployment", "German Unemployment Change"),
+    ("JPY", "LABOUR", "Labour Force Survey - Basic Tabulation", "Unemployment Rate"),
+    ("AUD", "INFLATION", "Consumer Price Index, Australia", "CPI m/m"),
+]
+for ccy, event_type, official_title, provider_title in bad_pairs:
+    assert not series_compatible(
+        {"ccy": ccy, "event_type": event_type, "title": official_title},
+        {"event": provider_title}
+    ), (official_title, provider_title)
+
+good_pairs = [
+    ("USD", "LABOUR_COST", "Employment Cost Index", "Employment Cost Index q/q"),
+    ("CAD", "GROWTH", "Gross domestic product by industry", "GDP m/m"),
+    ("EUR", "GROWTH", "Euro area preliminary flash GDP", "Eurozone Flash GDP q/q"),
+    ("EUR", "LABOUR", "Euro area unemployment", "Eurozone Unemployment Rate"),
+]
+for ccy, event_type, official_title, provider_title in good_pairs:
+    assert series_compatible(
+        {"ccy": ccy, "event_type": event_type, "title": official_title},
+        {"event": provider_title}
+    ), (official_title, provider_title)
+
+# Defense in depth: even when the previously persisted secondary JSON still
+# carries invalid matches, the independently rebuilt public calendar must
+# quarantine their values before they are ever exposed to the user.
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    day = "2099-10-28"
+    examples = [
+        ("AUD", "INFLATION", "Consumer Price Index, Australia", "Import Prices q/q"),
+        ("EUR", "GROWTH", "Euro area preliminary flash GDP", "French Flash GDP q/q"),
+        ("EUR", "LABOUR", "Euro area unemployment", "German Unemployment Change"),
+        ("USD", "LABOUR_COST", "Employment Cost Index", "Employment Cost Index q/q"),
+    ]
+    macro_rows = [
+        {"ccy": ccy, "date": day, "event_type": kind,
+         "title": title, "quality": "OFFICIAL_CALENDAR"}
+        for ccy, kind, title, provider in examples
+    ]
+    consensus_rows = [
+        {"event_key": "|".join((ccy, day, kind, title)),
+         "status": "AVAILABLE", "consensus": "1.8%", "previous": "5.7%",
+         "provider_event": provider, "provider": "TEST"}
+        for ccy, kind, title, provider in examples
+    ]
+    cb_file = root / "cb.json"
+    official_file = root / "official.json"
+    consensus_file = root / "consensus.json"
+    public_file = root / "calendar.json"
+    cb_file.write_text(json.dumps({}, indent=2))
+    official_file.write_text(json.dumps({"events": macro_rows}, indent=2))
+    consensus_file.write_text(json.dumps({"events": consensus_rows}, indent=2))
+    with (patch.object(calendar, "ROOT", root),
+          patch.object(calendar, "CB", cb_file),
+          patch.object(calendar, "MACRO", official_file),
+          patch.object(calendar, "CONSENSUS", consensus_file),
+          patch.object(calendar, "OUT", public_file)):
+        calendar.main()
+    result = json.loads(public_file.read_text(encoding="utf-8"))
+    assert len(result["events"]) == 4
+    assert result["coverage"]["consensus_available_events"] == 1
+    for event in result["events"]:
+        if event["ccy"] == "USD":
+            assert event["consensus_status"] == "AVAILABLE"
+            assert event["consensus"] == "1.8%"
+        else:
+            assert event["consensus_status"] == "NOT_PRESENT"
+            assert "consensus" not in event and "previous" not in event
+
+print("MACRO_CONSENSUS_EXACT_SERIES_AND_REGION_GUARDS_PASS")

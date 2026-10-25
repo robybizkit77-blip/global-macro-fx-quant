@@ -48,6 +48,58 @@ def semantic_score(official,candidate):
     return score
 
 
+
+def series_compatible(official, candidate):
+    """Fail closed unless the candidate represents the same geographic
+    aggregate and economic series; a generic category/date match is unsafe.
+    A whole-release title must not silently inherit a narrower subseries.
+    """
+    ccy = str(official.get('ccy') or '')
+    o = norm(official.get('title'))
+    c = norm(candidate.get('event'))
+    if not o or not c:
+        return False
+    # EUR includes country-level events in third-party calendars, whereas the
+    # official seed refers to the Euro AREA. French/German data are not peers.
+    if ccy == 'EUR' and ('euro area' in o or 'eurozone' in o):
+        if not ('euro area' in c or 'eurozone' in c):
+            return False
+        if any(country in c.split() for country in (
+            'french', 'german', 'italian', 'spanish', 'dutch'
+        )):
+            return False
+    if 'employment cost index' in o:
+        return 'employment cost index' in c
+    if 'consumer price index' in o or re.search(r'\bcpi\b', o):
+        # "Import Prices", PPI and trimmed/core series are not headline CPI.
+        # The official seed lacks a m/m vs y/y indicator: do not attach an
+        # unexplained subseries consensus to the entire CPI release.
+        if any(bad in c for bad in ('import prices', 'producer prices',
+                                    'trimmed mean', 'core cpi', 'weighted median')):
+            return False
+        return ('consumer price index' in c or re.search(r'\bcpi\b', c)) and not (
+            re.search(r'\b(m m|y y|q q)\b', c) and
+            not any(m in o for m in ('m m', 'y y', 'q q'))
+        )
+    if 'preliminary flash gdp' in o:
+        return 'gdp' in c and 'flash' in c
+    if 'gross domestic product by industry' in o:
+        return ccy == 'CAD' and (
+            c.startswith('gdp m m') or
+            'gross domestic product by industry' in c
+        )
+    if 'unemployment' in o:
+        return 'unemployment rate' in c and 'change' not in c
+    if 'labour force survey' in o:
+        # The aggregate release contains multiple metrics. A provider's
+        # unemployment-rate subseries needs its own explicit seed event.
+        return 'labour force survey' in c
+    # For remaining families, require substantially matching actual names;
+    # synonyms such as "prices" or "employment" alone are insufficient.
+    return len(o) >= 12 and (o in c or c in o)
+
+
+
 def fetch_calendar():
     req=urllib.request.Request(FEED,headers={
         'User-Agent':'GMFQ/1.0 (+https://github.com/robybizkit77-blip/global-macro-fx-quant)',
@@ -103,6 +155,8 @@ def main():
                 continue
             gap=abs((cd-d).days)
             if gap>1:
+                continue
+            if not series_compatible(e, cand):
                 continue
             sem=semantic_score(e,cand)
             if sem<4:
