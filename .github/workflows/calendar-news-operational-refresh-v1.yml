@@ -106,6 +106,13 @@ jobs:
           }
           assert external['core_effect']=='NONE'
           assert all(x['quality']=='OFFICIAL_RSS_DATED_LINK' and x.get('url') and x.get('published_at_utc') for x in external['headlines'])
+          assert all(x.get('desk_context',{}).get('operational_relevance') in {'MONITOR','REVIEW','CONTEXT'} and
+                     x['desk_context']['analysis_basis']=='SOURCE_HEADLINE_ONLY' and
+                     x['desk_context']['market_direction']=='NOT_DETERMINED' and
+                     x['desk_context']['market_reaction']=='NOT_MEASURED' and
+                     x['desk_context']['why_watch'] and x['desk_context']['verify_next']
+                     for x in external['headlines'])
+          assert news['scope']['external_news_feed']=='OFFICIAL_G8_CB_EIA_RSS_SEPARATE_HEADLINE_ONLY'
           print('OFFICIAL_NEWS_RSS_RECEIPT', external['status'], len(external['headlines']))
           print('CALENDAR_NEWS_OPERATIONAL_REFRESH_PASS',len(cal['events']),len(macro),cal['coverage']['consensus_available_events'],len(news['items']),news['content_as_of'])
           PY
