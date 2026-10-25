@@ -7,6 +7,7 @@ on:
       - 'validation/build_calendar_operational_v1.py'
       - 'validation/refresh_macro_consensus_secondary_v1.py'
       - 'validation/build_news_pulse_operational_v1.py'
+      - 'validation/collect_official_news_rss_v1.py'
       - 'validation/test_calendar_news_daily_recheck_v1.py'
       - 'validation/calendar/MACRO_RELEASE_SOURCE_REGISTRY_V1.json'
       - 'live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json'
@@ -21,6 +22,7 @@ on:
       - 'validation/build_calendar_operational_v1.py'
       - 'validation/refresh_macro_consensus_secondary_v1.py'
       - 'validation/build_news_pulse_operational_v1.py'
+      - 'validation/collect_official_news_rss_v1.py'
       - 'validation/test_calendar_news_daily_recheck_v1.py'
       - 'validation/calendar/MACRO_RELEASE_SOURCE_REGISTRY_V1.json'
       - 'live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json'
@@ -94,6 +96,17 @@ jobs:
           assert news['schema']=='GMFQ_NEWS_PULSE_OPERATIONAL_V1'
           assert news['status']=='ACTIVE_DETERMINISTIC_LAYERS'
           assert news['items']
+          external=news['official_releases']
+          assert external['schema']=='GMFQ_OFFICIAL_RSS_HEADLINES_V1'
+          assert external['source_count']==2
+          assert external['source_failures'] in (0,1,2)
+          assert external['status'] in {
+            'SOURCES_UNAVAILABLE','PARTIAL_SOURCES',
+            'VERIFIED_NO_RECENT_RELEASES','VERIFIED_OFFICIAL_RELEASES'
+          }
+          assert external['core_effect']=='NONE'
+          assert all(x['quality']=='OFFICIAL_RSS_DATED_LINK' and x.get('url') and x.get('published_at_utc') for x in external['headlines'])
+          print('OFFICIAL_NEWS_RSS_RECEIPT', external['status'], len(external['headlines']))
           print('CALENDAR_NEWS_OPERATIONAL_REFRESH_PASS',len(cal['events']),len(macro),cal['coverage']['consensus_available_events'],len(news['items']),news['content_as_of'])
           PY
       - name: Persist changed operational views
