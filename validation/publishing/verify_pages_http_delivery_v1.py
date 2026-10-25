@@ -29,7 +29,15 @@ FILES = (
     # Home Market Pulse: exact public bytes, not just network HTTP 200.
     "live_data/sections/NEWS_PULSE_OPERATIONAL.json",
     "live_data/sections/CALENDAR_OPERATIONAL_VIEW.json",
-    "payload/part-00.txt",
+    # Every shipped runtime segment is required: a single stale part can
+    # break FX pairs, the research monitor or the Home while part-00 looks OK.
+    "index.html",
+    *(f"payload/part-{i:02d}.txt" for i in range(16)),
+    "dashboard/pairs-operational-v1.js",
+    "dashboard/forwarddesk-operational-v1.js",
+    "dashboard/currencies-operational-v1.js",
+    "dashboard/macro-operational-v1.js",
+    "dashboard/ratesdesk-operational-v1.js",
     # Keep the public derived COT story and manifest in exact-byte lockstep
     # with the runtime payload. A stale standalone file fails the release.
     "live_data/sections/V247_COT_STORIES.json",
