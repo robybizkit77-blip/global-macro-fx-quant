@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-10-22",
-  "generated_at_utc": "2026-10-25T16:16:38.368738Z",
+  "generated_at_utc": "2026-10-25T17:25:25.865878Z",
   "items": [
     {
       "as_of": "2026-10-22",
@@ -47,7 +47,7 @@
       "title": "GBP: repricing OIS più dovish (-5.2 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-10-25T16:16:38.368738Z",
+  "last_checked_at_utc": "2026-10-25T17:25:25.865878Z",
   "official_releases": {
     "core_effect": "NONE",
     "headlines": [
@@ -77,63 +77,87 @@
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "EUR",
-        "id": "ECB_PRESS:https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261021_1~d190f2c349.en.pdf",
+        "ccy": "GBP",
+        "id": "BOE_NEWS:https://www.bankofengland.co.uk/news/2026/october/regulators-unveil-plans-to-simplify-senior-manager-and-certification-regime",
         "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-10-21T08:00:00Z",
+        "published_at_utc": "2026-10-22T20:00:00Z",
         "quality": "OFFICIAL_RSS_DATED_LINK",
-        "source": "Banca centrale europea",
-        "source_id": "ECB_PRESS",
-        "title": "Piero Cipollone: Pontes and Appia: unlocking opportunities for banks",
-        "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261021_1~d190f2c349.en.pdf"
+        "source": "Bank of England",
+        "source_id": "BOE_NEWS",
+        "title": "Regulators unveil plans to simplify Senior Manager and Certification Regime",
+        "url": "https://www.bankofengland.co.uk/news/2026/october/regulators-unveil-plans-to-simplify-senior-manager-and-certification-regime"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "EUR",
-        "id": "ECB_PRESS:https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261021~401d6c4b70.en.html",
+        "ccy": "GBP",
+        "id": "BOE_NEWS:https://www.bankofengland.co.uk/minutes/2026/september/securities-lending-committee-meeting-september-2026",
         "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-10-21T04:15:00Z",
+        "published_at_utc": "2026-10-22T15:35:53Z",
         "quality": "OFFICIAL_RSS_DATED_LINK",
-        "source": "Banca centrale europea",
-        "source_id": "ECB_PRESS",
-        "title": "Philip R. Lane: Euro liquidity lines and the international monetary system",
-        "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261021~401d6c4b70.en.html"
+        "source": "Bank of England",
+        "source_id": "BOE_NEWS",
+        "title": "Minutes of the Securities Lending Committee meeting – September 2026",
+        "url": "https://www.bankofengland.co.uk/minutes/2026/september/securities-lending-committee-meeting-september-2026"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "EUR",
-        "id": "ECB_PRESS:https://www.ecb.europa.eu//press/inter/date/2026/html/ecb.in261020~97e2e4bc38.en.html",
+        "ccy": "ENERGY",
+        "id": "EIA_ENERGY:https://www.eia.gov/todayinenergy/detail.php?id=68344",
         "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-10-20T07:00:00Z",
+        "published_at_utc": "2026-10-22T14:00:00Z",
         "quality": "OFFICIAL_RSS_DATED_LINK",
-        "source": "Banca centrale europea",
-        "source_id": "ECB_PRESS",
-        "title": "Frank Elderson: Interview with Die Presse",
-        "url": "https://www.ecb.europa.eu//press/inter/date/2026/html/ecb.in261020~97e2e4bc38.en.html"
+        "source": "U.S. Energy Information Administration",
+        "source_id": "EIA_ENERGY",
+        "title": "U.S. refineries have been running at very high rates in 2026",
+        "url": "https://www.eia.gov/todayinenergy/detail.php?id=68344"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "EUR",
-        "id": "ECB_PRESS:https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261019~f0a3e053de.en.html",
+        "ccy": "ENERGY",
+        "id": "EIA_ENERGY:https://www.eia.gov/todayinenergy/detail.php?id=68325",
         "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-10-19T06:00:00Z",
+        "published_at_utc": "2026-10-19T14:00:00Z",
         "quality": "OFFICIAL_RSS_DATED_LINK",
-        "source": "Banca centrale europea",
-        "source_id": "ECB_PRESS",
-        "title": "Frank Elderson: From climate and nature risks to economic resilience and competitiveness",
-        "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261019~f0a3e053de.en.html"
+        "source": "U.S. Energy Information Administration",
+        "source_id": "EIA_ENERGY",
+        "title": "Hybrid sales rise while battery electric sales remain lower after tax credit expiration",
+        "url": "https://www.eia.gov/todayinenergy/detail.php?id=68325"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "EUR",
-        "id": "ECB_PRESS:https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261017~7015ea3099.en.html",
+        "ccy": "CAD",
+        "id": "BOC_PRESS:https://www.bankofcanada.ca/2026/10/the-bank-of-canada-releases-the-third-quarter-issues-of-the-business-outlook-survey-and-the-canadian-survey-of-consumer-expectations/",
         "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-10-17T05:00:00Z",
+        "published_at_utc": "2026-10-19T11:00:48Z",
         "quality": "OFFICIAL_RSS_DATED_LINK",
-        "source": "Banca centrale europea",
-        "source_id": "ECB_PRESS",
-        "title": "Christine Lagarde: IMFC Statement",
-        "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261017~7015ea3099.en.html"
+        "source": "Bank of Canada",
+        "source_id": "BOC_PRESS",
+        "title": "The Bank of Canada releases the third quarter issues of the Business Outlook Survey and the Canadian Survey of Consumer Expectations",
+        "url": "https://www.bankofcanada.ca/2026/10/the-bank-of-canada-releases-the-third-quarter-issues-of-the-business-outlook-survey-and-the-canadian-survey-of-consumer-expectations/"
+      },
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "NZD",
+        "id": "RBNZ_NEWS:https://www.rbnz.govt.nz/news-and-events/news/2026/10/new-framework-supports-access-to-basic-transaction-services",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-10-18T11:00:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "source": "Reserve Bank of New Zealand",
+        "source_id": "RBNZ_NEWS",
+        "title": "New framework supports access to basic transaction services",
+        "url": "https://www.rbnz.govt.nz/news-and-events/news/2026/10/new-framework-supports-access-to-basic-transaction-services"
+      },
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "CAD",
+        "id": "BOC_PRESS:https://www.bankofcanada.ca/2026/10/media-roundtable-governor-macklem-2026-10-17/",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-10-17T09:00:36Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "source": "Bank of Canada",
+        "source_id": "BOC_PRESS",
+        "title": "Media roundtable with Governor Macklem",
+        "url": "https://www.bankofcanada.ca/2026/10/media-roundtable-governor-macklem-2026-10-17/"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
@@ -151,13 +175,15 @@
     "last_attempt_day_rome": "2026-10-25",
     "latest_published_at_utc": "2026-10-24T06:00:00Z",
     "schema": "GMFQ_OFFICIAL_RSS_HEADLINES_V1",
-    "scope": "OFFICIAL_FED_ECB_PRESS_ONLY_NOT_GENERAL_MARKET_NEWS",
-    "source_count": 2,
+    "scope": "G8_CENTRAL_BANK_AND_EIA_OFFICIAL_RELEASES_NOT_GENERAL_MARKET_NEWS",
+    "source_count": 9,
     "source_failures": 0,
     "sources": [
       {
         "accepted_items": 1,
         "ccy": "USD",
+        "entries_rejected": 19,
+        "feed_entries_seen": 20,
         "feed_url": "https://www.federalreserve.gov/feeds/press_all.xml",
         "source": "Federal Reserve Board",
         "source_id": "FED_PRESS",
@@ -166,9 +192,81 @@
       {
         "accepted_items": 7,
         "ccy": "EUR",
+        "entries_rejected": 8,
+        "feed_entries_seen": 15,
         "feed_url": "https://www.ecb.europa.eu/rss/press.html",
         "source": "Banca centrale europea",
         "source_id": "ECB_PRESS",
+        "status": "OK_RECENT_ITEMS"
+      },
+      {
+        "accepted_items": 3,
+        "ccy": "GBP",
+        "entries_rejected": 47,
+        "feed_entries_seen": 50,
+        "feed_url": "https://www.bankofengland.co.uk/rss/news",
+        "source": "Bank of England",
+        "source_id": "BOE_NEWS",
+        "status": "OK_RECENT_ITEMS"
+      },
+      {
+        "accepted_items": 0,
+        "ccy": "JPY",
+        "entries_rejected": 51,
+        "feed_entries_seen": 51,
+        "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
+        "source": "Bank of Japan",
+        "source_id": "BOJ_NEWS",
+        "status": "NO_VERIFIED_RECENT_ITEMS"
+      },
+      {
+        "accepted_items": 0,
+        "ccy": "CHF",
+        "entries_rejected": 15,
+        "feed_entries_seen": 15,
+        "feed_url": "https://www.snb.ch/public/rss/en/mopo",
+        "source": "Swiss National Bank",
+        "source_id": "SNB_POLICY",
+        "status": "NO_VERIFIED_RECENT_ITEMS"
+      },
+      {
+        "accepted_items": 4,
+        "ccy": "CAD",
+        "entries_rejected": 6,
+        "feed_entries_seen": 10,
+        "feed_url": "https://www.bankofcanada.ca/content_type/press/feed/",
+        "source": "Bank of Canada",
+        "source_id": "BOC_PRESS",
+        "status": "OK_RECENT_ITEMS"
+      },
+      {
+        "accepted_items": 0,
+        "ccy": "AUD",
+        "entries_rejected": 1,
+        "feed_entries_seen": 1,
+        "feed_url": "https://www.rba.gov.au/rss/rss-cb-media-releases.xml",
+        "source": "Reserve Bank of Australia",
+        "source_id": "RBA_PRESS",
+        "status": "NO_VERIFIED_RECENT_ITEMS"
+      },
+      {
+        "accepted_items": 1,
+        "ccy": "NZD",
+        "entries_rejected": 49,
+        "feed_entries_seen": 50,
+        "feed_url": "https://www.rbnz.govt.nz/feeds/news",
+        "source": "Reserve Bank of New Zealand",
+        "source_id": "RBNZ_NEWS",
+        "status": "OK_RECENT_ITEMS"
+      },
+      {
+        "accepted_items": 3,
+        "ccy": "ENERGY",
+        "entries_rejected": 17,
+        "feed_entries_seen": 20,
+        "feed_url": "https://www.eia.gov/rss/todayinenergy.xml",
+        "source": "U.S. Energy Information Administration",
+        "source_id": "EIA_ENERGY",
         "status": "OK_RECENT_ITEMS"
       }
     ],
