@@ -27,6 +27,10 @@ data["CALENDAR_OPERATIONAL_VIEW.json"]["generated_at_utc"] = "2026-10-23T05:52:0
 # A daily successful recheck is distinct from content modification time.
 for name in ("NEWS_PULSE_OPERATIONAL.json", "CALENDAR_OPERATIONAL_VIEW.json"):
     data[name]["last_checked_at_utc"] = "2026-10-23T05:52:00Z"
+# Pin the rates vintage independently of mutable current production data.
+for ccy in ("USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"):
+    data["NATIVE_RATES_DATA.json"][ccy]["date"] = "2026-10-22"
+    data["NATIVE_RATES_DATA.json"][ccy]["quality"] = "FULL_CURRENT_OFFICIAL"
 data["NATIVE_RATES_DATA.json"]["CHF"]["date"] = "2026-09-30"
 data["NATIVE_RATES_DATA.json"]["NZD"]["date"] = "2026-10-16"
 # Pin the entire OIS test-state fixture: this is a *deterministic synthetic
@@ -101,7 +105,10 @@ for mutation in (
 # News build date and economic signal date are independent.
 assert out["evidence"]["NEWS_CONTENT_VINTAGE"]["content_as_of"] == "2026-10-22"
 assert out["evidence"]["NEWS_CONTENT_VINTAGE"]["status"] == "PREVIOUS_TRADING_SESSION_OR_NEWER"
-assert out["documented_nonblocking_gaps"] == []
+assert out["documented_nonblocking_gaps"] == [
+    "RATES_2Y_10Y_LAG_OR_BLOCKED:CHF,NZD",
+    "OIS_G8_UNAVAILABLE:CHF,EUR,NZD",
+]
 
 for mutation in (
     lambda x: x["NEWS_PULSE_OPERATIONAL.json"].update(content_as_of="2026-12-01"),
@@ -243,10 +250,16 @@ monday_feed["NEWS_PULSE_OPERATIONAL.json"]["generated_at_utc"] = "2026-10-23T06:
 monday_feed["CALENDAR_OPERATIONAL_VIEW.json"]["generated_at_utc"] = "2026-10-25T06:49:34Z"
 for name in ("NEWS_PULSE_OPERATIONAL.json", "CALENDAR_OPERATIONAL_VIEW.json"):
     monday_feed[name]["last_checked_at_utc"] = "2026-10-26T05:10:00Z"
+for ccy in ("USD", "EUR", "GBP", "JPY", "CAD", "AUD"):
+    monday_feed["NATIVE_RATES_DATA.json"][ccy]["date"] = "2026-10-23"
 monday_check = inspect(monday_feed, monday)
 assert not monday_check["critical_daily_problems"]
 assert monday_check["evidence"]["NEWS_CONTENT_VINTAGE"]["status"] == "OLDER_THAN_PREVIOUS_TRADING_SESSION"
-assert monday_check["documented_nonblocking_gaps"] == ["NEWS_CONTENT_OLDER_THAN_PREVIOUS_SESSION"]
+assert monday_check["documented_nonblocking_gaps"] == [
+    "NEWS_CONTENT_OLDER_THAN_PREVIOUS_SESSION",
+    "RATES_2Y_10Y_LAG_OR_BLOCKED:CHF,NZD",
+    "OIS_G8_UNAVAILABLE:CHF,EUR,NZD",
+]
 
 broken = copy.deepcopy(data)
 broken["ECB_G8_PRICE_HISTORY.json"]["rows"][-1]["Date"] = "2026-10-21"
