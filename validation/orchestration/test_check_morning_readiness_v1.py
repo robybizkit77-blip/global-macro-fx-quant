@@ -215,6 +215,7 @@ assert x["operational_state"] == "DAILY_INPUTS_INCOMPLETE"
 
 broken = copy.deepcopy(data)
 broken["NEWS_PULSE_OPERATIONAL.json"]["generated_at_utc"] = "2026-10-22T08:00:00Z"
+broken["NEWS_PULSE_OPERATIONAL.json"]["last_checked_at_utc"] = "2026-10-22T08:00:00Z"
 assert "NEWS_PULSE_REFRESH" in inspect(broken, asof)["critical_daily_problems"]
 
 broken = copy.deepcopy(data)
@@ -236,8 +237,6 @@ monday_feed["PAIR_SETUP_OPERATIONAL_VIEW.json"]["price_asof"] = "2026-10-23"
 monday_feed["PAIR_SETUP_OPERATIONAL_VIEW.json"]["price_audit"].update(as_of="2026-10-23",history_asof="2026-10-23",overlay_asof="2026-10-23")
 monday_feed["D.json"]["risk"]["VIX"]["last_date"] = "2026-10-23"
 monday_feed["D.json"]["risk"]["VIX"]["dates"][-1] = "2026-10-23"
-monday_feed["NEWS_PULSE_OPERATIONAL.json"]["generated_at_utc"] = "2026-10-26T05:10:00Z"
-monday_feed["CALENDAR_OPERATIONAL_VIEW.json"]["generated_at_utc"] = "2026-10-26T05:10:00Z"
 # Keep the original economic signal modification dates while confirming
 # today's successful source verification on Monday (CET).
 monday_feed["NEWS_PULSE_OPERATIONAL.json"]["generated_at_utc"] = "2026-10-23T06:52:00Z"
