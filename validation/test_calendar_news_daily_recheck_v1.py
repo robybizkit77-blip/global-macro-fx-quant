@@ -391,6 +391,15 @@ assert audit["fx"]["status"] == "NO_CERTIFIED_EVENT_WINDOW"
 assert audit["market_reaction"] == "NOT_MEASURED"
 assert audit["direction"] == "NOT_DETERMINED"
 assert audit["causal_attribution"] == "NOT_ESTABLISHED"
+# An unexpected future-dated market snapshot cannot be accepted as context.
+future_ois = json.loads(json.dumps(ois_sample))
+future_ois["currencies"]["GBP"]["as_of"] = "2026-10-27"
+assert proof.assess(headline, future_ois, rates_sample,
+                    now=at("2026-10-25T17:00:00Z"))["ois_or_futures"]["status"] == "NOT_VALIDATED_DAILY_CONTEXT"
+future_rates = json.loads(json.dumps(rates_sample))
+future_rates["GBP"]["date"] = "2026-10-27"
+assert proof.assess(headline, ois_sample, future_rates,
+                    now=at("2026-10-25T17:00:00Z"))["yield_2y"]["status"] == "NOT_VALIDATED_DAILY_CONTEXT"
 
 # Existing daily numbers can be *before* or *after* a release date but do
 # not prove the event reaction even when their calendar date is later.
