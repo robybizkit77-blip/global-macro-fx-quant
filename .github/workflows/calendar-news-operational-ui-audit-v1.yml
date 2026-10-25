@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'validation/build_calendar_operational_v1.py'
+      - 'validation/build_news_pulse_operational_v1.py'
+      - 'dashboard/editorial-freshness-guard-v1.js'
       - 'dashboard/calendar-news-operational-v1.js'
       - 'live_data/sections/CALENDAR_OPERATIONAL_VIEW.json'
       - 'live_data/sections/NEWS_PULSE_OPERATIONAL.json'
@@ -16,6 +18,8 @@ on:
     branches: [main]
     paths:
       - 'validation/build_calendar_operational_v1.py'
+      - 'validation/build_news_pulse_operational_v1.py'
+      - 'dashboard/editorial-freshness-guard-v1.js'
       - 'dashboard/calendar-news-operational-v1.js'
       - 'live_data/sections/CALENDAR_OPERATIONAL_VIEW.json'
       - 'live_data/sections/NEWS_PULSE_OPERATIONAL.json'
@@ -73,9 +77,23 @@ jobs:
               if(cal.w>cal.cw+2)throw new Error(`${name} calendar overflow ${cal.w}/${cal.cw}`);
               await page.evaluate(()=>window.showView&&window.showView('news'));
               await page.waitForSelector('#news [data-gmfq-operational="news"]',{state:'visible'});
-              const news=await page.evaluate(()=>({cards:document.querySelectorAll('#news .opCard').length,fresh:document.getElementById('news')?.dataset.gmfqEditorialFreshness,w:document.querySelector('#news [data-gmfq-operational="news"]')?.scrollWidth,cw:document.querySelector('#news [data-gmfq-operational="news"]')?.clientWidth}));
+              const news=await page.evaluate(()=>{
+                const node=document.getElementById('news');
+                const ref=window.GMFQ_CALENDAR_NEWS_OPERATIONAL?.content_as_of;
+                const now=new Date();now.setHours(0,0,0,0);
+                const signal=ref?new Date(ref+'T00:00:00'):null;
+                const age=signal?Math.floor((now-signal)/86400000):null;
+                const expected=age===null?'UNVERIFIED':age>2?'STALE':'FRESH';
+                return {cards:document.querySelectorAll('#news .opCard').length,
+                  fresh:node?.dataset.gmfqEditorialFreshness,expected,content_as_of:ref,
+                  banner:node?.querySelector(':scope > .gmfqEditorialFreshnessBanner')?.innerText||'',
+                  w:document.querySelector('#news [data-gmfq-operational="news"]')?.scrollWidth,
+                  cw:document.querySelector('#news [data-gmfq-operational="news"]')?.clientWidth};
+              });
               if(news.cards<4)throw new Error(`${name} news cards ${news.cards}`);
-              if(news.fresh!=='FRESH')throw new Error(`${name} news freshness ${news.fresh}`);
+              if(news.fresh!==news.expected)throw new Error(`${name} News signal vintage freshness ${JSON.stringify(news)}`);
+              if(news.fresh==='STALE'&&!news.banner.includes(news.content_as_of))
+                throw new Error(`${name} dated News signals not visibly caveated ${JSON.stringify(news)}`);
               if(news.w>news.cw+2)throw new Error(`${name} news overflow ${news.w}/${news.cw}`);
               if(errors.length)throw new Error(`${name} console errors: ${errors.join(' | ')}`);
               await page.screenshot({path:`calendar-news-${name}.png`,fullPage:true});
