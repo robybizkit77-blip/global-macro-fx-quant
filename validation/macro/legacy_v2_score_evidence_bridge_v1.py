@@ -91,9 +91,15 @@ def bridge(model, legacy, v2):
             check(finite(historical), "unverifiable frozen scalar value")
             evidence = mapping[(currency, pillar)]
             source = evidence.get("candidate_evidence_source_id")
-            same = bool(source is not None
-                        and evidence.get("canonical_series_id_matches_candidate") is True
-                        and evidence.get("canonical_frequency_matches_candidate") is True)
+            canonical_id = evidence.get("canonical_series_id")
+            canonical_freq = evidence.get("canonical_frequency")
+            candidate_freq = evidence.get("candidate_frequency")
+            sid_match = source is not None and canonical_id is not None and source == canonical_id
+            freq_match = candidate_freq is not None and canonical_freq is not None and candidate_freq == canonical_freq
+            check(evidence.get("canonical_series_id_matches_candidate") is sid_match
+                  and evidence.get("canonical_frequency_matches_candidate") is freq_match,
+                  "upstream source/frequency parity inconsistent with actual labels")
+            same = sid_match and freq_match
             first_count = evidence.get("candidate_documented_first_periods_visible")
             check(type(first_count) is int and first_count >= 0,
                   "invalid reported candidate first-release count")
@@ -102,17 +108,45 @@ def bridge(model, legacy, v2):
                   "invalid canonical training requirement")
             # Only compare like-for-like registered source and frequency.
             gap = max(0, target - first_count) if same and target is not None else None
-            reason = ("NO_CANDIDATE_SOURCE" if source is None else
-                      "CANDIDATE_SOURCE_ID_OR_FREQUENCY_MISMATCH" if not same else
-                      "CANDIDATE_MATCHES_ID_AND_FREQUENCY_BUT_NOT_PIT_CERTIFIED")
+            # Exactly eight Growth canonical slots still have no chosen metric.
+            # Their mismatches must never be counted as corrupt source mappings.
+            if pillar == "growth":
+                check(canonical_id is None and canonical_freq is None,
+                      "Growth source selected without a reviewed versioned rule")
+                category = "GROWTH_CANONICAL_INDICATOR_NOT_SELECTED"
+                next_action = "Select and approve the Growth metric, unit and economic horizon before binding a V2 source"
+            elif source is None:
+                category = "NO_CANDIDATE_SOURCE"
+                next_action = "Acquire attested publisher first releases for the exact registered indicator"
+            elif not sid_match and not freq_match:
+                category = "INDICATOR_AND_FREQUENCY_DIFFER"
+                next_action = "Reconcile both economic metric identity and period frequency; do not substitute series"
+            elif not sid_match:
+                category = "INDICATOR_DIFFERS_SAME_FREQUENCY"
+                next_action = "Verify metric identities and units on official source before proposing a crosswalk"
+            elif not freq_match:
+                category = "FREQUENCY_DIFFERS"
+                next_action = "Reconcile period horizon and observation windows before proposing a mapping"
+            else:
+                category = "TECHNICAL_ID_FREQUENCY_MATCH_PIT_NOT_CERTIFIED"
+                next_action = "Verify actual first-release original-day history and versioned score formula"
+            reason = ("CANDIDATE_MATCHES_ID_AND_FREQUENCY_BUT_NOT_PIT_CERTIFIED"
+                      if same else category)
             out.append({
                 "currency": currency, "pillar": pillar,
                 "frozen_score_as_of": FROZEN,
                 "frozen_historical_scalar": historical,
                 "old_formula_source_to_score": "NOT_FOUND_IN_VERIFIED_REPOSITORY",
                 "candidate_source_id": source,
-                "canonical_source_id": evidence.get("canonical_series_id"),
+                "canonical_source_id": canonical_id,
+                "canonical_frequency": canonical_freq,
+                "candidate_frequency": candidate_freq,
+                "canonical_series_id_matches_candidate": sid_match,
+                "canonical_frequency_matches_candidate": freq_match,
                 "source_id_and_frequency_match": same,
+                "source_reconciliation_class": category,
+                "recommended_source_review_action": next_action,
+                "canonical_metric_unit_or_publisher_mapping_certified": False,
                 "candidate_first_release_periods_visible": first_count,
                 "minimum_required_canonical_first_releases": target,
                 "same_source_periods_still_needed_descriptive_only": gap,
@@ -132,6 +166,27 @@ def bridge(model, legacy, v2):
     mismatch = 24 - source_match - no_source
     check(no_source == v2["summary"]["slots_without_shared_candidate_stream"],
           "source stream count mismatch")
+    category_counts = {name: sum(r["source_reconciliation_class"] == name for r in out)
+                       for name in (
+                           "GROWTH_CANONICAL_INDICATOR_NOT_SELECTED",
+                           "NO_CANDIDATE_SOURCE",
+                           "INDICATOR_AND_FREQUENCY_DIFFER",
+                           "INDICATOR_DIFFERS_SAME_FREQUENCY",
+                           "FREQUENCY_DIFFERS",
+                           "TECHNICAL_ID_FREQUENCY_MATCH_PIT_NOT_CERTIFIED")}
+    check(category_counts["GROWTH_CANONICAL_INDICATOR_NOT_SELECTED"] == 8,
+          "unexpected Growth source-selection contract")
+    check(sum(category_counts.values()) == 24,
+          "missing evidence reconciliation classifications")
+    other_mismatch = sum(
+        r["pillar"] != "growth" and
+        r["source_reconciliation_class"] not in (
+            "TECHNICAL_ID_FREQUENCY_MATCH_PIT_NOT_CERTIFIED",
+            "NO_CANDIDATE_SOURCE")
+        for r in out
+    )
+    check(mismatch == category_counts["GROWTH_CANONICAL_INDICATOR_NOT_SELECTED"]
+          + other_mismatch, "crosswalk mismatch decomposition inconsistent")
     return {
         "schema": SCHEMA,
         "status": "HISTORICAL_SCALARS_JOINED_RESEARCH_SOURCE_EVIDENCE_NO_FORMULA",
@@ -145,6 +200,9 @@ def bridge(model, legacy, v2):
             "source_id_and_frequency_matches": source_match,
             "candidate_missing": no_source,
             "candidate_wrong_id_or_frequency": mismatch,
+            "unselected_growth_canonical_indicators": category_counts["GROWTH_CANONICAL_INDICATOR_NOT_SELECTED"],
+            "non_growth_source_or_frequency_mismatches": other_mismatch,
+            "source_reconciliation_classes": category_counts,
             "documented_web_first_release_periods_not_archived_pit": first_total,
             "eligible_for_new_numeric_scores": 0,
             "independent_historical_formula_replays": 0,
@@ -166,6 +224,51 @@ def bridge(model, legacy, v2):
     }
 
 
+def markdown(receipt):
+    """Human audit: show the exact identity/frequency discrepancies first."""
+    stats = receipt["summary"]
+    lines = [
+        "# Macro G8 - source-to-score reconciliation (read only)",
+        "",
+        "Historical Macro baseline: 2026-09-25. **No new scores or FX rankings authorised.**",
+        "",
+        f"Technical source ID and frequency matches: **{stats['source_id_and_frequency_matches']}/24**. "
+        f"Unselected Growth canonical indicators: **{stats['unselected_growth_canonical_indicators']}**. "
+        f"Other source/frequency mismatches: **{stats['non_growth_source_or_frequency_mismatches']}**.",
+        "",
+        "A matching ID/frequency does **not** prove metric equivalence, first-release PIT history "
+        "or a source-to-score formula. Archived release-day proof for the full training "
+        "series is still absent.",
+        "",
+        "| Currency | Pillar | Registered metric (frequency) | Candidate (frequency) | Visible first-release periods | Precise blocker |",
+        "| --- | --- | --- | --- | ---: | --- |",
+    ]
+    rows = sorted(receipt["rows"], key=lambda r: (
+        r["source_id_and_frequency_match"], r["pillar"] != "growth",
+        r["currency"], r["pillar"]))
+    for r in rows:
+        label = lambda key: str(r.get(key) or "NOT_SELECTED")
+        lines.append(
+            f"| {r['currency']} | {r['pillar']} | "
+            f"{label('canonical_source_id')} ({label('canonical_frequency')}) | "
+            f"{label('candidate_source_id')} ({label('candidate_frequency')}) | "
+            f"{r['candidate_first_release_periods_visible']} | "
+            f"{r['source_reconciliation_class']} |"
+        )
+    lines += [
+        "",
+        "**Ordering:** all pending indicators first; matching technical IDs last.",
+        "",
+        "## Explicit exclusions",
+        "- No implied equation for Growth/Labour/Inflation was inferred from 24 historical outputs.",
+        "- A reported source mismatch is not necessarily a data-provider error; it may be a different economic statistic.",
+        "- A first-release webpage is not equivalent to archived immutable first-release values and revisions.",
+        "- No PIT-certified rebase or current-day Macro strength is created by this dossier.",
+        "",
+    ]
+    return "\\n".join(lines)
+
+
 def run():
     now = datetime.now(timezone.utc)
     model = json.loads((ROOT / "live_data/sections/D.json").read_text(encoding="utf-8"))
@@ -177,15 +280,20 @@ def run():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", type=Path)
+    parser.add_argument("--markdown", type=Path)
     args = parser.parse_args()
-    if args.out is not None:
-        check(args.out.resolve().is_relative_to(Path("/tmp")),
-              "receipt output must remain under /tmp")
+    for output in (args.out, args.markdown):
+        if output is not None:
+            check(output.resolve().is_relative_to(Path("/tmp")),
+                  "receipt output must remain under /tmp")
     receipt = run()
     if args.out:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(json.dumps(receipt, sort_keys=True, ensure_ascii=False,
                                        indent=2) + "\n", encoding="utf-8")
+    if args.markdown:
+        args.markdown.parent.mkdir(parents=True, exist_ok=True)
+        args.markdown.write_text(markdown(receipt) + "\\n", encoding="utf-8")
     print(json.dumps({
         "status": receipt["status"], **receipt["summary"],
         "safe_to_publish_new_D": False,
