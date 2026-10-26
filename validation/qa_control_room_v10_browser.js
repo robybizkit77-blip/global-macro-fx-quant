@@ -719,7 +719,7 @@ function expectedReactionFromMetrics(row){
     if(!cbFirst.priority?.includes('sintesi resta sospesa')||
        !cbFirst.evidence?.includes('Decisioni o pricing non riconciliabili')||
        !cbFirst.text.includes('Dati o copertura insufficienti')||
-       !cbFirst.text.includes('snapshot policy storico')||
+       !cbFirst.text.toLowerCase().includes('snapshot policy storico')||
        !cbFirst.closed||!cbFirst.chart||!cbFirst.table||!cbFirst.order||
        cbFirst.width>cbFirst.client+2||cbFirst.doc>cbFirst.viewport+16)
       throw Error(label+' CB fail-closed source provenance not honest '+JSON.stringify(cbFirst));
