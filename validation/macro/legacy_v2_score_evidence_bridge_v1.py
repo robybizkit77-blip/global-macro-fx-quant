@@ -54,6 +54,14 @@ def bridge(model, legacy, v2):
     old = model.get("macro")
     check(isinstance(old, dict) and set(old) == set(FX),
           "frozen scalar currency coverage incomplete")
+    frozen_values = {currency: {
+        name: old[currency].get(name) for name in (*PILLARS, "cycle")
+    } for currency in FX}
+    frozen_hash = hashlib.sha256(json.dumps(
+        frozen_values, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")).hexdigest()
+    check(legacy.get("historical_scores_sha256") == frozen_hash,
+          "frozen 24 historical output vector not aligned with scored source receipt")
     rows = v2.get("rows")
     check(isinstance(rows, list) and len(rows) == 24,
           "V2 source slot coverage incomplete")
