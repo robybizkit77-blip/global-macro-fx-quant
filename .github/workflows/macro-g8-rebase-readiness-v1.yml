@@ -125,7 +125,10 @@ jobs:
         run: |
           set -euo pipefail
           python -m unittest validation.macro.test_legacy_v2_score_evidence_bridge_v1 -v
-          python -m validation.macro.legacy_v2_score_evidence_bridge_v1 --out /tmp/macro-g8-rebase/legacy-v2-24-score-crosswalk.json
+          python -m validation.macro.legacy_v2_score_evidence_bridge_v1 \
+            --out /tmp/macro-g8-rebase/legacy-v2-24-score-crosswalk.json \
+            --markdown /tmp/macro-g8-rebase/legacy-v2-24-score-mismatch-dossier.md
+          cat /tmp/macro-g8-rebase/legacy-v2-24-score-mismatch-dossier.md >> "$GITHUB_STEP_SUMMARY"
           python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
           import json
           r=json.load(open('/tmp/macro-g8-rebase/legacy-v2-24-score-crosswalk.json'))
