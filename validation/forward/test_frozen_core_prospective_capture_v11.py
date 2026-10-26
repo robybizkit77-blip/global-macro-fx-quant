@@ -39,6 +39,40 @@ def local(hour):
     return dt.datetime(2026,10,26,hour,31,tzinfo=gate.ROME)
 
 class ProspectiveAdmission(unittest.TestCase):
+    def test_primary_backup_and_unmatched_utc_crons_across_dst(self):
+        # 19:30 + 20:30 Rome on CET and CEST; same-day source gate stays.
+        self.assertEqual(gate.schedule_attempt(
+            dt.datetime(2026,10,26,19,31,tzinfo=gate.ROME),
+            "schedule","30 18 * * 1-5"),"PRIMARY_1930_ROME")
+        self.assertEqual(gate.schedule_attempt(
+            dt.datetime(2026,10,26,20,31,tzinfo=gate.ROME),
+            "schedule","30 19 * * 1-5"),"FALLBACK_2030_ROME")
+        self.assertEqual(gate.schedule_attempt(
+            dt.datetime(2026,10,23,19,31,tzinfo=gate.ROME),
+            "schedule","30 17 * * 1-5"),"PRIMARY_1930_ROME")
+        self.assertEqual(gate.schedule_attempt(
+            dt.datetime(2026,10,23,20,31,tzinfo=gate.ROME),
+            "schedule","30 18 * * 1-5"),"FALLBACK_2030_ROME")
+        self.assertEqual(gate.schedule_attempt(
+            dt.datetime(2026,10,26,18,31,tzinfo=gate.ROME),
+            "schedule","30 17 * * 1-5"),"SKIPPED_DUPLICATE_DST_UTC_SLOT")
+        self.assertEqual(gate.schedule_attempt(
+            dt.datetime(2026,10,23,21,31,tzinfo=gate.ROME),
+            "schedule","30 19 * * 1-5"),"SKIPPED_DUPLICATE_DST_UTC_SLOT")
+        self.assertEqual(gate.schedule_attempt(
+            dt.datetime(2026,10,26,20,31,tzinfo=gate.ROME),
+            "workflow_dispatch",""),"MANUAL_ATTEMPT")
+        with self.assertRaisesRegex(ValueError,"aware"):
+            gate.schedule_attempt(dt.datetime(2026,10,26,20,31),"schedule","30 19 * * 1-5")
+
+    def test_backup_does_not_replay_official_oct23_fixing(self):
+        fx,setup,d=minimal()
+        fx["last_as_of"]="2026-10-23"
+        setup["price_asof"]="2026-10-23"
+        result=gate.assess(dt.datetime(2026,10,26,20,31,tzinfo=gate.ROME),fx,setup,d)
+        self.assertEqual(result["status"],"BLOCKED_NO_CAPTURE")
+        self.assertIn("ECB_CURRENT_DAY_FIXING_NOT_PRESENT",result["checks"])
+
     def test_after_close_all_28_and_official_current_date(self):
         fx,setup,d=minimal()
         result=gate.assess(local(19),fx,setup,d)
