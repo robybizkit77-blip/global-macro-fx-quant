@@ -105,7 +105,10 @@ class LegacyV2ScoreEvidenceTests(unittest.TestCase):
         # research source; it is observed, but no canonical training deficit
         # may be inferred from different frequency/metric observations.
         target = next(r for r in modified["rows"]
-                      if r["candidate_evidence_source_id"] is not None)
+                      if r["pillar"] != "growth"
+                      and r["candidate_evidence_source_id"] is not None
+                      and r["canonical_series_id_matches_candidate"] is True
+                      and r["canonical_frequency_matches_candidate"] is True)
         target["candidate_evidence_source_id"] += "_DIFFERENT_SERIES"
         target["canonical_series_id_matches_candidate"] = False
         result = bridge(self.model, self.legacy, modified)
