@@ -48,6 +48,7 @@ class EUR2YParityTests(unittest.TestCase):
 
     def test_reject_short_unverified_historic_source(self):
         days=[x.isoformat() for x in sorted(self.orig)[:100]]
+        days.append("2026-10-22")  # preserve current end; test short overlap, not missing as-of
         with self.assertRaisesRegex(ValueError,"insufficient source overlap"):
             m.audit_eur_original(self.rates,self.raw(skip=set(x.isoformat()
                 for x in self.orig if x.isoformat() not in days)))
