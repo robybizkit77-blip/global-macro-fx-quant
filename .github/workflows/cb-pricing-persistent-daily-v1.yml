@@ -70,7 +70,7 @@ jobs:
         if: steps.gate.outputs.should_run == 'true'
         run: python3 -m pip install --disable-pip-version-check requests beautifulsoup4 pandas openpyxl
 
-      - name: Run certified all-currency dry-run preflight
+      - name: Run per-currency certified dry-run preflight
         if: steps.gate.outputs.should_run == 'true'
         shell: bash
         run: |
@@ -79,11 +79,41 @@ jobs:
           python3 - <<'PY'
           import json
           d=json.load(open('/tmp/cb-pricing-persistent/DAILY_RECEIPT.json'))
-          assert d['status']=='ALL_GREEN_NO_PUBLICATION',d
+          expected=['AUD','CAD','GBP','JPY']
           assert d['working_tree_clean'] is True,d
-          assert sorted(d['currencies'])==['AUD','CAD','GBP','JPY'],d
-          assert all(d['currencies'][c]['status']=='GREEN' for c in ('AUD','CAD','GBP','JPY')),d
-          print('CB_PRICING_PERSISTENT_PREFLIGHT_PASS')
+          assert sorted(d['currencies'])==expected,d
+          assert d['per_currency_dry_run_required'] is True,d
+          assert not d['promotion_performed'] and not d['live_data_published'],d
+          eligible=[c for c in expected if d['currencies'][c]['status']=='GREEN']
+          blocked=[c for c in expected if d['currencies'][c]['status']!='GREEN']
+          assert eligible and d['eligible_currencies']==eligible,d
+          assert d['blocked_currencies']==blocked,d
+          assert all(d['currencies'][c]['status'] in ('FAILED','STALE') for c in blocked),d
+          assert d['status']==('ALL_GREEN_NO_PUBLICATION' if not blocked else 'PARTIAL_GREEN_NO_PUBLICATION'),d
+          assert d['all_or_nothing_gate'] is (not blocked),d
+          for c in eligible:
+              row=d['currencies'][c]
+              assert row['candidate_status']=='READY_FOR_DRY_RUN' and row['isolated_dry_run']=='PASS',row
+              assert row['isolated_semantic_scope']==[c],row
+              assert row['business_day_lag'] in (0,1,2),row
+              candidate=json.load(open('/tmp/cb-pricing-persistent/'+c+'.candidate.json'))
+              assert candidate['currency']==c and candidate['as_of']==row['as_of'],candidate
+              assert candidate['status']=='READY_FOR_DRY_RUN',candidate
+          # Negative fixture against the exact eligibility predicate:
+          # a failed CAD collector cannot be selected for application.
+          from copy import deepcopy
+          simulated=deepcopy(d['currencies'])
+          simulated['CAD']['status']='FAILED'
+          simulated_ok=[c for c in expected if simulated[c]['status']=='GREEN']
+          assert 'CAD' not in simulated_ok
+          assert set(simulated_ok)==set(eligible)-{'CAD'}
+          simulated_all_failed=deepcopy(d['currencies'])
+          for c in expected: simulated_all_failed[c]['status']='FAILED'
+          assert not [c for c in expected if simulated_all_failed[c]['status']=='GREEN']
+          print('CB_PRICING_FAILED_CAD_ISOLATION_FIXTURE_PASS',simulated_ok)
+          print('CB_PRICING_CERTIFIED_LANES_PREFLIGHT_PASS',eligible,'BLOCKED',blocked)
+          with open('/tmp/cb-pricing-persistent/eligible.json','w') as f: json.dump(eligible,f)
+
           PY
           git diff --exit-code -- live_data payload
 
@@ -96,15 +126,27 @@ jobs:
           cp payload/part-00.txt /tmp/cb-pricing-persistent/part-00.before.txt
           cp live_data/manifest.v2.json /tmp/cb-pricing-persistent/manifest.before.json
 
-      - name: Apply all four validated candidates
+      - name: Apply independently certified source candidates only
         if: steps.gate.outputs.should_run == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          python3 validation/cb_pricing/apply_aud_asx_ib_candidate.py --candidate /tmp/cb-pricing-persistent/AUD.candidate.json > /tmp/cb-pricing-persistent/AUD.apply.json
-          python3 validation/cb_pricing/apply_cad_mx_corra_candidate.py --candidate /tmp/cb-pricing-persistent/CAD.candidate.json > /tmp/cb-pricing-persistent/CAD.apply.json
-          python3 validation/cb_pricing/apply_gbp_boe_ois_candidate.py --candidate /tmp/cb-pricing-persistent/GBP.candidate.json > /tmp/cb-pricing-persistent/GBP.apply.json
-          python3 validation/cb_pricing/apply_jpy_tfx_tona_candidate.py --candidate /tmp/cb-pricing-persistent/JPY.candidate.json > /tmp/cb-pricing-persistent/JPY.apply.json
+          python3 - <<'PY'
+          import json,subprocess
+          from pathlib import Path
+          root=Path('/tmp/cb-pricing-persistent')
+          eligible=json.loads((root/'eligible.json').read_text())
+          scripts={'AUD':'apply_aud_asx_ib_candidate.py','CAD':'apply_cad_mx_corra_candidate.py',
+                   'GBP':'apply_gbp_boe_ois_candidate.py','JPY':'apply_jpy_tfx_tona_candidate.py'}
+          assert eligible and len(eligible)==len(set(eligible))
+          assert set(eligible)<=set(scripts),eligible
+          for c in eligible:
+              with (root/(c+'.apply.json')).open('w') as log:
+                  subprocess.run(['python3','validation/cb_pricing/'+scripts[c],
+                     '--candidate',str(root/(c+'.candidate.json'))],stdout=log,check=True)
+              print('CB_PRICING_INDEPENDENT_OFFICIAL_CANDIDATE_APPLIED',c)
+          print('CB_PRICING_SOURCE_BLOCKED_NOT_APPLIED',sorted(set(scripts)-set(eligible)))
+          PY
           python3 validation/build_live_manifest_v2.py --write live_data/manifest.v2.json > /tmp/cb-pricing-persistent/manifest-build.json
           python3 validation/check_cb_pricing_source_registry.py > /tmp/cb-pricing-persistent/registry.json
           python3 validation/check_live_update_contract.py > /tmp/cb-pricing-persistent/live-contract.json
@@ -124,9 +166,9 @@ jobs:
           an=json.load(open('live_data/sections/NATIVE_CB_DATA.json'))
           co=sorted(k for k in bo['currencies'] if bo['currencies'][k]!=ao['currencies'][k])
           cn=sorted(k for k in bn if bn[k]!=an[k])
-          allowed_ccy=['AUD','CAD','GBP','JPY']
-          assert set(co).issubset(allowed_ccy),co
-          assert set(cn).issubset(allowed_ccy),cn
+          eligible=json.load(open('/tmp/cb-pricing-persistent/eligible.json'))
+          assert set(co).issubset(eligible),('unexpected currency published',co,eligible)
+          assert set(cn).issubset(eligible),('unexpected currency published',cn,eligible)
           assert co==cn,(co,cn)
           changed=sorted(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
           allowed=['live_data/manifest.v2.json','live_data/sections/NATIVE_CB_DATA.json','live_data/sections/OIS_DATA.json','payload/part-00.txt']
