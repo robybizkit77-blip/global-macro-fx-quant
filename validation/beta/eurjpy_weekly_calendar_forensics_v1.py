@@ -27,7 +27,7 @@ def analyze_calendar(fx_dates, eur_dates, jpy_dates, *, start, end):
         raise ValueError("invalid audit range")
     fx,eur,jpy=map(set,(fx_dates,eur_dates,jpy_dates))
     common=fx & eur & jpy
-    if not (all(type(d) is date for d in x) for x in (fx,eur,jpy)):
+    if not all(all(type(d) is date for d in x) for x in (fx,eur,jpy)):
         raise ValueError("non-date source index")
     start_friday=beta.friday(start)
     last_friday=beta.friday(end)
