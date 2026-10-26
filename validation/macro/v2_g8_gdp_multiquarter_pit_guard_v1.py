@@ -1,5 +1,7 @@
 """Research-only cross-quarter GDP vintage validation; not a source certification."""
 from datetime import date, datetime, timedelta, timezone
+import calendar
+import math
 from urllib.parse import urlsplit
 
 CURRENCIES = set("USD EUR GBP JPY CHF CAD AUD NZD".split())
@@ -21,10 +23,12 @@ def validate(rows):
         if type(stage) is not int or stage < 0:
             raise ValueError("invalid revision sequence")
         release = visible_at(day)
-        if date.fromisoformat(day) <= date(int(q[:4]), int(q[-1]) * 3, 1):
+        end_month = int(q[-1]) * 3
+        quarter_end = date(int(q[:4]), end_month, calendar.monthrange(int(q[:4]), end_month)[1])
+        if date.fromisoformat(day) <= quarter_end:
             raise ValueError("publication precedes end of reference quarter")
         value, unit = row.get("reported_value"), row.get("reported_unit")
-        if type(value) not in (int, float) or not (-100 < value < 1000):
+        if type(value) not in (int, float) or not math.isfinite(value) or not (-100 < value < 1000):
             raise ValueError("invalid GDP reading")
         if not isinstance(unit, str) or not unit.startswith("PERCENT_"):
             raise ValueError("explicit original units required")
