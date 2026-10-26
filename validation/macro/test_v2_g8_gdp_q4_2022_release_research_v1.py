@@ -87,15 +87,15 @@ class GDP2022Q4PublisherResearchTests(unittest.TestCase):
                          "PERCENT_QOQ_SA_CHAIN_VOLUME_PRODUCTION")
         self.assertIn("FIRST_RELEASE_MINUS_0_6",nz["NZD:2022Q4"]["original_source_value_not_current_vintage"])
 
-    def test_seventeen_quarters_136_first_sources_and_no_operational_promotion(self):
+    def test_eighteen_quarters_144_first_sources_and_no_operational_promotion(self):
         r=research_receipt()
-        self.assertEqual(r["quarters_documented"],17)
-        self.assertEqual(r["first_publisher_statements_documented"],136)
+        self.assertEqual(r["quarters_documented"],18)
+        self.assertEqual(r["first_publisher_statements_documented"],144)
         self.assertEqual(r["first_statement_quarters_per_currency"],
-                         {c:17 for c in "USD EUR GBP JPY CHF CAD AUD NZD".split()})
+                         {c:18 for c in "USD EUR GBP JPY CHF CAD AUD NZD".split()})
         all_rows=unified_research_rows()
         self.assertEqual(len({(x["currency"],x["reference_quarter"]) for x in all_rows
-                              if x["stage_order"]==0}),136)
+                              if x["stage_order"]==0}),144)
         early=snapshot(all_rows,"2023-02-24T00:00:00Z")
         self.assertIn("USD:2022Q4",early["visible_vintages"])
         self.assertNotIn("USD:2023Q1",early["visible_vintages"])
