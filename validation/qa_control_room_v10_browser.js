@@ -580,11 +580,13 @@ function expectedReactionFromMetrics(row){
     return d?.querySelector('#rates-select button[data-ccy="NZD"]')?.getAttribute('aria-pressed')==='true'
        && d?.getElementById('rates-status')?.textContent.includes('Nuova Zelanda');
   },null,{timeout:15000});
-  await page.waitForFunction(()=>{
+  await page.waitForFunction(expected=>{
     const d=document.getElementById('gmfq-page')?.contentDocument;
-    return d?.querySelectorAll('#gmfq-pricing-research .gmfq-research-plot svg polyline').length===4;
-  },null,{timeout:25000});
-  // Sources are fetched asynchronously AFTER the four core pricing curves
+    // The actual plotted ECB/BoE/other curves must obey the SAME
+    // 4-day officialPricingCurrent policy as Home and the pair panel.
+    return d?.querySelectorAll('#gmfq-pricing-research .gmfq-research-plot svg polyline').length===expected;
+  },certified,{timeout:25000});
+  // Sources are fetched asynchronously AFTER the currently eligible curves
   // render. Wait for all four individually linked source-readiness rows rather
   // than racing the still-loading "Stato fonti da aggiornare" placeholder.
   // Timeout still FAILS if the actual read-only source context is missing.
