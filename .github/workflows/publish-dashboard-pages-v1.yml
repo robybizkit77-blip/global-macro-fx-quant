@@ -19,8 +19,11 @@ permissions:
 # Preserve pending morning writes/retries instead of replacing an older
 # pending run when another workflow/event is triggered in the same group.
 # Each attempt remains serialized; downstream source/lease checks still apply.
+# PR validation never occupies the production writer/retry queue.
+# All main, workflow_run, workflow_dispatch and schedule triggers retain
+# the original shared production group and serialized writes.
 concurrency:
-  group: publish-dashboard-pages-v1
+  group: ${{ github.event_name == 'pull_request' && format('pages-validation-pr-{0}', github.event.pull_request.number) || 'publish-dashboard-pages-v1' }}
   queue: max
   cancel-in-progress: false
 
