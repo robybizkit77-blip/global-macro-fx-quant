@@ -1,5 +1,6 @@
 """EUR daily 2Y/10Y old-history quarantine and safe G8 feed continuity."""
 import copy
+from datetime import date, timedelta
 import json
 import subprocess
 import sys
@@ -15,23 +16,29 @@ class EURDailyRatesHistorySourceGuardTests(unittest.TestCase):
     def setUpClass(cls):
         cls.live=json.loads(m.DEFAULT_CURRENT.read_text(encoding="utf-8"))
 
-    def test_real_known_official_tail_accepted_without_recertifying_old_history(self):
-        r=m.eur_daily_append_source_gate(self.live['EUR'],'2026-10-23')
+    @staticmethod
+    def next_date(row):
+        return (date.fromisoformat(row['date'])+timedelta(days=1)).isoformat()
+
+    def test_real_known_official_tail_accepted_on_both_source_versions(self):
+        row=self.live['EUR']
+        r=m.eur_daily_append_source_gate(row,self.next_date(row))
         self.assertEqual(r['source_clean_tail_from'],'2026-10-13')
-        self.assertEqual(r['weekly_ref'],'2026-10-16')
-        self.assertEqual(r['history_status'],m.EUR_LEGACY_STATUS)
-        self.assertTrue(r['historical_legacy_basis_quarantined'])
+        self.assertEqual(r['history_status'],row['history_status'])
+        self.assertEqual(r['historical_legacy_basis_quarantined'],
+                         row['history_status']==m.EUR_LEGACY_STATUS)
         self.assertFalse(r['historical_first_release_pit_certified'])
+        self.assertGreaterEqual(r['weekly_ref'],'2026-10-16')
 
     def test_legacy_provenance_cannot_be_silently_upgraded(self):
         src=copy.deepcopy(self.live['EUR'])
         src['history_status']='FULL_ECB_SAME_BASIS_2Y_10Y_RESEARCH_CANDIDATE_ONLY'
         with self.assertRaisesRegex(ValueError,"not approved"):
-            m.eur_daily_append_source_gate(src,'2026-10-23')
+            m.eur_daily_append_source_gate(src,self.next_date(src))
         src['history_status']=m.EUR_LEGACY_STATUS
         src['history2_quality']='COMPLETE_SOURCE_VERIFIED'
         with self.assertRaisesRegex(ValueError,"quarantine label changed"):
-            m.eur_daily_append_source_gate(src,'2026-10-23')
+            m.eur_daily_append_source_gate(src,self.next_date(src))
 
     def test_known_official_2y_or_10y_date_value_tampering_blocks_eur_only(self):
         for key in ['history2','history10']:
@@ -39,23 +46,26 @@ class EURDailyRatesHistorySourceGuardTests(unittest.TestCase):
                 src=copy.deepcopy(self.live['EUR'])
                 idx=src[key]['dates'].index('2026-10-15')
                 src[key]['values'][idx]+=0.05
-                with self.assertRaisesRegex(ValueError,"clean tail drift"):
-                    m.eur_daily_append_source_gate(src,'2026-10-23')
+                with self.assertRaisesRegex(ValueError,"(clean tail drift|historical values drift)"):
+                    m.eur_daily_append_source_gate(src,self.next_date(src))
 
     def test_one_tenor_different_calendar_or_unordered_history_blocks(self):
         for key in ['history2','history10']:
             src=copy.deepcopy(self.live['EUR'])
-            src[key]['dates'][-2]='2026-10-19'
-            with self.assertRaisesRegex(ValueError,"duplicated or unordered"):
-                m.eur_daily_append_source_gate(src,'2026-10-23')
+            src[key]['dates'][-2]=src[key]['dates'][-3]
+            with self.assertRaisesRegex(ValueError,
+                     "(duplicated or unordered|historical values drift)"):
+                m.eur_daily_append_source_gate(src,self.next_date(src))
 
     def test_weekly_reference_must_not_use_legacy_curve_values(self):
         # Next official source observation years ahead must not use a stale
         # 7-calendar-day weekly baseline for an invented change.
+        eur=self.live['EUR']
+        gap=(date.fromisoformat(eur['date'])+timedelta(days=15)).isoformat()
         with self.assertRaisesRegex(ValueError,"gap >12"):
-            m.eur_daily_append_source_gate(self.live['EUR'],'2026-11-20')
+            m.eur_daily_append_source_gate(eur,gap)
         with self.assertRaisesRegex(ValueError,"new official observation does not advance"):
-            m.eur_daily_append_source_gate(self.live['EUR'],'2026-10-22')
+            m.eur_daily_append_source_gate(eur,eur['date'])
 
 
     def approved_fake_fixture_for_contract_tests(self):
@@ -63,6 +73,10 @@ class EURDailyRatesHistorySourceGuardTests(unittest.TestCase):
         from hashlib import sha256
         from datetime import date
         s=copy.deepcopy(self.live['EUR'])
+        if s.get('history_status')==m.EUR_APPROVED_STATUS:
+            # Real published fixture is the stronger original official check;
+            # no fictitious extra observations are added after promotion.
+            return s
         extra=['2026-09-23','2026-09-24','2026-09-25','2026-09-28',
                '2026-09-29','2026-09-30','2026-10-05','2026-10-07',
                '2026-10-08','2026-10-09','2026-10-12']
@@ -100,7 +114,7 @@ class EURDailyRatesHistorySourceGuardTests(unittest.TestCase):
 
     def test_approved_origin_fingerprint_maintains_282_publisher_prefix(self):
         s=self.approved_fake_fixture_for_contract_tests()
-        proof=m.eur_daily_append_source_gate(s,'2026-10-23')
+        proof=m.eur_daily_append_source_gate(s,self.next_date(s))
         self.assertEqual(proof['history_status'],m.EUR_APPROVED_STATUS)
         self.assertFalse(proof['historical_legacy_basis_quarantined'])
 
@@ -127,14 +141,15 @@ class EURDailyRatesHistorySourceGuardTests(unittest.TestCase):
     def run_builder(self,currencies,*,tamper_eur=False):
         src=copy.deepcopy(self.live)
         if tamper_eur:
-            src['EUR']['history2']['values'][-6]+=0.2
+            idx=src['EUR']['history2']['dates'].index('2026-10-15')
+            src['EUR']['history2']['values'][idx]+=.2
         audit={'status':'PASS','summary':{'updates_available':list(currencies)},
                'currencies':{}}
         for c in currencies:
             d=src[c]
             audit['currencies'][c]={
                 'coverage_mode':'LIVE_FETCH',
-                'official':{'date':'2026-10-23','2Y':d['2Y']+.01,
+                'official':{'date':self.next_date(d),'2Y':d['2Y']+.01,
                             '10Y':d['10Y']+.01}}
         with tempfile.TemporaryDirectory() as td:
             d=Path(td)
@@ -154,12 +169,12 @@ class EURDailyRatesHistorySourceGuardTests(unittest.TestCase):
         self.assertEqual(receipt['status'],'CANDIDATE_READY')
         self.assertEqual(receipt['changed_currencies'],['EUR'])
         self.assertEqual(receipt['quarantined_currencies'],{})
-        self.assertEqual(out['EUR']['history_status'],m.EUR_LEGACY_STATUS)
-        self.assertEqual(out['EUR']['history2_quality'],m.EUR_LEGACY_QUALITY)
-        self.assertEqual(out['EUR']['history2']['dates'][-1],'2026-10-23')
+        self.assertEqual(out['EUR']['history_status'],self.live['EUR']['history_status'])
+        self.assertEqual(out['EUR']['history2_quality'],self.live['EUR']['history2_quality'])
+        self.assertEqual(out['EUR']['history2']['dates'][-1],self.next_date(self.live['EUR']))
         self.assertEqual(len(out['EUR']['history2']['dates']),
                          len(self.live['EUR']['history2']['dates'])+1)
-        self.assertEqual(out['EUR']['weekly2_validation']['start_date'],'2026-10-16')
+        self.assertGreaterEqual(out['EUR']['weekly2_validation']['start_date'],'2026-10-16')
 
     def test_eur_bad_history_quarantines_only_eur_and_other_official_ccy_advances(self):
         proc,out=self.run_builder(['EUR','CAD'],tamper_eur=True)
@@ -171,7 +186,7 @@ class EURDailyRatesHistorySourceGuardTests(unittest.TestCase):
                          'DAILY_OFFICIAL_NEW_SNAPSHOT_QUARANTINED')
         self.assertTrue(receipt['quarantined_currencies']['EUR']['existing_eur_history_unchanged'])
         self.assertEqual(out['EUR']['date'],self.live['EUR']['date'])
-        self.assertEqual(out['CAD']['date'],'2026-10-23')
+        self.assertEqual(out['CAD']['date'],self.next_date(self.live['CAD']))
 
     def test_eur_only_bad_history_no_updates_preserves_source_aged_metadata_path(self):
         proc,out=self.run_builder(['EUR'],tamper_eur=True)

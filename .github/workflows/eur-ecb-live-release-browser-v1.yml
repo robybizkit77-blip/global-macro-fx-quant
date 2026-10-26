@@ -1,0 +1,95 @@
+name: EUR ECB 2Y10Y Live-Release 1440/390 Preview Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'live_data/sections/NATIVE_RATES_DATA.json'
+      - 'validation/rates/qa_v10_eur_approved_history_published_visual_v1.cjs'
+      - '.github/workflows/eur-ecb-live-release-browser-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  published-status-preview:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 13
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Restore approved unchanged Control Room v10 32-part UI
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin gh-pages --no-tags
+          mkdir -p site/control-room-preview/parts
+          for i in $(seq -w 0 31); do
+            git show "origin/gh-pages:site/control-room-preview/parts/part-$i.txt" > "site/control-room-preview/parts/part-$i.txt"
+          done
+          test "$(find site/control-room-preview/parts -type f | wc -l)" -eq 32
+          node --check site/control-room-preview/home-navigation-v10.js
+          node --check validation/rates/qa_v10_eur_approved_history_published_visual_v1.cjs
+      - name: Install headless Chromium for v10 desktop/mobile
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm init -y >/dev/null 2>&1
+          npm install --no-save --no-audit --no-fund playwright
+          npx playwright install --only-shell chromium
+      - name: Prove exact original publisher source status before browser
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from validation.build_rates_candidate_from_audit import eur_daily_append_source_gate
+          src=json.load(open('live_data/sections/NATIVE_RATES_DATA.json'))
+          eur=src['EUR']
+          assert eur['date']=='2026-10-22'
+          assert len(eur['history2']['dates'])==len(eur['history10']['dates'])==282
+          assert eur['historical_curve_rebase']['status']=='PUBLISHED_AFTER_SOURCE_AND_BROWSER_QA'
+          assert eur['historical_curve_rebase']['source_rebase_not_market_move']
+          assert eur_daily_append_source_gate(eur,'2026-10-23')['historical_legacy_basis_quarantined'] is False
+          print('ECB_EUR_OFFICIAL_282_DATES_PUBLISHED_STATUS_SOURCE_AND_DAILY_GUARD_GREEN')
+          PY
+      - name: Render target 1440px desktop and 390px mobile, verify CHF explanatory label
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8818 --bind 127.0.0.1 > /tmp/eur-approved-release-browser.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          sleep 2
+          node validation/rates/qa_v10_eur_approved_history_published_visual_v1.cjs \
+            --scenario published --chf-10y 0.5102548462926042 \
+            --out /tmp/eur-approved-history-browser.json \
+            --screenshots /tmp/eur-approved-release-screens
+          test -s /tmp/eur-approved-history-browser.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          a=json.load(open('/tmp/eur-approved-history-browser.json'))
+          assert a['status']=='PUBLISHED_SOURCE_BROWSER_RELEASE_CANDIDATE_GREEN',a
+          assert len(a['cases'])==2
+          assert a['main_merge_approved_or_applied'] is False
+          x={p.name for p in Path('/tmp/eur-approved-release-screens').glob('*.png')}
+          assert {'desktop-v10-rates.png','desktop-v10-home.png',
+                  'mobile-v10-rates.png','mobile-v10-home.png'}<=x,x
+          print('ECB_EUR_LIVE_RELEASE_BROWSER_1440_390_VISUAL_PREVIEW_GREEN',sorted(x))
+          PY
+      - name: Save proof of candidate page on both formats
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: approved-eur-ecb-2y10y-chf-rebase-1440-390-premerge
+          path: |
+            /tmp/eur-approved-history-browser.json
+            /tmp/eur-approved-release-screens/
+          if-no-files-found: warn
+          retention-days: 30
