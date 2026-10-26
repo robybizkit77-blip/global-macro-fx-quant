@@ -1,0 +1,52 @@
+name: G8 28-Pair Daily Event Context (unscheduled)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/news_g8_28pair_daily_event_proxy_v1.py'
+      - 'validation/test_news_g8_28pair_daily_event_proxy_v1.py'
+      - 'validation/NEWS_G8_28PAIR_EVENT_PROXY_QUICK_GUIDE.md'
+      - '.github/workflows/g8-28pair-daily-event-context-ci.yml'
+      - 'live_data/sections/ECB_G8_PRICE_HISTORY.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-reference-proxy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile and test official-source 28 pair arithmetic and caveats
+        run: |
+          python -m py_compile validation/news_g8_28pair_daily_event_proxy_v1.py validation/test_news_g8_28pair_daily_event_proxy_v1.py
+          python -m unittest validation.test_news_g8_28pair_daily_event_proxy_v1 -v
+      - name: Pilot BLS October 2 FX reference context
+        run: |
+          python -m validation.news_g8_28pair_daily_event_proxy_v1 \
+            --event-date 2026-10-02 --as-of 2026-10-26 \
+            --event-label BLS_US_JOBS_OCT2_2026 \
+            --out /tmp/gmfq-28pair-event-proxy.json
+          python - <<'PY'
+          import json
+          x=json.load(open('/tmp/gmfq-28pair-event-proxy.json'))
+          assert x['pair_count']==28 and x['observed_pair_count']==28
+          assert x['event_causality']=='NOT_ESTABLISHED'
+          assert x['eligible_for_pair_rank_change'] is False
+          assert x['eligible_for_backtest'] is False
+          assert x['estimated_intraday_reaction'] is None
+          p=next(p for p in x['pairs'] if p['pair']=='EURUSD')
+          assert p['event_to_next_fixing_pips']==-21.0
+          assert x['next_calendar_gap_days']==3
+          print('G8_28_CROSSES_DAILY_REFERENCE_VALID_NO_EVENT_CAUSALITY')
+          PY
+      - name: No production file changes
+        run: |
+          test -z "$(git status --porcelain -- live_data site dashboard payload)"
+          echo RESEARCH_ONLY_NO_PRODUCTION_MUTATION
