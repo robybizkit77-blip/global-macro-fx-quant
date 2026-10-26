@@ -31,6 +31,8 @@ on:
       - 'validation/macro/test_v2_g8_gdp_unified_web_research_v1.py'
       - 'validation/macro/fixtures/v2_g8_gdp_q3_2023_official_web_release_research_v1.json'
       - 'validation/macro/test_v2_g8_gdp_q3_2023_release_research_v1.py'
+      - 'validation/macro/fixtures/v2_g8_gdp_q2_2023_official_web_release_research_v1.json'
+      - 'validation/macro/test_v2_g8_gdp_q2_2023_release_research_v1.py'
       - '.github/workflows/macro-gdp-multiquarter-research-v1.yml'
   push:
     branches: [main]
@@ -62,6 +64,8 @@ on:
       - 'validation/macro/test_v2_g8_gdp_unified_web_research_v1.py'
       - 'validation/macro/fixtures/v2_g8_gdp_q3_2023_official_web_release_research_v1.json'
       - 'validation/macro/test_v2_g8_gdp_q3_2023_release_research_v1.py'
+      - 'validation/macro/fixtures/v2_g8_gdp_q2_2023_official_web_release_research_v1.json'
+      - 'validation/macro/test_v2_g8_gdp_q2_2023_release_research_v1.py'
       - '.github/workflows/macro-gdp-multiquarter-research-v1.yml'
   workflow_dispatch:
 
@@ -103,5 +107,7 @@ jobs:
         run: python -m unittest validation.macro.test_v2_g8_gdp_unified_web_research_v1 -v
       - name: Test 2023 Q3 G8 first estimates and twelve-quarter research history
         run: python -m unittest validation.macro.test_v2_g8_gdp_q3_2023_release_research_v1 -v
+      - name: Test Q2 2023 first-release research vintages and 13-quarter as-of protection
+        run: python -m unittest validation.macro.test_v2_g8_gdp_q2_2023_release_research_v1 -v
       - name: Verify operational data untouched
         run: git diff --exit-code HEAD^ HEAD -- live_data/sections/D.json live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
