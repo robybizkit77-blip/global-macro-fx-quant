@@ -160,6 +160,18 @@
       "stage_order": 0,
       "eligible_for_macro_scoring": false,
       "PIT_training_vintage_certified": false
+    },
+    {
+      "currency": "NZD",
+      "reference_quarter": "2026Q1",
+      "publisher_release_day": "2026-09-17",
+      "reported_value": 0.9,
+      "reported_unit": "PERCENT_QOQ_SA_CHAIN_VOLUME_PRODUCTION",
+      "source_url": "https://www.stats.govt.nz/news/gdp-increases-0-2-percent-in-the-june-2026-quarter/",
+      "verified_publisher_host": "www.stats.govt.nz",
+      "stage_order": 1,
+      "eligible_for_macro_scoring": false,
+      "PIT_training_vintage_certified": false
     }
   ]
 }
