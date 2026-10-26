@@ -21,11 +21,17 @@ def at(text: str) -> dt.datetime:
 
 
 for when, expected in (
-    ("2026-10-23T04:59:00+02:00", False),
+    ("2026-10-23T03:59:00+02:00", False),
+    ("2026-10-23T04:00:00+02:00", True),
+    ("2026-10-23T04:43:00+02:00", True),  # new CEST primary prebrief
+    ("2026-10-23T04:59:00+02:00", True),
     ("2026-10-23T05:00:00+02:00", True),
     ("2026-10-23T09:59:00+02:00", True),
     ("2026-10-23T10:00:00+02:00", False),
     ("2026-10-25T08:00:00+01:00", False),  # Sunday DST transition
+    ("2026-10-26T03:59:00+01:00", False),
+    ("2026-10-26T04:00:00+01:00", True),
+    ("2026-10-26T04:43:00+01:00", True),  # new CET primary prebrief
     ("2026-10-26T05:00:00+01:00", True),  # Monday in CET
     ("2026-10-26T09:59:00+01:00", True),
     ("2026-10-26T10:00:00+01:00", False),
@@ -80,6 +86,30 @@ for ccy, status in {
     "AUD": "GREEN_OFFICIAL", "NZD": "WITHHELD",
 }.items():
     good["OIS_OPERATIONAL_VIEW.json"]["currencies"][ccy]["operational_status"] = status
+
+# The 04:43 source gate must be active BEFORE the primary workflow publishes.
+# A legitimate early producer receipt must be judged at its actual timestamp,
+# not falsely failed because the later 07:45 fixtures have not happened yet.
+early = at("2026-10-26T04:43:00+01:00")
+early_good = copy.deepcopy(good)
+for name in ("NEWS_PULSE_OPERATIONAL.json", "CALENDAR_OPERATIONAL_VIEW.json"):
+    early_good[name]["generated_at_utc"] = "2026-10-26T02:20:00Z"
+    early_good[name]["last_checked_at_utc"] = "2026-10-26T02:20:00Z"
+early_passed = evaluate(early, early_good)
+assert early_passed["morning_gate_required"] is True
+assert early_passed["status"] == "PASS_MORNING_SOURCES_VERIFIED", early_passed
+assert early_passed["window"] == "WEEKDAYS_04_00_TO_10_00_EUROPE_ROME"
+early_missing = copy.deepcopy(early_good)
+early_missing["PAIR_SETUP_OPERATIONAL_VIEW.json"]["pairs"].pop(
+    next(iter(early_missing["PAIR_SETUP_OPERATIONAL_VIEW.json"]["pairs"]))
+)
+early_blocked = evaluate(early, early_missing)
+assert early_blocked["status"] == "BLOCK_MORNING_INPUTS_INCOMPLETE", early_blocked
+assert "PAIR_SOURCE_INTEGRITY" in early_blocked["critical_daily_problems"]
+# A source refresh not yet performed must not get credited to early prebrief.
+early_future = copy.deepcopy(early_good)
+early_future["NEWS_PULSE_OPERATIONAL.json"]["last_checked_at_utc"] = "2026-10-26T05:30:00Z"
+assert evaluate(early, early_future)["status"] == "BLOCK_MORNING_INPUTS_INCOMPLETE"
 
 passed = evaluate(monday, good)
 assert passed["status"] == "PASS_MORNING_SOURCES_VERIFIED", passed
