@@ -42,12 +42,25 @@ class Pages0800DeliveryTests(unittest.TestCase):
         self.assertEqual(d["status"], "PASS_PUBLIC_HTTP_BY_0800")
         self.assertTrue(d["independent_of_parent_orchestrator"])
         self.assertEqual(d["verified_file_count"], len(FILES))
+        self.assertTrue(d["on_time_delivery_proven"])
+        self.assertFalse(d["verified_after_deadline"])
 
     def test_late_success_is_never_on_time(self):
         self.public["verified_at_utc"] = "2026-10-27T07:03:00Z"
         d = self.result(dt.datetime(2026, 10, 27, 8, 15, tzinfo=ROME))
-        self.assertEqual(d["status"], "LATE_PUBLIC_HTTP_AFTER_0800")
+        self.assertEqual(d["status"], "VERIFIED_AFTER_0800_DELIVERY_TIME_UNPROVEN")
         self.assertTrue(d["public_exact_bytes_pass"])
+        self.assertTrue(d["verified_after_deadline"])
+        self.assertFalse(d["on_time_delivery_proven"])
+
+    def test_after_deadline_observation_cannot_prove_actual_delivery_late(self):
+        # The site may have been live at 07:30; an HTTP read at 08:20
+        # cannot retroactively establish the actual release time.
+        self.public["verified_at_utc"] = "2026-10-27T07:20:00Z"
+        d = self.result(dt.datetime(2026, 10, 27, 8, 21, tzinfo=ROME))
+        self.assertEqual(d["status"], "VERIFIED_AFTER_0800_DELIVERY_TIME_UNPROVEN")
+        self.assertTrue(d["public_exact_bytes_pass"])
+        self.assertFalse(d["on_time_delivery_proven"])
 
     def test_public_missing_is_not_success(self):
         self.assertEqual(evaluate(self.source, None, self.now)["status"], "FAIL_PUBLIC_HTTP_UNVERIFIED")
