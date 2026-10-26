@@ -122,12 +122,13 @@ function expectedReactionFromMetrics(row){
   // 4 calendar days, ACTIVE source and backtest-eligible official curve.
   // Rates 2Y/10Y have a distinct 5-day contract; applying that to OIS
   // would falsely count stale GBP on 2026-10-26 as still current.
-  const certified=Object.values(expectedOis.currencies).filter(x=>
+  const officialCurrent=Object.entries(expectedOis.currencies).filter(([,x])=>
     x.operational_status==='GREEN_OFFICIAL'&&x.official_status==='ACTIVE'&&
     x.quality==='OFFICIAL_CERTIFIED'&&x.backtest_eligible_as_official===true&&
     current(x.as_of,4)&&
     ['3m','6m','12m'].every(k=>Number.isFinite(x.horizons?.[k]?.rate)&&
-      Number.isFinite(x.horizons?.[k]?.policy_delta_bp))).length;
+      Number.isFinite(x.horizons?.[k]?.policy_delta_bp))).map(([ccy])=>ccy).sort();
+  const certified=officialCurrent.length;
   const expectedFx=current(fxData.last_as_of,4);
   await page.waitForFunction(()=>!!document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-home-data-audit'),
     null,{timeout:15000});
@@ -365,7 +366,7 @@ function expectedReactionFromMetrics(row){
      r.flags.some(x=>!x.visible||!x.flag)||!r.flags.find(x=>x.symbol==='DXY')?.caption?.includes('SINTETICO'))
     fatal.push('Home flagged currency tiles or DXY disclosure missing '+JSON.stringify(r.flags));
   if(r.pricing.length!==8||new Set(r.pricing.map(x=>x.ccy)).size!==8||
-     r.pricing.filter(x=>x.status==='OFFICIAL_REPRICING').length!==4||
+     JSON.stringify(r.pricing.filter(x=>x.status==='OFFICIAL_REPRICING').map(x=>x.ccy).sort())!==JSON.stringify(officialCurrent)||
      r.pricing.some(x=>!['OFFICIAL_REPRICING','FUTURES_LEVEL_ONLY','CASH_CARRY_SCENARIO','BANK_BILL_PROXY','WITHHELD'].includes(x.status)||
        (x.allowed==='true')!==(x.status==='OFFICIAL_REPRICING'))||
      r.pricing.some(x=>x.status==='FUTURES_LEVEL_ONLY'&&!x.content.includes('PX'))||
