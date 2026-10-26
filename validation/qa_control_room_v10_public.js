@@ -5,6 +5,7 @@ const fs=require('node:fs');
 const {execFileSync}=require('node:child_process');
 const {readApproved,verifyPublicNzd}=require('./control_room_nzd_public_contract_v1.js');
 const {matrix:expectedOisResearchMatrix,romeTodayIso}=require('../site/control-room-preview/ois-pricing-estimates-v1.js');
+const {expectedOfficialCurrencies}=require('./control_room_public_ois_eligibility_v1.js');
 const approvedNzdrates=readApproved('.');
 // PR browser QA targets the *currently published* main; its new loader
 // and version token will appear on GitHub Pages only after merge.
@@ -250,6 +251,32 @@ async function getState(page){
            width:rail?.scrollWidth,client:rail?.clientWidth,
            page:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
        });
+       // Verify the live DOM against independent publicly delivered
+       // operational AND canonical OIS data, applying the same strict
+       // four-Rome-calendar-day source freshness rule as the renderer.
+       // Historical official observations remain historical, never forced to
+       // appear as live repricing, and estimated data can never count.
+       const publicOis=await page.evaluate(async()=>{
+         const base='/global-macro-fx-quant/live_data/sections/';
+         const urls=['OIS_OPERATIONAL_VIEW.json','OIS_DATA.json'];
+         return await Promise.all(urls.map(async name=>{
+           const response=await fetch(base+name,{cache:'no-store'});
+           if(!response.ok)throw Error('Public OIS feed '+name+' HTTP '+response.status);
+           return response.json();
+         }));
+       });
+       const expectedOfficial=expectedOfficialCurrencies(publicOis[0],publicOis[1],romeTodayIso());
+       const displayedOfficial=reading.newHome.pricing
+         .filter(x=>x.status==='OFFICIAL_REPRICING').map(x=>x.code);
+       if(reading.newHome.pricing.length!==8||
+          new Set(reading.newHome.pricing.map(x=>x.code)).size!==8||
+          JSON.stringify([...displayedOfficial].sort())!==JSON.stringify([...expectedOfficial].sort()))
+          throw Error(name+' public official OIS display/source-age mismatch '+JSON.stringify({
+            displayedOfficial,expectedOfficial,asof:romeTodayIso(),
+            sourceDates:Object.fromEntries(expectedOfficial.map(c=>[c,publicOis[0].currencies[c].as_of]))
+          }));
+       console.log('PUBLIC_V10_DYNAMIC_CERTIFIED_OIS_SOURCE_AGE_PASS',name,
+         JSON.stringify({asof:romeTodayIso(),official:expectedOfficial}));
        if(!reading.present||!reading.nextToGlobe||reading.sourceEffect!=='NONE'||
            reading.visualEdition!=='home-composition-v1'||
            !reading.layout.styleMounted||!reading.layout.heroFullWidth||
@@ -261,7 +288,7 @@ async function getState(page){
            reading.newHome.flags.some(x=>!x.flag)||
            !reading.newHome.flags.find(x=>x.code==='DXY')?.dxyTag?.includes('SINTETICO')||
            reading.newHome.pricing.length!==8||
-           reading.newHome.pricing.filter(x=>x.status==='OFFICIAL_REPRICING').length!==4||
+           reading.newHome.pricing.filter(x=>x.status==='OFFICIAL_REPRICING').length!==expectedOfficial.length||
            reading.newHome.pricing.some(x=>(x.allowed==='true')!==(x.status==='OFFICIAL_REPRICING'))||
            !reading.newHome.pulsePresent||!reading.newHome.pulseNewsHref||
            (process.env.GITHUB_EVENT_NAME!=='pull_request'&&navigationVersion==='event-risk-radar-20261022'&&
