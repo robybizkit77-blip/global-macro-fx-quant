@@ -67,8 +67,14 @@ permissions:
   contents: read
   actions: write
 
+# Preserve each scheduled phase when a previous phase is still running.
+# The default pending queue keeps only ONE pending run and silently cancels the
+# previous pending schedule, even with cancel-in-progress: false.
+# queue: max preserves queued phases without allowing concurrent data writes.
+# This does NOT guarantee that a late GitHub scheduled event begins by 08:00.
 concurrency:
   group: daily-data-orchestrator-v2
+  queue: max
   cancel-in-progress: false
 
 env:
