@@ -274,18 +274,18 @@
           "symbol": "CBOT:ZQV2027"
         },
         "3m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "ZQZ2026",
           "contract_description": "Dec 2026",
           "expiration": "2027-01-04",
-          "futures_price": 95.965,
+          "futures_price": 95.95,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
-          "policy_delta_bp": 16.0,
-          "price_valid_until": "2026-10-23T21:15:08Z",
-          "quote_as_of": "2026-10-23",
+          "policy_delta_bp": 17.5,
+          "price_valid_until": "2026-10-26T14:44:50Z",
+          "quote_as_of": "2026-10-26",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 4.035,
+          "rate": 4.05,
           "symbol": "CBOT:ZQZ2026"
         },
         "6m": {
