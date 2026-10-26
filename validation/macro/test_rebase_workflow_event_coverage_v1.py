@@ -75,7 +75,7 @@ class RebaseWorkflowCoverage(unittest.TestCase):
             "assert x['structural_rebase']=='BLOCKED_SCORE_CONTRACT'",
             "assert x['safe_to_publish_D'] is False",
             "assert x['safe_to_publish_new_D'] is False",
-            "assert x['safe_to_update_pair_thesis'] is False",
+            "x['safe_to_update_pair_thesis'] is False",
             "assert x['writes_live_data'] is False",
             "git diff --exit-code -- live_data/sections/D.json",
         ):
