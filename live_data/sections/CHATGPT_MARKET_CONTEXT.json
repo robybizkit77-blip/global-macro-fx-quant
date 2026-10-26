@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_CHATGPT_MARKET_CONTEXT_V1",
-  "generated_at_utc": "2026-10-26T11:42:49Z",
+  "generated_at_utc": "2026-10-26T14:46:09Z",
   "evaluation_date_europe_rome": "2026-10-26",
   "reference_only": true,
   "policy": {
@@ -15,38 +15,122 @@
     "ois_official": {
       "USD": {
         "state": "UNAVAILABLE",
-        "as_of": "2026-10-22",
+        "as_of": "2026-10-23",
         "reason": "Only GBP, JPY, CAD and AUD have the certified OIS contract; estimated/proxy OIS is informational only, never alert-certified."
       },
       "EUR": {
         "state": "UNAVAILABLE",
-        "as_of": "2026-10-21",
+        "as_of": "2026-10-23",
         "reason": "Only GBP, JPY, CAD and AUD have the certified OIS contract; estimated/proxy OIS is informational only, never alert-certified."
       },
       "GBP": {
-        "state": "STALE",
-        "as_of": "2026-10-21",
-        "reason": "Age 5d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-10-23",
+        "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
+        "policy_rate_pct": 3.75,
+        "horizons": {
+          "3m": {
+            "rate_pct": 4.1517,
+            "delta_vs_policy_bp": 40.2,
+            "change_1d_bp": 2.0,
+            "change_1w_bp": 1.7
+          },
+          "6m": {
+            "rate_pct": 4.4932,
+            "delta_vs_policy_bp": 74.3,
+            "change_1d_bp": 3.1,
+            "change_1w_bp": 1.8
+          },
+          "12m": {
+            "rate_pct": 4.8853,
+            "delta_vs_policy_bp": 113.5,
+            "change_1d_bp": 3.5,
+            "change_1w_bp": 2.7
+          }
+        }
       },
       "JPY": {
-        "state": "STALE",
-        "as_of": "2026-10-22",
-        "reason": "Age 4d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-10-26",
+        "source": "Tokyo Financial Exchange · Three-month TONA Futures",
+        "policy_rate_pct": 1.25,
+        "horizons": {
+          "3m": {
+            "rate_pct": 1.465,
+            "delta_vs_policy_bp": 21.5,
+            "change_1d_bp": -0.5,
+            "change_1w_bp": -1.0
+          },
+          "6m": {
+            "rate_pct": 1.702,
+            "delta_vs_policy_bp": 45.2,
+            "change_1d_bp": -0.5,
+            "change_1w_bp": -1.0
+          },
+          "12m": {
+            "rate_pct": 1.979,
+            "delta_vs_policy_bp": 72.9,
+            "change_1d_bp": 4.7,
+            "change_1w_bp": -4.6
+          }
+        }
       },
       "CHF": {
         "state": "UNAVAILABLE",
-        "as_of": "2026-10-22",
+        "as_of": "2026-10-23",
         "reason": "Only GBP, JPY, CAD and AUD have the certified OIS contract; estimated/proxy OIS is informational only, never alert-certified."
       },
       "CAD": {
-        "state": "STALE",
-        "as_of": "2026-10-22",
-        "reason": "Age 4d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-10-23",
+        "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
+        "policy_rate_pct": 2.25,
+        "horizons": {
+          "3m": {
+            "rate_pct": 2.72,
+            "delta_vs_policy_bp": 47.0,
+            "change_1d_bp": 2.5,
+            "change_1w_bp": 9.5
+          },
+          "6m": {
+            "rate_pct": 2.985,
+            "delta_vs_policy_bp": 73.5,
+            "change_1d_bp": 3.5,
+            "change_1w_bp": 7.5
+          },
+          "12m": {
+            "rate_pct": 3.325,
+            "delta_vs_policy_bp": 107.5,
+            "change_1d_bp": 5.5,
+            "change_1w_bp": 5.5
+          }
+        }
       },
       "AUD": {
-        "state": "STALE",
-        "as_of": "2026-10-22",
-        "reason": "Age 4d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-10-23",
+        "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
+        "policy_rate_pct": 4.6,
+        "horizons": {
+          "3m": {
+            "rate_pct": 4.77,
+            "delta_vs_policy_bp": 17.0,
+            "change_1d_bp": -2.5,
+            "change_1w_bp": 7.5
+          },
+          "6m": {
+            "rate_pct": 4.845,
+            "delta_vs_policy_bp": 24.5,
+            "change_1d_bp": -4.0,
+            "change_1w_bp": 8.0
+          },
+          "12m": {
+            "rate_pct": 4.815,
+            "delta_vs_policy_bp": 21.5,
+            "change_1d_bp": -7.0,
+            "change_1w_bp": 2.5
+          }
+        }
       },
       "NZD": {
         "state": "UNAVAILABLE",
