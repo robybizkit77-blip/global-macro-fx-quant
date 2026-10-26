@@ -139,7 +139,6 @@ def main() -> None:
         "45 6 * * 1-5",
         "phase=premorning",
         "rates-persistent-daily-v1.yml",
-        "cb-pricing-persistent-daily-v1.yml",
         "macro-persistent-daily-v1.yml",
         "ois-estimated-snapshot-repricing-v1.yml",
         "price-persistent-daily-v1.yml",
