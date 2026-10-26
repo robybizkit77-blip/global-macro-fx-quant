@@ -11,30 +11,40 @@ on:
       - 'validation/macro/score_formula_provenance_v1.py'
       - 'validation/macro/test_score_formula_provenance_v1.py'
       - 'validation/macro/latest_release_pit_ledger_v1.py'
+      - 'validation/macro/test_latest_release_pit_ledger_v1.py'
+      - 'validation/macro/test_rebase_workflow_event_coverage_v1.py'
       - 'validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json'
-      - 'validation/macro/rebase_joint_gate_v1.py'
-      - 'validation/macro/test_rebase_joint_gate_v1.py'
-      - 'validation/macro/score_formula_provenance_v1.py'
-      - 'validation/macro/test_score_formula_provenance_v1.py'
-      - 'validation/macro/latest_release_pit_ledger_v1.py'
-      - 'validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json'
-      - '.github/workflows/macro-g8-rebase-readiness-v1.yml'
+      - 'validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-22.json'
       - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
+      - '.github/workflows/macro-g8-rebase-readiness-v1.yml'
       - 'live_data/sections/D.json'
       - 'live_data/sections/MACRO_SERIES.json'
       - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
       - 'live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'
+      - 'live_data/sections/NATIVE_RATES_DATA.json'
+      - 'live_data/sections/OIS_OPERATIONAL_VIEW.json'
   push:
     branches: [main]
     paths:
       - 'validation/macro/rebase_readiness_v1.py'
       - 'validation/macro/test_rebase_readiness_v1.py'
-      - '.github/workflows/macro-g8-rebase-readiness-v1.yml'
+      - 'validation/macro/rebase_joint_gate_v1.py'
+      - 'validation/macro/test_rebase_joint_gate_v1.py'
+      - 'validation/macro/score_formula_provenance_v1.py'
+      - 'validation/macro/test_score_formula_provenance_v1.py'
+      - 'validation/macro/latest_release_pit_ledger_v1.py'
+      - 'validation/macro/test_latest_release_pit_ledger_v1.py'
+      - 'validation/macro/test_rebase_workflow_event_coverage_v1.py'
+      - 'validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json'
+      - 'validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-22.json'
       - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
+      - '.github/workflows/macro-g8-rebase-readiness-v1.yml'
       - 'live_data/sections/D.json'
       - 'live_data/sections/MACRO_SERIES.json'
       - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
       - 'live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'
+      - 'live_data/sections/NATIVE_RATES_DATA.json'
+      - 'live_data/sections/OIS_OPERATIONAL_VIEW.json'
   workflow_run:
     workflows:
       - 'Macro Persistent Daily V1'
@@ -44,7 +54,6 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 8 * * 1-5'
-
 permissions:
   contents: read
 
@@ -66,6 +75,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Verify every Macro rebase audit input triggers this workflow
+        run: python -m unittest validation.macro.test_rebase_workflow_event_coverage_v1 -v
       - name: Verify G8 lineage, observation PIT, pair coverage and fail-closed no-write
         run: python -m unittest validation.macro.test_rebase_readiness_v1 -v
       - name: Independently verify historical scalar scores vs display/directional code
@@ -103,6 +114,8 @@ jobs:
           PY
           git diff --exit-code -- live_data/sections/D.json \
             live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
+      - name: Validate 16-source latest official release PIT evidence (read only)
+        run: python -m unittest validation.macro.test_latest_release_pit_ledger_v1 -v
       - name: Join source-to-engine and official release PIT evidence (no Macro rebase)
         shell: bash
         run: |
