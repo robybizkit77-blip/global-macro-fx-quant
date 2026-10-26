@@ -118,8 +118,8 @@ class Japan2YRepairTests(unittest.TestCase):
     def test_two_publisher_corrections_only_and_verify_all_273(self):
         rows=self.stage["candidate_rows"]
         def csv_bytes(items):
-            return ("Interest Rate\\nDate,1Y,2Y,10Y\\n"+"".join(
-                f"{x['date'].replace('-','/')},1,{(1.948 if x['date']=='2026-09-25' else 1.981 if x['date']=='2026-09-28' else x['yield_pct']):.3f},3\\n"
+            return ("Interest Rate\nDate,1Y,2Y,10Y\n"+"".join(
+                f"{x['date'].replace('-','/')},1,{(1.948 if x['date']=='2026-09-25' else 1.981 if x['date']=='2026-09-28' else x['yield_pct']):.3f},3\n"
                 for x in items)).encode("cp932")
         result=m.propose_verified_latest_publisher_candidate(
             self.stage,csv_bytes(rows[:170]),csv_bytes(rows[170:]))
@@ -141,8 +141,8 @@ class Japan2YRepairTests(unittest.TestCase):
     def test_unreviewed_third_publisher_discrepancy_never_autocorrected(self):
         rows=self.stage["candidate_rows"]
         def source(items):
-            return ("Interest Rate\\nDate,1Y,2Y\\n"+"".join(
-                f"{x['date'].replace('-','/')},1,{(1.948 if x['date']=='2026-09-25' else 1.981 if x['date']=='2026-09-28' else 0.123 if x['date']=='2025-05-08' else x['yield_pct']):.3f}\\n"
+            return ("Interest Rate\nDate,1Y,2Y\n"+"".join(
+                f"{x['date'].replace('-','/')},1,{(1.948 if x['date']=='2026-09-25' else 1.981 if x['date']=='2026-09-28' else 0.123 if x['date']=='2025-05-08' else x['yield_pct']):.3f}\n"
                 for x in items)).encode("cp932")
         with self.assertRaisesRegex(ValueError,"unreviewed MoF source differences"):
             m.propose_verified_latest_publisher_candidate(
