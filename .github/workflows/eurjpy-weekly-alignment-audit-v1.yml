@@ -1,0 +1,110 @@
+name: EURJPY Official Weekly 2Y Alignment Audit (unscheduled)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/beta/eurjpy_weekly_calendar_forensics_v1.py'
+      - 'validation/beta/eurjpy_ecb_2y_official_bridge_v1.py'
+      - 'validation/beta/audit_ecb_eur2y_official_mirror_parity_v1.py'
+      - 'validation/beta/test_audit_ecb_eur2y_official_mirror_parity_v1.py'
+      - 'validation/beta/test_eurjpy_ecb_2y_official_bridge_v1.py'
+      - 'validation/beta/test_eurjpy_weekly_calendar_forensics_v1.py'
+      - '.github/workflows/eurjpy-weekly-alignment-audit-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  independent-eurjpy-calendar:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify source-week provenance, 54-week training + test minimum
+        run: |
+          python -m py_compile validation/beta/eurjpy_weekly_calendar_forensics_v1.py validation/beta/test_eurjpy_weekly_calendar_forensics_v1.py
+          python -m unittest validation.beta.test_eurjpy_weekly_calendar_forensics_v1 -v
+          python -m unittest validation.beta.test_eurjpy_ecb_2y_official_bridge_v1 -v
+          python -m unittest validation.beta.test_audit_ecb_eur2y_official_mirror_parity_v1 -v
+      - name: Retrieve only original MoF official CSVs for forensic diagnosis
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error --retry 2 --max-time 30 \
+            https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/historical/jgbcme_all.csv \
+            --output /tmp/jpy-original-archive.csv
+          curl --fail --location --silent --show-error --retry 2 --max-time 30 \
+            https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/jgbcme.csv \
+            --output /tmp/jpy-original-current.csv
+          python -m validation.beta.eurjpy_weekly_calendar_forensics_v1 \
+            --mof-historical-csv /tmp/jpy-original-archive.csv \
+            --mof-current-csv /tmp/jpy-original-current.csv \
+            --as-of 2026-10-26 \
+            --out /tmp/gmfq-eurjpy-official-calendar-audit.json
+          python - <<'PY'
+          import json
+          x=json.load(open('/tmp/gmfq-eurjpy-official-calendar-audit.json'))
+          assert x['mo_f_source_verified'] is True
+          assert x['asynchronous_cross_day_returns_used'] is False
+          assert x['missing_values_interpolated'] is False
+          assert x['beta_promoted'] is False
+          assert x['historical_oos_rows'] == 0
+          assert x['longest_consecutive_exact_week_span'] < 54
+          print('EURJPY_EXACT_CALENDAR_BLOCKERS',[(g['week_end'],g['status'],
+            g['last_each_date']) for g in x['gaps']])
+          print('EURJPY_LONGEST_CONSECUTIVE_WEEKS',x['longest_consecutive_exact_week_span'])
+          print('EURJPY_52W_PRIOR_OOS_PROOF',x['status'])
+          PY
+      # The former 5-day "missing dates only" patch is intentionally
+      # retired: official publisher values disagree with the mirror on
+      # 260/271 overlapping historical days. Always audit FULL source first.
+      - name: Verify FULL ECB AAA 2Y source, quarantine mirror, and run shadow EURJPY OOS
+        id: euro_full
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error --retry 2 --max-time 45 \
+            'https://data-api.ecb.europa.eu/service/data/YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y?startPeriod=2025-09-16&endPeriod=2026-10-22&format=csvdata' \
+            --header 'Accept: text/csv' \
+            --output /tmp/eur-aaa2y-2025-2026-original.csv
+          python - <<'PY'
+          import json
+          from validation.beta import weekly_fx_2y_shadow_oos_v1 as b
+          from validation.beta.audit_ecb_eur2y_official_mirror_parity_v1 import (
+              audit_eur_original,shadow_full_publisher_eurjpy_oos)
+          src=json.loads(b.RATE_PATH.read_text(encoding='utf-8'))
+          fx=json.loads(b.FX_PATH.read_text(encoding='utf-8'))
+          original=open('/tmp/eur-aaa2y-2025-2026-original.csv','rb').read()
+          mof_historical=open('/tmp/jpy-original-archive.csv','rb').read()
+          mof_current=open('/tmp/jpy-original-current.csv','rb').read()
+          record=audit_eur_original(src,original)
+          with open('/tmp/gmfq-eur2y-full-publisher-parity.json','w') as f:
+              json.dump(record,f,indent=2)
+          print('ECB_FULL_EUR2Y_PUBLISHER_VS_MIRROR',record)
+          assert not record['production_history_modified']
+          assert record['overlap_rows'] >= 200
+          source_verified_shadow=shadow_full_publisher_eurjpy_oos(
+              fx,src,original,mof_historical,mof_current)
+          with open('/tmp/gmfq-eurjpy-official-source-shadow-result.json','w') as f:
+              json.dump(source_verified_shadow,f,indent=2)
+          print('ECB_ORIGINAL_FULL_SERIES_EURJPY_SHADOW_OOS', {
+              'eurjpy_historical_oos_rows':source_verified_shadow['eurjpy_historical_oos_rows'],
+              'pair_count_with_some_historical_oos':source_verified_shadow['pair_count_with_some_historical_oos'],
+              'variance_descriptive_pairs':source_verified_shadow['pair_count_with_descriptive_variance'],
+              'old_mirror_values_mismatching_official':record['mismatching_same_day_yield_rows'],
+              'official_extra_publisher_dates':record['missing_from_mirror_dates']})
+          assert source_verified_shadow['eurjpy_historical_oos_rows']>0
+          assert source_verified_shadow['pair_count_with_some_historical_oos']==28
+          assert not source_verified_shadow['beta_promoted']
+          assert not source_verified_shadow['live_data_modified']
+          assert source_verified_shadow['publisher_current_latest_not_first_release_pit']
+          PY
+      - name: No live model, historical source or active Control Room changes
+        run: |
+          test -z "$(git status --porcelain -- live_data validation/forward validation/beta/RATE_BETA_OBSERVATIONAL_CONTRACT_V1_2026-10-15.json site dashboard payload)"
+          echo EURJPY_NO_PRODUCTION_DATA_MUTATION
