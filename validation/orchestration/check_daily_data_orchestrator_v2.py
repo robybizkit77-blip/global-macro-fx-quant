@@ -36,7 +36,10 @@ def main() -> None:
     assert c["rules"]["prebrief_cb_pricing_independent_source_outage_isolation"] is True
     assert "cb-pricing-persistent-daily-v1.yml" not in c["phases"]["prebrief"]
     assert "cb-pricing-persistent-daily-v1.yml" not in c["phases"]["premorning"]
-    assert "cb-pricing-persistent-daily-v1.yml" in c["phases"]["morning"]
+    assert c["rules"]["morning_0910_cb_independent_source_outage_isolation"] is True
+    assert "cb-pricing-persistent-daily-v1.yml" not in c["phases"]["morning"]
+    assert "cb-pricing-persistent-daily-v1.yml" not in c["phases"]["prebrief"]
+    assert "cb-pricing-persistent-daily-v1.yml" not in c["phases"]["premorning"]
     cb = (WORKFLOWS_DIR / c["separate_cadences"]["CB_PRICING_MORNING"]).read_text()
     assert "schedule:" in cb and "workflow_dispatch:" in cb
     # Exact UTC pairs support early independent 06:00/06:30/07:00 Rome slots.
@@ -95,9 +98,14 @@ def main() -> None:
     assert "17 4 * * 1-5" in news
     assert "17 6 * * *" in news
     text = WORKFLOW.read_text()
-    # No duplicate CB acquisition in the 05:00 and 07:45 child arrays.
+    # No duplicate CB acquisition in 05:00, 07:45 OR 09:10,
+    # preserving independent 06:00/06:30/07:00 publisher-reconciled CB refresh.
     segment = text[text.index("              prebrief)"):text.index("              morning)", text.index("              prebrief)"))]
     assert "cb-pricing-persistent-daily-v1.yml" not in segment
+    morning_segment = text[text.index("              morning)"):text.index("              close)", text.index("              morning)"))]
+    assert "cb-pricing-persistent-daily-v1.yml" not in morning_segment
+    assert "calendar-news-operational-refresh-v1.yml" in morning_segment
+    assert "ois-estimated-snapshot-repricing-v1.yml" in morning_segment
     required_markers = [
         "name: Daily Data Orchestrator V2",
         "actions: write",
@@ -131,7 +139,6 @@ def main() -> None:
         "45 6 * * 1-5",
         "phase=premorning",
         "rates-persistent-daily-v1.yml",
-        "cb-pricing-persistent-daily-v1.yml",
         "macro-persistent-daily-v1.yml",
         "ois-estimated-snapshot-repricing-v1.yml",
         "price-persistent-daily-v1.yml",
