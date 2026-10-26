@@ -100,7 +100,7 @@ jobs:
           embedded=section.split('        run: |\n',1)[1].splitlines()
           script='\n'.join(line[10:] if line.startswith('          ') else line for line in embedded)+'\n'
           subprocess.run(['bash','-n'],input=script,text=True,check=True)
-          if script.count('workflows=(')!=5:
+          if len([line for line in script.splitlines() if line.strip()=='workflows=('])!=5:
               raise SystemExit('ORCHESTRATOR_PHASE_ARRAY_COUNT_DRIFT')
           print('ORCHESTRATOR_SERIALIZED_BASH_SYNTAX_PASS')
           PY
