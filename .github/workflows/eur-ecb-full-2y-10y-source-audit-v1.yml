@@ -6,6 +6,8 @@ on:
     paths:
       - 'validation/rates/build_eur_full_2y_10y_ecb_history_candidate_v1.py'
       - 'validation/rates/test_build_eur_full_2y_10y_ecb_history_candidate_v1.py'
+      - 'validation/rates/audit_eur_2y_10y_site_consumer_impact_v1.py'
+      - 'validation/rates/test_audit_eur_2y_10y_site_consumer_impact_v1.py'
       - 'validation/rates/EUR_2Y_10Y_PUBLISHER_HISTORY_RECONCILIATION_2026-10-26.md'
       - '.github/workflows/eur-ecb-full-2y-10y-source-audit-v1.yml'
   workflow_dispatch:
@@ -26,6 +28,7 @@ jobs:
         run: |
           python -m py_compile validation/rates/build_eur_full_2y_10y_ecb_history_candidate_v1.py
           python -m unittest validation.rates.test_build_eur_full_2y_10y_ecb_history_candidate_v1 -v
+          python -m unittest validation.rates.test_audit_eur_2y_10y_site_consumer_impact_v1 -v
       - name: Fetch original ECB same-basis official 2Y and 10Y history
         shell: bash
         run: |
@@ -65,8 +68,35 @@ jobs:
           assert all(draft[c]==orig[c] for c in orig if c!='EUR')
           assert a['per_tenor_official_parity']['2Y']['overlap_yield_mismatches'] >= 250
           assert a['per_tenor_official_parity']['2Y']['new_publisher_date_count'] >= 10
+          assert a['per_tenor_official_parity']['10Y']['overlap_yield_mismatches'] >= 250
+          assert a['per_tenor_official_parity']['10Y']['new_publisher_date_count'] >= 10
+          assert a['candidate_chg2_bp']==orig['EUR']['chg2_bp']
+          assert a['candidate_chg10_bp']==orig['EUR']['chg10_bp']
+          assert a['candidate_curve_bp']==orig['EUR']['curve_bp']
           print('OFFICIAL_ECB_2Y_10Y_RECONCILIATION_RECEIPT',json.dumps(a,sort_keys=True))
           print('EUR_SOURCE_CANDIDATE_ONLY_NO_PUBLISH_NO_MODEL_CHANGE')
+          PY
+      - name: Gate affected CHF reference proxy, FX pair analytics and historic yield plots
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m validation.rates.audit_eur_2y_10y_site_consumer_impact_v1 \
+            --candidate /tmp/gmfq-eur-full-history-source-candidate.json \
+            --out /tmp/gmfq-eur2y-10y-site-impact.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/gmfq-eur2y-10y-site-impact.json'))
+          assert d['status']=='CONTROLLED_RELEASE_REQUIRED_NO_AUTO_PROMOTION'
+          assert d['impacts']['2Y']['changed_stored_historical_days'] >= 250
+          assert d['impacts']['10Y']['changed_stored_historical_days'] >= 250
+          assert len(d['consumer_classes'])>=5
+          assert d['unchanged_latest_official_EUR_2Y_10Y']
+          assert not d['quantified_derived_CHF_beta_estimate_reaction']
+          assert not d['browser_active_preview_1440_and_390_verified_after_candidate']
+          assert not d['full_live_manifest_payload_roundtrip_checked']
+          assert not d['safe_to_publish_now']
+          assert not d['publisher_candidate_applied']
+          print('RATES_FULL_ECB_HISTORY_CONTROLLED_RELEASE_REQUIRED',json.dumps(d,sort_keys=True))
           PY
       - name: Confirm no official rate mirror, Core, report or runtime mutation
         shell: bash
