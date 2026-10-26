@@ -526,8 +526,15 @@ function expectedReactionFromMetrics(row){
       noCore:p.dataset.coreEffect==='NONE'&&p.dataset.pairEffect==='NONE',
       width:p.scrollWidth,client:p.clientWidth};
   });
-  if(yieldStudy.count!==8||yieldStudy.recent!=='6'||
-     JSON.stringify(yieldStudy.historical.slice().sort())!==JSON.stringify(['CHF','NZD'])||
+  // Sovereign Rates freshness is intentionally per-source and date-based.
+  // On 26 Oct the AUD 21 Oct rate is 5 days old and must be shown as
+  // historical, not silently counted as a recent official quote.
+  const actualRates=JSON.parse(fs.readFileSync(path.join(DATA,'NATIVE_RATES_DATA.json'),'utf8'));
+  const expectedHistorical=g8.filter(ccy=>
+    !(current(actualRates[ccy]?.date,4)&&
+      String(actualRates[ccy]?.quality||'').includes('OFFICIAL'))).sort();
+  if(yieldStudy.count!==8||yieldStudy.recent!==String(8-expectedHistorical.length)||
+     JSON.stringify(yieldStudy.historical.slice().sort())!==JSON.stringify(expectedHistorical)||
      !yieldStudy.snb?.includes('non calcolare spread misti')||!yieldStudy.noCore||
      yieldStudy.width>yieldStudy.client+2)
     throw Error(label+' G8 observed sovereign yield study not ready '+JSON.stringify(yieldStudy));
