@@ -173,6 +173,36 @@ def build_candidate(rates,raw2,raw10):
     eur["history10_quality"]="ECB_ORIGINAL_10Y_FULL_HISTORICAL_LATEST_VINTAGE_NOT_PIT"
     eur["history_status"]="FULL_ECB_SAME_BASIS_2Y_10Y_RESEARCH_CANDIDATE_ONLY"
     eur["history_note"]="Both historical tenors sourced from original ECB SDMX ECB AAA Svensson 2Y/10Y curves; first-release publication instants not independently certified."
+
+    # Source-proof notice to accompany prospective preview and eventual
+    # approved live history promotion. The candidate is emphatically NOT
+    # the production approval, even if its publisher CSVs match.
+    # Freeze the paired original publisher points as an audit fingerprint;
+    # the daily updater may append future points but must not rewrite them.
+    original_pairing=[
+        [d.isoformat(),official2[d],official10[d]]
+        for d in sorted(official2)
+    ]
+    baseline_history_sha256=hashlib.sha256(
+        json.dumps(original_pairing,separators=(",",":"),ensure_ascii=False).encode()
+    ).hexdigest()
+    eur["historical_curve_rebase"]={
+        "schema":"GMFQ_EUR_2Y_10Y_HISTORY_REBASE_NOTICE_V1",
+        "status":"RESEARCH_CANDIDATE_NOT_PUBLISHED",
+        "source_authority":"European Central Bank",
+        "instrument":"AAA Svensson euro area government spot 2Y and 10Y",
+        "original_history_start":START,
+        "original_history_end":latest.isoformat(),
+        "original_point_count":len(original_pairing),
+        "original_paired_values_sha256":baseline_history_sha256,
+        "original_ecb_2y_csv_sha256":hashlib.sha256(raw2).hexdigest(),
+        "original_ecb_10y_csv_sha256":hashlib.sha256(raw10).hexdigest(),
+        "historical_first_release_pit_certified":False,
+        "requires_explicit_release":True,
+        "source_rebase_not_market_move":True,
+        "chf_reference_beta_recalibration_not_official_chf_yield":True,
+    }
+
     if eur["date"]!=src["date"] or any(out[cc]!=rates[cc] for cc in out if cc!="EUR"):
         raise ValueError("unexpected currency or source snapshot scope change")
     if any(eur[k]!=src[k] for k in ("2Y","10Y","date","quality","source","tenors")):
@@ -188,6 +218,9 @@ def build_candidate(rates,raw2,raw10):
         "weekly_reference_same_day":ref.isoformat(),
         "candidate_chg2_bp":delta2,"candidate_chg10_bp":delta10,
         "candidate_curve_bp":eur["curve_bp"],
+        "source_history_rebase_notice_candidate_only":True,
+        "official_paired_observations_sha256":baseline_history_sha256,
+        "rebase_does_not_mean_market_move":True,
         "current_rate_snapshot_unchanged":True,
         "other_seven_G8_unchanged":True,
         "5Y_30Y_tenors_unchanged":True,
