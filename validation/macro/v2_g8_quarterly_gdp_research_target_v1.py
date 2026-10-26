@@ -111,7 +111,7 @@ def audit():
         link = urlparse(url)
         require(link.scheme == "https" and link.hostname == TRUSTED_DOMAINS[ccy]
                 and link.username is None and link.password is None
-                and link.query in ("", "lang=en") and
+                and link.query in ("", "lang=en", "pid=3610010401") and
                 not link.fragment and dataset and publisher and caveat,
                 ccy + " unverified official GDP target")
         old = PINNED[ccy]
