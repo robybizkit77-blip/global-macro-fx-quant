@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/eur-2y10y-v10-candidate-browser-v1.yml'
+      - 'validation/rates/qa_v10_eur2y10y_candidate_visual_v1.cjs'
       - 'validation/rates/EUR_2Y10Y_CANDIDATE_BROWSER_VISUAL_AUDIT_2026-10-26.md'
   workflow_dispatch:
 
@@ -44,9 +45,9 @@ jobs:
           npm init -y >/dev/null 2>&1
           npm install --no-save playwright
           npx playwright install --with-deps chromium
-          node --check validation/qa_control_room_v10_browser.js
+          node --check validation/rates/qa_v10_eur2y10y_candidate_visual_v1.cjs
 
-      - name: Run existing full v10 functional browser suite on original Rates
+      - name: Targeted actual v10 Rates/CHF browser QA on unchanged original site
         shell: bash
         run: |
           set -euo pipefail
@@ -54,9 +55,11 @@ jobs:
           server=$!
           trap 'kill "$server" 2>/dev/null || true' EXIT
           sleep 2
-          node validation/qa_control_room_v10_browser.js | tee /tmp/eur-original-v10-browser.log
+          node validation/rates/qa_v10_eur2y10y_candidate_visual_v1.cjs \
+            --scenario before --chf-10y 0.39472560216237235 \
+            --out /tmp/eur-original-v10-browser-receipt.json \
+            --screenshots /tmp/eur-v10-visual-proof/before | tee /tmp/eur-original-v10-browser.log
           mkdir -p /tmp/eur-v10-visual-proof/before
-          cp -a v10-qa-images/. /tmp/eur-v10-visual-proof/before/
           test -n "$(find /tmp/eur-v10-visual-proof/before -name '*.png' -print -quit)"
           kill "$server" 2>/dev/null || true
           wait "$server" 2>/dev/null || true
@@ -86,7 +89,7 @@ jobs:
           print('V10_CANDIDATE_ORIGINAL_BCE_SOURCE_VERIFIED')
           PY
 
-      - name: Run actual unchanged v10 on ECB-corrected candidate in detached worktree
+      - name: Targeted actual v10 Rates/CHF browser QA on corrected source in detached worktree
         shell: bash
         run: |
           set -euo pipefail
@@ -117,9 +120,11 @@ jobs:
             server=$!
             trap 'kill "$server" 2>/dev/null || true' EXIT
             sleep 2
-            node validation/qa_control_room_v10_browser.js | tee /tmp/eur-candidate-v10-browser.log
+            node validation/rates/qa_v10_eur2y10y_candidate_visual_v1.cjs \
+              --scenario after --chf-10y 0.5102548462926042 \
+              --out /tmp/eur-candidate-v10-browser-receipt.json \
+              --screenshots /tmp/eur-v10-visual-proof/after | tee /tmp/eur-candidate-v10-browser.log
             mkdir -p /tmp/eur-v10-visual-proof/after
-            cp -a v10-qa-images/. /tmp/eur-v10-visual-proof/after/
             test -n "$(find /tmp/eur-v10-visual-proof/after -name '*.png' -print -quit)"
             kill "$server" 2>/dev/null || true
             wait "$server" 2>/dev/null || true
@@ -154,8 +159,8 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-      - name: No production promotion
+      - name: No production promotion; independent morning-calendar source integrity issue remains open
         if: always()
         run: |
-          echo 'Full existing Control Room v10 browser suite exercised before/after on 1440px desktop and 390px mobile with approved 32-part gh-pages UI.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'The actual approved 32-part v10 CHF/EUR Rates rendering was browser-tested before/after at 1440px and 390px. This is targeted QA, NOT the full v10 A-Z suite.' >> "$GITHUB_STEP_SUMMARY"
           echo '**Candidate staging only: no live publication. CHF 10Y +11.55bp historical beta proxy rebase needs explicit low-confidence label review.**' >> "$GITHUB_STEP_SUMMARY"
