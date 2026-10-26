@@ -50,7 +50,7 @@ SOURCES = {
             "QOQ_VS_SAME_QUARTER_YOY_VS_ANNUAL_AVERAGE_MUST_NOT_MIX", "GDP_PRODUCTION_TOTAL"),
 }
 TRUSTED_DOMAINS = {
-    "USD": "bea.gov", "EUR": "ec.europa.eu", "GBP": "www.ons.gov.uk",
+    "USD": "www.bea.gov", "EUR": "ec.europa.eu", "GBP": "www.ons.gov.uk",
     "JPY": "www.esri.cao.go.jp", "CHF": "www.seco.admin.ch",
     "CAD": "www150.statcan.gc.ca", "AUD": "www.abs.gov.au",
     "NZD": "www.stats.govt.nz",
