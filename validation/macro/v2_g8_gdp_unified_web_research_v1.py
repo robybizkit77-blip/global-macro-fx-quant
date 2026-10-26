@@ -11,6 +11,7 @@ from validation.macro.v2_g8_gdp_multiquarter_pit_guard_v1 import validate, snaps
 
 FIX = Path(__file__).parent / "fixtures"
 QUARTER_FILES = (
+    "v2_g8_gdp_q3_2022_official_web_release_research_v1.json",
     "v2_g8_gdp_q4_2022_official_web_release_research_v1.json",
     "v2_g8_gdp_q1_2023_official_web_release_research_v1.json",
     "v2_g8_gdp_q2_2023_official_web_release_research_v1.json",
