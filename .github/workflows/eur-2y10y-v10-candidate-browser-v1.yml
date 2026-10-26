@@ -6,6 +6,9 @@ on:
     paths:
       - '.github/workflows/eur-2y10y-v10-candidate-browser-v1.yml'
       - 'validation/rates/qa_v10_eur2y10y_candidate_visual_v1.cjs'
+      - 'site/control-room-preview/home-navigation-v10.js'
+      - 'validation/rates/build_eur_full_2y_10y_ecb_history_candidate_v1.py'
+      - 'validation/build_rates_candidate_from_audit.py'
       - 'validation/rates/EUR_2Y10Y_CANDIDATE_BROWSER_VISUAL_AUDIT_2026-10-26.md'
   workflow_dispatch:
 
