@@ -113,7 +113,7 @@ class LegacyV2ScoreEvidenceTests(unittest.TestCase):
                    if r["currency"] == target["currency"] and
                    r["pillar"] == target["pillar"])
         self.assertEqual(row["open_source_gate"],
-                         "CANDIDATE_SOURCE_ID_OR_FREQUENCY_MISMATCH")
+                         "INDICATOR_DIFFERS_SAME_FREQUENCY")
         self.assertIsNone(row["same_source_periods_still_needed_descriptive_only"])
 
 
