@@ -1,0 +1,161 @@
+name: EUR ECB 2Y10Y V10 1440/390 Candidate Visual QA (no publish)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/eur-2y10y-v10-candidate-browser-v1.yml'
+      - 'validation/rates/EUR_2Y10Y_CANDIDATE_BROWSER_VISUAL_AUDIT_2026-10-26.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  baseline-vs-candidate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Restore approved gh-pages v10 32-part visual payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin gh-pages --no-tags
+          mkdir -p site/control-room-preview/parts
+          for i in $(seq -w 0 31); do
+            git show "origin/gh-pages:site/control-room-preview/parts/part-$i.txt" > "site/control-room-preview/parts/part-$i.txt"
+          done
+          test "$(find site/control-room-preview/parts -type f | wc -l)" -eq 32
+          echo APPROVED_V10_32_PART_VISUAL_BASELINE_LOADED
+
+      - name: Install Chrome/Playwright
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm init -y >/dev/null 2>&1
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+          node --check validation/qa_control_room_v10_browser.js
+
+      - name: Run existing full v10 functional browser suite on original Rates
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8818 --bind 127.0.0.1 > /tmp/eur-v10-original-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          sleep 2
+          node validation/qa_control_room_v10_browser.js | tee /tmp/eur-original-v10-browser.log
+          mkdir -p /tmp/eur-v10-visual-proof/before
+          cp -a v10-qa-images/. /tmp/eur-v10-visual-proof/before/
+          test -n "$(find /tmp/eur-v10-visual-proof/before -name '*.png' -print -quit)"
+          kill "$server" 2>/dev/null || true
+          wait "$server" 2>/dev/null || true
+          echo V10_ORIGINAL_1440_390_FULL_BROWSER_GREEN
+
+      - name: Fetch original official ECB paired yields and build candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error --retry 2 --max-time 45 \
+            'https://data-api.ecb.europa.eu/service/data/YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y?startPeriod=2025-09-16&endPeriod=2026-10-22&format=csvdata' \
+            -H 'Accept: text/csv' -o /tmp/eur-v10-2y-source.csv
+          curl --fail --location --silent --show-error --retry 2 --max-time 45 \
+            'https://data-api.ecb.europa.eu/service/data/YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_10Y?startPeriod=2025-09-16&endPeriod=2026-10-22&format=csvdata' \
+            -H 'Accept: text/csv' -o /tmp/eur-v10-10y-source.csv
+          python -m validation.rates.build_eur_full_2y_10y_ecb_history_candidate_v1 \
+            --ecb-2y-original /tmp/eur-v10-2y-source.csv \
+            --ecb-10y-original /tmp/eur-v10-10y-source.csv \
+            --candidate /tmp/eur-v10-validated-candidate.json \
+            --receipt /tmp/eur-v10-source-receipt.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/eur-v10-source-receipt.json'))
+          assert r['per_tenor_official_parity']['2Y']['overlap_yield_mismatches']==260
+          assert r['per_tenor_official_parity']['10Y']['overlap_yield_mismatches']==260
+          assert not r['actual_production_promotion']
+          print('V10_CANDIDATE_ORIGINAL_BCE_SOURCE_VERIFIED')
+          PY
+
+      - name: Run actual unchanged v10 on ECB-corrected candidate in detached worktree
+        shell: bash
+        run: |
+          set -euo pipefail
+          export NODE_PATH="$GITHUB_WORKSPACE/node_modules"
+          staged="$RUNNER_TEMP/gmfq-ecb-v10-browser-stage"
+          git worktree add --detach "$staged" HEAD
+          mkdir -p "$staged/site/control-room-preview/parts"
+          cp -a site/control-room-preview/parts/. "$staged/site/control-room-preview/parts/"
+          (
+            cd "$staged"
+            python validation/update_live_direct_section.py \
+              --section NATIVE_RATES_DATA \
+              --replacement /tmp/eur-v10-validated-candidate.json \
+              --apply > /tmp/eur-v10-stage-apply.json
+            python validation/build_live_manifest_v2.py \
+              --write live_data/manifest.v2.json > /tmp/eur-v10-stage-manifest.json
+            python validation/check_live_update_contract.py > /tmp/eur-v10-stage-contract.json
+            python validation/rebuild_live_data_runtime.py --verify-only > /tmp/eur-v10-stage-runtime.json
+            python - <<'PY'
+          import json
+          a=json.load(open('/tmp/eur-v10-stage-contract.json'))
+          b=json.load(open('/tmp/eur-v10-stage-runtime.json'))
+          assert a['status']=='PASS' and b['status']=='PASS'
+          assert b.get('noop_roundtrip_byte_identical') is True
+          print('CANDIDATE_V10_DATA_PAYLOAD_STAGED_WITH_INTEGRITY_PASS')
+          PY
+            python3 -m http.server 8818 --bind 127.0.0.1 > /tmp/eur-v10-candidate-server.log 2>&1 &
+            server=$!
+            trap 'kill "$server" 2>/dev/null || true' EXIT
+            sleep 2
+            node validation/qa_control_room_v10_browser.js | tee /tmp/eur-candidate-v10-browser.log
+            mkdir -p /tmp/eur-v10-visual-proof/after
+            cp -a v10-qa-images/. /tmp/eur-v10-visual-proof/after/
+            test -n "$(find /tmp/eur-v10-visual-proof/after -name '*.png' -print -quit)"
+            kill "$server" 2>/dev/null || true
+            wait "$server" 2>/dev/null || true
+          )
+          git worktree remove --force "$staged"
+          test -z "$(git status --porcelain -- live_data payload site/website-v1)"
+          echo V10_EUR_2Y10Y_CANDIDATE_1440_390_FULL_BROWSER_GREEN
+
+      - name: Confirm before/after browser screenshot evidence and two viewports
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          a={x.name for x in Path('/tmp/eur-v10-visual-proof/before').glob('*.png')}
+          b={x.name for x in Path('/tmp/eur-v10-visual-proof/after').glob('*.png')}
+          assert a and a==b,(sorted(a),sorted(b))
+          assert any('desktop' in n for n in b),sorted(b)
+          assert any('mobile' in n for n in b),sorted(b)
+          for name in b:
+              assert (Path('/tmp/eur-v10-visual-proof/before')/name).stat().st_size>1000
+              assert (Path('/tmp/eur-v10-visual-proof/after')/name).stat().st_size>1000
+          print('V10_1440_390_BROWSER_BASELINE_CANDIDATE_IMAGES_VERIFIED',len(b),sorted(b))
+          PY
+
+      - name: Save desktop/mobile evidence both before/after
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eur-2y10y-v10-1440-390-browser-before-after
+          path: /tmp/eur-v10-visual-proof/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: No production promotion
+        if: always()
+        run: |
+          echo 'Full existing Control Room v10 browser suite exercised before/after on 1440px desktop and 390px mobile with approved 32-part gh-pages UI.' >> "$GITHUB_STEP_SUMMARY"
+          echo '**Candidate staging only: no live publication. CHF 10Y +11.55bp historical beta proxy rebase needs explicit low-confidence label review.**' >> "$GITHUB_STEP_SUMMARY"
