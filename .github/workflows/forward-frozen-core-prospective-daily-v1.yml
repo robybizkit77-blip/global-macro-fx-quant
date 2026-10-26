@@ -1,0 +1,141 @@
+name: Forward Frozen Core Prospective Daily V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/forward/**'
+      - 'validation/test_forward_decision_logger_v1.py'
+      - '.github/workflows/forward-frozen-core-prospective-daily-v1.yml'
+  workflow_dispatch:
+  schedule:
+    # Exactly one Rome 19:30 weekday slot. DST guard selects CET or CEST.
+    - cron: '30 17 * * 1-5'
+    - cron: '30 18 * * 1-5'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: forward-frozen-core-prospective-daily-v1
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile observational-only forward modules
+        run: |
+          python -m py_compile validation/forward/admit_frozen_core_prospective_capture_v1.py validation/forward/log_core_decision_v1.py validation/forward/test_frozen_core_prospective_capture_v11.py
+      - name: Verify frozen provenance, schema and no daily duplicates
+        run: |
+          python -m unittest validation.forward.test_frozen_core_prospective_capture_v11 -v
+          python validation/test_forward_decision_logger_v1.py
+          python -m unittest validation.forward.test_attach_core_outcomes_safety_v1 -v
+
+  capture:
+    needs: test
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Admit only official same-day 28-pair market observations
+        id: admit
+        shell: bash
+        env:
+          EVENT: ${{ github.event_name }}
+          SCHEDULE_CRON: ${{ github.event.schedule }}
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import datetime as dt
+          import json
+          import os
+          from pathlib import Path
+          from zoneinfo import ZoneInfo
+          from validation.forward.admit_frozen_core_prospective_capture_v1 import (
+              assess, FX, PAIR, CORE
+          )
+          now=dt.datetime.now(dt.timezone.utc)
+          rome=now.astimezone(ZoneInfo('Europe/Rome'))
+          expected='30 17 * * 1-5' if rome.utcoffset().total_seconds()==7200 else '30 18 * * 1-5'
+          if os.environ['EVENT']=='schedule' and os.environ['SCHEDULE_CRON']!=expected:
+              status='SKIPPED_DUPLICATE_DST_UTC_SLOT'
+              reasons=['WRONG_UTC_CRON_FOR_ROME_DST']
+          else:
+              r=assess(now,json.loads(FX.read_text(encoding='utf-8')),
+                          json.loads(PAIR.read_text(encoding='utf-8')),
+                          json.loads(CORE.read_text(encoding='utf-8')))
+              status=r['status'];reasons=r['checks']
+          admitted=status=='ADMITTED_PROSPECTIVE_BASELINE_OBSERVATION'
+          with open(os.environ['GITHUB_OUTPUT'],'a') as out:
+              out.write('admitted='+('true' if admitted else 'false')+'\n')
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as out:
+              out.write('## Forward prospective observation (no fresh Core re-run)\n')
+              out.write('- Status: **'+status+'**\n')
+              out.write('- Blockers: '+(', '.join(reasons) if reasons else 'none')+'\n')
+              out.write('- Time: '+now.isoformat()+'\n')
+              out.write('- New signal calculated: **NO**; no estimates or backfill.\n')
+          print('PROSPECTIVE_ADMISSION',status,'REASONS',reasons)
+          PY
+      - name: Append immutable daily 28-pair frozen-Core observation only
+        if: steps.admit.outputs.admitted == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cutoff=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          localday=$(TZ=Europe/Rome date +%Y%m%d)
+          python validation/forward/log_core_decision_v1.py --decision-cutoff "$cutoff" --run-id "frozen-core-${localday}" > /tmp/forward-snapshot-capture.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/forward-snapshot-capture.json'))
+          assert d['no_forward_outcomes_in_snapshot'] is True
+          assert d['observational_only'] is True
+          assert d['result']['written'] in (0,28)
+          print('FORWARD_SNAPSHOT_RESEARCH_ONLY_CAPTURE',d['result'])
+          PY
+      - name: Verify only immutable forward-ledger files changed
+        if: steps.admit.outputs.admitted == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import subprocess
+          x=subprocess.check_output(['git','status','--porcelain','--untracked-files=all'],text=True).splitlines()
+          for line in x:
+              path=line[3:]
+              if path != 'validation/forward/decision_snapshots/CORE_DECISION_SNAPSHOTS_V1.jsonl' and not (
+                 path.startswith('validation/forward/receipts/') and path.endswith('__V1.json')
+              ):
+                  raise SystemExit('UNEXPECTED_MUTATION '+line)
+          print('FORWARD_ONLY_LEDGER_AND_PROOF_FILES')
+          PY
+      - name: Commit new prospective observation only, no forced push
+        if: steps.admit.outputs.admitted == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add validation/forward/decision_snapshots/CORE_DECISION_SNAPSHOTS_V1.jsonl validation/forward/receipts/
+          if git diff --cached --quiet; then
+            echo 'FORWARD_ALREADY_CAPTURED_TODAY_NO_COMMIT' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Capture prospective frozen Core daily observation (no new signal)"
+          # A source branch change means source provenance no longer matches
+          # the latest main; fail closed, never force or rebase the evidence.
+          git push origin HEAD:main
+          echo '- Prospective observation: **committed to main** (unaltered baseline date).' >> "$GITHUB_STEP_SUMMARY"
