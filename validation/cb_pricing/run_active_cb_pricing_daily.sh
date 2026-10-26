@@ -231,18 +231,25 @@ for c in ('AUD','CAD','GBP','JPY'):
     currencies[c]=item
 
 statuses=[x['status'] for x in currencies.values()]
-if 'FAILED' in statuses:
-    overall='FAILED_NO_PUBLICATION'
-elif 'STALE' in statuses:
-    overall='STALE_NO_PUBLICATION'
-else:
+eligible=[c for c in ('AUD','CAD','GBP','JPY') if currencies[c]['status']=='GREEN']
+blocked=[c for c in ('AUD','CAD','GBP','JPY') if currencies[c]['status']!='GREEN']
+if len(eligible)==4:
     overall='ALL_GREEN_NO_PUBLICATION'
+elif eligible:
+    overall='PARTIAL_GREEN_NO_PUBLICATION'
+elif 'FAILED' in statuses:
+    overall='FAILED_NO_PUBLICATION'
+else:
+    overall='STALE_NO_PUBLICATION'
 receipt={
     'schema':'GMFQ_ACTIVE_CB_PRICING_DAILY_RECEIPT_V1',
     'generated_at_utc':now.isoformat(),
     'status':overall,
     'currencies':currencies,
-    'all_or_nothing_gate':True,
+    'eligible_currencies':eligible,
+    'blocked_currencies':blocked,
+    'per_currency_dry_run_required':True,
+    'all_or_nothing_gate':len(eligible)==4,
     'promotion_performed':False,
     'live_data_published':False,
     'gh_pages_published':False,
