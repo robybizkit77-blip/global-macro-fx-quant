@@ -2,10 +2,10 @@
   "schema": "GMFQ_DAILY_DATA_ORCHESTRATOR_V2",
   "version": "2026-10-26",
   "status": "ACTIVE_SCHEDULE_CONTRACT",
-  "purpose": "Attempt data preparation before 08:00 Europe/Rome, then reverify at 07:45 and catch up at 09:10; never invent unavailable official observations.",
+  "purpose": "Attempt early off-hour data preparation from 04:43 Europe/Rome to avoid GitHub's 05:00 load peak, reverify at 07:45 and catch up at 09:10; never invent unavailable official observations.",
   "timezone": "Europe/Rome",
   "target_local_times": {
-    "prebrief": "05:00",
+    "prebrief": "04:43",
     "premorning": "07:45",
     "morning": "09:10",
     "close": "18:30",
@@ -78,6 +78,8 @@
     "morning_0910_cb_independent_source_outage_isolation": true,
     "preserve_pending_scheduled_phases": true,
     "workflow_concurrency_pending_queue": "max",
-    "workflow_concurrency_cancel_in_progress": false
+    "workflow_concurrency_cancel_in_progress": false,
+    "prebrief_avoids_top_of_hour_load": true,
+    "prebrief_dst_gate_tested": true
   }
 }
