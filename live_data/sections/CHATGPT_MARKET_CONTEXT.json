@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_CHATGPT_MARKET_CONTEXT_V1",
-  "generated_at_utc": "2026-10-26T03:35:13Z",
+  "generated_at_utc": "2026-10-26T04:35:48Z",
   "evaluation_date_europe_rome": "2026-10-26",
   "reference_only": true,
   "policy": {
@@ -56,9 +56,14 @@
     },
     "government_rates": {
       "USD": {
-        "state": "STALE",
-        "as_of": "2026-10-22",
-        "reason": "Age 4d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-10-23",
+        "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-10-23",
+        "government_2y_pct": 4.69,
+        "government_10y_pct": 5.0,
+        "10y_minus_2y_bp": 31.0,
+        "change_2y_bp": -5.0,
+        "change_10y_bp": -9.0
       },
       "EUR": {
         "state": "STALE",
@@ -71,9 +76,14 @@
         "reason": "Age 4d exceeds the 3d alert limit."
       },
       "JPY": {
-        "state": "STALE",
-        "as_of": "2026-10-22",
-        "reason": "Age 4d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-10-23",
+        "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-10-23",
+        "government_2y_pct": 1.872,
+        "government_10y_pct": 2.837,
+        "10y_minus_2y_bp": 96.5,
+        "change_2y_bp": -4.6,
+        "change_10y_bp": -12.1
       },
       "CHF": {
         "state": "STALE",
@@ -82,8 +92,8 @@
       },
       "CAD": {
         "state": "STALE",
-        "as_of": "2026-10-21",
-        "reason": "Age 5d exceeds the 3d alert limit."
+        "as_of": "2026-10-22",
+        "reason": "Age 4d exceeds the 3d alert limit."
       },
       "AUD": {
         "state": "STALE",
