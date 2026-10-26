@@ -50,12 +50,21 @@ def main():
     assert swiss['separate_10y_snb_as_of'] in (chf10['as_of'],None)
     if '2026-10-19'==today:
         assert swiss['separate_10y_snb_as_of']=='2026-10-19'
-    # Adversarial: data missing and unvalidated source must fail, never invent a 2Y.
+    # Adversarial: a missing EUR official quote must not be forged. If the
+    # actual runtime uses informational estimated futures, the non-null
+    # indicative rate is allowed, but official backtest promotion is not.
     changed=deepcopy(view)
-    changed['currencies']['EUR']['horizons']['3m']['rate']=3.5
+    if changed['currencies']['EUR']['operational_status']=='WITHHELD':
+        changed['currencies']['EUR']['horizons']['3m']['rate']=3.5
+        expected='withheld OIS level leak'
+    elif changed['currencies']['EUR']['operational_status']=='GREEN_ESTIMATED':
+        changed['currencies']['EUR']['backtest_eligible_as_official']=True
+        expected='estimated source must not be official backtest'
+    else:
+        raise AssertionError('Unexpected EUR official promotion in source-access audit')
     try:build(plan,changed,official,rates,chf10,today=today)
-    except ValueError as e:assert 'withheld OIS level leak' in str(e)
-    else:raise AssertionError('False EUR OIS price admitted')
+    except ValueError as e:assert expected in str(e),(expected,str(e))
+    else:raise AssertionError('False EUR official OIS approval admitted')
     changed=deepcopy(plan)
     changed['governance']['no_automatic_promotions']=False
     try:build(changed,view,official,rates,chf10,today=today)

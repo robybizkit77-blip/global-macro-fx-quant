@@ -21,7 +21,9 @@ def main():
     scenarios=[
         ("wrong summary",lambda v,r,o,p:r["operational_summary"].update(green_official=99)),
         ("missing dossier",lambda v,r,o,p:r["currencies"].pop("CHF")),
-        ("outdated status",lambda v,r,o,p:r["currencies"]["EUR"].update(status="GREEN_ESTIMATED")),
+        ("outdated status",lambda v,r,o,p:r["currencies"]["EUR"].update(
+            status="WITHHELD" if v["currencies"]["EUR"]["operational_status"]=="GREEN_ESTIMATED"
+            else "GREEN_ESTIMATED")),
         ("outdated date",lambda v,r,o,p:r["currencies"]["USD"].update(operational_as_of="2026-10-01")),
         ("wrong source URL",lambda v,r,o,p:r["currencies"]["NZD"].update(source_url="https://invalid.example")),
         ("wrong count",lambda v,r,o,p:r.update(blocked_currency_count=r["blocked_currency_count"]+1)),

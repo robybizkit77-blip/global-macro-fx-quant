@@ -44,13 +44,43 @@ def main() -> None:
     del mutated_plan["blocked_sources"]["EUR"]
     rejects(mutated_plan, view, official, "missing specific currency source/access plan")
 
+    # EUR is source-blocked as an official OIS feed, but during a valid
+    # daily secondary-price refresh its operational row may be GREEN_ESTIMATED.
+    # A non-null *indicative* policy-reference spread then is NOT an official
+    # OIS observation. Test the real prohibition for each runtime state.
+    eur_state = view["currencies"]["EUR"]["operational_status"]
     mutated = deepcopy(view)
-    mutated["currencies"]["EUR"]["horizons"]["3m"]["policy_delta_bp"] = 22.5
-    rejects(plan, mutated, official, "withheld OIS level leak")
+    if eur_state == "WITHHELD":
+        mutated["currencies"]["EUR"]["horizons"]["3m"]["policy_delta_bp"] = 22.5
+        rejects(plan, mutated, official, "withheld OIS level leak")
+    elif eur_state == "GREEN_ESTIMATED":
+        mutated["currencies"]["EUR"]["backtest_eligible_as_official"] = True
+        rejects(plan, mutated, official, "estimated source must not be official backtest")
+        fake_official = deepcopy(official)
+        fake_official["currencies"]["EUR"]["status"] = "ACTIVE"
+        rejects(plan, view, fake_official, "estimated source shadowing active official")
+    elif eur_state == "GREEN_OFFICIAL":
+        fake_official = deepcopy(official)
+        fake_official["currencies"]["EUR"]["status"] = "WITHHELD"
+        rejects(plan, view, fake_official, "official promotion bypassed official runtime")
+    else:
+        raise AssertionError(f"unrecognized EUR operational state: {eur_state}")
 
     mutated = deepcopy(view)
-    mutated["currencies"]["EUR"]["secondary_quote_context"]["cross_date_join_allowed"] = True
-    rejects(plan, mutated, official, "unsafe promotion flag")
+    if view["currencies"]["EUR"].get("secondary_quote_context") is not None:
+        mutated["currencies"]["EUR"]["secondary_quote_context"]["cross_date_join_allowed"] = True
+        rejects(plan, mutated, official, "unsafe promotion flag")
+    else:
+        # Once EUR has an approved complete estimated row, a second
+        # individual-quotes overlay is prohibited, not silently accepted.
+        mutated["currencies"]["EUR"]["secondary_quote_context"] = {
+            "full_curve_usable": False,
+            "cross_date_join_allowed": False,
+            "policy_delta_allowed": False,
+            "repricing_signal_allowed": False,
+            "backtest_eligible_as_official": False,
+        }
+        rejects(plan, mutated, official, "secondary quote context not allowed")
 
     # USD/CHF have estimated futures levels today; a changed estimated rate
     # is NOT a WITHHELD level leak. Assert the actual governance boundary:
