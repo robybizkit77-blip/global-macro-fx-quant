@@ -39,7 +39,7 @@ const fake=structuredClone(live);fake.CHF.date='2026-10-22';
 assert.equal(f(fake,{}).rows.find(x=>x.ccy==='CHF').status,'UNAVAILABLE',
  'date relabeling cannot upgrade archived yields');
 const estim={CHF:{estimate2:true,estimate10:true,proxy:'EUR',
- estimatedAsOf2:'2026-10-22',estimatedAsOf10:'2026-10-22',
+ estimatedAsOf2:live.EUR.date,estimatedAsOf10:live.EUR.date,
  v2:.24,v10:.5,r2_2:.14,r2_10:.19,confidence2:'BASSA',confidence10:'BASSA'}};
 assert.equal(f(live,estim).rows.find(x=>x.ccy==='CHF').scenario?.proxy,'EUR');
 assert.equal(f(live,estim).rows.find(x=>x.ccy==='CHF').slopeBp,29.9,
