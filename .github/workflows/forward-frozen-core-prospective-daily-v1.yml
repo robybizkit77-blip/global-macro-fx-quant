@@ -9,9 +9,11 @@ on:
       - '.github/workflows/forward-frozen-core-prospective-daily-v1.yml'
   workflow_dispatch:
   schedule:
-    # Exactly one Rome 19:30 weekday slot. DST guard selects CET or CEST.
+    # 19:30 Rome primary and 20:30 Rome same-day backup.
+    # The CET/CEST cron union is filtered by the explicit DST admission gate.
     - cron: '30 17 * * 1-5'
     - cron: '30 18 * * 1-5'
+    - cron: '30 19 * * 1-5'
 
 permissions:
   contents: write
@@ -66,12 +68,13 @@ jobs:
           from pathlib import Path
           from zoneinfo import ZoneInfo
           from validation.forward.admit_frozen_core_prospective_capture_v1 import (
-              assess, FX, PAIR, CORE
+              assess, schedule_attempt, FX, PAIR, CORE
           )
           now=dt.datetime.now(dt.timezone.utc)
           rome=now.astimezone(ZoneInfo('Europe/Rome'))
-          expected='30 17 * * 1-5' if rome.utcoffset().total_seconds()==7200 else '30 18 * * 1-5'
-          if os.environ['EVENT']=='schedule' and os.environ['SCHEDULE_CRON']!=expected:
+          attempt=schedule_attempt(now,os.environ['EVENT'],
+                                   os.environ.get('SCHEDULE_CRON') or '')
+          if attempt=='SKIPPED_DUPLICATE_DST_UTC_SLOT':
               status='SKIPPED_DUPLICATE_DST_UTC_SLOT'
               reasons=['WRONG_UTC_CRON_FOR_ROME_DST']
           else:
@@ -84,6 +87,7 @@ jobs:
               out.write('admitted='+('true' if admitted else 'false')+'\n')
           with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as out:
               out.write('## Forward prospective observation (no fresh Core re-run)\n')
+              out.write('- Attempt: **'+attempt+'** (actual cutoff only, no 19:30 backfill)\n')
               out.write('- Status: **'+status+'**\n')
               out.write('- Blockers: '+(', '.join(reasons) if reasons else 'none')+'\n')
               out.write('- Time: '+now.isoformat()+'\n')
