@@ -202,7 +202,11 @@ def compute(decisions, fx, now, prior=()):
                 blockers["waiting"] += 1
                 continue
             target = maturity.astimezone(ROME).date()
-            candidates = [d for d in fx_rows if target <= d <= latest_allowed]
+            # The ECB fixing on the exact maturity DATE normally occurs
+            # before a 19:30 Rome snapshot's full 24h/7d horizon expires.
+            # Without per-observation certified publication instants, use
+            # only a STRICTLY LATER dated official fixing.
+            candidates = [d for d in fx_rows if target < d <= latest_allowed]
             if not candidates:
                 blockers["waiting"] += 1
                 continue
@@ -228,7 +232,7 @@ def compute(decisions, fx, now, prior=()):
                 "target_due_date": target.isoformat(),
                 "observed_reference_date": observed_on.isoformat(),
                 "observed_ecb_rate": end,
-                "gap_after_due_days": (observed_on - target).days,
+                "gap_after_due_days": (observed_on - target).days,\n                "first_reference_date_strictly_after_maturity_day": True,
                 "quote_unit": f"{quote}_PER_{base}",
                 "observed_reference_return_pct": round((end/start-1)*100, 7),
                 "observed_reference_change_pips": round((end-start)/pip, 5),
