@@ -86,7 +86,7 @@ class GDP2022Q2ResearchTests(unittest.TestCase):
         self.assertEqual(later["stage_order"],0)
         self.assertIn("NOT_PROOF_NO_EARLIER_FLASH",chf["first_release_uncertainty"])
 
-    def test_canada_australia_nz_and_global_eighteen_quarters(self):
+    def test_canada_australia_nz_and_global_twenty_quarters(self):
         at=snapshot(self.rows,"2022-09-01T00:00:00Z")["visible_vintages"]
         self.assertEqual(at["CAD:2022Q2"]["reported_value"],0.8)
         self.assertNotIn("AUD:2022Q2",at)
@@ -98,13 +98,13 @@ class GDP2022Q2ResearchTests(unittest.TestCase):
         self.assertEqual(nz["NZD:2022Q2"]["reported_unit"],
                          "PERCENT_QOQ_SA_CHAIN_VOLUME_PRODUCTION")
         receipt=research_receipt()
-        self.assertEqual(receipt["quarters_documented"],18)
-        self.assertEqual(receipt["first_publisher_statements_documented"],144)
+        self.assertEqual(receipt["quarters_documented"],20)
+        self.assertEqual(receipt["first_publisher_statements_documented"],160)
         self.assertEqual(receipt["first_statement_quarters_per_currency"],
-                         {c:18 for c in "USD EUR GBP JPY CHF CAD AUD NZD".split()})
+                         {c:20 for c in "USD EUR GBP JPY CHF CAD AUD NZD".split()})
         all_rows=unified_research_rows()
         self.assertEqual(len({(r["currency"],r["reference_quarter"]) for r in all_rows
-                              if r["stage_order"]==0}),144)
+                              if r["stage_order"]==0}),160)
         historic=snapshot(all_rows,"2022-09-16T00:00:00Z")
         self.assertNotIn("USD:2022Q3",historic["visible_vintages"])
         for flag in ("safe_to_update_live_macro_D","safe_to_change_28_pairs",

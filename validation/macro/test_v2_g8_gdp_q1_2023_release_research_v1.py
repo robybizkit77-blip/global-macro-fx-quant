@@ -79,7 +79,7 @@ class GDP2023Q1ResearchTests(unittest.TestCase):
         self.assertEqual(later["CHF:2023Q1"]["reported_value"],0.9)
         self.assertEqual(later["CHF:2023Q1"]["adjustment_scope"],"SEASONAL_CALENDAR_SPORTS")
 
-    def test_other_first_currencies_and_18_quarter_unified_research_scope(self):
+    def test_other_first_currencies_and_20_quarter_unified_research_scope(self):
         before=snapshot(self.rows,"2023-06-08T00:00:00Z")["visible_vintages"]
         self.assertEqual(before["CAD:2023Q1"]["reported_value"],0.8)
         self.assertEqual(before["AUD:2023Q1"]["reported_value"],0.2)
@@ -87,10 +87,10 @@ class GDP2023Q1ResearchTests(unittest.TestCase):
         after=snapshot(self.rows,"2023-06-16T00:00:00Z")["visible_vintages"]
         self.assertEqual(after["NZD:2023Q1"]["reported_value"],-0.1)
         receipt=research_receipt()
-        self.assertEqual(receipt["quarters_documented"],18)
-        self.assertEqual(receipt["first_publisher_statements_documented"],144)
+        self.assertEqual(receipt["quarters_documented"],20)
+        self.assertEqual(receipt["first_publisher_statements_documented"],160)
         self.assertEqual(receipt["first_statement_quarters_per_currency"],
-                         {c:18 for c in "USD EUR GBP JPY CHF CAD AUD NZD".split()})
+                         {c:20 for c in "USD EUR GBP JPY CHF CAD AUD NZD".split()})
         historic=snapshot(unified_research_rows(),"2023-06-16T00:00:00Z")
         self.assertNotIn("USD:2023Q2",historic["visible_vintages"])
         for flag in ("safe_to_update_live_macro_D","safe_to_use_for_beta",
