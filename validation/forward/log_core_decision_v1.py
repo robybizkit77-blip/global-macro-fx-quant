@@ -211,7 +211,32 @@ def existing_ids(path: Path) -> set[str]:
 
 
 def append_rows(rows: list[dict[str, Any]], dry_run: bool) -> dict[str, Any]:
-    known = existing_ids(DECISIONS)
+    # One immutable full-G8 observation per UTC capture day. A second
+    # run with a different timestamp must not create 28 new "decisions".
+    history = []
+    if DECISIONS.exists():
+        history = [json.loads(line) for line in DECISIONS.read_text(
+            encoding="utf-8").splitlines() if line.strip()]
+    prospective = [row for row in rows if
+                   row.get("capture_class") == "FROZEN_CORE_BASELINE_OBSERVATION"]
+    if prospective:
+        if len(prospective) != 28 or len({x["pair"] for x in prospective}) != 28:
+            raise ValueError("partial prospective pair batch")
+        day = prospective[0]["decision_cutoff"][:10]
+        if any(x["decision_cutoff"][:10] != day for x in prospective):
+            raise ValueError("prospective batch contains multiple cutoff dates")
+        earlier = [h for h in history if
+                   h.get("capture_class") == "FROZEN_CORE_BASELINE_OBSERVATION"
+                   and str(h.get("decision_cutoff") or "")[:10] == day]
+        if earlier:
+            if len(earlier) != 28 or len({h["pair"] for h in earlier}) != 28:
+                raise ValueError("partial existing daily observation, manual audit needed")
+            if {h["pair"] for h in earlier} != {h["pair"] for h in prospective}:
+                raise ValueError("prospective previous coverage differs")
+            return {"written": 0, "duplicates_skipped": len(rows),
+                    "total_candidates": len(rows),
+                    "same_day_observation_already_preserved": True}
+    known = {x["snapshot_id"] for x in history}
     new_rows = [row for row in rows if row["snapshot_id"] not in known]
     if not dry_run and new_rows:
         DECISIONS.parent.mkdir(parents=True, exist_ok=True)
