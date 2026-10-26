@@ -46,10 +46,12 @@ on:
           - night
           - full
   schedule:
-    # Europe/Rome 05:00 preparation for the 08:00 study briefing.
+    # Europe/Rome 04:43 preparation for the 08:00 study briefing.
+    # Off-hour minute avoids GitHub's documented top-of-hour scheduler load;
+    # earlier start adds 17 minutes of buffer without advancing source vintages.
     # Previous trading-day FX fixes/rates are already source-published by this slot.
-    - cron: '0 3 * * 1-5'
-    - cron: '0 4 * * 1-5'
+    - cron: '43 2 * * 1-5'
+    - cron: '43 3 * * 1-5'
     # Europe/Rome 07:45 pre-morning. Duplicate UTC entries cover CEST/CET; offset gate selects one.
     - cron: '45 5 * * 1-5'
     - cron: '45 6 * * 1-5'
@@ -142,7 +144,7 @@ jobs:
             sched='${{ github.event.schedule }}'
             phase=skip
             case "$sched|$offset" in
-              '0 3 * * 1-5|2'|'0 4 * * 1-5|1') phase=prebrief ;;
+              '43 2 * * 1-5|2'|'43 3 * * 1-5|1') phase=prebrief ;;
               '45 5 * * 1-5|2'|'45 6 * * 1-5|1') phase=premorning ;;
               '10 7 * * 1-5|2'|'10 8 * * 1-5|1') phase=morning ;;
               '30 16 * * 1-5|2'|'30 17 * * 1-5|1') phase=close ;;
@@ -152,7 +154,7 @@ jobs:
           echo "phase=$phase" >> "$GITHUB_OUTPUT"
           echo "Resolved phase: $phase"
 
-      # The 05:00/07:45 pipeline must inspect the refreshed main tree
+      # The 04:43/07:45 pipeline must inspect the refreshed main tree
       # before it explicitly dispatches the Pages publisher.
       - name: Checkout main for pre-publication source audit
         if: ${{ steps.phase.outputs.phase == 'prebrief' || steps.phase.outputs.phase == 'premorning' }}
@@ -326,10 +328,10 @@ jobs:
 
             echo "## Daily Data Orchestrator V2 — ${phase}" >> "$GITHUB_STEP_SUMMARY"
             for wf in "${workflows[@]}"; do
-              # A missed/failed 05:00 Calendar/News check must be recoverable
+              # A missed/failed 04:43 Calendar/News check must be recoverable
               # during the 07:45 safety pass. When BOTH producer receipts have
               # already been rechecked today, avoid duplicate source work.
-              # The 05:00 primary and 05:17 independent collector still lead.
+              # The 04:43 primary and 05:17 independent collector still lead.
               if [[ "$phase" == "premorning" && "$wf" == "calendar-news-operational-refresh-v1.yml" ]]; then
                 if python3 validation/orchestration/plan_premorning_calendar_news_recovery_v1.py \
                   --source-dir live_data/sections; then
@@ -339,7 +341,7 @@ jobs:
                 echo "- 07:45 Calendar/News: **RETRY** (missing or stale same-day source receipt)" >> "$GITHUB_STEP_SUMMARY"
               fi
               # Final E2E is a structural check, not proof that dated
-              # market sources are ready. Refuse the explicit 05:00/07:45
+              # market sources are ready. Refuse the explicit 04:43/07:45
               # Pages dispatch unless the actual refreshed main feeds pass.
               if [[ "$wf" == "publish-dashboard-pages-v1.yml" ]] &&
                  [[ "$phase" == "prebrief" || "$phase" == "premorning" ]]; then
