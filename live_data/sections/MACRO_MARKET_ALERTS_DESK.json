@@ -1,8 +1,49 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-26T09:59:57Z",
+  "generated_at_utc": "2026-10-26T10:55:27Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-28734cc3258fc3288e44",
+      "observed_at_utc": "2026-10-26T10:02:09Z",
+      "headline": "Bank of Canada expected to hike rate on Wednesday to stem spillover of energy inflation",
+      "summary": "Reuters riporta: Bank of Canada expected to hike rate on Wednesday to stem spillover of energy inflation. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "CAD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxPUXpOXzVmSjQ1YVpWOEdvN2ZtR2xyVmFDTTJxZzhqekRPVGRaVzl3QUV4bFFQYjZUckk0MExrRGZYbUNPd3czSV9yQVNORlFJc19rMm03T3BoNHhVNkRtTnRQckdpM0Q4MUFscWlzU1gtYVhrSUY0SjY1UlMxby00YXROUlJleDc4cXdBS2xFTkJvSHQwTGpwVkN5aVpqZ1dVM081dk9qM3dGSy05Z2kxaGU0TlctSXVMQUpBaGlVckQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-52defc26b1db971a8463",
+      "observed_at_utc": "2026-10-26T08:36:36Z",
+      "headline": "Asia-focused banks face capital squeeze due to inflation, bond turbulence",
+      "summary": "Reuters riporta: Asia-focused banks face capital squeeze due to inflation, bond turbulence. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxQQ3c0Nl9IZUxGNGlIRFlNSW0xRUIzUTkxZlZJYVhtWjI5NXlGNFVJcm1IMnNMNVFWZVV4c0toYkxQYjB5Z3VXanB2ZE5ycUxERkRObDhkYUw3RGlrbFlzMVM3OXpyRVZhLTNnMkZhMkhHRU9oeGpuOHBDUWtkNkprSkZuQWVlSWtxYllmX1NlWkdqOHVWZzlubGs0WExDR29iVl95S1paMEhzOEFob1JkQWxpeTlGcnZO?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-b303d0653f08a70a31e2",
+      "observed_at_utc": "2026-10-26T05:56:00Z",
+      "headline": "Gold gains as oil slide cools some inflation concerns",
+      "summary": "Reuters riporta: Gold gains as oil slide cools some inflation concerns. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxPZml1aC0yS2NrLUloeEFPZnYyeExpazhPVExTT1BLcV9HZGxEZWFzcHFUMTJFbDhUTjgyaE5EbGRja1BRX0p2UzlDSmEzUUpzTG9ZT2xKZEZMczFvb1pzU2xrdXlNT0dDUXYtQnhoLUFpT09xQmF5Q25FQXdKNGpjOERVdTB1UTk4NkhSd2k3cUNBSTJRMVVsUlpSWQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-97648f3aa36f42346eb7",
       "observed_at_utc": "2026-10-26T00:46:00Z",
@@ -1343,47 +1384,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxQc0pwaXRXY250QlJhREhaOWJuV1A0a0tWNGRXLW9VdjlFS2dSR09IdFNSRnA1VnotZW9ydlUwYy1GN3Rhb3JmaDlFRzZROVZyUUtqcUg4NzN3S1lfRzBtMERGcmREaFdvUXFwS2pCSXlLdzVUaDRLVm91TVZ4c1p2Q2xwSEZudGhuRkVhOGJLUDY0SUhuMFlVeFkyOEtWYlBvOVFBQW9lV2IzSTFxb09lT0k4d2tmZlk?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-cb925be3000a25f77798",
-      "observed_at_utc": "2026-10-22T09:46:51Z",
-      "headline": "Nasdaq futures drop over 1% as AI worries resurface, oil climbs",
-      "summary": "Reuters riporta: Nasdaq futures drop over 1% as AI worries resurface, oil climbs. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxNTWxDZDg5X0padGNvb2k2V2ZkX2tEWW9YWkdjeVdMZHNUTlg1MXY4TmUyTDZHdUhNTHFRNWRPRjc2VFlEN3RXTDhNSjhDYmRfTWZGXzdKYXdLejRHNGgwRVdNbmZRUkFhSm9GakxMek56UUZ2OUtqajd6NVkzRkR1VzBNWlo5VWp5NUFkX2phUjlSSFlndUlNNGxvUXlHSm1wMlpTbkRR?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-ab5bf909e04f723bebed",
-      "observed_at_utc": "2026-10-22T01:23:00Z",
-      "headline": "Indonesia issues record fines to companies over stock market violations",
-      "summary": "Reuters riporta: Indonesia issues record fines to companies over stock market violations. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxNY3MzeE9TNmZPQTI1dUhlSW9PZktuNzdWOUFsdnFkbkcxT01LMjZwRHJEU0xVVU84eERjYjhmcGd4X3FjVnM2NXJKWVptM2RfaE9MeXpraE5oT1BFenV3NTZxR2ptOWFmYkJUYmJmRVpieGhEX0VHRmxYQ2NMTzdwYmRuTUZ4OWxmLVpLZTJNS040TVJjOUIwcDdrbDlXZUh6RU1wNGhSWVV5WGtpWnIzVERpVEt2MWtub2h2Q3JId18?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-f845006254e002a0077d",
-      "observed_at_utc": "2026-10-22T09:42:00Z",
-      "headline": "World shares retreat as report of damage to oil tankers pushes oil prices higher",
-      "summary": "AP News riporta: World shares retreat as report of damage to oil tankers pushes oil prices higher. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "AP News · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxNbG9Bb3haUmhvOWFmQ0t6bWoyLThHN0pFV21XNjVOVXpsVmFBUEFhSk9HcC1ZYkV3eFhqT2d1SEFSQldtdm16YVM5UW1nRU5yc1JGRVkteEhNZmx0eEpOck1HdnNXNW1TSnh4YmRHU3dyeGdXdzdUZ3JsdFNHVUZwWEZrQVRXUWtrbHlJbDh1eDBSVU9iOUJScQ?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
