@@ -22,6 +22,8 @@ REQUIRED = (
     "validation/macro/latest_release_pit_ledger_v1.py",
     "validation/macro/test_latest_release_pit_ledger_v1.py",
     "validation/macro/test_rebase_workflow_event_coverage_v1.py",
+    "validation/macro/legacy_v2_score_evidence_bridge_v1.py",
+    "validation/macro/test_legacy_v2_score_evidence_bridge_v1.py",
     "validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json",
     "validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-22.json",
     "validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json",
