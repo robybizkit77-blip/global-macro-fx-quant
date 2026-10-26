@@ -36,8 +36,21 @@ for(const ccy of ['USD','EUR','CHF']){
    row.method_id='TRADINGVIEW_DATED_FUTURES_SSR_V2';
    row.as_of=FRESH;
  }else{
-   assert.equal(row.operational_status,'WITHHELD');
-   assert.equal(row.secondary_quote_context?.status,'INDICATIVE_OBSERVATIONS_NON_OIS');
+   // Deterministic 16/19/20 October *historical* fixture, deliberately
+   // independent of whether the live EUR dated-futures overlay has since
+   // become GREEN_ESTIMATED. Preserve no-OIS-promotion invariants.
+   assert(['WITHHELD','GREEN_ESTIMATED'].includes(row.operational_status));
+   row.operational_status='WITHHELD';
+   row.quality='ESTIMATED_INFORMATIONAL';
+   row.official_status='WITHHELD';
+   row.backtest_eligible_as_official=false;
+   row.secondary_quote_context={
+     status:'INDICATIVE_OBSERVATIONS_NON_OIS',
+     full_curve_usable:false,cross_date_join_allowed:false,
+     policy_delta_allowed:false,repricing_signal_allowed:false,
+     backtest_eligible_as_official:false,
+     horizons:Object.fromEntries(tenors.map(t=>[t,{}]))
+   };
  }
  for(const t of tenors){
    const history=fixedBars.filter(x=>x.currency===ccy&&x.observed_under_horizon===t)

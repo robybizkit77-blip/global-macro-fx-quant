@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'validation/qa_control_room_v10_public.js'
+      - 'validation/control_room_public_ois_eligibility_v1.js'
+      - 'validation/test_control_room_public_ois_eligibility_v1.js'
       - 'validation/control_room_nzd_public_contract_v1.js'
       - 'validation/test_control_room_nzd_public_contract_v1.js'
       - 'validation/test_control_room_rome_calendar_v1.js'
@@ -23,6 +25,8 @@ on:
       - 'site/control-room-preview/index.html'
       - 'site/control-room-preview/home-navigation-v10.js'
       - 'validation/qa_control_room_v10_public.js'
+      - 'validation/control_room_public_ois_eligibility_v1.js'
+      - 'validation/test_control_room_public_ois_eligibility_v1.js'
       - 'validation/control_room_nzd_public_contract_v1.js'
       - 'validation/test_control_room_nzd_public_contract_v1.js'
       - 'validation/test_control_room_rome_calendar_v1.js'
@@ -88,6 +92,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Fail-closed source-age and estimate QA fixtures
+        run: |
+          node --check validation/control_room_public_ois_eligibility_v1.js
+          node --check validation/test_control_room_public_ois_eligibility_v1.js
+          node --check validation/qa_control_room_v10_public.js
+          node validation/test_control_room_public_ois_eligibility_v1.js
       - name: Install Playwright browser
         run: |
           npm init -y >/dev/null 2>&1
