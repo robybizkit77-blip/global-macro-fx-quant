@@ -622,7 +622,7 @@ async function getState(page){
          });
          const today=romeTodayIso();
          const sourceDate=day=>{
-           if(!/^20\\d{2}-\\d{2}-\\d{2}$/.test(day||''))return null;
+           if(!/^20\d{2}-\d{2}-\d{2}$/.test(day||''))return null;
            const v=Date.parse(day+'T00:00:00Z');
            return Number.isFinite(v)&&new Date(v).toISOString().slice(0,10)===day?v:null;
          };
