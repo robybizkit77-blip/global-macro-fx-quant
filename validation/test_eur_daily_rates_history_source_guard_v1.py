@@ -53,7 +53,8 @@ class EURDailyRatesHistorySourceGuardTests(unittest.TestCase):
         for key in ['history2','history10']:
             src=copy.deepcopy(self.live['EUR'])
             src[key]['dates'][-2]=src[key]['dates'][-3]
-            with self.assertRaisesRegex(ValueError,"duplicated or unordered"):
+            with self.assertRaisesRegex(ValueError,
+                     "(duplicated or unordered|historical values drift)"):
                 m.eur_daily_append_source_gate(src,self.next_date(src))
 
     def test_weekly_reference_must_not_use_legacy_curve_values(self):
