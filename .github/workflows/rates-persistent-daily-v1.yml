@@ -7,6 +7,8 @@ on:
       - rates-persistent-daily-v1-2026-10-14
     paths:
       - '.github/workflows/rates-persistent-daily-v1.yml'
+      - 'validation/build_rates_candidate_from_audit.py'
+      - 'validation/test_eur_daily_rates_history_source_guard_v1.py'
       - 'validation/rates_schedule_gate_v2.py'
       - 'validation/test_rates_schedule_gate_v2.py'
       - 'validation/build_rates_audit_metadata.py'
@@ -24,6 +26,8 @@ on:
   pull_request:
     paths:
       - '.github/workflows/rates-persistent-daily-v1.yml'
+      - 'validation/build_rates_candidate_from_audit.py'
+      - 'validation/test_eur_daily_rates_history_source_guard_v1.py'
       - 'validation/rates_schedule_gate_v2.py'
       - 'validation/test_rates_schedule_gate_v2.py'
       - 'validation/build_rates_audit_metadata.py'
@@ -69,6 +73,8 @@ jobs:
         run: python3 validation/test_rates_schedule_gate_v2.py
       - name: Test source-age status labels for blocked/manual Rates
         run: python3 validation/test_rates_source_age_metadata_v1.py
+      - name: Protect EUR 2Y/10Y official history clean tail without blocking other G8 currencies
+        run: python3 -m unittest validation.test_eur_daily_rates_history_source_guard_v1 -v
 
       - name: Resolve Rates schedule from UTC cron and Rome offset
         id: gate
@@ -242,6 +248,22 @@ jobs:
             --audit /tmp/rates-persistent/audit.json \
             --output /tmp/rates-persistent/NATIVE_RATES_DATA.json \
             | tee /tmp/rates-persistent/candidate-summary.json
+          # Quarantined EUR history must be prominently visible, even if
+          # other currencies still update safely or no yield changes are made.
+          python - <<'PY'
+          import json,os
+          s=json.load(open('/tmp/rates-persistent/candidate-summary.json'))
+          blocked=s.get('quarantined_currencies',{})
+          if blocked:
+              with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as fd:
+                  fd.write('### Rates source-history quarantines (EUR 2Y/10Y)\n')
+                  for c,p in blocked.items():
+                      fd.write('- '+c+': **'+p['status']+'** · '+p['reason']+
+                               '. Existing live snapshot preserved; other valid G8 updates continue.\n')
+              print('RATES_SOURCE_HISTORY_EUR_QUARANTINED_UNRELATED_CURRENCIES_ALLOWED',blocked)
+          else:
+              print('RATES_SOURCE_HISTORY_APPEND_PROVENANCE_GUARD_PASS')
+          PY
           STATUS="$(python -c "import json; print(json.load(open('/tmp/rates-persistent/candidate-summary.json'))['status'])")"
           echo "status=$STATUS" >> "$GITHUB_OUTPUT"
           test "$STATUS" = 'NO_UPDATES' -o "$STATUS" = 'CANDIDATE_READY'
