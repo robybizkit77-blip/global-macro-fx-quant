@@ -1,8 +1,21 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-26T19:54:25Z",
+  "generated_at_utc": "2026-10-26T20:51:48Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-346bcd85e63dbe0ace6a",
+      "observed_at_utc": "2026-10-26T20:25:19Z",
+      "headline": "Equities end higher as Anthropic's IPO filing buoys AI stocks",
+      "summary": "Reuters riporta: Equities end higher as Anthropic's IPO filing buoys AI stocks. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPVVlfUU5UYnVIOHVRRHJCaWJNQ0NtM0V5aXdZUE5QSEhGVTAxWmdXcU1KeGVEaEtYTXlEal9YNjMwblR6bGZQcm5HODd6N2xnNUppZzdXMDVTSWwtZEc3a3p3Q0M4VzRtaHo3QTd1VDJpaGNPQmw0WjFNaEMyQ2JyOVpGcmZEbktIdk45OHp4blZxdzc5UllRT2V1cnllVTVVTjVYZm1IZ0VjWDlwTnc?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-59f5fe3883fbcce0cbc7",
       "observed_at_utc": "2026-10-26T18:37:31Z",
@@ -1378,19 +1391,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMi2AFBVV95cUxOeXZkVkhTMUxoaW8wOXZWUC1TbzdCbXlXbUVoWWVZdGZSN1FzdGdrb0VjcW1IZWtLR0JuUWx1RWdGNFpVTHgzYXVjeURmX3RPUVlxYVlNT1hvREZSLWVOR2NVN0sxZTZFMzNDcXFLbUQ2bjJVZUhzdGRSaFY4MTRKeGhuQ09fTFlfVVVVZmo3c24wTnBhZVlGckVPdXBodjF5UnR1RFFhRUtFXzZKVG56LTRoYlFja0pVbUV3OFFyX05zUTE4djJYUTYzQXVBY0s3TjlkdFk2cjA?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-4e1228f7ff64f39a14e1",
-      "observed_at_utc": "2026-10-22T16:50:19Z",
-      "headline": "Blackstone sees widening credit spreads as a chance to capture higher returns",
-      "summary": "Reuters riporta: Blackstone sees widening credit spreads as a chance to capture higher returns. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CREDIT",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxORldGZFBnWFM0UnNpZTVWZE95SkdVdVFyVjhpU3E0Sl9ucFhTTXJsX3NWVkZvOWd6TmhJRVZOQjhKb1dES3B2YUFHT0hJdWZIdk9VaFhmS2xub0dOVWsxMUxCV2wwVTdkcFV0TzFQSUhkMURBQ1BIMHViUVNxUXYydG94ajVNNWNEQmpZZDZBYi0wYWpKYklaeUlIWnpLSFhIdnd6WGtaQk9JUG1fWVg0b2cxTGJxWWxFeFZz?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
