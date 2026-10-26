@@ -83,15 +83,15 @@ class GDP2023Q2ResearchTests(unittest.TestCase):
         self.assertEqual(nz["NZD:2023Q2"]["reported_value"],0.9)
         self.assertEqual(nz["AUD:2023Q2"]["reported_value"],0.4)
 
-    def test_14_quarters_112_unique_first_source_records_and_no_promotion(self):
+    def test_15_quarters_120_unique_first_source_records_and_no_promotion(self):
         receipt=research_receipt()
-        self.assertEqual(receipt["quarters_documented"],14)
-        self.assertEqual(receipt["first_publisher_statements_documented"],112)
+        self.assertEqual(receipt["quarters_documented"],15)
+        self.assertEqual(receipt["first_publisher_statements_documented"],120)
         self.assertEqual(receipt["first_statement_quarters_per_currency"],
-                         {x:14 for x in "USD EUR GBP JPY CHF CAD AUD NZD".split()})
+                         {x:15 for x in "USD EUR GBP JPY CHF CAD AUD NZD".split()})
         rows=unified_research_rows()
         self.assertEqual(len({(r["currency"],r["reference_quarter"])
-                              for r in rows if r["stage_order"]==0}),112)
+                              for r in rows if r["stage_order"]==0}),120)
         historic=snapshot(rows,"2023-09-02T00:00:00Z")
         self.assertIn("CAD:2023Q2",historic["visible_vintages"])
         self.assertNotIn("NZD:2023Q2",historic["visible_vintages"])
