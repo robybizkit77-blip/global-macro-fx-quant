@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse, copy, json, pathlib, sys
+import argparse, copy, hashlib, json, pathlib, sys
 from datetime import date, timedelta
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
@@ -83,6 +83,33 @@ def eur_daily_append_source_gate(obj, new_date):
         if (obj.get('history2_quality')!='ECB_ORIGINAL_2Y_FULL_HISTORICAL_LATEST_VINTAGE_NOT_PIT'
             or obj.get('history10_quality')!='ECB_ORIGINAL_10Y_FULL_HISTORICAL_LATEST_VINTAGE_NOT_PIT'):
             raise ValueError('EUR 2Y/10Y approved full-source provenance incomplete')
+        notice=obj.get('historical_curve_rebase')
+        if (not isinstance(notice,dict) or
+            notice.get('schema')!='GMFQ_EUR_2Y_10Y_HISTORY_REBASE_NOTICE_V1' or
+            notice.get('status')!='PUBLISHED_AFTER_SOURCE_AND_BROWSER_QA' or
+            notice.get('source_authority')!='European Central Bank' or
+            notice.get('original_ecb_2y_csv_sha256')!='2d5b0e884b0d3728c29d935e0982e761896102bd401f4ae406a17680f6079bab' or
+            notice.get('original_ecb_10y_csv_sha256')!='c536410864ee8f873533509167ab350a189ed0987201b09b490f158aa85b9b4e' or
+            notice.get('original_history_start')!='2025-09-16' or
+            notice.get('original_history_end')!='2026-10-22' or
+            notice.get('original_point_count')!=282 or
+            notice.get('historical_first_release_pit_certified') is not False or
+            notice.get('source_rebase_not_market_move') is not True or
+            notice.get('chf_reference_beta_recalibration_not_official_chf_yield') is not True or
+            notice.get('requires_explicit_release') is not False):
+            raise ValueError('EUR rebase approved publication evidence incomplete')
+        for name in ('history2','history10'):
+            if obj[name]['dates'][0]!='2025-09-16':
+                raise ValueError('EUR original ECB 282-point publisher prefix start drift')
+            if obj[name]['dates'][281]!='2026-10-22':
+                raise ValueError('EUR original ECB 282-point publisher prefix end drift')
+        paired=[[d,obj['history2']['values'][i],obj['history10']['values'][i]]
+                for i,d in enumerate(obj['history2']['dates'][:282])]
+        fingerprint=hashlib.sha256(
+            json.dumps(paired,separators=(',',':'),ensure_ascii=False).encode()
+        ).hexdigest()
+        if notice.get('original_paired_values_sha256')!=fingerprint:
+            raise ValueError('EUR published ECB original 282-day paired historical values drift')
     else:
         raise ValueError('EUR historical curve provenance not approved for daily append')
     pts={}
