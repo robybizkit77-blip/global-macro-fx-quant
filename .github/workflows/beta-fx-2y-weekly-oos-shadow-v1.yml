@@ -1,0 +1,63 @@
+name: Beta Matched FX-2Y Weekly Pseudo-OOS Audit V1 (unscheduled)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/beta/weekly_fx_2y_shadow_oos_v1.py'
+      - 'validation/beta/test_weekly_fx_2y_shadow_oos_v1.py'
+      - 'validation/beta/BETA_WEEKLY_FX_2Y_SHADOW_OOS_AUDIT_2026-10-26.md'
+      - 'validation/beta/rate_beta_observational_v1.py'
+      - '.github/workflows/beta-fx-2y-weekly-oos-shadow-v1.yml'
+      - 'live_data/sections/NATIVE_RATES_DATA.json'
+      - 'live_data/sections/ECB_G8_PRICE_HISTORY.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  beta-research-pseudo-oos:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile and test exact-date 28 pair panel plus OOS guards
+        run: |
+          python -m py_compile validation/beta/weekly_fx_2y_shadow_oos_v1.py validation/beta/test_weekly_fx_2y_shadow_oos_v1.py
+          python -m unittest validation.beta.test_weekly_fx_2y_shadow_oos_v1 -v
+          python validation/beta/test_rate_beta_observational_v1.py
+      - name: Produce October 26 shadow source availability and OOS receipt
+        run: |
+          python -m validation.beta.weekly_fx_2y_shadow_oos_v1 \
+            --as-of 2026-10-26 --out /tmp/gmfq-rate-beta-28pair-pseudo-oos.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/gmfq-rate-beta-28pair-pseudo-oos.json'))
+          assert d['schema']=='GMFQ_FX_2Y_MATCHED_WEEKLY_OOS_RESEARCH_V1'
+          assert d['state']=='SHADOW_HISTORICAL_PSEUDO_OOS_NOT_LIVE'
+          assert d['pair_count']==28
+          assert d['rate_2y_series_quality']['JPY']['reason']=='NONCANONICAL_2Y_HISTORY_DATE'
+          assert d['pairs_with_any_oos']>=1
+          assert not d['historical_point_in_time_vintages_verified']
+          assert not d['yield_instrument_basis_comparable_across_countries']
+          assert not d['b1_b2_rule_validated']
+          assert not d['beta_promoted']
+          assert not d['trading_performance_claim']
+          assert not d['core_scores_modified']
+          assert not d['dashboard_changed']
+          assert all(x['historical_oos_observations']==0
+                     for x in d['pairs'] if 'JPY' in x['pair'])
+          for p in d['pairs']:
+              for o in p['recent_oos_samples']:
+                  assert o['training_last_week_end'] < o['evaluation_week_end']
+                  assert o['train_count']==52
+          print('BETA_MATCHED_WEEKLY_SHADOW_OOS_BLOCKED_FROM_TRADING_PROMOTION')
+          PY
+      - name: Preserve all production and canonical Beta/Forward artifacts
+        run: |
+          test -z "$(git status --porcelain -- live_data site dashboard payload validation/forward validation/beta/RATE_BETA_OBSERVATIONAL_CONTRACT_V1_2026-10-15.json)"
+          echo READONLY_28PAIR_BETA_PSEUDO_OOS_NO_MODEL_MUTATION
