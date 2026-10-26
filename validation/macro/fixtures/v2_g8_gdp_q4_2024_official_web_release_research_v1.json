@@ -1,0 +1,12 @@
+{
+  "schema": "GMFQ_G8_GDP_2024Q4_PUBLISHER_WEB_RELEASE_RESEARCH_V1",
+  "reviewed_on": "2026-10-26",
+  "reference_quarter": "2024Q4",
+  "archive_warning": "Retrospective official web statement research, not certified release-day archived data.",
+  "asof_policy": "CONSERVATIVE_NEXT_UTC_DAY",
+  "eligible_for_macro_scoring": false,
+  "eligible_for_beta": false,
+  "eligible_for_forward": false,
+  "may_rewrite_D_json": false,
+  "records": []
+}
