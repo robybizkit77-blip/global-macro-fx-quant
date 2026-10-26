@@ -55,7 +55,9 @@ async function run(){
    fs.mkdirSync(dir,{recursive:true});
    await page.screenshot({path:path.join(dir,label+'-v10-rates.png'),fullPage:true});
    const home=await page.goto(url+'#/home',{waitUntil:'domcontentloaded',timeout:120000});
-   assert(home?.ok(),'v10 Home route failed');
+   // Hash-only navigation keeps the same document and Playwright may
+   // legitimately return null instead of a fresh HTTP response.
+   assert(!home||home.ok(),'v10 Home HTTP navigation failed');
    await page.waitForFunction(()=>{
      const d=document.getElementById('gmfq-page')?.contentDocument;
      return Boolean(d?.querySelector('#valute .cc[data-filter="DXY"]'));
