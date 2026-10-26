@@ -284,7 +284,8 @@ def audit_with_official_jpy_source(fx, rates, historical_bytes, current_bytes,
     """
     import copy
     from validation.rates.audit_jpy_2y_mof_chronology_v1 import (
-        normalize_source, propose_verified_latest_publisher_candidate
+        normalize_source, propose_verified_latest_publisher_candidate,
+        parse_mof_csv, HIST_URL, CURR_URL
     )
     original=normalize_source(rates)
     checked=propose_verified_latest_publisher_candidate(
@@ -293,10 +294,29 @@ def audit_with_official_jpy_source(fx, rates, historical_bytes, current_bytes,
             "PUBLISHER_RECONCILED_273_OF_273_LATEST_RELEASE_RESEARCH_ONLY"
             or checked["source_comparison"]["matched"] != 273):
         raise ValueError("JPY 2Y source not fully reconciled")
+    # The stored mirror is incomplete (especially Aug/Sep 2026). Only
+    # after 273/273 verification may the shadow audit use the complete
+    # *independently downloaded* original publisher chronology. No filling
+    # or extrapolating missing official days is permitted.
+    historical=parse_mof_csv(historical_bytes,source=HIST_URL)
+    current=parse_mof_csv(current_bytes,source=CURR_URL)
+    for d in set(historical).intersection(current):
+        if historical[d]!=current[d]:
+            raise ValueError("conflicting MoF historical/monthly overlap")
+    whole={**historical,**current}
+    first=strict_date(fx["first_as_of"])
+    cutoff=min(strict_date(as_of),strict_date(rates["JPY"]["date"]))
+    publisher=[(d,v) for d,v in sorted(whole.items())
+               if first<=d<=cutoff]
+    if not publisher or publisher[-1][0]!=cutoff:
+        raise ValueError("original published MoF source unavailable for JPY current date")
+    for d,v in publisher:
+        if d.weekday()>=5 or not finite(v):
+            raise ValueError("MoF publisher chronology invalid")
     revised=copy.deepcopy(rates)
-    rows=checked["candidate_rows"]
-    revised["JPY"]["history2"]["dates"]=[x["date"] for x in rows]
-    revised["JPY"]["history2"]["values"]=[x["yield_pct"] for x in rows]
+    revised["JPY"]["history2"]["dates"]=[d.isoformat() for d,v in publisher]
+    revised["JPY"]["history2"]["values"]=[v for d,v in publisher]
+    revised["JPY"]["date"]=publisher[-1][0].isoformat()
     result=audit(fx,revised,as_of=as_of)
     # Even 28/28 historical OOS analyses would remain latest-revised pseudo
     # OOS, not real-time first-release data nor comparable 2Y benchmarks.
@@ -304,6 +324,12 @@ def audit_with_official_jpy_source(fx, rates, historical_bytes, current_bytes,
         "status":checked["status"],
         "matched_with_original_mof":checked["source_comparison"]["matched"],
         "original_observation_rows":checked["original_row_count"],
+        "publisher_full_2y_observations_used_research_only":len(publisher),
+        "publisher_first_date_used":publisher[0][0].isoformat(),
+        "publisher_last_date_used":publisher[-1][0].isoformat(),
+        "publisher_observation_extras_beyond_mirror":
+            len(publisher)-sum(first<=strict_date(x["date"])<=cutoff
+                               for x in checked["candidate_rows"]),
         "date_chronology_reversals_corrected_in_memory":
             checked["chronological_reversals"],
         "two_publisher_value_replacements":
