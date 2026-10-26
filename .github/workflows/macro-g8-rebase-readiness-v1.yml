@@ -129,6 +129,11 @@ jobs:
             --out /tmp/macro-g8-rebase/legacy-v2-24-score-crosswalk.json \
             --markdown /tmp/macro-g8-rebase/legacy-v2-24-score-mismatch-dossier.md
           cat /tmp/macro-g8-rebase/legacy-v2-24-score-mismatch-dossier.md >> "$GITHUB_STEP_SUMMARY"
+          # Include the specific mismatches in searchable CI logs. No scoring
+          # or runtime writes; markdown plus JSON remain uploaded as artifacts.
+          grep -E '^\\| (USD|EUR|GBP|JPY|CHF|CAD|AUD|NZD) \\|' \\
+            /tmp/macro-g8-rebase/legacy-v2-24-score-mismatch-dossier.md | \\
+            grep -v 'TECHNICAL_ID_FREQUENCY_MATCH_PIT_NOT_CERTIFIED' || true
           python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
           import json
           r=json.load(open('/tmp/macro-g8-rebase/legacy-v2-24-score-crosswalk.json'))
