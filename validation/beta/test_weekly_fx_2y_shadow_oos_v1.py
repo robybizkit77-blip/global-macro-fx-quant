@@ -71,7 +71,11 @@ class WeeklyBetaTests(unittest.TestCase):
 
     def test_reject_unmatched_rate_asof(self):
         d=copy.deepcopy(self.rates)
-        d["GBP"]["date"]="2026-10-23"
+        # The official GBP observation has advanced to 23 October.
+        # Corrupt the copy relative to the actual canonical source date,
+        # so this remains a genuine negative test after future refreshes.
+        observed=date.fromisoformat(d["GBP"]["date"])
+        d["GBP"]["date"]=(observed-timedelta(days=1)).isoformat()
         _,reason=m.rate_history("GBP",d,date(2026,10,26))
         self.assertEqual(reason,"2Y_SOURCE_ASOF_MISMATCH")
 

@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'validation/beta/weekly_fx_2y_shadow_oos_v1.py'
+      - 'validation/beta/beta_regression_diagnostics_research_v1.py'
+      - 'validation/beta/test_beta_regression_diagnostics_research_v1.py'
       - 'validation/rates/audit_jpy_2y_mof_chronology_v1.py'
       - 'validation/beta/test_weekly_fx_2y_shadow_oos_v1.py'
       - 'validation/beta/BETA_WEEKLY_FX_2Y_SHADOW_OOS_AUDIT_2026-10-26.md'
@@ -30,6 +32,7 @@ jobs:
         run: |
           python -m py_compile validation/beta/weekly_fx_2y_shadow_oos_v1.py validation/beta/test_weekly_fx_2y_shadow_oos_v1.py
           python -m unittest validation.beta.test_weekly_fx_2y_shadow_oos_v1 -v
+          python -m unittest validation.beta.test_beta_regression_diagnostics_research_v1 -v
           python validation/beta/test_rate_beta_observational_v1.py
       - name: Produce October 26 shadow source availability and OOS receipt
         run: |
@@ -48,6 +51,16 @@ jobs:
           assert not d['b1_b2_rule_validated']
           assert not d['beta_promoted']
           assert not d['trading_performance_claim']
+          assert d['pairs_with_52w_hc3_huber_research_diagnostics']>=1
+          for item in d['pairs']:
+              z=item['beta_52w_robust_standard_error_and_outlier_sensitivity_research_only']
+              if z is not None:
+                  assert z['sample_weeks']==52
+                  assert z['state']=='SHADOW_HISTORICAL_NOT_PIT_CERTIFIED'
+                  assert z['source_first_publication_pit_verified'] is False
+                  assert z['beta_promoted'] is False and z['performance_claim'] is False
+                  assert z['core_effect']=='NONE' and z['pair_signal_effect']=='NONE'
+          print('PDF_23_3_52W_HC3_HUBER_READONLY_DIAGNOSTICS')
           assert not d['core_scores_modified']
           assert not d['dashboard_changed']
           assert all(x['historical_oos_observations']==0

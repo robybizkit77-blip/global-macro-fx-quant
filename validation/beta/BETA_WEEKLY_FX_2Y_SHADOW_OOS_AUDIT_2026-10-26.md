@@ -35,6 +35,14 @@ python -m validation.beta.weekly_fx_2y_shadow_oos_v1 \
   --out /tmp/gmfq-beta-fx-2y-weekly-shadow.json
 ```
 
+## 26 October addendum: PDF Chapter 23.3, standard error and robust comparison
+
+The original `Il_beta_dalla_A_alla_Z.pdf`, chapter 23.3, asks for an OLS standard error robust to heteroskedasticity, comparison with Huber or Theil–Sen, and explicit outlier investigation. New read-only module `beta_regression_diagnostics_research_v1.py` calculates **HC3 heteroskedasticity-robust OLS standard error** (not Newey–West/HAC), **Huber 1.345 IRLS slope**, the numerical Huber-minus-original-OLS difference, observation leverage and maximum leave-one-out OLS slope change on **exactly 52 sequential weekly observations**. No arbitrary classification threshold has been introduced. Missing weeks, nonfinite observations and flat 2Y input invalidate the diagnostic.
+
+The original 52W OLS contract and PDF chapter 23.4 held-out variance-reduction assessment are not changed. These diagnostics are computed only in `weekly_fx_2y_shadow_oos_v1.py`, on complete historical panels, and explicitly state **first-publication PIT NOT certified**, **cross-country 2Y instrument basis NOT comparable/certified**, **research only**, **no predictive result**, **no signals/ranking/Core/backtest promotion**. Robust estimates themselves are neither used as hedges nor compared in a genuine PIT OOS period. The PDF's full ten-step procedure is therefore **still incomplete**.
+
+The PDF chapter 23.3 and 23.4 text does not itself specify operational thresholds named `B1` or `B2`. Those labels may belong to a separate project specification; no criteria are inferred from their names. Both remain unapproved until a separately documented canonical definition is located.
+
 ## True Beta launch blockers
 
 1. Repair JPY 2Y historical date identity/chronology **against original Ministry of Finance records** and freeze correct historical series, without guessing.
