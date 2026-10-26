@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed 05:00–10:00 Rome publisher gate, regardless of workflow trigger.
+"""Fail-closed 04:00–10:00 Rome publisher gate, regardless of workflow trigger.
 
 Outside the weekday study window the existing Pages structural and source
 checks retain authority; this module does not reclassify historical Macro or
@@ -19,7 +19,7 @@ sys.path.insert(0, str(ROOT / "validation" / "orchestration"))
 from check_morning_readiness_v1 import inspect, read_feeds  # noqa: E402
 
 ROME = ZoneInfo("Europe/Rome")
-START = dt.time(5, 0)
+START = dt.time(4, 0)
 END = dt.time(10, 0)
 
 
@@ -37,7 +37,7 @@ def evaluate(instant: dt.datetime, feeds: dict | None = None) -> dict:
     receipt = {
         "schema": "GMFQ_PAGES_MORNING_SOURCE_GATE_V1",
         "checked_at_rome": local.isoformat(timespec="seconds"),
-        "window": "WEEKDAYS_05_00_TO_10_00_EUROPE_ROME",
+        "window": "WEEKDAYS_04_00_TO_10_00_EUROPE_ROME",
         "morning_gate_required": active,
         "status": "PASS_OUTSIDE_MORNING_WINDOW",
         "critical_daily_problems": [],
