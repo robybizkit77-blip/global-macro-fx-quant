@@ -20,6 +20,7 @@ from statistics import pvariance
 
 from validation.beta.rate_beta_observational_v1 import ols_beta
 from validation.beta.beta_regression_diagnostics_research_v1 import diagnose
+from validation.beta.beta_lag_stability_research_v1 import diagnose as lag_stability_diagnose
 
 ROOT = Path(__file__).resolve().parents[2]
 FX_PATH = ROOT / "live_data/sections/ECB_G8_PRICE_HISTORY.json"
@@ -228,6 +229,18 @@ def audit(fx, rates, *, as_of="2026-10-26"):
                 (z["week_end"],z["fx_return"],z["delta_rel_2y"])
                 for z in latest_train
             ])
+        # PDF 23.3 steps 6/7; use only a backward walk through actual
+        # consecutive weekly rows. No historical gaps joined or synthetic days.
+        suffix = []
+        for z in reversed(obs):
+            if suffix and (suffix[-1]["week_end"]-z["week_end"]).days != 7:
+                break
+            suffix.append(z)
+        suffix.reverse()
+        dimson_stability = lag_stability_diagnose([
+            (z["week_end"],z["fx_return"],z["delta_rel_2y"])
+            for z in suffix[-55:]
+        ]) if len(suffix)>=WINDOW else None
         vals_y = [z["fx_return_observed"] for z in oos]
         vals_z = [z["hedged_reference_residual"] for z in oos]
         var_y = pvariance(vals_y) if len(vals_y) >= 2 else None
@@ -252,6 +265,7 @@ def audit(fx, rates, *, as_of="2026-10-26"):
             "actual_oos_hedged_residual_variance":var_z,
             "recent_oos_samples":oos[-3:],
             "beta_52w_robust_standard_error_and_outlier_sensitivity_research_only":robust_52w,
+            "beta_historical_dimson_and_rolling_stability_readonly":dimson_stability,
             "source_definition_comparability_verified":False,
             "first_publication_pit_verified":False,
             "forward_prospective_certified":False,
@@ -273,6 +287,8 @@ def audit(fx, rates, *, as_of="2026-10-26"):
              sum(x["variance_reduction_vs_unhedged_descriptive_only"] is not None for x in pairs),
         "pairs_with_52w_hc3_huber_research_diagnostics":
              sum(x["beta_52w_robust_standard_error_and_outlier_sensitivity_research_only"] is not None for x in pairs),
+        "pairs_with_lag_and_rolling_stability_research":
+             sum(x["beta_historical_dimson_and_rolling_stability_readonly"] is not None for x in pairs),
         "baseline_window_weeks":WINDOW,
         "dependent_variable":"SIMPLE_FX_WEEKLY_RETURN",
         "independent_variable":"WEEKLY_DELTA_2Y_BASE_MINUS_QUOTE_PERCENTAGE_POINTS",
