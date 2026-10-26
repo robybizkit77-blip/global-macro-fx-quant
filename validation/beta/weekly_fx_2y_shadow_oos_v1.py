@@ -274,16 +274,70 @@ def audit(fx, rates, *, as_of="2026-10-26"):
     }
 
 
+
+def audit_with_official_jpy_source(fx, rates, historical_bytes, current_bytes,
+                                   *, as_of="2026-10-26"):
+    """Optional VERIFIED latest-release MoF date/value research panel only.
+
+    Accept original publisher bytes, never a caller-produced PASS receipt.
+    Snapshot values and Core/official live_data are never modified.
+    """
+    import copy
+    from validation.rates.audit_jpy_2y_mof_chronology_v1 import (
+        normalize_source, propose_verified_latest_publisher_candidate
+    )
+    original=normalize_source(rates)
+    checked=propose_verified_latest_publisher_candidate(
+        original,historical_bytes,current_bytes)
+    if (checked["status"] !=
+            "PUBLISHER_RECONCILED_273_OF_273_LATEST_RELEASE_RESEARCH_ONLY"
+            or checked["source_comparison"]["matched"] != 273):
+        raise ValueError("JPY 2Y source not fully reconciled")
+    revised=copy.deepcopy(rates)
+    rows=checked["candidate_rows"]
+    revised["JPY"]["history2"]["dates"]=[x["date"] for x in rows]
+    revised["JPY"]["history2"]["values"]=[x["yield_pct"] for x in rows]
+    result=audit(fx,revised,as_of=as_of)
+    # Even 28/28 historical OOS analyses would remain latest-revised pseudo
+    # OOS, not real-time first-release data nor comparable 2Y benchmarks.
+    result["official_jpy_reconciliation"]={
+        "status":checked["status"],
+        "matched_with_original_mof":checked["source_comparison"]["matched"],
+        "original_observation_rows":checked["original_row_count"],
+        "date_chronology_reversals_corrected_in_memory":
+            checked["chronological_reversals"],
+        "two_publisher_value_replacements":
+            checked["latest_publisher_value_replacements"],
+        "publisher_original_files_sha256":{
+            "historical":checked["source_comparison"]["historical_source_sha256"],
+            "current":checked["source_comparison"]["current_source_sha256"],
+        },
+        "first_publication_vintage_certified":False,
+        "production_history_modified":False,
+        "core_28pair_rank_modified":False,
+    }
+    return result
+
+
 def main():
     ap=argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--as-of",default="2026-10-26")
+    ap.add_argument("--mof-historical-csv",type=Path)
+    ap.add_argument("--mof-current-csv",type=Path)
     ap.add_argument("--out",type=Path,required=True)
     args=ap.parse_args()
     if not args.out.resolve().is_relative_to(Path("/tmp")):
         ap.error("shadow research output must remain under /tmp")
-    data=audit(json.loads(FX_PATH.read_text(encoding="utf-8")),
-               json.loads(RATE_PATH.read_text(encoding="utf-8")),
-               as_of=args.as_of)
+    if bool(args.mof_historical_csv) != bool(args.mof_current_csv):
+        ap.error("both official original MoF CSV files must be provided")
+    fx=json.loads(FX_PATH.read_text(encoding="utf-8"))
+    rates=json.loads(RATE_PATH.read_text(encoding="utf-8"))
+    if args.mof_historical_csv:
+        data=audit_with_official_jpy_source(
+            fx,rates,args.mof_historical_csv.read_bytes(),
+            args.mof_current_csv.read_bytes(),as_of=args.as_of)
+    else:
+        data=audit(fx,rates,as_of=args.as_of)
     args.out.parent.mkdir(parents=True,exist_ok=True)
     args.out.write_text(json.dumps(data,ensure_ascii=False,sort_keys=True,indent=2)+"\n",
                        encoding="utf-8")
