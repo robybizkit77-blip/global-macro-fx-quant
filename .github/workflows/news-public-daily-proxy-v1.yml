@@ -1,0 +1,57 @@
+name: Public Event-Day Proxy Research V1 (unscheduled)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/news_market_daily_proxy_v1.py'
+      - 'validation/test_news_market_daily_proxy_v1.py'
+      - 'validation/NEWS_PUBLIC_DAILY_PROXY_METHOD_2026-10-26.md'
+      - '.github/workflows/news-public-daily-proxy-v1.yml'
+      - 'validation/event_market_evidence_registry_v1.json'
+      - 'live_data/sections/ECB_G8_PRICE_HISTORY.json'
+      - 'live_data/sections/NATIVE_RATES_DATA.json'
+      - 'live_data/sections/OIS_OPERATIONAL_VIEW.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  historical-public-daily-context:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Static Python checks
+        run: |
+          python -m py_compile validation/news_market_daily_proxy_v1.py validation/test_news_market_daily_proxy_v1.py
+      - name: Confirm legitimate references and no intraday/casual promotion
+        run: python -m unittest validation.test_news_market_daily_proxy_v1 -v
+      - name: Reproduce official dated daily context, not a market event claim
+        run: |
+          python -m validation.news_market_daily_proxy_v1 --as-of 2026-10-26 --out /tmp/gmfq-public-daily-reference-proxy.json
+          python - <<'PY'
+          import json
+          x=json.load(open('/tmp/gmfq-public-daily-reference-proxy.json'))
+          assert x['status']=='DAILY_REFERENCE_MOVEMENT_OBSERVED_NOT_INTRADAY'
+          fx=x['observed_daily_fx_reference']
+          assert fx['event_day_to_next_fixing_pips']==-21.0
+          assert fx['previous_to_event_day_pips']==-73.0
+          assert fx['post_fixing_calendar_gap_days']==3
+          assert x['daily_us_2y_reference']['previous_observation_calendar_gap_days']==4
+          assert x['daily_us_2y_reference']['daily_2y_change_bp'] is None
+          assert x['event_date_ois_futures']['status']=='NOT_EVENT_DATE_ALIGNED'
+          assert x['estimated_intraday_reaction'] is None
+          assert x['causal_attribution']=='NOT_ESTABLISHED'
+          assert x['eligible_for_backtest'] is False
+          assert x['safe_to_publish_live_data'] is False
+          print('OFFICIAL_PUBLIC_DAILY_CONTEXT_VALID_NO_INVENTED_INTRADAY')
+          PY
+      - name: Verify no live data, site, original model changes
+        run: |
+          test -z "$(git status --porcelain -- live_data site dashboard payload)"
+          echo SHADOW_DAILY_PROXY_NO_PRODUCTION_WRITES
