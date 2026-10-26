@@ -53,17 +53,44 @@ jobs:
           curl --fail --location --silent --show-error --retry 2 --max-time 30 \
             'https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/jgbcme.csv' \
             --output /tmp/jgbcme_current_official.csv
+          # The current mirror MUST initially reveal only the two reviewed
+          # date-value differences, without treating the uncorrected source
+          # as verified.
+          set +e
           python -m validation.rates.audit_jpy_2y_mof_chronology_v1 \
             --historical-csv /tmp/jgbcme_all_official.csv \
             --current-csv /tmp/jgbcme_current_official.csv \
+            --out /tmp/jpy-original-mof-discrepancies.json
+          original_exit=$?
+          set -e
+          test "$original_exit" -eq 2
+          python - <<'PY'
+          import json
+          data=json.load(open('/tmp/jpy-original-mof-discrepancies.json'))
+          z=data['source_comparison']
+          assert z['matched']==271
+          assert not z['missing']
+          assert {x['date'] for x in z['mismatches']} == {
+              '2026-09-25','2026-09-28'}
+          print('MOF_INDEPENDENTLY_CONFIRMED_TWO_ORIGINAL_DISCREPANCIES')
+          PY
+          # Reconcile only independently reviewed dates, with source bytes
+          # exactly as acquired from Japan MoF; stage result in /tmp only.
+          python -m validation.rates.audit_jpy_2y_mof_chronology_v1 \
+            --historical-csv /tmp/jgbcme_all_official.csv \
+            --current-csv /tmp/jgbcme_current_official.csv \
+            --reconcile-reviewed-two \
             --out /tmp/jpy-official-mof-2y-verified.json
           python - <<'PY'
           import json
           data=json.load(open('/tmp/jpy-official-mof-2y-verified.json'))
-          assert data['status']=='PUBLISHER_VERIFIED_OFFLINE_CANDIDATE'
+          assert data['status']=='PUBLISHER_RECONCILED_273_OF_273_LATEST_RELEASE_RESEARCH_ONLY'
           assert data['source_comparison']['matched']==273
+          assert len(data['latest_publisher_value_replacements'])==2
           assert not data['promoted_into_live_rates']
-          print('MOF_INDEPENDENT_273_2Y_PUBLISHER_AGREEMENT_CONFIRMED')
+          assert not data['promoted_into_beta']
+          assert not data['historical_first_publication_pit_certified']
+          print('MOF_INDEPENDENT_273_2Y_PUBLISHER_AGREEMENT_AFTER_TWO_AUDITED_PATCHES')
           PY
       - name: Surface publisher verification status even if source unavailable
         if: always()
@@ -71,7 +98,7 @@ jobs:
           MOF_OUTCOME: ${{ steps.mof.outcome }}
         run: |
           if [ "$MOF_OUTCOME" = success ]; then
-            echo '### Japan 2Y official-source attestation: ALL 273 matched; production unchanged' >> "$GITHUB_STEP_SUMMARY"
+            echo '### Japan 2Y official-source attestation: ALL 273 matched AFTER 2 SOURCE-VERIFIED REPAIRS; production unchanged' >> "$GITHUB_STEP_SUMMARY"
           else
             echo '### Japan 2Y official-source attestation: NOT VERIFIED (source/network mismatch or unreachable)' >> "$GITHUB_STEP_SUMMARY"
             echo 'Candidate remains quarantined from production and Beta until original MoF CSV independently agrees.' >> "$GITHUB_STEP_SUMMARY"
