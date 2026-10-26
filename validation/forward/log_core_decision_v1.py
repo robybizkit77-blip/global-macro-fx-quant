@@ -253,6 +253,20 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     cutoff = parse_cutoff(args.decision_cutoff)
+    if not args.dry_run:
+        now = dt.datetime.now(dt.timezone.utc)
+        if abs((now - cutoff).total_seconds()) > 120:
+            raise ValueError("non-dry-run cutoff must be actual current UTC instant, no retrospective capture")
+        # This also makes direct CLI non-dry-run fail closed: not only CI can
+        # enforce the official current-day price and active pair overlay gate.
+        from admit_frozen_core_prospective_capture_v1 import assess, FX, PAIR, CORE
+        admiss = assess(now,
+            json.loads(FX.read_text(encoding="utf-8")),
+            json.loads(PAIR.read_text(encoding="utf-8")),
+            json.loads(CORE.read_text(encoding="utf-8")),
+        )
+        if admiss["status"] != "ADMITTED_PROSPECTIVE_BASELINE_OBSERVATION":
+            raise ValueError("forward capture blocked: " + ",".join(admiss["checks"]))
     rows = make_rows(cutoff, args.run_id)
     result = append_rows(rows, args.dry_run)
     receipt = {
