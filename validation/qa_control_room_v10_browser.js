@@ -621,7 +621,8 @@ function expectedReactionFromMetrics(row){
   // The verified official count stays independent of mixed-date futures.
   // Secondary coverage may legitimately move GREEN_ESTIMATED -> WITHHELD;
   // never pin today's 2/2 split or treat the downgrade as data loss.
-  const expectedOfficial=operational.summary.green_official;
+  // A green publisher lane may be stale (GBP 21 Oct on 26 Oct); count
+  // currently eligible published price curves, not all certified sources.
   const expectedEstimated=operational.summary.green_estimated;
   const expectedWithheld=operational.summary.operational_withheld;
   const plottedOfficial=Object.entries(operational.currencies).filter(([c,r])=>
@@ -630,7 +631,7 @@ function expectedReactionFromMetrics(row){
     current(r.as_of,4)&&
     ['3m','6m','12m'].every(t=>Number.isFinite(r.horizons?.[t]?.policy_delta_bp)))
     .map(([c])=>c);
-  if(research.sourceStatus!=='READ_ONLY'||research.visibleCount!==String(expectedOfficial)||
+  if(research.sourceStatus!=='READ_ONLY'||research.visibleCount!==String(plottedOfficial.length)||
      research.estimated!==String(expectedEstimated)||
      research.withheld!==String(expectedWithheld)||
      !research.disclosureClosed||!research.secondaryHidden||!research.plotVisible||
