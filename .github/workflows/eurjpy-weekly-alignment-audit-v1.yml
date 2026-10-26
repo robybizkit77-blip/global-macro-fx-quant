@@ -6,6 +6,8 @@ on:
     paths:
       - 'validation/beta/eurjpy_weekly_calendar_forensics_v1.py'
       - 'validation/beta/eurjpy_ecb_2y_official_bridge_v1.py'
+      - 'validation/beta/audit_ecb_eur2y_official_mirror_parity_v1.py'
+      - 'validation/beta/test_audit_ecb_eur2y_official_mirror_parity_v1.py'
       - 'validation/beta/test_eurjpy_ecb_2y_official_bridge_v1.py'
       - 'validation/beta/test_eurjpy_weekly_calendar_forensics_v1.py'
       - '.github/workflows/eurjpy-weekly-alignment-audit-v1.yml'
@@ -28,6 +30,7 @@ jobs:
           python -m py_compile validation/beta/eurjpy_weekly_calendar_forensics_v1.py validation/beta/test_eurjpy_weekly_calendar_forensics_v1.py
           python -m unittest validation.beta.test_eurjpy_weekly_calendar_forensics_v1 -v
           python -m unittest validation.beta.test_eurjpy_ecb_2y_official_bridge_v1 -v
+          python -m unittest validation.beta.test_audit_ecb_eur2y_official_mirror_parity_v1 -v
       - name: Retrieve only original MoF official CSVs for forensic diagnosis
         shell: bash
         run: |
@@ -96,6 +99,39 @@ jobs:
             echo 'EUR/JPY historic pseudo-OOS: official 2Y source bridge verified, 28/28 shadow coverage. No Core change.' >> "$GITHUB_STEP_SUMMARY"
           else
             echo 'EUR/JPY missing-week ECB 2Y original source: NOT VERIFIED. EURJPY stays non-OOS until source agreement.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Audit full official BCE AAA 2Y series vs original 271-day mirror
+        id: euro_full
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error --retry 2 --max-time 45 \
+            'https://data-api.ecb.europa.eu/service/data/YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y?startPeriod=2025-09-16&endPeriod=2026-10-22&format=csvdata' \
+            --header 'Accept: text/csv' \
+            --output /tmp/eur-aaa2y-2025-2026-original.csv
+          python - <<'PY'
+          import json
+          from validation.beta import weekly_fx_2y_shadow_oos_v1 as b
+          from validation.beta.audit_ecb_eur2y_official_mirror_parity_v1 import audit_eur_original
+          src=json.loads(b.RATE_PATH.read_text(encoding='utf-8'))
+          original=open('/tmp/eur-aaa2y-2025-2026-original.csv','rb').read()
+          record=audit_eur_original(src,original)
+          with open('/tmp/gmfq-eur2y-full-publisher-parity.json','w') as f:
+              json.dump(record,f,indent=2)
+          print('ECB_FULL_EUR2Y_PUBLISHER_VS_MIRROR',record)
+          assert not record['production_history_modified']
+          assert record['overlap_rows'] >= 200
+          PY
+      - name: Report official EUR 2Y basis mismatch separately from PR success
+        if: always()
+        env:
+          FULL_CHECK: ${{ steps.euro_full.outcome }}
+        run: |
+          if [ "$FULL_CHECK" = success ]; then
+            echo 'ECB EUR2Y official vs mirror full date-by-date comparison complete; inspect observed differences before any promotion.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'ECB EUR2Y full source comparison NOT VERIFIED. Original EUR2Y remains untrusted for certification.' >> "$GITHUB_STEP_SUMMARY"
           fi
       - name: No live model, historical source or active Control Room changes
         run: |
