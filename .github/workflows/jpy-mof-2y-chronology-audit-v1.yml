@@ -1,0 +1,83 @@
+name: JPY MoF 2Y Chronology Evidence Gate V1 (unscheduled)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/rates/audit_jpy_2y_mof_chronology_v1.py'
+      - 'validation/rates/test_audit_jpy_2y_mof_chronology_v1.py'
+      - 'validation/rates/JPY_MOF_2Y_DATE_VALUE_RECONCILIATION_2026-10-26.md'
+      - '.github/workflows/jpy-mof-2y-chronology-audit-v1.yml'
+      - 'live_data/sections/NATIVE_RATES_DATA.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  stage-and-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify every original JPY date keeps its original yield
+        run: |
+          python -m py_compile validation/rates/audit_jpy_2y_mof_chronology_v1.py validation/rates/test_audit_jpy_2y_mof_chronology_v1.py
+          python -m unittest validation.rates.test_audit_jpy_2y_mof_chronology_v1 -v
+          python -m validation.rates.audit_jpy_2y_mof_chronology_v1 --out /tmp/jpy-2y-chronology-candidate.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/jpy-2y-chronology-candidate.json'))
+          assert r['status']=='NORMALIZED_PAIRS_PUBLISHER_ATTESTATION_PENDING'
+          assert r['original_row_count']==r['normalized_row_count']==273
+          assert r['noncanonical_date_strings']==246
+          assert r['chronological_reversals']==30
+          assert r['date_value_pairs_preserved'] is True
+          assert r['missing_dates_imputed'] is False
+          assert r['promoted_into_live_rates'] is False
+          assert r['promoted_into_beta'] is False
+          print('JPY_2Y_273_DATE_VALUE_PAIRS_PRESERVED_NOT_YET_SOURCE_CERTIFIED')
+          PY
+      - name: Check original official MoF CSV source independently
+        id: mof
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error --retry 2 --max-time 30 \
+            'https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/historical/jgbcme_all.csv' \
+            --output /tmp/jgbcme_all_official.csv
+          curl --fail --location --silent --show-error --retry 2 --max-time 30 \
+            'https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/jgbcme.csv' \
+            --output /tmp/jgbcme_current_official.csv
+          python -m validation.rates.audit_jpy_2y_mof_chronology_v1 \
+            --historical-csv /tmp/jgbcme_all_official.csv \
+            --current-csv /tmp/jgbcme_current_official.csv \
+            --out /tmp/jpy-official-mof-2y-verified.json
+          python - <<'PY'
+          import json
+          data=json.load(open('/tmp/jpy-official-mof-2y-verified.json'))
+          assert data['status']=='PUBLISHER_VERIFIED_OFFLINE_CANDIDATE'
+          assert data['source_comparison']['matched']==273
+          assert not data['promoted_into_live_rates']
+          print('MOF_INDEPENDENT_273_2Y_PUBLISHER_AGREEMENT_CONFIRMED')
+          PY
+      - name: Surface publisher verification status even if source unavailable
+        if: always()
+        env:
+          MOF_OUTCOME: ${{ steps.mof.outcome }}
+        run: |
+          if [ "$MOF_OUTCOME" = success ]; then
+            echo '### Japan 2Y official-source attestation: ALL 273 matched; production unchanged' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo '### Japan 2Y official-source attestation: NOT VERIFIED (source/network mismatch or unreachable)' >> "$GITHUB_STEP_SUMMARY"
+            echo 'Candidate remains quarantined from production and Beta until original MoF CSV independently agrees.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: No live data/Beta/Forward/UI production mutation
+        if: always()
+        run: |
+          test -z "$(git status --porcelain -- live_data validation/beta validation/forward site dashboard payload)"
+          echo JPY_MOF_QA_NO_PRODUCTION_MUTATION
