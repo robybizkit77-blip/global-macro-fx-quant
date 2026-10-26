@@ -43,8 +43,11 @@ jobs:
         run: |
           set -euo pipefail
           npm init -y >/dev/null 2>&1
-          npm install --no-save playwright
-          npx playwright install --with-deps chromium
+          npm install --no-save --no-audit --no-fund playwright
+          # The Ubuntu runner has Chromium runtime libraries already.
+          # Download only the headless shell used by chromium.launch;
+          # apt-get --with-deps was stalling the earlier QA run.
+          npx playwright install --only-shell chromium
           node --check validation/rates/qa_v10_eur2y10y_candidate_visual_v1.cjs
 
       - name: Targeted actual v10 Rates/CHF browser QA on unchanged original site
