@@ -35,8 +35,10 @@ class LaunchTruthGateTests(unittest.TestCase):
         self.assertEqual(x["forward"]["decision_snapshot_hash_mismatches"], 0)
         self.assertEqual(x["forward"]["decision_snapshot_clock_invalid"], 0)
         self.assertEqual(x["forward"]["duplicate_snapshot_ids"], 0)
-        if not self.out:\n            self.assertIn("FORWARD_NO_REALIZED_OUTCOMES", x["blockers"])
-        if len(x["forward"]["run_ids"]) == 1:\n            self.assertIn("FORWARD_SMOKE_ONLY_NO_LIVE_OBSERVATION_SEQUENCE", x["blockers"])
+        if not self.out:
+            self.assertIn("FORWARD_NO_REALIZED_OUTCOMES", x["blockers"])
+        if len(x["forward"]["run_ids"]) == 1:
+            self.assertIn("FORWARD_SMOKE_ONLY_NO_LIVE_OBSERVATION_SEQUENCE", x["blockers"])
         self.assertTrue(x["beta"]["observational_contract_present"])
         self.assertFalse(x["beta"]["strategy_beta_validated"])
         self.assertFalse(x["beta_promoted"])
