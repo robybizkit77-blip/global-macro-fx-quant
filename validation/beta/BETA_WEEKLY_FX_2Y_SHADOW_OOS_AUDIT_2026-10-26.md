@@ -43,6 +43,12 @@ The original 52W OLS contract and PDF chapter 23.4 held-out variance-reduction a
 
 The PDF chapter 23.3 and 23.4 text does not itself specify operational thresholds named `B1` or `B2`. Those labels may belong to a separate project specification; no criteria are inferred from their names. Both remain unapproved until a separately documented canonical definition is located.
 
+## 26 October supplement: PDF chapter 23.3 steps 6 and 7 (retrospective only)
+
+`beta_lag_stability_research_v1.py` reports a **single-week Dimson lag, contemporaneous and lead regression** (plus the coefficient sum), using exactly 50 fully observable internal response rows from a 52-week historical training window. The lead regressor uses week `t+1` **only inside that past training window**. It is absolutely not permitted in forward prediction or a live Core signal. Singular regression matrices are explicitly marked unavailable.
+
+Also reports the last up-to-four **unchanged 52W rolling OLS** estimates, their range and population standard deviation, only where each complete 52-week training window is strictly contiguous. No EWMA or Kalman smoothing is introduced; the existing V1 contract explicitly forbids adding smoothing to the production estimator. No stability thresholds, regime labels, B1/B2 rules or performance claims are inferred. JPY is still quarantined in the canonical history if source dates are malformed; the verified-original Ministry of Finance research audit remains a separate no-write experiment. PIT-vintage and different government-yield instrument definitions remain open blockers.
+
 ## True Beta launch blockers
 
 1. Repair JPY 2Y historical date identity/chronology **against original Ministry of Finance records** and freeze correct historical series, without guessing.
