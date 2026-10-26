@@ -10,7 +10,7 @@
 - Rates, OIS, COT and price retain conservative observation-day availability heuristics or WITHHELD. No invented same-day release timestamps or assumed license.
 
 ## Admission and cadence
-An *independent*, explicitly scheduled GitHub Actions workflow at **19:30 Rome weekdays** (both CET/CEST crons with a local DST gate) attempts prospective evidence capture only if all are true:
+An *independent* GitHub Actions workflow attempts actual prospective evidence capture at **19:30 Rome weekdays**, with a **20:30 Rome same-day backup** if the first attempt could not obtain the completed official sources. Both CET/CEST crons are checked against the local DST offset; the backup uses its **real current decision timestamp**, never recreates an unavailable 19:30 decision. Existing same-day 28-pair batches are idempotent, and partial batches fail. Capture is attempted only if all are true:
 1. Active actual Rome weekday and at/after 19:00; no fake historical cutoff. Direct non-dry-run CLI also checks the decision cutoff is within 120 seconds of real UTC time.
 2. Current-day **official ECB reference rate history** has `last_as_of == Rome today`. If unpublished due holiday/lag, record `BLOCKED_NO_CAPTURE`, not a fabricated return.
 3. All **28 pair** current operational setup prices have `price_asof == Rome today`, with the 28 canonical Core structures present and a historical Core baseline date.
@@ -18,7 +18,7 @@ An *independent*, explicitly scheduled GitHub Actions workflow at **19:30 Rome w
 5. Only `validation/forward/decision_snapshots/CORE_DECISION_SNAPSHOTS_V1.jsonl` and the immutable receipt path may change. `git push` must be fast-forward; no force push, no rebasing a prior-time decision over later source updates.
 6. A PR runs offline QA only; never writes any snapshot or creates an outcome. No site or model recalculation or live trade.
 
-A scheduled run can be **blocked** by unavailable official feeds or delayed Cron. This is intentional and must not count as successful forward market observation. GitHub schedule does not guarantee execution at a precise time. A cancelled/late admission is **not backfilled** later.
+A second 20:30 attempt is a genuine NEW observation if and only if no earlier 28-pair batch exists; it is not an outcome, not a trading entry and not a substitute for earlier missing snapshots.\n\nA scheduled run can be **blocked** by unavailable official feeds or delayed Cron. This is intentional and must not count as successful forward market observation. GitHub schedule does not guarantee execution at a precise time. A cancelled/late admission is **not backfilled** later.
 
 ## Oct 26 audit hardening before any first genuine 19:30 capture
 
