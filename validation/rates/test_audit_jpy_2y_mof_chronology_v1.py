@@ -114,6 +114,40 @@ class Japan2YRepairTests(unittest.TestCase):
         self.assertEqual(official["state"],"NOT_CERTIFIED_OFFICIAL_COMPARISON_FAILED")
         self.assertEqual(len(official["missing"]),1)
 
+
+    def test_two_publisher_corrections_only_and_verify_all_273(self):
+        rows=self.stage["candidate_rows"]
+        def csv_bytes(items):
+            return ("Interest Rate\\nDate,1Y,2Y,10Y\\n"+"".join(
+                f"{x['date'].replace('-','/')},1,{(1.948 if x['date']=='2026-09-25' else 1.981 if x['date']=='2026-09-28' else x['yield_pct']):.3f},3\\n"
+                for x in items)).encode("cp932")
+        result=m.propose_verified_latest_publisher_candidate(
+            self.stage,csv_bytes(rows[:170]),csv_bytes(rows[170:]))
+        self.assertEqual(result["status"],
+                         "PUBLISHER_RECONCILED_273_OF_273_LATEST_RELEASE_RESEARCH_ONLY")
+        self.assertEqual(result["source_initial_271_of_273_audit"]["matched"],271)
+        self.assertEqual(result["source_comparison"]["matched"],273)
+        self.assertEqual(len(result["latest_publisher_value_replacements"]),2)
+        fixed={x["date"]:x["yield_pct"] for x in result["candidate_rows"]}
+        self.assertEqual(fixed["2026-09-25"],1.948)
+        self.assertEqual(fixed["2026-09-28"],1.981)
+        self.assertFalse(result["promoted_into_live_rates"])
+        self.assertFalse(result["promoted_into_beta"])
+        self.assertFalse(result["historical_first_publication_pit_certified"])
+        orig={x["date"]:x["yield_pct"] for x in rows}
+        self.assertEqual({d for d in fixed if fixed[d]!=orig[d]},
+                         {"2026-09-25","2026-09-28"})
+
+    def test_unreviewed_third_publisher_discrepancy_never_autocorrected(self):
+        rows=self.stage["candidate_rows"]
+        def source(items):
+            return ("Interest Rate\\nDate,1Y,2Y\\n"+"".join(
+                f"{x['date'].replace('-','/')},1,{(1.948 if x['date']=='2026-09-25' else 1.981 if x['date']=='2026-09-28' else 0.123 if x['date']=='2025-05-08' else x['yield_pct']):.3f}\\n"
+                for x in items)).encode("cp932")
+        with self.assertRaisesRegex(ValueError,"unreviewed MoF source differences"):
+            m.propose_verified_latest_publisher_candidate(
+                self.stage,source(rows[:170]),source(rows[170:]))
+
     def test_invalid_official_nan_and_duplicate_are_rejected(self):
         with self.assertRaisesRegex(ValueError,"nonfinite"):
             m.parse_mof_csv(b"Date,1Y,2Y\n2026/10/02,1,nan\n",source=m.HIST_URL)
