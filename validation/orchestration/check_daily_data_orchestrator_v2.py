@@ -18,12 +18,16 @@ def main() -> None:
     assert c["schema"] == "GMFQ_DAILY_DATA_ORCHESTRATOR_V2"
     assert c["timezone"] == "Europe/Rome"
     assert c["target_local_times"] == {
-        "prebrief": "05:00",
+        "prebrief": "04:43",
         "premorning": "07:45",
         "morning": "09:10",
         "close": "18:30",
         "night": "00:50",
     }
+    assert c["rules"]["prebrief_avoids_top_of_hour_load"] is True
+    assert c["rules"]["prebrief_dst_gate_tested"] is True
+    assert "'43 2 * * 1-5|2'|'43 3 * * 1-5|1') phase=prebrief" in WORKFLOW.read_text()
+    assert "Test 04:43 Rome off-hour DST prebrief schedule" in WORKFLOW.read_text()
     assert c["rules"]["strict_sequence"] is True
     # Regression: cancel-in-progress=false alone is NOT sufficient. GitHub
     # replaces an existing pending workflow when a second pending arrives,
@@ -137,8 +141,8 @@ def main() -> None:
         "child_url=$(jq -r '.html_url // empty'",
         'Child run identity failed:',
         'actions/runs/${run_id}',
-        "0 3 * * 1-5",
-        "0 4 * * 1-5",
+        "43 2 * * 1-5",
+        "43 3 * * 1-5",
         "phase=prebrief",
         "check_morning_readiness_v1.py",
         "test_check_morning_readiness_v1.py",
