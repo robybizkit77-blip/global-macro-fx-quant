@@ -25,6 +25,20 @@ def main() -> None:
         "night": "00:50",
     }
     assert c["rules"]["strict_sequence"] is True
+    # Regression: cancel-in-progress=false alone is NOT sufficient. GitHub
+    # replaces an existing pending workflow when a second pending arrives,
+    # unless the multi-pending concurrency queue is explicitly enabled.
+    assert c["rules"]["preserve_pending_scheduled_phases"] is True
+    assert c["rules"]["workflow_concurrency_pending_queue"] == "max"
+    assert c["rules"]["workflow_concurrency_cancel_in_progress"] is False
+    workflow_text = WORKFLOW.read_text()
+    concurrency_section = workflow_text.split("\\nconcurrency:\\n", 1)
+    assert len(concurrency_section) == 2
+    block = concurrency_section[1].split("\\nenv:\\n", 1)[0]
+    assert "group: daily-data-orchestrator-v2" in block
+    assert "queue: max" in block
+    assert "cancel-in-progress: false" in block
+
     assert c["rules"]["stop_on_child_failure"] is True
     assert c["rules"]["duplicate_collectors_forbidden"] is True
     assert c["rules"]["core_scoring_effect"] == "NONE"
