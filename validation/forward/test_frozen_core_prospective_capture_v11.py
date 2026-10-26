@@ -92,9 +92,19 @@ class ProspectiveAdmission(unittest.TestCase):
         self.assertTrue(all(x["capture_class"]=="FROZEN_CORE_BASELINE_OBSERVATION" for x in rows))
         self.assertTrue(all(x["core_baseline_as_of"]=="2026-09-25" for x in rows))
         self.assertTrue(all(x["core_recomputed_at_capture"] is False for x in rows))
-        self.assertTrue(all(len(x["inputs"])==8 for x in rows))
+        self.assertTrue(all(len(x["inputs"])==9 for x in rows))
         self.assertTrue(all(x["inputs"]["macro"]["state"]=="WITHHELD" for x in rows))
         self.assertTrue(all(x["inputs"]["macro"]["value"] is None for x in rows))
+        self.assertTrue(all(x["t0_fx_reference"]["intra_day_traded_price"] is False for x in rows))
+        self.assertTrue(all(x["t0_fx_reference"]["official_publication_instant_independently_verified"] is False for x in rows))
+        self.assertTrue(all(x["inputs"]["ecb_reference"] == x["t0_fx_reference"] for x in rows))
+        for row in rows:
+            if row["t0_fx_reference"]["state"] == "OBSERVED_AT_CAPTURE":
+                self.assertGreater(row["t0_fx_reference"]["rate"], 0)
+                self.assertEqual(row["t0_fx_reference"]["source_date"], "2026-10-26")
+            else:
+                self.assertIsNone(row["t0_fx_reference"]["rate"])
+
         self.assertTrue(all(x["snapshot_sha256"]==logger.digest(
             {k:v for k,v in x.items() if k!="snapshot_sha256"}) for x in rows))
 
