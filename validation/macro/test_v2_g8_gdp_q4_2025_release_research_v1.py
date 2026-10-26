@@ -56,6 +56,15 @@ class GDP2025Q4ReleaseResearchTests(unittest.TestCase):
         self.assertEqual(later["CHF:2025Q4"]["reported_value"], 0.2)
         self.assertEqual(later["GBP:2025Q4"]["reported_value"], 0.1)
 
+    def test_source_domain_not_self_certifying(self):
+        from copy import deepcopy
+        rows = deepcopy(self.rows)
+        fake = next(r for r in rows if r["currency"] == "USD")
+        fake["source_url"] = "https://fake-bea.example/news/gdp"
+        fake["verified_publisher_host"] = "fake-bea.example"
+        with self.assertRaises(ValueError):
+            validate(rows)
+
     def test_cross_year_multiquarter_not_same_vintage(self):
         other = json.loads(Q1Q2.read_text(encoding="utf-8"))["records"]
         combined = validate(self.rows + other)
