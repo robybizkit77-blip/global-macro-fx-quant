@@ -711,6 +711,22 @@ function expectedReactionFromMetrics(row){
       width:p.scrollWidth,client:p.clientWidth,
       doc:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
   });
+  // Current policy snapshots and published price clocks are distinct.
+  // When the policy book cannot be reconciled with current pricing, the
+  // intended fail-closed display is WITHHELD; do not demand a nonexistent
+  // certified live CB commentary or current meeting agenda.
+  if(cbFirst.status==='WITHHELD'){
+    if(!cbFirst.priority?.includes('sintesi resta sospesa')||
+       !cbFirst.evidence?.includes('Decisioni o pricing non riconciliabili')||
+       !cbFirst.text.includes('Dati o copertura insufficienti')||
+       !cbFirst.text.includes('snapshot policy storico')||
+       !cbFirst.closed||!cbFirst.chart||!cbFirst.table||!cbFirst.order||
+       cbFirst.width>cbFirst.client+2||cbFirst.doc>cbFirst.viewport+16)
+      throw Error(label+' CB fail-closed source provenance not honest '+JSON.stringify(cbFirst));
+    console.log('CONTROL_ROOM_V10_CB_HISTORIC_SOURCE_FAIL_CLOSED_GREEN',label,
+      {policy_last:cbFirst.last,pricing_current:certified});
+    await page.screenshot({path:'v10-qa-images/'+label+'-cb-reading-first.png',fullPage:true});
+  }else{
   if(cbFirst.status!=='READ_ONLY'||cbFirst.certified!==String(operational.summary.green_official)||
      cbFirst.estimated!==String(operational.summary.green_estimated)||
      cbFirst.withheld!==String(operational.summary.operational_withheld)||cbFirst.first!==Object.values(cbFixture).map(x=>x.last_date).sort()[0]||
@@ -769,6 +785,7 @@ function expectedReactionFromMetrics(row){
     return d?.getElementById('gmfq-cb-reading-first')?.dataset.readingStatus==='WITHHELD';
   },null,{timeout:35000});
   await page.unroute('**/NATIVE_CB_DATA.json');
+  } // End certified CB branch: withheld sources may not be promoted by tests.
 
   // CFTC: all eight 104W series must be internally consistent. USD 79.8077
   // rounds to 80th, while the historical narrative still says NEUTRALE;
