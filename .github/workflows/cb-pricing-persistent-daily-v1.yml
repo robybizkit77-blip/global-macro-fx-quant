@@ -99,6 +99,18 @@ jobs:
               candidate=json.load(open('/tmp/cb-pricing-persistent/'+c+'.candidate.json'))
               assert candidate['currency']==c and candidate['as_of']==row['as_of'],candidate
               assert candidate['status']=='READY_FOR_DRY_RUN',candidate
+          # Negative fixture against the exact eligibility predicate:
+          # a failed CAD collector cannot be selected for application.
+          from copy import deepcopy
+          simulated=deepcopy(d['currencies'])
+          simulated['CAD']['status']='FAILED'
+          simulated_ok=[c for c in expected if simulated[c]['status']=='GREEN']
+          assert 'CAD' not in simulated_ok
+          assert set(simulated_ok)==set(eligible)-{'CAD'}
+          simulated_all_failed=deepcopy(d['currencies'])
+          for c in expected: simulated_all_failed[c]['status']='FAILED'
+          assert not [c for c in expected if simulated_all_failed[c]['status']=='GREEN']
+          print('CB_PRICING_FAILED_CAD_ISOLATION_FIXTURE_PASS',simulated_ok)
           print('CB_PRICING_CERTIFIED_LANES_PREFLIGHT_PASS',eligible,'BLOCKED',blocked)
           with open('/tmp/cb-pricing-persistent/eligible.json','w') as f: json.dump(eligible,f)
 
