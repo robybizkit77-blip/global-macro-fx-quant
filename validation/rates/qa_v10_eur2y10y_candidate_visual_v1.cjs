@@ -37,6 +37,9 @@ async function run(){
      return {viewport:d?.documentElement.clientWidth,
        document_width:d?.documentElement.scrollWidth,
        chf_scenario:c?.querySelector('.gmfq-yield-scenario')?.textContent,
+       source_rebase_status:host?.dataset.eurSourceRebase,
+       chf_source_rebase_notice:c?.querySelector('.gmfq-yield-rebase')?.textContent||null,
+       chf_source_rebase_count:c?.querySelectorAll('.gmfq-yield-rebase').length||0,
        chf_asof:c?.dataset.asof,eur_current_cell:e?.textContent,eur_asof:e?.dataset.asof,
        proxy_not_official:host?.textContent?.includes('non prezzi ufficiali'),
        no_core_effect:host?.dataset.coreEffect==='NONE',
@@ -47,6 +50,17 @@ async function run(){
      label+' rates horizontal overflow '+JSON.stringify(observed));
    assert(observed.chf_scenario?.includes('10Y ≈'+expected10.toFixed(3)+'% (BASSA)'),
      label+' CHF low-confidence 10Y proxy not displayed '+JSON.stringify(observed));
+   if(scenario==='before'){
+     assert.equal(observed.source_rebase_status,'NONE');
+     assert.equal(observed.chf_source_rebase_notice,null);
+   }else{
+     assert.equal(observed.source_rebase_status,'RESEARCH_CANDIDATE_NOT_PUBLISHED');
+     assert.equal(observed.chf_source_rebase_count,1);
+     assert(observed.chf_source_rebase_notice?.includes('ANTEPRIMA RICERCA')&&
+            observed.chf_source_rebase_notice?.includes('revisione dello scenario β')&&
+            observed.chf_source_rebase_notice?.includes('non un movimento osservato oggi')&&
+            observed.chf_source_rebase_notice?.includes('Affidabilità BASSA'));
+   }
    assert.equal(observed.chf_asof,'2026-09-30');
    assert(observed.eur_current_cell?.includes('3.007%')&&
           observed.eur_current_cell?.includes('3.384%'),'EUR current yields unexpectedly changed');

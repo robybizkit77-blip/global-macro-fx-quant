@@ -57,6 +57,73 @@ class EURDailyRatesHistorySourceGuardTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"new official observation does not advance"):
             m.eur_daily_append_source_gate(self.live['EUR'],'2026-10-22')
 
+
+    def approved_fake_fixture_for_contract_tests(self):
+        """Synthetic source data: contracts ONLY, not market observations."""
+        from hashlib import sha256
+        from datetime import date
+        s=copy.deepcopy(self.live['EUR'])
+        extra=['2026-09-23','2026-09-24','2026-09-25','2026-09-28',
+               '2026-09-29','2026-09-30','2026-10-05','2026-10-07',
+               '2026-10-08','2026-10-09','2026-10-12']
+        for name in ('history2','history10'):
+            vals=dict(zip(s[name]['dates'],s[name]['values']))
+            for d in extra:
+                vals[d]=3.1 if name=='history2' else 3.5
+            ordered=sorted(vals.items())
+            s[name]['dates']=[d for d,v in ordered]
+            s[name]['values']=[v for d,v in ordered]
+        assert len(s['history2']['dates'])==282
+        paired=[[d,s['history2']['values'][i],s['history10']['values'][i]]
+                for i,d in enumerate(s['history2']['dates'])]
+        sha=sha256(json.dumps(paired,separators=(',',':'),
+                             ensure_ascii=False).encode()).hexdigest()
+        s['history_status']=m.EUR_APPROVED_STATUS
+        s['history2_quality']='ECB_ORIGINAL_2Y_FULL_HISTORICAL_LATEST_VINTAGE_NOT_PIT'
+        s['history10_quality']='ECB_ORIGINAL_10Y_FULL_HISTORICAL_LATEST_VINTAGE_NOT_PIT'
+        s['historical_curve_rebase']={
+            'schema':'GMFQ_EUR_2Y_10Y_HISTORY_REBASE_NOTICE_V1',
+            'status':'PUBLISHED_AFTER_SOURCE_AND_BROWSER_QA',
+            'source_authority':'European Central Bank',
+            'original_ecb_2y_csv_sha256':
+              '2d5b0e884b0d3728c29d935e0982e761896102bd401f4ae406a17680f6079bab',
+            'original_ecb_10y_csv_sha256':
+              'c536410864ee8f873533509167ab350a189ed0987201b09b490f158aa85b9b4e',
+            'original_history_start':'2025-09-16','original_history_end':'2026-10-22',
+            'original_point_count':282,'original_paired_values_sha256':sha,
+            'historical_first_release_pit_certified':False,
+            'source_rebase_not_market_move':True,
+            'chf_reference_beta_recalibration_not_official_chf_yield':True,
+            'requires_explicit_release':False,
+        }
+        return s
+
+    def test_approved_origin_fingerprint_maintains_282_publisher_prefix(self):
+        s=self.approved_fake_fixture_for_contract_tests()
+        proof=m.eur_daily_append_source_gate(s,'2026-10-23')
+        self.assertEqual(proof['history_status'],m.EUR_APPROVED_STATUS)
+        self.assertFalse(proof['historical_legacy_basis_quarantined'])
+
+    def test_approved_origin_fingerprint_rejects_historical_rewrite(self):
+        s=self.approved_fake_fixture_for_contract_tests()
+        s['history2']['values'][10]+=.007
+        with self.assertRaisesRegex(ValueError,'historical values drift'):
+            m.eur_daily_append_source_gate(s,'2026-10-23')
+        s=self.approved_fake_fixture_for_contract_tests()
+        s['historical_curve_rebase']['original_ecb_2y_csv_sha256']='not_official'
+        with self.assertRaisesRegex(ValueError,'publication evidence incomplete'):
+            m.eur_daily_append_source_gate(s,'2026-10-23')
+        s=self.approved_fake_fixture_for_contract_tests()
+        s['historical_curve_rebase']['status']='RESEARCH_CANDIDATE_NOT_PUBLISHED'
+        with self.assertRaisesRegex(ValueError,'publication evidence incomplete'):
+            m.eur_daily_append_source_gate(s,'2026-10-23')
+
+    def test_candidate_never_passes_as_published_source_even_with_good_rates(self):
+        s=self.approved_fake_fixture_for_contract_tests()
+        s['history_status']='FULL_ECB_SAME_BASIS_2Y_10Y_RESEARCH_CANDIDATE_ONLY'
+        with self.assertRaisesRegex(ValueError,'not approved'):
+            m.eur_daily_append_source_gate(s,'2026-10-23')
+
     def run_builder(self,currencies,*,tamper_eur=False):
         src=copy.deepcopy(self.live)
         if tamper_eur:

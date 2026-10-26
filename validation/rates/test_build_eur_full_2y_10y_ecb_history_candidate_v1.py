@@ -48,6 +48,16 @@ class FullECBSameBasisHistoryTests(unittest.TestCase):
         self.assertEqual(cand["EUR"]["tenors"],self.live["EUR"]["tenors"])
         self.assertEqual(cand["EUR"]["history2"]["dates"],self.live["EUR"]["history2"]["dates"])
         self.assertIn("NOT_PIT",cand["EUR"]["history2_quality"])
+        notice=cand["EUR"]["historical_curve_rebase"]
+        self.assertEqual(notice["schema"],"GMFQ_EUR_2Y_10Y_HISTORY_REBASE_NOTICE_V1")
+        self.assertEqual(notice["status"],"RESEARCH_CANDIDATE_NOT_PUBLISHED")
+        self.assertEqual(notice["original_point_count"],271)
+        self.assertTrue(notice["requires_explicit_release"])
+        self.assertTrue(notice["source_rebase_not_market_move"])
+        self.assertFalse(notice["historical_first_release_pit_certified"])
+        self.assertEqual(notice["original_paired_values_sha256"],
+                         receipt["official_paired_observations_sha256"])
+        self.assertFalse(receipt["actual_production_promotion"])
 
     def test_historic_source_discrepancies_corrected_in_candidate_only(self):
         v={"2026-09-21":3.1476088412,"2026-09-22":3.135563132}

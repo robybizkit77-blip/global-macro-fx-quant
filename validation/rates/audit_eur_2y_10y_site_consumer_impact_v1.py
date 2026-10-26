@@ -30,10 +30,35 @@ def assess(original,candidate,home,legacy,legacy_dash,adapter):
     permitted={
       "history2","history10","chg2_bp","chg10_bp","curve_bp",
       "curve_state","weekly2_validation","weekly10_validation",
-      "history2_quality","history10_quality","history_status","history_note"
+      "history2_quality","history10_quality","history_status","history_note",
+      "historical_curve_rebase"
     }
     if not changed or set(changed)-permitted:
         raise ValueError("candidate scope invalid: "+str(set(changed)-permitted))
+    if "historical_curve_rebase" in changed:
+        note=after.get("historical_curve_rebase")
+        if (not isinstance(note,dict) or
+            note.get("schema")!="GMFQ_EUR_2Y_10Y_HISTORY_REBASE_NOTICE_V1" or
+            note.get("status")!="RESEARCH_CANDIDATE_NOT_PUBLISHED" or
+            note.get("source_authority")!="European Central Bank" or
+            note.get("original_point_count")!=282 or
+            note.get("original_history_start")!="2025-09-16" or
+            note.get("original_history_end")!="2026-10-22" or
+            note.get("historical_first_release_pit_certified") is not False or
+            note.get("requires_explicit_release") is not True or
+            note.get("source_rebase_not_market_move") is not True):
+            raise ValueError("unapproved or malformed historical source rebase notice")
+        ds=after["history2"]["dates"]
+        if (ds!=after["history10"]["dates"] or len(ds)!=282 or
+            ds[0]!="2025-09-16" or ds[-1]!="2026-10-22"):
+            raise ValueError("ECB rebase metadata not backed by complete paired history")
+        paired=[[dt,after["history2"]["values"][i],after["history10"]["values"][i]]
+                for i,dt in enumerate(ds)]
+        digest=hashlib.sha256(
+            json.dumps(paired,separators=(",",":"),ensure_ascii=False).encode()
+        ).hexdigest()
+        if digest!=note.get("original_paired_values_sha256"):
+            raise ValueError("ECB source rebase fingerprint does not match original rates")
     # The current 2Y/10Y are already official. Replacing older dates must
     # not silently alter the rate quote displayed in daily market snapshots.
     for script,label,tokens in (

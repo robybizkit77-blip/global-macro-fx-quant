@@ -118,9 +118,17 @@ function expectedReactionFromMetrics(row){
       Date.parse(dt+'T00:00:00Z'))/86400000;
     return Number.isFinite(diff)&&diff>=0&&diff<=max;
   };
-  const certified=Object.values(expectedOis.currencies).filter(x=>
-    x.operational_status==='GREEN_OFFICIAL'&&x.quality==='OFFICIAL_CERTIFIED'&&current(x.as_of)&&
-    ['3m','6m','12m'].every(k=>Number.isFinite(x.horizons?.[k]?.rate)&&Number.isFinite(x.horizons?.[k]?.policy_delta_bp))).length;
+  // Match the existing, approved v10 officialPricingCurrent() contract:
+  // 4 calendar days, ACTIVE source and backtest-eligible official curve.
+  // Rates 2Y/10Y have a distinct 5-day contract; applying that to OIS
+  // would falsely count stale GBP on 2026-10-26 as still current.
+  const officialCurrent=Object.entries(expectedOis.currencies).filter(([,x])=>
+    x.operational_status==='GREEN_OFFICIAL'&&x.official_status==='ACTIVE'&&
+    x.quality==='OFFICIAL_CERTIFIED'&&x.backtest_eligible_as_official===true&&
+    current(x.as_of,4)&&
+    ['3m','6m','12m'].every(k=>Number.isFinite(x.horizons?.[k]?.rate)&&
+      Number.isFinite(x.horizons?.[k]?.policy_delta_bp))).map(([ccy])=>ccy).sort();
+  const certified=officialCurrent.length;
   const expectedFx=current(fxData.last_as_of,4);
   await page.waitForFunction(()=>!!document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-home-data-audit'),
     null,{timeout:15000});
@@ -358,7 +366,7 @@ function expectedReactionFromMetrics(row){
      r.flags.some(x=>!x.visible||!x.flag)||!r.flags.find(x=>x.symbol==='DXY')?.caption?.includes('SINTETICO'))
     fatal.push('Home flagged currency tiles or DXY disclosure missing '+JSON.stringify(r.flags));
   if(r.pricing.length!==8||new Set(r.pricing.map(x=>x.ccy)).size!==8||
-     r.pricing.filter(x=>x.status==='OFFICIAL_REPRICING').length!==4||
+     JSON.stringify(r.pricing.filter(x=>x.status==='OFFICIAL_REPRICING').map(x=>x.ccy).sort())!==JSON.stringify(officialCurrent)||
      r.pricing.some(x=>!['OFFICIAL_REPRICING','FUTURES_LEVEL_ONLY','CASH_CARRY_SCENARIO','BANK_BILL_PROXY','WITHHELD'].includes(x.status)||
        (x.allowed==='true')!==(x.status==='OFFICIAL_REPRICING'))||
      r.pricing.some(x=>x.status==='FUTURES_LEVEL_ONLY'&&!x.content.includes('PX'))||
@@ -518,8 +526,15 @@ function expectedReactionFromMetrics(row){
       noCore:p.dataset.coreEffect==='NONE'&&p.dataset.pairEffect==='NONE',
       width:p.scrollWidth,client:p.clientWidth};
   });
-  if(yieldStudy.count!==8||yieldStudy.recent!=='6'||
-     JSON.stringify(yieldStudy.historical.slice().sort())!==JSON.stringify(['CHF','NZD'])||
+  // Sovereign Rates freshness is intentionally per-source and date-based.
+  // On 26 Oct the AUD 21 Oct rate is 5 days old and must be shown as
+  // historical, not silently counted as a recent official quote.
+  const actualRates=JSON.parse(fs.readFileSync(path.join(DATA,'NATIVE_RATES_DATA.json'),'utf8'));
+  const expectedHistorical=g8.filter(ccy=>
+    !(current(actualRates[ccy]?.date,4)&&
+      String(actualRates[ccy]?.quality||'').includes('OFFICIAL'))).sort();
+  if(yieldStudy.count!==8||yieldStudy.recent!==String(8-expectedHistorical.length)||
+     JSON.stringify(yieldStudy.historical.slice().sort())!==JSON.stringify(expectedHistorical)||
      !yieldStudy.snb?.includes('non calcolare spread misti')||!yieldStudy.noCore||
      yieldStudy.width>yieldStudy.client+2)
     throw Error(label+' G8 observed sovereign yield study not ready '+JSON.stringify(yieldStudy));
@@ -565,11 +580,13 @@ function expectedReactionFromMetrics(row){
     return d?.querySelector('#rates-select button[data-ccy="NZD"]')?.getAttribute('aria-pressed')==='true'
        && d?.getElementById('rates-status')?.textContent.includes('Nuova Zelanda');
   },null,{timeout:15000});
-  await page.waitForFunction(()=>{
+  await page.waitForFunction(expected=>{
     const d=document.getElementById('gmfq-page')?.contentDocument;
-    return d?.querySelectorAll('#gmfq-pricing-research .gmfq-research-plot svg polyline').length===4;
-  },null,{timeout:25000});
-  // Sources are fetched asynchronously AFTER the four core pricing curves
+    // The actual plotted ECB/BoE/other curves must obey the SAME
+    // 4-day officialPricingCurrent policy as Home and the pair panel.
+    return d?.querySelectorAll('#gmfq-pricing-research .gmfq-research-plot svg polyline').length===expected;
+  },certified,{timeout:25000});
+  // Sources are fetched asynchronously AFTER the currently eligible curves
   // render. Wait for all four individually linked source-readiness rows rather
   // than racing the still-loading "Stato fonti da aggiornare" placeholder.
   // Timeout still FAILS if the actual read-only source context is missing.
@@ -604,7 +621,8 @@ function expectedReactionFromMetrics(row){
   // The verified official count stays independent of mixed-date futures.
   // Secondary coverage may legitimately move GREEN_ESTIMATED -> WITHHELD;
   // never pin today's 2/2 split or treat the downgrade as data loss.
-  const expectedOfficial=operational.summary.green_official;
+  // A green publisher lane may be stale (GBP 21 Oct on 26 Oct); count
+  // currently eligible published price curves, not all certified sources.
   const expectedEstimated=operational.summary.green_estimated;
   const expectedWithheld=operational.summary.operational_withheld;
   const plottedOfficial=Object.entries(operational.currencies).filter(([c,r])=>
@@ -613,7 +631,7 @@ function expectedReactionFromMetrics(row){
     current(r.as_of,4)&&
     ['3m','6m','12m'].every(t=>Number.isFinite(r.horizons?.[t]?.policy_delta_bp)))
     .map(([c])=>c);
-  if(research.sourceStatus!=='READ_ONLY'||research.visibleCount!==String(expectedOfficial)||
+  if(research.sourceStatus!=='READ_ONLY'||research.visibleCount!==String(plottedOfficial.length)||
      research.estimated!==String(expectedEstimated)||
      research.withheld!==String(expectedWithheld)||
      !research.disclosureClosed||!research.secondaryHidden||!research.plotVisible||
@@ -693,6 +711,22 @@ function expectedReactionFromMetrics(row){
       width:p.scrollWidth,client:p.clientWidth,
       doc:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
   });
+  // Current policy snapshots and published price clocks are distinct.
+  // When the policy book cannot be reconciled with current pricing, the
+  // intended fail-closed display is WITHHELD; do not demand a nonexistent
+  // certified live CB commentary or current meeting agenda.
+  if(cbFirst.status==='WITHHELD'){
+    if(!cbFirst.priority?.includes('sintesi resta sospesa')||
+       !cbFirst.evidence?.includes('Decisioni o pricing non riconciliabili')||
+       !cbFirst.text.includes('Dati o copertura insufficienti')||
+       !cbFirst.text.toLowerCase().includes('snapshot policy storico')||
+       !cbFirst.closed||!cbFirst.chart||!cbFirst.table||!cbFirst.order||
+       cbFirst.width>cbFirst.client+2||cbFirst.doc>cbFirst.viewport+16)
+      throw Error(label+' CB fail-closed source provenance not honest '+JSON.stringify(cbFirst));
+    console.log('CONTROL_ROOM_V10_CB_HISTORIC_SOURCE_FAIL_CLOSED_GREEN',label,
+      {policy_last:cbFirst.last,pricing_current:certified});
+    await page.screenshot({path:'v10-qa-images/'+label+'-cb-reading-first.png',fullPage:true});
+  }else{
   if(cbFirst.status!=='READ_ONLY'||cbFirst.certified!==String(operational.summary.green_official)||
      cbFirst.estimated!==String(operational.summary.green_estimated)||
      cbFirst.withheld!==String(operational.summary.operational_withheld)||cbFirst.first!==Object.values(cbFixture).map(x=>x.last_date).sort()[0]||
@@ -751,6 +785,7 @@ function expectedReactionFromMetrics(row){
     return d?.getElementById('gmfq-cb-reading-first')?.dataset.readingStatus==='WITHHELD';
   },null,{timeout:35000});
   await page.unroute('**/NATIVE_CB_DATA.json');
+  } // End certified CB branch: withheld sources may not be promoted by tests.
 
   // CFTC: all eight 104W series must be internally consistent. USD 79.8077
   // rounds to 80th, while the historical narrative still says NEUTRALE;
