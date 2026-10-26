@@ -611,23 +611,57 @@ async function getState(page){
          return d?.getElementById('gmfq-pricing-research')?.querySelector('.gmfq-research-plot svg, .gmfq-research-plot p');
        },null,{timeout:20000});
        if(process.env.GITHUB_EVENT_NAME!=='pull_request'){
+         // Compare against currently published, dated canonical G8 yields.
+         // An AUD observation from Oct 21 is historical on Oct 26; its
+         // source status must not be "repaired" or hidden to appease QA.
+         const publicRates=await page.evaluate(async()=>{
+           const res=await fetch('/global-macro-fx-quant/live_data/sections/NATIVE_RATES_DATA.json',
+             {cache:'no-store'});
+           if(!res.ok)throw Error('Public canonical rates HTTP '+res.status);
+           return res.json();
+         });
+         const today=romeTodayIso();
+         const sourceDate=day=>{
+           if(!/^20\d{2}-\d{2}-\d{2}$/.test(day||''))return null;
+           const v=Date.parse(day+'T00:00:00Z');
+           return Number.isFinite(v)&&new Date(v).toISOString().slice(0,10)===day?v:null;
+         };
+         const nowDay=sourceDate(today);
+         const yieldExpected=Object.fromEntries(
+           ['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'].map(ccy=>{
+             const r=publicRates[ccy],day=sourceDate(r?.date);
+             const valid=day!==null&&day<=nowDay&&typeof r?.quality==='string'&&
+               r.quality.includes('OFFICIAL')&&['2Y','10Y'].every(t=>{
+                 const h=t==='2Y'?r.history2:r.history10;
+                 return Number.isFinite(r[t])&&Array.isArray(h?.dates)&&
+                   Array.isArray(h?.values)&&h.dates.length>=20&&
+                   h.dates.length===h.values.length&&h.dates.at(-1)===r.date&&
+                   Number.isFinite(h.values.at(-1))&&
+                   Math.abs(h.values.at(-1)-r[t])<=0.00001&&r[t]>-5&&r[t]<25;
+               });
+             return [ccy,!valid?'UNAVAILABLE':(nowDay-day)/86400000>4?'HISTORICAL':'RECENT'];
+           }));
          const y=await page.evaluate(()=>{
            const d=document.getElementById('gmfq-page')?.contentDocument,
              p=d?.getElementById('gmfq-yields-study');
            return {present:!!p,count:p?.querySelectorAll('.gmfq-yield-row[data-ccy]').length,
              verified:p?.dataset.coverage,core:p?.dataset.coreEffect,pair:p?.dataset.pairEffect,
+             states:[...p?.querySelectorAll('.gmfq-yield-row[data-ccy]')||[]].map(x=>({ccy:x.dataset.ccy,state:x.dataset.state})),
              historical:[...p?.querySelectorAll('.gmfq-yield-row[data-state="HISTORICAL"]')||[]].map(x=>x.dataset.ccy),
              snb:p?.querySelector('[data-snb-10y="SEPARATE"]')?.textContent,
              width:p?.scrollWidth,client:p?.clientWidth};
          });
          if(!y.present||y.verified!=='8'||y.count!==8||
             y.core!=='NONE'||y.pair!=='NONE'||
-            JSON.stringify(y.historical.sort())!==JSON.stringify(['CHF','NZD'])||
+            y.states?.length!==8||y.states.some(x=>yieldExpected[x.ccy]!==x.state)||
+            JSON.stringify([...y.historical].sort())!==JSON.stringify(
+              Object.entries(yieldExpected).filter(([,status])=>status==='HISTORICAL')
+               .map(([ccy])=>ccy).sort())||
             !y.snb?.includes('non calcolare spread misti')||
             y.width>y.client+2)
             throw Error(name+' G8 dated yields missing from public Rates research '+JSON.stringify(y));
          console.log('CONTROL_ROOM_PUBLIC_G8_DATED_YIELDS_STUDY_GREEN',name,
-           JSON.stringify({count:y.count,historical:y.historical,noModelPromotion:true}));
+           JSON.stringify({count:y.count,historical:y.historical,expected:yieldExpected,noModelPromotion:true}));
          const webReview=await page.evaluate(async()=>{
            const d=document.getElementById('gmfq-page')?.contentDocument,
              p=d?.getElementById('gmfq-yields-study'),
