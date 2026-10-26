@@ -3,10 +3,10 @@ name: Publish Dashboard Pages V1
 on:
   pull_request:
     branches: [main]
-    paths: ['.github/workflows/publish-dashboard-pages-v1.yml','index.html','payload/**','dashboard/**','live_data/sections/OIS_DATA.json','live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/D.json','live_data/sections/ESTIMATED_RESIDUAL_GAPS.json','live_data/sections/V247_COT_STORIES.json','live_data/sections/RATES_AUDIT_METADATA.json','live_data/manifest.v2.json','live_data/sections/NATIVE_CB_DATA.json','live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json','live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json','live_data/sections/NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json','live_data/sections/OIS_SOURCE_READINESS_VIEW.json','validation/publishing/verify_pages_http_delivery_v1.py','validation/publishing/test_verify_pages_http_delivery_v1.py','validation/publishing/test_pages_operational_ois_summary_source_v1.py','validation/publishing/check_control_room_feed_mirrors_v1.py','validation/cb_pricing/check_ois_readiness_parity_v1.py','validation/cb_pricing/test_check_ois_readiness_parity_v1.py','validation/publishing/check_pages_morning_readiness_v1.py','validation/publishing/test_pages_morning_readiness_v1.py','validation/publishing/test_pages_main_source_lease_v1.py']
+    paths: ['.github/workflows/publish-dashboard-pages-v1.yml','index.html','payload/**','dashboard/**','live_data/sections/OIS_DATA.json','live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/D.json','live_data/sections/ESTIMATED_RESIDUAL_GAPS.json','live_data/sections/V247_COT_STORIES.json','live_data/sections/RATES_AUDIT_METADATA.json','live_data/manifest.v2.json','live_data/sections/NATIVE_CB_DATA.json','live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json','live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json','live_data/sections/NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json','live_data/sections/OIS_SOURCE_READINESS_VIEW.json','validation/publishing/verify_pages_http_delivery_v1.py','validation/publishing/test_verify_pages_http_delivery_v1.py','validation/publishing/test_pages_operational_ois_summary_source_v1.py','validation/publishing/check_control_room_feed_mirrors_v1.py','validation/cb_pricing/check_ois_readiness_parity_v1.py','validation/cb_pricing/test_check_ois_readiness_parity_v1.py','validation/publishing/check_pages_morning_readiness_v1.py','validation/publishing/test_pages_morning_readiness_v1.py','validation/publishing/test_pages_main_source_lease_v1.py','validation/publishing/check_pages_0800_delivery_sla_v1.py','validation/publishing/test_check_pages_0800_delivery_sla_v1.py']
   push:
     branches: [main]
-    paths: ['.github/workflows/publish-dashboard-pages-v1.yml','index.html','payload/**','dashboard/**','live_data/sections/OIS_DATA.json','live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/D.json','live_data/sections/ESTIMATED_RESIDUAL_GAPS.json','live_data/sections/V247_COT_STORIES.json','live_data/sections/RATES_AUDIT_METADATA.json','live_data/manifest.v2.json','live_data/sections/NATIVE_CB_DATA.json','live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json','live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json','live_data/sections/NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json','live_data/sections/OIS_SOURCE_READINESS_VIEW.json','validation/publishing/verify_pages_http_delivery_v1.py','validation/publishing/test_verify_pages_http_delivery_v1.py','validation/publishing/test_pages_operational_ois_summary_source_v1.py','validation/publishing/check_control_room_feed_mirrors_v1.py','validation/cb_pricing/check_ois_readiness_parity_v1.py','validation/cb_pricing/test_check_ois_readiness_parity_v1.py','validation/publishing/check_pages_morning_readiness_v1.py','validation/publishing/test_pages_morning_readiness_v1.py','validation/publishing/test_pages_main_source_lease_v1.py']
+    paths: ['.github/workflows/publish-dashboard-pages-v1.yml','index.html','payload/**','dashboard/**','live_data/sections/OIS_DATA.json','live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/CALENDAR_OPERATIONAL_VIEW.json','live_data/sections/NEWS_PULSE_OPERATIONAL.json','live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/D.json','live_data/sections/ESTIMATED_RESIDUAL_GAPS.json','live_data/sections/V247_COT_STORIES.json','live_data/sections/RATES_AUDIT_METADATA.json','live_data/manifest.v2.json','live_data/sections/NATIVE_CB_DATA.json','live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json','live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json','live_data/sections/NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json','live_data/sections/OIS_SOURCE_READINESS_VIEW.json','validation/publishing/verify_pages_http_delivery_v1.py','validation/publishing/test_verify_pages_http_delivery_v1.py','validation/publishing/test_pages_operational_ois_summary_source_v1.py','validation/publishing/check_control_room_feed_mirrors_v1.py','validation/cb_pricing/check_ois_readiness_parity_v1.py','validation/cb_pricing/test_check_ois_readiness_parity_v1.py','validation/publishing/check_pages_morning_readiness_v1.py','validation/publishing/test_pages_morning_readiness_v1.py','validation/publishing/test_pages_main_source_lease_v1.py','validation/publishing/check_pages_0800_delivery_sla_v1.py','validation/publishing/test_check_pages_0800_delivery_sla_v1.py']
   workflow_run:
     workflows: ['Macro Persistent Daily V1','CB Pricing Persistent Daily V1','OIS Estimated Snapshot Repricing V1','OIS G8 History Persistent Daily V1','Calendar News Operational Refresh V1','Price Persistent Daily V1','Rates Persistent Daily V1','COT Persistent Weekly V1','Liquidity JPY M3 Persistent Daily V1','VIX Persistent Apply V1','WTI Persistent Rebuild V1','Brent Market Proxy Refresh V1','Gold Secondary Market Proxy Refresh V1']
     types: [completed]
@@ -196,6 +196,7 @@ jobs:
         run: |
           python3 validation/publishing/test_pages_morning_readiness_v1.py
           python3 validation/publishing/test_pages_main_source_lease_v1.py
+          python3 validation/publishing/test_check_pages_0800_delivery_sla_v1.py
 
       - name: Block incomplete morning sources before any Pages write
         if: github.event_name != 'pull_request'
@@ -364,6 +365,30 @@ jobs:
             --budget-seconds 600 --interval-seconds 10 \
             --output /tmp/pages-public-http-proof.json
 
+      # This receipt does not rely on Daily Data Orchestrator V2 succeeding.
+      # Independent source workflows can publish before 08:00; late public
+      # propagation can also be certified accurately as late, not GREEN.
+      - name: Record independent 08:00 Rome public delivery receipt
+        if: always() && github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/publishing/check_pages_0800_delivery_sla_v1.py \
+            --source /tmp/pages-morning-readiness.json \
+            --public /tmp/pages-public-http-proof.json \
+            --output /tmp/pages-0800-delivery-sla.json
+          python3 - <<'PY'
+          import json, os
+          d=json.load(open('/tmp/pages-0800-delivery-sla.json',encoding='utf-8'))
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as out:
+              out.write('\n### Independent 08:00 Rome public HTTP receipt\n')
+              out.write('- Status: **'+d['status']+'**\n')
+              out.write('- Source check: '+str(d['source_checked_at_rome'])+'\n')
+              out.write('- Exact public HTTP verified: '+str(d['public_verified_at_rome'])+'\n')
+              out.write('- File coverage: '+str(d['verified_file_count'])+'\n')
+              out.write('- This does not depend on a successful parent orchestrator.\n')
+          PY
+
       - name: Upload delivery evidence
         if: always() && github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
@@ -372,4 +397,5 @@ jobs:
           path: |
             /tmp/pages-delivery-proof.json
             /tmp/pages-public-http-proof.json
+            /tmp/pages-0800-delivery-sla.json
           if-no-files-found: warn
