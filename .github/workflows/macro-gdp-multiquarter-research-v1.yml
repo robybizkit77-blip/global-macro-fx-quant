@@ -1,0 +1,35 @@
+name: Macro GDP Multiquarter Research Guard V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/macro/v2_g8_gdp_multiquarter_pit_guard_v1.py'
+      - 'validation/macro/test_v2_g8_gdp_multiquarter_pit_guard_v1.py'
+      - 'validation/macro/fixtures/v2_g8_gdp_multiquarter_partial_official_research_v1.json'
+      - '.github/workflows/macro-gdp-multiquarter-research-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/macro/v2_g8_gdp_multiquarter_pit_guard_v1.py'
+      - 'validation/macro/test_v2_g8_gdp_multiquarter_pit_guard_v1.py'
+      - 'validation/macro/fixtures/v2_g8_gdp_multiquarter_partial_official_research_v1.json'
+      - '.github/workflows/macro-gdp-multiquarter-research-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  research-only-validation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test chronological GDP vintages and research fixture
+        run: python -m unittest validation.macro.test_v2_g8_gdp_multiquarter_pit_guard_v1 -v
+      - name: Verify operational data untouched
+        run: git diff --exit-code -- live_data/sections/D.json live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
