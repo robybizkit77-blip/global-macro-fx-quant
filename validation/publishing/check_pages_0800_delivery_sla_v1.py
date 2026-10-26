@@ -3,8 +3,7 @@
 
 Unlike the parent orchestrator SLA, this evaluates the publisher's own
 pre-write source gate AND exact public HTTP proof. It observes real public
-delivery even when an independent producer triggers the publisher. A late
-success is useful but is NEVER marked on time. This is read-only.
+delivery even when an independent producer triggers the publisher. Verification observed after 08:00 cannot prove when files first became available.\nOnly verified-before-08:00 observations certify on-time service. This is read-only.
 """
 from __future__ import annotations
 
@@ -75,7 +74,7 @@ def evaluate(source: dict | None, public: dict | None, now: dt.datetime, *, expe
         status = "FAIL_PUBLIC_HTTP_UNVERIFIED"
     else:
         deadline = dt.datetime.combine(checked_rome.date(), TARGET, tzinfo=ROME)
-        status = "PASS_PUBLIC_HTTP_BY_0800" if verified_rome <= deadline else "LATE_PUBLIC_HTTP_AFTER_0800"
+        status = "PASS_PUBLIC_HTTP_BY_0800" if verified_rome <= deadline else "VERIFIED_AFTER_0800_DELIVERY_TIME_UNPROVEN"
     deadline = dt.datetime.combine(local_now.date(), TARGET, tzinfo=ROME)
     return {
         "schema": "GMFQ_INDEPENDENT_PAGES_0800_SLA_V1",
@@ -86,12 +85,14 @@ def evaluate(source: dict | None, public: dict | None, now: dt.datetime, *, expe
         "public_verified_at_rome": verified_rome.isoformat(timespec="seconds") if verified_rome else None,
         "evaluated_at_rome": local_now.isoformat(timespec="seconds"),
         "source_pass": source_ok,
+        "on_time_delivery_proven": status == "PASS_PUBLIC_HTTP_BY_0800",
+        "verified_after_deadline": bool(public_ok and verified_rome > deadline),
         "public_exact_bytes_pass": public_ok,
         "verified_file_count": len(paths),
         "independent_of_parent_orchestrator": True,
         "scope": "EXACT_PUBLIC_HTTP_FILES_AND_MORNING_SOURCE_GATE_ONLY",
         "model_beta_forward_effect": "NONE",
-        "note": "Does not certify sources outside the publisher gate or guarantee future GitHub cron timing.",
+        "note": "The receipt records the time of observation, not the first moment of CDN availability. A verification after 08:00 is not proof that actual delivery was late. Does not guarantee future cron timing.",
     }
 
 

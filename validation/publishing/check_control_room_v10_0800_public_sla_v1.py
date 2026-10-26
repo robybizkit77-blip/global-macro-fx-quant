@@ -55,6 +55,7 @@ def run(now: dt.datetime, root: Path, base_url: str, *, auditor=verify) -> dict:
     receipt["public_proof"] = public
     receipt["source_readiness"] = source
     receipt["browser_render_certified"] = False
+    receipt["delivery_timestamp_basis"] = "OBSERVED_HTTP_TIMESTAMP_ONLY_NOT_FIRST_CDN_AVAILABILITY"
     return receipt
 
 
