@@ -82,14 +82,14 @@ class GDP2023Q3ResearchTests(unittest.TestCase):
         self.assertEqual(later["NZD:2023Q3"]["reported_unit"],
                          "PERCENT_QOQ_SA_CHAIN_VOLUME_PRODUCTION")
 
-    def test_unified_fourteen_quarters_112_first_records_not_live(self):
+    def test_unified_fifteen_quarters_120_first_records_not_live(self):
         receipt=research_receipt()
-        self.assertEqual(receipt["quarters_documented"],14)
-        self.assertEqual(receipt["first_publisher_statements_documented"],112)
+        self.assertEqual(receipt["quarters_documented"],15)
+        self.assertEqual(receipt["first_publisher_statements_documented"],120)
         all_rows=unified_research_rows()
         first={(r["currency"],r["reference_quarter"]) for r in all_rows
                if r["stage_order"]==0}
-        self.assertEqual(len(first),112)
+        self.assertEqual(len(first),120)
         at=snapshot(all_rows,"2023-12-22T00:00:00Z")
         self.assertIn("NZD:2023Q3",at["visible_vintages"])
         self.assertNotIn("USD:2023Q4",at["visible_vintages"])
