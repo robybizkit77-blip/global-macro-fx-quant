@@ -5,6 +5,19 @@ import math
 from urllib.parse import urlsplit
 
 CURRENCIES = set("USD EUR GBP JPY CHF CAD AUD NZD".split())
+# Independently pinned government statistical publisher domains.
+# The per-row host field alone is not sufficient issuer authentication.
+PUBLISHER_HOSTS = {
+    "USD": {"www.bea.gov", "bea.gov"},
+    "EUR": {"ec.europa.eu"},
+    "GBP": {"www.ons.gov.uk"},
+    "JPY": {"www.esri.cao.go.jp", "www5.cao.go.jp"},
+    "CHF": {"www.seco.admin.ch", "www.pfp.admin.ch", "www.efd.admin.ch"},
+    "CAD": {"www150.statcan.gc.ca"},
+    "AUD": {"www.abs.gov.au"},
+    "NZD": {"www.stats.govt.nz"},
+}
+
 
 def visible_at(day):
     d = date.fromisoformat(day)
@@ -36,7 +49,8 @@ def validate(rows):
         if not isinstance(url, str):
             raise ValueError("source required")
         parsed = urlsplit(url)
-        if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password or parsed.fragment or parsed.hostname != row.get("verified_publisher_host"):
+        if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password or parsed.fragment or (parsed.hostname != row.get("verified_publisher_host") or
+            parsed.hostname not in PUBLISHER_HOSTS[c]):
             raise ValueError("publisher host must be separately pinned")
         if row.get("eligible_for_macro_scoring") is not False or row.get("PIT_training_vintage_certified") is not False:
             raise ValueError("unapproved historical promotion")
