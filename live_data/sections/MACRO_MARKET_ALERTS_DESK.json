@@ -1,8 +1,51 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-26T21:48:16Z",
+  "generated_at_utc": "2026-10-26T22:51:02Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-fc186c4323c0fd8766c5",
+      "observed_at_utc": "2026-10-26T15:35:43Z",
+      "headline": "AI stocks rise as Anthropic nears Wall Street debut amid investor caution",
+      "summary": "Reuters riporta: AI stocks rise as Anthropic nears Wall Street debut amid investor caution. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxQNVdGRWF4eUpFNlQ2QkxGSWVrdlZZMU9OVlgtNkduS1JrMVdzQ0VJRVJPak4xcERFNENPWGE3YUM3VHpSSnFybzZJRWRTSW53eWwzTW1jLTR5dmpjelcxam96czEycUZ3a1piY2kwcC15WTR3ZFJUeGdIUkxuLXl6b0d4dGJ0T0hWcUl0ejVSMzI1UlpJdzRnZ09Td05wRDlJbVJaT0ktM3Z4Q2ZNdnNSWnA1bkZGVl9iYVI1TEtCc0VhRjRJ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-444481ff76a641f6b8f9",
+      "observed_at_utc": "2026-10-26T00:46:00Z",
+      "headline": "World stocks gain ahead of 'formidable' week for risk; oil prices fall",
+      "summary": "Reuters riporta: World stocks gain ahead of 'formidable' week for risk; oil prices fall. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMifkFVX3lxTE90MHowUDNReVJUUkkxWEZhTnAyYnZZNGNXQjJPVWt0QjgtaERfUHM4bERQd2k2NW5kMXR5dld0NHpsYnBhOENieXU1VU9saFBya202TXRjUktMa0l6OXF0OEZFUDdxR3FtSTdCLUxRVGpZNnBndExIcGVEZmtXZw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-661c62493b5eec5919de",
+      "observed_at_utc": "2026-10-26T10:31:43Z",
+      "headline": "Euro zone firms find it harder to get credit, ECB survey shows",
+      "summary": "Reuters riporta: Euro zone firms find it harder to get credit, ECB survey shows. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "EUR"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxQbkZkaU9IcHBVSFd2TXpwbWRKc1hOLS11RVVuZktKZUtZRDJGcUN5bmZGb19NS2JEd3prYUFkejdybkJscnQ0WTVPMW5GNG5jUmUwQmE0eVZ1U1o4SVZfRFZwd01ISzA5clhHMFg4UEtjWjJSeDk2NVBsbXc2Mk9vclRDMW0wWXRhNUNKSmt5LWFyTVNaSW91elhfUXlsOV9jNnRoR0RBNUYyczZ6X2pxODZ5M2U?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-139601b773683e574918",
       "observed_at_utc": "2026-10-26T21:02:00Z",
@@ -1354,45 +1397,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxNa2tNRmp3a3M1dmlVenEyZWI1YUNVcTZXQlJTeDNrdGpsTXhFQ1NDQURlUDZOZUpvNWtjMGtBb1IyYmNnUVY3MlE1U3o4a01XWDM3WWZnVGltTTBGN2k3akZHb1hTVW52RlhFdEZOclBTSlVOQlp0aGxZdU5PeWR3THRZa2Z1M0R6VVVxT3ZDdWtlc2FfajRUMWRxNWlRb2tMUjRRdkttYlZTSGpja1V3SnRndlEyRVJUZ3QtRVlSRWFMX2I3YXIwa3R3?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-f86bd75fe7a2ea1779da",
-      "observed_at_utc": "2026-10-22T19:04:12Z",
-      "headline": "Rifts emerge in Libya as eastern parliament backs central bank chief's resignation",
-      "summary": "Reuters riporta: Rifts emerge in Libya as eastern parliament backs central bank chief's resignation. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxQUmZZVFpPdHR0ZXM0QllwRldsMlJCd3lxcU9BTHY5RE1IOTNNUFdMbTd1cVFzWG1ZUURydWpVU0NJM0M5a1BKZEw2cklMV25udUlqUk9WMkJXd1RHZEVuODBSMlJwNm1tekNVTWwwdzdsVEw1eHJyYzdVQ3E3czNFSnE5NzByUi1XY1g3aUZBaGtGRC04LUlQaXlZYjExRV8xMEFpb1dBVnhRLTNJdHBYVTJxdy1sSmRtWkhQa1JEU1hnaDNsVWNleA?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-ed0298ea32fcfea24668",
-      "observed_at_utc": "2026-10-22T15:35:24Z",
-      "headline": "Irish central bank fines Coinbase unit €3.25 million",
-      "summary": "Reuters riporta: Irish central bank fines Coinbase unit €3.25 million. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxQbk5FZEJQRDhUeGJnTnFGVEtCcm8xVWpHalUxT2dna2h5WXdOdTVOSU8wbFFGZkJMcjUzUnRjTDA0bmd1OUxXRm41ckZkRDVkZFFVT3lhVHpyQlNyTTlRQ0dSNDVPUDBIRURNY0l6czBQWENOcTdlTmh5dUFsQ1VpQzJzRzVUS29Zc243aFNsWlFCUDF4dENwWU9CS3AtOTd6d2h2ZXJ3?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-64d0701614765d395e4e",
-      "observed_at_utc": "2026-10-22T17:13:00Z",
-      "headline": "Inflation at the movies: Runtimes are longer, from ‘The Odyssey’ to ‘You Can See Everything’",
-      "summary": "AP News riporta: Inflation at the movies: Runtimes are longer, from ‘The Odyssey’ to ‘You Can See Everything’. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "AP News · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiigFBVV95cUxQN0NQUHFNdkI2OHRsSktYTFNOZGpGVDRLMk96MkpjMkZrVnlXYURSUG44UG9xc3pCR3VqbzVPOGVWU05GSUh3YVZ3RG5qZnA4Qkh0MmtHNXUycGQ1RFF6WFl2YlFhajdJU0s5RUc4WWdLd18wQmNHZk1LckwwNWcwU1Z2aUl1V0NCVXc?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
