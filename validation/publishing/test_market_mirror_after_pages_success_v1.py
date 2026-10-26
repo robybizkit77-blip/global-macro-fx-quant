@@ -14,6 +14,10 @@ assert "group: publish-dashboard-pages-v1" in market
 assert "cancel-in-progress: false" in market
 assert "group: publish-dashboard-pages-v1" in pages
 assert "cancel-in-progress: false" in pages
+# A shared group without queue:max silently replaces pending mirror runs.
+# Preserve both pending runs without permitting concurrent gh-pages writes.
+assert market.split("concurrency:",1)[1].split("jobs:",1)[0].count("queue: max") == 1
+assert pages.split("concurrency:",1)[1].split("jobs:",1)[0].count("queue: max") == 1
 assert "'Publish Control Room Market Data V1'" not in pages.split('workflow_run:',1)[1].split('workflow_dispatch:',1)[0], (
     'Avoid publication trigger cycle from Market into Pages')
 assert "'Rates Persistent Daily V1'" in pages
