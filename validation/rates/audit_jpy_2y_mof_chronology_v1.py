@@ -190,10 +190,53 @@ def verify_official(candidate, historical, current):
     }
 
 
+# Explicitly reviewed discrepancy from official 26 Oct 2026 MoF CSV
+# comparison. A third discrepancy is a new source incident, not an
+# automatically acceptable revision.
+REVIEWED_CONFLICT_DATES = frozenset(("2026-09-25","2026-09-28"))
+
+
+def propose_verified_latest_publisher_candidate(candidate, historical, current):
+    """Use independently downloaded MoF values for precisely reviewed dates.
+
+    Never infer missing observations. Re-validate 273/273 after the replacements.
+    Returns research candidate only; historical first-release PIT still absent.
+    """
+    first = verify_official(candidate, historical, current)
+    if first["missing"]:
+        raise ValueError("publisher missing original 2Y dates: no correction")
+    differences = first["mismatches"]
+    if {m["date"] for m in differences} != REVIEWED_CONFLICT_DATES:
+        raise ValueError("unreviewed MoF source differences; independent audit needed")
+    patches = {m["date"]:m for m in differences}
+    repaired = json.loads(json.dumps(candidate))
+    for row in repaired["candidate_rows"]:
+        d=row["date"]
+        if d in patches:
+            row["yield_pct"]=patches[d]["official"]
+    repaired["yield_values_modified"]=True
+    repaired["original_values_retained_in_patch_audit"]=True
+    repaired["latest_publisher_value_replacements"]=differences
+    # Rerun independent full-row cross-check after the changes. Temporarily
+    # retain the first-stage status accepted by verify_official.
+    second=verify_official(repaired,historical,current)
+    if second["state"]!="ALL_2Y_POINTS_AGREE_WITH_MOF" or second["matched"]!=273:
+        raise ValueError("publisher reconciliation did not match all 273 original dates")
+    repaired["status"]="PUBLISHER_RECONCILED_273_OF_273_LATEST_RELEASE_RESEARCH_ONLY"
+    repaired["source_comparison"]=second
+    repaired["source_initial_271_of_273_audit"]=first
+    repaired["historical_first_publication_pit_certified"]=False
+    repaired["promoted_into_live_rates"]=False
+    repaired["promoted_into_beta"]=False
+    return repaired
+
+
 def main():
     ap=argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--historical-csv",type=Path)
     ap.add_argument("--current-csv",type=Path)
+    ap.add_argument("--reconcile-reviewed-two",action="store_true",
+                    help="Replace only official-audited Sep25/Sep28 values in /tmp candidate")
     ap.add_argument("--out",type=Path,required=True)
     args=ap.parse_args()
     if not args.out.resolve().is_relative_to(Path("/tmp")):
@@ -201,12 +244,20 @@ def main():
     if bool(args.historical_csv) != bool(args.current_csv):
         ap.error("both publisher CSV sources must be available together")
     candidate=normalize_source(json.loads(SOURCE.read_text(encoding="utf-8")))
+    if args.reconcile_reviewed_two and not args.historical_csv:
+        ap.error("publisher reconciliation requires both original MoF CSV files")
     if args.historical_csv:
-        candidate["source_comparison"]=verify_official(
-            candidate,args.historical_csv.read_bytes(),args.current_csv.read_bytes())
-        candidate["status"]="PUBLISHER_VERIFIED_OFFLINE_CANDIDATE" if (
-            candidate["source_comparison"]["state"]=="ALL_2Y_POINTS_AGREE_WITH_MOF"
-        ) else "PUBLISHER_COMPARISON_FAILED"
+        historical=args.historical_csv.read_bytes()
+        current=args.current_csv.read_bytes()
+        if args.reconcile_reviewed_two:
+            candidate=propose_verified_latest_publisher_candidate(
+                candidate,historical,current)
+        else:
+            candidate["source_comparison"]=verify_official(
+                candidate,historical,current)
+            candidate["status"]="PUBLISHER_VERIFIED_OFFLINE_CANDIDATE" if (
+                candidate["source_comparison"]["state"]=="ALL_2Y_POINTS_AGREE_WITH_MOF"
+            ) else "PUBLISHER_COMPARISON_FAILED"
     args.out.parent.mkdir(parents=True,exist_ok=True)
     args.out.write_text(json.dumps(candidate,indent=2,ensure_ascii=False)+"\n",
                         encoding="utf-8")
