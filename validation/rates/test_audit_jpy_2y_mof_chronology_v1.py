@@ -99,7 +99,7 @@ class Japan2YRepairTests(unittest.TestCase):
         rows=self.stage["candidate_rows"]
         def c(x):
             return ("Interest Rate\nDate,1Y,2Y\n"+"".join(
-                f"{y['date'].replace('-','/')},1,{y['yield_pct'] + (.02 if y is x[0] else 0):.3f}\n" for y in x)).encode("cp932")
+                f"{y['date'].replace('-','/')},1,{y['yield_pct'] + (.02 if y["date"] == rows[0]["date"] else 0):.3f}\n" for y in x)).encode("cp932")
         official=m.verify_official(self.stage,c(rows[:150]),c(rows[150:]))
         self.assertEqual(official["state"],"NOT_CERTIFIED_OFFICIAL_COMPARISON_FAILED")
         self.assertEqual(len(official["mismatches"]),1)
