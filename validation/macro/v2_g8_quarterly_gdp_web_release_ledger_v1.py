@@ -41,7 +41,6 @@ FOLLOWUP = {
     "GBP": ("2026-09-30", 0.5, "PERCENT_QOQ_SA",
             "QUARTERLY_NATIONAL_ACCOUNTS_REVISION", "www.ons.gov.uk"),
 }
-ALL = {(**{}) if False else currency: values for currency, values in FIRST.items()}
 # Explicit safe nonannualized unit: US SAAR and Swiss sports-adjusted
 # statistic cannot be ranked as identical unqualified quarterly GDP.
 CONDITIONAL_UNITS = {"PERCENT_SAAR_ANNUALIZED", "PERCENT_QOQ_SA_CALENDAR_SPORTS"}
