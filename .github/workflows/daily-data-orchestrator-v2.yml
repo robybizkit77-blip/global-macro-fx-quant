@@ -232,11 +232,10 @@ jobs:
               prebrief)
                 # Strictly serial: official/estimated daily data, then a final
                 # read-only certification and Pages publication before the user studies.
-                # Non-daily residual series keep their own collector cadence.
+                # CB Pricing has its own independent 06:00/06:30/07:00 Rome schedule.\n                # Its external CAD Market Review outage must not block FX/Macro/News/VIX.\n                # Keep CAD source quality/staleness independently validated at publication.\n                # Non-daily residual series keep their own collector cadence.
                 workflows=(
                   macro-persistent-daily-v1.yml
                   rates-persistent-daily-v1.yml
-                  cb-pricing-persistent-daily-v1.yml
                   ois-estimated-snapshot-repricing-v1.yml
                   calendar-news-operational-refresh-v1.yml
                   vix-persistent-apply-v1.yml
@@ -245,9 +244,8 @@ jobs:
                 )
                 ;;
               premorning)
-                workflows=(
+                # CB Pricing runs separately before the 08:00 desk; never duplicate\n                # it here, or an isolated MX source outage can block Pages.\n                workflows=(
                   rates-persistent-daily-v1.yml
-                  cb-pricing-persistent-daily-v1.yml
                   final-e2e-certification-gate-v3.yml
                   publish-dashboard-pages-v1.yml
                 )
