@@ -62,6 +62,7 @@ function collect(ctx,rates,fx){
       estimate_pct:chf[flag]===true?chf[value]:null,
       beta:chf[flag]===true?chf[isTwo?'beta2':'beta10']:null,
       r2:chf[flag]===true?chf[isTwo?'r2_2':'r2_10']:null,
+      confidence:chf[flag]===true?chf[isTwo?'confidence2':'confidence10']:null,
       anchor:chf[flag]===true?chf[isTwo?'anchor2':'anchor10']:null,
       input_as_of:chf[flag]===true?chf[isTwo?'estimatedAsOf2':'estimatedAsOf10']:null
     };
@@ -118,6 +119,12 @@ function compare(oldRates,newRates,fx){
     compared_pairs:Object.keys(before.reactions).length,
     before_current_eur:before.EUR,after_current_eur:after.EUR,
     CHF_reference_beta_impact:differences,
+    CHF_10Y_proxy_material_rebase_bp_threshold_for_QA_only:5,
+    CHF_10Y_proxy_rebase_review_required:
+      differences['10Y'].estimate_status_changed ||
+      differences['10Y'].estimate_delta_bp===null ||
+      Math.abs(differences['10Y'].estimate_delta_bp)>=5,
+    CHF_10Y_proxy_not_official_yield:true,
     pair_reaction_changed_count:reactionChanges.length,
     pair_reaction_changed:reactionChanges,
     pair_observed_2y_changed_count:observedChanges.length,
@@ -144,6 +151,7 @@ function main(){
     assert.equal(out.pair_observed_2y_changed_count,0);
     assert.equal(out.CHF_reference_beta_impact['2Y'].estimate_delta_bp,0);
     assert.equal(out.CHF_reference_beta_impact['10Y'].estimate_delta_bp,0);
+    assert.equal(out.CHF_10Y_proxy_rebase_review_required,false);
     const altered=deepJson(x);
     altered.EUR.history2.values[altered.EUR.history2.values.length-17]+=.2;
     const proof=compare(x,altered,f);
