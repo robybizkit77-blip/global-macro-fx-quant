@@ -1,0 +1,151 @@
+name: EUR ECB 2Y10Y V10 Impact + Isolated Rollback QA
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/rates/audit_v10_eur_ecb_history_chf_pair_sensitivity_v1.cjs'
+      - '.github/workflows/eur-2y10y-v10-impact-rollback-v1.yml'
+      - 'validation/rates/EUR_2Y10Y_V10_CONSUMER_ROLLBACK_AUDIT_2026-10-26.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  controlled-qa:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check exact active v10 JS function parity and CHF sensitivity
+        run: |
+          node --check validation/rates/audit_v10_eur_ecb_history_chf_pair_sensitivity_v1.cjs
+          node validation/rates/audit_v10_eur_ecb_history_chf_pair_sensitivity_v1.cjs --self-test
+
+      - name: Independently acquire full ECB EUR 2Y and 10Y original data
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error --retry 2 --max-time 45 \
+            'https://data-api.ecb.europa.eu/service/data/YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y?startPeriod=2025-09-16&endPeriod=2026-10-22&format=csvdata' \
+            -H 'Accept: text/csv' -o /tmp/gmfq-ecb-eur-2y-original.csv
+          curl --fail --location --silent --show-error --retry 2 --max-time 45 \
+            'https://data-api.ecb.europa.eu/service/data/YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_10Y?startPeriod=2025-09-16&endPeriod=2026-10-22&format=csvdata' \
+            -H 'Accept: text/csv' -o /tmp/gmfq-ecb-eur-10y-original.csv
+
+      - name: Stage same-source candidate and compare actual v10 CHF and FX behavior
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m validation.rates.build_eur_full_2y_10y_ecb_history_candidate_v1 \
+            --ecb-2y-original /tmp/gmfq-ecb-eur-2y-original.csv \
+            --ecb-10y-original /tmp/gmfq-ecb-eur-10y-original.csv \
+            --candidate /tmp/gmfq-eur-publisher-history.json \
+            --receipt /tmp/gmfq-eur-publisher-provenance.json
+          python -m validation.rates.audit_eur_2y_10y_site_consumer_impact_v1 \
+            --candidate /tmp/gmfq-eur-publisher-history.json \
+            --out /tmp/gmfq-eur-impacted-consumers.json
+          node validation/rates/audit_v10_eur_ecb_history_chf_pair_sensitivity_v1.cjs \
+            --candidate /tmp/gmfq-eur-publisher-history.json \
+            --output /tmp/gmfq-eur-v10-active-js-old-v-new.json
+          python - <<'PY'
+          import json
+          source=json.load(open('/tmp/gmfq-eur-publisher-provenance.json'))
+          impact=json.load(open('/tmp/gmfq-eur-impacted-consumers.json'))
+          result=json.load(open('/tmp/gmfq-eur-v10-active-js-old-v-new.json'))
+          assert source['actual_production_promotion'] is False
+          assert source['per_tenor_official_parity']['2Y']['overlap_yield_mismatches']>=250
+          assert source['per_tenor_official_parity']['10Y']['overlap_yield_mismatches']>=250
+          assert result['compared_pairs']==28
+          assert result['before_current_eur']==result['after_current_eur']
+          assert result['live_data_modified'] is False
+          assert impact['safe_to_publish_now'] is False
+          assert result['no_canonical_D_json_or_model_score_loaded'] is True
+          print('REAL_V10_CHF_EUR_REFERENCE_SENSITIVITY',
+                json.dumps(result['CHF_reference_beta_impact']))
+          print('REAL_V10_FX_28_PAIR_MARKET_REACTION_CHANGES',
+                result['pair_reaction_changed_count'],
+                json.dumps(result['pair_reaction_changed'][:28]))
+          print('REAL_V10_PAIR_OBSERVED_2Y_LEG_CHANGES',
+                result['pair_observed_2y_changed_count'])
+          print('HOLD_LIVE_PUBLISH_UNTIL_CHF_REVIEW_AND_VISUAL_QA')
+          PY
+          test -z "$(git status --porcelain -- live_data payload site)"
+
+      - name: Full simulated live section + manifest + payload roundtrip in isolated worktree
+        shell: bash
+        run: |
+          set -euo pipefail
+          isolated="$RUNNER_TEMP/gmfq-rates-rollback-isolated"
+          git worktree add --detach "$isolated" HEAD
+          (
+            cd "$isolated"
+            before="$(sha256sum live_data/sections/NATIVE_RATES_DATA.json | cut -d' ' -f1)"
+            python validation/update_live_direct_section.py \
+              --section NATIVE_RATES_DATA \
+              --replacement /tmp/gmfq-eur-publisher-history.json \
+              > /tmp/gmfq-eur-rates-raw-preflight.json
+            python validation/update_live_direct_section.py \
+              --section NATIVE_RATES_DATA \
+              --replacement /tmp/gmfq-eur-publisher-history.json \
+              --apply > /tmp/gmfq-eur-rates-isolated-apply.json
+            python validation/build_live_manifest_v2.py \
+              --write live_data/manifest.v2.json > /tmp/gmfq-eur-new-manifest.json
+            python validation/check_live_update_contract.py > /tmp/gmfq-eur-live-contract-qa.json
+            python validation/rebuild_live_data_runtime.py \
+              --verify-only > /tmp/gmfq-eur-runtime-qa.json
+            python - <<'PY'
+          import json,subprocess
+          from pathlib import Path
+          data=json.load(open('/tmp/gmfq-eur-rates-isolated-apply.json'))
+          contract=json.load(open('/tmp/gmfq-eur-live-contract-qa.json'))
+          roundtrip=json.load(open('/tmp/gmfq-eur-runtime-qa.json'))
+          assert data['status']=='PASS'
+          assert data['applied'] is True
+          assert data['section']=='NATIVE_RATES_DATA'
+          assert contract['status']=='PASS',contract
+          assert roundtrip['status']=='PASS',roundtrip
+          assert roundtrip.get('noop_roundtrip_byte_identical') is True,roundtrip
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          allowed={'live_data/sections/NATIVE_RATES_DATA.json','live_data/manifest.v2.json',
+                   'payload/part-%02d.txt'%data['part']}
+          assert changed==allowed,(changed,allowed)
+          active=json.load(open('live_data/sections/NATIVE_RATES_DATA.json'))
+          staged=json.load(open('/tmp/gmfq-eur-publisher-history.json'))
+          assert active==staged
+          print('EUR_2Y10Y_LIVE_PAYLOAD_WORKTREE_ONLY_FULL_ROUNDTRIP_PASS',sorted(changed))
+          PY
+            git restore -- live_data/sections/NATIVE_RATES_DATA.json \
+              live_data/manifest.v2.json payload
+            test -z "$(git status --porcelain)"
+            after="$(sha256sum live_data/sections/NATIVE_RATES_DATA.json | cut -d' ' -f1)"
+            test "$before" = "$after"
+            python validation/check_live_update_contract.py \
+              > /tmp/gmfq-eur-rollback-restored-contract.json
+            python - <<'PY'
+          import json
+          c=json.load(open('/tmp/gmfq-eur-rollback-restored-contract.json'))
+          assert c['status']=='PASS'
+          print('EUR_2Y10Y_ISOLATED_ROLLBACK_BYTE_IDENTICAL_AND_CONTRACT_PASS')
+          PY
+          )
+          git worktree remove --force "$isolated"
+          test -z "$(git status --porcelain -- live_data payload site)"
+          echo 'ROLLBACK_TESTED_PRODUCTION_UNTOUCHED'
+
+      - name: QA is not a production approval
+        if: always()
+        run: |
+          echo '## ECB EUR 2Y / 10Y historical source QA' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Executed real v10 CHF scenario and all 28 pair FX reactions against old and official-source candidate; separate JSON receipts remain on this runner.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Isolated worktree full manifest+runtime roundtrip and byte-level rollback must pass to mark job green.' >> "$GITHUB_STEP_SUMMARY"
+          echo '**No live data published. Browser visual check (1440/390), historic PIT and derived CHF model review remain mandatory.**' >> "$GITHUB_STEP_SUMMARY"
