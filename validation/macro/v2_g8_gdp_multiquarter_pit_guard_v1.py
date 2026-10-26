@@ -12,7 +12,7 @@ PUBLISHER_HOSTS = {
     "EUR": {"ec.europa.eu"},
     "GBP": {"www.ons.gov.uk"},
     "JPY": {"www.esri.cao.go.jp", "www5.cao.go.jp"},
-    "CHF": {"www.seco.admin.ch", "www.pfp.admin.ch", "www.efd.admin.ch", "www.admin.ch", "www.edi.admin.ch", "www.sif.admin.ch"},
+    "CHF": {"www.seco.admin.ch", "www.pfp.admin.ch", "www.efd.admin.ch", "www.admin.ch", "www.edi.admin.ch", "www.sif.admin.ch", "www.schweizerischesseeschifffahrtsamt.eda.admin.ch"},
     "CAD": {"www150.statcan.gc.ca"},
     "AUD": {"www.abs.gov.au"},
     "NZD": {"www.stats.govt.nz"},
@@ -59,27 +59,35 @@ def validate(rows):
             raise ValueError("invalid reference benchmark")
         if type(row.get("methodology_break_acknowledged", False)) is not bool:
             raise ValueError("invalid methodology flag")
+        if type(row.get("unit_definition_break_acknowledged", False)) is not bool:
+            raise ValueError("invalid unit definition flag")
+        if row.get("unit_definition_break_acknowledged") is True and (
+                not isinstance(row.get("definition_warning"), str)
+                or len(row["definition_warning"]) < 30):
+            raise ValueError("unit definition change requires explanation")
         key = (c, q, stage)
         if key in seen:
             raise ValueError("duplicate release stage")
         seen.add(key)
         groups.setdefault((c, q), []).append((stage, release, unit, base,
-                                                 row.get("methodology_break_acknowledged") is True))
+                                                 row.get("methodology_break_acknowledged") is True,
+                                                 row.get("unit_definition_break_acknowledged") is True))
         result.append({**row, "conservative_available_from_utc": release.isoformat()})
     for stages in groups.values():
         stages.sort()
         if [s[0] for s in stages] != list(range(len(stages))):
             raise ValueError("missing first release or revision")
-        if len({s[2] for s in stages}) != 1:
-            raise ValueError("incomparable revision definitions")
         if any(a[1] >= b[1] for a, b in zip(stages, stages[1:])):
             raise ValueError("revision cannot arrive before earlier release")
-        if stages[0][4]:
+        if stages[0][4] or stages[0][5]:
             raise ValueError("first release cannot claim a change from an earlier stage")
         for a, b in zip(stages, stages[1:]):
             changed = a[3] != b[3]
             if changed != b[4]:
                 raise ValueError("reference benchmark change must be explicitly acknowledged")
+            unit_changed = a[2] != b[2]
+            if unit_changed != b[5]:
+                raise ValueError("unit definition break must be explicitly acknowledged")
     return result
 
 def snapshot(rows, cutoff_utc):
