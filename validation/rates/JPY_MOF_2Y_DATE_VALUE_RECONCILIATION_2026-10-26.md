@@ -24,6 +24,28 @@ An independent CSV comparator reads original **CP932** publication bytes and sel
 
 The PR CI has an independent network step for these official original URLs. If the Ministry site cannot be reached or even a single row disagrees, the publisher state is **NOT VERIFIED** and the candidate remains quarantined; the offline unit tests may still pass, but **that is not certification of the JPY source**. Downloaded publisher bytes remain under `/tmp`; the workflow does not publish or redistribute their contents.
 
+## Actual independent original-source CI attestation — 26 October 2026
+
+The [official JGB archive](https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/historical/jgbcme_all.csv) and [current file](https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/jgbcme.csv) were both retrieved independently in GitHub Actions; source SHA-256s were captured in the CI receipt. The **first** historical mirror comparison returned **271 / 273** source matches, not 273 / 273. The two official-source conflicts were:
+
+| Historical date | Stored initial 2Y % | Official MoF latest release 2Y % | Difference |
+|---|---:|---:|---:|
+| 2026-09-25 | 1.925 | 1.948 | +2.3 bp |
+| 2026-09-28 | 1.950 | 1.981 | +3.1 bp |
+
+The repaired **research-only** candidate then replaced exactly these two source values with the independently downloaded official publisher data, without changing any other 271 observations. Its full **second** publisher comparison passed **273 / 273**. **Original site data, original Core, existing Beta run and 28 pair ranking remain unchanged.**
+
+This is a validated agreement **against the MoF files retrieved in the CI run**, not independent certification of first-release vintage as actually known in September (the publisher may revise historical values). No original publisher bytes are redistributed. An added third mismatch or missing publisher date is a hard blocker, not silently patched.
+
+Run with publisher original files:
+```bash
+python -m validation.rates.audit_jpy_2y_mof_chronology_v1 \
+  --historical-csv /tmp/jgbcme_all_official.csv \
+  --current-csv /tmp/jgbcme_current_official.csv \
+  --reconcile-reviewed-two \
+  --out /tmp/jpy-2y-official-reconciled.json
+```
+
 ## Research Beta status
 
 `validation/beta/weekly_fx_2y_shadow_oos_v1.py` currently quarantines JPY 2Y when its source chronology violates strict ISO. The seven affected cross pairs remain excluded until the original official CSV comparisons pass *and* the source builder can fix the actual daily chronology without ever pairing a yield with another day. Independent historical first-release PIT timestamps, rate basis comparability and true predictive performance **remain unverified** even if all 273 observations agree.
