@@ -1,8 +1,49 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-26T15:44:30Z",
+  "generated_at_utc": "2026-10-26T16:59:35Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-e29368c09ad1d4742568",
+      "observed_at_utc": "2026-10-26T14:40:49Z",
+      "headline": "Japan auto union group looks beyond inflation-linked pay hikes for 2027 talks",
+      "summary": "Reuters riporta: Japan auto union group looks beyond inflation-linked pay hikes for 2027 talks. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [
+        "JPY"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMi1gFBVV95cUxNYkdsZlNicmFJemYxa09ucUMxTlZxT1M1bnJ6eUpOT1BwM29kLXROSXZkSlF3Tk9TV2cwemw2eUxUejJjWVV5akp2em1tX0Zzc1JhamdSeF9IbWVWRHVBdVF0Y2E5LXZ6RGtFVy1keDJ4cWdTM09XXy1yejVmemt1ckdmaEVQRXNCclU3WVRrRUNPVjh4OEtkN3FnYmU3czlMYmRoc1Zsc0JwTEl3cU9IR21pVVdPZ2pNZXA5NU5lLTdWVGVBckFfZzE3d2Z1OXR2MkhIaG53?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-91cebfd1a3e9708d85d4",
+      "observed_at_utc": "2026-10-26T12:29:43Z",
+      "headline": "Nigeria targets single-digit inflation by end-2027 to unlock cheaper borrowing, minister says",
+      "summary": "Reuters riporta: Nigeria targets single-digit inflation by end-2027 to unlock cheaper borrowing, minister says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxNckw5dlVKZ0FDcTdxM2ZfS3R6Mzl1YTdSc0xxa2tSVVcwMzBwczdRVFFITVBjUU8yQS1KQ2ZmcFA2WUh1TEhuSjE0bWdQYU15YWFiMWpQVlBMR1JCU2hEWm9MV1p3YWpuSlc1OHloTEhJblJnYlhPZVNOZmNpLVdIT2pLb0NhT3RPZDB6em1ya1M3ZkQzRDBZTmozVlNlQTJYZEQ1SkxIR21ibVhOalV1ZVdua1dKWjVSQVh0OHF2UElKZw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-51f47606802236b497a5",
+      "observed_at_utc": "2026-10-26T16:09:14Z",
+      "headline": "Wall St eyes best day in a month as Anthropic's IPO filing propels AI stocks",
+      "summary": "Reuters riporta: Wall St eyes best day in a month as Anthropic's IPO filing propels AI stocks. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPVVlfUU5UYnVIOHVRRHJCaWJNQ0NtM0V5aXdZUE5QSEhGVTAxWmdXcU1KeGVEaEtYTXlEal9YNjMwblR6bGZQcm5HODd6N2xnNUppZzdXMDVTSWwtZEc3a3p3Q0M4VzRtaHo3QTd1VDJpaGNPQmw0WjFNaEMyQ2JyOVpGcmZEbktIdk45OHp4blZxdzc5UllRT2V1cnllVTVVTjVYZm1IZ0VjWDlwTnc?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-5287d79e45ad501d2db6",
       "observed_at_utc": "2026-10-26T10:22:43Z",
@@ -1349,45 +1390,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxNTWxDZDg5X0padGNvb2k2V2ZkX2tEWW9YWkdjeVdMZHNUTlg1MXY4TmUyTDZHdUhNTHFRNWRPRjc2VFlEN3RXTDhNSjhDYmRfTWZGXzdKYXdLejRHNGgwRVdNbmZRUkFhSm9GakxMek56UUZ2OUtqajd6NVkzRkR1VzBNWlo5VWp5NUFkX2phUjlSSFlndUlNNGxvUXlHSm1wMlpTbkRR?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-1a59e26c8177ee6fc542",
-      "observed_at_utc": "2026-10-22T15:02:00Z",
-      "headline": "AI stocks undercut markets worldwide as oil climbs to its highest price since May",
-      "summary": "AP News riporta: AI stocks undercut markets worldwide as oil climbs to its highest price since May. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "AP News · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxNbG9Bb3haUmhvOWFmQ0t6bWoyLThHN0pFV21XNjVOVXpsVmFBUEFhSk9HcC1ZYkV3eFhqT2d1SEFSQldtdm16YVM5UW1nRU5yc1JGRVkteEhNZmx0eEpOck1HdnNXNW1TSnh4YmRHU3dyeGdXdzdUZ3JsdFNHVUZwWEZrQVRXUWtrbHlJbDh1eDBSVU9iOUJScQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-d324cdb4687c09e1ff76",
-      "observed_at_utc": "2026-10-22T08:24:09Z",
-      "headline": "Uganda central bank sells FX after rate hike fails to stem shilling losses",
-      "summary": "Reuters riporta: Uganda central bank sells FX after rate hike fails to stem shilling losses. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxPOUlEOG9ERHY5N3FzaUVQV0c5WjBFM0QxaWJzcXhrd2RaRmUtdm9yd2RzZWtnbEtQUUpYSDdDdHIzRUtXb0ZXak1ST25RX1hNZFNwcnluSmQ0aDhYTXphT0RPWUw0N3FnRk9McTRjR0FjMnlVY29WVkpjVm5lci10YTdPNkQta1lNUHVtdW8wUXlFREhNUFZFWWMyR0VnQUd0YjA1SEhESzB3NDhnenJST2RxQzlzMDJMaE1YaQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-5949ea170ac8bb029034",
-      "observed_at_utc": "2026-10-22T04:03:00Z",
-      "headline": "Gold falls to more than two-month low as oil-fuelled inflation fears weigh",
-      "summary": "Reuters riporta: Gold falls to more than two-month low as oil-fuelled inflation fears weigh. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxPdWF1N1NOek9pQi1IYkRUMll1bHRXOFluVmtuYm9LR1dtMThlWlZDYXB5RlVwYko2MVFRS01SSnIwRGhMRnFULTZvdURKV0MxOHk1clF4NW1wTkJUOWkyMng4b2J5QjI4X2tLRkVMSGxDcTIxV0xXTThnZkxvQjVUajZBMmY4RURVTzQtcFN1T2gybVJWRkMwX0RCdkxGTVpLbUdlT0paVU80cWc0VS0xenk0QnZRYS1B?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
