@@ -1,0 +1,93 @@
+{
+  "schema": "GMFQ_G8_GDP_MULTQUARTER_PUBLISHER_STATEMENT_RESEARCH_V1",
+  "reviewed_on": "2026-10-26",
+  "coverage": "PARTIAL_USD_GBP_Q1_AND_USD_Q2_REVISION",
+  "historical_release_day_bytes_archived": false,
+  "eligible_for_macro_scoring": false,
+  "records": [
+    {
+      "currency": "USD",
+      "reference_quarter": "2026Q1",
+      "publisher_release_day": "2026-04-30",
+      "reported_value": 2,
+      "stage_order": 0,
+      "reported_unit": "PERCENT_SAAR_ANNUALIZED",
+      "source_url": "https://www.bea.gov/news/2026/gdp-advance-estimate-1st-quarter-2026",
+      "verified_publisher_host": "www.bea.gov",
+      "eligible_for_macro_scoring": false,
+      "PIT_training_vintage_certified": false
+    },
+    {
+      "currency": "USD",
+      "reference_quarter": "2026Q1",
+      "publisher_release_day": "2026-05-28",
+      "reported_value": 1.6,
+      "stage_order": 1,
+      "reported_unit": "PERCENT_SAAR_ANNUALIZED",
+      "source_url": "https://www.bea.gov/news/2026/gdp-second-estimate-and-corporate-profits-1st-quarter-2026",
+      "verified_publisher_host": "www.bea.gov",
+      "eligible_for_macro_scoring": false,
+      "PIT_training_vintage_certified": false
+    },
+    {
+      "currency": "GBP",
+      "reference_quarter": "2026Q1",
+      "publisher_release_day": "2026-05-14",
+      "reported_value": 0.6,
+      "stage_order": 0,
+      "reported_unit": "PERCENT_QOQ_SA",
+      "source_url": "https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/gdpfirstquarterlyestimateuk/januarytomarch2026",
+      "verified_publisher_host": "www.ons.gov.uk",
+      "eligible_for_macro_scoring": false,
+      "PIT_training_vintage_certified": false
+    },
+    {
+      "currency": "GBP",
+      "reference_quarter": "2026Q1",
+      "publisher_release_day": "2026-06-30",
+      "reported_value": 0.6,
+      "stage_order": 1,
+      "reported_unit": "PERCENT_QOQ_SA",
+      "source_url": "https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/quarterlynationalaccounts/januarytomarch2026",
+      "verified_publisher_host": "www.ons.gov.uk",
+      "eligible_for_macro_scoring": false,
+      "PIT_training_vintage_certified": false
+    },
+    {
+      "currency": "USD",
+      "reference_quarter": "2026Q2",
+      "publisher_release_day": "2026-07-30",
+      "reported_value": 1.5,
+      "stage_order": 0,
+      "reported_unit": "PERCENT_SAAR_ANNUALIZED",
+      "source_url": "https://www.bea.gov/news/2026/gdp-advance-estimate-2nd-quarter-2026",
+      "verified_publisher_host": "www.bea.gov",
+      "eligible_for_macro_scoring": false,
+      "PIT_training_vintage_certified": false
+    },
+    {
+      "currency": "USD",
+      "reference_quarter": "2026Q2",
+      "publisher_release_day": "2026-08-27",
+      "reported_value": 1.5,
+      "stage_order": 1,
+      "reported_unit": "PERCENT_SAAR_ANNUALIZED",
+      "source_url": "https://www.bea.gov/news/2026/gdp-second-estimate-and-corporate-profits-2nd-quarter-2026",
+      "verified_publisher_host": "www.bea.gov",
+      "eligible_for_macro_scoring": false,
+      "PIT_training_vintage_certified": false
+    },
+    {
+      "currency": "USD",
+      "reference_quarter": "2026Q2",
+      "publisher_release_day": "2026-09-30",
+      "reported_value": 2.2,
+      "stage_order": 2,
+      "reported_unit": "PERCENT_SAAR_ANNUALIZED",
+      "source_url": "https://bea.gov/news/2026/gdp-third-estimate-industries-corporate-profits-state-gdp-and-state-personal-income-2nd",
+      "verified_publisher_host": "bea.gov",
+      "eligible_for_macro_scoring": false,
+      "PIT_training_vintage_certified": false
+    }
+  ]
+}
