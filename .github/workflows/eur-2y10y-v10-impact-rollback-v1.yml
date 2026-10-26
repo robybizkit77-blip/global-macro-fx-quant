@@ -68,6 +68,10 @@ jobs:
           assert result['compared_pairs']==28
           assert result['before_current_eur']==result['after_current_eur']
           assert result['live_data_modified'] is False
+          assert result['CHF_10Y_proxy_rebase_review_required'] is True
+          assert result['CHF_10Y_proxy_not_official_yield'] is True
+          assert result['CHF_reference_beta_impact']['10Y']['after']['confidence']=='BASSA'
+          assert result['CHF_reference_beta_impact']['2Y']['after']['confidence']=='BASSA'
           assert impact['safe_to_publish_now'] is False
           assert result['no_canonical_D_json_or_model_score_loaded'] is True
           print('REAL_V10_CHF_EUR_REFERENCE_SENSITIVITY',
