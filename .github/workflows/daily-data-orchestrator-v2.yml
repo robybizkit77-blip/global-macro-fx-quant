@@ -88,6 +88,22 @@ jobs:
         run: python validation/orchestration/test_check_morning_delivery_sla_v1.py
       - name: Test fail-closed evidence for all orchestrated child steps
         run: python validation/orchestration/test_check_child_execution_steps_v1.py
+      - name: Bash syntax-check serialized refresh before any dispatch
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import subprocess
+          text=Path('.github/workflows/daily-data-orchestrator-v2.yml').read_text(encoding='utf-8')
+          section=text.split('      - name: Run serialized refresh sequence\n',1)[1].split(
+              '      - name: Retain exact child-step proof',1)[0]
+          embedded=section.split('        run: |\n',1)[1].splitlines()
+          script='\n'.join(line[10:] if line.startswith('          ') else line for line in embedded)+'\n'
+          subprocess.run(['bash','-n'],input=script,text=True,check=True)
+          if len([line for line in script.splitlines() if line.strip()=='workflows=('])!=5:
+              raise SystemExit('ORCHESTRATOR_PHASE_ARRAY_COUNT_DRIFT')
+          print('ORCHESTRATOR_SERIALIZED_BASH_SYNTAX_PASS')
+          PY
       - name: Test transient GitHub run/job reads without duplicate dispatch
         run: python validation/orchestration/test_orchestrator_readonly_api_retry_v1.py
 
@@ -232,7 +248,10 @@ jobs:
               prebrief)
                 # Strictly serial: official/estimated daily data, then a final
                 # read-only certification and Pages publication before the user studies.
-                # CB Pricing has its own independent 06:00/06:30/07:00 Rome schedule.\n                # Its external CAD Market Review outage must not block FX/Macro/News/VIX.\n                # Keep CAD source quality/staleness independently validated at publication.\n                # Non-daily residual series keep their own collector cadence.
+                # CB Pricing has its own independent 06:00/06:30/07:00 Rome schedule.
+                # Its external CAD Market Review outage must not block FX/Macro/News/VIX.
+                # Keep CAD source quality/staleness independently validated at publication.
+                # Non-daily residual series keep their own collector cadence.
                 workflows=(
                   macro-persistent-daily-v1.yml
                   rates-persistent-daily-v1.yml
@@ -244,7 +263,9 @@ jobs:
                 )
                 ;;
               premorning)
-                # CB Pricing runs separately before the 08:00 desk; never duplicate\n                # it here, or an isolated MX source outage can block Pages.\n                workflows=(
+                # CB Pricing runs separately before the 08:00 desk; never duplicate
+                # it here, or an isolated MX source outage can block Pages.
+                workflows=(
                   rates-persistent-daily-v1.yml
                   final-e2e-certification-gate-v3.yml
                   publish-dashboard-pages-v1.yml
