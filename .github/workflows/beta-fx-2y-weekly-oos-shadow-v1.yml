@@ -86,6 +86,10 @@ jobs:
           assert not data['beta_promoted']
           assert not data['trading_performance_claim']
           assert not data['historical_point_in_time_vintages_verified']
+          print('JPY_SEVEN_CROSSES_OOS_COVERAGE',{
+              p['pair']:p['historical_oos_observations']
+              for p in data['pairs'] if 'JPY' in p['pair']})
+          print('JPY_ALL_PAIR_OOS_TOTAL',data['pairs_with_any_oos'])
           print('OFFICIAL_JPY_7_CROSSES_RESEARCH_AVAILABLE_NO_PRODUCTION_PROMOTION')
           PY
       - name: Report official source availability without false certification
