@@ -120,14 +120,20 @@ function matrix(ois,bb,today){
      for(const t of tenors)points[t]={value:x.horizons[t].rate,date:x.as_of};
      tier='OFFICIAL';source=x.source||'';
     }
-  }else if(['USD','CHF'].includes(ccy)&&x.operational_status==='GREEN_ESTIMATED'&&
+  }else if(['USD','EUR','CHF'].includes(ccy)&&x.operational_status==='GREEN_ESTIMATED'&&
     x.official_status==='WITHHELD'&&x.quality==='ESTIMATED_INFORMATIONAL'&&
     x.backtest_eligible_as_official===false&&x.method_id==='TRADINGVIEW_DATED_FUTURES_SSR_V2'){
     for(const t of tenors){
      const p=x.horizons?.[t]||{},checked=auditDatedFuture(ccy,t,p,p.rate,p.quote_as_of,today);
      if(checked)points[t]=checked;
     }
-    if(Object.keys(points).length){tier='PROXY';source=x.source||'';}
+    if(Object.keys(points).length){
+      // The three futures remain individual contracts, never a reconstructed
+      // OIS curve. Mixed publication dates must be explicit even when the
+      // derived operational status is informational GREEN_ESTIMATED.
+      tier=new Set(Object.values(points).map(p=>p.date)).size>1?'MIXED':'PROXY';
+      source=x.source||'';
+    }
   }else if(['USD','EUR','CHF'].includes(ccy)&&x.operational_status==='WITHHELD'&&
     x.official_status==='WITHHELD'&&x.quality==='ESTIMATED_INFORMATIONAL'&&
     x.backtest_eligible_as_official===false){
