@@ -1,8 +1,49 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-26T17:51:23Z",
+  "generated_at_utc": "2026-10-26T19:04:29Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-c74ca7afc6c46b7f7491",
+      "observed_at_utc": "2026-10-26T17:39:16Z",
+      "headline": "European stocks rebound as corporate optimism lifts mood ahead of rate decisions",
+      "summary": "Reuters riporta: European stocks rebound as corporate optimism lifts mood ahead of rate decisions. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPNTNqT1RkY0RsU1oyTkpOUHNVR3V3eDNUckxOSV9QeW1JelM3TjhzTjJ5NmJkcl8tMXFOOVJjVlJhMEtaSmI2RjNqV2VwbW93RWlRanFHZjJJTVg4Qi1jQmQ2ekRpZU1tZzk1Y1BEZDVYNlVzblNtV2loeFkzSHZQWFdTdUFXMjkxSHozRENYZWp3cXBzQ3ZPRTZDaGRrRGNOZzVF?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-546a89a6e9a295984ee4",
+      "observed_at_utc": "2026-10-26T00:46:00Z",
+      "headline": "World stocks gain ahead of 'formidable' week for risk; oil prices ease",
+      "summary": "Reuters riporta: World stocks gain ahead of 'formidable' week for risk; oil prices ease. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMifkFVX3lxTE90MHowUDNReVJUUkkxWEZhTnAyYnZZNGNXQjJPVWt0QjgtaERfUHM4bERQd2k2NW5kMXR5dld0NHpsYnBhOENieXU1VU9saFBya202TXRjUktMa0l6OXF0OEZFUDdxR3FtSTdCLUxRVGpZNnBndExIcGVEZmtXZw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-18fedb758478c674232e",
+      "observed_at_utc": "2026-10-26T17:30:00Z",
+      "headline": "US stocks climb amid shaky trading in markets worldwide",
+      "summary": "AP News riporta: US stocks climb amid shaky trading in markets worldwide. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxNOGVDbFMzWWNkWEw1NzNQRUJLek52UWF2ZUh1dDVXM2FHNXhYekVEOUpNejc5djNNX0hTWDZiLVpaWUNnaGZ6b29iMS0wNHM0M0Y1eG9MdC1yVUVpTV9QbDlieDVrS3NLemIzTFdPOHFRTG1JSEpzbEc5MFR2aUhRMmFpSGJaZDJRV1d6bW1hUlVJUDdUSkFkMg?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-0f2dc78c69c78610c365",
       "observed_at_utc": "2026-10-26T11:25:43Z",
@@ -1352,45 +1393,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxNTWxDZDg5X0padGNvb2k2V2ZkX2tEWW9YWkdjeVdMZHNUTlg1MXY4TmUyTDZHdUhNTHFRNWRPRjc2VFlEN3RXTDhNSjhDYmRfTWZGXzdKYXdLejRHNGgwRVdNbmZRUkFhSm9GakxMek56UUZ2OUtqajd6NVkzRkR1VzBNWlo5VWp5NUFkX2phUjlSSFlndUlNNGxvUXlHSm1wMlpTbkRR?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-f1bdfcf72fe325c05ae3",
-      "observed_at_utc": "2026-10-22T16:00:49Z",
-      "headline": "Libya's eastern parliament approves in principle central bank governor's resignation, spokesperson says",
-      "summary": "Reuters riporta: Libya's eastern parliament approves in principle central bank governor's resignation, spokesperson says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxQUmZZVFpPdHR0ZXM0QllwRldsMlJCd3lxcU9BTHY5RE1IOTNNUFdMbTd1cVFzWG1ZUURydWpVU0NJM0M5a1BKZEw2cklMV25udUlqUk9WMkJXd1RHZEVuODBSMlJwNm1tekNVTWwwdzdsVEw1eHJyYzdVQ3E3czNFSnE5NzByUi1XY1g3aUZBaGtGRC04LUlQaXlZYjExRV8xMEFpb1dBVnhRLTNJdHBYVTJxdy1sSmRtWkhQa1JEU1hnaDNsVWNleA?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-dc9ad8db029f9d58ca56",
-      "observed_at_utc": "2026-10-21T23:19:00Z",
-      "headline": "Trump lashes out at reporters pressing him on Russia sanctions waiver",
-      "summary": "AP News riporta: Trump lashes out at reporters pressing him on Russia sanctions waiver. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "AP News · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxOSEVqOVZjRDRpREp4em9RdWgxZ1ZnaGNSYUtlWWM0NVhvbTJpelJKNmFnVlRIbHFyaHAzQjR5b21JRF9kQmdHSlBjampfYTVaRlcwVXZRU0t3WGQtcC1rSVRhUjVFZi15UkJ3UXRIN2pXNDhkVG5ueVVydFlNUjd6UmpOdDFCRmw0Qkl1VTZ2TUpqaXJOdW9wNGZSMGtkWFl2czMySld4cUlLSzkxdFZiTEllV0pnWllXeHpySW1zSlRtXzNNcUE?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-4bff94bf1dd95741f600",
-      "observed_at_utc": "2026-10-22T03:08:00Z",
-      "headline": "Indonesian sovereign fund Danantara says it has bought stocks after market rout",
-      "summary": "Reuters riporta: Indonesian sovereign fund Danantara says it has bought stocks after market rout. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMizwFBVV95cUxOdmtKSk9BTE9RNjJhbWZ2dVdFZlAyQzhnUHBXT2RGS3JHb3ltcmpyanlwQ2RJZmJvaHhvaHRTelQtdVdfY29USi0tRnRQdmw2enFWSzBSSzMwZEVkRGtldGhmV2tnbFVmLXFaY1NpNzdKN0xMN1dDSTVUdHNGOGtBazgzTkRDQmh2RjNFNW5HNkg1UkdUb3hndFZDRnUzRncwSzNGX185LU9yV0IxZjkzenhTWTNpMDBWWC13Z3Q4ZWFEc1FUVElJb3k0TnI1Nmc?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
