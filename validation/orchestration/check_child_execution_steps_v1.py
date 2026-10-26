@@ -21,7 +21,7 @@ REQUIRED_STEPS: dict[str, tuple[str, ...]] = {
         "Build official Rates candidate",
     ),
     "cb-pricing-persistent-daily-v1.yml": (
-        "Run certified all-currency dry-run preflight",
+        "Run per-currency certified dry-run preflight",
         "Enforce semantic and tracked scope",
     ),
     "ois-estimated-snapshot-repricing-v1.yml": (
