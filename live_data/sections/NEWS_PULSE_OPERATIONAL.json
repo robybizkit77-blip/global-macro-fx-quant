@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-10-22",
-  "generated_at_utc": "2026-10-25T18:10:21.067828Z",
+  "generated_at_utc": "2026-10-26T06:56:07.674890Z",
   "items": [
     {
       "as_of": "2026-10-22",
@@ -47,10 +47,58 @@
       "title": "GBP: repricing OIS più dovish (-5.2 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-10-25T18:10:21.067828Z",
+  "last_checked_at_utc": "2026-10-26T06:56:07.674890Z",
   "official_releases": {
     "core_effect": "NONE",
     "headlines": [
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "EUR",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
+        "id": "ECB_PRESS:https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261026~d903d7ad85.en.html",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-10-26T05:00:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "status": "NOT_VALIDATED_DAILY_CONTEXT"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-10-22",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "European Central Bank · AAA Svensson spot curve · 2026-10-22",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 3.0074951382
+          }
+        },
+        "source": "Banca centrale europea",
+        "source_id": "ECB_PRESS",
+        "title": "Frank Elderson: Taking action for nature – investing in economic resilience and prosperity",
+        "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261026~d903d7ad85.en.html"
+      },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "EUR",
@@ -98,54 +146,6 @@
         "source_id": "ECB_PRESS",
         "title": "Piero Cipollone: Interview with Milano Finanza",
         "url": "https://www.ecb.europa.eu//press/inter/date/2026/html/ecb.in261024~ee2ba73cf3.en.html"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "EUR",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "MONITOR",
-          "topic": "MACRO_EXPECTATIONS",
-          "verify_next": "Leggere i numeri e confrontarli con precedente e consenso quando disponibili; poi controllare OIS/futures, 2Y e cambio.",
-          "why_watch": "Pubblicazione collegata alle aspettative o allo scenario macro; il titolo non rivela sorpresa né variazioni dei valori."
-        },
-        "id": "ECB_PRESS:https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr261023~a3d201c97c.en.html",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-10-23T08:00:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-10-22",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "European Central Bank · AAA Svensson spot curve · 2026-10-22",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.0074951382
-          }
-        },
-        "source": "Banca centrale europea",
-        "source_id": "ECB_PRESS",
-        "title": "ECB Consumer Expectations Survey results – September 2026",
-        "url": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr261023~a3d201c97c.en.html"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
@@ -378,13 +378,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-10-21",
+            "date": "2026-10-22",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-10-21",
+            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-10-22",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.32
+            "yield_2y_pct": 3.22
           }
         },
         "source": "Bank of Canada",
@@ -481,13 +481,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-10-21",
+            "date": "2026-10-22",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-10-21",
+            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-10-22",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.32
+            "yield_2y_pct": 3.22
           }
         },
         "source": "Bank of Canada",
@@ -536,13 +536,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-10-22",
+            "date": "2026-10-23",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-10-22",
+            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-10-23",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.65
+            "yield_2y_pct": 4.69
           }
         },
         "source": "Federal Reserve Board",
@@ -551,8 +551,8 @@
         "url": "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20261016a.htm"
       }
     ],
-    "last_attempt_day_rome": "2026-10-25",
-    "latest_published_at_utc": "2026-10-24T06:00:00Z",
+    "last_attempt_day_rome": "2026-10-26",
+    "latest_published_at_utc": "2026-10-26T05:00:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -576,9 +576,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 7,
+        "accepted_items": 8,
         "ccy": "EUR",
-        "entries_rejected": 8,
+        "entries_rejected": 7,
         "feed_entries_seen": 15,
         "feed_url": "https://www.ecb.europa.eu/rss/press.html",
         "source": "Banca centrale europea",
@@ -616,9 +616,9 @@
         "status": "NO_VERIFIED_RECENT_ITEMS"
       },
       {
-        "accepted_items": 4,
+        "accepted_items": 3,
         "ccy": "CAD",
-        "entries_rejected": 6,
+        "entries_rejected": 7,
         "feed_entries_seen": 10,
         "feed_url": "https://www.bankofcanada.ca/content_type/press/feed/",
         "source": "Bank of Canada",
