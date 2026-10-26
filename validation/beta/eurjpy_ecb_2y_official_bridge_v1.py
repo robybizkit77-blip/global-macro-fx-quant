@@ -26,7 +26,7 @@ ECB_URL=("https://data-api.ecb.europa.eu/service/data/YC/"
 TARGETS=("2026-09-23","2026-09-24","2026-09-25")
 
 
-def parse_ecb_sdmx_original_csv(raw):
+def parse_ecb_sdmx_original_csv(raw, *, start="2026-09-21", end="2026-09-25"):
     if not isinstance(raw,bytes) or not raw:
         raise ValueError("original ECB SDMX CSV bytes required")
     try:
@@ -44,7 +44,7 @@ def parse_ecb_sdmx_original_csv(raw):
         if not isinstance(raw_date,str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}",raw_date):
             raise ValueError("invalid ECB 2Y day")
         dt=date.fromisoformat(raw_date)
-        if not (date(2026,9,21)<=dt<=date(2026,9,25)):
+        if not (date.fromisoformat(start)<=dt<=date.fromisoformat(end)):
             raise ValueError("ECB 2Y response has observations outside requested bounds")
         if dt in observed:
             raise ValueError("duplicate ECB 2Y day")
