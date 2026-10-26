@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_DAILY_DATA_ORCHESTRATOR_V2",
-  "version": "2026-10-23",
+  "version": "2026-10-26",
   "status": "ACTIVE_SCHEDULE_CONTRACT",
   "purpose": "Attempt data preparation before 08:00 Europe/Rome, then reverify at 07:45 and catch up at 09:10; never invent unavailable official observations.",
   "timezone": "Europe/Rome",
@@ -22,6 +22,7 @@
       "publish-dashboard-pages-v1.yml"
     ],
     "premorning": [
+      "calendar-news-operational-refresh-v1.yml",
       "rates-persistent-daily-v1.yml",
       "final-e2e-certification-gate-v3.yml",
       "publish-dashboard-pages-v1.yml"
@@ -73,6 +74,7 @@
     "prebrief_never_fabricates_missing_publications": true,
     "morning_0910_is_catch_up_not_first_refresh": true,
     "prebrief_recovers_official_previous_close_vix": true,
-    "prebrief_cb_pricing_independent_source_outage_isolation": true
+    "prebrief_cb_pricing_independent_source_outage_isolation": true,
+    "premorning_calendar_news_selective_retry": true
   }
 }
