@@ -95,16 +95,16 @@ class EURDailyRatesHistorySourceGuardTests(unittest.TestCase):
         self.assertEqual(out['EUR']['weekly2_validation']['start_date'],'2026-10-16')
 
     def test_eur_bad_history_quarantines_only_eur_and_other_official_ccy_advances(self):
-        proc,out=self.run_builder(['EUR','USD'],tamper_eur=True)
+        proc,out=self.run_builder(['EUR','CAD'],tamper_eur=True)
         self.assertEqual(proc.returncode,0,proc.stderr)
         receipt=json.loads(proc.stdout)
         self.assertEqual(receipt['status'],'CANDIDATE_READY')
-        self.assertEqual(receipt['changed_currencies'],['USD'])
+        self.assertEqual(receipt['changed_currencies'],['CAD'])
         self.assertEqual(receipt['quarantined_currencies']['EUR']['status'],
                          'DAILY_OFFICIAL_NEW_SNAPSHOT_QUARANTINED')
         self.assertTrue(receipt['quarantined_currencies']['EUR']['existing_eur_history_unchanged'])
         self.assertEqual(out['EUR']['date'],self.live['EUR']['date'])
-        self.assertEqual(out['USD']['date'],'2026-10-23')
+        self.assertEqual(out['CAD']['date'],'2026-10-23')
 
     def test_eur_only_bad_history_no_updates_preserves_source_aged_metadata_path(self):
         proc,out=self.run_builder(['EUR'],tamper_eur=True)
