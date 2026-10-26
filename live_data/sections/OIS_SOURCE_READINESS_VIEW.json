@@ -1,6 +1,6 @@
 {
-  "as_of": "2026-10-23",
-  "blocked_currency_count": 3,
+  "as_of": "2026-10-26",
+  "blocked_currency_count": 1,
   "currencies": {
     "CHF": {
       "activation_requirement": "Validare ICE SA3 oppure Eurex FSR3, senza unire exchange o date differenti.",
@@ -12,20 +12,16 @@
         "has_new_verified_2y": false,
         "last_paired_2y10y_as_of": "2026-09-30",
         "paired_current": false,
-        "separate_10y_snb_as_of": "2026-10-22"
+        "separate_10y_snb_as_of": "2026-10-23"
       },
-      "indicative_quote_dates": {
-        "12m": "2026-10-22",
-        "3m": "2026-10-22",
-        "6m": "2026-10-23"
-      },
-      "obstacle": "Settlement futures SARON ICE/Eurex non certificati in una stessa serie storica.",
-      "operational_as_of": "2026-10-22",
+      "indicative_quote_dates": {},
+      "obstacle": "Fonte indicativa: manca certificazione operativa.",
+      "operational_as_of": "2026-10-23",
       "price_or_curve_embedded": false,
       "source_reviewed_as_of": "2026-10-23",
       "source_title": "ICE Futures Europe Three-Month SARON futures (SA3) daily settlements",
       "source_url": "https://www.ice.com/products/72270612/Three-Month-Saron-Index-Futures-Contract/data",
-      "status": "WITHHELD",
+      "status": "GREEN_ESTIMATED",
       "usable_for_policy_pricing": false
     },
     "EUR": {
@@ -33,34 +29,26 @@
       "backtest_eligible_as_official": false,
       "currency": "EUR",
       "dates_joinable": false,
-      "indicative_quote_dates": {
-        "12m": "2026-10-22",
-        "3m": "2026-10-21",
-        "6m": "2026-10-21"
-      },
-      "obstacle": "Eurex FST3: settlement ufficiali non accessibili con il percorso privato richiesto; contratti secondari su date diverse, non curva OIS.",
-      "operational_as_of": "2026-10-21",
+      "indicative_quote_dates": {},
+      "obstacle": "Fonte indicativa: manca certificazione operativa.",
+      "operational_as_of": "2026-10-23",
       "price_or_curve_embedded": false,
       "research_context": {
         "cross_date_join_allowed": false,
         "eligible_as_ois": false,
-        "full_horizon_set": true,
+        "full_horizon_set": false,
         "instrument": "Eurex FST3 individual dated secondary contract observations",
         "kind": "DATED_ESTR_FUTURES_QUOTES_NOT_OIS",
         "policy_delta_allowed": false,
-        "quote_dates": {
-          "12m": "2026-10-22",
-          "3m": "2026-10-21",
-          "6m": "2026-10-21"
-        },
+        "quote_dates": {},
         "rates_embedded": false,
         "same_date_across_horizons": false,
-        "status": "MIXED_DATE_QUOTES"
+        "status": "PARTIAL_QUOTES"
       },
       "source_reviewed_as_of": "2026-10-23",
       "source_title": "Eurex Three-Month Euro STR Futures, product FST3, daily exchange settlements",
       "source_url": "https://www.eurex.com/ex-en/markets/int/mon/3m-euro-str-futures/estr/Three-Month-Euro-STR-Futures-3402480",
-      "status": "WITHHELD",
+      "status": "GREEN_ESTIMATED",
       "usable_for_policy_pricing": false
     },
     "NZD": {
@@ -77,7 +65,7 @@
         "instrument": "ASX NZ 90-Day Bank Bill futures",
         "kind": "ASX_NZD_BANK_BILL_DIRECTION_NOT_OIS",
         "policy_delta_allowed": false,
-        "proxy_as_of": "2026-10-22",
+        "proxy_as_of": "2026-10-23",
         "rates_embedded": false,
         "status": "RECENT_DIRECTIONAL",
         "substitutes_for_ois_level": false
@@ -95,7 +83,7 @@
       "dates_joinable": false,
       "indicative_quote_dates": {},
       "obstacle": "Fonte indicativa: manca certificazione operativa.",
-      "operational_as_of": "2026-10-22",
+      "operational_as_of": "2026-10-23",
       "price_or_curve_embedded": false,
       "source_reviewed_as_of": "2026-10-23",
       "source_title": "CME/CBOT official 30-Day Federal Funds futures settlements (ZQ)",
@@ -112,10 +100,10 @@
   "note": "Stato accesso alle fonti; non è una previsione, non certifica nuovi prezzi.",
   "operational_summary": {
     "g8_total": 8,
-    "green_estimated": 1,
+    "green_estimated": 3,
     "green_official": 4,
-    "operational_green": 5,
-    "operational_withheld": 3
+    "operational_green": 7,
+    "operational_withheld": 1
   },
   "prices_omitted": true,
   "schema": "GMFQ_OIS_SOURCE_READINESS_VIEW_V1",
