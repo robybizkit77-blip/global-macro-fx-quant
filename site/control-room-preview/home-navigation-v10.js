@@ -1301,12 +1301,32 @@ function renderYieldStudy(doc,rates,snb,webReview){
  if(!anchor)return;
  const derived=ratesAll(rates),out=yieldStudySnapshot(rates,derived);
  const nzWeb=nzdWebReviewCandidate(rates,webReview);
+ // Show history-rebasing provenance only when present in the independently
+ // source-verified ECB candidate or a separately approved public transition.
+ // A change in CHF model estimates is NOT an official CHF yield movement.
+ const rebase=rates?.EUR?.historical_curve_rebase;
+ const rebaseStatus=rebase?.schema==='GMFQ_EUR_2Y_10Y_HISTORY_REBASE_NOTICE_V1'&&
+  rebase.source_authority==='European Central Bank'&&
+  rebase.source_rebase_not_market_move===true&&
+  rebase.chf_reference_beta_recalibration_not_official_chf_yield===true&&
+  ['RESEARCH_CANDIDATE_NOT_PUBLISHED','PUBLISHED_AFTER_SOURCE_AND_BROWSER_QA'].includes(rebase.status)
+  ?rebase.status:null;
+ const rebaseIntro=rebaseStatus==='RESEARCH_CANDIDATE_NOT_PUBLISHED'
+  ?'ANTEPRIMA RICERCA · ':'STORICO BCE RICALIBRATO · ';
+ const rebaseNotice=rebaseStatus?
+  '<div class="gmfq-yield-rebase" data-rebase-status="'+htmlEscape(rebaseStatus)+'">'+
+  '<strong>'+rebaseIntro+'</strong>La stima CHF basata sui rendimenti EUR 2Y/10Y è stata '+
+  'ricalcolata sullo storico BCE omogeneo. Una differenza rispetto alla versione precedente '+
+  'è una <strong>revisione dello scenario β</strong>, non un movimento osservato oggi sui '+
+  'titoli svizzeri. Affidabilità BASSA; tasso CHF ufficiale e data restano separati.</div>':'';
+
  const host=doc.createElement('section');
  host.id='gmfq-yields-study';host.className='desk-panel';
  host.dataset.coverage=String(out.covered);host.dataset.recent=String(out.recent);
  host.dataset.scenarioCount=String(out.scenarios);
  host.dataset.coreEffect='NONE';host.dataset.pairEffect='NONE';
  host.dataset.nzdWebReview=nzWeb?'RESEARCH_UNAPPROVED':'UNAVAILABLE';
+ host.dataset.eurSourceRebase=rebaseStatus||'NONE';
  host.setAttribute('aria-label','Rendimenti G8 2 e 10 anni osservati e scenari separati');
  const css=doc.createElement('style');css.id='gmfq-yields-study-style';
  css.textContent=
@@ -1319,6 +1339,7 @@ function renderYieldStudy(doc,rates,snb,webReview){
   '#gmfq-yields-study .gmfq-yield-row small{display:block;font:10px/1.4 Arial,sans-serif;color:#9ab4c6}'+
   '#gmfq-yields-study .gmfq-yield-row .gmfq-yield-meta,#gmfq-yields-study .gmfq-yield-row .gmfq-yield-scenario{grid-column:1/-1;color:#a9c2d2;font:10px/1.5 Arial,sans-serif;overflow-wrap:anywhere}'+
   '#gmfq-yields-study .gmfq-yield-row .gmfq-yield-scenario{color:#dfc78b}'+
+  '#gmfq-yields-study .gmfq-yield-rebase{grid-column:1/-1;font:11px/1.55 Arial,sans-serif;color:#e6ca90;padding:9px 10px;border-left:2px solid #af9255;background:rgba(175,146,85,.075);overflow-wrap:anywhere}'+
   '#gmfq-yields-study .gmfq-yield-row .gmfq-yield-web-candidate{grid-column:1/-1;font:11px/1.6 Arial,sans-serif;color:#e8cb92;margin:3px 0;overflow-wrap:anywhere}'+
   '#gmfq-yields-study .gmfq-yield-web-candidate a{color:#ebd49f;text-decoration:underline}'+
   '#gmfq-yields-study .gmfq-yield-row[data-state="HISTORICAL"]>div:first-child small{color:#e0c486}'+
@@ -1348,7 +1369,8 @@ function renderYieldStudy(doc,rates,snb,webReview){
    (x.scenario?'<div class="gmfq-yield-scenario">Scenario β informativo '+FLAG[x.scenario.proxy]+
     ' '+x.scenario.proxy+' · '+x.scenario.date+' · 2Y ≈'+percent(x.scenario.v2)+
     ' ('+x.scenario.confidence2+') · 10Y ≈'+percent(x.scenario.v10)+
-    ' ('+x.scenario.confidence10+'). Non è un nuovo spread osservato.</div>':'')+'</div>';
+    ' ('+x.scenario.confidence10+'). Non è un nuovo spread osservato.</div>':'')+
+   (x.ccy==='CHF'&&x.scenario?.proxy==='EUR'?rebaseNotice:'')+'</div>';
  }).join('');
  const chf=snb?.schema==='GMFQ_CHF_SNB_10Y_SPOT_CONTEXT_V1'&&
   snb.status==='OFFICIAL_PUBLISHED_10Y_INFORMATIONAL'&&snb.currency==='CHF'&&
