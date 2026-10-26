@@ -80,7 +80,8 @@ class GDP2022Q2ResearchTests(unittest.TestCase):
         self.assertEqual(chf["reported_unit"],"PERCENT_QOQ_SA_CALENDAR_SPORTS")
         self.assertEqual(chf["stage_order"],0)
         self.assertEqual(chf["publisher_correction_notice_day"],"2022-09-13")
-        self.assertIn("not a Q2 revision",chf["publisher_correction_note"])
+        self.assertIn("materially unaffected",chf["publisher_correction_note"])
+        self.assertIn("no false 2022Q2 revision stage added",chf["publisher_correction_note"])
         later=snapshot(self.rows,"2022-09-20T00:00:00Z")["visible_vintages"]["CHF:2022Q2"]
         self.assertEqual(later["stage_order"],0)
         self.assertIn("NOT_PROOF_NO_EARLIER_FLASH",chf["first_release_uncertainty"])
