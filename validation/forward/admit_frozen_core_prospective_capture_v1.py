@@ -15,6 +15,23 @@ PAIR = ROOT / "live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json"
 CORE = ROOT / "live_data/sections/D.json"
 
 
+def schedule_attempt(now, event, cron):
+    """CET/CEST 19:30 primary and 20:30 real-time backup, no backfill."""
+    if now.tzinfo is None or now.utcoffset() is None:
+        raise ValueError("aware actual schedule clock required")
+    if event != "schedule":
+        return "MANUAL_ATTEMPT"
+    if now.astimezone(ROME).utcoffset().total_seconds() == 7200:
+        primary, fallback = "30 17 * * 1-5", "30 18 * * 1-5"
+    else:
+        primary, fallback = "30 18 * * 1-5", "30 19 * * 1-5"
+    if cron == primary:
+        return "PRIMARY_1930_ROME"
+    if cron == fallback:
+        return "FALLBACK_2030_ROME"
+    return "SKIPPED_DUPLICATE_DST_UTC_SLOT"
+
+
 def assess(now, fx, setup, core):
     if now.tzinfo is None or now.utcoffset() is None:
         raise ValueError("actual forward observation must have timezone")
