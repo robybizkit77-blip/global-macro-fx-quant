@@ -20,6 +20,8 @@ on:
       - 'validation/publishing/verify_control_room_market_delivery_v1.py'
       - 'validation/publishing/test_market_mirror_after_pages_success_v1.py'
       - 'validation/publishing/test_control_room_market_delivery_v1.py'
+      - 'validation/publishing/check_control_room_v10_0800_public_sla_v1.py'
+      - 'validation/publishing/test_control_room_v10_0800_public_sla_v1.py'
       - 'validation/check_nzd_rates_reviewed_snapshot_v1.py'
       - 'validation/test_nzd_rates_reviewed_snapshot_v1.py'
       - 'validation/RATES_SOURCE_ADAPTERS_V1_2026-10-05.json'
@@ -122,6 +124,7 @@ jobs:
           python validation/publishing/test_market_mirror_after_pages_success_v1.py
           python validation/test_nzd_rates_reviewed_snapshot_v1.py
           python validation/publishing/test_verify_pages_http_delivery_v1.py
+          python validation/publishing/test_control_room_v10_0800_public_sla_v1.py
 
       - name: Publish exact feed scope to gh-pages with lease
         if: github.event_name != 'pull_request'
@@ -195,3 +198,35 @@ jobs:
           assert len(receipt['branch']['checks'])==len(receipt['public_http']['checks'])==5
           print('CONTROL_ROOM_ALL_FIVE_MARKET_PUBLIC_MIRRORS_GREEN')
           PY
+
+      # Independent of Daily Data Orchestrator's 05:00/07:45 scheduled starts.
+      # Market mirrors alone do not certify the complete v10 site: check the
+      # main dashboard runtime, five market mirrors and preview loader/addons.
+      # Read-only; late or incomplete receipts cannot rewrite market data.
+      - name: Record full v10 morning public HTTP receipt
+        if: always() && github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/publishing/check_control_room_v10_0800_public_sla_v1.py \
+            --output /tmp/control-room-v10-0800-public-sla.json
+          python - <<'PY'
+          import json, os
+          d=json.load(open('/tmp/control-room-v10-0800-public-sla.json',encoding='utf-8'))
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as out:
+              out.write('\n### Control Room v10 · independent 08:00 public check\n')
+              out.write('- Status: **'+d['status']+'**\n')
+              out.write('- Source checked: '+str(d['source_checked_at_rome'])+'\n')
+              out.write('- Public exact bytes: '+str(d['public_verified_at_rome'])+'\n')
+              out.write('- Verified files: '+str(d['verified_file_count'])+'/'+str(d.get('expected_file_count'))+'\n')
+              out.write('- Full browser rendering is assessed by separate v10 QA.\n')
+          PY
+
+      - name: Retain full v10 morning HTTP SLA evidence
+        if: always() && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: control-room-v10-0800-public-sla
+          path: /tmp/control-room-v10-0800-public-sla.json
+          if-no-files-found: warn
+          retention-days: 21
