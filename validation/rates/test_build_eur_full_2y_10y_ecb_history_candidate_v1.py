@@ -63,18 +63,35 @@ class FullECBSameBasisHistoryTests(unittest.TestCase):
         v={"2026-09-21":3.1476088412,"2026-09-22":3.135563132}
         a=self.make_csv("2Y",revisions=v)
         b=self.make_csv("10Y")
-        cand,receipt=m.build_candidate(self.live,a,b)
+        old=copy.deepcopy(self.live)
+        # After official publisher restoration, build an independently
+        # synthetic *legacy-contaminated* mirror to retain the adversarial
+        # two-mismatch contract instead of assuming a live data defect.
+        if old["EUR"].get("history_status")=="FULL_ECB_SAME_BASIS_2Y_10Y_OFFICIAL_PUBLISHED":
+            for d in v:
+                i=old["EUR"]["history2"]["dates"].index(d)
+                old["EUR"]["history2"]["values"][i]+=0.10
+        cand,receipt=m.build_candidate(old,a,b)
         self.assertEqual(receipt["per_tenor_official_parity"]["2Y"]["overlap_yield_mismatches"],2)
         self.assertEqual(receipt["per_tenor_official_parity"]["10Y"]["overlap_yield_mismatches"],0)
         mapping=dict(zip(cand["EUR"]["history2"]["dates"],cand["EUR"]["history2"]["values"]))
         self.assertEqual(mapping["2026-09-21"],3.1476088412)
-        self.assertEqual(self.live["EUR"]["history2"]["values"][
-            self.live["EUR"]["history2"]["dates"].index("2026-09-21")],3.2598888904)
+        self.assertNotEqual(old["EUR"]["history2"]["values"][
+            old["EUR"]["history2"]["dates"].index("2026-09-21")],3.1476088412)
 
     def test_new_official_week_date_cannot_be_invented_or_relabelled(self):
+        old=copy.deepcopy(self.live)
+        if "2026-09-23" in old["EUR"]["history2"]["dates"]:
+            # Released official source already contains this day; remove it
+            # in a synthetic legacy input to test missing-day restoration.
+            for tenor in ("2Y","10Y"):
+                hist=old["EUR"]["history"+tenor[:-1]]
+                idx=hist["dates"].index("2026-09-23")
+                hist["dates"].pop(idx)
+                hist["values"].pop(idx)
         a=self.make_csv("2Y",add={"2026-09-23":3.12345})
         b=self.make_csv("10Y",add={"2026-09-23":3.94567})
-        cand,receipt=m.build_candidate(self.live,a,b)
+        cand,receipt=m.build_candidate(old,a,b)
         self.assertEqual(receipt["per_tenor_official_parity"]["2Y"]["new_publisher_dates"],
                          ["2026-09-23"])
         self.assertEqual(cand["EUR"]["history2"]["dates"].count("2026-09-23"),1)
@@ -82,7 +99,7 @@ class FullECBSameBasisHistoryTests(unittest.TestCase):
 
     def test_incomplete_single_tenor_dates_is_fatal(self):
         a=self.make_csv("2Y",add={"2026-09-23":3.12345})
-        b=self.make_csv("10Y")
+        b=self.make_csv("10Y",omit={"2026-09-23"})
         with self.assertRaisesRegex(ValueError,"same-day complete"):
             m.build_candidate(self.live,a,b)
 
