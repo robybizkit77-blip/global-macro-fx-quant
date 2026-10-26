@@ -138,6 +138,40 @@ class WeeklyBetaTests(unittest.TestCase):
                             for o in obs))
         self.assertTrue(all(o["training_last_week_end"] < o["evaluation_week_end"] for o in obs))
 
+
+    def _historical_mof_fixture(self, *, third_bad=False):
+        from validation.rates.audit_jpy_2y_mof_chronology_v1 import normalize_source
+        original=normalize_source(self.rates)
+        records=original["candidate_rows"]
+        def bytes_for(rows):
+            return ("Interest Rate\nDate,1Y,2Y,10Y\n"+"".join(
+                f"{row['date'].replace('-','/')},1,{(1.948 if row['date']=='2026-09-25' else 1.981 if row['date']=='2026-09-28' else 0.111 if third_bad and row['date']=='2025-05-08' else row['yield_pct']):.3f},3\n"
+                for row in rows)).encode("cp932")
+        return bytes_for(records[:150]),bytes_for(records[150:])
+
+    def test_verified_official_bytes_unlock_jpy_shadow_only(self):
+        import json
+        before=json.dumps(self.rates,sort_keys=True)
+        old=next(x for x in self.receipt["pairs"] if x["pair"]=="USDJPY")
+        self.assertEqual(old["aligned_weekly_fixing_points"],0)
+        h,c=self._historical_mof_fixture()
+        x=m.audit_with_official_jpy_source(self.fx,self.rates,h,c)
+        self.assertEqual(x["official_jpy_reconciliation"]["matched_with_original_mof"],273)
+        self.assertEqual(x["rate_2y_series_quality"]["JPY"]["status"],
+                         "OBSERVATIONS_AVAILABLE")
+        self.assertTrue(all(p["aligned_weekly_fixing_points"]>0
+                            for p in x["pairs"] if "JPY" in p["pair"]))
+        self.assertFalse(x["beta_promoted"])
+        self.assertFalse(x["historical_point_in_time_vintages_verified"])
+        self.assertFalse(x["yield_instrument_basis_comparable_across_countries"])
+        self.assertFalse(x["official_jpy_reconciliation"]["production_history_modified"])
+        self.assertEqual(json.dumps(self.rates,sort_keys=True),before)
+
+    def test_third_source_discrepancy_blocks_jpy_shadow(self):
+        h,c=self._historical_mof_fixture(third_bad=True)
+        with self.assertRaisesRegex(ValueError,"unreviewed MoF source differences"):
+            m.audit_with_official_jpy_source(self.fx,self.rates,h,c)
+
     def test_bad_input_date_rejected(self):
         with self.assertRaisesRegex(ValueError,"noncanonical ISO date"):
             m.strict_date("2025-5-8")

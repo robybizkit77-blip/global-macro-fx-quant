@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'validation/beta/weekly_fx_2y_shadow_oos_v1.py'
+      - 'validation/rates/audit_jpy_2y_mof_chronology_v1.py'
       - 'validation/beta/test_weekly_fx_2y_shadow_oos_v1.py'
       - 'validation/beta/BETA_WEEKLY_FX_2Y_SHADOW_OOS_AUDIT_2026-10-26.md'
       - 'validation/beta/rate_beta_observational_v1.py'
@@ -57,6 +58,50 @@ jobs:
                   assert o['train_count']==52
           print('BETA_MATCHED_WEEKLY_SHADOW_OOS_BLOCKED_FROM_TRADING_PROMOTION')
           PY
+      - name: Independently reconcile Japan 2Y from official MoF source for research only
+        id: jpy_official
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error --retry 2 --max-time 30 \
+            'https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/historical/jgbcme_all.csv' \
+            --output /tmp/jpy-2y-history-original.csv
+          curl --fail --location --silent --show-error --retry 2 --max-time 30 \
+            'https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/jgbcme.csv' \
+            --output /tmp/jpy-2y-current-original.csv
+          python -m validation.beta.weekly_fx_2y_shadow_oos_v1 \
+            --as-of 2026-10-26 \
+            --mof-historical-csv /tmp/jpy-2y-history-original.csv \
+            --mof-current-csv /tmp/jpy-2y-current-original.csv \
+            --out /tmp/gmfq-rate-beta-shadow-official-jpy.json
+          python - <<'PY'
+          import json
+          data=json.load(open('/tmp/gmfq-rate-beta-shadow-official-jpy.json'))
+          assert data['official_jpy_reconciliation']['matched_with_original_mof']==273
+          assert data['rate_2y_series_quality']['JPY']['reason'] is None
+          assert sum(p['aligned_weekly_fixing_points']>0
+                     for p in data['pairs'] if 'JPY' in p['pair'])==7
+          assert data['pair_count']==28
+          assert not data['beta_promoted']
+          assert not data['trading_performance_claim']
+          assert not data['historical_point_in_time_vintages_verified']
+          print('JPY_SEVEN_CROSSES_OOS_COVERAGE',{
+              p['pair']:p['historical_oos_observations']
+              for p in data['pairs'] if 'JPY' in p['pair']})
+          print('JPY_ALL_PAIR_OOS_TOTAL',data['pairs_with_any_oos'])
+          print('OFFICIAL_JPY_7_CROSSES_RESEARCH_AVAILABLE_NO_PRODUCTION_PROMOTION')
+          PY
+      - name: Report official source availability without false certification
+        if: always()
+        env:
+          CHECK_OUTCOME: ${{ steps.jpy_official.outcome }}
+        run: |
+          if [ "$CHECK_OUTCOME" = success ]; then
+            echo 'JPY 2Y research-only source audit: publisher verified 273/273. No Core, Live_Data or Forward change.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'JPY 2Y research-only source audit: publisher NOT VERIFIED; seven JPY pairs remain quarantined.' >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Preserve all production and canonical Beta/Forward artifacts
         run: |
           test -z "$(git status --porcelain -- live_data site dashboard payload validation/forward validation/beta/RATE_BETA_OBSERVATIONAL_CONTRACT_V1_2026-10-15.json)"
