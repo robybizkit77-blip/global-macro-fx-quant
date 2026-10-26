@@ -140,7 +140,8 @@ class EURDailyRatesHistorySourceGuardTests(unittest.TestCase):
     def run_builder(self,currencies,*,tamper_eur=False):
         src=copy.deepcopy(self.live)
         if tamper_eur:
-            src['EUR']['history2']['values'][-6]+=0.2
+            idx=src['EUR']['history2']['dates'].index('2026-10-15')
+            src['EUR']['history2']['values'][idx]+=.2
         audit={'status':'PASS','summary':{'updates_available':list(currencies)},
                'currencies':{}}
         for c in currencies:
