@@ -10,10 +10,18 @@ assert "'Publish Dashboard Pages V1'" in market.split('workflow_run:',1)[1].spli
 assert "github.event.workflow_run.conclusion == 'success'" in market
 assert "github.event.workflow_run.head_branch == 'main'" in market
 assert "contents: write" in market
-assert "group: publish-dashboard-pages-v1" in market
-assert "cancel-in-progress: false" in market
-assert "group: publish-dashboard-pages-v1" in pages
-assert "cancel-in-progress: false" in pages
+# PR tests use isolated groups; production root and the market mirror owner
+# MUST still serialize on the exact same production group.
+for workflow, pr_name in ((market, "market-data-validation-pr"),
+                          (pages, "pages-validation-pr")):
+    queue = workflow.split("concurrency:", 1)[1].split("jobs:", 1)[0]
+    assert "github.event_name == 'pull_request'" in queue
+    assert "format('" + pr_name + "-{0}', github.event.pull_request.number)" in queue
+    assert "|| 'publish-dashboard-pages-v1'" in queue
+    assert "cancel-in-progress: false" in queue
+    assert "queue: max" in queue
+assert "format('pages-validation-pr-{0}'" not in market
+assert "format('market-data-validation-pr-{0}'" not in pages
 # A shared group without queue:max silently replaces pending mirror runs.
 # Preserve both pending runs without permitting concurrent gh-pages writes.
 assert market.split("concurrency:",1)[1].split("jobs:",1)[0].count("queue: max") == 1
