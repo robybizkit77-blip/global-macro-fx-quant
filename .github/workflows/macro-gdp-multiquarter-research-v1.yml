@@ -19,6 +19,8 @@ on:
       - 'validation/macro/test_v2_g8_gdp_q4_2024_release_research_v1.py'
       - 'validation/macro/fixtures/v2_g8_gdp_q3_2024_official_web_release_research_v1.json'
       - 'validation/macro/test_v2_g8_gdp_q3_2024_release_research_v1.py'
+      - 'validation/macro/fixtures/v2_g8_gdp_q2_2024_official_web_release_research_v1.json'
+      - 'validation/macro/test_v2_g8_gdp_q2_2024_release_research_v1.py'
       - '.github/workflows/macro-gdp-multiquarter-research-v1.yml'
   push:
     branches: [main]
@@ -38,6 +40,8 @@ on:
       - 'validation/macro/test_v2_g8_gdp_q4_2024_release_research_v1.py'
       - 'validation/macro/fixtures/v2_g8_gdp_q3_2024_official_web_release_research_v1.json'
       - 'validation/macro/test_v2_g8_gdp_q3_2024_release_research_v1.py'
+      - 'validation/macro/fixtures/v2_g8_gdp_q2_2024_official_web_release_research_v1.json'
+      - 'validation/macro/test_v2_g8_gdp_q2_2024_release_research_v1.py'
       - '.github/workflows/macro-gdp-multiquarter-research-v1.yml'
   workflow_dispatch:
 
@@ -67,5 +71,7 @@ jobs:
         run: python -m unittest validation.macro.test_v2_g8_gdp_q4_2024_release_research_v1 -v
       - name: Test 2024 Q3 publisher vintages and eight-quarter history
         run: python -m unittest validation.macro.test_v2_g8_gdp_q3_2024_release_research_v1 -v
+      - name: Validate 2024 Q2 G8 vintages and nine-quarter PIT research chronology
+        run: python -m unittest validation.macro.test_v2_g8_gdp_q2_2024_release_research_v1 -v
       - name: Verify operational data untouched
         run: git diff --exit-code -- live_data/sections/D.json live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
