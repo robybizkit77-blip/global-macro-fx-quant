@@ -1,7 +1,7 @@
 {
   "currencies": {
     "AUD": {
-      "as_of": "2026-10-22",
+      "as_of": "2026-10-23",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
@@ -9,22 +9,22 @@
       "direction_vs_policy": "UP",
       "horizons": {
         "12m": {
-          "change_1d_bp": 1.5,
-          "change_1w_bp": 4.5,
-          "policy_delta_bp": 28.5,
-          "rate": 4.885
+          "change_1d_bp": -7.0,
+          "change_1w_bp": 2.5,
+          "policy_delta_bp": 21.5,
+          "rate": 4.815
         },
         "3m": {
-          "change_1d_bp": 2.5,
-          "change_1w_bp": 11.0,
-          "policy_delta_bp": 19.5,
-          "rate": 4.795
+          "change_1d_bp": -2.5,
+          "change_1w_bp": 7.5,
+          "policy_delta_bp": 17.0,
+          "rate": 4.77
         },
         "6m": {
-          "change_1d_bp": 3.5,
-          "change_1w_bp": 11.0,
-          "policy_delta_bp": 28.5,
-          "rate": 4.885
+          "change_1d_bp": -4.0,
+          "change_1w_bp": 8.0,
+          "policy_delta_bp": 24.5,
+          "rate": 4.845
         }
       },
       "official_status": "ACTIVE",
@@ -34,7 +34,7 @@
       "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)"
     },
     "CAD": {
-      "as_of": "2026-10-22",
+      "as_of": "2026-10-23",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
@@ -42,22 +42,22 @@
       "direction_vs_policy": "UP",
       "horizons": {
         "12m": {
-          "change_1d_bp": -11.5,
-          "change_1w_bp": -0.5,
-          "policy_delta_bp": 102.0,
-          "rate": 3.27
+          "change_1d_bp": 5.5,
+          "change_1w_bp": 5.5,
+          "policy_delta_bp": 107.5,
+          "rate": 3.325
         },
         "3m": {
-          "change_1d_bp": -5.0,
-          "change_1w_bp": 8.0,
-          "policy_delta_bp": 44.5,
-          "rate": 2.695
+          "change_1d_bp": 2.5,
+          "change_1w_bp": 9.5,
+          "policy_delta_bp": 47.0,
+          "rate": 2.72
         },
         "6m": {
-          "change_1d_bp": -7.5,
-          "change_1w_bp": 3.5,
-          "policy_delta_bp": 70.0,
-          "rate": 2.95
+          "change_1d_bp": 3.5,
+          "change_1w_bp": 7.5,
+          "policy_delta_bp": 73.5,
+          "rate": 2.985
         }
       },
       "official_status": "ACTIVE",
@@ -223,7 +223,7 @@
       "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures"
     },
     "GBP": {
-      "as_of": "2026-10-21",
+      "as_of": "2026-10-23",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
@@ -231,22 +231,22 @@
       "direction_vs_policy": "UP",
       "horizons": {
         "12m": {
-          "change_1d_bp": -5.2,
-          "change_1w_bp": 3.9,
-          "policy_delta_bp": 113.7,
-          "rate": 4.8868
+          "change_1d_bp": 3.5,
+          "change_1w_bp": 2.7,
+          "policy_delta_bp": 113.5,
+          "rate": 4.8853
         },
         "3m": {
-          "change_1d_bp": -1.7,
-          "change_1w_bp": 1.2,
-          "policy_delta_bp": 39.1,
-          "rate": 4.1415
+          "change_1d_bp": 2.0,
+          "change_1w_bp": 1.7,
+          "policy_delta_bp": 40.2,
+          "rate": 4.1517
         },
         "6m": {
-          "change_1d_bp": -3.6,
-          "change_1w_bp": 2.3,
-          "policy_delta_bp": 73.6,
-          "rate": 4.4857
+          "change_1d_bp": 3.1,
+          "change_1w_bp": 1.8,
+          "policy_delta_bp": 74.3,
+          "rate": 4.4932
         }
       },
       "official_status": "ACTIVE",
@@ -256,7 +256,7 @@
       "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive"
     },
     "JPY": {
-      "as_of": "2026-10-22",
+      "as_of": "2026-10-26",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
@@ -264,22 +264,22 @@
       "direction_vs_policy": "UP",
       "horizons": {
         "12m": {
-          "change_1d_bp": -0.6,
-          "change_1w_bp": -2.0,
-          "policy_delta_bp": 76.9,
-          "rate": 2.019
+          "change_1d_bp": 4.7,
+          "change_1w_bp": -4.6,
+          "policy_delta_bp": 72.9,
+          "rate": 1.979
         },
         "3m": {
-          "change_1d_bp": 0.0,
-          "change_1w_bp": 0.0,
-          "policy_delta_bp": 22.5,
-          "rate": 1.475
+          "change_1d_bp": -0.5,
+          "change_1w_bp": -1.0,
+          "policy_delta_bp": 21.5,
+          "rate": 1.465
         },
         "6m": {
-          "change_1d_bp": 0.0,
-          "change_1w_bp": 0.0,
-          "policy_delta_bp": 46.2,
-          "rate": 1.712
+          "change_1d_bp": -0.5,
+          "change_1w_bp": -1.0,
+          "policy_delta_bp": 45.2,
+          "rate": 1.702
         }
       },
       "official_status": "ACTIVE",
