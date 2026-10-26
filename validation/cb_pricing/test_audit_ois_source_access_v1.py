@@ -67,8 +67,20 @@ def main() -> None:
         raise AssertionError(f"unrecognized EUR operational state: {eur_state}")
 
     mutated = deepcopy(view)
-    mutated["currencies"]["EUR"]["secondary_quote_context"]["cross_date_join_allowed"] = True
-    rejects(plan, mutated, official, "unsafe promotion flag")
+    if view["currencies"]["EUR"].get("secondary_quote_context") is not None:
+        mutated["currencies"]["EUR"]["secondary_quote_context"]["cross_date_join_allowed"] = True
+        rejects(plan, mutated, official, "unsafe promotion flag")
+    else:
+        # Once EUR has an approved complete estimated row, a second
+        # individual-quotes overlay is prohibited, not silently accepted.
+        mutated["currencies"]["EUR"]["secondary_quote_context"] = {
+            "full_curve_usable": False,
+            "cross_date_join_allowed": False,
+            "policy_delta_allowed": False,
+            "repricing_signal_allowed": False,
+            "backtest_eligible_as_official": False,
+        }
+        rejects(plan, mutated, official, "secondary quote context not allowed")
 
     # USD/CHF have estimated futures levels today; a changed estimated rate
     # is NOT a WITHHELD level leak. Assert the actual governance boundary:
