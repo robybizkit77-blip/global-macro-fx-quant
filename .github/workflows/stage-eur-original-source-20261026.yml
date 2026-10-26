@@ -1,0 +1,163 @@
+name: Stage EUR ECB 2Y10Y Reviewed History PR (NO MAIN WRITE)
+
+on:
+  push:
+    branches:
+      - release/eur-ecb-2y10y-source-historical-20261026
+    paths:
+      - '.github/workflows/stage-eur-original-source-20261026.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: one-time-eur-ecb-2y10y-source-pr-stage
+  cancel-in-progress: false
+
+jobs:
+  prepare-release-pr:
+    if: github.ref == 'refs/heads/release/eur-ecb-2y10y-source-historical-20261026'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release/eur-ecb-2y10y-source-historical-20261026
+          fetch-depth: 2
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate starting HEAD and G8 source parity before any branch commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_SHA" = "$(git rev-parse HEAD)"
+          python -m py_compile validation/rates/build_one_time_eur_official_history_release_v1.py
+          python -m unittest validation.test_eur_daily_rates_history_source_guard_v1 -v
+          python validation/check_live_update_contract.py > /tmp/eur-stage-original-contract.json
+          python validation/rebuild_live_data_runtime.py --verify-only > /tmp/eur-stage-original-roundtrip.json
+          python - <<'PY'
+          import json
+          c=json.load(open('/tmp/eur-stage-original-contract.json'))
+          r=json.load(open('/tmp/eur-stage-original-roundtrip.json'))
+          assert c['status']=='PASS',c
+          assert r['status']=='PASS' and r['noop_roundtrip_byte_identical'],r
+          print('EUR_SOURCE_ORIGINAL_MAIN_APPROVED_RUNTIME_PASS')
+          PY
+
+      - name: Fetch exactly tested original ECB 2Y and 10Y publisher source CSVs
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error --retry 2 --max-time 45 \
+            'https://data-api.ecb.europa.eu/service/data/YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y?startPeriod=2025-09-16&endPeriod=2026-10-22&format=csvdata' \
+            -H 'Accept: text/csv' -o /tmp/eur-ecb-released-2y.csv
+          curl --fail --location --silent --show-error --retry 2 --max-time 45 \
+            'https://data-api.ecb.europa.eu/service/data/YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_10Y?startPeriod=2025-09-16&endPeriod=2026-10-22&format=csvdata' \
+            -H 'Accept: text/csv' -o /tmp/eur-ecb-released-10y.csv
+          python -m validation.rates.build_one_time_eur_official_history_release_v1 \
+            --official-2y /tmp/eur-ecb-released-2y.csv \
+            --official-10y /tmp/eur-ecb-released-10y.csv \
+            --output /tmp/eur-ecb-source-approved-staged.json \
+            --receipt /tmp/eur-ecb-source-provenance.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/eur-ecb-source-provenance.json'))
+          assert r['ready_for_atomic_pr_branch_commit'] is True
+          assert r['baseline_source_release_requires_main_merge'] is True
+          assert r['actual_production_promotion'] is False
+          assert r['verified_daily_append_adopts_publisher_source'] is True
+          print('EUR_OFFICIAL_ORIGINAL_2Y10Y_PREMERGE_GUARDED_SOURCE_PASS')
+          PY
+
+      - name: Compare actual v10 CHF beta and all 28 FX pairs before applying
+        shell: bash
+        run: |
+          set -euo pipefail
+          node validation/rates/audit_v10_eur_ecb_history_chf_pair_sensitivity_v1.cjs \
+            --candidate /tmp/eur-ecb-source-approved-staged.json \
+            --output /tmp/eur-chf-28-pairs-before-versus-after.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/eur-chf-28-pairs-before-versus-after.json'))
+          assert r['compared_pairs']==28
+          assert r['pair_reaction_changed_count']==0
+          assert r['pair_observed_2y_changed_count']==0
+          assert r['CHF_10Y_proxy_rebase_review_required'] is True
+          assert r['CHF_10Y_proxy_not_official_yield'] is True
+          assert r['CHF_reference_beta_impact']['10Y']['after']['confidence']=='BASSA'
+          x=r['CHF_reference_beta_impact']['10Y']['estimate_delta_bp']
+          assert 11.50<x<11.60,x
+          assert not r['automatic_live_promotion_allowed']
+          print('EUR_CHF_BASSA_28_FX_UNCHANGED_SOURCE_REBASE_BEFORE_AFTER_PASS')
+          PY
+
+      - name: Apply release candidate ONLY into working release branch checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/update_live_direct_section.py \
+            --section NATIVE_RATES_DATA \
+            --replacement /tmp/eur-ecb-source-approved-staged.json \
+            > /tmp/eur-ecb-direct-preview.json
+          python validation/update_live_direct_section.py \
+            --section NATIVE_RATES_DATA \
+            --replacement /tmp/eur-ecb-source-approved-staged.json \
+            --apply > /tmp/eur-ecb-direct-branch-apply.json
+          python validation/build_live_manifest_v2.py \
+            --write live_data/manifest.v2.json > /tmp/eur-ecb-updated-manifest.json
+          python validation/check_live_update_contract.py > /tmp/eur-ecb-final-live-contract.json
+          python validation/rebuild_live_data_runtime.py --verify-only > /tmp/eur-ecb-final-payload-roundtrip.json
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib,json,subprocess
+          def rd(n):return json.load(open('/tmp/eur-'+n+'.json'))
+          a=rd('ecb-direct-branch-apply')
+          c=rd('ecb-final-live-contract')
+          x=rd('ecb-final-payload-roundtrip')
+          assert a['status']=='PASS' and a['applied'] is True and a['changed_payload_parts']==[0]
+          assert c['status']=='PASS'
+          assert x['status']=='PASS' and x['noop_roundtrip_byte_identical'] is True
+          assert json.loads(Path('live_data/sections/NATIVE_RATES_DATA.json').read_text())==rd('ecb-source-approved-staged')
+          new=json.loads(Path('live_data/sections/NATIVE_RATES_DATA.json').read_text())
+          assert len(new['EUR']['history2']['dates'])==len(new['EUR']['history10']['dates'])==282
+          assert new['EUR']['historical_curve_rebase']['status']=='PUBLISHED_AFTER_SOURCE_AND_BROWSER_QA'
+          assert new['EUR']['historical_curve_rebase']['source_rebase_not_market_move']
+          from validation.build_rates_candidate_from_audit import eur_daily_append_source_gate
+          assert eur_daily_append_source_gate(new['EUR'],'2026-10-23')['historical_legacy_basis_quarantined'] is False
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          exact={'live_data/sections/NATIVE_RATES_DATA.json','live_data/manifest.v2.json','payload/part-00.txt'}
+          assert changed==exact,(changed,exact)
+          print('ONLY_EUR_OFFICIAL_HISTORY_AND_MANIFEST_PART00_CHANGED',sorted(changed))
+          print('ATOMIC_BRANCH_RELEASE_MANIFEST_AND_BYTE_IDENTICAL_ROUNDTRIP_PASS')
+          PY
+
+      - name: Commit reviewed data to PR BRANCH ONLY with HEAD lease
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- live_data/sections/NATIVE_RATES_DATA.json live_data/manifest.v2.json payload/part-00.txt
+          git diff --cached --exit-code --quiet && { echo 'No source changes to stage' >&2; exit 1; }
+          git commit -m 'Stage original ECB EUR 2Y+10Y reviewed 282-day series for PR'
+          REMOTE="$(git ls-remote origin refs/heads/release/eur-ecb-2y10y-source-historical-20261026 | awk '{print $1}')"
+          test "$REMOTE" = "$GITHUB_SHA" || { echo 'Release PR branch moved, abort staging without force' >&2; exit 1; }
+          git push origin HEAD:release/eur-ecb-2y10y-source-historical-20261026
+          echo 'ECB_EUR_RATE_SOURCE_PR_BRANCH_STAGED_NOT_PRODUCTION'
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eur-ecb-official-original-premerge-release-evidence
+          path: |
+            /tmp/eur-ecb-*.json
+            /tmp/eur-chf-28-pairs-before-versus-after.json
+          retention-days: 30
+          if-no-files-found: warn
