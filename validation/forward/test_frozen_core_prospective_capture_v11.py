@@ -108,6 +108,58 @@ class ProspectiveAdmission(unittest.TestCase):
         self.assertTrue(all(x["snapshot_sha256"]==logger.digest(
             {k:v for k,v in x.items() if k!="snapshot_sha256"}) for x in rows))
 
+    def test_prospective_hash_and_missing_inputs_block_before_append(self):
+        rows=logger.make_rows(logger.parse_cutoff("2026-10-26T19:31:00Z"),"forward-20261026")
+        logger.validate_prospective_batch(rows)
+        changed=copy.deepcopy(rows)
+        changed[0]["inputs"].pop("macro")
+        changed[0]["snapshot_sha256"]=logger.digest(
+            {k:v for k,v in changed[0].items() if k!="snapshot_sha256"})
+        with self.assertRaisesRegex(ValueError,"MISSING_PIT_INPUTS"):
+            logger.validate_prospective_batch(changed)
+        changed=copy.deepcopy(rows)
+        changed[0]["core_recomputed_at_capture"]=True
+        changed[0]["snapshot_sha256"]=logger.digest(
+            {k:v for k,v in changed[0].items() if k!="snapshot_sha256"})
+        with self.assertRaisesRegex(ValueError,"PROMOTION_FORBIDDEN"):
+            logger.validate_prospective_batch(changed)
+        changed=copy.deepcopy(rows)
+        changed[0]["withheld_flags"]["macro"]=False
+        changed[0]["snapshot_sha256"]=logger.digest(
+            {k:v for k,v in changed[0].items() if k!="snapshot_sha256"})
+        with self.assertRaisesRegex(ValueError,"WITHHELD_FLAG_MISMATCH"):
+            logger.validate_prospective_batch(changed)
+
+    def test_prospective_source_clock_and_wrong_pair_block(self):
+        rows=logger.make_rows(logger.parse_cutoff("2026-10-26T19:31:00Z"),"forward-20261026")
+        changed=copy.deepcopy(rows)
+        changed[0]["pair"]="EUR/EUR"
+        changed[0]["snapshot_sha256"]=logger.digest(
+            {k:v for k,v in changed[0].items() if k!="snapshot_sha256"})
+        with self.assertRaisesRegex(ValueError,"NON_G8_PAIR_OR_ORIENTATION"):
+            logger.validate_prospective_batch(changed)
+        changed=copy.deepcopy(rows)
+        changed[0]["inputs"]["core_pair_state"]["available_at"]="2026-10-27T23:59:59Z"
+        changed[0]["snapshot_sha256"]=logger.digest(
+            {k:v for k,v in changed[0].items() if k!="snapshot_sha256"})
+        with self.assertRaisesRegex(ValueError,"POST_DECISION_INPUT_LEAK"):
+            logger.validate_prospective_batch(changed)
+
+    def test_prospective_t0_promotion_rejected_without_touching_ledger(self):
+        rows=logger.make_rows(logger.parse_cutoff("2026-10-26T19:31:00Z"),"forward-20261026")
+        rows[0]["t0_fx_reference"]["intra_day_traded_price"]=True
+        rows[0]["snapshot_sha256"]=logger.digest(
+            {k:v for k,v in rows[0].items() if k!="snapshot_sha256"})
+        with tempfile.TemporaryDirectory() as tmp:
+            old=logger.DECISIONS
+            try:
+                logger.DECISIONS=pathlib.Path(tmp)/"ledger.jsonl"
+                with self.assertRaisesRegex(ValueError,"T0_REFERENCE_MISMATCH_OR_PROMOTION"):
+                    logger.append_rows(rows,False)
+                self.assertFalse(logger.DECISIONS.exists())
+            finally:
+                logger.DECISIONS=old
+
     def test_same_day_second_run_does_not_duplicate_even_if_clock_changes(self):
         rows=logger.make_rows(logger.parse_cutoff("2026-10-26T19:31:00Z"),"forward-20261026")
         newer=logger.make_rows(logger.parse_cutoff("2026-10-26T20:32:00Z"),"forward-retry")

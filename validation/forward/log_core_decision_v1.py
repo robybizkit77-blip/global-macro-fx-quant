@@ -265,6 +265,121 @@ def existing_ids(path: Path) -> set[str]:
     return {json.loads(line)["snapshot_id"] for line in path.read_text(encoding="utf-8").splitlines() if line.strip()}
 
 
+def validate_prospective_batch(rows: list[dict[str, Any]]) -> None:
+    """Hard pre-append V1.1 scope, contract, SHA and PIT checks.
+
+    Historical V1.0 smoke observations are immutable and intentionally NOT
+    retrofitted to this stricter prospective batch contract.
+    """
+    if len(rows) != 28:
+        raise ValueError("PROSPECTIVE_INCOMPLETE_28_PAIR_BATCH")
+    spec = json.loads(SCHEMA.read_text(encoding="utf-8"))
+    required = set(spec["required_snapshot_fields"])
+    names = {k for k in ("EUR", "USD", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD")}
+    expected = {frozenset((a, b)) for a in names for b in names if a != b}
+    seen, keys, cutoffs, batches, baselines = set(), set(), set(), set(), set()
+    ledger_sources = set(("core_surface", "macro", "rates", "ois",
+                          "central_bank", "cot", "liquidity",
+                          "ecb_reference", "pair_setup"))
+    used_layers = {"core_pair_state": "core_surface", "macro": "macro",
+                   "rates": "rates", "ois": "ois", "central_bank": "central_bank",
+                   "cot": "cot", "liquidity": "liquidity",
+                   "price": "core_surface"}
+    for row in rows:
+        if not isinstance(row, dict) or required - set(row):
+            raise ValueError("PROSPECTIVE_MISSING_CANONICAL_CONTRACT_FIELD")
+        if (row.get("schema_version") != "GMFQ_CORE_FORWARD_DECISION_LOGGER_V1.1.0" or
+            row.get("capture_class") != "FROZEN_CORE_BASELINE_OBSERVATION" or
+            row.get("core_recomputed_at_capture") is not False or
+            row.get("current_macro_score_certified") is not False or
+            row.get("price_anchor_is_executable") is not False or
+            row.get("source_panel_is_true_historical_pit") is not False):
+            raise ValueError("PROSPECTIVE_MODEL_OR_PIT_PROMOTION_FORBIDDEN")
+        cutoff = parse_cutoff(row["decision_cutoff"])
+        if row["decision_cutoff"] != cutoff.isoformat().replace("+00:00", "Z"):
+            raise ValueError("PROSPECTIVE_NONCANONICAL_CUTOFF")
+        baseline = row.get("core_baseline_as_of")
+        if (not isinstance(baseline, str) or len(baseline) != 10 or
+            dt.date.fromisoformat(baseline) >= cutoff.date()):
+            raise ValueError("PROSPECTIVE_NOT_FROZEN_PAST_BASELINE")
+        pair = row.get("pair")
+        if not isinstance(pair, str) or pair.count("/") != 1:
+            raise ValueError("PROSPECTIVE_INVALID_PAIR")
+        a, b = pair.split("/")
+        if (a not in names or b not in names or a == b or
+            row.get("base_currency") != a or row.get("quote_currency") != b):
+            raise ValueError("PROSPECTIVE_NON_G8_PAIR_OR_ORIENTATION")
+        key = frozenset((a, b))
+        if key in seen:
+            raise ValueError("PROSPECTIVE_DUPLICATE_OR_INVERTED_PAIR")
+        seen.add(key)
+        keys.add(pair)
+        cutoffs.add(row["decision_cutoff"])
+        batches.add(row.get("run_id"))
+        baselines.add(baseline)
+        expected_id = hashlib.sha256(
+            f"{row['decision_cutoff']}|{row['run_id']}|{pair}".encode("utf-8")
+        ).hexdigest()
+        if (row.get("snapshot_id") != expected_id or
+            row.get("snapshot_sha256") != digest(
+                {k: v for k, v in row.items() if k != "snapshot_sha256"}
+            )):
+            raise ValueError("PROSPECTIVE_IDENTITY_OR_HASH_MISMATCH")
+        inputs = row.get("inputs")
+        flags = row.get("withheld_flags")
+        provenance = row.get("source_provenance")
+        if (not isinstance(inputs, dict) or set(inputs) != set(used_layers) | {"ecb_reference"} or
+            not isinstance(flags, dict) or set(flags) != set(inputs) or
+            not isinstance(provenance, dict) or set(provenance) != ledger_sources):
+            raise ValueError("PROSPECTIVE_MISSING_PIT_INPUTS_OR_SOURCE_PROVENANCE")
+        for src in provenance.values():
+            if (not isinstance(src, dict) or
+                not isinstance(src.get("source_id"), str) or
+                not isinstance(src.get("sha256"), str) or
+                len(src["sha256"]) != 64):
+                raise ValueError("PROSPECTIVE_SOURCE_DIGEST_MISSING")
+        for layer, src_key in used_layers.items():
+            value = inputs[layer]
+            canonical_source = provenance[src_key]
+            if not isinstance(value, dict) or value.get("state") not in ("AVAILABLE", "WITHHELD"):
+                raise ValueError("PROSPECTIVE_BAD_INPUT_STATE")
+            if (value.get("source_id") != canonical_source["source_id"] or
+                value.get("source_sha256") != canonical_source["sha256"] or
+                flags[layer] is not (value["state"] == "WITHHELD")):
+                raise ValueError("PROSPECTIVE_SOURCE_OR_WITHHELD_FLAG_MISMATCH")
+            available_at = value.get("available_at")
+            if value["state"] == "WITHHELD":
+                if available_at is not None or value.get("value") is not None:
+                    raise ValueError("PROSPECTIVE_UNVERIFIED_INPUT_VALUE_LEAK")
+            else:
+                if (not isinstance(available_at, str) or
+                    parse_cutoff(available_at) > cutoff or
+                    value.get("value") is None):
+                    raise ValueError("PROSPECTIVE_POST_DECISION_INPUT_LEAK")
+        t0 = row.get("t0_fx_reference")
+        if (not isinstance(t0, dict) or inputs["ecb_reference"] != t0 or
+            t0.get("source_id") != provenance["ecb_reference"]["source_id"] or
+            t0.get("source_sha256") != provenance["ecb_reference"]["sha256"] or
+            t0.get("intra_day_traded_price") is not False or
+            t0.get("official_publication_instant_independently_verified") is not False or
+            t0.get("state") not in ("WITHHELD", "OBSERVED_AT_CAPTURE") or
+            flags["ecb_reference"] is not (t0.get("state") == "WITHHELD")):
+            raise ValueError("PROSPECTIVE_T0_REFERENCE_MISMATCH_OR_PROMOTION")
+        if t0["state"] == "WITHHELD":
+            if t0.get("rate") is not None:
+                raise ValueError("PROSPECTIVE_WITHHELD_T0_RATE_LEAK")
+        elif (type(t0.get("rate")) not in (int, float) or
+              not (t0["rate"] > 0) or
+              t0.get("source_date") != cutoff.date().isoformat()):
+            raise ValueError("PROSPECTIVE_INVALID_DATED_ECB_REFERENCE")
+        if any(k in row for k in ("forward_return", "realized_pnl", "realized_cost",
+                                  "target_label", "future_outcome")):
+            raise ValueError("PROSPECTIVE_FUTURE_LABEL_LEAK")
+    if (seen != expected or len(keys) != 28 or len(cutoffs) != 1 or
+        len(batches) != 1 or len(baselines) != 1):
+        raise ValueError("PROSPECTIVE_NONATOMIC_28_PAIR_CAPTURE")
+
+
 def append_rows(rows: list[dict[str, Any]], dry_run: bool) -> dict[str, Any]:
     # One immutable full-G8 observation per UTC capture day. A second
     # run with a different timestamp must not create 28 new "decisions".
@@ -275,6 +390,7 @@ def append_rows(rows: list[dict[str, Any]], dry_run: bool) -> dict[str, Any]:
     prospective = [row for row in rows if
                    row.get("capture_class") == "FROZEN_CORE_BASELINE_OBSERVATION"]
     if prospective:
+        validate_prospective_batch(prospective)
         if len(prospective) != 28 or len({x["pair"] for x in prospective}) != 28:
             raise ValueError("partial prospective pair batch")
         day = prospective[0]["decision_cutoff"][:10]
