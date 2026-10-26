@@ -36,8 +36,12 @@ on:
 permissions:
   contents: write
 
+# Preserve pending morning writes/retries instead of replacing an older
+# pending run when another workflow/event is triggered in the same group.
+# Each attempt remains serialized; downstream source/lease checks still apply.
 concurrency:
   group: cb-pricing-persistent-daily-v1
+  queue: max
   cancel-in-progress: false
 
 jobs:

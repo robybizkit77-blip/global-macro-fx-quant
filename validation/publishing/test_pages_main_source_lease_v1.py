@@ -9,6 +9,7 @@ import subprocess
 
 root = Path(__file__).resolve().parents[2]
 workflow = (root / ".github/workflows/publish-dashboard-pages-v1.yml").read_text()
+assert "queue: max" in workflow.split("concurrency:", 1)[1].split("jobs:", 1)[0], "PAGES_PENDING_RUN_REPLACEMENT_RISK"
 begin = "      - name: Publish dashboard runtime and operational assets to gh-pages with lease"
 end = "      - name: Ensure actual Pages build follows automated gh-pages push"
 assert workflow.count(begin) == workflow.count(end) == 1

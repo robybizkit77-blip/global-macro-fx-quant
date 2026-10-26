@@ -4,6 +4,16 @@ from __future__ import annotations
 
 import datetime as dt
 from cb_pricing_schedule_gate_v1 import gate
+from pathlib import Path
+
+# 06:00, 06:30 and 07:00 independent retries must never replace each other
+# while an earlier source acquisition is in progress.
+ROOT = Path(__file__).resolve().parents[2]
+WORKFLOW = (ROOT / ".github/workflows/cb-pricing-persistent-daily-v1.yml").read_text()
+QUEUE = WORKFLOW.split("concurrency:", 1)[1].split("jobs:", 1)[0]
+assert "group: cb-pricing-persistent-daily-v1" in QUEUE
+assert "queue: max" in QUEUE
+assert "cancel-in-progress: false" in QUEUE
 
 
 def at(year, month, day, hour, minute):
