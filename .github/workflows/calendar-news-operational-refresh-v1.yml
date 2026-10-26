@@ -34,6 +34,9 @@ on:
       - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
       - '.github/workflows/calendar-news-operational-refresh-v1.yml'
   schedule:
+    # Early weekday availability check: 05:17 CET / 06:17 CEST.
+    # The existing 06:17 UTC run is retained as an independent backup.
+    - cron: '17 4 * * 1-5'
     - cron: '17 6 * * *'
   workflow_dispatch:
 
