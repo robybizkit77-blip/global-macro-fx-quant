@@ -14,6 +14,7 @@ from datetime import date, timedelta
 from itertools import combinations
 import json
 import math
+import re
 from pathlib import Path
 from statistics import pvariance
 
@@ -33,6 +34,10 @@ WINDOW = 52
 def strict_date(raw):
     if not isinstance(raw, str):
         raise ValueError("ISO date required")
+    # Different Python versions parse loose ISO dates differently; reject
+    # unpadded Japanese source strings deterministically before parsing.
+    if not re.fullmatch(r"\\d{4}-\\d{2}-\\d{2}", raw):
+        raise ValueError("noncanonical ISO date")
     try:
         d = date.fromisoformat(raw)
     except ValueError as exc:
