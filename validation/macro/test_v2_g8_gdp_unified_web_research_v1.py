@@ -18,16 +18,16 @@ class GDPUnifiedResearchTests(unittest.TestCase):
         cls.rows=unified_research_rows()
         cls.receipt=research_receipt()
 
-    def test_twelve_quarters_96_distinct_first_recorded_release_keys(self):
+    def test_thirteen_quarters_104_distinct_first_recorded_release_keys(self):
         s=self.receipt
-        self.assertEqual(s["quarters_documented"], 12)
-        self.assertEqual(s["first_publisher_statements_documented"], 96)
+        self.assertEqual(s["quarters_documented"], 13)
+        self.assertEqual(s["first_publisher_statements_documented"], 104)
         self.assertEqual(s["first_statement_quarters_per_currency"],
-                         {c:12 for c in "USD EUR GBP JPY CHF CAD AUD NZD".split()})
+                         {c:13 for c in "USD EUR GBP JPY CHF CAD AUD NZD".split()})
         self.assertEqual(len(self.rows),
                          len({(r["currency"],r["reference_quarter"],r["stage_order"])
                               for r in self.rows}))
-        self.assertGreater(s["research_events_documented"],96)
+        self.assertGreater(s["research_events_documented"],104)
 
     def test_us_duplicate_2026_q2_release_not_counted_twice(self):
         usd=[r for r in self.rows if r["currency"]=="USD"
