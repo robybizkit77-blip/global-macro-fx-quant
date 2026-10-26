@@ -7,7 +7,10 @@ const a=source.indexOf('function marketResearchCurves(data){');
 const b=source.indexOf('\nfunction marketResearchSvg(',a);
 assert(a>=0&&b>a,'Canonical Rates renderer not found');
 const FX=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
-const DAY='2026-10-21';
+const real=JSON.parse(fs.readFileSync('live_data/sections/OIS_OPERATIONAL_VIEW.json','utf8'));
+// Derive the deterministic replay clock from the verified GBP fixture,
+// never assume 21 October stays the live official observation date.
+const DAY=real.currencies.GBP.as_of;
 const age=s=>(Date.parse(DAY+'T00:00:00Z')-Date.parse(s+'T00:00:00Z'))/86400000;
 const fresh=(day,max)=>typeof day==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(day)&&
  Number.isFinite(age(day))&&age(day)>=0&&age(day)<=max;
@@ -18,7 +21,6 @@ assert(guardStart>=0&&guardEnd>guardStart,'Canonical shared OIS source guard not
 const guard=source.slice(guardStart,guardEnd);
 const curves=new Function('FX','fresh','num',guard+source.slice(a,b)+
  ';return marketResearchCurves;')(FX,fresh,num);
-const real=JSON.parse(fs.readFileSync('live_data/sections/OIS_OPERATIONAL_VIEW.json','utf8'));
 const official=Object.entries(real.currencies).filter(([c,r])=>
  r.operational_status==='GREEN_OFFICIAL'&&r.official_status==='ACTIVE'&&
  r.quality==='OFFICIAL_CERTIFIED'&&r.backtest_eligible_as_official===true&&fresh(r.as_of,4))
