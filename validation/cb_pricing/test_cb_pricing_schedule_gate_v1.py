@@ -11,7 +11,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW = (ROOT / ".github/workflows/cb-pricing-persistent-daily-v1.yml").read_text()
 QUEUE = WORKFLOW.split("concurrency:", 1)[1].split("jobs:", 1)[0]
-assert "group: cb-pricing-persistent-daily-v1" in QUEUE
+assert "github.event_name == 'pull_request'" in QUEUE
+assert "format('cb-pricing-validation-pr-{0}', github.event.pull_request.number)" in QUEUE
+assert "|| 'cb-pricing-persistent-daily-v1'" in QUEUE
 assert "queue: max" in QUEUE
 assert "cancel-in-progress: false" in QUEUE
 
