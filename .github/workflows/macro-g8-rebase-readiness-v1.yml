@@ -13,6 +13,8 @@ on:
       - 'validation/macro/latest_release_pit_ledger_v1.py'
       - 'validation/macro/test_latest_release_pit_ledger_v1.py'
       - 'validation/macro/test_rebase_workflow_event_coverage_v1.py'
+      - 'validation/macro/legacy_v2_score_evidence_bridge_v1.py'
+      - 'validation/macro/test_legacy_v2_score_evidence_bridge_v1.py'
       - 'validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json'
       - 'validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-22.json'
       - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
@@ -35,6 +37,8 @@ on:
       - 'validation/macro/latest_release_pit_ledger_v1.py'
       - 'validation/macro/test_latest_release_pit_ledger_v1.py'
       - 'validation/macro/test_rebase_workflow_event_coverage_v1.py'
+      - 'validation/macro/legacy_v2_score_evidence_bridge_v1.py'
+      - 'validation/macro/test_legacy_v2_score_evidence_bridge_v1.py'
       - 'validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json'
       - 'validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-22.json'
       - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
@@ -116,6 +120,24 @@ jobs:
             live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
       - name: Validate 16-source latest official release PIT evidence (read only)
         run: python -m unittest validation.macro.test_latest_release_pit_ledger_v1 -v
+      - name: Audit frozen 24 Macro scores against real V2 24-pillar source evidence (research only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest validation.macro.test_legacy_v2_score_evidence_bridge_v1 -v
+          python -m validation.macro.legacy_v2_score_evidence_bridge_v1 --out /tmp/macro-g8-rebase/legacy-v2-24-score-crosswalk.json
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          r=json.load(open('/tmp/macro-g8-rebase/legacy-v2-24-score-crosswalk.json'))
+          s=r['summary']
+          assert s['historical_scalar_values']==24 and s['eligible_for_new_numeric_scores']==0
+          assert r['safe_to_publish_new_D'] is False and r['writes_live_data'] is False
+          print('**Legacy Macro 24 scalar → V2 24 evidence crosswalk, read only.**')
+          print('Matching source/frequency: '+str(s['source_id_and_frequency_matches'])+'/24; '
+                'wrong: '+str(s['candidate_wrong_id_or_frequency'])+
+                '; absent: '+str(s['candidate_missing'])+
+                '. New scores certified: **0**.')
+          PY
       - name: Join source-to-engine and official release PIT evidence (no Macro rebase)
         shell: bash
         run: |
