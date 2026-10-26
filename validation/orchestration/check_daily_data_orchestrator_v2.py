@@ -32,9 +32,9 @@ def main() -> None:
     assert c["rules"]["workflow_concurrency_pending_queue"] == "max"
     assert c["rules"]["workflow_concurrency_cancel_in_progress"] is False
     workflow_text = WORKFLOW.read_text()
-    concurrency_section = workflow_text.split("\\nconcurrency:\\n", 1)
+    concurrency_section = workflow_text.split("\nconcurrency:\n", 1)
     assert len(concurrency_section) == 2
-    block = concurrency_section[1].split("\\nenv:\\n", 1)[0]
+    block = concurrency_section[1].split("\nenv:\n", 1)[0]
     assert "group: daily-data-orchestrator-v2" in block
     assert "queue: max" in block
     assert "cancel-in-progress: false" in block
