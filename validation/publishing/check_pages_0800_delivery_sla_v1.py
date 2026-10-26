@@ -30,7 +30,7 @@ def parse_aware(value: object) -> dt.datetime | None:
     return parsed if parsed.tzinfo is not None and parsed.utcoffset() is not None else None
 
 
-def evaluate(source: dict | None, public: dict | None, now: dt.datetime) -> dict:
+def evaluate(source: dict | None, public: dict | None, now: dt.datetime, *, expected_files: tuple[str, ...] = FILES) -> dict:
     if now.tzinfo is None or now.utcoffset() is None:
         raise ValueError("now must be timezone aware")
     local_now = now.astimezone(ROME)
@@ -55,8 +55,8 @@ def evaluate(source: dict | None, public: dict | None, now: dt.datetime) -> dict
         and public.get("status") == "PASS"
         and public.get("basis") == "PUBLIC_HTTP_200_EXACT_SHA256"
         and public.get("conclusion") == "ALL_PUBLIC_FILES_MATCH"
-        and len(paths) == len(FILES)
-        and set(paths) == set(FILES)
+        and len(paths) == len(expected_files)
+        and set(paths) == set(expected_files)
         and all(r.get("http_200_and_sha256_match") is True and r.get("http_status") == 200
                 and isinstance(r.get("expected_sha256"), str)
                 and len(r["expected_sha256"]) == 64
