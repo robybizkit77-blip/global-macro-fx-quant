@@ -14,6 +14,7 @@ import subprocess
 import sys
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parents[2]
 FORWARD = ROOT / "validation" / "forward"
@@ -99,6 +100,8 @@ def source_bundle(cutoff: dt.datetime) -> tuple[dict[str, tuple[Any, str]], dict
         "central_bank": "live_data/sections/NATIVE_CB_DATA.json",
         "cot": "live_data/sections/V250_COT_CHART_DATA.json",
         "liquidity": "live_data/sections/NATIVE_LIQ_DATA.json",
+        "ecb_reference": "live_data/sections/ECB_G8_PRICE_HISTORY.json",
+        "pair_setup": "live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json",
     }.items():
         sources[key] = load_json(rel)
     d, _ = sources["core_surface"]
@@ -115,6 +118,31 @@ def make_rows(cutoff: dt.datetime, run_id: str) -> list[dict[str, Any]]:
         rules_fp = str(t0.get("rules_fingerprint") or "WITHHELD")
     except FileNotFoundError:
         pass
+    # Preserve the frozen structural Core vintage. New observations must never
+    # represent the Sep-2026 baseline as a newly recomputed Macro decision.
+    baseline_day = d.get("asOf")
+    if not isinstance(baseline_day, str) or len(baseline_day) != 10:
+        raise ValueError("unverifiable Core structural baseline date")
+    try:
+        baseline_date = dt.date.fromisoformat(baseline_day)
+    except ValueError as exc:
+        raise ValueError("invalid Core structural baseline date") from exc
+    if baseline_date >= cutoff.date():
+        raise ValueError("Core baseline must predate prospective capture")
+    ecb, ecb_sha = sources["ecb_reference"]
+    setup, setup_sha = sources["pair_setup"]
+    if not isinstance(ecb.get("rows"), list) or not isinstance(setup.get("pairs"), dict):
+        raise ValueError("missing official FX reference or pair setup")
+    day = cutoff.date().isoformat()
+    ref_row = next((x for x in ecb["rows"] if x.get("Date") == day), None)
+    # The standalone non-dry-run admission first checks actual 19:00 Rome
+    # and presence of both current-day official ECB and 28 pair overlay dates.
+    official_after_publication = (
+        isinstance(ref_row, dict)
+        and ecb.get("last_as_of") == day
+        and setup.get("price_asof") == day
+        and cutoff.astimezone(ZoneInfo('Europe/Rome')).hour >= 19
+    )
     rows = []
     for price in d["pairs"]:
         pair = str(price["pair"])
@@ -132,8 +160,15 @@ def make_rows(cutoff: dt.datetime, run_id: str) -> list[dict[str, Any]]:
         inputs["core_pair_state"], withheld["core_pair_state"] = input_record(
             "CORE_SURFACE", state, "live_data/sections/D.json", core_sha, cutoff, d.get("asOf")
         )
+        # The thermometer carries observation *periods* but not certified
+        # PIT publication timestamps; do not leak a post-baseline macro datum
+        # into the frozen structural decision by assigning d.asOf as its time.
+        macro_ccys = macro.get("currencies", {})
         inputs["macro"], withheld["macro"] = input_record(
-            "MACRO", {base: macro.get(base), quote: macro.get(quote)}, "live_data/sections/MACRO_THERMOMETER_DATA.json", macro_sha, cutoff, d.get("asOf")
+            "MACRO",
+            {base: macro_ccys.get(base), quote: macro_ccys.get(quote)},
+            "live_data/sections/MACRO_THERMOMETER_DATA.json", macro_sha, cutoff,
+            None,
         )
         inputs["rates"], withheld["rates"] = input_record(
             "RATES", {base: rates.get(base), quote: rates.get(quote)}, "live_data/sections/NATIVE_RATES_DATA.json", rates_sha, cutoff,
@@ -147,10 +182,36 @@ def make_rows(cutoff: dt.datetime, run_id: str) -> list[dict[str, Any]]:
         inputs["price"], withheld["price"] = input_record(
             "PRICE", price, "live_data/sections/D.json", core_sha, cutoff, price.get("price_asof") or d.get("priceAsOf")
         )
+        # A same-day official ECB reference rate, captured after the normal
+        # publication window, provides a transparent non-executable T0 price.
+        # It is NEVER inferred from D.json stale price_asof / legacy model.
+        t0_rate = None
+        if official_after_publication:
+            from math import isfinite
+            base_num = 1 if base == "EUR" else ref_row.get(base)
+            quote_num = 1 if quote == "EUR" else ref_row.get(quote)
+            if (type(base_num) in (int, float) and isfinite(base_num) and base_num > 0
+                    and type(quote_num) in (int, float) and isfinite(quote_num) and quote_num > 0):
+                t0_rate = float(quote_num / base_num)
+        t0 = {
+            "layer": "ECB_DAILY_REFERENCE_NOT_EXECUTABLE_SPOT",
+            "state": "OBSERVED_AT_CAPTURE" if t0_rate is not None else "WITHHELD",
+            "rate": t0_rate,
+            "pair": pair,
+            "source_date": day if t0_rate is not None else None,
+            "unit": quote + "_PER_" + base,
+            "source_id": "live_data/sections/ECB_G8_PRICE_HISTORY.json",
+            "source_sha256": ecb_sha,
+            "intra_day_traded_price": False,
+            "official_publication_instant_independently_verified": False,
+            "basis": "ECB_EUR_BASE_CROSS_AFTER_1900_ROME_REPOSITORY_OBSERVATION",
+        }
+        inputs["ecb_reference"] = t0
+        withheld["ecb_reference"] = t0_rate is None
         # The Core contract states these are context-only; do not log a non-used overlay as an input.
         overlays = {"used": False, "reason": "Risk and liquidity do not alter Core structural scoring, bias, sizing or pair eligibility."}
         body = {
-            "schema_version": "GMFQ_CORE_FORWARD_DECISION_LOGGER_V1.0.0",
+            "schema_version": "GMFQ_CORE_FORWARD_DECISION_LOGGER_V1.1.0",
             "decision_cutoff": cutoff.isoformat().replace("+00:00", "Z"),
             "run_id": run_id,
             "source_commit": commit_sha(),
@@ -161,19 +222,40 @@ def make_rows(cutoff: dt.datetime, run_id: str) -> list[dict[str, Any]]:
             "trade_attractiveness": state.get("state_label"),
             "core_signal": state.get("convergence_winner"),
             "core_score": None,
+            "t0_fx_reference": t0,
+            "pair_setup_price_as_of_at_capture": setup.get("price_asof"),
+            "price_anchor_is_executable": False,
+            # Versioned observation of an old model, never an engine re-run.
+            "capture_class": "FROZEN_CORE_BASELINE_OBSERVATION",
+            "core_baseline_as_of": baseline_day,
+            "core_recomputed_at_capture": False,
+            "current_macro_score_certified": False,
+            "source_panel_is_true_historical_pit": False,
+            "inputs": inputs,
             "macro_inputs_states": inputs["macro"],
             "rates_2y_10y_ois_cb_states": {k: inputs[k] for k in ("rates", "ois", "central_bank")},
             "cot_positioning": inputs["cot"],
             "price_market_confirmation_divergence": {"price": inputs["price"], "pair_state": inputs["core_pair_state"]},
             "risk_liquidity_overlays": overlays,
             "withheld_flags": withheld,
-            "source_provenance": {key: {"source_id": f"live_data/sections/{key}", "sha256": sha} for key, (_, sha) in sources.items()},
+            "source_provenance": {
+                key: {"source_id": "live_data/sections/" + {
+                    "core_surface":"D.json","macro":"MACRO_THERMOMETER_DATA.json",
+                    "rates":"NATIVE_RATES_DATA.json","ois":"OIS_DATA.json",
+                    "central_bank":"NATIVE_CB_DATA.json",
+                    "cot":"V250_COT_CHART_DATA.json","liquidity":"NATIVE_LIQ_DATA.json",
+                    "ecb_reference":"ECB_G8_PRICE_HISTORY.json",
+                    "pair_setup":"PAIR_SETUP_OPERATIONAL_VIEW.json"
+                }[key], "sha256": sha} for key, (_, sha) in sources.items()
+            },
             "rules_fingerprint": rules_fp,
         }
         identity = f"{body['decision_cutoff']}|{run_id}|{pair}"
         body["snapshot_id"] = hashlib.sha256(identity.encode("utf-8")).hexdigest()
         body["snapshot_sha256"] = digest(body)
         rows.append(body)
+    if len(rows) != 28 or len({r["pair"] for r in rows}) != 28:
+        raise ValueError("expected exactly 28 unique frozen canonical pairs")
     return sorted(rows, key=lambda row: row["pair"])
 
 
@@ -184,7 +266,32 @@ def existing_ids(path: Path) -> set[str]:
 
 
 def append_rows(rows: list[dict[str, Any]], dry_run: bool) -> dict[str, Any]:
-    known = existing_ids(DECISIONS)
+    # One immutable full-G8 observation per UTC capture day. A second
+    # run with a different timestamp must not create 28 new "decisions".
+    history = []
+    if DECISIONS.exists():
+        history = [json.loads(line) for line in DECISIONS.read_text(
+            encoding="utf-8").splitlines() if line.strip()]
+    prospective = [row for row in rows if
+                   row.get("capture_class") == "FROZEN_CORE_BASELINE_OBSERVATION"]
+    if prospective:
+        if len(prospective) != 28 or len({x["pair"] for x in prospective}) != 28:
+            raise ValueError("partial prospective pair batch")
+        day = prospective[0]["decision_cutoff"][:10]
+        if any(x["decision_cutoff"][:10] != day for x in prospective):
+            raise ValueError("prospective batch contains multiple cutoff dates")
+        earlier = [h for h in history if
+                   h.get("capture_class") == "FROZEN_CORE_BASELINE_OBSERVATION"
+                   and str(h.get("decision_cutoff") or "")[:10] == day]
+        if earlier:
+            if len(earlier) != 28 or len({h["pair"] for h in earlier}) != 28:
+                raise ValueError("partial existing daily observation, manual audit needed")
+            if {h["pair"] for h in earlier} != {h["pair"] for h in prospective}:
+                raise ValueError("prospective previous coverage differs")
+            return {"written": 0, "duplicates_skipped": len(rows),
+                    "total_candidates": len(rows),
+                    "same_day_observation_already_preserved": True}
+    known = {x["snapshot_id"] for x in history}
     new_rows = [row for row in rows if row["snapshot_id"] not in known]
     if not dry_run and new_rows:
         DECISIONS.parent.mkdir(parents=True, exist_ok=True)
@@ -201,6 +308,20 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     cutoff = parse_cutoff(args.decision_cutoff)
+    if not args.dry_run:
+        now = dt.datetime.now(dt.timezone.utc)
+        if abs((now - cutoff).total_seconds()) > 120:
+            raise ValueError("non-dry-run cutoff must be actual current UTC instant, no retrospective capture")
+        # This also makes direct CLI non-dry-run fail closed: not only CI can
+        # enforce the official current-day price and active pair overlay gate.
+        from admit_frozen_core_prospective_capture_v1 import assess, FX, PAIR, CORE
+        admiss = assess(now,
+            json.loads(FX.read_text(encoding="utf-8")),
+            json.loads(PAIR.read_text(encoding="utf-8")),
+            json.loads(CORE.read_text(encoding="utf-8")),
+        )
+        if admiss["status"] != "ADMITTED_PROSPECTIVE_BASELINE_OBSERVATION":
+            raise ValueError("forward capture blocked: " + ",".join(admiss["checks"]))
     rows = make_rows(cutoff, args.run_id)
     result = append_rows(rows, args.dry_run)
     receipt = {
@@ -215,7 +336,7 @@ def main() -> int:
         "batch_sha256": digest(rows),
         "result": result,
     }
-    if not args.dry_run:
+    if not args.dry_run and result["written"]:
         RECEIPTS.mkdir(parents=True, exist_ok=True)
         (RECEIPTS / f"{cutoff.date().isoformat()}__{args.run_id}__V1.json").write_bytes(canonical(receipt))
     print(json.dumps(receipt, ensure_ascii=False, sort_keys=True))

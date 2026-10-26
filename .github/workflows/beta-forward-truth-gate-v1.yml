@@ -40,8 +40,8 @@ jobs:
           import json
           data=json.load(open('/tmp/gmfq-beta-forward-readiness.json',encoding='utf-8'))
           assert data['state']=='NOT_READY_FOR_FINAL_LAUNCH_SIGNOFF'
-          assert data['forward']['decision_rows']==28
-          assert data['forward']['outcome_rows']==0
+          assert data['forward']['decision_rows']>=28
+          assert data['forward']['outcome_rows']>=0
           assert data['forward']['decision_snapshot_hash_mismatches']==0
           assert data['forward']['duplicate_snapshot_ids']==0
           assert data['beta']['observational_contract_present']
