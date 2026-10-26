@@ -23,6 +23,53 @@ FX = ("USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD")
 PILLARS = ("growth", "labour", "inflation")
 FROZEN = "2026-09-25"
 
+# These metadata relationships are externally documented or constrained by
+# official economic definitions. A semantic link NEVER waives the source ID,
+# period, revision, precision or original-day historical vintage requirement.
+# USD FRED UNRATE notes explicitly identify BLS source code LNS14000000.
+# EUR Eurostat exposes the headline annual HICP through prc_hicp_minr;
+# research event history is not thereby equal to the canonical vendor vintage.
+# CHF SECO rounds one decimal vs exact SNB cube; AUD CPI M and Q are different
+# aggregation horizons after the complete Monthly CPI regime change.
+SOURCE_RELATIONSHIP_REVIEW = {
+    ("USD", "labour"): {
+        "canonical_id": "UNRATE",
+        "candidate_id": "LNS14000000",
+        "canonical_freq": "M", "candidate_freq": "M",
+        "class": "SOURCE_CODE_LINEAGE_DOCUMENTED_NO_PIT_VINTAGE",
+        "publisher_evidence_url": "https://fred.stlouisfed.org/series/UNRATE",
+        "source_metric_concept_documented": True,
+        "next_requirement": "Replay original BLS U3 first-release records against contemporaneous FRED UNRATE release vintages and revisions",
+    },
+    ("EUR", "inflation"): {
+        "canonical_id": "EA_HICP_HEADLINE_YOY",
+        "candidate_id": "EA_HICP_HEADLINE_YOY_history_value",
+        "canonical_freq": "M", "candidate_freq": "M",
+        "class": "HICP_HEADLINE_FAMILY_MATCH_CANONICAL_VINTAGE_UNPROVEN",
+        "publisher_evidence_url": "https://ec.europa.eu/eurostat/databrowser/product/view/prc_hicp_minr",
+        "source_metric_concept_documented": True,
+        "next_requirement": "Compare exact EA20/EA21, HICP all-items YoY, first-release period, flash/detail stage and original release-day bytes",
+    },
+    ("CHF", "labour"): {
+        "canonical_id": "CH_UNEMP_RATE",
+        "candidate_id": "CH_SECO_SA_REGISTERED_UNEMP_RATE_ONE_DECIMAL",
+        "canonical_freq": "M", "candidate_freq": "M",
+        "class": "ROUNDED_SECO_VS_EXACT_SNB_SERIES_VINTAGE_UNPROVEN",
+        "publisher_evidence_url": "https://www.arbeit.swiss/en/information-centre/labour-market-statistics-switzerland",
+        "source_metric_concept_documented": False,
+        "next_requirement": "Recover first-day exact SNB amarbma reading and revisions, not only the rounded SECO 3.1 percent press rate",
+    },
+    ("AUD", "inflation"): {
+        "canonical_id": "AU_CPI_HEADLINE_Q_YOY",
+        "candidate_id": "AU_CPI_HEADLINE_M_YOY_context_value",
+        "canonical_freq": "Q", "candidate_freq": "M",
+        "class": "MONTHLY_VS_QUARTERLY_ABS_CPI_HORIZON_DIFFERENT",
+        "publisher_evidence_url": "https://www.abs.gov.au/statistics/detailed-methodology-information/concepts-sources-methods/consumer-price-index-concepts-sources-and-methods/2025/historical-background-and-evolution-monthly-cpi",
+        "source_metric_concept_documented": False,
+        "next_requirement": "Keep old quarterly PIT separate; independently decide whether to version and validate a newly monthly CPI model",
+    },
+}
+
 
 def check(predicate, message):
     if not predicate:
@@ -132,6 +179,13 @@ def bridge(model, legacy, v2):
                 next_action = "Verify actual first-release original-day history and versioned score formula"
             reason = ("CANDIDATE_MATCHES_ID_AND_FREQUENCY_BUT_NOT_PIT_CERTIFIED"
                       if same else category)
+            relationship = SOURCE_RELATIONSHIP_REVIEW.get((currency, pillar))
+            if relationship:
+                check(pillar != "growth" and not same
+                      and (canonical_id, source, canonical_freq, candidate_freq) ==
+                      (relationship["canonical_id"], relationship["candidate_id"],
+                       relationship["canonical_freq"], relationship["candidate_freq"]),
+                      "source semantic crosswalk not tied to exact official registry and candidate")
             out.append({
                 "currency": currency, "pillar": pillar,
                 "frozen_score_as_of": FROZEN,
@@ -146,6 +200,15 @@ def bridge(model, legacy, v2):
                 "source_id_and_frequency_match": same,
                 "source_reconciliation_class": category,
                 "recommended_source_review_action": next_action,
+                "official_source_relationship_class": (
+                    relationship["class"] if relationship else "NO_SEPARATE_SEMANTIC_REVIEW"),
+                "official_source_relationship_url": (
+                    relationship["publisher_evidence_url"] if relationship else None),
+                "same_statistical_concept_externally_documented": (
+                    relationship["source_metric_concept_documented"] if relationship else False),
+                "official_reconciliation_next_requirement": (
+                    relationship["next_requirement"] if relationship else next_action),
+                "economic_source_code_alias_certified_for_pit_score": False,
                 "canonical_metric_unit_or_publisher_mapping_certified": False,
                 "candidate_first_release_periods_visible": first_count,
                 "minimum_required_canonical_first_releases": target,
@@ -178,6 +241,11 @@ def bridge(model, legacy, v2):
           "unexpected Growth source-selection contract")
     check(sum(category_counts.values()) == 24,
           "missing evidence reconciliation classifications")
+    check({(r["currency"], r["pillar"]) for r in out
+           if r["official_source_relationship_url"]} == set(SOURCE_RELATIONSHIP_REVIEW),
+          "one or more official semantic source reviews missing")
+    check(all(r["economic_source_code_alias_certified_for_pit_score"] is False
+              for r in out), "technical alias must never promote economic score")
     other_mismatch = sum(
         r["pillar"] != "growth" and
         r["source_reconciliation_class"] not in (
@@ -203,6 +271,10 @@ def bridge(model, legacy, v2):
             "unselected_growth_canonical_indicators": category_counts["GROWTH_CANONICAL_INDICATOR_NOT_SELECTED"],
             "non_growth_source_or_frequency_mismatches": other_mismatch,
             "source_reconciliation_classes": category_counts,
+            "documented_underlying_series_code_links_not_PIT_certified": sum(
+                r["official_source_relationship_class"] ==
+                "SOURCE_CODE_LINEAGE_DOCUMENTED_NO_PIT_VINTAGE" for r in out),
+            "source_review_cases_with_no_PIT_promotion": len(SOURCE_RELATIONSHIP_REVIEW),
             "documented_web_first_release_periods_not_archived_pit": first_total,
             "eligible_for_new_numeric_scores": 0,
             "independent_historical_formula_replays": 0,
@@ -253,7 +325,7 @@ def markdown(receipt):
             f"{label('canonical_source_id')} ({label('canonical_frequency')}) | "
             f"{label('candidate_source_id')} ({label('candidate_frequency')}) | "
             f"{r['candidate_first_release_periods_visible']} | "
-            f"{r['source_reconciliation_class']} |"
+            f"{r['official_source_relationship_class'] if r['official_source_relationship_url'] else r['source_reconciliation_class']} |"
         )
     lines += [
         "",
@@ -262,6 +334,9 @@ def markdown(receipt):
         "## Explicit exclusions",
         "- No implied equation for Growth/Labour/Inflation was inferred from 24 historical outputs.",
         "- A reported source mismatch is not necessarily a data-provider error; it may be a different economic statistic.",
+        "- FRED's UNRATE source-code notes document BLS LNS14000000, but do not certify identical past distribution timestamps/vintages.",
+        "- Eurostat headline-family mapping does not resolve EA20/EA21 or research-vs-canonical first-day transport.",
+        "- Rounded SECO data cannot become the exact SNB cube; monthly ABS CPI is not quarterly CPI.",
         "- A first-release webpage is not equivalent to archived immutable first-release values and revisions.",
         "- No PIT-certified rebase or current-day Macro strength is created by this dossier.",
         "",
