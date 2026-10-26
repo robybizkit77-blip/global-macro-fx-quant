@@ -115,6 +115,17 @@ def make_rows(cutoff: dt.datetime, run_id: str) -> list[dict[str, Any]]:
         rules_fp = str(t0.get("rules_fingerprint") or "WITHHELD")
     except FileNotFoundError:
         pass
+    # Preserve the frozen structural Core vintage. New observations must never
+    # represent the Sep-2026 baseline as a newly recomputed Macro decision.
+    baseline_day = d.get("asOf")
+    if not isinstance(baseline_day, str) or len(baseline_day) != 10:
+        raise ValueError("unverifiable Core structural baseline date")
+    try:
+        baseline_date = dt.date.fromisoformat(baseline_day)
+    except ValueError as exc:
+        raise ValueError("invalid Core structural baseline date") from exc
+    if baseline_date >= cutoff.date():
+        raise ValueError("Core baseline must predate prospective capture")
     rows = []
     for price in d["pairs"]:
         pair = str(price["pair"])
@@ -132,8 +143,15 @@ def make_rows(cutoff: dt.datetime, run_id: str) -> list[dict[str, Any]]:
         inputs["core_pair_state"], withheld["core_pair_state"] = input_record(
             "CORE_SURFACE", state, "live_data/sections/D.json", core_sha, cutoff, d.get("asOf")
         )
+        # The thermometer carries observation *periods* but not certified
+        # PIT publication timestamps; do not leak a post-baseline macro datum
+        # into the frozen structural decision by assigning d.asOf as its time.
+        macro_ccys = macro.get("currencies", {})
         inputs["macro"], withheld["macro"] = input_record(
-            "MACRO", {base: macro.get(base), quote: macro.get(quote)}, "live_data/sections/MACRO_THERMOMETER_DATA.json", macro_sha, cutoff, d.get("asOf")
+            "MACRO",
+            {base: macro_ccys.get(base), quote: macro_ccys.get(quote)},
+            "live_data/sections/MACRO_THERMOMETER_DATA.json", macro_sha, cutoff,
+            None,
         )
         inputs["rates"], withheld["rates"] = input_record(
             "RATES", {base: rates.get(base), quote: rates.get(quote)}, "live_data/sections/NATIVE_RATES_DATA.json", rates_sha, cutoff,
@@ -150,7 +168,7 @@ def make_rows(cutoff: dt.datetime, run_id: str) -> list[dict[str, Any]]:
         # The Core contract states these are context-only; do not log a non-used overlay as an input.
         overlays = {"used": False, "reason": "Risk and liquidity do not alter Core structural scoring, bias, sizing or pair eligibility."}
         body = {
-            "schema_version": "GMFQ_CORE_FORWARD_DECISION_LOGGER_V1.0.0",
+            "schema_version": "GMFQ_CORE_FORWARD_DECISION_LOGGER_V1.1.0",
             "decision_cutoff": cutoff.isoformat().replace("+00:00", "Z"),
             "run_id": run_id,
             "source_commit": commit_sha(),
@@ -161,6 +179,13 @@ def make_rows(cutoff: dt.datetime, run_id: str) -> list[dict[str, Any]]:
             "trade_attractiveness": state.get("state_label"),
             "core_signal": state.get("convergence_winner"),
             "core_score": None,
+            # Versioned observation of an old model, never an engine re-run.
+            "capture_class": "FROZEN_CORE_BASELINE_OBSERVATION",
+            "core_baseline_as_of": baseline_day,
+            "core_recomputed_at_capture": False,
+            "current_macro_score_certified": False,
+            "source_panel_is_true_historical_pit": False,
+            "inputs": inputs,
             "macro_inputs_states": inputs["macro"],
             "rates_2y_10y_ois_cb_states": {k: inputs[k] for k in ("rates", "ois", "central_bank")},
             "cot_positioning": inputs["cot"],
@@ -174,6 +199,8 @@ def make_rows(cutoff: dt.datetime, run_id: str) -> list[dict[str, Any]]:
         body["snapshot_id"] = hashlib.sha256(identity.encode("utf-8")).hexdigest()
         body["snapshot_sha256"] = digest(body)
         rows.append(body)
+    if len(rows) != 28 or len({r["pair"] for r in rows}) != 28:
+        raise ValueError("expected exactly 28 unique frozen canonical pairs")
     return sorted(rows, key=lambda row: row["pair"])
 
 
