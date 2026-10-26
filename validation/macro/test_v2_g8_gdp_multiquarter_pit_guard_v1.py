@@ -1,6 +1,8 @@
 """Synthetic release chronology tests: illustrative values are NOT factual GDP."""
 import copy
+import json
 import unittest
+from pathlib import Path
 from validation.macro.v2_g8_gdp_multiquarter_pit_guard_v1 import validate, snapshot
 
 def event(q, day, value, stage=0, unit="PERCENT_QOQ_SA"):
@@ -26,6 +28,18 @@ class Tests(unittest.TestCase):
         self.assertEqual(final["visible_vintages"]["GBP:2026Q2"]["reported_value"], 0.5)
         self.assertFalse(final["safe_to_use_for_beta"])
         self.assertFalse(final["safe_to_update_live_macro_D"])
+
+    def test_actual_research_fixture_chronology(self):
+        path = Path(__file__).parent / "fixtures/v2_g8_gdp_multiquarter_partial_official_research_v1.json"
+        data = json.loads(path.read_text(encoding="utf-8"))
+        rows = validate(data["records"])
+        q1 = {r["currency"] for r in rows if r["reference_quarter"] == "2026Q1" and r["stage_order"] == 0}
+        self.assertEqual(q1, {"USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"})
+        self.assertFalse(data["eligible_for_macro_scoring"])
+        snap = snapshot(data["records"], "2026-08-01T00:00:00Z")
+        self.assertEqual(snap["visible_vintages"]["USD:2026Q2"]["reported_value"], 1.5)
+        self.assertEqual(snap["visible_vintages"]["NZD:2026Q1"]["reported_value"], 0.8)
+        self.assertFalse(snap["safe_to_change_28_pairs"])
 
     def test_reject_unsafe_release_metadata(self):
         for mutation in ({"stage_order": 2}, {"reported_unit": "PERCENT_SAAR_ANNUALIZED"},
