@@ -20,6 +20,12 @@ An *independent*, explicitly scheduled GitHub Actions workflow at **19:30 Rome w
 
 A scheduled run can be **blocked** by unavailable official feeds or delayed Cron. This is intentional and must not count as successful forward market observation. GitHub schedule does not guarantee execution at a precise time. A cancelled/late admission is **not backfilled** later.
 
+## Oct 26 audit hardening before any first genuine 19:30 capture
+
+The V1.1 future capture logger now validates the exact complete 28-unordered-G8-pair batch atomically before writing it. Checks the canonical V1 contract required fields, the frozen Sept 25 model provenance and no-PIT-promotion fields, deterministic snapshot identity and SHA256, layer-to-publisher digest parity, all nine input states, timestamp `available_at` strictly no later than the frozen decision cutoff, explicit `WITHHELD` null values, independent conservative daily ECB reference T0, and absence of future-return labels. Bad/partial/tampered batches fail without touching the append-only file; no source replay or corrections of old observations are authorized.
+
+The 28 Oct 14 `V1.0.0` test snapshots are preserved byte-for-byte. V1.1 checks apply to genuine prospective additions only. A GREEN offline test does **not** certify that the 19:30 GitHub cron ran or that the official current-day ECB 28-pair price source existed at capture. Real capture remains subject to its separate admission gate and future observed outcomes.
+
 ## What remains unproven
 - Price and instrument-specific later outcomes/costs are not attached, do not exist yet, and must be source and PIT audited.
 - A frozen-core baseline observation does not constitute independent updated Macro score and cannot be presented as an active trade entry.
