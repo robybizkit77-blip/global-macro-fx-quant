@@ -281,10 +281,13 @@ jobs:
                 )
                 ;;
               morning)
+                # CB Pricing already has independent 06:00/06:30/07:00 Rome
+                # source retries. An isolated external CAD/MX failure must not
+                # abort the 09:10 catch-up of FX/Macro/OIS/Calendar/Pages.
+                # Daily G8 CB statuses are separately checked by the publisher.
                 workflows=(
                   macro-persistent-daily-v1.yml
                   rates-persistent-daily-v1.yml
-                  cb-pricing-persistent-daily-v1.yml
                   ois-estimated-snapshot-repricing-v1.yml
                   liquidity-jpy-m3-persistent-daily-v1.yml
                   chf-residual-proxy-refresh-v1.yml
