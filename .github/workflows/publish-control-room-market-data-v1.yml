@@ -18,6 +18,7 @@ on:
     paths:
       - '.github/workflows/publish-control-room-market-data-v1.yml'
       - 'validation/publishing/verify_control_room_market_delivery_v1.py'
+      - 'validation/publishing/test_market_mirror_after_pages_success_v1.py'
       - 'validation/publishing/test_control_room_market_delivery_v1.py'
       - 'validation/check_nzd_rates_reviewed_snapshot_v1.py'
       - 'validation/test_nzd_rates_reviewed_snapshot_v1.py'
@@ -26,7 +27,12 @@ on:
       - 'validation/fixtures/rbnz_b2_independent_source_review_2026-10-19.json'
       - 'validation/run_rates_audit.py'
   workflow_run:
-    workflows: ['Rates Persistent Daily V1','COT Persistent Weekly V1','Pair Setup Operational View V1','Price History Persistent Daily V1']
+    # Pages publishes the canonical payload+manifest; its success is the
+    # completion barrier before the separate market-feed mirror owner runs.
+    # A Rates workflow_run and the Pages job may otherwise contend for the
+    # same gh-pages lease, cancelling one pending workflow and leaving the
+    # payload current but NATIVE_RATES_DATA.json behind by one observation.
+    workflows: ['Rates Persistent Daily V1','COT Persistent Weekly V1','Pair Setup Operational View V1','Price History Persistent Daily V1','Publish Dashboard Pages V1']
     types: [completed]
   workflow_dispatch:
 
@@ -113,6 +119,7 @@ jobs:
       - name: Test market SHA parity and bounded CDN verifier
         run: |
           python validation/publishing/test_control_room_market_delivery_v1.py
+          python validation/publishing/test_market_mirror_after_pages_success_v1.py
           python validation/test_nzd_rates_reviewed_snapshot_v1.py
           python validation/publishing/test_verify_pages_http_delivery_v1.py
 
