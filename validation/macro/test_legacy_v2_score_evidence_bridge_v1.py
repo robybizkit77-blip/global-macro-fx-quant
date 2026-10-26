@@ -99,6 +99,43 @@ class LegacyV2ScoreEvidenceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "source/frequency parity inconsistent"):
             bridge(self.model, self.legacy, bad)
 
+    def test_four_official_semantic_relationships_do_not_approve_pit(self):
+        receipt = bridge(self.model, self.legacy, self.v2)
+        rows = {(r["currency"], r["pillar"]): r for r in receipt["rows"]}
+        expected = {
+            ("USD", "labour"): ("SOURCE_CODE_LINEAGE_DOCUMENTED_NO_PIT_VINTAGE", True),
+            ("EUR", "inflation"): ("HICP_HEADLINE_FAMILY_MATCH_CANONICAL_VINTAGE_UNPROVEN", True),
+            ("CHF", "labour"): ("ROUNDED_SECO_VS_EXACT_SNB_SERIES_VINTAGE_UNPROVEN", False),
+            ("AUD", "inflation"): ("MONTHLY_VS_QUARTERLY_ABS_CPI_HORIZON_DIFFERENT", False),
+        }
+        self.assertEqual(receipt["summary"]["documented_underlying_series_code_links_not_PIT_certified"], 1)
+        self.assertEqual(receipt["summary"]["source_review_cases_with_no_PIT_promotion"], 4)
+        for key, (label, concept) in expected.items():
+            with self.subTest(key=key):
+                row = rows[key]
+                self.assertEqual(row["official_source_relationship_class"], label)
+                self.assertEqual(row["same_statistical_concept_externally_documented"], concept)
+                self.assertTrue(row["official_source_relationship_url"].startswith("https://"))
+                self.assertFalse(row["source_id_and_frequency_match"])
+                self.assertFalse(row["economic_source_code_alias_certified_for_pit_score"])
+                self.assertFalse(row["safe_to_regenerate_pillar_score"])
+                self.assertFalse(row["candidate_history_archived_original_bytes"])
+
+    def test_fred_underlying_bls_source_mapping_is_not_an_unverified_series_alias(self):
+        modified = copy.deepcopy(self.v2)
+        row = next(x for x in modified["rows"]
+                   if x["currency"] == "USD" and x["pillar"] == "labour")
+        row["candidate_evidence_source_id"] = "LNS14000001"
+        with self.assertRaisesRegex(ValueError, "semantic crosswalk not tied"):
+            bridge(self.model, self.legacy, modified)
+        modified = copy.deepcopy(self.v2)
+        row = next(x for x in modified["rows"]
+                   if x["currency"] == "AUD" and x["pillar"] == "inflation")
+        row["candidate_frequency"] = "Q"
+        row["canonical_frequency_matches_candidate"] = True
+        with self.assertRaisesRegex(ValueError, "semantic crosswalk not tied"):
+            bridge(self.model, self.legacy, modified)
+
     def test_never_subtract_incompatible_frequency_from_training_requirement(self):
         modified = copy.deepcopy(self.v2)
         # Any row with a source candidate can be changed to a wrong-identity
