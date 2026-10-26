@@ -6,6 +6,7 @@ on:
     paths:
       - 'validation/rates/build_eur_full_2y_10y_ecb_history_candidate_v1.py'
       - 'validation/rates/test_build_eur_full_2y_10y_ecb_history_candidate_v1.py'
+      - 'live_data/sections/NATIVE_RATES_DATA.json'
       - 'validation/rates/audit_eur_2y_10y_site_consumer_impact_v1.py'
       - 'validation/rates/test_audit_eur_2y_10y_site_consumer_impact_v1.py'
       - 'validation/rates/EUR_2Y_10Y_PUBLISHER_HISTORY_RECONCILIATION_2026-10-26.md'
@@ -66,10 +67,21 @@ jobs:
           assert draft['EUR']['10Y']==orig['EUR']['10Y']
           assert draft['EUR']['tenors']==orig['EUR']['tenors']
           assert all(draft[c]==orig[c] for c in orig if c!='EUR')
-          assert a['per_tenor_official_parity']['2Y']['overlap_yield_mismatches'] >= 250
-          assert a['per_tenor_official_parity']['2Y']['new_publisher_date_count'] >= 10
-          assert a['per_tenor_official_parity']['10Y']['overlap_yield_mismatches'] >= 250
-          assert a['per_tenor_official_parity']['10Y']['new_publisher_date_count'] >= 10
+          is_published=orig['EUR'].get('history_status')=='FULL_ECB_SAME_BASIS_2Y_10Y_OFFICIAL_PUBLISHED'
+          for tenor in ('2Y','10Y'):
+              parity=a['per_tenor_official_parity'][tenor]
+              if is_published:
+                  assert parity['overlap_yield_mismatches']==0,parity
+                  assert parity['new_publisher_date_count']==0,parity
+                  assert parity['stored_observations']==parity['official_observations']==282,parity
+              else:
+                  assert parity['overlap_yield_mismatches']>=250,parity
+                  assert parity['new_publisher_date_count']>=10,parity
+          if is_published:
+              assert orig['EUR']['historical_curve_rebase']['status']=='PUBLISHED_AFTER_SOURCE_AND_BROWSER_QA'
+              assert (orig['EUR']['historical_curve_rebase']['original_paired_values_sha256']
+                      ==a['official_paired_observations_sha256'])
+          print('EUR_SOURCE_STATE','PUBLISHED_VERIFIED' if is_published else 'LEGACY_PRE_REPAIR')
           assert a['candidate_chg2_bp']==orig['EUR']['chg2_bp']
           assert a['candidate_chg10_bp']==orig['EUR']['chg10_bp']
           assert a['candidate_curve_bp']==orig['EUR']['curve_bp']
@@ -87,8 +99,11 @@ jobs:
           import json
           d=json.load(open('/tmp/gmfq-eur2y-10y-site-impact.json'))
           assert d['status']=='CONTROLLED_RELEASE_REQUIRED_NO_AUTO_PROMOTION'
-          assert d['impacts']['2Y']['changed_stored_historical_days'] >= 250
-          assert d['impacts']['10Y']['changed_stored_historical_days'] >= 250
+          original=json.load(open('live_data/sections/NATIVE_RATES_DATA.json'))
+          released=original['EUR'].get('history_status')=='FULL_ECB_SAME_BASIS_2Y_10Y_OFFICIAL_PUBLISHED'
+          for tenor in ('2Y','10Y'):
+              changed=d['impacts'][tenor]['changed_stored_historical_days']
+              assert changed==0 if released else changed>=250,(tenor,changed)
           assert len(d['consumer_classes'])>=5
           assert d['unchanged_latest_official_EUR_2Y_10Y']
           assert not d['quantified_derived_CHF_beta_estimate_reaction']
