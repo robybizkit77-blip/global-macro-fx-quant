@@ -1,0 +1,141 @@
+name: Forward ECB Reference Outcomes V1 (research only)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/forward/observe_official_ecb_reference_outcomes_v1.py'
+      - 'validation/forward/test_observe_official_ecb_reference_outcomes_v1.py'
+      - 'validation/forward/ECB_FORWARD_REFERENCE_OUTCOMES_RUNBOOK_2026-10-26.md'
+      - '.github/workflows/forward-ecb-reference-outcomes-v1.yml'
+  workflow_dispatch:
+  schedule:
+    # Europe/Rome weekday 21:15; both clock offsets, strict UTC/DST gate.
+    - cron: '15 19 * * 1-5'
+    - cron: '15 20 * * 1-5'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: forward-ecb-reference-outcomes-v1
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate reference outcome source and horizon safety
+        run: |
+          python -m py_compile validation/forward/observe_official_ecb_reference_outcomes_v1.py validation/forward/test_observe_official_ecb_reference_outcomes_v1.py
+          python -m unittest validation.forward.test_observe_official_ecb_reference_outcomes_v1 -v
+      - name: Confirm current repository has no faux matured outcomes
+        run: |
+          python -m validation.forward.observe_official_ecb_reference_outcomes_v1 --receipt /tmp/gmfq-forward-ecb-ref-audit.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/gmfq-forward-ecb-ref-audit.json'))
+          assert d['status']=='REFERENCE_ONLY_NOT_TRADE_PERFORMANCE'
+          assert d['no_fake_costs'] and d['no_trading_pnl_claims']
+          assert all(r['trade_net_return'] is None and r['trade_cost_bps'] is None for r in d['new_rows'])
+          assert all(r['capture_class']=='FROZEN_CORE_BASELINE_OBSERVATION' for r in d['new_rows'])
+          print('PROSPECTIVE_ECB_REFERENCE_ONLY_NO_CERTIFIED_TRADES',d['new_reference_observations'])
+          PY
+      - name: Read-only CI cannot touch production
+        run: |
+          test -z "$(git status --porcelain -- live_data site dashboard payload validation/forward/decision_snapshots)"
+          echo ECB_REFERENCE_COMPARISON_CI_NO_PRODUCTION_MUTATION
+
+  observe:
+    needs: test
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Enforce Rome business day and source clock
+        id: gate
+        env:
+          EVENT_TYPE: ${{ github.event_name }}
+          CRON: ${{ github.event.schedule }}
+        run: |
+          python - <<'PY'
+          from datetime import datetime, timezone
+          from zoneinfo import ZoneInfo
+          import os
+          now=datetime.now(timezone.utc).astimezone(ZoneInfo('Europe/Rome'))
+          expected='15 19 * * 1-5' if now.utcoffset().total_seconds()==7200 else '15 20 * * 1-5'
+          valid=(now.weekday()<5 and now.hour>=21 and
+                 (os.environ['EVENT_TYPE']!='schedule' or os.environ['CRON']==expected))
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:
+              f.write('valid='+('true' if valid else 'false')+'\n')
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
+              f.write('## Forward ECB daily reference comparison\n')
+              f.write('- Rome now: '+now.isoformat()+'\n')
+              f.write('- Eligible schedule: '+str(valid)+'\n')
+              f.write('- Scope: daily ECB fixing movement; NOT realized trading performance.\n')
+          print('ECB_REFERENCE_OBSERVER_TIME_GATE',valid)
+          PY
+      - name: Compare only genuine matured snapshot horizons
+        if: steps.gate.outputs.valid == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m validation.forward.observe_official_ecb_reference_outcomes_v1 \
+            --receipt /tmp/gmfq-forward-ecb-ref-receipt.json --append-journal
+          python - <<'PY'
+          import json,os
+          d=json.load(open('/tmp/gmfq-forward-ecb-ref-receipt.json'))
+          assert d['status']=='REFERENCE_ONLY_NOT_TRADE_PERFORMANCE'
+          assert d['no_fake_costs'] and d['no_model_effect']
+          assert all(r['trade_net_return'] is None and r['trade_pnl'] is None for r in d['new_rows'])
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
+              f.write('- Newly observed reference comparisons: '+str(d['new_reference_observations'])+'\n')
+              f.write('- Missing / waiting: '+str(d['blocked_and_waiting'])+'\n')
+          PY
+      - name: Prevent other file mutation
+        if: steps.gate.outputs.valid == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import subprocess
+          paths=subprocess.check_output(['git','status','--porcelain','--untracked-files=all'],text=True).splitlines()
+          allowed='validation/forward/reference_observations/ECB_REFERENCE_COMPARISONS_V1.jsonl'
+          for line in paths:
+              if line[3:] != allowed:
+                  raise SystemExit('UNEXPECTED_REFERENCE_OBSERVER_MUTATION '+line)
+          print('FORWARD_REFERENCE_JOURNAL_ONLY')
+          PY
+      - name: Commit only new non-executable ECB reference comparisons
+        if: steps.gate.outputs.valid == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! -f validation/forward/reference_observations/ECB_REFERENCE_COMPARISONS_V1.jsonl ]]; then
+            echo 'NO_MATURED_REFERENCE_OBSERVATIONS_YET' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git add validation/forward/reference_observations/ECB_REFERENCE_COMPARISONS_V1.jsonl
+          if git diff --cached --quiet; then
+            echo 'REFERENCE_COMPARISONS_ALREADY_RECORDED_NO_COMMIT' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Append genuine forward ECB daily reference comparisons (no PnL)"
+          # Neither a rebase nor a force push is allowed: each observation
+          # must preserve its originating source commit and chronology.
+          git push origin HEAD:main
+          echo 'Immutable reference-only observations committed on main.' >> "$GITHUB_STEP_SUMMARY"
