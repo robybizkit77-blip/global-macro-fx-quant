@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-10-23",
+  "as_of": "2026-10-26",
   "capture_method": "AUTOMATED_PINNED_OFFICIAL_WEBPAGE",
   "currency": "CHF",
   "eligible_for_backtests": false,
@@ -12,10 +12,10 @@
   "provenance": "SNB_PUBLIC_PAGE_DATED_EXACT_10Y",
   "schema": "GMFQ_CHF_SNB_10Y_SPOT_CONTEXT_V1",
   "source": "Swiss National Bank · Current interest rates · Confederation 10Y spot",
-  "source_html_sha256": "50c613975c140767d95cf6b7ff0c8943f89ae1c14e5c62eba1a0a62c74627d60",
+  "source_html_sha256": "8611ebd73399aa2e291674d07943d4df70df5192b5aaf4300fb0f4e5eb7258bc",
   "source_url": "https://www.snb.ch/en/the-snb/mandates-goals/statistics/statistics-pub/current_interest_exchange_rates",
   "status": "OFFICIAL_PUBLISHED_10Y_INFORMATIONAL",
   "tenor": "10Y",
-  "value_percent": 0.491,
+  "value_percent": 0.526,
   "yield_type": "SWISS_CONFEDERATION_ZERO_COUPON_SPOT"
 }
