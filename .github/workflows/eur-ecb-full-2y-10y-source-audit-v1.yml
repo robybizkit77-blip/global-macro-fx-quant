@@ -1,0 +1,76 @@
+name: EUR Official ECB Full 2Y 10Y History Candidate CI (read-only)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/rates/build_eur_full_2y_10y_ecb_history_candidate_v1.py'
+      - 'validation/rates/test_build_eur_full_2y_10y_ecb_history_candidate_v1.py'
+      - 'validation/rates/EUR_2Y_10Y_PUBLISHER_HISTORY_RECONCILIATION_2026-10-26.md'
+      - '.github/workflows/eur-ecb-full-2y-10y-source-audit-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  independent-ecb-history:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test strict source and no-production-write invariants
+        run: |
+          python -m py_compile validation/rates/build_eur_full_2y_10y_ecb_history_candidate_v1.py
+          python -m unittest validation.rates.test_build_eur_full_2y_10y_ecb_history_candidate_v1 -v
+      - name: Fetch original ECB same-basis official 2Y and 10Y history
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error --retry 2 --max-time 45 \
+            'https://data-api.ecb.europa.eu/service/data/YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y?startPeriod=2025-09-16&endPeriod=2026-10-22&format=csvdata' \
+            --header 'Accept: text/csv' --output /tmp/eur-aaa-2y-original.csv
+          curl --fail --location --silent --show-error --retry 2 --max-time 45 \
+            'https://data-api.ecb.europa.eu/service/data/YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_10Y?startPeriod=2025-09-16&endPeriod=2026-10-22&format=csvdata' \
+            --header 'Accept: text/csv' --output /tmp/eur-aaa-10y-original.csv
+      - name: Build and audit full paired source-history candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m validation.rates.build_eur_full_2y_10y_ecb_history_candidate_v1 \
+            --ecb-2y-original /tmp/eur-aaa-2y-original.csv \
+            --ecb-10y-original /tmp/eur-aaa-10y-original.csv \
+            --candidate /tmp/gmfq-eur-full-history-source-candidate.json \
+            --receipt /tmp/gmfq-eur-2y-10y-parity-receipt.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          a=json.loads(Path('/tmp/gmfq-eur-2y-10y-parity-receipt.json').read_text())
+          orig=json.loads(Path('live_data/sections/NATIVE_RATES_DATA.json').read_text())
+          draft=json.loads(Path('/tmp/gmfq-eur-full-history-source-candidate.json').read_text())
+          assert a['schema']=='GMFQ_EUR_2Y_10Y_ECB_FULL_HISTORICAL_CANDIDATE_V1'
+          assert a['status']=='CANDIDATE_FOR_SEPARATE_REVIEW_NOT_PUBLISHED'
+          assert a['current_rate_snapshot_unchanged']
+          assert a['other_seven_G8_unchanged']
+          assert a['5Y_30Y_tenors_unchanged']
+          assert a['no_smoothing_or_date_imputation']
+          assert not a['actual_production_promotion']
+          assert not a['first_release_vintage_certified']
+          assert draft['EUR']['2Y']==orig['EUR']['2Y']
+          assert draft['EUR']['10Y']==orig['EUR']['10Y']
+          assert draft['EUR']['tenors']==orig['EUR']['tenors']
+          assert all(draft[c]==orig[c] for c in orig if c!='EUR')
+          assert a['per_tenor_official_parity']['2Y']['overlap_yield_mismatches'] >= 250
+          assert a['per_tenor_official_parity']['2Y']['new_publisher_date_count'] >= 10
+          print('OFFICIAL_ECB_2Y_10Y_RECONCILIATION_RECEIPT',json.dumps(a,sort_keys=True))
+          print('EUR_SOURCE_CANDIDATE_ONLY_NO_PUBLISH_NO_MODEL_CHANGE')
+          PY
+      - name: Confirm no official rate mirror, Core, report or runtime mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain -- live_data validation/forward site dashboard payload)"
+          echo ECB_ORIGINAL_SOURCE_CANDIDATE_READ_ONLY_CI_PASS
