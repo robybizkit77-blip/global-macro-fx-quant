@@ -1,0 +1,126 @@
+{
+  "schema": "GMFQ_G8_REAL_GDP_Q2_2026_PUBLISHER_WEB_RELEASE_EVENTS_V1",
+  "reviewed_on": "2026-10-26",
+  "release_artifact_original_day_bytes_archived": false,
+  "release_timestamp_intraday_independently_verified": false,
+  "asof_policy": "CONSERVATIVE_DATE_ONLY_PUBLICLY_VISIBLE_FROM_NEXT_UTC_DAY",
+  "gdp_reporting_horizon_not_uniform": true,
+  "eligible_for_macro_scoring": false,
+  "eligible_for_beta": false,
+  "eligible_for_forward": false,
+  "may_rewrite_D_json": false,
+  "observed_first_web_releases": 8,
+  "observed_follow_up_revisions": 2,
+  "records": [
+    {
+      "currency": "USD",
+      "reference_quarter": "2026Q2",
+      "publisher_release_day": "2026-07-30",
+      "reported_value": 1.5,
+      "reported_unit": "PERCENT_SAAR_ANNUALIZED",
+      "publication_stage": "ADVANCE",
+      "source_url": "https://www.bea.gov/news/2026/gdp-advance-estimate-2nd-quarter-2026",
+      "source_description": "BEA real GDP, percent change at seasonally adjusted annual rate; NOT quarterly QoQ",
+      "stage_order": 0
+    },
+    {
+      "currency": "EUR",
+      "reference_quarter": "2026Q2",
+      "publisher_release_day": "2026-07-30",
+      "reported_value": 0.4,
+      "reported_unit": "PERCENT_QOQ_SA_CALENDAR",
+      "publication_stage": "PRELIMINARY_FLASH",
+      "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-30072026-ap",
+      "source_description": "Euro area EA21 real GDP chain-linked volume SA; first preliminary flash",
+      "stage_order": 0
+    },
+    {
+      "currency": "GBP",
+      "reference_quarter": "2026Q2",
+      "publisher_release_day": "2026-08-13",
+      "reported_value": 0.4,
+      "reported_unit": "PERCENT_QOQ_SA",
+      "publication_stage": "FIRST_QUARTERLY_ESTIMATE",
+      "source_url": "https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/gdpfirstquarterlyestimateuk/apriltojune2026",
+      "source_description": "ONS real GDP chained volume measures Q2 first quarterly estimate",
+      "stage_order": 0
+    },
+    {
+      "currency": "JPY",
+      "reference_quarter": "2026Q2",
+      "publisher_release_day": "2026-08-17",
+      "reported_value": 0.3,
+      "reported_unit": "PERCENT_QOQ_SA",
+      "publication_stage": "FIRST_PRELIMINARY",
+      "source_url": "https://www.esri.cao.go.jp/en/sna/data/sokuhou/files/2026/qe262/gdemenuea.html",
+      "source_description": "Cabinet Office ESRI GDP expenditure real seasonally adjusted Q2 first preliminary",
+      "stage_order": 0
+    },
+    {
+      "currency": "CHF",
+      "reference_quarter": "2026Q2",
+      "publisher_release_day": "2026-08-14",
+      "reported_value": 1.5,
+      "reported_unit": "PERCENT_QOQ_SA_CALENDAR_SPORTS",
+      "publication_stage": "FLASH",
+      "source_url": "https://www.schweizerischesseeschifffahrtsamt.eda.admin.ch/en/newnsb/1BH4HnCuYPWb_WqjPywR4",
+      "source_description": "SECO GDP flash real GDP seasonal/calendar and sports-event adjusted; government release mirror",
+      "stage_order": 0
+    },
+    {
+      "currency": "CAD",
+      "reference_quarter": "2026Q2",
+      "publisher_release_day": "2026-08-28",
+      "reported_value": 0.8,
+      "reported_unit": "PERCENT_QOQ_SA",
+      "publication_stage": "FIRST_RELEASE",
+      "source_url": "https://www150.statcan.gc.ca/n1/daily-quotidien/260828/dq260828a-eng.htm",
+      "source_description": "Statistics Canada total expenditure GDP chained 2017 dollars; Table 36-10-0104-01",
+      "stage_order": 0
+    },
+    {
+      "currency": "AUD",
+      "reference_quarter": "2026Q2",
+      "publisher_release_day": "2026-09-02",
+      "reported_value": 0.4,
+      "reported_unit": "PERCENT_QOQ_SA_CHAIN_VOLUME",
+      "publication_stage": "FIRST_RELEASE",
+      "source_url": "https://www.abs.gov.au/statistics/economy/national-accounts/australian-national-accounts-national-income-expenditure-and-product/jun-2026",
+      "source_description": "ABS June 2026 GDP seasonally adjusted chain volume quarterly percent",
+      "stage_order": 0
+    },
+    {
+      "currency": "NZD",
+      "reference_quarter": "2026Q2",
+      "publisher_release_day": "2026-09-17",
+      "reported_value": 0.2,
+      "reported_unit": "PERCENT_QOQ_SA_CHAIN_VOLUME_PRODUCTION",
+      "publication_stage": "FIRST_RELEASE",
+      "source_url": "https://www.stats.govt.nz/information-releases/gross-domestic-product-june-2026-quarter/",
+      "source_description": "Stats NZ GDP production real seasonally adjusted chain volume quarterly percent; NOT YoY or annual average",
+      "stage_order": 0
+    },
+    {
+      "currency": "EUR",
+      "reference_quarter": "2026Q2",
+      "publisher_release_day": "2026-09-07",
+      "reported_value": 0.6,
+      "reported_unit": "PERCENT_QOQ_SA_CALENDAR",
+      "publication_stage": "REGULAR_ESTIMATE_REVISED",
+      "source_url": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-07092026-ap",
+      "source_description": "Eurostat revised Q2 EA21 real GDP to 0.6 from 0.4 preliminary flash",
+      "stage_order": 1
+    },
+    {
+      "currency": "GBP",
+      "reference_quarter": "2026Q2",
+      "publisher_release_day": "2026-09-30",
+      "reported_value": 0.5,
+      "reported_unit": "PERCENT_QOQ_SA",
+      "publication_stage": "QUARTERLY_NATIONAL_ACCOUNTS_REVISION",
+      "source_url": "https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/quarterlynationalaccounts/apriltojune2026",
+      "source_description": "ONS detailed quarterly national accounts Q2 revised to 0.5 from 0.4 first quarterly estimate",
+      "stage_order": 1
+    }
+  ]
+}

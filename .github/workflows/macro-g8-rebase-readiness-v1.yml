@@ -17,6 +17,9 @@ on:
       - 'validation/macro/test_legacy_v2_score_evidence_bridge_v1.py'
       - 'validation/macro/v2_g8_quarterly_gdp_research_target_v1.py'
       - 'validation/macro/test_v2_g8_quarterly_gdp_research_target_v1.py'
+      - 'validation/macro/fixtures/v2_g8_quarterly_gdp_q2_2026_web_release_ledger_v1.json'
+      - 'validation/macro/v2_g8_quarterly_gdp_web_release_ledger_v1.py'
+      - 'validation/macro/test_v2_g8_quarterly_gdp_web_release_ledger_v1.py'
       - 'validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json'
       - 'validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-22.json'
       - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
@@ -43,6 +46,9 @@ on:
       - 'validation/macro/test_legacy_v2_score_evidence_bridge_v1.py'
       - 'validation/macro/v2_g8_quarterly_gdp_research_target_v1.py'
       - 'validation/macro/test_v2_g8_quarterly_gdp_research_target_v1.py'
+      - 'validation/macro/fixtures/v2_g8_quarterly_gdp_q2_2026_web_release_ledger_v1.json'
+      - 'validation/macro/v2_g8_quarterly_gdp_web_release_ledger_v1.py'
+      - 'validation/macro/test_v2_g8_quarterly_gdp_web_release_ledger_v1.py'
       - 'validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json'
       - 'validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-22.json'
       - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
@@ -176,6 +182,27 @@ jobs:
           assert r['can_change_28_pair_theses'] is False
           assert r['writes_live_data'] is False
           print('G8_GROWTH_GDP_RESEARCH_DESIGN_VERIFIED_NO_MACRO_PROMOTION')
+          PY
+      - name: Audit eight period-specific Q2 GDP first web releases and later revisions (no scoring)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest validation.macro.test_v2_g8_quarterly_gdp_web_release_ledger_v1 -v
+          python -m validation.macro.v2_g8_quarterly_gdp_web_release_ledger_v1 \
+            --out /tmp/macro-g8-rebase/gdp-q2-2026-web-release-ledger.json \
+            --markdown /tmp/macro-g8-rebase/gdp-q2-2026-web-release-ledger.md
+          cat /tmp/macro-g8-rebase/gdp-q2-2026-web-release-ledger.md >> "$GITHUB_STEP_SUMMARY"
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/macro-g8-rebase/gdp-q2-2026-web-release-ledger.json'))
+          assert r['audit']['summary']['first_publisher_web_statements_documented']==8
+          assert r['audit']['summary']['documented_followup_revisions']==2
+          assert r['snapshot']['visible_currency_count']==8
+          assert r['audit']['safe_to_update_live_macro_D'] is False
+          assert r['audit']['safe_to_use_for_beta'] is False
+          assert r['audit']['safe_to_use_for_forward'] is False
+          assert r['audit']['writes_live_data'] is False
+          print('G8_GDP_Q2_FIRST_WEB_EIGHT_WITH_TWO_REVISIONS_PIT_SCORING_BLOCKED')
           PY
       - name: Join source-to-engine and official release PIT evidence (no Macro rebase)
         shell: bash
