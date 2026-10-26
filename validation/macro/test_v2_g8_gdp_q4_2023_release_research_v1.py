@@ -70,11 +70,11 @@ class GDP2023Q4ResearchTests(unittest.TestCase):
 
     def test_extended_unified_quarter_union_research_only(self):
         receipt=research_receipt()
-        self.assertEqual(receipt["quarters_documented"],17)
-        self.assertEqual(receipt["first_publisher_statements_documented"],136)
+        self.assertEqual(receipt["quarters_documented"],18)
+        self.assertEqual(receipt["first_publisher_statements_documented"],144)
         rows=unified_research_rows()
         first={(r["currency"],r["reference_quarter"]) for r in rows if r["stage_order"]==0}
-        self.assertEqual(len(first),136)
+        self.assertEqual(len(first),144)
         for flag in ("safe_to_update_live_macro_D","safe_to_use_for_beta",
                      "safe_to_use_for_forward","safe_to_change_28_pairs",
                      "historical_training_approved","intraday_PIT_certified"):
