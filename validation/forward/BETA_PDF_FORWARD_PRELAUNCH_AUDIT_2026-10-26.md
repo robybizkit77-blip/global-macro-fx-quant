@@ -11,7 +11,8 @@ The actual repository beta implementation:
 - It does **not** generate an official, historically point-in-time weekly input panel; the CSV is caller supplied.
 - Output correctly labels `RESEARCH_NOT_VALIDATED` and B1/B2 **NOT_EVALUATED** (canonical definitions absent). No production promotion, historical proof, beta regime, score or backtest.
 - The 10-point procedure: (1) purpose/reference **partly chosen**; (2) PIT panel **not certified**; (3) frequency sensitivity **not tested**; (4) OLS and HC3 robust standard error **implemented in research only**, no HAC or certified PIT; (5) Huber plus leave-one-out sensitivity **implemented in research only**; (6) one-week Dimson lead/lag **retrospective-only diagnostic**, no future x(t+1) permitted in a signal; (7) four consecutive 52W rolling estimates **research only**, EWMA/Kalman not added or calibrated; (8) shrinkage when relevant **not tested**; (9) symmetric two-asset estimator suitability **not evaluated**; (10) strict OOS variance reduction **not demonstrated**.
-- Steps 4–7 above were expanded on 26 October through PR #656 (HC3 / Huber) and PR #657 (Dimson / rolling); observational gates, historical panel limitations, and performance certification remain blocked.\n- **Do not invent B1/B2 rules** to produce a superficial PASS. Later gate the meaningful minimum for our FX use case and explicitly justify any method exclusions.
+- Steps 4–7 above were expanded on 26 October through PR #656 (HC3 / Huber) and PR #657 (Dimson / rolling); observational gates, historical panel limitations, and performance certification remain blocked.
+- **Do not invent B1/B2 rules** to produce a superficial PASS. Later gate the meaningful minimum for our FX use case and explicitly justify any method exclusions.
 
 ## Forward: preserve real-time observations, never retrospective pseudo evidence
 
