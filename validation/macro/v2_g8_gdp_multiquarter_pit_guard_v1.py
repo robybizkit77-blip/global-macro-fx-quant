@@ -12,7 +12,7 @@ PUBLISHER_HOSTS = {
     "EUR": {"ec.europa.eu"},
     "GBP": {"www.ons.gov.uk"},
     "JPY": {"www.esri.cao.go.jp", "www5.cao.go.jp"},
-    "CHF": {"www.seco.admin.ch", "www.pfp.admin.ch", "www.efd.admin.ch"},
+    "CHF": {"www.seco.admin.ch", "www.pfp.admin.ch", "www.efd.admin.ch", "www.admin.ch"},
     "CAD": {"www150.statcan.gc.ca"},
     "AUD": {"www.abs.gov.au"},
     "NZD": {"www.stats.govt.nz"},
@@ -54,11 +54,17 @@ def validate(rows):
             raise ValueError("publisher host must be separately pinned")
         if row.get("eligible_for_macro_scoring") is not False or row.get("PIT_training_vintage_certified") is not False:
             raise ValueError("unapproved historical promotion")
+        base = row.get("reference_base_year")
+        if base is not None and (type(base) is not int or not (1990 <= base <= 2050)):
+            raise ValueError("invalid reference benchmark")
+        if type(row.get("methodology_break_acknowledged", False)) is not bool:
+            raise ValueError("invalid methodology flag")
         key = (c, q, stage)
         if key in seen:
             raise ValueError("duplicate release stage")
         seen.add(key)
-        groups.setdefault((c, q), []).append((stage, release, unit))
+        groups.setdefault((c, q), []).append((stage, release, unit, base,
+                                                 row.get("methodology_break_acknowledged") is True))
         result.append({**row, "conservative_available_from_utc": release.isoformat()})
     for stages in groups.values():
         stages.sort()
@@ -68,6 +74,12 @@ def validate(rows):
             raise ValueError("incomparable revision definitions")
         if any(a[1] >= b[1] for a, b in zip(stages, stages[1:])):
             raise ValueError("revision cannot arrive before earlier release")
+        if stages[0][4]:
+            raise ValueError("first release cannot claim a change from an earlier stage")
+        for a, b in zip(stages, stages[1:]):
+            changed = a[3] != b[3]
+            if changed != b[4]:
+                raise ValueError("reference benchmark change must be explicitly acknowledged")
     return result
 
 def snapshot(rows, cutoff_utc):
