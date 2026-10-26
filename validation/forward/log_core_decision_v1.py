@@ -281,7 +281,7 @@ def main() -> int:
         "batch_sha256": digest(rows),
         "result": result,
     }
-    if not args.dry_run:
+    if not args.dry_run and result["written"]:
         RECEIPTS.mkdir(parents=True, exist_ok=True)
         (RECEIPTS / f"{cutoff.date().isoformat()}__{args.run_id}__V1.json").write_bytes(canonical(receipt))
     print(json.dumps(receipt, ensure_ascii=False, sort_keys=True))
