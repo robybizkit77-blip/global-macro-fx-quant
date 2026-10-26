@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_CHATGPT_MARKET_CONTEXT_V1",
-  "generated_at_utc": "2026-10-26T10:40:25Z",
+  "generated_at_utc": "2026-10-26T11:42:49Z",
   "evaluation_date_europe_rome": "2026-10-26",
   "reference_only": true,
   "policy": {
@@ -66,14 +66,24 @@
         "change_10y_bp": -9.0
       },
       "EUR": {
-        "state": "STALE",
-        "as_of": "2026-10-22",
-        "reason": "Age 4d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-10-23",
+        "source": "European Central Bank · AAA Svensson spot curve · 2026-10-23",
+        "government_2y_pct": 2.9835,
+        "government_10y_pct": 3.3694,
+        "10y_minus_2y_bp": 38.6,
+        "change_2y_bp": -4.7,
+        "change_10y_bp": -7.5
       },
       "GBP": {
-        "state": "STALE",
-        "as_of": "2026-10-22",
-        "reason": "Age 4d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-10-23",
+        "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-10-23",
+        "government_2y_pct": 4.7074,
+        "government_10y_pct": 5.3475,
+        "10y_minus_2y_bp": 64.0,
+        "change_2y_bp": 6.4,
+        "change_10y_bp": 1.0
       },
       "JPY": {
         "state": "AVAILABLE_CERTIFIED",
