@@ -15,6 +15,8 @@ on:
       - 'validation/macro/test_rebase_workflow_event_coverage_v1.py'
       - 'validation/macro/legacy_v2_score_evidence_bridge_v1.py'
       - 'validation/macro/test_legacy_v2_score_evidence_bridge_v1.py'
+      - 'validation/macro/v2_g8_quarterly_gdp_research_target_v1.py'
+      - 'validation/macro/test_v2_g8_quarterly_gdp_research_target_v1.py'
       - 'validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json'
       - 'validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-22.json'
       - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
@@ -39,6 +41,8 @@ on:
       - 'validation/macro/test_rebase_workflow_event_coverage_v1.py'
       - 'validation/macro/legacy_v2_score_evidence_bridge_v1.py'
       - 'validation/macro/test_legacy_v2_score_evidence_bridge_v1.py'
+      - 'validation/macro/v2_g8_quarterly_gdp_research_target_v1.py'
+      - 'validation/macro/test_v2_g8_quarterly_gdp_research_target_v1.py'
       - 'validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-20.json'
       - 'validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-22.json'
       - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
@@ -153,6 +157,25 @@ jobs:
                 'wrong: '+str(s['candidate_wrong_id_or_frequency'])+
                 '; absent: '+str(s['candidate_missing'])+
                 '. New scores certified: **0**.')
+          PY
+      - name: Research-only G8 quarterly real GDP target with same-vintage QoQ gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest validation.macro.test_v2_g8_quarterly_gdp_research_target_v1 -v
+          python -m validation.macro.v2_g8_quarterly_gdp_research_target_v1 \
+            --out /tmp/macro-g8-rebase/gdp-quarterly-research-target-v1.json \
+            --markdown /tmp/macro-g8-rebase/gdp-quarterly-research-target-v1.md
+          cat /tmp/macro-g8-rebase/gdp-quarterly-research-target-v1.md >> "$GITHUB_STEP_SUMMARY"
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/macro-g8-rebase/gdp-quarterly-research-target-v1.json'))
+          assert len(r['rows'])==8
+          assert r['summary']['official_primary_GDP_PIT_source_series_admitted']==0
+          assert r['can_replace_2026_09_25_D_macro'] is False
+          assert r['can_change_28_pair_theses'] is False
+          assert r['writes_live_data'] is False
+          print('G8_GROWTH_GDP_RESEARCH_DESIGN_VERIFIED_NO_MACRO_PROMOTION')
           PY
       - name: Join source-to-engine and official release PIT evidence (no Macro rebase)
         shell: bash
