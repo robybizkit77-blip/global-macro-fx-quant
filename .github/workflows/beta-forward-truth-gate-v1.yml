@@ -1,0 +1,54 @@
+name: Beta PDF and Forward Ledger Truth Gate V1 (unscheduled)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/beta/**'
+      - 'validation/forward/**'
+      - 'validation/test_forward_decision_logger_v1.py'
+      - '.github/workflows/beta-forward-truth-gate-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fail-closed-prelaunch-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile Beta and Forward research / safety code
+        run: |
+          python -m py_compile validation/beta/rate_beta_observational_v1.py validation/forward/log_core_decision_v1.py validation/forward/attach_core_outcomes_v1.py validation/forward/audit_beta_forward_launch_readiness_v1.py validation/forward/test_attach_core_outcomes_safety_v1.py validation/forward/test_audit_beta_forward_launch_readiness_v1.py
+      - name: Run original observational Beta and forward logger tests
+        run: |
+          python validation/beta/test_rate_beta_observational_v1.py
+          python validation/test_forward_decision_logger_v1.py
+      - name: Test anti-lookahead outcome + archived forward launch evidence
+        run: |
+          python -m unittest validation.forward.test_attach_core_outcomes_safety_v1 -v
+          python -m unittest validation.forward.test_audit_beta_forward_launch_readiness_v1 -v
+      - name: Report actual blocked Beta / Forward launch evidence
+        run: |
+          python -m validation.forward.audit_beta_forward_launch_readiness_v1 --out /tmp/gmfq-beta-forward-readiness.json
+          python - <<'PY'
+          import json
+          data=json.load(open('/tmp/gmfq-beta-forward-readiness.json',encoding='utf-8'))
+          assert data['state']=='NOT_READY_FOR_FINAL_LAUNCH_SIGNOFF'
+          assert data['forward']['decision_rows']==28
+          assert data['forward']['outcome_rows']==0
+          assert data['forward']['decision_snapshot_hash_mismatches']==0
+          assert data['forward']['duplicate_snapshot_ids']==0
+          assert data['beta']['observational_contract_present']
+          assert not data['beta_promoted'] and not data['forward_performance_promoted']
+          print('BETA_FORWARD_NOT_READY_TRUTHFUL_READONLY_GATE_PASS')
+          PY
+      - name: No production, core, site or archived ledger modifications
+        run: |
+          test -z "$(git status --porcelain -- live_data site dashboard payload validation/forward/decision_snapshots)"
+          echo READ_ONLY_SIGNOFF_QA_NO_BACKFILL_NO_TRADES_NO_PRODUCTION_MUTATION
