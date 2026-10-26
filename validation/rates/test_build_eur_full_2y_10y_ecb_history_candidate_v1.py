@@ -51,7 +51,8 @@ class FullECBSameBasisHistoryTests(unittest.TestCase):
         notice=cand["EUR"]["historical_curve_rebase"]
         self.assertEqual(notice["schema"],"GMFQ_EUR_2Y_10Y_HISTORY_REBASE_NOTICE_V1")
         self.assertEqual(notice["status"],"RESEARCH_CANDIDATE_NOT_PUBLISHED")
-        self.assertEqual(notice["original_point_count"],271)
+        self.assertEqual(notice["original_point_count"],
+                         len(self.live["EUR"]["history2"]["dates"]))
         self.assertTrue(notice["requires_explicit_release"])
         self.assertTrue(notice["source_rebase_not_market_move"])
         self.assertFalse(notice["historical_first_release_pit_certified"])
