@@ -114,6 +114,8 @@ jobs:
           PY
           git diff --exit-code -- live_data/sections/D.json \
             live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
+      - name: Validate 16-source latest official release PIT evidence (read only)
+        run: python -m unittest validation.macro.test_latest_release_pit_ledger_v1 -v
       - name: Join source-to-engine and official release PIT evidence (no Macro rebase)
         shell: bash
         run: |
