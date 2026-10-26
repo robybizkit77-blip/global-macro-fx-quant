@@ -665,8 +665,12 @@ function expectedReactionFromMetrics(row){
       swissVisible:!!p?.querySelector('#gmfq-chf-snb-10y-context')?.getClientRects().length,
       sourceDetailPresent:!!p?.querySelector('#gmfq-source-readiness')};
   });
-  if(!expandedSourceDetail.open||!expandedSourceDetail.secondaryVisible||!expandedSourceDetail.swissVisible||
-     !expandedSourceDetail.sourceDetailPresent)
+  // No secondary quote card is needed once all three USD/EUR/CHF
+  // observation lanes are individually verified GREEN_ESTIMATED. Cards
+  // must appear only for currently WITHHELD lanes with audited context.
+  if(!expandedSourceDetail.open||
+     expandedSourceDetail.secondaryVisible!==(expectedSecondaryQuotes>0)||
+     !expandedSourceDetail.swissVisible||!expandedSourceDetail.sourceDetailPresent)
     throw Error(label+' Rates full source research unavailable '+JSON.stringify(expandedSourceDetail));
   console.log('CONTROL_ROOM_V10_RATES_DECISION_FIRST_GREEN',label,{status:research.sourceStatus,sourceCount:research.fourCurves,withheld:research.withheld});
   if(!plottedOfficial.length)throw Error(label+' no valid official curve to filter');
