@@ -12,7 +12,7 @@ PUBLISHER_HOSTS = {
     "EUR": {"ec.europa.eu"},
     "GBP": {"www.ons.gov.uk"},
     "JPY": {"www.esri.cao.go.jp", "www5.cao.go.jp"},
-    "CHF": {"www.seco.admin.ch", "www.pfp.admin.ch", "www.efd.admin.ch", "www.admin.ch", "www.edi.admin.ch", "www.sif.admin.ch", "www.schweizerischesseeschifffahrtsamt.eda.admin.ch", "www.geo.admin.ch"},
+    "CHF": {"www.seco.admin.ch", "www.pfp.admin.ch", "www.efd.admin.ch", "www.admin.ch", "www.edi.admin.ch", "www.sif.admin.ch", "www.schweizerischesseeschifffahrtsamt.eda.admin.ch", "www.geo.admin.ch", "www.seco-cooperation.admin.ch"},
     "CAD": {"www150.statcan.gc.ca"},
     "AUD": {"www.abs.gov.au"},
     "NZD": {"www.stats.govt.nz"},
