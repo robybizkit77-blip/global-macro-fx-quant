@@ -30,6 +30,7 @@ def main() -> None:
     assert c["rules"]["core_scoring_effect"] == "NONE"
     assert c["rules"]["official_promotion_effect"] == "NONE"
     assert c["rules"]["premorning_avoids_not_yet_ready_sources"] is True
+    assert c["rules"]["premorning_calendar_news_selective_retry"] is True
     assert c["separate_cadences"]["COT"] == "cot-persistent-weekly-v1.yml"
     assert c["separate_cadences"]["CB_PRICING_MORNING"] == "cb-pricing-persistent-daily-v1.yml"
     assert c["rules"]["prebrief_cb_pricing_independent_source_outage_isolation"] is True
@@ -74,12 +75,17 @@ def main() -> None:
     assert c["rules"]["prebrief_recovers_official_previous_close_vix"] is True
     assert c["rules"]["morning_0910_is_catch_up_not_first_refresh"] is True
     assert c["phases"]["premorning"] == [
+        "calendar-news-operational-refresh-v1.yml",
         "rates-persistent-daily-v1.yml",
         "final-e2e-certification-gate-v3.yml",
         "publish-dashboard-pages-v1.yml",
     ]
     assert "macro-persistent-daily-v1.yml" not in c["phases"]["premorning"]
     assert "ois-estimated-snapshot-repricing-v1.yml" not in c["phases"]["premorning"]
+    assert "calendar-news-operational-refresh-v1.yml" in c["phases"]["premorning"]
+    assert 'plan_premorning_calendar_news_recovery_v1.py' in WORKFLOW.read_text()
+    assert 'SKIPPED** (both sources already rechecked today' in WORKFLOW.read_text()
+    assert 'RETRY** (missing or stale same-day source receipt)' in WORKFLOW.read_text()
     assert "chf-residual-proxy-refresh-v1.yml" not in c["phases"]["premorning"]
     assert "jpy-reserve-balances-proxy-refresh-v1.yml" not in c["phases"]["premorning"]
 

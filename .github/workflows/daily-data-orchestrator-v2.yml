@@ -14,6 +14,8 @@ on:
       - 'validation/orchestration/check_child_execution_steps_v1.py'
       - 'validation/orchestration/test_check_child_execution_steps_v1.py'
       - 'validation/orchestration/test_orchestrator_readonly_api_retry_v1.py'
+      - 'validation/orchestration/plan_premorning_calendar_news_recovery_v1.py'
+      - 'validation/orchestration/test_plan_premorning_calendar_news_recovery_v1.py'
   push:
     branches: [main]
     paths:
@@ -27,6 +29,8 @@ on:
       - 'validation/orchestration/check_child_execution_steps_v1.py'
       - 'validation/orchestration/test_check_child_execution_steps_v1.py'
       - 'validation/orchestration/test_orchestrator_readonly_api_retry_v1.py'
+      - 'validation/orchestration/plan_premorning_calendar_news_recovery_v1.py'
+      - 'validation/orchestration/test_plan_premorning_calendar_news_recovery_v1.py'
   workflow_dispatch:
     inputs:
       phase:
@@ -104,6 +108,8 @@ jobs:
               raise SystemExit('ORCHESTRATOR_PHASE_ARRAY_COUNT_DRIFT')
           print('ORCHESTRATOR_SERIALIZED_BASH_SYNTAX_PASS')
           PY
+      - name: Test pre-morning Calendar/News selective recheck recovery
+        run: python -m unittest validation.orchestration.test_plan_premorning_calendar_news_recovery_v1 -v
       - name: Test transient GitHub run/job reads without duplicate dispatch
         run: python validation/orchestration/test_orchestrator_readonly_api_retry_v1.py
 
@@ -263,9 +269,12 @@ jobs:
                 )
                 ;;
               premorning)
-                # CB Pricing runs separately before the 08:00 desk; never duplicate
-                # it here, or an isolated MX source outage can block Pages.
+                # CB Pricing runs separately before 08:00.
+                # Calendar/News is a selective RECOVERY, not a blind duplicate:
+                # skip its independent collector if it already checked both
+                # public views today (Europe/Rome); retry stale or invalid evidence.
                 workflows=(
+                  calendar-news-operational-refresh-v1.yml
                   rates-persistent-daily-v1.yml
                   final-e2e-certification-gate-v3.yml
                   publish-dashboard-pages-v1.yml
@@ -308,6 +317,18 @@ jobs:
 
             echo "## Daily Data Orchestrator V2 — ${phase}" >> "$GITHUB_STEP_SUMMARY"
             for wf in "${workflows[@]}"; do
+              # A missed/failed 05:00 Calendar/News check must be recoverable
+              # during the 07:45 safety pass. When BOTH producer receipts have
+              # already been rechecked today, avoid duplicate source work.
+              # The 05:00 primary and 05:17 independent collector still lead.
+              if [[ "$phase" == "premorning" && "$wf" == "calendar-news-operational-refresh-v1.yml" ]]; then
+                if python3 validation/orchestration/plan_premorning_calendar_news_recovery_v1.py \
+                  --source-dir live_data/sections; then
+                  echo "- 07:45 Calendar/News: **SKIPPED** (both sources already rechecked today, Rome); no new acquisition claimed" >> "$GITHUB_STEP_SUMMARY"
+                  continue
+                fi
+                echo "- 07:45 Calendar/News: **RETRY** (missing or stale same-day source receipt)" >> "$GITHUB_STEP_SUMMARY"
+              fi
               # Final E2E is a structural check, not proof that dated
               # market sources are ready. Refuse the explicit 05:00/07:45
               # Pages dispatch unless the actual refreshed main feeds pass.
