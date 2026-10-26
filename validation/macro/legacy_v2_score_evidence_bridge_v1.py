@@ -266,7 +266,7 @@ def markdown(receipt):
         "- No PIT-certified rebase or current-day Macro strength is created by this dossier.",
         "",
     ]
-    return "\\n".join(lines)
+    return "\n".join(lines)
 
 
 def run():
@@ -293,7 +293,7 @@ def main():
                                        indent=2) + "\n", encoding="utf-8")
     if args.markdown:
         args.markdown.parent.mkdir(parents=True, exist_ok=True)
-        args.markdown.write_text(markdown(receipt) + "\\n", encoding="utf-8")
+        args.markdown.write_text(markdown(receipt) + "\n", encoding="utf-8")
     print(json.dumps({
         "status": receipt["status"], **receipt["summary"],
         "safe_to_publish_new_D": False,
