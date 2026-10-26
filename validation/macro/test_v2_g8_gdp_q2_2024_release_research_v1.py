@@ -92,7 +92,16 @@ class GDP2024Q2ResearchTests(unittest.TestCase):
         self.assertEqual(quarters,{"2024Q2","2024Q3","2024Q4","2025Q1","2025Q2",
                                    "2025Q3","2025Q4","2026Q1","2026Q2"})
         first={(r["currency"],r["reference_quarter"]) for r in all_rows if r["stage_order"]==0}
-        self.assertEqual(len(first),72)
+        # PR #677 stores 7 other 2026Q2 currencies in an independent, pinned
+        # publisher web ledger; they are NOT yet part of this normalized guard.
+        # Preserve that boundary; do not claim all 72 have been PIT-normalized.
+        self.assertEqual(len(first),65)
+        q2_ledger=json.loads((FIX/"v2_g8_quarterly_gdp_q2_2026_web_release_ledger_v1.json").read_text(encoding="utf-8"))
+        q2_first={(r["currency"],r["reference_quarter"]) for r in q2_ledger["records"]
+                  if r["stage_order"]==0}
+        self.assertEqual(len(q2_first),8)
+        self.assertEqual(len(first | q2_first),72)
+        self.assertEqual(len(q2_first - first),7)
         asof=snapshot(all_rows,"2024-09-20T00:00:00Z")
         self.assertIn("NZD:2024Q2",asof["visible_vintages"])
         self.assertNotIn("USD:2024Q3",asof["visible_vintages"])
