@@ -23,17 +23,40 @@ logger=load("log_core_decision_v1")
 
 
 def minimal():
-    fx={
-        "status":"CURRENT_OFFICIAL_HISTORY",
-        "source_url":"https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-        "last_as_of":"2026-10-26",
+    day = "2026-10-26"
+    quote = {ccy: 1.1 + i/10 for i, ccy in enumerate(gate.G8)}
+    quote["EUR"] = 1.0
+    ecb_row = {"Date": day, **quote}
+    fx = {
+        "status": "CURRENT_OFFICIAL_HISTORY",
+        "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+        "last_as_of": day,
+        "rows": [{"Date": "2026-10-23", **quote} for _ in range(20)] + [ecb_row],
+        "row_count": 21,
     }
-    pairs={f"P{i:02}":{} for i in range(28)}
-    setup={"pair_count":28,"price_asof":"2026-10-26","pairs":pairs}
-    d={"asOf":"2026-09-25",
-       "pairs":[{"pair":f"{i:02}/XX"} for i in range(28)],
-       "pairStates":{f"{i:02}/XX":{} for i in range(28)}}
-    return fx,setup,d
+    canonical = [
+        a + "/" + b for i, a in enumerate(gate.G8) for b in gate.G8[i + 1:]
+    ]
+    pairs = {p.replace("/", ""): {"canonical_pair": p} for p in canonical}
+    setup = {
+        "status": "CURRENT_CANONICAL_ENGINE",
+        "pair_count": 28,
+        "price_asof": day,
+        "macro_baseline_asof": "2026-09-25",
+        "pairs": pairs,
+        "price_audit": {
+            "status": "PASS", "as_of": day, "overlay_asof": day,
+            "history_asof": day, "pair_count": 28,
+            "complete_pair_count": 28, "returns_complete": True,
+            "no_lookahead": True,
+        },
+    }
+    d = {
+        "asOf": "2026-09-25",
+        "pairs": [{"pair": p} for p in canonical],
+        "pairStates": {p: {} for p in canonical},
+    }
+    return fx, setup, d
 
 def local(hour):
     return dt.datetime(2026,10,26,hour,31,tzinfo=gate.ROME)
@@ -110,9 +133,61 @@ class ProspectiveAdmission(unittest.TestCase):
 
     def test_no_partial_pair_setup(self):
         fx,setup,d=minimal()
-        setup["pairs"].pop("P27")
+        setup["pairs"].pop(next(iter(setup["pairs"])))
         self.assertIn("PAIR_SETUP_CURRENT_DAY_28_PAIR_PRICE_NOT_PRESENT",
             gate.assess(local(19),fx,setup,d)["checks"])
+
+    def test_complete_source_and_pair_integrity_required_before_admission(self):
+        # A 28-record count is NOT proof of the correct 28 G8 orientations.
+        fx, setup, core = minimal()
+        self.assertTrue(gate.certified_pair_universe(setup, core))
+        self.assertEqual(gate.assess(local(19), fx, setup, core)["checks"], [])
+
+        altered = copy.deepcopy(setup)
+        original = next(iter(altered["pairs"]))
+        altered["pairs"]["ZZZZZZ"] = altered["pairs"].pop(original)
+        self.assertIn("PAIR_CORE_G8_ORIENTATION_MISMATCH",
+                      gate.assess(local(19), fx, altered, core)["checks"])
+
+        altered = copy.deepcopy(setup)
+        original = next(iter(altered["pairs"]))
+        altered["pairs"][original]["canonical_pair"] = "EUR/EUR"
+        self.assertIn("PAIR_CORE_G8_ORIENTATION_MISMATCH",
+                      gate.assess(local(19), fx, altered, core)["checks"])
+
+        altered = copy.deepcopy(setup)
+        altered["price_audit"]["status"] = "FAIL"
+        self.assertIn("PAIR_PRICE_AUDIT_NOT_CERTIFIED",
+                      gate.assess(local(19), fx, altered, core)["checks"])
+
+        altered = copy.deepcopy(setup)
+        altered["price_audit"]["history_asof"] = "2026-10-23"
+        self.assertIn("PAIR_PRICE_AUDIT_NOT_CERTIFIED",
+                      gate.assess(local(19), fx, altered, core)["checks"])
+
+        altered = copy.deepcopy(setup)
+        altered["macro_baseline_asof"] = "2026-10-20"
+        self.assertIn("PAIR_MACRO_BASELINE_MISMATCH",
+                      gate.assess(local(19), fx, altered, core)["checks"])
+
+        altered = copy.deepcopy(core)
+        altered["pairs"][0]["pair"] = "EUR/EUR"
+        self.assertIn("PAIR_CORE_G8_ORIENTATION_MISMATCH",
+                      gate.assess(local(19), fx, setup, altered)["checks"])
+
+    def test_ecb_date_label_does_not_certify_corrupt_last_row(self):
+        fx, setup, core = minimal()
+        fx["rows"][-1]["Date"] = "2026-10-23"
+        self.assertIn("ECB_OFFICIAL_ROW_INTEGRITY_FAILED",
+                      gate.assess(local(19), fx, setup, core)["checks"])
+        fx, setup, core = minimal()
+        fx["rows"][-1]["JPY"] = None
+        self.assertIn("ECB_OFFICIAL_ROW_INTEGRITY_FAILED",
+                      gate.assess(local(19), fx, setup, core)["checks"])
+        fx, setup, core = minimal()
+        fx["row_count"] = 999
+        self.assertIn("ECB_OFFICIAL_ROW_INTEGRITY_FAILED",
+                      gate.assess(local(19), fx, setup, core)["checks"])
 
     def test_unaware_capture_clock_rejected(self):
         fx,setup,d=minimal()
