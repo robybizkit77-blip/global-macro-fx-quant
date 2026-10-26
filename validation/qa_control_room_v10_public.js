@@ -727,7 +727,8 @@ async function getState(page){
          };
        });
        if(research.actualCurves!==research.expectedCurves||research.secondaryCards!==research.expectedCards||
-          !research.note.includes('non sono una curva OIS')||
+          (research.expectedCards>0 && !research.note.includes('non sono una curva OIS'))||
+          (research.expectedCards===0 && !research.note.includes('GREEN_ESTIMATED restano indicative'))||
           !research.note.includes('NON curva OIS né policy delta')||
           (process.env.GITHUB_EVENT_NAME!=='pull_request'&&(
              research.readinessExpected===null||
