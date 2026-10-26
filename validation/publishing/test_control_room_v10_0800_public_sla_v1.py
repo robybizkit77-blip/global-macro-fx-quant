@@ -69,11 +69,11 @@ class ControlRoomV10SlaTests(unittest.TestCase):
         at = dt.datetime(2026, 10, 27, 7, 58, tzinfo=ROME)
         self.assertEqual(evaluate(source, public, at, expected_files=V10_FILES)["status"], "FAIL_PUBLIC_HTTP_UNVERIFIED")
 
-    def test_late_v10_public_success_is_still_late(self):
+    def test_late_observation_does_not_assume_v10_delivery_was_late(self):
         source, public = self.make_receipts()
         public["verified_at_utc"] = "2026-10-27T07:10:00Z"
         at = dt.datetime(2026, 10, 27, 8, 13, tzinfo=ROME)
-        self.assertEqual(evaluate(source, public, at, expected_files=V10_FILES)["status"], "LATE_PUBLIC_HTTP_AFTER_0800")
+        self.assertEqual(evaluate(source, public, at, expected_files=V10_FILES)["status"], "VERIFIED_AFTER_0800_DELIVERY_TIME_UNPROVEN")
 
     def test_off_window_never_makes_network_request(self):
         def forbidden(*args, **kwargs):
