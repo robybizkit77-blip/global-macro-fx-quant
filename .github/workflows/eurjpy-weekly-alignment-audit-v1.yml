@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'validation/beta/eurjpy_weekly_calendar_forensics_v1.py'
+      - 'validation/beta/eurjpy_ecb_2y_official_bridge_v1.py'
+      - 'validation/beta/test_eurjpy_ecb_2y_official_bridge_v1.py'
       - 'validation/beta/test_eurjpy_weekly_calendar_forensics_v1.py'
       - '.github/workflows/eurjpy-weekly-alignment-audit-v1.yml'
   workflow_dispatch:
@@ -25,6 +27,7 @@ jobs:
         run: |
           python -m py_compile validation/beta/eurjpy_weekly_calendar_forensics_v1.py validation/beta/test_eurjpy_weekly_calendar_forensics_v1.py
           python -m unittest validation.beta.test_eurjpy_weekly_calendar_forensics_v1 -v
+          python -m unittest validation.beta.test_eurjpy_ecb_2y_official_bridge_v1 -v
       - name: Retrieve only original MoF official CSVs for forensic diagnosis
         shell: bash
         run: |
@@ -54,6 +57,46 @@ jobs:
           print('EURJPY_LONGEST_CONSECUTIVE_WEEKS',x['longest_consecutive_exact_week_span'])
           print('EURJPY_52W_PRIOR_OOS_PROOF',x['status'])
           PY
+      - name: Validate the exact missing EUR 2Y days against original ECB SDMX
+        id: official_ecb
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error --retry 2 --max-time 35 \
+            'https://data-api.ecb.europa.eu/service/data/YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y?startPeriod=2026-09-21&endPeriod=2026-09-25&format=csvdata' \
+            --header 'Accept: text/csv' \
+            --output /tmp/eur-aaa2y-sept2026-original-ecb.csv
+          python - <<'PY'
+          import json,hashlib
+          from validation.beta import weekly_fx_2y_shadow_oos_v1 as base
+          from validation.beta.eurjpy_ecb_2y_official_bridge_v1 import verify_full_eurjpy_beta_shadow
+          fx=json.loads(base.FX_PATH.read_text(encoding='utf-8'))
+          rates=json.loads(base.RATE_PATH.read_text(encoding='utf-8'))
+          ecb=open('/tmp/eur-aaa2y-sept2026-original-ecb.csv','rb').read()
+          mof1=open('/tmp/jpy-original-archive.csv','rb').read()
+          mof2=open('/tmp/jpy-original-current.csv','rb').read()
+          receipt=verify_full_eurjpy_beta_shadow(fx,rates,ecb,mof1,mof2)
+          receipt['original_ecb_csv_sha256']=hashlib.sha256(ecb).hexdigest()
+          assert receipt['new_eurjpy_oos_rows'] > 0
+          assert receipt['pair_count_with_any_shadow_oos']==28
+          assert not receipt['model_beta_promoted']
+          assert not receipt['live_data_modified']
+          assert not receipt['historical_pit_certified']
+          with open('/tmp/eurjpy-ecb-original-bridge-receipt.json','w') as f:
+              json.dump(receipt,f,indent=2)
+          print('EURJPY_ECB_OFFICIAL_MISSING_DATES_RESTORED_IN_RESEARCH_ONLY',receipt)
+          PY
+      - name: Surface original publisher ECB result without fake promotion
+        if: always()
+        env:
+          ECB_SOURCE_GATE: ${{ steps.official_ecb.outcome }}
+        run: |
+          if [ "$ECB_SOURCE_GATE" = success ]; then
+            echo 'EUR/JPY historic pseudo-OOS: official 2Y source bridge verified, 28/28 shadow coverage. No Core change.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'EUR/JPY missing-week ECB 2Y original source: NOT VERIFIED. EURJPY stays non-OOS until source agreement.' >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: No live model, historical source or active Control Room changes
         run: |
           test -z "$(git status --porcelain -- live_data validation/forward validation/beta/RATE_BETA_OBSERVATIONAL_CONTRACT_V1_2026-10-15.json site dashboard payload)"
