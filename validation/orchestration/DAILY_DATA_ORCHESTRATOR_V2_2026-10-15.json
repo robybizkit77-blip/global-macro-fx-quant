@@ -75,6 +75,9 @@
     "prebrief_recovers_official_previous_close_vix": true,
     "prebrief_cb_pricing_independent_source_outage_isolation": true,
     "premorning_calendar_news_selective_retry": true,
-    "morning_0910_cb_independent_source_outage_isolation": true
+    "morning_0910_cb_independent_source_outage_isolation": true,
+    "preserve_pending_scheduled_phases": true,
+    "workflow_concurrency_pending_queue": "max",
+    "workflow_concurrency_cancel_in_progress": false
   }
 }
