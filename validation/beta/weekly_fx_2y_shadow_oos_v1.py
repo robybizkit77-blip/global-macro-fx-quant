@@ -19,6 +19,7 @@ from pathlib import Path
 from statistics import pvariance
 
 from validation.beta.rate_beta_observational_v1 import ols_beta
+from validation.beta.beta_regression_diagnostics_research_v1 import diagnose
 
 ROOT = Path(__file__).resolve().parents[2]
 FX_PATH = ROOT / "live_data/sections/ECB_G8_PRICE_HISTORY.json"
@@ -214,6 +215,19 @@ def audit(fx, rates, *, as_of="2026-10-26"):
                 reason = "BELOW_52_ALIGNED_WEEKLY_RETURNS"
             elif not oos:
                 reason = "NO_FULL_52W_PRIOR_TRAINING_PLUS_LATER_TEST"
+        # PDF 23.3 step 4/5: diagnostic on an independently checked
+        # contiguous 52W historical sample, never a production signal.
+        # This does NOT supply missing first-publication PIT vintages.
+        robust_52w = None
+        latest_train = obs[-WINDOW:]
+        if len(latest_train) == WINDOW and all(
+            (later["week_end"]-prior["week_end"]).days == 7
+            for prior,later in zip(latest_train,latest_train[1:])
+        ):
+            robust_52w = diagnose([
+                (z["week_end"],z["fx_return"],z["delta_rel_2y"])
+                for z in latest_train
+            ])
         vals_y = [z["fx_return_observed"] for z in oos]
         vals_z = [z["hedged_reference_residual"] for z in oos]
         var_y = pvariance(vals_y) if len(vals_y) >= 2 else None
@@ -237,6 +251,7 @@ def audit(fx, rates, *, as_of="2026-10-26"):
             "actual_oos_y_variance":var_y,
             "actual_oos_hedged_residual_variance":var_z,
             "recent_oos_samples":oos[-3:],
+            "beta_52w_robust_standard_error_and_outlier_sensitivity_research_only":robust_52w,
             "source_definition_comparability_verified":False,
             "first_publication_pit_verified":False,
             "forward_prospective_certified":False,
@@ -256,6 +271,8 @@ def audit(fx, rates, *, as_of="2026-10-26"):
         "pairs_with_any_oos":sum(x["historical_oos_observations"]>0 for x in pairs),
         "pairs_with_descriptive_variance_measure":
              sum(x["variance_reduction_vs_unhedged_descriptive_only"] is not None for x in pairs),
+        "pairs_with_52w_hc3_huber_research_diagnostics":
+             sum(x["beta_52w_robust_standard_error_and_outlier_sensitivity_research_only"] is not None for x in pairs),
         "baseline_window_weeks":WINDOW,
         "dependent_variable":"SIMPLE_FX_WEEKLY_RETURN",
         "independent_variable":"WEEKLY_DELTA_2Y_BASE_MINUS_QUOTE_PERCENTAGE_POINTS",
