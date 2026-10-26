@@ -8,7 +8,7 @@ Il problema non si esauriva nell'ordine delle date: alcune settimane mancavano n
 
 - Default senza CSV originali: **21/28** coppie con almeno una verifica storica oltre le 52 settimane; sette JPY in quarantena per date non canoniche.
 - Con gli originali MoF acquisiti e verificati indipendentemente: **27/28** coppie con almeno una verifica storica *pseudo-OOS*. **12/28** con almeno quattro osservazioni successive per un confronto **puramente descrittivo** di varianza (non sufficiente per rivendicare efficacia statistica).
-- Non forzare l'ultima coppia a essere certificata: dati ancora troppo brevi, date non comuni o serie CHF/NZD vecchie possono impedire una finestra OOS completa. Il job stampa il numero esatto di prove per ciascuna coppia JPY.
+- **EUR/JPY è l'unica coppia senza alcuna settimana di test OOS**: non supera il requisito completo di 52 rendimenti settimanali consecutivi precedenti più una nuova settimana di valutazione con EUR 2Y e JPY 2Y sulla stessa data. Non forzare la continuità o creare tassi mancanti. Il job ha verificato: EURJPY **0**, USDJPY **6**, GBPJPY **6**, JPYCHF **3**, JPYCAD **7**, JPYAUD **6**, JPYNZD **6** osservazioni OOS. Sono verifiche storiche descrittive, non performance operative.
 
 ```bash
 python -m validation.beta.weekly_fx_2y_shadow_oos_v1 --as-of 2026-10-26 \
