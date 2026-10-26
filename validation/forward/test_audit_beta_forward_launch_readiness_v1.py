@@ -49,7 +49,12 @@ class LaunchTruthGateTests(unittest.TestCase):
         steps = x["beta"]["pdf_23_3_ten_step_audit"]
         self.assertEqual(len(steps), 10)
         self.assertEqual(steps[-1]["state"], "NOT_CERTIFIED")
-        self.assertEqual(steps[3]["state"], "PARTIAL_OLS_ONLY")
+        self.assertEqual(steps[3]["state"], "PARTIAL_52W_OLS_HC3_RESEARCH_NO_PIT_NO_HAC")
+        self.assertEqual(steps[4]["state"], "HUBER_LEAVE_ONE_OUT_RESEARCH_ONLY")
+        self.assertEqual(steps[5]["state"], "DIMSON_1LEAD_1LAG_RETROSPECTIVE_ONLY")
+        self.assertEqual(steps[6]["state"], "ROLLING_52W_FOUR_WINDOWS_ONLY_NO_EWMA_OR_KALMAN")
+        self.assertEqual(steps[1]["state"], "NOT_CERTIFIED")
+        self.assertEqual(steps[2]["state"], "NOT_IMPLEMENTED")
         self.assertFalse(x["beta"]["pdf_23_4_oos_hedge_variance_reduction_validated"])
         self.assertFalse(x["beta"]["b1_b2_ready"])
 
