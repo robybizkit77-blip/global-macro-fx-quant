@@ -125,7 +125,23 @@ jobs:
         run: |
           set -euo pipefail
           python -m unittest validation.macro.test_legacy_v2_score_evidence_bridge_v1 -v
-          python -m validation.macro.legacy_v2_score_evidence_bridge_v1 --out /tmp/macro-g8-rebase/legacy-v2-24-score-crosswalk.json
+          python -m validation.macro.legacy_v2_score_evidence_bridge_v1 \
+            --out /tmp/macro-g8-rebase/legacy-v2-24-score-crosswalk.json \
+            --markdown /tmp/macro-g8-rebase/legacy-v2-24-score-mismatch-dossier.md
+          cat /tmp/macro-g8-rebase/legacy-v2-24-score-mismatch-dossier.md >> "$GITHUB_STEP_SUMMARY"
+          # Exact source discrepancies in searchable logs; no score generation.
+          python - <<'PY'
+          import json
+          rows=json.load(open('/tmp/macro-g8-rebase/legacy-v2-24-score-crosswalk.json'))['rows']
+          for r in rows:
+              if r['source_reconciliation_class'] == 'TECHNICAL_ID_FREQUENCY_MATCH_PIT_NOT_CERTIFIED':
+                  continue
+              print('MACRO_SOURCE_RECONCILIATION',
+                    r['currency'], r['pillar'],
+                    'canonical=', r['canonical_source_id'], r['canonical_frequency'],
+                    'candidate=', r['candidate_source_id'], r['candidate_frequency'],
+                    'reason=', r['source_reconciliation_class'])
+          PY
           python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
           import json
           r=json.load(open('/tmp/macro-g8-rebase/legacy-v2-24-score-crosswalk.json'))

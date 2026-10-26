@@ -69,20 +69,54 @@ class LegacyV2ScoreEvidenceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "coverage incomplete"):
             bridge(self.model, self.legacy, modified)
 
+    def test_mismatch_groups_and_named_dossier_are_complete_without_promotion(self):
+        from validation.macro.legacy_v2_score_evidence_bridge_v1 import markdown
+        receipt = bridge(self.model, self.legacy, self.v2)
+        stats = receipt["summary"]
+        self.assertEqual(stats["unselected_growth_canonical_indicators"], 8)
+        self.assertEqual(stats["source_id_and_frequency_matches"], 12)
+        self.assertEqual(stats["non_growth_source_or_frequency_mismatches"], 4)
+        self.assertEqual(sum(stats["source_reconciliation_classes"].values()), 24)
+        growth = [r for r in receipt["rows"] if r["pillar"] == "growth"]
+        self.assertEqual(len(growth), 8)
+        self.assertTrue(all(r["canonical_source_id"] is None and
+                            r["source_reconciliation_class"] ==
+                            "GROWTH_CANONICAL_INDICATOR_NOT_SELECTED" for r in growth))
+        self.assertTrue(all(r["canonical_metric_unit_or_publisher_mapping_certified"] is False
+                            for r in receipt["rows"]))
+        report = markdown(receipt)
+        self.assertEqual(report.count("GROWTH_CANONICAL_INDICATOR_NOT_SELECTED"), 8)
+        self.assertEqual(len([x for x in report.splitlines() if x.startswith("| ")]) - 2, 24)
+        self.assertIn("No PIT-certified rebase", report)
+
+    def test_upstream_parity_claim_cannot_overrule_actual_id_and_frequency(self):
+        bad = copy.deepcopy(self.v2)
+        candidate = next(row for row in bad["rows"]
+                         if row["candidate_evidence_source_id"] is not None)
+        candidate["canonical_series_id_matches_candidate"] = not (
+            candidate["candidate_evidence_source_id"] ==
+            candidate["canonical_series_id"])
+        with self.assertRaisesRegex(ValueError, "source/frequency parity inconsistent"):
+            bridge(self.model, self.legacy, bad)
+
     def test_never_subtract_incompatible_frequency_from_training_requirement(self):
         modified = copy.deepcopy(self.v2)
         # Any row with a source candidate can be changed to a wrong-identity
         # research source; it is observed, but no canonical training deficit
         # may be inferred from different frequency/metric observations.
         target = next(r for r in modified["rows"]
-                      if r["candidate_evidence_source_id"] is not None)
+                      if r["pillar"] != "growth"
+                      and r["candidate_evidence_source_id"] is not None
+                      and r["canonical_series_id_matches_candidate"] is True
+                      and r["canonical_frequency_matches_candidate"] is True)
+        target["candidate_evidence_source_id"] += "_DIFFERENT_SERIES"
         target["canonical_series_id_matches_candidate"] = False
         result = bridge(self.model, self.legacy, modified)
         row = next(r for r in result["rows"]
                    if r["currency"] == target["currency"] and
                    r["pillar"] == target["pillar"])
         self.assertEqual(row["open_source_gate"],
-                         "CANDIDATE_SOURCE_ID_OR_FREQUENCY_MISMATCH")
+                         "INDICATOR_DIFFERS_SAME_FREQUENCY")
         self.assertIsNone(row["same_source_periods_still_needed_descriptive_only"])
 
 
