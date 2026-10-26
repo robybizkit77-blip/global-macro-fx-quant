@@ -11,6 +11,8 @@ on:
       - 'validation/macro/test_v2_g8_gdp_q4_2025_release_research_v1.py'
       - 'validation/macro/fixtures/v2_g8_gdp_q3_2025_official_web_release_research_v1.json'
       - 'validation/macro/test_v2_g8_gdp_q3_2025_release_research_v1.py'
+      - 'validation/macro/fixtures/v2_g8_gdp_q2_2025_official_web_release_research_v1.json'
+      - 'validation/macro/test_v2_g8_gdp_q2_2025_release_research_v1.py'
       - '.github/workflows/macro-gdp-multiquarter-research-v1.yml'
   push:
     branches: [main]
@@ -22,6 +24,8 @@ on:
       - 'validation/macro/test_v2_g8_gdp_q4_2025_release_research_v1.py'
       - 'validation/macro/fixtures/v2_g8_gdp_q3_2025_official_web_release_research_v1.json'
       - 'validation/macro/test_v2_g8_gdp_q3_2025_release_research_v1.py'
+      - 'validation/macro/fixtures/v2_g8_gdp_q2_2025_official_web_release_research_v1.json'
+      - 'validation/macro/test_v2_g8_gdp_q2_2025_release_research_v1.py'
       - '.github/workflows/macro-gdp-multiquarter-research-v1.yml'
   workflow_dispatch:
 
@@ -43,5 +47,7 @@ jobs:
         run: python -m unittest validation.macro.test_v2_g8_gdp_q4_2025_release_research_v1 -v
       - name: Test 2025 Q3 first releases, delayed US and Japanese rebenchmark
         run: python -m unittest validation.macro.test_v2_g8_gdp_q3_2025_release_research_v1 -v
+      - name: Test 2025 Q2 G8 release vintages and 5-quarter history
+        run: python -m unittest validation.macro.test_v2_g8_gdp_q2_2025_release_research_v1 -v
       - name: Verify operational data untouched
         run: git diff --exit-code -- live_data/sections/D.json live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
