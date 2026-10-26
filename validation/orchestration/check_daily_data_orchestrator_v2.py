@@ -31,6 +31,17 @@ def main() -> None:
     assert c["rules"]["official_promotion_effect"] == "NONE"
     assert c["rules"]["premorning_avoids_not_yet_ready_sources"] is True
     assert c["separate_cadences"]["COT"] == "cot-persistent-weekly-v1.yml"
+    assert c["separate_cadences"]["CB_PRICING_MORNING"] == "cb-pricing-persistent-daily-v1.yml"
+    assert c["rules"]["prebrief_cb_pricing_independent_source_outage_isolation"] is True
+    assert "cb-pricing-persistent-daily-v1.yml" not in c["phases"]["prebrief"]
+    assert "cb-pricing-persistent-daily-v1.yml" not in c["phases"]["premorning"]
+    assert "cb-pricing-persistent-daily-v1.yml" in c["phases"]["morning"]
+    cb = (WORKFLOWS_DIR / c["separate_cadences"]["CB_PRICING_MORNING"]).read_text()
+    assert "schedule:" in cb and "workflow_dispatch:" in cb
+    # Exact UTC pairs support early independent 06:00/06:30/07:00 Rome slots.
+    assert "0 4 * * 1-5" in cb and "0 5 * * 1-5" in cb
+    assert "30 5 * * 1-5" in cb and "0 6 * * 1-5" in cb
+    assert "python3 validation/cb_pricing/cb_pricing_schedule_gate_v1.py" in cb
 
     expected_suffix = [
         "final-e2e-certification-gate-v3.yml",
@@ -52,7 +63,6 @@ def main() -> None:
     assert c["phases"]["prebrief"] == [
         "macro-persistent-daily-v1.yml",
         "rates-persistent-daily-v1.yml",
-        "cb-pricing-persistent-daily-v1.yml",
         "ois-estimated-snapshot-repricing-v1.yml",
         "calendar-news-operational-refresh-v1.yml",
         "vix-persistent-apply-v1.yml",
@@ -65,7 +75,6 @@ def main() -> None:
     assert c["rules"]["morning_0910_is_catch_up_not_first_refresh"] is True
     assert c["phases"]["premorning"] == [
         "rates-persistent-daily-v1.yml",
-        "cb-pricing-persistent-daily-v1.yml",
         "final-e2e-certification-gate-v3.yml",
         "publish-dashboard-pages-v1.yml",
     ]
@@ -74,7 +83,15 @@ def main() -> None:
     assert "chf-residual-proxy-refresh-v1.yml" not in c["phases"]["premorning"]
     assert "jpy-reserve-balances-proxy-refresh-v1.yml" not in c["phases"]["premorning"]
 
+    # The separate News updater must try early before the 08:00 desk,
+    # because delayed GitHub cron can arrive well after its scheduled UTC minute.
+    news = (WORKFLOWS_DIR / "calendar-news-operational-refresh-v1.yml").read_text()
+    assert "17 4 * * 1-5" in news
+    assert "17 6 * * *" in news
     text = WORKFLOW.read_text()
+    # No duplicate CB acquisition in the 05:00 and 07:45 child arrays.
+    segment = text[text.index("              prebrief)"):text.index("              morning)", text.index("              prebrief)"))]
+    assert "cb-pricing-persistent-daily-v1.yml" not in segment
     required_markers = [
         "name: Daily Data Orchestrator V2",
         "actions: write",
