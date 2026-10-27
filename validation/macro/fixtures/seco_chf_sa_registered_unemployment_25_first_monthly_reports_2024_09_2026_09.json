@@ -1,0 +1,432 @@
+{
+  "schema": "GMFQ_MACRO_V2_CHF_25_TARGET_ISSUER_MONTHS_PARTIAL_RECOVERY_V1",
+  "source_publisher": "Swiss State Secretariat for Economic Affairs (SECO)",
+  "official_index_url": "https://www.seco.admin.ch/de/arbeitsmarktstatistik-berichte-rechtsgrundlagen",
+  "index_capture_SHA256": "4453c9b43fa01ac1f1a7d49de2cde8ec448f674a2eb0572670b93eb134ee8a02",
+  "source_recovery": "2026-10-27_DOWNLOAD_OF_OFFICIAL_ISSUER_REPORTS_NOT_CONTEMPORANEOUS_CAPTURE",
+  "metric": "CH_SECO_REGISTRATION_SA_UNEMPLOYMENT_RATE_0P1_PERCENT_ALTERNATIVE",
+  "frequency": "M",
+  "unit": "percent",
+  "precision_decimals": 1,
+  "archived_issuer_first_rounded_reports": [
+    {
+      "reference_month": "2025-01",
+      "original_seco_rounded_sa_registered_unemployment_pct": 2.7,
+      "published_report_date": "2025-02-06",
+      "conservative_available_from_utc": "2025-02-07T00:00:00+00:00",
+      "release_time_quality": "DAY_AFTER_OFFICIAL_REPORT_DATE_NOT_PROVEN_INTRADAY_AVAILABLE",
+      "official_month_report_url": "https://www.seco.admin.ch/dam/de/sd-web/bmEy5Xr0ojD3/2025-01_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf",
+      "official_pdf_sha256_captured_now": "31c63775fd13b12d00fb9bfd139152ed9fd9e681e349db829b7cbaee0d1e1daf",
+      "original_month_pdf_pages": 27,
+      "first_column_validated_against_comparison_columns": {
+        "summary_original_quote": "Die saisonbereinigte Arbeitslosenquote  verharrte im Januar 2025 bei 2,7%",
+        "summary_rate_pct_one_decimal": "2,7",
+        "table_one_unemployment_subsection_rate_crosscheck": true,
+        "quality_if_no_table_crosscheck": null
+      },
+      "source_metric": "SECO_REGISTERED_UNEMPLOYMENT_SEASONALLY_ADJUSTED_ROUNDED_0P1PCT",
+      "original_release_day_HTTP_bytes_preserved_at_its_own_date": false,
+      "equivalent_to_exact_SNB_AMARBMA_first_vintage": false
+    },
+    {
+      "reference_month": "2025-02",
+      "original_seco_rounded_sa_registered_unemployment_pct": 2.7,
+      "published_report_date": "2025-03-06",
+      "conservative_available_from_utc": "2025-03-07T00:00:00+00:00",
+      "release_time_quality": "DAY_AFTER_OFFICIAL_REPORT_DATE_NOT_PROVEN_INTRADAY_AVAILABLE",
+      "official_month_report_url": "https://www.seco.admin.ch/dam/de/sd-web/qzQqJIHfzJN1/2025-02_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf",
+      "official_pdf_sha256_captured_now": "5eb209b0483fbc7500f0ec6ee250e8b669f6ac20e965698d2b35cab7706f6a8d",
+      "original_month_pdf_pages": 27,
+      "first_column_validated_against_comparison_columns": {
+        "summary_original_quote": "Die saisonbereinigte Arbeitslosenquote  verharrte im Februar 2025 bei 2,7%",
+        "summary_rate_pct_one_decimal": "2,7",
+        "table_one_unemployment_subsection_rate_crosscheck": true,
+        "quality_if_no_table_crosscheck": null
+      },
+      "source_metric": "SECO_REGISTERED_UNEMPLOYMENT_SEASONALLY_ADJUSTED_ROUNDED_0P1PCT",
+      "original_release_day_HTTP_bytes_preserved_at_its_own_date": false,
+      "equivalent_to_exact_SNB_AMARBMA_first_vintage": false
+    },
+    {
+      "reference_month": "2025-03",
+      "original_seco_rounded_sa_registered_unemployment_pct": 2.8,
+      "published_report_date": "2025-04-04",
+      "conservative_available_from_utc": "2025-04-05T00:00:00+00:00",
+      "release_time_quality": "DAY_AFTER_OFFICIAL_REPORT_DATE_NOT_PROVEN_INTRADAY_AVAILABLE",
+      "official_month_report_url": "https://www.seco.admin.ch/dam/de/sd-web/OxGRvm9O9FI0/2025-03_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf",
+      "official_pdf_sha256_captured_now": "ed5e99067932459a328256cc915ce0b353f176b132e1ed05a89a16959b42f668",
+      "original_month_pdf_pages": 27,
+      "first_column_validated_against_comparison_columns": {
+        "summary_original_quote": "Die saisonbereinigte Arbeitslosenquote  stieg im März 2025 gegenüber dem Vormonat um 0,1 Prozentpunkte auf 2,8%",
+        "summary_rate_pct_one_decimal": "2,8",
+        "table_one_unemployment_subsection_rate_crosscheck": true,
+        "quality_if_no_table_crosscheck": null
+      },
+      "source_metric": "SECO_REGISTERED_UNEMPLOYMENT_SEASONALLY_ADJUSTED_ROUNDED_0P1PCT",
+      "original_release_day_HTTP_bytes_preserved_at_its_own_date": false,
+      "equivalent_to_exact_SNB_AMARBMA_first_vintage": false
+    },
+    {
+      "reference_month": "2025-04",
+      "original_seco_rounded_sa_registered_unemployment_pct": 2.8,
+      "published_report_date": "2025-05-06",
+      "conservative_available_from_utc": "2025-05-07T00:00:00+00:00",
+      "release_time_quality": "DAY_AFTER_OFFICIAL_REPORT_DATE_NOT_PROVEN_INTRADAY_AVAILABLE",
+      "official_month_report_url": "https://www.seco.admin.ch/dam/de/sd-web/uYdixjom7YbN/2025-04_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf",
+      "official_pdf_sha256_captured_now": "75e37ec5e0aef5f0442b47c046e8db8c268bca91ceaad48f208edf7ad9572c8e",
+      "original_month_pdf_pages": 27,
+      "first_column_validated_against_comparison_columns": {
+        "summary_original_quote": "Die saisonbereinigte Arbeitslosenquote  verharrte im April 2025 bei 2,8%",
+        "summary_rate_pct_one_decimal": "2,8",
+        "table_one_unemployment_subsection_rate_crosscheck": true,
+        "quality_if_no_table_crosscheck": null
+      },
+      "source_metric": "SECO_REGISTERED_UNEMPLOYMENT_SEASONALLY_ADJUSTED_ROUNDED_0P1PCT",
+      "original_release_day_HTTP_bytes_preserved_at_its_own_date": false,
+      "equivalent_to_exact_SNB_AMARBMA_first_vintage": false
+    },
+    {
+      "reference_month": "2025-05",
+      "original_seco_rounded_sa_registered_unemployment_pct": 2.9,
+      "published_report_date": "2025-06-05",
+      "conservative_available_from_utc": "2025-06-06T00:00:00+00:00",
+      "release_time_quality": "DAY_AFTER_OFFICIAL_REPORT_DATE_NOT_PROVEN_INTRADAY_AVAILABLE",
+      "official_month_report_url": "https://www.seco.admin.ch/dam/de/sd-web/e3bdPTDWc8AT/2025-05_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf",
+      "official_pdf_sha256_captured_now": "6be5770bf26ec69f2ccc79818832bcd3c2580ba6ca0587236158b733c7e81ad0",
+      "original_month_pdf_pages": 27,
+      "first_column_validated_against_comparison_columns": {
+        "summary_original_quote": "Die saisonbereinigte Arbeitslosenquote  stieg im Mai 2025 gegenüber dem Vormonat um 0,1 Prozentpunkte auf 2,9%",
+        "summary_rate_pct_one_decimal": "2,9",
+        "table_one_unemployment_subsection_rate_crosscheck": true,
+        "quality_if_no_table_crosscheck": null
+      },
+      "source_metric": "SECO_REGISTERED_UNEMPLOYMENT_SEASONALLY_ADJUSTED_ROUNDED_0P1PCT",
+      "original_release_day_HTTP_bytes_preserved_at_its_own_date": false,
+      "equivalent_to_exact_SNB_AMARBMA_first_vintage": false
+    },
+    {
+      "reference_month": "2025-06",
+      "original_seco_rounded_sa_registered_unemployment_pct": 2.9,
+      "published_report_date": "2025-07-04",
+      "conservative_available_from_utc": "2025-07-05T00:00:00+00:00",
+      "release_time_quality": "DAY_AFTER_OFFICIAL_REPORT_DATE_NOT_PROVEN_INTRADAY_AVAILABLE",
+      "official_month_report_url": "https://www.seco.admin.ch/dam/de/sd-web/hRJxVUsubCMa/2025-06_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf",
+      "official_pdf_sha256_captured_now": "7548b4845b3d8dac5f21697220ca9a7223b3f2eaad77e008f9c4ac666e799786",
+      "original_month_pdf_pages": 28,
+      "first_column_validated_against_comparison_columns": {
+        "summary_original_quote": "Die saisonbereinigte Arbeitslosenquote  stieg im Juni 2025 gegenüber dem Vormonat um 0,1 Prozentpunkte auf 2,9%",
+        "summary_rate_pct_one_decimal": "2,9",
+        "table_one_unemployment_subsection_rate_crosscheck": true,
+        "quality_if_no_table_crosscheck": null
+      },
+      "source_metric": "SECO_REGISTERED_UNEMPLOYMENT_SEASONALLY_ADJUSTED_ROUNDED_0P1PCT",
+      "original_release_day_HTTP_bytes_preserved_at_its_own_date": false,
+      "equivalent_to_exact_SNB_AMARBMA_first_vintage": false
+    },
+    {
+      "reference_month": "2025-07",
+      "original_seco_rounded_sa_registered_unemployment_pct": 2.9,
+      "published_report_date": "2025-08-07",
+      "conservative_available_from_utc": "2025-08-08T00:00:00+00:00",
+      "release_time_quality": "DAY_AFTER_OFFICIAL_REPORT_DATE_NOT_PROVEN_INTRADAY_AVAILABLE",
+      "official_month_report_url": "https://www.seco.admin.ch/dam/de/sd-web/oCbZfwgw9uKs/2025-07_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf",
+      "official_pdf_sha256_captured_now": "6af733461ea813cffadea17a4011ee3ae7de119c1528750d7b4c6738a1d7c44e",
+      "original_month_pdf_pages": 28,
+      "first_column_validated_against_comparison_columns": {
+        "summary_original_quote": "Die saisonbereinigte Arbeitslosenquote  verharrte im Juli 2025 bei 2,9%",
+        "summary_rate_pct_one_decimal": "2,9",
+        "table_one_unemployment_subsection_rate_crosscheck": true,
+        "quality_if_no_table_crosscheck": null
+      },
+      "source_metric": "SECO_REGISTERED_UNEMPLOYMENT_SEASONALLY_ADJUSTED_ROUNDED_0P1PCT",
+      "original_release_day_HTTP_bytes_preserved_at_its_own_date": false,
+      "equivalent_to_exact_SNB_AMARBMA_first_vintage": false
+    },
+    {
+      "reference_month": "2025-08",
+      "original_seco_rounded_sa_registered_unemployment_pct": 2.9,
+      "published_report_date": "2025-09-04",
+      "conservative_available_from_utc": "2025-09-05T00:00:00+00:00",
+      "release_time_quality": "DAY_AFTER_OFFICIAL_REPORT_DATE_NOT_PROVEN_INTRADAY_AVAILABLE",
+      "official_month_report_url": "https://www.seco.admin.ch/dam/de/sd-web/Q4LZC0oYGnGL/2025-08_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf",
+      "official_pdf_sha256_captured_now": "39749d51e56d1483a4dae011331fa7f038565dc45bd809789677d6d088eeb47b",
+      "original_month_pdf_pages": 28,
+      "first_column_validated_against_comparison_columns": {
+        "summary_original_quote": "Die saisonbereinigte Arbeitslosenquote  verharrte im August 2025 bei 2,9%",
+        "summary_rate_pct_one_decimal": "2,9",
+        "table_one_unemployment_subsection_rate_crosscheck": true,
+        "quality_if_no_table_crosscheck": null
+      },
+      "source_metric": "SECO_REGISTERED_UNEMPLOYMENT_SEASONALLY_ADJUSTED_ROUNDED_0P1PCT",
+      "original_release_day_HTTP_bytes_preserved_at_its_own_date": false,
+      "equivalent_to_exact_SNB_AMARBMA_first_vintage": false
+    },
+    {
+      "reference_month": "2025-09",
+      "original_seco_rounded_sa_registered_unemployment_pct": 3.0,
+      "published_report_date": "2025-10-06",
+      "conservative_available_from_utc": "2025-10-07T00:00:00+00:00",
+      "release_time_quality": "DAY_AFTER_OFFICIAL_REPORT_DATE_NOT_PROVEN_INTRADAY_AVAILABLE",
+      "official_month_report_url": "https://www.seco.admin.ch/dam/de/sd-web/8iIHiHZPHN6r/2025-09_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf",
+      "official_pdf_sha256_captured_now": "6f800c6632bb1103ec2589afce2cddd3ddd1f6dd461f0b768bc3e32073fa49c0",
+      "original_month_pdf_pages": 28,
+      "first_column_validated_against_comparison_columns": {
+        "summary_original_quote": "Die saisonbereinigte Arbeitslosenquote  stieg im September 2025 gegenüber dem Vormonat um 0,1 Prozentpunkte auf 3,0%",
+        "summary_rate_pct_one_decimal": "3,0",
+        "table_one_unemployment_subsection_rate_crosscheck": true,
+        "quality_if_no_table_crosscheck": null
+      },
+      "source_metric": "SECO_REGISTERED_UNEMPLOYMENT_SEASONALLY_ADJUSTED_ROUNDED_0P1PCT",
+      "original_release_day_HTTP_bytes_preserved_at_its_own_date": false,
+      "equivalent_to_exact_SNB_AMARBMA_first_vintage": false
+    },
+    {
+      "reference_month": "2025-10",
+      "original_seco_rounded_sa_registered_unemployment_pct": 3.0,
+      "published_report_date": "2025-11-06",
+      "conservative_available_from_utc": "2025-11-07T00:00:00+00:00",
+      "release_time_quality": "DAY_AFTER_OFFICIAL_REPORT_DATE_NOT_PROVEN_INTRADAY_AVAILABLE",
+      "official_month_report_url": "https://www.seco.admin.ch/dam/de/sd-web/lH9aO0LngHT9/2025-10_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf",
+      "official_pdf_sha256_captured_now": "4ef5d84c14cde4e80810f2eb4585a45abeeb31e9d4610856e1e6feba53f736c3",
+      "original_month_pdf_pages": 28,
+      "first_column_validated_against_comparison_columns": {
+        "summary_original_quote": "Die saisonbereinigte Arbeitslosenquote  verharrte im Oktober 2025 bei 3,0%",
+        "summary_rate_pct_one_decimal": "3,0",
+        "table_one_unemployment_subsection_rate_crosscheck": true,
+        "quality_if_no_table_crosscheck": null
+      },
+      "source_metric": "SECO_REGISTERED_UNEMPLOYMENT_SEASONALLY_ADJUSTED_ROUNDED_0P1PCT",
+      "original_release_day_HTTP_bytes_preserved_at_its_own_date": false,
+      "equivalent_to_exact_SNB_AMARBMA_first_vintage": false
+    },
+    {
+      "reference_month": "2025-11",
+      "original_seco_rounded_sa_registered_unemployment_pct": 3.0,
+      "published_report_date": "2025-12-04",
+      "conservative_available_from_utc": "2025-12-05T00:00:00+00:00",
+      "release_time_quality": "DAY_AFTER_OFFICIAL_REPORT_DATE_NOT_PROVEN_INTRADAY_AVAILABLE",
+      "official_month_report_url": "https://www.seco.admin.ch/dam/de/sd-web/tFakVkqGqhic/2025-11_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf",
+      "official_pdf_sha256_captured_now": "e284378188b5c46dfe62d3615921a394c36399cafcd3c3f92e7cd97d0340d0db",
+      "original_month_pdf_pages": 28,
+      "first_column_validated_against_comparison_columns": {
+        "summary_original_quote": "Die saisonbereinigte Arbeitslosenquote  verharrte im November 2025 bei 3,0%",
+        "summary_rate_pct_one_decimal": "3,0",
+        "table_one_unemployment_subsection_rate_crosscheck": true,
+        "quality_if_no_table_crosscheck": null
+      },
+      "source_metric": "SECO_REGISTERED_UNEMPLOYMENT_SEASONALLY_ADJUSTED_ROUNDED_0P1PCT",
+      "original_release_day_HTTP_bytes_preserved_at_its_own_date": false,
+      "equivalent_to_exact_SNB_AMARBMA_first_vintage": false
+    },
+    {
+      "reference_month": "2025-12",
+      "original_seco_rounded_sa_registered_unemployment_pct": 3.0,
+      "published_report_date": "2026-01-09",
+      "conservative_available_from_utc": "2026-01-10T00:00:00+00:00",
+      "release_time_quality": "DAY_AFTER_OFFICIAL_REPORT_DATE_NOT_PROVEN_INTRADAY_AVAILABLE",
+      "official_month_report_url": "https://www.seco.admin.ch/dam/de/sd-web/0zOP2k0fJrJj/2025-12_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf",
+      "official_pdf_sha256_captured_now": "1dabd410759a4c4304c8ef52d42b1e164766676d84d6081b545afda0668b8c52",
+      "original_month_pdf_pages": 29,
+      "first_column_validated_against_comparison_columns": {
+        "summary_original_quote": "Die saisonbereinigte Arbeitslosenquote  sukzessive von 2,7% (Januar 2025) auf 3,0% (Dezember 2025)",
+        "summary_rate_pct_one_decimal": "3,0",
+        "table_one_unemployment_subsection_rate_crosscheck": false,
+        "quality_if_no_table_crosscheck": "OFFICIAL_PUBLISHER_FIRST_DAY_REPORT_EXECUTIVE_SUMMARY"
+      },
+      "source_metric": "SECO_REGISTERED_UNEMPLOYMENT_SEASONALLY_ADJUSTED_ROUNDED_0P1PCT",
+      "original_release_day_HTTP_bytes_preserved_at_its_own_date": false,
+      "equivalent_to_exact_SNB_AMARBMA_first_vintage": false
+    },
+    {
+      "reference_month": "2026-01",
+      "original_seco_rounded_sa_registered_unemployment_pct": 2.9,
+      "published_report_date": "2026-02-06",
+      "conservative_available_from_utc": "2026-02-07T00:00:00+00:00",
+      "release_time_quality": "DAY_AFTER_OFFICIAL_REPORT_DATE_NOT_PROVEN_INTRADAY_AVAILABLE",
+      "official_month_report_url": "https://www.seco.admin.ch/dam/de/sd-web/3dmYe3hl-IiX/2026-01_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf",
+      "official_pdf_sha256_captured_now": "badb2e4518f213d7fb785637fa5ca4bb1898c00f7b3a4485e16629efdf8917b1",
+      "original_month_pdf_pages": 28,
+      "first_column_validated_against_comparison_columns": {
+        "summary_original_quote": "Die saisonbereinigte Arbeitslosenquote  sank im Januar 2026 gegenüber dem Vormonat um 0,1 Prozentpunkte auf 2,9%",
+        "summary_rate_pct_one_decimal": "2,9",
+        "table_one_unemployment_subsection_rate_crosscheck": true,
+        "quality_if_no_table_crosscheck": null
+      },
+      "source_metric": "SECO_REGISTERED_UNEMPLOYMENT_SEASONALLY_ADJUSTED_ROUNDED_0P1PCT",
+      "original_release_day_HTTP_bytes_preserved_at_its_own_date": false,
+      "equivalent_to_exact_SNB_AMARBMA_first_vintage": false
+    },
+    {
+      "reference_month": "2026-02",
+      "original_seco_rounded_sa_registered_unemployment_pct": 3.0,
+      "published_report_date": "2026-03-05",
+      "conservative_available_from_utc": "2026-03-06T00:00:00+00:00",
+      "release_time_quality": "DAY_AFTER_OFFICIAL_REPORT_DATE_NOT_PROVEN_INTRADAY_AVAILABLE",
+      "official_month_report_url": "https://www.seco.admin.ch/dam/de/sd-web/koTM5Dm0o1mP/2026-02_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf",
+      "official_pdf_sha256_captured_now": "948a39f0dc006f7b27f1264a18ec0ee97e6e943a1eb576394d497e5d883773e6",
+      "original_month_pdf_pages": 28,
+      "first_column_validated_against_comparison_columns": {
+        "summary_original_quote": "Die saisonbereinigte Arbeitslosenquote  stieg im Februar 2026 gegenüber dem Vormonat um 0,1 Pro- zentpunkte auf 3,0%",
+        "summary_rate_pct_one_decimal": "3,0",
+        "table_one_unemployment_subsection_rate_crosscheck": true,
+        "quality_if_no_table_crosscheck": null
+      },
+      "source_metric": "SECO_REGISTERED_UNEMPLOYMENT_SEASONALLY_ADJUSTED_ROUNDED_0P1PCT",
+      "original_release_day_HTTP_bytes_preserved_at_its_own_date": false,
+      "equivalent_to_exact_SNB_AMARBMA_first_vintage": false
+    },
+    {
+      "reference_month": "2026-03",
+      "original_seco_rounded_sa_registered_unemployment_pct": 3.0,
+      "published_report_date": "2026-04-08",
+      "conservative_available_from_utc": "2026-04-09T00:00:00+00:00",
+      "release_time_quality": "DAY_AFTER_OFFICIAL_REPORT_DATE_NOT_PROVEN_INTRADAY_AVAILABLE",
+      "official_month_report_url": "https://www.seco.admin.ch/dam/de/sd-web/C6Htf34KPwjy/2026-03_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf",
+      "official_pdf_sha256_captured_now": "d663ca74de12e6260930197cb77cca0291e382ceeb0021c419db5fd84f748824",
+      "original_month_pdf_pages": 28,
+      "first_column_validated_against_comparison_columns": {
+        "summary_original_quote": "Die saisonbereinigte Arbeitslosenquote  verharrte im März 2026 bei 3,0%",
+        "summary_rate_pct_one_decimal": "3,0",
+        "table_one_unemployment_subsection_rate_crosscheck": true,
+        "quality_if_no_table_crosscheck": null
+      },
+      "source_metric": "SECO_REGISTERED_UNEMPLOYMENT_SEASONALLY_ADJUSTED_ROUNDED_0P1PCT",
+      "original_release_day_HTTP_bytes_preserved_at_its_own_date": false,
+      "equivalent_to_exact_SNB_AMARBMA_first_vintage": false
+    },
+    {
+      "reference_month": "2026-04",
+      "original_seco_rounded_sa_registered_unemployment_pct": 3.0,
+      "published_report_date": "2026-05-07",
+      "conservative_available_from_utc": "2026-05-08T00:00:00+00:00",
+      "release_time_quality": "DAY_AFTER_OFFICIAL_REPORT_DATE_NOT_PROVEN_INTRADAY_AVAILABLE",
+      "official_month_report_url": "https://www.seco.admin.ch/dam/de/sd-web/dhdkI1Aav55G/2026-04_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf",
+      "official_pdf_sha256_captured_now": "401af9dfb279f9edeb54889b24154774777ce8ba3202fa515f9c127a22f4ca9b",
+      "original_month_pdf_pages": 28,
+      "first_column_validated_against_comparison_columns": {
+        "summary_original_quote": "Die saisonbereinigte Arbeitslosenquote  verharrte im April 2026 bei 3,0%",
+        "summary_rate_pct_one_decimal": "3,0",
+        "table_one_unemployment_subsection_rate_crosscheck": true,
+        "quality_if_no_table_crosscheck": null
+      },
+      "source_metric": "SECO_REGISTERED_UNEMPLOYMENT_SEASONALLY_ADJUSTED_ROUNDED_0P1PCT",
+      "original_release_day_HTTP_bytes_preserved_at_its_own_date": false,
+      "equivalent_to_exact_SNB_AMARBMA_first_vintage": false
+    },
+    {
+      "reference_month": "2026-05",
+      "original_seco_rounded_sa_registered_unemployment_pct": 3.1,
+      "published_report_date": "2026-06-04",
+      "conservative_available_from_utc": "2026-06-05T00:00:00+00:00",
+      "release_time_quality": "DAY_AFTER_OFFICIAL_REPORT_DATE_NOT_PROVEN_INTRADAY_AVAILABLE",
+      "official_month_report_url": "https://www.seco.admin.ch/dam/de/sd-web/SbYdGjztxsYn/2026-05_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf",
+      "official_pdf_sha256_captured_now": "4b72a6c1913ced5449a9bd3e22e866bf9954dd34ecedf2e79c099775beba8447",
+      "original_month_pdf_pages": 28,
+      "first_column_validated_against_comparison_columns": {
+        "summary_original_quote": "Die saisonbereinigte Arbeitslosenquote  stieg im Mai 2026 gegenüber dem Vormonat um 0,1 Prozentpunkte auf 3,1%",
+        "summary_rate_pct_one_decimal": "3,1",
+        "table_one_unemployment_subsection_rate_crosscheck": true,
+        "quality_if_no_table_crosscheck": null
+      },
+      "source_metric": "SECO_REGISTERED_UNEMPLOYMENT_SEASONALLY_ADJUSTED_ROUNDED_0P1PCT",
+      "original_release_day_HTTP_bytes_preserved_at_its_own_date": false,
+      "equivalent_to_exact_SNB_AMARBMA_first_vintage": false
+    },
+    {
+      "reference_month": "2026-06",
+      "original_seco_rounded_sa_registered_unemployment_pct": 3.1,
+      "published_report_date": "2026-07-06",
+      "conservative_available_from_utc": "2026-07-07T00:00:00+00:00",
+      "release_time_quality": "DAY_AFTER_OFFICIAL_REPORT_DATE_NOT_PROVEN_INTRADAY_AVAILABLE",
+      "official_month_report_url": "https://www.seco.admin.ch/dam/de/sd-web/-frJzsphIetD/2026-06_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf",
+      "official_pdf_sha256_captured_now": "ff8550ef37a05627caf0458fde279cb2f13083bca7036f3dbebcbb228b10ab68",
+      "original_month_pdf_pages": 28,
+      "first_column_validated_against_comparison_columns": {
+        "summary_original_quote": "Die saisonbereinigte Arbeitslosenquote  verharrte im Juni 2026 bei 3,1%",
+        "summary_rate_pct_one_decimal": "3,1",
+        "table_one_unemployment_subsection_rate_crosscheck": true,
+        "quality_if_no_table_crosscheck": null
+      },
+      "source_metric": "SECO_REGISTERED_UNEMPLOYMENT_SEASONALLY_ADJUSTED_ROUNDED_0P1PCT",
+      "original_release_day_HTTP_bytes_preserved_at_its_own_date": false,
+      "equivalent_to_exact_SNB_AMARBMA_first_vintage": false
+    },
+    {
+      "reference_month": "2026-07",
+      "original_seco_rounded_sa_registered_unemployment_pct": 3.1,
+      "published_report_date": "2026-08-06",
+      "conservative_available_from_utc": "2026-08-07T00:00:00+00:00",
+      "release_time_quality": "DAY_AFTER_OFFICIAL_REPORT_DATE_NOT_PROVEN_INTRADAY_AVAILABLE",
+      "official_month_report_url": "https://www.seco.admin.ch/dam/de/sd-web/87RRZ57sm6Qi/2026-07_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf",
+      "official_pdf_sha256_captured_now": "e3eb91f458165924fbd4c778b285cb2f02a7c206eec6d67abf0f02135e3de676",
+      "original_month_pdf_pages": 28,
+      "first_column_validated_against_comparison_columns": {
+        "summary_original_quote": "Die saisonbereinigte Arbeitslosenquote  verharrte im Juli 2026 bei 3,1%",
+        "summary_rate_pct_one_decimal": "3,1",
+        "table_one_unemployment_subsection_rate_crosscheck": true,
+        "quality_if_no_table_crosscheck": null
+      },
+      "source_metric": "SECO_REGISTERED_UNEMPLOYMENT_SEASONALLY_ADJUSTED_ROUNDED_0P1PCT",
+      "original_release_day_HTTP_bytes_preserved_at_its_own_date": false,
+      "equivalent_to_exact_SNB_AMARBMA_first_vintage": false
+    },
+    {
+      "reference_month": "2026-08",
+      "original_seco_rounded_sa_registered_unemployment_pct": 3.1,
+      "published_report_date": "2026-09-07",
+      "conservative_available_from_utc": "2026-09-08T00:00:00+00:00",
+      "release_time_quality": "DAY_AFTER_OFFICIAL_REPORT_DATE_NOT_PROVEN_INTRADAY_AVAILABLE",
+      "official_month_report_url": "https://www.seco.admin.ch/dam/de/sd-web/dbh3eu-KTouI/2026-08_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf",
+      "official_pdf_sha256_captured_now": "378568316f62492fecfe191ce714519c4ca70c8712f0124a31317c3fdc237464",
+      "original_month_pdf_pages": 28,
+      "first_column_validated_against_comparison_columns": {
+        "summary_original_quote": "Die saisonbereinigte Arbeitslosenquote  verharrte im August 2026 bei 3,1%",
+        "summary_rate_pct_one_decimal": "3,1",
+        "table_one_unemployment_subsection_rate_crosscheck": true,
+        "quality_if_no_table_crosscheck": null
+      },
+      "source_metric": "SECO_REGISTERED_UNEMPLOYMENT_SEASONALLY_ADJUSTED_ROUNDED_0P1PCT",
+      "original_release_day_HTTP_bytes_preserved_at_its_own_date": false,
+      "equivalent_to_exact_SNB_AMARBMA_first_vintage": false
+    },
+    {
+      "reference_month": "2026-09",
+      "original_seco_rounded_sa_registered_unemployment_pct": 3.1,
+      "published_report_date": "2026-10-06",
+      "conservative_available_from_utc": "2026-10-07T00:00:00+00:00",
+      "release_time_quality": "DAY_AFTER_OFFICIAL_REPORT_DATE_NOT_PROVEN_INTRADAY_AVAILABLE",
+      "official_month_report_url": "https://www.seco.admin.ch/dam/de/sd-web/nTAcn9LsVnCO/2026-09_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf",
+      "official_pdf_sha256_captured_now": "5ccfa02e3ff5cad6ca0f6984e3294657d4440554bfc614659f3e0eb0d5bb18b4",
+      "original_month_pdf_pages": 28,
+      "first_column_validated_against_comparison_columns": {
+        "summary_original_quote": "Die saisonbereinigte Arbeitslosenquote  verharrte im September 2026 bei 3,1%",
+        "summary_rate_pct_one_decimal": "3,1",
+        "table_one_unemployment_subsection_rate_crosscheck": true,
+        "quality_if_no_table_crosscheck": null
+      },
+      "source_metric": "SECO_REGISTERED_UNEMPLOYMENT_SEASONALLY_ADJUSTED_ROUNDED_0P1PCT",
+      "original_release_day_HTTP_bytes_preserved_at_its_own_date": false,
+      "equivalent_to_exact_SNB_AMARBMA_first_vintage": false
+    }
+  ],
+  "target_first_month": "2024-09",
+  "last_reference_month": "2026-09",
+  "target_observations": 25,
+  "verified_issuer_first_rounded_reports": 21,
+  "original_reports_currently_unavailable_periods": [
+    "2024-09",
+    "2024-10",
+    "2024-11",
+    "2024-12"
+  ],
+  "prior_original_published_months": 20,
+  "prior_training_target": 24,
+  "current_report_window_complete": false,
+  "source_day_first_HTTP_payloads_independently_archived": false,
+  "complete_historical_SNB_exact_release_vintage_proven": false,
+  "can_replace_canonical_CH_UNEMP_RATE_history_value": false,
+  "safe_to_publish_new_D": false,
+  "safe_for_beta": false,
+  "safe_for_forward": false,
+  "writes_live_data": false
+}
