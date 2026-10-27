@@ -70,6 +70,13 @@ vix["dates"][-1] = "2026-10-23"
 for name in ("NEWS_PULSE_OPERATIONAL.json", "CALENDAR_OPERATIONAL_VIEW.json"):
     good[name]["generated_at_utc"] = "2026-10-26T05:30:00Z"
     good[name]["last_checked_at_utc"] = "2026-10-26T05:30:00Z"
+# Freeze the historical Monday-morning content vintage too, not just the
+# generated_at timestamp. Current live News Pulse has advanced past Oct 22.
+# This test explicitly exercises the nonblocking STALE_NEWS_CONTENT receipt.
+news_fixture=good["NEWS_PULSE_OPERATIONAL.json"]
+news_fixture["content_as_of"]="2026-10-22"
+for item in news_fixture["items"]:
+    item["as_of"]="2026-10-22"
 for c in good["MACRO_THERMOMETER_DATA.json"]["currencies"].values():
     for key in ("inflation", "labour"):
         c[key]["as_of"] = "2026-09"
