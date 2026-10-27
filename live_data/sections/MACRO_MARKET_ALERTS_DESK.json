@@ -1,8 +1,36 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-27T15:59:08Z",
+  "generated_at_utc": "2026-10-27T16:59:41Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-573afb16c165d6f6bf42",
+      "observed_at_utc": "2026-10-27T16:35:18Z",
+      "headline": "Wall St rises as AI momentum holds heading into key earnings, Fed decision",
+      "summary": "Reuters riporta: Wall St rises as AI momentum holds heading into key earnings, Fed decision. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxNR21qQWZsLUZqbWRjR2YtQ3FGakpEWWVjSUVFNjVDSi01MnRiWmV3Z2pPQUsyVGhJR3UxQ1o4RjRVa2tCLXNXbnJjNE9fbE5KVzlKTEZtNHpZb3lPR0hXcFFSVGVydlpnR3RQdVM5bDE3aVI3aVowN0NqY3NHb3VDN3hlaXpLTmxkeFc3NE13dUNqYUtIMHNxRFR5M3VYZmpKUDRzVE5WLUdwRHJCeEpQM1pKaw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-c2b3b34f2dea4d4e4472",
+      "observed_at_utc": "2026-10-27T15:48:46Z",
+      "headline": "Poorer Brazilians devote four times more income to credit card debt, central bank says",
+      "summary": "Reuters riporta: Poorer Brazilians devote four times more income to credit card debt, central bank says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxOcHhTdWhkbjVIbnJ1NFVfN2YwYUtEQlVQTWhWVW93TGdKdWJVVlRVX0t2anMySThWOVpkRkdaelMtb3ZYS3E5QUQzNFhKMndFY2l0d3ZpWHh6eTQ4ZUJvQlY3R25odnRuQV8tVzFlelFPQkxnSVpsQXV0S1YzZUIxMU90WktKSjA5ZjY2cmw2elkwd29aLUZHaFlCM0JhVVdqTGg0VUg4WDNxNTI1ZjZvMF9JUkpJd0VMdXZsWGZLdmJUUEZaUkpB?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-3aed6c5fa0f28e711f44",
       "observed_at_utc": "2026-10-27T14:32:33Z",
@@ -1377,36 +1405,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxNeVdjcHBnZnppTnlpcmxrRTg0c18wb0NCU01Qc0pnT3VZSk54QXltcnBXX09GbWQtdDQ3emdVbkhvcmswcVhIamtLcW1qVUU0R2VyUE0yNVlnbFZSYXkyWHpOSmlaeEhNMDJlRHVCMzR5cHd4Mmd5WFVvMWJZOTFObndJamFPQ3lqUFVzTTE4Wk5PS2syTXhodzU3VXZ5cFJVc2dlUWRMRm9CazJjUEgyb1I2MlpKTjhJeFE?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-34db36bbebf68593dd5f",
-      "observed_at_utc": "2026-10-23T10:07:44Z",
-      "headline": "Wall St Week Ahead Earnings flood, Fed meeting pose pivotal tests for rickety AI market rally",
-      "summary": "Reuters riporta: Wall St Week Ahead Earnings flood, Fed meeting pose pivotal tests for rickety AI market rally. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxPR3FjeUJFd2Z6ZFBxOEFlLUx4anZlN1BqeFkxQ1pFcTdXTENYc0tMdW9RbjJ1Vk91Y2tmSXVoRDFCTmZoQ2cxN3BaSlFfTXplZUNZTFIzVmR3OTVmUVYzWnBXVkxRNXAtOEpBSUpIVjlBMnJ6cVViYnFSSHZoaC1CbkR5TnBzZndWNEo5aFlkWTVKY0hSYzRuOTlzUjYwcGlrcFJKQXhlbmFOMHNWLTRiRHZaM21fWEF1SDl1Mg?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-f73fd279899dde04dec4",
-      "observed_at_utc": "2026-10-23T11:42:00Z",
-      "headline": "The Kremlin says a first tanker of Russian diesel sets sail for the US despite Ukraine's protests",
-      "summary": "AP News riporta: The Kremlin says a first tanker of Russian diesel sets sail for the US despite Ukraine's protests. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "AP News · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxPNlBURXk2bjFrc3ZkS2YxamJJM1RjZ1lOblh6ZTJPWTdrbHpPWjJIdzZMdjdBR0pOZFZ1eHhOcnUxRllDOGMweV9NN1JpU28yMmpEeFMwaFBweFk5bGR1QnRBd2NfdXI4Tk1uOWdjNFRhR2dZOG9BNGVWN1ZhQjBIdkloVEsxaUxkWlJJMTFjbnRCZ3I5dkgtN0U4bXBfbnZQVzliVThn?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
