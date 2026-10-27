@@ -15,6 +15,8 @@ def main():
     canonical="live_data/sections/MACRO_SERIES.json"
     heat="live_data/sections/MACRO_THERMOMETER_DATA.json"
     assert canonical in FILES and heat in FILES
+    assert "Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text()" in workflow
+    assert "Path('live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/MACRO_SERIES.json')" not in workflow
     assert FILES.count(canonical)==1
     assert active.count("feed('MACRO_SERIES.json')")==0, "Standalone is not a Home direct source"
     # The Pages runner must watch the source AND actually copy, stage and
