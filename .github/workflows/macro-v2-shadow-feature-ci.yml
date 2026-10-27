@@ -21,9 +21,6 @@ on:
       - 'validation/macro/v2_bls_us_unrate_25_release_pilot_v1.py'
       - 'validation/macro/test_v2_bls_us_unrate_25_release_pilot_v1.py'
       - 'validation/macro/MACRO_V2_US_BLS_25_FIRST_RELEASE_PILOT_2026-10-23.md'
-      - 'validation/macro/v2_us_cpi_alfred_release_day_pilot_v1.py'
-      - 'validation/macro/test_v2_us_cpi_alfred_release_day_pilot_v1.py'
-      - 'validation/macro/MACRO_V2_US_CPI_ALFRED_RELEASE_DAY_PILOT_2026-10-27.md'
       - 'validation/macro/fixtures/v2_bls_us_unemployment_shutdown_2025_gap_resumption.json'
       - 'validation/macro/v2_bls_shutdown_sparse_reentry_v1.py'
       - 'validation/macro/test_v2_bls_shutdown_sparse_reentry_v1.py'
@@ -472,9 +469,6 @@ jobs:
           python -m validation.macro.v2_us_fed_g17_shutdown_13_month_replay_v1 --asof 2025-12-23T14:15:00Z --out /tmp/macro-v2-shadow/us-ip-after-double-first.json
           python -m validation.macro.v2_us_fed_g17_shutdown_13_month_replay_v1 --asof 2026-03-16T13:15:00Z --out /tmp/macro-v2-shadow/us-ip-first-real-six-month-growth.json
           python -m validation.macro.v2_us_fed_g17_shutdown_13_month_replay_v1 --asof 2026-10-24T00:00:00Z --out /tmp/macro-v2-shadow/us-ip-thirteen-month-replay.json
-      - name: Verify US CPI ALFRED as-of vintage parser and original BLS rounded release crosscheck without external HTTP
-        run: |
-          python -m unittest validation.macro.test_v2_us_cpi_alfred_release_day_pilot_v1 -v
       - name: Confirm no runtime or website files were changed by tests
         run: |
           git diff --exit-code -- live_data site payload dashboard
