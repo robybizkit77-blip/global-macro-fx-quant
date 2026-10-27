@@ -14,6 +14,9 @@ on:
       - 'validation/macro/v2_eur_ea_regime_chf_precision_guard_v1.py'
       - 'validation/macro/v2_g8_24_axis_asof_evidence_v1.py'
       - 'validation/macro/v2_g8_24_axis_daily_release_replay_v1.py'
+      - 'validation/macro/v2_g8_24_axis_training_history_gap_audit_v1.py'
+      - 'validation/macro/test_v2_g8_24_axis_training_history_gap_audit_v1.py'
+      - 'validation/macro/MACRO_V2_24_SOURCE_TRAINING_WINDOW_GAP_AUDIT_2026-10-27.md'
       - 'validation/macro/test_v2_g8_24_axis_daily_release_replay_v1.py'
       - 'validation/macro/MACRO_V2_G8_24_AXIS_DAILY_REPLAY_2026-10-27.md'
       - 'validation/macro/test_v2_g8_24_axis_asof_evidence_v1.py'
@@ -63,6 +66,9 @@ on:
       - 'validation/macro/v2_eur_ea_regime_chf_precision_guard_v1.py'
       - 'validation/macro/v2_g8_24_axis_asof_evidence_v1.py'
       - 'validation/macro/v2_g8_24_axis_daily_release_replay_v1.py'
+      - 'validation/macro/v2_g8_24_axis_training_history_gap_audit_v1.py'
+      - 'validation/macro/test_v2_g8_24_axis_training_history_gap_audit_v1.py'
+      - 'validation/macro/MACRO_V2_24_SOURCE_TRAINING_WINDOW_GAP_AUDIT_2026-10-27.md'
       - 'validation/macro/test_v2_g8_24_axis_daily_release_replay_v1.py'
       - 'validation/macro/MACRO_V2_G8_24_AXIS_DAILY_REPLAY_2026-10-27.md'
       - 'validation/macro/test_v2_g8_24_axis_asof_evidence_v1.py'
@@ -139,6 +145,8 @@ jobs:
         run: python -m unittest validation.macro.test_v2_g8_24_axis_asof_evidence_v1 -v
       - name: Verify actual daily as-of source releases and revisions across 24 G8 axes
         run: python -m unittest validation.macro.test_v2_g8_24_axis_daily_release_replay_v1 -v
+      - name: Audit 24 G8 first-web research training windows and missing periods
+        run: python -m unittest validation.macro.test_v2_g8_24_axis_training_history_gap_audit_v1 -v
       - name: Build read-only current observational feature receipt
         run: |
           python -m validation.macro.v2_g8_observed_feature_bridge_v1 \
@@ -401,6 +409,39 @@ jobs:
               f.write('- Qualified jointly historical PIT training days: **0**. FX OOS tests: **0**.\n')
               f.write('- Current unfinished UTC day excluded. No live D/28 pairs changes.\n')
           PY
+      - name: Publish 24 first-release training window missing-period evidence (research only)
+        run: |
+          python -m validation.macro.v2_g8_24_axis_training_history_gap_audit_v1 \
+            --output /tmp/macro-v2-g8-24-first-release-training-gaps.json
+          python - <<'PY'
+          import json, os
+          d=json.load(open('/tmp/macro-v2-g8-24-first-release-training-gaps.json'))
+          s=d['summary']
+          assert s['currencies']==8
+          assert s['economic_slots']==24
+          assert s['genuinely_historic_PIT_training_slots_certified']==0
+          assert s['currency_FX_strength_scores_approved']==0
+          assert s['cross_currency_pair_rankings_changed']==0
+          assert d['safe_to_publish_new_D'] is False
+          assert d['safe_to_recalculate_28_pairs'] is False
+          assert d['safe_to_use_for_beta'] is False
+          assert d['safe_to_use_for_forward'] is False
+          assert d['writes_live_data'] is False
+          assert '2025-10' in d['slots']['USD.labour']['missing_required_prior_periods']
+          assert 'EURO_AREA_EA19_EA20_EA21_PRIOR_24M_NOT_HOMOGENEOUS' in \
+                 d['slots']['EUR.inflation']['current_PIT_research_comparability_caveats']
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as f:
+              f.write('\n### Macro V2 — exact missing historical first-release windows G8\n')
+              f.write('- Slots: **24**; source initial-web windows numerically complete: **%s/24**.\n' %
+                      s['prior_first_web_contiguous_12Q_or_24M_slots'])
+              f.write('- Slots missing required previous months/quarters: **%s/24**, missing periods: **%s**.\n' %
+                      (s['slots_missing_required_initial_release_periods'],
+                       s['missing_required_prior_periods_total']))
+              f.write('- Slots with semantic/definition caveats: **%s**.\n' %
+                      s['slots_with_semantic_or_definition_caveats'])
+              f.write('- Independently complete source-day PIT histories ready for Macro model: **0/24**.\n')
+              f.write('- First-release windows are research sources, NEVER automatic FX strength or D.json approval.\n')
+          PY
       - name: Retain dated shadow evidence (never publish to live_data)
         if: always()
         uses: actions/upload-artifact@v4
@@ -415,5 +456,6 @@ jobs:
             /tmp/macro-v2-eur-chf-source-interpretation.json
             /tmp/macro-v2-g8-24-axis-shared-utc-evidence.json
             /tmp/macro-v2-g8-24-axis-daily-release-evidence.json
+            /tmp/macro-v2-g8-24-first-release-training-gaps.json
           if-no-files-found: warn
           retention-days: 21
