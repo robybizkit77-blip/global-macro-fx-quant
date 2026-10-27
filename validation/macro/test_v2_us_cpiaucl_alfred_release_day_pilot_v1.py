@@ -13,6 +13,8 @@ def fixture(month, base=300.0, current=310.0, extra=None):
     w = csv.writer(b)
     w.writerow(["observation_date", "CPIAUCSL_" + vintage])
     w.writerow([earlier_month(month, 12) + "-01", base])
+    rate = {"2025-09": 0.3, "2026-09": 0.6}[month]
+    w.writerow([earlier_month(month, 1) + "-01", current / (1 + rate / 100)])
     w.writerow([month + "-01", current])
     for p, v in extra or []:
         w.writerow([p + "-01", v])
@@ -27,6 +29,9 @@ class TestReleaseDayPilot(unittest.TestCase):
                 self.assertEqual(out["schema"], SCHEMA)
                 self.assertEqual(out["CPIAUCSL_SA_index_current_at_release_day"], 310)
                 self.assertAlmostEqual(out["index_based_SA_YOY_pct_as_of_release_day"], 100/30)
+                self.assertTrue(out["ALFRED_SA_MOM_matches_BLS_first_published_rounded_monthly_pct"])
+                self.assertAlmostEqual(out["index_based_SA_MOM_pct_as_of_release_day"],
+                                       out["BLS_original_published_rounded_SA_MOM_pct"], places=5)
                 self.assertIn("alfred.stlouisfed.org", url_for(month))
                 self.assertEqual(out["BLS_published_release_day"], RELEASES[month][0])
                 self.assertFalse(out["safe_to_publish_new_D"])
@@ -37,6 +42,10 @@ class TestReleaseDayPilot(unittest.TestCase):
                 self.assertFalse(out["research_first_release_training_24M_complete"])
                 self.assertFalse(out["first_release_BLS_download_sha256_verified"])
                 self.assertFalse(out["BLS_NSA_official_headline_YOY_identical"])
+
+    def test_reject_wrong_alfred_s_a_monthly_change_even_with_valid_yoy(self):
+        with self.assertRaises(ValueError):
+            inspect("2026-09", fixture("2026-09").replace(b"308.149", b"299.149"))
 
     def test_shut_down_october_2025_must_never_be_filled(self):
         with self.assertRaises(ValueError):
