@@ -65,6 +65,7 @@ def main():
     # VIX must stay in the public HTTP proof after future refactors.
     assert "live_data/sections/D.json" in FILES
     assert "live_data/sections/MACRO_THERMOMETER_DATA.json" in FILES
+    assert "live_data/sections/MACRO_SERIES.json" in FILES
     assert "live_data/sections/NEWS_PULSE_OPERATIONAL.json" in FILES
     assert "live_data/sections/CALENDAR_OPERATIONAL_VIEW.json" in FILES
     assert "live_data/sections/NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json" in FILES
