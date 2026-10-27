@@ -290,6 +290,19 @@ def main():
     print(json.dumps({"schema": out["schema"], "status": out["status"],
                       **out["summary"], "safe_to_publish_new_D": False},
                      sort_keys=True))
+    # Case-by-case diagnostics: user-facing trace, not a relative FX ranking.
+    for currency in FX:
+        item = out["weights_and_input_stress"]["countries"][currency]
+        print(json.dumps({
+            "currency": currency,
+            "baseline_activity_balance_z": item["baseline_activity_balance_z"],
+            "baseline_bucket": item["baseline_bucket"],
+            "weight_25_50_75_buckets": item["weight_variant_activity_buckets"],
+            "weight_changes_category": item["weight_category_changes"],
+            "shock_changes_category": item["input_shock_changes_baseline_category"],
+            "quality_flags": item["source_quality_flags"],
+            "fx_strength_score": None,
+        }, sort_keys=True))
 
 
 if __name__ == "__main__":
