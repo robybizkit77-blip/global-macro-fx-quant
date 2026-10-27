@@ -89,7 +89,16 @@ def main():
     assert success["status"] == "PASS", success
     assert success["attempts"] >= 2, success
     assert all(x["http_200_and_sha256_match"] for x in success["checks"])
-    # A stale standalone Macro Series must be caught even when D and the\n    # thermometer are already up-to-date on Pages. Retain retry semantics.\n    macro_delayed = case(True, "live_data/sections/MACRO_SERIES.json")\n    assert macro_delayed["status"] == "PASS" and macro_delayed["attempts"] >= 2\n    macro_stale = case(False, "live_data/sections/MACRO_SERIES.json")\n    assert macro_stale["status"] == "FAIL"\n    wrong = next(r for r in macro_stale["checks"] if r["path"] == "live_data/sections/MACRO_SERIES.json")\n    assert not wrong["http_200_and_sha256_match"]\n    failure = case(False)
+    # A stale standalone Macro Series must fail even if D and the
+    # thermometer already match. Eventual CDN consistency may retry.
+    macro_delayed = case(True, "live_data/sections/MACRO_SERIES.json")
+    assert macro_delayed["status"] == "PASS" and macro_delayed["attempts"] >= 2
+    macro_stale = case(False, "live_data/sections/MACRO_SERIES.json")
+    assert macro_stale["status"] == "FAIL"
+    wrong = next(r for r in macro_stale["checks"]
+                 if r["path"] == "live_data/sections/MACRO_SERIES.json")
+    assert not wrong["http_200_and_sha256_match"]
+    failure = case(False)
     assert failure["status"] == "FAIL", failure
     assert failure["attempts"] == 1
     assert failure["conclusion"] == "DELIVERY_NOT_CONVERGED"
