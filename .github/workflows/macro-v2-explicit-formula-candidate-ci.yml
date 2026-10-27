@@ -1,0 +1,35 @@
+name: Macro V2 explicit domestic formula candidate QA (research, unscheduled)
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/macro-v2-explicit-formula-candidate-ci.yml'
+      - 'validation/macro/v2_domestic_candidate_explicit_formula_v1.py'
+      - 'validation/macro/test_v2_domestic_candidate_explicit_formula_v1.py'
+      - 'validation/macro/MACRO_V2_EXPLICIT_DOMESTIC_FORMULA_CANDIDATE_2026-10-27.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit-formula:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test fixed formula, 8 country axes, sensitivity and no live writes
+        run: |
+          python -m unittest validation.macro.test_v2_domestic_candidate_explicit_formula_v1 -v
+          python -m validation.macro.v2_domestic_candidate_explicit_formula_v1 --as-of 2026-10-27 --out /tmp/gmfq-domestic-macro-candidate.json
+      - name: Check exact forbidden publication diff
+        run: |
+          git diff --exit-code -- live_data payload site dashboard
+          test -z "$(git status --porcelain -- live_data payload site dashboard)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macro-v2-domestic-candidate-${{ github.run_id }}
+          path: /tmp/gmfq-domestic-macro-candidate.json
+          if-no-files-found: error
+          retention-days: 30
