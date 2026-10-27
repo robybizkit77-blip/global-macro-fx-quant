@@ -40,7 +40,7 @@ class CoreBridgeReadinessTests(unittest.TestCase):
             for dim in ("inflation","labour"):
                 source=r["currency_source_coverage"][c][dim]
                 self.assertEqual(source["series_id"],
-                                 self.heat["currencies"][c][dim]["latest"]["series_id"])
+                                 self.heat["currencies"][c][dim]["series_id"])
                 self.assertFalse(source["approved_as_core_weight"])
 
     def test_no_automatic_score_or_pair_promotion_even_if_date_manually_edited(self):
@@ -70,9 +70,9 @@ class CoreBridgeReadinessTests(unittest.TestCase):
         core=copy.deepcopy(self.core);core["asOf"]="2026-10-28"
         with self.assertRaises(ValueError):self.check(core=core)
         h=copy.deepcopy(self.heat)
-        h["currencies"]["NZD"]["inflation"]["latest"]["as_of"]="2026-11"
+        h["currencies"]["NZD"]["inflation"]["as_of"]="2026-11"
         with self.assertRaises(ValueError):self.check(heat=h)
-        h["currencies"]["NZD"]["inflation"]["latest"]["as_of"]="2026-13"
+        h["currencies"]["NZD"]["inflation"]["as_of"]="2026-13"
         with self.assertRaises(ValueError):self.check(heat=h)
         p=copy.deepcopy(self.pairs);p["price_audit"]["status"]="FAIL"
         with self.assertRaises(ValueError):self.check(pairs=p)
@@ -86,7 +86,7 @@ class CoreBridgeReadinessTests(unittest.TestCase):
         self.assertTrue(r["source_observation_as_of_is_not_release_timestamp"])
         self.assertTrue(r["all_observation_dates_not_future"])
         self.assertEqual(r["currency_source_coverage"]["NZD"]["labour"]["observation_as_of"],
-                         self.heat["currencies"]["NZD"]["labour"]["latest"]["as_of"])
+                         self.heat["currencies"]["NZD"]["labour"]["as_of"])
         self.assertEqual(r["currency_source_coverage"]["AUD"]["inflation"]["observation_frequency"],"Q")
         self.assertTrue(r["audit_only_no_data_written"])
 
