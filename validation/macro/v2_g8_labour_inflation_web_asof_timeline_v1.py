@@ -217,7 +217,16 @@ def compile_timeline(registry, candidates, *, start=DEFAULT_START, end=None):
             **qualified_canonical(source, canonical),
         }
     from validation.macro.v2_g8_source_semantic_reconciliation_v1 import reconcile
+    from validation.macro.v2_eur_aud_archival_first_web_overlay_v1 import archived_overlay
     reconciliation = reconcile(full)
+    # Keep the 16 earlier candidate streams unchanged and separately expose
+    # the *canonical* two archived sources. EUR flash initial is not overwritten
+    # by later detail; AUD quarterly CPI is never substituted with monthly CPI.
+    archived = archived_overlay(as_of=daily_end(finish).isoformat())
+    archival_index = {key: [
+        (timestamp(e["visible_from_utc"]), e)
+        for e in hist["events"]]
+        for key, hist in archived["histories"].items()}
     snapshots = []
     for ordinal in range((finish - begin).days + 1):
         day = begin + timedelta(days=ordinal)
@@ -226,8 +235,24 @@ def compile_timeline(registry, candidates, *, start=DEFAULT_START, end=None):
             # This source ledger has a strict separation between availability
             # of evidence and the country/pillar canonical model.
             rows[key] = asof_source(src, daily_end(day))
+        prior = {}
+        for k, events in archival_index.items():
+            visible = [e for clock, e in events if clock <= daily_end(day)]
+            latest = visible[-1] if visible else None
+            prior[k] = {
+                "canonical_archival_first_web_rows_known": len(visible),
+                "most_recent_canonical_archival_first_web_value": (
+                    latest["reported_value"] if latest else None),
+                "most_recent_canonical_archival_economic_period": (
+                    latest["reference_period"] if latest else None),
+                "most_recent_canonical_archival_publisher_gate_utc": (
+                    latest["visible_from_utc"] if latest else None),
+                "no_future_publications_visible_in_this_snapshot": True,
+                "safe_to_use_for_macro_scoring": False,
+            }
         snapshots.append({"as_of_end_utc": daily_end(day).isoformat(),
-                          "slots": rows})
+                          "slots": rows,
+                          "canonical_EUR_AUD_archival_first_web_overlay": prior})
     latest = snapshots[-1]["slots"]
     same = sum(x["series_and_frequency_match"] for x in full.values())
     visible = sum(x["first_web_value"] is not None for x in latest.values())
@@ -241,6 +266,7 @@ def compile_timeline(registry, candidates, *, start=DEFAULT_START, end=None):
                    "policy": "DOCUMENTED_SOURCE_EVENT_GATE_NOT_ECONOMIC_OBSERVATION_MONTH"},
         "source_catalogue": full,
         "source_semantic_reconciliation": reconciliation,
+        "canonical_EUR_AUD_first_web_archival_overlay": archived,
         "daily_web_release_snapshots": snapshots,
         "current_latest_web_publisher_observations": latest,
         "summary": {
@@ -255,6 +281,9 @@ def compile_timeline(registry, candidates, *, start=DEFAULT_START, end=None):
             "slots_with_visible_first_web_on_end_date": visible,
             "first_publisher_web_periods_in_bounded_dossiers": first_total,
             "independent_event_boundaries_checked": boundary_count,
+            "additional_canonical_EUR_AUD_initial_publisher_periods_loaded": 139,
+            "archived_EUR_months": archived["summary"]["eur_inflation_monthly"],
+            "archived_AUD_quarters": archived["summary"]["aud_inflation_quarterly"],
             "joint_PIT_training_histories_certified": 0,
             "live_macro_scores_created": 0,
             "FX_backtests_performed": 0,
@@ -270,7 +299,11 @@ def compile_timeline(registry, candidates, *, start=DEFAULT_START, end=None):
         "writes_live_data": False,
     }
     results["evidence_fingerprint_sha256"] = hashlib.sha256(json.dumps(
-        {"catalogue": full, "reconciliation": reconciliation, "daily": snapshots},
+        {"catalogue": full, "reconciliation": reconciliation,
+         "archived_EUR_AUD_sha": {
+             k: (v["source_csv_sha256"], v["source_semantic_sha256"])
+             for k, v in archived["histories"].items()},
+         "daily": snapshots},
         sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     return results
 
