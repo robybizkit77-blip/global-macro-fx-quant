@@ -572,8 +572,8 @@ jobs:
           y=json.load(open('/tmp/macro-v2-g8-24-first-release-training-gaps.json'))
           s=x['summary']
           assert s['official_issuer_archive_links_documented']==24
-          assert s['official_BLS_HTML_news_releases_opened_and_read']==21
-          assert s['archive_index_only_unreadable_HTML_links']==3
+          assert s['official_BLS_HTML_news_releases_opened_and_read']==24
+          assert s['archive_index_only_unreadable_HTML_links']==0
           assert s['BLS_2025_10_all_items_officially_unpublished']==1
           assert s['2025_11_two_month_rounded_SA_change_not_MOM']==1
           assert s['new_exact_CPIAUCSL_first_vintage_index_levels']==0
@@ -582,7 +582,7 @@ jobs:
           assert x['safe_to_publish_new_D'] is False
           with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as f:
               f.write('\\n### BLS CPI 25-month first archived issuer news releases (RESEARCH ONLY)\\n')
-              f.write('- 24 release URLs in official index; **21** HTML pages opened, **3** link-only timeouts. No original HTML byte SHA captured.\\n')
+              f.write('- 24 release URLs in official index; **24** HTML pages opened, **0** link-only timeouts. No original HTML byte SHA captured.\\n')
               f.write('- Oct 2025 no all-items observation. Nov 2025 +0.2% **over TWO months** (Sep-Nov), not Nov MoM.\\n')
               f.write('- Original rounded SA report changes do NOT replace exact CPIAUCSL SA index levels; **0** new canonical first vintages.\\n')
               f.write('- Unchanged source-window research completeness **22/24**, PIT-certified Macro slots **0**; no Core/FX/Beta/Forward.\\n')

@@ -354,8 +354,8 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
         bls_news_archive = bls_original_news_audit(cutoff=ASOF)
         bls_count = bls_news_archive["summary"]
         check(bls_count["official_issuer_archive_links_documented"] == 24
-              and bls_count["official_BLS_HTML_news_releases_opened_and_read"] == 21
-              and bls_count["archive_index_only_unreadable_HTML_links"] == 3
+              and bls_count["official_BLS_HTML_news_releases_opened_and_read"] == 24
+              and bls_count["archive_index_only_unreadable_HTML_links"] == 0
               and bls_count["BLS_2025_10_all_items_officially_unpublished"] == 1
               and bls_count["new_exact_CPIAUCSL_first_vintage_index_levels"] == 0
               and bls_news_archive["safe_to_publish_new_D"] is False

@@ -104,10 +104,17 @@ def audit(*, cutoff=ASOF, fixture=None):
                 "November 2025 was 2-month change, never 1-month")
         if month == "2025-11":
             require(delta == 0.2, "BLS November shutdown bridge must be 0.2 over two months")
-    require(counter == {"HTML_OPENED": 21,
-                        "ARCHIVE_INDEX_LINK_ONLY_TIMEOUT": 3,
+    require(counter == {"HTML_OPENED": 24,
+                        "ARCHIVE_INDEX_LINK_ONLY_TIMEOUT": 0,
                         "NO_OFFICIAL_ALL_ITEMS_CPI_RELEASE": 1},
             "publisher link/open/gap confidence counts drift")
+    anchors = {"2024-11": 0.3, "2024-12": 0.4, "2025-07": 0.2}
+    for economic_month, original_change in anchors.items():
+        found = [r for r in records if r["reference_month"] == economic_month]
+        require(len(found) == 1 and found[0]["source_evidence_level"] == "HTML_OPENED"
+                and found[0]["sa_change_horizon_months"] == 1
+                and found[0]["first_issuer_reported_sa_all_items_change_pct_rounded_1dp"]
+                == original_change, "recovered BLS HTML original headline anchor mismatch")
     require(records[-1]["reference_month"] == "2026-09"
             and records[-1]["first_issuer_reported_sa_all_items_change_pct_rounded_1dp"] == 0.6
             and records[12]["reference_month"] == "2025-09"
@@ -121,10 +128,10 @@ def audit(*, cutoff=ASOF, fixture=None):
     summary = {
         "calendar_periods": 25,
         "official_issuer_archive_links_documented": 24,
-        "official_BLS_HTML_news_releases_opened_and_read": 21,
-        "archive_index_only_unreadable_HTML_links": 3,
+        "official_BLS_HTML_news_releases_opened_and_read": 24,
+        "archive_index_only_unreadable_HTML_links": 0,
         "BLS_2025_10_all_items_officially_unpublished": 1,
-        "one_month_rounded_SA_rate_readings": 20,
+        "one_month_rounded_SA_rate_readings": 23,
         "2025_11_two_month_rounded_SA_change_not_MOM": 1,
         "prior_24_calendar_months_with_issuer_archive_link": 23,
         "prior_24_calendar_months_truly_consecutive_CPIAUCSL_index_vintages": 0,

@@ -4,7 +4,7 @@
   "intended_canonical_series": "CPIAUCSL",
   "bls_sa_issuer_series": "CUSR0000SA0",
   "bls_nsa_distinct_series": "CUUR0000SA0",
-  "disclaimer": "First archived issuer news release rounded all-items SA percentage change, never the exact SA index vintage; original raw issuer HTML bytes not acquired/hashed; three URLs seen only in official archive index. December 2025-11 reports 2-month change due to October gap.",
+  "disclaimer": "First archived issuer news release rounded all-items SA percentage change, never the exact SA index vintage; original raw issuer HTML bytes not acquired/hashed; all 24 URLs independently opened through searchable official BLS archive on 2026-10-27. December 2025-11 reports 2-month change due to October gap.",
   "structural_gap_explanation_url": "https://www.bls.gov/cpi/additional-resources/2025-federal-government-shutdown-impact-cpi-faq.htm",
   "records": [
     {
@@ -34,9 +34,9 @@
       "publisher_release_day": "2024-12-11",
       "issuer_archived_html_url": "https://www.bls.gov/news.release/archives/cpi_12112024.htm",
       "issuer_archived_index_url": "https://www.bls.gov/bls/news-release/cpi.htm",
-      "source_evidence_level": "ARCHIVE_INDEX_LINK_ONLY_TIMEOUT",
-      "first_issuer_reported_sa_all_items_change_pct_rounded_1dp": null,
-      "sa_change_horizon_months": null,
+      "source_evidence_level": "HTML_OPENED",
+      "first_issuer_reported_sa_all_items_change_pct_rounded_1dp": 0.3,
+      "sa_change_horizon_months": 1,
       "original_html_raw_sha256": null,
       "first_issuer_sa_index_level_CUSR0000SA0": null
     },
@@ -45,9 +45,9 @@
       "publisher_release_day": "2025-01-15",
       "issuer_archived_html_url": "https://www.bls.gov/news.release/archives/cpi_01152025.htm",
       "issuer_archived_index_url": "https://www.bls.gov/bls/news-release/cpi.htm",
-      "source_evidence_level": "ARCHIVE_INDEX_LINK_ONLY_TIMEOUT",
-      "first_issuer_reported_sa_all_items_change_pct_rounded_1dp": null,
-      "sa_change_horizon_months": null,
+      "source_evidence_level": "HTML_OPENED",
+      "first_issuer_reported_sa_all_items_change_pct_rounded_1dp": 0.4,
+      "sa_change_horizon_months": 1,
       "original_html_raw_sha256": null,
       "first_issuer_sa_index_level_CUSR0000SA0": null
     },
@@ -122,9 +122,9 @@
       "publisher_release_day": "2025-08-12",
       "issuer_archived_html_url": "https://www.bls.gov/news.release/archives/cpi_08122025.htm",
       "issuer_archived_index_url": "https://www.bls.gov/bls/news-release/cpi.htm",
-      "source_evidence_level": "ARCHIVE_INDEX_LINK_ONLY_TIMEOUT",
-      "first_issuer_reported_sa_all_items_change_pct_rounded_1dp": null,
-      "sa_change_horizon_months": null,
+      "source_evidence_level": "HTML_OPENED",
+      "first_issuer_reported_sa_all_items_change_pct_rounded_1dp": 0.2,
+      "sa_change_horizon_months": 1,
       "original_html_raw_sha256": null,
       "first_issuer_sa_index_level_CUSR0000SA0": null
     },
