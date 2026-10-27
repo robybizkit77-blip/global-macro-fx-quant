@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_CHATGPT_MARKET_CONTEXT_V1",
-  "generated_at_utc": "2026-10-27T14:48:45Z",
+  "generated_at_utc": "2026-10-27T15:46:16Z",
   "evaluation_date_europe_rome": "2026-10-27",
   "reference_only": true,
   "policy": {
@@ -56,7 +56,7 @@
       },
       "CHF": {
         "state": "UNAVAILABLE",
-        "as_of": "2026-10-23",
+        "as_of": "2026-10-26",
         "reason": "Only GBP, JPY, CAD and AUD have the certified OIS contract; estimated/proxy OIS is informational only, never alert-certified."
       },
       "CAD": {
@@ -77,24 +77,44 @@
     },
     "government_rates": {
       "USD": {
-        "state": "STALE",
-        "as_of": "2026-10-23",
-        "reason": "Age 4d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-10-26",
+        "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-10-26",
+        "government_2y_pct": 4.68,
+        "government_10y_pct": 5.0,
+        "10y_minus_2y_bp": 32.0,
+        "change_2y_bp": -9.0,
+        "change_10y_bp": -15.0
       },
       "EUR": {
-        "state": "STALE",
-        "as_of": "2026-10-23",
-        "reason": "Age 4d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-10-26",
+        "source": "European Central Bank · AAA Svensson spot curve · 2026-10-26",
+        "government_2y_pct": 3.0254,
+        "government_10y_pct": 3.3736,
+        "10y_minus_2y_bp": 34.8,
+        "change_2y_bp": -2.8,
+        "change_10y_bp": -9.6
       },
       "GBP": {
-        "state": "STALE",
-        "as_of": "2026-10-23",
-        "reason": "Age 4d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-10-26",
+        "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-10-26",
+        "government_2y_pct": 4.7316,
+        "government_10y_pct": 5.3259,
+        "10y_minus_2y_bp": 59.4,
+        "change_2y_bp": 2.4,
+        "change_10y_bp": -8.8
       },
       "JPY": {
-        "state": "STALE",
-        "as_of": "2026-10-23",
-        "reason": "Age 4d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-10-26",
+        "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-10-26",
+        "government_2y_pct": 1.888,
+        "government_10y_pct": 2.824,
+        "10y_minus_2y_bp": 93.6,
+        "change_2y_bp": -1.6,
+        "change_10y_bp": -11.1
       },
       "CHF": {
         "state": "STALE",
@@ -102,9 +122,14 @@
         "reason": "Age 27d exceeds the 3d alert limit."
       },
       "CAD": {
-        "state": "STALE",
-        "as_of": "2026-10-22",
-        "reason": "Age 5d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-10-26",
+        "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-10-26",
+        "government_2y_pct": 3.37,
+        "government_10y_pct": 3.84,
+        "10y_minus_2y_bp": 47.0,
+        "change_2y_bp": 4.0,
+        "change_10y_bp": -9.0
       },
       "AUD": {
         "state": "STALE",
