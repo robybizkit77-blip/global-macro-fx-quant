@@ -10,6 +10,11 @@ on:
       - 'validation/macro/v2_g8_sensitivity_release_clock_v1.py'
       - 'validation/macro/v2_g8_labour_inflation_web_asof_timeline_v1.py'
       - 'validation/macro/v2_g8_source_semantic_reconciliation_v1.py'
+      - 'validation/macro/v2_eur_aud_archival_first_web_overlay_v1.py'
+      - 'validation/macro/test_v2_eur_aud_archival_first_web_overlay_v1.py'
+      - 'validation/macro/fixtures/EUR_HICP_FLASH_STRICT_FIRST_RELEASE_2018_2026_09.csv.xz.b64'
+      - 'validation/macro/fixtures/AUD_CPI_Q_YOY_STRICT_FIRST_RELEASE_2018_2026Q2.csv.xz.b64'
+      - 'validation/macro/MACRO_V2_EUR_AUD_ARCHIVAL_139_FIRST_RELEASES_2026-10-27.md'
       - 'validation/macro/test_v2_g8_source_semantic_reconciliation_v1.py'
       - 'validation/macro/MACRO_V2_4_G8_SOURCE_SEMANTIC_RECONCILIATION_2026-10-27.md'
       - 'validation/macro/aud_inflation_strict_pit_evidence_v1_2026-10-09.json'
@@ -45,6 +50,11 @@ on:
       - 'validation/macro/v2_g8_sensitivity_release_clock_v1.py'
       - 'validation/macro/v2_g8_labour_inflation_web_asof_timeline_v1.py'
       - 'validation/macro/v2_g8_source_semantic_reconciliation_v1.py'
+      - 'validation/macro/v2_eur_aud_archival_first_web_overlay_v1.py'
+      - 'validation/macro/test_v2_eur_aud_archival_first_web_overlay_v1.py'
+      - 'validation/macro/fixtures/EUR_HICP_FLASH_STRICT_FIRST_RELEASE_2018_2026_09.csv.xz.b64'
+      - 'validation/macro/fixtures/AUD_CPI_Q_YOY_STRICT_FIRST_RELEASE_2018_2026Q2.csv.xz.b64'
+      - 'validation/macro/MACRO_V2_EUR_AUD_ARCHIVAL_139_FIRST_RELEASES_2026-10-27.md'
       - 'validation/macro/test_v2_g8_source_semantic_reconciliation_v1.py'
       - 'validation/macro/MACRO_V2_4_G8_SOURCE_SEMANTIC_RECONCILIATION_2026-10-27.md'
       - 'validation/macro/aud_inflation_strict_pit_evidence_v1_2026-10-09.json'
@@ -103,6 +113,8 @@ jobs:
         run: python -m unittest validation.macro.test_v2_g8_labour_inflation_web_asof_timeline_v1 -v
       - name: Test reconciled four source semantic mismatches and 34Q/105M evidence
         run: python -m unittest validation.macro.test_v2_g8_source_semantic_reconciliation_v1 -v
+      - name: Test 139 persisted original EUR and AUD publisher first-release records
+        run: python -m unittest validation.macro.test_v2_eur_aud_archival_first_web_overlay_v1 -v
       - name: Build read-only current observational feature receipt
         run: |
           python -m validation.macro.v2_g8_observed_feature_bridge_v1 \
@@ -251,6 +263,29 @@ jobs:
               out.write('- Of 4 apparent mismatches: **2** verified conceptual lineages (NOT PIT-ready), **2** genuine measurement differences.\n')
               out.write('- Model-ready histories: **0**; no new D, FX ranking, Beta or Forward.\n')
           PY
+      - name: Replay 105 Eurostat flash + 34 ABS quarterly original artifact CSV rows
+        run: |
+          python -m validation.macro.v2_eur_aud_archival_first_web_overlay_v1 \
+            --output /tmp/macro-v2-eur-aud-first-web-archive.json
+          python - <<'PY'
+          import json, os
+          d=json.load(open('/tmp/macro-v2-eur-aud-first-web-archive.json'))
+          assert d['summary']['pinned_original_first_web_rows']==139
+          assert d['summary']['eur_inflation_monthly']==105
+          assert d['summary']['aud_inflation_quarterly']==34
+          assert d['summary']['source_archival_receipts_reconciled']==2
+          assert d['historical_aggregate_score_pit_certified'] is False
+          assert d['safe_to_publish_new_D'] is False
+          assert d['safe_to_change_28_pairs'] is False
+          assert d['safe_for_beta'] is False and d['safe_for_forward'] is False
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as f:
+              f.write('\n### Macro V2 — actual archived EUR/AUD issuer FIRST-release rows\n')
+              f.write('- EUR: **105** original Eurostat web flash periods, first date 2018-01, latest 2026-09.\n')
+              f.write('- AUD: **34** genuine quarterly ABS CPI periods 2018Q1–2026Q2, NOT monthly CPI substitutes.\n')
+              f.write('- Exact original CSV SHA-256 **and** independent semantic rowset SHA-256 verified for both archives.\n')
+              f.write('- Archived source URLs and individual source SHA pins retained; intraday EUR flash time unknown (next-UTC-day policy).\n')
+              f.write('- G8 24-pillar PIT scoring, Macro D promotion, 28 pairs, Beta/Forward: **NOT APPROVED**.\n')
+          PY
       - name: Retain dated shadow evidence (never publish to live_data)
         if: always()
         uses: actions/upload-artifact@v4
@@ -261,5 +296,6 @@ jobs:
             /tmp/macro-v2-three-axis-g8-research.json
             /tmp/macro-v2-weight-stress-gdp-clock.json
             /tmp/macro-v2-g8-inflation-labour-release-chronology.json
+            /tmp/macro-v2-eur-aud-first-web-archive.json
           if-no-files-found: warn
           retention-days: 21
