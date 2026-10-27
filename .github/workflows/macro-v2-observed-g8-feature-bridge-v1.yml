@@ -15,6 +15,9 @@ on:
       - 'validation/macro/v2_g8_24_axis_asof_evidence_v1.py'
       - 'validation/macro/v2_g8_24_axis_daily_release_replay_v1.py'
       - 'validation/macro/v2_g8_24_axis_training_history_gap_audit_v1.py'
+      - 'validation/macro/v2_g8_us_cpi_chf_labour_quality_proxies_v1.py'
+      - 'validation/macro/test_v2_g8_us_cpi_chf_labour_quality_proxies_v1.py'
+      - 'validation/macro/MACRO_V2_US_CPI_CHF_LABOUR_QUALITY_PROXIES_2026-10-27.md'
       - 'validation/macro/v2_g8_11_retained_source_archives_v1.py'
       - 'validation/macro/test_v2_g8_11_retained_source_archives_v1.py'
       - 'validation/macro/one_shot_retain_g8_11_original_release_artifacts_v1.py'
@@ -72,6 +75,9 @@ on:
       - 'validation/macro/v2_g8_24_axis_asof_evidence_v1.py'
       - 'validation/macro/v2_g8_24_axis_daily_release_replay_v1.py'
       - 'validation/macro/v2_g8_24_axis_training_history_gap_audit_v1.py'
+      - 'validation/macro/v2_g8_us_cpi_chf_labour_quality_proxies_v1.py'
+      - 'validation/macro/test_v2_g8_us_cpi_chf_labour_quality_proxies_v1.py'
+      - 'validation/macro/MACRO_V2_US_CPI_CHF_LABOUR_QUALITY_PROXIES_2026-10-27.md'
       - 'validation/macro/v2_g8_11_retained_source_archives_v1.py'
       - 'validation/macro/test_v2_g8_11_retained_source_archives_v1.py'
       - 'validation/macro/one_shot_retain_g8_11_original_release_artifacts_v1.py'
@@ -159,6 +165,8 @@ jobs:
         run: python -m unittest validation.macro.test_v2_g8_24_axis_training_history_gap_audit_v1 -v
       - name: Test eleven retained official first-release source archives (1003 records)
         run: python -m unittest validation.macro.test_v2_g8_11_retained_source_archives_v1 -v
+      - name: Test official CPI October 2025 gap and rounded Swiss proxy with no PIT promotion
+        run: python -m unittest validation.macro.test_v2_g8_us_cpi_chf_labour_quality_proxies_v1 -v
       - name: Build read-only current observational feature receipt
         run: |
           python -m validation.macro.v2_g8_observed_feature_bridge_v1 \
@@ -477,6 +485,35 @@ jobs:
                       row['research_only_quality_label']))
               f.write('\nThe 11 numerically contiguous series remain unapproved for live Core scoring.\n')
           PY
+      - name: Keep source-quality estimates separate from true original release histories
+        run: |
+          python -m validation.macro.v2_g8_us_cpi_chf_labour_quality_proxies_v1 \
+            --output /tmp/macro-v2-us-cpi-chf-labour-quality-proxy.json
+          python - <<'PY'
+          import json, os
+          d=json.load(open('/tmp/macro-v2-us-cpi-chf-labour-quality-proxy.json'))
+          z=json.load(open('/tmp/macro-v2-g8-24-first-release-training-gaps.json'))
+          assert d['summary']['estimates_added']==2
+          assert d['summary']['genuinely_new_first_release_archival_rows_added']==0
+          assert d['summary']['USD_CPI_unpublished_October_2025_first_release'] is True
+          assert d['summary']['CHF_SNB_first_release_exact_value_recovered'] is False
+          assert z['summary']['prior_first_web_contiguous_12Q_or_24M_slots']==22
+          assert z['summary']['slots_missing_required_initial_release_periods']==2
+          assert z['summary']['secondary_provisional_descriptors_available']==2
+          assert z['summary']['source_slots_with_original_window_or_labeled_provisional_context']==24
+          assert z['summary']['genuinely_historic_PIT_training_slots_certified']==0
+          assert d['safe_to_publish_new_D'] is False
+          assert d['safe_to_change_28_pairs'] is False
+          assert d['safe_for_beta'] is False and d['safe_for_forward'] is False
+          assert z['safe_to_publish_new_D'] is False
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as f:
+              f.write('\n### 24 source axes: 22 historical first-web windows plus 2 EXPLICIT research estimates\n')
+              f.write('- USD CPIAUCSL: 24 **observed revised** months within 25 calendar months; Oct-2025 missing, not imputed.\n')
+              f.write('- CHF unemployment: 24 **retrospectively revised SNB** prior months; latest SECO first report 3.1% rounded, NOT exact SNB original.\n')
+              f.write('- 22/24 numerical source-web windows remain 22/24; NOT 24/24 PIT original vintages.\n')
+              f.write('- Publisher archived CPI retrieval blocked HTTP 403; no fake first publication values.\n')
+              f.write('- Macro/FX Core scores authorized: **0**, pair or Beta/Forward modifications: **0**.\n')
+          PY
       - name: Retain dated shadow evidence (never publish to live_data)
         if: always()
         uses: actions/upload-artifact@v4
@@ -492,5 +529,6 @@ jobs:
             /tmp/macro-v2-g8-24-axis-shared-utc-evidence.json
             /tmp/macro-v2-g8-24-axis-daily-release-evidence.json
             /tmp/macro-v2-g8-24-first-release-training-gaps.json
+            /tmp/macro-v2-us-cpi-chf-labour-quality-proxy.json
           if-no-files-found: warn
           retention-days: 21

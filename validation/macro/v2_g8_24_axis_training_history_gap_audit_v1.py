@@ -300,6 +300,27 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
         "currency_FX_strength_scores_approved": 0,
         "cross_currency_pair_rankings_changed": 0,
     }
+    # Secondary, explicitly estimated research view. This must NEVER alter
+    # the 22/24 actual first-web window counts or any source-data values.
+    # The proxy is only reproducible at its fixed 2026-10-26 baseline:
+    # CURRENTLY REVISED history cannot be replayed as an earlier PIT archive.
+    estimated_proxies = None
+    if cutoff == ASOF:
+        from validation.macro.v2_g8_us_cpi_chf_labour_quality_proxies_v1 import (
+            profile as provisional_profile
+        )
+        estimated_proxies = provisional_profile(as_of=ASOF)
+        check(set(estimated_proxies["two_explicitly_estimated_missing_source_windows"])
+              == {"USD.inflation", "CHF.labour"} and
+              estimated_proxies["summary"]["genuinely_new_first_release_archival_rows_added"] == 0
+              and estimated_proxies["safe_to_publish_new_D"] is False,
+              "provisional sources must not be mistaken for original PIT histories")
+        check(stat["prior_first_web_contiguous_12Q_or_24M_slots"] == 22 and
+              stat["slots_missing_required_initial_release_periods"] == 2,
+              "proxy values cannot overwrite 22/24 real first-release coverage")
+        stat["secondary_provisional_descriptors_available"] = 2
+        stat["source_slots_with_original_window_or_labeled_provisional_context"] = 24
+        stat["secondary_provisional_first_release_corrections"] = 0
     out = {
         "schema": SCHEMA, "as_of_utc": cut.isoformat(),
         "status": "24_G8_SOURCE_WINDOW_COMPLETENESS_RESEARCH_ONLY_NOT_MODEL_PIT",
@@ -307,6 +328,9 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
                            "quarterly_prior": QUARTERLY_PRIOR,
                            "latest_initial_observation_excluded_from_training": True},
         "slots": details, "summary": stat,
+        "separate_revised_history_estimates_for_US_CPI_and_CHF_unemployment":
+            estimated_proxies,
+        "observed_first_web_22_and_estimated_context_2_must_never_be_combined_as_PIT": True,
         "series_counts_do_not_equal_valid_historical_PIT_trading_samples": True,
         "current_monthly_and_quarterly_observation_periods_not_comparable": True,
         "no_future_revision_or_backfill_from_revised_history": True,
