@@ -6,11 +6,14 @@
 
 We located the official [BLS archive index](https://www.bls.gov/bls/news-release/cpi.htm)
 for all 25 calendar economic months September 2024–September 2026.
-**24** all-items CPI release links exist. **21** archived BLS HTML release pages
-could be opened and their contemporary all-items **seasonally adjusted,
-one-decimal percentage changes** read; **three** official listed URLs
-(November and December 2024, July 2025) timed out during this audit, so
-those rows are **index-link only** and carry no values. The original
+**24** all-items CPI release links exist. All **24** archived BLS HTML
+release pages are now accessible via the official BLS publisher pages
+indexed in web search. Their contemporary all-items **seasonally adjusted,
+one-decimal percentage changes** were read. The three initially unresolved
+economic periods were recovered on 27 October 2026:
+November 2024 **+0.3%** ([11 Dec 2024](https://www.bls.gov/news.release/archives/cpi_12112024.htm));
+December 2024 **+0.4%** ([15 Jan 2025](https://www.bls.gov/news.release/archives/cpi_01152025.htm));
+July 2025 **+0.2%** ([12 Aug 2025](https://www.bls.gov/news.release/archives/cpi_08122025.htm)). The original
 HTML raw bytes were **not downloaded and SHA-256-archived**; therefore the
 HTML-opened records are NOT byte-captured first-release primary artifacts.
 
@@ -74,3 +77,31 @@ website, daily schedule, OIS or Rates fields are modified.
 first-release day, initial historical seasonal revisions, and carry the
 unpublished Oct-2025 gap as a structural missing period. No automatic
 upgrade to 24-month consecutive training permitted.
+
+## Original CPI-U supplementary vintages — feasibility assessed 27 October 2026
+
+BLS explicitly maintains [archived supplemental CPI files](https://www.bls.gov/cpi/tables/supplemental-files/home.htm)
+with individual **2025/2026 issue-month XLSX** files (CPI-U and Historical CPI-U)
+and a consolidated **2024 archive ZIP**. It also preserves annual
+[seasonal-adjustment revisions](https://www.bls.gov/cpi/tables/seasonal-adjustment/)
+(e.g., the February 2026 replacement of 2021–2025 adjusted values). These
+are the appropriate original-publisher candidates for testing precise
+issue-time `CUSR0000SA0` index histories.
+
+**No official original XLSX/ZIP bytes were successfully acquired or
+checksummed in this recovery.** The 2026-09 issuer XLSX could be identified
+by URL, but the research fetch environment could not download the binary.
+ALFRED `CPIAUCSL` historical-vintage exports remain an independently
+maintained Fed mirror and were also not acquired in this recovery. No
+backtest, intraday vintage assertion, or canonical issuer first-vintage
+approval follows from the mere existence of archive URLs.
+
+A follow-up byte-level recovery must parse the exact all-items **SA**
+index levels (not the unadjusted CPI-U table index), match each document's
+reference/issue month, retain raw bytes + SHA-256, and compare issuer
+vintage versus any ALFRED snapshot at the same publisher release date.
+The archived publisher warns that supplemental files can include
+subsequent revisions, so a contemporary issue-month file must be
+independently checked for accidental 2026 backfill. The 2025-10
+all-items data remain structurally unpublished: never invent or
+interpolate them, and do not call the research 24/24 PIT-ready.
