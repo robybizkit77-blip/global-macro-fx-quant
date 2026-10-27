@@ -56,9 +56,9 @@ def audit(core,heat,series,setup,as_of):
         dims={}
         for dim in ("inflation","labour"):
             h=heat["currencies"][ccy].get(dim)
-            if not isinstance(h,dict) or not isinstance(h.get("latest"),dict):
+            if not isinstance(h,dict):
                 raise ValueError(f"missing thermometer {ccy}.{dim}")
-            leaf=h["latest"]
+            leaf=h
             observed=leaf.get("as_of")
             date_value=_observation(observed)
             if date_value>today:
