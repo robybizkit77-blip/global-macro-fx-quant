@@ -1609,7 +1609,7 @@ function expectedReactionFromMetrics(row){
   for(const row of rankSetup.descriptions){
     const item=setupFeed.pairs[row.code];
     const expected=sourcedReasons(item).slice(0,2).join(' · ');
-    const favored=item.setup.quality==='NON VALUTABILE'?'':
+    const favored=item.setup.quality==='NON VALUTABILE'?'Nessuna direzione · ':
       'Favore '+item.setup.structuralFav+' · ';
     if(row.why!==favored+expected)
       throw Error(label+' risk explanation is not tied to current source state: '+
