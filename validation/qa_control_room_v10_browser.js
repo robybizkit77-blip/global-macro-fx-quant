@@ -1615,7 +1615,8 @@ function expectedReactionFromMetrics(row){
       throw Error(label+' risk explanation is not tied to current source state: '+
         row.code+' expected '+favored+expected+' received '+row.why);
   }
-  if(!rankSetup.descriptions.some(x=>x.quality==='CON RISCHI'&&x.why?.length>5))
+  if(!rankSetup.descriptions.some(x=>
+      setupFeed.pairs[x.code]?.setup?.quality==='CON RISCHI'&&x.why?.length>5))
     throw Error(label+' current canonical risk has no explanatory text');
   await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-rank-mode="thesis"]').click();
   const rankThesis=await readRank();
