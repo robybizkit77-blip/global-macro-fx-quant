@@ -16,6 +16,10 @@ on:
       - 'validation/macro/v2_g8_24_axis_daily_release_replay_v1.py'
       - 'validation/macro/v2_g8_24_axis_training_history_gap_audit_v1.py'
       - 'validation/macro/v2_g8_us_cpi_chf_labour_quality_proxies_v1.py'
+      - 'validation/macro/v2_chf_seco_first_month_rounded_alternative_v1.py'
+      - 'validation/macro/test_v2_chf_seco_first_month_rounded_alternative_v1.py'
+      - 'validation/macro/fixtures/seco_chf_sa_registered_unemployment_25_first_monthly_reports_2024_09_2026_09.json'
+      - 'validation/macro/MACRO_V2_SECO_25_MONTHLY_FIRST_ROUNDED_ALTERNATIVE_2026-10-27.md'
       - 'validation/macro/test_v2_g8_us_cpi_chf_labour_quality_proxies_v1.py'
       - 'validation/macro/MACRO_V2_US_CPI_CHF_LABOUR_QUALITY_PROXIES_2026-10-27.md'
       - 'validation/macro/v2_g8_11_retained_source_archives_v1.py'
@@ -76,6 +80,10 @@ on:
       - 'validation/macro/v2_g8_24_axis_daily_release_replay_v1.py'
       - 'validation/macro/v2_g8_24_axis_training_history_gap_audit_v1.py'
       - 'validation/macro/v2_g8_us_cpi_chf_labour_quality_proxies_v1.py'
+      - 'validation/macro/v2_chf_seco_first_month_rounded_alternative_v1.py'
+      - 'validation/macro/test_v2_chf_seco_first_month_rounded_alternative_v1.py'
+      - 'validation/macro/fixtures/seco_chf_sa_registered_unemployment_25_first_monthly_reports_2024_09_2026_09.json'
+      - 'validation/macro/MACRO_V2_SECO_25_MONTHLY_FIRST_ROUNDED_ALTERNATIVE_2026-10-27.md'
       - 'validation/macro/test_v2_g8_us_cpi_chf_labour_quality_proxies_v1.py'
       - 'validation/macro/MACRO_V2_US_CPI_CHF_LABOUR_QUALITY_PROXIES_2026-10-27.md'
       - 'validation/macro/v2_g8_11_retained_source_archives_v1.py'
@@ -167,6 +175,8 @@ jobs:
         run: python -m unittest validation.macro.test_v2_g8_11_retained_source_archives_v1 -v
       - name: Test official CPI October 2025 gap and rounded Swiss proxy with no PIT promotion
         run: python -m unittest validation.macro.test_v2_g8_us_cpi_chf_labour_quality_proxies_v1 -v
+      - name: Audit 21 byte-hashed original SECO 2025/26 PDFs plus four indexed-only 2024 reports
+        run: python -m unittest validation.macro.test_v2_chf_seco_first_month_rounded_alternative_v1 -v
       - name: Build read-only current observational feature receipt
         run: |
           python -m validation.macro.v2_g8_observed_feature_bridge_v1 \
@@ -514,6 +524,35 @@ jobs:
               f.write('- Publisher archived CPI retrieval blocked HTTP 403; no fake first publication values.\n')
               f.write('- Macro/FX Core scores authorized: **0**, pair or Beta/Forward modifications: **0**.\n')
           PY
+      - name: Review alternative first-published one-decimal Swiss SECO series (not SNB exact)
+        run: |
+          python -m validation.macro.v2_chf_seco_first_month_rounded_alternative_v1 \
+            --output /tmp/macro-v2-seco-chf-25-rounded-first-months.json
+          python - <<'PY'
+          import json, os
+          x=json.load(open('/tmp/macro-v2-seco-chf-25-rounded-first-months.json'))
+          d=json.load(open('/tmp/macro-v2-g8-24-first-release-training-gaps.json'))
+          assert x['summary']['alternative_SECO_first_rounded_web_coverage_months']==25
+          assert x['summary']['official_PDF_raw_bytes_SHA_captured_now']==21
+          assert x['summary']['official_2024_original_PDF_search_index_only_currently_404']==4
+          assert x['summary']['separate_new_SNB_canonical_first_release_history_periods']==0
+          assert x['historical_24_SNB_exact_first_release_percentages_unavailable']
+          assert x['safe_to_publish_new_D'] is False
+          assert d['summary']['prior_first_web_contiguous_12Q_or_24M_slots']==22
+          assert d['summary']['slots_missing_required_initial_release_periods']==2
+          assert d['summary']['CH_labour_SECO_alternative_issuer_rounded_months']==25
+          assert d['summary']['CH_labour_SECO_alternative_downloaded_report_PDFs']==21
+          assert d['summary']['CH_labour_exact_SNB_first_release_history_approved']==0
+          assert d['SECO_25_rounded_report_months_do_NOT_close_SNB_original_exact_PIT']
+          assert d['summary']['genuinely_historic_PIT_training_slots_certified']==0
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as f:
+              f.write('\n### CHF SECO original rounded reports — separate from exact SNB\n')
+              f.write('- Original SECO issue reports 2025–26 with raw downloaded PDF SHA256: **21**.\n')
+              f.write('- Four 2024 official original issuer reports: **indexed text only**, historical source URL now HTTP 404.\n')
+              f.write('- Current 2026-09 original SECO SA registered jobless rate: **3.1% rounded**.\n')
+              f.write('- Swiss 25-month alternative historical research: 24 prior rounded rates. NO SNB exact historical vintages certified.\n')
+              f.write('- G8 canonical first-web training windows: still **22/24**, not 23/24 or 24/24 certified.\n')
+          PY
       - name: Retain dated shadow evidence (never publish to live_data)
         if: always()
         uses: actions/upload-artifact@v4
@@ -530,5 +569,6 @@ jobs:
             /tmp/macro-v2-g8-24-axis-daily-release-evidence.json
             /tmp/macro-v2-g8-24-first-release-training-gaps.json
             /tmp/macro-v2-us-cpi-chf-labour-quality-proxy.json
+            /tmp/macro-v2-seco-chf-25-rounded-first-months.json
           if-no-files-found: warn
           retention-days: 21
