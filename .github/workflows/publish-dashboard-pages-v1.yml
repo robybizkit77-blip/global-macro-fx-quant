@@ -116,7 +116,7 @@ jobs:
             c for c,v in ois['currencies'].items() if v['operational_status']=='GREEN_OFFICIAL'}
           cal=json.loads(Path('live_data/sections/CALENDAR_OPERATIONAL_VIEW.json').read_text())
           news=json.loads(Path('live_data/sections/NEWS_PULSE_OPERATIONAL.json').read_text())
-          macro_heat=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json','live_data/sections/MACRO_SERIES.json').read_text())
+          macro_heat=json.loads(Path('live_data/sections/MACRO_THERMOMETER_DATA.json').read_text())
           d=json.loads(Path('live_data/sections/D.json').read_text())
           residual=json.loads(Path('live_data/sections/ESTIMATED_RESIDUAL_GAPS.json').read_text())
           # Publish the derived COT story and runtime manifest with the same
