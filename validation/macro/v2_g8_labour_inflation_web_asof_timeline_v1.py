@@ -216,6 +216,8 @@ def compile_timeline(registry, candidates, *, start=DEFAULT_START, end=None):
             "claimed_archival_first_release_dataset_certified": False,
             **qualified_canonical(source, canonical),
         }
+    from validation.macro.v2_g8_source_semantic_reconciliation_v1 import reconcile
+    reconciliation = reconcile(full)
     snapshots = []
     for ordinal in range((finish - begin).days + 1):
         day = begin + timedelta(days=ordinal)
@@ -238,6 +240,7 @@ def compile_timeline(registry, candidates, *, start=DEFAULT_START, end=None):
                    "daily_snapshots": len(snapshots),
                    "policy": "DOCUMENTED_SOURCE_EVENT_GATE_NOT_ECONOMIC_OBSERVATION_MONTH"},
         "source_catalogue": full,
+        "source_semantic_reconciliation": reconciliation,
         "daily_web_release_snapshots": snapshots,
         "current_latest_web_publisher_observations": latest,
         "summary": {
@@ -245,6 +248,10 @@ def compile_timeline(registry, candidates, *, start=DEFAULT_START, end=None):
             "slots_with_candidate_publisher_web_research": len(full),
             "series_frequency_exact_candidate_matches": same,
             "candidate_source_mismatches_or_frequency_mismatches": 16 - same,
+            "candidate_lineage_aliases_semantically_identified":
+                reconciliation["summary"]["source_lineage_aliases_documented_not_production_approved"],
+            "candidate_true_measurement_mismatches":
+                reconciliation["summary"]["genuine_measurement_mismatches_to_replace"],
             "slots_with_visible_first_web_on_end_date": visible,
             "first_publisher_web_periods_in_bounded_dossiers": first_total,
             "independent_event_boundaries_checked": boundary_count,
@@ -263,7 +270,7 @@ def compile_timeline(registry, candidates, *, start=DEFAULT_START, end=None):
         "writes_live_data": False,
     }
     results["evidence_fingerprint_sha256"] = hashlib.sha256(json.dumps(
-        {"catalogue": full, "daily": snapshots},
+        {"catalogue": full, "reconciliation": reconciliation, "daily": snapshots},
         sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     return results
 
