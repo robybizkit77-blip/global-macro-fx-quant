@@ -18,6 +18,10 @@ on:
       - 'validation/macro/v2_g8_us_cpi_chf_labour_quality_proxies_v1.py'
       - 'validation/macro/v2_chf_seco_first_month_rounded_alternative_v1.py'
       - 'validation/macro/v2_us_bls_cpi_first_news_archive_v1.py'
+      - 'validation/macro/v2_us_cpiau_alfred_seven_release_day_index_v1.py'
+      - 'validation/macro/test_v2_us_cpiau_alfred_seven_release_day_index_v1.py'
+      - 'validation/macro/fixtures/v2_us_cpiau_alfred_seven_release_day_html_index_2026_10_27.json'
+      - 'validation/macro/MACRO_V2_US_CPIAUCSL_ALFRED_SEVEN_RELEASE_DAY_INDEX_ANCHORS_2026-10-27.md'
       - 'validation/macro/test_v2_us_bls_cpi_first_news_archive_v1.py'
       - 'validation/macro/fixtures/v2_bls_us_cpi_25_month_first_news_release_ledger_2026_10_27.json'
       - 'validation/macro/MACRO_V2_US_BLS_CPI_25_MONTH_FIRST_NEWS_ARCHIVE_2026-10-27.md'
@@ -86,6 +90,10 @@ on:
       - 'validation/macro/v2_g8_us_cpi_chf_labour_quality_proxies_v1.py'
       - 'validation/macro/v2_chf_seco_first_month_rounded_alternative_v1.py'
       - 'validation/macro/v2_us_bls_cpi_first_news_archive_v1.py'
+      - 'validation/macro/v2_us_cpiau_alfred_seven_release_day_index_v1.py'
+      - 'validation/macro/test_v2_us_cpiau_alfred_seven_release_day_index_v1.py'
+      - 'validation/macro/fixtures/v2_us_cpiau_alfred_seven_release_day_html_index_2026_10_27.json'
+      - 'validation/macro/MACRO_V2_US_CPIAUCSL_ALFRED_SEVEN_RELEASE_DAY_INDEX_ANCHORS_2026-10-27.md'
       - 'validation/macro/test_v2_us_bls_cpi_first_news_archive_v1.py'
       - 'validation/macro/fixtures/v2_bls_us_cpi_25_month_first_news_release_ledger_2026_10_27.json'
       - 'validation/macro/MACRO_V2_US_BLS_CPI_25_MONTH_FIRST_NEWS_ARCHIVE_2026-10-27.md'
@@ -187,6 +195,8 @@ jobs:
         run: python -m unittest validation.macro.test_v2_chf_seco_first_month_rounded_alternative_v1 -v
       - name: Reject missing October 2025 CPI and mislabelled November two-month BLS change
         run: python -m unittest validation.macro.test_v2_us_bls_cpi_first_news_archive_v1 -v
+      - name: Validate seven exact ALFRED CPIAUCSL release-date index observations WITHOUT BLS PIT promotion
+        run: python -m unittest validation.macro.test_v2_us_cpiau_alfred_seven_release_day_index_v1 -v
       - name: Build read-only current observational feature receipt
         run: |
           python -m validation.macro.v2_g8_observed_feature_bridge_v1 \
@@ -587,6 +597,30 @@ jobs:
               f.write('- Original rounded SA report changes do NOT replace exact CPIAUCSL SA index levels; **0** new canonical first vintages.\\n')
               f.write('- Unchanged source-window research completeness **22/24**, PIT-certified Macro slots **0**; no Core/FX/Beta/Forward.\\n')
           PY
+      - name: Retain separate seven-point ALFRED release-date SA index mirror research
+        run: |
+          python -m validation.macro.v2_us_cpiau_alfred_seven_release_day_index_v1 --output /tmp/macro-v2-us-cpi-alfred-release-day-mirror.json
+          python - <<'PY'
+          import json, os
+          a = json.load(open('/tmp/macro-v2-us-cpi-alfred-release-day-mirror.json'))
+          g = json.load(open('/tmp/macro-v2-g8-24-first-release-training-gaps.json'))
+          assert a['source_page_count'] == 7
+          assert a['source_kind'] == 'ALFRED_HISTORICAL_RELEASE_DAY_HTML_NOT_BLS_ORIGINAL_BYTES'
+          assert a['BLS_original_issue_day_bytes_sha256_captured'] == 0
+          assert a['ALFRED_historical_full_vintage_CSVs_acquired'] == 0
+          assert a['canonical_CPIAUCSL_first_releases_source_day_certified'] == 0
+          assert a['BLS_2025_10_original_all_items_absent'] is True
+          assert a['safe_to_publish_new_D'] is False
+          assert g['summary']['USD_CPI_ALFRED_release_day_SA_index_mirror_anchors'] == 7
+          assert g['summary']['US_inflation_BLS_news_pages_read'] == 24
+          assert g['summary']['US_inflation_BLS_news_index_only_links'] == 0
+          assert g['summary']['prior_first_web_contiguous_12Q_or_24M_slots'] == 22
+          assert g['summary']['genuinely_historic_PIT_training_slots_certified'] == 0
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
+              summary.write('\\n### US CPIAUCSL first observed seven release-day index levels (ALFRED MIRROR)\\n')
+              summary.write('- Exact 3dp index level anchors: **7** with dated ALFRED release pages, not original BLS byte-hashed vintages.\\n')
+              summary.write('- Source windows still **22/24** research; 0 first-vintage PIT model certification, no D, 28 pairs, Beta or Forward.\\n')
+          PY
       - name: Retain dated shadow evidence (never publish to live_data)
         if: always()
         uses: actions/upload-artifact@v4
@@ -605,5 +639,6 @@ jobs:
             /tmp/macro-v2-us-cpi-chf-labour-quality-proxy.json
             /tmp/macro-v2-seco-chf-25-rounded-first-months.json
             /tmp/macro-v2-us-cpi-first-news-archive.json
+            /tmp/macro-v2-us-cpi-alfred-release-day-mirror.json
           if-no-files-found: warn
           retention-days: 21
