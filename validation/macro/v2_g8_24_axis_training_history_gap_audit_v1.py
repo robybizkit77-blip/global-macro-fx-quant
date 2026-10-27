@@ -80,6 +80,12 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
     normalized = catalogue(raw, r)
     GDP = GDP_receipt(gdp, as_of=cut.isoformat())
     ea = euro_quality(cutoff=cut.isoformat())
+    from validation.macro.v2_g8_11_retained_source_archives_v1 import run as retained_run
+    retained = retained_run()
+    check(retained["summary"]["g8_histories_added"] == 11 and
+          retained["safe_to_publish_new_D"] is False and
+          retained["source_bytes_equal_to_prior_independently_audited_archives"],
+          "11 original source materializations failed integrity/promotion gates")
 
     details = {}
     for currency in FX:
@@ -104,6 +110,23 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
                 ]
                 method = "GDP_FIRST_PUBLISHER_WEB_RESEARCH_12Q_NOT_SOURCE_DAY_ARCHIVE"
                 source_id = "GDP_RESEARCH_TARGET_NOT_CANONICAL_REGISTERED"
+            elif key in retained["histories"]:
+                item = retained["histories"][key]
+                check(item["frequency"] == freq and
+                      item["FX_scoring_approved"] is False and
+                      item["historical_issuer_source_bytes_attested_by_earlier_materializer"],
+                      "historical source record not provenance-safe")
+                first_web = [
+                    (row["reference_period"],
+                     timestamp(row["first_web_publisher_gate_utc"]),
+                     row["first_web_value"])
+                    for row in item["records"]
+                    if timestamp(row["first_web_publisher_gate_utc"]) <= cut
+                ]
+                method = "RETAINED_OFFICIAL_STRICT_FIRST_RELEASE_ARTIFACT_HASH_PINNED"
+                # Keep this separate from the newer latest-web candidate;
+                # source archive may end BEFORE the latest candidate month.
+                source_id = "OFFICIAL_ISSUER_FIRST_WEB_MATERIALIZATION_" + key
             elif key in ("EUR.inflation", "AUD.inflation"):
                 item = original["histories"][key]
                 check(item["source_id"] == source_id and
@@ -140,13 +163,24 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
                 check(pidx not in indices and gate <= cut,
                       "duplicate first release period or future release leak")
                 indices[pidx] = (period, gate, value)
-            visible = current["web_first_release_known_at_cutoff"]
-            check(bool(first_web) == visible,
-                  "visible initial web evidence and single cutoff disagree: " + key)
+            latest_source_period = current["reported_economic_period"]
+            # Existing 16-slot latest-web view can be from a shorter research
+            # pilot than the new full archive. For archived complete sources
+            # source period might also be OLDER than a brand new 2026 web release;
+            # preserve both, never claim a stale source equals the latest.
+            visible = bool(first_web)
+            if key not in retained["histories"]:
+                check(visible == current["web_first_release_known_at_cutoff"],
+                      "visible initial web evidence and single cutoff disagree: " + key)
             last_idx = max(indices) if indices else None
-            if last_idx is not None:
-                check(idx(current["reported_economic_period"], freq) == last_idx,
+            if last_idx is not None and key not in retained["histories"]:
+                check(idx(latest_source_period, freq) == last_idx,
                       "latest reported reference differs from first-web ledger: " + key)
+            source_last_period = (indices[last_idx][0] if last_idx is not None else None)
+            future_candidate_lag = (
+                idx(latest_source_period, freq) - last_idx
+                if last_idx is not None and latest_source_period is not None
+                else None)
             needed = ([last_idx - i for i in range(required_prior, 0, -1)]
                       if last_idx is not None else [])
             missing = [period_label(i, freq) for i in needed if i not in indices]
@@ -172,6 +206,14 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
                       current["reported_economic_period"],
                       "GDP release source and latest research period mismatch")
                 definition.extend(GDP["features"][currency].get("growth_definition_caveats", []))
+            if key == "EUR.labour" and key in retained["histories"]:
+                definition.append("EUROSTAT_UNEMPLOYMENT_EA19_EA20_EA21_GEOGRAPHY_REQUIRES_AUDIT")
+            if key == "GBP.labour" and key in retained["histories"]:
+                definition.append("ONS_3M_LFS_ROLLING_REFERENCE_END_MONTH_NOT_SINGLE_MONTH_MEASURE")
+            if key == "JPY.inflation" and key in retained["histories"]:
+                definition.append("JAPAN_CPI_2015_2020_2025_INDEX_BASE_TRANSITIONS")
+            if key == "AUD.labour" and key in retained["histories"]:
+                definition.append("ABS_AUSSTATS_TO_MODERN_FIRST_RELEASE_ROUTE_TRANSITION")
             if key == "AUD.inflation":
                 check(freq == "Q" and
                       normalized[key]["frequency"] == "M",
@@ -199,8 +241,13 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
                 "training_evidence_source_id": source_id,
                 "training_web_data_source_type": method,
                 "published_observation_frequency": freq,
-                "reference_period_last_first_web": current["reported_economic_period"],
-                "last_first_web_gate_utc": current["first_documented_web_gate_utc"],
+                "reference_period_last_first_web": source_last_period,
+                "newest_bounded_research_web_reference_period": latest_source_period,
+                "retained_archive_vs_latest_web_gap_periods": future_candidate_lag,
+                "historical_original_archive_latest_release_gate_utc": (
+                    indices[last_idx][1].isoformat() if last_idx is not None else None),
+                "last_first_web_gate_utc": (
+                    indices[last_idx][1].isoformat() if last_idx is not None else None),
                 "first_web_periods_documented_asof": len(indices),
                 "last_documented_period_lag_in_own_frequency_units": lag_in_periods,
                 "bounded_BLS_pilot_ends_before_structural_oct2025_gap": stale_pilot,
@@ -245,6 +292,10 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
         "slots_with_stale_historical_BLS_pilot_not_live_2026": sum(
             x["bounded_BLS_pilot_ends_before_structural_oct2025_gap"]
             for x in details.values()),
+        "retained_official_first_release_source_archives_ingested": 11,
+        "retained_source_original_issuer_records_imported":
+            retained["summary"]["archived_first_release_observations"],
+        "archive_source_rows_are_original_materializer_proof_not_updated_live_data": True,
         "genuinely_historic_PIT_training_slots_certified": 0,
         "currency_FX_strength_scores_approved": 0,
         "cross_currency_pair_rankings_changed": 0,
@@ -262,6 +313,7 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
         "current_US_BLS_oct2025_gap_never_imputed_as_observed": True,
         "EUR_EA21_membership_break_not_hidden": True,
         "CHF_SECO_rounded_never_called_first_SNB_exact": True,
+        "retained_official_source_archive_original_SHA256_checked_each_run": True,
         "safe_to_publish_new_D": False, "safe_to_recalculate_28_pairs": False,
         "safe_to_use_for_beta": False, "safe_to_use_for_forward": False,
         "writes_live_data": False,
