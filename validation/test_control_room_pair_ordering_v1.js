@@ -97,10 +97,47 @@ for(const mode of ['setup','thesis']){
    assert(cmp<=0,'list out of deterministic lexicographic order');
  }
 }
-assert.equal(result.setup[0].code,'NZDUSD','setup order should reflect current source price/timing/extension');
-assert.equal(result.thesis[0].code,'USDCHF','structural order should privilege joint macro/policy agreement');
-assert(result.setup.find(x=>x.code==='AUDCHF').why.includes('Timing contrario'));
-assert(result.setup.find(x=>x.code==='EURUSD').why.includes('Prezzo già avanzato'));
+// The live canonical source evolves daily; do not freeze a particular pair as
+// the winner. The independent lexicographic checks above must hold for BOTH
+// modes, with deterministic ties. Verify risk reasons from CURRENT source.
+for(const mode of ['setup','thesis']){
+ const rows=result[mode],first=rows[0],key=mode==='setup'?'setupKey':'thesisKey';
+ assert(rows.every(row=>{
+   for(let i=0;i<first[key].length;i++){
+     if(row[key][i]!==first[key][i])return first[key][i]>=row[key][i];
+   }
+   return first.code.localeCompare(row.code)<=0;
+ }),mode+' top choice must have highest canonical source-derived key');
+}
+function expectedSourcedReasons(code){
+ const p=setup.pairs[code],x=p.setup;
+ if(x.quality==='NON VALUTABILE'){
+   return [p.decision_frame.quality==='PILASTRI DIVISI'?'Macro e Tassi/CB in conflitto':
+     p.decision_frame.quality==='SEPARAZIONE RATES MATERIALE'?'Solo spread 2Y; tesi assente':
+     'Nessuna preferenza Macro/Tassi'];
+ }
+ const reasons=[];
+ if(x.price.state==='BAD')reasons.push('Prezzo contro la tesi');
+ else if(x.price.state==='NEUTRAL')reasons.push('Prezzo non conferma');
+ if(x.timing.state==='ADVERSE')reasons.push('Timing contrario');
+ if(x.extension.state==='ADVANCED')reasons.push('Prezzo già avanzato');
+ if(p.transition.state==='DIVERGENZA RELATIVA DA MONITORARE')reasons.push('Dinamica relativa divergente');
+ if(x.timing.state==='UNCERTAIN')reasons.push('Timing incerto');
+ if(x.timing.state==='MIXED')reasons.push('Timing misto');
+ if(x.timing.state==='PARTIAL')reasons.push('Timing solo parziale');
+ if(x.cot.state==='HIGH')reasons.push('COT affollato/estremo');
+ if(x.cot.state==='DIVERGENT')reasons.push('COT contrario');
+ if(x.liquidity.state==='BAD')reasons.push('Liquidità sfavorevole');
+ if(p.decision_frame.quality==='VANTAGGIO RELATIVO PARZIALE')
+   reasons.push('Tesi sorretta da un solo pilastro');
+ return reasons.length?reasons:['Servono trigger e rapporto rischio/rendimento esterni al modello'];
+}
+for(const row of result.setup){
+ const canonical=expectedSourcedReasons(row.code).slice(0,2).join(' · ');
+ assert.equal(row.why,canonical,'risk reasons must be derived from current issuer/feed states: '+row.code);
+}
+assert(result.setup.some(x=>x.quality==='CON RISCHI'&&x.why.length>5),
+ 'at least one current risk should be explained by a concrete feed constraint');
 assert(result.setup.find(x=>x.code==='USDCHF')?.why.length>3,'USDCHF must preserve its current source-derived obstacle');
 function mutate(fn){const input=structuredClone(setup);fn(input);return rank(input,model);}
 // A quality category with zero observations may be omitted by the producer.
