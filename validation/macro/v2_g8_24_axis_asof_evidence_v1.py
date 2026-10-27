@@ -181,6 +181,16 @@ def source_snapshot(*, cutoff, registry, source_candidates=None,
             g.get("research_robust_growth_z"))
         target["last_web_revision_not_substituted_in_first_release_training"] = (
             g["latest_visible_revision"])
+        if g["latest_visible_revision"] is not None:
+            # The first-web GDP headline remains unchanged. A revision becomes
+            # a separate, correctly unit-normalized value ONLY after its
+            # own documented issuer day; it never leaks into old daily cuts.
+            target["asof_value_latest_known_revision"] = (
+                g["latest_visible_revision"]["nonannualized_qoq_pct"])
+            target["latest_revision_reported_unit"] = (
+                g["latest_visible_revision"]["reported_unit"])
+            target["latest_revision_publisher_day"] = (
+                g["latest_visible_revision"]["publisher_release_day"])
         # Do not compare the SAAR headline and a revised QoQ figure directly.
         target["revisions_tracked_separately_from_initial"] = True
         rows[f"{currency}.growth"] = target
