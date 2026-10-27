@@ -6,6 +6,9 @@ on:
     paths:
       - '.github/workflows/macro-v2-observed-g8-feature-bridge-v1.yml'
       - 'validation/macro/v2_g8_observed_feature_bridge_v1.py'
+      - 'validation/macro/v2_g8_three_axis_economic_shadow_v1.py'
+      - 'validation/macro/test_v2_g8_three_axis_economic_shadow_v1.py'
+      - 'validation/macro/MACRO_V2_THREE_AXIS_RESEARCH_CONTRACT_2026-10-27.md'
       - 'validation/macro/v2_g8_gdp_first_web_growth_features_v1.py'
       - 'validation/macro/test_v2_g8_gdp_first_web_growth_features_v1.py'
       - 'validation/macro/v2_g8_gdp_unified_web_research_v1.py'
@@ -24,6 +27,9 @@ on:
     paths:
       - '.github/workflows/macro-v2-observed-g8-feature-bridge-v1.yml'
       - 'validation/macro/v2_g8_observed_feature_bridge_v1.py'
+      - 'validation/macro/v2_g8_three_axis_economic_shadow_v1.py'
+      - 'validation/macro/test_v2_g8_three_axis_economic_shadow_v1.py'
+      - 'validation/macro/MACRO_V2_THREE_AXIS_RESEARCH_CONTRACT_2026-10-27.md'
       - 'validation/macro/v2_g8_gdp_first_web_growth_features_v1.py'
       - 'validation/macro/test_v2_g8_gdp_first_web_growth_features_v1.py'
       - 'validation/macro/v2_g8_gdp_unified_web_research_v1.py'
@@ -61,6 +67,8 @@ jobs:
         run: python -m unittest validation.macro.test_v2_g8_observed_feature_bridge_v1 -v
       - name: Test original-web GDP 12-quarter prior-only Growth normalisation
         run: python -m unittest validation.macro.test_v2_g8_gdp_first_web_growth_features_v1 -v
+      - name: Test G8 macro shadow 3-axis semantics and quality gates
+        run: python -m unittest validation.macro.test_v2_g8_three_axis_economic_shadow_v1 -v
       - name: Build read-only current observational feature receipt
         run: |
           python -m validation.macro.v2_g8_observed_feature_bridge_v1 \
@@ -108,11 +116,42 @@ jobs:
                                 (key, val['status'], ', '.join(val['missing_prior_periods'])))
               out.write('- This job PASS means **research bridge computation**, not D.json calibration or first-release vintage certification.\n')
           PY
+      - name: Compute research-only three-axis G8 scenario receipt
+        run: |
+          python -m validation.macro.v2_g8_three_axis_economic_shadow_v1 \
+            --output /tmp/macro-v2-three-axis-g8-research.json
+          python - <<'PY'
+          import json, os
+          d=json.load(open('/tmp/macro-v2-three-axis-g8-research.json'))
+          assert d['summary']['economies']==8
+          assert d['summary']['research_axes']==24
+          assert d['summary']['research_activity_balances_calculated']==8
+          assert d['summary']['countries_with_estimated_source_axes']==1
+          assert d['summary']['countries_with_GDP_measurement_caveats']==2
+          assert d['summary']['macro_model_scores_approved']==0
+          assert d['summary']['FX_scores_approved']==0
+          assert d['summary']['pair_rankings_recalculated']==0
+          assert d['safe_to_publish_new_D'] is False
+          assert d['safe_to_update_pair_theses'] is False
+          assert d['safe_for_beta'] is False and d['safe_for_forward'] is False
+          assert all(x['fx_currency_strength_score'] is None and
+                     x['fx_directional_bias'] is None and
+                     x['economic_cycle_certified'] is None
+                     for x in d['countries'].values())
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as w:
+              w.write('\n### Macro V2 — candidate three-axis economics (NOT FX scores)\n')
+              w.write('- Shadow economies: **8/8**, axes: **24/24** (growth, labour tightness, price pressure).\n')
+              w.write('- USD: two **estimated** source axes; EUR/CHF: GDP definition caveats.\n')
+              w.write('- Activity combines only growth and labour 50/50 (hypothesis). Inflation stands alone.\n')
+              w.write('- Economic regime/model approval: **0**. No core scores, FX ranks, Beta or Forward.\n')
+          PY
       - name: Retain dated shadow evidence (never publish to live_data)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: macro-v2-observed-research-${{ github.run_id }}
-          path: /tmp/macro-v2-observed-g8-feature-bridge.json
+          path: |
+            /tmp/macro-v2-observed-g8-feature-bridge.json
+            /tmp/macro-v2-three-axis-g8-research.json
           if-no-files-found: warn
           retention-days: 21
