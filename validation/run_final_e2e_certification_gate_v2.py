@@ -7,6 +7,10 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+# The production workflow invokes this file as a script, so repo root must
+# be importable for the shared strict Forward archive module.
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 
 def load_json(rel: str):
@@ -91,10 +95,17 @@ def main():
     if result.get("total_candidates") != 28:
         raise SystemExit("forward logger pair count drift")
 
+    # Forward decisions are a legitimately growing append-only journal:
+    # each new accepted prospective cutoff adds exactly 28 G8 crosses.
+    # Never freeze the whole archive to the October 14 smoke batch size.
+    from validation.forward.check_append_only_snapshots_gate_v1 import inspect as inspect_forward
     snapshot_path = ROOT / "validation/forward/decision_snapshots/CORE_DECISION_SNAPSHOTS_V1.jsonl"
-    snapshot_lines = [line for line in snapshot_path.read_text(encoding="utf-8").splitlines() if line.strip()]
-    if len(snapshot_lines) != 28:
-        raise SystemExit(f"forward snapshot count drift: {len(snapshot_lines)}")
+    snapshot_rows = [json.loads(line) for line in snapshot_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    forward_archive = inspect_forward(snapshot_rows)
+    if forward_archive["status"] != "PASS_RESEARCH_OBSERVATIONAL_ARCHIVE_NOT_FORWARD_VALIDATION":
+        raise SystemExit("forward journal audit not accepted")
+    if forward_archive["run_ids"][0] != "real-main-smoke-20261014":
+        raise SystemExit("first Forward smoke capture lineage changed")
 
     receipt = {
         "schema": "GMFQ_FINAL_E2E_CERTIFICATION_GATE_V2",
@@ -124,8 +135,12 @@ def main():
         "forward_logger": {
             "status": "PASS",
             "observational_only": True,
-            "snapshot_count": 28,
-            "no_forward_outcomes_in_snapshot": True,
+            "snapshot_count": forward_archive["snapshot_rows"],
+            "complete_28_pair_batches": forward_archive["complete_28_pair_batches"],
+            "first_smoke_28_pair_batch_preserved": True,
+            "legacy_missing_PIT_fields_not_promoted": True,
+            "forward_launch_certified": False,
+            "no_forward_outcomes_in_snapshot": forward_archive["no_forward_returns_embedded"],
         },
         "publication_policy": {
             "data_final_gate_publishable": base_gate.get("publishable"),

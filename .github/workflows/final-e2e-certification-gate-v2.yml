@@ -58,7 +58,12 @@ jobs:
           assert d['rate_beta']['scope']=='OBSERVATIONAL_ONLY', d
           assert d['rate_beta']['backtest_enabled'] is False, d
           assert d['rate_beta']['promotion_enabled'] is False, d
-          assert d['forward_logger']['snapshot_count']==28, d
+          forward=d['forward_logger']
+          assert forward['complete_28_pair_batches'] >= 1, d
+          assert forward['snapshot_count']==28*forward['complete_28_pair_batches'], d
+          assert forward['first_smoke_28_pair_batch_preserved'] is True, d
+          assert forward['legacy_missing_PIT_fields_not_promoted'] is True, d
+          assert forward['forward_launch_certified'] is False, d
           assert d['forward_logger']['no_forward_outcomes_in_snapshot'] is True, d
           print('FINAL_E2E_V2_PASS')
           PY

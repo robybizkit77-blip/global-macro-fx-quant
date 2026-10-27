@@ -59,6 +59,8 @@ jobs:
           sha256sum live_data/sections/OIS_DATA.json > /tmp/ois.before.sha256
           sha256sum live_data/sections/NATIVE_CB_DATA.json > /tmp/native_cb.before.sha256
           sha256sum live_data/manifest.v2.json > /tmp/manifest.before.sha256
+      - name: Reject tampered or partially appended Forward snapshot batches
+        run: python -m unittest validation.forward.test_check_append_only_snapshots_gate_v1 -v
       - name: Run final system alignment gate V3
         run: |
           set -euo pipefail
