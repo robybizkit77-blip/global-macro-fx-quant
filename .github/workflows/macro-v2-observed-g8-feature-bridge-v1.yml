@@ -352,7 +352,7 @@ jobs:
           assert d['slots']['EUR.inflation']['homogeneous_24_month_EA_membership_reference'] is False
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as f:
               f.write('\n### Macro V2 — single-UTC G8 evidence snapshot, NOT joint PIT training\n')
-              f.write('- Economies/axes: **8/24**. Latest first-web publisher evidence visible: **%s/24**.\n' %
+              f.write('- Economies: **8**, research axes: **24**. Latest first-web publisher evidence visible: **%s/24**.\n' %
                       s['first_web_latest_source_slots_visible'])
               f.write('- Canonical EUR monthly + AUD quarterly first web archive: **139** historical observations.\n')
               f.write('- EUR inflation Sep-2026 EA21 baseline 24 prior same-membership months: **NO**.\n')
