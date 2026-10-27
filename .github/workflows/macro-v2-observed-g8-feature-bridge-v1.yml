@@ -9,6 +9,11 @@ on:
       - 'validation/macro/v2_g8_three_axis_economic_shadow_v1.py'
       - 'validation/macro/v2_g8_sensitivity_release_clock_v1.py'
       - 'validation/macro/v2_g8_labour_inflation_web_asof_timeline_v1.py'
+      - 'validation/macro/v2_g8_source_semantic_reconciliation_v1.py'
+      - 'validation/macro/test_v2_g8_source_semantic_reconciliation_v1.py'
+      - 'validation/macro/MACRO_V2_4_G8_SOURCE_SEMANTIC_RECONCILIATION_2026-10-27.md'
+      - 'validation/macro/aud_inflation_strict_pit_evidence_v1_2026-10-09.json'
+      - 'validation/macro/eur_inflation_strict_pit_evidence_v1_2026-10-10.json'
       - 'validation/macro/test_v2_g8_labour_inflation_web_asof_timeline_v1.py'
       - 'validation/macro/MACRO_V2_G8_INFLATION_LABOUR_SOURCE_ASOF_LEDGER_2026-10-27.md'
       - 'validation/macro/v2_pit_g8_evidence_adapters_v1.py'
@@ -39,6 +44,11 @@ on:
       - 'validation/macro/v2_g8_three_axis_economic_shadow_v1.py'
       - 'validation/macro/v2_g8_sensitivity_release_clock_v1.py'
       - 'validation/macro/v2_g8_labour_inflation_web_asof_timeline_v1.py'
+      - 'validation/macro/v2_g8_source_semantic_reconciliation_v1.py'
+      - 'validation/macro/test_v2_g8_source_semantic_reconciliation_v1.py'
+      - 'validation/macro/MACRO_V2_4_G8_SOURCE_SEMANTIC_RECONCILIATION_2026-10-27.md'
+      - 'validation/macro/aud_inflation_strict_pit_evidence_v1_2026-10-09.json'
+      - 'validation/macro/eur_inflation_strict_pit_evidence_v1_2026-10-10.json'
       - 'validation/macro/test_v2_g8_labour_inflation_web_asof_timeline_v1.py'
       - 'validation/macro/MACRO_V2_G8_INFLATION_LABOUR_SOURCE_ASOF_LEDGER_2026-10-27.md'
       - 'validation/macro/v2_pit_g8_evidence_adapters_v1.py'
@@ -91,6 +101,8 @@ jobs:
         run: python -m unittest validation.macro.test_v2_g8_sensitivity_release_clock_v1 -v
       - name: Test 16 inflation labour official issuer release chronology
         run: python -m unittest validation.macro.test_v2_g8_labour_inflation_web_asof_timeline_v1 -v
+      - name: Test reconciled four source semantic mismatches and 34Q/105M evidence
+        run: python -m unittest validation.macro.test_v2_g8_source_semantic_reconciliation_v1 -v
       - name: Build read-only current observational feature receipt
         run: |
           python -m validation.macro.v2_g8_observed_feature_bridge_v1 \
@@ -209,6 +221,14 @@ jobs:
           assert m['inflation_labour_source_slots']==16
           assert m['slots_with_candidate_publisher_web_research']==16
           assert m['joint_PIT_training_histories_certified']==0
+          q=r['source_semantic_reconciliation']
+          assert q['summary']['exact_series_ID_and_frequency']==12
+          assert q['summary']['source_lineage_aliases_documented_not_production_approved']==2
+          assert q['summary']['genuine_measurement_mismatches_to_replace']==2
+          assert q['summary']['registered_AUD_quarterly_archival_receipt_periods']==34
+          assert q['summary']['registered_EUR_monthly_archival_receipt_periods']==105
+          assert q['summary']['macro_model_scores_approved']==0
+          assert q['safe_to_publish_new_D'] is False
           assert m['FX_backtests_performed']==0
           assert m['live_macro_scores_created']==0
           assert r['later_revisions_never_retroactively_substituted_into_earlier_snapshots']
@@ -228,6 +248,7 @@ jobs:
                         m['slots_with_visible_first_web_on_end_date'])
               out.write('- Daily as-of snapshots: **%s**; missing releases are not filled.\n' %
                         r['window']['daily_snapshots'])
+              out.write('- Of 4 apparent mismatches: **2** verified conceptual lineages (NOT PIT-ready), **2** genuine measurement differences.\n')
               out.write('- Model-ready histories: **0**; no new D, FX ranking, Beta or Forward.\n')
           PY
       - name: Retain dated shadow evidence (never publish to live_data)
