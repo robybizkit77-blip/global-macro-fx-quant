@@ -99,6 +99,14 @@ class TwoResidualEstimatedResearchSeries(unittest.TestCase):
         self.assertEqual(s["slots_missing_required_initial_release_periods"],2)
         self.assertEqual(s["missing_required_prior_periods_total"],46)
         self.assertEqual(s["genuinely_historic_PIT_training_slots_certified"],0)
+        self.assertEqual(s["secondary_provisional_descriptors_available"],2)
+        self.assertEqual(s["source_slots_with_original_window_or_labeled_provisional_context"],24)
+        self.assertEqual(s["secondary_provisional_first_release_corrections"],0)
+        self.assertTrue(base[
+            "observed_first_web_22_and_estimated_context_2_must_never_be_combined_as_PIT"])
+        self.assertEqual(
+            base["separate_revised_history_estimates_for_US_CPI_and_CHF_unemployment"]
+                ["receipt_sha256"],self.research["receipt_sha256"])
         self.assertEqual(s["currency_FX_strength_scores_approved"],0)
 
     def test_does_not_change_live_core_and_pair_snapshots(self):
