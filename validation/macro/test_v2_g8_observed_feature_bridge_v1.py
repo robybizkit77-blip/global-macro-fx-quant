@@ -224,6 +224,13 @@ class ObservedBridgeTests(unittest.TestCase):
                             for x in observed["us_bls_shutdown_research_estimates"].values()))
 
         self.assertEqual(observed["summary"]["growth_scores_computed"], 0)
+        self.assertEqual(observed["summary"]["gdp_descriptive_research_growth_features"], 8)
+        self.assertEqual(set(observed["growth_quarterly_gdp_initial_web_research_features"]), set(FX))
+        self.assertEqual(observed["summary"]["gdp_features_with_definition_caveats"], 2)
+        self.assertTrue(observed["gdp_initial_web_features_not_model_growth_scores"])
+        self.assertTrue(all(z["numeric_model_growth_score"] is None and
+                            z["actual_PIT_backtest_eligible"] is False
+                            for z in observed["growth_quarterly_gdp_initial_web_research_features"].values()))
         self.assertFalse(observed["safe_to_publish_new_D"])
         self.assertFalse(observed["safe_to_update_pair_theses"])
         self.assertFalse(observed["safe_to_use_for_beta"])
