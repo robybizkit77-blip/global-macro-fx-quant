@@ -37,6 +37,21 @@ Restano intenzionalmente separati:
 - GBP Labour: dato di fine finestra trimestrale mobile LFS, non disoccupazione di un solo mese.
 - JPY Inflation: la CPI ha transizioni di base, senza garantire invariabilità della metrica nel tempo.
 
+## Risultato della PR #712 — audit del 26 ottobre 2026
+
+Prima del recupero degli 11 archivi: **11/24** finestre numericamente continue, **13/24** incomplete e **280** periodi richiesti non documentati nelle relative finestre.
+
+Dopo il recupero e l'integrazione: **22/24** finestre con 12 trimestri o 24 mesi consecutivi di prima pubblicazione; **2/24** incomplete, con **46 periodi** complessivamente mancanti nella finestra corrente di ricerca.
+
+Le due incompiute sono:
+
+- **USD.inflation**: dossier corrente con soltanto la prima pubblicazione relativa a settembre 2026, quindi **24 mesi precedenti** ancora mancanti nel ledger first-release. Questo è separato dallo shutdown BLS e dalla storia revisionata.
+- **CHF.labour**: dossier SECO con tre prime osservazioni arrotondate, dunque **22 mesi precedenti** ancora mancanti; non equivale a primi valori esatti SNB.
+
+**8 caselle** conservano caveat semantici/definizionali anche con i periodi numericamente completi: Eurozona EA19/20/21, GBP labour LFS rolling window, JPY CPI rebasing, AUD labour source-era transition, Swiss GDP sports/flash, e altri casi documentati nel dettaglio JSON. Il **BLS USD Labour** è un pilot first-web terminato nel settembre 2025: matematicamente completo allora, ma **non un archivio aggiornato a ottobre 2026**.
+
+Pertanto, **zero componenti approvate per uno storico modello Forex point-in-time integrato**. Non confondere “22 finestre di numeri” con 22 segnali operativi.
+
 ## Prove e limiti
 
 L'impronta SHA verifica l'identità con i precedenti **artifact dei materializer**, che già raccoglievano dati dai comunicati e ne conservavano gli hash originari. Non significa che oggi siano stati scaricati nuovamente e ricertificati indipendentemente **i 1.003 corpi HTTP storici dei publisher**. Non possediamo neppure la catena completa delle revisioni per ogni fonte.
