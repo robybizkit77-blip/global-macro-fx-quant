@@ -205,10 +205,15 @@ def build(observed):
             },
             "dimensions": {"growth": growth, "labour": labour, "inflation": inflation},
             "quality_flags": flags,
-            "qualitative_quality": ("ESTIMATED_AND_DEFINITION_CAVEAT"
-                                    if len(flags) > 1 else
-                                    "ESTIMATED_RESEARCH_ONLY" if flags else
-                                    "REVISED_OR_WEB_RESEARCH_NOT_PIT"),
+            "qualitative_quality": (
+                "ESTIMATED_WITH_DEFINITION_CAVEAT" if (
+                    (labour["is_estimate"] or inflation["is_estimate"]) and
+                    bool(growth["definition_caveats"])) else
+                "ESTIMATED_RESEARCH_ONLY" if (
+                    labour["is_estimate"] or inflation["is_estimate"]) else
+                "GDP_DEFINITION_CAVEAT_RESEARCH_ONLY" if
+                    growth["definition_caveats"] else
+                "REVISED_OR_WEB_RESEARCH_NOT_PIT"),
             "economic_cycle_certified": None,
             "policy_rate_signal": None,
             "cb_pricing_signal": None,
