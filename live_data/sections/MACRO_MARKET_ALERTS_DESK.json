@@ -1,8 +1,49 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-27T08:57:13Z",
+  "generated_at_utc": "2026-10-27T09:55:10Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-d5b53f96f977b0180fd9",
+      "observed_at_utc": "2026-10-27T09:28:09Z",
+      "headline": "OPEC+ oil producers set to keep output targets steady at Sunday meeting, sources say",
+      "summary": "Reuters riporta: OPEC+ oil producers set to keep output targets steady at Sunday meeting, sources say. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "COMMODITIES",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxNMk1rLTI4Z1oza3I5SDJ2YUR0WUhiQ0RmWV9KLUpCSHMyY1FoSFgwWUFOc010MzIyWThVNEZvRFl0YzBzNHFmazA3ZEV2ZzRPX2pNWU9GSVd5Z1VnaVRGdmdSZDVEVVlGTmxuNVlsdzNSMGlBdW5UYVRpelBBXzhLOWkwd2pST0NmQjRMek82VS1ncXZTWjk5Q09reDQtQmNON3NfRF9ld1FUWG1hQW5QRFZySkdIM1VKRzVvbGZLVEE0V1hPQ2dsTkNnZw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-d9ad236c9056ed5c8bc0",
+      "observed_at_utc": "2026-10-27T02:12:00Z",
+      "headline": "Dollar firms ahead of central bank meetings, steadier stocks stall safe haven play",
+      "summary": "Reuters riporta: Dollar firms ahead of central bank meetings, steadier stocks stall safe haven play. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxPVDhUYWVaR1lyeGFScDAxOG1INFBuME5XaHhvOFNZTnhjUXFCTHVGX2k1cEJzSUMwUmpQblFZWE1WU2Z6Q0dnZTRmc2lCSEE1RklYN3VZdWV3aVRLblJ4aTFudW1aUkxUVWZXWUl6Ql8zQkVEaDBJakY4SnhyUmRwb1BQcHpKSHlOWG5DeDN3QVFIb1MyMU5mcDlESEdQS1BwdHhpaThFZjZDMDIweVVYX1VQX1VEdVdh?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-c406849c2477418d789a",
+      "observed_at_utc": "2026-10-27T04:57:00Z",
+      "headline": "Taiwan central bank sees strong tech demand driving exports into 2027",
+      "summary": "Reuters riporta: Taiwan central bank sees strong tech demand driving exports into 2027. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOX0tXRFhXZDRFQUlCYmE1dG9LaG9pcUZSMElqMEd4TXFFX3VmV2xFSFpBMVVnT0tOTDUtWUJ5OHVSUUlUQm5SQ3lIb3JzTmpyNHRlNXRLQ0dhU0E2RzR3Q2ZEZGw0VlRVeHI3Q2FxX1YxbjJMUFB1dzQxbG1jU3hBdEFmcnBYalZmVDFKLXNnODRNdjNJUlp2b2JhZGZieklsb3pnTmxrX0JDbV9nYi1SUi1aMGFoMVRuazZqaUluQUpxUQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-98c7c8ea34d3efd19aa5",
       "observed_at_utc": "2026-10-27T04:05:00Z",
@@ -1354,51 +1395,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxQMG5uTk9BQ2lzbUtHT1k4Nlp4RlRCcXFvVXR5YUhCamhubGQ1SlB0c2FYczVLdl9ESzJBRzdkNmVuYU1ISVc2MndXWnBZTzBDNFdzeHBEQTNPTGU2SGhBTmtKM3Z1SWUxR2szN20yYWIySGIzUXlZcXVhdGNtTlJNMGN1WQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-a5239668e9651f94965c",
-      "observed_at_utc": "2026-10-22T23:48:00Z",
-      "headline": "Japan's core inflation exceeds BOJ target, cements near-term rate hike chance",
-      "summary": "Reuters riporta: Japan's core inflation exceeds BOJ target, cements near-term rate hike chance. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "JPY"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxQOTJqdzA2UHpkbmExTlVYbWgxX2VuMGQ3ck9XcUpfUEgxQURja19JdmlfLURneW9HUWpZbzNPMFJ3bS15Zk5DYlNTWU1teWprbW1hOHlJNXdDNWxYbExYRUU0bTIyVzFPLVlRZjY2cFk0THZTb094X2FrM3lPZ005THBHczdTdEl4WEhIUXVCdnA2TE9qTEtFWHh4aHloeWZFU0RuQmhlR0VRSDRCTURWZDB2eTNnWDloNWJIWktsNG5Pak5NSEdtSQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-1f7188058436ee783b06",
-      "observed_at_utc": "2026-10-22T17:56:55Z",
-      "headline": "ECB's Santos Pereira pushes for deeper EU integration",
-      "summary": "Reuters riporta: ECB's Santos Pereira pushes for deeper EU integration. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "EUR"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxQQ1VyZ3MxYmxhbTJmNGNBbFhkOG80Ulo0WklKWHZfWU5PcUhzbktCaFVtbUVaTkxPQ3ZteGFVR29CRWtlYWdFYlNFM3d3aWZ1S0NkMjNIby05N3RGSXZiVnE1WlI2T2tQOWtrNHF3S0EwMFE0aXVoYXBCNkVUX1NkTkpodTl2aFQyRld4bnZBc2hHOHFabTAwYw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-c9a2b39e7ae321172e54",
-      "observed_at_utc": "2026-10-22T21:57:00Z",
-      "headline": "SK Hynix says Solidigm suspends review of US IPO, citing market volatility",
-      "summary": "Reuters riporta: SK Hynix says Solidigm suspends review of US IPO, citing market volatility. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNakIxS1gtNjFlNDJKUVl5cUZZTGlsamY3UG5ST0Y5UjEyU1RUSmx2Skh3aXZIRE95MjFUdHdXOFhVZVpRZmVUclRwSVJMNUVnYWFSOXFRRzdYWXNBbDJxZlBMbXlmVGYtQ09KOWtrWnJZTXdEQmRzeHNDUi0tMGJoWXVmaHNqZTkyRm1CQmFUcUE4OEN3YnJWQ2M1cEo0d1hNQ3BzVVVLakd2SXVo?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
