@@ -245,19 +245,41 @@ def build(series, heatmap, registry, *, as_of):
             require(len(hits) == 1, f"missing/duplicated registered history {c}.{dim}")
             features[f"{c}.{dim}"] = pillar_feature(
                 c, dim, entry, hits[0], heatmap["currencies"][c][dim], day)
+    # The strict baseline stays unchanged. Separate, BLS-attested optional
+    # research estimates do NOT count as 24 consecutive-period intensities.
+    from validation.macro.v2_us_shutdown_gap_research_v1 import shadow_gap_estimate
+    shutdown_estimates = {}
+    for dim in PILLARS:
+        key = f"USD.{dim}"
+        strict = features[key]
+        if strict["status"] == "NO_Z_MISSING_PRIOR_ECONOMIC_PERIODS":
+            entry = registry["series"][key]
+            rid = ((entry.get("historical_replay_evidence") or {})
+                   .get("macro_series_id") or entry["series_id"] + "_history_value")
+            source_row = next(x for x in series["USD"] if x.get("id") == rid)
+            shutdown_estimates[key] = shadow_gap_estimate(
+                dim, entry, source_row, heatmap["currencies"]["USD"][dim],
+                strict, day)
     growth = growth_research(day)
     scored = sum(x["research_robust_z"] is not None for x in features.values())
+    optional_estimate_count = sum(
+        x.get("estimated_research_robust_z") is not None
+        for x in shutdown_estimates.values())
     receipt = {
         "schema": SCHEMA, "checked_as_of": as_of,
         "status": "OBSERVED_G8_RESEARCH_FEATURES_NOT_CERTIFIED_MACRO_MODEL",
         "source_class": "TODAY_REVISED_OBSERVATIONS_NOT_REPLAYABLE_HISTORICAL_PIT",
         "inflation_labour": features,
+        "us_bls_shutdown_research_estimates": shutdown_estimates,
         "growth_quarterly_gdp_web": growth,
         "summary": {
             "g8_currencies": 8, "economic_dimension_slots": 24,
             "registered_inflation_labour_slots": len(features),
             "descriptive_research_z_available": scored,
             "descriptive_research_z_unavailable": 16 - scored,
+            "additional_us_gap_aware_estimates": optional_estimate_count,
+            "descriptive_inputs_strict_plus_separate_estimates":
+                scored + optional_estimate_count,
             "growth_web_observations_visible": sum(
                 x["status"] == "OFFICIAL_WEB_STATEMENT_RESEARCH_NOT_PIT_CERTIFIED"
                 for x in growth.values()),
@@ -266,12 +288,14 @@ def build(series, heatmap, registry, *, as_of):
         "current_values_are_not_verified_first_release_vintages": True,
         "no_cross_country_rank_or_mixed_frequency_aggregation": True,
         "no_inference_from_inflation_pressure_to_fx_direction": True,
+        "optional_us_gap_estimates_not_replacements_for_strict_z": True,
         "safe_to_publish_new_D": False, "safe_to_update_pair_theses": False,
         "safe_to_use_for_beta": False, "safe_to_use_for_forward": False,
         "writes_live_data": False,
     }
     receipt["input_fingerprint_sha256"] = hashlib.sha256(
-        json.dumps({"as_of": as_of, "features": features, "growth": growth},
+        json.dumps({"as_of": as_of, "features": features, "growth": growth,
+                    "us_gap_estimates": shutdown_estimates},
                    sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     return receipt
 
