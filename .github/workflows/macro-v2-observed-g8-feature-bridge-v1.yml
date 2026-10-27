@@ -12,6 +12,9 @@ on:
       - 'validation/macro/v2_g8_source_semantic_reconciliation_v1.py'
       - 'validation/macro/v2_eur_aud_archival_first_web_overlay_v1.py'
       - 'validation/macro/v2_eur_ea_regime_chf_precision_guard_v1.py'
+      - 'validation/macro/v2_g8_24_axis_asof_evidence_v1.py'
+      - 'validation/macro/test_v2_g8_24_axis_asof_evidence_v1.py'
+      - 'validation/macro/MACRO_V2_G8_24_AXIS_UTC_ASOF_EVIDENCE_CONTRACT_2026-10-27.md'
       - 'validation/macro/test_v2_eur_ea_regime_chf_precision_guard_v1.py'
       - 'validation/macro/MACRO_V2_EA_MEMBERSHIP_CHF_PRECISION_2026-10-27.md'
       - 'validation/macro/test_v2_eur_aud_archival_first_web_overlay_v1.py'
@@ -55,6 +58,9 @@ on:
       - 'validation/macro/v2_g8_source_semantic_reconciliation_v1.py'
       - 'validation/macro/v2_eur_aud_archival_first_web_overlay_v1.py'
       - 'validation/macro/v2_eur_ea_regime_chf_precision_guard_v1.py'
+      - 'validation/macro/v2_g8_24_axis_asof_evidence_v1.py'
+      - 'validation/macro/test_v2_g8_24_axis_asof_evidence_v1.py'
+      - 'validation/macro/MACRO_V2_G8_24_AXIS_UTC_ASOF_EVIDENCE_CONTRACT_2026-10-27.md'
       - 'validation/macro/test_v2_eur_ea_regime_chf_precision_guard_v1.py'
       - 'validation/macro/MACRO_V2_EA_MEMBERSHIP_CHF_PRECISION_2026-10-27.md'
       - 'validation/macro/test_v2_eur_aud_archival_first_web_overlay_v1.py'
@@ -123,6 +129,8 @@ jobs:
         run: python -m unittest validation.macro.test_v2_eur_aud_archival_first_web_overlay_v1 -v
       - name: Test 3 Eurozone HICP populations and rounded Swiss official evidence
         run: python -m unittest validation.macro.test_v2_eur_ea_regime_chf_precision_guard_v1 -v
+      - name: Verify 24 G8 source slots at shared UTC cutoffs
+        run: python -m unittest validation.macro.test_v2_g8_24_axis_asof_evidence_v1 -v
       - name: Build read-only current observational feature receipt
         run: |
           python -m validation.macro.v2_g8_observed_feature_bridge_v1 \
@@ -320,6 +328,37 @@ jobs:
               out.write('- SECO 3.1% one-decimal = [3.05, 3.15) plausible exact interval, not certified SNB exact release.\n')
               out.write('- 0 approved Macro scores and 0 changed pair rankings.\n')
           PY
+      - name: Build 24-axis UTC evidence snapshot (not a PIT backtest)
+        run: |
+          python -m validation.macro.v2_g8_24_axis_asof_evidence_v1 \
+            --output /tmp/macro-v2-g8-24-axis-shared-utc-evidence.json
+          python - <<'PY'
+          import json, os
+          d=json.load(open('/tmp/macro-v2-g8-24-axis-shared-utc-evidence.json'))
+          s=d['summary']
+          assert s['currency_count']==8
+          assert s['target_slots']==24
+          assert s['canonical_archived_initial_source_rows']==139
+          assert s['first_release_observations_in_archived_EUR_AUD']==139
+          assert s['candidate_source_id_frequency_equal']==12
+          assert s['official_complete_PIT_training_slots']==0
+          assert s['model_macro_scores_approved']==0
+          assert s['FX_pair_rankings_rebuilt']==0
+          assert d['safe_to_publish_new_D'] is False
+          assert d['safe_to_update_pair_theses'] is False
+          assert d['safe_to_use_for_beta'] is False
+          assert d['safe_to_use_for_forward'] is False
+          assert d['slots']['CHF.labour']['canonical_exact_SNB_first_release_timestamp_utc'] is None
+          assert d['slots']['EUR.inflation']['homogeneous_24_month_EA_membership_reference'] is False
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as f:
+              f.write('\n### Macro V2 — single-UTC G8 evidence snapshot, NOT joint PIT training\n')
+              f.write('- Economies/axes: **8/24**. Latest first-web publisher evidence visible: **%s/24**.\n' %
+                      s['first_web_latest_source_slots_visible'])
+              f.write('- Canonical EUR monthly + AUD quarterly first web archive: **139** historical observations.\n')
+              f.write('- EUR inflation Sep-2026 EA21 baseline 24 prior same-membership months: **NO**.\n')
+              f.write('- CHF Sep-2026 SA 3.1% SECO rounded, NOT first-release precision SNB.\n')
+              f.write('- Complete joint 24-axis historic PIT training series: **0**. No D or FX reranking.\n')
+          PY
       - name: Retain dated shadow evidence (never publish to live_data)
         if: always()
         uses: actions/upload-artifact@v4
@@ -332,5 +371,6 @@ jobs:
             /tmp/macro-v2-g8-inflation-labour-release-chronology.json
             /tmp/macro-v2-eur-aud-first-web-archive.json
             /tmp/macro-v2-eur-chf-source-interpretation.json
+            /tmp/macro-v2-g8-24-axis-shared-utc-evidence.json
           if-no-files-found: warn
           retention-days: 21
