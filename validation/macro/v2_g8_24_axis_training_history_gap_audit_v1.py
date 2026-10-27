@@ -126,7 +126,7 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
                 method = "RETAINED_OFFICIAL_STRICT_FIRST_RELEASE_ARTIFACT_HASH_PINNED"
                 # Keep this separate from the newer latest-web candidate;
                 # source archive may end BEFORE the latest candidate month.
-                source_id = "OFFICIAL_ISSUER_FIRST_WEB_MATERIALIZATION_" + key
+                source_id = current["registered_canonical_series_id"]
             elif key in ("EUR.inflation", "AUD.inflation"):
                 item = original["histories"][key]
                 check(item["source_id"] == source_id and
