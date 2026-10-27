@@ -426,6 +426,36 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
               "annual CPI revision/gap quality must not create new model PIT data")
         stat["USD_CPI_annual_seasonal_revision_pairs_verified"] = 15
         stat["USD_CPI_2025_10_index_missing_2026_10_SA_yoy_prospective_missing"] = True
+    # Source-first Aug2024 publisher issue-month XLSX (acquired Oct2026)
+    # supplies the 24th PREVIOUS published CPI observation; old 24-file
+    # ledger INCLUDED latest Sep2026, thus only had 23 previous months.
+    # Complete 24-in-25 observed but NON-consecutive and NON-PIT shadow
+    # robust z sensitivity compared with already-present revised proxy.
+    us_cpi_prior24_issuer_vs_revised = None
+    if cutoff == ASOF:
+        from validation.macro.v2_us_cpi_prior24_issuer_revised_sensitivity_v1 import (
+            audit as prior24_issuer_shadow_audit
+        )
+        us_cpi_prior24_issuer_vs_revised = prior24_issuer_shadow_audit()
+        sample = us_cpi_prior24_issuer_vs_revised["summary"]
+        check(sample["official_published_prior_months"] == 24
+              and sample["prior_calendar_months"] == 25
+              and sample["missing_prior_month"] == "2025-10"
+              and sample["issuer_original_day_binary_certifications"] == 0
+              and sample["model_PIT_history_certified"] == 0
+              and us_cpi_prior24_issuer_vs_revised["safe_to_publish_D_json"] is False
+              and stat["prior_first_web_contiguous_12Q_or_24M_slots"] == 22,
+              "Aug2024 issued workbook is necessary but cannot certify PIT 24-consecutive")
+        current_revised_proxy = estimated_proxies[
+            "two_explicitly_estimated_missing_source_windows"]["USD.inflation"][
+            "estimated_descriptive_robust_z"]
+        check(abs(sample["asof_revised_series_robust_z"]["clipped_z"]
+                  - current_revised_proxy) < 0.00001,
+              "frozen revised as-of CPI robust z must match existing descriptive proxy")
+        stat["USD_CPI_issuer_month_prior_observed_corrected_23_to_24"] = 24
+        stat["USD_CPI_issue_vintage_vs_revised_z_delta_research"] = sample[
+            "robust_z_candidate_minus_revised"]
+        stat["USD_CPI_issuer_original_day_PIT_training_still_unapproved"] = True
     out = {
         "schema": SCHEMA, "as_of_utc": cut.isoformat(),
         "status": "24_G8_SOURCE_WINDOW_COMPLETENESS_RESEARCH_ONLY_NOT_MODEL_PIT",
@@ -445,6 +475,8 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
             us_cpi_xlsx_issue_candidates,
         "separate_USD_CPI_annual_SA_revisions_and_missing_YOY_gap_policy":
             us_cpi_annual_revision_gap_policy,
+        "separate_USD_CPI_corrected_24_prior_issued_vs_revised_Z_not_PIT":
+            us_cpi_prior24_issuer_vs_revised,
         "BLS_nov2025_two_month_change_NOT_November_MOM": True,
         "SECO_25_rounded_report_months_do_NOT_close_SNB_original_exact_PIT": True,
         "observed_first_web_22_and_estimated_context_2_must_never_be_combined_as_PIT": True,
