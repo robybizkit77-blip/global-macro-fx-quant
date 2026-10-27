@@ -16,7 +16,7 @@ import re
 from itertools import combinations
 
 G8=("USD","EUR","GBP","JPY","CHF","CAD","AUD","NZD")
-PAIRS={a+"/"+b for a,b in combinations(sorted(G8),2)}
+PAIR_KEYS={tuple(sorted((a,b))) for a,b in combinations(sorted(G8),2)}
 SCHEMAS={"GMFQ_CORE_FORWARD_DECISION_LOGGER_V1.0.0","GMFQ_CORE_FORWARD_DECISION_LOGGER_V1.1.0"}
 FORWARD_RETURN_KEYS={"outcome","forward_return","future_return","future_pnl",
                      "realized_return","target_label","trade_pnl"}
@@ -50,7 +50,9 @@ def inspect(rows):
         check(isinstance(row,dict),"JSONL row must be an object")
         check(not (FORWARD_RETURN_KEYS & set(row)), "decision contains future outcomes")
         pair=row.get("pair")
-        check(pair in PAIRS and row.get("base_currency")+"/"+row.get("quote_currency")==pair,
+        base, quote=row.get("base_currency"),row.get("quote_currency")
+        check(isinstance(pair,str) and base in G8 and quote in G8 and base != quote
+              and pair==base+"/"+quote and tuple(sorted((base,quote))) in PAIR_KEYS,
               "non-G8 or inconsistent cross identity")
         cutoff=row.get("decision_cutoff")
         now=utc(cutoff)
@@ -86,13 +88,16 @@ def inspect(rows):
                 if avail is not None:
                     check(utc(avail)<=now,"future source used in prior capture")
         groups[key].append(row)
-    expected=PAIRS
+    expected=PAIR_KEYS
+    canonical_pair_spelling={x["pair"] for x in groups[group_order[0]]}
     previous=None
     v1_0=0
     for key in group_order:
         lines=groups[key]
-        check(len(lines)==28 and {x["pair"] for x in lines}==expected,
-              "missing / duplicate / extra G8 pair in capture")
+        check(len(lines)==28 and
+              {tuple(sorted((x["base_currency"],x["quote_currency"]))) for x in lines}==expected
+              and {x["pair"] for x in lines}==canonical_pair_spelling,
+              "missing / duplicate / extra G8 pair or orientation drift in capture")
         check(len({x["schema_version"] for x in lines})==1,
               "mixed schema inside same cutoff")
         check(len({x["source_commit"] for x in lines})==1,
