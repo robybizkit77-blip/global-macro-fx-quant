@@ -909,9 +909,9 @@ async function getState(page){
             rankedSetup.rows.length!==28||
             rankedSetup.rows.some((x,i)=>x.rank!==i+1||!x.reason)||
             new Set(rankedSetup.rows.map(x=>x.code)).size!==28||
-            !rankedSetup.rows.find(x=>x.code==='AUDCHF')?.reason.includes('Timing contrario')||
-            !rankedSetup.rows.find(x=>x.code==='EURUSD')?.reason.includes('Prezzo già avanzato'))
-           throw Error(name+' public ranked pairs or named CON RISCHI constraint absent '+JSON.stringify(rankedSetup));
+            rankedSetup.rows.some(x=>!x.reason?.trim()||
+              !/^(Favore |Nessuna direzione)/.test(x.reason)))
+           throw Error(name+' public ranked pairs source-derived interpretation invalid '+JSON.stringify(rankedSetup));
          if(['pairs-first-risk-check-20261023','pairs-top8-overlap-20261023','pairs-dense-first-read-20261023','home-nzd-b2-web-reviewed-20261023','home-nzd-b2-pair-zero-gates-20261024','home-morning-clock-verified-20261024'].includes(navigationVersion)&&
             rankedSetup.rows.some(x=>!x.firstCheck?.startsWith('Primo controllo · ')||
               x.checkSource!=='PAIR_SETUP_OPERATIONAL_VIEW'))
