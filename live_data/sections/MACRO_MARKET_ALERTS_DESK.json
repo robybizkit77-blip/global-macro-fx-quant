@@ -1,8 +1,36 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-27T18:59:01Z",
+  "generated_at_utc": "2026-10-27T22:59:21Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-e90639531e7e73e34a49",
+      "observed_at_utc": "2026-10-27T19:07:42Z",
+      "headline": "NYSE moves to bring all-or-nothing options to stocks and company earnings",
+      "summary": "Reuters riporta: NYSE moves to bring all-or-nothing options to stocks and company earnings. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxOOGhCS0RLa1ctTWJndGN2ZmVuX09pTTV0LXQxcnF1T2ZLUGZUTndKS19vYTZ2NFExT09tODNiX1pYZnlHUGxrZU9OQ2ItMXFUbVhORnVid3BhQjFScFk5S2VsWWNxYl8xVDg1RlBLaHdHM1loRm9zemRwVUtLamNhSkhVTTlyalQ3aERaS0RwUXZkZTVUSTBjVnRmaGh5WVk0SmJ4VlhlY3Y4QTM3RVpPNUhYOEMtdUE?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-ddc0f0b2b9e7abbfcca0",
+      "observed_at_utc": "2026-10-27T02:12:00Z",
+      "headline": "Dollar rises as markets eye central bank meetings",
+      "summary": "Reuters riporta: Dollar rises as markets eye central bank meetings. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxPVDhUYWVaR1lyeGFScDAxOG1INFBuME5XaHhvOFNZTnhjUXFCTHVGX2k1cEJzSUMwUmpQblFZWE1WU2Z6Q0dnZTRmc2lCSEE1RklYN3VZdWV3aVRLblJ4aTFudW1aUkxUVWZXWUl6Ql8zQkVEaDBJakY4SnhyUmRwb1BQcHpKSHlOWG5DeDN3QVFIb1MyMU5mcDlESEdQS1BwdHhpaThFZjZDMDIweVVYX1VQX1VEdVdh?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-e71f55af66262f1475a3",
       "observed_at_utc": "2026-10-27T01:46:00Z",
@@ -1376,34 +1404,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNLUFBR0xnWGVNdnlZWHllVVp3bmdPQ2xsMEVHbXktYXUwMVRmZlZNU1E4Z3F1R0paZVZfZkFUbFU1cG5ZZnZteFVxUXRRS0c5RmFiVUtiU25makZIMTVaR2dlbGZLQ2VRN0tKYnpmblZLdUZkajhmUFgxMG1wNEU2N21Wdno3UHFoMGhnM2EyMDZkY1JLZ0FDT1lnSWNQU0NlZTFyNUo1QkpNTWFm?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-b714f21f79b1a7e32bee",
-      "observed_at_utc": "2026-10-23T14:59:43Z",
-      "headline": "Ship attacks in Strait of Hormuz hit record high in October",
-      "summary": "Reuters riporta: Ship attacks in Strait of Hormuz hit record high in October. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxOT0p6ZElVazFhVWJxRy15cXJ6X2VJZlBZbkp6dTFNUGNzb1pCbjYyenA2UE5ERXBYMnMya2tYNkNfcGN3U3FGZ3V2MzdaN0RWUng5VFJHVl9jVk9LLVJGOVFVRFNKR21sc0pULWQ0Vm9uQk9tODlWTGs0U3BSeFd2MC15X2RIakQ2Mkw0eFhMa1Y2UUVWYVBsZkhrZHowVnlaWUpKZA?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-d407b72a3e00e19b546e",
-      "observed_at_utc": "2026-10-23T04:14:00Z",
-      "headline": "Gold set for steep weekly loss as rising oil prices bolster Fed rate hike bets",
-      "summary": "Reuters riporta: Gold set for steep weekly loss as rising oil prices bolster Fed rate hike bets. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxOWE1LcUgzRWRwVDZmX3FEaWszVHF0cFQ1ekt6M1pyQ0lfc05PQm9DekdZcXprdm1vQk00SlNEZjEwQllCd1VwMUJySnIxcF9ZblFaRHFsV3BzSU52SlJSSi1TeWxoTmdYc1h6UHhPQTFQYU41ZEdQTFRNY3l0N1Q2bnRDV2x1MjlveGtxTk1oQWlGd3ExcUZEd2QzdF9TUkVKcXotUlIycUgtb1RrZjJ3?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
