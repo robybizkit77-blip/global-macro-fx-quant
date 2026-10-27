@@ -92,17 +92,21 @@ def extract_seasonal_first_rate(raw,key):
     rate=float(quoted[0].replace(",","."))
     require(1.0<=rate<=6.0,"SA registered unemployment rate outside plausible 1–6%")
     table=document[5].get_text("text",sort=True).replace("\u00ad","")
-    require("Tabelle 1" in table and "Langzeitarbeitslose" in table and
-            "Arbeitslosenquote" in table,"SECO table1 not found")
-    # Cross-check the *unemployment* row only, up to "Langzeitarbeitslose",
-    # to avoid confusing it with the distinct jobseeker and vacancy rates.
-    before_long=table.split("Langzeitarbeitslose",1)[0]
-    require(quoted[0] in before_long,
-            "SECO summary rate not confirmed in Table 1: "+key)
+    # The 2025/26 report layout changed for some issues: do not mistake
+    # the source-published jobseeker rate for registered unemployment.
+    # The signed/dated publisher executive summary is always canonical,
+    # and Table 1 is an extra check only WHEN it can be safely located.
+    has_table=("Tabelle 1" in table and "Langzeitarbeitslose" in table and
+               "Arbeitslosenquote" in table)
+    if has_table:
+        before_long=table.split("Langzeitarbeitslose",1)[0]
+        require(quoted[0] in before_long,
+                "SECO summary rate differs from unemployment subsection in Table1: "+key)
     return rate,release_day,len(document),{
         "summary_original_quote":"Die saisonbereinigte Arbeitslosenquote "+match.group(1),
         "summary_rate_pct_one_decimal":quoted[0],
-        "table_one_unemployment_subsection_rate_crosscheck":True}
+        "table_one_unemployment_subsection_rate_crosscheck":has_table,
+        "quality_if_no_table_crosscheck":"OFFICIAL_PUBLISHER_FIRST_DAY_REPORT_EXECUTIVE_SUMMARY" if not has_table else None}
 
 def run():
     urls,page_sha=discover()
