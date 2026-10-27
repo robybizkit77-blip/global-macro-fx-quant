@@ -321,6 +321,26 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
         stat["secondary_provisional_descriptors_available"] = 2
         stat["source_slots_with_original_window_or_labeled_provisional_context"] = 24
         stat["secondary_provisional_first_release_corrections"] = 0
+    # Separate official SECO alternative: 21 fresh publisher PDF source
+    # SHA captures plus 4 official 2024 report excerpts currently searchable
+    # but with original direct PDF URLs returning 404. Not the exact SNB
+    # registered CH_UNEMP_RATE first-vintage needed by the production core.
+    swiss_alternative = None
+    if cutoff == ASOF:
+        from validation.macro.v2_chf_seco_first_month_rounded_alternative_v1 import (
+            audit as swiss_alternative_audit
+        )
+        swiss_alternative=swiss_alternative_audit(cutoff=ASOF)
+        check(swiss_alternative["summary"]["official_PDF_raw_bytes_SHA_captured_now"]==21 and
+              swiss_alternative["summary"]["official_2024_original_PDF_search_index_only_currently_404"]==4 and
+              swiss_alternative["summary"]["separate_new_SNB_canonical_first_release_history_periods"]==0 and
+              swiss_alternative["safe_to_publish_new_D"] is False and
+              stat["prior_first_web_contiguous_12Q_or_24M_slots"]==22,
+              "SECO 25-month rounded alternate cannot promote SNB canonical PIT coverage")
+        stat["CH_labour_SECO_alternative_issuer_rounded_months"]=25
+        stat["CH_labour_SECO_alternative_downloaded_report_PDFs"]=21
+        stat["CH_labour_SECO_alternative_search_index_only_reports"]=4
+        stat["CH_labour_exact_SNB_first_release_history_approved"]=0
     out = {
         "schema": SCHEMA, "as_of_utc": cut.isoformat(),
         "status": "24_G8_SOURCE_WINDOW_COMPLETENESS_RESEARCH_ONLY_NOT_MODEL_PIT",
@@ -330,6 +350,9 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
         "slots": details, "summary": stat,
         "separate_revised_history_estimates_for_US_CPI_and_CHF_unemployment":
             estimated_proxies,
+        "separate_first_rounded_SECO_issuer_reports_not_SNB_exact":
+            swiss_alternative,
+        "SECO_25_rounded_report_months_do_NOT_close_SNB_original_exact_PIT": True,
         "observed_first_web_22_and_estimated_context_2_must_never_be_combined_as_PIT": True,
         "series_counts_do_not_equal_valid_historical_PIT_trading_samples": True,
         "current_monthly_and_quarterly_observation_periods_not_comparable": True,
