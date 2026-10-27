@@ -148,10 +148,31 @@ function style(doc){
  `;
  doc.head.appendChild(s);
 }
+/* Official Japanese yield feed contains unpadded month/day strings and rows
+   lexically sorted by those raw strings. Normalize DATE ONLY, preserving each
+   value at its original index, then sort the paired observations by ISO day.
+   No writeback to source feeds, model scores, rates, CB pricing or ranking. */
+function normalizeHistoryDate(raw){
+ if(typeof raw!=='string')return null;
+ const m=/^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(raw);
+ if(!m)return null;
+ const y=Number(m[1]),month=Number(m[2]),day=Number(m[3]);
+ if(y<1900||y>2100||month<1||month>12||day<1||day>31)return null;
+ const dt=new Date(Date.UTC(y,month-1,day));
+ if(dt.getUTCFullYear()!==y||dt.getUTCMonth()!==month-1||dt.getUTCDate()!==day)return null;
+ return m[1]+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+}
 function dateHistory(x,which){
  const h=x?.[which];if(!h)return[];
+ const cutoff=x?.date?normalizeHistoryDate(x.date):null;
+ if(x?.date&&!cutoff)return[];
  const arr=Array.isArray(h)?h.map(p=>({date:p.date,v:num(p.value)})):Array.isArray(h.dates)?h.dates.map((date,i)=>({date,v:num(h.values?.[i])})):[];
- return arr.filter(p=>/^\d{4}-\d{2}-\d{2}$/.test(p.date||'')&&p.v!==null&&(!x?.date||p.date<=x.date)).sort((a,b)=>a.date.localeCompare(b.date))
+ const paired=arr.map(p=>({date:normalizeHistoryDate(p.date),v:p.v}))
+   .filter(p=>p.date&&p.v!==null&&(!cutoff||p.date<=cutoff))
+   .sort((a,b)=>a.date.localeCompare(b.date));
+ // Two source strings must never silently alias to the same trading day.
+ for(let i=1;i<paired.length;i++)if(paired[i].date===paired[i-1].date)return[];
+ return paired;
 }
 function estimate(target,ref,which){
  const original=target?.[which==='history2'?'2Y':'10Y'];const base=ref?.[which==='history2'?'2Y':'10Y'];
