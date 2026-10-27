@@ -98,8 +98,21 @@ def extract_seasonal_first_rate(raw,key):
 def run():
     urls,page_sha=discover()
     rows=[]
+    missing_legacy=[]
     for key in EXPECTED:
-        raw,final=retrieve(urls[key],pdf=True)
+        if key in OLD:
+            try:
+                raw,final=retrieve(urls[key],pdf=True)
+            except requests.exceptions.HTTPError as exc:
+                # Known broken pre-2025 issuer paths: never backfill from a
+                # later PDF where first/previous-month values were revised.
+                if exc.response is None or exc.response.status_code not in (404,410):
+                    raise
+                missing_legacy.append(key)
+                print("SECO_LEGACY_SOURCE_UNAVAILABLE",key,flush=True)
+                continue
+        else:
+            raw,final=retrieve(urls[key],pdf=True)
         rate,day,pages,comparisons=extract_seasonal_first_rate(raw,key)
         item={
             "reference_month":key,"original_seco_rounded_sa_registered_unemployment_pct":rate,
@@ -117,15 +130,18 @@ def run():
         rows.append(item)
         print(key,day,rate,flush=True)
         time.sleep(.12)
-    require(len(rows)==25 and [r["reference_month"] for r in rows]==EXPECTED,
-            "all 24 prior original published headline months must be present")
+    actual=[x["reference_month"] for x in rows]
+    require([x for x in EXPECTED if x not in missing_legacy] == actual
+            and len(rows)>=21
+            and all(x.startswith("2024-") for x in missing_legacy),
+            "2025–2026 actual issuer reports must be complete; 2024 failures exposed")
     require(rows[-1]["original_seco_rounded_sa_registered_unemployment_pct"]==3.1,
             "September-2026 first headline conflicts with separately verified SECO")
     require(rows[-9]["reference_month"]=="2026-01" and
             rows[-9]["original_seco_rounded_sa_registered_unemployment_pct"]==2.9,
             "January 2026 independently reviewed SECO first headline differs")
     output={
-        "schema":"GMFQ_MACRO_V2_CHF_25_OFFICIAL_SECO_MONTH_REPORT_FIRST_ROUNDED_SA_RATES_V1",
+        "schema":"GMFQ_MACRO_V2_CHF_25_TARGET_ISSUER_MONTHS_PARTIAL_RECOVERY_V1",
         "source_publisher":"Swiss State Secretariat for Economic Affairs (SECO)",
         "official_index_url":LIST,
         "index_capture_SHA256":page_sha,
@@ -133,8 +149,13 @@ def run():
         "metric":"CH_SECO_REGISTRATION_SA_UNEMPLOYMENT_RATE_0P1_PERCENT_ALTERNATIVE",
         "frequency":"M","unit":"percent","precision_decimals":1,
         "archived_issuer_first_rounded_reports":rows,
-        "first_reference_month":"2024-09","last_reference_month":"2026-09",
-        "observations":25,"prior_training_observations":24,
+        "target_first_month":"2024-09","last_reference_month":"2026-09",
+        "target_observations":25,
+        "verified_issuer_first_rounded_reports":len(rows),
+        "original_reports_currently_unavailable_periods":missing_legacy,
+        "prior_original_published_months":len(rows)-1,
+        "prior_training_target":24,
+        "current_report_window_complete":False,
         "source_day_first_HTTP_payloads_independently_archived":False,
         "complete_historical_SNB_exact_release_vintage_proven":False,
         "can_replace_canonical_CH_UNEMP_RATE_history_value":False,
