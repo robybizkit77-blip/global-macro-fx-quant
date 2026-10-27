@@ -1,0 +1,80 @@
+name: Macro Core D Daily Bridge Readiness (read-only blocker)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/macro/check_core_daily_bridge_readiness_v1.py'
+      - 'validation/macro/test_core_daily_bridge_readiness_v1.py'
+      - '.github/workflows/macro-core-daily-bridge-readiness-v1.yml'
+      - 'live_data/sections/D.json'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+      - 'live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/macro-core-daily-bridge-readiness-v1.yml'
+      - 'validation/macro/check_core_daily_bridge_readiness_v1.py'
+      - 'live_data/sections/D.json'
+  workflow_run:
+    workflows: ['Macro Persistent Daily V1']
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  read-only-macro-core-bridge:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test frozen D, 8 currency sources, history and 28-pair nonpromotion
+        run: |
+          python -m unittest validation.macro.test_core_daily_bridge_readiness_v1 -v
+      - name: Record dated read-only Macro Core bridge status
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m validation.macro.check_core_daily_bridge_readiness_v1 \
+            --output /tmp/gmfq-core-daily-bridge-readiness.json > /tmp/gmfq-core-daily-bridge-stdout.json
+          python - <<'PY'
+          import json, os
+          d=json.load(open('/tmp/gmfq-core-daily-bridge-readiness.json'))
+          assert d['audit_only_no_data_written'] is True
+          assert d['status'] in {'BLOCKED_UNCERTIFIED_CORE_RECALIBRATION',
+                                 'BROKEN_PAIR_MACRO_BASELINE_CONTRACT'}
+          assert d['daily_core_scoring_and_rank_rebuild_certified'] is False
+          assert d['eligible_to_promote_new_macro_scores'] is False
+          assert d['eligible_to_republish_28_pair_thesis'] is False
+          assert len(d['currency_source_coverage'])==8
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as out:
+              out.write('### Macro Core D bridge: explicitly NOT certified\n')
+              out.write('- Status: **'+d['status']+'**\n')
+              out.write('- Day of audit: **'+d['checked_as_of']+'**\n')
+              out.write('- Existing Core D: **'+d['core_as_of']+'** ('+str(d['core_age_calendar_days'])+' days old)\n')
+              out.write('- 28-pair FX overlay: **'+d['pair_price_as_of']+'**\n')
+              out.write('- Macro/Tassi baseline for pairs: **'+d['pair_macro_baseline_as_of']+'**\n')
+              out.write('- Daily refresh writes **inflation/labour only**, not Growth/CB or Core D recalibration.\n')
+              out.write('- CI success certifies the **blocker detection**, NOT daily Macro model freshness.\n')
+          print('MACRO_CORE_DAILY_BRIDGE_BLOCKER_AUDIT_PASS',
+                d['status'],d['core_as_of'],d['pair_price_as_of'])
+          PY
+      - name: Preserve cross-day Macro bridge evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-core-bridge-readiness-${{ github.run_id }}
+          path: /tmp/gmfq-core-daily-bridge-readiness.json
+          if-no-files-found: warn
+          retention-days: 21
