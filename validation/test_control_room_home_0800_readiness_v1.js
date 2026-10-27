@@ -33,10 +33,21 @@ const observed=inspect();
 assert.equal(observed.total,5);
 assert.equal(observed.checks.calendar,false,'future calendar cannot certify a past briefing');
 assert.equal(observed.checks.news,false,'08:52 CEST news cannot certify 08:00 CEST');
-assert.equal(observed.confirmed,3);
+// Feeds continue moving forward. Running the frozen Oct 23 as-of scenario
+// against later real snapshots must NOT falsely certify three market sources.
+assert.equal(observed.confirmed,Object.values(observed.checks).filter(Boolean).length);
+assert(observed.confirmed<=3,'future release must not validate an older morning');
 assert.equal(observed.mode,'DAILY_INCOMPLETE');
-// Positive PIT fixture: a separately generated same-day calendar at 23 October.
+// Positive historical PIT fixture: independently ALIGN the five sources to the
+// frozen decision day (not only the news stamps) before checking readiness.
 const verifiedFixture=structuredClone(inputs);
+verifiedFixture[0].last_as_of='2026-10-23';
+verifiedFixture[0].rows.at(-1).Date='2026-10-23';
+verifiedFixture[2].price_asof='2026-10-23';
+verifiedFixture[2].price_audit.as_of='2026-10-23';
+verifiedFixture[1].risk.VIX.last_date='2026-10-23';
+verifiedFixture[1].risk.VIX.dates.at(-1)==='2026-10-23'||
+  (verifiedFixture[1].risk.VIX.dates[verifiedFixture[1].risk.VIX.dates.length-1]='2026-10-23');
 verifiedFixture[5].generated_at_utc='2026-10-23T05:52:00Z';
 verifiedFixture[6].generated_at_utc='2026-10-23T05:52:00Z';
 const result=inspect(verifiedFixture);
