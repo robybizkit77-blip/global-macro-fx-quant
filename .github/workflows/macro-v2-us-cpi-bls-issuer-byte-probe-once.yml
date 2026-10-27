@@ -5,6 +5,7 @@ on:
     paths:
       - ".github/workflows/macro-v2-us-cpi-bls-issuer-byte-probe-once.yml"
       - "validation/macro/one_shot_us_cpi_bls_alfred_byte_probe_v1.py"
+      - "validation/macro/one_shot_us_cpi_xlsx_structure_inspect_v1.py"
 permissions:
   contents: read
 jobs:
@@ -18,6 +19,8 @@ jobs:
           python-version: "3.12"
       - name: "Probe official CPI source bytes with strict host and size controls"
         run: python validation/macro/one_shot_us_cpi_bls_alfred_byte_probe_v1.py --out /tmp/bls_cpi_research_probe
+      - name: "Read source XLSX structure and identify SA-index candidate rows"
+        run: python validation/macro/one_shot_us_cpi_xlsx_structure_inspect_v1.py
       - name: "Verify never classified as source-day PIT or production Core input"
         run: |
           python - <<'PY'
