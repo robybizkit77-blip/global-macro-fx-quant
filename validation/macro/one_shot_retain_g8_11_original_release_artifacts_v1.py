@@ -126,7 +126,9 @@ def get_artifact(artifact_id):
             redirected = super().redirect_request(request, fp, code, msg, headers, newurl)
             if redirected is not None and not newurl.startswith("https://api.github.com/"):
                 redirected.remove_header("Authorization")
-                redirected.remove_unredirected_header("Authorization")
+                for h in list(redirected.unredirected_hdrs):
+                    if h.lower() == "authorization":
+                        del redirected.unredirected_hdrs[h]
             return redirected
     return urllib.request.build_opener(SafeRedirect()).open(req, timeout=100).read()
 
