@@ -1580,11 +1580,44 @@ function expectedReactionFromMetrics(row){
   if(unranked<0||rankedCodes.slice(unranked).some(x=>
       setupFeed.pairs[x].setup.quality!=='NON VALUTABILE'))
     throw Error(label+' pair without a thesis incorrectly outranks canonical thesis');
-  const meaningfulRisk=rankSetup.descriptions.find(x=>x.code==='AUDCHF');
-  const extendedRisk=rankSetup.descriptions.find(x=>x.code==='EURUSD');
-  if(!meaningfulRisk?.why?.includes('Timing contrario')||
-     !extendedRisk?.why?.includes('Prezzo già avanzato'))
-    throw Error(label+' CON RISCHI still lacks a concrete source-based explanation');
+  // The current live source can remove ADVANCED or ADVERSE from an example.
+  // Fail if ANY rendered reason does not match today's canonical conditions,
+  // rather than demanding yesterday's risk on a fixed currency pair.
+  const sourcedReasons=(p)=>{
+    const x=p.setup||{},f=p.decision_frame||{};
+    if(x.quality==='NON VALUTABILE')return [
+      f.quality==='PILASTRI DIVISI'?'Macro e Tassi/CB in conflitto':
+      f.quality==='SEPARAZIONE RATES MATERIALE'?'Solo spread 2Y; tesi assente':
+      'Nessuna preferenza Macro/Tassi'];
+    const out=[];
+    if(x.price?.state==='BAD')out.push('Prezzo contro la tesi');
+    else if(x.price?.state==='NEUTRAL')out.push('Prezzo non conferma');
+    if(x.timing?.state==='ADVERSE')out.push('Timing contrario');
+    if(x.extension?.state==='ADVANCED')out.push('Prezzo già avanzato');
+    if(p.transition?.state==='DIVERGENZA RELATIVA DA MONITORARE')
+      out.push('Dinamica relativa divergente');
+    if(x.timing?.state==='UNCERTAIN')out.push('Timing incerto');
+    if(x.timing?.state==='MIXED')out.push('Timing misto');
+    if(x.timing?.state==='PARTIAL')out.push('Timing solo parziale');
+    if(x.cot?.state==='HIGH')out.push('COT affollato/estremo');
+    if(x.cot?.state==='DIVERGENT')out.push('COT contrario');
+    if(x.liquidity?.state==='BAD')out.push('Liquidità sfavorevole');
+    if(f.quality==='VANTAGGIO RELATIVO PARZIALE')
+      out.push('Tesi sorretta da un solo pilastro');
+    return out.length?out:['Servono trigger e rapporto rischio/rendimento esterni al modello'];
+  };
+  for(const row of rankSetup.descriptions){
+    const item=setupFeed.pairs[row.code];
+    const expected=sourcedReasons(item).slice(0,2).join(' · ');
+    const favored=item.setup.quality==='NON VALUTABILE'?'Nessuna direzione · ':
+      'Favore '+item.setup.structuralFav+' · ';
+    if(row.why!==favored+expected)
+      throw Error(label+' risk explanation is not tied to current source state: '+
+        row.code+' expected '+favored+expected+' received '+row.why);
+  }
+  if(!rankSetup.descriptions.some(x=>
+      setupFeed.pairs[x.code]?.setup?.quality==='CON RISCHI'&&x.why?.length>5))
+    throw Error(label+' current canonical risk has no explanatory text');
   await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-rank-mode="thesis"]').click();
   const rankThesis=await readRank();
   verifyOverlap(rankThesis);
@@ -1862,7 +1895,9 @@ function expectedReactionFromMetrics(row){
   });
   if(!eurChecklist.exists||eurChecklist.rows.length!==3||
      !eurChecklist.rows[0].includes('USD')||!eurChecklist.rows[1].includes('EUR')||
-     !eurChecklist.rows[2].includes('Estensione del prezzo:')||
+     (setupFeed.pairs.EURUSD.setup.extension.state==='ADVANCED'
+        ?!eurChecklist.rows[2].includes('Estensione del prezzo:')
+        :eurChecklist.rows[2].includes('Estensione del prezzo:'))||
      !eurChecklist.rows[2].includes('Timing:')||
      !eurChecklist.rows[2].includes('Posizionamento:')||
      !eurChecklist.text.includes('Solo uno dei due pilastri strutturali separa chiaramente le valute')||

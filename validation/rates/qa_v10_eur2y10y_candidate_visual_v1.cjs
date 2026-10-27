@@ -3,13 +3,27 @@
 /* Browser-focused v10 Rates CHF proxy and EUR yield source change QA.
    Keeps pre-existing morning-calendar source freshness failure separate. */
 const {chromium}=require('playwright');
-const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
 
 async function run(){
  const a=process.argv.slice(2),p=k=>a[a.indexOf(k)+1];
  const scenario=p('--scenario'),expected10=Number(p('--chf-10y')),output=p('--out'),dir=p('--screenshots');
  if(!['before','after'].includes(scenario)||!Number.isFinite(expected10)||
     !output?.startsWith('/tmp/')||!dir?.startsWith('/tmp/'))throw Error('Invalid scenario or /tmp paths');
+ // Historical candidate source may already be deployed. Test against the
+ // currently official source instead of assuming a once-new rebase is pending.
+ const raw=JSON.parse(fs.readFileSync('live_data/sections/NATIVE_RATES_DATA.json','utf8'));
+ const addon=fs.readFileSync('site/control-room-preview/home-navigation-v10.js','utf8');
+ const st=addon.indexOf('function normalizeHistoryDate(raw){');
+ const en=addon.indexOf('function ratesAll(raw){',st);
+ assert(st>=0&&en>st,'production rate history helper unavailable');
+ const ctx={num:x=>typeof x==='number'&&Number.isFinite(x)?x:null,
+   fresh:(day,days)=>typeof day==='string'&&
+     Math.abs((Date.parse(raw.EUR.date)-Date.parse(day))/86400000)<=days,Date};
+ vm.createContext(ctx);vm.runInContext(addon.slice(st,en),ctx);
+ const derived=ctx.estimate(raw.CHF,raw.EUR,'history10');
+ assert(derived&&Number.isFinite(derived.v)&&derived.confidence==='BASSA',
+   'actual low-confidence CHF proxy cannot be reproduced from canonical source');
  const browser=await chromium.launch({headless:true}),cases=[],issues=[];
  try{
   for(const [label,viewport] of [['desktop',{width:1440,height:950}],['mobile',{width:390,height:844}]]){
@@ -48,22 +62,31 @@ async function run(){
    assert(observed.viewport>100,'No v10 viewport');
    assert(observed.document_width<=observed.viewport+16,
      label+' rates horizontal overflow '+JSON.stringify(observed));
-   assert(observed.chf_scenario?.includes('10Y ≈'+expected10.toFixed(3)+'% (BASSA)'),
-     label+' CHF low-confidence 10Y proxy not displayed '+JSON.stringify(observed));
-   if(scenario==='before'){
-     assert.equal(observed.source_rebase_status,'NONE');
+   const published=observed.source_rebase_status==='PUBLISHED_AFTER_SOURCE_AND_BROWSER_QA';
+   assert(['NONE','RESEARCH_CANDIDATE_NOT_PUBLISHED',
+           'PUBLISHED_AFTER_SOURCE_AND_BROWSER_QA'].includes(observed.source_rebase_status),
+       'rebase status invalid '+JSON.stringify(observed));
+   const expectedRendered=published?derived.v:expected10;
+   assert(observed.chf_scenario?.includes('10Y ≈'+expectedRendered.toFixed(3)+'% (BASSA)'),
+     label+' CHF low-confidence 10Y beta disagrees with available source '+JSON.stringify({
+       expected:expectedRendered,observed:observed.chf_scenario}));
+   if(observed.source_rebase_status==='NONE'){
+     assert.equal(scenario,'before','no candidate rebase on an after-only scenario');
      assert.equal(observed.chf_source_rebase_notice,null);
    }else{
-     assert.equal(observed.source_rebase_status,'RESEARCH_CANDIDATE_NOT_PUBLISHED');
+     const title=published?'STORICO BCE RICALIBRATO':'ANTEPRIMA RICERCA';
      assert.equal(observed.chf_source_rebase_count,1);
-     assert(observed.chf_source_rebase_notice?.includes('ANTEPRIMA RICERCA')&&
+     assert(observed.chf_source_rebase_notice?.includes(title)&&
             observed.chf_source_rebase_notice?.includes('revisione dello scenario β')&&
             observed.chf_source_rebase_notice?.includes('non un movimento osservato oggi')&&
-            observed.chf_source_rebase_notice?.includes('Affidabilità BASSA'));
+            observed.chf_source_rebase_notice?.includes('Affidabilità BASSA'),
+       'CHF beta rebase explanation must disclose research status and source change');
    }
-   assert.equal(observed.chf_asof,'2026-09-30');
-   assert(observed.eur_current_cell?.includes('3.007%')&&
-          observed.eur_current_cell?.includes('3.384%'),'EUR current yields unexpectedly changed');
+   assert.equal(observed.chf_asof,raw.CHF.date);
+   assert(observed.eur_asof===raw.EUR.date&&
+          observed.eur_current_cell?.includes(raw.EUR['2Y'].toFixed(3)+'%')&&
+          observed.eur_current_cell?.includes(raw.EUR['10Y'].toFixed(3)+'%'),
+     'EUR displayed 2Y/10Y values must match the official canonical source');
    assert(observed.proxy_not_official&&observed.no_core_effect&&observed.no_pair_effect,
           'Derived proxy incorrectly labeled a canonical model or official quote');
    fs.mkdirSync(dir,{recursive:true});
