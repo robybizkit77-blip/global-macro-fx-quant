@@ -1,8 +1,47 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-26T22:51:02Z",
+  "generated_at_utc": "2026-10-27T03:51:18Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-7a4c05264307398cd129",
+      "observed_at_utc": "2026-10-27T03:24:00Z",
+      "headline": "Trump and Rubio plan to visit oil tanker carrying Venezuelan crude in Texas",
+      "summary": "AP News riporta: Trump and Rubio plan to visit oil tanker carrying Venezuelan crude in Texas. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxPY1lQMDdtdmVjVTlZS1lRUTY4OEJGamlOTUV1TWVHelZ6VHFUYWhjZE1qYVZhSk5oamx5UkhzLXRTZks0dHZFX1A4X3BFMWpQWGhpa3ZENkhYWmFKNUxFbnJoX2E0anFtZWdIVzVCYzNjc1NIWmE3QXFNa2NyMlVxdlZMVUE4SDNBdVBjZzdtUTFlVF9uY0pzVl9ZSkM5T2V4eVE?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-c72a62e7476e5a20e989",
+      "observed_at_utc": "2026-10-26T23:17:00Z",
+      "headline": "South Korea Q3 GDP beats forecasts as AI chip boom boosts exports, investments",
+      "summary": "Reuters riporta: South Korea Q3 GDP beats forecasts as AI chip boom boosts exports, investments. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxPclJITG5OM3lQUHFQQXI0Z0QxNTEzU2RjOXNHakE5aXZiWkJNUjVpYUtiNE1OcVNIY3dNMkxsTHQ3TlpfbnFXM2M0N3VSdDdXbEktX29CaFhLWnZMYS1fWGFpSmo4aERwRkpKTTJPNmRqMVcxTVFONFBnN04yM2FoRlBoaGRkb0YxNmJmU3JTSEJIR3I5N2I0ZndDREZsU01vOEhIa1RqRzlJQ1lhODJubEllc3d4MzQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-93496de760778c56e0f7",
+      "observed_at_utc": "2026-10-27T01:46:00Z",
+      "headline": "Asian stocks surge as Anthropic IPO lifts sentiment ahead of earnings, central banks",
+      "summary": "Reuters riporta: Asian stocks surge as Anthropic IPO lifts sentiment ahead of earnings, central banks. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxQdEdzTDdxbEtNX1l6VDJMdF9NTGpUNEJPYy1jaUo2SkllaGhJZnZvNzZOOTd5MkZHV3p5T2ZhcjlkcWduOXp5elFKREQ0bFBib0pXUzNKdGI2QmE3eWZxRlktZXhSZG0tQzQ4U1dXNWxOZktiZVZvc1pNUERsYUFLVUJYSQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-fc186c4323c0fd8766c5",
       "observed_at_utc": "2026-10-26T15:35:43Z",
@@ -1354,49 +1393,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxPVy1xaDI3WlUteUFnVTZtUGRnbnlYRmRWREp5akpFX29zZGVhajhhUUpXUE1RVjUya3dvNFlVdVlTdmd4TkRNVWdELU5IQmV2U0d1Vk1MXy1teXEzSzhWSWtRU3pRNmpKYUpmQjdIZlV4WlRlbVJRZjhOS3V5TDZ2TFhsM1lXdlhYWF9fdmQ4Z1JhTXpvaVQ2WEdvTHB3R082YmZNVXBkeXktc2Y0SXhScGVnckVqU2xFZnlaZmpwVldxSWlDOGZTZzJLSUpQUQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-c8045b97f5f06ca8188b",
-      "observed_at_utc": "2026-10-22T20:01:06Z",
-      "headline": "S&P 500, Nasdaq end sharply lower as revived AI doubts ignite tech selloff",
-      "summary": "Reuters riporta: S&P 500, Nasdaq end sharply lower as revived AI doubts ignite tech selloff. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxNTWxDZDg5X0padGNvb2k2V2ZkX2tEWW9YWkdjeVdMZHNUTlg1MXY4TmUyTDZHdUhNTHFRNWRPRjc2VFlEN3RXTDhNSjhDYmRfTWZGXzdKYXdLejRHNGgwRVdNbmZRUkFhSm9GakxMek56UUZ2OUtqajd6NVkzRkR1VzBNWlo5VWp5NUFkX2phUjlSSFlndUlNNGxvUXlHSm1wMlpTbkRR?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-57cec65990496ee8b549",
-      "observed_at_utc": "2026-10-22T00:46:00Z",
-      "headline": "Oil prices hit five-month high as Houthi attacks stoke Middle East supply fears",
-      "summary": "Reuters riporta: Oil prices hit five-month high as Houthi attacks stoke Middle East supply fears. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxOYzBEdGVKYmZ3VVpJajg0TW5DN2VHVEM2aDVTcFJKQVduMnVMTU5NbVcyMGxBanBHY3VvMzJQR1VrQWM4b0hLeG1YaTFWcldTeU9yTlBXc3FiR1FtcUp0SmxhRkJkWmpmZ2x6X3VGZHZEUDNLTE9LTFZNSlBWWjNJVGtaV3YwWkc4QVhxbHozYkx5THpZMVlYVDAtd0dqbUMyOUcyVk91NEYxaFFCZklRWWhjQm5qN2NvVHdWdnZIQVJSMk0?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-ed1fc6997fd7d7af4683",
-      "observed_at_utc": "2026-10-22T16:02:09Z",
-      "headline": "Nasdaq CEO flags 'modest softening' in IPO market as macro uncertainty hits debuts",
-      "summary": "Reuters riporta: Nasdaq CEO flags 'modest softening' in IPO market as macro uncertainty hits debuts. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxNa2tNRmp3a3M1dmlVenEyZWI1YUNVcTZXQlJTeDNrdGpsTXhFQ1NDQURlUDZOZUpvNWtjMGtBb1IyYmNnUVY3MlE1U3o4a01XWDM3WWZnVGltTTBGN2k3akZHb1hTVW52RlhFdEZOclBTSlVOQlp0aGxZdU5PeWR3THRZa2Z1M0R6VVVxT3ZDdWtlc2FfajRUMWRxNWlRb2tMUjRRdkttYlZTSGpja1V3SnRndlEyRVJUZ3QtRVlSRWFMX2I3YXIwa3R3?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
