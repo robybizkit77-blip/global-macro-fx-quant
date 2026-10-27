@@ -3,7 +3,7 @@ import copy
 import json
 import unittest
 from pathlib import Path
-from validation.forward.check_append_only_snapshots_gate_v1 import inspect,PAIRS,canonical_hash
+from validation.forward.check_append_only_snapshots_gate_v1 import inspect,canonical_hash
 
 ROOT=Path(__file__).resolve().parents[2]
 ARCH=ROOT/"validation/forward/decision_snapshots/CORE_DECISION_SNAPSHOTS_V1.jsonl"
