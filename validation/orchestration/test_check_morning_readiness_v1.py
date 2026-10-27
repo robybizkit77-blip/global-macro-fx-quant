@@ -22,6 +22,16 @@ data["D.json"]["asOf"] = "2026-09-25"
 data["D.json"]["risk"]["VIX"]["last_date"] = "2026-10-22"
 data["D.json"]["risk"]["VIX"]["dates"][-1] = "2026-10-22"
 data["D.json"]["risk"]["VIX"]["last_value"] = 19.03
+# This is an as-of 23 October SYNTHETIC contract fixture. The live News
+# feed must never inject items from 26 October (or any later update) into
+# an earlier historical test: that made the production orchestrator's
+# contract job fail BEFORE dispatching any child refresh on 27 October.
+# Keep actual live News vintage integrity checks in inspect() unchanged.
+data["NEWS_PULSE_OPERATIONAL.json"]["content_as_of"] = "2026-10-22"
+data["NEWS_PULSE_OPERATIONAL.json"]["items"] = [
+    {"as_of": "2026-10-21", "source": "QA_SYNTHETIC", "headline": "QA older observation"},
+    {"as_of": "2026-10-22", "source": "QA_SYNTHETIC", "headline": "QA prior session"},
+]
 data["NEWS_PULSE_OPERATIONAL.json"]["generated_at_utc"] = "2026-10-23T05:52:00Z"
 data["CALENDAR_OPERATIONAL_VIEW.json"]["generated_at_utc"] = "2026-10-23T05:52:00Z"
 # A daily successful recheck is distinct from content modification time.
