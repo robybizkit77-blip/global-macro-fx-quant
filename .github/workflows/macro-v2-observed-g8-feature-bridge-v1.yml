@@ -15,6 +15,11 @@ on:
       - 'validation/macro/v2_g8_24_axis_asof_evidence_v1.py'
       - 'validation/macro/v2_g8_24_axis_daily_release_replay_v1.py'
       - 'validation/macro/v2_g8_24_axis_training_history_gap_audit_v1.py'
+      - 'validation/macro/v2_g8_11_retained_source_archives_v1.py'
+      - 'validation/macro/test_v2_g8_11_retained_source_archives_v1.py'
+      - 'validation/macro/one_shot_retain_g8_11_original_release_artifacts_v1.py'
+      - 'validation/macro/fixtures/*STRICT_WEB_FIRST_ROWS_2018_2026.archive.xz.b64'
+      - 'validation/macro/fixtures/G8_STRICT_SOURCE_FIRST_RELEASE_11_ARCHIVES_MANIFEST.json'
       - 'validation/macro/test_v2_g8_24_axis_training_history_gap_audit_v1.py'
       - 'validation/macro/MACRO_V2_24_SOURCE_TRAINING_WINDOW_GAP_AUDIT_2026-10-27.md'
       - 'validation/macro/test_v2_g8_24_axis_daily_release_replay_v1.py'
@@ -67,6 +72,11 @@ on:
       - 'validation/macro/v2_g8_24_axis_asof_evidence_v1.py'
       - 'validation/macro/v2_g8_24_axis_daily_release_replay_v1.py'
       - 'validation/macro/v2_g8_24_axis_training_history_gap_audit_v1.py'
+      - 'validation/macro/v2_g8_11_retained_source_archives_v1.py'
+      - 'validation/macro/test_v2_g8_11_retained_source_archives_v1.py'
+      - 'validation/macro/one_shot_retain_g8_11_original_release_artifacts_v1.py'
+      - 'validation/macro/fixtures/*STRICT_WEB_FIRST_ROWS_2018_2026.archive.xz.b64'
+      - 'validation/macro/fixtures/G8_STRICT_SOURCE_FIRST_RELEASE_11_ARCHIVES_MANIFEST.json'
       - 'validation/macro/test_v2_g8_24_axis_training_history_gap_audit_v1.py'
       - 'validation/macro/MACRO_V2_24_SOURCE_TRAINING_WINDOW_GAP_AUDIT_2026-10-27.md'
       - 'validation/macro/test_v2_g8_24_axis_daily_release_replay_v1.py'
@@ -147,6 +157,8 @@ jobs:
         run: python -m unittest validation.macro.test_v2_g8_24_axis_daily_release_replay_v1 -v
       - name: Audit 24 G8 first-web research training windows and missing periods
         run: python -m unittest validation.macro.test_v2_g8_24_axis_training_history_gap_audit_v1 -v
+      - name: Test eleven retained official first-release source archives (1003 records)
+        run: python -m unittest validation.macro.test_v2_g8_11_retained_source_archives_v1 -v
       - name: Build read-only current observational feature receipt
         run: |
           python -m validation.macro.v2_g8_observed_feature_bridge_v1 \
@@ -420,6 +432,14 @@ jobs:
           assert s['currencies']==8
           assert s['economic_slots']==24
           assert s['genuinely_historic_PIT_training_slots_certified']==0
+          assert s['retained_official_first_release_source_archives_ingested']==11
+          assert s['retained_source_original_issuer_records_imported']==1003
+          assert s['prior_first_web_contiguous_12Q_or_24M_slots']==22
+          assert s['slots_missing_required_initial_release_periods']==2
+          assert s['missing_required_prior_periods_total']==46
+          assert s['slots_with_semantic_or_definition_caveats']==8
+          assert len(d['slots']['USD.inflation']['missing_required_prior_periods'])==24
+          assert len(d['slots']['CHF.labour']['missing_required_prior_periods'])==22
           assert s['currency_FX_strength_scores_approved']==0
           assert s['cross_currency_pair_rankings_changed']==0
           assert d['safe_to_publish_new_D'] is False
@@ -445,6 +465,7 @@ jobs:
               f.write('- USD BLS Labour 25-release pilot ends Sep-2025; October 2025 unpublished, not a fake missing month within the pilot.\n')
               f.write('- Independently complete source-day PIT histories ready for Macro model: **0/24**.\n')
               f.write('- First-release windows are research sources, NEVER automatic FX strength or D.json approval.\n')
+              f.write('- Eleven earlier independently audited official original-source materializations retained: **1003 first releases**.\n')
               f.write('\n| G8 macro pillar | Documented first releases | 12Q/24M prior found | Missing prior periods | Qualitative quality |\n')
               f.write('|---|---:|---:|---:|---|\n')
               for key,row in sorted(d['slots'].items()):
