@@ -23,8 +23,10 @@ from urllib.request import Request, urlopen
 SCHEMA = "GMFQ_MACRO_V2_US_CPIAUCSL_ALFRED_TWO_RELEASE_DATE_PILOT_V1"
 RELEASES = {
     "2025-09": ("2025-10-24", "https://www.bls.gov/news.release/archives/cpi_10242025.htm"),
-    "2026-09": ("2026-10-14", "https://www.bls.gov/cpi/news.htm"),
+    "2026-09": ("2026-10-14", "https://www.bls.gov/news.release/archives/cpi_10142026.htm"),
 }
+BLS_FIRST_PUBLISHED_SA_MOM_PCT = {"2025-09": 0.3, "2026-09": 0.6}
+BLS_FIRST_PUBLISHED_NSA_YOY_PCT = {"2025-09": 3.0, "2026-09": 3.7}
 SERIES = "CPIAUCSL"
 ASOF = "2026-10-26T23:59:59Z"
 
@@ -105,11 +107,16 @@ def inspect(month, raw):
     ensure("2025-10" not in values,
            "October 2025 all-items CPI never published by BLS")
     prior = earlier_month(month, 12)
-    ensure(month in values and prior in values,
-           "release-day SA CPI index and comparable 12-month base required")
+    preceding = earlier_month(month, 1)
+    ensure(month in values and prior in values and preceding in values,
+           "release-day SA CPI index, preceding month and comparable 12-month base required")
     ensure(values[prior] > 0, "invalid CPI base")
     yoy = 100 * (values[month] / values[prior] - 1)
     ensure(math.isfinite(yoy), "invalid SA 12-month change")
+    mom = 100 * (values[month] / values[preceding] - 1)
+    ensure(math.isfinite(mom) and
+           abs(mom - BLS_FIRST_PUBLISHED_SA_MOM_PCT[month]) < 0.051,
+           "ALFRED SA index release-day MoM conflicts with original BLS rounded SA MoM")
     return {
         "schema": SCHEMA, "research_as_of_utc": ASOF,
         "status": "ALFRED_RELEASE_DAY_ASOF_SA_INDEX_PILOT_NOT_BLS_RAW_FIRST_RELEASE",
@@ -121,6 +128,10 @@ def inspect(month, raw):
         "CPIAUCSL_SA_index_current_at_release_day": values[month],
         "CPIAUCSL_SA_index_12m_base_as_of_same_day": values[prior],
         "index_based_SA_YOY_pct_as_of_release_day": yoy,
+        "index_based_SA_MOM_pct_as_of_release_day": mom,
+        "BLS_original_published_rounded_SA_MOM_pct": BLS_FIRST_PUBLISHED_SA_MOM_PCT[month],
+        "BLS_original_published_NSA_YOY_pct_SEPARATE": BLS_FIRST_PUBLISHED_NSA_YOY_PCT[month],
+        "ALFRED_SA_MOM_matches_BLS_first_published_rounded_monthly_pct": True,
         "BLS_NSA_official_headline_YOY_identical": False,
         "vintage_contains_proof_of_BLS_intraday_publication": False,
         "ALFRED_vintage_date_does_not_prove_exact_publisher_intraday_timestamp": True,
