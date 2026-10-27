@@ -10,7 +10,7 @@ const live=JSON.parse(fs.readFileSync('live_data/sections/NATIVE_RATES_DATA.json
 // This fixture must age relative to the latest real official observation,
 // not an immutable Oct-23 test clock that later makes valid Oct-26 data
 // appear from the future and aborts the published v10 build.
-const latest=FX.map(ccy=>live[ccy]?.date).filter(x=>/^20\\d{2}-\\d{2}-\\d{2}$/.test(x||'')).sort().at(-1);
+const latest=FX.map(ccy=>live[ccy]?.date).filter(x=>/^20\d{2}-\d{2}-\d{2}$/.test(x||'')).sort().at(-1);
 assert(latest,'official rates have no valid dated observations');
 const now=Date.parse(latest+'T00:00:00Z');
 const age=iso=>{
