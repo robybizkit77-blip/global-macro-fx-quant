@@ -118,6 +118,7 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
                 method = "ARCHIVED_PUBLISHER_FIRST_WEB_CSV_SHA_PINNED_NOT_REVERIFIED_SOURCE_DAY"
             else:
                 stream = normalized[key]
+                source_id = stream["source_series_id"]
                 check((key in RESEARCH_PINNED) or (
                       stream["source_series_id"] == source_id and
                       stream["frequency"] == freq),
@@ -194,9 +195,7 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
                 "model_PIT_training_approved": False,
                 "current_PIT_research_comparability_caveats": definition,
                 "candidate_differs_from_core_or_alias_needs_review": require_mismatch,
-                "source_measurement_alternative_not_interchangeable":
-                    key in ("AUD.inflation", "CHF.labour") and
-                    not (key == "AUD.inflation"),
+                "source_measurement_alternative_not_interchangeable": key == "CHF.labour",
                 "research_only_quality_label": (
                     "NO_FIRST_WEB_FOUND" if not visible else
                     "INCOMPLETE_PRIOR_FIRST_RELEASES" if not complete else
