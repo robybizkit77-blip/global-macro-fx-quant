@@ -19,7 +19,6 @@ import hashlib
 import json
 from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
 from validation.macro.v2_g8_24_axis_asof_evidence_v1 import (
     FX, DIMENSIONS, REGISTRY, SCHEMA as SNAPSHOT_SCHEMA,
@@ -174,11 +173,13 @@ def _publisher_event_ledger(candidates, archival, gdp_rows, begin, end):
 def replay(*, start=DEFAULT_START, end=None, source_candidates=None,
            GDP_rows=None, archive=None, registry=None):
     first = day(start)
-    last = day(end or datetime.now(ZoneInfo("Europe/Rome")).date().isoformat())
+    # Completed UTC days only. Today's live as-of snapshot is a separate
+    # report; calling an unfinished day "23:59 UTC" would leak future data.
     now = datetime.now(timezone.utc)
+    last = day(end or (now.date() - timedelta(days=1)).isoformat())
     require(last >= first and (last-first).days < MAX_REPLAY_DAYS and
-            utc_day_close(last) <= now + timedelta(days=1),
-            "longitudinal replay must be bounded and not future")
+            last < now.date(),
+            "longitudinal replay must cover only completed UTC calendar days")
     catalogue_data = (registry if registry is not None else
                       json.loads(REGISTRY.read_text(encoding="utf-8")))
     raw_candidates = source_candidates if source_candidates is not None else collect()
@@ -259,7 +260,8 @@ def replay(*, start=DEFAULT_START, end=None, source_candidates=None,
     res = {
         "schema": SCHEMA, "status": "RESEARCH_DAILY_G8_24_AXIS_WEB_RELEASE_EVIDENCE_NO_PIT_BACKTEST",
         "window": {"start": first.isoformat(), "end": last.isoformat(),
-                   "daily_cuts": len(observations), "cut_utc": "23:59:59.999999"},
+                   "daily_cuts": len(observations), "cut_utc": "23:59:59.999999",
+                   "latest_incomplete_UTC_day_excluded": True},
         "daily_evidence_snapshots": observations,
         "official_candidate_and_archived_release_gates": event_log,
         "summary": {
