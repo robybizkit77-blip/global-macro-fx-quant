@@ -16,6 +16,13 @@ Per ciascuna casella si registrano: serie canonica e **serie realmente usata com
 
 La stessa logica è applicata agli altri Paesi. Ogni casella riceve una **qualità nominativa**, fra `INCOMPLETE_PRIOR_FIRST_RELEASES`, `DEFINITION_OR_SEMANTIC_RISK` e `NUMERIC_WEB_WINDOW_AVAILABLE_NOT_PIT_CERTIFIED`. La presenza di una finestra numericamente completa **non** certifica un backtest: il controllo espone sempre **zero serie approvate per training storico PIT** finché non esistono catene complete, riproducibili e omogenee.
 
+## Esito verificato sulla fotografia del 26 ottobre (prima CI)
+
+- **11/24** finestre di first-web research numericamente continue; **13/24** incomplete, con **280 periodi mancanti nelle rispettive finestre richieste** (non 280 pubblicazioni indipendenti, perché le finestre sono per serie).
+- **4/24** con caveat di definizione statistica espliciti; **1** pilot BLS di Labour USD storicamente continuo ma **non aggiornato** alle pubblicazioni 2026.
+- Il campione BLS di **25 mesi** termina a **settembre 2025**: i 24 mesi precedenti sono completi **per quella data storica**. L'assenza del dato di ottobre 2025 per shutdown avviene *dopo* quel campione e non è un buco della finestra 2023–2025. L'ultimo dato di disoccupazione del 2026 nel sistema osservazionale è un'altra fonte/storia e non diventa automaticamente una prima pubblicazione del pilot. Chi dichiara questo pilot pronto per il Core di ottobre 2026 sbaglia.
+- **Zero** storici completamente certificati per training PIT e zero punteggi FX nuovi: completezza matematica ≠ idoneità operativa.
+
 ## Come leggere il prossimo risultato
 
 L'obiettivo è avere un elenco concreto, non genericamente “ancora manca lo storico”: una **tabella 24×1** di periodo attuale, prime uscite disponibili, mesi/trimestri mancanti, definizione statistica e intervento successivo. Questa tabella stabilirà dove indirizzare il recupero delle singole pubblicazioni più utili.
