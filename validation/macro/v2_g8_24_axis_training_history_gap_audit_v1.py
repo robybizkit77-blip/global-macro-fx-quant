@@ -176,6 +176,22 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
                 check(freq == "Q" and
                       normalized[key]["frequency"] == "M",
                       "quarterly canonical CPI accidentally replaced by monthly")
+            # Explicitly distinguish the *historical* BLS 25-release pilot
+            # ending Sep-2025 from the latest Sep-2026 observed/revised
+            # unemployment value in the operational source. The known
+            # Oct-2025 structural BLS gap is AFTER the pilot's last period,
+            # not inside that pilot's 24 prior-month training window.
+            current_frequency_index = (
+                cut.year * (4 if freq == "Q" else 12) +
+                ((cut.month-1)//3 if freq == "Q" else cut.month-1))
+            lag_in_periods = (
+                current_frequency_index - last_idx
+                if last_idx is not None else None)
+            stale_pilot = key == "USD.labour" and (
+                current["reported_economic_period"] == "2025-09" and
+                lag_in_periods is not None and lag_in_periods >= 12)
+            check(key != "USD.labour" or stale_pilot,
+                  "USD BLS bounded web pilot must not silently become 2026 latest releases")
             require_mismatch = key in RESEARCH_PINNED
             record = {
                 "slot": key, "currency": currency, "pillar": pillar,
@@ -186,6 +202,11 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
                 "reference_period_last_first_web": current["reported_economic_period"],
                 "last_first_web_gate_utc": current["first_documented_web_gate_utc"],
                 "first_web_periods_documented_asof": len(indices),
+                "last_documented_period_lag_in_own_frequency_units": lag_in_periods,
+                "bounded_BLS_pilot_ends_before_structural_oct2025_gap": stale_pilot,
+                "BLS_oct2025_observation_not_published": (
+                    ["2025-10"] if key == "USD.labour" else []),
+                "current_live_observed_series_not_equivalent_to_bounded_web_pilot": stale_pilot,
                 "prior_first_release_periods_required": required_prior,
                 "prior_contiguous_first_web_periods_documented": len(prior_with_observed),
                 "missing_required_prior_periods": missing,
@@ -199,6 +220,8 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
                 "research_only_quality_label": (
                     "NO_FIRST_WEB_FOUND" if not visible else
                     "INCOMPLETE_PRIOR_FIRST_RELEASES" if not complete else
+                    "STALE_BLS_WEB_PILOT_ONLY_NOT_2026_ECONOMIC_RELEASES"
+                    if stale_pilot else
                     "DEFINITION_OR_SEMANTIC_RISK" if definition else
                     "NUMERIC_WEB_WINDOW_AVAILABLE_NOT_PIT_CERTIFIED"),
                 "FX_signal_approved": False, "safe_to_update_D": False,
@@ -219,6 +242,9 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
             len(x["missing_required_prior_periods"]) for x in details.values()),
         "slots_with_semantic_or_definition_caveats": sum(
             bool(x["current_PIT_research_comparability_caveats"]) for x in details.values()),
+        "slots_with_stale_historical_BLS_pilot_not_live_2026": sum(
+            x["bounded_BLS_pilot_ends_before_structural_oct2025_gap"]
+            for x in details.values()),
         "genuinely_historic_PIT_training_slots_certified": 0,
         "currency_FX_strength_scores_approved": 0,
         "cross_currency_pair_rankings_changed": 0,
