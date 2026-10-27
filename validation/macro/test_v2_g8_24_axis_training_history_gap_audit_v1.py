@@ -74,13 +74,24 @@ class HistoricalTrainingGapAudit(unittest.TestCase):
         self.assertTrue(x["candidate_differs_from_core_or_alias_needs_review"])
         self.assertFalse(x["source_measurement_alternative_not_interchangeable"])
 
-    def test_US_unemployment_shutdown_gap_not_imputed_as_first_release(self):
+    def test_US_unemployment_25_historical_pilot_stops_before_shutdown_and_live_2026(self):
         x = self.r["slots"]["USD.labour"]
-        self.assertIn("2025-10", x["missing_required_prior_periods"])
-        self.assertFalse(x["prior_initial_web_sequence_complete_mathematically"])
+        # Pilot has a CONTIGUOUS 2023-09..2025-09 25-release sample. This
+        # does NOT include the later October-2025 BLS missing observation,
+        # and does NOT attest the 2026 economic first releases.
+        self.assertEqual(x["reference_period_last_first_web"], "2025-09")
+        self.assertEqual(x["first_web_periods_documented_asof"], 25)
+        self.assertEqual(x["missing_required_prior_periods"], [])
+        self.assertTrue(x["prior_initial_web_sequence_complete_mathematically"])
+        self.assertTrue(x["bounded_BLS_pilot_ends_before_structural_oct2025_gap"])
+        self.assertEqual(x["BLS_oct2025_observation_not_published"], ["2025-10"])
+        self.assertTrue(x["current_live_observed_series_not_equivalent_to_bounded_web_pilot"])
+        self.assertEqual(x["research_only_quality_label"],
+                         "STALE_BLS_WEB_PILOT_ONLY_NOT_2026_ECONOMIC_RELEASES")
         self.assertEqual(x["training_evidence_source_id"], "LNS14000000")
         self.assertEqual(x["training_web_data_source_type"],
                          "BLS_LNS14000000_TO_FRED_UNRATE_LINEAGE_NOT_ORIGINAL_FULL_CHAIN")
+        self.assertFalse(x["model_PIT_training_approved"])
 
     def test_chf_seco_one_decimal_does_not_certify_amarbma_exact_vintage(self):
         x = self.r["slots"]["CHF.labour"]
