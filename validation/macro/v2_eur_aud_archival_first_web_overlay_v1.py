@@ -52,7 +52,7 @@ ENTRIES = {
         "frequency": "Q", "canonical_series_id": "AU_CPI_HEADLINE_Q_YOY",
         "authority": "Australian Bureau of Statistics",
         "evidence": "aud_inflation_strict_pit_evidence_v1_2026-10-09.json",
-        "expected_semantic_hash": "d448f8717ab8a7ae73a93e0444aed0e72e97a1dc71e4f74ae61eed541f",  # overwritten by pinned rowset check below
+        "expected_semantic_hash": "d448f8717ab8a7ae73af7d591fd1114512e578c6ef3821f3afe96ae9b789a31f",
         "keys": ["reference_quarter", "cpi_yoy", "release_date",
                  "release_time", "timezone", "pit_status"],
         "csv_columns": ["reference_quarter", "cpi_yoy", "release_date",
@@ -61,13 +61,6 @@ ENTRIES = {
         "allowed_hosts": {"www.abs.gov.au"},
     },
 }
-# Explicit separate AUD SHA in archival evidence. Keep adjacent to EUR pin;
-# a wrong/poisoned row cannot be accepted by either semantic or original bytes.
-ENTRIES["AUD.inflation"]["expected_semantic_hash"] = (
-    "d448f8717ab8a7ae73af7d591fd1114512e578c6ef3821f3afe96ae9b789a31f"
-)
-
-
 def require(ok, msg):
     if not ok:
         raise ValueError("GMFQ_139_ARCHIVED_RELEASES_REJECTED: " + msg)
