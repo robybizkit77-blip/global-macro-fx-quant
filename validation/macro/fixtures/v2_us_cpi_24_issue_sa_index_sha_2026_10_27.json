@@ -1,0 +1,360 @@
+{
+  "schema": "GMFQ_MACRO_V2_US_CPI_25_CALENDAR_24_ISSUE_XLSX_SA_INDEX_AND_BASE_CANDIDATES_V1",
+  "evidence_as_of_date": "2026-10-27",
+  "original_issuer_day_HTTP_capture_not_proven": true,
+  "source_retrieval_method": "GITHUB_ACTIONS_ISSUER_DOMAIN_DIRECT_2026_10_27",
+  "run_url": "https://github.com/robybizkit77-blip/global-macro-fx-quant/actions/runs/40587426321",
+  "job_id": 122482495412,
+  "series_semantics": "BLS_CUSR0000SA0_ALL_ITEMS_SA_INDEX_MATCHES_FRED_CPIAUCSL",
+  "unadjusted_series_not_substitutable": "CUUR0000SA0",
+  "source_issuer_url": "https://www.bls.gov/cpi/tables/supplemental-files/",
+  "BLS_2025_OCT_original_all_items_index_unpublished": true,
+  "prior_24_calendar_first_release_contiguous_PIT_ready": false,
+  "pit_backtest_or_live_score_approved": false,
+  "reported_yoy_formula": "100 * (same-issue SA index observation/current SAME-ISSUE SA index observation 12m earlier - 1); never headline NSA YOY",
+  "records": [
+    {
+      "economic_month": "2024-09",
+      "publisher_release_day": "2024-10-10",
+      "source_url": "https://www.bls.gov/cpi/tables/supplemental-files/cpi-u-202409.xlsx",
+      "raw_xlsx_sha256": "7e7a3466fc443bd29a64cbbc7ceff6aedd2efc1743afc7abb44ba74a6ef2f02c",
+      "captured_bytes": 150827,
+      "SA_index_at_issue": "314.686",
+      "same_issue_SA_12m_base": "307.288",
+      "SA_index_yoy_pct_same_issue": "2.407513",
+      "evidence_quality": "ORIGINAL_PUBLISHER_ISSUE_MONTH_FILENAME_BINARY_CAPTURED_2026_10_27_NOT_ON_RELEASE_DAY"
+    },
+    {
+      "economic_month": "2024-10",
+      "publisher_release_day": "2024-11-13",
+      "source_url": "https://www.bls.gov/cpi/tables/supplemental-files/cpi-u-202410.xlsx",
+      "raw_xlsx_sha256": "85c258f2ef14ed1636c3e6dc807c82a0d2984432dce274c5807be121f7e4487d",
+      "captured_bytes": 146655,
+      "SA_index_at_issue": "315.454",
+      "same_issue_SA_12m_base": "307.531",
+      "SA_index_yoy_pct_same_issue": "2.576326",
+      "evidence_quality": "ORIGINAL_PUBLISHER_ISSUE_MONTH_FILENAME_BINARY_CAPTURED_2026_10_27_NOT_ON_RELEASE_DAY"
+    },
+    {
+      "economic_month": "2024-11",
+      "publisher_release_day": "2024-12-11",
+      "source_url": "https://www.bls.gov/cpi/tables/supplemental-files/cpi-u-202411.xlsx",
+      "raw_xlsx_sha256": "a35ba70e1c3daa503fcb0c9053f525e18eee3785a29f17ea2a6b5e4ca9937c60",
+      "captured_bytes": 151000,
+      "SA_index_at_issue": "316.441",
+      "same_issue_SA_12m_base": "308.024",
+      "SA_index_yoy_pct_same_issue": "2.732579",
+      "evidence_quality": "ORIGINAL_PUBLISHER_ISSUE_MONTH_FILENAME_BINARY_CAPTURED_2026_10_27_NOT_ON_RELEASE_DAY"
+    },
+    {
+      "economic_month": "2024-12",
+      "publisher_release_day": "2025-01-15",
+      "source_url": "https://www.bls.gov/cpi/tables/supplemental-files/cpi-u-202412.xlsx",
+      "raw_xlsx_sha256": "4a362c33dbf11acb1a5449f4070949076320d83d9a7af2d2e88faf85a026a037",
+      "captured_bytes": 150284,
+      "SA_index_at_issue": "317.685",
+      "same_issue_SA_12m_base": "308.742",
+      "SA_index_yoy_pct_same_issue": "2.896593",
+      "evidence_quality": "ORIGINAL_PUBLISHER_ISSUE_MONTH_FILENAME_BINARY_CAPTURED_2026_10_27_NOT_ON_RELEASE_DAY"
+    },
+    {
+      "economic_month": "2025-01",
+      "publisher_release_day": "2025-02-12",
+      "source_url": "https://www.bls.gov/cpi/tables/supplemental-files/cpi-u-202501.xlsx",
+      "raw_xlsx_sha256": "18505ebd1c36d4e5390862017fa173bf32d96d68cfa2c7331bf2344a9b07e373",
+      "captured_bytes": 151098,
+      "SA_index_at_issue": "319.086",
+      "same_issue_SA_12m_base": "309.794",
+      "SA_index_yoy_pct_same_issue": "2.999413",
+      "evidence_quality": "ORIGINAL_PUBLISHER_ISSUE_MONTH_FILENAME_BINARY_CAPTURED_2026_10_27_NOT_ON_RELEASE_DAY"
+    },
+    {
+      "economic_month": "2025-02",
+      "publisher_release_day": "2025-03-12",
+      "source_url": "https://www.bls.gov/cpi/tables/supplemental-files/cpi-u-202502.xlsx",
+      "raw_xlsx_sha256": "8ff0084f0ea37288bd0176a918d1c813b4903c493538a63f69abde719adb723a",
+      "captured_bytes": 150847,
+      "SA_index_at_issue": "319.775",
+      "same_issue_SA_12m_base": "311.022",
+      "SA_index_yoy_pct_same_issue": "2.814270",
+      "evidence_quality": "ORIGINAL_PUBLISHER_ISSUE_MONTH_FILENAME_BINARY_CAPTURED_2026_10_27_NOT_ON_RELEASE_DAY"
+    },
+    {
+      "economic_month": "2025-03",
+      "publisher_release_day": "2025-04-10",
+      "source_url": "https://www.bls.gov/cpi/tables/supplemental-files/cpi-u-202503.xlsx",
+      "raw_xlsx_sha256": "e7ec2d1458042f60f95095b4880289684568a2c862a8fc31a0cdfc346780b242",
+      "captured_bytes": 151210,
+      "SA_index_at_issue": "319.615",
+      "same_issue_SA_12m_base": "312.107",
+      "SA_index_yoy_pct_same_issue": "2.405585",
+      "evidence_quality": "ORIGINAL_PUBLISHER_ISSUE_MONTH_FILENAME_BINARY_CAPTURED_2026_10_27_NOT_ON_RELEASE_DAY"
+    },
+    {
+      "economic_month": "2025-04",
+      "publisher_release_day": "2025-05-13",
+      "source_url": "https://www.bls.gov/cpi/tables/supplemental-files/cpi-u-202504.xlsx",
+      "raw_xlsx_sha256": "75885f87fb63fbc7a3c9cfe72a83af2bb0f84fa1d200489c04a9c0b11d0a1127",
+      "captured_bytes": 150806,
+      "SA_index_at_issue": "320.321",
+      "same_issue_SA_12m_base": "313.016",
+      "SA_index_yoy_pct_same_issue": "2.333747",
+      "evidence_quality": "ORIGINAL_PUBLISHER_ISSUE_MONTH_FILENAME_BINARY_CAPTURED_2026_10_27_NOT_ON_RELEASE_DAY"
+    },
+    {
+      "economic_month": "2025-05",
+      "publisher_release_day": "2025-06-11",
+      "source_url": "https://www.bls.gov/cpi/tables/supplemental-files/cpi-u-202505.xlsx",
+      "raw_xlsx_sha256": "b2779ba5f794236362538fd2cbc4cd2de465893a004f9ba921a1e37500531532",
+      "captured_bytes": 146885,
+      "SA_index_at_issue": "320.580",
+      "same_issue_SA_12m_base": "313.140",
+      "SA_index_yoy_pct_same_issue": "2.375934",
+      "evidence_quality": "ORIGINAL_PUBLISHER_ISSUE_MONTH_FILENAME_BINARY_CAPTURED_2026_10_27_NOT_ON_RELEASE_DAY"
+    },
+    {
+      "economic_month": "2025-06",
+      "publisher_release_day": "2025-07-15",
+      "source_url": "https://www.bls.gov/cpi/tables/supplemental-files/cpi-u-202506.xlsx",
+      "raw_xlsx_sha256": "ff67c8d07023ced7d3e3ead51bc7cf6a5d7783470e8b6c6134cb1e0ed72ac976",
+      "captured_bytes": 150714,
+      "SA_index_at_issue": "321.500",
+      "same_issue_SA_12m_base": "313.131",
+      "SA_index_yoy_pct_same_issue": "2.672683",
+      "evidence_quality": "ORIGINAL_PUBLISHER_ISSUE_MONTH_FILENAME_BINARY_CAPTURED_2026_10_27_NOT_ON_RELEASE_DAY"
+    },
+    {
+      "economic_month": "2025-07",
+      "publisher_release_day": "2025-08-12",
+      "source_url": "https://www.bls.gov/cpi/tables/supplemental-files/cpi-u-202507.xlsx",
+      "raw_xlsx_sha256": "7fe2c1417af4a8731899c47d6abf056d5194ca6814bb4049ff6f0415221ec590",
+      "captured_bytes": 150905,
+      "SA_index_at_issue": "322.132",
+      "same_issue_SA_12m_base": "313.566",
+      "SA_index_yoy_pct_same_issue": "2.731801",
+      "evidence_quality": "ORIGINAL_PUBLISHER_ISSUE_MONTH_FILENAME_BINARY_CAPTURED_2026_10_27_NOT_ON_RELEASE_DAY"
+    },
+    {
+      "economic_month": "2025-08",
+      "publisher_release_day": "2025-09-11",
+      "source_url": "https://www.bls.gov/cpi/tables/supplemental-files/cpi-u-202508.xlsx",
+      "raw_xlsx_sha256": "708d11f809e0be7679527502e6e72c9fe8cd1f38a404ffba99c611a6146fd239",
+      "captured_bytes": 147227,
+      "SA_index_at_issue": "323.364",
+      "same_issue_SA_12m_base": "314.131",
+      "SA_index_yoy_pct_same_issue": "2.939220",
+      "evidence_quality": "ORIGINAL_PUBLISHER_ISSUE_MONTH_FILENAME_BINARY_CAPTURED_2026_10_27_NOT_ON_RELEASE_DAY"
+    },
+    {
+      "economic_month": "2025-09",
+      "publisher_release_day": "2025-10-24",
+      "source_url": "https://www.bls.gov/cpi/tables/supplemental-files/cpi-u-202509.xlsx",
+      "raw_xlsx_sha256": "05735c42819b069497314289ea83a1ad2cf681a62a5f2ebd3c7b83cc8d18c51b",
+      "captured_bytes": 147352,
+      "SA_index_at_issue": "324.368",
+      "same_issue_SA_12m_base": "314.851",
+      "SA_index_yoy_pct_same_issue": "3.022700",
+      "evidence_quality": "ORIGINAL_PUBLISHER_ISSUE_MONTH_FILENAME_BINARY_CAPTURED_2026_10_27_NOT_ON_RELEASE_DAY"
+    },
+    {
+      "economic_month": "2025-10",
+      "publisher_release_day": null,
+      "source_url": null,
+      "raw_xlsx_sha256": null,
+      "SA_index_at_issue": null,
+      "same_issue_SA_12m_base": null,
+      "SA_index_yoy_pct_same_issue": null,
+      "evidence_quality": "UNPUBLISHED_ALL_ITEMS_CPI_REFERENCE_MONTH_DO_NOT_IMPUTE"
+    },
+    {
+      "economic_month": "2025-11",
+      "publisher_release_day": "2025-12-18",
+      "source_url": "https://www.bls.gov/cpi/tables/supplemental-files/cpi-u-202511.xlsx",
+      "raw_xlsx_sha256": "525edbc04b13696a42b79c375a402a05b3ed5fdfcf110d8293d63b9fc55c5676",
+      "captured_bytes": 140429,
+      "SA_index_at_issue": "325.031",
+      "same_issue_SA_12m_base": "316.449",
+      "SA_index_yoy_pct_same_issue": "2.711969",
+      "evidence_quality": "ORIGINAL_PUBLISHER_ISSUE_MONTH_FILENAME_BINARY_CAPTURED_2026_10_27_NOT_ON_RELEASE_DAY"
+    },
+    {
+      "economic_month": "2025-12",
+      "publisher_release_day": "2026-01-13",
+      "source_url": "https://www.bls.gov/cpi/tables/supplemental-files/cpi-u-202512.xlsx",
+      "raw_xlsx_sha256": "897ca3b78be7301b53cbff20bc7558ceb7d5da01d22d9e87ac411c4d9f6941ee",
+      "captured_bytes": 143961,
+      "SA_index_at_issue": "326.030",
+      "same_issue_SA_12m_base": "317.603",
+      "SA_index_yoy_pct_same_issue": "2.653312",
+      "evidence_quality": "ORIGINAL_PUBLISHER_ISSUE_MONTH_FILENAME_BINARY_CAPTURED_2026_10_27_NOT_ON_RELEASE_DAY"
+    },
+    {
+      "economic_month": "2026-01",
+      "publisher_release_day": "2026-02-13",
+      "source_url": "https://www.bls.gov/cpi/tables/supplemental-files/cpi-u-202601.xlsx",
+      "raw_xlsx_sha256": "c95513a7b3c5ceaf43c8c175c3a285b3631e5f2c4e05bc6a878885e176d318ca",
+      "captured_bytes": 145097,
+      "SA_index_at_issue": "326.588",
+      "same_issue_SA_12m_base": "318.961",
+      "SA_index_yoy_pct_same_issue": "2.391201",
+      "evidence_quality": "ORIGINAL_PUBLISHER_ISSUE_MONTH_FILENAME_BINARY_CAPTURED_2026_10_27_NOT_ON_RELEASE_DAY"
+    },
+    {
+      "economic_month": "2026-02",
+      "publisher_release_day": "2026-03-11",
+      "source_url": "https://www.bls.gov/cpi/tables/supplemental-files/cpi-u-202602.xlsx",
+      "raw_xlsx_sha256": "a25eeac1ac9ab742870c27a65f9e549c6c820b8d3ee44fbdb9df62f22a604289",
+      "captured_bytes": 147182,
+      "SA_index_at_issue": "327.460",
+      "same_issue_SA_12m_base": "319.679",
+      "SA_index_yoy_pct_same_issue": "2.434004",
+      "evidence_quality": "ORIGINAL_PUBLISHER_ISSUE_MONTH_FILENAME_BINARY_CAPTURED_2026_10_27_NOT_ON_RELEASE_DAY"
+    },
+    {
+      "economic_month": "2026-03",
+      "publisher_release_day": "2026-04-10",
+      "source_url": "https://www.bls.gov/cpi/tables/supplemental-files/cpi-u-202603.xlsx",
+      "raw_xlsx_sha256": "2bbc0e0f21cb03216cf39204e44f332ea533c8bd2fb5ff610cd774dfbb80a985",
+      "captured_bytes": 151145,
+      "SA_index_at_issue": "330.293",
+      "same_issue_SA_12m_base": "319.785",
+      "SA_index_yoy_pct_same_issue": "3.285958",
+      "evidence_quality": "ORIGINAL_PUBLISHER_ISSUE_MONTH_FILENAME_BINARY_CAPTURED_2026_10_27_NOT_ON_RELEASE_DAY"
+    },
+    {
+      "economic_month": "2026-04",
+      "publisher_release_day": "2026-05-12",
+      "source_url": "https://www.bls.gov/cpi/tables/supplemental-files/cpi-u-202604.xlsx",
+      "raw_xlsx_sha256": "150d3be73fba791794b78a696657a5e2985152f8d20af857b2c6f9f8c6f86482",
+      "captured_bytes": 146917,
+      "SA_index_at_issue": "332.407",
+      "same_issue_SA_12m_base": "320.302",
+      "SA_index_yoy_pct_same_issue": "3.779246",
+      "evidence_quality": "ORIGINAL_PUBLISHER_ISSUE_MONTH_FILENAME_BINARY_CAPTURED_2026_10_27_NOT_ON_RELEASE_DAY"
+    },
+    {
+      "economic_month": "2026-05",
+      "publisher_release_day": "2026-06-10",
+      "source_url": "https://www.bls.gov/cpi/tables/supplemental-files/cpi-u-202605.xlsx",
+      "raw_xlsx_sha256": "5cc9e850ee7b03377d1dcb8988c34fe97aaa1d3707533f40fa8b4a87f3fa0192",
+      "captured_bytes": 151394,
+      "SA_index_at_issue": "333.979",
+      "same_issue_SA_12m_base": "320.620",
+      "SA_index_yoy_pct_same_issue": "4.166615",
+      "evidence_quality": "ORIGINAL_PUBLISHER_ISSUE_MONTH_FILENAME_BINARY_CAPTURED_2026_10_27_NOT_ON_RELEASE_DAY"
+    },
+    {
+      "economic_month": "2026-06",
+      "publisher_release_day": "2026-07-14",
+      "source_url": "https://www.bls.gov/cpi/tables/supplemental-files/cpi-u-202606.xlsx",
+      "raw_xlsx_sha256": "8f4a0aa735f265f510b315af9c37a1e3a2e9c11321fcea48f43a69136b9aa0fd",
+      "captured_bytes": 150945,
+      "SA_index_at_issue": "332.568",
+      "same_issue_SA_12m_base": "321.435",
+      "SA_index_yoy_pct_same_issue": "3.463531",
+      "evidence_quality": "ORIGINAL_PUBLISHER_ISSUE_MONTH_FILENAME_BINARY_CAPTURED_2026_10_27_NOT_ON_RELEASE_DAY"
+    },
+    {
+      "economic_month": "2026-07",
+      "publisher_release_day": "2026-08-12",
+      "source_url": "https://www.bls.gov/cpi/tables/supplemental-files/cpi-u-202607.xlsx",
+      "raw_xlsx_sha256": "95e9600c17e2f766947d38dd6efcb4e8e60c97909452d964c20d17506429c302",
+      "captured_bytes": 146632,
+      "SA_index_at_issue": "332.813",
+      "same_issue_SA_12m_base": "322.169",
+      "SA_index_yoy_pct_same_issue": "3.303856",
+      "evidence_quality": "ORIGINAL_PUBLISHER_ISSUE_MONTH_FILENAME_BINARY_CAPTURED_2026_10_27_NOT_ON_RELEASE_DAY"
+    },
+    {
+      "economic_month": "2026-08",
+      "publisher_release_day": "2026-09-11",
+      "source_url": "https://www.bls.gov/cpi/tables/supplemental-files/cpi-u-202608.xlsx",
+      "raw_xlsx_sha256": "a10d9e3eefb4e33a3cd7c751f47b99fb80a64905f372a50b5551c2765c8979e9",
+      "captured_bytes": 146458,
+      "SA_index_at_issue": "334.131",
+      "same_issue_SA_12m_base": "323.291",
+      "SA_index_yoy_pct_same_issue": "3.353016",
+      "evidence_quality": "ORIGINAL_PUBLISHER_ISSUE_MONTH_FILENAME_BINARY_CAPTURED_2026_10_27_NOT_ON_RELEASE_DAY"
+    },
+    {
+      "economic_month": "2026-09",
+      "publisher_release_day": "2026-10-14",
+      "source_url": "https://www.bls.gov/cpi/tables/supplemental-files/cpi-u-202609.xlsx",
+      "raw_xlsx_sha256": "ef47d4b02343eae00bbfa7db7b18181564ec4133050f7e7b821c9805ae5202a0",
+      "captured_bytes": 146900,
+      "SA_index_at_issue": "336.298",
+      "same_issue_SA_12m_base": "324.245",
+      "SA_index_yoy_pct_same_issue": "3.717251",
+      "evidence_quality": "ORIGINAL_PUBLISHER_ISSUE_MONTH_FILENAME_BINARY_CAPTURED_2026_10_27_NOT_ON_RELEASE_DAY"
+    }
+  ],
+  "ALFRED_7_independent_same_release_page_anchor_checks": [
+    {
+      "economic_month": "2024-10",
+      "alfred_release_date_page_url": "https://alfred.stlouisfed.org/release?rd=2024-11-13&rid=10",
+      "bls_index_SA": "315.454",
+      "alfred_release_page_index": "315.454",
+      "match": true
+    },
+    {
+      "economic_month": "2024-12",
+      "alfred_release_date_page_url": "https://alfred.stlouisfed.org/release?rd=2025-01-15&rid=10",
+      "bls_index_SA": "317.685",
+      "alfred_release_page_index": "317.685",
+      "match": true
+    },
+    {
+      "economic_month": "2025-07",
+      "alfred_release_date_page_url": "https://alfred.stlouisfed.org/release?rd=2025-08-12&rid=10",
+      "bls_index_SA": "322.132",
+      "alfred_release_page_index": "322.132",
+      "match": true
+    },
+    {
+      "economic_month": "2025-09",
+      "alfred_release_date_page_url": "https://alfred.stlouisfed.org/release?rd=2025-10-24&rid=10",
+      "bls_index_SA": "324.368",
+      "alfred_release_page_index": "324.368",
+      "match": true
+    },
+    {
+      "economic_month": "2025-11",
+      "alfred_release_date_page_url": "https://alfred.stlouisfed.org/release?rd=2025-12-18&rid=10",
+      "bls_index_SA": "325.031",
+      "alfred_release_page_index": "325.031",
+      "match": true
+    },
+    {
+      "economic_month": "2025-12",
+      "alfred_release_date_page_url": "https://alfred.stlouisfed.org/release?rd=2026-01-13&rid=10",
+      "bls_index_SA": "326.030",
+      "alfred_release_page_index": "326.03",
+      "match": true
+    },
+    {
+      "economic_month": "2026-08",
+      "alfred_release_date_page_url": "https://alfred.stlouisfed.org/release?rd=2026-09-11&rid=10",
+      "bls_index_SA": "334.131",
+      "alfred_release_page_index": "334.131",
+      "match": true
+    }
+  ],
+  "summary": {
+    "published_month_workbooks_captured": 24,
+    "calendar_months": 25,
+    "missing_unpublished_periods": [
+      "2025-10"
+    ],
+    "exact_SA_index_and_12m_base_candidates": 24,
+    "source_raw_byte_sha256_observed_2026_10_27": 24,
+    "ALFRED_release_date_anchor_matches": 7,
+    "original_issuer_day_byte_certifications": 0,
+    "model_joint_PIT_training_slots_approved": 0,
+    "source_window_numerical_completeness_22_of_24_UNCHANGED": true
+  },
+  "safe_to_publish_new_D": false,
+  "safe_to_change_28_pairs": false,
+  "safe_for_beta": false,
+  "safe_for_forward": false,
+  "writes_live_data": false
+}
