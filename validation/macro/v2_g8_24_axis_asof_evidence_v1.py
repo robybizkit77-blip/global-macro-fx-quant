@@ -47,7 +47,6 @@ from validation.macro.v2_shadow_features_v1 import ROOT
 SCHEMA = "GMFQ_MACRO_V2_G8_24_AXIS_SINGLE_UTC_ASOF_EVIDENCE_V1"
 DIMENSIONS = ("growth", "inflation", "labour")
 OVERRIDE_CANONICAL_ARCHIVE = ("EUR.inflation", "AUD.inflation")
-MAX_REPLAY_DATE = "2026-10-27"
 
 
 def require(ok, reason):
@@ -108,6 +107,25 @@ def source_snapshot(*, cutoff, registry, source_candidates=None,
             "16 G8 published registry source contracts required")
     candidates = catalogue(
         source_candidates if source_candidates is not None else collect(), registry)
+    # Reject a fifth semantic mismatch, as well as alias/frequency/source
+    # swaps masquerading as an already attested matching canonical series.
+    for ccy in FX:
+        for pillar in ("inflation", "labour"):
+            key = f"{ccy}.{pillar}"
+            can = registry["series"][key]
+            cand = candidates[key]
+            equal = (can["series_id"] == cand["source_series_id"] and
+                     can["frequency"] == cand["frequency"])
+            if key in RESEARCH_PINNED:
+                id_core, freq_core, id_cand, freq_cand, publisher, _ = RESEARCH_PINNED[key]
+                require(not equal and
+                        (can["series_id"], can["frequency"],
+                         cand["source_series_id"], cand["frequency"],
+                         cand["publisher"]) ==
+                        (id_core, freq_core, id_cand, freq_cand, publisher),
+                        "four acknowledged semantic source mismatches are not interchangeable")
+            else:
+                require(equal, "unknown source identity/frequency disagreement: " + key)
     archived = archival if archival is not None else archived_overlay(
         as_of=clock.isoformat())
     require(archived["schema"] ==
