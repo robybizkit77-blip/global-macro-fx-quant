@@ -6,6 +6,7 @@ on:
       - ".github/workflows/macro-v2-us-cpi-bls-issuer-byte-probe-once.yml"
       - "validation/macro/one_shot_us_cpi_bls_alfred_byte_probe_v1.py"
       - "validation/macro/one_shot_us_cpi_xlsx_structure_inspect_v1.py"
+      - "validation/macro/one_shot_us_cpi_issue_xlsx_sa_index_extract_v1.py"
 permissions:
   contents: read
 jobs:
@@ -21,13 +22,15 @@ jobs:
         run: python validation/macro/one_shot_us_cpi_bls_alfred_byte_probe_v1.py --out /tmp/bls_cpi_research_probe
       - name: "Read source XLSX structure and identify SA-index candidate rows"
         run: python validation/macro/one_shot_us_cpi_xlsx_structure_inspect_v1.py
+      - name: "Extract official issue-month SA all-items index and same-issue 12-month base"
+        run: python validation/macro/one_shot_us_cpi_issue_xlsx_sa_index_extract_v1.py
       - name: "Verify never classified as source-day PIT or production Core input"
         run: |
           python - <<'PY'
           import json
           r=json.load(open('/tmp/bls_cpi_research_probe/receipt.json'))
           assert r['schema']=='GMFQ_MACRO_V2_US_CPI_BLS_ALFRED_BYTES_ONE_SHOT_PROBE_V1'
-          assert len(r['results'])==7
+          assert len(r['results'])==27
           assert r['original_BLS_first_issuer_vintages_PIT_certified']==0
           assert r['missing_2025_10_all_items_CPI_observation_filled'] is False
           for k in ('safe_to_publish_new_D','safe_to_change_28_pairs','safe_for_beta','safe_for_forward','writes_live_data'):
