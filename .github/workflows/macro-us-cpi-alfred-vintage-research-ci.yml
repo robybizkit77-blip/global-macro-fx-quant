@@ -1,0 +1,38 @@
+name: Macro US CPI ALFRED vintage guards (unscheduled)
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/macro-us-cpi-alfred-vintage-research-ci.yml'
+      - 'validation/macro/v2_us_cpi_alfred_release_day_pilot_v1.py'
+      - 'validation/macro/test_v2_us_cpi_alfred_release_day_pilot_v1.py'
+      - 'validation/macro/MACRO_V2_US_CPI_ALFRED_RELEASE_DAY_PILOT_2026-10-27.md'
+  push:
+    branches:
+      - research-us-cpi-alfred-vintage-gate-20261027
+    paths:
+      - '.github/workflows/macro-us-cpi-alfred-vintage-research-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-alfred-vintage-and-bls-first-publication:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Enforce original BLS SA MoM, no fabricated October 2025 and no FX promotion
+        run: |
+          python -m unittest validation.macro.test_v2_us_cpi_alfred_release_day_pilot_v1 -v
+      - name: Enforce research-only isolation from Core, published feeds, Beta and site
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- live_data payload site dashboard
+          test -z "$(git status --porcelain -- live_data payload site dashboard)"
+          test ! -e .github/workflows/macro-us-cpi-alfred-once-recover-v1.yml
+          echo "SOURCE_GATES_GREEN_BUT_NO_ALFRED_ORIGINAL_CSV_BYTES_RECOVERED"
