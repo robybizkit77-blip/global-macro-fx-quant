@@ -87,6 +87,11 @@ class SynchronizedMacroEvidenceTests(unittest.TestCase):
         self.assertAlmostEqual(r["USD.growth"]["first_web_value"],
                                100 * (1.015 ** 0.25 - 1), places=10)
         self.assertEqual(r["USD.growth"]["reported_economic_period"], "2026Q2")
+        self.assertIsNone(r["USD.growth"]["registered_canonical_series_id"])
+        self.assertFalse(
+            r["USD.growth"]["has_canonical_GDP_source_registered_in_16_slot_registry"])
+        self.assertEqual(r["USD.growth"]["growth_metric_research_target"],
+                         "OFFICIAL_REAL_GDP_SEASONALLY_ADJUSTED_QOQ")
         self.assertEqual(r["EUR.growth"]["reported_economic_period"], "2026Q2")
         self.assertEqual(r["EUR.inflation"]["reported_economic_period"], "2026-09")
         self.assertEqual(r["AUD.inflation"]["reported_economic_period"], "2026-06")
