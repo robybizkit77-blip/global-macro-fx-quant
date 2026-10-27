@@ -61,10 +61,13 @@ assert.equal(result.rateRecent.length,6);
 assert.equal(result.rateLag.join(','),'NZD,CHF');
 assert.equal(result.official.length,4);
 const liveOis=inputs[4].currencies;
-assert.equal(result.estimated.length,FX.filter(c=>liveOis[c].operational_status==='GREEN_ESTIMATED').length);
+const eligibleEstimated=FX.filter(c=>liveOis[c]?.operational_status==='GREEN_ESTIMATED'&&
+  !result.official.includes(c)&&ctx.fresh(liveOis[c]?.as_of,5));
+assert.deepEqual([...result.estimated].sort(),eligibleEstimated.sort(),
+  'Expired or future estimated OIS must NOT be called available at the frozen 08:00 cutoff');
 assert.deepEqual([...result.withoutOis].sort(),
-  FX.filter(c=>liveOis[c].operational_status==='WITHHELD').sort(),
-  'Morning readout must not disguise expired or incomplete pricing as estimated.');
+  FX.filter(c=>!result.official.includes(c)&&!eligibleEstimated.includes(c)).sort(),
+  'Morning readout must preserve all missing, future and stale OIS source distinctions');
 assert.equal(result.macroDay,'2026-09-25');
 
 function altered(index,mutate){
