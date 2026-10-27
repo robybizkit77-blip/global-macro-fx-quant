@@ -94,6 +94,113 @@ class ObservedBridgeTests(unittest.TestCase):
         self.assertEqual(gdp["EUR"]["publication_stage"],
                          "REGULAR_ESTIMATE_REVISED")
 
+    def test_bls_attested_october_gap_yields_only_explicit_estimate(self):
+        from validation.macro.v2_us_shutdown_gap_research_v1 import (
+            shadow_gap_estimate, BLS_EVIDENCE
+        )
+        reg, row, heat = fixture()
+        reg["series_id"] = "UNRATE"
+        reg["historical_replay_evidence"]["macro_series_id"] = "US_UNRATE_history_value"
+        row["id"] = "US_UNRATE_history_value"
+        heat["series_id"] = "UNRATE"
+        i = row["dates"].index("2025-10")
+        row["dates"].pop(i)
+        row["values"].pop(i)
+        strict = pillar_feature("USD", "labour", reg, row, heat, date(2026, 10, 27))
+        self.assertIsNone(strict["research_robust_z"])
+        self.assertIn("2025-10", strict["missing_prior_periods"])
+        gap = shadow_gap_estimate(
+            "labour", reg, row, heat, strict, date(2026, 10, 27))
+        self.assertEqual(gap["status"],
+                         "BLS_SHUTDOWN_GAP_AWARE_RESEARCH_ESTIMATE_NOT_PIT")
+        self.assertEqual(gap["training_observed_months_used"], 24)
+        self.assertEqual(gap["missing_calendar_periods"], ["2025-10"])
+        self.assertTrue(-3 <= gap["estimated_research_robust_z"] <= 3)
+        self.assertFalse(gap["original_missing_value_imputed"])
+        self.assertFalse(gap["allow_macro_score"])
+        self.assertFalse(gap["allow_beta"])
+        self.assertEqual(gap["official_evidence_url"],
+                         BLS_EVIDENCE["labour"]["primary_reference"])
+
+    def test_extra_gap_does_not_get_hidden_by_structural_exception(self):
+        from validation.macro.v2_us_shutdown_gap_research_v1 import shadow_gap_estimate
+        reg, row, heat = fixture()
+        reg["series_id"] = "UNRATE"
+        reg["historical_replay_evidence"]["macro_series_id"] = "US_UNRATE_history_value"
+        row["id"] = "US_UNRATE_history_value"
+        heat["series_id"] = "UNRATE"
+        for d in ("2025-10", "2025-09"):
+            i = row["dates"].index(d)
+            row["dates"].pop(i)
+            row["values"].pop(i)
+        strict = pillar_feature("USD", "labour", reg, row, heat, date(2026, 10, 27))
+        gap = shadow_gap_estimate("labour", reg, row, heat, strict,
+                                  date(2026, 10, 27))
+        self.assertIsNone(gap["estimated_research_robust_z"])
+        self.assertEqual(gap["status"],
+                         "NO_GAP_ESTIMATE_UNLESS_EXACT_BLS_MISSING_MONTH")
+        self.assertEqual(gap["missing_calendar_periods"], ["2025-09", "2025-10"])
+
+    def test_missing_month_must_really_be_absent_and_correct_source(self):
+        from validation.macro.v2_us_shutdown_gap_research_v1 import shadow_gap_estimate
+        reg, row, heat = fixture()
+        reg["series_id"] = "UNRATE"
+        reg["historical_replay_evidence"]["macro_series_id"] = "US_UNRATE_history_value"
+        row["id"] = "US_UNRATE_history_value"
+        heat["series_id"] = "UNRATE"
+        # A different month cannot borrow the BLS October official exception.
+        i = row["dates"].index("2025-09")
+        row["dates"].pop(i)
+        row["values"].pop(i)
+        strict = pillar_feature("USD", "labour", reg, row, heat, date(2026, 10, 27))
+        with self.assertRaisesRegex(ValueError, "fabricated"):
+            shadow_gap_estimate("labour", reg, row, heat, strict,
+                                date(2026, 10, 27))
+        reg["series_id"] = "FAKE"
+        with self.assertRaisesRegex(ValueError, "exact registered"):
+            shadow_gap_estimate("labour", reg, row, heat, strict,
+                                date(2026, 10, 27))
+
+    def test_cpi_index_yoy_uses_actual_12_month_reference_not_shifted_row(self):
+        from validation.macro.v2_us_shutdown_gap_research_v1 import shadow_gap_estimate
+        dates = []
+        values = []
+        for i in range(39):  # Jan 2023 through Mar 2026
+            y, m = 2023 + i // 12, i % 12 + 1
+            raw = f"{y:04d}-{m:02d}"
+            if raw != "2025-10":
+                dates.append(raw)
+                values.append(290 + i * 0.5 + 0.02 * (i % 4))
+        reg = {
+            "series_id": "CPIAUCSL", "frequency": "M",
+            "transformation": "yoy_pct_from_index",
+            "historical_replay_evidence": {
+                "macro_series_id": "US_CPIAUCSL_history_value"},
+        }
+        row = {"id": "US_CPIAUCSL_history_value",
+               "dates": dates, "values": values}
+        actual_map = dict(zip(dates, values))
+        true_yoy = 100 * (actual_map["2026-03"] / actual_map["2025-03"] - 1)
+        heat = {
+            "series_id": "CPIAUCSL", "frequency": "M",
+            "transformation": "yoy_pct_from_index",
+            "as_of": "2026-03", "latest_value": true_yoy,
+            "validation": dict.fromkeys(("source", "history", "latest",
+                                         "transformation"), True),
+        }
+        strict = pillar_feature("USD", "inflation", reg, row, heat,
+                                date(2026, 10, 27))
+        self.assertEqual(strict["status"], "NO_Z_MISSING_PRIOR_ECONOMIC_PERIODS")
+        self.assertAlmostEqual(strict["observation_value"], true_yoy)
+        est = shadow_gap_estimate("inflation", reg, row, heat,
+                                  strict, date(2026, 10, 27))
+        self.assertEqual(est["status"],
+                         "BLS_SHUTDOWN_GAP_AWARE_RESEARCH_ESTIMATE_NOT_PIT")
+        self.assertEqual(est["training_observed_months_used"], 24)
+        self.assertEqual(est["missing_calendar_periods"], ["2025-10"])
+        self.assertTrue(math.isfinite(est["estimated_research_robust_z"]))
+        self.assertFalse(est["allow_pair_ranking"])
+
     def test_actual_16_sources_8_growth_and_no_production_writes(self):
         from pathlib import Path
         source = ROOT / "live_data/sections"
@@ -108,6 +215,14 @@ class ObservedBridgeTests(unittest.TestCase):
         self.assertEqual(set(observed["growth_quarterly_gdp_web"]), set(FX))
         self.assertEqual(observed["summary"]["economic_dimension_slots"], 24)
         self.assertEqual(observed["summary"]["fx_strength_scores_computed"], 0)
+        self.assertIn("additional_us_gap_aware_estimates", observed["summary"])
+        self.assertEqual(set(observed["us_bls_shutdown_research_estimates"]),
+                         {k for k in ("USD.inflation", "USD.labour")
+                          if observed["inflation_labour"][k]["research_robust_z"] is None})
+        self.assertTrue(all(x["allow_macro_score"] is False and
+                            x["allow_pair_ranking"] is False
+                            for x in observed["us_bls_shutdown_research_estimates"].values()))
+
         self.assertEqual(observed["summary"]["growth_scores_computed"], 0)
         self.assertFalse(observed["safe_to_publish_new_D"])
         self.assertFalse(observed["safe_to_update_pair_theses"])
