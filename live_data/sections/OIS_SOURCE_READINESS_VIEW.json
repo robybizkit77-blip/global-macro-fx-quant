@@ -14,18 +14,14 @@
         "paired_current": false,
         "separate_10y_snb_as_of": "2026-10-26"
       },
-      "indicative_quote_dates": {
-        "12m": "2026-10-26",
-        "3m": "2026-10-23",
-        "6m": "2026-10-26"
-      },
-      "obstacle": "Settlement futures SARON ICE/Eurex non certificati in una stessa serie storica.",
-      "operational_as_of": "2026-10-23",
+      "indicative_quote_dates": {},
+      "obstacle": "Fonte indicativa: manca certificazione operativa.",
+      "operational_as_of": "2026-10-26",
       "price_or_curve_embedded": false,
       "source_reviewed_as_of": "2026-10-23",
       "source_title": "ICE Futures Europe Three-Month SARON futures (SA3) daily settlements",
       "source_url": "https://www.ice.com/products/72270612/Three-Month-Saron-Index-Futures-Contract/data",
-      "status": "WITHHELD",
+      "status": "GREEN_ESTIMATED",
       "usable_for_policy_pricing": false
     },
     "EUR": {
@@ -85,14 +81,18 @@
       "backtest_eligible_as_official": false,
       "currency": "USD",
       "dates_joinable": false,
-      "indicative_quote_dates": {},
-      "obstacle": "Fonte indicativa: manca certificazione operativa.",
+      "indicative_quote_dates": {
+        "12m": "2026-10-26",
+        "3m": "2026-10-27",
+        "6m": "2026-10-26"
+      },
+      "obstacle": "Settlement CME Fed Funds incompleti (manca una serie storica sincronizzata con diritti d'uso verificati).",
       "operational_as_of": "2026-10-26",
       "price_or_curve_embedded": false,
       "source_reviewed_as_of": "2026-10-23",
       "source_title": "CME/CBOT official 30-Day Federal Funds futures settlements (ZQ)",
       "source_url": "https://www.cmegroup.com/markets/interest-rates/stirs/30-day-federal-fund.settlements.html",
-      "status": "GREEN_ESTIMATED",
+      "status": "WITHHELD",
       "usable_for_policy_pricing": false
     }
   },
