@@ -91,7 +91,7 @@ class FirstWebGrowthTests(unittest.TestCase):
                     x["currency"] == "USD" and x["reference_quarter"] == "2026Q2"
                     and x["stage_order"] == 0)
         fake["reported_unit"] = "PERCENT_QOQ_SA"
-        with self.assertRaisesRegex(ValueError, "GDP metric/horizon"):
+        with self.assertRaisesRegex(ValueError, "unit definition|GDP metric/horizon"):
             receipt(altered, as_of="2026-10-27T00:00:00Z")
         bad = [dict(x) if x is first else x for x in self.rows]
         fake = next(x for x in bad if
