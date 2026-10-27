@@ -21,7 +21,7 @@ PATH=Path("/tmp/macro-v2-aug24-issuer-workbook")
 
 def main():
     PATH.mkdir(parents=True,exist_ok=True)
-    with urlopen(Request(URL,headers={"User-Agent":"Mozilla/5.0","Accept":"*/*"}),timeout=20) as response:
+    with urlopen(Request(URL,headers={"User-Agent":"Mozilla/5.0 (compatible; MacroV2Research/1.0)","Accept":"*/*"}),timeout=20) as response:
         if response.status!=200 or response.geturl()!=URL: raise ValueError("BLS URL/status changed")
         data=response.read(350001)
     if len(data)<10000 or len(data)>350000 or data[:4]!=b"PK\x03\x04":
