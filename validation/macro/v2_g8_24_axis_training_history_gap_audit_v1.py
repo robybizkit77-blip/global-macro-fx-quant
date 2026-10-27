@@ -341,6 +341,30 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
         stat["CH_labour_SECO_alternative_downloaded_report_PDFs"]=21
         stat["CH_labour_SECO_alternative_search_index_only_reports"]=4
         stat["CH_labour_exact_SNB_first_release_history_approved"]=0
+    # Separate first-publisher BLS original news-release WEB evidence.
+    # 21 HTML pages read + 3 links found only in the official archive
+    # index. All-item SA percentage changes are rounded, NOT the exact
+    # historical CPIAUCSL index vintage. Oct-2025 is unpublished and
+    # Nov-2025 0.2% explicitly spans TWO months. Zero canonical upgrades.
+    bls_news_archive = None
+    if cutoff == ASOF:
+        from validation.macro.v2_us_bls_cpi_first_news_archive_v1 import (
+            audit as bls_original_news_audit
+        )
+        bls_news_archive = bls_original_news_audit(cutoff=ASOF)
+        bls_count = bls_news_archive["summary"]
+        check(bls_count["official_issuer_archive_links_documented"] == 24
+              and bls_count["official_BLS_HTML_news_releases_opened_and_read"] == 21
+              and bls_count["archive_index_only_unreadable_HTML_links"] == 3
+              and bls_count["BLS_2025_10_all_items_officially_unpublished"] == 1
+              and bls_count["new_exact_CPIAUCSL_first_vintage_index_levels"] == 0
+              and bls_news_archive["safe_to_publish_new_D"] is False
+              and stat["prior_first_web_contiguous_12Q_or_24M_slots"] == 22,
+              "original BLS news releases cannot promote SA vintage or fill shutdown")
+        stat["US_inflation_BLS_news_release_archive_links"] = 24
+        stat["US_inflation_BLS_news_pages_read"] = 21
+        stat["US_inflation_BLS_news_index_only_links"] = 3
+        stat["US_inflation_exact_CPIAUCSL_first_vintage_index_levels_added"] = 0
     out = {
         "schema": SCHEMA, "as_of_utc": cut.isoformat(),
         "status": "24_G8_SOURCE_WINDOW_COMPLETENESS_RESEARCH_ONLY_NOT_MODEL_PIT",
@@ -352,6 +376,9 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
             estimated_proxies,
         "separate_first_rounded_SECO_issuer_reports_not_SNB_exact":
             swiss_alternative,
+        "separate_original_BLS_news_rounded_SA_not_CPIAUCSL_exact":
+            bls_news_archive,
+        "BLS_nov2025_two_month_change_NOT_November_MOM": True,
         "SECO_25_rounded_report_months_do_NOT_close_SNB_original_exact_PIT": True,
         "observed_first_web_22_and_estimated_context_2_must_never_be_combined_as_PIT": True,
         "series_counts_do_not_equal_valid_historical_PIT_trading_samples": True,
