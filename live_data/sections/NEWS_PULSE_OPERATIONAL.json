@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-10-26",
-  "generated_at_utc": "2026-10-27T04:50:51.128897Z",
+  "generated_at_utc": "2026-10-27T06:52:23.247026Z",
   "items": [
     {
       "as_of": "2026-10-26",
@@ -47,7 +47,7 @@
       "title": "AUD: repricing implicito da futures più dovish (-7.0 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-10-27T04:50:51.128897Z",
+  "last_checked_at_utc": "2026-10-27T06:52:23.247026Z",
   "official_releases": {
     "core_effect": "NONE",
     "headlines": [
@@ -535,9 +535,9 @@
         "status": "NO_VERIFIED_RECENT_ITEMS"
       },
       {
-        "accepted_items": 9,
+        "accepted_items": 8,
         "ccy": "EUR",
-        "entries_rejected": 6,
+        "entries_rejected": 7,
         "feed_entries_seen": 15,
         "feed_url": "https://www.ecb.europa.eu/rss/press.html",
         "source": "Banca centrale europea",
@@ -557,8 +557,8 @@
       {
         "accepted_items": 0,
         "ccy": "JPY",
-        "entries_rejected": 49,
-        "feed_entries_seen": 49,
+        "entries_rejected": 47,
+        "feed_entries_seen": 47,
         "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
         "source": "Bank of Japan",
         "source_id": "BOJ_NEWS",
