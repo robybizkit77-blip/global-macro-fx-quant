@@ -7,6 +7,10 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+# The production workflow invokes this file as a script, so repo root must
+# be importable for the shared strict Forward archive module.
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 
 def load_json(rel: str):
