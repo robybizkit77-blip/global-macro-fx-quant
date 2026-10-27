@@ -1,56 +1,111 @@
 {
-  "content_as_of": "2026-10-22",
-  "generated_at_utc": "2026-10-26T06:56:07.674890Z",
+  "content_as_of": "2026-10-26",
+  "generated_at_utc": "2026-10-27T04:50:51.128897Z",
   "items": [
     {
-      "as_of": "2026-10-22",
-      "category": "FUTURES_IMPLIED_REPRICING",
-      "ccy": "CAD",
-      "confidence": "A",
-      "detail": "Movimento 1D -11.5 bp sul bucket 12M; variazione 1W -0.5 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
-      "title": "CAD: repricing implicito da futures più dovish (-11.5 bp 12M in 1D)"
-    },
-    {
-      "as_of": "2026-10-22",
-      "category": "FUTURES_IMPLIED_REPRICING",
-      "ccy": "AUD",
-      "confidence": "A",
-      "detail": "Movimento 1D +3.5 bp sul bucket 6M; variazione 1W +11.0 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
-      "title": "AUD: repricing implicito da futures più hawkish (+3.5 bp 6M in 1D)"
-    },
-    {
-      "as_of": "2026-10-22",
+      "as_of": "2026-10-26",
       "category": "FUTURES_IMPLIED_REPRICING",
       "ccy": "JPY",
       "confidence": "A",
-      "detail": "Movimento 1D -0.6 bp sul bucket 12M; variazione 1W -2.0 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
-      "importance": "MEDIUM",
+      "detail": "Movimento 1D +4.7 bp sul bucket 12M; variazione 1W -4.6 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "HIGH",
       "quality": "OFFICIAL_CERTIFIED",
       "source": "Tokyo Financial Exchange · Three-month TONA Futures",
-      "title": "JPY: repricing implicito da futures più dovish (-0.6 bp 12M in 1D)"
+      "title": "JPY: repricing implicito da futures più hawkish (+4.7 bp 12M in 1D)"
     },
     {
-      "as_of": "2026-10-21",
+      "as_of": "2026-10-23",
       "category": "OIS_REPRICING",
       "ccy": "GBP",
       "confidence": "A",
-      "detail": "Movimento 1D -5.2 bp sul bucket 12M; variazione 1W +3.9 bp.",
+      "detail": "Movimento 1D +3.5 bp sul bucket 12M; variazione 1W +2.7 bp.",
       "importance": "HIGH",
       "quality": "OFFICIAL_CERTIFIED",
       "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
-      "title": "GBP: repricing OIS più dovish (-5.2 bp 12M in 1D)"
+      "title": "GBP: repricing OIS più hawkish (+3.5 bp 12M in 1D)"
+    },
+    {
+      "as_of": "2026-10-23",
+      "category": "FUTURES_IMPLIED_REPRICING",
+      "ccy": "CAD",
+      "confidence": "A",
+      "detail": "Movimento 1D +5.5 bp sul bucket 12M; variazione 1W +5.5 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
+      "title": "CAD: repricing implicito da futures più hawkish (+5.5 bp 12M in 1D)"
+    },
+    {
+      "as_of": "2026-10-23",
+      "category": "FUTURES_IMPLIED_REPRICING",
+      "ccy": "AUD",
+      "confidence": "A",
+      "detail": "Movimento 1D -7.0 bp sul bucket 12M; variazione 1W +2.5 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
+      "title": "AUD: repricing implicito da futures più dovish (-7.0 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-10-26T06:56:07.674890Z",
+  "last_checked_at_utc": "2026-10-27T04:50:51.128897Z",
   "official_releases": {
     "core_effect": "NONE",
     "headlines": [
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "EUR",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
+        "id": "ECB_PRESS:https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr261026~bde7b6d11a.en.html",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-10-26T09:00:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "6m_rate_pct": 2.8525,
+            "date": "2026-10-26",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "ESTIMATED_INFORMATIONAL",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+            "status": "DAILY_CONTEXT_ONLY"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-10-23",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "European Central Bank · AAA Svensson spot curve · 2026-10-23",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 2.9834609509
+          }
+        },
+        "source": "Banca centrale europea",
+        "source_id": "ECB_PRESS",
+        "title": "Survey on the Access to Finance of Enterprises: lending conditions tightened",
+        "url": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr261026~bde7b6d11a.en.html"
+      },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "EUR",
@@ -76,7 +131,14 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
+            "6m_rate_pct": 2.8525,
+            "date": "2026-10-26",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "ESTIMATED_INFORMATIONAL",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+            "status": "DAILY_CONTEXT_ONLY"
           },
           "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
           "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
@@ -85,67 +147,19 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-10-22",
+            "date": "2026-10-23",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "European Central Bank · AAA Svensson spot curve · 2026-10-22",
+            "source": "European Central Bank · AAA Svensson spot curve · 2026-10-23",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.0074951382
+            "yield_2y_pct": 2.9834609509
           }
         },
         "source": "Banca centrale europea",
         "source_id": "ECB_PRESS",
         "title": "Frank Elderson: Taking action for nature – investing in economic resilience and prosperity",
         "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261026~d903d7ad85.en.html"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "EUR",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "REVIEW",
-          "topic": "CB_COMMUNICATION",
-          "verify_next": "Esaminare il testo integrale; identificare eventuali novità rispetto alla posizione precedente e verificare la reazione del mercato.",
-          "why_watch": "Intervento di una banca centrale: il solo titolo non permette di classificare il tono hawkish o dovish."
-        },
-        "id": "ECB_PRESS:https://www.ecb.europa.eu//press/inter/date/2026/html/ecb.in261024~ee2ba73cf3.en.html",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-10-24T06:00:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-10-22",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "European Central Bank · AAA Svensson spot curve · 2026-10-22",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.0074951382
-          }
-        },
-        "source": "Banca centrale europea",
-        "source_id": "ECB_PRESS",
-        "title": "Piero Cipollone: Interview with Milano Finanza",
-        "url": "https://www.ecb.europa.eu//press/inter/date/2026/html/ecb.in261024~ee2ba73cf3.en.html"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
@@ -172,12 +186,12 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 4.4857,
-            "date": "2026-10-21",
+            "6m_rate_pct": 4.4932,
+            "date": "2026-10-23",
             "event_window_proof": false,
             "instrument": "OIS_OBSERVED",
             "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
             "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
             "status": "DAILY_CONTEXT_ONLY"
           },
@@ -188,13 +202,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-10-22",
+            "date": "2026-10-23",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-10-22",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
+            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-10-23",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.675877863998116
+            "yield_2y_pct": 4.707411816007678
           }
         },
         "source": "Bank of England",
@@ -227,12 +241,12 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 4.4857,
-            "date": "2026-10-21",
+            "6m_rate_pct": 4.4932,
+            "date": "2026-10-23",
             "event_window_proof": false,
             "instrument": "OIS_OBSERVED",
             "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
             "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
             "status": "DAILY_CONTEXT_ONLY"
           },
@@ -243,13 +257,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-10-22",
+            "date": "2026-10-23",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-10-22",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
+            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-10-23",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.675877863998116
+            "yield_2y_pct": 4.707411816007678
           }
         },
         "source": "Bank of England",
@@ -362,8 +376,8 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 2.95,
-            "date": "2026-10-22",
+            "6m_rate_pct": 2.985,
+            "date": "2026-10-23",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
@@ -465,8 +479,8 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 2.95,
-            "date": "2026-10-22",
+            "6m_rate_pct": 2.985,
+            "date": "2026-10-23",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
@@ -494,65 +508,10 @@
         "source_id": "BOC_PRESS",
         "title": "Media roundtable with Governor Macklem",
         "url": "https://www.bankofcanada.ca/2026/10/media-roundtable-governor-macklem-2026-10-17/"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "USD",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "FED_PRESS:https://www.federalreserve.gov/newsevents/pressreleases/enforcement20261016a.htm",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-10-16T15:00:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "6m_rate_pct": 4.29,
-            "date": "2026-10-22",
-            "event_window_proof": false,
-            "instrument": "FUTURES_IMPLIED",
-            "quality": "ESTIMATED_INFORMATIONAL",
-            "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
-            "status": "DAILY_CONTEXT_ONLY"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-10-23",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-10-23",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.69
-          }
-        },
-        "source": "Federal Reserve Board",
-        "source_id": "FED_PRESS",
-        "title": "Federal Reserve Board announces termination of enforcement actions with Gardner Bancshares, Inc. and Small Business Bank",
-        "url": "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20261016a.htm"
       }
     ],
-    "last_attempt_day_rome": "2026-10-26",
-    "latest_published_at_utc": "2026-10-26T05:00:00Z",
+    "last_attempt_day_rome": "2026-10-27",
+    "latest_published_at_utc": "2026-10-26T09:00:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -566,19 +525,19 @@
     "source_failures": 0,
     "sources": [
       {
-        "accepted_items": 1,
+        "accepted_items": 0,
         "ccy": "USD",
-        "entries_rejected": 19,
+        "entries_rejected": 20,
         "feed_entries_seen": 20,
         "feed_url": "https://www.federalreserve.gov/feeds/press_all.xml",
         "source": "Federal Reserve Board",
         "source_id": "FED_PRESS",
-        "status": "OK_RECENT_ITEMS"
+        "status": "NO_VERIFIED_RECENT_ITEMS"
       },
       {
-        "accepted_items": 8,
+        "accepted_items": 9,
         "ccy": "EUR",
-        "entries_rejected": 7,
+        "entries_rejected": 6,
         "feed_entries_seen": 15,
         "feed_url": "https://www.ecb.europa.eu/rss/press.html",
         "source": "Banca centrale europea",
@@ -586,9 +545,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 3,
+        "accepted_items": 2,
         "ccy": "GBP",
-        "entries_rejected": 47,
+        "entries_rejected": 48,
         "feed_entries_seen": 50,
         "feed_url": "https://www.bankofengland.co.uk/rss/news",
         "source": "Bank of England",
@@ -598,8 +557,8 @@
       {
         "accepted_items": 0,
         "ccy": "JPY",
-        "entries_rejected": 51,
-        "feed_entries_seen": 51,
+        "entries_rejected": 49,
+        "feed_entries_seen": 49,
         "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
         "source": "Bank of Japan",
         "source_id": "BOJ_NEWS",
@@ -616,9 +575,9 @@
         "status": "NO_VERIFIED_RECENT_ITEMS"
       },
       {
-        "accepted_items": 3,
+        "accepted_items": 2,
         "ccy": "CAD",
-        "entries_rejected": 7,
+        "entries_rejected": 8,
         "feed_entries_seen": 10,
         "feed_url": "https://www.bankofcanada.ca/content_type/press/feed/",
         "source": "Bank of Canada",
@@ -646,9 +605,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 3,
+        "accepted_items": 2,
         "ccy": "ENERGY",
-        "entries_rejected": 17,
+        "entries_rejected": 18,
         "feed_entries_seen": 20,
         "feed_url": "https://www.eia.gov/rss/todayinenergy.xml",
         "source": "U.S. Energy Information Administration",
