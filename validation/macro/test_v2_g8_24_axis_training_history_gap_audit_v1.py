@@ -118,6 +118,18 @@ class HistoricalTrainingGapAudit(unittest.TestCase):
         self.assertEqual(
             result["summary"]["US_inflation_exact_CPIAUCSL_first_vintage_index_levels_added"], 0)
 
+    def test_ALFRED_seven_release_day_index_mirror_does_not_upweight_USD(self):
+        a = self.r["separate_ALFRED_release_day_index_mirror_not_BLS_original_PIT"]
+        self.assertIsNotNone(a)
+        self.assertEqual(a["source_page_count"], 7)
+        self.assertEqual(a["BLS_original_issue_day_bytes_sha256_captured"], 0)
+        self.assertEqual(a["canonical_CPIAUCSL_first_releases_source_day_certified"], 0)
+        self.assertFalse(a["safe_to_publish_new_D"])
+        self.assertEqual(self.r["summary"]["USD_CPI_ALFRED_release_day_SA_index_mirror_anchors"], 7)
+        self.assertEqual(self.r["summary"]["US_inflation_BLS_news_pages_read"], 24)
+        self.assertEqual(self.r["summary"]["US_inflation_BLS_news_index_only_links"], 0)
+        self.assertEqual(self.r["summary"]["prior_first_web_contiguous_12Q_or_24M_slots"], 22)
+
     def test_missing_month_detected_by_period_not_merely_count(self):
         self.assertEqual(idx("2026-06", "Q"), idx("2026Q2", "Q"))
         self.assertEqual(idx("2025-12", "Q"), idx("2025Q4", "Q"))
