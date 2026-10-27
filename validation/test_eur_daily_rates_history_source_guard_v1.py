@@ -50,11 +50,14 @@ class EURDailyRatesHistorySourceGuardTests(unittest.TestCase):
                     m.eur_daily_append_source_gate(src,self.next_date(src))
 
     def test_one_tenor_different_calendar_or_unordered_history_blocks(self):
+        # On the approved ECB 282-point series, an altered tail date can be
+        # rejected by the authenticated publisher-prefix fingerprint before
+        # the generic duplicate-date gate. Both outcomes must remain FAIL.
         for key in ['history2','history10']:
             src=copy.deepcopy(self.live['EUR'])
             src[key]['dates'][-2]=src[key]['dates'][-3]
             with self.assertRaisesRegex(ValueError,
-                     "(duplicated or unordered|historical values drift)"):
+                     "(duplicated or unordered|historical values drift|282-point publisher prefix end drift)"):
                 m.eur_daily_append_source_gate(src,self.next_date(src))
 
     def test_weekly_reference_must_not_use_legacy_curve_values(self):
