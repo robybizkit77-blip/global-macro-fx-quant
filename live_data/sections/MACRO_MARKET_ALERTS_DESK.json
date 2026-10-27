@@ -1,8 +1,38 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-27T17:57:15Z",
+  "generated_at_utc": "2026-10-27T18:59:01Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-e71f55af66262f1475a3",
+      "observed_at_utc": "2026-10-27T01:46:00Z",
+      "headline": "Stocks rise as oil slips with tech earnings, Fed ahead",
+      "summary": "Reuters riporta: Stocks rise as oil slips with tech earnings, Fed ahead. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxQdEdzTDdxbEtNX1l6VDJMdF9NTGpUNEJPYy1jaUo2SkllaGhJZnZvNzZOOTd5MkZHV3p5T2ZhcjlkcWduOXp5elFKREQ0bFBib0pXUzNKdGI2QmE3eWZxRlktZXhSZG0tQzQ4U1dXNWxOZktiZVZvc1pNUERsYUFLVUJYSQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-c76616fa220eccb814ad",
+      "observed_at_utc": "2026-10-27T17:11:00Z",
+      "headline": "Broadcom and other AI stocks lift Wall Street closer to its record",
+      "summary": "AP News riporta: Broadcom and other AI stocks lift Wall Street closer to its record. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxNalA1YWp3MHd0dHNjRGRDaG05a1dLczBwNjE3RjVLU1JRSU1GaGVKRVFHdFBrU2ZxaDZmckMtVVVEUGpjLTQxNkxkNzhVVmlUUVQtTUxUeE9CaUtZNVU2Y1AwWk1aY0VOcHNwclpBdUg2VkdHd2RTcVFOcllaSlRBaksxVklzWTEtYnEyZ2NQVy1KTFIx?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-45a7aa241be0bfa593da",
       "observed_at_utc": "2026-10-27T17:41:13Z",
@@ -1374,36 +1404,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxOWE1LcUgzRWRwVDZmX3FEaWszVHF0cFQ1ekt6M1pyQ0lfc05PQm9DekdZcXprdm1vQk00SlNEZjEwQllCd1VwMUJySnIxcF9ZblFaRHFsV3BzSU52SlJSSi1TeWxoTmdYc1h6UHhPQTFQYU41ZEdQTFRNY3l0N1Q2bnRDV2x1MjlveGtxTk1oQWlGd3ExcUZEd2QzdF9TUkVKcXotUlIycUgtb1RrZjJ3?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-13c49a8d3f2ef29ae41f",
-      "observed_at_utc": "2026-10-23T16:29:02Z",
-      "headline": "Nasdaq ticks up as tech stocks steady; SpaceX worries hit telecoms",
-      "summary": "Reuters riporta: Nasdaq ticks up as tech stocks steady; SpaceX worries hit telecoms. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMingFBVV95cUxQR01KeXBjdXBubVRzTlJfWWJTMHctb2hFS2pVT21ydWtZNzBaMldxd1c2ZUJGNWhIeGV6MUxvQVZvSl9GdFh5QThQbFpuT0IwYi02Y3JGM19YSWJ3LXMtb29RbS1WZUljdGtsS2dockxHVm5SWnBSMzJpM0Y4RFItdW5SMzFsdXg2LWtrYWE1SC1TQlkxOERJZHNtQVREdw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-c61e9f115c35df58ffb9",
-      "observed_at_utc": "2026-10-23T11:03:44Z",
-      "headline": "UK stocks set for weekly declines as oil prices soar",
-      "summary": "Reuters riporta: UK stocks set for weekly declines as oil prices soar. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "GBP"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNLUFBR0xnWGVNdnlZWHllVVp3bmdPQ2xsMEVHbXktYXUwMVRmZlZNU1E4Z3F1R0paZVZfZkFUbFU1cG5ZZnZteFVxUXRRS0c5RmFiVUtiU25makZIMTVaR2dlbGZLQ2VRN0tKYnpmblZLdUZkajhmUFgxMG1wNEU2N21Wdno3UHFoMGhnM2EyMDZkY1JLZ0FDT1lnSWNQU0NlZTFyNUo1QkpNTWFm?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
