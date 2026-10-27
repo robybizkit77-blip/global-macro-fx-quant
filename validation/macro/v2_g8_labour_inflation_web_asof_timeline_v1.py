@@ -223,6 +223,14 @@ def compile_timeline(registry, candidates, *, start=DEFAULT_START, end=None):
     # the *canonical* two archived sources. EUR flash initial is not overwritten
     # by later detail; AUD quarterly CPI is never substituted with monthly CPI.
     archived = archived_overlay(as_of=daily_end(finish).isoformat())
+    from validation.macro.v2_eur_ea_regime_chf_precision_guard_v1 import (
+        audit as quality_audit, label as euro_membership, swiss_quality
+    )
+    quality = quality_audit(as_of=daily_end(finish).isoformat())
+    require(quality["safe_to_publish_new_D"] is False and
+            quality["summary"]["eur_first_flash_months"] == 105 and
+            quality["summary"]["eur_homogeneous_24_prior_month_windows"] == 48,
+            "EUR/CHF first-release quality gates must remain research-only")
     archival_index = {key: [
         (timestamp(e["visible_from_utc"]), e)
         for e in hist["events"]]
@@ -250,9 +258,21 @@ def compile_timeline(registry, candidates, *, start=DEFAULT_START, end=None):
                 "no_future_publications_visible_in_this_snapshot": True,
                 "safe_to_use_for_macro_scoring": False,
             }
+        eur_latest = prior["EUR.inflation"]["most_recent_canonical_archival_economic_period"]
+        # Release events are the time gates; population label is derived from
+        # reference period ONLY after its first flash becomes visible.
+        euro_population = euro_membership(eur_latest) if eur_latest else None
+        swiss_rounded = swiss_quality(cutoff=daily_end(day).isoformat())
         snapshots.append({"as_of_end_utc": daily_end(day).isoformat(),
                           "slots": rows,
-                          "canonical_EUR_AUD_archival_first_web_overlay": prior})
+                          "canonical_EUR_AUD_archival_first_web_overlay": prior,
+                          "semantic_quality": {
+                              "EUR_inflation_membership_as_of": euro_population,
+                              "CHF_labour_SECO_rounded_rate_as_of":
+                                  swiss_rounded["rounded_SECO_sa_rate_pct_visible"],
+                              "CHF_exact_SNB_first_release_not_proven": True,
+                              "all_semantic_quality_flags_research_only": True,
+                          }})
     latest = snapshots[-1]["slots"]
     same = sum(x["series_and_frequency_match"] for x in full.values())
     visible = sum(x["first_web_value"] is not None for x in latest.values())
@@ -267,6 +287,7 @@ def compile_timeline(registry, candidates, *, start=DEFAULT_START, end=None):
         "source_catalogue": full,
         "source_semantic_reconciliation": reconciliation,
         "canonical_EUR_AUD_first_web_archival_overlay": archived,
+        "EUR_membership_and_CHF_precision_audit": quality,
         "daily_web_release_snapshots": snapshots,
         "current_latest_web_publisher_observations": latest,
         "summary": {
@@ -284,6 +305,11 @@ def compile_timeline(registry, candidates, *, start=DEFAULT_START, end=None):
             "additional_canonical_EUR_AUD_initial_publisher_periods_loaded": 139,
             "archived_EUR_months": archived["summary"]["eur_inflation_monthly"],
             "archived_AUD_quarters": archived["summary"]["aud_inflation_quarterly"],
+            "EUROSTAT_same_regime_prior_24m_windows":
+                quality["summary"]["eur_homogeneous_24_prior_month_windows"],
+            "EUR_current_24m_same_membership_reference_sufficient":
+                quality["summary"]["eur_current_24m_same_membership_reference_sufficient"],
+            "CHF_exact_SNB_first_release_available": False,
             "joint_PIT_training_histories_certified": 0,
             "live_macro_scores_created": 0,
             "FX_backtests_performed": 0,
@@ -303,6 +329,7 @@ def compile_timeline(registry, candidates, *, start=DEFAULT_START, end=None):
          "archived_EUR_AUD_sha": {
              k: (v["source_csv_sha256"], v["source_semantic_sha256"])
              for k, v in archived["histories"].items()},
+         "quality_receipt_sha256": quality["receipt_sha256"],
          "daily": snapshots},
         sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     return results
