@@ -5,6 +5,7 @@ on:
       - research-us-cpi-alfred-vintage-gate-20261027
     paths:
       - '.github/workflows/macro-us-cpi-alfred-once-recover-v1.yml'
+      - 'validation/macro/v2_us_cpiaucl_alfred_release_day_pilot_v1.py'
   workflow_dispatch:
 
 permissions:
@@ -17,7 +18,7 @@ concurrency:
 jobs:
   recover-original-fed-vintage-mirror:
     runs-on: ubuntu-24.04
-    timeout-minutes: 12
+    timeout-minutes: 14
     steps:
       - uses: actions/checkout@v4
         with:
