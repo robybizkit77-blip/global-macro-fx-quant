@@ -31,9 +31,9 @@ class BLSFirstNewsArchiveResearchTests(unittest.TestCase):
         self.assertEqual((stat["calendar_periods"],
                           stat["official_issuer_archive_links_documented"],
                           stat["official_BLS_HTML_news_releases_opened_and_read"],
-                          stat["archive_index_only_unreadable_HTML_links"]), (25, 24, 21, 3))
+                          stat["archive_index_only_unreadable_HTML_links"]), (25, 24, 24, 0))
         self.assertEqual(stat["BLS_2025_10_all_items_officially_unpublished"], 1)
-        self.assertEqual(stat["one_month_rounded_SA_rate_readings"], 20)
+        self.assertEqual(stat["one_month_rounded_SA_rate_readings"], 23)
         self.assertEqual(stat["2025_11_two_month_rounded_SA_change_not_MOM"], 1)
         self.assertEqual(stat["prior_24_calendar_months_with_issuer_archive_link"], 23)
         self.assertEqual(stat["new_exact_CPIAUCSL_first_vintage_index_levels"], 0)
@@ -55,9 +55,21 @@ class BLSFirstNewsArchiveResearchTests(unittest.TestCase):
         self.mutate(lambda d: d["records"][13].update(
             first_issuer_reported_sa_all_items_change_pct_rounded_1dp=0.0))
 
-    def test_index_only_sources_have_no_unverified_numbers_or_forged_hash(self):
+    def test_all_three_recovered_original_BLS_HTML_anchors(self):
+        recovered={"2024-11":0.3,"2024-12":0.4,"2025-07":0.2}
+        rows={r["reference_month"]:r for r in self.raw["records"]}
+        for month, expected in recovered.items():
+            self.assertEqual(rows[month]["source_evidence_level"], "HTML_OPENED")
+            self.assertEqual(rows[month]["first_issuer_reported_sa_all_items_change_pct_rounded_1dp"], expected)
+            self.assertEqual(rows[month]["sa_change_horizon_months"], 1)
         self.mutate(lambda d: d["records"][2].update(
+            source_evidence_level="ARCHIVE_INDEX_LINK_ONLY_TIMEOUT"))
+        self.mutate(lambda d: d["records"][3].update(
             first_issuer_reported_sa_all_items_change_pct_rounded_1dp=0.3))
+        self.mutate(lambda d: d["records"][10].update(
+            first_issuer_reported_sa_all_items_change_pct_rounded_1dp=0.3))
+
+    def test_no_unverified_number_or_forged_source_hash(self):
         self.mutate(lambda d: d["records"][3].update(original_html_raw_sha256="a" * 64))
         self.mutate(lambda d: d["records"][10].update(
             first_issuer_sa_index_level_CUSR0000SA0=315.22))
