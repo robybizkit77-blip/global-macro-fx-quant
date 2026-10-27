@@ -155,7 +155,7 @@ class DailyG8ReleaseReconstruction(unittest.TestCase):
         x = replay(start="2026-10-25", end="2026-10-26")
         after = {n: (folder / n).read_bytes() for n in names}
         self.assertEqual(before, after)
-        self.assertEqual(x["summary"]["model_macro_scores_approved"], 0)
+        self.assertEqual(x["summary"]["macro_model_scores_approved"], 0)
         self.assertFalse(x["safe_to_publish_new_D"])
 
 
