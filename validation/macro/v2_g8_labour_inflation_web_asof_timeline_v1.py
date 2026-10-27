@@ -151,6 +151,11 @@ def catalogue(raw_candidates, registry):
     index = {}
     for raw in raw_candidates:
         stream = normalize(raw)  # existing publisher/semantic/source-clock guard
+        # The shared audited collector also provides eight Growth candidates.
+        # They are checked by normalize() but are OUTSIDE this 16-slot
+        # Inflation/Labour release-clock contract.
+        if stream["pillar"] == "growth":
+            continue
         key = f"{stream['currency']}.{stream['pillar']}"
         fail_if(key in registry["series"] and key not in index,
                 "missing or repeated/foreign 16-slot issuer-web candidate")
