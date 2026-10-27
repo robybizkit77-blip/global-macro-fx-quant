@@ -4,6 +4,7 @@ on:
     branches: [feature/macro-v2-recover-11-strict-original-series-20261027]
     paths:
       - '.github/workflows/macro-v2-one-shot-retain-11-originals-20261027.yml'
+      - 'validation/macro/one_shot_retain_g8_11_original_release_artifacts_v1.py'
 permissions:
   contents: write
 jobs:
