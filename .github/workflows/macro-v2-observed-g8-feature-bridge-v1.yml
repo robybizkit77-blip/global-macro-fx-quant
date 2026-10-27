@@ -445,6 +445,16 @@ jobs:
               f.write('- USD BLS Labour 25-release pilot ends Sep-2025; October 2025 unpublished, not a fake missing month within the pilot.\n')
               f.write('- Independently complete source-day PIT histories ready for Macro model: **0/24**.\n')
               f.write('- First-release windows are research sources, NEVER automatic FX strength or D.json approval.\n')
+              f.write('\n| G8 macro pillar | Documented first releases | 12Q/24M prior found | Missing prior periods | Qualitative quality |\n')
+              f.write('|---|---:|---:|---:|---|\n')
+              for key,row in sorted(d['slots'].items()):
+                  f.write('| %s | %s | %s/%s | %s | %s |\n' % (
+                      key, row['first_web_periods_documented_asof'],
+                      row['prior_contiguous_first_web_periods_documented'],
+                      row['prior_first_release_periods_required'],
+                      len(row['missing_required_prior_periods']),
+                      row['research_only_quality_label']))
+              f.write('\nThe 11 numerically contiguous series remain unapproved for live Core scoring.\n')
           PY
       - name: Retain dated shadow evidence (never publish to live_data)
         if: always()
