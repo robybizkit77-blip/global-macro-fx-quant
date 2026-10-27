@@ -11,6 +11,7 @@ on:
       - 'validation/macro/v2_g8_gdp_unified_web_research_v1.py'
       - 'validation/macro/v2_g8_gdp_multiquarter_pit_guard_v1.py'
       - 'validation/macro/fixtures/v2_g8_gdp_*'
+      - 'validation/macro/fixtures/v2_g8_quarterly_gdp_q2_2026_web_release_ledger_v1.json'
       - 'validation/macro/v2_us_shutdown_gap_research_v1.py'
       - 'validation/macro/test_v2_g8_observed_feature_bridge_v1.py'
       - 'validation/macro/v2_g8_quarterly_gdp_web_release_ledger_v1.py'
@@ -28,6 +29,7 @@ on:
       - 'validation/macro/v2_g8_gdp_unified_web_research_v1.py'
       - 'validation/macro/v2_g8_gdp_multiquarter_pit_guard_v1.py'
       - 'validation/macro/fixtures/v2_g8_gdp_*'
+      - 'validation/macro/fixtures/v2_g8_quarterly_gdp_q2_2026_web_release_ledger_v1.json'
       - 'validation/macro/v2_us_shutdown_gap_research_v1.py'
       - 'validation/macro/test_v2_g8_observed_feature_bridge_v1.py'
       - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
@@ -95,11 +97,9 @@ jobs:
               out.write('- This exception is limited to one documented 2025-10 US gap; no missing economic values are filled.\n')
               out.write('- GDP Q2 2026 official-web descriptions visible: **%s/8**\n' %
                         x['summary']['growth_web_observations_visible'])
-              out.write('- GDP quantitative descriptive 12-quarter Growth features: **%s/8** (initial web statements, NOT PIT)
-' %
+              out.write('- GDP quantitative descriptive 12-quarter Growth features: **%s/8** (initial web statements, NOT PIT)\n' %
                         x['summary']['gdp_descriptive_research_growth_features'])
-              out.write('- GDP definitions caveated (EA population/CHF sports): **%s/8**; not admitted to FX scores or comparisons.
-' %
+              out.write('- GDP definitions caveated (EA population/CHF sports): **%s/8**; not admitted to FX scores or comparisons.\n' %
                         x['summary']['gdp_features_with_definition_caveats'])
               out.write('- New Growth scores: **0**; FX strength and pair thesis updates: **0**\n')
               for key, val in x['inflation_labour'].items():
