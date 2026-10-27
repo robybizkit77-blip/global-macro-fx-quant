@@ -52,7 +52,7 @@ class G8SourceSemanticsTests(unittest.TestCase):
         self.assertEqual(r["fred_unrate_BLS_source_code"], "LNS14000000")
         self.assertTrue(r["bls_web_first_release_pilot_not_full_current_chain"])
         self.assertTrue(r["missing_october_2025_unemployment_not_imputed"])
-        self.assertFalse(r["source_lineage_confident_not_replay_ready"] is False)
+        self.assertTrue(r["source_lineage_confident_not_replay_ready"])
 
     def test_eurostat_semantic_alias_retains_105_month_strict_evidence_receipt(self):
         r = reconcile(self.cat)["verdicts"]["EUR.inflation"]
@@ -93,10 +93,10 @@ class G8SourceSemanticsTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "unreviewed mismatch"):
             reconcile(fake)
         for key, field, value in (
-            ("USD.labour", "web_candidate_series_id", "LNS14000001"),
+            ("USD.labour", "candidate_series_id", "LNS14000001"),
             ("EUR.inflation", "official_publisher", "Fake Eurostat"),
-            ("AUD.inflation", "web_candidate_frequency", "Q"),
-            ("CHF.labour", "web_candidate_series_id", "CH_UNEMP_RATE"),
+            ("AUD.inflation", "candidate_frequency", "Q"),
+            ("CHF.labour", "candidate_series_id", "CH_UNEMP_RATE"),
         ):
             fake = copy.deepcopy(self.cat)
             fake[key][field] = value
