@@ -104,6 +104,6 @@ class CoreBridgeReadinessTests(unittest.TestCase):
         self.assertNotIn("git add -- live_data/sections/D.json",wf)
         self.assertNotIn("--section D",wf)
         gdp=(ROOT/"validation/macro/v2_g8_gdp_unified_web_research_v1.py").read_text(encoding="utf-8")
-        self.assertIn('"safe_to_update_live_macro_D": False',gdp)
+        self.assertIn('"safe_to_update_live_macro_D":False',gdp)
 
 if __name__=="__main__":unittest.main()
