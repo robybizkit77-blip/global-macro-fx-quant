@@ -1,0 +1,86 @@
+name: Macro V2 Observed G8 Feature Bridge (research only)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/macro-v2-observed-g8-feature-bridge-v1.yml'
+      - 'validation/macro/v2_g8_observed_feature_bridge_v1.py'
+      - 'validation/macro/test_v2_g8_observed_feature_bridge_v1.py'
+      - 'validation/macro/v2_g8_quarterly_gdp_web_release_ledger_v1.py'
+      - 'validation/macro/fixtures/v2_g8_quarterly_gdp_q2_2026_web_release_ledger_v1.json'
+      - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/macro-v2-observed-g8-feature-bridge-v1.yml'
+      - 'validation/macro/v2_g8_observed_feature_bridge_v1.py'
+      - 'validation/macro/test_v2_g8_observed_feature_bridge_v1.py'
+      - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+  workflow_run:
+    workflows: ['Macro Persistent Daily V1']
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit-observed-feature-bridge:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test G8 feature transformation and no-score isolation
+        run: python -m unittest validation.macro.test_v2_g8_observed_feature_bridge_v1 -v
+      - name: Build read-only current observational feature receipt
+        run: |
+          python -m validation.macro.v2_g8_observed_feature_bridge_v1 \
+            --output /tmp/macro-v2-observed-g8-feature-bridge.json
+          python - <<'PY'
+          import json, os
+          x=json.load(open('/tmp/macro-v2-observed-g8-feature-bridge.json'))
+          assert x['summary']['economic_dimension_slots']==24
+          assert x['summary']['registered_inflation_labour_slots']==16
+          assert x['summary']['growth_scores_computed']==0
+          assert x['summary']['fx_strength_scores_computed']==0
+          assert x['safe_to_publish_new_D'] is False
+          assert x['safe_to_update_pair_theses'] is False
+          assert x['safe_to_use_for_beta'] is False
+          assert x['safe_to_use_for_forward'] is False
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as out:
+              out.write('## Macro V2 — observed G8 research features, NOT Core D\n')
+              out.write('- Registered inflation/labour source slots: **16/16**\n')
+              out.write('- Descriptive research z values: **%s/16** (revised history, NOT PIT)\n' %
+                        x['summary']['descriptive_research_z_available'])
+              out.write('- Excluded/insufficient research z: **%s/16**\n' %
+                        x['summary']['descriptive_research_z_unavailable'])
+              out.write('- GDP Q2 2026 official-web descriptions visible: **%s/8**\n' %
+                        x['summary']['growth_web_observations_visible'])
+              out.write('- New Growth scores: **0**; FX strength and pair thesis updates: **0**\n')
+              for key, val in x['inflation_labour'].items():
+                  if val['research_robust_z'] is None:
+                      out.write('- %s: **%s**; absent prior periods: %s\n' %
+                                (key, val['status'], ', '.join(val['missing_prior_periods'])))
+              out.write('- This job PASS means **research bridge computation**, not D.json calibration or first-release vintage certification.\n')
+          PY
+      - name: Retain dated shadow evidence (never publish to live_data)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-v2-observed-research-${{ github.run_id }}
+          path: /tmp/macro-v2-observed-g8-feature-bridge.json
+          if-no-files-found: warn
+          retention-days: 21
