@@ -16,6 +16,7 @@ on:
       - 'validation/check_nzd_rates_reviewed_snapshot_v1.py'
       - 'site/control-room-preview/ois-pricing-estimates-v1.js'
       - 'validation/test_control_room_g8_visible_pricing_v1.js'
+      - 'validation/test_control_room_rates_history_calendar_v1.js'
       - 'site/control-room-preview/home-navigation-v10.js'
       - 'site/control-room-preview/index.html'
       - '.github/workflows/control-room-v10-public-browser-qa.yml'
@@ -36,6 +37,7 @@ on:
       - 'validation/check_nzd_rates_reviewed_snapshot_v1.py'
       - 'site/control-room-preview/ois-pricing-estimates-v1.js'
       - 'validation/test_control_room_g8_visible_pricing_v1.js'
+      - 'validation/test_control_room_rates_history_calendar_v1.js'
       - '.github/workflows/control-room-v10-public-browser-qa.yml'
   workflow_run:
     workflows: ['Publish Control Room Market Data V1']
@@ -98,6 +100,11 @@ jobs:
           node --check validation/test_control_room_public_ois_eligibility_v1.js
           node --check validation/qa_control_room_v10_public.js
           node validation/test_control_room_public_ois_eligibility_v1.js
+      - name: Verify G8 official curve date/value pairing and JPY chronological recovery
+        run: |
+          node --check site/control-room-preview/home-navigation-v10.js
+          node --check validation/test_control_room_rates_history_calendar_v1.js
+          node validation/test_control_room_rates_history_calendar_v1.js
       - name: Install Playwright browser
         run: |
           npm init -y >/dev/null 2>&1
