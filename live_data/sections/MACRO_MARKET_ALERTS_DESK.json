@@ -1,8 +1,38 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-27T15:02:59Z",
+  "generated_at_utc": "2026-10-27T15:59:08Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-3aed6c5fa0f28e711f44",
+      "observed_at_utc": "2026-10-27T14:32:33Z",
+      "headline": "S&P 500, Nasdaq advance as oil eases ahead of Fed decision",
+      "summary": "Reuters riporta: S&P 500, Nasdaq advance as oil eases ahead of Fed decision. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxNR21qQWZsLUZqbWRjR2YtQ3FGakpEWWVjSUVFNjVDSi01MnRiWmV3Z2pPQUsyVGhJR3UxQ1o4RjRVa2tCLXNXbnJjNE9fbE5KVzlKTEZtNHpZb3lPR0hXcFFSVGVydlpnR3RQdVM5bDE3aVI3aVowN0NqY3NHb3VDN3hlaXpLTmxkeFc3NE13dUNqYUtIMHNxRFR5M3VYZmpKUDRzVE5WLUdwRHJCeEpQM1pKaw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-af42344e83eaeca2e3e9",
+      "observed_at_utc": "2026-10-27T10:15:01Z",
+      "headline": "Bond investors are thinking less about the Fed and more about AI, deficits",
+      "summary": "Reuters riporta: Bond investors are thinking less about the Fed and more about AI, deficits. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxOTVZDTFViUjF0VS1rM2FQX1ZjYmpIQncyQi1pMldoZ1N2U2JXUjIydVFJUGN1dXV4STlvYlVEM3FPSEZaSEt3Rnkxc0R5c3JrOEg2b0g2d2pUemFMbXpKNjZ6M1NabkwxcmJrbE5sdWtnU2pDd3R0X3ZkakhTNTZraUU0ejJKdDVRR0NheWhzcXBLUnU2dGxGUXFURnJZaExIM1hTRW9LWE5KbkNJN2RZ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-c46b84d9ec8e6335d5a3",
       "observed_at_utc": "2026-10-27T13:41:44Z",
@@ -1377,34 +1407,6 @@
       "related_pairs": [],
       "source_label": "AP News · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxPNlBURXk2bjFrc3ZkS2YxamJJM1RjZ1lOblh6ZTJPWTdrbHpPWjJIdzZMdjdBR0pOZFZ1eHhOcnUxRllDOGMweV9NN1JpU28yMmpEeFMwaFBweFk5bGR1QnRBd2NfdXI4Tk1uOWdjNFRhR2dZOG9BNGVWN1ZhQjBIdkloVEsxaUxkWlJJMTFjbnRCZ3I5dkgtN0U4bXBfbnZQVzliVThn?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-6fb8f5f314dab2c60735",
-      "observed_at_utc": "2026-10-23T04:14:00Z",
-      "headline": "Gold set for second weekly loss as oil-fuelled inflation concerns bolster Fed hike outlook",
-      "summary": "Reuters riporta: Gold set for second weekly loss as oil-fuelled inflation concerns bolster Fed hike outlook. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxOWE1LcUgzRWRwVDZmX3FEaWszVHF0cFQ1ekt6M1pyQ0lfc05PQm9DekdZcXprdm1vQk00SlNEZjEwQllCd1VwMUJySnIxcF9ZblFaRHFsV3BzSU52SlJSSi1TeWxoTmdYc1h6UHhPQTFQYU41ZEdQTFRNY3l0N1Q2bnRDV2x1MjlveGtxTk1oQWlGd3ExcUZEd2QzdF9TUkVKcXotUlIycUgtb1RrZjJ3?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-533852ec70b6848cc5d0",
-      "observed_at_utc": "2026-10-23T01:04:00Z",
-      "headline": "Brent crude hits more than five-month high on Houthi-Saudi attacks, UAE oil spill",
-      "summary": "Reuters riporta: Brent crude hits more than five-month high on Houthi-Saudi attacks, UAE oil spill. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxPR2dZUC10TmJYRUk2RmM5WWpxaUx2XzBPZ0ZTV3hIR3BkaGFvZ3B2T1hhd0xEcXZOWk5LdXhLLUF5QU9XdTRQdnRyTk9jcmVNMEZvZlZBRW8xcG1TVW1fTkY2UnFrcXlVWlUwbDhRYk9pcW1fdEdzMVNRR2ZhYVl2T0RZa09uZTktZGFWRVRWSEpGeFhYVXVPR09zNDVaTVdiNDdRRHg3VFNyZWNNWVBmdkxGMWFOa05yN2NBRnRVZjF3eF9i?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
