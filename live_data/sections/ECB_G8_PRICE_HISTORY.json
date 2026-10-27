@@ -11,10 +11,10 @@
     "NZD"
   ],
   "first_as_of": "2024-08-19",
-  "last_as_of": "2026-10-26",
+  "last_as_of": "2026-10-27",
   "pair_count": 28,
   "retention_calendar_days": 800,
-  "row_count": 559,
+  "row_count": 560,
   "rows": [
     {
       "AUD": 1.6486,
@@ -6164,6 +6164,17 @@
       "JPY": 176.15,
       "NZD": 1.9695,
       "USD": 1.1188
+    },
+    {
+      "AUD": 1.5856,
+      "CAD": 1.5636,
+      "CHF": 0.9239,
+      "Date": "2026-10-27",
+      "EUR": 1.0,
+      "GBP": 0.83658,
+      "JPY": 175.97,
+      "NZD": 1.9552,
+      "USD": 1.115
     }
   ],
   "schema": "GMFQ_ECB_G8_PRICE_HISTORY_V1",
