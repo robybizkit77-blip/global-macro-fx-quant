@@ -362,9 +362,27 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
               and stat["prior_first_web_contiguous_12Q_or_24M_slots"] == 22,
               "original BLS news releases cannot promote SA vintage or fill shutdown")
         stat["US_inflation_BLS_news_release_archive_links"] = 24
-        stat["US_inflation_BLS_news_pages_read"] = 21
-        stat["US_inflation_BLS_news_index_only_links"] = 3
+        stat["US_inflation_BLS_news_pages_read"] = bls_count["official_BLS_HTML_news_releases_opened_and_read"]
+        stat["US_inflation_BLS_news_index_only_links"] = bls_count["archive_index_only_unreadable_HTML_links"]
         stat["US_inflation_exact_CPIAUCSL_first_vintage_index_levels_added"] = 0
+    # Independent Federal Reserve ALFRED historical release-day pages:
+    # seven exact 3dp SA INDEX last-observation anchors. This is NOT
+    # original BLS vintage bytes nor a 24-month CPI PIT training window.
+    alfred_release_day_mirror = None
+    if cutoff == ASOF:
+        from validation.macro.v2_us_cpiau_alfred_seven_release_day_index_v1 import (
+            audit as alfred_release_index_audit
+        )
+        alfred_release_day_mirror = alfred_release_index_audit(as_of=ASOF)
+        check(alfred_release_day_mirror["source_page_count"] == 7
+              and alfred_release_day_mirror["BLS_original_issue_day_bytes_sha256_captured"] == 0
+              and alfred_release_day_mirror["ALFRED_historical_full_vintage_CSVs_acquired"] == 0
+              and alfred_release_day_mirror["canonical_CPIAUCSL_first_releases_source_day_certified"] == 0
+              and alfred_release_day_mirror["safe_to_publish_new_D"] is False
+              and stat["prior_first_web_contiguous_12Q_or_24M_slots"] == 22,
+              "Fed mirror cannot upgrade original BLS source-day PIT history")
+        stat["USD_CPI_ALFRED_release_day_SA_index_mirror_anchors"] = 7
+        stat["USD_CPI_exact_BLS_original_source_day_vintages_certified"] = 0
     out = {
         "schema": SCHEMA, "as_of_utc": cut.isoformat(),
         "status": "24_G8_SOURCE_WINDOW_COMPLETENESS_RESEARCH_ONLY_NOT_MODEL_PIT",
@@ -378,6 +396,8 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
             swiss_alternative,
         "separate_original_BLS_news_rounded_SA_not_CPIAUCSL_exact":
             bls_news_archive,
+        "separate_ALFRED_release_day_index_mirror_not_BLS_original_PIT":
+            alfred_release_day_mirror,
         "BLS_nov2025_two_month_change_NOT_November_MOM": True,
         "SECO_25_rounded_report_months_do_NOT_close_SNB_original_exact_PIT": True,
         "observed_first_web_22_and_estimated_context_2_must_never_be_combined_as_PIT": True,
