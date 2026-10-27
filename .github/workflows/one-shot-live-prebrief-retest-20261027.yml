@@ -1,4 +1,4 @@
-name: One-off Oct27 production prebrief E2E retest - DELETE AFTER RUN
+name: One-off Oct27 production prebrief E2E retest after Rates #717 - DELETE AFTER RUN
 on:
   push:
     branches:
