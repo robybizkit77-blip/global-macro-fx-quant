@@ -130,6 +130,21 @@ class HistoricalTrainingGapAudit(unittest.TestCase):
         self.assertEqual(self.r["summary"]["US_inflation_BLS_news_index_only_links"], 0)
         self.assertEqual(self.r["summary"]["prior_first_web_contiguous_12Q_or_24M_slots"], 22)
 
+    def test_24_BLS_issuer_month_3dp_SA_index_and_same_vintage_base_remain_research(self):
+        x = self.r["separate_BLS_24_issue_month_exact_SA_indexes_not_historic_day_bytes"]
+        self.assertIsNotNone(x)
+        self.assertEqual(x["summary"]["published_month_workbooks_captured"], 24)
+        self.assertEqual(x["summary"]["exact_SA_index_and_12m_base_candidates"], 24)
+        self.assertEqual(x["summary"]["ALFRED_release_date_anchor_matches"], 7)
+        self.assertEqual(x["issuer_day_original_bytes_certified"], 0)
+        self.assertTrue(x["2025_10_unpublished_BLS_all_items_index_still_missing"])
+        self.assertTrue(x["cannot_claim_strict_consecutive_24m_training"])
+        self.assertFalse(x["safe_to_publish_new_D"])
+        self.assertEqual(self.r["summary"]["USD_CPI_BLS_issuer_month_exact_SA_index_candidates_late_capture"], 24)
+        self.assertEqual(self.r["summary"]["USD_CPI_BLS_issuer_month_same_vintage_12m_index_bases_late_capture"], 24)
+        self.assertEqual(self.r["summary"]["USD_CPI_original_day_byte_certifications"], 0)
+        self.assertEqual(self.r["summary"]["prior_first_web_contiguous_12Q_or_24M_slots"], 22)
+
     def test_missing_month_detected_by_period_not_merely_count(self):
         self.assertEqual(idx("2026-06", "Q"), idx("2026Q2", "Q"))
         self.assertEqual(idx("2025-12", "Q"), idx("2025Q4", "Q"))

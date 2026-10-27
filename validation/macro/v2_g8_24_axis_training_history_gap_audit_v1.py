@@ -383,6 +383,28 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
               "Fed mirror cannot upgrade original BLS source-day PIT history")
         stat["USD_CPI_ALFRED_release_day_SA_index_mirror_anchors"] = 7
         stat["USD_CPI_exact_BLS_original_source_day_vintages_certified"] = 0
+    # Individual publisher issue-month original domain XLSX bytes were
+    # captured *now* (Oct-2026) for 24 real BLS release months, each
+    # containing its SA index and same-edition 12m SA base. Their historic
+    # upload-time immutability is NOT proven. Missing Oct-2025 all-items
+    # remains a gap; cannot promote a strict 24-month first-vintage window.
+    us_cpi_xlsx_issue_candidates = None
+    if cutoff == ASOF:
+        from validation.macro.v2_us_blscpi_24_issue_sa_index_sha_evidence_v1 import (
+            audit as bls_xlsx_issue_audit
+        )
+        us_cpi_xlsx_issue_candidates = bls_xlsx_issue_audit()
+        issuer = us_cpi_xlsx_issue_candidates["summary"]
+        check(issuer["published_month_workbooks_captured"] == 24
+              and issuer["exact_SA_index_and_12m_base_candidates"] == 24
+              and issuer["ALFRED_release_date_anchor_matches"] == 7
+              and issuer["original_issuer_day_byte_certifications"] == 0
+              and us_cpi_xlsx_issue_candidates["safe_to_publish_new_D"] is False
+              and stat["prior_first_web_contiguous_12Q_or_24M_slots"] == 22,
+              "late BLS issue-month workbooks never certify original day PIT series")
+        stat["USD_CPI_BLS_issuer_month_exact_SA_index_candidates_late_capture"] = 24
+        stat["USD_CPI_BLS_issuer_month_same_vintage_12m_index_bases_late_capture"] = 24
+        stat["USD_CPI_original_day_byte_certifications"] = 0
     out = {
         "schema": SCHEMA, "as_of_utc": cut.isoformat(),
         "status": "24_G8_SOURCE_WINDOW_COMPLETENESS_RESEARCH_ONLY_NOT_MODEL_PIT",
@@ -398,6 +420,8 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
             bls_news_archive,
         "separate_ALFRED_release_day_index_mirror_not_BLS_original_PIT":
             alfred_release_day_mirror,
+        "separate_BLS_24_issue_month_exact_SA_indexes_not_historic_day_bytes":
+            us_cpi_xlsx_issue_candidates,
         "BLS_nov2025_two_month_change_NOT_November_MOM": True,
         "SECO_25_rounded_report_months_do_NOT_close_SNB_original_exact_PIT": True,
         "observed_first_web_22_and_estimated_context_2_must_never_be_combined_as_PIT": True,
