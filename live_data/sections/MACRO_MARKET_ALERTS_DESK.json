@@ -1,8 +1,38 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-27T07:59:21Z",
+  "generated_at_utc": "2026-10-27T08:57:13Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-98c7c8ea34d3efd19aa5",
+      "observed_at_utc": "2026-10-27T04:05:00Z",
+      "headline": "US futures and Asian stocks advance following a rally on Wall Street",
+      "summary": "AP News riporta: US futures and Asian stocks advance following a rally on Wall Street. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxOSkFDb1lyemxMSmp3U1lrVDd0a2pQZUhWT25KcmI4S1hCbkVyMm1wdVhfSHp3VXpfejFTc0VTeUlCNTNzVHRvMHBfQm43UUVOOS12anFRSGphX1pFS2V2Q1FPVm05ZHd1Q3JjdUZWWm1LWVphakxzLURUc1pjbENNbTVQS1o1ZTZmUDhMZ0RYaTdabW9F?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-a24dc2921db3b383eb9e",
+      "observed_at_utc": "2026-10-27T02:28:00Z",
+      "headline": "Indian shares muted as oil stays near 6-month high, Fed rate decision in focus",
+      "summary": "Reuters riporta: Indian shares muted as oil stays near 6-month high, Fed rate decision in focus. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxPcms4SkRwSDBJVER3QkV1VmoyX1pvTUlrcjRpSk4xSmNLNFZYNjh3Vi1LMGNfUnZPYnVscDdQZl9Xa0d4SHhKM1lDLXItNWh0aWMxNThJeVpMOEsxWXYwNUVXSWMtVWZRZjRRQlFUYk9tRUZxRUR1MWo0QUdPVE9TdzFnWDk0Qzd3NDZfYml4cGdSenVORGpfUTB6RTMyRV9BRmowWERaeWdsSFVLUU0zdFl3?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-326e30da00d22d5d52d8",
       "observed_at_utc": "2026-10-27T02:50:00Z",
@@ -1369,32 +1399,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNakIxS1gtNjFlNDJKUVl5cUZZTGlsamY3UG5ST0Y5UjEyU1RUSmx2Skh3aXZIRE95MjFUdHdXOFhVZVpRZmVUclRwSVJMNUVnYWFSOXFRRzdYWXNBbDJxZlBMbXlmVGYtQ09KOWtrWnJZTXdEQmRzeHNDUi0tMGJoWXVmaHNqZTkyRm1CQmFUcUE4OEN3YnJWQ2M1cEo0d1hNQ3BzVVVLakd2SXVo?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-4e2c5e69498bf2c3eb16",
-      "observed_at_utc": "2026-10-22T02:15:00Z",
-      "headline": "Stocks drop as Meta fans AI worries, Treasuries gain",
-      "summary": "Reuters riporta: Stocks drop as Meta fans AI worries, Treasuries gain. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxQNmlzbXFUNWNXc3U3RHRac2lYVEhXNjZmZGw0Q19yNVRORUEtak91QlJnTEVqcGhWT2xuT2RmOHdTVHlyN1JmSHRVZEpfMzgtNEVMT1RCWk1VNGswaVFYTXI4WlFpUE95aEJid1NxNVNBdzBGX0pzOUQwMnZnQ25kOVNXQQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-795f40750aed304446b5",
-      "observed_at_utc": "2026-10-22T17:56:09Z",
-      "headline": "Paraguay's central bank under pressure over politically connected lender",
-      "summary": "Reuters riporta: Paraguay's central bank under pressure over politically connected lender. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxPQkttWTU1WHM3ZHo1N04tMXo2ajRjOGpTX3VRWkFmVGhwNlZkUEc0bEtBa2hKdEFBYzhGV21BTFNfQzVjVTY4OGVPem1wdHZEZjZERkYyakdwcGVMaU5HOUxtQXZNaVlNd0dKazVQYUlpU0d2WGNhV0l1T3pJN1djVkhhbGZ6X1JlWXhQTFJXczFORWd0eHRpMHFUVjZHMkJtbGJWbWVYekVlYjNpMERSV2tqV2JNWHpyemNEQU84bHowQQ?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
