@@ -4,6 +4,7 @@ on:
     branches: [feature/macro-v2-seco-25-first-monthly-releases-20261027]
     paths:
       - '.github/workflows/macro-v2-one-shot-seco-25-20261027.yml'
+      - 'validation/macro/one_shot_retain_seco_25_official_month_reports_v1.py'
 permissions:
   contents: write
 jobs:
@@ -28,8 +29,10 @@ jobs:
           from pathlib import Path
           path=Path('validation/macro/fixtures/seco_chf_sa_registered_unemployment_25_first_monthly_reports_2024_09_2026_09.json')
           d=json.loads(path.read_text())
-          assert d['observations']==25 and d['prior_training_observations']==24
-          assert d['archived_issuer_first_rounded_reports'][0]['reference_month']=='2024-09'
+          assert d['target_observations']==25
+          assert d['verified_issuer_first_rounded_reports']>=21
+          assert d['original_reports_currently_unavailable_periods']==['2024-09','2024-10','2024-11','2024-12']
+          assert d['archived_issuer_first_rounded_reports'][0]['reference_month']=='2025-01'
           assert d['archived_issuer_first_rounded_reports'][-1]['reference_month']=='2026-09'
           assert d['archived_issuer_first_rounded_reports'][-1]['original_seco_rounded_sa_registered_unemployment_pct']==3.1
           assert d['can_replace_canonical_CH_UNEMP_RATE_history_value'] is False
