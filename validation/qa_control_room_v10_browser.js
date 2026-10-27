@@ -1607,10 +1607,13 @@ function expectedReactionFromMetrics(row){
     return out.length?out:['Servono trigger e rapporto rischio/rendimento esterni al modello'];
   };
   for(const row of rankSetup.descriptions){
-    const expected=sourcedReasons(setupFeed.pairs[row.code]).slice(0,2).join(' · ');
-    if(row.why!==expected)
+    const item=setupFeed.pairs[row.code];
+    const expected=sourcedReasons(item).slice(0,2).join(' · ');
+    const favored=item.setup.quality==='NON VALUTABILE'?'':
+      'Favore '+item.setup.structuralFav+' · ';
+    if(row.why!==favored+expected)
       throw Error(label+' risk explanation is not tied to current source state: '+
-        row.code+' expected '+expected+' received '+row.why);
+        row.code+' expected '+favored+expected+' received '+row.why);
   }
   if(!rankSetup.descriptions.some(x=>x.quality==='CON RISCHI'&&x.why?.length>5))
     throw Error(label+' current canonical risk has no explanatory text');
