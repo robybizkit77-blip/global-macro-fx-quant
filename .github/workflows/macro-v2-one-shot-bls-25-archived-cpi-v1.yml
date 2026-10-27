@@ -1,0 +1,39 @@
+name: Macro V2 One-Shot BLS Archived CPI Headline Research
+on:
+  push:
+    branches: [feature/macro-v2-us-cpi-seco-first-issuer-gap-research-20261027]
+    paths:
+      - '.github/workflows/macro-v2-one-shot-bls-25-archived-cpi-v1.yml'
+permissions:
+  contents: write
+jobs:
+  acquire:
+    if: github.repository == 'robybizkit77-blip/global-macro-fx-quant'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Read publisher first-web archived news releases (not index vintage)
+        run: |
+          python validation/macro/one_shot_acquire_us_bls_cpi_25_archived_headlines_v1.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('validation/macro/fixtures/us_bls_cpi_25_first_web_nsa_headlines_2024_08_2026_09.json').read_text())
+          assert len(r['periods_2024_08_to_2026_09_except_oct2025'])==25
+          assert r['missing_observation']['observation_value'] is None
+          assert r['source_values_not_equivalent_to_production_CPIAUCSL_SA_INDEX_YOY']
+          assert r['safe_to_publish_new_D'] is False
+          PY
+      - name: Preserve audited original web headlines on research branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/macro/fixtures/us_bls_cpi_25_first_web_nsa_headlines_2024_08_2026_09.json
+          git commit -m "Research: preserve 25 official first BLS CPI-U NSA headlines, October 2025 gap unchanged"
+          git push origin "HEAD:${{ github.ref_name }}"
