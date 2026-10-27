@@ -1,8 +1,36 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-27T16:59:41Z",
+  "generated_at_utc": "2026-10-27T17:57:15Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-45a7aa241be0bfa593da",
+      "observed_at_utc": "2026-10-27T17:41:13Z",
+      "headline": "Trump says he will visit tanker in Texas with first oil from Venezuela deal",
+      "summary": "Reuters riporta: Trump says he will visit tanker in Texas with first oil from Venezuela deal. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxQS2xReG5IbDd2VEVRZXJ1VUtaNGtlSFhpa3paSkFQVWhLWVk3NzNkendFMXNTZ3p5b3R6aTJTUzluYk1PUGlySXNEaDZPdXN2ZEx2WTF0SlRZZ1lmRmtRZnpFSVU4WGp0ZkdfY18tQlYwck9GbVBRUXR0Q2x2bVlkWDdMbVNFSVVZNnh2bXpjMm9hRjd3eThsYXRqQ0JhT05hc2hIWG93U005R2pFOXlORmZmNV9uYW02cGM4?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-a35e94290488acd21b30",
+      "observed_at_utc": "2026-10-27T05:46:00Z",
+      "headline": "Gold gains on softer oil prices ahead of Fed meeting",
+      "summary": "Reuters riporta: Gold gains on softer oil prices ahead of Fed meeting. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxQQWIyeWVhRnVBaHZfV05HanpZVFJzZDZiaC1MTEFVX0JEbWc5RVhRV3htMnJFMDNCVjBPWTJISkhha3ZWc3otaXBCTGloREJidmlqOWtXMTQ4Zks2aTA5czBzNC1OdGNuVXlqLVZ4TTk3M1VUSEZvdVdCLXV3bHJsZXBHSktGcXR0dk1wS2VYdWYxTm9ueGc?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-573afb16c165d6f6bf42",
       "observed_at_utc": "2026-10-27T16:35:18Z",
@@ -1376,35 +1404,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNLUFBR0xnWGVNdnlZWHllVVp3bmdPQ2xsMEVHbXktYXUwMVRmZlZNU1E4Z3F1R0paZVZfZkFUbFU1cG5ZZnZteFVxUXRRS0c5RmFiVUtiU25makZIMTVaR2dlbGZLQ2VRN0tKYnpmblZLdUZkajhmUFgxMG1wNEU2N21Wdno3UHFoMGhnM2EyMDZkY1JLZ0FDT1lnSWNQU0NlZTFyNUo1QkpNTWFm?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-b66a8aa3ccbcae41c6bf",
-      "observed_at_utc": "2026-10-23T11:37:44Z",
-      "headline": "India central bank to impose new leverage rules for banks from April 1, 2027",
-      "summary": "Reuters riporta: India central bank to impose new leverage rules for banks from April 1, 2027. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxPVENUVUkyNksxVm5rWUs0SFNJaWJfYkRQNTAwZ0ZNUy1XUzJmRUR6MXNkRjBwY1dRZ0Q4a09QTlQtSTRJTE8xSGpfOXAyQVZrdU1vVnljckpIR2IwMm91VzNPSW50TENOV0NRVU9RTDBvZWJvdU9UelpjWjUtZ3lWeDFMVDJrMUFoekJhVndJdjB2d1ZPVS1Xbk95UmhYUGRJeERvdGtXdmVTX2FiSWptVA?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-fb2cdf0c41d0cf6c07ae",
-      "observed_at_utc": "2026-10-22T18:02:09Z",
-      "headline": "Canadian dollar extends daily winning streak as interest rate spreads narrow",
-      "summary": "Reuters riporta: Canadian dollar extends daily winning streak as interest rate spreads narrow. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD",
-        "CAD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxNeVdjcHBnZnppTnlpcmxrRTg0c18wb0NCU01Qc0pnT3VZSk54QXltcnBXX09GbWQtdDQ3emdVbkhvcmswcVhIamtLcW1qVUU0R2VyUE0yNVlnbFZSYXkyWHpOSmlaeEhNMDJlRHVCMzR5cHd4Mmd5WFVvMWJZOTFObndJamFPQ3lqUFVzTTE4Wk5PS2syTXhodzU3VXZ5cFJVc2dlUWRMRm9CazJjUEgyb1I2MlpKTjhJeFE?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
