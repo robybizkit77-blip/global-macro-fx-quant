@@ -11,7 +11,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from verify_pages_http_delivery_v1 import FILES, verify
 
 
-def case(delayed: bool) -> dict:
+def case(delayed: bool, stale_name: str = 'payload/part-15.txt') -> dict:
     with tempfile.TemporaryDirectory() as tmp:
         root = pathlib.Path(tmp)
         for idx, name in enumerate(FILES):
@@ -30,7 +30,7 @@ def case(delayed: bool) -> dict:
                     return
                 # One outdated CDN reply, then the verified bytes; or a
                 # permanently outdated endpoint if delayed=False.
-                outdated = name == "payload/part-15.txt" and (
+                outdated = name == stale_name and (
                     requests["by_name"][name] == 1 if delayed else True
                 )
                 payload = b"old-cdn-copy" if outdated else (root / name).read_bytes()
@@ -89,7 +89,7 @@ def main():
     assert success["status"] == "PASS", success
     assert success["attempts"] >= 2, success
     assert all(x["http_200_and_sha256_match"] for x in success["checks"])
-    failure = case(False)
+    # A stale standalone Macro Series must be caught even when D and the\n    # thermometer are already up-to-date on Pages. Retain retry semantics.\n    macro_delayed = case(True, "live_data/sections/MACRO_SERIES.json")\n    assert macro_delayed["status"] == "PASS" and macro_delayed["attempts"] >= 2\n    macro_stale = case(False, "live_data/sections/MACRO_SERIES.json")\n    assert macro_stale["status"] == "FAIL"\n    wrong = next(r for r in macro_stale["checks"] if r["path"] == "live_data/sections/MACRO_SERIES.json")\n    assert not wrong["http_200_and_sha256_match"]\n    failure = case(False)
     assert failure["status"] == "FAIL", failure
     assert failure["attempts"] == 1
     assert failure["conclusion"] == "DELIVERY_NOT_CONVERGED"
