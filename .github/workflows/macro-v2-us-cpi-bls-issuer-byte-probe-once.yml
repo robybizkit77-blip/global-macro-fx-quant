@@ -1,0 +1,41 @@
+name: "Macro V2 CPI BLS original bytes diagnostic — one shot only"
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/macro-v2-us-cpi-bls-issuer-byte-probe-once.yml"
+      - "validation/macro/one_shot_us_cpi_bls_alfred_byte_probe_v1.py"
+permissions:
+  contents: read
+jobs:
+  probe-bls-original-xlsx-and-alfred-vintages:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: "Probe official CPI source bytes with strict host and size controls"
+        run: python validation/macro/one_shot_us_cpi_bls_alfred_byte_probe_v1.py --out /tmp/bls_cpi_research_probe
+      - name: "Verify never classified as source-day PIT or production Core input"
+        run: |
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/bls_cpi_research_probe/receipt.json'))
+          assert r['schema']=='GMFQ_MACRO_V2_US_CPI_BLS_ALFRED_BYTES_ONE_SHOT_PROBE_V1'
+          assert len(r['results'])==7
+          assert r['original_BLS_first_issuer_vintages_PIT_certified']==0
+          assert r['missing_2025_10_all_items_CPI_observation_filled'] is False
+          for k in ('safe_to_publish_new_D','safe_to_change_28_pairs','safe_for_beta','safe_for_forward','writes_live_data'):
+              assert r[k] is False
+          print('TRANSPORT_PROBE_PASS: research isolation; no PIT original backfill or FX score')
+          PY
+      - name: "Retain original captured bytes as short-lived diagnostic artifacts only"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: us-cpi-bls-alfred-source-transport-once
+          path: /tmp/bls_cpi_research_probe/
+          if-no-files-found: warn
+          retention-days: 7
