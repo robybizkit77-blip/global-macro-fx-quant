@@ -26,6 +26,8 @@ FILES = (
     # Assert exact public VIX source and loaded runtime payload, not only OIS/JS.
     "live_data/sections/D.json",
     "live_data/sections/MACRO_THERMOMETER_DATA.json",
+    # Canonical source and thermometer must converge as separate exact-byte files.
+    "live_data/sections/MACRO_SERIES.json",
     # Home Market Pulse: exact public bytes, not just network HTTP 200.
     "live_data/sections/NEWS_PULSE_OPERATIONAL.json",
     "live_data/sections/CALENDAR_OPERATIONAL_VIEW.json",
