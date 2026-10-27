@@ -13,6 +13,8 @@ import hashlib
 import io
 import json
 import math
+import time
+from urllib.error import HTTPError, URLError
 from datetime import date, timedelta
 from pathlib import Path
 from urllib.parse import urlencode, urlsplit
@@ -50,12 +52,22 @@ def url_for(month):
 def acquire(month):
     """Optional explicit opt-in: never run a web download in tests or during import."""
     req = Request(url_for(month), headers={"User-Agent": "GlobalMacroFXQuant-Research/1.0"})
-    with urlopen(req, timeout=20) as response:
-        ensure(urlsplit(response.geturl()).hostname == "alfred.stlouisfed.org",
-               "unexpected redirect outside ALFRED")
-        data = response.read(524289)
-    ensure(len(data) <= 524288, "unexpectedly large response")
-    return data
+    # ALFRED historic-vintage exports can be slow. Fail closed after bounded
+    # retries instead of silently replacing a vintage with today's FRED data.
+    for attempt in range(3):
+        try:
+            with urlopen(req, timeout=60) as response:
+                ensure(urlsplit(response.geturl()).hostname == "alfred.stlouisfed.org",
+                       "unexpected redirect outside ALFRED")
+                data = response.read(524289)
+            ensure(len(data) <= 524288, "unexpectedly large response")
+            return data
+        except (TimeoutError, URLError, HTTPError) as exc:
+            if attempt == 2:
+                raise RuntimeError(
+                    "Official ALFRED as-of CSV retrieval unavailable; no data substituted"
+                ) from exc
+            time.sleep(2 ** attempt)
 
 
 def inspect(month, raw):
