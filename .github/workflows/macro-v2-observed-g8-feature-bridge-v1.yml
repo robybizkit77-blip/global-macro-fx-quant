@@ -21,6 +21,10 @@ on:
       - 'validation/macro/v2_us_cpiau_alfred_seven_release_day_index_v1.py'
       - 'validation/macro/v2_us_blscpi_24_issue_sa_index_sha_evidence_v1.py'
       - 'validation/macro/v2_us_cpi_two_annual_sa_vintage_revisions_gap_policy_v1.py'
+      - 'validation/macro/v2_us_cpi_prior24_issuer_revised_sensitivity_v1.py'
+      - 'validation/macro/test_v2_us_cpi_prior24_issuer_revised_sensitivity_v1.py'
+      - 'validation/macro/fixtures/v2_us_cpi_24_prior_month_issuer_vs_revised_shadow_sensitivity_2026_10_27.json'
+      - 'validation/macro/MACRO_V2_US_CPI_CORRECTED_24_PRIOR_ISSUER_REVISED_SENSITIVITY_2026-10-27.md'
       - 'validation/macro/test_v2_us_cpi_two_annual_sa_vintage_revisions_gap_policy_v1.py'
       - 'validation/macro/fixtures/v2_us_cpi_sa_seasonal_revisions_shutdown_gap_policy_2026_10_27.json'
       - 'validation/macro/MACRO_V2_US_CPI_SA_ANNUAL_REVISIONS_TWO_STRUCTURAL_GAPS_2026-10-27.md'
@@ -101,6 +105,10 @@ on:
       - 'validation/macro/v2_us_cpiau_alfred_seven_release_day_index_v1.py'
       - 'validation/macro/v2_us_blscpi_24_issue_sa_index_sha_evidence_v1.py'
       - 'validation/macro/v2_us_cpi_two_annual_sa_vintage_revisions_gap_policy_v1.py'
+      - 'validation/macro/v2_us_cpi_prior24_issuer_revised_sensitivity_v1.py'
+      - 'validation/macro/test_v2_us_cpi_prior24_issuer_revised_sensitivity_v1.py'
+      - 'validation/macro/fixtures/v2_us_cpi_24_prior_month_issuer_vs_revised_shadow_sensitivity_2026_10_27.json'
+      - 'validation/macro/MACRO_V2_US_CPI_CORRECTED_24_PRIOR_ISSUER_REVISED_SENSITIVITY_2026-10-27.md'
       - 'validation/macro/test_v2_us_cpi_two_annual_sa_vintage_revisions_gap_policy_v1.py'
       - 'validation/macro/fixtures/v2_us_cpi_sa_seasonal_revisions_shutdown_gap_policy_2026_10_27.json'
       - 'validation/macro/MACRO_V2_US_CPI_SA_ANNUAL_REVISIONS_TWO_STRUCTURAL_GAPS_2026-10-27.md'
@@ -217,6 +225,8 @@ jobs:
         run: python -m unittest validation.macro.test_v2_us_blscpi_24_issue_sa_index_sha_evidence_v1 -v
       - name: Validate annual CPI seasonal revision vintages and Oct-2025/Oct-2026 two-gap protection
         run: python -m unittest validation.macro.test_v2_us_cpi_two_annual_sa_vintage_revisions_gap_policy_v1 -v
+      - name: Validate correct BLS CPI preceding-24 months and issuer-vs-revised Z sensitivity
+        run: python -m unittest validation.macro.test_v2_us_cpi_prior24_issuer_revised_sensitivity_v1 -v
       - name: Build read-only current observational feature receipt
         run: |
           python -m validation.macro.v2_g8_observed_feature_bridge_v1 \
@@ -692,6 +702,33 @@ jobs:
               f.write('- Strict 24 prior-month index/YoY windows fail while either gap is inside. Nonconsecutive 24-in-25 only explicitly estimated research.\\n')
               f.write('- Main G8 first-web numeric coverage **22/24 unchanged**, original-day model PIT **0**; no live Core/FX/Beta/Forward edits.\\n')
           PY
+      - name: Verify Aug-2024 original issuer-month repair and two-descriptor Z comparison (no PIT)
+        run: |
+          python -m validation.macro.v2_us_cpi_prior24_issuer_revised_sensitivity_v1 --output /tmp/macro-v2-us-cpi-corrected-24-prior-vintage-sensitivity.json
+          python - <<'PY'
+          import json, os
+          s=json.load(open('/tmp/macro-v2-us-cpi-corrected-24-prior-vintage-sensitivity.json'))
+          g=json.load(open('/tmp/macro-v2-g8-24-first-release-training-gaps.json'))
+          k=s['summary']
+          assert k['official_published_prior_months']==24
+          assert k['prior_calendar_months']==25
+          assert k['missing_prior_month']=='2025-10'
+          assert s['latest_Sep2026_excluded_from_training'] is True
+          assert k['issuer_original_day_binary_certifications']==0
+          assert abs(k['issuer_month_candidate_robust_z']['clipped_z']-2.257242)<0.00001
+          assert abs(k['asof_revised_series_robust_z']['clipped_z']-2.260357)<0.00001
+          assert k['same_direction_both_robust_z_positive'] is True
+          assert k['model_PIT_history_certified']==0
+          assert s['safe_to_publish_D_json'] is False
+          assert g['summary']['USD_CPI_issuer_month_prior_observed_corrected_23_to_24']==24
+          assert g['summary']['prior_first_web_contiguous_12Q_or_24M_slots']==22
+          assert g['summary']['genuinely_historic_PIT_training_slots_certified']==0
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as w:
+              w.write('\\n### US CPI Aug-2024 source repairs 24 PRIOR (not including latest) BLS periods\\n')
+              w.write('- First original issuer-month Aug-2024 BLS XLSX source SHA captured Oct-2026; **24 previous published months / 25 calendar**; Oct-2025 gap intact.\\n')
+              w.write('- Current vs first-issuer-month shadow Z: **+2.260357 revised** vs **+2.257242 original edition candidate**; difference -0.003115.\\n')
+              w.write('- Source-day PIT original bytes **0**; no D, FX ranking, Beta or Forward; numeric first-web 22/24 unchanged.\\n')
+          PY
       - name: Retain dated shadow evidence (never publish to live_data)
         if: always()
         uses: actions/upload-artifact@v4
@@ -713,5 +750,6 @@ jobs:
             /tmp/macro-v2-us-cpi-alfred-release-day-mirror.json
             /tmp/macro-v2-us-cpi-24-issuer-month-sa-candidates.json
             /tmp/macro-v2-us-cpi-two-annual-revisions-shutdown-gap-policy.json
+            /tmp/macro-v2-us-cpi-corrected-24-prior-vintage-sensitivity.json
           if-no-files-found: warn
           retention-days: 21

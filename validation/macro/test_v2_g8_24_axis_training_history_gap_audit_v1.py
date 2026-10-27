@@ -158,6 +158,21 @@ class HistoricalTrainingGapAudit(unittest.TestCase):
         self.assertEqual(self.r["summary"]["prior_first_web_contiguous_12Q_or_24M_slots"],22)
         self.assertEqual(self.r["summary"]["genuinely_historic_PIT_training_slots_certified"],0)
 
+    def test_aug2024_corrected_preceding24_issuer_z_shadow_keeps_22_24_PIT_unchanged(self):
+        x = self.r["separate_USD_CPI_corrected_24_prior_issued_vs_revised_Z_not_PIT"]
+        self.assertEqual(x["summary"]["official_published_prior_months"],24)
+        self.assertEqual(x["summary"]["prior_calendar_months"],25)
+        self.assertEqual(x["summary"]["missing_prior_month"],"2025-10")
+        self.assertEqual(x["summary"]["model_PIT_history_certified"],0)
+        self.assertEqual(x["Aug_2024_new_publisher_month_SA_index"],"314.121")
+        self.assertTrue(x["comparison_first_issue_vs_asof_revised_never_full_PIT"])
+        self.assertFalse(x["safe_to_publish_D_json"])
+        self.assertFalse(x["safe_to_recalculate_28_pairs"])
+        self.assertAlmostEqual(x["summary"]["robust_z_candidate_minus_revised"],-0.003115,places=6)
+        self.assertEqual(self.r["summary"]["USD_CPI_issuer_month_prior_observed_corrected_23_to_24"],24)
+        self.assertEqual(self.r["summary"]["prior_first_web_contiguous_12Q_or_24M_slots"],22)
+        self.assertEqual(self.r["summary"]["genuinely_historic_PIT_training_slots_certified"],0)
+
     def test_missing_month_detected_by_period_not_merely_count(self):
         self.assertEqual(idx("2026-06", "Q"), idx("2026Q2", "Q"))
         self.assertEqual(idx("2025-12", "Q"), idx("2025Q4", "Q"))
