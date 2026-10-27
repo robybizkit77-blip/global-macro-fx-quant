@@ -79,6 +79,12 @@ class IssuerWebAsOfTimelineTests(unittest.TestCase):
         self.assertEqual(later["latest_reference_period"], "2026Q2")
         self.assertEqual(later["first_web_value"], 5.6)
         self.assertEqual(later["asof_known_value"], 5.6)
+        prior = later["older_periods_with_revisions_visible_asof"]
+        previous = next(x for x in prior if x["reference_period"] == "2026Q1")
+        self.assertEqual(previous["first_web_value"], 5.3)
+        self.assertEqual(previous["last_visible_value_asof"], 5.4)
+        self.assertEqual(previous["last_visible_stage"], "REVISION_WEB")
+        self.assertTrue(previous["revised_publication_cannot_rewrite_prior_asof"])
         self.assertTrue(initial["selected_reference_period_is_release_period_not_current_calendar"])
 
     def test_eurostat_flash_vs_detailed_follows_visibility(self):
