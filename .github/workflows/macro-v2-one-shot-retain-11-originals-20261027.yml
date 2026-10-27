@@ -1,0 +1,37 @@
+name: Macro V2 one-shot retain 11 original G8 issuer materializations
+on:
+  push:
+    branches: [feature/macro-v2-recover-11-strict-original-series-20261027]
+    paths:
+      - '.github/workflows/macro-v2-one-shot-retain-11-originals-20261027.yml'
+permissions:
+  contents: write
+jobs:
+  retain-historical-originals:
+    if: github.repository == 'robybizkit77-blip/global-macro-fx-quant'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Retain 11 existing source materialization datasets with hard hashes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python validation/macro/one_shot_retain_g8_11_original_release_artifacts_v1.py
+      - name: Commit exactly the eleven pinned fixtures (one-time on feature branch only)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/macro/fixtures/*_STRICT_WEB_FIRST_ROWS_2018_2026.archive.xz.b64
+          git add validation/macro/fixtures/G8_STRICT_SOURCE_FIRST_RELEASE_11_ARCHIVES_MANIFEST.json
+          if git diff --cached --quiet; then
+            echo "All source fixtures already retained"
+          else
+            git commit -m "Research: retain 11 historical official source first-release archives, pinned original bytes"
+            git push origin "HEAD:${{ github.ref_name }}"
+          fi
