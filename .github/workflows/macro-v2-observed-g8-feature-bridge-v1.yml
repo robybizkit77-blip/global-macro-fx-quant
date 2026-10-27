@@ -20,6 +20,10 @@ on:
       - 'validation/macro/v2_us_bls_cpi_first_news_archive_v1.py'
       - 'validation/macro/v2_us_cpiau_alfred_seven_release_day_index_v1.py'
       - 'validation/macro/v2_us_blscpi_24_issue_sa_index_sha_evidence_v1.py'
+      - 'validation/macro/v2_us_cpi_two_annual_sa_vintage_revisions_gap_policy_v1.py'
+      - 'validation/macro/test_v2_us_cpi_two_annual_sa_vintage_revisions_gap_policy_v1.py'
+      - 'validation/macro/fixtures/v2_us_cpi_sa_seasonal_revisions_shutdown_gap_policy_2026_10_27.json'
+      - 'validation/macro/MACRO_V2_US_CPI_SA_ANNUAL_REVISIONS_TWO_STRUCTURAL_GAPS_2026-10-27.md'
       - 'validation/macro/test_v2_us_blscpi_24_issue_sa_index_sha_evidence_v1.py'
       - 'validation/macro/fixtures/v2_us_cpi_24_issue_sa_index_sha_2026_10_27.json'
       - 'validation/macro/MACRO_V2_US_BLS_24_ISSUER_MONTH_EXACT_SA_CPI_INDEX_12M_BASES_2026-10-27.md'
@@ -96,6 +100,10 @@ on:
       - 'validation/macro/v2_us_bls_cpi_first_news_archive_v1.py'
       - 'validation/macro/v2_us_cpiau_alfred_seven_release_day_index_v1.py'
       - 'validation/macro/v2_us_blscpi_24_issue_sa_index_sha_evidence_v1.py'
+      - 'validation/macro/v2_us_cpi_two_annual_sa_vintage_revisions_gap_policy_v1.py'
+      - 'validation/macro/test_v2_us_cpi_two_annual_sa_vintage_revisions_gap_policy_v1.py'
+      - 'validation/macro/fixtures/v2_us_cpi_sa_seasonal_revisions_shutdown_gap_policy_2026_10_27.json'
+      - 'validation/macro/MACRO_V2_US_CPI_SA_ANNUAL_REVISIONS_TWO_STRUCTURAL_GAPS_2026-10-27.md'
       - 'validation/macro/test_v2_us_blscpi_24_issue_sa_index_sha_evidence_v1.py'
       - 'validation/macro/fixtures/v2_us_cpi_24_issue_sa_index_sha_2026_10_27.json'
       - 'validation/macro/MACRO_V2_US_BLS_24_ISSUER_MONTH_EXACT_SA_CPI_INDEX_12M_BASES_2026-10-27.md'
@@ -207,6 +215,8 @@ jobs:
         run: python -m unittest validation.macro.test_v2_us_cpiau_alfred_seven_release_day_index_v1 -v
       - name: Validate 24 exact BLS issue-month SA CPI levels plus same-vintage 12m base as research
         run: python -m unittest validation.macro.test_v2_us_blscpi_24_issue_sa_index_sha_evidence_v1 -v
+      - name: Validate annual CPI seasonal revision vintages and Oct-2025/Oct-2026 two-gap protection
+        run: python -m unittest validation.macro.test_v2_us_cpi_two_annual_sa_vintage_revisions_gap_policy_v1 -v
       - name: Build read-only current observational feature receipt
         run: |
           python -m validation.macro.v2_g8_observed_feature_bridge_v1 \
@@ -657,6 +667,31 @@ jobs:
               f.write('- Oct-2025 formally unpublished. Source-day historical BLS raw byte captures: **0**, no PIT backtest promotion.\\n')
               f.write('- G8 research source window: **22/24** unchanged; model-ready PIT sources **0**. No Core, 28 pairs, Beta, Forward.\\n')
           PY
+      - name: Retain CPI two annual SA revision and shutdown gap research-only policy
+        run: |
+          python -m validation.macro.v2_us_cpi_two_annual_sa_vintage_revisions_gap_policy_v1 --output /tmp/macro-v2-us-cpi-two-annual-revisions-shutdown-gap-policy.json
+          python - <<'PY'
+          import json, os
+          x=json.load(open('/tmp/macro-v2-us-cpi-two-annual-revisions-shutdown-gap-policy.json'))
+          g=json.load(open('/tmp/macro-v2-g8-24-first-release-training-gaps.json'))
+          assert x['sampled_cross_issuer_month_revision_pairs']==15
+          assert x['maximum_SA_index_revision_points']=='0.170'
+          assert x['original_issuer_day_source_bytes_PIT_certified']==0
+          assert x['structurally_missing_2025_10_SA_index']
+          assert x['prospectively_missing_2026_10_SA_yoy_when_oct26_index_published']
+          assert x['future_first_vintage_eligibility_not_yet_certified']
+          assert x['safe_to_publish_new_D'] is False
+          assert g['summary']['USD_CPI_annual_seasonal_revision_pairs_verified']==15
+          assert g['summary']['USD_CPI_2025_10_index_missing_2026_10_SA_yoy_prospective_missing']
+          assert g['summary']['prior_first_web_contiguous_12Q_or_24M_slots']==22
+          assert g['summary']['genuinely_historic_PIT_training_slots_certified']==0
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as f:
+              f.write('\\n### US CPI seasonal revision and original publication gap policy (RESEARCH)\\n')
+              f.write('- **15** pinned issuer-month annual adjusted index revision pairs; max shift **0.170** index points.\\n')
+              f.write('- Original CPI SA INDEX **Oct-2025 missing** and SA index-based YoY **Oct-2026 prospectively unavailable**; BLS internal seasonal-factor estimates are not published observations.\\n')
+              f.write('- Strict 24 prior-month index/YoY windows fail while either gap is inside. Nonconsecutive 24-in-25 only explicitly estimated research.\\n')
+              f.write('- Main G8 first-web numeric coverage **22/24 unchanged**, original-day model PIT **0**; no live Core/FX/Beta/Forward edits.\\n')
+          PY
       - name: Retain dated shadow evidence (never publish to live_data)
         if: always()
         uses: actions/upload-artifact@v4
@@ -677,5 +712,6 @@ jobs:
             /tmp/macro-v2-us-cpi-first-news-archive.json
             /tmp/macro-v2-us-cpi-alfred-release-day-mirror.json
             /tmp/macro-v2-us-cpi-24-issuer-month-sa-candidates.json
+            /tmp/macro-v2-us-cpi-two-annual-revisions-shutdown-gap-policy.json
           if-no-files-found: warn
           retention-days: 21
