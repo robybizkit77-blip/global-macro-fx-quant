@@ -1,0 +1,68 @@
+name: Macro V2 US CPI ALFRED one-shot source recovery (research)
+on:
+  push:
+    branches:
+      - research-us-cpi-alfred-vintage-gate-20261027
+    paths:
+      - '.github/workflows/macro-us-cpi-alfred-once-recover-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gmfq-cpi-alfred-recovery-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  recover-original-fed-vintage-mirror:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run offline adversarial strict-source tests
+        run: |
+          python -m unittest validation.macro.test_v2_us_cpiaucl_alfred_release_day_pilot_v1 -v
+      - name: Capture both ALFRED dated CSVs and complete research receipts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/alfred-real-vintage-20261027
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from validation.macro.v2_us_cpiaucl_alfred_release_day_pilot_v1 import acquire, inspect
+          d=Path('/tmp/alfred-real-vintage-20261027')
+          for month in ('2025-09','2026-09'):
+              raw=acquire(month)
+              item=inspect(month,raw)
+              (d/f'CPIAUCSL_{month}_asof_release_day.csv').write_bytes(raw)
+              (d/f'CPIAUCSL_{month}_receipt.json').write_text(json.dumps(item,indent=2)+'\n')
+              print(json.dumps({'period':month,'sa_yoy':item['index_based_SA_YOY_pct_as_of_release_day'],'sha':item['ALFRED_exact_download_bytes_sha256'],'safe_to_publish_new_D':False},sort_keys=True))
+          PY
+      - name: Save captured public source bytes on research branch ONLY
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p validation/macro/fixtures/alfred_us_cpi_release_day_20261027
+          cp /tmp/alfred-real-vintage-20261027/* validation/macro/fixtures/alfred_us_cpi_release_day_20261027/
+          git diff --exit-code -- live_data payload site dashboard
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add validation/macro/fixtures/alfred_us_cpi_release_day_20261027/
+          git commit -m "research(usd-cpi): retain actual as-of ALFRED CSV bytes and SHA receipts"
+          git push origin HEAD:${{ github.ref_name }}
+      - name: Retain source acquisition artifacts even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macro-us-cpi-alfred-recovery-${{ github.run_id }}
+          path: /tmp/alfred-real-vintage-20261027/
+          if-no-files-found: warn
+          retention-days: 90
