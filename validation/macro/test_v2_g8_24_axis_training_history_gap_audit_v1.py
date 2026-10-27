@@ -102,6 +102,22 @@ class HistoricalTrainingGapAudit(unittest.TestCase):
         self.assertTrue(x["source_measurement_alternative_not_interchangeable"])
         self.assertNotEqual(x["training_evidence_source_id"], x["model_canonical_source_id"])
 
+    def test_BLS_original_news_receipt_does_not_upgrade_CPIAUCSL_or_22_of_24(self):
+        result = self.r
+        news = result["separate_original_BLS_news_rounded_SA_not_CPIAUCSL_exact"]
+        self.assertIsNotNone(news)
+        self.assertTrue(result["BLS_nov2025_two_month_change_NOT_November_MOM"])
+        self.assertEqual(news["summary"]["official_issuer_archive_links_documented"], 24)
+        self.assertEqual(news["summary"]["official_BLS_HTML_news_releases_opened_and_read"], 21)
+        self.assertEqual(news["summary"]["archive_index_only_unreadable_HTML_links"], 3)
+        self.assertEqual(news["summary"]["new_exact_CPIAUCSL_first_vintage_index_levels"], 0)
+        self.assertTrue(news["reported_SA_rounded_changes_not_exact_CPIAUCSL_vintages"])
+        self.assertTrue(news["2025_11_change_is_two_month_not_November_MOM"])
+        self.assertFalse(news["safe_to_publish_new_D"])
+        self.assertEqual(result["summary"]["prior_first_web_contiguous_12Q_or_24M_slots"], 22)
+        self.assertEqual(
+            result["summary"]["US_inflation_exact_CPIAUCSL_first_vintage_index_levels_added"], 0)
+
     def test_missing_month_detected_by_period_not_merely_count(self):
         self.assertEqual(idx("2026-06", "Q"), idx("2026Q2", "Q"))
         self.assertEqual(idx("2025-12", "Q"), idx("2025Q4", "Q"))
