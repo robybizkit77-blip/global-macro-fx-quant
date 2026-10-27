@@ -53,6 +53,36 @@ jobs:
           npx playwright install --only-shell chromium
           node --check validation/rates/qa_v10_eur2y10y_candidate_visual_v1.cjs
 
+      - name: Inspect already-published ECB EUR source rebase
+        id: source_state
+        shell: bash
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          src=json.load(open('live_data/sections/NATIVE_RATES_DATA.json'))
+          eur=src['EUR']
+          published=(eur.get('history_status')=='FULL_ECB_SAME_BASIS_2Y_10Y_OFFICIAL_PUBLISHED'
+                     and eur.get('historical_curve_rebase',{}).get('status')=='PUBLISHED_AFTER_SOURCE_AND_BROWSER_QA'
+                     and len(eur['history2']['dates'])==len(eur['history10']['dates'])
+                     and eur['history2']['dates'][-1]==eur['history10']['dates'][-1]==eur['date']
+                     and len(eur['history2']['dates'])>=282)
+          print('published='+str(published).lower())
+          PY
+      - name: Verify published rebase status is not mistaken for a fresh candidate
+        if: steps.source_state.outputs.published == 'true'
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('live_data/sections/NATIVE_RATES_DATA.json'))['EUR']
+          r=d['historical_curve_rebase']
+          assert r['source_rebase_not_market_move']
+          assert r['chf_reference_beta_recalibration_not_official_chf_yield']
+          assert r['historical_first_release_pit_certified'] is False
+          assert d['history2']['dates'][-1]==d['history10']['dates'][-1]==d['date']
+          print('ECB_PREVIOUSLY_PUBLISHED_REBASE_SOURCE_CHECK_PASS',d['date'])
+          PY
+
       - name: Targeted actual v10 Rates/CHF browser QA on unchanged original site
         shell: bash
         run: |
@@ -72,6 +102,7 @@ jobs:
           echo V10_ORIGINAL_1440_390_FULL_BROWSER_GREEN
 
       - name: Fetch original official ECB paired yields and build candidate
+        if: steps.source_state.outputs.published != 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -96,6 +127,7 @@ jobs:
           PY
 
       - name: Targeted actual v10 Rates/CHF browser QA on corrected source in detached worktree
+        if: steps.source_state.outputs.published != 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -140,6 +172,7 @@ jobs:
           echo V10_EUR_2Y10Y_CANDIDATE_1440_390_FULL_BROWSER_GREEN
 
       - name: Confirm before/after browser screenshot evidence and two viewports
+        if: steps.source_state.outputs.published != 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -156,6 +189,28 @@ jobs:
           print('V10_1440_390_BROWSER_BASELINE_CANDIDATE_IMAGES_VERIFIED',len(b),sorted(b))
           PY
 
+      - name: Check approved published 1440/390 browser receipts
+        if: steps.source_state.outputs.published == 'true'
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.load(open('/tmp/eur-original-v10-browser-receipt.json'))
+          assert r['status']=='TARGETED_BROWSER_CANDIDATE_GREEN',r
+          assert len(r['cases'])==2
+          assert {x['label'] for x in r['cases']}=={'desktop','mobile'}
+          assert all(x['observed']['source_rebase_status']=='PUBLISHED_AFTER_SOURCE_AND_BROWSER_QA'
+                     and x['observed']['no_core_effect']
+                     and x['observed']['no_pair_effect']
+                     and x['observed']['proxy_not_official']
+                     for x in r['cases'])
+          imgs={x.name for x in Path('/tmp/eur-v10-visual-proof/before').glob('*.png')}
+          assert {'desktop-v10-rates.png','desktop-v10-home.png',
+                  'mobile-v10-rates.png','mobile-v10-home.png'}<=imgs,imgs
+          print('APPROVED_ECB_REBASE_PUBLISHED_DESKTOP_MOBILE_PROOF_PASS')
+          PY
+
       - name: Save desktop/mobile evidence both before/after
         if: always()
         uses: actions/upload-artifact@v4
@@ -169,4 +224,8 @@ jobs:
         if: always()
         run: |
           echo 'The actual approved 32-part v10 CHF/EUR Rates rendering was browser-tested before/after at 1440px and 390px. This is targeted QA, NOT the full v10 A-Z suite.' >> "$GITHUB_STEP_SUMMARY"
-          echo '**Candidate staging only: no live publication. CHF 10Y +11.55bp historical beta proxy rebase needs explicit low-confidence label review.**' >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ steps.source_state.outputs.published }}" = "true" ]; then
+            echo '**Already published ECB historical rebase: verified current official 2Y/10Y and CHf low-confidence research proxy without rerunning obsolete fixed-period candidate. No operational data rewritten in this PR.**' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo '**Unpublished ECB source: staged research-only candidate with full before/after browser QA. No live promotion.**' >> "$GITHUB_STEP_SUMMARY"
+          fi
