@@ -78,7 +78,7 @@ class HistoricalTrainingGapAudit(unittest.TestCase):
         x = self.r["slots"]["USD.labour"]
         self.assertIn("2025-10", x["missing_required_prior_periods"])
         self.assertFalse(x["prior_initial_web_sequence_complete_mathematically"])
-        self.assertEqual(x["training_evidence_source_id"], "UNRATE")
+        self.assertEqual(x["training_evidence_source_id"], "LNS14000000")
         self.assertEqual(x["training_web_data_source_type"],
                          "BLS_LNS14000000_TO_FRED_UNRATE_LINEAGE_NOT_ORIGINAL_FULL_CHAIN")
 
@@ -89,6 +89,7 @@ class HistoricalTrainingGapAudit(unittest.TestCase):
         self.assertIn("SECO_ONE_DECIMAL_NOT_CANONICAL_SNB_EXACT_FIRST_VINTAGE",
                       x["current_PIT_research_comparability_caveats"])
         self.assertTrue(x["source_measurement_alternative_not_interchangeable"])
+        self.assertNotEqual(x["training_evidence_source_id"], x["model_canonical_source_id"])
 
     def test_missing_month_detected_by_period_not_merely_count(self):
         self.assertEqual(idx("2026-06", "Q"), idx("2026Q2", "Q"))
