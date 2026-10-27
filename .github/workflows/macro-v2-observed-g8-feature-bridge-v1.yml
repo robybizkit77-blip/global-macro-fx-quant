@@ -434,8 +434,12 @@ jobs:
           assert s['genuinely_historic_PIT_training_slots_certified']==0
           assert s['retained_official_first_release_source_archives_ingested']==11
           assert s['retained_source_original_issuer_records_imported']==1003
-          assert s['prior_first_web_contiguous_12Q_or_24M_slots']>=20
-          assert s['slots_missing_required_initial_release_periods']<=4
+          assert s['prior_first_web_contiguous_12Q_or_24M_slots']==22
+          assert s['slots_missing_required_initial_release_periods']==2
+          assert s['missing_required_prior_periods_total']==46
+          assert s['slots_with_semantic_or_definition_caveats']==8
+          assert len(d['slots']['USD.inflation']['missing_required_prior_periods'])==24
+          assert len(d['slots']['CHF.labour']['missing_required_prior_periods'])==22
           assert s['currency_FX_strength_scores_approved']==0
           assert s['cross_currency_pair_rankings_changed']==0
           assert d['safe_to_publish_new_D'] is False
