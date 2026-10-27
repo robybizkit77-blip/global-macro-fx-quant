@@ -6,6 +6,12 @@ on:
     paths:
       - '.github/workflows/macro-v2-observed-g8-feature-bridge-v1.yml'
       - 'validation/macro/v2_g8_observed_feature_bridge_v1.py'
+      - 'validation/macro/v2_g8_gdp_first_web_growth_features_v1.py'
+      - 'validation/macro/test_v2_g8_gdp_first_web_growth_features_v1.py'
+      - 'validation/macro/v2_g8_gdp_unified_web_research_v1.py'
+      - 'validation/macro/v2_g8_gdp_multiquarter_pit_guard_v1.py'
+      - 'validation/macro/fixtures/v2_g8_gdp_*'
+      - 'validation/macro/fixtures/v2_g8_quarterly_gdp_q2_2026_web_release_ledger_v1.json'
       - 'validation/macro/v2_us_shutdown_gap_research_v1.py'
       - 'validation/macro/test_v2_g8_observed_feature_bridge_v1.py'
       - 'validation/macro/v2_g8_quarterly_gdp_web_release_ledger_v1.py'
@@ -18,6 +24,12 @@ on:
     paths:
       - '.github/workflows/macro-v2-observed-g8-feature-bridge-v1.yml'
       - 'validation/macro/v2_g8_observed_feature_bridge_v1.py'
+      - 'validation/macro/v2_g8_gdp_first_web_growth_features_v1.py'
+      - 'validation/macro/test_v2_g8_gdp_first_web_growth_features_v1.py'
+      - 'validation/macro/v2_g8_gdp_unified_web_research_v1.py'
+      - 'validation/macro/v2_g8_gdp_multiquarter_pit_guard_v1.py'
+      - 'validation/macro/fixtures/v2_g8_gdp_*'
+      - 'validation/macro/fixtures/v2_g8_quarterly_gdp_q2_2026_web_release_ledger_v1.json'
       - 'validation/macro/v2_us_shutdown_gap_research_v1.py'
       - 'validation/macro/test_v2_g8_observed_feature_bridge_v1.py'
       - 'validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json'
@@ -47,6 +59,8 @@ jobs:
           python-version: '3.12'
       - name: Test G8 feature transformation and no-score isolation
         run: python -m unittest validation.macro.test_v2_g8_observed_feature_bridge_v1 -v
+      - name: Test original-web GDP 12-quarter prior-only Growth normalisation
+        run: python -m unittest validation.macro.test_v2_g8_gdp_first_web_growth_features_v1 -v
       - name: Build read-only current observational feature receipt
         run: |
           python -m validation.macro.v2_g8_observed_feature_bridge_v1 \
@@ -58,6 +72,11 @@ jobs:
           assert x['summary']['registered_inflation_labour_slots']==16
           assert x['summary']['growth_scores_computed']==0
           assert x['summary']['fx_strength_scores_computed']==0
+          assert x['summary']['gdp_descriptive_research_growth_features']==8
+          assert x['summary']['gdp_features_with_definition_caveats']==2
+          assert x['gdp_initial_web_features_not_model_growth_scores'] is True
+          assert all(t['safe_to_promote_growth_score'] is False for t in
+                     x['growth_quarterly_gdp_initial_web_research_features'].values())
           assert x['summary']['descriptive_inputs_strict_plus_separate_estimates'] <= 16
           assert x['optional_us_gap_estimates_not_replacements_for_strict_z'] is True
           assert all(z['allow_macro_score'] is False and z['allow_pair_ranking'] is False
@@ -78,6 +97,10 @@ jobs:
               out.write('- This exception is limited to one documented 2025-10 US gap; no missing economic values are filled.\n')
               out.write('- GDP Q2 2026 official-web descriptions visible: **%s/8**\n' %
                         x['summary']['growth_web_observations_visible'])
+              out.write('- GDP quantitative descriptive 12-quarter Growth features: **%s/8** (initial web statements, NOT PIT)\n' %
+                        x['summary']['gdp_descriptive_research_growth_features'])
+              out.write('- GDP definitions caveated (EA population/CHF sports): **%s/8**; not admitted to FX scores or comparisons.\n' %
+                        x['summary']['gdp_features_with_definition_caveats'])
               out.write('- New Growth scores: **0**; FX strength and pair thesis updates: **0**\n')
               for key, val in x['inflation_labour'].items():
                   if val['research_robust_z'] is None:

@@ -261,6 +261,11 @@ def build(series, heatmap, registry, *, as_of):
                 dim, entry, source_row, heatmap["currencies"]["USD"][dim],
                 strict, day)
     growth = growth_research(day)
+    from validation.macro.v2_g8_gdp_first_web_growth_features_v1 import run as gdp_feature_run
+    gdp_features = gdp_feature_run(as_of=as_of + "T00:00:00Z")
+    require(gdp_features["summary"]["g8_currencies"] == 8 and
+            gdp_features["can_publish_D_json"] is False,
+            "GDP current research must remain separate from live Growth model")
     scored = sum(x["research_robust_z"] is not None for x in features.values())
     optional_estimate_count = sum(
         x.get("estimated_research_robust_z") is not None
@@ -272,6 +277,8 @@ def build(series, heatmap, registry, *, as_of):
         "inflation_labour": features,
         "us_bls_shutdown_research_estimates": shutdown_estimates,
         "growth_quarterly_gdp_web": growth,
+        "growth_quarterly_gdp_initial_web_research_features": gdp_features["features"],
+        "growth_research_evidence_receipt_sha256": gdp_features["receipt_sha256"],
         "summary": {
             "g8_currencies": 8, "economic_dimension_slots": 24,
             "registered_inflation_labour_slots": len(features),
@@ -283,19 +290,25 @@ def build(series, heatmap, registry, *, as_of):
             "growth_web_observations_visible": sum(
                 x["status"] == "OFFICIAL_WEB_STATEMENT_RESEARCH_NOT_PIT_CERTIFIED"
                 for x in growth.values()),
+            "gdp_descriptive_research_growth_features":
+                gdp_features["summary"]["growth_observational_features_computed"],
+            "gdp_features_with_definition_caveats":
+                gdp_features["summary"]["growth_observational_features_with_definition_caveats"],
             "growth_scores_computed": 0, "fx_strength_scores_computed": 0,
         },
         "current_values_are_not_verified_first_release_vintages": True,
         "no_cross_country_rank_or_mixed_frequency_aggregation": True,
         "no_inference_from_inflation_pressure_to_fx_direction": True,
         "optional_us_gap_estimates_not_replacements_for_strict_z": True,
+        "gdp_initial_web_features_not_model_growth_scores": True,
         "safe_to_publish_new_D": False, "safe_to_update_pair_theses": False,
         "safe_to_use_for_beta": False, "safe_to_use_for_forward": False,
         "writes_live_data": False,
     }
     receipt["input_fingerprint_sha256"] = hashlib.sha256(
         json.dumps({"as_of": as_of, "features": features, "growth": growth,
-                    "us_gap_estimates": shutdown_estimates},
+                    "us_gap_estimates": shutdown_estimates,
+                    "gdp_first_web_research_sha256": gdp_features["receipt_sha256"]},
                    sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     return receipt
 
