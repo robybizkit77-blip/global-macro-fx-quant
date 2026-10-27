@@ -95,6 +95,7 @@ def asof_source(source, cutoff):
         return {**base, "status": "NOT_YET_VISIBLE_IN_THIS_BOUNDED_PUBLISHER_LEDGER",
                 "latest_reference_period": None, "first_web_value": None,
                 "asof_known_value": None, "known_revision_count_for_latest": 0,
+                "older_periods_with_revisions_visible_asof": [],
                 "first_gate_utc": None, "last_gate_utc": None}
     latest_first = max(first, key=lambda e: e["reference_period_index"])
     period = latest_first["reference_period"]
@@ -102,6 +103,25 @@ def asof_source(source, cutoff):
     # Same period can have flash/detail/revision, possibly all later than the
     # latest first event: sort by actual *available* gate, not fixture order.
     latest = max(same_period, key=lambda e: timestamp(e["visible_from_utc"]))
+    # A newer month/quarter can arrive alongside revisions of OLDER periods.
+    # Preserve those as-of revisions instead of dropping them just because the
+    # dashboard headline selected the newest observed period (e.g. NZD Q1).
+    revisions_older = []
+    for first_event in sorted(first, key=lambda e: e["reference_period_index"]):
+        if first_event["reference_period"] == period:
+            continue
+        old_period = first_event["reference_period"]
+        old_events = [e for e in events if e["reference_period"] == old_period]
+        revised = max(old_events, key=lambda e: timestamp(e["visible_from_utc"]))
+        if revised["stage"] != "FIRST_WEB":
+            revisions_older.append({
+                "reference_period": old_period,
+                "first_web_value": first_event["reported_value"],
+                "last_visible_value_asof": revised["reported_value"],
+                "last_visible_stage": revised["stage"],
+                "last_visible_gate_utc": revised["visible_from_utc"],
+                "revised_publication_cannot_rewrite_prior_asof": True,
+            })
     return {
         **base,
         "status": "OFFICIAL_WEB_CANDIDATE_VISIBLE_NOT_FULL_PIT_ARCHIVE",
@@ -111,6 +131,7 @@ def asof_source(source, cutoff):
         "known_revision_count_for_latest":
             sum(x["stage"] in ("DETAILED_WEB", "REVISION_WEB")
                 for x in same_period),
+        "older_periods_with_revisions_visible_asof": revisions_older,
         "first_gate_utc": latest_first["visible_from_utc"],
         "last_gate_utc": latest["visible_from_utc"],
         "first_source_url": latest_first["source_url"],
