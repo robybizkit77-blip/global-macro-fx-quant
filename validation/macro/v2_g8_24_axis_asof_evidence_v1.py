@@ -155,9 +155,13 @@ def source_snapshot(*, cutoff, registry, source_candidates=None,
     rows = {}
     for currency in FX:
         g = growth["features"][currency]
-        target = _base(currency, "growth",
-                       "OFFICIAL_REAL_GDP_SEASONALLY_ADJUSTED_QOQ",
-                       "Q")
+        # Growth is only the separately versioned V2 GDP RESEARCH metric.
+        # There is no 8-country GDP source registration in the 16-slot
+        # canonical Inflation/Labour registry: never invent one here.
+        target = _base(currency, "growth", None, "Q")
+        target["growth_metric_research_target"] = (
+            "OFFICIAL_REAL_GDP_SEASONALLY_ADJUSTED_QOQ")
+        target["has_canonical_GDP_source_registered_in_16_slot_registry"] = False
         _set_first(
             target, period=g["latest_initial_period"],
             value=g["latest_nonannualized_qoq_pct"],
