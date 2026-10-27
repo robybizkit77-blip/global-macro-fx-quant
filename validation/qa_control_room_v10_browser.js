@@ -1895,7 +1895,9 @@ function expectedReactionFromMetrics(row){
   });
   if(!eurChecklist.exists||eurChecklist.rows.length!==3||
      !eurChecklist.rows[0].includes('USD')||!eurChecklist.rows[1].includes('EUR')||
-     !eurChecklist.rows[2].includes('Estensione del prezzo:')||
+     (setupFeed.pairs.EURUSD.setup.extension.state==='ADVANCED'
+        ?!eurChecklist.rows[2].includes('Estensione del prezzo:')
+        :eurChecklist.rows[2].includes('Estensione del prezzo:'))||
      !eurChecklist.rows[2].includes('Timing:')||
      !eurChecklist.rows[2].includes('Posizionamento:')||
      !eurChecklist.text.includes('Solo uno dei due pilastri strutturali separa chiaramente le valute')||
