@@ -29,6 +29,11 @@ DASH_OWNED = {
     "OIS_SOURCE_READINESS_VIEW.json",
 }
 DERIVED_SIDECARS = {"RATES_AUDIT_METADATA.json","OIS_DATA.json"}  # Non-Home-direct metadata and official OIS canonical source requiring strict public parity.
+# MACRO_SERIES powers canonical statistical research and public standalone readers.
+# The active Home reads the derived thermometer, so do NOT add to DASH_OWNED:
+# that set is required to match exactly the active Preview feed() references.
+CANONICAL_STANDALONE_PUBLIC = {"MACRO_SERIES.json"}
+
 MARKET_OWNED = {
     "NATIVE_RATES_DATA.json", "V250_COT_CHART_DATA.json",
     "PAIR_SETUP_OPERATIONAL_VIEW.json", "ECB_G8_PRICE_HISTORY.json",
@@ -73,6 +78,17 @@ def main() -> int:
         assert '"' + "live_data/sections/" + name + '"' in public, (
             "Derived sidecar not HTTP hash-verified", name
         )
+    for name in sorted(CANONICAL_STANDALONE_PUBLIC):
+        assert name in copied, f"Canonical Macro source missing from Pages copy loop: {name}"
+        assert dash.count("live_data/sections/" + name) >= 3, (
+            "Standalone Macro source missing from Pages triggers/allowlist/staging", name
+        )
+        assert '"' + "live_data/sections/" + name + '"' in public, (
+            "Standalone Macro source missing from exact-byte public HTTP proof", name
+        )
+        assert name not in DASH_OWNED and name not in MARKET_OWNED, (
+            "A canonical standalone source cannot acquire a second writer", name
+        )
     for name in sorted(MARKET_OWNED):
         assert market.count("live_data/sections/" + name) >= 3, (
             "Market mirror trigger/copy/allowlist incomplete", name
@@ -98,6 +114,7 @@ def main() -> int:
         "dashboard_publisher": sorted(DASH_OWNED),
         "market_publisher": sorted(MARKET_OWNED),
         "derived_sidecars": sorted(DERIVED_SIDECARS),
+        "canonical_standalone_public": sorted(CANONICAL_STANDALONE_PUBLIC),
         "missing": [], "duplicate_owners": [],
     }, sort_keys=True))
     return 0
