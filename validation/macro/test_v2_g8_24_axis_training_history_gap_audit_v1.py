@@ -145,6 +145,19 @@ class HistoricalTrainingGapAudit(unittest.TestCase):
         self.assertEqual(self.r["summary"]["USD_CPI_original_day_byte_certifications"], 0)
         self.assertEqual(self.r["summary"]["prior_first_web_contiguous_12Q_or_24M_slots"], 22)
 
+    def test_USD_CPI_annual_revision_history_and_2026_yoy_gap_remain_nonPIT(self):
+        x = self.r["separate_USD_CPI_annual_SA_revisions_and_missing_YOY_gap_policy"]
+        self.assertEqual(x["sampled_cross_issuer_month_revision_pairs"], 15)
+        self.assertEqual(x["maximum_SA_index_revision_points"], "0.170")
+        self.assertTrue(x["structurally_missing_2025_10_SA_index"])
+        self.assertTrue(x["prospectively_missing_2026_10_SA_yoy_when_oct26_index_published"])
+        self.assertFalse(x["original_CPIAUCSL_24m_strict_training_approved"])
+        self.assertFalse(x["safe_to_publish_new_D"])
+        self.assertEqual(self.r["summary"]["USD_CPI_annual_seasonal_revision_pairs_verified"], 15)
+        self.assertTrue(self.r["summary"]["USD_CPI_2025_10_index_missing_2026_10_SA_yoy_prospective_missing"])
+        self.assertEqual(self.r["summary"]["prior_first_web_contiguous_12Q_or_24M_slots"],22)
+        self.assertEqual(self.r["summary"]["genuinely_historic_PIT_training_slots_certified"],0)
+
     def test_missing_month_detected_by_period_not_merely_count(self):
         self.assertEqual(idx("2026-06", "Q"), idx("2026Q2", "Q"))
         self.assertEqual(idx("2025-12", "Q"), idx("2025Q4", "Q"))

@@ -405,6 +405,27 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
         stat["USD_CPI_BLS_issuer_month_exact_SA_index_candidates_late_capture"] = 24
         stat["USD_CPI_BLS_issuer_month_same_vintage_12m_index_bases_late_capture"] = 24
         stat["USD_CPI_original_day_byte_certifications"] = 0
+    # Annual CPI seasonal revisions empirically demonstrate why 2026
+    # history must NOT overwrite earlier information sets; October 2025
+    # missing CPI INDEX separately implies October 2026 missing SA YoY
+    # because its denominator is unpublished. Gap-aware estimates only.
+    us_cpi_annual_revision_gap_policy = None
+    if cutoff == ASOF:
+        from validation.macro.v2_us_cpi_two_annual_sa_vintage_revisions_gap_policy_v1 import (
+            audit as annual_cpi_revision_audit
+        )
+        us_cpi_annual_revision_gap_policy = annual_cpi_revision_audit()
+        policy = us_cpi_annual_revision_gap_policy
+        check(policy["sampled_cross_issuer_month_revision_pairs"] == 15
+              and policy["maximum_SA_index_revision_points"] == "0.170"
+              and policy["original_issuer_day_source_bytes_PIT_certified"] == 0
+              and policy["structurally_missing_2025_10_SA_index"] is True
+              and policy["prospectively_missing_2026_10_SA_yoy_when_oct26_index_published"] is True
+              and policy["safe_to_publish_new_D"] is False
+              and stat["prior_first_web_contiguous_12Q_or_24M_slots"] == 22,
+              "annual CPI revision/gap quality must not create new model PIT data")
+        stat["USD_CPI_annual_seasonal_revision_pairs_verified"] = 15
+        stat["USD_CPI_2025_10_index_missing_2026_10_SA_yoy_prospective_missing"] = True
     out = {
         "schema": SCHEMA, "as_of_utc": cut.isoformat(),
         "status": "24_G8_SOURCE_WINDOW_COMPLETENESS_RESEARCH_ONLY_NOT_MODEL_PIT",
@@ -422,6 +443,8 @@ def evidence(*, cutoff=ASOF, source_candidates=None, GDP_rows=None,
             alfred_release_day_mirror,
         "separate_BLS_24_issue_month_exact_SA_indexes_not_historic_day_bytes":
             us_cpi_xlsx_issue_candidates,
+        "separate_USD_CPI_annual_SA_revisions_and_missing_YOY_gap_policy":
+            us_cpi_annual_revision_gap_policy,
         "BLS_nov2025_two_month_change_NOT_November_MOM": True,
         "SECO_25_rounded_report_months_do_NOT_close_SNB_original_exact_PIT": True,
         "observed_first_web_22_and_estimated_context_2_must_never_be_combined_as_PIT": True,
