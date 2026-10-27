@@ -2328,7 +2328,9 @@ async function mountPairRankedList(doc){
    overlap.dataset.mostRepeated=c.join(',');
    overlap.dataset.frequency=String(focus.max);
    overlap.dataset.favoredCount=fav;
-   overlap.textContent='Prime 8 · '+focus.withRisks+'/8 CON RISCHI · '+
+   // Keep source quality in dataset for exact audits; explain concentration
+   // to people without blanket "CON RISCHI" labels on every top-eight pair.
+   overlap.textContent='Prime 8 · '+
      (c.length===1?'Valuta più ricorrente: ':'Valute più ricorrenti: ')+
      names+' in '+focus.max+'/8 coppie (valuta favorita dal modello storico in '+fav+'/8). '+
      'Sovrapposizione valutaria, non correlazione né rischio portafoglio stimati.';
@@ -2839,7 +2841,7 @@ async function mountScreenerBlockers(doc){
   '<div class="gmfq-screener-quality" aria-label="Distribuzione esatta dei 28 setup FX">'+
    '<span data-quality="DA CONFERMARE"><b>'+counts['DA CONFERMARE']+'</b> da confermare</span>'+
    '<span data-quality="DA MONITORARE"><b>'+counts['DA MONITORARE']+'</b> da monitorare</span>'+
-   '<span data-quality="CON RISCHI"><b>'+counts['CON RISCHI']+'</b> con rischi</span>'+
+   '<span data-quality="CON RISCHI"><b>'+counts['CON RISCHI']+'</b> con criticità da verificare</span>'+
    '<span data-quality="NON VALUTABILE"><b>'+counts['NON VALUTABILE']+'</b> non valutabili</span></div>'+
   '<div class="gmfq-screener-review" data-ranking="NONE" data-trade-signals="NONE">'+
    '<p class="gmfq-screener-review-title">Stati da verificare nel motore · '+reviewPairs.length+' coppie</p>'+
