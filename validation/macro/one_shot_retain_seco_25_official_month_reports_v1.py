@@ -80,20 +80,29 @@ def extract_seasonal_first_rate(raw,key):
     year_ref,month_ref=map(int,key.split("-"))
     require((release_day.year-year_ref)*12+release_day.month-month_ref in (1,2),
             "report date not following reported month")
-    # Original report table on printed p.6, physical PDF index 5.
+    # Read first-release SA REGISTERED unemployment from the independent
+    # publisher's "Kurzübersicht" (physical PDF page 4), not the separate
+    # seasonally adjusted JOBSEEKER rate in the later part of Table 1.
+    summary=document[4].get_text("text",sort=True).replace("\u00ad","")
+    clean=" ".join(summary.split())
+    match=re.search(r"Die\s+saisonbereinigte\s+Arbeitslosenquote\b(.{0,260}?)\.",clean,re.I)
+    require(match is not None,"SECO original SA unemployment sentence missing: "+key)
+    quoted=re.findall(r"(?:auf|bei)\s+(\d{1,2},\d)\s*%",match.group(1),re.I)
+    require(len(quoted)==1,"SECO SA unemployment quote not unique: "+key+" "+match.group(1))
+    rate=float(quoted[0].replace(",","."))
+    require(1.0<=rate<=6.0,"SA registered unemployment rate outside plausible 1–6%")
     table=document[5].get_text("text",sort=True).replace("\u00ad","")
-    match=re.search(r"Arbeitslosenquote.{0,40}?(?:\n|$).*?Saisonbereinigt",table,re.S)
-    require(match is not None and "Tabelle 1" in table,"official unemployment table missing")
-    segment=table[match.end():match.end()+190]
-    numbers=re.findall(r"(?<!\d)(\d{1,2},\d)(?!\d)",segment)
-    # First number is first-report value in the economic month column;
-    # second and third are in the previous-month/year comparison columns.
-    require(len(numbers)>=3,"seasonally adjusted rate comparison columns missing")
-    rate=float(numbers[0].replace(",","."))
-    require(1.0<=rate<=8.0,"implausible Swiss registered SA rate")
+    require("Tabelle 1" in table and "Langzeitarbeitslose" in table and
+            "Arbeitslosenquote" in table,"SECO table1 not found")
+    # Cross-check the *unemployment* row only, up to "Langzeitarbeitslose",
+    # to avoid confusing it with the distinct jobseeker and vacancy rates.
+    before_long=table.split("Langzeitarbeitslose",1)[0]
+    require(quoted[0] in before_long,
+            "SECO summary rate not confirmed in Table 1: "+key)
     return rate,release_day,len(document),{
-        "table_rate_current":numbers[0],"table_rate_previous":numbers[1],
-        "table_rate_last_year":numbers[2]}
+        "summary_original_quote":"Die saisonbereinigte Arbeitslosenquote "+match.group(1),
+        "summary_rate_pct_one_decimal":quoted[0],
+        "table_one_unemployment_subsection_rate_crosscheck":True}
 
 def run():
     urls,page_sha=discover()
@@ -140,6 +149,9 @@ def run():
     require(rows[-9]["reference_month"]=="2026-01" and
             rows[-9]["original_seco_rounded_sa_registered_unemployment_pct"]==2.9,
             "January 2026 independently reviewed SECO first headline differs")
+    jan25=next(x for x in rows if x["reference_month"]=="2025-01")
+    require(jan25["original_seco_rounded_sa_registered_unemployment_pct"]==2.7,
+            "January 2025 independently verified SECO first release is 2.7%, never 4.5% jobseekers")
     output={
         "schema":"GMFQ_MACRO_V2_CHF_25_TARGET_ISSUER_MONTHS_PARTIAL_RECOVERY_V1",
         "source_publisher":"Swiss State Secretariat for Economic Affairs (SECO)",
