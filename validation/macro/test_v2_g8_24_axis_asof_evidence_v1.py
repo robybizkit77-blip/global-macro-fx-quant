@@ -123,7 +123,7 @@ class SynchronizedMacroEvidenceTests(unittest.TestCase):
     def test_poisoned_registries_and_archived_sources_fail_closed(self):
         wrong = copy.deepcopy(self.registry)
         wrong["series"]["AUD.inflation"]["frequency"] = "M"
-        with self.assertRaisesRegex(ValueError, "canonical"):
+        with self.assertRaisesRegex(ValueError, "four acknowledged semantic source mismatches"):
             source_snapshot(cutoff=self.day, registry=wrong)
         wrong = copy.deepcopy(self.registry)
         del wrong["series"]["USD.labour"]
