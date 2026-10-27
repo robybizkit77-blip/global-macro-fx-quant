@@ -18,7 +18,7 @@ jobs:
           python-version: "3.12"
       - name: Fetch BLS Aug 2024 CPI SA index from dated issuer workbook
         run: python -m validation.macro.one_shot_us_blscpi_aug2024_prior24_source_v1
-      - name: Strict proof: never original issuer-day historical bytes / PIT certification
+      - name: 'Strict proof - never original issuer-day historical bytes or PIT certification'
         run: |
           python - <<'PY'
           import json
