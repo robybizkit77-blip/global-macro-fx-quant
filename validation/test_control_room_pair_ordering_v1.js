@@ -120,7 +120,7 @@ function expectedSourcedReasons(code){
  if(x.price.state==='BAD')reasons.push('Prezzo contro la tesi');
  else if(x.price.state==='NEUTRAL')reasons.push('Prezzo non conferma');
  if(x.timing.state==='ADVERSE')reasons.push('Timing contrario');
- if(x.extension.state==='ADVANCED')reasons.push('Prezzo già avanzato');
+ if(['ADVANCED','EXTENDED'].includes(x.extension.state))reasons.push('Prezzo già avanzato');
  if(p.transition.state==='DIVERGENZA RELATIVA DA MONITORARE')reasons.push('Dinamica relativa divergente');
  if(x.timing.state==='UNCERTAIN')reasons.push('Timing incerto');
  if(x.timing.state==='MIXED')reasons.push('Timing misto');
@@ -157,6 +157,28 @@ assert.equal(mutate(x=>{x.quality_distribution.UNKNOWN=0}),null,
 assert.equal(mutate(x=>{x.quality_distribution[zeroBucket]=-1}),null,
   'negative counts are rejected');
 assert.equal(mutate(x=>{x.quality_distribution['CON RISCHI']+=1}),null);
+// The canonical runtime can emit EXTENDED for an overextended price. The
+// previously recognized ADVANCED and current EXTENDED are both bearish for
+// entry attractiveness (not a new directional FX signal). Unknown enums
+// must still fail closed rather than silently count as NORMAL.
+const eligibleExtension=Object.keys(setup.pairs).find(code=>
+  setup.pairs[code].setup.quality!=='NON VALUTABILE');
+assert(eligibleExtension,'needs an eligible setup to test extension semantics');
+const previousLabel=structuredClone(setup),currentLabel=structuredClone(setup);
+previousLabel.pairs[eligibleExtension].setup.extension.state='ADVANCED';
+currentLabel.pairs[eligibleExtension].setup.extension.state='EXTENDED';
+const oldRank=rank(previousLabel,model),newRank=rank(currentLabel,model);
+assert(oldRank&&newRank,'both provenance-supported extension spellings must be accepted');
+for(const mode of ['setup','thesis']){
+  const oldRow=oldRank[mode].find(x=>x.code===eligibleExtension);
+  const newRow=newRank[mode].find(x=>x.code===eligibleExtension);
+  assert.equal(JSON.stringify(Array.from(oldRow[mode+'Key'])),
+               JSON.stringify(Array.from(newRow[mode+'Key'])),
+               'EXTENDED cannot improve an already-advanced setup rank');
+  assert.equal(oldRow.why,newRow.why,'risk reading must remain identical');
+}
+assert.equal(mutate(x=>{x.pairs[eligibleExtension].setup.extension.state='UNVERIFIED'}),null,
+  'unknown extension must remain fail-closed');
 assert.equal(mutate(x=>{x.pairs.AUDCHF.setup.price.state='UNVERIFIED'}),null);
 assert.equal(mutate(x=>{x.pairs.AUDCHF.setup.structural.quality='NOISE'}),null);
 assert.equal(mutate(x=>{x.pairs.AUDCHF.setup.structuralFav='NZD'}),null);
@@ -164,6 +186,8 @@ assert.equal(mutate(x=>{x.pairs.AUDCHF.setup.timing.state='PREDICTED'}),null);
 assert.equal(mutate(x=>{x.entry_level_published=true}),null);
 assert.equal(mutate(x=>{x.price_audit.status='FAIL'}),null);
 assert.equal(rank(setup,{asOf:'2026-09-24'}),null);
+assert(source.includes("if(modelState.verified&&['ADVANCED','EXTENDED'].includes(src.extension?.state))"),
+ 'canonical extended-price blocker remains visible in Pair Deep Dive');
 assert(source.includes('MutationObserver(()=>apply())'),'native search/re-render reordering contract');
 assert(source.includes("check.textContent='Primo controllo · '+r.firstCheck"),'each native pair risk has a visible first research check');
 assert(source.includes("tbody.append(...sorted)"),'native 28-row table, not a new duplicative list');

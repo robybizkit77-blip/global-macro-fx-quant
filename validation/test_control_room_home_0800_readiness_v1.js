@@ -57,8 +57,20 @@ assert.equal(result.prior,'2026-10-22');
 assert.equal(result.fxDay,'2026-10-23');
 assert.equal(result.vixDay,'2026-10-23');
 assert.equal(result.sourceEffect,'NONE');
-assert.equal(result.rateRecent.length,6);
-assert.equal(result.rateLag.join(','),'NZD,CHF');
+// This is an Oct-23 point-in-time replay against a moving real repo.
+ // Oct-26/27 source dates are FUTURE relative to the frozen cutoff and must
+ // not be counted; never pin yesterday's six current currencies in a PIT test.
+const rateSource=inputs[3];
+const expectedRateRecent=FX.filter(ccy=>{
+ const x=rateSource[ccy];
+ return x&&String(x.quality||'').includes('OFFICIAL')&&
+   ctx.fresh(x.date,5)&&Number.isFinite(x['2Y'])&&Number.isFinite(x['10Y']);
+});
+assert.deepEqual([...result.rateRecent].sort(),[...expectedRateRecent].sort(),
+ 'no post-cutoff or stale official rate may be promoted at frozen 08:00');
+assert.deepEqual([...result.rateLag].sort(),
+ FX.filter(c=>!expectedRateRecent.includes(c)).sort(),
+ 'rate laggers include future observations relative to replay date');
 assert.equal(result.official.length,4);
 const liveOis=inputs[4].currencies;
 const eligibleEstimated=FX.filter(c=>liveOis[c]?.operational_status==='GREEN_ESTIMATED'&&

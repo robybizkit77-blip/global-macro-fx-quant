@@ -1593,7 +1593,7 @@ function expectedReactionFromMetrics(row){
     if(x.price?.state==='BAD')out.push('Prezzo contro la tesi');
     else if(x.price?.state==='NEUTRAL')out.push('Prezzo non conferma');
     if(x.timing?.state==='ADVERSE')out.push('Timing contrario');
-    if(x.extension?.state==='ADVANCED')out.push('Prezzo già avanzato');
+    if(['ADVANCED','EXTENDED'].includes(x.extension?.state))out.push('Prezzo già avanzato');
     if(p.transition?.state==='DIVERGENZA RELATIVA DA MONITORARE')
       out.push('Dinamica relativa divergente');
     if(x.timing?.state==='UNCERTAIN')out.push('Timing incerto');
@@ -1895,7 +1895,7 @@ function expectedReactionFromMetrics(row){
   });
   if(!eurChecklist.exists||eurChecklist.rows.length!==3||
      !eurChecklist.rows[0].includes('USD')||!eurChecklist.rows[1].includes('EUR')||
-     (setupFeed.pairs.EURUSD.setup.extension.state==='ADVANCED'
+     (['ADVANCED','EXTENDED'].includes(setupFeed.pairs.EURUSD.setup.extension.state)
         ?!eurChecklist.rows[2].includes('Estensione del prezzo:')
         :eurChecklist.rows[2].includes('Estensione del prezzo:'))||
      !eurChecklist.rows[2].includes('Timing:')||
