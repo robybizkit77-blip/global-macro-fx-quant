@@ -36,11 +36,11 @@ CLAIMED_LAST_DELTA_TOLERANCE_BP=0.11
 def need(ok,reason):
     if not ok:raise ValueError("FX_2Y_REPRICING_SURPRISE_ADMISSION_REJECTED: "+reason)
 
-def strict_day(text):
+def strict_day(text, allow_future=False):
     need(isinstance(text,str) and re.fullmatch(r"20\d\d-\d\d-\d\d",text),
          "strict ISO observation date required")
     result=date.fromisoformat(text)
-    need(result.isoformat()==text and result<=date.fromisoformat(EVALUATION_DAY),
+    need(result.isoformat()==text and (allow_future or result<=date.fromisoformat(EVALUATION_DAY)),
          "invalid or forward dated data")
     return result
 
@@ -138,7 +138,7 @@ def inspect_consensus(calendar,seed):
              and (event.get("ccy"),event.get("official_date"),
                   event.get("event_type"),event.get("official_title")) in registered,
              "forecast event must correspond to unmodified official calendar release")
-        day=strict_day(event["official_date"])
+        day=strict_day(event["official_date"],allow_future=True)
         need(day>date.fromisoformat(EVALUATION_DAY),"frozen 28 Oct consensus must be pre-release")
         forecast=event.get("consensus")
         need(isinstance(forecast,str) and forecast.strip()
