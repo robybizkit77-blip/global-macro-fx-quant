@@ -14,6 +14,16 @@ on:
       - 'validation/forward/ECB_FORWARD_REFERENCE_OUTCOMES_RUNBOOK_2026-10-26.md'
       - '.github/workflows/forward-ecb-reference-outcomes-v1.yml'
   workflow_dispatch:
+  push:
+    # One-time production validation after this pre-existing observer changes.
+    # The time gate below still forbids any early or weekend write.
+    branches: [main]
+    paths: ['.github/workflows/forward-ecb-reference-outcomes-v1.yml']
+  workflow_run:
+    # Reuse an ALREADY scheduled hourly workflow. No additional cron.
+    # Bot-authored source commits do not reliably trigger push workflows.
+    workflows: ['Hourly Certified Alert Readiness V1']
+    types: [completed]
   schedule:
     # Europe/Rome weekday 21:15; both clock offsets, strict UTC/DST gate.
     - cron: '15 19 * * 1-5'
@@ -91,7 +101,16 @@ jobs:
 
   observe:
     needs: test
-    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    if: >-
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.name == 'Hourly Certified Alert Readiness V1' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.event == 'schedule')
+
     runs-on: ubuntu-24.04
     timeout-minutes: 9
     steps:
@@ -123,7 +142,7 @@ jobs:
               f.write('- Rome now: '+now.isoformat()+'\n')
               f.write('- Eligible schedule: '+str(valid)+'\n')
               f.write('- Scope: daily ECB fixing movement; NOT realized trading performance.\n')
-          print('ECB_REFERENCE_OBSERVER_TIME_GATE',valid)
+          print('ECB_REFERENCE_OBSERVER_TIME_GATE',valid, 'trigger', os.environ['EVENT_TYPE'], 'Rome', now.isoformat())
           PY
       - name: Compare only genuine matured snapshot horizons
         if: steps.gate.outputs.valid == 'true'
