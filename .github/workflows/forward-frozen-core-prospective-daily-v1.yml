@@ -40,6 +40,7 @@ jobs:
           python validation/test_forward_decision_logger_v1.py
           python -m unittest validation.forward.test_attach_core_outcomes_safety_v1 -v
           python -m unittest validation.forward.test_capture_v2_research_prospective_evidence_v1 -v
+          python -m unittest validation.forward.test_v2_full_command_capture_path_v1 -v
 
   capture:
     needs: test
