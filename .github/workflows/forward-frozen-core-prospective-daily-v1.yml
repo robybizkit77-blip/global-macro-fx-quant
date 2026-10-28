@@ -6,6 +6,8 @@ on:
     paths:
       - 'validation/forward/**'
       - 'validation/test_forward_decision_logger_v1.py'
+      - 'validation/forward/hourly_recovery_gate_v1.py'
+      - 'validation/forward/test_hourly_recovery_gate_v1.py'
       - 'validation/macro/v2_core_beta_evidence_desk_v1.py'
       - 'validation/macro/test_v2_core_beta_evidence_desk_v1.py'
       - '.github/workflows/forward-frozen-core-prospective-daily-v1.yml'
@@ -13,7 +15,7 @@ on:
   workflow_run:
     # Same existing process, event-driven recovery after the OFFICIAL 28-pair
     # price overlay has been validated. No extra cron or fake T0 backfill.
-    workflows: ['Pair Setup Operational View V1']
+    workflows: ['Pair Setup Operational View V1', 'Hourly Certified Alert Readiness V1']
     types: [completed]
   schedule:
     # 19:30 Rome primary and 20:30 Rome same-day backup.
@@ -33,16 +35,32 @@ jobs:
   test:
     runs-on: ubuntu-24.04
     timeout-minutes: 8
+    outputs:
+      eligible: ${{ steps.early_gate.outputs.eligible }}
     steps:
       - uses: actions/checkout@v4
+      - name: Gate existing hourly retries before expensive tests
+        id: early_gate
+        shell: bash
+        env:
+          EVENT: ${{ github.event_name }}
+          UPSTREAM: ${{ github.event.workflow_run.name }}
+          UPSTREAM_EVENT: ${{ github.event.workflow_run.event }}
+        run: |
+          set -euo pipefail
+          python3 validation/forward/hourly_recovery_gate_v1.py --event "$EVENT" --upstream "$UPSTREAM" --upstream-event "$UPSTREAM_EVENT" --output "$GITHUB_OUTPUT"
       - uses: actions/setup-python@v5
+        if: steps.early_gate.outputs.eligible == 'true'
         with:
           python-version: '3.12'
       - name: Compile observational-only forward modules
+        if: steps.early_gate.outputs.eligible == 'true'
         run: |
           python -m py_compile validation/forward/admit_frozen_core_prospective_capture_v1.py validation/forward/log_core_decision_v1.py validation/forward/test_frozen_core_prospective_capture_v11.py validation/forward/capture_v2_research_prospective_evidence_v1.py
       - name: Verify frozen provenance, schema and no daily duplicates
+        if: steps.early_gate.outputs.eligible == 'true'
         run: |
+          python -m unittest validation.forward.test_hourly_recovery_gate_v1 -v
           python -m unittest validation.forward.test_frozen_core_prospective_capture_v11 -v
           python validation/test_forward_decision_logger_v1.py
           python -m unittest validation.forward.test_attach_core_outcomes_safety_v1 -v
@@ -52,12 +70,16 @@ jobs:
   capture:
     needs: test
     if: >-
-      github.event_name == 'schedule' ||
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'workflow_run' &&
-       github.event.workflow_run.conclusion == 'success' &&
-       github.event.workflow_run.head_branch == 'main' &&
-       github.event.workflow_run.event != 'pull_request')
+      needs.test.outputs.eligible == 'true' &&
+      (github.event_name == 'schedule' ||
+       github.event_name == 'workflow_dispatch' ||
+       (github.event_name == 'workflow_run' &&
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.event != 'pull_request' &&
+        (github.event.workflow_run.name == 'Pair Setup Operational View V1' ||
+         (github.event.workflow_run.name == 'Hourly Certified Alert Readiness V1' &&
+          github.event.workflow_run.event == 'schedule'))))
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     steps:
