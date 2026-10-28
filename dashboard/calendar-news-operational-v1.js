@@ -156,11 +156,22 @@ function macroReleaseCard(item){
  const actual=Number.isFinite(item.official_actual_percent)?item.official_actual_percent:null;
  const forecast=Number.isFinite(item.secondary_consensus_percent)?item.secondary_consensus_percent:null;
  const surprise=Number.isFinite(item.actual_minus_frozen_consensus_pp)?item.actual_minus_frozen_consensus_pp:null;
- const validActual=(actual!==null&&forecast!==null&&surprise!==null&&
+ // Numeric consistency alone does not certify issuer provenance. Reject actuals
+ // lacking a whitelisted official source, verified runner-capture quality, or
+ // a plausible post-release UTC observation timestamp.
+ const issuerLink=issuerActualLink(item.official_actual_source_url,ccy);
+ const captured=typeof item.official_actual_captured_at_utc==='string'?
+     Date.parse(item.official_actual_captured_at_utc):NaN;
+ const scheduled=typeof item.scheduled_utc==='string'?
+     Date.parse(item.scheduled_utc):NaN;
+ const sourceVerified=(issuerLink!==null&&
+     item.official_actual_source_quality==='FIRST_RUNNER_OBSERVATION_NOT_ISSUER_FIRST_RELEASE_PIT'&&
+     Number.isFinite(captured)&&Number.isFinite(scheduled)&&captured>=scheduled);
+ const validActual=(sourceVerified&&actual!==null&&forecast!==null&&surprise!==null&&
      Math.abs((actual-forecast)-surprise)<0.000001&&
      item.event_causality_verified===false&&item.eligible_for_Core_Beta_Forward===false);
  const state=MACRO_RELEASE_STATES[item.state]||'Stato operativo non verificato';
- const link=validActual?issuerActualLink(item.official_actual_source_url,ccy):null;
+ const link=validActual?issuerLink:null;
  const details=validActual?'<div class="opMacroStats">'+
     '<div><small>Consenso congelato (fonte B)</small><strong>'+esc(macroNumber(forecast,1,true))+'%</strong></div>'+
     '<div><small>Actual fonte ufficiale</small><strong>'+esc(macroNumber(actual,1,true))+'%</strong></div>'+
