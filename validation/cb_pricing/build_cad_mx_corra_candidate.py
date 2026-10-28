@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse,json,pathlib
+import argparse,datetime as dt,json,pathlib
 ROOT=pathlib.Path(__file__).resolve().parents[2]
-OIS=ROOT/'live_data'/'sections'/'OIS_DATA.json'; REG=ROOT/'validation'/'cb_pricing'/'CB_PRICING_SOURCE_STATUS_2026-10-08.json'
+OIS=ROOT/'live_data'/'sections'/'OIS_DATA.json'; NATIVE=ROOT/'live_data'/'sections'/'NATIVE_CB_DATA.json'; REG=ROOT/'validation'/'cb_pricing'/'CB_PRICING_SOURCE_STATUS_2026-10-08.json'
 def classify(v,eps=.05):
  a=[float(v[k]) for k in ('3m','6m','12m')]; p=sum(x>eps for x in a); n=sum(x<-eps for x in a)
  if p==3:return 'UP'
@@ -20,7 +20,19 @@ def main():
  if rg.get('status')!='ACTIVE' or rg.get('official_source')!='Montréal Exchange':raise SystemExit('registry does not authorize CAD MX pricing')
  live=json.loads(OIS.read_text())['currencies']['CAD']
  if live.get('status')!='ACTIVE' or live.get('source')!=s.get('source') or live.get('policy_rate') is None or not live.get('meetings'):raise SystemExit('canonical CAD metadata mismatch')
- policy=float(live['policy_rate']); h={}
+ # The official BoC rate may change AFTER the last MX close. Never
+ # relabel a pre-announcement quote with a newly decided policy baseline.
+ # When an actual post-announcement MX session is available, its candidate
+ # uses the separately recorded official policy rate, not yesterday's.
+ bank=json.loads(NATIVE.read_text())['CAD']
+ official_day=dt.date.fromisoformat(bank['last_date'])
+ market_day=dt.date.fromisoformat(s['as_of'])
+ prior_policy=float(live['policy_rate'])
+ official_policy=float(bank['rate'])
+ if market_day<official_day and abs(official_policy-prior_policy)>1e-8:
+  raise SystemExit('CAD_PRE_DECISION_MX_PRICE_CANNOT_BE_REBASED_TO_NEW_POLICY_RATE')
+ policy=official_policy if market_day>=official_day else prior_policy
+ h={}
  for k in ('3m','6m','12m'):
   rate=float(s['observations']['current'][k]); h[k]={'rate':rate,'change_1d_bp':float(s['change_1d_bp'][k]),'change_1w_bp':float(s['change_1w_bp'][k]),'policy_delta_bp':round((rate-policy)*100,4)}
  c={'schema':'GMFQ_CB_PRICING_CANDIDATE_V1','currency':'CAD','status':'READY_FOR_DRY_RUN','as_of':s['as_of'],'source':s['source'],'source_url':s['source_url'],'instrument':s['instrument'],'quotation':s['quotation'],'policy_rate':policy,'meeting_path':live['meetings'],'contract_mapping':s['contract_mapping'],'horizons':h,'cuts_hikes_priced':{f'{k}_bp':h[k]['policy_delta_bp'] for k in h},'direction':classify({k:h[k]['policy_delta_bp'] for k in h}),'change_direction_1d':classify(s['change_1d_bp']),'change_direction_1w':classify(s['change_1w_bp']),'observations':s['observations'],'validation':{'source_validated':True,'asof_validated':True,'meeting_path_validated':True,'changes_validated':True,'current_real':True,'previous_real':True,'week_real':True,'no_interpolation':True,'source_registry_authorized':True,'runtime_mutated':False,'payload_mutated':False,'weekly_reference_note':f"1W uses official MX session {s['observations']['weekly_reference']['date']} versus {s['as_of']}."},'provenance':{'collector':'validation/cb_pricing/collect_cad_mx_corra.py','method':'Direct official Montréal Exchange CRA settlement prices transformed as 100 minus settlement; canonical quarterly buckets; no interpolation.','weekly_reference_rule':s['validation']['weekly_reference_rule']}}
