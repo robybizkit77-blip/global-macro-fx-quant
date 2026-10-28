@@ -17,14 +17,20 @@ import unittest
 from unittest.mock import patch
 
 from validation.forward import capture_v2_research_prospective_evidence_v1 as cap
-from validation.macro.v2_domestic_candidate_explicit_formula_v1 import run as domestic_run
+from validation.forward.test_capture_v2_research_prospective_evidence_v1 import (
+    V2ProspectiveResearchCapture as IsolatedFixture
+)
 
 
 class WholeV2CapturePath(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.cutoff = datetime.fromisoformat("2026-10-27T19:31:00+01:00")
-        cls.after = cls.cutoff + timedelta(seconds=7)
+        # Reuse the per-day isolated deterministic fixture (never an old
+        # fixed 2026-10-27 runtime clock after the real market has advanced).
+        # This test MUST NOT write a fake current-day FX fixing to live_data.
+        IsolatedFixture.setUpClass()
+        cls.cutoff = IsolatedFixture.cut
+        cls.after = IsolatedFixture.now
         cls.names = (
             "ECB_G8_PRICE_HISTORY",
             "PAIR_SETUP_OPERATIONAL_VIEW",
@@ -33,8 +39,16 @@ class WholeV2CapturePath(unittest.TestCase):
             "OIS_OPERATIONAL_VIEW",
             "NATIVE_RATES_DATA",
         )
-        cls.source = {n: cap.read_live(n) for n in cls.names}
-        cls.candidate = domestic_run(as_of="2026-10-27")
+        cls.source = {
+            "ECB_G8_PRICE_HISTORY": IsolatedFixture.fx,
+            "PAIR_SETUP_OPERATIONAL_VIEW": IsolatedFixture.pairs,
+            "D": IsolatedFixture.legacy,
+            "NATIVE_CB_DATA": IsolatedFixture.cb,
+            "OIS_OPERATIONAL_VIEW": IsolatedFixture.ois,
+            "NATIVE_RATES_DATA": IsolatedFixture.rates,
+        }
+        cls.candidate = IsolatedFixture.candidate
+        cls.day = IsolatedFixture.day
 
     def sources(self, *, update=None):
         data = copy.deepcopy(self.source)
@@ -46,10 +60,12 @@ class WholeV2CapturePath(unittest.TestCase):
         # No monkeypatching of the global file system or current clock.
         # Only source reads are rerouted; the sole write is the /tmp test file.
         with patch.object(cap, "read_live", side_effect=lambda name: data[name]):
-            with patch.object(cap, "domestic_run",
-                              return_value=self.candidate if candidate is None else candidate):
-                return cap.attempt(cutoff=self.cutoff, now=self.after,
-                                   dry_run=dry_run, path=journal)
+            with patch.object(cap, "file_sha",
+                              side_effect=lambda filename: cap.sha(data[Path(filename).stem])):
+                with patch.object(cap, "domestic_run",
+                                  return_value=self.candidate if candidate is None else candidate):
+                    return cap.attempt(cutoff=self.cutoff, now=self.after,
+                                       dry_run=dry_run, path=journal)
 
     def test_real_command_path_synthetic_clock_full_8_g8_28_ecb_without_backfill(self):
         data = self.sources()
@@ -75,8 +91,8 @@ class WholeV2CapturePath(unittest.TestCase):
             self.assertEqual(len(rows), 1)
             row = rows[0]
             self.assertEqual(row["schema"], cap.SCHEMA)
-            self.assertEqual(row["local_date_rome"], "2026-10-27")
-            self.assertEqual(row["official_ecb_t0_date"], "2026-10-27")
+            self.assertEqual(row["local_date_rome"], self.day)
+            self.assertEqual(row["official_ecb_t0_date"], self.day)
             self.assertEqual(len(row["domestic_v2_features"]),8)
             self.assertEqual(len(row["observed_t0_ref"]),28)
             self.assertEqual(len(row["old_core_pair_context_UNCHANGED"]),28)
@@ -84,7 +100,7 @@ class WholeV2CapturePath(unittest.TestCase):
             self.assertFalse(row["future_outcomes_observed_at_capture"])
             self.assertFalse(row["V2_pair_directional_predictions"])
             self.assertFalse(row["eligible_for_real_trading_or_sizing"])
-            self.assertEqual(cap.verify_journal(rows), {"2026-10-27"})
+            self.assertEqual(cap.verify_journal(rows), {self.day})
             first_bytes = journal.read_bytes()
             again = self.attempt(data, journal)
             self.assertEqual(again["status"],
@@ -99,15 +115,18 @@ class WholeV2CapturePath(unittest.TestCase):
 
     def test_real_command_rejects_stale_t0_before_computing_v2_candidate(self):
         def stale(data):
-            data["ECB_G8_PRICE_HISTORY"]["last_as_of"] = "2026-10-26"
-            data["PAIR_SETUP_OPERATIONAL_VIEW"]["price_asof"] = "2026-10-26"
+            previous=(self.cutoff.date()-timedelta(days=1)).isoformat()
+            data["ECB_G8_PRICE_HISTORY"]["last_as_of"] = previous
+            data["PAIR_SETUP_OPERATIONAL_VIEW"]["price_asof"] = previous
         data = self.sources(update=stale)
         with tempfile.TemporaryDirectory() as temp:
             journal = Path(temp)/"blocked.jsonl"
             with patch.object(cap, "read_live", side_effect=lambda name: data[name]):
-                with patch.object(cap,"domestic_run",
-                                  side_effect=AssertionError("must gate before candidate calculation")):
-                    result=cap.attempt(cutoff=self.cutoff, now=self.after,path=journal)
+                with patch.object(cap, "file_sha",
+                                  side_effect=AssertionError("no source hash before admissibility")):
+                    with patch.object(cap,"domestic_run",
+                                      side_effect=AssertionError("must gate before candidate calculation")):
+                        result=cap.attempt(cutoff=self.cutoff, now=self.after,path=journal)
             self.assertEqual(result["status"],
                              "BLOCKED_NO_OFFICIAL_SAME_DAY_T0_NO_V2_CAPTURE")
             self.assertIn("ECB_CURRENT_DAY_FIXING_NOT_PRESENT",result["admission_checks"])
