@@ -10,6 +10,7 @@ on:
       - 'validation/collect_official_news_rss_v1.py'
       - 'dashboard/editorial-freshness-guard-v1.js'
       - 'dashboard/calendar-news-operational-v1.js'
+      - 'validation/test_news_macro_actual_browser_contract_v1.cjs'
       - 'live_data/sections/CALENDAR_OPERATIONAL_VIEW.json'
       - 'live_data/sections/NEWS_PULSE_OPERATIONAL.json'
       - 'live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json'
@@ -25,6 +26,7 @@ on:
       - 'validation/collect_official_news_rss_v1.py'
       - 'dashboard/editorial-freshness-guard-v1.js'
       - 'dashboard/calendar-news-operational-v1.js'
+      - 'validation/test_news_macro_actual_browser_contract_v1.cjs'
       - 'live_data/sections/CALENDAR_OPERATIONAL_VIEW.json'
       - 'live_data/sections/NEWS_PULSE_OPERATIONAL.json'
       - 'live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json'
@@ -183,6 +185,7 @@ jobs:
           })().catch(e=>{console.error(e);process.exit(1)});
           JS
           node calendar-news-ui-audit.js
+          node validation/test_news_macro_actual_browser_contract_v1.cjs
       - uses: actions/upload-artifact@v4
         with:
           name: calendar-news-operational-ui-audit-v1
