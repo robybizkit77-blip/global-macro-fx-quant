@@ -108,13 +108,13 @@ def parse_issuer_page(event_key,raw,*,expected_release=None,expected_period=None
             raise Pending("GDP_PUBLICATION_NOT_TARGET_ISSUE")
         # Exact primary GDP all-industries paragraph; avoid the *advance*
         # estimate for next month or changes in individual sectors.
-        pattern=(r"Real gross domestic product\s*\(GDP\)\s+"
+        pattern=(r"Real gross domestic product\s*\(\s*GDP\s*\)\s+"
                  r"(grew|rose|increased|declined|decreased|fell)\s+"
                  r"([0-9]+(?:\.[0-9]+)?)%\s+in\s+"+
                  re.escape(month)+r"\b")
         hits=re.findall(pattern,text,re.I)
         unchanged=re.findall(
-            r"Real gross domestic product\s*\(GDP\)\s+"
+            r"Real gross domestic product\s*\(\s*GDP\s*\)\s+"
             r"was essentially unchanged in\s+"+re.escape(month)+r"\b",
             text,re.I)
         if len(hits)==0 and len(unchanged)==1:
