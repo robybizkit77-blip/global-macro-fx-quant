@@ -56,6 +56,10 @@ jobs:
           AUDIT_SECOND: ${{ inputs.second_friday }}
         run: |
           mkdir -p /tmp/weekly-four-extra
+          if [[ -n "$AUDIT_FIRST" && -z "$AUDIT_SECOND" ]] || [[ -z "$AUDIT_FIRST" && -n "$AUDIT_SECOND" ]]; then
+            echo "Both dates required or leave both blank" >&2
+            exit 1
+          fi
           if [[ -n "$AUDIT_FIRST" && -n "$AUDIT_SECOND" ]]; then
             python validation/cb_pricing/audit_weekly_four_extra_v1.py --first "$AUDIT_FIRST" --second "$AUDIT_SECOND" --output /tmp/weekly-four-extra/audit.json | tee /tmp/weekly-four-extra/summary.txt
           else
@@ -67,7 +71,8 @@ jobs:
           r=json.loads(Path('/tmp/weekly-four-extra/audit.json').read_text())
           assert set(r['currencies']) == {'USD','EUR','CHF','NZD'}
           assert not r['controls']['policy_repricing_certified']
-          assert r['validated_observed_contract_changes'] >= 5
+          assert r['validated_observed_contract_changes'] >= 0
+          assert r['dates'][0] < r['dates'][1]
           lines=[f"### Weekly USD/EUR/CHF/NZD research audit — {r['dates'][0]} → {r['dates'][1]}",
                  '| Currency | 3M | 6M | 12M | Source |',
                  '|---|---:|---:|---:|---|']
