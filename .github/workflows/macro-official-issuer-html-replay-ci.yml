@@ -1,0 +1,49 @@
+name: Official Macro Actual Source Replay - BLS ECI and Canada GDP
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/macro/capture_official_postrelease_actuals_v1.py'
+      - 'validation/macro/test_capture_official_postrelease_actuals_v1.py'
+      - 'validation/macro/replay_real_publisher_html_eci_gdp_v1.py'
+      - '.github/workflows/macro-official-issuer-html-replay-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check-both-real-official-publishers:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Offline fail-closed tests on official issue/period identity and zero GDP
+        run: |
+          python -m unittest validation.macro.test_capture_official_postrelease_actuals_v1 -v
+          python -m unittest validation.macro.test_one_date_oct30_official_actual_fast_poll_gate_v1 -v
+      - name: Fetch actual BLS July and Statistics Canada September historical documents
+        run: |
+          python -m validation.macro.replay_real_publisher_html_eci_gdp_v1 \
+            --out /tmp/macro-issuer-real-historical-source-replay.json
+      - name: Verify original publisher sources and immutable production files
+        run: |
+          python - <<'PY'
+          import json
+          p='/tmp/macro-issuer-real-historical-source-replay.json'
+          d=json.load(open(p))
+          assert d['historical_documents_downloaded']==2
+          assert d['status']=='HISTORICAL_OFFICIAL_PUBLISHER_HTML_SOURCE_REPLAY_PASSED'
+          assert d['frozen_oct30_actuals_written']==0
+          assert all(r['source_bytes']>1000 for r in d['records'])
+          assert all(r['recorded_at_original_release_day'] is False for r in d['records'])
+          assert set(r['parsed_actual_percent'] for r in d['records'])=={0.0,0.9}
+          PY
+          git diff --exit-code -- live_data validation/macro/MACRO_PRE_RELEASE_CONSENSUS_LEDGER_V1.jsonl validation/macro/MACRO_OFFICIAL_ACTUAL_FIRST_SEEN_V1.jsonl validation/macro/MACRO_EVENT_PRE_RELEASE_MARKET_ANCHORS_V1.jsonl
+      - uses: actions/upload-artifact@v4
+        with:
+          name: original-issuer-past-eci-gdp-source-replay
+          path: /tmp/macro-issuer-real-historical-source-replay.json
+          retention-days: 14
+          if-no-files-found: error
