@@ -23,6 +23,14 @@ jobs:
             --audit /tmp/rates-audit.json \
             --output /tmp/NATIVE_RATES_DATA.json \
             | tee /tmp/candidate-summary.json
+      - name: Verify source-dated weekly 2Y/10Y change receipts before staging candidate
+        run: |
+          python -m unittest validation.rates.test_weekly_rate_change_contract_v1 -v
+          python validation/rates/verify_weekly_rate_change_contract_v1.py \
+            --candidate /tmp/NATIVE_RATES_DATA.json \
+            --previous live_data/sections/NATIVE_RATES_DATA.json \
+            --out /tmp/rates-weekly-2y10y-receipts.json
+
       - name: Enforce no-write path when there are no updates
         shell: bash
         run: |
@@ -72,6 +80,7 @@ jobs:
           path: |
             /tmp/rates-audit.json
             /tmp/candidate-summary.json
+            /tmp/rates-weekly-2y10y-receipts.json
             /tmp/NATIVE_RATES_DATA.json
             /tmp/RATES_AUDIT_METADATA.json
             /tmp/candidate-files.txt
