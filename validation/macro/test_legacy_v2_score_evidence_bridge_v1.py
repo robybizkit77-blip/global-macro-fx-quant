@@ -7,7 +7,8 @@ import unittest
 from validation.macro.legacy_v2_score_evidence_bridge_v1 import bridge, run
 from validation.macro.score_formula_provenance_v1 import run as legacy_run
 from validation.macro.v2_pit_g8_control_plane_v1 import run as v2_run
-from datetime import date
+from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 from pathlib import Path
 import json
 
@@ -18,8 +19,17 @@ class LegacyV2ScoreEvidenceTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.model = json.loads((ROOT / "live_data/sections/D.json").read_text())
-        cls.legacy = legacy_run(today=date(2026, 10, 26))
+        # Use the actual Rome session date, not a past test day: the live
+        # official price overlay legitimately advances after 26 October.
+        # The provenance gate itself must still reject future-dated input.
+        cls.legacy = legacy_run(today=datetime.now(ZoneInfo("Europe/Rome")).date())
         cls.v2 = v2_run(as_of="2026-10-26T16:00:00Z")
+
+    def test_frozen_provenance_rejects_price_snapshot_future_to_clock(self):
+        pair = json.loads((ROOT / "live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json").read_text())
+        observed_price_day = date.fromisoformat(pair["price_asof"])
+        with self.assertRaisesRegex(ValueError, "future baseline / price snapshot"):
+            legacy_run(today=observed_price_day - timedelta(days=1))
 
     def test_exact_24_historical_numbers_join_not_promoted(self):
         receipt = bridge(self.model, self.legacy, self.v2)
