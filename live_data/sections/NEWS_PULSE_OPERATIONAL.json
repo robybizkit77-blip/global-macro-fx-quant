@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-10-26",
-  "generated_at_utc": "2026-10-28T04:25:34.381688Z",
+  "generated_at_utc": "2026-10-28T04:59:42.055663Z",
   "items": [
     {
       "as_of": "2026-10-26",
@@ -47,7 +47,7 @@
       "title": "AUD: repricing implicito da futures più dovish (-7.0 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-10-28T04:25:34.381688Z",
+  "last_checked_at_utc": "2026-10-28T04:59:42.055663Z",
   "official_releases": {
     "core_effect": "NONE",
     "headlines": [
@@ -124,7 +124,14 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
+            "6m_rate_pct": 2.8225,
+            "date": "2026-10-27",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "ESTIMATED_INFORMATIONAL",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+            "status": "DAILY_CONTEXT_ONLY"
           },
           "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
           "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
@@ -172,7 +179,14 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
+            "6m_rate_pct": 2.8225,
+            "date": "2026-10-27",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "ESTIMATED_INFORMATIONAL",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
+            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+            "status": "DAILY_CONTEXT_ONLY"
           },
           "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
           "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
