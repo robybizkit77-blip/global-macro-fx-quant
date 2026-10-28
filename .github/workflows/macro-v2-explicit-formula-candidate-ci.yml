@@ -36,9 +36,19 @@ jobs:
           h=Path('/tmp/gmfq-core-beta-evidence-desk.html').read_text()
           assert x['schema']=='GMFQ_MACRO_V2_G8_28PAIR_BETA_EVIDENCE_DESK_V1'
           assert x['summary']['country_count']==8 and x['summary']['legacy_pair_count']==28
-          assert x['summary']['official_policy_pricing']==4
-          assert x['summary']['indicative_policy_pricing']==2
-          assert x['summary']['context_only_non_policy_6m']==2
+          kinds=[r['six_month_source_class'] for r in x['countries'].values()]
+          assert x['summary']['official_policy_pricing']==kinds.count('OFFICIAL_POLICY_PRICING')
+          assert x['summary']['indicative_policy_pricing']==kinds.count('ESTIMATED_POLICY_PRICING_NOT_OFFICIAL')
+          assert x['summary']['pre_decision_6m_quotes']==sum(y.startswith('PRE_DECISION_') for y in kinds)
+          assert x['summary']['context_only_non_policy_6m']==8-x['summary']['official_policy_pricing']-x['summary']['indicative_policy_pricing']
+          cad=x['countries']['CAD']
+          assert cad['official_current_cb_rate_pct']==2.50
+          if cad['six_month_source_class']=='PRE_DECISION_OFFICIAL_QUOTE_NO_CURRENT_POLICY_DELTA':
+              assert cad['six_month_policy_delta_bp'] is None
+              assert cad['ois_prior_policy_rate_pct_if_pre_decision']==2.25
+          else:
+              assert cad['six_month_source_class']=='OFFICIAL_POLICY_PRICING'
+              assert cad['six_month_policy_delta_bp'] is not None
           assert x['summary']['new_country_FX_scores']==0
           assert not x['safe_to_republish_D'] and not x['forecast_or_entry_generated']
           assert h.count('<article class="country">')==8

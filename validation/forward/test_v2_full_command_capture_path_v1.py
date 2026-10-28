@@ -146,7 +146,12 @@ class WholeV2CapturePath(unittest.TestCase):
                 self.attempt(self.sources(),journal,candidate=changed)
             self.assertFalse(journal.exists())
         def inconsistent_cb(data):
+            # An altered policy rate with a SAME-DAY market quote must still
+            # fail. Older quotes from BEFORE a real BoC decision are a
+            # separately labelled, historical market observation.
             data["NATIVE_CB_DATA"]["CAD"]["rate"] += 0.25
+            data["NATIVE_CB_DATA"]["CAD"]["last_date"] = (
+                data["OIS_OPERATIONAL_VIEW"]["currencies"]["CAD"]["as_of"])
         with tempfile.TemporaryDirectory() as temp:
             journal = Path(temp)/"never.jsonl"
             with self.assertRaises(ValueError):
