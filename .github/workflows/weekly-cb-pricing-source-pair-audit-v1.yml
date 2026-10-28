@@ -112,6 +112,12 @@ jobs:
                   "status": state,
                   "dates_verified": sorted(collected),
                   "contract_mapping_consistent": state == "PAIR_VERIFIED",
+                  "instrument": collected[dates[0]]["instrument"] if dates[0] in collected else None,
+                  "source": collected[dates[0]]["source"] if dates[0] in collected else None,
+                  "levels_pct": {
+                      date: {h: obj["observations"]["current"][h] for h in ("3m", "6m", "12m")}
+                      for date, obj in collected.items()
+                  },
                   "reprice_bp": delta,
                   "errors": errors,
               }
@@ -129,13 +135,14 @@ jobs:
               "",
               "Read-only. No promotion to OIS_DATA, CB pricing, dashboard, signals or backtests.",
               "",
-              "| Source | Verified dates | Result | 6M change |",
-              "|---|---|---|---|",
+              "| Source | Verified dates | Result | 3M change | 6M change | 12M change |",
+              "|---|---|---|---:|---:|---:|",
           ]
           for currency, row in outcomes.items():
               val = row["reprice_bp"]
-              change = f'{val["6m"]:+.2f} bp' if val is not None else "Unavailable"
-              lines.append(f'| {currency} | {", ".join(row["dates_verified"]) or "none"} | {row["status"]} | {change} |')
+              changes = [f'{val[h]:+.2f} bp' if val is not None else "Unavailable"
+                         for h in ("3m", "6m", "12m")]
+              lines.append(f'| {currency} | {", ".join(row["dates_verified"]) or "none"} | {row["status"]} | {" | ".join(changes)} |')
           lines += ["", "Incomplete sources remain **unverified**, never zero or an invented estimate."]
           for currency, row in outcomes.items():
               for err in row["errors"]:
@@ -150,6 +157,14 @@ jobs:
           if passed == 0:
               sys.exit("No official source pair verified; inspect upstream errors above")
           PY
+      - name: Upload source-pair audit evidence (no production publication)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-cb-pricing-source-pair-audit
+          path: /tmp/cb-pricing-weekly-audit/*.json
+          if-no-files-found: warn
+          retention-days: 30
       - name: Prove checkout remained unchanged
         if: always()
         shell: bash
