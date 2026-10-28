@@ -27,11 +27,12 @@ SCHEMA="GMFQ_OFFICIAL_MACRO_ACTUAL_FIRST_SEEN_POST_RELEASE_V1"
 ECI="USD|2026-10-30|LABOUR_COST|Employment Cost Index"
 GDP="CAD|2026-10-30|GROWTH|Gross domestic product by industry"
 TARGETS={
-  ECI:{"url":["https://www.bls.gov/news.release/eci.htm"],
+  ECI:{"url":["https://www.bls.gov/news.release/eci.htm",
+       "https://www.bls.gov/news.release/eci.nr0.htm"],
        "host":"www.bls.gov","currency":"USD",
        "publisher":"U.S. Bureau of Labor Statistics","period":"2026Q3",
        "unit":"PCT_QOQ_SA_CIVILIAN_TOTAL_COMPENSATION"},
-  GDP:{"url":["https://www150.statcan.gc.ca/n1/daily-quotidien/261030/dq261030"+letter+"-eng.htm" for letter in "abcd"],
+  GDP:{"url":["https://www150.statcan.gc.ca/n1/daily-quotidien/261030/dq261030"+letter+"-eng.htm" for letter in "abcdefgh"],
        "host":"www150.statcan.gc.ca","currency":"CAD",
        "publisher":"Statistics Canada","period":"2026-08",
        "unit":"PCT_MOM_SA_REAL_GDP_ALL_INDUSTRIES"},
@@ -56,32 +57,78 @@ class PlainText(HTMLParser):
     def value(self):
         return re.sub(r"\s+"," ",unescape(" ".join(self.parts))).strip()
 
-def parse_issuer_page(event_key,raw):
+def parse_issuer_page(event_key,raw,*,expected_release=None,expected_period=None):
+    """Read only issuer's exact aggregate. Optional dates are ONLY for historical
+    parser replay; production always uses the hardcoded 30-Oct-2026 targets.
+
+    Supports zero/no-change wording without inventing zero for an absent release.
+    Do not read an advanced estimate for a future reference month.
+    """
     need(event_key in TARGETS,"unknown event")
     need(isinstance(raw,bytes) and 0<len(raw)<=MAX_BYTES,
          "issuer page bytes missing or excessive")
     reader=PlainText();reader.feed(raw.decode("utf-8",errors="replace"))
     text=reader.value()
     if event_key==ECI:
-        if not re.search(r"embargoed until.{0,100}8:30 a\.m\.\s*\(ET\)\s*Friday,?\s+October\s+30,?\s+2026",text,re.I):
-            raise Pending("ECI_RELEASE_DATE_NOT_OCT30")
-        if not re.search(r"EMPLOYMENT COST INDEX\s*[-–—]?\s*SEPTEMBER\s+2026",text,re.I):
-            raise Pending("ECI_REFERENCE_PERIOD_NOT_Q3")
-        pattern=(r"Compensation costs for civilian workers\s+(increased|decreased)\s+"
-                 r"([0-9]+(?:\.[0-9]+)?)\s+percent,?\s+seasonally adjusted,?\s+"
-                 r"for the\s+3-month period\s+ending in September\s+2026")
+        released=expected_release or "Friday, October 30, 2026"
+        month=expected_period or "September"
+        # Real BLS pages include a press identifier (USDL-xx) between
+        # embargo wording and the local clock. Do not assume the line
+        # is contiguous or allow the *next release* line to qualify.
+        date_escaped=re.escape(released)
+        header=(r"Transmission of material in this release is embargoed until"
+                r".{0,180}8:30 a\.m\.\s*\(ET\)\s*"+date_escaped)
+        if not re.search(header,text,re.I):
+            raise Pending("ECI_RELEASE_HEADER_NOT_TARGET_PUBLICATION")
+        if not re.search(r"EMPLOYMENT COST INDEX\s*[\W_]{0,8}\s*"+
+                         re.escape(month)+r"\s+2026",text,re.I):
+            raise Pending("ECI_WRONG_REFERENCE_QUARTER")
+        pattern=(r"Compensation costs for civilian workers\s+"
+                 r"(increased|decreased|were unchanged|remained unchanged)"
+                 r"(?:\s+(?:by\s+)?)?"
+                 r"([0-9]+(?:\.[0-9]+)?)?\s*(?:percent)?\s*,?\s*"
+                 r"seasonally adjusted,?\s*for the\s+3-month period"
+                 r"\s+ending in\s+"+re.escape(month)+r"\s+2026")
+        hits=re.findall(pattern,text,re.I)
+        if len(hits)!=1:
+            raise Pending("ECI_CIVILIAN_COMPENSATION_QOQ_SA_NOT_UNAMBIGUOUS")
+        verb,rawval=hits[0]
+        if "unchanged" in verb.lower():
+            if rawval:raise Pending("ECI_UNCHANGED_WITH_NONZERO_NUMBER")
+            return 0.0
+        if not rawval:raise Pending("ECI_MISSING_RATE")
+        actual=float(rawval)
     else:
-        if not re.search(r"Gross domestic product by industry,?\s*August\s+2026",text,re.I):
-            raise Pending("GDP_REFERENCE_PERIOD_NOT_AUG")
-        if not re.search(r"Released:\s*2026-10-30",text,re.I):
-            raise Pending("GDP_PUBLICATION_NOT_OCT30")
+        released=expected_release or "2026-10-30"
+        month=expected_period or "August"
+        if not re.search(r"Gross domestic product by industry,?\s*"+
+                         re.escape(month)+r"\s+2026",text,re.I):
+            raise Pending("GDP_WRONG_MONTH_OR_SERIES")
+        if not re.search(r"Released:\s*"+re.escape(released)+r"\b",text,re.I):
+            raise Pending("GDP_PUBLICATION_NOT_TARGET_ISSUE")
+        # Exact primary GDP all-industries paragraph; avoid the *advance*
+        # estimate for next month or changes in individual sectors.
         pattern=(r"Real gross domestic product\s*\(GDP\)\s+"
                  r"(grew|rose|increased|declined|decreased|fell)\s+"
-                 r"([0-9]+(?:\.[0-9]+)?)%\s+in August\b")
-    hits=re.findall(pattern,text,re.I)
-    if len(hits)!=1:raise Pending("ISSUER_AGGREGATE_SERIES_RATE_NOT_UNAMBIGUOUS")
-    verb,value=hits[0]
-    actual=float(value)
+                 r"([0-9]+(?:\.[0-9]+)?)%\s+in\s+"+
+                 re.escape(month)+r"\b")
+        hits=re.findall(pattern,text,re.I)
+        unchanged=re.findall(
+            r"Real gross domestic product\s*\(GDP\)\s+"
+            r"was essentially unchanged in\s+"+re.escape(month)+r"\b",
+            text,re.I)
+        if len(hits)==0 and len(unchanged)==1:
+            # Do not convert "essentially unchanged" to 0 until the
+            # publisher's prominent month-specific 0.0% figure agrees.
+            headline=(r"Real GDP by industry\s+"+re.escape(month)+r"\s+2026"
+                      r"\s+0\.0%\s+\(monthly change\)")
+            if not re.search(headline,text,re.I):
+                raise Pending("GDP_ESSENTIALLY_UNCHANGED_NO_0_0_PCT_HEADLINE")
+            return 0.0
+        if len(hits)!=1 or unchanged:
+            raise Pending("GDP_AGGREGATE_PRIMARY_RATE_NOT_UNAMBIGUOUS")
+        verb,rawval=hits[0]
+        actual=float(rawval)
     need(math.isfinite(actual) and abs(actual)<50,"nonfinite or implausible actual")
     return -actual if verb.lower() in ("decreased","declined","fell") else actual
 
