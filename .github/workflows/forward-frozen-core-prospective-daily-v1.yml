@@ -112,30 +112,27 @@ jobs:
           print('FORWARD_SNAPSHOT_RESEARCH_ONLY_CAPTURE',d['result'])
           PY
       - name: Freeze independent V2 research features beside today's ECB T0 (best effort)
+        id: v2_shadow
         if: steps.admit.outputs.admitted == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          # The existing Core journal is PRIMARY; a blocked V2 research
-          # feature must NEVER abort or erase that legitimate frozen snapshot.
+          # Existing frozen-Core snapshot must remain PRIMARY, even if the
+          # independent V2 research feature computation fails.
+          status='V2_RESEARCH_SOURCE_FAILURE'
           if python -m validation.forward.capture_v2_research_prospective_evidence_v1 > /tmp/v2-research-prospective-capture.json; then
             cat /tmp/v2-research-prospective-capture.json
-            python - <<'PY'
-          import json, os
-          x=json.load(open('/tmp/v2-research-prospective-capture.json'))
-          allowed={
-              'PROSPECTIVE_SHADOW_RESEARCH_SNAPSHOT_APPEND_OK',
-              'EXISTING_DATE_ALREADY_FROZEN_NO_OVERWRITE',
-              'BLOCKED_NO_OFFICIAL_SAME_DAY_T0_NO_V2_CAPTURE'
-          }
-          assert x['status'] in allowed
-          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as o:
-              o.write('- Separate V2 **research feature observation**: '+x['status']+'; never a trading signal or model performance claim.\n')
-          PY
-          else
-            echo 'V2_RESEARCH_SHADOW_FAILED_WITHOUT_BLOCKING_FROZEN_CORE_CAPTURE' >> "$GITHUB_STEP_SUMMARY"
-            echo 'V2 research source inconsistent; existing Core observation remains primary and unchanged.'
+            status="$(python -c "import json; print(json.load(open('/tmp/v2-research-prospective-capture.json'))['status'])" || echo 'V2_RESEARCH_RECEIPT_INVALID')"
           fi
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          case "$status" in
+            PROSPECTIVE_SHADOW_RESEARCH_SNAPSHOT_APPEND_OK|EXISTING_DATE_ALREADY_FROZEN_NO_OVERWRITE)
+              echo "- V2 independent research capture: **$status**" >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            *)
+              echo "- V2 independent research capture: **FAILED / NOT CAPTURED ($status)**. Frozen-Core write remains primary; job will be marked RED only AFTER its persistence." >> "$GITHUB_STEP_SUMMARY"
+              ;;
+          esac
       - name: Verify only immutable forward-ledger files changed
         if: steps.admit.outputs.admitted == 'true'
         shell: bash
@@ -175,3 +172,23 @@ jobs:
           # the latest main; fail closed, never force or rebase the evidence.
           git push origin HEAD:main
           echo '- Prospective observation: **committed to main** (unaltered baseline date).' >> "$GITHUB_STEP_SUMMARY"
+      - name: Certify V2 research capture separately after primary Core commit
+        if: steps.admit.outputs.admitted == 'true'
+        shell: bash
+        env:
+          V2_SHADOW_STATUS: ${{ steps.v2_shadow.outputs.status }}
+        run: |
+          set -euo pipefail
+          # This executes AFTER primary legacy snapshot persistence. A V2
+          # failure must not leave a misleading GREEN service run, but must
+          # never erase or prevent the separately committed legacy observation.
+          case "$V2_SHADOW_STATUS" in
+            PROSPECTIVE_SHADOW_RESEARCH_SNAPSHOT_APPEND_OK|EXISTING_DATE_ALREADY_FROZEN_NO_OVERWRITE)
+              echo 'V2_RESEARCH_CAPTURE_REAL_OR_IDEMPOTENT_PASS'
+              ;;
+            *)
+              echo "::error::V2_RESEARCH_CAPTURE_FAILED_AFTER_LEGACY_PERSISTENCE status=$V2_SHADOW_STATUS"
+              echo '- Final outcome: **PARTIAL, V2 research capture not recorded**.' >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+              ;;
+          esac
