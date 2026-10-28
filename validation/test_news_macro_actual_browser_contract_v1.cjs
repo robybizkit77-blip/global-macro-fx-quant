@@ -114,8 +114,7 @@ earlyCad.state='OFFICIAL_ACTUAL_PRESENT_PRE_EVENT_MARKET_ANCHOR_ABSENT';
       await page.route('**/live_data/sections/NEWS_PULSE_OPERATIONAL.json',async route=>{
         ++requests;
         const body=phase==='BEFORE'?before:
-          phase==='PARTIAL'?partial:phase==='AFTER'?after:
-          phase==='UNTRUSTED'?untrusted:phase==='BAD_CLOCK'?badClock:malformed;
+          phase==='PARTIAL'?partial:phase==='AFTER'?after:malformed;
         await route.fulfill({status:200,contentType:'application/json',
                             body:JSON.stringify(body)});
       });
@@ -223,53 +222,58 @@ earlyCad.state='OFFICIAL_ACTUAL_PRESENT_PRE_EVENT_MARKET_ANCHOR_ABSENT';
       assert.match(bad.text,/Non calcolabile/);
       assert.equal(bad.links,0);
 
-      // A numerically consistent actual is STILL NOT verified if the URL is
-      // outside the publisher allowlist. The UI must hide its actual/source.
-      // Synchronize after the previous asynchronous refresh so a later
-      // virtual clock tick cannot be dropped by refreshInFlight on mobile.
-      await page.waitForLoadState('networkidle',{timeout:10000});
-      await page.evaluate(()=>window.showView&&window.showView('news'));
-      phase='UNTRUSTED';
-      await page.clock.fastForward(120500);
-      await page.waitForFunction(()=>document.querySelector(
-        '#news .opCard[data-kind="macro-evidence"][data-ccy="CAD"]'
-      )?.dataset.stage==='PENDING_OFFICIAL_ACTUAL_ISSUER_VERIFICATION',
-      null,{timeout:20000});
-      const unsafe=await page.evaluate(()=>{
-        const c=document.querySelector('#news .opCard[data-kind="macro-evidence"][data-ccy="CAD"]');
-        return {text:c.textContent,links:c.querySelectorAll('a[href]').length};
-      });
-      assert.match(unsafe.text,/In attesa/);
-      assert.match(unsafe.text,/Non calcolabile/);
-      assert(!unsafe.text.includes('Actual − consenso'));
-      assert.equal(unsafe.links,0,'Do not render nonissuer actual');
-
-      // Likewise, an issuer URL does not rescue a first-seen clock that is
-      // earlier than the confirmed release timestamp.
-      await page.waitForLoadState('networkidle',{timeout:10000});
-      await page.evaluate(()=>window.showView&&window.showView('news'));
-      phase='BAD_CLOCK';
-      await page.clock.fastForward(120500);
-      await page.waitForFunction(()=>document.querySelector(
-        '#news .opCard[data-kind="macro-evidence"][data-ccy="CAD"]'
-      )?.dataset.stage==='OFFICIAL_ACTUAL_PRESENT_PRE_EVENT_MARKET_ANCHOR_ABSENT',
-      null,{timeout:20000});
-      const early=await page.evaluate(()=>{
-        const c=document.querySelector('#news .opCard[data-kind="macro-evidence"][data-ccy="CAD"]');
-        return {text:c.textContent,links:c.querySelectorAll('a[href]').length};
-      });
-      assert.match(early.text,/In attesa/);
-      assert.match(early.text,/Non calcolabile/);
-      assert.equal(early.links,0,'Pre-release captured_at cannot certify an actual');
-      assert(requests>=6,'initial + 5 live refresh network reads required');
+      assert(requests>=4,'initial + 3 live refresh network reads required');
       assert.deepEqual(errors,[],'No JS runtime errors '+device);
       console.log('MACRO_NEWS_ACTUAL_BROWSER_PASS',device,{
         forecast_only_before:true,partial_actual_first:true,actual_zero_after:true,
         source_links_after:true,malformed_suppressed:true,
-        untrusted_issuer_suppressed:true,pre_release_clock_suppressed:true,
         requests,viewport:width
       });
       await page.close();
+
+      // Provenance adversaries run on independent fresh pages. Timer
+      // transitions are already proven above; these cases test the consumer's
+      // fail-closed gate, not consecutive artificial virtual-clock refreshes.
+      for(const [name,fixture] of [['UNTRUSTED_ISSUER',untrusted],
+                                  ['BAD_FIRST_SEEN_CLOCK',badClock]]){
+        const probe=await browser.newPage({viewport:{width,height}});
+        const probeErrors=[];
+        probe.on('pageerror',e=>probeErrors.push(String(e)));
+        await probe.route('**/live_data/sections/NEWS_PULSE_OPERATIONAL.json',
+          async route=>route.fulfill({status:200,contentType:'application/json',
+                                     body:JSON.stringify(fixture)}));
+        await probe.goto('http://127.0.0.1:8765/',{waitUntil:'networkidle'});
+        await probe.waitForFunction(
+          ()=>window.GMFQ_CALENDAR_NEWS_OPERATIONAL?.status==='ACTIVE',
+          null,{timeout:20000});
+        await probe.evaluate(()=>window.showView&&window.showView('news'));
+        await probe.waitForSelector(
+          '#news .opCard[data-kind="macro-evidence"][data-ccy="CAD"]',
+          {state:'visible'});
+        const evidence=await probe.evaluate(()=>{
+          const c=document.querySelector(
+            '#news .opCard[data-kind="macro-evidence"][data-ccy="CAD"]');
+          const usd=document.querySelector(
+            '#news .opCard[data-kind="macro-evidence"][data-ccy="USD"]');
+          return {
+            stage:c.dataset.stage,text:c.textContent||'',
+            links:c.querySelectorAll('a[href]').length,
+            w:c.scrollWidth,cw:c.clientWidth,
+            usdActual:usd?.textContent.includes('Actual − consenso')
+          };
+        });
+        assert.equal(evidence.stage,
+          fixture.macro_event_market_context.events.find(e=>e.currency==='CAD').state);
+        assert(evidence.usdActual,'Unrelated valid USD official actual remains visible');
+        assert.match(evidence.text,/In attesa/);
+        assert.match(evidence.text,/Non calcolabile/);
+        assert(!evidence.text.includes('Actual − consenso'));
+        assert.equal(evidence.links,0,name+' must not render CAD issuer actual link');
+        assert(evidence.w<=evidence.cw+2,name+' mobile overflow');
+        assert.deepEqual(probeErrors,[],name+' JS errors '+device);
+        console.log('MACRO_NEWS_PROVENANCE_FAIL_CLOSED_PASS',device,name);
+        await probe.close();
+      }
     }
   } finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});
