@@ -177,5 +177,39 @@ class ReferenceOutcomesTests(unittest.TestCase):
             m.compute([self.sample()],self.fx,datetime(2026,10,26,20,15))
 
 
+    def test_real_2026_10_26_t0_has_28_1d_ecb_reference_returns_on_oct28(self):
+        # Prospective T0 was actually captured on 26 Oct. This test is
+        # reference-only, not trading performance or a reconstructed signal.
+        snapshots=[x for x in m.rows(m.DECISIONS)
+                   if x.get("capture_class")=="FROZEN_CORE_BASELINE_OBSERVATION"
+                   and str(x.get("decision_cutoff","")).startswith("2026-10-26")]
+        self.assertEqual(len(snapshots),28)
+        result=self.observe(snaps=snapshots,now="2026-10-28T20:40:00Z")
+        self.assertEqual(result["new_reference_observations"],28)
+        self.assertEqual({r["horizon"] for r in result["new_rows"]},{"1D"})
+        self.assertEqual({r["observed_reference_date"] for r in result["new_rows"]},
+                         {"2026-10-28"})
+        self.assertTrue(all(r["trade_pnl"] is None and r["trade_net_return"] is None
+                            and not r["model_out_of_sample_performance_certified"]
+                            for r in result["new_rows"]))
+        second=self.observe(snaps=snapshots,now="2026-10-28T20:40:00Z",
+                            prior=result["new_rows"])
+        self.assertEqual(second["new_reference_observations"],0)
+
+    def test_observer_recovery_reuses_existing_hourly_without_new_cron(self):
+        workflow=(m.ROOT/".github/workflows/forward-ecb-reference-outcomes-v1.yml"
+                  ).read_text(encoding="utf-8")
+        self.assertEqual(workflow.count("cron: '15 19 * * 1-5'"),1)
+        self.assertEqual(workflow.count("cron: '15 20 * * 1-5'"),1)
+        self.assertIn("workflows: ['Hourly Certified Alert Readiness V1']",workflow)
+        self.assertIn("github.event.workflow_run.conclusion == 'success'",workflow)
+        self.assertIn("github.event.workflow_run.head_branch == 'main'",workflow)
+        self.assertIn("github.event.workflow_run.event == 'schedule'",workflow)
+        self.assertIn("github.event_name == 'push' && github.ref == 'refs/heads/main'",workflow)
+        self.assertIn("now.weekday()<5 and now.hour>=21",workflow)
+        self.assertIn("REFERENCE_ONLY_NOT_TRADE_PERFORMANCE",workflow)
+        self.assertIn("--append-journal",workflow)
+
+
 if __name__=="__main__":
     unittest.main()
