@@ -1,0 +1,146 @@
+name: Macro 30 October 2026 targeted official actual fast checks
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/macro-official-actual-fast-poll-20261030.yml'
+      - 'validation/macro/one_date_oct30_official_actual_fast_poll_gate_v1.py'
+      - 'validation/macro/test_one_date_oct30_official_actual_fast_poll_gate_v1.py'
+      - 'validation/macro/MACRO_20261030_OFFICIAL_ACTUAL_FAST_CHECK_PLAN.md'
+  workflow_dispatch:
+  schedule:
+    # Friday October 30 2026, event 12:30Z=13:30 CET.
+    # 13:37, 13:57, 14:27, 15:07 CET planned; GitHub may start late.
+    # Cron repeats annually; a hard-coded year guard suppresses later polls.
+    - cron: '37,57 12 30 10 *'
+    - cron: '27 13 30 10 *'
+    - cron: '7 14 30 10 *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('macro-actual-qa-{0}', github.ref) || 'calendar-news-operational-refresh-v1' }}
+  cancel-in-progress: false
+
+jobs:
+  regression:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: No-network UTC timing, official actual and market context tests
+        run: |
+          python -m unittest validation.macro.test_one_date_oct30_official_actual_fast_poll_gate_v1 -v
+          python -m unittest validation.macro.test_capture_official_postrelease_actuals_v1 -v
+          python -m unittest validation.macro.test_build_macro_event_market_context_v1 -v
+      - name: Pre-release reference state only, no future issuer HTTP
+        run: python -m validation.macro.one_date_oct30_official_actual_fast_poll_gate_v1
+
+  live-source-recheck:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Real UTC/2026/archived-forecast/actual-missing guard
+        id: gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m validation.macro.one_date_oct30_official_actual_fast_poll_gate_v1 \
+            --github-output "$GITHUB_OUTPUT" \
+            --github-summary "$GITHUB_STEP_SUMMARY"
+      - name: Test official actual capture and market-source contracts
+        if: steps.gate.outputs.should_poll == 'true'
+        run: |
+          python -m unittest validation.macro.test_one_date_oct30_official_actual_fast_poll_gate_v1 -v
+          python -m unittest validation.macro.test_capture_official_postrelease_actuals_v1 -v
+          python -m unittest validation.macro.test_build_macro_event_market_context_v1 -v
+      - name: Fetch issuer official actuals only after scheduled publication
+        if: steps.gate.outputs.should_poll == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m validation.macro.capture_official_postrelease_actuals_v1 \
+            | tee /tmp/macro-oct30-official-actual-first-seen.json
+          python - <<'PY'
+          import json,os
+          r=json.load(open('/tmp/macro-oct30-official-actual-first-seen.json'))
+          assert r['status']=='OFFICIAL_ACTUAL_POST_RELEASE_FIRST_CAPTURE_MONITOR'
+          assert not r['fx_or_rates_causality_verified']
+          assert not r['actual_first_release_PIT_verified']
+          assert not r['Core_changed'] and not r['Beta_or_Forward_changed']
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as f:
+              f.write('### Issuer post-release actuals\n')
+              f.write('- First observed official results this run: '+str(r['new_actuals'])+'; archived: '+str(r['total_actuals'])+'\n')
+              for key,state in r['states'].items():
+                  f.write('- '+key+': **'+state+'**\n')
+              f.write('- Daily 2Y/FX moves do not certify a causal reaction to this data.\n')
+          PY
+      - name: Refresh existing noncausal News Pulse event context
+        if: steps.gate.outputs.should_poll == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/build_news_pulse_operational_v1.py \
+            | tee /tmp/macro-oct30-news-context-refresh.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          n=json.loads(Path('live_data/sections/NEWS_PULSE_OPERATIONAL.json').read_text())
+          ctx=n['macro_event_market_context']
+          assert ctx['schema']=='GMFQ_MACRO_EVENT_CONTEXT_DAILY_MATCH_V1'
+          assert ctx['summary']['events']==2 and ctx['summary']['FX_signals']==0
+          assert ctx['summary']['issuer_event_intraday_reactions_certified']==0
+          assert all(x['FX_trade_signal'] is None
+                     and x['event_causality_verified'] is False
+                     and x['eligible_for_Core_Beta_Forward'] is False
+                     for x in ctx['events'])
+          PY
+      - name: Atomic safe publish only official actual ledger and News Pulse file
+        if: steps.gate.outputs.should_poll == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only -- validation/macro/MACRO_OFFICIAL_ACTUAL_FIRST_SEEN_V1.jsonl live_data/sections/NEWS_PULSE_OPERATIONAL.json)"
+          if [ -z "$changed" ]; then
+            echo OFFICIAL_SOURCE_NOT_YET_PUBLISHED_OR_NOT_PARSEABLE
+            exit 0
+          fi
+          unexpected="$(git diff --name-only | grep -Ev '^(validation/macro/MACRO_OFFICIAL_ACTUAL_FIRST_SEEN_V1.jsonl|live_data/sections/NEWS_PULSE_OPERATIONAL.json)$' || true)"
+          test -z "$unexpected" || { echo "Unexpected changes: $unexpected" >&2; exit 1; }
+          git diff --check
+          REMOTE_SHA="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+          LOCAL_SHA="$(git rev-parse HEAD)"
+          test "$REMOTE_SHA" = "$LOCAL_SHA" || {
+            echo 'main moved: do not force push; existing Calendar/News run can retry' >&2
+            exit 1
+          }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add validation/macro/MACRO_OFFICIAL_ACTUAL_FIRST_SEEN_V1.jsonl live_data/sections/NEWS_PULSE_OPERATIONAL.json
+          git commit -m 'Capture publisher official actuals and refresh dated noncausal macro context'
+          git push origin HEAD:main
+      - uses: actions/upload-artifact@v4
+        if: steps.gate.outputs.should_poll == 'true'
+        with:
+          name: macro-20261030-official-release-evidence-receipt
+          path: |
+            /tmp/macro-oct30-official-actual-first-seen.json
+            /tmp/macro-oct30-news-context-refresh.json
+          retention-days: 14
+          if-no-files-found: error
