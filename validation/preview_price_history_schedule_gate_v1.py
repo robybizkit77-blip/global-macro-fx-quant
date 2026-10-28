@@ -6,6 +6,11 @@ whether this is the intended Europe/Rome 17:25, 17:55 or 18:25 slot by the
 *scheduled cron*, not the runner's exact minute. The overlapping UTC 16:25
 represents 18:25 CEST or 17:25 CET, never both.
 
+When an out-of-season duplicate cron starts late enough to fall AFTER an
+active Rome slot, permit a catch-up attempt rather than skipping a potential
+recovery. The official fetch, immutable historical validation, idempotent
+NO_CHANGE handling and main-head lease still govern persistence.
+
 Price-history data, pair scores and FX signals are NOT modified by this gate.
 Only the existing, official-source ECB candidate workflow may run.
 """
@@ -26,6 +31,16 @@ CRON_TO_LOCAL = {
     "25 17 * * 1-5": {1: "18:25"},
     "55 15 * * 1-5": {2: "17:55"},
     "55 16 * * 1-5": {1: "17:55"},
+}
+
+# Existing CET/CEST union crons can also serve as a last-chance catch-up
+# if GitHub delays an out-of-season run past an eligible local slot.
+# No extra schedules, new sources, backfills or model changes.
+LATE_DUPLICATE_FALLBACKS = {
+    ("25 15 * * 1-5", 1): "17:25",
+    ("55 15 * * 1-5", 1): "17:25",
+    ("25 17 * * 1-5", 2): "18:25",
+    ("55 16 * * 1-5", 2): "18:25",
 }
 
 
@@ -54,20 +69,27 @@ def resolve(event: str, cron: str, now: dt.datetime) -> dict:
         return result
     offset = int(local.utcoffset().total_seconds() // 3600)
     clock = offsets.get(offset)
+    late_duplicate_catchup = False
     if clock is None:
-        result["reason"] = "CET_CEST_DUPLICATE_CRON"
-        return result
+        clock = LATE_DUPLICATE_FALLBACKS.get((cron, offset))
+        if clock is None:
+            result["reason"] = "CET_CEST_DUPLICATE_CRON"
+            return result
+        late_duplicate_catchup = True
     result["local_slot"] = clock
     hour, minute = map(int, clock.split(":"))
     due_local = dt.datetime.combine(local.date(), dt.time(hour, minute), tzinfo=ROME)
     late_minutes = int((now.astimezone(UTC) - due_local.astimezone(UTC)).total_seconds() // 60)
     result["queue_delay_minutes"] = late_minutes
     if late_minutes < 0:
-        result["reason"] = "BEFORE_SLOT"
+        result["reason"] = ("CET_CEST_DUPLICATE_CRON" if late_duplicate_catchup
+                            else "BEFORE_SLOT")
     elif late_minutes > MAX_DELAY_MINUTES:
         result["reason"] = "EXPIRED_QUEUE_WINDOW"
     else:
-        result.update(should_run=True, reason="VALID_DELAY_TOLERANT_ROME_PRICE_HISTORY_SLOT")
+        reason = ("VALID_LATE_DUPLICATE_CATCHUP_SLOT" if late_duplicate_catchup
+                  else "VALID_DELAY_TOLERANT_ROME_PRICE_HISTORY_SLOT")
+        result.update(should_run=True, reason=reason)
     return result
 
 
