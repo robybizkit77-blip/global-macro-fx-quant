@@ -2,6 +2,15 @@ name: Weekly CB pricing source-pair audit (read-only)
 
 on:
   workflow_dispatch:
+    inputs:
+      start_date:
+        description: "Earlier Friday (YYYY-MM-DD). Leave empty for latest two completed Fridays."
+        required: false
+        type: string
+      end_date:
+        description: "Later Friday (YYYY-MM-DD). Leave empty for latest two completed Fridays."
+        required: false
+        type: string
   push:
     branches: [audit/weekly-rates-source-pair-20261028]
     paths:
@@ -15,7 +24,7 @@ permissions:
   contents: read
 
 jobs:
-  audit-16-vs-23-october:
+  audit-two-fridays:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -27,6 +36,9 @@ jobs:
         run: python -m pip install --disable-pip-version-check requests beautifulsoup4 pandas openpyxl
       - name: Probe official sources on exact dates, without touching production
         shell: bash
+        env:
+          AUDIT_START_DATE: ${{ inputs.start_date }}
+          AUDIT_END_DATE: ${{ inputs.end_date }}
         run: |
           set -euo pipefail
           python - <<'PY'
@@ -39,46 +51,73 @@ jobs:
           import urllib.request
           import zipfile
 
-          dates = ["2026-10-16", "2026-10-23"]
+          today = dt.datetime.now(dt.timezone.utc).date()
+          latest_friday = today - dt.timedelta(days=(today.weekday() - 4) % 7)
+          if latest_friday >= today:
+              latest_friday -= dt.timedelta(days=7)
+          start_raw = os.environ.get("AUDIT_START_DATE", "").strip()
+          end_raw = os.environ.get("AUDIT_END_DATE", "").strip()
+          if bool(start_raw) != bool(end_raw):
+              sys.exit("Both start_date and end_date must be supplied together")
+          if start_raw:
+              start, end = dt.date.fromisoformat(start_raw), dt.date.fromisoformat(end_raw)
+          else:
+              end = latest_friday
+              start = end - dt.timedelta(days=7)
+          if start.weekday() != 4 or end.weekday() != 4 or (end-start).days != 7 or end >= today:
+              sys.exit(f"Require two consecutive completed Fridays; received {start}, {end}")
+          dates = [start.isoformat(), end.isoformat()]
           sources = {
               "GBP": "validation/cb_pricing/collect_gbp_boe_ois.py",
               "CAD": "validation/cb_pricing/collect_cad_mx_corra.py",
               "JPY": "validation/cb_pricing/collect_jpy_tfx_tona.py",
               "AUD": "validation/cb_pricing/collect_aud_asx_ib.py",
           }
-          archive_url = "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/latest-yield-curve-data.zip"
           root = Path("/tmp/cb-pricing-weekly-audit")
           root.mkdir(parents=True, exist_ok=True)
           outcomes = {}
-          archive_error = None
-          archive = root / "boe-official-current-month.zip"
-          try:
-              req = urllib.request.Request(archive_url, headers={"User-Agent": "GLOBAL-MACRO-FX-QUANT research validation"})
-              with urllib.request.urlopen(req, timeout=75) as response:
-                  archive.write_bytes(response.read())
-              if not zipfile.is_zipfile(archive):
-                  raise ValueError("official GBP response is not a ZIP archive")
-          except Exception as exc:
-              archive_error = f"{type(exc).__name__}: {str(exc)[:240]}"
+          boe_packages = []
+          boe_errors = []
+          for kind, url in (
+              ("monthly", "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/latest-yield-curve-data.zip"),
+              ("archive", "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/oisddata.zip"),
+          ):
+              target = root / f"boe-{kind}.zip"
+              try:
+                  req = urllib.request.Request(url, headers={"User-Agent": "GLOBAL-MACRO-FX-QUANT research validation"})
+                  with urllib.request.urlopen(req, timeout=75) as response:
+                      target.write_bytes(response.read())
+                  if not zipfile.is_zipfile(target):
+                      raise ValueError("official GBP response is not a ZIP archive")
+                  boe_packages.append(target)
+              except Exception as exc:
+                  boe_errors.append(f"{kind}: {type(exc).__name__}: {str(exc)[:240]}")
 
           for currency, collector in sources.items():
               collected = {}
               errors = []
               for date in dates:
-                  if currency == "GBP" and archive_error:
-                      errors.append(f"{date}: official current-month package unavailable ({archive_error})")
+                  if currency == "GBP" and not boe_packages:
+                      errors.append(f"{date}: both official BoE packages unavailable: {boe_errors}")
                       continue
                   target = root / f"{currency}-{date}.json"
-                  cmd = [sys.executable, collector, "--as-of", date, "--output", str(target)]
-                  if currency == "GBP":
-                      cmd += ["--zip", str(archive)]
-                  try:
-                      run = subprocess.run(cmd, check=False, capture_output=True, text=True, timeout=360)
-                  except subprocess.TimeoutExpired:
-                      errors.append(f"{date}: collector timeout (360s)")
-                      continue
-                  if run.returncode != 0:
-                      errors.append(f"{date}: collector failed: {(run.stderr or run.stdout).strip()[-300:]}")
+                  base_cmd = [sys.executable, collector, "--as-of", date, "--output", str(target)]
+                  candidates = boe_packages if currency == "GBP" else [None]
+                  issues = []
+                  succeeded = False
+                  for package in candidates:
+                      cmd = base_cmd + (["--zip", str(package)] if package else [])
+                      try:
+                          run = subprocess.run(cmd, check=False, capture_output=True, text=True, timeout=360)
+                      except subprocess.TimeoutExpired:
+                          issues.append(f"{package or 'source'}: collector timeout (360s)")
+                          continue
+                      if run.returncode == 0:
+                          succeeded = True
+                          break
+                      issues.append(f"{package or 'source'}: {(run.stderr or run.stdout).strip()[-260:]}")
+                  if not succeeded:
+                      errors.append(f"{date}: collector failed: {issues}")
                       continue
                   try:
                       obj = json.loads(target.read_text(encoding="utf-8"))
@@ -131,7 +170,7 @@ jobs:
           }
           (root / "audit.json").write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
           lines = [
-              "### Weekly source-pair audit · 16 → 23 October 2026",
+              f"### Weekly source-pair audit · {dates[0]} → {dates[1]}",
               "",
               "Read-only. No promotion to OIS_DATA, CB pricing, dashboard, signals or backtests.",
               "",
