@@ -55,6 +55,11 @@ def schedule_attempt(now, event, cron):
     """CET/CEST 19:30 primary and 20:30 real-time backup, no backfill."""
     if now.tzinfo is None or now.utcoffset() is None:
         raise ValueError("aware actual schedule clock required")
+    if event == "workflow_run":
+        # This is only a label. Actual workflow admission separately requires
+        # successful completed Pair Setup on main (not a PR), followed by the
+        # same real-time official same-day ECB and 28-pair PIT price audit.
+        return "AFTER_CANONICAL_PAIR_HANDOFF_REAL_TIME_RETRY"
     if event != "schedule":
         return "MANUAL_ATTEMPT"
     if now.astimezone(ROME).utcoffset().total_seconds() == 7200:
