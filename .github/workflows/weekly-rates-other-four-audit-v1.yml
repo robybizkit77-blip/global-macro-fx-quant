@@ -1,0 +1,83 @@
+name: Weekly USD EUR CHF NZD research rates audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [audit/weekly-rates-other-four-20261028]
+    paths:
+      - validation/cb_pricing/audit_weekly_four_extra_v1.py
+      - .github/workflows/weekly-rates-other-four-audit-v1.yml
+  pull_request:
+    branches: [main]
+    paths:
+      - validation/cb_pricing/audit_weekly_four_extra_v1.py
+      - .github/workflows/weekly-rates-other-four-audit-v1.yml
+
+permissions:
+  contents: read
+
+jobs:
+  weekly-other-four:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test stored exact-contract research data
+        run: |
+          python validation/cb_pricing/test_ois_same_contract_history_v1.py
+          python - <<'PY'
+          import sys
+          sys.path.insert(0,'validation/cb_pricing')
+          from audit_weekly_four_extra_v1 import checked_secondary_pair
+          from ois_same_contract_history_v1 import load_history
+          p=checked_secondary_pair(load_history(),'2026-10-16','2026-10-23')
+          assert p['USD']['horizons']['3m']['change_bp'] == -3.5
+          assert p['USD']['horizons']['6m']['change_bp'] is None
+          assert p['EUR']['horizons']['6m']['change_bp'] == -5.25
+          assert p['CHF']['horizons']['3m']['change_bp'] == 0.0
+          assert p['CHF']['horizons']['12m']['change_bp'] is None
+          print('SECONDARY_SAME_CONTRACT_REGRESSION_PASS')
+          PY
+      - name: Check two completed Fridays with NZD exchange EOD reports
+        run: |
+          mkdir -p /tmp/weekly-four-extra
+          python validation/cb_pricing/audit_weekly_four_extra_v1.py             --first 2026-10-16 --second 2026-10-23             --output /tmp/weekly-four-extra/audit.json | tee /tmp/weekly-four-extra/summary.txt
+          python - <<'PY'
+          import json,os
+          from pathlib import Path
+          r=json.loads(Path('/tmp/weekly-four-extra/audit.json').read_text())
+          assert set(r['currencies']) == {'USD','EUR','CHF','NZD'}
+          assert not r['controls']['policy_repricing_certified']
+          assert r['validated_observed_contract_changes'] >= 5
+          lines=['### Weekly USD/EUR/CHF/NZD research audit — 16–23 October',
+                 '| Currency | 3M | 6M | 12M | Source |',
+                 '|---|---:|---:|---:|---|']
+          for c,v in r['currencies'].items():
+            def rate(k):
+              value=v['horizons'][k]['change_bp']
+              return 'unavailable' if value is None else f'{value:+.2f} bp'
+            lines.append(f"| {c} | {rate('3m')} | {rate('6m')} | {rate('12m')} | {v['classification']} |")
+            if v.get('error'): lines.append(f"{c} probe error: {v['error']}")
+          lines.append('Official OIS policy curve repricing NOT certified; no policy promotion.')
+          s='\n'.join(lines)+'\n'
+          print(s)
+          if os.environ.get('GITHUB_STEP_SUMMARY'):
+            with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f: f.write(s)
+          PY
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-four-extra-research-audit
+          path: /tmp/weekly-four-extra/*.json
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Read-only proof
+        if: always()
+        run: |
+          git diff --exit-code
+          test -z "$(git ls-files --others --exclude-standard)"
+          echo NO_PRODUCTION_MUTATION
