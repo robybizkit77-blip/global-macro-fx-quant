@@ -48,9 +48,7 @@ jobs:
           UPSTREAM_EVENT: ${{ github.event.workflow_run.event }}
         run: |
           set -euo pipefail
-          python3 validation/forward/hourly_recovery_gate_v1.py \\
-            --event "$EVENT" --upstream "$UPSTREAM" \\
-            --upstream-event "$UPSTREAM_EVENT" --output "$GITHUB_OUTPUT"
+          python3 validation/forward/hourly_recovery_gate_v1.py --event "$EVENT" --upstream "$UPSTREAM" --upstream-event "$UPSTREAM_EVENT" --output "$GITHUB_OUTPUT"
       - uses: actions/setup-python@v5
         if: steps.early_gate.outputs.eligible == 'true'
         with:
