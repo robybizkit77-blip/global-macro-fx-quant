@@ -6,6 +6,9 @@ on:
       - '.github/workflows/macro-v2-core-quant-falsification-ci.yml'
       - 'validation/macro/v2_core_quant_falsification_readiness_v1.py'
       - 'validation/macro/test_v2_core_quant_falsification_readiness_v1.py'
+      - 'validation/macro/v2_chf_seco_first_month_rounded_alternative_v1.py'
+      - 'validation/macro/test_v2_chf_seco_first_month_rounded_alternative_v1.py'
+      - 'validation/macro/MACRO_V2_24_SOURCE_TRAINING_WINDOW_GAP_AUDIT_2026-10-27.md'
       - 'validation/macro/MACRO_V2_CORE_QUANT_FALSIFICATION_DECISION_2026-10-28.md'
   workflow_dispatch:
 permissions:
@@ -23,6 +26,7 @@ jobs:
         run: |
           python -m unittest validation.macro.test_v2_domestic_candidate_explicit_formula_v1 -v
           python -m unittest validation.macro.test_v2_core_quant_falsification_readiness_v1 -v
+          python -m unittest validation.macro.test_v2_chf_seco_first_month_rounded_alternative_v1 -v
       - name: Generate dated quantitative model and archived forward receipt reconciliation
         run: |
           python -m validation.macro.v2_core_quant_falsification_readiness_v1 --as-of 2026-10-28 --out /tmp/gmfq-core-quant-falsification-2026-10-28.json
