@@ -81,6 +81,24 @@ def classify(candidate: dict, prior: dict, d: dict, price: dict, today: date) ->
     guard(price.get("rows") and price["rows"][-1].get("Date") == price["last_as_of"],
           "ECB last row/as-of mismatch")
     guard((today - official_asof).days <= 5, "official Price history not current")
+    # Price overlay and the independently persisted ECB history update in
+    # different workflows. A newer, date-valid overlay may reach the browser
+    # first. This is a pending dependency, NEVER publication approval.
+    # The retry is already wired to Price History Persistent Daily V1.
+    if cand_price > official_asof:
+        return {
+            "status": "WAITING_FOR_ECB_HISTORY_SAME_DAY",
+            "action": "NO_WRITE",
+            "reason": "ECB overlay is newer than the separately validated history; wait for matching official archive row before price handoff",
+            "candidate_price_asof": cand_price.isoformat(),
+            "official_history_asof": official_asof.isoformat(),
+            "previous_price_asof": prev_price.isoformat(),
+            "macro_asof": cand_macro.isoformat(),
+            "pair_count": 28,
+            "ready_for_forward_v2": False,
+            "structural_preferences_preserved": True,
+            "entry_levels_added": False,
+        }
     guard(cand_price == official_asof, "candidate Price must match validated ECB last row")
     guard(cand_price >= prev_price, "candidate Price regresses")
     if baseline != prev_macro:
