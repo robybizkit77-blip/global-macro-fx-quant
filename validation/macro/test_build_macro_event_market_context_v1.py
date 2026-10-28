@@ -74,6 +74,8 @@ class EventMarketContextTests(unittest.TestCase):
         for x in r["events"]:
             self.assertEqual(x["state"],"PENDING_OFFICIAL_RELEASE")
             self.assertIsNone(x["official_actual_percent"])
+            self.assertIsNone(x["official_actual_source_url"])
+            self.assertIsNone(x["official_actual_captured_at_utc"])
             self.assertIsNone(x["post_event_daily_comparison"])
             self.assertFalse(x["event_causality_verified"])
 
@@ -121,6 +123,10 @@ class EventMarketContextTests(unittest.TestCase):
             self.assertIsNone(item["FX_trade_signal"])
             self.assertIsNone(item["CB_Want_Can_from_official_statements"])
             self.assertFalse(item["eligible_for_Core_Beta_Forward"])
+            self.assertTrue(item["official_actual_source_url"].startswith("https://"))
+            self.assertEqual(item["official_actual_source_quality"],
+                             "FIRST_RUNNER_OBSERVATION_NOT_ISSUER_FIRST_RELEASE_PIT")
+            self.assertTrue(item["official_actual_captured_at_utc"].endswith("Z"))
             p=item["post_event_daily_comparison"]
             self.assertEqual(p["2Y"]["to"],"2026-11-02")
             self.assertEqual(p["2Y"]["status"],"DESCRIPTIVE_MULTIDAY_CHANGE_NOT_EVENT_CAUSAL")
