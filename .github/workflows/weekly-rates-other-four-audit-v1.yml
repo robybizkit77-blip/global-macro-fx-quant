@@ -2,6 +2,15 @@ name: Weekly USD EUR CHF NZD research rates audit
 
 on:
   workflow_dispatch:
+    inputs:
+      first_friday:
+        description: Earlier Friday YYYY-MM-DD (optional)
+        required: false
+        type: string
+      second_friday:
+        description: Later Friday YYYY-MM-DD (optional)
+        required: false
+        type: string
   push:
     branches: [audit/weekly-rates-other-four-20261028]
     paths:
@@ -42,9 +51,16 @@ jobs:
           print('SECONDARY_SAME_CONTRACT_REGRESSION_PASS')
           PY
       - name: Check two completed Fridays with NZD exchange EOD reports
+        env:
+          AUDIT_FIRST: ${{ inputs.first_friday }}
+          AUDIT_SECOND: ${{ inputs.second_friday }}
         run: |
           mkdir -p /tmp/weekly-four-extra
-          python validation/cb_pricing/audit_weekly_four_extra_v1.py             --first 2026-10-16 --second 2026-10-23             --output /tmp/weekly-four-extra/audit.json | tee /tmp/weekly-four-extra/summary.txt
+          if [[ -n "$AUDIT_FIRST" && -n "$AUDIT_SECOND" ]]; then
+            python validation/cb_pricing/audit_weekly_four_extra_v1.py --first "$AUDIT_FIRST" --second "$AUDIT_SECOND" --output /tmp/weekly-four-extra/audit.json | tee /tmp/weekly-four-extra/summary.txt
+          else
+            python validation/cb_pricing/audit_weekly_four_extra_v1.py --output /tmp/weekly-four-extra/audit.json | tee /tmp/weekly-four-extra/summary.txt
+          fi
           python - <<'PY'
           import json,os
           from pathlib import Path
@@ -52,7 +68,7 @@ jobs:
           assert set(r['currencies']) == {'USD','EUR','CHF','NZD'}
           assert not r['controls']['policy_repricing_certified']
           assert r['validated_observed_contract_changes'] >= 5
-          lines=['### Weekly USD/EUR/CHF/NZD research audit — 16–23 October',
+          lines=[f"### Weekly USD/EUR/CHF/NZD research audit — {r['dates'][0]} → {r['dates'][1]}",
                  '| Currency | 3M | 6M | 12M | Source |',
                  '|---|---:|---:|---:|---|']
           for c,v in r['currencies'].items():
