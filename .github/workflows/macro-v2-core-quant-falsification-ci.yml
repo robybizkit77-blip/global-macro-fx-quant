@@ -1,0 +1,60 @@
+name: Macro V2 quantitative Core falsification - research only
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/macro-v2-core-quant-falsification-ci.yml'
+      - 'validation/macro/v2_core_quant_falsification_readiness_v1.py'
+      - 'validation/macro/test_v2_core_quant_falsification_readiness_v1.py'
+      - 'validation/macro/MACRO_V2_CORE_QUANT_FALSIFICATION_DECISION_2026-10-28.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  quantify-but-do-not-promote-core:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test research mathematics and reject unsupported PIT, beta, or forward claims
+        run: |
+          python -m unittest validation.macro.test_v2_domestic_candidate_explicit_formula_v1 -v
+          python -m unittest validation.macro.test_v2_core_quant_falsification_readiness_v1 -v
+      - name: Generate dated quantitative model and archived forward receipt reconciliation
+        run: |
+          python -m validation.macro.v2_core_quant_falsification_readiness_v1 --as-of 2026-10-28 --out /tmp/gmfq-core-quant-falsification-2026-10-28.json
+          python - <<'PY'
+          import json,os
+          f=json.load(open('/tmp/gmfq-core-quant-falsification-2026-10-28.json'))
+          assert f['status']=='RESEARCH_QUANT_MATH_CHECKED__PIT_OOS_AND_OPERATIONAL_PROMOTION_BLOCKED'
+          assert f['universe']['canonical_unique_unordered_pairs']==28
+          assert f['formula_stress']['economic_axes']==24
+          assert f['summary']['mathematical_research_gates_checked']==1
+          assert f['summary']['unmet_or_blocked_launch_quant_gates']==6
+          assert f['forward_truth']['decision_rows_in_actual_journal']==84
+          assert f['forward_truth']['journal_unique_cutoffs']==3
+          assert f['forward_truth']['realized_outcome_rows']==0
+          assert f['forward_truth']['receipt_batches_claiming_written_rows_absent_from_journal']==0
+          assert f['forward_truth']['three_date_archived_forward_observations_reconciled'] is True
+          assert not f['safe_to_publish_new_D'] and not f['safe_to_recalculate_28_pairs']
+          assert not f['safe_to_claim_quantitative_predictive_validation']
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as o:
+              o.write('### Macro V2 quantitative readiness - research proof, NOT forward model validation\n')
+              o.write('- Reproducible 8-country domestic candidate, 24 economic axes, 3 predetermined growth weight scenarios. No cross-country FX strength permitted.\n')
+              o.write('- Historical v9.3 walkforward is pseudo-OOS; it cannot validate the new domestic candidate.\n')
+              o.write('- Actual forward journal: 84 entries across 3 cutoffs with receipt reconciliation, still 0 validated future outcomes.\n')
+              o.write('- 6 of 8 validation gates blocked; two research gates checked (formula and journal). CI green is not predictive proof. Core D and 28 FX pairs unchanged.\n')
+          PY
+      - name: Assert no production, signals or archival journal writes
+        run: |
+          git diff --exit-code -- live_data site dashboard payload validation/forward/decision_snapshots
+          test -z "$(git status --porcelain -- live_data site dashboard payload validation/forward/decision_snapshots)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macro-v2-core-quant-falsification-research
+          path: /tmp/gmfq-core-quant-falsification-2026-10-28.json
+          retention-days: 21
+          if-no-files-found: error
