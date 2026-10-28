@@ -66,3 +66,21 @@ for remote, should_pass in (
         assert "PAGES_SOURCE_MAIN_MOVED" in result.stderr, result.stderr
 
 print("PAGES_MAIN_SOURCE_LEASE_CONTRACT_PASS")
+
+# A GITHUB_TOKEN commit from the date-gated Oct-30 official-actual job
+# does not fan out into the publisher's plain push trigger. Its completed
+# workflow_run must therefore be an explicit source of Pages publication.
+producer = (root / ".github/workflows/macro-official-actual-fast-poll-20261030.yml").read_text()
+import re as _re
+source_name = _re.search(r"(?m)^name:\s*(.+?)\s*$", producer)
+assert source_name, "OCT30_OFFICIAL_ACTUAL_PRODUCER_NAME_MISSING"
+triggers = workflow.split("\n  workflow_run:\n", 1)[1].split("\n  workflow_dispatch:", 1)[0]
+assert triggers.count("'" + source_name.group(1) + "'") == 1, (
+    "OCT30_OFFICIAL_ACTUAL_PAGES_TRIGGER_MISSING_OR_DUPLICATED"
+)
+assert "types: [completed]" in triggers, "PAGES_WORKFLOW_RUN_COMPLETED_EVENT_MISSING"
+assert "github.event.workflow_run.conclusion == 'success'" in workflow, (
+    "PAGES_PUBLISHER_MUST_REQUIRE_SUCCESSFUL_PRODUCER"
+)
+print("PAGES_OCT30_OFFICIAL_ACTUAL_TRIGGER_PASS")
+
