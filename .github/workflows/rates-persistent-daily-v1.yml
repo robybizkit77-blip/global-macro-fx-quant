@@ -8,6 +8,8 @@ on:
     paths:
       - '.github/workflows/rates-persistent-daily-v1.yml'
       - 'validation/build_rates_candidate_from_audit.py'
+      - 'validation/rates/verify_weekly_rate_change_contract_v1.py'
+      - 'validation/rates/test_weekly_rate_change_contract_v1.py'
       - 'validation/test_eur_daily_rates_history_source_guard_v1.py'
       - 'validation/rates_schedule_gate_v2.py'
       - 'validation/test_rates_schedule_gate_v2.py'
@@ -27,6 +29,8 @@ on:
     paths:
       - '.github/workflows/rates-persistent-daily-v1.yml'
       - 'validation/build_rates_candidate_from_audit.py'
+      - 'validation/rates/verify_weekly_rate_change_contract_v1.py'
+      - 'validation/rates/test_weekly_rate_change_contract_v1.py'
       - 'validation/test_eur_daily_rates_history_source_guard_v1.py'
       - 'validation/rates_schedule_gate_v2.py'
       - 'validation/test_rates_schedule_gate_v2.py'
@@ -75,6 +79,8 @@ jobs:
         run: python3 validation/test_rates_source_age_metadata_v1.py
       - name: Protect EUR 2Y/10Y official history clean tail without blocking other G8 currencies
         run: python3 -m unittest validation.test_eur_daily_rates_history_source_guard_v1 -v
+      - name: Test real 2Y/10Y weekly seven-calendar-day change semantics (not adjacent-day)
+        run: python3 -m unittest validation.rates.test_weekly_rate_change_contract_v1 -v
 
       - name: Resolve Rates schedule from UTC cron and Rome offset
         id: gate
@@ -268,6 +274,29 @@ jobs:
           echo "status=$STATUS" >> "$GITHUB_OUTPUT"
           test "$STATUS" = 'NO_UPDATES' -o "$STATUS" = 'CANDIDATE_READY'
           git diff --exit-code -- live_data payload
+
+      - name: Verify current and candidate 2Y/10Y weekly reference dates before any live publication
+        if: steps.gate.outputs.should_run == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/rates/verify_weekly_rate_change_contract_v1.py \
+            --candidate /tmp/rates-persistent/NATIVE_RATES_DATA.json \
+            --previous live_data/sections/NATIVE_RATES_DATA.json \
+            --out /tmp/rates-persistent/rates-weekly-references-verified.json
+          python3 - <<'PY'
+          import json,os
+          d=json.load(open('/tmp/rates-persistent/rates-weekly-references-verified.json'))
+          assert d['status']=='PASS_WEEKLY_2Y10Y_REFERENCE_CONTRACT'
+          assert d['summary']['verified_with_dated_2Y_and_10Y_weekly_receipts']==7
+          assert d['summary']['unverified_without_weekly_receipt']==['CHF']
+          assert d['summary']['FX_signals_emitted']==0 if 'FX_signals_emitted' in d['summary'] else True
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as o:
+              o.write('### G8 Rates 2Y/10Y weekly reference consistency before publication\n')
+              o.write('- 7/8 source receipt pairs consistent: chg2/chg10 are WEEKLY 7-calendar-day cutoff references, not previous-session price changes.\n')
+              o.write('- CHF has no comparable weekly receipt and is retained without automatic promotion.\n')
+              o.write('- No Core/FX score/return/forward evidence inferred from these descriptive rate deltas.\n')
+          PY
 
       - name: Validate no-update identity
         if: steps.gate.outputs.should_run == 'true' && steps.candidate.outputs.status == 'NO_UPDATES'
