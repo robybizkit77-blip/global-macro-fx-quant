@@ -30,6 +30,9 @@ FILES = (
     "live_data/sections/MACRO_SERIES.json",
     # Home Market Pulse: exact public bytes, not just network HTTP 200.
     "live_data/sections/NEWS_PULSE_OPERATIONAL.json",
+    # News Pulse actuals are unusable if the public CDN still serves old render code.
+    # Certify the *displayed* News Pulse JavaScript alongside the exact JSON.
+    "dashboard/calendar-news-operational-v1.js",
     "live_data/sections/CALENDAR_OPERATIONAL_VIEW.json",
     # Every shipped runtime segment is required: a single stale part can
     # break FX pairs, the research monitor or the Home while part-00 looks OK.
