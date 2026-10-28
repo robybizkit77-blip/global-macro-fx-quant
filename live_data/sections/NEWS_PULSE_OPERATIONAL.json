@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-10-26",
-  "generated_at_utc": "2026-10-27T15:36:57.505398Z",
+  "generated_at_utc": "2026-10-28T04:25:34.381688Z",
   "items": [
     {
       "as_of": "2026-10-26",
@@ -47,10 +47,58 @@
       "title": "AUD: repricing implicito da futures più dovish (-7.0 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-10-27T15:36:57.505398Z",
+  "last_checked_at_utc": "2026-10-28T04:25:34.381688Z",
   "official_releases": {
     "core_effect": "NONE",
     "headlines": [
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "NZD",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
+        "id": "RBNZ_NEWS:https://www.rbnz.govt.nz/news-and-events/news/2026/10/ocr-held-at-2-75-percent",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-10-27T11:00:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "status": "NOT_VALIDATED_DAILY_CONTEXT"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-10-16",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL_MANUAL_VERIFIED",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Reserve Bank of New Zealand · B2 government bond closing yields · 2026-10-16 · reviewed public table",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 3.89
+          }
+        },
+        "source": "Reserve Bank of New Zealand",
+        "source_id": "RBNZ_NEWS",
+        "title": "OCR held at 2.75%",
+        "url": "https://www.rbnz.govt.nz/news-and-events/news/2026/10/ocr-held-at-2-75-percent"
+      },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "EUR",
@@ -76,14 +124,7 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 2.8525,
-            "date": "2026-10-26",
-            "event_window_proof": false,
-            "instrument": "FUTURES_IMPLIED",
-            "quality": "ESTIMATED_INFORMATIONAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
-            "status": "DAILY_CONTEXT_ONLY"
+            "status": "NOT_VALIDATED_DAILY_CONTEXT"
           },
           "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
           "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
@@ -131,14 +172,7 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 2.8525,
-            "date": "2026-10-26",
-            "event_window_proof": false,
-            "instrument": "FUTURES_IMPLIED",
-            "quality": "ESTIMATED_INFORMATIONAL",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
-            "status": "DAILY_CONTEXT_ONLY"
+            "status": "NOT_VALIDATED_DAILY_CONTEXT"
           },
           "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
           "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
@@ -455,8 +489,8 @@
         "url": "https://www.rbnz.govt.nz/news-and-events/news/2026/10/new-framework-supports-access-to-basic-transaction-services"
       }
     ],
-    "last_attempt_day_rome": "2026-10-27",
-    "latest_published_at_utc": "2026-10-27T00:00:00Z",
+    "last_attempt_day_rome": "2026-10-28",
+    "latest_published_at_utc": "2026-10-27T11:00:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -540,9 +574,9 @@
         "status": "NO_VERIFIED_RECENT_ITEMS"
       },
       {
-        "accepted_items": 1,
+        "accepted_items": 2,
         "ccy": "NZD",
-        "entries_rejected": 49,
+        "entries_rejected": 48,
         "feed_entries_seen": 50,
         "feed_url": "https://www.rbnz.govt.nz/feeds/news",
         "source": "Reserve Bank of New Zealand",
