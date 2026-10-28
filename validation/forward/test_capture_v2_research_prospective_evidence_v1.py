@@ -8,7 +8,8 @@ import hashlib
 import json
 import tempfile
 import unittest
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, time
+from zoneinfo import ZoneInfo
 from pathlib import Path
 
 from validation.forward import capture_v2_research_prospective_evidence_v1 as cap
@@ -18,15 +19,35 @@ from validation.macro.v2_domestic_candidate_explicit_formula_v1 import run as do
 class V2ProspectiveResearchCapture(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.day="2026-10-27"
-        cls.cut=datetime.fromisoformat("2026-10-27T19:31:00+01:00")
+        # Run the CI on any day, even after the real ECB and pair archives
+        # advance beyond 2026-10-27. These are ONLY synthetic test inputs.
+        # No synthetic date or price is ever written to the real journal.
+        today=datetime.now(ZoneInfo("Europe/Rome")).date()
+        while today.weekday()>=5:
+            today-=timedelta(days=1)
+        cls.day=today.isoformat()
+        cls.cut=datetime.combine(today,time(19,31),tzinfo=ZoneInfo("Europe/Rome"))
         cls.now=cls.cut+timedelta(seconds=9)
-        cls.fx=cap.read_live("ECB_G8_PRICE_HISTORY")
-        cls.pairs=cap.read_live("PAIR_SETUP_OPERATIONAL_VIEW")
+        cls.fx=copy.deepcopy(cap.read_live("ECB_G8_PRICE_HISTORY"))
+        cls.pairs=copy.deepcopy(cap.read_live("PAIR_SETUP_OPERATIONAL_VIEW"))
         cls.legacy=cap.read_live("D")
         cls.cb=cap.read_live("NATIVE_CB_DATA")
         cls.ois=cap.read_live("OIS_OPERATIONAL_VIEW")
         cls.rates=cap.read_live("NATIVE_RATES_DATA")
+        # Use the archived last quote ONLY as a test-only surrogate for the
+        # test civil day. This cannot certify today's real ECB publication.
+        if cls.fx["last_as_of"]!=cls.day:
+            cls.fx["rows"]=[r for r in cls.fx["rows"] if r["Date"]<cls.day]
+            if not cls.fx["rows"]:
+                raise ValueError("no prior ECB quote for an isolated test")
+            synthetic=copy.deepcopy(cls.fx["rows"][-1])
+            synthetic["Date"]=cls.day
+            cls.fx["rows"].append(synthetic)
+            cls.fx["last_as_of"]=cls.day
+            cls.fx["row_count"]=len(cls.fx["rows"])
+        cls.pairs["price_asof"]=cls.day
+        for k in ("as_of","overlay_asof","history_asof"):
+            cls.pairs["price_audit"][k]=cls.day
         cls.candidate=domestic(as_of=cls.day)
         cls.hashes={
             "ecb":cap.file_sha("live_data/sections/ECB_G8_PRICE_HISTORY.json"),
@@ -69,9 +90,11 @@ class V2ProspectiveResearchCapture(unittest.TestCase):
             self.assertIsNone(row["FX_signal"])
             self.assertIsNone(row["trade_entry"])
             self.assertTrue(row["cb_CAN_not_calibrated"])
-            self.assertIsNone(row["weight_invariant_class_only"]) if c in (
-                "USD","CHF","AUD","NZD") else self.assertIsNotNone(
-                row["weight_invariant_class_only"])
+            self.assertEqual(
+                row["weight_invariant_class_only"],
+                self.candidate["countries"][c][
+                    "continuous_weight_sensitivity_RESEARCH_ONLY"][
+                        "weight_invariant_domestic_class_RESEARCH_ONLY"])
         for flag in (
             "historical_issuer_PIT_backtest_certified",
             "future_outcomes_observed_at_capture",
@@ -104,7 +127,7 @@ class V2ProspectiveResearchCapture(unittest.TestCase):
 
     def test_not_a_forward_prediction_and_guard_v2_quality(self):
         changed=copy.deepcopy(self.candidate)
-        changed["economic_as_of"]="2026-10-28"
+        changed["economic_as_of"]=(self.cut.date()+timedelta(days=1)).isoformat()
         with self.assertRaises(ValueError):
             self.build(candidate=changed,source_hashes={
                 **self.hashes,"candidate":cap.sha(changed)})
@@ -124,15 +147,15 @@ class V2ProspectiveResearchCapture(unittest.TestCase):
 
     def test_stale_or_noncurrent_t0_and_modified_sources_are_rejected(self):
         changed=copy.deepcopy(self.fx)
-        changed["last_as_of"]="2026-10-26"
+        changed["last_as_of"]=(self.cut.date()-timedelta(days=1)).isoformat()
         with self.assertRaises(ValueError):
             self.build(fx=changed)
         changed=copy.deepcopy(self.pairs)
-        changed["price_asof"]="2026-10-26"
+        changed["price_asof"]=(self.cut.date()-timedelta(days=1)).isoformat()
         with self.assertRaises(ValueError):
             self.build(pair_setup=changed)
         changed=copy.deepcopy(self.legacy)
-        changed["asOf"]="2026-10-27"
+        changed["asOf"]=self.day
         with self.assertRaises(ValueError):
             self.build(legacy=changed)
 
