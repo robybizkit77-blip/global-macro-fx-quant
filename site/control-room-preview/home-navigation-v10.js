@@ -2045,7 +2045,7 @@ function pairDeskOrdering(feedData,model){
    const eligible=quality!=='NON VALUTABILE';
    if(eligible&&(![code.slice(0,3),code.slice(3)].includes(fav)||
      !['GOOD','BAD','NEUTRAL'].includes(x.price?.state)||
-     !['ADVANCED','NORMAL'].includes(x.extension?.state)||
+     !['ADVANCED','EXTENDED','NORMAL'].includes(x.extension?.state)||
      !Object.hasOwn(timingRank,x.timing?.state)||
      !['GOOD','NEUTRAL','BAD'].includes(x.liquidity?.state)||
      !['HIGH','MEDIUM','DIVERGENT','CONTEXT'].includes(x.cot?.state)||
@@ -2072,7 +2072,7 @@ function pairDeskOrdering(feedData,model){
      if(x.price?.state==='BAD')reasons.push('Prezzo contro la tesi');
      else if(x.price?.state==='NEUTRAL')reasons.push('Prezzo non conferma');
      if(x.timing?.state==='ADVERSE')reasons.push('Timing contrario');
-     if(x.extension?.state==='ADVANCED')reasons.push('Prezzo già avanzato');
+     if(['ADVANCED','EXTENDED'].includes(x.extension?.state))reasons.push('Prezzo già avanzato');
      if(p.transition?.state==='DIVERGENZA RELATIVA DA MONITORARE')
        reasons.push('Dinamica relativa divergente');
      if(x.timing?.state==='UNCERTAIN')reasons.push('Timing incerto');
