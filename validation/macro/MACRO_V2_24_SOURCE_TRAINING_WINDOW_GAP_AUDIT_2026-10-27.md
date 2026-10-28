@@ -1,5 +1,28 @@
 # Macro V2 — audit per valuta della completezza storica (27 ottobre 2026)
 
+> **Aggiornamento del 28 ottobre 2026 — dato successivo all'audit iniziale.**
+> Dopo il recupero e la conservazione di 11 archivi ufficiali originali, la
+> fotografia di ricerca è salita a **22/24 finestre numericamente continue**
+> (2 incomplete, **46 periodi** mancanti); il precedente dato **11/24 e 280**
+> descrive il primo collaudo precedente, non lo stato attuale. I due slot non
+> continui sono **USD.inflation** (indice BLS CPI SA originario, con ottobre
+> 2025 non pubblicato) e **CHF.labour** (prima serie SNB precisa non
+> ricostruibile automaticamente dai dati SECO arrotondati).
+>
+> Per **CHF.labour**, i rapporti mensili SECO 2024 settembre-dicembre
+> risultano anche indicizzati con il testo completo del PDF originale
+> (Tabelle 1: tasso destagionalizzato **2,6%** in tutti e quattro), sui
+> domini ufficiali `arbeit.swiss`/`secoalv`; i tentativi di scaricare
+> il PDF nel controllo del 28 ottobre non hanno restituito i byte:
+> **21 PDF originali con SHA e 4 soli documenti indicizzati; 0 nuove
+> prime-vintage SNB precise certificate**. Quattro documenti indicizzati
+> non diventano quattro originali acquisiti.
+>
+> Anche **22/24 non significa 22/24 certificati PIT**. Il contatore di
+> storici omogenei, originali e sincronizzati per un modello FX resta 0;
+> nessuna modifica a `D.json`, ranking 28 coppie, Beta o Forward.
+>
+
 ## Cosa viene misurato
 
 Il nuovo controllo confronta le **24 componenti G8** con una regola temporale uguale per tutti: la variabile attuale è *fuori dal campione di training* e per normalizzarla servono esattamente **24 pubblicazioni mensili precedenti** oppure **12 trimestrali precedenti** della *stessa metrica*. Non basta possedere 25 o 13 valori disordinati: l'audit calcola **i periodi economici precisi mancanti** all'interno della finestra precedente, e verifica le date di visibilità delle pubblicazioni.
