@@ -1,0 +1,62 @@
+name: Macro V2 FX 28-pair source synchronized evidence QA - research only
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/macro-v2-28pair-source-synchronization-ci.yml'
+      - 'validation/macro/v2_fx_28pair_synchronized_evidence_gate_v1.py'
+      - 'validation/macro/test_v2_fx_28pair_synchronized_evidence_gate_v1.py'
+      - 'validation/macro/MACRO_V2_FX_28PAIR_RATES_OIS_SOURCE_SYNCHRONIZATION_2026-10-28.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-source-dates-no-fx-repricing:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate 28 canonical pair time alignment without comparative FX score
+        run: |
+          python -m unittest validation.macro.test_v2_fx_28pair_synchronized_evidence_gate_v1 -v
+      - name: Produce read-only dated 28 pair source mismatch matrix
+        run: |
+          python -m validation.macro.v2_fx_28pair_synchronized_evidence_gate_v1 --as-of 2026-10-28 --out /tmp/gmfq-v2-28pair-2y-ois-synchronization.json
+          python - <<'PY'
+          import json,os
+          r=json.load(open('/tmp/gmfq-v2-28pair-2y-ois-synchronization.json'))
+          s=r['summary']
+          assert s['currencies']==8 and s['pairs_total']==28
+          assert s['country_official_OIS_6m_count']==4
+          assert s['country_only_indicative_or_unavailable_OIS_6m_count']==4
+          assert s['country_2Y_and_official_OIS_same_date_count']==2
+          assert s['pair_same_day_2Y_raw_description_only']==4
+          assert s['pair_both_official_OIS_6m_any_dates']==6
+          assert s['pair_both_official_OIS_6m_same_date']==3
+          assert s['pair_full_bundle_2Y_and_official_OIS_exact_date']==0
+          assert s['relative_FX_pair_scores_authorized']==0
+          assert s['relative_cb_Want_Can_scores_authorized']==0
+          assert not r['safe_to_publish_D_json'] and not r['safe_to_recalculate_28_pairs']
+          assert r['no_automatic_OIS_proxy_promotion'] is True
+          assert all(p['can_construct_model_relative_FX_score'] is False
+                     for p in r['pair_evidence'].values())
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as f:
+              f.write('### Macro V2 28 pairs - date alignment research, not FX signals\n')
+              f.write('- Official 6M OIS only for four currencies; remaining four estimates/information cannot become official policy repricing.\n')
+              f.write('- Four pair 2Y snapshots same date (descriptive only), three pair 6M official matched-date snapshots (descriptive only).\n')
+              f.write('- Zero fully synchronized own-currency 2Y + official 6M OIS dual-leg pair bundles. No 28 pair cross-currency scores or CB Want/Can inferred.\n')
+              f.write('- Source timing and benchmark basis still block cross-country FX relative score, Beta and Forward; no Core changes.\n')
+          PY
+      - name: Assert no edits to published model, rates, original archives, dashboard
+        run: |
+          git diff --exit-code -- live_data site dashboard payload validation/forward/decision_snapshots
+          test -z "$(git status --porcelain -- live_data site dashboard payload validation/forward/decision_snapshots)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macro-v2-28pair-2y-ois-same-day-research
+          path: /tmp/gmfq-v2-28pair-2y-ois-synchronization.json
+          retention-days: 21
+          if-no-files-found: error
