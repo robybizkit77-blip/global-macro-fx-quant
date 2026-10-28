@@ -101,6 +101,61 @@ class OfficialActualAdmissionTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             capture(self.frozen,[],AFTER,redirect)
 
+    def test_real_canada_july_2026_unchanged_headline_is_true_numeric_zero(self):
+        # Replays exact wording and prominent 0.0% month heading observed
+        # on Statistics Canada's official 2026-09-29 article. Synthetic HTML
+        # fixture is explicitly not a claim to cache the original site bytes.
+        zero=b"""<html><h1>Gross domestic product by industry, July 2026</h1>
+        <div>Released: 2026-09-29</div>
+        <h2>Real GDP by industry</h2><p>July 2026</p>
+        <p>0.0%</p><p>(monthly change)</p>
+        <p>Real gross domestic product (GDP) was essentially unchanged in July.</p>
+        <p>Advance estimate of August GDP: 0.8%, not July actual.</p></html>"""
+        self.assertEqual(parse_issuer_page(
+            GDP,zero,expected_release="2026-09-29",expected_period="July"),0.0)
+        without_headline=zero.replace(b"0.0%",b"no official numeric measure")
+        with self.assertRaises(Pending):
+            parse_issuer_page(GDP,without_headline,
+                              expected_release="2026-09-29",expected_period="July")
+        with self.assertRaises(Pending):
+            parse_issuer_page(GDP,zero,expected_release="2026-10-30",
+                              expected_period="August")
+
+    def test_eci_june_2026_real_header_template_and_future_date_guard(self):
+        # The BLS issued Q2 2026 version reads with the same civilian
+        # compensation aggregate; not a fabricated ECI Q3 actual.
+        older=b"""<html>
+        Transmission of material in this release is embargoed until
+        USDL-26-1270
+        8:30 a.m. (ET) Friday, July 31, 2026
+        EMPLOYMENT COST INDEX - JUNE 2026
+        Compensation costs for civilian workers increased 0.9 percent,
+        seasonally adjusted, for the 3-month period ending in June 2026.
+        Wages and salaries increased 0.9 percent.</html>"""
+        self.assertEqual(parse_issuer_page(
+            ECI,older,expected_release="Friday, July 31, 2026",
+            expected_period="June"),0.9)
+        with self.assertRaises(Pending):
+            parse_issuer_page(ECI,older)
+        ambiguous=older.replace(
+            b"Compensation costs for civilian workers increased 0.9 percent,",
+            b"Compensation costs for private industry workers increased 0.9 percent,")
+        with self.assertRaises(Pending):
+            parse_issuer_page(ECI,ambiguous,
+                              expected_release="Friday, July 31, 2026",
+                              expected_period="June")
+
+    def test_gdp_all_issuer_candidates_and_bls_secondary_page_are_allowlisted(self):
+        cad=TARGETS[GDP]["url"]
+        self.assertEqual(len(cad),8)
+        self.assertTrue(all(x.startswith(
+            "https://www150.statcan.gc.ca/n1/daily-quotidien/261030/dq261030")
+            for x in cad))
+        self.assertTrue(all(x.endswith("-eng.htm") for x in cad))
+        self.assertEqual(TARGETS[ECI]["url"],
+                         ["https://www.bls.gov/news.release/eci.htm",
+                          "https://www.bls.gov/news.release/eci.nr0.htm"])
+
     def test_archive_cannot_be_modified_or_market_causality_synthesized(self):
         rows,_=capture(self.frozen,[],AFTER,fake_fetch)
         edits=[
