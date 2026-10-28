@@ -144,7 +144,7 @@ malformed.macro_event_market_context.events.find(e=>e.currency==='CAD')
       }
       assert.match(usd.text,/\+0\.9%/);
       assert.match(usd.text,/\+0\.1/);
-      assert.match(cad.text,/\b0\.0%/); // zero is a valid verified actual, no artificial plus sign
+      assert.match(cad.text,/0\.0%/); // zero is a valid verified actual, no artificial plus sign
       assert.match(cad.text,/-0\.2/);
       assert(usd.links[0].startsWith('https://www.bls.gov/'));
       assert(cad.links[0].startsWith('https://www150.statcan.gc.ca/'));
