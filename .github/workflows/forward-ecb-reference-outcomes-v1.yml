@@ -8,6 +8,9 @@ on:
       - 'validation/forward/test_observe_official_ecb_reference_outcomes_v1.py'
       - 'validation/forward/observe_v2_research_ecb_reference_returns_v1.py'
       - 'validation/forward/test_observe_v2_research_ecb_reference_returns_v1.py'
+      - 'validation/forward/audit_v2_prospective_cohort_independence_v1.py'
+      - 'validation/forward/test_audit_v2_prospective_cohort_independence_v1.py'
+      - 'validation/forward/V2_FORWARD_COHORT_EVALUATION_CONTRACT_2026-10-28.md'
       - 'validation/forward/ECB_FORWARD_REFERENCE_OUTCOMES_RUNBOOK_2026-10-26.md'
       - '.github/workflows/forward-ecb-reference-outcomes-v1.yml'
   workflow_dispatch:
@@ -37,6 +40,7 @@ jobs:
           python -m py_compile validation/forward/observe_official_ecb_reference_outcomes_v1.py validation/forward/test_observe_official_ecb_reference_outcomes_v1.py
           python -m unittest validation.forward.test_observe_official_ecb_reference_outcomes_v1 -v
           python -m unittest validation.forward.test_observe_v2_research_ecb_reference_returns_v1 -v
+          python -m unittest validation.forward.test_audit_v2_prospective_cohort_independence_v1 -v
       - name: Confirm current repository has no faux matured outcomes
         run: |
           python -m validation.forward.observe_official_ecb_reference_outcomes_v1 --receipt /tmp/gmfq-forward-ecb-ref-audit.json
@@ -62,6 +66,23 @@ jobs:
                      r['beta_predictive_accuracy'] is None and
                      r['model_alpha_claim'] is False for r in d['new_rows'])
           print('V2_SHADOW_REFERENCE_OBSERVER_NO_PROFIT_CLAIMS_PASS',d['new_matured_reference_rows'])
+          PY
+      - name: Require cohort/date independence audit before any V2 validation language
+        run: |
+          python -m validation.forward.audit_v2_prospective_cohort_independence_v1             --receipt /tmp/gmfq-v2-prospective-cohort-independence.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('/tmp/gmfq-v2-prospective-cohort-independence.json').read_text())
+          assert d['schema']=='GMFQ_V2_PROSPECTIVE_FX_COHORT_DEPENDENCE_AUDIT_V1'
+          assert d['number_of_independent_EUR_base_FX_quote_levels_per_date_at_most']==7
+          assert d['canonical_28_pair_crosses_per_snapshot']==28
+          assert d['no_cross_pair_independence_assumption'] is True
+          assert d['no_naive_pair_level_p_values'] is True
+          assert d['source_survivorship_audit_includes_missing_unobserved_rows'] is True
+          assert d['new_candidate_predictive_accuracy_or_alpha_claimed'] is False
+          assert d['allowed_to_promote_D_or_28_pairs'] is False
+          print('V2_FORWARD_28_PAIR_DEPENDENCE_COHORT_READINESS_PASS')
           PY
       - name: Read-only CI cannot touch production
         run: |
@@ -142,6 +163,25 @@ jobs:
           else
             echo 'V2_REFERENCE_OBSERVER_FAILED_WITHOUT_BLOCKING_LEGACY_COMPARISONS' >> "$GITHUB_STEP_SUMMARY"
           fi
+      - name: Record V2 date-cluster completeness without false pair-level sample size
+        if: steps.gate.outputs.valid == 'true'
+        run: |
+          python -m validation.forward.audit_v2_prospective_cohort_independence_v1             --receipt /tmp/gmfq-v2-cohort-coverage-daily.json
+          python - <<'PY'
+          import json,os
+          d=json.load(open('/tmp/gmfq-v2-cohort-coverage-daily.json'))
+          assert d['no_naive_pair_level_p_values'] and not d['allowed_to_promote_D_or_28_pairs']
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as o:
+              o.write('- V2 independent prospectively observed *capture days*: '+
+                      str(d['total_frozen_capture_date_clusters'])+
+                      '; FX 28 pair rows are shared-currency dependent, **NOT 28 trials**.\n')
+              for name,x in d['per_horizon'].items():
+                  o.write('  - '+name+': matured dates '+
+                          str(x['capture_date_clusters_with_elapsed_horizon'])+
+                          ', observed rows '+str(x['recorded_reference_pair_rows'])+
+                          '/'+str(x['possible_reference_pair_rows_at_matured_dates'])+
+                          ', missing '+str(x['not_observed_yet_pair_rows'])+'\n')
+          PY
       - name: Prevent other file mutation
         if: steps.gate.outputs.valid == 'true'
         shell: bash
