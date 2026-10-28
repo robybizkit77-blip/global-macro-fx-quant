@@ -196,12 +196,16 @@ class ReferenceOutcomesTests(unittest.TestCase):
                             prior=result["new_rows"])
         self.assertEqual(second["new_reference_observations"],0)
 
-    def test_observer_recovery_reuses_existing_hourly_without_new_cron(self):
+    def test_observer_recovery_reuses_existing_scheduled_upstreams_without_new_cron(self):
         workflow=(m.ROOT/".github/workflows/forward-ecb-reference-outcomes-v1.yml"
                   ).read_text(encoding="utf-8")
         self.assertEqual(workflow.count("cron: '15 19 * * 1-5'"),1)
         self.assertEqual(workflow.count("cron: '15 20 * * 1-5'"),1)
-        self.assertIn("workflows: ['Hourly Certified Alert Readiness V1']",workflow)
+        # Real delayed scheduled Forward completions are a second recovery
+        # source if the separately scheduled hourly alert workflow is delayed.
+        self.assertIn("workflows: ['Hourly Certified Alert Readiness V1', 'Forward Frozen Core Prospective Daily V1']",workflow)
+        self.assertIn("github.event.workflow_run.name == 'Hourly Certified Alert Readiness V1'",workflow)
+        self.assertIn("github.event.workflow_run.name == 'Forward Frozen Core Prospective Daily V1'",workflow)
         self.assertIn("github.event.workflow_run.conclusion == 'success'",workflow)
         self.assertIn("github.event.workflow_run.head_branch == 'main'",workflow)
         self.assertIn("github.event.workflow_run.event == 'schedule'",workflow)
