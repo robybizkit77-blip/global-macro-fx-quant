@@ -1,13 +1,19 @@
 #!/usr/bin/env python3
-import json,re,math
+import json,re,math,sys
 from datetime import date,datetime,timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 from collect_official_news_rss_v1 import collect as collect_official_releases
 from news_reaction_evidence_v1 import annotate as annotate_reaction_proof
-from macro.build_macro_event_market_context_v1 import run as macro_event_market_context_run
+
 
 ROOT=Path(__file__).resolve().parents[1]
+# This builder is invoked as `python validation/build_news_pulse_operational_v1.py`
+# by multiple existing jobs; its script directory, not repository root, is
+# initially on sys.path. Resolve the existing validation package explicitly.
+if str(ROOT) not in sys.path:
+    sys.path.insert(0,str(ROOT))
+from validation.macro.build_macro_event_market_context_v1 import run as macro_event_market_context_run
 OIS=ROOT/'live_data/sections/OIS_OPERATIONAL_VIEW.json'
 MACRO=ROOT/'live_data/sections/MACRO_THERMOMETER_DATA.json'
 OUT=ROOT/'live_data/sections/NEWS_PULSE_OPERATIONAL.json'
