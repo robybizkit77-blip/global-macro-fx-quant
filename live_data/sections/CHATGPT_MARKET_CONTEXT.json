@@ -1,7 +1,7 @@
 {
   "schema": "GMFQ_CHATGPT_MARKET_CONTEXT_V1",
-  "generated_at_utc": "2026-10-28T20:47:59Z",
-  "evaluation_date_europe_rome": "2026-10-28",
+  "generated_at_utc": "2026-10-28T23:07:22Z",
+  "evaluation_date_europe_rome": "2026-10-29",
   "reference_only": true,
   "policy": {
     "fail_closed": true,
@@ -182,7 +182,7 @@
       "CHF": {
         "state": "STALE",
         "as_of": "2026-09-30",
-        "reason": "Age 28d exceeds the 3d alert limit."
+        "reason": "Age 29d exceeds the 3d alert limit."
       },
       "CAD": {
         "state": "AVAILABLE_CERTIFIED",
@@ -197,12 +197,12 @@
       "AUD": {
         "state": "STALE",
         "as_of": "2026-10-21",
-        "reason": "Age 7d exceeds the 3d alert limit."
+        "reason": "Age 8d exceeds the 3d alert limit."
       },
       "NZD": {
         "state": "STALE",
         "as_of": "2026-10-16",
-        "reason": "Age 12d exceeds the 3d alert limit."
+        "reason": "Age 13d exceeds the 3d alert limit."
       }
     },
     "cot_weekly": {
