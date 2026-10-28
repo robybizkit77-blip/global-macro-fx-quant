@@ -67,15 +67,13 @@ class Relative28FXSourceSyncTests(unittest.TestCase):
         self.assertIsNotNone(d["EUR/GBP"]["2Y_raw_yield_difference_bp_DESCRIPTION_ONLY"])
         self.assertFalse(d["EUR/GBP"]["6m_official_same_observation_day"])
         self.assertIsNone(d["EUR/GBP"]["6m_official_curve_difference_bp_DESCRIPTION_ONLY"])
-        self.assertTrue(d["JPY/AUD"]["6m_official_same_observation_day"])
-        self.assertIsNotNone(d["JPY/AUD"]["6m_official_curve_difference_bp_DESCRIPTION_ONLY"])
-        self.assertFalse(d["JPY/AUD"]["2Y_same_observation_day"])
-        self.assertIsNone(d["JPY/AUD"]["2Y_raw_yield_difference_bp_DESCRIPTION_ONLY"])
+        self.assertTrue(d["AUD/JPY"]["6m_official_same_observation_day"])
+        self.assertIsNotNone(d["AUD/JPY"]["6m_official_curve_difference_bp_DESCRIPTION_ONLY"])
+        self.assertFalse(d["AUD/JPY"]["2Y_same_observation_day"])
+        self.assertIsNone(d["AUD/JPY"]["2Y_raw_yield_difference_bp_DESCRIPTION_ONLY"])
         self.assertFalse(d["GBP/JPY"]["6m_official_same_observation_day"])
         self.assertFalse(d["GBP/JPY"]["2Y_same_observation_day"])
-        self.assertFalse(d["USD/EUR"]["6m_official_both_legs"] if
-                         "6m_official_both_legs" in d["USD/EUR"] else
-                         d["EUR/USD"]["6m_official_both_legs"])
+        self.assertFalse(d["EUR/USD"]["6m_official_both_legs"])
 
     def test_currency_indicative_is_visible_but_never_upgraded_to_OIS(self):
         d=self.result["source_currencies"]
