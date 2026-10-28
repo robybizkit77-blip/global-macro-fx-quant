@@ -85,8 +85,49 @@ class ProspectiveAdmission(unittest.TestCase):
         self.assertEqual(gate.schedule_attempt(
             dt.datetime(2026,10,26,20,31,tzinfo=gate.ROME),
             "workflow_dispatch",""),"MANUAL_ATTEMPT")
+        self.assertEqual(gate.schedule_attempt(
+            dt.datetime(2026,10,26,21,31,tzinfo=gate.ROME),
+            "workflow_run",""),"AFTER_CANONICAL_PAIR_HANDOFF_REAL_TIME_RETRY")
         with self.assertRaisesRegex(ValueError,"aware"):
             gate.schedule_attempt(dt.datetime(2026,10,26,20,31),"schedule","30 19 * * 1-5")
+
+    def test_pair_handoff_late_event_must_still_obey_official_same_day_gate(self):
+        fx, setup, core = minimal()
+        late = dt.datetime(2026,10,26,21,31,tzinfo=gate.ROME)
+        allowed = gate.assess(late,fx,setup,core)
+        self.assertEqual(allowed["status"],"ADMITTED_PROSPECTIVE_BASELINE_OBSERVATION")
+        stale=copy.deepcopy(setup)
+        stale["price_asof"]="2026-10-23"
+        blocked=gate.assess(late,fx,stale,core)
+        self.assertEqual(blocked["status"],"BLOCKED_NO_CAPTURE")
+        self.assertIn("PAIR_SETUP_CURRENT_DAY_28_PAIR_PRICE_NOT_PRESENT",blocked["checks"])
+        oldfx=copy.deepcopy(fx)
+        oldfx["last_as_of"]="2026-10-23"
+        blocked=gate.assess(late,oldfx,setup,core)
+        self.assertIn("ECB_CURRENT_DAY_FIXING_NOT_PRESENT",blocked["checks"])
+        # Source event alone cannot override the real Rome-hour safety check.
+        earlier=dt.datetime(2026,10,26,18,31,tzinfo=gate.ROME)
+        self.assertIn("NOT_AFTER_1900_ROME",gate.assess(earlier,fx,setup,core)["checks"])
+
+    def test_existing_forward_workflow_event_recovery_has_no_new_cron_or_pr_capture(self):
+        workflow=(gate.ROOT/".github/workflows/forward-frozen-core-prospective-daily-v1.yml"
+                  ).read_text(encoding="utf-8")
+        self.assertEqual(workflow.count("cron: '30 17 * * 1-5'"),1)
+        self.assertEqual(workflow.count("cron: '30 18 * * 1-5'"),1)
+        self.assertEqual(workflow.count("cron: '30 19 * * 1-5'"),1)
+        self.assertIn("workflows: ['Pair Setup Operational View V1']",workflow)
+        self.assertIn("types: [completed]",workflow)
+        self.assertIn("github.event.workflow_run.conclusion == 'success'",workflow)
+        self.assertIn("github.event.workflow_run.head_branch == 'main'",workflow)
+        self.assertIn("github.event.workflow_run.event != 'pull_request'",workflow)
+        self.assertIn("steps.admit.outputs.admitted == 'true'",workflow)
+        self.assertIn("EXISTING_DATE_ALREADY_FROZEN_NO_OVERWRITE",workflow)
+        self.assertIn("Certify V2 research capture separately after primary Core commit",workflow)
+        # The canonical pair exporter does not itself depend on any forward
+        # workflow, preventing an accidental workflow-run feedback loop.
+        exporter=(gate.ROOT/".github/workflows/pair-setup-operational-view-v1.yml"
+                  ).read_text(encoding="utf-8")
+        self.assertNotIn("'Forward Frozen Core Prospective Daily V1'",exporter)
 
     def test_backup_does_not_replay_official_oct23_fixing(self):
         fx,setup,d=minimal()
