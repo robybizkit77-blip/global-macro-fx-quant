@@ -102,6 +102,43 @@ class RatesWeeklyReferenceContractTests(unittest.TestCase):
         altered["USD"]["freshness_note"]="changed without new source"
         with self.assertRaises(ValueError):validate(altered,reference=self.current)
 
+    def test_synthetic_new_USD_source_date_could_pass_only_with_matching_weekly_2y_10y_receipts(self):
+        # A deterministic synthetic contract exercise, NOT an observed
+        # Treasury print or permission to push a future rate.
+        out=copy.deepcopy(self.current)
+        row=out["USD"]
+        newday=(date.fromisoformat(row["date"])+timedelta(days=1)).isoformat()
+        oldday=row["date"]
+        row["date"]=newday
+        for tenor,hname,receipt_name,delta_name,newvalue in (
+            ("2Y","history2","weekly2_validation","chg2_bp",row["2Y"]+0.01),
+            ("10Y","history10","weekly10_validation","chg10_bp",row["10Y"]+0.02)
+        ):
+            history=row[hname]
+            history["dates"].append(newday)
+            history["values"].append(newvalue)
+            history["last_date"]=newday
+            history["last_value"]=newvalue
+            row[tenor]=newvalue
+            cutoff=(date.fromisoformat(newday)-timedelta(days=7)).isoformat()
+            refs=[d for d in history["dates"] if d<=cutoff]
+            start=max(refs)
+            start_value=history["values"][history["dates"].index(start)]
+            weekly_bp=round((newvalue-start_value)*100,1)
+            row[delta_name]=weekly_bp
+            row[receipt_name].update(
+                start_date=start,start_value=start_value,
+                end_date=newday,end_value=newvalue,change_bp=weekly_bp)
+        row["curve_bp"]=round((row["10Y"]-row["2Y"])*100,1)
+        verified=validate(out,reference=self.current)
+        self.assertEqual(verified["summary"]["changed_currencies"],["USD"])
+        self.assertEqual(verified["currencies"]["USD"]["2Y"]["source_end_day"],newday)
+        self.assertEqual(verified["currencies"]["USD"]["10Y"]["source_end_day"],newday)
+        self.assertEqual(self.current["USD"]["date"],oldday)
+        out["USD"]["weekly2_validation"]["start_value"]+=0.5
+        with self.assertRaises(ValueError):
+            validate(out,reference=self.current)
+
     def test_read_only_deterministic_and_no_legacy_data_changes(self):
         before=LIVE.read_bytes()
         r=run(candidate_path=LIVE,reference_path=LIVE)
