@@ -145,8 +145,8 @@ malformed.macro_event_market_context.events.find(e=>e.currency==='CAD')
       assert.equal(midway.length,2);
       assert(first&&pending);
       assert.equal(first.stage,'DAILY_CONTEXT_ONLY_NO_EVENT_CAUSALITY');
-      assert.match(first.text,/\\+0\\.9%/);
-      assert.match(first.text,/\\+0\\.1/);
+      assert(first.text.includes('+0.9%'),'USD actual visible in partial state');
+      assert(first.text.includes('+0.1'),'USD surprise visible in partial state');
       assert.equal(first.links.length,1);
       assert(first.links[0].startsWith('https://www.bls.gov/'));
       assert.equal(pending.stage,'PENDING_OFFICIAL_RELEASE');
