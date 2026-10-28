@@ -187,6 +187,16 @@ def evaluate(*,candidate,forward,history,core,setup,receipts,decisions,as_of=EVA
     receipt_rows=receipt_reconciliation(receipts,decisions)
     mismatch=[x for x in receipt_rows if x["unreconciled_claimed_writes"]>0]
     latest_journal=max((r["decision_cutoff"] for r in decisions),default=None)
+    receipt_matched_repeats=(
+        forward["forward"]["unique_cutoff_instants"] >= 3 and
+        forward["forward"]["distinct_run_ids"] >= 3 and
+        forward["forward"]["decision_rows"] >= 84 and
+        not mismatch and
+        any(r["run_id"]=="frozen-core-20261026" and
+            r["persisted_matching_decision_rows"]==28 for r in receipt_rows) and
+        any(r["run_id"]=="frozen-core-20261027" and
+            r["persisted_matching_decision_rows"]==28 for r in receipt_rows)
+    )
     required=[
       {"gate":"CURRENT_FORMULA_NUMERIC_REPRODUCTION",
        "state":"VERIFIED_RESEARCH_MATH_ONLY",
@@ -201,8 +211,11 @@ def evaluate(*,candidate,forward,history,core,setup,receipts,decisions,as_of=EVA
        "state":"BLOCKED",
        "reason":"existing 2018–2026 v9.3 study uses retrospectively revised histories, pseudo-OOS only"},
       {"gate":"FORWARD_REALTIME_DECISION_JOURNAL",
-       "state":"BLOCKED",
-       "reason":"legacy one-date smoke archive and some receipt claims lack archived matching decisions"},
+       "state":("RECONCILED_OBSERVATIONAL_CAPTURE_ONLY" if receipt_matched_repeats
+                else "BLOCKED"),
+       "reason":("3 real prospective date batches with journal rows and matching receipts, not future price outcomes"
+                 if receipt_matched_repeats
+                 else "prospective receipts and immutable journal insufficiently reconciled")},
       {"gate":"FORWARD_REALIZED_OUTCOMES_AND_COSTS",
        "state":"BLOCKED",
        "reason":"no independently validated future outcomes or price/cost evidence"},
@@ -246,6 +259,7 @@ def evaluate(*,candidate,forward,history,core,setup,receipts,decisions,as_of=EVA
           "receipt_records":receipt_rows,
           "receipt_batches_claiming_written_rows_absent_from_journal":len(mismatch),
           "some_receipts_do_not_establish_archived_decisions":len(mismatch)>0,
+          "three_date_archived_forward_observations_reconciled":receipt_matched_repeats,
           "snapshots_not_equivalent_to_trading_evidence":True,
           "first_forward_eval_certified":False,
       },
@@ -258,6 +272,7 @@ def evaluate(*,candidate,forward,history,core,setup,receipts,decisions,as_of=EVA
       "gates":required,
       "summary":{
           "mathematical_research_gates_checked":1,
+          "forward_observational_capture_gate_checked":int(receipt_matched_repeats),
           "unmet_or_blocked_launch_quant_gates":sum(g["state"]=="BLOCKED" for g in required),
           "source_first_release_completeness_certified":False,
           "FX_backtest_evidence_certified":False,
@@ -284,7 +299,6 @@ def run(*,as_of=EVALUATION_DAY):
     forward=forward_inspect(json.loads(BETA.read_text()),
                             json.loads(FORWARD_SCHEMA.read_text()),
                             decisions,_read_lines(OUTCOMES))
-    files=sorted(RECEIPTS.glob("2026-10-*_V1.json"))
     # All canonical V1 receipts in the archived directory, no network.
     files=sorted(RECEIPTS.glob("*__*__V1.json"))
     receipts=[json.loads(p.read_text(encoding="utf-8")) for p in files]
