@@ -6,6 +6,8 @@ on:
     paths:
       - 'validation/forward/**'
       - 'validation/test_forward_decision_logger_v1.py'
+      - 'validation/macro/v2_core_beta_evidence_desk_v1.py'
+      - 'validation/macro/test_v2_core_beta_evidence_desk_v1.py'
       - '.github/workflows/forward-frozen-core-prospective-daily-v1.yml'
   workflow_dispatch:
   workflow_run:
