@@ -86,6 +86,30 @@ class OfficialActualAdmissionTests(unittest.TestCase):
         self.assertEqual(parse_issuer_page(GDP,CAD_NEW.replace(
             b"grew 0.3% in August",b"fell 0.3% in August")),-0.3)
 
+    def test_successful_official_download_stamps_actual_after_network_not_poller_start(self):
+        seen=AFTER+timedelta(minutes=3,seconds=44)
+        acquired=[]
+        def mock(url,host):
+            acquired.append((url,host))
+            return (BLS_NEW if host=="www.bls.gov" else CAD_NEW),url
+        records,receipt=capture(
+            self.frozen,[],AFTER,mock,observed_clock=lambda:seen)
+        self.assertEqual(receipt["new_actuals"],2)
+        self.assertEqual({x["captured_at_utc"] for x in records},
+                         {"2026-10-30T12:38:44Z"})
+        self.assertEqual({x["official_scheduled_release_utc"] for x in records},
+                         {"2026-10-30T12:30:00Z"})
+        self.assertGreaterEqual(len(acquired),2)
+        validate_actual_log(records,self.frozen)
+
+    def test_verified_actual_observation_clock_never_precedes_poll_or_release(self):
+        for instant in (AFTER-timedelta(seconds=1),
+                        datetime(2026,10,30,12,39), # no offset
+                        AFTER+timedelta(days=15)):
+            with self.subTest(clock=str(instant)),self.assertRaises(ValueError):
+                capture(self.frozen,[],AFTER,fake_fetch,
+                        observed_clock=lambda instant=instant:instant)
+
     def test_failed_official_http_is_missing_not_a_0_or_3rd_party_actual(self):
         def bad(url,host):raise OSError("source unavailable")
         rows,receipt=capture(self.frozen,[],AFTER,bad)
