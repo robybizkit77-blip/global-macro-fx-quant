@@ -18,8 +18,9 @@ T0="2026-10-28T08:35:00Z"
 class ConsensusFreezeTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.seed=json.loads(SEED.read_text(encoding="utf-8"))
-        cls.consensus=json.loads(CONSENSUS.read_text(encoding="utf-8"))
+        fixture=json.loads((SEED.parents[2]/"validation/macro/fixtures/pre_release_oct28_usd_cad_fixture_v1.json").read_text(encoding="utf-8"))
+        cls.seed=fixture["official"]
+        cls.consensus=fixture["consensus"]
 
     def freeze_at(self,at=T0,seed=None,consensus=None,old=None):
         return freeze(seed or self.seed,consensus or self.consensus,
@@ -112,11 +113,15 @@ class ConsensusFreezeTests(unittest.TestCase):
     def test_run_adds_exactly_once_and_mutates_no_other_files(self):
         with tempfile.TemporaryDirectory() as td:
             ledger=Path(td)/"ledger.jsonl"
+            seed=Path(td)/"official.json"
+            cons=Path(td)/"consensus.json"
+            seed.write_text(json.dumps(self.seed))
+            cons.write_text(json.dumps(self.consensus))
             before=(SEED.read_bytes(),CONSENSUS.read_bytes())
-            first=run(SEED,CONSENSUS,ledger,captured_at=T0)
+            first=run(seed,cons,ledger,captured_at=T0)
             self.assertEqual(first["new_forecasts_frozen"],2)
             bytes_first=ledger.read_bytes()
-            second=run(SEED,CONSENSUS,ledger,captured_at="2026-10-28T09:00:00Z")
+            second=run(seed,cons,ledger,captured_at="2026-10-28T09:00:00Z")
             self.assertEqual(second["new_forecasts_frozen"],0)
             self.assertEqual(bytes_first,ledger.read_bytes())
             self.assertEqual(len(read_existing(ledger)),2)
