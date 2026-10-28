@@ -4,9 +4,11 @@ import unittest
 from datetime import datetime,timezone
 
 from validation.macro.publish_oct30_official_actual_retry_v1 import (
-    retry_transaction,MAX_ATTEMPTS,SCHEMA,
-    run as real_gate_run
+    retry_transaction,MAX_ATTEMPTS,SCHEMA
 )
+from validation.macro.one_date_oct30_official_actual_fast_poll_gate_v1 import gate
+from validation.macro.freeze_pre_release_consensus_v1 import LEDGER,read_existing
+from validation.macro.capture_official_postrelease_actuals_v1 import OUT
 
 class ActualPublicationRetryTests(unittest.TestCase):
     def test_one_conflict_rechecks_official_source_again_on_new_main(self):
@@ -84,15 +86,13 @@ class ActualPublicationRetryTests(unittest.TestCase):
                                   lambda:True,lambda:None,attempts=1)
         self.assertEqual(result["attempts"],1)
 
-    def test_live_repo_gate_on_oct28_is_read_only_and_no_fake_future_actuals(self):
-        out=real_gate_run()
-        self.assertEqual(out["schema"],SCHEMA)
-        # CI runs on Oct 28, before the two scheduled Oct 30 issuer releases.
-        # Later test invocations can still rely on the strict 2026-10-30 date
-        # gate and must not make any issuer network fetch when out of scope.
-        self.assertFalse(out["published"])
-        self.assertEqual(out["attempts"],0)
-        self.assertTrue(out["writes_Core_Beta_Forward"] is False)
+    def test_live_repo_event_clock_gate_before_oct30_does_not_download_or_write(self):
+        before=LEDGER.read_bytes(),OUT.read_bytes()
+        result=gate(read_existing(LEDGER),read_existing(OUT),
+                    datetime(2026,10,28,10,30,tzinfo=timezone.utc))
+        self.assertFalse(result["should_poll"])
+        self.assertEqual(result["status"],"OUTSIDE_ONCE_ONLY_RELEASE_DAY")
+        self.assertEqual(before,(LEDGER.read_bytes(),OUT.read_bytes()))
 
 if __name__=="__main__":
     unittest.main()
