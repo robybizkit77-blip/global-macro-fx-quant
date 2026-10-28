@@ -159,7 +159,7 @@ jobs:
           set -euo pipefail
           changed="$(git diff --name-only -- live_data/sections/CALENDAR_OPERATIONAL_VIEW.json live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json live_data/sections/NEWS_PULSE_OPERATIONAL.json validation/macro/MACRO_PRE_RELEASE_CONSENSUS_LEDGER_V1.jsonl)"
           if [ -z "$changed" ]; then echo CALENDAR_NEWS_NO_CHANGE; exit 0; fi
-          unexpected="$(git diff --name-only | grep -Ev '^(live_data/sections/CALENDAR_OPERATIONAL_VIEW.json|live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json|live_data/sections/NEWS_PULSE_OPERATIONAL.json|validation/macro/MACRO_PRE_RELEASE_CONSENSUS_LEDGER_V1.jsonl) || true)"
+          unexpected="$(git diff --name-only | grep -Ev '^(live_data/sections/CALENDAR_OPERATIONAL_VIEW.json|live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json|live_data/sections/NEWS_PULSE_OPERATIONAL.json|validation/macro/MACRO_PRE_RELEASE_CONSENSUS_LEDGER_V1.jsonl)$' || true)"
           test -z "$unexpected" || { echo "Unexpected changes: $unexpected" >&2; exit 1; }
           REMOTE_SHA="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
           LOCAL_SHA="$(git rev-parse HEAD)"
@@ -167,15 +167,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add live_data/sections/CALENDAR_OPERATIONAL_VIEW.json live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json live_data/sections/NEWS_PULSE_OPERATIONAL.json validation/macro/MACRO_PRE_RELEASE_CONSENSUS_LEDGER_V1.jsonl
-          git commit -m 'Refresh operational Calendar, consensus and News Pulse'
-          git push origin HEAD:main
- || true)"
-          test -z "$unexpected" || { echo "Unexpected changes: $unexpected" >&2; exit 1; }
-          REMOTE_SHA="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
-          LOCAL_SHA="$(git rev-parse HEAD)"
-          test "$REMOTE_SHA" = "$LOCAL_SHA" || { echo 'main moved during Calendar/News refresh' >&2; exit 1; }
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add live_data/sections/CALENDAR_OPERATIONAL_VIEW.json live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json live_data/sections/NEWS_PULSE_OPERATIONAL.json
-          git commit -m 'Refresh operational Calendar, consensus and News Pulse'
+          git commit -m 'Refresh operational Calendar, consensus and frozen pre-release forecast ledger'
           git push origin HEAD:main
