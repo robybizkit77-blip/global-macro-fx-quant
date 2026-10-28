@@ -55,7 +55,8 @@ class QuantFalsificationReadinessTests(unittest.TestCase):
         self.assertEqual(r["formula_stress"]["economic_axes"],24)
         self.assertEqual(r["formula_stress"]["tested_growth_weights"],[0.25,0.5,0.75])
         self.assertEqual(r["summary"]["mathematical_research_gates_checked"],1)
-        self.assertEqual(r["summary"]["unmet_or_blocked_launch_quant_gates"],7)
+        self.assertEqual(r["summary"]["unmet_or_blocked_launch_quant_gates"],6)
+        self.assertEqual(r["summary"]["forward_observational_capture_gate_checked"],1)
         self.assertEqual(r["summary"]["new_core_scores_published"],0)
         self.assertEqual(r["summary"]["FX_pair_rankings_recomputed"],0)
         self.assertTrue(r["research_math_not_predictive_validation"])
@@ -68,17 +69,19 @@ class QuantFalsificationReadinessTests(unittest.TestCase):
         f=self.result["forward_truth"]
         self.assertGreaterEqual(len(f["receipt_records"]),3)
         self.assertEqual(f["realized_outcome_rows"],0)
-        self.assertEqual(f["journal_unique_cutoffs"],1)
-        self.assertEqual(f["journal_distinct_runs"],1)
-        self.assertEqual(f["decision_rows_in_actual_journal"],28)
-        self.assertEqual(f["receipt_batches_claiming_written_rows_absent_from_journal"],2)
-        self.assertTrue(f["some_receipts_do_not_establish_archived_decisions"])
+        self.assertEqual(f["journal_unique_cutoffs"],3)
+        self.assertEqual(f["journal_distinct_runs"],3)
+        self.assertEqual(f["decision_rows_in_actual_journal"],84)
+        self.assertEqual(f["receipt_batches_claiming_written_rows_absent_from_journal"],0)
+        self.assertFalse(f["some_receipts_do_not_establish_archived_decisions"])
+        self.assertTrue(f["three_date_archived_forward_observations_reconciled"])
         unpaired=[x for x in f["receipt_records"] if x["unreconciled_claimed_writes"]>0]
-        self.assertEqual({x["run_id"] for x in unpaired},
-                         {"frozen-core-20261026","frozen-core-20261027"})
-        self.assertTrue(all(x["status"]=="RECEIPT_REPORTS_WRITES_NOT_IN_ARCHIVED_JOURNAL"
+        self.assertEqual(unpaired, [])
+        self.assertEqual({x["run_id"] for x in f["receipt_records"]},
+                         {"real-main-smoke-20261014", "frozen-core-20261026", "frozen-core-20261027"})
+        self.assertTrue(all(x["status"]=="MATCHED_JOURNAL_OR_ZERO_WRITES_NOT_PERFORMANCE"
                             and x["can_count_as_prospective_OOS_sample"] is False
-                            for x in unpaired))
+                            for x in f["receipt_records"]))
         self.assertTrue(f["snapshots_not_equivalent_to_trading_evidence"])
 
     def test_legacy_revised_pseudo_OOS_cannot_be_new_formula_validation(self):
@@ -115,7 +118,7 @@ class QuantFalsificationReadinessTests(unittest.TestCase):
             macro_baseline_asof="2026-10-27"))
         self.reject("forward",lambda d:d.update(state="READY_FOR_LAUNCH"))
         self.reject("forward",lambda d:d["beta"].update(strategy_beta_validated=True))
-        self.reject("forward",lambda d:d["forward"].update(decision_rows=84))
+        self.reject("forward",lambda d:d["forward"].update(decision_rows=85))
 
     def test_archives_and_main_live_data_unchanged(self):
         paths=[
