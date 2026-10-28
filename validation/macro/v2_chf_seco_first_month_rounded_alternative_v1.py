@@ -111,7 +111,7 @@ def from_index_only():
          "official_pdf_sha256_captured_now":None,
          "source_first_month_raw_document_bytes_downloaded":False,
          "document_original_release_day_HTTP_snapshot_verified":False,
-         "publisher_first_original_exact_SNB_values_verified":False}
+         "publisher_first_original_exact_SNB_values_verified":False})
     return rows
 
 
