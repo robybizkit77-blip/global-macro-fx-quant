@@ -10,6 +10,7 @@ on:
       - 'validation/collect_official_news_rss_v1.py'
       - 'dashboard/editorial-freshness-guard-v1.js'
       - 'dashboard/calendar-news-operational-v1.js'
+      - 'validation/test_news_macro_actual_browser_contract_v1.cjs'
       - 'live_data/sections/CALENDAR_OPERATIONAL_VIEW.json'
       - 'live_data/sections/NEWS_PULSE_OPERATIONAL.json'
       - 'live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json'
@@ -25,6 +26,7 @@ on:
       - 'validation/collect_official_news_rss_v1.py'
       - 'dashboard/editorial-freshness-guard-v1.js'
       - 'dashboard/calendar-news-operational-v1.js'
+      - 'validation/test_news_macro_actual_browser_contract_v1.cjs'
       - 'live_data/sections/CALENDAR_OPERATIONAL_VIEW.json'
       - 'live_data/sections/NEWS_PULSE_OPERATIONAL.json'
       - 'live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json'
@@ -94,7 +96,7 @@ jobs:
                 const sourceLinks=officialCards.map(card=>card.querySelector('a[href]')?.href||'');
                 return {cards:document.querySelectorAll('#news .opCard').length,
                   officialCards:officialCards.length,sourceLinks,
-                  proofLabelCount:officialCards.filter(c=>c.dataset.relevance==='MONITOR' && c.textContent.includes('Reazione non certificata')).length,
+                  proofLabelCount:officialCards.filter(c=>c.dataset.relevance==='MONITOR' && /Reazione(?: di mercato:)? non certificata/i.test(c.textContent)).length,
                   tiers:officialCards.map(card=>card.dataset.relevance),
                   monitorQuestions:officialCards.filter(card=>card.dataset.relevance==='MONITOR'&&
                     card.textContent.includes('Perché conta')&&card.textContent.includes('Cosa verificare')).length,
@@ -183,6 +185,7 @@ jobs:
           })().catch(e=>{console.error(e);process.exit(1)});
           JS
           node calendar-news-ui-audit.js
+          node validation/test_news_macro_actual_browser_contract_v1.cjs
       - uses: actions/upload-artifact@v4
         with:
           name: calendar-news-operational-ui-audit-v1
