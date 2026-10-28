@@ -34,9 +34,10 @@ class EventMarketContextTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.forecasts=read_existing(LEDGER)
-        cls.rates=json.loads(RATES.read_text(encoding="utf-8"))
-        cls.ois=json.loads(OIS.read_text(encoding="utf-8"))
-        cls.fx=json.loads(FX.read_text(encoding="utf-8"))
+        fixture=json.loads((ROOT/"validation/macro/fixtures/macro_event_market_preanchor_oct28_v1.json").read_text(encoding="utf-8"))
+        cls.rates=fixture["rates"]
+        cls.ois=fixture["ois"]
+        cls.fx=fixture["fx"]
         cls.anchors,cls.receipt=capture_anchors(
             cls.forecasts,[],cls.rates,cls.ois,cls.fx,BEFORE)
         cls.signed_actuals,_=capture_actuals(cls.forecasts,[],AFTER,official_mock)
