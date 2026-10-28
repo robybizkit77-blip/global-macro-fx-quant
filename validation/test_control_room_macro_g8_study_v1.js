@@ -34,7 +34,11 @@ degraded(x=>x.latest_value+=10,'EUR','inflation');
 degraded(x=>x.validation.latest=false,'USD','labour');
 degraded(x=>x.transformation='arbitrary','CAD','inflation');
 degraded(x=>x.as_of='2027-01','NZD','labour');
-degraded(x=>x.history.pop(),'AUD','inflation');
+// A growing 41-point source history can validly lose its last item when
+// the previous observation equals the latest. Mutate the actual final value
+// and below-minimum history length instead: each MUST fail independently.
+degraded(x=>{x.history[x.history.length-1]=x.latest_value+1},'AUD','inflation');
+degraded(x=>{x.history=x.history.slice(-23)},'AUD','inflation');
 assert(source.includes('data-core-effect="NONE" data-bias-effect="NONE"'));
 assert(source.includes("panel.dataset.observedStudyCount=String(overview.count)"));
 assert(source.includes("Inflazione: '+(inflation?fmt(inflation.value,2)"));
