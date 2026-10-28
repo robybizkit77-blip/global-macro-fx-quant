@@ -86,6 +86,44 @@ class HandoffTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "candidate Price must match"):
             classify(self.candidate, self.prior, self.d, self.ecb, self.today)
 
+    def test_official_overlay_ahead_of_separate_ecb_history_waits_without_write(self):
+        # A verified current overlay can lead the official historical archive.
+        # Its date is not certification of an independently persisted archive.
+        self.candidate["price_asof"] = "2026-10-20"
+        self.candidate["price_audit"]["as_of"] = "2026-10-20"
+        self.today = date(2026, 10, 20)
+        row = classify(self.candidate, self.prior, self.d, self.ecb, self.today)
+        self.assertEqual(row["status"], "WAITING_FOR_ECB_HISTORY_SAME_DAY")
+        self.assertEqual(row["action"], "NO_WRITE")
+        self.assertFalse(row["ready_for_forward_v2"])
+        self.assertEqual(row["candidate_price_asof"], "2026-10-20")
+        self.assertEqual(row["official_history_asof"], "2026-10-19")
+        # The SAME candidate becomes eligible only after the official
+        # independent history catches up, with no model refresh.
+        self.ecb["last_as_of"] = "2026-10-20"
+        self.ecb["rows"][-1]["Date"] = "2026-10-20"
+        row = classify(self.candidate, self.prior, self.d, self.ecb, self.today)
+        self.assertEqual(row["status"], "PRICE_CONTEXT_UPDATE")
+        self.assertEqual(row["action"], "ELIGIBLE_FOR_PERSISTENCE")
+
+    def test_mismatched_older_candidate_still_rejected(self):
+        self.candidate["price_asof"] = "2026-10-18"
+        self.candidate["price_audit"]["as_of"] = "2026-10-18"
+        with self.assertRaisesRegex(ValueError, "candidate Price must match"):
+            classify(self.candidate, self.prior, self.d, self.ecb, self.today)
+
+    def test_wait_state_never_approves_changed_macro_or_future_price(self):
+        self.candidate["price_asof"] = "2026-10-20"
+        self.candidate["price_audit"]["as_of"] = "2026-10-20"
+        self.d["asOf"] = "2026-10-01"
+        with self.assertRaisesRegex(ValueError, "provenance differs"):
+            classify(self.candidate, self.prior, self.d, self.ecb, self.today)
+        self.d["asOf"] = "2026-09-25"
+        self.candidate["price_asof"] = "2026-10-21"
+        self.candidate["price_audit"]["as_of"] = "2026-10-21"
+        with self.assertRaisesRegex(ValueError, "future"):
+            classify(self.candidate, self.prior, self.d, self.ecb, self.today)
+
     def test_fake_entry_flag_rejected(self):
         self.candidate["entry_level_published"] = True
         with self.assertRaisesRegex(ValueError, "no-entry semantics"):
