@@ -225,6 +225,10 @@ earlyCad.state='OFFICIAL_ACTUAL_PRESENT_PRE_EVENT_MARKET_ANCHOR_ABSENT';
 
       // A numerically consistent actual is STILL NOT verified if the URL is
       // outside the publisher allowlist. The UI must hide its actual/source.
+      // Synchronize after the previous asynchronous refresh so a later
+      // virtual clock tick cannot be dropped by refreshInFlight on mobile.
+      await page.waitForLoadState('networkidle',{timeout:10000});
+      await page.evaluate(()=>window.showView&&window.showView('news'));
       phase='UNTRUSTED';
       await page.clock.fastForward(120500);
       await page.waitForFunction(()=>document.querySelector(
@@ -242,6 +246,8 @@ earlyCad.state='OFFICIAL_ACTUAL_PRESENT_PRE_EVENT_MARKET_ANCHOR_ABSENT';
 
       // Likewise, an issuer URL does not rescue a first-seen clock that is
       // earlier than the confirmed release timestamp.
+      await page.waitForLoadState('networkidle',{timeout:10000});
+      await page.evaluate(()=>window.showView&&window.showView('news'));
       phase='BAD_CLOCK';
       await page.clock.fastForward(120500);
       await page.waitForFunction(()=>document.querySelector(
