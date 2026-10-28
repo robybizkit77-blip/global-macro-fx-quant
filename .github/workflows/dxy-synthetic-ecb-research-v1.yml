@@ -12,6 +12,11 @@ on:
       - 'live_data/sections/ECB_G8_PRICE_HISTORY.json'
       - 'validation/build_dxy_synthetic_ecb_v1.py'
       - '.github/workflows/dxy-synthetic-ecb-research-v1.yml'
+  workflow_run:
+    # GitHub Actions GITHUB_TOKEN commits do not trigger downstream push workflows.
+    # Rebuild only after the official same-day ECB history workflow succeeds.
+    workflows: ['Price History Persistent Daily V1']
+    types: [completed]
   schedule:
     - cron: '30 16 * * 1-5'
   workflow_dispatch:
@@ -22,6 +27,11 @@ concurrency:
   cancel-in-progress: false
 jobs:
   build:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.event != 'pull_request')
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:
