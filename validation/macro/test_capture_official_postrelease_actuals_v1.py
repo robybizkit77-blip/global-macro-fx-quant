@@ -127,13 +127,14 @@ class OfficialActualAdmissionTests(unittest.TestCase):
 
     def test_run_uses_existing_forecast_and_preserves_all_live_files(self):
         old=LEDGER.read_bytes()
+        old_actual=OUT.read_bytes() if OUT.exists() else None
         with tempfile.TemporaryDirectory() as tmp:
             out=Path(tmp)/"actuals.jsonl"
             result=run(LEDGER,out,BEFORE)
             self.assertFalse(out.exists())
             self.assertEqual(result["new_actuals"],0)
         self.assertEqual(LEDGER.read_bytes(),old)
-        self.assertEqual(OUT.read_text(encoding="utf-8"),"")
+        self.assertEqual(OUT.read_bytes() if OUT.exists() else None,old_actual)
 
 if __name__=="__main__":
     unittest.main()
