@@ -1,0 +1,61 @@
+name: Macro V2 three-weight 28 FX pair categorical contrast research
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/macro-v2-fx-pair-categorical-weight-contrast-research-ci.yml'
+      - 'validation/macro/v2_fx_28pair_domestic_categorical_contrasts_v1.py'
+      - 'validation/macro/test_v2_fx_28pair_domestic_categorical_contrasts_v1.py'
+      - 'validation/macro/MACRO_V2_28_PAIR_CATEGORICAL_DOMESTIC_CONTRAST_2026-10-28.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check-domestic-scenarios-28-pairs:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate three preregistered weights across all 28 pairs and no FX score
+        run: |
+          python -m unittest validation.macro.test_v2_fx_28pair_domestic_categorical_contrasts_v1 -v
+      - name: Produce 28-pair categorical robustness matrix, no ranked currencies
+        run: |
+          python -m validation.macro.v2_fx_28pair_domestic_categorical_contrasts_v1 --as-of 2026-10-28 --out /tmp/gmfq-v2-28-pair-domestic-categorical-contrast-2026-10-28.json
+          python - <<'PY'
+          import json,os
+          d=json.load(open('/tmp/gmfq-v2-28-pair-domestic-categorical-contrast-2026-10-28.json'))
+          s=d['summary']
+          assert s['countries']==8 and s['pairs']==28 and s['scenarios_per_pair']==3
+          assert s['country_weight_unstable_count']==4
+          assert (s['pairs_persistent_opposed_categories']+
+                  s['pairs_weight_sensitive_opposed_categories']+
+                  s['pairs_no_opposed_categories'])==28
+          assert s['pairs_all_2Y_6m_OIS_exact_same_day']==0
+          assert s['FX_directional_signals']==0
+          assert s['relative_strength_rankings']==0
+          assert s['out_of_sample_predictions_evaluated']==0
+          assert not d['safe_to_publish_new_D']
+          assert not d['safe_to_change_28_pair_states']
+          assert not d['safe_to_use_for_beta'] and not d['safe_to_use_for_forward']
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as f:
+              f.write('### 28 G8 pair economic contrast under 25/50/75 growth weights (DESCRIPTIVE ONLY)\n')
+              f.write('- Persistent opposed domestic category: '+str(s['pairs_persistent_opposed_categories'])+' /28\n')
+              f.write('- Weight-sensitive opposed domestic category: '+str(s['pairs_weight_sensitive_opposed_categories'])+' /28\n')
+              f.write('- No opposed firm/soft activity category: '+str(s['pairs_no_opposed_categories'])+' /28\n')
+              f.write('- 4/8 currencies unstable at the domestic level; this is not a cross-country comparable numerical FX score.\n')
+              f.write('- No ranking, trade, Beta, forward, historic PIT or Core publication; 2Y and OIS still unsynchronized.\n')
+          PY
+      - name: Source/production/forward archives unchanged
+        run: |
+          git diff --exit-code -- live_data site dashboard payload validation/forward/decision_snapshots
+          test -z "$(git status --porcelain -- live_data site dashboard payload validation/forward/decision_snapshots)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macro-v2-28pair-categorical-weight-scenarios
+          path: /tmp/gmfq-v2-28-pair-domestic-categorical-contrast-2026-10-28.json
+          retention-days: 21
+          if-no-files-found: error
