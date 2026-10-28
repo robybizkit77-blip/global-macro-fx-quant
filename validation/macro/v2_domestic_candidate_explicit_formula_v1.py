@@ -65,6 +65,37 @@ def indicative_regime(activity, inflation):
             "SOFT_GROWTH_WITH_SUBDUED_PRICE_PRESSURE")
 
 
+def continuous_weight_interval(growth: float, labour: float) -> dict:
+    """Exact interval for EVERY preregistered weight from 25% to 75%.
+
+    The equation is affine in the growth weight. Therefore its extrema over
+    the continuous interval occur at the two fixed endpoints; the middle
+    50/50 classification cannot be called robust if either endpoint differs.
+    This is within-economy arithmetic ONLY, not a PIT or FX validation.
+    """
+    require(SENSITIVITY_GROWTH_WEIGHTS == (0.25, 0.50, 0.75),
+            "continuous sensitivity endpoints changed without preregistration")
+    g = numeric(growth, "interval.growth")
+    l = numeric(labour, "interval.labour")
+    endpoint_values = (0.25*g + 0.75*l, 0.75*g + 0.25*l)
+    lower, upper = min(endpoint_values), max(endpoint_values)
+    midpoint = 0.50*(g+l)
+    classes = (activity_class(lower), activity_class(midpoint),
+               activity_class(upper))
+    robust = classes[0] == classes[1] == classes[2]
+    return {
+        "growth_weight_interval_inclusive": [0.25, 0.75],
+        "domestic_activity_z_min": round(lower, 12),
+        "domestic_activity_z_max": round(upper, 12),
+        "classification_unchanged_at_every_weight_in_interval": robust,
+        "weight_invariant_domestic_class_RESEARCH_ONLY": (
+            classes[1] if robust else None
+        ),
+        "class_changes_with_admissible_weights": not robust,
+        "continuous_weight_math_is_NOT_PIT_or_FX_validation": True,
+    }
+
+
 def build(shadow, legacy):
     require(isinstance(shadow, dict) and shadow.get("schema") == INPUT_SCHEMA
             and shadow.get("status") ==
@@ -112,7 +143,11 @@ def build(shadow, legacy):
         scenarios = {str(int(w*100)): round(w*g+(1-w)*l,12)
                      for w in SENSITIVITY_GROWTH_WEIGHTS}
         state = activity_class(activity)
-        stable = all(activity_class(v) == state for v in scenarios.values())
+        sensitivity = continuous_weight_interval(g, l)
+        stable = sensitivity["classification_unchanged_at_every_weight_in_interval"]
+        require(stable == all(activity_class(w*g+(1-w)*l) == state
+                              for w in SENSITIVITY_GROWTH_WEIGHTS),
+                currency + ": discrete vs continuous weight stability mismatch")
         quality = list(row.get("quality_flags", []))
         dims = row.get("dimensions", {})
         require(set(dims) == {"growth", "labour", "inflation"}, currency+": 3 dimensions required")
@@ -135,6 +170,7 @@ def build(shadow, legacy):
             "indicative_domestic_regime":indicative_regime(activity,p),
             "weights_growth_labour": [W_GROWTH,W_LABOUR],
             "growth_weight_sensitivity_z":scenarios,
+            "continuous_weight_sensitivity_RESEARCH_ONLY":sensitivity,
             "activity_class_stable_across_25_50_75pct_growth":stable,
             "source_quality_flags":quality,
             "source_quality_details":{
@@ -167,6 +203,16 @@ def build(shadow, legacy):
         "summary":{
             "currencies":len(cases), "axes":len(cases)*3,
             "countries_unstable_to_weights":sum(not x["activity_class_stable_across_25_50_75pct_growth"] for x in cases.values()),
+            "countries_robust_for_ALL_continuous_weights_25_75pct":sum(
+                x["continuous_weight_sensitivity_RESEARCH_ONLY"][
+                    "classification_unchanged_at_every_weight_in_interval"
+                ] for x in cases.values()
+            ),
+            "countries_weight_ambiguous_no_robust_class":sum(
+                x["continuous_weight_sensitivity_RESEARCH_ONLY"][
+                    "weight_invariant_domestic_class_RESEARCH_ONLY"
+                ] is None for x in cases.values()
+            ),
             "countries_with_estimates":sum(any(d["is_estimate"] for d in x["source_quality_details"].values()) for x in cases.values()),
             "FX_scores_produced":0,
             "28_pair_theses_recomputed":0,
