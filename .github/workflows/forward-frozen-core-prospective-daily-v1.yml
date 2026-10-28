@@ -33,12 +33,13 @@ jobs:
           python-version: '3.12'
       - name: Compile observational-only forward modules
         run: |
-          python -m py_compile validation/forward/admit_frozen_core_prospective_capture_v1.py validation/forward/log_core_decision_v1.py validation/forward/test_frozen_core_prospective_capture_v11.py
+          python -m py_compile validation/forward/admit_frozen_core_prospective_capture_v1.py validation/forward/log_core_decision_v1.py validation/forward/test_frozen_core_prospective_capture_v11.py validation/forward/capture_v2_research_prospective_evidence_v1.py
       - name: Verify frozen provenance, schema and no daily duplicates
         run: |
           python -m unittest validation.forward.test_frozen_core_prospective_capture_v11 -v
           python validation/test_forward_decision_logger_v1.py
           python -m unittest validation.forward.test_attach_core_outcomes_safety_v1 -v
+          python -m unittest validation.forward.test_capture_v2_research_prospective_evidence_v1 -v
 
   capture:
     needs: test
@@ -110,6 +111,31 @@ jobs:
           assert d['result']['written'] in (0,28)
           print('FORWARD_SNAPSHOT_RESEARCH_ONLY_CAPTURE',d['result'])
           PY
+      - name: Freeze independent V2 research features beside today's ECB T0 (best effort)
+        if: steps.admit.outputs.admitted == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The existing Core journal is PRIMARY; a blocked V2 research
+          # feature must NEVER abort or erase that legitimate frozen snapshot.
+          if python -m validation.forward.capture_v2_research_prospective_evidence_v1 > /tmp/v2-research-prospective-capture.json; then
+            cat /tmp/v2-research-prospective-capture.json
+            python - <<'PY'
+          import json, os
+          x=json.load(open('/tmp/v2-research-prospective-capture.json'))
+          allowed={
+              'PROSPECTIVE_SHADOW_RESEARCH_SNAPSHOT_APPEND_OK',
+              'EXISTING_DATE_ALREADY_FROZEN_NO_OVERWRITE',
+              'BLOCKED_NO_OFFICIAL_SAME_DAY_T0_NO_V2_CAPTURE'
+          }
+          assert x['status'] in allowed
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as o:
+              o.write('- Separate V2 **research feature observation**: '+x['status']+'; never a trading signal or model performance claim.\n')
+          PY
+          else
+            echo 'V2_RESEARCH_SHADOW_FAILED_WITHOUT_BLOCKING_FROZEN_CORE_CAPTURE' >> "$GITHUB_STEP_SUMMARY"
+            echo 'V2 research source inconsistent; existing Core observation remains primary and unchanged.'
+          fi
       - name: Verify only immutable forward-ledger files changed
         if: steps.admit.outputs.admitted == 'true'
         shell: bash
@@ -120,7 +146,10 @@ jobs:
           x=subprocess.check_output(['git','status','--porcelain','--untracked-files=all'],text=True).splitlines()
           for line in x:
               path=line[3:]
-              if path != 'validation/forward/decision_snapshots/CORE_DECISION_SNAPSHOTS_V1.jsonl' and not (
+              if path not in (
+                  'validation/forward/decision_snapshots/CORE_DECISION_SNAPSHOTS_V1.jsonl',
+                  'validation/forward/candidate_shadow_snapshots/V2_MACRO_EVIDENCE_SNAPSHOTS_V1.jsonl'
+              ) and not (
                  path.startswith('validation/forward/receipts/') and path.endswith('__V1.json')
               ):
                   raise SystemExit('UNEXPECTED_MUTATION '+line)
@@ -132,6 +161,9 @@ jobs:
         run: |
           set -euo pipefail
           git add validation/forward/decision_snapshots/CORE_DECISION_SNAPSHOTS_V1.jsonl validation/forward/receipts/
+          if test -f validation/forward/candidate_shadow_snapshots/V2_MACRO_EVIDENCE_SNAPSHOTS_V1.jsonl; then
+            git add validation/forward/candidate_shadow_snapshots/V2_MACRO_EVIDENCE_SNAPSHOTS_V1.jsonl
+          fi
           if git diff --cached --quiet; then
             echo 'FORWARD_ALREADY_CAPTURED_TODAY_NO_COMMIT' >> "$GITHUB_STEP_SUMMARY"
             exit 0
