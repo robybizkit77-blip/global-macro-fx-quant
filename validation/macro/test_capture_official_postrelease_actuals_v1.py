@@ -113,6 +113,11 @@ class OfficialActualAdmissionTests(unittest.TestCase):
         <p>Advance estimate of August GDP: 0.8%, not July actual.</p></html>"""
         self.assertEqual(parse_issuer_page(
             GDP,zero,expected_release="2026-09-29",expected_period="July"),0.0)
+        # The actual StatCan HTML wraps GDP in inline markup; plain-text
+        # extraction then becomes "( GDP )", not "(GDP)".
+        wrapped=zero.replace(b"(GDP)",b"(<span>GDP</span>)")
+        self.assertEqual(parse_issuer_page(
+            GDP,wrapped,expected_release="2026-09-29",expected_period="July"),0.0)
         without_headline=zero.replace(b"0.0%",b"no official numeric measure")
         with self.assertRaises(Pending):
             parse_issuer_page(GDP,without_headline,
