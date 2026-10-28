@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-10-27",
-  "generated_at_utc": "2026-10-28T09:50:06.041374Z",
+  "generated_at_utc": "2026-10-28T10:14:40.928733Z",
   "items": [
     {
       "as_of": "2026-10-27",
@@ -47,7 +47,7 @@
       "title": "GBP: repricing OIS più hawkish (+3.2 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-10-28T09:50:06.041374Z",
+  "last_checked_at_utc": "2026-10-28T10:14:40.928733Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -61,7 +61,10 @@
         "event_causality_verified": false,
         "event_key": "USD|2026-10-30|LABOUR_COST|Employment Cost Index",
         "forecast_quality": "SECONDARY_FROZEN_PRE_RELEASE_B",
+        "official_actual_captured_at_utc": null,
         "official_actual_percent": null,
+        "official_actual_source_quality": null,
+        "official_actual_source_url": null,
         "post_event_daily_comparison": null,
         "pre_event_reference": {
           "10Y": {
@@ -102,7 +105,10 @@
         "event_causality_verified": false,
         "event_key": "CAD|2026-10-30|GROWTH|Gross domestic product by industry",
         "forecast_quality": "SECONDARY_FROZEN_PRE_RELEASE_B",
+        "official_actual_captured_at_utc": null,
         "official_actual_percent": null,
+        "official_actual_source_quality": null,
+        "official_actual_source_url": null,
         "post_event_daily_comparison": null,
         "pre_event_reference": {
           "10Y": {
