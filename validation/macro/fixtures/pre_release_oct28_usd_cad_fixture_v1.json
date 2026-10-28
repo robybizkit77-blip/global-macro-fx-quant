@@ -1,0 +1,99 @@
+{
+  "schema": "GMFQ_MACRO_CONSENSUS_OCT28_PRE_RELEASE_CAPTURE_CONTRACT_FIXTURE_V1",
+  "fixture_as_of": "2026-10-28",
+  "official": {
+    "schema": "GMFQ_MACRO_RELEASE_OFFICIAL_SEED_V1",
+    "status": "ACTIVE_VERIFIED_SEED",
+    "events": [
+      {
+        "ccy": "USD",
+        "date": "2026-10-30",
+        "time_local": "08:30",
+        "timezone": "America/New_York",
+        "event_type": "LABOUR_COST",
+        "title": "Employment Cost Index",
+        "reference_period": "Q3 2026",
+        "importance": "HIGH",
+        "quality": "OFFICIAL_CONFIRMED",
+        "source_family": "BLS"
+      },
+      {
+        "ccy": "CAD",
+        "date": "2026-10-30",
+        "time_local": "08:30",
+        "timezone": "America/Toronto",
+        "event_type": "GROWTH",
+        "title": "Gross domestic product by industry",
+        "reference_period": "August 2026",
+        "importance": "HIGH",
+        "quality": "OFFICIAL_CONFIRMED",
+        "source_family": "Statistics Canada"
+      }
+    ]
+  },
+  "consensus": {
+    "events": [
+      {
+        "actual_ignored_for_pre_release_consensus": true,
+        "ccy": "USD",
+        "confidence_grade": "B",
+        "consensus": "0.8%",
+        "date_match_gap_days": 0,
+        "event_key": "USD|2026-10-30|LABOUR_COST|Employment Cost Index",
+        "event_type": "LABOUR_COST",
+        "impact": "Medium",
+        "official_date": "2026-10-30",
+        "official_date_overridden": false,
+        "official_title": "Employment Cost Index",
+        "previous": "0.9%",
+        "provider": "FOREX_FACTORY_FAIR_ECONOMY_WEEKLY",
+        "provider_country": null,
+        "provider_date": "2026-10-30",
+        "provider_event": "Employment Cost Index q/q",
+        "provider_url": null,
+        "status": "AVAILABLE",
+        "unit": null
+      },
+      {
+        "actual_ignored_for_pre_release_consensus": true,
+        "ccy": "CAD",
+        "confidence_grade": "B",
+        "consensus": "0.2%",
+        "date_match_gap_days": 0,
+        "event_key": "CAD|2026-10-30|GROWTH|Gross domestic product by industry",
+        "event_type": "GROWTH",
+        "impact": "Medium",
+        "official_date": "2026-10-30",
+        "official_date_overridden": false,
+        "official_title": "Gross domestic product by industry",
+        "previous": "0.0%",
+        "provider": "FOREX_FACTORY_FAIR_ECONOMY_WEEKLY",
+        "provider_country": null,
+        "provider_date": "2026-10-30",
+        "provider_event": "GDP m/m",
+        "provider_url": null,
+        "status": "AVAILABLE",
+        "unit": null
+      }
+    ],
+    "generated_at_utc": "2026-10-28T07:03:04.961073Z",
+    "provider": "FOREX_FACTORY_FAIR_ECONOMY_WEEKLY",
+    "provider_endpoint": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
+    "provider_field": "forecast",
+    "provider_previous_field": "previous",
+    "rules": {
+      "actual_not_used_as_pre_release_consensus": true,
+      "context_only": true,
+      "core_score_impact": 0,
+      "estimate_field_is_consensus_only": true,
+      "never_change_release_date": true,
+      "never_fill_missing_with_zero": true,
+      "never_promote_to_official": true,
+      "official_calendar_remains_primary": true,
+      "public_json_secondary_source": true,
+      "weekly_feed_scope": true
+    },
+    "schema": "GMFQ_MACRO_CONSENSUS_SECONDARY_V1",
+    "status": "ACTIVE_PARTIAL"
+  }
+}
