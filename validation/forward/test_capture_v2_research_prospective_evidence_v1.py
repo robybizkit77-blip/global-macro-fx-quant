@@ -159,6 +159,31 @@ class V2ProspectiveResearchCapture(unittest.TestCase):
             with self.assertRaises(ValueError):
                 cap.append(x,path=path)
 
+    def test_existing_cadence_keeps_core_primary_but_never_false_green_v2(self):
+        workflow=(cap.ROOT/".github/workflows/forward-frozen-core-prospective-daily-v1.yml").read_text(encoding="utf-8")
+        # Only existing Rome 19:30/20:30 DST union, never a new cron.
+        self.assertEqual(workflow.count("cron: '30 17 * * 1-5'"),1)
+        self.assertEqual(workflow.count("cron: '30 18 * * 1-5'"),1)
+        self.assertEqual(workflow.count("cron: '30 19 * * 1-5'"),1)
+        core_pos=workflow.index("name: Append immutable daily 28-pair frozen-Core observation only")
+        v2_pos=workflow.index("name: Freeze independent V2 research features beside today's ECB T0")
+        persist_pos=workflow.index("name: Commit new prospective observation only, no forced push")
+        check_pos=workflow.index("name: Certify V2 research capture separately after primary Core commit")
+        self.assertLess(core_pos,v2_pos)
+        self.assertLess(v2_pos,persist_pos)
+        self.assertLess(persist_pos,check_pos)
+        self.assertIn("id: v2_shadow",workflow)
+        self.assertIn("V2_SHADOW_STATUS: ${{ steps.v2_shadow.outputs.status }}",workflow)
+        self.assertIn("V2_RESEARCH_CAPTURE_FAILED_AFTER_LEGACY_PERSISTENCE",workflow)
+        self.assertIn("V2_RESEARCH_SOURCE_FAILURE",workflow)
+        self.assertIn("V2_RESEARCH_RECEIPT_INVALID",workflow)
+        self.assertIn("EXISTING_DATE_ALREADY_FROZEN_NO_OVERWRITE",workflow)
+        self.assertIn("PROSPECTIVE_SHADOW_RESEARCH_SNAPSHOT_APPEND_OK",workflow)
+        # An admitted run that lacks a V2 record MUST exit with a failing
+        # status. This occurs only after the older Core has already persisted.
+        self.assertIn("exit 1",workflow[check_pos:])
+        self.assertIn("git push origin HEAD:main",workflow[persist_pos:check_pos])
+
     def test_no_runtime_output_or_historical_snapshots_written(self):
         paths=[
             cap.ROOT/"live_data/sections/D.json",
