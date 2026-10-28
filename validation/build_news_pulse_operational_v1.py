@@ -5,6 +5,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 from collect_official_news_rss_v1 import collect as collect_official_releases
 from news_reaction_evidence_v1 import annotate as annotate_reaction_proof
+from macro.build_macro_event_market_context_v1 import run as macro_event_market_context_run
 
 ROOT=Path(__file__).resolve().parents[1]
 OIS=ROOT/'live_data/sections/OIS_OPERATIONAL_VIEW.json'
@@ -191,7 +192,11 @@ def main():
     # Keep the established deterministic market signal vintage independent of
     # external official statements. Never backfill a failed RSS feed or claim
     # that a press announcement proves a market move.
-    core={'schema':'GMFQ_NEWS_PULSE_OPERATIONAL_V1','status':'ACTIVE_DETERMINISTIC_LAYERS','content_as_of':iso(latest),'scope':{'external_news_feed':'OFFICIAL_G8_CB_EIA_RSS_SEPARATE_HEADLINE_ONLY','inputs':['OIS_OPERATIONAL_VIEW','MACRO_THERMOMETER_DATA'],'claim':'LATEST_VALIDATED_SIGNALS_NOT_GENERIC_HEADLINES'},'items':items,'official_releases':official}
+    # Published as an additional explicit evidence lane; unchanged classic
+    # news headline items remain independent of macro-event attribution.
+    # Anchor journal is written by the preceding Calendar/News workflow step.
+    _, macro_context = macro_event_market_context_run(now=now,freeze=False)
+    core={'schema':'GMFQ_NEWS_PULSE_OPERATIONAL_V1','status':'ACTIVE_DETERMINISTIC_LAYERS','content_as_of':iso(latest),'scope':{'external_news_feed':'OFFICIAL_G8_CB_EIA_RSS_SEPARATE_HEADLINE_ONLY','inputs':['OIS_OPERATIONAL_VIEW','MACRO_THERMOMETER_DATA'],'claim':'LATEST_VALIDATED_SIGNALS_NOT_GENERIC_HEADLINES'},'items':items,'official_releases':official,'macro_event_market_context':macro_context}
     changed=stable_write(core, now=now)
     print(json.dumps({'status':'PASS','changed':changed,'items':len(items),'content_as_of':iso(latest),'official_headlines':len(official['headlines']),'official_source_status':[{'id':x['source_id'],'status':x['status'],'count':x['accepted_items']} for x in official['sources']],'output':str(OUT.relative_to(ROOT))}))
 
