@@ -5,7 +5,8 @@
  * NOT actual US ECI or Canadian GDP values. Do not write production JSON.
  * Proves that the live news app interprets (a) first-seen official actual,
  * (b) exact pre-release consensus, (c) a genuine numeric ZERO, (d) source
- * links, (e) noncausal dated 2Y/FX context, (f) 2-minute visible-view refresh.
+ * links, (e) noncausal dated 2Y/FX context, (f) 2-minute visible-view refresh,
+ * (g) a partial first-issuer actual without marking both events as released.
  */
 const {chromium}=require('playwright');
 const fs=require('node:fs');
@@ -76,6 +77,16 @@ function release(){
 }
 const before=baseline();
 const after=release();
+const partial=structuredClone(after);
+// USD BLS arrives first; the CAD issuer is still genuinely unavailable.
+// A partial update must not manufacture a second actual or source URL.
+partial.macro_event_market_context.events[1]=structuredClone(
+  before.macro_event_market_context.events[1]);
+partial.macro_event_market_context.summary.awaiting_release=1;
+partial.macro_event_market_context.summary.awaiting_actual=0;
+partial.macro_event_market_context.summary.observed_daily_context=1;
+assert.equal(partial.macro_event_market_context.events[0].currency,'USD');
+assert.equal(partial.macro_event_market_context.events[1].currency,'CAD');
 const malformed=structuredClone(after);
 malformed.macro_event_market_context.events.find(e=>e.currency==='CAD')
   .actual_minus_frozen_consensus_pp=7.1;
@@ -93,7 +104,8 @@ malformed.macro_event_market_context.events.find(e=>e.currency==='CAD')
       let requests=0;
       await page.route('**/live_data/sections/NEWS_PULSE_OPERATIONAL.json',async route=>{
         ++requests;
-        const body=phase==='BEFORE'?before:phase==='AFTER'?after:malformed;
+        const body=phase==='BEFORE'?before:
+          phase==='PARTIAL'?partial:phase==='AFTER'?after:malformed;
         await route.fulfill({status:200,contentType:'application/json',
                             body:JSON.stringify(body)});
       });
@@ -114,8 +126,38 @@ malformed.macro_event_market_context.events.find(e=>e.currency==='CAD')
         assert.equal(x.links,0,'No fabricated issuer actual URL before release');
       }
 
-      // Simulate public News Pulse changing while the tab is already open.
-      // The page's two-minute visible-only timer must update both cards.
+      // First issuer arrives while the other is missing. A fully rendered
+      // USD card must coexist with a still-pending CAD card. On both screens.
+      phase='PARTIAL';
+      await page.clock.fastForward(120500);
+      await page.waitForFunction(()=>{
+        const usd=document.querySelector('#news .opCard[data-kind="macro-evidence"][data-ccy="USD"]');
+        return usd?.textContent.includes('Actual − consenso');
+      },null,{timeout:20000});
+      const midway=await page.evaluate(()=>[...document.querySelectorAll(
+        '#news .opCard[data-kind="macro-evidence"]')].map(card=>({
+          ccy:card.dataset.ccy,stage:card.dataset.stage,
+          text:card.textContent||'',w:card.scrollWidth,cw:card.clientWidth,
+          links:[...card.querySelectorAll('a[href]')].map(a=>a.href)
+        })));
+      const first=midway.find(x=>x.ccy==='USD');
+      const pending=midway.find(x=>x.ccy==='CAD');
+      assert.equal(midway.length,2);
+      assert(first&&pending);
+      assert.equal(first.stage,'DAILY_CONTEXT_ONLY_NO_EVENT_CAUSALITY');
+      assert(first.text.includes('+0.9%'),'USD actual visible in partial state');
+      assert(first.text.includes('+0.1'),'USD surprise visible in partial state');
+      assert.equal(first.links.length,1);
+      assert(first.links[0].startsWith('https://www.bls.gov/'));
+      assert.equal(pending.stage,'PENDING_OFFICIAL_RELEASE');
+      assert.match(pending.text,/In attesa/);
+      assert.match(pending.text,/Non calcolabile/);
+      assert(!pending.text.includes('Actual − consenso'));
+      assert.equal(pending.links.length,0,'No fictitious CAD official link');
+      for(const item of midway){
+        assert(item.w<=item.cw+2,'Partial card horizontal overflow '+device+'/'+item.ccy);
+      }
+      // Second issuer appears on the next two-minute visible-view refresh.
       phase='AFTER';
       await page.clock.fastForward(120500);
       await page.waitForFunction(()=>[...document.querySelectorAll(
@@ -170,10 +212,10 @@ malformed.macro_event_market_context.events.find(e=>e.currency==='CAD')
       assert.match(bad.text,/In attesa/);
       assert.match(bad.text,/Non calcolabile/);
       assert.equal(bad.links,0);
-      assert(requests>=3,'initial + 2 live refresh network reads required');
+      assert(requests>=4,'initial + 3 live refresh network reads required');
       assert.deepEqual(errors,[],'No JS runtime errors '+device);
       console.log('MACRO_NEWS_ACTUAL_BROWSER_PASS',device,{
-        forecast_only_before:true,actual_zero_after:true,
+        forecast_only_before:true,partial_actual_first:true,actual_zero_after:true,
         source_links_after:true,malformed_suppressed:true,
         requests,viewport:width
       });
