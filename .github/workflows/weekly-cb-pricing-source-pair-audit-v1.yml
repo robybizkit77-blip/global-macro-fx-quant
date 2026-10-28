@@ -1,0 +1,214 @@
+name: Weekly CB pricing source-pair audit (read-only)
+
+on:
+  workflow_dispatch:
+    inputs:
+      start_date:
+        description: "Earlier Friday (YYYY-MM-DD). Leave empty for latest two completed Fridays."
+        required: false
+        type: string
+      end_date:
+        description: "Later Friday (YYYY-MM-DD). Leave empty for latest two completed Fridays."
+        required: false
+        type: string
+  push:
+    branches: [audit/weekly-rates-source-pair-20261028]
+    paths:
+      - .github/workflows/weekly-cb-pricing-source-pair-audit-v1.yml
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/weekly-cb-pricing-source-pair-audit-v1.yml
+
+permissions:
+  contents: read
+
+jobs:
+  audit-two-fridays:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install existing official collector dependencies
+        run: python -m pip install --disable-pip-version-check requests beautifulsoup4 pandas openpyxl
+      - name: Probe official sources on exact dates, without touching production
+        shell: bash
+        env:
+          AUDIT_START_DATE: ${{ inputs.start_date }}
+          AUDIT_END_DATE: ${{ inputs.end_date }}
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import datetime as dt
+          import json
+          import os
+          from pathlib import Path
+          import subprocess
+          import sys
+          import urllib.request
+          import zipfile
+
+          today = dt.datetime.now(dt.timezone.utc).date()
+          latest_friday = today - dt.timedelta(days=(today.weekday() - 4) % 7)
+          if latest_friday >= today:
+              latest_friday -= dt.timedelta(days=7)
+          start_raw = os.environ.get("AUDIT_START_DATE", "").strip()
+          end_raw = os.environ.get("AUDIT_END_DATE", "").strip()
+          if bool(start_raw) != bool(end_raw):
+              sys.exit("Both start_date and end_date must be supplied together")
+          if start_raw:
+              start, end = dt.date.fromisoformat(start_raw), dt.date.fromisoformat(end_raw)
+          else:
+              end = latest_friday
+              start = end - dt.timedelta(days=7)
+          if start.weekday() != 4 or end.weekday() != 4 or (end-start).days != 7 or end >= today:
+              sys.exit(f"Require two consecutive completed Fridays; received {start}, {end}")
+          dates = [start.isoformat(), end.isoformat()]
+          sources = {
+              "GBP": "validation/cb_pricing/collect_gbp_boe_ois.py",
+              "CAD": "validation/cb_pricing/collect_cad_mx_corra.py",
+              "JPY": "validation/cb_pricing/collect_jpy_tfx_tona.py",
+              "AUD": "validation/cb_pricing/collect_aud_asx_ib.py",
+          }
+          root = Path("/tmp/cb-pricing-weekly-audit")
+          root.mkdir(parents=True, exist_ok=True)
+          outcomes = {}
+          boe_packages = []
+          boe_errors = []
+          for kind, url in (
+              ("monthly", "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/latest-yield-curve-data.zip"),
+              ("archive", "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/oisddata.zip"),
+          ):
+              target = root / f"boe-{kind}.zip"
+              try:
+                  req = urllib.request.Request(url, headers={"User-Agent": "GLOBAL-MACRO-FX-QUANT research validation"})
+                  with urllib.request.urlopen(req, timeout=75) as response:
+                      target.write_bytes(response.read())
+                  if not zipfile.is_zipfile(target):
+                      raise ValueError("official GBP response is not a ZIP archive")
+                  boe_packages.append(target)
+              except Exception as exc:
+                  boe_errors.append(f"{kind}: {type(exc).__name__}: {str(exc)[:240]}")
+
+          for currency, collector in sources.items():
+              collected = {}
+              errors = []
+              for date in dates:
+                  if currency == "GBP" and not boe_packages:
+                      errors.append(f"{date}: both official BoE packages unavailable: {boe_errors}")
+                      continue
+                  target = root / f"{currency}-{date}.json"
+                  base_cmd = [sys.executable, collector, "--as-of", date, "--output", str(target)]
+                  candidates = boe_packages if currency == "GBP" else [None]
+                  issues = []
+                  succeeded = False
+                  for package in candidates:
+                      cmd = base_cmd + (["--zip", str(package)] if package else [])
+                      try:
+                          run = subprocess.run(cmd, check=False, capture_output=True, text=True, timeout=360)
+                      except subprocess.TimeoutExpired:
+                          issues.append(f"{package or 'source'}: collector timeout (360s)")
+                          continue
+                      if run.returncode == 0:
+                          succeeded = True
+                          break
+                      issues.append(f"{package or 'source'}: {(run.stderr or run.stdout).strip()[-260:]}")
+                  if not succeeded:
+                      errors.append(f"{date}: collector failed: {issues}")
+                      continue
+                  try:
+                      obj = json.loads(target.read_text(encoding="utf-8"))
+                      validation = obj.get("validation", {})
+                      current = obj["observations"]["current"]
+                      assert obj["currency"] == currency
+                      assert obj["as_of"] == date == current["date"]
+                      assert validation.get("official_source") is True
+                      assert validation.get("no_interpolation", True) is True
+                      assert obj["status"] == "SOURCE_SNAPSHOT_ONLY"
+                      assert all(isinstance(current[k], (int, float)) for k in ("3m", "6m", "12m"))
+                      collected[date] = obj
+                  except (OSError, ValueError, AssertionError, KeyError, TypeError) as exc:
+                      errors.append(f"{date}: invalid official snapshot ({type(exc).__name__}: {exc})")
+              state = "INCOMPLETE_SOURCE_PAIR"
+              delta = None
+              if len(collected) == 2:
+                  first, second = [collected[d] for d in dates]
+                  if first.get("contract_mapping") != second.get("contract_mapping"):
+                      errors.append("contract mapping differs across the two dates")
+                  elif first.get("instrument") != second.get("instrument"):
+                      errors.append("different instruments across dates")
+                  else:
+                      state = "PAIR_VERIFIED"
+                      delta = {
+                          h: round((second["observations"]["current"][h] -
+                                    first["observations"]["current"][h]) * 100, 4)
+                          for h in ("3m", "6m", "12m")
+                      }
+              outcomes[currency] = {
+                  "status": state,
+                  "dates_verified": sorted(collected),
+                  "contract_mapping_consistent": state == "PAIR_VERIFIED",
+                  "instrument": collected[dates[0]]["instrument"] if dates[0] in collected else None,
+                  "source": collected[dates[0]]["source"] if dates[0] in collected else None,
+                  "levels_pct": {
+                      date: {h: obj["observations"]["current"][h] for h in ("3m", "6m", "12m")}
+                      for date, obj in collected.items()
+                  },
+                  "reprice_bp": delta,
+                  "errors": errors,
+              }
+
+          # Local job evidence only: no writes to production feeds, source registries or gh-pages.
+          report = {
+              "schema": "GMFQ_WEEKLY_CB_SOURCE_PAIR_AUDIT_V1",
+              "source_dates": dates,
+              "scope": "READ_ONLY_SOURCE_VERIFICATION_NO_PRODUCTION_PROMOTION",
+              "results": outcomes,
+          }
+          (root / "audit.json").write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+          lines = [
+              f"### Weekly source-pair audit · {dates[0]} → {dates[1]}",
+              "",
+              "Read-only. No promotion to OIS_DATA, CB pricing, dashboard, signals or backtests.",
+              "",
+              "| Source | Verified dates | Result | 3M change | 6M change | 12M change |",
+              "|---|---|---|---:|---:|---:|",
+          ]
+          for currency, row in outcomes.items():
+              val = row["reprice_bp"]
+              changes = [f'{val[h]:+.2f} bp' if val is not None else "Unavailable"
+                         for h in ("3m", "6m", "12m")]
+              lines.append(f'| {currency} | {", ".join(row["dates_verified"]) or "none"} | {row["status"]} | {" | ".join(changes)} |')
+          lines += ["", "Incomplete sources remain **unverified**, never zero or an invented estimate."]
+          for currency, row in outcomes.items():
+              for err in row["errors"]:
+                  lines.append(f'- {currency}: {err}')
+          summary = "\n".join(lines) + "\n"
+          print(summary)
+          if os.environ.get("GITHUB_STEP_SUMMARY"):
+              with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as f:
+                  f.write(summary)
+          passed = sum(x["status"] == "PAIR_VERIFIED" for x in outcomes.values())
+          print(f"PAIR_AUDIT_COMPLETED={passed}/4")
+          if passed == 0:
+              sys.exit("No official source pair verified; inspect upstream errors above")
+          PY
+      - name: Upload source-pair audit evidence (no production publication)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-cb-pricing-source-pair-audit
+          path: /tmp/cb-pricing-weekly-audit/*.json
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Prove checkout remained unchanged
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          test -z "$(git ls-files --others --exclude-standard)"
+          echo "NO_PRODUCTION_FILE_MUTATION"
