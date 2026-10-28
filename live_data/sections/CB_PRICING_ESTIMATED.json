@@ -1,7 +1,7 @@
 {
   "currencies": {
     "CHF": {
-      "as_of": "2026-10-26",
+      "as_of": "2026-10-27",
       "change_1d_bp": null,
       "change_1w_bp": null,
       "change_status": "DERIVED_ONLY_FROM_HOMOGENEOUS_SNAPSHOT_HISTORY",
@@ -34,15 +34,15 @@
           "symbol": "ICEEUR:SA3M2027"
         },
         "3m": {
-          "business_day_lag": 2,
+          "business_day_lag": 0,
           "contract": "SA3U2026",
           "contract_description": "Sep 2026",
           "expiration": "2026-12-15",
           "futures_price": 100.0475,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
           "policy_delta_bp": -4.8,
-          "price_valid_until": "2026-10-26T14:02:35Z",
-          "quote_as_of": "2026-10-26",
+          "price_valid_until": "2026-10-28T07:50:43Z",
+          "quote_as_of": "2026-10-28",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": -0.0475,
