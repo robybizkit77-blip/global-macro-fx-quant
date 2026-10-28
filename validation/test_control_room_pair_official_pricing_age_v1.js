@@ -8,7 +8,12 @@ const start=source.indexOf('function officialPricingCurrent(x){');
 const end=source.indexOf('function htmlEscape(',start);
 assert(start>=0&&end>start,'Missing shared official-source guard');
 const clamp=(s,t)=>Math.round((Date.parse(t+'T00:00:00Z')-Date.parse(s+'T00:00:00Z'))/86400000);
-const today='2026-10-23';
+const rome=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{
+ timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'
+}).formatToParts(new Date()).map(p=>[p.type,p.value]));
+const today=rome.year+'-'+rome.month+'-'+rome.day;
+const offsetDays=n=>new Date(Date.parse(today+'T00:00:00Z')+
+ n*86400000).toISOString().slice(0,10);
 const fresh=(s,max)=>typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&
  Number.isFinite(clamp(s,today))&&clamp(s,today)>=0&&clamp(s,today)<=max;
 const num=x=>typeof x==='number'&&Number.isFinite(x)?x:null;
@@ -28,13 +33,13 @@ for(const ccy of candidates){
     assert(!real.includes(ccy),ccy+' incomplete source must not be promoted');
 }
 const x=structuredClone(feed.currencies.GBP);
-x.as_of='2026-10-19'; // four Rome calendar days
+x.as_of=offsetDays(-4);
 assert.equal(official(x),true,'official age day four remains usable');
-x.as_of='2026-10-18'; // five days
+x.as_of=offsetDays(-5);
 assert.equal(official(x),false,'official age day five is historical, not current');
-x.as_of='2026-10-24';
+x.as_of=offsetDays(1);
 assert.equal(official(x),false,'future as-of not current');
-x.as_of='2026-10-22';
+x.as_of=offsetDays(-1);
 const negative=[
  ['estimated',v=>v.operational_status='GREEN_ESTIMATED'],
  ['withheld',v=>v.operational_status='WITHHELD'],
