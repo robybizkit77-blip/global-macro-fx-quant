@@ -96,7 +96,7 @@ jobs:
                 const sourceLinks=officialCards.map(card=>card.querySelector('a[href]')?.href||'');
                 return {cards:document.querySelectorAll('#news .opCard').length,
                   officialCards:officialCards.length,sourceLinks,
-                  proofLabelCount:officialCards.filter(c=>c.dataset.relevance==='MONITOR' && c.textContent.includes('Reazione non certificata')).length,
+                  proofLabelCount:officialCards.filter(c=>c.dataset.relevance==='MONITOR' && /Reazione(?: di mercato:)? non certificata/i.test(c.textContent)).length,
                   tiers:officialCards.map(card=>card.dataset.relevance),
                   monitorQuestions:officialCards.filter(card=>card.dataset.relevance==='MONITOR'&&
                     card.textContent.includes('Perché conta')&&card.textContent.includes('Cosa verificare')).length,
