@@ -67,6 +67,9 @@ def main():
     assert "live_data/sections/MACRO_THERMOMETER_DATA.json" in FILES
     assert "live_data/sections/MACRO_SERIES.json" in FILES
     assert "live_data/sections/NEWS_PULSE_OPERATIONAL.json" in FILES
+    assert "dashboard/calendar-news-operational-v1.js" in FILES, (
+        "NEWS_PULSE_PUBLIC_JS_CAN_STAY_STALE_WITH_GREEN_JSON"
+    )
     assert "live_data/sections/CALENDAR_OPERATIONAL_VIEW.json" in FILES
     assert "live_data/sections/NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json" in FILES
     assert set(f"payload/part-{i:02d}.txt" for i in range(16)) <= set(FILES)
@@ -98,6 +101,19 @@ def main():
     wrong = next(r for r in macro_stale["checks"]
                  if r["path"] == "live_data/sections/MACRO_SERIES.json")
     assert not wrong["http_200_and_sha256_match"]
+    # A stale News Pulse renderer is a deployment failure even when the
+    # official-actual JSON and all other operational feeds already match.
+    renderer_delayed = case(True, "dashboard/calendar-news-operational-v1.js")
+    assert renderer_delayed["status"] == "PASS" and renderer_delayed["attempts"] >= 2
+    renderer_stale = case(False, "dashboard/calendar-news-operational-v1.js")
+    assert renderer_stale["status"] == "FAIL", renderer_stale
+    bad_renderer = next(row for row in renderer_stale["checks"]
+                        if row["path"] == "dashboard/calendar-news-operational-v1.js")
+    assert bad_renderer["http_status"] == 200
+    assert bad_renderer["public_sha256"] != bad_renderer["expected_sha256"]
+    assert not bad_renderer["http_200_and_sha256_match"]
+    assert all(row["http_200_and_sha256_match"] for row in renderer_stale["checks"]
+               if row["path"] != "dashboard/calendar-news-operational-v1.js")
     failure = case(False)
     assert failure["status"] == "FAIL", failure
     assert failure["attempts"] == 1
