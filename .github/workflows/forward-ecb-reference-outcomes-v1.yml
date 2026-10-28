@@ -6,6 +6,8 @@ on:
     paths:
       - 'validation/forward/observe_official_ecb_reference_outcomes_v1.py'
       - 'validation/forward/test_observe_official_ecb_reference_outcomes_v1.py'
+      - 'validation/forward/observe_v2_research_ecb_reference_returns_v1.py'
+      - 'validation/forward/test_observe_v2_research_ecb_reference_returns_v1.py'
       - 'validation/forward/ECB_FORWARD_REFERENCE_OUTCOMES_RUNBOOK_2026-10-26.md'
       - '.github/workflows/forward-ecb-reference-outcomes-v1.yml'
   workflow_dispatch:
@@ -34,6 +36,7 @@ jobs:
         run: |
           python -m py_compile validation/forward/observe_official_ecb_reference_outcomes_v1.py validation/forward/test_observe_official_ecb_reference_outcomes_v1.py
           python -m unittest validation.forward.test_observe_official_ecb_reference_outcomes_v1 -v
+          python -m unittest validation.forward.test_observe_v2_research_ecb_reference_returns_v1 -v
       - name: Confirm current repository has no faux matured outcomes
         run: |
           python -m validation.forward.observe_official_ecb_reference_outcomes_v1 --receipt /tmp/gmfq-forward-ecb-ref-audit.json
@@ -45,6 +48,20 @@ jobs:
           assert all(r['trade_net_return'] is None and r['trade_cost_bps'] is None for r in d['new_rows'])
           assert all(r['capture_class']=='FROZEN_CORE_BASELINE_OBSERVATION' for r in d['new_rows'])
           print('PROSPECTIVE_ECB_REFERENCE_ONLY_NO_CERTIFIED_TRADES',d['new_reference_observations'])
+          PY
+      - name: Verify V2 shadow observer separately, without invented results
+        run: |
+          python -m validation.forward.observe_v2_research_ecb_reference_returns_v1 --receipt /tmp/v2-research-outcome-audit.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/v2-research-outcome-audit.json'))
+          assert d['status']=='FEATURE_OUTCOME_ASSOCIATION_PANEL_ONLY_NO_PREDICTIVE_VALIDATION'
+          assert d['no_actual_PnL_or_beta_performance_claim']
+          assert all(r['trade_net_return'] is None and
+                     r['trade_direction'] is None and
+                     r['beta_predictive_accuracy'] is None and
+                     r['model_alpha_claim'] is False for r in d['new_rows'])
+          print('V2_SHADOW_REFERENCE_OBSERVER_NO_PROFIT_CLAIMS_PASS',d['new_matured_reference_rows'])
           PY
       - name: Read-only CI cannot touch production
         run: |
@@ -104,6 +121,27 @@ jobs:
               f.write('- Newly observed reference comparisons: '+str(d['new_reference_observations'])+'\n')
               f.write('- Missing / waiting: '+str(d['blocked_and_waiting'])+'\n')
           PY
+      - name: Observe mature V2 shadow ECB references separately (best effort)
+        if: steps.gate.outputs.valid == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Never interfere with existing frozen-Core comparison if V2 research
+          # is absent or incomplete. Outcome snapshots are observational only.
+          if python -m validation.forward.observe_v2_research_ecb_reference_returns_v1               --receipt /tmp/gmfq-v2-research-reference-observer.json               --append-journal > /tmp/gmfq-v2-research-reference-summary.json; then
+            cat /tmp/gmfq-v2-research-reference-summary.json
+            python - <<'PY'
+          import json,os
+          d=json.load(open('/tmp/gmfq-v2-research-reference-summary.json'))
+          assert d['status']=='FEATURE_OUTCOME_ASSOCIATION_PANEL_ONLY_NO_PREDICTIVE_VALIDATION'
+          assert d['no_actual_PnL_or_beta_performance_claim']
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as o:
+              o.write('- V2 shadow *reference-only* rows: '+str(d['new_matured_reference_rows'])+
+                      '; beta predictive accuracy still NOT certified.\n')
+          PY
+          else
+            echo 'V2_REFERENCE_OBSERVER_FAILED_WITHOUT_BLOCKING_LEGACY_COMPARISONS' >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Prevent other file mutation
         if: steps.gate.outputs.valid == 'true'
         shell: bash
@@ -112,9 +150,12 @@ jobs:
           python - <<'PY'
           import subprocess
           paths=subprocess.check_output(['git','status','--porcelain','--untracked-files=all'],text=True).splitlines()
-          allowed='validation/forward/reference_observations/ECB_REFERENCE_COMPARISONS_V1.jsonl'
+          allowed={
+              'validation/forward/reference_observations/ECB_REFERENCE_COMPARISONS_V1.jsonl',
+              'validation/forward/reference_observations/V2_RESEARCH_ECB_REFERENCE_RETURNS_V1.jsonl'
+          }
           for line in paths:
-              if line[3:] != allowed:
+              if line[3:] not in allowed:
                   raise SystemExit('UNEXPECTED_REFERENCE_OBSERVER_MUTATION '+line)
           print('FORWARD_REFERENCE_JOURNAL_ONLY')
           PY
@@ -123,11 +164,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [[ ! -f validation/forward/reference_observations/ECB_REFERENCE_COMPARISONS_V1.jsonl ]]; then
+          if [[ ! -f validation/forward/reference_observations/ECB_REFERENCE_COMPARISONS_V1.jsonl &&                 ! -f validation/forward/reference_observations/V2_RESEARCH_ECB_REFERENCE_RETURNS_V1.jsonl ]]; then
             echo 'NO_MATURED_REFERENCE_OBSERVATIONS_YET' >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
-          git add validation/forward/reference_observations/ECB_REFERENCE_COMPARISONS_V1.jsonl
+          if test -f validation/forward/reference_observations/ECB_REFERENCE_COMPARISONS_V1.jsonl; then
+            git add validation/forward/reference_observations/ECB_REFERENCE_COMPARISONS_V1.jsonl
+          fi
+          if test -f validation/forward/reference_observations/V2_RESEARCH_ECB_REFERENCE_RETURNS_V1.jsonl; then
+            git add validation/forward/reference_observations/V2_RESEARCH_ECB_REFERENCE_RETURNS_V1.jsonl
+          fi
           if git diff --cached --quiet; then
             echo 'REFERENCE_COMPARISONS_ALREADY_RECORDED_NO_COMMIT' >> "$GITHUB_STEP_SUMMARY"
             exit 0
