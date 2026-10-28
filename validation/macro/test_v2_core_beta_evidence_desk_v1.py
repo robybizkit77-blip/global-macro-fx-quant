@@ -2,6 +2,8 @@
 import copy
 import json
 import unittest
+from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from validation.macro.v2_domestic_candidate_explicit_formula_v1 import run as domestic_run
 from validation.macro.v2_core_beta_evidence_desk_v1 import (
@@ -13,7 +15,8 @@ class IntegratedBetaDeskTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         read=lambda f:json.loads((ROOT/"live_data/sections"/(f+".json")).read_text())
-        cls.candidate=domestic_run(as_of="2026-10-27")
+        cls.audit_day=datetime.now(ZoneInfo("Europe/Rome")).date().isoformat()
+        cls.candidate=domestic_run(as_of=cls.audit_day)
         cls.legacy=read("D")
         cls.pairs=read("PAIR_SETUP_OPERATIONAL_VIEW")
         cls.cb=read("NATIVE_CB_DATA")
@@ -30,7 +33,7 @@ class IntegratedBetaDeskTests(unittest.TestCase):
             "rates":copy.deepcopy(self.rates),
         }
         data.update(overrides)
-        return build(**data)
+        return build(**data, as_of=self.audit_day)
 
     def test_all_eight_leg_sources_and_all_28_unchanged_pair_context(self):
         result=self.make()
@@ -38,11 +41,12 @@ class IntegratedBetaDeskTests(unittest.TestCase):
         self.assertEqual(set(result["countries"]),set(G8))
         self.assertEqual(len(result["pairs"]),28)
         self.assertEqual(result["legacy_model_baseline_as_of"],"2026-09-25")
-        self.assertEqual(result["official_price_overlay_as_of"],"2026-10-27")
+        self.assertEqual(result["official_price_overlay_as_of"],self.pairs["price_asof"])
         self.assertEqual(result["summary"]["domestic_classes_robust"],4)
-        self.assertEqual(result["summary"]["official_policy_pricing"],4)
+        self.assertEqual(result["summary"]["official_policy_pricing"],3)
+        self.assertEqual(result["summary"]["pre_decision_6m_quotes"],1)
         self.assertEqual(result["summary"]["indicative_policy_pricing"],2)
-        self.assertEqual(result["summary"]["context_only_non_policy_6m"],2)
+        self.assertEqual(result["summary"]["context_only_non_policy_6m"],3)
         self.assertEqual(result["summary"]["new_country_FX_scores"],0)
         self.assertEqual(result["summary"]["new_pair_theses"],0)
         for flag in ("safe_to_republish_D",
@@ -68,16 +72,35 @@ class IntegratedBetaDeskTests(unittest.TestCase):
         x=self.make()["countries"]
         self.assertEqual({k for k,v in x.items()
             if v["six_month_source_class"]=="OFFICIAL_POLICY_PRICING"},
-            {"GBP","JPY","CAD","AUD"})
+            {"GBP","JPY","AUD"})
         self.assertEqual({k for k,v in x.items()
             if v["six_month_source_class"]=="ESTIMATED_POLICY_PRICING_NOT_OFFICIAL"},
             {"USD","EUR"})
         self.assertEqual(x["CHF"]["six_month_source_class"],
                          "SECONDARY_NON_OIS_6M_CONTEXT_ONLY")
         self.assertIsNone(x["CHF"]["six_month_policy_delta_bp"])
+        self.assertEqual(x["CAD"]["six_month_source_class"],
+                         "PRE_DECISION_OFFICIAL_QUOTE_NO_CURRENT_POLICY_DELTA")
+        self.assertEqual(x["CAD"]["official_current_cb_rate_pct"],2.50)
+        self.assertEqual(x["CAD"]["ois_prior_policy_rate_pct_if_pre_decision"],2.25)
+        self.assertIsNone(x["CAD"]["six_month_policy_delta_bp"])
+        self.assertEqual(x["CAD"]["six_month_quote_date"],"2026-10-27")
         self.assertEqual(x["NZD"]["six_month_source_class"],
                          "BANK_BILL_BASIS_DIRECTIONAL_CONTEXT_ONLY")
         self.assertIsNone(x["NZD"]["six_month_policy_delta_bp"])
+
+    def test_predecision_mismatch_must_have_strictly_older_ois_quote(self):
+        # A same-day 2.25% curve cannot masquerade as a valid quote against
+        # the new official BoC 2.50% rate.
+        invalid=copy.deepcopy(self.ois)
+        invalid["currencies"]["CAD"]["as_of"]=self.cb["CAD"]["last_date"]
+        with self.assertRaisesRegex(ValueError, "policy rate and market bridge disagree"):
+            self.make(ois=invalid)
+        # In contrast, the old quote is genuine 27-Oct pre-decision context.
+        row=self.make()["countries"]["CAD"]
+        self.assertEqual(row["six_month_source_class"],
+                         "PRE_DECISION_OFFICIAL_QUOTE_NO_CURRENT_POLICY_DELTA")
+        self.assertIsNone(row["six_month_policy_delta_bp"])
 
     def test_historical_bond_not_described_current_and_no_tenor_mixup(self):
         x=self.make()["countries"]
@@ -108,11 +131,11 @@ class IntegratedBetaDeskTests(unittest.TestCase):
 
     def test_no_future_cb_yield_or_bad_pair_universe(self):
         wrong=copy.deepcopy(self.cb)
-        wrong["EUR"]["last_date"]="2026-11-01"
+        wrong["EUR"]["last_date"]=(date.fromisoformat(self.audit_day)+timedelta(days=2)).isoformat()
         with self.assertRaises(ValueError):
             self.make(banks=wrong)
         wrong=copy.deepcopy(self.rates)
-        wrong["CHF"]["date"]="2026-10-29"
+        wrong["CHF"]["date"]=(date.fromisoformat(self.audit_day)+timedelta(days=1)).isoformat()
         with self.assertRaises(ValueError):
             self.make(rates=wrong)
         wrong=copy.deepcopy(self.pairs)
