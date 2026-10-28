@@ -1936,7 +1936,7 @@ function pairEvidenceChecklist(code,pair,modelDay,reactionHtml,macroDay){
  else if(!fav)blockers.push('Il motore non individua una valuta favorita.');
  if(modelState.verified&&(src.price?.state==='BAD'||src.price?.state==='NEUTRAL'))
   blockers.push('Prezzo nel modello: '+src.price.text+'.');
- if(modelState.verified&&src.extension?.state==='ADVANCED')
+ if(modelState.verified&&['ADVANCED','EXTENDED'].includes(src.extension?.state))
   blockers.push('Estensione del prezzo: '+(src.extension.text||'già avanzato')+'.');
  if(modelState.verified&&typeof src.timing?.text==='string')blockers.push('Timing: '+src.timing.text+'.');
  if(modelState.verified&&['HIGH','DIVERGENT'].includes(src.cot?.state)&&typeof src.cot.text==='string')
