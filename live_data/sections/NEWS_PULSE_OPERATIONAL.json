@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-10-27",
-  "generated_at_utc": "2026-10-28T10:14:40.928733Z",
+  "generated_at_utc": "2026-10-28T14:46:48.560928Z",
   "items": [
     {
       "as_of": "2026-10-27",
@@ -47,7 +47,7 @@
       "title": "GBP: repricing OIS più hawkish (+3.2 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-10-28T10:14:40.928733Z",
+  "last_checked_at_utc": "2026-10-28T14:46:48.560928Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -180,9 +180,9 @@
           "verify_next": "Leggere i numeri e confrontarli con precedente e consenso quando disponibili; poi controllare OIS/futures, 2Y e cambio.",
           "why_watch": "Pubblicazione collegata alle aspettative o allo scenario macro; il titolo non rivela sorpresa né variazioni dei valori."
         },
-        "id": "BOC_PRESS:https://www.bankofcanada.ca/2026/10/fad-announcement-release-mpr-2026-10-28/",
+        "id": "BOC_PRESS:https://www.bankofcanada.ca/multimedia/press-conference-monetary-policy-report-october-2026/",
         "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-10-28T09:45:08Z",
+        "published_at_utc": "2026-10-28T10:30:43Z",
         "quality": "OFFICIAL_RSS_DATED_LINK",
         "reaction_evidence": {
           "causal_attribution": "NOT_ESTABLISHED",
@@ -220,8 +220,63 @@
         },
         "source": "Bank of Canada",
         "source_id": "BOC_PRESS",
-        "title": "Bank of Canada interest rate announcement and release of the Monetary Policy Report",
-        "url": "https://www.bankofcanada.ca/2026/10/fad-announcement-release-mpr-2026-10-28/"
+        "title": "Press Conference: Monetary Policy Report – October 2026",
+        "url": "https://www.bankofcanada.ca/multimedia/press-conference-monetary-policy-report-october-2026/"
+      },
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "CAD",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
+        "id": "BOC_PRESS:https://www.bankofcanada.ca/2026/10/fad-press-release-2026-10-28/",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-10-28T09:47:20Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "6m_rate_pct": 2.995,
+            "date": "2026-10-27",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "OFFICIAL_CERTIFIED",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
+            "status": "DAILY_CONTEXT_ONLY"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-10-26",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-10-26",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 3.37
+          }
+        },
+        "source": "Bank of Canada",
+        "source_id": "BOC_PRESS",
+        "title": "Bank of Canada raises the policy rate by 25 basis points to 2½%",
+        "url": "https://www.bankofcanada.ca/2026/10/fad-press-release-2026-10-28/"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
@@ -570,113 +625,10 @@
         "source_id": "EIA_ENERGY",
         "title": "Hybrid sales rise while battery electric sales remain lower after tax credit expiration",
         "url": "https://www.eia.gov/todayinenergy/detail.php?id=68325"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "CAD",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "MONITOR",
-          "topic": "MACRO_EXPECTATIONS",
-          "verify_next": "Leggere i numeri e confrontarli con precedente e consenso quando disponibili; poi controllare OIS/futures, 2Y e cambio.",
-          "why_watch": "Pubblicazione collegata alle aspettative o allo scenario macro; il titolo non rivela sorpresa né variazioni dei valori."
-        },
-        "id": "BOC_PRESS:https://www.bankofcanada.ca/2026/10/the-bank-of-canada-releases-the-third-quarter-issues-of-the-business-outlook-survey-and-the-canadian-survey-of-consumer-expectations/",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-10-19T11:00:48Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "6m_rate_pct": 2.995,
-            "date": "2026-10-27",
-            "event_window_proof": false,
-            "instrument": "FUTURES_IMPLIED",
-            "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
-            "status": "DAILY_CONTEXT_ONLY"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-10-26",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-10-26",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.37
-          }
-        },
-        "source": "Bank of Canada",
-        "source_id": "BOC_PRESS",
-        "title": "The Bank of Canada releases the third quarter issues of the Business Outlook Survey and the Canadian Survey of Consumer Expectations",
-        "url": "https://www.bankofcanada.ca/2026/10/the-bank-of-canada-releases-the-third-quarter-issues-of-the-business-outlook-survey-and-the-canadian-survey-of-consumer-expectations/"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "NZD",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "RBNZ_NEWS:https://www.rbnz.govt.nz/news-and-events/news/2026/10/new-framework-supports-access-to-basic-transaction-services",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-10-18T11:00:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-10-16",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL_MANUAL_VERIFIED",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Reserve Bank of New Zealand · B2 government bond closing yields · 2026-10-16 · reviewed public table",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.89
-          }
-        },
-        "source": "Reserve Bank of New Zealand",
-        "source_id": "RBNZ_NEWS",
-        "title": "New framework supports access to basic transaction services",
-        "url": "https://www.rbnz.govt.nz/news-and-events/news/2026/10/new-framework-supports-access-to-basic-transaction-services"
       }
     ],
     "last_attempt_day_rome": "2026-10-28",
-    "latest_published_at_utc": "2026-10-28T09:45:08Z",
+    "latest_published_at_utc": "2026-10-28T10:30:43Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -740,9 +692,9 @@
         "status": "NO_VERIFIED_RECENT_ITEMS"
       },
       {
-        "accepted_items": 2,
+        "accepted_items": 5,
         "ccy": "CAD",
-        "entries_rejected": 8,
+        "entries_rejected": 5,
         "feed_entries_seen": 10,
         "feed_url": "https://www.bankofcanada.ca/content_type/press/feed/",
         "source": "Bank of Canada",
@@ -760,9 +712,9 @@
         "status": "NO_VERIFIED_RECENT_ITEMS"
       },
       {
-        "accepted_items": 2,
+        "accepted_items": 1,
         "ccy": "NZD",
-        "entries_rejected": 48,
+        "entries_rejected": 49,
         "feed_entries_seen": 50,
         "feed_url": "https://www.rbnz.govt.nz/feeds/news",
         "source": "Reserve Bank of New Zealand",

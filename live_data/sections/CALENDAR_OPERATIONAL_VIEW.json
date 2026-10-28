@@ -53,20 +53,6 @@
       "title": "Consumer Price Index, Australia"
     },
     {
-      "bank": "Reserve Bank of New Zealand",
-      "ccy": "NZD",
-      "consensus_status": "NOT_APPLICABLE",
-      "current_rate": 2.75,
-      "date": "2026-10-28",
-      "event_type": "CENTRAL_BANK_DECISION",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_SCHEDULE_FROM_CERTIFIED_CB_LAYER",
-      "source_layer": "NATIVE_CB_DATA",
-      "stance": "HAWKISH · restrittiva",
-      "status": "UPCOMING",
-      "title": "RBNZ · decisione di politica monetaria"
-    },
-    {
       "bank": "ECB",
       "ccy": "EUR",
       "consensus_status": "NOT_APPLICABLE",
@@ -317,10 +303,24 @@
       "title": "Swiss GDP flash"
     },
     {
+      "bank": "Reserve Bank of New Zealand",
+      "ccy": "NZD",
+      "consensus_status": "NOT_APPLICABLE",
+      "current_rate": 2.75,
+      "date": "2026-12-09",
+      "event_type": "CENTRAL_BANK_DECISION",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_SCHEDULE_FROM_CERTIFIED_CB_LAYER",
+      "source_layer": "NATIVE_CB_DATA",
+      "stance": "INVARIATA · rischio hawkish",
+      "status": "UPCOMING",
+      "title": "RBNZ · decisione di politica monetaria"
+    },
+    {
       "bank": "Swiss National Bank",
       "ccy": "CHF",
       "consensus_status": "NOT_APPLICABLE",
-      "current_rate": 0.0,
+      "current_rate": 0,
       "date": "2026-12-10",
       "event_type": "CENTRAL_BANK_DECISION",
       "importance": "HIGH",
@@ -346,8 +346,8 @@
       "title": "Gross domestic product"
     }
   ],
-  "generated_at_utc": "2026-10-25T15:35:18.803564Z",
-  "last_checked_at_utc": "2026-10-28T04:25:34.331069Z",
+  "generated_at_utc": "2026-10-28T14:46:48.505846Z",
+  "last_checked_at_utc": "2026-10-28T14:46:48.505846Z",
   "schema": "GMFQ_CALENDAR_OPERATIONAL_VIEW_V3",
   "scope": {
     "central_bank_schedule": "ACTIVE_OFFICIAL",
