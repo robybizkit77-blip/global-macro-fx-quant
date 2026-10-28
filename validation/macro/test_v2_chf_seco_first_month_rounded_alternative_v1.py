@@ -4,7 +4,8 @@ import json
 import unittest
 
 from validation.macro.v2_chf_seco_first_month_rounded_alternative_v1 import (
-    audit, ASOF, FIXTURE, SCHEMA, EARLY_INDEX_ONLY
+    audit, ASOF, FIXTURE, SCHEMA, EARLY_INDEX_ONLY,
+    INDEXED_OFFICIAL_PDF_TEXT_ONLY, from_index_only
 )
 from validation.macro.v2_shadow_features_v1 import ROOT
 from validation.macro.v2_g8_24_axis_training_history_gap_audit_v1 import evidence
@@ -36,6 +37,28 @@ class CHFOfficialFirstRoundedAlternative(unittest.TestCase):
         self.assertEqual(rows[-1]["original_seco_rounded_sa_registered_unemployment_pct"],3.1)
         self.assertEqual(rows[16]["reference_month"],"2026-01")
         self.assertEqual(rows[16]["original_seco_rounded_sa_registered_unemployment_pct"],2.9)
+
+    def test_four_cached_full_pdf_text_links_do_not_promote_raw_pdf_bytes(self):
+        rows=from_index_only()
+        self.assertEqual(len(rows),4)
+        self.assertEqual(set(INDEXED_OFFICIAL_PDF_TEXT_ONLY),
+                         {r["reference_month"] for r in rows})
+        self.assertEqual([r["indexed_document_pages_reported_NOT_verified_raw_PDF"]
+                          for r in rows],[26,27,27,28])
+        for r in rows:
+            self.assertEqual(r["indexed_pdf_first_table_SA_rate_one_decimal_confirmed"],2.6)
+            self.assertTrue(r["official_web_indexed_full_PDF_text_locator_NOT_downloadable_original"]
+                            .startswith("https://www.arbeit.swiss/"))
+            self.assertTrue(r["indexed_official_PDF_text_is_not_original_bytes_or_source_day_snapshot"])
+            self.assertIsNone(r["official_pdf_sha256_captured_now"])
+            self.assertFalse(r["source_first_month_raw_document_bytes_downloaded"])
+            self.assertFalse(r["document_original_release_day_HTTP_snapshot_verified"])
+            self.assertFalse(r["publisher_first_original_exact_SNB_values_verified"])
+        summary=self.a["summary"]
+        self.assertEqual(summary["official_2024_original_full_PDF_text_index_locators_identified"],4)
+        self.assertEqual(summary["original_PDF_bytes_still_missing_despite_indexed_text"],4)
+        self.assertEqual(summary["official_PDF_raw_bytes_SHA_captured_now"],21)
+        self.assertEqual(summary["authorized_G8_macro_currency_scores"],0)
 
     def test_rounded_research_z_is_not_precise_snb_first_vintage(self):
         d=self.a
