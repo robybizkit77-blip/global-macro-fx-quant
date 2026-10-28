@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_CHATGPT_MARKET_CONTEXT_V1",
-  "generated_at_utc": "2026-10-27T23:42:58Z",
+  "generated_at_utc": "2026-10-28T05:27:08Z",
   "evaluation_date_europe_rome": "2026-10-28",
   "reference_only": true,
   "policy": {
@@ -15,12 +15,12 @@
     "ois_official": {
       "USD": {
         "state": "UNAVAILABLE",
-        "as_of": "2026-10-26",
+        "as_of": "2026-10-27",
         "reason": "Only GBP, JPY, CAD and AUD have the certified OIS contract; estimated/proxy OIS is informational only, never alert-certified."
       },
       "EUR": {
         "state": "UNAVAILABLE",
-        "as_of": "2026-10-26",
+        "as_of": "2026-10-27",
         "reason": "Only GBP, JPY, CAD and AUD have the certified OIS contract; estimated/proxy OIS is informational only, never alert-certified."
       },
       "GBP": {
@@ -78,13 +78,13 @@
     "government_rates": {
       "USD": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-10-26",
-        "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-10-26",
-        "government_2y_pct": 4.68,
-        "government_10y_pct": 5.0,
-        "10y_minus_2y_bp": 32.0,
+        "as_of": "2026-10-27",
+        "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-10-27",
+        "government_2y_pct": 4.7,
+        "government_10y_pct": 4.99,
+        "10y_minus_2y_bp": 29.0,
         "change_2y_bp": -9.0,
-        "change_10y_bp": -15.0
+        "change_10y_bp": -13.0
       },
       "EUR": {
         "state": "AVAILABLE_CERTIFIED",
@@ -108,13 +108,13 @@
       },
       "JPY": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-10-26",
-        "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-10-26",
+        "as_of": "2026-10-27",
+        "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-10-27",
         "government_2y_pct": 1.888,
-        "government_10y_pct": 2.824,
-        "10y_minus_2y_bp": 93.6,
-        "change_2y_bp": -1.6,
-        "change_10y_bp": -11.1
+        "government_10y_pct": 2.829,
+        "10y_minus_2y_bp": 94.1,
+        "change_2y_bp": -2.1,
+        "change_10y_bp": -9.8
       },
       "CHF": {
         "state": "STALE",
