@@ -20,9 +20,11 @@ on:
     branches: [main]
     paths: ['.github/workflows/forward-ecb-reference-outcomes-v1.yml']
   workflow_run:
-    # Reuse an ALREADY scheduled hourly workflow. No additional cron.
+    # Reuse ALREADY scheduled workflows. No additional cron or pipeline.
+    # A delayed scheduled Forward completion can recover missed ECB outcomes
+    # even when the hourly scheduler has stalled. No retrospective T0.
     # Bot-authored source commits do not reliably trigger push workflows.
-    workflows: ['Hourly Certified Alert Readiness V1']
+    workflows: ['Hourly Certified Alert Readiness V1', 'Forward Frozen Core Prospective Daily V1']
     types: [completed]
   schedule:
     # Europe/Rome weekday 21:15; both clock offsets, strict UTC/DST gate.
@@ -106,7 +108,8 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
       (github.event_name == 'workflow_run' &&
-       github.event.workflow_run.name == 'Hourly Certified Alert Readiness V1' &&
+       (github.event.workflow_run.name == 'Hourly Certified Alert Readiness V1' ||
+        github.event.workflow_run.name == 'Forward Frozen Core Prospective Daily V1') &&
        github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.head_branch == 'main' &&
        github.event.workflow_run.event == 'schedule')
