@@ -186,6 +186,8 @@ assert.equal(mutate(x=>{x.pairs.AUDCHF.setup.timing.state='PREDICTED'}),null);
 assert.equal(mutate(x=>{x.entry_level_published=true}),null);
 assert.equal(mutate(x=>{x.price_audit.status='FAIL'}),null);
 assert.equal(rank(setup,{asOf:'2026-09-24'}),null);
+assert(source.includes("if(modelState.verified&&['ADVANCED','EXTENDED'].includes(src.extension?.state))"),
+ 'canonical extended-price blocker remains visible in Pair Deep Dive');
 assert(source.includes('MutationObserver(()=>apply())'),'native search/re-render reordering contract');
 assert(source.includes("check.textContent='Primo controllo · '+r.firstCheck"),'each native pair risk has a visible first research check');
 assert(source.includes("tbody.append(...sorted)"),'native 28-row table, not a new duplicative list');
