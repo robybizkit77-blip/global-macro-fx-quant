@@ -38,6 +38,34 @@ EARLY_INDEX_ONLY = (
 )
 
 
+# Search-engine document indexes have preserved the publisher's FULL PDF TEXT
+# (including Table 1); as of 2026-10-28 direct PDF HTTP/byte capture is NOT
+# available. These are NOT alternate downloaded originals and their exact
+# URL existence in the index must not promote a source-day PIT vintage.
+INDEXED_OFFICIAL_PDF_TEXT_ONLY = {
+    "2024-09": (
+        "https://www.arbeit.swiss/dam/secoalv/de/dokumente/publikationen/amstat/2024/"
+        "die_lage_auf_dem_arbeitsmarkt_im_september_2024.pdf.download.pdf/"
+        "2024-09_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf", 26
+    ),
+    "2024-10": (
+        "https://www.arbeit.swiss/dam/secoalv/de/dokumente/publikationen/amstat/2024/"
+        "die_lage_auf_dem_arbeitsmarkt_202410_dfi.pdf.download.pdf/"
+        "2024-10_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf", 27
+    ),
+    "2024-11": (
+        "https://www.arbeit.swiss/dam/secoalv/de/dokumente/publikationen/amstat/2024/"
+        "die_lage_auf_dem_arbeitsmarkt_202411.pdf.download.pdf/"
+        "2024-11_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf", 27
+    ),
+    "2024-12": (
+        "https://www.arbeit.swiss/dam/secoalv/de/dokumente/publikationen/amstat/2024/"
+        "die_lage_auf_dem_arbeitsmarkt_202412.pdf.download.pdf/"
+        "2024-12_Die_Lage_auf_dem_Arbeitsmarkt_DE.pdf", 28
+    ),
+}
+
+
 def require(value, message):
     if not value:
         raise ValueError("MACRO_V2_CHF_SECO_25_ALTERNATIVE_REJECTED: " + message)
@@ -56,19 +84,35 @@ def first_gate(day):
 
 
 def from_index_only():
-    return [
-        {"reference_month":p,
+    require(set(INDEXED_OFFICIAL_PDF_TEXT_ONLY) ==
+            {p for p, *_ in EARLY_INDEX_ONLY},
+            "exact four historical issuer PDF cache locators")
+    rows = []
+    for p, rate, day, url in EARLY_INDEX_ONLY:
+        indexed_url, indexed_pages = INDEXED_OFFICIAL_PDF_TEXT_ONLY[p]
+        parsed = urlsplit(indexed_url)
+        require(parsed.scheme == "https" and parsed.hostname == "www.arbeit.swiss"
+                and parsed.path.endswith(".pdf")
+                and p[:4] in parsed.path and p in parsed.path
+                and not parsed.username and not parsed.password
+                and indexed_pages >= 22,
+                "cached publisher PDF locator cannot prove an issuer original")
+        require(rate == 2.6, "indexed SECO Table 1 rounded SA rate drift")
+        rows.append({"reference_month":p,
          "original_seco_rounded_sa_registered_unemployment_pct":rate,
          "published_report_date":day,
          "conservative_available_from_utc":first_gate(day),
          "official_month_report_url":url,
+         "official_web_indexed_full_PDF_text_locator_NOT_downloadable_original":indexed_url,
+         "indexed_document_pages_reported_NOT_verified_raw_PDF":indexed_pages,
+         "indexed_pdf_first_table_SA_rate_one_decimal_confirmed":rate,
+         "indexed_official_PDF_text_is_not_original_bytes_or_source_day_snapshot":True,
          "source_quality":"OFFICIAL_2024_INDEXED_ORIGINAL_PDF_TABLE_CACHED_404_NO_BYTES",
          "official_pdf_sha256_captured_now":None,
          "source_first_month_raw_document_bytes_downloaded":False,
          "document_original_release_day_HTTP_snapshot_verified":False,
          "publisher_first_original_exact_SNB_values_verified":False}
-        for p,rate,day,url in EARLY_INDEX_ONLY
-    ]
+    return rows
 
 
 def audit(*,cutoff=ASOF,raw=None):
@@ -145,6 +189,12 @@ def audit(*,cutoff=ASOF,raw=None):
             "independently checked monthly SECO anchor release values differ")
     old_download=sum(x["source_first_month_raw_document_bytes_downloaded"] for x in rows)
     require(old_download==21,"21 genuine first-report downloaded PDFs required")
+    require(sum(bool(x.get("official_web_indexed_full_PDF_text_locator_NOT_downloadable_original"))
+                for x in rows)==4 and
+            all(x["official_pdf_sha256_captured_now"] is None and
+                x["source_first_month_raw_document_bytes_downloaded"] is False
+                for x in rows[:4]),
+            "index text of four 2024 originals must not become captured PDF bytes")
     swiss=swiss_quality(cutoff=cutoff)
     require(swiss["rounded_SECO_sa_rate_pct_visible"]==3.1
             and swiss["exact_SNB_release_timestamp_utc"] is None,
@@ -182,6 +232,8 @@ def audit(*,cutoff=ASOF,raw=None):
             "alternative_SECO_first_rounded_web_coverage_months":25,
             "official_PDF_raw_bytes_SHA_captured_now":21,
             "official_2024_original_PDF_search_index_only_currently_404":4,
+            "official_2024_original_full_PDF_text_index_locators_identified":4,
+            "original_PDF_bytes_still_missing_despite_indexed_text":4,
             "retrospective_SNBSI_source_first_precision_verified":0,
             "separate_new_SNB_canonical_first_release_history_periods":0,
             "USD_CPI_first_release_windows_changed":0,
