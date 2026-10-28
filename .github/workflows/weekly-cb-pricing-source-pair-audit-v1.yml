@@ -46,12 +46,12 @@ jobs:
               "JPY": "validation/cb_pricing/collect_jpy_tfx_tona.py",
               "AUD": "validation/cb_pricing/collect_aud_asx_ib.py",
           }
-          archive_url = "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/oisddata.zip"
+          archive_url = "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/latest-yield-curve-data.zip"
           root = Path("/tmp/cb-pricing-weekly-audit")
           root.mkdir(parents=True, exist_ok=True)
           outcomes = {}
           archive_error = None
-          archive = root / "boe-official-archive.zip"
+          archive = root / "boe-official-current-month.zip"
           try:
               req = urllib.request.Request(archive_url, headers={"User-Agent": "GLOBAL-MACRO-FX-QUANT research validation"})
               with urllib.request.urlopen(req, timeout=75) as response:
@@ -66,7 +66,7 @@ jobs:
               errors = []
               for date in dates:
                   if currency == "GBP" and archive_error:
-                      errors.append(f"{date}: official archive unavailable ({archive_error})")
+                      errors.append(f"{date}: official current-month package unavailable ({archive_error})")
                       continue
                   target = root / f"{currency}-{date}.json"
                   cmd = [sys.executable, collector, "--as-of", date, "--output", str(target)]
