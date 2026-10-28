@@ -8,6 +8,10 @@ on:
       - 'validation/refresh_macro_consensus_secondary_v1.py'
       - 'validation/macro/freeze_pre_release_consensus_v1.py'
       - 'validation/macro/capture_official_postrelease_actuals_v1.py'
+      - 'validation/macro/build_macro_event_market_context_v1.py'
+      - 'validation/macro/test_build_macro_event_market_context_v1.py'
+      - 'validation/macro/fixtures/macro_event_market_preanchor_oct28_v1.json'
+      - 'validation/macro/MACRO_EVENT_PRE_RELEASE_MARKET_ANCHORS_V1.jsonl'
       - 'validation/macro/test_capture_official_postrelease_actuals_v1.py'
       - 'validation/macro/MACRO_OFFICIAL_ACTUAL_FIRST_SEEN_V1.jsonl'
       - 'validation/macro/test_freeze_pre_release_consensus_v1.py'
@@ -31,6 +35,10 @@ on:
       - 'validation/refresh_macro_consensus_secondary_v1.py'
       - 'validation/macro/freeze_pre_release_consensus_v1.py'
       - 'validation/macro/capture_official_postrelease_actuals_v1.py'
+      - 'validation/macro/build_macro_event_market_context_v1.py'
+      - 'validation/macro/test_build_macro_event_market_context_v1.py'
+      - 'validation/macro/fixtures/macro_event_market_preanchor_oct28_v1.json'
+      - 'validation/macro/MACRO_EVENT_PRE_RELEASE_MARKET_ANCHORS_V1.jsonl'
       - 'validation/macro/test_capture_official_postrelease_actuals_v1.py'
       - 'validation/macro/MACRO_OFFICIAL_ACTUAL_FIRST_SEEN_V1.jsonl'
       - 'validation/macro/test_freeze_pre_release_consensus_v1.py'
@@ -119,6 +127,33 @@ jobs:
               fd.write('- No pre-scheduled fetch, no first-release PIT claim, no causal FX repricing, Core, Beta or Forward promotion.\n')
           PY
 
+      - name: Test real dated pre-event market anchors and conservative post-event comparisons
+        run: python -m unittest validation.macro.test_build_macro_event_market_context_v1 -v
+      - name: Archive first-seen pre-announcement 2Y/10Y ECB FX and official 6M futures source anchors
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m validation.macro.build_macro_event_market_context_v1 \
+            --receipt /tmp/macro-event-market-context-receipt.json
+          python - <<'PY'
+          import json,os
+          d=json.load(open('/tmp/macro-event-market-context-receipt.json'))
+          a=d['anchor'];c=d['context']
+          assert a['status']=='MACRO_PRE_RELEASE_MARKET_ANCHOR_CHECK'
+          assert a['writes_live_model'] is False
+          assert a['safe_for_new_FX_signal'] is False
+          assert c['summary']['events']==2
+          assert c['summary']['issuer_event_intraday_reactions_certified']==0
+          assert c['summary']['FX_signals']==0
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as o:
+              o.write('### Macro event before/after calendar context, NOT verified release-market causality\n')
+              o.write('- Early pre-event market anchors saved: '+str(a['added_anchors'])+
+                      '; total '+str(a['total_anchors'])+'.\n')
+              for e in c['events']:
+                  o.write('- '+e['event_key']+': **'+e['state']+'**.\n')
+              o.write('- 2Y government yields are not pure CB policy; CAD futures are not OIS, USD 6M remains estimated/absent from official source.\n')
+          PY
+
       - name: Test source recheck distinct from content modification
         run: python validation/test_calendar_news_daily_recheck_v1.py
       - name: Build operational Calendar and News Pulse
@@ -155,6 +190,14 @@ jobs:
           assert con['rules']['public_json_secondary_source'] is True
           assert con['rules']['weekly_feed_scope'] is True
           assert news['schema']=='GMFQ_NEWS_PULSE_OPERATIONAL_V1'
+          ev=news['macro_event_market_context']
+          assert ev['schema']=='GMFQ_MACRO_EVENT_CONTEXT_DAILY_MATCH_V1'
+          assert ev['summary']['events']==2
+          assert ev['summary']['issuer_event_intraday_reactions_certified']==0
+          assert ev['summary']['FX_signals']==0
+          assert all(e['FX_trade_signal'] is None and e['event_causality_verified'] is False
+                     and e['eligible_for_Core_Beta_Forward'] is False
+                     for e in ev['events'])
           assert news['status']=='ACTIVE_DETERMINISTIC_LAYERS'
           assert news['items']
           external=news['official_releases']
@@ -187,15 +230,15 @@ jobs:
         if: github.event_name != 'pull_request'
         run: |
           set -euo pipefail
-          changed="$(git diff --name-only -- live_data/sections/CALENDAR_OPERATIONAL_VIEW.json live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json live_data/sections/NEWS_PULSE_OPERATIONAL.json validation/macro/MACRO_PRE_RELEASE_CONSENSUS_LEDGER_V1.jsonl validation/macro/MACRO_OFFICIAL_ACTUAL_FIRST_SEEN_V1.jsonl)"
+          changed="$(git diff --name-only -- live_data/sections/CALENDAR_OPERATIONAL_VIEW.json live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json live_data/sections/NEWS_PULSE_OPERATIONAL.json validation/macro/MACRO_PRE_RELEASE_CONSENSUS_LEDGER_V1.jsonl validation/macro/MACRO_OFFICIAL_ACTUAL_FIRST_SEEN_V1.jsonl validation/macro/MACRO_EVENT_PRE_RELEASE_MARKET_ANCHORS_V1.jsonl)"
           if [ -z "$changed" ]; then echo CALENDAR_NEWS_NO_CHANGE; exit 0; fi
-          unexpected="$(git diff --name-only | grep -Ev '^(live_data/sections/CALENDAR_OPERATIONAL_VIEW.json|live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json|live_data/sections/NEWS_PULSE_OPERATIONAL.json|validation/macro/MACRO_PRE_RELEASE_CONSENSUS_LEDGER_V1.jsonl|validation/macro/MACRO_OFFICIAL_ACTUAL_FIRST_SEEN_V1.jsonl)$' || true)"
+          unexpected="$(git diff --name-only | grep -Ev '^(live_data/sections/CALENDAR_OPERATIONAL_VIEW.json|live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json|live_data/sections/NEWS_PULSE_OPERATIONAL.json|validation/macro/MACRO_PRE_RELEASE_CONSENSUS_LEDGER_V1.jsonl|validation/macro/MACRO_OFFICIAL_ACTUAL_FIRST_SEEN_V1.jsonl|validation/macro/MACRO_EVENT_PRE_RELEASE_MARKET_ANCHORS_V1.jsonl)$' || true)"
           test -z "$unexpected" || { echo "Unexpected changes: $unexpected" >&2; exit 1; }
           REMOTE_SHA="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
           LOCAL_SHA="$(git rev-parse HEAD)"
           test "$REMOTE_SHA" = "$LOCAL_SHA" || { echo 'main moved during Calendar/News refresh' >&2; exit 1; }
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add live_data/sections/CALENDAR_OPERATIONAL_VIEW.json live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json live_data/sections/NEWS_PULSE_OPERATIONAL.json validation/macro/MACRO_PRE_RELEASE_CONSENSUS_LEDGER_V1.jsonl validation/macro/MACRO_OFFICIAL_ACTUAL_FIRST_SEEN_V1.jsonl
+          git add live_data/sections/CALENDAR_OPERATIONAL_VIEW.json live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json live_data/sections/NEWS_PULSE_OPERATIONAL.json validation/macro/MACRO_PRE_RELEASE_CONSENSUS_LEDGER_V1.jsonl validation/macro/MACRO_OFFICIAL_ACTUAL_FIRST_SEEN_V1.jsonl validation/macro/MACRO_EVENT_PRE_RELEASE_MARKET_ANCHORS_V1.jsonl
           git commit -m 'Refresh operational Calendar, consensus and frozen pre-release forecast ledger'
           git push origin HEAD:main
