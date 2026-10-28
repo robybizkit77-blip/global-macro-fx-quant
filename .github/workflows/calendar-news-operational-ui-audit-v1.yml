@@ -105,6 +105,53 @@ jobs:
                   cw:document.querySelector('#news [data-gmfq-operational="news"]')?.clientWidth};
               });
               if(news.cards<4)throw new Error(`${name} news cards ${news.cards}`);
+              // Regression: new macro source-clock lane must be rendered,
+              // not merely present in operational JSON.
+              const macroEvidence=await page.evaluate(async()=>{
+                const payload=await (await fetch(
+                  'live_data/sections/NEWS_PULSE_OPERATIONAL.json',
+                  {cache:'no-store'})).json();
+                const data=payload.macro_event_market_context;
+                const cards=[...document.querySelectorAll(
+                  '#news .opCard[data-kind="macro-evidence"]')];
+                const ui=cards.map(card=>({
+                  ccy:card.dataset.ccy,
+                  stage:card.dataset.stage,
+                  text:card.textContent||'',
+                  t2:card.querySelectorAll('.opMacroRate').length,
+                  width:card.scrollWidth,
+                  clientWidth:card.clientWidth,
+                  links:[...card.querySelectorAll('a[href]')].map(x=>x.href)
+                }));
+                return {schema:data?.schema,events:data?.events,ui};
+              });
+              if(macroEvidence.schema!=='GMFQ_MACRO_EVENT_CONTEXT_DAILY_MATCH_V1'||
+                 macroEvidence.events.length!==2||macroEvidence.ui.length!==2)
+                throw new Error(name+' macro evidence invisible: '+JSON.stringify(macroEvidence));
+              const expectedLabels={USD:'Costo del lavoro USA',CAD:'PIL mensile Canada'};
+              for(const event of macroEvidence.events){
+                const card=macroEvidence.ui.find(x=>x.ccy===event.currency);
+                if(!card||card.stage!==event.state||
+                   !card.text.includes(expectedLabels[event.currency])||
+                   !card.text.includes('Consenso congelato')||
+                   !card.text.includes('Reazione evento')||
+                   !card.text.includes('2Y')||
+                   card.t2<4||card.width>card.clientWidth+2)
+                  throw new Error(name+' macro card: '+JSON.stringify(card));
+                if(event.official_actual_percent===null){
+                  if(!card.text.includes('In attesa')||
+                     !card.text.includes('Non calcolabile')||
+                     card.links.length)
+                    throw new Error(name+' premature actual: '+JSON.stringify(card));
+                }else if(!card.text.includes('Actual − consenso')){
+                  throw new Error(name+' missing source comparison: '+JSON.stringify(card));
+                }
+                if(card.links.some(url=>!(event.currency==='USD'?
+                       /^https:\/\/www\.bls\.gov\//:
+                       /^https:\/\/www150\.statcan\.gc\.ca\//).test(url)))
+                  throw new Error(name+' unofficial issuer link: '+JSON.stringify(card));
+              }
+
               const officialReceipt=await page.evaluate(async()=>(
                 await (await fetch('live_data/sections/NEWS_PULSE_OPERATIONAL.json',{cache:'no-store'})).json()
               ).official_releases);
