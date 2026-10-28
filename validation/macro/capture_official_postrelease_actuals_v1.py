@@ -190,7 +190,12 @@ def validate_actual_log(rows,forecasts):
         prev=row["record_sha256"]
     return prev,seen
 
-def capture(forecasts,old,now,fetch=retrieve):
+def capture(forecasts,old,now,fetch=retrieve,observed_clock=None):
+    # Offline tests deliberately default to their explicit simulated clock.
+    # Live run() injects datetime.now so official page observation is stamped
+    # AFTER successful HTTP retrieval + metric parsing, never before fetch.
+    if observed_clock is None:
+        observed_clock=lambda: now
     previous,seen=validate_actual_log(old,forecasts)
     need(isinstance(now,datetime) and now.tzinfo is not None
          and now.utcoffset() is not None,"capture clock must be offset-aware")
@@ -215,13 +220,24 @@ def capture(forecasts,old,now,fetch=retrieve):
                 observed=parse_issuer_page(key,body)
             except (Pending,TimeoutError,OSError,UnicodeError):
                 continue
+            # The observation is the successful verified parse, NOT the
+            # beginning of this polling job or an issuer publication clock.
+            observed_at=observed_clock()
+            need(isinstance(observed_at,datetime)
+                 and observed_at.tzinfo is not None
+                 and observed_at.utcoffset() is not None,
+                 "official page observation clock must be offset-aware")
+            observed_at=observed_at.astimezone(timezone.utc)
+            need(observed_at>=now and
+                 scheduled<=observed_at<=scheduled+MAX_CAPTURE_LAG,
+                 "first verified source observation cannot precede polling or release")
             # Fail closed for invariant violations; only availability
             # and page-series mismatch may be treated as "still pending".
             record={
                 "schema":SCHEMA,"event_key":key,"currency":target["currency"],
                 "publisher":target["publisher"],"source_url":url,
                 "source_html_sha256":hashlib.sha256(body).hexdigest(),
-                "captured_at_utc":utc_text(now),
+                "captured_at_utc":utc_text(observed_at),
                 "official_scheduled_release_utc":utc_text(scheduled),
                 "first_page_observation_not_publisher_delivery_time":True,
                 "reference_period":target["period"],"unit":target["unit"],
@@ -255,7 +271,7 @@ def run(forecast_path=LEDGER,actual_path=OUT,now=None):
     if now is None:now=datetime.now(timezone.utc)
     prior=read_existing(forecast_path)
     old=read_existing(actual_path)
-    new,receipt=capture(prior,old,now)
+    new,receipt=capture(prior,old,now,observed_clock=lambda:datetime.now(timezone.utc))
     if len(new)>len(old):
         with actual_path.open("a",encoding="utf-8") as handle:
             for row in new[len(old):]:
