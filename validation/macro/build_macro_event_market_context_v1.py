@@ -247,6 +247,9 @@ def build_context(forecasts,anchors,actuals,rates,ois,fx,now):
           "secondary_consensus_percent":f["consensus_value_percent"],
           "forecast_quality":"SECONDARY_FROZEN_PRE_RELEASE_B",
           "official_actual_percent":actual["actual_percent"] if actual else None,
+          "official_actual_source_url":actual["source_url"] if actual else None,
+          "official_actual_captured_at_utc":actual["captured_at_utc"] if actual else None,
+          "official_actual_source_quality":"FIRST_RUNNER_OBSERVATION_NOT_ISSUER_FIRST_RELEASE_PIT" if actual else None,
           "actual_minus_frozen_consensus_pp":actual["actual_minus_frozen_consensus_pp"] if actual else None,
           "pre_event_reference":a and {
              "captured_at_utc":a["captured_at_utc"],
