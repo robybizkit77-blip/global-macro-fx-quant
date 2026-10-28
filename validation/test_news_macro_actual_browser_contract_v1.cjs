@@ -6,7 +6,8 @@
  * Proves that the live news app interprets (a) first-seen official actual,
  * (b) exact pre-release consensus, (c) a genuine numeric ZERO, (d) source
  * links, (e) noncausal dated 2Y/FX context, (f) 2-minute visible-view refresh,
- * (g) a partial first-issuer actual without marking both events as released.
+ * (g) a partial first-issuer actual without marking both events as released,
+ * (h) fail-closed source host and first-observation clock integrity.
  */
 const {chromium}=require('playwright');
 const fs=require('node:fs');
@@ -90,6 +91,14 @@ assert.equal(partial.macro_event_market_context.events[1].currency,'CAD');
 const malformed=structuredClone(after);
 malformed.macro_event_market_context.events.find(e=>e.currency==='CAD')
   .actual_minus_frozen_consensus_pp=7.1;
+const untrusted=structuredClone(after);
+const unsafeCad=untrusted.macro_event_market_context.events.find(e=>e.currency==='CAD');
+unsafeCad.official_actual_source_url='https://not-statcan.example.com/fake-gdp';
+unsafeCad.state='PENDING_OFFICIAL_ACTUAL_ISSUER_VERIFICATION';
+const badClock=structuredClone(after);
+const earlyCad=badClock.macro_event_market_context.events.find(e=>e.currency==='CAD');
+earlyCad.official_actual_captured_at_utc='2026-10-30T12:29:59Z';
+earlyCad.state='OFFICIAL_ACTUAL_PRESENT_PRE_EVENT_MARKET_ANCHOR_ABSENT';
 
 (async()=>{
   const browser=await chromium.launch({headless:true});
@@ -212,6 +221,7 @@ malformed.macro_event_market_context.events.find(e=>e.currency==='CAD')
       assert.match(bad.text,/In attesa/);
       assert.match(bad.text,/Non calcolabile/);
       assert.equal(bad.links,0);
+
       assert(requests>=4,'initial + 3 live refresh network reads required');
       assert.deepEqual(errors,[],'No JS runtime errors '+device);
       console.log('MACRO_NEWS_ACTUAL_BROWSER_PASS',device,{
@@ -220,6 +230,50 @@ malformed.macro_event_market_context.events.find(e=>e.currency==='CAD')
         requests,viewport:width
       });
       await page.close();
+
+      // Provenance adversaries run on independent fresh pages. Timer
+      // transitions are already proven above; these cases test the consumer's
+      // fail-closed gate, not consecutive artificial virtual-clock refreshes.
+      for(const [name,fixture] of [['UNTRUSTED_ISSUER',untrusted],
+                                  ['BAD_FIRST_SEEN_CLOCK',badClock]]){
+        const probe=await browser.newPage({viewport:{width,height}});
+        const probeErrors=[];
+        probe.on('pageerror',e=>probeErrors.push(String(e)));
+        await probe.route('**/live_data/sections/NEWS_PULSE_OPERATIONAL.json',
+          async route=>route.fulfill({status:200,contentType:'application/json',
+                                     body:JSON.stringify(fixture)}));
+        await probe.goto('http://127.0.0.1:8765/',{waitUntil:'networkidle'});
+        await probe.waitForFunction(
+          ()=>window.GMFQ_CALENDAR_NEWS_OPERATIONAL?.status==='ACTIVE',
+          null,{timeout:20000});
+        await probe.evaluate(()=>window.showView&&window.showView('news'));
+        await probe.waitForSelector(
+          '#news .opCard[data-kind="macro-evidence"][data-ccy="CAD"]',
+          {state:'visible'});
+        const evidence=await probe.evaluate(()=>{
+          const c=document.querySelector(
+            '#news .opCard[data-kind="macro-evidence"][data-ccy="CAD"]');
+          const usd=document.querySelector(
+            '#news .opCard[data-kind="macro-evidence"][data-ccy="USD"]');
+          return {
+            stage:c.dataset.stage,text:c.textContent||'',
+            links:c.querySelectorAll('a[href]').length,
+            w:c.scrollWidth,cw:c.clientWidth,
+            usdActual:usd?.textContent.includes('Actual − consenso')
+          };
+        });
+        assert.equal(evidence.stage,
+          fixture.macro_event_market_context.events.find(e=>e.currency==='CAD').state);
+        assert(evidence.usdActual,'Unrelated valid USD official actual remains visible');
+        assert.match(evidence.text,/In attesa/);
+        assert.match(evidence.text,/Non calcolabile/);
+        assert(!evidence.text.includes('Actual − consenso'));
+        assert.equal(evidence.links,0,name+' must not render CAD issuer actual link');
+        assert(evidence.w<=evidence.cw+2,name+' mobile overflow');
+        assert.deepEqual(probeErrors,[],name+' JS errors '+device);
+        console.log('MACRO_NEWS_PROVENANCE_FAIL_CLOSED_PASS',device,name);
+        await probe.close();
+      }
     }
   } finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});
