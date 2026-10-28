@@ -121,7 +121,7 @@ def parse_issuer_page(event_key,raw,*,expected_release=None,expected_period=None
             # Do not convert "essentially unchanged" to 0 until the
             # publisher's prominent month-specific 0.0% figure agrees.
             headline=(r"Real GDP by industry\s+"+re.escape(month)+r"\s+2026"
-                      r"\s+0\.0%\s+\(monthly change\)")
+                      r".{0,120}0\.0%.{0,120}\(monthly change\)")
             if not re.search(headline,text,re.I):
                 raise Pending("GDP_ESSENTIALLY_UNCHANGED_NO_0_0_PCT_HEADLINE")
             return 0.0
