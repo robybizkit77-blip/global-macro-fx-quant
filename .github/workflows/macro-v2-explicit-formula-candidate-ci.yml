@@ -6,6 +6,8 @@ on:
       - '.github/workflows/macro-v2-explicit-formula-candidate-ci.yml'
       - 'validation/macro/v2_domestic_candidate_explicit_formula_v1.py'
       - 'validation/macro/test_v2_domestic_candidate_explicit_formula_v1.py'
+      - 'validation/macro/v2_core_beta_evidence_desk_v1.py'
+      - 'validation/macro/test_v2_core_beta_evidence_desk_v1.py'
       - 'validation/macro/MACRO_V2_EXPLICIT_DOMESTIC_FORMULA_CANDIDATE_2026-10-27.md'
   workflow_dispatch:
 permissions:
@@ -22,7 +24,26 @@ jobs:
       - name: Test fixed formula, 8 country axes, sensitivity and no live writes
         run: |
           python -m unittest validation.macro.test_v2_domestic_candidate_explicit_formula_v1 -v
+          python -m unittest validation.macro.test_v2_core_beta_evidence_desk_v1 -v
           python -m validation.macro.v2_domestic_candidate_explicit_formula_v1 --as-of 2026-10-27 --out /tmp/gmfq-domestic-macro-candidate.json
+      - name: Build downloadable integrated beta evidence review, without new FX scoring
+        run: |
+          python -m validation.macro.v2_core_beta_evidence_desk_v1 --as-of 2026-10-28 --receipt /tmp/gmfq-core-beta-evidence-desk.json --html /tmp/gmfq-core-beta-evidence-desk.html
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('/tmp/gmfq-core-beta-evidence-desk.json').read_text())
+          h=Path('/tmp/gmfq-core-beta-evidence-desk.html').read_text()
+          assert x['schema']=='GMFQ_MACRO_V2_G8_28PAIR_BETA_EVIDENCE_DESK_V1'
+          assert x['summary']['country_count']==8 and x['summary']['legacy_pair_count']==28
+          assert x['summary']['official_policy_pricing']==4
+          assert x['summary']['indicative_policy_pricing']==2
+          assert x['summary']['context_only_non_policy_6m']==2
+          assert x['summary']['new_country_FX_scores']==0
+          assert not x['safe_to_republish_D'] and not x['forecast_or_entry_generated']
+          assert h.count('<article class="country">')==8
+          print('CORE_V2_INTEGRATED_BETA_RESEARCH_PREVIEW_PASS')
+          PY
       - name: Check exact forbidden publication diff
         run: |
           git diff --exit-code -- live_data payload site dashboard
@@ -30,6 +51,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: macro-v2-domestic-candidate-${{ github.run_id }}
-          path: /tmp/gmfq-domestic-macro-candidate.json
+          path: |
+            /tmp/gmfq-domestic-macro-candidate.json
+            /tmp/gmfq-core-beta-evidence-desk.json
+            /tmp/gmfq-core-beta-evidence-desk.html
           if-no-files-found: error
           retention-days: 30
