@@ -109,9 +109,15 @@ def build(candidate, legacy, pairs, banks, ois, rates, *, as_of=RESEARCH_DAY):
         ensure(str(rate.get("quality", "")).startswith("FULL_CURRENT_OFFICIAL")
                and finite(rate.get("2Y")) and finite(rate.get("10Y")),
                ccy + " only dated official observed government yields")
-        ensure(finite(curve.get("policy_rate"))
-               and abs(curve["policy_rate"] - cb.get("rate", -99999)) < 1e-8,
-               ccy + " policy rate and market bridge must agree")
+        policy_matched = (finite(curve.get("policy_rate"))
+                          and finite(cb.get("rate"))
+                          and abs(curve["policy_rate"] - cb["rate"]) < 1e-8)
+        # A dated official policy decision can advance before the next market
+        # close. Keep pre-decision quotes intact, with no fabricated delta
+        # against the NEW policy rate. Same-day discrepancies still fail.
+        predecision = not policy_matched and oy < cb_date
+        ensure(policy_matched or predecision,
+               ccy + " policy rate and market bridge disagree at same/newer quote date")
         six = curve.get("horizons", {}).get("6m", {})
         market = None
         market_class = None
@@ -123,7 +129,8 @@ def build(candidate, legacy, pairs, banks, ois, rates, *, as_of=RESEARCH_DAY):
                    and finite(six.get("policy_delta_bp")),
                    ccy + " claimed official 6M must be source-certified")
             market = six["rate"]
-            market_class = "OFFICIAL_POLICY_PRICING"
+            market_class = ("PRE_DECISION_OFFICIAL_QUOTE_NO_CURRENT_POLICY_DELTA"
+                            if predecision else "OFFICIAL_POLICY_PRICING")
         elif curve.get("operational_status") == "GREEN_ESTIMATED":
             ensure(curve.get("quality") == "ESTIMATED_INFORMATIONAL"
                    and curve.get("backtest_eligible_as_official") is False
@@ -131,7 +138,8 @@ def build(candidate, legacy, pairs, banks, ois, rates, *, as_of=RESEARCH_DAY):
                    and finite(six.get("policy_delta_bp")),
                    ccy + " B-grade 6M must remain indicative")
             market = six["rate"]
-            market_class = "ESTIMATED_POLICY_PRICING_NOT_OFFICIAL"
+            market_class = ("PRE_DECISION_ESTIMATED_QUOTE_NO_CURRENT_POLICY_DELTA"
+                            if predecision else "ESTIMATED_POLICY_PRICING_NOT_OFFICIAL")
         elif curve.get("operational_status") == "WITHHELD":
             ensure(curve.get("quality") == "ESTIMATED_INFORMATIONAL"
                    and curve.get("backtest_eligible_as_official") is False
@@ -182,6 +190,8 @@ def build(candidate, legacy, pairs, banks, ois, rates, *, as_of=RESEARCH_DAY):
             "cb_CAN_status": "NOT_CALIBRATED_FROM_ECONOMIC_LEVELS",
             "six_month_rate_pct_descriptive_only": market,
             "six_month_source_class": market_class,
+            "ois_prior_policy_rate_pct_if_pre_decision": curve["policy_rate"] if predecision else None,
+            "official_current_cb_rate_pct": cb["rate"],
             "six_month_policy_delta_bp": six["policy_delta_bp"] if market_class in (
                 "OFFICIAL_POLICY_PRICING",
                 "ESTIMATED_POLICY_PRICING_NOT_OFFICIAL") else None,
@@ -228,7 +238,12 @@ def build(candidate, legacy, pairs, banks, ois, rates, *, as_of=RESEARCH_DAY):
                 "ESTIMATED_POLICY_PRICING_NOT_OFFICIAL" for x in country.values()),
             "context_only_non_policy_6m": sum(x["six_month_source_class"] in (
                 "SECONDARY_NON_OIS_6M_CONTEXT_ONLY",
-                "BANK_BILL_BASIS_DIRECTIONAL_CONTEXT_ONLY") for x in country.values()),
+                "BANK_BILL_BASIS_DIRECTIONAL_CONTEXT_ONLY",
+                "PRE_DECISION_OFFICIAL_QUOTE_NO_CURRENT_POLICY_DELTA",
+                "PRE_DECISION_ESTIMATED_QUOTE_NO_CURRENT_POLICY_DELTA") for x in country.values()),
+            "pre_decision_6m_quotes": sum(x["six_month_source_class"] in (
+                "PRE_DECISION_OFFICIAL_QUOTE_NO_CURRENT_POLICY_DELTA",
+                "PRE_DECISION_ESTIMATED_QUOTE_NO_CURRENT_POLICY_DELTA") for x in country.values()),
             "historical_bond_yields": sum(x["bond_freshness"] != "OBSERVED_RECENT"
                                            for x in country.values()),
             "new_country_FX_scores": 0, "new_pair_theses": 0,
@@ -254,6 +269,8 @@ def render(out):
     h = html.escape
     labels = {
         "OFFICIAL_POLICY_PRICING": "6M ufficiale certificato",
+        "PRE_DECISION_OFFICIAL_QUOTE_NO_CURRENT_POLICY_DELTA": "6M ufficiale ma PRE decisione · no Δ tasso attuale",
+        "PRE_DECISION_ESTIMATED_QUOTE_NO_CURRENT_POLICY_DELTA": "6M stimato PRE decisione · no Δ tasso attuale",
         "ESTIMATED_POLICY_PRICING_NOT_OFFICIAL": "6M indicativo, non ufficiale",
         "SECONDARY_NON_OIS_6M_CONTEXT_ONLY": "6M secondario non OIS",
         "BANK_BILL_BASIS_DIRECTIONAL_CONTEXT_ONLY": "Bank bill: solo contesto direzionale",
