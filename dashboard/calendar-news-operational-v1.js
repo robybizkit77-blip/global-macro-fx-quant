@@ -225,6 +225,34 @@ function newsHtml(data){
 let cache=null;
 async function load(){if(cache)return cache;const [c,n]=await Promise.all([fetch('live_data/sections/CALENDAR_OPERATIONAL_VIEW.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('calendar '+r.status);return r.json()}),fetch('live_data/sections/NEWS_PULSE_OPERATIONAL.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('news '+r.status);return r.json()})]);cache={c,n};return cache;}
 async function render(){css();try{const {c,n}=await load();const cal=document.getElementById('calendar'),news=document.getElementById('news');if(cal&&!cal.querySelector('[data-gmfq-operational="calendar"]'))cal.innerHTML=calendarHtml(c);if(news&&!news.querySelector('[data-gmfq-operational="news"]'))news.innerHTML=newsHtml(n);window.GMFQ_CALENDAR_NEWS_OPERATIONAL={status:'ACTIVE',calendar:c.status,news:n.status,calendar_events:(c.events||[]).length,macro_events:(c.events||[]).filter(e=>e.event_type!=='CENTRAL_BANK_DECISION').length,consensus_available:c.coverage?.consensus_available_events||0,news_items:(n.items||[]).length,content_as_of:n.content_as_of};}catch(err){console.error('calendar-news-operational',err);window.GMFQ_CALENDAR_NEWS_OPERATIONAL={status:'ERROR',error:String(err)};}}
+// Keep a News Pulse tab opened before a release useful after publication,
+// without reloading or mutating unrelated model/currency sections. Poll only
+// when the News section is actually visible; never fake a fresh market quote.
+let refreshInFlight=false;
+async function refreshMacroEventsVisible(){
+ const news=document.getElementById('news');
+ if(refreshInFlight||!news||!news.querySelector('[data-gmfq-operational="news"]')||
+    news.getClientRects().length===0)return;
+ refreshInFlight=true;
+ try{
+  const r=await fetch('live_data/sections/NEWS_PULSE_OPERATIONAL.json',{cache:'no-store'});
+  if(!r.ok)return;
+  const latest=await r.json();
+  if(latest?.schema!=='GMFQ_NEWS_PULSE_OPERATIONAL_V1'||!cache)return;
+  const prior=JSON.stringify(cache.n?.macro_event_market_context||null);
+  const current=JSON.stringify(latest.macro_event_market_context||null);
+  if(prior===current)return;
+  cache.n=latest;
+  news.innerHTML=newsHtml(latest);
+  if(window.GMFQ_CALENDAR_NEWS_OPERATIONAL?.status==='ACTIVE'){
+   window.GMFQ_CALENDAR_NEWS_OPERATIONAL.content_as_of=latest.content_as_of;
+   window.GMFQ_CALENDAR_NEWS_OPERATIONAL.macro_event_states=
+       (latest.macro_event_market_context?.events||[]).map(x=>x.state);
+  }
+ }catch(e){console.warn('[GMFQ macro event news refresh]',e);}
+ finally{refreshInFlight=false;}
+}
+setInterval(refreshMacroEventsVisible,120000);
 const obs=new MutationObserver(()=>{const c=document.getElementById('calendar'),n=document.getElementById('news');if((c&&!c.querySelector('[data-gmfq-operational="calendar"]'))||(n&&!n.querySelector('[data-gmfq-operational="news"]')))render();});
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{render();obs.observe(document.body,{childList:true,subtree:true});},{once:true});else{render();obs.observe(document.body,{childList:true,subtree:true});}
 })();
