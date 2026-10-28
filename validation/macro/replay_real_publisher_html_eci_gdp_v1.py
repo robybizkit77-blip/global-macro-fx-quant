@@ -12,7 +12,7 @@ import hashlib
 import json
 
 from validation.macro.capture_official_postrelease_actuals_v1 import (
-    ECI,GDP,parse_issuer_page,retrieve,need
+    ECI,GDP,parse_issuer_page,retrieve,need,Pending,PlainText
 )
 
 SAMPLES=[
@@ -42,9 +42,20 @@ def audit(get=retrieve):
         body,final=get(sample["source_url"],sample["host"])
         need(final==sample["source_url"],
              "published source redirected from declared historical location")
-        number=parse_issuer_page(sample["key"],body,
-                expected_release=sample["release"],
-                expected_period=sample["period"])
+        try:
+            number=parse_issuer_page(sample["key"],body,
+                    expected_release=sample["release"],
+                    expected_period=sample["period"])
+        except Pending:
+            # First-party real page only. Print short debugging fragments
+            # to distinguish missing genuine headline from HTML spacing.
+            h=PlainText();h.feed(body.decode("utf-8",errors="replace"))
+            content=h.value()
+            for key in ("Real GDP by industry","was essentially unchanged in","Released:"):
+                i=content.find(key)
+                if i>=0:print("ISSUER_PARSER_DIAGNOSTIC",sample["host"],key,
+                              repr(content[max(0,i-80):i+260]),flush=True)
+            raise
         need(abs(number-sample["published_value"])<1e-9,
              sample["scope"]+": parser does not match original publisher actual")
         output.append({
