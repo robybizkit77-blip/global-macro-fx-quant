@@ -108,7 +108,7 @@ items={
 "No new trade entry or invalidation trigger": "Non sono disponibili trigger numerici certificati" in s and "Nessun livello, stop, score o segnale viene creato" in s,
 "Model decision bridge shown after observed market reaction": "pairThesisReactionBridge(code,setup.pairs[code],setup.price_asof,reaction,macroDay)" in s and "pairMarketReactionAudit(code,rates,fx)" in s,
 "Qualitative confirm and weaken checks rely on dated model only": "function pairEvidenceChecklist(code,pair,modelDay,reactionHtml,macroDay)" in s and "frame.missing" in s and "src.structuralFav" in s,
-"Setup blockers reflect native timing, extension, positioning, and liquidity": "src.extension?.state==='ADVANCED'" in s and "src.timing?.text" in s and "src.cot?.state" in s and "src.liquidity?.state" in s,
+"Setup blockers reflect native timing, extension, positioning, and liquidity": "['ADVANCED','EXTENDED'].includes(src.extension?.state)" in s and "src.timing?.text" in s and "src.cot?.state" in s and "src.liquidity?.state" in s,
 "Confirmation conditions cannot automatically generate technical triggers": "Nessun trigger numerico o livello tecnico viene derivato automaticamente" in s and "Domande di ricerca, non condizioni operative già soddisfatte" in s,
 "Evidence checklist belongs inside existing editorial decision frame": "pairEvidenceChecklist(code,pair,modelDay,reactionHtml,macroDay)+" in s,
 "Explicit Macro baseline provenance distinct from Price": "macro_baseline_asof" in s and "Baseline Macro/Tassi" in s and "NON CORRENTE: tesi da rivalidare" in s,
