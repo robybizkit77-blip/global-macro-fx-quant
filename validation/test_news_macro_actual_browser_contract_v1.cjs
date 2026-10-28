@@ -6,7 +6,8 @@
  * Proves that the live news app interprets (a) first-seen official actual,
  * (b) exact pre-release consensus, (c) a genuine numeric ZERO, (d) source
  * links, (e) noncausal dated 2Y/FX context, (f) 2-minute visible-view refresh,
- * (g) a partial first-issuer actual without marking both events as released.
+ * (g) a partial first-issuer actual without marking both events as released,
+ * (h) fail-closed source host and first-observation clock integrity.
  */
 const {chromium}=require('playwright');
 const fs=require('node:fs');
@@ -90,6 +91,14 @@ assert.equal(partial.macro_event_market_context.events[1].currency,'CAD');
 const malformed=structuredClone(after);
 malformed.macro_event_market_context.events.find(e=>e.currency==='CAD')
   .actual_minus_frozen_consensus_pp=7.1;
+const untrusted=structuredClone(after);
+const unsafeCad=untrusted.macro_event_market_context.events.find(e=>e.currency==='CAD');
+unsafeCad.official_actual_source_url='https://not-statcan.example.com/fake-gdp';
+unsafeCad.state='PENDING_OFFICIAL_ACTUAL_ISSUER_VERIFICATION';
+const badClock=structuredClone(after);
+const earlyCad=badClock.macro_event_market_context.events.find(e=>e.currency==='CAD');
+earlyCad.official_actual_captured_at_utc='2026-10-30T12:29:59Z';
+earlyCad.state='OFFICIAL_ACTUAL_PRESENT_PRE_EVENT_MARKET_ANCHOR_ABSENT';
 
 (async()=>{
   const browser=await chromium.launch({headless:true});
@@ -105,7 +114,8 @@ malformed.macro_event_market_context.events.find(e=>e.currency==='CAD')
       await page.route('**/live_data/sections/NEWS_PULSE_OPERATIONAL.json',async route=>{
         ++requests;
         const body=phase==='BEFORE'?before:
-          phase==='PARTIAL'?partial:phase==='AFTER'?after:malformed;
+          phase==='PARTIAL'?partial:phase==='AFTER'?after:
+          phase==='UNTRUSTED'?untrusted:phase==='BAD_CLOCK'?badClock:malformed;
         await route.fulfill({status:200,contentType:'application/json',
                             body:JSON.stringify(body)});
       });
@@ -212,11 +222,45 @@ malformed.macro_event_market_context.events.find(e=>e.currency==='CAD')
       assert.match(bad.text,/In attesa/);
       assert.match(bad.text,/Non calcolabile/);
       assert.equal(bad.links,0);
-      assert(requests>=4,'initial + 3 live refresh network reads required');
+
+      // A numerically consistent actual is STILL NOT verified if the URL is
+      // outside the publisher allowlist. The UI must hide its actual/source.
+      phase='UNTRUSTED';
+      await page.clock.fastForward(120500);
+      await page.waitForFunction(()=>document.querySelector(
+        '#news .opCard[data-kind="macro-evidence"][data-ccy="CAD"]'
+      )?.dataset.stage==='PENDING_OFFICIAL_ACTUAL_ISSUER_VERIFICATION',
+      null,{timeout:20000});
+      const unsafe=await page.evaluate(()=>{
+        const c=document.querySelector('#news .opCard[data-kind="macro-evidence"][data-ccy="CAD"]');
+        return {text:c.textContent,links:c.querySelectorAll('a[href]').length};
+      });
+      assert.match(unsafe.text,/In attesa/);
+      assert.match(unsafe.text,/Non calcolabile/);
+      assert(!unsafe.text.includes('Actual − consenso'));
+      assert.equal(unsafe.links,0,'Do not render nonissuer actual');
+
+      // Likewise, an issuer URL does not rescue a first-seen clock that is
+      // earlier than the confirmed release timestamp.
+      phase='BAD_CLOCK';
+      await page.clock.fastForward(120500);
+      await page.waitForFunction(()=>document.querySelector(
+        '#news .opCard[data-kind="macro-evidence"][data-ccy="CAD"]'
+      )?.dataset.stage==='OFFICIAL_ACTUAL_PRESENT_PRE_EVENT_MARKET_ANCHOR_ABSENT',
+      null,{timeout:20000});
+      const early=await page.evaluate(()=>{
+        const c=document.querySelector('#news .opCard[data-kind="macro-evidence"][data-ccy="CAD"]');
+        return {text:c.textContent,links:c.querySelectorAll('a[href]').length};
+      });
+      assert.match(early.text,/In attesa/);
+      assert.match(early.text,/Non calcolabile/);
+      assert.equal(early.links,0,'Pre-release captured_at cannot certify an actual');
+      assert(requests>=6,'initial + 5 live refresh network reads required');
       assert.deepEqual(errors,[],'No JS runtime errors '+device);
       console.log('MACRO_NEWS_ACTUAL_BROWSER_PASS',device,{
         forecast_only_before:true,partial_actual_first:true,actual_zero_after:true,
         source_links_after:true,malformed_suppressed:true,
+        untrusted_issuer_suppressed:true,pre_release_clock_suppressed:true,
         requests,viewport:width
       });
       await page.close();
