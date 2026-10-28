@@ -56,7 +56,7 @@ class OneDateReleasePollTests(unittest.TestCase):
             self.assertTrue(r["recurrent_schedule_after_2026_oct30_has_no_active_polls"])
 
     def test_issuer_first_actuals_mark_complete_and_preserve_first(self):
-        bls=b"""<html>embargoed until 8:30 a.m. (ET) Friday, October 30, 2026
+        bls=b"""<html>Transmission of material in this release is embargoed until 8:30 a.m. (ET) Friday, October 30, 2026
           EMPLOYMENT COST INDEX - SEPTEMBER 2026
           Compensation costs for civilian workers increased 0.7 percent,
           seasonally adjusted, for the 3-month period ending in September 2026.</html>"""
