@@ -1,22 +1,32 @@
-name: One Time Orchestrator Recovery After CB Gate Fix
+# One-time recovery, triggered ONLY by this exact single commit message.
+# Reuse the canonical morning phase; no direct mutation of market data or scores.
+name: One Time Orchestrator Morning Recovery 2026-10-29
 on:
   push:
     branches: [main]
     paths:
       - '.github/workflows/one-time-orchestrator-morning-recovery-after-cb-20261019.yml'
+
 permissions:
   contents: read
   actions: write
+
+concurrency:
+  group: one-time-orchestrator-recovery-20261029
+  cancel-in-progress: false
+
 jobs:
   dispatch:
+    if: github.event.head_commit.message == 'One-time recovery 2026-10-29: dispatch existing orchestrator morning phase'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - name: Dispatch existing orchestrator morning phase once
+      - name: Dispatch existing morning catch-up once
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
           gh workflow run daily-data-orchestrator-v2.yml --ref main -f phase=morning
-          echo ORCHESTRATOR_POST_CB_RECOVERY_DISPATCHED
+          echo 'ONE_TIME_MORNING_RECOVERY_DISPATCH_SUBMITTED_20261029'
+          echo "Dispatched existing morning phase against main at $(date -u +'%FT%TZ')" >> "$GITHUB_STEP_SUMMARY"
