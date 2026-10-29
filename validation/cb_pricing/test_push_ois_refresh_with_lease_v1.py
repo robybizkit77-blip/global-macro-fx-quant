@@ -69,6 +69,20 @@ def test_unrelated_change():
         assert git("merge-base", "--is-ancestor", base, "HEAD", cwd=writer) == ""
 
 
+def test_unrelated_change_without_repository_identity():
+    """A hosted runner can replay a local OIS commit without global Git config."""
+    with tempfile.TemporaryDirectory() as td:
+        origin, writer, other = fixture(Path(td))
+        git("config", "--unset", "user.name", cwd=writer)
+        git("config", "--unset", "user.email", cwd=writer)
+        base = git("rev-parse", "HEAD", cwd=writer)
+        write(writer, ESTIMATED_PATHS[0], "identity-free validated observation\\n")
+        other_commit(other, "live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json", "concurrent non-OIS change\\n")
+        result = persist(base, "estimated", cwd=writer)
+        assert result["status"] == "PUSHED" and result["unrelated_main_advance"] is True, result
+        assert git("--git-dir", str(origin), "show", "main:" + ESTIMATED_PATHS[0]) == "identity-free validated observation"
+
+
 def test_refuse_protected(mode: str, upstream_path: str):
     with tempfile.TemporaryDirectory() as td:
         origin, writer, other = fixture(Path(td))
@@ -140,6 +154,7 @@ def test_noop_scope():
 
 if __name__ == "__main__":
     test_unrelated_change()
+    test_unrelated_change_without_repository_identity()
     test_refuse_protected("estimated", "live_data/sections/OIS_DATA.json")
     test_refuse_protected("g8", ESTIMATED_PATHS[0])
     test_refuse_protected("g8", "validation/cb_pricing/ois_g8_history_snapshot_v1.py")
