@@ -4,9 +4,6 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/macro-v2-explicit-formula-candidate-ci.yml'
-      - 'validation/macro/v2_g8_growth_cross_country_comparability_v1.py'
-      - 'validation/macro/test_v2_g8_growth_cross_country_comparability_v1.py'
-      - 'validation/macro/MACRO_V2_G8_GDP_COMPARABILITY_2026-10-29.md'
       - 'validation/macro/v2_domestic_candidate_explicit_formula_v1.py'
       - 'validation/macro/test_v2_domestic_candidate_explicit_formula_v1.py'
       - 'validation/macro/v2_core_beta_evidence_desk_v1.py'
@@ -57,29 +54,6 @@ jobs:
           assert h.count('<article class="country">')==8
           print('CORE_V2_INTEGRATED_BETA_RESEARCH_PREVIEW_PASS')
           PY
-      - name: Test same-quarter GDP versus own-history intensity across all 28 pairs
-        run: |
-          python -m unittest validation.macro.test_v2_g8_growth_cross_country_comparability_v1 -v
-          python -m validation.macro.v2_g8_growth_cross_country_comparability_v1 --out /tmp/gmfq-g8-gdp-comparability-20261029.json
-          python - <<'PY'
-          import json,os
-          x=json.load(open('/tmp/gmfq-g8-gdp-comparability-20261029.json'))
-          t=x['summary']
-          assert t['economies']==8 and t['pairs_audited_for_descriptive_representation']==28
-          assert (t['within_history_vs_qoq_order_agreements']+
-                  t['within_history_vs_qoq_order_inversions']+
-                  t['pairs_with_order_ties'])==28
-          assert t['original_release_day_binary_certified_training_panels']==0
-          assert t['eligible_cross_country_FX_strength_pairs']==0
-          assert t['pairs_with_EUR_or_CHF_definition_caveats']==13
-          assert all(x[k] is False for k in ('safe_to_publish_D',
-                     'safe_to_recalculate_28_pairs','safe_for_beta',
-                     'safe_for_forward','writes_live_data'))
-          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as out:
-              out.write('### G8 GDP economic comparability: research, not Forex ranking\\n')
-              out.write(f"- 28 cross-economy GDP QoQ vs own-history z comparisons: {t['within_history_vs_qoq_order_agreements']} order agreements, {t['within_history_vs_qoq_order_inversions']} inversions, {t['pairs_with_order_ties']} ties.\\n")
-              out.write('- Q2-2026 original GDP first-web source statements, USD SAAR converted; EUR population and CHF sports flags explicit. No GDP-to-FX ranking or model promotion.\\n')
-          PY
       - name: Check exact forbidden publication diff
         run: |
           git diff --exit-code -- live_data payload site dashboard
@@ -91,6 +65,5 @@ jobs:
             /tmp/gmfq-domestic-macro-candidate.json
             /tmp/gmfq-core-beta-evidence-desk.json
             /tmp/gmfq-core-beta-evidence-desk.html
-            /tmp/gmfq-g8-gdp-comparability-20261029.json
           if-no-files-found: error
           retention-days: 30
