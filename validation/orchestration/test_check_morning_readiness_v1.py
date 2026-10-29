@@ -7,6 +7,38 @@ from check_morning_readiness_v1 import read_feeds, inspect, prior_weekday, rome_
 
 ROME = ZoneInfo("Europe/Rome")
 data = read_feeds()
+# Freeze the complete 16-observation macro grid, not just ECB/News/Rates.
+# The historic 23-Oct-2026 test cannot consume post-23-Oct releases
+# (notably the AUD 2026-09 CPI subsequently added to live data).
+# These are explicitly synthetic, finite integrity fixtures, NOT published
+# macro levels or release timestamps; the real feed is tested separately.
+MACRO_FIXTURE_PERIODS = {
+    "USD": ("2026-09", "2026-09-01"),
+    "EUR": ("2026-09", "2026-08"),
+    "GBP": ("2026-09-01", "2026-08-01"),
+    "JPY": ("2026-09", "2026-08"),
+    "CHF": ("2026-09", "2026-09-01"),
+    "CAD": ("2026-09-01", "2026-09-01"),
+    "AUD": ("2026-06", "2026-09-01"),
+    "NZD": ("2026-09-01", "2026-06"),
+}
+assert set(MACRO_FIXTURE_PERIODS) == set(data["MACRO_THERMOMETER_DATA.json"]["currencies"])
+for ccy, (inflation_period, labour_period) in MACRO_FIXTURE_PERIODS.items():
+    for pillar, period, value in (
+        ("inflation", inflation_period, 2.5),
+        ("labour", labour_period, 4.5),
+    ):
+        row = data["MACRO_THERMOMETER_DATA.json"]["currencies"][ccy][pillar]
+        row.update(
+            as_of=period,
+            latest_value=value,
+            history=[value - 0.1, value],
+            source=("QA_SYNTHETIC_Figure.NZ mirror" if ccy == "NZD" and pillar == "labour"
+                    else "QA_SYNTHETIC_MACRO_REFERENCE_PERIOD"),
+        )
+# The production feed is NOT overwritten; the synthetic as-of fixture is
+# modified only in memory for the deterministic regression test.
+
 # A fixed validated as-of fixture: future production refreshes must not
 # make these deterministic gate tests depend on today's latest close.
 data["ECB_G8_PRICE_HISTORY.json"]["status"] = "CURRENT_OFFICIAL_HISTORY"
@@ -79,6 +111,20 @@ assert len(macro["rows"]) == 16
 assert not macro["release_timestamps_verified"]
 assert not macro["full_first_release_pit_certified"]
 assert not macro["scores_recomputed"]
+# Separate live-data schema sanity test: newer official observation periods
+# must be accepted under the actual evaluation date without rewriting the
+# frozen 23-Oct scenario. This is independent of the synthetic levels above.
+live_thermometer = read_feeds()["MACRO_THERMOMETER_DATA.json"]
+live_probe = copy.deepcopy(data)
+live_probe["MACRO_THERMOMETER_DATA.json"] = live_thermometer
+live_now = dt.datetime.now(dt.timezone.utc)
+live_evidence = inspect(live_probe, live_now)["evidence"]["MACRO_OBSERVATIONS_G8"]
+assert live_evidence["observed"] == 16 and live_evidence["invalid"] == [], live_evidence
+assert live_evidence["rows"]["AUD.inflation"]["reference_period"] == (
+    live_thermometer["currencies"]["AUD"]["inflation"]["as_of"]
+)
+assert live_evidence["scores_recomputed"] is False
+
 assert macro["rows"]["JPY.inflation"]["reference_period"] == "2026-09"
 assert macro["rows"]["AUD.inflation"]["reference_period"] == "2026-06"
 assert macro["rows"]["NZD.labour"]["reference_period"] == "2026-06"
