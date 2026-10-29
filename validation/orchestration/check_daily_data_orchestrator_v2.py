@@ -60,9 +60,9 @@ def main() -> None:
     assert "cb-pricing-persistent-daily-v1.yml" not in c["phases"]["premorning"]
     cb = (WORKFLOWS_DIR / c["separate_cadences"]["CB_PRICING_MORNING"]).read_text()
     assert "schedule:" in cb and "workflow_dispatch:" in cb
-    # Exact UTC pairs support early independent 06:00/06:30/07:00 Rome slots.
-    assert "0 4 * * 1-5" in cb and "0 5 * * 1-5" in cb
-    assert "30 5 * * 1-5" in cb and "0 6 * * 1-5" in cb
+    # Exact UTC pairs support independent 06:07/06:37/07:07 Rome retries.
+    assert "7 4 * * 1-5" in cb and "7 5 * * 1-5" in cb
+    assert "37 5 * * 1-5" in cb and "7 6 * * 1-5" in cb
     assert "python3 validation/cb_pricing/cb_pricing_schedule_gate_v1.py" in cb
 
     expected_suffix = [
