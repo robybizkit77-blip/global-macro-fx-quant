@@ -68,4 +68,14 @@ assert.match(z.text,/non OIS/);
 // Malformed source data fail closed.
 assert.equal(audit(fed,null,today).quoted_levels_visible,false);
 assert.equal(audit({last_date:'invalid'},source(),today).pre_decision,false);
+// Official CME source must be opened by the user, never harvested into v10.
+const cbStart=s.indexOf('async function mountCentralBankFirstReading(');
+const cbEnd=s.indexOf('function cotQuantitativeAudit(',cbStart);
+const cb=s.slice(cbStart,cbEnd);
+assert(cbStart>0&&cbEnd>cbStart);
+assert.match(cb,/https:\/\/www\.cmegroup\.com\/markets\/interest-rates\/cme-fedwatch-tool/);
+assert.match(cb,/fedWatch\.target='_blank'/);
+assert.match(cb,/fedWatch\.rel='noopener noreferrer'/);
+assert.match(cb,/fedNote\.appendChild\(fedWatch\)/);
+assert.doesNotMatch(cb,/fetch\([^)]*cmegroup/i);
 console.log('FED_PRE_FOMC_PRICING_FRESHNESS_DISCLOSURE_FAIL_CLOSED_PASS');
