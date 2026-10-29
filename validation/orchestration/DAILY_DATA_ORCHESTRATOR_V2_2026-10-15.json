@@ -24,6 +24,7 @@
     "premorning": [
       "calendar-news-operational-refresh-v1.yml",
       "rates-persistent-daily-v1.yml",
+      "vix-persistent-apply-v1.yml",
       "final-e2e-certification-gate-v3.yml",
       "publish-dashboard-pages-v1.yml"
     ],
@@ -80,6 +81,7 @@
     "workflow_concurrency_pending_queue": "max",
     "workflow_concurrency_cancel_in_progress": false,
     "prebrief_avoids_top_of_hour_load": true,
-    "prebrief_dst_gate_tested": true
+    "prebrief_dst_gate_tested": true,
+    "premorning_vix_selective_retry": true
   }
 }
