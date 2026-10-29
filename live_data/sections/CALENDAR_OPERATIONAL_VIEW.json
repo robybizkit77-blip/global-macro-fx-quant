@@ -1,57 +1,14 @@
 {
   "coverage": {
-    "cb_schedule_available": 8,
+    "cb_schedule_available": 7,
     "consensus_available_events": 2,
     "g8_total": 8,
-    "macro_ccy_coverage": 8,
+    "macro_ccy_coverage": 7,
     "previous_only_events": 0,
-    "upcoming_macro_events": 14,
-    "upcoming_total_events": 22
+    "upcoming_macro_events": 13,
+    "upcoming_total_events": 20
   },
   "events": [
-    {
-      "bank": "Federal Reserve",
-      "ccy": "USD",
-      "consensus_status": "NOT_APPLICABLE",
-      "current_rate": 3.875,
-      "date": "2026-10-28",
-      "event_type": "CENTRAL_BANK_DECISION",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_SCHEDULE_FROM_CERTIFIED_CB_LAYER",
-      "source_layer": "NATIVE_CB_DATA",
-      "stance": "HAWKISH · restrittiva",
-      "status": "UPCOMING",
-      "title": "Fed · decisione di politica monetaria"
-    },
-    {
-      "bank": "Bank of Canada",
-      "ccy": "CAD",
-      "consensus_status": "NOT_APPLICABLE",
-      "current_rate": 2.25,
-      "date": "2026-10-28",
-      "event_type": "CENTRAL_BANK_DECISION",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_SCHEDULE_FROM_CERTIFIED_CB_LAYER",
-      "source_layer": "NATIVE_CB_DATA",
-      "stance": "INVARIATA · rischio inflazione",
-      "status": "UPCOMING",
-      "title": "BoC · decisione di politica monetaria"
-    },
-    {
-      "ccy": "AUD",
-      "consensus_status": "NOT_PRESENT",
-      "date": "2026-10-28",
-      "event_type": "INFLATION",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_CALENDAR",
-      "reference_period": "September 2026",
-      "source_family": "ABS",
-      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
-      "status": "UPCOMING",
-      "time_local": "11:30",
-      "timezone": "Australia/Sydney",
-      "title": "Consumer Price Index, Australia"
-    },
     {
       "bank": "ECB",
       "ccy": "EUR",
@@ -303,6 +260,20 @@
       "title": "Swiss GDP flash"
     },
     {
+      "bank": "Bank of Canada",
+      "ccy": "CAD",
+      "consensus_status": "NOT_APPLICABLE",
+      "current_rate": 2.5,
+      "date": "2026-12-09",
+      "event_type": "CENTRAL_BANK_DECISION",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_SCHEDULE_FROM_CERTIFIED_CB_LAYER",
+      "source_layer": "NATIVE_CB_DATA",
+      "stance": "HAWKISH · rialzo prudente",
+      "status": "UPCOMING",
+      "title": "BoC · decisione di politica monetaria"
+    },
+    {
       "bank": "Reserve Bank of New Zealand",
       "ccy": "NZD",
       "consensus_status": "NOT_APPLICABLE",
@@ -346,8 +317,8 @@
       "title": "Gross domestic product"
     }
   ],
-  "generated_at_utc": "2026-10-28T14:46:48.505846Z",
-  "last_checked_at_utc": "2026-10-28T14:46:48.505846Z",
+  "generated_at_utc": "2026-10-29T07:57:52.541828Z",
+  "last_checked_at_utc": "2026-10-29T07:57:52.541828Z",
   "schema": "GMFQ_CALENDAR_OPERATIONAL_VIEW_V3",
   "scope": {
     "central_bank_schedule": "ACTIVE_OFFICIAL",
@@ -357,7 +328,6 @@
     "consensus_provider": "FOREX_FACTORY_FAIR_ECONOMY_WEEKLY",
     "core_score_impact": 0,
     "macro_release_currencies": [
-      "AUD",
       "CAD",
       "CHF",
       "EUR",
