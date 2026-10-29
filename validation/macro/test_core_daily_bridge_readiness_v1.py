@@ -2,7 +2,7 @@
 import copy
 import json
 import unittest
-from datetime import datetime
+from datetime import date, datetime, timedelta, time
 from zoneinfo import ZoneInfo
 from unittest.mock import patch
 from pathlib import Path
@@ -22,7 +22,8 @@ class CoreBridgeReadinessTests(unittest.TestCase):
         cls.series=load("MACRO_SERIES")
         cls.pairs=load("PAIR_SETUP_OPERATIONAL_VIEW")
 
-    def check(self,core=None,heat=None,series=None,pairs=None,when="2026-10-27"):
+    def check(self,core=None,heat=None,series=None,pairs=None,when=None):
+        when=when or max("2026-10-29", self.pairs["price_asof"])
         return audit(core if core is not None else self.core,
                      heat if heat is not None else self.heat,
                      series if series is not None else self.series,
@@ -32,8 +33,10 @@ class CoreBridgeReadinessTests(unittest.TestCase):
         r=self.check()
         self.assertEqual(r["status"],"BLOCKED_UNCERTIFIED_CORE_RECALIBRATION")
         self.assertEqual(r["core_as_of"],"2026-09-25")
-        self.assertEqual(r["core_age_calendar_days"],32)
-        self.assertEqual(r["pair_price_as_of"],"2026-10-26")
+        self.assertEqual(r["core_age_calendar_days"],
+                         (date.fromisoformat(max("2026-10-29", self.pairs["price_asof"]))
+                          -date(2026,9,25)).days)
+        self.assertEqual(r["pair_price_as_of"],self.pairs["price_asof"])
         self.assertEqual(r["pair_macro_baseline_as_of"],"2026-09-25")
         self.assertTrue(r["pair_macro_baseline_matches_core"])
         self.assertFalse(r["core_matches_pair_price_day"])
@@ -54,9 +57,10 @@ class CoreBridgeReadinessTests(unittest.TestCase):
                     "historical_gdp_research_is_eligible_for_live_model",
                     "core_growth_dimension_rebuilt_by_daily_macro_pipeline"):
             self.assertIs(r[key],False)
-        fake_core=copy.deepcopy(self.core);fake_core["asOf"]="2026-10-27"
+        fake_core=copy.deepcopy(self.core)
+        fake_core["asOf"]=max("2026-10-29", self.pairs["price_asof"])
         fake_pair=copy.deepcopy(self.pairs)
-        fake_pair["macro_baseline_asof"]="2026-10-27"
+        fake_pair["macro_baseline_asof"]=fake_core["asOf"]
         q=self.check(core=fake_core,pairs=fake_pair)
         self.assertTrue(q["core_same_day_as_check"])
         self.assertFalse(q["eligible_to_promote_new_macro_scores"])
@@ -81,13 +85,14 @@ class CoreBridgeReadinessTests(unittest.TestCase):
 
     def test_rome_local_date_drives_automatic_daily_audit(self):
         # UTC is still the previous day at 00:10 in Rome: no UTC date drift.
-        rome_midnight=datetime(2026, 10, 30, 0, 10,
-                               tzinfo=ZoneInfo("Europe/Rome"))
+        day=date.fromisoformat(max("2026-10-29", self.pairs["price_asof"])) + timedelta(days=1)
+        rome_midnight=datetime.combine(day, time(0, 10), tzinfo=ZoneInfo("Europe/Rome"))
         with patch("validation.macro.check_core_daily_bridge_readiness_v1.datetime") as clock:
             clock.now.return_value=rome_midnight
             receipt=run()
-        self.assertEqual(receipt["checked_as_of"], "2026-10-30")
-        self.assertEqual(receipt["core_age_calendar_days"], 35)
+        self.assertEqual(receipt["checked_as_of"], day.isoformat())
+        self.assertEqual(receipt["core_age_calendar_days"],
+                         (day-date(2026, 9, 25)).days)
         self.assertFalse(receipt["eligible_to_promote_new_macro_scores"])
 
     def test_changed_macro_baseline_is_not_silently_reconciled(self):
@@ -98,7 +103,10 @@ class CoreBridgeReadinessTests(unittest.TestCase):
         self.assertFalse(r["eligible_to_republish_28_pair_thesis"])
 
     def test_reject_future_publication_observations_and_corrupted_inputs(self):
-        core=copy.deepcopy(self.core);core["asOf"]="2026-10-28"
+        core=copy.deepcopy(self.core)
+        future=(date.fromisoformat(max("2026-10-29", self.pairs["price_asof"]))
+                +timedelta(days=1)).isoformat()
+        core["asOf"]=future
         with self.assertRaises(ValueError):self.check(core=core)
         h=copy.deepcopy(self.heat)
         h["currencies"]["NZD"]["inflation"]["as_of"]="2026-11"
@@ -107,7 +115,7 @@ class CoreBridgeReadinessTests(unittest.TestCase):
         with self.assertRaises(ValueError):self.check(heat=h)
         p=copy.deepcopy(self.pairs);p["price_audit"]["status"]="FAIL"
         with self.assertRaises(ValueError):self.check(pairs=p)
-        p=copy.deepcopy(self.pairs);p["price_asof"]="2026-10-28"
+        p=copy.deepcopy(self.pairs);p["price_asof"]=future
         with self.assertRaises(ValueError):self.check(pairs=p)
         s=copy.deepcopy(self.series);s.pop("EUR")
         with self.assertRaises(ValueError):self.check(series=s)
@@ -124,7 +132,7 @@ class CoreBridgeReadinessTests(unittest.TestCase):
     def test_read_only_run_and_source_refresh_separation(self):
         files=("D","MACRO_THERMOMETER_DATA","MACRO_SERIES","PAIR_SETUP_OPERATIONAL_VIEW")
         before={k:(ROOTS/(k+".json")).read_bytes() for k in files}
-        r=run(as_of="2026-10-27")
+        r=run(as_of=max("2026-10-29", self.pairs["price_asof"]))
         after={k:(ROOTS/(k+".json")).read_bytes() for k in files}
         self.assertEqual(before,after)
         self.assertFalse(r["daily_core_scoring_and_rank_rebuild_certified"])
