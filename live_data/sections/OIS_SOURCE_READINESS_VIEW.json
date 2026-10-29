@@ -1,6 +1,6 @@
 {
   "as_of": "2026-10-29",
-  "blocked_currency_count": 4,
+  "blocked_currency_count": 3,
   "currencies": {
     "CHF": {
       "activation_requirement": "Validare ICE SA3 oppure Eurex FSR3, senza unire exchange o date differenti.",
@@ -77,7 +77,7 @@
         "instrument": "ASX NZ 90-Day Bank Bill futures",
         "kind": "ASX_NZD_BANK_BILL_DIRECTION_NOT_OIS",
         "policy_delta_allowed": false,
-        "proxy_as_of": "2026-10-28",
+        "proxy_as_of": "2026-10-29",
         "rates_embedded": false,
         "status": "RECENT_DIRECTIONAL",
         "substitutes_for_ois_level": false
@@ -93,18 +93,14 @@
       "backtest_eligible_as_official": false,
       "currency": "USD",
       "dates_joinable": false,
-      "indicative_quote_dates": {
-        "12m": "2026-10-28",
-        "3m": "2026-10-29",
-        "6m": "2026-10-28"
-      },
-      "obstacle": "Settlement CME Fed Funds incompleti (manca una serie storica sincronizzata con diritti d'uso verificati).",
-      "operational_as_of": "2026-10-28",
+      "indicative_quote_dates": {},
+      "obstacle": "Fonte indicativa: manca certificazione operativa.",
+      "operational_as_of": "2026-10-29",
       "price_or_curve_embedded": false,
       "source_reviewed_as_of": "2026-10-23",
       "source_title": "CME/CBOT official 30-Day Federal Funds futures settlements (ZQ)",
       "source_url": "https://www.cmegroup.com/markets/interest-rates/stirs/30-day-federal-fund.settlements.html",
-      "status": "WITHHELD",
+      "status": "GREEN_ESTIMATED",
       "usable_for_policy_pricing": false
     }
   },
@@ -116,10 +112,10 @@
   "note": "Stato accesso alle fonti; non è una previsione, non certifica nuovi prezzi.",
   "operational_summary": {
     "g8_total": 8,
-    "green_estimated": 0,
+    "green_estimated": 1,
     "green_official": 4,
-    "operational_green": 4,
-    "operational_withheld": 4
+    "operational_green": 5,
+    "operational_withheld": 3
   },
   "prices_omitted": true,
   "schema": "GMFQ_OIS_SOURCE_READINESS_VIEW_V1",
