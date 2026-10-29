@@ -73,8 +73,14 @@ on:
 permissions:
   contents: write
 
+# Keep both existing 05:17/07:17 CET Calendar source rechecks when a
+# delayed scheduled event overlaps another build. The early VIX recovery
+# follows only successful scheduled Calendar runs, so dropping the pending
+# schedule would silently remove that independent prebrief opportunity.
+# PR validation is isolated from production and all writers remain serialized.
 concurrency:
-  group: calendar-news-operational-refresh-v1
+  group: ${{ github.event_name == 'pull_request' && format('calendar-news-validation-pr-{0}', github.event.pull_request.number) || 'calendar-news-operational-refresh-v1' }}
+  queue: max
   cancel-in-progress: false
 
 jobs:
