@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import datetime as dt
+from pathlib import Path
 from check_cb_pricing_recovery_v1 import decide, build_receipt
 
 UTC = dt.timezone.utc
@@ -28,6 +29,27 @@ def jobs(green=True):
 
 
 def check():
+    # All fallback heartbeats already exist as independent workflows.
+    # Never add a new cron/task or couple these read-only observers to production writes.
+    root = Path(__file__).resolve().parents[2]
+    wf = (root / ".github/workflows/cb-pricing-persistent-daily-v1.yml").read_text()
+    block = wf.split("  workflow_run:", 1)[1].split("  workflow_dispatch:", 1)[0]
+    heartbeats = {
+        "Hourly Certified Alert Readiness V1": "hourly-certified-alert-readiness-v1.yml",
+        "Rates Persistent Daily V1": "rates-persistent-daily-v1.yml",
+        "CB Pricing Daily Operational Observation": "cb-pricing-daily-operational.yml",
+        "Rates Daily Operational Observation": "rates-daily-operational.yml",
+    }
+    for name, filename in heartbeats.items():
+        assert block.count(f"      - '{name}'") == 1, name
+        source = (root / ".github/workflows" / filename).read_text()
+        assert f"name: {name}" in source, filename
+        assert "  schedule:" in source, filename
+    assert "    types: [completed]" in block
+    assert "github.event.workflow_run.conclusion == 'success'" in wf
+    assert "github.event.workflow_run.head_branch == 'main'" in wf
+    assert "check_cb_pricing_recovery_v1.py" in wf
+
     # CET Oct 29 07:30, after the third planned 07:13 slot.
     now = at(2026,10,29,6,30)
     missing = decide(now, [], lambda _: jobs(), 99)
