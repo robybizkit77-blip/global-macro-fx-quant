@@ -97,13 +97,44 @@ def main():
     cb=json.loads(CB.read_text())
     view=json.loads(OPERATIONAL.read_text())
     receipt=check(ois,cb,view)
-    # Regression for BoC +25 bp on 28 Oct after the actual 27 Oct MX CRA close.
-    # This is an explicitly historical market-policy anchor, not a post-BoC
-    # repricing claim, source replacement or fake OIS publication.
-    require("CAD" in receipt["pre_decision_policy_anchor_currencies"],
-            "CAD pre-decision historical marker not detected")
-    require(equal(ois["currencies"]["CAD"]["policy_rate"],2.25) and
-            equal(cb["CAD"]["rate"],2.50),"BoC 27/28 October policy anchors")
+    # Current live source may advance past the 28 Oct BoC decision.
+    # Do not pin the live runtime to the historical 27 Oct overnight rate.
+    cad_source=ois["currencies"]["CAD"]
+    cad_cb=cb["CAD"]
+    if date.fromisoformat(cad_source["as_of"]) >= date.fromisoformat(cad_cb["last_date"]):
+        require(equal(cad_source["policy_rate"],cad_cb["rate"]),
+                "CAD post-decision official settlement must use current BoC policy rate")
+        require("CAD" not in receipt["pre_decision_policy_anchor_currencies"],
+                "post-decision CAD cannot retain historical mismatch exemption")
+
+    # FROZEN QA-ONLY historical fixture: actual 27 Oct MX CRA settlements,
+    # followed by the 28 Oct +25bp BoC decision. No fixture data is written.
+    # Exercise the narrow temporal exception even after live source advances.
+    historic_prices={"3m":2.715,"6m":2.995,"12m":3.360}
+    historic_moves={"3m":(-1.5,-1.5),"6m":(-1.5,-2.5),"12m":(-2.0,-2.5)}
+    hist_ois=copy.deepcopy(ois)
+    hist_cb=copy.deepcopy(cb)
+    hist_view=copy.deepcopy(view)
+    original=hist_ois["currencies"]["CAD"]
+    before=hist_cb["CAD"]
+    exposed=hist_view["currencies"]["CAD"]
+    original.update(as_of="2026-10-27",policy_rate=2.25)
+    exposed.update(as_of="2026-10-27",policy_rate=2.25)
+    for tenor,rate in historic_prices.items():
+        daily,weekly=historic_moves[tenor]
+        original["horizons"][tenor].update(
+            rate=rate,change_1d_bp=daily,change_1w_bp=weekly,
+            policy_delta_bp=round((rate-2.25)*100,1))
+        exposed["horizons"][tenor]=copy.deepcopy(original["horizons"][tenor])
+        before["market_pricing"]["h"+tenor]=rate
+    before["market_pricing"].update(
+        as_of="2026-10-27",freshness_status="HISTORICAL_PRE_DECISION",
+        note="Verified 27 Oct CRA, NON confrontabili con il nuovo tasso 2,50%.")
+    before["pricing_status"]="CRA 27 ottobre PRECEDENTI al rialzo BoC del 28 ottobre."
+    historic_receipt=check(hist_ois,hist_cb,hist_view)
+    require("CAD" in historic_receipt["pre_decision_policy_anchor_currencies"],
+            "historical CAD pre-decision protection regression")
+
     for label,change in (
         ("no CAD predecision marker",lambda d:d["CAD"]["market_pricing"].update(
             freshness_status="LIVE_OR_RECENT_SESSION")),
@@ -112,9 +143,9 @@ def main():
         ("no CAD caveat",lambda d:d["CAD"]["market_pricing"].update(note="")),
         ("incorrect CAD rate change",lambda d:d["CAD"].update(rate=2.75)),
     ):
-        malformed=copy.deepcopy(cb)
+        malformed=copy.deepcopy(hist_cb)
         change(malformed)
-        try:check(ois,malformed,view)
+        try:check(hist_ois,malformed,hist_view)
         except ValueError:pass
         else:raise AssertionError("Failed to reject "+label)
     for code,mutate in (
