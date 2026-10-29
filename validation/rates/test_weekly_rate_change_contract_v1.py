@@ -91,11 +91,17 @@ class RatesWeeklyReferenceContractTests(unittest.TestCase):
         self.fail(lambda d:d["NZD"]["history10"].update(last_date="2026-10-15"))
 
     def test_source_clock_not_silently_rewritten_or_future_faked(self):
-        self.fail(lambda d:d["USD"].update(date="2026-10-28"))
+        # Always ALTER the actual source date rather than assigning a fixed
+        # future date that eventually becomes the real latest official print.
+        # The previous hardcoded USD 2026-10-28 and CAD 2026-10-27 values
+        # had become no-ops as both live sources advanced, falsely failing CI.
+        self.fail(lambda d:d["USD"].update(date=(
+            date.fromisoformat(d["USD"]["date"])-timedelta(days=1)).isoformat()))
         self.fail(lambda d:d["GBP"]["weekly10_validation"].update(
             start_date="2026-10-26"))
         self.fail(lambda d:d["CAD"]["history2"]["dates"].__setitem__(-1,
-            "2026-10-27"))
+            (date.fromisoformat(d["CAD"]["history2"]["dates"][-1])-
+             timedelta(days=1)).isoformat()))
         self.fail(lambda d:d["JPY"].update(chg10_bp=float("nan")))
         self.fail(lambda d:d["EUR"].update(quality="ESTIMATED_INFORMATIONAL"))
         self.fail(lambda d:d["CHF"].update(weekly2_validation={
