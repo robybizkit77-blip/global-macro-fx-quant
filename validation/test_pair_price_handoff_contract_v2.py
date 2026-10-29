@@ -4,6 +4,7 @@ import copy
 import itertools
 import unittest
 from datetime import date
+from pathlib import Path
 
 from validation.pair_price_handoff_contract_v2 import FX, classify
 
@@ -40,6 +41,28 @@ def fixtures():
 
 
 class HandoffTests(unittest.TestCase):
+    def test_workflow_preserves_queued_recovery_and_post_dxy_retry(self):
+        flow = (Path(__file__).resolve().parents[1] /
+                ".github/workflows/pair-setup-operational-view-v1.yml").read_text(encoding="utf-8")
+        block = flow.split("  workflow_run:", 1)[1].split("  workflow_dispatch:", 1)[0]
+        for source in (
+            "Price History Persistent Daily V1",
+            "Macro Persistent Daily V1",
+            "Price Persistent Daily V1",
+            "DXY Synthetic ECB Research V1",
+        ):
+            self.assertEqual(block.count(f"      - '{source}'"), 1)
+        self.assertIn("types: [completed]", block)
+        self.assertIn("github.event.workflow_run.conclusion == 'success'", flow)
+        self.assertIn("github.event.workflow_run.head_branch == 'main'", flow)
+        self.assertIn("queue: max", flow)
+        self.assertIn("cancel-in-progress: false", flow)
+        self.assertIn("pair-validation-pr-{0}", flow)
+        self.assertIn("Main moved since validation. Safe retry required.", flow)
+        self.assertIn("Main moved during Pair persistence. Safe retry required.", flow)
+        self.assertIn("steps.handoff.outputs.status == 'PRICE_CONTEXT_UPDATE'", flow)
+        self.assertEqual(flow.count("    - cron:"), 1)
+
     def setUp(self):
         self.prior, self.d, self.ecb = fixtures()
         self.candidate = copy.deepcopy(self.prior)
