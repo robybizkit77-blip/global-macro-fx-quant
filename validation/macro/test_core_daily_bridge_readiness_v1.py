@@ -2,6 +2,9 @@
 import copy
 import json
 import unittest
+from datetime import datetime
+from zoneinfo import ZoneInfo
+from unittest.mock import patch
 from pathlib import Path
 from validation.macro.check_core_daily_bridge_readiness_v1 import (
     ROOT, G8, audit, run,
@@ -58,6 +61,34 @@ class CoreBridgeReadinessTests(unittest.TestCase):
         self.assertTrue(q["core_same_day_as_check"])
         self.assertFalse(q["eligible_to_promote_new_macro_scores"])
         self.assertEqual(q["status"],"BLOCKED_UNCERTIFIED_CORE_RECALIBRATION")
+
+    def test_all_24_frozen_scores_and_cycles_are_immutable_without_rebase(self):
+        receipt=self.check()
+        self.assertTrue(receipt["frozen_24_scores_and_8_cycles_match_historical_source"])
+        self.assertTrue(receipt["historical_score_match_does_not_certify_freshness"])
+        for c in G8:
+            for key in ("growth", "labour", "inflation", "cycle"):
+                core=copy.deepcopy(self.core)
+                core["macro"][c][key] = (
+                    "GOLDILOCKS" if core["macro"][c][key] != "GOLDILOCKS"
+                    else "STAGFLATION"
+                ) if key == "cycle" else core["macro"][c][key] + 0.001
+                with self.subTest(ccy=c, pillar=key):
+                    with self.assertRaisesRegex(
+                        ValueError, "FROZEN_CORE_MACRO_SCORE_VECTOR_CHANGED"
+                    ):
+                        self.check(core=core)
+
+    def test_rome_local_date_drives_automatic_daily_audit(self):
+        # UTC is still the previous day at 00:10 in Rome: no UTC date drift.
+        rome_midnight=datetime(2026, 10, 30, 0, 10,
+                               tzinfo=ZoneInfo("Europe/Rome"))
+        with patch("validation.macro.check_core_daily_bridge_readiness_v1.datetime") as clock:
+            clock.now.return_value=rome_midnight
+            receipt=run()
+        self.assertEqual(receipt["checked_as_of"], "2026-10-30")
+        self.assertEqual(receipt["core_age_calendar_days"], 35)
+        self.assertFalse(receipt["eligible_to_promote_new_macro_scores"])
 
     def test_changed_macro_baseline_is_not_silently_reconciled(self):
         x=copy.deepcopy(self.pairs);x["macro_baseline_asof"]="2026-10-15"
