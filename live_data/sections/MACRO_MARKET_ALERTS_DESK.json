@@ -1,8 +1,52 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-29T20:20:57Z",
+  "generated_at_utc": "2026-10-29T23:59:43Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-5b3ae674619f8719f94e",
+      "observed_at_utc": "2026-10-29T09:33:44Z",
+      "headline": "India's finance ministry sees FY27 growth at 7.3%, flags inflation risks",
+      "summary": "Reuters riporta: India's finance ministry sees FY27 growth at 7.3%, flags inflation risks. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxQbHJKOFdCa1lNa3I2Y01DOVFLMDhSR3lhVnBGTmd3cG1UZXQ5LWdudTlhOUotYVZpUlktR09YbzhfR19RUkFCTzFnUmNjY2hxeVl3ejRscWNRV2t2TkpYdGNMWVhZZ0tOYkpEQmtxNDN3d2dhU2NSNktwMFJ6bUZkVVluUmJuNW1vYnhkZjJDMWhDTThvQ0l4NjdNc0tyTDM1cllSa2llM1MwSWN4WjZ3YnQ1VQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-077f501514a427e351f9",
+      "observed_at_utc": "2026-10-29T03:17:00Z",
+      "headline": "Hong Kong Monetary Authority leaves interest rates unchanged, tracking Fed move",
+      "summary": "Reuters riporta: Hong Kong Monetary Authority leaves interest rates unchanged, tracking Fed move. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxPN3J6WGNOeVpGVUFtLVBCWkItVWVEQmQwMnhTeldWYko5SnR6akxlQTJOR2ZMbnZodUhnMk8zMjRLaFpsQm5iMVFlTnJheVlnQzVhOW5WVFRYdnZHMUFxRWJBMVpUMHhubklkaFJ0dVloc3d0dTItcnJ5NEFMYlBXY1F1ZTFHV3lpN3NOSDNKQkJ6THNpbUp0MlMwRlpSQU4yNzdUMmZQOVFFSS1mVWROaUJpSjNBNXJZQS1nV2xEU1FJQmJaZ1FBenROYkM4UQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-037167c1ce165f9a6255",
+      "observed_at_utc": "2026-10-28T20:44:49Z",
+      "headline": "Canadian dollar strengthens, bond yields rise after BoC's rate hike",
+      "summary": "Reuters riporta: Canadian dollar strengthens, bond yields rise after BoC's rate hike. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD",
+        "CAD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxPclpLdEx1LThWT3M0WnFzLXZvTk1aU2IzaE5RV29PdzlVR29oX29ya2dqWWt5bXJTMlF0LUtFbV9VWVNXcjhMN0UxZTZyUHl4TVpNSGdRNEk2SGNoYXlRbUlpRzdfb3A5TVZzRG5SRG1GTVZvOG5CQjVLSHhKMFlKdy16QmZ0eFJhLXpwTGYtbkZ5dEFmclNPa0xSMkhmOUh4dXFXY2NBX1ZmTzhraExN?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-9811ea79c81c5c201b3a",
       "observed_at_utc": "2026-10-29T17:06:20Z",
@@ -1377,47 +1421,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxQUzBNLUdzSXJyUVlmV19mTVRxempkeGpFOERuNWVHSnFqWFh2TkZqYk0yYjkwVVV1UkhPY0lzUGJHZk0tNjl6WDJtTkN5R0xQdFZNZ0NpR0Y5eVRWa1dLN0ZmX1dZWUlrTlh0YlRhZWhMbmZKRVJmTTl0anpmb1hrQ3Iwb1gzNTNzRUNybzhMdGR3VVFkd0dZa05Nc3RPOXp2QklZTGZydnYweXM?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-ec61f96a6fae7d78d25d",
-      "observed_at_utc": "2026-10-26T01:31:00Z",
-      "headline": "Oil prices, Fed policy decision to steer rupee, bonds this week",
-      "summary": "Reuters riporta: Oil prices, Fed policy decision to steer rupee, bonds this week. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxPelJyN3JpclF1bWk1YzFhM1prRER2SmsyZ0tLbEYyVnZxb0JhbV9sVEplUzhvbnFydkUtdURhektCU2Z1a3VNVk8xaGRBZXZSanpsYWkzMkh1RDBpQktlR25CeEZabmZLWTdfN0QwYUZWQjQ2VmVGdENPSm04Z1BwUF83am40bVlTYjVjV0REZWdUS3E3cUNLaFZCaEFoQzhBemhoRkFxa3hSUQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-8f192e058850d7212eca",
-      "observed_at_utc": "2026-10-26T01:47:00Z",
-      "headline": "Saudi Arabia to store crude oil in Singapore from second half of 2027",
-      "summary": "Reuters riporta: Saudi Arabia to store crude oil in Singapore from second half of 2027. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "COMMODITIES",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxQUzBNLUdzSXJyUVlmV19mTVRxempkeGpFOERuNWVHSnFqWFh2TkZqYk0yYjkwVVV1UkhPY0lzUGJHZk0tNjl6WDJtTkN5R0xQdFZNZ0NpR0Y5eVRWa1dLN0ZmX1dZWUlrTlh0YlRhZWhMbmZKRVJmTTl0anpmb1hrQ3Iwb1gzNTNzRUNybzhMdGR3VVFkd0dZa05Nc3RPOXp2QklZTGZydnYweXM?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-b68578131bc4f84c3ec6",
-      "observed_at_utc": "2026-10-26T00:46:00Z",
-      "headline": "Asian shares make cautious start, Brent eases from six-month high",
-      "summary": "Reuters riporta: Asian shares make cautious start, Brent eases from six-month high. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "COMMODITIES",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMifkFVX3lxTE90MHowUDNReVJUUkkxWEZhTnAyYnZZNGNXQjJPVWt0QjgtaERfUHM4bERQd2k2NW5kMXR5dld0NHpsYnBhOENieXU1VU9saFBya202TXRjUktMa0l6OXF0OEZFUDdxR3FtSTdCLUxRVGpZNnBndExIcGVEZmtXZw?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
