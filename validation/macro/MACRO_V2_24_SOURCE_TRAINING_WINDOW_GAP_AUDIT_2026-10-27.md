@@ -23,6 +23,14 @@
 > nessuna modifica a `D.json`, ranking 28 coppie, Beta o Forward.
 >
 
+## Addendum 29 ottobre 2026 — CHF: precisione SECO non recuperabile per inversione dell'arrotondamento
+
+Una nuova prova di sensibilità usa le **25 prime quote mensili SECO arrotondate a 0,1 punti percentuali**, senza dichiarare di possedere valori SNB precisi o timestamp di pubblicazione intraday. Il dato di settembre 2026 è 3,1%; sui 24 mesi precedenti la mediana dei valori pubblicati è 2,9% e la MAD 0,1 pp. Lo z descrittivo calcolato direttamente sui numeri stampati è circa **+1,35** (disoccupazione più elevata rispetto alla stessa serie storica SECO).
+
+Assumendo solo **a scopo matematico** che ciascun valore SECO antecedente all'arrotondamento possa essere compreso tra il numero stampato ±0,05 pp, la mediana precedente può muoversi di ±0,05 e la MAD di ±0,10 pp. Si ottiene un intervallo **conservativo** per lo z robusto limitato a ±3 che include valori circa **+0,34 fino a +3**. Pertanto la classe descrittiva attraversa la soglia ±0,5: **non è robusta neppure alla sola precisione di stampa**. Un valore MAD potenzialmente nullo rende alcuni scenari matematicamente non definibili, non valori FX certi.
+
+Il risultato **non** è un intervallo di confidenza statistico, non misura l'incertezza da revisioni stagionali, non equivale alla storia SNB `amarbma` e non recupera i quattro PDF originali mancanti del 2024. Non altera i contatori 22/24, le 24 caselle PIT non certificate, `D.json` o le 28 tesi. Fonte/algoritmo: `validation/macro/v2_chf_seco_first_month_rounded_alternative_v1.py` e relativi test avversariali.
+
 ## Cosa viene misurato
 
 Il nuovo controllo confronta le **24 componenti G8** con una regola temporale uguale per tutti: la variabile attuale è *fuori dal campione di training* e per normalizzarla servono esattamente **24 pubblicazioni mensili precedenti** oppure **12 trimestrali precedenti** della *stessa metrica*. Non basta possedere 25 o 13 valori disordinati: l'audit calcola **i periodi economici precisi mancanti** all'interno della finestra precedente, e verifica le date di visibilità delle pubblicazioni.
