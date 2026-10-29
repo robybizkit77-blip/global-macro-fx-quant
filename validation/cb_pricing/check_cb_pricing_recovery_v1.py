@@ -24,7 +24,7 @@ REQUIRED_STEPS = frozenset((
     "Run per-currency certified dry-run preflight",
     "Apply independently certified source candidates only",
 ))
-START_TIME = dt.time(7, 23)
+START_TIME = dt.time(7, 15)
 END_TIME = dt.time(10, 30)
 
 
