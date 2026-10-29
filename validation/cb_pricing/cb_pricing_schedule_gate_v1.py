@@ -14,7 +14,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 ROME = ZoneInfo("Europe/Rome")
-LOCAL_SLOTS = ((6, 0), (6, 30), (7, 0))
+LOCAL_SLOTS = ((6, 7), (6, 37), (7, 7))
 
 
 def gate(event: str, cron: str, utc_now: dt.datetime) -> tuple[bool, str]:
@@ -54,7 +54,7 @@ def main() -> None:
         "reason": reason,
         "rome_started_at": now.astimezone(ROME).isoformat(),
         "scheduled_utc_cron": args.cron,
-        "slots_rome": ["06:00", "06:30", "07:00"],
+        "slots_rome": ["06:07", "06:37", "07:07"],
     }
     if args.output:
         with Path(args.output).open("a", encoding="utf-8") as f:
