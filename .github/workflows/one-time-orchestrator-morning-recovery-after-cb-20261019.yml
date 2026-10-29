@@ -31,3 +31,31 @@ jobs:
           gh workflow run daily-data-orchestrator-v2.yml --ref main -f phase=morning
           echo 'ONE_TIME_MORNING_RECOVERY_DISPATCH_SUBMITTED_20261029'
           echo "Dispatched existing morning phase against main at $(date -u +'%FT%TZ')" >> "$GITHUB_STEP_SUMMARY"
+
+  audit-cb-pricing-registration:
+    # One-time READ-ONLY repository audit; no extra scheduled task and no dispatch.
+    if: >-
+      github.event.head_commit.message == 'One-time read-only CB Pricing workflow registration audit 2026-10-29'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Verify GitHub registered scheduled workflow states and recent event receipts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for wf in cb-pricing-persistent-daily-v1.yml daily-data-orchestrator-v2.yml; do
+            echo "WORKFLOW_AUDIT_BEGIN $wf"
+            detail=$(gh api "repos/${GH_REPO}/actions/workflows/${wf}")
+            echo "$detail" | jq -c '{id,name,path,state,created_at,updated_at}'
+            runs=$(gh api "repos/${GH_REPO}/actions/workflows/${wf}/runs?per_page=40")
+            echo "$runs" | jq -c '{total_count, recent: [.workflow_runs[:15][] | {id,event,created_at,status,conclusion,head_branch}]}'
+            scheduled_today=$(echo "$runs" | jq -r '[.workflow_runs[] | select(.event == "schedule" and .created_at >= "2026-10-29T00:00:00Z")] | length')
+            state=$(echo "$detail" | jq -er '.state')
+            echo "SCHEDULED_RUNS_TODAY_UTC $wf $scheduled_today"
+            echo "- `$wf`: state **$state**, scheduled runs UTC 29 Oct **$scheduled_today**" >> "$GITHUB_STEP_SUMMARY"
+            echo "WORKFLOW_AUDIT_END $wf"
+          done
+          echo 'READ_ONLY_WORKFLOW_REGISTRATION_AUDIT_COMPLETE'
