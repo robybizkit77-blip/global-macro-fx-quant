@@ -53,7 +53,10 @@ jobs:
           assert a['automated_price_ingestion_enabled'] is False
           assert a['price_levels_collected_or_logged'] is False
           assert a['access_terms_or_redistribution_rights_certified'] is False
-          assert a['status'] in {'PUBLIC_EOD_ACCESS_CANDIDATE_FOUND','PUBLIC_EOD_ACCESS_NOT_PROVEN'}
+          assert a['status'] in {'PUBLIC_EOD_ACCESS_CANDIDATE_FOUND',
+                             'PUBLIC_EOD_PARTIAL_ROLLING_ACCESS','PUBLIC_EOD_ACCESS_NOT_PROVEN'}
+          assert isinstance(a['weekly_same_contract_access_proven'],bool)
+          assert isinstance(a['latest_two_dates_accessible'],bool)
           assert len(a['checks'])==3
           event=a['fomc_event_window']
           assert event['event_date']=='2026-10-28'
