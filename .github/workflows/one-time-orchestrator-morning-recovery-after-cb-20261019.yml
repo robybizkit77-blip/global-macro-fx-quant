@@ -59,3 +59,35 @@ jobs:
             echo "WORKFLOW_AUDIT_END $wf"
           done
           echo 'READ_ONLY_WORKFLOW_REGISTRATION_AUDIT_COMPLETE'
+
+  dispatch-cb-pricing-once:
+    # Exactly one explicit recovery attempt; NOT a new cron or recurring workflow.
+    if: >-
+      github.event.head_commit.message == 'One-time 2026-10-29 CB Pricing recovery after missing scheduled runs'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Recheck registration and no duplicate then dispatch existing CB Pricing
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          workflow=cb-pricing-persistent-daily-v1.yml
+          state=$(gh api "repos/${GH_REPO}/actions/workflows/${workflow}" --jq .state)
+          [[ "$state" == active ]] || { echo "CB_PRICING_WORKFLOW_NOT_ACTIVE: $state" >&2; exit 1; }
+          receipts=$(gh api "repos/${GH_REPO}/actions/workflows/${workflow}/runs?per_page=80")
+          existing=$(jq -r '[.workflow_runs[] | select(.created_at >= "2026-10-29T00:00:00Z" and (.event == "schedule" or .event == "workflow_dispatch"))] | length' <<<"$receipts")
+          if [[ "$existing" != 0 ]]; then
+            echo "CB_PRICING_ALREADY_TRIGGERED_TODAY: $existing; refusing duplicate recovery" >&2
+            exit 1
+          fi
+          dispatched=$(gh api --method POST -H 'X-GitHub-Api-Version: 2026-03-10' \
+            "repos/${GH_REPO}/actions/workflows/${workflow}/dispatches" \
+            -f ref=main -F return_run_details=true)
+          id=$(jq -er '.workflow_run_id | select(type=="number" and .>0)' <<<"$dispatched")
+          html=$(jq -er '.html_url | select(type=="string")' <<<"$dispatched")
+          [[ "$html" == "https://github.com/${GH_REPO}/actions/runs/${id}" ]] || exit 1
+          echo "CB_PRICING_ONE_TIME_RECOVERY_DISPATCHED $id $html"
+          echo "Recovery: [$workflow run #$id]($html). Source audit applies inside the existing workflow." >> "$GITHUB_STEP_SUMMARY"
