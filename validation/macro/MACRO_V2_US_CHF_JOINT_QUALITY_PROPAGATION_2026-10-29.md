@@ -14,6 +14,27 @@ Un confronto tra due misure descrittive può dare una classe uguale senza dare u
 
 L'algoritmo rifiuta discrepanze di fonte, falsi PDF verificati, variazione dei pesi registrati, valori SNB inventati e promozione delle classi a FX. Produce **solo una ricevuta sotto /tmp**, in un workflow di ricerca già presente, con test adversariali e controllo delle scritture.
 
+## Risultato calcolato sul candidato reale (29 ottobre)
+
+L'[esecuzione di verifica #40882793571](https://github.com/robybizkit77-blip/global-macro-fx-quant/actions/runs/40882793571) ha verificato numericamente i risultati, senza cambiare il candidato del 27 ottobre:
+
+| Stress | Stima di ricerca | Interpretazione |
+|---|---:|---|
+| USD inflazione indice SA, file BLS del relativo mese | +2,257242 z | Pressione prezzi sopra la propria storia |
+| USD inflazione indice SA, serie CPIAUCSL oggi revisionata | +2,260357 z | Stessa classe descrittiva |
+| Differenza USD BLS meno serie revisionata | −0,003115 z | Scarto ridotto **in questo campione**, non prova di PIT |
+| CHF disoccupazione SECO arrotondata | +1,348982 z | Non è la precisione della serie SNB |
+| CHF disoccupazione SECO ipoteticamente non arrotondata | +0,337245 a +3,000000 z | Limite conservativo, non intervallo di confidenza |
+| CHF attività, formula fissa 50/50 con fonte SECO alternativa | 0,000000 a +1,331377 z | Attraversa la soglia di categoria +0,5 |
+| CHF attività, fonte SECO alternativa e Growth 25–75% | −1,500000 a +2,165689 z | Attraversa le tre categorie qualitative |
+| CHF attività del candidato originale su SNB corrente revisionata | +1,021487 z | **Non cambiata**, non sostituita |
+
+I limiti ±0,05 pp di stampa SECO sono trattati come incertezza teorica compatibile con l'arrotondamento, non come valori originali realmente osservati. La cautela resta maggiore perché le destagionalizzazioni possono essere revisionate; il campione di stima non prova il primo valore esatto SNB.
+
+I dati USD hanno entrambi una classe inflazionistica superiore alla propria storia, ma la mancanza strutturale del riferimento ottobre 2025 e l'acquisizione tardiva dei byte delle pubblicazioni impediscono ogni inferenza PIT rigorosa. Una differenza bassa in una sola data non dimostra stabilità su altri regimi.
+
+**Esito di policy:** due fonti informative studiate, 0 storici congiunti PIT certificati, 0 nuovi Core/FX autorizzati. Il prossimo miglioramento deve lavorare sulla **comparabilità reale fra economie** e sulla **validazione fuori campione**; non ricreare i dati mancanti.
+
 ## Esito atteso per la pubblicazione
 Il verdetto sarà verificabile nel log CI, che emette z USD, intervallo SECO CHF e attività alternativa. Anche se qualche classe risultasse stabile, **non** viene pubblicata alcuna nuova valutazione FX; il candidato non diventa Core `D.json`, non modifica le 28 coppie, Beta o Forward, e non apre nuovi cron o task.
 
