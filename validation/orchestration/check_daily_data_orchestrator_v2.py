@@ -60,9 +60,12 @@ def main() -> None:
     assert "cb-pricing-persistent-daily-v1.yml" not in c["phases"]["premorning"]
     cb = (WORKFLOWS_DIR / c["separate_cadences"]["CB_PRICING_MORNING"]).read_text()
     assert "schedule:" in cb and "workflow_dispatch:" in cb
-    # Exact UTC pairs support early independent 06:00/06:30/07:00 Rome slots.
-    assert "0 4 * * 1-5" in cb and "0 5 * * 1-5" in cb
-    assert "30 5 * * 1-5" in cb and "0 6 * * 1-5" in cb
+    # Exact UTC pairs support off-peak independent 06:13/06:43/07:13 Rome slots.
+    # Both CET/CEST partners are present; the local gate rejects the wrong partner.
+    for cron in ("13 4 * * 1-5", "43 4 * * 1-5", "13 5 * * 1-5",
+                 "43 5 * * 1-5", "13 6 * * 1-5"):
+        assert f"- cron: '{cron}'" in cb, cron
+    assert "workflow_run:" in cb and "check_cb_pricing_recovery_v1.py" in cb
     assert "python3 validation/cb_pricing/cb_pricing_schedule_gate_v1.py" in cb
 
     expected_suffix = [
@@ -117,7 +120,7 @@ def main() -> None:
     assert "17 6 * * *" in news
     text = WORKFLOW.read_text()
     # No duplicate CB acquisition in 05:00, 07:45 OR 09:10,
-    # preserving independent 06:00/06:30/07:00 publisher-reconciled CB refresh.
+    # preserving independent 06:13/06:43/07:13 publisher-reconciled CB refresh.
     segment = text[text.index("              prebrief)"):text.index("              morning)", text.index("              prebrief)"))]
     assert "cb-pricing-persistent-daily-v1.yml" not in segment
     morning_segment = text[text.index("              morning)"):text.index("              close)", text.index("              morning)"))]
