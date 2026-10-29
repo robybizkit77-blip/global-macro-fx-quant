@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -107,6 +108,22 @@ def build_currency(ccy, cb_row, ois_row, live_row=None, directional_proxy=None):
         input_mode = "NATIVE_CB_FALLBACK"
         method_id = NATIVE_METHOD_ID
         horizon_meta = {h: {} for h in ("3m", "6m", "12m")}
+
+    # The EUR native CB quote is a historical secondary snapshot, not a live
+    # market path. Never revive it as an active 3-horizon estimate if the
+    # independently dated live overlay cannot be used. A source date must be
+    # unambiguous and recent, not an observation range such as "Sep 26/29".
+    if ccy == "EUR" and input_mode == "NATIVE_CB_FALLBACK":
+        try:
+            source_day = date.fromisoformat(str(as_of))
+            age_days = (date.today() - source_day).days
+        except (TypeError, ValueError):
+            age_days = None
+        if age_days is None or not 0 <= age_days <= 5:
+            vals = {h: None for h in ("3m", "6m", "12m")}
+            source_quality = "STALE_SECONDARY_WITHHELD"
+            freshness_status = "STALE_SOURCE_WITHHELD"
+            note = "Historical EUR futures quote is not a current market-pricing observation; use only independently dated verified contracts. No official OIS curve is available."
 
     n = sum(v is not None for v in vals.values())
     if n == 0:

@@ -69,6 +69,25 @@ def main():
         assert row["change_1d_bp"] is None
         assert row["change_1w_bp"] is None
 
+    # EUR native quote is date-ambiguous and over a month old. If the live
+    # overlay fails, do not resurrect that snapshot as active market pricing.
+    eur_without_live = mod.build_currency("EUR", cb["EUR"], {"status": "WITHHELD"}, None)
+    assert eur_without_live["status"] == "WITHHELD", eur_without_live
+    assert eur_without_live["freshness_status"] == "STALE_SOURCE_WITHHELD", eur_without_live
+    assert all(eur_without_live["horizons"][h]["rate"] is None for h in ("3m", "6m", "12m"))
+    assert eur_without_live["policy_rate"] == cb["EUR"]["rate"]
+    assert eur_without_live["governance"]["core_score_effect"] == "NONE"
+
+    # Even a strictly dated quote older than five days is not a fresh fallback.
+    from datetime import date, timedelta
+    from copy import deepcopy
+    ecb_old = deepcopy(cb["EUR"])
+    ecb_old["market_pricing"]["as_of"] = (date.today() - timedelta(days=6)).isoformat()
+    assert mod.build_currency("EUR", ecb_old, {"status": "WITHHELD"}, None)["status"] == "WITHHELD"
+    ecb_recent = deepcopy(cb["EUR"])
+    ecb_recent["market_pricing"]["as_of"] = date.today().isoformat()
+    assert mod.build_currency("EUR", ecb_recent, {"status": "WITHHELD"}, None)["status"] == "ESTIMATED_ACTIVE"
+
     # Never allow the estimated layer to shadow an official ACTIVE currency.
     x = mod.build_currency("USD", cb["USD"], {"status": "ACTIVE"}, None)
     assert x["status"] == "NOT_APPLICABLE_OFFICIAL_ACTIVE"
