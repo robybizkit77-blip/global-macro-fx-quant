@@ -24,6 +24,13 @@ MAX_HISTORY = 100
 MAX_NEW_PER_RUN = 3
 MAX_AGE_HOURS = 30
 ALLOWED_PUBLISHERS = {"Reuters", "Associated Press", "AP News"}
+# Independent of Google News: use these official publisher feeds only if ALL
+# primary Google News searches fail. BBC items retain their own attribution.
+BBC_FALLBACK_FEEDS = (
+    "https://feeds.bbci.co.uk/news/business/rss.xml",
+    "https://feeds.bbci.co.uk/news/world/rss.xml",
+)
+BBC_LINK_HOSTS = {"www.bbc.com", "www.bbc.co.uk", "bbc.com", "bbc.co.uk"}
 SEARCHES = (
     '(site:reuters.com OR site:apnews.com) (Hormuz OR tanker OR OPEC OR "oil supply" OR "energy sanctions") when:2d',
     '(site:reuters.com OR site:apnews.com) ("central bank" OR "interest rate" OR inflation OR payrolls OR "bond yields") when:2d',
@@ -134,6 +141,34 @@ def parse_rss(xml):
     return output
 
 
+def parse_bbc_rss(xml):
+    """Parse only publisher-linked BBC items from the pinned official RSS host.
+
+    A BBC item is never relabelled Reuters/AP. Ignore off-site links and missing
+    publisher timestamps. Do not infer that a headline is independently verified.
+    """
+    root = ET.fromstring(xml)
+    if root.tag != "rss":
+        raise ValueError("Not a BBC RSS feed")
+    output = []
+    for entry in root.findall("./channel/item"):
+        title = (entry.findtext("title") or "").strip()
+        date = (entry.findtext("pubDate") or "").strip()
+        link = (entry.findtext("link") or "").strip()
+        parts = urllib.parse.urlsplit(link)
+        if not title or not date or parts.scheme != "https" or parts.hostname not in BBC_LINK_HOSTS:
+            continue
+        try:
+            stamp = parsedate_to_datetime(date)
+            if stamp.tzinfo is None:
+                continue
+        except (ValueError, TypeError, IndexError):
+            continue
+        output.append({"title": title[:280], "source": "BBC News",
+                       "observed": stamp.astimezone(timezone.utc), "url": link})
+    return output
+
+
 def make_item(record, now):
     title, observed = record["title"], record["observed"]
     if observed > now + timedelta(minutes=10) or now - observed > timedelta(hours=MAX_AGE_HOURS):
@@ -159,7 +194,9 @@ def make_item(record, now):
             "independently_confirmed": False}
 
 
-def build(previous, records, now):
+def build(previous, records, now, *, source_scope="REUTERS_AP_GOOGLE_NEWS"):
+    if source_scope not in {"REUTERS_AP_GOOGLE_NEWS", "BBC_OFFICIAL_FALLBACK"}:
+        raise ValueError("Unknown source scope")
     if not isinstance(previous, dict) or previous.get("schema") != SCHEMA:
         raise ValueError("Existing Desk feed missing or has an unknown schema")
     if not isinstance(previous.get("history"), list) or not isinstance(previous.get("policy"), dict):
@@ -182,7 +219,9 @@ def build(previous, records, now):
             break
     updated = dict(previous)
     policy = dict(previous["policy"])
-    policy["source"] = "INDEPENDENT_REUTERS_AP_NEWS_RSS"
+    policy["source"] = ("INDEPENDENT_REUTERS_AP_NEWS_RSS"
+                        if source_scope == "REUTERS_AP_GOOGLE_NEWS"
+                        else "REUTERS_AP_NEWS_WITH_BBC_OFFICIAL_RSS_FALLBACK")
     policy["certification"] = "PUBLISHER_ATTRIBUTED_NOT_INDEPENDENTLY_CONFIRMED"
     updated["policy"] = policy
     updated["history"] = (fresh + old)[:MAX_HISTORY]
@@ -196,20 +235,36 @@ def run(output, previous):
     current = datetime.now(timezone.utc)
     records = []
     successes = 0
+    source_scope = "REUTERS_AP_GOOGLE_NEWS"
     for url in feeds():
         try:
             records.extend(parse_rss(get_xml(url)))
             successes += 1
         except (ValueError, ET.ParseError, urllib.error.URLError, TimeoutError) as exc:
-            print(f"RSS_WITHHELD: {type(exc).__name__}: {exc}", file=sys.stderr)
+            print(f"RSS_PRIMARY_WITHHELD: {type(exc).__name__}: {exc}", file=sys.stderr)
     if not successes:
-        raise RuntimeError("All RSS feeds unavailable; do not replace Desk feed")
+        # A network error at Google News must not block a different, direct
+        # publisher RSS. Never relabel a BBC story as Reuters or AP.
+        source_scope = "BBC_OFFICIAL_FALLBACK"
+        for url in BBC_FALLBACK_FEEDS:
+            try:
+                records.extend(parse_bbc_rss(get_xml(url)))
+                successes += 1
+            except (ValueError, ET.ParseError, urllib.error.URLError, TimeoutError) as exc:
+                print(f"RSS_BACKUP_WITHHELD: {type(exc).__name__}: {exc}", file=sys.stderr)
+        if successes:
+            print("RSS_INDEPENDENT_BBC_FALLBACK_ACTIVE", file=sys.stderr)
+    if not successes:
+        # Fail closed. No output file is created, and gh-pages is left intact.
+        raise RuntimeError("All primary and independent backup RSS feeds unavailable; do not replace Desk feed")
     existing = json.loads(previous.read_text(encoding="utf-8"))
-    updated, count = build(existing, records, current)
+    updated, count = build(existing, records, current, source_scope=source_scope)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(updated, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({"sources_ok": successes, "items_considered": len(records),
-                      "new_events": count, "total_history": len(updated["history"])}))
+    print(json.dumps({"sources_ok": successes, "source_scope": source_scope,
+                      "fallback_used": source_scope == "BBC_OFFICIAL_FALLBACK",
+                      "items_considered": len(records), "new_events": count,
+                      "total_history": len(updated["history"])}))
 
 
 def main():
