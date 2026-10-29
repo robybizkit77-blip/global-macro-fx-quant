@@ -25,13 +25,13 @@ class H1RepricingTests(unittest.TestCase):
     def sample(self):
         prior = self.snap("2026-10-29", "2026-10-29T20:08:00Z")
         current = self.snap("2026-10-30", "2026-10-30T20:08:00Z")
-        current["domestic_v2_features"]["EUR"]["two_year_observed_yield_pct"] = 3.03
+        current["domestic_v2_features"]["USD"]["two_year_observed_yield_pct"] = 4.03
         # A lower contemporaneous EUR/USD means momentum forecasts DOWN.
-        current["observed_t0_ref"]["EUR/USD"]["rate"] = (
-            prior["observed_t0_ref"]["EUR/USD"]["rate"] * .995)
+        current["observed_t0_ref"]["USD/EUR"]["rate"] = (
+            prior["observed_t0_ref"]["USD/EUR"]["rate"] * .995)
         current["snapshot_sha256"] = cap.sha({
             k:v for k,v in current.items() if k != "snapshot_sha256"})
-        outcome = outcome_fixture(current, "EUR/USD", "1W", "2026-11-09")
+        outcome = outcome_fixture(current, "USD/EUR", "1W", "2026-11-09")
         now = datetime(2026,11,10,20,15,tzinfo=timezone.utc)
         return prior, current, outcome, now
 
@@ -75,7 +75,7 @@ class H1RepricingTests(unittest.TestCase):
         ):
             with self.subTest(change=change):
                 bad=copy.deepcopy(curr)
-                bad["domestic_v2_features"]["EUR"].update(change)
+                bad["domestic_v2_features"]["USD"].update(change)
                 bad["snapshot_sha256"]=cap.sha({
                     k:v for k,v in bad.items() if k!="snapshot_sha256"})
                 result=h1.inspect([prev,bad],[],now)
@@ -84,7 +84,7 @@ class H1RepricingTests(unittest.TestCase):
 
     def test_future_2y_source_date_rejected_even_when_snapshot_hash_valid(self):
         prev,curr,out,now=self.sample()
-        curr["domestic_v2_features"]["EUR"]["bond_date"]="2026-11-02"
+        curr["domestic_v2_features"]["USD"]["bond_date"]="2026-11-02"
         curr["snapshot_sha256"]=cap.sha({
             k:v for k,v in curr.items() if k!="snapshot_sha256"})
         with self.assertRaisesRegex(ValueError,"future dated 2Y"):
@@ -99,7 +99,7 @@ class H1RepricingTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             h1.inspect([prev,curr],[out,out],now)
         changed=copy.deepcopy(curr)
-        changed["observed_t0_ref"]["EUR/USD"]["rate"]=1234
+        changed["observed_t0_ref"]["USD/EUR"]["rate"]=1234
         with self.assertRaises(ValueError):
             h1.inspect([prev,changed],[out],now)
 
