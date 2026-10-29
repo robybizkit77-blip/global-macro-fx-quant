@@ -55,8 +55,10 @@ def enforce(morning: str, pages: str, orchestration: str, verifier: str) -> None
             "Pages falsely insists all eight economies have source-backed scheduled macro events")
     require("no_core" in verifier or "source" in verifier.lower(),
             "official future coverage must remain backed by source checks")
-    require('PAGES_PUBLIC_HTTP_PROOF' in pages
-            and 'PAGES_INDEPENDENT_0800_SLA' in pages,
+    require('Verify public Pages HTTP delivery after bounded CDN propagation' in pages
+            and 'python validation/publishing/verify_pages_http_delivery_v1.py' in pages
+            and 'python3 validation/publishing/check_pages_0800_delivery_sla_v1.py' in pages
+            and '/tmp/pages-public-http-proof.json' in pages,
             "do not mistake a green runner for public HTTP/08:00 proof")
 
 
@@ -100,8 +102,9 @@ class MorningSourceDriftContract(unittest.TestCase):
 
     def test_regression_missing_real_delivery_proof_rejected(self):
         with self.assertRaisesRegex(ValueError, "public HTTP"):
-            self.check(pages=self.pages.replace("PAGES_PUBLIC_HTTP_PROOF",
-                                                "HTTP_CHECK_REMOVED"))
+            self.check(pages=self.pages.replace(
+                "python validation/publishing/verify_pages_http_delivery_v1.py",
+                "echo HTTP_CHECK_REMOVED"))
 
 
 if __name__ == "__main__":
