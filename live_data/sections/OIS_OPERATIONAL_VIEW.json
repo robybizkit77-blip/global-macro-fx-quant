@@ -287,7 +287,7 @@
       "withheld_reason": "STALE_OR_INCOMPLETE_PRICING"
     },
     "GBP": {
-      "as_of": "2026-10-27",
+      "as_of": "2026-10-28",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
@@ -295,22 +295,22 @@
       "direction_vs_policy": "UP",
       "horizons": {
         "12m": {
-          "change_1d_bp": 1.6,
-          "change_1w_bp": -0.4,
-          "policy_delta_bp": 118.4,
-          "rate": 4.934
+          "change_1d_bp": 1.5,
+          "change_1w_bp": 6.2,
+          "policy_delta_bp": 119.9,
+          "rate": 4.949
         },
         "3m": {
           "change_1d_bp": 0.4,
-          "change_1w_bp": 1.7,
-          "policy_delta_bp": 42.6,
-          "rate": 4.176
+          "change_1w_bp": 3.9,
+          "policy_delta_bp": 43.0,
+          "rate": 4.1804
         },
         "6m": {
-          "change_1d_bp": 1.5,
-          "change_1w_bp": 1.5,
-          "policy_delta_bp": 78.7,
-          "rate": 4.5372
+          "change_1d_bp": 0.8,
+          "change_1w_bp": 5.9,
+          "policy_delta_bp": 79.5,
+          "rate": 4.5447
         }
       },
       "official_status": "ACTIVE",
@@ -320,7 +320,7 @@
       "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive"
     },
     "JPY": {
-      "as_of": "2026-10-28",
+      "as_of": "2026-10-29",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
@@ -328,10 +328,10 @@
       "direction_vs_policy": "UP",
       "horizons": {
         "12m": {
-          "change_1d_bp": 0.2,
-          "change_1w_bp": 5.2,
-          "policy_delta_bp": 73.4,
-          "rate": 1.984
+          "change_1d_bp": 1.5,
+          "change_1w_bp": 6.7,
+          "policy_delta_bp": 74.9,
+          "rate": 1.999
         },
         "3m": {
           "change_1d_bp": 0.0,
