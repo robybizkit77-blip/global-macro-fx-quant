@@ -3,8 +3,10 @@
 
 The historical CME delayed_snap API needs OAuth, entitlement and redistribution
 license. This probe does NOT call that API. It only checks whether the public
-product settlement webpage's JSON endpoint is usable for 3 dates. It never
-prints or saves settlement prices, edits runtime, or certifies redistribution.
+product settlement webpage's JSON endpoint is usable for dated contracts.
+An optional FOMC event-window check verifies the same contract IDs were present
+on BOTH sides of the event without recording levels or calculating repricing.
+It never prints or saves settlement prices, edits runtime, or certifies redistribution.
 """
 from __future__ import annotations
 
@@ -111,23 +113,64 @@ def get_public_page_json(product_id: str, trade_date: dt.date) -> tuple[str, obj
         return "NON_JSON_RESPONSE", None
 
 
-def probe(today: dt.datetime) -> dict:
+def probe(today: dt.datetime, event_date: dt.date | None = None) -> dict:
     dates = target_dates(today)
     # Product ID 305 is the current CME website product reference for ZQ;
     # 41 is a CME clearing/product code, not proof of the website product ID.
     # Only 305 is probed automatically; never fall back to 41 without review.
     pid = CANDIDATES[0]
+    cache = {}
+    def check_date(d: dt.date) -> tuple[dict, set[str]]:
+        # Never persist returned settlement prices; only date/identity and
+        # anonymous contract availability. Reuse requests across two windows.
+        if d not in cache:
+            access, payload = get_public_page_json(pid, d)
+            c = classify(payload, d) if access == "HTTP_200" else {"state": "SOURCE_UNAVAILABLE", "rows": 0}
+            contracts = c.pop("contracts", set())
+            cache[d] = ({"date": d.isoformat(), "http_result": access, **c}, contracts)
+        return cache[d]
+
     checks = []
     common: set[str] | None = None
     for d in dates:
-        access, payload = get_public_page_json(pid, d)
-        c = classify(payload, d) if access == "HTTP_200" else {"state": "SOURCE_UNAVAILABLE", "rows": 0}
-        contracts = c.pop("contracts", set())
+        c, contracts = check_date(d)
         if c["state"] == "DATE_EXACT_CONTRACTS_PRESENT":
             common = contracts if common is None else common & contracts
         else:
             common = set()
-        checks.append({"date": d.isoformat(), "http_result": access, **c})
+        checks.append(c)
+    event_audit = None
+    if event_date is not None:
+        chicago_day = today.astimezone(CHICAGO).date()
+        before = bd_before(event_date, 1)
+        audit = {
+            "event": "FOMC_2026_10_28" if event_date.isoformat() == "2026-10-28" else "CUSTOM_DATED_EVENT",
+            "event_date": event_date.isoformat(),
+            "pre_event_trade_date": before.isoformat(),
+            "post_event_trade_date": event_date.isoformat(),
+            "levels_recorded": False,
+            "repricing_computed": False,
+            "official_pricing_promotion_allowed": False,
+        }
+        if chicago_day <= event_date:
+            audit["status"] = "EVENT_NOT_YET_PAST"
+            audit["checks"] = []
+            audit["matched_contract_count"] = 0
+        elif (chicago_day - event_date).days > 14:
+            audit["status"] = "EVENT_WINDOW_EXPIRED_NO_NEW_REQUESTS"
+            audit["checks"] = []
+            audit["matched_contract_count"] = 0
+        else:
+            pre, pre_contracts = check_date(before)
+            post, post_contracts = check_date(event_date)
+            overlap = len(pre_contracts & post_contracts) if all(
+                c["state"] == "DATE_EXACT_CONTRACTS_PRESENT" for c in (pre, post)
+            ) else 0
+            audit["checks"] = [pre, post]
+            audit["matched_contract_count"] = overlap
+            audit["status"] = ("DATE_MATCHED_EVENT_ACCESS_CANDIDATE" if overlap >= 9
+                               else "EVENT_ACCESS_NOT_PROVEN")
+        event_audit = audit
     shared = sorted(common or [])
     enough_shared = len(shared) >= 9
     all_valid = all(c["state"] == "DATE_EXACT_CONTRACTS_PRESENT" for c in checks)
@@ -145,6 +188,7 @@ def probe(today: dt.datetime) -> dict:
         "checks": checks,
         "common_contract_count": len(shared),
         "price_levels_collected_or_logged": False,
+        "fomc_event_window": event_audit,
         "interpretation": "Public website endpoint availability only, not a licensed official historical-data feed; requires source-identity and permitted-use review.",
         "licensed_api_note": "CME delayed_snap histSettlements requires OAuth + data entitlements and a Public Website (Delayed) Redistribution licence. Never call without credentials.",
     }
@@ -154,8 +198,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", default="/tmp/cme-zq-public-source-proof.json")
     parser.add_argument("--summary")
+    parser.add_argument("--event-date", type=dt.date.fromisoformat, default=None,
+                        help="Optional completed issuer decision day; match contracts on event and prior session, no price capture")
     args = parser.parse_args()
-    result = probe(dt.datetime.now(dt.timezone.utc))
+    result = probe(dt.datetime.now(dt.timezone.utc), event_date=args.event_date)
     Path(args.output).write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print("CME_PUBLIC_ZQ_SOURCE_PROOF", json.dumps(result, sort_keys=True))
     if args.summary:
