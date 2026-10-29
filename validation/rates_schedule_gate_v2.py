@@ -6,6 +6,12 @@ Rome slot. GitHub can start a run late; use the cron identity and the
 Europe/Rome offset rather than the runner's current minute. Do not conflate
 the CET/CEST duplicate cron expressions. A bounded 4-hour delay window
 prevents a queued job from running against the wrong local session.
+
+Evening recovery reuses completed, successful, MAIN-branch *scheduled* runs of
+the pre-existing Hourly Certified Alert Readiness workflow. No new cron.
+Reject mismatched upstream identities, PR/push/manual events and weekends.
+This gives late official North American rates a second real read before the
+next day's morning pipeline; it NEVER advances unavailable source observations.
 """
 from __future__ import annotations
 
@@ -28,7 +34,9 @@ SLOTS = {
 }
 
 
-def resolve(event: str, cron: str, now: dt.datetime) -> dict:
+def resolve(event: str, cron: str, now: dt.datetime, *,
+            upstream_name: str = "", upstream_event: str = "",
+            upstream_conclusion: str = "", upstream_head_branch: str = "") -> dict:
     if now.tzinfo is None or now.utcoffset() is None:
         raise ValueError("offset-aware timestamp required")
     local = now.astimezone(ROME)
@@ -41,6 +49,29 @@ def resolve(event: str, cron: str, now: dt.datetime) -> dict:
         "should_run": False,
         "reason": "",
     }
+    if event == "workflow_run":
+        out["upstream_name"] = upstream_name
+        out["upstream_event"] = upstream_event
+        out["upstream_conclusion"] = upstream_conclusion
+        out["upstream_head_branch"] = upstream_head_branch
+        if (upstream_name != "Hourly Certified Alert Readiness V1"
+                or upstream_event != "schedule"
+                or upstream_conclusion != "success"
+                or upstream_head_branch != "main"):
+            out["reason"] = "UNTRUSTED_OR_NON_SCHEDULED_UPSTREAM"
+            return out
+        if local.weekday() >= 5:
+            out["reason"] = "EVENING_RECOVERY_WEEKEND"
+            return out
+        if not (19 <= local.hour <= 23):
+            out["reason"] = "OUTSIDE_EVENING_SOURCE_PUBLICATION_WINDOW"
+            return out
+        out.update(should_run=True,
+                   reason="TRUSTED_SCHEDULED_HOURLY_EVENING_RATES_RECOVERY")
+        return out
+    if event not in ("schedule", "workflow_dispatch", "push", "pull_request"):
+        out["reason"] = "UNKNOWN_EVENT_FAIL_CLOSED"
+        return out
     if event != "schedule":
         out.update(should_run=True, reason="EXPLICIT_EVENT")
         return out
@@ -75,10 +106,18 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--event", required=True)
     ap.add_argument("--cron", default="")
+    ap.add_argument("--upstream-name", default="")
+    ap.add_argument("--upstream-event", default="")
+    ap.add_argument("--upstream-conclusion", default="")
+    ap.add_argument("--upstream-head-branch", default="")
     ap.add_argument("--output")
     ap.add_argument("--summary")
     args = ap.parse_args()
-    result = resolve(args.event, args.cron, dt.datetime.now(UTC))
+    result = resolve(args.event, args.cron, dt.datetime.now(UTC),
+                     upstream_name=args.upstream_name,
+                     upstream_event=args.upstream_event,
+                     upstream_conclusion=args.upstream_conclusion,
+                     upstream_head_branch=args.upstream_head_branch)
     print("RATES_SCHEDULE_GATE_V2 " + json.dumps(result, sort_keys=True), flush=True)
     if args.output:
         with Path(args.output).open("a", encoding="utf-8") as file:
