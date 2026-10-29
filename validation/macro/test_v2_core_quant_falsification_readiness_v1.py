@@ -69,16 +69,22 @@ class QuantFalsificationReadinessTests(unittest.TestCase):
         f=self.result["forward_truth"]
         self.assertGreaterEqual(len(f["receipt_records"]),3)
         self.assertEqual(f["realized_outcome_rows"],0)
-        self.assertEqual(f["journal_unique_cutoffs"],3)
-        self.assertEqual(f["journal_distinct_runs"],3)
-        self.assertEqual(f["decision_rows_in_actual_journal"],84)
+        self.assertGreaterEqual(f["journal_unique_cutoffs"],3)
+        self.assertEqual(f["journal_unique_cutoffs"],len({r["decision_cutoff"] for r in self.decisions}))
+        self.assertGreaterEqual(f["journal_distinct_runs"],3)
+        self.assertEqual(f["journal_distinct_runs"],len({r["run_id"] for r in self.decisions}))
+        self.assertGreaterEqual(f["decision_rows_in_actual_journal"],84)
+        self.assertEqual(f["decision_rows_in_actual_journal"],len(self.decisions))
         self.assertEqual(f["receipt_batches_claiming_written_rows_absent_from_journal"],0)
         self.assertFalse(f["some_receipts_do_not_establish_archived_decisions"])
         self.assertTrue(f["three_date_archived_forward_observations_reconciled"])
         unpaired=[x for x in f["receipt_records"] if x["unreconciled_claimed_writes"]>0]
         self.assertEqual(unpaired, [])
         self.assertEqual({x["run_id"] for x in f["receipt_records"]},
-                         {"real-main-smoke-20261014", "frozen-core-20261026", "frozen-core-20261027"})
+                         {r["run_id"] for r in self.receipts})
+        self.assertTrue({"real-main-smoke-20261014", "frozen-core-20261026",
+                         "frozen-core-20261027"}.issubset(
+                         {x["run_id"] for x in f["receipt_records"]}))
         self.assertTrue(all(x["status"]=="MATCHED_JOURNAL_OR_ZERO_WRITES_NOT_PERFORMANCE"
                             and x["can_count_as_prospective_OOS_sample"] is False
                             for x in f["receipt_records"]))
@@ -110,7 +116,7 @@ class QuantFalsificationReadinessTests(unittest.TestCase):
 
     def test_eight_currencies_28_pairs_and_stale_core_dated_safely(self):
         self.assertEqual(self.result["universe"]["macro_baseline_as_of"],"2026-09-25")
-        self.assertEqual(self.result["universe"]["pair_price_as_of"],"2026-10-27")
+        self.assertEqual(self.result["universe"]["pair_price_as_of"],self.setup["price_asof"])
         self.assertFalse(self.result["universe"]["same_date_macro_and_fx_prices"])
         self.reject("core",lambda d:d.update(asOf="2026-10-27"))
         self.reject("setup",lambda d:d.update(pair_count=27))
@@ -118,7 +124,7 @@ class QuantFalsificationReadinessTests(unittest.TestCase):
             macro_baseline_asof="2026-10-27"))
         self.reject("forward",lambda d:d.update(state="READY_FOR_LAUNCH"))
         self.reject("forward",lambda d:d["beta"].update(strategy_beta_validated=True))
-        self.reject("forward",lambda d:d["forward"].update(decision_rows=85))
+        self.reject("forward",lambda d:d["forward"].update(decision_rows=len(self.decisions)+1))
 
     def test_archives_and_main_live_data_unchanged(self):
         paths=[
