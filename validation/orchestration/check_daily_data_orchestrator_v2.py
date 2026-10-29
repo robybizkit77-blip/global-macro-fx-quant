@@ -184,8 +184,8 @@ def main() -> None:
     # run the source-backed child-step proof. They MUST check out the repo
     # before executing that Python file, even if no pre-publication audit runs.
     checkout_segment = text.split(
-        '      - name: Checkout main for pre-publication source audit\\n', 1
-    )[1].split('      - name: Run serialized refresh sequence\\n', 1)[0]
+        '      - name: Checkout main for pre-publication source audit\n', 1
+    )[1].split('      - name: Run serialized refresh sequence\n', 1)[0]
     assert "if: ${{ steps.phase.outputs.phase != 'skip' }}" in checkout_segment
     assert 'uses: actions/checkout@v4' in checkout_segment
     assert 'ref: main' in checkout_segment
