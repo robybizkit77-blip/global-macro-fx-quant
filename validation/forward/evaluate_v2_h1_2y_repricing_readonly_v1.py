@@ -247,6 +247,8 @@ def operational_2y_readiness(live_rates, now):
     day = now.astimezone(ROME).date()
     countries = {}
     fresh = []
+    def finite_yield(v):
+        return type(v) in (int, float) and math.isfinite(v)
     for ccy in cap.G8:
         row = live_rates.get(ccy)
         state = "MISSING_RATE"
@@ -264,7 +266,7 @@ def operational_2y_readiness(live_rates, now):
                     source_day = None
             else:
                 source_day = None
-            if source_day is not None and positive(value):
+            if source_day is not None and finite_yield(value):
                 if source_day > day:
                     state = "FUTURE_SOURCE_REJECTED"
                 else:
@@ -281,7 +283,7 @@ def operational_2y_readiness(live_rates, now):
         countries[ccy] = {
             "source_date": stamp,
             "source_age_weekdays": age,
-            "two_year_yield_pct": value if positive(value) else None,
+            "two_year_yield_pct": value if finite_yield(value) else None,
             "source_quality_label_untrusted_for_freshness": (
                 row.get("quality") if isinstance(row, dict) else None),
             "state": state,
