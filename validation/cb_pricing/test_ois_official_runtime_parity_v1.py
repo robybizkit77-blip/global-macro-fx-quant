@@ -9,6 +9,8 @@ from __future__ import annotations
 import copy
 import json
 import math
+import re
+from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -31,6 +33,7 @@ def check(ois:dict, cb:dict, view:dict):
     require(set(source)>=set(G8) and set(cb)>=set(G8) and set(v)>=set(G8), "G8 currencies")
     require(view.get("schema")=="GMFQ_OIS_OPERATIONAL_VIEW_V1", "schema")
     active=[]
+    pre_decision=[]
     for c in G8:
         o=source[c]
         p=cb[c]["market_pricing"]
@@ -48,8 +51,33 @@ def check(ois:dict, cb:dict, view:dict):
                 c+" official qualification")
         require(x.get("as_of")==o.get("as_of")==p.get("as_of"),c+" as-of drift")
         require(x.get("source")==o.get("source")==p.get("source"),c+" source lineage")
-        require(equal(x.get("policy_rate"),o.get("policy_rate")) and
-                equal(x.get("policy_rate"),cb[c]["rate"]),c+" policy rate")
+        # A *dated* pre-decision official futures settlement must retain the
+        # policy rate from its own trading session. Never re-anchor old 3/6/12M
+        # policy deltas to a new CB rate decided the following day.
+        require(equal(x.get("policy_rate"),o.get("policy_rate")),
+                c+" source-day policy rate")
+        if not equal(x.get("policy_rate"),cb[c]["rate"]):
+            source_day=o.get("as_of")
+            decision_day=cb[c].get("last_date")
+            action=str(cb[c].get("action") or "")
+            action_bp=re.search(r"([+-]\\d+)\\s*pb",action)
+            try:
+                dated=(date.fromisoformat(str(source_day)) <
+                       date.fromisoformat(str(decision_day)))
+            except ValueError:
+                dated=False
+            note=p.get("note")
+            require(
+                dated and
+                p.get("freshness_status")=="HISTORICAL_PRE_DECISION" and
+                action_bp is not None and
+                equal(cb[c]["rate"]-o["policy_rate"],int(action_bp.group(1))/100) and
+                isinstance(note,str) and "NON confrontabili" in note and
+                isinstance(cb[c].get("pricing_status"),str) and
+                "PRECEDENTI" in cb[c]["pricing_status"],
+                c+" unacknowledged pre-decision policy rate mismatch"
+            )
+            pre_decision.append(c)
         for t in HORIZONS:
             original=o["horizons"][t]
             displayed=x["horizons"][t]
@@ -59,7 +87,9 @@ def check(ois:dict, cb:dict, view:dict):
     # pin the count to today's four or allow the view to invent that promotion.
     require(len(active)>0, "no official sources")
     require(view["summary"]["green_official"]==len(active), "certified count mismatch")
-    return {"status":"PASS","aligned_currencies":active,"as_of":{c:v[c]["as_of"] for c in active},
+    return {"status":"PASS","aligned_currencies":active,
+            "pre_decision_policy_anchor_currencies":pre_decision,
+            "as_of":{c:v[c]["as_of"] for c in active},
             "official_only":True,"estimated_promoted":False}
 
 def main():
@@ -67,6 +97,26 @@ def main():
     cb=json.loads(CB.read_text())
     view=json.loads(OPERATIONAL.read_text())
     receipt=check(ois,cb,view)
+    # Regression for BoC +25 bp on 28 Oct after the actual 27 Oct MX CRA close.
+    # This is an explicitly historical market-policy anchor, not a post-BoC
+    # repricing claim, source replacement or fake OIS publication.
+    require("CAD" in receipt["pre_decision_policy_anchor_currencies"],
+            "CAD pre-decision historical marker not detected")
+    require(equal(ois["currencies"]["CAD"]["policy_rate"],2.25) and
+            equal(cb["CAD"]["rate"],2.50),"BoC 27/28 October policy anchors")
+    for label,change in (
+        ("no CAD predecision marker",lambda d:d["CAD"]["market_pricing"].update(
+            freshness_status="LIVE_OR_RECENT_SESSION")),
+        ("no CAD policy action",lambda d:d["CAD"].update(action="INVARIATO")),
+        ("no CAD decision lag",lambda d:d["CAD"].update(last_date="2026-10-27")),
+        ("no CAD caveat",lambda d:d["CAD"]["market_pricing"].update(note="")),
+        ("incorrect CAD rate change",lambda d:d["CAD"].update(rate=2.75)),
+    ):
+        malformed=copy.deepcopy(cb)
+        change(malformed)
+        try:check(ois,malformed,view)
+        except ValueError:pass
+        else:raise AssertionError("Failed to reject "+label)
     for code,mutate in (
         ("stale GBP as-of",lambda d:d["currencies"]["GBP"].update(as_of="2026-10-19")),
         ("wrong GBP 6m",lambda d:d["currencies"]["GBP"]["horizons"]["6m"].update(rate=4.48)),
