@@ -9,6 +9,7 @@ on:
       - 'validation/orchestration/check_daily_data_orchestrator_v2.py'
       - 'validation/orchestration/check_morning_readiness_v1.py'
       - 'validation/orchestration/test_check_morning_readiness_v1.py'
+      - 'validation/orchestration/test_morning_source_drift_contract_v1.py'
       - 'validation/orchestration/test_prebrief_offhour_dst_schedule_v1.py'
       - 'validation/orchestration/check_morning_delivery_sla_v1.py'
       - 'validation/orchestration/test_check_morning_delivery_sla_v1.py'
@@ -25,6 +26,7 @@ on:
       - 'validation/orchestration/check_daily_data_orchestrator_v2.py'
       - 'validation/orchestration/check_morning_readiness_v1.py'
       - 'validation/orchestration/test_check_morning_readiness_v1.py'
+      - 'validation/orchestration/test_morning_source_drift_contract_v1.py'
       - 'validation/orchestration/test_prebrief_offhour_dst_schedule_v1.py'
       - 'validation/orchestration/check_morning_delivery_sla_v1.py'
       - 'validation/orchestration/test_check_morning_delivery_sla_v1.py'
@@ -98,6 +100,8 @@ jobs:
         run: python validation/orchestration/check_daily_data_orchestrator_v2.py
       - name: Test morning freshness and DST-aware source windows
         run: python validation/orchestration/test_check_morning_readiness_v1.py
+      - name: Test live-vintage and source-backed calendar guards for 08:00
+        run: python -m unittest validation.orchestration.test_morning_source_drift_contract_v1 -v
       - name: Test 04:43 Rome off-hour DST prebrief schedule
         run: python validation/orchestration/test_prebrief_offhour_dst_schedule_v1.py
       - name: Test 08:00 Rome delivery SLA and failure receipts
