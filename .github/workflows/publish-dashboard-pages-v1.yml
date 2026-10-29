@@ -185,8 +185,9 @@ jobs:
           assert cal['status']=='ACTIVE_CB_PLUS_MACRO_OFFICIAL_WITH_SECONDARY_CONTEXT'
           from validation.calendar.verify_future_macro_coverage_v1 import verify as verify_future
           seed=json.loads(Path('live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json').read_text())
+          cb_source=json.loads(Path('live_data/sections/NATIVE_CB_DATA.json').read_text())
           from datetime import datetime, timezone
-          future=verify_future(cal,seed,datetime.now(timezone.utc))
+          future=verify_future(cal,seed,cb_source,datetime.now(timezone.utc))
           print('CALENDAR_FUTURE_COVERAGE_SOURCE_PARITY',future)
           assert cal['scope']['core_score_impact']==0 and cal['scope']['consensus_context_only'] is True and cal['scope']['consensus_never_changes_official_date'] is True
           macro=[e for e in cal['events'] if e.get('event_type')!='CENTRAL_BANK_DECISION']
