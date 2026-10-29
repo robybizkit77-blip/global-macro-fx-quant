@@ -26,12 +26,14 @@ on:
       - 'validation/cb_pricing/test_cb_pricing_schedule_gate_v1.py'
   workflow_dispatch:
   schedule:
-    # Europe/Rome retries: 06:00, 06:30, 07:00 on working days.
-    - cron: '0 4 * * 1-5'
-    - cron: '0 5 * * 1-5'
-    - cron: '30 4 * * 1-5'
-    - cron: '30 5 * * 1-5'
-    - cron: '0 6 * * 1-5'
+    # Europe/Rome retries: 06:07, 06:37, 07:07 on working days.
+    # Existing 3 attempts only: shift away from GitHub top-of-hour load.
+    # This reduces exposure to drops but cannot guarantee scheduler delivery.
+    - cron: '7 4 * * 1-5'
+    - cron: '7 5 * * 1-5'
+    - cron: '37 4 * * 1-5'
+    - cron: '37 5 * * 1-5'
+    - cron: '7 6 * * 1-5'
 
 permissions:
   contents: write
