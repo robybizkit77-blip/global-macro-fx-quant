@@ -3495,6 +3495,16 @@ async function mountCentralBankFirstReading(doc){
  fedNote.dataset.preDecision=String(fedAudit.pre_decision);
  fedNote.style.cssText='border-top:1px solid #294657;padding-top:8px;margin:10px 0 3px;color:#d2c59e;font:11px/1.6 Arial,sans-serif;overflow-wrap:anywhere';
  fedNote.textContent=fedAudit.text;
+ // An ordinary outbound reference lets the user consult the licensed source
+ // on its own website. NO CME data extraction, iframe or price/probability API.
+ const fedWatch=doc.createElement('a');
+ fedWatch.href='https://www.cmegroup.com/markets/interest-rates/cme-fedwatch-tool';
+ fedWatch.target='_blank';fedWatch.rel='noopener noreferrer';
+ fedWatch.textContent='Consulta FedWatch ufficiale CME (sito esterno)';
+ fedWatch.setAttribute('aria-label','Apri FedWatch sul sito ufficiale CME');
+ fedWatch.style.cssText='color:#e5c986;text-decoration:underline;display:inline-block;margin-left:5px';
+ fedNote.appendChild(doc.createTextNode(' '));
+ fedNote.appendChild(fedWatch);
  rail.querySelector('.gmfq-first-explainer')?.insertAdjacentElement('afterend',fedNote);
  const meetings=FX.map(ccy=>{
    const policy=cb[ccy],pricing=ois.currencies[ccy];
