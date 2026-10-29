@@ -30,7 +30,9 @@ def main():
     before = json.dumps(rates, sort_keys=True)
 
     assert validate_existing(rates,"CHF") == dt.date(2026,9,30)
-    assert validate_existing(rates,"NZD") == dt.date(2026,10,5)
+    # Actual production NZD rates can legitimately advance beyond the
+    # original Oct 5 fixture. Never assert a frozen date against live data.
+    assert validate_existing(rates,"NZD") == dt.date.fromisoformat(rates["NZD"]["date"])
     snb = ("Date;D0;D1;Value\n"
            "2026-10-16;CHF;2J;0.32\n"
            "2026-10-16;CHF;10J;0.64\n").encode()
@@ -80,25 +82,35 @@ def main():
     must_reject(lambda:make_candidate(corrupt,"CHF",o,
         source_sha256="fixture",mode="TEST",today=today),"history tail tampering")
 
+    # Build a deterministic synthetic NEXT-session observation from the real
+    # certified NZD baseline. The staging gate, not a frozen source vintage,
+    # is under test; no production series or actual yields are modified.
+    nzd_previous = validate_existing(rates, "NZD")
+    nzd_candidate_date = nzd_previous + dt.timedelta(days=1)
+    while nzd_candidate_date.weekday() >= 5:
+        nzd_candidate_date += dt.timedelta(days=1)
+    nzd_test_now = nzd_candidate_date + dt.timedelta(days=1)
+    nzd_y2 = round(float(rates["NZD"]["2Y"]) - 0.01, 4)
+    nzd_y10 = round(float(rates["NZD"]["10Y"]) + 0.01, 4)
     wb=Workbook()
     ws=wb.active
     ws.title="Daily close"
     ws.append(["Secondary market government bond closing yields (%pa)",None,None])
     ws.append(["Date","2 year","10 year"])
-    ws.append([dt.date(2026,10,15),3.9,5.15])
-    ws.append([dt.date(2026,10,16),3.88,5.14])
+    ws.append([nzd_previous, rates["NZD"]["2Y"], rates["NZD"]["10Y"]])
+    ws.append([nzd_candidate_date, nzd_y2, nzd_y10])
     out=io.BytesIO()
     wb.save(out); raw=out.getvalue()
     mapping={"sheet":"Daily close","header_row":2,"group_row":1,
              "date_col":1,"y2_col":2,"y10_col":3,
              "source_url":RBNZ_B2,"source_sha256":hashlib.sha256(raw).hexdigest()}
     parsed=parse_rbnz_b2_xlsx(raw,mapping)
-    assert parsed["date"]=="2026-10-16"
-    assert parsed["2Y"]==3.88 and parsed["10Y"]==5.14
+    assert parsed["date"] == nzd_candidate_date.isoformat()
+    assert parsed["2Y"] == nzd_y2 and parsed["10Y"] == nzd_y10
     nzdcandidate,nzdreceipt=make_candidate(rates,"NZD",parsed,
         source_sha256=mapping["source_sha256"],
-        mode="SYNTHETIC_RBNZ_FIXTURE_QA",today=today)
-    assert nzdcandidate["NZD"]["date"]=="2026-10-16"
+        mode="SYNTHETIC_RBNZ_FIXTURE_QA",today=nzd_test_now)
+    assert nzdcandidate["NZD"]["date"] == nzd_candidate_date.isoformat()
     assert set(k for k in rates if nzdcandidate[k]!=rates[k])=={"NZD"}
     assert nzdreceipt["eligible_for_automatic_promotion"] is False
     assert "government benchmark close" in nzdreceipt["official_basis"]
