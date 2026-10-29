@@ -1,7 +1,18 @@
 {
-  "content_as_of": "2026-10-28",
-  "generated_at_utc": "2026-10-29T10:36:59.564550Z",
+  "content_as_of": "2026-10-29",
+  "generated_at_utc": "2026-10-29T12:59:01.222171Z",
   "items": [
+    {
+      "as_of": "2026-10-29",
+      "category": "FUTURES_IMPLIED_REPRICING",
+      "ccy": "JPY",
+      "confidence": "A",
+      "detail": "Movimento 1D +1.5 bp sul bucket 12M; variazione 1W +6.7 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "MEDIUM",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "Tokyo Financial Exchange · Three-month TONA Futures",
+      "title": "JPY: repricing implicito da futures più hawkish (+1.5 bp 12M in 1D)"
+    },
     {
       "as_of": "2026-10-28",
       "category": "FUTURES_IMPLIED_REPRICING",
@@ -26,28 +37,17 @@
     },
     {
       "as_of": "2026-10-28",
-      "category": "FUTURES_IMPLIED_REPRICING",
-      "ccy": "JPY",
-      "confidence": "A",
-      "detail": "Movimento 1D +0.2 bp sul bucket 12M; variazione 1W +5.2 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
-      "importance": "MEDIUM",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "Tokyo Financial Exchange · Three-month TONA Futures",
-      "title": "JPY: repricing implicito da futures più hawkish (+0.2 bp 12M in 1D)"
-    },
-    {
-      "as_of": "2026-10-27",
       "category": "OIS_REPRICING",
       "ccy": "GBP",
       "confidence": "A",
-      "detail": "Movimento 1D +1.6 bp sul bucket 12M; variazione 1W -0.4 bp.",
+      "detail": "Movimento 1D +1.5 bp sul bucket 12M; variazione 1W +6.2 bp.",
       "importance": "MEDIUM",
       "quality": "OFFICIAL_CERTIFIED",
       "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
-      "title": "GBP: repricing OIS più hawkish (+1.6 bp 12M in 1D)"
+      "title": "GBP: repricing OIS più hawkish (+1.5 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-10-29T10:36:59.564550Z",
+  "last_checked_at_utc": "2026-10-29T12:59:01.222171Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -170,6 +170,116 @@
     "headlines": [
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "CAD",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
+        "id": "BOC_PRESS:https://www.bankofcanada.ca/2026/10/bank-canada-webcasts-john-kuszczak-memorial-lecture-2026-10-29/",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-10-29T11:30:30Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "6m_rate_pct": 3.04,
+            "date": "2026-10-28",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "OFFICIAL_CERTIFIED",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
+            "status": "DAILY_CONTEXT_ONLY"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-10-27",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-10-27",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 3.36
+          }
+        },
+        "source": "Bank of Canada",
+        "source_id": "BOC_PRESS",
+        "title": "Bank of Canada webcasts The John Kuszczak Memorial Lecture",
+        "url": "https://www.bankofcanada.ca/2026/10/bank-canada-webcasts-john-kuszczak-memorial-lecture-2026-10-29/"
+      },
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "CAD",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
+        "id": "BOC_PRESS:https://www.bankofcanada.ca/multimedia/john-kuszczak-memorial-lecture-2026-10-29/",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-10-29T11:30:11Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "6m_rate_pct": 3.04,
+            "date": "2026-10-28",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "OFFICIAL_CERTIFIED",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
+            "status": "DAILY_CONTEXT_ONLY"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-10-27",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-10-27",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 3.36
+          }
+        },
+        "source": "Bank of Canada",
+        "source_id": "BOC_PRESS",
+        "title": "John Kuszczak Memorial Lecture 2026",
+        "url": "https://www.bankofcanada.ca/multimedia/john-kuszczak-memorial-lecture-2026-10-29/"
+      },
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "EUR",
         "desk_context": {
           "analysis_basis": "SOURCE_HEADLINE_ONLY",
@@ -241,8 +351,8 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 4.5372,
-            "date": "2026-10-27",
+            "6m_rate_pct": 4.5447,
+            "date": "2026-10-28",
             "event_window_proof": false,
             "instrument": "OIS_OBSERVED",
             "quality": "OFFICIAL_CERTIFIED",
@@ -344,12 +454,12 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 4.5372,
-            "date": "2026-10-27",
+            "6m_rate_pct": 4.5447,
+            "date": "2026-10-28",
             "event_window_proof": false,
             "instrument": "OIS_OBSERVED",
             "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
             "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
             "status": "DAILY_CONTEXT_ONLY"
           },
@@ -373,116 +483,6 @@
         "source_id": "BOE_NEWS",
         "title": "Remit for the Monetary Policy Committee - October 2026",
         "url": "https://www.bankofengland.co.uk/letter/2026/mpc-remit-2026"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "CAD",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "REVIEW",
-          "topic": "CB_COMMUNICATION",
-          "verify_next": "Esaminare il testo integrale; identificare eventuali novità rispetto alla posizione precedente e verificare la reazione del mercato.",
-          "why_watch": "Intervento di una banca centrale: il solo titolo non permette di classificare il tono hawkish o dovish."
-        },
-        "id": "BOC_PRESS:https://www.bankofcanada.ca/2026/10/bank-canada-media-interview-bloomberg-news-2026-10-28/",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-10-28T13:30:23Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "6m_rate_pct": 3.04,
-            "date": "2026-10-28",
-            "event_window_proof": false,
-            "instrument": "FUTURES_IMPLIED",
-            "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
-            "status": "DAILY_CONTEXT_ONLY"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-10-27",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-10-27",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.36
-          }
-        },
-        "source": "Bank of Canada",
-        "source_id": "BOC_PRESS",
-        "title": "Bank of Canada Media Interview – Bloomberg News",
-        "url": "https://www.bankofcanada.ca/2026/10/bank-canada-media-interview-bloomberg-news-2026-10-28/"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "CAD",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "REVIEW",
-          "topic": "CB_COMMUNICATION",
-          "verify_next": "Esaminare il testo integrale; identificare eventuali novità rispetto alla posizione precedente e verificare la reazione del mercato.",
-          "why_watch": "Intervento di una banca centrale: il solo titolo non permette di classificare il tono hawkish o dovish."
-        },
-        "id": "BOC_PRESS:https://www.bankofcanada.ca/2026/10/bank-canada-media-interview-good-question-with-amanda-lang-2026-10-28/",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-10-28T13:30:22Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "6m_rate_pct": 3.04,
-            "date": "2026-10-28",
-            "event_window_proof": false,
-            "instrument": "FUTURES_IMPLIED",
-            "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
-            "status": "DAILY_CONTEXT_ONLY"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-10-27",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-10-27",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.36
-          }
-        },
-        "source": "Bank of Canada",
-        "source_id": "BOC_PRESS",
-        "title": "Bank of Canada Media Interview – Good Question with Amanda Lang",
-        "url": "https://www.bankofcanada.ca/2026/10/bank-canada-media-interview-good-question-with-amanda-lang-2026-10-28/"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
@@ -662,7 +662,7 @@
       }
     ],
     "last_attempt_day_rome": "2026-10-29",
-    "latest_published_at_utc": "2026-10-29T10:00:00Z",
+    "latest_published_at_utc": "2026-10-29T11:30:30Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -726,9 +726,9 @@
         "status": "NO_VERIFIED_RECENT_ITEMS"
       },
       {
-        "accepted_items": 8,
+        "accepted_items": 9,
         "ccy": "CAD",
-        "entries_rejected": 2,
+        "entries_rejected": 1,
         "feed_entries_seen": 10,
         "feed_url": "https://www.bankofcanada.ca/content_type/press/feed/",
         "source": "Bank of Canada",
