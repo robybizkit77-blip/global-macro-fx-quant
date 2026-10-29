@@ -7,6 +7,13 @@ on:
   push:
     branches: [main]
     paths: ['.github/workflows/vix-persistent-apply-v1.yml', 'validation/fetch_cboe_vix_candidate_v2.py', 'validation/apply_cboe_vix_candidate_v1.py', 'validation/risk/test_vix_persistent_schedule_contract_v1.py']
+  workflow_run:
+    # Independent Calendar/News schedule (05:17 and 07:17 CET) can recover
+    # a missing/delayed overnight VIX cron before the 08:00 study briefing.
+    # Only its actual scheduled success on main is eligible: orchestrator-
+    # dispatched Calendar runs must not recursively fan out more work.
+    workflows: ['Calendar News Operational Refresh V1']
+    types: [completed]
   workflow_dispatch:
   schedule:
     # UTC duplicates cover CET/CEST; delayed GitHub runs must still check Cboe.
@@ -24,10 +31,22 @@ on:
     - cron: '45 12 * * 1-6'
 
 permissions: {contents: write}
-concurrency: {group: vix-persistent-apply-v1, cancel-in-progress: false}
+
+# Keep both a late overnight probe and an independent Calendar recovery:
+# GitHub's default single-pending run could otherwise drop the recovery.
+# PR checks never block the serialized production writer.
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('vix-validation-pr-{0}', github.event.pull_request.number) || 'vix-persistent-apply-v1' }}
+  queue: max
+  cancel-in-progress: false
 
 jobs:
   persist-vix-current:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.event == 'schedule')
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:

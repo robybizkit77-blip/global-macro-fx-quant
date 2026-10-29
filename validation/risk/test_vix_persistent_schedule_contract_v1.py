@@ -33,6 +33,26 @@ class VIXScheduleTests(unittest.TestCase):
         self.assertNotIn("23:15 23:45",gate)
         self.assertNotIn("== *",gate)
 
+    def test_independent_early_calendar_success_recovers_vix_without_new_crons(self):
+        workflow=policy_text()
+        trigger=workflow.split("  workflow_run:",1)[1].split("  workflow_dispatch:",1)[0]
+        self.assertIn("workflows: ['Calendar News Operational Refresh V1']",trigger)
+        self.assertIn("types: [completed]",trigger)
+        self.assertIn("github.event.workflow_run.conclusion == 'success'",workflow)
+        self.assertIn("github.event.workflow_run.head_branch == 'main'",workflow)
+        # Only independent schedule runs; not the Calendar jobs already
+        # dispatched by our parent orchestrator or PR/failed workflows.
+        self.assertIn("github.event.workflow_run.event == 'schedule'",workflow)
+        self.assertIn("queue: max",workflow)
+        self.assertIn("cancel-in-progress: false",workflow)
+        self.assertIn("vix-validation-pr-{0}",workflow)
+        self.assertNotIn("should_run=false",workflow)
+        calendar=(ROOT/".github/workflows/calendar-news-operational-refresh-v1.yml").read_text(encoding="utf-8")
+        self.assertIn("- cron: '17 4 * * 1-5'",calendar)
+        self.assertIn("- cron: '17 6 * * *'",calendar)
+        # No added VIX schedules; still exactly six independent official Cboe probes.
+        self.assertEqual(len(re.findall(r"^    - cron:",workflow,re.MULTILINE)),6)
+
     def test_utc_duplicate_slots_cover_both_rome_timezones_and_late_runs(self):
         text=policy_text()
         crons=re.findall(r"^\s+- cron: '(\d+) (\d+) \* \* 1-5'$",
