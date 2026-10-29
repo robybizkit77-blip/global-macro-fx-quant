@@ -78,6 +78,9 @@ def main():
     assert "github.event.workflow_run.conclusion == 'success'" in workflow
     assert "github.event.workflow_run.head_branch == 'main'" in workflow
     assert "github.event.workflow_run.event != 'pull_request'" in workflow
+    # Both history->price and price->history are admitted only when their
+    # parent was NOT itself started by workflow_run (cycle protection).
+    assert "github.event.workflow_run.event != 'workflow_run'" in workflow
     assert "queue: max" in workflow
     assert "cancel-in-progress: false" in workflow
     assert "price-validation-pr-{0}" in workflow
