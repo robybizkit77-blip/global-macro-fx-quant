@@ -29,7 +29,8 @@ REGISTERED_AT = datetime(2026, 10, 28, 22, 43, 56, tzinfo=timezone.utc)
 PRIMARY_HORIZON = "1W"
 MIN_DATES = 120
 REASONS = ("missing_prior_T0", "missing_rate", "stale_rate",
-           "unchanged_bond_date", "noncomparable_source", "zero_signal",
+           "unchanged_bond_date", "missing_instrument_identity",
+           "noncomparable_source", "zero_signal",
            "not_matured", "missing_future_fixing", "evaluated")
 
 
@@ -102,8 +103,10 @@ def source_pair(now_snap, before_snap, ccy):
         return "unchanged_bond_date", None
     ids = (now.get("two_year_instrument_identity"),
            before.get("two_year_instrument_identity"))
+    # A legacy snapshot without a fingerprint is not evidence that the
+    # underlying instruments differ. Never repair or backfill frozen snapshots.
     if not all(isinstance(x, str) and len(x.strip()) > 12 for x in ids):
-        return "noncomparable_source", None
+        return "missing_instrument_identity", None
     if ids[0] != ids[1]:
         return "noncomparable_source", None
     return None, values[0] - values[1]
