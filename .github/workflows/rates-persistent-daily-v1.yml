@@ -47,6 +47,11 @@ on:
       - 'validation/rates/build_nzd_b2_oct22_review_candidate_v1.py'
       - 'validation/rates/test_build_nzd_b2_oct22_review_candidate_v1.py'
   workflow_dispatch:
+  workflow_run:
+    # Reuse the already scheduled hourly alert; no new cron/workflow.
+    # Official North American government yields can arrive after Rome morning.
+    workflows: ['Hourly Certified Alert Readiness V1']
+    types: [completed]
   schedule:
     # Europe/Rome target windows: 07:20-07:39, 08:00-08:19, 09:00-09:19 on working days.
     # Duplicate UTC entries cover CET/CEST; cron identity resolves each Rome slot even if GitHub queues >20min.
@@ -88,11 +93,19 @@ jobs:
         env:
           RATES_TRIGGER_EVENT: ${{ github.event_name }}
           RATES_TRIGGER_CRON: ${{ github.event.schedule }}
+          RATES_UPSTREAM_NAME: ${{ github.event.workflow_run.name }}
+          RATES_UPSTREAM_EVENT: ${{ github.event.workflow_run.event }}
+          RATES_UPSTREAM_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          RATES_UPSTREAM_BRANCH: ${{ github.event.workflow_run.head_branch }}
         run: |
           set -euo pipefail
           python3 validation/rates_schedule_gate_v2.py \
             --event "$RATES_TRIGGER_EVENT" \
             --cron "$RATES_TRIGGER_CRON" \
+            --upstream-name "$RATES_UPSTREAM_NAME" \
+            --upstream-event "$RATES_UPSTREAM_EVENT" \
+            --upstream-conclusion "$RATES_UPSTREAM_CONCLUSION" \
+            --upstream-head-branch "$RATES_UPSTREAM_BRANCH" \
             --output "$GITHUB_OUTPUT" \
             --summary "$GITHUB_STEP_SUMMARY"
 
