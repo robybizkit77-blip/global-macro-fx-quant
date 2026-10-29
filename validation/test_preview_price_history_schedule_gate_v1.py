@@ -2,6 +2,7 @@
 """Deterministic Rome summer/winter duplicate-cron and delayed-run tests."""
 from __future__ import annotations
 import datetime as dt
+from pathlib import Path
 from preview_price_history_schedule_gate_v1 import CRON_TO_LOCAL, resolve, MAX_DELAY_MINUTES
 
 
@@ -55,8 +56,24 @@ def main():
     check("schedule", "25 16 * * 1-5", "2026-10-19T19:26:00Z", False, "EXPIRED_QUEUE_WINDOW")
     check("schedule", "25 16 * * 1-5", "2026-10-24T16:25:00Z", False, "NOT_ROME_BUSINESS_DAY")
     check("schedule", "30 16 * * 1-5", "2026-10-19T16:30:00Z", False, "UNRECOGNIZED_CRON")
-    for event in ("workflow_dispatch", "pull_request", "push"):
+    for event in ("workflow_dispatch", "pull_request", "push", "workflow_run"):
         check(event, "", "2026-10-19T11:20:00Z", True, "EXPLICIT_MANUAL_OR_CI_EVENT")
+
+    # The historical source refresh may follow an actual Price producer without
+    # waiting for the next scheduled attempt; the opposite trigger has its own
+    # anti-feedback guard so this never creates a workflow_run cycle.
+    workflow = (Path(__file__).resolve().parents[1] /
+                ".github/workflows/price-history-persistent-daily-v1.yml").read_text(encoding="utf-8")
+    trigger = workflow.split("  workflow_run:", 1)[1].split("  workflow_dispatch:", 1)[0]
+    assert "workflows: ['Price Persistent Daily V1']" in trigger
+    assert "types: [completed]" in trigger
+    assert "github.event.workflow_run.conclusion == 'success'" in workflow
+    assert "github.event.workflow_run.head_branch == 'main'" in workflow
+    assert "github.event.workflow_run.event != 'pull_request'" in workflow
+    assert "github.event.workflow_run.event != 'workflow_run'" in workflow
+    assert "queue: max" in workflow and "cancel-in-progress: false" in workflow
+    assert "price-history-validation-pr-{0}" in workflow
+    assert workflow.count("    - cron:") == 5
     try:
         resolve("schedule", "25 15 * * 1-5", dt.datetime(2026, 10, 19, 15, 25))
         raise AssertionError("naive datetime unexpectedly accepted")
