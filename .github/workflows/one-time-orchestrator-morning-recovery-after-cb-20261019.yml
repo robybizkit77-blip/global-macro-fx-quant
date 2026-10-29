@@ -18,7 +18,7 @@ concurrency:
 jobs:
   dispatch:
     if: >-
-      github.event.head_commit.message == 'One-time recovery 2026-10-29 restart after rates source clock fix'
+      github.event.head_commit.message == 'One-time recovery 2026-10-29 verify OIS and continue morning chain'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
