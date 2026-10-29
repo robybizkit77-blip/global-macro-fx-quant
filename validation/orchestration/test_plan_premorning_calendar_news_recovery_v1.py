@@ -35,6 +35,45 @@ class PlannerTests(unittest.TestCase):
         f=feeds("2026-10-26T05:56:07Z")
         f["NEWS_PULSE"]["generated_at_utc"]="2026-10-26T05:56:08Z"
         self.assertEqual(assess(now,f)["status"],"RETRY_REQUIRED")
+    def test_oct30_boj_decision_day_after_early_check_rechecks_news(self):
+        # Official BoJ publication time is unspecified: 05:17 check is too
+        # early to prove the decision's 07:45 availability.
+        now=self.at("2026-10-30T07:45:00+01:00")
+        f=feeds("2026-10-30T04:17:00Z")
+        cb={"JPY":{"last_date":"2026-09-18","next_meeting":"2026-10-30"}}
+        result=assess(now,f,cb)
+        self.assertEqual(result["status"],"RETRY_REQUIRED")
+        self.assertEqual(result["source_rechecks_needed"],["NEWS_PULSE"])
+        self.assertEqual(result["evidence"]["NEWS_PULSE"]["state"],
+                         "CB_MEETING_DAY_EARLY_NEWS_CHECK")
+        self.assertEqual(result["issuer_meetings_due_for_source_watch"],["JPY"])
+        self.assertIs(result["meeting_schedule_never_certifies_a_decision"],True)
+
+    def test_meeting_day_late_check_does_not_duplicate(self):
+        now=self.at("2026-10-30T07:45:00+01:00")
+        cb={"JPY":{"last_date":"2026-09-18","next_meeting":"2026-10-30"}}
+        late=feeds("2026-10-30T06:35:00Z")  # 07:35 Rome
+        self.assertEqual(assess(now,late,cb)["status"],
+                         "SKIP_ALREADY_RECHECKED_TODAY")
+
+    def test_no_meeting_and_already_certified_decision_skip(self):
+        now=self.at("2026-10-30T07:45:00+01:00")
+        early=feeds("2026-10-30T04:17:00Z")
+        self.assertEqual(assess(now,early,{})["status"],"SKIP_ALREADY_RECHECKED_TODAY")
+        cb={"JPY":{"last_date":"2026-10-30","next_meeting":"2026-12-18"}}
+        self.assertEqual(assess(now,early,cb)["status"],"SKIP_ALREADY_RECHECKED_TODAY")
+        bad={"JPY":{"last_date":"bad","next_meeting":"2026-10-30"}}
+        self.assertEqual(assess(now,early,bad)["status"],"SKIP_ALREADY_RECHECKED_TODAY")
+
+    def test_cb_meeting_recheck_preserves_clock_and_invalid_source_gate(self):
+        now=self.at("2026-10-30T07:45:00+01:00")
+        cb={"JPY":{"last_date":"2026-09-18","next_meeting":"2026-10-30"}}
+        f=feeds("2026-10-30T04:17:00Z")
+        f["NEWS_PULSE"]["last_checked_at_utc"]="2026-10-30T09:45:00Z"
+        self.assertEqual(assess(now,f,cb)["evidence"]["NEWS_PULSE"]["state"],
+                         "INVALID_OR_MISSING_SOURCE_CLOCK")
+        self.assertEqual(assess(now,f,cb)["source_rechecks_needed"],["NEWS_PULSE"])
+
     def test_dst_oct25_cross_midnight(self):
         # 2026-10-25 switched +02 to +01. No UTC date heuristic allowed.
         now=self.at("2026-10-26T07:45:00+01:00")
