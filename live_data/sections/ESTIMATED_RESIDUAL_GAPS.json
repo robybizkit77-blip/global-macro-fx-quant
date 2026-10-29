@@ -105,10 +105,10 @@
     "GOLD.market_proxy": {
       "status": "MARKET_PROXY_ACTIVE_SECONDARY",
       "confidence": "B_FOR_DIRECTION_ONLY",
-      "proxy_as_of": "2026-10-28",
-      "value": 4061.1001,
-      "change_1d_pct": -0.3313,
-      "change_1w_pct": -2.1422,
+      "proxy_as_of": "2026-10-29",
+      "value": 4065.1001,
+      "change_1d_pct": -0.2332,
+      "change_1w_pct": -2.0458,
       "source": "Yahoo Finance public chart JSON · COMEX Gold Futures (GC=F)",
       "source_endpoint": "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
       "vendor_symbol": "GC=F",
@@ -117,7 +117,7 @@
       "exchange_name": "CMX",
       "instrument_type": "FUTURE",
       "observation_count_1mo": 23,
-      "fetched_at_utc": "2026-10-28T13:42:27.017073Z",
+      "fetched_at_utc": "2026-10-29T01:58:51.381188Z",
       "official_canonical_untouched": true,
       "interpretation": "Informational delayed futures market proxy, not LBMA Gold Price, not physical spot, not certified exchange settlement, and not eligible for canonical Gold history, core, signals, sizing or official backtests."
     }
