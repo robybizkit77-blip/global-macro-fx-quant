@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Read-only CB Pricing fallback gate: no extra cron, no blind dispatch.
 
-Existing independent workflow_run events can execute CB Pricing only after the
-Rome morning retries, and only if no completed *substantive* CB producer has
-succeeded today. API failures raise and NEVER silently approve a duplicate.
+Existing independent workflow_run events can recover missed CB Pricing cron
+from 06:30 Rome, after the first 06:13 slot. Later planned retries remain
+independent. Recovery is admitted only when no completed *substantive* CB
+producer has succeeded today. API failures raise and NEVER silently approve a duplicate.
 """
 from __future__ import annotations
 
@@ -24,7 +25,7 @@ REQUIRED_STEPS = frozenset((
     "Run per-currency certified dry-run preflight",
     "Apply independently certified source candidates only",
 ))
-START_TIME = dt.time(7, 15)
+START_TIME = dt.time(6, 30)
 END_TIME = dt.time(17, 30)
 
 
