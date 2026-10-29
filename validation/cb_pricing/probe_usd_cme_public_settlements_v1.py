@@ -213,6 +213,15 @@ def main():
             for r in result["checks"]:
                 fh.write(f"| {r['date']} | {r['http_result']} | {r['state']} | {r['rows']} |\n")
 
+            event = result.get("fomc_event_window")
+            if event:
+                fh.write("\\n### FOMC pre/post settlement ACCESS, not repricing\\n\\n")
+                fh.write(f"Event {event['event_date']}: **{event['status']}**; "
+                         f"same dated contract IDs: {event['matched_contract_count']}.\\n\\n")
+                for row in event["checks"]:
+                    fh.write(f"- {row['date']}: {row['http_result']} / {row['state']}\\n")
+                fh.write("\\nNo prices recorded, no implied probability and no official OIS promotion.\\n")
+
 
 if __name__ == "__main__":
     main()
