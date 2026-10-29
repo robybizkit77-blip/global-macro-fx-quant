@@ -57,7 +57,8 @@ def patch(cb: dict) -> tuple[dict, str]:
         if any(eur.get(k) != v for k, v in fields.items()):
             raise ValueError("ECB_CATCHUP_FAIL_CLOSED: decision date already present with different facts")
         return result, "ALREADY_CERTIFIED_NO_CHANGE"
-    if (current.get("bank") != "ECB" or current.get("rate") != 2.5
+    if (current.get("last_date") != PRIOR_DATE
+            or current.get("bank") != "ECB" or current.get("rate") != 2.5
             or current.get("rate_text") != "Deposit 2.50%"
             or current.get("next_meeting") != LAST_ISSUER_DECISION
             or current.get("action") != "RIALZO +25 pb"
