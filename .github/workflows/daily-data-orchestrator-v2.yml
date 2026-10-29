@@ -158,10 +158,13 @@ jobs:
           echo "phase=$phase" >> "$GITHUB_OUTPUT"
           echo "Resolved phase: $phase"
 
-      # The 04:43/07:45 pipeline must inspect the refreshed main tree
-      # before it explicitly dispatches the Pages publisher.
+      # EVERY active phase needs source scripts for the fail-closed check
+      # of actual child job steps. The prebrief/premorning phases additionally
+      # use this same checkout for the pre-publication source audit.
+      # A missing checkout in the manual/09:10 "morning" phase previously
+      # stopped after its first successful child with ENOENT on the proof script.
       - name: Checkout main for pre-publication source audit
-        if: ${{ steps.phase.outputs.phase == 'prebrief' || steps.phase.outputs.phase == 'premorning' }}
+        if: ${{ steps.phase.outputs.phase != 'skip' }}
         uses: actions/checkout@v4
         with:
           ref: main
