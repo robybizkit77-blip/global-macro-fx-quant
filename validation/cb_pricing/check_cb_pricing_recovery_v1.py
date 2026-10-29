@@ -25,7 +25,7 @@ REQUIRED_STEPS = frozenset((
     "Apply independently certified source candidates only",
 ))
 START_TIME = dt.time(7, 15)
-END_TIME = dt.time(10, 30)
+END_TIME = dt.time(17, 30)
 
 
 def parse_utc(value: str) -> dt.datetime:
@@ -63,6 +63,7 @@ def decide(
         "qualified_success_runs_today": [],
         "status": "SKIP",
         "reason": "",
+        "late_recovery": False,
     }
     if rome.weekday() >= 5:
         result["reason"] = "ROME_WEEKEND"
@@ -99,6 +100,7 @@ def decide(
         result["reason"] = "ALREADY_PRODUCED_TODAY"
     else:
         result["status"] = "RUN"
+        result["late_recovery"] = rome.time().replace(tzinfo=None) >= dt.time(8, 0)
         result["reason"] = (
             "NO_SCHEDULE_DELIVERED_RECOVER" if result["scheduled_runs_today"] == 0
             else "NO_SUCCESSFUL_PRODUCER_RECOVER"
@@ -131,6 +133,40 @@ def github_get(repo: str, api_path: str) -> dict:
     raise RuntimeError("UNREACHABLE")
 
 
+def build_receipt(now: dt.datetime, current_run_id: int, fetch) -> dict:
+    """Skip out of window without network; fail-closed on incomplete run history."""
+    first = decide(now, [], lambda _: [], current_run_id)
+    if not first["eligible_window"]:
+        first["api_read_performed"] = False
+        return first
+
+    run_data = fetch(f"/actions/workflows/{WORKFLOW_FILE}/runs?per_page=100")
+    runs = run_data.get("workflow_runs")
+    if not isinstance(runs, list):
+        raise ValueError("GITHUB_RUN_HISTORY_INVALID")
+
+    # A busy repository can have >100 workflow runs. Avoid a false 'no prior
+    # success' if the API page doesn't go back to the start of today's session.
+    if len(runs) >= 100:
+        stamps = [r.get("created_at") for r in runs]
+        if not all(stamps):
+            raise ValueError("GITHUB_RUN_HISTORY_TIMESTAMP_MISSING")
+        earliest = min(parse_utc(stamp) for stamp in stamps)
+        rome_start = dt.datetime.combine(now.astimezone(ROME).date(), dt.time(5, 45), ROME)
+        if earliest > rome_start.astimezone(dt.timezone.utc):
+            raise ValueError("GITHUB_RUN_HISTORY_PAGE_TRUNCATED_FAIL_CLOSED")
+
+    def get_jobs(run_id: int) -> list[dict]:
+        payload = fetch(f"/actions/runs/{run_id}/jobs?per_page=100")
+        if not isinstance(payload.get("jobs"), list):
+            raise ValueError("GITHUB_JOBS_HISTORY_INVALID")
+        return payload["jobs"]
+
+    receipt = decide(now, runs, get_jobs, current_run_id)
+    receipt["api_read_performed"] = True
+    return receipt
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", required=True)
@@ -138,23 +174,16 @@ def main() -> None:
     parser.add_argument("--output", required=True)
     parser.add_argument("--summary", required=True)
     args = parser.parse_args()
-    run_data = github_get(args.repo, f"/actions/workflows/{WORKFLOW_FILE}/runs?per_page=100")
-    if not isinstance(run_data.get("workflow_runs"), list):
-        raise ValueError("GITHUB_RUN_HISTORY_INVALID")
-
-    def get_jobs(run_id: int) -> list[dict]:
-        payload = github_get(args.repo, f"/actions/runs/{run_id}/jobs?per_page=100")
-        if not isinstance(payload.get("jobs"), list):
-            raise ValueError("GITHUB_JOBS_HISTORY_INVALID")
-        return payload["jobs"]
-
-    receipt = decide(dt.datetime.now(dt.timezone.utc), run_data["workflow_runs"], get_jobs, args.current_run_id)
+    now = dt.datetime.now(dt.timezone.utc)
+    receipt = build_receipt(now, args.current_run_id, lambda path: github_get(args.repo, path))
     with Path(args.output).open("a", encoding="utf-8") as out:
         out.write("should_run=" + ("true" if receipt["status"] == "RUN" else "false") + "\n")
         out.write("gate_reason=" + receipt["reason"] + "\n")
     with Path(args.summary).open("a", encoding="utf-8") as out:
         out.write("### CB Pricing missed-cron recovery\n\n")
         out.write("**" + receipt["status"] + "**: " + receipt["reason"] + "\n\n")
+        out.write("Checked after 08:00 Rome: " + str(now.astimezone(ROME).time().replace(tzinfo=None) >= dt.time(8)) + "\n\n")
+        out.write("Late recovery if RUN: " + str(receipt["late_recovery"]) + " (never on-time SLA proof)\n\n")
         out.write("Successful substantive earlier producers: " + str(receipt["qualified_success_runs_today"]) + "\n")
     print("CB_PRICING_RECOVERY_RECEIPT", json.dumps(receipt, sort_keys=True))
 
