@@ -29,9 +29,14 @@ on:
       - 'validation/cb_pricing/check_cb_pricing_recovery_v1.py'
       - 'validation/cb_pricing/test_check_cb_pricing_recovery_v1.py'
   workflow_run:
-    # Independent existing hourly/rates workflows can recover dropped CB cron.
-    # A read-only gate prevents re-collecting after substantive CB success.
-    workflows: ['Hourly Certified Alert Readiness V1', 'Rates Persistent Daily V1']
+    # Independent existing hourly/rates and operational observation workflows
+    # can recover dropped CB cron. The observation cadences are already active
+    # (not newly scheduled), and the read-only gate prevents duplicate writes.
+    workflows:
+      - 'Hourly Certified Alert Readiness V1'
+      - 'Rates Persistent Daily V1'
+      - 'CB Pricing Daily Operational Observation'
+      - 'Rates Daily Operational Observation'
     types: [completed]
   workflow_dispatch:
   schedule:
