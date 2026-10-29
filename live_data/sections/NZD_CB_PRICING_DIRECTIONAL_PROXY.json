@@ -1,9 +1,9 @@
 {
-  "as_of": "2026-10-27",
+  "as_of": "2026-10-28",
   "basis_warning": "Bank-bill/FRA rates contain bank-credit and term/basis components. Do not treat these levels as OCR OIS and do not compute OCR policy deltas from them.",
   "confidence_grade": "B_FOR_DIRECTION_C_FOR_POLICY_LEVEL",
   "currency": "NZD",
-  "generated_at_utc": "2026-10-28T08:01:46.639971Z",
+  "generated_at_utc": "2026-10-29T09:36:17.238215Z",
   "governance": {
     "backtest_eligible_as_official_ois": false,
     "bias_effect": "NONE",
@@ -16,37 +16,37 @@
   },
   "horizons": {
     "12m": {
-      "change_1d_bp": 7.0,
-      "change_1w_bp": 0.0,
+      "change_1d_bp": -8.0,
+      "change_1w_bp": -6.0,
       "expiration": "2027-09-15",
       "expiry_label": "Sep 2027",
-      "implied_bank_bill_rate": 4.24,
+      "implied_bank_bill_rate": 4.16,
       "mapping": "nearest listed expiry to trade_date+365d; no interpolation",
-      "settlement_change": -0.07,
-      "settlement_price": 95.76,
-      "weekly_reference_trade_date": "2026-10-20"
+      "settlement_change": 0.08,
+      "settlement_price": 95.84,
+      "weekly_reference_trade_date": "2026-10-21"
     },
     "3m": {
-      "change_1d_bp": 2.0,
-      "change_1w_bp": 4.0,
+      "change_1d_bp": -20.0,
+      "change_1w_bp": -16.0,
       "expiration": "2026-12-16",
       "expiry_label": "Dec 2026",
-      "implied_bank_bill_rate": 3.53,
+      "implied_bank_bill_rate": 3.33,
       "mapping": "nearest listed expiry to trade_date+90d; no interpolation",
-      "settlement_change": -0.02,
-      "settlement_price": 96.47,
-      "weekly_reference_trade_date": "2026-10-20"
+      "settlement_change": 0.2,
+      "settlement_price": 96.67,
+      "weekly_reference_trade_date": "2026-10-21"
     },
     "6m": {
-      "change_1d_bp": 4.0,
-      "change_1w_bp": 1.0,
+      "change_1d_bp": -15.0,
+      "change_1w_bp": -13.0,
       "expiration": "2027-03-10",
       "expiry_label": "Mar 2027",
-      "implied_bank_bill_rate": 3.84,
+      "implied_bank_bill_rate": 3.69,
       "mapping": "nearest listed expiry to trade_date+180d; no interpolation",
-      "settlement_change": -0.04,
-      "settlement_price": 96.16,
-      "weekly_reference_trade_date": "2026-10-20"
+      "settlement_change": 0.15,
+      "settlement_price": 96.31,
+      "weekly_reference_trade_date": "2026-10-21"
     }
   },
   "instrument": "ASX New Zealand 90 Day Bank Accepted Bill Futures (BB)",
@@ -54,7 +54,7 @@
   "schema": "GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1",
   "source": "ASX official NZ futures end-of-day total traded report",
   "source_quality": "OFFICIAL_EXCHANGE_DIRECTIONAL_PROXY",
-  "source_url": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261027ZFT.htm",
+  "source_url": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261028ZFT.htm",
   "status": "LIVE_DIRECTIONAL_PROXY_READY",
-  "weekly_reference_source_url": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261020ZFT.htm"
+  "weekly_reference_source_url": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261021ZFT.htm"
 }
