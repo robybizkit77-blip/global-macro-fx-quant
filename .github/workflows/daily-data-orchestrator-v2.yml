@@ -77,13 +77,14 @@ permissions:
   contents: read
   actions: write
 
-# Preserve each scheduled phase when a previous phase is still running.
-# The default pending queue keeps only ONE pending run and silently cancels the
-# previous pending schedule, even with cancel-in-progress: false.
-# queue: max preserves queued phases without allowing concurrent data writes.
-# This does NOT guarantee that a late GitHub scheduled event begins by 08:00.
+# Serialize *production* schedule and manual dispatch phases on the original
+# queue; all market-data writers must keep running one at a time.
+# Separate pull_request/push contract-only CI (which never dispatches children)
+# so frequent code validations cannot hold up the 04:43/07:45 production queue.
+# queue: max preserves all pending production runs. GitHub may still delay
+# delivery of a scheduled event; this change is not a punctuality guarantee.
 concurrency:
-  group: daily-data-orchestrator-v2
+  group: ${{ github.event_name == 'pull_request' && format('daily-data-orchestrator-v2-ci-pr-{0}', github.event.pull_request.number) || github.event_name == 'push' && 'daily-data-orchestrator-v2-ci-push' || 'daily-data-orchestrator-v2' }}
   queue: max
   cancel-in-progress: false
 
