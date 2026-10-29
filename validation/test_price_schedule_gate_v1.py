@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import datetime as dt
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from price_schedule_gate_v1 import SLOTS, gate
@@ -62,8 +63,25 @@ def main():
     assert_gate("schedule", "10 15 * * 1-5", "2026-10-19T15:09:00Z", False, "BEFORE_LOCAL_SCHEDULED_SLOT")
     assert_gate("schedule", "20 15 * * 1-5", "2026-10-19T15:20:00Z", False, "UNKNOWN_CRON_FAIL_CLOSED")
     assert_gate("schedule", "10 15 * * 1-5", "2026-10-24T15:12:00Z", False, "NOT_LOCAL_BUSINESS_DAY")
-    for event in ("workflow_dispatch", "push", "pull_request"):
+    for event in ("workflow_dispatch", "push", "pull_request", "workflow_run"):
         assert_gate(event, "", "2026-10-19T12:00:00Z", True, "MANUAL_OR_PUSH_OR_PR")
+
+    # Existing official ECB history workflow provides an independent after-
+    # publication trigger. No new crons, no duplicate writes, no PR/failed
+    # parent, and no replacement of queued production retries.
+    workflow = (Path(__file__).resolve().parents[1] /
+                ".github/workflows/price-persistent-daily-v1.yml").read_text(encoding="utf-8")
+    assert "workflow_run:" in workflow
+    trigger = workflow.split("  workflow_run:", 1)[1].split("  workflow_dispatch:", 1)[0]
+    assert "workflows: ['Price History Persistent Daily V1']" in trigger
+    assert "types: [completed]" in trigger
+    assert "github.event.workflow_run.conclusion == 'success'" in workflow
+    assert "github.event.workflow_run.head_branch == 'main'" in workflow
+    assert "github.event.workflow_run.event != 'pull_request'" in workflow
+    assert "queue: max" in workflow
+    assert "cancel-in-progress: false" in workflow
+    assert "price-validation-pr-{0}" in workflow
+    assert workflow.count("    - cron:") == 6
 
     try:
         gate("schedule", "10 15 * * 1-5", dt.datetime(2026, 10, 19))

@@ -18,6 +18,12 @@ on:
       - 'validation/test_price_schedule_gate_v1.py'
       - 'validation/refresh_live_manifest_v2.py'
       - 'live_data/manifest.v2.json'
+  workflow_run:
+    # Independent existing ECB history producer can recover a missed/delayed
+    # Price cron once its official history acquisition has completed.
+    # No additional schedule and no publication from PR/failed parents.
+    workflows: ['Price History Persistent Daily V1']
+    types: [completed]
   workflow_dispatch:
   schedule:
     # Europe/Rome retries after the ECB reference-rate publication window.
@@ -32,12 +38,20 @@ on:
 permissions:
   contents: write
 
+# Do not discard one pending price recovery if another scheduled retry arrives.
+# PR validation does not occupy the production writer queue.
 concurrency:
-  group: price-persistent-daily-v1
+  group: ${{ github.event_name == 'pull_request' && format('price-validation-pr-{0}', github.event.pull_request.number) || 'price-persistent-daily-v1' }}
+  queue: max
   cancel-in-progress: false
 
 jobs:
   persist-price:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.event != 'pull_request')
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
