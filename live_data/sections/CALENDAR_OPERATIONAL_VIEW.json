@@ -1,12 +1,12 @@
 {
   "coverage": {
-    "cb_schedule_available": 7,
+    "cb_schedule_available": 8,
     "consensus_available_events": 2,
     "g8_total": 8,
     "macro_ccy_coverage": 7,
     "previous_only_events": 0,
     "upcoming_macro_events": 13,
-    "upcoming_total_events": 20
+    "upcoming_total_events": 21
   },
   "events": [
     {
@@ -260,6 +260,20 @@
       "title": "Swiss GDP flash"
     },
     {
+      "bank": "Federal Reserve",
+      "ccy": "USD",
+      "consensus_status": "NOT_APPLICABLE",
+      "current_rate": 3.875,
+      "date": "2026-12-09",
+      "event_type": "CENTRAL_BANK_DECISION",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_SCHEDULE_FROM_CERTIFIED_CB_LAYER",
+      "source_layer": "NATIVE_CB_DATA",
+      "stance": "INVARIATA · rischio hawkish",
+      "status": "UPCOMING",
+      "title": "Fed · decisione di politica monetaria"
+    },
+    {
       "bank": "Bank of Canada",
       "ccy": "CAD",
       "consensus_status": "NOT_APPLICABLE",
@@ -317,8 +331,8 @@
       "title": "Gross domestic product"
     }
   ],
-  "generated_at_utc": "2026-10-29T07:57:52.541828Z",
-  "last_checked_at_utc": "2026-10-29T07:57:52.541828Z",
+  "generated_at_utc": "2026-10-29T08:12:59.917692Z",
+  "last_checked_at_utc": "2026-10-29T08:12:59.917692Z",
   "schema": "GMFQ_CALENDAR_OPERATIONAL_VIEW_V3",
   "scope": {
     "central_bank_schedule": "ACTIVE_OFFICIAL",
