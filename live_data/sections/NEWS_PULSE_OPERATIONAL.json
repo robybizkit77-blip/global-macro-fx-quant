@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-10-27",
-  "generated_at_utc": "2026-10-29T08:13:00.004736Z",
+  "generated_at_utc": "2026-10-29T09:41:42.572063Z",
   "items": [
     {
       "as_of": "2026-10-27",
@@ -47,7 +47,7 @@
       "title": "GBP: repricing OIS più hawkish (+3.2 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-10-29T08:13:00.004736Z",
+  "last_checked_at_utc": "2026-10-29T09:41:42.572063Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -168,6 +168,54 @@
   "official_releases": {
     "core_effect": "NONE",
     "headlines": [
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "USD",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
+        "id": "FED_PRESS:https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-10-28T18:00:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "status": "NOT_VALIDATED_DAILY_CONTEXT"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-10-28",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-10-28",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 4.67
+          }
+        },
+        "source": "Federal Reserve Board",
+        "source_id": "FED_PRESS",
+        "title": "Federal Reserve issues FOMC statement",
+        "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm"
+      },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "GBP",
@@ -406,14 +454,7 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 2.8225,
-            "date": "2026-10-27",
-            "event_window_proof": false,
-            "instrument": "FUTURES_IMPLIED",
-            "quality": "ESTIMATED_INFORMATIONAL",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
-            "status": "DAILY_CONTEXT_ONLY"
+            "status": "NOT_VALIDATED_DAILY_CONTEXT"
           },
           "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
           "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
@@ -461,14 +502,7 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 2.8225,
-            "date": "2026-10-27",
-            "event_window_proof": false,
-            "instrument": "FUTURES_IMPLIED",
-            "quality": "ESTIMATED_INFORMATIONAL",
-            "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
-            "status": "DAILY_CONTEXT_ONLY"
+            "status": "NOT_VALIDATED_DAILY_CONTEXT"
           },
           "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
           "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
@@ -628,7 +662,7 @@
       }
     ],
     "last_attempt_day_rome": "2026-10-29",
-    "latest_published_at_utc": "2026-10-28T14:16:49Z",
+    "latest_published_at_utc": "2026-10-28T18:00:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -639,18 +673,17 @@
     "schema": "GMFQ_OFFICIAL_RSS_HEADLINES_V1",
     "scope": "G8_CENTRAL_BANK_AND_EIA_OFFICIAL_RELEASES_NOT_GENERAL_MARKET_NEWS",
     "source_count": 9,
-    "source_failures": 1,
+    "source_failures": 0,
     "sources": [
       {
-        "accepted_items": 0,
+        "accepted_items": 1,
         "ccy": "USD",
-        "entries_rejected": null,
-        "failure_type": "HTTPError",
-        "feed_entries_seen": null,
+        "entries_rejected": 19,
+        "feed_entries_seen": 20,
         "feed_url": "https://www.federalreserve.gov/feeds/press_all.xml",
         "source": "Federal Reserve Board",
         "source_id": "FED_PRESS",
-        "status": "FETCH_OR_PARSE_FAILED"
+        "status": "OK_RECENT_ITEMS"
       },
       {
         "accepted_items": 8,
@@ -733,7 +766,7 @@
         "status": "OK_RECENT_ITEMS"
       }
     ],
-    "status": "PARTIAL_SOURCES"
+    "status": "VERIFIED_OFFICIAL_RELEASES"
   },
   "schema": "GMFQ_NEWS_PULSE_OPERATIONAL_V1",
   "scope": {
