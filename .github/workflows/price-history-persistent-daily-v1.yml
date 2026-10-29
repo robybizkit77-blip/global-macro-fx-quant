@@ -17,6 +17,12 @@ on:
       - '.github/workflows/price-history-persistent-daily-v1.yml'
       - 'validation/preview_price_history_schedule_gate_v1.py'
       - 'validation/test_preview_price_history_schedule_gate_v1.py'
+  workflow_run:
+    # An actual completed Price acquisition can promptly refresh canonical
+    # ECB history. Reject a Price run that was itself triggered by history,
+    # preventing a workflow_run feedback loop.
+    workflows: ['Price Persistent Daily V1']
+    types: [completed]
   workflow_dispatch:
   schedule:
     # Europe/Rome retries 15 minutes after the current Price lane windows.
@@ -31,11 +37,18 @@ permissions:
   contents: write
 
 concurrency:
-  group: price-history-persistent-daily-v1
+  group: ${{ github.event_name == 'pull_request' && format('price-history-validation-pr-{0}', github.event.pull_request.number) || 'price-history-persistent-daily-v1' }}
+  queue: max
   cancel-in-progress: false
 
 jobs:
   persist-history:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.event != 'pull_request' &&
+       github.event.workflow_run.event != 'workflow_run')
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
