@@ -23,6 +23,8 @@ on:
       - 'validation/test_calendar_news_daily_recheck_v1.py'
       - 'validation/calendar/verify_future_macro_coverage_v1.py'
       - 'validation/calendar/test_verify_future_macro_coverage_v1.py'
+      - 'validation/calendar/promote_fomc_oct28_official_cb_catchup_v1.py'
+      - 'validation/calendar/test_promote_fomc_oct28_official_cb_catchup_v1.py'
       - 'validation/calendar/MACRO_RELEASE_SOURCE_REGISTRY_V1.json'
       - 'live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json'
       - 'live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json'
@@ -52,6 +54,8 @@ on:
       - 'validation/test_calendar_news_daily_recheck_v1.py'
       - 'validation/calendar/verify_future_macro_coverage_v1.py'
       - 'validation/calendar/test_verify_future_macro_coverage_v1.py'
+      - 'validation/calendar/promote_fomc_oct28_official_cb_catchup_v1.py'
+      - 'validation/calendar/test_promote_fomc_oct28_official_cb_catchup_v1.py'
       - 'validation/calendar/MACRO_RELEASE_SOURCE_REGISTRY_V1.json'
       - 'live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json'
       - 'live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json'
@@ -85,6 +89,53 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Admit the verified October 28 FOMC decision into CB source (no model effect)
+        run: |
+          set -euo pipefail
+          python -m unittest validation.calendar.test_promote_fomc_oct28_official_cb_catchup_v1 -v
+          python validation/calendar/promote_fomc_oct28_official_cb_catchup_v1.py \
+            --output /tmp/gmfq-fomc-oct28-candidate.json \
+            | tee /tmp/gmfq-fomc-oct28-receipt.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/gmfq-fomc-oct28-receipt.json'))
+          assert d['status'] in {
+             'OFFICIAL_FOMC_2026_10_28_CATCHUP_READY',
+             'ALREADY_CERTIFIED_NO_CHANGE','SKIP_NEWER_CERTIFIED_USD_DECISION'
+          }
+          PY
+          if python - <<'PY'
+          import json
+          d=json.load(open('/tmp/gmfq-fomc-oct28-receipt.json'))
+          raise SystemExit(0 if d['changed'] else 1)
+          PY
+          then
+            python validation/update_live_direct_section.py \
+              --section NATIVE_CB_DATA \
+              --replacement /tmp/gmfq-fomc-oct28-candidate.json \
+              --apply > /tmp/gmfq-fomc-section-apply.json
+          else
+            echo FOMC_ALREADY_CERTIFIED_NO_PAYLOAD_UPDATE
+          fi
+          python validation/build_live_manifest_v2.py \
+            --write live_data/manifest.v2.json > /tmp/gmfq-fomc-manifest-check.json
+          python validation/check_live_update_contract.py > /tmp/gmfq-fomc-live-contract.json
+          python validation/rebuild_live_data_runtime.py --verify-only \
+            > /tmp/gmfq-fomc-runtime-check.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/gmfq-fomc-oct28-receipt.json'))
+          m=json.load(open('/tmp/gmfq-fomc-manifest-check.json'))
+          c=json.load(open('/tmp/gmfq-fomc-live-contract.json'))
+          r=json.load(open('/tmp/gmfq-fomc-runtime-check.json'))
+          assert m['status']=='PASS' and c['status']=='PASS'
+          assert r['status']=='PASS' and r['noop_roundtrip_byte_identical'] is True
+          assert d['rate_level_changed'] is False
+          assert d['market_pricing_unchanged'] is True
+          assert d['core_or_ois_or_pair_effect']=='NONE'
+          print('OFFICIAL_FOMC_CB_SOURCE_INTEGRITY_PASS',d['status'])
+          PY
+
       - name: Refresh public secondary consensus
         run: |
           set -euo pipefail
@@ -240,9 +291,19 @@ jobs:
         if: github.event_name != 'pull_request'
         run: |
           set -euo pipefail
-          changed="$(git diff --name-only -- live_data/sections/CALENDAR_OPERATIONAL_VIEW.json live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json live_data/sections/NEWS_PULSE_OPERATIONAL.json validation/macro/MACRO_PRE_RELEASE_CONSENSUS_LEDGER_V1.jsonl validation/macro/MACRO_OFFICIAL_ACTUAL_FIRST_SEEN_V1.jsonl validation/macro/MACRO_EVENT_PRE_RELEASE_MARKET_ANCHORS_V1.jsonl)"
+          changed="$(git diff --name-only -- live_data/sections/CALENDAR_OPERATIONAL_VIEW.json live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json live_data/sections/NEWS_PULSE_OPERATIONAL.json validation/macro/MACRO_PRE_RELEASE_CONSENSUS_LEDGER_V1.jsonl validation/macro/MACRO_OFFICIAL_ACTUAL_FIRST_SEEN_V1.jsonl validation/macro/MACRO_EVENT_PRE_RELEASE_MARKET_ANCHORS_V1.jsonl live_data/sections/NATIVE_CB_DATA.json live_data/manifest.v2.json payload/part-00.txt)"
           if [ -z "$changed" ]; then echo CALENDAR_NEWS_NO_CHANGE; exit 0; fi
-          unexpected="$(git diff --name-only | grep -Ev '^(live_data/sections/CALENDAR_OPERATIONAL_VIEW.json|live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json|live_data/sections/NEWS_PULSE_OPERATIONAL.json|validation/macro/MACRO_PRE_RELEASE_CONSENSUS_LEDGER_V1.jsonl|validation/macro/MACRO_OFFICIAL_ACTUAL_FIRST_SEEN_V1.jsonl|validation/macro/MACRO_EVENT_PRE_RELEASE_MARKET_ANCHORS_V1.jsonl)$' || true)"
+          unexpected="$(git diff --name-only | grep -Ev '^(live_data/sections/CALENDAR_OPERATIONAL_VIEW.json|live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json|live_data/sections/NEWS_PULSE_OPERATIONAL.json|validation/macro/MACRO_PRE_RELEASE_CONSENSUS_LEDGER_V1.jsonl|validation/macro/MACRO_OFFICIAL_ACTUAL_FIRST_SEEN_V1.jsonl|validation/macro/MACRO_EVENT_PRE_RELEASE_MARKET_ANCHORS_V1.jsonl|live_data/sections/NATIVE_CB_DATA.json|live_data/manifest.v2.json|payload/part-00.txt) || true)"
+          test -z "$unexpected" || { echo "Unexpected changes: $unexpected" >&2; exit 1; }
+          REMOTE_SHA="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+          LOCAL_SHA="$(git rev-parse HEAD)"
+          test "$REMOTE_SHA" = "$LOCAL_SHA" || { echo 'main moved during Calendar/News refresh' >&2; exit 1; }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add live_data/sections/CALENDAR_OPERATIONAL_VIEW.json live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json live_data/sections/NEWS_PULSE_OPERATIONAL.json validation/macro/MACRO_PRE_RELEASE_CONSENSUS_LEDGER_V1.jsonl validation/macro/MACRO_OFFICIAL_ACTUAL_FIRST_SEEN_V1.jsonl validation/macro/MACRO_EVENT_PRE_RELEASE_MARKET_ANCHORS_V1.jsonl live_data/sections/NATIVE_CB_DATA.json live_data/manifest.v2.json payload/part-00.txt
+          git commit -m 'Refresh operational Calendar, consensus and frozen pre-release forecast ledger'
+          git push origin HEAD:main
+ || true)"
           test -z "$unexpected" || { echo "Unexpected changes: $unexpected" >&2; exit 1; }
           REMOTE_SHA="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
           LOCAL_SHA="$(git rev-parse HEAD)"
