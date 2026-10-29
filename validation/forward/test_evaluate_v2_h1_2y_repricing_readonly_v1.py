@@ -67,7 +67,7 @@ class H1RepricingTests(unittest.TestCase):
     def test_source_staleness_identity_and_unchanged_quote_date_block(self):
         prev,curr,out,now = self.sample()
         for change,reason in (
-            ({"two_year_instrument_identity":None},"noncomparable_source"),
+            ({"two_year_instrument_identity":None},"missing_instrument_identity"),
             ({"two_year_instrument_identity":"different issuer | 2Y"},"noncomparable_source"),
             ({"bond_date":"2026-10-21"},"stale_rate"),
             ({"bond_date":"2026-10-29"},"unchanged_bond_date"),
@@ -81,6 +81,16 @@ class H1RepricingTests(unittest.TestCase):
                 result=h1.inspect([prev,bad],[],now)
                 self.assertGreater(result["reason_counts"][reason],0)
                 self.assertEqual(result["reason_counts"]["evaluated"],0)
+
+    def test_prior_immutable_snapshot_without_id_is_reported_as_missing(self):
+        prev,curr,out,now=self.sample()
+        prev["domestic_v2_features"]["EUR"].pop("two_year_instrument_identity")
+        prev["snapshot_sha256"]=cap.sha({
+            k:v for k,v in prev.items() if k!="snapshot_sha256"})
+        result=h1.inspect([prev,curr],[],now)
+        self.assertGreater(result["reason_counts"]["missing_instrument_identity"],0)
+        self.assertEqual(result["reason_counts"]["evaluated"],0)
+        self.assertTrue(result["not_a_v2_signal_or_predictive_validation"])
 
     def test_future_2y_source_date_rejected_even_when_snapshot_hash_valid(self):
         prev,curr,out,now=self.sample()
