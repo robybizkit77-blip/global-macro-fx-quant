@@ -10,20 +10,6 @@
   },
   "events": [
     {
-      "bank": "ECB",
-      "ccy": "EUR",
-      "consensus_status": "NOT_APPLICABLE",
-      "current_rate": 2.5,
-      "date": "2026-10-29",
-      "event_type": "CENTRAL_BANK_DECISION",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_SCHEDULE_FROM_CERTIFIED_CB_LAYER",
-      "source_layer": "NATIVE_CB_DATA",
-      "stance": "HAWKISH · restrittiva",
-      "status": "UPCOMING",
-      "title": "ECB · decisione di politica monetaria"
-    },
-    {
       "ccy": "USD",
       "consensus": "0.8%",
       "consensus_confidence": "B",
@@ -316,6 +302,20 @@
       "title": "SNB · decisione di politica monetaria"
     },
     {
+      "bank": "ECB",
+      "ccy": "EUR",
+      "consensus_status": "NOT_APPLICABLE",
+      "current_rate": 2.5,
+      "date": "2026-12-17",
+      "event_type": "CENTRAL_BANK_DECISION",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_SCHEDULE_FROM_CERTIFIED_CB_LAYER",
+      "source_layer": "NATIVE_CB_DATA",
+      "stance": "INVARIATA · dati dipendenti",
+      "status": "UPCOMING",
+      "title": "ECB · decisione di politica monetaria"
+    },
+    {
       "ccy": "NZD",
       "consensus_status": "NOT_PRESENT",
       "date": "2026-12-17",
@@ -331,8 +331,8 @@
       "title": "Gross domestic product"
     }
   ],
-  "generated_at_utc": "2026-10-29T08:12:59.917692Z",
-  "last_checked_at_utc": "2026-10-29T08:12:59.917692Z",
+  "generated_at_utc": "2026-10-29T20:45:07.857367Z",
+  "last_checked_at_utc": "2026-10-29T20:45:07.857367Z",
   "schema": "GMFQ_CALENDAR_OPERATIONAL_VIEW_V3",
   "scope": {
     "central_bank_schedule": "ACTIVE_OFFICIAL",
