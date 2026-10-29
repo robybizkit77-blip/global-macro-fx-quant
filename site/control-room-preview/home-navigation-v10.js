@@ -51,6 +51,50 @@ function officialPricingCurrent(x){
    num(x.horizons?.[t]?.policy_delta_bp)!==null);
 }
 
+/* Fed policy decisions and Fed Funds futures have separate observation dates.
+   Keep stale policy-book pricing and pre-FOMC secondary quotes visible ONLY as
+   explicitly dated research context, never as post-meeting repricing. */
+function fedPricingFreshnessAudit(fed,usd,today){
+ const policy=typeof fed?.last_date==='string'?fed.last_date:'';
+ const raw=typeof fed?.market_pricing?.as_of==='string'?fed.market_pricing.as_of:'';
+ const legacyMonth=/^20\d{2}-\d{2}/.exec(raw)?.[0]||null;
+ const legacyStale=!!legacyMonth&&legacyMonth<today.slice(0,7);
+ const expected=['3m','6m','12m'];
+ const rows=expected.map(h=>usd?.horizons?.[h]||{});
+ const dated=rows.map(x=>x.quote_as_of);
+ const sameDate=dated.every(d=>/^20\d{2}-\d{2}-\d{2}$/.test(d||'')&&d===dated[0]);
+ const date=dated[0]||null;
+ const verified=usd?.operational_status==='GREEN_ESTIMATED'&&
+  usd.quality==='ESTIMATED_INFORMATIONAL'&&
+  usd.backtest_eligible_as_official===false&&
+  typeof usd.source==='string'&&usd.source.includes('TradingView')&&
+  sameDate&&date===usd.as_of&&date<=today&&
+  (Date.parse(today+'T00:00:00Z')-Date.parse(date+'T00:00:00Z'))<=4*86400000&&
+  rows.every(x=>x.quote_timestamp_verified===true&&
+   /^ZQ[A-Z]\d{4}$/.test(x.contract||'')&&
+   typeof x.rate==='number'&&Number.isFinite(x.rate)&&
+   typeof x.futures_price==='number'&&Number.isFinite(x.futures_price)&&
+   Math.abs(x.rate-(100-x.futures_price))<0.0002);
+ const preDecision=verified&&/^20\d{2}-\d{2}-\d{2}$/.test(policy)&&date<policy;
+ const label='🇺🇸 Fed · pricing separato: ';
+ const legacy=legacyStale?'lo snapshot futures nel registro delle banche centrali è storico ('+
+  legacyMonth+'), NON un pricing aggiornato. ':
+  'la data del pricing nel registro CB va verificata separatamente. ';
+ const context=verified?
+  'Futures ZQ indicativi al '+date+': 3M '+rows[0].rate.toFixed(2)+'%, 6M '+
+   rows[1].rate.toFixed(2)+'%, 12M '+rows[2].rate.toFixed(2)+'%. '+
+   (preDecision?'Quotazioni PRECEDENTI alla decisione Fed del '+policy+
+    ': non misurano il repricing successivo. ':
+    'Quotazioni successive/allineate alla decisione, ma non certificano un repricing di meeting. '):
+  'Nessun set 3M/6M/12M di futures USD simultaneamente datato e verificato utilizzabile qui. ';
+ return {
+  state:legacyStale?(preDecision?'LEGACY_STALE_PRE_DECISION':verified?
+   'LEGACY_STALE_SECONDARY_ONLY':'LEGACY_STALE_NO_SECONDARY'):'LEGACY_DATE_UNVERIFIED',
+  legacy_month:legacyMonth,quote_date:verified?date:null,pre_decision:!!preDecision,
+  quoted_levels_visible:!!verified,
+  text:label+legacy+context+'Fonte secondaria, non OIS; nessuna probabilità di rialzo, policy delta o segnale FX derivato.'
+ };
+}
 function htmlEscape(x){return String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function go(url){if(url&&url.startsWith('#/')&&location.hash!==url)location.hash=url}
 async function feed(file){const c=new AbortController(),t=setTimeout(()=>c.abort(),12000);try{const r=await fetch(ROOT+file,{cache:'no-store',signal:c.signal});if(!r.ok)throw Error('HTTP '+r.status);return await r.json()}finally{clearTimeout(t)}}
@@ -3443,6 +3487,15 @@ async function mountCentralBankFirstReading(doc){
  // Historical bank-decision snapshots supply meeting dates, NOT live release
  // confirmation. Keep same-day/past meetings out of "upcoming" summaries.
  const today=romeTodayIso();
+ // Source-age disclosure is non-operative and does not replace any CB quote.
+ const fedAudit=fedPricingFreshnessAudit(cb.USD,ois.currencies.USD,today);
+ const fedNote=doc.createElement('p');fedNote.id='gmfq-fed-pricing-freshness';
+ fedNote.dataset.pricingState=fedAudit.state;
+ fedNote.dataset.quoteAsOf=fedAudit.quote_date||'';
+ fedNote.dataset.preDecision=String(fedAudit.pre_decision);
+ fedNote.style.cssText='border-top:1px solid #294657;padding-top:8px;margin:10px 0 3px;color:#d2c59e;font:11px/1.6 Arial,sans-serif;overflow-wrap:anywhere';
+ fedNote.textContent=fedAudit.text;
+ rail.querySelector('.gmfq-first-explainer')?.insertAdjacentElement('afterend',fedNote);
  const meetings=FX.map(ccy=>{
    const policy=cb[ccy],pricing=ois.currencies[ccy];
    const status=pricing.operational_status;
