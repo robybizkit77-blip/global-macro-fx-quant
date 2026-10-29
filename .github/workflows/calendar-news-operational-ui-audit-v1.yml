@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'validation/build_calendar_operational_v1.py'
+      - 'validation/calendar/verify_future_macro_coverage_v1.py'
+      - 'validation/calendar/test_verify_future_macro_coverage_v1.py'
       - 'validation/build_news_pulse_operational_v1.py'
       - 'validation/news_reaction_evidence_v1.py'
       - 'validation/collect_official_news_rss_v1.py'
@@ -21,6 +23,8 @@ on:
     branches: [main]
     paths:
       - 'validation/build_calendar_operational_v1.py'
+      - 'validation/calendar/verify_future_macro_coverage_v1.py'
+      - 'validation/calendar/test_verify_future_macro_coverage_v1.py'
       - 'validation/build_news_pulse_operational_v1.py'
       - 'validation/news_reaction_evidence_v1.py'
       - 'validation/collect_official_news_rss_v1.py'
@@ -77,8 +81,14 @@ jobs:
                 const visibleSecondary=macro.filter(card=>card.querySelector('.opConsensus')).length;
                 return {cb:document.querySelectorAll('#calendar .opCard[data-kind="cb"]').length,macro:macro.length,valid,visibleSecondary,fresh:document.getElementById('calendar')?.dataset.gmfqEditorialFreshness,text:document.getElementById('calendar')?.innerText||'',w:root?.scrollWidth,cw:root?.clientWidth};
               });
-              if(cal.cb!==8)throw new Error(`${name} CB cards ${cal.cb}`);
-              if(cal.macro<8)throw new Error(`${name} macro cards ${cal.macro}`);
+              const certifiedCalendar=await page.evaluate(async()=>(
+                await (await fetch('live_data/sections/CALENDAR_OPERATIONAL_VIEW.json',
+                   {cache:'no-store'})).json()
+              ));
+              if(cal.cb!==certifiedCalendar.coverage.cb_schedule_available)
+                throw new Error(`${name} CB cards ${cal.cb}/${certifiedCalendar.coverage.cb_schedule_available}`);
+              if(cal.macro!==certifiedCalendar.coverage.upcoming_macro_events)
+                throw new Error(`${name} macro cards ${cal.macro}/${certifiedCalendar.coverage.upcoming_macro_events}`);
               if(cal.valid!==cal.macro||cal.visibleSecondary!==cal.macro)throw new Error(`${name} consensus render ${cal.valid}/${cal.visibleSecondary}/${cal.macro}`);
               if(!/Core impact: 0/.test(cal.text))throw new Error(`${name} core impact label missing`);
               if(cal.fresh!=='FRESH')throw new Error(`${name} calendar freshness ${cal.fresh}`);

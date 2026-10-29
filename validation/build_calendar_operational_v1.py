@@ -59,7 +59,7 @@ def main():
     macro=json.loads(MACRO.read_text(encoding='utf-8'))
     consensus=json.loads(CONSENSUS.read_text(encoding='utf-8')) if CONSENSUS.exists() else {'status':'MISSING','events':[]}
     cmap={r.get('event_key'):r for r in consensus.get('events',[]) if r.get('event_key')}
-    today=date.today(); events=[]; cb_count=0; macro_count=0; consensus_available=0; previous_only=0
+    today=datetime.now(ZoneInfo('Europe/Rome')).date(); events=[]; cb_count=0; macro_count=0; consensus_available=0; previous_only=0
     for ccy in ORDER:
         row=cb.get(ccy) or {}; raw=row.get('next_meeting')
         if raw:

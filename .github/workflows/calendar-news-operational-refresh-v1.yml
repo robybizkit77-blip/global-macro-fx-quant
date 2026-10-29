@@ -21,6 +21,8 @@ on:
       - 'validation/news_reaction_evidence_v1.py'
       - 'validation/collect_official_news_rss_v1.py'
       - 'validation/test_calendar_news_daily_recheck_v1.py'
+      - 'validation/calendar/verify_future_macro_coverage_v1.py'
+      - 'validation/calendar/test_verify_future_macro_coverage_v1.py'
       - 'validation/calendar/MACRO_RELEASE_SOURCE_REGISTRY_V1.json'
       - 'live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json'
       - 'live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json'
@@ -48,6 +50,8 @@ on:
       - 'validation/news_reaction_evidence_v1.py'
       - 'validation/collect_official_news_rss_v1.py'
       - 'validation/test_calendar_news_daily_recheck_v1.py'
+      - 'validation/calendar/verify_future_macro_coverage_v1.py'
+      - 'validation/calendar/test_verify_future_macro_coverage_v1.py'
       - 'validation/calendar/MACRO_RELEASE_SOURCE_REGISTRY_V1.json'
       - 'live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json'
       - 'live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json'
@@ -161,6 +165,9 @@ jobs:
           set -euo pipefail
           python validation/build_calendar_operational_v1.py
           python validation/build_news_pulse_operational_v1.py
+      - name: Verify source-matched future G8 dates and honest partial coverage
+        run: python -m unittest validation.calendar.test_verify_future_macro_coverage_v1 -v
+
       - name: Validate operational outputs
         run: |
           python - <<'PY'
@@ -171,14 +178,17 @@ jobs:
           news=json.loads(Path('live_data/sections/NEWS_PULSE_OPERATIONAL.json').read_text())
           assert cal['schema']=='GMFQ_CALENDAR_OPERATIONAL_VIEW_V3'
           assert cal['status']=='ACTIVE_CB_PLUS_MACRO_OFFICIAL_WITH_SECONDARY_CONTEXT'
-          assert cal['coverage']['cb_schedule_available']==8
-          assert cal['coverage']['macro_ccy_coverage']==8
-          assert cal['coverage']['upcoming_macro_events']>=8
+          from validation.calendar.verify_future_macro_coverage_v1 import verify
+          from datetime import datetime, timezone
+          seed=json.loads(Path('live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json').read_text())
+          cb=json.loads(Path('live_data/sections/NATIVE_CB_DATA.json').read_text())
+          receipt=verify(cal,seed,cb,datetime.now(timezone.utc))
+          print('CALENDAR_FUTURE_SOURCE_PARITY',receipt)
           assert cal['scope']['core_score_impact']==0
           assert cal['scope']['consensus_context_only'] is True
           assert cal['scope']['consensus_never_changes_official_date'] is True
           macro=[e for e in cal['events'] if e['event_type']!='CENTRAL_BANK_DECISION']
-          assert {e['ccy'] for e in macro}=={'USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'}
+          assert {e['ccy'] for e in macro}==set(cal['scope']['macro_release_currencies'])
           assert all(str(e['quality']).startswith('OFFICIAL_') for e in macro)
           assert all(e.get('consensus_status') in {'AVAILABLE','PREVIOUS_ONLY','NOT_PRESENT'} for e in macro)
           assert con['provider']=='FOREX_FACTORY_FAIR_ECONOMY_WEEKLY'
