@@ -37,6 +37,19 @@ def run():
         assert result["official_OIS_status_change_allowed"] is False
         assert result["access_terms_or_redistribution_rights_certified"] is False
         assert result["common_contract_count"] >= 9
+        assert result["weekly_same_contract_access_proven"] is True
+        # Public page may expose the event pair but not T-5 on same basis.
+        def short_lookback(pid,date):
+            if date==dates[2]:
+                return ("HTTP_200",{"tradeDate":date.strftime("%m/%d/%Y"),"settlements":[]})
+            return ("HTTP_200",payload(date.strftime("%m/%d/%Y")))
+        mod.get_public_page_json = short_lookback
+        partial = mod.probe(now)
+        assert partial["status"] == "PUBLIC_EOD_PARTIAL_ROLLING_ACCESS"
+        assert partial["latest_two_dates_accessible"] is True
+        assert partial["weekly_same_contract_access_proven"] is False
+        assert partial["checks"][2]["rows"] == 0
+
         mod.get_public_page_json = lambda pid, date: ("HTTP_403", None)
         no_access = mod.probe(now)
         assert no_access["status"] == "PUBLIC_EOD_ACCESS_NOT_PROVEN"
