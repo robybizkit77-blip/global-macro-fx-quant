@@ -114,6 +114,41 @@ class H1RepricingTests(unittest.TestCase):
         self.assertIn("Treasury 2Y",x)
         self.assertIsNone(cap.two_year_instrument_identity({},"USD",4.5))
 
+    def test_2y_operational_readiness_is_separate_from_H1_and_source_dated(self):
+        def entry(day, value, quality="FULL_CURRENT_OFFICIAL"):
+            return {
+                "date":day, "2Y":value, "quality":quality,
+                "source":"Official issuer · constant 2Y definition · "+day,
+                "history2":{"label":"2Y instrument"},
+                "tenors":[{"tenor":"2Y","date":day,"value":value}],
+            }
+        live={
+            "USD":entry("2026-10-27",4.5),
+            "JPY":entry("2026-10-28",1.3),
+            # Negative yields are valid sovereign yields.
+            "CHF":entry("2026-10-28",-0.15),
+            # Fresh-looking quality labels do NOT override source age.
+            "GBP":entry("2026-10-26",4.3),
+            "AUD":entry("2026-10-21",5.0),
+            "NZD":entry("2026-11-02",3.8),
+            "EUR":entry("2026-10-28",2.9),
+        }
+        live["EUR"]["history2"].pop("label")
+        out=h1.operational_2y_readiness(
+            live,datetime(2026,10,29,7,0,tzinfo=timezone.utc))
+        states={k:v["state"] for k,v in out["currency_status"].items()}
+        self.assertEqual(states["USD"],"POTENTIALLY_FRESH_NOT_YET_H1_ELIGIBLE")
+        self.assertEqual(states["JPY"],"POTENTIALLY_FRESH_NOT_YET_H1_ELIGIBLE")
+        self.assertEqual(states["CHF"],"POTENTIALLY_FRESH_NOT_YET_H1_ELIGIBLE")
+        self.assertEqual(states["GBP"],"STALE_FOR_H1")
+        self.assertEqual(states["AUD"],"STALE_FOR_H1")
+        self.assertEqual(states["NZD"],"FUTURE_SOURCE_REJECTED")
+        self.assertEqual(states["EUR"],"MISSING_COMPARABLE_2Y_IDENTITY")
+        self.assertEqual(states["CAD"],"MISSING_RATE")
+        self.assertEqual(out["potential_pairs_upper_bound_not_scored"],3)
+        self.assertTrue(out["does_not_certify_H1_pair_or_outcome"])
+        self.assertTrue(out["no_rates_or_forward_journal_mutation"])
+
     def test_no_mutation_of_original_ledgers(self):
         paths=[cap.JOURNAL,h1.obs.OUTCOMES]
         before={str(p):p.read_bytes() if p.is_file() else None for p in paths}

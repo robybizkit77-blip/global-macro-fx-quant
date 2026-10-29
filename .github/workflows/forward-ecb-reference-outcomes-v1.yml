@@ -107,6 +107,13 @@ jobs:
           assert p["protocol"]=="V2-H1-2Y-REPRICING-1W-V1"
           assert p["not_a_v2_signal_or_predictive_validation"] is True
           assert p["writes_live_data"] is False
+          d=p["operational_2y_source_readiness"]
+          assert d["all_G8_checked"] is True
+          assert d["does_not_certify_H1_pair_or_outcome"] is True
+          assert d["no_rates_or_forward_journal_mutation"] is True
+          assert d["diagnostic_scope"]=="OPERATIONAL_CURRENT_SOURCE_NOT_FROZEN_T0"
+          print("H1_2Y_SOURCE_STATUS",{
+              c:v["state"] for c,v in d["currency_status"].items()})
           assert p["no_naive_pair_level_inference"] is True
           print("H1_RESEARCH_ONLY_NO_SCORE_NO_PNL",p["status"])
           PY

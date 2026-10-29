@@ -233,6 +233,75 @@ def inspect(frozen, outcomes, now):
     }
 
 
+
+def operational_2y_readiness(live_rates, now):
+    """Current-source diagnostic ONLY; not a historical H1 signal or T0.
+
+    Publication date, not a static quality string, controls freshness.
+    Weekdays are a conservative proxy, not a verified local holiday calendar.
+    Source identity alone cannot prove two consecutive frozen observations.
+    """
+    require(isinstance(live_rates, dict), "missing operational Rates map")
+    require(now.tzinfo is not None and now.utcoffset() is not None,
+            "operational readiness needs aware date")
+    day = now.astimezone(ROME).date()
+    countries = {}
+    fresh = []
+    def finite_yield(v):
+        return type(v) in (int, float) and math.isfinite(v)
+    for ccy in cap.G8:
+        row = live_rates.get(ccy)
+        state = "MISSING_RATE"
+        age = None
+        stamp = None
+        instrument_id = None
+        value = None
+        if isinstance(row, dict):
+            stamp = row.get("date")
+            value = row.get("2Y")
+            if isinstance(stamp, str):
+                try:
+                    source_day = date.fromisoformat(stamp)
+                except ValueError:
+                    source_day = None
+            else:
+                source_day = None
+            if source_day is not None and finite_yield(value):
+                if source_day > day:
+                    state = "FUTURE_SOURCE_REJECTED"
+                else:
+                    age = business_age(day, source_day)
+                    instrument_id = cap.two_year_instrument_identity(
+                        live_rates, ccy, value)
+                    if age > 2:
+                        state = "STALE_FOR_H1"
+                    elif not instrument_id:
+                        state = "MISSING_COMPARABLE_2Y_IDENTITY"
+                    else:
+                        state = "POTENTIALLY_FRESH_NOT_YET_H1_ELIGIBLE"
+                        fresh.append(ccy)
+        countries[ccy] = {
+            "source_date": stamp,
+            "source_age_weekdays": age,
+            "two_year_yield_pct": value if finite_yield(value) else None,
+            "source_quality_label_untrusted_for_freshness": (
+                row.get("quality") if isinstance(row, dict) else None),
+            "state": state,
+            "instrument_metadata_available": instrument_id is not None,
+        }
+    return {
+        "as_of_rome_date": day.isoformat(),
+        "diagnostic_scope": "OPERATIONAL_CURRENT_SOURCE_NOT_FROZEN_T0",
+        "does_not_certify_H1_pair_or_outcome": True,
+        "potentially_fresh_currencies": fresh,
+        "potential_pairs_upper_bound_not_scored": (
+            len(fresh)*(len(fresh)-1)//2),
+        "currency_status": countries,
+        "all_G8_checked": len(countries)==8,
+        "no_rates_or_forward_journal_mutation": True,
+    }
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--receipt", type=Path, required=True)
@@ -241,6 +310,11 @@ def main():
             "research receipts only under /tmp")
     now = datetime.now(timezone.utc)
     result = inspect(obs.read_jsonl(cap.JOURNAL), obs.read_jsonl(obs.OUTCOMES), now)
+    # Operational diagnostics are explicitly separate from the frozen PIT
+    # evaluation cohort and are NEVER used to calculate H1 outcomes.
+    source = cap.ROOT / "live_data/sections/NATIVE_RATES_DATA.json"
+    result["operational_2y_source_readiness"] = operational_2y_readiness(
+        json.loads(source.read_text(encoding="utf-8")), now)
     args.receipt.parent.mkdir(parents=True, exist_ok=True)
     args.receipt.write_text(json.dumps(result, sort_keys=True, indent=2)+"\n",
                             encoding="utf-8")
