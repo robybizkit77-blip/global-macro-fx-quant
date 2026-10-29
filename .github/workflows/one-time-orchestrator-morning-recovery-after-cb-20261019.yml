@@ -18,7 +18,7 @@ concurrency:
 jobs:
   dispatch:
     if: >-
-      github.event.head_commit.message == 'One-time recovery 2026-10-29 corrected morning catchup'
+      github.event.head_commit.message == 'One-time recovery 2026-10-29 relaunch morning with checkout fix'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
