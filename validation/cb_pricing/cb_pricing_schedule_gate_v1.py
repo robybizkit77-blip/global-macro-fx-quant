@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""DST-aware, GitHub-delay-tolerant gate for the three Rome CB Pricing slots.
+"""DST-aware, GitHub-delay-tolerant gate for the three off-hour Rome CB Pricing slots.
 
 The five UTC cron lines cover both CET and CEST. Identify the intended local
 slot from github.event.schedule and the current Rome weekday, rather than
@@ -14,7 +14,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 ROME = ZoneInfo("Europe/Rome")
-LOCAL_SLOTS = ((6, 0), (6, 30), (7, 0))
+LOCAL_SLOTS = ((6, 13), (6, 43), (7, 13))
 
 
 def gate(event: str, cron: str, utc_now: dt.datetime) -> tuple[bool, str]:
@@ -54,7 +54,7 @@ def main() -> None:
         "reason": reason,
         "rome_started_at": now.astimezone(ROME).isoformat(),
         "scheduled_utc_cron": args.cron,
-        "slots_rome": ["06:00", "06:30", "07:00"],
+        "slots_rome": ["06:13", "06:43", "07:13"],
     }
     if args.output:
         with Path(args.output).open("a", encoding="utf-8") as f:
