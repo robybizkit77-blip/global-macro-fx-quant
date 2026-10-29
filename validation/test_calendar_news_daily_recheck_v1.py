@@ -243,6 +243,43 @@ ecb_rss = b"""<?xml version="1.0" encoding="utf-8"?>
 <link>https://www.ecb.europa.eu/press/key/date/2026/html/example.en.html</link>
 <pubDate>Sat, 24 Oct 2026 12:00:00 GMT</pubDate></item>
 </channel></rss>"""
+# Regression: BoJ uses issuer-specific policy release titles. The official
+# headline must be watched as a CB event, without inferring a decision or bias.
+boj_source = next(x for x in officialrss.RSS_SOURCES if x["id"] == "BOJ_NEWS")
+for title, expected_topic in (
+    ("Statement on Monetary Policy", "CB_POLICY"),
+    ("Change in the Guideline for Money Market Operations", "CB_POLICY"),
+    ("(Reference) Change in the Guideline for Money Market Operations (September 2026 MPM)", "CB_POLICY"),
+    ("Outlook for Economic Activity and Prices (October 2026, The Bank's View)", "MACRO_EXPECTATIONS"),
+):
+    ctx = officialrss.desk_context(title, boj_source)
+    assert ctx["operational_relevance"] == "MONITOR", (title, ctx)
+    assert ctx["topic"] == expected_topic, (title, ctx)
+    assert ctx["analysis_basis"] == "SOURCE_HEADLINE_ONLY", ctx
+    assert ctx["market_direction"] == "NOT_DETERMINED", ctx
+    assert ctx["market_reaction"] == "NOT_MEASURED", ctx
+
+# The same words on another publisher's feed are not silently designated BoJ.
+assert officialrss.desk_context(
+    "Change in the Guideline for Money Market Operations",
+    next(x for x in officialrss.RSS_SOURCES if x["id"] == "FED_PRESS"),
+)["topic"] == "INSTITUTIONAL"
+
+boj_future_fixture = b"""<?xml version="1.0" encoding="utf-8"?>
+<rss><channel><item><title>Statement on Monetary Policy</title>
+<link>https://www.boj.or.jp/en/mopo/mpmdeci/state_2026/test-fixture.pdf</link>
+<pubDate>Fri, 30 Oct 2026 03:30:00 GMT</pubDate></item></channel></rss>"""
+future_items = officialrss.extract_items(
+    boj_future_fixture, boj_source, at("2026-10-30T04:00:00+00:00"))
+assert len(future_items) == 1, future_items
+assert future_items[0]["desk_context"]["topic"] == "CB_POLICY"
+assert future_items[0]["desk_context"]["market_direction"] == "NOT_DETERMINED"
+assert future_items[0]["quality"] == "OFFICIAL_RSS_DATED_LINK"
+assert officialrss.extract_items(
+    boj_future_fixture.replace(b"www.boj.or.jp", b"example.com"),
+    boj_source, at("2026-10-30T04:00:00+00:00")) == []
+print("BOJ_OFFICIAL_RSS_POLICY_TITLE_CLASSIFICATION_PASS")
+
 # One publisher-controlled item per approved source is accepted; no
 # cross-host links are admitted. An EIA entry is an energy publication,
 # never presented as currency-specific macro news or WTI-price movement.
