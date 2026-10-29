@@ -10,6 +10,9 @@ import argparse
 import json
 from datetime import date, datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
+
+from validation.macro.score_formula_provenance_v1 import FROZEN_HISTORICAL_SCORES
 
 ROOT=Path(__file__).resolve().parents[2]
 G8=("USD","EUR","GBP","JPY","CHF","CAD","AUD","NZD")
@@ -48,6 +51,14 @@ def audit(core,heat,series,setup,as_of):
         raise ValueError("macro heatmap not certified structure")
     if core.get("macro") is None or not all(k in core["macro"] for k in G8):
         raise ValueError("incomplete canonical core G8")
+    # Immutable historic numeric Core as-of must match the original frozen
+    # 24 pillars and cycle classes; matching asOf alone is not score provenance.
+    # No new score generator is certified by checking this historical vector.
+    frozen = {ccy: {field: core["macro"][ccy].get(field)
+                    for field in ("growth", "labour", "inflation", "cycle")}
+              for ccy in G8}
+    if frozen != FROZEN_HISTORICAL_SCORES:
+        raise ValueError("FROZEN_CORE_MACRO_SCORE_VECTOR_CHANGED_WITHOUT_CERTIFIED_REBASE")
     if set(G8)-set(heat.get("currencies",{})) or set(G8)-set(series):
         raise ValueError("incomplete inflation/labour source G8")
     rows={}
@@ -89,6 +100,8 @@ def audit(core,heat,series,setup,as_of):
         "pair_price_age_calendar_days":(today-price_day).days,
         "pair_macro_baseline_as_of":baseline.isoformat(),
         "pair_macro_baseline_matches_core":baseline_matches,
+        "frozen_24_scores_and_8_cycles_match_historical_source": True,
+        "historical_score_match_does_not_certify_freshness": True,
         "core_same_day_as_check":core_day==today,
         "core_matches_pair_price_day":core_day==price_day,
         "inflation_labour_dimensions_in_daily_refresh":2,
@@ -108,7 +121,7 @@ def audit(core,heat,series,setup,as_of):
 def run(root=ROOT,as_of=None):
     p=root/"live_data"/"sections"
     read=lambda n:json.loads((p/(n+".json")).read_text(encoding="utf-8"))
-    as_of=as_of or datetime.now().date().isoformat()
+    as_of=as_of or datetime.now(ZoneInfo("Europe/Rome")).date().isoformat()
     return audit(read("D"),read("MACRO_THERMOMETER_DATA"),read("MACRO_SERIES"),
                  read("PAIR_SETUP_OPERATIONAL_VIEW"),as_of)
 

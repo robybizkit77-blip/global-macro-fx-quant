@@ -54,6 +54,8 @@ jobs:
           assert d['audit_only_no_data_written'] is True
           assert d['status'] in {'BLOCKED_UNCERTIFIED_CORE_RECALIBRATION',
                                  'BROKEN_PAIR_MACRO_BASELINE_CONTRACT'}
+          assert d['frozen_24_scores_and_8_cycles_match_historical_source'] is True
+          assert d['historical_score_match_does_not_certify_freshness'] is True
           assert d['daily_core_scoring_and_rank_rebuild_certified'] is False
           assert d['eligible_to_promote_new_macro_scores'] is False
           assert d['eligible_to_republish_28_pair_thesis'] is False
