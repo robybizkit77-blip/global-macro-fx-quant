@@ -49,6 +49,7 @@ def main() -> None:
     assert c["rules"]["official_promotion_effect"] == "NONE"
     assert c["rules"]["premorning_avoids_not_yet_ready_sources"] is True
     assert c["rules"]["premorning_calendar_news_selective_retry"] is True
+    assert c["rules"]["premorning_vix_selective_retry"] is True
     assert c["separate_cadences"]["COT"] == "cot-persistent-weekly-v1.yml"
     assert c["separate_cadences"]["CB_PRICING_MORNING"] == "cb-pricing-persistent-daily-v1.yml"
     assert c["rules"]["prebrief_cb_pricing_independent_source_outage_isolation"] is True
@@ -101,9 +102,15 @@ def main() -> None:
     assert c["phases"]["premorning"] == [
         "calendar-news-operational-refresh-v1.yml",
         "rates-persistent-daily-v1.yml",
+        "vix-persistent-apply-v1.yml",
         "final-e2e-certification-gate-v3.yml",
         "publish-dashboard-pages-v1.yml",
     ]
+    assert "plan_premorning_vix_recovery_v1.py" in WORKFLOW.read_text()
+    assert "Test 07:45 selective official VIX close recovery" in WORKFLOW.read_text()
+    assert "git show origin/main:live_data/sections/D.json" in WORKFLOW.read_text()
+    assert "07:45 VIX: **SKIPPED**" in WORKFLOW.read_text()
+    assert "07:45 VIX: **RETRY**" in WORKFLOW.read_text()
     assert "macro-persistent-daily-v1.yml" not in c["phases"]["premorning"]
     assert "ois-estimated-snapshot-repricing-v1.yml" not in c["phases"]["premorning"]
     assert "calendar-news-operational-refresh-v1.yml" in c["phases"]["premorning"]

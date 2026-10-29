@@ -18,6 +18,8 @@ on:
       - 'validation/orchestration/test_orchestrator_readonly_api_retry_v1.py'
       - 'validation/orchestration/plan_premorning_calendar_news_recovery_v1.py'
       - 'validation/orchestration/test_plan_premorning_calendar_news_recovery_v1.py'
+      - 'validation/orchestration/plan_premorning_vix_recovery_v1.py'
+      - 'validation/orchestration/test_plan_premorning_vix_recovery_v1.py'
   push:
     branches: [main]
     paths:
@@ -35,6 +37,8 @@ on:
       - 'validation/orchestration/test_orchestrator_readonly_api_retry_v1.py'
       - 'validation/orchestration/plan_premorning_calendar_news_recovery_v1.py'
       - 'validation/orchestration/test_plan_premorning_calendar_news_recovery_v1.py'
+      - 'validation/orchestration/plan_premorning_vix_recovery_v1.py'
+      - 'validation/orchestration/test_plan_premorning_vix_recovery_v1.py'
   workflow_dispatch:
     inputs:
       phase:
@@ -126,6 +130,8 @@ jobs:
           PY
       - name: Test pre-morning Calendar/News selective recheck recovery
         run: python -m unittest validation.orchestration.test_plan_premorning_calendar_news_recovery_v1 -v
+      - name: Test 07:45 selective official VIX close recovery
+        run: python -m unittest validation.orchestration.test_plan_premorning_vix_recovery_v1 -v
       - name: Test transient GitHub run/job reads without duplicate dispatch
         run: python validation/orchestration/test_orchestrator_readonly_api_retry_v1.py
 
@@ -295,6 +301,7 @@ jobs:
                 workflows=(
                   calendar-news-operational-refresh-v1.yml
                   rates-persistent-daily-v1.yml
+                  vix-persistent-apply-v1.yml
                   final-e2e-certification-gate-v3.yml
                   publish-dashboard-pages-v1.yml
                 )
@@ -350,6 +357,19 @@ jobs:
                   continue
                 fi
                 echo "- 07:45 Calendar/News: **RETRY** (missing or stale same-day source receipt)" >> "$GITHUB_STEP_SUMMARY"
+              fi
+              # If the overnight Cboe source or 07:17 Calendar-triggered VIX
+              # recovery was late, 07:45 gets one selective official fetch.
+              # Read the latest main source, not the older orchestrator checkout.
+              if [[ "$phase" == "premorning" && "$wf" == "vix-persistent-apply-v1.yml" ]]; then
+                git fetch origin --no-tags --depth=1 '+refs/heads/main:refs/remotes/origin/main'
+                git show origin/main:live_data/sections/D.json > /tmp/premorning-vix-current-main.json
+                if python3 validation/orchestration/plan_premorning_vix_recovery_v1.py \
+                  --source-file /tmp/premorning-vix-current-main.json; then
+                  echo "- 07:45 VIX: **SKIPPED** (official prior-session Cboe close already validated on latest main)" >> "$GITHUB_STEP_SUMMARY"
+                  continue
+                fi
+                echo "- 07:45 VIX: **RETRY** (last official Cboe date/integrity still needs verification)" >> "$GITHUB_STEP_SUMMARY"
               fi
               # Final E2E is a structural check, not proof that dated
               # market sources are ready. Refuse the explicit 04:43/07:45
