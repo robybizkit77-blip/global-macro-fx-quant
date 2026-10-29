@@ -39,7 +39,13 @@ def main() -> None:
     concurrency_section = workflow_text.split("\nconcurrency:\n", 1)
     assert len(concurrency_section) == 2
     block = concurrency_section[1].split("\nenv:\n", 1)[0]
-    assert "group: daily-data-orchestrator-v2" in block
+    # Contract-only PR/push validation must not occupy the production queue.
+    # Schedule and manual dispatch still serialize on the original group.
+    assert "github.event_name == 'pull_request'" in block
+    assert "github.event.pull_request.number" in block
+    assert "github.event_name == 'push'" in block
+    assert "daily-data-orchestrator-v2-ci-push" in block
+    assert "|| 'daily-data-orchestrator-v2' }}" in block
     assert "queue: max" in block
     assert "cancel-in-progress: false" in block
 
