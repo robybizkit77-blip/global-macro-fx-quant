@@ -180,6 +180,18 @@ def main() -> None:
     # The parent must never dispatch its explicit 05:00/07:45 Pages job
     # before checking source freshness on the latest main checkout.
     assert 'Checkout main for pre-publication source audit' in text
+    # All active phases, including 09:10 manual morning / close / night,
+    # run the source-backed child-step proof. They MUST check out the repo
+    # before executing that Python file, even if no pre-publication audit runs.
+    checkout_segment = text.split(
+        '      - name: Checkout main for pre-publication source audit\\n', 1
+    )[1].split('      - name: Run serialized refresh sequence\\n', 1)[0]
+    assert "if: ${{ steps.phase.outputs.phase != 'skip' }}" in checkout_segment
+    assert 'uses: actions/checkout@v4' in checkout_segment
+    assert 'ref: main' in checkout_segment
+    assert text.index('      - name: Checkout main for pre-publication source audit') < text.index(
+        '      - name: Run serialized refresh sequence'
+    )
     assert 'if [[ "$wf" == "publish-dashboard-pages-v1.yml" ]] &&' in text
     assert 'git fetch origin --no-tags --depth=1' in text
     assert 'git reset --hard origin/main' in text
