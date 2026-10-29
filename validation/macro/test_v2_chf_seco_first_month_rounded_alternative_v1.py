@@ -2,10 +2,14 @@
 import copy
 import json
 import unittest
+import math
+import random
+import statistics
 
 from validation.macro.v2_chf_seco_first_month_rounded_alternative_v1 import (
     audit, ASOF, FIXTURE, SCHEMA, EARLY_INDEX_ONLY,
-    INDEXED_OFFICIAL_PDF_TEXT_ONLY, from_index_only
+    INDEXED_OFFICIAL_PDF_TEXT_ONLY, from_index_only,
+    rounding_uncertainty_envelope
 )
 from validation.macro.v2_shadow_features_v1 import ROOT
 from validation.macro.v2_g8_24_axis_training_history_gap_audit_v1 import evidence
@@ -77,6 +81,53 @@ class CHFOfficialFirstRoundedAlternative(unittest.TestCase):
         for name in ["safe_to_publish_new_D","safe_to_change_28_pairs",
                      "safe_for_beta","safe_for_forward","writes_live_data"]:
             self.assertFalse(d[name])
+
+    def test_rounding_alone_can_flip_chf_research_class_without_snb_vintage(self):
+        research=self.a["statistical_research"]
+        result=research["hypothetical_unrounded_SECO_precision_envelope"]
+        nominal=research["descriptive_robust_z_of_rounded_first_SECO_rates"]
+        lo,hi=result["descriptive_robust_z_clipped_conservative_interval"]
+        self.assertGreater(nominal,0.5)
+        self.assertLess(lo,0.5)
+        self.assertGreater(hi,0.5)
+        self.assertLessEqual(lo,nominal)
+        self.assertGreaterEqual(hi,nominal)
+        self.assertTrue(result["possible_zero_prior_mad"])
+        self.assertFalse(result["all_admissible_rounded_input_histories_have_same_descriptive_class"])
+        self.assertEqual(result["rounding_half_width_percentage_points"],0.05)
+        self.assertEqual(result["possible_descriptive_classes_at_interval_endpoints"],
+                         ["HIGHER_UNEMPLOYMENT_VS_SECO_HISTORY","NEAR_SECO_HISTORY"])
+        for key in ("pre_rounding_rates_observed_or_recovered",
+                    "exact_SNB_amarbma_vintages_reconstructed",
+                    "publisher_original_day_bytes_completed",
+                    "safe_for_macro_score","safe_for_FX_ranking",
+                    "safe_for_backtest"):
+            self.assertFalse(result[key],key)
+
+    def test_interval_provably_contains_many_hypothetical_unrounded_histories(self):
+        # Deterministic perturbations ONLY, never a claim of observed SNB or SECO
+        # pre-rounding precision. Both per-row variation and changing MED/MAD tested.
+        published=[r["original_seco_rounded_sa_registered_unemployment_pct"]
+                   for r in self.a["publisher_first_rounded_monthly_reports"]]
+        receipt=rounding_uncertainty_envelope(published)
+        lo,hi=receipt["descriptive_robust_z_clipped_conservative_interval"]
+        rng=random.Random(1729)
+        for _ in range(250):
+            hypothetical=[v+rng.uniform(-0.049999,0.049999) for v in published]
+            previous=hypothetical[:-1]
+            median=statistics.median(previous)
+            mad=statistics.median(abs(v-median) for v in previous)
+            if mad<=1e-12: continue
+            z=max(-3.0,min(3.0,(hypothetical[-1]-median)/(1.4826*mad)))
+            self.assertTrue(math.isfinite(z))
+            self.assertLessEqual(lo-1e-9,z)
+            self.assertGreaterEqual(hi+1e-9,z)
+        # In a flat rounded history a precise MAD can be zero, not a signal.
+        flat=rounding_uncertainty_envelope([2.5]*25)
+        self.assertTrue(flat["possible_zero_prior_mad"])
+        self.assertFalse(flat["all_admissible_rounded_input_histories_have_same_descriptive_class"])
+        with self.assertRaises(ValueError):
+            rounding_uncertainty_envelope(published,rounding_half_width=0.01)
 
     def test_no_publish_clock_from_real_report_day(self):
         d=self.a
