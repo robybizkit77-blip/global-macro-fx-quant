@@ -27,11 +27,36 @@ const eur=rows.find(x=>x.ccy==='EUR'),nzd=rows.find(x=>x.ccy==='NZD');
 assert(['PROXY','MIXED','WITHHELD','OFFICIAL'].includes(eur.tier));
 assert(['SCENARIO','WITHHELD','OFFICIAL'].includes(nzd.tier));
 if(['PROXY','MIXED'].includes(eur.tier)){
- assert(['3m','6m','12m'].every(h=>eur.points[h]?.date),'EUR futures must be individually dated');
- assert.equal(eur.tier, new Set(Object.values(eur.points).map(p=>p.date)).size>1?'MIXED':'PROXY',
-  'EUR must distinguish non-synchronized dates from matched futures dates');
- assert(['3m','6m','12m'].every(h=>eur.points[h].direct_ois_quote===false),
-  'Dated EUR futures never certified as OIS');
+ // A date mismatch may leave only 1-2 individually usable contracts.
+ // Never demand all three or join tomorrow's bar to today's source vintage.
+ const visible=Object.entries(eur.points).filter(([h,p])=>
+  ['3m','6m','12m'].includes(h)&&p?.date);
+ assert(visible.length>=1&&visible.length<=3,
+  'EUR observations require independent dated contract receipts');
+ assert(visible.every(([h,p])=>p.source_quote_verified===true&&
+  p.direct_ois_quote===false&&p.policy_repricing_allowed===false),
+  'Dated EUR futures never certified as OIS or repricing');
+ if(visible.length===3){
+  assert.equal(eur.tier,new Set(visible.map(([,p])=>p.date)).size>1?'MIXED':'PROXY',
+   'Complete EUR futures must distinguish non-synchronized dates');
+ }else{
+  assert.equal(eur.tier,'MIXED','Incomplete EUR secondary quotes are not a synchronized curve');
+  assert.equal(c.currency_tiers.EUR,'INCOMPLETE_OR_STALE',
+   '1-2 individually dated futures must not count as complete 3M/6M/12M coverage');
+  assert(c.incomplete_codes.includes('EUR'));
+ }
+}
+// Reject an individual EUR bar that is newer than the declared view day
+// without suppressing independently verified 3M/6M observations.
+const eurSource=ois.currencies.EUR;
+const eurFuture=eurSource.horizons?.['12m']?.quote_as_of;
+if(eurSource.operational_status==='WITHHELD'&&eurFuture&&eurFuture>when&&
+   eurSource.secondary_quote_context?.date_mismatch===true){
+ assert(!eur.points['12m'],
+  'A next-day 12M EUR bar must not be presented as observed at the prior close');
+ assert(['3m','6m'].every(h=>!eur.points[h]||eur.points[h].date<=when));
+ assert(c.incomplete_codes.includes('EUR'),
+  'Partially observed EUR futures must not be counted as complete pricing');
 }
 if(ois.currencies.EUR.operational_status==='GREEN_ESTIMATED'&&
  ois.currencies.EUR.as_of===when)
