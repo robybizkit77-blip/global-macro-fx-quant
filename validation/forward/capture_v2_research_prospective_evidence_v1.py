@@ -104,7 +104,7 @@ def two_year_instrument_identity(rates, ccy, observed_yield):
             or not math.isclose(reported,observed_yield,rel_tol=1e-8,abs_tol=1e-8)
             or not math.isclose(entry["value"],observed_yield,rel_tol=1e-8,abs_tol=1e-8)):
         return None
-    definition=re.sub(r"\\s*·\\s*20\\d{2}-\\d{2}-\\d{2}","",raw).strip()
+    definition=re.sub(r"\s*·\s*20\d{2}-\d{2}-\d{2}","",raw).strip()
     return definition+" | "+label.strip()+" | 2Y"
 
 
