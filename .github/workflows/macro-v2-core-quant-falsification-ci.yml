@@ -9,6 +9,9 @@ on:
       - 'validation/macro/v2_us_chf_source_quality_propagation_v1.py'
       - 'validation/macro/test_v2_us_chf_source_quality_propagation_v1.py'
       - 'validation/macro/MACRO_V2_US_CHF_JOINT_QUALITY_PROPAGATION_2026-10-29.md'
+      - 'validation/macro/v2_g8_growth_cross_country_comparability_v1.py'
+      - 'validation/macro/test_v2_g8_growth_cross_country_comparability_v1.py'
+      - 'validation/macro/MACRO_V2_G8_GDP_COMPARABILITY_2026-10-29.md'
       - 'validation/macro/v2_chf_seco_first_month_rounded_alternative_v1.py'
       - 'validation/macro/test_v2_chf_seco_first_month_rounded_alternative_v1.py'
       - 'validation/macro/MACRO_V2_24_SOURCE_TRAINING_WINDOW_GAP_AUDIT_2026-10-27.md'
@@ -30,6 +33,7 @@ jobs:
           python -m unittest validation.macro.test_v2_domestic_candidate_explicit_formula_v1 -v
           python -m unittest validation.macro.test_v2_core_quant_falsification_readiness_v1 -v
           python -m unittest validation.macro.test_v2_chf_seco_first_month_rounded_alternative_v1 -v
+          python -m unittest validation.macro.test_v2_g8_growth_cross_country_comparability_v1 -v
           python -m unittest validation.macro.test_v2_us_chf_source_quality_propagation_v1 -v
       - name: Generate dated quantitative model and archived forward receipt reconciliation
         run: |
@@ -85,6 +89,24 @@ jobs:
               out.write(f"- CHF hypothetical alternative SECO z interval: {c['hypothetical_precise_seco_unemployment_z_bounds']}; joint source/weight domestic range: {c['hypothetical_25_to_75_growth_weight_activity_interval']}. Not the canonical SNB first vintage.\\n")
               out.write('- Zero authorised FX signals or new Core.\\n')
           PY
+      - name: Verify all 28 G8 GDP QoQ versus historical Z comparability diagnostics
+        run: |
+          python -m validation.macro.v2_g8_growth_cross_country_comparability_v1 --out /tmp/gmfq-g8-gdp-comparability-20261029.json
+          python - <<'PY'
+          import json,os
+          x=json.load(open('/tmp/gmfq-g8-gdp-comparability-20261029.json'))
+          t=x['summary']
+          assert t['economies']==8 and t['pairs_audited_for_descriptive_representation']==28
+          assert t['within_history_vs_qoq_order_agreements']+t['within_history_vs_qoq_order_inversions']+t['pairs_with_order_ties']==28
+          assert t['pairs_with_EUR_or_CHF_definition_caveats']==13
+          assert t['eligible_cross_country_FX_strength_pairs']==0
+          assert t['original_release_day_binary_certified_training_panels']==0
+          assert not x['safe_to_publish_D'] and not x['safe_to_recalculate_28_pairs']
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as out:
+              out.write('### G8 GDP cross-country representation test (research only)\\n')
+              out.write(f"- 28 GDP comparisons: {t['within_history_vs_qoq_order_agreements']} agreements, {t['within_history_vs_qoq_order_inversions']} inverted rankings, {t['pairs_with_order_ties']} ties.\\n")
+              out.write('- Same GDP economic quarter, not synchronized issuer vintages or a cross-country FX signal.\\n')
+          PY
       - name: Assert no production, signals or archival journal writes
         run: |
           git diff --exit-code -- live_data site dashboard payload validation/forward/decision_snapshots
@@ -95,5 +117,6 @@ jobs:
           path: |
             /tmp/gmfq-core-quant-falsification-2026-10-28.json
             /tmp/gmfq-us-chf-source-stress.json
+            /tmp/gmfq-g8-gdp-comparability-20261029.json
           retention-days: 21
           if-no-files-found: error
