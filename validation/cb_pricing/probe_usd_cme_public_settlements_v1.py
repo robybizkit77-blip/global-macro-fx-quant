@@ -174,10 +174,23 @@ def probe(today: dt.datetime, event_date: dt.date | None = None) -> dict:
     shared = sorted(common or [])
     enough_shared = len(shared) >= 9
     all_valid = all(c["state"] == "DATE_EXACT_CONTRACTS_PRESENT" for c in checks)
+    # CME's public page can have a shorter lookback than T-5. Do not turn
+    # a valid T/T-1 event pair into an all-window failure when T-5 is empty;
+    # retain the exact date-level failure and do not certify a 1W comparison.
+    two_latest_valid = all(
+        c["state"] == "DATE_EXACT_CONTRACTS_PRESENT" for c in checks[:2]
+    )
+    rolling_status = (
+        "PUBLIC_EOD_ACCESS_CANDIDATE_FOUND" if all_valid and enough_shared
+        else "PUBLIC_EOD_PARTIAL_ROLLING_ACCESS" if two_latest_valid
+        else "PUBLIC_EOD_ACCESS_NOT_PROVEN"
+    )
     # A probe is NOT a license, a downstream market-data contract or an OIS feed.
     return {
         "schema": "GMFQ_CME_PUBLIC_ZQ_ACCESS_PROBE_V1",
-        "status": "PUBLIC_EOD_ACCESS_CANDIDATE_FOUND" if all_valid and enough_shared else "PUBLIC_EOD_ACCESS_NOT_PROVEN",
+        "status": rolling_status,
+        "weekly_same_contract_access_proven": all_valid and enough_shared,
+        "latest_two_dates_accessible": two_latest_valid,
         "product_id_candidate": pid,
         "product_identity_certified": False,
         "access_terms_or_redistribution_rights_certified": False,
