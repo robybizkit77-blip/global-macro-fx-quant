@@ -6,6 +6,9 @@ on:
       - '.github/workflows/macro-v2-core-quant-falsification-ci.yml'
       - 'validation/macro/v2_core_quant_falsification_readiness_v1.py'
       - 'validation/macro/test_v2_core_quant_falsification_readiness_v1.py'
+      - 'validation/macro/v2_us_chf_source_quality_propagation_v1.py'
+      - 'validation/macro/test_v2_us_chf_source_quality_propagation_v1.py'
+      - 'validation/macro/MACRO_V2_US_CHF_JOINT_QUALITY_PROPAGATION_2026-10-29.md'
       - 'validation/macro/v2_chf_seco_first_month_rounded_alternative_v1.py'
       - 'validation/macro/test_v2_chf_seco_first_month_rounded_alternative_v1.py'
       - 'validation/macro/MACRO_V2_24_SOURCE_TRAINING_WINDOW_GAP_AUDIT_2026-10-27.md'
@@ -27,6 +30,7 @@ jobs:
           python -m unittest validation.macro.test_v2_domestic_candidate_explicit_formula_v1 -v
           python -m unittest validation.macro.test_v2_core_quant_falsification_readiness_v1 -v
           python -m unittest validation.macro.test_v2_chf_seco_first_month_rounded_alternative_v1 -v
+          python -m unittest validation.macro.test_v2_us_chf_source_quality_propagation_v1 -v
       - name: Generate dated quantitative model and archived forward receipt reconciliation
         run: |
           python -m validation.macro.v2_core_quant_falsification_readiness_v1 --as-of 2026-10-28 --out /tmp/gmfq-core-quant-falsification-2026-10-28.json
@@ -56,6 +60,31 @@ jobs:
               o.write('- Actual Forward journal: row/cutoff counts verified against the persisted growing ledger; no validated future outcomes.\n')
               o.write('- 6 of 8 validation gates blocked; two research gates checked (formula and journal). CI green is not predictive proof. Core D and 28 FX pairs unchanged.\n')
           PY
+      - name: Quantify real USD/CHF incomplete-source impact on the unpromoted V2 candidate
+        run: |
+          set -euo pipefail
+          python -m validation.macro.v2_us_chf_source_quality_propagation_v1 --out /tmp/gmfq-us-chf-source-stress.json
+          python - <<'PY'
+          import json, os
+          x=json.load(open('/tmp/gmfq-us-chf-source-stress.json'))
+          assert x['status']=='TWO_MISSING_CORE_SOURCE_QUALITY_STRESSED_NO_PIT_FX_PROMOTION'
+          assert x['USD_inflation']['unpublished_period']=='2025-10'
+          assert x['USD_inflation']['training_observations']==24
+          assert x['USD_inflation']['training_calendar_months']==25
+          assert x['USD_inflation']['strict_consecutive_PIT_training_eligible'] is False
+          assert x['CHF_labour']['exact_historical_snb_source_day_vintages']==0
+          assert x['CHF_labour']['safe_to_replace_candidate_labour_axis'] is False
+          assert x['summary']['source_day_training_vintage_series_certified']==0
+          assert all(x[k] is False for k in ('safe_to_publish_new_D',
+                      'safe_to_recalculate_28_pairs','safe_for_beta',
+                      'safe_for_forward','writes_live_data'))
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as out:
+              out.write('### USD CPI missing-month / CHF source-precision stress (research only)\\n')
+              out.write(f"- USD issuer vs revised z: {x['USD_inflation']['issuer_minus_revised_z']:+.6f}; no 2025-10 source and no 24 consecutive PIT months.\\n")
+              c=x['CHF_labour']
+              out.write(f"- CHF hypothetical alternative SECO z interval: {c['hypothetical_precise_seco_unemployment_z_bounds']}; joint source/weight domestic range: {c['hypothetical_25_to_75_growth_weight_activity_interval']}. Not the canonical SNB first vintage.\\n")
+              out.write('- Zero authorised FX signals or new Core.\\n')
+          PY
       - name: Assert no production, signals or archival journal writes
         run: |
           git diff --exit-code -- live_data site dashboard payload validation/forward/decision_snapshots
@@ -63,6 +92,8 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: macro-v2-core-quant-falsification-research
-          path: /tmp/gmfq-core-quant-falsification-2026-10-28.json
+          path: |
+            /tmp/gmfq-core-quant-falsification-2026-10-28.json
+            /tmp/gmfq-us-chf-source-stress.json
           retention-days: 21
           if-no-files-found: error
