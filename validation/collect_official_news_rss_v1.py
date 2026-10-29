@@ -151,7 +151,7 @@ def desk_context(title: str, source: dict) -> dict:
             why = "Approfondimento energetico o strutturale: dal titolo non emerge un nuovo segnale sul prezzo del petrolio."
             check = "Leggere la pubblicazione originale; valutare soltanto dopo l'eventuale rilevanza per domanda, offerta e prezzi."
     elif source["id"] == "BOJ_NEWS" and re.search(
-            r"\\b(statement on monetary policy|change in the guideline for money market operations)\\b", t):
+            r"\b(statement on monetary policy|change in the guideline for money market operations)\b", t):
         # BoJ's actual English release titles differ from the standard
         # "monetary policy statement" wording. This is classification only:
         # the headline NEVER establishes a rate level, vote, bias or surprise.
@@ -159,7 +159,7 @@ def desk_context(title: str, source: dict) -> dict:
         why = "Pubblicazione ufficiale BoJ di politica monetaria: il titolo non conferma l'esito, il voto o il tono della decisione."
         check = "Leggere il documento BoJ; verificare decisione, livello del tasso, voto e Outlook prima di confrontare TONA, 2Y e JPY."
     elif source["id"] == "BOJ_NEWS" and re.search(
-            r"\\boutlook for economic activity and prices\\b", t):
+            r"\boutlook for economic activity and prices\b", t):
         relevance, topic = "MONITOR", "MACRO_EXPECTATIONS"
         why = "Outlook ufficiale BoJ: la sola pubblicazione non dimostra una revisione hawkish o dovish delle proiezioni."
         check = "Leggere stime e revisioni ufficiali; distinguere previsioni e decisione sui tassi, poi verificare TONA, 2Y e JPY."
