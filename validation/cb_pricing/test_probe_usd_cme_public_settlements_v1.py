@@ -44,6 +44,43 @@ def run():
         mod.get_public_page_json = lambda pid, date: ("HTTP_200", payload("10/16/2026"))
         mismatched = mod.probe(now)
         assert mismatched["status"] == "PUBLIC_EOD_ACCESS_NOT_PROVEN", mismatched
+        # 29 Oct Chicago date: dated 27 Oct pre-FOMC and 28 Oct post-FOMC
+        # settlements must BOTH exist and share the SAME listed contracts.
+        event = dt.date(2026,10,28)
+        event_now = dt.datetime(2026,10,29,8,50,tzinfo=dt.timezone.utc)
+        calls = []
+        def good_event(pid,date):
+            calls.append(date.isoformat())
+            return ("HTTP_200", payload(date.strftime("%m/%d/%Y")))
+        mod.get_public_page_json = good_event
+        checked = mod.probe(event_now, event_date=event)
+        assert checked["fomc_event_window"]["status"] == "DATE_MATCHED_EVENT_ACCESS_CANDIDATE", checked
+        assert checked["fomc_event_window"]["matched_contract_count"] >= 9
+        assert [x["date"] for x in checked["fomc_event_window"]["checks"]] == ["2026-10-27","2026-10-28"]
+        assert checked["fomc_event_window"]["levels_recorded"] is False
+        assert checked["fomc_event_window"]["repricing_computed"] is False
+        assert checked["fomc_event_window"]["official_pricing_promotion_allowed"] is False
+        assert checked["price_levels_collected_or_logged"] is False
+        assert len(calls)==3, "same event dates must be read only once when rolling probe overlaps"
+        # Even one incorrectly dated CME response fails closed.
+        mod.get_public_page_json = lambda pid,date: ("HTTP_200", payload("10/27/2026"))
+        bad = mod.probe(event_now, event_date=event)
+        assert bad["fomc_event_window"]["status"] == "EVENT_ACCESS_NOT_PROVEN", bad
+        assert bad["fomc_event_window"]["matched_contract_count"] == 0
+        # HTTP 403 is a source failure, not an artificial unchanged quote.
+        mod.get_public_page_json = lambda pid,date: ("HTTP_403", None)
+        blocked = mod.probe(event_now, event_date=event)
+        assert blocked["fomc_event_window"]["status"] == "EVENT_ACCESS_NOT_PROVEN"
+        assert all(x["http_result"]=="HTTP_403" for x in blocked["fomc_event_window"]["checks"])
+        # Do not query future FOMC settlements or repeatedly probe an expired event.
+        calls.clear()
+        mod.get_public_page_json = good_event
+        early = mod.probe(dt.datetime(2026,10,28,16,0,tzinfo=dt.timezone.utc),event_date=event)
+        assert early["fomc_event_window"]["status"] == "EVENT_NOT_YET_PAST"
+        assert "2026-10-28" not in calls
+        late = mod.probe(dt.datetime(2026,11,16,14,0,tzinfo=dt.timezone.utc),event_date=event)
+        assert late["fomc_event_window"]["status"] == "EVENT_WINDOW_EXPIRED_NO_NEW_REQUESTS"
+        assert late["fomc_event_window"]["checks"] == []
     finally:
         mod.get_public_page_json = saved
     print("CME_PUBLIC_ZQ_DATE_AND_ENTITLEMENT_GATE_V1_PASS")
