@@ -446,3 +446,22 @@ assert len(all_proof["headlines"]) == 2
 assert all(x["reaction_evidence"]["market_reaction"] == "NOT_MEASURED"
            for x in all_proof["headlines"])
 print("NEWS_REACTION_EVENT_WINDOW_FAIL_CLOSED_PASS")
+
+
+# A GitHub 'success' with a dropped pending 07:17 Calendar schedule cannot
+# trigger its linked early VIX recovery; keep every pending source check.
+# This is a workflow-contract test, not a mock claim of actual scheduling.
+calendar_workflow = (Path(__file__).resolve().parents[1] /
+    ".github/workflows/calendar-news-operational-refresh-v1.yml").read_text(encoding="utf-8")
+vix_workflow = (Path(__file__).resolve().parents[1] /
+    ".github/workflows/vix-persistent-apply-v1.yml").read_text(encoding="utf-8")
+assert "queue: max" in calendar_workflow
+assert "cancel-in-progress: false" in calendar_workflow
+assert "calendar-news-validation-pr-{0}" in calendar_workflow
+assert calendar_workflow.count("    - cron:") == 2
+assert "    - cron: '17 4 * * 1-5'" in calendar_workflow
+assert "    - cron: '17 6 * * *'" in calendar_workflow
+assert "workflows: ['Calendar News Operational Refresh V1']" in vix_workflow
+assert "github.event.workflow_run.event == 'schedule'" in vix_workflow
+assert "github.event.workflow_run.conclusion == 'success'" in vix_workflow
+print("CALENDAR_EARLY_VIX_BACKUP_NO_DROPPED_PENDING_RUNS_PASS")
