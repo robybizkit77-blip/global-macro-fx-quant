@@ -53,7 +53,7 @@ jobs:
               o.write('### Macro V2 quantitative readiness - research proof, NOT forward model validation\n')
               o.write('- Reproducible 8-country domestic candidate, 24 economic axes, 3 predetermined growth weight scenarios. No cross-country FX strength permitted.\n')
               o.write('- Historical v9.3 walkforward is pseudo-OOS; it cannot validate the new domestic candidate.\n')
-              o.write('- Actual Forward journal: row/cutoff counts verified against the persisted growing ledger; no validated future outcomes.\\n')
+              o.write('- Actual Forward journal: row/cutoff counts verified against the persisted growing ledger; no validated future outcomes.\n')
               o.write('- 6 of 8 validation gates blocked; two research gates checked (formula and journal). CI green is not predictive proof. Core D and 28 FX pairs unchanged.\n')
           PY
       - name: Assert no production, signals or archival journal writes
