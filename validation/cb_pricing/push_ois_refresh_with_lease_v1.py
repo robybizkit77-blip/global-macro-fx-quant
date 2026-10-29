@@ -94,7 +94,12 @@ def persist(base_sha: str, mode: str, *, cwd: Path | None = None, attempts: int 
                 raise LeaseError("REFUSED_PROTECTED_OIS_CHANGE: recompute refresh from latest main")
             raise LeaseError("Could not compare protected inputs on main")
         if anchor != remote:
-            git("rebase", "--onto", remote, anchor, cwd=cwd)
+            # A hosted runner may not have a repository identity. The initial
+            # commit already supplies a scoped identity; the rebase rewrite must
+            # do the same when unrelated main changes require replay.
+            git("-c", "user.name=github-actions[bot]",
+                "-c", "user.email=41898282+github-actions[bot]@users.noreply.github.com",
+                "rebase", "--onto", remote, anchor, cwd=cwd)
             anchor = remote
         pushed = git("push", "origin", "HEAD:refs/heads/main", cwd=cwd, check=False)
         if pushed.returncode == 0:
