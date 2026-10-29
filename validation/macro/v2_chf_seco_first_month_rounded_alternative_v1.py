@@ -115,6 +115,78 @@ def from_index_only():
     return rows
 
 
+ROUNDING_HALF_WIDTH_PCT = 0.05
+ROBUST_Z_CLIP = 3.0
+DESCRIPTIVE_Z_THRESHOLD = 0.50
+
+
+def rounding_uncertainty_envelope(values, *, rounding_half_width=ROUNDING_HALF_WIDTH_PCT):
+    """Conservative interval, NOT a reconstruction of exact SECO/SNB vintages.
+
+    Each hypothetical pre-rounding SECO rate is within +/-0.05 percentage
+    points of its printed one-decimal value. Median is 1-Lipschitz in the
+    componentwise max error; MAD (median absolute deviation) is 2-Lipschitz.
+    Consequently median and MAD envelopes are mathematically conservative
+    even though original precise issuer values are not observed.
+    """
+    require(isinstance(values, list) and len(values) == 25
+            and all(type(x) in (int, float) and math.isfinite(x) for x in values),
+            "rounding envelope requires all 25 finite first SECO published values")
+    require(rounding_half_width == ROUNDING_HALF_WIDTH_PCT,
+            "fixed published SECO precision must not be silently widened or narrowed")
+    prior = values[:-1]
+    med = statistics.median(prior)
+    mad = statistics.median(abs(x-med) for x in prior)
+    r = rounding_half_width
+    med_min, med_max = med-r, med+r
+    mad_min, mad_max = max(0.0, mad-2*r), mad+2*r
+    n_min = values[-1]-r-med_max
+    n_max = values[-1]+r-med_min
+    d_min, d_max = 1.4826*mad_min, 1.4826*mad_max
+    # If some admissible unrounded series has MAD=0, no precise z is defined
+    # for it. That uncertainty is explicit, never filled with a made-up z.
+    if d_min <= 1e-12:
+        lo = (-ROBUST_Z_CLIP if n_min < 0 else
+              0.0 if n_min == 0 else n_min/d_max)
+        hi = (ROBUST_Z_CLIP if n_max > 0 else
+              0.0 if n_max == 0 else n_max/d_max)
+    else:
+        ratios = [n / d for n in (n_min, n_max) for d in (d_min, d_max)]
+        lo, hi = min(ratios), max(ratios)
+    lower = max(-ROBUST_Z_CLIP, min(ROBUST_Z_CLIP, lo))
+    upper = max(-ROBUST_Z_CLIP, min(ROBUST_Z_CLIP, hi))
+    require(lower <= upper and math.isfinite(lower) and math.isfinite(upper),
+            "impossible conservative pre-rounding sensitivity interval")
+
+    def class_of(z):
+        if z >= DESCRIPTIVE_Z_THRESHOLD:
+            return "HIGHER_UNEMPLOYMENT_VS_SECO_HISTORY"
+        if z <= -DESCRIPTIVE_Z_THRESHOLD:
+            return "LOWER_UNEMPLOYMENT_VS_SECO_HISTORY"
+        return "NEAR_SECO_HISTORY"
+    # Even if endpoints have same class, a zero admissible MAD means precise
+    # z is undefined for at least one potential pre-rounded history.
+    classes = sorted({class_of(lower), class_of(upper)})
+    robust = len(classes) == 1 and d_min > 1e-12
+    return {
+        "basis": "HYPOTHETICAL_UNROUNDED_SECO_0P1_PCT_NOT_SNB_PRECISE_VINTAGE",
+        "rounding_half_width_percentage_points": r,
+        "prior_median_interval_pct": [med_min, med_max],
+        "prior_mad_interval_pct": [mad_min, mad_max],
+        "possible_zero_prior_mad": d_min <= 1e-12,
+        "descriptive_robust_z_clipped_conservative_interval": [lower, upper],
+        "descriptive_unemployment_z_threshold": DESCRIPTIVE_Z_THRESHOLD,
+        "all_admissible_rounded_input_histories_have_same_descriptive_class": robust,
+        "possible_descriptive_classes_at_interval_endpoints": classes,
+        "pre_rounding_rates_observed_or_recovered": False,
+        "exact_SNB_amarbma_vintages_reconstructed": False,
+        "publisher_original_day_bytes_completed": False,
+        "safe_for_macro_score": False,
+        "safe_for_FX_ranking": False,
+        "safe_for_backtest": False,
+    }
+
+
 def audit(*,cutoff=ASOF,raw=None):
     require(cutoff==ASOF,"current issuer archive is NOT historical cutoff replay")
     base=raw if raw is not None else json.loads(FIXTURE.read_text(encoding="utf-8"))
@@ -204,6 +276,12 @@ def audit(*,cutoff=ASOF,raw=None):
     med=statistics.median(prior)
     mad=statistics.median(abs(x-med) for x in prior)
     z=None if mad<=1e-9 else max(-3.0,min(3.0,(values[-1]-med)/(1.4826*mad)))
+    uncertainty=rounding_uncertainty_envelope(values)
+    if z is not None:
+        require(uncertainty["descriptive_robust_z_clipped_conservative_interval"][0]
+                - 1e-10 <= z <=
+                uncertainty["descriptive_robust_z_clipped_conservative_interval"][1] + 1e-10,
+                "rounded SECO observed calculation outside robust uncertainty envelope")
     status=("ROUNDING_AND_SOURCE_HETEROGENEITY_DESCRIPTIVE_Z_AVAILABLE"
             if z is not None else "NO_Z_ZERO_VARIATION_IN_ROUNDED_SECO")
     return {
@@ -223,6 +301,7 @@ def audit(*,cutoff=ASOF,raw=None):
             "research_prior_median_pct":med,
             "research_prior_mad_pct":mad,
             "descriptive_robust_z_of_rounded_first_SECO_rates":z,
+            "hypothetical_unrounded_SECO_precision_envelope":uncertainty,
             "statistical_precision_caveat":
                 "ONE_DECIMAL_ROUNDING_AND_4_CACHED_INDEX_ONLY_REPORTS",
             "not_equivalent_to_exact_SNB_first_release_z":True,
