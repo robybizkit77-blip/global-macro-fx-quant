@@ -15,6 +15,7 @@ import argparse
 import hashlib
 import json
 import math
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -74,6 +75,37 @@ def cutoff_valid(cutoff, current):
     require(local.weekday() < 5 and local.hour >= 19,
             "only real observed evening weekday captures")
     return utc, local.date().isoformat()
+
+
+def two_year_instrument_identity(rates, ccy, observed_yield):
+    """Freeze comparable sovereign 2Y series metadata, never infer a trade.
+
+    Existing pre-feature snapshots remain untouched and intentionally lack
+    this fingerprint. Normalization removes source publication dates ONLY;
+    issuer, curve definition and series label stay in the original record.
+    A missing/inconsistent source is H1-ineligible, NOT a V2 capture failure.
+    """
+    item=rates.get(ccy, {})
+    raw=item.get("source")
+    history=item.get("history2")
+    tenors=item.get("tenors")
+    if not isinstance(raw,str) or not isinstance(history,dict) or not isinstance(tenors,list):
+        return None
+    label=history.get("label")
+    entry=next((v for v in tenors if isinstance(v,dict) and v.get("tenor")=="2Y"), None)
+    reported=item.get("2Y")
+    if (not isinstance(label,str) or not label.strip()
+            or not raw.strip() or not isinstance(entry,dict)
+            or type(reported) not in (int,float)
+            or type(observed_yield) not in (int,float)
+            or type(entry.get("value")) not in (int,float)
+            or not all(math.isfinite(float(v)) for v in
+                       (reported, observed_yield, entry["value"]))
+            or not math.isclose(reported,observed_yield,rel_tol=1e-8,abs_tol=1e-8)
+            or not math.isclose(entry["value"],observed_yield,rel_tol=1e-8,abs_tol=1e-8)):
+        return None
+    definition=re.sub(r"\\s*·\\s*20\\d{2}-\\d{2}-\\d{2}","",raw).strip()
+    return definition+" | "+label.strip()+" | 2Y"
 
 
 def make(cutoff, now, *, fx, pair_setup, legacy, candidate, banks, ois, rates,
@@ -151,6 +183,8 @@ def make(cutoff, now, *, fx, pair_setup, legacy, candidate, banks, ois, rates,
             "bond_date": row["official_bond_date"],
             "bond_age_days_at_capture": row["bond_age_days"],
             "two_year_observed_yield_pct": row["two_year_yield_pct"],
+            "two_year_instrument_identity": two_year_instrument_identity(
+                rates, ccy, row["two_year_yield_pct"]),
             "ten_year_observed_yield_pct": row["ten_year_yield_pct"],
             "FX_signal": None, "trade_entry": None
         }
