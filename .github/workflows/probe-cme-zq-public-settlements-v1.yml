@@ -7,6 +7,11 @@ on:
       - '.github/workflows/probe-cme-zq-public-settlements-v1.yml'
       - 'validation/cb_pricing/probe_usd_cme_public_settlements_v1.py'
       - 'validation/cb_pricing/test_probe_usd_cme_public_settlements_v1.py'
+  # Read-only check after CME overnight settlement publishing; later fallback.
+  # GitHub Action execution times may be delayed; not an 08:00 data SLA.
+  schedule:
+    - cron: '43 6 * * 1-5'
+    - cron: '43 12 * * 1-5'
   workflow_dispatch:
 
 permissions:
@@ -33,6 +38,7 @@ jobs:
         run: |
           python validation/cb_pricing/probe_usd_cme_public_settlements_v1.py \
             --output /tmp/cme-zq-public-source-proof.json \
+            --event-date 2026-10-28 \
             --summary "$GITHUB_STEP_SUMMARY"
 
       - name: Enforce zero repository or official runtime mutation
@@ -49,6 +55,19 @@ jobs:
           assert a['access_terms_or_redistribution_rights_certified'] is False
           assert a['status'] in {'PUBLIC_EOD_ACCESS_CANDIDATE_FOUND','PUBLIC_EOD_ACCESS_NOT_PROVEN'}
           assert len(a['checks'])==3
+          event=a['fomc_event_window']
+          assert event['event_date']=='2026-10-28'
+          assert event['pre_event_trade_date']=='2026-10-27'
+          assert event['post_event_trade_date']=='2026-10-28'
+          assert event['status'] in {
+             'EVENT_NOT_YET_PAST','EVENT_WINDOW_EXPIRED_NO_NEW_REQUESTS',
+             'DATE_MATCHED_EVENT_ACCESS_CANDIDATE','EVENT_ACCESS_NOT_PROVEN'
+          }
+          assert event['levels_recorded'] is False
+          assert event['repricing_computed'] is False
+          assert event['official_pricing_promotion_allowed'] is False
+          assert a['product_identity_certified'] is False
+
           print('CME_ZQ_SOURCE_PROBE_ZERO_MUTATION_PASS')
           PY
 
