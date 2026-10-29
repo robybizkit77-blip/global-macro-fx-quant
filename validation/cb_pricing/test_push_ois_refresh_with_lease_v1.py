@@ -76,8 +76,8 @@ def test_unrelated_change_without_repository_identity():
         git("config", "--unset", "user.name", cwd=writer)
         git("config", "--unset", "user.email", cwd=writer)
         base = git("rev-parse", "HEAD", cwd=writer)
-        write(writer, ESTIMATED_PATHS[0], "identity-free validated observation\\n")
-        other_commit(other, "live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json", "concurrent non-OIS change\\n")
+        write(writer, ESTIMATED_PATHS[0], "identity-free validated observation\n")
+        other_commit(other, "live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json", "concurrent non-OIS change\n")
         result = persist(base, "estimated", cwd=writer)
         assert result["status"] == "PUSHED" and result["unrelated_main_advance"] is True, result
         assert git("--git-dir", str(origin), "show", "main:" + ESTIMATED_PATHS[0]) == "identity-free validated observation"
