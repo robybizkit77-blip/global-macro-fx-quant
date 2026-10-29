@@ -60,7 +60,7 @@ def check(ois:dict, cb:dict, view:dict):
             source_day=o.get("as_of")
             decision_day=cb[c].get("last_date")
             action=str(cb[c].get("action") or "")
-            action_bp=re.search(r"([+-]\\d+)\\s*pb",action)
+            action_bp=re.search(r"([+-]\d+)\s*pb",action)
             try:
                 dated=(date.fromisoformat(str(source_day)) <
                        date.fromisoformat(str(decision_day)))
