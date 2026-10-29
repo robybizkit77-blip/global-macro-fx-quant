@@ -69,7 +69,16 @@ def check():
     wrong_branch = run(14, "workflow_dispatch", "2026-10-29T06:00:00Z", head_branch="test")
     assert decide(now, [wrong_branch], lambda _: jobs(), 99)["status"] == "RUN"
     assert decide(now, [run(99, "workflow_run", "2026-10-29T06:29:00Z")], lambda _: jobs(), 99)["status"] == "RUN"
-    assert decide(at(2026,10,29,5,30), [], lambda _: jobs(), 99)["status"] == "SKIP"
+    # 06:35 CET existing hourly alert heartbeat must be usable before 08:00.
+    first_heartbeat = at(2026,10,29,5,35)
+    early_recovery = decide(first_heartbeat, [], lambda _: jobs(), 99)
+    assert early_recovery["status"] == "RUN"
+    assert early_recovery["reason"] == "NO_SCHEDULE_DELIVERED_RECOVER"
+    assert early_recovery["late_recovery"] is False
+    # Never repeat a substantive first-slot CB producer via the fallback.
+    assert decide(first_heartbeat, [good], lambda _: jobs(), 99)["reason"] == "ALREADY_PRODUCED_TODAY"
+    # Before 06:30 CET no fallback is permitted.
+    assert decide(at(2026,10,29,5,29), [], lambda _: jobs(), 99)["status"] == "SKIP"
     assert decide(at(2026,10,29,16,31), [], lambda _: jobs(), 99)["status"] == "SKIP"
     assert decide(at(2026,10,31,6,30), [], lambda _: jobs(), 99)["reason"] == "ROME_WEEKEND"
     # Next Monday in CET, 07:30 local = 06:30 UTC; summer CEST = 05:30 UTC.
@@ -84,7 +93,7 @@ def check():
     def should_not_call_api(_):
         raise AssertionError("OUT_OF_WINDOW_API_READ_NOT_ALLOWED")
 
-    early = build_receipt(at(2026,10,29,5,0), 99, should_not_call_api)
+    early = build_receipt(at(2026,10,29,5,29), 99, should_not_call_api)
     assert early["status"] == "SKIP" and early["api_read_performed"] is False
     weekend = build_receipt(at(2026,10,31,12,30), 99, should_not_call_api)
     assert weekend["status"] == "SKIP" and weekend["api_read_performed"] is False
