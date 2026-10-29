@@ -25,6 +25,9 @@ on:
       - 'Price History Persistent Daily V1'
       - 'Macro Persistent Daily V1'
       - 'Price Persistent Daily V1'
+      # A completed DXY build can move main after the first Pair checkout.
+      # Give Pair a second, independently completed main-source handoff.
+      - 'DXY Synthetic ECB Research V1'
     types: [completed]
   workflow_dispatch:
   schedule:
@@ -33,8 +36,12 @@ on:
 permissions:
   contents: write
 
+# A successful main-source handoff must not be discarded because another
+# Price/History/DXY workflow_run finished while its Chromium export was busy.
+# Keep production serialized, retain all pending runs and isolate PR CI.
 concurrency:
-  group: pair-setup-operational-view-main
+  group: ${{ github.event_name == 'pull_request' && format('pair-validation-pr-{0}', github.event.pull_request.number) || 'pair-setup-operational-view-main' }}
+  queue: max
   cancel-in-progress: false
 
 jobs:
