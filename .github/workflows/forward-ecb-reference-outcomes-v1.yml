@@ -96,6 +96,20 @@ jobs:
           assert d['allowed_to_promote_D_or_28_pairs'] is False
           print('V2_FORWARD_28_PAIR_DEPENDENCE_COHORT_READINESS_PASS')
           PY
+      - name: Audit preregistered V2 H1 2Y repricing research (read-only)
+        run: |
+          python -m py_compile validation/forward/evaluate_v2_h1_2y_repricing_readonly_v1.py
+          python -m unittest validation.forward.test_evaluate_v2_h1_2y_repricing_readonly_v1 -v
+          python -m validation.forward.evaluate_v2_h1_2y_repricing_readonly_v1 --receipt /tmp/gmfq-v2-h1-research-only.json
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/gmfq-v2-h1-research-only.json'))
+          assert p["protocol"]=="V2-H1-2Y-REPRICING-1W-V1"
+          assert p["not_a_v2_signal_or_predictive_validation"] is True
+          assert p["writes_live_data"] is False
+          assert p["no_naive_pair_level_inference"] is True
+          print("H1_RESEARCH_ONLY_NO_SCORE_NO_PNL",p["status"])
+          PY
       - name: Read-only CI cannot touch production
         run: |
           test -z "$(git status --porcelain -- live_data site dashboard payload validation/forward/decision_snapshots)"
