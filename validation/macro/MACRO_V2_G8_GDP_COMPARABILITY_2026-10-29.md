@@ -25,6 +25,25 @@ Una inversione è una controprova concreta all'idea che *crescita più alta ques
 
 I test impediscono di nascondere due economie, scambiare il tasso annualizzato USA per un QoQ, ignorare i caveat EUR/CHF, alterare i pilastri del candidato e dichiarare una qualunque delle 28 comparazioni idonea per un ranking forex.
 
+## Risultato effettivo verificato dal CI del 29 ottobre 2026
+
+Run [#40886683372](https://github.com/robybizkit77-blip/global-macro-fx-quant/actions/runs/40886683372): 5 test di comparabilità superati. Tutte le **28** combinazioni sono state valutate: **23 accordi di ordine, 2 inversioni, 3 parità** (nella variabile QoQ o z). **13/28** combinazioni includono almeno uno dei due caveat EUR/CHF.
+
+| Valuta | PIL reale 2026Q2 QoQ dopo conversione | Z rispetto ai propri 12 trimestri precedenti |
+| --- | ---: | ---: |
+| USD | +0,372909% (SAAR di +1,5% convertito) | −1,1463 |
+| EUR | +0,4% | +0,6745 |
+| GBP | +0,4% | +1,1242 |
+| JPY | +0,3% | +0,2248 |
+| CHF | +1,5% (definizioni sport/flash miste) | +3,0000 (clipped) |
+| AUD | +0,4% | +0,6745 |
+| NZD | +0,2% | 0,0000 |
+| CAD | +0,8% | +1,4839 |
+
+**Le due inversioni sono USD/JPY e USD/NZD.** Il PIL USA QoQ supera rispettivamente +0,3% e +0,2%, ma la sua deviazione rispetto alla propria storia è nettamente più debole. Le tre parità QoQ emergono dalle tre economie al +0,4% (EUR, GBP e AUD). Non vanno trasformate in ipotesi di direzione dei cross FX.
+
+Osservazioni di contesto: le prime dichiarazioni di GDP 2026Q2 sono state pubblicate in **sette giornate distinte** distribuite su 49 giorni civili. Il rischio di non simultaneità e le differenti metodologie persistono anche dopo la conversione del tasso annualizzato USA; restano **0/28** confronti autorizzati come ranking di forza FX e **0** storici congiunti PIT certificati. **28 confronti diagnostici non sono 28 esperimenti predittivi**.
+
 ## Verifica separata della capacità predittiva
 
 Il protocollo H1 già preregistrato per il repricing relativo dei 2Y resta autonomo. Al controllo di oggi (run Forward ECB Reference Outcomes V1 #40883368047), il suo archivio era di **una sola giornata V2**, senza rendimenti 1W maturati e con **zero giornate H1 ammissibili**. Il test richiede almeno 120 giornate pienamente valutabili prima di un'inferenza formale. Le serie 2Y di AUD, CHF e NZD mostravano insufficiente freschezza per l'H1 in quel controllo.
