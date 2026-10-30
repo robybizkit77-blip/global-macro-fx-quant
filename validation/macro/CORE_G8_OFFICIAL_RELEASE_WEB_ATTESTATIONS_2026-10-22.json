@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_G8_CORE_OFFICIAL_WEB_RELEASE_ATTESTATIONS_V1",
-  "review_as_of": "2026-10-22",
+  "review_as_of": "2026-10-30",
   "evidence_class": "OFFICIAL_PUBLISHER_RELEASE_WEB_VALUE_DATE_NOT_IMMUTABLE_BYTES",
   "historical_full_PIT_vintage_certified": false,
   "metadata": {
@@ -63,15 +63,15 @@
     },
     {
       "key": "JPY.labour",
-      "observation_period": "2026-08",
-      "release_date": "2026-10-02",
+      "observation_period": "2026-09",
+      "release_date": "2026-10-30",
       "release_timestamp_local": null,
-      "published_value": 2.5,
-      "raw_series_value": 2.5,
+      "published_value": 2.4,
+      "raw_series_value": 2.4,
       "transform": "level",
       "publisher": "Statistics Bureau of Japan",
       "url": "https://www.stat.go.jp/data/roudou/sokuhou/tsuki/",
-      "source_locator": "Labour Force Survey Basic Tabulation August 2026 released 2 October 2026, seasonally adjusted complete unemployment rate 2.5%; page may later change, no content hash"
+      "source_locator": "Statistics Bureau of Japan, Labour Force Survey (Basic Tabulation) September 2026: official current-period page explicitly dated 30 October 2026, seasonally adjusted complete unemployment rate 2.4% (August 2.5%). Live official webpage is mutable; no archival source-byte hash or exact intraday release timestamp claimed."
     },
     {
       "key": "GBP.labour",
