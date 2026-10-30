@@ -99,7 +99,8 @@ class EstimatedOisReliabilityTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "NZD basis provenance"):
             new_zealand_evidence(f)
         f = copy.deepcopy(self.nzd)
-        f["recent_plateau"]["rows"][0]["bank_bill_90d_pct"] += 1.0
+        for v in f["recent_plateau"]["rows"]:
+            v["bank_bill_90d_pct"] += .12
         with self.assertRaisesRegex(ValueError, "NZD central fit"):
             new_zealand_evidence(f)
         f = copy.deepcopy(self.nzd)
