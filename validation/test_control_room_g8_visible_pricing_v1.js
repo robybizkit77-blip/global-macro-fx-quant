@@ -13,6 +13,17 @@ const future=new Date(Date.parse(when+'T00:00:00Z')+30*86400000)
 const rows=matrix(ois,bill,when);
 assert.deepEqual(rows.map(x=>x.ccy),g8);
 const rendered=view(rows);
+assert.equal((rendered.match(/data-chart-ccy="/g)||[]).length,8,
+ 'All 8 G8 research mini charts must render, even with source grading');
+assert(rendered.includes('data-mini-curves="8"'));
+for(const r of rows){
+ const mark=new RegExp('data-chart-ccy="'+r.ccy+'" data-quality="'+r.tier+'" data-points="3"');
+ if(r.tier!=='WITHHELD'&&['3m','6m','12m'].every(t=>r.points[t]?.value!=null))
+  assert(mark.test(rendered),'Missing source-graded 3-point chart for '+r.ccy);
+}
+if(rows.find(r=>r.ccy==='EUR')?.tier==='MIXED')
+ assert(/data-chart-ccy="EUR"[^>]+data-joined="false"/.test(rendered),
+  'Unsynchronised EUR contracts must not be joined into a fake OIS curve');
 assert(rendered.includes('class="gmfq-est-disclosure" open data-default="OPEN"'),
  'All G8 rows must be expanded by default');
 assert(rendered.includes('valute con riferimenti numerici'));
