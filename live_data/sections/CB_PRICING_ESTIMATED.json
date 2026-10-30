@@ -241,7 +241,7 @@
       "status": "ESTIMATED_PARTIAL"
     },
     "USD": {
-      "as_of": "2026-10-29",
+      "as_of": "2026-10-30",
       "change_1d_bp": null,
       "change_1w_bp": null,
       "change_status": "DERIVED_ONLY_FROM_HOMOGENEOUS_SNAPSHOT_HISTORY",
@@ -259,18 +259,18 @@
       },
       "horizons": {
         "12m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "ZQV2027",
           "contract_description": "Oct 2027",
           "expiration": "2027-11-01",
-          "futures_price": 95.47,
+          "futures_price": 95.57,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
-          "policy_delta_bp": 65.5,
-          "price_valid_until": "2026-10-29T18:26:38Z",
-          "quote_as_of": "2026-10-29",
+          "policy_delta_bp": 55.5,
+          "price_valid_until": "2026-10-30T18:33:43Z",
+          "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 4.53,
+          "rate": 4.43,
           "symbol": "CBOT:ZQV2027"
         },
         "3m": {
