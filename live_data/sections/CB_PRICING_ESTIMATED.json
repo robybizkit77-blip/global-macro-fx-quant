@@ -1,7 +1,7 @@
 {
   "currencies": {
     "CHF": {
-      "as_of": "2026-10-28",
+      "as_of": "2026-10-29",
       "change_1d_bp": null,
       "change_1w_bp": null,
       "change_status": "DERIVED_ONLY_FROM_HOMOGENEOUS_SNAPSHOT_HISTORY",
@@ -20,21 +20,21 @@
       "horizons": {
         "12m": {
           "business_day_lag": 1,
-          "contract": "SA3M2027",
-          "contract_description": "Jun 2027",
-          "expiration": "2027-09-14",
-          "futures_price": 99.67,
+          "contract": "SA3U2027",
+          "contract_description": "Sep 2027",
+          "expiration": "2027-12-14",
+          "futures_price": 99.565,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
-          "policy_delta_bp": 33.0,
-          "price_valid_until": "2026-10-28T17:58:55Z",
-          "quote_as_of": "2026-10-28",
+          "policy_delta_bp": 43.5,
+          "price_valid_until": "2026-10-29T17:59:58Z",
+          "quote_as_of": "2026-10-29",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 0.33,
-          "symbol": "ICEEUR:SA3M2027"
+          "rate": 0.435,
+          "symbol": "ICEEUR:SA3U2027"
         },
         "3m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "SA3U2026",
           "contract_description": "Sep 2026",
           "expiration": "2026-12-15",
@@ -53,14 +53,14 @@
           "contract": "SA3Z2026",
           "contract_description": "Dec 2026",
           "expiration": "2027-03-16",
-          "futures_price": 100.005,
+          "futures_price": 100.015,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
-          "policy_delta_bp": -0.5,
-          "price_valid_until": "2026-10-28T17:58:48Z",
-          "quote_as_of": "2026-10-28",
+          "policy_delta_bp": -1.5,
+          "price_valid_until": "2026-10-29T17:59:55Z",
+          "quote_as_of": "2026-10-29",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": -0.005,
+          "rate": -0.015,
           "symbol": "ICEEUR:SA3Z2026"
         }
       },
@@ -94,7 +94,7 @@
       },
       "horizons": {
         "12m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "FST3M2027",
           "contract_description": "Jun 2027",
           "expiration": "2027-09-15",
@@ -109,7 +109,7 @@
           "symbol": "EUREX:FST3M2027"
         },
         "3m": {
-          "business_day_lag": 1,
+          "business_day_lag": 2,
           "contract": "FST3V2026",
           "contract_description": "Oct 2026",
           "expiration": "2027-01-20",
@@ -131,8 +131,8 @@
           "futures_price": 97.165,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
           "policy_delta_bp": 33.5,
-          "price_valid_until": "2026-10-28T22:04:40Z",
-          "quote_as_of": "2026-10-28",
+          "price_valid_until": "2026-10-29T22:06:42Z",
+          "quote_as_of": "2026-10-29",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": 2.835,
@@ -259,7 +259,7 @@
       },
       "horizons": {
         "12m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "ZQV2027",
           "contract_description": "Oct 2027",
           "expiration": "2027-11-01",
@@ -274,7 +274,7 @@
           "symbol": "CBOT:ZQV2027"
         },
         "3m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "ZQZ2026",
           "contract_description": "Dec 2026",
           "expiration": "2027-01-04",
@@ -289,7 +289,7 @@
           "symbol": "CBOT:ZQZ2026"
         },
         "6m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "ZQJ2027",
           "contract_description": "Apr 2027",
           "expiration": "2027-05-03",
