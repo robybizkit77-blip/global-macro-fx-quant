@@ -45,6 +45,28 @@ class Pages0800DeliveryTests(unittest.TestCase):
         self.assertTrue(d["on_time_delivery_proven"])
         self.assertFalse(d["verified_after_deadline"])
 
+    def test_http_on_time_can_coexist_with_unresolved_cb_policy(self):
+        self.source["issuer_policy_watch"] = {
+            "status": "PENDING_SAME_DAY_CB_DECISION", "currencies": ["JPY"]}
+        d = self.result()
+        self.assertEqual(d["status"], "PASS_PUBLIC_HTTP_BY_0800")
+        self.assertTrue(d["on_time_delivery_proven"])
+        self.assertEqual(d["cb_policy_pending_currencies"], ["JPY"])
+        self.assertFalse(d["cb_policy_no_pending_same_day_decision_proven"])
+        self.assertTrue(d["http_delivery_does_not_certify_cb_release"])
+
+    def test_resolved_policy_watch_is_separately_certified(self):
+        self.source["issuer_policy_watch"] = {
+            "status": "NO_PENDING_SAME_DAY_CB_DECISION", "currencies": []}
+        d = self.result()
+        self.assertTrue(d["on_time_delivery_proven"])
+        self.assertTrue(d["cb_policy_no_pending_same_day_decision_proven"])
+
+    def test_missing_policy_watch_never_falsely_certifies_complete(self):
+        d = self.result()
+        self.assertEqual(d["cb_policy_watch_status"], "NOT_CERTIFIED")
+        self.assertFalse(d["cb_policy_no_pending_same_day_decision_proven"])
+
     def test_late_success_is_never_on_time(self):
         self.public["verified_at_utc"] = "2026-10-27T07:03:00Z"
         d = self.result(dt.datetime(2026, 10, 27, 8, 15, tzinfo=ROME))
