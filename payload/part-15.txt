@@ -2842,20 +2842,20 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
 })();
 </script>
 
-<script id="gmfq-price-ecb-20261029">
+<script id="gmfq-price-ecb-20261030">
 (function(){
   'use strict';
   try{
     const row={
-      Date:'2026-10-29',
+      Date:'2026-10-30',
       EUR:1,
-      USD:1.113,
-      GBP:0.83578,
-      JPY:175.92,
-      CHF:0.9222,
-      CAD:1.5577,
-      AUD:1.5842,
-      NZD:1.9817
+      USD:1.1172,
+      GBP:0.8338,
+      JPY:175.68,
+      CHF:0.9194,
+      CAD:1.5606,
+      AUD:1.5904,
+      NZD:1.9823
     };
     if(typeof D==='undefined' || !Array.isArray(D.prices)) throw new Error('PRICE_DATA_MISSING');
     const i=D.prices.findIndex(x=>x?.Date===row.Date);
@@ -2863,22 +2863,22 @@ window.GMFQ_RUNTIME_VALIDATION_MANIFEST={
     else D.prices.push(row);
     D.prices.sort((a,b)=>String(a.Date).localeCompare(String(b.Date)));
     if(window.DATA_FRESHNESS_REGISTRY){
-      window.DATA_FRESHNESS_REGISTRY.audit_date='2026-10-29';
-      window.DATA_FRESHNESS_REGISTRY.PRICE={as_of:'2026-10-29',status:'CURRENT_OFFICIAL',source:'ECB euro foreign exchange reference rates'};
+      window.DATA_FRESHNESS_REGISTRY.audit_date='2026-10-30';
+      window.DATA_FRESHNESS_REGISTRY.PRICE={as_of:'2026-10-30',status:'CURRENT_OFFICIAL',source:'ECB euro foreign exchange reference rates'};
     }
     if(window.FINAL_SOURCE_POLICY_AUDIT){
-      if(window.FINAL_SOURCE_POLICY_AUDIT.PRICE) Object.assign(window.FINAL_SOURCE_POLICY_AUDIT.PRICE,{current_as_of:'2026-10-29',source:'ECB euro foreign exchange reference rates',policy:'AUTO_UPDATE_PRIMARY',fallback:'LAST_VALID_STALE'});
-      if(window.FINAL_SOURCE_POLICY_AUDIT.price) Object.assign(window.FINAL_SOURCE_POLICY_AUDIT.price,{current_as_of:'2026-10-29',source:'ECB euro foreign exchange reference rates',policy:'AUTO_UPDATE_PRIMARY',fallback:'LAST_VALID_STALE'});
+      if(window.FINAL_SOURCE_POLICY_AUDIT.PRICE) Object.assign(window.FINAL_SOURCE_POLICY_AUDIT.PRICE,{current_as_of:'2026-10-30',source:'ECB euro foreign exchange reference rates',policy:'AUTO_UPDATE_PRIMARY',fallback:'LAST_VALID_STALE'});
+      if(window.FINAL_SOURCE_POLICY_AUDIT.price) Object.assign(window.FINAL_SOURCE_POLICY_AUDIT.price,{current_as_of:'2026-10-30',source:'ECB euro foreign exchange reference rates',policy:'AUTO_UPDATE_PRIMARY',fallback:'LAST_VALID_STALE'});
     }
     if(window.PRODUCTION_PRICE_COT_LIQ_AUDIT?.price){
-      Object.assign(window.PRODUCTION_PRICE_COT_LIQ_AUDIT.price,{status:'CURRENT_OFFICIAL',current_as_of:'2026-10-29',action:'CURRENT'});
+      Object.assign(window.PRODUCTION_PRICE_COT_LIQ_AUDIT.price,{status:'CURRENT_OFFICIAL',current_as_of:'2026-10-30',action:'CURRENT'});
     }
-    window.GMFQ_ECB_PRICE_AUDIT={status:'PASS',as_of:'2026-10-29',source:'ECB euro foreign exchange reference rates',row:{...row},pair_count:Array.isArray(D.pairs)?D.pairs.length:null,rule:'All 28 G8 crosses are derived from one official ECB EUR-base fixing row; no intraday mixing.'};
+    window.GMFQ_ECB_PRICE_AUDIT={status:'PASS',as_of:'2026-10-30',source:'ECB euro foreign exchange reference rates',row:{...row},pair_count:Array.isArray(D.pairs)?D.pairs.length:null,rule:'All 28 G8 crosses are derived from one official ECB EUR-base fixing row; no intraday mixing.'};
     try{ if(typeof stableModelRefresh==='function') stableModelRefresh(); }catch(e){}
     try{ if(typeof rebuildCanonicalState==='function') rebuildCanonicalState(); }catch(e){}
     try{ if(typeof syncCoreFreshnessRegistryFromLive==='function') syncCoreFreshnessRegistryFromLive(); }catch(e){}
     document.documentElement.setAttribute('data-ecb-price-audit','PASS');
-    document.documentElement.setAttribute('data-price-asof','2026-10-29');
+    document.documentElement.setAttribute('data-price-asof','2026-10-30');
   }catch(e){
     window.GMFQ_ECB_PRICE_AUDIT={status:'FAIL',error:String(e?.message||e)};
     document.documentElement.setAttribute('data-ecb-price-audit','FAIL');
