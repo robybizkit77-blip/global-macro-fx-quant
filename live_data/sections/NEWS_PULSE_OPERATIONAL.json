@@ -1,7 +1,18 @@
 {
-  "content_as_of": "2026-10-29",
-  "generated_at_utc": "2026-10-30T10:32:11.508824Z",
+  "content_as_of": "2026-10-30",
+  "generated_at_utc": "2026-10-30T12:53:29.794483Z",
   "items": [
+    {
+      "as_of": "2026-10-30",
+      "category": "FUTURES_IMPLIED_REPRICING",
+      "ccy": "JPY",
+      "confidence": "A",
+      "detail": "Movimento 1D -0.1 bp sul bucket 6M; variazione 1W -0.3 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "MEDIUM",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "Tokyo Financial Exchange · Three-month TONA Futures",
+      "title": "JPY: repricing implicito da futures più dovish (-0.1 bp 6M in 1D)"
+    },
     {
       "as_of": "2026-10-29",
       "category": "FUTURES_IMPLIED_REPRICING",
@@ -25,17 +36,6 @@
       "title": "AUD: repricing implicito da futures più dovish (-3.0 bp 12M in 1D)"
     },
     {
-      "as_of": "2026-10-29",
-      "category": "FUTURES_IMPLIED_REPRICING",
-      "ccy": "JPY",
-      "confidence": "A",
-      "detail": "Movimento 1D +1.5 bp sul bucket 12M; variazione 1W +6.7 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
-      "importance": "MEDIUM",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "Tokyo Financial Exchange · Three-month TONA Futures",
-      "title": "JPY: repricing implicito da futures più hawkish (+1.5 bp 12M in 1D)"
-    },
-    {
       "as_of": "2026-10-28",
       "category": "OIS_REPRICING",
       "ccy": "GBP",
@@ -47,7 +47,7 @@
       "title": "GBP: repricing OIS più hawkish (+1.5 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-10-30T10:32:11.508824Z",
+  "last_checked_at_utc": "2026-10-30T12:53:29.794483Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -55,17 +55,30 @@
         "CB_Want_Can_from_official_statements": null,
         "FX_trade_signal": null,
         "OIS_post_event_intraday_comparison": null,
-        "actual_minus_frozen_consensus_pp": null,
+        "actual_minus_frozen_consensus_pp": 0.0,
         "currency": "USD",
         "eligible_for_Core_Beta_Forward": false,
         "event_causality_verified": false,
         "event_key": "USD|2026-10-30|LABOUR_COST|Employment Cost Index",
         "forecast_quality": "SECONDARY_FROZEN_PRE_RELEASE_B",
-        "official_actual_captured_at_utc": null,
-        "official_actual_percent": null,
-        "official_actual_source_quality": null,
-        "official_actual_source_url": null,
-        "post_event_daily_comparison": null,
+        "official_actual_captured_at_utc": "2026-10-30T12:53:28Z",
+        "official_actual_percent": 0.8,
+        "official_actual_source_quality": "FIRST_RUNNER_OBSERVATION_NOT_ISSUER_FIRST_RELEASE_PIT",
+        "official_actual_source_url": "https://www.bls.gov/news.release/eci.htm",
+        "post_event_daily_comparison": {
+          "10Y": {
+            "status": "NO_MATCHED_POST_EVENT_SOURCE"
+          },
+          "2Y": {
+            "status": "NO_MATCHED_POST_EVENT_SOURCE"
+          },
+          "ECB_FX": {
+            "status": "NO_MATCHED_POST_EVENT_SOURCE"
+          },
+          "SIX_MONTH": {
+            "status": "NO_OFFICIAL_PRERELEASE_SOURCE"
+          }
+        },
         "pre_event_reference": {
           "10Y": {
             "date": "2026-10-27",
@@ -93,23 +106,36 @@
         },
         "scheduled_utc": "2026-10-30T12:30:00Z",
         "secondary_consensus_percent": 0.8,
-        "state": "PENDING_OFFICIAL_RELEASE"
+        "state": "PENDING_POST_RELEASE_DAILY_OBSERVATIONS"
       },
       {
         "CB_Want_Can_from_official_statements": null,
         "FX_trade_signal": null,
         "OIS_post_event_intraday_comparison": null,
-        "actual_minus_frozen_consensus_pp": null,
+        "actual_minus_frozen_consensus_pp": -0.2,
         "currency": "CAD",
         "eligible_for_Core_Beta_Forward": false,
         "event_causality_verified": false,
         "event_key": "CAD|2026-10-30|GROWTH|Gross domestic product by industry",
         "forecast_quality": "SECONDARY_FROZEN_PRE_RELEASE_B",
-        "official_actual_captured_at_utc": null,
-        "official_actual_percent": null,
-        "official_actual_source_quality": null,
-        "official_actual_source_url": null,
-        "post_event_daily_comparison": null,
+        "official_actual_captured_at_utc": "2026-10-30T12:53:28Z",
+        "official_actual_percent": 0.0,
+        "official_actual_source_quality": "FIRST_RUNNER_OBSERVATION_NOT_ISSUER_FIRST_RELEASE_PIT",
+        "official_actual_source_url": "https://www150.statcan.gc.ca/n1/daily-quotidien/261030/dq261030a-eng.htm",
+        "post_event_daily_comparison": {
+          "10Y": {
+            "status": "NO_MATCHED_POST_EVENT_SOURCE"
+          },
+          "2Y": {
+            "status": "NO_MATCHED_POST_EVENT_SOURCE"
+          },
+          "ECB_FX": {
+            "status": "NO_MATCHED_POST_EVENT_SOURCE"
+          },
+          "SIX_MONTH": {
+            "status": "NO_MATCHED_POST_EVENT_SOURCE"
+          }
+        },
         "pre_event_reference": {
           "10Y": {
             "date": "2026-10-26",
@@ -150,7 +176,7 @@
         },
         "scheduled_utc": "2026-10-30T12:30:00Z",
         "secondary_consensus_percent": 0.2,
-        "state": "PENDING_OFFICIAL_RELEASE"
+        "state": "PENDING_POST_RELEASE_DAILY_OBSERVATIONS"
       }
     ],
     "no_causality_without_intraday_same_instrument_pre_post": true,
@@ -159,7 +185,7 @@
     "summary": {
       "FX_signals": 0,
       "awaiting_actual": 0,
-      "awaiting_release": 2,
+      "awaiting_release": 0,
       "events": 2,
       "issuer_event_intraday_reactions_certified": 0,
       "observed_daily_context": 0
@@ -241,12 +267,12 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 1.705,
-            "date": "2026-10-29",
+            "6m_rate_pct": 1.704,
+            "date": "2026-10-30",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
             "source": "Tokyo Financial Exchange · Three-month TONA Futures",
             "status": "DAILY_CONTEXT_ONLY"
           },
@@ -296,12 +322,12 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 1.705,
-            "date": "2026-10-29",
+            "6m_rate_pct": 1.704,
+            "date": "2026-10-30",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
             "source": "Tokyo Financial Exchange · Three-month TONA Futures",
             "status": "DAILY_CONTEXT_ONLY"
           },
