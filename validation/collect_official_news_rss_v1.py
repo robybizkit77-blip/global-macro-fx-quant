@@ -117,6 +117,14 @@ def trustworthy_url(value: str, source: dict) -> str | None:
         url = urllib.parse.urlsplit(target)
     except (ValueError, TypeError):
         return None
+    # The official BoJ feed may contain legacy HTTP article links even
+    # when fetched over HTTPS. Upgrade only exact trusted BoJ host links
+    # (no credentials/ports); do not fetch or trust plaintext article pages.
+    # All other issuers retain HTTPS-only provenance.
+    if (source["id"] == "BOJ_NEWS" and url.scheme == "http"
+            and url.hostname in source["hosts"] and url.port is None
+            and not url.username and not url.password):
+        url = url._replace(scheme="https")
     if url.scheme != "https" or url.hostname not in source["hosts"]:
         return None
     if url.username or url.password or url.port not in (None, 443):
