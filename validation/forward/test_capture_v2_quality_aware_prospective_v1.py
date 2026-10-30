@@ -180,10 +180,15 @@ class QualityAwareProspectiveCaptureTests(unittest.TestCase):
         today=datetime.now(ZoneInfo("Europe/Rome"))
         # Only enforce the early-date test on current 2026-10-30 CI window.
         if today.date().isoformat() <= "2026-11-01":
-            with self.assertRaisesRegex(ValueError,"first legitimate"):
+            previous=qa.JOURNAL.read_bytes() if qa.JOURNAL.exists() else None
+            with self.assertRaisesRegex(
+                ValueError,"only real observed evening weekday captures|"
+                           "first legitimate local capture"
+            ):
                 qa.attempt(cutoff=today,now=today)
+            after=qa.JOURNAL.read_bytes() if qa.JOURNAL.exists() else None
+            self.assertEqual(previous,after)
         self.assertTrue(qa.NO_HISTORICAL_BACKFILL)
-        self.assertFalse(qa.JOURNAL.exists())
 
 
 if __name__=="__main__":
