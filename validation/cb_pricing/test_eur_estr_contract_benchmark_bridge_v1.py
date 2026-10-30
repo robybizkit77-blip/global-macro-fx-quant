@@ -38,6 +38,11 @@ class EurFst3BenchmarkTests(unittest.TestCase):
         x=self.contracts
         self.assertEqual(len(x["observations"]),28)
         self.assertEqual(len(x["contracts"]),4)
+        self.assertEqual(sum(q["accrual_already_started_at_quote_date"]
+                             for q in x["observations"]),5)
+        self.assertEqual(sum(q["needs_realized_ESTR_component_for_OIS_comparison"]
+                             for q in x["observations"]),5)
+
         self.assertEqual(
             {r["contract"]:(r["accrual_start"],r["accrual_end"])
              for r in x["contracts"]},
@@ -56,6 +61,12 @@ class EurFst3BenchmarkTests(unittest.TestCase):
                          "NO_ADMISSIBLE_INDEPENDENT_SAME_WINDOW_OIS_REFERENCE")
         self.assertEqual(o["admissible_same_window_pairs"],0)
         self.assertEqual(len(o["unmatched"]),28)
+        self.assertEqual(o["started_compounding_period_quote_count"],5)
+        self.assertEqual(o["not_yet_started_or_start_day_quote_count"],23)
+        self.assertEqual(sum(r["reason"]==
+          "COMPOUNDING_ALREADY_STARTED_REQUIRES_REALIZED_ESTR_SPLICE"
+          for r in o["unmatched"]),5)
+
         self.assertIsNone(o["actual_model_OIS_level_MAE_bp"])
         self.assertIsNone(o["predicted_OIS_direction_hit_rate"])
         self.assertFalse(o["historical_PIT_and_walk_forward_validated"])
