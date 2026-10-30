@@ -89,13 +89,16 @@ def parse_stream(lines):
         if len(factors)==len(dates):
             # Stop as soon as exact needed points were found; partial CSV, not full-history audit.
             break
-    status="EXACT_29OCT_ESTR_DISCOUNT_FACTORS_FOUND" if len(factors)==len(dates) and futures else "NO_VALID_ESTR_DISCOUNT_FACTORS_FOR_EXACT_WINDOWS"
+    status=("EXACT_29OCT_ESTR_DISCOUNT_FACTORS_FOUND" if len(factors)==len(dates) and futures
+            else "PARTIAL_ESTR_DISCOUNT_FACTORS_FOUND" if factors and futures
+            else "NO_VALID_ESTR_DISCOUNT_FACTORS_FOR_EXACT_WINDOWS")
     return report(status,counts,types,seen_rows,seen_chars,factors,timestamps,delimiter)
 
 def report(status,counts,types,rows,chars,factors,timestamps,delimiter):
     fut=relevant_futures()
     comparable=[]
-    if status=="EXACT_29OCT_ESTR_DISCOUNT_FACTORS_FOUND" and len(timestamps)==1:
+    if status in ("EXACT_29OCT_ESTR_DISCOUNT_FACTORS_FOUND",
+               "PARTIAL_ESTR_DISCOUNT_FACTORS_FOUND") and len(timestamps)==1:
         for x in fut:
             start,end=x["accrual_start"],x["accrual_end"]
             if start not in factors or end not in factors:continue
@@ -113,7 +116,8 @@ def report(status,counts,types,rows,chars,factors,timestamps,delimiter):
                 "curve_from_same_eurex_group":True,
                 "time_synchronization_with_futures_not_verified":True,
             })
-    if status=="EXACT_29OCT_ESTR_DISCOUNT_FACTORS_FOUND" and len(timestamps)!=1:
+    if status in ("EXACT_29OCT_ESTR_DISCOUNT_FACTORS_FOUND",
+               "PARTIAL_ESTR_DISCOUNT_FACTORS_FOUND") and len(timestamps)!=1:
         status="MULTIPLE_VALUATION_TIMESTAMPS_NO_JOIN"
     return {
         "schema":"GMFQ_EUREX_CLEARING_CURVE_PUBLIC_PROBE_V2",
