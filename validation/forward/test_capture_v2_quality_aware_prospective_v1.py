@@ -176,6 +176,82 @@ class QualityAwareProspectiveCaptureTests(unittest.TestCase):
                 qa.append(snap,path=target)
         self.assertEqual(before,{str(p):p.read_bytes() for p in protect})
 
+    def test_full_future_command_with_isolated_synthetic_disk_inputs(self):
+        # Exercise the entire attempt -> official admission -> economic bridge
+        # -> ordinal quality -> source-digest -> make -> append path on a
+        # SYNTHETIC future date in an ISOLATED temporary repository.
+        import hashlib
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as td:
+            root=Path(td)
+            fixtures={
+                "ecb":self.fx,"pair_setup":self.pair,"legacy_core":self.core,
+                "macro_series":{"SYNTHETIC_ONLY":True},
+                "macro_thermometer":{"SYNTHETIC_ONLY":True},
+                "macro_registry":{"SYNTHETIC_ONLY":True},
+            }
+            for key,relative in qa.SOURCE_PATHS.items():
+                target=root/relative
+                target.parent.mkdir(parents=True,exist_ok=True)
+                target.write_text(json.dumps(fixtures[key])+"\n",
+                                  encoding="utf-8")
+            target=root/"research"/"future-only.jsonl"
+            digest=lambda rel: hashlib.sha256((root/rel).read_bytes()).hexdigest()
+            with patch.object(qa,"ROOT",root), \
+                 patch.object(qa,"file_sha",side_effect=digest), \
+                 patch.object(qa,"economic_run",return_value=self.observed) as econ, \
+                 patch.object(qa,"ordinal_build",return_value=self.ordinal) as ordinal:
+                out=qa.attempt(cutoff=self.cut,now=self.now,path=target)
+                self.assertEqual(out["status"],
+                                 "QUALITY_AWARE_PROSPECTIVE_SNAPSHOT_APPEND_OK")
+                self.assertEqual(out["economic_dimension_slots"],24)
+                self.assertFalse(out["forward_H1_eligible"])
+                econ.assert_called_once_with(as_of="2026-11-02")
+                ordinal.assert_called_once()
+                snapshot=json.loads(target.read_text())
+                self.assertEqual(qa.validate_snapshot(snapshot),"2026-11-02")
+                self.assertEqual(snapshot["source_file_sha256"],
+                                 {k:digest(p) for k,p in qa.SOURCE_PATHS.items()})
+                orig=target.read_bytes()
+                second=qa.attempt(cutoff=self.cut+timedelta(minutes=15),
+                                  now=self.now+timedelta(minutes=15),path=target)
+                self.assertEqual(second["status"],
+                                 "EXISTING_QUALITY_AWARE_DATE_FROZEN_NO_OVERWRITE")
+                self.assertEqual(orig,target.read_bytes())
+                # Different target, but no same-day official ECB: no fake
+                # observation can bypass the existing canonical market gate.
+                stale=copy.deepcopy(self.fx)
+                stale["last_as_of"]="2026-10-30"
+                (root/qa.SOURCE_PATHS["ecb"]).write_text(json.dumps(stale)+"\n")
+                out=qa.attempt(cutoff=self.cut,now=self.now,
+                               path=root/"research"/"blocked.jsonl")
+                self.assertEqual(out["status"],
+                                 "BLOCKED_NO_OFFICIAL_SAME_DAY_ECB_T0")
+                self.assertFalse((root/"research"/"blocked.jsonl").exists())
+
+    def test_workflow_separate_provenance_and_no_extra_schedules(self):
+        path=qa.ROOT/".github/workflows/forward-frozen-core-prospective-daily-v1.yml"
+        text=path.read_text(encoding="utf-8")
+        for utc in ("17","18","19"):
+            self.assertEqual(text.count("cron: '30 "+utc+" * * 1-5'"),1)
+        self.assertIn("id: v2_quality",text)
+        self.assertIn("NOT_BEFORE_FUTURE_QUALITY_AWARE_COHORT",text)
+        self.assertIn("QUALITY_AWARE_PROSPECTIVE_SNAPSHOT_APPEND_OK",text)
+        self.assertIn("QUALITY_AWARE_PROSPECTIVE_CAPTURE_MISSING_AFTER_CORE_PERSISTENCE",text)
+        self.assertIn("V2_RESEARCH_CAPTURE_FAILED_AFTER_LEGACY_PERSISTENCE",text)
+        self.assertLess(
+            text.index("name: Append immutable daily 28-pair frozen-Core observation only"),
+            text.index("name: Freeze separate quality-aware V2 research features"))
+        self.assertLess(
+            text.index("name: Freeze separate quality-aware V2 research features"),
+            text.index("name: Commit new prospective observation only"))
+        self.assertLess(
+            text.index("name: Commit new prospective observation only"),
+            text.index("name: Certify future quality-aware observational journal only after Core persistence"))
+        self.assertIn("git add validation/forward/candidate_shadow_snapshots/V2_QUALITY_AWARE_PROSPECTIVE_SNAPSHOTS_V1.jsonl",text)
+        self.assertEqual(text.count("git push origin HEAD:main"),1)
+        self.assertNotIn("cancel-in-progress: true",text)
+
     def test_cli_cannot_write_future_snapshot_today(self):
         today=datetime.now(ZoneInfo("Europe/Rome"))
         # Only enforce the early-date test on current 2026-10-30 CI window.
