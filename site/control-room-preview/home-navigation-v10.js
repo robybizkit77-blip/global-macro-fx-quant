@@ -3894,7 +3894,7 @@ async function mountMacroV2CurrentEvidence(doc){
    const field=k=>{const x=heat?.[k],y=macroThermometerObservation(x);
      return y?fmt(y.value,2)+'% · '+htmlEscape(y.period):'n.d.';};
    const d=rate?.date,rateRecent=fresh(d,5);
-   const secondary=secondary2YReading(secondary2y,rates,ccy);
+   const market2y=secondary2YReading(secondary2y,rates,ccy);
    const p=policy?.horizons?.['6m'],policyAsOf=policy?.as_of||'';
    const direct=policy?.operational_status==='GREEN_OFFICIAL'&&
      policy.official_status==='ACTIVE'&&policy.quality==='OFFICIAL_CERTIFIED'&&
@@ -3917,8 +3917,8 @@ async function mountMacroV2CurrentEvidence(doc){
       '" data-growth-period="'+htmlEscape(observed?.reference_quarter||'')+
       '" data-rates-date="'+htmlEscape(d||'')+
       '" data-ois-quality="'+htmlEscape(grade)+
-      '" data-secondary2y-tier="'+(secondary?'SECONDARY_OBSERVED_NOT_OFFICIAL':'NONE')+
-      '" data-secondary2y-date="'+htmlEscape(secondary?.date||'')+'">'+
+      '" data-secondary2y-tier="'+(market2y?'SECONDARY_OBSERVED_NOT_OFFICIAL':'NONE')+
+      '" data-secondary2y-date="'+htmlEscape(market2y?.date||'')+'">'+
      '<strong>'+FLAG[ccy]+' '+ccy+'</strong>'+
      '<p><b>Growth</b> '+gdpValue+' <small>'+htmlEscape(observed?.reference_quarter||'')+
        ' · web '+htmlEscape(observed?.publisher_release_day||'')+
@@ -3929,10 +3929,10 @@ async function mountMacroV2CurrentEvidence(doc){
        (rateRecent?'':' · STORICO')+'</small>'+
        ' <b>6M monetario</b> '+six+' <small>'+htmlEscape(effective6mAsOf)+
        ' · '+htmlEscape(grade)+'</small></p>'+
-       (secondary?'<p><b>2Y riferimento mercato</b> '+safeRate(secondary.value)+
-         ' <small>'+htmlEscape(secondary.date)+' · '+(secondary.stale?'STORICO':'recente')+
-         ' · NON ufficiale · '+secondary.sourceCount+' fonti, dispersione '+
-         safeRate(secondary.min)+'–'+safeRate(secondary.max)+
+       (market2y?'<p><b>2Y riferimento mercato</b> '+safeRate(market2y.value)+
+         ' <small>'+htmlEscape(market2y.date)+' · '+(market2y.stale?'STORICO':'recente')+
+         ' · NON ufficiale · '+market2y.sourceCount+' fonti, dispersione '+
+         safeRate(market2y.min)+'–'+safeRate(market2y.max)+
          ' · nessuno spread/score</small></p>':'')+'</article>';
  };
  const style=doc.createElement('style');
