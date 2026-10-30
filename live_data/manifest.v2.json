@@ -1,8 +1,8 @@
 {
   "schema": "GMFQ_LIVE_DATA_MANIFEST_V2",
   "generated_from_current_payload": true,
-  "runtime_sha256": "0a42c943d0b40cfe490298fbefbce48f6919a9f7ba10dfc5bd206edc12222756",
-  "runtime_bytes": 2763291,
+  "runtime_sha256": "d71c26c5ff828898d381d4d835ae9bb6383836b617381b9a159de9e131354727",
+  "runtime_bytes": 2763292,
   "part_count": 16,
   "direct_section_count": 12,
   "derived_section_count": 2,
@@ -61,8 +61,8 @@
       "key": "OIS_DATA",
       "file": "OIS_DATA.json",
       "mode": "DIRECT_SINGLE_PART",
-      "bytes": 13713,
-      "sha256": "d8286a604dc757ec12487741e14cbc30c7495ca9543d68c0c047e1b519e24192",
+      "bytes": 13714,
+      "sha256": "1cdf93325bdf5670158c68277461fd786f9237e84d2ef4aa8567ae4649dfbfb4",
       "occurrences_in_payload": 1,
       "part": 0,
       "direct_update_allowed": true
