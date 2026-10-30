@@ -404,6 +404,9 @@ jobs:
               out.write('- Source check: '+str(d['source_checked_at_rome'])+'\n')
               out.write('- Exact public HTTP verified: '+str(d['public_verified_at_rome'])+'\n')
               out.write('- File coverage: '+str(d['verified_file_count'])+'\n')
+              out.write('- CB policy watch: '+str(d['cb_policy_watch_status'])+'\n')
+              out.write('- Same-day CB still pending: '+(', '.join(d['cb_policy_pending_currencies']) if d['cb_policy_pending_currencies'] else 'none / unknown')+'\n')
+              out.write('- HTTP publication is distinct from issuer-policy verification.\n')
               out.write('- This does not depend on a successful parent orchestrator.\n')
           PY
 
