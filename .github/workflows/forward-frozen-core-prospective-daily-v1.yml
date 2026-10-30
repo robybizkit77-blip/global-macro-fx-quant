@@ -207,6 +207,7 @@ jobs:
           print('FORWARD_ONLY_LEDGER_AND_PROOF_FILES')
           PY
       - name: Commit new prospective observation only, no forced push
+        id: commit_snapshot
         if: steps.admit.outputs.admitted == 'true'
         shell: bash
         run: |
@@ -230,7 +231,9 @@ jobs:
           git push origin HEAD:main
           echo '- Prospective observation: **committed to main** (unaltered baseline date).' >> "$GITHUB_STEP_SUMMARY"
       - name: Certify future quality-aware observational journal only after Core persistence
-        if: steps.admit.outputs.admitted == 'true'
+        # Only trust durable source-controlled evidence after a successful
+        # append-or-idempotent Git commit step. Never certify on push failure.
+        if: steps.admit.outputs.admitted == 'true' && steps.commit_snapshot.outcome == 'success'
         shell: bash
         env:
           QUALITY_STATUS: ${{ steps.v2_quality.outputs.status }}
@@ -249,7 +252,9 @@ jobs:
           esac
 
       - name: Certify V2 research capture separately after primary Core commit
-        if: steps.admit.outputs.admitted == 'true'
+        # Keep the original V2 RED/status visible even if quality-aware
+        # certification fails earlier. Do not run if persistence failed.
+        if: ${{ always() && steps.admit.outputs.admitted == 'true' && steps.commit_snapshot.outcome == 'success' }}
         shell: bash
         env:
           V2_SHADOW_STATUS: ${{ steps.v2_shadow.outputs.status }}
