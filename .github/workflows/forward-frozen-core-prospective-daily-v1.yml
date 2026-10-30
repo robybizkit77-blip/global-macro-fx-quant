@@ -56,7 +56,7 @@ jobs:
       - name: Compile observational-only forward modules
         if: steps.early_gate.outputs.eligible == 'true'
         run: |
-          python -m py_compile validation/forward/admit_frozen_core_prospective_capture_v1.py validation/forward/log_core_decision_v1.py validation/forward/test_frozen_core_prospective_capture_v11.py validation/forward/capture_v2_research_prospective_evidence_v1.py
+          python -m py_compile validation/forward/admit_frozen_core_prospective_capture_v1.py validation/forward/log_core_decision_v1.py validation/forward/test_frozen_core_prospective_capture_v11.py validation/forward/capture_v2_research_prospective_evidence_v1.py validation/forward/capture_v2_quality_aware_prospective_v1.py
       - name: Verify frozen provenance, schema and no daily duplicates
         if: steps.early_gate.outputs.eligible == 'true'
         run: |
@@ -66,6 +66,7 @@ jobs:
           python -m unittest validation.forward.test_attach_core_outcomes_safety_v1 -v
           python -m unittest validation.forward.test_capture_v2_research_prospective_evidence_v1 -v
           python -m unittest validation.forward.test_v2_full_command_capture_path_v1 -v
+          python -m unittest validation.forward.test_capture_v2_quality_aware_prospective_v1 -v
 
   capture:
     needs: test
@@ -169,6 +170,22 @@ jobs:
               echo "- V2 independent research capture: **FAILED / NOT CAPTURED ($status)**. Frozen-Core write remains primary; job will be marked RED only AFTER its persistence." >> "$GITHUB_STEP_SUMMARY"
               ;;
           esac
+      - name: Freeze separate quality-aware V2 research features (future-only, no H1)
+        id: v2_quality
+        if: steps.admit.outputs.admitted == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          day=$(TZ=Europe/Rome date +%F)
+          status='QUALITY_AWARE_SOURCE_FAILURE'
+          if [[ "$day" < "2026-11-02" ]]; then
+            status='NOT_BEFORE_FUTURE_QUALITY_AWARE_COHORT'
+          elif python -m validation.forward.capture_v2_quality_aware_prospective_v1 > /tmp/v2-quality-aware-prospective-capture.json; then
+            cat /tmp/v2-quality-aware-prospective-capture.json
+            status="$(python -c "import json; print(json.load(open('/tmp/v2-quality-aware-prospective-capture.json'))['status'])" || echo 'QUALITY_AWARE_RECEIPT_INVALID')"
+          fi
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          echo "- Separate quality-aware observational freeze: **$status** (no original V2 score, no H1)." >> "$GITHUB_STEP_SUMMARY"
       - name: Verify only immutable forward-ledger files changed
         if: steps.admit.outputs.admitted == 'true'
         shell: bash
@@ -181,7 +198,8 @@ jobs:
               path=line[3:]
               if path not in (
                   'validation/forward/decision_snapshots/CORE_DECISION_SNAPSHOTS_V1.jsonl',
-                  'validation/forward/candidate_shadow_snapshots/V2_MACRO_EVIDENCE_SNAPSHOTS_V1.jsonl'
+                  'validation/forward/candidate_shadow_snapshots/V2_MACRO_EVIDENCE_SNAPSHOTS_V1.jsonl',
+                  'validation/forward/candidate_shadow_snapshots/V2_QUALITY_AWARE_PROSPECTIVE_SNAPSHOTS_V1.jsonl'
               ) and not (
                  path.startswith('validation/forward/receipts/') and path.endswith('__V1.json')
               ):
@@ -197,6 +215,9 @@ jobs:
           if test -f validation/forward/candidate_shadow_snapshots/V2_MACRO_EVIDENCE_SNAPSHOTS_V1.jsonl; then
             git add validation/forward/candidate_shadow_snapshots/V2_MACRO_EVIDENCE_SNAPSHOTS_V1.jsonl
           fi
+          if test -f validation/forward/candidate_shadow_snapshots/V2_QUALITY_AWARE_PROSPECTIVE_SNAPSHOTS_V1.jsonl; then
+            git add validation/forward/candidate_shadow_snapshots/V2_QUALITY_AWARE_PROSPECTIVE_SNAPSHOTS_V1.jsonl
+          fi
           if git diff --cached --quiet; then
             echo 'FORWARD_ALREADY_CAPTURED_TODAY_NO_COMMIT' >> "$GITHUB_STEP_SUMMARY"
             exit 0
@@ -208,6 +229,25 @@ jobs:
           # the latest main; fail closed, never force or rebase the evidence.
           git push origin HEAD:main
           echo '- Prospective observation: **committed to main** (unaltered baseline date).' >> "$GITHUB_STEP_SUMMARY"
+      - name: Certify future quality-aware observational journal only after Core persistence
+        if: steps.admit.outputs.admitted == 'true'
+        shell: bash
+        env:
+          QUALITY_STATUS: ${{ steps.v2_quality.outputs.status }}
+        run: |
+          set -euo pipefail
+          # A quality-only record can NEVER turn missing original V2 GREEN.
+          case "$QUALITY_STATUS" in
+            NOT_BEFORE_FUTURE_QUALITY_AWARE_COHORT|QUALITY_AWARE_PROSPECTIVE_SNAPSHOT_APPEND_OK|EXISTING_QUALITY_AWARE_DATE_FROZEN_NO_OVERWRITE)
+              echo "QUALITY_AWARE_RESEARCH_JOURNAL_STATUS=$QUALITY_STATUS"
+              ;;
+            *)
+              echo "::error::QUALITY_AWARE_PROSPECTIVE_CAPTURE_MISSING_AFTER_CORE_PERSISTENCE status=$QUALITY_STATUS"
+              echo "- Separate quality-aware cohort: **NOT CAPTURED** (primary Core already committed)." >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+              ;;
+          esac
+
       - name: Certify V2 research capture separately after primary Core commit
         if: steps.admit.outputs.admitted == 'true'
         shell: bash
