@@ -1623,12 +1623,33 @@ function expectedReactionFromMetrics(row){
   verifyOverlap(rankThesis);
   if(rankThesis.readingMode!=='compact'||rankThesis.readingSample.checkDisplay!=='none')
     throw Error(label+' changing sort unexpectedly expands pair row details');
+  // The winner changes with daily fixing: independently construct the
+  // canonical thesis priority tuple from the current source, not yesterday's
+  // USDCHF/AUDCHF winner. The unit test separately audits the sorter itself.
+  const thesisKey=code=>{
+    const p=setupFeed.pairs[code],x=p.setup;
+    return [Number(x.quality!=='NON VALUTABILE'),
+      p.decision_frame.quality==='CONTRASTO STRUTTURALE FORTE'?3:
+        p.decision_frame.quality==='VANTAGGIO RELATIVO PARZIALE'?2:0,
+      p.transition?.state==='DINAMICA RELATIVA ALLINEATA'?2:
+        p.transition?.state==='NESSUNA DIVERGENZA RELATIVA CHIARA'?1:0,
+      ({GOOD:2,NEUTRAL:1,BAD:0})[x.price?.state]??0,
+      ({ALIGNED:4,PARTIAL:3,MIXED:2,UNCERTAIN:1,ADVERSE:0})[x.timing?.state]??-1,
+      x.extension?.state==='NORMAL'?1:0,
+      ({GOOD:2,NEUTRAL:1,BAD:0})[x.liquidity?.state]??0,
+      ({MEDIUM:3,CONTEXT:2,HIGH:1,DIVERGENT:0})[x.cot?.state]??0];
+  };
+  const expectedThesisCodes=Object.keys(setupFeed.pairs).sort((a,b)=>{
+    const aa=thesisKey(a),bb=thesisKey(b);
+    for(let i=0;i<aa.length;i++)if(aa[i]!==bb[i])return bb[i]-aa[i];
+    return a.localeCompare(b);
+  });
   if(rankThesis.mode!=='thesis'||rankThesis.view!=='focus'||
      rankThesis.descriptions.slice(0,8).some(x=>!x.visible)||
      rankThesis.descriptions.length!==28||
      rankThesis.modes[1]?.pressed!=='true'||
      rankThesis.descriptions.some((x,i)=>x.rank!==i+1||x.mode!=='thesis')||
-     rankThesis.descriptions[0]?.code!=='USDCHF')
+     JSON.stringify(rankThesis.descriptions.map(x=>x.code))!==JSON.stringify(expectedThesisCodes))
     throw Error(label+' strength-of-thesis order failed '+JSON.stringify(rankThesis));
   await page.frameLocator('#gmfq-page').locator('#gmfq-pair-rank button[data-rank-mode="setup"]').click();
   await page.frameLocator('#gmfq-page').locator('#pair-search').fill('USDCHF');
