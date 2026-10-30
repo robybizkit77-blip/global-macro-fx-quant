@@ -101,10 +101,15 @@ function auditDatedFuture(ccy,term,primary,rate,quoteDate,today){
  const code=String(primary.contract||''),pattern=new RegExp('^'+spec[1]+'[FGHJKMNQUVXZ][0-9]{4}$');
  if(!pattern.test(code)||primary.symbol!==spec[0]+code||
     primary.mapping!=='nearest dated listed contract expiry to today+'+target+'d; no interpolation')return null;
- const expiry=dayIndex(primary.expiration),todayIndex=dayIndex(today);
- if(expiry===null||todayIndex===null||expiry<todayIndex)return null;
- const gap=expiry-todayIndex-target;
- if(Math.abs(gap)>45)return null;
+ // Contract-to-tenor proximity is fixed AT THE OBSERVATION DAY.
+ // Reopening the site tomorrow must never shift yesterday's futures expiry.
+ // Recency remains checked separately by fresh(quoteDate,today).
+ const expiry=dayIndex(primary.expiration),quoteIndex=dayIndex(quoteDate);
+ if(expiry===null||quoteIndex===null||expiry<quoteIndex)return null;
+ const gap=expiry-quoteIndex-target;
+ // Tolerate ONE calendar day of bar-time vs collection-time mismatch at the expiry-window boundary.
+ // Any accepted borderline point is explicitly APPROXIMATE_EXPIRY, never OIS.
+ if(Math.abs(gap)>46)return null;
  const implied=100-primary.futures_price;
  if(Math.abs(implied-rate)>0.0002||implied<-5||implied>25)return null;
  return {value:rate,date:quoteDate,contract:code,expires:primary.expiration,
