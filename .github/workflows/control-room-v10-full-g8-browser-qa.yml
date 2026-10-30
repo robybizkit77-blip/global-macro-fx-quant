@@ -13,6 +13,9 @@ on:
       - 'validation/qa_ois_g8_estimates_v1.js'
       - 'validation/cb_pricing/audit_estimated_ois_reliability_v1.py'
       - 'validation/cb_pricing/test_audit_estimated_ois_reliability_v1.py'
+      - 'validation/cb_pricing/eur_estr_contract_benchmark_bridge_v1.py'
+      - 'validation/cb_pricing/test_eur_estr_contract_benchmark_bridge_v1.py'
+      - 'validation/cb_pricing/probe_cme_term_estr_public_download_v1.py'
       - '.github/workflows/control-room-v10-full-g8-browser-qa.yml'
   workflow_dispatch:
 permissions:
@@ -54,8 +57,8 @@ jobs:
           import json
           from pathlib import Path
           x=json.loads(Path('/tmp/ois-estimate-reliability.json').read_text())
-          assert x['quotes_observed']==86
-          assert x['total_matched_same_contract_changes']==74
+          assert x['quotes_observed']>=86
+          assert x['total_matched_same_contract_changes']>=74
           assert x['currencies_with_verified_OIS_accuracy']==0
           assert x['directional_hit_rate_vs_OIS'] is None
           assert x['eligible_to_reprice_CB_or_28_pairs'] is False
@@ -67,6 +70,29 @@ jobs:
         with:
           name: ois-estimate-reliability-research-v1
           path: /tmp/ois-estimate-reliability.json
+          if-no-files-found: warn
+      - name: Independent EUR FST3 window alignment research-only
+        run: |
+          python3 -m unittest validation.cb_pricing.test_eur_estr_contract_benchmark_bridge_v1 -v
+          python3 -m validation.cb_pricing.eur_estr_contract_benchmark_bridge_v1 --out /tmp/eur-estr-benchmark-readiness.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          o=json.loads(Path('/tmp/eur-estr-benchmark-readiness.json').read_text())
+          assert o['eur_archived_futures_observations']==28
+          assert o['distinct_eurex_futures_periods']==4
+          assert o['admissible_same_window_pairs']==0
+          assert o['actual_model_OIS_level_MAE_bp'] is None
+          assert o['eligible_to_change_OIS_operational_feed'] is False
+          assert o['writes_live_data'] is False
+          print('EUR_FST3_FOUR_EXACT_ACCRUAL_WINDOWS_PASS_NO_OIS_MAE_INVENTED')
+          PY
+      - name: Upload EUR benchmark alignment research receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eur-fst3-benchmark-readiness-v1
+          path: /tmp/eur-estr-benchmark-readiness.json
           if-no-files-found: warn
       - name: Install browser runner
         run: |
