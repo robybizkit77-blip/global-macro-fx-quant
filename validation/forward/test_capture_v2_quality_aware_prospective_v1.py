@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import copy
-from datetime import datetime, timedelta, timezone, time
+from datetime import datetime, timedelta, timezone, time, date
 import json
 from pathlib import Path
 import tempfile
@@ -27,8 +27,14 @@ class QualityAwareProspectiveCaptureTests(unittest.TestCase):
         # This is a synthetic future clock solely for pure-code testing.
         # There is NO V2 quality journal written by this fixture.
         LegacyFixture.setUpClass()
-        cls.day = "2026-11-02"
-        cls.cut = datetime.fromisoformat("2026-11-02T19:31:00+01:00")
+        # Choose a synthetic weekday on/after both the registered first day
+        # and the actual test clock. This still cannot write a real snapshot.
+        day=max(date(2026,11,2),datetime.now(ZoneInfo("Europe/Rome")).date())
+        while day.weekday()>=5:
+            day+=timedelta(days=1)
+        cls.day=day.isoformat()
+        cls.cut=datetime.combine(day,time(19,31),
+                                 tzinfo=ZoneInfo("Europe/Rome"))
         cls.now = cls.cut + timedelta(seconds=7)
         cls.fx = copy.deepcopy(LegacyFixture.fx)
         original = [r for r in cls.fx["rows"] if r["Date"] < cls.day]
@@ -67,7 +73,7 @@ class QualityAwareProspectiveCaptureTests(unittest.TestCase):
     def test_g8_24_economic_slots_28_genuine_reference_shapes_and_no_H1(self):
         snap=self.make()
         self.assertEqual(snap["schema"],qa.SCHEMA)
-        self.assertEqual(snap["local_date_rome"],"2026-11-02")
+        self.assertEqual(snap["local_date_rome"],self.day)
         self.assertEqual(len(snap["observed_t0_ref"]),28)
         self.assertEqual(len(snap["economic_observations"]),8)
         self.assertEqual(
@@ -83,12 +89,13 @@ class QualityAwareProspectiveCaptureTests(unittest.TestCase):
         self.assertFalse(snap["historical_issuer_PIT_certified"])
         self.assertFalse(snap["eligible_for_beta_forward_trading"])
         self.assertEqual(snap["numeric_z_imputation_count"],0)
-        self.assertEqual(qa.validate_snapshot(snap),"2026-11-02")
+        self.assertEqual(qa.validate_snapshot(snap),self.day)
         if "EUR.labour" in self.ordinal["zero_mad_components"]:
             euro=snap["economic_observations"]["EUR"]
             self.assertIsNone(euro["labour"]["research_robust_z"])
             self.assertEqual(euro["zero_mad_context"]["labour"][
-                "ordinal_relation"],"ABOVE_ALL_PRIOR")
+                "ordinal_relation"],self.ordinal["zero_mad_components"][
+                    "EUR.labour"]["ordinal_relation"])
             self.assertIsNone(euro["zero_mad_context"]["labour"][
                 "numeric_replacement_z"])
 
@@ -206,10 +213,10 @@ class QualityAwareProspectiveCaptureTests(unittest.TestCase):
                                  "QUALITY_AWARE_PROSPECTIVE_SNAPSHOT_APPEND_OK")
                 self.assertEqual(out["economic_dimension_slots"],24)
                 self.assertFalse(out["forward_H1_eligible"])
-                econ.assert_called_once_with(as_of="2026-11-02")
+                econ.assert_called_once_with(as_of=self.day)
                 ordinal.assert_called_once()
                 snapshot=json.loads(target.read_text())
-                self.assertEqual(qa.validate_snapshot(snapshot),"2026-11-02")
+                self.assertEqual(qa.validate_snapshot(snapshot),self.day)
                 self.assertEqual(snapshot["source_file_sha256"],
                                  {k:digest(p) for k,p in qa.SOURCE_PATHS.items()})
                 orig=target.read_bytes()
