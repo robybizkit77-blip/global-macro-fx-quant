@@ -6,6 +6,7 @@ on:
       - '.github/workflows/macro-v2-explicit-formula-candidate-ci.yml'
       - 'validation/macro/v2_domestic_candidate_explicit_formula_v1.py'
       - 'validation/macro/test_v2_domestic_candidate_explicit_formula_v1.py'
+      - 'validation/macro/fixtures/v2_g8_frozen_domestic_research_coordinates_2026_10_27.json'
       - 'validation/macro/v2_core_beta_evidence_desk_v1.py'
       - 'validation/macro/test_v2_core_beta_evidence_desk_v1.py'
       - 'validation/macro/MACRO_V2_EXPLICIT_DOMESTIC_FORMULA_CANDIDATE_2026-10-27.md'
@@ -24,8 +25,41 @@ jobs:
       - name: Test fixed formula, 8 country axes, sensitivity and no live writes
         run: |
           python -m unittest validation.macro.test_v2_domestic_candidate_explicit_formula_v1 -v
-          python -m unittest validation.macro.test_v2_core_beta_evidence_desk_v1 -v
-          python -m validation.macro.v2_domestic_candidate_explicit_formula_v1 --as-of 2026-10-27 --out /tmp/gmfq-domestic-macro-candidate.json
+          # Read-only regression on a visibly OLD Oct-27 economic research fixture.
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from validation.macro.test_v2_domestic_candidate_explicit_formula_v1 import frozen_research_shadow
+          from validation.macro.v2_domestic_candidate_explicit_formula_v1 import build
+          x=build(frozen_research_shadow(),json.loads(Path('live_data/sections/D.json').read_text()))
+          assert x['economic_as_of']=='2026-10-27'
+          assert [x['summary'][k] for k in (
+              'countries_robust_hypothetical_axis_shift_0p10_z',
+              'countries_robust_hypothetical_axis_shift_0p25_z',
+              'countries_robust_hypothetical_axis_shift_0p50_z')] == [4,2,0]
+          assert x['safe_to_publish_D'] is False
+          Path('/tmp/gmfq-domestic-macro-candidate.json').write_text(json.dumps(x,indent=2)+'\n')
+          print('FROZEN_2026_10_27_G8_STRESS_4_2_0_RESEARCH_ONLY')
+          PY
+      - name: Audit current source availability independently of frozen formula
+        id: admission
+        run: |
+          python -m validation.macro.v2_domestic_candidate_explicit_formula_v1 --readiness-only --out /tmp/gmfq-current-macro-input-readiness.json
+          python - <<'PY'
+          import json,os
+          from pathlib import Path
+          x=json.loads(Path('/tmp/gmfq-current-macro-input-readiness.json').read_text())
+          assert x['schema']=='GMFQ_MACRO_V2_G8_CURRENT_SOURCE_READINESS_V1'
+          assert x['eligible_to_publish_D'] is False
+          assert x['eligible_to_recompute_28_pairs'] is False
+          assert x['no_missing_z_substituted'] is True
+          assert x['currencies_with_three_research_axes']+x['currencies_blocked']==8
+          complete=x['strict_eight_country_candidate_allowed_now']
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:
+              f.write('complete='+str(complete).lower()+'\n')
+          print('MACRO_CURRENT_SOURCE_'+('EIGHT_RESEARCH_AXES_ONLY' if complete else 'BLOCKED_MISSING_Z'))
+          print('BLOCKERS:',x['blocked'])
+          PY
       - name: Build downloadable integrated beta evidence review, without new FX scoring
         run: |
           python -m validation.macro.v2_core_beta_evidence_desk_v1 --as-of 2026-10-28 --receipt /tmp/gmfq-core-beta-evidence-desk.json --html /tmp/gmfq-core-beta-evidence-desk.html
