@@ -61,6 +61,7 @@ jobs:
              'validation/cb_pricing/audit_estimated_ois_reliability_v1.py',
              'validation/cb_pricing/test_audit_estimated_ois_reliability_v1.py',
              '.github/workflows/ois-estimate-reliability-research-qa-v1.yml',
+             '.github/workflows/control-room-v10-full-g8-browser-qa.yml',
           }
           changed=set(subprocess.check_output(
              ['git','diff','--name-only','origin/main...HEAD'],text=True).splitlines())
