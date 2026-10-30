@@ -1029,11 +1029,13 @@ function expectedReactionFromMetrics(row){
       width:p?.scrollWidth,client:p?.clientWidth,
       docWidth:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth};
   });
-  const expectedMacroCcy=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+  const expectedMacroCcy=g8.filter(c=>!!macroThermo.currencies?.[c]);
+  // The native dashboard uses its own fixed display order. Validate the
+  // unordered 8-currency coverage, not a cosmetic currency ordering.
   if(macroV2.status!=='OBSERVED_RESEARCH_CONTEXT'||macroV2.count!=='8'||
      macroV2.score!=='NONE'||macroV2.pairs!=='NONE'||
      macroV2.rows.length!==8||
-     JSON.stringify(macroV2.rows.map(x=>x.currency))!==JSON.stringify(expectedMacroCcy)||
+     JSON.stringify(macroV2.rows.map(x=>x.currency).sort())!==JSON.stringify(expectedMacroCcy.sort())||
      macroV2.rows.some(x=>x.quarter!=='2026Q2'||!x.text.includes('Inflazione')||
        !x.text.includes('Disoccupazione')||!x.text.includes('6M monetario')||
        x.ratesDate!==ratesFeed[x.currency].date)||
