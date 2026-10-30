@@ -18,6 +18,13 @@ assert(rendered.includes('class="gmfq-est-disclosure" open data-default="OPEN"')
 assert(rendered.includes('valute con riferimenti numerici'));
 assert(rendered.includes('data-ccy="NZD"'));
 assert(rendered.includes('data-ccy="EUR"'));
+assert(rendered.includes('G8 · OIS e stime monetarie 3M / 6M / 12M'),
+ 'Rates page must identify certified versus estimated 3M/6M/12M values');
+assert(rendered.includes('data-g8-estimated-curve-coverage='),
+ 'Rates page must make numeric G8 estimate coverage explicit');
+assert(rendered.includes('STIMA · FUTURES / DATE NON SINCRONIZZATE'),
+ 'Mixed-date quote must remain visibly an estimate, not a full certified OIS');
+
 assert(rendered.includes('non intervallo statistico'));
 assert(rendered.includes('NESSUNA')===false);
 const c=coverage(ois,bill,when);
@@ -95,6 +102,14 @@ const misgoverned=structuredClone(bill);misgoverned.governance.policy_delta_from
 assert.deepEqual(Object.keys(scenarioSixMonth(ois,misgoverned,when)),[],
  'unsafe proxy governance rejected');
 const home=fs.readFileSync('site/control-room-preview/home-navigation-v10.js','utf8');
+assert(home.includes("fmt(x.level,2)+'%'"),
+ 'Home certified 6M is a rate level in percent, not a delta in bp');
+assert(home.includes("host.dataset.gmfqSixMonthUnit='RATE_PCT'"),
+ 'Home all-eight unit contract must remain percentage levels');
+assert(home.includes("data-six-month-coverage="),
+ 'Home must visibly disclose how many of the G8 have a numeric 6M');
+assert(home.includes("Tutti i valori sono livelli di tasso in %"),
+ 'Home must not mix 6M deltas and absolute rate units');
 assert(home.includes("state==='CASH_CARRY_SCENARIO'?'≈'+fmt(x.scenario.value,2)+'% ST'"),
  'Home uses NZD adjusted scenario');
 assert(home.includes("pairMacroRatesComparison(code,setup.pairs[code],rates,ois,setup.price_asof,macroDay,proxy)"),
