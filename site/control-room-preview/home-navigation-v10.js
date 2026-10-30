@@ -1310,6 +1310,85 @@ function focusCurrency(doc){
 /* The dedicated Rates page already renders all eight G8 rows, but the original
    design exposes only four country selectors. Complete the selectors in the
    additive adapter; a missing verified series still renders WITHHELD. */
+
+/* Restore existing sovereign chart from verified, same-day historical 2Y/10Y pairs. */
+function sovereignHistoryPairs(rates,k){
+ const r=rates?.[k],a=r?.history2,b=r?.history10,valid=d=>/^\\d{4}-\\d{2}-\\d{2}$/.test(d||'');
+ if(!r||!String(r.quality||'').includes('OFFICIAL')||!valid(r.date)||
+    !Array.isArray(a?.dates)||!Array.isArray(a?.values)||
+    !Array.isArray(b?.dates)||!Array.isArray(b?.values)||
+    a.dates.length!==a.values.length||b.dates.length!==b.values.length)return [];
+ const two=new Map(a.dates.map((d,i)=>[d,num(a.values[i])]));
+ const rows=b.dates.map((d,i)=>({d,y2:two.get(d),y10:num(b.values[i])}))
+  .filter(x=>valid(x.d)&&x.d<=r.date&&x.y2!==null&&x.y2!==undefined&&
+    x.y10!==null&&x.y2>-5&&x.y2<30&&x.y10>-5&&x.y10<30)
+  .sort((x,y)=>x.d.localeCompare(y.d));
+ if(rows.length<2||rows.at(-1).d!==r.date||Math.abs(rows.at(-1).y2-r['2Y'])>.002||
+    Math.abs(rows.at(-1).y10-r['10Y'])>.002)return [];
+ const last=Date.parse(r.date+'T00:00:00Z'),recent=rows.filter(x=>
+  Date.parse(x.d+'T00:00:00Z')>=last-184*86400000);
+ return recent.length>=2?recent:rows.slice(-40);
+}
+function mountSovereignHistoryPlot(doc,rates){
+ const host=doc.getElementById('rates-chart'),sel=doc.getElementById('rates-select');
+ if(!host||!sel||host.dataset.sovereignPlotMounted)return;
+ host.dataset.sovereignPlotMounted='true';
+ const css=doc.createElement('style');css.textContent=
+  '#rates-chart{height:auto!important;min-height:260px;overflow:visible!important}'+
+  '#rates-chart [data-gmfq-sovereign-plot]{width:100%;height:auto;display:block;max-height:330px}'+
+  '#rates-chart .gmfq-gov-source{display:flex;justify-content:space-between;flex-wrap:wrap;gap:5px;color:#b9ccda;font:11px/1.5 Arial,sans-serif}'+
+  '#rates-chart .gmfq-gov-legend{color:#c4d7e7;font:11px/1.6 Arial,sans-serif}'+
+  '#rates-chart .gmfq-gov-axes text{fill:#a4bfce;font:11px Arial,sans-serif}';
+ doc.head.appendChild(css);
+ const paint=()=>{
+  if(route()!=='tassi'||frame.contentDocument!==doc||!host.isConnected)return;
+  const k=(sel.querySelector('button[aria-pressed="true"][data-ccy]')||
+   sel.querySelector('button.active[data-ccy]'))?.dataset.ccy||'USD';
+  const rows=sovereignHistoryPairs(rates,k);host.dataset.gmfqSovereignCcy=k;
+  host.dataset.gmfqSovereignCount=String(rows.length);
+  if(rows.length<2){host.innerHTML='<p>Storico 2Y/10Y omogeneo insufficiente per '+k+
+   '. Nessuna serie ricostruita.</p>';return;}
+  const vals=rows.flatMap(x=>[x.y2,x.y10]),lo=Math.floor((Math.min(...vals)-.2)*4)/4,
+   hi=Math.ceil((Math.max(...vals)+.2)*4)/4,span=hi-lo||1,
+   first=Date.parse(rows[0].d+'T00:00:00Z'),last=Date.parse(rows.at(-1).d+'T00:00:00Z');
+  const px=d=>62+814*(Date.parse(d+'T00:00:00Z')-first)/(last-first||1),
+   py=v=>28+203*(hi-v)/span;
+  const axes=Array.from({length:5},(_,i)=>{
+   let v=lo+i*span/4,y=py(v);
+   return '<line x1="62" x2="876" y1="'+y+'" y2="'+y+
+    '" stroke="#29485b"/><text x="53" y="'+(y+4)+'" text-anchor="end">'+fmt(v,2)+'%</text>';
+  }).join('')+[0,.25,.5,.75,1].map(q=>{
+   let d=rows[Math.round(q*(rows.length-1))].d;
+   return '<text x="'+px(d)+'" y="272" text-anchor="middle">'+d.slice(5)+'</text>';
+  }).join('');
+  const trace=(field,tenor,color)=>'<polyline data-tenor="'+tenor+
+    '" fill="none" stroke="'+color+'" stroke-width="3" points="'+
+    rows.map(x=>px(x.d).toFixed(1)+','+py(x[field]).toFixed(1)).join(' ')+
+    '"/><circle cx="'+px(rows.at(-1).d)+'" cy="'+py(rows.at(-1)[field])+
+    '" r="4" fill="'+color+'"/>';
+  const asof=rows.at(-1).d,old=romeCalendarAge(asof)>5;
+  host.innerHTML='<div class="gmfq-gov-source"><b>'+FLAG[k]+' '+k+
+   ' · 2Y / 10Y</b><span>'+(old?'STORICO':'OSSERVATO')+' · '+asof+
+   ' · '+rows.length+' date comuni</span></div>'+
+   '<svg data-gmfq-sovereign-plot="TRUE" data-ccy="'+k+
+   '" viewBox="0 0 900 285" role="img" aria-label="'+k+' storico 2Y e 10Y verificato">'+
+   '<g class="gmfq-gov-axes">'+axes+'</g>'+trace('y2','2Y','#67bcff')+
+   trace('y10','10Y','#e6c476')+'</svg><div class="gmfq-gov-legend">● 2Y azzurro · ● 10Y oro · NATIVE_RATES_DATA, date abbinate · non OIS</div>';
+  const meta=doc.getElementById('rates-chart-meta');
+  if(meta)meta.textContent=k+' · '+(old?'storico non corrente':'ultima rilevazione')+
+   ' '+asof+' · solo rendimenti governativi';
+ };
+ sel.addEventListener('click',e=>{
+  if(e.target.closest('button[data-ccy]')){
+   doc.defaultView.setTimeout(paint,0);doc.defaultView.setTimeout(paint,120);
+  }
+ });
+ const obs=new doc.defaultView.MutationObserver(()=>{
+  if(host.dataset.gmfqSovereignCount!=='0'&&!host.querySelector('svg[data-gmfq-sovereign-plot]'))
+   doc.defaultView.queueMicrotask(paint);
+ });
+ obs.observe(host,{childList:true});paint();
+}
 function enhanceRatesDetail(doc){
  const select=doc.getElementById('rates-select');
  if(!select)return;
@@ -1768,6 +1847,7 @@ async function applyMarketResearch(doc){
  const all=await Promise.allSettled([feed('OIS_OPERATIONAL_VIEW.json'),feed('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),feed('NATIVE_RATES_DATA.json'),feed('CHF_SNB_10Y_SPOT_CONTEXT.json'),feed('OIS_SOURCE_READINESS_VIEW.json'),feed('NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json'),fetchSecondary2Y()]);
  const feeds=all.map(x=>x.status==='fulfilled'?x.value:null);
  renderYieldStudy(doc,feeds[2],feeds[3],feeds[5],feeds[6]);
+  mountSovereignHistoryPlot(doc,feeds[2]);
  mountMarketResearch(doc,...feeds.slice(0,5));
 }
 
