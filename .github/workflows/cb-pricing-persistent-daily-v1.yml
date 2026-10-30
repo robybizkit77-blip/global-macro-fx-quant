@@ -99,7 +99,7 @@ jobs:
               --output "$GITHUB_OUTPUT" --summary "$GITHUB_STEP_SUMMARY"
           fi
 
-      - name: Regression: JPY TONA OIS-only and native-only apply must remain isolated
+      - name: "Regression: JPY TONA OIS-only and native-only apply must remain isolated"
         run: python3 -m unittest validation.cb_pricing.test_apply_jpy_tfx_tona_candidate -v
 
       - name: Test Rome DST, duplicate UTC slots and delayed starts
