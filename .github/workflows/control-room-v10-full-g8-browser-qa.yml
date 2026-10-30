@@ -17,6 +17,8 @@ on:
       - 'validation/cb_pricing/test_eur_estr_contract_benchmark_bridge_v1.py'
       - 'validation/cb_pricing/eur_independent_spot_ois_forward_research_v1.py'
       - 'validation/cb_pricing/probe_eurex_clearing_discount_curve_v1.py'
+      - 'validation/cb_pricing/probe_eurex_historical_estr_source_v1.py'
+      - 'validation/cb_pricing/test_probe_eurex_historical_estr_source_v1.py'
       - 'validation/cb_pricing/test_probe_eurex_clearing_discount_curve_v1.py'
       - 'validation/cb_pricing/test_eur_independent_spot_ois_forward_research_v1.py'
       - 'validation/cb_pricing/probe_cme_term_estr_public_download_v1.py'
@@ -126,6 +128,28 @@ jobs:
         with:
           name: eurex-clearing-ois-discount-curve-source-probe
           path: /tmp/eurex-clearing-curve-probe.json
+          if-no-files-found: warn
+      - name: Verify real 21-Oct OTC historical link (bounded public metadata-only probe)
+        run: |
+          python3 -m unittest validation.cb_pricing.test_probe_eurex_historical_estr_source_v1 -v
+          python3 -m validation.cb_pricing.probe_eurex_historical_estr_source_v1 --once --out /tmp/eurex-historic-source-access.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('/tmp/eurex-historic-source-access.json').read_text())
+          assert d['schema']=='GMFQ_EUREX_OIS_HISTORICAL_ACCESS_RESEARCH_V1'
+          assert d['EUR_OIS_MAE_bp'] is None
+          assert d['multi_date_OIS_spread_statistics_allowed'] is False
+          assert d['no_generated_untested_historical_url'] is True
+          assert d['changes_live_OIS_or_FX'] is False
+          print('GROUNDED_21OCT_ARCHIVE_ACCESS_VERIFIED',d['historic_21oct_public_source_verified'])
+          PY
+      - name: Upload archived €STR source access audit only (not vendor data)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eurex-historical-estr-archive-availability-v1
+          path: /tmp/eurex-historic-source-access.json
           if-no-files-found: warn
       - name: Install browser runner
         run: |
