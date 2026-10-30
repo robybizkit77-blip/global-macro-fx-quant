@@ -65,8 +65,39 @@ class LatestReleaseLedgerTests(unittest.TestCase):
                          "2026-10-15T00:30:00+00:00")
         self.assertEqual(out["observations"]["CAD.inflation"]["release"]["first_release_date"],
                          "2026-10-19")
-        self.assertEqual(out["observations"]["JPY.labour"]["release"]["first_release_date"],
-                         "2026-10-02")
+        # The 2 October release documents AUGUST unemployment only. The
+        # canonical e-Stat series has advanced to September: a previous-month
+        # anchor cannot certify the latest period (nor its intraday clock).
+        august = self.anchors.get(("JPY.labour", "2026-08"), [])
+        self.assertTrue(any(r["date"] == "2026-10-02" and r["value"] == 2.5
+                            for r in august))
+        jpy = out["observations"]["JPY.labour"]
+        current_period = jpy["current_observation_period"][:7]
+        if current_period == "2026-08":
+            self.assertEqual(jpy["release"]["first_release_date"], "2026-10-02")
+        else:
+            self.assertGreater(current_period, "2026-08")
+            self.assertNotEqual(jpy["release"]["first_release_date"], "2026-10-02")
+            if not self.anchors.get(("JPY.labour", current_period)):
+                self.assertEqual(jpy["release"]["status"],
+                                 "WITHHELD_EXACT_PERIOD_EVIDENCE")
+                self.assertIsNone(jpy["release"]["first_release_date"])
+                self.assertIsNone(jpy["release"]["first_release_timestamp_utc"])
+                self.assertFalse(jpy["release"]["historical_backtest_safe_for_all_periods"])
+
+    def test_jpy_august_labour_anchor_cannot_certify_september(self):
+        current = self.run_receipt()["observations"]["JPY.labour"]
+        if current["current_observation_period"][:7] != "2026-09":
+            self.skipTest("September JPY labour has advanced; old-month guard tested above")
+        self.assertEqual(current["latest_transformed_observation"], 2.4)
+        self.assertEqual(current["release"]["status"], "WITHHELD_EXACT_PERIOD_EVIDENCE")
+        forged = copy.deepcopy(self.anchors)
+        archived = next(r for r in forged[("JPY.labour", "2026-08")]
+                        if r["date"] == "2026-10-02" and r["value"] == 2.5)
+        forged[("JPY.labour", "2026-09")] = [copy.deepcopy(archived)]
+        with self.assertRaisesRegex(ValueError,
+                                    "conflicting current-period pinned official value"):
+            self.run_receipt(forged)
 
     def test_gbp_two_period_first_release_corrected_without_promoting_macro_score(self):
         r = self.run_receipt()["observations"]["GBP.labour"]

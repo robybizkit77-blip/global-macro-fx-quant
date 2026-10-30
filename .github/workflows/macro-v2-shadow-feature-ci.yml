@@ -218,7 +218,12 @@ jobs:
           assert x['schema']=='GMFQ_MACRO_V2_G8_PIT_COVERAGE_READINESS_V1'
           assert x['summary']['observed_pillar_slots']==24
           assert x['summary']['registered_core_series']==16
-          assert x['summary']['latest_core_official_web_anchors']==8
+          # All 8 publisher attestations remain accounted for, but an
+          # August release cannot certify September JPY unemployment.
+          assert x['summary']['latest_core_official_web_anchors'] + \
+                 x['summary']['historical_core_official_web_anchors'] == 8
+          assert x['summary']['historical_core_official_web_anchors'] == \
+                 len(x['summary']['historical_core_source_keys'])
           assert x['summary']['latest_growth_official_web_anchors']==2
           assert x['summary']['certified_full_first_release_histories']==0
           assert x['summary']['eligible_live_macro_pillars']==0

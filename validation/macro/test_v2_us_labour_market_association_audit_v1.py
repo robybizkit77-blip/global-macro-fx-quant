@@ -142,6 +142,38 @@ class BLSReactionAuditTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"ECB daily EUR/USD"):
             inventory(**q)
 
+    def test_live_treasury_and_ecb_roll_forward_but_frozen_study_is_unchanged(self):
+        base=inputs()
+        frozen=inventory(**base)
+        self.assertEqual(frozen["sources"]["history_rates_last_date"],"2026-10-23")
+        self.assertEqual(frozen["sources"]["history_fx_last_date"],"2026-10-23")
+        self.assertEqual(frozen["sources"]["fixed_research_cutoff"],"2026-10-23")
+        self.assertTrue(frozen["sources"]["later_live_observations_excluded"])
+        # Even a fully re-published, internally consistent official latest
+        # value AFTER the cutoff must not change historical BLS comparisons.
+        later=copy.deepcopy(base)
+        usd=later["rates"]["USD"]
+        self.assertGreater(usd["date"],"2026-10-23")
+        usd["2Y"]=float(usd["2Y"])+0.01
+        usd["history2"]["values"][-1]=usd["2Y"]
+        usd["history2"]["last_value"]=usd["2Y"]
+        fx=later["fx"]
+        self.assertGreater(fx["last_as_of"],"2026-10-23")
+        fx["rows"][-1]["USD"]=float(fx["rows"][-1]["USD"])+0.0001
+        self.assertEqual(inventory(**later),frozen)
+        with self.assertRaisesRegex(ValueError,"USD Treasury 2Y current source integrity"):
+            bad=copy.deepcopy(base)
+            bad["rates"]["USD"]["history2"]["last_value"]=99
+            inventory(**bad)
+
+    def test_future_live_treasury_observation_is_rejected(self):
+        bad=inputs()
+        bad["rates"]["USD"]["date"]="2099-01-01"
+        bad["rates"]["USD"]["history2"]["last_date"]="2099-01-01"
+        bad["rates"]["USD"]["history2"]["dates"][-1]="2099-01-01"
+        with self.assertRaisesRegex(ValueError,"USD Treasury 2Y current source integrity"):
+            inventory(**bad)
+
     def test_no_deceptive_simple_macro_correlation_or_trade_conclusion(self):
         report=run()
         text=markdown(report)
