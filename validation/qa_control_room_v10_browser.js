@@ -583,6 +583,20 @@ function expectedReactionFromMetrics(row){
       note:p.querySelector('.gmfq-est-quick-read')?.textContent,
       sourceRows:p.querySelectorAll('.gmfq-est-row[data-ccy]').length};
   });
+  const chartAudit=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument,
+      p=d?.getElementById('gmfq-g8-mini-charts');
+    return {visible:!!p?.getClientRects().length,count:p?.querySelectorAll('[data-chart-ccy]').length,
+      charts:[...p?.querySelectorAll('[data-chart-ccy]')||[]].map(x=>({
+        ccy:x.dataset.chartCcy,quality:x.dataset.quality,points:x.querySelectorAll('circle').length,
+        joined:x.dataset.joined,svg:!!x.querySelector('svg')?.getClientRects().length
+      }))};
+  });
+  if(!chartAudit.visible||chartAudit.count!==8||
+     chartAudit.charts.some(x=>!x.svg||x.points!==3)||
+     chartAudit.charts.some(x=>x.quality==='MIXED'&&x.joined!=='false'))
+    throw Error(label+' Missing/unverified source-graded G8 charts '+JSON.stringify(chartAudit));
+  console.log('CONTROL_ROOM_VISIBLE_G8_CHARTS_GREEN',label,JSON.stringify(chartAudit));
   if(!compact.open||!compact.visible||compact.sourceRows!==8||
      !compact.note?.includes('valute con riferimenti numerici'))
     throw Error('G8 Rates references hidden or incomplete: '+JSON.stringify(compact));
