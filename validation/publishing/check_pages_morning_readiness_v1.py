@@ -16,7 +16,10 @@ from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "validation" / "orchestration"))
-from check_morning_readiness_v1 import inspect, read_feeds  # noqa: E402
+from check_morning_readiness_v1 import FEEDS, inspect, read_feeds  # noqa: E402
+from plan_premorning_calendar_news_recovery_v1 import (  # noqa: E402
+    pending_issuer_meetings, read_cb,
+)
 
 ROME = ZoneInfo("Europe/Rome")
 START = dt.time(4, 0)
@@ -30,7 +33,7 @@ def in_morning_window(instant: dt.datetime) -> bool:
     return local.weekday() < 5 and START <= local.time().replace(tzinfo=None) < END
 
 
-def evaluate(instant: dt.datetime, feeds: dict | None = None) -> dict:
+def evaluate(instant: dt.datetime, feeds: dict | None = None, cb_data: dict | None = None) -> dict:
     """Evaluate the immutable checkout being considered for Pages publication."""
     active = in_morning_window(instant)
     local = instant.astimezone(ROME)
@@ -43,6 +46,7 @@ def evaluate(instant: dt.datetime, feeds: dict | None = None) -> dict:
         "critical_daily_problems": [],
         "documented_nonblocking_gaps": [],
         "news_content_vintage": None,
+        "issuer_policy_watch": {"status": "NOT_APPLICABLE", "currencies": []},
         "authority": "MORNING_SOURCE_READINESS" if active else "STANDARD_PAGES_PREFLIGHT",
     }
     if not active:
@@ -57,6 +61,28 @@ def evaluate(instant: dt.datetime, feeds: dict | None = None) -> dict:
     receipt["critical_daily_problems"] = report["critical_daily_problems"]
     receipt["documented_nonblocking_gaps"] = report.get("documented_nonblocking_gaps", [])
     receipt["news_content_vintage"] = report["evidence"].get("NEWS_CONTENT_VINTAGE")
+    # A same-day scheduled CB meeting is a watch cue, NOT evidence that the
+    # issuer released a statement. Keep HTTP publication working while clearly
+    # flagging an unresolved native policy row at the time of observation.
+    native_cb = cb_data if cb_data is not None else read_cb(FEEDS)
+    if not isinstance(native_cb, dict):
+        receipt["issuer_policy_watch"] = {
+            "status": "SOURCE_UNAVAILABLE", "currencies": [],
+            "basis": "NATIVE_CB_DATA_MISSING_OR_INVALID"
+        }
+        receipt["documented_nonblocking_gaps"].append("CB_POLICY_WATCH_SOURCE_UNAVAILABLE")
+    else:
+        due = pending_issuer_meetings(local.date(), native_cb)
+        receipt["issuer_policy_watch"] = {
+            "status": ("PENDING_SAME_DAY_CB_DECISION" if due
+                       else "NO_PENDING_SAME_DAY_CB_DECISION"),
+            "currencies": due,
+            "basis": "NATIVE_CB_DATA_NEXT_MEETING_VS_LAST_DATE",
+            "official_release_inferred": False
+        }
+        if due:
+            receipt["documented_nonblocking_gaps"].append(
+                "CB_POLICY_DECISION_DAY_UNRESOLVED:" + ",".join(due))
     receipt["operational_state"] = report["operational_state"]
     receipt["expected_previous_weekday"] = report["expected_previous_weekday"]
     receipt["evidence_as_of"] = {
