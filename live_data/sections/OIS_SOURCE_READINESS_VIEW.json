@@ -1,6 +1,6 @@
 {
   "as_of": "2026-10-30",
-  "blocked_currency_count": 2,
+  "blocked_currency_count": 3,
   "currencies": {
     "CHF": {
       "activation_requirement": "Validare ICE SA3 oppure Eurex FSR3, senza unire exchange o date differenti.",
@@ -89,14 +89,18 @@
       "backtest_eligible_as_official": false,
       "currency": "USD",
       "dates_joinable": false,
-      "indicative_quote_dates": {},
-      "obstacle": "Fonte indicativa: manca certificazione operativa.",
+      "indicative_quote_dates": {
+        "12m": "2026-10-29",
+        "3m": "2026-10-30",
+        "6m": "2026-10-29"
+      },
+      "obstacle": "Settlement CME Fed Funds incompleti (manca una serie storica sincronizzata con diritti d'uso verificati).",
       "operational_as_of": "2026-10-29",
       "price_or_curve_embedded": false,
       "source_reviewed_as_of": "2026-10-23",
       "source_title": "CME/CBOT official 30-Day Federal Funds futures settlements (ZQ)",
       "source_url": "https://www.cmegroup.com/markets/interest-rates/stirs/30-day-federal-fund.settlements.html",
-      "status": "GREEN_ESTIMATED",
+      "status": "WITHHELD",
       "usable_for_policy_pricing": false
     }
   },
@@ -108,10 +112,10 @@
   "note": "Stato accesso alle fonti; non è una previsione, non certifica nuovi prezzi.",
   "operational_summary": {
     "g8_total": 8,
-    "green_estimated": 2,
+    "green_estimated": 1,
     "green_official": 4,
-    "operational_green": 6,
-    "operational_withheld": 2
+    "operational_green": 5,
+    "operational_withheld": 3
   },
   "prices_omitted": true,
   "schema": "GMFQ_OIS_SOURCE_READINESS_VIEW_V1",
