@@ -144,6 +144,25 @@ assert passed["documented_nonblocking_gaps"] == [
 ], passed
 
 
+# Regression: on a central-bank meeting day, a source recheck at 07:45
+# does not prove the scheduled policy decision was published and certified.
+# Keep Pages able to publish, but retain a visible unresolved-policy caveat.
+pending_policy = {"JPY": {"last_date": "2026-09-18", "next_meeting": "2026-10-26"}}
+watch = evaluate(monday, good, cb_data=pending_policy)
+assert watch["status"] == "PASS_MORNING_SOURCES_VERIFIED", watch
+assert watch["issuer_policy_watch"]["status"] == "PENDING_SAME_DAY_CB_DECISION", watch
+assert watch["issuer_policy_watch"]["currencies"] == ["JPY"], watch
+assert watch["issuer_policy_watch"]["official_release_inferred"] is False
+assert "CB_POLICY_DECISION_DAY_UNRESOLVED:JPY" in watch["documented_nonblocking_gaps"]
+cleared_policy = {"JPY": {"last_date": "2026-10-26", "next_meeting": "2026-12-18"}}
+clear = evaluate(monday, good, cb_data=cleared_policy)
+assert clear["issuer_policy_watch"]["status"] == "NO_PENDING_SAME_DAY_CB_DECISION"
+assert not any("CB_POLICY_DECISION_DAY_UNRESOLVED" in s
+               for s in clear["documented_nonblocking_gaps"])
+source_unavailable = evaluate(monday, good, cb_data=[])
+assert source_unavailable["issuer_policy_watch"]["status"] == "SOURCE_UNAVAILABLE"
+assert "CB_POLICY_WATCH_SOURCE_UNAVAILABLE" in source_unavailable["documented_nonblocking_gaps"]
+
 missing_pair = copy.deepcopy(good)
 missing_pair["PAIR_SETUP_OPERATIONAL_VIEW.json"]["pairs"].pop(
     next(iter(missing_pair["PAIR_SETUP_OPERATIONAL_VIEW.json"]["pairs"]))
