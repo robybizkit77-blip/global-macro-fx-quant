@@ -861,7 +861,7 @@ async function mountHomeMarketPulse(doc){
   const data=await feed('NEWS_PULSE_OPERATIONAL.json');
   if(!host.isConnected||frame.contentDocument!==doc)return;
   const rows=marketPulseReadings(data);
-  host.dataset.pulseStatus=rows.length?'RECENT_VALIDATED':'WITHHELD';
+  host.dataset.pulseStatus=rows.length?'RECENT_VALIDATED':'LOADING_REFERENCE';
   host.dataset.asOf=rows.length?data.content_as_of:'';
   date.textContent=rows.length?'Rilevazione '+data.content_as_of+' · non intraday':'Nessuna rilevazione recente verificata';
   const bp=v=>(v>0?'+':'')+fmt(v,1)+' bp';
@@ -882,6 +882,43 @@ async function mountHomeMarketPulse(doc){
      '</p><p>Variazioni dei tassi impliciti dello strumento indicato; non equivalgono a decisioni della banca centrale o a movimenti FX osservati.</p></details></article>';
   }).join(''):
     '<p class="gmfq-pulse-caption">Il feed non contiene dati di pricing sufficientemente recenti o verificabili. Nessuna notizia datata è mostrata come corrente.</p>';
+   if(!rows.length){
+    // A missing 1D repricing release does not mean no dated 6M market reference.
+    // Recover the same audited G8 research matrix as Rates; never invent deltas.
+    let recovered=false;
+    try{
+     const audited=window.GMFQ_OIS_RESEARCH_V1?.matrix;
+     if(typeof audited==='function'){
+      const feeds=await Promise.all([feed('OIS_OPERATIONAL_VIEW.json'),feed('NZD_CB_PRICING_DIRECTIONAL_PROXY.json')]);
+      if(!host.isConnected||frame.contentDocument!==doc)return;
+      const reference=audited(feeds[0],feeds[1],romeTodayIso());
+      const valid=reference.length===8&&reference.every(x=>
+       ['OFFICIAL','PROXY','MIXED','SCENARIO'].includes(x.tier)&&
+       num(x.points?.['6m']?.value)!==null&&fresh(x.points['6m'].date,5));
+      if(valid){
+       box.innerHTML=reference.map(x=>
+        '<article class="gmfq-pulse-item" data-pulse-context-ccy="'+x.ccy+
+        '" data-pulse-quality="'+x.tier+'" data-research-only="true">'+
+        '<strong>'+FLAG[x.ccy]+' '+x.ccy+' · 6M</strong>'+
+        '<span class="gmfq-pulse-instrument">'+htmlEscape(x.tier==='OFFICIAL'?'FONTE CERTIFICATA':
+          x.tier==='SCENARIO'?'SCENARIO EMPIRICO · NON OIS':
+          x.tier==='MIXED'?'FUTURES INDICATIVO · DATE NON SINCRONIZZATE':
+          'FUTURES INDICATIVO')+' · '+htmlEscape(x.points['6m'].date)+'</span>'+
+        '<div class="gmfq-pulse-metrics"><span>Livello 6M <b> '+(x.tier==='OFFICIAL'?'':'≈')+
+        fmt(x.points['6m'].value,2)+'%</b></span></div>'+
+        '<small class="gmfq-pulse-caution">Solo livello dello strumento. Variazioni 1D/1W non certificate; non è previsione di policy, trade o ΔOIS.</small></article>'
+       ).join('');
+       host.dataset.pulseStatus='DATED_LEVEL_CONTEXT';
+       host.dataset.asOf=romeTodayIso();
+       date.textContent='Livelli 6M · data distinta per valuta';
+       lead.textContent='Nessuna variazione recente validata. Riferimenti monetari 6M per tutte le G8, con qualità e data di origine; non sono segnali.';
+       recovered=true;
+      }
+     }
+    }catch(error){console.warn('[GMFQ Home 6M research references unavailable]',String(error))}
+    if(!recovered)host.dataset.pulseStatus='WITHHELD';
+   }
+
  }catch(e){
   if(!host.isConnected)return;
   host.dataset.pulseStatus='WITHHELD';
