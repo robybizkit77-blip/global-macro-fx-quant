@@ -16,6 +16,8 @@ on:
       - 'validation/cb_pricing/eur_estr_contract_benchmark_bridge_v1.py'
       - 'validation/cb_pricing/test_eur_estr_contract_benchmark_bridge_v1.py'
       - 'validation/cb_pricing/eur_independent_spot_ois_forward_research_v1.py'
+      - 'validation/cb_pricing/probe_eurex_clearing_discount_curve_v1.py'
+      - 'validation/cb_pricing/test_probe_eurex_clearing_discount_curve_v1.py'
       - 'validation/cb_pricing/test_eur_independent_spot_ois_forward_research_v1.py'
       - 'validation/cb_pricing/probe_cme_term_estr_public_download_v1.py'
       - '.github/workflows/control-room-v10-full-g8-browser-qa.yml'
@@ -100,6 +102,31 @@ jobs:
         run: |
           python3 -m unittest validation.cb_pricing.test_eur_independent_spot_ois_forward_research_v1 -v
           echo EUR_SPOT_OIS_BOOTSTRAP_RESEARCH_ONLY_NO_MAE_CLAIM
+      - name: Probe official Eurex Clearing public discount curve (one dated request, no live-data writes)
+        run: |
+          python3 -m unittest validation.cb_pricing.test_probe_eurex_clearing_discount_curve_v1 -v
+          python3 -m validation.cb_pricing.probe_eurex_clearing_discount_curve_v1 --once --out /tmp/eurex-clearing-curve-probe.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          o=json.loads(Path('/tmp/eurex-clearing-curve-probe.json').read_text())
+          assert o['schema']=='GMFQ_EUREX_CLEARING_CURVE_PUBLIC_PROBE_V2'
+          assert o['MAE_vs_true_OIS_bp'] is None
+          assert o['eligible_to_modify_live_OIS_or_FX'] is False
+          if o['status']=='EXACT_29OCT_ESTR_DISCOUNT_FACTORS_FOUND':
+              assert o['expected_curve_id']=='EUR.ESTR.1D'
+              assert o['matched_observations_count']==2
+              assert all(r['source_day']=='2026-10-29' for r in o['matched_futures'])
+          print('NO_OIS_ACCURACY_GRADE_OR_LIVE_REPRICING_PROMOTION')
+          print('EUREX_CLEARING_CURVE_SOURCE_PROBE',o['status'])
+          PY
+      - name: Upload source probe receipt (no raw settlement curve)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eurex-clearing-ois-discount-curve-source-probe
+          path: /tmp/eurex-clearing-curve-probe.json
+          if-no-files-found: warn
       - name: Install browser runner
         run: |
           npm init -y >/dev/null 2>&1
