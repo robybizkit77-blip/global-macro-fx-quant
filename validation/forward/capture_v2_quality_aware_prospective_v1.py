@@ -105,6 +105,25 @@ def validate_snapshot(row):
         orientations.add(frozenset((a,b)))
     require(orientations == EXPECTED_UNORDERED_G8,
             "28 official crosses do not cover G8")
+    # 28 G8 crosses share exactly seven independent ECB/EUR quote levels.
+    # A signed but altered FX leg must NOT become a legitimate observation:
+    # reconstruct every cross from the same seven reference legs.
+    def fx(a, b):
+        direct = anchors.get(a + "/" + b)
+        if direct is not None:
+            return direct["rate"]
+        inverse = anchors.get(b + "/" + a)
+        require(inverse is not None, "unavailable reverse FX reference leg")
+        return 1.0 / inverse["rate"]
+
+    eur_legs = {ccy: (1.0 if ccy == "EUR" else fx("EUR", ccy))
+                for ccy in G8}
+    for pair, observed_cross in anchors.items():
+        a, b = pair.split("/")
+        expected = eur_legs[b] / eur_legs[a]
+        require(math.isclose(observed_cross["rate"], expected,
+                             rel_tol=1e-9, abs_tol=1e-10),
+                "signed ECB cross violates EUR seven-leg triangle: " + pair)
     observed = row.get("economic_observations")
     require(isinstance(observed,dict) and set(observed)==set(G8),
             "all 8 economic research dimensions required")
@@ -151,6 +170,20 @@ def validate_snapshot(row):
             and all(isinstance(x,str) and len(x)==64
                     and all(ch in "0123456789abcdef" for ch in x)
                     for x in hashes.values()), "source provenance incomplete")
+    # Snapshot identity is not arbitrary metadata: bind it to the certified
+    # T0 input, contemporaneous macro source, ordinal observation receipt.
+    ordinal_sha = row.get("ordinal_evidence_sha256")
+    require(isinstance(ordinal_sha,str) and len(ordinal_sha)==64
+            and all(ch in "0123456789abcdef" for ch in ordinal_sha),
+            "missing signed ordinal evidence fingerprint")
+    expected_id=sha({
+        "schema":SCHEMA,"date":day,
+        "official_ecb_source_sha":hashes["ecb"],
+        "macro_series_source_sha":hashes["macro_series"],
+        "ordinal_evidence_sha":ordinal_sha,
+    })
+    require(row.get("snapshot_id")==expected_id,
+            "snapshot identity does not bind immutable source inputs")
     return day
 
 
