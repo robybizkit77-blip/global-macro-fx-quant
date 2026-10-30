@@ -26,7 +26,7 @@ def fixture():
 
 
 class ReadinessTests(unittest.TestCase):
-    ASOF = date(2026, 10, 23)
+    ASOF = date(2026, 10, 30)
 
     def report(self, modified=None):
         inputs = fixture()
@@ -114,25 +114,27 @@ class ReadinessTests(unittest.TestCase):
             ),
         )
 
-    def test_past_jpy_attestation_cannot_certify_september(self):
+    def test_jpy_september_current_release_is_date_only_not_training_pit(self):
         r = self.report()
         rows = {(x["currency"], x["pillar"]): x for x in r["rows"]}
         jpy = rows["JPY", "labour"]
-        old = next(a for a in fixture()["core"]["attestations"]
-                   if a["key"] == "JPY.labour")
-        self.assertEqual(old["observation_period"], "2026-08")
-        self.assertEqual(old["published_value"], 2.5)
-        self.assertEqual(old["release_date"], "2026-10-02")
-        self.assertIsNone(jpy["latest_anchor"])
-        self.assertFalse(jpy["latest_anchor_only"])
+        anchor = next(a for a in fixture()["core"]["attestations"]
+                      if a["key"] == "JPY.labour")
+        self.assertEqual(anchor["observation_period"], "2026-09")
+        self.assertEqual(anchor["published_value"], 2.4)
+        self.assertEqual(anchor["release_date"], "2026-10-30")
+        self.assertEqual(jpy["latest_anchor"]["period"], "2026-09")
+        self.assertEqual(jpy["latest_anchor"]["released_on"], "2026-10-30")
+        self.assertFalse(jpy["latest_anchor"]["utc_release_time_verified"])
+        self.assertTrue(jpy["latest_anchor_only"])
         self.assertFalse(jpy["eligible_for_live_scoring"])
-        self.assertIn("JPY.labour", r["summary"]["historical_core_source_keys"])
+        self.assertNotIn("JPY.labour", r["summary"]["historical_core_source_keys"])
 
     def test_stale_core_attestation_cannot_be_reissued_after_cutoff(self):
         def mutation(p):
             old = next(a for a in p["core"]["attestations"]
                        if a["key"] == "JPY.labour")
-            old["release_date"] = "2026-10-25"
+            old["release_date"] = "2026-11-01"
         self.assertRaisesRegex(
             ValueError, "Core publication outside observation/as-of chronology",
             self.report, mutation
@@ -142,7 +144,7 @@ class ReadinessTests(unittest.TestCase):
         self.assertRaisesRegex(
             ValueError, "Core publication outside",
             self.report, lambda p: p["core"]["attestations"][0].update(
-                release_date="2026-10-24"
+                release_date="2026-11-01"
             ),
         )
 
@@ -209,7 +211,7 @@ class ReadinessTests(unittest.TestCase):
         self.assertIn("**0/24** certified full first-release histories", m)
         self.assertIn("| NZD | inflation | Q |", m)
         self.assertIn("| USD | growth | unselected |", m)
-        self.assertEqual(r["as_of"], "2026-10-23")
+        self.assertEqual(r["as_of"], "2026-10-30")
 
 
 if __name__ == "__main__":
