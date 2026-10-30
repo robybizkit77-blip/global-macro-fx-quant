@@ -230,6 +230,39 @@ def extract_items(payload: bytes, source: dict, now: dt.datetime) -> list[dict]:
     return observations
 
 
+def select_source_headlines(observations: list[dict], source: dict) -> list[dict]:
+    """Preserve the same-day BoJ policy statement in a two-item RSS shortlist.
+
+    The BoJ may issue the statement, outlook and operational notices minutes
+    apart. Latest-two selection alone can hide its actual policy statement.
+    This prioritizes only a dated, source-verified same-Japan-day CB_POLICY
+    item; never synthesizes a release, a rate decision or a market reaction.
+    """
+    ranked = sorted(
+        observations, key=lambda x: (x["published_at_utc"], x["url"]),
+        reverse=True)
+    if source["id"] != "BOJ_NEWS" or not ranked:
+        return ranked[:MAX_ITEMS_PER_SOURCE]
+
+    def japan_day(row):
+        clock = dt.datetime.fromisoformat(
+            row["published_at_utc"].replace("Z", "+00:00"))
+        return clock.astimezone(ZoneInfo("Asia/Tokyo")).date()
+
+    latest_day = japan_day(ranked[0])
+    policy = next((
+        item for item in ranked
+        if japan_day(item) == latest_day
+        and item.get("desk_context", {}).get("topic") == "CB_POLICY"
+    ), None)
+    if policy is None:
+        return ranked[:MAX_ITEMS_PER_SOURCE]
+    # One policy headline plus newest distinct other BoJ release.
+    return ([policy] +
+            [item for item in ranked if item["url"] != policy["url"]]
+            )[:MAX_ITEMS_PER_SOURCE]
+
+
 def collect(now: dt.datetime | None = None, transport=None) -> dict:
     now = now or dt.datetime.now(dt.timezone.utc)
     if now.tzinfo is None or now.utcoffset() is None:
@@ -273,8 +306,7 @@ def collect(now: dt.datetime | None = None, transport=None) -> dict:
         }
         if failure_type:
             info["failure_type"] = failure_type
-        observations.sort(key=lambda x: (x["published_at_utc"], x["url"]), reverse=True)
-        return observations[:MAX_ITEMS_PER_SOURCE], info
+        return select_source_headlines(observations, source), info
 
     # Independent publisher requests run concurrently: one inaccessible feed
     # cannot serially delay the mandatory daily prebrief by 8 seconds per bank.
