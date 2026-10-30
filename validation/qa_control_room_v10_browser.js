@@ -586,6 +586,38 @@ function expectedReactionFromMetrics(row){
   if(!compact.open||!compact.visible||compact.sourceRows!==8||
      !compact.note?.includes('valute con riferimenti numerici'))
     throw Error('G8 Rates references hidden or incomplete: '+JSON.stringify(compact));
+  const sourcePriority=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument,
+     p=d?.getElementById('gmfq-ois-research-estimates'),
+     o=d?.getElementById('ois-rows')?.closest('.desk-panel'),
+     toggle=d?.getElementById('gmfq-certified-only-toggle');
+    return {coverage:p?.dataset.sourceGradedCoverage,
+      signal:p?.dataset.signalEffect,
+      primaryFirst:!!(p&&o&&(p.compareDocumentPosition(o)&Node.DOCUMENT_POSITION_FOLLOWING)),
+      officialOnlyHidden:!!o?.hidden,
+      toggle:!!toggle,expanded:toggle?.getAttribute('aria-expanded'),
+      rows:[...p?.querySelectorAll('.gmfq-est-row[data-ccy]')||[]].map(x=>({
+        c:x.dataset.ccy,tier:x.dataset.estimateType,
+        numeric:[...x.querySelectorAll(':scope > div')].slice(1,4).map(y=>y.querySelector('b')?.textContent)
+      }))};
+  });
+  if(sourcePriority.coverage!=='8/8'||sourcePriority.signal!=='NONE'||
+     !sourcePriority.primaryFirst||!sourcePriority.officialOnlyHidden||
+     !sourcePriority.toggle||sourcePriority.expanded!=='false'||
+     sourcePriority.rows.length!==8||
+     sourcePriority.rows.some(x=>!['OFFICIAL','PROXY','MIXED','SCENARIO'].includes(x.tier)||
+       x.numeric.length!==3||x.numeric.some(v=>!v||v==='—')))
+    throw Error(label+' Rates main matrix not fully 8/8 source-graded or official-only not collapsed '+JSON.stringify(sourcePriority));
+  await page.frameLocator('#gmfq-page').locator('#gmfq-certified-only-toggle').click();
+  const officialOpened=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return {visible:!!d?.getElementById('ois-rows')?.getClientRects().length,
+      expanded:d?.getElementById('gmfq-certified-only-toggle')?.getAttribute('aria-expanded')};
+  });
+  if(!officialOpened.visible||officialOpened.expanded!=='true')
+    throw Error('Source-only official OIS audit cannot be examined '+JSON.stringify(officialOpened));
+  await page.frameLocator('#gmfq-page').locator('#gmfq-certified-only-toggle').click();
+  console.log('CONTROL_ROOM_RATES_8_8_PRIMARY_SOURCE_GRADE_NO_FALSE_OFFICIAL_GREEN',label);
   const toggle=page.frameLocator('#gmfq-page').locator('#gmfq-ois-research-estimates .gmfq-est-disclosure > summary');
   await toggle.click();
   const collapsed=await page.evaluate(()=>{
