@@ -1961,7 +1961,7 @@ function expectedReactionFromMetrics(row){
   for(const code of ['CHF','EUR']){
     const op=operational.currencies[code],p=op?.horizons?.['6m'];
     const quote=code==='EUR'?op.secondary_quote_context?.horizons?.['6m']:p;
-    const deltaDate=(Date.UTC(new Date().getUTCFullYear(),new Date().getUTCMonth(),new Date().getUTCDate())-
+    const deltaDate=(Date.parse(romeTodayIso()+'T00:00:00Z')-
        Date.parse((quote?.quote_as_of||'')+'T00:00:00Z'))/86400000;
     const rate=code==='EUR'?quote?.rate_indicative:p?.rate;
     const valid=p?.quote_timestamp_verified===true&&
@@ -2349,7 +2349,7 @@ function expectedReactionFromMetrics(row){
   for(const item of expected){
     const card=risk.cards.find(x=>x.symbol===item.code),day=item.secondary?
       item.series.proxy_as_of:item.series.last_date;
-    const age=Math.round((Date.UTC(new Date().getUTCFullYear(),new Date().getUTCMonth(),new Date().getUTCDate())-
+    const age=Math.round((Date.parse(romeTodayIso()+'T00:00:00Z')-
       Date.parse(day+'T00:00:00Z'))/86400000);
     const expectedState=item.secondary?(age<=3?'SECONDARY_RECENT':'SECONDARY_HISTORICAL'):
       (age<=3?'OFFICIAL_RECENT':'OFFICIAL_HISTORICAL');
