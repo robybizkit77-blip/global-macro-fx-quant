@@ -81,7 +81,7 @@ jobs:
           assert x['new_schedule_added'] is False and x['changes_live_OIS_or_FX'] is False
           print('EUREX_21OCT_SOURCE_VERIFIED',x['historic_21oct_public_source_verified'])
           PY
-      - name: Gate: no OIS benchmark equals no validated OIS MAE or hit rate
+      - name: "Gate: no OIS benchmark equals no validated OIS MAE or hit rate"
         run: |
           python - <<'PY'
           import json
@@ -106,7 +106,7 @@ jobs:
           assert nz['monthly_bill_minus_OCR_holdout_MAE_bp']==16.333
           print('OIS_RESEARCH_INDEPENDENT_BENCHMARK_NOT_AVAILABLE_NO_TRADING_PROMOTION')
           PY
-      - name: Gate: protect actual site, currency scores, 28 pairs and schedulers
+      - name: "Gate: protect actual site, currency scores, 28 pairs and schedulers"
         run: |
           python - <<'PY'
           import subprocess
