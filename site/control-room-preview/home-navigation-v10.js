@@ -1695,6 +1695,47 @@ function marketResearchSvg(curves){
  svg+='<text x="678" y="14" text-anchor="end" fill="#a4bfce" font-size="11">Δ policy rate · bp</text>';
  return '<svg viewBox="0 0 720 234" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Pricing a 3, 6 e 12 mesi, confronto solo dati certificati">'+svg+'</svg>';
 }
+
+function marketResearchGraded(ois,proxy){
+ const make=window.GMFQ_OIS_RESEARCH_V1?.matrix;
+ if(typeof make!=='function')return [];
+ return make(ois,proxy,romeTodayIso()).filter(r=>
+  FX.includes(r.ccy)&&['OFFICIAL','PROXY','MIXED','SCENARIO'].includes(r.tier)&&
+  ['3m','6m','12m'].every(t=>num(r.points?.[t]?.value)!==null&&fresh(r.points[t].date,5)))
+ .map(r=>({k:r.ccy,tier:r.tier,pts:['3m','6m','12m'].map(t=>r.points[t].value),
+  dates:['3m','6m','12m'].map(t=>r.points[t].date),
+  joined:new Set(['3m','6m','12m'].map(t=>r.points[t].date)).size===1}));
+}
+/* Do not join secondary futures with different quote dates or imply OIS policy deltas. */
+function marketResearchGradedSvg(curves){
+ if(!curves.length)return '<p style="padding:18px">Riferimenti 3M/6M/12M non disponibili con date verificabili.</p>';
+ const values=curves.flatMap(c=>c.pts),lo=Math.floor((Math.min(...values)-.25)*2)/2,
+  hi=Math.ceil((Math.max(...values)+.25)*2)/2,span=hi-lo||1;
+ const xx=[94,350,616],yy=v=>25+170*(hi-v)/span;
+ let svg='<g data-graded-axis="PERCENT">';
+ for(let i=0;i<=4;i++){
+  let v=lo+i*span/4,y=yy(v);
+  svg+='<line x1="59" x2="682" y1="'+y+'" y2="'+y+
+   '" stroke="#28495b"/><text x="50" y="'+(y+4)+'" font-size="12" fill="#a9c3d3" text-anchor="end">'+fmt(v,1)+'%</text>';
+ }
+ ['3M','6M','12M'].forEach((t,i)=>svg+='<text x="'+xx[i]+'" y="225" fill="#afc6d6" font-size="13" text-anchor="middle">'+t+'</text>');
+ svg+='</g>';
+ for(const c of curves){
+  svg+='<g data-graded-ccy="'+c.k+'" data-quality="'+c.tier+'" data-joined="'+c.joined+'">';
+  if(c.joined)svg+='<polyline fill="none" stroke="'+COLOR[c.k]+'" stroke-width="3"'+
+    (c.tier==='OFFICIAL'?'':' stroke-dasharray="5 5"')+' points="'+
+    c.pts.map((v,i)=>xx[i]+','+yy(v).toFixed(1)).join(' ')+'"/>';
+  c.pts.forEach((v,i)=>svg+='<circle cx="'+xx[i]+'" cy="'+yy(v).toFixed(1)+
+    '" r="5" fill="'+COLOR[c.k]+'"><title>'+c.k+' '+['3M','6M','12M'][i]+
+    ' '+fmt(v,3)+'% · '+c.dates[i]+' · '+c.tier+'</title></circle>');
+  svg+='</g>';
+ }
+ svg+='<text x="682" y="13" font-size="11" text-anchor="end" fill="#a8bdcb">Livello monetario · %</text>';
+ return '<svg data-chart="G8_SOURCE_GRADED_LEVELS" data-currencies="'+curves.length+
+  '" viewBox="0 0 720 240" role="img" aria-label="'+curves.length+
+  ' valute G8, livelli 3M 6M 12M, fonte qualificata">'+svg+'</svg>';
+}
+
 function marketResearchSecondary(data){
  const terms=['3m','6m','12m'];
  const cards=['USD','EUR','CHF'].flatMap(k=>{
@@ -1768,7 +1809,7 @@ function mountMarketResearch(doc,ois,proxy,rates,snb10,sourceReadiness){
  const style=doc.createElement('style');style.id='gmfq-pricing-research-style';
  style.textContent='#gmfq-pricing-research{margin-top:12px}#gmfq-pricing-research .gmfq-research-intro,#gmfq-pricing-research .gmfq-research-note{color:#a9c1d2;font-size:12px;line-height:1.55;margin:9px 0 14px}#gmfq-pricing-research h3{font-size:13px;color:#e5edf5;margin:0 0 10px}#gmfq-pricing-research .gmfq-research-plot{height:225px;max-width:100%;border:1px solid #284456;border-radius:7px;background:#0b2030;overflow:hidden}#gmfq-pricing-research svg{height:100%;width:100%;display:block}#gmfq-pricing-research .gmfq-research-tabs,#gmfq-pricing-research .gmfq-research-legend{display:flex;flex-wrap:wrap;gap:7px 13px;margin:9px 0}#gmfq-pricing-research button{cursor:pointer;background:#122c40;border:1px solid #34546b;padding:6px 12px;border-radius:5px;color:#c0d0e0;font:12px Arial,sans-serif}#gmfq-pricing-research button[aria-pressed=true]{background:#e2c87c;border-color:#e2c87c;color:#102132}#gmfq-pricing-research button:focus-visible{outline:2px solid #f7dfa0}#gmfq-pricing-research .gmfq-research-legend span{font-size:11px;color:#b4c9d8}#gmfq-pricing-research .gmfq-research-legend i{display:inline-block;width:13px;height:3px;margin-right:5px;vertical-align:middle}#gmfq-pricing-research .gmfq-research-separator{border-top:1px solid #294556;margin-top:18px;padding-top:16px}#gmfq-pricing-research .gmfq-pricing-core-status{margin:8px 0 7px;padding:8px 0 9px;border-bottom:1px solid #2c4759;color:#d8c895;font:600 12px/1.5 Arial,sans-serif;overflow-wrap:anywhere}#gmfq-pricing-research .gmfq-pricing-core-explanation{color:#aabfce;font:11px/1.6 Arial,sans-serif;margin:0 0 12px}#gmfq-pricing-research #gmfq-pricing-evidence-details{border-top:1px solid #2d4858;margin-top:15px;padding-top:10px;min-width:0}#gmfq-pricing-research #gmfq-pricing-evidence-details>summary{cursor:pointer;color:#e3cb93;font:600 12px/1.55 Arial,sans-serif;outline-offset:4px;padding:6px 1px;overflow-wrap:anywhere}#gmfq-pricing-research #gmfq-pricing-evidence-details:not([open])>:not(summary){display:none!important}#gmfq-pricing-research .gmfq-quote-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:9px}#gmfq-pricing-research .gmfq-quote-card{background:#0b2232;border:1px solid #294659;border-radius:6px;padding:11px}#gmfq-pricing-research .gmfq-snb-spot{border:1px solid #315267;background:#0d2637;border-radius:7px;padding:12px 14px;margin:10px 0 12px;color:#aec6d7;font-size:12px;line-height:1.65}#gmfq-pricing-research .gmfq-snb-spot strong{color:#e6f1f8;font-size:20px;font-variant-numeric:tabular-nums}#gmfq-pricing-research .gmfq-snb-spot a{color:#e8cb8b;text-decoration:underline}#gmfq-pricing-research .gmfq-quote-card b{display:block;color:#f0d091;font-size:12px;margin-bottom:8px}#gmfq-pricing-research .gmfq-quote{color:#b6c9d8;font-size:11px;line-height:1.7}#gmfq-pricing-research .gmfq-quote strong{color:#e5eff5}#gmfq-pricing-research .gmfq-source-readiness{border-top:1px solid #294556;margin-top:18px;padding-top:14px}#gmfq-pricing-research .gmfq-source-readiness summary{font-size:13px;font-weight:700;color:#e9d192;cursor:pointer;outline-offset:4px}#gmfq-pricing-research .gmfq-source-row{display:flex;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid #203c4d}#gmfq-pricing-research .gmfq-source-row b{font-size:12px;color:#dbe9f3}#gmfq-pricing-research .gmfq-source-row p{font-size:12px;color:#adbfcd;margin:5px 0}#gmfq-pricing-research .gmfq-source-row small{display:block;color:#c4d3dd;line-height:1.45;font-size:11px}#gmfq-pricing-research .gmfq-source-link{flex:0 0 auto;font-size:11px}#gmfq-pricing-research .gmfq-source-link a{color:#e6c57f;text-decoration:underline}@media(max-width:600px){#gmfq-pricing-research .gmfq-source-row{display:block}#gmfq-pricing-research .gmfq-source-link{margin-top:7px}}@media(max-width:600px){#gmfq-pricing-research .gmfq-research-plot{height:190px}#gmfq-pricing-research .gmfq-quote-cards{grid-template-columns:1fr}}';
  doc.head.appendChild(style);
- const curves=marketResearchCurves(ois),host=doc.createElement('section');
+ const curves=marketResearchCurves(ois),graded=marketResearchGraded(ois,proxy),host=doc.createElement('section');
  const classes=['GREEN_OFFICIAL','GREEN_ESTIMATED','WITHHELD'];
  const statusesComplete=ois?.schema==='GMFQ_OIS_OPERATIONAL_VIEW_V1'&&
   FX.every(c=>classes.includes(ois.currencies?.[c]?.operational_status));
@@ -1783,36 +1824,37 @@ function mountMarketResearch(doc,ois,proxy,rates,snb10,sourceReadiness){
  host.id='gmfq-pricing-research';host.className='desk-panel';
  host.dataset.sourceStatus=curvesVerified?'READ_ONLY':'WITHHELD';
  host.dataset.verifiedCurves=curvesVerified?String(curves.length):'';
+  host.dataset.g8Levels=String(graded.length);
  host.dataset.estimatedLanes=curvesVerified?String(estimated.length):'';
  host.dataset.withheldLanes=curvesVerified?String(withheld.length):'';
  const headline=curvesVerified?
-   'Curve 3/6/12 mesi certificate: '+curves.length+'/8 · '+curves.map(c=>FLAG[c.k]+' '+c.k).join(', ')+'.':
+   'Grafico G8 3M/6M/12M: '+graded.length+'/8 valute con riferimenti datati. Curve certificate: '+curves.length+'/8 · '+curves.map(c=>FLAG[c.k]+' '+c.k).join(', ')+'.':
    'Copertura OIS/futures non verificabile: nessuna conclusione sul pricing.';
  host.innerHTML='<h2 class="desk-panel-title">Market Pricing · curve comparate e affidabilità</h2>'+
   '<div class="desk-panel-body"><p class="gmfq-pricing-core-status">'+htmlEscape(headline)+'</p>'+
   '<p class="gmfq-pricing-core-explanation">GBP: OIS BoE; JPY, AUD e CAD: futures monetari. Certificazione della fonte ≠ OIS puro. '+
    (curvesVerified?'Il quadro completo G8 con fonti certificate, futures indicativi e scenari è riportato nella tabella principale sopra. '+(estimated.length+withheld.length)+' valute senza OIS/futures certificati: usare le stime con i rispettivi limiti. ':'Riconciliazione delle fonti incompleta. ')+
    'I rendimenti governativi 2Y/10Y sono un layer distinto e non dimostrano da soli il percorso dei tassi.</p>'+
-  '<p class="gmfq-research-intro">Cosa sta prezzando il mercato su 3, 6 e 12 mesi? Il grafico mostra solo le scadenze validate, espresse come differenza dal policy rate. Non sono probabilità per meeting.</p>'+
-  '<div class="gmfq-research-tabs" role="group" aria-label="Filtra pricing certificato"></div>'+
+  '<p class="gmfq-research-intro">Cosa sta prezzando il mercato su 3, 6 e 12 mesi? Il grafico mostra livelli monetari 3M, 6M e 12M in %, con qualità separata. Non sono Δ policy rate né probabilità per meeting.</p>'+
+  '<div class="gmfq-research-tabs" role="group" aria-label="Filtra riferimenti monetari G8"></div>'+
   '<div class="gmfq-research-plot"></div><div class="gmfq-research-legend"></div>'+
-  '<p class="gmfq-research-note">Le curve sintetizzano prezzi per scadenza, non un percorso certo della banca centrale. Strumenti, date e limiti delle fonti restano consultabili nell’analisi completa.</p>'+
+  '<p class="gmfq-research-note">Le curve sintetizzano prezzi per scadenza, non un percorso certo della banca centrale. Linea piena: certificata; tratteggio: stima/scenario; punti isolati: date diverse, non collegate. Senza Δ policy, segnali FX o OIS sintetici. Strumenti, date e limiti delle fonti restano consultabili nell’analisi completa.</p>'+
   '<details id="gmfq-pricing-evidence-details"><summary>Apri analisi completa · fonti, proxy e casi incompleti</summary>'+
   marketResearchSecondary(ois)+'<div class="gmfq-research-separator"><h3>Fonti incomplete</h3>'+
   '<div class="gmfq-snb-spot" id="gmfq-chf-snb-10y-context" role="note"></div>'+
   '<p class="gmfq-research-note" id="gmfq-nzd-pricing-context"></p>'+
   '<p class="gmfq-research-note" id="gmfq-chf-rates-context"></p></div>'+marketSourceReadinessHtml(sourceReadiness,ois)+'</details></div>';
  original.insertAdjacentElement('afterend',host);
- const labels=[['ALL','Tutte'],...curves.map(c=>[c.k,FLAG[c.k]+' '+c.k])];
+ const labels=[['ALL','Tutte'],...graded.map(c=>[c.k,FLAG[c.k]+' '+c.k])];
  const tabs=host.querySelector('.gmfq-research-tabs'),plot=host.querySelector('.gmfq-research-plot'),legend=host.querySelector('.gmfq-research-legend');
  let selected='ALL';
  for(const [key,value] of labels){
   const b=doc.createElement('button');b.type='button';b.dataset.pricingCcy=key;b.textContent=value;tabs.appendChild(b);
  }
  const draw=()=>{
-  const shown=selected==='ALL'?curves:curves.filter(x=>x.k===selected);
-  plot.innerHTML=marketResearchSvg(shown);
-  legend.innerHTML=shown.map(c=>'<span title="'+htmlEscape(c.src)+'"><i style="background:'+COLOR[c.k]+'"></i>'+FLAG[c.k]+' '+c.k+' · '+htmlEscape(c.date)+'</span>').join('');
+  const shown=selected==='ALL'?graded:graded.filter(x=>x.k===selected);
+   plot.innerHTML=marketResearchGradedSvg(shown);
+   legend.innerHTML=shown.map(c=>'<span title="'+htmlEscape(c.dates.join(' / '))+'"><i style="background:'+COLOR[c.k]+'"></i>'+FLAG[c.k]+' '+c.k+' · '+c.tier+' · '+htmlEscape([...new Set(c.dates)].join(' / '))+'</span>').join('');
   tabs.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.pricingCcy===selected)));
  };
  tabs.addEventListener('click',e=>{const b=e.target.closest('button[data-pricing-ccy]');if(b){selected=b.dataset.pricingCcy;draw()}});
