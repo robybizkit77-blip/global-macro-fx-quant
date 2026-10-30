@@ -366,9 +366,20 @@ function oisAll(doc,ois,proxy){
    num(q.value)!==null&&num(q.range[0])!==null&&num(q.range[1])!==null&&
    q.range[0]<q.value&&q.value<q.range[1]?q:null;
   const bill=k==='NZD'&&nzReady?num(proxy.horizons?.['6m']?.implied_bank_bill_rate):null;
-  return {k,delta,official,indicative:v,scenario:sc,bill};
+  // All G8 lanes show the same financial quantity: 6M level in %.
+  // Certified Δ-policy is available separately, never the main displayed unit.
+  const level=official?num(x?.horizons?.['6m']?.rate):
+    v?num(v.value):sc?num(sc.value):bill;
+  return {k,delta,official,indicative:v,scenario:sc,bill,level};
  });
  const max=Math.max(65,...rows.map(x=>Math.abs(x.delta||0)));
+ const displayed=rows.filter(x=>num(x.level)!==null).length;
+ const certified=rows.filter(x=>x.official&&num(x.level)!==null).length;
+ const estimated=displayed-certified;
+ host.dataset.gmfqSixMonthDisplayed=String(displayed);
+ host.dataset.gmfqSixMonthOfficial=String(certified);
+ host.dataset.gmfqSixMonthEstimated=String(estimated);
+ host.dataset.gmfqSixMonthUnit='RATE_PCT';
  host.innerHTML=rows.map(x=>{
   const state=x.official?'OFFICIAL_REPRICING':x.indicative?'FUTURES_LEVEL_ONLY':
    x.scenario?'CASH_CARRY_SCENARIO':x.k==='NZD'&&x.bill!==null?'BANK_BILL_PROXY':'WITHHELD';
@@ -380,7 +391,7 @@ function oisAll(doc,ois,proxy){
    state==='CASH_CARRY_SCENARIO'?'Stima Bank Bill–OCR · fascia '+fmt(x.scenario.range[0],2)+'–'+fmt(x.scenario.range[1],2)+'% · NON ΔOIS':
    state==='BANK_BILL_PROXY'?'Bank Bill · non OIS':'OIS/6M non certificato';
   const readable=state==='OFFICIAL_REPRICING'?
-   ((x.delta>=0?'+':'')+fmt(x.delta,0)+' bp'):
+   fmt(x.level,2)+'%':
    state==='FUTURES_LEVEL_ONLY'?'≈'+fmt(x.indicative.value,2)+'% PX':
    state==='CASH_CARRY_SCENARIO'?'≈'+fmt(x.scenario.value,2)+'% ST':
    state==='BANK_BILL_PROXY'?'≈'+fmt(x.bill,2)+'% BB':'NON CERT.';
@@ -394,9 +405,12 @@ function oisAll(doc,ois,proxy){
    '" style="width:'+w+'%"></div></div>'+
    '<strong>'+readable+'</strong></div>';
  }).join('')+
- '<div class="oisnote">Δ bp = repricing 6M certificato (OIS o futures monetari verificati). '+
- 'PX = livello futures indicativo, non Δ policy. ST = scenario empirico NZD (Bank Bill corretto per basis, fascia in tooltip), non OIS e non Δ OCR. PROXY BB ≠ OIS: Bank Bill NZD, non Δ OCR. '+
- 'NON CERT. = nessun livello comparabile verificato.</div>';
+ '<div class="oisnote" data-six-month-coverage="'+displayed+'/8"><b>6M · '+displayed+
+ '/8 valute</b> · '+certified+' fonti certificate · '+estimated+
+ ' stime/proxy. Tutti i valori sono livelli di tasso in %, NON Δ policy in bp. '+
+ 'PX = futures indicativi (non OIS); ST = scenario NZD Bank Bill corretto per basis (non OIS). '+
+ 'Δ policy e date nel dettaglio; 3M / 6M / 12M nella pagina Tassi. '+
+ 'Nessuna stima è una quotazione OIS ufficiale o un segnale FX.</div>';
 }
 function dxyLine(data){
  if(!Array.isArray(data?.history)||data.history.length<3)
