@@ -76,6 +76,15 @@ def evaluate(source: dict | None, public: dict | None, now: dt.datetime, *, expe
         deadline = dt.datetime.combine(checked_rome.date(), TARGET, tzinfo=ROME)
         status = "PASS_PUBLIC_HTTP_BY_0800" if verified_rome <= deadline else "VERIFIED_AFTER_0800_DELIVERY_TIME_UNPROVEN"
     deadline = dt.datetime.combine(local_now.date(), TARGET, tzinfo=ROME)
+    watch = source.get("issuer_policy_watch") if isinstance(source, dict) else None
+    watch = watch if isinstance(watch, dict) else {}
+    watch_status = watch.get("status", "NOT_CERTIFIED")
+    pending = watch.get("currencies") if isinstance(watch.get("currencies"), list) else []
+    # HTTP files may be available by 08:00 while a same-day central-bank
+    # decision is still unresolved. Keep delivery and policy facts separate.
+    cb_policy_clear_at_observation = bool(
+        source_ok and watch_status == "NO_PENDING_SAME_DAY_CB_DECISION"
+    )
     return {
         "schema": "GMFQ_INDEPENDENT_PAGES_0800_SLA_V1",
         "status": status,
@@ -86,13 +95,17 @@ def evaluate(source: dict | None, public: dict | None, now: dt.datetime, *, expe
         "evaluated_at_rome": local_now.isoformat(timespec="seconds"),
         "source_pass": source_ok,
         "on_time_delivery_proven": status == "PASS_PUBLIC_HTTP_BY_0800",
+        "cb_policy_watch_status": watch_status,
+        "cb_policy_pending_currencies": pending,
+        "cb_policy_no_pending_same_day_decision_proven": cb_policy_clear_at_observation,
+        "http_delivery_does_not_certify_cb_release": True,
         "verified_after_deadline": bool(public_ok and verified_rome > deadline),
         "public_exact_bytes_pass": public_ok,
         "verified_file_count": len(paths),
         "independent_of_parent_orchestrator": True,
         "scope": "EXACT_PUBLIC_HTTP_FILES_AND_MORNING_SOURCE_GATE_ONLY",
         "model_beta_forward_effect": "NONE",
-        "note": "The receipt records the time of observation, not the first moment of CDN availability. A verification after 08:00 is not proof that actual delivery was late. Does not guarantee future cron timing.",
+        "note": "The receipt certifies exact public HTTP files, not a same-day CB decision. A post-08:00 HTTP read cannot prove first availability was late. Does not guarantee future cron timing.",
     }
 
 
