@@ -6,6 +6,8 @@ on:
       - '.github/workflows/macro-v2-explicit-formula-candidate-ci.yml'
       - 'validation/macro/v2_domestic_candidate_explicit_formula_v1.py'
       - 'validation/macro/test_v2_domestic_candidate_explicit_formula_v1.py'
+      - 'validation/macro/v2_zero_mad_ordinal_quality_v1.py'
+      - 'validation/macro/test_v2_zero_mad_ordinal_quality_v1.py'
       - 'validation/macro/fixtures/v2_g8_frozen_domestic_research_coordinates_2026_10_27.json'
       - 'validation/macro/v2_core_beta_evidence_desk_v1.py'
       - 'validation/macro/test_v2_core_beta_evidence_desk_v1.py'
@@ -53,12 +55,30 @@ jobs:
           assert x['eligible_to_publish_D'] is False
           assert x['eligible_to_recompute_28_pairs'] is False
           assert x['no_missing_z_substituted'] is True
+          assert x['zero_mad_ordinals_never_become_numeric_features'] is True
+          assert x['zero_mad_context_descriptors_validated']==len(x['zero_mad_source_keys'])
           assert x['currencies_with_three_research_axes']+x['currencies_blocked']==8
+          for key in x['zero_mad_source_keys']:
+              ccy,pillar=key.split('.')
+              row=x['countries'][ccy]['axes'][pillar]
+              desc=row['zero_mad_descriptive_context_only']
+              assert desc is not None
+              assert desc['numeric_replacement_z'] is None
+              assert desc['eligible_for_activity_score'] is False
+              assert desc['not_historical_PIT'] is True
+              assert row['strict_numeric_z'] is None
+              assert row['z_available_for_RESEARCH_ONLY'] is False
+          if 'EUR.labour' in x['zero_mad_source_keys']:
+              eur=x['countries']['EUR']['axes']['labour']
+              assert eur['upstream_status']=='NO_Z_ZERO_ROBUST_DISPERSION'
+              assert eur['zero_mad_descriptive_context_only']['ordinal_relation']=='ABOVE_ALL_PRIOR'
+              assert x['strict_eight_country_candidate_allowed_now'] is False
           complete=x['strict_eight_country_candidate_allowed_now']
           with open(os.environ['GITHUB_OUTPUT'],'a') as f:
               f.write('complete='+str(complete).lower()+'\n')
           print('MACRO_CURRENT_SOURCE_'+('EIGHT_RESEARCH_AXES_ONLY' if complete else 'BLOCKED_MISSING_Z'))
           print('BLOCKERS:',x['blocked'])
+          print('ZERO_MAD_ORDINAL_DESCRIPTORS:',x['zero_mad_context_descriptors_validated'])
           PY
       - name: Build downloadable integrated beta evidence review, without new FX scoring
         if: steps.admission.outputs.complete == 'true'
@@ -103,6 +123,13 @@ jobs:
               'status':'WITHHELD_CURRENT_BETA_ECONOMIC_INPUT_NOT_COMPUTABLE',
               'economic_source_as_of':x['as_of'],
               'source_blockers':x['blocked'],
+              'zero_mad_descriptive_context':{
+                  c+'.'+p: data['zero_mad_descriptive_context_only']
+                  for c,row in x['countries'].items()
+                  for p,data in row['axes'].items()
+                  if data.get('zero_mad_descriptive_context_only') is not None
+              },
+              'zero_mad_numeric_substitutions':0,
               'beta_preview_generated':False,
               'current_FX_scores_generated':0,
               'current_28_pair_theses_generated':0,

@@ -12,7 +12,7 @@ from validation.macro.v2_g8_observed_feature_bridge_v1 import run as observed_ru
 from validation.macro.v2_domestic_candidate_explicit_formula_v1 import (
     build,run,activity_class,indicative_regime,continuous_weight_interval,
     independent_axis_revision_envelope, REVISION_STRESS_EPSILONS_Z,
-    source_readiness, G8,FORMULA
+    source_readiness, run_source_readiness, G8,FORMULA
 )
 
 
@@ -193,6 +193,93 @@ class CandidateFormulaTests(unittest.TestCase):
         for invalid in (float("nan"),float("inf"),3.1):
             with self.assertRaises(ValueError):
                 continuous_weight_interval(invalid,0)
+
+    def test_zero_mad_descriptive_source_attached_without_numeric_promotion(self):
+        from datetime import datetime
+        from zoneinfo import ZoneInfo
+        from validation.macro import v2_zero_mad_ordinal_quality_v1 as quality
+        today=datetime.now(ZoneInfo("Europe/Rome")).date()
+        observed=observed_run(as_of=today.isoformat())
+        raw_series=json.loads(quality.SOURCE.read_text(encoding="utf-8"))
+        registry=json.loads(quality.REGISTRY.read_text(encoding="utf-8"))
+        ordinal=quality.build(observed,raw_series,registry,today=today)
+        full=source_readiness(observed,ordinal_quality=ordinal)
+        actual=run_source_readiness(as_of=today.isoformat())
+        self.assertEqual(full,actual)
+        without=source_readiness(observed)
+        self.assertEqual(full["blocked"],without["blocked"])
+        self.assertEqual(full["currencies_blocked"],without["currencies_blocked"])
+        self.assertFalse(full["strict_eight_country_candidate_allowed_now"] and
+                         full["eligible_to_publish_D"])
+        self.assertEqual(full["zero_mad_context_descriptors_validated"],
+                         len(full["zero_mad_source_keys"]))
+        self.assertEqual(set(full["zero_mad_source_keys"]),
+                         set(ordinal["zero_mad_components"]))
+        self.assertTrue(full["zero_mad_ordinals_never_become_numeric_features"])
+        self.assertEqual(full["ordinal_source_policy_id"],quality.POLICY_ID)
+        for key in full["zero_mad_source_keys"]:
+            ccy,pillar=key.split(".")
+            slot=full["countries"][ccy]["axes"][pillar]
+            desc=slot["zero_mad_descriptive_context_only"]
+            self.assertIsNotNone(desc,key)
+            self.assertIsNone(slot["strict_numeric_z"])
+            self.assertIsNone(desc["numeric_replacement_z"])
+            self.assertFalse(desc["eligible_for_activity_score"])
+            self.assertIsNone(desc["FX_or_policy_direction_derived"])
+            self.assertTrue(desc["not_historical_PIT"])
+            self.assertEqual(desc["ordinal_relation"],
+                             ordinal["zero_mad_components"][key]["ordinal_relation"])
+            self.assertFalse(without["countries"][ccy]["axes"][pillar][
+                             "zero_mad_descriptive_context_only"])
+        if "EUR.labour" in full["zero_mad_source_keys"]:
+            eur=full["countries"]["EUR"]["axes"]["labour"]
+            d=eur["zero_mad_descriptive_context_only"]
+            self.assertEqual(eur["upstream_status"],"NO_Z_ZERO_ROBUST_DISPERSION")
+            self.assertEqual(d["ordinal_relation"],"ABOVE_ALL_PRIOR")
+            self.assertAlmostEqual(d["latest_observation"],6.5)
+            self.assertAlmostEqual(d["prior_median"],6.4)
+            self.assertAlmostEqual(d["current_minus_prior_median_original_units"],.1)
+            self.assertEqual(d["prior_reference_periods"],24)
+            self.assertEqual(d["midrank_fraction_of_prior"],1.0)
+            self.assertFalse(full["countries"]["EUR"][
+                             "complete_three_axis_research_candidate"])
+
+    def test_forged_ordinal_context_is_rejected_not_recast_as_fx(self):
+        from datetime import datetime
+        from zoneinfo import ZoneInfo
+        from validation.macro import v2_zero_mad_ordinal_quality_v1 as quality
+        today=datetime.now(ZoneInfo("Europe/Rome")).date()
+        observed=observed_run(as_of=today.isoformat())
+        ordinal=quality.build(observed,
+            json.loads(quality.SOURCE.read_text(encoding="utf-8")),
+            json.loads(quality.REGISTRY.read_text(encoding="utf-8")),
+            today=today)
+        keys=list(ordinal["zero_mad_components"])
+        spoof=copy.deepcopy(ordinal)
+        spoof["can_generate_legacy_D"]=True
+        with self.assertRaisesRegex(ValueError,"ordinal-only quality contract"):
+            source_readiness(observed,ordinal_quality=spoof)
+        spoof=copy.deepcopy(ordinal)
+        spoof["as_of_observed_economic_bridge"]="2026-10-23"
+        with self.assertRaisesRegex(ValueError,"ordinal-only quality contract"):
+            source_readiness(observed,ordinal_quality=spoof)
+        if keys:
+            key=keys[0]
+            for mut in (
+                lambda d: d.update({"numeric_replacement_z":0.0}),
+                lambda d: d.update({"eligible_for_domestic_activity_weighting":True}),
+                lambda d: d.update({"current_observation":d["current_observation"]+1}),
+                lambda d: d.update({"ordinal_relation":"FX_LONG"}),
+                lambda d: d.update({"midrank_percentile_of_prior":1.5}),
+            ):
+                spoof=copy.deepcopy(ordinal)
+                mut(spoof["zero_mad_components"][key])
+                with self.assertRaises(ValueError):
+                    source_readiness(observed,ordinal_quality=spoof)
+            spoof=copy.deepcopy(ordinal)
+            del spoof["zero_mad_components"][key]
+            with self.assertRaisesRegex(ValueError,"coverage does not match source"):
+                source_readiness(observed,ordinal_quality=spoof)
 
     def test_current_missing_source_cannot_be_forged_as_numeric(self):
         from datetime import datetime
