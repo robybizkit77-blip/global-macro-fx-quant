@@ -299,6 +299,8 @@ def source_readiness(observed: dict) -> dict:
             observed.get("safe_to_use_for_forward") is False and
             observed.get("writes_live_data") is False,
             "unsafe current observable-source evidence")
+    require(date.fromisoformat(observed["checked_as_of"]) <= datetime.now(ZoneInfo("Europe/Rome")).date(),
+            "future observed research cutoff")
     raw = observed.get("inflation_labour")
     growth = observed.get("growth_quarterly_gdp_initial_web_research_features")
     gaps = observed.get("us_bls_shutdown_research_estimates")
@@ -316,7 +318,11 @@ def source_readiness(observed: dict) -> dict:
         val = g.get("research_robust_growth_z")
         # Growth remains an observational first-web research feature, not
         # a certified source-day PIT economic strength score.
-        g_available = type(val) in (int,float) and math.isfinite(val)
+        g_available = type(val) in (int,float) and math.isfinite(val) and abs(val) <= 3.000000001
+        require(g.get("status") in (
+            "DESCRIPTIVE_INITIAL_WEB_GROWTH_Z_DEFINITION_CAVEAT",
+            "DESCRIPTIVE_INITIAL_WEB_GROWTH_Z_NOT_MODEL_CERTIFIED") or not g_available,
+            c + ": growth status cannot be promoted by numerical value")
         entries["growth"] = {
             "status":"OBSERVATIONAL_RESEARCH_Z" if g_available else "BLOCKED_MISSING_Z",
             "upstream_status":g.get("status"),
@@ -332,7 +338,14 @@ def source_readiness(observed: dict) -> dict:
             entry=raw[key]
             status=entry.get("status")
             z=entry.get("research_robust_z")
-            good=type(z) in (int,float) and math.isfinite(z)
+            good=type(z) in (int,float) and math.isfinite(z) and abs(z) <= 3.000000001
+            require(entry.get("currency")==c and entry.get("pillar")==pillar,
+                    key+": invalid axis identity")
+            require((good and status=="DESCRIPTIVE_REVISED_HISTORY_ROBUST_Z_NOT_PIT") or
+                    (not good and z is None and status in (
+                     "NO_Z_ZERO_ROBUST_DISPERSION",
+                     "NO_Z_MISSING_PRIOR_ECONOMIC_PERIODS")),
+                    key+": strict numeric status/zero-MAD contradiction")
             gap=(gaps.get(key) or {})
             is_estimate=(not good and c=="USD" and
                 status=="NO_Z_MISSING_PRIOR_ECONOMIC_PERIODS" and
