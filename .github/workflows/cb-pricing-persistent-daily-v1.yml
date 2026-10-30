@@ -12,6 +12,7 @@ on:
       - 'validation/cb_pricing/apply_cad_mx_corra_candidate.py'
       - 'validation/cb_pricing/apply_gbp_boe_ois_candidate.py'
       - 'validation/cb_pricing/apply_jpy_tfx_tona_candidate.py'
+      - 'validation/cb_pricing/test_apply_jpy_tfx_tona_candidate.py'
       - 'validation/cb_pricing/cb_pricing_schedule_gate_v1.py'
       - 'validation/cb_pricing/test_cb_pricing_schedule_gate_v1.py'
       - 'validation/cb_pricing/check_cb_pricing_recovery_v1.py'
@@ -24,6 +25,7 @@ on:
       - 'validation/cb_pricing/apply_cad_mx_corra_candidate.py'
       - 'validation/cb_pricing/apply_gbp_boe_ois_candidate.py'
       - 'validation/cb_pricing/apply_jpy_tfx_tona_candidate.py'
+      - 'validation/cb_pricing/test_apply_jpy_tfx_tona_candidate.py'
       - 'validation/cb_pricing/cb_pricing_schedule_gate_v1.py'
       - 'validation/cb_pricing/test_cb_pricing_schedule_gate_v1.py'
       - 'validation/cb_pricing/check_cb_pricing_recovery_v1.py'
@@ -96,6 +98,9 @@ jobs:
               --event "$GH_EVENT_NAME" --cron "$GH_EVENT_SCHEDULE" \
               --output "$GITHUB_OUTPUT" --summary "$GITHUB_STEP_SUMMARY"
           fi
+
+      - name: "Regression: JPY TONA OIS-only and native-only apply must remain isolated"
+        run: python3 -m unittest validation.cb_pricing.test_apply_jpy_tfx_tona_candidate -v
 
       - name: Test Rome DST, duplicate UTC slots and delayed starts
         if: steps.gate.outputs.should_run == 'true'

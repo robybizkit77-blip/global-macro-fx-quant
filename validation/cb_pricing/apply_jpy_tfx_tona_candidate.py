@@ -22,6 +22,15 @@ def replace(raw,marker,obj):
 def r4(x):return round(float(x),4)
 def r1(x):return round(float(x),1)
 
+def assert_jpy_only_deltas(before_ois, after_ois, before_native, after_native):
+    """Allow already-current JPY price summaries while refusing cross-currency changes."""
+    co=[k for k in after_ois['currencies']
+        if after_ois['currencies'][k]!=before_ois['currencies'][k]]
+    cn=[k for k in after_native if after_native[k]!=before_native[k]]
+    if any(k!='JPY' for k in co+cn):
+        raise SystemExit(f'non-JPY semantic delta OIS={co} NATIVE={cn}')
+    return co,cn
+
 def main():
     ap=argparse.ArgumentParser(); ap.add_argument('--candidate',required=True,type=pathlib.Path); a=ap.parse_args(); c=json.loads(a.candidate.read_text(encoding='utf-8'))
     if c.get('schema')!='GMFQ_CB_PRICING_CANDIDATE_V1' or c.get('currency')!='JPY' or c.get('status')!='READY_FOR_DRY_RUN': raise SystemExit('invalid JPY candidate')
@@ -31,8 +40,7 @@ def main():
     j=o['currencies']['JPY']; j.update({'status':'ACTIVE','as_of':c['as_of'],'source':c['source'],'source_url':c['source_url'],'source_meta':{'official_public':True,'instrument':c['instrument'],'quotation':c['quotation'],'horizon_mapping':f"{cmap['3m']} / {cmap['6m']} / {cmap['12m']} direct TFX quarterly buckets; no interpolation",'contract_mapping':cmap},'policy_rate':c['policy_rate'],'meetings':c['meeting_path'],'horizons':{k:{'rate':r4(h[k]['rate']),'change_1d_bp':r1(h[k]['change_1d_bp']),'change_1w_bp':r1(h[k]['change_1w_bp']),'policy_delta_bp':r1(h[k]['policy_delta_bp'])} for k in ('3m','6m','12m')},'cuts_hikes_priced':{f'{k}_bp':r1(h[k]['policy_delta_bp']) for k in ('3m','6m','12m')},'direction':c['direction'],'change_direction_1d':c['change_direction_1d'],'change_direction_1w':c['change_direction_1w'],'validation':{k:v for k,v in c['validation'].items() if k not in ('runtime_mutated','payload_mutated','source_registry_authorized')},'provenance':{'method':c['provenance']['method'],'collector':c['provenance']['collector'],'request_url':c['provenance']['request_url'],'weekly_reference_rule':c['provenance']['weekly_reference_rule'],'observations':c['observations']}})
     ng=n['JPY']; vals={k:r4(h[k]['rate']) for k in ('3m','6m','12m')}
     ng['pricing_tier']='COMPLETO_OFFICIAL_TFX_TONA_HISTORY'; ng['pricing_status']=f"TFX official TONA futures: 3M {vals['3m']:.4f}%; 6M {vals['6m']:.4f}%; 12M {vals['12m']:.4f}%."; ng['market_3m']=f"{vals['3m']:.4f}%"; ng['market_6m']=f"{vals['6m']:.4f}%"; ng['market_12m']=f"{vals['12m']:.4f}%"; ng['market_pricing']={'as_of':c['as_of'],'instrument':c['instrument'],'quality':'COMPLETO_OFFICIAL_TFX_TONA_HISTORY','h3m':vals['3m'],'h6m':vals['6m'],'h12m':vals['12m'],'near_term':'Official TFX TONA futures settlements; current, 1D and official weekly-reference history validated.','source':c['source'],'source_url':c['source_url'],'note':c['provenance']['method'],'freshness_status':'CURRENT_VALIDATED'}
-    co=[k for k in o['currencies'] if o['currencies'][k]!=bo['currencies'][k]]; cn=[k for k in n if n[k]!=bn[k]]
-    if (co,cn) not in [(['JPY'],['JPY']),([],[])]: raise SystemExit(f'non-JPY semantic delta OIS={co} NATIVE={cn}')
+    co,cn=assert_jpy_only_deltas(bo,o,bn,n)
     raw=PAYLOAD.read_bytes(); ro=extract(raw,OM)[0]; rn=extract(raw,NM)[0]
     if ro!=bo or rn!=bn: raise SystemExit('live sections and payload differ before apply')
     OIS.write_text(json.dumps(o,ensure_ascii=False,separators=(',',':')),encoding='utf-8'); NATIVE.write_text(json.dumps(n,ensure_ascii=False,separators=(',',':')),encoding='utf-8'); PAYLOAD.write_bytes(replace(replace(raw,OM,o),NM,n))
