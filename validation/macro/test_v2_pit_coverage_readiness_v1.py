@@ -8,7 +8,7 @@ import unittest
 from datetime import date
 
 from validation.macro.v2_pit_coverage_readiness_v1 import (
-    BLS_FILE, CORE_FILE, GBP_FILE, GROWTH_FILE, REGISTRY, SERIES,
+    BLS_FILE, CORE_FILE, CORE_CURRENT_FILE, CORE_CURRENT_FROM, GBP_FILE, GROWTH_FILE, REGISTRY, SERIES,
     THERMOMETER, ROOT, inspect, markdown, read, run,
 )
 
@@ -18,7 +18,7 @@ def fixture():
         "registry": read(ROOT, REGISTRY),
         "therm": read(ROOT, THERMOMETER),
         "series": read(ROOT, SERIES),
-        "core": read(ROOT, CORE_FILE),
+        "core": read(ROOT, CORE_CURRENT_FILE if date(2026, 10, 30) >= CORE_CURRENT_FROM else CORE_FILE),
         "growth": read(ROOT, GROWTH_FILE),
         "gbp": read(ROOT, GBP_FILE),
         "bls": read(ROOT, BLS_FILE),
