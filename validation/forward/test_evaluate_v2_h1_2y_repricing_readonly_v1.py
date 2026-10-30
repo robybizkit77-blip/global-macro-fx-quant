@@ -158,5 +158,52 @@ class H1RepricingTests(unittest.TestCase):
         self.assertEqual(before,after)
 
 
+    def test_preflight_is_rates_only_and_blocks_stale_prior_and_unchanged_date(self):
+        prior = self.snap("2026-10-29", "2026-10-29T20:08:00Z")
+        for ccy, feature in prior["domestic_v2_features"].items():
+            feature["two_year_instrument_identity"] = (
+                "issuer/series-" + ccy + " | 2Y label | 2Y")
+        prior["domestic_v2_features"]["AUD"]["bond_date"] = "2026-10-21"
+        prior["domestic_v2_features"]["CHF"]["bond_date"] = "2026-09-30"
+        prior["domestic_v2_features"]["NZD"]["bond_date"] = "2026-10-16"
+        prior["snapshot_sha256"] = cap.sha({
+            k: v for k, v in prior.items() if k != "snapshot_sha256"})
+        def row(ccy, date_str):
+            v = prior["domestic_v2_features"][ccy]["two_year_observed_yield_pct"]
+            return {"date": date_str, "2Y": v + 0.01,
+                    "source": "issuer/series-" + ccy + " · " + date_str,
+                    "history2": {"label": "2Y label"},
+                    "tenors": [{"tenor": "2Y", "date": date_str, "value": v + 0.01}]}
+        live = {
+            ccy: row(ccy, "2026-10-30" if ccy in ("USD", "JPY", "AUD")
+                     else "2026-10-29")
+            for ccy in cap.G8
+        }
+        live["CHF"] = row("CHF", "2026-09-30")
+        live["NZD"] = row("NZD", "2026-10-16")
+        result = h1.preflight_previous_frozen_rates_only(
+            [prior], live, datetime(2026, 10, 30, 11, 46, tzinfo=timezone.utc))
+        self.assertEqual(result["denominator_potential_pairs"], 28)
+        self.assertEqual(result["potential_rate_comparable_pairs"], ["USD/JPY"])
+        self.assertEqual(result["pair_count_upper_bound"], 1)
+        self.assertEqual(result["currency_rate_comparability"]["AUD"], "stale_rate")
+        self.assertEqual(result["currency_rate_comparability"]["EUR"], "unchanged_bond_date")
+        self.assertEqual(result["currency_rate_comparability"]["CHF"], "stale_rate")
+        self.assertEqual(sum(result["other_pairs_by_primary_rate_blocker"].values()), 27)
+        self.assertTrue(result["rates_only_not_frozen_t0"])
+        self.assertTrue(result["no_predictions_or_outcomes"])
+        self.assertFalse(result["mutates_forward_journals"])
+
+    def test_preflight_missing_prior_and_weekend_fail_closed(self):
+        now = datetime(2026, 10, 30, 11, 0, tzinfo=timezone.utc)
+        empty = h1.preflight_previous_frozen_rates_only([], {}, now)
+        self.assertEqual(empty["status"], "MISSING_PREVIOUS_BUSINESS_DAY_FREEZE")
+        self.assertEqual(empty["pair_count_upper_bound"], 0)
+        weekend = h1.preflight_previous_frozen_rates_only(
+            [], {}, datetime(2026, 10, 31, 11, 0, tzinfo=timezone.utc))
+        self.assertEqual(weekend["status"], "WEEKEND_NO_SAME_DAY_FORWARD_CAPTURE")
+        self.assertEqual(weekend["pair_count_upper_bound"], 0)
+
+
 if __name__=="__main__":
     unittest.main()

@@ -302,6 +302,84 @@ def operational_2y_readiness(live_rates, now):
     }
 
 
+
+def preflight_previous_frozen_rates_only(frozen, live_rates, now):
+    """Hypothetical same-day rates eligibility, never a forward observation.
+
+    Compare today's *currently available* operational 2Y source with the
+    unmodified previous Rome business-day V2 freeze.  No today T0 is assumed,
+    no snapshot is written and no H1 outcome is computed.  This diagnostic
+    can change until the authentic evening capture is frozen.
+    """
+    require(isinstance(live_rates, dict), "preflight needs operational rates")
+    require(isinstance(now, datetime) and now.tzinfo is not None
+            and now.utcoffset() is not None, "preflight needs aware instant")
+    day = now.astimezone(ROME).date()
+    prior_day = prev_business_day(day)
+    base = {
+        "comparison_day_rome": day.isoformat(),
+        "previous_frozen_day_rome": prior_day.isoformat(),
+        "denominator_potential_pairs": 28,
+        "rates_only_not_frozen_t0": True,
+        "no_predictions_or_outcomes": True,
+        "not_H1_eligible_until_authentic_capture": True,
+        "mutates_forward_journals": False,
+    }
+    if day.weekday() >= 5:
+        return {**base, "status": "WEEKEND_NO_SAME_DAY_FORWARD_CAPTURE",
+                "potential_rate_comparable_pairs": [], "pair_count_upper_bound": 0}
+    prior = next((s for s in frozen
+                  if s.get("local_date_rome") == prior_day.isoformat()), None)
+    if prior is None:
+        return {**base, "status": "MISSING_PREVIOUS_BUSINESS_DAY_FREEZE",
+                "potential_rate_comparable_pairs": [], "pair_count_upper_bound": 0}
+    # Reuse the same source/date/identity checks as the preregistered evaluator;
+    # a live feed's quality label alone is never evidence of a new trading day.
+    current = {"local_date_rome": day.isoformat(), "domestic_v2_features": {}}
+    for ccy in cap.G8:
+        row = live_rates.get(ccy)
+        row = row if isinstance(row, dict) else {}
+        observed = row.get("2Y")
+        current["domestic_v2_features"][ccy] = {
+            "two_year_observed_yield_pct": observed,
+            "bond_date": row.get("date"),
+            "two_year_instrument_identity": (
+                cap.two_year_instrument_identity(live_rates, ccy, observed)
+                if type(observed) in (int, float) and math.isfinite(observed)
+                else None
+            ),
+        }
+    reasons = {}
+    for ccy in cap.G8:
+        reason, _ = source_pair(current, prior, ccy)
+        reasons[ccy] = reason or "POTENTIALLY_COMPARABLE"
+    possible = []
+    pair_reasons = Counter()
+    for pair in sorted(prior["observed_t0_ref"]):
+        base_ccy, quote_ccy = pair.split("/")
+        if (reasons[base_ccy] == "POTENTIALLY_COMPARABLE" and
+                reasons[quote_ccy] == "POTENTIALLY_COMPARABLE"):
+            possible.append(pair)
+        else:
+            pair_reasons[reasons[base_ccy] if
+                         reasons[base_ccy] != "POTENTIALLY_COMPARABLE"
+                         else reasons[quote_ccy]] += 1
+    require(len(prior["observed_t0_ref"]) == 28, "prior freeze lacks 28 T0")
+    require(len(possible) + sum(pair_reasons.values()) == 28,
+            "rates-only preflight denominator mismatch")
+    return {
+        **base,
+        "status": "RATES_ONLY_PRELIMINARY_NOT_H1_COHORT",
+        "previous_frozen_snapshot_id": prior["snapshot_id"],
+        "currency_rate_comparability": reasons,
+        "potential_rate_comparable_pairs": possible,
+        "pair_count_upper_bound": len(possible),
+        "other_pairs_by_primary_rate_blocker": dict(pair_reasons),
+        "warning": ("Today has no authenticated frozen T0 in this comparison. "
+                    "Even positive rate comparability does not prove a valid "
+                    "H1 signal, benchmark, or future 1W outcome."),
+    }
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--receipt", type=Path, required=True)
@@ -309,12 +387,16 @@ def main():
     require(args.receipt.resolve().is_relative_to(Path("/tmp")),
             "research receipts only under /tmp")
     now = datetime.now(timezone.utc)
-    result = inspect(obs.read_jsonl(cap.JOURNAL), obs.read_jsonl(obs.OUTCOMES), now)
+    frozen = obs.read_jsonl(cap.JOURNAL)
+    result = inspect(frozen, obs.read_jsonl(obs.OUTCOMES), now)
     # Operational diagnostics are explicitly separate from the frozen PIT
     # evaluation cohort and are NEVER used to calculate H1 outcomes.
     source = cap.ROOT / "live_data/sections/NATIVE_RATES_DATA.json"
+    live_rates = json.loads(source.read_text(encoding="utf-8"))
     result["operational_2y_source_readiness"] = operational_2y_readiness(
-        json.loads(source.read_text(encoding="utf-8")), now)
+        live_rates, now)
+    result["preflight_rates_vs_prior_frozen"] = preflight_previous_frozen_rates_only(
+        frozen, live_rates, now)
     args.receipt.parent.mkdir(parents=True, exist_ok=True)
     args.receipt.write_text(json.dumps(result, sort_keys=True, indent=2)+"\n",
                             encoding="utf-8")
