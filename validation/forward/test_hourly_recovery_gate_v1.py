@@ -42,6 +42,33 @@ class HourlyForwardRecoveryTests(unittest.TestCase):
         self.assertEqual(x["reason"], "BOTH_PROSPECTIVE_LEDGERS_ALREADY_CAPTURED_TODAY")
         self.assertTrue(self.ev("2026-10-28T20:20:00Z", True, False)["eligible"])
 
+    def test_future_quality_aware_missing_reopens_existing_hourly_recovery(self):
+        from validation.forward.hourly_recovery_gate_v1 import QUALITY_FIRST_DAY
+        self.assertEqual(QUALITY_FIRST_DAY, dt.date(2026,11,2))
+        after = at("2026-11-02T20:20:00Z")
+        missing = evaluate(after,"workflow_run",HOURLY,"schedule",
+                           True,True,False)
+        self.assertTrue(missing["eligible"])
+        self.assertEqual(missing["reason"],"HOURLY_SAME_DAY_FORWARD_RECOVERY")
+        complete = evaluate(after,"workflow_run",HOURLY,"schedule",
+                            True,True,True)
+        self.assertFalse(complete["eligible"])
+        self.assertEqual(complete["reason"],
+                         "ALL_FUTURE_PROSPECTIVE_LEDGER_CLASSES_CAPTURED_TODAY")
+        prior = evaluate(at("2026-10-30T20:20:00Z"),"workflow_run",
+                         HOURLY,"schedule",True,True,False)
+        self.assertFalse(prior["eligible"])
+        self.assertEqual(prior["reason"],
+                         "BOTH_PROSPECTIVE_LEDGERS_ALREADY_CAPTURED_TODAY")
+
+    def test_future_quality_only_does_not_skip_missing_core_or_original_v2(self):
+        after=at("2026-11-02T20:20:00Z")
+        for a,b in ((False,True),(True,False),(False,False)):
+            self.assertTrue(evaluate(after,"workflow_run",HOURLY,"schedule",
+                                     a,b,True)["eligible"])
+        self.assertFalse(evaluate(after,"workflow_run",HOURLY,
+                                  "pull_request",True,True,False)["eligible"])
+
     def test_hourly_pr_or_push_never_triggers(self):
         self.assertFalse(self.ev("2026-10-28T20:20:00Z",
                                  upstream_event="push")["eligible"])
