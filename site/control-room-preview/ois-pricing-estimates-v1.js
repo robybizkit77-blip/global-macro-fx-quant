@@ -4,7 +4,7 @@
 'use strict';
 const fx=['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'],tenors=['3m','6m','12m'];
 const flags={USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',AUD:'🇦🇺',CAD:'🇨🇦',NZD:'🇳🇿',CHF:'🇨🇭'};
-const labels={OFFICIAL:'FONTE MONETARIA CERTIFICATA',PROXY:'STIMA · FUTURES',MIXED:'STIMA · FUTURES / DATE DIVERSE',SCENARIO:'STIMA · BANK BILL–OCR NZD',WITHHELD:'FONTE NON DISPONIBILE'};
+const labels={OFFICIAL:'FONTE MONETARIA CERTIFICATA',PROXY:'STIMA · FUTURES',MIXED:'STIMA · FUTURES / DATE NON SINCRONIZZATE',SCENARIO:'SCENARIO · RBNZ B2 · STIMA BANK BILL–OCR',WITHHELD:'FONTE NON DISPONIBILE'};
 const number=x=>typeof x==='number'&&Number.isFinite(x)?x:null;
 const fmt=x=>number(x)===null?'—':x.toFixed(2);
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
