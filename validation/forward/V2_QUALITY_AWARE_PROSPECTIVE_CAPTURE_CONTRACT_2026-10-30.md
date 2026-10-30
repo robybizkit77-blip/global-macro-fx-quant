@@ -39,3 +39,15 @@ Un run scheduled/cadence positivo non attesta il giornale se il T0 non è stato 
 - 120 giorni distinti e benchmark H1 si applicano **solo al vecchio protocollo H1**, che non importa questo journal. Nuove ipotesi quantitative su questo cohort richiederanno nuova preregistrazione senza selezionare pesi ex-post.
 
 **Protezione:** nessuna modifica a `D.json`, alle 28 coppie, a `V2_MACRO_EVIDENCE_SNAPSHOTS_V1.jsonl`, alla soglia H1 o ai workflow delle 08:00.
+
+## Addendum — congelamento congiunto Macro → Rates (30 ottobre, prima del primo T0)
+
+Il cohort futuro-only **dal 2 novembre** acquisisce anche un *market context* verificabile, distinto da un Core FX:
+
+- 8 valute: policy rate e data della banca centrale, rendimenti sovrani 2Y/10Y con data e qualità, e orizzonte monetario 6M con fonte, data e tier **ufficiale / futures stimato / futures secondario / bank-bill NZD / non disponibile**. Dati vecchi rimangono esplicitamente storici; mai rinfrescarli modificandone la data.
+- 28 orientamenti canonici: spread 2Y descrittivo **solo** se le due quotazioni ufficiali condividono il medesimo giorno. Un confronto 6M tra differenti indici, futures o bank bill viene lasciato **null**, non finto spread OIS. Il 2Y non è una previsione FX.
+- Quattro input aggiuntivi ricevono SHA256: `NATIVE_RATES_DATA`, `OIS_OPERATIONAL_VIEW`, `NATIVE_CB_DATA`, `NZD_CB_PRICING_DIRECTIONAL_PROXY`. Il digest del market context e tutti questi input sono nel `snapshot_id`; il validatore impedisce di risigillare un differenziale su date non corrispondenti o una stima come OIS ufficiale.
+- **Zero nuovi bias, zero segnali, zero rendimenti futuri, zero modifica a D.json/Beta/Forward H1.** È un snapshot delle informazioni osservabili *al momento della cattura*, non un database storico point-in-time.
+- Le quattro fonti sono congelate nel medesimo cutoff dell'ECB T0; la cattura resta esclusivamente futura e il vecchio journal V2 numerico rimane indipendente, anche se RED per MAD=0. Non aggiunge cron o automazioni.
+
+Questo addendum è preregistrato prima del primo snapshot ammissibile. Non usare tali colonne per ottimizzare pesi a posteriori. Un eventuale modello relativo Macro→Rates→FX richiederà una successiva ipotesi versionata, osservazioni indipendenti maturate e verifica OOS.
