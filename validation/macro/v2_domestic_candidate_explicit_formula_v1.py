@@ -285,7 +285,7 @@ def build(shadow, legacy):
     return output
 
 
-def source_readiness(observed: dict) -> dict:
+def source_readiness(observed: dict, *, ordinal_quality: dict | None = None) -> dict:
     """Typed read-only current-source admission, even when a z is undefined.
 
     The separate strict full-candidate `run` continues to reject missing
@@ -309,6 +309,32 @@ def source_readiness(observed: dict) -> dict:
             and isinstance(growth,dict) and set(growth)==set(G8)
             and isinstance(gaps,dict) and set(gaps) <= {"USD.labour","USD.inflation"},
             "incomplete or unregistered G8 research axes")
+    # The independent preregistered zero-MAD quality module can describe
+    # levels/ordinal rank in the original economic units. Its output is
+    # NEVER a numerical Z, a permitted FX label, or a model input.
+    zero_keys = {key for key, item in raw.items()
+                 if item.get("status") == "NO_Z_ZERO_ROBUST_DISPERSION"}
+    quality_parts = {}
+    if ordinal_quality is not None:
+        from validation.macro import v2_zero_mad_ordinal_quality_v1 as quality
+        require(isinstance(ordinal_quality, dict)
+                and ordinal_quality.get("schema") == quality.SCHEMA
+                and ordinal_quality.get("policy_id") == quality.POLICY_ID
+                and ordinal_quality.get("as_of_observed_economic_bridge") ==
+                    observed["checked_as_of"]
+                and ordinal_quality.get("strict_numeric_z_imputation_count") == 0
+                and ordinal_quality.get("existing_macro_v2_strict_z_unchanged") is True
+                and ordinal_quality.get("can_generate_legacy_D") is False
+                and ordinal_quality.get("can_write_forward_v2_journal") is False
+                and ordinal_quality.get("can_feed_preregistered_H1") is False
+                and ordinal_quality.get("allowed_to_create_trading_signal") is False
+                and ordinal_quality.get("historical_PIT_validated") is False
+                and ordinal_quality.get("writes_live_data") is False
+                and isinstance(ordinal_quality.get("zero_mad_components"), dict),
+                "invalid zero-MAD ordinal-only quality contract")
+        quality_parts = ordinal_quality["zero_mad_components"]
+        require(set(quality_parts) == zero_keys,
+                "zero-MAD quality coverage does not match source status")
     rows = {}
     blocked = []
     estimated = []
@@ -355,6 +381,36 @@ def source_readiness(observed: dict) -> dict:
             state=("REVISED_HISTORY_Z_RESEARCH_ONLY" if good else
                    "ESTIMATED_US_BLS_GAP_RESEARCH_ONLY" if is_estimate else
                    "BLOCKED_MISSING_OR_ZERO_DISPERSION_Z")
+            # Verified descriptor from the already-existing zero-MAD module.
+            # Missing descriptor leaves this axis BLOCKED, never gets a z.
+            ordinal = quality_parts.get(key)
+            if status == "NO_Z_ZERO_ROBUST_DISPERSION" and ordinal is not None:
+                require(ordinal.get("status") ==
+                        "UNDEFINED_STRICT_Z_ZERO_MAD_ORDINAL_CONTEXT_ONLY"
+                        and ordinal.get("latest_observation_period") ==
+                            entry["observation_period"]
+                        and ordinal.get("number_of_prior_economic_periods") ==
+                            (24 if entry["frequency"] == "M" else 12)
+                        and ordinal.get("strict_prior_MAD") is not None
+                        and abs(ordinal["strict_prior_MAD"]) <= 1e-9
+                        and ordinal.get("numeric_replacement_z") is None
+                        and ordinal.get("is_numeric_z_score") is False
+                        and ordinal.get("eligible_for_domestic_activity_weighting") is False
+                        and ordinal.get("eligible_for_forward_features") is False
+                        and ordinal.get("FX_or_policy_direction_derived") is None
+                        and ordinal.get("not_a_historical_point_in_time_measurement") is True
+                        and type(ordinal.get("midrank_percentile_of_prior")) in (int, float)
+                        and 0 <= ordinal["midrank_percentile_of_prior"] <= 1,
+                        key+": ordinal quality cannot become numeric or tradable")
+                require(type(ordinal.get("current_observation")) in (int, float)
+                        and math.isclose(ordinal["current_observation"],
+                                         entry["observation_value"],
+                                         rel_tol=0,abs_tol=1e-9),
+                        key+": ordinal observation and source do not match")
+                require(ordinal.get("ordinal_relation") in (
+                    "ABOVE_ALL_PRIOR", "BELOW_ALL_PRIOR",
+                    "WITHIN_OR_TIED_PRIOR_RANGE"),
+                    key+": unregistered ordinal comparison")
             entries[pillar]={
                 "status":state,
                 "upstream_status":status,
@@ -363,6 +419,21 @@ def source_readiness(observed: dict) -> dict:
                 "uses_unapproved_estimate":bool(is_estimate),
                 "numeric_replacement_imputed":False,
                 "strict_numeric_z":z if good else None,
+                "zero_mad_descriptive_context_only":({
+                    "latest_observation":ordinal["current_observation"],
+                    "prior_median":ordinal["prior_median"],
+                    "current_minus_prior_median_original_units":
+                        ordinal["current_minus_prior_median_original_units"],
+                    "prior_reference_periods":
+                        ordinal["number_of_prior_economic_periods"],
+                    "ordinal_relation":ordinal["ordinal_relation"],
+                    "midrank_fraction_of_prior":
+                        ordinal["midrank_percentile_of_prior"],
+                    "numeric_replacement_z":None,
+                    "eligible_for_activity_score":False,
+                    "FX_or_policy_direction_derived":None,
+                    "not_historical_PIT":True,
+                } if ordinal is not None else None),
             }
             if is_estimate:
                 estimated.append(key)
@@ -382,6 +453,11 @@ def source_readiness(observed: dict) -> dict:
         "currencies_with_three_research_axes":eligible,
         "currencies_blocked":8-eligible,
         "blocked":blocked,"separate_US_research_estimate_series":sorted(estimated),
+        "zero_mad_source_keys":sorted(zero_keys),
+        "zero_mad_context_descriptors_validated":len(quality_parts),
+        "zero_mad_ordinals_never_become_numeric_features":True,
+        "ordinal_source_policy_id":(
+            ordinal_quality["policy_id"] if ordinal_quality is not None else None),
         "countries":rows,
         "strict_eight_country_candidate_allowed_now":eligible==8,
         "eligible_to_publish_D":False,
@@ -393,7 +469,13 @@ def source_readiness(observed: dict) -> dict:
 
 
 def run_source_readiness(as_of=None) -> dict:
-    return source_readiness(observed_run(as_of=as_of))
+    from validation.macro import v2_zero_mad_ordinal_quality_v1 as quality
+    observed = observed_run(as_of=as_of)
+    series = json.loads(quality.SOURCE.read_text(encoding="utf-8"))
+    registry = json.loads(quality.REGISTRY.read_text(encoding="utf-8"))
+    receipt = quality.build(observed, series, registry,
+                            today=datetime.now(ZoneInfo("Europe/Rome")).date())
+    return source_readiness(observed, ordinal_quality=receipt)
 
 
 def run(as_of=None, legacy_path=None):
@@ -418,7 +500,10 @@ def main():
     if a.readiness_only:
         print(json.dumps({"status":result["status"],"as_of":result["as_of"],
                           "currencies_blocked":result["currencies_blocked"],
-                          "blocked":result["blocked"],"eligible_to_publish_D":False},
+                          "blocked":result["blocked"],
+                          "zero_mad_context_descriptors_validated":
+                              result["zero_mad_context_descriptors_validated"],
+                          "eligible_to_publish_D":False},
                          sort_keys=True))
     else:
         print(json.dumps({"status":result["status"],"summary":result["summary"],
