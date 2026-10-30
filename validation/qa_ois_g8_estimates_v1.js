@@ -191,7 +191,7 @@ for(const ccy of ['USD','EUR','CHF']){
   assert.equal(research.contract,p.contract);
   assert.equal(research.expires,p.expiration);
   assert(Math.abs(100-p.futures_price-research.value)<=0.0002);
-  assert(Math.abs(research.tenor_gap_days)<=45);
+  assert(Math.abs(research.tenor_gap_days)<=46, 'One-day SSR bar-to-collection tolerance must be explicitly bounded');
   assert.equal(research.tenor_gap_days,expectedGap(p.expiration,p.quote_as_of,t));
   const displayDay=ccy==='EUR'?src.secondary_quote_context.horizons[t].quote_as_of:p.quote_as_of;
   assert.equal(research.date,displayDay);
@@ -225,6 +225,19 @@ const boundaryNext=auditDatedFuture('EUR','12m',eurBoundary,2.65,'2026-10-30','2
 assert(boundarySame&&boundaryNext,'Overnight calendar rollover must not drop the validated quote');
 assert.equal(boundarySame.tenor_gap_days,boundaryNext.tenor_gap_days);
 assert.equal(boundaryNext.source_quote_verified,true);
+const borderlineCHF={
+ contract:'SA3U2027',symbol:'ICEEUR:SA3U2027',
+ mapping:'nearest dated listed contract expiry to today+365d; no interpolation',
+ expiration:'2027-12-14',futures_price:100.01,
+ quote_as_of:'2026-10-29',quote_timestamp_verified:true,
+ quote_timestamp_source:'SSR_DAILY_BAR_DATA_UPDATE_TIME'
+};
+const chfEdge=auditDatedFuture('CHF','12m',borderlineCHF,-0.01,'2026-10-29','2026-10-31');
+assert(chfEdge&&Math.abs(chfEdge.tenor_gap_days)===46,
+ 'CHF one-day collection mismatch should show audited approximate contract, not disappear');
+const chfStale=auditDatedFuture('CHF','12m',borderlineCHF,-0.01,'2026-10-29','2026-11-12');
+assert.equal(chfStale,null,'One-day tolerance must never override source recency');
+
 const dollarQuote=ois.currencies.USD.horizons['3m'];
 assert.equal(auditDatedFuture('USD','3m',dollarQuote,dollarQuote.rate,
   dollarQuote.quote_as_of,TODAY)?.source_quote_verified,true);
