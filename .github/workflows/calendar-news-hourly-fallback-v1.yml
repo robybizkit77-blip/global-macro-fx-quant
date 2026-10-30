@@ -1,0 +1,83 @@
+name: Calendar News Morning Fallback From Existing Hourly Readiness V1
+
+# No new schedule/cron. This is a narrow, fail-closed backup for a dropped
+# 07:45 orchestrator schedule. The hourly readiness workflow already runs.
+# Workflow_run is only a clock cue; never an issuer-policy data source.
+on:
+  workflow_run:
+    workflows:
+      - Hourly Certified Alert Readiness V1
+    types: [completed]
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/calendar-news-hourly-fallback-v1.yml'
+      - 'validation/orchestration/plan_calendar_news_hourly_fallback_v1.py'
+      - 'validation/orchestration/test_plan_calendar_news_hourly_fallback_v1.py'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: calendar-news-existing-hourly-morning-fallback
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test safe morning recovery gate
+        run: |
+          python -m unittest validation.orchestration.test_plan_calendar_news_hourly_fallback_v1 -v
+          python -m unittest validation.orchestration.test_plan_premorning_calendar_news_recovery_v1 -v
+
+  fallback:
+    if: >-
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.event == 'schedule' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check independent hourly parent and real Calendar News source receipts
+        id: decide
+        shell: bash
+        env:
+          PARENT_EVENT_JSON: ${{ toJSON(github.event.workflow_run) }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$PARENT_EVENT_JSON" > "$RUNNER_TEMP/parent.json"
+          python -m validation.orchestration.plan_calendar_news_hourly_fallback_v1 \
+            --parent-json "$RUNNER_TEMP/parent.json" \
+            --source-dir live_data/sections \
+            --output "$GITHUB_OUTPUT" \
+            --summary "$GITHUB_STEP_SUMMARY"
+      - name: Dispatch EXISTING Calendar News refresh (no new schedule)
+        if: steps.decide.outputs.should_dispatch == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api -X POST "repos/$GITHUB_REPOSITORY/actions/workflows/calendar-news-operational-refresh-v1.yml/dispatches" \
+            -H "Accept: application/vnd.github+json" -f ref=main
+          echo "- Calendar News refresh dispatch accepted by GitHub; actual child execution and public publication require independent verification." >> "$GITHUB_STEP_SUMMARY"
