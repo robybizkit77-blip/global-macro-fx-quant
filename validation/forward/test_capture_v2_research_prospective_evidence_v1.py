@@ -17,10 +17,10 @@ from validation.macro.v2_domestic_candidate_explicit_formula_v1 import run as do
 
 
 
-# Source quality can make the OPTIONAL V2 research candidate unavailable even
-# when the frozen-Core primary capture is fully admissible.  Fail closed for
-# every unexpected error; skip only this explicitly recognized source-state.
-# The actual V2 capture retains its own post-Core persistence RED gate.
+# The optional production V2 candidate must fail-closed on zero MAD. Its
+# integration tests, however, must NOT silently disappear when an observed
+# rounded series has zero MAD. Create a deterministic synthetic EUR-only
+# fixture IN MEMORY, never in live_data or the prospective ledger.
 V2_SOURCE_Z_UNAVAILABLE = (
     "MACRO_V2_THREE_AXIS_REJECTED: "
     "missing strict z cannot be replaced by unapproved estimates"
@@ -31,24 +31,43 @@ def optional_v2_test_candidate(day):
     try:
         return domestic(as_of=day)
     except ValueError as exc:
-        if str(exc) == V2_SOURCE_Z_UNAVAILABLE:
-            raise unittest.SkipTest(
-                "OPTIONAL_V2_RESEARCH_SOURCE_INELIGIBLE: strict robust z "
-                "not computable from current macro series; no imputation, "
-                "no V2 candidate certified, primary Frozen Core remains "
-                "independently testable"
-            ) from exc
-        raise
+        if str(exc) != V2_SOURCE_Z_UNAVAILABLE:
+            raise
+        from validation.macro.v2_g8_observed_feature_bridge_v1 import (
+            run as observed_run
+        )
+        from validation.macro.v2_g8_three_axis_economic_shadow_v1 import (
+            build as shadow_build
+        )
+        from validation.macro.v2_domestic_candidate_explicit_formula_v1 import (
+            build as domestic_build
+        )
+        observed = observed_run(as_of=day)
+        unavailable = sorted(k for k, v in observed["inflation_labour"].items()
+                             if v["research_robust_z"] is None
+                             and k not in observed["us_bls_shutdown_research_estimates"])
+        if unavailable != ["EUR.labour"]:
+            raise ValueError("SYNTHETIC_V2_FIXTURE_UNEXPECTED_MISSING_Z: " +
+                             repr(unavailable)) from exc
+        eur = observed["inflation_labour"]["EUR.labour"]
+        if eur.get("status") != "NO_Z_ZERO_ROBUST_DISPERSION":
+            raise ValueError("SYNTHETIC_V2_FIXTURE_NOT_ZERO_MAD") from exc
+        import copy
+        synthetic = copy.deepcopy(observed)
+        synthetic_eur = synthetic["inflation_labour"]["EUR.labour"]
+        synthetic_eur["research_robust_z"] = 0.0  # test-only invented input
+        synthetic_eur["status"] = "DESCRIPTIVE_REVISED_HISTORY_ROBUST_Z_NOT_PIT"
+        synthetic["input_fingerprint_sha256"] = cap.sha({
+            "TEST_ONLY_NOT_A_REAL_ECONOMIC_MEASUREMENT": True,
+            "day": day, "dimension": "EUR.labour",
+            "substituted_z": 0.0,
+        })
+        return domestic_build(shadow_build(synthetic), cap.read_live("D"))
 
 
 class OptionalV2SourceGatePolicy(unittest.TestCase):
-    def test_only_exact_known_source_block_may_skip_optional_fixture(self):
+    def test_unexpected_errors_are_never_masked(self):
         from unittest.mock import patch
-        with patch(
-            "validation.forward.test_capture_v2_research_prospective_evidence_v1.domestic",
-            side_effect=ValueError(V2_SOURCE_Z_UNAVAILABLE),
-        ), self.assertRaisesRegex(unittest.SkipTest, "SOURCE_INELIGIBLE"):
-            optional_v2_test_candidate("2026-10-30")
         for unexpected in ("missing code contract", "wrong schema",
                            "MACRO_V2_THREE_AXIS_REJECTED: corrupted source"):
             with self.subTest(error=unexpected):
@@ -57,6 +76,15 @@ class OptionalV2SourceGatePolicy(unittest.TestCase):
                     side_effect=ValueError(unexpected),
                 ), self.assertRaisesRegex(ValueError, unexpected):
                     optional_v2_test_candidate("2026-10-30")
+
+    def test_synthetic_candidate_is_not_written_to_real_forward_journals(self):
+        # Static boundary: only synthetic tests call this helper, and the
+        # production capture has no import/usage of it.
+        from pathlib import Path
+        source=(cap.ROOT/"validation/forward/capture_v2_research_prospective_evidence_v1.py").read_text()
+        self.assertNotIn("optional_v2_test_candidate", source)
+        self.assertNotIn("SYNTHETIC_V2_FIXTURE_", source)
+        self.assertFalse(hasattr(cap, "synthetic_economic_z"))
 
 
 class V2ProspectiveResearchCapture(unittest.TestCase):
