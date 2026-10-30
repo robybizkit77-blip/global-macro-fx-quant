@@ -84,17 +84,25 @@ def inventory(*, rates: dict, fx: dict, ois: list[dict],
             {"USD","EUR","GBP","JPY","CHF","CAD","AUD","NZD"},
             "G8 sovereign source keys drifted")
     usd=rates["USD"]
+    # The live official Treasury source advances after this frozen research
+    # cutoff. Validate its FULL dated history against the live leaf first,
+    # then use ONLY dated observations available through 2026-10-23.
+    now=datetime.now(ZoneInfo("Europe/Rome")).date()
     require(usd.get("quality")=="FULL_CURRENT_OFFICIAL" and
             isinstance(usd.get("source"),str) and
             usd["source"].startswith("U.S. Department of the Treasury") and
-            parse_day(usd["date"])<=as_of and
+            parse_day(usd["date"])<=now and
             usd["history2"].get("last_date")==usd["date"] and
             usd["history2"].get("last_value")==usd["2Y"],
             "USD Treasury 2Y current source integrity failed")
-    y=dated_series(usd["history2"]["dates"],usd["history2"]["values"],
-                   limit=as_of,kind="UST2Y")
-    require(y[-1][0].isoformat()==usd["date"],
+    full_y=dated_series(usd["history2"]["dates"],usd["history2"]["values"],
+                        limit=now,kind="UST2Y")
+    require(full_y[-1][0].isoformat()==usd["date"] and
+            full_y[-1][1]==usd["2Y"],
             "latest UST Treasury observation is not the dated canonical value")
+    y=[row for row in full_y if row[0]<=as_of]
+    require(y and y[-1][0]>=date(2026,10,22),
+            "frozen UST2Y cutoff observations unavailable")
     require(fx.get("schema")=="GMFQ_ECB_G8_PRICE_HISTORY_V1" and
             fx.get("status")=="CURRENT_OFFICIAL_HISTORY" and fx.get("base")=="EUR" and
             fx.get("source")=="ECB euro foreign exchange reference rates" and
@@ -102,12 +110,14 @@ def inventory(*, rates: dict, fx: dict, ois: list[dict],
             "USD" in fx.get("currencies",[]) and fx.get("row_count")==len(fx.get("rows",[])),
             "ECB daily EUR/USD source contract failed")
     raw_fx=fx["rows"]
-    f=dated_series([x.get("Date") for x in raw_fx],
-                   [x.get("USD") for x in raw_fx],
-                   limit=as_of,kind="EURUSD")
-    require(f[-1][0].isoformat()==fx["last_as_of"],
+    full_f=dated_series([x.get("Date") for x in raw_fx],
+                        [x.get("USD") for x in raw_fx],
+                        limit=now,kind="EURUSD")
+    require(full_f[-1][0].isoformat()==fx["last_as_of"],
             "last ECB fixing does not match official FX ledger date")
-    require(f[0][0].isoformat()==fx["first_as_of"] and
+    f=[row for row in full_f if row[0]<=as_of]
+    require(f and f[-1][0]>=date(2026,10,22) and
+            full_f[0][0].isoformat()==fx["first_as_of"] and
             usd["history2"]["dates"][0]>="2025-01-01",
             "historical dataset coverage changed unexpectedly")
     # Recent same-contract research snapshots begin only in October 2026.
@@ -118,24 +128,30 @@ def inventory(*, rates: dict, fx: dict, ois: list[dict],
                 row.get("policy_delta_eligible") is False and
                 row.get("backtest_eligible_as_official") is False,
                 "estimated futures contract must not be promoted as official OIS")
-        require(parse_day(row["observation_date"])<=as_of,
+        require(parse_day(row["observation_date"])<=now,
                 "future-dated contract in history")
     for row in ois:
         require(row.get("schema")=="GMFQ_OIS_G8_SNAPSHOT_V1" and
                 row.get("currency") in
                 {"USD","EUR","GBP","JPY","CHF","CAD","AUD","NZD"} and
                 (row.get("source_as_of") is None or
-                 parse_day(row["source_as_of"])<=as_of),
+                 parse_day(row["source_as_of"])<=now),
                 "OIS history source/date contract mismatch")
         # Some non-USD G8 contracts are already audited and backtest-eligible.
         # This audit concerns USD only; never downgrade other source families.
         if row["currency"]=="USD":
             require(row.get("backtest_eligible_as_official") is False,
                     "USD OIS study must not promote estimated snapshots as official")
-    first_contract=min((parse_day(x["observation_date"]) for x in contracts),
+    # Historical window is fixed: newer live quotes are not retroactively
+    # evidence of an OIS, Treasury or FX reaction at the 2026-10-23 cutoff.
+    cutoff_contracts=[x for x in contracts
+                      if parse_day(x["observation_date"])<=as_of]
+    cutoff_ois=[x for x in ois if x.get("source_as_of") and
+                parse_day(x["source_as_of"])<=as_of]
+    first_contract=min((parse_day(x["observation_date"]) for x in cutoff_contracts),
                        default=None)
-    first_ois=min((parse_day(x["source_as_of"]) for x in ois
-                   if x.get("currency")=="USD" and x.get("source_as_of")),default=None)
+    first_ois=min((parse_day(x["source_as_of"]) for x in cutoff_ois
+                   if x.get("currency")=="USD"),default=None)
     require(first_contract is not None and first_contract>=date(2026,10,16)
             and first_ois is not None and first_ois>=date(2026,10,16),
             "earlier market-pricing history may need a new event-window audit")
