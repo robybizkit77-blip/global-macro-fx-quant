@@ -174,9 +174,11 @@ def new_zealand_evidence(cal: dict) -> dict:
     actual = [round(basis(r), 8) for r in holdout]
     residual = [round(fitted - v, 8) for v in actual]
     mae = mean(abs(e) for e in residual)
-    error = {"month": r["month"], "observed_bill_minus_OCR_basis_bp": round(v, 5),
-             "frozen_fit_basis_bp": fitted, "fit_minus_observed_basis_bp": round(e, 5)}
-    entries = [error for r, v, e in zip(holdout, actual, residual)]
+    entries = [
+        {"month": r["month"], "observed_bill_minus_OCR_basis_bp": round(v, 5),
+         "frozen_fit_basis_bp": fitted, "fit_minus_observed_basis_bp": round(e, 5)}
+        for r, v, e in zip(holdout, actual, residual)
+    ]
     assert math.isclose(mae, cal["holdout_2026_q3"]["mae_bp"], abs_tol=1e-6)
     return {
         "currency": "NZD",
