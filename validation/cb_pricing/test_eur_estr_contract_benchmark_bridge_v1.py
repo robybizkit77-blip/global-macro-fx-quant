@@ -88,7 +88,6 @@ class EurFst3BenchmarkTests(unittest.TestCase):
     def test_wrong_date_underlying_convention_and_permissions_are_rejected(self):
         base=self.reference()
         for field,value in [
-            ("quote_date","2026-10-17"),
             ("accrual_start","2026-01-01"),
             ("accrual_end","2028-01-01"),
             ("floating_index","EURIBOR"),
@@ -104,13 +103,11 @@ class EurFst3BenchmarkTests(unittest.TestCase):
             b=copy.deepcopy(base)
             b[field]=value
             with self.subTest(field=field,value=value),self.assertRaises(ValueError):
-                if field in ("quote_date",):
-                    # A valid but wrong date may be rejected as unmatched rather than
-                    # input-invalid. Never silently pair it to the actual future.
-                    o=compare(self.archive,[b])
-                    self.assertEqual(o["admissible_same_window_pairs"],0)
-                    raise ValueError("source not matched by date")
                 compare(self.archive,[b])
+        wrong_day=copy.deepcopy(base)
+        wrong_day["quote_date"]="2026-10-17"
+        self.assertEqual(compare(self.archive,[wrong_day])["admissible_same_window_pairs"],0,
+                         "same-period quote published on a different date cannot be joined")
         with self.assertRaisesRegex(ValueError,"duplicated independent"):
             compare(self.archive,[base,base])
 
