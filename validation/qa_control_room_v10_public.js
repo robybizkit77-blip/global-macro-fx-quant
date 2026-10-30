@@ -1124,11 +1124,28 @@ async function getState(page){
            return {exists:!!c,rows:[...c?.querySelectorAll('.gmfq-evidence-row')||[]].map(x=>x.textContent),
              content:c?.textContent,width:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth};
          });
-         if(!evidence.exists||evidence.rows.length!==3||
+         // Read the very same public canonical source as the page. Individual
+         // blockers are conditional: a NORMAL extension must NOT be invented
+         // merely to satisfy an old date-pinned assertion.
+         const evidenceSource=await page.evaluate(async()=>{
+           const res=await fetch('https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json',{cache:'no-store'});
+           if(!res.ok)return null;
+           const data=await res.json();
+           return {asof:data.price_asof,source:data.pairs?.EURUSD?.setup||null};
+         });
+         const src=evidenceSource?.source,rowText=evidence.rows[2]||'';
+         const blockers=src?[
+           ['Prezzo nel modello:', ['BAD','NEUTRAL'].includes(src.price?.state)],
+           ['Estensione del prezzo:', ['ADVANCED','EXTENDED'].includes(src.extension?.state)],
+           ['Timing:', typeof src.timing?.text==='string'],
+           ['Posizionamento:', ['HIGH','DIVERGENT'].includes(src.cot?.state)],
+           ['Liquidità:', src.liquidity?.state==='BAD']
+         ]:[];
+         if(!src||!evidence.content?.includes('Prezzo del modello: '+evidenceSource.asof)||
+            !evidence.exists||evidence.rows.length!==3||
             !evidence.rows[0]?.includes('USD')||
             !evidence.rows[1]?.includes('EUR')||
-            !evidence.rows[2]?.includes('Estensione del prezzo:')||
-            !evidence.rows[2]?.includes('Posizionamento:')||
+            blockers.some(([label,expected])=>rowText.includes(label)!==expected)||
             !evidence.content?.includes('Nessun trigger numerico o livello tecnico viene derivato automaticamente')||
             evidence.width>evidence.viewport+16)
            throw Error(name+' published Pair evidence checklist missing or fabricated '+JSON.stringify(evidence));
