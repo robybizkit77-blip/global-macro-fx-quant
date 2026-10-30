@@ -4,6 +4,9 @@ on:
     branches: [main]
     paths:
       - 'validation/cb_pricing/audit_estimated_ois_reliability_v1.py'
+      - 'validation/cb_pricing/eur_estr_contract_benchmark_bridge_v1.py'
+      - 'validation/cb_pricing/test_eur_estr_contract_benchmark_bridge_v1.py'
+      - 'validation/cb_pricing/probe_cme_term_estr_public_download_v1.py'
       - 'validation/cb_pricing/test_audit_estimated_ois_reliability_v1.py'
       - 'validation/cb_pricing/history/OIS_SAME_CONTRACT_QUOTES_V1.jsonl'
       - 'validation/cb_pricing/NZD_BB_CASH_RESEARCH_CALIBRATION_V1_2026-10-21.json'
@@ -28,6 +31,34 @@ jobs:
         run: |
           python -m unittest validation.cb_pricing.test_audit_estimated_ois_reliability_v1 -v
           python -m validation.cb_pricing.audit_estimated_ois_reliability_v1 --out /tmp/ois-estimate-reliability.json
+      - name: EUR exact forward accrual windows and synthetic independent benchmark tests
+        run: |
+          python -m unittest validation.cb_pricing.test_eur_estr_contract_benchmark_bridge_v1 -v
+          python -m validation.cb_pricing.eur_estr_contract_benchmark_bridge_v1 --out /tmp/eur-estr-benchmark-readiness.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('/tmp/eur-estr-benchmark-readiness.json').read_text())
+          assert x['eur_archived_futures_observations']==28
+          assert x['distinct_eurex_futures_periods']==4
+          assert x['admissible_same_window_pairs']==0
+          assert x['actual_model_OIS_level_MAE_bp'] is None
+          assert x['predicted_OIS_direction_hit_rate'] is None
+          assert x['eligible_to_change_OIS_operational_feed'] is False
+          print('EUR_FST3_EXACT_WINDOWS_4_VALIDATED_BENCHMARK_MATCHES_0')
+          PY
+      - name: One official CME CSV availability request, metadata only, no ingestion
+        run: |
+          python -m validation.cb_pricing.probe_cme_term_estr_public_download_v1 --once --out /tmp/cme-term-estr-source-access.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('/tmp/cme-term-estr-source-access.json').read_text())
+          assert x['independent_OIS_same_forward_period_benchmark'] is False
+          assert x['eligible_to_modify_live_OIS_or_FX'] is False
+          assert x['downloaded_data_stored'] is False
+          print('CME_TERM_ESTR_SPOT_REFERENCE_CANNOT_VALIDATE_FST3_DIRECTLY',x['status'])
+          PY
       - name: Gate: no OIS benchmark equals no validated OIS MAE or hit rate
         run: |
           python - <<'PY'
@@ -59,6 +90,9 @@ jobs:
           import subprocess
           allowed={
              'validation/cb_pricing/audit_estimated_ois_reliability_v1.py',
+             'validation/cb_pricing/eur_estr_contract_benchmark_bridge_v1.py',
+             'validation/cb_pricing/test_eur_estr_contract_benchmark_bridge_v1.py',
+             'validation/cb_pricing/probe_cme_term_estr_public_download_v1.py',
              'validation/cb_pricing/test_audit_estimated_ois_reliability_v1.py',
              '.github/workflows/ois-estimate-reliability-research-qa-v1.yml',
              '.github/workflows/control-room-v10-full-g8-browser-qa.yml',
@@ -73,5 +107,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ois-estimate-reliability-research-v1
-          path: /tmp/ois-estimate-reliability.json
+          path: |
+            /tmp/ois-estimate-reliability.json
+            /tmp/eur-estr-benchmark-readiness.json
+            /tmp/cme-term-estr-source-access.json
           if-no-files-found: warn
