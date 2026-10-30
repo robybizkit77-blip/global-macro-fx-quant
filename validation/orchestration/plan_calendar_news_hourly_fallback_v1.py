@@ -43,7 +43,9 @@ def plan(now: dt.datetime, parent: dict, sources: dict, cb: dict) -> dict:
             and parent.get("head_branch") == "main"):
         result["reasons"] = ["UNTRUSTED_OR_NON_SCHEDULED_PARENT"]
         return result
-    completed = parse_clock(parent.get("completed_at"))
+    # workflow_run webhook objects have updated_at, not job.completed_at.
+    # On a completed/success event, updated_at is the terminal receipt.
+    completed = parse_clock(parent.get("updated_at"))
     if completed is None or not dt.timedelta() <= now-completed <= MAX_PARENT_AGE:
         result["reasons"] = ["STALE_OR_FUTURE_PARENT_COMPLETION"]
         return result
