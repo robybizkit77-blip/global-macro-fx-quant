@@ -24,6 +24,8 @@ W_LABOUR = 0.50
 W_INFLATION = 0.0  # The policy reaction, not CPI level, can affect FX.
 Z_THRESHOLD = 0.50
 SENSITIVITY_GROWTH_WEIGHTS = (0.25, 0.50, 0.75)
+# Hypothetical coordinate shifts, not estimated historical revision errors.
+REVISION_STRESS_EPSILONS_Z = (0.10, 0.25, 0.50)
 G8 = tuple(FX)
 
 
@@ -96,6 +98,34 @@ def continuous_weight_interval(growth: float, labour: float) -> dict:
     }
 
 
+def independent_axis_revision_envelope(growth: float, labour: float,
+                                       epsilon: float) -> dict:
+    """Exact worst-case envelope: every Growth weight in [0.25, 0.75].
+
+    Each own-history z-coordinate may vary INDEPENDENTLY by +/- epsilon;
+    convex weights put extrema at the two registered weight endpoints plus
+    the symmetric shift. This is hypothetical sensitivity arithmetic, NOT
+    an observed release-vintage revision error distribution or FX evidence.
+    """
+    require(type(epsilon) in (int, float) and math.isfinite(epsilon)
+            and 0 <= epsilon <= 0.50,
+            "revision stress must be finite and in registered 0..0.50 z range")
+    base = continuous_weight_interval(growth, labour)
+    lower = base["domestic_activity_z_min"] - epsilon
+    upper = base["domestic_activity_z_max"] + epsilon
+    stable = activity_class(lower) == activity_class(upper)
+    return {
+        "hypothetical_each_axis_shift_abs_z": epsilon,
+        "growth_weight_interval_inclusive": [0.25, 0.75],
+        "stressed_activity_z_min": round(lower, 12),
+        "stressed_activity_z_max": round(upper, 12),
+        "class_invariant_to_all_weights_and_independent_axis_shifts": stable,
+        "robust_domestic_class_RESEARCH_ONLY": activity_class(lower) if stable else None,
+        "this_is_not_an_empirical_revision_error_estimate": True,
+        "not_a_PIT_or_FX_forecast_test": True,
+    }
+
+
 def build(shadow, legacy):
     require(isinstance(shadow, dict) and shadow.get("schema") == INPUT_SCHEMA
             and shadow.get("status") ==
@@ -144,6 +174,14 @@ def build(shadow, legacy):
                      for w in SENSITIVITY_GROWTH_WEIGHTS}
         state = activity_class(activity)
         sensitivity = continuous_weight_interval(g, l)
+        revision_stresses = {
+            str(int(eps*100)): independent_axis_revision_envelope(g, l, eps)
+            for eps in REVISION_STRESS_EPSILONS_Z
+        }
+        require(all(not item["class_invariant_to_all_weights_and_independent_axis_shifts"]
+                    or sensitivity["classification_unchanged_at_every_weight_in_interval"]
+                    for item in revision_stresses.values()),
+                currency + ": stress robustness cannot exceed weight-only robustness")
         stable = sensitivity["classification_unchanged_at_every_weight_in_interval"]
         require(stable == all(activity_class(w*g+(1-w)*l) == state
                               for w in SENSITIVITY_GROWTH_WEIGHTS),
@@ -171,6 +209,7 @@ def build(shadow, legacy):
             "weights_growth_labour": [W_GROWTH,W_LABOUR],
             "growth_weight_sensitivity_z":scenarios,
             "continuous_weight_sensitivity_RESEARCH_ONLY":sensitivity,
+            "hypothetical_axis_revision_stress_RESEARCH_ONLY":revision_stresses,
             "activity_class_stable_across_25_50_75pct_growth":stable,
             "source_quality_flags":quality,
             "source_quality_details":{
@@ -198,6 +237,7 @@ def build(shadow, legacy):
         "historical_first_publication_PIT_not_certified":True,
         "growth_definition_caveats_and_estimates_visible":True,
         "out_of_sample_falsification_not_completed":True,
+        "revision_stress_is_hypothetical_not_data_calibrated":True,
         "canonical_core_score_formula_recovered":False,
         "countries":cases,
         "summary":{
@@ -213,6 +253,18 @@ def build(shadow, legacy):
                     "weight_invariant_domestic_class_RESEARCH_ONLY"
                 ] is None for x in cases.values()
             ),
+            "countries_robust_hypothetical_axis_shift_0p10_z":sum(
+                x["hypothetical_axis_revision_stress_RESEARCH_ONLY"]["10"][
+                    "class_invariant_to_all_weights_and_independent_axis_shifts"]
+                for x in cases.values()),
+            "countries_robust_hypothetical_axis_shift_0p25_z":sum(
+                x["hypothetical_axis_revision_stress_RESEARCH_ONLY"]["25"][
+                    "class_invariant_to_all_weights_and_independent_axis_shifts"]
+                for x in cases.values()),
+            "countries_robust_hypothetical_axis_shift_0p50_z":sum(
+                x["hypothetical_axis_revision_stress_RESEARCH_ONLY"]["50"][
+                    "class_invariant_to_all_weights_and_independent_axis_shifts"]
+                for x in cases.values()),
             "countries_with_estimates":sum(any(d["is_estimate"] for d in x["source_quality_details"].values()) for x in cases.values()),
             "FX_scores_produced":0,
             "28_pair_theses_recomputed":0,
