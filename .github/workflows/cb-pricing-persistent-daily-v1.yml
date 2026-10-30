@@ -211,7 +211,10 @@ jobs:
           eligible=json.load(open('/tmp/cb-pricing-persistent/eligible.json'))
           assert set(co).issubset(eligible),('unexpected currency published',co,eligible)
           assert set(cn).issubset(eligible),('unexpected currency published',cn,eligible)
-          assert co==cn,(co,cn)
+          # A previously current JPY native summary need not change when
+          # its official TONA OIS row advances. Every other currency must
+          # still appear in BOTH layers or in neither layer.
+          assert (set(co)^set(cn)).issubset({'JPY'}),(co,cn)
           changed=sorted(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
           allowed=['live_data/manifest.v2.json','live_data/sections/NATIVE_CB_DATA.json','live_data/sections/OIS_DATA.json','payload/part-00.txt']
           assert set(changed).issubset(allowed),(changed,allowed)

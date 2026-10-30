@@ -146,12 +146,28 @@ bn=json.loads((root/'NATIVE.baseline.json').read_text())
 an=json.loads(pathlib.Path('live_data/sections/NATIVE_CB_DATA.json').read_text())
 co=[k for k in bo['currencies'] if bo['currencies'][k] != ao['currencies'][k]]
 cn=[k for k in bn if bn[k] != an[k]]
-if (co,cn) not in [([c],[c]),([],[])]:
+if c=='JPY':
+    # Reuse the same JPY-only invariant as the actual apply script.
+    # Already-current native JPY pricing may remain byte-identical even
+    # when the TFX OIS provenance is refreshed. No other currency may move.
+    from validation.cb_pricing.apply_jpy_tfx_tona_candidate import assert_jpy_only_deltas
+    co,cn=assert_jpy_only_deltas(bo,ao,bn,an)
+elif (co,cn) not in [([c],[c]),([],[])]:
     raise SystemExit(f'{c} semantic scope failure OIS={co} NATIVE={cn}')
 changed=sorted(subprocess.check_output(['git','diff','--name-only'], text=True).splitlines())
-expected=sorted(['live_data/manifest.v2.json','live_data/sections/NATIVE_CB_DATA.json','live_data/sections/OIS_DATA.json','payload/part-00.txt'])
-if changed not in (expected, []):
+expected={'live_data/manifest.v2.json','live_data/sections/NATIVE_CB_DATA.json',
+          'live_data/sections/OIS_DATA.json','payload/part-00.txt'}
+if (set(changed) != expected and changed) and c!='JPY':
     raise SystemExit(f'{c} file scope failure {changed}')
+if c=='JPY':
+    if not set(changed).issubset(expected):
+        raise SystemExit(f'JPY unapproved file changes {changed}')
+    # A real JPY change must be reflected in the canonical payload + manifest.
+    price_layers={'live_data/sections/NATIVE_CB_DATA.json','live_data/sections/OIS_DATA.json'}
+    if changed and (not (set(changed) & price_layers) or
+                    'payload/part-00.txt' not in changed or
+                    'live_data/manifest.v2.json' not in changed):
+        raise SystemExit(f'JPY incomplete payload propagation {changed}')
 print(c, 'ISOLATED_DRY_RUN_PASS', 'NO_CHANGE' if not changed else 'UPDATED')
 PY
   ); then
