@@ -335,7 +335,8 @@ function view(rows,moves=[]){
  // The user needs all eight dated 3M/6M/12M references at first glance.
  // Preserve full source provenance and leave methodology collapsible.
  // No estimate becomes a certified OIS or an official policy delta.
- const usable=8-counts.WITHHELD;
+ const usable=rows.filter(r=>r.tier!=='WITHHELD'&&tenors.every(t=>
+  number(r.points[t]?.value)!==null&&r.points[t]?.date)).length;
  const brief=usable+'/8 valute con riferimenti numerici (ufficiali, proxy o scenari) · '+
    counts.OFFICIAL+' fonti certificate · '+counts.PROXY+' futures indicativi · '+
    counts.MIXED+' con date diverse · '+counts.SCENARIO+' scenario NZD'+
@@ -353,7 +354,7 @@ function view(rows,moves=[]){
  matchedResearchHtml(moves)+'<p class="gmfq-est-note"><b>Metodo:</b> GBP OIS BoE; AUD/CAD/JPY futures monetari ufficiali; USD/EUR/CHF: ogni contratto è datato separatamente; se le date non coincidono, sono solo osservazioni individuali e non una curva sincronizzata. Su USD/EUR/CHF vengono verificati prezzo, contratto, data e scadenza; lo scarto in giorni è visibile, <b>senza inventare una correzione OIS</b>. NZD: scenario empirico su Bank Bill 90 giorni − OCR RBNZ (19 mesi, due regimi): sconto stimato 24 bp, fascia prudenziale 10–50 bp, ampliata dopo un test su luglio–settembre 2026 (errore medio del punto centrale circa 16 bp). <b>non è uno spread OIS misurato e non intervallo statistico</b>. Sono futures trimestrali, non una curva OIS spot. Nessuna stima produce variazioni OIS 1D/1W, segnali FX o backtest.</p></div></details>';
 }
 const css=[
- '#gmfq-ois-research-estimates{margin:12px 0;min-width:0}',
+ '#gmfq-ois-research-estimates{margin:0 0 14px;min-width:0}',
  '#gmfq-ois-research-estimates .gmfq-est-quick-read{padding:4px 15px 2px;margin:5px 0;color:#b7cbd8;font:12px/1.55 Arial,sans-serif;overflow-wrap:anywhere}',
  '#gmfq-ois-research-estimates .gmfq-est-quick-read strong{color:#e4edf5}',
  '#gmfq-ois-research-estimates .gmfq-est-disclosure{padding:0 15px 12px;margin-top:5px}',
@@ -401,7 +402,10 @@ async function mount(doc){
  const box=doc.createElement('section');box.id='gmfq-ois-research-estimates';box.className='desk-panel';
  box.dataset.coreEffect='NONE';box.dataset.officialPromotion='false';box.dataset.status='LOADING';
  box.innerHTML='<h2 class="desk-panel-title">G8 · tassi monetari</h2>';
- anchor.insertAdjacentElement('afterend',box);
+ // The verified, quality-graded 8-currency matrix is the primary Rates
+ // readout; do not force the user to scroll past an official-only table
+ // that shows WITHHELD for perfectly usable dated secondary observations.
+ anchor.insertAdjacentElement('beforebegin',box);
  const st=doc.createElement('style');st.textContent=css;doc.head.appendChild(st);
  try{const [a,b,h]=await Promise.allSettled([get('OIS_OPERATIONAL_VIEW.json'),get('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),loadSameContractArchive()]);
   if(frame.contentDocument!==doc||!active())return;
@@ -409,7 +413,37 @@ async function mount(doc){
   if(o?.schema!=='GMFQ_OIS_OPERATIONAL_VIEW_V1'||!o.currencies)throw Error('invalid feed');
   const rows=matrix(o,p,romeTodayIso());
   box.dataset.status='RESEARCH_ONLY';box.dataset.officalSources=''+rows.filter(r=>r.tier==='OFFICIAL').length;
-  box.innerHTML=view(rows,matchedResearchMoves(h.status==='fulfilled'?h.value:'',rows,romeTodayIso()));
+  const now=romeTodayIso();
+  const complete=rows.length===8&&rows.every(r=>r.tier!=='WITHHELD'&&
+   tenors.every(t=>number(r.points[t]?.value)!==null&&fresh(r.points[t]?.date,now)));
+  box.dataset.sourceGradedCoverage=complete?'8/8':'PARTIAL';
+  box.dataset.signalEffect='NONE';
+  box.innerHTML=view(rows,matchedResearchMoves(h.status==='fulfilled'?h.value:'',rows,now));
+  // Keep the native STRICT CERTIFIED FEED unchanged and inspectable on demand.
+  // Collapse its visually duplicate, official-only gaps ONLY while a fully
+  // sourced and dated 8/8 matrix is available; fail open otherwise.
+  if(complete&&anchor.isConnected&&!doc.getElementById('gmfq-certified-only-toggle')){
+   const toggle=doc.createElement('button');
+   toggle.type='button';toggle.id='gmfq-certified-only-toggle';
+   toggle.dataset.scope='NATIVE_OFFICIAL_ONLY';
+   toggle.setAttribute('aria-controls','ois-rows');
+   toggle.style.cssText='display:block;width:100%;text-align:left;margin:0 0 13px;padding:9px 13px;border:1px solid #294b61;background:#0c2131;color:#b5c8d8;border-radius:6px;font:12px/1.5 Arial,sans-serif;cursor:pointer';
+   box.insertAdjacentElement('afterend',toggle);
+   const focus=new URLSearchParams(location.hash.split('?')[1]||'').get('focus');
+   let shown=focus==='ois';
+   const sync=()=>{
+    anchor.hidden=!shown;
+    // Old approved official-only block remains intact in the DOM and can
+    // never inherit values from futures or cash-carry research scenarios.
+    anchor.style.setProperty('display',shown?'':'none',shown?'':'important');
+    toggle.setAttribute('aria-expanded',String(shown));
+    toggle.textContent=shown?
+     'Nascondi dettaglio fonte certificata · copertura ufficiale 4/8':
+     'Apri dettaglio delle sole fonti certificate · 4/8 (le stime 8/8 sono sopra)';
+   };
+   toggle.addEventListener('click',()=>{shown=!shown;sync()});
+   sync();
+  }
  }catch(e){box.dataset.status='WITHHELD';box.innerHTML='<h2 class="desk-panel-title">G8 · dati non disponibili</h2>';
   console.warn('[GMFQ OIS research withheld]',String(e));}
 }
