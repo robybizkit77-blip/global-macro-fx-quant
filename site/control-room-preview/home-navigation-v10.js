@@ -408,7 +408,7 @@ function oisAll(doc,ois,proxy){
  '<div class="oisnote" data-six-month-coverage="'+displayed+'/8"><b>6M · '+displayed+
  '/8 valute</b> · '+certified+' fonti certificate · '+estimated+
  ' stime/proxy. Tutti i valori sono livelli di tasso in %, NON Δ policy in bp. '+
- 'PX = futures indicativi (non OIS); ST = scenario NZD Bank Bill corretto per basis (non OIS). '+
+ 'PX = futures indicativi (non OIS); ST = scenario NZD Bank Bill corretto per basis (non OIS). PROXY BB ≠ OIS. '+
  'Δ policy e date nel dettaglio; 3M / 6M / 12M nella pagina Tassi. '+
  'Nessuna stima è una quotazione OIS ufficiale o un segnale FX.</div>';
 }
