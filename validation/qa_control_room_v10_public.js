@@ -699,7 +699,13 @@ async function getState(page){
            feed.currencies?.[k]?.secondary_quote_context?.full_curve_usable===false&&
            feed.currencies?.[k]?.secondary_quote_context?.policy_delta_allowed===false);
          return {
-           actualCurves:panel.querySelectorAll('svg polyline').length,expectedCurves:eligible.length,
+           actualCurves:panel.querySelectorAll('.gmfq-research-plot svg g[data-graded-ccy]').length,
+            expectedCurves:eligible.length,
+            gradedRows:[...panel.querySelectorAll('.gmfq-research-plot svg g[data-graded-ccy]')].map(x=>({
+              ccy:x.dataset.gradedCcy,tier:x.dataset.quality,
+              points:x.querySelectorAll('circle').length,joined:x.dataset.joined,
+              lines:x.querySelectorAll('polyline').length
+            })),
            secondaryCards:panel.querySelectorAll('.gmfq-quote-card').length,expectedCards:secondary.length,
            note:panel.textContent,docWidth:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth,
            readinessCount:panel.querySelectorAll('#gmfq-source-readiness .gmfq-source-row').length,
@@ -726,7 +732,14 @@ async function getState(page){
              {value:snb.value_percent.toFixed(3),date:snb.as_of}:null
          };
        });
-       if(research.actualCurves!==research.expectedCurves||research.secondaryCards!==research.expectedCards||
+       if(research.actualCurves!==8||
+           new Set(research.gradedRows.map(x=>x.ccy)).size!==8||
+           research.gradedRows.some(x=>x.points!==3||
+             !['OFFICIAL','PROXY','MIXED','SCENARIO'].includes(x.tier)||
+             (x.tier==='MIXED'&&(x.joined!=='false'||x.lines!==0)))||
+           !research.note.includes('Grafico G8 3M/6M/12M: 8/8')||
+           !research.note.includes('Curve certificate: '+research.expectedCurves+'/8')||
+           research.secondaryCards!==research.expectedCards||
           (research.expectedCards>0 && !research.note.includes('non sono una curva OIS'))||
           (research.expectedCards===0 && !research.note.includes('GREEN_ESTIMATED restano indicative'))||
           !research.note.includes('NON curva OIS né policy delta')||
