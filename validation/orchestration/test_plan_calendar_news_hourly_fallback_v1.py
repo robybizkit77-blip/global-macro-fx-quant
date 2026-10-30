@@ -100,6 +100,22 @@ class MorningFallbackTests(unittest.TestCase):
                               parent("2026-10-30T06:59:00Z"),
                               receipts(),cb_meeting())["should_dispatch"])
 
+    def test_workflow_preserves_pending_events_and_separates_pr_validation(self):
+        # Guard against a GitHub Actions default: with only
+        # cancel-in-progress:false, a second pending run is replaced by a new
+        # one. Two clock parents must not silently discard earlier work.
+        workflow=(Path(__file__).resolve().parents[2] /
+                  ".github/workflows/calendar-news-hourly-fallback-v1.yml").read_text()
+        self.assertIn("  queue: max\n",workflow)
+        self.assertIn("  cancel-in-progress: false\n",workflow)
+        self.assertIn("github.event_name == 'pull_request' && format('calendar-news-fallback-pr-",workflow)
+        self.assertIn("|| 'calendar-news-existing-hourly-morning-fallback'",workflow)
+        self.assertEqual(workflow.count("      - Hourly Certified Alert Readiness V1"),1)
+        self.assertEqual(workflow.count("      - Macro Desk Source Watch V1"),1)
+        # The fallback itself must remain event-based; no third cron.
+        self.assertNotIn("  schedule:\n",workflow)
+        self.assertIn("      github.event.workflow_run.event == 'schedule' &&",workflow)
+
     def test_bad_clock_fails_closed(self):
         with self.assertRaises(ValueError):
             plan(dt.datetime(2026,10,30,5,35),parent(),receipts(),cb_meeting())
