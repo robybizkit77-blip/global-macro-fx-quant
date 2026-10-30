@@ -67,7 +67,7 @@ class ClearingOisSourceTests(unittest.TestCase):
         r=parse_stream(self.rows(missing=d))
         self.assertEqual(r["matched_observations_count"],1)
         self.assertEqual(r["status"],
-                         "NO_VALID_ESTR_DISCOUNT_FACTORS_FOR_EXACT_WINDOWS")
+                         "PARTIAL_ESTR_DISCOUNT_FACTORS_FOUND")
         self.assertIsNone(r["MAE_vs_true_OIS_bp"])
 
     def test_conflicting_same_timestamp_factor_rejected(self):
