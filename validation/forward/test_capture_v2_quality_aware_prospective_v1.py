@@ -112,6 +112,39 @@ class QualityAwareProspectiveCaptureTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"research-only"):
             qa.validate_snapshot(bad)
 
+    def test_resigned_nontriangular_ecb_cross_is_rejected(self):
+        original=self.make()
+        forged=copy.deepcopy(original)
+        # Choose a cross not involving the EUR reference legs, because an
+        # independent non-EUR cross has to equal the quotient of two EUR legs.
+        pair=next(p for p in forged["observed_t0_ref"]
+                  if "EUR" not in p.split("/"))
+        forged["observed_t0_ref"][pair]["rate"] *= 1.01
+        forged["snapshot_sha256"]=qa.sha({
+            k:v for k,v in forged.items() if k!="snapshot_sha256"})
+        with self.assertRaisesRegex(ValueError,
+                                    "seven-leg triangle"):
+            qa.validate_snapshot(forged)
+        # The valid original must remain acceptable.
+        self.assertEqual(qa.validate_snapshot(original),self.day)
+
+    def test_resigned_random_snapshot_id_cannot_claim_source_provenance(self):
+        original=self.make()
+        forged=copy.deepcopy(original)
+        forged["snapshot_id"]="f"*64
+        forged["snapshot_sha256"]=qa.sha({
+            k:v for k,v in forged.items() if k!="snapshot_sha256"})
+        with self.assertRaisesRegex(ValueError,
+                                    "snapshot identity does not bind"):
+            qa.validate_snapshot(forged)
+        forged=copy.deepcopy(original)
+        forged["source_file_sha256"]["ecb"]="0"*64
+        forged["snapshot_sha256"]=qa.sha({
+            k:v for k,v in forged.items() if k!="snapshot_sha256"})
+        with self.assertRaisesRegex(ValueError,
+                                    "snapshot identity does not bind"):
+            qa.validate_snapshot(forged)
+
     def test_no_backfill_before_nov2_wrong_times_and_blocked_pricing(self):
         for cut in (datetime.fromisoformat("2026-10-30T19:31:00+01:00"),
                     datetime.fromisoformat("2026-10-31T20:31:00+01:00"),
