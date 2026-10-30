@@ -11,6 +11,8 @@ on:
       - 'site/control-room-preview/ois-pricing-estimates-v1.js'
       - 'validation/test_control_room_g8_visible_pricing_v1.js'
       - 'validation/qa_ois_g8_estimates_v1.js'
+      - 'validation/cb_pricing/audit_estimated_ois_reliability_v1.py'
+      - 'validation/cb_pricing/test_audit_estimated_ois_reliability_v1.py'
       - '.github/workflows/control-room-v10-full-g8-browser-qa.yml'
   workflow_dispatch:
 permissions:
@@ -44,6 +46,28 @@ jobs:
           node --check site/control-room-preview/ois-pricing-estimates-v1.js
           node validation/test_control_room_g8_visible_pricing_v1.js
           node validation/qa_ois_g8_estimates_v1.js
+      - name: Audit four estimated currencies' historical source reliability (research only)
+        run: |
+          python3 -m unittest validation.cb_pricing.test_audit_estimated_ois_reliability_v1 -v
+          python3 -m validation.cb_pricing.audit_estimated_ois_reliability_v1 --out /tmp/ois-estimate-reliability.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('/tmp/ois-estimate-reliability.json').read_text())
+          assert x['quotes_observed']==86
+          assert x['total_matched_same_contract_changes']==74
+          assert x['currencies_with_verified_OIS_accuracy']==0
+          assert x['directional_hit_rate_vs_OIS'] is None
+          assert x['eligible_to_reprice_CB_or_28_pairs'] is False
+          print('OIS_ESTIMATE_RESEARCH_DATA_CHECK_GREEN_INDEPENDENT_OIS_ACCURACY_UNVALIDATED')
+          PY
+      - name: Upload research reliability receipt (not official OIS scores)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ois-estimate-reliability-research-v1
+          path: /tmp/ois-estimate-reliability.json
+          if-no-files-found: warn
       - name: Install browser runner
         run: |
           npm init -y >/dev/null 2>&1
