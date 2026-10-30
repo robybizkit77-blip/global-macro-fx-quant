@@ -5,6 +5,8 @@ on:
     paths:
       - 'validation/cb_pricing/audit_estimated_ois_reliability_v1.py'
       - 'validation/cb_pricing/eur_estr_contract_benchmark_bridge_v1.py'
+      - 'validation/cb_pricing/eur_independent_spot_ois_forward_research_v1.py'
+      - 'validation/cb_pricing/test_eur_independent_spot_ois_forward_research_v1.py'
       - 'validation/cb_pricing/test_eur_estr_contract_benchmark_bridge_v1.py'
       - 'validation/cb_pricing/probe_cme_term_estr_public_download_v1.py'
       - 'validation/cb_pricing/test_audit_estimated_ois_reliability_v1.py'
@@ -59,6 +61,10 @@ jobs:
           assert x['downloaded_data_stored'] is False
           print('CME_TERM_ESTR_SPOT_REFERENCE_CANNOT_VALIDATE_FST3_DIRECTLY',x['status'])
           PY
+      - name: EUR independent spot OIS research bridge synthetic-only QA
+        run: |
+          python -m unittest validation.cb_pricing.test_eur_independent_spot_ois_forward_research_v1 -v
+          echo EUR_OIS_SPOT_FORWARD_RESEARCH_RECONSTRUCTION_QA_ONLY
       - name: Gate: no OIS benchmark equals no validated OIS MAE or hit rate
         run: |
           python - <<'PY'
@@ -91,6 +97,8 @@ jobs:
           allowed={
              'validation/cb_pricing/audit_estimated_ois_reliability_v1.py',
              'validation/cb_pricing/eur_estr_contract_benchmark_bridge_v1.py',
+             'validation/cb_pricing/eur_independent_spot_ois_forward_research_v1.py',
+             'validation/cb_pricing/test_eur_independent_spot_ois_forward_research_v1.py',
              'validation/cb_pricing/test_eur_estr_contract_benchmark_bridge_v1.py',
              'validation/cb_pricing/test_audit_estimated_ois_reliability_v1.py',
              'validation/cb_pricing/probe_cme_term_estr_public_download_v1.py',
