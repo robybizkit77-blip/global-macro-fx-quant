@@ -292,6 +292,37 @@ class QualityAwareProspectiveCaptureTests(unittest.TestCase):
         self.assertEqual(text.count("git push origin HEAD:main"),1)
         self.assertNotIn("cancel-in-progress: true",text)
 
+    def test_independent_v2_certifications_run_after_successful_persistence(self):
+        # Regression for a real GitHub Actions "implicit success()" trap:
+        # a failing quality gate must not suppress the next original-V2
+        # diagnosis, but failed git push must NEVER be called persisted.
+        path=qa.ROOT/".github/workflows/forward-frozen-core-prospective-daily-v1.yml"
+        workflow=path.read_text(encoding="utf-8")
+        start=workflow.index(
+            "      - name: Commit new prospective observation only, no forced push")
+        quality=workflow.index(
+            "      - name: Certify future quality-aware observational journal only after Core persistence")
+        original=workflow.index(
+            "      - name: Certify V2 research capture separately after primary Core commit")
+        commit_step=workflow[start:quality]
+        quality_step=workflow[quality:original]
+        original_step=workflow[original:]
+        self.assertIn("id: commit_snapshot",commit_step)
+        self.assertIn("git push origin HEAD:main",commit_step)
+        self.assertIn("steps.commit_snapshot.outcome == 'success'",quality_step)
+        self.assertIn("steps.commit_snapshot.outcome == 'success'",original_step)
+        self.assertIn("always()",original_step.split("run: |",1)[0])
+        self.assertIn("V2_RESEARCH_CAPTURE_FAILED_AFTER_LEGACY_PERSISTENCE",
+                      original_step)
+        self.assertIn("QUALITY_AWARE_PROSPECTIVE_CAPTURE_MISSING_AFTER_CORE_PERSISTENCE",
+                      quality_step)
+        self.assertNotIn("continue-on-error: true",quality_step)
+        self.assertNotIn("continue-on-error: true",original_step)
+        # A real error remains a RED run; never silently approve a model.
+        self.assertIn("exit 1",quality_step)
+        self.assertIn("exit 1",original_step)
+        self.assertEqual(workflow.count("git push origin HEAD:main"),1)
+
     def test_cli_cannot_write_future_snapshot_today(self):
         today=datetime.now(ZoneInfo("Europe/Rome"))
         # Only enforce the early-date test on current 2026-10-30 CI window.
