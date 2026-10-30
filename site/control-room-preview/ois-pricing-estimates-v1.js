@@ -107,7 +107,9 @@ function auditDatedFuture(ccy,term,primary,rate,quoteDate,today){
  const expiry=dayIndex(primary.expiration),quoteIndex=dayIndex(quoteDate);
  if(expiry===null||quoteIndex===null||expiry<quoteIndex)return null;
  const gap=expiry-quoteIndex-target;
- if(Math.abs(gap)>45)return null;
+ // Tolerate ONE calendar day of bar-time vs collection-time mismatch at the expiry-window boundary.
+ // Any accepted borderline point is explicitly APPROXIMATE_EXPIRY, never OIS.
+ if(Math.abs(gap)>46)return null;
  const implied=100-primary.futures_price;
  if(Math.abs(implied-rate)>0.0002||implied<-5||implied>25)return null;
  return {value:rate,date:quoteDate,contract:code,expires:primary.expiration,
