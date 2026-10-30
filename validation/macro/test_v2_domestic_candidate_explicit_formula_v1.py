@@ -11,7 +11,8 @@ from validation.macro.v2_g8_three_axis_economic_shadow_v1 import (
 from validation.macro.v2_g8_observed_feature_bridge_v1 import run as observed_run
 from validation.macro.v2_domestic_candidate_explicit_formula_v1 import (
     build,run,activity_class,indicative_regime,continuous_weight_interval,
-    independent_axis_revision_envelope, REVISION_STRESS_EPSILONS_Z, G8,FORMULA
+    independent_axis_revision_envelope, REVISION_STRESS_EPSILONS_Z,
+    source_readiness, G8,FORMULA
 )
 
 
@@ -193,6 +194,26 @@ class CandidateFormulaTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 continuous_weight_interval(invalid,0)
 
+    def test_current_missing_source_cannot_be_forged_as_numeric(self):
+        from datetime import datetime
+        from zoneinfo import ZoneInfo
+        today=datetime.now(ZoneInfo("Europe/Rome")).date().isoformat()
+        observed=observed_run(as_of=today)
+        spoof=copy.deepcopy(observed)
+        item=spoof["inflation_labour"]["EUR.labour"]
+        if item["status"] == "NO_Z_ZERO_ROBUST_DISPERSION":
+            item["research_robust_z"]=0.0
+            with self.assertRaisesRegex(ValueError,"strict numeric status/zero-MAD contradiction"):
+                source_readiness(spoof)
+            item["research_robust_z"]=None
+        item["currency"]="GBP"
+        with self.assertRaisesRegex(ValueError,"invalid axis identity"):
+            source_readiness(spoof)
+        spoof=copy.deepcopy(observed)
+        spoof["safe_to_publish_new_D"]=True
+        with self.assertRaises(ValueError):
+            source_readiness(spoof)
+
     def test_frozen_research_fixture_matches_27_oct_original_candidate_values(self):
         r=build(self.shadow,self.legacy)
         self.assertEqual(r["economic_as_of"],"2026-10-27")
@@ -207,11 +228,23 @@ class CandidateFormulaTests(unittest.TestCase):
         from zoneinfo import ZoneInfo
         now=datetime.now(ZoneInfo("Europe/Rome")).date().isoformat()
         observed=observed_run(as_of=now)
+        readiness=source_readiness(observed)
+        self.assertEqual(readiness["as_of"],now)
+        self.assertEqual(len(readiness["countries"]),8)
+        self.assertFalse(readiness["eligible_to_publish_D"])
+        self.assertFalse(readiness["eligible_to_recompute_28_pairs"])
+        self.assertFalse(readiness["writes_live_data"])
+        self.assertTrue(readiness["no_missing_z_substituted"])
+        self.assertEqual(readiness["currencies_with_three_research_axes"]+
+                         readiness["currencies_blocked"],8)
         self.assertNotEqual(observed["checked_as_of"],self.shadow["as_of"])
         self.assertTrue(observed["current_values_are_not_verified_first_release_vintages"])
         eu=observed["inflation_labour"]["EUR.labour"]
         if eu["status"] == "NO_Z_ZERO_ROBUST_DISPERSION":
             self.assertIsNone(eu["research_robust_z"])
+            self.assertIn({"currency":"EUR","pillar":"labour",
+                           "reason":"NO_Z_ZERO_ROBUST_DISPERSION"}, readiness["blocked"])
+            self.assertFalse(readiness["strict_eight_country_candidate_allowed_now"])
             with self.assertRaisesRegex(ValueError,
                     "missing strict z cannot be replaced by unapproved estimates"):
                 shadow_run(as_of=now)
