@@ -65,5 +65,8 @@ estim.CHF.estimatedAsOf10=new Date(Date.parse(live.EUR.date+'T00:00:00Z')-864000
 assert.equal(f(live,estim).rows.find(x=>x.ccy==='CHF').scenario,null,
  'mismatched scenario dates must not create a mixed-date estimate');
 assert(src.includes("host.dataset.coreEffect='NONE'")&&src.includes("host.dataset.pairEffect='NONE'"));
-assert(src.includes('renderYieldStudy(doc,feeds[2],feeds[3],feeds[5])'),'RBNZ web-review is a separate sixth feed, not canonical Rates');
+assert(src.includes('renderYieldStudy(doc,feeds[2],feeds[3],feeds[5],feeds[6])'),
+ 'RBNZ web-review remains sixth feed and market-only 2Y is the separate seventh, never canonical Rates');
+assert(src.includes('secondary2YReading(secondary2y,rates,x.ccy)')&&
+ src.includes('fetchSecondary2Y()'), 'secondary 2Y context must stay display-only');
 console.log('G8_YIELD_DATED_STUDY_NO_PROMOTION_PASS',JSON.stringify({covered:rows.covered,recent:rows.recent,historical:rows.covered-rows.recent,no_core_effect:true}));

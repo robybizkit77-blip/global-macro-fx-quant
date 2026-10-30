@@ -1343,6 +1343,69 @@ function yieldStudySnapshot(raw,derived){
   recent:rows.filter(r=>r.status==='RECENT').length,
   scenarios:rows.filter(r=>r.scenario).length};
 }
+
+/* Separate secondary market observations: not the SNB/RBNZ official 2Y,
+   not a fresh 10Y slope, pair spread, V2 economic score or trading signal.
+   A retained market observation must retain its actual timestamp forever. */
+const SECONDARY_2Y_URL='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/validation/rates/fixtures/chf_nzd_2y_secondary_market_2026-10-30.json';
+async function fetchSecondary2Y(){
+ const ctrl=new AbortController(),t=setTimeout(()=>ctrl.abort(),11000);
+ try{const r=await fetch(SECONDARY_2Y_URL,{cache:'no-store',signal:ctrl.signal});
+  if(!r.ok)throw Error('Secondary market 2Y HTTP '+r.status);
+  return await r.json();
+ }finally{clearTimeout(t)}
+}
+function secondary2YObservation(snap,rates,ccy){
+ const allowed=['CHF','NZD'];
+ const g=snap?.governance,r=snap?.observations?.[ccy],old=rates?.[ccy],q=r?.source_quotes;
+ if(!allowed.includes(ccy)||
+    snap?.schema!=='GMFQ_CHF_NZD_2Y_SECONDARY_MARKET_SNAPSHOT_V1'||
+    snap.status!=='SECONDARY_OBSERVED_2Y_REFERENCE_RESEARCH_ONLY'||
+    snap.source_quotes_not_guaranteed_identical_benchmark!==true||
+    snap.values_not_independent_closing_auctions!==true||
+    g?.canonical_native_rates_unchanged!==true||
+    g?.official_rates_history_untouched!==true||
+    g?.no_cross_country_spread!==true||
+    g?.no_same_currency_2y_10y_slope!==true||
+    g?.eligible_for_macro_score!==false||g?.eligible_for_28pair_bias!==false||
+    g?.eligible_for_beta_or_forward!==false||g?.eligible_for_automatic_canonical_promotion!==false||
+    g?.data_are_not_2y_OIS!==true||
+    r?.currency!==ccy||r.tenor!=='2Y'||r.market_observation_date!==snap.as_of||
+    !Array.isArray(q)||q.length!==(ccy==='CHF'?3:2)||
+    r.quote_source_count!==q.length||
+    r.range_kind!=='CROSS_PROVIDER_DISPERSION_NOT_CONFIDENCE_INTERVAL'||
+    !['SECONDARY_MARKET_INDICATIVE_MIXED_INSTRUMENT_BASIS',
+      'SECONDARY_MARKET_INDICATIVE_NOT_RBNZ_B2_CERTIFIED'].includes(r.quality)||
+    !old||!String(old.quality||'').includes('OFFICIAL')||
+    num(old['2Y'])===null||!Number.isInteger(romeCalendarAge(old.date))||
+    !(r.market_observation_date>old.date))return null;
+ const age=romeCalendarAge(r.market_observation_date);
+ if(!Number.isInteger(age)||age<0)return null;
+ const vals=[];
+ for(const obs of q){
+  let u;try{u=new URL(obs.url)}catch(_){return null}
+  if(u.protocol!=='https:'||!['www.investing.com','tradingeconomics.com','www.worldgovernmentbonds.com'].includes(u.hostname)||
+     obs.observation_date!==r.market_observation_date||
+     num(obs.value_pct)===null||obs.value_pct < -5||obs.value_pct > 25)return null;
+  vals.push(obs.value_pct);
+ }
+ const z=vals.slice().sort((a,b)=>a-b);
+ const median=(z[Math.floor((z.length-1)/2)]+z[Math.ceil((z.length-1)/2)])/2;
+ if(num(r.value_pct)===null||num(r.range_min_pct)===null||num(r.range_max_pct)===null||
+    Math.abs(median-r.value_pct)>1e-8||Math.abs(z[0]-r.range_min_pct)>1e-8||
+    Math.abs(z.at(-1)-r.range_max_pct)>1e-8)return null;
+ return {ccy,value:r.value_pct,date:r.market_observation_date,age,
+   min:r.range_min_pct,max:r.range_max_pct,sourceCount:q.length,
+   tier:'SECONDARY_OBSERVED_NOT_OFFICIAL',sources:q.map(x=>({name:x.publisher,url:x.url})),
+   noSpread:true,noSignal:true,stale:age>5};
+}
+function secondary2YReading(snap,rates,ccy){
+ const old=rates?.[ccy];
+ if(old&&String(old.quality||'').includes('OFFICIAL')&&
+    fresh(old.date,5)&&num(old['2Y'])!==null)return null;
+ return secondary2YObservation(snap,rates,ccy);
+}
+
 /* Two matching RBNZ B2 HTML reads: display-only, not independent XLSX review. */
 function nzdWebReviewCandidate(canonical,c){
  const r=canonical?.NZD,g=c?.governance||{},e=c?.evidence||{};
@@ -1374,7 +1437,7 @@ function nzdWebReviewCandidate(canonical,c){
  return {date:c.as_of,v2:c['2Y'],v10:c['10Y'],slopeBp:c.curve_bp,
    historical:age>4,source:c.source_url,approval:'PENDING'};
 }
-function renderYieldStudy(doc,rates,snb,webReview){
+function renderYieldStudy(doc,rates,snb,webReview,secondary2y){
  if(route()!=='tassi'||frame.contentDocument!==doc||doc.getElementById('gmfq-yields-study'))return;
  const anchor=doc.getElementById('rates-rows')?.closest('.desk-panel');
  if(!anchor)return;
@@ -1421,6 +1484,9 @@ function renderYieldStudy(doc,rates,snb,webReview){
   '#gmfq-yields-study .gmfq-yield-rebase{grid-column:1/-1;font:11px/1.55 Arial,sans-serif;color:#e6ca90;padding:9px 10px;border-left:2px solid #af9255;background:rgba(175,146,85,.075);overflow-wrap:anywhere}'+
   '#gmfq-yields-study .gmfq-yield-row .gmfq-yield-web-candidate{grid-column:1/-1;font:11px/1.6 Arial,sans-serif;color:#e8cb92;margin:3px 0;overflow-wrap:anywhere}'+
   '#gmfq-yields-study .gmfq-yield-web-candidate a{color:#ebd49f;text-decoration:underline}'+
+  '#gmfq-yields-study .gmfq-yield-market{grid-column:1/-1;font:11px/1.6 Arial,sans-serif;color:#b7d8eb;border-left:2px solid #5380a5;padding:4px 8px;overflow-wrap:anywhere}'+
+  '#gmfq-yields-study .gmfq-yield-market[data-quality="STALE"]{color:#d9c18b;border-color:#b19561}'+
+  '#gmfq-yields-study .gmfq-yield-market a{color:inherit;text-decoration:underline}'+
   '#gmfq-yields-study .gmfq-yield-row[data-state="HISTORICAL"]>div:first-child small{color:#e0c486}'+
   '#gmfq-yields-study .gmfq-yield-head{color:#a9c1d0;font:600 11px/1.6 Arial,sans-serif}'+
   '@media(max-width:520px){#gmfq-yields-study .gmfq-yields-grid{padding:0 9px 10px}'+
@@ -1430,6 +1496,7 @@ function renderYieldStudy(doc,rates,snb,webReview){
   '#gmfq-yields-study .gmfq-yields-count{padding:8px 9px 0}}';
  doc.head.appendChild(css);
  const elements=out.rows.map(x=>{
+  const market=secondary2YReading(secondary2y,rates,x.ccy);
   const percent=n=>num(n)===null?'—':fmt(n,3)+'%';
   const label=x.status==='RECENT'?'osservazione recente':
     x.status==='HISTORICAL'?'ultima osservazione storica':'non verificabile';
@@ -1439,6 +1506,14 @@ function renderYieldStudy(doc,rates,snb,webReview){
    '<div><strong>'+percent(x.v2)+'</strong></div><div><strong>'+percent(x.v10)+'</strong></div>'+
    '<div class="gmfq-yield-meta">Fonte governativa · '+htmlEscape(x.asof||'n.d.')+
    (x.slopeBp!==null?' · 10Y−2Y '+(x.slopeBp>=0?'+':'')+fmt(x.slopeBp,1)+' bp (stessa data)':'')+'</div>'+
+   (market?'<div class="gmfq-yield-market" data-quality="'+(market.stale?'STALE':'RECENT')+
+     '" data-date="'+htmlEscape(market.date)+'" data-tier="SECONDARY_OBSERVED_NOT_OFFICIAL">'+
+     '<b>2Y mercato · '+percent(market.value)+'</b> · '+htmlEscape(market.date)+
+     (market.stale?' · STORICO, non aggiornato':' · recente')+
+     ' · dispersione fonti '+percent(market.min)+'–'+percent(market.max)+
+     ' ('+market.sourceCount+' quotazioni). <strong>NON ufficiale</strong>, non confrontare con il 10Y SNB/RBNZ e non usare per spread FX. '+
+     market.sources.map(x=>'<a href="'+htmlEscape(x.url)+'" target="_blank" rel="noopener noreferrer">'+htmlEscape(x.name)+'</a>').join(' · ')+
+     '</div>':'')+
    (x.ccy==='NZD'&&nzWeb?'<div class="gmfq-yield-web-candidate" data-nzd-web-review="RESEARCH_UNAPPROVED">'+
      'RBNZ B2 · '+htmlEscape(nzWeb.date)+(nzWeb.historical?' · dato storico':' · dato recente')+
      ' · 2Y '+percent(nzWeb.v2)+' · 10Y '+percent(nzWeb.v10)+
@@ -1653,9 +1728,9 @@ function mountMarketResearch(doc,ois,proxy,rates,snb10,sourceReadiness){
   '';
 }
 async function applyMarketResearch(doc){
- const all=await Promise.allSettled([feed('OIS_OPERATIONAL_VIEW.json'),feed('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),feed('NATIVE_RATES_DATA.json'),feed('CHF_SNB_10Y_SPOT_CONTEXT.json'),feed('OIS_SOURCE_READINESS_VIEW.json'),feed('NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json')]);
+ const all=await Promise.allSettled([feed('OIS_OPERATIONAL_VIEW.json'),feed('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),feed('NATIVE_RATES_DATA.json'),feed('CHF_SNB_10Y_SPOT_CONTEXT.json'),feed('OIS_SOURCE_READINESS_VIEW.json'),feed('NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json'),fetchSecondary2Y()]);
  const feeds=all.map(x=>x.status==='fulfilled'?x.value:null);
- renderYieldStudy(doc,feeds[2],feeds[3],feeds[5]);
+ renderYieldStudy(doc,feeds[2],feeds[3],feeds[5],feeds[6]);
  mountMarketResearch(doc,...feeds.slice(0,5));
 }
 
@@ -3767,13 +3842,13 @@ async function mountMacroV2CurrentEvidence(doc){
  const gdpUrl='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/validation/macro/fixtures/v2_g8_quarterly_gdp_q2_2026_web_release_ledger_v1.json';
  const results=await Promise.allSettled([
   feed('MACRO_THERMOMETER_DATA.json'),feed('NATIVE_RATES_DATA.json'),
-  feed('OIS_OPERATIONAL_VIEW.json'),feed('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),
+  feed('OIS_OPERATIONAL_VIEW.json'),feed('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),fetchSecondary2Y(),
   (async()=>{const response=await fetch(gdpUrl,{cache:'no-store'});
     if(!response.ok)throw Error('GDP dossier HTTP '+response.status);
     return response.json()})()
  ]);
  if(route()!=='macro'||frame.contentDocument!==doc||!panel.isConnected)return;
- const [macro,rates,ois,nzdProxy,gdp]=results.map(r=>r.status==='fulfilled'?r.value:null);
+ const [macro,rates,ois,nzdProxy,secondary2y,gdp]=results.map(r=>r.status==='fulfilled'?r.value:null);
  const valid=macro?.schema_version==='GMFQ_MACRO_HEATMAP_V1'&&
    macro.status==='ACTIVE'&&rates&&ois?.currencies&&
    gdp?.schema==='GMFQ_G8_REAL_GDP_Q2_2026_PUBLISHER_WEB_RELEASE_EVENTS_V1'&&
@@ -3819,6 +3894,7 @@ async function mountMacroV2CurrentEvidence(doc){
    const field=k=>{const x=heat?.[k],y=macroThermometerObservation(x);
      return y?fmt(y.value,2)+'% · '+htmlEscape(y.period):'n.d.';};
    const d=rate?.date,rateRecent=fresh(d,5);
+   const market2y=secondary2YReading(secondary2y,rates,ccy);
    const p=policy?.horizons?.['6m'],policyAsOf=policy?.as_of||'';
    const direct=policy?.operational_status==='GREEN_OFFICIAL'&&
      policy.official_status==='ACTIVE'&&policy.quality==='OFFICIAL_CERTIFIED'&&
@@ -3840,17 +3916,24 @@ async function mountMacroV2CurrentEvidence(doc){
    return '<article class="gmfq-macro-v2-country" data-ccy="'+ccy+
       '" data-growth-period="'+htmlEscape(observed?.reference_quarter||'')+
       '" data-rates-date="'+htmlEscape(d||'')+
-      '" data-ois-quality="'+htmlEscape(grade)+'">'+
+      '" data-ois-quality="'+htmlEscape(grade)+
+      '" data-secondary2y-tier="'+(market2y?'SECONDARY_OBSERVED_NOT_OFFICIAL':'NONE')+
+      '" data-secondary2y-date="'+htmlEscape(market2y?.date||'')+'">'+
      '<strong>'+FLAG[ccy]+' '+ccy+'</strong>'+
      '<p><b>Growth</b> '+gdpValue+' <small>'+htmlEscape(observed?.reference_quarter||'')+
        ' · web '+htmlEscape(observed?.publisher_release_day||'')+
        (revised?' · revisione':' · prima stima')+'</small></p>'+
      '<p><b>Inflazione</b> '+field('inflation')+
        ' <b>Disoccupazione</b> '+field('labour')+'</p>'+
-     '<p><b>2Y</b> '+safeRate(rate['2Y'])+' <small>'+htmlEscape(d||'')+
+     '<p><b>2Y ufficiale</b> '+safeRate(rate['2Y'])+' <small>'+htmlEscape(d||'')+
        (rateRecent?'':' · STORICO')+'</small>'+
        ' <b>6M monetario</b> '+six+' <small>'+htmlEscape(effective6mAsOf)+
-       ' · '+htmlEscape(grade)+'</small></p></article>';
+       ' · '+htmlEscape(grade)+'</small></p>'+
+       (market2y?'<p><b>2Y riferimento mercato</b> '+safeRate(market2y.value)+
+         ' <small>'+htmlEscape(market2y.date)+' · '+(market2y.stale?'STORICO':'recente')+
+         ' · NON ufficiale · '+market2y.sourceCount+' fonti, dispersione '+
+         safeRate(market2y.min)+'–'+safeRate(market2y.max)+
+         ' · nessuno spread/score</small></p>':'')+'</article>';
  };
  const style=doc.createElement('style');
  style.id='gmfq-macro-v2-current-style';

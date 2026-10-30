@@ -1,0 +1,91 @@
+{
+  "schema": "GMFQ_CHF_NZD_2Y_SECONDARY_MARKET_SNAPSHOT_V1",
+  "status": "SECONDARY_OBSERVED_2Y_REFERENCE_RESEARCH_ONLY",
+  "as_of": "2026-10-30",
+  "access_date": "2026-10-30",
+  "methodology": "REPORTED_SECONDARY_2Y_GOVERNMENT_YIELD_MEDIAN_OF_LISTED_SAME_DATE_SOURCES",
+  "not_an_official_SNB_or_RBNZ_yield": true,
+  "source_quotes_not_guaranteed_identical_benchmark": true,
+  "values_not_independent_closing_auctions": true,
+  "prices_not_forward_looking_estimates": true,
+  "asof_date_is_market_observation_not_file_generation_date": true,
+  "observations": {
+    "CHF": {
+      "currency": "CHF",
+      "tenor": "2Y",
+      "market_observation_date": "2026-10-30",
+      "value_pct": 0.188,
+      "quote_source_count": 3,
+      "range_min_pct": 0.184,
+      "range_max_pct": 0.208,
+      "range_kind": "CROSS_PROVIDER_DISPERSION_NOT_CONFIDENCE_INTERVAL",
+      "quality": "SECONDARY_MARKET_INDICATIVE_MIXED_INSTRUMENT_BASIS",
+      "source_quotes": [
+        {
+          "publisher": "Investing.com",
+          "value_pct": 0.184,
+          "observation_date": "2026-10-30",
+          "url": "https://www.investing.com/rates-bonds/switzerland-2-year-bond-yield-historical-data",
+          "source_type": "HISTORICAL_REPORTED_CLOSE"
+        },
+        {
+          "publisher": "Trading Economics",
+          "value_pct": 0.188,
+          "observation_date": "2026-10-30",
+          "url": "https://tradingeconomics.com/switzerland/2-year-note-yield",
+          "source_type": "OTC_QUOTE_REPORTED_DAILY"
+        },
+        {
+          "publisher": "World Government Bonds",
+          "value_pct": 0.208,
+          "observation_date": "2026-10-30",
+          "observation_time_utc": "15:15",
+          "url": "https://www.worldgovernmentbonds.com/bond-historical-data/switzerland/2-years/",
+          "source_type": "INTRADAY_INDICATIVE_YIELD"
+        }
+      ],
+      "caveat": "Different quote times/methodologies. Median is research context, NOT SNB zero-coupon spot 2J, no 2Y/10Y slope and no cross-country official spread."
+    },
+    "NZD": {
+      "currency": "NZD",
+      "tenor": "2Y",
+      "market_observation_date": "2026-10-30",
+      "value_pct": 3.748,
+      "quote_source_count": 2,
+      "range_min_pct": 3.748,
+      "range_max_pct": 3.748,
+      "range_kind": "CROSS_PROVIDER_DISPERSION_NOT_CONFIDENCE_INTERVAL",
+      "quality": "SECONDARY_MARKET_INDICATIVE_NOT_RBNZ_B2_CERTIFIED",
+      "source_quotes": [
+        {
+          "publisher": "Investing.com",
+          "value_pct": 3.748,
+          "observation_date": "2026-10-30",
+          "url": "https://www.investing.com/rates-bonds/new-zealand-2-years-bond-yield-historical-data",
+          "source_type": "HISTORICAL_REPORTED_CLOSE"
+        },
+        {
+          "publisher": "Trading Economics",
+          "value_pct": 3.748,
+          "observation_date": "2026-10-30",
+          "url": "https://tradingeconomics.com/new-zealand/2-year-note-yield",
+          "source_type": "OTC_QUOTE_REPORTED_DAILY"
+        }
+      ],
+      "caveat": "Reported market 2Y reference, not authenticated same-basis RBNZ B2 2Y or an OIS. Two matching providers are not independently audited market transactions."
+    }
+  },
+  "governance": {
+    "canonical_native_rates_unchanged": true,
+    "official_rates_history_untouched": true,
+    "no_cross_country_spread": true,
+    "no_same_currency_2y_10y_slope": true,
+    "eligible_for_macro_score": false,
+    "eligible_for_28pair_bias": false,
+    "eligible_for_beta_or_forward": false,
+    "eligible_for_historical_PIT_backtest": false,
+    "eligible_for_automatic_canonical_promotion": false,
+    "data_are_not_2y_OIS": true,
+    "refresh_policy": "REPLACE_ONLY_AFTER_NEW_DATED_SOURCE_VERIFICATION; OTHERWISE_KEEP_ORIGINAL_ASOF_AND_LABEL_STALE"
+  }
+}

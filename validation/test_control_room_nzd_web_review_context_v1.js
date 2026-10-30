@@ -54,5 +54,6 @@ assert.equal(overdue({...raw,NZD:{...raw.NZD,date:'2026-10-16','2Y':3.89,'10Y':5
  'expired unapproved source cannot be shown as current context');
 assert(source.includes("host.dataset.coreEffect='NONE'"));
 assert(source.includes("data-nzd-web-review=\"RESEARCH_UNAPPROVED\""));
-assert(source.includes("renderYieldStudy(doc,feeds[2],feeds[3],feeds[5])"));
+assert(source.includes("renderYieldStudy(doc,feeds[2],feeds[3],feeds[5],feeds[6])"),
+ 'NZD reviewed web source remains the sixth feed; secondary market 2Y is separate seventh');
 console.log('NZD_B2_TWO_WEB_READS_STUDY_ONLY_NO_PROMOTION_PASS');
