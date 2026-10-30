@@ -4,7 +4,7 @@
 'use strict';
 const fx=['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'],tenors=['3m','6m','12m'];
 const flags={USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',AUD:'🇦🇺',CAD:'🇨🇦',NZD:'🇳🇿',CHF:'🇨🇭'};
-const labels={OFFICIAL:'CERTIFICATA',PROXY:'FUTURES INDICATIVI',MIXED:'DATE NON SINCRONIZZATE',SCENARIO:'SCENARIO · RBNZ B2',WITHHELD:'NON DISPONIBILE'};
+const labels={OFFICIAL:'FONTE MONETARIA CERTIFICATA',PROXY:'STIMA · FUTURES',MIXED:'STIMA · FUTURES / DATE NON SINCRONIZZATE',SCENARIO:'SCENARIO · RBNZ B2 · STIMA BANK BILL–OCR',WITHHELD:'FONTE NON DISPONIBILE'};
 const number=x=>typeof x==='number'&&Number.isFinite(x)?x:null;
 const fmt=x=>number(x)===null?'—':x.toFixed(2);
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -340,11 +340,11 @@ function view(rows,moves=[]){
    counts.OFFICIAL+' fonti certificate · '+counts.PROXY+' futures indicativi · '+
    counts.MIXED+' con date diverse · '+counts.SCENARIO+' scenario NZD'+
    (counts.WITHHELD?' · '+counts.WITHHELD+' senza fonte attendibile':'');
- return '<h2 class="desk-panel-title">G8 · Pricing monetario 3M / 6M / 12M</h2>'+
- '<p class="gmfq-est-quick-read"><strong>Copertura G8 · </strong>'+esc(brief)+
+ return '<h2 class="desk-panel-title">G8 · OIS e stime monetarie 3M / 6M / 12M</h2>'+
+ '<p class="gmfq-est-quick-read" data-g8-estimated-curve-coverage="'+usable+'/8"><strong>Copertura G8 · </strong>'+esc(brief)+
  '. Tutte le valute sono consultabili; le stime non diventano segnali.</p>'+
  '<details class="gmfq-est-disclosure" open data-default="OPEN"><summary>Tabella G8 · 3M / 6M / 12M, dati e fonti (tocca per nascondere)</summary>'+
- '<div class="gmfq-est-body"><p>Valori <b>certificati, indicativi e scenari</b> distinti. Date per singola scadenza; non tutte le serie sono OIS.</p>'+
+ '<div class="gmfq-est-body"><p><b>8 valute, 3 scadenze per valuta.</b> Le curve non certificate restano <b>stime/proxy</b> con date separate, non quotazioni OIS né curve sincronizzate. Nessun segnale FX deriva dai valori stimati.</p>'+
  '<div role="table" class="gmfq-est-table"><div class="gmfq-est-row gmfq-est-head" role="row"><span>Valuta</span><span>3M</span><span>6M</span><span>12M</span></div>'+
  rows.map(r=>'<div role="row" class="gmfq-est-row" data-ccy="'+r.ccy+'" data-estimate-type="'+r.tier+'">'+
  '<div><strong>'+flags[r.ccy]+' '+r.ccy+'</strong><small>'+labels[r.tier]+'</small></div>'+
