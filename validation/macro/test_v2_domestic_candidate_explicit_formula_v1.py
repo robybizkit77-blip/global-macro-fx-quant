@@ -7,7 +7,8 @@ from pathlib import Path
 
 from validation.macro.v2_g8_three_axis_economic_shadow_v1 import run as shadow_run
 from validation.macro.v2_domestic_candidate_explicit_formula_v1 import (
-    build,run,activity_class,indicative_regime,continuous_weight_interval,G8,FORMULA
+    build,run,activity_class,indicative_regime,continuous_weight_interval,
+    independent_axis_revision_envelope, REVISION_STRESS_EPSILONS_Z, G8,FORMULA
 )
 
 
@@ -93,6 +94,64 @@ class CandidateFormulaTests(unittest.TestCase):
         for invalid in (float("nan"),float("inf"),3.1):
             with self.assertRaises(ValueError):
                 continuous_weight_interval(invalid,0)
+
+    def test_independent_revision_stress_is_mathematical_not_empirical(self):
+        self.assertEqual(REVISION_STRESS_EPSILONS_Z, (0.10, 0.25, 0.50))
+        for g, l, eps, lower, upper in [
+            (0.30, 0.30, 0.10, 0.20, 0.40),
+            (0.30, 0.30, 0.25, 0.05, 0.55),
+            (1.00, 1.00, 0.50, 0.50, 1.50),
+            (1.00, -1.00, 0.25, -0.75, 0.75),
+        ]:
+            with self.subTest(g=g, l=l, eps=eps):
+                x=independent_axis_revision_envelope(g,l,eps)
+                self.assertAlmostEqual(x["stressed_activity_z_min"],lower)
+                self.assertAlmostEqual(x["stressed_activity_z_max"],upper)
+                self.assertTrue(x["this_is_not_an_empirical_revision_error_estimate"])
+                self.assertTrue(x["not_a_PIT_or_FX_forecast_test"])
+        self.assertTrue(independent_axis_revision_envelope(
+            0.30,0.30,0.10)["class_invariant_to_all_weights_and_independent_axis_shifts"])
+        self.assertFalse(independent_axis_revision_envelope(
+            0.30,0.30,0.25)["class_invariant_to_all_weights_and_independent_axis_shifts"])
+        self.assertEqual(independent_axis_revision_envelope(
+            1,1,0.50)["robust_domestic_class_RESEARCH_ONLY"],
+            "FIRM_RELATIVE_TO_OWN_HISTORY")
+        for eps in [-1, 0.51, float("nan"), float("inf"), True]:
+            with self.assertRaises(ValueError):
+                independent_axis_revision_envelope(0.2,0.3,eps)
+
+    def test_g8_stress_nested_without_promoting_FX(self):
+        out=build(self.shadow,self.legacy)
+        self.assertTrue(out["revision_stress_is_hypothetical_not_data_calibrated"])
+        counts=[]
+        for key in ("10","25","50"):
+            valid=0
+            for ccy,row in out["countries"].items():
+                diag=row["hypothetical_axis_revision_stress_RESEARCH_ONLY"][key]
+                self.assertTrue(diag["this_is_not_an_empirical_revision_error_estimate"])
+                self.assertTrue(diag["not_a_PIT_or_FX_forecast_test"])
+                self.assertIsNone(row["FX_strength_candidate"])
+                robust=diag["class_invariant_to_all_weights_and_independent_axis_shifts"]
+                if robust:
+                    self.assertTrue(row["activity_class_stable_across_25_50_75pct_growth"])
+                    self.assertEqual(diag["robust_domestic_class_RESEARCH_ONLY"],
+                                     row["domestic_activity_class"])
+                else:
+                    self.assertIsNone(diag["robust_domestic_class_RESEARCH_ONLY"])
+                valid+=robust
+            counts.append(valid)
+        self.assertGreaterEqual(counts[0],counts[1])
+        self.assertGreaterEqual(counts[1],counts[2])
+        self.assertLessEqual(counts[0],4)
+        self.assertEqual(counts[0],out["summary"][
+            "countries_robust_hypothetical_axis_shift_0p10_z"])
+        self.assertEqual(counts[1],out["summary"][
+            "countries_robust_hypothetical_axis_shift_0p25_z"])
+        self.assertEqual(counts[2],out["summary"][
+            "countries_robust_hypothetical_axis_shift_0p50_z"])
+        self.assertEqual(out["summary"]["FX_scores_produced"],0)
+        self.assertFalse(out["safe_to_publish_D"])
+        print("G8_HYPOTHETICAL_REVISION_STRESS_COUNTS_10_25_50",counts)
 
     def test_inflation_is_separate_no_false_growth_increase(self):
         a=build(self.shadow,self.legacy)["countries"]["CAD"]
