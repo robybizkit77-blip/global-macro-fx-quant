@@ -19,8 +19,9 @@ class EstimatedOisReliabilityTests(unittest.TestCase):
 
     def test_research_archive_is_real_observations_no_trading_promotion(self):
         out = build(self.archive, self.nzd)
-        self.assertEqual(out["quotes_observed"], 86)
-        self.assertEqual(out["total_matched_same_contract_changes"], 74)
+        self.assertEqual(out["quotes_observed"], len(self.rows))
+        self.assertGreaterEqual(out["quotes_observed"], 86, "append-only audit lost historical rows")
+        self.assertGreaterEqual(out["total_matched_same_contract_changes"], 74, "append-only audit lost source-matched moves")
         self.assertEqual(out["currencies_with_verified_OIS_accuracy"], 0)
         self.assertIsNone(out["level_MAE_vs_OIS"])
         self.assertIsNone(out["directional_hit_rate_vs_OIS"])
@@ -31,7 +32,9 @@ class EstimatedOisReliabilityTests(unittest.TestCase):
         self.assertFalse(out["writes_live_data"])
         self.assertEqual(set(out["currencies"]), {"USD", "EUR", "CHF", "NZD"})
         for c, expected in (("USD", 30), ("EUR", 28), ("CHF", 28)):
-            self.assertEqual(out["currencies"][c]["quote_count"], expected)
+            self.assertGreaterEqual(out["currencies"][c]["quote_count"], expected, "source archive lost G8 base sample")
+            self.assertEqual(out["currencies"][c]["quote_count"],
+                             sum(q["currency"] == c for q in self.rows))
             self.assertFalse(out["currencies"][c]["independent_OIS_benchmark_available"])
             self.assertIsNone(out["currencies"][c]["level_error_MAE_bp"])
             self.assertIsNone(out["currencies"][c]["direction_accuracy_percent"])
@@ -77,7 +80,8 @@ class EstimatedOisReliabilityTests(unittest.TestCase):
             check_archive(rows)
         checked = check_archive(self.rows)
         valid = futures_evidence(checked, "USD")
-        self.assertEqual(valid["same_contract_valid_move_count"], 26)
+        self.assertGreaterEqual(valid["same_contract_valid_move_count"], 26,
+                                "valid USD same-contract comparisons may grow, not shrink")
         for m in valid["same_contract_changes"]:
             self.assertTrue(m["contract"].startswith("ZQ"))
             self.assertGreaterEqual(m["change_bp"], -100)
