@@ -116,7 +116,7 @@ class EurFst3BenchmarkTests(unittest.TestCase):
             with self.subTest(field=field,value=value),self.assertRaises(ValueError):
                 compare(self.archive,[b])
         wrong_day=copy.deepcopy(base)
-        wrong_day["quote_date"]="2026-10-17"
+        wrong_day["quote_date"]="2026-10-15"
         self.assertEqual(compare(self.archive,[wrong_day])["admissible_same_window_pairs"],0,
                          "same-period quote published on a different date cannot be joined")
         with self.assertRaisesRegex(ValueError,"duplicated independent"):
