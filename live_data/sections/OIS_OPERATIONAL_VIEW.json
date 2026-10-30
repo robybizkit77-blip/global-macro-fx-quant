@@ -320,7 +320,7 @@
       "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive"
     },
     "JPY": {
-      "as_of": "2026-10-29",
+      "as_of": "2026-10-30",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
@@ -328,22 +328,22 @@
       "direction_vs_policy": "UP",
       "horizons": {
         "12m": {
-          "change_1d_bp": 1.5,
-          "change_1w_bp": 6.7,
-          "policy_delta_bp": 74.9,
-          "rate": 1.999
+          "change_1d_bp": -0.1,
+          "change_1w_bp": 6.6,
+          "policy_delta_bp": 74.8,
+          "rate": 1.998
         },
         "3m": {
-          "change_1d_bp": 0.0,
-          "change_1w_bp": -0.2,
-          "policy_delta_bp": 21.8,
-          "rate": 1.468
+          "change_1d_bp": -0.1,
+          "change_1w_bp": -0.3,
+          "policy_delta_bp": 21.7,
+          "rate": 1.467
         },
         "6m": {
-          "change_1d_bp": 0.0,
-          "change_1w_bp": -0.2,
-          "policy_delta_bp": 45.5,
-          "rate": 1.705
+          "change_1d_bp": -0.1,
+          "change_1w_bp": -0.3,
+          "policy_delta_bp": 45.4,
+          "rate": 1.704
         }
       },
       "official_status": "ACTIVE",
