@@ -24,7 +24,8 @@ SCHEMA = "GMFQ_MACRO_PIT_RELEASE_LEDGER_V1"
 ANCHOR_GLOB = "*_historical_anchor_*.json"
 EVIDENCE_GLOB = "*_strict_pit_evidence_*.json"
 RECEIPT_GLOB = "*_strict_pit_receipt_*.json"
-WEB_EVIDENCE_FILE = "CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-22.json"
+WEB_EVIDENCE_FILE = "CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-30.json"
+WEB_EVIDENCE_ARCHIVE = "CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-22.json"
 WEB_SCHEMA = "GMFQ_G8_CORE_OFFICIAL_WEB_RELEASE_ATTESTATIONS_V1"
 OFFICIAL_HOSTS = {"USD": "bls.gov", "CAD": "statcan.gc.ca", "AUD": "abs.gov.au",
                   "JPY": "stat.go.jp", "GBP": "ons.gov.uk", "NZD": "stats.govt.nz"}
@@ -67,9 +68,9 @@ def anchor_row(entry, path, series_key, kind):
     }
 
 
-def source_web_attestations(core_dir):
+def source_web_attestations(core_dir, filename=WEB_EVIDENCE_FILE):
     """Web-sourced latest release facts: NOT archive-vintage provenance."""
-    file = core_dir / WEB_EVIDENCE_FILE
+    file = core_dir / filename
     if not file.exists():
         return {"attestations": [], "contradictions": []}
     data = json.loads(file.read_text(encoding="utf-8"))
@@ -180,8 +181,17 @@ def collect_candidates(core_dir):
                         continue
                     add(key, period, anchor_row(row, path.relative_to(ROOT).as_posix(),
                                                 key, kind+"_"+field.upper()))
+    # Preserve facts from the 22-Oct issuer dossier without replacing their
+    # reference periods with later releases. Same-period anchors in the newer
+    # 30-Oct dossier supersede the older copy; historical periods remain
+    # independently traceable but can NEVER certify a new latest month.
     web = source_web_attestations(core_dir)
-    for row in web["attestations"]:
+    archive = source_web_attestations(core_dir, WEB_EVIDENCE_ARCHIVE)
+    latest_pairs = {(r["key"], r["observation_period"]) for r in web["attestations"]}
+    selected = [(r, WEB_EVIDENCE_FILE) for r in web["attestations"]]
+    selected += [(r, WEB_EVIDENCE_ARCHIVE) for r in archive["attestations"]
+                 if (r["key"], r["observation_period"]) not in latest_pairs]
+    for row, filename in selected:
         stamp = row.get("release_timestamp_local")
         instant = (datetime.fromisoformat(stamp).astimezone(timezone.utc).isoformat()
                    if stamp else None)
@@ -189,7 +199,7 @@ def collect_candidates(core_dir):
             "release_date": row["release_date"],
             "value": row["published_value"],
             "official_reference": row["url"],
-        }, f"validation/macro/{WEB_EVIDENCE_FILE}", row["key"],
+        }, f"validation/macro/{filename}", row["key"],
            "OFFICIAL_WEB_RELEASE_UNHASHED")
         official["release_instant_utc"] = instant
         official["series_value"] = row["raw_series_value"]
