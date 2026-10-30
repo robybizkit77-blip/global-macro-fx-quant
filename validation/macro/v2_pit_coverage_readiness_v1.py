@@ -21,6 +21,8 @@ from validation.macro.v2_shadow_intensity_v1 import WINDOW
 
 SCHEMA = "GMFQ_MACRO_V2_G8_PIT_COVERAGE_READINESS_V1"
 CORE_FILE = "validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-22.json"
+CORE_CURRENT_FILE = "validation/macro/CORE_G8_OFFICIAL_RELEASE_WEB_ATTESTATIONS_2026-10-30.json"
+CORE_CURRENT_FROM = date(2026, 10, 30)
 GROWTH_FILE = "validation/macro/GROWTH_FIRST_RELEASE_OFFICIAL_WEB_ATTESTATIONS_2026-10-20.json"
 GBP_FILE = "validation/macro/GBP_MGSX_ROLLING_WINDOW_FIRST_RELEASE_MAP_2026-10-20.json"
 BLS_FILE = "validation/macro/fixtures/v2_bls_us_unrate_first_release_2023_12_2024_04.json"
@@ -270,7 +272,7 @@ def run(*, root: Path = ROOT, as_of: date | None = None) -> dict:
         "registry": read(root, REGISTRY),
         "therm": read(root, THERMOMETER),
         "series": read(root, SERIES),
-        "core": read(root, CORE_FILE),
+        "core": read(root, CORE_CURRENT_FILE if as_of >= CORE_CURRENT_FROM else CORE_FILE),
         "growth": read(root, GROWTH_FILE),
         "gbp": read(root, GBP_FILE),
         "bls": read(root, BLS_FILE),

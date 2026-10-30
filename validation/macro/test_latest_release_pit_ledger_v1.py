@@ -72,25 +72,21 @@ class LatestReleaseLedgerTests(unittest.TestCase):
         self.assertTrue(any(r["date"] == "2026-10-02" and r["value"] == 2.5
                             for r in august))
         jpy = out["observations"]["JPY.labour"]
-        current_period = jpy["current_observation_period"][:7]
-        if current_period == "2026-08":
-            self.assertEqual(jpy["release"]["first_release_date"], "2026-10-02")
-        else:
-            self.assertGreater(current_period, "2026-08")
-            self.assertNotEqual(jpy["release"]["first_release_date"], "2026-10-02")
-            if not self.anchors.get(("JPY.labour", current_period)):
-                self.assertEqual(jpy["release"]["status"],
-                                 "WITHHELD_EXACT_PERIOD_EVIDENCE")
-                self.assertIsNone(jpy["release"]["first_release_date"])
-                self.assertIsNone(jpy["release"]["first_release_timestamp_utc"])
-                self.assertFalse(jpy["release"]["historical_backtest_safe_for_all_periods"])
+        self.assertEqual(jpy["current_observation_period"][:7], "2026-09")
+        self.assertEqual(jpy["latest_transformed_observation"], 2.4)
+        self.assertEqual(jpy["release"]["first_release_date"], "2026-10-30")
+        self.assertEqual(jpy["release"]["status"], "DATE_ONLY")
+        self.assertIsNone(jpy["release"]["first_release_timestamp_utc"])
+        self.assertFalse(jpy["release"]["historical_backtest_safe_for_all_periods"])
 
-    def test_jpy_august_labour_anchor_cannot_certify_september(self):
+    def test_jpy_august_archive_is_not_reissued_as_september_first_release(self):
         current = self.run_receipt()["observations"]["JPY.labour"]
-        if current["current_observation_period"][:7] != "2026-09":
-            self.skipTest("September JPY labour has advanced; old-month guard tested above")
+        self.assertEqual(current["release"]["first_release_date"], "2026-10-30")
+        self.assertEqual(current["release"]["status"], "DATE_ONLY")
         self.assertEqual(current["latest_transformed_observation"], 2.4)
-        self.assertEqual(current["release"]["status"], "WITHHELD_EXACT_PERIOD_EVIDENCE")
+        august = self.anchors.get(("JPY.labour", "2026-08"), [])
+        self.assertTrue(any(r["date"] == "2026-10-02" and r["value"] == 2.5
+                            for r in august))
         forged = copy.deepcopy(self.anchors)
         archived = next(r for r in forged[("JPY.labour", "2026-08")]
                         if r["date"] == "2026-10-02" and r["value"] == 2.5)
