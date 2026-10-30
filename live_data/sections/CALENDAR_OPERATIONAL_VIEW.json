@@ -62,20 +62,6 @@
       "title": "Euro area unemployment"
     },
     {
-      "bank": "Bank of Japan",
-      "ccy": "JPY",
-      "consensus_status": "NOT_APPLICABLE",
-      "current_rate": 1.25,
-      "date": "2026-10-30",
-      "event_type": "CENTRAL_BANK_DECISION",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_SCHEDULE_FROM_CERTIFIED_CB_LAYER",
-      "source_layer": "NATIVE_CB_DATA",
-      "stance": "HAWKISH · restrittiva",
-      "status": "UPCOMING",
-      "title": "BoJ · decisione di politica monetaria"
-    },
-    {
       "ccy": "JPY",
       "consensus_status": "NOT_PRESENT",
       "date": "2026-10-30",
@@ -329,10 +315,24 @@
       "time_local": null,
       "timezone": "Pacific/Auckland",
       "title": "Gross domestic product"
+    },
+    {
+      "bank": "Bank of Japan",
+      "ccy": "JPY",
+      "consensus_status": "NOT_APPLICABLE",
+      "current_rate": 1.25,
+      "date": "2026-12-18",
+      "event_type": "CENTRAL_BANK_DECISION",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_SCHEDULE_FROM_CERTIFIED_CB_LAYER",
+      "source_layer": "NATIVE_CB_DATA",
+      "stance": "INVARIATA · rischio hawkish",
+      "status": "UPCOMING",
+      "title": "BoJ · decisione di politica monetaria"
     }
   ],
-  "generated_at_utc": "2026-10-29T20:45:07.857367Z",
-  "last_checked_at_utc": "2026-10-30T03:01:58.491552Z",
+  "generated_at_utc": "2026-10-30T07:19:06.039151Z",
+  "last_checked_at_utc": "2026-10-30T07:19:06.039151Z",
   "schema": "GMFQ_CALENDAR_OPERATIONAL_VIEW_V3",
   "scope": {
     "central_bank_schedule": "ACTIVE_OFFICIAL",

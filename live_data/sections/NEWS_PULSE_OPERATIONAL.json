@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-10-29",
-  "generated_at_utc": "2026-10-30T03:01:58.569130Z",
+  "generated_at_utc": "2026-10-30T07:19:06.122441Z",
   "items": [
     {
       "as_of": "2026-10-29",
@@ -47,7 +47,7 @@
       "title": "GBP: repricing OIS più hawkish (+1.5 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-10-30T03:01:58.569130Z",
+  "last_checked_at_utc": "2026-10-30T07:19:06.122441Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -796,9 +796,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 12,
+        "accepted_items": 11,
         "ccy": "EUR",
-        "entries_rejected": 3,
+        "entries_rejected": 4,
         "feed_entries_seen": 15,
         "feed_url": "https://www.ecb.europa.eu/rss/press.html",
         "source": "Banca centrale europea",
@@ -818,8 +818,8 @@
       {
         "accepted_items": 0,
         "ccy": "JPY",
-        "entries_rejected": 44,
-        "feed_entries_seen": 44,
+        "entries_rejected": 49,
+        "feed_entries_seen": 49,
         "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
         "source": "Bank of Japan",
         "source_id": "BOJ_NEWS",
