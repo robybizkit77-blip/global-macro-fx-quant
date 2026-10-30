@@ -1675,7 +1675,7 @@ function mountMarketResearch(doc,ois,proxy,rates,snb10,sourceReadiness){
  host.innerHTML='<h2 class="desk-panel-title">Market Pricing · curve comparate e affidabilità</h2>'+
   '<div class="desk-panel-body"><p class="gmfq-pricing-core-status">'+htmlEscape(headline)+'</p>'+
   '<p class="gmfq-pricing-core-explanation">GBP: OIS BoE; JPY, AUD e CAD: futures monetari. Certificazione della fonte ≠ OIS puro. '+
-   (curvesVerified?estimated.length+' valute indicative/stimate; '+withheld.length+' senza curva certificata (WITHHELD). ':'Riconciliazione delle fonti incompleta. ')+
+   (curvesVerified?'Il quadro completo G8 con fonti certificate, futures indicativi e scenari è riportato nella tabella principale sopra. '+(estimated.length+withheld.length)+' valute senza OIS/futures certificati: usare le stime con i rispettivi limiti. ':'Riconciliazione delle fonti incompleta. ')+
    'I rendimenti governativi 2Y/10Y sono un layer distinto e non dimostrano da soli il percorso dei tassi.</p>'+
   '<p class="gmfq-research-intro">Cosa sta prezzando il mercato su 3, 6 e 12 mesi? Il grafico mostra solo le scadenze validate, espresse come differenza dal policy rate. Non sono probabilità per meeting.</p>'+
   '<div class="gmfq-research-tabs" role="group" aria-label="Filtra pricing certificato"></div>'+
