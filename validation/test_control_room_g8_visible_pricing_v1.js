@@ -22,7 +22,7 @@ assert(rendered.includes('G8 · OIS e stime monetarie 3M / 6M / 12M'),
  'Rates page must identify certified versus estimated 3M/6M/12M values');
 assert(rendered.includes('data-g8-estimated-curve-coverage='),
  'Rates page must make numeric G8 estimate coverage explicit');
-assert(rendered.includes('STIMA · FUTURES / DATE DIVERSE'),
+assert(rendered.includes('STIMA · FUTURES / DATE NON SINCRONIZZATE'),
  'Mixed-date quote must remain visibly an estimate, not a full certified OIS');
 
 assert(rendered.includes('non intervallo statistico'));
