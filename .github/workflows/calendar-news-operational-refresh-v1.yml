@@ -24,7 +24,9 @@ on:
       - 'validation/calendar/verify_future_macro_coverage_v1.py'
       - 'validation/calendar/test_verify_future_macro_coverage_v1.py'
       - 'validation/calendar/promote_fomc_oct28_official_cb_catchup_v1.py'
+      - 'validation/calendar/promote_boj_oct30_official_cb_catchup_v1.py'
       - 'validation/calendar/test_promote_fomc_oct28_official_cb_catchup_v1.py'
+      - 'validation/calendar/test_promote_boj_oct30_official_cb_catchup_v1.py'
       - 'validation/calendar/MACRO_RELEASE_SOURCE_REGISTRY_V1.json'
       - 'live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json'
       - 'live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json'
@@ -55,7 +57,9 @@ on:
       - 'validation/calendar/verify_future_macro_coverage_v1.py'
       - 'validation/calendar/test_verify_future_macro_coverage_v1.py'
       - 'validation/calendar/promote_fomc_oct28_official_cb_catchup_v1.py'
+      - 'validation/calendar/promote_boj_oct30_official_cb_catchup_v1.py'
       - 'validation/calendar/test_promote_fomc_oct28_official_cb_catchup_v1.py'
+      - 'validation/calendar/test_promote_boj_oct30_official_cb_catchup_v1.py'
       - 'validation/calendar/MACRO_RELEASE_SOURCE_REGISTRY_V1.json'
       - 'live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json'
       - 'live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json'
@@ -140,6 +144,55 @@ jobs:
           assert d['market_pricing_unchanged'] is True
           assert d['core_or_ois_or_pair_effect']=='NONE'
           print('OFFICIAL_FOMC_CB_SOURCE_INTEGRITY_PASS',d['status'])
+          PY
+
+      - name: Admit verified October 30 BoJ HOLD decision and December next meeting (no repricing rewrite)
+        run: |
+          set -euo pipefail
+          python -m unittest validation.calendar.test_promote_boj_oct30_official_cb_catchup_v1 -v
+          python validation/calendar/promote_boj_oct30_official_cb_catchup_v1.py \
+            --output /tmp/gmfq-boj-oct30-candidate.json \
+            | tee /tmp/gmfq-boj-oct30-receipt.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/gmfq-boj-oct30-receipt.json'))
+          assert d['status'] in {
+             'OFFICIAL_BOJ_2026_10_30_CATCHUP_READY',
+             'ALREADY_CERTIFIED_NO_CHANGE','SKIP_NEWER_CERTIFIED_JPY_DECISION'
+          }
+          assert d['rate_level_changed'] is False
+          assert d['market_pricing_unchanged'] is True
+          assert d['core_or_ois_or_pair_effect']=='NONE'
+          PY
+          if python - <<'PY'
+          import json
+          d=json.load(open('/tmp/gmfq-boj-oct30-receipt.json'))
+          raise SystemExit(0 if d['changed'] else 1)
+          PY
+          then
+            python validation/update_live_direct_section.py \
+              --section NATIVE_CB_DATA \
+              --replacement /tmp/gmfq-boj-oct30-candidate.json \
+              --apply > /tmp/gmfq-boj-section-apply.json
+          else
+            echo BOJ_OCT30_ALREADY_CERTIFIED_NO_PAYLOAD_UPDATE
+          fi
+          python validation/build_live_manifest_v2.py \
+            --write live_data/manifest.v2.json > /tmp/gmfq-boj-manifest-check.json
+          python validation/check_live_update_contract.py > /tmp/gmfq-boj-live-contract.json
+          python validation/rebuild_live_data_runtime.py --verify-only \
+            > /tmp/gmfq-boj-runtime-check.json
+          python - <<'PY'
+          import json
+          for name in ('manifest','live-contract','runtime'):
+              path={'manifest':'/tmp/gmfq-boj-manifest-check.json',
+                    'live-contract':'/tmp/gmfq-boj-live-contract.json',
+                    'runtime':'/tmp/gmfq-boj-runtime-check.json'}[name]
+              d=json.load(open(path))
+              assert d['status']=='PASS', (name,d)
+              if name=='runtime':
+                  assert d['noop_roundtrip_byte_identical'] is True
+          print('OFFICIAL_BOJ_OCT30_CB_SOURCE_INTEGRITY_PASS')
           PY
 
       - name: Refresh public secondary consensus
