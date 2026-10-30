@@ -1,0 +1,76 @@
+name: OIS Estimated Curve Reliability Research QA
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/cb_pricing/audit_estimated_ois_reliability_v1.py'
+      - 'validation/cb_pricing/test_audit_estimated_ois_reliability_v1.py'
+      - 'validation/cb_pricing/history/OIS_SAME_CONTRACT_QUOTES_V1.jsonl'
+      - 'validation/cb_pricing/NZD_BB_CASH_RESEARCH_CALIBRATION_V1_2026-10-21.json'
+      - '.github/workflows/ois-estimate-reliability-research-qa-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test only research provenance, no OIS skill claims
+        run: |
+          python -m unittest validation.cb_pricing.test_audit_estimated_ois_reliability_v1 -v
+          python -m validation.cb_pricing.audit_estimated_ois_reliability_v1 --out /tmp/ois-estimate-reliability.json
+      - name: Gate: no OIS benchmark equals no validated OIS MAE or hit rate
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          o=json.loads(Path('/tmp/ois-estimate-reliability.json').read_text())
+          assert o['schema']=='GMFQ_ESTIMATED_OIS_RELIABILITY_RESEARCH_V1'
+          assert o['quotes_observed']>=1
+          assert o['currencies_with_verified_OIS_accuracy']==0
+          assert o['independent_synchronized_OIS_reference_count']==0
+          assert o['level_MAE_vs_OIS'] is None
+          assert o['directional_hit_rate_vs_OIS'] is None
+          assert o['eligible_to_reprice_CB_or_28_pairs'] is False
+          assert o['eligible_to_publish_official_OIS'] is False
+          assert o['eligible_for_H1_or_Forward'] is False
+          assert o['writes_live_data'] is False
+          for c in ('USD','EUR','CHF','NZD'):
+              row=o['currencies'][c]
+              assert row['level_error_MAE_bp'] is None
+              assert row['direction_accuracy_percent'] is None
+              assert row['reliability_grade_for_OIS_accuracy']=='NOT_VALIDATED_NO_INDEPENDENT_OIS_REFERENCE'
+          nz=o['currencies']['NZD']
+          assert nz['monthly_bill_minus_OCR_holdout_MAE_bp']==16.333
+          print('OIS_RESEARCH_INDEPENDENT_BENCHMARK_NOT_AVAILABLE_NO_TRADING_PROMOTION')
+          PY
+      - name: Gate: protect actual site, currency scores, 28 pairs and schedulers
+        run: |
+          python - <<'PY'
+          import subprocess
+          allowed={
+             'validation/cb_pricing/audit_estimated_ois_reliability_v1.py',
+             'validation/cb_pricing/test_audit_estimated_ois_reliability_v1.py',
+             '.github/workflows/ois-estimate-reliability-research-qa-v1.yml',
+          }
+          changed=set(subprocess.check_output(
+             ['git','diff','--name-only','origin/main...HEAD'],text=True).splitlines())
+          assert changed<=allowed, 'unapproved research change: '+repr(sorted(changed-allowed))
+          print('RESEARCH_ONLY_NO_LIVE_DATA_SITE_CRON_OR_MODEL_WRITES')
+          PY
+      - name: Archive empirical evidence and explicit OIS-accuracy no-go
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ois-estimate-reliability-research-v1
+          path: /tmp/ois-estimate-reliability.json
+          if-no-files-found: warn
