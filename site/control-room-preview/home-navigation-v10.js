@@ -1310,6 +1310,85 @@ function focusCurrency(doc){
 /* The dedicated Rates page already renders all eight G8 rows, but the original
    design exposes only four country selectors. Complete the selectors in the
    additive adapter; a missing verified series still renders WITHHELD. */
+
+/* Restore existing sovereign chart from verified, same-day historical 2Y/10Y pairs. */
+function sovereignHistoryPairs(rates,k){
+ const r=rates?.[k],a=r?.history2,b=r?.history10,valid=d=>/^\d{4}-\d{2}-\d{2}$/.test(d||'');
+ if(!r||!String(r.quality||'').includes('OFFICIAL')||!valid(r.date)||
+    !Array.isArray(a?.dates)||!Array.isArray(a?.values)||
+    !Array.isArray(b?.dates)||!Array.isArray(b?.values)||
+    a.dates.length!==a.values.length||b.dates.length!==b.values.length)return [];
+ const two=new Map(a.dates.map((d,i)=>[d,num(a.values[i])]));
+ const rows=b.dates.map((d,i)=>({d,y2:two.get(d),y10:num(b.values[i])}))
+  .filter(x=>valid(x.d)&&x.d<=r.date&&x.y2!==null&&x.y2!==undefined&&
+    x.y10!==null&&x.y2>-5&&x.y2<30&&x.y10>-5&&x.y10<30)
+  .sort((x,y)=>x.d.localeCompare(y.d));
+ if(rows.length<2||rows.at(-1).d!==r.date||Math.abs(rows.at(-1).y2-r['2Y'])>.002||
+    Math.abs(rows.at(-1).y10-r['10Y'])>.002)return [];
+ const last=Date.parse(r.date+'T00:00:00Z'),recent=rows.filter(x=>
+  Date.parse(x.d+'T00:00:00Z')>=last-184*86400000);
+ return recent.length>=2?recent:rows.slice(-40);
+}
+function mountSovereignHistoryPlot(doc,rates){
+ const host=doc.getElementById('rates-chart'),sel=doc.getElementById('rates-select');
+ if(!host||!sel||host.dataset.sovereignPlotMounted)return;
+ host.dataset.sovereignPlotMounted='true';
+ const css=doc.createElement('style');css.textContent=
+  '#rates-chart{height:auto!important;min-height:260px;overflow:visible!important}'+
+  '#rates-chart [data-gmfq-sovereign-plot]{width:100%;height:auto;display:block;max-height:330px}'+
+  '#rates-chart .gmfq-gov-source{display:flex;justify-content:space-between;flex-wrap:wrap;gap:5px;color:#b9ccda;font:11px/1.5 Arial,sans-serif}'+
+  '#rates-chart .gmfq-gov-legend{color:#c4d7e7;font:11px/1.6 Arial,sans-serif}'+
+  '#rates-chart .gmfq-gov-axes text{fill:#a4bfce;font:11px Arial,sans-serif}';
+ doc.head.appendChild(css);
+ const paint=()=>{
+  if(route()!=='tassi'||frame.contentDocument!==doc||!host.isConnected)return;
+  const k=(sel.querySelector('button[aria-pressed="true"][data-ccy]')||
+   sel.querySelector('button.active[data-ccy]'))?.dataset.ccy||'USD';
+  const rows=sovereignHistoryPairs(rates,k);host.dataset.gmfqSovereignCcy=k;
+  host.dataset.gmfqSovereignCount=String(rows.length);
+  if(rows.length<2){host.innerHTML='<p>Storico 2Y/10Y omogeneo insufficiente per '+k+
+   '. Nessuna serie ricostruita.</p>';return;}
+  const vals=rows.flatMap(x=>[x.y2,x.y10]),lo=Math.floor((Math.min(...vals)-.2)*4)/4,
+   hi=Math.ceil((Math.max(...vals)+.2)*4)/4,span=hi-lo||1,
+   first=Date.parse(rows[0].d+'T00:00:00Z'),last=Date.parse(rows.at(-1).d+'T00:00:00Z');
+  const px=d=>62+814*(Date.parse(d+'T00:00:00Z')-first)/(last-first||1),
+   py=v=>28+203*(hi-v)/span;
+  const axes=Array.from({length:5},(_,i)=>{
+   let v=lo+i*span/4,y=py(v);
+   return '<line x1="62" x2="876" y1="'+y+'" y2="'+y+
+    '" stroke="#29485b"/><text x="53" y="'+(y+4)+'" text-anchor="end">'+fmt(v,2)+'%</text>';
+  }).join('')+[0,.25,.5,.75,1].map(q=>{
+   let d=rows[Math.round(q*(rows.length-1))].d;
+   return '<text x="'+px(d)+'" y="272" text-anchor="middle">'+d.slice(5)+'</text>';
+  }).join('');
+  const trace=(field,tenor,color)=>'<polyline data-tenor="'+tenor+
+    '" fill="none" stroke="'+color+'" stroke-width="3" points="'+
+    rows.map(x=>px(x.d).toFixed(1)+','+py(x[field]).toFixed(1)).join(' ')+
+    '"/><circle cx="'+px(rows.at(-1).d)+'" cy="'+py(rows.at(-1)[field])+
+    '" r="4" fill="'+color+'"/>';
+  const asof=rows.at(-1).d,old=romeCalendarAge(asof)>5;
+  host.innerHTML='<div class="gmfq-gov-source"><b>'+FLAG[k]+' '+k+
+   ' · 2Y / 10Y</b><span>'+(old?'STORICO':'OSSERVATO')+' · '+asof+
+   ' · '+rows.length+' date comuni</span></div>'+
+   '<svg data-gmfq-sovereign-plot="TRUE" data-ccy="'+k+
+   '" viewBox="0 0 900 285" role="img" aria-label="'+k+' storico 2Y e 10Y verificato">'+
+   '<g class="gmfq-gov-axes">'+axes+'</g>'+trace('y2','2Y','#67bcff')+
+   trace('y10','10Y','#e6c476')+'</svg><div class="gmfq-gov-legend">● 2Y azzurro · ● 10Y oro · NATIVE_RATES_DATA, date abbinate · non OIS</div>';
+  const meta=doc.getElementById('rates-chart-meta');
+  if(meta)meta.textContent=k+' · '+(old?'storico non corrente':'ultima rilevazione')+
+   ' '+asof+' · solo rendimenti governativi';
+ };
+ sel.addEventListener('click',e=>{
+  if(e.target.closest('button[data-ccy]')){
+   doc.defaultView.setTimeout(paint,0);doc.defaultView.setTimeout(paint,120);
+  }
+ });
+ const obs=new doc.defaultView.MutationObserver(()=>{
+  if(host.dataset.gmfqSovereignCount!=='0'&&!host.querySelector('svg[data-gmfq-sovereign-plot]'))
+   doc.defaultView.queueMicrotask(paint);
+ });
+ obs.observe(host,{childList:true});paint();
+}
 function enhanceRatesDetail(doc){
  const select=doc.getElementById('rates-select');
  if(!select)return;
@@ -1616,6 +1695,47 @@ function marketResearchSvg(curves){
  svg+='<text x="678" y="14" text-anchor="end" fill="#a4bfce" font-size="11">Δ policy rate · bp</text>';
  return '<svg viewBox="0 0 720 234" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Pricing a 3, 6 e 12 mesi, confronto solo dati certificati">'+svg+'</svg>';
 }
+
+function marketResearchGraded(ois,proxy){
+ const make=window.GMFQ_OIS_RESEARCH_V1?.matrix;
+ if(typeof make!=='function')return [];
+ return make(ois,proxy,romeTodayIso()).filter(r=>
+  FX.includes(r.ccy)&&['OFFICIAL','PROXY','MIXED','SCENARIO'].includes(r.tier)&&
+  ['3m','6m','12m'].every(t=>num(r.points?.[t]?.value)!==null&&fresh(r.points[t].date,5)))
+ .map(r=>({k:r.ccy,tier:r.tier,pts:['3m','6m','12m'].map(t=>r.points[t].value),
+  dates:['3m','6m','12m'].map(t=>r.points[t].date),
+  joined:new Set(['3m','6m','12m'].map(t=>r.points[t].date)).size===1}));
+}
+/* Do not join secondary futures with different quote dates or imply OIS policy deltas. */
+function marketResearchGradedSvg(curves){
+ if(!curves.length)return '<p style="padding:18px">Riferimenti 3M/6M/12M non disponibili con date verificabili.</p>';
+ const values=curves.flatMap(c=>c.pts),lo=Math.floor((Math.min(...values)-.25)*2)/2,
+  hi=Math.ceil((Math.max(...values)+.25)*2)/2,span=hi-lo||1;
+ const xx=[94,350,616],yy=v=>25+170*(hi-v)/span;
+ let svg='<g data-graded-axis="PERCENT">';
+ for(let i=0;i<=4;i++){
+  let v=lo+i*span/4,y=yy(v);
+  svg+='<line x1="59" x2="682" y1="'+y+'" y2="'+y+
+   '" stroke="#28495b"/><text x="50" y="'+(y+4)+'" font-size="12" fill="#a9c3d3" text-anchor="end">'+fmt(v,1)+'%</text>';
+ }
+ ['3M','6M','12M'].forEach((t,i)=>svg+='<text x="'+xx[i]+'" y="225" fill="#afc6d6" font-size="13" text-anchor="middle">'+t+'</text>');
+ svg+='</g>';
+ for(const c of curves){
+  svg+='<g data-graded-ccy="'+c.k+'" data-quality="'+c.tier+'" data-joined="'+c.joined+'">';
+  if(c.joined)svg+='<polyline fill="none" stroke="'+COLOR[c.k]+'" stroke-width="3"'+
+    (c.tier==='OFFICIAL'?'':' stroke-dasharray="5 5"')+' points="'+
+    c.pts.map((v,i)=>xx[i]+','+yy(v).toFixed(1)).join(' ')+'"/>';
+  c.pts.forEach((v,i)=>svg+='<circle cx="'+xx[i]+'" cy="'+yy(v).toFixed(1)+
+    '" r="5" fill="'+COLOR[c.k]+'"><title>'+c.k+' '+['3M','6M','12M'][i]+
+    ' '+fmt(v,3)+'% · '+c.dates[i]+' · '+c.tier+'</title></circle>');
+  svg+='</g>';
+ }
+ svg+='<text x="682" y="13" font-size="11" text-anchor="end" fill="#a8bdcb">Livello monetario · %</text>';
+ return '<svg data-chart="G8_SOURCE_GRADED_LEVELS" data-currencies="'+curves.length+
+  '" viewBox="0 0 720 240" role="img" aria-label="'+curves.length+
+  ' valute G8, livelli 3M 6M 12M, fonte qualificata">'+svg+'</svg>';
+}
+
 function marketResearchSecondary(data){
  const terms=['3m','6m','12m'];
  const cards=['USD','EUR','CHF'].flatMap(k=>{
@@ -1689,7 +1809,7 @@ function mountMarketResearch(doc,ois,proxy,rates,snb10,sourceReadiness){
  const style=doc.createElement('style');style.id='gmfq-pricing-research-style';
  style.textContent='#gmfq-pricing-research{margin-top:12px}#gmfq-pricing-research .gmfq-research-intro,#gmfq-pricing-research .gmfq-research-note{color:#a9c1d2;font-size:12px;line-height:1.55;margin:9px 0 14px}#gmfq-pricing-research h3{font-size:13px;color:#e5edf5;margin:0 0 10px}#gmfq-pricing-research .gmfq-research-plot{height:225px;max-width:100%;border:1px solid #284456;border-radius:7px;background:#0b2030;overflow:hidden}#gmfq-pricing-research svg{height:100%;width:100%;display:block}#gmfq-pricing-research .gmfq-research-tabs,#gmfq-pricing-research .gmfq-research-legend{display:flex;flex-wrap:wrap;gap:7px 13px;margin:9px 0}#gmfq-pricing-research button{cursor:pointer;background:#122c40;border:1px solid #34546b;padding:6px 12px;border-radius:5px;color:#c0d0e0;font:12px Arial,sans-serif}#gmfq-pricing-research button[aria-pressed=true]{background:#e2c87c;border-color:#e2c87c;color:#102132}#gmfq-pricing-research button:focus-visible{outline:2px solid #f7dfa0}#gmfq-pricing-research .gmfq-research-legend span{font-size:11px;color:#b4c9d8}#gmfq-pricing-research .gmfq-research-legend i{display:inline-block;width:13px;height:3px;margin-right:5px;vertical-align:middle}#gmfq-pricing-research .gmfq-research-separator{border-top:1px solid #294556;margin-top:18px;padding-top:16px}#gmfq-pricing-research .gmfq-pricing-core-status{margin:8px 0 7px;padding:8px 0 9px;border-bottom:1px solid #2c4759;color:#d8c895;font:600 12px/1.5 Arial,sans-serif;overflow-wrap:anywhere}#gmfq-pricing-research .gmfq-pricing-core-explanation{color:#aabfce;font:11px/1.6 Arial,sans-serif;margin:0 0 12px}#gmfq-pricing-research #gmfq-pricing-evidence-details{border-top:1px solid #2d4858;margin-top:15px;padding-top:10px;min-width:0}#gmfq-pricing-research #gmfq-pricing-evidence-details>summary{cursor:pointer;color:#e3cb93;font:600 12px/1.55 Arial,sans-serif;outline-offset:4px;padding:6px 1px;overflow-wrap:anywhere}#gmfq-pricing-research #gmfq-pricing-evidence-details:not([open])>:not(summary){display:none!important}#gmfq-pricing-research .gmfq-quote-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:9px}#gmfq-pricing-research .gmfq-quote-card{background:#0b2232;border:1px solid #294659;border-radius:6px;padding:11px}#gmfq-pricing-research .gmfq-snb-spot{border:1px solid #315267;background:#0d2637;border-radius:7px;padding:12px 14px;margin:10px 0 12px;color:#aec6d7;font-size:12px;line-height:1.65}#gmfq-pricing-research .gmfq-snb-spot strong{color:#e6f1f8;font-size:20px;font-variant-numeric:tabular-nums}#gmfq-pricing-research .gmfq-snb-spot a{color:#e8cb8b;text-decoration:underline}#gmfq-pricing-research .gmfq-quote-card b{display:block;color:#f0d091;font-size:12px;margin-bottom:8px}#gmfq-pricing-research .gmfq-quote{color:#b6c9d8;font-size:11px;line-height:1.7}#gmfq-pricing-research .gmfq-quote strong{color:#e5eff5}#gmfq-pricing-research .gmfq-source-readiness{border-top:1px solid #294556;margin-top:18px;padding-top:14px}#gmfq-pricing-research .gmfq-source-readiness summary{font-size:13px;font-weight:700;color:#e9d192;cursor:pointer;outline-offset:4px}#gmfq-pricing-research .gmfq-source-row{display:flex;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid #203c4d}#gmfq-pricing-research .gmfq-source-row b{font-size:12px;color:#dbe9f3}#gmfq-pricing-research .gmfq-source-row p{font-size:12px;color:#adbfcd;margin:5px 0}#gmfq-pricing-research .gmfq-source-row small{display:block;color:#c4d3dd;line-height:1.45;font-size:11px}#gmfq-pricing-research .gmfq-source-link{flex:0 0 auto;font-size:11px}#gmfq-pricing-research .gmfq-source-link a{color:#e6c57f;text-decoration:underline}@media(max-width:600px){#gmfq-pricing-research .gmfq-source-row{display:block}#gmfq-pricing-research .gmfq-source-link{margin-top:7px}}@media(max-width:600px){#gmfq-pricing-research .gmfq-research-plot{height:190px}#gmfq-pricing-research .gmfq-quote-cards{grid-template-columns:1fr}}';
  doc.head.appendChild(style);
- const curves=marketResearchCurves(ois),host=doc.createElement('section');
+ const curves=marketResearchCurves(ois),graded=marketResearchGraded(ois,proxy),host=doc.createElement('section');
  const classes=['GREEN_OFFICIAL','GREEN_ESTIMATED','WITHHELD'];
  const statusesComplete=ois?.schema==='GMFQ_OIS_OPERATIONAL_VIEW_V1'&&
   FX.every(c=>classes.includes(ois.currencies?.[c]?.operational_status));
@@ -1704,36 +1824,37 @@ function mountMarketResearch(doc,ois,proxy,rates,snb10,sourceReadiness){
  host.id='gmfq-pricing-research';host.className='desk-panel';
  host.dataset.sourceStatus=curvesVerified?'READ_ONLY':'WITHHELD';
  host.dataset.verifiedCurves=curvesVerified?String(curves.length):'';
+  host.dataset.g8Levels=String(graded.length);
  host.dataset.estimatedLanes=curvesVerified?String(estimated.length):'';
  host.dataset.withheldLanes=curvesVerified?String(withheld.length):'';
  const headline=curvesVerified?
-   'Curve 3/6/12 mesi certificate: '+curves.length+'/8 · '+curves.map(c=>FLAG[c.k]+' '+c.k).join(', ')+'.':
+   'Grafico G8 3M/6M/12M: '+graded.length+'/8 valute con riferimenti datati. Curve certificate: '+curves.length+'/8 · '+curves.map(c=>FLAG[c.k]+' '+c.k).join(', ')+'.':
    'Copertura OIS/futures non verificabile: nessuna conclusione sul pricing.';
  host.innerHTML='<h2 class="desk-panel-title">Market Pricing · curve comparate e affidabilità</h2>'+
   '<div class="desk-panel-body"><p class="gmfq-pricing-core-status">'+htmlEscape(headline)+'</p>'+
   '<p class="gmfq-pricing-core-explanation">GBP: OIS BoE; JPY, AUD e CAD: futures monetari. Certificazione della fonte ≠ OIS puro. '+
    (curvesVerified?'Il quadro completo G8 con fonti certificate, futures indicativi e scenari è riportato nella tabella principale sopra. '+(estimated.length+withheld.length)+' valute senza OIS/futures certificati: usare le stime con i rispettivi limiti. ':'Riconciliazione delle fonti incompleta. ')+
    'I rendimenti governativi 2Y/10Y sono un layer distinto e non dimostrano da soli il percorso dei tassi.</p>'+
-  '<p class="gmfq-research-intro">Cosa sta prezzando il mercato su 3, 6 e 12 mesi? Il grafico mostra solo le scadenze validate, espresse come differenza dal policy rate. Non sono probabilità per meeting.</p>'+
-  '<div class="gmfq-research-tabs" role="group" aria-label="Filtra pricing certificato"></div>'+
+  '<p class="gmfq-research-intro">Cosa sta prezzando il mercato su 3, 6 e 12 mesi? Il grafico mostra livelli monetari 3M, 6M e 12M in %, con qualità separata. Non sono Δ policy rate né probabilità per meeting.</p>'+
+  '<div class="gmfq-research-tabs" role="group" aria-label="Filtra riferimenti monetari G8"></div>'+
   '<div class="gmfq-research-plot"></div><div class="gmfq-research-legend"></div>'+
-  '<p class="gmfq-research-note">Le curve sintetizzano prezzi per scadenza, non un percorso certo della banca centrale. Strumenti, date e limiti delle fonti restano consultabili nell’analisi completa.</p>'+
+  '<p class="gmfq-research-note">Le curve sintetizzano prezzi per scadenza, non un percorso certo della banca centrale. Linea piena: certificata; tratteggio: stima/scenario; punti isolati: date diverse, non collegate. Senza Δ policy, segnali FX o OIS sintetici. Strumenti, date e limiti delle fonti restano consultabili nell’analisi completa.</p>'+
   '<details id="gmfq-pricing-evidence-details"><summary>Apri analisi completa · fonti, proxy e casi incompleti</summary>'+
   marketResearchSecondary(ois)+'<div class="gmfq-research-separator"><h3>Fonti incomplete</h3>'+
   '<div class="gmfq-snb-spot" id="gmfq-chf-snb-10y-context" role="note"></div>'+
   '<p class="gmfq-research-note" id="gmfq-nzd-pricing-context"></p>'+
   '<p class="gmfq-research-note" id="gmfq-chf-rates-context"></p></div>'+marketSourceReadinessHtml(sourceReadiness,ois)+'</details></div>';
  original.insertAdjacentElement('afterend',host);
- const labels=[['ALL','Tutte'],...curves.map(c=>[c.k,FLAG[c.k]+' '+c.k])];
+ const labels=[['ALL','Tutte'],...graded.map(c=>[c.k,FLAG[c.k]+' '+c.k])];
  const tabs=host.querySelector('.gmfq-research-tabs'),plot=host.querySelector('.gmfq-research-plot'),legend=host.querySelector('.gmfq-research-legend');
  let selected='ALL';
  for(const [key,value] of labels){
   const b=doc.createElement('button');b.type='button';b.dataset.pricingCcy=key;b.textContent=value;tabs.appendChild(b);
  }
  const draw=()=>{
-  const shown=selected==='ALL'?curves:curves.filter(x=>x.k===selected);
-  plot.innerHTML=marketResearchSvg(shown);
-  legend.innerHTML=shown.map(c=>'<span title="'+htmlEscape(c.src)+'"><i style="background:'+COLOR[c.k]+'"></i>'+FLAG[c.k]+' '+c.k+' · '+htmlEscape(c.date)+'</span>').join('');
+  const shown=selected==='ALL'?graded:graded.filter(x=>x.k===selected);
+   plot.innerHTML=marketResearchGradedSvg(shown);
+   legend.innerHTML=shown.map(c=>'<span title="'+htmlEscape(c.dates.join(' / '))+'"><i style="background:'+COLOR[c.k]+'"></i>'+FLAG[c.k]+' '+c.k+' · '+c.tier+' · '+htmlEscape([...new Set(c.dates)].join(' / '))+'</span>').join('');
   tabs.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.pricingCcy===selected)));
  };
  tabs.addEventListener('click',e=>{const b=e.target.closest('button[data-pricing-ccy]');if(b){selected=b.dataset.pricingCcy;draw()}});
@@ -1768,6 +1889,7 @@ async function applyMarketResearch(doc){
  const all=await Promise.allSettled([feed('OIS_OPERATIONAL_VIEW.json'),feed('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),feed('NATIVE_RATES_DATA.json'),feed('CHF_SNB_10Y_SPOT_CONTEXT.json'),feed('OIS_SOURCE_READINESS_VIEW.json'),feed('NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json'),fetchSecondary2Y()]);
  const feeds=all.map(x=>x.status==='fulfilled'?x.value:null);
  renderYieldStudy(doc,feeds[2],feeds[3],feeds[5],feeds[6]);
+  mountSovereignHistoryPlot(doc,feeds[2]);
  mountMarketResearch(doc,...feeds.slice(0,5));
 }
 
