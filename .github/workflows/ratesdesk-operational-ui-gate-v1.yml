@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'index.html'
+      - 'payload/part-07.txt'
+      - 'validation/rates/test_v233_rates_source_age_guard_v1.js'
       - 'dashboard/ratesdesk-operational-v1.js'
       - 'validation/ui/DASHBOARD_UI_OWNERSHIP_REGISTRY_V1_2026-10-15.json'
       - '.github/workflows/ratesdesk-operational-ui-gate-v1.yml'
@@ -12,6 +14,8 @@ on:
     branches: [main]
     paths:
       - 'index.html'
+      - 'payload/part-07.txt'
+      - 'validation/rates/test_v233_rates_source_age_guard_v1.js'
       - 'dashboard/ratesdesk-operational-v1.js'
       - 'validation/ui/DASHBOARD_UI_OWNERSHIP_REGISTRY_V1_2026-10-15.json'
       - '.github/workflows/ratesdesk-operational-ui-gate-v1.yml'
@@ -29,6 +33,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Enforce live-source age and historic-no-FX Rates labels
+        run: node validation/rates/test_v233_rates_source_age_guard_v1.js
       - name: Install Chromium
         run: |
           npm init -y >/dev/null 2>&1
