@@ -4,6 +4,8 @@ on:
     branches: [main]
     paths:
       - 'validation/cb_pricing/audit_estimated_ois_reliability_v1.py'
+      - 'validation/cb_pricing/probe_eurex_historical_estr_source_v1.py'
+      - 'validation/cb_pricing/test_probe_eurex_historical_estr_source_v1.py'
       - 'validation/cb_pricing/eur_estr_contract_benchmark_bridge_v1.py'
       - 'validation/cb_pricing/eur_independent_spot_ois_forward_research_v1.py'
       - 'validation/cb_pricing/test_eur_independent_spot_ois_forward_research_v1.py'
@@ -65,6 +67,20 @@ jobs:
         run: |
           python -m unittest validation.cb_pricing.test_eur_independent_spot_ois_forward_research_v1 -v
           echo EUR_OIS_SPOT_FORWARD_RESEARCH_RECONSTRUCTION_QA_ONLY
+      - name: Check observed historical Eurex Clearing URLs, without generating archive links
+        run: |
+          python -m unittest validation.cb_pricing.test_probe_eurex_historical_estr_source_v1 -v
+          python -m validation.cb_pricing.probe_eurex_historical_estr_source_v1 --once --out /tmp/eurex-historic-source-access.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('/tmp/eurex-historic-source-access.json').read_text())
+          assert x['schema']=='GMFQ_EUREX_OIS_HISTORICAL_ACCESS_RESEARCH_V1'
+          assert x['different_dates_verified']<=2
+          assert x['EUR_OIS_MAE_bp'] is None and x['EUR_OIS_hit_rate'] is None
+          assert x['new_schedule_added'] is False and x['changes_live_OIS_or_FX'] is False
+          print('EUREX_21OCT_SOURCE_VERIFIED',x['historic_21oct_public_source_verified'])
+          PY
       - name: Gate: no OIS benchmark equals no validated OIS MAE or hit rate
         run: |
           python - <<'PY'
@@ -96,6 +112,8 @@ jobs:
           import subprocess
           allowed={
              'validation/cb_pricing/audit_estimated_ois_reliability_v1.py',
+             'validation/cb_pricing/probe_eurex_historical_estr_source_v1.py',
+             'validation/cb_pricing/test_probe_eurex_historical_estr_source_v1.py',
              'validation/cb_pricing/eur_estr_contract_benchmark_bridge_v1.py',
              'validation/cb_pricing/eur_independent_spot_ois_forward_research_v1.py',
              'validation/cb_pricing/test_eur_independent_spot_ois_forward_research_v1.py',
@@ -121,4 +139,5 @@ jobs:
             /tmp/ois-estimate-reliability.json
             /tmp/eur-estr-benchmark-readiness.json
             /tmp/cme-term-estr-source-access.json
+            /tmp/eurex-historic-source-access.json
           if-no-files-found: warn
