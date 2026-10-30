@@ -40,14 +40,23 @@ class ReadinessTests(unittest.TestCase):
         self.assertEqual(x["observed_pillar_slots"], 24)
         self.assertEqual(x["registered_core_series"], 16)
         self.assertEqual(x["growth_currencies_with_observations"], 8)
-        self.assertEqual(x["latest_core_official_web_anchors"], 8)
+        current_core = sum(
+            a["observation_period"][:7] ==
+            fixture()["therm"]["currencies"][a["key"].split(".")[0]][a["key"].split(".")[1]]["as_of"][:7]
+            for a in fixture()["core"]["attestations"]
+        )
+        self.assertEqual(x["latest_core_official_web_anchors"], current_core)
+        self.assertEqual(x["historical_core_official_web_anchors"], 8 - current_core)
+        self.assertEqual(x["latest_core_official_web_anchors"] +
+                         x["historical_core_official_web_anchors"], 8)
         self.assertEqual(x["latest_growth_official_web_anchors"], 2)
         self.assertEqual(x["first_release_pilot_rows_unmapped_to_canonical"], 5)
         self.assertEqual(x["gbp_ons_rolling_month_evidence_only"], 3)
         self.assertEqual(x["certified_full_first_release_histories"], 0)
         self.assertEqual(x["eligible_live_macro_pillars"], 0)
         self.assertEqual(len(receipt["rows"]), 24)
-        self.assertEqual(sum(bool(r["latest_anchor"]) for r in receipt["rows"]), 10)
+        self.assertEqual(sum(bool(r["latest_anchor"]) for r in receipt["rows"]),
+                         current_core + 2)
         for row in receipt["rows"]:
             self.assertGreater(row["observed_history_points_max"], 11)
             self.assertFalse(row["full_historical_pit_for_scoring"])
@@ -97,12 +106,36 @@ class ReadinessTests(unittest.TestCase):
             )
         self.assertRaisesRegex(ValueError, "duplicate or unknown", self.report, mutation)
 
-    def test_unknown_core_latest_period_is_rejected(self):
+    def test_future_core_attestation_period_is_rejected(self):
         self.assertRaisesRegex(
-            ValueError, "Core attestation value/period mismatch",
+            ValueError, "Core attestation after current canonical period",
             self.report, lambda p: p["core"]["attestations"][0].update(
-                observation_period="2026-08"
+                observation_period="2026-12"
             ),
+        )
+
+    def test_past_jpy_attestation_cannot_certify_september(self):
+        r = self.report()
+        rows = {(x["currency"], x["pillar"]): x for x in r["rows"]}
+        jpy = rows["JPY", "labour"]
+        old = next(a for a in fixture()["core"]["attestations"]
+                   if a["key"] == "JPY.labour")
+        self.assertEqual(old["observation_period"], "2026-08")
+        self.assertEqual(old["published_value"], 2.5)
+        self.assertEqual(old["release_date"], "2026-10-02")
+        self.assertIsNone(jpy["latest_anchor"])
+        self.assertFalse(jpy["latest_anchor_only"])
+        self.assertFalse(jpy["eligible_for_live_scoring"])
+        self.assertIn("JPY.labour", r["summary"]["historical_core_source_keys"])
+
+    def test_stale_core_attestation_cannot_be_reissued_after_cutoff(self):
+        def mutation(p):
+            old = next(a for a in p["core"]["attestations"]
+                       if a["key"] == "JPY.labour")
+            old["release_date"] = "2026-10-25"
+        self.assertRaisesRegex(
+            ValueError, "Core publication outside observation/as-of chronology",
+            self.report, mutation
         )
 
     def test_latest_release_cannot_exist_after_audit_cutoff(self):
