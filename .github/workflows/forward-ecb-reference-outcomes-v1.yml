@@ -13,6 +13,9 @@ on:
       - 'validation/forward/V2_FORWARD_COHORT_EVALUATION_CONTRACT_2026-10-28.md'
       - 'validation/macro/v2_eur_labour_zero_mad_diagnostic_v1.py'
       - 'validation/macro/test_v2_eur_labour_zero_mad_diagnostic_v1.py'
+      - 'validation/macro/v2_zero_mad_ordinal_quality_v1.py'
+      - 'validation/macro/test_v2_zero_mad_ordinal_quality_v1.py'
+      - 'validation/macro/V2_ZERO_MAD_ORDINAL_QUALITY_PROTOCOL_2026-10-30.md'
       - 'validation/forward/ECB_FORWARD_REFERENCE_OUTCOMES_RUNBOOK_2026-10-26.md'
       - '.github/workflows/forward-ecb-reference-outcomes-v1.yml'
   workflow_dispatch:
@@ -112,6 +115,26 @@ jobs:
           assert d["writes_live_data"] is False
           assert d["writes_frozen_forward_journals"] is False
           print("EUR_LABOUR_SCALE_DIAGNOSTIC", d["status"], d["current_economic_period"])
+          PY
+      - name: Test research-only zero-MAD ordinal status without numeric fallback
+        run: |
+          python -m unittest validation.macro.test_v2_zero_mad_ordinal_quality_v1 -v
+          python -m validation.macro.v2_zero_mad_ordinal_quality_v1 --receipt /tmp/gmfq-v2-zero-mad-ordinal-quality.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          v=json.loads(Path("/tmp/gmfq-v2-zero-mad-ordinal-quality.json").read_text())
+          assert v["policy_id"]=="V2-ZERO-MAD-ORDINAL-QUALITY-V1"
+          assert v["strict_numeric_z_imputation_count"]==0
+          assert v["can_write_forward_v2_journal"] is False
+          assert v["can_feed_preregistered_H1"] is False
+          assert v["changes_prior_frozen_snapshots"] is False
+          assert v["writes_live_data"] is False
+          assert all(x["numeric_replacement_z"] is None
+                     and x["eligible_for_forward_features"] is False
+                     for x in v["zero_mad_components"].values())
+          print("ZERO_MAD_ORDINAL_QUALITY_NO_NUMERIC_FALLBACK_PASS",
+                sorted(v["zero_mad_components"]))
           PY
       - name: Audit preregistered V2 H1 2Y repricing research (read-only)
         run: |
