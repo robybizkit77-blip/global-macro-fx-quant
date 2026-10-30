@@ -61,8 +61,10 @@ jobs:
           print('BLOCKERS:',x['blocked'])
           PY
       - name: Build downloadable integrated beta evidence review, without new FX scoring
+        if: steps.admission.outputs.complete == 'true'
         run: |
-          python -m validation.macro.v2_core_beta_evidence_desk_v1 --as-of 2026-10-28 --receipt /tmp/gmfq-core-beta-evidence-desk.json --html /tmp/gmfq-core-beta-evidence-desk.html
+          python -m unittest validation.macro.test_v2_core_beta_evidence_desk_v1 -v
+          python -m validation.macro.v2_core_beta_evidence_desk_v1 --as-of "$(TZ=Europe/Rome date +%Y-%m-%d)" --receipt /tmp/gmfq-core-beta-evidence-desk.json --html /tmp/gmfq-core-beta-evidence-desk.html
           python - <<'PY'
           import json
           from pathlib import Path
@@ -88,6 +90,28 @@ jobs:
           assert h.count('<article class="country">')==8
           print('CORE_V2_INTEGRATED_BETA_RESEARCH_PREVIEW_PASS')
           PY
+      - name: Explicitly withhold Beta preview when Macro data are incomplete
+        if: steps.admission.outputs.complete != 'true'
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('/tmp/gmfq-current-macro-input-readiness.json').read_text())
+          assert x['strict_eight_country_candidate_allowed_now'] is False
+          assert x['currencies_blocked'] >= 1
+          withheld={
+              'status':'WITHHELD_CURRENT_BETA_ECONOMIC_INPUT_NOT_COMPUTABLE',
+              'economic_source_as_of':x['as_of'],
+              'source_blockers':x['blocked'],
+              'beta_preview_generated':False,
+              'current_FX_scores_generated':0,
+              'current_28_pair_theses_generated':0,
+              'safe_to_publish_D':False,
+              'note':'Archived 27-Oct regression PASS is NOT a current G8 Beta validation.',
+          }
+          Path('/tmp/gmfq-core-beta-withheld.json').write_text(json.dumps(withheld,indent=2)+'\n')
+          print('BETA_PREVIEW_WITHHELD_CORRECTLY',x['blocked'])
+          PY
       - name: Check exact forbidden publication diff
         run: |
           git diff --exit-code -- live_data payload site dashboard
@@ -97,6 +121,8 @@ jobs:
           name: macro-v2-domestic-candidate-${{ github.run_id }}
           path: |
             /tmp/gmfq-domestic-macro-candidate.json
+            /tmp/gmfq-current-macro-input-readiness.json
+            /tmp/gmfq-core-beta-withheld.json
             /tmp/gmfq-core-beta-evidence-desk.json
             /tmp/gmfq-core-beta-evidence-desk.html
           if-no-files-found: error
