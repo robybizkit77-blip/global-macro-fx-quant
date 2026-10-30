@@ -11,10 +11,14 @@ import argparse
 import hashlib
 import json
 import math
-from datetime import date
+from datetime import date, datetime
+from zoneinfo import ZoneInfo
 from pathlib import Path
 from validation.macro.v2_g8_three_axis_economic_shadow_v1 import (
     FX, SCHEMA as INPUT_SCHEMA, run as shadow_run,
+)
+from validation.macro.v2_g8_observed_feature_bridge_v1 import (
+    SCHEMA as OBSERVED_SCHEMA, run as observed_run
 )
 
 SCHEMA = "GMFQ_MACRO_V2_EXPLICIT_DOMESTIC_CANDIDATE_V1"
@@ -24,6 +28,8 @@ W_LABOUR = 0.50
 W_INFLATION = 0.0  # The policy reaction, not CPI level, can affect FX.
 Z_THRESHOLD = 0.50
 SENSITIVITY_GROWTH_WEIGHTS = (0.25, 0.50, 0.75)
+# Hypothetical coordinate shifts, not estimated historical revision errors.
+REVISION_STRESS_EPSILONS_Z = (0.10, 0.25, 0.50)
 G8 = tuple(FX)
 
 
@@ -96,6 +102,34 @@ def continuous_weight_interval(growth: float, labour: float) -> dict:
     }
 
 
+def independent_axis_revision_envelope(growth: float, labour: float,
+                                       epsilon: float) -> dict:
+    """Exact worst-case envelope: every Growth weight in [0.25, 0.75].
+
+    Each own-history z-coordinate may vary INDEPENDENTLY by +/- epsilon;
+    convex weights put extrema at the two registered weight endpoints plus
+    the symmetric shift. This is hypothetical sensitivity arithmetic, NOT
+    an observed release-vintage revision error distribution or FX evidence.
+    """
+    require(type(epsilon) in (int, float) and math.isfinite(epsilon)
+            and 0 <= epsilon <= 0.50,
+            "revision stress must be finite and in registered 0..0.50 z range")
+    base = continuous_weight_interval(growth, labour)
+    lower = base["domestic_activity_z_min"] - epsilon
+    upper = base["domestic_activity_z_max"] + epsilon
+    stable = activity_class(lower) == activity_class(upper)
+    return {
+        "hypothetical_each_axis_shift_abs_z": epsilon,
+        "growth_weight_interval_inclusive": [0.25, 0.75],
+        "stressed_activity_z_min": round(lower, 12),
+        "stressed_activity_z_max": round(upper, 12),
+        "class_invariant_to_all_weights_and_independent_axis_shifts": stable,
+        "robust_domestic_class_RESEARCH_ONLY": activity_class(lower) if stable else None,
+        "this_is_not_an_empirical_revision_error_estimate": True,
+        "not_a_PIT_or_FX_forecast_test": True,
+    }
+
+
 def build(shadow, legacy):
     require(isinstance(shadow, dict) and shadow.get("schema") == INPUT_SCHEMA
             and shadow.get("status") ==
@@ -144,6 +178,14 @@ def build(shadow, legacy):
                      for w in SENSITIVITY_GROWTH_WEIGHTS}
         state = activity_class(activity)
         sensitivity = continuous_weight_interval(g, l)
+        revision_stresses = {
+            str(int(eps*100)): independent_axis_revision_envelope(g, l, eps)
+            for eps in REVISION_STRESS_EPSILONS_Z
+        }
+        require(all(not item["class_invariant_to_all_weights_and_independent_axis_shifts"]
+                    or sensitivity["classification_unchanged_at_every_weight_in_interval"]
+                    for item in revision_stresses.values()),
+                currency + ": stress robustness cannot exceed weight-only robustness")
         stable = sensitivity["classification_unchanged_at_every_weight_in_interval"]
         require(stable == all(activity_class(w*g+(1-w)*l) == state
                               for w in SENSITIVITY_GROWTH_WEIGHTS),
@@ -171,6 +213,7 @@ def build(shadow, legacy):
             "weights_growth_labour": [W_GROWTH,W_LABOUR],
             "growth_weight_sensitivity_z":scenarios,
             "continuous_weight_sensitivity_RESEARCH_ONLY":sensitivity,
+            "hypothetical_axis_revision_stress_RESEARCH_ONLY":revision_stresses,
             "activity_class_stable_across_25_50_75pct_growth":stable,
             "source_quality_flags":quality,
             "source_quality_details":{
@@ -198,6 +241,7 @@ def build(shadow, legacy):
         "historical_first_publication_PIT_not_certified":True,
         "growth_definition_caveats_and_estimates_visible":True,
         "out_of_sample_falsification_not_completed":True,
+        "revision_stress_is_hypothetical_not_data_calibrated":True,
         "canonical_core_score_formula_recovered":False,
         "countries":cases,
         "summary":{
@@ -213,6 +257,18 @@ def build(shadow, legacy):
                     "weight_invariant_domestic_class_RESEARCH_ONLY"
                 ] is None for x in cases.values()
             ),
+            "countries_robust_hypothetical_axis_shift_0p10_z":sum(
+                x["hypothetical_axis_revision_stress_RESEARCH_ONLY"]["10"][
+                    "class_invariant_to_all_weights_and_independent_axis_shifts"]
+                for x in cases.values()),
+            "countries_robust_hypothetical_axis_shift_0p25_z":sum(
+                x["hypothetical_axis_revision_stress_RESEARCH_ONLY"]["25"][
+                    "class_invariant_to_all_weights_and_independent_axis_shifts"]
+                for x in cases.values()),
+            "countries_robust_hypothetical_axis_shift_0p50_z":sum(
+                x["hypothetical_axis_revision_stress_RESEARCH_ONLY"]["50"][
+                    "class_invariant_to_all_weights_and_independent_axis_shifts"]
+                for x in cases.values()),
             "countries_with_estimates":sum(any(d["is_estimate"] for d in x["source_quality_details"].values()) for x in cases.values()),
             "FX_scores_produced":0,
             "28_pair_theses_recomputed":0,
@@ -229,6 +285,117 @@ def build(shadow, legacy):
     return output
 
 
+def source_readiness(observed: dict) -> dict:
+    """Typed read-only current-source admission, even when a z is undefined.
+
+    The separate strict full-candidate `run` continues to reject missing
+    inputs. This diagnostic does NOT impute or score a blocked currency.
+    """
+    require(isinstance(observed,dict) and
+            observed.get("schema") == OBSERVED_SCHEMA and
+            observed.get("status") ==
+            "OBSERVED_G8_RESEARCH_FEATURES_NOT_CERTIFIED_MACRO_MODEL" and
+            observed.get("safe_to_publish_new_D") is False and
+            observed.get("safe_to_use_for_forward") is False and
+            observed.get("writes_live_data") is False,
+            "unsafe current observable-source evidence")
+    require(date.fromisoformat(observed["checked_as_of"]) <= datetime.now(ZoneInfo("Europe/Rome")).date(),
+            "future observed research cutoff")
+    raw = observed.get("inflation_labour")
+    growth = observed.get("growth_quarterly_gdp_initial_web_research_features")
+    gaps = observed.get("us_bls_shutdown_research_estimates")
+    require(isinstance(raw,dict) and set(raw)==
+            {f"{c}.{d}" for c in G8 for d in ("labour","inflation")}
+            and isinstance(growth,dict) and set(growth)==set(G8)
+            and isinstance(gaps,dict) and set(gaps) <= {"USD.labour","USD.inflation"},
+            "incomplete or unregistered G8 research axes")
+    rows = {}
+    blocked = []
+    estimated = []
+    for c in G8:
+        entries = {}
+        g = growth[c]
+        val = g.get("research_robust_growth_z")
+        # Growth remains an observational first-web research feature, not
+        # a certified source-day PIT economic strength score.
+        g_available = type(val) in (int,float) and math.isfinite(val) and abs(val) <= 3.000000001
+        require(g.get("status") in (
+            "DESCRIPTIVE_INITIAL_WEB_GROWTH_Z_DEFINITION_CAVEAT",
+            "DESCRIPTIVE_INITIAL_WEB_GROWTH_Z_NOT_MODEL_CERTIFIED") or not g_available,
+            c + ": growth status cannot be promoted by numerical value")
+        entries["growth"] = {
+            "status":"OBSERVATIONAL_RESEARCH_Z" if g_available else "BLOCKED_MISSING_Z",
+            "upstream_status":g.get("status"),
+            "reference_period":g.get("latest_initial_period"),
+            "z_available_for_RESEARCH_ONLY":g_available,
+            "numeric_replacement_imputed":False,
+        }
+        if not g_available:
+            blocked.append({"currency":c,"pillar":"growth",
+                            "reason":g.get("status") or "MISSING_GROWTH_Z"})
+        for pillar in ("labour","inflation"):
+            key=c+"."+pillar
+            entry=raw[key]
+            status=entry.get("status")
+            z=entry.get("research_robust_z")
+            good=type(z) in (int,float) and math.isfinite(z) and abs(z) <= 3.000000001
+            require(entry.get("currency")==c and entry.get("pillar")==pillar,
+                    key+": invalid axis identity")
+            require((good and status=="DESCRIPTIVE_REVISED_HISTORY_ROBUST_Z_NOT_PIT") or
+                    (not good and z is None and status in (
+                     "NO_Z_ZERO_ROBUST_DISPERSION",
+                     "NO_Z_MISSING_PRIOR_ECONOMIC_PERIODS")),
+                    key+": strict numeric status/zero-MAD contradiction")
+            gap=(gaps.get(key) or {})
+            is_estimate=(not good and c=="USD" and
+                status=="NO_Z_MISSING_PRIOR_ECONOMIC_PERIODS" and
+                gap.get("status")=="BLS_SHUTDOWN_GAP_AWARE_RESEARCH_ESTIMATE_NOT_PIT" and
+                type(gap.get("estimated_research_robust_z")) in (int,float) and
+                math.isfinite(gap["estimated_research_robust_z"]))
+            state=("REVISED_HISTORY_Z_RESEARCH_ONLY" if good else
+                   "ESTIMATED_US_BLS_GAP_RESEARCH_ONLY" if is_estimate else
+                   "BLOCKED_MISSING_OR_ZERO_DISPERSION_Z")
+            entries[pillar]={
+                "status":state,
+                "upstream_status":status,
+                "reference_period":entry.get("observation_period"),
+                "z_available_for_RESEARCH_ONLY":bool(good or is_estimate),
+                "uses_unapproved_estimate":bool(is_estimate),
+                "numeric_replacement_imputed":False,
+                "strict_numeric_z":z if good else None,
+            }
+            if is_estimate:
+                estimated.append(key)
+            elif not good:
+                blocked.append({"currency":c,"pillar":pillar,
+                                "reason":status or "MISSING_STRICT_Z"})
+        rows[c]={"axes":entries,
+                 "complete_three_axis_research_candidate":all(
+                    x["z_available_for_RESEARCH_ONLY"] for x in entries.values())}
+    eligible=sum(r["complete_three_axis_research_candidate"] for r in rows.values())
+    return {
+        "schema":"GMFQ_MACRO_V2_G8_CURRENT_SOURCE_READINESS_V1",
+        "as_of":observed["checked_as_of"],
+        "status":("FULL_EIGHT_RESEARCH_AXES_AVAILABLE_NOT_PIT"
+                  if eligible==8 else
+                  "BLOCKED_EIGHT_COUNTRY_RESEARCH_INPUTS"),
+        "currencies_with_three_research_axes":eligible,
+        "currencies_blocked":8-eligible,
+        "blocked":blocked,"separate_US_research_estimate_series":sorted(estimated),
+        "countries":rows,
+        "strict_eight_country_candidate_allowed_now":eligible==8,
+        "eligible_to_publish_D":False,
+        "eligible_to_recompute_28_pairs":False,
+        "historical_PIT_or_OOS_validated":False,
+        "writes_live_data":False,
+        "no_missing_z_substituted":True,
+    }
+
+
+def run_source_readiness(as_of=None) -> dict:
+    return source_readiness(observed_run(as_of=as_of))
+
+
 def run(as_of=None, legacy_path=None):
     root=Path(__file__).resolve().parents[2]
     legacy_path=legacy_path or root/"live_data/sections/D.json"
@@ -239,17 +406,24 @@ def main():
     parser=argparse.ArgumentParser()
     parser.add_argument("--as-of")
     parser.add_argument("--out",type=Path)
+    parser.add_argument("--readiness-only",action="store_true",help="No score; typed current source blockers")
     a=parser.parse_args()
     if a.out:
         require(a.out.resolve().is_relative_to(Path("/tmp")),
                 "research-only file must be under /tmp")
-    result=run(as_of=a.as_of)
+    result=run_source_readiness(as_of=a.as_of) if a.readiness_only else run(as_of=a.as_of)
     if a.out:
         a.out.parent.mkdir(parents=True,exist_ok=True)
         a.out.write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n")
-    print(json.dumps({"status":result["status"],"summary":result["summary"],
-                      "safe_to_publish_D":result["safe_to_publish_D"],
-                      "receipt_sha256":result["receipt_sha256"]},sort_keys=True))
+    if a.readiness_only:
+        print(json.dumps({"status":result["status"],"as_of":result["as_of"],
+                          "currencies_blocked":result["currencies_blocked"],
+                          "blocked":result["blocked"],"eligible_to_publish_D":False},
+                         sort_keys=True))
+    else:
+        print(json.dumps({"status":result["status"],"summary":result["summary"],
+                          "safe_to_publish_D":result["safe_to_publish_D"],
+                          "receipt_sha256":result["receipt_sha256"]},sort_keys=True))
 
 
 if __name__=="__main__":

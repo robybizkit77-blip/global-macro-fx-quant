@@ -5,16 +5,116 @@ import math
 import unittest
 from pathlib import Path
 
-from validation.macro.v2_g8_three_axis_economic_shadow_v1 import run as shadow_run
-from validation.macro.v2_domestic_candidate_explicit_formula_v1 import (
-    build,run,activity_class,indicative_regime,continuous_weight_interval,G8,FORMULA
+from validation.macro.v2_g8_three_axis_economic_shadow_v1 import (
+    SCHEMA as SHADOW_SCHEMA, run as shadow_run
 )
+from validation.macro.v2_g8_observed_feature_bridge_v1 import run as observed_run
+from validation.macro.v2_domestic_candidate_explicit_formula_v1 import (
+    build,run,activity_class,indicative_regime,continuous_weight_interval,
+    independent_axis_revision_envelope, REVISION_STRESS_EPSILONS_Z,
+    source_readiness, G8,FORMULA
+)
+
+
+FROZEN_RESEARCH = (Path(__file__).resolve().parents[2] /
+    "validation/macro/fixtures/v2_g8_frozen_domestic_research_coordinates_2026_10_27.json")
+
+
+def frozen_research_shadow():
+    """Reconstitute ONLY a 27-Oct offline regression fixture from CI evidence.
+
+    This deliberately cannot be called today's observation or historical
+    first-release PIT. Only numerical research-test input fields are retained.
+    """
+    fixture = json.loads(FROZEN_RESEARCH.read_text(encoding="utf-8"))
+    assert fixture["schema"] == "GMFQ_MACRO_V2_FROZEN_RESEARCH_COORDINATES_TEST_FIXTURE_V1"
+    assert fixture["economic_as_of"] == "2026-10-27"
+    assert fixture["artifact_id"] == 12721884785
+    assert fixture["original_shadow_receipt_sha256"] == (
+        "8b56f7fac1d97b59f71939105509032dcaa799d9a1a938c9f13a9e4313638027")
+    assert fixture["original_candidate_receipt_sha256"] == (
+        "9f9d4182974db3c5425a8a7e0191da3d3d90ee29a3ef82d258716896c1ee919d")
+    assert fixture["research_coordinates_from_prior_observed_revised_histories_not_historical_first_release_PIT"] is True
+    assert fixture["original_artifact_is_not_live_current_source"] is True
+    assert fixture["eligible_to_recompute_D"] is False
+    assert fixture["eligible_to_recompute_28_pairs"] is False
+    assert set(fixture["countries"]) == set(G8)
+    countries = {}
+    for ccy, source in fixture["countries"].items():
+        g, l, p = (source[k] for k in ("g","l","p"))
+        assert all(type(v) in (float,int) and math.isfinite(v) and abs(v) <= 3
+                   for v in (g,l,p)), ccy
+        assert type(source["estimated"]) is bool
+        flags = list(source["flags"])
+        assert source["estimated"] == (ccy == "USD")
+        assert set(source) == {"g","l","p","lp","ip","flags","estimated"}
+        details = {
+            "growth":{
+                "reference_period":"2026Q2",
+                "method":"FIRST_WEB_GDP_12_PRIOR_QUARTERS_RESEARCH_ONLY",
+                "quality":("GDP_FIRST_WEB_DEFINITION_CAVEAT_NO_PIT"
+                           if ccy in ("EUR","CHF") else
+                           "GDP_FIRST_WEB_RESEARCH_NO_ORIGINAL_DAY_ARCHIVE"),
+                "is_estimate":False,
+            },
+            "labour":{
+                "reference_period":source["lp"],
+                "method":("ESTIMATE_BLS_SHUTDOWN_EXACT_ONE_GAP_25_CALENDAR_MONTHS"
+                          if source["estimated"] else
+                          "OBSERVED_REVISED_HISTORY_24M_OR_12Q"),
+                "quality":("ESTIMATED_NOT_OBSERVED_24_CONSECUTIVE_MONTHS_NO_PIT"
+                           if source["estimated"] else
+                           "RESEARCH_CURRENT_REVISED_HISTORY_NO_HISTORIC_PIT"),
+                "is_estimate":source["estimated"],
+            },
+            "inflation":{
+                "reference_period":source["ip"],
+                "method":("ESTIMATE_BLS_SHUTDOWN_EXACT_ONE_GAP_25_CALENDAR_MONTHS"
+                          if source["estimated"] else
+                          "OBSERVED_REVISED_HISTORY_24M_OR_12Q"),
+                "quality":("ESTIMATED_NOT_OBSERVED_24_CONSECUTIVE_MONTHS_NO_PIT"
+                           if source["estimated"] else
+                           "RESEARCH_CURRENT_REVISED_HISTORY_NO_HISTORIC_PIT"),
+                "is_estimate":source["estimated"],
+            },
+        }
+        countries[ccy] = {
+            "currency":ccy,
+            "growth_relative_to_own_history_z":g,
+            "labour_tightness_relative_to_own_history_z":l,
+            "inflation_pressure_relative_to_own_history_z":p,
+            "illustrative_activity_labour_balance_z":round(.5*(g+l),12),
+            "quality_flags":flags,
+            "dimensions":details,
+            "fx_currency_strength_score":None,
+            "fx_directional_bias":None,
+            "policy_rate_signal":None,
+            "cb_pricing_signal":None,
+            "candidate_for_pair_ranking":False,
+            "approved_for_live_core_D":False,
+        }
+    return {
+        "schema":SHADOW_SCHEMA,
+        "status":"EIGHT_SHADOW_THREE_AXIS_ECONOMIC_SCENARIOS_NOT_MACRO_SCORES",
+        "as_of":fixture["economic_as_of"],
+        "scope":{"activity_weights":{
+            "growth":0.5, "labour_tightness":0.5,"inflation_in_activity":0.0}},
+        "summary":{"research_axes":24,"economies":8,"FX_scores_approved":0},
+        "countries":countries,
+        "observed_data_is_not_historic_publication_vintage_replay":True,
+        "economic_axis_math_not_validated_against_out_of_sample_events":True,
+        "safe_to_publish_new_D":False,
+        "safe_to_update_pair_theses":False,
+        "safe_for_beta":False,
+        "safe_for_forward":False,
+        "writes_live_data":False,
+    }
 
 
 class CandidateFormulaTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.shadow=shadow_run(as_of="2026-10-27")
+        cls.shadow=frozen_research_shadow()
         cls.legacy=json.loads((Path(__file__).resolve().parents[2]/
                               "live_data/sections/D.json").read_text())
 
@@ -94,6 +194,127 @@ class CandidateFormulaTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 continuous_weight_interval(invalid,0)
 
+    def test_current_missing_source_cannot_be_forged_as_numeric(self):
+        from datetime import datetime
+        from zoneinfo import ZoneInfo
+        today=datetime.now(ZoneInfo("Europe/Rome")).date().isoformat()
+        observed=observed_run(as_of=today)
+        spoof=copy.deepcopy(observed)
+        item=spoof["inflation_labour"]["EUR.labour"]
+        if item["status"] == "NO_Z_ZERO_ROBUST_DISPERSION":
+            item["research_robust_z"]=0.0
+            with self.assertRaisesRegex(ValueError,"strict numeric status/zero-MAD contradiction"):
+                source_readiness(spoof)
+            item["research_robust_z"]=None
+        item["currency"]="GBP"
+        with self.assertRaisesRegex(ValueError,"invalid axis identity"):
+            source_readiness(spoof)
+        spoof=copy.deepcopy(observed)
+        spoof["safe_to_publish_new_D"]=True
+        with self.assertRaises(ValueError):
+            source_readiness(spoof)
+
+    def test_frozen_research_fixture_matches_27_oct_original_candidate_values(self):
+        r=build(self.shadow,self.legacy)
+        self.assertEqual(r["economic_as_of"],"2026-10-27")
+        self.assertEqual(r["formula_version"],FORMULA)
+        self.assertTrue(r["historical_first_publication_PIT_not_certified"])
+        self.assertFalse(r["safe_to_publish_D"])
+        self.assertFalse(r["safe_to_update_pair_theses"])
+        self.assertEqual(r["summary"]["countries_robust_for_ALL_continuous_weights_25_75pct"],4)
+
+    def test_current_source_admission_does_not_reuse_frozen_fixture(self):
+        from datetime import datetime
+        from zoneinfo import ZoneInfo
+        now=datetime.now(ZoneInfo("Europe/Rome")).date().isoformat()
+        observed=observed_run(as_of=now)
+        readiness=source_readiness(observed)
+        self.assertEqual(readiness["as_of"],now)
+        self.assertEqual(len(readiness["countries"]),8)
+        self.assertFalse(readiness["eligible_to_publish_D"])
+        self.assertFalse(readiness["eligible_to_recompute_28_pairs"])
+        self.assertFalse(readiness["writes_live_data"])
+        self.assertTrue(readiness["no_missing_z_substituted"])
+        self.assertEqual(readiness["currencies_with_three_research_axes"]+
+                         readiness["currencies_blocked"],8)
+        self.assertNotEqual(observed["checked_as_of"],self.shadow["as_of"])
+        self.assertTrue(observed["current_values_are_not_verified_first_release_vintages"])
+        eu=observed["inflation_labour"]["EUR.labour"]
+        if eu["status"] == "NO_Z_ZERO_ROBUST_DISPERSION":
+            self.assertIsNone(eu["research_robust_z"])
+            self.assertIn({"currency":"EUR","pillar":"labour",
+                           "reason":"NO_Z_ZERO_ROBUST_DISPERSION"}, readiness["blocked"])
+            self.assertFalse(readiness["strict_eight_country_candidate_allowed_now"])
+            with self.assertRaisesRegex(ValueError,
+                    "missing strict z cannot be replaced by unapproved estimates"):
+                shadow_run(as_of=now)
+        else:
+            # Source may advance. Only a genuinely computable current G8
+            # snapshot can pass; do not force a historical source status.
+            self.assertIn(eu["status"],(
+                "DESCRIPTIVE_REVISED_HISTORY_ROBUST_Z_NOT_PIT",
+                "NO_Z_MISSING_PRIOR_ECONOMIC_PERIODS",
+            ))
+        self.assertFalse(observed["safe_to_publish_new_D"])
+
+    def test_independent_revision_stress_is_mathematical_not_empirical(self):
+        self.assertEqual(REVISION_STRESS_EPSILONS_Z, (0.10, 0.25, 0.50))
+        for g, l, eps, lower, upper in [
+            (0.30, 0.30, 0.10, 0.20, 0.40),
+            (0.30, 0.30, 0.25, 0.05, 0.55),
+            (1.00, 1.00, 0.50, 0.50, 1.50),
+            (1.00, -1.00, 0.25, -0.75, 0.75),
+        ]:
+            with self.subTest(g=g, l=l, eps=eps):
+                x=independent_axis_revision_envelope(g,l,eps)
+                self.assertAlmostEqual(x["stressed_activity_z_min"],lower)
+                self.assertAlmostEqual(x["stressed_activity_z_max"],upper)
+                self.assertTrue(x["this_is_not_an_empirical_revision_error_estimate"])
+                self.assertTrue(x["not_a_PIT_or_FX_forecast_test"])
+        self.assertTrue(independent_axis_revision_envelope(
+            0.30,0.30,0.10)["class_invariant_to_all_weights_and_independent_axis_shifts"])
+        self.assertFalse(independent_axis_revision_envelope(
+            0.30,0.30,0.25)["class_invariant_to_all_weights_and_independent_axis_shifts"])
+        self.assertEqual(independent_axis_revision_envelope(
+            1,1,0.50)["robust_domestic_class_RESEARCH_ONLY"],
+            "FIRM_RELATIVE_TO_OWN_HISTORY")
+        for eps in [-1, 0.51, float("nan"), float("inf"), True]:
+            with self.assertRaises(ValueError):
+                independent_axis_revision_envelope(0.2,0.3,eps)
+
+    def test_g8_stress_nested_without_promoting_FX(self):
+        out=build(self.shadow,self.legacy)
+        self.assertTrue(out["revision_stress_is_hypothetical_not_data_calibrated"])
+        counts=[]
+        for key in ("10","25","50"):
+            valid=0
+            for ccy,row in out["countries"].items():
+                diag=row["hypothetical_axis_revision_stress_RESEARCH_ONLY"][key]
+                self.assertTrue(diag["this_is_not_an_empirical_revision_error_estimate"])
+                self.assertTrue(diag["not_a_PIT_or_FX_forecast_test"])
+                self.assertIsNone(row["FX_strength_candidate"])
+                robust=diag["class_invariant_to_all_weights_and_independent_axis_shifts"]
+                if robust:
+                    self.assertTrue(row["activity_class_stable_across_25_50_75pct_growth"])
+                    self.assertEqual(diag["robust_domestic_class_RESEARCH_ONLY"],
+                                     row["domestic_activity_class"])
+                else:
+                    self.assertIsNone(diag["robust_domestic_class_RESEARCH_ONLY"])
+                valid+=robust
+            counts.append(valid)
+        self.assertGreaterEqual(counts[0],counts[1])
+        self.assertGreaterEqual(counts[1],counts[2])
+        self.assertEqual(counts,[4,2,0])
+        self.assertEqual(counts[0],out["summary"][
+            "countries_robust_hypothetical_axis_shift_0p10_z"])
+        self.assertEqual(counts[1],out["summary"][
+            "countries_robust_hypothetical_axis_shift_0p25_z"])
+        self.assertEqual(counts[2],out["summary"][
+            "countries_robust_hypothetical_axis_shift_0p50_z"])
+        self.assertEqual(out["summary"]["FX_scores_produced"],0)
+        self.assertFalse(out["safe_to_publish_D"])
+        print("G8_HYPOTHETICAL_REVISION_STRESS_COUNTS_10_25_50",counts)
+
     def test_inflation_is_separate_no_false_growth_increase(self):
         a=build(self.shadow,self.legacy)["countries"]["CAD"]
         modified=copy.deepcopy(self.shadow)
@@ -139,7 +360,7 @@ class CandidateFormulaTests(unittest.TestCase):
                root/"live_data/sections/MACRO_SERIES.json",
                root/"live_data/sections/MACRO_THERMOMETER_DATA.json"]
         before={str(x):x.read_bytes() for x in paths}
-        out=run(as_of="2026-10-27")
+        out=build(self.shadow,self.legacy)
         self.assertEqual(out["economic_as_of"],"2026-10-27")
         self.assertEqual({str(x):x.read_bytes() for x in paths},before)
 

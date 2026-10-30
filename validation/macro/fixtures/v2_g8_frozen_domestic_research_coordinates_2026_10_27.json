@@ -1,0 +1,97 @@
+{
+  "schema": "GMFQ_MACRO_V2_FROZEN_RESEARCH_COORDINATES_TEST_FIXTURE_V1",
+  "artifact_evidence": "https://github.com/robybizkit77-blip/global-macro-fx-quant/actions/runs/40480968234",
+  "artifact_id": 12721884785,
+  "source_artifact_name": "macro-v2-three-axis-g8-research.json",
+  "original_shadow_receipt_sha256": "8b56f7fac1d97b59f71939105509032dcaa799d9a1a938c9f13a9e4313638027",
+  "original_shadow_json_bytes_sha256": "44acf69e61b4799917addfaabc420442d33b338bc0bfa1c9303a1f39e8e4fa10",
+  "original_formula_candidate_artifact_id": 12815335538,
+  "original_candidate_receipt_sha256": "9f9d4182974db3c5425a8a7e0191da3d3d90ee29a3ef82d258716896c1ee919d",
+  "economic_as_of": "2026-10-27",
+  "research_coordinates_from_prior_observed_revised_histories_not_historical_first_release_PIT": true,
+  "original_artifact_is_not_live_current_source": true,
+  "data_is_test_fixture_only": true,
+  "eligible_to_recompute_D": false,
+  "eligible_to_recompute_28_pairs": false,
+  "FX_strength_or_forward_evidence": false,
+  "countries": {
+    "USD": {
+      "g": -1.1463210009973883,
+      "l": 0,
+      "p": 2.2603578510271696,
+      "lp": "2026-09",
+      "ip": "2026-09",
+      "flags": [
+        "US_BLS_ESTIMATED_INFLATION_LABOUR_Z"
+      ],
+      "estimated": true
+    },
+    "EUR": {
+      "g": 0.6744907594765953,
+      "l": -0.6744907594766012,
+      "p": 3,
+      "lp": "2026-08",
+      "ip": "2026-09",
+      "flags": [
+        "EURO_AREA_POPULATION_DEFINITION_NOT_UNIFORM_OR_UNPINNED"
+      ],
+      "estimated": false
+    },
+    "GBP": {
+      "g": 1.1241512657943253,
+      "l": 0.5058680696074442,
+      "p": 0.8431134493457443,
+      "lp": "2026-08",
+      "ip": "2026-09",
+      "flags": [],
+      "estimated": false
+    },
+    "JPY": {
+      "g": 0.22483025315886504,
+      "l": 0,
+      "p": -0.5901794145420204,
+      "lp": "2026-08",
+      "ip": "2026-09",
+      "flags": [],
+      "estimated": false
+    },
+    "CHF": {
+      "g": 3,
+      "l": -0.9570251359326951,
+      "p": 2.3607176581680833,
+      "lp": "2026-09",
+      "ip": "2026-09",
+      "flags": [
+        "SWISS_INITIAL_GDP_SPORTS_FLASH_DEFINITION_MIXED"
+      ],
+      "estimated": false
+    },
+    "CAD": {
+      "g": 1.4838796708485096,
+      "l": 0.6744907594765952,
+      "p": 1.7269287905969604,
+      "lp": "2026-09",
+      "ip": "2026-09",
+      "flags": [],
+      "estimated": false
+    },
+    "AUD": {
+      "g": 0.6744907594765954,
+      "l": -2.020310933239856,
+      "p": 0.28103781644858067,
+      "lp": "2026-09",
+      "ip": "2026Q2",
+      "flags": [],
+      "estimated": false
+    },
+    "NZD": {
+      "g": 0,
+      "l": -1.156269873388448,
+      "p": 0.5395926075812763,
+      "lp": "2026Q2",
+      "ip": "2026Q3",
+      "flags": [],
+      "estimated": false
+    }
+  }
+}
