@@ -122,7 +122,50 @@ v233RatesCurrency=c;
 renderNativeRatesDesk();
 }
 
+/* Official source quality is distinct from recency. Do not infer today's
+   policy repricing from a valid but historical CHF/NZD yield snapshot. */
+function v233RatesFreshness(d,todayIso){
+  const day=String(d?.date||'');
+  const today=todayIso||new Intl.DateTimeFormat('sv-SE',{
+    timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'
+  }).format(new Date());
+  const asUtc=x=>/^\\d{4}-\\d{2}-\\d{2}$/.test(x)&&
+    !Number.isNaN(Date.parse(x+'T00:00:00Z'))&&
+    new Date(x+'T00:00:00Z').toISOString().slice(0,10)===x?
+    Date.parse(x+'T00:00:00Z'):null;
+  const a=asUtc(day),n=asUtc(today);
+  const age=a!==null&&n!==null?Math.round((n-a)/86400000):null;
+  const verified=String(d?.quality||'').includes('OFFICIAL')&&
+    d?.history2?.last_date===day&&d?.history10?.last_date===day&&
+    Number.isFinite(d?.['2Y'])&&Number.isFinite(d?.['10Y'])&&
+    d.history2.last_value===d['2Y']&&d.history10.last_value===d['10Y'];
+  return {date:day,ageDays:age,current:verified&&age>=0&&age<=5,
+    historic:verified&&age>5,verified};
+}
+
 function v478RatesTutor(c,d){
+  const source=v233RatesFreshness(d);
+  if(!source.current){
+    const label=source.verified&&source.historic?'STORICO':'NON VERIFICABILE';
+    const date=source.date||'non verificata';
+    const note='I rendimenti 2Y e 10Y disponibili sono del '+date+
+      ': non documentano il repricing odierno, un cambiamento della banca centrale o un vantaggio FX corrente.';
+    return {
+      now:{txt:label+' · NON OPERATIVO',cls:'neu'},
+      dir:{txt:'DIREZIONE ATTUALE NON DISPONIBILE',cls:'neu'},
+      title:'Rendimenti '+c+' · fonte '+(source.verified?'storica':'non verificabile'),
+      text:note,
+      drivers:[
+        {label:'2Y · dato '+date,txt:Number.isFinite(d?.['2Y'])?fmt(d['2Y'],2)+'% · solo storico':'Non verificabile',cls:'v478Neu'},
+        {label:'10Y · dato '+date,txt:Number.isFinite(d?.['10Y'])?fmt(d['10Y'],2)+'% · solo storico':'Non verificabile',cls:'v478Neu'},
+        {label:'Repricing / FX',txt:'Sospeso finché non arriva una coppia ufficiale recente',cls:'v478Neu'}
+      ],
+      confirm:'Nuova coppia ufficiale 2Y/10Y sulla stessa data, con storico e fonte verificati.',
+      reverse:'Non considerare i vecchi Δ settimanali prova di repricing o conferma FX corrente.',
+      fx:'Nessun giudizio operativo su '+c+' dai rendimenti del '+date+'.',
+      div:{name:'Non valutabile con dati storici',why:note}
+    };
+  }
   const m2=v233Move(d?.chg2_bp), m10=v233Move(d?.chg10_bp);
   const driver=v233Driver(d), curve=v233CurveInterpretation(d), div=v233Divergence(d);
 
@@ -222,7 +265,37 @@ v233RatesBound=true;
 det.addEventListener('toggle',()=>{if(det.open)v233RenderCharts()});
 }
 if(det?.open)v233RenderCharts();
+const age=v233RatesFreshness(d);
+if(!age.current){
+  const date=age.date||'non verificata';
+  const note='Fonte 2Y/10Y '+date+' · '+(age.historic?'storica':'non verificata')+
+    '. Non descrive il mercato di oggi; nuovi livelli e differenziali richiedono una coppia ufficiale recente.';
+  set('#v233DataQuality',age.historic?'UFFICIALE · STORICO '+date:'FONTE NON VALIDATA · '+date);
+  set('#v233Headline',note);
+  const headline=document.querySelector('#v233Headline');
+  if(headline)headLineNeutral(headline);
+  set('#v233Driver','Non valutabile con dati storici');
+  set('#v233DriverWhy',note);
+  set('#v233Divergence','Non valutabile');
+  set('#v233DivergenceWhy','La divergenza storica non certifica una dinamica attuale.');
+  set('#v233Turning','Non valutabile ora');
+  set('#v233TurningWhy','Servono aggiornamenti simultanei del 2Y e del 10Y.');
+  set('#v233Risk','Lettura temporale');
+  set('#v233RiskWhy',note);
+  set('#v233RatesRead',note);
+  set('#v233FxRead','Nessun supporto o pressione FX corrente derivabile dai rendimenti del '+date+'.');
+  const grid=document.querySelector('#v233RatesGrid');
+  if(grid)grid.innerHTML=[
+    v233RateCard('2Y · '+date,Number.isFinite(d['2Y'])?fmt(d['2Y'],2)+'%':'—','Dato storico','Non aggiornato alla seduta corrente.','neu'),
+    v233RateCard('10Y · '+date,Number.isFinite(d['10Y'])?fmt(d['10Y'],2)+'%':'—','Dato storico','Non combinare con rendimenti di date differenti.','neu'),
+    v233RateCard('10Y−2Y · '+date,Number.isFinite(d.curve_bp)?fmt(d.curve_bp,1)+' pb':'—','Curva storica','Nessuna inferenza su repricing o forza FX odierna.','neu')
+  ].join('');
+  const changes=document.querySelector('#v233ChangeList');
+  if(changes)changes.innerHTML='<div class="v233NoChange">Movimenti settimanali riferiti al '+date+
+    ': non usarli come variazioni della settimana attuale.</div>';
+}
 };
+function headLineNeutral(el){ el.className='v233Headline neu'; }
 </script><script>
 let v234CbCurrency = (typeof nativeCbSelected!=='undefined' && nativeCbSelected) ? nativeCbSelected : 'USD';
 function v234CountryLabel(c){
