@@ -93,30 +93,45 @@ def inspect(inputs: dict[str, dict], *, as_of: date) -> dict:
     check(reg["series"]["USD.labour"]["series_id"] != bls["series_id"],
           "BLS LNS14000000 pilot is not canonical UNRATE: mapping needs separate review")
 
-    latest_core = {}
+    latest_core, historical_core, seen_core = {}, {}, set()
     for a in core.get("attestations", []):
         key = a.get("key")
-        check(key in reg["series"] and key not in latest_core,
+        check(key in reg["series"] and key not in seen_core,
               "missing, duplicate or unknown core attestation")
+        seen_core.add(key)
         ccy, pillar = key.split(".")
         record = therm["currencies"][ccy][pillar]
-        check(month_of(a["observation_period"]) == month_of(record["as_of"])
-              and finite(a.get("published_value"))
-              and finite(record.get("latest_value"))
-              and abs(a["published_value"] - record["latest_value"]) < 1e-6,
-              "latest Core attestation value/period mismatch: " + key)
+        anchor_period = month_of(a["observation_period"])
+        live_period = month_of(record["as_of"])
+        check(finite(a.get("published_value")) and finite(record.get("latest_value")),
+              "Core attestation/canonical value missing: " + key)
+        check(anchor_period <= live_period,
+              "Core attestation after current canonical period: " + key)
         released = date.fromisoformat(a["release_date"])
         check(released <= as_of and released >=
-              date.fromisoformat(month_of(a["observation_period"]) + "-01"),
+              date.fromisoformat(anchor_period + "-01"),
               "Core publication outside observation/as-of chronology: " + key)
+        if anchor_period < live_period:
+            # A publisher attestation is immutable history, NOT evidence of
+            # the newly observed month. Never silently reuse its date/value.
+            historical_core[key] = {
+                "archived_period": anchor_period,
+                "current_observation_period": live_period,
+                "released_on": released.isoformat(),
+                "latest_observation_certified": False,
+            }
+            continue
+        check(abs(a["published_value"] - record["latest_value"]) < 1e-6,
+              "latest Core attestation value/period mismatch: " + key)
         latest_core[key] = {
-            "period": month_of(a["observation_period"]),
+            "period": anchor_period,
             "released_on": released.isoformat(),
             "publisher": a.get("publisher"),
             "utc_release_time_verified": bool(a.get("release_timestamp_local")),
             "evidence_type": "DATED_OFFICIAL_WEB_LATEST_ONLY_NO_ARCHIVE_BYTES",
         }
-    check(len(latest_core) == 8, "expected eight independently sourced latest Core anchors")
+    check(len(latest_core) + len(historical_core) == 8,
+          "expected eight independently sourced Core attestations or archived predecessors")
 
     latest_growth = {}
     for a in growth.get("attestations", []):
@@ -218,6 +233,8 @@ def inspect(inputs: dict[str, dict], *, as_of: date) -> dict:
             r["pillar"] == "growth" for r in rows
         ),
         "latest_core_official_web_anchors": len(latest_core),
+        "historical_core_official_web_anchors": len(historical_core),
+        "historical_core_source_keys": sorted(historical_core),
         "latest_growth_official_web_anchors": len(latest_growth),
         "first_release_pilot_rows_unmapped_to_canonical": len(bls["vintages"]),
         "gbp_ons_rolling_month_evidence_only": len(gbp["official_periods"]),
@@ -233,7 +250,7 @@ def inspect(inputs: dict[str, dict], *, as_of: date) -> dict:
         "summary": summary, "rows": rows,
         "notes": [
             "120 observed monthly values are not 120 timestamped first releases.",
-            "The 8 core / 2 growth official-page anchors each cover the latest period only.",
+            "Only exact-current-period Core attestations count as latest; past-month attestations are preserved as historical, never reused as new release times.",
             "GBP MGSX windows are not calendar months with independently verified UTC release times.",
             "BLS LNS14000000 five-release pilot must not be silently assigned to UNRATE.",
             "Secondary/intermediary transports are not promoted by this inventory.",
@@ -269,8 +286,9 @@ def markdown(r: dict) -> str:
         f"Observed pillars **{s['observed_pillar_slots']}/24**; core "
         f"**{s['registered_core_series']}/16**; Growth **"
         f"{s['growth_currencies_with_observations']}/8**.",
-        f"Latest official-web anchors: Core **{s['latest_core_official_web_anchors']}** "
-        f"and Growth **{s['latest_growth_official_web_anchors']}** (not complete PIT).",
+        f"Latest official-web anchors: Core **{s['latest_core_official_web_anchors']}**; "
+        f"historical Core **{s['historical_core_official_web_anchors']}**; "
+        f"Growth **{s['latest_growth_official_web_anchors']}** (not complete PIT).",
         "**0/24** certified full first-release histories; **0/24** "
         "eligible for score publication.",
         "",
