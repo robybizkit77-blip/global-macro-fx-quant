@@ -20,8 +20,12 @@ on:
 permissions:
   contents: read
 
+# Two distinct production clocks can fire close together. Preserve a queued
+# pending recovery instead of silently replacing it with the latest event.
+# PR test runs must not occupy or displace the production recovery queue.
 concurrency:
-  group: calendar-news-existing-hourly-morning-fallback
+  group: ${{ github.event_name == 'pull_request' && format('calendar-news-fallback-pr-{0}', github.event.pull_request.number) || 'calendar-news-existing-hourly-morning-fallback' }}
+  queue: max
   cancel-in-progress: false
 
 jobs:
