@@ -1313,7 +1313,7 @@ function focusCurrency(doc){
 
 /* Restore existing sovereign chart from verified, same-day historical 2Y/10Y pairs. */
 function sovereignHistoryPairs(rates,k){
- const r=rates?.[k],a=r?.history2,b=r?.history10,valid=d=>/^\\d{4}-\\d{2}-\\d{2}$/.test(d||'');
+ const r=rates?.[k],a=r?.history2,b=r?.history10,valid=d=>/^\d{4}-\d{2}-\d{2}$/.test(d||'');
  if(!r||!String(r.quality||'').includes('OFFICIAL')||!valid(r.date)||
     !Array.isArray(a?.dates)||!Array.isArray(a?.values)||
     !Array.isArray(b?.dates)||!Array.isArray(b?.values)||
