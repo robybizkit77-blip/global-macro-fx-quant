@@ -16,6 +16,49 @@ from validation.forward import capture_v2_research_prospective_evidence_v1 as ca
 from validation.macro.v2_domestic_candidate_explicit_formula_v1 import run as domestic
 
 
+
+# Source quality can make the OPTIONAL V2 research candidate unavailable even
+# when the frozen-Core primary capture is fully admissible.  Fail closed for
+# every unexpected error; skip only this explicitly recognized source-state.
+# The actual V2 capture retains its own post-Core persistence RED gate.
+V2_SOURCE_Z_UNAVAILABLE = (
+    "MACRO_V2_THREE_AXIS_REJECTED: "
+    "missing strict z cannot be replaced by unapproved estimates"
+)
+
+
+def optional_v2_test_candidate(day):
+    try:
+        return domestic(as_of=day)
+    except ValueError as exc:
+        if str(exc) == V2_SOURCE_Z_UNAVAILABLE:
+            raise unittest.SkipTest(
+                "OPTIONAL_V2_RESEARCH_SOURCE_INELIGIBLE: strict robust z "
+                "not computable from current macro series; no imputation, "
+                "no V2 candidate certified, primary Frozen Core remains "
+                "independently testable"
+            ) from exc
+        raise
+
+
+class OptionalV2SourceGatePolicy(unittest.TestCase):
+    def test_only_exact_known_source_block_may_skip_optional_fixture(self):
+        from unittest.mock import patch
+        with patch(
+            "validation.forward.test_capture_v2_research_prospective_evidence_v1.domestic",
+            side_effect=ValueError(V2_SOURCE_Z_UNAVAILABLE),
+        ), self.assertRaisesRegex(unittest.SkipTest, "SOURCE_INELIGIBLE"):
+            optional_v2_test_candidate("2026-10-30")
+        for unexpected in ("missing code contract", "wrong schema",
+                           "MACRO_V2_THREE_AXIS_REJECTED: corrupted source"):
+            with self.subTest(error=unexpected):
+                with patch(
+                    "validation.forward.test_capture_v2_research_prospective_evidence_v1.domestic",
+                    side_effect=ValueError(unexpected),
+                ), self.assertRaisesRegex(ValueError, unexpected):
+                    optional_v2_test_candidate("2026-10-30")
+
+
 class V2ProspectiveResearchCapture(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -48,7 +91,7 @@ class V2ProspectiveResearchCapture(unittest.TestCase):
         cls.pairs["price_asof"]=cls.day
         for k in ("as_of","overlay_asof","history_asof"):
             cls.pairs["price_audit"][k]=cls.day
-        cls.candidate=domestic(as_of=cls.day)
+        cls.candidate=optional_v2_test_candidate(cls.day)
         cls.hashes={
             "ecb":cap.file_sha("live_data/sections/ECB_G8_PRICE_HISTORY.json"),
             "pair_setup":cap.file_sha("live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json"),
