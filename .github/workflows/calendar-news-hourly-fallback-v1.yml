@@ -1,12 +1,14 @@
 name: Calendar News Morning Fallback From Existing Hourly Readiness V1
 
 # No new schedule/cron. This is a narrow, fail-closed backup for a dropped
-# 07:45 orchestrator schedule. The hourly readiness workflow already runs.
+# 07:45 orchestrator schedule. Reuse two existing independent hourly
+# schedules (Certified Alert Readiness and Macro Desk Source Watch).
 # Workflow_run is only a clock cue; never an issuer-policy data source.
 on:
   workflow_run:
     workflows:
       - Hourly Certified Alert Readiness V1
+      - Macro Desk Source Watch V1
     types: [completed]
   pull_request:
     branches: [main]
@@ -58,7 +60,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Check independent hourly parent and real Calendar News source receipts
+      - name: Check trusted existing scheduled parent and real Calendar News source receipts
         id: decide
         shell: bash
         env:
