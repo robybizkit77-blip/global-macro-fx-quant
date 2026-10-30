@@ -91,7 +91,10 @@ def eur_archive(text):
             "underlying": "3M_COMPOUNDED_ESTR",
             "source": OFFICIAL_SPEC}
         by_trade_date[r["observation_date"]].append(r["contract"])
+        started=day(r["observation_date"])>day(start)
         out.append({"contract":r["contract"],"horizon_label":r["observed_under_horizon"],
+            "accrual_already_started_at_quote_date":started,
+            "needs_realized_ESTR_component_for_OIS_comparison":started,
             "quote_date":r["observation_date"],"first_seen_at_utc":r["first_seen_at_utc"],
             "rate_pct":r["implied_rate"],"accrual_start":start,"accrual_end":end,
             "source_method":r["source_method"],"official_ois":False})
@@ -143,6 +146,10 @@ def compare(text, references):
     compared = []
     unmatched = []
     for f in research["observations"]:
+        if f["accrual_already_started_at_quote_date"]:
+            unmatched.append({"contract":f["contract"],"date":f["quote_date"],
+                "reason":"COMPOUNDING_ALREADY_STARTED_REQUIRES_REALIZED_ESTR_SPLICE"})
+            continue
         k = (f["quote_date"],f["accrual_start"],f["accrual_end"])
         o = by_period.get(k)
         if o is None:
@@ -164,6 +171,11 @@ def compare(text, references):
                   "NO_ADMISSIBLE_INDEPENDENT_SAME_WINDOW_OIS_REFERENCE",
         "eur_archived_futures_observations":len(research["observations"]),
         "distinct_eurex_futures_periods":len(research["contracts"]),
+        "started_compounding_period_quote_count":sum(
+            q["accrual_already_started_at_quote_date"] for q in research["observations"]),
+        "not_yet_started_or_start_day_quote_count":sum(
+            not q["accrual_already_started_at_quote_date"] for q in research["observations"]),
+        "requires_realized_ESTR_before_full_curve_comparison":True,
         "contract_windows":research["contracts"],
         "reference_rows_submitted":len(references),
         "admissible_same_window_pairs":len(compared),
