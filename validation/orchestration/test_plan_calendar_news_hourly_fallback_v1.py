@@ -13,8 +13,8 @@ def source(created, checked=None):
     return {"generated_at_utc":created,"last_checked_at_utc":checked or created}
 def cb_meeting():
     return {"JPY":{"next_meeting":"2026-10-30","last_date":"2026-09-18"}}
-def parent(completed="2026-10-30T05:34:00Z"):
-    return {"name":"Hourly Certified Alert Readiness V1","event":"schedule",
+def parent(completed="2026-10-30T05:34:00Z", name="Hourly Certified Alert Readiness V1"):
+    return {"name":name,"event":"schedule",
             "conclusion":"success","head_branch":"main","updated_at":completed}
 def receipts(checked="2026-10-30T03:01:58Z"):
     return {"CALENDAR":source(checked),"NEWS_PULSE":source(checked)}
@@ -27,6 +27,34 @@ class MorningFallbackTests(unittest.TestCase):
         self.assertIn("CB_MEETING_DAY_PRIOR_TO_0500_NEWS_CHECK",a["reasons"])
         self.assertFalse(a["issuer_release_inferred"])
         self.assertFalse(a["new_cron_added"])
+
+    def test_independent_existing_desk_source_watch_recovers_boj_source(self):
+        # Actual 30 October scheduled Macro Desk Source Watch clock ran at
+        # 05:55 UTC / 06:55 CET, independently of the sparse 07-minute cron.
+        p=parent("2026-10-30T05:55:30Z",name="Macro Desk Source Watch V1")
+        a=plan(instant("2026-10-30T05:56:00Z"),p,receipts(),cb_meeting())
+        self.assertEqual(a["status"],"DISPATCH_REQUIRED")
+        self.assertIn("NEWS_PULSE",a["source_rechecks_needed"])
+        self.assertFalse(a["issuer_release_inferred"])
+        self.assertFalse(a["new_cron_added"])
+
+    def test_independent_desk_watch_skips_when_sources_are_current(self):
+        p=parent("2026-10-30T05:55:30Z",name="Macro Desk Source Watch V1")
+        a=plan(instant("2026-10-30T05:56:00Z"),p,
+               receipts("2026-10-30T05:50:00Z"),cb_meeting())
+        self.assertFalse(a["should_dispatch"])
+
+    def test_independent_desk_watch_rejects_manual_pr_other_branch_and_replay(self):
+        now=instant("2026-10-30T05:56:00Z")
+        for key,val in (("event","workflow_dispatch"),("event","push"),
+                        ("event","pull_request"),("head_branch","feature"),
+                        ("conclusion","failure"),("name","Macro Desk Other Workflow")):
+            with self.subTest(key=key,val=val):
+                p=parent("2026-10-30T05:55:30Z",name="Macro Desk Source Watch V1")
+                p[key]=val
+                self.assertFalse(plan(now,p,receipts(),cb_meeting())["should_dispatch"])
+        p=parent("2026-10-30T05:00:00Z",name="Macro Desk Source Watch V1")
+        self.assertFalse(plan(now,p,receipts(),cb_meeting())["should_dispatch"])
 
     def test_already_rechecked_after_0500_skips_duplicate(self):
         r=receipts("2026-10-30T05:31:00Z")
