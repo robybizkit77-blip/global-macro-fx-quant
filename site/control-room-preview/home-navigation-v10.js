@@ -3767,13 +3767,13 @@ async function mountMacroV2CurrentEvidence(doc){
  const gdpUrl='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/validation/macro/fixtures/v2_g8_quarterly_gdp_q2_2026_web_release_ledger_v1.json';
  const results=await Promise.allSettled([
   feed('MACRO_THERMOMETER_DATA.json'),feed('NATIVE_RATES_DATA.json'),
-  feed('OIS_OPERATIONAL_VIEW.json'),
+  feed('OIS_OPERATIONAL_VIEW.json'),feed('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),
   (async()=>{const response=await fetch(gdpUrl,{cache:'no-store'});
     if(!response.ok)throw Error('GDP dossier HTTP '+response.status);
     return response.json()})()
  ]);
  if(route()!=='macro'||frame.contentDocument!==doc||!panel.isConnected)return;
- const [macro,rates,ois,gdp]=results.map(r=>r.status==='fulfilled'?r.value:null);
+ const [macro,rates,ois,nzdProxy,gdp]=results.map(r=>r.status==='fulfilled'?r.value:null);
  const valid=macro?.schema_version==='GMFQ_MACRO_HEATMAP_V1'&&
    macro.status==='ACTIVE'&&rates&&ois?.currencies&&
    gdp?.schema==='GMFQ_G8_REAL_GDP_Q2_2026_PUBLISHER_WEB_RELEASE_EVENTS_V1'&&
@@ -3791,6 +3791,12 @@ async function mountMacroV2CurrentEvidence(doc){
   return;
  }
  const today=romeTodayIso();
+ // The Rates addon is the pre-existing governance layer for approved
+ // EUR/CHF dated-futures context and NZD bank-bill/OCR scenarios. Never
+ // manufacture OIS quotes from a blank operational 6M slot.
+ const research=window.GMFQ_OIS_RESEARCH_V1;
+ const indicative=research?.indicativeSixMonth?.(ois,today)||{};
+ const nzdScenario=research?.scenarioSixMonth?.(ois,nzdProxy,today)||{};
  const safeRate=x=>num(x)!==null?fmt(x,2)+'%':'n.d.';
  const card=ccy=>{
    const growth=first.find(x=>x.currency===ccy);
@@ -3814,10 +3820,23 @@ async function mountMacroV2CurrentEvidence(doc){
      return y?fmt(y.value,2)+'% · '+htmlEscape(y.period):'n.d.';};
    const d=rate?.date,rateRecent=fresh(d,5);
    const p=policy?.horizons?.['6m'],policyAsOf=policy?.as_of||'';
-   const grade=policy?.operational_status==='GREEN_OFFICIAL'?'UFFICIALE':
-     policy?.operational_status==='GREEN_ESTIMATED'?'STIMA':
-     'CONTESTO NON CERTIFICATO';
-   const six= num(p?.rate)!==null?safeRate(p.rate):'n.d.';
+   const direct=policy?.operational_status==='GREEN_OFFICIAL'&&
+     policy.official_status==='ACTIVE'&&policy.quality==='OFFICIAL_CERTIFIED'&&
+     fresh(policyAsOf,4)&&num(p?.rate)!==null;
+   const estimated=policy?.operational_status==='GREEN_ESTIMATED'&&
+     fresh(policyAsOf,5)&&num(p?.rate)!==null;
+   const secondary=['EUR','CHF'].includes(ccy)?indicative[ccy]:
+     ccy==='NZD'?nzdScenario.NZD:null;
+   const value=direct||estimated?p.rate:
+     secondary?.pair_effect==='NONE'&&secondary.is_official_ois===false&&
+     fresh(secondary.quote_as_of,5)?secondary.value:null;
+   const grade=direct?'UFFICIALE CERTIFICATO':
+     estimated?'STIMA · FUTURES':
+     num(value)!==null&&ccy==='NZD'?'SCENARIO · BANK BILL–OCR':
+     num(value)!==null?'STIMA · FUTURES INDICATIVI':'FONTE NON VERIFICATA';
+   const effective6mAsOf=direct||estimated?policyAsOf:
+     num(value)!==null?secondary.quote_as_of:policyAsOf;
+   const six=safeRate(value);
    return '<article class="gmfq-macro-v2-country" data-ccy="'+ccy+
       '" data-growth-period="'+htmlEscape(observed?.reference_quarter||'')+
       '" data-rates-date="'+htmlEscape(d||'')+
@@ -3830,7 +3849,7 @@ async function mountMacroV2CurrentEvidence(doc){
        ' <b>Disoccupazione</b> '+field('labour')+'</p>'+
      '<p><b>2Y</b> '+safeRate(rate['2Y'])+' <small>'+htmlEscape(d||'')+
        (rateRecent?'':' · STORICO')+'</small>'+
-       ' <b>6M monetario</b> '+six+' <small>'+htmlEscape(policyAsOf)+
+       ' <b>6M monetario</b> '+six+' <small>'+htmlEscape(effective6mAsOf)+
        ' · '+htmlEscape(grade)+'</small></p></article>';
  };
  const style=doc.createElement('style');
