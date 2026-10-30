@@ -92,6 +92,7 @@ jobs:
              'validation/cb_pricing/audit_estimated_ois_reliability_v1.py',
              'validation/cb_pricing/eur_estr_contract_benchmark_bridge_v1.py',
              'validation/cb_pricing/test_eur_estr_contract_benchmark_bridge_v1.py',
+             'validation/cb_pricing/test_audit_estimated_ois_reliability_v1.py',
              'validation/cb_pricing/probe_cme_term_estr_public_download_v1.py',
              'validation/cb_pricing/test_audit_estimated_ois_reliability_v1.py',
              '.github/workflows/ois-estimate-reliability-research-qa-v1.yml',
