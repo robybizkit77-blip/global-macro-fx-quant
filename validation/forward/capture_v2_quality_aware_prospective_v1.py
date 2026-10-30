@@ -32,6 +32,9 @@ from validation.macro.v2_zero_mad_ordinal_quality_v1 import (
     build as ordinal_build, POLICY_ID as ORDINAL_POLICY,
     NOT_BEFORE_ROME,
 )
+from validation.forward.v2_quality_market_context_v1 import (
+    build as market_build, validate as market_validate, SCHEMA as MARKET_SCHEMA,
+)
 
 SCHEMA = "GMFQ_V2_QUALITY_AWARE_OBSERVATIONAL_FREEZE_V1"
 JOURNAL = (ROOT / "validation/forward/candidate_shadow_snapshots/"
@@ -43,6 +46,10 @@ SOURCE_PATHS = {
     "macro_series": "live_data/sections/MACRO_SERIES.json",
     "macro_thermometer": "live_data/sections/MACRO_THERMOMETER_DATA.json",
     "macro_registry": "validation/macro/MACRO_SOURCE_REGISTRY_2026-10-08.json",
+    "rates": "live_data/sections/NATIVE_RATES_DATA.json",
+    "ois": "live_data/sections/OIS_OPERATIONAL_VIEW.json",
+    "banks": "live_data/sections/NATIVE_CB_DATA.json",
+    "nzd_proxy": "live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json",
 }
 NO_FX_PREDICTION = True
 NO_HISTORICAL_BACKFILL = True
@@ -165,6 +172,11 @@ def validate_snapshot(row):
             row.get("zero_mad_source_count")==zero_mad and
             row.get("numeric_z_imputation_count")==0,
             "economic source-quality counts altered")
+    market=row.get("market_context")
+    require(isinstance(market,dict) and market.get("schema")==MARKET_SCHEMA and
+            market.get("as_of_rome")==day and market_validate(market) and
+            row.get("market_context_sha256")==sha(market),
+            "G8 market and 28 pair source contract not signed")
     hashes=row.get("source_file_sha256")
     require(isinstance(hashes,dict) and set(hashes)==set(SOURCE_PATHS)
             and all(isinstance(x,str) and len(x)==64
@@ -181,13 +193,19 @@ def validate_snapshot(row):
         "official_ecb_source_sha":hashes["ecb"],
         "macro_series_source_sha":hashes["macro_series"],
         "ordinal_evidence_sha":ordinal_sha,
+        "rates_source_sha":hashes["rates"],
+        "ois_source_sha":hashes["ois"],
+        "banks_source_sha":hashes["banks"],
+        "nzd_source_sha":hashes["nzd_proxy"],
+        "market_context_sha":row["market_context_sha256"],
     })
     require(row.get("snapshot_id")==expected_id,
             "snapshot identity does not bind immutable source inputs")
     return day
 
 
-def make(cutoff, now, *, fx, pair_setup, core, observed, ordinal, hashes):
+def make(cutoff, now, *, fx, pair_setup, core, observed, ordinal,
+         rates, ois, banks, nzd_proxy, hashes):
     utc, day = valid_capture_clock(cutoff, now)
     admission=assess(utc,fx,pair_setup,core)
     require(admission["status"]=="ADMITTED_PROSPECTIVE_BASELINE_OBSERVATION",
@@ -256,6 +274,8 @@ def make(cutoff, now, *, fx, pair_setup, core, observed, ordinal, hashes):
         countries[ccy]=country
     missed=sum(c[p]["research_robust_z"] is None
                for c in countries.values() for p in PILLARS)
+    market=market_build(day,rates,ois,banks,nzd_proxy,pair_setup)
+    market_validate(market)
     body={
         "schema":SCHEMA,
         "status":"FROZEN_PARTIAL_ECONOMIC_RESEARCH_NO_MODEL_SCORE",
@@ -266,6 +286,8 @@ def make(cutoff, now, *, fx, pair_setup, core, observed, ordinal, hashes):
         "observed_t0_ref":anchors,
         "old_core_as_of":core["asOf"],
         "economic_observations":countries,
+        "market_context":market,
+        "market_context_sha256":sha(market),
         "strict_robust_z_missing_count":missed,
         "zero_mad_source_count":len(descriptor),
         "numeric_z_imputation_count":0,
@@ -288,6 +310,11 @@ def make(cutoff, now, *, fx, pair_setup, core, observed, ordinal, hashes):
         "schema":SCHEMA,"date":day,"official_ecb_source_sha":hashes["ecb"],
         "macro_series_source_sha":hashes["macro_series"],
         "ordinal_evidence_sha":body["ordinal_evidence_sha256"],
+        "rates_source_sha":hashes["rates"],
+        "ois_source_sha":hashes["ois"],
+        "banks_source_sha":hashes["banks"],
+        "nzd_source_sha":hashes["nzd_proxy"],
+        "market_context_sha":body["market_context_sha256"],
     })
     body["snapshot_sha256"]=sha(body)
     validate_snapshot(body)
@@ -352,12 +379,19 @@ def attempt(*, cutoff, now, dry_run=False, path=JOURNAL):
             sha(core)==sha(read("legacy_core")),
             "market/source input mutated during freeze")
     snapshot=make(utc,now,fx=fx,pair_setup=pair,core=core,
-                  observed=observed,ordinal=ordinal,hashes=hashes_after)
+                  observed=observed,ordinal=ordinal,
+                  rates=read("rates"),ois=read("ois"),
+                  banks=read("banks"),nzd_proxy=read("nzd_proxy"),
+                  hashes=hashes_after)
     status=append(snapshot,path=path,dry_run=dry_run)
     return {"status":status,"local_date":day,
             "snapshot_id":snapshot["snapshot_id"],
             "snapshot_sha256":snapshot["snapshot_sha256"],
             "economic_dimension_slots":24,
+            "market_economies":snapshot["market_context"]["summary"]["eight_economies"],
+            "market_pairs":snapshot["market_context"]["summary"]["28_pairs"],
+            "market_6m_official":snapshot["market_context"]["summary"]["official_6m"],
+            "market_6m_estimated_or_proxy":snapshot["market_context"]["summary"]["estimated_or_proxy_6m"],
             "robust_z_missing_count":snapshot["strict_robust_z_missing_count"],
             "zero_mad_source_count":snapshot["zero_mad_source_count"],
             "new_FX_signals":0,"forward_H1_eligible":False,

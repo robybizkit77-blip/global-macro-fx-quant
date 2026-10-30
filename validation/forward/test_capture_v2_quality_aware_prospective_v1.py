@@ -50,6 +50,10 @@ class QualityAwareProspectiveCaptureTests(unittest.TestCase):
         for key in ("as_of","overlay_asof","history_asof"):
             cls.pair["price_audit"][key] = cls.day
         cls.core = copy.deepcopy(LegacyFixture.legacy)
+        cls.rates = copy.deepcopy(LegacyFixture.rates)
+        cls.ois = copy.deepcopy(LegacyFixture.ois)
+        cls.banks = copy.deepcopy(LegacyFixture.cb)
+        cls.nzd_proxy = json.loads((qa.ROOT/qa.SOURCE_PATHS["nzd_proxy"]).read_text())
         cls.observed = observed_run(as_of=cls.day)
         series = json.loads(SERIES.read_text(encoding="utf-8"))
         registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
@@ -65,6 +69,10 @@ class QualityAwareProspectiveCaptureTests(unittest.TestCase):
             "core":copy.deepcopy(self.core),
             "observed":copy.deepcopy(self.observed),
             "ordinal":copy.deepcopy(self.ordinal),
+            "rates":copy.deepcopy(self.rates),
+            "ois":copy.deepcopy(self.ois),
+            "banks":copy.deepcopy(self.banks),
+            "nzd_proxy":copy.deepcopy(self.nzd_proxy),
             "hashes":copy.deepcopy(self.hashes),
         }
         inputs.update(kwargs)
@@ -76,6 +84,12 @@ class QualityAwareProspectiveCaptureTests(unittest.TestCase):
         self.assertEqual(snap["local_date_rome"],self.day)
         self.assertEqual(len(snap["observed_t0_ref"]),28)
         self.assertEqual(len(snap["economic_observations"]),8)
+        self.assertEqual(len(snap["market_context"]["countries"]),8)
+        self.assertEqual(len(snap["market_context"]["pairs"]),28)
+        self.assertEqual(snap["market_context"]["summary"]["FX_scores"],0)
+        self.assertTrue(snap["market_context"]["no_2y_yield_spread_as_trading_signal"])
+        self.assertEqual(snap["market_context"]["summary"]["official_6m"],4)
+        self.assertEqual(snap["market_context"]["summary"]["estimated_or_proxy_6m"],4)
         self.assertEqual(
             sum(len([c["inflation"],c["labour"],c["growth"]])
                 for c in snap["economic_observations"].values()),24)
@@ -98,6 +112,34 @@ class QualityAwareProspectiveCaptureTests(unittest.TestCase):
                     "EUR.labour"]["ordinal_relation"])
             self.assertIsNone(euro["zero_mad_context"]["labour"][
                 "numeric_replacement_z"])
+
+    def test_resigned_noncomparable_6m_or_unmatched_2y_cannot_become_fx_signal(self):
+        valid=self.make()
+        original=valid["market_context"]
+        self.assertEqual(original["summary"]["estimated_or_proxy_6m"],4)
+        self.assertEqual(original["countries"]["NZD"]["six_month_source_tier"],
+                         "NZD_BANK_BILL_BASIS_PROXY_NOT_OIS")
+        for c in ("NZD","CHF","EUR","USD"):
+            self.assertFalse(original["countries"][c]["six_month_is_official_ois_only"])
+        for pair,info in original["pairs"].items():
+            self.assertIsNone(info["6m_cross_market_policy_spread_bp"])
+            self.assertIsNone(info["FX_signal"])
+            if not info["2y_same_official_observation_day"]:
+                self.assertIsNone(info["2y_sovereign_spread_bp_DESCRIPTIVE_ONLY"])
+        forged=copy.deepcopy(valid)
+        forged["market_context"]["countries"]["NZD"]["six_month_is_official_ois_only"]=True
+        forged["market_context_sha256"]=qa.sha(forged["market_context"])
+        forged["snapshot_sha256"]=qa.sha({k:v for k,v in forged.items() if k!="snapshot_sha256"})
+        with self.assertRaisesRegex(ValueError, "false official"):
+            qa.validate_snapshot(forged)
+        forged=copy.deepcopy(valid)
+        pair=next(k for k,v in forged["market_context"]["pairs"].items()
+                  if not v["2y_same_official_observation_day"])
+        forged["market_context"]["pairs"][pair]["2y_sovereign_spread_bp_DESCRIPTIVE_ONLY"]=12.5
+        forged["market_context_sha256"]=qa.sha(forged["market_context"])
+        forged["snapshot_sha256"]=qa.sha({k:v for k,v in forged.items() if k!="snapshot_sha256"})
+        with self.assertRaisesRegex(ValueError, "mismatched-date"):
+            qa.validate_snapshot(forged)
 
     def test_frozen_snapshot_no_future_outcomes_and_no_price_execution(self):
         snap=self.make()
@@ -154,7 +196,8 @@ class QualityAwareProspectiveCaptureTests(unittest.TestCase):
                 qa.make(cut,cut+timedelta(seconds=3),
                         fx=self.fx,pair_setup=self.pair,core=self.core,
                         observed=self.observed,ordinal=self.ordinal,
-                        hashes=self.hashes)
+                        rates=self.rates,ois=self.ois,banks=self.banks,
+                        nzd_proxy=self.nzd_proxy,hashes=self.hashes)
         stale=copy.deepcopy(self.fx)
         stale["last_as_of"]="2026-10-30"
         with self.assertRaisesRegex(ValueError,"official same-day"):
@@ -229,6 +272,8 @@ class QualityAwareProspectiveCaptureTests(unittest.TestCase):
                 "macro_series":{"SYNTHETIC_ONLY":True},
                 "macro_thermometer":{"SYNTHETIC_ONLY":True},
                 "macro_registry":{"SYNTHETIC_ONLY":True},
+                "rates":self.rates,"ois":self.ois,
+                "banks":self.banks,"nzd_proxy":self.nzd_proxy,
             }
             for key,relative in qa.SOURCE_PATHS.items():
                 target=root/relative
@@ -245,6 +290,8 @@ class QualityAwareProspectiveCaptureTests(unittest.TestCase):
                 self.assertEqual(out["status"],
                                  "QUALITY_AWARE_PROSPECTIVE_SNAPSHOT_APPEND_OK")
                 self.assertEqual(out["economic_dimension_slots"],24)
+                self.assertEqual(out["market_economies"],8)
+                self.assertEqual(out["market_pairs"],28)
                 self.assertFalse(out["forward_H1_eligible"])
                 econ.assert_called_once_with(as_of=self.day)
                 ordinal.assert_called_once()
