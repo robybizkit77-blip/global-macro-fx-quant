@@ -301,7 +301,7 @@ function expectedReactionFromMetrics(row){
 
   await page.waitForFunction(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument;
-    return ['RECENT_VALIDATED','WITHHELD'].includes(d?.getElementById('gmfq-market-pulse')?.dataset.pulseStatus);
+    return ['RECENT_VALIDATED','DATED_LEVEL_CONTEXT','WITHHELD'].includes(d?.getElementById('gmfq-market-pulse')?.dataset.pulseStatus);
   },null,{timeout:26000});
   await page.waitForFunction(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument;
@@ -345,6 +345,9 @@ function expectedReactionFromMetrics(row){
       pulse:{state:d.getElementById('gmfq-market-pulse')?.dataset.pulseStatus,
         asof:d.getElementById('gmfq-market-pulse')?.dataset.asOf,
         articles:d.querySelectorAll('#gmfq-market-pulse .gmfq-pulse-item').length,
+         contextual:[...d.querySelectorAll('#gmfq-market-pulse [data-pulse-context-ccy]')].map(x=>({
+           ccy:x.dataset.pulseContextCcy,quality:x.dataset.pulseQuality,
+           text:x.innerText,researchOnly:x.dataset.researchOnly})),
         instruments:[...d.querySelectorAll('#gmfq-market-pulse .gmfq-pulse-item')].map(x=>({
           ccy:x.dataset.pulseCcy,type:x.dataset.instrumentType,
           name:x.querySelector('.gmfq-pulse-instrument')?.textContent,
@@ -379,12 +382,19 @@ function expectedReactionFromMetrics(row){
      r.pricing.some(x=>x.status==='CASH_CARRY_SCENARIO'&&
        (x.ccy!=='NZD'||!nzdScenario||!x.content.includes(nzdDisplayed+'% ST')||x.allowed!=='false')))
     fatal.push('6M pricing source tiers wrong: '+JSON.stringify(r.pricing));
-  if(!['RECENT_VALIDATED','WITHHELD'].includes(r.pulse.state)||
+  if(!['RECENT_VALIDATED','DATED_LEVEL_CONTEXT','WITHHELD'].includes(r.pulse.state)||
      !r.pulse.text.includes('non titoli giornalistici in tempo reale')||
      !r.pulse.newsLink||r.pulse.width>r.pulse.client+2||
      (r.pulse.state==='RECENT_VALIDATED'&&(r.pulse.articles<1||
        !/^20\d{2}-\d{2}-\d{2}$/.test(r.pulse.asof))))
     fatal.push('Market Pulse source-date/fail-closed contract failed '+JSON.stringify(r.pulse));
+   if(r.pulse.state==='DATED_LEVEL_CONTEXT'&&
+      (r.pulse.contextual.length!==8||
+       new Set(r.pulse.contextual.map(x=>x.ccy)).size!==8||
+       r.pulse.contextual.some(x=>!['OFFICIAL','PROXY','MIXED','SCENARIO'].includes(x.quality)||
+          x.researchOnly!=='true'||!x.text.includes('6M'))||
+       !r.pulse.text.includes('Nessuna variazione recente validata')))
+     fatal.push('Home 6M context fallback invalid '+JSON.stringify(r.pulse.contextual));
   if(r.pulse.title!=='Market Pulse · tassi impliciti'||
      !r.pulse.externalSeparation?.includes('Notizie esterne')||
      (r.pulse.state==='RECENT_VALIDATED'&&r.pulse.instruments.some(x=>
