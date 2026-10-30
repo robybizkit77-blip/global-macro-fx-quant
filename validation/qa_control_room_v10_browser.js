@@ -82,6 +82,11 @@ function expectedReactionFromMetrics(row){
     if(!fs.existsSync(file))return route.fulfill({status:404,body:'Missing fixture'});
     return route.fulfill({status:200,contentType:'application/json',body:fs.readFileSync(file),headers:{'Access-Control-Allow-Origin':'*'}});
   });
+  // Immutable, source-dated 2Y secondary observations (not canonical Rates).
+  await page.route('https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/validation/rates/fixtures/chf_nzd_2y_secondary_market_2026-10-30.json',async route=>{
+    const quote=fs.readFileSync('validation/rates/fixtures/chf_nzd_2y_secondary_market_2026-10-30.json');
+    await route.fulfill({status:200,contentType:'application/json',body:quote,headers:{'Access-Control-Allow-Origin':'*'}});
+  });
   const url='http://127.0.0.1:8818/site/control-room-preview/';
   const response=await page.goto(url,{waitUntil:'domcontentloaded',timeout:120000});
   if(!response||!response.ok())throw Error(label+' home did not load');
@@ -523,6 +528,13 @@ function expectedReactionFromMetrics(row){
       recent:p.dataset.recent,historical:[...p.querySelectorAll('.gmfq-yield-row[data-state="HISTORICAL"]')].map(x=>x.dataset.ccy),
       dates:[...p.querySelectorAll('.gmfq-yield-row[data-ccy]')].map(x=>x.dataset.asof),
       snb:p.querySelector('[data-snb-10y="SEPARATE"]')?.textContent,
+      secondary:[...p.querySelectorAll('.gmfq-yield-row[data-ccy]')].map(x=>({
+       currency:x.dataset.ccy,
+       text:x.querySelector('[data-tier="SECONDARY_OBSERVED_NOT_OFFICIAL"]')?.textContent||null,
+       tier:x.querySelector('[data-tier="SECONDARY_OBSERVED_NOT_OFFICIAL"]')?.dataset.tier||null,
+       date:x.querySelector('[data-tier="SECONDARY_OBSERVED_NOT_OFFICIAL"]')?.dataset.date||null,
+       quality:x.querySelector('[data-tier="SECONDARY_OBSERVED_NOT_OFFICIAL"]')?.dataset.quality||null
+      })),
       noCore:p.dataset.coreEffect==='NONE'&&p.dataset.pairEffect==='NONE',
       width:p.scrollWidth,client:p.clientWidth};
   });
@@ -539,6 +551,25 @@ function expectedReactionFromMetrics(row){
      yieldStudy.width>yieldStudy.client+2)
     throw Error(label+' G8 observed sovereign yield study not ready '+JSON.stringify(yieldStudy));
 
+  // Secondary CHF/NZD government 2Y market observations must not overwrite
+  // the dated official yield; exactly two source-context rows are expected
+  // while the canonical source is lagging. No sovereign slope or pair signal.
+  const twoYResearch=JSON.parse(fs.readFileSync(
+    'validation/rates/fixtures/chf_nzd_2y_secondary_market_2026-10-30.json','utf8'));
+  for(const c of ['CHF','NZD']){
+    const row=yieldStudy.secondary.find(x=>x.currency===c);
+    const official=actualRates[c];
+    const market=twoYResearch.observations[c];
+    const eligible=official.date<market.market_observation_date&&
+      !current(official.date,5);
+    if(!row||(eligible&&!row.text?.includes('2Y mercato'))||
+       (eligible&&(row.date!==market.market_observation_date||
+          !row.text.includes('NON ufficiale')||
+          !row.text.includes('non usare per spread FX')))||
+       (!eligible&&row.text))
+     throw Error(label+' 2Y secondary market provenance not separated '+JSON.stringify({c,row,eligible}));
+  }
+  console.log('CONTROL_ROOM_SECONDARY_2Y_CHF_NZD_RESEARCH_GREEN',label);
   // Explicit requirement: all eight currency estimates and certified sources
   // must be visible at first read. Method and sources remain accessible.
   await page.waitForFunction(()=>{
@@ -1025,6 +1056,7 @@ function expectedReactionFromMetrics(row){
       rows:[...p?.querySelectorAll('.gmfq-macro-v2-country')||[]].map(x=>({
         currency:x.dataset.ccy,quarter:x.dataset.growthPeriod,
         ratesDate:x.dataset.ratesDate,oisQuality:x.dataset.oisQuality,
+        marketTier:x.dataset.secondary2yTier,marketDate:x.dataset.secondary2yDate,
         text:x.textContent})),
       width:p?.scrollWidth,client:p?.clientWidth,
       docWidth:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth};
@@ -1041,6 +1073,18 @@ function expectedReactionFromMetrics(row){
        x.ratesDate!==ratesFeed[x.currency].date)||
      macroV2.width>macroV2.client+2||macroV2.docWidth>macroV2.viewport+16)
     throw Error(label+' G8 current V2 economic/rates source context incorrect '+JSON.stringify(macroV2));
+  for(const c of ['CHF','NZD']){
+    const row=macroV2.rows.find(x=>x.currency===c);
+    const quote=JSON.parse(fs.readFileSync('validation/rates/fixtures/chf_nzd_2y_secondary_market_2026-10-30.json')).observations[c];
+    const expected=ratesFeed[c].date<quote.market_observation_date&&!current(ratesFeed[c].date,5);
+    if(!row||(expected&&(
+      row.marketTier!=='SECONDARY_OBSERVED_NOT_OFFICIAL'||
+      row.marketDate!==quote.market_observation_date||
+      !row.text.includes('2Y riferimento mercato')||
+      !row.text.includes('nessuno spread/score')))||
+      (!expected&&row.marketTier!=='NONE'))
+      throw Error(label+' macro market 2Y context contamination '+JSON.stringify({c,row,expected}));
+  }
   console.log('CONTROL_ROOM_MACRO_V2_G8_CURRENT_EVIDENCE_RESEARCH_GREEN',label,
     {count:macroV2.rows.length,period:'2026Q2',scoreEffect:'NONE'});
   const macroLens=await page.evaluate(()=>{
