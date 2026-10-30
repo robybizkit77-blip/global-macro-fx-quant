@@ -88,18 +88,18 @@
     "BRENT.market_proxy": {
       "status": "MARKET_PROXY_ACTIVE_SECONDARY",
       "confidence": "B_FOR_DIRECTION_ONLY",
-      "value": 110.98,
-      "change_1d_pct": -2.5465,
-      "change_1w_pct": 1.9849,
+      "value": 113.84,
+      "change_1d_pct": -1.2834,
+      "change_1w_pct": 0.592,
       "source": "Yahoo Finance public chart JSON · Brent Crude Oil Last Day Financial Futures (BZ=F)",
       "interpretation": "Secondary futures market proxy for live Brent level/direction only. It does not replace canonical EIA Brent spot, does not certify ICE history, and has no Core/backtest effect.",
-      "proxy_as_of": "2026-10-29",
+      "proxy_as_of": "2026-10-30",
       "source_endpoint": "https://query1.finance.yahoo.com/v8/finance/chart/BZ=F",
       "vendor_symbol": "BZ=F",
       "currency": "USD",
       "exchange_name": "NYM",
       "instrument_type": "FUTURE",
-      "fetched_at_utc": "2026-10-29T01:51:31.349699Z",
+      "fetched_at_utc": "2026-10-30T02:00:05.058948Z",
       "official_canonical_untouched": true
     },
     "GOLD.market_proxy": {
