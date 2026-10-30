@@ -129,7 +129,7 @@ function v233RatesFreshness(d,todayIso){
   const today=todayIso||new Intl.DateTimeFormat('sv-SE',{
     timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'
   }).format(new Date());
-  const asUtc=x=>/^\\d{4}-\\d{2}-\\d{2}$/.test(x)&&
+  const asUtc=x=>/^\d{4}-\d{2}-\d{2}$/.test(x)&&
     !Number.isNaN(Date.parse(x+'T00:00:00Z'))&&
     new Date(x+'T00:00:00Z').toISOString().slice(0,10)===x?
     Date.parse(x+'T00:00:00Z'):null;
@@ -273,7 +273,7 @@ if(!age.current){
   set('#v233DataQuality',age.historic?'UFFICIALE · STORICO '+date:'FONTE NON VALIDATA · '+date);
   set('#v233Headline',note);
   const headline=document.querySelector('#v233Headline');
-  if(headline)headLineNeutral(headline);
+  if(headline)headline.className='v233Headline neu';
   set('#v233Driver','Non valutabile con dati storici');
   set('#v233DriverWhy',note);
   set('#v233Divergence','Non valutabile');
@@ -295,7 +295,6 @@ if(!age.current){
     ': non usarli come variazioni della settimana attuale.</div>';
 }
 };
-function headLineNeutral(el){ el.className='v233Headline neu'; }
 </script><script>
 let v234CbCurrency = (typeof nativeCbSelected!=='undefined' && nativeCbSelected) ? nativeCbSelected : 'USD';
 function v234CountryLabel(c){
