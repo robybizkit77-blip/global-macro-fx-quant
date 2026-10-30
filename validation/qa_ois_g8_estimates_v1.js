@@ -175,9 +175,10 @@ assert(pairAdapter.includes('6M pricing WITHHELD'));
 
 // Source-level 100-price identity and expiry-proximity: same dated contract,
 // not an observed OIS basis or a truly synchronized 3M/6M/12M cash curve.
-const expectedGap={USD:{'3m':-15,'6m':14,'12m':11},
- CHF:{'3m':-35,'6m':-34,'12m':-37},
- EUR:{'3m':1,'6m':30,'12m':-36}};
+// Anchor expiry to each contract's VERIFIED quote day, never the viewer's day.
+const targetDays={'3m':90,'6m':180,'12m':365};
+const expectedGap=(expiry,quoted,term)=>
+ (Date.parse(expiry+'T00:00:00Z')-Date.parse(quoted+'T00:00:00Z'))/86400000-targetDays[term];
 for(const ccy of ['USD','EUR','CHF']){
  const src=ois.currencies[ccy];
  for(const t of tenors){
@@ -191,7 +192,7 @@ for(const ccy of ['USD','EUR','CHF']){
   assert.equal(research.expires,p.expiration);
   assert(Math.abs(100-p.futures_price-research.value)<=0.0002);
   assert(Math.abs(research.tenor_gap_days)<=45);
-  assert.equal(research.tenor_gap_days,expectedGap[ccy][t]);
+  assert.equal(research.tenor_gap_days,expectedGap(p.expiration,p.quote_as_of,t));
   const displayDay=ccy==='EUR'?src.secondary_quote_context.horizons[t].quote_as_of:p.quote_as_of;
   assert.equal(research.date,displayDay);
  }
@@ -211,6 +212,19 @@ assert.equal(matrix(quoteDay,bb,TODAY).find(r=>r.ccy==='EUR').points['3m'],undef
 const spoofTicker=structuredClone(ois);
 spoofTicker.currencies.EUR.secondary_quote_context.horizons['12m'].contract='FST3U2027';
 assert.equal(matrix(spoofTicker,bb,TODAY).find(r=>r.ccy==='EUR').points['12m'],undefined);
+// A quote must NOT lose its 12M tenor because the site was opened one day later.
+const eurBoundary={
+ contract:'FST3M2027',symbol:'EUREX:FST3M2027',
+ mapping:'nearest dated listed contract expiry to today+365d; no interpolation',
+ expiration:'2027-09-15',futures_price:97.35,
+ quote_as_of:'2026-10-30',quote_timestamp_verified:true,
+ quote_timestamp_source:'SSR_DAILY_BAR_DATA_UPDATE_TIME'
+};
+const boundarySame=auditDatedFuture('EUR','12m',eurBoundary,2.65,'2026-10-30','2026-10-30');
+const boundaryNext=auditDatedFuture('EUR','12m',eurBoundary,2.65,'2026-10-30','2026-10-31');
+assert(boundarySame&&boundaryNext,'Overnight calendar rollover must not drop the validated quote');
+assert.equal(boundarySame.tenor_gap_days,boundaryNext.tenor_gap_days);
+assert.equal(boundaryNext.source_quote_verified,true);
 const dollarQuote=ois.currencies.USD.horizons['3m'];
 assert.equal(auditDatedFuture('USD','3m',dollarQuote,dollarQuote.rate,
   dollarQuote.quote_as_of,TODAY)?.source_quote_verified,true);
