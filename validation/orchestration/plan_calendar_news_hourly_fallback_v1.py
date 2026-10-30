@@ -2,8 +2,8 @@
 """Fail-closed morning Calendar/News fallback using an EXISTING hourly workflow.
 
 This planner does not schedule anything, publish anything or infer a CB decision.
-It admits one bounded follow-up dispatch after a *successful scheduled* hourly
-source-readiness workflow, only if the live Calendar/News receipts show a reason
+It admits a bounded follow-up dispatch after a *successful scheduled* existing
+hourly source workflow, only if the live Calendar/News receipts show a reason
 to recheck. The unchanged 07:45 Rome orchestrator remains the primary path.
 """
 from __future__ import annotations
@@ -23,6 +23,12 @@ START = dt.time(5, 0)
 END = dt.time(7, 50)
 MEETING_FIRST_CHECK = dt.time(5, 0)
 MAX_PARENT_AGE = dt.timedelta(minutes=45)
+# Independent cron event sources already present in this repository. Never
+# accept PR, manual, failed, non-main, or unrelated workflow-run parents.
+ALLOWED_SCHEDULE_PARENTS = frozenset({
+    "Hourly Certified Alert Readiness V1",
+    "Macro Desk Source Watch V1",
+})
 
 
 def plan(now: dt.datetime, parent: dict, sources: dict, cb: dict) -> dict:
@@ -35,9 +41,9 @@ def plan(now: dt.datetime, parent: dict, sources: dict, cb: dict) -> dict:
         "new_cron_added": False, "issuer_release_inferred": False,
         "production_data_changed": False
     }
-    # A PR / push / manual run of the hourly alert workflow never triggers
-    # a privileged downstream dispatch.
-    if not (parent.get("name") == "Hourly Certified Alert Readiness V1"
+    # PR, push and manual runs of EITHER parent never trigger a privileged
+    # downstream dispatch. Both are just clocks, never source evidence.
+    if not (parent.get("name") in ALLOWED_SCHEDULE_PARENTS
             and parent.get("event") == "schedule"
             and parent.get("conclusion") == "success"
             and parent.get("head_branch") == "main"):
