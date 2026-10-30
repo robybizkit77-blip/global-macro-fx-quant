@@ -73,7 +73,10 @@ for(const bad of [null,'2099-01-01','2026-13-50','2026-09-24']){
 }
 const inconsistent=funcs.pairModelEvidenceState('2026-10-20','2026-10-19');
 assert.equal(inconsistent.verified,false,'macro newer than model price must not be a valid structural view');
-const recent=funcs.pairModelEvidenceState('2026-10-19',modelDay);
+// Current-model branch must be relative to the canonical price clock;
+// a calendar date that was recent yesterday becomes stale automatically.
+const recentDay=new Date(Date.parse(today+'T00:00:00Z')-86400000).toISOString().slice(0,10);
+const recent=funcs.pairModelEvidenceState(recentDay,modelDay);
 assert.deepEqual(recent,{verified:true,current:true,historical:false});
 assert(source.includes('const macroDay=macroVerified?setup.macro_baseline_asof:null;'),
  'Caller must verify the D.json/Pair source join before these functions');

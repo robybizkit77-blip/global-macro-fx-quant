@@ -1000,11 +1000,49 @@ function expectedReactionFromMetrics(row){
   // independently dated Inflation/Labour observations.
   const oldModel=JSON.parse(fs.readFileSync(path.join(DATA,'D.json'),'utf8'));
   const macroThermo=JSON.parse(fs.readFileSync(path.join(DATA,'MACRO_THERMOMETER_DATA.json'),'utf8'));
+  // Official-web Q2 GDP evidence is a fixture-based source, never a live
+  // headline inferred from the old D scalar. Intercept it identically in QA.
+  await page.route('https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/validation/macro/fixtures/v2_g8_quarterly_gdp_q2_2026_web_release_ledger_v1.json',async route=>{
+    const evidence=fs.readFileSync('validation/macro/fixtures/v2_g8_quarterly_gdp_q2_2026_web_release_ledger_v1.json');
+    await route.fulfill({status:200,contentType:'application/json',body:evidence,headers:{'Access-Control-Allow-Origin':'*'}});
+  });
   await page.goto(url+'#/macro?ccy=EUR',{waitUntil:'domcontentloaded',timeout:120000});
   await page.waitForFunction(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument;
     return d?.getElementById('gmfq-macro-source-lens')?.dataset.auditStatus==='READ_ONLY';
   },null,{timeout:40000});
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument,
+      p=d?.getElementById('gmfq-macro-v2-current-evidence');
+    return p?.dataset.status==='OBSERVED_RESEARCH_CONTEXT'&&
+      p.querySelectorAll('.gmfq-macro-v2-country').length===8;
+  },null,{timeout:40000});
+  const macroV2=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument,
+      p=d?.getElementById('gmfq-macro-v2-current-evidence');
+    return {status:p?.dataset.status,count:p?.dataset.currencyCount,
+      score:p?.dataset.macroScoreEffect,pairs:p?.dataset.pairRankEffect,
+      rows:[...p?.querySelectorAll('.gmfq-macro-v2-country')||[]].map(x=>({
+        currency:x.dataset.ccy,quarter:x.dataset.growthPeriod,
+        ratesDate:x.dataset.ratesDate,oisQuality:x.dataset.oisQuality,
+        text:x.textContent})),
+      width:p?.scrollWidth,client:p?.clientWidth,
+      docWidth:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth};
+  });
+  const expectedMacroCcy=g8.filter(c=>!!macroThermo.currencies?.[c]);
+  // The native dashboard uses its own fixed display order. Validate the
+  // unordered 8-currency coverage, not a cosmetic currency ordering.
+  if(macroV2.status!=='OBSERVED_RESEARCH_CONTEXT'||macroV2.count!=='8'||
+     macroV2.score!=='NONE'||macroV2.pairs!=='NONE'||
+     macroV2.rows.length!==8||
+     JSON.stringify(macroV2.rows.map(x=>x.currency).sort())!==JSON.stringify(expectedMacroCcy.sort())||
+     macroV2.rows.some(x=>x.quarter!=='2026Q2'||!x.text.includes('Inflazione')||
+       !x.text.includes('Disoccupazione')||!x.text.includes('6M monetario')||
+       x.ratesDate!==ratesFeed[x.currency].date)||
+     macroV2.width>macroV2.client+2||macroV2.docWidth>macroV2.viewport+16)
+    throw Error(label+' G8 current V2 economic/rates source context incorrect '+JSON.stringify(macroV2));
+  console.log('CONTROL_ROOM_MACRO_V2_G8_CURRENT_EVIDENCE_RESEARCH_GREEN',label,
+    {count:macroV2.rows.length,period:'2026Q2',scoreEffect:'NONE'});
   const macroLens=await page.evaluate(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument;
     const p=d.getElementById('gmfq-macro-source-lens');
