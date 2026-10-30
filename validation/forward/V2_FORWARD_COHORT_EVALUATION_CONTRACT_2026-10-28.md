@@ -74,3 +74,24 @@ La convenzione è **positivo = apprezzamento della valuta A**; nessuna prevision
 ### Separazione dalla produzione
 
 Nessun nuovo workflow/cron, modifica degli snapshot, del `D.json`, delle 28 coppie operative o dei report. Questo **protocollo documentale** non crea ordini, previsioni ufficiali, backtest o statistiche OOS. L'implementazione futura della ricerca, se e quando i dati lo permetteranno, dovrà consumare **in sola lettura** i due journal già esistenti e produrre soltanto ricevute di ricerca; qualsiasi nuova ipotesi costituisce una nuova famiglia di test dichiarata prima dei rispettivi outcome.
+
+
+## Preflight operativo aggiuntivo (30 ottobre 2026) — nessuna nuova ipotesi
+
+Il valutatore esistente `evaluate_v2_h1_2y_repricing_readonly_v1.py` produce anche
+`preflight_rates_vs_prior_frozen`: diagnostica *read-only* che confronta
+la data, la fonte e l'identità del 2Y **attualmente disponibili** con
+lo snapshot V2 immutabile del precedente giorno lavorativo Roma.
+Riusa esattamente i controlli `source_pair()` preregistrati:
+freschezza di **entrambe** le osservazioni, nuova data dell'obbligazione,
+strumento identico e valore numerico coerente.
+
+Il report conserva sempre il denominatore di **28 coppie potenziali**,
+elenca blocchi e coppie soltanto *potenzialmente confrontabili per rates*.
+Non inserisce un T0 fittizio, non congela dati al posto del workflow serale,
+non usa gli esiti BCE e non attribuisce alcun segnale o performance H1.
+Il numero può cambiare nel giorno finché non arriva il freeze autentico.
+Se manca lo snapshot del giorno lavorativo precedente o è weekend, il
+preflight fallisce chiuso con **0 coppie candidate**. È una diagnosi
+preliminare, non altera le regole immutabili di H1, non introduce
+workflow, cron o dipendenze sulla Control Room.
