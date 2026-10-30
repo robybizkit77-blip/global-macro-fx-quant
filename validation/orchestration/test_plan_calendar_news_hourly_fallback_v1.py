@@ -15,7 +15,7 @@ def cb_meeting():
     return {"JPY":{"next_meeting":"2026-10-30","last_date":"2026-09-18"}}
 def parent(completed="2026-10-30T05:34:00Z"):
     return {"name":"Hourly Certified Alert Readiness V1","event":"schedule",
-            "conclusion":"success","head_branch":"main","completed_at":completed}
+            "conclusion":"success","head_branch":"main","updated_at":completed}
 def receipts(checked="2026-10-30T03:01:58Z"):
     return {"CALENDAR":source(checked),"NEWS_PULSE":source(checked)}
 
