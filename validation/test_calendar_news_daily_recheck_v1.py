@@ -278,6 +278,71 @@ assert future_items[0]["quality"] == "OFFICIAL_RSS_DATED_LINK"
 assert officialrss.extract_items(
     boj_future_fixture.replace(b"www.boj.or.jp", b"example.com"),
     boj_source, at("2026-10-30T04:00:00+00:00")) == []
+# A BoJ publisher-supplied legacy http link may be safely normalized to
+# the same official HTTPS host. Cross-host links stay forbidden and only the
+# actual dated issuer RSS record can become a policy headline.
+boj_legacy_url="http://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/k261030a.pdf"
+assert officialrss.trustworthy_url(boj_legacy_url, boj_source) == (
+    "https://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/k261030a.pdf")
+legacy_fixture=boj_future_fixture.replace(
+    b"https://www.boj.or.jp/en/mopo/mpmdeci/state_2026/test-fixture.pdf",
+    boj_legacy_url.encode())
+legacy_items=officialrss.extract_items(
+    legacy_fixture,boj_source,at("2026-10-30T04:00:00+00:00"))
+assert len(legacy_items)==1
+assert legacy_items[0]["quality"]=="OFFICIAL_RSS_DATED_LINK"
+assert legacy_items[0]["desk_context"]["topic"]=="CB_POLICY"
+assert officialrss.extract_items(
+    legacy_fixture.replace(b"www.boj.or.jp",b"attacker.example"),
+    boj_source,at("2026-10-30T04:00:00+00:00"))==[]
+assert officialrss.trustworthy_url(
+    "http://www.boj.or.jp:8080/en/mopo/test.pdf",boj_source) is None
+assert officialrss.trustworthy_url(
+    "http://user:pass@www.boj.or.jp/en/mopo/test.pdf",boj_source) is None
+assert officialrss.trustworthy_url(
+    "http://www.federalreserve.gov/en/mopo/test.pdf",
+    next(z for z in officialrss.RSS_SOURCES if z["id"]=="FED_PRESS")) is None
+# Real-world same-day ordering regression: newer BoJ ETF/Outlook releases
+# must NOT push the earlier verified rate-decision statement out of the two
+# most recent official issuer headlines.
+boj_same_day = b"""<rss><channel>
+<item><title>Amendment to Basic Principles for Disposal of ETFs and J-REITs</title>
+<link>http://www.boj.or.jp/en/mopo/2026/etf-test.pdf</link>
+<pubDate>Fri, 30 Oct 2026 05:00:00 GMT</pubDate></item>
+<item><title>Outlook for Economic Activity and Prices (October 2026, The Bank's View)</title>
+<link>http://www.boj.or.jp/en/mopo/outlook/2026/test.pdf</link>
+<pubDate>Fri, 30 Oct 2026 04:00:00 GMT</pubDate></item>
+<item><title>Statement on Monetary Policy</title>
+<link>http://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/k261030a.pdf</link>
+<pubDate>Fri, 30 Oct 2026 03:02:00 GMT</pubDate></item>
+<item><title>Statement on Monetary Policy (previous meeting)</title>
+<link>http://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/older.pdf</link>
+<pubDate>Thu, 22 Oct 2026 03:02:00 GMT</pubDate></item>
+</channel></rss>"""
+boj_all = officialrss.extract_items(
+    boj_same_day, boj_source, at("2026-10-30T07:00:00+00:00"))
+assert len(boj_all) == 4
+boj_selected = officialrss.select_source_headlines(boj_all, boj_source)
+assert len(boj_selected) == officialrss.MAX_ITEMS_PER_SOURCE == 2
+assert boj_selected[0]["title"] == "Statement on Monetary Policy", boj_selected
+assert boj_selected[0]["published_at_utc"] == "2026-10-30T03:02:00Z"
+assert boj_selected[1]["title"].startswith("Amendment to Basic Principles"), boj_selected
+assert all(x["quality"]=="OFFICIAL_RSS_DATED_LINK" for x in boj_selected)
+assert all(x["desk_context"]["market_reaction"]=="NOT_MEASURED"
+           for x in boj_selected)
+# Never revive an old policy item if today's feed is only non-policy.
+recent_non_policy = [x for x in boj_all if
+    x["published_at_utc"].startswith("2026-10-30") and
+    x["desk_context"]["topic"] != "CB_POLICY"]
+assert [x["title"] for x in officialrss.select_source_headlines(
+    recent_non_policy + [boj_all[-1]], boj_source)] == [
+    recent_non_policy[0]["title"], recent_non_policy[1]["title"]]
+assert officialrss.select_source_headlines(
+    boj_all, next(s for s in officialrss.RSS_SOURCES if s["id"]=="FED_PRESS")
+)[0]["title"].startswith("Amendment")
+print("BOJ_SAME_DAY_POLICY_STATEMENT_SHORTLIST_PRIORITY_PASS")
+
+print("BOJ_LEGACY_PUBLISHER_HTTP_LINK_HTTPS_UPGRADE_FAIL_CLOSED_PASS")
 print("BOJ_OFFICIAL_RSS_POLICY_TITLE_CLASSIFICATION_PASS")
 
 # One publisher-controlled item per approved source is accepted; no
