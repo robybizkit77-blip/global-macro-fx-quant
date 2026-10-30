@@ -278,6 +278,31 @@ assert future_items[0]["quality"] == "OFFICIAL_RSS_DATED_LINK"
 assert officialrss.extract_items(
     boj_future_fixture.replace(b"www.boj.or.jp", b"example.com"),
     boj_source, at("2026-10-30T04:00:00+00:00")) == []
+# A BoJ publisher-supplied legacy http link may be safely normalized to
+# the same official HTTPS host. Cross-host links stay forbidden and only the
+# actual dated issuer RSS record can become a policy headline.
+boj_legacy_url="http://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/k261030a.pdf"
+assert officialrss.trustworthy_url(boj_legacy_url, boj_source) == (
+    "https://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/k261030a.pdf")
+legacy_fixture=boj_future_fixture.replace(
+    b"https://www.boj.or.jp/en/mopo/mpmdeci/state_2026/test-fixture.pdf",
+    boj_legacy_url.encode())
+legacy_items=officialrss.extract_items(
+    legacy_fixture,boj_source,at("2026-10-30T04:00:00+00:00"))
+assert len(legacy_items)==1
+assert legacy_items[0]["quality"]=="OFFICIAL_RSS_DATED_LINK"
+assert legacy_items[0]["desk_context"]["topic"]=="CB_POLICY"
+assert officialrss.extract_items(
+    legacy_fixture.replace(b"www.boj.or.jp",b"attacker.example"),
+    boj_source,at("2026-10-30T04:00:00+00:00"))==[]
+assert officialrss.trustworthy_url(
+    "http://www.boj.or.jp:8080/en/mopo/test.pdf",boj_source) is None
+assert officialrss.trustworthy_url(
+    "http://user:pass@www.boj.or.jp/en/mopo/test.pdf",boj_source) is None
+assert officialrss.trustworthy_url(
+    "http://www.federalreserve.gov/en/mopo/test.pdf",
+    next(z for z in officialrss.RSS_SOURCES if z["id"]=="FED_PRESS")) is None
+print("BOJ_LEGACY_PUBLISHER_HTTP_LINK_HTTPS_UPGRADE_FAIL_CLOSED_PASS")
 print("BOJ_OFFICIAL_RSS_POLICY_TITLE_CLASSIFICATION_PASS")
 
 # One publisher-controlled item per approved source is accepted; no
