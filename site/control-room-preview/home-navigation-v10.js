@@ -3749,6 +3749,131 @@ async function mountCotFirstReading(doc){
  }
 }
 
+
+/* G8 current economic/rates context: factual observations only.
+   This does not resurrect the undocumented 2026-09-25 D score formula,
+   estimate macro-FX strength, or alter the 28 canonical pair theses. */
+async function mountMacroV2CurrentEvidence(doc){
+ if(route()!=='macro'||frame.contentDocument!==doc||
+    doc.getElementById('gmfq-macro-v2-current-evidence'))return;
+ const hero=doc.querySelector('.desk-hero');
+ if(!hero)return;
+ const panel=doc.createElement('section');
+ panel.id='gmfq-macro-v2-current-evidence';panel.className='desk-panel';
+ panel.dataset.status='LOADING';
+ panel.setAttribute('aria-label','Evidenze G8 recenti Growth Macro e tassi senza nuovo score FX');
+ panel.innerHTML='<h2 class="desk-panel-title">Macro V2 · evidenze disponibili</h2><p>Verifica di date, fonti e qualità in corso.</p>';
+ hero.insertAdjacentElement('afterend',panel);
+ const gdpUrl='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/validation/macro/fixtures/v2_g8_quarterly_gdp_q2_2026_web_release_ledger_v1.json';
+ const results=await Promise.allSettled([
+  feed('MACRO_THERMOMETER_DATA.json'),feed('NATIVE_RATES_DATA.json'),
+  feed('OIS_OPERATIONAL_VIEW.json'),feed('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),
+  (async()=>{const response=await fetch(gdpUrl,{cache:'no-store'});
+    if(!response.ok)throw Error('GDP dossier HTTP '+response.status);
+    return response.json()})()
+ ]);
+ if(route()!=='macro'||frame.contentDocument!==doc||!panel.isConnected)return;
+ const [macro,rates,ois,nzdProxy,gdp]=results.map(r=>r.status==='fulfilled'?r.value:null);
+ const valid=macro?.schema_version==='GMFQ_MACRO_HEATMAP_V1'&&
+   macro.status==='ACTIVE'&&rates&&ois?.currencies&&
+   gdp?.schema==='GMFQ_G8_REAL_GDP_Q2_2026_PUBLISHER_WEB_RELEASE_EVENTS_V1'&&
+   gdp.eligible_for_macro_scoring===false&&gdp.may_rewrite_D_json===false&&
+   gdp.release_artifact_original_day_bytes_archived===false&&
+   gdp.gdp_reporting_horizon_not_uniform===true&&
+   gdp.observed_first_web_releases===8;
+ const first=gdp?.records?.filter(x=>x.stage_order===0)||[];
+ const unique=new Set(first.map(x=>x.currency));
+ if(!valid||first.length!==8||unique.size!==8||
+    !FX.every(c=>unique.has(c)&&macro.currencies?.[c]?.status==='ACTIVE'&&rates[c]&&ois.currencies[c])){
+  panel.dataset.status='INCOMPLETE_SOURCE_CONTEXT';
+  panel.innerHTML='<h2 class="desk-panel-title">Macro V2 · evidenze disponibili</h2>'+
+   '<p>Almeno una fonte G8 non è verificabile. Restano visibili le osservazioni Macro e Rates nelle rispettive sezioni; non si pubblicano valori sostitutivi arbitrari.</p>';
+  return;
+ }
+ const today=romeTodayIso();
+ // The Rates addon is the pre-existing governance layer for approved
+ // EUR/CHF dated-futures context and NZD bank-bill/OCR scenarios. Never
+ // manufacture OIS quotes from a blank operational 6M slot.
+ const research=window.GMFQ_OIS_RESEARCH_V1;
+ const indicative=research?.indicativeSixMonth?.(ois,today)||{};
+ const nzdScenario=research?.scenarioSixMonth?.(ois,nzdProxy,today)||{};
+ const safeRate=x=>num(x)!==null?fmt(x,2)+'%':'n.d.';
+ const card=ccy=>{
+   const growth=first.find(x=>x.currency===ccy);
+   const revised=gdp.records.filter(x=>x.currency===ccy&&x.stage_order>0&&x.publisher_release_day<=today)
+      .sort((a,b)=>a.publisher_release_day.localeCompare(b.publisher_release_day)).at(-1);
+   const observed=revised||growth, heat=macro.currencies[ccy],rate=rates[ccy],policy=ois.currencies[ccy];
+   const gdpKnown=/^2026Q2$/.test(observed?.reference_quarter||'')&&
+     /^\d{4}-\d{2}-\d{2}$/.test(observed.publisher_release_day)&&
+     observed.publisher_release_day<=today&&num(observed.reported_value)!==null;
+   let gdpValue='n.d.';
+   if(gdpKnown){
+     const raw=observed.reported_value;
+     // United States headline is annualized. Convert to nonannualized QoQ
+     // purely for the descriptive line, not as a comparable model feature.
+     const qoq=observed.reported_unit==='PERCENT_SAAR_ANNUALIZED'?
+       100*(Math.pow(1+raw/100,1/4)-1):raw;
+     gdpValue=fmt(qoq,2)+'% QoQ'+
+       (observed.reported_unit==='PERCENT_SAAR_ANNUALIZED'?' · da SAAR':'');
+   }
+   const field=k=>{const x=heat?.[k],y=macroThermometerObservation(x);
+     return y?fmt(y.value,2)+'% · '+htmlEscape(y.period):'n.d.';};
+   const d=rate?.date,rateRecent=fresh(d,5);
+   const p=policy?.horizons?.['6m'],policyAsOf=policy?.as_of||'';
+   const direct=policy?.operational_status==='GREEN_OFFICIAL'&&
+     policy.official_status==='ACTIVE'&&policy.quality==='OFFICIAL_CERTIFIED'&&
+     fresh(policyAsOf,4)&&num(p?.rate)!==null;
+   const estimated=policy?.operational_status==='GREEN_ESTIMATED'&&
+     fresh(policyAsOf,5)&&num(p?.rate)!==null;
+   const secondary=['EUR','CHF'].includes(ccy)?indicative[ccy]:
+     ccy==='NZD'?nzdScenario.NZD:null;
+   const value=direct||estimated?p.rate:
+     secondary?.pair_effect==='NONE'&&secondary.is_official_ois===false&&
+     fresh(secondary.quote_as_of,5)?secondary.value:null;
+   const grade=direct?'UFFICIALE CERTIFICATO':
+     estimated?'STIMA · FUTURES':
+     num(value)!==null&&ccy==='NZD'?'SCENARIO · BANK BILL–OCR':
+     num(value)!==null?'STIMA · FUTURES INDICATIVI':'FONTE NON VERIFICATA';
+   const effective6mAsOf=direct||estimated?policyAsOf:
+     num(value)!==null?secondary.quote_as_of:policyAsOf;
+   const six=safeRate(value);
+   return '<article class="gmfq-macro-v2-country" data-ccy="'+ccy+
+      '" data-growth-period="'+htmlEscape(observed?.reference_quarter||'')+
+      '" data-rates-date="'+htmlEscape(d||'')+
+      '" data-ois-quality="'+htmlEscape(grade)+'">'+
+     '<strong>'+FLAG[ccy]+' '+ccy+'</strong>'+
+     '<p><b>Growth</b> '+gdpValue+' <small>'+htmlEscape(observed?.reference_quarter||'')+
+       ' · web '+htmlEscape(observed?.publisher_release_day||'')+
+       (revised?' · revisione':' · prima stima')+'</small></p>'+
+     '<p><b>Inflazione</b> '+field('inflation')+
+       ' <b>Disoccupazione</b> '+field('labour')+'</p>'+
+     '<p><b>2Y</b> '+safeRate(rate['2Y'])+' <small>'+htmlEscape(d||'')+
+       (rateRecent?'':' · STORICO')+'</small>'+
+       ' <b>6M monetario</b> '+six+' <small>'+htmlEscape(effective6mAsOf)+
+       ' · '+htmlEscape(grade)+'</small></p></article>';
+ };
+ const style=doc.createElement('style');
+ style.id='gmfq-macro-v2-current-style';
+ style.textContent='#gmfq-macro-v2-current-evidence{margin:0 0 14px;padding:14px 16px;min-width:0}'+
+  '#gmfq-macro-v2-current-evidence p{font:12px/1.55 Arial,sans-serif;color:#bed1de;margin:6px 0;overflow-wrap:anywhere}'+
+  '#gmfq-macro-v2-current-evidence .gmfq-macro-v2-intro{color:#e4d3a5;font-size:12px}'+
+  '#gmfq-macro-v2-current-evidence .gmfq-macro-v2-countries{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:11px 0}'+
+  '#gmfq-macro-v2-current-evidence .gmfq-macro-v2-country{min-width:0;background:#0b2232;border:1px solid #294557;border-radius:5px;padding:9px 11px}'+
+  '#gmfq-macro-v2-current-evidence .gmfq-macro-v2-country>strong{color:#e3ebf3;font:600 13px Arial,sans-serif}'+
+  '#gmfq-macro-v2-current-evidence .gmfq-macro-v2-country b{color:#d9e6ef;font-weight:600;margin-right:3px}'+
+  '#gmfq-macro-v2-current-evidence .gmfq-macro-v2-country small{color:#9db6c8;font-size:10px}'+
+  '@media(max-width:680px){#gmfq-macro-v2-current-evidence .gmfq-macro-v2-countries{grid-template-columns:1fr}}';
+ doc.head.appendChild(style);
+ panel.dataset.status='OBSERVED_RESEARCH_CONTEXT';
+ panel.dataset.currencyCount='8';
+ panel.dataset.macroScoreEffect='NONE';
+ panel.dataset.pairRankEffect='NONE';
+ panel.innerHTML='<h2 class="desk-panel-title">Macro V2 · quadro osservato delle 8 economie</h2>'+
+  '<p class="gmfq-macro-v2-intro">Growth, inflazione, lavoro e front-end monetario con date distinte. Queste evidenze NON aggiornano i 24 punteggi storici del 25/09 né classificano le 28 coppie.</p>'+
+  '<div class="gmfq-macro-v2-countries">'+FX.map(card).join('')+'</div>'+
+  '<p>Growth: ultime rilevazioni Q2 2026 documentate nel dossier web dei primi comunicati, con revisioni EUR/GBP quando già pubblicate; non è un archivio PIT completo. Le stime 6M non sono OIS ufficiali. I dati economici possono riferirsi a mesi diversi. Nessun segnale FX o promozione al modello.</p>';
+}
+
 function onFrameLoad(){
  let doc;try{doc=frame.contentDocument}catch(_){return}
  if(!doc?.body||mountedDocuments.has(doc))return;
@@ -3760,6 +3885,7 @@ function onFrameLoad(){
    if(route()==='banche')mountCentralBankFirstReading(doc).catch(e=>console.warn('[GMFQ CB first reading WITHHELD]',e));
    if(route()==='cot')mountCotFirstReading(doc).catch(e=>console.warn('[GMFQ COT first reading WITHHELD]',e));
    if(route()==='macro')mountMacroSourceLens(doc).catch(e=>console.warn('[GMFQ Macro source lens WITHHELD]',e));
+   if(route()==='macro')mountMacroV2CurrentEvidence(doc).catch(e=>console.warn('[GMFQ Macro V2 context source unavailable]',e));
    if(route()==='valute')mountValuteSourceCompass(doc).catch(e=>console.warn('[GMFQ Valute source compass WITHHELD]',e));
    if(route()==='coppie')mountPairResearch(doc).catch(e=>console.warn('[GMFQ pair research WITHHELD]',e));
    if(route()==='coppie')mountPairRankedList(doc).catch(e=>console.warn('[GMFQ pair ranking WITHHELD]',e));
