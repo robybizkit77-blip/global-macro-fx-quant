@@ -18,7 +18,7 @@ assert.equal(result.NZD.independent_xlsx_crosscheck,false);
 assert.equal(result.NZD.latest_is_official_canonical,false);
 assert.equal(result.NZD.source_quality,'RBNZ_B2_OFFICIAL_SINGLE_WEB_TEXT__XLSX_PENDING');
 const h=continuityHtml(result);
-assert(h.includes('2026-10-29')&&h.includes('3,77%')&&h.includes('4,87%'));
+assert(h.includes('2026-10-29')&&h.includes('3.77%')&&h.includes('4.87%'));
 assert(h.includes('non ancora riconciliata con XLSX'));
 assert(!h.includes('NZD · B2 ufficiale'));
 assert.equal(rates.NZD.date,'2026-10-16');
