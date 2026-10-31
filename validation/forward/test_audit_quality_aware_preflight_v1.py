@@ -8,6 +8,7 @@ from validation.forward import audit_quality_aware_preflight_v1 as audit
 from validation.forward.capture_v2_quality_aware_prospective_v1 import ROOT, SOURCE_PATHS
 from validation.forward.v2_quality_market_context_v1 import build as market_build
 from validation.macro.v2_g8_observed_feature_bridge_v1 import run as observed_run
+from validation.macro.v2_us_shutdown_2025_calendar_gap_v1 import audit as us_audit
 from validation.macro.v2_zero_mad_ordinal_quality_v1 import (
     build as ordinal_build, SOURCE as SERIES, REGISTRY,
 )
@@ -22,6 +23,9 @@ class QualityAwarePreflightTests(unittest.TestCase):
         cls.fx = load("ecb")
         cls.pairs = load("pair_setup")
         cls.observed = observed_run(as_of=cls.day)
+        series=json.loads(SERIES.read_text())
+        registry=json.loads(REGISTRY.read_text())
+        cls.us_shutdown=us_audit(series,registry,cls.observed,checked_as_of=cls.day)
         cls.ordinal = ordinal_build(
             cls.observed,
             json.loads(SERIES.read_text()),
@@ -35,7 +39,7 @@ class QualityAwarePreflightTests(unittest.TestCase):
 
     def inspect(self, **kwargs):
         data = {key:copy.deepcopy(getattr(self,key)) for key
-                in ("now","fx","pairs","observed","ordinal","market")}
+                in ("now","fx","pairs","observed","ordinal","market","us_shutdown")}
         data.update(kwargs)
         return audit.inspect(**data)
 
@@ -53,6 +57,9 @@ class QualityAwarePreflightTests(unittest.TestCase):
         self.assertEqual(out["ordinal_context_only_slots"],["EUR.labour"])
         self.assertIn("EUR.labour",out["current_strict_z_missing_slots"])
         self.assertTrue(out["current_USD_inflation_missing_Oct2025_source_PIT_not_repaired"])
+        self.assertTrue(out["current_USD_labour_missing_Oct2025_CPS_PIT_not_repaired"])
+        self.assertEqual(out["US_oct2025_unpublished_source_calendar_gap"]["strict_24_calendar_missing_slots"],
+                         ["USD.inflation","USD.labour"])
         self.assertTrue(out["current_CHF_labour_first_SNB_precision_PIT_not_repaired"])
 
     def test_rejects_source_promotion_or_fake_data(self):
@@ -62,6 +69,8 @@ class QualityAwarePreflightTests(unittest.TestCase):
             ("ordinal",("strict_numeric_z_imputation_count",),1),
             ("ordinal",("zero_mad_components","EUR.labour","numeric_replacement_z"),2),
             ("market",("summary","FX_scores"),1),
+            ("us_shutdown",("slots","USD.labour","oct_2025_observation_exists"),True),
+            ("us_shutdown",("slots","USD.inflation","prior_24_missing_periods"),[]),
             ("market",("summary","28_pairs"),27),
             ("pairs",("pair_count",),27),
             ("fx",("last_as_of",),"2026-10-30" if self.fx["last_as_of"]!="2026-10-30" else "2026-10-29"),
