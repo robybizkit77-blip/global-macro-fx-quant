@@ -141,21 +141,29 @@ def validate_conflict_lineage(feed: dict, history: list[dict],
             visited.add(h)
             event = events[k["event_id"]]
             incoming = event["conflicting_source_quote"]
+            original = event["original_immutable_quote"]
             require(event["key"] == [ccy, k["contract"], k["observation_date"]]
-                    and incoming["observed_under_horizon"] == h,
+                    and incoming["observed_under_horizon"] == h
+                    and original["observed_under_horizon"] == h,
                     ccy + ": quarantine event does not describe claimed contract")
-            q = ((entry.get("horizons") or {}).get(h) or {})
-            require(
-                q.get("contract") == incoming["contract"] and
-                q.get("symbol") == incoming["symbol"] and
-                q.get("expiration") == incoming["expiration"] and
-                q.get("quote_as_of") == incoming["observation_date"] and
+            q = ((entry.get("horizons") or {}).get(h) or {}
+            # Either side of the immutable two-quote disagreement may be
+            # re-fetched. Neither becomes verified simply by reappearing.
+            one_of_signed_prints = any(
+                q.get("contract") == candidate["contract"] and
+                q.get("symbol") == candidate["symbol"] and
+                q.get("expiration") == candidate["expiration"] and
+                q.get("quote_as_of") == candidate["observation_date"] and
                 type(q.get("rate")) in (int, float) and
                 type(q.get("futures_price")) in (int, float) and
-                q["rate"] == incoming["implied_rate"] and
-                q["futures_price"] == incoming["futures_price"] and
-                q.get("quote_timestamp_verified") is False and
-                q.get("quote_timestamp_source") ==
+                q["rate"] == candidate["implied_rate"] and
+                q["futures_price"] == candidate["futures_price"]
+                for candidate in (original, incoming)
+            )
+            require(
+                one_of_signed_prints
+                and q.get("quote_timestamp_verified") is False
+                and q.get("quote_timestamp_source") ==
                     "QUARANTINED_SAME_CONTRACT_SAME_DAY",
                 ccy + "/" + h + ": displayed tentative quote not identical to signed event")
             checked.append((ccy, h, k["event_id"]))
@@ -173,17 +181,33 @@ def reconcile(feed: dict, history: list[dict],
     eligible, excluded = candidates(feed)
     known = {record_key(row): row for row in history}
     seen = {row["event_id"] for row in existing_events}
+    # A previously disputed contract/day remains disputed even when the
+    # provider subsequently repeats the *first* print. Seeing the old price
+    # again is NOT an independent settlement/reconciliation.
+    disputed_by_key = {}
+    for event in existing_events:
+        disputed_by_key.setdefault(tuple(event["key"]), []).append(event)
     updated = copy.deepcopy(feed)
     conflicts = []
     quarantined = {}
     for row in eligible:
-        archived = known.get(record_key(row))
-        if archived is None or quote_fingerprint(archived) == quote_fingerprint(row):
+        key = record_key(row)
+        archived = known.get(key)
+        if archived is None:
             continue
-        event = conflict_event(archived, row)
-        if event["event_id"] not in seen:
-            conflicts.append(event)
-            seen.add(event["event_id"])
+        old_print = quote_fingerprint(archived) == quote_fingerprint(row)
+        previous_disputes = disputed_by_key.get(key, [])
+        if old_print and not previous_disputes:
+            continue
+        if old_print:
+            # Frozen first-seen value reappeared: keep an existing dispute
+            # event and its exact original-bar link, never invent a "close".
+            event = sorted(previous_disputes, key=lambda e:e["event_id"])[0]
+        else:
+            event = conflict_event(archived, row)
+            if event["event_id"] not in seen:
+                conflicts.append(event)
+                seen.add(event["event_id"])
         currency = row["currency"]
         horizon = row["observed_under_horizon"]
         quarantined.setdefault(currency, []).append({
