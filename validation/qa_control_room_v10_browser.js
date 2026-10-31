@@ -391,8 +391,11 @@ function expectedReactionFromMetrics(row){
    if(r.pulse.state==='DATED_LEVEL_CONTEXT'&&
       (r.pulse.contextual.length!==8||
        new Set(r.pulse.contextual.map(x=>x.ccy)).size!==8||
-       r.pulse.contextual.some(x=>!['OFFICIAL','PROXY','MIXED','SCENARIO'].includes(x.quality)||
-          x.researchOnly!=='true'||!x.text.includes('6M'))||
+       r.pulse.contextual.some(x=>!['OFFICIAL','PROXY','MIXED','CONFLICTED','SCENARIO'].includes(x.quality)||
+          x.researchOnly!=='true'||!x.text.includes('6M')||
+          (x.quality==='CONFLICTED'&&
+           (!x.text.includes('QUOTAZIONE NON CONVALIDATA')||
+            !x.text.includes('non è previsione di policy, trade o ΔOIS'))))||
        !r.pulse.text.includes('Nessuna variazione recente validata')))
      fatal.push('Home 6M context fallback invalid '+JSON.stringify(r.pulse.contextual));
   if(r.pulse.title!=='Market Pulse · tassi impliciti'||
