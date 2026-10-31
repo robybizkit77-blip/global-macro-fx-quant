@@ -49,7 +49,7 @@ reject('CHF false same-day curve allowed',(_,c)=>c.eligible_for_curve_spreads=tr
 reject('CHF tampered source SHA',(_,c)=>c.source_html_sha256='forged',x=>x.CHF===null);
 reject('CHF future-dated 10Y',(_,c)=>c.as_of='2026-11-02',x=>x.CHF===null);
 reject('CHF duplicate history day',(a)=>a.CHF.history2.dates[2]=a.CHF.history2.dates[1],x=>x.CHF===null);
-reject('CHF historical 2Y last value altered',(a)=>a.CHF.history2.values.at(-1)+=0.1,x=>x.CHF===null);
+reject('CHF historical 2Y last value altered',(a)=>a.CHF.history2.values[a.CHF.history2.values.length-1]+=0.1,x=>x.CHF===null);
 reject('CHF current source 10Y inconsistent',(_,c)=>c.value_percent='NOT A NUMBER',x=>x.CHF===null);
 reject('NZD unapproved web reread must never promote',(_,c)=>c.status='OFFICIAL_VERIFIED',x=>x.NZD===null);
 reject('NZD source missing human approval status',(_,__,n)=>n.evidence.independent_human_reviewer_confirmed=true,x=>x.NZD===null);
