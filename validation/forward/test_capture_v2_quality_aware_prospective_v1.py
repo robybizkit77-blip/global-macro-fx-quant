@@ -316,6 +316,109 @@ class QualityAwareProspectiveCaptureTests(unittest.TestCase):
                                  "BLOCKED_NO_OFFICIAL_SAME_DAY_ECB_T0")
                 self.assertFalse((root/"research"/"blocked.jsonl").exists())
 
+    def test_1930_missing_source_recovers_at_2030_without_duplicate_or_fake_T0(self):
+        """Full synthetic disk path: late ECB/Pair -> retry -> durable proof -> no rewrite.
+
+        Tests two independent delayed inputs without changing any live source or
+        preregistered outcome. No synthetic row is committed to the real journal.
+        """
+        import hashlib
+        from unittest.mock import patch
+        from validation.forward.certify_quality_aware_persisted_v1 import audit
+
+        for missing in ("ecb", "pair_setup"):
+            with self.subTest(missing=missing), tempfile.TemporaryDirectory() as td:
+                root = Path(td)
+                fixtures = {
+                    "ecb": copy.deepcopy(self.fx),
+                    "pair_setup": copy.deepcopy(self.pair),
+                    "legacy_core": copy.deepcopy(self.core),
+                    "macro_series": {"SYNTHETIC_ONLY": True},
+                    "macro_thermometer": {"SYNTHETIC_ONLY": True},
+                    "macro_registry": {"SYNTHETIC_ONLY": True},
+                    "rates": copy.deepcopy(self.rates),
+                    "ois": copy.deepcopy(self.ois),
+                    "banks": copy.deepcopy(self.banks),
+                    "nzd_proxy": copy.deepcopy(self.nzd_proxy),
+                }
+                if missing == "ecb":
+                    fixtures["ecb"]["last_as_of"] = "2026-10-30"
+                    fixtures["ecb"]["rows"] = [
+                        row for row in fixtures["ecb"]["rows"]
+                        if row["Date"] < self.day
+                    ]
+                    fixtures["ecb"]["row_count"] = len(fixtures["ecb"]["rows"])
+                else:
+                    fixtures["pair_setup"]["price_asof"] = "2026-10-30"
+
+                for key, relative in qa.SOURCE_PATHS.items():
+                    source = root / relative
+                    source.parent.mkdir(parents=True, exist_ok=True)
+                    source.write_text(json.dumps(fixtures[key]) + "\n", encoding="utf-8")
+
+                journal = root / "isolated" / "quality.jsonl"
+                file_digest = lambda rel: hashlib.sha256(
+                    (root / rel).read_bytes()
+                ).hexdigest()
+                with patch.object(qa, "ROOT", root), \
+                     patch.object(qa, "file_sha", side_effect=file_digest), \
+                     patch.object(qa, "economic_run", return_value=self.observed) as econ, \
+                     patch.object(qa, "ordinal_build", return_value=self.ordinal) as ordinal:
+                    first = qa.attempt(cutoff=self.cut, now=self.now, path=journal)
+                    self.assertEqual(first["status"], "BLOCKED_NO_OFFICIAL_SAME_DAY_ECB_T0")
+                    self.assertEqual(first["appended"], 0)
+                    self.assertFalse(journal.exists())
+                    econ.assert_not_called()
+                    ordinal.assert_not_called()
+
+                    # The official source arrives after the primary run, not
+                    # a fabricated or backdated first snapshot.
+                    updated = "ecb" if missing == "ecb" else "pair_setup"
+                    source = root / qa.SOURCE_PATHS[updated]
+                    real = self.fx if missing == "ecb" else self.pair
+                    source.write_text(json.dumps(real) + "\n", encoding="utf-8")
+
+                    backup_time = self.cut + timedelta(hours=1)
+                    backup_now = self.now + timedelta(hours=1)
+                    second = qa.attempt(
+                        cutoff=backup_time, now=backup_now, path=journal
+                    )
+                    self.assertEqual(
+                        second["status"], "QUALITY_AWARE_PROSPECTIVE_SNAPSHOT_APPEND_OK"
+                    )
+                    self.assertEqual(second["appended"], 1)
+                    econ.assert_called_once_with(as_of=self.day)
+                    ordinal.assert_called_once()
+                    frozen = journal.read_bytes()
+                    row = json.loads(frozen)
+                    self.assertEqual(qa.validate_snapshot(row), self.day)
+                    self.assertEqual(row["official_ecb_t0_date"], self.day)
+                    self.assertEqual(len(row["observed_t0_ref"]), 28)
+                    self.assertEqual(row["numeric_z_imputation_count"], 0)
+
+                    proof = audit(
+                        now=backup_now, admitted=True,
+                        core_persisted=True, path=journal
+                    )
+                    self.assertEqual(
+                        proof["status"],
+                        "QUALITY_AWARE_DURABLE_RESEARCH_COHORT_CERTIFIED"
+                    )
+                    self.assertTrue(proof["source_controlled_journal_verified"])
+                    self.assertFalse(proof["can_validate_H1_or_FX_predictive_skill"])
+
+                    replay = qa.attempt(
+                        cutoff=backup_time + timedelta(minutes=30),
+                        now=backup_now + timedelta(minutes=30), path=journal
+                    )
+                    self.assertEqual(
+                        replay["status"],
+                        "EXISTING_QUALITY_AWARE_DATE_FROZEN_NO_OVERWRITE"
+                    )
+                    self.assertEqual(replay["appended"], 0)
+                    self.assertEqual(journal.read_bytes(), frozen)
+                    econ.assert_called_once_with(as_of=self.day)
+
     def test_workflow_separate_provenance_and_no_extra_schedules(self):
         path=qa.ROOT/".github/workflows/forward-frozen-core-prospective-daily-v1.yml"
         text=path.read_text(encoding="utf-8")
