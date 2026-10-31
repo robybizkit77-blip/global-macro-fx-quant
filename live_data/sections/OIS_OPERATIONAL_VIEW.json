@@ -67,28 +67,28 @@
       "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)"
     },
     "CHF": {
-      "as_of": "2026-10-29",
+      "as_of": "2026-10-30",
       "backtest_eligible_as_official": false,
       "change_1d_available": false,
       "change_1w_available": false,
       "confidence": "B",
-      "direction_vs_policy": null,
+      "direction_vs_policy": "UP",
       "horizons": {
         "12m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "SA3U2027",
           "contract_description": "Sep 2027",
           "expiration": "2027-12-14",
-          "futures_price": 99.565,
+          "futures_price": 99.61,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
-          "policy_delta_bp": null,
-          "price_valid_until": "2026-10-29T17:59:58Z",
-          "quote_as_of": "2026-10-29",
+          "policy_delta_bp": 39.0,
+          "price_valid_until": "2026-10-30T17:59:52Z",
+          "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": null,
+          "rate": 0.39,
           "symbol": "ICEEUR:SA3U2027"
         },
         "3m": {
@@ -100,12 +100,12 @@
           "expiration": "2026-12-15",
           "futures_price": 100.0475,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
-          "policy_delta_bp": null,
+          "policy_delta_bp": -4.8,
           "price_valid_until": "2026-10-30T08:01:34Z",
           "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": null,
+          "rate": -0.0475,
           "symbol": "ICEEUR:SA3U2026"
         },
         "6m": {
@@ -117,12 +117,12 @@
           "expiration": "2027-03-16",
           "futures_price": 100.025,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
-          "policy_delta_bp": null,
+          "policy_delta_bp": -2.5,
           "price_valid_until": "2026-10-30T17:59:52Z",
           "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": null,
+          "rate": -0.025,
           "symbol": "ICEEUR:SA3Z2026"
         }
       },
@@ -130,7 +130,7 @@
       "market_direction_proxy": null,
       "method_id": "TRADINGVIEW_DATED_FUTURES_SSR_V2",
       "official_status": "WITHHELD",
-      "operational_status": "WITHHELD",
+      "operational_status": "GREEN_ESTIMATED",
       "policy_rate": 0.0,
       "quality": "ESTIMATED_INFORMATIONAL",
       "repricing_reference": {
@@ -142,39 +142,7 @@
         "weekly_min_age_days": 5,
         "weekly_reference_captured_at_utc": null
       },
-      "secondary_quote_context": {
-        "backtest_eligible_as_official": false,
-        "cross_date_join_allowed": false,
-        "date_mismatch": true,
-        "full_curve_usable": false,
-        "horizons": {
-          "12m": {
-            "contract": "SA3U2027",
-            "quote_as_of": "2026-10-29",
-            "rate_indicative": 0.435,
-            "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
-          },
-          "3m": {
-            "contract": "SA3U2026",
-            "quote_as_of": "2026-10-30",
-            "rate_indicative": -0.0475,
-            "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
-          },
-          "6m": {
-            "contract": "SA3Z2026",
-            "quote_as_of": "2026-10-30",
-            "rate_indicative": -0.025,
-            "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
-          }
-        },
-        "method_id": "TRADINGVIEW_DATED_FUTURES_SSR_V2",
-        "policy_delta_allowed": false,
-        "repricing_signal_allowed": false,
-        "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
-        "status": "INDICATIVE_OBSERVATIONS_NON_OIS"
-      },
-      "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
-      "withheld_reason": "STALE_OR_INCOMPLETE_PRICING"
+      "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures"
     },
     "EUR": {
       "as_of": "2026-10-29",
@@ -219,17 +187,17 @@
           "symbol": "EUREX:FST3V2026"
         },
         "6m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "FST3G2027",
           "contract_description": "Feb 2027",
           "expiration": "2027-05-19",
-          "futures_price": 97.165,
+          "futures_price": 97.1675,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-10-29T22:06:42Z",
-          "quote_as_of": "2026-10-29",
+          "price_valid_until": "2026-10-30T22:05:37Z",
+          "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": null,
@@ -272,8 +240,8 @@
           },
           "6m": {
             "contract": "FST3G2027",
-            "quote_as_of": "2026-10-29",
-            "rate_indicative": 2.835,
+            "quote_as_of": "2026-10-30",
+            "rate_indicative": 2.8325,
             "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
           }
         },
@@ -529,9 +497,9 @@
   "status": "PARTIAL_WITHHELD",
   "summary": {
     "g8_total": 8,
-    "green_estimated": 1,
+    "green_estimated": 2,
     "green_official": 4,
-    "operational_green": 5,
-    "operational_withheld": 3
+    "operational_green": 6,
+    "operational_withheld": 2
   }
 }
