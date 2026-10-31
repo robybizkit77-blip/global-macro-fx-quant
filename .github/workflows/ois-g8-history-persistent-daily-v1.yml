@@ -46,6 +46,9 @@ on:
       - 'live_data/sections/OIS_SOURCE_READINESS_VIEW.json'
       - 'validation/cb_pricing/ois_estimated_snapshot_v1.py'
       - 'validation/cb_pricing/ois_same_contract_history_v1.py'
+      - 'validation/cb_pricing/reconcile_ois_secondary_conflicts_v1.py'
+      - 'validation/cb_pricing/test_reconcile_ois_secondary_conflicts_v1.py'
+      - 'validation/cb_pricing/history/OIS_SAME_CONTRACT_CONFLICTS_V1.jsonl'
       - 'validation/cb_pricing/test_ois_same_contract_history_v1.py'
       - 'validation/cb_pricing/history/OIS_SAME_CONTRACT_QUOTES_V1.jsonl'
       - 'validation/cb_pricing/build_ois_operational_view_v1.py'
@@ -112,6 +115,12 @@ jobs:
       - name: Refresh NZD directional market proxy
         if: steps.gate.outputs.should_run == 'true'
         run: python validation/cb_pricing/collect_nzd_asx_directional_proxy_v1.py
+
+      - name: Quarantine conflicting source bars before estimated/G8 persistence
+        if: steps.gate.outputs.should_run == 'true'
+        run: |
+          python validation/cb_pricing/test_reconcile_ois_secondary_conflicts_v1.py
+          python validation/cb_pricing/reconcile_ois_secondary_conflicts_v1.py --write
 
       - name: Rebuild estimated pricing layer
         if: steps.gate.outputs.should_run == 'true'
@@ -237,6 +246,7 @@ jobs:
             'live_data/sections/OIS_SOURCE_READINESS_VIEW.json',
             'validation/cb_pricing/history/OIS_ESTIMATED_SNAPSHOTS_V1.jsonl',
             'validation/cb_pricing/history/OIS_SAME_CONTRACT_QUOTES_V1.jsonl',
+            'validation/cb_pricing/history/OIS_SAME_CONTRACT_CONFLICTS_V1.jsonl',
             'validation/cb_pricing/history/OIS_G8_SNAPSHOTS_V1.jsonl',
           }
           assert set(changed).issubset(allowed),(changed,sorted(allowed))
