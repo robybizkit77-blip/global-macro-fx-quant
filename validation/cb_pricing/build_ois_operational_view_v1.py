@@ -182,7 +182,11 @@ def build():
             if not usable:
                 out['currencies'][ccy] = {
                     'operational_status': 'WITHHELD',
-                    'withheld_reason': 'NO_USABLE_OFFICIAL_OR_ESTIMATED_PRICING',
+                    'withheld_reason': (
+                        'SECONDARY_QUOTE_CONFLICT_QUARANTINED'
+                        if e.get('input_mode') == 'QUARANTINED_SECONDARY_NO_FALLBACK'
+                        else 'NO_USABLE_OFFICIAL_OR_ESTIMATED_PRICING'
+                    ),
                     'quality': 'UNAVAILABLE',
                     'confidence': 'C',
                     'official_status': o.get('status', 'WITHHELD'),
