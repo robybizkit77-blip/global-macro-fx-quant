@@ -561,7 +561,45 @@ function expectedReactionFromMetrics(row){
      yieldStudy.width>yieldStudy.client+2)
     throw Error(label+' G8 observed sovereign yield study not ready '+JSON.stringify(yieldStudy));
 
-  // Secondary CHF/NZD government 2Y market observations must not overwrite
+  // Original G8 table historical CHF/NZD coverage must be numeric and auditable.
+   await page.waitForFunction(()=>{
+     const d=document.getElementById('gmfq-page')?.contentDocument;
+     return ['NZD','CHF'].every(c=>[...d?.querySelectorAll('#rates-rows > tr')||[]]
+       .some(row=>row.dataset.gmfqProvenance==='OFFICIAL_HISTORICAL_SAME_DAY_2Y_10Y'&&
+          row.cells[0]?.textContent.includes(c==='NZD'?'Nuova Zelanda':'Svizzera')));
+   },null,{timeout:20000});
+   const sovereignRows=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument;
+    return ['NZD','CHF'].map(c=>{
+     const row=[...d?.querySelectorAll('#rates-rows > tr')||[]]
+       .find(x=>x.cells[0]?.textContent.includes(c==='NZD'?'Nuova Zelanda':'Svizzera'));
+     return {ccy:c,asof:row?.dataset.gmfqHistoricalYield,
+      usDay:row?.dataset.gmfqHistoricalSpreadDate,visible:!!row?.getClientRects().length,
+      cells:[...row?.cells||[]].map(x=>x.textContent.trim()),
+      note:d?.getElementById('gmfq-native-history-note')?.textContent};
+    });
+   });
+   for(const row of sovereignRows){
+    const official=actualRates[row.ccy],us=actualRates.USD.history2,
+      own=official.history2,usMap=new Map(us.dates.map((d,i)=>[d,us.values[i]]));
+    const common=own.dates.map((d,i)=>({d,v:own.values[i]}))
+      .filter(x=>x.d<=official.date&&Number.isFinite(usMap.get(x.d))).at(-1);
+    if(!common)throw Error(label+' missing real common US observation '+row.ccy);
+    const delta=(common.v-usMap.get(common.d))*100,
+      slope=(official['10Y']-official['2Y'])*100;
+    if(!row.visible||row.asof!==official.date||row.usDay!==common.d||
+      !row.cells[0].includes('STORICO '+official.date)||
+      !row.cells[1].includes(official['2Y'].toFixed(3)+'%')||
+      !row.cells[2].includes(official['10Y'].toFixed(3)+'%')||
+      !row.cells[3].includes(slope.toFixed(1)+' bp')||
+      !row.cells[4].includes(delta.toFixed(1)+' bp')||
+      !row.cells[4].includes('data comune '+common.d)||
+      !row.cells[6].includes('CERTIFICATO · STORICO')||
+      !row.note?.includes('NON livelli correnti'))
+      throw Error(label+' Original G8 sovereign table missing CHF/NZD '+JSON.stringify(row));
+   }
+   console.log('CONTROL_ROOM_NATIVE_G8_TABLE_CHF_NZD_DATED_GREEN',label,JSON.stringify(sovereignRows));
+   // Secondary CHF/NZD government 2Y market observations must not overwrite
   // the dated official yield; exactly two source-context rows are expected
   // while the canonical source is lagging. No sovereign slope or pair signal.
   const twoYResearch=JSON.parse(fs.readFileSync(
