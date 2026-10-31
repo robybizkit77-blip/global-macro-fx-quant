@@ -79,7 +79,7 @@ class IndependentWorkbookTests(unittest.TestCase):
             reconcile(workbook(mutate),SOURCE,RATES_OBJ)
     def test_newer_missing_date_not_filled_from_earlier(self):
         with self.assertRaisesRegex(ValueError,"missing HTML-publication date"):
-            reconcile(workbook(lambda s:s.cell(15,1,None)),SOURCE,RATES_OBJ)
+            reconcile(workbook(lambda s:setattr(s.cell(15,1),'value',None)),SOURCE,RATES_OBJ)
 
 if __name__=="__main__":
     unittest.main(verbosity=2)
