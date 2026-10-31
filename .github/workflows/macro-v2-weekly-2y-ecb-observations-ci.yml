@@ -1,0 +1,55 @@
+name: Macro V2 exact weekly 2Y ECB FX observations - research only
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/macro-v2-weekly-2y-ecb-observations-ci.yml'
+      - 'validation/macro/v2_fx_exact_weekly_2y_ecb_context_v1.py'
+      - 'validation/macro/test_v2_fx_exact_weekly_2y_ecb_context_v1.py'
+      - 'validation/macro/MACRO_V2_WEEKLY_2Y_FX_OBSERVED_WINDOW_2026-10-31.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit-weekly-2y-fx-dates:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Exact 2Y and ECB common-date adversarial tests
+        run: python -m unittest validation.macro.test_v2_fx_exact_weekly_2y_ecb_context_v1 -v
+      - name: Read-only current observed-week matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          DAY="$(TZ=Europe/Rome date +%F)"
+          python -m validation.macro.v2_fx_exact_weekly_2y_ecb_context_v1 \
+            --as-of "$DAY" --out /tmp/gmfq-v2-exact-weekly-2y-ecb-observed.json
+          python - <<'PY'
+          import json,os
+          x=json.load(open('/tmp/gmfq-v2-exact-weekly-2y-ecb-observed.json'))
+          s=x['summary']
+          assert s['pairs']==28 and s['FX_signals']==0 and s['Core_rebased']==0
+          assert s['eligible_pairs']+s['excluded_pairs']==28
+          assert x['no_D_or_pair_updates'] and x['no_OOS_or_predictive_success_claim']
+          assert x['sovereign_2Y_instrument_conventions_not_identical']
+          assert x['ECB_reference_is_not_executable_price_or_intraday_reaction']
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
+              f.write('### Exact weekly 2Y and ECB FX observations (NO FX SIGNAL)\n')
+              f.write(f"- Matched currencies: {s['common_date_2Y_currencies']}/8; exact-date pairs: {s['eligible_pairs']}/28\n")
+              f.write(f"- Seven-calendar-day observation window: {x['observation_window']}\n")
+              f.write('- Not 2Y instrument-standardized, not PIT historical first release, not an event study or Core update\n')
+          PY
+      - name: Ensure no live or Forward mutations
+        run: |
+          git diff --exit-code -- live_data site dashboard payload validation/forward
+          test -z "$(git status --porcelain -- live_data site dashboard payload validation/forward)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macro-v2-exact-weekly-2y-ecb-observation-only
+          path: /tmp/gmfq-v2-exact-weekly-2y-ecb-observed.json
+          retention-days: 30
+          if-no-files-found: error
