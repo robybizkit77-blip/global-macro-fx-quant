@@ -182,7 +182,11 @@ def build():
             if not usable:
                 out['currencies'][ccy] = {
                     'operational_status': 'WITHHELD',
-                    'withheld_reason': 'NO_USABLE_OFFICIAL_OR_ESTIMATED_PRICING',
+                    'withheld_reason': (
+                        'SECONDARY_QUOTE_CONFLICT_QUARANTINED'
+                        if e.get('input_mode') == 'QUARANTINED_SECONDARY_NO_FALLBACK'
+                        else 'NO_USABLE_OFFICIAL_OR_ESTIMATED_PRICING'
+                    ),
                     'quality': 'UNAVAILABLE',
                     'confidence': 'C',
                     'official_status': o.get('status', 'WITHHELD'),
@@ -201,7 +205,11 @@ def build():
                     'backtest_eligible_as_official': False
                 }
                 continue
-            repricing = _estimated_repricing(ccy, e, history)
+            # Conflicting daily-bar prints may remain useful indicative levels,
+            # but must never become computed day/week repricing evidence.
+            conflict = e.get('source_conflict_status') == (
+                'UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT')
+            repricing = _empty_repricing() if conflict else _estimated_repricing(ccy, e, history)
             horizons = {}
             for h in HORIZONS:
                 base = dict(((e.get('horizons') or {}).get(h) or {}))
@@ -233,6 +241,14 @@ def build():
                 },
                 'backtest_eligible_as_official': False
             }
+            if conflict:
+                out['currencies'][ccy].update({
+                    'source_conflict_status': e.get('source_conflict_status'),
+                    'source_conflict_keys': e.get('source_conflict_keys'),
+                    'source_quality': e.get('source_quality'),
+                    'note': e.get('note'),
+                    'conflicted_source_eligible_for_repricing': False,
+                })
     # Read optional secondary source only for provenance of individual non-OIS quotes.
     try:
         live_quotes = json.loads(LIVE_QUOTES.read_text(encoding='utf-8'))

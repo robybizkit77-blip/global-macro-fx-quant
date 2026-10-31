@@ -24,6 +24,7 @@ ESTIMATED_PATHS = (
     "live_data/sections/OIS_SOURCE_READINESS_VIEW.json",
     "validation/cb_pricing/history/OIS_ESTIMATED_SNAPSHOTS_V1.jsonl",
     "validation/cb_pricing/history/OIS_SAME_CONTRACT_QUOTES_V1.jsonl",
+    "validation/cb_pricing/history/OIS_SAME_CONTRACT_CONFLICTS_V1.jsonl",
 )
 G8_PATHS = ESTIMATED_PATHS + (
     "validation/cb_pricing/history/OIS_G8_SNAPSHOTS_V1.jsonl",

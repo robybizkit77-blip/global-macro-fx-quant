@@ -11,8 +11,18 @@ from build_ois_operational_view_v1 import _estimated_repricing, DAILY_REFERENCE_
 ROOT = Path(__file__).resolve().parents[2]
 VIEW = json.loads((ROOT / 'live_data/sections/OIS_OPERATIONAL_VIEW.json').read_text(encoding='utf-8'))
 
-estimated=[c for c,r in VIEW['currencies'].items() if r['operational_status']=='GREEN_ESTIMATED']
-assert len(estimated)==VIEW['summary']['green_estimated']
+all_estimated=[c for c,r in VIEW['currencies'].items() if r['operational_status']=='GREEN_ESTIMATED']
+assert len(all_estimated)==VIEW['summary']['green_estimated']
+estimated=[c for c in all_estimated if VIEW['currencies'][c].get(
+    'source_conflict_status') != 'UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT']
+for c in set(all_estimated)-set(estimated):
+    row=VIEW['currencies'][c]
+    assert row['change_1d_available'] is False
+    assert row['change_1w_available'] is False
+    assert all(row['horizons'][h]['policy_delta_bp'] is None
+               and row['horizons'][h]['change_1d_bp'] is None
+               and row['horizons'][h]['change_1w_bp'] is None
+               for h in ('3m','6m','12m'))
 
 assert int(DAILY_REFERENCE_MIN_AGE.total_seconds() / 3600) == 18
 assert WEEKLY_REFERENCE_MIN_AGE.days == 5
@@ -88,7 +98,7 @@ else:
         r = append_changed_snapshots(VIEW, '2026-10-15T08:00:00Z', p)
         assert r['status']=='PASS' and r['appended']==0 and r['currencies']==[], r
         assert load_history(p)==[]
-    assert VIEW['summary']['green_estimated']==0
+    assert not estimated  # Conflict-graded visible levels are not snapshottable.
     print('OIS_ESTIMATED_ZERO_INPUT_FAIL_CLOSED_PASS')
 
 print('PASS OIS estimated snapshot/repricing V2 method isolation')

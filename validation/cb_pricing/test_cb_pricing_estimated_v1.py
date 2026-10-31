@@ -31,10 +31,20 @@ def main():
     if live is not None:
         for ccy in ("USD", "EUR", "CHF"):
             row = built["currencies"][ccy]
-            assert row["input_mode"] == "LIVE_SECONDARY_OVERLAY", row
+            assert row["input_mode"] in ("LIVE_SECONDARY_OVERLAY",
+                                         "LIVE_SECONDARY_CONFLICT_INDICATIVE"), row
+            if row["input_mode"] == "LIVE_SECONDARY_CONFLICT_INDICATIVE":
+                assert row["source_conflict_status"] == "UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT"
+                assert row["source_conflict_keys"]
+                assert row["source_quality"] == "SECONDARY_CONFLICTED_INDICATIVE_NOT_OIS"
+                assert row["confidence_grade"] == "C"
+                assert row["direction_vs_policy"] == "WITHHELD"
+                assert all(row["horizons"][h]["policy_delta_bp"] is None
+                           for h in ("3m", "6m", "12m"))
             assert row["method_id"] == "TRADINGVIEW_DATED_FUTURES_SSR_V2", row
             assert row["method_id"] == mod.LIVE_METHOD_ID, row
-            assert row["freshness_status"] == "LIVE_OR_RECENT_SESSION", row
+            assert row["freshness_status"] in (
+                "LIVE_OR_RECENT_SESSION", "SAME_DAY_SOURCE_CONFLICT_UNRESOLVED"), row
             for h in ("3m", "6m", "12m"):
                 x = row["horizons"][h]
                 assert x["rate"] is not None, x

@@ -72,6 +72,11 @@ def append_changed_snapshots(view: dict, captured_at_utc: str, path: Path = HIST
     appended = []
     for currency in ESTIMATED:
         row = (view.get("currencies") or {}).get(currency) or {}
+        if row.get("source_conflict_status") == (
+                "UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT"):
+            # Indicative levels may remain visible, but no new estimated
+            # snapshot/repricing reference can be derived from disputed bars.
+            continue
         if row.get("operational_status") == "WITHHELD":
             continue  # No observation: do not append stale or synthetic history.
         if row.get("operational_status") != "GREEN_ESTIMATED":
