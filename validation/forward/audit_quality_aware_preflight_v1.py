@@ -78,6 +78,9 @@ def inspect(*, now, observed, ordinal, market, fx, pairs):
             "zero-MAD descriptor/source mismatch")
     for k in ordinal_keys:
         desc = ordinal["zero_mad_components"][k]
+        require(dimensions[k].get("research_robust_z") is None
+                and dimensions[k].get("status") == "NO_Z_ZERO_ROBUST_DISPERSION",
+                k + " missing strict-z mask contradiction")
         require(desc.get("numeric_replacement_z") is None
                 and desc.get("eligible_for_activity_score") is False,
                 k + " invalid z-score substitution")
