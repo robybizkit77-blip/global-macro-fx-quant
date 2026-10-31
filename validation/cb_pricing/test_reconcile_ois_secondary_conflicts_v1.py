@@ -130,7 +130,10 @@ with tempfile.TemporaryDirectory() as td:
 
     # Original raw quote independently reappears; record neither a second
     # conflict event nor an overwritten first observation.
-    feed.write_text(json.dumps(fixture, sort_keys=True) + "\n")
+    first_print = copy.deepcopy(fixture)
+    first_print["currencies"]["USD"]["horizons"]["3m"]["futures_price"] = anchor["futures_price"]
+    first_print["currencies"]["USD"]["horizons"]["3m"]["rate"] = anchor["implied_rate"]
+    feed.write_text(json.dumps(first_print, sort_keys=True) + "\n")
     replay = apply(source=feed, history=archive, quarantine=quarantine, write=True)
     assert replay["written"] == 0 and replay["new_quarantine_events"] == 0, replay
     # Re-fetching the very first source print is NOT proof that the
