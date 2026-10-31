@@ -82,7 +82,8 @@ def inspect(*, now, observed, ordinal, market, fx, pairs):
                 and dimensions[k].get("status") == "NO_Z_ZERO_ROBUST_DISPERSION",
                 k + " missing strict-z mask contradiction")
         require(desc.get("numeric_replacement_z") is None
-                and desc.get("eligible_for_activity_score") is False,
+                and desc.get("eligible_for_domestic_activity_weighting") is False
+                and desc.get("eligible_for_forward_features") is False,
                 k + " invalid z-score substitution")
     records = source_map(fx)
     latest = fx.get("last_as_of")
