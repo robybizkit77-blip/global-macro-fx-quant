@@ -28,7 +28,7 @@ small{color:#829eb5;display:block;margin-top:10px}
   const tail="</body></html>";
   if(!certifiedDefault.trimEnd().endsWith(tail))throw new Error("Contratto HTML Control Room non riconosciuto");
   // Define the research-only source guard before Home reads its coverage.
-  const scriptTag='<script src="./ois-pricing-estimates-v1.js?v=g8-charts-8-of-8-and-quote-day-20261031"><'+'/script>'+
+  const scriptTag='<script src="./ois-pricing-estimates-v1.js?v=disputed-source-dots-20261031"><'+'/script>'+
    '<script src="./home-navigation-v10.js?v=gov-g8-historical-nzd-chf-cot-bce-20261031"><'+'/script>';
   const withNavigation=certifiedDefault.trimEnd().slice(0,-tail.length)+scriptTag+tail;
   document.open();
