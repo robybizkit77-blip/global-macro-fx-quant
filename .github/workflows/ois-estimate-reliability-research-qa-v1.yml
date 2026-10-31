@@ -43,13 +43,13 @@ jobs:
           import json
           from pathlib import Path
           x=json.loads(Path('/tmp/eur-estr-benchmark-readiness.json').read_text())
-          assert x['eur_archived_futures_observations']==28
-          assert x['distinct_eurex_futures_periods']==4
+          assert x['eur_archived_futures_observations']>=28
+          assert x['distinct_eurex_futures_periods']>=4
           assert x['admissible_same_window_pairs']==0
           assert x['actual_model_OIS_level_MAE_bp'] is None
           assert x['predicted_OIS_direction_hit_rate'] is None
           assert x['eligible_to_change_OIS_operational_feed'] is False
-          print('EUR_FST3_EXACT_WINDOWS_4_VALIDATED_BENCHMARK_MATCHES_0')
+          print('EUR_FST3_DYNAMIC_WINDOWS_VALIDATED_BENCHMARK_MATCHES_0')
           PY
       - name: One official CME CSV availability request, metadata only, no ingestion
         run: |

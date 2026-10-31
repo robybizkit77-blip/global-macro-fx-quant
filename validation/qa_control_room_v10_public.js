@@ -662,6 +662,30 @@ async function getState(page){
             throw Error(name+' G8 dated yields missing from public Rates research '+JSON.stringify(y));
          console.log('CONTROL_ROOM_PUBLIC_G8_DATED_YIELDS_STUDY_GREEN',name,
            JSON.stringify({count:y.count,historical:y.historical,expected:yieldExpected,noModelPromotion:true}));
+         // Public regression: original G8 government table must not show blanks for CHF/NZD.
+         if(process.env.GITHUB_EVENT_NAME!=='pull_request'){
+           const rows=await page.evaluate(()=>{
+             const d=document.getElementById('gmfq-page')?.contentDocument;
+             return ['NZD','CHF'].map(ccy=>{
+               const tr=[...d?.querySelectorAll('#rates-rows > tr')||[]].find(x=>
+                 x.cells[0]?.textContent.includes(ccy==='NZD'?'Nuova Zelanda':'Svizzera'));
+               return {ccy,asof:tr?.dataset.gmfqHistoricalYield,usDay:tr?.dataset.gmfqHistoricalSpreadDate,
+                 visible:!!tr?.getClientRects().length,cells:[...tr?.cells||[]].map(x=>x.textContent.trim())};
+             });
+           });
+           for(const r of rows){
+             const source=publicRates[r.ccy];
+             if(!r.visible||r.asof!==source.date||!r.usDay||r.usDay>source.date||
+               !r.cells[0]?.includes('STORICO '+source.date)||
+               !r.cells[1]?.includes(source['2Y'].toFixed(3)+'%')||
+               !r.cells[2]?.includes(source['10Y'].toFixed(3)+'%')||
+               !r.cells[3]?.includes(' bp')||
+               !r.cells[4]?.includes('data comune '+r.usDay)||
+               !r.cells[6]?.includes('CERTIFICATO · STORICO'))
+               throw Error(name+' public original G8 government table missing dated CHF/NZD '+JSON.stringify(r));
+           }
+           console.log('CONTROL_ROOM_PUBLIC_NATIVE_G8_CHF_NZD_DATED_GREEN',name,JSON.stringify(rows));
+         }
          const webReview=await page.evaluate(async()=>{
            const d=document.getElementById('gmfq-page')?.contentDocument,
              p=d?.getElementById('gmfq-yields-study'),
