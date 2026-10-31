@@ -24,6 +24,7 @@ ROOT=Path(__file__).resolve().parents[2]
 HTML=ROOT / "live_data/sections/NZD_B2_GOVT_LATEST_WEB_RESEARCH.json"
 RATES=ROOT / "live_data/sections/NATIVE_RATES_DATA.json"
 URL="https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/b/b2/hb2-daily-close.xlsx"
+ALTERNATE="https://rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/b/b2/hb2-daily-close.xlsx"
 SCHEMA="GMFQ_NZD_RBNZ_B2_HTML_VS_INDEPENDENT_XLSX_RECONCILIATION_V1"
 
 
@@ -90,7 +91,7 @@ def locate_government_pair(wb):
 
 
 def reconcile(raw: bytes, web: dict, rates: dict, *, url: str=URL) -> dict:
-    require(url==URL and raw.startswith(b"PK\x03\x04")
+    require(url in (URL,ALTERNATE) and raw.startswith(b"PK\x03\x04")
             and len(raw)>=1000 and len(raw)<10_000_000,
             "unexpected source URL, size or XLSX signature")
     require(web.get("schema")=="GMFQ_NZD_B2_LATEST_GOVT_HTML_RESEARCH_V1"
@@ -160,16 +161,35 @@ def main():
     args=p.parse_args()
     require(args.output.resolve().is_relative_to(Path("/tmp")),
             "research-only receipt must stay in /tmp")
+    used=URL
     if args.xlsx:
         raw=args.xlsx.read_bytes()
     else:
-        req=Request(URL,headers={
-            "User-Agent":"GlobalMacroFXQuant/1.0 (read-only official source XLSX cross-check)",
-            "Accept":"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})
-        with urlopen(req,timeout=24) as response:
-            require(response.status==200,"RBNZ XLSX endpoint returned non-200")
-            raw=response.read(10_000_001)
-    result=reconcile(raw,json.loads(HTML.read_text()),json.loads(RATES.read_text()))
+        # Both hosts are listed in the official RBNZ statistical file index.
+        # Do not use third-party mirrors, proxy credentials, or unknown hosts.
+        # Explicitly retain both HTTP failures rather than claiming an XLSX.
+        errors=[]
+        raw=None
+        for host in (URL,ALTERNATE):
+            try:
+                req=Request(host,headers={
+                    "User-Agent":"GlobalMacroFXQuant/1.0 (read-only official source XLSX cross-check)",
+                    "Accept":"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})
+                with urlopen(req,timeout=20) as response:
+                    require(response.status==200,"RBNZ XLSX endpoint returned non-200")
+                    candidate=response.read(10_000_001)
+                    require(candidate.startswith(b"PK\x03\x04") and
+                            len(candidate)<10_000_001,
+                            "official XLSX missing ZIP signature or too large")
+                    raw=candidate;used=host;break
+            except (OSError,ValueError) as exc:
+                errors.append({"official_host":host,
+                               "error_type":type(exc).__name__,
+                               "reason":str(exc)[:110]})
+        require(raw is not None, "all official XLSX hosts inaccessible: "+
+                json.dumps(errors))
+    result=reconcile(raw,json.loads(HTML.read_text()),
+                     json.loads(RATES.read_text()),url=used)
     args.output.parent.mkdir(parents=True,exist_ok=True)
     args.output.write_text(json.dumps(result,indent=2)+"\n",encoding="utf-8")
     print(json.dumps({"status":result["status"],
