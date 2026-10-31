@@ -2,7 +2,7 @@
 /* User-facing complete G8 table is immediately visible, dated and non-promotional. */
 const fs=require('node:fs');
 const assert=require('node:assert/strict');
-const {matrix,view,coverage,calibratedNzdCarry,scenarioSixMonth,indicativeSixMonth}=require('../site/control-room-preview/ois-pricing-estimates-v1.js');
+const {matrix,view,coverage,calibratedNzdCarry,scenarioSixMonth,indicativeSixMonth,auditNzdBankBill}=require('../site/control-room-preview/ois-pricing-estimates-v1.js');
 const ois=JSON.parse(fs.readFileSync('live_data/sections/OIS_OPERATIONAL_VIEW.json','utf8'));
 const bill=JSON.parse(fs.readFileSync('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json','utf8'));
 const g8=['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'];
@@ -132,6 +132,34 @@ for(const row of contested){
 assert(!contested.some(r=>r.allow_repricing||r.allow_official_promotion||r.official_ois));
 assert(!eur.allow_repricing&&!eur.allow_official_promotion&&eur.core_score_effect==='NONE');
 assert(!nzd.allow_repricing&&!nzd.allow_official_promotion&&nzd.core_score_effect==='NONE');
+// ASX NZD quote-quality invariants: reject synthetic rates, wrong ASX
+// report date, expiry roll, settlement and changes BEFORE using cash basis.
+// This validates the research display, NOT OIS market-pricing.
+const validatedBB=auditNzdBankBill(bill,when);
+assert(validatedBB&&Object.keys(validatedBB).length===3,
+ 'Official ASX source reference must provide three independently audited bills');
+for(const term of ['3m','6m','12m'])
+ assert.equal(validatedBB[term],bill.horizons[term].implied_bank_bill_rate);
+function badBill(edit,reason){
+ const bad=structuredClone(bill);
+ edit(bad);
+ assert.equal(auditNzdBankBill(bad,when),null,reason);
+ assert(!scenarioSixMonth(ois,bad,when).NZD,
+   'A contaminated ASX bankbill observation must NEVER become NZD research OIS: '+reason);
+ assert.equal(matrix(ois,bad,when).find(x=>x.ccy==='NZD').tier,'WITHHELD',
+   'Invalid ASX feed must fail closed in Rates matrix: '+reason);
+}
+badBill(b=>b.horizons['6m'].settlement_price+=.02,'rate / settlement mismatch');
+badBill(b=>b.horizons['3m'].change_1d_bp*=-1,'daily settlement-change sign mismatch');
+badBill(b=>b.horizons['12m'].expiry_label='Mar 2027','horizon / listed contract mismatch');
+badBill(b=>b.horizons['6m'].expiration='2027-06-17','wrong ASX contract calendar');
+badBill(b=>b.horizons['3m'].mapping='interpolated','no synthetic expiry interpolation');
+badBill(b=>b.horizons['3m'].change_1w_bp=undefined,'incomplete weekly source proof');
+badBill(b=>b.source_url='https://example.org/not-exchange','non-ASX source');
+badBill(b=>b.as_of='2026-10-29','report date and ASX URL mismatch');
+badBill(b=>b.governance.core_score_effect='NZD_LONG','FX score promotion');
+badBill(b=>delete b.horizons['6m'],'missing 6M quote');
+
 const shared=scenarioSixMonth(ois,bill,when);
 if(nzd.tier==='SCENARIO'){
  assert.equal(nzd.points['3m'].date,bill.as_of);

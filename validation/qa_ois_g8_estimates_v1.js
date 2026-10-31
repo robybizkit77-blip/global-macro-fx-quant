@@ -72,6 +72,11 @@ for(const ccy of ['USD','EUR','CHF']){
  }
 }
 bb.as_of=FRESH;
+// Historical, explicitly SYNTHETIC quality-gate fixture: keep ASX identity
+// internally consistent with its simulated quote/weekly reference dates.
+bb.source_url='https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261020ZFT.htm';
+bb.weekly_reference_source_url='https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261013ZFT.htm';
+for(const t of tenors)bb.horizons[t].weekly_reference_trade_date='2026-10-13';
 // Verify current PUBLIC inputs remain purely individual, independently dated
 // information whenever a live quote mismatch withholds a complete curve.
 const current=matrix(liveOis,liveBb,TODAY);

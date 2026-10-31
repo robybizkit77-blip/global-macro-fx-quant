@@ -6,6 +6,8 @@ on:
       - 'validation/cb_pricing/OIS_ESTIMATED_REPRICING_CONTRACT_V1_2026-10-15.json'
       - 'validation/cb_pricing/collect_cb_pricing_estimated_live_v1.py'
       - 'validation/cb_pricing/collect_nzd_asx_directional_proxy_v1.py'
+      - 'validation/cb_pricing/nzd_asx_scenario_sensitivity_v2.py'
+      - 'validation/cb_pricing/test_nzd_asx_scenario_sensitivity_v2.py'
       - 'validation/cb_pricing/build_cb_pricing_estimated_v1.py'
       - 'validation/cb_pricing/ois_estimated_snapshot_v1.py'
       - 'validation/cb_pricing/test_ois_estimated_snapshot_v1.py'
@@ -39,6 +41,8 @@ on:
       - 'validation/cb_pricing/OIS_ESTIMATED_REPRICING_CONTRACT_V1_2026-10-15.json'
       - 'validation/cb_pricing/collect_cb_pricing_estimated_live_v1.py'
       - 'validation/cb_pricing/collect_nzd_asx_directional_proxy_v1.py'
+      - 'validation/cb_pricing/nzd_asx_scenario_sensitivity_v2.py'
+      - 'validation/cb_pricing/test_nzd_asx_scenario_sensitivity_v2.py'
       - 'validation/cb_pricing/build_cb_pricing_estimated_v1.py'
       - 'validation/cb_pricing/ois_estimated_snapshot_v1.py'
       - 'validation/cb_pricing/test_ois_estimated_snapshot_v1.py'
@@ -111,6 +115,24 @@ jobs:
 
       - name: Collect official ASX NZD directional rates proxy
         run: python validation/cb_pricing/collect_nzd_asx_directional_proxy_v1.py
+
+      - name: Test NZD ASX bank-bill scenario source and frozen research calibration
+        run: python validation/cb_pricing/test_nzd_asx_scenario_sensitivity_v2.py
+
+      - name: Audit current NZD 3M/6M/12M bank-bill scenarios (research only)
+        continue-on-error: true
+        run: |
+          python validation/cb_pricing/nzd_asx_scenario_sensitivity_v2.py \
+            --output /tmp/nzd-bankbill-scenario-sensitivity-v2.json
+
+      - name: Retain NZD empirical basis-stress receipt, not OIS pricing
+        if: always() && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: nzd-asx-bankbill-scenario-sensitivity-v2
+          path: /tmp/nzd-bankbill-scenario-sensitivity-v2.json
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Quarantine unresolved same-day secondary quote conflicts before pricing
         shell: bash
