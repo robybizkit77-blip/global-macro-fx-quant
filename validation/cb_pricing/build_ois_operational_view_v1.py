@@ -205,7 +205,11 @@ def build():
                     'backtest_eligible_as_official': False
                 }
                 continue
-            repricing = _estimated_repricing(ccy, e, history)
+            # Conflicting daily-bar prints may remain useful indicative levels,
+            # but must never become computed day/week repricing evidence.
+            conflict = e.get('source_conflict_status') == (
+                'UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT')
+            repricing = _empty_repricing() if conflict else _estimated_repricing(ccy, e, history)
             horizons = {}
             for h in HORIZONS:
                 base = dict(((e.get('horizons') or {}).get(h) or {}))
@@ -221,11 +225,16 @@ def build():
                 'as_of': e.get('as_of'),
                 'policy_rate': e.get('policy_rate'),
                 'source': e.get('source'),
+                'source_conflict_status': e.get('source_conflict_status'),
+                'source_conflict_keys': e.get('source_conflict_keys'),
+                'source_quality': e.get('source_quality'),
+                'note': e.get('note'),
                 'horizons': horizons,
                 'direction_vs_policy': e.get('direction_vs_policy'),
                 'market_direction_proxy': e.get('market_direction_proxy'),
                 'change_1d_available': repricing['change_1d_available'],
                 'change_1w_available': repricing['change_1w_available'],
+                'conflicted_source_eligible_for_repricing': False if conflict else None,
                 'repricing_reference': {
                     'method_id': method_id(e),
                     'previous_observation_captured_at_utc': repricing['previous_reference'],
