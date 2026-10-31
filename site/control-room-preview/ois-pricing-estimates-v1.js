@@ -109,7 +109,7 @@ function auditNzdBankBill(bb,today){
   while(x.getUTCDay()!==3)x.setUTCDate(x.getUTCDate()+1);
   return x.toISOString().slice(0,10);
  };
- const durations={'3m':90,'6m':180,'12m':365},seen=new Set(),verified={};
+ const durations={'3m':90,'6m':180,'12m':365},seen=new Set(),weeks=new Set(),verified={};
  for(const t of tenors){
   const p=bb.horizons[t]||{},end=expire(p.expiry_label),rate=number(p.implied_bank_bill_rate),
     price=number(p.settlement_price),change=number(p.settlement_change),daily=number(p.change_1d_bp);
@@ -126,8 +126,15 @@ function auditNzdBankBill(bb,today){
    if(!/^\d{4}-\d\d-\d\d$/.test(prior||''))return null;
    const lapse=(+d-Date.parse(prior+'T00:00:00Z'))/86400000;
    if(!Number.isInteger(lapse)||lapse<4||lapse>12)return null;
+   weeks.add(prior);
   }
   seen.add(end);verified[t]=rate;
+ }
+ if(weeks.size>1)return null;
+ if(weeks.size){
+  const ref=[...weeks][0],stamp=ref.slice(2,4)+ref.slice(5,7)+ref.slice(8,10);
+  if(bb.weekly_reference_source_url!==
+    'https://www.asx.com.au/data/futures/reports/EODWebMarketSummary'+stamp+'ZFT.htm')return null;
  }
  return verified;
 }
