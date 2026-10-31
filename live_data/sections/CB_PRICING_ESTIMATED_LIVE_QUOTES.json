@@ -1,22 +1,22 @@
 {
   "currencies": {
     "CHF": {
-      "as_of": "2026-10-29",
+      "as_of": "2026-10-30",
       "confidence_grade": "B",
       "freshness_status": "LIVE_OR_RECENT_SESSION",
       "horizons": {
         "12m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "SA3U2027",
           "contract_description": "Sep 2027",
           "expiration": "2027-12-14",
-          "futures_price": 99.565,
+          "futures_price": 99.61,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
-          "price_valid_until": "2026-10-29T17:59:58Z",
-          "quote_as_of": "2026-10-29",
+          "price_valid_until": "2026-10-30T17:59:52Z",
+          "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 0.435,
+          "rate": 0.39,
           "symbol": "ICEEUR:SA3U2027"
         },
         "3m": {
@@ -89,17 +89,17 @@
           "symbol": "EUREX:FST3V2026"
         },
         "6m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "FST3G2027",
           "contract_description": "Feb 2027",
           "expiration": "2027-05-19",
-          "futures_price": 97.165,
+          "futures_price": 97.1675,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
-          "price_valid_until": "2026-10-29T22:06:42Z",
-          "quote_as_of": "2026-10-29",
+          "price_valid_until": "2026-10-30T22:05:37Z",
+          "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 2.835,
+          "rate": 2.8325,
           "symbol": "EUREX:FST3G2027"
         }
       },
@@ -166,7 +166,7 @@
       "status": "LIVE_SECONDARY_READY"
     }
   },
-  "generated_at_utc": "2026-10-31T02:16:54.644983Z",
+  "generated_at_utc": "2026-10-31T09:30:49.778787Z",
   "governance": {
     "backtest_eligible_as_official_ois": false,
     "bias_effect": "NONE",

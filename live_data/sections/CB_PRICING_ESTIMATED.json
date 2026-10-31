@@ -1,7 +1,7 @@
 {
   "currencies": {
     "CHF": {
-      "as_of": "2026-10-29",
+      "as_of": "2026-10-30",
       "change_1d_bp": null,
       "change_1w_bp": null,
       "change_status": "DERIVED_ONLY_FROM_HOMOGENEOUS_SNAPSHOT_HISTORY",
@@ -19,18 +19,18 @@
       },
       "horizons": {
         "12m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "SA3U2027",
           "contract_description": "Sep 2027",
           "expiration": "2027-12-14",
-          "futures_price": 99.565,
+          "futures_price": 99.61,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
-          "policy_delta_bp": 43.5,
-          "price_valid_until": "2026-10-29T17:59:58Z",
-          "quote_as_of": "2026-10-29",
+          "policy_delta_bp": 39.0,
+          "price_valid_until": "2026-10-30T17:59:52Z",
+          "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 0.435,
+          "rate": 0.39,
           "symbol": "ICEEUR:SA3U2027"
         },
         "3m": {
@@ -124,18 +124,18 @@
           "symbol": "EUREX:FST3V2026"
         },
         "6m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "FST3G2027",
           "contract_description": "Feb 2027",
           "expiration": "2027-05-19",
-          "futures_price": 97.165,
+          "futures_price": 97.1675,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
-          "policy_delta_bp": 33.5,
-          "price_valid_until": "2026-10-29T22:06:42Z",
-          "quote_as_of": "2026-10-29",
+          "policy_delta_bp": 33.2,
+          "price_valid_until": "2026-10-30T22:05:37Z",
+          "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 2.835,
+          "rate": 2.8325,
           "symbol": "EUREX:FST3G2027"
         }
       },
