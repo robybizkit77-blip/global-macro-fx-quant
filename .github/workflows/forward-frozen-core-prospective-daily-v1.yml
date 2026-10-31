@@ -56,7 +56,7 @@ jobs:
       - name: Compile observational-only forward modules
         if: steps.early_gate.outputs.eligible == 'true'
         run: |
-          python -m py_compile validation/forward/admit_frozen_core_prospective_capture_v1.py validation/forward/log_core_decision_v1.py validation/forward/test_frozen_core_prospective_capture_v11.py validation/forward/capture_v2_research_prospective_evidence_v1.py validation/forward/capture_v2_quality_aware_prospective_v1.py
+          python -m py_compile validation/forward/admit_frozen_core_prospective_capture_v1.py validation/forward/log_core_decision_v1.py validation/forward/test_frozen_core_prospective_capture_v11.py validation/forward/capture_v2_research_prospective_evidence_v1.py validation/forward/capture_v2_quality_aware_prospective_v1.py validation/forward/certify_quality_aware_persisted_v1.py
       - name: Verify frozen provenance, schema and no daily duplicates
         if: steps.early_gate.outputs.eligible == 'true'
         run: |
@@ -67,6 +67,7 @@ jobs:
           python -m unittest validation.forward.test_capture_v2_research_prospective_evidence_v1 -v
           python -m unittest validation.forward.test_v2_full_command_capture_path_v1 -v
           python -m unittest validation.forward.test_capture_v2_quality_aware_prospective_v1 -v
+          python -m unittest validation.forward.test_certify_quality_aware_persisted_v1 -v
 
       - name: Observe registered next-session V2 economic/market inputs without synthetic ECB T0
         if: github.event_name == 'pull_request' && steps.early_gate.outputs.eligible == 'true'
@@ -108,6 +109,9 @@ jobs:
           github.event.workflow_run.event == 'schedule'))))
     runs-on: ubuntu-24.04
     timeout-minutes: 8
+    outputs:
+      admitted: ${{ steps.admit.outputs.admitted }}
+      core_persisted: ${{ steps.commit_snapshot.outcome == 'success' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -298,3 +302,53 @@ jobs:
               exit 1
               ;;
           esac
+
+  certify-quality-aware-independent:
+    # A failure of the separately guarded original V2 cannot suppress this
+    # independent journal verification. Never certifies the original model.
+    needs: [test, capture]
+    if: >-
+      always() && needs.test.outputs.eligible == 'true' &&
+      (github.event_name == 'schedule' ||
+       github.event_name == 'workflow_dispatch' ||
+       github.event_name == 'workflow_run')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify future 24-axis and 28-pair Quality-Aware evidence committed to main
+        shell: bash
+        env:
+          CAPTURE_ADMITTED: ${{ needs.capture.outputs.admitted }}
+          CORE_PERSISTED: ${{ needs.capture.outputs.core_persisted }}
+        run: |
+          set +e
+          python -m validation.forward.certify_quality_aware_persisted_v1 \
+            --admitted "$CAPTURE_ADMITTED" --core-persisted "$CORE_PERSISTED" \
+            > /tmp/forward-v2-quality-independent-proof.json
+          rc=$?
+          set -e
+          cat /tmp/forward-v2-quality-independent-proof.json
+          python - <<'PY'
+          import json,os
+          from pathlib import Path
+          path=Path('/tmp/forward-v2-quality-independent-proof.json')
+          if not path.is_file() or not path.stat().st_size:
+              raise SystemExit('QUALITY_AWARE_INDEPENDENT_AUDIT_MISSING_OUTPUT')
+          r=json.loads(path.read_text())
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as f:
+              f.write('### Forward V2 Quality-Aware — independent durable proof\n')
+              f.write('- Status: **'+r['status']+'**\n')
+              f.write('- Official reference date: '+r['local_date_rome']+'\n')
+              f.write('- Verified in committed main: **'+str(r['source_controlled_journal_verified'])+'**\n')
+              f.write('- Original V2 is NOT certified or overridden by this result.\n')
+          PY
+          exit "$rc"
