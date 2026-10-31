@@ -15,7 +15,27 @@ ASOF = date(2026,10,31)
 class NzdScenarioSensitivityTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        # Fixed 30-Oct ASX public-research replay, never pinned to the
+        # moving newest operational quote feed used on future weekdays.
         cls.feed=json.loads(ASX.read_text(encoding="utf-8"))
+        cls.feed["as_of"]="2026-10-30"
+        cls.feed["source_url"]=(
+            "https://www.asx.com.au/data/futures/reports/"
+            "EODWebMarketSummary261030ZFT.htm")
+        cls.feed["horizons"]={
+            h:{
+                "expiry_label":label, "expiration":expiry,
+                "settlement_price":100-rate,
+                "implied_bank_bill_rate":rate,
+                "settlement_change":0.06, "change_1d_bp":-6.0,
+                "change_1w_bp":weekly,
+                "weekly_reference_trade_date":"2026-10-23",
+                "mapping":f"nearest listed expiry to trade_date+{days}d; no interpolation"
+            } for h,(label,expiry,rate,weekly,days) in {
+               "3m":("Mar 2027","2027-03-10",3.59,-21.0,90),
+               "6m":("Jun 2027","2027-06-16",3.9,-16.0,180),
+               "12m":("Sep 2027","2027-09-15",4.05,-12.0,365)
+            }.items()}
         cls.cal=json.loads(CAL.read_text(encoding="utf-8"))
 
     def test_source_31_oct_three_bills_reproducible_and_not_ois(self):
