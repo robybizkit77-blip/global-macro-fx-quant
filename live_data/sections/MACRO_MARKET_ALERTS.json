@@ -1,7 +1,7 @@
 {
   "schema": "GMFQ_PUBLIC_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-31T19:53:46Z",
-  "as_of_evaluation_date": "2026-10-31",
+  "generated_at_utc": "2026-10-31T23:18:30Z",
+  "as_of_evaluation_date": "2026-11-01",
   "state": "WITHHELD",
   "withheld_reason": "Nessun evento certificato fornito.",
   "today": [],
