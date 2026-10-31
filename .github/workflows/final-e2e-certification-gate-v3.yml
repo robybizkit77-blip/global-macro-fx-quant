@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'validation/run_final_e2e_certification_gate_v3.py'
+      - 'validation/test_final_e2e_secondary_conflicts_v3.py'
       - 'validation/run_final_e2e_certification_gate_v2.py'
       - 'validation/finalization/**'
       - 'validation/cb_pricing/**'
@@ -27,6 +28,7 @@ on:
       - 'live_data/sections/CB_PRICING_ESTIMATED_LIVE_QUOTES.json'
       - 'live_data/sections/OIS_OPERATIONAL_VIEW.json'
       - 'validation/run_final_e2e_certification_gate_v3.py'
+      - 'validation/test_final_e2e_secondary_conflicts_v3.py'
       - 'validation/estimated/**'
       - '.github/workflows/final-e2e-certification-gate-v3.yml'
   workflow_run:
@@ -61,6 +63,9 @@ jobs:
           sha256sum live_data/manifest.v2.json > /tmp/manifest.before.sha256
       - name: Reject tampered or partially appended Forward snapshot batches
         run: python -m unittest validation.forward.test_check_append_only_snapshots_gate_v1 -v
+      - name: Verify quarantine-aware final system certification, fail closed
+        run: python -m unittest validation.test_final_e2e_secondary_conflicts_v3 -v
+
       - name: Run final system alignment gate V3
         run: |
           set -euo pipefail
