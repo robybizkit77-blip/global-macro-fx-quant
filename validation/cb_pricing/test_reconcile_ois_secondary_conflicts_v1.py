@@ -119,8 +119,10 @@ with tempfile.TemporaryDirectory() as td:
     from ois_estimated_snapshot_v1 import append_changed_snapshots
     scratch = directory / "estimated_snapshots.jsonl"
     prohibited = append_changed_snapshots({
-        "currencies": {"USD": {"operational_status": "GREEN_ESTIMATED",
-                              **usd}}
+        "currencies": {"USD": {"operational_status": "GREEN_ESTIMATED", **usd},
+                       "EUR": {"operational_status": "WITHHELD"},
+                       "CHF": {"operational_status": "WITHHELD"},
+                       "NZD": {"operational_status": "WITHHELD"}}
     }, "2026-10-31T12:01:00Z", scratch)
     assert prohibited["appended"] == 0 and not scratch.exists(), prohibited
 
