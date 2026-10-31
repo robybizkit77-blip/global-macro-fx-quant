@@ -1,0 +1,62 @@
+name: Macro P0 G8 28-Pair Structural Rebase Dependency Audit
+
+on:
+  pull_request:
+    paths:
+      - 'validation/macro/rebase_28pair_dependency_matrix_v1.py'
+      - 'validation/macro/test_rebase_28pair_dependency_matrix_v1.py'
+      - '.github/workflows/macro-p0-rebase-28pair-dependencies-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  research-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Pin canonical Macro, FX pair, rates and OIS inputs
+        run: |
+          sha256sum live_data/sections/D.json \
+                    live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json \
+                    live_data/sections/NATIVE_RATES_DATA.json \
+                    live_data/sections/OIS_OPERATIONAL_VIEW.json > /tmp/macro-p0-no-mutation.sha256
+      - name: Regress existing independent structural and PIT gates
+        run: |
+          python -m unittest validation.macro.test_rebase_readiness_v1 -v
+          python -m unittest validation.macro.test_rebase_joint_gate_v1 -v
+          python -m unittest validation.macro.test_score_formula_provenance_v1 -v
+      - name: Compute current 8-currency and 28-pair dependency receipt
+        run: |
+          python -m unittest validation.macro.test_rebase_28pair_dependency_matrix_v1 -v
+          python -m validation.macro.rebase_28pair_dependency_matrix_v1 \
+            --as-of 2026-10-31 \
+            --out /tmp/gmfq-macro-rebase-28pair-blockers-2026-10-31.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path('/tmp/gmfq-macro-rebase-28pair-blockers-2026-10-31.json').read_text())
+          s=data['summary']
+          assert (s['currencies'],s['macro_axes_historical'],
+                  s['latest_labour_inflation_source_rows'],s['pairs'])==(8,24,16,28)
+          assert s['pairs_allowed_to_rebase_structural']==0
+          assert s['new_fx_strength_scores']==0
+          assert s['new_fx_direction_signals']==0
+          assert data['candidate_D_json'] is None
+          assert data['candidate_pair_state'] is None
+          assert not any(data[k] for k in ('safe_to_publish_D_json',
+              'safe_to_update_28_pairs','safe_for_beta','safe_for_forward','writes_live_data'))
+          print('MACRO_P0_28PAIR_DEPENDENCIES_RESEARCH_ONLY_PASS',s)
+          PY
+      - name: Prove production data were never mutated
+        run: |
+          sha256sum -c /tmp/macro-p0-no-mutation.sha256
+          git diff --exit-code -- live_data/sections/D.json \
+            live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json \
+            live_data/sections/NATIVE_RATES_DATA.json \
+            live_data/sections/OIS_OPERATIONAL_VIEW.json
