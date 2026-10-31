@@ -102,9 +102,11 @@ def test_readiness_atomic_writer_scope():
     readiness="live_data/sections/OIS_SOURCE_READINESS_VIEW.json"
     operational="live_data/sections/OIS_OPERATIONAL_VIEW.json"
     same_contract="validation/cb_pricing/history/OIS_SAME_CONTRACT_QUOTES_V1.jsonl"
+    conflict_journal="validation/cb_pricing/history/OIS_SAME_CONTRACT_CONFLICTS_V1.jsonl"
     assert readiness in G8_PATHS and readiness in ESTIMATED_PATHS
     assert operational in G8_PATHS and operational in ESTIMATED_PATHS
     assert same_contract in G8_PATHS and same_contract in ESTIMATED_PATHS
+    assert conflict_journal in G8_PATHS and conflict_journal in ESTIMATED_PATHS
     # Both existing runners can publish matching operational and access data.
     for mode in ("estimated","g8"):
         with tempfile.TemporaryDirectory() as td:
