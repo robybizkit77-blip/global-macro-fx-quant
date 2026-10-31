@@ -83,6 +83,7 @@ def check_asx(feed: dict, asof: date) -> dict:
     require(isinstance(rows, dict) and set(rows) == set(TENORS),
             "3m/6m/12m missing or extra horizon")
     used = set()
+    weekly_days = set()
     validated = {}
     for h, days in TENORS.items():
         p = rows[h]
@@ -117,6 +118,7 @@ def check_asx(feed: dict, asof: date) -> dict:
                     and re.fullmatch(r"\d{4}-\d\d-\d\d", weekly_date)
                     and 4 <= (asx_day - date.fromisoformat(weekly_date)).days <= 12,
                     h + " weekly reference missing/dated outside reasonable window")
+            weekly_days.add(weekly_date)
         else:
             require(weekly_date is None, h + " unpaired weekly reference")
         validated[h] = {
@@ -129,6 +131,14 @@ def check_asx(feed: dict, asof: date) -> dict:
             "observation_is_ois": False,
             "policy_repricing_signal": False,
         }
+    require(len(weekly_days) <= 1,
+            "different weekly report days across NZD contracts")
+    if weekly_days:
+        week = date.fromisoformat(next(iter(weekly_days)))
+        require(feed.get("weekly_reference_source_url") ==
+                "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary"
+                + week.strftime("%y%m%d") + "ZFT.htm",
+                "ASX weekly report does not match same-contract comparison date")
     return validated
 
 
