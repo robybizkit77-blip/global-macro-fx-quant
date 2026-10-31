@@ -4,7 +4,7 @@
 'use strict';
 const fx=['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'],tenors=['3m','6m','12m'];
 const flags={USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',AUD:'🇦🇺',CAD:'🇨🇦',NZD:'🇳🇿',CHF:'🇨🇭'};
-const labels={OFFICIAL:'FONTE MONETARIA CERTIFICATA',PROXY:'STIMA · FUTURES',MIXED:'STIMA · FUTURES / DATE NON SINCRONIZZATE',SCENARIO:'SCENARIO · RBNZ B2 · STIMA BANK BILL–OCR',WITHHELD:'FONTE NON DISPONIBILE'};
+const labels={OFFICIAL:'FONTE MONETARIA CERTIFICATA',PROXY:'STIMA · FUTURES',MIXED:'STIMA · FUTURES / DATE NON SINCRONIZZATE',CONFLICTED:'STIMA CONTESTATA · QUOTAZIONI NON CONVALIDATE',SCENARIO:'SCENARIO · RBNZ B2 · STIMA BANK BILL–OCR',WITHHELD:'FONTE NON DISPONIBILE'};
 const number=x=>typeof x==='number'&&Number.isFinite(x)?x:null;
 const fmt=x=>number(x)===null?'—':x.toFixed(2);
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -116,6 +116,26 @@ function auditDatedFuture(ccy,term,primary,rate,quoteDate,today){
   tenor_gap_days:gap,mapping_quality:Math.abs(gap)<=21?'NEAR_TARGET':'APPROXIMATE_EXPIRY',
   source_quote_verified:true,direct_ois_quote:false,policy_repricing_allowed:false};
 }
+/* Conflict-graded secondary prints are unverified context, not market OIS. */
+function auditDisputedFuture(ccy,term,p,keys,today){
+ if(p?.quote_timestamp_verified!==false||
+    p?.quote_timestamp_source!=='QUARANTINED_SAME_CONTRACT_SAME_DAY'||
+    !Array.isArray(keys))return null;
+ const matches=keys.filter(k=>k?.horizon===term&&k.contract===p.contract&&
+   k.observation_date===p.quote_as_of&&
+   typeof k.event_id==='string'&&/^[a-f0-9]{64}$/.test(k.event_id));
+ if(matches.length!==1)return null;
+ // The independent contract/expiry/date/price arithmetic is reused purely
+ // for geometry, never as a verification or a policy-pricing promotion.
+ const check=auditDatedFuture(ccy,term,{
+  ...p,quote_timestamp_verified:true,
+  quote_timestamp_source:'SSR_DAILY_BAR_DATA_UPDATE_TIME'
+ },p.rate,p.quote_as_of,today);
+ if(!check)return null;
+ return {...check,source_quote_verified:false,source_quote_disputed:true,
+  dispute_event_id:matches[0].event_id,direct_ois_quote:false,
+  policy_repricing_allowed:false};
+}
 function matrix(ois,bb,today){
  return fx.map(ccy=>{
   const x=ois?.currencies?.[ccy]||{},points={};let tier='WITHHELD',source='';
@@ -128,16 +148,22 @@ function matrix(ois,bb,today){
   }else if(['USD','EUR','CHF'].includes(ccy)&&x.operational_status==='GREEN_ESTIMATED'&&
     x.official_status==='WITHHELD'&&x.quality==='ESTIMATED_INFORMATIONAL'&&
     x.backtest_eligible_as_official===false&&x.method_id==='TRADINGVIEW_DATED_FUTURES_SSR_V2'){
+    const sourceDisputed=x.source_conflict_status===
+      'UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT';
     for(const t of tenors){
      const p=x.horizons?.[t]||{},checked=auditDatedFuture(ccy,t,p,p.rate,p.quote_as_of,today);
      if(checked)points[t]=checked;
+     else if(sourceDisputed){
+      const disputed=auditDisputedFuture(ccy,t,p,x.source_conflict_keys,today);
+      if(disputed)points[t]=disputed;
+     }
     }
     if(Object.keys(points).length){
-      // The three futures remain individual contracts, never a reconstructed
-      // OIS curve. Mixed publication dates must be explicit even when the
-      // derived operational status is informational GREEN_ESTIMATED.
-      tier=new Set(Object.values(points).map(p=>p.date)).size>1?'MIXED':'PROXY';
-      source=x.source||'';
+      tier=Object.values(points).some(p=>p.source_quote_disputed)?
+       'CONFLICTED':
+       new Set(Object.values(points).map(p=>p.date)).size>1?'MIXED':'PROXY';
+      source=(x.source||'')+(tier==='CONFLICTED'?
+       ' · QUOTAZIONI SECONDARIE CONTESTATE: livelli provvisori, nessun Delta OIS':'');
     }
   }else if(['USD','EUR','CHF'].includes(ccy)&&x.operational_status==='WITHHELD'&&
     x.official_status==='WITHHELD'&&x.quality==='ESTIMATED_INFORMATIONAL'&&
@@ -191,7 +217,7 @@ function indicativeSixMonth(ois,today){
  const observations=matrix(ois,null,today),approved={};
  for(const row of observations){
   if(!['USD','EUR','CHF'].includes(row.ccy)||
-     !['PROXY','MIXED'].includes(row.tier))continue;
+     !['PROXY','MIXED','CONFLICTED'].includes(row.tier))continue;
   const p=row.points?.['6m'];
   if(!p||!p.source_quote_verified||!p.contract||!p.expires||
      !fresh(p.date,today)||number(p.value)===null||
@@ -199,7 +225,8 @@ function indicativeSixMonth(ois,today){
   approved[row.ccy]=Object.freeze({
     type:row.tier,currency:row.ccy,value:p.value,
     quote_as_of:p.date,contract:p.contract,expiry:p.expires,
-    label:row.tier==='MIXED'?'FUTURES DATATO · '+row.ccy+' non sincronizzato':'FUTURES INDICATIVO',
+    label:row.tier==='CONFLICTED'?'FUTURES DATATO · '+row.ccy+' 6M verificato singolarmente, altri contratti contestati':
+      row.tier==='MIXED'?'FUTURES DATATO · '+row.ccy+' non sincronizzato':'FUTURES INDICATIVO',
     is_official_ois:false,policy_delta_allowed:false,pair_effect:'NONE',core_effect:'NONE'
   });
  }
@@ -337,7 +364,7 @@ function miniCharts(rows){
   if(p.length<2)return '<article class="gmfq-mini-curve" data-chart-ccy="'+r.ccy+'" data-points="'+p.length+'"><b>'+flags[r.ccy]+' '+r.ccy+'</b><p>Storico insufficiente · dati in tabella</p></article>';
   const values=p.map(x=>x.v.value),bottom=Math.min(...values),top=Math.max(...values),pad=Math.max(.1,(top-bottom)*.2);
   const x=i=>38+111*i,y=v=>82-62*(v-bottom+pad)/(top-bottom+2*pad);
-  const synced=new Set(p.map(a=>a.v.date)).size===1,joined=p.length===3&&synced;
+  const synced=new Set(p.map(a=>a.v.date)).size===1,joined=p.length===3&&synced&&r.tier!=='CONFLICTED';
   const path=joined?'<path d="'+p.map((a,i)=>(i?'L':'M')+x(a.i)+','+y(a.v.value).toFixed(1)).join(' ')+
    '" fill="none" stroke="'+(r.tier==='OFFICIAL'?'#52b6cf':'#d9bd7a')+'" stroke-width="2"'+
    (r.tier==='OFFICIAL'?'':' stroke-dasharray="5 4"')+'/>':'';
@@ -345,7 +372,9 @@ function miniCharts(rows){
    '" r="4" fill="'+(r.tier==='OFFICIAL'?'#52b6cf':'#d9bd7a')+'"><title>'+esc(a.t+' '+fmt(a.v.value)+'% '+a.v.date)+
    '</title></circle><text x="'+x(a.i)+'" y="'+Math.max(11,y(a.v.value)-9).toFixed(1)+
    '" text-anchor="middle">'+(r.tier==='OFFICIAL'?'':'≈')+fmt(a.v.value)+'%</text></g>').join('');
-  const date=joined?p[0].v.date:'Date distinte: '+[...new Set(p.map(a=>a.v.date))].join(' / ');
+  const date=r.tier==='CONFLICTED'?
+    'Quotazioni contestate · punti non connessi · '+[...new Set(p.map(a=>a.v.date))].join(' / '):
+    joined?p[0].v.date:'Date distinte: '+[...new Set(p.map(a=>a.v.date))].join(' / ');
   return '<article class="gmfq-mini-curve" data-chart-ccy="'+r.ccy+'" data-quality="'+r.tier+
     '" data-points="'+p.length+'" data-joined="'+joined+'"><header><b>'+flags[r.ccy]+' '+r.ccy+
     '</b><small>'+labels[r.tier]+'</small></header><svg viewBox="0 0 300 112" role="img" aria-label="'+esc(r.ccy+' '+date)+
@@ -358,10 +387,11 @@ function miniCharts(rows){
 function view(rows,moves=[]){
  const cell=(r,t)=>{const x=r.points[t];return x?
   '<b>'+(r.tier==='OFFICIAL'?'':'≈')+fmt(x.value)+'%</b><small>'+esc(x.date)+'</small>'+
-   (x.source_quote_verified?'<small>scad. '+(x.tenor_gap_days>0?'+':'')+x.tenor_gap_days+'gg vs target</small>':'')+
+    (x.source_quote_disputed?'<small>⚠ QUOTAZIONE CONTESTATA · non convalidata</small>':
+     x.source_quote_verified?'<small>scad. '+(x.tenor_gap_days>0?'+':'')+x.tenor_gap_days+'gg vs target</small>':'')+
    (x.range?'<small>'+fmt(x.range[0])+'–'+fmt(x.range[1])+'%</small>':''):
   '<b>—</b><small>n.d.</small>';};
- const counts=Object.fromEntries(['OFFICIAL','PROXY','MIXED','SCENARIO','WITHHELD'].map(t=>[t,rows.filter(r=>r.tier===t).length]));
+ const counts=Object.fromEntries(['OFFICIAL','PROXY','MIXED','CONFLICTED','SCENARIO','WITHHELD'].map(t=>[t,rows.filter(r=>r.tier===t).length]));
  // The user needs all eight dated 3M/6M/12M references at first glance.
  // Preserve full source provenance and leave methodology collapsible.
  // No estimate becomes a certified OIS or an official policy delta.
@@ -369,13 +399,13 @@ function view(rows,moves=[]){
   number(r.points[t]?.value)!==null&&r.points[t]?.date)).length;
  const brief=usable+'/8 valute con riferimenti numerici (ufficiali, proxy o scenari) · '+
    counts.OFFICIAL+' fonti certificate · '+counts.PROXY+' futures indicativi · '+
-   counts.MIXED+' con date diverse · '+counts.SCENARIO+' scenario NZD'+
+   counts.MIXED+' con date diverse · '+counts.CONFLICTED+' con quotazioni contestate · '+counts.SCENARIO+' scenario NZD'+
    (counts.WITHHELD?' · '+counts.WITHHELD+' senza fonte attendibile':'');
  return '<h2 class="desk-panel-title">G8 · OIS e stime monetarie 3M / 6M / 12M</h2>'+
  '<p class="gmfq-est-quick-read" data-g8-estimated-curve-coverage="'+usable+'/8"><strong>Copertura G8 · </strong>'+esc(brief)+
  '. Tutte le valute sono consultabili; le stime non diventano segnali.</p>'+miniCharts(rows)+
  '<details class="gmfq-est-disclosure" open data-default="OPEN"><summary>Tabella G8 · 3M / 6M / 12M, dati e fonti (tocca per nascondere)</summary>'+
- '<div class="gmfq-est-body"><p><b>8 valute, 3 scadenze per valuta.</b> Le curve non certificate restano <b>stime/proxy</b> con date separate, non quotazioni OIS né curve sincronizzate. Nessun segnale FX deriva dai valori stimati.</p>'+
+ '<div class="gmfq-est-body"><p><b>8 valute, 3 scadenze per valuta.</b> Le curve non certificate restano <b>stime/proxy</b> con date separate, non quotazioni OIS né curve sincronizzate. Le quotazioni discordanti per lo stesso contratto/data sono <b>contestate, non convalidate</b>, senza repricing e senza linee congiunte. Nessun segnale FX deriva dai valori stimati.</p>'+
  '<div role="table" class="gmfq-est-table"><div class="gmfq-est-row gmfq-est-head" role="row"><span>Valuta</span><span>3M</span><span>6M</span><span>12M</span></div>'+
  rows.map(r=>'<div role="row" class="gmfq-est-row" data-ccy="'+r.ccy+'" data-estimate-type="'+r.tier+'">'+
  '<div><strong>'+flags[r.ccy]+' '+r.ccy+'</strong><small>'+labels[r.tier]+'</small></div>'+

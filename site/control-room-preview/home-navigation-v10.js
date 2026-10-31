@@ -893,7 +893,7 @@ async function mountHomeMarketPulse(doc){
       if(!host.isConnected||frame.contentDocument!==doc)return;
       const reference=audited(feeds[0],feeds[1],romeTodayIso());
       const valid=reference.length===8&&reference.every(x=>
-       ['OFFICIAL','PROXY','MIXED','SCENARIO'].includes(x.tier)&&
+       ['OFFICIAL','PROXY','MIXED','CONFLICTED','SCENARIO'].includes(x.tier)&&
        num(x.points?.['6m']?.value)!==null&&fresh(x.points['6m'].date,5));
       if(valid){
        box.innerHTML=reference.map(x=>
@@ -902,7 +902,8 @@ async function mountHomeMarketPulse(doc){
         '<strong>'+FLAG[x.ccy]+' '+x.ccy+' · 6M</strong>'+
         '<span class="gmfq-pulse-instrument">'+htmlEscape(x.tier==='OFFICIAL'?'FONTE CERTIFICATA':
           x.tier==='SCENARIO'?'SCENARIO EMPIRICO · NON OIS':
-          x.tier==='MIXED'?'FUTURES INDICATIVO · DATE NON SINCRONIZZATE':
+          x.tier==='CONFLICTED'?'FUTURES CONTESTATO · QUOTAZIONE NON CONVALIDATA':
+           x.tier==='MIXED'?'FUTURES INDICATIVO · DATE NON SINCRONIZZATE':
           'FUTURES INDICATIVO')+' · '+htmlEscape(x.points['6m'].date)+'</span>'+
         '<div class="gmfq-pulse-metrics"><span>Livello 6M <b> '+(x.tier==='OFFICIAL'?'':'≈')+
         fmt(x.points['6m'].value,2)+'%</b></span></div>'+
@@ -1764,11 +1765,11 @@ function marketResearchGraded(ois,proxy){
  const make=window.GMFQ_OIS_RESEARCH_V1?.matrix;
  if(typeof make!=='function')return [];
  return make(ois,proxy,romeTodayIso()).filter(r=>
-  FX.includes(r.ccy)&&['OFFICIAL','PROXY','MIXED','SCENARIO'].includes(r.tier)&&
+  FX.includes(r.ccy)&&['OFFICIAL','PROXY','MIXED','CONFLICTED','SCENARIO'].includes(r.tier)&&
   ['3m','6m','12m'].every(t=>num(r.points?.[t]?.value)!==null&&fresh(r.points[t].date,5)))
  .map(r=>({k:r.ccy,tier:r.tier,pts:['3m','6m','12m'].map(t=>r.points[t].value),
   dates:['3m','6m','12m'].map(t=>r.points[t].date),
-  joined:new Set(['3m','6m','12m'].map(t=>r.points[t].date)).size===1}));
+  joined:r.tier!=='CONFLICTED'&&new Set(['3m','6m','12m'].map(t=>r.points[t].date)).size===1}));
 }
 /* Do not join secondary futures with different quote dates or imply OIS policy deltas. */
 function marketResearchGradedSvg(curves){
@@ -2019,7 +2020,7 @@ function pairMacroRatesComparison(code,pair,rates,ois,modelDay,macroDay,proxy){
    '2Y / 10Y WITHHELD · ultima data '+(r.date||'non verificata');
   const context=!p.ok?indicative6m[c]:null;
   const contextValid=context&&context.currency===c&&
-   ['USD','EUR','CHF'].includes(c)&&['PROXY','MIXED'].includes(context.type)&&
+   ['USD','EUR','CHF'].includes(c)&&['PROXY','MIXED','CONFLICTED'].includes(context.type)&&
    context.is_official_ois===false&&context.policy_delta_allowed===false&&
    context.pair_effect==='NONE'&&context.core_effect==='NONE'&&
    num(context.value)!==null&&fresh(context.quote_as_of,5);

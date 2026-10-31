@@ -2,7 +2,7 @@
 /* User-facing complete G8 table is immediately visible, dated and non-promotional. */
 const fs=require('node:fs');
 const assert=require('node:assert/strict');
-const {matrix,view,coverage,calibratedNzdCarry,scenarioSixMonth}=require('../site/control-room-preview/ois-pricing-estimates-v1.js');
+const {matrix,view,coverage,calibratedNzdCarry,scenarioSixMonth,indicativeSixMonth}=require('../site/control-room-preview/ois-pricing-estimates-v1.js');
 const ois=JSON.parse(fs.readFileSync('live_data/sections/OIS_OPERATIONAL_VIEW.json','utf8'));
 const bill=JSON.parse(fs.readFileSync('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json','utf8'));
 const g8=['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'];
@@ -33,8 +33,12 @@ assert(rendered.includes('G8 · OIS e stime monetarie 3M / 6M / 12M'),
  'Rates page must identify certified versus estimated 3M/6M/12M values');
 assert(rendered.includes('data-g8-estimated-curve-coverage='),
  'Rates page must make numeric G8 estimate coverage explicit');
-assert(rendered.includes('STIMA · FUTURES / DATE NON SINCRONIZZATE'),
- 'Mixed-date quote must remain visibly an estimate, not a full certified OIS');
+if(rows.some(r=>r.tier==='MIXED'))
+ assert(rendered.includes('STIMA · FUTURES / DATE NON SINCRONIZZATE'),
+  'A true mixed-date quote must visibly remain an estimate');
+if(rows.some(r=>r.tier==='CONFLICTED'))
+ assert(rendered.includes('STIMA CONTESTATA · QUOTAZIONI NON CONVALIDATE'),
+  'A source conflict must be visible as a disputed estimate, not a verified OIS');
 
 assert(rendered.includes('non intervallo statistico'));
 assert(rendered.includes('NESSUNA')===false);
@@ -42,23 +46,26 @@ const c=coverage(ois,bill,when);
 assert.equal(c.total,8);
 assert.equal(c.covered_count+c.incomplete_codes.length,8);
 const eur=rows.find(x=>x.ccy==='EUR'),nzd=rows.find(x=>x.ccy==='NZD');
-assert(['PROXY','MIXED','WITHHELD','OFFICIAL'].includes(eur.tier));
+assert(['PROXY','MIXED','CONFLICTED','WITHHELD','OFFICIAL'].includes(eur.tier));
 assert(['SCENARIO','WITHHELD','OFFICIAL'].includes(nzd.tier));
-if(['PROXY','MIXED'].includes(eur.tier)){
+if(['PROXY','MIXED','CONFLICTED'].includes(eur.tier)){
  // A date mismatch may leave only 1-2 individually usable contracts.
  // Never demand all three or join tomorrow's bar to today's source vintage.
  const visible=Object.entries(eur.points).filter(([h,p])=>
   ['3m','6m','12m'].includes(h)&&p?.date);
  assert(visible.length>=1&&visible.length<=3,
   'EUR observations require independent dated contract receipts');
- assert(visible.every(([h,p])=>p.source_quote_verified===true&&
+ assert(visible.every(([h,p])=>
+  (p.source_quote_verified===true||p.source_quote_disputed===true)&&
   p.direct_ois_quote===false&&p.policy_repricing_allowed===false),
   'Dated EUR futures never certified as OIS or repricing');
  if(visible.length===3){
-  assert.equal(eur.tier,new Set(visible.map(([,p])=>p.date)).size>1?'MIXED':'PROXY',
+  const expected=visible.some(([,p])=>p.source_quote_disputed)?'CONFLICTED':
+    new Set(visible.map(([,p])=>p.date)).size>1?'MIXED':'PROXY';
+  assert.equal(eur.tier,expected,
    'Complete EUR futures must distinguish non-synchronized dates');
  }else{
-  assert.equal(eur.tier,'MIXED','Incomplete EUR secondary quotes are not a synchronized curve');
+  assert(['MIXED','CONFLICTED'].includes(eur.tier),'Incomplete EUR secondary quotes cannot become certified OIS');
   assert.equal(c.currency_tiers.EUR,'INCOMPLETE_OR_STALE',
    '1-2 individually dated futures must not count as complete 3M/6M/12M coverage');
   assert(c.incomplete_codes.includes('EUR'));
@@ -78,7 +85,51 @@ if(eurSource.operational_status==='WITHHELD'&&eurFuture&&eurFuture>when&&
 }
 if(ois.currencies.EUR.operational_status==='GREEN_ESTIMATED'&&
  ois.currencies.EUR.as_of===when)
- assert(['PROXY','MIXED'].includes(eur.tier),'Verified current EUR futures must not disappear');
+ assert(['PROXY','MIXED','CONFLICTED'].includes(eur.tier),'Current EUR futures must retain transparent source status');
+// Real source-conflict evidence must remain legible as research dots only.
+// An audit-verified quote and an unverified same-day competing quote are
+// intentionally different statuses; the latter can never become OIS or 1D/1W.
+const contested=rows.filter(r=>r.tier==='CONFLICTED');
+for(const row of contested){
+ const src=ois.currencies[row.ccy];
+ assert.equal(src.source_conflict_status,'UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT');
+ const disputed=Object.entries(row.points).filter(([,p])=>p.source_quote_disputed);
+ assert(disputed.length>=1,row.ccy+' conflict lost from graph');
+ assert(rendered.includes('data-chart-ccy="'+row.ccy+'" data-quality="CONFLICTED" data-points="3" data-joined="false"'),
+  row.ccy+' disputed points must be individually visible, never joined');
+ for(const [term,p] of disputed){
+  assert.equal(p.source_quote_verified,false);
+  assert.equal(p.policy_repricing_allowed,false);
+  assert.equal(p.direct_ois_quote,false);
+  assert(/^[a-f0-9]{64}$/.test(p.dispute_event_id));
+  const spoofed=structuredClone(ois);
+  const bad=spoofed.currencies[row.ccy].source_conflict_keys.find(k=>k.horizon===term);
+  bad.event_id='forged-not-an-event';
+  assert(!matrix(spoofed,bill,when).find(x=>x.ccy===row.ccy).points[term]?.source_quote_disputed,
+   'Unproven disputed futures may not be displayed as admissible evidence');
+  const invalidPrice=structuredClone(ois);
+  invalidPrice.currencies[row.ccy].horizons[term].futures_price+=0.1;
+  assert(!matrix(invalidPrice,bill,when).find(x=>x.ccy===row.ccy).points[term]?.source_quote_disputed,
+   'Contradictory futures arithmetic must fail closed');
+ }
+}
+// A currency-wide conflict does not invalidate an independently verified 6M
+// contract. It DOES invalidate a disputed 6M print: no fallback or repricing.
+const individuallyVerified=indicativeSixMonth(ois,when);
+for(const row of contested){
+ const point=row.points['6m'];
+ if(point?.source_quote_verified){
+  assert.equal(individuallyVerified[row.ccy]?.type,'CONFLICTED');
+  assert.equal(individuallyVerified[row.ccy]?.value,point.value);
+  assert.equal(individuallyVerified[row.ccy]?.policy_delta_allowed,false);
+  assert.equal(individuallyVerified[row.ccy]?.pair_effect,'NONE');
+  assert(individuallyVerified[row.ccy]?.label.includes('verificato singolarmente'));
+ }else{
+  assert.equal(individuallyVerified[row.ccy],undefined,
+   'A disputed 6M bar cannot be shown as verified individually');
+ }
+}
+assert(!contested.some(r=>r.allow_repricing||r.allow_official_promotion||r.official_ois));
 assert(!eur.allow_repricing&&!eur.allow_official_promotion&&eur.core_score_effect==='NONE');
 assert(!nzd.allow_repricing&&!nzd.allow_official_promotion&&nzd.core_score_effect==='NONE');
 const shared=scenarioSixMonth(ois,bill,when);
