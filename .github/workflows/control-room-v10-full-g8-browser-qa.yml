@@ -86,7 +86,7 @@ jobs:
           # Append-only futures quotes grow each session; require coverage, not a frozen count.
           assert o['eur_archived_futures_observations']>=28
           assert o['eur_archived_futures_observations'] == o['started_compounding_period_quote_count'] + o['not_yet_started_or_start_day_quote_count']
-          assert o['distinct_eurex_futures_periods']==4
+          assert o['distinct_eurex_futures_periods']>=4
           assert o['admissible_same_window_pairs']==0
           assert o['actual_model_OIS_level_MAE_bp'] is None
           assert o['eligible_to_change_OIS_operational_feed'] is False
