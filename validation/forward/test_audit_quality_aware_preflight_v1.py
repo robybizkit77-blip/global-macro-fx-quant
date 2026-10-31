@@ -58,7 +58,7 @@ class QualityAwarePreflightTests(unittest.TestCase):
     def test_rejects_source_promotion_or_fake_data(self):
         for source,path,value in (
             ("observed",("safe_to_publish_new_D",),True),
-            ("observed",("inflation_labour","EUR.labour"),None),
+            ("observed",("inflation_labour","EUR.labour","research_robust_z"),0),
             ("ordinal",("strict_numeric_z_imputation_count",),1),
             ("ordinal",("zero_mad_components","EUR.labour","numeric_replacement_z"),2),
             ("market",("summary","FX_scores"),1),
