@@ -764,8 +764,9 @@ async function getState(page){
        if(research.actualCurves!==8||
            new Set(research.gradedRows.map(x=>x.ccy)).size!==8||
            research.gradedRows.some(x=>x.points!==3||
-             !['OFFICIAL','PROXY','MIXED','SCENARIO'].includes(x.tier)||
-             (x.tier==='MIXED'&&(x.joined!=='false'||x.lines!==0)))||
+             !['OFFICIAL','PROXY','MIXED','CONFLICTED','SCENARIO'].includes(x.tier)||
+             (['MIXED','CONFLICTED'].includes(x.tier)&&
+               (x.joined!=='false'||x.lines!==0)))||
            !research.note.includes('Grafico G8 3M/6M/12M: 8/8')||
            !research.note.includes('Curve certificate: '+research.expectedCurves+'/8')||
            research.secondaryCards!==research.expectedCards||
