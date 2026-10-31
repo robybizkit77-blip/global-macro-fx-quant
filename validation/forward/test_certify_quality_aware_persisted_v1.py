@@ -93,6 +93,22 @@ class IndependentDurabilityTests(unittest.TestCase):
                       core_persisted=True, path=path)
         self.assertEqual(got["status"],"BLOCKED_QUALITY_AWARE_JOURNAL_INTEGRITY")
 
+    def test_existing_workflow_proves_quality_independently_from_old_v2(self):
+        from validation.forward.capture_v2_quality_aware_prospective_v1 import ROOT
+        w=(ROOT/".github/workflows/forward-frozen-core-prospective-daily-v1.yml").read_text()
+        self.assertIn("certify-quality-aware-independent:",w)
+        self.assertIn("needs: [test, capture]",w)
+        self.assertIn("always() && needs.test.outputs.eligible == 'true'",w)
+        self.assertIn("CAPTURE_ADMITTED: ${{ needs.capture.outputs.admitted }}",w)
+        self.assertIn("CORE_PERSISTED: ${{ needs.capture.outputs.core_persisted }}",w)
+        self.assertIn("validation.forward.test_certify_quality_aware_persisted_v1",w)
+        self.assertIn("ref: main",w)
+        # The original model's failure remains visible in its own step,
+        # while the separate read-only certification must still execute.
+        self.assertIn("::error::V2_RESEARCH_CAPTURE_FAILED_AFTER_LEGACY_PERSISTENCE",w)
+        self.assertEqual(w.count("    - cron:"),3)
+        self.assertEqual(w.count("certify-quality-aware-independent:"),1)
+
     def test_read_only_no_existing_real_quality_journal_modified(self):
         from validation.forward.capture_v2_quality_aware_prospective_v1 import JOURNAL
         before=JOURNAL.read_bytes() if JOURNAL.exists() else None
