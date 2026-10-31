@@ -68,6 +68,23 @@ const duplicate={date:'2026-10-23',history2:{dates:['2026-1-2','2026-01-02'],val
 assert.equal(dateHistory(duplicate,'history2').length,0,'colliding normalized dates must fail closed');
 assert.equal(dateHistory({date:'bad-date',history2:{dates:['2026-01-02'],values:[1]}},'history2').length,
   0,'invalid current as-of must not yield a plausible chart');
+// Audit original source date versus the independent freshness classification.
+// CHF/NZD official histories stay HISTORICAL, not current trading observations.
+const audit=JSON.parse(fs.readFileSync('live_data/sections/RATES_AUDIT_METADATA.json','utf8'));
+for(const ccy of ['CHF','NZD']){
+ assert.equal(audit.rates[ccy].current_as_of,raw[ccy].date,
+  ccy+' metadata must refer to exact actual observation day');
+ assert.equal(audit.expected_rates[ccy],raw[ccy].date);
+ assert.notEqual(audit.rates[ccy].status,'RECENT_OFFICIAL_OBSERVATION');
+}
+const hhStart=js.indexOf('function mountHistoricalSovereignTable(doc,raw){');
+const hhEnd=js.indexOf('function renderYieldStudy(doc,rates',hhStart);
+assert(hhStart>=0&&hhEnd>hhStart);
+const hh=js.slice(hhStart,hhEnd);
+for(const s of ['CERTIFICATO · STORICO','STORICO ','OFFICIAL_HISTORICAL_SAME_DAY_2Y_10Y',
+                'non la data del rendimento sopra','NON livelli correnti'])
+ assert(hh.includes(s),'historical CHF/NZD original Rates UI guard missing: '+s);
+console.log('RATES_CHF_NZD_HISTORICAL_EXPLICIT_SOURCE_GATE');
 console.log('JPY_RATES_READ_ONLY_NORMALIZE_PASS',
   JSON.stringify({currencyTenorChecks:checks,jpy2YRecovered:dateHistory(jpy,'history2').length,
     jpy10YRecovered:dateHistory(jpy,'history10').length}));
