@@ -1,8 +1,23 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-31T20:01:38Z",
+  "generated_at_utc": "2026-10-31T23:25:49Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-c194aedead3fdf86012a",
+      "observed_at_utc": "2026-10-30T19:39:07Z",
+      "headline": "White House hearing on Fed's Cook delayed to December, Hassett says",
+      "summary": "Reuters riporta: White House hearing on Fed's Cook delayed to December, Hassett says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxOUWFLMXBRYXVPMHZLZ3NZRWVMYlhWaVBtdGRTU19RakNmYW90OVBUSFI2Q0JfVE16MnBDcV9xSEtpdjJSWlRBb0Vhd3JzaG5abHRLcWdaVm1RWkhvVWdHQ0RiN0pHeVdYbmY1U1IyQXNkWUl4M2I1TGcyUFItTGNQM0ZkZDRFWWlsN3phR1JybXhnTGZLY3R6Rm5EaTJJNTl6bEowUTRIWUZVaFpmRTlWR0V3?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-0a5002037ecd9d3e9f2d",
       "observed_at_utc": "2026-10-31T18:05:10Z",
@@ -1408,19 +1423,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPNTNqT1RkY0RsU1oyTkpOUHNVR3V3eDNUckxOSV9QeW1JelM3TjhzTjJ5NmJkcl8tMXFOOVJjVlJhMEtaSmI2RjNqV2VwbW93RWlRanFHZjJJTVg4Qi1jQmQ2ekRpZU1tZzk1Y1BEZDVYNlVzblNtV2loeFkzSHZQWFdTdUFXMjkxSHozRENYZWp3cXBzQ3ZPRTZDaGRrRGNOZzVF?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-c7d6ffb3ef3fbfeefdf2",
-      "observed_at_utc": "2026-10-26T04:09:00Z",
-      "headline": "Brazil stocks, real tumble as Lula win shifts investor focus",
-      "summary": "Reuters riporta: Brazil stocks, real tumble as Lula win shifts investor focus. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxQN2NwbFFDLVhWTUJuTGZxYkI1YWtMOFNFM29UMndmRUp3V1RzM0wyeTdvS2dzalE3WFRKdUVvWTdpOXVzakNmajA1TFVkX1RmdG5xRmRWUm9pQ1lOMEYwM2tMQVY0emRfdjVWeks3QVBhdWNzVXd4dEN1TE5oc1Q2ZHpOUDE3NmM4bWE0Sk1mS3RSeF9CUUlqdjhkZmJiNFpRWUp3ZTRDb3ZHWkU?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
