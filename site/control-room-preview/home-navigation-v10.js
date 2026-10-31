@@ -1553,6 +1553,70 @@ function nzdWebReviewCandidate(canonical,c){
  return {date:c.as_of,v2:c['2Y'],v10:c['10Y'],slopeBp:c.curve_bp,
    historical:age>4,source:c.source_url,approval:'PENDING'};
 }
+
+/* Keep observed historical NZD and CHF sovereign yields visible in ORIGINAL G8 table.
+   Reconstruct a relative-US spread only at the last actual SAME-DATE observation. */
+function historicalSovereignTableRows(raw){
+ const study=yieldStudySnapshot(raw,ratesAll(raw));
+ const usd=new Map(dateHistory(raw?.USD,'history2').map(p=>[p.date,p.v]));
+ return ['NZD','CHF'].map(ccy=>{
+  const r=study.rows.find(x=>x.ccy===ccy);
+  if(r?.status!=='HISTORICAL'||num(r.v2)===null||num(r.v10)===null)return null;
+  const common=dateHistory(raw[ccy],'history2').filter(p=>p.date<=r.asof&&usd.has(p.date));
+  const last=common.at(-1);
+  if(!last)return null;
+  return {ccy,asof:r.asof,v2:r.v2,v10:r.v10,slopeBp:r.slopeBp,
+   usDate:last.date,usSpreadBp:(last.v-usd.get(last.date))*100,scenario:r.scenario};
+ }).filter(Boolean);
+}
+function mountHistoricalSovereignTable(doc,raw){
+ const tbody=doc.getElementById('rates-rows');
+ if(!tbody||tbody.dataset.gmfqHistoryAdapter==='true')return;
+ tbody.dataset.gmfqHistoryAdapter='true';
+ const found=new Map(historicalSovereignTableRows(raw).map(x=>[x.ccy,x]));
+ const css=doc.createElement('style');css.id='gmfq-native-history-style';
+ css.textContent='#rates-rows tr[data-gmfq-historical-yield] td{vertical-align:middle}'+
+  '#rates-rows .gmfq-history-date{display:block;color:#e8c77c;font:600 10px/1.35 Arial,sans-serif;margin-top:3px}'+
+  '#rates-rows .gmfq-history-est{display:block;color:#acd2e6;font:10px/1.35 Arial,sans-serif;white-space:normal;margin-top:3px}'+
+  '#rates-rows .gmfq-history-spread-date{display:block;color:#e5c98e;font:9px/1.35 Arial,sans-serif;white-space:normal}'+
+  '#rates-rows .gmfq-history-badge{color:#e5c98e!important;border:1px solid #927a49!important;white-space:nowrap}'+
+  '#gmfq-native-history-note{color:#b9cddd;padding:7px 12px;font:11px/1.55 Arial,sans-serif}'+
+  '@media(max-width:600px){#rates-rows .gmfq-history-badge{font-size:9px}}';
+ doc.head.appendChild(css);
+ const draw=()=>{
+  if(route()!=='tassi'||frame.contentDocument!==doc||!tbody.isConnected)return;
+  const rows=[...tbody.querySelectorAll(':scope > tr')];
+  if(rows.length!==8)return;
+  for(const [ccy,name] of [['NZD','Nuova Zelanda'],['CHF','Svizzera']]){
+   const row=rows.find(x=>x.cells?.[0]?.textContent.includes(name)),r=found.get(ccy);
+   if(!row||row.cells.length!==7||!r||row.dataset.gmfqHistoricalYield===r.asof)continue;
+   row.dataset.gmfqHistoricalYield=r.asof;row.dataset.gmfqHistoricalSpreadDate=r.usDate;
+   row.dataset.gmfqProvenance='OFFICIAL_HISTORICAL_SAME_DAY_2Y_10Y';
+   const pct=n=>fmt(n,3)+'%';
+   row.cells[0].innerHTML='<strong>'+FLAG[ccy]+' '+htmlEscape(name)+'</strong>'+
+    '<small class="gmfq-history-date">STORICO '+htmlEscape(r.asof)+'</small>';
+   row.cells[1].innerHTML=pct(r.v2)+(r.scenario?
+    '<small class="gmfq-history-est">β ≈'+pct(r.scenario.v2)+' · '+htmlEscape(r.scenario.date)+'</small>':'');
+   row.cells[2].innerHTML=pct(r.v10)+(r.scenario?
+    '<small class="gmfq-history-est">β ≈'+pct(r.scenario.v10)+' · '+htmlEscape(r.scenario.date)+'</small>':'');
+   row.cells[3].textContent=(r.slopeBp>=0?'+':'')+fmt(r.slopeBp,1)+' bp';
+   row.cells[4].innerHTML=(r.usSpreadBp>=0?'+':'')+fmt(r.usSpreadBp,1)+' bp'+
+    '<small class="gmfq-history-spread-date">data comune '+htmlEscape(r.usDate)+'</small>';
+   row.cells[4].title='Spread storico '+ccy+' − USA del '+r.usDate+
+    '. Data diversa dal rendimento 2Y/10Y mostrato: NON spread corrente.';
+   row.cells[5].textContent=r.asof;
+   row.cells[6].innerHTML='<span class="desk-quality gmfq-history-badge">CERTIFICATO · STORICO</span>';
+  }
+  const panel=tbody.closest('.desk-panel');
+  if(panel&&!panel.querySelector('#gmfq-native-history-note')){
+   const note=doc.createElement('p');note.id='gmfq-native-history-note';
+   note.textContent='NZD e CHF: rendimenti 2Y/10Y ufficiali ma storici, NON livelli correnti. “2Y vs US” usa l’ultima data comune verificata indicata nella cella, non la data del rendimento sopra. Eventuali stime β sono separate: nessun effetto su score, coppie o backtest.';
+   panel.appendChild(note);
+  }
+ };
+ const watcher=new doc.defaultView.MutationObserver(draw);
+ watcher.observe(tbody,{childList:true,subtree:true});draw();
+}
 function renderYieldStudy(doc,rates,snb,webReview,secondary2y){
  if(route()!=='tassi'||frame.contentDocument!==doc||doc.getElementById('gmfq-yields-study'))return;
  const anchor=doc.getElementById('rates-rows')?.closest('.desk-panel');
@@ -1889,6 +1953,7 @@ async function applyMarketResearch(doc){
  const all=await Promise.allSettled([feed('OIS_OPERATIONAL_VIEW.json'),feed('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),feed('NATIVE_RATES_DATA.json'),feed('CHF_SNB_10Y_SPOT_CONTEXT.json'),feed('OIS_SOURCE_READINESS_VIEW.json'),feed('NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json'),fetchSecondary2Y()]);
  const feeds=all.map(x=>x.status==='fulfilled'?x.value:null);
  renderYieldStudy(doc,feeds[2],feeds[3],feeds[5],feeds[6]);
+ mountHistoricalSovereignTable(doc,feeds[2]);
   mountSovereignHistoryPlot(doc,feeds[2]);
  mountMarketResearch(doc,...feeds.slice(0,5));
 }
