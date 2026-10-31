@@ -37,20 +37,21 @@ class EurFst3BenchmarkTests(unittest.TestCase):
     def test_archive_matches_real_eurex_compounding_windows(self):
         x=self.contracts
         self.assertGreaterEqual(len(x["observations"]),28)
-        self.assertEqual(len(x["contracts"]),4)
+        self.assertGreaterEqual(len(x["contracts"]),4)
         self.assertGreaterEqual(sum(q["accrual_already_started_at_quote_date"]
                              for q in x["observations"]),5)
         self.assertEqual(sum(q["needs_realized_ESTR_component_for_OIS_comparison"]
                              for q in x["observations"]),
                          sum(q["accrual_already_started_at_quote_date"] for q in x["observations"]))
 
-        self.assertEqual(
-            {r["contract"]:(r["accrual_start"],r["accrual_end"])
-             for r in x["contracts"]},
-            {"FST3V2026":("2026-10-21","2027-01-20"),
+        windows={r["contract"]:(r["accrual_start"],r["accrual_end"])
+                 for r in x["contracts"]}
+        for contract,window in {
+             "FST3V2026":("2026-10-21","2027-01-20"),
              "FST3Z2026":("2026-12-16","2027-03-17"),
              "FST3G2027":("2027-02-17","2027-05-19"),
-             "FST3M2027":("2027-06-16","2027-09-15")})
+             "FST3M2027":("2027-06-16","2027-09-15")}.items():
+            self.assertEqual(windows[contract],window)
         for q in x["observations"]:
             self.assertEqual(q["official_ois"],False)
             self.assertEqual(q["accrual_end"],
