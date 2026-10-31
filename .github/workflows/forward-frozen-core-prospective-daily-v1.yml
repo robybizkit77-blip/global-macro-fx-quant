@@ -68,6 +68,28 @@ jobs:
           python -m unittest validation.forward.test_v2_full_command_capture_path_v1 -v
           python -m unittest validation.forward.test_capture_v2_quality_aware_prospective_v1 -v
 
+      - name: Observe registered next-session V2 economic/market inputs without synthetic ECB T0
+        if: github.event_name == 'pull_request' && steps.early_gate.outputs.eligible == 'true'
+        run: |
+          python -m unittest validation.forward.test_audit_quality_aware_preflight_v1 -v
+          python -m validation.forward.audit_quality_aware_preflight_v1 --out /tmp/v2-quality-aware-next-session-source-preflight.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('/tmp/v2-quality-aware-next-session-source-preflight.json').read_text())
+          assert r['schema']=='GMFQ_V2_QUALITY_AWARE_NEXT_SESSION_SOURCE_PREFLIGHT_V1'
+          assert r['economic_research_dimensions']==24
+          assert r['source_quality_graded_market_currencies']==8
+          assert r['market_context_pairs']==28
+          assert r['current_EUR_labour_zero_MAD_never_filled_with_fake_z']
+          assert r['current_CHF_labour_first_SNB_precision_PIT_not_repaired']
+          assert r['current_USD_inflation_missing_Oct2025_source_PIT_not_repaired']
+          assert not r['safe_to_capture_without_real_time_admission']
+          assert not r['historical_PIT_validated']
+          assert not r['future_snapshot_captured_now']
+          print('FUTURE_V2_QUALITY_AWARE_24_28_SOURCE_PREFLIGHT_ONLY_GREEN',r['status'])
+          PY
+
   capture:
     needs: test
     if: >-
