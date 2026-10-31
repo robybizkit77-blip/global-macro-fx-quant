@@ -3927,11 +3927,42 @@ function cotQuantitativeAudit(chart,story){
    extremeLong:extremes.filter(c=>series[c].q==='EXTREME LONG'),
    extremeShort:extremes.filter(c=>series[c].q==='EXTREME SHORT')};
 }
+/* ECB fixing is a DATE-SEPARATED FX observation, NEVER a CFTC-price confirmation.
+   Tuesday CFTC positions are NOT necessarily Friday publication-time positions. */
+function cotBcePriceContext(cftcDay, fx){
+ const iso=d=>/^\d{4}-\d{2}-\d{2}$/.test(d||'')&&
+   Number.isFinite(Date.parse(d+'T00:00:00Z'))&&
+   new Date(Date.parse(d+'T00:00:00Z')).toISOString().slice(0,10)===d;
+ if(!iso(cftcDay)||fx?.base!=='EUR'||fx?.status!=='CURRENT_OFFICIAL_HISTORY'||
+    fx?.pair_count!==28||!Array.isArray(fx?.rows)||fx.row_count!==fx.rows.length||
+    !iso(fx.last_as_of)||fx.last_as_of<=cftcDay||
+    fx.rows.at(-1)?.Date!==fx.last_as_of)return null;
+ const gap=(Date.parse(fx.last_as_of+'T00:00:00Z')-
+   Date.parse(cftcDay+'T00:00:00Z'))/86400000;
+ if(gap<=0||gap>7)return null; // Never extrapolate a stale CFTC report.
+ const start=fx.rows.filter(r=>r.Date===cftcDay);
+ if(start.length!==1)return null;
+ const a=start[0],b=fx.rows.at(-1),ccys=['EUR',...FX.filter(x=>x!=='EUR')];
+ if(![a,b].every(r=>ccys.every(c=>num(r?.[c])!==null&&r[c]>0&&r[c]<100000)&&r.EUR===1))return null;
+ const lines=FX.map(ccy=>{
+   // ECB EUR-base: USD per CCY = EURUSD / EURCCY.
+   // USD is displayed in EUR per USD to preserve currency-oriented moves.
+   const side=ccy==='USD'?'USD/EUR':ccy+'/USD';
+   const measure=r=>ccy==='USD'?1/r.USD:ccy==='EUR'?r.USD:r.USD/r[ccy];
+   const p0=measure(a),p1=measure(b),pct=100*(p1/p0-1);
+   if(!Number.isFinite(pct)||Math.abs(pct)>80)return null;
+   return {ccy,side,pct};
+ });
+ if(lines.includes(null))return null;
+ return {cftc_day:cftcDay,fx_start_day:cftcDay,fx_end_day:fx.last_as_of,
+   days:gap,lines,source:'ECB euro foreign exchange reference rates',
+   is_position_price_confirmation:false,not_intraday:true,causal_claim:false};
+}
 async function mountCotFirstReading(doc){
  if(route()!=='cot'||frame.contentDocument!==doc)return;
  const hero=doc.querySelector('.desk-hero'),table=doc.getElementById('cot-table');
  if(!hero||!table||doc.getElementById('gmfq-cot-reading-first'))return;
- const inputs=await Promise.allSettled([feed('V250_COT_CHART_DATA.json'),feed('V247_COT_STORIES.json')]);
+ const inputs=await Promise.allSettled([feed('V250_COT_CHART_DATA.json'),feed('V247_COT_STORIES.json'),feed('ECB_G8_PRICE_HISTORY.json')]);
  if(route()!=='cot'||frame.contentDocument!==doc)return;
  const result=cotQuantitativeAudit(inputs[0].status==='fulfilled'?inputs[0].value:null,
    inputs[1].status==='fulfilled'?inputs[1].value:null);
@@ -4045,6 +4076,36 @@ async function mountCotFirstReading(doc){
    rail.dataset.focusCount=String(result.crowdingFocus.length);
    rail.dataset.weeklyAsOf=result.priorAsOf;
    rail.dataset.weeklyCount=String(result.weeklyPositions.length);
+ }
+ // Separate dated FX context: show what spot reference DID, not whether
+ // positioning predicted it. The original COT price field stays WITHHELD.
+ const priceContext=result&&!result.mismatched.length&&inputs[2].status==='fulfilled'?
+   cotBcePriceContext(result.asof,inputs[2].value):null;
+ rail.dataset.bcePriceContext=priceContext?'DATED_ONLY':'UNAVAILABLE';
+ if(priceContext){
+   const box=doc.createElement('details');box.className='gmfq-cot-bce-price';
+   box.dataset.cftcAsOf=priceContext.cftc_day;
+   box.dataset.ecbAsOf=priceContext.fx_end_day;
+   box.dataset.priceConfirmation='NONE';
+   const sign=v=>(v>0?'+':'')+v.toFixed(2)+'%';
+   box.innerHTML='<summary>Prezzo BCE · '+priceContext.fx_start_day+' → '+
+     priceContext.fx_end_day+' · 8 valute (solo contesto)</summary>'+
+     '<ul style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));'+
+       'gap:4px 14px;list-style:none;padding:6px 0;margin:0">'+
+     priceContext.lines.map(x=>'<li data-bce-ccy="'+x.ccy+'" '+
+       'data-price-percent="'+x.pct.toFixed(5)+'">'+FLAG[x.ccy]+' '+
+       x.side+' · '+sign(x.pct)+'</li>').join('')+'</ul>'+
+     '<small style="display:block;font-size:11px;line-height:1.5;color:#a9bfcd">'+
+       'Fixing BCE giornaliero, NON prezzo eseguibile/intraday. Le posizioni CFTC '+
+       'sono riferite al martedì e pubblicate successivamente: il movimento '+
+       'del cambio dopo martedì NON dimostra conferma, causalità o rendimento '+
+       'delle posizioni. COT e FX non sono un segnale di trading.</small>';
+   // Keep native provenance as the sole DIRECT child details element;
+   // existing keyboard and accessibility checks must remain unambiguous.
+   const contextHost=doc.createElement('div');
+   contextHost.className='gmfq-cot-bce-host';
+   contextHost.appendChild(box);
+   rail.appendChild(contextHost);
  }
 }
 
