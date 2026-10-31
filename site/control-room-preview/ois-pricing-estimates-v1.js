@@ -291,7 +291,7 @@ function continuityHtml(result){
   '2Y stimato non disponibile: riferimento 10Y non più recente.')+
   ' Nessuna curva ufficiale 2Y/10Y sincronizzata.</p></div>':'';
  const kiwi=nzd?
-  '<div data-continuity-ccy="NZD" data-model="TWO_UNAPPROVED_WEB_READS" data-official-curve="false">'+
+  '<div data-continuity-ccy="NZD" data-model="'+(nzd.independent_xlsx_crosscheck===false?'OFFICIAL_HTML_UNAPPROVED':'TWO_UNAPPROVED_WEB_READS')+'" data-official-curve="false">'+
   '<b>🇳🇿 NZD · B2 in revisione '+esc(nzd.unapproved_pair_date)+'</b>'+
   '<p>2Y <strong>'+field(nzd.reviewed_2y)+'</strong> · 10Y <strong>'+field(nzd.reviewed_10y)+
   '</strong>. '+(nzd.independent_xlsx_crosscheck===false?'Ultima tabella ufficiale HTML RBNZ, <strong>non ancora riconciliata con XLSX</strong>':'Due letture web concordanti, ma <strong>non ancora approvate</strong>')+' per sostituire la coppia ufficiale del '+
