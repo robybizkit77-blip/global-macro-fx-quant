@@ -82,6 +82,62 @@ function calibratedNzdCarry(){
   direct_nzbo_ois_quote:false,statistical_confidence_interval:false,
   forward_ois_curve:false,policy_delta_allowed:false,core_effect:'NONE'};
 }
+/* Independent ASX verification for NZD *bank bill* futures. Never OIS. */
+function auditNzdBankBill(bb,today){
+ if(!bb||bb.schema!=='GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1'||
+  bb.currency!=='NZD'||bb.status!=='LIVE_DIRECTIONAL_PROXY_READY'||
+  bb.source_quality!=='OFFICIAL_EXCHANGE_DIRECTIONAL_PROXY'||
+  bb.source!=='ASX official NZ futures end-of-day total traded report'||
+  bb.instrument!=='ASX New Zealand 90 Day Bank Accepted Bill Futures (BB)'||
+  !fresh(bb.as_of,today))return null;
+ const d=new Date(bb.as_of+'T00:00:00Z');
+ if(!Number.isFinite(+d)||d.getUTCDay()===0||d.getUTCDay()===6)return null;
+ const stamp=bb.as_of.slice(2,4)+bb.as_of.slice(5,7)+bb.as_of.slice(8,10);
+ if(bb.source_url!=='https://www.asx.com.au/data/futures/reports/EODWebMarketSummary'+stamp+'ZFT.htm')return null;
+ const g=bb.governance||{};
+ if(g.informational_only!==true||g.substitutes_for_ois_level!==false||
+    g.policy_delta_from_proxy_allowed!==false||
+    g.backtest_eligible_as_official_ois!==false||
+    ['core_score_effect','bias_effect','sizing_effect','pair_engine_effect']
+     .some(k=>g[k]!=='NONE'))return null;
+ if(!bb.horizons||Object.keys(bb.horizons).sort().join(',')!=='12m,3m,6m')return null;
+ const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+ const expire=label=>{
+  const m=/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (20\d\d)$/.exec(label||'');
+  if(!m)return null;
+  const x=new Date(Date.UTC(+m[2],months.indexOf(m[1]),10));
+  while(x.getUTCDay()!==3)x.setUTCDate(x.getUTCDate()+1);
+  return x.toISOString().slice(0,10);
+ };
+ const durations={'3m':90,'6m':180,'12m':365},seen=new Set(),weeks=new Set(),verified={};
+ for(const t of tenors){
+  const p=bb.horizons[t]||{},end=expire(p.expiry_label),rate=number(p.implied_bank_bill_rate),
+    price=number(p.settlement_price),change=number(p.settlement_change),daily=number(p.change_1d_bp);
+  if(!end||p.expiration!==end||seen.has(end)||end<=bb.as_of||
+     Math.abs((Date.parse(end+'T00:00:00Z')- +d)/86400000-durations[t])>65||
+     p.mapping!=='nearest listed expiry to trade_date+'+durations[t]+'d; no interpolation'||
+     rate===null||rate< -5||rate>25||price===null||price<=80||price>=105||
+     Math.abs((100-price)-rate)>0.0002||
+     (change===null)!==(daily===null)||
+     (change!==null&&Math.abs(Math.round(-change*1000)/10-daily)>0.051))return null;
+  const week=number(p.change_1w_bp),prior=p.weekly_reference_trade_date;
+  if(week===null&&prior!=null)return null;
+  if(week!==null){
+   if(!/^\d{4}-\d\d-\d\d$/.test(prior||''))return null;
+   const lapse=(+d-Date.parse(prior+'T00:00:00Z'))/86400000;
+   if(!Number.isInteger(lapse)||lapse<4||lapse>12)return null;
+   weeks.add(prior);
+  }
+  seen.add(end);verified[t]=rate;
+ }
+ if(weeks.size>1)return null;
+ if(weeks.size){
+  const ref=[...weeks][0],stamp=ref.slice(2,4)+ref.slice(5,7)+ref.slice(8,10);
+  if(bb.weekly_reference_source_url!==
+    'https://www.asx.com.au/data/futures/reports/EODWebMarketSummary'+stamp+'ZFT.htm')return null;
+ }
+ return verified;
+}
 /* Read-only futures provenance: checked dated ticker, verified trading day,
    price 100 minus rate, proximity of expiry to labelled 90/180/365d targets.
    This cannot construct a forward OIS cash curve, basis or 1D/1W repricing. */
@@ -185,10 +241,10 @@ function matrix(ois,bb,today){
     bb.currency==='NZD'&&bb.status==='LIVE_DIRECTIONAL_PROXY_READY'&&
     bb.governance?.substitutes_for_ois_level===false&&
     bb.governance?.policy_delta_from_proxy_allowed===false&&fresh(bb.as_of,today)){
-    const calibration=calibratedNzdCarry();
-    if(calibration&&bb.governance?.backtest_eligible_as_official_ois===false){
+    const calibration=calibratedNzdCarry(),verifiedBB=auditNzdBankBill(bb,today);
+    if(calibration&&verifiedBB&&bb.governance?.backtest_eligible_as_official_ois===false){
      for(const t of tenors){
-      const p=bb.horizons?.[t]||{},raw=number(p.implied_bank_bill_rate);
+      const p=bb.horizons?.[t]||{},raw=number(verifiedBB[t]);
       if(raw!==null&&raw>=-5&&raw<=25&&
          /^\d{4}-\d{2}-\d{2}$/.test(p.expiration||'')&&
          typeof p.mapping==='string'&&p.mapping.includes('nearest listed expiry')){
@@ -202,7 +258,8 @@ function matrix(ois,bb,today){
      if(Object.keys(points).length){
       tier='SCENARIO';source=(bb.source||'')+
         ' · '+calibration.source+' ('+calibration.observations+
-        ' mesi; sconto empirico '+calibration.basis_bp+' bp)';
+        ' mesi; sconto empirico '+calibration.basis_bp+' bp; '+
+         'stress Q3 ex-post 38 bp (14 bp meno sul livello), NON validato OOS)';
      }
     }
   }
@@ -453,7 +510,7 @@ const css=[
  '@media(max-width:600px){#gmfq-ois-research-estimates .gmfq-same-line{grid-template-columns:minmax(55px,.7fr) repeat(3,minmax(0,1fr))}#gmfq-ois-research-estimates .gmfq-same-line>*{padding:6px 3px}#gmfq-ois-research-estimates .gmfq-same-value b{font-size:11px}#gmfq-ois-research-estimates .gmfq-same-value small{font-size:8px}}',
  '@media(max-width:600px){#gmfq-ois-research-estimates .gmfq-est-body{padding:9px}#gmfq-ois-research-estimates .gmfq-est-row{grid-template-columns:minmax(78px,1.1fr) repeat(3,minmax(0,1fr))}#gmfq-ois-research-estimates .gmfq-est-row>div,#gmfq-ois-research-estimates .gmfq-est-row>span{padding:6px 4px}#gmfq-ois-research-estimates .gmfq-est-row b{font-size:12px}#gmfq-ois-research-estimates .gmfq-est-row small{font-size:9px}}'
 ].join('');
-if(typeof module!=='undefined'&&module.exports)module.exports={romeTodayIso,matrix,view,matchedResearchMoves,fresh,coverage,indicativeSixMonth,scenarioSixMonth,auditDatedFuture,calibratedNzdCarry,NZD_REFERENCE_ROWS,NZD_RECENT_ROWS,NZD_HOLDOUT_ROWS};
+if(typeof module!=='undefined'&&module.exports)module.exports={romeTodayIso,matrix,view,matchedResearchMoves,fresh,coverage,indicativeSixMonth,scenarioSixMonth,auditNzdBankBill,auditDatedFuture,calibratedNzdCarry,NZD_REFERENCE_ROWS,NZD_RECENT_ROWS,NZD_HOLDOUT_ROWS};
 if(typeof window!=='undefined')window.GMFQ_OIS_RESEARCH_V1=Object.freeze({romeTodayIso,matrix,coverage,indicativeSixMonth,scenarioSixMonth});
 if(typeof document==='undefined')return;
 const frame=document.getElementById('gmfq-page');if(!frame)return;
