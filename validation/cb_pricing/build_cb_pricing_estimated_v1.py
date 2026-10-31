@@ -109,6 +109,29 @@ def build_currency(ccy, cb_row, ois_row, live_row=None, directional_proxy=None):
         method_id = NATIVE_METHOD_ID
         horizon_meta = {h: {} for h in ("3m", "6m", "12m")}
 
+    # A same-contract/same-day secondary conflict is not an alternate
+    # certified settlement. Never revive native CB fallback or score any
+    # horizon from the unresolved currency while evidence is quarantined.
+    if ccy in ("USD", "EUR", "CHF") and (
+            (live_row or {}).get("source_conflict_status") ==
+            "UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT"):
+        lr = live_row or {}
+        vals = {h: None for h in ("3m", "6m", "12m")}
+        as_of = lr.get("as_of")
+        instrument = lr.get("instrument")
+        source = lr.get("source")
+        source_url = lr.get("source_url")
+        source_quality = "SECONDARY_QUOTE_CONFLICT_QUARANTINED"
+        freshness_status = "SOURCE_CONFLICT_NOT_CERTIFIED"
+        confidence = "C"
+        input_mode = "QUARANTINED_SECONDARY_NO_FALLBACK"
+        method_id = LIVE_METHOD_ID
+        horizon_meta = {h: {} for h in ("3m", "6m", "12m")}
+        note = ("Unresolved secondary futures same-day contract conflict: "
+                "the first source quote is immutable; a later differing "
+                "quote is quarantined. No official OIS, policy expectation "
+                "or cross-session repricing is certified.")
+
     # The EUR native CB quote is a historical secondary snapshot, not a live
     # market path. Never revive it as an active 3-horizon estimate if the
     # independently dated live overlay cannot be used. A source date must be
