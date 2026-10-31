@@ -230,7 +230,6 @@ def build():
                 'market_direction_proxy': e.get('market_direction_proxy'),
                 'change_1d_available': repricing['change_1d_available'],
                 'change_1w_available': repricing['change_1w_available'],
-                'conflicted_source_eligible_for_repricing': False if conflict else None,
                 'repricing_reference': {
                     'method_id': method_id(e),
                     'previous_observation_captured_at_utc': repricing['previous_reference'],
