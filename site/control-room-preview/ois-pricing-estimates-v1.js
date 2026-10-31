@@ -190,7 +190,7 @@ function ratesContinuity(rates,chf,nzd,today){
     slope_window_observations:60,
     calibration_end:c.date,
     source_quality:'10Y_OFFICIAL__2Y_HISTORICAL_SLOPE_SCENARIO',
-    2Y_not_observed_same_day:true,official_2y10y_spread_available:false,
+    two_year_not_observed_same_day:true,official_2y10y_spread_available:false,
     percentile_band_is_forecast_interval:false,
     rates_feed_written:false};
   }
