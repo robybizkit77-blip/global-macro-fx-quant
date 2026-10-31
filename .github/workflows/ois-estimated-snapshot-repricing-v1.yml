@@ -10,6 +10,7 @@ on:
       - 'validation/cb_pricing/ois_estimated_snapshot_v1.py'
       - 'validation/cb_pricing/test_ois_estimated_snapshot_v1.py'
       - 'validation/cb_pricing/ois_same_contract_history_v1.py'
+      - 'validation/cb_pricing/ois_estimated_snapshot_v1.py'
       - 'validation/cb_pricing/reconcile_ois_secondary_conflicts_v1.py'
       - 'validation/cb_pricing/test_reconcile_ois_secondary_conflicts_v1.py'
       - 'validation/cb_pricing/history/OIS_SAME_CONTRACT_CONFLICTS_V1.jsonl'
@@ -40,6 +41,7 @@ on:
       - 'validation/cb_pricing/ois_estimated_snapshot_v1.py'
       - 'validation/cb_pricing/test_ois_estimated_snapshot_v1.py'
       - 'validation/cb_pricing/ois_same_contract_history_v1.py'
+      - 'validation/cb_pricing/ois_estimated_snapshot_v1.py'
       - 'validation/cb_pricing/reconcile_ois_secondary_conflicts_v1.py'
       - 'validation/cb_pricing/test_reconcile_ois_secondary_conflicts_v1.py'
       - 'validation/cb_pricing/history/OIS_SAME_CONTRACT_CONFLICTS_V1.jsonl'
@@ -171,7 +173,14 @@ jobs:
                   assert all(r['horizons'][h]['rate'] is None for h in ('3m','6m','12m')), r
                   continue
               assert r['operational_status']=='GREEN_ESTIMATED', r
-              assert r['input_mode']=='LIVE_SECONDARY_OVERLAY', r
+              assert r['input_mode'] in ('LIVE_SECONDARY_OVERLAY',
+                                         'LIVE_SECONDARY_CONFLICT_INDICATIVE'), r
+              if r['input_mode']=='LIVE_SECONDARY_CONFLICT_INDICATIVE':
+                  assert r['source_conflict_status']=='UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT'
+                  assert r['conflicted_source_eligible_for_repricing'] is False
+                  assert r['change_1d_available'] is False and r['change_1w_available'] is False
+                  assert all(x['policy_delta_bp'] is None and x['change_1d_bp'] is None
+                             and x['change_1w_bp'] is None for x in r['horizons'].values())
               assert r['method_id']=='TRADINGVIEW_DATED_FUTURES_SSR_V2', r
               assert r['backtest_eligible_as_official'] is False
               assert r['repricing_reference']['homogeneous_method_required'] is True
