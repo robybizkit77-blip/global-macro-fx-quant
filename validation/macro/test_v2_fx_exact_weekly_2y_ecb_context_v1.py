@@ -62,8 +62,9 @@ class WeeklyReferenceTest(unittest.TestCase):
         r, fx, s, d = copy.deepcopy(self.inputs)
         for i,day in enumerate(r["USD"]["history2"]["dates"]):
             if day == "2026-10-22":
-                r["USD"]["history2"]["dates"].pop(i)
-                r["USD"]["history2"]["values"].pop(i)
+                # Synthetic source-clock disruption: preserve 3-point history,
+                # remove the exact ECB/common-day identity without imputation.
+                r["USD"]["history2"]["dates"][i] = "2026-10-21"
                 break
         out = self.report([r, fx, s, d])
         self.assertNotIn("USD", out["eligible_currency_codes"])
