@@ -13,6 +13,8 @@ on:
       - 'validation/cb_pricing/ois_estimated_snapshot_v1.py'
       - 'validation/cb_pricing/reconcile_ois_secondary_conflicts_v1.py'
       - 'validation/cb_pricing/test_reconcile_ois_secondary_conflicts_v1.py'
+      - 'validation/cb_pricing/ois_uncontested_contract_moves_v1.py'
+      - 'validation/cb_pricing/test_ois_uncontested_contract_moves_v1.py'
       - 'validation/cb_pricing/history/OIS_SAME_CONTRACT_CONFLICTS_V1.jsonl'
       - 'validation/cb_pricing/test_ois_same_contract_history_v1.py'
       - 'validation/cb_pricing/test_ois_operational_view_v1.py'
@@ -44,6 +46,8 @@ on:
       - 'validation/cb_pricing/ois_estimated_snapshot_v1.py'
       - 'validation/cb_pricing/reconcile_ois_secondary_conflicts_v1.py'
       - 'validation/cb_pricing/test_reconcile_ois_secondary_conflicts_v1.py'
+      - 'validation/cb_pricing/ois_uncontested_contract_moves_v1.py'
+      - 'validation/cb_pricing/test_ois_uncontested_contract_moves_v1.py'
       - 'validation/cb_pricing/history/OIS_SAME_CONTRACT_CONFLICTS_V1.jsonl'
       - 'validation/cb_pricing/test_ois_same_contract_history_v1.py'
       - 'validation/cb_pricing/test_ois_operational_view_v1.py'
@@ -113,6 +117,7 @@ jobs:
         run: |
           set -euo pipefail
           python validation/cb_pricing/test_reconcile_ois_secondary_conflicts_v1.py
+          python validation/cb_pricing/test_ois_uncontested_contract_moves_v1.py
           python validation/cb_pricing/reconcile_ois_secondary_conflicts_v1.py --write
 
       - name: Rebuild estimated input and pre-snapshot operational view
@@ -128,6 +133,32 @@ jobs:
       - name: Append same-contract bar observations (existing schedule, no new job)
         if: github.event_name != 'pull_request'
         run: python validation/cb_pricing/ois_same_contract_history_v1.py --write
+
+      - name: Audit independently verified clean contracts despite other conflicted tenors
+        run: |
+          python validation/cb_pricing/ois_uncontested_contract_moves_v1.py \
+            --output /tmp/ois-uncontested-tenor-moves-v1.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('/tmp/ois-uncontested-tenor-moves-v1.json').read_text())
+          assert r['status']=='PASS_RESEARCH_DIAGNOSTIC_NOT_OIS_OR_POLICY_REPRICING'
+          assert r['summary']['total_horizons']==9
+          assert r['summary']['official_ois_promotions']==0
+          assert r['summary']['policy_deltas_computed']==0
+          assert r['summary']['fx_signals_computed']==0
+          assert not r['writes_live_data'] and not r['writes_history']
+          print('OIS_UNCONTESTED_PER_TENOR_RESEARCH_EVIDENCE_PASS',r['summary'])
+          PY
+
+      - name: Retain OIS research-only per-contract source-quality receipt
+        if: always() && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ois-uncontested-tenor-evidence
+          path: /tmp/ois-uncontested-tenor-moves-v1.json
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Record changed estimated snapshots
         if: github.event_name != 'pull_request'
