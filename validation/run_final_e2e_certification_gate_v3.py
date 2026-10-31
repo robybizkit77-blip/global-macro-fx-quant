@@ -35,6 +35,69 @@ def run(cmd: list[str]):
     return proc.stdout
 
 
+def certify_secondary_source_state(ccy: str, row: dict) -> str:
+    """Validates graded secondary evidence without inventing clean OIS curves."""
+    if ccy not in ("USD", "EUR", "CHF"):
+        raise ValueError("unsupported secondary currency")
+    if row.get("status") != "ESTIMATED_ACTIVE":
+        raise ValueError(f"{ccy} estimated live layer not active")
+    if row.get("method_id") != "TRADINGVIEW_DATED_FUTURES_SSR_V2":
+        raise ValueError(f"{ccy} estimated method drift")
+    if row.get("governance", {}).get("backtest_eligible_as_official_ois") is not False:
+        raise ValueError(f"{ccy} secondary futures promoted to official backtest input")
+    if row.get("governance", {}).get("core_score_effect") != "NONE" or (
+        row.get("governance", {}).get("pair_engine_effect") != "NONE"):
+        raise ValueError(f"{ccy} secondary sources silently entered Macro/Pair")
+    mode = row.get("input_mode")
+    if mode not in ("LIVE_SECONDARY_OVERLAY", "LIVE_SECONDARY_CONFLICT_INDICATIVE"):
+        raise ValueError(f"{ccy} estimated input mode drift")
+    disputed = mode == "LIVE_SECONDARY_CONFLICT_INDICATIVE"
+    horizon_ids = set()
+    if disputed:
+        if (row.get("source_conflict_status") !=
+                "UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT"
+            or row.get("source_quality") != "SECONDARY_CONFLICTED_INDICATIVE_NOT_OIS"
+            or row.get("direction_vs_policy") != "WITHHELD"
+            or row.get("change_status") != "CONFLICTED_SECONDARY_NO_REPRICING"
+            or row.get("change_1d_bp") is not None
+            or row.get("change_1w_bp") is not None):
+            raise ValueError(f"{ccy} conflicted source was promoted to repricing")
+        keys = row.get("source_conflict_keys")
+        if not isinstance(keys, list) or not keys or len(keys) > 3:
+            raise ValueError(f"{ccy} missing verified conflict identity")
+        import re
+        for key in keys:
+            h = key.get("horizon") if isinstance(key, dict) else None
+            point = (row.get("horizons") or {}).get(h) or {}
+            if (h not in ("3m", "6m", "12m") or h in horizon_ids
+                or not isinstance(key.get("event_id"), str)
+                or re.fullmatch(r"[0-9a-f]{64}", key["event_id"]) is None
+                or key.get("contract") != point.get("contract")
+                or key.get("observation_date") != point.get("quote_as_of")
+                or point.get("quote_timestamp_verified") is not False
+                or point.get("quote_timestamp_source") !=
+                    "QUARANTINED_SAME_CONTRACT_SAME_DAY"):
+                raise ValueError(f"{ccy}/{h} unverified quarantine source identity")
+            horizon_ids.add(h)
+    elif row.get("source_conflict_status") is not None or row.get("source_conflict_keys"):
+        raise ValueError(f"{ccy} clean source has hidden unresolved conflicts")
+    for horizon in ("3m", "6m", "12m"):
+        point = (row.get("horizons") or {}).get(horizon) or {}
+        if (type(point.get("rate")) not in (int, float)
+            or "!" in str(point.get("contract") or "")
+            or "!" in str(point.get("symbol") or "")):
+            raise ValueError(f"{ccy} estimated {horizon} lacks a dated numeric futures quote")
+        if disputed and point.get("policy_delta_bp") is not None:
+            raise ValueError(f"{ccy}/{horizon} conflicted currency inferred CB policy")
+        if disputed and horizon not in horizon_ids:
+            if (point.get("quote_timestamp_verified") is not True or
+                point.get("quote_timestamp_source") !=
+                    "SSR_DAILY_BAR_DATA_UPDATE_TIME"):
+                raise ValueError(f"{ccy}/{horizon} uncontested tenor unverified")
+    return ("SOURCE_CONFLICT_ANNOTATED_NO_REPRICING"
+            if disputed else "INDEPENDENTLY_TIMESTAMPED_SECONDARY_NOT_OIS")
+
+
 def main():
     v2 = run_json([sys.executable, "validation/run_final_e2e_certification_gate_v2.py"])
     if v2.get("status") != "PASS" or v2.get("v1_freeze_ready") is not True:
@@ -73,22 +136,13 @@ def main():
     # Current operational estimated architecture: USD/EUR/CHF use live secondary
     # dated listed futures only; NZD preserves the native RBNZ OIS anchor and adds
     # an explicitly non-OIS ASX directional market-rates proxy.
+    secondary_grades = {}
     for ccy in ("USD", "EUR", "CHF"):
-        row = cb_after_obj["currencies"][ccy]
-        if row.get("status") != "ESTIMATED_ACTIVE":
-            raise SystemExit(f"{ccy} estimated live layer not active")
-        if row.get("input_mode") != "LIVE_SECONDARY_OVERLAY":
-            raise SystemExit(f"{ccy} estimated input mode drift")
-        if row.get("method_id") != "TRADINGVIEW_DATED_FUTURES_SSR_V2":
-            raise SystemExit(f"{ccy} estimated method drift")
-        if row.get("governance", {}).get("backtest_eligible_as_official_ois") is not False:
-            raise SystemExit(f"{ccy} estimated layer was silently promoted to official backtest input")
-        for horizon in ("3m", "6m", "12m"):
-            point = (row.get("horizons") or {}).get(horizon) or {}
-            if not isinstance(point.get("rate"), (int, float)):
-                raise SystemExit(f"{ccy} estimated {horizon} missing numeric rate")
-            if "!" in str(point.get("contract") or "") or "!" in str(point.get("symbol") or ""):
-                raise SystemExit(f"{ccy} estimated {horizon} uses forbidden continuous future")
+        try:
+            secondary_grades[ccy] = certify_secondary_source_state(
+                ccy, cb_after_obj["currencies"][ccy])
+        except ValueError as exc:
+            raise SystemExit(str(exc)) from exc
 
     nzd = cb_after_obj["currencies"]["NZD"]
     if nzd.get("status") != "ESTIMATED_PARTIAL" or nzd.get("input_mode") != "NATIVE_CB_FALLBACK":
@@ -235,9 +289,15 @@ def main():
                 "native_ois_anchor_currencies": ["NZD"],
                 "directional_market_proxy_currencies": ["NZD"],
                 "deterministic_snapshot_aligned": True,
-                "operational_coverage": "GREEN_8_OF_8",
-                "official_green": 4,
-                "estimated_green": 4,
+                "operational_coverage": operational_ois["status"],
+                "official_green": counts["green_official"],
+                "estimated_green": counts["green_estimated"],
+                "operational_withheld": counts["operational_withheld"],
+                "secondary_source_grades": secondary_grades,
+                "unresolved_secondary_source_conflicts": [
+                    ccy for ccy, grade in secondary_grades.items()
+                    if grade == "SOURCE_CONFLICT_ANNOTATED_NO_REPRICING"
+                ],
                 "core_effect": "NONE",
             },
             "residual_gaps": {
