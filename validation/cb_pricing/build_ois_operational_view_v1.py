@@ -241,6 +241,14 @@ def build():
                 },
                 'backtest_eligible_as_official': False
             }
+            if conflict:
+                out['currencies'][ccy].update({
+                    'source_conflict_status': e.get('source_conflict_status'),
+                    'source_conflict_keys': e.get('source_conflict_keys'),
+                    'source_quality': e.get('source_quality'),
+                    'note': e.get('note'),
+                    'conflicted_source_eligible_for_repricing': False,
+                })
     # Read optional secondary source only for provenance of individual non-OIS quotes.
     try:
         live_quotes = json.loads(LIVE_QUOTES.read_text(encoding='utf-8'))
