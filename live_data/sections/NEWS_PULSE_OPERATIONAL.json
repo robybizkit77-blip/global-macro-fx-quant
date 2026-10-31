@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-10-30",
-  "generated_at_utc": "2026-10-30T21:37:56.076123Z",
+  "generated_at_utc": "2026-10-31T02:47:42.823099Z",
   "items": [
     {
       "as_of": "2026-10-30",
@@ -47,7 +47,7 @@
       "title": "AUD: repricing implicito da futures più dovish (-3.0 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-10-30T21:37:56.076123Z",
+  "last_checked_at_utc": "2026-10-31T02:47:42.823099Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -907,7 +907,7 @@
         "url": "https://www.rbnz.govt.nz/news-and-events/news/2026/10/ocr-held-at-2-75-percent"
       }
     ],
-    "last_attempt_day_rome": "2026-10-30",
+    "last_attempt_day_rome": "2026-10-31",
     "latest_published_at_utc": "2026-10-30T16:10:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
