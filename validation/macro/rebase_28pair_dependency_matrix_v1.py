@@ -68,8 +68,17 @@ def build(gate, score, model, setup, rates, ois):
             and score.get("pairs_in_source_snapshot") == 28,
             "historical numeric score provenance certification drift")
     require(model.get("asOf") == setup.get("macro_baseline_asof")
-            == gate.get("macro_baseline_as_of") == score.get("model_as_of"),
-            "canonical Macro model vs pair setup baseline drift")
+            == gate.get("macro_baseline_as_of") == score.get("model_as_of")
+            and gate.get("as_of") == score.get("audit_as_of"),
+            "canonical Macro/price/model audit dates drift")
+    frozen = {ccy: {p: (model.get("macro") or {}).get(ccy, {}).get(p)
+                    for p in ("growth", "labour", "inflation", "cycle")}
+              for ccy in CCYS}
+    actual_sha = hashlib.sha256(json.dumps(
+        frozen, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")).hexdigest()
+    require(actual_sha == score.get("historical_scores_sha256"),
+            "one of 24 frozen scores or eight cycles changed without independent proof")
     require(set(model.get("macro") or {}) == set(CCYS)
             and set(gate.get("currency_gates") or {}) == set(CCYS)
             and set(rates) == set(CCYS)
