@@ -22,6 +22,9 @@ from validation.forward.v2_quality_market_context_v1 import (
     build as market_build, validate as market_validate,
 )
 from validation.macro.v2_g8_observed_feature_bridge_v1 import run as economic_run
+from validation.macro.v2_us_shutdown_2025_calendar_gap_v1 import (
+    audit as us_shutdown_audit, SCHEMA as US_SHUTDOWN_SCHEMA,
+)
 from validation.macro.v2_zero_mad_ordinal_quality_v1 import (
     build as ordinal_build, SOURCE as SERIES, REGISTRY,
     POLICY_ID, NOT_BEFORE_ROME,
@@ -36,7 +39,7 @@ def require(ok, msg):
         raise ValueError("QUALITY_AWARE_PREFLIGHT_REJECTED: " + msg)
 
 
-def inspect(*, now, observed, ordinal, market, fx, pairs):
+def inspect(*, now, observed, ordinal, market, fx, pairs, us_shutdown):
     """Verify own-source contracts; never gate a real freeze or write T0."""
     require(isinstance(now, datetime) and now.tzinfo is not None
             and now.utcoffset() is not None, "timezone-aware real instant")
@@ -85,6 +88,24 @@ def inspect(*, now, observed, ordinal, market, fx, pairs):
                 and desc.get("eligible_for_domestic_activity_weighting") is False
                 and desc.get("eligible_for_forward_features") is False,
                 k + " invalid z-score substitution")
+    require(us_shutdown.get("schema") == US_SHUTDOWN_SCHEMA and
+            us_shutdown.get("checked_as_of") == day and
+            us_shutdown.get("no_release_imputation") is True and
+            us_shutdown.get("no_historical_PIT_certification") is True and
+            us_shutdown.get("safe_to_publish_D") is False and
+            us_shutdown.get("writes_live_data") is False and
+            set(us_shutdown.get("slots", {})) ==
+              {"USD.inflation", "USD.labour"},
+            "US missing BLS reference months not reconciled")
+    for key in ("USD.inflation", "USD.labour"):
+        detail = us_shutdown["slots"][key]
+        require(detail.get("oct_2025_observation_exists") is False and
+                detail.get("never_published_reference_period") == "2025-10" and
+                detail.get("prior_24_missing_periods") ==
+                    dimensions[key].get("missing_prior_periods") and
+                detail.get("strict_current_research_z_is_null") is
+                    (dimensions[key].get("research_robust_z") is None),
+                key + " US calendar history/feature nonrelease contract")
     records = source_map(fx)
     latest = fx.get("last_as_of")
     same_day = any(d.isoformat() == day for d in records)
@@ -108,7 +129,13 @@ def inspect(*, now, observed, ordinal, market, fx, pairs):
         "market_context_pairs": 28,
         "current_strict_z_missing_slots": bad,
         "ordinal_context_only_slots": ordinal_keys,
-        "current_USD_inflation_missing_Oct2025_source_PIT_not_repaired": True,
+        "current_USD_inflation_missing_Oct2025_source_PIT_not_repaired": (
+            us_shutdown["slots"]["USD.inflation"]["oct_2025_observation_exists"] is False
+        ),
+        "current_USD_labour_missing_Oct2025_CPS_PIT_not_repaired": (
+            us_shutdown["slots"]["USD.labour"]["oct_2025_observation_exists"] is False
+        ),
+        "US_oct2025_unpublished_source_calendar_gap": us_shutdown["summary"],
         "current_CHF_labour_first_SNB_precision_PIT_not_repaired": True,
         "current_EUR_labour_zero_MAD_never_filled_with_fake_z": (
             "EUR.labour" not in ordinal_keys or "EUR.labour" in bad
@@ -131,18 +158,20 @@ def run(*, now=None):
     day = now.astimezone(ZoneInfo("Europe/Rome")).date().isoformat()
     load = lambda key: json.loads((ROOT / SOURCE_PATHS[key]).read_text(encoding="utf-8"))
     observed = economic_run(as_of=day)
+    economic_series=json.loads(SERIES.read_text(encoding="utf-8"))
+    economic_registry=json.loads(REGISTRY.read_text(encoding="utf-8"))
     ordinal = ordinal_build(
-        observed,
-        json.loads(SERIES.read_text(encoding="utf-8")),
-        json.loads(REGISTRY.read_text(encoding="utf-8")),
+        observed,economic_series,economic_registry,
         today=date.fromisoformat(day),
     )
+    shutdown = us_shutdown_audit(
+        economic_series,economic_registry,observed,checked_as_of=day)
     pairs = load("pair_setup")
     market = market_build(day, load("rates"), load("ois"), load("banks"),
                           load("nzd_proxy"), pairs)
     market_validate(market)
     return inspect(now=now, observed=observed, ordinal=ordinal,
-                   market=market, fx=load("ecb"), pairs=pairs)
+                   market=market, fx=load("ecb"), pairs=pairs, us_shutdown=shutdown)
 
 
 def main():
@@ -158,6 +187,7 @@ def main():
                       "economic_research_dimensions": result["economic_research_dimensions"],
                       "strict_z_missing_slots": result["current_strict_z_missing_slots"],
                       "zero_MAD_context_only_slots": result["ordinal_context_only_slots"],
+                      "US_2025_10_source_gaps":result["US_oct2025_unpublished_source_calendar_gap"]["strict_24_calendar_missing_slots"],
                       "ecb_T0_today": result["official_same_day_ECB_T0_observed"],
                       "snapshot_written": False}, sort_keys=True))
 
