@@ -3,7 +3,7 @@
     "CHF": {
       "as_of": "2026-10-30",
       "confidence_grade": "B",
-      "freshness_status": "LIVE_OR_RECENT_SESSION",
+      "freshness_status": "SOURCE_CONFLICT_NOT_CERTIFIED",
       "horizons": {
         "12m": {
           "business_day_lag": 0,
@@ -24,13 +24,13 @@
           "contract": "SA3U2026",
           "contract_description": "Sep 2026",
           "expiration": "2026-12-15",
-          "futures_price": 100.0475,
+          "futures_price": 100.05,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
-          "price_valid_until": "2026-10-30T08:01:34Z",
+          "price_valid_until": "2026-10-30T17:47:27Z",
           "quote_as_of": "2026-10-30",
-          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
-          "quote_timestamp_verified": true,
-          "rate": -0.0475,
+          "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
+          "quote_timestamp_verified": false,
+          "rate": -0.05,
           "symbol": "ICEEUR:SA3U2026"
         },
         "6m": {
@@ -49,40 +49,49 @@
         }
       },
       "instrument": "Three Month SARON",
-      "note": "Indicative dated-futures quote levels only. TradingView Offer.priceValidUntil is not the quote observation timestamp; no freshness, synchronized curve, policy delta or repricing is certified. Never substitute this for OIS.",
+      "note": "Indicative dated-futures quote levels only. TradingView Offer.priceValidUntil is not the quote observation timestamp; no freshness, synchronized curve, policy delta or repricing is certified. Never substitute this for OIS. Same listed contract and quote day had conflicting source values; first observed version retained, later version quarantined. No policy-level, OIS or daily repricing inference.",
       "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+      "source_conflict_keys": [
+        {
+          "contract": "SA3U2026",
+          "event_id": "2a38e4fe90102a5d0109986fd530e0e3fb94098df496ba8e9d6a0ac53a0bb1cd",
+          "horizon": "3m",
+          "observation_date": "2026-10-30"
+        }
+      ],
+      "source_conflict_status": "UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT",
       "source_quality": "SECONDARY_PUBLIC_LIVE_PROXY",
       "source_url": "https://www.tradingview.com/symbols/ICEEUR-SA31%21/contracts/",
-      "status": "LIVE_SECONDARY_READY"
+      "status": "LIVE_SECONDARY_CONFLICT_QUARANTINED"
     },
     "EUR": {
-      "as_of": "2026-10-29",
+      "as_of": "2026-10-30",
       "confidence_grade": "B",
-      "freshness_status": "LIVE_OR_RECENT_SESSION",
+      "freshness_status": "SOURCE_CONFLICT_NOT_CERTIFIED",
       "horizons": {
         "12m": {
           "business_day_lag": 0,
           "contract": "FST3U2027",
           "contract_description": "Sep 2027",
           "expiration": "2027-12-15",
-          "futures_price": 96.885,
+          "futures_price": 96.8875,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
-          "price_valid_until": "2026-10-30T15:14:57Z",
+          "price_valid_until": "2026-10-30T22:05:42Z",
           "quote_as_of": "2026-10-30",
-          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
-          "quote_timestamp_verified": true,
-          "rate": 3.115,
+          "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
+          "quote_timestamp_verified": false,
+          "rate": 3.1125,
           "symbol": "EUREX:FST3U2027"
         },
         "3m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "FST3V2026",
           "contract_description": "Oct 2026",
           "expiration": "2027-01-20",
           "futures_price": 97.4875,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
-          "price_valid_until": "2026-10-29T22:06:36Z",
-          "quote_as_of": "2026-10-29",
+          "price_valid_until": "2026-10-30T22:05:37Z",
+          "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": 2.5125,
@@ -104,29 +113,38 @@
         }
       },
       "instrument": "Three-Month Euro STR Futures",
-      "note": "Indicative dated-futures quote levels only. TradingView Offer.priceValidUntil is not the quote observation timestamp; no freshness, synchronized curve, policy delta or repricing is certified. Never substitute this for OIS.",
+      "note": "Indicative dated-futures quote levels only. TradingView Offer.priceValidUntil is not the quote observation timestamp; no freshness, synchronized curve, policy delta or repricing is certified. Never substitute this for OIS. Same listed contract and quote day had conflicting source values; first observed version retained, later version quarantined. No policy-level, OIS or daily repricing inference.",
       "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+      "source_conflict_keys": [
+        {
+          "contract": "FST3U2027",
+          "event_id": "1d7b56dd052a004b558f0d769068af782de7c59a99efd469576a5a0ff01cdda1",
+          "horizon": "12m",
+          "observation_date": "2026-10-30"
+        }
+      ],
+      "source_conflict_status": "UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT",
       "source_quality": "SECONDARY_PUBLIC_LIVE_PROXY",
       "source_url": "https://www.tradingview.com/symbols/EUREX-FST31%21/contracts/",
-      "status": "LIVE_SECONDARY_READY"
+      "status": "LIVE_SECONDARY_CONFLICT_QUARANTINED"
     },
     "USD": {
       "as_of": "2026-10-30",
       "confidence_grade": "B",
-      "freshness_status": "LIVE_OR_RECENT_SESSION",
+      "freshness_status": "SOURCE_CONFLICT_NOT_CERTIFIED",
       "horizons": {
         "12m": {
           "business_day_lag": 0,
           "contract": "ZQV2027",
           "contract_description": "Oct 2027",
           "expiration": "2027-11-01",
-          "futures_price": 95.57,
+          "futures_price": 95.54,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
-          "price_valid_until": "2026-10-30T18:33:43Z",
+          "price_valid_until": "2026-10-30T21:19:09Z",
           "quote_as_of": "2026-10-30",
-          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
-          "quote_timestamp_verified": true,
-          "rate": 4.43,
+          "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
+          "quote_timestamp_verified": false,
+          "rate": 4.46,
           "symbol": "CBOT:ZQV2027"
         },
         "3m": {
@@ -134,13 +152,13 @@
           "contract": "ZQZ2026",
           "contract_description": "Dec 2026",
           "expiration": "2027-01-04",
-          "futures_price": 95.985,
+          "futures_price": 95.99,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
-          "price_valid_until": "2026-10-30T09:24:56Z",
+          "price_valid_until": "2026-10-30T21:19:05Z",
           "quote_as_of": "2026-10-30",
-          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
-          "quote_timestamp_verified": true,
-          "rate": 4.015,
+          "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
+          "quote_timestamp_verified": false,
+          "rate": 4.01,
           "symbol": "CBOT:ZQZ2026"
         },
         "6m": {
@@ -148,25 +166,46 @@
           "contract": "ZQJ2027",
           "contract_description": "Apr 2027",
           "expiration": "2027-05-03",
-          "futures_price": 95.75,
+          "futures_price": 95.72,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
-          "price_valid_until": "2026-10-30T18:22:22Z",
+          "price_valid_until": "2026-10-30T21:19:03Z",
           "quote_as_of": "2026-10-30",
-          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
-          "quote_timestamp_verified": true,
-          "rate": 4.25,
+          "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
+          "quote_timestamp_verified": false,
+          "rate": 4.28,
           "symbol": "CBOT:ZQJ2027"
         }
       },
       "instrument": "30 Day Federal Funds Futures",
-      "note": "Indicative dated-futures quote levels only. TradingView Offer.priceValidUntil is not the quote observation timestamp; no freshness, synchronized curve, policy delta or repricing is certified. Never substitute this for OIS.",
+      "note": "Indicative dated-futures quote levels only. TradingView Offer.priceValidUntil is not the quote observation timestamp; no freshness, synchronized curve, policy delta or repricing is certified. Never substitute this for OIS. Same listed contract and quote day had conflicting source values; first observed version retained, later version quarantined. No policy-level, OIS or daily repricing inference.",
       "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+      "source_conflict_keys": [
+        {
+          "contract": "ZQZ2026",
+          "event_id": "74b24ede1c86ee888d4cd88ab178657f67a4b3775c269daa2b7f5e4b9fe680d0",
+          "horizon": "3m",
+          "observation_date": "2026-10-30"
+        },
+        {
+          "contract": "ZQJ2027",
+          "event_id": "01c90b25c3727f85758ec575558643bf253a6c7156853e9e1d3da0e80f451144",
+          "horizon": "6m",
+          "observation_date": "2026-10-30"
+        },
+        {
+          "contract": "ZQV2027",
+          "event_id": "09498a870e208e6e9151a4faf241369c796a751c3825a7122b5e5412d3c75404",
+          "horizon": "12m",
+          "observation_date": "2026-10-30"
+        }
+      ],
+      "source_conflict_status": "UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT",
       "source_quality": "SECONDARY_PUBLIC_LIVE_PROXY",
       "source_url": "https://www.tradingview.com/symbols/CBOT-ZQ1%21/contracts/",
-      "status": "LIVE_SECONDARY_READY"
+      "status": "LIVE_SECONDARY_CONFLICT_QUARANTINED"
     }
   },
-  "generated_at_utc": "2026-10-31T09:31:10.015188Z",
+  "generated_at_utc": "2026-10-31T21:00:09.773695Z",
   "governance": {
     "backtest_eligible_as_official_ois": false,
     "bias_effect": "NONE",
