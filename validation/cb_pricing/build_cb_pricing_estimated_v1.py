@@ -109,28 +109,37 @@ def build_currency(ccy, cb_row, ois_row, live_row=None, directional_proxy=None):
         method_id = NATIVE_METHOD_ID
         horizon_meta = {h: {} for h in ("3m", "6m", "12m")}
 
-    # A same-contract/same-day secondary conflict is not an alternate
-    # certified settlement. Never revive native CB fallback or score any
-    # horizon from the unresolved currency while evidence is quarantined.
-    if ccy in ("USD", "EUR", "CHF") and (
-            (live_row or {}).get("source_conflict_status") ==
-            "UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT"):
+    # Preserve *indicative* source levels, not a settlement or a tradable
+    # rate path. Both versions are retained in the separate quarantine.
+    # Do not substitute the old native CB fallback, infer policy deltas, or
+    # freeze the other currencies merely because one daily-bar disagrees.
+    conflicted = (ccy in ("USD", "EUR", "CHF") and
+                  (live_row or {}).get("source_conflict_status") ==
+                  "UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT")
+    if conflicted:
         lr = live_row or {}
-        vals = {h: None for h in ("3m", "6m", "12m")}
+        hs = lr.get("horizons") or {}
+        vals = {h: _num((hs.get(h) or {}).get("rate"))
+                for h in ("3m", "6m", "12m")}
+        # An incomplete source is unavailable, never silently native-fallback.
+        if any(v is None for v in vals.values()):
+            vals = {h: None for h in vals}
         as_of = lr.get("as_of")
         instrument = lr.get("instrument")
         source = lr.get("source")
         source_url = lr.get("source_url")
-        source_quality = "SECONDARY_QUOTE_CONFLICT_QUARANTINED"
-        freshness_status = "SOURCE_CONFLICT_NOT_CERTIFIED"
+        source_quality = "SECONDARY_CONFLICTED_INDICATIVE_NOT_OIS"
+        freshness_status = "SAME_DAY_SOURCE_CONFLICT_UNRESOLVED"
         confidence = "C"
-        input_mode = "QUARANTINED_SECONDARY_NO_FALLBACK"
+        input_mode = "LIVE_SECONDARY_CONFLICT_INDICATIVE"
         method_id = LIVE_METHOD_ID
-        horizon_meta = {h: {} for h in ("3m", "6m", "12m")}
-        note = ("Unresolved secondary futures same-day contract conflict: "
-                "the first source quote is immutable; a later differing "
-                "quote is quarantined. No official OIS, policy expectation "
-                "or cross-session repricing is certified.")
+        horizon_meta = {h: {k: v for k, v in (hs.get(h) or {}).items()
+                            if k != "rate"} for h in ("3m", "6m", "12m")}
+        note = ("Indicative secondary futures quotes have unresolved same-contract/"
+                "same-day source disagreement; first and later prints are "
+                "preserved separately. Levels may be displayed as provisional "
+                "estimates only. No official OIS, policy delta or 1D/1W "
+                "repricing is certified.")
 
     # The EUR native CB quote is a historical secondary snapshot, not a live
     # market path. Never revive it as an active 3-horizon estimate if the
@@ -160,7 +169,8 @@ def build_currency(ccy, cb_row, ois_row, live_row=None, directional_proxy=None):
     for h, rate in vals.items():
         horizons[h] = {
             "rate": rate,
-            "policy_delta_bp": None if rate is None or policy_rate is None else round((rate - policy_rate) * 100.0, 1),
+            "policy_delta_bp": (None if conflicted or rate is None or policy_rate is None
+                                else round((rate - policy_rate) * 100.0, 1)),
             **horizon_meta[h],
         }
 
@@ -192,7 +202,8 @@ def build_currency(ccy, cb_row, ois_row, live_row=None, directional_proxy=None):
         "direction_vs_policy": direction,
         "change_1d_bp": None,
         "change_1w_bp": None,
-        "change_status": "DERIVED_ONLY_FROM_HOMOGENEOUS_SNAPSHOT_HISTORY",
+        "change_status": ("CONFLICTED_SECONDARY_NO_REPRICING"
+                          if conflicted else "DERIVED_ONLY_FROM_HOMOGENEOUS_SNAPSHOT_HISTORY"),
         "note": note,
         "governance": {
             "informational_only": True,
@@ -203,6 +214,9 @@ def build_currency(ccy, cb_row, ois_row, live_row=None, directional_proxy=None):
             "backtest_eligible_as_official_ois": False,
         },
     }
+    if conflicted:
+        result["source_conflict_status"] = lr["source_conflict_status"]
+        result["source_conflict_keys"] = lr.get("source_conflict_keys", [])
     proxy = _valid_nzd_directional_proxy(directional_proxy) if ccy == "NZD" else None
     if proxy is not None:
         result["market_direction_proxy"] = {
