@@ -11,6 +11,8 @@ on:
       - 'site/control-room-preview/ois-pricing-estimates-v1.js'
       - 'validation/test_control_room_g8_visible_pricing_v1.js'
       - 'validation/test_control_room_chf_nzd_rates_research_v1.js'
+      - 'validation/test_nzd_rbnz_b2_latest_web_research_v1.js'
+      - 'live_data/sections/NZD_B2_GOVT_LATEST_WEB_RESEARCH.json'
       - 'validation/qa_ois_g8_estimates_v1.js'
       - 'validation/cb_pricing/audit_estimated_ois_reliability_v1.py'
       - 'validation/cb_pricing/test_audit_estimated_ois_reliability_v1.py'
@@ -54,6 +56,7 @@ jobs:
           node --check site/control-room-preview/ois-pricing-estimates-v1.js
           node validation/test_control_room_g8_visible_pricing_v1.js
           node validation/test_control_room_chf_nzd_rates_research_v1.js
+          node validation/test_nzd_rbnz_b2_latest_web_research_v1.js
           node validation/qa_ois_g8_estimates_v1.js
       - name: Audit four estimated currencies' historical source reliability (research only)
         run: |
