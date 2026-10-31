@@ -1,0 +1,139 @@
+{
+  "schema": "GMFQ_V10_FROZEN_PREVIEW_PART_BLOB_MANIFEST_V1",
+  "basis": "APPROVED_FROZEN_GH_PAGES_DESIGN_32_PARTS_2026_10_31",
+  "source_ref": "gh-pages",
+  "source_path": "site/control-room-preview/parts",
+  "provenance": "31 October source snapshot, separately tested by Control Room v10 full G8 browser QA and public browser QA. New design requires explicit reviewed manifest update.",
+  "automatic_promotion": false,
+  "scope": "STATIC_DESIGN_BYTES_ONLY_NO_FX_OR_POLICY_EFFECT",
+  "files": {
+    "part-00.txt": {
+      "git_blob_sha1": "51c521330129f986054fc2a79c2f43ef4187bd40",
+      "bytes": 200009
+    },
+    "part-01.txt": {
+      "git_blob_sha1": "5c8fa56f9b8682a8ae1f82c95b1a5f5c5cdfacf4",
+      "bytes": 200164
+    },
+    "part-02.txt": {
+      "git_blob_sha1": "f04d61304fba30d0df686fbaba9540c3d1a2dd28",
+      "bytes": 200171
+    },
+    "part-03.txt": {
+      "git_blob_sha1": "c79b704a3f2331a164db9147cfbaa8b564b04203",
+      "bytes": 200004
+    },
+    "part-04.txt": {
+      "git_blob_sha1": "07fa62e9fa6a01614f72a82a6c1313769f29973b",
+      "bytes": 200139
+    },
+    "part-05.txt": {
+      "git_blob_sha1": "8e1ede01705c9b26f64876fa13af7165b206dd49",
+      "bytes": 200004
+    },
+    "part-06.txt": {
+      "git_blob_sha1": "abd78e2d730589ea5c04be65eef6c954c522e304",
+      "bytes": 200182
+    },
+    "part-07.txt": {
+      "git_blob_sha1": "10ade62f0ae0e33093dea1629727d1de5624f111",
+      "bytes": 200004
+    },
+    "part-08.txt": {
+      "git_blob_sha1": "1695e738423e8b12490883fca9cd0f774624ffc0",
+      "bytes": 200146
+    },
+    "part-09.txt": {
+      "git_blob_sha1": "227229a5954bfe034f6f9fae936fa2ed2c3f6c77",
+      "bytes": 200004
+    },
+    "part-10.txt": {
+      "git_blob_sha1": "4da36782ec6c0da80d3ff110c1bc0e1a2adf9cca",
+      "bytes": 200174
+    },
+    "part-11.txt": {
+      "git_blob_sha1": "2a413c5110fa58172ae203b3485430e9d174336a",
+      "bytes": 200004
+    },
+    "part-12.txt": {
+      "git_blob_sha1": "a6e48857dd3446ea3fa8755619097955596d78e0",
+      "bytes": 200187
+    },
+    "part-13.txt": {
+      "git_blob_sha1": "559eb39653fff66a8a020742a8696f4d35c60d07",
+      "bytes": 200004
+    },
+    "part-14.txt": {
+      "git_blob_sha1": "37f230e7f3e335594fa2afaa00154e629aab4c88",
+      "bytes": 200189
+    },
+    "part-15.txt": {
+      "git_blob_sha1": "9498c53a8e66c29c170583407230ac703007e0f6",
+      "bytes": 200004
+    },
+    "part-16.txt": {
+      "git_blob_sha1": "3328398de06e8657bf3a5b2c83a08af545b7454d",
+      "bytes": 200159
+    },
+    "part-17.txt": {
+      "git_blob_sha1": "db425e43c3c2f0223a4e30f648812d414336bc04",
+      "bytes": 200004
+    },
+    "part-18.txt": {
+      "git_blob_sha1": "65d0bd6fe046ac1e1d1602f79d2cafa63c78f1b6",
+      "bytes": 200201
+    },
+    "part-19.txt": {
+      "git_blob_sha1": "f84d20398e8feeb46f954064805762f9fa118860",
+      "bytes": 200004
+    },
+    "part-20.txt": {
+      "git_blob_sha1": "5b5bfc811860a56ed77ebc0a5ab48b40729b4178",
+      "bytes": 200144
+    },
+    "part-21.txt": {
+      "git_blob_sha1": "afb29c740d2c17e2c9f93da7f871f2726911fe5d",
+      "bytes": 200004
+    },
+    "part-22.txt": {
+      "git_blob_sha1": "127ef6dd98f71abfc592c4f0b5bade9b5ac75062",
+      "bytes": 200136
+    },
+    "part-23.txt": {
+      "git_blob_sha1": "d0eb5453cb555f7c47bf7342c2ccdafa7f5cf45b",
+      "bytes": 200004
+    },
+    "part-24.txt": {
+      "git_blob_sha1": "ea8b6b919f1ffc54be0b81c2533eca688d228e32",
+      "bytes": 200123
+    },
+    "part-25.txt": {
+      "git_blob_sha1": "3f2b42dcd211ea4d74643113a4a5c3049f4705a2",
+      "bytes": 200004
+    },
+    "part-26.txt": {
+      "git_blob_sha1": "7162b141bb466828ac6700efe383fdc3e3c5fc63",
+      "bytes": 200152
+    },
+    "part-27.txt": {
+      "git_blob_sha1": "1fa2286fd4f41423b82d3feec08feb0482245343",
+      "bytes": 200013
+    },
+    "part-28.txt": {
+      "git_blob_sha1": "c5754acacdfa94b73a7996fbb56d798564b6f066",
+      "bytes": 200068
+    },
+    "part-29.txt": {
+      "git_blob_sha1": "1a3a5508a8064166e3746a40d104140769f56bd5",
+      "bytes": 200060
+    },
+    "part-30.txt": {
+      "git_blob_sha1": "6f618742b187eabd0e1ad98609a7c0bf47fffae6",
+      "bytes": 200008
+    },
+    "part-31.txt": {
+      "git_blob_sha1": "4ca1961b1e929774f514c43f7eacfd921b87ea9c",
+      "bytes": 19102
+    }
+  }
+}
