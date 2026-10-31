@@ -40,5 +40,8 @@ assert(src.includes("feed('ECB_G8_PRICE_HISTORY.json')"));
 assert(src.includes("rail.dataset.bcePriceContext=priceContext?'DATED_ONLY':'UNAVAILABLE'"));
 assert(src.includes("box.dataset.priceConfirmation='NONE'"));
 assert(src.includes('NON dimostra conferma, causalità'));
+assert(src.includes("contextHost.appendChild(box);"));
+assert(src.includes("rail.appendChild(contextHost);"));
+assert(src.includes("del cambio dopo martedì NON dimostra"));
 console.log('COT_ECB_PRICE_CONTEXT_DATED_NONCAUSAL_PASS',
  JSON.stringify({cftc:tue,ecb:fx.last_as_of,currencies:8,negative:6,signals:0}));
