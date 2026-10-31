@@ -2,7 +2,7 @@
 /* User-facing complete G8 table is immediately visible, dated and non-promotional. */
 const fs=require('node:fs');
 const assert=require('node:assert/strict');
-const {matrix,view,coverage,calibratedNzdCarry,scenarioSixMonth}=require('../site/control-room-preview/ois-pricing-estimates-v1.js');
+const {matrix,view,coverage,calibratedNzdCarry,scenarioSixMonth,indicativeSixMonth}=require('../site/control-room-preview/ois-pricing-estimates-v1.js');
 const ois=JSON.parse(fs.readFileSync('live_data/sections/OIS_OPERATIONAL_VIEW.json','utf8'));
 const bill=JSON.parse(fs.readFileSync('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json','utf8'));
 const g8=['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'];
@@ -111,6 +111,22 @@ for(const row of contested){
   invalidPrice.currencies[row.ccy].horizons[term].futures_price+=0.1;
   assert(!matrix(invalidPrice,bill,when).find(x=>x.ccy===row.ccy).points[term]?.source_quote_disputed,
    'Contradictory futures arithmetic must fail closed');
+ }
+}
+// A currency-wide conflict does not invalidate an independently verified 6M
+// contract. It DOES invalidate a disputed 6M print: no fallback or repricing.
+const individuallyVerified=indicativeSixMonth(ois,when);
+for(const row of contested){
+ const point=row.points['6m'];
+ if(point?.source_quote_verified){
+  assert.equal(individuallyVerified[row.ccy]?.type,'CONFLICTED');
+  assert.equal(individuallyVerified[row.ccy]?.value,point.value);
+  assert.equal(individuallyVerified[row.ccy]?.policy_delta_allowed,false);
+  assert.equal(individuallyVerified[row.ccy]?.pair_effect,'NONE');
+  assert(individuallyVerified[row.ccy]?.label.includes('verificato singolarmente'));
+ }else{
+  assert.equal(individuallyVerified[row.ccy],undefined,
+   'A disputed 6M bar cannot be shown as verified individually');
  }
 }
 assert(!contested.some(r=>r.allow_repricing||r.allow_official_promotion||r.official_ois));
