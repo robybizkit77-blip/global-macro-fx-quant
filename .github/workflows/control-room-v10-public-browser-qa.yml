@@ -107,6 +107,8 @@ jobs:
           node --check site/control-room-preview/home-navigation-v10.js
           node --check validation/test_control_room_rates_history_calendar_v1.js
           node validation/test_control_room_rates_history_calendar_v1.js
+          node --check validation/test_control_room_cot_bce_price_context_v1.js
+          node validation/test_control_room_cot_bce_price_context_v1.js
           node --check validation/test_fed_pricing_freshness_audit_v1.cjs
           node validation/test_fed_pricing_freshness_audit_v1.cjs
       - name: Install Playwright browser
