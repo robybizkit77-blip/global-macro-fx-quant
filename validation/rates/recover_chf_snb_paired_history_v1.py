@@ -62,6 +62,7 @@ def verify(source: dict, rates: dict, ten: dict, *,
             v = ob["value"]
             require(isinstance(d, str) and
                     date.fromisoformat(d).isoformat() == d and
+                    d <= asof.isoformat() and
                     isinstance(v, (int, float)) and not isinstance(v, bool) and
                     math.isfinite(v) and -5 <= v <= 25 and
                     d not in observations,
