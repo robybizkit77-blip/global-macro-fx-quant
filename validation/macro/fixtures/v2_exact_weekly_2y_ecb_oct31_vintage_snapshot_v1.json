@@ -1,0 +1,317 @@
+{
+  "description": "Immutable 31 Oct 2026 read-only reduced fixture derived from original repository files; latest-vintage not original PIT.",
+  "sources": {
+    "NATIVE_RATES_DATA.json": "e614b0d4e054fdf4d3e127ec7c66a218e5fff33b",
+    "ECB_G8_PRICE_HISTORY.json": "4d26e804961ad6d2607390952eca8a34b5c67b46",
+    "PAIR_SETUP_OPERATIONAL_VIEW.json": "0cd69d80db759730b222898e33d463132fd8ed5e",
+    "D.json": "d960b0050b2b94fea1affb71ab3a8d01b2e5d96c"
+  },
+  "rates": {
+    "USD": {
+      "date": "2026-10-29",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-10-29",
+      "2Y": 4.61,
+      "history2": {
+        "dates": [
+          "2026-10-15",
+          "2026-10-22",
+          "2026-10-29"
+        ],
+        "values": [
+          4.77,
+          4.65,
+          4.61
+        ],
+        "last_date": "2026-10-29",
+        "last_value": 4.61
+      }
+    },
+    "EUR": {
+      "date": "2026-10-29",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "source": "European Central Bank · AAA Svensson spot curve · 2026-10-29",
+      "2Y": 3.0080012626,
+      "history2": {
+        "dates": [
+          "2026-10-15",
+          "2026-10-22",
+          "2026-10-29"
+        ],
+        "values": [
+          2.9927412165,
+          3.0074951382,
+          3.0080012626
+        ],
+        "last_date": "2026-10-29",
+        "last_value": 3.0080012626
+      }
+    },
+    "GBP": {
+      "date": "2026-10-29",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-10-29",
+      "2Y": 4.704701439845901,
+      "history2": {
+        "dates": [
+          "2026-10-15",
+          "2026-10-22",
+          "2026-10-29"
+        ],
+        "values": [
+          4.66907871704343,
+          4.675877863998116,
+          4.704701439845901
+        ],
+        "last_date": "2026-10-29",
+        "last_value": 4.704701439845901
+      }
+    },
+    "JPY": {
+      "date": "2026-10-29",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-10-29",
+      "2Y": 1.901,
+      "history2": {
+        "dates": [
+          "2026-10-15",
+          "2026-10-22",
+          "2026-10-29"
+        ],
+        "values": [
+          1.913,
+          1.914,
+          1.901
+        ],
+        "last_date": "2026-10-29",
+        "last_value": 1.901
+      }
+    },
+    "AUD": {
+      "date": "2026-10-28",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "source": "Reserve Bank of Australia · F2 Capital Market Yields – Government Bonds – Daily · 2026-10-28",
+      "2Y": 4.951,
+      "history2": {
+        "dates": [
+          "2026-10-14",
+          "2026-10-21",
+          "2026-10-28"
+        ],
+        "values": [
+          4.919,
+          4.917,
+          4.951
+        ],
+        "last_date": "2026-10-28",
+        "last_value": 4.951
+      }
+    },
+    "CAD": {
+      "date": "2026-10-29",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-10-29",
+      "2Y": 3.36,
+      "history2": {
+        "dates": [
+          "2026-10-15",
+          "2026-10-22",
+          "2026-10-29"
+        ],
+        "values": [
+          3.2,
+          3.22,
+          3.36
+        ],
+        "last_date": "2026-10-29",
+        "last_value": 3.36
+      }
+    },
+    "NZD": {
+      "date": "2026-10-16",
+      "quality": "FULL_CURRENT_OFFICIAL_MANUAL_VERIFIED",
+      "source": "Reserve Bank of New Zealand · B2 government bond closing yields · 2026-10-16 · reviewed public table",
+      "2Y": 3.89,
+      "history2": {
+        "dates": [
+          "2026-10-01",
+          "2026-10-05",
+          "2026-10-16"
+        ],
+        "values": [
+          3.89,
+          3.83,
+          3.89
+        ],
+        "last_date": "2026-10-16",
+        "last_value": 3.89
+      }
+    },
+    "CHF": {
+      "date": "2026-09-30",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "source": "Swiss National Bank · spot interest rates on Swiss Confederation bonds · rendeiduebd",
+      "2Y": 0.287,
+      "history2": {
+        "dates": [
+          "2026-09-28",
+          "2026-09-29",
+          "2026-09-30"
+        ],
+        "values": [
+          0.405,
+          0.345,
+          0.287
+        ],
+        "last_date": "2026-09-30",
+        "last_value": 0.287
+      }
+    }
+  },
+  "fx": {
+    "base": "EUR",
+    "status": "CURRENT_OFFICIAL_HISTORY",
+    "last_as_of": "2026-10-30",
+    "pair_count": 28,
+    "row_count": 3,
+    "rows": [
+      {
+        "AUD": 1.598,
+        "CAD": 1.5725,
+        "CHF": 0.9211,
+        "Date": "2026-10-22",
+        "EUR": 1,
+        "GBP": 0.8377,
+        "JPY": 175.97,
+        "NZD": 1.9724,
+        "USD": 1.1205
+      },
+      {
+        "AUD": 1.5842,
+        "CAD": 1.5577,
+        "CHF": 0.9222,
+        "Date": "2026-10-29",
+        "EUR": 1,
+        "GBP": 0.83578,
+        "JPY": 175.92,
+        "NZD": 1.9817,
+        "USD": 1.113
+      },
+      {
+        "AUD": 1.5904,
+        "CAD": 1.5606,
+        "CHF": 0.9194,
+        "Date": "2026-10-30",
+        "EUR": 1,
+        "GBP": 0.8338,
+        "JPY": 175.68,
+        "NZD": 1.9823,
+        "USD": 1.1172
+      }
+    ]
+  },
+  "setup": {
+    "pair_count": 28,
+    "price_asof": "2026-10-30",
+    "macro_baseline_asof": "2026-09-25",
+    "pairs": {
+      "AUDCAD": {
+        "canonical_pair": "AUD/CAD"
+      },
+      "AUDCHF": {
+        "canonical_pair": "AUD/CHF"
+      },
+      "AUDJPY": {
+        "canonical_pair": "AUD/JPY"
+      },
+      "AUDNZD": {
+        "canonical_pair": "AUD/NZD"
+      },
+      "AUDUSD": {
+        "canonical_pair": "AUD/USD"
+      },
+      "CADCHF": {
+        "canonical_pair": "CAD/CHF"
+      },
+      "CADJPY": {
+        "canonical_pair": "CAD/JPY"
+      },
+      "CHFJPY": {
+        "canonical_pair": "CHF/JPY"
+      },
+      "EURAUD": {
+        "canonical_pair": "EUR/AUD"
+      },
+      "EURCAD": {
+        "canonical_pair": "EUR/CAD"
+      },
+      "EURCHF": {
+        "canonical_pair": "EUR/CHF"
+      },
+      "EURGBP": {
+        "canonical_pair": "EUR/GBP"
+      },
+      "EURJPY": {
+        "canonical_pair": "EUR/JPY"
+      },
+      "EURNZD": {
+        "canonical_pair": "EUR/NZD"
+      },
+      "EURUSD": {
+        "canonical_pair": "EUR/USD"
+      },
+      "GBPAUD": {
+        "canonical_pair": "GBP/AUD"
+      },
+      "GBPCAD": {
+        "canonical_pair": "GBP/CAD"
+      },
+      "GBPCHF": {
+        "canonical_pair": "GBP/CHF"
+      },
+      "GBPJPY": {
+        "canonical_pair": "GBP/JPY"
+      },
+      "GBPNZD": {
+        "canonical_pair": "GBP/NZD"
+      },
+      "GBPUSD": {
+        "canonical_pair": "GBP/USD"
+      },
+      "NZDCAD": {
+        "canonical_pair": "NZD/CAD"
+      },
+      "NZDCHF": {
+        "canonical_pair": "NZD/CHF"
+      },
+      "NZDJPY": {
+        "canonical_pair": "NZD/JPY"
+      },
+      "NZDUSD": {
+        "canonical_pair": "NZD/USD"
+      },
+      "USDCAD": {
+        "canonical_pair": "USD/CAD"
+      },
+      "USDCHF": {
+        "canonical_pair": "USD/CHF"
+      },
+      "USDJPY": {
+        "canonical_pair": "USD/JPY"
+      }
+    }
+  },
+  "core": {
+    "asOf": "2026-09-25",
+    "macro": {
+      "USD": {},
+      "EUR": {},
+      "GBP": {},
+      "JPY": {},
+      "AUD": {},
+      "CAD": {},
+      "NZD": {},
+      "CHF": {}
+    }
+  }
+}
