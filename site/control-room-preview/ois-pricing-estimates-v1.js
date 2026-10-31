@@ -217,7 +217,7 @@ function indicativeSixMonth(ois,today){
  const observations=matrix(ois,null,today),approved={};
  for(const row of observations){
   if(!['USD','EUR','CHF'].includes(row.ccy)||
-     !['PROXY','MIXED'].includes(row.tier))continue;
+     !['PROXY','MIXED','CONFLICTED'].includes(row.tier))continue;
   const p=row.points?.['6m'];
   if(!p||!p.source_quote_verified||!p.contract||!p.expires||
      !fresh(p.date,today)||number(p.value)===null||
@@ -225,7 +225,8 @@ function indicativeSixMonth(ois,today){
   approved[row.ccy]=Object.freeze({
     type:row.tier,currency:row.ccy,value:p.value,
     quote_as_of:p.date,contract:p.contract,expiry:p.expires,
-    label:row.tier==='MIXED'?'FUTURES DATATO · '+row.ccy+' non sincronizzato':'FUTURES INDICATIVO',
+    label:row.tier==='CONFLICTED'?'FUTURES DATATO · '+row.ccy+' 6M verificato singolarmente, altri contratti contestati':
+      row.tier==='MIXED'?'FUTURES DATATO · '+row.ccy+' non sincronizzato':'FUTURES INDICATIVO',
     is_official_ois:false,policy_delta_allowed:false,pair_effect:'NONE',core_effect:'NONE'
   });
  }
