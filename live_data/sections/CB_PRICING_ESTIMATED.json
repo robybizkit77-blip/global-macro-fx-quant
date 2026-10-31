@@ -49,18 +49,18 @@
           "symbol": "ICEEUR:SA3U2026"
         },
         "6m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "SA3Z2026",
           "contract_description": "Dec 2026",
           "expiration": "2027-03-16",
-          "futures_price": 100.015,
+          "futures_price": 100.025,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
-          "policy_delta_bp": -1.5,
-          "price_valid_until": "2026-10-29T17:59:55Z",
-          "quote_as_of": "2026-10-29",
+          "policy_delta_bp": -2.5,
+          "price_valid_until": "2026-10-30T17:59:52Z",
+          "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": -0.015,
+          "rate": -0.025,
           "symbol": "ICEEUR:SA3Z2026"
         }
       },
@@ -95,18 +95,18 @@
       "horizons": {
         "12m": {
           "business_day_lag": 0,
-          "contract": "FST3M2027",
-          "contract_description": "Jun 2027",
-          "expiration": "2027-09-15",
-          "futures_price": 96.9525,
+          "contract": "FST3U2027",
+          "contract_description": "Sep 2027",
+          "expiration": "2027-12-15",
+          "futures_price": 96.885,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
-          "policy_delta_bp": 54.7,
-          "price_valid_until": "2026-10-30T10:30:38Z",
+          "policy_delta_bp": 61.5,
+          "price_valid_until": "2026-10-30T15:14:57Z",
           "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 3.0475,
-          "symbol": "EUREX:FST3M2027"
+          "rate": 3.115,
+          "symbol": "EUREX:FST3U2027"
         },
         "3m": {
           "business_day_lag": 1,

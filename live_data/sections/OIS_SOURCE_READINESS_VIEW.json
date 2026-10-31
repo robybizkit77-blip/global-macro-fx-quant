@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-10-30",
+  "as_of": "2026-10-31",
   "blocked_currency_count": 3,
   "currencies": {
     "CHF": {
@@ -17,7 +17,7 @@
       "indicative_quote_dates": {
         "12m": "2026-10-29",
         "3m": "2026-10-30",
-        "6m": "2026-10-29"
+        "6m": "2026-10-30"
       },
       "obstacle": "Settlement futures SARON ICE/Eurex non certificati in una stessa serie storica.",
       "operational_as_of": "2026-10-29",

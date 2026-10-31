@@ -109,17 +109,17 @@
           "symbol": "ICEEUR:SA3U2026"
         },
         "6m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "SA3Z2026",
           "contract_description": "Dec 2026",
           "expiration": "2027-03-16",
-          "futures_price": 100.015,
+          "futures_price": 100.025,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-10-29T17:59:55Z",
-          "quote_as_of": "2026-10-29",
+          "price_valid_until": "2026-10-30T17:59:52Z",
+          "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": null,
@@ -162,8 +162,8 @@
           },
           "6m": {
             "contract": "SA3Z2026",
-            "quote_as_of": "2026-10-29",
-            "rate_indicative": -0.015,
+            "quote_as_of": "2026-10-30",
+            "rate_indicative": -0.025,
             "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
           }
         },
@@ -188,18 +188,18 @@
           "business_day_lag": 0,
           "change_1d_bp": null,
           "change_1w_bp": null,
-          "contract": "FST3M2027",
-          "contract_description": "Jun 2027",
-          "expiration": "2027-09-15",
-          "futures_price": 96.9525,
+          "contract": "FST3U2027",
+          "contract_description": "Sep 2027",
+          "expiration": "2027-12-15",
+          "futures_price": 96.885,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-10-30T10:30:38Z",
+          "price_valid_until": "2026-10-30T15:14:57Z",
           "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": null,
-          "symbol": "EUREX:FST3M2027"
+          "symbol": "EUREX:FST3U2027"
         },
         "3m": {
           "business_day_lag": 1,
@@ -259,9 +259,9 @@
         "full_curve_usable": false,
         "horizons": {
           "12m": {
-            "contract": "FST3M2027",
+            "contract": "FST3U2027",
             "quote_as_of": "2026-10-30",
-            "rate_indicative": 3.0475,
+            "rate_indicative": 3.115,
             "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
           },
           "3m": {
