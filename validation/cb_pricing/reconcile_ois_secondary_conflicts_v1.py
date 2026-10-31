@@ -86,23 +86,128 @@ def read_conflicts(path: Path = CONFLICTS) -> list[dict]:
     return events
 
 
+def validate_conflict_lineage(feed: dict, history: list[dict],
+                              existing_events: list[dict]) -> dict:
+    """Cross-check three independent receipts: immutable bar, event and live.
+
+    A valid event_id by itself is NOT evidence that the current displayed
+    tentative quote is the quote referenced by that event. Equally, a
+    syntactically valid quarantined quote is NOT evidence that the original
+    signed history was preserved. Neither can be silently reclassified.
+    """
+    archived = {record_key(row): row for row in history}
+    events = {}
+    for event in existing_events:
+        original, incoming = (event["original_immutable_quote"],
+                              event["conflicting_source_quote"])
+        validate_row(original)
+        validate_row(incoming)
+        key = record_key(original)
+        require(key in archived and
+                quote_fingerprint(archived[key]) == quote_fingerprint(original),
+                "quarantine original missing or diverges from immutable first quote")
+        require(event == conflict_event(original, incoming),
+                "quarantine event ID/payload integrity mismatch")
+        require(event["event_id"] not in events, "duplicate journal event identity")
+        events[event["event_id"]] = event
+
+    checked = []
+    for ccy in ("USD", "EUR", "CHF"):
+        entry = ((feed.get("currencies") or {}).get(ccy) or {})
+        flagged = entry.get("source_conflict_status") == STATUS
+        keys = entry.get("source_conflict_keys")
+        if not flagged:
+            require(entry.get("source_conflict_status") is None
+                    and keys is None,
+                    ccy + ": unmanaged quarantine metadata")
+            # One may collect newly timestamp-verified quotes with prior
+            # historical conflicts; the old events remain append-only.
+            require(entry.get("status") != "LIVE_SECONDARY_CONFLICT_QUARANTINED",
+                    ccy + ": quarantined status without evidence")
+            continue
+        require(entry.get("status") == "LIVE_SECONDARY_CONFLICT_QUARANTINED"
+                and isinstance(keys, list) and len(keys) > 0,
+                ccy + ": quarantine status without matched horizon keys")
+        visited = set()
+        for k in keys:
+            require(isinstance(k, dict) and
+                    set(k) == {"contract", "observation_date", "horizon", "event_id"}
+                    and k["horizon"] in ("3m", "6m", "12m")
+                    and isinstance(k["event_id"], str) and
+                    k["event_id"] in events,
+                    ccy + ": nonexistent or malformed quarantine key")
+            h = k["horizon"]
+            require(h not in visited, ccy + ": same horizon quarantined twice")
+            visited.add(h)
+            event = events[k["event_id"]]
+            incoming = event["conflicting_source_quote"]
+            original = event["original_immutable_quote"]
+            require(event["key"] == [ccy, k["contract"], k["observation_date"]]
+                    and incoming["observed_under_horizon"] == h
+                    and original["observed_under_horizon"] == h,
+                    ccy + ": quarantine event does not describe claimed contract")
+            q = ((entry.get("horizons") or {}).get(h) or {})
+            # Either side of the immutable two-quote disagreement may be
+            # re-fetched. Neither becomes verified simply by reappearing.
+            one_of_signed_prints = any(
+                q.get("contract") == candidate["contract"] and
+                q.get("symbol") == candidate["symbol"] and
+                q.get("expiration") == candidate["expiration"] and
+                q.get("quote_as_of") == candidate["observation_date"] and
+                type(q.get("rate")) in (int, float) and
+                type(q.get("futures_price")) in (int, float) and
+                q["rate"] == candidate["implied_rate"] and
+                q["futures_price"] == candidate["futures_price"]
+                for candidate in (original, incoming)
+            )
+            require(
+                one_of_signed_prints
+                and q.get("quote_timestamp_verified") is False
+                and q.get("quote_timestamp_source") ==
+                    "QUARANTINED_SAME_CONTRACT_SAME_DAY",
+                ccy + "/" + h + ": displayed tentative quote not identical to signed event")
+            checked.append((ccy, h, k["event_id"]))
+        for h, q in (entry.get("horizons") or {}).items():
+            if q.get("quote_timestamp_source") == "QUARANTINED_SAME_CONTRACT_SAME_DAY":
+                require(h in visited and q.get("quote_timestamp_verified") is False,
+                        ccy + ": quarantined raw quote without independently verified event")
+    return {"journal_events_validated": len(events),
+            "current_quarantine_horizons_verified": len(checked)}
+
+
 def reconcile(feed: dict, history: list[dict],
               existing_events: list[dict]) -> tuple[dict, list[dict], dict]:
     # candidates() validates quotes and issuer/non-OIS governance before comparison.
     eligible, excluded = candidates(feed)
     known = {record_key(row): row for row in history}
     seen = {row["event_id"] for row in existing_events}
+    # A previously disputed contract/day remains disputed even when the
+    # provider subsequently repeats the *first* print. Seeing the old price
+    # again is NOT an independent settlement/reconciliation.
+    disputed_by_key = {}
+    for event in existing_events:
+        disputed_by_key.setdefault(tuple(event["key"]), []).append(event)
     updated = copy.deepcopy(feed)
     conflicts = []
     quarantined = {}
     for row in eligible:
-        archived = known.get(record_key(row))
-        if archived is None or quote_fingerprint(archived) == quote_fingerprint(row):
+        key = record_key(row)
+        archived = known.get(key)
+        if archived is None:
             continue
-        event = conflict_event(archived, row)
-        if event["event_id"] not in seen:
-            conflicts.append(event)
-            seen.add(event["event_id"])
+        old_print = quote_fingerprint(archived) == quote_fingerprint(row)
+        previous_disputes = disputed_by_key.get(key, [])
+        if old_print and not previous_disputes:
+            continue
+        if old_print:
+            # Frozen first-seen value reappeared: keep an existing dispute
+            # event and its exact original-bar link, never invent a "close".
+            event = sorted(previous_disputes, key=lambda e:e["event_id"])[0]
+        else:
+            event = conflict_event(archived, row)
+            if event["event_id"] not in seen:
+                conflicts.append(event)
+                seen.add(event["event_id"])
         currency = row["currency"]
         horizon = row["observed_under_horizon"]
         quarantined.setdefault(currency, []).append({
@@ -148,6 +253,15 @@ def apply(*, source: Path = SOURCE, history: Path = HISTORY,
     archived = load_history(history)
     prior = read_conflicts(quarantine)
     clean, events, receipt = reconcile(feed, archived, prior)
+    # A previously quarantined feed can be replayed by either OIS writer.
+    # Do not let a forged/stale event_id or a mutated tentative quote bypass
+    # the per-contract archive merely because candidates() skips it.
+    existing_lineage = validate_conflict_lineage(feed, archived, prior)
+    # On the first encounter, reconcile generates fresh events and updates the
+    # feed in memory. Recheck the combined ledger BEFORE any persistent write.
+    all_lineage = validate_conflict_lineage(clean, archived, prior + events)
+    receipt["quarantine_evidence"] = all_lineage
+    receipt["previous_events_checked"] = existing_lineage["journal_events_validated"]
     # Assert only valid, non-conflicted sources reach the immutable bar writer.
     # This must succeed before any mutations to the runner worktree.
     append_verified(clean, history, write=False)

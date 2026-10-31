@@ -130,9 +130,26 @@ with tempfile.TemporaryDirectory() as td:
 
     # Original raw quote independently reappears; record neither a second
     # conflict event nor an overwritten first observation.
-    feed.write_text(json.dumps(fixture, sort_keys=True) + "\n")
+    first_print = copy.deepcopy(fixture)
+    first_print["currencies"]["USD"]["horizons"]["3m"]["futures_price"] = anchor["futures_price"]
+    first_print["currencies"]["USD"]["horizons"]["3m"]["rate"] = anchor["implied_rate"]
+    feed.write_text(json.dumps(first_print, sort_keys=True) + "\n")
     replay = apply(source=feed, history=archive, quarantine=quarantine, write=True)
     assert replay["written"] == 0 and replay["new_quarantine_events"] == 0, replay
+    # Re-fetching the very first source print is NOT proof that the
+    # disagreement has been independently resolved. It stays in quarantine.
+    assert replay["conflict_currencies"] == ["USD"], replay
+    replay_source = json.loads(feed.read_text(encoding="utf-8"))
+    replay_h = replay_source["currencies"]["USD"]["horizons"]["3m"]
+    assert replay_h["quote_timestamp_verified"] is False
+    assert replay_h["quote_timestamp_source"] == "QUARANTINED_SAME_CONTRACT_SAME_DAY"
+    assert replay_h["rate"] == 4.015  # Original print retained, NOT promoted
+    assert replay_source["currencies"]["USD"]["source_conflict_keys"][0]["event_id"] == event["event_id"]
+    from reconcile_ois_secondary_conflicts_v1 import validate_conflict_lineage
+    reread = validate_conflict_lineage(replay_source, load_history(archive),
+                                       read_conflicts(quarantine))
+    assert reread["current_quarantine_horizons_verified"] == 1
+
     assert archive.read_bytes() == frozen_archive
     assert quarantine.read_bytes() == frozen_quarantine
     assert len(read_conflicts(quarantine)) == 1
@@ -142,10 +159,12 @@ with tempfile.TemporaryDirectory() as td:
     later = copy.deepcopy(fixture)
     later["currencies"]["USD"]["horizons"]["3m"]["futures_price"] = 95.985
     later["currencies"]["USD"]["horizons"]["3m"]["rate"] = 4.015
-    # Returning to the original first print is not a conflict.
+    # Returning to the original first print is a replayed, already-known
+    # disagreement. It must not create another event or clear quarantine.
     feed.write_text(json.dumps(later) + "\n")
     same = apply(source=feed, history=archive, quarantine=quarantine, write=True)
-    assert same["conflict_currencies"] == [], same
+    assert same["conflict_currencies"] == ["USD"], same
+    assert same["new_quarantine_events"] == 0, same
     assert quarantine.read_bytes() == frozen_quarantine
 
     # A forged official quote is never accepted into the history or quarantine.
