@@ -71,6 +71,7 @@ jobs:
       - name: Observe registered next-session V2 economic/market inputs without synthetic ECB T0
         if: github.event_name == 'pull_request' && steps.early_gate.outputs.eligible == 'true'
         run: |
+          python -m unittest validation.macro.test_v2_us_shutdown_2025_calendar_gap_v1 -v
           python -m unittest validation.forward.test_audit_quality_aware_preflight_v1 -v
           python -m validation.forward.audit_quality_aware_preflight_v1 --out /tmp/v2-quality-aware-next-session-source-preflight.json
           python - <<'PY'
@@ -84,6 +85,8 @@ jobs:
           assert r['current_EUR_labour_zero_MAD_never_filled_with_fake_z']
           assert r['current_CHF_labour_first_SNB_precision_PIT_not_repaired']
           assert r['current_USD_inflation_missing_Oct2025_source_PIT_not_repaired']
+          assert r['current_USD_labour_missing_Oct2025_CPS_PIT_not_repaired']
+          assert r['US_oct2025_unpublished_source_calendar_gap']['strict_24_calendar_missing_slots'] == ['USD.inflation', 'USD.labour']
           assert not r['safe_to_capture_without_real_time_admission']
           assert not r['historical_PIT_validated']
           assert not r['future_snapshot_captured_now']
