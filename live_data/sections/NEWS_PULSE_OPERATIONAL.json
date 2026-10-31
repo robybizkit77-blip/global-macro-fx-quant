@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-10-30",
-  "generated_at_utc": "2026-10-31T02:47:42.823099Z",
+  "generated_at_utc": "2026-10-31T12:26:28.551938Z",
   "items": [
     {
       "as_of": "2026-10-30",
@@ -47,7 +47,7 @@
       "title": "AUD: repricing implicito da futures più dovish (-3.0 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-10-31T02:47:42.823099Z",
+  "last_checked_at_utc": "2026-10-31T12:26:28.551938Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -932,9 +932,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 14,
+        "accepted_items": 12,
         "ccy": "EUR",
-        "entries_rejected": 1,
+        "entries_rejected": 3,
         "feed_entries_seen": 15,
         "feed_url": "https://www.ecb.europa.eu/rss/press.html",
         "source": "Banca centrale europea",
