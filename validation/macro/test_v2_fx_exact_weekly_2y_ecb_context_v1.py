@@ -2,6 +2,8 @@
 import copy
 import json
 import unittest
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from pathlib import Path
 from validation.macro.v2_fx_exact_weekly_2y_ecb_context_v1 import build, DATA
 
@@ -12,7 +14,10 @@ FILES = ["NATIVE_RATES_DATA.json", "ECB_G8_PRICE_HISTORY.json",
 class WeeklyReferenceTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.inputs = [json.loads((DATA / f).read_text()) for f in FILES]
+        fixture = json.loads((Path(__file__).parent / "fixtures" /
+            "v2_exact_weekly_2y_ecb_oct31_vintage_snapshot_v1.json").read_text())
+        cls.inputs = [fixture["rates"], fixture["fx"], fixture["setup"], fixture["core"]]
+        cls.source_shas = fixture["sources"]
 
     def report(self, values=None, audit_day="2026-10-31"):
         return build(*(values or copy.deepcopy(self.inputs)), audit_day=audit_day)
@@ -72,7 +77,7 @@ class WeeklyReferenceTest(unittest.TestCase):
 
     def test_duplicate_ecb_fixing_day_fails(self):
         a = copy.deepcopy(self.inputs)
-        a[1]["rows"].insert(-1, copy.deepcopy(a[1]["rows"][-4]))
+        a[1]["rows"].insert(-1, copy.deepcopy(a[1]["rows"][0]))
         a[1]["row_count"] += 1
         with self.assertRaisesRegex(ValueError, "duplicate ECB"):
             self.report(a)
@@ -98,6 +103,22 @@ class WeeklyReferenceTest(unittest.TestCase):
             self.report(a)
         with self.assertRaisesRegex(ValueError, "latest official FX evidence"):
             self.report(audit_day="2026-10-28")
+
+    def test_live_source_contract_is_also_available_without_frozen_date_assumption(self):
+        today = datetime.now(ZoneInfo("Europe/Rome")).date().isoformat()
+        live = [json.loads((DATA / f).read_text()) for f in FILES]
+        current = build(*live, audit_day=today)
+        self.assertEqual(current["summary"]["pairs"], 28)
+        self.assertEqual(current["summary"]["eligible_pairs"] +
+                         current["summary"]["excluded_pairs"], 28)
+        self.assertEqual(current["summary"]["FX_signals"], 0)
+        self.assertTrue(current["no_D_or_pair_updates"])
+
+    def test_source_fixture_provenance_is_explicit_not_pit(self):
+        self.assertEqual(set(self.source_shas), set(FILES))
+        self.assertTrue(all(len(sha) == 40 for sha in self.source_shas.values()))
+        sample = self.report()
+        self.assertTrue(sample["source_vintage_is_as_retrieved_not_historic_PIT"])
 
     def test_corrupted_2y_value_or_date_fails(self):
         a = copy.deepcopy(self.inputs)
