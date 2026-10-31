@@ -102,17 +102,27 @@ with tempfile.TemporaryDirectory() as td:
     assert next(x for x in persisted if record_key(x) == record_key(anchor)) == anchor
     assert len({record_key(x) for x in persisted}) == 9
 
-    # Conflicted USD cannot recover through old native CB fallback and cannot
-    # be advertised as an updated 3M/6M/12M monetary curve.
+    # Indicative 3M/6M/12M prices are still visible, but provenance is
+    # explicitly conflicted: no native fallback, no CB delta, no OIS repricing,
+    # no historic estimated-snapshot admission despite non-null display levels.
     usd = build_currency("USD", {"rate": 3.875, "market_pricing": {
         "h3m": 4.25, "h6m": 4.32, "h12m": 4.6, "as_of": "2026-10-30"
     }}, {"status": "WITHHELD"}, bad)
-    assert usd["status"] == "WITHHELD", usd
-    assert usd["input_mode"] == "QUARANTINED_SECONDARY_NO_FALLBACK", usd
-    assert usd["source_quality"] == "SECONDARY_QUOTE_CONFLICT_QUARANTINED", usd
-    assert all(v["rate"] is None and v["policy_delta_bp"] is None
+    assert usd["status"] == "ESTIMATED_ACTIVE", usd
+    assert usd["input_mode"] == "LIVE_SECONDARY_CONFLICT_INDICATIVE", usd
+    assert usd["source_quality"] == "SECONDARY_CONFLICTED_INDICATIVE_NOT_OIS", usd
+    assert usd["source_conflict_status"] == STATUS
+    assert all(v["rate"] is not None and v["policy_delta_bp"] is None
                for v in usd["horizons"].values())
+    assert usd["direction_vs_policy"] == "WITHHELD"
     assert usd["change_1d_bp"] is None and usd["change_1w_bp"] is None
+    from ois_estimated_snapshot_v1 import append_changed_snapshots
+    scratch = directory / "estimated_snapshots.jsonl"
+    prohibited = append_changed_snapshots({
+        "currencies": {"USD": {"operational_status": "GREEN_ESTIMATED",
+                              **usd}}
+    }, "2026-10-31T12:01:00Z", scratch)
+    assert prohibited["appended"] == 0 and not scratch.exists(), prohibited
 
     frozen_archive, frozen_quarantine = archive.read_bytes(), quarantine.read_bytes()
 
