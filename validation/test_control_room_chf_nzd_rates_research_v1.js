@@ -51,7 +51,7 @@ reject('CHF future-dated 10Y',(_,c)=>c.as_of='2026-11-02',x=>x.CHF===null);
 reject('CHF duplicate history day',(a)=>a.CHF.history2.dates[2]=a.CHF.history2.dates[1],x=>x.CHF===null);
 reject('CHF historical 2Y last value altered',(a)=>a.CHF.history2.values[a.CHF.history2.values.length-1]+=0.1,x=>x.CHF===null);
 reject('CHF current source 10Y inconsistent',(_,c)=>c.value_percent='NOT A NUMBER',x=>x.CHF===null);
-reject('NZD unapproved web reread must never promote',(_,c)=>c.status='OFFICIAL_VERIFIED',x=>x.NZD===null);
+reject('NZD unapproved web reread must never promote',(_,__,n)=>n.status='OFFICIAL_VERIFIED',x=>x.NZD===null);
 reject('NZD source missing human approval status',(_,__,n)=>n.evidence.independent_human_reviewer_confirmed=true,x=>x.NZD===null);
 reject('NZD source inconsistent existing official anchor',(_,__,n)=>n.canonical_at_review['2Y']+=.1,x=>x.NZD===null);
 reject('NZD unvalidated spread status',(_,__,n)=>n.governance.eligible_for_rate_spreads=true,x=>x.NZD===null);
