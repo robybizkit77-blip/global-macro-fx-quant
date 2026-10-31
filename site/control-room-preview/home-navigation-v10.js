@@ -4095,12 +4095,17 @@ async function mountCotFirstReading(doc){
      priceContext.lines.map(x=>'<li data-bce-ccy="'+x.ccy+'" '+
        'data-price-percent="'+x.pct.toFixed(5)+'">'+FLAG[x.ccy]+' '+
        x.side+' · '+sign(x.pct)+'</li>').join('')+'</ul>'+
-     '<p style="font-size:11px;line-height:1.5;color:#a9bfcd">'+
+     '<small style="display:block;font-size:11px;line-height:1.5;color:#a9bfcd">'+
        'Fixing BCE giornaliero, NON prezzo eseguibile/intraday. Le posizioni CFTC '+
        'sono riferite al martedì e pubblicate successivamente: il movimento '+
        'del cambio dopo martedì NON dimostra conferma, causalità o rendimento '+
-       'delle posizioni. COT e FX non sono un segnale di trading.</p>';
-   rail.appendChild(box);
+       'delle posizioni. COT e FX non sono un segnale di trading.</small>';
+   // Keep native provenance as the sole DIRECT child details element;
+   // existing keyboard and accessibility checks must remain unambiguous.
+   const contextHost=doc.createElement('div');
+   contextHost.className='gmfq-cot-bce-host';
+   contextHost.appendChild(box);
+   rail.appendChild(contextHost);
  }
 }
 
