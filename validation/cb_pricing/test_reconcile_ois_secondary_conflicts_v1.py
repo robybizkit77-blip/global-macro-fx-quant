@@ -159,10 +159,12 @@ with tempfile.TemporaryDirectory() as td:
     later = copy.deepcopy(fixture)
     later["currencies"]["USD"]["horizons"]["3m"]["futures_price"] = 95.985
     later["currencies"]["USD"]["horizons"]["3m"]["rate"] = 4.015
-    # Returning to the original first print is not a conflict.
+    # Returning to the original first print is a replayed, already-known
+    # disagreement. It must not create another event or clear quarantine.
     feed.write_text(json.dumps(later) + "\n")
     same = apply(source=feed, history=archive, quarantine=quarantine, write=True)
-    assert same["conflict_currencies"] == [], same
+    assert same["conflict_currencies"] == ["USD"], same
+    assert same["new_quarantine_events"] == 0, same
     assert quarantine.read_bytes() == frozen_quarantine
 
     # A forged official quote is never accepted into the history or quarantine.
