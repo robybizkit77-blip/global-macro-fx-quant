@@ -22,6 +22,9 @@ on:
       - 'validation/publishing/test_control_room_market_delivery_v1.py'
       - 'validation/publishing/check_control_room_v10_0800_public_sla_v1.py'
       - 'validation/publishing/test_control_room_v10_0800_public_sla_v1.py'
+      - 'validation/publishing/verify_control_room_v10_preview_parts_v1.py'
+      - 'validation/publishing/test_verify_control_room_v10_preview_parts_v1.py'
+      - 'validation/publishing/control_room_v10_frozen_preview_parts_v1.json'
       - 'validation/check_nzd_rates_reviewed_snapshot_v1.py'
       - 'validation/test_nzd_rates_reviewed_snapshot_v1.py'
       - 'validation/RATES_SOURCE_ADAPTERS_V1_2026-10-05.json'
@@ -132,6 +135,7 @@ jobs:
           python validation/publishing/test_market_mirror_after_pages_success_v1.py
           python validation/test_nzd_rates_reviewed_snapshot_v1.py
           python validation/publishing/test_verify_pages_http_delivery_v1.py
+          python validation/publishing/test_verify_control_room_v10_preview_parts_v1.py
           python validation/publishing/test_control_room_v10_0800_public_sla_v1.py
 
       - name: Publish exact feed scope to gh-pages with lease
