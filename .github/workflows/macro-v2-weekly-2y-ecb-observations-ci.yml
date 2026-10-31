@@ -6,6 +6,7 @@ on:
       - '.github/workflows/macro-v2-weekly-2y-ecb-observations-ci.yml'
       - 'validation/macro/v2_fx_exact_weekly_2y_ecb_context_v1.py'
       - 'validation/macro/test_v2_fx_exact_weekly_2y_ecb_context_v1.py'
+      - 'validation/macro/fixtures/v2_exact_weekly_2y_ecb_oct31_vintage_snapshot_v1.json'
       - 'validation/macro/MACRO_V2_WEEKLY_2Y_FX_OBSERVED_WINDOW_2026-10-31.md'
   workflow_dispatch:
 permissions:
