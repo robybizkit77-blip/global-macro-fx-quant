@@ -1,0 +1,92 @@
+{
+  "schema": "GMFQ_NZD_B2_LATEST_GOVT_HTML_RESEARCH_V1",
+  "currency": "NZD",
+  "authority": "Reserve Bank of New Zealand",
+  "basis": "NZFMA indicative 5:10pm closing 2-year and 10-year government benchmark bond yields; not swap, Bank Bill, or OIS",
+  "source_url": "https://www.rbnz.govt.nz/en/statistics/series/exchange-and-interest-rates/wholesale-interest-rates",
+  "source_release_date": "2026-10-30",
+  "latest_observation_date": "2026-10-29",
+  "status": "SINGLE_OFFICIAL_RBNZ_HTML_TEXT_CAPTURE__INDEPENDENT_XLSX_REVIEW_PENDING",
+  "source_citation": "Official RBNZ B2 public HTML table viewed 2026-10-31; XLSX byte-level comparison unavailable at capture.",
+  "latest_official_web_read_only": {
+    "date": "2026-10-29",
+    "2Y": 3.77,
+    "10Y": 4.87,
+    "curve_bp": 110
+  },
+  "historical_approved_anchor": {
+    "date": "2026-10-16",
+    "2Y": 3.89,
+    "10Y": 5
+  },
+  "website_rows": [
+    {
+      "date": "2026-10-15",
+      "2Y": 3.81,
+      "10Y": 4.94
+    },
+    {
+      "date": "2026-10-16",
+      "2Y": 3.89,
+      "10Y": 5
+    },
+    {
+      "date": "2026-10-19",
+      "2Y": 3.91,
+      "10Y": 5.01
+    },
+    {
+      "date": "2026-10-20",
+      "2Y": 3.94,
+      "10Y": 5.06
+    },
+    {
+      "date": "2026-10-21",
+      "2Y": 3.93,
+      "10Y": 5.03
+    },
+    {
+      "date": "2026-10-22",
+      "2Y": 3.91,
+      "10Y": 4.98
+    },
+    {
+      "date": "2026-10-23",
+      "2Y": 3.89,
+      "10Y": 4.94
+    },
+    {
+      "date": "2026-10-27",
+      "2Y": 3.94,
+      "10Y": 4.97
+    },
+    {
+      "date": "2026-10-28",
+      "2Y": 3.83,
+      "10Y": 4.93
+    },
+    {
+      "date": "2026-10-29",
+      "2Y": 3.77,
+      "10Y": 4.87
+    }
+  ],
+  "publication_notes": {
+    "normally_one_business_day_lag": true,
+    "table_displays_closing_bond_yields_not_swap_yields": true,
+    "days_with_no_published_govt_pair_not_interpolated": true
+  },
+  "governance": {
+    "independent_xlsx_reconciliation_completed": false,
+    "independent_human_review_completed": false,
+    "eligible_for_official_canonical_promotion": false,
+    "eligible_for_macro_score": false,
+    "eligible_for_rates_spreads": false,
+    "eligible_for_backtests": false,
+    "market_pricing_change_from_this_source_allowed": false,
+    "core_score_effect": "NONE",
+    "pair_engine_effect": "NONE",
+    "live_rate_data_written": false
+  },
+  "method_note": "Append-only research observation in a separate file. Preserve prior Oct22 2-web-read record and Oct16 canonical until XLSX comparison/reviewer approval; do not infer a synchronized CHF curve or OIS path."
+}

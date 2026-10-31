@@ -6,12 +6,22 @@ on:
     paths:
       - 'validation/build_chf_nzd_official_rates_staging_v1.py'
       - 'validation/test_chf_nzd_official_rates_staging_v1.py'
+      - 'validation/rates/recover_chf_snb_paired_history_v1.py'
+      - 'validation/rates/test_recover_chf_snb_paired_history_v1.py'
+      - 'validation/rates/reconcile_rbnz_b2_xlsx_oct29_v1.py'
+      - 'validation/rates/test_reconcile_rbnz_b2_xlsx_oct29_v1.py'
+      - 'live_data/sections/NZD_B2_GOVT_LATEST_WEB_RESEARCH.json'
       - '.github/workflows/chf-nzd-official-rates-gated-staging-v1.yml'
   push:
     branches: [main]
     paths:
       - 'validation/build_chf_nzd_official_rates_staging_v1.py'
       - 'validation/test_chf_nzd_official_rates_staging_v1.py'
+      - 'validation/rates/recover_chf_snb_paired_history_v1.py'
+      - 'validation/rates/test_recover_chf_snb_paired_history_v1.py'
+      - 'validation/rates/reconcile_rbnz_b2_xlsx_oct29_v1.py'
+      - 'validation/rates/test_reconcile_rbnz_b2_xlsx_oct29_v1.py'
+      - 'live_data/sections/NZD_B2_GOVT_LATEST_WEB_RESEARCH.json'
       - '.github/workflows/chf-nzd-official-rates-gated-staging-v1.yml'
   schedule:
     # 17:00 UTC on weekdays: after the existing daily access probe.
@@ -41,6 +51,34 @@ jobs:
           python -m py_compile validation/build_chf_nzd_official_rates_staging_v1.py validation/test_chf_nzd_official_rates_staging_v1.py
           python validation/probe_chf_nzd_rates_sources_v1.py --self-test
           python validation/test_chf_nzd_official_rates_staging_v1.py
+      - name: Test CHF same-date spot recovery and independent NZD B2 XLSX mapping
+        run: |
+          python validation/rates/test_recover_chf_snb_paired_history_v1.py
+          python validation/rates/test_reconcile_rbnz_b2_xlsx_oct29_v1.py
+
+      - name: Attempt current SNB daily 2Y+10Y paired-source recovery (never publish)
+        shell: bash
+        run: |
+          set -u
+          mkdir -p /tmp/chf-nzd-official-staging
+          if python validation/rates/recover_chf_snb_paired_history_v1.py \
+              --output /tmp/chf-nzd-official-staging/CHF_PAIRED_HISTORY_RECEIPT.json; then
+            echo SNB_PAIRED_SOURCE_RECOVERY_READ_ONLY_REPORT_WRITTEN
+          else
+            echo SNB_PAIRED_SOURCE_UNAVAILABLE_OR_AMBIGUOUS__NOT_CERTIFIED
+          fi
+
+      - name: Attempt independently downloaded RBNZ B2 XLSX vs Oct 29 public HTML (never publish)
+        shell: bash
+        run: |
+          set -u
+          if python validation/rates/reconcile_rbnz_b2_xlsx_oct29_v1.py \
+              --output /tmp/chf-nzd-official-staging/NZD_XLSX_HTML_COMPARE.json; then
+            echo NZD_B2_XLSX_HTML_RECONCILED__MANUAL_APPROVAL_STILL_REQUIRED
+          else
+            echo NZD_B2_XLSX_UNAVAILABLE_OR_NOT_RECONCILED__OFFICIAL_PROMOTION_PROHIBITED
+          fi
+
       - name: Read official SNB paired 2Y/10Y and stage only if new and current
         shell: bash
         run: |

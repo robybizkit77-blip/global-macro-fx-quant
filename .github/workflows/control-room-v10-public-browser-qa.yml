@@ -17,6 +17,8 @@ on:
       - 'site/control-room-preview/ois-pricing-estimates-v1.js'
       - 'validation/test_control_room_g8_visible_pricing_v1.js'
       - 'validation/test_control_room_chf_nzd_rates_research_v1.js'
+      - 'validation/test_nzd_rbnz_b2_latest_web_research_v1.js'
+      - 'live_data/sections/NZD_B2_GOVT_LATEST_WEB_RESEARCH.json'
       - 'validation/test_fed_pricing_freshness_audit_v1.cjs'
       - 'validation/test_control_room_rates_history_calendar_v1.js'
       - 'site/control-room-preview/home-navigation-v10.js'
@@ -127,6 +129,7 @@ jobs:
           node validation/test_control_room_pending_source_dossiers_v1.js
           node validation/test_control_room_g8_visible_pricing_v1.js
           node validation/test_control_room_chf_nzd_rates_research_v1.js
+          node validation/test_nzd_rbnz_b2_latest_web_research_v1.js
           python validation/cb_pricing/test_build_ois_source_readiness_view_v1.py
       - name: Validate Preview browser QA JavaScript syntax
         run: node --check validation/qa_control_room_v10_public.js
