@@ -1,8 +1,51 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-31T02:28:07Z",
+  "generated_at_utc": "2026-10-31T09:43:41Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-d97b149d905c95af8fed",
+      "observed_at_utc": "2026-10-30T14:18:27Z",
+      "headline": "German inflation cools on fuel tax cut, economy grows more than expected in Q3",
+      "summary": "Reuters riporta: German inflation cools on fuel tax cut, economy grows more than expected in Q3. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxOT2VyTFJQdHM3YjBFYUJJbDA4Y0JfSFZUTm5XNDloeUJCeUlRcU4wdEtvNXJISGtKc0h3MHFCajg5YTEtYUh6NkJ0eWxmdTRJOEtfRnh5OUFBUUpGNWdQV1FUY2NRN2tMbllZVUFDZWhqVG9SUjR3X2xnOXdDQkJiQUdxWGVkWEN6ZVNsdUprZnBmWlpOT0JSa0w4LTlzSHdfX3U0?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-e8c033f5eee0c70ec2c6",
+      "observed_at_utc": "2026-10-30T11:54:50Z",
+      "headline": "More ECB hikes may be needed to stop inflation, Panetta says",
+      "summary": "Reuters riporta: More ECB hikes may be needed to stop inflation, Panetta says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "EUR"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPcTdaamhfckpnZjNRSnhtN1FQcEFyVUlmQ3BlamJTcDI1ZnFiVFloUndsY0c1SVZjcDY3ZzV2T3RxNy1ZU2pWelVfSG00b0QwbGtsVEtNZzBDMDJhRlhtZ0RwY3QxYTRjeTdBaHd5QnVBZlJGUldoaGFCaDRqRl9DR1NEV2dNZ1pyR2lvMGhWYUVkT1BMVy1NQXZHZ0RPQzQxam8zTE9lRTM2RndPWkE?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-b25d33914f22c47503ec",
+      "observed_at_utc": "2026-10-30T09:13:43Z",
+      "headline": "ECB survey sees higher inflation in coming quarters",
+      "summary": "Reuters riporta: ECB survey sees higher inflation in coming quarters. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "EUR"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxOX3pZLVNlOVN6NTVFZXhJeWhaZ0tVSUZMLWFzOFV4RGtIcTRMZVNVTnlPTElVYlA1WTlXeUtKUGVMRXB3MEY3eV85bXpBT040VVJHLUpkQml0ZkNVS3FTRFRqY2V1MG9LV3BwVmZEWVd5aktvWUFnWWc2Q25jUkVxZUhxRHRWRzlxVndHSUJQS0liMnVXNHdrVw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-6b4fbc5a8c488202b38f",
       "observed_at_utc": "2026-10-30T17:35:43Z",
@@ -1380,45 +1423,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxOVVNMUGdfdGo5OFI2RExWUFBBTkQ3SWhMaVNCajNGUER0Si1ULTM0QnJ2UDZoMURnczVfU0N4dXVfN3VjV2Qxd2VGcW1YcUxYb2FrdG1wa3VsdDZ2YldVeExjQXZrQjRtcld4VHFrTjMxeVEzU2JGM1E2TTJTTjNTc3llMUo4SkNYanhrb2Fqb2l0TmpQaENReFpVbkJMSk9hbG5XbW1ObnFMdGZENFNZQTBzdnEwQzhFRUVacTF1UQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-16d3a0c1a1fc75c78ba6",
-      "observed_at_utc": "2026-10-26T05:56:00Z",
-      "headline": "Gold gains as oil price slide cools some inflation concerns",
-      "summary": "Reuters riporta: Gold gains as oil price slide cools some inflation concerns. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxPZml1aC0yS2NrLUloeEFPZnYyeExpazhPVExTT1BLcV9HZGxEZWFzcHFUMTJFbDhUTjgyaE5EbGRja1BRX0p2UzlDSmEzUUpzTG9ZT2xKZEZMczFvb1pzU2xrdXlNT0dDUXYtQnhoLUFpT09xQmF5Q25FQXdKNGpjOERVdTB1UTk4NkhSd2k3cUNBSTJRMVVsUlpSWQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-39283b59516b6e8941b8",
-      "observed_at_utc": "2026-10-26T10:41:00Z",
-      "headline": "Trump failed to stop inflation. Now Republicans may pay the price in the midterm elections",
-      "summary": "AP News riporta: Trump failed to stop inflation. Now Republicans may pay the price in the midterm elections. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "AP News · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxPbDB0Q3N4MWxNWWdRNUtaNHBIaVhzeldEWEt1eDM0dDJKT3FvMGh4RG82RlgyUW5CdmxvZkJFUThJQkxvWU16NXE0bUE1RkQ0UUhNMXQ3ZWQ3Y0I2bGNzVzB5WlRvMWpFUGdBWGhTWTl2enl4V3UzM0lHa21RbWI5NWR3dlFhWElfaTlJX2ZETExYN1ZfMDgxZWJyeGdQTnRZ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-afce7630a9cc1acb4efa",
-      "observed_at_utc": "2026-10-26T12:04:00Z",
-      "headline": "Musk's warning hits neocloud stocks as debt concerns mount",
-      "summary": "Reuters riporta: Musk's warning hits neocloud stocks as debt concerns mount. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQaElYSFRZcUVWRmFiRzg0SWRkSENhb0NvTGNLS1gwZnZrU015R3R6NmdiLTE4WDVCeUNkWi1LejFmRXVsUmRmRzQydEEtby1ESzFNY21ZSnhNV1ZhdU9jQ2NMMHBFZlc0anVGcjBBVEVvQU9vdl9RUVRMUmhGSzdRaFdWRmNISTg5WjlqazEwLUdJbjRtYzY3eHlTU0lZRTF4?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
