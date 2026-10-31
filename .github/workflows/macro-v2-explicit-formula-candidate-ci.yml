@@ -6,6 +6,8 @@ on:
       - '.github/workflows/macro-v2-explicit-formula-candidate-ci.yml'
       - 'validation/macro/v2_domestic_candidate_explicit_formula_v1.py'
       - 'validation/macro/test_v2_domestic_candidate_explicit_formula_v1.py'
+      - 'validation/macro/v2_source_robustness_triage_v1.py'
+      - 'validation/macro/test_v2_source_robustness_triage_v1.py'
       - 'validation/macro/v2_zero_mad_ordinal_quality_v1.py'
       - 'validation/macro/test_v2_zero_mad_ordinal_quality_v1.py'
       - 'validation/macro/fixtures/v2_g8_frozen_domestic_research_coordinates_2026_10_27.json'
@@ -80,6 +82,31 @@ jobs:
           print('BLOCKERS:',x['blocked'])
           print('ZERO_MAD_ORDINAL_DESCRIPTORS:',x['zero_mad_context_descriptors_validated'])
           PY
+      - name: Audit first-web 24-axis gaps and exact frozen candidate boundary margins
+        run: |
+          python -m unittest validation.macro.test_v2_source_robustness_triage_v1 -v
+          python -m validation.macro.v2_g8_24_axis_training_history_gap_audit_v1 --output /tmp/gmfq-macro-source-gap-20261026.json
+          python -m validation.macro.v2_source_robustness_triage_v1 \
+            --gap /tmp/gmfq-macro-source-gap-20261026.json \
+            --candidate /tmp/gmfq-domestic-macro-candidate.json \
+            --readiness /tmp/gmfq-current-macro-input-readiness.json \
+            --out /tmp/gmfq-macro-source-robustness-triage.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('/tmp/gmfq-macro-source-robustness-triage.json').read_text())
+          n=r['summary']
+          assert r['schema']=='GMFQ_MACRO_V2_SOURCE_AND_ROBUSTNESS_TRIAGE_V1'
+          assert n['g8_currencies']==8 and n['source_axes']==24
+          assert n['fully_certified_historical_PIT_axes']==0
+          assert n['candidate_countries_weight_robust']+n['candidate_countries_weight_ambiguous']==8
+          assert set(n['missing_window_axes'])=={'USD.inflation','CHF.labour'}
+          assert n['mathematically_contiguous_windows']==22
+          assert r['snapshots_are_not_synchronous_and_cannot_be_joined_into_backtest']
+          assert not r['safe_to_publish_new_D'] and not r['safe_to_recalculate_28_pairs']
+          assert not r['safe_to_use_for_beta_or_forward'] and not r['writes_live_data']
+          print('MACRO_V2_24_AXIS_SOURCE_AND_EXACT_STRESS_RESEARCH_ONLY_PASS',n)
+          PY
       - name: Build downloadable integrated beta evidence review, without new FX scoring
         if: steps.admission.outputs.complete == 'true'
         run: |
@@ -149,6 +176,8 @@ jobs:
           path: |
             /tmp/gmfq-domestic-macro-candidate.json
             /tmp/gmfq-current-macro-input-readiness.json
+            /tmp/gmfq-macro-source-gap-20261026.json
+            /tmp/gmfq-macro-source-robustness-triage.json
             /tmp/gmfq-core-beta-withheld.json
             /tmp/gmfq-core-beta-evidence-desk.json
             /tmp/gmfq-core-beta-evidence-desk.html
