@@ -146,7 +146,7 @@ def validate_conflict_lineage(feed: dict, history: list[dict],
                     and incoming["observed_under_horizon"] == h
                     and original["observed_under_horizon"] == h,
                     ccy + ": quarantine event does not describe claimed contract")
-            q = ((entry.get("horizons") or {}).get(h) or {}
+            q = ((entry.get("horizons") or {}).get(h) or {})
             # Either side of the immutable two-quote disagreement may be
             # re-fetched. Neither becomes verified simply by reappearing.
             one_of_signed_prints = any(
