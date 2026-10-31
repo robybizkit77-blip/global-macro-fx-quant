@@ -454,7 +454,9 @@ async function getState(page){
            .map(x=>[x.ccy,x.tier]));
        const expectedKeys=['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'];
        let newResearchVisible=false,latestResearch=null;
-       for(let attempt=0;attempt<16;attempt++){
+       // GitHub branch parity is earlier than Pages build/CDN convergence.
+       // Allow bounded real-time propagation; do not mark a stale build GREEN.
+       for(let attempt=0;attempt<24;attempt++){
          try{
            await page.waitForFunction(()=>{
              const d=document.getElementById('gmfq-page')?.contentDocument;
@@ -480,8 +482,11 @@ async function getState(page){
          }catch(error){
            console.log('PUBLIC_OIS_RESEARCH_WAIT',name,attempt,String(error).slice(0,180));
          }
-         await page.goto(BASE+'?oisResearch='+Date.now()+'-'+attempt+'#/tassi?focus=ois',
-           {waitUntil:'domcontentloaded',timeout:120000});
+         if(attempt<23){
+           await page.waitForTimeout(3000);
+           await page.goto(BASE+'?oisResearch='+Date.now()+'-'+attempt+'#/tassi?focus=ois',
+             {waitUntil:'domcontentloaded',timeout:120000});
+         }
        }
        if(!newResearchVisible)throw Error(name+
          ' public OIS addon version or source classification not converged '+
