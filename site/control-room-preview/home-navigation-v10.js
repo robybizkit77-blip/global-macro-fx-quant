@@ -2020,7 +2020,7 @@ function pairMacroRatesComparison(code,pair,rates,ois,modelDay,macroDay,proxy){
    '2Y / 10Y WITHHELD · ultima data '+(r.date||'non verificata');
   const context=!p.ok?indicative6m[c]:null;
   const contextValid=context&&context.currency===c&&
-   ['USD','EUR','CHF'].includes(c)&&['PROXY','MIXED'].includes(context.type)&&
+   ['USD','EUR','CHF'].includes(c)&&['PROXY','MIXED','CONFLICTED'].includes(context.type)&&
    context.is_official_ois===false&&context.policy_delta_allowed===false&&
    context.pair_effect==='NONE'&&context.core_effect==='NONE'&&
    num(context.value)!==null&&fresh(context.quote_as_of,5);
