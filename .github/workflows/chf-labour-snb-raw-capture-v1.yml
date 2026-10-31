@@ -6,6 +6,8 @@ on:
     paths:
       - 'validation/macro/capture_chf_labour_snb_vintage_v1.py'
       - 'validation/macro/test_capture_chf_labour_snb_vintage_v1.py'
+      - 'validation/macro/probe_chf_seco_2024_first_month_pdf_bytes_v1.py'
+      - 'validation/macro/test_probe_chf_seco_2024_first_month_pdf_bytes_v1.py'
       - '.github/workflows/chf-labour-snb-raw-capture-v1.yml'
   workflow_dispatch:
 
@@ -22,9 +24,56 @@ jobs:
         with:
           python-version: '3.12'
       - name: Run fail-closed read-only capture contract tests
-        run: python -m unittest validation.macro.test_capture_chf_labour_snb_vintage_v1 -v
+        run: |
+          python -m unittest validation.macro.test_capture_chf_labour_snb_vintage_v1 -v
+          python -m unittest validation.macro.test_probe_chf_seco_2024_first_month_pdf_bytes_v1 -v
       - name: No canonical payload changed
         run: git diff --exit-code -- live_data/sections/D.json live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
+
+  audit-original-2024-seco-pdfs:
+    if: github.event_name == 'pull_request'
+    needs: deterministic-validation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe only four issuer 2024 first-month report PDFs
+        run: |
+          python -m validation.macro.probe_chf_seco_2024_first_month_pdf_bytes_v1 --output-dir /tmp/gmfq-chf-seco-2024-pdf-recheck
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          p=Path('/tmp/gmfq-chf-seco-2024-pdf-recheck')
+          d=json.loads((p/'probe_manifest.json').read_text())
+          s=d['summary']
+          assert d['schema']=='GMFQ_CHF_SECO_2024_FOUR_ISSUER_PDF_BYTE_RECHECK_V1'
+          assert s['first_month_periods_checked']==4
+          assert s['candidate_PDF_bytes_retrieved_today']+s['still_no_candidate_original_PDF_bytes']==4
+          assert not s['exact_historical_SNB_release_vintages_certified']
+          assert not s['publisher_day_original_HTTP_vintages_certified']
+          for item in d['source_months'].values():
+              r=item['captured_candidate_today']
+              if r:
+                  assert hashlib.sha256((p/r['file']).read_bytes()).hexdigest()==r['candidate']['sha256']
+                  assert not r['candidate']['publisher_day_original_HTTP_bytes_certified']
+                  assert not r['candidate']['monthly_table_first_column_authenticated']
+          assert not d['can_promote_CHF_labour_to_24_months_PIT']
+          assert not d['can_upgrade_2024_SECO_fixture_automatically']
+          assert not d['can_update_D_or_28_pairs'] and not d['writes_live_data']
+          print('CH_SECO_FOUR_2024_ORIGINAL_PDF_CANDIDATE_PROBE_NO_PIT_PROMOTION_GREEN',s)
+          PY
+          git diff --exit-code -- live_data/sections/D.json live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
+      - name: Retain only candidate binary downloads and read-only provenance manifest for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chf-seco-four-2024-pdf-recovery-research-${{ github.run_id }}
+          path: /tmp/gmfq-chf-seco-2024-pdf-recheck/
+          if-no-files-found: warn
+          retention-days: 90
 
   capture-current-snb:
     if: github.event_name == 'workflow_dispatch'
