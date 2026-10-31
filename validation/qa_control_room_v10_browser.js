@@ -670,7 +670,7 @@ function expectedReactionFromMetrics(row){
      !sourcePriority.primaryFirst||!sourcePriority.officialOnlyHidden||
      !sourcePriority.toggle||sourcePriority.expanded!=='false'||
      sourcePriority.rows.length!==8||
-     sourcePriority.rows.some(x=>!['OFFICIAL','PROXY','MIXED','SCENARIO'].includes(x.tier)||
+     sourcePriority.rows.some(x=>!['OFFICIAL','PROXY','MIXED','CONFLICTED','SCENARIO'].includes(x.tier)||
        x.numeric.length!==3||x.numeric.some(v=>!v||v==='—')))
     throw Error(label+' Rates main matrix not fully 8/8 source-graded or official-only not collapsed '+JSON.stringify(sourcePriority));
   await page.frameLocator('#gmfq-page').locator('#gmfq-certified-only-toggle').click();
@@ -793,8 +793,8 @@ function expectedReactionFromMetrics(row){
     throw Error(label+' Rates/OIS decision-first evidence failed '+JSON.stringify(research));
   if(research.g8LevelSeries!==8||research.g8Levels!=='8'||
       research.qualityTypes.some(x=>x.points!==3||
-       !['OFFICIAL','PROXY','MIXED','SCENARIO'].includes(x.tier)||
-       (x.tier==='MIXED'&&x.joined!=='false'))||
+       !['OFFICIAL','PROXY','MIXED','CONFLICTED','SCENARIO'].includes(x.tier)||
+       (['MIXED','CONFLICTED'].includes(x.tier)&&x.joined!=='false'))||
       research.secondary!==expectedSecondaryQuotes||
      !['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'].every(c=>research.legend.includes(c))||
      !research.disclaimers.includes('NON curva OIS')&&
