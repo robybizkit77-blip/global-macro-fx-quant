@@ -133,6 +133,20 @@ with tempfile.TemporaryDirectory() as td:
     feed.write_text(json.dumps(fixture, sort_keys=True) + "\n")
     replay = apply(source=feed, history=archive, quarantine=quarantine, write=True)
     assert replay["written"] == 0 and replay["new_quarantine_events"] == 0, replay
+    # Re-fetching the very first source print is NOT proof that the
+    # disagreement has been independently resolved. It stays in quarantine.
+    assert replay["conflict_currencies"] == ["USD"], replay
+    replay_source = json.loads(feed.read_text(encoding="utf-8"))
+    replay_h = replay_source["currencies"]["USD"]["horizons"]["3m"]
+    assert replay_h["quote_timestamp_verified"] is False
+    assert replay_h["quote_timestamp_source"] == "QUARANTINED_SAME_CONTRACT_SAME_DAY"
+    assert replay_h["rate"] == 4.015  # Original print retained, NOT promoted
+    assert replay_source["currencies"]["USD"]["source_conflict_keys"][0]["event_id"] == event["event_id"]
+    from reconcile_ois_secondary_conflicts_v1 import validate_conflict_lineage
+    reread = validate_conflict_lineage(replay_source, load_history(archive),
+                                       read_conflicts(quarantine))
+    assert reread["current_quarantine_horizons_verified"] == 1
+
     assert archive.read_bytes() == frozen_archive
     assert quarantine.read_bytes() == frozen_quarantine
     assert len(read_conflicts(quarantine)) == 1
