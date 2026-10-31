@@ -138,6 +138,116 @@ function auditNzdBankBill(bb,today){
  }
  return verified;
 }
+/* CHF/NZD 2Y/10Y dated historical CONTEXT, separate from G8 OIS.
+   CHF has one new official SNB 10Y, not an official same-date 2Y.
+   A 2Y *scenario* is 10Y minus distribution of previous 60 official
+   paired-date 10Y-2Y spreads. 10/90 percentiles are IN-SAMPLE descriptive,
+   not an OOS confidence interval. NZD has two agreeing web reads of
+   22-Oct RBNZ benchmark closes, not independent XLSX/human approval. */
+function ratesContinuity(rates,chf,nzd,today){
+ const result={schema:'GMFQ_CHF_NZD_2Y10Y_DATED_RESEARCH_V1',CHF:null,NZD:null,
+  official_rates_modified:false,official_spread_signals:false,fx_effect:'NONE'};
+ const dt=s=>typeof s==='string'&&/^\d{4}-\d\d-\d\d$/.test(s)&&
+  Number.isFinite(Date.parse(s+'T00:00:00Z'))?Date.parse(s+'T00:00:00Z'):null;
+ const finite=x=>number(x)!==null&&Number.isFinite(x)&&x>-5&&x<25;
+ const old=ccy=>{
+  const x=rates?.[ccy];
+  if(!x||dt(x.date)===null||!finite(x['2Y'])||!finite(x['10Y'])||
+     !x.quality?.includes('OFFICIAL')||!x.source?.includes(ccy==='CHF'?'Swiss National Bank':'Reserve Bank of New Zealand'))return null;
+  const a=x.history2||{},b=x.history10||{},d=a.dates||[],e=b.dates||[];
+  if(d.length<60||e.length!==d.length||d.some((v,i)=>v!==e[i]||(i>0&&v<=d[i-1]))||
+     d.at(-1)!==x.date||Math.abs(a.values?.at(-1)-x['2Y'])>1e-8||
+     Math.abs(b.values?.at(-1)-x['10Y'])>1e-8||
+     a.values.length!==d.length||b.values.length!==d.length)return null;
+  return x;
+ };
+ const c=old('CHF');
+ if(c&&chf?.schema==='GMFQ_CHF_SNB_10Y_SPOT_CONTEXT_V1'&&
+    chf.currency==='CHF'&&chf.tenor==='10Y'&&
+    chf.status==='OFFICIAL_PUBLISHED_10Y_INFORMATIONAL'&&
+    chf.yield_type==='SWISS_CONFEDERATION_ZERO_COUPON_SPOT'&&
+    chf.provenance==='SNB_PUBLIC_PAGE_DATED_EXACT_10Y'&&
+    chf.has_current_2y===false&&chf.eligible_for_curve_spreads===false&&
+    chf.eligible_for_core_signals===false&&chf.eligible_for_backtests===false&&
+    chf.ois_or_saron===false&&/^[a-f0-9]{64}$/.test(chf.source_html_sha256||'')&&
+    finite(chf.value_percent)&&dt(chf.as_of)!==null&&chf.as_of>c.date&&chf.as_of<=today){
+  const diffs=c.history2.dates.slice(-60).map((_,i)=>{
+   const idx=c.history2.dates.length-60+i;
+   return c.history10.values[idx]-c.history2.values[idx];
+  }).sort((a,b)=>a-b);
+  const q=p=>{
+   const k=(diffs.length-1)*p,l=Math.floor(k),u=Math.ceil(k);
+   return diffs[l]+(diffs[u]-diffs[l])*(k-l);
+  };
+  const median=q(.5),p10=q(.1),p90=q(.9),reported=chf.value_percent;
+  if(diffs.every(x=>finite(x)&&x<5)&&p10<=median&&median<=p90){
+   result.CHF={official_pair_date:c.date,old_2y:c['2Y'],old_10y:c['10Y'],
+    observed_10y_date:chf.as_of,observed_10y:reported,
+    estimated_2y_date:chf.as_of,
+    estimated_2y:fresh(chf.as_of,today)?Number((reported-median).toFixed(4)):null,
+    illustrative_2y_range:fresh(chf.as_of,today)?
+     [Number((reported-p90).toFixed(4)),Number((reported-p10).toFixed(4))]:null,
+    slope_window_observations:60,
+    calibration_end:c.date,
+    source_quality:'10Y_OFFICIAL__2Y_HISTORICAL_SLOPE_SCENARIO',
+    2Y_not_observed_same_day:true,official_2y10y_spread_available:false,
+    percentile_band_is_forecast_interval:false,
+    rates_feed_written:false};
+  }
+ }
+ const z=old('NZD');
+ if(z&&nzd?.schema==='GMFQ_NZD_B2_GOVT_WEB_REVIEW_CONTEXT_V1'&&
+   nzd.currency==='NZD'&&nzd.status==='TWO_WEB_READS_MATCH__UNAPPROVED_RESEARCH_ONLY'&&
+   nzd.source==='Reserve Bank of New Zealand'&&
+   nzd.evidence?.first_web_review==='FIRST_REVIEW_COMPLETE_SECOND_INDEPENDENT_REVIEW_PENDING'&&
+   nzd.evidence?.second_web_review==='SECOND_OFFICIAL_WEB_READ_MATCHES_FIRST_REVIEW__MANUAL_APPROVAL_PENDING'&&
+   nzd.evidence?.independent_xlsx_review_completed===false&&
+   nzd.evidence?.independent_human_reviewer_confirmed===false&&
+   nzd.governance?.official_canonical_untouched===true&&
+   nzd.governance?.eligible_for_rate_spreads===false&&
+   nzd.governance?.eligible_for_automatic_promotion===false&&
+   nzd.governance?.live_data_promotion_allowed===false&&
+   nzd.governance?.core_score_effect==='NONE'&&
+   nzd.governance?.pair_engine_effect==='NONE'&&
+   dt(nzd.as_of)!==null&&nzd.as_of>z.date&&nzd.as_of<=today&&
+   nzd.canonical_at_review?.as_of===z.date&&
+   nzd.canonical_at_review['2Y']===z['2Y']&&
+   nzd.canonical_at_review['10Y']===z['10Y']&&
+   finite(nzd['2Y'])&&finite(nzd['10Y'])&&
+   Math.abs((nzd['10Y']-nzd['2Y'])*100-nzd.curve_bp)<.051){
+    result.NZD={official_pair_date:z.date,old_2y:z['2Y'],old_10y:z['10Y'],
+     unapproved_pair_date:nzd.as_of,reviewed_2y:nzd['2Y'],reviewed_10y:nzd['10Y'],
+     source_quality:'RBNZ_B2_DOUBLE_WEB_READ__UNAPPROVED',
+     latest_is_official_canonical:false,
+     no_observations_claimed_after:nzd.as_of,
+     incomplete_excel_and_human_review:true,rates_feed_written:false};
+ }
+ return result;
+}
+function continuityHtml(result){
+ const chf=result.CHF,nzd=result.NZD;
+ const field=(x)=>fmt(x)+'%';
+ if(!chf&&!nzd)return '<p class="gmfq-cont-empty">Nessuna nuova osservazione verificabile; restano valide le date dell’archivio.</p>';
+ const swiss=chf?
+  '<div data-continuity-ccy="CHF" data-model="HISTORICAL_SLOPE_60D" data-official-curve="false">'+
+  '<b>🇨🇭 CHF · 10Y SNB osservato '+esc(chf.observed_10y_date)+'</b>'+
+  '<p>10Y <strong>'+field(chf.observed_10y)+'</strong> ufficiale. 2Y ultima osservazione '+esc(chf.official_pair_date)+
+  ': <strong>'+field(chf.old_2y)+'</strong>. '+(chf.estimated_2y!==null?
+  '2Y <strong>stima ≈'+field(chf.estimated_2y)+'</strong> (scenario di pendenza costante mediana; fascia descrittiva '+
+  field(chf.illustrative_2y_range[0])+'–'+field(chf.illustrative_2y_range[1])+').':
+  '2Y stimato non disponibile: riferimento 10Y non più recente.')+
+  ' Nessuna curva ufficiale 2Y/10Y sincronizzata.</p></div>':'';
+ const kiwi=nzd?
+  '<div data-continuity-ccy="NZD" data-model="TWO_UNAPPROVED_WEB_READS" data-official-curve="false">'+
+  '<b>🇳🇿 NZD · B2 in revisione '+esc(nzd.unapproved_pair_date)+'</b>'+
+  '<p>2Y <strong>'+field(nzd.reviewed_2y)+'</strong> · 10Y <strong>'+field(nzd.reviewed_10y)+
+  '</strong>. Due letture web concordanti, ma <strong>non ancora approvate</strong> per sostituire la coppia ufficiale del '+
+  esc(nzd.official_pair_date)+'. Nessun rendimento inventato nei giorni successivi.</p></div>':'';
+ return '<section id="gmfq-chf-nzd-continuity" data-study-only="true" data-core-effect="NONE">'+
+  '<h3>CHF / NZD · continuità 2Y e 10Y</h3>'+
+  '<p>Contesto datato, separato dalla curva ufficiale: valori osservati, stime e revisioni non sono intercambiabili.</p>'+
+  swiss+kiwi+'<small>CHF: la fascia 10°–90° percentile nasce da 60 spread storici precedenti; non è un intervallo di previsione validato. Il modello assume una pendenza stabile, da falsificare. Nessun dato qui entra in Macro, OIS, segnali o backtest.</small></section>';
+}
 /* Read-only futures provenance: checked dated ticker, verified trading day,
    price 100 minus rate, proximity of expiry to labelled 90/180/365d targets.
    This cannot construct a forward OIS cash curve, basis or 1D/1W repricing. */
@@ -500,6 +610,13 @@ const css=[
  '#gmfq-ois-research-estimates .gmfq-est-source{grid-column:1/-1;color:#9aafbd;font-size:10px;padding-top:0!important}',
  '#gmfq-ois-research-estimates .gmfq-est-head{color:#adbecc;background:#142c3d;font:600 10px Arial,sans-serif}',
  '#gmfq-ois-research-estimates [data-estimate-type="SCENARIO"] b,#gmfq-ois-research-estimates [data-estimate-type="MIXED"] b{color:#e3c681}',
+ '#gmfq-ois-research-estimates #gmfq-chf-nzd-continuity{border-top:1px solid #2c495a;padding:12px 15px;color:#bfd1dc;font:12px/1.55 Arial,sans-serif}',
+ '#gmfq-ois-research-estimates #gmfq-chf-nzd-continuity h3{font:600 15px/1.5 Georgia,serif;color:#e4eef6;margin:0 0 6px}',
+ '#gmfq-ois-research-estimates #gmfq-chf-nzd-continuity>div{border-top:1px solid #294859;padding-top:8px;overflow-wrap:anywhere}',
+ '#gmfq-ois-research-estimates #gmfq-chf-nzd-continuity b{color:#e4eef6}',
+ '#gmfq-ois-research-estimates #gmfq-chf-nzd-continuity strong{color:#e3c681;font-variant-numeric:tabular-nums}',
+ '#gmfq-ois-research-estimates #gmfq-chf-nzd-continuity small{color:#9eb7c8;font-size:10px}',
+ '@media(max-width:600px){#gmfq-ois-research-estimates #gmfq-chf-nzd-continuity{padding:10px;font-size:11px}}',
  '#gmfq-ois-research-estimates .gmfq-est-note{margin-top:12px;color:#b1c5d2}',
  '#gmfq-ois-research-estimates .gmfq-same-table{border:1px solid #2c495a;background:#0a2132;border-radius:6px;margin:8px 0;overflow:hidden}',
  '#gmfq-ois-research-estimates .gmfq-same-line{display:grid;grid-template-columns:minmax(72px,.75fr) repeat(3,minmax(0,1fr));border-bottom:1px solid #254153}',
@@ -510,7 +627,7 @@ const css=[
  '@media(max-width:600px){#gmfq-ois-research-estimates .gmfq-same-line{grid-template-columns:minmax(55px,.7fr) repeat(3,minmax(0,1fr))}#gmfq-ois-research-estimates .gmfq-same-line>*{padding:6px 3px}#gmfq-ois-research-estimates .gmfq-same-value b{font-size:11px}#gmfq-ois-research-estimates .gmfq-same-value small{font-size:8px}}',
  '@media(max-width:600px){#gmfq-ois-research-estimates .gmfq-est-body{padding:9px}#gmfq-ois-research-estimates .gmfq-est-row{grid-template-columns:minmax(78px,1.1fr) repeat(3,minmax(0,1fr))}#gmfq-ois-research-estimates .gmfq-est-row>div,#gmfq-ois-research-estimates .gmfq-est-row>span{padding:6px 4px}#gmfq-ois-research-estimates .gmfq-est-row b{font-size:12px}#gmfq-ois-research-estimates .gmfq-est-row small{font-size:9px}}'
 ].join('');
-if(typeof module!=='undefined'&&module.exports)module.exports={romeTodayIso,matrix,view,matchedResearchMoves,fresh,coverage,indicativeSixMonth,scenarioSixMonth,auditNzdBankBill,auditDatedFuture,calibratedNzdCarry,NZD_REFERENCE_ROWS,NZD_RECENT_ROWS,NZD_HOLDOUT_ROWS};
+if(typeof module!=='undefined'&&module.exports)module.exports={romeTodayIso,matrix,view,matchedResearchMoves,ratesContinuity,continuityHtml,fresh,coverage,indicativeSixMonth,scenarioSixMonth,auditNzdBankBill,auditDatedFuture,calibratedNzdCarry,NZD_REFERENCE_ROWS,NZD_RECENT_ROWS,NZD_HOLDOUT_ROWS};
 if(typeof window!=='undefined')window.GMFQ_OIS_RESEARCH_V1=Object.freeze({romeTodayIso,matrix,coverage,indicativeSixMonth,scenarioSixMonth});
 if(typeof document==='undefined')return;
 const frame=document.getElementById('gmfq-page');if(!frame)return;
@@ -536,7 +653,7 @@ async function mount(doc){
  // that shows WITHHELD for perfectly usable dated secondary observations.
  anchor.insertAdjacentElement('beforebegin',box);
  const st=doc.createElement('style');st.textContent=css;doc.head.appendChild(st);
- try{const [a,b,h]=await Promise.allSettled([get('OIS_OPERATIONAL_VIEW.json'),get('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),loadSameContractArchive()]);
+ try{const [a,b,h,rates,chf,nzd]=await Promise.allSettled([get('OIS_OPERATIONAL_VIEW.json'),get('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),loadSameContractArchive(),get('NATIVE_RATES_DATA.json'),get('CHF_SNB_10Y_SPOT_CONTEXT.json'),get('NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json')]);
   if(frame.contentDocument!==doc||!active())return;
   const o=a.status==='fulfilled'?a.value:null,p=b.status==='fulfilled'?b.value:null;
   if(o?.schema!=='GMFQ_OIS_OPERATIONAL_VIEW_V1'||!o.currencies)throw Error('invalid feed');
@@ -548,6 +665,12 @@ async function mount(doc){
   box.dataset.sourceGradedCoverage=complete?'8/8':'PARTIAL';
   box.dataset.signalEffect='NONE';
   box.innerHTML=view(rows,matchedResearchMoves(h.status==='fulfilled'?h.value:'',rows,now));
+   // A missing research-only source NEVER invalidates independently certified
+   // or source-graded G8 monetary rates.
+   const research=ratesContinuity(rates.status==='fulfilled'?rates.value:null,
+    chf.status==='fulfilled'?chf.value:null,
+    nzd.status==='fulfilled'?nzd.value:null,now);
+   box.insertAdjacentHTML('beforeend',continuityHtml(research));
   // Keep the native STRICT CERTIFIED FEED unchanged and inspectable on demand.
   // Collapse its visually duplicate, official-only gaps ONLY while a fully
   // sourced and dated 8/8 matrix is available; fail open otherwise.
