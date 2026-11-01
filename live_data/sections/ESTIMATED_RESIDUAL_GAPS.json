@@ -17,7 +17,7 @@
       "source_sheet": "末残（Amounts at end of period）",
       "source_column": 7,
       "source_header_context": "4298428 | 4247068 | 4210409 | 4346010 | 4216365 | 4072435 | 4028129 | 3905362",
-      "fetched_at_utc": "2026-11-01T15:13:17.262089Z",
+      "fetched_at_utc": "2026-11-01T15:26:46.546437Z",
       "official_canonical_untouched": true,
       "original_runtime_validation": {
         "period": "2026-08",
