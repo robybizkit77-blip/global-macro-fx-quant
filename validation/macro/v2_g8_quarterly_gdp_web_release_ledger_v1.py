@@ -30,7 +30,7 @@ FIRST = {
     "GBP": ("2026-08-13", 0.4, "PERCENT_QOQ_SA", "FIRST_QUARTERLY_ESTIMATE", "www.ons.gov.uk"),
     "JPY": ("2026-08-17", 0.3, "PERCENT_QOQ_SA", "FIRST_PRELIMINARY", "www.esri.cao.go.jp"),
     "CHF": ("2026-08-14", 1.5, "PERCENT_QOQ_SA_CALENDAR_SPORTS", "FLASH",
-            "www.schweizerischesseeschifffahrtsamt.eda.admin.ch"),
+            "www.seco.admin.ch"),
     "CAD": ("2026-08-28", 0.8, "PERCENT_QOQ_SA", "FIRST_RELEASE", "www150.statcan.gc.ca"),
     "AUD": ("2026-09-02", 0.4, "PERCENT_QOQ_SA_CHAIN_VOLUME", "FIRST_RELEASE", "www.abs.gov.au"),
     "NZD": ("2026-09-17", 0.2, "PERCENT_QOQ_SA_CHAIN_VOLUME_PRODUCTION", "FIRST_RELEASE", "www.stats.govt.nz"),
