@@ -743,6 +743,14 @@ function mountHomeReadingPath(doc,context){
   '#gmfq-home-change-lead .gmfq-home-change-more{justify-self:start;margin-top:2px;padding:2px 0;color:#a9c6d8;font:600 10px/1.5 Arial,sans-serif}'+
   '@media(max-width:600px){#gmfq-home-change-lead{margin-bottom:10px;padding-bottom:10px}'+
   '#gmfq-home-change-lead .gmfq-home-change-value{font-size:13px;line-height:1.48}}';
+ visual.textContent+=
+  '#gmfq-home-observed-moves{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:9px 0 10px;min-width:0}'+
+  '#gmfq-home-observed-moves [data-home-observed]{border-left:2px solid #45677b;padding:1px 0 2px 10px;min-width:0}'+
+  '#gmfq-home-observed-moves .gmfq-home-observed-title{display:block;color:#b8d0dd;font:600 10px/1.4 Arial,sans-serif}'+
+  '#gmfq-home-observed-moves .gmfq-home-observed-value{display:block;color:#ecf2f7;font:600 12px/1.5 Arial,sans-serif;margin:3px 0;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}'+
+  '#gmfq-home-observed-moves .gmfq-home-observed-note{display:block;color:#a5bdcb;font:10px/1.48 Arial,sans-serif;overflow-wrap:anywhere}'+
+  '#gmfq-home-observed-moves [data-observation-state="NOT_VERIFIED"] .gmfq-home-observed-value{color:#d7c38f}'+
+  '@media(max-width:720px){#gmfq-home-observed-moves{grid-template-columns:1fr;gap:10px;margin:8px 0 10px}}';
  doc.head.appendChild(visual);
  const rail=doc.createElement('nav');
  rail.id='gmfq-home-reading-path';rail.setAttribute('aria-label','Da dove iniziare la lettura Macro FX');
@@ -760,6 +768,11 @@ function mountHomeReadingPath(doc,context){
   '<span class="gmfq-home-change-label">COSA È CAMBIATO · PRICING MONETARIO</span>'+
   '<p class="gmfq-home-change-value">Verifica in corso delle ultime variazioni monetarie certificate.</p>'+
   '<small class="gmfq-home-change-provenance">Nessun movimento anticipato senza una fonte datata.</small>'+
+  '<div id="gmfq-home-observed-moves" data-source-effect="NONE" data-pair-effect="NONE" aria-label="Movimenti FX e cross-asset datati">'+
+  '<div data-home-observed="fx" data-observation-state="CHECKING"><span class="gmfq-home-observed-title">FX · fixing BCE</span>'+
+  '<strong class="gmfq-home-observed-value">Verifica in corso</strong><small class="gmfq-home-observed-note">Solo cambi confrontabili.</small></div>'+
+  '<div data-home-observed="cross" data-observation-state="CHECKING"><span class="gmfq-home-observed-title">Cross-asset</span>'+
+  '<strong class="gmfq-home-observed-value">Verifica in corso</strong><small class="gmfq-home-observed-note">Solo chiusure datate.</small></div></div>'+
   '<button type="button" class="gmfq-home-change-more" data-home-pulse-focus="true">Dettaglio e fonti del Market Pulse ↓</button></section>'+
   '<span class="gmfq-reading-heading">PRIMA VERIFICA DEL RESEARCH DESK</span>'+
   '<p class="gmfq-reading-priority" aria-label="Prima verifica da effettuare">'+htmlEscape(priority.text)+'</p>'+
@@ -837,6 +850,97 @@ function marketPulseReadings(feedData){
  return rows.slice(0,4);
 }
 // Copy only vetted, source-dated Market Pulse context into the first Home read.
+// Research-only daily observations. Never confound an ECB fixing quote
+// (foreign units per 1 EUR) with currency-strength scores or market timing.
+// VIX must align to the very same two fixing dates; WTI/Gold/Brent have
+// no current, synchronized observations in this feed and are not invented.
+function homeDatedFxRiskObservations(fx,model,today=romeTodayIso()){
+ const blank={fx:null,vix:null,sourceEffect:'NONE',pairEffect:'NONE'};
+ const iso=d=>typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&
+   Number.isFinite(Date.parse(d+'T00:00:00Z'))&&
+   new Date(d+'T00:00:00Z').toISOString().slice(0,10)===d;
+ const lag=(old,now)=>iso(old)&&iso(now)?
+   (Date.parse(now+'T00:00:00Z')-Date.parse(old+'T00:00:00Z'))/86400000:null;
+ if(!iso(today)||fx?.schema!=='GMFQ_ECB_G8_PRICE_HISTORY_V1'||
+    fx.status!=='CURRENT_OFFICIAL_HISTORY'||fx.base!=='EUR'||
+    fx.source!=='ECB euro foreign exchange reference rates'||
+    fx.source_url!=='https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml'||
+    !Array.isArray(fx.currencies)||fx.currencies.length!==8||
+    !FX.every(k=>fx.currencies.includes(k))||
+    !Array.isArray(fx.rows)||fx.rows.length<3||fx.row_count!==fx.rows.length)return blank;
+ const current=fx.rows.at(-1),previous=fx.rows.at(-2),
+   age=lag(fx.last_as_of,today),gap=lag(previous?.Date,current?.Date);
+ if(!current||!previous||current.Date!==fx.last_as_of||
+    age===null||age<0||age>4||gap===null||gap<1||gap>5||
+    num(current.EUR)!==1||num(previous.EUR)!==1)return blank;
+ const changes=[];
+ for(const k of FX.filter(x=>x!=='EUR')){
+  const now=num(current[k]),old=num(previous[k]);
+  if(now===null||old===null||now<=0||old<=0)return blank;
+  const pct=(now/old-1)*100;
+  if(!Number.isFinite(pct)||Math.abs(pct)>15)return blank;
+  changes.push({pair:'EUR/'+k,pct,code:k});
+ }
+ const strongest=changes.reduce((x,y)=>y.pct>x.pct?y:x);
+ const weakest=changes.reduce((x,y)=>y.pct<x.pct?y:x);
+ const result={...blank,fx:{asof:current.Date,previous:previous.Date,
+   strongest,weakest,pairsChecked:changes.length,
+   source:'ECB euro foreign exchange reference rates',unit:'foreign currency units per EUR'}};
+ const vix=model?.risk?.VIX;
+ const dates=vix?.dates,values=vix?.values;
+ if(!Array.isArray(dates)||!Array.isArray(values)||
+    dates.length<2||dates.length!==values.length)return result;
+ const day=dates.at(-1),prevDay=dates.at(-2),v=num(values.at(-1)),
+   prev=num(values.at(-2));
+ // VIX is recorded as a dated close in the risk dataset. No extrapolation
+ // and no claim of causal confirmation from prices in other asset classes.
+ if(day!==current.Date||prevDay!==previous.Date||
+    vix.last_date!==day||vix.last_value!==v||
+    v===null||prev===null||v<=0||prev<=0)return result;
+ const diff=v-prev,pct=100*diff/prev;
+ if(!Number.isFinite(diff)||!Number.isFinite(pct)||Math.abs(pct)>100)return result;
+ result.vix={asof:day,previous:prevDay,value:v,previousValue:prev,
+   points:diff,pct,source:'VIX · dated close in operational risk dataset'};
+ return result;
+}
+function mountHomeDatedFxRisk(doc,fx,model){
+ if(!home()||frame.contentDocument!==doc)return;
+ const root=doc.getElementById('gmfq-home-observed-moves');if(!root)return;
+ const data=homeDatedFxRiskObservations(fx,model);
+ const part=(key,title,value,note,state)=>{
+  const item=root.querySelector('[data-home-observed="'+key+'"]');
+  if(!item)return;
+  item.dataset.observationState=state;
+  item.querySelector('.gmfq-home-observed-title').textContent=title;
+  item.querySelector('.gmfq-home-observed-value').textContent=value;
+  item.querySelector('.gmfq-home-observed-note').textContent=note;
+ };
+ const signed=(v,d=2)=>(v>0?'+':'')+v.toFixed(d).replace('.',',');
+ if(data.fx){
+  const {strongest,weakest,asof,previous,pairsChecked}=data.fx;
+  const candidates=[strongest,weakest].filter((x,i,a)=>a.findIndex(y=>y.code===x.code)===i);
+  const label=candidates.map(x=>x.pair+' '+signed(x.pct)+'%').join(' · ');
+  part('fx','FX · fixing BCE '+asof,label,
+   pairsChecked+' cambi EUR/XXX, rispetto al '+previous+
+   ' · valore in valuta estera per 1 EUR; non è un ranking G8 né un prezzo intraday.',
+   'OFFICIAL_DATED');
+ }else part('fx','FX · fixing BCE','Confronto giornaliero non verificabile',
+   'Nessun movimento attribuito a una data o fonte non riconciliata.','NOT_VERIFIED');
+ if(data.vix){
+  const {asof,previous,value,points,pct}=data.vix;
+  part('cross','Cross-asset · VIX '+asof,
+   value.toFixed(2).replace('.',',')+' · '+signed(points)+' pt ('+signed(pct,1)+'%)',
+   'Chiusura VIX nel dataset risk vs '+previous+
+   '; non è un segnale risk-off né una conferma di azioni, oro e petrolio.',
+   'DATED_RISK_CLOSE');
+ }else part('cross','Cross-asset · verifica',
+  'Nessuna variazione cross-asset sincronizzata',
+  'Dati assenti, storici o non allineati: nessuna variazione inventata.','NOT_VERIFIED');
+ root.dataset.observationAsOf=data.fx?.asof||'';
+ root.dataset.fxState=data.fx?'OFFICIAL_DATED':'NOT_VERIFIED';
+ root.dataset.crossState=data.vix?'DATED_RISK_CLOSE':'NOT_VERIFIED';
+ root.dataset.sourceEffect='NONE';root.dataset.pairEffect='NONE';
+}
 function updateHomePulseFirstRead(doc,host){
  if(!home()||frame.contentDocument!==doc)return;
  const el=doc.getElementById('gmfq-home-change-lead');
@@ -1205,6 +1309,7 @@ function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy,proxy,model,setup,news,cal
  const complete=fxCurrent&&ratesCurrent.length===8&&oisCurrent.length===8&&dxyCurrent&&macroCurrent;
  const morning=homeMorningStudySources(fx,model,setup,rates,ois,news,calendar);
  mountHomeReadingPath(doc,{macroDay:pairMacroDay,fxCurrent,fxDay,oisCount:oisCurrent.length,setup});
+ mountHomeDatedFxRisk(doc,fx,model);
  // One editorial source line, not another card or a new reliability score.
  const rail=doc.getElementById('gmfq-home-reading-path');
  if(rail&&morning){
