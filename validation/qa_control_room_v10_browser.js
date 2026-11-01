@@ -834,15 +834,33 @@ function expectedReactionFromMetrics(row){
   if(sourcePriority.coverage!==expectedCoverage||
      sourcePriority.complete!==completeCharts+'/8'||
      sourcePriority.signal!=='NONE'||!sourcePriority.primaryFirst||
-     sourcePriority.officialOnlyHidden||sourcePriority.toggle||
+     // A source-graded panel can be the default first read only if the
+     // certified-source panel remains accessible through its real toggle.
+     (sourcePriority.officialOnlyHidden&&
+       (!sourcePriority.toggle||sourcePriority.expanded!=='false'))||
      sourcePriority.rows.length!==8||!chfRow||chfRow.tier!=='PROXY'||
      chfRow.numeric.length!==3||!chfSlotsOk||
      sourcePriority.rows.some(x=>x.c!=='CHF'&&(
         !['OFFICIAL','PROXY','MIXED','CONFLICTED','SCENARIO'].includes(x.tier)||
         x.numeric.length!==3||x.numeric.some(v=>!v||v==='—'))))
     throw Error(label+' G8 source-graded visual/count mismatch '+JSON.stringify(sourcePriority));
+  // The official-only panel is intentionally collapsed behind a labelled
+  // toggle in this source-first layout. Browser QA must PROVE it can open;
+  // hiding it irretrievably is a failure.
+  if(sourcePriority.officialOnlyHidden){
+    await page.frameLocator('#gmfq-page').locator('#gmfq-certified-only-toggle').click();
+    const revealed=await page.evaluate(()=>{
+      const d=document.getElementById('gmfq-page')?.contentDocument;
+      const trigger=d?.getElementById('gmfq-certified-only-toggle');
+      const official=d?.getElementById('ois-rows')?.closest('.desk-panel');
+      return {expanded:trigger?.getAttribute('aria-expanded'),hidden:official?.hidden};
+    });
+    if(revealed.hidden!==false||revealed.expanded!=='true')
+      throw Error(label+' official OIS panel cannot be accessed '+JSON.stringify(revealed));
+  }
   console.log('CONTROL_ROOM_RATES_8_8_SOURCE_DRIVEN_CHF_TENORS_GREEN',label,
-    JSON.stringify({complete:completeCharts,chfPoints:chfChart.points}));
+    JSON.stringify({complete:completeCharts,chfPoints:chfChart.points,
+      certifiedPanelOpened:sourcePriority.officialOnlyHidden}));
   const toggle=page.frameLocator('#gmfq-page').locator('#gmfq-ois-research-estimates .gmfq-est-disclosure > summary');
   await toggle.click();
   const collapsed=await page.evaluate(()=>{
