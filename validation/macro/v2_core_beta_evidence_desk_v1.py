@@ -188,14 +188,18 @@ def build(candidate, legacy, pairs, banks, ois, rates, *, as_of=RESEARCH_DAY):
                 ensure(curve.get("input_mode") == "LIVE_SECONDARY_OVERLAY"
                        and curve.get("source_conflict_status") is None
                        and curve.get("source_conflict_keys") is None
-                       and finite(six.get("policy_delta_bp"))
+                       and six.get("policy_delta_bp") is None
+                       and curve.get("policy_repricing_inference_allowed") is False
+                       and curve.get("direction_vs_policy") == "WITHHELD"
+                       and curve.get("change_1d_available") is False
+                       and curve.get("change_1w_available") is False
+                       and six.get("raw_level_gap_not_policy_repricing") is True
                        and six.get("quote_timestamp_verified") is True
                        and six.get("quote_timestamp_source") ==
                            "SSR_DAILY_BAR_DATA_UPDATE_TIME",
                        ccy + " non-conflicted B-grade 6M evidence not verified")
                 market = six["rate"]
-                market_class = ("PRE_DECISION_ESTIMATED_QUOTE_NO_CURRENT_POLICY_DELTA"
-                                if predecision else "ESTIMATED_POLICY_PRICING_NOT_OFFICIAL")
+                market_class = "ESTIMATED_FUTURES_6M_CONTEXT_ONLY_NO_POLICY_DELTA"
         elif curve.get("operational_status") == "WITHHELD":
             ensure(curve.get("quality") == "ESTIMATED_INFORMATIONAL"
                    and curve.get("backtest_eligible_as_official") is False
@@ -250,7 +254,7 @@ def build(candidate, legacy, pairs, banks, ois, rates, *, as_of=RESEARCH_DAY):
             "official_current_cb_rate_pct": cb["rate"],
             "six_month_policy_delta_bp": six["policy_delta_bp"] if market_class in (
                 "OFFICIAL_POLICY_PRICING",
-                "ESTIMATED_POLICY_PRICING_NOT_OFFICIAL") else None,
+                ) else None,
             "six_month_quote_date": oy.isoformat(),
             "six_month_quote_age_days": (day-oy).days,
             "two_year_yield_pct": rate["2Y"],
@@ -296,6 +300,7 @@ def build(candidate, legacy, pairs, banks, ois, rates, *, as_of=RESEARCH_DAY):
                 "CONFLICTED_FUTURES_6M_CONTEXT_ONLY_NO_POLICY_DELTA",
                 "SECONDARY_NON_OIS_6M_CONTEXT_ONLY",
                 "BANK_BILL_BASIS_DIRECTIONAL_CONTEXT_ONLY",
+                "ESTIMATED_FUTURES_6M_CONTEXT_ONLY_NO_POLICY_DELTA",
                 "PRE_DECISION_OFFICIAL_QUOTE_NO_CURRENT_POLICY_DELTA",
                 "PRE_DECISION_ESTIMATED_QUOTE_NO_CURRENT_POLICY_DELTA") for x in country.values()),
             "pre_decision_6m_quotes": sum(x["six_month_source_class"] in (
@@ -328,7 +333,7 @@ def render(out):
         "OFFICIAL_POLICY_PRICING": "6M ufficiale certificato",
         "PRE_DECISION_OFFICIAL_QUOTE_NO_CURRENT_POLICY_DELTA": "6M ufficiale ma PRE decisione · no Δ tasso attuale",
         "PRE_DECISION_ESTIMATED_QUOTE_NO_CURRENT_POLICY_DELTA": "6M stimato PRE decisione · no Δ tasso attuale",
-        "ESTIMATED_POLICY_PRICING_NOT_OFFICIAL": "6M indicativo, non ufficiale",
+        "ESTIMATED_FUTURES_6M_CONTEXT_ONLY_NO_POLICY_DELTA": "6M futures indicativo · non è repricing di banca centrale",
         "CONFLICTED_FUTURES_6M_CONTEXT_ONLY_NO_POLICY_DELTA": "Futures 6M contestato · nessun pricing tasso",
         "SECONDARY_NON_OIS_6M_CONTEXT_ONLY": "6M secondario non OIS",
         "BANK_BILL_BASIS_DIRECTIONAL_CONTEXT_ONLY": "Bank bill: solo contesto direzionale",
