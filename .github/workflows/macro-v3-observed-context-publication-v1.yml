@@ -1,0 +1,103 @@
+name: Macro V3 Observed G8 28-Pair Public Context V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/macro/publish_v3_current_context_v1.py'
+      - 'validation/macro/v3_current_g8_28pair_economic_evidence_v1.py'
+      - '.github/workflows/macro-v3-observed-context-publication-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/macro/publish_v3_current_context_v1.py'
+      - '.github/workflows/macro-v3-observed-context-publication-v1.yml'
+  workflow_run:
+    workflows: ['Macro Persistent Daily V1']
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: macro-v3-observed-context-publisher-main
+  cancel-in-progress: false
+
+jobs:
+  source-audited-public-context:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && 'main' || github.ref }}
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Source integrity regression (8 economies and 28 pairs)
+        run: |
+          python -m unittest validation.macro.test_v3_current_g8_28pair_economic_evidence_v1 -v
+      - name: Generate verified public Macro V3 context
+        run: |
+          set -euo pipefail
+          python -m validation.macro.publish_v3_current_context_v1
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          f=Path('site/control-room-preview/macro-v3-current-evidence.json')
+          d=json.loads(f.read_text())
+          assert d['summary']['currencies']==8
+          assert d['summary']['economic_dimensions']==24
+          assert d['summary']['pairs']==28
+          assert len(d['countries'])==8 and len(d['pair_context'])==28
+          assert d['status']=='OBSERVED_ECONOMIC_CONTEXT_NOT_FX_SIGNAL'
+          assert d['safe_to_republish_D'] is False
+          assert d['safe_to_recompute_structural_pair_theses'] is False
+          assert d['eligible_for_trading_or_forward_backtest'] is False
+          assert all(c['macro_score'] is None and c['FX_strength'] is None for c in d['countries'].values())
+          assert all(p['pair_trade_bias'] is None for p in d['pair_context'].values())
+          print('MACRO_V3_PUBLIC_CONTEXT_8_G8_24_AXES_28_PAIRS_PASS')
+          PY
+      - name: Exact source and website write scope; canonical D untouched
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- live_data payload dashboard index.html
+          test -z "$(git status --porcelain -- live_data payload dashboard index.html)"
+          test -f site/control-room-preview/macro-v3-current-evidence.json
+          echo 'MACRO_V3_PUBLICATION_NO_CANONICAL_SIGNAL_MUTATION_PASS'
+      - name: Commit only new read-only site research snapshot (main only)
+        if: github.event_name != 'pull_request'
+        run: |
+          set -euo pipefail
+          if [ "$(git branch --show-current)" != "main" ]; then
+            git checkout main
+          fi
+          TARGET="site/control-room-preview/macro-v3-current-evidence.json"
+          git add -- "$TARGET"
+          if git diff --cached --quiet; then
+            echo 'MACRO_V3_CURRENT_CONTEXT_UNCHANGED'
+            exit 0
+          fi
+          CHANGED="$(git diff --cached --name-only)"
+          test "$CHANGED" = "$TARGET" || { echo "Unsafe staged path $CHANGED" >&2; exit 1; }
+          BASE="$(git rev-parse HEAD)"
+          git fetch origin main --no-tags
+          test "$(git rev-parse origin/main)" = "$BASE" || { echo "main advanced: do not publish stale Macro snapshot" >&2; exit 1; }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Publish observed Macro V3 G8 and 28-pair research context'
+          git push --force-with-lease=refs/heads/main:$BASE origin HEAD:main
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macro-v3-observed-public-receipt-${{ github.run_id }}
+          path: site/control-room-preview/macro-v3-current-evidence.json
+          if-no-files-found: warn
+          retention-days: 14
