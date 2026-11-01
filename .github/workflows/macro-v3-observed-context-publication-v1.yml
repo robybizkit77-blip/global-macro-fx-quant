@@ -19,9 +19,11 @@ on:
 
 permissions:
   contents: write
+  pages: write
 
 concurrency:
-  group: macro-v3-observed-context-publisher-main
+  group: publish-dashboard-pages-v1
+  queue: max
   cancel-in-progress: false
 
 jobs:
@@ -94,6 +96,55 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git commit -m 'Publish observed Macro V3 G8 and 28-pair research context'
           git push --force-with-lease=refs/heads/main:$BASE origin HEAD:main
+      - name: Mirror verified V3 file to gh-pages with remote-head lease
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          TARGET="site/control-room-preview/macro-v3-current-evidence.json"
+          git fetch origin main gh-pages --no-tags
+          git show "origin/main:$TARGET" | cmp - "$TARGET" || { echo 'Main source drift' >&2; exit 1; }
+          PAGE_SHA="$(git rev-parse origin/gh-pages)"
+          WORKTREE="$(mktemp -d)"
+          git worktree add --detach "$WORKTREE" origin/gh-pages
+          mkdir -p "$WORKTREE/site/control-room-preview"
+          cp "$TARGET" "$WORKTREE/$TARGET"
+          cd "$WORKTREE"
+          git add -- "$TARGET"
+          if ! git diff --cached --quiet; then
+            CHANGED="$(git diff --cached --name-only)"
+            test "$CHANGED" = "$TARGET" || { echo "Unexpected changed files $CHANGED" >&2; exit 1; }
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'Publish only Macro V3 observed G8 source snapshot'
+            REMOTE="$(git ls-remote origin refs/heads/gh-pages | awk '{print $1}')"
+            test "$REMOTE" = "$PAGE_SHA" || { echo 'Pages advanced; fail closed' >&2; exit 1; }
+            git push --force-with-lease=refs/heads/gh-pages:"$PAGE_SHA" origin HEAD:gh-pages
+          fi
+          git show "HEAD:$TARGET" | cmp - "${{ github.workspace }}/$TARGET"
+          echo MACRO_V3_GHPAGES_EXACT_SOURCE_PROOF_PASS
+      - name: Explicitly queue Pages build after bot push
+        if: github.event_name != 'pull_request'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cfg="$(gh api "repos/${GITHUB_REPOSITORY}/pages")"
+          test "$(jq -r '.source.branch' <<<"$cfg")" = "gh-pages"
+          test "$(jq -r '.source.path' <<<"$cfg")" = "/"
+          TARGET_SHA="$(git ls-remote origin refs/heads/gh-pages | awk '{print $1}')"
+          last="$(gh api "repos/${GITHUB_REPOSITORY}/pages/builds/latest" 2>/dev/null || echo '{}')"
+          last_sha="$(jq -r '.commit // empty' <<<"$last")"
+          last_status="$(jq -r '.status // empty' <<<"$last")"
+          if [[ "$last_sha" == "$TARGET_SHA" &&
+                ( "$last_status" == "built" || "$last_status" == "building" || "$last_status" == "queued" ) ]]; then
+            echo "PAGES_BUILD_ALREADY_TARGETING_V3 $TARGET_SHA"
+          else
+            r="$(gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds")"
+            jq -e '.status == "queued" || .status == "building"' <<<"$r" >/dev/null
+            echo "MACRO_V3_PAGES_BUILD_EXPLICITLY_QUEUED $TARGET_SHA"
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
