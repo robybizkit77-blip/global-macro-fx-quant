@@ -311,6 +311,19 @@ function dayIndex(v){
  const t=Date.parse(v+'T00:00:00Z');
  return Number.isFinite(t)&&new Date(t).toISOString().slice(0,10)===v?t/86400000:null;
 }
+function saronAccrualWindow(contract){
+ const m=/^SA3([HMUZ])(\d{4})$/.exec(contract||'');
+ if(!m)return null;
+ const mo={H:3,M:6,U:9,Z:12}[m[1]],year=Number(m[2]);
+ const wed=(y,month)=>{
+  const first=new Date(Date.UTC(y,month-1,1));
+  return Date.UTC(y,month-1,1+((3-first.getUTCDay()+7)%7)+14);
+ };
+ const start=wed(year,mo);
+ const y2=mo===12?year+1:year,m2=mo===12?3:mo+3;
+ const end=wed(y2,m2)-86400000;
+ return {start:start/86400000,end:end/86400000};
+}
 function auditDatedFuture(ccy,term,primary,rate,quoteDate,today){
  const spec=FUTURE_SPEC[ccy],target=TENOR_TARGET[term];
  if(!spec||!target||!primary||number(primary.futures_price)===null||
@@ -318,21 +331,38 @@ function auditDatedFuture(ccy,term,primary,rate,quoteDate,today){
     primary.quote_timestamp_verified!==true||
     primary.quote_timestamp_source!=='SSR_DAILY_BAR_DATA_UPDATE_TIME')return null;
  const code=String(primary.contract||''),pattern=new RegExp('^'+spec[1]+'[FGHJKMNQUVXZ][0-9]{4}$');
- if(!pattern.test(code)||primary.symbol!==spec[0]+code||
-    primary.mapping!=='nearest dated listed contract expiry to today+'+target+'d; no interpolation')return null;
+ if(!pattern.test(code)||primary.symbol!==spec[0]+code)return null;
+ const chfNew=ccy==='CHF'&&primary.mapping===
+    'nearest ICE SARON accrual start to today+'+target+'d; no interpolation';
+ const legacy=primary.mapping===
+    'nearest dated listed contract expiry to today+'+target+'d; no interpolation';
+ if(!chfNew&&!legacy)return null;
  // Contract-to-tenor proximity is fixed AT THE OBSERVATION DAY.
  // Reopening the site tomorrow must never shift yesterday's futures expiry.
  // Recency remains checked separately by fresh(quoteDate,today).
  const expiry=dayIndex(primary.expiration),quoteIndex=dayIndex(quoteDate);
  if(expiry===null||quoteIndex===null||expiry<quoteIndex)return null;
- const gap=expiry-quoteIndex-target;
- // Tolerate ONE calendar day of bar-time vs collection-time mismatch at the expiry-window boundary.
- // Any accepted borderline point is explicitly APPROXIMATE_EXPIRY, never OIS.
- if(Math.abs(gap)>46)return null;
+ const window=ccy==='CHF'?saronAccrualWindow(code):null;
+ if(ccy==='CHF'&&(!window||window.end!==expiry))return null;
+ const gap=(chfNew?window.start:expiry)-quoteIndex-target;
+ const legacyStarted=ccy==='CHF'&&legacy&&window.start<=quoteIndex;
+ // Forward SARON contracts are named by accrual START, not final settlement.
+ // Historical pre-2 Nov expiry-mapped quotes remain observable as raw
+ // evidence, but a past-started window may NEVER be promoted as 6M forward.
+ if(chfNew){
+   if(!primary.accrual_start||
+      dayIndex(primary.accrual_start)!==window.start||
+      window.start<=quoteIndex||Math.abs(gap)>50)return null;
+ }else if(Math.abs(gap)>46)return null;
  const implied=100-primary.futures_price;
  if(Math.abs(implied-rate)>0.0002||implied<-5||implied>25)return null;
  return {value:rate,date:quoteDate,contract:code,expires:primary.expiration,
-  tenor_gap_days:gap,mapping_quality:Math.abs(gap)<=21?'NEAR_TARGET':'APPROXIMATE_EXPIRY',
+  accrual_start:ccy==='CHF'?new Date(window.start*86400000).toISOString().slice(0,10):null,
+  tenor_gap_days:gap,
+  mapping_quality:legacyStarted?'LEGACY_STARTED_WINDOW_NOT_FORWARD':
+    chfNew?'SARON_FORWARD_START_APPROXIMATE':
+    Math.abs(gap)<=21?'NEAR_TARGET':'APPROXIMATE_EXPIRY',
+  legacy_mislabeled_horizon:legacyStarted,
   source_quote_verified:true,direct_ois_quote:false,policy_repricing_allowed:false};
 }
 /* Conflict-graded secondary prints are unverified context, not market OIS. */
@@ -439,7 +469,7 @@ function indicativeSixMonth(ois,today){
   if(!['USD','EUR','CHF'].includes(row.ccy)||
      !['PROXY','MIXED','CONFLICTED'].includes(row.tier))continue;
   const p=row.points?.['6m'];
-  if(!p||!p.source_quote_verified||!p.contract||!p.expires||
+  if(!p||!p.source_quote_verified||p.legacy_mislabeled_horizon===true||!p.contract||!p.expires||
      !fresh(p.date,today)||number(p.value)===null||
      p.policy_repricing_allowed!==false||p.direct_ois_quote!==false)continue;
   approved[row.ccy]=Object.freeze({
@@ -649,8 +679,8 @@ function miniCharts(rows){
     const state=!valid?'MISSING':disputed?'DISPUTED':
       x.range?'SCENARIO':r.tier==='OFFICIAL'?'OFFICIAL':'INDICATIVE';
     const range=valid&&x.range?'<small>Fascia '+fmt(x.range[0])+'–'+fmt(x.range[1])+'%</small>':'';
-    return '<div data-horizon="'+t+'" data-point-state="'+state+'"><span>'+t.toUpperCase()+
-     '</span><b>'+label+'</b><small>'+(valid?esc(x.date):'non verificato')+
+    return '<div data-horizon="'+t+'" data-point-state="'+(x?.legacy_mislabeled_horizon?'LEGACY_NOT_FORWARD':state)+'"><span>'+t.toUpperCase()+
+     '</span><b>'+label+'</b><small>'+(valid?(x.legacy_mislabeled_horizon?'NON FORWARD · ':'')+esc(x.date):'non verificato')+
      '</small>'+range+'</div>';
    }).join('')+'</div>';
   if(!p.length){
@@ -705,7 +735,9 @@ function view(rows,moves=[]){
  const cell=(r,t)=>{const x=r.points[t];return x?
   '<b>'+(r.tier==='OFFICIAL'?'':'≈')+fmt(x.value)+'%</b><small>'+esc(x.date)+'</small>'+
     (x.source_quote_disputed?'<small>⚠ QUOTAZIONE CONTESTATA · non convalidata</small>':
-     x.source_quote_verified?'<small>scad. '+(x.tenor_gap_days>0?'+':'')+x.tenor_gap_days+'gg vs target</small>':'')+
+     x.legacy_mislabeled_horizon?'<small>⚠ FINE CONTRATTO, NON TASSO FORWARD '+t.toUpperCase()+' · non utilizzabile</small>':
+     x.source_quote_verified?'<small>'+(x.accrual_start?'inizio matur. '+esc(x.accrual_start)+' · ':'')+
+       (x.tenor_gap_days>0?'+':'')+x.tenor_gap_days+'gg vs target</small>':'')+
    (x.range?'<small>'+fmt(x.range[0])+'–'+fmt(x.range[1])+'%</small>':''):
   '<b>—</b><small>n.d.</small>';};
  const counts=Object.fromEntries(['OFFICIAL','PROXY','MIXED','CONFLICTED','SCENARIO','WITHHELD'].map(t=>[t,rows.filter(r=>r.tier===t).length]));
@@ -731,7 +763,7 @@ function view(rows,moves=[]){
  '<div><strong>'+flags[r.ccy]+' '+r.ccy+'</strong><small>'+labels[r.tier]+'</small></div>'+
  tenors.map(t=>'<div>'+cell(r,t)+'</div>').join('')+
  '<div class="gmfq-est-source">'+esc(r.source||'Fonte non corrente')+'</div></div>').join('')+'</div>'+
- matchedResearchHtml(moves)+'<p class="gmfq-est-note"><b>Metodo:</b> GBP OIS BoE; AUD/CAD/JPY futures monetari ufficiali; USD/EUR/CHF: ogni contratto è datato separatamente; se le date non coincidono, sono solo osservazioni individuali e non una curva sincronizzata. Su USD/EUR/CHF vengono verificati prezzo, contratto, data e scadenza; lo scarto in giorni è visibile, <b>senza inventare una correzione OIS</b>. NZD: scenario empirico su Bank Bill 90 giorni − OCR RBNZ (19 mesi, due regimi): sconto stimato 24 bp, fascia prudenziale 10–50 bp, ampliata dopo un test su luglio–settembre 2026 (errore medio del punto centrale circa 16 bp). <b>non è uno spread OIS misurato e non intervallo statistico</b>. Sono futures trimestrali, non una curva OIS spot. Nessuna stima produce variazioni OIS 1D/1W, segnali FX o backtest.</p></div></details>';
+ matchedResearchHtml(moves)+'<p class="gmfq-est-note"><b>Metodo:</b> GBP OIS BoE; AUD/CAD/JPY futures monetari ufficiali; USD/EUR/CHF: ogni contratto è datato separatamente; se le date non coincidono, sono solo osservazioni individuali e non una curva sincronizzata. Su USD/EUR/CHF vengono verificati prezzo, contratto, data e scadenza; lo scarto in giorni è visibile, <b>senza inventare una correzione OIS</b>. NZD: scenario empirico su Bank Bill 90 giorni − OCR RBNZ (19 mesi, due regimi): sconto stimato 24 bp, fascia prudenziale 10–50 bp, ampliata dopo un test su luglio–settembre 2026 (errore medio del punto centrale circa 16 bp). <b>non è uno spread OIS misurato e non intervallo statistico</b>. Sono futures trimestrali, non una curva OIS spot. CHF: dalle acquisizioni di novembre i tre orizzonti seguono il primo giorno della finestra SARON; le vecchie selezioni basate sulla scadenza finale, se gia iniziate, restano evidenza storica segnalata come NON FORWARD. Nessuna stima produce variazioni OIS 1D/1W, segnali FX o backtest.</p></div></details>';
 }
 const css=[
  '#gmfq-ois-research-estimates{margin:0 0 14px;min-width:0}',
