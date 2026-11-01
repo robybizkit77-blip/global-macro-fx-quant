@@ -4,6 +4,10 @@ on:
   pull_request:
     branches: [main]
     paths:
+      # Reference outcome tests depend on the V2 beta source tier and quarantine logic.
+      # Include these paths so a change such as PR #863 cannot bypass ECB safety CI.
+      - 'validation/macro/v2_core_beta_evidence_desk_v1.py'
+      - 'validation/macro/test_v2_core_beta_evidence_desk_v1.py'
       - 'validation/forward/observe_official_ecb_reference_outcomes_v1.py'
       - 'validation/forward/test_observe_official_ecb_reference_outcomes_v1.py'
       - 'validation/forward/observe_v2_research_ecb_reference_returns_v1.py'
