@@ -63,8 +63,8 @@
       "reported_value": 1.5,
       "reported_unit": "PERCENT_QOQ_SA_CALENDAR_SPORTS",
       "publication_stage": "FLASH",
-      "source_url": "https://www.schweizerischesseeschifffahrtsamt.eda.admin.ch/en/newnsb/1BH4HnCuYPWb_WqjPywR4",
-      "source_description": "SECO GDP flash real GDP seasonal/calendar and sports-event adjusted; government release mirror",
+      "source_url": "https://www.seco.admin.ch/en/newnsb/1BH4HnCuYPWb_WqjPywR4",
+      "source_description": "SECO GDP flash real GDP seasonal/calendar and sports-event adjusted; original issuer release 14 August 2026",
       "stage_order": 0
     },
     {
