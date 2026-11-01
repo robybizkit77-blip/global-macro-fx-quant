@@ -367,6 +367,39 @@ function expectedReactionFromMetrics(row){
       pageWidth:d.documentElement.scrollWidth,viewWidth:d.documentElement.clientWidth
     };
   });
+  // Source-dated first-screen Home reading, never an undated "today" signal.
+  const firstRead=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page').contentDocument,
+      el=d.getElementById('gmfq-home-change-lead'),
+      market=d.getElementById('gmfq-market-pulse');
+    return {exists:!!el,state:el?.dataset.state,asof:el?.dataset.observationAsOf,
+      sourceEffect:el?.dataset.sourceEffect,
+      lead:el?.querySelector('.gmfq-home-change-value')?.textContent,
+      note:el?.querySelector('.gmfq-home-change-provenance')?.textContent,
+      link:!!el?.querySelector('button[data-home-pulse-focus]'),
+      marketStatus:market?.dataset.pulseStatus,marketAsOf:market?.dataset.asOf,
+      marketText:market?.querySelector('.gmfq-pulse-lead')?.textContent,
+      rail:d.getElementById('gmfq-home-reading-path')?.getBoundingClientRect().width,
+      overflow:d.documentElement.scrollWidth-d.documentElement.clientWidth};
+  });
+  if(!firstRead.exists||firstRead.sourceEffect!=='NONE'||!firstRead.link||
+      firstRead.overflow>16||!firstRead.lead||!firstRead.note)
+    throw Error(label+' Home first-read visual/source contract missing '+JSON.stringify(firstRead));
+  if(firstRead.marketStatus==='RECENT_VALIDATED'){
+    if(firstRead.state!=='DATED_REPRICING'||firstRead.asof!==firstRead.marketAsOf||
+       firstRead.lead!==firstRead.marketText||
+       !firstRead.note.includes('non intraday, non segnale FX.'))
+      throw Error(label+' Home reported undated or unsourced change '+JSON.stringify(firstRead));
+  }else if(firstRead.marketStatus==='DATED_LEVEL_CONTEXT'){
+    if(firstRead.state!=='LEVEL_CONTEXT_ONLY'||firstRead.asof||
+       !firstRead.lead.includes('Nessuna variazione 1D/1W recente certificata'))
+      throw Error(label+' historical level misrepresented as fresh repricing '+JSON.stringify(firstRead));
+  }else if(firstRead.marketStatus==='WITHHELD'){
+    if(firstRead.state!=='NO_RECENT_CHANGE'||firstRead.asof||
+       !firstRead.note.includes('non equivale a una variazione nulla'))
+      throw Error(label+' unavailable market repricing claimed as zero '+JSON.stringify(firstRead));
+  }else throw Error(label+' first read still loading after Market Pulse settled '+JSON.stringify(firstRead));
+  console.log('HOME_FIRST_READ_SOURCE_HIERARCHY_GREEN',label,JSON.stringify(firstRead));
   console.log(label,JSON.stringify(r));
   const fatal=[];
   const currencies=['DXY','EUR','JPY','GBP','AUD','CAD','NZD','CHF'];
