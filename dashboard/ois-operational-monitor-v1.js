@@ -144,7 +144,7 @@ function chfTenorTruth(c,r){
     r?.method_id!=='TRADINGVIEW_DATED_FUTURES_SSR_V2'||
     r?.official_status!=='WITHHELD'||r?.source_conflict_status)return '';
  const day=s=>{
-   if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(s||''))return null;
+   if(!/^\d{4}-\d{2}-\d{2}$/.test(s||''))return null;
    const t=Date.parse(s+'T00:00:00Z');
    return Number.isFinite(t)&&new Date(t).toISOString().slice(0,10)===s?t:null;
  };
@@ -155,7 +155,7 @@ function chfTenorTruth(c,r){
  const display=s=>s.slice(8,10)+'/'+s.slice(5,7)+'/'+s.slice(0,4);
  const windows=[];
  for(const [h,target] of [['3m',90],['6m',180],['12m',365]]){
-   const p=r.horizons?.[h]||{},m=/^SA3([HMUZ])(\\d{4})$/.exec(p.contract||'');
+   const p=r.horizons?.[h]||{},m=/^SA3([HMUZ])(\d{4})$/.exec(p.contract||'');
    if(!m||p.symbol!=='ICEEUR:'+p.contract||p.quote_timestamp_verified!==true||
       p.quote_timestamp_source!=='SSR_DAILY_BAR_DATA_UPDATE_TIME'||
       p.mapping!=='nearest ICE SARON accrual start to today+'+target+'d; no interpolation')return '';
