@@ -154,6 +154,7 @@ def recover_chf_ice_quarters(rows: list[dict]) -> list[dict]:
     Only one absent quarter between *two* good listed bookends is recovered.
     """
     eligible = {}
+    invalid_listed = set()
     month_code = {3: "H", 6: "M", 9: "U", 12: "Z"}
     for row in rows:
         code = str(row.get("contract") or "")
@@ -162,6 +163,10 @@ def recover_chf_ice_quarters(rows: list[dict]) -> list[dict]:
         except ValueError:
             continue
         if row.get("symbol") != "ICEEUR:" + code or row.get("expiration") != end:
+            # A listed ticker with a contradictory vendor expiry is a
+            # source integrity incident, *not* an absent metadata record.
+            # Do not backfill it from the calendar.
+            invalid_listed.add((start.year, start.month))
             continue
         eligible[(start.year, start.month)] = row
     recovered = dict(eligible)
@@ -169,7 +174,7 @@ def recover_chf_ice_quarters(rows: list[dict]) -> list[dict]:
         next_month, next_year = (3, year + 1) if month == 12 else (month + 3, year)
         following_month, following_year = ((3, next_year + 1)
                                           if next_month == 12 else (next_month + 3, next_year))
-        if (next_year, next_month) in eligible:
+        if (next_year, next_month) in eligible or (next_year, next_month) in invalid_listed:
             continue
         # No extrapolation outside known ICE listings, nor over larger gaps.
         if (following_year, following_month) not in eligible:
