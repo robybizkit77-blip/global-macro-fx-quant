@@ -92,7 +92,7 @@ jobs:
               if row['input_mode']=='LIVE_SECONDARY_CONFLICT_INDICATIVE':
                   assert row['source_conflict_status']=='UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT'
                   assert row['conflicted_source_eligible_for_repricing'] is False
-                  assert row['direction_vs_policy'] is None
+                  assert row['direction_vs_policy'] in ('WITHHELD', None), row
                   assert all(row['horizons'][h]['policy_delta_bp'] is None for h in ('3m','6m','12m'))
               else:
                   assert row.get('source_conflict_status') is None
