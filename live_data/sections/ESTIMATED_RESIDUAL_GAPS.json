@@ -8,7 +8,7 @@
       "status": "ESTIMATED_ACTIVE_AUTO_REFRESH_OFFICIAL_PROXY",
       "confidence": "A/B",
       "proxy_as_of": "2026-09",
-      "proxy_value": 3849859.0,
+      "proxy_value": 3849859,
       "source": "Bank of Japan official Monetary Base long-term workbook · Reserve Balances",
       "interpretation": "Semantically exact BoJ Reserve Balances series, auto-refreshed from the official workbook. Suitable for live level/direction/momentum; original runtime vintage equivalence remains explicitly unclaimed.",
       "change_1m_pct": -1.4212,
@@ -21,15 +21,15 @@
       "official_canonical_untouched": true,
       "original_runtime_validation": {
         "period": "2026-08",
-        "official_proxy_value": 3905362.0,
-        "runtime_reference": 3905822.0,
-        "absolute_difference": 460.0,
+        "official_proxy_value": 3905362,
+        "runtime_reference": 3905822,
+        "absolute_difference": 460,
         "difference_pct": 0.0118,
         "original_runtime_vintage_equivalence_claimed": false
       },
       "continuity_anchor": {
         "period": "2026-09",
-        "expected_official_value": 3849859.0,
+        "expected_official_value": 3849859,
         "matched": true
       }
     },
@@ -37,7 +37,7 @@
       "status": "ESTIMATED_ACTIVE_AUTO_REFRESH_OFFICIAL_PROXY",
       "confidence": "B/C",
       "proxy_as_of": "2026-08",
-      "proxy_value": 408395.0,
+      "proxy_value": 408395,
       "official_runtime_reference": 400255.9803935034,
       "absolute_difference": 8384.0196064966,
       "source": "SNB official API · cube bakredinausbm · AV1 | A | T1 | B",
@@ -100,7 +100,25 @@
       "instrument_type": "FUTURE",
       "fetched_at_utc": "2026-11-01T14:47:55.936984Z",
       "official_canonical_untouched": true,
-      "interpretation": "Secondary futures market proxy for live Brent level/direction only. It does not replace canonical EIA Brent spot, does not certify ICE history, and has no Core/backtest effect."
+      "interpretation": "Secondary futures market proxy for live Brent level/direction only. It does not replace canonical EIA Brent spot, does not certify ICE history, and has no Core/backtest effect.",
+      "same_date_source_vintages": [
+        {
+          "kind": "SECONDARY_SAME_DATE_SNAPSHOT_DIFFERENCE",
+          "market_date": "2026-10-30",
+          "prior_fetched_at_utc": "2026-10-31T02:47:01.815051Z",
+          "new_fetched_at_utc": "2026-11-01T14:47:55.936984Z",
+          "prior_value": 112.33,
+          "new_value": 113.43,
+          "prior_change_1d_pct": -2.2197,
+          "new_change_1d_pct": -1.2622,
+          "prior_change_1w_pct": -3.7611,
+          "new_change_1w_pct": -2.8187,
+          "source_snapshot_commit_before": "c5382192ea73e32e559e1f252ed3b0476e1ca513",
+          "source_snapshot_commit_after": "2fb6d671d1707eecdafaf037814c6eb1d56502ab",
+          "interpretation": "Vendor snapshot changed; not a new market session or official settlement revision."
+        }
+      ],
+      "vintage_audit_count": 1
     },
     "GOLD.market_proxy": {
       "status": "MARKET_PROXY_ACTIVE_SECONDARY",
