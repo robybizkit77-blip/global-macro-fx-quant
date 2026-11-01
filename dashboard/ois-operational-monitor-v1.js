@@ -66,7 +66,7 @@ function style(){
  .oisProxyBox{margin-top:8px;border:1px solid rgba(35,183,255,.3);background:rgba(35,183,255,.055);border-radius:8px;padding:7px;display:grid;gap:6px}.oisProxyHead{display:flex;justify-content:space-between;gap:6px;align-items:center}.oisProxyTitle{font-size:8px;font-weight:900;letter-spacing:.05em;color:#8fdcff}.oisProxyFlag{font-size:7px;font-weight:900;color:#ffca62;border:1px solid rgba(255,202,98,.45);border-radius:999px;padding:2px 5px;white-space:nowrap}.oisProxyGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.oisProxyCell{min-width:0;border-left:1px solid rgba(49,83,106,.55);padding-left:5px}.oisProxyCell:first-child{border-left:0;padding-left:0}.oisProxyHz{font-size:7px;color:#7899aa}.oisProxyRate{font-size:10px;font-weight:850;color:#dcecf4;margin:1px 0}.oisProxyMove{font-size:7px;color:#86a6b7;line-height:1.35}.oisProxyMove .up{color:#20df76}.oisProxyMove .down{color:#b99aff}.oisProxyNote{font-size:7px;color:#7493a4;line-height:1.35}
  .oisReprice{overflow-x:auto;max-width:100%}.oisReprice table{min-width:760px;width:100%}.oisReprice th,.oisReprice td{font-size:9px;padding:6px 5px}.oisReprice td.up{color:#20df76}.oisReprice td.down{color:#b99aff}.oisReprice td.neu{color:#91aebe}.oisQuality{font-size:8px;font-weight:850;border-radius:999px;padding:3px 5px;border:1px solid #31536a}.oisQuality.off{color:#20df76;border-color:rgba(32,223,118,.4)}.oisQuality.est{color:#f2bb49;border-color:rgba(242,187,73,.4)}.oisFoot{font-size:9px;color:#7899aa;line-height:1.45}.oisFail{border:1px solid rgba(255,82,99,.45);background:rgba(255,82,99,.06);color:#ff929d;border-radius:8px;padding:10px;font-size:11px}
  .oisScenarioBox{margin-top:8px;border:1px solid rgba(194,177,250,.36);background:rgba(194,177,250,.06);border-radius:9px;padding:9px;display:grid;gap:8px}.oisScenarioGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.oisScenarioCell{min-width:0;display:grid;gap:2px}.oisScenarioCell span,.oisScenarioCell small{color:#aeb8d5;font-size:9px}.oisScenarioCell b{color:#d4c6ff;font-size:13px;font-weight:850} 
- .oisResearchQuotes{margin-top:8px;border:1px solid rgba(242,187,73,.32);background:rgba(242,187,73,.045);border-radius:9px;padding:9px;display:grid;gap:8px}.oisResearchHead{font-size:10px;line-height:1.45;font-weight:800;color:#f2cf7b}.oisResearchGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.oisResearchCell{min-width:0;border-left:1px solid rgba(242,187,73,.2);padding-left:6px}.oisResearchCell:first-child{border:0;padding-left:0}.oisResearchHz{font-size:9px;color:#9ab4c2}.oisResearchRate{font-size:12px;font-weight:850;color:#f0f6fa;margin-top:2px}.oisResearchDate{font-size:9px;color:#b3a47f;margin-top:2px;overflow-wrap:anywhere}.oisResearchNote{font-size:10px;line-height:1.45;color:#c9b98d}
+ .oisSaronTruth{display:grid;gap:6px;margin-top:8px;padding:8px;border:1px solid rgba(242,187,73,.3);background:rgba(242,187,73,.04);border-radius:8px;color:#e3d7b6;font-size:10px;line-height:1.5;overflow-wrap:anywhere}.oisSaronTruth strong{font-size:10px;color:#f2cf7b}.oisSaronTruthRows{display:grid;gap:3px}.oisSaronTruthRows span b{color:#fff}.oisSaronTruth small{font-size:10px;line-height:1.5;color:#bcae85}\n .oisResearchQuotes{margin-top:8px;border:1px solid rgba(242,187,73,.32);background:rgba(242,187,73,.045);border-radius:9px;padding:9px;display:grid;gap:8px}.oisResearchHead{font-size:10px;line-height:1.45;font-weight:800;color:#f2cf7b}.oisResearchGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.oisResearchCell{min-width:0;border-left:1px solid rgba(242,187,73,.2);padding-left:6px}.oisResearchCell:first-child{border:0;padding-left:0}.oisResearchHz{font-size:9px;color:#9ab4c2}.oisResearchRate{font-size:12px;font-weight:850;color:#f0f6fa;margin-top:2px}.oisResearchDate{font-size:9px;color:#b3a47f;margin-top:2px;overflow-wrap:anywhere}.oisResearchNote{font-size:10px;line-height:1.45;color:#c9b98d}
  @media(max-width:1050px){.oisPathGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:650px){.oisPathGrid{grid-template-columns:1fr}.oisPathVals{grid-template-columns:repeat(4,minmax(52px,1fr))}.oisProxyGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
  `;document.head.appendChild(s);
 }
@@ -135,6 +135,48 @@ function nzdScenarioHtml(s){
  return '<div class="oisScenarioBox" data-ois-nzd-scenario="RESEARCH_ONLY_NOT_OIS"><div class="oisResearchHead">SCENARIO NZD · 3M / 6M / 12M · NON OIS</div><div class="oisScenarioGrid">'+cells+'</div><div class="oisResearchNote">Futures ASX Bank Bill meno 24 bp di differenziale storico cash bill–OCR RBNZ; fascia descrittiva 10–50 bp, non probabilistica. Scadenze di futures, non curva OIS spot. As-of '+esc(s.as_of)+'. Nessun delta di policy, FX, backtest o segnale.</div></div>';
 }
 
+// ICE SA3 codes identify the FIRST day of a future 3-month compounded
+// SARON accrual window, not a spot OIS tenor. Render only fully source-audited
+// dated contracts. Quarantined, legacy expiry-based or mismatched quote days
+// never receive a seemingly precise maturity explanation.
+function chfTenorTruth(c,r){
+ if(c!=='CHF'||r?.operational_status!=='GREEN_ESTIMATED'||
+    r?.method_id!=='TRADINGVIEW_DATED_FUTURES_SSR_V2'||
+    r?.official_status!=='WITHHELD'||r?.source_conflict_status)return '';
+ const day=s=>{
+   if(!/^\d{4}-\d{2}-\d{2}$/.test(s||''))return null;
+   const t=Date.parse(s+'T00:00:00Z');
+   return Number.isFinite(t)&&new Date(t).toISOString().slice(0,10)===s?t:null;
+ };
+ const thirdWed=(year,month)=>{
+   const weekday=new Date(Date.UTC(year,month-1,1)).getUTCDay();
+   return Date.UTC(year,month-1,1+((3-weekday+7)%7)+14);
+ };
+ const display=s=>s.slice(8,10)+'/'+s.slice(5,7)+'/'+s.slice(0,4);
+ const windows=[];
+ for(const [h,target] of [['3m',90],['6m',180],['12m',365]]){
+   const p=r.horizons?.[h]||{},m=/^SA3([HMUZ])(\d{4})$/.exec(p.contract||'');
+   if(!m||p.symbol!=='ICEEUR:'+p.contract||p.quote_timestamp_verified!==true||
+      p.quote_timestamp_source!=='SSR_DAILY_BAR_DATA_UPDATE_TIME'||
+      p.mapping!=='nearest ICE SARON accrual start to today+'+target+'d; no interpolation')return '';
+   const month={H:3,M:6,U:9,Z:12}[m[1]],year=Number(m[2]);
+   const start=thirdWed(year,month),nextMonth=month===12?3:month+3;
+   const end=thirdWed(month===12?year+1:year,nextMonth)-86400000;
+   const observed=day(p.quote_as_of),actualStart=day(p.accrual_start),actualEnd=day(p.expiration);
+   const price=Number(p.futures_price),rate=Number(p.rate);
+   if(observed===null||actualStart!==start||actualEnd!==end||start<=observed||
+      !Number.isFinite(price)||!Number.isFinite(rate)||Math.abs(100-price-rate)>.0002)return '';
+   const shift=Math.round((start-observed)/86400000)-target;
+   if(Math.abs(shift)>50)return '';
+   windows.push('<span><b>'+h.toUpperCase()+'</b> · '+esc(p.contract)+
+     ' · inizio '+display(p.accrual_start)+' ('+Math.abs(shift)+
+     ' gg '+(shift<0?'prima':shift>0?'dopo':'dal target esatto')+')</span>');
+ }
+ return '<div class="oisSaronTruth" data-ois-chf-window="AUDITED_SARON_ACCRUAL_START">'+
+   '<strong>CHF · finestre reali dei futures</strong>'+
+   '<div class="oisSaronTruthRows">'+windows.join('')+'</div>'+
+   '<small>NON OIS SPOT: ogni contratto misura il SARON composto in un trimestre futuro. Gli orizzonti 3M/6M/12M sono approssimazioni, non date di decisione SNB. Il differenziale futures–tasso SNB non equivale a rialzi o tagli prezzati.</small></div>';
+}
 function secondaryQuotesHtml(c,r){
  const ctx=r?.secondary_quote_context;
  if(!ctx||r.operational_status!=='WITHHELD'||!['USD','EUR','CHF'].includes(c))return '';
@@ -152,7 +194,7 @@ function render(){
  if(state.status!=='READY'||!state.data){host.innerHTML='<div class="oisOpSub">Caricamento OIS operativo…</div>';return true;}
  const d=state.data;const rows=CCYS.map(c=>[c,d.currencies[c]]);
  const finite=rows.flatMap(([,r])=>H.map(h=>rowRate(r,h)).filter(v=>v!==null&&v!==undefined&&Number.isFinite(Number(v))).map(Number));let min=Math.min(...finite),max=Math.max(...finite);if(!finite.length){min=0;max=1;}const pad=Math.max(.15,(max-min)*.08);min-=pad;max+=pad;
- const cards=rows.map(([c,r])=>{const est=r.operational_status==='GREEN_ESTIMATED',scenario=c==='NZD'?nzdScenario(r):null;return `<div class="oisPathCard" data-ois-ccy="${c}"><div class="oisPathTop"><span class="oisPathCcy">${c}</span><span class="oisPathMeta ${est||scenario?'est':'off'}">${scenario?'SCENARIO':r.operational_status==='WITHHELD'?'WITHHELD':est?'ESTIMATED':'OFFICIAL'}</span></div>${r.operational_status==='WITHHELD'?(scenario?'<div class="oisOpSub">OIS non certificata · scenario di ricerca separato</div>':'<div class="oisOpSub">Curva OIS non certificata · nessun livello sostitutivo</div>'):pathSvg(r,min,max)}${scenario?'':`<div class="oisPathVals">${H.map(h=>`<span>${h==='policy'?'POLICY':h.toUpperCase()}<b>${fmtRate(rowRate(r,h))}</b></span>`).join('')}</div>`}${nzdScenarioHtml(scenario)}${proxyHtml(c,r)}${secondaryQuotesHtml(c,r)}<div class="oisAsOf" title="${esc(r.source)}">as-of ${esc(scenario?.as_of||r.as_of||'—')} · conf. ${esc(r.confidence||'—')}</div></div>`;}).join('');
+ const cards=rows.map(([c,r])=>{const est=r.operational_status==='GREEN_ESTIMATED',scenario=c==='NZD'?nzdScenario(r):null;return `<div class="oisPathCard" data-ois-ccy="${c}"><div class="oisPathTop"><span class="oisPathCcy">${c}</span><span class="oisPathMeta ${est||scenario?'est':'off'}">${scenario?'SCENARIO':r.operational_status==='WITHHELD'?'WITHHELD':est?'ESTIMATED':'OFFICIAL'}</span></div>${r.operational_status==='WITHHELD'?(scenario?'<div class="oisOpSub">OIS non certificata · scenario di ricerca separato</div>':'<div class="oisOpSub">Curva OIS non certificata · nessun livello sostitutivo</div>'):pathSvg(r,min,max)}${scenario?'':`<div class="oisPathVals">${H.map(h=>`<span>${h==='policy'?'POLICY':h.toUpperCase()}<b>${fmtRate(rowRate(r,h))}</b></span>`).join('')}</div>`}${chfTenorTruth(c,r)}${nzdScenarioHtml(scenario)}${proxyHtml(c,r)}${secondaryQuotesHtml(c,r)}<div class="oisAsOf" title="${esc(r.source)}">as-of ${esc(scenario?.as_of||r.as_of||'—')} · conf. ${esc(r.confidence||'—')}</div></div>`;}).join('');
  const trs=rows.map(([c,r])=>{const est=r.operational_status==='GREEN_ESTIMATED';const cells=['3m','6m','12m'].flatMap(h=>r.operational_status==='WITHHELD'?[null,null]:[r?.horizons?.[h]?.change_1d_bp,r?.horizons?.[h]?.change_1w_bp]).map(v=>`<td class="${clsBp(v)}">${fmtBp(v)}</td>`).join('');return `<tr><td><b>${c}</b> <span class="oisQuality ${est?'est':'off'}">${r.operational_status==='WITHHELD'?'WITHHELD':est?'EST':'OFF'}</span></td>${cells}<td>${r.change_1d_available?'SI':'NO'}/${r.change_1w_available?'SI':'NO'}</td></tr>`;}).join('');
  host.innerHTML=`<div class="oisOp"><div class="oisOpHead"><div><div class="oisOpTitle">OIS / Policy Pricing — G8 Operational</div><div class="oisOpSub">Riferimenti monetari G8: i dati ufficiali possono essere futures oppure OIS diretti (GBP). Le stime sono indicative, non OIS certificate. Le variazioni non confrontabili restano assenti e le stime non entrano come OIS ufficiali nel backtest.</div></div><div class="oisOpBadges"><span class="oisBadge off">${d.summary.green_official} FONTI UFFICIALI</span><span class="oisBadge est">${d.summary.green_estimated} ESTIMATED</span><span class="oisBadge">${d.summary.operational_green}/8 OPERATIVO · ${d.summary.operational_withheld} OIS SENZA PRICING ${nzdScenario(d.currencies.NZD)?'· 1 SCENARIO NZD':''}</span></div></div><div class="oisPathGrid">${cards}</div><div class="oisReprice"><table><thead><tr><th>Valuta</th><th>3M Δ1D</th><th>3M Δ1W</th><th>6M Δ1D</th><th>6M Δ1W</th><th>12M Δ1D</th><th>12M Δ1W</th><th>Storico 1D/1W</th></tr></thead><tbody>${trs}</tbody></table></div><div class="oisFoot">NULL ≠ 0 bp: “—” significa storico insufficiente o punto non disponibile. Il monitor usa esclusivamente <code>OIS_OPERATIONAL_VIEW.json</code>; il box ASX NZD mostra futures bancari; lo scenario con differenziale RBNZ è ricerca separata e non viene promosso a OIS.</div></div>`;
  return true;

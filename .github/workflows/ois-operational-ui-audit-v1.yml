@@ -70,6 +70,20 @@ jobs:
               const rows=[...(host?.querySelectorAll('.oisReprice tbody tr')||[])];
               const tickers=[...(host?.querySelectorAll('.oisPathCcy')||[])].map(x=>x.textContent.trim());
               const foot=host?.querySelector('.oisFoot')?.textContent||'';
+              const chf=window.GMFQ_OIS_OPERATIONAL_UI?.data?.currencies?.CHF;
+              const chfNote=host?.querySelector('[data-ois-ccy="CHF"] [data-ois-chf-window]');
+              const chfTerms=['3m','6m','12m'];
+              const validCHF=chf?.operational_status==='GREEN_ESTIMATED'&&
+                chf?.method_id==='TRADINGVIEW_DATED_FUTURES_SSR_V2'&&
+                !chf?.source_conflict_status&&
+                chfTerms.every(h=>chf.horizons?.[h]?.quote_timestamp_verified===true&&
+                  chf.horizons?.[h]?.accrual_start&&chf.horizons?.[h]?.expiration);
+              const chfText=chfNote?.textContent||'';
+              const chfDatesPresent=validCHF?chfTerms.every(h=>{
+                const q=chf.horizons[h],d=q.accrual_start;
+                return chfText.includes(q.contract)&&
+                  chfText.includes(d.slice(8,10)+'/'+d.slice(5,7)+'/'+d.slice(0,4));
+              }):true;
               const docOverflow=document.documentElement.scrollWidth-window.innerWidth;
               const hostOverflow=host?host.scrollWidth-host.clientWidth:null;
               const active=document.getElementById('ratesdesk')?.classList.contains('active')===true;
@@ -79,6 +93,8 @@ jobs:
                 hasEstimated:badges.filter(x=>x==='ESTIMATED'||x==='Stimato').length,
                 hasAllCurrencies:CCYS.every(c=>tickers.includes(c)),
                 hasNullPolicy:foot.includes('NULL ≠ 0 bp'),
+                chfExpected:!!validCHF,chfVisible:!!chfNote,chfDatesPresent,
+                chfCaveat:chfText.includes('NON OIS SPOT')&&chfText.includes('non equivale a rialzi o tagli'),
                 docOverflow,hostOverflow,
                 hostBox:host?{w:host.getBoundingClientRect().width,h:host.getBoundingClientRect().height}:null,
                 finalAudit:window.GMFQ_POST_GATE_FINAL_AUDIT||null
@@ -97,6 +113,10 @@ jobs:
                throw new Error(label+' dynamic quality split mismatch');
             if(result.audit.nzd_scenario_count!==Number(result.audit.nzd_scenario_expected))throw new Error(label+' NZD research scenario integrity failure');
             if(!result.hasAllCurrencies||!result.hasNullPolicy)throw new Error(label+' content integrity failure');
+            if(result.chfExpected&&(!result.chfVisible||!result.chfDatesPresent||!result.chfCaveat))
+              throw new Error(label+' CHF futures accrual-window context not rendered accurately');
+            if(!result.chfExpected&&result.chfVisible)
+              throw new Error(label+' CHF accrual context displayed without verified dated futures');
             if(!result.hostBox||result.hostBox.w<=0||result.hostBox.h<=0)throw new Error(label+' OIS host not rendered');
             if(result.hostOverflow!=null&&result.hostOverflow>4)throw new Error(label+' OIS host horizontal overflow '+result.hostOverflow);
             await page.screenshot({path:`ois-operational-${label}.png`,fullPage:true});
