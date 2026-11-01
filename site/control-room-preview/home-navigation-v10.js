@@ -751,6 +751,12 @@ function mountHomeReadingPath(doc,context){
   '#gmfq-home-observed-moves .gmfq-home-observed-note{display:block;color:#a5bdcb;font:10px/1.48 Arial,sans-serif;overflow-wrap:anywhere}'+
   '#gmfq-home-observed-moves [data-observation-state="NOT_VERIFIED"] .gmfq-home-observed-value{color:#d7c38f}'+
   '@media(max-width:720px){#gmfq-home-observed-moves{grid-template-columns:1fr;gap:10px;margin:8px 0 10px}}';
+ visual.textContent+=
+  '#gmfq-home-commodity-research{grid-column:1/-1;min-width:0;border-top:1px solid #345368;padding:10px 0 0;display:grid;gap:4px}'+
+  '#gmfq-home-commodity-research .gmfq-home-commodity-line{color:#e0eaf1;font:11px/1.65 Arial,sans-serif;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}'+
+  '#gmfq-home-commodity-research .gmfq-home-commodity-caveat{color:#a3bbca;font:10px/1.45 Arial,sans-serif;overflow-wrap:anywhere}'+
+  '@media(max-width:600px){#gmfq-home-commodity-research{padding-top:8px;gap:3px}'+
+  '#gmfq-home-commodity-research .gmfq-home-commodity-line{font-size:10px;line-height:1.65}}';
  doc.head.appendChild(visual);
  const rail=doc.createElement('nav');
  rail.id='gmfq-home-reading-path';rail.setAttribute('aria-label','Da dove iniziare la lettura Macro FX');
@@ -940,6 +946,74 @@ function mountHomeDatedFxRisk(doc,fx,model){
  root.dataset.fxState=data.fx?'OFFICIAL_DATED':'NOT_VERIFIED';
  root.dataset.crossState=data.vix?'DATED_RISK_CLOSE':'NOT_VERIFIED';
  root.dataset.sourceEffect='NONE';root.dataset.pairEffect='NONE';
+}
+// Secondary futures observations add *context*, not another certified asset
+// or a fake synchronized spot curve. Reuse exact Cross-Asset source guards.
+function homeCommodityResearchReadout(res,model){
+ const result={gold:null,brent:null,wti:null,sourceEffect:'NONE',pairEffect:'NONE'};
+ const golden=res?.lanes?.['GOLD.market_proxy'];
+ if(validCrossGold(res,golden)&&crossGoldAge(golden.proxy_as_of)<=3&&
+    num(golden.change_1d_pct)!==null&&Math.abs(golden.change_1d_pct)<30){
+  result.gold={asof:golden.proxy_as_of,value:golden.value,
+   delta:golden.change_1d_pct,grade:'SECONDARY_FUTURES',
+   symbol:'GC=F',source:'Yahoo Finance public chart JSON'};
+ }
+ const brent=crossRiskBrent(res);
+ if(brent.state==='SECONDARY_RECENT'&&num(brent.delta)!==null&&
+    Math.abs(brent.delta)<30){
+  result.brent={asof:brent.asof,value:brent.value,delta:brent.delta,
+   grade:'SECONDARY_FUTURES',symbol:'BZ=F',source:'Yahoo Finance public chart JSON'};
+ }
+ // Last observed WTI spot must carry its *own* date. No rollover to the
+ // Gold/Brent futures as-of and no 30 October oil-return claim.
+ const wti=crossRiskObservation(model?.risk?.WTI,'WTI');
+ if(['OFFICIAL_RECENT','OFFICIAL_HISTORICAL'].includes(wti.state)&&
+    num(wti.value)!==null){
+  result.wti={asof:wti.asof,value:wti.value,grade:wti.state,
+   source:'U.S. Energy Information Administration',benchmark:'RWTC'};
+ }
+ return result;
+}
+async function mountHomeCommodityContext(doc,model){
+ if(!home()||frame.contentDocument!==doc)return;
+ const root=doc.getElementById('gmfq-home-observed-moves');
+ if(!root||root.querySelector('#gmfq-home-commodity-research'))return;
+ const note=doc.createElement('div');
+ note.id='gmfq-home-commodity-research';
+ note.dataset.sourceEffect='NONE';note.dataset.pairEffect='NONE';
+ note.setAttribute('aria-label','Commodities: futures indicativi e dati spot non sincronizzati');
+ note.innerHTML='<span class="gmfq-home-observed-title">COMMODITIES · FONTI DISTINTE</span>'+
+  '<span class="gmfq-home-commodity-line">Verifica delle ultime osservazioni datate.</span>';
+ root.appendChild(note);
+ const line=note.querySelector('.gmfq-home-commodity-line');
+ let res=null;
+ try{res=await feed('ESTIMATED_RESIDUAL_GAPS.json')}
+ catch(error){console.warn('[GMFQ Home Commodity provenance unavailable]',String(error))}
+ if(!note.isConnected||frame.contentDocument!==doc||!home())return;
+ const read=homeCommodityResearchReadout(res,model);
+ const fmt2=x=>x.toFixed(2).replace('.',','),
+   pct=x=>(x>0?'+':'')+fmt2(x)+'%';
+ const rows=[];
+ if(read.gold)rows.push('Oro FUT GC=F '+read.gold.asof+
+  ': ≈ '+fmt2(read.gold.value)+' USD/oz, '+pct(read.gold.delta)+' 1D (indicativo)');
+ if(read.brent)rows.push('Brent FUT BZ=F '+read.brent.asof+
+  ': ≈ '+fmt2(read.brent.value)+' USD/bbl, '+pct(read.brent.delta)+' 1D (indicativo)');
+ if(read.wti)rows.push('WTI SPOT EIA '+read.wti.asof+
+  ': '+fmt2(read.wti.value)+' USD/bbl, ultimo disponibile'+
+  (read.wti.grade==='OFFICIAL_HISTORICAL'?' · STORICO':''));
+ if(!rows.length)rows.push('Nessun riferimento commodity validato abbastanza per una variazione corrente.');
+ line.textContent=rows.join(' · ');
+ const caveat=doc.createElement('small');
+ caveat.className='gmfq-home-commodity-caveat';
+ caveat.textContent='Futures secondari ≠ prezzi spot/settlement certificati. '+
+  'Le date possono divergere: non confrontare i rendimenti come se fossero sincronizzati.';
+ note.appendChild(caveat);
+ note.dataset.goldState=read.gold?'SECONDARY_FUTURES':'NOT_VERIFIED';
+ note.dataset.brentState=read.brent?'SECONDARY_FUTURES':'NOT_VERIFIED';
+ note.dataset.wtiState=read.wti?read.wti.grade:'NOT_VERIFIED';
+ note.dataset.asofGold=read.gold?.asof||'';
+ note.dataset.asofBrent=read.brent?.asof||'';
+ note.dataset.asofWti=read.wti?.asof||'';
 }
 function updateHomePulseFirstRead(doc,host){
  if(!home()||frame.contentDocument!==doc)return;
@@ -1310,6 +1384,7 @@ function mountHomeFreshnessAudit(doc,fx,rates,ois,dxy,proxy,model,setup,news,cal
  const morning=homeMorningStudySources(fx,model,setup,rates,ois,news,calendar);
  mountHomeReadingPath(doc,{macroDay:pairMacroDay,fxCurrent,fxDay,oisCount:oisCurrent.length,setup});
  mountHomeDatedFxRisk(doc,fx,model);
+ mountHomeCommodityContext(doc,model);
  // One editorial source line, not another card or a new reliability score.
  const rail=doc.getElementById('gmfq-home-reading-path');
  if(rail&&morning){
