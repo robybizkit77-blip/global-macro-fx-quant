@@ -579,32 +579,96 @@ function matchedResearchHtml(moves){
 }
 /* A research visual, not an OIS curve: mixed-date futures are unjoined. */
 function miniCharts(rows){
+ // Source quality and instrument type are deliberately independent:
+ // GBP is the only direct OIS series; other certified levels are futures.
+ const instrument=r=>r.official_ois?'OIS BoE':
+   r.tier==='OFFICIAL'?'Futures monetari ufficiali':
+   r.tier==='SCENARIO'?'Scenario Bank Bill → OCR':
+   r.tier==='CONFLICTED'?'Futures secondari contestati':
+   r.tier==='MIXED'?'Futures indicativi, date diverse':
+   r.tier==='PROXY'?'Futures indicativi':'Nessuna fonte utilizzabile';
+ const ink=r=>r.tier==='CONFLICTED'?'#b99aff':
+   r.tier==='OFFICIAL'?'#67c4e5':
+   r.tier==='SCENARIO'?'#c2b1fa':'#e5bd77';
  const cards=rows.map(r=>{
-  const p=tenors.map((t,i)=>({t,i,v:r.points[t]})).filter(x=>number(x.v?.value)!==null&&fresh(x.v.date,x.v.date));
-  if(!p.length)return '<article class="gmfq-mini-curve" data-chart-ccy="'+r.ccy+'" data-points="0"><b>'+flags[r.ccy]+' '+r.ccy+'</b><p>Nessuna scadenza verificabile; nessuna curva inventata</p></article>';
-  const values=p.map(x=>x.v.value),bottom=Math.min(...values),top=Math.max(...values),pad=Math.max(.1,(top-bottom)*.2);
-  const x=i=>38+111*i,y=v=>82-62*(v-bottom+pad)/(top-bottom+2*pad);
-  const synced=new Set(p.map(a=>a.v.date)).size===1,joined=p.length===3&&synced&&r.tier!=='CONFLICTED';
-  const path=joined?'<path d="'+p.map((a,i)=>(i?'L':'M')+x(a.i)+','+y(a.v.value).toFixed(1)).join(' ')+
-   '" fill="none" stroke="'+(r.tier==='OFFICIAL'?'#52b6cf':'#d9bd7a')+'" stroke-width="2"'+
-   (r.tier==='OFFICIAL'?'':' stroke-dasharray="5 4"')+'/>':'';
-  const dots=p.map(a=>'<g data-tenor="'+a.t+'"><circle cx="'+x(a.i)+'" cy="'+y(a.v.value).toFixed(1)+
-   '" r="4" fill="'+(r.tier==='OFFICIAL'?'#52b6cf':'#d9bd7a')+'"><title>'+esc(a.t+' '+fmt(a.v.value)+'% '+a.v.date)+
-   '</title></circle><text x="'+x(a.i)+'" y="'+Math.max(11,y(a.v.value)-9).toFixed(1)+
-   '" text-anchor="middle">'+(r.tier==='OFFICIAL'?'':'≈')+fmt(a.v.value)+'%</text></g>').join('');
+  const p=tenors.map((t,i)=>({t,i,v:r.points[t]}))
+   .filter(x=>number(x.v?.value)!==null&&fresh(x.v.date,x.v.date));
+  const dates=[...new Set(p.map(x=>x.v.date))];
+  // Only a complete, synchronized certified monetary series may draw a line.
+  // Individually dated, disputed, modelled or partial points stay unconnected.
+  const joined=p.length===3&&dates.length===1&&r.tier==='OFFICIAL';
+  const missing=tenors.filter(t=>!p.some(x=>x.t===t));
+  const kind=r.official_ois?'DIRECT_OIS':r.tier==='OFFICIAL'?'OFFICIAL_FUTURES':
+   r.tier==='SCENARIO'?'MODEL_SCENARIO':
+   r.tier==='CONFLICTED'?'CONTESTED_FUTURES':
+   r.tier==='WITHHELD'?'UNAVAILABLE':'INDICATIVE_FUTURES';
   const date=p.length===1?
     'Solo '+p[0].t.toUpperCase()+' · '+p[0].v.date+' · PUNTO ISOLATO, NON CURVA':
     r.tier==='CONFLICTED'?
-    'Quotazioni contestate · punti non connessi · '+[...new Set(p.map(a=>a.v.date))].join(' / '):
-    joined?p[0].v.date:'Punti non connessi · '+[...new Set(p.map(a=>a.v.date))].join(' / ');
-  return '<article class="gmfq-mini-curve" data-chart-ccy="'+r.ccy+'" data-quality="'+r.tier+
-    '" data-points="'+p.length+'" data-joined="'+joined+'"><header><b>'+flags[r.ccy]+' '+r.ccy+
-    '</b><small>'+labels[r.tier]+'</small></header><svg viewBox="0 0 300 112" role="img" aria-label="'+esc(r.ccy+' '+date)+
-    '"><g class="axis"><line x1="20" y1="88" x2="280" y2="88"/>'+tenors.map((t,i)=>
-      '<text x="'+x(i)+'" y="106" text-anchor="middle">'+t.toUpperCase()+'</text>').join('')+
-    '</g>'+path+dots+'</svg><small class="date">'+esc(date)+'</small></article>';
+    'Quotazioni contestate · punti non connessi · '+dates.join(' / '):
+    p.length===0?'Nessuna scadenza datata verificabile':
+    joined?'Serie ufficiale sincronizzata · '+dates[0]:
+    'Punti non connessi · '+dates.join(' / ');
+  const header='<header><b>'+flags[r.ccy]+' '+r.ccy+'</b><small>'+esc(instrument(r))+'</small></header>';
+  const strip='<div class="gmfq-mini-values" role="group" aria-label="Scadenze 3M 6M 12M">'+
+   tenors.map(t=>{
+    const x=r.points[t],valid=number(x?.value)!==null&&fresh(x?.date,x?.date);
+    const disputed=valid&&x.source_quote_disputed===true;
+    const label=valid?(r.tier==='OFFICIAL'?'':'≈')+fmt(x.value)+'%':'—';
+    const state=!valid?'MISSING':disputed?'DISPUTED':
+      x.range?'SCENARIO':r.tier==='OFFICIAL'?'OFFICIAL':'INDICATIVE';
+    const range=valid&&x.range?'<small>Fascia '+fmt(x.range[0])+'–'+fmt(x.range[1])+'%</small>':'';
+    return '<div data-horizon="'+t+'" data-point-state="'+state+'"><span>'+t.toUpperCase()+
+     '</span><b>'+label+'</b><small>'+(valid?esc(x.date):'non verificato')+
+     '</small>'+range+'</div>';
+   }).join('')+'</div>';
+  if(!p.length){
+   return '<article class="gmfq-mini-curve" data-chart-ccy="'+r.ccy+'" data-quality="'+r.tier+
+    '" data-points="0" data-joined="false" data-instrument="'+kind+
+    '" data-missing-tenors="3" data-synchronized="false">'+header+
+    '<div class="gmfq-mini-empty">Nessun punto osservabile: non disegnare una curva.</div>'+
+    strip+'<small class="date">'+esc(date)+'</small></article>';
+  }
+  const values=p.map(x=>x.v.value),bottom=Math.min(...values),top=Math.max(...values);
+  const pad=Math.max(.1,(top-bottom)*.2);
+  const x=i=>38+111*i,y=v=>82-62*(v-bottom+pad)/(top-bottom+2*pad);
+  const line=joined?'<path d="'+p.map((a,i)=>(i?'L':'M')+x(a.i)+','+
+   y(a.v.value).toFixed(1)).join(' ')+
+   '" fill="none" stroke="'+ink(r)+'" stroke-width="2"/>':'';
+  const dots=p.map(a=>{
+   const disputed=a.v.source_quote_disputed===true;
+   const color=disputed?'#b99aff':ink(r);
+   return '<g data-tenor="'+a.t+'" data-point-state="'+(disputed?'DISPUTED':r.tier)+
+    '"><circle cx="'+x(a.i)+'" cy="'+y(a.v.value).toFixed(1)+
+    '" r="4.5" fill="'+color+'" stroke="#071b2b" stroke-width="1.5"><title>'+
+    esc(a.t.toUpperCase()+' '+fmt(a.v.value)+'% · '+a.v.date+
+      (disputed?' · contestato, non convalidato':''))+
+    '</title></circle></g>';
+  }).join('');
+  const mark=missing.map(t=>'<text class="missing" x="'+x(tenors.indexOf(t))+
+   '" y="60" text-anchor="middle">n.d.</text>').join('');
+  const plot='<svg viewBox="0 0 300 112" role="img" aria-label="'+esc(r.ccy+' · '+date)+
+   '"><g class="axis"><line x1="20" y1="88" x2="280" y2="88"/>'+
+   tenors.map((t,i)=>'<text x="'+x(i)+'" y="106" text-anchor="middle">'+
+    t.toUpperCase()+'</text>').join('')+'</g>'+line+dots+mark+'</svg>';
+  return '<article class="gmfq-mini-curve" data-chart-ccy="'+r.ccy+
+   '" data-quality="'+r.tier+'" data-points="'+p.length+'" data-joined="'+joined+
+   '" data-instrument="'+kind+'" data-missing-tenors="'+missing.length+
+   '" data-synchronized="'+(dates.length===1)+'">'+header+plot+strip+
+   '<small class="date">'+esc(date)+'</small></article>';
  }).join('');
- return '<section id="gmfq-g8-mini-charts" data-mini-curves="'+rows.length+'"><header><b>Grafici 3M / 6M / 12M · G8</b><small>Scala indipendente per valuta. Tratteggio = stima. Un solo punto o date diverse NON rappresentano una curva OIS.</small></header><div class="gmfq-mini-grid">'+cards+'</div></section>';
+ return '<section id="gmfq-g8-mini-charts" data-mini-curves="'+rows.length+'">'+
+  '<header><b>3M / 6M / 12M · otto valute, qualità visibile</b>'+
+  '<small>Scala indipendente per valuta: confronta la forma, non l’altezza tra grafici. '+
+  'Linea = tre scadenze certificate e sincronizzate; punti singoli = dati non '+
+  'collegabili in una curva. Solo GBP è OIS diretta; AUD/CAD/JPY sono futures ufficiali.</small>'+
+  '<div class="gmfq-mini-key" aria-label="Legenda qualità delle fonti">'+
+  '<span data-key="official">● OIS / futures certificati</span>'+
+  '<span data-key="indicative">● Futures indicativi</span>'+
+  '<span data-key="disputed">● Contestati</span>'+
+  '<span data-key="scenario">● Scenario NZD</span>'+
+  '<span data-key="missing">— Dato mancante</span></div></header>'+
+  '<div class="gmfq-mini-grid">'+cards+'</div></section>';
 }
 function view(rows,moves=[]){
  const cell=(r,t)=>{const x=r.points[t];return x?
@@ -653,6 +717,29 @@ const css=[
  '#gmfq-g8-mini-charts .gmfq-mini-curve svg text{fill:#e2eef5;font:10px Arial,sans-serif}',
  '#gmfq-g8-mini-charts .gmfq-mini-curve svg .axis line{stroke:#345061}',
  '#gmfq-g8-mini-charts .gmfq-mini-curve .date{display:block;color:#acc5d3;font:9px/1.4 Arial,sans-serif}',
+ '#gmfq-g8-mini-charts .gmfq-mini-key{display:flex;flex-wrap:wrap;gap:5px 13px;margin-top:5px;color:#b5cada;font:10px/1.5 Arial,sans-serif}',
+ '#gmfq-g8-mini-charts .gmfq-mini-key [data-key="official"]{color:#67c4e5}',
+ '#gmfq-g8-mini-charts .gmfq-mini-key [data-key="indicative"]{color:#e5bd77}',
+ '#gmfq-g8-mini-charts .gmfq-mini-key [data-key="disputed"]{color:#b99aff}',
+ '#gmfq-g8-mini-charts .gmfq-mini-key [data-key="scenario"]{color:#c2b1fa}',
+ '#gmfq-g8-mini-charts .gmfq-mini-curve header{align-items:flex-start}',
+ '#gmfq-g8-mini-charts .gmfq-mini-curve header small{max-width:72%;text-align:right;overflow-wrap:anywhere}',
+ '#gmfq-g8-mini-charts .gmfq-mini-curve[data-quality="OFFICIAL"] header small{color:#67c4e5}',
+ '#gmfq-g8-mini-charts .gmfq-mini-curve[data-quality="CONFLICTED"] header small{color:#b99aff}',
+ '#gmfq-g8-mini-charts .gmfq-mini-curve[data-quality="SCENARIO"] header small{color:#c2b1fa}',
+ '#gmfq-g8-mini-charts .gmfq-mini-curve svg .missing{fill:#8fa8b8;font-size:10px}',
+ '#gmfq-g8-mini-charts .gmfq-mini-values{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:1px 0 7px}',
+ '#gmfq-g8-mini-charts .gmfq-mini-values>div{min-width:0;padding:5px 3px;border-top:1px solid #315063;text-align:center}',
+ '#gmfq-g8-mini-charts .gmfq-mini-values span,#gmfq-g8-mini-charts .gmfq-mini-values small{display:block;color:#a9c2d0;font:9px/1.45 Arial,sans-serif;overflow-wrap:anywhere}',
+ '#gmfq-g8-mini-charts .gmfq-mini-values b{display:block;color:#e8f0f6;font:600 12px/1.5 Arial,sans-serif;font-variant-numeric:tabular-nums}',
+ '#gmfq-g8-mini-charts [data-point-state="MISSING"] b{color:#8fa8b8}',
+ '#gmfq-g8-mini-charts [data-point-state="DISPUTED"] b{color:#b99aff}',
+ '#gmfq-g8-mini-charts [data-point-state="SCENARIO"] b{color:#c2b1fa}',
+ '#gmfq-g8-mini-charts [data-point-state="INDICATIVE"] b{color:#e5bd77}',
+ '#gmfq-g8-mini-charts [data-point-state="OFFICIAL"] b{color:#67c4e5}',
+ '#gmfq-g8-mini-charts .gmfq-mini-empty{padding:20px 5px;color:#afc1cd;text-align:center;font:11px/1.5 Arial,sans-serif}',
+ '@media(max-width:600px){#gmfq-g8-mini-charts .gmfq-mini-key{gap:4px 10px;font-size:9px}#gmfq-g8-mini-charts .gmfq-mini-values b{font-size:13px}}',
+
  '@media(max-width:600px){#gmfq-g8-mini-charts{padding:8px}#gmfq-g8-mini-charts .gmfq-mini-grid{grid-template-columns:1fr}}',
  '#gmfq-ois-research-estimates .gmfq-est-disclosure{padding:0 15px 12px;margin-top:5px}',
  '#gmfq-ois-research-estimates .gmfq-est-disclosure>summary{color:#e0c88b;font:600 12px/1.55 Arial,sans-serif;cursor:pointer;padding:10px 0;border-top:1px solid #274355;outline-offset:3px}',
