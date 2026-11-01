@@ -72,7 +72,7 @@
       "change_1d_available": false,
       "change_1w_available": false,
       "confidence": "B",
-      "direction_vs_policy": "UP",
+      "direction_vs_policy": "WITHHELD",
       "horizons": {
         "12m": {
           "accrual_start": "2027-12-15",
@@ -84,12 +84,14 @@
           "expiration": "2028-03-14",
           "futures_price": 99.52,
           "mapping": "nearest ICE SARON accrual start to today+365d; no interpolation",
-          "policy_delta_bp": 48.0,
+          "policy_delta_bp": null,
           "price_valid_until": "2026-10-30T17:59:52Z",
           "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": 0.48,
+          "raw_level_gap_not_policy_repricing": true,
+          "raw_level_minus_spot_policy_bp": 48.0,
           "symbol": "ICEEUR:SA3Z2027"
         },
         "3m": {
@@ -102,12 +104,14 @@
           "expiration": "2027-03-16",
           "futures_price": 100.025,
           "mapping": "nearest ICE SARON accrual start to today+90d; no interpolation",
-          "policy_delta_bp": -2.5,
+          "policy_delta_bp": null,
           "price_valid_until": "2026-10-30T17:59:52Z",
           "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": -0.025,
+          "raw_level_gap_not_policy_repricing": true,
+          "raw_level_minus_spot_policy_bp": -2.5,
           "symbol": "ICEEUR:SA3Z2026"
         },
         "6m": {
@@ -120,12 +124,14 @@
           "expiration": "2027-06-15",
           "futures_price": 99.9,
           "mapping": "nearest ICE SARON accrual start to today+180d; no interpolation",
-          "policy_delta_bp": 10.0,
+          "policy_delta_bp": null,
           "price_valid_until": "2026-10-30T17:59:52Z",
           "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": 0.1,
+          "raw_level_gap_not_policy_repricing": true,
+          "raw_level_minus_spot_policy_bp": 10.0,
           "roster_quality": "ICE_LISTED_QUARTER_CALENDAR_DERIVED_UNQUOTED",
           "symbol": "ICEEUR:SA3H2027"
         }
@@ -136,7 +142,9 @@
       "official_status": "WITHHELD",
       "operational_status": "GREEN_ESTIMATED",
       "policy_rate": 0.0,
+      "policy_repricing_inference_allowed": false,
       "quality": "ESTIMATED_INFORMATIONAL",
+      "raw_level_gap_scope": "DESCRIPTIVE_LEVEL_ARITHMETIC_NOT_EXPECTED_CB_RATE",
       "repricing_reference": {
         "daily_min_age_hours": 18,
         "homogeneous_method_required": true,
@@ -172,6 +180,8 @@
           "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
           "quote_timestamp_verified": false,
           "rate": 3.1125,
+          "raw_level_gap_not_policy_repricing": true,
+          "raw_level_minus_spot_policy_bp": null,
           "symbol": "EUREX:FST3U2027"
         },
         "3m": {
@@ -189,6 +199,8 @@
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": 2.5125,
+          "raw_level_gap_not_policy_repricing": true,
+          "raw_level_minus_spot_policy_bp": null,
           "symbol": "EUREX:FST3V2026"
         },
         "6m": {
@@ -206,6 +218,8 @@
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": 2.8325,
+          "raw_level_gap_not_policy_repricing": true,
+          "raw_level_minus_spot_policy_bp": null,
           "symbol": "EUREX:FST3G2027"
         }
       },
@@ -216,7 +230,9 @@
       "official_status": "WITHHELD",
       "operational_status": "GREEN_ESTIMATED",
       "policy_rate": 2.5,
+      "policy_repricing_inference_allowed": false,
       "quality": "ESTIMATED_INFORMATIONAL",
+      "raw_level_gap_scope": "DESCRIPTIVE_LEVEL_ARITHMETIC_NOT_EXPECTED_CB_RATE",
       "repricing_reference": {
         "daily_min_age_hours": 18,
         "homogeneous_method_required": true,
@@ -316,19 +332,25 @@
           "change_1d_bp": null,
           "change_1w_bp": null,
           "policy_delta_bp": null,
-          "rate": null
+          "rate": null,
+          "raw_level_gap_not_policy_repricing": true,
+          "raw_level_minus_spot_policy_bp": null
         },
         "3m": {
           "change_1d_bp": null,
           "change_1w_bp": null,
           "policy_delta_bp": null,
-          "rate": null
+          "rate": null,
+          "raw_level_gap_not_policy_repricing": true,
+          "raw_level_minus_spot_policy_bp": 25.0
         },
         "6m": {
           "change_1d_bp": null,
           "change_1w_bp": null,
           "policy_delta_bp": null,
-          "rate": null
+          "rate": null,
+          "raw_level_gap_not_policy_repricing": true,
+          "raw_level_minus_spot_policy_bp": null
         }
       },
       "input_mode": "NATIVE_CB_FALLBACK",
@@ -384,7 +406,9 @@
       "official_status": "WITHHELD",
       "operational_status": "WITHHELD",
       "policy_rate": 2.75,
+      "policy_repricing_inference_allowed": false,
       "quality": "ESTIMATED_INFORMATIONAL",
+      "raw_level_gap_scope": "DESCRIPTIVE_LEVEL_ARITHMETIC_NOT_EXPECTED_CB_RATE",
       "repricing_reference": {
         "daily_min_age_hours": 18,
         "homogeneous_method_required": true,
@@ -421,6 +445,8 @@
           "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
           "quote_timestamp_verified": false,
           "rate": 4.46,
+          "raw_level_gap_not_policy_repricing": true,
+          "raw_level_minus_spot_policy_bp": null,
           "symbol": "CBOT:ZQV2027"
         },
         "3m": {
@@ -438,6 +464,8 @@
           "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
           "quote_timestamp_verified": false,
           "rate": 4.01,
+          "raw_level_gap_not_policy_repricing": true,
+          "raw_level_minus_spot_policy_bp": null,
           "symbol": "CBOT:ZQZ2026"
         },
         "6m": {
@@ -455,6 +483,8 @@
           "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
           "quote_timestamp_verified": false,
           "rate": 4.28,
+          "raw_level_gap_not_policy_repricing": true,
+          "raw_level_minus_spot_policy_bp": null,
           "symbol": "CBOT:ZQJ2027"
         }
       },
@@ -465,7 +495,9 @@
       "official_status": "WITHHELD",
       "operational_status": "GREEN_ESTIMATED",
       "policy_rate": 3.875,
+      "policy_repricing_inference_allowed": false,
       "quality": "ESTIMATED_INFORMATIONAL",
+      "raw_level_gap_scope": "DESCRIPTIVE_LEVEL_ARITHMETIC_NOT_EXPECTED_CB_RATE",
       "repricing_reference": {
         "daily_min_age_hours": 18,
         "homogeneous_method_required": true,
