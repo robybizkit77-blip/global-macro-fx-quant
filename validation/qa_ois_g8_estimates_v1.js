@@ -64,6 +64,14 @@ for(const ccy of ['USD','EUR','CHF']){
      quote_as_of:bar.observation_date,
      quote_timestamp_verified:true,
      quote_timestamp_source:'SSR_DAILY_BAR_DATA_UPDATE_TIME'});
+   if(ccy==='CHF'){
+     // Frozen 16/19/20 Oct archival bars predate the ICE accrual-start
+     // collector correction. Their original source identity is expiry-based.
+     // Do not inherit the live Nov CHF mapping from the mutable feed.
+     const target={'3m':90,'6m':180,'12m':365}[t];
+     h.mapping='nearest dated listed contract expiry to today+'+target+'d; no interpolation';
+     delete h.accrual_start;
+   }
    if(ccy==='EUR'){
      Object.assign(row.secondary_quote_context.horizons[t],{
        contract:bar.contract,rate_indicative:bar.implied_rate,
