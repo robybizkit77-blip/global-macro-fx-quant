@@ -493,7 +493,10 @@ function coverage(ois,bb,today){
 
 /* Pure, source-dated SAME futures-contract comparisons for each approximate
    3M/6M/12M label. No OIS repricing, no smoothing and never compare a roll. */
-function matchedResearchMoves(text,rows,today){
+function matchedResearchMoves(text,rows,today,conflictText=''){
+ // A conflict in one tenor must not erase unrelated verified contracts.
+ // Reject any *historically* disputed day as either end of a comparison.
+ if(typeof conflictText!=='string'||conflictText.length>1000000)return [];
  if(typeof text!=='string'||text.length>3000000)return [];
  const parsed=[],seen=new Set();
  const exchange={USD:'CBOT:',EUR:'EUREX:',CHF:'ICEEUR:'};
@@ -528,18 +531,46 @@ function matchedResearchMoves(text,rows,today){
    seen.add(identity);parsed.push(x);
   }
  }catch(_){return [];}
+
+ const disputedKeys=new Set(),eventIDs=new Set();
+ try {
+  for(const line of conflictText.split('\n')){
+   if(!line.trim())continue;
+   const e=JSON.parse(line),k=e.key;
+   if(e.schema!=='GMFQ_OIS_SAME_CONTRACT_SECONDARY_CONFLICT_V1'||
+      e.status!=='UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT'||
+      !Array.isArray(k)||k.length!==3||
+      !['USD','EUR','CHF'].includes(k[0])||
+      !/^[A-Z0-9]+$/.test(k[1])||!validDay(k[2])||
+      typeof e.event_id!=='string'||!/^[a-f0-9]{64}$/.test(e.event_id)||
+      eventIDs.has(e.event_id)||e.resolution!==null||
+      e.eligible_for_ois_level!==false||e.eligible_for_repricing!==false||
+      e.eligible_for_model_or_H1!==false)return [];
+   const orig=e.original_immutable_quote,other=e.conflicting_source_quote;
+   if(!orig||!other||
+      [orig,other].some(v=>v.currency!==k[0]||v.contract!==k[1]||
+       v.observation_date!==k[2]||v.official_ois_quote!==false||
+       v.policy_delta_eligible!==false)||
+      orig.implied_rate===other.implied_rate||
+      !parsed.some(v=>v.currency===k[0]&&v.contract===k[1]&&
+       v.observation_date===k[2]&&v.symbol===orig.symbol&&
+       v.implied_rate===orig.implied_rate&&v.futures_price===orig.futures_price))return [];
+   eventIDs.add(e.event_id);disputedKeys.add(k.join('|'));
+  }
+ }catch(_){return [];}
  const result=[];
  for(const ccy of ['USD','EUR','CHF']){
   const row=rows.find(x=>x.ccy===ccy);
-  if(!row||!['PROXY','MIXED'].includes(row.tier))continue;
+  if(!row||!['PROXY','MIXED','CONFLICTED'].includes(row.tier))continue;
   for(const tenor of ['3m','6m','12m']){
    const p=row.points?.[tenor];
-   if(!p?.source_quote_verified||!p.contract||!p.expires||!validDay(p.date)||
+   if(!p?.source_quote_verified||p.source_quote_disputed===true||!p.contract||!p.expires||!validDay(p.date)||
       !fresh(p.date,today))continue;
    const bars=parsed.filter(x=>x.currency===ccy&&
      x.contract===p.contract&&x.symbol===exchange[ccy]+p.contract&&
      x.expiration===p.expires&&x.observed_under_horizon===tenor&&
-     x.observation_date<=p.date)
+     x.observation_date<=p.date&&
+     !disputedKeys.has([x.currency,x.contract,x.observation_date].join('|')))
     .sort((a,b)=>a.observation_date.localeCompare(b.observation_date));
    if(bars.length<2)continue;
    const last=bars[bars.length-1],prior=bars[bars.length-2];
@@ -575,7 +606,7 @@ function matchedResearchHtml(moves){
   currencies.map(ccy=>'<div role="row" class="gmfq-same-line" data-same-ccy="'+ccy+'">'+
    '<div><strong>'+flags[ccy]+' '+ccy+'</strong></div>'+
    terms.map(t=>td(ccy,t)).join('')+'</div>').join('')+'</div>'+
-  '<small>Variazioni dello <b>stesso futures</b> su intervalli osservati anche diversi da una seduta. Non sono ΔOIS ufficiali, curve sincronizzate o segnali FX.</small></section>';
+  '<small>Solo contratti verificati e giorni privi di contestazioni: un conflitto su un’altra scadenza non annulla questi confronti. Un contratto contestato resta non confrontabile. Variazioni dello <b>stesso futures</b>, non ΔOIS ufficiali, curve sincronizzate o segnali FX.</small></section>';
 }
 /* A research visual, not an OIS curve: mixed-date futures are unjoined. */
 function miniCharts(rows){
@@ -780,6 +811,12 @@ const ROOT='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-
 let mounted=null;
 function active(){return(location.hash||'#/home').split('?')[0]==='#/tassi';}
 async function get(p){const r=await fetch(ROOT+p,{cache:'no-store'});if(!r.ok)throw Error('feed '+p);return r.json();}
+async function loadConflictArchive(){
+ const url='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/validation/cb_pricing/history/OIS_SAME_CONTRACT_CONFLICTS_V1.jsonl';
+ const response=await fetch(url,{cache:'no-store'});
+ if(!response.ok)throw Error('source conflict journal unavailable');
+ return response.text();
+}
 async function loadSameContractArchive(){
  const url='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/validation/cb_pricing/history/OIS_SAME_CONTRACT_QUOTES_V1.jsonl';
  const response=await fetch(url,{cache:'no-store'});
@@ -798,7 +835,7 @@ async function mount(doc){
  // that shows WITHHELD for perfectly usable dated secondary observations.
  anchor.insertAdjacentElement('beforebegin',box);
  const st=doc.createElement('style');st.textContent=css;doc.head.appendChild(st);
- try{const [a,b,h,rates,chf,nzd,latest]=await Promise.allSettled([get('OIS_OPERATIONAL_VIEW.json'),get('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),loadSameContractArchive(),get('NATIVE_RATES_DATA.json'),get('CHF_SNB_10Y_SPOT_CONTEXT.json'),get('NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json'),get('NZD_B2_GOVT_LATEST_WEB_RESEARCH.json')]);
+ try{const [a,b,h,ledger,rates,chf,nzd,latest]=await Promise.allSettled([get('OIS_OPERATIONAL_VIEW.json'),get('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),loadSameContractArchive(),loadConflictArchive(),get('NATIVE_RATES_DATA.json'),get('CHF_SNB_10Y_SPOT_CONTEXT.json'),get('NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json'),get('NZD_B2_GOVT_LATEST_WEB_RESEARCH.json')]);
   if(frame.contentDocument!==doc||!active())return;
   const o=a.status==='fulfilled'?a.value:null,p=b.status==='fulfilled'?b.value:null;
   if(o?.schema!=='GMFQ_OIS_OPERATIONAL_VIEW_V1'||!o.currencies)throw Error('invalid feed');
@@ -809,7 +846,7 @@ async function mount(doc){
    tenors.every(t=>number(r.points[t]?.value)!==null&&fresh(r.points[t]?.date,now)));
   box.dataset.sourceGradedCoverage=complete?'8/8':'PARTIAL';
   box.dataset.signalEffect='NONE';
-  box.innerHTML=view(rows,matchedResearchMoves(h.status==='fulfilled'?h.value:'',rows,now));
+  box.innerHTML=view(rows,matchedResearchMoves(h.status==='fulfilled'?h.value:'',rows,now,ledger.status==='fulfilled'?ledger.value:null));
    // A missing research-only source NEVER invalidates independently certified
    // or source-graded G8 monetary rates.
    const research=ratesContinuity(rates.status==='fulfilled'?rates.value:null,
