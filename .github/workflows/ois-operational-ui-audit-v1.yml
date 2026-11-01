@@ -93,8 +93,9 @@ jobs:
             if(result.cards!==8||result.rows!==8)throw new Error(label+' expected 8 cards/rows');
             if(result.hasOfficial!==result.audit.summary.green_official||
                result.hasEstimated!==result.audit.summary.green_estimated||
-               result.badges.filter(x=>x==='WITHHELD').length!==result.audit.summary.operational_withheld)
+               result.badges.filter(x=>x==='WITHHELD'||x==='SCENARIO').length!==result.audit.summary.operational_withheld)
                throw new Error(label+' dynamic quality split mismatch');
+            if(result.audit.nzd_scenario_count!==Number(result.audit.nzd_scenario_expected))throw new Error(label+' NZD research scenario integrity failure');
             if(!result.hasAllCurrencies||!result.hasNullPolicy)throw new Error(label+' content integrity failure');
             if(!result.hostBox||result.hostBox.w<=0||result.hostBox.h<=0)throw new Error(label+' OIS host not rendered');
             if(result.hostOverflow!=null&&result.hostOverflow>4)throw new Error(label+' OIS host horizontal overflow '+result.hostOverflow);
