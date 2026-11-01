@@ -213,6 +213,47 @@ q,ex=candidates(bad)
 assert len([x for x in q if x["currency"]=="CHF"])==2
 assert any("CHF/6m" in x for x in ex)
 
+# ICE March 2027 is listed, and its SARON window runs March-June 2027.
+# If the secondary SSR contract parser skips the March metadata entirely,
+# bounded ICE calendar recovery supplies only its CONTRACT ID, NOT a quote.
+from datetime import date as _date
+from collect_cb_pricing_estimated_live_v1 import (
+    recover_chf_ice_quarters, select_contracts, saron_window,
+)
+def _chf_row(code):
+    start,expiry=saron_window(code)
+    return {"symbol":"ICEEUR:"+code,"contract":code,"expiration":expiry,
+            "description":code,"instrument_name":"Three Month SARON"}
+short_chain=[_chf_row(c) for c in (
+    "SA3Z2026","SA3M2027","SA3U2027","SA3Z2027",
+    "SA3H2028","SA3M2028","SA3U2028")]
+recovered=recover_chf_ice_quarters(short_chain)
+q={r["contract"]:r for r in recovered}
+assert "SA3H2027" in q, "ICE March quarter must be recovered"
+assert q["SA3H2027"]["roster_quality"] == "ICE_LISTED_QUARTER_CALENDAR_DERIVED_UNQUOTED"
+assert not any("price" in r or "rate" in r or "quote_as_of" in r for r in recovered), (
+    "calendar may reconstruct identity only, never market rates")
+chosen=select_contracts(short_chain,_date(2026,10,30),currency="CHF")
+assert chosen["3m"]["contract"]=="SA3Z2026"
+assert chosen["6m"]["contract"]=="SA3H2027", chosen
+assert chosen["12m"]["contract"]=="SA3U2027", chosen
+assert abs((chosen["6m"]["accrual_start"]-_date(2026,10,30)).days-180)<=45
+# If one bookend has false expiry, it cannot authorize synthesizing the gap.
+poison=copy.deepcopy(short_chain)
+poison[1]["expiration"]=_date(2027,9,13)
+assert "SA3H2027" not in {x["contract"] for x in recover_chf_ice_quarters(poison)}
+# Never project missing contracts beyond the final verified quarter.
+assert "SA3Z2028" not in q
+# Even if a code is recovered, an independently timestamped quote must still
+# be fetched from that exact contract page before it can enter pricing.
+from collect_cb_pricing_estimated_live_v1 import parse_quote
+try:
+    parse_quote('<title>SA3H2027</title>',"SA3H2027",_date(2026,11,2))
+    raise AssertionError("unquoted ICE quarter passed market-data verification")
+except RuntimeError as err:
+    assert "no SSR Offer quote" in str(err)
+print("CHF_ICE_QUARTER_ROSTER_GAP_RECOVERY_PASS")
+
 _same_contract_current_only()
 print(f"OIS_SAME_CONTRACT_HISTORY_V1_PASS: immutable 23-row replay; "
       f"production {len(seed)} verified rows; matched changes, no roll, fail closed")
