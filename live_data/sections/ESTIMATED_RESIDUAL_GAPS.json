@@ -17,7 +17,7 @@
       "source_sheet": "末残（Amounts at end of period）",
       "source_column": 7,
       "source_header_context": "4298428 | 4247068 | 4210409 | 4346010 | 4216365 | 4072435 | 4028129 | 3905362",
-      "fetched_at_utc": "2026-11-01T15:13:17.262089Z",
+      "fetched_at_utc": "2026-11-01T15:26:46.546437Z",
       "official_canonical_untouched": true,
       "original_runtime_validation": {
         "period": "2026-08",
@@ -37,7 +37,7 @@
       "status": "ESTIMATED_ACTIVE_AUTO_REFRESH_OFFICIAL_PROXY",
       "confidence": "B/C",
       "proxy_as_of": "2026-08",
-      "proxy_value": 408395,
+      "proxy_value": 408395.0,
       "official_runtime_reference": 400255.9803935034,
       "absolute_difference": 8384.0196064966,
       "source": "SNB official API · cube bakredinausbm · AV1 | A | T1 | B",
@@ -56,7 +56,7 @@
         "editionDate": "20261021_0900",
         "publicSinceDate": "20261021_0900"
       },
-      "fetched_at_utc": "2026-10-30T13:28:49.783131Z",
+      "fetched_at_utc": "2026-11-01T15:26:59.979338Z",
       "official_canonical_untouched": true
     },
     "CHF.sight_deposits": {
@@ -82,7 +82,7 @@
         "editionDate": "20261021_0942",
         "publicSinceDate": "20261021_0942"
       },
-      "fetched_at_utc": "2026-10-30T13:28:50.238032Z",
+      "fetched_at_utc": "2026-11-01T15:27:00.440299Z",
       "official_canonical_untouched": true
     },
     "BRENT.market_proxy": {
@@ -134,8 +134,8 @@
       "unit": "USD per troy ounce",
       "exchange_name": "CMX",
       "instrument_type": "FUTURE",
-      "observation_count_1mo": 23,
-      "fetched_at_utc": "2026-10-31T17:23:17.325129Z",
+      "observation_count_1mo": 22,
+      "fetched_at_utc": "2026-11-01T15:26:32.099294Z",
       "official_canonical_untouched": true,
       "interpretation": "Informational delayed futures market proxy, not LBMA Gold Price, not physical spot, not certified exchange settlement, and not eligible for canonical Gold history, core, signals, sizing or official backtests."
     }
