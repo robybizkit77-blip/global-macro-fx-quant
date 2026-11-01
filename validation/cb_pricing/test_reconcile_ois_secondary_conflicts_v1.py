@@ -12,7 +12,7 @@ from ois_same_contract_history_v1 import (
     SOURCE, HISTORY, append_verified, candidates, load_history, record_key,
 )
 from reconcile_ois_secondary_conflicts_v1 import (
-    STATUS, apply, read_conflicts,
+    STATUS, CONFLICTS, apply, read_conflicts,
 )
 
 # Use original immutable October source bars, not the moving latest-live quotes.
