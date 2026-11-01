@@ -1,0 +1,1417 @@
+{
+  "canonical_D_macro_baseline_as_of": "2026-09-25",
+  "countries": {
+    "AUD": {
+      "FX_strength": null,
+      "country_relative_rank": null,
+      "growth": {
+        "is_growth_strength_score": false,
+        "later_revisions_not_identical_to_first_release": true,
+        "national_definitions_are_not_fully_cross_country_equivalent": true,
+        "nonannualized_qoq_descriptive_pct": 0.4,
+        "publisher_release_day": "2026-09-02",
+        "publisher_source": "https://www.abs.gov.au/statistics/economy/national-accounts/australian-national-accounts-national-income-expenditure-and-product/jun-2026",
+        "reference_quarter": "2026Q2",
+        "reported_unit": "PERCENT_QOQ_SA_CHAIN_VOLUME",
+        "reported_value": 0.4
+      },
+      "inflation": {
+        "change_direction": "UP",
+        "change_over_three_observation_intervals_pp": 0.3,
+        "normalization_not_required_for_observed_value": true,
+        "observation_intervals_not_fixed_calendar_months": true,
+        "observation_period": "2026Q3",
+        "observation_period_is_not_release_instant": true,
+        "observation_value": 3.9,
+        "observed_history_revised_not_historic_PIT": true,
+        "reported_unit": "PERCENT_OR_PERCENTAGE_POINTS",
+        "research_z_only_when_available": 0.374717088598108,
+        "research_z_was_not_imputed": false,
+        "series_id": "AU_CPI_HEADLINE_Q_YOY",
+        "source": "Australian Bureau of Statistics"
+      },
+      "inflation_accelerating_yoy": true,
+      "inflation_decelerating_yoy": false,
+      "labour": {
+        "change_direction": "UP",
+        "change_over_three_observation_intervals_pp": 0.268452,
+        "normalization_not_required_for_observed_value": true,
+        "observation_intervals_not_fixed_calendar_months": true,
+        "observation_period": "2026-09",
+        "observation_period_is_not_release_instant": true,
+        "observation_value": 4.7,
+        "observed_history_revised_not_historic_PIT": true,
+        "reported_unit": "PERCENT_OR_PERCENTAGE_POINTS",
+        "research_z_only_when_available": 2.020310933239856,
+        "research_z_was_not_imputed": false,
+        "series_id": "AU_UNEMP_RATE",
+        "source": "Australian Bureau of Statistics"
+      },
+      "macro_score": null,
+      "not_a_trade_or_policy_signal": true,
+      "unemployment_falling": false,
+      "unemployment_rising": true
+    },
+    "CAD": {
+      "FX_strength": null,
+      "country_relative_rank": null,
+      "growth": {
+        "is_growth_strength_score": false,
+        "later_revisions_not_identical_to_first_release": true,
+        "national_definitions_are_not_fully_cross_country_equivalent": true,
+        "nonannualized_qoq_descriptive_pct": 0.8,
+        "publisher_release_day": "2026-08-28",
+        "publisher_source": "https://www150.statcan.gc.ca/n1/daily-quotidien/260828/dq260828a-eng.htm",
+        "reference_quarter": "2026Q2",
+        "reported_unit": "PERCENT_QOQ_SA",
+        "reported_value": 0.8
+      },
+      "inflation": {
+        "change_direction": "UP",
+        "change_over_three_observation_intervals_pp": 0.29473,
+        "normalization_not_required_for_observed_value": true,
+        "observation_intervals_not_fixed_calendar_months": true,
+        "observation_period": "2026-09",
+        "observation_period_is_not_release_instant": true,
+        "observation_value": 3.092783505154628,
+        "observed_history_revised_not_historic_PIT": true,
+        "reported_unit": "PERCENT_OR_PERCENTAGE_POINTS",
+        "research_z_only_when_available": 1.7269287905969604,
+        "research_z_was_not_imputed": false,
+        "series_id": "CA_CPI_HEADLINE_YOY",
+        "source": "Statistics Canada"
+      },
+      "inflation_accelerating_yoy": true,
+      "inflation_decelerating_yoy": false,
+      "labour": {
+        "change_direction": "FLAT",
+        "change_over_three_observation_intervals_pp": 0.0,
+        "normalization_not_required_for_observed_value": true,
+        "observation_intervals_not_fixed_calendar_months": true,
+        "observation_period": "2026-09",
+        "observation_period_is_not_release_instant": true,
+        "observation_value": 6.5,
+        "observed_history_revised_not_historic_PIT": true,
+        "reported_unit": "PERCENT_OR_PERCENTAGE_POINTS",
+        "research_z_only_when_available": -0.6744907594765952,
+        "research_z_was_not_imputed": false,
+        "series_id": "CA_UNEMP_RATE",
+        "source": "Statistics Canada"
+      },
+      "macro_score": null,
+      "not_a_trade_or_policy_signal": true,
+      "unemployment_falling": false,
+      "unemployment_rising": false
+    },
+    "CHF": {
+      "FX_strength": null,
+      "country_relative_rank": null,
+      "growth": {
+        "is_growth_strength_score": false,
+        "later_revisions_not_identical_to_first_release": true,
+        "national_definitions_are_not_fully_cross_country_equivalent": true,
+        "nonannualized_qoq_descriptive_pct": 1.5,
+        "publisher_release_day": "2026-08-14",
+        "publisher_source": "https://www.schweizerischesseeschifffahrtsamt.eda.admin.ch/en/newnsb/1BH4HnCuYPWb_WqjPywR4",
+        "reference_quarter": "2026Q2",
+        "reported_unit": "PERCENT_QOQ_SA_CALENDAR_SPORTS",
+        "reported_value": 1.5
+      },
+      "inflation": {
+        "change_direction": "UP",
+        "change_over_three_observation_intervals_pp": 0.5,
+        "normalization_not_required_for_observed_value": true,
+        "observation_intervals_not_fixed_calendar_months": true,
+        "observation_period": "2026-09",
+        "observation_period_is_not_release_instant": true,
+        "observation_value": 1.0,
+        "observed_history_revised_not_historic_PIT": true,
+        "reported_unit": "PERCENT_OR_PERCENTAGE_POINTS",
+        "research_z_only_when_available": 2.3607176581680833,
+        "research_z_was_not_imputed": false,
+        "series_id": "CH_CPI_HEADLINE_YOY",
+        "source": "Swiss National Bank data portal / SFSO"
+      },
+      "inflation_accelerating_yoy": true,
+      "inflation_decelerating_yoy": false,
+      "labour": {
+        "change_direction": "FLAT",
+        "change_over_three_observation_intervals_pp": 0.009022,
+        "normalization_not_required_for_observed_value": true,
+        "observation_intervals_not_fixed_calendar_months": true,
+        "observation_period": "2026-09",
+        "observation_period_is_not_release_instant": true,
+        "observation_value": 3.1249882357461,
+        "observed_history_revised_not_historic_PIT": true,
+        "reported_unit": "PERCENT_OR_PERCENTAGE_POINTS",
+        "research_z_only_when_available": 0.9570251359326951,
+        "research_z_was_not_imputed": false,
+        "series_id": "CH_UNEMP_RATE",
+        "source": "Swiss National Bank data portal / SECO"
+      },
+      "macro_score": null,
+      "not_a_trade_or_policy_signal": true,
+      "unemployment_falling": false,
+      "unemployment_rising": false
+    },
+    "EUR": {
+      "FX_strength": null,
+      "country_relative_rank": null,
+      "growth": {
+        "is_growth_strength_score": false,
+        "later_revisions_not_identical_to_first_release": true,
+        "national_definitions_are_not_fully_cross_country_equivalent": true,
+        "nonannualized_qoq_descriptive_pct": 0.6,
+        "publisher_release_day": "2026-09-07",
+        "publisher_source": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-07092026-ap",
+        "reference_quarter": "2026Q2",
+        "reported_unit": "PERCENT_QOQ_SA_CALENDAR",
+        "reported_value": 0.6
+      },
+      "inflation": {
+        "change_direction": "UP",
+        "change_over_three_observation_intervals_pp": 1.0,
+        "normalization_not_required_for_observed_value": true,
+        "observation_intervals_not_fixed_calendar_months": true,
+        "observation_period": "2026-09",
+        "observation_period_is_not_release_instant": true,
+        "observation_value": 3.8,
+        "observed_history_revised_not_historic_PIT": true,
+        "reported_unit": "PERCENT_OR_PERCENTAGE_POINTS",
+        "research_z_only_when_available": 3.0,
+        "research_z_was_not_imputed": false,
+        "series_id": "EA_HICP_HEADLINE_YOY",
+        "source": "Eurostat prc_hicp_minr via Wolfram HTTP transport"
+      },
+      "inflation_accelerating_yoy": true,
+      "inflation_decelerating_yoy": false,
+      "labour": {
+        "change_direction": "UP",
+        "change_over_three_observation_intervals_pp": 0.1,
+        "normalization_not_required_for_observed_value": true,
+        "observation_intervals_not_fixed_calendar_months": true,
+        "observation_period": "2026-09",
+        "observation_period_is_not_release_instant": true,
+        "observation_value": 6.5,
+        "observed_history_revised_not_historic_PIT": true,
+        "reported_unit": "PERCENT_OR_PERCENTAGE_POINTS",
+        "research_z_only_when_available": null,
+        "research_z_was_not_imputed": true,
+        "series_id": "EA_UNEMP",
+        "source": "Eurostat"
+      },
+      "macro_score": null,
+      "not_a_trade_or_policy_signal": true,
+      "unemployment_falling": false,
+      "unemployment_rising": true
+    },
+    "GBP": {
+      "FX_strength": null,
+      "country_relative_rank": null,
+      "growth": {
+        "is_growth_strength_score": false,
+        "later_revisions_not_identical_to_first_release": true,
+        "national_definitions_are_not_fully_cross_country_equivalent": true,
+        "nonannualized_qoq_descriptive_pct": 0.5,
+        "publisher_release_day": "2026-09-30",
+        "publisher_source": "https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/quarterlynationalaccounts/apriltojune2026",
+        "reference_quarter": "2026Q2",
+        "reported_unit": "PERCENT_QOQ_SA",
+        "reported_value": 0.5
+      },
+      "inflation": {
+        "change_direction": "UP",
+        "change_over_three_observation_intervals_pp": 0.9,
+        "normalization_not_required_for_observed_value": true,
+        "observation_intervals_not_fixed_calendar_months": true,
+        "observation_period": "2026-09",
+        "observation_period_is_not_release_instant": true,
+        "observation_value": 3.5,
+        "observed_history_revised_not_historic_PIT": true,
+        "reported_unit": "PERCENT_OR_PERCENTAGE_POINTS",
+        "research_z_only_when_available": 0.8431134493457443,
+        "research_z_was_not_imputed": false,
+        "series_id": "D7G7",
+        "source": "Office for National Statistics"
+      },
+      "inflation_accelerating_yoy": true,
+      "inflation_decelerating_yoy": false,
+      "labour": {
+        "change_direction": "DOWN",
+        "change_over_three_observation_intervals_pp": -0.2,
+        "normalization_not_required_for_observed_value": true,
+        "observation_intervals_not_fixed_calendar_months": true,
+        "observation_period": "2026-08",
+        "observation_period_is_not_release_instant": true,
+        "observation_value": 4.7,
+        "observed_history_revised_not_historic_PIT": true,
+        "reported_unit": "PERCENT_OR_PERCENTAGE_POINTS",
+        "research_z_only_when_available": -0.5058680696074442,
+        "research_z_was_not_imputed": false,
+        "series_id": "MGSX",
+        "source": "Office for National Statistics"
+      },
+      "macro_score": null,
+      "not_a_trade_or_policy_signal": true,
+      "unemployment_falling": true,
+      "unemployment_rising": false
+    },
+    "JPY": {
+      "FX_strength": null,
+      "country_relative_rank": null,
+      "growth": {
+        "is_growth_strength_score": false,
+        "later_revisions_not_identical_to_first_release": true,
+        "national_definitions_are_not_fully_cross_country_equivalent": true,
+        "nonannualized_qoq_descriptive_pct": 0.3,
+        "publisher_release_day": "2026-08-17",
+        "publisher_source": "https://www.esri.cao.go.jp/en/sna/data/sokuhou/files/2026/qe262/gdemenuea.html",
+        "reference_quarter": "2026Q2",
+        "reported_unit": "PERCENT_QOQ_SA",
+        "reported_value": 0.3
+      },
+      "inflation": {
+        "change_direction": "UP",
+        "change_over_three_observation_intervals_pp": 0.5,
+        "normalization_not_required_for_observed_value": true,
+        "observation_intervals_not_fixed_calendar_months": true,
+        "observation_period": "2026-09",
+        "observation_period_is_not_release_instant": true,
+        "observation_value": 2.1,
+        "observed_history_revised_not_historic_PIT": true,
+        "reported_unit": "PERCENT_OR_PERCENTAGE_POINTS",
+        "research_z_only_when_available": -0.5901794145420204,
+        "research_z_was_not_imputed": false,
+        "series_id": "JP_CPI_HEADLINE_YOY",
+        "source": "Statistics Bureau of Japan / e-Stat"
+      },
+      "inflation_accelerating_yoy": true,
+      "inflation_decelerating_yoy": false,
+      "labour": {
+        "change_direction": "DOWN",
+        "change_over_three_observation_intervals_pp": -0.1,
+        "normalization_not_required_for_observed_value": true,
+        "observation_intervals_not_fixed_calendar_months": true,
+        "observation_period": "2026-09",
+        "observation_period_is_not_release_instant": true,
+        "observation_value": 2.4,
+        "observed_history_revised_not_historic_PIT": true,
+        "reported_unit": "PERCENT_OR_PERCENTAGE_POINTS",
+        "research_z_only_when_available": -1.3489815189531904,
+        "research_z_was_not_imputed": false,
+        "series_id": "JP_UNEMP_RATE",
+        "source": "Statistics Bureau of Japan / Labour Force Survey"
+      },
+      "macro_score": null,
+      "not_a_trade_or_policy_signal": true,
+      "unemployment_falling": true,
+      "unemployment_rising": false
+    },
+    "NZD": {
+      "FX_strength": null,
+      "country_relative_rank": null,
+      "growth": {
+        "is_growth_strength_score": false,
+        "later_revisions_not_identical_to_first_release": true,
+        "national_definitions_are_not_fully_cross_country_equivalent": true,
+        "nonannualized_qoq_descriptive_pct": 0.2,
+        "publisher_release_day": "2026-09-17",
+        "publisher_source": "https://www.stats.govt.nz/information-releases/gross-domestic-product-june-2026-quarter/",
+        "reference_quarter": "2026Q2",
+        "reported_unit": "PERCENT_QOQ_SA_CHAIN_VOLUME_PRODUCTION",
+        "reported_value": 0.2
+      },
+      "inflation": {
+        "change_direction": "UP",
+        "change_over_three_observation_intervals_pp": 0.6,
+        "normalization_not_required_for_observed_value": true,
+        "observation_intervals_not_fixed_calendar_months": true,
+        "observation_period": "2026Q3",
+        "observation_period_is_not_release_instant": true,
+        "observation_value": 3.7,
+        "observed_history_revised_not_historic_PIT": true,
+        "reported_unit": "PERCENT_OR_PERCENTAGE_POINTS",
+        "research_z_only_when_available": 0.5395926075812763,
+        "research_z_was_not_imputed": false,
+        "series_id": "NZ_CPI_HEADLINE_YOY",
+        "source": "Stats NZ"
+      },
+      "inflation_accelerating_yoy": true,
+      "inflation_decelerating_yoy": false,
+      "labour": {
+        "change_direction": "UP",
+        "change_over_three_observation_intervals_pp": 0.3,
+        "normalization_not_required_for_observed_value": true,
+        "observation_intervals_not_fixed_calendar_months": true,
+        "observation_period": "2026Q2",
+        "observation_period_is_not_release_instant": true,
+        "observation_value": 5.6,
+        "observed_history_revised_not_historic_PIT": true,
+        "reported_unit": "PERCENT_OR_PERCENTAGE_POINTS",
+        "research_z_only_when_available": 1.156269873388448,
+        "research_z_was_not_imputed": false,
+        "series_id": "NZ_UNEMP_RATE",
+        "source": "Stats NZ via Figure.NZ mirror"
+      },
+      "macro_score": null,
+      "not_a_trade_or_policy_signal": true,
+      "unemployment_falling": false,
+      "unemployment_rising": true
+    },
+    "USD": {
+      "FX_strength": null,
+      "country_relative_rank": null,
+      "growth": {
+        "is_growth_strength_score": false,
+        "later_revisions_not_identical_to_first_release": true,
+        "national_definitions_are_not_fully_cross_country_equivalent": true,
+        "nonannualized_qoq_descriptive_pct": 0.372909,
+        "publisher_release_day": "2026-07-30",
+        "publisher_source": "https://www.bea.gov/news/2026/gdp-advance-estimate-2nd-quarter-2026",
+        "reference_quarter": "2026Q2",
+        "reported_unit": "PERCENT_SAAR_ANNUALIZED",
+        "reported_value": 1.5
+      },
+      "inflation": {
+        "change_direction": "UP",
+        "change_over_three_observation_intervals_pp": 0.25372,
+        "normalization_not_required_for_observed_value": true,
+        "observation_intervals_not_fixed_calendar_months": true,
+        "observation_period": "2026-09",
+        "observation_period_is_not_release_instant": true,
+        "observation_value": 3.7172508442689933,
+        "observed_history_revised_not_historic_PIT": true,
+        "reported_unit": "PERCENT_OR_PERCENTAGE_POINTS",
+        "research_z_only_when_available": null,
+        "research_z_was_not_imputed": true,
+        "series_id": "CPIAUCSL",
+        "source": "FRED/BLS"
+      },
+      "inflation_accelerating_yoy": true,
+      "inflation_decelerating_yoy": false,
+      "labour": {
+        "change_direction": "UP",
+        "change_over_three_observation_intervals_pp": 0.1,
+        "normalization_not_required_for_observed_value": true,
+        "observation_intervals_not_fixed_calendar_months": true,
+        "observation_period": "2026-09",
+        "observation_period_is_not_release_instant": true,
+        "observation_value": 4.2,
+        "observed_history_revised_not_historic_PIT": true,
+        "reported_unit": "PERCENT_OR_PERCENTAGE_POINTS",
+        "research_z_only_when_available": null,
+        "research_z_was_not_imputed": true,
+        "series_id": "UNRATE",
+        "source": "FRED/BLS"
+      },
+      "macro_score": null,
+      "not_a_trade_or_policy_signal": true,
+      "unemployment_falling": false,
+      "unemployment_rising": true
+    }
+  },
+  "economic_data_coverage": "8/8_G8_THREE_PILLARS",
+  "eligible_for_trading_or_forward_backtest": false,
+  "fx_price_as_of": "2026-10-30",
+  "generated_europe_rome_day": "2026-11-01",
+  "historic_PIT_OOS_not_certified": true,
+  "pair_context": {
+    "AUD/CAD": {
+      "base": "AUD",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "AUD": 0.4,
+        "CAD": 0.8
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "AUD": "2026Q2",
+        "CAD": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "AUD": "2026Q3",
+        "CAD": "2026-09"
+      },
+      "inflation_yoy_changes_pp": {
+        "AUD": 0.3,
+        "CAD": 0.29473
+      },
+      "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "AUD": 0.268452,
+        "CAD": 0.0
+      },
+      "labour_periods": {
+        "AUD": "2026-09",
+        "CAD": "2026-09"
+      },
+      "pair_trade_bias": null,
+      "quote": "CAD",
+      "recalculated_structural_thesis": false
+    },
+    "AUD/CHF": {
+      "base": "AUD",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "AUD": 0.4,
+        "CHF": 1.5
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "AUD": "2026Q2",
+        "CHF": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "AUD": "2026Q3",
+        "CHF": "2026-09"
+      },
+      "inflation_yoy_changes_pp": {
+        "AUD": 0.3,
+        "CHF": 0.5
+      },
+      "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "AUD": 0.268452,
+        "CHF": 0.009022
+      },
+      "labour_periods": {
+        "AUD": "2026-09",
+        "CHF": "2026-09"
+      },
+      "pair_trade_bias": null,
+      "quote": "CHF",
+      "recalculated_structural_thesis": false
+    },
+    "AUD/JPY": {
+      "base": "AUD",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "AUD": 0.4,
+        "JPY": 0.3
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "AUD": "2026Q2",
+        "JPY": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "AUD": "2026Q3",
+        "JPY": "2026-09"
+      },
+      "inflation_yoy_changes_pp": {
+        "AUD": 0.3,
+        "JPY": 0.5
+      },
+      "labour_change_contrast": "BASE_UNEMPLOYMENT_RISING_QUOTE_FALLING",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "AUD": 0.268452,
+        "JPY": -0.1
+      },
+      "labour_periods": {
+        "AUD": "2026-09",
+        "JPY": "2026-09"
+      },
+      "pair_trade_bias": null,
+      "quote": "JPY",
+      "recalculated_structural_thesis": false
+    },
+    "AUD/NZD": {
+      "base": "AUD",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "AUD": 0.4,
+        "NZD": 0.2
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "AUD": "2026Q2",
+        "NZD": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "AUD": "2026Q3",
+        "NZD": "2026Q3"
+      },
+      "inflation_yoy_changes_pp": {
+        "AUD": 0.3,
+        "NZD": 0.6
+      },
+      "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "AUD": 0.268452,
+        "NZD": 0.3
+      },
+      "labour_periods": {
+        "AUD": "2026-09",
+        "NZD": "2026Q2"
+      },
+      "pair_trade_bias": null,
+      "quote": "NZD",
+      "recalculated_structural_thesis": false
+    },
+    "AUD/USD": {
+      "base": "AUD",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "AUD": 0.4,
+        "USD": 0.372909
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "AUD": "2026Q2",
+        "USD": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "AUD": "2026Q3",
+        "USD": "2026-09"
+      },
+      "inflation_yoy_changes_pp": {
+        "AUD": 0.3,
+        "USD": 0.25372
+      },
+      "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "AUD": 0.268452,
+        "USD": 0.1
+      },
+      "labour_periods": {
+        "AUD": "2026-09",
+        "USD": "2026-09"
+      },
+      "pair_trade_bias": null,
+      "quote": "USD",
+      "recalculated_structural_thesis": false
+    },
+    "CAD/CHF": {
+      "base": "CAD",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "CAD": 0.8,
+        "CHF": 1.5
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "CAD": "2026Q2",
+        "CHF": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "CAD": "2026-09",
+        "CHF": "2026-09"
+      },
+      "inflation_yoy_changes_pp": {
+        "CAD": 0.29473,
+        "CHF": 0.5
+      },
+      "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "CAD": 0.0,
+        "CHF": 0.009022
+      },
+      "labour_periods": {
+        "CAD": "2026-09",
+        "CHF": "2026-09"
+      },
+      "pair_trade_bias": null,
+      "quote": "CHF",
+      "recalculated_structural_thesis": false
+    },
+    "CAD/JPY": {
+      "base": "CAD",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "CAD": 0.8,
+        "JPY": 0.3
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "CAD": "2026Q2",
+        "JPY": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "CAD": "2026-09",
+        "JPY": "2026-09"
+      },
+      "inflation_yoy_changes_pp": {
+        "CAD": 0.29473,
+        "JPY": 0.5
+      },
+      "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "CAD": 0.0,
+        "JPY": -0.1
+      },
+      "labour_periods": {
+        "CAD": "2026-09",
+        "JPY": "2026-09"
+      },
+      "pair_trade_bias": null,
+      "quote": "JPY",
+      "recalculated_structural_thesis": false
+    },
+    "CHF/JPY": {
+      "base": "CHF",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "CHF": 1.5,
+        "JPY": 0.3
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "CHF": "2026Q2",
+        "JPY": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "CHF": "2026-09",
+        "JPY": "2026-09"
+      },
+      "inflation_yoy_changes_pp": {
+        "CHF": 0.5,
+        "JPY": 0.5
+      },
+      "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "CHF": 0.009022,
+        "JPY": -0.1
+      },
+      "labour_periods": {
+        "CHF": "2026-09",
+        "JPY": "2026-09"
+      },
+      "pair_trade_bias": null,
+      "quote": "JPY",
+      "recalculated_structural_thesis": false
+    },
+    "EUR/AUD": {
+      "base": "EUR",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "AUD": 0.4,
+        "EUR": 0.6
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "AUD": "2026Q2",
+        "EUR": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "AUD": "2026Q3",
+        "EUR": "2026-09"
+      },
+      "inflation_yoy_changes_pp": {
+        "AUD": 0.3,
+        "EUR": 1.0
+      },
+      "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "AUD": 0.268452,
+        "EUR": 0.1
+      },
+      "labour_periods": {
+        "AUD": "2026-09",
+        "EUR": "2026-09"
+      },
+      "pair_trade_bias": null,
+      "quote": "AUD",
+      "recalculated_structural_thesis": false
+    },
+    "EUR/CAD": {
+      "base": "EUR",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "CAD": 0.8,
+        "EUR": 0.6
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "CAD": "2026Q2",
+        "EUR": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "CAD": "2026-09",
+        "EUR": "2026-09"
+      },
+      "inflation_yoy_changes_pp": {
+        "CAD": 0.29473,
+        "EUR": 1.0
+      },
+      "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "CAD": 0.0,
+        "EUR": 0.1
+      },
+      "labour_periods": {
+        "CAD": "2026-09",
+        "EUR": "2026-09"
+      },
+      "pair_trade_bias": null,
+      "quote": "CAD",
+      "recalculated_structural_thesis": false
+    },
+    "EUR/CHF": {
+      "base": "EUR",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "CHF": 1.5,
+        "EUR": 0.6
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "CHF": "2026Q2",
+        "EUR": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "CHF": "2026-09",
+        "EUR": "2026-09"
+      },
+      "inflation_yoy_changes_pp": {
+        "CHF": 0.5,
+        "EUR": 1.0
+      },
+      "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "CHF": 0.009022,
+        "EUR": 0.1
+      },
+      "labour_periods": {
+        "CHF": "2026-09",
+        "EUR": "2026-09"
+      },
+      "pair_trade_bias": null,
+      "quote": "CHF",
+      "recalculated_structural_thesis": false
+    },
+    "EUR/GBP": {
+      "base": "EUR",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "EUR": 0.6,
+        "GBP": 0.5
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "EUR": "2026Q2",
+        "GBP": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "EUR": "2026-09",
+        "GBP": "2026-09"
+      },
+      "inflation_yoy_changes_pp": {
+        "EUR": 1.0,
+        "GBP": 0.9
+      },
+      "labour_change_contrast": "BASE_UNEMPLOYMENT_RISING_QUOTE_FALLING",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "EUR": 0.1,
+        "GBP": -0.2
+      },
+      "labour_periods": {
+        "EUR": "2026-09",
+        "GBP": "2026-08"
+      },
+      "pair_trade_bias": null,
+      "quote": "GBP",
+      "recalculated_structural_thesis": false
+    },
+    "EUR/JPY": {
+      "base": "EUR",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "EUR": 0.6,
+        "JPY": 0.3
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "EUR": "2026Q2",
+        "JPY": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "EUR": "2026-09",
+        "JPY": "2026-09"
+      },
+      "inflation_yoy_changes_pp": {
+        "EUR": 1.0,
+        "JPY": 0.5
+      },
+      "labour_change_contrast": "BASE_UNEMPLOYMENT_RISING_QUOTE_FALLING",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "EUR": 0.1,
+        "JPY": -0.1
+      },
+      "labour_periods": {
+        "EUR": "2026-09",
+        "JPY": "2026-09"
+      },
+      "pair_trade_bias": null,
+      "quote": "JPY",
+      "recalculated_structural_thesis": false
+    },
+    "EUR/NZD": {
+      "base": "EUR",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "EUR": 0.6,
+        "NZD": 0.2
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "EUR": "2026Q2",
+        "NZD": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "EUR": "2026-09",
+        "NZD": "2026Q3"
+      },
+      "inflation_yoy_changes_pp": {
+        "EUR": 1.0,
+        "NZD": 0.6
+      },
+      "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "EUR": 0.1,
+        "NZD": 0.3
+      },
+      "labour_periods": {
+        "EUR": "2026-09",
+        "NZD": "2026Q2"
+      },
+      "pair_trade_bias": null,
+      "quote": "NZD",
+      "recalculated_structural_thesis": false
+    },
+    "EUR/USD": {
+      "base": "EUR",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "EUR": 0.6,
+        "USD": 0.372909
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "EUR": "2026Q2",
+        "USD": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "EUR": "2026-09",
+        "USD": "2026-09"
+      },
+      "inflation_yoy_changes_pp": {
+        "EUR": 1.0,
+        "USD": 0.25372
+      },
+      "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "EUR": 0.1,
+        "USD": 0.1
+      },
+      "labour_periods": {
+        "EUR": "2026-09",
+        "USD": "2026-09"
+      },
+      "pair_trade_bias": null,
+      "quote": "USD",
+      "recalculated_structural_thesis": false
+    },
+    "GBP/AUD": {
+      "base": "GBP",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "AUD": 0.4,
+        "GBP": 0.5
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "AUD": "2026Q2",
+        "GBP": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "AUD": "2026Q3",
+        "GBP": "2026-09"
+      },
+      "inflation_yoy_changes_pp": {
+        "AUD": 0.3,
+        "GBP": 0.9
+      },
+      "labour_change_contrast": "BASE_UNEMPLOYMENT_FALLING_QUOTE_RISING",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "AUD": 0.268452,
+        "GBP": -0.2
+      },
+      "labour_periods": {
+        "AUD": "2026-09",
+        "GBP": "2026-08"
+      },
+      "pair_trade_bias": null,
+      "quote": "AUD",
+      "recalculated_structural_thesis": false
+    },
+    "GBP/CAD": {
+      "base": "GBP",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "CAD": 0.8,
+        "GBP": 0.5
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "CAD": "2026Q2",
+        "GBP": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "CAD": "2026-09",
+        "GBP": "2026-09"
+      },
+      "inflation_yoy_changes_pp": {
+        "CAD": 0.29473,
+        "GBP": 0.9
+      },
+      "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "CAD": 0.0,
+        "GBP": -0.2
+      },
+      "labour_periods": {
+        "CAD": "2026-09",
+        "GBP": "2026-08"
+      },
+      "pair_trade_bias": null,
+      "quote": "CAD",
+      "recalculated_structural_thesis": false
+    },
+    "GBP/CHF": {
+      "base": "GBP",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "CHF": 1.5,
+        "GBP": 0.5
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "CHF": "2026Q2",
+        "GBP": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "CHF": "2026-09",
+        "GBP": "2026-09"
+      },
+      "inflation_yoy_changes_pp": {
+        "CHF": 0.5,
+        "GBP": 0.9
+      },
+      "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "CHF": 0.009022,
+        "GBP": -0.2
+      },
+      "labour_periods": {
+        "CHF": "2026-09",
+        "GBP": "2026-08"
+      },
+      "pair_trade_bias": null,
+      "quote": "CHF",
+      "recalculated_structural_thesis": false
+    },
+    "GBP/JPY": {
+      "base": "GBP",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "GBP": 0.5,
+        "JPY": 0.3
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "GBP": "2026Q2",
+        "JPY": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "GBP": "2026-09",
+        "JPY": "2026-09"
+      },
+      "inflation_yoy_changes_pp": {
+        "GBP": 0.9,
+        "JPY": 0.5
+      },
+      "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "GBP": -0.2,
+        "JPY": -0.1
+      },
+      "labour_periods": {
+        "GBP": "2026-08",
+        "JPY": "2026-09"
+      },
+      "pair_trade_bias": null,
+      "quote": "JPY",
+      "recalculated_structural_thesis": false
+    },
+    "GBP/NZD": {
+      "base": "GBP",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "GBP": 0.5,
+        "NZD": 0.2
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "GBP": "2026Q2",
+        "NZD": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "GBP": "2026-09",
+        "NZD": "2026Q3"
+      },
+      "inflation_yoy_changes_pp": {
+        "GBP": 0.9,
+        "NZD": 0.6
+      },
+      "labour_change_contrast": "BASE_UNEMPLOYMENT_FALLING_QUOTE_RISING",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "GBP": -0.2,
+        "NZD": 0.3
+      },
+      "labour_periods": {
+        "GBP": "2026-08",
+        "NZD": "2026Q2"
+      },
+      "pair_trade_bias": null,
+      "quote": "NZD",
+      "recalculated_structural_thesis": false
+    },
+    "GBP/USD": {
+      "base": "GBP",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "GBP": 0.5,
+        "USD": 0.372909
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "GBP": "2026Q2",
+        "USD": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "GBP": "2026-09",
+        "USD": "2026-09"
+      },
+      "inflation_yoy_changes_pp": {
+        "GBP": 0.9,
+        "USD": 0.25372
+      },
+      "labour_change_contrast": "BASE_UNEMPLOYMENT_FALLING_QUOTE_RISING",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "GBP": -0.2,
+        "USD": 0.1
+      },
+      "labour_periods": {
+        "GBP": "2026-08",
+        "USD": "2026-09"
+      },
+      "pair_trade_bias": null,
+      "quote": "USD",
+      "recalculated_structural_thesis": false
+    },
+    "NZD/CAD": {
+      "base": "NZD",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "CAD": 0.8,
+        "NZD": 0.2
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "CAD": "2026Q2",
+        "NZD": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "CAD": "2026-09",
+        "NZD": "2026Q3"
+      },
+      "inflation_yoy_changes_pp": {
+        "CAD": 0.29473,
+        "NZD": 0.6
+      },
+      "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "CAD": 0.0,
+        "NZD": 0.3
+      },
+      "labour_periods": {
+        "CAD": "2026-09",
+        "NZD": "2026Q2"
+      },
+      "pair_trade_bias": null,
+      "quote": "CAD",
+      "recalculated_structural_thesis": false
+    },
+    "NZD/CHF": {
+      "base": "NZD",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "CHF": 1.5,
+        "NZD": 0.2
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "CHF": "2026Q2",
+        "NZD": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "CHF": "2026-09",
+        "NZD": "2026Q3"
+      },
+      "inflation_yoy_changes_pp": {
+        "CHF": 0.5,
+        "NZD": 0.6
+      },
+      "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "CHF": 0.009022,
+        "NZD": 0.3
+      },
+      "labour_periods": {
+        "CHF": "2026-09",
+        "NZD": "2026Q2"
+      },
+      "pair_trade_bias": null,
+      "quote": "CHF",
+      "recalculated_structural_thesis": false
+    },
+    "NZD/JPY": {
+      "base": "NZD",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "JPY": 0.3,
+        "NZD": 0.2
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "JPY": "2026Q2",
+        "NZD": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "JPY": "2026-09",
+        "NZD": "2026Q3"
+      },
+      "inflation_yoy_changes_pp": {
+        "JPY": 0.5,
+        "NZD": 0.6
+      },
+      "labour_change_contrast": "BASE_UNEMPLOYMENT_RISING_QUOTE_FALLING",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "JPY": -0.1,
+        "NZD": 0.3
+      },
+      "labour_periods": {
+        "JPY": "2026-09",
+        "NZD": "2026Q2"
+      },
+      "pair_trade_bias": null,
+      "quote": "JPY",
+      "recalculated_structural_thesis": false
+    },
+    "NZD/USD": {
+      "base": "NZD",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "NZD": 0.2,
+        "USD": 0.372909
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "NZD": "2026Q2",
+        "USD": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "NZD": "2026Q3",
+        "USD": "2026-09"
+      },
+      "inflation_yoy_changes_pp": {
+        "NZD": 0.6,
+        "USD": 0.25372
+      },
+      "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "NZD": 0.3,
+        "USD": 0.1
+      },
+      "labour_periods": {
+        "NZD": "2026Q2",
+        "USD": "2026-09"
+      },
+      "pair_trade_bias": null,
+      "quote": "USD",
+      "recalculated_structural_thesis": false
+    },
+    "USD/CAD": {
+      "base": "USD",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "CAD": 0.8,
+        "USD": 0.372909
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "CAD": "2026Q2",
+        "USD": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "CAD": "2026-09",
+        "USD": "2026-09"
+      },
+      "inflation_yoy_changes_pp": {
+        "CAD": 0.29473,
+        "USD": 0.25372
+      },
+      "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "CAD": 0.0,
+        "USD": 0.1
+      },
+      "labour_periods": {
+        "CAD": "2026-09",
+        "USD": "2026-09"
+      },
+      "pair_trade_bias": null,
+      "quote": "CAD",
+      "recalculated_structural_thesis": false
+    },
+    "USD/CHF": {
+      "base": "USD",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "CHF": 1.5,
+        "USD": 0.372909
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "CHF": "2026Q2",
+        "USD": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "CHF": "2026-09",
+        "USD": "2026-09"
+      },
+      "inflation_yoy_changes_pp": {
+        "CHF": 0.5,
+        "USD": 0.25372
+      },
+      "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "CHF": 0.009022,
+        "USD": 0.1
+      },
+      "labour_periods": {
+        "CHF": "2026-09",
+        "USD": "2026-09"
+      },
+      "pair_trade_bias": null,
+      "quote": "CHF",
+      "recalculated_structural_thesis": false
+    },
+    "USD/JPY": {
+      "base": "USD",
+      "estimated_FX_expected_return": null,
+      "growth": {
+        "JPY": 0.3,
+        "USD": 0.372909
+      },
+      "growth_levels_not_comparable_as_relative_currency_strength": true,
+      "growth_periods": {
+        "JPY": "2026Q2",
+        "USD": "2026Q2"
+      },
+      "inflation_change_does_not_imply_hawkish_policy": true,
+      "inflation_periods": {
+        "JPY": "2026-09",
+        "USD": "2026-09"
+      },
+      "inflation_yoy_changes_pp": {
+        "JPY": 0.5,
+        "USD": 0.25372
+      },
+      "labour_change_contrast": "BASE_UNEMPLOYMENT_RISING_QUOTE_FALLING",
+      "labour_change_does_not_prove_FX_appreciation": true,
+      "labour_changes_pp": {
+        "JPY": -0.1,
+        "USD": 0.1
+      },
+      "labour_periods": {
+        "JPY": "2026-09",
+        "USD": "2026-09"
+      },
+      "pair_trade_bias": null,
+      "quote": "JPY",
+      "recalculated_structural_thesis": false
+    }
+  },
+  "safe_to_recompute_structural_pair_theses": false,
+  "safe_to_republish_D": false,
+  "schema": "GMFQ_MACRO_V3_G8_28PAIR_PUBLIC_OBSERVED_CONTEXT_V1",
+  "snapshot_content_sha256": "eedf3b1d4e7daf713745b8797599a5c273b55bc8e90438af28d15ff623f29cb4",
+  "source_observation_periods_not_release_days": true,
+  "source_receipt_sha256": "198ca0f5295df009c9b604d0e7ea638f17a669405acf386ac42269f3c1617d76",
+  "source_value_quality": "OBSERVED_REVISED_SERIES_AND_PUBLISHER_WEB_GDP",
+  "status": "OBSERVED_ECONOMIC_CONTEXT_NOT_FX_SIGNAL",
+  "summary": {
+    "GDP_publishers_visible": 8,
+    "currencies": 8,
+    "economic_dimensions": 24,
+    "latest_observation_values_present": 24,
+    "numeric_old_D_macro_scores_replaced": 0,
+    "pair_trade_signals_generated": 0,
+    "pairs": 28
+  }
+}
