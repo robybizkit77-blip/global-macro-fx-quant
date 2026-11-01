@@ -16,6 +16,7 @@ on:
       - 'validation/check_nzd_rates_reviewed_snapshot_v1.py'
       - 'site/control-room-preview/ois-pricing-estimates-v1.js'
       - 'validation/test_control_room_g8_visible_pricing_v1.js'
+      - 'validation/test_control_room_partial_chf_graded_chart_v1.js'
       - 'validation/test_control_room_chf_nzd_rates_research_v1.js'
       - 'validation/test_nzd_rbnz_b2_latest_web_research_v1.js'
       - 'live_data/sections/NZD_B2_GOVT_LATEST_WEB_RESEARCH.json'
@@ -128,6 +129,7 @@ jobs:
           node validation/test_control_room_rome_calendar_v1.js
           node validation/test_control_room_pending_source_dossiers_v1.js
           node validation/test_control_room_g8_visible_pricing_v1.js
+          node validation/test_control_room_partial_chf_graded_chart_v1.js
           node validation/test_control_room_chf_nzd_rates_research_v1.js
           node validation/test_nzd_rbnz_b2_latest_web_research_v1.js
           python validation/cb_pricing/test_build_ois_source_readiness_view_v1.py
