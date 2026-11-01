@@ -134,12 +134,68 @@ def build(candidate, legacy, pairs, banks, ois, rates, *, as_of=RESEARCH_DAY):
         elif curve.get("operational_status") == "GREEN_ESTIMATED":
             ensure(curve.get("quality") == "ESTIMATED_INFORMATIONAL"
                    and curve.get("backtest_eligible_as_official") is False
-                   and finite(six.get("rate"))
-                   and finite(six.get("policy_delta_bp")),
+                   and finite(six.get("rate")),
                    ccy + " B-grade 6M must remain indicative")
-            market = six["rate"]
-            market_class = ("PRE_DECISION_ESTIMATED_QUOTE_NO_CURRENT_POLICY_DELTA"
-                            if predecision else "ESTIMATED_POLICY_PRICING_NOT_OFFICIAL")
+            if curve.get("input_mode") == "LIVE_SECONDARY_CONFLICT_INDICATIVE":
+                # A same-contract/day dispute quarantines the source for
+                # monetary-policy repricing, even when the specific 6M
+                # contract was individually timestamp-verified (EUR).
+                keys = curve.get("source_conflict_keys")
+                ensure(ccy in ("USD", "EUR", "CHF")
+                       and curve.get("method_id") == "TRADINGVIEW_DATED_FUTURES_SSR_V2"
+                       and curve.get("source_quality") ==
+                           "SECONDARY_CONFLICTED_INDICATIVE_NOT_OIS"
+                       and curve.get("source_conflict_status") ==
+                           "UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT"
+                       and curve.get("conflicted_source_eligible_for_repricing") is False
+                       and curve.get("direction_vs_policy") == "WITHHELD"
+                       and curve.get("change_1d_available") is False
+                       and curve.get("change_1w_available") is False
+                       and six.get("policy_delta_bp") is None
+                       and six.get("change_1d_bp") is None
+                       and six.get("change_1w_bp") is None
+                       and isinstance(keys, list) and 1 <= len(keys) <= 3,
+                       ccy + " conflicted 6M must never claim policy pricing or repricing")
+                seen = set()
+                for item in keys:
+                    ensure(isinstance(item, dict)
+                           and item.get("horizon") in ("3m", "6m", "12m")
+                           and item["horizon"] not in seen
+                           and isinstance(item.get("event_id"), str)
+                           and len(item["event_id"]) == 64
+                           and all(ch in "0123456789abcdef" for ch in item["event_id"])
+                           and item.get("contract") ==
+                               curve.get("horizons", {}).get(item["horizon"], {}).get("contract")
+                           and item.get("observation_date") ==
+                               curve.get("horizons", {}).get(item["horizon"], {}).get("quote_as_of"),
+                           ccy + " malformed historical futures dispute identity")
+                    seen.add(item["horizon"])
+                if "6m" in seen:
+                    ensure(six.get("quote_timestamp_verified") is False
+                           and six.get("quote_timestamp_source") ==
+                              "QUARANTINED_SAME_CONTRACT_SAME_DAY",
+                           ccy + " disputed 6M quote falsely verified")
+                else:
+                    ensure(six.get("quote_timestamp_verified") is True
+                           and six.get("quote_timestamp_source") ==
+                              "SSR_DAILY_BAR_DATA_UPDATE_TIME",
+                           ccy + " uncontested 6M quote missing timestamp verification")
+                # The finite price is only an explicitly DISPUTED futures
+                # observation, never a 6M OIS level or a policy forecast.
+                market = six["rate"]
+                market_class = "CONFLICTED_FUTURES_6M_CONTEXT_ONLY_NO_POLICY_DELTA"
+            else:
+                ensure(curve.get("input_mode") == "LIVE_SECONDARY_OVERLAY"
+                       and curve.get("source_conflict_status") is None
+                       and curve.get("source_conflict_keys") is None
+                       and finite(six.get("policy_delta_bp"))
+                       and six.get("quote_timestamp_verified") is True
+                       and six.get("quote_timestamp_source") ==
+                           "SSR_DAILY_BAR_DATA_UPDATE_TIME",
+                       ccy + " non-conflicted B-grade 6M evidence not verified")
+                market = six["rate"]
+                market_class = ("PRE_DECISION_ESTIMATED_QUOTE_NO_CURRENT_POLICY_DELTA"
+                                if predecision else "ESTIMATED_POLICY_PRICING_NOT_OFFICIAL")
         elif curve.get("operational_status") == "WITHHELD":
             ensure(curve.get("quality") == "ESTIMATED_INFORMATIONAL"
                    and curve.get("backtest_eligible_as_official") is False
@@ -237,6 +293,7 @@ def build(candidate, legacy, pairs, banks, ois, rates, *, as_of=RESEARCH_DAY):
             "indicative_policy_pricing": sum(x["six_month_source_class"] ==
                 "ESTIMATED_POLICY_PRICING_NOT_OFFICIAL" for x in country.values()),
             "context_only_non_policy_6m": sum(x["six_month_source_class"] in (
+                "CONFLICTED_FUTURES_6M_CONTEXT_ONLY_NO_POLICY_DELTA",
                 "SECONDARY_NON_OIS_6M_CONTEXT_ONLY",
                 "BANK_BILL_BASIS_DIRECTIONAL_CONTEXT_ONLY",
                 "PRE_DECISION_OFFICIAL_QUOTE_NO_CURRENT_POLICY_DELTA",
@@ -272,6 +329,7 @@ def render(out):
         "PRE_DECISION_OFFICIAL_QUOTE_NO_CURRENT_POLICY_DELTA": "6M ufficiale ma PRE decisione · no Δ tasso attuale",
         "PRE_DECISION_ESTIMATED_QUOTE_NO_CURRENT_POLICY_DELTA": "6M stimato PRE decisione · no Δ tasso attuale",
         "ESTIMATED_POLICY_PRICING_NOT_OFFICIAL": "6M indicativo, non ufficiale",
+        "CONFLICTED_FUTURES_6M_CONTEXT_ONLY_NO_POLICY_DELTA": "Futures 6M contestato · nessun pricing tasso",
         "SECONDARY_NON_OIS_6M_CONTEXT_ONLY": "6M secondario non OIS",
         "BANK_BILL_BASIS_DIRECTIONAL_CONTEXT_ONLY": "Bank bill: solo contesto direzionale",
         "NO_VERIFIED_6M_POLICY_PRICING": "6M non verificato"
