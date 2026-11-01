@@ -774,8 +774,9 @@ function expectedReactionFromMetrics(row){
   if(!chartAudit.visible||chartAudit.count!==8||
      chartAudit.charts.some(x=>!x.svg||x.points<1||x.points>3||
        (x.ccy!=='CHF'&&x.points!==3)||
-       (x.ccy==='CHF'&&(x.points!==1||x.quality!=='PROXY'||x.joined!=='false')))||
-     chartAudit.charts.some(x=>x.quality==='MIXED'&&x.joined!=='false'))
+       (x.ccy==='CHF'&&(x.quality!=='PROXY'||x.joined!=='false')))||
+     chartAudit.charts.some(x=>x.quality!=='OFFICIAL'&&
+       (x.joined!=='false'||x.lineCount!==0)))
     throw Error(label+' Missing/unverified source-graded G8 charts '+JSON.stringify(chartAudit));
   const visualTypes={GBP:'DIRECT_OIS',AUD:'OFFICIAL_FUTURES',CAD:'OFFICIAL_FUTURES',
     JPY:'OFFICIAL_FUTURES',NZD:'MODEL_SCENARIO'};
