@@ -29,7 +29,7 @@ small{color:#829eb5;display:block;margin-top:10px}
   if(!certifiedDefault.trimEnd().endsWith(tail))throw new Error("Contratto HTML Control Room non riconosciuto");
   // Define the research-only source guard before Home reads its coverage.
   const scriptTag='<script src="./ois-pricing-estimates-v1.js?v=ois-g8-source-visual-20261101"><'+'/script>'+
-   '<script src="./home-navigation-v10.js?v=home-dated-first-read-20261101"><'+'/script>';
+   '<script src="./home-navigation-v10.js?v=home-pulse-materiality-20261101"><'+'/script>';
   const withNavigation=certifiedDefault.trimEnd().slice(0,-tail.length)+scriptTag+tail;
   document.open();
   document.write(withNavigation);
