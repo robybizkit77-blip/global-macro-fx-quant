@@ -222,6 +222,10 @@ def build():
             for h in HORIZONS:
                 base = dict(((e.get('horizons') or {}).get(h) or {}))
                 base.update(repricing['horizon_changes'][h])
+                # Defence in depth: no ESTIMATED layer can ever publish a
+                # numerical expected CB decision as a 'policy delta'.
+                # Keep quoted levels and the explicitly descriptive gap.
+                base['policy_delta_bp'] = None
                 horizons[h] = base
             out['currencies'][ccy] = {
                 'operational_status': 'GREEN_ESTIMATED',
@@ -234,7 +238,9 @@ def build():
                 'policy_rate': e.get('policy_rate'),
                 'source': e.get('source'),
                 'horizons': horizons,
-                'direction_vs_policy': e.get('direction_vs_policy'),
+                'direction_vs_policy': 'WITHHELD',
+                'policy_repricing_inference_allowed': False,
+                'raw_level_gap_scope': e.get('raw_level_gap_scope'),
                 'market_direction_proxy': e.get('market_direction_proxy'),
                 'change_1d_available': repricing['change_1d_available'],
                 'change_1w_available': repricing['change_1w_available'],
