@@ -158,15 +158,28 @@
       "FX_strength": null,
       "country_relative_rank": null,
       "growth": {
+        "historical_pit_training_vintages_certified": false,
         "is_growth_strength_score": false,
         "later_revisions_not_identical_to_first_release": true,
         "national_definitions_are_not_fully_cross_country_equivalent": true,
-        "nonannualized_qoq_descriptive_pct": 0.6,
-        "publisher_release_day": "2026-09-07",
-        "publisher_source": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-07092026-ap",
-        "reference_quarter": "2026Q2",
+        "nonannualized_qoq_descriptive_pct": 0.4,
+        "prior_documented_quarter": {
+          "is_growth_strength_score": false,
+          "later_revisions_not_identical_to_first_release": true,
+          "national_definitions_are_not_fully_cross_country_equivalent": true,
+          "nonannualized_qoq_descriptive_pct": 0.6,
+          "publisher_release_day": "2026-09-07",
+          "publisher_source": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-07092026-ap",
+          "reference_quarter": "2026Q2",
+          "reported_unit": "PERCENT_QOQ_SA_CALENDAR",
+          "reported_value": 0.6
+        },
+        "publication_stage": "PRELIMINARY_FLASH",
+        "publisher_release_day": "2026-10-30",
+        "publisher_source": "https://ec.europa.eu/eurostat/en/web/products-euro-indicators/w/2-30102026-ap",
+        "reference_quarter": "2026Q3",
         "reported_unit": "PERCENT_QOQ_SA_CALENDAR",
-        "reported_value": 0.6
+        "reported_value": 0.4
       },
       "inflation": {
         "change_direction": "UP",
@@ -362,15 +375,28 @@
       "FX_strength": null,
       "country_relative_rank": null,
       "growth": {
+        "historical_pit_training_vintages_certified": false,
         "is_growth_strength_score": false,
         "later_revisions_not_identical_to_first_release": true,
         "national_definitions_are_not_fully_cross_country_equivalent": true,
-        "nonannualized_qoq_descriptive_pct": 0.372909,
-        "publisher_release_day": "2026-07-30",
-        "publisher_source": "https://www.bea.gov/news/2026/gdp-advance-estimate-2nd-quarter-2026",
-        "reference_quarter": "2026Q2",
+        "nonannualized_qoq_descriptive_pct": 0.839373,
+        "prior_documented_quarter": {
+          "is_growth_strength_score": false,
+          "later_revisions_not_identical_to_first_release": true,
+          "national_definitions_are_not_fully_cross_country_equivalent": true,
+          "nonannualized_qoq_descriptive_pct": 0.372909,
+          "publisher_release_day": "2026-07-30",
+          "publisher_source": "https://www.bea.gov/news/2026/gdp-advance-estimate-2nd-quarter-2026",
+          "reference_quarter": "2026Q2",
+          "reported_unit": "PERCENT_SAAR_ANNUALIZED",
+          "reported_value": 1.5
+        },
+        "publication_stage": "ADVANCE",
+        "publisher_release_day": "2026-10-29",
+        "publisher_source": "https://bea.gov/news/2026/gdp-advance-estimate-3rd-quarter-2026",
+        "reference_quarter": "2026Q3",
         "reported_unit": "PERCENT_SAAR_ANNUALIZED",
-        "reported_value": 1.5
+        "reported_value": 3.4
       },
       "inflation": {
         "change_direction": "UP",
@@ -561,12 +587,12 @@
       "estimated_FX_expected_return": null,
       "growth": {
         "AUD": 0.4,
-        "USD": 0.372909
+        "USD": 0.839373
       },
       "growth_levels_not_comparable_as_relative_currency_strength": true,
       "growth_periods": {
         "AUD": "2026Q2",
-        "USD": "2026Q2"
+        "USD": "2026Q3"
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
       "inflation_periods": {
@@ -701,12 +727,12 @@
       "estimated_FX_expected_return": null,
       "growth": {
         "AUD": 0.4,
-        "EUR": 0.6
+        "EUR": 0.4
       },
       "growth_levels_not_comparable_as_relative_currency_strength": true,
       "growth_periods": {
         "AUD": "2026Q2",
-        "EUR": "2026Q2"
+        "EUR": "2026Q3"
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
       "inflation_periods": {
@@ -736,12 +762,12 @@
       "estimated_FX_expected_return": null,
       "growth": {
         "CAD": 0.8,
-        "EUR": 0.6
+        "EUR": 0.4
       },
       "growth_levels_not_comparable_as_relative_currency_strength": true,
       "growth_periods": {
         "CAD": "2026Q2",
-        "EUR": "2026Q2"
+        "EUR": "2026Q3"
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
       "inflation_periods": {
@@ -771,12 +797,12 @@
       "estimated_FX_expected_return": null,
       "growth": {
         "CHF": 1.5,
-        "EUR": 0.6
+        "EUR": 0.4
       },
       "growth_levels_not_comparable_as_relative_currency_strength": true,
       "growth_periods": {
         "CHF": "2026Q2",
-        "EUR": "2026Q2"
+        "EUR": "2026Q3"
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
       "inflation_periods": {
@@ -805,12 +831,12 @@
       "base": "EUR",
       "estimated_FX_expected_return": null,
       "growth": {
-        "EUR": 0.6,
+        "EUR": 0.4,
         "GBP": 0.5
       },
       "growth_levels_not_comparable_as_relative_currency_strength": true,
       "growth_periods": {
-        "EUR": "2026Q2",
+        "EUR": "2026Q3",
         "GBP": "2026Q2"
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
@@ -840,12 +866,12 @@
       "base": "EUR",
       "estimated_FX_expected_return": null,
       "growth": {
-        "EUR": 0.6,
+        "EUR": 0.4,
         "JPY": 0.3
       },
       "growth_levels_not_comparable_as_relative_currency_strength": true,
       "growth_periods": {
-        "EUR": "2026Q2",
+        "EUR": "2026Q3",
         "JPY": "2026Q2"
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
@@ -875,12 +901,12 @@
       "base": "EUR",
       "estimated_FX_expected_return": null,
       "growth": {
-        "EUR": 0.6,
+        "EUR": 0.4,
         "NZD": 0.2
       },
       "growth_levels_not_comparable_as_relative_currency_strength": true,
       "growth_periods": {
-        "EUR": "2026Q2",
+        "EUR": "2026Q3",
         "NZD": "2026Q2"
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
@@ -910,13 +936,13 @@
       "base": "EUR",
       "estimated_FX_expected_return": null,
       "growth": {
-        "EUR": 0.6,
-        "USD": 0.372909
+        "EUR": 0.4,
+        "USD": 0.839373
       },
       "growth_levels_not_comparable_as_relative_currency_strength": true,
       "growth_periods": {
-        "EUR": "2026Q2",
-        "USD": "2026Q2"
+        "EUR": "2026Q3",
+        "USD": "2026Q3"
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
       "inflation_periods": {
@@ -1121,12 +1147,12 @@
       "estimated_FX_expected_return": null,
       "growth": {
         "GBP": 0.5,
-        "USD": 0.372909
+        "USD": 0.839373
       },
       "growth_levels_not_comparable_as_relative_currency_strength": true,
       "growth_periods": {
         "GBP": "2026Q2",
-        "USD": "2026Q2"
+        "USD": "2026Q3"
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
       "inflation_periods": {
@@ -1261,12 +1287,12 @@
       "estimated_FX_expected_return": null,
       "growth": {
         "NZD": 0.2,
-        "USD": 0.372909
+        "USD": 0.839373
       },
       "growth_levels_not_comparable_as_relative_currency_strength": true,
       "growth_periods": {
         "NZD": "2026Q2",
-        "USD": "2026Q2"
+        "USD": "2026Q3"
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
       "inflation_periods": {
@@ -1296,12 +1322,12 @@
       "estimated_FX_expected_return": null,
       "growth": {
         "CAD": 0.8,
-        "USD": 0.372909
+        "USD": 0.839373
       },
       "growth_levels_not_comparable_as_relative_currency_strength": true,
       "growth_periods": {
         "CAD": "2026Q2",
-        "USD": "2026Q2"
+        "USD": "2026Q3"
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
       "inflation_periods": {
@@ -1331,12 +1357,12 @@
       "estimated_FX_expected_return": null,
       "growth": {
         "CHF": 1.5,
-        "USD": 0.372909
+        "USD": 0.839373
       },
       "growth_levels_not_comparable_as_relative_currency_strength": true,
       "growth_periods": {
         "CHF": "2026Q2",
-        "USD": "2026Q2"
+        "USD": "2026Q3"
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
       "inflation_periods": {
@@ -1366,12 +1392,12 @@
       "estimated_FX_expected_return": null,
       "growth": {
         "JPY": 0.3,
-        "USD": 0.372909
+        "USD": 0.839373
       },
       "growth_levels_not_comparable_as_relative_currency_strength": true,
       "growth_periods": {
         "JPY": "2026Q2",
-        "USD": "2026Q2"
+        "USD": "2026Q3"
       },
       "inflation_change_does_not_imply_hawkish_policy": true,
       "inflation_periods": {
@@ -1400,12 +1426,13 @@
   "safe_to_recompute_structural_pair_theses": false,
   "safe_to_republish_D": false,
   "schema": "GMFQ_MACRO_V3_G8_28PAIR_PUBLIC_OBSERVED_CONTEXT_V1",
-  "snapshot_content_sha256": "eedf3b1d4e7daf713745b8797599a5c273b55bc8e90438af28d15ff623f29cb4",
+  "snapshot_content_sha256": "5e8cec4f8f443f59976a55a2d2f7e904f9a48d04f38136f0e80f4fc45729bc34",
   "source_observation_periods_not_release_days": true,
-  "source_receipt_sha256": "198ca0f5295df009c9b604d0e7ea638f17a669405acf386ac42269f3c1617d76",
+  "source_receipt_sha256": "4e99e6d4e99e567e8716b13a5fb9885a161453dd947ba310aa8e9bf3eebe1492",
   "source_value_quality": "OBSERVED_REVISED_SERIES_AND_PUBLISHER_WEB_GDP",
   "status": "OBSERVED_ECONOMIC_CONTEXT_NOT_FX_SIGNAL",
   "summary": {
+    "GDP_later_quarter_official_releases": 2,
     "GDP_publishers_visible": 8,
     "currencies": 8,
     "economic_dimensions": 24,
