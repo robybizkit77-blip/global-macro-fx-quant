@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-10-30",
-  "generated_at_utc": "2026-10-31T12:26:28.551938Z",
+  "generated_at_utc": "2026-11-01T13:22:07.523090Z",
   "items": [
     {
       "as_of": "2026-10-30",
@@ -47,7 +47,7 @@
       "title": "AUD: repricing implicito da futures più dovish (-3.0 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-10-31T12:26:28.551938Z",
+  "last_checked_at_utc": "2026-11-01T13:22:07.523090Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -219,7 +219,14 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
+            "6m_rate_pct": 2.8325,
+            "date": "2026-10-30",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "ESTIMATED_INFORMATIONAL",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+            "status": "DAILY_CONTEXT_ONLY"
           },
           "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
           "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
@@ -307,7 +314,14 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
+            "6m_rate_pct": 2.8325,
+            "date": "2026-10-30",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "ESTIMATED_INFORMATIONAL",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+            "status": "DAILY_CONTEXT_ONLY"
           },
           "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
           "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
@@ -465,7 +479,7 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 4.25,
+            "6m_rate_pct": 4.28,
             "date": "2026-10-30",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
@@ -828,7 +842,7 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 4.25,
+            "6m_rate_pct": 4.28,
             "date": "2026-10-30",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
@@ -907,7 +921,7 @@
         "url": "https://www.rbnz.govt.nz/news-and-events/news/2026/10/ocr-held-at-2-75-percent"
       }
     ],
-    "last_attempt_day_rome": "2026-10-31",
+    "last_attempt_day_rome": "2026-11-01",
     "latest_published_at_utc": "2026-10-30T16:10:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
@@ -952,10 +966,10 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 16,
+        "accepted_items": 11,
         "ccy": "JPY",
-        "entries_rejected": 35,
-        "feed_entries_seen": 51,
+        "entries_rejected": 37,
+        "feed_entries_seen": 48,
         "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
         "source": "Bank of Japan",
         "source_id": "BOJ_NEWS",
