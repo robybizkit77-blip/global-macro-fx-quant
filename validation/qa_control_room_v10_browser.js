@@ -467,15 +467,15 @@ function expectedReactionFromMetrics(row){
     throw Error(label+' Home mixed-instrument disclaimer/layout failed '+JSON.stringify(commodity));
   const proxies=JSON.parse(fs.readFileSync(path.join(DATA,'ESTIMATED_RESIDUAL_GAPS.json'),'utf8')),
     risk=JSON.parse(fs.readFileSync(path.join(DATA,'D.json'),'utf8')).risk;
-  const gold=proxies.lanes['GOLD.market_proxy'],brent=proxies.lanes['BRENT.market_proxy'];
-  if(current(gold.proxy_as_of,3)){
-    if(commodity.gold!=='SECONDARY_FUTURES'||commodity.goldDay!==gold.proxy_as_of||
+  const goldCommodityProxy=proxies.lanes['GOLD.market_proxy'],brentCommodityProxy=proxies.lanes['BRENT.market_proxy'];
+  if(current(goldCommodityProxy.proxy_as_of,3)){
+    if(commodity.gold!=='SECONDARY_FUTURES'||commodity.goldDay!==goldCommodityProxy.proxy_as_of||
        !commodity.text.includes('Oro FUT GC=F')||!commodity.text.includes('(indicativo)'))
       throw Error(label+' gold futures not source-grade visible '+JSON.stringify(commodity));
   }else if(commodity.gold!=='NOT_VERIFIED')
     throw Error(label+' stale gold future promoted '+JSON.stringify(commodity));
-  if(current(brent.proxy_as_of,3)){
-    if(commodity.brent!=='SECONDARY_FUTURES'||commodity.brentDay!==brent.proxy_as_of||
+  if(current(brentCommodityProxy.proxy_as_of,3)){
+    if(commodity.brent!=='SECONDARY_FUTURES'||commodity.brentDay!==brentCommodityProxy.proxy_as_of||
        !commodity.text.includes('Brent FUT BZ=F'))
       throw Error(label+' Brent futures not source-grade visible '+JSON.stringify(commodity));
   }else if(commodity.brent!=='NOT_VERIFIED')
