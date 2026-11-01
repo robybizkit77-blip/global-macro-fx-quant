@@ -2025,7 +2025,10 @@ function marketResearchGraded(ois,proxy){
   const dates=terms.map((t,i)=>pts[i]===null?null:r.points[t].date);
   const count=pts.filter(v=>v!==null).length;
   if(!count)return null;
-  const joined=count===3&&r.tier!=='CONFLICTED'&&new Set(dates).size===1;
+  // Connect only independently certified sources. The CHF SARON dated
+  // futures and NZD bank-bill model remain individual levels, never a
+  // synthetic joined OIS market curve.
+  const joined=count===3&&r.tier==='OFFICIAL'&&new Set(dates).size===1;
   return {k:r.ccy,tier:r.tier,pts,dates,joined,verifiedTenors:count,
     missingTenors:terms.filter((t,i)=>pts[i]===null)};
  }).filter(Boolean);
