@@ -21,6 +21,8 @@ jobs:
           python-version: '3.12'
       - name: Run self-test
         run: python validation/estimated/test_residual_gaps_estimated_v1.py
+      - name: Prevent shared-writer races and source retrigger loops
+        run: python -m unittest validation.estimated.test_residual_shared_writer_contract_v1 -v
       - name: Verify official source files are untouched by this PR
         run: |
           python - <<'PY'

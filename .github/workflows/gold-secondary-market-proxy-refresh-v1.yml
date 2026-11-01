@@ -20,7 +20,12 @@ on:
     - cron: '55 12 * * 1-6'
 
 permissions: {contents: write}
-concurrency: {group: gold-secondary-market-proxy-v1, cancel-in-progress: false}
+# Gold, Brent, CHF and JPY all persist to the *same* residual JSON.
+# Serialize production writers across workflows; PR checks use isolated groups.
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('residual-proxy-gold-pr-{0}', github.event.pull_request.number) || 'residual-proxy-shared-writers-v1' }}
+  queue: max
+  cancel-in-progress: false
 
 jobs:
   refresh-gold-secondary:

@@ -15,13 +15,20 @@ on:
     paths:
       - validation/estimated/refresh_brent_market_proxy_v1.py
       - validation/estimated/test_refresh_brent_market_proxy_v1.py
-      - live_data/sections/ESTIMATED_RESIDUAL_GAPS.json
+      # Changes written by OTHER producers are not new observations for this source.
+      # Scheduled/manual refresh continues independently; no self-trigger cascade.
       - .github/workflows/brent-market-proxy-refresh-v1.yml
   schedule:
     - cron: '20 22 * * 1-5'
 
 permissions:
   contents: write
+
+# Serialize writes to shared residual JSON with Gold/CHF/JPY; PR tests do not block writers.
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('residual-proxy-brent-pr-{0}', github.event.pull_request.number) || 'residual-proxy-shared-writers-v1' }}
+  queue: max
+  cancel-in-progress: false
 
 jobs:
   refresh:
