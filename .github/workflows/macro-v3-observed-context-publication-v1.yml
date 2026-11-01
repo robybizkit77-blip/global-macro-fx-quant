@@ -22,7 +22,8 @@ permissions:
   pages: write
 
 concurrency:
-  group: macro-v3-observed-context-publisher-main
+  group: publish-dashboard-pages-v1
+  queue: max
   cancel-in-progress: false
 
 jobs:
