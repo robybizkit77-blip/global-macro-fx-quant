@@ -644,7 +644,9 @@ function expectedReactionFromMetrics(row){
       }))};
   });
   if(!chartAudit.visible||chartAudit.count!==8||
-     chartAudit.charts.some(x=>!x.svg||x.points!==3)||
+     chartAudit.charts.some(x=>!x.svg||x.points<1||x.points>3||
+       (x.ccy!=='CHF'&&x.points!==3)||
+       (x.ccy==='CHF'&&(x.points!==1||x.quality!=='PROXY'||x.joined!=='false')))||
      chartAudit.charts.some(x=>x.quality==='MIXED'&&x.joined!=='false'))
     throw Error(label+' Missing/unverified source-graded G8 charts '+JSON.stringify(chartAudit));
   console.log('CONTROL_ROOM_VISIBLE_G8_CHARTS_GREEN',label,JSON.stringify(chartAudit));
@@ -657,6 +659,7 @@ function expectedReactionFromMetrics(row){
      o=d?.getElementById('ois-rows')?.closest('.desk-panel'),
      toggle=d?.getElementById('gmfq-certified-only-toggle');
     return {coverage:p?.dataset.sourceGradedCoverage,
+      complete:p?.querySelector('.gmfq-est-quick-read')?.dataset.completeTenors,
       signal:p?.dataset.signalEffect,
       primaryFirst:!!(p&&o&&(p.compareDocumentPosition(o)&Node.DOCUMENT_POSITION_FOLLOWING)),
       officialOnlyHidden:!!o?.hidden,
@@ -666,23 +669,20 @@ function expectedReactionFromMetrics(row){
         numeric:[...x.querySelectorAll(':scope > div')].slice(1,4).map(y=>y.querySelector('b')?.textContent)
       }))};
   });
-  if(sourcePriority.coverage!=='8/8'||sourcePriority.signal!=='NONE'||
-     !sourcePriority.primaryFirst||!sourcePriority.officialOnlyHidden||
-     !sourcePriority.toggle||sourcePriority.expanded!=='false'||
-     sourcePriority.rows.length!==8||
-     sourcePriority.rows.some(x=>!['OFFICIAL','PROXY','MIXED','CONFLICTED','SCENARIO'].includes(x.tier)||
-       x.numeric.length!==3||x.numeric.some(v=>!v||v==='—')))
-    throw Error(label+' Rates main matrix not fully 8/8 source-graded or official-only not collapsed '+JSON.stringify(sourcePriority));
-  await page.frameLocator('#gmfq-page').locator('#gmfq-certified-only-toggle').click();
-  const officialOpened=await page.evaluate(()=>{
-    const d=document.getElementById('gmfq-page')?.contentDocument;
-    return {visible:!!d?.getElementById('ois-rows')?.getClientRects().length,
-      expanded:d?.getElementById('gmfq-certified-only-toggle')?.getAttribute('aria-expanded')};
-  });
-  if(!officialOpened.visible||officialOpened.expanded!=='true')
-    throw Error('Source-only official OIS audit cannot be examined '+JSON.stringify(officialOpened));
-  await page.frameLocator('#gmfq-page').locator('#gmfq-certified-only-toggle').click();
-  console.log('CONTROL_ROOM_RATES_8_8_PRIMARY_SOURCE_GRADE_NO_FALSE_OFFICIAL_GREEN',label);
+  // A single CHF 12M settlement is a valid research point, NOT a
+  // complete CHF 3M/6M/12M market curve. Keep native official view open.
+  const chfRow=sourcePriority.rows.find(x=>x.c==='CHF');
+  if(sourcePriority.coverage!=='PARTIAL'||sourcePriority.complete!=='7/8'||
+     sourcePriority.signal!=='NONE'||!sourcePriority.primaryFirst||
+     sourcePriority.officialOnlyHidden||sourcePriority.toggle||
+     sourcePriority.rows.length!==8||!chfRow||chfRow.tier!=='PROXY'||
+     chfRow.numeric.length!==3||chfRow.numeric[0]!=='—'||
+     chfRow.numeric[1]!=='—'||!chfRow.numeric[2]||chfRow.numeric[2]==='—'||
+     sourcePriority.rows.some(x=>x.c!=='CHF'&&(
+        !['OFFICIAL','PROXY','MIXED','CONFLICTED','SCENARIO'].includes(x.tier)||
+        x.numeric.length!==3||x.numeric.some(v=>!v||v==='—'))))
+    throw Error(label+' CHF source-grade partial 12M incorrectly promoted to 8 full curves '+JSON.stringify(sourcePriority));
+  console.log('CONTROL_ROOM_RATES_8_8_VISIBLE_7_8_FULL_ONE_CHF_12M_NO_SYNTHETIC_GREEN',label);
   const toggle=page.frameLocator('#gmfq-page').locator('#gmfq-ois-research-estimates .gmfq-est-disclosure > summary');
   await toggle.click();
   const collapsed=await page.evaluate(()=>{
@@ -792,9 +792,12 @@ function expectedReactionFromMetrics(row){
      !plottedOfficial.every(c=>research.readingText.includes(c)))
     throw Error(label+' Rates/OIS decision-first evidence failed '+JSON.stringify(research));
   if(research.g8LevelSeries!==8||research.g8Levels!=='8'||
-      research.qualityTypes.some(x=>x.points!==3||
+      research.qualityTypes.some(x=>x.points<1||x.points>3||
+       (x.ccy!=='CHF'&&x.points!==3)||
+       (x.ccy==='CHF'&&(x.points!==1||x.tier!=='PROXY'||x.joined!=='false'))||
        !['OFFICIAL','PROXY','MIXED','CONFLICTED','SCENARIO'].includes(x.tier)||
        (['MIXED','CONFLICTED'].includes(x.tier)&&x.joined!=='false'))||
+      !research.disclaimers.includes('CHF 1/3 scadenze (solo punti verificati, NON curva)')||
       research.secondary!==expectedSecondaryQuotes||
      !['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'].every(c=>research.legend.includes(c))||
      !research.disclaimers.includes('NON curva OIS')&&
@@ -2005,13 +2008,25 @@ function expectedReactionFromMetrics(row){
     const deltaDate=(Date.parse(romeTodayIso()+'T00:00:00Z')-
        Date.parse((quote?.quote_as_of||'')+'T00:00:00Z'))/86400000;
     const rate=code==='EUR'?quote?.rate_indicative:p?.rate;
+    // Source timestamp and price arithmetic alone DO NOT license a 6M
+    // context: CHF's Oct30 SA3U2026 expires in Dec26, far sooner than
+    // six months. The app correctly withholds such a mislabeled tenor.
+    const expiryDays=(Date.parse((p?.expiration||'')+'T00:00:00Z')-
+      Date.parse((p?.quote_as_of||'')+'T00:00:00Z'))/86400000;
+    const expiryValid=Number.isInteger(expiryDays)&&
+      Math.abs(expiryDays-180)<=46;
     const valid=p?.quote_timestamp_verified===true&&
       p.quote_timestamp_source==='SSR_DAILY_BAR_DATA_UPDATE_TIME'&&
       p.quote_as_of===quote?.quote_as_of&&
       Number.isInteger(deltaDate)&&deltaDate>=0&&deltaDate<=5&&
-      Math.abs(100-p.futures_price-rate)<=0.0002;
-    if(!valid)continue;
+      expiryValid&&Math.abs(100-p.futures_price-rate)<=0.0002;
     const leg=compareCHF.dates.find(x=>x.includes(code));
+    if(code==='CHF'&&!expiryValid){
+      if(!leg?.includes('6M pricing WITHHELD'))
+        throw Error(label+' invalid dated CHF 6M expiry must be WITHHELD '+JSON.stringify({leg,p}));
+      continue;
+    }
+    if(!valid)continue;
     if(!leg?.includes('6M repricing policy non certificato')||
        !leg?.includes(p.contract)||!leg?.includes('NON ΔOIS, solo contesto'))
       throw Error(label+' '+code+' dated 6M context missing or misrepresented '+JSON.stringify({leg,quote}));

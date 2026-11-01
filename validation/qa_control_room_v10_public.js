@@ -732,8 +732,10 @@ async function getState(page){
             expectedCurves:eligible.length,
             gradedRows:[...panel.querySelectorAll('.gmfq-research-plot svg g[data-graded-ccy]')].map(x=>({
               ccy:x.dataset.gradedCcy,tier:x.dataset.quality,
-              points:x.querySelectorAll('circle').length,joined:x.dataset.joined,
-              lines:x.querySelectorAll('polyline').length
+              points:x.querySelectorAll('circle').length,
+              expectedPoints:Number(x.dataset.verifiedTenors),
+              labels:[...x.querySelectorAll('circle title')].map(y=>y.textContent),
+              joined:x.dataset.joined,lines:x.querySelectorAll('polyline').length
             })),
            secondaryCards:panel.querySelectorAll('.gmfq-quote-card').length,expectedCards:secondary.length,
            note:panel.textContent,docWidth:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth,
@@ -763,10 +765,17 @@ async function getState(page){
        });
        if(research.actualCurves!==8||
            new Set(research.gradedRows.map(x=>x.ccy)).size!==8||
-           research.gradedRows.some(x=>x.points!==3||
+           research.gradedRows.some(x=>x.points<1||x.points>3||
+             x.expectedPoints!==x.points||
              !['OFFICIAL','PROXY','MIXED','CONFLICTED','SCENARIO'].includes(x.tier)||
+             (x.points<3&&(x.joined!=='false'||x.lines!==0||
+               !x.labels.every(t=>t.includes('SCADENZA ISOLATA NON CURVA'))))||
              (['MIXED','CONFLICTED'].includes(x.tier)&&
                (x.joined!=='false'||x.lines!==0)))||
+           (research.gradedRows.some(x=>x.points<3)&&
+             !research.note.includes('Copertura parziale:'))||
+           !research.gradedRows.some(x=>x.ccy==='CHF'&&x.tier==='PROXY'&&
+             x.points>=1&&x.joined==='false'&&x.lines===0)||
            !research.note.includes('Grafico G8 3M/6M/12M: 8/8')||
            !research.note.includes('Curve certificate: '+research.expectedCurves+'/8')||
            research.secondaryCards!==research.expectedCards||

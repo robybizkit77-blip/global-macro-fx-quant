@@ -581,7 +581,7 @@ function matchedResearchHtml(moves){
 function miniCharts(rows){
  const cards=rows.map(r=>{
   const p=tenors.map((t,i)=>({t,i,v:r.points[t]})).filter(x=>number(x.v?.value)!==null&&fresh(x.v.date,x.v.date));
-  if(p.length<2)return '<article class="gmfq-mini-curve" data-chart-ccy="'+r.ccy+'" data-points="'+p.length+'"><b>'+flags[r.ccy]+' '+r.ccy+'</b><p>Storico insufficiente · dati in tabella</p></article>';
+  if(!p.length)return '<article class="gmfq-mini-curve" data-chart-ccy="'+r.ccy+'" data-points="0"><b>'+flags[r.ccy]+' '+r.ccy+'</b><p>Nessuna scadenza verificabile; nessuna curva inventata</p></article>';
   const values=p.map(x=>x.v.value),bottom=Math.min(...values),top=Math.max(...values),pad=Math.max(.1,(top-bottom)*.2);
   const x=i=>38+111*i,y=v=>82-62*(v-bottom+pad)/(top-bottom+2*pad);
   const synced=new Set(p.map(a=>a.v.date)).size===1,joined=p.length===3&&synced&&r.tier!=='CONFLICTED';
@@ -592,9 +592,11 @@ function miniCharts(rows){
    '" r="4" fill="'+(r.tier==='OFFICIAL'?'#52b6cf':'#d9bd7a')+'"><title>'+esc(a.t+' '+fmt(a.v.value)+'% '+a.v.date)+
    '</title></circle><text x="'+x(a.i)+'" y="'+Math.max(11,y(a.v.value)-9).toFixed(1)+
    '" text-anchor="middle">'+(r.tier==='OFFICIAL'?'':'≈')+fmt(a.v.value)+'%</text></g>').join('');
-  const date=r.tier==='CONFLICTED'?
+  const date=p.length===1?
+    'Solo '+p[0].t.toUpperCase()+' · '+p[0].v.date+' · PUNTO ISOLATO, NON CURVA':
+    r.tier==='CONFLICTED'?
     'Quotazioni contestate · punti non connessi · '+[...new Set(p.map(a=>a.v.date))].join(' / '):
-    joined?p[0].v.date:'Date distinte: '+[...new Set(p.map(a=>a.v.date))].join(' / ');
+    joined?p[0].v.date:'Punti non connessi · '+[...new Set(p.map(a=>a.v.date))].join(' / ');
   return '<article class="gmfq-mini-curve" data-chart-ccy="'+r.ccy+'" data-quality="'+r.tier+
     '" data-points="'+p.length+'" data-joined="'+joined+'"><header><b>'+flags[r.ccy]+' '+r.ccy+
     '</b><small>'+labels[r.tier]+'</small></header><svg viewBox="0 0 300 112" role="img" aria-label="'+esc(r.ccy+' '+date)+
@@ -602,7 +604,7 @@ function miniCharts(rows){
       '<text x="'+x(i)+'" y="106" text-anchor="middle">'+t.toUpperCase()+'</text>').join('')+
     '</g>'+path+dots+'</svg><small class="date">'+esc(date)+'</small></article>';
  }).join('');
- return '<section id="gmfq-g8-mini-charts" data-mini-curves="'+rows.length+'"><header><b>Grafici 3M / 6M / 12M · G8</b><small>Scala indipendente per valuta. Tratteggio = stima; punti non connessi = date diverse. Nessuna curva OIS inventata.</small></header><div class="gmfq-mini-grid">'+cards+'</div></section>';
+ return '<section id="gmfq-g8-mini-charts" data-mini-curves="'+rows.length+'"><header><b>Grafici 3M / 6M / 12M · G8</b><small>Scala indipendente per valuta. Tratteggio = stima. Un solo punto o date diverse NON rappresentano una curva OIS.</small></header><div class="gmfq-mini-grid">'+cards+'</div></section>';
 }
 function view(rows,moves=[]){
  const cell=(r,t)=>{const x=r.points[t];return x?
@@ -615,14 +617,17 @@ function view(rows,moves=[]){
  // The user needs all eight dated 3M/6M/12M references at first glance.
  // Preserve full source provenance and leave methodology collapsible.
  // No estimate becomes a certified OIS or an official policy delta.
- const usable=rows.filter(r=>r.tier!=='WITHHELD'&&tenors.every(t=>
+ const usable=rows.filter(r=>r.tier!=='WITHHELD'&&tenors.some(t=>
   number(r.points[t]?.value)!==null&&r.points[t]?.date)).length;
- const brief=usable+'/8 valute con riferimenti numerici (ufficiali, proxy o scenari) · '+
+ const allTenors=rows.filter(r=>r.tier!=='WITHHELD'&&tenors.every(t=>
+  number(r.points[t]?.value)!==null&&r.points[t]?.date)).length;
+ const brief=usable+'/8 valute con riferimenti numerici (almeno una scadenza datata); '+
+    allTenors+'/8 con tre scadenze effettivamente verificate · '+
    counts.OFFICIAL+' fonti certificate · '+counts.PROXY+' futures indicativi · '+
    counts.MIXED+' con date diverse · '+counts.CONFLICTED+' con quotazioni contestate · '+counts.SCENARIO+' scenario NZD'+
    (counts.WITHHELD?' · '+counts.WITHHELD+' senza fonte attendibile':'');
  return '<h2 class="desk-panel-title">G8 · OIS e stime monetarie 3M / 6M / 12M</h2>'+
- '<p class="gmfq-est-quick-read" data-g8-estimated-curve-coverage="'+usable+'/8"><strong>Copertura G8 · </strong>'+esc(brief)+
+ '<p class="gmfq-est-quick-read" data-g8-estimated-curve-coverage="'+usable+'/8" data-complete-tenors="'+allTenors+'/8"><strong>Copertura G8 · </strong>'+esc(brief)+
  '. Tutte le valute sono consultabili; le stime non diventano segnali.</p>'+miniCharts(rows)+
  '<details class="gmfq-est-disclosure" open data-default="OPEN"><summary>Tabella G8 · 3M / 6M / 12M, dati e fonti (tocca per nascondere)</summary>'+
  '<div class="gmfq-est-body"><p><b>8 valute, 3 scadenze per valuta.</b> Le curve non certificate restano <b>stime/proxy</b> con date separate, non quotazioni OIS né curve sincronizzate. Le quotazioni discordanti per lo stesso contratto/data sono <b>contestate, non convalidate</b>, senza repricing e senza linee congiunte. Nessun segnale FX deriva dai valori stimati.</p>'+
