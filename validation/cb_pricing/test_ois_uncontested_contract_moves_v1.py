@@ -86,7 +86,16 @@ class UncontestedContractEvidenceTests(unittest.TestCase):
                           if row["currency"] == c
                           and row["observed_under_horizon"] == horizon
                           and row["observation_date"] == "2026-10-30"]
-                candidates = sorted(sample, key=lambda v:v["contract"])
+                # The historical Oct30 replay requires the dated contract
+                # nearest its originally signed-off expiry horizon, not the
+                # lexical first contract. The mutable archive now contains
+                # additional CHF accrual-start mapped contracts for Oct30.
+                from datetime import date, timedelta
+                fixed_date=date(2026,10,30)
+                candidates = sorted(sample, key=lambda v: (
+                    abs((date.fromisoformat(v["expiration"]) -
+                         (fixed_date+timedelta(days=days))).days),
+                    v["contract"]))
                 # EUR can have two distinct 12M listed contracts on the
                 # same day: choose the one with a signed source conflict.
                 e = ev.get((c,horizon))
