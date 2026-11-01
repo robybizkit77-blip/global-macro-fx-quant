@@ -82,8 +82,20 @@ jobs:
                   assert row['change_1w_available'] is False
                   continue
               assert row['operational_status']=='GREEN_ESTIMATED', row
-              assert row['input_mode']=='LIVE_SECONDARY_OVERLAY', row
+              assert row['input_mode'] in ('LIVE_SECONDARY_OVERLAY',
+                                           'LIVE_SECONDARY_CONFLICT_INDICATIVE'), row
               assert row['method_id']=='TRADINGVIEW_DATED_FUTURES_SSR_V2', row
+              # The snapshots lack a stable contract identity: never label
+              # changes 1D/1W, including first clean Monday after a conflict.
+              assert row['change_1d_available'] is False, row
+              assert row['change_1w_available'] is False, row
+              if row['input_mode']=='LIVE_SECONDARY_CONFLICT_INDICATIVE':
+                  assert row['source_conflict_status']=='UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT'
+                  assert row['conflicted_source_eligible_for_repricing'] is False
+                  assert row['direction_vs_policy'] is None
+                  assert all(row['horizons'][h]['policy_delta_bp'] is None for h in ('3m','6m','12m'))
+              else:
+                  assert row.get('source_conflict_status') is None
               assert row['repricing_reference']['missing_reference_policy']=='NULL_NOT_ZERO'
               assert row['repricing_reference']['homogeneous_method_required'] is True
               for h in ('3m','6m','12m'):
