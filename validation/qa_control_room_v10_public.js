@@ -177,7 +177,7 @@ async function getState(page){
          }catch(_){console.log('PUBLIC_HOME_READING_CDN_PENDING',name,attempt)}
        }
        if(!readingReady)throw Error(name+' PUBLIC_HOME_READING_VERSION_NOT_DEPLOYED '+navigationVersion);
-       if(['home-dated-first-read-20261101','home-pulse-materiality-20261101','home-fx-vix-dated-20261101'].includes(navigationVersion)){
+       if(['home-dated-first-read-20261101','home-pulse-materiality-20261101','home-fx-vix-dated-20261101','home-commodities-graded-20261101'].includes(navigationVersion)){
          await page.waitForFunction(()=>{
            const d=document.getElementById('gmfq-page')?.contentDocument,
              lead=d?.getElementById('gmfq-home-change-lead'),
@@ -216,7 +216,7 @@ async function getState(page){
             (proof.state!=='LEVEL_CONTEXT_ONLY'||proof.asof))
            throw Error(name+' stale levels called fresh repricing '+JSON.stringify(proof));
          console.log('PUBLIC_HOME_DATED_FIRST_READ_GREEN',name,JSON.stringify(proof));
-         if(navigationVersion==='home-fx-vix-dated-20261101'){
+         if(['home-fx-vix-dated-20261101','home-commodities-graded-20261101'].includes(navigationVersion)){
            const audit=await page.evaluate(async()=>{
              const d=document.getElementById('gmfq-page').contentDocument,
                root=d.getElementById('gmfq-home-observed-moves'),
@@ -269,6 +269,60 @@ async function getState(page){
              JSON.stringify({asof:audit.asof,fxState:audit.fxState,crossState:audit.crossState,
                fx:audit.fx?.slice(0,180),vix:audit.cross?.slice(0,160),
                width:audit.width,client:audit.client}));
+           if(navigationVersion==='home-commodities-graded-20261101'){
+             await page.waitForFunction(()=>{
+               const d=document.getElementById('gmfq-page')?.contentDocument,
+                 note=d?.getElementById('gmfq-home-commodity-research');
+               return !!note&&note.dataset.goldState!==undefined&&
+                 note.dataset.brentState!==undefined&&note.dataset.wtiState!==undefined;
+             },null,{timeout:30000});
+             const proof=await page.evaluate(async()=>{
+               const d=document.getElementById('gmfq-page').contentDocument,
+                 root=d.getElementById('gmfq-home-observed-moves'),
+                 el=d.getElementById('gmfq-home-commodity-research');
+               const base='/global-macro-fx-quant/live_data/sections/';
+               const response=await fetch(base+'ESTIMATED_RESIDUAL_GAPS.json',{cache:'no-store'});
+               if(!response.ok)throw Error('Public commodity source '+response.status);
+               const data=await response.json();
+               return {present:!!el,source:el.dataset.sourceEffect,pair:el.dataset.pairEffect,
+                 gold:el.dataset.goldState,brent:el.dataset.brentState,wti:el.dataset.wtiState,
+                 goldDay:el.dataset.asofGold,brentDay:el.dataset.asofBrent,
+                 wtiDay:el.dataset.asofWti,text:el.textContent,
+                 width:root.scrollWidth,client:root.clientWidth,
+                 goldSource:data.lanes?.['GOLD.market_proxy'],
+                 brentSource:data.lanes?.['BRENT.market_proxy']};
+             });
+             if(!proof.present||proof.source!=='NONE'||proof.pair!=='NONE'||
+                proof.width>proof.client+2||
+                !proof.text.includes('Futures secondari ≠ prezzi spot/settlement certificati'))
+               throw Error(name+' unlabelled commodities / overflow '+JSON.stringify(proof).slice(0,1300));
+             const age=iso=>{
+               const dt=Date.parse(iso+'T00:00:00Z'),now=Date.parse(romeTodayIso()+'T00:00:00Z');
+               return Number.isFinite(dt)?(now-dt)/86400000:null;
+             };
+             const gold=proof.goldSource,brent=proof.brentSource;
+             if(age(gold?.proxy_as_of)>=0&&age(gold?.proxy_as_of)<=3){
+               const val=gold.value.toFixed(2).replace('.',',');
+               if(proof.gold!=='SECONDARY_FUTURES'||proof.goldDay!==gold.proxy_as_of||
+                  !proof.text.includes('Oro FUT GC=F')||!proof.text.includes(val))
+                 throw Error(name+' missing secondary gold source '+JSON.stringify(proof).slice(0,1100));
+             }else if(proof.gold!=='NOT_VERIFIED')
+               throw Error(name+' stale gold labelled current');
+             if(age(brent?.proxy_as_of)>=0&&age(brent?.proxy_as_of)<=3){
+               if(proof.brent!=='SECONDARY_FUTURES'||proof.brentDay!==brent.proxy_as_of||
+                  !proof.text.includes('Brent FUT BZ=F'))
+                 throw Error(name+' missing secondary Brent source '+JSON.stringify(proof).slice(0,1100));
+             }else if(proof.brent!=='NOT_VERIFIED')
+               throw Error(name+' stale Brent labelled current');
+             if(proof.wti!=='OFFICIAL_HISTORICAL'||!proof.text.includes('WTI SPOT EIA '+proof.wtiDay)||
+                !proof.text.includes('· STORICO'))
+               throw Error(name+' WTI stale last date disguised '+JSON.stringify(proof).slice(0,1100));
+             console.log('PUBLIC_HOME_COMMODITY_SOURCE_GRADED_390_1440_GREEN',name,
+               JSON.stringify({gold:proof.gold,brent:proof.brent,wti:proof.wti,
+                 dates:[proof.goldDay,proof.brentDay,proof.wtiDay],
+                 width:proof.width,client:proof.client}));
+           }
+
          }
 
        }
