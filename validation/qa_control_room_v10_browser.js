@@ -399,6 +399,51 @@ function expectedReactionFromMetrics(row){
        !firstRead.note.includes('non equivale a una variazione nulla'))
       throw Error(label+' unavailable market repricing claimed as zero '+JSON.stringify(firstRead));
   }else throw Error(label+' first read still loading after Market Pulse settled '+JSON.stringify(firstRead));
+
+  // The pair universe, official source and risk close must agree on dated
+  // observations before a cross-asset statement enters the first read.
+  const observed=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page').contentDocument,
+      x=d.getElementById('gmfq-home-observed-moves'),
+      fx=x?.querySelector('[data-home-observed="fx"]'),
+      v=x?.querySelector('[data-home-observed="cross"]');
+    return {exists:!!x,asof:x?.dataset.observationAsOf,
+      fxState:x?.dataset.fxState,crossState:x?.dataset.crossState,
+      sourceEffect:x?.dataset.sourceEffect,pairEffect:x?.dataset.pairEffect,
+      fx:fx?.textContent,vix:v?.textContent,
+      slots:x?.querySelectorAll('[data-home-observed]').length,
+      width:x?.scrollWidth,client:x?.clientWidth};
+  });
+  if(!observed.exists||observed.slots!==2||observed.sourceEffect!=='NONE'||
+     observed.pairEffect!=='NONE'||observed.width>observed.client+2)
+    throw Error(label+' Home FX/VIX source bridge missing or overflows '+JSON.stringify(observed));
+  const obsFx=JSON.parse(fs.readFileSync(path.join(DATA,'ECB_G8_PRICE_HISTORY.json'),'utf8')),
+    obsD=JSON.parse(fs.readFileSync(path.join(DATA,'D.json'),'utf8')),
+    curr=obsFx.rows.at(-1),prev=obsFx.rows.at(-2);
+  const obsRecent=current(curr.Date,4)&&curr.Date===obsFx.last_as_of&&
+    obsFx.status==='CURRENT_OFFICIAL_HISTORY'&&obsFx.source==='ECB euro foreign exchange reference rates';
+  const pr=v=>(v>0?'+':'')+v.toFixed(2).replace('.',',')+'%';
+  if(obsRecent){
+    const vals=['USD','GBP','JPY','AUD','CAD','NZD','CHF'].map(code=>({
+      code,pct:100*(curr[code]/prev[code]-1)}));
+    const best=vals.reduce((a,b)=>a.pct>b.pct?a:b);
+    const worst=vals.reduce((a,b)=>a.pct<b.pct?a:b);
+    if(observed.fxState!=='OFFICIAL_DATED'||observed.asof!==curr.Date||
+       !observed.fx.includes('EUR/'+best.code+' '+pr(best.pct))||
+       !observed.fx.includes('EUR/'+worst.code+' '+pr(worst.pct))||
+       !observed.fx.includes('non è un ranking G8'))
+      throw Error(label+' unverified FX extremes '+JSON.stringify(observed));
+    const V=obsD.risk.VIX;
+    if(V.last_date===curr.Date&&V.dates.at(-2)===prev.Date){
+      if(observed.crossState!=='DATED_RISK_CLOSE'||
+         !observed.vix.includes(V.last_value.toFixed(2).replace('.',','))||
+         !observed.vix.includes('non è un segnale risk-off'))
+        throw Error(label+' synchronized VIX source bridge missing '+JSON.stringify(observed));
+    }else if(observed.crossState!=='NOT_VERIFIED')
+      throw Error(label+' stale VIX represented as current '+JSON.stringify(observed));
+  }else if(observed.fxState!=='NOT_VERIFIED'||observed.crossState!=='NOT_VERIFIED')
+    throw Error(label+' stale fixing was promoted '+JSON.stringify(observed));
+  console.log('HOME_FX_VIX_FIRST_READ_390_1440_GREEN',label,JSON.stringify(observed));
   console.log('HOME_FIRST_READ_SOURCE_HIERARCHY_GREEN',label,JSON.stringify(firstRead));
   console.log(label,JSON.stringify(r));
   const fatal=[];

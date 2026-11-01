@@ -49,7 +49,7 @@ rejected(x=>x.items[0].detail='Movimento 1D +10 bp sul bucket 6M; variazione 1W 
 const expired=structuredClone(base);expired.content_as_of='2026-10-28';
 assert.equal(read(expired).length,0,'stale feed may not be claimed recent');
 for(const token of [
- 'COSA È CAMBIATO · PRICING MONETARIO','data-home-pulse-focus="true"',
+ 'COSA È CAMBIATO · MERCATI','data-home-pulse-focus="true"',
  "container.dataset.state='DATED_REPRICING'", // changed below to el
  "el.dataset.state='NO_RECENT_CHANGE'",
  "updateHomePulseFirstRead(doc,host)"

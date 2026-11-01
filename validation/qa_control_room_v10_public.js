@@ -177,7 +177,7 @@ async function getState(page){
          }catch(_){console.log('PUBLIC_HOME_READING_CDN_PENDING',name,attempt)}
        }
        if(!readingReady)throw Error(name+' PUBLIC_HOME_READING_VERSION_NOT_DEPLOYED '+navigationVersion);
-       if(['home-dated-first-read-20261101','home-pulse-materiality-20261101'].includes(navigationVersion)){
+       if(['home-dated-first-read-20261101','home-pulse-materiality-20261101','home-fx-vix-dated-20261101'].includes(navigationVersion)){
          await page.waitForFunction(()=>{
            const d=document.getElementById('gmfq-page')?.contentDocument,
              lead=d?.getElementById('gmfq-home-change-lead'),
@@ -216,6 +216,61 @@ async function getState(page){
             (proof.state!=='LEVEL_CONTEXT_ONLY'||proof.asof))
            throw Error(name+' stale levels called fresh repricing '+JSON.stringify(proof));
          console.log('PUBLIC_HOME_DATED_FIRST_READ_GREEN',name,JSON.stringify(proof));
+         if(navigationVersion==='home-fx-vix-dated-20261101'){
+           const audit=await page.evaluate(async()=>{
+             const d=document.getElementById('gmfq-page').contentDocument,
+               root=d.getElementById('gmfq-home-observed-moves'),
+               fx=root?.querySelector('[data-home-observed="fx"]'),
+               vix=root?.querySelector('[data-home-observed="cross"]');
+             const base='/global-macro-fx-quant/live_data/sections/';
+             const [a,b]=await Promise.all(['ECB_G8_PRICE_HISTORY.json','D.json'].map(async file=>{
+               const response=await fetch(base+file,{cache:'no-store'});
+               if(!response.ok)throw Error('Home source HTTP '+response.status+' '+file);
+               return response.json();
+             }));
+             return {present:!!root,source:root?.dataset.sourceEffect,pair:root?.dataset.pairEffect,
+               fxState:root?.dataset.fxState,crossState:root?.dataset.crossState,
+               asof:root?.dataset.observationAsOf,
+               fx:fx?.textContent,cross:vix?.textContent,
+               width:root?.scrollWidth,client:root?.clientWidth,
+               sourceFx:a,sourceVix:b.risk?.VIX};
+           });
+           if(!audit.present||audit.source!=='NONE'||audit.pair!=='NONE'||
+              audit.width>audit.client+2)
+             throw Error(name+' first-read FX/VIX missing/overflow '+JSON.stringify(audit).slice(0,1300));
+           const hist=audit.sourceFx,risk=audit.sourceVix,latest=hist.rows.at(-1),
+             earlier=hist.rows.at(-2);
+           const age=(Date.parse(romeTodayIso()+'T00:00:00Z')-Date.parse(hist.last_as_of+'T00:00:00Z'))/86400000;
+           const eligible=age>=0&&age<=4&&hist.status==='CURRENT_OFFICIAL_HISTORY'&&
+             hist.source==='ECB euro foreign exchange reference rates'&&
+             latest.Date===hist.last_as_of;
+           if(eligible){
+             const vals=['USD','GBP','JPY','AUD','CAD','NZD','CHF'].map(code=>({
+               code,pct:(latest[code]/earlier[code]-1)*100
+             }));
+             const top=vals.reduce((a,b)=>a.pct>b.pct?a:b),
+               low=vals.reduce((a,b)=>a.pct<b.pct?a:b),
+               disp=v=>(v>0?'+':'')+v.toFixed(2).replace('.',',')+'%';
+             if(audit.fxState!=='OFFICIAL_DATED'||audit.asof!==latest.Date||
+                !audit.fx.includes('EUR/'+top.code+' '+disp(top.pct))||
+                !audit.fx.includes('EUR/'+low.code+' '+disp(low.pct))||
+                !audit.fx.includes('non è un ranking G8'))
+               throw Error(name+' dated ECB FX not verified '+JSON.stringify(audit).slice(0,950));
+             if(risk?.last_date===latest.Date&&risk.dates?.at(-2)===earlier.Date){
+               const show=risk.last_value.toFixed(2).replace('.',',');
+               if(audit.crossState!=='DATED_RISK_CLOSE'||!audit.cross.includes(show)||
+                  !audit.cross.includes('non è un segnale risk-off'))
+                 throw Error(name+' matched VIX not displayed '+JSON.stringify(audit).slice(0,1100));
+             }else if(audit.crossState!=='NOT_VERIFIED')
+               throw Error(name+' stale cross-asset promoted '+JSON.stringify(audit).slice(0,950));
+           }else if(audit.fxState!=='NOT_VERIFIED'||audit.crossState!=='NOT_VERIFIED')
+             throw Error(name+' unverified FX/cross-asset displayed as observed');
+           console.log('PUBLIC_HOME_FX_VIX_OBSERVED_PARITY_GREEN',name,
+             JSON.stringify({asof:audit.asof,fxState:audit.fxState,crossState:audit.crossState,
+               fx:audit.fx?.slice(0,180),vix:audit.cross?.slice(0,160),
+               width:audit.width,client:audit.client}));
+         }
+
        }
 
        // Verify the published Home puts the source-led research sequence

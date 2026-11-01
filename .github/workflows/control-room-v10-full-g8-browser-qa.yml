@@ -8,6 +8,7 @@ on:
       - 'live_data/sections/DXY_SYNTHETIC_ECB.json'
       - 'validation/qa_control_room_v10_browser.js'
       - 'validation/test_control_room_home_first_read_v1.js'
+      - 'validation/test_control_room_home_fx_risk_observations_v1.js'
       - 'validation/test_control_room_pending_source_dossiers_v1.js'
       - 'site/control-room-preview/ois-pricing-estimates-v1.js'
       - 'validation/test_control_room_g8_visible_pricing_v1.js'
@@ -56,6 +57,7 @@ jobs:
           node --check validation/qa_control_room_v10_browser.js
           node --check site/control-room-preview/home-navigation-v10.js
           node validation/test_control_room_home_first_read_v1.js
+          node validation/test_control_room_home_fx_risk_observations_v1.js
           node --check site/control-room-preview/ois-pricing-estimates-v1.js
           node validation/test_control_room_g8_visible_pricing_v1.js
           node validation/test_control_room_partial_chf_graded_chart_v1.js
