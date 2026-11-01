@@ -71,9 +71,8 @@
       "backtest_eligible_as_official": false,
       "change_1d_available": false,
       "change_1w_available": false,
-      "confidence": "C",
-      "conflicted_source_eligible_for_repricing": false,
-      "direction_vs_policy": "WITHHELD",
+      "confidence": "B",
+      "direction_vs_policy": "UP",
       "horizons": {
         "12m": {
           "business_day_lag": 0,
@@ -84,7 +83,7 @@
           "expiration": "2027-12-14",
           "futures_price": 99.61,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
-          "policy_delta_bp": null,
+          "policy_delta_bp": 39.0,
           "price_valid_until": "2026-10-30T17:59:52Z",
           "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
@@ -96,41 +95,40 @@
           "business_day_lag": 0,
           "change_1d_bp": null,
           "change_1w_bp": null,
-          "contract": "SA3U2026",
-          "contract_description": "Sep 2026",
-          "expiration": "2026-12-15",
-          "futures_price": 100.05,
-          "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
-          "policy_delta_bp": null,
-          "price_valid_until": "2026-10-30T17:47:27Z",
-          "quote_as_of": "2026-10-30",
-          "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
-          "quote_timestamp_verified": false,
-          "rate": -0.05,
-          "symbol": "ICEEUR:SA3U2026"
-        },
-        "6m": {
-          "business_day_lag": 0,
-          "change_1d_bp": null,
-          "change_1w_bp": null,
           "contract": "SA3Z2026",
           "contract_description": "Dec 2026",
           "expiration": "2027-03-16",
           "futures_price": 100.025,
-          "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
-          "policy_delta_bp": null,
+          "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
+          "policy_delta_bp": -2.5,
           "price_valid_until": "2026-10-30T17:59:52Z",
           "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": -0.025,
           "symbol": "ICEEUR:SA3Z2026"
+        },
+        "6m": {
+          "business_day_lag": 0,
+          "change_1d_bp": null,
+          "change_1w_bp": null,
+          "contract": "SA3U2026",
+          "contract_description": "Sep 2026",
+          "expiration": "2026-12-15",
+          "futures_price": 100.05,
+          "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
+          "policy_delta_bp": -5.0,
+          "price_valid_until": "2026-10-30T17:47:27Z",
+          "quote_as_of": "2026-10-30",
+          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
+          "quote_timestamp_verified": true,
+          "rate": -0.05,
+          "symbol": "ICEEUR:SA3U2026"
         }
       },
-      "input_mode": "LIVE_SECONDARY_CONFLICT_INDICATIVE",
+      "input_mode": "LIVE_SECONDARY_OVERLAY",
       "market_direction_proxy": null,
       "method_id": "TRADINGVIEW_DATED_FUTURES_SSR_V2",
-      "note": "Indicative secondary futures quotes have unresolved same-contract/same-day source disagreement; first and later prints are preserved separately. Levels may be displayed as provisional estimates only. No official OIS, policy delta or 1D/1W repricing is certified.",
       "official_status": "WITHHELD",
       "operational_status": "GREEN_ESTIMATED",
       "policy_rate": 0.0,
@@ -144,17 +142,7 @@
         "weekly_min_age_days": 5,
         "weekly_reference_captured_at_utc": null
       },
-      "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
-      "source_conflict_keys": [
-        {
-          "contract": "SA3U2026",
-          "event_id": "2a38e4fe90102a5d0109986fd530e0e3fb94098df496ba8e9d6a0ac53a0bb1cd",
-          "horizon": "3m",
-          "observation_date": "2026-10-30"
-        }
-      ],
-      "source_conflict_status": "UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT",
-      "source_quality": "SECONDARY_CONFLICTED_INDICATIVE_NOT_OIS"
+      "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures"
     },
     "EUR": {
       "as_of": "2026-10-30",
