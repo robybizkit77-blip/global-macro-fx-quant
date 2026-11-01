@@ -1,7 +1,7 @@
 'use strict';
-/* Prove 8 visible currency groups with ONLY actually validated listed-contract
- * expiry references: the CHF source has 12M and no usable 3M/6M on Oct30.
- * Never interpolate or relabel a futures settlement as an official OIS.
+/* Prove eight currencies, dynamic source-verified CHF SARON accrual-start
+ * points and no joined indicative futures curves. Tests work both on old
+ * 12M-only captures and the new valid 3M/6M/12M collector output.
  */
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const addon=require('../site/control-room-preview/ois-pricing-estimates-v1.js');
@@ -27,53 +27,63 @@ const api=new Function('window','FX','romeTodayIso','num','fresh','COLOR','fmt',
 const srcFeed=JSON.parse(fs.readFileSync('live_data/sections/OIS_OPERATIONAL_VIEW.json'));
 const bb=JSON.parse(fs.readFileSync('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json'));
 const rows=api.marketResearchGraded(srcFeed,bb);
-const primary=addon.view(addon.matrix(srcFeed,bb,now));
+const audited=addon.matrix(srcFeed,bb,now),primary=addon.view(audited);
+const auditChf=audited.find(x=>x.ccy==='CHF');
+const terms=['3m','6m','12m'];
+const active=terms.filter(t=>typeof auditChf.points[t]?.value==='number');
+const full=audited.filter(x=>terms.every(t=>typeof x.points[t]?.value==='number'));
 assert(primary.includes('data-g8-estimated-curve-coverage="8/8"'));
-assert(primary.includes('data-complete-tenors="7/8"'));
+assert(primary.includes('data-complete-tenors="'+full.length+'/8"'));
 const primaryChf=primary.match(/<article class="gmfq-mini-curve" data-chart-ccy="CHF"[\s\S]*?<\/article>/);
-assert(primaryChf,'CHF must have its own primary mini-chart even with one tenor');
-assert(primaryChf[0].includes('data-points="1"'));
+assert(primaryChf,'CHF must have a primary mini-chart');
+assert(primaryChf[0].includes('data-points="'+active.length+'"'));
 assert(primaryChf[0].includes('data-joined="false"'));
-assert(primaryChf[0].includes('Solo 12M'));
-assert(primaryChf[0].includes('PUNTO ISOLATO, NON CURVA'));
-assert(primaryChf[0].includes('<svg ')&&primaryChf[0].includes('<circle '));
-assert(!primaryChf[0].includes('<path '),'one CHF dot must never draw an implied futures curve');
+assert(!primaryChf[0].includes('<path '),'indicative CHF futures must stay unjoined');
+assert.equal((primaryChf[0].match(/<circle /g)||[]).length,active.length);
+assert(active.length>=1,'available CHF quotes must not disappear from the public research chart');
 
-assert.equal(rows.length,8,'G8 must be visible from actually sourced current points');
+assert.equal(rows.length,8,'all eight currency groups must be present');
 assert.deepEqual(new Set(rows.map(x=>x.k)),new Set(FX));
 const chf=rows.find(x=>x.k==='CHF');
 assert(chf,'CHF source-graded futures must not be fully hidden');
 assert.equal(chf.tier,'PROXY');
 assert.equal(chf.joined,false);
-assert.equal(chf.verifiedTenors,1);
-assert.deepEqual(chf.pts,[null,null,0.39]);
-assert.deepEqual(chf.dates,[null,null,'2026-10-30']);
-assert.deepEqual(chf.missingTenors,['3m','6m']);
-assert.equal(rows.filter(x=>x.verifiedTenors===3).length,7);
+assert.equal(chf.verifiedTenors,active.length);
+assert.deepEqual(chf.pts,terms.map(t=>auditChf.points[t]?.value??null));
+assert.deepEqual(chf.dates,terms.map(t=>auditChf.points[t]?.date??null));
+assert.deepEqual(chf.missingTenors,terms.filter(t=>!active.includes(t)));
+assert.equal(rows.filter(x=>x.verifiedTenors===3).length,full.length);
+
 const html=api.marketResearchGradedSvg(rows);
 assert(html.includes('data-currencies="8"'));
 const group=html.match(/<g data-graded-ccy="CHF"[\s\S]*?<\/g>/);
-assert(group,'CHF individual source evidence must be drawn');
-assert(group[0].includes('data-verified-tenors="1"'));
+assert(group);
+assert(group[0].includes('data-verified-tenors="'+active.length+'"'));
 assert(group[0].includes('data-joined="false"'));
-assert(group[0].includes('CHF 12M 0.390% · 2026-10-30 · PROXY · SCADENZA ISOLATA NON CURVA'));
-assert(!group[0].includes('CHF 3M')&&!group[0].includes('CHF 6M'));
-assert(!group[0].includes('<polyline'),'never connect unavailable contract tenors');
-assert.equal((group[0].match(/<circle /g)||[]).length,1);
-const bad=structuredClone(srcFeed);
-bad.currencies.CHF.horizons['12m'].quote_timestamp_verified=false;
-const missing=api.marketResearchGraded(bad,bb);
-assert(!missing.find(x=>x.k==='CHF'),'unverified CHF must disappear rather than infer an OIS curve');
+assert(!group[0].includes('<polyline'),'individual CHF futures must not be connected');
+assert.equal((group[0].match(/<circle /g)||[]).length,active.length);
+for(const t of active){
+ assert(group[0].includes('CHF '+t.toUpperCase()),
+  'observed, individually audited CHF future should appear: '+t);
+}
+
+const invalid=structuredClone(srcFeed);
+for(const t of terms)invalid.currencies.CHF.horizons[t].quote_timestamp_verified=false;
+assert(!api.marketResearchGraded(invalid,bb).find(x=>x.k==='CHF'),
+ 'no unverified CHF horizons may be used');
 const wrongExpiry=structuredClone(srcFeed);
 wrongExpiry.currencies.CHF.horizons['12m'].expiration='2029-12-14';
-assert(!api.marketResearchGraded(wrongExpiry,bb).find(x=>x.k==='CHF'),
- 'future contract outside 12M expiry window must not be coerced to OIS');
+const withoutWrongExpiry=api.marketResearchGraded(wrongExpiry,bb).find(x=>x.k==='CHF');
+assert(!withoutWrongExpiry||withoutWrongExpiry.pts[2]===null,
+ '12M expiry substitution cannot become 12M future');
 const wrongMath=structuredClone(srcFeed);
 wrongMath.currencies.CHF.horizons['12m'].futures_price=97;
-assert(!api.marketResearchGraded(wrongMath,bb).find(x=>x.k==='CHF'),
- 'wrong 100-price minus yield identity must be rejected');
+const withoutWrongMath=api.marketResearchGraded(wrongMath,bb).find(x=>x.k==='CHF');
+assert(!withoutWrongMath||withoutWrongMath.pts[2]===null,
+ 'wrong futures 100 minus price cannot become 12M level');
 assert(!html.includes('CHF 3M 0.000%')&&!html.includes('CHF 6M 0.000%'),
  'missing points cannot become zero-rate placeholders');
+
 console.log('CHF_PARTIAL_FUTURES_G8_VISIBLE_NO_SYNTHETIC_CURVE_PASS',
  JSON.stringify({currencies:rows.length,chf_tenors:chf.verifiedTenors,
  official_ois_claims:0,synthetic_points:0}));
