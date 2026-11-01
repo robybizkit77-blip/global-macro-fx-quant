@@ -27,6 +27,18 @@ const api=new Function('window','FX','romeTodayIso','num','fresh','COLOR','fmt',
 const srcFeed=JSON.parse(fs.readFileSync('live_data/sections/OIS_OPERATIONAL_VIEW.json'));
 const bb=JSON.parse(fs.readFileSync('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json'));
 const rows=api.marketResearchGraded(srcFeed,bb);
+const primary=addon.view(addon.matrix(srcFeed,bb,now));
+assert(primary.includes('data-g8-estimated-curve-coverage="8/8"'));
+assert(primary.includes('data-complete-tenors="7/8"'));
+const primaryChf=primary.match(/<article class="gmfq-mini-curve" data-chart-ccy="CHF"[\s\S]*?<\/article>/);
+assert(primaryChf,'CHF must have its own primary mini-chart even with one tenor');
+assert(primaryChf[0].includes('data-points="1"'));
+assert(primaryChf[0].includes('data-joined="false"'));
+assert(primaryChf[0].includes('Solo 12M'));
+assert(primaryChf[0].includes('PUNTO ISOLATO, NON CURVA'));
+assert(primaryChf[0].includes('<svg ')&&primaryChf[0].includes('<circle '));
+assert(!primaryChf[0].includes('<path '),'one CHF dot must never draw an implied futures curve');
+
 assert.equal(rows.length,8,'G8 must be visible from actually sourced current points');
 assert.deepEqual(new Set(rows.map(x=>x.k)),new Set(FX));
 const chf=rows.find(x=>x.k==='CHF');
