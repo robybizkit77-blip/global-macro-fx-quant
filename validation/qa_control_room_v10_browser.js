@@ -2230,13 +2230,28 @@ function expectedReactionFromMetrics(row){
     const deltaDate=(Date.parse(romeTodayIso()+'T00:00:00Z')-
        Date.parse((quote?.quote_as_of||'')+'T00:00:00Z'))/86400000;
     const rate=code==='EUR'?quote?.rate_indicative:p?.rate;
-    // Source timestamp and price arithmetic alone DO NOT license a 6M
-    // context: CHF's Oct30 SA3U2026 expires in Dec26, far sooner than
-    // six months. The app correctly withholds such a mislabeled tenor.
-    const expiryDays=(Date.parse((p?.expiration||'')+'T00:00:00Z')-
-      Date.parse((p?.quote_as_of||'')+'T00:00:00Z'))/86400000;
-    const expiryValid=Number.isInteger(expiryDays)&&
-      Math.abs(expiryDays-180)<=46;
+    // ICE SARON futures reference the START of a future three-month
+    // accrual quarter, whereas EUR dated futures use the expiry convention.
+    // Old CHF expiry-based 6M checks would reject a correctly verified
+    // March-2027 SARON start just because accrual ends in June.
+    const days=(a,b)=>(Date.parse(a+'T00:00:00Z')-Date.parse(b+'T00:00:00Z'))/86400000;
+    const chfCode=/^SA3([HMUZ])(\\d{4})$/.exec(p?.contract||'');
+    const month=chfCode?{H:3,M:6,U:9,Z:12}[chfCode[1]]:null;
+    const year=chfCode?Number(chfCode[2]):null;
+    const thirdWed=(y,m)=>{
+      const first=new Date(Date.UTC(y,m-1,1)).getUTCDay();
+      return new Date(Date.UTC(y,m-1,1+((3-first+7)%7)+14)).toISOString().slice(0,10);
+    };
+    const expectedStart=chfCode?thirdWed(year,month):null;
+    const nextMonth=month===12?3:month+3,nextYear=month===12?year+1:year;
+    const expectedEnd=chfCode?new Date(Date.parse(thirdWed(nextYear,nextMonth)+'T00:00:00Z')-86400000).toISOString().slice(0,10):null;
+    const expiryDays=days(p?.expiration||'',p?.quote_as_of||'');
+    const expiryValid=code==='CHF'?!!(chfCode&&
+      p?.mapping==='nearest ICE SARON accrual start to today+180d; no interpolation'&&
+      p?.accrual_start===expectedStart&&p?.expiration===expectedEnd&&
+      Number.isInteger(days(expectedStart,p.quote_as_of))&&
+      Math.abs(days(expectedStart,p.quote_as_of)-180)<=50):
+      Number.isInteger(expiryDays)&&Math.abs(expiryDays-180)<=46;
     const valid=p?.quote_timestamp_verified===true&&
       p.quote_timestamp_source==='SSR_DAILY_BAR_DATA_UPDATE_TIME'&&
       p.quote_as_of===quote?.quote_as_of&&
