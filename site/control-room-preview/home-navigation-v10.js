@@ -2016,16 +2016,16 @@ function marketResearchGraded(ois,proxy){
  return make(ois,proxy,romeTodayIso()).filter(r=>
   FX.includes(r.ccy)&&['OFFICIAL','PROXY','MIXED','CONFLICTED','SCENARIO'].includes(r.tier))
  .map(r=>{
-  // Source-verified listed futures can cover only some target tenors.
-  // CHF Oct30: valid isolated 12M; 3M/6M fail strict expiry-window
-  // comparison. Visible data must NEVER create fictional endpoints.
+  // Each listed futures maturity is an independently dated reference.
+  // CHF SARON now has 3 correctly accrual-start mapped tenors, but three
+  // verified secondary futures are NOT a synchronized OIS spot curve.
   const terms=['3m','6m','12m'];
   const pts=terms.map(t=>num(r.points?.[t]?.value)!==null&&fresh(r.points[t].date,5)?
    r.points[t].value:null);
   const dates=terms.map((t,i)=>pts[i]===null?null:r.points[t].date);
   const count=pts.filter(v=>v!==null).length;
   if(!count)return null;
-  const joined=count===3&&r.tier!=='CONFLICTED'&&new Set(dates).size===1;
+  const joined=count===3&&r.tier==='OFFICIAL'&&new Set(dates).size===1;
   return {k:r.ccy,tier:r.tier,pts,dates,joined,verifiedTenors:count,
     missingTenors:terms.filter((t,i)=>pts[i]===null)};
  }).filter(Boolean);
