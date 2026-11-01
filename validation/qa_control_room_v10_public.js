@@ -490,6 +490,66 @@ async function getState(page){
        console.log('PUBLIC_V10_G8_SOVEREIGN_VISUAL_SOURCE_PARITY_GREEN',name,
          JSON.stringify({script:navigationVersion,plots:plotSummary}));
      }
+     // The PR preview is checked by local browser QA. On merged main,
+     // certify what public GitHub Pages ACTUALLY renders (not only bundle SHA):
+     // 8 visible panels, explicit 3M/6M/12M, dated source type and no fake OIS.
+     if(process.env.GITHUB_EVENT_NAME!=='pull_request' &&
+        addonVersion==='ois-g8-source-visual-20261101'){
+       let cardsReady=false;
+       for(let attempt=0;attempt<12;attempt++){
+         try{
+           await page.waitForFunction(()=>{
+             const d=document.getElementById('gmfq-page')?.contentDocument;
+             return d?.getElementById('gmfq-g8-mini-charts')?.dataset.miniCurves==='8'&&
+               !!d.querySelector('#gmfq-g8-mini-charts .gmfq-mini-key')&&
+               d.querySelectorAll('#gmfq-g8-mini-charts article[data-chart-ccy]').length===8;
+           },null,{timeout:7500});
+           cardsReady=true;break;
+         }catch(_){
+           await page.goto(BASE+'?oisVisual='+Date.now()+'-'+attempt+'#/tassi?focus=ois',
+             {waitUntil:'domcontentloaded',timeout:120000});
+         }
+       }
+       if(!cardsReady)throw Error(name+' public OIS visual source-grade build not served by CDN');
+       const ui=await page.evaluate(()=>{
+         const d=document.getElementById('gmfq-page').contentDocument,
+           root=d.getElementById('gmfq-g8-mini-charts');
+         return {legend:root.querySelector('.gmfq-mini-key')?.textContent,
+           width:d.documentElement.scrollWidth,client:d.documentElement.clientWidth,
+           cards:[...root.querySelectorAll('article[data-chart-ccy]')].map(x=>({
+             ccy:x.dataset.chartCcy,quality:x.dataset.quality,
+             instrument:x.dataset.instrument,points:Number(x.dataset.points),
+             missing:Number(x.dataset.missingTenors),joined:x.dataset.joined,
+             lines:x.querySelectorAll('svg path').length,
+             slots:[...x.querySelectorAll('.gmfq-mini-values [data-horizon]')].map(z=>({
+               tenor:z.dataset.horizon,status:z.dataset.pointState,
+               label:z.textContent
+             }))
+           }))};
+       });
+       if(ui.cards.length!==8||ui.width>ui.client+16||
+          !ui.legend?.includes('Futures indicativi')||
+          !ui.legend?.includes('Contestati')||
+          !ui.legend?.includes('Scenario NZD'))
+         throw Error(name+' public G8 OIS source legend/viewport failed '+JSON.stringify(ui));
+       const expected={GBP:'DIRECT_OIS',AUD:'OFFICIAL_FUTURES',CAD:'OFFICIAL_FUTURES',
+         JPY:'OFFICIAL_FUTURES',NZD:'MODEL_SCENARIO'};
+       for(const c of ui.cards){
+         const instrument=expected[c.ccy]||
+           (c.quality==='CONFLICTED'?'CONTESTED_FUTURES':'INDICATIVE_FUTURES');
+         if(c.instrument!==instrument||c.slots.map(z=>z.tenor).join(',')!=='3m,6m,12m'||
+            c.slots.filter(z=>z.status==='MISSING').length!==c.missing||
+            c.missing!==3-c.points||
+            (c.quality!=='OFFICIAL'&&(c.joined!=='false'||c.lines!==0)))
+          throw Error(name+' source-sensitive 3M/6M/12M chart failed '+JSON.stringify(c));
+         if(c.quality==='CONFLICTED'&&!c.slots.some(z=>z.status==='DISPUTED'))
+          throw Error(name+' disputed individual quote is not visibly marked '+JSON.stringify(c));
+         if(c.ccy==='CHF'&&c.points===1&&c.missing!==2)
+          throw Error(name+' CHF isolated 12M promoted to curve');
+       }
+       console.log('PUBLIC_G8_OIS_SOURCE_GRADED_390_1440_GREEN',name,
+         JSON.stringify(ui.cards.map(c=>({ccy:c.ccy,points:c.points,missing:c.missing,instrument:c.instrument}))));
+     }
      // In PR the public website still has the previous addon; inspect the
      // new market-research panel only on main, after the exact deployment.
      if(process.env.GITHUB_EVENT_NAME!=='pull_request'){

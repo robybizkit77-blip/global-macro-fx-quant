@@ -640,7 +640,13 @@ function expectedReactionFromMetrics(row){
     return {visible:!!p?.getClientRects().length,count:p?.querySelectorAll('[data-chart-ccy]').length,
       charts:[...p?.querySelectorAll('[data-chart-ccy]')||[]].map(x=>({
         ccy:x.dataset.chartCcy,quality:x.dataset.quality,points:x.querySelectorAll('circle').length,
-        joined:x.dataset.joined,svg:!!x.querySelector('svg')?.getClientRects().length
+        joined:x.dataset.joined,svg:!!x.querySelector('svg')?.getClientRects().length,
+        instrument:x.dataset.instrument,missing:Number(x.dataset.missingTenors),
+        lineCount:x.querySelectorAll('svg path').length,
+        slots:[...x.querySelectorAll('.gmfq-mini-values [data-horizon]')].map(y=>({
+          tenor:y.dataset.horizon,state:y.dataset.pointState,
+          value:y.querySelector('b')?.textContent,date:y.querySelector('small')?.textContent
+        }))
       }))};
   });
   if(!chartAudit.visible||chartAudit.count!==8||
@@ -649,6 +655,29 @@ function expectedReactionFromMetrics(row){
        (x.ccy==='CHF'&&(x.points!==1||x.quality!=='PROXY'||x.joined!=='false')))||
      chartAudit.charts.some(x=>x.quality==='MIXED'&&x.joined!=='false'))
     throw Error(label+' Missing/unverified source-graded G8 charts '+JSON.stringify(chartAudit));
+  const visualTypes={GBP:'DIRECT_OIS',AUD:'OFFICIAL_FUTURES',CAD:'OFFICIAL_FUTURES',
+    JPY:'OFFICIAL_FUTURES',NZD:'MODEL_SCENARIO'};
+  for(const chart of chartAudit.charts){
+    const expected=visualTypes[chart.ccy]||
+      (chart.quality==='CONFLICTED'?'CONTESTED_FUTURES':'INDICATIVE_FUTURES');
+    const source=operational.currencies[chart.ccy];
+    if(chart.instrument!==expected||chart.slots.map(x=>x.tenor).join(',')!=='3m,6m,12m')
+      throw Error(label+' misleading 3M/6M/12M instrument / slots '+JSON.stringify(chart));
+    if(chart.slots.filter(x=>x.state==='MISSING').length!==chart.missing||
+       chart.missing!==3-chart.points)
+      throw Error(label+' hidden maturity on G8 visual '+JSON.stringify(chart));
+    if(chart.quality!=='OFFICIAL'&&(chart.joined!=='false'||chart.lineCount!==0))
+      throw Error(label+' unauthorized indicative OIS curve connection '+JSON.stringify(chart));
+    if(chart.quality==='CONFLICTED'&&!chart.slots.some(x=>x.state==='DISPUTED'))
+      throw Error(label+' disputed futures hidden in ordinary chart '+JSON.stringify(chart));
+    if(chart.ccy==='CHF'&&chart.missing!==2)
+      throw Error(label+' isolated CHF 12M must disclose missing 3M and 6M');
+    if(chart.ccy==='NZD'&&!chart.slots.every(x=>x.state==='SCENARIO'))
+      throw Error(label+' NZD scenario not disclosed in every maturity');
+    if(!source)throw Error(label+' missing source provenance for '+chart.ccy);
+  }
+  console.log('CONTROL_ROOM_G8_OIS_VISUAL_QUALITY_390_1440_GREEN',label,
+    JSON.stringify(chartAudit.charts.map(x=>({ccy:x.ccy,instrument:x.instrument,missing:x.missing,joined:x.joined}))));
   console.log('CONTROL_ROOM_VISIBLE_G8_CHARTS_GREEN',label,JSON.stringify(chartAudit));
   if(!compact.open||!compact.visible||compact.sourceRows!==8||
      !compact.note?.includes('valute con riferimenti numerici'))
