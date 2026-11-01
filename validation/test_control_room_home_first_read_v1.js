@@ -59,4 +59,6 @@ for(const token of [
 }
 assert(js.includes('non intraday, non segnale FX.'));
 assert(js.includes('La mancata verifica non equivale a una variazione nulla.'));
+assert(js.includes('Movimento inferiore a 1 bp; nessuna conclusione sul regime da questo solo dato.'));
+assert(js.includes('Unica variazione 1D recente certificata: '));
 console.log('HOME_SOURCE_SAFE_FIRST_READ_GREEN',JSON.stringify({sources:rows.map(x=>x.ccy),exactDatum:rows[0].one,readOnly:true}));
