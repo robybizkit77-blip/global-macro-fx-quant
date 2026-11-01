@@ -77,6 +77,46 @@ for(const ccy of ['CHF','NZD']){
  assert.equal(audit.expected_rates[ccy],raw[ccy].date);
  assert.notEqual(audit.rates[ccy].status,'RECENT_OFFICIAL_OBSERVATION');
 }
+// The visible historical 2Y/10Y plot MUST consume normalized dates too.
+// Past QA protected a research helper while the actual chart silently lost
+// hundreds of unpadded JPY observations.
+const plotStart=js.indexOf('function sovereignHistoryPairs(rates,k){');
+const plotEnd=js.indexOf('function mountSovereignHistoryPlot(doc,rates){',plotStart);
+assert(plotStart>=0&&plotEnd>plotStart,'Actual sovereign plot helper missing');
+const sovereignHistoryPairs=vm.runInNewContext(
+ js.slice(plotStart,plotEnd)+'\nsovereignHistoryPairs',
+ {dateHistory,num:v=>typeof v==='number'&&Number.isFinite(v)?v:null,Date},
+ {timeout:1000});
+let checkedPlots=0;
+for(const ccy of g8){
+ const data=raw[ccy],a=dateHistory(data,'history2'),b=dateHistory(data,'history10');
+ const byDate=new Map(a.map(x=>[x.date,x.v]));
+ const cutoff=Date.parse(data.date+'T00:00:00Z')-184*86400000;
+ const expected=b.filter(x=>byDate.has(x.date)&&
+   Date.parse(x.date+'T00:00:00Z')>=cutoff);
+ const plot=sovereignHistoryPairs(raw,ccy);
+ assert(expected.length>=2,'source truly missing paired history for '+ccy);
+ assert.equal(plot.length,expected.length,ccy+' plot must preserve ALL recent dated 2Y/10Y pairs');
+ assert.equal(plot.at(-1).d,data.date,ccy+' chart must end on authentic source date');
+ for(let i=0;i<plot.length;i++){
+   assert.equal(plot[i].d,expected[i].date,ccy+' chart date '+i);
+   assert.equal(plot[i].y2,byDate.get(expected[i].date),ccy+' 2Y source-value pairing '+i);
+   assert.equal(plot[i].y10,expected[i].v,ccy+' 10Y source-value pairing '+i);
+ }
+ checkedPlots++;
+}
+assert(sovereignHistoryPairs(raw,'JPY').length>60,
+ 'JPY graph still truncates the available 184-day source history');
+const tamperedPlot=structuredClone(raw);
+tamperedPlot.JPY.history2.dates[1]=tamperedPlot.JPY.history2.dates[0];
+assert.equal(sovereignHistoryPairs(tamperedPlot,'JPY').length,0,
+ 'plot must reject normalization collisions instead of inventing an aligned curve');
+tamperedPlot.JPY.history2.dates[1]='2025-02-30';
+assert.equal(sovereignHistoryPairs(tamperedPlot,'JPY').length,0,
+ 'plot must reject invalid source dates instead of silently dropping observations');
+console.log('G8_SOVEREIGN_2Y10Y_CHART_FULL_HISTORY_PASS',
+ JSON.stringify({plots:checkedPlots,jpyPoints:sovereignHistoryPairs(raw,'JPY').length}));
+
 const hhStart=js.indexOf('function mountHistoricalSovereignTable(doc,raw){');
 const hhEnd=js.indexOf('function renderYieldStudy(doc,rates',hhStart);
 assert(hhStart>=0&&hhEnd>hhStart);

@@ -721,6 +721,50 @@ function expectedReactionFromMetrics(row){
       jpCurve.tenors.join(',')!=='2Y,10Y'||!jpCurve.meta?.includes('JPY'))
      throw Error(label+' GOVERNMENT_2Y10Y_JPY_EMPTY '+JSON.stringify(jpCurve));
    console.log('CONTROL_ROOM_GOVERNMENT_2Y10Y_JPY_VISIBLE_GREEN',label,JSON.stringify(jpCurve));
+   // Actual SVG/visible QA for EACH G8 government history (1440 and 390).
+   // An SVG with only two JPY points is NOT enough: prove full 184-day
+   // normalization and exact data/date pairing against unchanged source JSON.
+   const calendarDay=d=>{
+     const m=/^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(d||'');
+     return m?m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0'):null;
+   };
+   const plotResults=[];
+   for(const ccy of g8){
+     const source=ratesFeed[ccy],two=source.history2,ten=source.history10;
+     const map=new Map(two.dates.map((d,i)=>[calendarDay(d),two.values[i]]));
+     const latest=Date.parse(source.date+'T00:00:00Z');
+     const expected=ten.dates.map((d,i)=>({d:calendarDay(d),y2:map.get(calendarDay(d)),y10:ten.values[i]}))
+       .filter(x=>x.d&&Number.isFinite(x.y2)&&Number.isFinite(x.y10)&&
+         Date.parse(x.d+'T00:00:00Z')>=latest-184*86400000&&x.d<=source.date);
+     if(expected.length<2)throw Error(label+' source lacks G8 historical series '+ccy);
+     await page.frameLocator('#gmfq-page').locator('#rates-select button[data-ccy="'+ccy+'"]').click();
+     await page.waitForFunction(({ccy,count})=>{
+       const d=document.getElementById('gmfq-page')?.contentDocument,
+         h=d?.getElementById('rates-chart'),
+         svg=h?.querySelector('svg[data-gmfq-sovereign-plot]');
+       return svg?.dataset.ccy===ccy&&svg.getClientRects().length>0&&
+         Number(h?.dataset.gmfqSovereignCount)===count&&
+         svg.querySelectorAll('polyline[data-tenor]').length===2;
+     },{ccy,count:expected.length},{timeout:17000});
+     const rendered=await page.evaluate(()=>{
+       const d=document.getElementById('gmfq-page').contentDocument,
+         host=d.getElementById('rates-chart'),svg=host.querySelector('svg[data-gmfq-sovereign-plot]');
+       return {ccy:svg?.dataset.ccy,count:Number(host?.dataset.gmfqSovereignCount),
+         visible:!!svg?.getClientRects().length,source:host.querySelector('.gmfq-gov-source')?.textContent,
+         meta:d.getElementById('rates-chart-meta')?.textContent,
+         traces:[...svg.querySelectorAll('polyline[data-tenor]')].map(x=>({
+           tenor:x.dataset.tenor,points:(x.getAttribute('points')||'').trim().split(/\s+/).length
+         }))};
+     });
+     if(rendered.count!==expected.length||rendered.traces.some(x=>x.points!==expected.length)||
+        !rendered.source?.includes(source.date)||!rendered.meta?.includes(source.date))
+       throw Error(label+' incomplete government visual chart '+ccy+' '+JSON.stringify(rendered));
+     const age=(Date.parse(romeTodayIso()+'T00:00:00Z')-latest)/86400000;
+     if(age>5&&(!rendered.meta.includes('storico non corrente')||!rendered.source.includes('STORICO')))
+       throw Error(label+' historically stale sovereign graph labeled current '+ccy);
+     plotResults.push({ccy,points:rendered.count,asof:source.date,old:age>5});
+   }
+   console.log('CONTROL_ROOM_G8_SOVEREIGN_FULL_HISTORY_VISUAL_GREEN',label,JSON.stringify(plotResults));
   await page.frameLocator('#gmfq-page').locator('#rates-select button[data-ccy="NZD"]').click();
   await page.waitForFunction(()=>{
     const d=document.getElementById('gmfq-page')?.contentDocument;
