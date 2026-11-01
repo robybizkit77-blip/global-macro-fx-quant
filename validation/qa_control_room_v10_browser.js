@@ -725,7 +725,7 @@ function expectedReactionFromMetrics(row){
    // An SVG with only two JPY points is NOT enough: prove full 184-day
    // normalization and exact data/date pairing against unchanged source JSON.
    const calendarDay=d=>{
-     const m=/^(\\d{4})-(\\d{1,2})-(\\d{1,2})$/.exec(d||'');
+     const m=/^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(d||'');
      return m?m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0'):null;
    };
    const plotResults=[];
@@ -753,7 +753,7 @@ function expectedReactionFromMetrics(row){
          visible:!!svg?.getClientRects().length,source:host.querySelector('.gmfq-gov-source')?.textContent,
          meta:d.getElementById('rates-chart-meta')?.textContent,
          traces:[...svg.querySelectorAll('polyline[data-tenor]')].map(x=>({
-           tenor:x.dataset.tenor,points:(x.getAttribute('points')||'').trim().split(/\\s+/).length
+           tenor:x.dataset.tenor,points:(x.getAttribute('points')||'').trim().split(/\s+/).length
          }))};
      });
      if(rendered.count!==expected.length||rendered.traces.some(x=>x.points!==expected.length)||
