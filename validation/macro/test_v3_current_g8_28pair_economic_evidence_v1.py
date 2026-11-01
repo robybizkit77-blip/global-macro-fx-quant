@@ -10,6 +10,7 @@ from validation.macro.v2_g8_observed_feature_bridge_v1 import run as observed_ru
 from validation.macro.v3_current_g8_28pair_economic_evidence_v1 import (
     FX, ROOT, SCHEMA, build, load, movement, run,
 )
+from validation.macro.v3_gdp_q3_official_overlay_v1 import observed_q3_updates, LEDGER
 
 
 class CurrentEconomicEvidenceTests(unittest.TestCase):
@@ -58,7 +59,8 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
             self.assertIsNone(country["FX_strength"])
             self.assertIsNone(country["macro_score"])
             self.assertIsNone(country["country_relative_rank"])
-            self.assertEqual(country["growth"]["reference_quarter"], "2026Q2")
+            self.assertEqual(country["growth"]["reference_quarter"],
+                             "2026Q3" if c in ("USD", "EUR") else "2026Q2")
             self.assertFalse(country["growth"]["is_growth_strength_score"])
             for dim in ("labour", "inflation"):
                 item = country[dim]
@@ -104,6 +106,37 @@ class CurrentEconomicEvidenceTests(unittest.TestCase):
                 self.assertEqual((sa, sb), ("DOWN", "UP"))
             if x["labour_change_contrast"] == "BASE_UNEMPLOYMENT_RISING_QUOTE_FALLING":
                 self.assertEqual((sa, sb), ("UP", "DOWN"))
+
+    def test_q3_latest_real_official_releases_no_fictional_g8_growth(self):
+        import math
+        self.assertEqual(self.result["summary"]["GDP_later_quarter_official_releases"], 2)
+        countries = self.result["country_evidence"]
+        self.assertEqual(set(observed_q3_updates("2026-10-29")), set())
+        self.assertEqual(set(observed_q3_updates("2026-10-30")), {"USD"})
+        self.assertEqual(set(observed_q3_updates("2026-10-31")), {"USD", "EUR"})
+        self.assertTrue(math.isclose(
+            countries["USD"]["growth"]["nonannualized_qoq_descriptive_pct"],
+            100*((1+3.4/100)**.25-1), abs_tol=1e-6))
+        self.assertEqual(countries["EUR"]["growth"]["nonannualized_qoq_descriptive_pct"], 0.4)
+        for c in ("USD", "EUR"):
+            self.assertEqual(countries[c]["growth"]["prior_documented_quarter"]["reference_quarter"], "2026Q2")
+            self.assertIs(countries[c]["growth"]["is_growth_strength_score"], False)
+        for c in set(FX)-{"USD", "EUR"}:
+            self.assertNotIn("prior_documented_quarter", countries[c]["growth"])
+        for pair, row in self.result["pair_context"].items():
+            for c in (row["base"], row["quote"]):
+                self.assertEqual(row["growth_periods"][c], countries[c]["growth"]["reference_quarter"])
+            self.assertIsNone(row["pair_trade_bias"])
+        events = json.loads(LEDGER.read_text())["events"]
+        for change in (
+            lambda d: d["events"][0].update(reported_value=6.5),
+            lambda d: d["events"][1].update(source_url="https://example.org/"),
+            lambda d: d["events"][0].update(publisher_release_day="2026-10-20"),
+        ):
+            ledger = json.loads(LEDGER.read_text())
+            change(ledger)
+            with self.assertRaisesRegex(ValueError, "MACRO_V3_GDP_Q3"):
+                observed_q3_updates(self.asof, evidence=ledger)
 
     def test_tampered_sources_and_future_publications_rejected(self):
         self.error("heat", lambda x: x["currencies"]["CHF"]["labour"]
