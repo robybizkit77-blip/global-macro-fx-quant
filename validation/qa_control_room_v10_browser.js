@@ -2235,7 +2235,7 @@ function expectedReactionFromMetrics(row){
     // Old CHF expiry-based 6M checks would reject a correctly verified
     // March-2027 SARON start just because accrual ends in June.
     const days=(a,b)=>(Date.parse(a+'T00:00:00Z')-Date.parse(b+'T00:00:00Z'))/86400000;
-    const chfCode=/^SA3([HMUZ])(\\d{4})$/.exec(p?.contract||'');
+    const chfCode=/^SA3([HMUZ])(\d{4})$/.exec(p?.contract||'');
     const month=chfCode?{H:3,M:6,U:9,Z:12}[chfCode[1]]:null;
     const year=chfCode?Number(chfCode[2]):null;
     const thirdWed=(y,m)=>{
