@@ -434,6 +434,62 @@ async function getState(page){
      await page.frameLocator('#gmfq-page').locator('.mid > .panel:nth-child(2)').click();
      await page.waitForURL(/#\/tassi\?focus=2y$/,{timeout:15000});
      await page.waitForFunction(()=>document.getElementById('gmfq-page')?.contentDocument?.querySelector('#rates-select'),null,{timeout:20000});
+     // Confirm actual CDN output after merge, not only main source parity.
+     // A valid SVG with two JPY points can hide 246 skipped non-padded dates.
+     if(process.env.GITHUB_EVENT_NAME!=='pull_request' &&
+        navigationVersion==='g8-sovereign-full-history-20261101'){
+       const sovereignPublicRates=await page.evaluate(async()=>{
+         const res=await fetch('/global-macro-fx-quant/live_data/sections/NATIVE_RATES_DATA.json',
+           {cache:'no-store'});
+         if(!res.ok)throw Error('Public sovereign feed HTTP '+res.status);
+         return res.json();
+       });
+       await page.waitForFunction(()=>
+         document.getElementById('gmfq-page')?.contentDocument
+          ?.querySelectorAll('#rates-select button[data-ccy]').length===8,
+         null,{timeout:20000});
+       const plotSummary=[];
+       for(const ccy of ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD']){
+         const src=sovereignPublicRates[ccy];
+         if(!src)throw Error(name+' public missing sovereign '+ccy);
+         const normal=d=>{
+           const m=/^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(d||'');
+           return m?m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0'):null;
+         };
+         const two=new Map(src.history2.dates.map((d,i)=>[normal(d),src.history2.values[i]]));
+         const last=Date.parse(src.date+'T00:00:00Z');
+         const expected=src.history10.dates.map((d,i)=>({d:normal(d),
+           y2:two.get(normal(d)),y10:src.history10.values[i]}))
+          .filter(x=>x.d&&Number.isFinite(x.y2)&&Number.isFinite(x.y10)&&x.d<=src.date&&
+            Date.parse(x.d+'T00:00:00Z')>=last-184*86400000);
+         if(expected.length<2)throw Error(name+' public source history incomplete '+ccy);
+         await page.frameLocator('#gmfq-page').locator('#rates-select button[data-ccy="'+ccy+'"]').click();
+         await page.waitForFunction(({ccy,count})=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument,
+             h=d?.getElementById('rates-chart'),
+             svg=h?.querySelector('svg[data-gmfq-sovereign-plot]');
+           return svg?.dataset.ccy===ccy&&svg.getClientRects().length>0&&
+             Number(h.dataset.gmfqSovereignCount)===count&&
+             svg.querySelectorAll('polyline[data-tenor]').length===2;
+         },{ccy,count:expected.length},{timeout:17000});
+         const proof=await page.evaluate(()=>{
+           const d=document.getElementById('gmfq-page').contentDocument,
+             h=d.getElementById('rates-chart'),svg=h.querySelector('svg[data-gmfq-sovereign-plot]');
+           return {ccy:svg.dataset.ccy,n:Number(h.dataset.gmfqSovereignCount),
+             asof:h.querySelector('.gmfq-gov-source')?.textContent||'',
+             traces:[...svg.querySelectorAll('polyline[data-tenor]')].map(x=>({
+               tenor:x.dataset.tenor,n:(x.getAttribute('points')||'').trim().split(/\s+/).length
+             }))};
+         });
+         if(proof.ccy!==ccy||proof.n!==expected.length||
+            proof.traces.length!==2||proof.traces.some(x=>x.n!==expected.length)||
+            !proof.asof.includes(src.date))
+           throw Error(name+' public truncated 2Y/10Y plot '+ccy+' '+JSON.stringify(proof));
+         plotSummary.push({ccy,points:proof.n,date:src.date});
+       }
+       console.log('PUBLIC_V10_G8_SOVEREIGN_VISUAL_SOURCE_PARITY_GREEN',name,
+         JSON.stringify({script:navigationVersion,plots:plotSummary}));
+     }
      // In PR the public website still has the previous addon; inspect the
      // new market-research panel only on main, after the exact deployment.
      if(process.env.GITHUB_EVENT_NAME!=='pull_request'){
