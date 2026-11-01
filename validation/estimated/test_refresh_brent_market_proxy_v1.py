@@ -130,6 +130,55 @@ class BrentMarketProxyTests(unittest.TestCase):
                     build_output(source, rows, meta, STAMP)
                 meta = fixture()["chart"]["result"][0]["meta"]
 
+    def test_same_date_vendor_change_is_recorded_not_a_new_return(self):
+        rows, meta = parse_chart(fixture(), TODAY)
+        before = residual()
+        before["lanes"][LANE] = {
+            "proxy_as_of": TODAY.isoformat(), "value": 112.33,
+            "change_1d_pct": -2.2197, "change_1w_pct": -3.7611,
+            "fetched_at_utc": "2026-10-30T20:00:00Z",
+        }
+        after = build_output(before, rows, meta, STAMP)
+        b = after["lanes"][LANE]
+        self.assertEqual(b["vintage_audit_count"], 1)
+        e = b["same_date_source_vintages"][0]
+        self.assertEqual(e["kind"], "SECONDARY_SAME_DATE_SNAPSHOT_DIFFERENCE")
+        self.assertEqual(e["market_date"], TODAY.isoformat())
+        self.assertEqual(e["prior_value"], 112.33)
+        self.assertEqual(e["new_value"], 121.0)
+        self.assertEqual(e["prior_change_1d_pct"], -2.2197)
+        self.assertEqual(e["new_change_1d_pct"], b["change_1d_pct"])
+        self.assertEqual(e["prior_fetched_at_utc"], "2026-10-30T20:00:00Z")
+        self.assertEqual(e["new_fetched_at_utc"], STAMP.isoformat().replace("+00:00", "Z"))
+        self.assertIn("not a new market session", e["interpretation"])
+        self.assertEqual(before["lanes"][LANE]["value"], 112.33)
+
+    def test_identical_refetch_retains_timestamp_and_idempotence(self):
+        rows, meta = parse_chart(fixture(), TODAY)
+        before = build_output(residual(), rows, meta, STAMP)
+        after = build_output(before, rows, meta, STAMP + dt.timedelta(hours=4))
+        self.assertEqual(after, before)
+        self.assertEqual(after["lanes"][LANE]["same_date_source_vintages"], [])
+
+    def test_vintage_chain_capped_and_kept_after_new_market_day(self):
+        rows, meta = parse_chart(fixture(), TODAY)
+        initial = build_output(residual(), rows, meta, STAMP)
+        revised_rows = copy.deepcopy(rows)
+        revised_rows[-1] = (TODAY.isoformat(), 122.0)
+        revised = build_output(initial, revised_rows, meta, STAMP + dt.timedelta(minutes=10))
+        self.assertEqual(revised["lanes"][LANE]["vintage_audit_count"], 1)
+        revised2 = build_output(revised, rows, meta, STAMP + dt.timedelta(minutes=20))
+        self.assertEqual(revised2["lanes"][LANE]["vintage_audit_count"], 2)
+        advanced_rows = rows[1:] + [((TODAY + dt.timedelta(days=1)).isoformat(), 123.0)]
+        advanced = build_output(revised2, advanced_rows, meta, STAMP + dt.timedelta(days=1))
+        self.assertEqual(advanced["lanes"][LANE]["vintage_audit_count"], 2)
+        self.assertEqual(advanced["lanes"][LANE]["same_date_source_vintages"],
+                         revised2["lanes"][LANE]["same_date_source_vintages"])
+        invalid = copy.deepcopy(revised2)
+        invalid["lanes"][LANE]["same_date_source_vintages"] = [{}] * 25
+        with self.assertRaisesRegex(ValueError, "vintage audit"):
+            build_output(invalid, revised_rows, meta, STAMP + dt.timedelta(minutes=30))
+
     def test_friday_close_saturday_catchup_admissible(self):
         rows, _ = parse_chart(fixture(), TODAY + dt.timedelta(days=1))
         self.assertEqual(rows[-1][0], TODAY.isoformat())
