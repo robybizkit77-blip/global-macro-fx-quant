@@ -792,9 +792,12 @@ function expectedReactionFromMetrics(row){
      !plottedOfficial.every(c=>research.readingText.includes(c)))
     throw Error(label+' Rates/OIS decision-first evidence failed '+JSON.stringify(research));
   if(research.g8LevelSeries!==8||research.g8Levels!=='8'||
-      research.qualityTypes.some(x=>x.points!==3||
+      research.qualityTypes.some(x=>x.points<1||x.points>3||
+       (x.ccy!=='CHF'&&x.points!==3)||
+       (x.ccy==='CHF'&&(x.points!==1||x.tier!=='PROXY'||x.joined!=='false'))||
        !['OFFICIAL','PROXY','MIXED','CONFLICTED','SCENARIO'].includes(x.tier)||
        (['MIXED','CONFLICTED'].includes(x.tier)&&x.joined!=='false'))||
+      !research.disclaimers.includes('CHF 1/3 scadenze (solo punti verificati, NON curva)')||
       research.secondary!==expectedSecondaryQuotes||
      !['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'].every(c=>research.legend.includes(c))||
      !research.disclaimers.includes('NON curva OIS')&&
