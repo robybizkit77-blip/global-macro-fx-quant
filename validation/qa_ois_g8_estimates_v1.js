@@ -63,7 +63,12 @@ for(const ccy of ['USD','EUR','CHF']){
      rate:ccy==='EUR'?null:bar.implied_rate,
      quote_as_of:bar.observation_date,
      quote_timestamp_verified:true,
-     quote_timestamp_source:'SSR_DAILY_BAR_DATA_UPDATE_TIME'});
+     quote_timestamp_source:'SSR_DAILY_BAR_DATA_UPDATE_TIME',
+     // Historical 16/19/20 Oct replay uses the original pre-ICE-fix
+     // expiry-based selector, not today's new SARON accrual-start metadata.
+     mapping:'nearest dated listed contract expiry to today+'+
+       ({'3m':90,'6m':180,'12m':365})[t]+'d; no interpolation'});
+   delete h.accrual_start;
    if(ccy==='EUR'){
      Object.assign(row.secondary_quote_context.horizons[t],{
        contract:bar.contract,rate_indicative:bar.implied_rate,
