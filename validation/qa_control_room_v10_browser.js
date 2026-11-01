@@ -774,7 +774,7 @@ function expectedReactionFromMetrics(row){
   if(!chartAudit.visible||chartAudit.count!==8||
      chartAudit.charts.some(x=>!x.svg||x.points<1||x.points>3||
        (x.ccy!=='CHF'&&x.points!==3)||
-       (x.ccy==='CHF'&&(x.points!==1||x.quality!=='PROXY'||x.joined!=='false')))||
+       (x.ccy==='CHF'&&(x.quality!=='PROXY'||x.joined!=='false')))||
      chartAudit.charts.some(x=>x.quality==='MIXED'&&x.joined!=='false'))
     throw Error(label+' Missing/unverified source-graded G8 charts '+JSON.stringify(chartAudit));
   const visualTypes={GBP:'DIRECT_OIS',AUD:'OFFICIAL_FUTURES',CAD:'OFFICIAL_FUTURES',
@@ -792,8 +792,8 @@ function expectedReactionFromMetrics(row){
       throw Error(label+' unauthorized indicative OIS curve connection '+JSON.stringify(chart));
     if(chart.quality==='CONFLICTED'&&!chart.slots.some(x=>x.state==='DISPUTED'))
       throw Error(label+' disputed futures hidden in ordinary chart '+JSON.stringify(chart));
-    if(chart.ccy==='CHF'&&chart.missing!==2)
-      throw Error(label+' isolated CHF 12M must disclose missing 3M and 6M');
+    if(chart.ccy==='CHF'&&(chart.missing!==3-chart.points||chart.joined!=='false'))
+      throw Error(label+' CHF must disclose precisely the unavailable verified source tenors');
     if(chart.ccy==='NZD'&&!chart.slots.every(x=>x.state==='SCENARIO'))
       throw Error(label+' NZD scenario not disclosed in every maturity');
     if(!source)throw Error(label+' missing source provenance for '+chart.ccy);
@@ -820,20 +820,29 @@ function expectedReactionFromMetrics(row){
         numeric:[...x.querySelectorAll(':scope > div')].slice(1,4).map(y=>y.querySelector('b')?.textContent)
       }))};
   });
-  // A single CHF 12M settlement is a valid research point, NOT a
-  // complete CHF 3M/6M/12M market curve. Keep native official view open.
+  // The actual CHF futures source progressed from one validated maturity
+  // to three. Test the current 8-currency source contract, not an old
+  // 7/8 fixture. Keep non-joined futures points and no OIS promotion.
+  const completeCharts=chartAudit.charts.filter(x=>x.points===3).length;
+  const expectedCoverage=completeCharts===8?'8/8':'PARTIAL';
   const chfRow=sourcePriority.rows.find(x=>x.c==='CHF');
-  if(sourcePriority.coverage!=='PARTIAL'||sourcePriority.complete!=='7/8'||
+  const chfChart=chartAudit.charts.find(x=>x.ccy==='CHF');
+  const chfSlotsOk=chfChart?.slots.every((slot,i)=>{
+    const value=chfRow?.numeric[i];
+    return slot.state==='MISSING'?value==='—':!!value&&value!=='—';
+  });
+  if(sourcePriority.coverage!==expectedCoverage||
+     sourcePriority.complete!==completeCharts+'/8'||
      sourcePriority.signal!=='NONE'||!sourcePriority.primaryFirst||
      sourcePriority.officialOnlyHidden||sourcePriority.toggle||
      sourcePriority.rows.length!==8||!chfRow||chfRow.tier!=='PROXY'||
-     chfRow.numeric.length!==3||chfRow.numeric[0]!=='—'||
-     chfRow.numeric[1]!=='—'||!chfRow.numeric[2]||chfRow.numeric[2]==='—'||
+     chfRow.numeric.length!==3||!chfSlotsOk||
      sourcePriority.rows.some(x=>x.c!=='CHF'&&(
         !['OFFICIAL','PROXY','MIXED','CONFLICTED','SCENARIO'].includes(x.tier)||
         x.numeric.length!==3||x.numeric.some(v=>!v||v==='—'))))
-    throw Error(label+' CHF source-grade partial 12M incorrectly promoted to 8 full curves '+JSON.stringify(sourcePriority));
-  console.log('CONTROL_ROOM_RATES_8_8_VISIBLE_7_8_FULL_ONE_CHF_12M_NO_SYNTHETIC_GREEN',label);
+    throw Error(label+' G8 source-graded visual/count mismatch '+JSON.stringify(sourcePriority));
+  console.log('CONTROL_ROOM_RATES_8_8_SOURCE_DRIVEN_CHF_TENORS_GREEN',label,
+    JSON.stringify({complete:completeCharts,chfPoints:chfChart.points}));
   const toggle=page.frameLocator('#gmfq-page').locator('#gmfq-ois-research-estimates .gmfq-est-disclosure > summary');
   await toggle.click();
   const collapsed=await page.evaluate(()=>{
