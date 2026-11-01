@@ -177,7 +177,7 @@ async function getState(page){
          }catch(_){console.log('PUBLIC_HOME_READING_CDN_PENDING',name,attempt)}
        }
        if(!readingReady)throw Error(name+' PUBLIC_HOME_READING_VERSION_NOT_DEPLOYED '+navigationVersion);
-       if(['home-dated-first-read-20261101','home-pulse-materiality-20261101','home-fx-vix-dated-20261101','home-commodities-graded-20261101'].includes(navigationVersion)){
+       if(['home-dated-first-read-20261101','home-pulse-materiality-20261101','home-fx-vix-dated-20261101','home-commodities-graded-20261101','home-saron-source-qa-20261101'].includes(navigationVersion)){
          await page.waitForFunction(()=>{
            const d=document.getElementById('gmfq-page')?.contentDocument,
              lead=d?.getElementById('gmfq-home-change-lead'),
@@ -216,7 +216,7 @@ async function getState(page){
             (proof.state!=='LEVEL_CONTEXT_ONLY'||proof.asof))
            throw Error(name+' stale levels called fresh repricing '+JSON.stringify(proof));
          console.log('PUBLIC_HOME_DATED_FIRST_READ_GREEN',name,JSON.stringify(proof));
-         if(['home-fx-vix-dated-20261101','home-commodities-graded-20261101'].includes(navigationVersion)){
+         if(['home-fx-vix-dated-20261101','home-commodities-graded-20261101','home-saron-source-qa-20261101'].includes(navigationVersion)){
            const audit=await page.evaluate(async()=>{
              const d=document.getElementById('gmfq-page').contentDocument,
                root=d.getElementById('gmfq-home-observed-moves'),
@@ -269,7 +269,7 @@ async function getState(page){
              JSON.stringify({asof:audit.asof,fxState:audit.fxState,crossState:audit.crossState,
                fx:audit.fx?.slice(0,180),vix:audit.cross?.slice(0,160),
                width:audit.width,client:audit.client}));
-           if(navigationVersion==='home-commodities-graded-20261101'){
+           if(['home-commodities-graded-20261101','home-saron-source-qa-20261101'].includes(navigationVersion)){
              await page.waitForFunction(()=>{
                const d=document.getElementById('gmfq-page')?.contentDocument,
                  note=d?.getElementById('gmfq-home-commodity-research');
