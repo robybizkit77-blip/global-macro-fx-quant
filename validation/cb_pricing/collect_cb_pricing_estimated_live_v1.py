@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import calendar
 import urllib.request
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -114,7 +115,64 @@ def parse_contracts(html: str, spec: dict) -> list[dict]:
     return rows
 
 
-def select_contracts(rows: list[dict], today: date) -> dict[str, dict]:
+def saron_window(contract: str) -> tuple[date, date]:
+    """ICE SA3 quarter names START the compounded SARON accrual window.
+
+    Source: ICE Three Month SARON futures contract specifications and expiry
+    calendar. This is not a spot 3M/6M/12M OIS or interpolation.
+    """
+    m = re.fullmatch(r"SA3([HMUZ])(\d{4})", contract)
+    if m is None:
+        raise ValueError("unrecognised ICE quarterly SARON listed contract")
+    month = {"H": 3, "M": 6, "U": 9, "Z": 12}[m.group(1)]
+    year = int(m.group(2))
+
+    def third_wednesday(y: int, mo: int) -> date:
+        first = date(y, mo, 1)
+        return first + timedelta(days=(2 - first.weekday()) % 7 + 14)
+
+    start = third_wednesday(year, month)
+    end_month = month + 3
+    end_year = year
+    if end_month > 12:
+        end_month -= 12
+        end_year += 1
+    # Listed last trading/final-settlement day: Tuesday before next
+    # quarterly contract's third Wednesday (holiday adjustments may exist).
+    end = third_wednesday(end_year, end_month) - timedelta(days=1)
+    return start, end
+
+
+def select_contracts(rows: list[dict], today: date,
+                     currency: str | None = None) -> dict[str, dict]:
+    if currency == "CHF":
+        # Never map a SARON future by its END date: a Sep26 future ending
+        # Dec15 was previously mislabeled 6M in late October, although its
+        # interest-rate accrual already started in September.
+        future = []
+        for row in rows:
+            start, end = saron_window(row["contract"])
+            if row["expiration"] != end:
+                # Neither an inconsistent vendor expiry nor a partial-rate
+                # contract can become an operational CHF 6M quote.
+                continue
+            if start > today:
+                future.append({**row, "accrual_start": start})
+        selected = {}
+        used = set()
+        for horizon, days in TARGET_DAYS.items():
+            target = today + timedelta(days=days)
+            candidates = [r for r in future
+                          if r["contract"] not in used
+                          and abs((r["accrual_start"] - target).days) <= 50]
+            if not candidates:
+                raise RuntimeError(f"CHF: no dated future accrual period near {horizon}")
+            row = min(candidates, key=lambda r:
+                      (abs((r["accrual_start"] - target).days), r["accrual_start"]))
+            selected[horizon] = row
+            used.add(row["contract"])
+        return selected
+
     future = [r for r in rows if r["expiration"] >= today]
     selected = {}
     used = set()
@@ -197,7 +255,7 @@ def collect(today: date | None = None) -> dict:
     }
     for ccy, spec in SPECS.items():
         contracts = parse_contracts(fetch(spec["chain_url"]), spec)
-        selected = select_contracts(contracts, today)
+        selected = select_contracts(contracts, today, currency=ccy)
         horizons = {}
         # Collect only separately verified daily-bar observation dates.
         asofs = []
@@ -218,7 +276,10 @@ def collect(today: date | None = None) -> dict:
                 "quote_timestamp_source": q["quote_timestamp_source"],
                 "price_valid_until": q["price_valid_until"],
                 "business_day_lag": q["business_day_lag"],
-                "mapping": f"nearest dated listed contract expiry to today+{TARGET_DAYS[horizon]}d; no interpolation",
+                "mapping": (f"nearest ICE SARON accrual start to today+{TARGET_DAYS[horizon]}d; no interpolation"
+                            if ccy == "CHF" else
+                            f"nearest dated listed contract expiry to today+{TARGET_DAYS[horizon]}d; no interpolation"),
+                **({"accrual_start": row["accrual_start"].isoformat()} if ccy == "CHF" else {}),
             }
         out["currencies"][ccy] = {
             "status": "LIVE_SECONDARY_READY" if len(asofs) == 3 else "LIVE_SECONDARY_INDICATIVE_ONLY",

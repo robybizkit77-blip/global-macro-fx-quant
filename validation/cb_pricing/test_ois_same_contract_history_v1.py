@@ -181,6 +181,38 @@ def _same_contract_current_only():
     assert all(row["source_timestamp_evidence"] == "SSR_DAILY_BAR_DATA_UPDATE_TIME" for row in bootstrap)
 
 
+
+# New ICE SARON starts can be captured without rewriting the original 93+
+# observations. Entirely simulated Nov 2 identities for schema regression;
+# these are NOT observed Nov 2 SARON market prices.
+from collect_cb_pricing_estimated_live_v1 import saron_window
+feb = copy.deepcopy(LIVE)
+feb["generated_at_utc"] = "2026-11-02T17:15:00Z"
+for t,contract in (("3m","SA3Z2026"),("6m","SA3H2027"),("12m","SA3U2027")):
+    p=feb["currencies"]["CHF"]["horizons"][t]
+    start,end=saron_window(contract)
+    p.update({"contract":contract,"symbol":"ICEEUR:"+contract,
+        "expiration":end.isoformat(),"accrual_start":start.isoformat(),
+        "quote_as_of":"2026-11-02","futures_price":99.9,"rate":0.1,
+        "quote_timestamp_verified":True,
+        "quote_timestamp_source":"SSR_DAILY_BAR_DATA_UPDATE_TIME",
+        "mapping":"nearest ICE SARON accrual start to today+"+
+          str({"3m":90,"6m":180,"12m":365}[t])+"d; no interpolation"})
+    feb["currencies"]["CHF"]["source_quality"]="SECONDARY_PUBLIC_LIVE_PROXY"
+q,_=candidates(feb)
+assert len([x for x in q if x["currency"]=="CHF"])==3
+bad=copy.deepcopy(feb)
+bad["currencies"]["CHF"]["horizons"]["6m"]["mapping"]=(
+ "nearest dated listed contract expiry to today+180d; no interpolation")
+q,ex=candidates(bad)
+assert len([x for x in q if x["currency"]=="CHF"])==2
+assert any("CHF/6m" in x for x in ex)
+bad=copy.deepcopy(feb)
+bad["currencies"]["CHF"]["horizons"]["6m"]["accrual_start"]="2027-03-18"
+q,ex=candidates(bad)
+assert len([x for x in q if x["currency"]=="CHF"])==2
+assert any("CHF/6m" in x for x in ex)
+
 _same_contract_current_only()
 print(f"OIS_SAME_CONTRACT_HISTORY_V1_PASS: immutable 23-row replay; "
       f"production {len(seed)} verified rows; matched changes, no roll, fail closed")

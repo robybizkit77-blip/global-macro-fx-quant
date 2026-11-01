@@ -427,6 +427,44 @@ spoofCurrent[1].points['6m'].source_quote_verified=false;
 assert(!matchedResearchMoves(signedFull,spoofCurrent,'2026-11-01',conflictEvents)
  .some(x=>x.ccy==='EUR'&&x.tenor==='6m'));
 
+
+// New ICE contract naming rule: SARON 6M references the March 2027 ACCRUAL
+// start, not the already-running Sep26 window which finishes in Dec26.
+const chfNew={
+ contract:'SA3H2027',symbol:'ICEEUR:SA3H2027',
+ mapping:'nearest ICE SARON accrual start to today+180d; no interpolation',
+ expiration:'2027-06-15',accrual_start:'2027-03-17',
+ futures_price:99.9,quote_as_of:'2026-10-30',
+ quote_timestamp_verified:true,
+ quote_timestamp_source:'SSR_DAILY_BAR_DATA_UPDATE_TIME'
+};
+const chfFuture=auditDatedFuture('CHF','6m',chfNew,0.1,'2026-10-30','2026-11-01');
+assert(chfFuture&&chfFuture.accrual_start==='2027-03-17');
+assert(chfFuture.mapping_quality==='SARON_FORWARD_START_APPROXIMATE');
+assert(chfFuture.policy_repricing_allowed===false&&chfFuture.direct_ois_quote===false);
+const invalidAccrual={...chfNew,accrual_start:'2027-03-16'};
+assert.equal(auditDatedFuture('CHF','6m',invalidAccrual,0.1,'2026-10-30','2026-11-01'),null);
+const invalidExpiry={...chfNew,expiration:'2027-06-16'};
+assert.equal(auditDatedFuture('CHF','6m',invalidExpiry,0.1,'2026-10-30','2026-11-01'),null);
+const oldSep={
+ contract:'SA3U2026',symbol:'ICEEUR:SA3U2026',
+ mapping:'nearest dated listed contract expiry to today+180d; no interpolation',
+ expiration:'2026-12-15',futures_price:100.05,quote_as_of:'2026-10-30',
+ quote_timestamp_verified:true,quote_timestamp_source:'SSR_DAILY_BAR_DATA_UPDATE_TIME'
+};
+// Old archived late-October contract can remain displayed *as evidence*, but
+// cannot become a legitimate CHF 6M forward/pricing input.
+const oldResearch=auditDatedFuture('CHF','6m',oldSep,-0.05,'2026-10-30','2026-11-01');
+assert.equal(oldResearch,null, 'A 6M label based on the Sep26 Dec15 final settlement is too far from April 2027 and MUST stay unavailable');
+const oldChf=structuredClone(liveOis);
+const oldRates=matrix(oldChf,liveBb,'2026-11-01');
+const oldChf6=oldRates.find(x=>x.ccy==='CHF')?.points?.['6m'];
+if(oldChf6?.contract==='SA3U2026'){
+ assert.equal(oldChf6.legacy_mislabeled_horizon,true);
+ assert.equal(indicativeSixMonth(oldChf,'2026-11-01').CHF,undefined);
+ assert(view(oldRates).includes('NON TASSO FORWARD 6M'));
+}
+
 const absent=view(result,[]);
 assert(absent.includes('osservazioni confrontabili non disponibili'));
 

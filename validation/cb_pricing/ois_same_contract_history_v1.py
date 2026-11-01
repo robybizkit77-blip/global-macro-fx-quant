@@ -12,6 +12,7 @@ import json
 import re
 from datetime import date, datetime, timezone
 from pathlib import Path
+from collect_cb_pricing_estimated_live_v1 import saron_window
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "live_data/sections/CB_PRICING_ESTIMATED_LIVE_QUOTES.json"
@@ -146,11 +147,27 @@ def candidates(quote_feed: dict) -> tuple[list[dict], list[str]]:
             }
             try:
                 validate_row(rec)
-                expected = (date.fromisoformat(rec["expiration"]) -
-                            date.fromisoformat(seen_at[:10])).days - TENORS[tenor]
-                require(abs(expected) <= 45 and p.get("mapping") ==
-                        f"nearest dated listed contract expiry to today+{TENORS[tenor]}d; no interpolation",
-                        "expiry selection mismatch")
+                if ccy == "CHF" and p.get("mapping") == (
+                        f"nearest ICE SARON accrual start to today+{TENORS[tenor]}d; no interpolation"):
+                    start, end = saron_window(rec["contract"])
+                    expected = (start - date.fromisoformat(seen_at[:10])).days - TENORS[tenor]
+                    require(start > date.fromisoformat(rec["observation_date"]) and
+                            rec["expiration"] == end.isoformat() and
+                            p.get("accrual_start") == start.isoformat() and
+                            abs(expected) <= 50,
+                            "CHF accrual-start/expiry mismatch")
+                else:
+                    # Existing immutable October records keep their original
+                    # horizon labels; new November CHF feeds cannot revive
+                    # the old expiry-based selector.
+                    require(ccy != "CHF" or
+                            date.fromisoformat(seen_at[:10]) < date(2026, 11, 2),
+                            "legacy CHF expiry-based contract selection forbidden")
+                    expected = (date.fromisoformat(rec["expiration"]) -
+                                date.fromisoformat(seen_at[:10])).days - TENORS[tenor]
+                    require(abs(expected) <= 45 and p.get("mapping") ==
+                            f"nearest dated listed contract expiry to today+{TENORS[tenor]}d; no interpolation",
+                            "expiry selection mismatch")
                 out.append(rec)
             except ValueError as err:
                 excluded.append(ccy + "/" + tenor + ": " + str(err))
