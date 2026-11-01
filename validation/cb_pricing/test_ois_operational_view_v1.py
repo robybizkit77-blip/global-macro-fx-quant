@@ -34,6 +34,11 @@ for ccy, row in VIEW['currencies'].items():
         assert row['backtest_eligible_as_official'] is False
         assert row['confidence'] in ('A','A/B','B','B/C','C')
         assert any((row['horizons'].get(h) or {}).get('rate') is not None for h in ('3m','6m','12m'))
+        assert row['direction_vs_policy'] == 'WITHHELD'
+        assert row['policy_repricing_inference_allowed'] is False
+        assert row['raw_level_gap_scope'] == 'DESCRIPTIVE_LEVEL_ARITHMETIC_NOT_EXPECTED_CB_RATE'
+        assert all(row['horizons'][h]['policy_delta_bp'] is None for h in ('3m','6m','12m'))
+        assert all(row['horizons'][h]['raw_level_gap_not_policy_repricing'] is True for h in ('3m','6m','12m'))
 
 # Derive approved official scope from canonical OIS, never a frozen currency list.
 # An unauthorized estimated/secondary row cannot count as a certified source.
