@@ -2008,13 +2008,25 @@ function expectedReactionFromMetrics(row){
     const deltaDate=(Date.parse(romeTodayIso()+'T00:00:00Z')-
        Date.parse((quote?.quote_as_of||'')+'T00:00:00Z'))/86400000;
     const rate=code==='EUR'?quote?.rate_indicative:p?.rate;
+    // Source timestamp and price arithmetic alone DO NOT license a 6M
+    // context: CHF's Oct30 SA3U2026 expires in Dec26, far sooner than
+    // six months. The app correctly withholds such a mislabeled tenor.
+    const expiryDays=(Date.parse((p?.expiration||'')+'T00:00:00Z')-
+      Date.parse((p?.quote_as_of||'')+'T00:00:00Z'))/86400000;
+    const expiryValid=Number.isInteger(expiryDays)&&
+      Math.abs(expiryDays-180)<=46;
     const valid=p?.quote_timestamp_verified===true&&
       p.quote_timestamp_source==='SSR_DAILY_BAR_DATA_UPDATE_TIME'&&
       p.quote_as_of===quote?.quote_as_of&&
       Number.isInteger(deltaDate)&&deltaDate>=0&&deltaDate<=5&&
-      Math.abs(100-p.futures_price-rate)<=0.0002;
-    if(!valid)continue;
+      expiryValid&&Math.abs(100-p.futures_price-rate)<=0.0002;
     const leg=compareCHF.dates.find(x=>x.includes(code));
+    if(code==='CHF'&&!expiryValid){
+      if(!leg?.includes('6M pricing WITHHELD'))
+        throw Error(label+' invalid dated CHF 6M expiry must be WITHHELD '+JSON.stringify({leg,p}));
+      continue;
+    }
+    if(!valid)continue;
     if(!leg?.includes('6M repricing policy non certificato')||
        !leg?.includes(p.contract)||!leg?.includes('NON ΔOIS, solo contesto'))
       throw Error(label+' '+code+' dated 6M context missing or misrepresented '+JSON.stringify({leg,quote}));
