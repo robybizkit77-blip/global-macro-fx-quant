@@ -107,10 +107,16 @@ def build(observed, heat, legacy, setup, *, as_of):
                  research.get("eligible_for_historical_backtest") is False and
                  research.get("source_observation_is_current_revised_history_not_historic_pit") is True,
                  c + "." + pillar + " invalid observed source identity")
-            need(research.get("canonical_series_id") == h.get("series_id") and
-                 research.get("observation_period") == h.get("as_of", "")[:7],
-                 c + "." + pillar + " observation period or series drift")
             period = period_month(h["as_of"], c + "." + pillar)
+            # Quarterly publisher periods use 2026Q3 whereas the native
+            # thermometer retains the quarter-end month 2026-09.
+            expected_period = (
+                f"{period.year}Q{(period.month-1)//3+1}"
+                if research.get("frequency") == "Q" else period.strftime("%Y-%m")
+            )
+            need(research.get("canonical_series_id") == h.get("series_id") and
+                 research.get("observation_period") == expected_period,
+                 c + "." + pillar + " observation period or series drift")
             need(period <= cutoff.replace(day=1), c + "." + pillar + " future observation")
             history = h.get("history")
             need(isinstance(history, list) and len(history) >= 4 and
