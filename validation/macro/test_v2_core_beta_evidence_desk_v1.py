@@ -89,8 +89,11 @@ class IntegratedBetaDeskTests(unittest.TestCase):
                 x[c]["six_month_rate_pct_descriptive_only"],
                 self.ois["currencies"][c]["horizons"]["6m"]["rate"])
         self.assertEqual(x["CHF"]["six_month_source_class"],
-                         "ESTIMATED_POLICY_PRICING_NOT_OFFICIAL")
-        self.assertIsNotNone(x["CHF"]["six_month_policy_delta_bp"])
+                         "ESTIMATED_FUTURES_6M_CONTEXT_ONLY_NO_POLICY_DELTA")
+        self.assertIsNone(x["CHF"]["six_month_policy_delta_bp"])
+        self.assertEqual(x["CHF"]["six_month_rate_pct_descriptive_only"],
+                         self.ois["currencies"]["CHF"]["horizons"]["6m"]["rate"])
+        self.assertFalse(self.ois["currencies"]["CHF"]["policy_repricing_inference_allowed"])
         self.assertEqual(x["CAD"]["official_current_cb_rate_pct"],2.50)
         self.assertEqual(x["CAD"]["six_month_quote_date"],
                          self.ois["currencies"]["CAD"]["as_of"])

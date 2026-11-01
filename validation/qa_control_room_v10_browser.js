@@ -774,7 +774,7 @@ function expectedReactionFromMetrics(row){
   if(!chartAudit.visible||chartAudit.count!==8||
      chartAudit.charts.some(x=>!x.svg||x.points<1||x.points>3||
        (x.ccy!=='CHF'&&x.points!==3)||
-       (x.ccy==='CHF'&&(x.points!==1||x.quality!=='PROXY'||x.joined!=='false')))||
+       (x.ccy==='CHF'&&(x.quality!=='PROXY'||x.joined!=='false')))||
      chartAudit.charts.some(x=>x.quality==='MIXED'&&x.joined!=='false'))
     throw Error(label+' Missing/unverified source-graded G8 charts '+JSON.stringify(chartAudit));
   const visualTypes={GBP:'DIRECT_OIS',AUD:'OFFICIAL_FUTURES',CAD:'OFFICIAL_FUTURES',
@@ -792,8 +792,8 @@ function expectedReactionFromMetrics(row){
       throw Error(label+' unauthorized indicative OIS curve connection '+JSON.stringify(chart));
     if(chart.quality==='CONFLICTED'&&!chart.slots.some(x=>x.state==='DISPUTED'))
       throw Error(label+' disputed futures hidden in ordinary chart '+JSON.stringify(chart));
-    if(chart.ccy==='CHF'&&chart.missing!==2)
-      throw Error(label+' isolated CHF 12M must disclose missing 3M and 6M');
+    if(chart.ccy==='CHF'&&(chart.missing!==3-chart.points||chart.joined!=='false'))
+      throw Error(label+' CHF must disclose precisely the unavailable verified source tenors');
     if(chart.ccy==='NZD'&&!chart.slots.every(x=>x.state==='SCENARIO'))
       throw Error(label+' NZD scenario not disclosed in every maturity');
     if(!source)throw Error(label+' missing source provenance for '+chart.ccy);
@@ -820,20 +820,47 @@ function expectedReactionFromMetrics(row){
         numeric:[...x.querySelectorAll(':scope > div')].slice(1,4).map(y=>y.querySelector('b')?.textContent)
       }))};
   });
-  // A single CHF 12M settlement is a valid research point, NOT a
-  // complete CHF 3M/6M/12M market curve. Keep native official view open.
+  // The actual CHF futures source progressed from one validated maturity
+  // to three. Test the current 8-currency source contract, not an old
+  // 7/8 fixture. Keep non-joined futures points and no OIS promotion.
+  const completeCharts=chartAudit.charts.filter(x=>x.points===3).length;
+  const expectedCoverage=completeCharts===8?'8/8':'PARTIAL';
   const chfRow=sourcePriority.rows.find(x=>x.c==='CHF');
-  if(sourcePriority.coverage!=='PARTIAL'||sourcePriority.complete!=='7/8'||
+  const chfChart=chartAudit.charts.find(x=>x.ccy==='CHF');
+  const chfSlotsOk=chfChart?.slots.every((slot,i)=>{
+    const value=chfRow?.numeric[i];
+    return slot.state==='MISSING'?value==='—':!!value&&value!=='—';
+  });
+  if(sourcePriority.coverage!==expectedCoverage||
+     sourcePriority.complete!==completeCharts+'/8'||
      sourcePriority.signal!=='NONE'||!sourcePriority.primaryFirst||
-     sourcePriority.officialOnlyHidden||sourcePriority.toggle||
+     // A source-graded panel can be the default first read only if the
+     // certified-source panel remains accessible through its real toggle.
+     (sourcePriority.officialOnlyHidden&&
+       (!sourcePriority.toggle||sourcePriority.expanded!=='false'))||
      sourcePriority.rows.length!==8||!chfRow||chfRow.tier!=='PROXY'||
-     chfRow.numeric.length!==3||chfRow.numeric[0]!=='—'||
-     chfRow.numeric[1]!=='—'||!chfRow.numeric[2]||chfRow.numeric[2]==='—'||
+     chfRow.numeric.length!==3||!chfSlotsOk||
      sourcePriority.rows.some(x=>x.c!=='CHF'&&(
         !['OFFICIAL','PROXY','MIXED','CONFLICTED','SCENARIO'].includes(x.tier)||
         x.numeric.length!==3||x.numeric.some(v=>!v||v==='—'))))
-    throw Error(label+' CHF source-grade partial 12M incorrectly promoted to 8 full curves '+JSON.stringify(sourcePriority));
-  console.log('CONTROL_ROOM_RATES_8_8_VISIBLE_7_8_FULL_ONE_CHF_12M_NO_SYNTHETIC_GREEN',label);
+    throw Error(label+' G8 source-graded visual/count mismatch '+JSON.stringify(sourcePriority));
+  // The official-only panel is intentionally collapsed behind a labelled
+  // toggle in this source-first layout. Browser QA must PROVE it can open;
+  // hiding it irretrievably is a failure.
+  if(sourcePriority.officialOnlyHidden){
+    await page.frameLocator('#gmfq-page').locator('#gmfq-certified-only-toggle').click();
+    const revealed=await page.evaluate(()=>{
+      const d=document.getElementById('gmfq-page')?.contentDocument;
+      const trigger=d?.getElementById('gmfq-certified-only-toggle');
+      const official=d?.getElementById('ois-rows')?.closest('.desk-panel');
+      return {expanded:trigger?.getAttribute('aria-expanded'),hidden:official?.hidden};
+    });
+    if(revealed.hidden!==false||revealed.expanded!=='true')
+      throw Error(label+' official OIS panel cannot be accessed '+JSON.stringify(revealed));
+  }
+  console.log('CONTROL_ROOM_RATES_8_8_SOURCE_DRIVEN_CHF_TENORS_GREEN',label,
+    JSON.stringify({complete:completeCharts,chfPoints:chfChart.points,
+      certifiedPanelOpened:sourcePriority.officialOnlyHidden}));
   const toggle=page.frameLocator('#gmfq-page').locator('#gmfq-ois-research-estimates .gmfq-est-disclosure > summary');
   await toggle.click();
   const collapsed=await page.evaluate(()=>{
@@ -989,10 +1016,10 @@ function expectedReactionFromMetrics(row){
   if(research.g8LevelSeries!==8||research.g8Levels!=='8'||
       research.qualityTypes.some(x=>x.points<1||x.points>3||
        (x.ccy!=='CHF'&&x.points!==3)||
-       (x.ccy==='CHF'&&(x.points!==1||x.tier!=='PROXY'||x.joined!=='false'))||
+       (x.ccy==='CHF'&&(x.tier!=='PROXY'||x.joined!=='false'))||
        !['OFFICIAL','PROXY','MIXED','CONFLICTED','SCENARIO'].includes(x.tier)||
        (['MIXED','CONFLICTED'].includes(x.tier)&&x.joined!=='false'))||
-      !research.disclaimers.includes('CHF 1/3 scadenze (solo punti verificati, NON curva)')||
+      !research.qualityTypes.some(x=>x.ccy==='CHF'&&x.tier==='PROXY'&&x.points>=1&&x.points<=3&&x.joined==='false')||
       research.secondary!==expectedSecondaryQuotes||
      !['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'].every(c=>research.legend.includes(c))||
      !research.disclaimers.includes('NON curva OIS')&&
@@ -2203,13 +2230,28 @@ function expectedReactionFromMetrics(row){
     const deltaDate=(Date.parse(romeTodayIso()+'T00:00:00Z')-
        Date.parse((quote?.quote_as_of||'')+'T00:00:00Z'))/86400000;
     const rate=code==='EUR'?quote?.rate_indicative:p?.rate;
-    // Source timestamp and price arithmetic alone DO NOT license a 6M
-    // context: CHF's Oct30 SA3U2026 expires in Dec26, far sooner than
-    // six months. The app correctly withholds such a mislabeled tenor.
-    const expiryDays=(Date.parse((p?.expiration||'')+'T00:00:00Z')-
-      Date.parse((p?.quote_as_of||'')+'T00:00:00Z'))/86400000;
-    const expiryValid=Number.isInteger(expiryDays)&&
-      Math.abs(expiryDays-180)<=46;
+    // ICE SARON futures reference the START of a future three-month
+    // accrual quarter, whereas EUR dated futures use the expiry convention.
+    // Old CHF expiry-based 6M checks would reject a correctly verified
+    // March-2027 SARON start just because accrual ends in June.
+    const days=(a,b)=>(Date.parse(a+'T00:00:00Z')-Date.parse(b+'T00:00:00Z'))/86400000;
+    const chfCode=/^SA3([HMUZ])(\d{4})$/.exec(p?.contract||'');
+    const month=chfCode?{H:3,M:6,U:9,Z:12}[chfCode[1]]:null;
+    const year=chfCode?Number(chfCode[2]):null;
+    const thirdWed=(y,m)=>{
+      const first=new Date(Date.UTC(y,m-1,1)).getUTCDay();
+      return new Date(Date.UTC(y,m-1,1+((3-first+7)%7)+14)).toISOString().slice(0,10);
+    };
+    const expectedStart=chfCode?thirdWed(year,month):null;
+    const nextMonth=month===12?3:month+3,nextYear=month===12?year+1:year;
+    const expectedEnd=chfCode?new Date(Date.parse(thirdWed(nextYear,nextMonth)+'T00:00:00Z')-86400000).toISOString().slice(0,10):null;
+    const expiryDays=days(p?.expiration||'',p?.quote_as_of||'');
+    const expiryValid=code==='CHF'?!!(chfCode&&
+      p?.mapping==='nearest ICE SARON accrual start to today+180d; no interpolation'&&
+      p?.accrual_start===expectedStart&&p?.expiration===expectedEnd&&
+      Number.isInteger(days(expectedStart,p.quote_as_of))&&
+      Math.abs(days(expectedStart,p.quote_as_of)-180)<=50):
+      Number.isInteger(expiryDays)&&Math.abs(expiryDays-180)<=46;
     const valid=p?.quote_timestamp_verified===true&&
       p.quote_timestamp_source==='SSR_DAILY_BAR_DATA_UPDATE_TIME'&&
       p.quote_as_of===quote?.quote_as_of&&
