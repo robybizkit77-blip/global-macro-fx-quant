@@ -6,26 +6,28 @@
       "freshness_status": "LIVE_OR_RECENT_SESSION",
       "horizons": {
         "12m": {
+          "accrual_start": "2027-12-15",
           "business_day_lag": 0,
-          "contract": "SA3U2027",
-          "contract_description": "Sep 2027",
-          "expiration": "2027-12-14",
-          "futures_price": 99.61,
-          "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
+          "contract": "SA3Z2027",
+          "contract_description": "Dec 2027",
+          "expiration": "2028-03-14",
+          "futures_price": 99.52,
+          "mapping": "nearest ICE SARON accrual start to today+365d; no interpolation",
           "price_valid_until": "2026-10-30T17:59:52Z",
           "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 0.39,
-          "symbol": "ICEEUR:SA3U2027"
+          "rate": 0.48,
+          "symbol": "ICEEUR:SA3Z2027"
         },
         "3m": {
+          "accrual_start": "2026-12-16",
           "business_day_lag": 0,
           "contract": "SA3Z2026",
           "contract_description": "Dec 2026",
           "expiration": "2027-03-16",
           "futures_price": 100.025,
-          "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
+          "mapping": "nearest ICE SARON accrual start to today+90d; no interpolation",
           "price_valid_until": "2026-10-30T17:59:52Z",
           "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
@@ -34,18 +36,19 @@
           "symbol": "ICEEUR:SA3Z2026"
         },
         "6m": {
+          "accrual_start": "2027-06-16",
           "business_day_lag": 0,
-          "contract": "SA3U2026",
-          "contract_description": "Sep 2026",
-          "expiration": "2026-12-15",
-          "futures_price": 100.05,
-          "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
-          "price_valid_until": "2026-10-30T17:47:27Z",
+          "contract": "SA3M2027",
+          "contract_description": "Jun 2027",
+          "expiration": "2027-09-14",
+          "futures_price": 99.75,
+          "mapping": "nearest ICE SARON accrual start to today+180d; no interpolation",
+          "price_valid_until": "2026-10-30T17:59:52Z",
           "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": -0.05,
-          "symbol": "ICEEUR:SA3U2026"
+          "rate": 0.25,
+          "symbol": "ICEEUR:SA3M2027"
         }
       },
       "instrument": "Three Month SARON",
@@ -196,7 +199,7 @@
       "status": "LIVE_SECONDARY_CONFLICT_QUARANTINED"
     }
   },
-  "generated_at_utc": "2026-11-01T16:16:22.601670Z",
+  "generated_at_utc": "2026-11-01T16:28:39.011912Z",
   "governance": {
     "backtest_eligible_as_official_ois": false,
     "bias_effect": "NONE",
