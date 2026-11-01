@@ -444,6 +444,7 @@ function expectedReactionFromMetrics(row){
   }else if(observed.fxState!=='NOT_VERIFIED'||observed.crossState!=='NOT_VERIFIED')
     throw Error(label+' stale fixing was promoted '+JSON.stringify(observed));
   console.log('HOME_FX_VIX_FIRST_READ_390_1440_GREEN',label,JSON.stringify(observed));
+  {
   // A single compact Home commodity row can contain secondary futures levels,
   // but must NEVER promote them to physical spot or synchronize old EIA WTI.
   await page.waitForFunction(()=>{
@@ -485,6 +486,7 @@ function expectedReactionFromMetrics(row){
      !commodity.text.includes('· STORICO'))
     throw Error(label+' WTI latest EIA spot not honestly dated '+JSON.stringify(commodity));
   console.log('HOME_COMMODITY_RESEARCH_DATED_390_1440_GREEN',label,JSON.stringify(commodity));
+  }
 
   console.log('HOME_FIRST_READ_SOURCE_HIERARCHY_GREEN',label,JSON.stringify(firstRead));
   console.log(label,JSON.stringify(r));
