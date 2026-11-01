@@ -43,7 +43,9 @@ if estimated:
         focus=estimated[0]
         before=float(changed['currencies'][focus]['horizons']['3m']['rate'])
         changed['currencies'][focus]['horizons']['3m']['rate'] = before + 0.05
-        changed['currencies'][focus]['horizons']['3m']['policy_delta_bp'] = float(changed['currencies'][focus]['horizons']['3m']['policy_delta_bp']) + 5.0
+        assert changed['currencies'][focus]['horizons']['3m']['policy_delta_bp'] is None
+        # Updating a rate should snapshot the level, never create a
+        # corresponding CB repricing delta for an estimated futures quote.
         r3 = append_changed_snapshots(changed, '2026-10-16T08:00:00Z', p)
         assert r3['appended'] == 1 and r3['currencies'] == [focus], r3
         rows = load_history(p)
