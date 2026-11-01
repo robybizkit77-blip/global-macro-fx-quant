@@ -6,10 +6,15 @@ on:
     paths:
       - 'validation/macro/publish_v3_current_context_v1.py'
       - 'validation/macro/v3_current_g8_28pair_economic_evidence_v1.py'
+      - 'validation/macro/v3_gdp_q3_official_overlay_v1.py'
+      - 'validation/macro/fixtures/v3_gdp_q3_2026_official_web_updates_v1.json'
       - '.github/workflows/macro-v3-observed-context-publication-v1.yml'
   push:
     branches: [main]
     paths:
+      - 'validation/macro/v3_current_g8_28pair_economic_evidence_v1.py'
+      - 'validation/macro/v3_gdp_q3_official_overlay_v1.py'
+      - 'validation/macro/fixtures/v3_gdp_q3_2026_official_web_updates_v1.json'
       - 'validation/macro/publish_v3_current_context_v1.py'
       - '.github/workflows/macro-v3-observed-context-publication-v1.yml'
   workflow_run:
