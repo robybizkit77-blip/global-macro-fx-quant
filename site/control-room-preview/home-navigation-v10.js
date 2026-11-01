@@ -765,7 +765,7 @@ function mountHomeReadingPath(doc,context){
  rail.dataset.priorityState=priority.state;
  rail.innerHTML='<div class="gmfq-reading-main">'+
   '<section id="gmfq-home-change-lead" data-state="CHECKING" data-source-effect="NONE" aria-label="Cosa è cambiato nell’ultima seduta verificata">'+
-  '<span class="gmfq-home-change-label">COSA È CAMBIATO · PRICING MONETARIO</span>'+
+  '<span class="gmfq-home-change-label">COSA È CAMBIATO · MERCATI</span>'+
   '<p class="gmfq-home-change-value">Verifica in corso delle ultime variazioni monetarie certificate.</p>'+
   '<small class="gmfq-home-change-provenance">Nessun movimento anticipato senza una fonte datata.</small>'+
   '<div id="gmfq-home-observed-moves" data-source-effect="NONE" data-pair-effect="NONE" aria-label="Movimenti FX e cross-asset datati">'+
