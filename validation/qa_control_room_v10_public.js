@@ -177,7 +177,7 @@ async function getState(page){
          }catch(_){console.log('PUBLIC_HOME_READING_CDN_PENDING',name,attempt)}
        }
        if(!readingReady)throw Error(name+' PUBLIC_HOME_READING_VERSION_NOT_DEPLOYED '+navigationVersion);
-       if(navigationVersion==='home-dated-first-read-20261101'){
+       if(['home-dated-first-read-20261101','home-pulse-materiality-20261101'].includes(navigationVersion)){
          await page.waitForFunction(()=>{
            const d=document.getElementById('gmfq-page')?.contentDocument,
              lead=d?.getElementById('gmfq-home-change-lead'),
