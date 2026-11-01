@@ -455,7 +455,7 @@ const oldSep={
 // Old archived late-October contract can remain displayed *as evidence*, but
 // cannot become a legitimate CHF 6M forward/pricing input.
 const oldResearch=auditDatedFuture('CHF','6m',oldSep,-0.05,'2026-10-30','2026-11-01');
-assert(oldResearch&&oldResearch.legacy_mislabeled_horizon===true);
+assert.equal(oldResearch,null, 'A 6M label based on the Sep26 Dec15 final settlement is too far from April 2027 and MUST stay unavailable');
 const oldChf=structuredClone(liveOis);
 const oldRates=matrix(oldChf,liveBb,'2026-11-01');
 const oldChf6=oldRates.find(x=>x.ccy==='CHF')?.points?.['6m'];
