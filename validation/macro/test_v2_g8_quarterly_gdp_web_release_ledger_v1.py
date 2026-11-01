@@ -70,6 +70,22 @@ class GDPQuarterlyPublisherLedgerTests(unittest.TestCase):
         self.assertTrue(all(not r["certified_for_common_G8_growth_score"]
                             for r in all_c.values()))
 
+    def test_chf_first_publisher_must_be_primary_seco_not_federal_mirror(self):
+        swiss = next(r for r in self.receipt["events"] if
+                     r["currency"] == "CHF" and r["stage_order"] == 0)
+        self.assertEqual(
+            swiss["source_url"],
+            "https://www.seco.admin.ch/en/newnsb/1BH4HnCuYPWb_WqjPywR4")
+        self.assertEqual(swiss["publisher_release_day"], "2026-08-14")
+        self.assertEqual(swiss["reported_value"], 1.5)
+        self.assertEqual(swiss["reported_unit"], "PERCENT_QOQ_SA_CALENDAR_SPORTS")
+        bad = copy.deepcopy(self.data)
+        next(r for r in bad["records"] if
+             r["currency"] == "CHF" and r["stage_order"] == 0)["source_url"] = (
+            "https://www.schweizerischesseeschifffahrtsamt.eda.admin.ch/en/newnsb/1BH4HnCuYPWb_WqjPywR4")
+        with self.assertRaises(ValueError):
+            review(bad)
+
     def test_corrupt_values_dates_units_duplicates_unsafe_provenance_refused(self):
         patches = []
         d = copy.deepcopy(self.data)
