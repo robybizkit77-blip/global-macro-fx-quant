@@ -295,11 +295,13 @@ jobs:
                 )
                 ;;
               premorning)
+                # Selectively recover missing prebrief Macro without duplicating a certified run.
                 # CB Pricing runs separately before 08:00.
                 # Calendar/News is a selective RECOVERY, not a blind duplicate:
                 # skip its independent collector if it already checked both
                 # public views today (Europe/Rome); retry stale or invalid evidence.
                 workflows=(
+                  macro-persistent-daily-v1.yml
                   calendar-news-operational-refresh-v1.yml
                   rates-persistent-daily-v1.yml
                   vix-persistent-apply-v1.yml
@@ -347,6 +349,47 @@ jobs:
 
             echo "## Daily Data Orchestrator V2 — ${phase}" >> "$GITHUB_STEP_SUMMARY"
             for wf in "${workflows[@]}"; do
+              # Latest same-day main Macro run must prove real executed source steps.
+              # Skip duplicates for active runs, but never call them certified.
+              if [[ "$phase" == "premorning" && "$wf" == "macro-persistent-daily-v1.yml" ]]; then
+                macro_done=false
+                macro_runs=""
+                if macro_runs="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/macro-persistent-daily-v1.yml/runs?branch=main&per_page=100")"; then
+                  today_utc="$(date -u +%F)"
+                  macro_latest="$(jq -c --arg day "$today_utc" '
+                    [.workflow_runs[] | select(.head_branch=="main") |
+                     select(.event=="schedule" or .event=="workflow_dispatch") |
+                     select(.created_at[0:10] == $day)] |
+                    sort_by(.created_at, .id) | last // {}' <<<"$macro_runs")"
+                  macro_id="$(jq -r '.id // empty' <<<"$macro_latest")"
+                  macro_status="$(jq -r '.status // empty' <<<"$macro_latest")"
+                  macro_conclusion="$(jq -r '.conclusion // empty' <<<"$macro_latest")"
+                  if [[ "$macro_status" == "queued" || "$macro_status" == "in_progress" ||
+                        "$macro_status" == "waiting" || "$macro_status" == "pending" ]]; then
+                    echo "- 07:45 Macro: **ACTIVE NOT CERTIFIED**, run #${macro_id}, no duplicate" >> "$GITHUB_STEP_SUMMARY"
+                    continue
+                  fi
+                  if [[ "$macro_status" == "completed" && "$macro_conclusion" == "success" ]] &&
+                    macro_jobs="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${macro_id}/jobs?per_page=100")"; then
+                    macro_steps="$(jq -c '.jobs[] | select(.name=="persist-macro" and .status=="completed" and .conclusion=="success") | .steps' <<<"$macro_jobs")"
+                    if [[ -n "$macro_steps" ]] && jq -e --arg a 'Snapshot baseline and registry contract' \
+                      --arg b 'Fetch and PIT-verify all 16 core series independently' \
+                      --arg c 'Confirm no-change case' \
+                      --arg d 'Commit validated Macro update to main with remote-head lease' '
+                      [.[] | select(.conclusion=="success") | .name] as $ok |
+                      ($ok | index($a)) != null and ($ok | index($b)) != null and
+                      (($ok | index($c)) != null or ($ok | index($d)) != null)
+                    ' <<<"$macro_steps" >/dev/null; then
+                      macro_done=true
+                    fi
+                  fi
+                fi
+                if [[ "$macro_done" == true ]]; then
+                  echo "- 07:45 Macro: **SKIPPED**, actual source verification executed today in run #${macro_id}" >> "$GITHUB_STEP_SUMMARY"
+                  continue
+                fi
+                echo "- 07:45 Macro: **RECOVERY**, no proven successful same-day check" >> "$GITHUB_STEP_SUMMARY"
+              fi
               # A missed/failed 04:43 Calendar/News check must be recoverable
               # during the 07:45 safety pass. When BOTH producer receipts have
               # already been rechecked today, avoid duplicate source work.
