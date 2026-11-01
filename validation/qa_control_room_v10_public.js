@@ -177,6 +177,47 @@ async function getState(page){
          }catch(_){console.log('PUBLIC_HOME_READING_CDN_PENDING',name,attempt)}
        }
        if(!readingReady)throw Error(name+' PUBLIC_HOME_READING_VERSION_NOT_DEPLOYED '+navigationVersion);
+       if(navigationVersion==='home-dated-first-read-20261101'){
+         await page.waitForFunction(()=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument,
+             lead=d?.getElementById('gmfq-home-change-lead'),
+             pulse=d?.getElementById('gmfq-market-pulse');
+           return !!lead&&['DATED_REPRICING','LEVEL_CONTEXT_ONLY','NO_RECENT_CHANGE']
+             .includes(lead.dataset.state)&&
+             ['RECENT_VALIDATED','DATED_LEVEL_CONTEXT','WITHHELD']
+             .includes(pulse?.dataset.pulseStatus);
+         },null,{timeout:30000});
+         const proof=await page.evaluate(()=>{
+           const d=document.getElementById('gmfq-page').contentDocument,
+             lead=d.getElementById('gmfq-home-change-lead'),
+             pulse=d.getElementById('gmfq-market-pulse');
+           const rail=d.getElementById('gmfq-home-reading-path'),
+             change=lead.getBoundingClientRect(),hero=d.querySelector('.hero').getBoundingClientRect();
+           return {state:lead.dataset.state,asof:lead.dataset.observationAsOf,
+             sourceEffect:lead.dataset.sourceEffect,text:lead.querySelector('.gmfq-home-change-value')?.textContent,
+             note:lead.querySelector('.gmfq-home-change-provenance')?.textContent,
+             link:!!lead.querySelector('button[data-home-pulse-focus]'),
+             pulse:pulse.dataset.pulseStatus,pulseDay:pulse.dataset.asOf,
+             pulseText:pulse.querySelector('.gmfq-pulse-lead')?.textContent,
+             first:change.top>=rail.getBoundingClientRect().top-1&&change.top<hero.top,
+             width:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
+         });
+         if(!proof.first||!proof.link||proof.sourceEffect!=='NONE'||
+            proof.width>proof.viewport+16||!proof.text||!proof.note)
+           throw Error(name+' public Home 1st read incomplete '+JSON.stringify(proof));
+         if(proof.pulse==='RECENT_VALIDATED'&&
+            (proof.state!=='DATED_REPRICING'||proof.asof!==proof.pulseDay||
+             proof.text!==proof.pulseText||!proof.note.includes('non intraday')))
+           throw Error(name+' public unsourced first-screen repricing '+JSON.stringify(proof));
+         if(proof.pulse==='WITHHELD'&&
+            (proof.state!=='NO_RECENT_CHANGE'||proof.asof))
+           throw Error(name+' public invented Home repricing '+JSON.stringify(proof));
+         if(proof.pulse==='DATED_LEVEL_CONTEXT'&&
+            (proof.state!=='LEVEL_CONTEXT_ONLY'||proof.asof))
+           throw Error(name+' stale levels called fresh repricing '+JSON.stringify(proof));
+         console.log('PUBLIC_HOME_DATED_FIRST_READ_GREEN',name,JSON.stringify(proof));
+       }
+
        // Verify the published Home puts the source-led research sequence
        // before the protected globe/grid, without an extra dashboard.
        const reading=await page.evaluate(()=>{

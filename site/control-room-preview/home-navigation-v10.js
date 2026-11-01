@@ -733,6 +733,16 @@ function mountHomeReadingPath(doc,context){
   '.gridtop #ois .gmfq-six-month-name small{font-size:9px}'+
   '.gridtop #ois .gmfq-six-month-row strong{font-size:10px}'+
   '.gridtop #ois .oisnote{font-size:9px}}';
+ visual.textContent+=
+  '#gmfq-home-change-lead{display:grid;gap:3px;min-width:0;margin:0 0 12px;padding:0 0 12px;border-bottom:1px solid #365365}'+
+  '#gmfq-home-change-lead .gmfq-home-change-label{display:block;color:#8fc9dc;font:600 10px/1.4 Arial,sans-serif;letter-spacing:.10em}'+
+  '#gmfq-home-change-lead .gmfq-home-change-value{margin:2px 0;color:#ecf2f7;font:600 15px/1.48 Arial,sans-serif;overflow-wrap:anywhere}'+
+  '#gmfq-home-change-lead .gmfq-home-change-provenance{color:#aac4d1;font:10px/1.5 Arial,sans-serif;overflow-wrap:anywhere}'+
+  '#gmfq-home-change-lead[data-state="NO_RECENT_CHANGE"] .gmfq-home-change-value,'+
+  '#gmfq-home-change-lead[data-state="LEVEL_CONTEXT_ONLY"] .gmfq-home-change-value{color:#ddc58d}'+
+  '#gmfq-home-change-lead .gmfq-home-change-more{justify-self:start;margin-top:2px;padding:2px 0;color:#a9c6d8;font:600 10px/1.5 Arial,sans-serif}'+
+  '@media(max-width:600px){#gmfq-home-change-lead{margin-bottom:10px;padding-bottom:10px}'+
+  '#gmfq-home-change-lead .gmfq-home-change-value{font-size:13px;line-height:1.48}}';
  doc.head.appendChild(visual);
  const rail=doc.createElement('nav');
  rail.id='gmfq-home-reading-path';rail.setAttribute('aria-label','Da dove iniziare la lettura Macro FX');
@@ -745,7 +755,13 @@ function mountHomeReadingPath(doc,context){
  rail.dataset.sourceEffect='NONE';
  rail.dataset.priorityTarget=priority.key;
  rail.dataset.priorityState=priority.state;
- rail.innerHTML='<div class="gmfq-reading-main"><span class="gmfq-reading-heading">PRIORITÀ DEL RESEARCH DESK</span>'+
+ rail.innerHTML='<div class="gmfq-reading-main">'+
+  '<section id="gmfq-home-change-lead" data-state="CHECKING" data-source-effect="NONE" aria-label="Cosa è cambiato nell’ultima seduta verificata">'+
+  '<span class="gmfq-home-change-label">COSA È CAMBIATO · PRICING MONETARIO</span>'+
+  '<p class="gmfq-home-change-value">Verifica in corso delle ultime variazioni monetarie certificate.</p>'+
+  '<small class="gmfq-home-change-provenance">Nessun movimento anticipato senza una fonte datata.</small>'+
+  '<button type="button" class="gmfq-home-change-more" data-home-pulse-focus="true">Dettaglio e fonti del Market Pulse ↓</button></section>'+
+  '<span class="gmfq-reading-heading">PRIMA VERIFICA DEL RESEARCH DESK</span>'+
   '<p class="gmfq-reading-priority" aria-label="Prima verifica da effettuare">'+htmlEscape(priority.text)+'</p>'+
   '<span class="gmfq-reading-trust">Ricerca, non segnali: '+(fxCurrent?'fixing BCE '+htmlEscape(fxDay):'fixing BCE non verificato')+'</span></div>'+
   '<div class="gmfq-reading-side"><span class="gmfq-reading-side-title">PERCORSO DI VERIFICA</span>'+
@@ -755,6 +771,7 @@ function mountHomeReadingPath(doc,context){
  // The native globe HERO is the first child of .gridtop. Keep the 3-column
  // original grid intact: position the editorial path BEFORE that entire grid.
  grid.insertAdjacentElement('beforebegin',rail);
+ updateHomePulseFirstRead(doc,doc.getElementById('gmfq-market-pulse'));
  const mid=doc.querySelector('.mid'),bottom=doc.querySelector('.bottom');
  if(mid&&bottom&&mid.parentElement===bottom.parentElement){
   const chapter=(id,number,title,note)=>{
@@ -769,6 +786,10 @@ function mountHomeReadingPath(doc,context){
    'Tesi e condizioni del modello: contesto per approfondire, non segnali di ingresso.'));
  }
  rail.addEventListener('click',event=>{
+  if(event.target.closest('button[data-home-pulse-focus]')){
+   doc.getElementById('gmfq-market-pulse')?.scrollIntoView({behavior:'smooth',block:'start'});
+   return;
+  }
   const button=event.target.closest('button[data-reading-target]');
   if(!button||!rail.contains(button))return;
   const target=steps.find(x=>x.key===button.dataset.readingTarget);
@@ -795,7 +816,8 @@ function marketPulseReadings(feedData){
     !fresh(feedData.generated_at_utc.slice(0,10),2))return [];
  const used=new Set,rows=[];
  for(const x of feedData.items){
-   if(!x||!instrument[x.ccy]||used.has(x.ccy)||x.category!=='OIS_REPRICING'||
+   if(!x||!instrument[x.ccy]||used.has(x.ccy)||
+      x.category!==(instrument[x.ccy].kind==='OIS'?'OIS_REPRICING':'FUTURES_IMPLIED_REPRICING')||
       x.quality!=='OFFICIAL_CERTIFIED'||x.confidence!=='A'||
       !['HIGH','MEDIUM'].includes(x.importance)||
       x.as_of!==feedData.content_as_of||!fresh(x.as_of,2)||
@@ -803,8 +825,8 @@ function marketPulseReadings(feedData){
       typeof x.detail!=='string'||x.detail.length>350||
       typeof x.source!=='string'||x.source.length>230||
       !instrument[x.ccy].pattern.test(x.source))continue;
-   const m=/^Movimento 1D ([+-]\d+(?:\.\d+)?) bp sul bucket (3M|6M|12M); variazione 1W ([+-]\d+(?:\.\d+)?) bp\.$/.exec(x.detail);
-   if(!m)continue;
+   const m=/^Movimento 1D ([+-]\d+(?:\.\d+)?) bp sul bucket (3M|6M|12M); variazione 1W ([+-]\d+(?:\.\d+)?) bp\.( Indicazione tratta da futures: non equivale a una curva OIS osservata\.)?$/.exec(x.detail);
+   if(!m||(instrument[x.ccy].kind==='FUTURES')!==Boolean(m[4]))continue;
    const one=Number(m[1]),week=Number(m[3]);
    if(!Number.isFinite(one)||!Number.isFinite(week)||Math.abs(one)>100||Math.abs(week)>200)continue;
    used.add(x.ccy);
@@ -813,6 +835,40 @@ function marketPulseReadings(feedData){
       source:x.source,detail:x.detail});
  }
  return rows.slice(0,4);
+}
+// Copy only vetted, source-dated Market Pulse context into the first Home read.
+function updateHomePulseFirstRead(doc,host){
+ if(!home()||frame.contentDocument!==doc)return;
+ const el=doc.getElementById('gmfq-home-change-lead');
+ if(!el)return;
+ const main=el.querySelector('.gmfq-home-change-value'),
+   note=el.querySelector('.gmfq-home-change-provenance');
+ if(!main||!note)return;
+ const status=host?.dataset.pulseStatus||'LOADING';
+ const asof=host?.dataset.asOf||'';
+ const line=host?.querySelector('.gmfq-pulse-lead')?.textContent||'';
+ el.dataset.sourceEffect='NONE';
+ if(status==='RECENT_VALIDATED'&&/^\d{4}-\d{2}-\d{2}$/.test(asof)&&line){
+  el.dataset.state='DATED_REPRICING';
+  el.dataset.observationAsOf=asof;
+  main.textContent=line;
+  note.textContent='Ultima osservazione monetaria '+asof+' · non intraday, non segnale FX.';
+ }else if(status==='DATED_LEVEL_CONTEXT'){
+  el.dataset.state='LEVEL_CONTEXT_ONLY';
+  el.dataset.observationAsOf='';
+  main.textContent='Nessuna variazione 1D/1W recente certificata: disponibili soltanto livelli 6M datati e distinti per valuta.';
+  note.textContent='I livelli non dimostrano un nuovo repricing. Controlla la data di ciascuna fonte.';
+ }else if(status==='WITHHELD'){
+  el.dataset.state='NO_RECENT_CHANGE';
+  el.dataset.observationAsOf='';
+  main.textContent='Nessuna variazione recente verificabile nel feed monetario. Non dedurre che il mercato sia rimasto fermo.';
+  note.textContent='La mancata verifica non equivale a una variazione nulla.';
+ }else{
+  el.dataset.state='CHECKING';
+  el.dataset.observationAsOf='';
+  main.textContent='Verifica in corso delle ultime variazioni monetarie certificate.';
+  note.textContent='Nessun movimento anticipato senza una fonte datata.';
+ }
 }
 async function mountHomeMarketPulse(doc){
  if(!home()||frame.contentDocument!==doc||doc.documentElement.dataset.marketMode!=='live'||
@@ -926,6 +982,7 @@ async function mountHomeMarketPulse(doc){
   date.textContent='Aggiornamento non disponibile';
   box.innerHTML='<p class="gmfq-pulse-caption">Pricing non verificabile al momento; le notizie esterne restano accessibili separatamente.</p>';
  }
+ updateHomePulseFirstRead(doc,host);
 }
 
 /* Home Event Risk uses existing official Calendar seed only. It does NOT
