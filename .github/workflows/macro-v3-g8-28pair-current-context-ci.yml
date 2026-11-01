@@ -1,0 +1,67 @@
+name: Macro V3 G8 current observed values and 28-pair economic input (no signal)
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/macro-v3-g8-28pair-current-context-ci.yml'
+      - 'validation/macro/v3_current_g8_28pair_economic_evidence_v1.py'
+      - 'validation/macro/test_v3_current_g8_28pair_economic_evidence_v1.py'
+      - 'validation/macro/v2_g8_observed_feature_bridge_v1.py'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+      - 'live_data/sections/MACRO_SERIES.json'
+      - 'live_data/sections/D.json'
+      - 'live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  current-economic-source-replay:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test 24 observed source values, 8 economies and 28 pair contexts
+        run: python -m unittest validation.macro.test_v3_current_g8_28pair_economic_evidence_v1 -v
+      - name: Replay current observed Macro evidence against official source references
+        run: |
+          set -euo pipefail
+          CUTOFF="$(TZ=Europe/Rome date +%Y-%m-%d)"
+          python -m validation.macro.v3_current_g8_28pair_economic_evidence_v1 \
+            --as-of "$CUTOFF" \
+            --out /tmp/gmfq-current-macro-v3-economic-observations.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('/tmp/gmfq-current-macro-v3-economic-observations.json').read_text())
+          assert r['summary']['currencies']==8
+          assert r['summary']['economic_dimensions']==24
+          assert r['summary']['latest_observation_values_present']==24
+          assert r['summary']['pairs']==28
+          assert r['summary']['pair_trade_signals_generated']==0
+          assert r['source_value_quality']=='OBSERVED_REVISED_SERIES_AND_PUBLISHER_WEB_GDP'
+          assert not r['safe_to_republish_D'] and not r['safe_to_recompute_structural_pair_theses']
+          assert not r['eligible_for_trading_or_forward_backtest'] and not r['writes_live_data']
+          with open(__import__('os').environ['GITHUB_STEP_SUMMARY'],'a') as s:
+              s.write('## Macro V3: fresh input values, NOT a newly certified FX model\n')
+              s.write('24 / 24 real latest G8 country observations · 28 / 28 pair contexts.\n')
+              s.write('D.json remains frozen at '+r['canonical_D_macro_baseline_as_of']+
+                      ' · FX price snapshot '+r['fx_price_as_of']+'.\n')
+              s.write('This does not yet authorize new FX strength, trading bias or backtests.\n')
+          print('MACRO_V3_CURRENT_G8_24_OBSERVED_VALUES_28PAIR_CONTEXT_PASS')
+          PY
+      - name: Prove no core FX output or runtime section is modified
+        run: |
+          git diff --exit-code -- live_data payload site dashboard
+          test -z "$(git status --porcelain -- live_data payload site dashboard)"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macro-v3-current-observed-source-context-${{ github.run_id }}
+          path: /tmp/gmfq-current-macro-v3-economic-observations.json
+          if-no-files-found: warn
+          retention-days: 30
