@@ -8,7 +8,7 @@
       "status": "ESTIMATED_ACTIVE_AUTO_REFRESH_OFFICIAL_PROXY",
       "confidence": "A/B",
       "proxy_as_of": "2026-09",
-      "proxy_value": 3849859,
+      "proxy_value": 3849859.0,
       "source": "Bank of Japan official Monetary Base long-term workbook · Reserve Balances",
       "interpretation": "Semantically exact BoJ Reserve Balances series, auto-refreshed from the official workbook. Suitable for live level/direction/momentum; original runtime vintage equivalence remains explicitly unclaimed.",
       "change_1m_pct": -1.4212,
@@ -17,19 +17,19 @@
       "source_sheet": "末残（Amounts at end of period）",
       "source_column": 7,
       "source_header_context": "4298428 | 4247068 | 4210409 | 4346010 | 4216365 | 4072435 | 4028129 | 3905362",
-      "fetched_at_utc": "2026-10-30T13:37:21.049852Z",
+      "fetched_at_utc": "2026-11-01T15:13:17.262089Z",
       "official_canonical_untouched": true,
       "original_runtime_validation": {
         "period": "2026-08",
-        "official_proxy_value": 3905362,
-        "runtime_reference": 3905822,
-        "absolute_difference": 460,
+        "official_proxy_value": 3905362.0,
+        "runtime_reference": 3905822.0,
+        "absolute_difference": 460.0,
         "difference_pct": 0.0118,
         "original_runtime_vintage_equivalence_claimed": false
       },
       "continuity_anchor": {
         "period": "2026-09",
-        "expected_official_value": 3849859,
+        "expected_official_value": 3849859.0,
         "matched": true
       }
     },
