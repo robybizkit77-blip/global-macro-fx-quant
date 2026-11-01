@@ -51,20 +51,21 @@
           "symbol": "ICEEUR:SA3Z2026"
         },
         "6m": {
-          "accrual_start": "2027-06-16",
+          "accrual_start": "2027-03-17",
           "business_day_lag": 0,
-          "contract": "SA3M2027",
-          "contract_description": "Jun 2027",
-          "expiration": "2027-09-14",
-          "futures_price": 99.75,
+          "contract": "SA3H2027",
+          "contract_description": "ICE quarter 2027-03 (calendar-derived identity)",
+          "expiration": "2027-06-15",
+          "futures_price": 99.9,
           "mapping": "nearest ICE SARON accrual start to today+180d; no interpolation",
-          "policy_delta_bp": 25.0,
+          "policy_delta_bp": 10.0,
           "price_valid_until": "2026-10-30T17:59:52Z",
           "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 0.25,
-          "symbol": "ICEEUR:SA3M2027"
+          "rate": 0.1,
+          "roster_quality": "ICE_LISTED_QUARTER_CALENDAR_DERIVED_UNQUOTED",
+          "symbol": "ICEEUR:SA3H2027"
         }
       },
       "input_mode": "LIVE_SECONDARY_OVERLAY",
