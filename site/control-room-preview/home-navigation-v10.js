@@ -3090,6 +3090,24 @@ async function mountPairResearch(doc){
     'La data del fixing e quella del motore coincidono, oppure il fixing più recente non è verificato.';
   // All diagnostics remain verbatim and source-derived; only reading order and
   // disclosure state change. The canonical model and 28 pair states are untouched.
+  const v3Pair=v3?.pair_context?.[a+'/'+b];
+  const v3Leg=(c)=>{
+   const m=v3.countries[c],g=m.growth,l=m.labour,i=m.inflation;
+   const rate=rates?.[c],rateOk=String(rate?.quality||'').includes('OFFICIAL')&&
+    fresh(rate?.date,5)&&num(rate?.['2Y'])!==null;
+   const trend=x=>x==='UP'?'sale':x==='DOWN'?'scende':'stabile';
+   return '<article><strong>'+FLAG[c]+' '+c+' · dati osservati</strong>'+
+    '<span>PIL '+htmlEscape(g.reference_quarter)+': '+fmt(g.nonannualized_qoq_descriptive_pct,2)+'% trimestrale · pubblicazione '+htmlEscape(g.publisher_release_day)+'</span>'+
+    '<span>Disoccupazione '+fmt(l.observation_value,2)+'% · '+htmlEscape(l.observation_period)+' · '+trend(l.change_direction)+' rispetto a tre osservazioni prima</span>'+
+    '<span>Inflazione '+fmt(i.observation_value,2)+'% · '+htmlEscape(i.observation_period)+' · '+trend(i.change_direction)+' rispetto a tre osservazioni prima</span>'+
+    '<span>Rendimento 2Y '+(rateOk?fmt(rate['2Y'],3)+'% · '+htmlEscape(rate.date)+' · fonte ufficiale':'dato 2Y non attuale')+'</span></article>';
+  };
+  const v3Html=v3Pair&&v3Pair.base===a&&v3Pair.quote===b&&
+   v3Pair.pair_trade_bias===null?
+   '<section class="gmfq-v3-pair" id="gmfq-v3-current-pair-context" data-v3-pair="'+code+'" data-pair-signal="NONE">'+
+   '<h3>Macro V3 · cosa sta cambiando nelle due economie</h3>'+
+   '<div class="gmfq-v3-legs">'+v3Leg(a)+v3Leg(b)+'</div>'+
+   '<p>Periodi economici differenti. I 2Y sono rendimenti governativi, non OIS o decisioni attese. Nessun bias FX è dedotto automaticamente. Fotografia Macro: '+htmlEscape(v3.generated_europe_rome_day)+'; prezzo del modello: '+htmlEscape(setup.price_asof)+'.</p></section>':'';
   const comparison=pairMacroRatesComparison(code,setup.pairs[code],rates,ois,setup.price_asof,macroDay,proxy);
   const changes=pairWhatChangedEvidence(code,setup.pairs[code],rates,setup.price_asof,macroDay);
   const reaction=pairMarketReactionAudit(code,rates,fxOk?fx:null);
@@ -3104,7 +3122,7 @@ async function mountPairResearch(doc){
    (macroDay?(fresh(macroDay,10)?' · DATATA':' · STORICA'):' · WITHHELD')+'</span>'+
    '<span data-source="price"><b>Prezzo del modello:</b> '+htmlEscape(setup.price_asof)+'</span>'+
    '<span data-source="fixing"><b>Fixing BCE:</b> '+htmlEscape(fxDay||'non verificato')+'</span></div>'+
-   decision+
+   decision+v3Html+
    '<details id="gmfq-pair-full-research" class="gmfq-pair-full-research"'+(analysisExpanded?' open':'')+'>'+
    '<summary>Apri analisi completa · Macro/Rates, variazioni 2Y, audit prezzo e fonti</summary>'+
    comparison+changes+reaction+
