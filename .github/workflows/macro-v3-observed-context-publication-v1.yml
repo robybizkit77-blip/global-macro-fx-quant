@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'validation/macro/publish_v3_current_context_v1.py'
+      - 'validation/publishing/verify_pages_http_delivery_v1.py'
+      - 'validation/publishing/test_verify_pages_http_delivery_v1.py'
       - 'validation/macro/v3_current_g8_28pair_economic_evidence_v1.py'
       - 'validation/macro/v3_gdp_q3_official_overlay_v1.py'
       - 'validation/macro/fixtures/v3_gdp_q3_2026_official_web_updates_v1.json'
@@ -16,6 +18,8 @@ on:
       - 'validation/macro/v3_gdp_q3_official_overlay_v1.py'
       - 'validation/macro/fixtures/v3_gdp_q3_2026_official_web_updates_v1.json'
       - 'validation/macro/publish_v3_current_context_v1.py'
+      - 'validation/publishing/verify_pages_http_delivery_v1.py'
+      - 'validation/publishing/test_verify_pages_http_delivery_v1.py'
       - '.github/workflows/macro-v3-observed-context-publication-v1.yml'
   workflow_run:
     workflows: ['Macro Persistent Daily V1']
@@ -48,6 +52,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Public HTTP exact-byte audit regression (stale CDN must fail)
+        run: python validation/publishing/test_verify_pages_http_delivery_v1.py
       - name: Source integrity regression (8 economies and 28 pairs)
         run: |
           python -m unittest validation.macro.test_v3_current_g8_28pair_economic_evidence_v1 -v
@@ -150,10 +156,41 @@ jobs:
             jq -e '.status == "queued" || .status == "building"' <<<"$r" >/dev/null
             echo "MACRO_V3_PAGES_BUILD_EXPLICITLY_QUEUED $TARGET_SHA"
           fi
+      - name: Certify actual public Macro V3 HTTP bytes after Pages build
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from validation.publishing.verify_pages_http_delivery_v1 import BASE_URL, verify
+
+          target = 'site/control-room-preview/macro-v3-current-evidence.json'
+          source = json.loads(Path(target).read_text(encoding='utf-8'))
+          assert source['status'] == 'OBSERVED_ECONOMIC_CONTEXT_NOT_FX_SIGNAL'
+          assert source['summary']['currencies'] == 8
+          assert source['summary']['economic_dimensions'] == 24
+          assert source['summary']['pairs'] == 28
+          assert source['summary']['pair_trade_signals_generated'] == 0
+          report = verify(
+              Path('.'), BASE_URL, (target,),
+              budget_seconds=300, interval_seconds=10, timeout_seconds=12,
+          )
+          Path('/tmp/macro-v3-public-http-delivery-proof.json').write_text(
+              json.dumps(report, indent=2, sort_keys=True) + '\n',
+              encoding='utf-8',
+          )
+          print('MACRO_V3_PUBLIC_HTTP_SHA256', json.dumps(report, sort_keys=True), flush=True)
+          if report['status'] != 'PASS':
+              raise SystemExit('PUBLIC_MACRO_V3_HTTP_DELIVERY_NOT_CERTIFIED')
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: macro-v3-observed-public-receipt-${{ github.run_id }}
-          path: site/control-room-preview/macro-v3-current-evidence.json
+          path: |
+            site/control-room-preview/macro-v3-current-evidence.json
+            /tmp/macro-v3-public-http-delivery-proof.json
           if-no-files-found: warn
           retention-days: 14
