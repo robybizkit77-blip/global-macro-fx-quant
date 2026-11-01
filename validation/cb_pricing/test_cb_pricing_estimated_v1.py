@@ -118,6 +118,34 @@ def main():
     mismatched = parse_quote(offer + bar.replace("95.93", "95.94"), "ZQZ2026", date(2026, 10, 19))
     assert mismatched["quote_timestamp_verified"] is False, mismatched
 
+
+    # ICE official rule: SA3 contract names mark the START of compounded
+    # 3-month SARON accrual, not the final settlement date.
+    from collect_cb_pricing_estimated_live_v1 import saron_window, select_contracts
+    futures = []
+    for contract in ("SA3U2026","SA3Z2026","SA3H2027",
+                     "SA3M2027","SA3U2027","SA3Z2027"):
+        begin, end = saron_window(contract)
+        futures.append({"contract":contract,"symbol":"ICEEUR:"+contract,
+                        "expiration":end, "description":contract})
+    assert saron_window("SA3U2026") == (date(2026,9,16), date(2026,12,15))
+    assert saron_window("SA3Z2026") == (date(2026,12,16), date(2027,3,16))
+    assert saron_window("SA3H2027") == (date(2027,3,17), date(2027,6,15))
+    selected=select_contracts(futures,date(2026,10,30),currency="CHF")
+    assert {h:x["contract"] for h,x in selected.items()} == {
+        "3m":"SA3Z2026","6m":"SA3H2027","12m":"SA3U2027"
+    },selected
+    assert selected["6m"]["accrual_start"] == date(2027,3,17)
+    assert not any(x["contract"]=="SA3U2026" for x in selected.values())
+    misdated=[{**x,"expiration":date(2026,12,1)} if x["contract"]=="SA3H2027"
+              else x for x in futures]
+    assert select_contracts(misdated,date(2026,10,30),currency="CHF")["6m"]["contract"]=="SA3M2027"
+    try:
+        saron_window("SA3V2026")
+        raise AssertionError("monthly/unknown SARON contract accepted")
+    except ValueError:
+        pass
+
     print("CB_PRICING_ESTIMATED_V1: PASS")
 
 
