@@ -25,6 +25,7 @@ on:
       - 'site/control-room-preview/home-navigation-v10.js'
       - 'validation/test_control_room_home_first_read_v1.js'
       - 'validation/test_control_room_home_fx_risk_observations_v1.js'
+      - 'validation/test_control_room_home_commodities_quality_v1.js'
       - 'site/control-room-preview/index.html'
       - '.github/workflows/control-room-v10-public-browser-qa.yml'
   push:
@@ -34,6 +35,7 @@ on:
       - 'site/control-room-preview/home-navigation-v10.js'
       - 'validation/test_control_room_home_first_read_v1.js'
       - 'validation/test_control_room_home_fx_risk_observations_v1.js'
+      - 'validation/test_control_room_home_commodities_quality_v1.js'
       - 'validation/qa_control_room_v10_public.js'
       - 'validation/control_room_public_ois_eligibility_v1.js'
       - 'validation/test_control_room_public_ois_eligibility_v1.js'
@@ -115,6 +117,7 @@ jobs:
           node --check site/control-room-preview/home-navigation-v10.js
           node validation/test_control_room_home_first_read_v1.js
           node validation/test_control_room_home_fx_risk_observations_v1.js
+          node validation/test_control_room_home_commodities_quality_v1.js
           node --check validation/test_control_room_rates_history_calendar_v1.js
           node validation/test_control_room_rates_history_calendar_v1.js
           node --check validation/test_control_room_cot_bce_price_context_v1.js

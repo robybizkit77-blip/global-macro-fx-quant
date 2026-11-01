@@ -444,6 +444,50 @@ function expectedReactionFromMetrics(row){
   }else if(observed.fxState!=='NOT_VERIFIED'||observed.crossState!=='NOT_VERIFIED')
     throw Error(label+' stale fixing was promoted '+JSON.stringify(observed));
   console.log('HOME_FX_VIX_FIRST_READ_390_1440_GREEN',label,JSON.stringify(observed));
+  {
+  // A single compact Home commodity row can contain secondary futures levels,
+  // but must NEVER promote them to physical spot or synchronize old EIA WTI.
+  await page.waitForFunction(()=>{
+    const d=document.getElementById('gmfq-page')?.contentDocument,
+      note=d?.getElementById('gmfq-home-commodity-research');
+    return !!note&&note.dataset.goldState!==undefined&&note.dataset.brentState!==undefined&&
+      note.dataset.wtiState!==undefined;
+  },null,{timeout:25000});
+  const commodity=await page.evaluate(()=>{
+    const d=document.getElementById('gmfq-page').contentDocument,
+      x=d.getElementById('gmfq-home-commodity-research'),
+      root=d.getElementById('gmfq-home-observed-moves');
+    return {exists:!!x,source:x?.dataset.sourceEffect,pair:x?.dataset.pairEffect,
+      gold:x?.dataset.goldState,brent:x?.dataset.brentState,wti:x?.dataset.wtiState,
+      goldDay:x?.dataset.asofGold,brentDay:x?.dataset.asofBrent,wtiDay:x?.dataset.asofWti,
+      text:x?.textContent,scroll:root?.scrollWidth,client:root?.clientWidth};
+  });
+  if(!commodity.exists||commodity.source!=='NONE'||commodity.pair!=='NONE'||
+     commodity.scroll>commodity.client+2||
+     !commodity.text?.includes('Futures secondari ≠ prezzi spot/settlement certificati'))
+    throw Error(label+' Home mixed-instrument disclaimer/layout failed '+JSON.stringify(commodity));
+  const proxies=JSON.parse(fs.readFileSync(path.join(DATA,'ESTIMATED_RESIDUAL_GAPS.json'),'utf8')),
+    risk=JSON.parse(fs.readFileSync(path.join(DATA,'D.json'),'utf8')).risk;
+  const goldCommodityProxy=proxies.lanes['GOLD.market_proxy'],brentCommodityProxy=proxies.lanes['BRENT.market_proxy'];
+  if(current(goldCommodityProxy.proxy_as_of,3)){
+    if(commodity.gold!=='SECONDARY_FUTURES'||commodity.goldDay!==goldCommodityProxy.proxy_as_of||
+       !commodity.text.includes('Oro FUT GC=F')||!commodity.text.includes('(indicativo)'))
+      throw Error(label+' gold futures not source-grade visible '+JSON.stringify(commodity));
+  }else if(commodity.gold!=='NOT_VERIFIED')
+    throw Error(label+' stale gold future promoted '+JSON.stringify(commodity));
+  if(current(brentCommodityProxy.proxy_as_of,3)){
+    if(commodity.brent!=='SECONDARY_FUTURES'||commodity.brentDay!==brentCommodityProxy.proxy_as_of||
+       !commodity.text.includes('Brent FUT BZ=F'))
+      throw Error(label+' Brent futures not source-grade visible '+JSON.stringify(commodity));
+  }else if(commodity.brent!=='NOT_VERIFIED')
+    throw Error(label+' stale Brent future promoted '+JSON.stringify(commodity));
+  if(commodity.wti!=='OFFICIAL_HISTORICAL'||commodity.wtiDay!==risk.WTI.last_date||
+     !commodity.text.includes('WTI SPOT EIA '+risk.WTI.last_date)||
+     !commodity.text.includes('· STORICO'))
+    throw Error(label+' WTI latest EIA spot not honestly dated '+JSON.stringify(commodity));
+  console.log('HOME_COMMODITY_RESEARCH_DATED_390_1440_GREEN',label,JSON.stringify(commodity));
+  }
+
   console.log('HOME_FIRST_READ_SOURCE_HIERARCHY_GREEN',label,JSON.stringify(firstRead));
   console.log(label,JSON.stringify(r));
   const fatal=[];
