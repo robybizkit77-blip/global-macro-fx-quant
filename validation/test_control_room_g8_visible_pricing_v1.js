@@ -16,6 +16,49 @@ const rendered=view(rows);
 assert.equal((rendered.match(/data-chart-ccy="/g)||[]).length,8,
  'All 8 G8 research mini charts must render, even with source grading');
 assert(rendered.includes('data-mini-curves="8"'));
+// Visual source contract: every card shows ALL three maturity slots, explicitly
+// marking absent quotes. Not even a synchronized secondary-futures strip is OIS.
+assert(rendered.includes('data-key="disputed"')&&
+       rendered.includes('data-key="scenario"')&&
+       rendered.includes('Solo GBP è OIS diretta'),
+ 'legend must distinguish OIS, certified futures, indicative, disputed and scenario');
+const expectedType=r=>r.official_ois?'DIRECT_OIS':
+ r.tier==='OFFICIAL'?'OFFICIAL_FUTURES':
+ r.tier==='SCENARIO'?'MODEL_SCENARIO':
+ r.tier==='CONFLICTED'?'CONTESTED_FUTURES':
+ r.tier==='WITHHELD'?'UNAVAILABLE':'INDICATIVE_FUTURES';
+for(const r of rows){
+ const html=rendered.match(new RegExp('<article class="gmfq-mini-curve" data-chart-ccy="'+r.ccy+'"[\\s\\S]*?<\\/article>'))?.[0];
+ assert(html,'missing G8 visual card '+r.ccy);
+ assert(html.includes('data-instrument="'+expectedType(r)+'"'),r.ccy+' instrument provenance');
+ const slots=[...html.matchAll(/data-horizon="(3m|6m|12m)" data-point-state="([^"]+)"/g)];
+ assert.deepEqual(slots.map(x=>x[1]),['3m','6m','12m'],r.ccy+' all three tenor slots visible');
+ const sourceCount=['3m','6m','12m'].filter(t=>Number.isFinite(r.points[t]?.value)).length;
+ assert(html.includes('data-missing-tenors="'+(3-sourceCount)+'"'),
+   r.ccy+' absence must be explicit, not silently omitted');
+ assert.equal(slots.filter(x=>x[2]==='MISSING').length,3-sourceCount,
+   r.ccy+' exactly matched missing 3M/6M/12M labels');
+ const joined=sourceCount===3&&r.tier==='OFFICIAL'&&
+  new Set(Object.values(r.points).map(x=>x.date)).size===1;
+ assert(html.includes('data-joined="'+joined+'"'),r.ccy+' no deceptive secondary-futures connections');
+ if(r.tier==='CONFLICTED'){
+   assert(!html.includes('<path d='),r.ccy+' source conflicts MUST NOT be connected');
+   for(const [t,x] of Object.entries(r.points)){
+     if(x.source_quote_disputed)
+       assert(html.includes('data-horizon="'+t+'" data-point-state="DISPUTED"'),
+         r.ccy+' individually contested tenor must be purple and named');
+   }
+ }
+ if(r.tier==='SCENARIO'){
+   assert(!html.includes('<path d='),'NZD model is not an OIS curve');
+   assert(html.includes('Fascia '),'NZD model should show its uncertainty band per tenor');
+ }
+ if(r.ccy==='CHF'&&sourceCount===1){
+   assert(html.includes('PUNTO ISOLATO, NON CURVA')&&
+          html.includes('data-missing-tenors="2"'),
+    'CHF lone 12M quote must show both missing maturities');
+ }
+}
 for(const r of rows){
  const mark=new RegExp('data-chart-ccy="'+r.ccy+'" data-quality="'+r.tier+'" data-points="3"');
  if(r.tier!=='WITHHELD'&&['3m','6m','12m'].every(t=>r.points[t]?.value!=null))
