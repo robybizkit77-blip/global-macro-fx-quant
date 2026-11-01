@@ -922,8 +922,14 @@ async function mountHomeMarketPulse(doc){
   date.textContent=rows.length?'Rilevazione '+data.content_as_of+' · non intraday':'Nessuna rilevazione recente verificata';
   const bp=v=>(v>0?'+':'')+fmt(v,1)+' bp';
   const largest=rows.reduce((v,x)=>!v||Math.abs(x.one)>Math.abs(v.one)?x:v,null);
-  lead.textContent=largest?('Variazione 1D più ampia tra le '+rows.length+
-    ' fonti disponibili: '+largest.ccy+' '+bp(largest.one)+' ('+largest.horizon+').'):'';
+  // Editorial magnitude disclosure: a sole 0.1 bp print is not evidence of
+  // a broad monetary repricing. This threshold changes copy ONLY, not signals.
+  lead.textContent=largest?(
+    (rows.length===1?'Unica variazione 1D recente certificata: ':
+     'Variazione 1D più ampia tra '+rows.length+' fonti certificate: ')+
+    largest.ccy+' '+bp(largest.one)+' ('+largest.horizon+').'+
+    (Math.abs(largest.one)<1?' Movimento inferiore a 1 bp; nessuna conclusione sul regime da questo solo dato.':'')
+  ):'';
   box.innerHTML=rows.length?rows.map(x=>{
     const dir=v=>v>0?'UP':v<0?'DOWN':'FLAT';
     const opposite=x.one*x.week<0;
