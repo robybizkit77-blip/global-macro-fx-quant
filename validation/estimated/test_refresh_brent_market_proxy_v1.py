@@ -2,7 +2,9 @@
 """Offline source and safety contract for delayed BZ=F Brent futures proxy."""
 import copy
 import datetime as dt
+import json
 import unittest
+from pathlib import Path
 
 from validation.estimated.refresh_brent_market_proxy_v1 import (
     LANE, SYMBOL, BASE_URL, parse_chart, build_output,
@@ -178,6 +180,26 @@ class BrentMarketProxyTests(unittest.TestCase):
         invalid["lanes"][LANE]["same_date_source_vintages"] = [{}] * 25
         with self.assertRaisesRegex(ValueError, "vintage audit"):
             build_output(invalid, revised_rows, meta, STAMP + dt.timedelta(minutes=30))
+
+    def test_backfilled_october_30_source_vintages_are_explicitly_not_returns(self):
+        path = Path(__file__).resolve().parents[2] / "live_data/sections/ESTIMATED_RESIDUAL_GAPS.json"
+        doc = json.loads(path.read_text(encoding="utf-8"))
+        lane = doc["lanes"][LANE]
+        self.assertEqual(lane["vendor_symbol"], SYMBOL)
+        self.assertEqual(lane["proxy_as_of"], "2026-10-30")
+        self.assertEqual(lane["vintage_audit_count"], len(lane["same_date_source_vintages"]))
+        self.assertGreaterEqual(lane["vintage_audit_count"], 1)
+        event = lane["same_date_source_vintages"][0]
+        self.assertEqual(event["market_date"], lane["proxy_as_of"])
+        self.assertEqual(event["prior_value"], 112.33)
+        self.assertEqual(event["new_value"], 113.43)
+        self.assertEqual(event["source_snapshot_commit_before"],
+                         "c5382192ea73e32e559e1f252ed3b0476e1ca513")
+        self.assertEqual(event["source_snapshot_commit_after"],
+                         "2fb6d671d1707eecdafaf037814c6eb1d56502ab")
+        self.assertEqual(lane["value"], event["new_value"])
+        self.assertNotEqual(event["prior_change_1d_pct"], event["new_change_1d_pct"])
+        self.assertIn("not a new market session", event["interpretation"])
 
     def test_friday_close_saturday_catchup_admissible(self):
         rows, _ = parse_chart(fixture(), TODAY + dt.timedelta(days=1))
