@@ -1314,13 +1314,19 @@ function focusCurrency(doc){
 
 /* Restore existing sovereign chart from verified, same-day historical 2Y/10Y pairs. */
 function sovereignHistoryPairs(rates,k){
- const r=rates?.[k],a=r?.history2,b=r?.history10,valid=d=>/^\d{4}-\d{2}-\d{2}$/.test(d||'');
+ const r=rates?.[k],a=r?.history2,b=r?.history10;
+ const valid=d=>/^\d{4}-\d{2}-\d{2}$/.test(d||'');
  if(!r||!String(r.quality||'').includes('OFFICIAL')||!valid(r.date)||
     !Array.isArray(a?.dates)||!Array.isArray(a?.values)||
     !Array.isArray(b?.dates)||!Array.isArray(b?.values)||
     a.dates.length!==a.values.length||b.dates.length!==b.values.length)return [];
- const two=new Map(a.dates.map((d,i)=>[d,num(a.values[i])]));
- const rows=b.dates.map((d,i)=>({d,y2:two.get(d),y10:num(b.values[i])}))
+ // Reuse the validated calendar normalizer already used by Rates research.
+ // Old JPY feed dates like 2025-5-8 MUST not disappear from the actual chart.
+ // Duplicates created by normalization fail closed (never merge yields).
+ const twoHistory=dateHistory(r,'history2'),tenHistory=dateHistory(r,'history10');
+ if(twoHistory.length!==a.dates.length||tenHistory.length!==b.dates.length)return [];
+ const two=new Map(twoHistory.map(x=>[x.date,x.v]));
+ const rows=tenHistory.map(x=>({d:x.date,y2:two.get(x.date),y10:x.v}))
   .filter(x=>valid(x.d)&&x.d<=r.date&&x.y2!==null&&x.y2!==undefined&&
     x.y10!==null&&x.y2>-5&&x.y2<30&&x.y10>-5&&x.y10<30)
   .sort((x,y)=>x.d.localeCompare(y.d));
