@@ -52,6 +52,9 @@ def main():
                 assert "!" not in str(x.get("symbol") or ""), x
         assert built["currencies"]["NZD"]["input_mode"] == "NATIVE_CB_FALLBACK"
         assert built["currencies"]["NZD"]["method_id"] == mod.NATIVE_METHOD_ID
+        assert built["currencies"]["CHF"]["horizons"]["6m"]["raw_level_minus_spot_policy_bp"] == 10.0
+        assert built["currencies"]["CHF"]["horizons"]["12m"]["raw_level_minus_spot_policy_bp"] == 48.0
+        assert built["currencies"]["CHF"]["direction_vs_policy"] == "WITHHELD"
 
     if nzd_proxy is not None:
         nzd = built["currencies"]["NZD"]
@@ -66,9 +69,23 @@ def main():
         assert nzd["horizons"]["3m"]["rate"] == 3.0, nzd
         assert nzd["horizons"]["6m"]["rate"] is None, nzd
         assert nzd["horizons"]["12m"]["rate"] is None, nzd
-        assert nzd["direction_vs_policy"] == "UP", nzd
+        assert nzd["direction_vs_policy"] == "WITHHELD", nzd
+        assert nzd["horizons"]["3m"]["raw_level_minus_spot_policy_bp"] == 25.0
+        assert nzd["horizons"]["3m"]["policy_delta_bp"] is None
+        assert nzd["policy_repricing_inference_allowed"] is False
 
     for ccy, row in built["currencies"].items():
+        assert row["direction_vs_policy"] == "WITHHELD", ccy
+        assert row["policy_repricing_inference_allowed"] is False, ccy
+        assert row["raw_level_gap_scope"] == "DESCRIPTIVE_LEVEL_ARITHMETIC_NOT_EXPECTED_CB_RATE"
+        for tenor in ("3m", "6m", "12m"):
+            x = row["horizons"][tenor]
+            assert x["policy_delta_bp"] is None, (ccy,tenor,x)
+            assert x["raw_level_gap_not_policy_repricing"] is True
+            if x["rate"] is not None and row["policy_rate"] is not None and row["input_mode"] != "LIVE_SECONDARY_CONFLICT_INDICATIVE":
+                assert x["raw_level_minus_spot_policy_bp"] == round((x["rate"] - row["policy_rate"])*100,1)
+            else:
+                assert x["raw_level_minus_spot_policy_bp"] is None
         assert row["official_ois_status"] == "WITHHELD"
         assert row["governance"]["informational_only"] is True
         assert row["governance"]["core_score_effect"] == "NONE"

@@ -7,7 +7,7 @@
       "change_status": "DERIVED_ONLY_FROM_HOMOGENEOUS_SNAPSHOT_HISTORY",
       "confidence_grade": "B",
       "currency": "CHF",
-      "direction_vs_policy": "UP",
+      "direction_vs_policy": "WITHHELD",
       "freshness_status": "LIVE_OR_RECENT_SESSION",
       "governance": {
         "backtest_eligible_as_official_ois": false,
@@ -26,13 +26,15 @@
           "expiration": "2028-03-14",
           "futures_price": 99.52,
           "mapping": "nearest ICE SARON accrual start to today+365d; no interpolation",
-          "policy_delta_bp": 48.0,
+          "policy_delta_bp": null,
           "price_valid_until": "2026-10-30T17:59:52Z",
           "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": 0.48,
-          "symbol": "ICEEUR:SA3Z2027"
+          "symbol": "ICEEUR:SA3Z2027",
+          "raw_level_minus_spot_policy_bp": 48,
+          "raw_level_gap_not_policy_repricing": true
         },
         "3m": {
           "accrual_start": "2026-12-16",
@@ -42,13 +44,15 @@
           "expiration": "2027-03-16",
           "futures_price": 100.025,
           "mapping": "nearest ICE SARON accrual start to today+90d; no interpolation",
-          "policy_delta_bp": -2.5,
+          "policy_delta_bp": null,
           "price_valid_until": "2026-10-30T17:59:52Z",
           "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": -0.025,
-          "symbol": "ICEEUR:SA3Z2026"
+          "symbol": "ICEEUR:SA3Z2026",
+          "raw_level_minus_spot_policy_bp": -2.5,
+          "raw_level_gap_not_policy_repricing": true
         },
         "6m": {
           "accrual_start": "2027-03-17",
@@ -58,14 +62,16 @@
           "expiration": "2027-06-15",
           "futures_price": 99.9,
           "mapping": "nearest ICE SARON accrual start to today+180d; no interpolation",
-          "policy_delta_bp": 10.0,
+          "policy_delta_bp": null,
           "price_valid_until": "2026-10-30T17:59:52Z",
           "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": 0.1,
           "roster_quality": "ICE_LISTED_QUARTER_CALENDAR_DERIVED_UNQUOTED",
-          "symbol": "ICEEUR:SA3H2027"
+          "symbol": "ICEEUR:SA3H2027",
+          "raw_level_minus_spot_policy_bp": 10,
+          "raw_level_gap_not_policy_repricing": true
         }
       },
       "input_mode": "LIVE_SECONDARY_OVERLAY",
@@ -73,11 +79,13 @@
       "method_id": "TRADINGVIEW_DATED_FUTURES_SSR_V2",
       "note": "Indicative dated-futures quote levels only. TradingView Offer.priceValidUntil is not the quote observation timestamp; no freshness, synchronized curve, policy delta or repricing is certified. Never substitute this for OIS.",
       "official_ois_status": "WITHHELD",
-      "policy_rate": 0.0,
+      "policy_rate": 0,
       "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
       "source_quality": "SECONDARY_PUBLIC_LIVE_PROXY",
       "source_url": "https://www.tradingview.com/symbols/ICEEUR-SA31%21/contracts/",
-      "status": "ESTIMATED_ACTIVE"
+      "status": "ESTIMATED_ACTIVE",
+      "policy_repricing_inference_allowed": false,
+      "raw_level_gap_scope": "DESCRIPTIVE_LEVEL_ARITHMETIC_NOT_EXPECTED_CB_RATE"
     },
     "EUR": {
       "as_of": "2026-10-30",
@@ -110,7 +118,9 @@
           "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
           "quote_timestamp_verified": false,
           "rate": 3.1125,
-          "symbol": "EUREX:FST3U2027"
+          "symbol": "EUREX:FST3U2027",
+          "raw_level_minus_spot_policy_bp": null,
+          "raw_level_gap_not_policy_repricing": true
         },
         "3m": {
           "business_day_lag": 0,
@@ -125,7 +135,9 @@
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": 2.5125,
-          "symbol": "EUREX:FST3V2026"
+          "symbol": "EUREX:FST3V2026",
+          "raw_level_minus_spot_policy_bp": null,
+          "raw_level_gap_not_policy_repricing": true
         },
         "6m": {
           "business_day_lag": 0,
@@ -140,7 +152,9 @@
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": 2.8325,
-          "symbol": "EUREX:FST3G2027"
+          "symbol": "EUREX:FST3G2027",
+          "raw_level_minus_spot_policy_bp": null,
+          "raw_level_gap_not_policy_repricing": true
         }
       },
       "input_mode": "LIVE_SECONDARY_CONFLICT_INDICATIVE",
@@ -161,7 +175,9 @@
       "source_conflict_status": "UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT",
       "source_quality": "SECONDARY_CONFLICTED_INDICATIVE_NOT_OIS",
       "source_url": "https://www.tradingview.com/symbols/EUREX-FST31%21/contracts/",
-      "status": "ESTIMATED_ACTIVE"
+      "status": "ESTIMATED_ACTIVE",
+      "policy_repricing_inference_allowed": false,
+      "raw_level_gap_scope": "DESCRIPTIVE_LEVEL_ARITHMETIC_NOT_EXPECTED_CB_RATE"
     },
     "NZD": {
       "as_of": "2026-09-02",
@@ -170,7 +186,7 @@
       "change_status": "DERIVED_ONLY_FROM_HOMOGENEOUS_SNAPSHOT_HISTORY",
       "confidence_grade": "C",
       "currency": "NZD",
-      "direction_vs_policy": "UP",
+      "direction_vs_policy": "WITHHELD",
       "freshness_status": "PARTIAL_VALIDATED",
       "governance": {
         "backtest_eligible_as_official_ois": false,
@@ -183,15 +199,21 @@
       "horizons": {
         "12m": {
           "policy_delta_bp": null,
-          "rate": null
+          "rate": null,
+          "raw_level_minus_spot_policy_bp": null,
+          "raw_level_gap_not_policy_repricing": true
         },
         "3m": {
-          "policy_delta_bp": 25.0,
-          "rate": 3.0
+          "policy_delta_bp": null,
+          "rate": 3,
+          "raw_level_minus_spot_policy_bp": 25,
+          "raw_level_gap_not_policy_repricing": true
         },
         "6m": {
           "policy_delta_bp": null,
-          "rate": null
+          "rate": null,
+          "raw_level_minus_spot_policy_bp": null,
+          "raw_level_gap_not_policy_repricing": true
         }
       },
       "input_mode": "NATIVE_CB_FALLBACK",
@@ -202,8 +224,8 @@
         "confidence_grade": "B_FOR_DIRECTION_C_FOR_POLICY_LEVEL",
         "horizons": {
           "12m": {
-            "change_1d_bp": -6.0,
-            "change_1w_bp": -12.0,
+            "change_1d_bp": -6,
+            "change_1w_bp": -12,
             "expiration": "2027-09-15",
             "expiry_label": "Sep 2027",
             "implied_bank_bill_rate": 4.05,
@@ -213,8 +235,8 @@
             "weekly_reference_trade_date": "2026-10-23"
           },
           "3m": {
-            "change_1d_bp": -6.0,
-            "change_1w_bp": -21.0,
+            "change_1d_bp": -6,
+            "change_1w_bp": -21,
             "expiration": "2027-03-10",
             "expiry_label": "Mar 2027",
             "implied_bank_bill_rate": 3.59,
@@ -224,8 +246,8 @@
             "weekly_reference_trade_date": "2026-10-23"
           },
           "6m": {
-            "change_1d_bp": -6.0,
-            "change_1w_bp": -16.0,
+            "change_1d_bp": -6,
+            "change_1w_bp": -16,
             "expiration": "2027-06-16",
             "expiry_label": "Jun 2027",
             "implied_bank_bill_rate": 3.9,
@@ -251,7 +273,9 @@
       "source": "RBNZ Monetary Policy Statement Sep 2026",
       "source_quality": "PARZIALE_OFFICIAL",
       "source_url": null,
-      "status": "ESTIMATED_PARTIAL"
+      "status": "ESTIMATED_PARTIAL",
+      "policy_repricing_inference_allowed": false,
+      "raw_level_gap_scope": "DESCRIPTIVE_LEVEL_ARITHMETIC_NOT_EXPECTED_CB_RATE"
     },
     "USD": {
       "as_of": "2026-10-30",
@@ -284,7 +308,9 @@
           "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
           "quote_timestamp_verified": false,
           "rate": 4.46,
-          "symbol": "CBOT:ZQV2027"
+          "symbol": "CBOT:ZQV2027",
+          "raw_level_minus_spot_policy_bp": null,
+          "raw_level_gap_not_policy_repricing": true
         },
         "3m": {
           "business_day_lag": 0,
@@ -299,7 +325,9 @@
           "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
           "quote_timestamp_verified": false,
           "rate": 4.01,
-          "symbol": "CBOT:ZQZ2026"
+          "symbol": "CBOT:ZQZ2026",
+          "raw_level_minus_spot_policy_bp": null,
+          "raw_level_gap_not_policy_repricing": true
         },
         "6m": {
           "business_day_lag": 0,
@@ -314,7 +342,9 @@
           "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
           "quote_timestamp_verified": false,
           "rate": 4.28,
-          "symbol": "CBOT:ZQJ2027"
+          "symbol": "CBOT:ZQJ2027",
+          "raw_level_minus_spot_policy_bp": null,
+          "raw_level_gap_not_policy_repricing": true
         }
       },
       "input_mode": "LIVE_SECONDARY_CONFLICT_INDICATIVE",
@@ -347,7 +377,9 @@
       "source_conflict_status": "UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT",
       "source_quality": "SECONDARY_CONFLICTED_INDICATIVE_NOT_OIS",
       "source_url": "https://www.tradingview.com/symbols/CBOT-ZQ1%21/contracts/",
-      "status": "ESTIMATED_ACTIVE"
+      "status": "ESTIMATED_ACTIVE",
+      "policy_repricing_inference_allowed": false,
+      "raw_level_gap_scope": "DESCRIPTIVE_LEVEL_ARITHMETIC_NOT_EXPECTED_CB_RATE"
     }
   },
   "official_ois_runtime_untouched": true,

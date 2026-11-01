@@ -167,22 +167,29 @@ def build_currency(ccy, cb_row, ois_row, live_row=None, directional_proxy=None):
 
     horizons = {}
     for h, rate in vals.items():
+        # 100 - futures price is an average of a listed accrual window, not an
+        # expected policy rate at a specific 3M/6M/12M meeting. The native
+        # NZD secondary fallback is not a direct OIS observation either.
+        # Keep the simple, explicitly descriptive cross-instrument spread;
+        # NEVER promote it into policy_delta_bp or a CB direction signal.
+        descriptive_gap = (
+            round((rate - policy_rate) * 100.0, 1)
+            if not conflicted and rate is not None and policy_rate is not None
+            else None
+        )
         horizons[h] = {
             "rate": rate,
-            "policy_delta_bp": (None if conflicted or rate is None or policy_rate is None
-                                else round((rate - policy_rate) * 100.0, 1)),
+            "policy_delta_bp": None,
+            "raw_level_minus_spot_policy_bp": descriptive_gap,
+            "raw_level_gap_not_policy_repricing": True,
             **horizon_meta[h],
         }
 
-    available_deltas = [x["policy_delta_bp"] for x in horizons.values() if x["policy_delta_bp"] is not None]
-    if not available_deltas:
-        direction = "WITHHELD"
-    elif available_deltas[-1] > 5:
-        direction = "UP"
-    elif available_deltas[-1] < -5:
-        direction = "DOWN"
-    else:
-        direction = "FLAT"
+    # The estimated layer has no supported identification of a policy
+    # reaction function, meeting-dated expected path or contract/OIS basis.
+    # Do not infer hawkish/dovish from the level arithmetic. Underlying
+    # prices and separate verified market-history observations are retained.
+    direction = "WITHHELD"
 
     result = {
         "currency": ccy,
@@ -200,6 +207,8 @@ def build_currency(ccy, cb_row, ois_row, live_row=None, directional_proxy=None):
         "confidence_grade": confidence,
         "horizons": horizons,
         "direction_vs_policy": direction,
+        "policy_repricing_inference_allowed": False,
+        "raw_level_gap_scope": "DESCRIPTIVE_LEVEL_ARITHMETIC_NOT_EXPECTED_CB_RATE",
         "change_1d_bp": None,
         "change_1w_bp": None,
         "change_status": ("CONFLICTED_SECONDARY_NO_REPRICING"
