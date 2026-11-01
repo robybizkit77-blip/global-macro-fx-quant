@@ -81,11 +81,16 @@ class IntegratedBetaDeskTests(unittest.TestCase):
         self.assertTrue({"GBP","JPY","AUD"}.issubset(official))
         self.assertTrue(official.issubset({"GBP","JPY","AUD","CAD"}))
         self.assertEqual({k for k,v in x.items()
-            if v["six_month_source_class"]=="ESTIMATED_POLICY_PRICING_NOT_OFFICIAL"},
+            if v["six_month_source_class"]=="CONFLICTED_FUTURES_6M_CONTEXT_ONLY_NO_POLICY_DELTA"},
             {"USD","EUR"})
+        for c in ("USD","EUR"):
+            self.assertIsNone(x[c]["six_month_policy_delta_bp"])
+            self.assertEqual(
+                x[c]["six_month_rate_pct_descriptive_only"],
+                self.ois["currencies"][c]["horizons"]["6m"]["rate"])
         self.assertEqual(x["CHF"]["six_month_source_class"],
-                         "SECONDARY_NON_OIS_6M_CONTEXT_ONLY")
-        self.assertIsNone(x["CHF"]["six_month_policy_delta_bp"])
+                         "ESTIMATED_POLICY_PRICING_NOT_OFFICIAL")
+        self.assertIsNotNone(x["CHF"]["six_month_policy_delta_bp"])
         self.assertEqual(x["CAD"]["official_current_cb_rate_pct"],2.50)
         self.assertEqual(x["CAD"]["six_month_quote_date"],
                          self.ois["currencies"]["CAD"]["as_of"])
@@ -102,6 +107,49 @@ class IntegratedBetaDeskTests(unittest.TestCase):
         self.assertEqual(x["NZD"]["six_month_source_class"],
                          "BANK_BILL_BASIS_DIRECTIONAL_CONTEXT_ONLY")
         self.assertIsNone(x["NZD"]["six_month_policy_delta_bp"])
+
+    def test_futures_same_day_source_disputes_never_create_policy_deltas(self):
+        for c in ("USD", "EUR"):
+            with self.subTest(ccy=c):
+                row=self.make()["countries"][c]
+                self.assertEqual(row["six_month_source_class"],
+                                 "CONFLICTED_FUTURES_6M_CONTEXT_ONLY_NO_POLICY_DELTA")
+                self.assertIsNone(row["six_month_policy_delta_bp"])
+                self.assertEqual(row["six_month_quote_date"],
+                                 self.ois["currencies"][c]["as_of"])
+                self.assertIsNone(row["trade_signal"])
+                self.assertIsNone(row["FX_strength_score"])
+        for c in ("USD", "EUR"):
+            for label,change in (
+                ("false_policy_delta",lambda p:p["horizons"]["6m"].__setitem__("policy_delta_bp",15)),
+                ("fake_change_1d",lambda p:p["horizons"]["6m"].__setitem__("change_1d_bp",4)),
+                ("fake_change_1w",lambda p:p["horizons"]["6m"].__setitem__("change_1w_bp",-2)),
+                ("false_backtest",lambda p:p.__setitem__("backtest_eligible_as_official",True)),
+                ("false_policy_direction",lambda p:p.__setitem__("direction_vs_policy","UP")),
+                ("forged_event",lambda p:p["source_conflict_keys"][0].__setitem__("event_id","x"*64)),
+                ("wrong_contract",lambda p:p["source_conflict_keys"][0].__setitem__("contract","FAKE")),
+                ("fake_clear_conflict",lambda p:p.__setitem__("source_conflict_keys",[])),
+                ("source_grade_upgrade",lambda p:p.__setitem__("source_quality","OFFICIAL_CERTIFIED")),
+            ):
+                with self.subTest(ccy=c,case=label):
+                    wrong=copy.deepcopy(self.ois)
+                    change(wrong["currencies"][c])
+                    with self.assertRaises(ValueError):
+                        self.make(ois=wrong)
+
+    def test_disputed_six_month_print_unverified_but_healthy_other_tenor_accepted(self):
+        for c in ("USD", "EUR"):
+            p=self.ois["currencies"][c]
+            original=p["horizons"]["6m"]
+            # In the Oct30 source USD 6M is itself conflicted; EUR 6M
+            # is individually verified but another EUR tenor is disputed.
+            required=any(k["horizon"]=="6m" for k in p["source_conflict_keys"])
+            self.assertEqual(original["quote_timestamp_verified"],not required)
+            tampered=copy.deepcopy(self.ois)
+            q=tampered["currencies"][c]["horizons"]["6m"]
+            q["quote_timestamp_verified"]=required
+            with self.assertRaises(ValueError):
+                self.make(ois=tampered)
 
     def test_predecision_mismatch_must_have_strictly_older_ois_quote(self):
         # A same-day 2.25% curve cannot masquerade as a valid quote against
