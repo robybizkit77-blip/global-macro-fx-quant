@@ -3198,7 +3198,7 @@ function macroV3Verified(v,model,therm){
   return ['inflation','labour'].every(k=>{
    const obs=macroThermometerObservation(native[k]),r=row[k];
    const period=native[k]?.frequency==='Q'&&obs?
-    obs.period.slice(0,4)+'Q'+(Math.floor((Number(obs.period.slice(5,7))-1)/3)+1):obs?.period;
+    obs.period.slice(0,4)+'Q'+(Math.floor((Number(obs.period.slice(5,7))-1)/3)+1):obs?.period?.slice(0,7);
    return !!obs&&!!r&&r.series_id===obs.series&&r.observation_period===period&&
     r.observed_history_revised_not_historic_PIT===true&&
     Math.abs(r.observation_value-obs.value)<.00001;
