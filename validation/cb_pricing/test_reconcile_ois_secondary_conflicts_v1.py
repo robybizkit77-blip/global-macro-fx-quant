@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 import json
 import tempfile
+from datetime import date
 from pathlib import Path
 
 from build_cb_pricing_estimated_v1 import build_currency
@@ -32,7 +33,15 @@ for c in ("USD", "EUR", "CHF"):
                       if r["currency"] == c and r["observed_under_horizon"] == h
                       and r["observation_date"] <= "2026-10-30"]
         assert historical, (c, h)
-        a = max(historical, key=lambda v: (v["observation_date"], v["contract"]))
+        # Fixed 31-Oct replay must select the *nearest expiry* to the
+        # specified 90/180/365d test tenor, not the lexicographically latest
+        # contract. New legitimate CHF quotes appended to the 30-Oct archive
+        # must not silently change this historical signed-off fixture.
+        latest_day = max(v["observation_date"] for v in historical)
+        a = min((v for v in historical if v["observation_date"] == latest_day),
+                key=lambda v: (abs((date.fromisoformat(v["expiration"]) -
+                                    date(2026, 10, 31)).days - days),
+                               v["contract"]))
         q = row["horizons"][h]
         q.update({
             "contract": a["contract"], "symbol": a["symbol"],
