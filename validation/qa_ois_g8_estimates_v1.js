@@ -385,6 +385,48 @@ delete partialResearchFixture.find(x=>x.ccy==='EUR').points['6m'];
 const partialMoves=matchedResearchMoves(archive,partialResearchFixture,TODAY);
 assert.equal(partialMoves.length,8);
 assert(!partialMoves.some(x=>x.ccy==='EUR'&&x.tenor==='6m'));
+
+// Conflicts are per (currency, listed contract, day), not per entire currency.
+// Real Oct-30 first-seen bars + append-only conflict ledger demonstrate:
+// USD three disputed => no moves; EUR 12M disputed, EUR 3M/6M clean.
+const signedFull=observedHistory.map(x=>JSON.stringify(x)).join('\n')+'\n';
+const conflictEvents=fs.readFileSync(path.join(root,
+ 'validation/cb_pricing/history/OIS_SAME_CONTRACT_CONFLICTS_V1.jsonl'),'utf8');
+const oct30=(ccy,contract,day='2026-10-30')=>{
+ const v=observedHistory.find(x=>x.currency===ccy&&x.contract===contract&&x.observation_date===day);
+ assert(v,ccy+' '+contract+' '+day+' must exist in immutable archive');
+ return {value:v.implied_rate,date:v.observation_date,contract:v.contract,
+  expires:v.expiration,source_quote_verified:true,source_quote_disputed:false};
+};
+const conflictedLiveRows=[
+ {ccy:'USD',tier:'CONFLICTED',points:{
+  '3m':{...oct30('USD','ZQZ2026'),source_quote_verified:false,source_quote_disputed:true},
+  '6m':{...oct30('USD','ZQJ2027'),source_quote_verified:false,source_quote_disputed:true},
+  '12m':{...oct30('USD','ZQV2027'),source_quote_verified:false,source_quote_disputed:true}}},
+ {ccy:'EUR',tier:'CONFLICTED',points:{
+  '3m':oct30('EUR','FST3V2026'),
+  '6m':oct30('EUR','FST3G2027'),
+  '12m':{...oct30('EUR','FST3U2027'),source_quote_verified:false,source_quote_disputed:true}}},
+ {ccy:'CHF',tier:'CONFLICTED',points:{'3m':{...oct30('CHF','SA3U2026'),
+  source_quote_verified:false,source_quote_disputed:true}}}
+];
+const recovered=matchedResearchMoves(signedFull,conflictedLiveRows,'2026-11-01',conflictEvents);
+assert.equal(recovered.filter(x=>x.ccy==='USD').length,0);
+assert.equal(recovered.filter(x=>x.ccy==='EUR').length,2,JSON.stringify(recovered));
+assert.equal(recovered.find(x=>x.ccy==='EUR'&&x.tenor==='3m').delta_bp,0);
+assert.equal(recovered.find(x=>x.ccy==='EUR'&&x.tenor==='6m').delta_bp,-0.25);
+assert(!recovered.some(x=>x.ccy==='EUR'&&x.tenor==='12m'));
+assert(recovered.every(x=>x.official_ois===false&&x.policy_delta_allowed===false));
+assert.deepEqual(matchedResearchMoves(signedFull,conflictedLiveRows,'2026-11-01',null),[],
+ 'missing quarantine ledger must fail closed');
+assert.deepEqual(matchedResearchMoves(signedFull,conflictedLiveRows,'2026-11-01',
+ conflictEvents.replace('"resolution": null','"resolution": "PROMOTED"')),[],
+ 'malformed/untrusted quarantine ledger cannot authorize market moves');
+const spoofCurrent=structuredClone(conflictedLiveRows);
+spoofCurrent[1].points['6m'].source_quote_verified=false;
+assert(!matchedResearchMoves(signedFull,spoofCurrent,'2026-11-01',conflictEvents)
+ .some(x=>x.ccy==='EUR'&&x.tenor==='6m'));
+
 const absent=view(result,[]);
 assert(absent.includes('osservazioni confrontabili non disponibili'));
 
