@@ -8,13 +8,20 @@ on:
       - chf-residual-proxy-refresh-v1-2026-10-15
     paths:
       - validation/estimated/refresh_chf_residual_proxies_v1.py
-      - live_data/sections/ESTIMATED_RESIDUAL_GAPS.json
+      # Changes written by OTHER producers are not new observations for this source.
+      # Scheduled/manual refresh continues independently; no self-trigger cascade.
       - .github/workflows/chf-residual-proxy-refresh-v1.yml
   schedule:
     - cron: '35 06 * * 1-5'
 
 permissions:
   contents: write
+
+# One shared file is written by four independent producers; never overlap their commits.
+concurrency:
+  group: residual-proxy-shared-writers-v1
+  queue: max
+  cancel-in-progress: false
 
 jobs:
   refresh:
