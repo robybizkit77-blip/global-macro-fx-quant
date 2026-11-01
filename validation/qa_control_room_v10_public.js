@@ -1145,6 +1145,20 @@ async function getState(page){
            d.querySelectorAll('#pair-index button.pair-open[data-pair]').length===28&&
            d.getElementById('gmfq-pair-research-path')?.dataset.pair===code;
        },homePair,{timeout:35000});
+       if(navigationVersion==='home-macro-v3-evidence-20261101'){
+         const v3Pair=await page.evaluate(code=>{
+           const d=document.getElementById('gmfq-page')?.contentDocument;
+           const p=d?.getElementById('gmfq-v3-current-pair-context');
+           return {pair:p?.dataset.v3Pair,signal:p?.dataset.pairSignal,
+             rows:p?.querySelectorAll('.gmfq-v3-legs article').length,
+             text:p?.textContent||''};
+         },homePair);
+         if(v3Pair.pair!==homePair||v3Pair.signal!=='NONE'||
+            v3Pair.rows!==2||!v3Pair.text.includes('Rendimento 2Y')||
+            !v3Pair.text.includes('Nessun bias FX'))
+           throw Error(name+' PUBLIC_V3_PAIR_MACRO_RATES_STUDY_INVALID '+JSON.stringify(v3Pair));
+         console.log('CONTROL_ROOM_PUBLIC_MACRO_V3_24_AXES_28_PAIR_SOURCE_READOUT_PASS',name);
+       }
        if(['pairs-explained-ranking-20261022','pairs-focus-eight-20261022','pairs-first-risk-check-20261023','pairs-top8-overlap-20261023','pairs-dense-first-read-20261023','home-nzd-b2-web-reviewed-20261023','home-nzd-b2-pair-zero-gates-20261024','home-morning-clock-verified-20261024'].includes(navigationVersion)){
          await page.waitForFunction(()=>{
            const d=document.getElementById('gmfq-page')?.contentDocument,p=d?.getElementById('gmfq-pair-rank');
@@ -1584,6 +1598,25 @@ async function getState(page){
          const d=document.getElementById('gmfq-page')?.contentDocument;
          return d?.getElementById('gmfq-macro-source-lens')?.dataset.auditStatus==='READ_ONLY';
        },null,{timeout:25000});
+       if(navigationVersion==='home-macro-v3-evidence-20261101'){
+         let visible=false;
+         for(let attempt=0;attempt<12;attempt++){
+           visible=await page.evaluate(()=>{
+             const d=document.getElementById('gmfq-page')?.contentDocument;
+             const p=d?.getElementById('gmfq-macro-source-lens');
+             return p?.dataset.v3ObservedCount==='24'&&p?.dataset.v3PairContexts==='28';
+           });
+           if(visible)break;
+           await page.waitForTimeout(4000);
+           await page.goto(BASE+'?v3-evidence='+Date.now()+'-'+attempt+'#/macro?ccy=EUR',
+             {waitUntil:'domcontentloaded',timeout:120000});
+           await page.waitForFunction(()=>{
+             const d=document.getElementById('gmfq-page')?.contentDocument;
+             return d?.getElementById('gmfq-macro-source-lens')?.dataset.auditStatus==='READ_ONLY';
+           },null,{timeout:25000});
+         }
+         if(!visible)throw Error(name+' PUBLIC_MACRO_V3_24_28_NOT_ON_SITE');
+       }
        const macroFirst=await page.evaluate(()=>{
          const d=document.getElementById('gmfq-page')?.contentDocument;
          const panel=d.getElementById('gmfq-macro-source-lens');
@@ -1602,6 +1635,10 @@ async function getState(page){
            hidden:![...panel.querySelectorAll('.gmfq-macro-observation')].some(x=>x.getClientRects().length>0),
            count:panel.querySelectorAll('.gmfq-macro-observation').length,
            observedCount:panel.dataset.observedStudyCount,
+           v3ObservedCount:panel.dataset.v3ObservedCount,
+           v3Pairs:panel.dataset.v3PairContexts,
+           v3Headline:panel.querySelector('#gmfq-macro-v3-summary')?.textContent,
+           v3Growth:panel.querySelector('[data-v3-growth]')?.dataset.v3Growth,
            overviewCount:panel.querySelector('#gmfq-macro-g8-study')?.dataset.observationCount,
            overviewRows:[...panel.querySelectorAll('#gmfq-macro-g8-study [data-g8-ccy]')].map(x=>({
              ccy:x.dataset.g8Ccy,inflation:x.dataset.inflationStatus,
@@ -1623,7 +1660,10 @@ async function getState(page){
        if(!macroFirst.baseline||!studyValid||
           !macroFirst.priority?.startsWith('Gli score sono uno snapshot del modello')||
            !macroFirst.priorityFirst||
-           !macroFirst.closed||!macroFirst.hidden||macroFirst.count!==2||
+           !macroFirst.closed||!macroFirst.hidden||macroFirst.count!==(navigationVersion==='home-macro-v3-evidence-20261101'?3:2)||
+          (navigationVersion==='home-macro-v3-evidence-20261101'&&
+            (macroFirst.v3ObservedCount!=='24'||macroFirst.v3Pairs!=='28'||
+             !macroFirst.v3Headline?.includes('28 confronti')||!macroFirst.v3Growth))||
           macroFirst.width>macroFirst.viewport+16)
          throw Error(name+' public Macro reading not deployed '+JSON.stringify(macroFirst));
        if(navigationVersion==='macro-observed-dynamics-20261022'){
