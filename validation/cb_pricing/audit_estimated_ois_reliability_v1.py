@@ -89,12 +89,37 @@ def futures_evidence(rows: list[dict], ccy: str) -> dict:
     by_contract = defaultdict(list)
     for r in selected:
         by_contract[r["contract"]].append(r)
-    changes, excluded_gap = [], 0
+    changes, excluded_gap, excluded_horizon_remap = [], 0, 0
     for contract, contract_rows in sorted(by_contract.items()):
         s = sorted(contract_rows, key=lambda x: x["_date"])
-        require(len({x["observed_under_horizon"] for x in s}) == 1,
-                ccy + ": contract changed horizon label; no roll comparison")
+        horizons = {x["observed_under_horizon"] for x in s}
+        if len(horizons) > 1:
+            # The verified Nov-2026 SARON methodological correction switched
+            # from final-settlement tenor labels to accrual-start tenor
+            # labels. Do not compare prices *as 3M/6M/12M changes* across this
+            # boundary even for an identical listed contract. All unexpected
+            # mapping changes still fail closed (USD/EUR, tampered CHF, etc).
+            from validation.cb_pricing.collect_cb_pricing_estimated_live_v1 import saron_window
+            start, expiry = saron_window(contract) if ccy == "CHF" else (None, None)
+            pivot = next(i for i,x in enumerate(s)
+                         if x["observed_under_horizon"] != s[0]["observed_under_horizon"])
+            before, after = s[:pivot], s[pivot:]
+            require(ccy == "CHF" and contract.startswith("SA3") and
+                    len(horizons) == 2 and before and after and
+                    len({x["observed_under_horizon"] for x in before}) == 1 and
+                    len({x["observed_under_horizon"] for x in after}) == 1 and
+                    all(x["_first_seen"].date() < date(2026,11,1) for x in before) and
+                    all(x["_first_seen"].date() >= date(2026,11,1) for x in after) and
+                    all(x["expiration"] == expiry.isoformat() for x in s) and
+                    all(start > x["_date"] for x in after) and
+                    all(abs((start - x["_first_seen"].date()).days -
+                         {"3m":90,"6m":180,"12m":365}[x["observed_under_horizon"]]) <= 50
+                        for x in after),
+                    ccy + ": contract changed horizon label; no roll comparison")
         for old, new in zip(s, s[1:]):
+            if old["observed_under_horizon"] != new["observed_under_horizon"]:
+                excluded_horizon_remap += 1
+                continue
             gap = (new["_date"] - old["_date"]).days
             if not 1 <= gap <= 7:
                 excluded_gap += 1
@@ -130,6 +155,7 @@ def futures_evidence(rows: list[dict], ccy: str) -> dict:
         "first_seen_lag_days_max": max((r["_first_seen"].date() - r["_date"]).days for r in selected),
         "same_contract_valid_move_count": len(changes),
         "same_contract_excluded_gap_count": excluded_gap,
+        "same_contract_excluded_horizon_remap_count": excluded_horizon_remap,
         "same_contract_changes": changes,
         "horizons": by_tenor,
         "same_contract_moves_are_NOT_predicted_OIS_direction": True,
