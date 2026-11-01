@@ -606,7 +606,7 @@ function matchedResearchHtml(moves){
   currencies.map(ccy=>'<div role="row" class="gmfq-same-line" data-same-ccy="'+ccy+'">'+
    '<div><strong>'+flags[ccy]+' '+ccy+'</strong></div>'+
    terms.map(t=>td(ccy,t)).join('')+'</div>').join('')+'</div>'+
-  '<small>Solo contratti verificati e giorni privi di contestazioni: un conflitto su un’altra scadenza non annulla questi confronti. Un contratto contestato resta non confrontabile. Variazioni dello <b>stesso futures</b>, non ΔOIS ufficiali, curve sincronizzate o segnali FX.</small></section>';
+  '<small>Solo contratti verificati e giorni privi di contestazioni: un conflitto su un’altra scadenza non annulla questi confronti. Un contratto contestato resta non confrontabile. Sono variazioni dello <b>stesso futures</b>. Non sono ΔOIS ufficiali, curve sincronizzate o segnali FX.</small></section>';
 }
 /* A research visual, not an OIS curve: mixed-date futures are unjoined. */
 function miniCharts(rows){
