@@ -7,6 +7,9 @@ on:
       - 'validation/macro/v3_current_g8_28pair_economic_evidence_v1.py'
       - 'validation/macro/test_v3_current_g8_28pair_economic_evidence_v1.py'
       - 'validation/macro/v2_g8_observed_feature_bridge_v1.py'
+      - 'validation/macro/v2_g8_quarterly_gdp_web_release_ledger_v1.py'
+      - 'validation/macro/fixtures/v2_g8_quarterly_gdp_q2_2026_web_release_ledger_v1.json'
+      - 'validation/macro/test_v2_g8_quarterly_gdp_web_release_ledger_v1.py'
       - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
       - 'live_data/sections/MACRO_SERIES.json'
       - 'live_data/sections/D.json'
@@ -26,7 +29,9 @@ jobs:
         with:
           python-version: '3.12'
       - name: Test 24 observed source values, 8 economies and 28 pair contexts
-        run: python -m unittest validation.macro.test_v3_current_g8_28pair_economic_evidence_v1 -v
+        run: |
+          python -m unittest validation.macro.test_v2_g8_quarterly_gdp_web_release_ledger_v1 -v
+          python -m unittest validation.macro.test_v3_current_g8_28pair_economic_evidence_v1 -v
       - name: Replay current observed Macro evidence against official source references
         run: |
           set -euo pipefail
