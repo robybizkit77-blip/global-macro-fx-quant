@@ -1,6 +1,12 @@
 name: Brent Market Proxy Refresh V1
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - validation/estimated/refresh_brent_market_proxy_v1.py
+      - validation/estimated/test_refresh_brent_market_proxy_v1.py
+      - .github/workflows/brent-market-proxy-refresh-v1.yml
   workflow_dispatch:
   push:
     branches:
@@ -8,6 +14,7 @@ on:
       - brent-live-market-proxy-v1-2026-10-15
     paths:
       - validation/estimated/refresh_brent_market_proxy_v1.py
+      - validation/estimated/test_refresh_brent_market_proxy_v1.py
       - live_data/sections/ESTIMATED_RESIDUAL_GAPS.json
       - .github/workflows/brent-market-proxy-refresh-v1.yml
   schedule:
@@ -22,19 +29,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.ref_name }}
           fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
+      - name: Prove BZ=F source identity, source clock and fail-closed governance
+        run: python -m unittest validation.estimated.test_refresh_brent_market_proxy_v1 -v
+
       - name: Refresh Brent secondary market proxy
+        if: github.event_name != 'pull_request'
         run: |
           set -euo pipefail
           python validation/estimated/refresh_brent_market_proxy_v1.py
 
       - name: Validate governance and output
+        if: github.event_name != 'pull_request'
         run: |
           python - <<'PY'
           import json
@@ -47,7 +59,9 @@ jobs:
           assert lane['value'] is not None and lane['value']>0
           assert lane['change_1d_pct'] is not None
           assert lane['official_canonical_untouched'] is True
-          assert lane['vendor_symbol']=='BZ=F'
+          assert lane['vendor_symbol']=='BZ=F' and lane['instrument_type']=='FUTURE'
+          assert lane['currency']=='USD'
+          assert lane['source_endpoint']=='https://query1.finance.yahoo.com/v8/finance/chart/BZ=F'
           assert 'Yahoo Finance' in lane['source']
           gov=d['governance']
           assert gov['core_score_effect']=='NONE'
@@ -60,7 +74,7 @@ jobs:
           PY
 
       - name: Persist changed proxy on main only
-        if: github.ref_name == 'main'
+        if: github.event_name != 'pull_request' && github.ref_name == 'main'
         run: |
           set -euo pipefail
           changed="$(git diff --name-only -- live_data/sections/ESTIMATED_RESIDUAL_GAPS.json)"
