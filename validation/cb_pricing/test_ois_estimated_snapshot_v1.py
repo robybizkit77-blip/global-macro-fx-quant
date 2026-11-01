@@ -65,32 +65,57 @@ if estimated:
     assert r['change_1w_available'] is False, r
     assert all(x['change_1d_bp'] is None and x['change_1w_bp'] is None for x in r['horizon_changes'].values()), r
 
-    # A same-method intraday snapshot must NOT be mislabeled as 1D.
-    intraday = json.loads(json.dumps(base_row))
-    intraday['horizons']['3m']['rate'] = float(base_row['horizons']['3m']['rate']) - 0.02
-    intraday_record = make_record(focus, intraday, '2026-10-15T01:00:00Z')
-    r = _estimated_repricing(focus, base_row, [intraday_record, live_record])
-    assert r['previous_reference'] is None, r
-    assert r['change_1d_available'] is False, r
-    assert r['horizon_changes']['3m']['change_1d_bp'] is None, r
-
-    # Once a prior-session same-method V2 snapshot exists, 1D becomes legal.
+    # A data-snapshot comparison cannot prove a futures repricing: historical
+    # payloads omit listed contract identity, and capture time != quote day.
     prior_live = json.loads(json.dumps(base_row))
     prior_live['horizons']['3m']['rate'] = float(base_row['horizons']['3m']['rate']) - 0.01
-    prior_live_record = make_record(focus, prior_live, '2026-10-14T09:00:00Z')
-    r = _estimated_repricing(focus, base_row, [legacy_record, prior_live_record, intraday_record, live_record])
-    assert r['previous_reference'] == '2026-10-14T09:00:00Z', r
-    assert r['change_1d_available'] is True, r
-    assert r['horizon_changes']['3m']['change_1d_bp'] == 1.0, r
+    intraday = json.loads(json.dumps(base_row))
+    intraday['horizons']['3m']['rate'] = float(base_row['horizons']['3m']['rate']) - 0.02
+    historic_week = json.loads(json.dumps(base_row))
+    historic_week['horizons']['3m']['rate'] = float(base_row['horizons']['3m']['rate']) - 0.03
+    snapshots = [
+        make_record(focus, historic_week, '2026-10-10T08:00:00Z'),
+        make_record(focus, prior_live, '2026-10-14T09:00:00Z'),
+        make_record(focus, intraday, '2026-10-15T01:00:00Z'),
+        live_record,
+    ]
+    r = _estimated_repricing(focus, base_row, snapshots)
+    assert r['previous_reference'] is None and r['weekly_reference'] is None, r
+    assert r['change_1d_available'] is False and r['change_1w_available'] is False, r
+    assert all(x['change_1d_bp'] is None and x['change_1w_bp'] is None
+               for x in r['horizon_changes'].values()), r
 
-    # Weekly repricing remains unavailable until a same-method observation is >=5 days old.
-    week_row = json.loads(json.dumps(base_row))
-    week_row['horizons']['3m']['rate'] = float(base_row['horizons']['3m']['rate']) - 0.03
-    week_record = make_record(focus, week_row, '2026-10-10T08:00:00Z')
-    r = _estimated_repricing(focus, base_row, [week_record, prior_live_record, live_record])
-    assert r['weekly_reference'] == '2026-10-10T08:00:00Z', r
-    assert r['change_1w_available'] is True, r
-    assert r['horizon_changes']['3m']['change_1w_bp'] == 3.0, r
+    # Monday 2 Nov: a clean future capture must NOT make a misleading 1D
+    # comparison to Fri 30 Oct or Thu 29 Oct, or a 1W historical snapshot.
+    monday = json.loads(json.dumps(base_row))
+    monday['as_of'] = '2026-11-02'
+    monday['horizons']['6m']['rate'] = float(monday['horizons']['6m']['rate']) + 0.07
+    monday_now = make_record(focus, monday, '2026-11-02T20:15:00Z')
+    friday = json.loads(json.dumps(base_row))
+    friday['as_of'] = '2026-10-30'
+    friday['horizons']['6m']['rate'] = float(friday['horizons']['6m']['rate']) - 0.03
+    friday_old = make_record(focus, friday, '2026-10-30T20:15:00Z')
+    thursday = json.loads(json.dumps(base_row))
+    thursday['as_of'] = '2026-10-29'
+    thursday_old = make_record(focus, thursday, '2026-10-29T20:15:00Z')
+    r = _estimated_repricing(focus, monday, [thursday_old, friday_old, monday_now])
+    assert r['previous_reference'] is None and r['weekly_reference'] is None, r
+    assert not r['change_1d_available'] and not r['change_1w_available'], r
+    assert all(q['change_1d_bp'] is None and q['change_1w_bp'] is None
+               for q in r['horizon_changes'].values()), r
+
+    # Historical native-CB estimates remain on their pre-existing method;
+    # prevent an unrelated backwards-incompatible governance change.
+    native = json.loads(json.dumps(base_row))
+    native['method_id'] = 'NATIVE_CB_ESTIMATED_V1'
+    native['source'] = 'Native CB informational snapshot'
+    previous_native = json.loads(json.dumps(native))
+    previous_native['horizons']['3m']['rate'] -= 0.01
+    previous_record = make_record(focus, previous_native, '2026-10-14T09:00:00Z')
+    current_record = make_record(focus, native, '2026-10-15T08:00:00Z')
+    native_result = _estimated_repricing(focus, native, [previous_record,current_record])
+    assert native_result['change_1d_available'] is True, native_result
+    assert native_result['horizon_changes']['3m']['change_1d_bp'] == 1.0, native_result
 
 else:
     with tempfile.TemporaryDirectory() as td:

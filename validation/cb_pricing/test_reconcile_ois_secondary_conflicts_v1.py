@@ -12,7 +12,7 @@ from ois_same_contract_history_v1 import (
     SOURCE, HISTORY, append_verified, candidates, load_history, record_key,
 )
 from reconcile_ois_secondary_conflicts_v1 import (
-    STATUS, apply, read_conflicts,
+    STATUS, CONFLICTS, apply, read_conflicts,
 )
 
 # Use original immutable October source bars, not the moving latest-live quotes.
@@ -194,6 +194,65 @@ with tempfile.TemporaryDirectory() as td:
     except ValueError:
         pass
     assert archive.read_bytes() == frozen_archive
+
+
+# Nov 2 synthetic new-day source audit: old Oct 30 contract/day disputes
+# must persist in the append-only journal, but cannot poison fresh verified
+# quotes solely because their *contract* is the same. No market prices forged:
+# this is a deterministic governance fixture, not an actual Nov 2 quote.
+from datetime import date as _date
+from reconcile_ois_secondary_conflicts_v1 import (
+    reconcile as _reconcile, validate_conflict_lineage as _validate_lineage,
+)
+clean_monday = copy.deepcopy(template)
+clean_monday['generated_at_utc'] = '2026-11-02T20:15:00Z'
+for c in ('USD', 'EUR', 'CHF'):
+    entry = clean_monday['currencies'][c]
+    entry.pop('source_conflict_status', None)
+    entry.pop('source_conflict_keys', None)
+    entry['status'] = 'LIVE_SECONDARY_INDICATIVE_ONLY'
+    entry['source_quality'] = 'SECONDARY_PUBLIC_LIVE_PROXY'
+    entry['freshness_status'] = 'LIVE_OR_RECENT_SESSION'
+    for h, days in (('3m', 90),('6m', 180),('12m',365)):
+        q = entry['horizons'][h]
+        q['quote_as_of'] = '2026-11-02'
+        # Use exact archived price/contract, *only as a synthetic new-day
+        # source identity fixture*. The tests do not claim any Nov 2 price.
+        q['quote_timestamp_verified'] = True
+        q['quote_timestamp_source'] = 'SSR_DAILY_BAR_DATA_UPDATE_TIME'
+        q['mapping'] = f'nearest dated listed contract expiry to today+{days}d; no interpolation'
+        expiry_gap = (_date.fromisoformat(q['expiration']) - _date(2026,11,2)).days - days
+        if abs(expiry_gap) > 45:
+            q['quote_timestamp_verified'] = False
+            q['quote_timestamp_source'] = 'UNVERIFIED'
+
+archival = load_history(HISTORY)
+previous_events = read_conflicts(CONFLICTS)
+assert len(previous_events) >= 4, 'missing October conflict ledger'
+old_keys = {tuple(e['key']) for e in previous_events}
+assert ('USD','ZQZ2026','2026-10-30') in old_keys
+assert ('EUR','FST3U2027','2026-10-30') in old_keys
+_evidence = _validate_lineage(clean_monday, archival, previous_events)
+assert _evidence['journal_events_validated'] == len(previous_events)
+assert _evidence['current_quarantine_horizons_verified'] == 0
+new_feed, new_events, receipt = _reconcile(clean_monday, archival, previous_events)
+assert receipt['status'] == 'PASS_NO_SAME_DAY_SOURCE_CONFLICT', receipt
+assert receipt['new_quarantine_events'] == 0 and not new_events, receipt
+assert receipt['conflict_currencies'] == [] and receipt['market_repricing_from_conflicts'] is False
+assert all('source_conflict_status' not in new_feed['currencies'][c]
+           for c in ('USD', 'EUR', 'CHF'))
+with tempfile.TemporaryDirectory() as td:
+    scratch = Path(td)/'new_session_quotes.jsonl'
+    scratch.write_text(HISTORY.read_text(encoding='utf-8'), encoding='utf-8')
+    result = append_verified(new_feed, scratch, write=True)
+    assert result['written'] >= 1, result
+    stored = load_history(scratch)
+    assert all(any(row['currency'] == k[0] and row['contract'] == k[1]
+                   and row['observation_date'] == k[2] for row in stored)
+               for k in old_keys)
+    assert any(row['observation_date'] == '2026-11-02' for row in stored)
+assert len(read_conflicts(CONFLICTS)) == len(previous_events)
+print('OIS_NEW_SESSION_ROLLOVER_QUARANTINE_PRESERVED_PASS')
 
 print("OIS_SECONDARY_CONFLICT_QUARANTINE_V1_PASS: immutable first quote, "
       "later source quarantined, 8 unaffected bars, no duplicate or repricing")
