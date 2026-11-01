@@ -3,7 +3,7 @@
   "basis_warning": "Bank-bill/FRA rates contain bank-credit and term/basis components. Do not treat these levels as OCR OIS and do not compute OCR policy deltas from them.",
   "confidence_grade": "B_FOR_DIRECTION_C_FOR_POLICY_LEVEL",
   "currency": "NZD",
-  "generated_at_utc": "2026-11-01T17:59:12.040846Z",
+  "generated_at_utc": "2026-11-01T18:53:05.654317Z",
   "governance": {
     "backtest_eligible_as_official_ois": false,
     "bias_effect": "NONE",
