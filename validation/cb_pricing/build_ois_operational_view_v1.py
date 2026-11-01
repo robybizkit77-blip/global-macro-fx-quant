@@ -97,6 +97,14 @@ def _secondary_verified_quotes(ccy: str, live: dict, today):
 
 def _estimated_repricing(ccy: str, row: dict, history: list[dict]):
     current_method = method_id(row)
+    # Dated futures SSR snapshots record only 3m/6m/12m *rates* and their
+    # capture clock, not the precise listed contract in each stored snapshot.
+    # A previous snapshot >=18h old is NOT necessarily the prior trading
+    # session, and a tenor label can roll between contracts. It is therefore
+    # impossible to derive trustworthy 1D/1W OIS repricing from this archive.
+    # Research-only SAME-CONTRACT movements use the separate immutable archive.
+    if current_method == 'TRADINGVIEW_DATED_FUTURES_SSR_V2':
+        return _empty_repricing()
     rows = [
         x for x in history
         if x.get('currency') == ccy and method_id(x) == current_method
