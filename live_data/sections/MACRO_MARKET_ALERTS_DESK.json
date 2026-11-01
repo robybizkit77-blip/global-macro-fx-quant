@@ -1,8 +1,36 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-10-31T23:25:49Z",
+  "generated_at_utc": "2026-11-01T13:31:40Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-62ffc73d37b6f955fcd2",
+      "observed_at_utc": "2026-11-01T09:42:11Z",
+      "headline": "OPEC+ set to keep oil output targets steady, sources say",
+      "summary": "Reuters riporta: OPEC+ set to keep oil output targets steady, sources say. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "COMMODITIES",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxNMVRNX1Y5b0xXX3dlMU1QX2lRbVkxbkJYSU9SUVdxUFlXQ2hGcjRpRlVIbklCeTlZa1d2VnNOQWFaaVN0NHJVcnJSRVhUSngyVmcxdzlsZVpwSm1wbmduTGpNbXkwWEhKbGZQdURzZ0c0UHl2S28zLUxjbDdSUkdzZTFnMmtubVlvbmFVMHlsX3BvOVpLa2NqcWozZTJUWlhnUWUxYXFn?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-eec3f62b89e864c12637",
+      "observed_at_utc": "2026-11-01T09:15:15Z",
+      "headline": "Stocks gain as Fed official backs quarter-point hike",
+      "summary": "Reuters riporta: Stocks gain as Fed official backs quarter-point hike. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiZ0FVX3lxTE1EemRIeUxQaTBjVndZZ0ZRbGpUSzNJa2hJZHhpUHVDUFVWdVhweTN4eUFIdG04QTZrNG1ldzZCMmdPeVNQTEFUYU83UEZiYVRNNGdwUHlVcmFkOFVFVzAtSUFNM1g5NHc?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-c194aedead3fdf86012a",
       "observed_at_utc": "2026-10-30T19:39:07Z",
@@ -1394,35 +1422,6 @@
       "related_pairs": [],
       "source_label": "AP News · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxNOGVDbFMzWWNkWEw1NzNQRUJLek52UWF2ZUh1dDVXM2FHNXhYekVEOUpNejc5djNNX0hTWDZiLVpaWUNnaGZ6b29iMS0wNHM0M0Y1eG9MdC1yVUVpTV9QbDlieDVrS3NLemIzTFdPOHFRTG1JSEpzbEc5MFR2aUhRMmFpSGJaZDJRV1d6bW1hUlVJUDdUSkFkMg?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-0f2dc78c69c78610c365",
-      "observed_at_utc": "2026-10-26T11:25:43Z",
-      "headline": "Trend hedge funds saw worst week since 2024 as AI stocks fell, Goldman says",
-      "summary": "Reuters riporta: Trend hedge funds saw worst week since 2024 as AI stocks fell, Goldman says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxNaXVkNFhCYXZGZWdiZXZLTHFHMnJoN1VHWlc5QWNRSTcwRThfV2lvejJsdDdzbzE3S09XVzVneWJOVmJTSWJRRFliSVNFTzc2TEJxYlZKZ2tEVTM1dG5OR2h6MkVFUE9OM04yY1Jjd3B2VUVXSmtsTjMxQzUtd2JfZy1JbVBpYmg5bHR6Tm1PQzBrdWxkbWV1MjFfTkdlYlozSXlfaWt2X3UxUl9BV0tkN3kyNW5HeXZRREVmcEdwWQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-d7185d28da89e7314dca",
-      "observed_at_utc": "2026-10-26T11:00:49Z",
-      "headline": "European stocks rebound as investors eye ECB, Fed meetings",
-      "summary": "Reuters riporta: European stocks rebound as investors eye ECB, Fed meetings. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD",
-        "EUR"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPNTNqT1RkY0RsU1oyTkpOUHNVR3V3eDNUckxOSV9QeW1JelM3TjhzTjJ5NmJkcl8tMXFOOVJjVlJhMEtaSmI2RjNqV2VwbW93RWlRanFHZjJJTVg4Qi1jQmQ2ekRpZU1tZzk1Y1BEZDVYNlVzblNtV2loeFkzSHZQWFdTdUFXMjkxSHozRENYZWp3cXBzQ3ZPRTZDaGRrRGNOZzVF?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
