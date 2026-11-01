@@ -143,9 +143,54 @@ def saron_window(contract: str) -> tuple[date, date]:
     return start, end
 
 
+def recover_chf_ice_quarters(rows: list[dict]) -> list[dict]:
+    """Recover missing *identity metadata* between two listed ICE SARON quarters.
+
+    TradingView SSR can omit one contract from the strict name/expiry parser
+    even when ICE lists the consecutive quarterly months. ICE defines the
+    quarter code, accrual start and last trading day; no quote, level or
+    timestamp is ever inferred here. The subsequently fetched dedicated
+    contract page must independently supply a verified daily-bar price.
+    Only one absent quarter between *two* good listed bookends is recovered.
+    """
+    eligible = {}
+    month_code = {3: "H", 6: "M", 9: "U", 12: "Z"}
+    for row in rows:
+        code = str(row.get("contract") or "")
+        try:
+            start, end = saron_window(code)
+        except ValueError:
+            continue
+        if row.get("symbol") != "ICEEUR:" + code or row.get("expiration") != end:
+            continue
+        eligible[(start.year, start.month)] = row
+    recovered = dict(eligible)
+    for year, month in sorted(eligible):
+        next_month, next_year = (3, year + 1) if month == 12 else (month + 3, year)
+        following_month, following_year = ((3, next_year + 1)
+                                          if next_month == 12 else (next_month + 3, next_year))
+        if (next_year, next_month) in eligible:
+            continue
+        # No extrapolation outside known ICE listings, nor over larger gaps.
+        if (following_year, following_month) not in eligible:
+            continue
+        code = f"SA3{month_code[next_month]}{next_year}"
+        start, expiry = saron_window(code)
+        recovered[(next_year, next_month)] = {
+            "symbol": "ICEEUR:" + code,
+            "contract": code,
+            "expiration": expiry,
+            "description": f"ICE quarter {next_year}-{next_month:02d} (calendar-derived identity)",
+            "instrument_name": "Three Month SARON",
+            "roster_quality": "ICE_LISTED_QUARTER_CALENDAR_DERIVED_UNQUOTED",
+        }
+    return sorted(recovered.values(), key=lambda x: x["expiration"])
+
+
 def select_contracts(rows: list[dict], today: date,
                      currency: str | None = None) -> dict[str, dict]:
     if currency == "CHF":
+        rows = recover_chf_ice_quarters(rows)
         # Never map a SARON future by its END date: a Sep26 future ending
         # Dec15 was previously mislabeled 6M in late October, although its
         # interest-rate accrual already started in September.
@@ -280,6 +325,7 @@ def collect(today: date | None = None) -> dict:
                             if ccy == "CHF" else
                             f"nearest dated listed contract expiry to today+{TARGET_DAYS[horizon]}d; no interpolation"),
                 **({"accrual_start": row["accrual_start"].isoformat()} if ccy == "CHF" else {}),
+                **({"roster_quality": row["roster_quality"]} if row.get("roster_quality") else {}),
             }
         out["currencies"][ccy] = {
             "status": "LIVE_SECONDARY_READY" if len(asofs) == 3 else "LIVE_SECONDARY_INDICATIVE_ONLY",
