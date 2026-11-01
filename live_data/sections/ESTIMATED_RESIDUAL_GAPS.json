@@ -134,8 +134,8 @@
       "unit": "USD per troy ounce",
       "exchange_name": "CMX",
       "instrument_type": "FUTURE",
-      "observation_count_1mo": 23,
-      "fetched_at_utc": "2026-10-31T17:23:17.325129Z",
+      "observation_count_1mo": 22,
+      "fetched_at_utc": "2026-11-01T15:26:32.099294Z",
       "official_canonical_untouched": true,
       "interpretation": "Informational delayed futures market proxy, not LBMA Gold Price, not physical spot, not certified exchange settlement, and not eligible for canonical Gold history, core, signals, sizing or official backtests."
     }
