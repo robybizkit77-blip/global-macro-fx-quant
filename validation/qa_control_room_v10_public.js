@@ -177,7 +177,7 @@ async function getState(page){
          }catch(_){console.log('PUBLIC_HOME_READING_CDN_PENDING',name,attempt)}
        }
        if(!readingReady)throw Error(name+' PUBLIC_HOME_READING_VERSION_NOT_DEPLOYED '+navigationVersion);
-       if(['home-dated-first-read-20261101','home-pulse-materiality-20261101','home-fx-vix-dated-20261101','home-commodities-graded-20261101','home-saron-source-qa-20261101','home-macro-v3-evidence-20261101'].includes(navigationVersion)){
+       if(['home-dated-first-read-20261101','home-pulse-materiality-20261101','home-fx-vix-dated-20261101','home-commodities-graded-20261101','home-saron-source-qa-20261101','home-macro-v3-evidence-20261101','home-macro-v3-month-parity-20261101'].includes(navigationVersion)){
          await page.waitForFunction(()=>{
            const d=document.getElementById('gmfq-page')?.contentDocument,
              lead=d?.getElementById('gmfq-home-change-lead'),
@@ -216,7 +216,7 @@ async function getState(page){
             (proof.state!=='LEVEL_CONTEXT_ONLY'||proof.asof))
            throw Error(name+' stale levels called fresh repricing '+JSON.stringify(proof));
          console.log('PUBLIC_HOME_DATED_FIRST_READ_GREEN',name,JSON.stringify(proof));
-         if(['home-fx-vix-dated-20261101','home-commodities-graded-20261101','home-saron-source-qa-20261101','home-macro-v3-evidence-20261101'].includes(navigationVersion)){
+         if(['home-fx-vix-dated-20261101','home-commodities-graded-20261101','home-saron-source-qa-20261101','home-macro-v3-evidence-20261101','home-macro-v3-month-parity-20261101'].includes(navigationVersion)){
            const audit=await page.evaluate(async()=>{
              const d=document.getElementById('gmfq-page').contentDocument,
                root=d.getElementById('gmfq-home-observed-moves'),
@@ -269,7 +269,7 @@ async function getState(page){
              JSON.stringify({asof:audit.asof,fxState:audit.fxState,crossState:audit.crossState,
                fx:audit.fx?.slice(0,180),vix:audit.cross?.slice(0,160),
                width:audit.width,client:audit.client}));
-           if(['home-commodities-graded-20261101','home-saron-source-qa-20261101','home-macro-v3-evidence-20261101'].includes(navigationVersion)){
+           if(['home-commodities-graded-20261101','home-saron-source-qa-20261101','home-macro-v3-evidence-20261101','home-macro-v3-month-parity-20261101'].includes(navigationVersion)){
              await page.waitForFunction(()=>{
                const d=document.getElementById('gmfq-page')?.contentDocument,
                  note=d?.getElementById('gmfq-home-commodity-research');
@@ -1145,7 +1145,7 @@ async function getState(page){
            d.querySelectorAll('#pair-index button.pair-open[data-pair]').length===28&&
            d.getElementById('gmfq-pair-research-path')?.dataset.pair===code;
        },homePair,{timeout:35000});
-       if(navigationVersion==='home-macro-v3-evidence-20261101'){
+       if(['home-macro-v3-evidence-20261101','home-macro-v3-month-parity-20261101'].includes(navigationVersion)){
          const v3Pair=await page.evaluate(code=>{
            const d=document.getElementById('gmfq-page')?.contentDocument;
            const p=d?.getElementById('gmfq-v3-current-pair-context');
@@ -1598,7 +1598,7 @@ async function getState(page){
          const d=document.getElementById('gmfq-page')?.contentDocument;
          return d?.getElementById('gmfq-macro-source-lens')?.dataset.auditStatus==='READ_ONLY';
        },null,{timeout:25000});
-       if(navigationVersion==='home-macro-v3-evidence-20261101'){
+       if(['home-macro-v3-evidence-20261101','home-macro-v3-month-parity-20261101'].includes(navigationVersion)){
          let visible=false;
          for(let attempt=0;attempt<12;attempt++){
            visible=await page.evaluate(()=>{
@@ -1660,8 +1660,8 @@ async function getState(page){
        if(!macroFirst.baseline||!studyValid||
           !macroFirst.priority?.startsWith('Gli score sono uno snapshot del modello')||
            !macroFirst.priorityFirst||
-           !macroFirst.closed||!macroFirst.hidden||macroFirst.count!==(navigationVersion==='home-macro-v3-evidence-20261101'?3:2)||
-          (navigationVersion==='home-macro-v3-evidence-20261101'&&
+           !macroFirst.closed||!macroFirst.hidden||macroFirst.count!==(['home-macro-v3-evidence-20261101','home-macro-v3-month-parity-20261101'].includes(navigationVersion)?3:2)||
+          (['home-macro-v3-evidence-20261101','home-macro-v3-month-parity-20261101'].includes(navigationVersion)&&
             (macroFirst.v3ObservedCount!=='24'||macroFirst.v3Pairs!=='28'||
              !macroFirst.v3Headline?.includes('28 confronti')||!macroFirst.v3Growth))||
           macroFirst.width>macroFirst.viewport+16)

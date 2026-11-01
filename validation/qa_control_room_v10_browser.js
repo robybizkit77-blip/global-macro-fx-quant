@@ -1467,6 +1467,8 @@ function expectedReactionFromMetrics(row){
       })),
       dynamicNote:p.querySelector('.gmfq-macro-dynamics-note')?.textContent,
       observations:p.querySelectorAll('.gmfq-macro-observation').length,
+      v3Axes:p.dataset.v3ObservedCount,v3Pairs:p.dataset.v3PairContexts,
+      v3Growth:p.querySelector('[data-v3-growth]')?.dataset.v3Growth,
       description:p.textContent,
       preview:p.querySelector('#gmfq-macro-reading')?.textContent,
       fullClosed:p.querySelector('#gmfq-macro-observation-details')?.open===false,
@@ -1476,7 +1478,8 @@ function expectedReactionFromMetrics(row){
   });
   if(macroLens.baseline!==oldModel.asOf||macroLens.selected!=='EUR'||
      !macroLens.priority?.startsWith('Gli score sono uno snapshot del modello')||!macroLens.priorityFirst||
-     macroLens.observations!==2||!macroLens.fullClosed||!macroLens.observationsHidden||
+     macroLens.observations!==3||macroLens.v3Axes!=='24'||macroLens.v3Pairs!=='28'||
+     !/^20\d{2}Q[1-4]$/.test(macroLens.v3Growth||'')||!macroLens.fullClosed||!macroLens.observationsHidden||
      !macroLens.preview?.includes(macroThermo.currencies.EUR.inflation.as_of)||
      !macroLens.preview?.includes(macroThermo.currencies.EUR.labour.as_of)||
      !macroLens.description.includes('NON CORRENTE, da rivalidare')||
