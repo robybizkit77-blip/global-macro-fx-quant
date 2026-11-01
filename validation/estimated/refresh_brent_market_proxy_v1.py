@@ -16,6 +16,7 @@ SYMBOL = "BZ=F"
 BASE_URL = "https://query1.finance.yahoo.com/v8/finance/chart/BZ=F"
 LANE = "BRENT.market_proxy"
 MAX_CALENDAR_AGE_DAYS = 3
+MAX_VINTAGE_EVENTS = 24
 
 
 def _pct(a: float, b: float | None) -> float | None:
@@ -105,14 +106,58 @@ def build_output(doc: dict, rows: list[tuple[str, float]], meta: dict,
     old_day = old.get("proxy_as_of")
     if old_day and day < old_day:
         raise ValueError("Brent source rollback: would overwrite a newer observation")
+    # Repeated fetches of the same observation are idempotent. Do not make a
+    # fake "fresh" print merely by updating fetched_at_utc.
+    rounded = round(price, 4)
+    d1 = _pct(price, rows[-2][1])
+    d5 = _pct(price, rows[-6][1]) if len(rows) >= 6 else None
+    same_snapshot = (
+        day == old_day and old.get("value") == rounded
+        and old.get("change_1d_pct") == d1
+        and old.get("change_1w_pct") == d5
+        and old.get("vendor_symbol") == SYMBOL
+        and old.get("currency") == "USD"
+        and old.get("instrument_type") == "FUTURE"
+        and old.get("source_endpoint") == BASE_URL
+    )
+    if same_snapshot:
+        return copy.deepcopy(doc)
+
+    # This is a difference between two secondary-provider snapshots for the
+    # same *market* date. Never call it a new trading day's return or an
+    # official exchange correction. Preserve the prior as-of and fetch clock.
+    revisions = copy.deepcopy(old.get("same_date_source_vintages", []))
+    if not isinstance(revisions, list) or len(revisions) > MAX_VINTAGE_EVENTS:
+        raise ValueError("Brent vintage audit schema/count mismatch")
+    if old.get("proxy_as_of") == day and isinstance(old.get("value"), (float, int)):
+        stamp = fetched_at.astimezone(dt.timezone.utc).isoformat().replace("+00:00", "Z")
+        prior_stamp = old.get("fetched_at_utc")
+        if prior_stamp and (not isinstance(prior_stamp, str)
+                            or prior_stamp >= stamp):
+            raise ValueError("Brent same-date source snapshot clock is not increasing")
+        event = {
+            "kind": "SECONDARY_SAME_DATE_SNAPSHOT_DIFFERENCE",
+            "market_date": day,
+            "prior_fetched_at_utc": prior_stamp,
+            "new_fetched_at_utc": stamp,
+            "prior_value": old["value"],
+            "new_value": rounded,
+            "prior_change_1d_pct": old.get("change_1d_pct"),
+            "new_change_1d_pct": d1,
+            "prior_change_1w_pct": old.get("change_1w_pct"),
+            "new_change_1w_pct": d5,
+            "interpretation": "Vendor snapshot changed; not a new market session or official settlement revision.",
+        }
+        revisions.append(event)
+        revisions = revisions[-MAX_VINTAGE_EVENTS:]
     result = copy.deepcopy(doc)
     result["lanes"][LANE] = {
         "status": "MARKET_PROXY_ACTIVE_SECONDARY",
         "confidence": "B_FOR_DIRECTION_ONLY",
         "proxy_as_of": day,
-        "value": round(price, 4),
-        "change_1d_pct": _pct(price, rows[-2][1]),
-        "change_1w_pct": _pct(price, rows[-6][1]) if len(rows) >= 6 else None,
+        "value": rounded,
+        "change_1d_pct": d1,
+        "change_1w_pct": d5,
         "source": "Yahoo Finance public chart JSON · Brent Crude Oil Last Day Financial Futures (BZ=F)",
         "source_endpoint": BASE_URL,
         "vendor_symbol": SYMBOL,
@@ -121,6 +166,8 @@ def build_output(doc: dict, rows: list[tuple[str, float]], meta: dict,
         "instrument_type": "FUTURE",
         "fetched_at_utc": fetched_at.astimezone(dt.timezone.utc).isoformat().replace("+00:00", "Z"),
         "official_canonical_untouched": True,
+        "same_date_source_vintages": revisions,
+        "vintage_audit_count": len(revisions),
         "interpretation": (
             "Secondary futures market proxy for live Brent level/direction only. "
             "It does not replace canonical EIA Brent spot, does not certify ICE "
