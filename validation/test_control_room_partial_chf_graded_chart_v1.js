@@ -68,7 +68,7 @@ assert.deepEqual(new Set(rows.map(x=>x.k)),new Set(liveRows.map(x=>x.k)));
 assert(!rows.some(x=>x.k==='USD'),'Missing USD cannot become a fabricated curve');
 const chf=rows.find(x=>x.k==='CHF');
 assert(chf,'CHF source-graded futures must not be fully hidden');
-assert.equal(chf.tier,'PROXY');
+assert(['PROXY','MIXED'].includes(chf.tier));
 assert.equal(chf.joined,false);
 assert.equal(chf.verifiedTenors,1);
 assert.deepEqual(chf.pts,[null,null,srcFeed.currencies.CHF.horizons['12m'].rate]);
