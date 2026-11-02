@@ -4032,7 +4032,9 @@ async function mountCrossGold(doc){
   '</span><span>Δ ~1W: '+(valid?crossGoldPct(gold.change_1w_pct):'—')+'</span></div>'+
   '<div class="gmfq-gold-line">Fonte: Yahoo Finance, quotazione futures secondaria'+
    (state==='SECONDARY_HISTORICAL'?'. Dato storico, non utilizzabile come prezzo corrente.':'.')+'</div></div>'+
-  '<div class="gmfq-gold-spot"><strong>Gold Price LBMA · WITHHELD</strong>'+
+  '<div class="gmfq-gold-spot"><strong>Spot LBMA · non certificato nel feed</strong>'+
+  (valid?'<p class="gmfq-gold-line">Riferimento disponibile: futures GC=F ≈'+
+    crossGoldNumber(gold.value)+' USD/oz · '+htmlEscape(asof)+' · NON fixing LBMA.</p>':'')+
   '<details class="gmfq-gold-line"><summary>Perché lo spot non è disponibile</summary><p>Nessuna quotazione spot ufficiale certificata in questo feed. Le tre osservazioni Gold legacy non hanno provenienza verificata e non sono usate in questo confronto.</p></details>'+
   '<p class="gmfq-gold-line">Un futures indicativo non equivale a oro spot o fixing LBMA: non confondere strumenti, orari di rilevazione e metodologie.</p></div></div>'+
   '<div class="gmfq-gold-fine">Solo contesto cross-asset · Non è un prezzo di regolamento certificato, un segnale, un livello operativo o un input per Macro/FX, bias, sizing e backtest.</div>';
@@ -4465,6 +4467,8 @@ async function mountCotFirstReading(doc){
  if(route()!=='cot'||frame.contentDocument!==doc)return;
  const result=cotQuantitativeAudit(inputs[0].status==='fulfilled'?inputs[0].value:null,
    inputs[1].status==='fulfilled'?inputs[1].value:null);
+ const priceContext=result&&!result.mismatched.length&&inputs[2].status==='fulfilled'?
+   cotBcePriceContext(result.asof,inputs[2].value):null;
  const rail=researchFirstStrip(doc,'gmfq-cot-reading-first','COT · COSA CONTA',
   result?
    'CFTC '+result.asof+' · Estremi percentile 104W: '+result.extremes.length+'/8 · Crowding |Net/OI| ≥30%: '+result.crowding.length+'/8':
@@ -4476,7 +4480,10 @@ async function mountCotFirstReading(doc){
    'La lettura resta sospesa: le serie CFTC non sono riconciliabili.',
    intro:result?
    'Classificazione dopo arrotondamento: '+result.extremeLong.length+' EXTREME LONG, '+result.extremeShort.length+
-   ' EXTREME SHORT. Prezzo FX: WITHHELD (nessuna conferma ricostruita).'+
+   ' EXTREME SHORT. '+(priceContext?
+     'Prezzo FX: riferimento BCE datato '+priceContext.fx_start_day+' → '+
+      priceContext.fx_end_day+' per 8 valute (NON conferma COT).':
+     'Prezzo FX: riferimento BCE datato non verificabile (nessuna conferma ricostruita).')+
    (result.mismatched.length?' ⚠ Testo narrativo incoerente: '+result.mismatched.join(', ')+'.':''):
    'Serie o racconti CFTC non riconciliabili: non sono pubblicate nuove classificazioni.',
    sources:'CFTC Legacy Non-Commercial Futures Only: V250_COT_CHART_DATA (104 osservazioni per valuta) e V247_COT_STORIES. Ultima data di posizione martedì CFTC, non quotazione di mercato corrente.',
@@ -4578,8 +4585,6 @@ async function mountCotFirstReading(doc){
  }
  // Separate dated FX context: show what spot reference DID, not whether
  // positioning predicted it. The original COT price field stays WITHHELD.
- const priceContext=result&&!result.mismatched.length&&inputs[2].status==='fulfilled'?
-   cotBcePriceContext(result.asof,inputs[2].value):null;
  rail.dataset.bcePriceContext=priceContext?'DATED_ONLY':'UNAVAILABLE';
  if(priceContext){
    const box=doc.createElement('details');box.className='gmfq-cot-bce-price';
