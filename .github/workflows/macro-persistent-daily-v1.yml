@@ -25,10 +25,11 @@ on:
       - 'validation/macro/check_macro_source_registry.py'
       - 'validation/macro/test_macro_official_source_label_contract_v1.py'
   workflow_dispatch:
-  # Independent early source-watch schedule backstops GitHub's delayed/missed
-  # 07:35 Rome macro cron; the source acquisition and PIT rules are unchanged.
+  # Early source-watch -> Calendar/News -> Macro. Serial dependency
+  # avoids simultaneous main-branch writes by Calendar and Macro when an
+  # independent GitHub schedule was delayed or dropped.
   workflow_run:
-    workflows: ['Macro Desk Source Watch V1']
+    workflows: ['Calendar News Operational Refresh V1']
     types: [completed]
   schedule:
     - cron: '35 6 * * 1-5'
