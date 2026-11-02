@@ -1320,7 +1320,7 @@ function expectedReactionFromMetrics(row){
      cotFirst.crowding!==String(g8.filter(ccy=>
        Math.abs(cotFixture[ccy].netoi.at(-1))>=30).length)||
      !cotFirst.closed||!cotFirst.chart||!cotFirst.table||
-     !cotFirst.text.includes('Prezzo FX: WITHHELD')||
+     !cotFirst.text.includes('Prezzo FX: riferimento BCE datato')||
      !cotFirst.priority?.startsWith('Gli estremi COT descrivono')||
      !cotFirst.evidence?.includes('Estremi percentile 104W')||!cotFirst.order||
      cotFirst.text.includes('narrativo incoerente')||
@@ -2618,7 +2618,7 @@ function expectedReactionFromMetrics(row){
      gold.asof!==goldFixture.proxy_as_of||!gold.value?.includes(goldQuote)||
      !['transparent','rgba(0, 0, 0, 0)'].includes(gold.spotBackground)||
      gold.spotBorderSide!=='1px'||
-     !gold.text?.includes('Gold Price LBMA · WITHHELD')||
+     !gold.text?.includes('Spot LBMA · non certificato nel feed')||
      !gold.text?.includes('futures COMEX indicativo')||
      !gold.text?.includes('non sono usate in questo confronto')||
      !gold.text?.includes('non equivale a oro spot')||
@@ -2738,7 +2738,7 @@ function expectedReactionFromMetrics(row){
     const doc=document.getElementById('gmfq-page')?.contentDocument;
     const el=doc?.getElementById('gmfq-cross-gold-v10');
     return {state:el?.dataset.sourceStatus,value:el?.querySelector('.gmfq-gold-quote')?.textContent,
-      spot:el?.textContent?.includes('Gold Price LBMA · WITHHELD'),width:doc?.documentElement.scrollWidth,
+      spot:el?.textContent?.includes('Spot LBMA · non certificato nel feed'),width:doc?.documentElement.scrollWidth,
       viewport:doc?.documentElement.clientWidth};
   });
   if(bad.state!=='WITHHELD'||bad.value?.trim()!=='—'||!bad.spot||
