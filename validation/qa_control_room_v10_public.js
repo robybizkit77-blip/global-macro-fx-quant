@@ -1552,6 +1552,10 @@ async function getState(page){
            text:card?.textContent,quote:card?.querySelector('.gmfq-gold-quote')?.textContent,
             spotBackground:card?.querySelector('.gmfq-gold-spot')?doc.defaultView.getComputedStyle(card.querySelector('.gmfq-gold-spot')).backgroundColor:null,
             spotBorder:card?.querySelector('.gmfq-gold-spot')?(doc.documentElement.clientWidth<=700?doc.defaultView.getComputedStyle(card.querySelector('.gmfq-gold-spot')).borderTopWidth:doc.defaultView.getComputedStyle(card.querySelector('.gmfq-gold-spot')).borderLeftWidth):null,
+           goldTrend:card?.querySelector('svg.gmfq-gold-study-spark')?.dataset.trendSource,
+           goldTrendPoints:card?.querySelector('svg.gmfq-gold-study-spark')?.dataset.pointCount,
+           goldTrendLines:card?.querySelectorAll('svg.gmfq-gold-study-spark polyline').length,
+           goldDashed:card?.querySelector('svg.gmfq-gold-study-spark polyline')?.getAttribute('stroke-dasharray'),
            docWidth:doc?.documentElement.scrollWidth,viewport:doc?.documentElement.clientWidth,
            legacy:!!doc?.querySelector('[data-gmfq-operational="risk"]')};
        });
@@ -1561,6 +1565,9 @@ async function getState(page){
           !gold.text?.includes('GC=F · futures COMEX indicativo')||
           !gold.text?.includes('non equivale a oro spot')||
           gold.quote==='—'||gold.legacy||
+          gold.goldTrend!=='MODEL_BACKSOLVED'||gold.goldTrendPoints!=='3'||
+          gold.goldTrendLines!==1||!gold.goldDashed||
+          !gold.text?.includes('non sono prezzi storici osservati')||
            !['transparent','rgba(0, 0, 0, 0)'].includes(gold.spotBackground)||
            gold.spotBorder!=='1px'||gold.docWidth>gold.viewport+16){
          throw Error(name+' public Cross-Asset Gold not verified '+JSON.stringify(gold));
