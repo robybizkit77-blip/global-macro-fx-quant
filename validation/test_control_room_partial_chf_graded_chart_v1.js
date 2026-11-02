@@ -81,8 +81,8 @@ const group=html.match(/<g data-graded-ccy="CHF"[\s\S]*?<\/g>/);
 assert(group,'CHF individual source evidence must be drawn');
 assert(group[0].includes('data-verified-tenors="1"'));
 assert(group[0].includes('data-joined="false"'));
-assert(group[0].includes('CHF 12M '+srcFeed.currencies.CHF.horizons['12m'].rate.toFixed(3)+
- '% · '+srcFeed.currencies.CHF.horizons['12m'].quote_as_of+' · PROXY · SCADENZA ISOLATA NON CURVA'));
+assert(group[0].includes('CHF 12M '+chf.pts[2].toFixed(3)+
+ '% · '+chf.dates[2]+' · '+chf.tier+' · SCADENZA ISOLATA NON CURVA'));
 assert(!group[0].includes('CHF 3M')&&!group[0].includes('CHF 6M'));
 assert(!group[0].includes('<polyline'),'never connect unavailable contract tenors');
 assert.equal((group[0].match(/<circle /g)||[]).length,1);
