@@ -4216,7 +4216,7 @@ async function mountCrossRisk(doc){
    crossRiskCard('WTI',w,'Spot Cushing · RWTC','U.S. Energy Information Administration',false)+
    crossRiskCard('BRENT',b,'Futures BZ=F · non spot','Yahoo Finance · futures secondario',true)+
   '</div>'+
-  '<details class="gmfq-cross-risk-note"><summary>Come leggere VIX, WTI e Brent</summary><p><strong>Limiti delle fonti:</strong> il VIX misura volatilità implicita, non da solo la direzione del mercato. WTI e Brent non sono la stessa serie né lo stesso strumento: domanda, offerta, scadenza dei futures e differenze di rilevazione contano. <strong>Brent spot ufficiale: WITHHELD.</strong> Nessun confronto di spread fra spot e futures; nessun giudizio di risk-on/risk-off, segnale o sizing automatico.</p></details>';
+  '<details class="gmfq-cross-risk-note"><summary>Come leggere VIX, WTI e Brent</summary><p><strong>Limiti delle fonti:</strong> il VIX misura volatilità implicita, non da solo la direzione del mercato. WTI e Brent non sono la stessa serie né lo stesso strumento: domanda, offerta, scadenza dei futures e differenze di rilevazione contano. <strong>Brent spot ufficiale non certificato nel feed.</strong> Il riferimento numerico disponibile è il futures BZ=F visualizzato sopra con data e fonte proprie. Nessun confronto di spread fra spot e futures; nessun giudizio di risk-on/risk-off, segnale o sizing automatico.</p></details>';
  doc.defaultView.GMFQ_CROSS_RISK={status:global,
    vix:{status:v.state,as_of:v.asof},wti:{status:w.state,as_of:w.asof},
    brent:{status:b.state,as_of:b.asof},core_effect:'NONE',
