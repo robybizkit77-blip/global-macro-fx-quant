@@ -835,6 +835,9 @@ function expectedReactionFromMetrics(row){
     const value=chfRow?.numeric[i];
     return slot.state==='MISSING'?value==='—':!!value&&value!=='—';
   });
+  if(sourcePriority.coverage==='8/8'&&
+      (!sourcePriority.officialOnlyHidden||sourcePriority.expanded!=='false'))
+    throw Error(label+' complete G8 study must be first-read; official-only gaps must be collapsed');
   if(sourcePriority.coverage!==expectedCoverage||
      sourcePriority.complete!==completeCharts+'/8'||
      sourcePriority.signal!=='NONE'||!sourcePriority.primaryFirst||
