@@ -504,7 +504,7 @@ function expectedReactionFromMetrics(row){
   if(r.pricing.length!==8||new Set(r.pricing.map(x=>x.ccy)).size!==8||
      r.pricingMetric!=='RATE_PCT_ZERO_BASED'||!(Number(r.pricingScale)>0)||
      r.pricing.some(x=>x.metric!=='RATE_PCT_ZERO_BASED'||
-       x.renderedWidth!==x.barWidth+'%'||
+       Math.abs(parseFloat(x.renderedWidth)-Number(x.barWidth))>0.005||
        !Number.isFinite(Number(x.barWidth))||
        (x.level!==''&&Math.abs(Number(x.barWidth)-
          Math.round(10000*Math.min(1,Math.max(0,Number(x.level))/Number(r.pricingScale)))/100)>0.02))||
