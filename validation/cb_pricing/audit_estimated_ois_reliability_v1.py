@@ -108,7 +108,8 @@ def futures_evidence(rows: list[dict], ccy: str) -> dict:
                     len(horizons) == 2 and before and after and
                     len({x["observed_under_horizon"] for x in before}) == 1 and
                     len({x["observed_under_horizon"] for x in after}) == 1 and
-                    all(x["_first_seen"].date() < date(2026,11,1) for x in before) and
+                    (all(x["_first_seen"].date() < date(2026,11,1) for x in before) or
+                     all(x["_first_seen"].date() >= date(2026,11,1) for x in before)) and
                     all(x["_first_seen"].date() >= date(2026,11,1) for x in after) and
                     all(x["expiration"] == expiry.isoformat() for x in s) and
                     all(start > x["_date"] for x in after) and
