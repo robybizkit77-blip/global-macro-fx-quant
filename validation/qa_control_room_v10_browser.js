@@ -1469,6 +1469,10 @@ function expectedReactionFromMetrics(row){
         direction:x.dataset.direction,acceleration:x.dataset.acceleration,
         date:x.dataset.asOf,visible:!!x.getClientRects().length
       })),
+      tempoRows:[...p.querySelectorAll('#gmfq-macro-tempo-g8 [data-ccy]')].map(x=>({
+        ccy:x.dataset.ccy,inf:x.dataset.inflationChange,lab:x.dataset.labourChange
+      })),
+      tempoEffect:p.querySelector('#gmfq-macro-tempo-g8')?.dataset.coreEffect,
       dynamicNote:p.querySelector('.gmfq-macro-dynamics-note')?.textContent,
       observations:p.querySelectorAll('.gmfq-macro-observation').length,
       v3Axes:p.dataset.v3ObservedCount,v3Pairs:p.dataset.v3PairContexts,
@@ -1483,6 +1487,9 @@ function expectedReactionFromMetrics(row){
   if(macroLens.baseline!==oldModel.asOf||macroLens.selected!=='EUR'||
      !macroLens.priority?.startsWith('Gli score sono uno snapshot del modello')||!macroLens.priorityFirst||
      macroLens.observations!==3||macroLens.v3Axes!=='24'||macroLens.v3Pairs!=='28'||
+     macroLens.tempoRows.length!==8||macroLens.tempoEffect!=='NONE'||
+     macroLens.tempoRows.some(x=>!g8.includes(x.ccy)||
+       !Number.isFinite(Number(x.inf))||!Number.isFinite(Number(x.lab)))||
      !/^20\d{2}Q[1-4]$/.test(macroLens.v3Growth||'')||!macroLens.fullClosed||!macroLens.observationsHidden||
      !macroLens.preview?.includes(macroThermo.currencies.EUR.inflation.as_of)||
      !macroLens.preview?.includes(macroThermo.currencies.EUR.labour.as_of)||
