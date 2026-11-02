@@ -3,7 +3,7 @@
 import copy, datetime as dt, json
 from pathlib import Path
 from stage_chf_paired_backfill_v1 import stage
-from rates.recover_chf_snb_paired_history_v1 import SCHEMA
+SCHEMA = "GMFQ_SNB_CHF_DAILY_PAIRED_SPOT_BACKFILL_READ_ONLY_V1"
 
 rates=json.loads(Path("live_data/sections/NATIVE_RATES_DATA.json").read_text())
 anchor=rates["CHF"]
