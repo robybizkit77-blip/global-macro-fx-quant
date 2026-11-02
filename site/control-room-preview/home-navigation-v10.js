@@ -347,6 +347,12 @@ function oisAll(doc,ois,proxy){
   try{scenarios=api.scenarioSixMonth(ois,proxy,romeTodayIso())||{};}
   catch(e){console.warn('[GMFQ Home NZD scenario unavailable]',String(e))}
  }
+ let working={};
+ if(ois?.schema==='GMFQ_OIS_OPERATIONAL_VIEW_V1'&&
+    typeof api?.workingSixMonth==='function'){
+  try{working=api.workingSixMonth(ois,proxy,romeTodayIso())||{}}
+  catch(e){console.warn('[GMFQ 6M study model unavailable]',String(e))}
+ }
  const nzReady=proxy?.schema==='GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1'&&
   proxy.status==='LIVE_DIRECTIONAL_PROXY_READY'&&fresh(proxy.as_of,4)&&
   proxy.governance?.substitutes_for_ois_level===false&&
@@ -365,12 +371,13 @@ function oisAll(doc,ois,proxy){
    Array.isArray(q.range)&&q.range.length===2&&
    num(q.value)!==null&&num(q.range[0])!==null&&num(q.range[1])!==null&&
    q.range[0]<q.value&&q.value<q.range[1]?q:null;
+  const study=working[k]&&num(working[k].level_pct)!==null&&fresh(working[k].as_of,5)?working[k]:null;
   const bill=k==='NZD'&&nzReady?num(proxy.horizons?.['6m']?.implied_bank_bill_rate):null;
   // All G8 lanes show the same financial quantity: 6M level in %.
   // Certified Δ-policy is available separately, never the main displayed unit.
   const level=official?num(x?.horizons?.['6m']?.rate):
-    v?num(v.value):sc?num(sc.value):bill;
-  return {k,delta,official,indicative:v,scenario:sc,bill,level};
+    v?num(v.value):sc?num(sc.value):study?num(study.level_pct):bill;
+  return {k,delta,official,indicative:v,scenario:sc,study,bill,level};
  });
  const max=Math.max(65,...rows.map(x=>Math.abs(x.delta||0)));
  const displayed=rows.filter(x=>num(x.level)!==null).length;
@@ -382,18 +389,20 @@ function oisAll(doc,ois,proxy){
  host.dataset.gmfqSixMonthUnit='RATE_PCT';
  host.innerHTML=rows.map(x=>{
   const state=x.official?'OFFICIAL_REPRICING':x.indicative?'FUTURES_LEVEL_ONLY':
-   x.scenario?'CASH_CARRY_SCENARIO':x.k==='NZD'&&x.bill!==null?'BANK_BILL_PROXY':'WITHHELD';
+   x.scenario?'CASH_CARRY_SCENARIO':x.study?'WORKING_ESTIMATE':x.k==='NZD'&&x.bill!==null?'BANK_BILL_PROXY':'WITHHELD';
   const day=x.official?ois.currencies[x.k].as_of:
-   x.indicative?x.indicative.quote_as_of:x.scenario?x.scenario.quote_as_of:
+   x.indicative?x.indicative.quote_as_of:x.scenario?x.scenario.quote_as_of:x.study?x.study.as_of:
    state==='BANK_BILL_PROXY'?proxy.as_of:'—';
   const subtitle=state==='OFFICIAL_REPRICING'?'Δ 6M da fonte certificata':
    state==='FUTURES_LEVEL_ONLY'?'Futures indicativo · solo livello':
    state==='CASH_CARRY_SCENARIO'?'Stima Bank Bill–OCR · fascia '+fmt(x.scenario.range[0],2)+'–'+fmt(x.scenario.range[1],2)+'% · NON ΔOIS':
+   state==='WORKING_ESTIMATE'?'Stima di lavoro · '+x.study.type+' · non OIS certificato':
    state==='BANK_BILL_PROXY'?'Bank Bill · non OIS':'OIS/6M non certificato';
   const readable=state==='OFFICIAL_REPRICING'?
    fmt(x.level,2)+'%':
    state==='FUTURES_LEVEL_ONLY'?'≈'+fmt(x.indicative.value,2)+'% PX':
    state==='CASH_CARRY_SCENARIO'?'≈'+fmt(x.scenario.value,2)+'% ST':
+   state==='WORKING_ESTIMATE'?'≈'+fmt(x.study.level_pct,2)+'% ST':
    state==='BANK_BILL_PROXY'?'≈'+fmt(x.bill,2)+'% BB':'NON CERT.';
   const w=x.official?Math.max(2,Math.abs(x.delta)/max*100):0;
   return '<div class="oisrow gmfq-six-month-row'+(x.k==='NZD'?' gmfq-nzd-proxy':'')+'" data-ccy="'+x.k+'" data-pricing-state="'+state+
@@ -408,7 +417,7 @@ function oisAll(doc,ois,proxy){
  '<div class="oisnote" data-six-month-coverage="'+displayed+'/8"><b>6M · '+displayed+
  '/8 valute</b> · '+certified+' fonti certificate · '+estimated+
  ' stime/proxy. Tutti i valori sono livelli di tasso in %, NON Δ policy in bp. '+
- 'PX = futures indicativi (non OIS); ST = scenario NZD Bank Bill corretto per basis (non OIS). PROXY BB ≠ OIS. '+
+ 'PX = futures indicativi (non OIS); ST = stima di lavoro (USD da input contestati; NZD da Bank Bill–OCR). PROXY BB ≠ OIS. '+
  'Δ policy e date nel dettaglio; 3M / 6M / 12M nella pagina Tassi. '+
  'Nessuna stima è una quotazione OIS ufficiale o un segnale FX.</div>';
 }
@@ -2990,6 +2999,34 @@ async function mountPairRankedList(doc){
  obs.observe(tbody,{childList:true}); // Native text search & selecting a pair both re-render the same tbody.
  headline();apply();
 }
+/* Estimate First: a comparable 6M level spread for each pair.
+   Rates are observed or scenario inputs with independent timestamps;
+   this is a study calculation, NOT a policy repricing or trade signal. */
+function pairWorkingSixMonthHtml(code,ois,proxy){
+ const api=window.GMFQ_OIS_RESEARCH_V1;
+ if(typeof api?.workingSixMonth!=='function'||!/^[A-Z]{6}$/.test(code))return '';
+ const [base,quote]=[code.slice(0,3),code.slice(3,6)];
+ if(!FX.includes(base)||!FX.includes(quote)||base===quote)return '';
+ let levels={};
+ try{levels=api.workingSixMonth(ois,proxy,romeTodayIso());}
+ catch(_){return '';}
+ const left=levels[base],right=levels[quote];
+ if(!left||!right||num(left.level_pct)===null||num(right.level_pct)===null)return '';
+ const bp=Math.round((left.level_pct-right.level_pct)*1000)/10;
+ const flagged=[left,right].some(x=>x.type!=='CERTIFIED_LEVEL');
+ const label=x=>x.modelled?'STIMA':x.type==='CERTIFIED_LEVEL'?'FONTE CERTIFICATA':'FUTURES INDICATIVO';
+ const sign=bp>0?'+':'';
+ return '<section id="gmfq-pair-working-spread" data-pair-working="'+code+
+  '" data-estimate-first="true" data-instrument="6M_MONETARY_LEVEL_SPREAD" data-trading-signal="false"'+
+  ' style="margin:11px 0;padding:11px 13px;background:#0d2738;border:1px solid #35576c;border-radius:7px;overflow-wrap:anywhere">'+
+  '<strong style="color:#f0edf0;font-size:13px">Differenziale monetario 6M · scenario di lavoro</strong>'+
+  '<p style="margin:6px 0;font-size:13px;color:#cbdce8">'+FLAG[base]+' '+base+' '+fmt(left.level_pct,2)+'% ('+label(left)+
+  ') − '+FLAG[quote]+' '+quote+' '+fmt(right.level_pct,2)+'% ('+label(right)+
+  ') = <b>'+sign+fmt(bp,1)+' bp</b></p>'+
+  '<small style="color:#a8bfd0">Fonti '+htmlEscape(left.as_of)+' / '+htmlEscape(right.as_of)+
+  (flagged?' · almeno un livello stimato o indicativo':' · livelli da fonti certificate')+
+  '. Differenza fra livelli 6M; NON è carry realizzato, variazione OIS o segnale automatico.</small></section>';
+}
 async function mountPairResearch(doc){
  if(route()!=='coppie'||frame.contentDocument!==doc)return;
  const host=doc.getElementById('pair-detail');
@@ -3110,6 +3147,7 @@ async function mountPairResearch(doc){
    '<p>Periodi economici differenti. I 2Y sono rendimenti governativi, non OIS o decisioni attese. Nessun bias FX è dedotto automaticamente. Fotografia Macro: '+htmlEscape(v3.generated_europe_rome_day)+'; prezzo del modello: '+htmlEscape(setup.price_asof)+'.</p></section>':'';
   const comparison=pairMacroRatesComparison(code,setup.pairs[code],rates,ois,setup.price_asof,macroDay,proxy);
   const changes=pairWhatChangedEvidence(code,setup.pairs[code],rates,setup.price_asof,macroDay);
+  const scenario6m=pairWorkingSixMonthHtml(code,ois,proxy);
   const reaction=pairMarketReactionAudit(code,rates,fxOk?fx:null);
   const decision=pairThesisReactionBridge(code,setup.pairs[code],setup.price_asof,reaction,macroDay);
   panel.innerHTML='<h2 class="desk-panel-title">Percorso di ricerca · '+FLAG[a]+' '+a+' / '+FLAG[b]+' '+b+'</h2>'+
@@ -3122,7 +3160,7 @@ async function mountPairResearch(doc){
    (macroDay?(fresh(macroDay,10)?' · DATATA':' · STORICA'):' · WITHHELD')+'</span>'+
    '<span data-source="price"><b>Prezzo del modello:</b> '+htmlEscape(setup.price_asof)+'</span>'+
    '<span data-source="fixing"><b>Fixing BCE:</b> '+htmlEscape(fxDay||'non verificato')+'</span></div>'+
-   decision+v3Html+
+   decision+v3Html+scenario6m+
    '<details id="gmfq-pair-full-research" class="gmfq-pair-full-research"'+(analysisExpanded?' open':'')+'>'+
    '<summary>Apri analisi completa · Macro/Rates, variazioni 2Y, audit prezzo e fonti</summary>'+
    comparison+changes+reaction+
