@@ -2282,9 +2282,15 @@ function pairMacroRatesComparison(code,pair,rates,ois,modelDay,macroDay,proxy){
   'Non distingue chiaramente le due valute';
  const sovereign=(c)=>{
    const r=rates?.[c],d=r?.date;
-   const certified=!!r&&String(r.quality||'').includes('OFFICIAL')&&fresh(d,5)&&
+   // Estimate First (read-only): last official pair is a flat carry-forward
+   // reference when stale, never a new observation or an official same-day spread.
+   const dated=!!r&&String(r.quality||'').includes('OFFICIAL')&&
+    /^\d{4}-\d{2}-\d{2}$/.test(d||'')&&
     num(r['2Y'])!==null&&num(r['10Y'])!==null;
-   return {date:d||null,certified, y2:certified?num(r['2Y']):null,y10:certified?num(r['10Y']):null};
+   const certified=dated&&fresh(d,5);
+   return {date:d||null,certified,
+    y2:dated?num(r['2Y']):null,y10:dated?num(r['10Y']):null,
+    estimated:dated&&!certified};
  };
  const repricing=(c)=>{
    const o=ois?.currencies?.[c];
@@ -2297,7 +2303,10 @@ function pairMacroRatesComparison(code,pair,rates,ois,modelDay,macroDay,proxy){
   const r=sovereign(c),p=repricing(c);
   const ratesLine=r.certified?
    '2Y '+fmt(r.y2,2)+'% · 10Y '+fmt(r.y10,2)+'% · '+r.date:
-   '2Y / 10Y WITHHELD · ultima data '+(r.date||'non verificata');
+   r.estimated?
+   'STIMA DI CONTINUITÀ · 2Y ≈'+fmt(r.y2,2)+'% · 10Y ≈'+fmt(r.y10,2)+
+   '% · ultimo dato ufficiale '+r.date+' (valori mantenuti costanti, non quotazioni odierne)':
+   '2Y/10Y: riferimento numerico non ricostruibile';
   const context=!p.ok?indicative6m[c]:null;
   const contextValid=context&&context.currency===c&&
    ['USD','EUR','CHF'].includes(c)&&['PROXY','MIXED','CONFLICTED'].includes(context.type)&&
@@ -2329,11 +2338,17 @@ function pairMacroRatesComparison(code,pair,rates,ois,modelDay,macroDay,proxy){
  // Same date is mandatory; do not use the latest separately published CHF 10Y
  // to fill in a missing 2Y. A dated yield gap is NOT a policy prediction.
  const same=A.certified&&B.certified&&A.date===B.date;
- const spread=same?Math.round((A.y2-B.y2)*100):null;
+ const studySpread=A.y2!==null&&B.y2!==null?
+  Math.round((A.y2-B.y2)*100):null;
+ const spread=same?studySpread:null;
  const spreadMsg=same?
   'Spread 2Y governativi (base − quotata): '+(spread>0?'+':'')+spread+
     ' bp · stesso giorno '+A.date+'. Differenza di livello, non segnale FX.':
-  'Spread 2Y osservato: WITHHELD. Le due scadenze devono essere ufficiali, recenti e riferite allo stesso giorno.';
+  studySpread!==null?
+  'STIMA DI LAVORO · spread 2Y '+(studySpread>0?'+':'')+studySpread+
+   ' bp (ultimo dato '+a+': '+A.date+'; '+b+': '+B.date+
+   '). Carry-forward di livelli ufficiali datati, NON spread osservato nello stesso giorno e NON segnale FX.':
+  'Spread 2Y: stima numerica non ricostruibile';
  const verdict=!modelState.verified?
   'Baseline Macro/Tassi non verificata: preferenza e convergenza strutturale WITHHELD. I rendimenti ufficiali restano osservazioni separate.':
   macroSide&&policySide&&macroSide===policySide?
