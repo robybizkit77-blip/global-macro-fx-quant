@@ -1008,6 +1008,8 @@ async function getState(page){
            secondaryCards:panel.querySelectorAll('.gmfq-quote-card').length,expectedCards:secondary.length,
            note:panel.textContent,docWidth:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth,
            readinessCount:panel.querySelectorAll('#gmfq-source-readiness .gmfq-source-row').length,
+           studyCount:panel.querySelectorAll('#gmfq-source-readiness [data-source-study]').length,
+           studyText:panel.querySelector('#gmfq-source-readiness')?.textContent,
            readinessLinks:panel.querySelectorAll('#gmfq-source-readiness a').length,
            readinessCodes:[...panel.querySelectorAll('#gmfq-source-readiness .gmfq-source-row')].map(x=>x.dataset.sourceCcy).sort(),
            readinessContent:panel.querySelector('#gmfq-source-readiness')?.textContent,
@@ -1054,6 +1056,8 @@ async function getState(page){
           (process.env.GITHUB_EVENT_NAME!=='pull_request'&&(
              research.readinessExpected===null||
              research.readinessCount!==research.readinessExpected||
+             research.studyCount!==research.readinessExpected||
+             !research.studyText?.includes('Riferimenti di studio:')||
              research.readinessLinks!==research.readinessExpected||
              JSON.stringify(research.readinessCodes)!==JSON.stringify(pendingDossiers.codes)||
              !research.readinessContent?.includes('Nessun dato indicativo è promosso')||
