@@ -37,19 +37,26 @@ class SourceLabelAndTransportTests(unittest.TestCase):
         self.assertEqual(self.hm["series_id"],row["series_id"])
         self.assertEqual(self.hm["transformation"],row["transformation"])
 
-    def test_all_other_fifteen_labels_still_match_registered_legacy_name(self):
-        count=0
+    def test_other_fifteen_registered_labels_allow_only_documented_official_aliases(self):
+        # Preserve original source/transporter labels, never call an
+        # independently certified direct adapter an arbitrary source swap.
+        approved = {
+            "EUR.labour": "CERTIFIED_OFFICIAL_ADAPTER_LABEL_LEGACY_TRANSPORT_RETAINED",
+            "JPY.labour": "SAME_OFFICIAL_JPY_ESTAT_LABOUR_SURVEY_SOURCE",
+        }
+        count = 0
         for key,row in sorted(self.registry["series"].items()):
-            if key=="NZD.inflation":continue
-            cc,pillar=key.split(".")
-            label=self.heatmap["currencies"][cc][pillar]
-            _,adapter=certified_adapter_contract(key,row)
+            if key == "NZD.inflation": continue
+            cc,pillar = key.split(".")
+            label = self.heatmap["currencies"][cc][pillar]
+            _,adapter = certified_adapter_contract(key,row)
             with self.subTest(key=key):
                 self.assertEqual(
                     checked_public_source_label(key,row,label,adapter),
-                    "CANONICAL_SOURCE_LABEL")
-            count+=1
-        self.assertEqual(count,15)
+                    approved.get(key, "CANONICAL_SOURCE_LABEL"))
+            count += 1
+        self.assertEqual(count, 15)
+        self.assertEqual(len(approved), 2)
 
     def test_a_direct_adaptor_must_not_make_any_spoofed_source_official(self):
         row=self.nz
