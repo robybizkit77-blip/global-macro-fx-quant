@@ -456,6 +456,25 @@ function matrix(ois,bb,today){
      }
     }
   }
+  // When disputed USD 6M/12M are withheld, retain ONLY the independently
+  // dated 3M futures settlement as an unjoined research observation.
+  if(ccy==='USD'&&tier==='WITHHELD'&&
+     x.operational_status==='WITHHELD'&&
+     x.source_conflict_status==='UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT'&&
+     x.quality==='ESTIMATED_INFORMATIONAL'&&
+     x.backtest_eligible_as_official===false&&
+     Array.isArray(x.source_conflict_keys)&&
+     x.source_conflict_keys.length>0&&
+     x.source_conflict_keys.every(k=>k.horizon!=='3m')){
+    const p=x.horizons?.['3m']||{};
+    const implied=number(p.futures_price)===null?null:100-p.futures_price;
+    const observed=auditDatedFuture('USD','3m',p,implied,p.quote_as_of,today);
+    if(observed&&p.rate===null){
+     points['3m']=observed;
+     tier='MIXED';
+     source=(x.source||'')+' · SOLO CONTRATTO 3M VERIFICATO, 6M/12M CONTESTATI';
+    }
+  }
   return {ccy,tier,points,source,official_ois:ccy==='GBP'&&tier==='OFFICIAL',
     allow_official_promotion:false,allow_repricing:false,
     core_score_effect:'NONE',bias_effect:'NONE',pair_effect:'NONE',backtest_official:false};
