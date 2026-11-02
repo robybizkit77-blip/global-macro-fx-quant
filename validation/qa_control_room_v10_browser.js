@@ -839,7 +839,7 @@ function expectedReactionFromMetrics(row){
      // certified-source panel remains accessible through its real toggle.
      (sourcePriority.officialOnlyHidden&&
        (!sourcePriority.toggle||sourcePriority.expanded!=='false'))||
-     sourcePriority.rows.length!==8||!chfRow||chfRow.tier!=='PROXY'||
+     sourcePriority.rows.length!==8||!chfRow||!['PROXY','MIXED'].includes(chfRow.tier)||
      chfRow.numeric.length!==3||!chfSlotsOk||
      sourcePriority.rows.some(x=>x.c!=='CHF'&&(
         !['OFFICIAL','PROXY','MIXED','CONFLICTED','SCENARIO'].includes(x.tier)||
