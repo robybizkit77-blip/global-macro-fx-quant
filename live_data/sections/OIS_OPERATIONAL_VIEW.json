@@ -428,7 +428,7 @@
       "change_1w_available": false,
       "confidence": "C",
       "conflicted_source_eligible_for_repricing": false,
-      "direction_vs_policy": "WITHHELD",
+      "direction_vs_policy": null,
       "horizons": {
         "12m": {
           "business_day_lag": 1,
@@ -444,13 +444,13 @@
           "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
           "quote_timestamp_verified": false,
-          "rate": 4.46,
+          "rate": null,
           "raw_level_gap_not_policy_repricing": true,
           "raw_level_minus_spot_policy_bp": null,
           "symbol": "CBOT:ZQV2027"
         },
         "3m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "ZQZ2026",
@@ -459,11 +459,11 @@
           "futures_price": 95.99,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-10-30T21:19:05Z",
-          "quote_as_of": "2026-10-30",
-          "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
-          "quote_timestamp_verified": false,
-          "rate": 4.01,
+          "price_valid_until": "2026-11-02T09:41:06Z",
+          "quote_as_of": "2026-11-02",
+          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
+          "quote_timestamp_verified": true,
+          "rate": null,
           "raw_level_gap_not_policy_repricing": true,
           "raw_level_minus_spot_policy_bp": null,
           "symbol": "CBOT:ZQZ2026"
@@ -482,7 +482,7 @@
           "quote_as_of": "2026-10-30",
           "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
           "quote_timestamp_verified": false,
-          "rate": 4.28,
+          "rate": null,
           "raw_level_gap_not_policy_repricing": true,
           "raw_level_minus_spot_policy_bp": null,
           "symbol": "CBOT:ZQJ2027"
@@ -493,7 +493,7 @@
       "method_id": "TRADINGVIEW_DATED_FUTURES_SSR_V2",
       "note": "Indicative secondary futures quotes have unresolved same-contract/same-day source disagreement; first and later prints are preserved separately. Levels may be displayed as provisional estimates only. No official OIS, policy delta or 1D/1W repricing is certified.",
       "official_status": "WITHHELD",
-      "operational_status": "GREEN_ESTIMATED",
+      "operational_status": "WITHHELD",
       "policy_rate": 3.875,
       "policy_repricing_inference_allowed": false,
       "quality": "ESTIMATED_INFORMATIONAL",
@@ -510,12 +510,6 @@
       "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
       "source_conflict_keys": [
         {
-          "contract": "ZQZ2026",
-          "event_id": "74b24ede1c86ee888d4cd88ab178657f67a4b3775c269daa2b7f5e4b9fe680d0",
-          "horizon": "3m",
-          "observation_date": "2026-10-30"
-        },
-        {
           "contract": "ZQJ2027",
           "event_id": "01c90b25c3727f85758ec575558643bf253a6c7156853e9e1d3da0e80f451144",
           "horizon": "6m",
@@ -529,7 +523,8 @@
         }
       ],
       "source_conflict_status": "UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT",
-      "source_quality": "SECONDARY_CONFLICTED_INDICATIVE_NOT_OIS"
+      "source_quality": "SECONDARY_CONFLICTED_INDICATIVE_NOT_OIS",
+      "withheld_reason": "STALE_OR_INCOMPLETE_PRICING"
     }
   },
   "official_runtime_untouched": true,
@@ -537,9 +532,9 @@
   "status": "PARTIAL_WITHHELD",
   "summary": {
     "g8_total": 8,
-    "green_estimated": 3,
+    "green_estimated": 2,
     "green_official": 4,
-    "operational_green": 7,
-    "operational_withheld": 1
+    "operational_green": 6,
+    "operational_withheld": 2
   }
 }

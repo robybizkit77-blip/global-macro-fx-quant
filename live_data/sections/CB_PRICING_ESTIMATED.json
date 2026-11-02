@@ -313,17 +313,17 @@
           "symbol": "CBOT:ZQV2027"
         },
         "3m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "ZQZ2026",
           "contract_description": "Dec 2026",
           "expiration": "2027-01-04",
           "futures_price": 95.99,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-10-30T21:19:05Z",
-          "quote_as_of": "2026-10-30",
-          "quote_timestamp_source": "QUARANTINED_SAME_CONTRACT_SAME_DAY",
-          "quote_timestamp_verified": false,
+          "price_valid_until": "2026-11-02T09:41:06Z",
+          "quote_as_of": "2026-11-02",
+          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
+          "quote_timestamp_verified": true,
           "rate": 4.01,
           "raw_level_gap_not_policy_repricing": true,
           "raw_level_minus_spot_policy_bp": null,
@@ -357,12 +357,6 @@
       "raw_level_gap_scope": "DESCRIPTIVE_LEVEL_ARITHMETIC_NOT_EXPECTED_CB_RATE",
       "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
       "source_conflict_keys": [
-        {
-          "contract": "ZQZ2026",
-          "event_id": "74b24ede1c86ee888d4cd88ab178657f67a4b3775c269daa2b7f5e4b9fe680d0",
-          "horizon": "3m",
-          "observation_date": "2026-10-30"
-        },
         {
           "contract": "ZQJ2027",
           "event_id": "01c90b25c3727f85758ec575558643bf253a6c7156853e9e1d3da0e80f451144",
