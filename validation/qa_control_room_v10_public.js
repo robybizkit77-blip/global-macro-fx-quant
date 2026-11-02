@@ -1588,7 +1588,11 @@ async function getState(page){
            cardBg:panel?.querySelector('.gmfq-cross-risk-card')?d.defaultView.getComputedStyle(panel.querySelector('.gmfq-cross-risk-card')).backgroundColor:null,
            cards:[...panel?.querySelectorAll('[data-cross-instrument]')||[]]
              .map(c=>({name:c.dataset.crossInstrument,status:c.dataset.crossStatus,
-               asof:c.textContent,value:c.querySelector('.gmfq-cross-risk-value')?.textContent})),
+               asof:c.textContent,value:c.querySelector('.gmfq-cross-risk-value')?.textContent,
+               trend:c.querySelector('svg.gmfq-cross-risk-spark')?.dataset.trendSource,
+               points:Number(c.querySelector('svg.gmfq-cross-risk-spark')?.dataset.pointCount),
+               line:c.querySelectorAll('svg.gmfq-cross-risk-spark polyline').length,
+               dashed:c.querySelector('svg.gmfq-cross-risk-spark polyline')?.getAttribute('stroke-dasharray')||''})),
            text:panel?.textContent,width:d?.documentElement.scrollWidth,
            viewport:d?.documentElement.clientWidth};
        });
@@ -1604,6 +1608,9 @@ async function getState(page){
           !risk.cards.some(c=>c.name==='VIX'&&c.status.startsWith('OFFICIAL_'))||
           !risk.cards.some(c=>c.name==='WTI'&&c.status.startsWith('OFFICIAL_'))||
           !risk.cards.some(c=>c.name==='BRENT'&&c.status.startsWith('SECONDARY_'))||
+          risk.cards.some(c=>c.line!==1||
+            (c.name==='BRENT'?(c.trend!=='MODEL_BACKSOLVED'||c.points!==3||c.dashed!=='7 5'):
+             (c.trend!=='OBSERVED_DATED'||c.points!==30||c.dashed!=='')))||
           !risk.text?.includes('Brent spot ufficiale non certificato nel feed')||
           !risk.text?.includes('Nessun confronto di spread fra spot e futures')||
           risk.width>risk.viewport+16)
