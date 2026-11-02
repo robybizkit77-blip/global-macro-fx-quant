@@ -2101,7 +2101,7 @@ function marketResearchSecondary(data){
 }
 /* Compact source-unlock map: generated from live operational status and
    verified source/access audit. Never includes inferred market prices. */
-function marketSourceReadinessHtml(view,operational){
+function marketSourceReadinessHtml(view,operational,graded=[]){
  // A dossier documents an unresolved source-access decision, NOT an official
  // currency list. Reconcile pending G8 lanes with the audited registry and
  // hide a dossier only after the separately certified runtime is active.
@@ -2131,9 +2131,19 @@ function marketSourceReadinessHtml(view,operational){
   const anchor=validUrl?'<a href="'+htmlEscape(link)+'" target="_blank" rel="noopener noreferrer">Fonte originale ↗</a>':'Fonte da verificare';
   const live=operational.currencies[k].operational_status;
   const state=live==='GREEN_OFFICIAL'?'CERTIFICATA · fonte operativa':
-   live==='GREEN_ESTIMATED'?'SOLO INDICATIVA · non certificata':'WITHHELD · non certificata';
+   live==='GREEN_ESTIMATED'?'SOLO INDICATIVA · non certificata':
+   'STIMA DI LAVORO DISPONIBILE · fonte ufficiale ancora non certificata';
+  const study=graded.find(x=>x.k===k);
+  const terms=['3M','6M','12M'];
+  const levels=study?study.pts.map((value,i)=>num(value)===null?null:
+   terms[i]+' ≈'+fmt(value,3)+'% ('+htmlEscape(study.dates[i]||'data non certificata')+')').filter(Boolean):[];
+  const research=levels.length?
+   '<p class="gmfq-source-working" data-source-study="'+k+
+   '" data-study-points="'+levels.length+'"><b>Riferimenti di studio:</b> '+
+   levels.join(' · ')+'. <small>Indicativi/scenari, non curve OIS certificate né repricing per meeting.</small></p>':
+   '<p class="gmfq-source-working">Stima numerica non disponibile nel feed di studio di questa seduta.</p>';
   return '<div class="gmfq-source-row" data-source-ccy="'+k+'"><div><b>'+FLAG[k]+' '+k+' · '+htmlEscape(state)+'</b>'+
-   '<p>'+htmlEscape(v.obstacle)+'</p><small>Requisito per accesso ai dati ufficiali: '+htmlEscape(v.activation_requirement)+'</small></div>'+
+   research+'<p>'+htmlEscape(v.obstacle)+'</p><small>Requisito per accesso ai dati ufficiali: '+htmlEscape(v.activation_requirement)+'</small></div>'+
    '<div class="gmfq-source-link">'+anchor+'</div></div>';
  }).join('');
  const chf=view.currencies.CHF?.government_rates;
@@ -2189,7 +2199,7 @@ function mountMarketResearch(doc,ois,proxy,rates,snb10,sourceReadiness){
   marketResearchSecondary(ois)+'<div class="gmfq-research-separator"><h3>Fonti incomplete</h3>'+
   '<div class="gmfq-snb-spot" id="gmfq-chf-snb-10y-context" role="note"></div>'+
   '<p class="gmfq-research-note" id="gmfq-nzd-pricing-context"></p>'+
-  '<p class="gmfq-research-note" id="gmfq-chf-rates-context"></p></div>'+marketSourceReadinessHtml(sourceReadiness,ois)+'</details></div>';
+  '<p class="gmfq-research-note" id="gmfq-chf-rates-context"></p></div>'+marketSourceReadinessHtml(sourceReadiness,ois,graded)+'</details></div>';
  original.insertAdjacentElement('afterend',host);
  const labels=[['ALL','Tutte'],...graded.map(c=>[c.k,FLAG[c.k]+' '+c.k])];
  const tabs=host.querySelector('.gmfq-research-tabs'),plot=host.querySelector('.gmfq-research-plot'),legend=host.querySelector('.gmfq-research-legend');
