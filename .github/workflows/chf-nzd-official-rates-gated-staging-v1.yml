@@ -7,6 +7,7 @@ on:
       - 'validation/build_chf_nzd_official_rates_staging_v1.py'
       - 'validation/test_chf_nzd_official_rates_staging_v1.py'
       - 'validation/stage_chf_paired_backfill_v1.py'
+      - 'validation/test_stage_chf_paired_backfill_v1.py'
       - 'validation/rates/recover_chf_snb_paired_history_v1.py'
       - 'validation/rates/test_recover_chf_snb_paired_history_v1.py'
       - 'validation/rates/reconcile_rbnz_b2_xlsx_oct29_v1.py'
@@ -19,6 +20,7 @@ on:
       - 'validation/build_chf_nzd_official_rates_staging_v1.py'
       - 'validation/test_chf_nzd_official_rates_staging_v1.py'
       - 'validation/stage_chf_paired_backfill_v1.py'
+      - 'validation/test_stage_chf_paired_backfill_v1.py'
       - 'validation/rates/recover_chf_snb_paired_history_v1.py'
       - 'validation/rates/test_recover_chf_snb_paired_history_v1.py'
       - 'validation/rates/reconcile_rbnz_b2_xlsx_oct29_v1.py'
@@ -56,6 +58,7 @@ jobs:
       - name: Test CHF same-date spot recovery and independent NZD B2 XLSX mapping
         run: |
           python validation/rates/test_recover_chf_snb_paired_history_v1.py
+          python validation/test_stage_chf_paired_backfill_v1.py
           python validation/rates/test_reconcile_rbnz_b2_xlsx_oct29_v1.py
 
       - name: Attempt current SNB daily 2Y+10Y paired-source recovery (never publish)
