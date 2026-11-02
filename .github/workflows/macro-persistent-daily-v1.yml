@@ -6,6 +6,8 @@ on:
     paths:
       - '.github/workflows/macro-persistent-daily-v1.yml'
       - 'validation/macro_adapter_pit_handoff.py'
+      - 'validation/macro/check_macro_source_registry.py'
+      - 'validation/macro/test_macro_official_source_label_contract_v1.py'
       - 'validation/sources/cad_statcan_core.py'
       - 'validation/test_cad_statcan_transport.py'
       - 'validation/macro_pit_anchor_contract.py'
@@ -21,6 +23,7 @@ on:
       - '.github/workflows/macro-persistent-daily-v1.yml'
       # Registry preflight fixes must be exercised by the actual production child.
       - 'validation/macro/check_macro_source_registry.py'
+      - 'validation/macro/test_macro_official_source_label_contract_v1.py'
   workflow_dispatch:
   # Independent early source-watch schedule backstops GitHub's delayed/missed
   # 07:35 Rome macro cron; the source acquisition and PIT rules are unchanged.
@@ -65,6 +68,9 @@ jobs:
 
       - name: Verify BLS transient transport quarantine and PIT fail-closed rules (offline)
         run: python -m unittest validation.test_us_bls_transport_withheld_v1 -v
+
+      - name: Guard EUR JPY NZD official source-label identity and reject spoofing
+        run: python -m unittest validation.macro.test_macro_official_source_label_contract_v1 -v
 
       - name: Snapshot baseline and registry contract
         shell: bash
