@@ -1,8 +1,47 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-02T02:33:57Z",
+  "generated_at_utc": "2026-11-02T11:18:22Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-39639b8102f3fb9dc0d1",
+      "observed_at_utc": "2026-11-02T03:52:00Z",
+      "headline": "India's auto stocks rise as strong October sales signal resilient festive demand",
+      "summary": "Reuters riporta: India's auto stocks rise as strong October sales signal resilient festive demand. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxQSk1WX2FrREhQbTBpSzZBem9GeGlqdmlTOFlZYV9pemNvMGdOYl9qWlFwXzE3cUhkOC1FZkRjY0k1MzYwcG9JSnM5VFg4WmZEVGxYWVNpczFoN3dubG1sOWQtaVkzYVdibzAyN1BZR1dXVDZwTk40WTlxcmFrSkZmbXcweTA2b3ZvNVUtLVlzZFhrREswSW9wWWN5azRLQWhhMVdSYzV5ZzVwZmp6T1NtemplWjA0SmJWM1VjQlltY2ctUQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-2688d5ad53b4bc9eb603",
+      "observed_at_utc": "2026-11-02T00:41:00Z",
+      "headline": "European stocks flat, oil drops as midterm caution prevails",
+      "summary": "Reuters riporta: European stocks flat, oil drops as midterm caution prevails. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxPbXpaWVRrQUkzYThuc1E5TnFCUXBTSTV2bHNaR1FhUmdEYnhjSHVneFdpbGhjeENwWlE2WVE1c3FCUV9qeGZzRGNoNFEzdERMblBDb005a2NBV3B2YzdfNF95dGtrVmxiNlJrNFU3UC1BTnZHcVh4a3hna25vdEFkSEtMUQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-6a6c93e111790084bdb7",
+      "observed_at_utc": "2026-11-02T05:29:00Z",
+      "headline": "Asian shares mostly advance but tech stocks remain volatile, while oil sinks 3.3%",
+      "summary": "AP News riporta: Asian shares mostly advance but tech stocks remain volatile, while oil sinks 3.3%. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxQdndJTkZzZVB3bUs3SWZPMjZXZ3JzbnlHbWJoak5WWlJWTnQwZFpJNWZpd0tQb3RYanMyckQxMmVjWm5nQnk2Tzl6QjVCOVFmN21RNks4Q2tsM2tUODBSMldsdVQ3eDBoX3UyZDZMM3JybmZVRVhxT2lReGVMMEJuMTNvLTNUbmR0TmVqeXRXV1FZSVdUV1ZtcWVhQQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-b19dbce512954ac3a7c8",
       "observed_at_utc": "2026-11-02T01:34:00Z",
@@ -1377,51 +1416,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMifkFVX3lxTE90MHowUDNReVJUUkkxWEZhTnAyYnZZNGNXQjJPVWt0QjgtaERfUHM4bERQd2k2NW5kMXR5dld0NHpsYnBhOENieXU1VU9saFBya202TXRjUktMa0l6OXF0OEZFUDdxR3FtSTdCLUxRVGpZNnBndExIcGVEZmtXZw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-661c62493b5eec5919de",
-      "observed_at_utc": "2026-10-26T10:31:43Z",
-      "headline": "Euro zone firms find it harder to get credit, ECB survey shows",
-      "summary": "Reuters riporta: Euro zone firms find it harder to get credit, ECB survey shows. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "EUR"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxQbkZkaU9IcHBVSFd2TXpwbWRKc1hOLS11RVVuZktKZUtZRDJGcUN5bmZGb19NS2JEd3prYUFkejdybkJscnQ0WTVPMW5GNG5jUmUwQmE0eVZ1U1o4SVZfRFZwd01ISzA5clhHMFg4UEtjWjJSeDk2NVBsbXc2Mk9vclRDMW0wWXRhNUNKSmt5LWFyTVNaSW91elhfUXlsOV9jNnRoR0RBNUYyczZ6X2pxODZ5M2U?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-139601b773683e574918",
-      "observed_at_utc": "2026-10-26T21:02:00Z",
-      "headline": "Wall Street rises as AI stocks keep swinging",
-      "summary": "AP News riporta: Wall Street rises as AI stocks keep swinging. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "AP News · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxNOGVDbFMzWWNkWEw1NzNQRUJLek52UWF2ZUh1dDVXM2FHNXhYekVEOUpNejc5djNNX0hTWDZiLVpaWUNnaGZ6b29iMS0wNHM0M0Y1eG9MdC1yVUVpTV9QbDlieDVrS3NLemIzTFdPOHFRTG1JSEpzbEc5MFR2aUhRMmFpSGJaZDJRV1d6bW1hUlVJUDdUSkFkMg?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-78062ffad9d9bcc8d41c",
-      "observed_at_utc": "2026-10-26T02:02:00Z",
-      "headline": "Euro slips ahead of central bank meetings, real tumbles",
-      "summary": "Reuters riporta: Euro slips ahead of central bank meetings, real tumbles. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "EUR"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxQWlRGQXNlMDJDS0ZlQnJqVlI0Q3FOUUhyZmpfcUY2TDJNOTA5a0NDMEc5QWpKZ3NrQlZ0QWJSMERlU2wzQlFxcWF0OVFRVlNOSUYydEdiaU5LaTFvVDMxTk5NWTF6NVVFZEdRcW8tOHpZRnlmWDhiRnV3QlllYnVtVldqTGllWmY2RnF1MWVlMFRBT0xWbHliN3pWM3NhQnNzRV80ZHJ5T0M?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
