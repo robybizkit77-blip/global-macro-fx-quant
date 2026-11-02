@@ -694,8 +694,10 @@ async function getState(page){
           throw Error(name+' source-sensitive 3M/6M/12M chart failed '+JSON.stringify(c));
          if(c.quality==='CONFLICTED'&&!c.slots.some(z=>z.status==='DISPUTED'))
           throw Error(name+' disputed individual quote is not visibly marked '+JSON.stringify(c));
-         if(c.ccy==='CHF'&&c.points===1&&c.missing!==2)
-          throw Error(name+' CHF isolated 12M promoted to curve');
+         if(c.ccy==='CHF'&&c.points===3&&
+            !c.slots.some(x=>x.tenor==='3m'&&x.status==='SCENARIO'&&
+             x.label.includes('3M')))
+          throw Error(name+' CHF 3M must remain a labelled extrapolated scenario');
        }
        console.log('PUBLIC_G8_OIS_SOURCE_GRADED_390_1440_GREEN',name,
          JSON.stringify(ui.cards.map(c=>({ccy:c.ccy,points:c.points,missing:c.missing,instrument:c.instrument}))));
