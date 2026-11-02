@@ -4257,10 +4257,14 @@ async function mountCentralBankFirstReading(doc){
  if(route()!=='banche'||frame.contentDocument!==doc)return;
  const hero=doc.querySelector('.desk-hero'),table=doc.getElementById('cb-table');
  if(!hero||!table||doc.getElementById('gmfq-cb-reading-first'))return;
- const inputs=await Promise.allSettled([feed('NATIVE_CB_DATA.json'),feed('OIS_OPERATIONAL_VIEW.json')]);
+ const inputs=await Promise.allSettled([feed('NATIVE_CB_DATA.json'),feed('OIS_OPERATIONAL_VIEW.json'),feed('NZD_CB_PRICING_DIRECTIONAL_PROXY.json')]);
  if(route()!=='banche'||frame.contentDocument!==doc)return;
  const cb=inputs[0].status==='fulfilled'?inputs[0].value:null;
  const ois=inputs[1].status==='fulfilled'?inputs[1].value:null;
+ const proxy=inputs[2].status==='fulfilled'?inputs[2].value:null;
+ let study6m={};
+ try{study6m=window.GMFQ_OIS_RESEARCH_V1?.workingSixMonth?.(ois,proxy,romeTodayIso())||{};}
+ catch(e){console.warn('[GMFQ CB study 6M not available]',String(e))}
  const validCalendarDay=d=>typeof d==='string'&&/^20\d{2}-\d{2}-\d{2}$/.test(d)&&
   Number.isFinite(Date.parse(d+'T00:00:00Z'))&&
   new Date(d+'T00:00:00Z').toISOString().slice(0,10)===d;
@@ -4287,7 +4291,8 @@ async function mountCentralBankFirstReading(doc){
     'La sintesi resta sospesa finché decisioni e copertura del pricing non sono riconciliate.',
    intro:reconciled?
     'GBP: OIS BoE; JPY, AUD, CAD: futures monetari. '+estimated.length+' valute stimate; '+
-    withheld.length+' senza curva certificata. Repricing ≠ probabilità di meeting.':
+    withheld.length+' senza curva certificata. '+
+    Object.keys(study6m).length+'/8 riferimenti monetari 6M di studio. Repricing ≠ probabilità di meeting.':
     'Dati o copertura insufficienti: non è possibile dichiarare un quadro aggiornato delle banche centrali.',
    sources:'Policy rate e decisioni: NATIVE_CB_DATA, date individuali dell’ultima decisione; prezzi: OIS_OPERATIONAL_VIEW, as-of separato per valuta. I dati del policy book non rappresentano dichiarazioni appena rilasciate.',
    guard:'Le curve certificate possono riferirsi a strumenti differenti; futures monetari non sono OIS puri. Snapshot policy storico, nessun nuovo giudizio hawkish/dovish, probabilità implicita o segnale FX inferiti.'},
@@ -4326,7 +4331,9 @@ async function mountCentralBankFirstReading(doc){
    return {ccy,bank:String(policy.bank),date:policy.next_meeting,last:policy.last_date,
      rateText:String(policy.rate_text||fmt(policy.rate,2)+'%'),
      tier:status==='GREEN_OFFICIAL'?'CERTIFIED':status==='GREEN_ESTIMATED'?'ESTIMATED':'WITHHELD',
-     proxy:status==='WITHHELD'&&Boolean(pricing.market_direction_proxy||pricing.secondary_quote_context)};
+     proxy:status==='WITHHELD'&&Boolean(pricing.market_direction_proxy||pricing.secondary_quote_context),
+     six:study6m[ccy]&&num(study6m[ccy].level_pct)!==null&&study6m[ccy].no_policy_repricing===true&&
+      study6m[ccy].estimated_trading_signal===false?study6m[ccy]:null};
  }).sort((a,b)=>a.date.localeCompare(b.date)||FX.indexOf(a.ccy)-FX.indexOf(b.ccy));
  const future=meetings.filter(x=>x.date>today);
  const focusDates=[...new Set(future.map(x=>x.date))].slice(0,3);
@@ -4364,12 +4371,14 @@ async function mountCentralBankFirstReading(doc){
  detail.innerHTML='<summary>Apri tutte le 8 banche, tassi e qualità del pricing</summary>'+
  '<ul class="gmfq-cb-meeting-all">'+meetings.map(x=>
   '<li data-meeting-ccy="'+x.ccy+'" data-meeting-date="'+x.date+
-  '" data-meeting-tier="'+x.tier+'" data-policy-asof="'+x.last+'">'+
+  '" data-meeting-tier="'+x.tier+'" data-policy-asof="'+x.last+
+  '" data-study-6m="'+(x.six?fmt(x.six.level_pct,3):'')+'">'+
   FLAG[x.ccy]+' <strong>'+x.ccy+' · '+htmlEscape(x.bank)+'</strong> · '+htmlEscape(x.date)+
   ' · tasso '+htmlEscape(x.rateText)+' · '+
-  (x.tier==='CERTIFIED'?'6M: fonte certificata':
-   x.tier==='ESTIMATED'?'6M: futures indicativi':
-   '6M: WITHHELD'+(x.proxy?' (proxy/contesto separato)':''))+
+  (x.six?'6M: '+(x.tier==='CERTIFIED'?'LIVELLO VERIFICATO ':'STIMA DI LAVORO ≈')+
+    fmt(x.six.level_pct,3)+'% · '+htmlEscape(x.six.as_of||'data separata')+
+    (x.tier==='CERTIFIED'?' · fonte certificata':' · NON ΔOIS, solo contesto'):
+    '6M: nessun riferimento numerico ricostruibile')+
   (x.date<=today?' · DATA PASSATA NELLO SNAPSHOT':'')+'</li>').join('')+
  '</ul><p>Tassi policy: ultima decisione nello snapshot storico, NON valore aggiornato da questo pannello. Pricing: fonti certificate, futures indicativi e stime sono categorie distinte. Non attribuire probabilità di rialzo/taglio a una riunione.</p>';
  rail.appendChild(detail);
