@@ -32,7 +32,9 @@ const liveMatrix=addon.matrix(srcFeed,bb,now);
 const primary=addon.view(liveMatrix);
 const actualCoverage=FX.filter(k=>liveMatrix.find(r=>r.ccy===k)&&
   ['3m','6m','12m'].every(t=>Number.isFinite(liveMatrix.find(r=>r.ccy===k).points[t]?.value))).length;
-assert(primary.includes('data-g8-estimated-curve-coverage="8/8"'));
+const visibleCoverage=FX.filter(k=>{const row=liveMatrix.find(r=>r.ccy===k);return row&&['3m','6m','12m'].some(t=>Number.isFinite(row.points[t]?.value)&&row.points[t]?.date)}).length;
+assert(primary.includes('data-g8-estimated-curve-coverage="'+visibleCoverage+'/8"'),
+ 'Coverage must reflect verified dated observations, not a hard-coded 8/8');
 assert(primary.includes('data-complete-tenors="'+actualCoverage+'/8"'),
  'Complete-tenor tally must follow independently verified current source');
 assert.equal(liveRows.length,8,'All eight currencies must be displayed');
