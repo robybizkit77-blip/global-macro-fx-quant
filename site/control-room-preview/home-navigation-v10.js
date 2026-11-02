@@ -379,7 +379,9 @@ function oisAll(doc,ois,proxy){
     v?num(v.value):sc?num(sc.value):study?num(study.level_pct):bill;
   return {k,delta,official,indicative:v,scenario:sc,study,bill,level};
  });
- const max=Math.max(65,...rows.map(x=>Math.abs(x.delta||0)));
+ // Bars show 6M RATE LEVEL (%), the same quantity as their numeric labels.
+ // Prior official-policy delta scaling made every estimated bar zero-length.
+ const maxLevel=Math.max(1,...rows.map(x=>num(x.level)!==null?Math.max(0,x.level):0));
  const displayed=rows.filter(x=>num(x.level)!==null).length;
  const certified=rows.filter(x=>x.official&&num(x.level)!==null).length;
  const estimated=displayed-certified;
@@ -387,6 +389,8 @@ function oisAll(doc,ois,proxy){
  host.dataset.gmfqSixMonthOfficial=String(certified);
  host.dataset.gmfqSixMonthEstimated=String(estimated);
  host.dataset.gmfqSixMonthUnit='RATE_PCT';
+ host.dataset.gmfqSixMonthVisualMetric='RATE_PCT_ZERO_BASED';
+ host.dataset.gmfqSixMonthVisualMax=fmt(maxLevel,3);
  host.innerHTML=rows.map(x=>{
   const state=x.official?'OFFICIAL_REPRICING':x.indicative?'FUTURES_LEVEL_ONLY':
    x.scenario?'CASH_CARRY_SCENARIO':x.study?'WORKING_ESTIMATE':x.k==='NZD'&&x.bill!==null?'BANK_BILL_PROXY':'WITHHELD';
@@ -404,19 +408,21 @@ function oisAll(doc,ois,proxy){
    state==='CASH_CARRY_SCENARIO'?'≈'+fmt(x.scenario.value,2)+'% ST':
    state==='WORKING_ESTIMATE'?'≈'+fmt(x.study.level_pct,2)+'% ST':
    state==='BANK_BILL_PROXY'?'≈'+fmt(x.bill,2)+'% BB':'NON CERT.';
-  const w=x.official?Math.max(2,Math.abs(x.delta)/max*100):0;
+  const w=num(x.level)===null?0:Math.round(10000*Math.min(1,Math.max(0,x.level)/maxLevel))/100;
   return '<div class="oisrow gmfq-six-month-row'+(x.k==='NZD'?' gmfq-nzd-proxy':'')+'" data-ccy="'+x.k+'" data-pricing-state="'+state+
-   '" data-policy-delta-allowed="'+(x.official?'true':'false')+
+   '" data-bar-metric="RATE_PCT_ZERO_BASED" data-level-pct="'+(num(x.level)===null?'':fmt(x.level,3))+
+   '" data-level-bar-pct="'+fmt(w,2)+'" data-policy-delta-allowed="'+(x.official?'true':'false')+
    '" tabindex="0" role="link" aria-label="Apri '+x.k+' '+htmlEscape(subtitle)+'"'+
    ' title="'+htmlEscape(x.k+' · '+subtitle+' · '+day)+'">'+
    '<span class="gmfq-six-month-name"><i aria-hidden="true">'+FLAG[x.k]+'</i><b>'+x.k+'</b><small>'+BANK[x.k]+'</small></span>'+
-   '<div class="track"><div class="fill'+(x.official&&x.delta<0?' alt':'')+
-   '" style="width:'+w+'%"></div></div>'+
+   '<div class="track" role="img" aria-label="6M '+htmlEscape(readable)+
+   ' · scala comune da zero a '+fmt(maxLevel,2)+'%"><div class="fill'+(!x.official?' gmfq-estimated-level':'')+
+   '" style="width:'+fmt(w,2)+'%"></div></div>'+
    '<strong>'+readable+'</strong></div>';
  }).join('')+
  '<div class="oisnote" data-six-month-coverage="'+displayed+'/8"><b>6M · '+displayed+
  '/8 valute</b> · '+certified+' fonti certificate · '+estimated+
- ' stime/proxy. Tutti i valori sono livelli di tasso in %, NON Δ policy in bp. '+
+ ' stime/proxy. Barre su scala comune 0–'+fmt(maxLevel,2)+'%: livelli 6M, NON Δ policy in bp. '+
  'PX = futures indicativi (non OIS); ST = stima di lavoro (USD da input contestati; NZD da Bank Bill–OCR). PROXY BB ≠ OIS. '+
  'Δ policy e date nel dettaglio; 3M / 6M / 12M nella pagina Tassi. '+
  'Nessuna stima è una quotazione OIS ufficiale o un segnale FX.</div>';
@@ -728,7 +734,8 @@ function mountHomeReadingPath(doc,context){
     '.gridtop #ois .gmfq-six-month-row[data-pricing-state="BANK_BILL_PROXY"] .track,'+
     '.gridtop #ois .gmfq-six-month-row[data-pricing-state="WITHHELD"] .track{background:repeating-linear-gradient(90deg,#253f51 0px,#253f51 3px,#102637 3px,#102637 8px);opacity:.75}'+
   '.gridtop #ois .gmfq-six-month-row .track{height:10px;border-radius:5px;overflow:hidden}'+
-  '.gridtop #ois .gmfq-six-month-row .fill{height:100%;border-radius:5px}'+
+  '.gridtop #ois .gmfq-six-month-row .fill{height:100%;border-radius:5px;background:#66b6ae}'+
+  '.gridtop #ois .gmfq-six-month-row .fill.gmfq-estimated-level{background:#b19cd8;opacity:.90}'+
   '.gridtop #ois .oisnote{font:10px/1.4 Arial,sans-serif;color:#9eb5c6;margin-top:10px}'+
   '.gridtop .yieldplot svg,.mid .chartbody svg{border-radius:6px;overflow:visible}'+
   '.gridtop .yieldplot,.mid .chartbody{background:linear-gradient(160deg,#0b2231 0%,#071923 100%)}'+
