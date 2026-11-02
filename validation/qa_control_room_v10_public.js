@@ -1648,23 +1648,22 @@ async function getState(page){
              panel.querySelector('#gmfq-macro-g8-study')?.dataset.biasEffect==='NONE',
            width:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth};
        });
-       const macroNew=process.env.GITHUB_EVENT_NAME!=='pull_request';
-       const studyValid=macroNew?
-         macroFirst.preview?.includes('Inflazione: ')&&macroFirst.preview.includes('Disoccupazione: ')&&
+       // The public contract is source-derived rather than hardcoded to a
+       // navigation asset version. This panel has 16 observed G8 levels and
+       // three dated Macro V3 details since the canonical 2026-11-01 release.
+       const studyValid=macroFirst.preview?.includes('Inflazione: ')&&
+         macroFirst.preview?.includes('Disoccupazione: ')&&
          macroFirst.observedCount==='16'&&macroFirst.overviewCount==='16'&&
          macroFirst.overviewRows.length===8&&macroFirst.overviewRows.every(x=>
            ['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'].includes(x.ccy)&&
-           x.inflation==='OBSERVED'&&x.labour==='OBSERVED'&&x.visible)&&macroFirst.noEffect:
-         macroFirst.preview?.includes('Inflazione: periodo ')&&
-         macroFirst.preview.includes('Lavoro: periodo ');
+           x.inflation==='OBSERVED'&&x.labour==='OBSERVED'&&x.visible)&&
+         macroFirst.noEffect;
        if(!macroFirst.baseline||!studyValid||
           !macroFirst.priority?.startsWith('Gli score sono uno snapshot del modello')||
-           !macroFirst.priorityFirst||
-           !macroFirst.closed||!macroFirst.hidden||macroFirst.count!==(['home-macro-v3-evidence-20261101','home-macro-v3-month-parity-20261101','estimate-first-pair6m-20261102'].includes(navigationVersion)?3:2)||
-          (['home-macro-v3-evidence-20261101','home-macro-v3-month-parity-20261101','estimate-first-pair6m-20261102'].includes(navigationVersion)&&
-            (macroFirst.v3ObservedCount!=='24'||macroFirst.v3Pairs!=='28'||
-             !macroFirst.v3Headline?.includes('28 confronti')||!macroFirst.v3Growth))||
-          macroFirst.width>macroFirst.viewport+16)
+          !macroFirst.priorityFirst||!macroFirst.closed||!macroFirst.hidden||
+          macroFirst.count!==3||macroFirst.v3ObservedCount!=='24'||
+          macroFirst.v3Pairs!=='28'||!macroFirst.v3Headline?.includes('28 confronti')||
+          !macroFirst.v3Growth||macroFirst.width>macroFirst.viewport+16)
          throw Error(name+' public Macro reading not deployed '+JSON.stringify(macroFirst));
        if(navigationVersion==='macro-observed-dynamics-20261022'){
           if(macroFirst.dynamics.length!==2||

@@ -2278,6 +2278,11 @@ function pairMacroRatesComparison(code,pair,rates,ois,modelDay,macroDay,proxy){
   try{scenario6m=window.GMFQ_OIS_RESEARCH_V1.scenarioSixMonth(ois,proxy,romeTodayIso())||{};}
   catch(e){console.warn('[GMFQ Pair NZD scenario unavailable]',String(e))}
  }
+ let study6m={};
+ if(typeof window.GMFQ_OIS_RESEARCH_V1?.workingSixMonth==='function'){
+  try{study6m=window.GMFQ_OIS_RESEARCH_V1.workingSixMonth(ois,proxy,romeTodayIso())||{};}
+  catch(e){console.warn('[GMFQ 6M working level not available]',String(e))}
+ }
  const sideText=(v)=>v===a?'Favorisce '+FLAG[a]+' '+a:v===b?'Favorisce '+FLAG[b]+' '+b:
   'Non distingue chiaramente le due valute';
  const sovereign=(c)=>{
@@ -2321,6 +2326,9 @@ function pairMacroRatesComparison(code,pair,rates,ois,modelDay,macroDay,proxy){
    Array.isArray(sc.range)&&sc.range.length===2&&
    num(sc.value)!==null&&num(sc.range[0])!==null&&num(sc.range[1])!==null&&
    sc.range[0]<sc.value&&sc.value<sc.range[1]&&fresh(sc.quote_as_of,5);
+  const x=!p.ok&&!contextValid&&!scValid?study6m[c]:null;
+  const studyOk=x&&x.currency===c&&num(x.level_pct)!==null&&
+   x.no_policy_repricing===true&&x.estimated_trading_signal===false&&fresh(x.as_of,5);
   const fwd=p.ok?('6M '+(p.delta>0?'+':'')+fmt(p.delta,1)+' bp · '+p.instrument+
    ' · '+p.date):contextValid?
    '6M repricing policy non certificato · '+context.label+
@@ -2329,7 +2337,9 @@ function pairMacroRatesComparison(code,pair,rates,ois,modelDay,macroDay,proxy){
    '6M scenario empirico ≈'+fmt(sc.value,2)+'% · fascia '+
    fmt(sc.range[0],2)+'–'+fmt(sc.range[1],2)+'% · Bank Bill 90gg con basis RBNZ · '+
    sc.quote_as_of+' · NON ΔOIS, solo contesto':
-   '6M pricing WITHHELD · '+(p.date||'non verificato');
+   studyOk?'6M STIMA DI LAVORO ≈'+fmt(x.level_pct,3)+'% · '+x.type+
+    ' · '+x.as_of+' · NON ΔOIS, solo contesto':
+   '6M · nessun riferimento numerico ricostruibile';
   return '<div class="gmfq-compare-leg" data-gmfq-compare-ccy="'+c+'"><strong>'+
    FLAG[c]+' '+c+'</strong><small>'+htmlEscape(ratesLine)+'</small>'+
    '<small>'+htmlEscape(fwd)+'</small></div>';
@@ -3290,6 +3300,32 @@ function macroStudyOverview(therm){
    '</div><div>'+cell(r.labour)+'</div></div>').join('')+'</div>';
  return {rows,count,html};
 }
+/* Read-only V3 changes, not recalculated FX or policy scores. */
+function macroTempoG8Html(v3,therm){
+ if(!v3)return '';
+ const dt=(c,k)=>{
+  const x=v3.countries?.[c]?.[k],v=num(x?.change_over_three_observation_intervals_pp);
+  if(v!==null)return {v,period:x.observation_period,model:false};
+  const a=therm?.currencies?.[c]?.[k],h=a?.history;
+  return Array.isArray(h)&&h.length>=4&&num(h.at(-1))!==null&&num(h.at(-4))!==null?
+   {v:h.at(-1)-h.at(-4),period:a.as_of,model:true}:null;
+ };
+ const cell=x=>x?'<strong>'+(x.v>0?'+':'')+fmt(x.v,2)+' pp'+(x.model?' ≈':'')+
+  '</strong><small>'+htmlEscape(x.period)+(x.model?' · STIMA':'')+'</small>':
+  '<strong>—</strong><small>non stimabile</small>';
+ return '<section id="gmfq-macro-tempo-g8" data-core-effect="NONE" data-pair-effect="NONE">'+
+ '<h3>G8 · cosa sta cambiando</h3><p>PIL trimestrale; Δ inflazione e disoccupazione nelle ultime 3 rilevazioni. Le frequenze non sono uguali per tutti i paesi.</p>'+
+ '<div class="gmfq-macro-tempo-grid"><div class="gmfq-macro-tempo-row gmfq-macro-tempo-head">'+
+ '<span>Valuta</span><span>PIL QoQ</span><span>Δ infl. 3 obs.</span><span>Δ disocc. 3 obs.</span></div>'+
+ FX.map(c=>{
+  const g=v3.countries?.[c]?.growth,x=num(g?.nonannualized_qoq_descriptive_pct),a=dt(c,'inflation'),b=dt(c,'labour');
+  return '<div class="gmfq-macro-tempo-row" data-ccy="'+c+'" data-inflation-change="'+
+   (a?fmt(a.v,4):'')+'" data-labour-change="'+(b?fmt(b.v,4):'')+'">'+
+   '<div><b>'+FLAG[c]+' '+c+'</b></div><div>'+
+   (x!==null?'<strong>'+(x>0?'+':'')+fmt(x,2)+'%</strong><small>'+htmlEscape(g.reference_quarter)+'</small>':
+   '<strong>—</strong><small>non stimato</small>')+'</div><div>'+cell(a)+'</div><div>'+cell(b)+'</div></div>';
+ }).join('')+'</div><p>Disoccupazione in aumento significa lavoro più debole, non necessariamente valuta più debole. Nessuna modifica a score, tesi o segnali.</p></section>';
+}
 function macroBaselineValid(model,therm){
  return canonicalMacroBaselineAsOf(model)!==null&&
   therm?.schema_version==='GMFQ_MACRO_HEATMAP_V1'&&therm.status==='ACTIVE'&&
@@ -3353,6 +3389,7 @@ async function mountMacroSourceLens(doc){
   '#gmfq-macro-source-lens .gmfq-macro-observation p{color:#a8bdcb;font:11px/1.5 Arial,sans-serif;margin:4px 0;overflow-wrap:anywhere}'+
   '#gmfq-macro-source-lens .gmfq-macro-v3-intro{border-left:2px solid #65bd98;padding:8px 12px;margin:10px 0;color:#d6e5ed;font:12px/1.55 Arial,sans-serif;background:rgba(60,130,116,.09)}'+
    '#gmfq-macro-source-lens .gmfq-macro-guard{color:#91a9bb;font:10px/1.6 Arial,sans-serif;margin:9px 0 0}'+
+  '#gmfq-macro-tempo-g8{border-top:1px solid #355266;margin:12px 0;padding-top:10px}#gmfq-macro-tempo-g8 h3{color:#e5edf4;font:600 13px Arial,sans-serif;margin:0}#gmfq-macro-tempo-g8 p{color:#b7cad7;font:11px/1.5 Arial,sans-serif;margin:7px 0}#gmfq-macro-tempo-g8 .gmfq-macro-tempo-grid{border:1px solid #304b5c;border-radius:6px;overflow:hidden}#gmfq-macro-tempo-g8 .gmfq-macro-tempo-row{display:grid;grid-template-columns:minmax(52px,.6fr) repeat(3,minmax(0,1fr));border-bottom:1px solid #2d4655}#gmfq-macro-tempo-g8 .gmfq-macro-tempo-row>div,#gmfq-macro-tempo-g8 .gmfq-macro-tempo-row>span{padding:7px 4px;min-width:0;overflow-wrap:anywhere}#gmfq-macro-tempo-g8 .gmfq-macro-tempo-row strong{display:block;color:#edf3f7;font:600 11px/1.45 Arial,sans-serif}#gmfq-macro-tempo-g8 .gmfq-macro-tempo-row small{display:block;color:#a6bdcb;font:9px/1.4 Arial,sans-serif}#gmfq-macro-tempo-g8 .gmfq-macro-tempo-head{background:#122e3d;font:600 10px/1.4 Arial,sans-serif;color:#d0e4ef}}'+
   '#gmfq-macro-source-lens .gmfq-macro-provenance-fallback{padding:10px 16px;color:#d8c48d;font:12px/1.55 Arial,sans-serif}'+
   '@media(max-width:650px){#gmfq-macro-source-lens .gmfq-macro-body{padding:11px 12px}'+
   '#gmfq-macro-source-lens .gmfq-macro-measures{grid-template-columns:1fr}'+
@@ -3375,6 +3412,7 @@ async function mountMacroSourceLens(doc){
   '<p class="gmfq-macro-intro">G8: livelli osservati nelle serie disponibili, con date e frequenze indipendenti. Non sono nuove pubblicazioni sincronizzate, revisioni point-in-time certificate o nuovi score Growth.</p>'+
    (v3?'<p id="gmfq-macro-v3-summary" class="gmfq-macro-v3-intro" data-macro-v3-source="MATCHED_24_28"><strong>Macro V3 · fonte collegata.</strong> 8 economie, 24 osservazioni economiche e 28 confronti descrittivi. Fotografia generata il '+htmlEscape(v3.generated_europe_rome_day)+'. La direzione economica osservata non è un segnale FX.</p>':'')+
   '<div id="gmfq-macro-g8-study" data-core-effect="NONE" data-bias-effect="NONE" data-observation-count="'+overview.count+'">'+overview.html+'</div>'+
+  macroTempoG8Html(v3,thermometer)+
   '<p class="gmfq-macro-intro">Seleziona la valuta per direzione, accelerazione e fonti delle osservazioni.</p>'+
   '<label class="gmfq-macro-choice" for="gmfq-macro-provenance-currency">Valuta <select id="gmfq-macro-provenance-currency" aria-label="Valuta delle osservazioni Macro">'+options+'</select></label>'+
   '<p class="gmfq-macro-reading" id="gmfq-macro-reading" aria-live="polite">Periodi in verifica…</p>'+
