@@ -2999,6 +2999,34 @@ async function mountPairRankedList(doc){
  obs.observe(tbody,{childList:true}); // Native text search & selecting a pair both re-render the same tbody.
  headline();apply();
 }
+/* Estimate First: a comparable 6M level spread for each pair.
+   Rates are observed or scenario inputs with independent timestamps;
+   this is a study calculation, NOT a policy repricing or trade signal. */
+function pairWorkingSixMonthHtml(code,ois,proxy){
+ const api=window.GMFQ_OIS_RESEARCH_V1;
+ if(typeof api?.workingSixMonth!=='function'||!/^[A-Z]{6}$/.test(code))return '';
+ const [base,quote]=[code.slice(0,3),code.slice(3,6)];
+ if(!FX.includes(base)||!FX.includes(quote)||base===quote)return '';
+ let levels={};
+ try{levels=api.workingSixMonth(ois,proxy,romeTodayIso());}
+ catch(_){return '';}
+ const left=levels[base],right=levels[quote];
+ if(!left||!right||num(left.level_pct)===null||num(right.level_pct)===null)return '';
+ const bp=Math.round((left.level_pct-right.level_pct)*1000)/10;
+ const flagged=[left,right].some(x=>x.type!=='CERTIFIED_LEVEL');
+ const label=x=>x.modelled?'STIMA':x.type==='CERTIFIED_LEVEL'?'FONTE CERTIFICATA':'FUTURES INDICATIVO';
+ const sign=bp>0?'+':'';
+ return '<section id="gmfq-pair-working-spread" data-pair-working="'+code+
+  '" data-estimate-first="true" data-instrument="6M_MONETARY_LEVEL_SPREAD" data-trading-signal="false"'+
+  ' style="margin:11px 0;padding:11px 13px;background:#0d2738;border:1px solid #35576c;border-radius:7px;overflow-wrap:anywhere">'+
+  '<strong style="color:#f0edf0;font-size:13px">Differenziale monetario 6M · scenario di lavoro</strong>'+
+  '<p style="margin:6px 0;font-size:13px;color:#cbdce8">'+FLAG[base]+' '+base+' '+fmt(left.level_pct,2)+'% ('+label(left)+
+  ') − '+FLAG[quote]+' '+quote+' '+fmt(right.level_pct,2)+'% ('+label(right)+
+  ') = <b>'+sign+fmt(bp,1)+' bp</b></p>'+
+  '<small style="color:#a8bfd0">Fonti '+htmlEscape(left.as_of)+' / '+htmlEscape(right.as_of)+
+  (flagged?' · almeno un livello stimato o indicativo':' · livelli da fonti certificate')+
+  '. Differenza fra livelli 6M; NON è carry realizzato, variazione OIS o segnale automatico.</small></section>';
+}
 async function mountPairResearch(doc){
  if(route()!=='coppie'||frame.contentDocument!==doc)return;
  const host=doc.getElementById('pair-detail');
@@ -3119,6 +3147,7 @@ async function mountPairResearch(doc){
    '<p>Periodi economici differenti. I 2Y sono rendimenti governativi, non OIS o decisioni attese. Nessun bias FX è dedotto automaticamente. Fotografia Macro: '+htmlEscape(v3.generated_europe_rome_day)+'; prezzo del modello: '+htmlEscape(setup.price_asof)+'.</p></section>':'';
   const comparison=pairMacroRatesComparison(code,setup.pairs[code],rates,ois,setup.price_asof,macroDay,proxy);
   const changes=pairWhatChangedEvidence(code,setup.pairs[code],rates,setup.price_asof,macroDay);
+  const scenario6m=pairWorkingSixMonthHtml(code,ois,proxy);
   const reaction=pairMarketReactionAudit(code,rates,fxOk?fx:null);
   const decision=pairThesisReactionBridge(code,setup.pairs[code],setup.price_asof,reaction,macroDay);
   panel.innerHTML='<h2 class="desk-panel-title">Percorso di ricerca · '+FLAG[a]+' '+a+' / '+FLAG[b]+' '+b+'</h2>'+
@@ -3131,7 +3160,7 @@ async function mountPairResearch(doc){
    (macroDay?(fresh(macroDay,10)?' · DATATA':' · STORICA'):' · WITHHELD')+'</span>'+
    '<span data-source="price"><b>Prezzo del modello:</b> '+htmlEscape(setup.price_asof)+'</span>'+
    '<span data-source="fixing"><b>Fixing BCE:</b> '+htmlEscape(fxDay||'non verificato')+'</span></div>'+
-   decision+v3Html+
+   decision+v3Html+scenario6m+
    '<details id="gmfq-pair-full-research" class="gmfq-pair-full-research"'+(analysisExpanded?' open':'')+'>'+
    '<summary>Apri analisi completa · Macro/Rates, variazioni 2Y, audit prezzo e fonti</summary>'+
    comparison+changes+reaction+
