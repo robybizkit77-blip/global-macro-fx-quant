@@ -532,6 +532,31 @@ function scenarioSixMonth(ois,bb,today){
   backtest_eligible_as_official:false,pair_effect:'NONE',core_effect:'NONE'
  })});
 }
+/* Working 6M levels shared by Rates, Home and 28-pair research.
+   Levels are *not* central-bank meeting probabilities or a trading signal.
+   Source-graded estimates may be used for explicit research calculations. */
+function workingSixMonth(ois,bb,today){
+ if(ois?.schema!=='GMFQ_OIS_OPERATIONAL_VIEW_V1')return Object.freeze({});
+ const result={};
+ for(const r of matrix(ois,bb,today)){
+  const p=r.points?.['6m'];
+  if(!p||number(p.value)===null||!fresh(p.date,today)||
+     p.legacy_mislabeled_horizon===true)continue;
+  const kind=r.tier==='OFFICIAL'?'CERTIFIED_LEVEL':
+   (p.estimated||r.tier==='SCENARIO')?'MODEL_SCENARIO':
+   r.tier==='CONFLICTED'?'CONTESTED_INDICATIVE':'INDICATIVE_FUTURES';
+  result[r.ccy]=Object.freeze({
+    currency:r.ccy,level_pct:p.value,as_of:p.date,
+    type:kind,source_tier:r.tier,
+    provenance_note:r.source||'',
+    modelled:Boolean(p.estimated||r.tier==='SCENARIO'),
+    direct_ois_quote:r.official_ois,
+    no_policy_repricing:true,estimated_trading_signal:false,
+    input_date:p.scenario_input_date||p.date
+  });
+ }
+ return Object.freeze(result);
+}
 /* A full G8 research row requires three valid dated levels. A single
    observed contract must NOT count as complete 3M/6M/12M coverage. */
 function coverage(ois,bb,today){
@@ -879,8 +904,8 @@ const css=[
  '@media(max-width:600px){#gmfq-ois-research-estimates .gmfq-same-line{grid-template-columns:minmax(55px,.7fr) repeat(3,minmax(0,1fr))}#gmfq-ois-research-estimates .gmfq-same-line>*{padding:6px 3px}#gmfq-ois-research-estimates .gmfq-same-value b{font-size:11px}#gmfq-ois-research-estimates .gmfq-same-value small{font-size:8px}}',
  '@media(max-width:600px){#gmfq-ois-research-estimates .gmfq-est-body{padding:9px}#gmfq-ois-research-estimates .gmfq-est-row{grid-template-columns:minmax(78px,1.1fr) repeat(3,minmax(0,1fr))}#gmfq-ois-research-estimates .gmfq-est-row>div,#gmfq-ois-research-estimates .gmfq-est-row>span{padding:6px 4px}#gmfq-ois-research-estimates .gmfq-est-row b{font-size:12px}#gmfq-ois-research-estimates .gmfq-est-row small{font-size:9px}}'
 ].join('');
-if(typeof module!=='undefined'&&module.exports)module.exports={romeTodayIso,matrix,view,matchedResearchMoves,ratesContinuity,continuityHtml,fresh,coverage,indicativeSixMonth,scenarioSixMonth,auditNzdBankBill,auditDatedFuture,calibratedNzdCarry,NZD_REFERENCE_ROWS,NZD_RECENT_ROWS,NZD_HOLDOUT_ROWS};
-if(typeof window!=='undefined')window.GMFQ_OIS_RESEARCH_V1=Object.freeze({romeTodayIso,matrix,coverage,indicativeSixMonth,scenarioSixMonth});
+if(typeof module!=='undefined'&&module.exports)module.exports={romeTodayIso,matrix,view,matchedResearchMoves,ratesContinuity,continuityHtml,fresh,coverage,indicativeSixMonth,scenarioSixMonth,workingSixMonth,auditNzdBankBill,auditDatedFuture,calibratedNzdCarry,NZD_REFERENCE_ROWS,NZD_RECENT_ROWS,NZD_HOLDOUT_ROWS};
+if(typeof window!=='undefined')window.GMFQ_OIS_RESEARCH_V1=Object.freeze({romeTodayIso,matrix,coverage,indicativeSixMonth,scenarioSixMonth,workingSixMonth});
 if(typeof document==='undefined')return;
 const frame=document.getElementById('gmfq-page');if(!frame)return;
 const ROOT='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/';
