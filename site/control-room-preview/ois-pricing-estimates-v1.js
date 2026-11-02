@@ -424,6 +424,11 @@ function matrix(ois,bb,today){
       for(const t of tenors){
        const p=q.horizons?.[t]||{},primary=x.horizons?.[t]||{};
        if(p.source_quality!=='SECONDARY_VERIFIED_DAILY_BAR'||p.contract!==primary.contract)continue;
+       // The ICE quarterly roster is a calendar identity, NOT a traded 3M
+       // futures price. Treat its unquoted contract as missing observation.
+       // A separately-labelled 3M model may be calculated from verified
+       // 6M/12M inputs below, never from this calendar-derived 99.xx value.
+       if(primary.roster_quality==='ICE_LISTED_QUARTER_CALENDAR_DERIVED_UNQUOTED')continue;
        const checked=auditDatedFuture(ccy,t,primary,p.rate_indicative,p.quote_as_of,today);
        if(checked)points[t]=checked;
       }
