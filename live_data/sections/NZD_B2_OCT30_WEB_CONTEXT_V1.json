@@ -1,0 +1,12 @@
+{
+  "schema": "GMFQ_NZD_B2_OCT30_WEB_CONTEXT_V1",
+  "currency": "NZD",
+  "source_url": "https://www.rbnz.govt.nz/en/statistics/series/exchange-and-interest-rates/wholesale-interest-rates",
+  "published": "2026-11-02",
+  "observed": "2026-10-30",
+  "government_bond_2y": 3.96,
+  "government_bond_10y": 4.9,
+  "benchmark_roll_on_observation_date": true,
+  "status": "RESEARCH_ONLY_PENDING_INDEPENDENT_RECONCILIATION",
+  "eligible_for_trading_signals": false
+}
