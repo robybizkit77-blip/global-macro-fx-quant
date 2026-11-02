@@ -4127,7 +4127,7 @@ function crossRiskSparkline(code,row,series){
     series.last_date===row.asof&&Math.abs(series.last_value-row.value)<1e-8){
   const start=series.dates.length-30,dates=series.dates.slice(start);
   const vals=series.values.slice(start);
-  if(!dates.every((d,i)=>/^\\d{4}-\\d{2}-\\d{2}$/.test(d)&&
+  if(!dates.every((d,i)=>/^\d{4}-\d{2}-\d{2}$/.test(d)&&
       (i===0||d>dates[i-1]))||!vals.every(v=>num(v)!==null&&v>0))return '';
   values=vals;labels=[dates[0],dates.at(-1)];quality='OBSERVED_DATED';
  }else if(code==='BRENT'&&num(row.delta)!==null&&num(row.week)!==null&&
