@@ -2225,8 +2225,8 @@ function expectedReactionFromMetrics(row){
       disclaimer:c?.querySelector('.gmfq-compare-disclaimer')?.textContent};
   });
   if(!compareCHF.title?.includes('EUR /')||compareCHF.labels.length!==2||
-     compareCHF.same!=='false'||!compareCHF.spread.includes('WITHHELD')||
-     !compareCHF.dates.some(x=>x.includes('CHF')&&x.includes('2Y / 10Y WITHHELD'))||
+     compareCHF.same!=='false'||!compareCHF.spread.includes('STIMA DI LAVORO')||
+     !compareCHF.dates.some(x=>x.includes('CHF')&&x.includes('STIMA DI CONTINUITÀ'))||
      !compareCHF.disclaimer.includes('non sottrarre i loro delta'))
     throw Error(label+' CHF cross-date model/readiness guard broken '+JSON.stringify(compareCHF));
   // An unofficial 6M future can be shown as a dated LEVEL while the certified
@@ -2419,7 +2419,7 @@ function expectedReactionFromMetrics(row){
       legs:[...c?.querySelectorAll('.gmfq-compare-leg')||[]].map(x=>x.textContent)};
   });
   if(ratesFeed.AUD.date!==ratesFeed.CAD.date&&
-     (compareAUDCAD.same!=='false'||!compareAUDCAD.spread?.includes('WITHHELD')))
+     (compareAUDCAD.same!=='false'||!compareAUDCAD.spread?.includes('STIMA DI LAVORO')))
     throw Error(label+' AUDCAD mixed-date 2Y spread promoted '+JSON.stringify(compareAUDCAD));
   if(!compareAUDCAD.legs.some(x=>x.includes('futures IB'))||
      !compareAUDCAD.legs.some(x=>x.includes('futures CORRA')))

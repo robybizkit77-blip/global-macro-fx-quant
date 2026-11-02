@@ -1363,7 +1363,7 @@ async function getState(page){
              width:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth};
          });
          if(!pairMacro.present||pairMacro.macro!==2||
-            pairMacro.spreadSame!=='false'||!pairMacro.spreadText?.includes('WITHHELD')||
+            pairMacro.spreadSame!=='false'||!pairMacro.spreadText?.includes('STIMA DI LAVORO')||
             !pairMacro.text?.includes('CHF')||
             !pairMacro.text?.includes('I giudizi Macro e Tassi/CB sono quelli dello snapshot del motore')||
             pairMacro.width>pairMacro.viewport+16)

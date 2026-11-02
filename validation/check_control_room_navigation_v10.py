@@ -91,7 +91,7 @@ items={
 "Full Pair evidence remains source-derived": "const comparison=pairMacroRatesComparison" in s and "const reaction=pairMarketReactionAudit" in s and "pairMarketReactionAudit(code,rates,fxOk?fx:null)" in s,
 "Progressive state survives pair selection": "let analysisExpanded=false" in s and "analysisExpanded=event.target.open" in s and "analysisExpanded?' open':''" in s,
 "Pair Macro/CB side only from canonical engine": "function pairMacroRatesComparison(code,pair,rates,ois,modelDay,macroDay,proxy)" in s and "safeSide(s.macroSide)" in s and "safeSide(s.policySide)" in s,
-"Observed 2Y spread strictly matched-date official": "A.certified&&B.certified&&A.date===B.date" in s and "Spread 2Y osservato: WITHHELD" in s and "r['2Y']" in s,
+"Observed 2Y spread strictly matched-date official": "A.certified&&B.certified&&A.date===B.date" in s and "const spread=same?studySpread:null;" in s and "STIMA DI LAVORO · spread 2Y" in s and "NON spread osservato nello stesso giorno" in s and "r['2Y']" in s,
 "No inferred OIS differential for mismatched instruments": "futures IB" in s and "futures CORRA" in s and "non sottrarre i loro delta" in s,
 "Pair timing and risk preserved": "pairMacroRatesComparison(code,setup.pairs[code],rates,ois,setup.price_asof,macroDay,proxy)" in s and "non vengono ricalcolati con i rendimenti mostrati" in s and "sc.policy_delta_allowed===false" in s,
 "What Changed distinguishes model diagnosis from measured yield moves": "function pairWhatChangedEvidence(code,pair,rates,modelDay,macroDay)" in s and "data-macro-baseline-as-of" in s and "LETTURA MODELLO" in s and "VARIAZIONE 2Y" in s and "relative_dynamics" in s,
