@@ -4,7 +4,7 @@ import argparse, json, hashlib
 from pathlib import Path
 from datetime import date
 from build_chf_nzd_official_rates_staging_v1 import validate_existing
-from rates.recover_chf_snb_paired_history_v1 import SCHEMA as SOURCE_SCHEMA
+SOURCE_SCHEMA = "GMFQ_SNB_CHF_DAILY_PAIRED_SPOT_BACKFILL_READ_ONLY_V1"
 
 def stage(rates, evidence, today):
     old=rates["CHF"]
