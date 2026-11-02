@@ -774,7 +774,7 @@ function view(rows,moves=[]){
    (counts.WITHHELD?' · '+counts.WITHHELD+' senza fonte attendibile':'');
  const incomplete=rows.filter(r=>tenors.some(t=>number(r.points[t]?.value)===null)).map(r=>r.ccy);
  const contested=rows.filter(r=>r.tier==='CONFLICTED').map(r=>r.ccy);
- return '<h2 class="desk-panel-title">G8 · OIS e stime monetarie 3M / 6M / 12M</h2>'+decisionRead+
+ return '<h2 class="desk-panel-title">G8 · OIS e stime monetarie 3M / 6M / 12M</h2>' + 
  '<p class="gmfq-est-quick-read" data-g8-estimated-curve-coverage="'+usable+'/8" data-complete-tenors="'+allTenors+'/8"><strong>Copertura G8 · </strong>'+esc(brief)+
  '. Tutte le valute sono consultabili; le stime non diventano segnali.</p>'+miniCharts(rows)+
  '<details class="gmfq-est-disclosure" open data-default="OPEN"><summary>Tabella G8 · 3M / 6M / 12M, dati e fonti (tocca per nascondere)</summary>'+
