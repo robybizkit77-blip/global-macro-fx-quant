@@ -4115,7 +4115,48 @@ function crossStudyCoverage(rows){
   historical:checked.filter(x=>x.state.endsWith('_HISTORICAL')).length,
   checked};
 }
-function crossRiskCard(code,row,description,source,secondary){
+/* Cross-Asset mini-trends: measured VIX/WTI closes and an explicitly
+   reconstructed Brent futures SHAPE are different evidentiary objects.
+   Never turn vendor pct changes into certified historical settlements. */
+function crossRiskSparkline(code,row,series){
+ if(row?.state==='WITHHELD'||num(row?.value)===null||row.value<=0)return '';
+ let values=[],labels=[],quality='';
+ if(['VIX','WTI'].includes(code)&&
+    Array.isArray(series?.dates)&&Array.isArray(series?.values)&&
+    series.dates.length>=30&&series.dates.length===series.values.length&&
+    series.last_date===row.asof&&Math.abs(series.last_value-row.value)<1e-8){
+  const start=series.dates.length-30,dates=series.dates.slice(start);
+  const vals=series.values.slice(start);
+  if(!dates.every((d,i)=>/^\\d{4}-\\d{2}-\\d{2}$/.test(d)&&
+      (i===0||d>dates[i-1]))||!vals.every(v=>num(v)!==null&&v>0))return '';
+  values=vals;labels=[dates[0],dates.at(-1)];quality='OBSERVED_DATED';
+ }else if(code==='BRENT'&&num(row.delta)!==null&&num(row.week)!==null&&
+   row.delta>-90&&row.delta<900&&row.week>-90&&row.week<900){
+  const prev=row.value/(1+row.delta/100),week=row.value/(1+row.week/100);
+  if(![prev,week].every(x=>Number.isFinite(x)&&x>0))return '';
+  values=[week,prev,row.value];labels=['≈1W','≈1D',row.asof];
+  quality='MODEL_BACKSOLVED';
+ }else return '';
+ const lo=Math.min(...values),hi=Math.max(...values),pad=Math.max(.025,(hi-lo)*.16),
+   y=v=>7+52*(hi+pad-v)/(hi-lo+2*pad),x=i=>8+i*264/(values.length-1);
+ const points=values.map((v,i)=>x(i).toFixed(1)+','+y(v).toFixed(1)).join(' ');
+ const color=quality==='OBSERVED_DATED'?'#68b9ae':'#ba9de0';
+ const trace='<polyline fill="none" stroke="'+color+'" stroke-width="2.7" '+
+   (quality==='MODEL_BACKSOLVED'?'stroke-dasharray="7 5" ':'')+
+   'stroke-linejoin="round" stroke-linecap="round" points="'+points+'"/>';
+ const last=values.at(-1);
+ const note=quality==='OBSERVED_DATED'?
+   '30 osservazioni datate · '+labels[0]+' → '+labels[1]:
+   '3 livelli ricavati aritmeticamente dalle variazioni vendor 1D/1W; NON prezzi storici osservati';
+ return '<div class="gmfq-cross-mini-trend" data-chart-quality="'+quality+'">'+
+   '<svg class="gmfq-cross-risk-spark" data-trend-source="'+quality+
+   '" data-point-count="'+values.length+'" viewBox="0 0 280 75" role="img" aria-label="'+
+   htmlEscape(code+' · '+note)+'">'+
+   '<line x1="8" x2="272" y1="67" y2="67" stroke="#294858" stroke-width=".7"/>'+
+   trace+'<circle cx="272" cy="'+y(last).toFixed(1)+'" r="3.5" fill="'+color+'"/>'+
+   '</svg><small class="gmfq-cross-mini-note">'+htmlEscape(note)+'</small></div>';
+}
+function crossRiskCard(code,row,description,source,secondary,history){
  const current=['OFFICIAL_RECENT','SECONDARY_RECENT'].includes(row.state);
  const unavailable=row.state==='WITHHELD';
  const badge=unavailable?'WITHHELD · non verificato':current?
@@ -4132,6 +4173,7 @@ function crossRiskCard(code,row,description,source,secondary){
    '<p class="gmfq-cross-risk-source">as-of '+htmlEscape(row.asof)+'</p>'+
    '<div class="gmfq-cross-risk-changes"><span>Δ '+(secondary?'1D':'oss. prec.')+
    ' '+change+'</span>'+(secondary?'<span>Δ ~1W '+(unavailable?'—':crossGoldPct(row.week))+'</span>':'')+'</div>'+
+   crossRiskSparkline(code,row,history)+
    '<p class="gmfq-cross-risk-source">'+htmlEscape(source)+'</p></article>';
 }
 async function mountCrossRisk(doc){
@@ -4170,6 +4212,9 @@ async function mountCrossRisk(doc){
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-value{font:650 26px/1.3 Arial,sans-serif;color:#e9f1f7;margin:11px 0 4px;font-variant-numeric:tabular-nums}'+
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-value small{font:11px Arial,sans-serif;color:#afc2d0}'+
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-changes{color:#dacb9d;font:11px/1.5 Arial,sans-serif;display:flex;flex-wrap:wrap;gap:9px}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-mini-trend{min-width:0;margin:9px 0 10px;padding:7px 0;border-top:1px solid #263e4d;border-bottom:1px solid #263e4d}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-spark{display:block;max-width:100%;width:100%;height:76px;overflow:visible}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-mini-note{display:block;color:#a9c2d0;font:10px/1.45 Arial,sans-serif;overflow-wrap:anywhere}'+
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-note{border-top:1px solid #213f50;padding:12px 16px;color:#a9c1cf;font:11px/1.6 Arial,sans-serif}'+
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-note summary{cursor:pointer;color:#d8c58e;font-weight:600;outline-offset:3px}'+
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-note p{margin:7px 0 0}'+
@@ -4221,9 +4266,9 @@ async function mountCrossRisk(doc){
   '<span data-source="brent">Brent futures BZ=F '+htmlEscape(b.asof)+' · '+(b.state==='SECONDARY_RECENT'?'indicativo recente':'non corrente/non verificato')+'</span>'+
   '<span class="gmfq-risk-sync">Non sono quotazioni intraday sincronizzate.</span></div>'+
   '<div class="gmfq-cross-risk-grid">'+
-   crossRiskCard('VIX',v,'Volatilità implicita S&P 500','Cboe · storico ufficiale VIX',false)+
-   crossRiskCard('WTI',w,'Spot Cushing · RWTC','U.S. Energy Information Administration',false)+
-   crossRiskCard('BRENT',b,'Futures BZ=F · non spot','Yahoo Finance · futures secondario',true)+
+   crossRiskCard('VIX',v,'Volatilità implicita S&P 500','Cboe · storico ufficiale VIX',false,d?.risk?.VIX)+
+   crossRiskCard('WTI',w,'Spot Cushing · RWTC','U.S. Energy Information Administration',false,d?.risk?.WTI)+
+   crossRiskCard('BRENT',b,'Futures BZ=F · non spot','Yahoo Finance · futures secondario',true,null)+
   '</div>'+
   '<details class="gmfq-cross-risk-note"><summary>Come leggere VIX, WTI e Brent</summary><p><strong>Limiti delle fonti:</strong> il VIX misura volatilità implicita, non da solo la direzione del mercato. WTI e Brent non sono la stessa serie né lo stesso strumento: domanda, offerta, scadenza dei futures e differenze di rilevazione contano. <strong>Brent spot ufficiale non certificato nel feed.</strong> Il riferimento numerico disponibile è il futures BZ=F visualizzato sopra con data e fonte proprie. Nessun confronto di spread fra spot e futures; nessun giudizio di risk-on/risk-off, segnale o sizing automatico.</p></details>';
  doc.defaultView.GMFQ_CROSS_RISK={status:global,
