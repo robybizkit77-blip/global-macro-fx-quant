@@ -347,6 +347,12 @@ function oisAll(doc,ois,proxy){
   try{scenarios=api.scenarioSixMonth(ois,proxy,romeTodayIso())||{};}
   catch(e){console.warn('[GMFQ Home NZD scenario unavailable]',String(e))}
  }
+ let working={};
+ if(ois?.schema==='GMFQ_OIS_OPERATIONAL_VIEW_V1'&&
+    typeof api?.workingSixMonth==='function'){
+  try{working=api.workingSixMonth(ois,proxy,romeTodayIso())||{}}
+  catch(e){console.warn('[GMFQ 6M study model unavailable]',String(e))}
+ }
  const nzReady=proxy?.schema==='GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1'&&
   proxy.status==='LIVE_DIRECTIONAL_PROXY_READY'&&fresh(proxy.as_of,4)&&
   proxy.governance?.substitutes_for_ois_level===false&&
@@ -365,12 +371,13 @@ function oisAll(doc,ois,proxy){
    Array.isArray(q.range)&&q.range.length===2&&
    num(q.value)!==null&&num(q.range[0])!==null&&num(q.range[1])!==null&&
    q.range[0]<q.value&&q.value<q.range[1]?q:null;
+  const study=working[k]&&num(working[k].level_pct)!==null&&fresh(working[k].as_of,5)?working[k]:null;
   const bill=k==='NZD'&&nzReady?num(proxy.horizons?.['6m']?.implied_bank_bill_rate):null;
   // All G8 lanes show the same financial quantity: 6M level in %.
   // Certified Δ-policy is available separately, never the main displayed unit.
   const level=official?num(x?.horizons?.['6m']?.rate):
-    v?num(v.value):sc?num(sc.value):bill;
-  return {k,delta,official,indicative:v,scenario:sc,bill,level};
+    v?num(v.value):sc?num(sc.value):study?num(study.level_pct):bill;
+  return {k,delta,official,indicative:v,scenario:sc,study,bill,level};
  });
  const max=Math.max(65,...rows.map(x=>Math.abs(x.delta||0)));
  const displayed=rows.filter(x=>num(x.level)!==null).length;
@@ -382,18 +389,20 @@ function oisAll(doc,ois,proxy){
  host.dataset.gmfqSixMonthUnit='RATE_PCT';
  host.innerHTML=rows.map(x=>{
   const state=x.official?'OFFICIAL_REPRICING':x.indicative?'FUTURES_LEVEL_ONLY':
-   x.scenario?'CASH_CARRY_SCENARIO':x.k==='NZD'&&x.bill!==null?'BANK_BILL_PROXY':'WITHHELD';
+   x.scenario?'CASH_CARRY_SCENARIO':x.study?'WORKING_ESTIMATE':x.k==='NZD'&&x.bill!==null?'BANK_BILL_PROXY':'WITHHELD';
   const day=x.official?ois.currencies[x.k].as_of:
-   x.indicative?x.indicative.quote_as_of:x.scenario?x.scenario.quote_as_of:
+   x.indicative?x.indicative.quote_as_of:x.scenario?x.scenario.quote_as_of:x.study?x.study.as_of:
    state==='BANK_BILL_PROXY'?proxy.as_of:'—';
   const subtitle=state==='OFFICIAL_REPRICING'?'Δ 6M da fonte certificata':
    state==='FUTURES_LEVEL_ONLY'?'Futures indicativo · solo livello':
    state==='CASH_CARRY_SCENARIO'?'Stima Bank Bill–OCR · fascia '+fmt(x.scenario.range[0],2)+'–'+fmt(x.scenario.range[1],2)+'% · NON ΔOIS':
+   state==='WORKING_ESTIMATE'?'Stima di lavoro · '+x.study.type+' · non OIS certificato':
    state==='BANK_BILL_PROXY'?'Bank Bill · non OIS':'OIS/6M non certificato';
   const readable=state==='OFFICIAL_REPRICING'?
    fmt(x.level,2)+'%':
    state==='FUTURES_LEVEL_ONLY'?'≈'+fmt(x.indicative.value,2)+'% PX':
    state==='CASH_CARRY_SCENARIO'?'≈'+fmt(x.scenario.value,2)+'% ST':
+   state==='WORKING_ESTIMATE'?'≈'+fmt(x.study.level_pct,2)+'% ST':
    state==='BANK_BILL_PROXY'?'≈'+fmt(x.bill,2)+'% BB':'NON CERT.';
   const w=x.official?Math.max(2,Math.abs(x.delta)/max*100):0;
   return '<div class="oisrow gmfq-six-month-row'+(x.k==='NZD'?' gmfq-nzd-proxy':'')+'" data-ccy="'+x.k+'" data-pricing-state="'+state+
@@ -408,7 +417,7 @@ function oisAll(doc,ois,proxy){
  '<div class="oisnote" data-six-month-coverage="'+displayed+'/8"><b>6M · '+displayed+
  '/8 valute</b> · '+certified+' fonti certificate · '+estimated+
  ' stime/proxy. Tutti i valori sono livelli di tasso in %, NON Δ policy in bp. '+
- 'PX = futures indicativi (non OIS); ST = scenario NZD Bank Bill corretto per basis (non OIS). PROXY BB ≠ OIS. '+
+ 'PX = futures indicativi (non OIS); ST = stima di lavoro (USD da input contestati; NZD da Bank Bill–OCR). PROXY BB ≠ OIS. '+
  'Δ policy e date nel dettaglio; 3M / 6M / 12M nella pagina Tassi. '+
  'Nessuna stima è una quotazione OIS ufficiale o un segnale FX.</div>';
 }
