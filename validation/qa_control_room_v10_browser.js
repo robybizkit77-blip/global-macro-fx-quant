@@ -993,6 +993,9 @@ function expectedReactionFromMetrics(row){
       sourceCount:host?.querySelectorAll('#gmfq-source-readiness .gmfq-source-row').length,
       sourceLinks:host?.querySelectorAll('#gmfq-source-readiness .gmfq-source-link a').length,
       sourceCurrencies:[...host?.querySelectorAll('#gmfq-source-readiness .gmfq-source-row b')||[]].map(x=>x.textContent),
+      studyRows:[...host?.querySelectorAll('#gmfq-source-readiness [data-source-study]')||[]].map(x=>({
+        ccy:x.dataset.sourceStudy,count:Number(x.dataset.studyPoints),text:x.textContent
+      })),
       sourceDoc:host?.querySelector('#gmfq-source-readiness')?.textContent,
       chartWidth:host?.querySelector('.gmfq-research-plot')?.scrollWidth,
       docWidth:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth
@@ -1040,6 +1043,8 @@ function expectedReactionFromMetrics(row){
      !research.snbSpot.includes('nessuno spread o segnale')||
      research.sourceCount!==sourceIds.length||research.sourceLinks!==sourceIds.length||
      !sourceIds.every(c=>research.sourceCurrencies.some(x=>x.includes(c)))||
+     !sourceIds.every(c=>research.studyRows.some(x=>x.ccy===c&&x.count>0&&
+       x.text.includes('Riferimenti di studio:')&&x.text.includes('non curve OIS certificate')))||
      !research.sourceDoc.includes('non completa il 2Y')||
      !research.sourceDoc.includes('Nessun dato indicativo è promosso')||
      research.docWidth>research.viewport+16)
