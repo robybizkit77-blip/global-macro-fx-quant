@@ -2454,9 +2454,14 @@ function expectedReactionFromMetrics(row){
     throw Error(label+' AUDCAD observed 2Y series gaps misclassified '+JSON.stringify(deltaAUDCAD));
   const audReaction=await page.evaluate(()=>{
     const c=document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-pair-market-reaction');
-    return {status:c?.dataset.reactionStatus,content:c?.textContent};
+    const p=c?.querySelector('.gmfq-reaction-study');
+    return {status:c?.dataset.reactionStatus,content:c?.textContent,
+     study:p?.dataset.studyStatus,spread:p?.dataset.studySpreadBp};
   });
-  if(audReaction.status!=='WITHHELD'||
+  const expectedAudSpread=Math.round((ratesFeed.AUD['2Y']-ratesFeed.CAD['2Y'])*1000)/10;
+  if(audReaction.status!=='WITHHELD'||audReaction.study!=='LEVELS_ONLY'||
+     Number(audReaction.spread)!==expectedAudSpread||
+     !audReaction.content?.includes('STIMA DI CONTINUITÀ')||
      !audReaction.content?.includes('NON VALUTABILE'))
      throw Error(label+' AUDCAD reaction used unevenly dated historical 2Y '+JSON.stringify(audReaction));
 
