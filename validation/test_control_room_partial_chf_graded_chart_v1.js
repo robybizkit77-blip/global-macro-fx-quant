@@ -49,7 +49,8 @@ for(const term of ['3m','6m']){
 }
 const rows=api.marketResearchGraded(partialFeed,bb);
 const partialPrimary=addon.view(addon.matrix(partialFeed,bb,now));
-assert(partialPrimary.includes('data-complete-tenors="7/8"'));
+assert(partialPrimary.includes('data-complete-tenors="'+(actualCoverage-1)+'/8"'),
+ 'Removing CHF 3M and 6M must reduce complete-tenor coverage by one');
 const primaryChf=partialPrimary.match(/<article class="gmfq-mini-curve" data-chart-ccy="CHF"[\s\S]*?<\/article>/);
 assert(primaryChf,'CHF must have its own primary mini-chart even with one tenor');
 assert(primaryChf[0].includes('data-points="1"'));
