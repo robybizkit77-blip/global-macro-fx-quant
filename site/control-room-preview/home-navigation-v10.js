@@ -2037,7 +2037,8 @@ function marketResearchGraded(ois,proxy){
   // "joined" means synchronized, source-certified only. Full indicative
   // sets are rendered as dashed research geometry, NEVER official OIS.
   const joined=count===3&&r.tier==='OFFICIAL'&&new Set(dates).size===1;
-  return {k:r.ccy,tier:r.tier,pts,dates,joined,verifiedTenors:count,
+  const estimatedTenors=terms.map(t=>r.points?.[t]?.estimated===true);
+  return {k:r.ccy,tier:r.tier,pts,dates,estimatedTenors,joined,verifiedTenors:count,
     missingTenors:terms.filter((t,i)=>pts[i]===null)};
  }).filter(Boolean);
 }
@@ -2069,6 +2070,7 @@ function marketResearchGradedSvg(curves){
    svg+='<circle cx="'+xx[i]+'" cy="'+yy(v).toFixed(1)+
     '" r="5" fill="'+COLOR[c.k]+'"><title>'+c.k+' '+['3M','6M','12M'][i]+
     ' '+fmt(v,3)+'% · '+c.dates[i]+' · '+c.tier+
+    (c.estimatedTenors[i]?' · STIMA ESTRAPOLATA NON OSSERVATA':'')+
     (c.verifiedTenors<3?' · SCADENZA ISOLATA NON CURVA':'')+'</title></circle>';
   });
   svg+='</g>';
