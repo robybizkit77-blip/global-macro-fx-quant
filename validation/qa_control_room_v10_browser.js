@@ -765,6 +765,7 @@ function expectedReactionFromMetrics(row){
         joined:x.dataset.joined,svg:!!x.querySelector('svg')?.getClientRects().length,
         instrument:x.dataset.instrument,missing:Number(x.dataset.missingTenors),
         lineCount:x.querySelectorAll('svg path').length,
+        indicativeLines:x.querySelectorAll('svg path[data-model-line="true"][stroke-dasharray="6 5"]').length,
         slots:[...x.querySelectorAll('.gmfq-mini-values [data-horizon]')].map(y=>({
           tenor:y.dataset.horizon,state:y.dataset.pointState,
           value:y.querySelector('b')?.textContent,date:y.querySelector('small')?.textContent
@@ -789,7 +790,7 @@ function expectedReactionFromMetrics(row){
     if(chart.slots.filter(x=>x.state==='MISSING').length!==chart.missing||
        chart.missing!==3-chart.points)
       throw Error(label+' hidden maturity on G8 visual '+JSON.stringify(chart));
-    if(chart.quality!=='OFFICIAL'&&(chart.joined!=='false'||chart.lineCount!==0))
+    if(chart.quality!=='OFFICIAL'&&(chart.joined!=='false'||chart.lineCount!==(chart.points===3?1:0)||chart.indicativeLines!==chart.lineCount))
       throw Error(label+' unauthorized indicative OIS curve connection '+JSON.stringify(chart));
     if(chart.quality==='CONFLICTED'&&!chart.slots.some(x=>x.state==='DISPUTED'))
       throw Error(label+' disputed futures hidden in ordinary chart '+JSON.stringify(chart));

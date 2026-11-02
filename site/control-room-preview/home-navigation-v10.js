@@ -2082,7 +2082,7 @@ function marketResearchSecondary(data){
      '<strong>'+fmt(p.rate_indicative,3)+'%</strong> · '+htmlEscape(p.contract)+' · '+htmlEscape(p.quote_as_of):
      '<span>non verificato</span>')+'</div>';
   }).join('');
-  return ['<article class="gmfq-quote-card"><b>'+FLAG[k]+' '+k+' · WITHHELD</b>'+lines+'</article>'];
+  return ['<article class="gmfq-quote-card"><b>'+FLAG[k]+' '+k+' · FUTURES INDICATIVI · NON OIS</b>'+lines+'</article>'];
  });
  return cards.length?'<div class="gmfq-research-separator"><h3>Quotazioni secondarie · solo contesto</h3>'+
   '<div class="gmfq-quote-cards">'+cards.join('')+'</div>'+
@@ -4213,7 +4213,7 @@ async function mountCentralBankFirstReading(doc){
    x.tier==='ESTIMATED'?'6M: futures indicativi':
    '6M: WITHHELD'+(x.proxy?' (proxy/contesto separato)':''))+
   (x.date<=today?' · DATA PASSATA NELLO SNAPSHOT':'')+'</li>').join('')+
- '</ul><p>Tassi policy: ultima decisione nello snapshot storico, NON valore aggiornato da questo pannello. Pricing: fonti certificate, futures indicativi e WITHHELD sono categorie distinte. Non attribuire probabilità di rialzo/taglio a una riunione.</p>';
+ '</ul><p>Tassi policy: ultima decisione nello snapshot storico, NON valore aggiornato da questo pannello. Pricing: fonti certificate, futures indicativi e stime sono categorie distinte. Non attribuire probabilità di rialzo/taglio a una riunione.</p>';
  rail.appendChild(detail);
 }
 function cotQuantitativeAudit(chart,story){

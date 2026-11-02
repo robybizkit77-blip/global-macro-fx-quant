@@ -727,7 +727,8 @@ function miniCharts(rows){
   const values=p.map(x=>x.v.value),bottom=Math.min(...values),top=Math.max(...values);
   const pad=Math.max(.1,(top-bottom)*.2);
   const x=i=>38+111*i,y=v=>82-62*(v-bottom+pad)/(top-bottom+2*pad);
-  const line=joined?'<path d="'+p.map((a,i)=>(i?'L':'M')+x(a.i)+','+
+  const displayJoined=p.length===3;
+  const line=displayJoined?'<path data-model-line="'+(!joined)+'" stroke-dasharray="'+(joined?'none':'6 5')+'" d="'+p.map((a,i)=>(i?'L':'M')+x(a.i)+','+
    y(a.v.value).toFixed(1)).join(' ')+
    '" fill="none" stroke="'+ink(r)+'" stroke-width="2"/>':'';
   const dots=p.map(a=>{
@@ -755,7 +756,7 @@ function miniCharts(rows){
  return '<section id="gmfq-g8-mini-charts" data-mini-curves="'+rows.length+'">'+
   '<header><b>3M / 6M / 12M · otto valute, qualità visibile</b>'+
   '<small>Scala indipendente per valuta: confronta la forma, non l’altezza tra grafici. '+
-  'Linea = tre scadenze certificate e sincronizzate; punti singoli = dati non '+
+  'Linea piena = fonte certificata sincronizzata; tratteggio = collegamento illustrativo di stime e proxy (date anche diverse), NON curva OIS; punti singoli = dati non '+
   'collegabili in una curva. Solo GBP è OIS diretta; AUD/CAD/JPY sono futures ufficiali.</small>'+
   '<div class="gmfq-mini-key" aria-label="Legenda qualità delle fonti">'+
   '<span data-key="official">● OIS / futures certificati</span>'+
