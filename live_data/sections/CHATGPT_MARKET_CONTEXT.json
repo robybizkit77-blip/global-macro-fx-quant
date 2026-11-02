@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_CHATGPT_MARKET_CONTEXT_V1",
-  "generated_at_utc": "2026-11-02T10:54:07Z",
+  "generated_at_utc": "2026-11-02T20:43:06Z",
   "evaluation_date_europe_rome": "2026-11-02",
   "reference_only": true,
   "policy": {
@@ -24,33 +24,54 @@
         "reason": "Only GBP, JPY, CAD and AUD have the certified OIS contract; estimated/proxy OIS is informational only, never alert-certified."
       },
       "GBP": {
-        "state": "STALE",
-        "as_of": "2026-10-29",
-        "reason": "Age 4d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-10-30",
+        "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
+        "policy_rate_pct": 3.75,
+        "horizons": {
+          "3m": {
+            "rate_pct": 4.1504,
+            "delta_vs_policy_bp": 40.0,
+            "change_1d_bp": -1.1,
+            "change_1w_bp": -0.1
+          },
+          "6m": {
+            "rate_pct": 4.4784,
+            "delta_vs_policy_bp": 72.8,
+            "change_1d_bp": -2.9,
+            "change_1w_bp": -1.5
+          },
+          "12m": {
+            "rate_pct": 4.8292,
+            "delta_vs_policy_bp": 107.9,
+            "change_1d_bp": -6.7,
+            "change_1w_bp": -5.6
+          }
+        }
       },
       "JPY": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-10-30",
+        "as_of": "2026-11-02",
         "source": "Tokyo Financial Exchange · Three-month TONA Futures",
         "policy_rate_pct": 1.25,
         "horizons": {
           "3m": {
-            "rate_pct": 1.467,
-            "delta_vs_policy_bp": 21.7,
-            "change_1d_bp": -0.1,
-            "change_1w_bp": -0.3
+            "rate_pct": 1.46,
+            "delta_vs_policy_bp": 21.0,
+            "change_1d_bp": -0.7,
+            "change_1w_bp": -0.8
           },
           "6m": {
-            "rate_pct": 1.704,
-            "delta_vs_policy_bp": 45.4,
-            "change_1d_bp": -0.1,
-            "change_1w_bp": -0.3
+            "rate_pct": 1.697,
+            "delta_vs_policy_bp": 44.7,
+            "change_1d_bp": -0.7,
+            "change_1w_bp": -0.8
           },
           "12m": {
-            "rate_pct": 1.998,
-            "delta_vs_policy_bp": 74.8,
-            "change_1d_bp": -0.1,
-            "change_1w_bp": 6.6
+            "rate_pct": 1.991,
+            "delta_vs_policy_bp": 74.1,
+            "change_1d_bp": -0.7,
+            "change_1w_bp": 0.7
           }
         }
       },
@@ -129,14 +150,24 @@
         "change_10y_bp": -6.0
       },
       "EUR": {
-        "state": "STALE",
-        "as_of": "2026-10-29",
-        "reason": "Age 4d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-10-30",
+        "source": "European Central Bank · AAA Svensson spot curve · 2026-10-30",
+        "government_2y_pct": 3.0051,
+        "government_10y_pct": 3.365,
+        "10y_minus_2y_bp": 36.0,
+        "change_2y_bp": 2.2,
+        "change_10y_bp": -0.4
       },
       "GBP": {
-        "state": "STALE",
-        "as_of": "2026-10-29",
-        "reason": "Age 4d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-10-30",
+        "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-10-30",
+        "government_2y_pct": 4.6775,
+        "government_10y_pct": 5.2767,
+        "10y_minus_2y_bp": 59.9,
+        "change_2y_bp": -3.0,
+        "change_10y_bp": -7.1
       },
       "JPY": {
         "state": "AVAILABLE_CERTIFIED",
@@ -154,9 +185,14 @@
         "reason": "Age 33d exceeds the 3d alert limit."
       },
       "CAD": {
-        "state": "STALE",
-        "as_of": "2026-10-29",
-        "reason": "Age 4d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-10-30",
+        "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-10-30",
+        "government_2y_pct": 3.28,
+        "government_10y_pct": 3.78,
+        "10y_minus_2y_bp": 50.0,
+        "change_2y_bp": 6.0,
+        "change_10y_bp": 0.0
       },
       "AUD": {
         "state": "STALE",
