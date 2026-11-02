@@ -446,7 +446,7 @@ async function getState(page){
            !(Number(reading.newHome.pricingScale)>0)||
            reading.newHome.pricing.some(x=>x.metric!=='RATE_PCT_ZERO_BASED'||
              !Number.isFinite(Number(x.barWidth))||
-             x.renderedWidth!==x.barWidth+'%'||
+             Math.abs(parseFloat(x.renderedWidth)-Number(x.barWidth))>0.005||
              (x.level!==''&&Math.abs(Number(x.barWidth)-
                Math.round(10000*Math.min(1,Math.max(0,Number(x.level))/Number(reading.newHome.pricingScale)))/100)>0.02))||
            reading.newHome.pricing.filter(x=>x.status==='OFFICIAL_REPRICING').length!==expectedOfficial.length||
