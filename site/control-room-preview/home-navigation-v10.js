@@ -3988,6 +3988,30 @@ function crossGoldAge(iso){
 }
 function crossGoldNumber(x){return typeof x==='number'&&Number.isFinite(x)?x.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2}):'—'}
 function crossGoldPct(x){return typeof x==='number'&&Number.isFinite(x)?(x>0?'+':'')+x.toFixed(2)+'%':'—'}
+/* Three modelled anchors reconstructed from vendor 1D/1W returns.
+   Not historical daily settlements, spot LBMA prices or a time series. */
+function crossGoldStudySparkline(gold){
+ const current=num(gold?.value),day=num(gold?.change_1d_pct),week=num(gold?.change_1w_pct);
+ if(current===null||current<=0||day===null||week===null||
+    day<=-85||week<=-85||day>=500||week>=500)return '';
+ const priorDay=current/(1+day/100),priorWeek=current/(1+week/100);
+ const values=[priorWeek,priorDay,current];
+ if(!values.every(x=>Number.isFinite(x)&&x>0))return '';
+ const lower=Math.min(...values),upper=Math.max(...values),
+   pad=Math.max(1,(upper-lower)*0.16),span=upper-lower+2*pad;
+ const y=v=>9+56*(upper+pad-v)/span;
+ const x=[12,144,276],pts=values.map((v,i)=>x[i]+','+y(v).toFixed(1)).join(' ');
+ const labels=['≈1W','≈1D',gold.proxy_as_of];
+ return '<div class="gmfq-gold-study-trend" data-chart-quality="MODEL_BACKSOLVED" data-anchors="3">'+
+  '<svg class="gmfq-gold-study-spark" data-trend-source="MODEL_BACKSOLVED" data-point-count="3" '+
+  'viewBox="0 0 288 99" role="img" aria-label="GC=F: tre livelli di studio ricostruiti da variazioni vendor; non serie storica osservata">'+
+  '<line x1="12" x2="276" y1="74" y2="74" stroke="#345365" stroke-width=".8"/>'+
+  '<polyline fill="none" stroke="#d6b678" stroke-width="2.7" stroke-dasharray="7 5" stroke-linecap="round" stroke-linejoin="round" points="'+pts+'"/>'+
+  x.map((pos,i)=>'<circle cx="'+pos+'" cy="'+y(values[i]).toFixed(1)+'" r="3" fill="#d6b678"/>'+
+   '<text x="'+pos+'" y="92" text-anchor="'+(i===0?'start':i===2?'end':'middle')+'" fill="#9fbacb" font-size="10">'+htmlEscape(labels[i])+'</text>').join('')+
+  '</svg><small>STIMA VISIVA · 3 livelli ricavati dalle variazioni vendor 1D/1W; '+
+  'non sono prezzi storici osservati o fixing LBMA.</small></div>';
+}
 async function mountCrossGold(doc){
  if(route()!=='cross'||frame.contentDocument!==doc)return;
  const main=doc.querySelector('.desk-main'),anchor=main?.querySelector('.desk-grid');
@@ -4003,6 +4027,9 @@ async function mountCrossGold(doc){
   '#gmfq-cross-gold-v10 .gmfq-gold-badge[data-state="WITHHELD"]{color:#efa7b1}'+
   '#gmfq-cross-gold-v10 .gmfq-gold-line{font:11px/1.55 Arial,sans-serif;color:#afc4d2;margin:7px 0}'+
   '#gmfq-cross-gold-v10 .gmfq-gold-changes{display:flex;gap:15px;flex-wrap:wrap;font:12px Arial,sans-serif;color:#e1d19a;margin:12px 0}'+
+  '#gmfq-cross-gold-v10 .gmfq-gold-study-trend{min-width:0;max-width:100%;padding:8px 0;margin:8px 0;border-top:1px solid #294454;border-bottom:1px solid #294454}'+
+  '#gmfq-cross-gold-v10 .gmfq-gold-study-spark{display:block;width:100%;height:99px;max-width:100%;overflow:visible}'+
+  '#gmfq-cross-gold-v10 .gmfq-gold-study-trend small{display:block;color:#afc4d2;font:10px/1.5 Arial,sans-serif;overflow-wrap:anywhere}'+
   '#gmfq-cross-gold-v10 .gmfq-gold-spot{padding:12px 2px 12px 16px;border-left:1px solid #294454;background:transparent;min-width:0}'+
   '#gmfq-cross-gold-v10 .gmfq-gold-spot strong{display:block;font:600 13px/1.4 Arial,sans-serif;color:#d5e3ee;margin-bottom:7px}'+
   '#gmfq-cross-gold-v10 .gmfq-gold-fine{padding:0 17px 13px;color:#8fa8b9;font:10px/1.55 Arial,sans-serif}'+
@@ -4039,6 +4066,7 @@ async function mountCrossGold(doc){
   '<div class="gmfq-gold-line">GC=F · futures COMEX indicativo · as-of '+htmlEscape(asof)+'</div>'+
   '<div class="gmfq-gold-changes"><span>Δ 1D: '+(valid?crossGoldPct(gold.change_1d_pct):'—')+
   '</span><span>Δ ~1W: '+(valid?crossGoldPct(gold.change_1w_pct):'—')+'</span></div>'+
+  (valid?crossGoldStudySparkline(gold):'')+
   '<div class="gmfq-gold-line">Fonte: Yahoo Finance, quotazione futures secondaria'+
    (state==='SECONDARY_HISTORICAL'?'. Dato storico, non utilizzabile come prezzo corrente.':'.')+'</div></div>'+
   '<div class="gmfq-gold-spot"><strong>Spot LBMA · non certificato nel feed</strong>'+
