@@ -54,14 +54,27 @@ def resolve(event: str, cron: str, now: dt.datetime, *,
         out["upstream_event"] = upstream_event
         out["upstream_conclusion"] = upstream_conclusion
         out["upstream_head_branch"] = upstream_head_branch
-        if (upstream_name != "Hourly Certified Alert Readiness V1"
-                or upstream_event != "schedule"
+        # A safe serial fallback must not fire on Macro push, PR,
+        # manual dispatch, or its independent scheduled refresh.
+        morning = (upstream_name == "Macro Persistent Daily V1"
+                   and upstream_event == "workflow_run")
+        evening = (upstream_name == "Hourly Certified Alert Readiness V1"
+                   and upstream_event == "schedule")
+        if (not (morning or evening)
                 or upstream_conclusion != "success"
                 or upstream_head_branch != "main"):
             out["reason"] = "UNTRUSTED_OR_NON_SCHEDULED_UPSTREAM"
             return out
         if local.weekday() >= 5:
-            out["reason"] = "EVENING_RECOVERY_WEEKEND"
+            out["reason"] = ("MORNING_RECOVERY_WEEKEND" if morning
+                             else "EVENING_RECOVERY_WEEKEND")
+            return out
+        if morning:
+            if not (5 <= local.hour < 10):
+                out["reason"] = "OUTSIDE_MORNING_MACRO_RECOVERY_WINDOW"
+                return out
+            out.update(should_run=True,
+                       reason="TRUSTED_SERIAL_MACRO_MORNING_RATES_RECOVERY")
             return out
         if not (19 <= local.hour <= 23):
             out["reason"] = "OUTSIDE_EVENING_SOURCE_PUBLICATION_WINDOW"
