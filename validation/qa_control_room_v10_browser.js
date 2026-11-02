@@ -773,8 +773,9 @@ function expectedReactionFromMetrics(row){
   });
   if(!chartAudit.visible||chartAudit.count!==8||
      chartAudit.charts.some(x=>!x.svg||x.points<1||x.points>3||
-       (x.ccy!=='CHF'&&x.points!==3)||
-       (x.ccy==='CHF'&&(x.quality!=='PROXY'||x.joined!=='false')))||
+       (!['CHF','USD'].includes(x.ccy)&&x.points!==3)||
+       (x.ccy==='CHF'&&(!['PROXY','MIXED'].includes(x.quality)||x.joined!=='false'))||
+       (x.ccy==='USD'&&(x.quality!=='MIXED'||x.points!==1||x.joined!=='false')))||
      chartAudit.charts.some(x=>x.quality==='MIXED'&&x.joined!=='false'))
     throw Error(label+' Missing/unverified source-graded G8 charts '+JSON.stringify(chartAudit));
   const visualTypes={GBP:'DIRECT_OIS',AUD:'OFFICIAL_FUTURES',CAD:'OFFICIAL_FUTURES',
