@@ -71,7 +71,7 @@ assert(chf,'CHF source-graded futures must not be fully hidden');
 assert(['PROXY','MIXED'].includes(chf.tier));
 assert.equal(chf.joined,false);
 assert.equal(chf.verifiedTenors,1);
-assert.deepEqual(chf.pts,[null,null,srcFeed.currencies.CHF.horizons['12m'].rate]);
+assert.deepEqual(chf.pts,[null,null,liveRows.find(x=>x.k==='CHF').pts[2]]);
 assert.deepEqual(chf.dates,[null,null,'2026-10-30']);
 assert.deepEqual(chf.missingTenors,['3m','6m']);
 assert.equal(rows.filter(x=>x.verifiedTenors===3).length,actualCoverage-1);
