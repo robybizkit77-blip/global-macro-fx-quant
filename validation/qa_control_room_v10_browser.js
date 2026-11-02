@@ -974,7 +974,9 @@ function expectedReactionFromMetrics(row){
        g8LevelSeries:host?.querySelectorAll('.gmfq-research-plot svg g[data-graded-ccy]').length,
        qualityTypes:[...host?.querySelectorAll('.gmfq-research-plot svg g[data-graded-ccy]')||[]].map(x=>({
          ccy:x.dataset.gradedCcy,tier:x.dataset.quality,
-         joined:x.dataset.joined,points:x.querySelectorAll('circle').length
+         joined:x.dataset.joined,points:x.querySelectorAll('circle').length,
+         studyLines:x.querySelectorAll('polyline[data-illustrative="true"][stroke-dasharray="7 6"]').length,
+         officialLines:x.querySelectorAll('polyline[data-illustrative="false"]').length
        })),
        g8Levels:host?.dataset.g8Levels,
       secondary:host?.querySelectorAll('.gmfq-quote-card').length,
@@ -1022,7 +1024,9 @@ function expectedReactionFromMetrics(row){
        (x.ccy==='USD'&&(x.tier!=='MIXED'||x.points!==3||x.joined!=='false'))||
        (x.ccy==='CHF'&&(!['PROXY','MIXED'].includes(x.tier)||x.joined!=='false'))||
        !['OFFICIAL','PROXY','MIXED','CONFLICTED','SCENARIO'].includes(x.tier)||
-       (['MIXED','CONFLICTED'].includes(x.tier)&&x.joined!=='false'))||
+       (['MIXED','CONFLICTED'].includes(x.tier)&&x.joined!=='false')||
+       (x.tier==='OFFICIAL'&&(x.officialLines!==1||x.studyLines!==0))||
+       (x.tier!=='OFFICIAL'&&(x.studyLines!==(x.points===3?1:0)||x.officialLines!==0)))||
       !research.qualityTypes.some(x=>x.ccy==='CHF'&&['PROXY','MIXED'].includes(x.tier)&&x.points>=1&&x.points<=3&&x.joined==='false')||
       research.secondary!==expectedSecondaryQuotes||
      !['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'].every(c=>research.legend.includes(c))||
@@ -1060,8 +1064,8 @@ function expectedReactionFromMetrics(row){
     throw Error(label+' Rates full source research unavailable '+JSON.stringify(expandedSourceDetail));
   console.log('CONTROL_ROOM_V10_RATES_DECISION_FIRST_GREEN',label,{status:research.sourceStatus,sourceCount:research.fourCurves,withheld:research.withheld});
   if(!plottedOfficial.length)throw Error(label+' no valid official curve to filter');
-   // EUR: the three validated contracts have different observation dates.
-   // All 3 levels must be drawn as isolated circles, NOT a connected curve.
+   // EUR dates differ: a dashed three-point research shape is allowed,
+   // but never a synchronized, solid OIS curve.
    await page.frameLocator('#gmfq-page').locator('#gmfq-pricing-research button[data-pricing-ccy="EUR"]').click();
    const eurPlot=await page.evaluate(()=>{
     const svg=document.getElementById('gmfq-page')?.contentDocument
@@ -1069,8 +1073,8 @@ function expectedReactionFromMetrics(row){
     return {dots:svg?.querySelectorAll('g[data-graded-ccy="EUR"] circle').length,
       lines:svg?.querySelectorAll('g[data-graded-ccy="EUR"] polyline').length};
    });
-   if(eurPlot.dots!==3||eurPlot.lines!==0)
-     throw Error(label+' unsynchronised EUR is falsely connected '+JSON.stringify(eurPlot));
+   if(eurPlot.dots!==3||eurPlot.lines!==1)
+     throw Error(label+' EUR research must have a dashed three-point curve '+JSON.stringify(eurPlot));
   await page.frameLocator('#gmfq-page').locator(
     '#gmfq-pricing-research button[data-pricing-ccy="'+plottedOfficial[0]+'"]').click();
   const selectedCurveCount=await page.frameLocator('#gmfq-page').locator('#gmfq-pricing-research svg polyline').count();
