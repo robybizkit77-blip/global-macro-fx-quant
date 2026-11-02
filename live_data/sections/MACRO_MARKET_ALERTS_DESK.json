@@ -1,8 +1,49 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-01T22:52:07Z",
+  "generated_at_utc": "2026-11-02T02:33:57Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-b19dbce512954ac3a7c8",
+      "observed_at_utc": "2026-11-02T01:34:00Z",
+      "headline": "FUNDVIEW Indian stocks may recover on steady growth and earnings, Axis AMC says",
+      "summary": "Reuters riporta: FUNDVIEW Indian stocks may recover on steady growth and earnings, Axis AMC says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxONjliWTZBa2JoY2lIVm5QYVVjUmVWVXcyRS1JV3htNFprNHFmS3ZYUmdYTlczQktVUGgtOFo2d1p5NGFfajRIeGxHZ19DZXhSWmgtSG1RVzhfRWJ2Z0RQZkFhVmhxd2cyNHczMnVEUFY5NWpGdHZmbjlmTUZtN3c4WThkSEp2T1EtZFZHX3M1SklnVjdMWEpxeGRoZXg4VG1qb1YtcjRqMlBiM2dvQ19OeXdTSGs0OG9YdVRF?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-1af8743c25006a689dab",
+      "observed_at_utc": "2026-11-01T07:22:41Z",
+      "headline": "FT Vest Nasdaq-100 Conservative Buffer ETF - July (QCJL.N) | Stock Price & Latest News",
+      "summary": "Reuters riporta: FT Vest Nasdaq-100 Conservative Buffer ETF - July (QCJL.N) | Stock Price & Latest News. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE1YY0VIVWZxdldkamd3Y05Rd2NtQWlUS1o5VGdDdkdqZTRzSHpjMDNIMEJQVEhCWGEwU3RMQUM5U0Nkb0xjbHVSS190a1BMbGR1aGV2NXNieVA?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-a2f227b29eccbc0eb07b",
+      "observed_at_utc": "2026-11-02T00:16:42Z",
+      "headline": "COMMENTARY: Asia's crude oil imports back to pre-war levels but refined fuels lag",
+      "summary": "Reuters riporta: COMMENTARY: Asia's crude oil imports back to pre-war levels but refined fuels lag. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxNUjRWdTdnRzAwR2xkSU04ZHlmbHh0eXg5Wm8xS1k5Q2hLYWRWbWdOVzd4ckZHcjZkYktZVHEyV29yQ25XNE9Ga0Y3TG5Dc3Awd054Y2o3MU5rLTNZNmRRTkZXVjdyZWJNYnM4bVczRU1RRmlqOW5JOVZCVWpJSXFDazBHWm5hUXhGb2FGS2xUN3Q5cFFQelVqazAxYXNDamdDZ0pINE5mQUE3VGhFdDcxZkZ4cUdSOFVQTWRsdXl6LXdMTUpIWnFLQ0VB?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-bf1a763224da6d1c7935",
       "observed_at_utc": "2026-11-01T20:12:33Z",
@@ -1381,45 +1422,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxQWlRGQXNlMDJDS0ZlQnJqVlI0Q3FOUUhyZmpfcUY2TDJNOTA5a0NDMEc5QWpKZ3NrQlZ0QWJSMERlU2wzQlFxcWF0OVFRVlNOSUYydEdiaU5LaTFvVDMxTk5NWTF6NVVFZEdRcW8tOHpZRnlmWDhiRnV3QlllYnVtVldqTGllWmY2RnF1MWVlMFRBT0xWbHliN3pWM3NhQnNzRV80ZHJ5T0M?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-346bcd85e63dbe0ace6a",
-      "observed_at_utc": "2026-10-26T20:25:19Z",
-      "headline": "Equities end higher as Anthropic's IPO filing buoys AI stocks",
-      "summary": "Reuters riporta: Equities end higher as Anthropic's IPO filing buoys AI stocks. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPVVlfUU5UYnVIOHVRRHJCaWJNQ0NtM0V5aXdZUE5QSEhGVTAxWmdXcU1KeGVEaEtYTXlEal9YNjMwblR6bGZQcm5HODd6N2xnNUppZzdXMDVTSWwtZEc3a3p3Q0M4VzRtaHo3QTd1VDJpaGNPQmw0WjFNaEMyQ2JyOVpGcmZEbktIdk45OHp4blZxdzc5UllRT2V1cnllVTVVTjVYZm1IZ0VjWDlwTnc?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-59f5fe3883fbcce0cbc7",
-      "observed_at_utc": "2026-10-26T18:37:31Z",
-      "headline": "Equities climb as Anthropic's IPO filing buoys AI stocks",
-      "summary": "Reuters riporta: Equities climb as Anthropic's IPO filing buoys AI stocks. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPVVlfUU5UYnVIOHVRRHJCaWJNQ0NtM0V5aXdZUE5QSEhGVTAxWmdXcU1KeGVEaEtYTXlEal9YNjMwblR6bGZQcm5HODd6N2xnNUppZzdXMDVTSWwtZEc3a3p3Q0M4VzRtaHo3QTd1VDJpaGNPQmw0WjFNaEMyQ2JyOVpGcmZEbktIdk45OHp4blZxdzc5UllRT2V1cnllVTVVTjVYZm1IZ0VjWDlwTnc?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-c74ca7afc6c46b7f7491",
-      "observed_at_utc": "2026-10-26T17:39:16Z",
-      "headline": "European stocks rebound as corporate optimism lifts mood ahead of rate decisions",
-      "summary": "Reuters riporta: European stocks rebound as corporate optimism lifts mood ahead of rate decisions. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPNTNqT1RkY0RsU1oyTkpOUHNVR3V3eDNUckxOSV9QeW1JelM3TjhzTjJ5NmJkcl8tMXFOOVJjVlJhMEtaSmI2RjNqV2VwbW93RWlRanFHZjJJTVg4Qi1jQmQ2ekRpZU1tZzk1Y1BEZDVYNlVzblNtV2loeFkzSHZQWFdTdUFXMjkxSHozRENYZWp3cXBzQ3ZPRTZDaGRrRGNOZzVF?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
