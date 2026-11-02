@@ -2082,7 +2082,7 @@ function marketResearchSecondary(data){
      '<strong>'+fmt(p.rate_indicative,3)+'%</strong> · '+htmlEscape(p.contract)+' · '+htmlEscape(p.quote_as_of):
      '<span>non verificato</span>')+'</div>';
   }).join('');
-  return ['<article class="gmfq-quote-card"><b>'+FLAG[k]+' '+k+' · WITHHELD</b>'+lines+'</article>'];
+  return ['<article class="gmfq-quote-card"><b>'+FLAG[k]+' '+k+' · SOLO FUTURES INDICATIVI · NON OIS</b>'+lines+'</article>'];
  });
  return cards.length?'<div class="gmfq-research-separator"><h3>Quotazioni secondarie · solo contesto</h3>'+
   '<div class="gmfq-quote-cards">'+cards.join('')+'</div>'+
@@ -2406,7 +2406,7 @@ function pairWhatChangedEvidence(code,pair,rates,modelDay,macroDay){
   return '<div class="gmfq-change-leg" data-gmfq-change-currency="'+c+
     '" data-gmfq-yield-change="'+ob.status+'"><strong>'+FLAG[c]+' '+c+'</strong>'+
     '<span>LETTURA MODELLO · BASELINE MACRO/TASSI '+htmlEscape(baselineVerified?macroDay:'NON VERIFICATA')+
-    (baselineVerified?(baselineCurrent?' · SNAPSHOT DATATO':' · STORICA, DA RIVALIDARE'):' · WITHHELD')+'</span>'+
+    (baselineVerified?(baselineCurrent?' · SNAPSHOT DATATO':' · STORICA, DA RIVALIDARE'):' · DATO NON VERIFICATO')+'</span>'+
     modelLeg(c,key)+
     '<span>VARIAZIONE 2Y · DATI OSSERVATI</span><p class="gmfq-change-measured">'+
     htmlEscape(ob.text)+'</p></div>';
@@ -3119,7 +3119,7 @@ async function mountPairResearch(doc){
    (!macroDay?'UNVERIFIED':fresh(macroDay,10)?'DATED':'HISTORICAL')+
    '" aria-label="Date e provenienza delle evidenze">'+
    '<span data-source="macro"><b>Baseline Macro/Tassi:</b> '+htmlEscape(macroDay||'non verificata')+
-   (macroDay?(fresh(macroDay,10)?' · DATATA':' · STORICA'):' · WITHHELD')+'</span>'+
+   (macroDay?(fresh(macroDay,10)?' · DATATA':' · STORICA'):' · DATO NON VERIFICATO')+'</span>'+
    '<span data-source="price"><b>Prezzo del modello:</b> '+htmlEscape(setup.price_asof)+'</span>'+
    '<span data-source="fixing"><b>Fixing BCE:</b> '+htmlEscape(fxDay||'non verificato')+'</span></div>'+
    decision+v3Html+
@@ -3334,7 +3334,7 @@ async function mountMacroSourceLens(doc){
   reading=panel.querySelector('#gmfq-macro-reading'),
   dynamics=panel.querySelector('#gmfq-macro-dynamics');
  const measure=(label,obs)=>{
-  if(!obs)return '<div class="gmfq-macro-observation"><strong>'+label+' · dato WITHHELD</strong>'+
+  if(!obs)return '<div class="gmfq-macro-observation"><strong>'+label+' · dato non disponibile</strong>'+
     '<p>Osservazione non verificabile nel termometro, nessun livello ricostruito.</p></div>';
   return '<div class="gmfq-macro-observation"><strong>'+htmlEscape(label)+
    ' · '+htmlEscape(obs.label)+'</strong><p>Valore dataset: '+fmt(obs.value,2)+
@@ -3876,7 +3876,7 @@ async function mountCrossGold(doc){
   '</span><span>Δ ~1W: '+(valid?crossGoldPct(gold.change_1w_pct):'—')+'</span></div>'+
   '<div class="gmfq-gold-line">Fonte: Yahoo Finance, quotazione futures secondaria'+
    (state==='SECONDARY_HISTORICAL'?'. Dato storico, non utilizzabile come prezzo corrente.':'.')+'</div></div>'+
-  '<div class="gmfq-gold-spot"><strong>Gold Price LBMA · WITHHELD</strong>'+
+  '<div class="gmfq-gold-spot"><strong>Oro LBMA · quotazione spot non verificata</strong>'+
   '<details class="gmfq-gold-line"><summary>Perché lo spot non è disponibile</summary><p>Nessuna quotazione spot ufficiale certificata in questo feed. Le tre osservazioni Gold legacy non hanno provenienza verificata e non sono usate in questo confronto.</p></details>'+
   '<p class="gmfq-gold-line">Un futures indicativo non equivale a oro spot o fixing LBMA: non confondere strumenti, orari di rilevazione e metodologie.</p></div></div>'+
   '<div class="gmfq-gold-fine">Solo contesto cross-asset · Non è un prezzo di regolamento certificato, un segnale, un livello operativo o un input per Macro/FX, bias, sizing e backtest.</div>';
@@ -4213,7 +4213,7 @@ async function mountCentralBankFirstReading(doc){
    x.tier==='ESTIMATED'?'6M: futures indicativi':
    '6M: WITHHELD'+(x.proxy?' (proxy/contesto separato)':''))+
   (x.date<=today?' · DATA PASSATA NELLO SNAPSHOT':'')+'</li>').join('')+
- '</ul><p>Tassi policy: ultima decisione nello snapshot storico, NON valore aggiornato da questo pannello. Pricing: fonti certificate, futures indicativi e WITHHELD sono categorie distinte. Non attribuire probabilità di rialzo/taglio a una riunione.</p>';
+ '</ul><p>Tassi policy: ultima decisione nello snapshot storico, NON valore aggiornato da questo pannello. Pricing: fonti certificate, futures indicativi e scadenze senza quotazione verificata sono categorie distinte. Non attribuire probabilità di rialzo/taglio a una riunione.</p>';
  rail.appendChild(detail);
 }
 function cotQuantitativeAudit(chart,story){
