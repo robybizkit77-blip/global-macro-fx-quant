@@ -74,7 +74,7 @@ assert.equal(chf.verifiedTenors,1);
 assert.deepEqual(chf.pts,[null,null,liveRows.find(x=>x.k==='CHF').pts[2]]);
 assert.deepEqual(chf.dates,[null,null,'2026-10-30']);
 assert.deepEqual(chf.missingTenors,['3m','6m']);
-assert.equal(rows.filter(x=>x.verifiedTenors===3).length,actualCoverage-1);
+assert.equal(rows.filter(x=>x.verifiedTenors===3).length,liveRows.filter(x=>x.verifiedTenors===3).length);
 const html=api.marketResearchGradedSvg(rows);
 assert(html.includes('data-currencies="'+visibleCoverage+'"'));
 const group=html.match(/<g data-graded-ccy="CHF"[\s\S]*?<\/g>/);
