@@ -1544,7 +1544,7 @@ async function getState(page){
        });
        if(!['SECONDARY_CURRENT','SECONDARY_HISTORICAL'].includes(gold.state)||
           !/^20\d{2}-\d{2}-\d{2}$/.test(gold.asof||'')||
-          !gold.text?.includes('Gold Price LBMA · WITHHELD')||
+          !gold.text?.includes('Spot LBMA · non certificato nel feed')||
           !gold.text?.includes('GC=F · futures COMEX indicativo')||
           !gold.text?.includes('non equivale a oro spot')||
           gold.quote==='—'||gold.legacy||
