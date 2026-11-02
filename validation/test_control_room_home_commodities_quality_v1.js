@@ -45,7 +45,9 @@ assert.equal(current.brent.grade,'SECONDARY_FUTURES');
 assert.equal(current.brent.asof,residual.lanes['BRENT.market_proxy'].proxy_as_of);
 assert.equal(current.brent.delta,residual.lanes['BRENT.market_proxy'].change_1d_pct);
 assert.equal(current.wti.asof,model.risk.WTI.last_date);
-assert.equal(current.wti.grade,'OFFICIAL_HISTORICAL');
+const wtiAge=(Date.parse(today+'T00:00:00Z')-
+ Date.parse(model.risk.WTI.last_date+'T00:00:00Z'))/86400000;
+assert.equal(current.wti.grade,wtiAge<=3?'OFFICIAL_RECENT':'OFFICIAL_HISTORICAL');
 assert.equal(current.wti.benchmark,'RWTC');
 const reject=(mutate,field,reason)=>{
  const cloned=structuredClone(residual);mutate(cloned);
