@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-10-30",
-  "generated_at_utc": "2026-11-01T17:58:47.095688Z",
+  "generated_at_utc": "2026-11-02T07:24:35.345212Z",
   "items": [
     {
       "as_of": "2026-10-30",
@@ -47,7 +47,7 @@
       "title": "AUD: repricing implicito da futures più dovish (-3.0 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-01T17:58:47.095688Z",
+  "last_checked_at_utc": "2026-11-02T07:24:35.345212Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -194,6 +194,116 @@
   "official_releases": {
     "core_effect": "NONE",
     "headlines": [
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "JPY",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "MONITOR",
+          "topic": "MACRO_EXPECTATIONS",
+          "verify_next": "Leggere stime e revisioni ufficiali; distinguere previsioni e decisione sui tassi, poi verificare TONA, 2Y e JPY.",
+          "why_watch": "Outlook ufficiale BoJ: la sola pubblicazione non dimostra una revisione hawkish o dovish delle proiezioni."
+        },
+        "id": "BOJ_NEWS:https://www.boj.or.jp/en/mopo/outlook/gor2610b.pdf",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-02T05:00:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "6m_rate_pct": 1.704,
+            "date": "2026-10-30",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "OFFICIAL_CERTIFIED",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Tokyo Financial Exchange · Three-month TONA Futures",
+            "status": "DAILY_CONTEXT_ONLY"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-10-29",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-10-29",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 1.901
+          }
+        },
+        "source": "Bank of Japan",
+        "source_id": "BOJ_NEWS",
+        "title": "Outlook for Economic Activity and Prices (October 2026, full text)",
+        "url": "https://www.boj.or.jp/en/mopo/outlook/gor2610b.pdf"
+      },
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "JPY",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
+        "id": "BOJ_NEWS:https://www.boj.or.jp/en/statistics/boj/fm/juqf/juqf10.xlsx",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-02T04:00:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "6m_rate_pct": 1.704,
+            "date": "2026-10-30",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "OFFICIAL_CERTIFIED",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Tokyo Financial Exchange · Three-month TONA Futures",
+            "status": "DAILY_CONTEXT_ONLY"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-10-29",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-10-29",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 1.901
+          }
+        },
+        "source": "Bank of Japan",
+        "source_id": "BOJ_NEWS",
+        "title": "Sources of Changes in Current Account Balances and Market Operations (Oct.)",
+        "url": "https://www.boj.or.jp/en/statistics/boj/fm/juqf/juqf10.xlsx"
+      },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "EUR",
@@ -346,7 +456,7 @@
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "JPY",
+        "ccy": "USD",
         "desk_context": {
           "analysis_basis": "SOURCE_HEADLINE_ONLY",
           "market_direction": "NOT_DETERMINED",
@@ -356,9 +466,9 @@
           "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
           "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
         },
-        "id": "BOJ_NEWS:https://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/mpr261030c.pdf",
+        "id": "FED_PRESS:https://www.federalreserve.gov/newsevents/pressreleases/orders20261029a.htm",
         "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-10-30T08:00:00Z",
+        "published_at_utc": "2026-10-29T20:30:00Z",
         "quality": "OFFICIAL_RSS_DATED_LINK",
         "reaction_evidence": {
           "causal_attribution": "NOT_ESTABLISHED",
@@ -369,13 +479,13 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 1.704,
+            "6m_rate_pct": 4.28,
             "date": "2026-10-30",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
-            "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "Tokyo Financial Exchange · Three-month TONA Futures",
+            "quality": "ESTIMATED_INFORMATIONAL",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
+            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
             "status": "DAILY_CONTEXT_ONLY"
           },
           "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
@@ -388,71 +498,16 @@
             "date": "2026-10-29",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-10-29",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 1.901
-          }
-        },
-        "source": "Bank of Japan",
-        "source_id": "BOJ_NEWS",
-        "title": "Quarterly Schedule of Outright Purchases of Japanese Government Bonds (Competitive Auction Method) (October-December 2026) (Schedule Updates)",
-        "url": "https://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/mpr261030c.pdf"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "JPY",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "MONITOR",
-          "topic": "CB_POLICY",
-          "verify_next": "Leggere il documento BoJ; verificare decisione, livello del tasso, voto e Outlook prima di confrontare TONA, 2Y e JPY.",
-          "why_watch": "Pubblicazione ufficiale BoJ di politica monetaria: il titolo non conferma l'esito, il voto o il tono della decisione."
-        },
-        "id": "BOJ_NEWS:https://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/k261030a.pdf",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-10-30T04:00:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "6m_rate_pct": 1.704,
-            "date": "2026-10-30",
-            "event_window_proof": false,
-            "instrument": "FUTURES_IMPLIED",
-            "quality": "OFFICIAL_CERTIFIED",
             "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "Tokyo Financial Exchange · Three-month TONA Futures",
-            "status": "DAILY_CONTEXT_ONLY"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-10-29",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-10-29",
+            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-10-29",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 1.901
+            "yield_2y_pct": 4.61
           }
         },
-        "source": "Bank of Japan",
-        "source_id": "BOJ_NEWS",
-        "title": "Statement on Monetary Policy",
-        "url": "https://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/k261030a.pdf"
+        "source": "Federal Reserve Board",
+        "source_id": "FED_PRESS",
+        "title": "Federal Reserve Board announces approval of application by The Bank of Nova Scotia",
+        "url": "https://www.federalreserve.gov/newsevents/pressreleases/orders20261029a.htm"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
@@ -764,6 +819,61 @@
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "USD",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
+        "id": "FED_PRESS:https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-10-28T18:00:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "6m_rate_pct": 4.28,
+            "date": "2026-10-30",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "ESTIMATED_INFORMATIONAL",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
+            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+            "status": "DAILY_CONTEXT_ONLY"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-10-29",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
+            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-10-29",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 4.61
+          }
+        },
+        "source": "Federal Reserve Board",
+        "source_id": "FED_PRESS",
+        "title": "Federal Reserve issues FOMC statement",
+        "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm"
+      },
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "NZD",
         "desk_context": {
           "analysis_basis": "SOURCE_HEADLINE_ONLY",
@@ -811,8 +921,8 @@
         "url": "https://www.rbnz.govt.nz/news-and-events/news/2026/10/ocr-held-at-2-75-percent"
       }
     ],
-    "last_attempt_day_rome": "2026-11-01",
-    "latest_published_at_utc": "2026-10-30T16:10:00Z",
+    "last_attempt_day_rome": "2026-11-02",
+    "latest_published_at_utc": "2026-11-02T05:00:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -823,18 +933,17 @@
     "schema": "GMFQ_OFFICIAL_RSS_HEADLINES_V1",
     "scope": "G8_CENTRAL_BANK_AND_EIA_OFFICIAL_RELEASES_NOT_GENERAL_MARKET_NEWS",
     "source_count": 9,
-    "source_failures": 1,
+    "source_failures": 0,
     "sources": [
       {
-        "accepted_items": 0,
+        "accepted_items": 2,
         "ccy": "USD",
-        "entries_rejected": null,
-        "failure_type": "HTTPError",
-        "feed_entries_seen": null,
+        "entries_rejected": 18,
+        "feed_entries_seen": 20,
         "feed_url": "https://www.federalreserve.gov/feeds/press_all.xml",
         "source": "Federal Reserve Board",
         "source_id": "FED_PRESS",
-        "status": "FETCH_OR_PARSE_FAILED"
+        "status": "OK_RECENT_ITEMS"
       },
       {
         "accepted_items": 12,
@@ -847,9 +956,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 4,
+        "accepted_items": 3,
         "ccy": "GBP",
-        "entries_rejected": 46,
+        "entries_rejected": 47,
         "feed_entries_seen": 50,
         "feed_url": "https://www.bankofengland.co.uk/rss/news",
         "source": "Bank of England",
@@ -857,10 +966,10 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 11,
+        "accepted_items": 12,
         "ccy": "JPY",
-        "entries_rejected": 37,
-        "feed_entries_seen": 48,
+        "entries_rejected": 35,
+        "feed_entries_seen": 47,
         "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
         "source": "Bank of Japan",
         "source_id": "BOJ_NEWS",
@@ -917,7 +1026,7 @@
         "status": "OK_RECENT_ITEMS"
       }
     ],
-    "status": "PARTIAL_SOURCES"
+    "status": "VERIFIED_OFFICIAL_RELEASES"
   },
   "schema": "GMFQ_NEWS_PULSE_OPERATIONAL_V1",
   "scope": {

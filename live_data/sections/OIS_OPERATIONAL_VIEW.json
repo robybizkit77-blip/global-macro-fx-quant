@@ -76,7 +76,7 @@
       "horizons": {
         "12m": {
           "accrual_start": "2027-12-15",
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "SA3Z2027",
@@ -95,35 +95,15 @@
           "symbol": "ICEEUR:SA3Z2027"
         },
         "3m": {
-          "accrual_start": "2026-12-16",
-          "business_day_lag": 0,
-          "change_1d_bp": null,
-          "change_1w_bp": null,
-          "contract": "SA3Z2026",
-          "contract_description": "Dec 2026",
-          "expiration": "2027-03-16",
-          "futures_price": 100.025,
-          "mapping": "nearest ICE SARON accrual start to today+90d; no interpolation",
-          "policy_delta_bp": null,
-          "price_valid_until": "2026-10-30T17:59:52Z",
-          "quote_as_of": "2026-10-30",
-          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
-          "quote_timestamp_verified": true,
-          "rate": -0.025,
-          "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": -2.5,
-          "symbol": "ICEEUR:SA3Z2026"
-        },
-        "6m": {
           "accrual_start": "2027-03-17",
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "SA3H2027",
           "contract_description": "ICE quarter 2027-03 (calendar-derived identity)",
           "expiration": "2027-06-15",
           "futures_price": 99.9,
-          "mapping": "nearest ICE SARON accrual start to today+180d; no interpolation",
+          "mapping": "nearest ICE SARON accrual start to today+90d; no interpolation",
           "policy_delta_bp": null,
           "price_valid_until": "2026-10-30T17:59:52Z",
           "quote_as_of": "2026-10-30",
@@ -134,6 +114,26 @@
           "raw_level_minus_spot_policy_bp": 10.0,
           "roster_quality": "ICE_LISTED_QUARTER_CALENDAR_DERIVED_UNQUOTED",
           "symbol": "ICEEUR:SA3H2027"
+        },
+        "6m": {
+          "accrual_start": "2027-06-16",
+          "business_day_lag": 1,
+          "change_1d_bp": null,
+          "change_1w_bp": null,
+          "contract": "SA3M2027",
+          "contract_description": "Jun 2027",
+          "expiration": "2027-09-14",
+          "futures_price": 99.75,
+          "mapping": "nearest ICE SARON accrual start to today+180d; no interpolation",
+          "policy_delta_bp": null,
+          "price_valid_until": "2026-10-30T17:59:52Z",
+          "quote_as_of": "2026-10-30",
+          "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
+          "quote_timestamp_verified": true,
+          "rate": 0.25,
+          "raw_level_gap_not_policy_repricing": true,
+          "raw_level_minus_spot_policy_bp": 25.0,
+          "symbol": "ICEEUR:SA3M2027"
         }
       },
       "input_mode": "LIVE_SECONDARY_OVERLAY",
@@ -166,7 +166,7 @@
       "direction_vs_policy": "WITHHELD",
       "horizons": {
         "12m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "FST3U2027",
@@ -185,7 +185,7 @@
           "symbol": "EUREX:FST3U2027"
         },
         "3m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "FST3V2026",
@@ -204,7 +204,7 @@
           "symbol": "EUREX:FST3V2026"
         },
         "6m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "FST3G2027",
@@ -431,7 +431,7 @@
       "direction_vs_policy": "WITHHELD",
       "horizons": {
         "12m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "ZQV2027",
@@ -450,7 +450,7 @@
           "symbol": "CBOT:ZQV2027"
         },
         "3m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "ZQZ2026",
@@ -469,7 +469,7 @@
           "symbol": "CBOT:ZQZ2026"
         },
         "6m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "ZQJ2027",
