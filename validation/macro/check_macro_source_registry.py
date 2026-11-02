@@ -74,7 +74,8 @@ def checked_public_source_label(key: str, registry_row: dict, heatmap_row: dict,
     # official transport may explain why the heatmap's source label differs
     # from the legacy/secondary canonical transport description.
     if (registry_row.get("source_adapter_status") == "READY"
-            and registry_row.get("transport_class") in WEAK_TRANSPORT
+            and registry_row.get("transport_class") in
+                (WEAK_TRANSPORT | {"CERTIFIED_OFFICIAL_TRANSPORT_REQUIRED"})
             and isinstance(certified, dict)
             and certified.get("transport_class") in STRONG_ADAPTER_TRANSPORT
             and certified.get("dynamic_release_discovery") is True
@@ -82,6 +83,20 @@ def checked_public_source_label(key: str, registry_row: dict, heatmap_row: dict,
             and presented == certified.get("source")
             and isinstance(presented, str) and presented):
         return "CERTIFIED_OFFICIAL_ADAPTER_LABEL_LEGACY_TRANSPORT_RETAINED"
+    # The Japanese Statistics Bureau's directly certified e-Stat transport
+    # carries the Labour Force Survey. Its public series label names the
+    # survey rather than its API transport. This EXACT official identity is
+    # whitelisted only for the registered JP_UNEMP_RATE adapter.
+    if (key == "JPY.labour"
+            and registry_row.get("source_adapter_status") == "READY"
+            and registry_row.get("transport_class") == "OFFICIAL_DIRECT"
+            and registry_row.get("series_id") == "JP_UNEMP_RATE"
+            and registry_row.get("authority") == "Statistics Bureau of Japan"
+            and registry_row.get("adapter") == "validation/sources/jpy_estat_unemployment.py"
+            and (ROOT / "validation/sources/jpy_estat_unemployment.py").is_file()
+            and original == "Statistics Bureau of Japan / e-Stat"
+            and presented == "Statistics Bureau of Japan / Labour Force Survey"):
+        return "SAME_OFFICIAL_JPY_ESTAT_LABOUR_SURVEY_SOURCE"
     fail(f"{key} source drift without independently registered official adapter: "
          f"registry={original!r} heatmap={presented!r}")
 
