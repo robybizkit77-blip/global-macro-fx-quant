@@ -456,6 +456,34 @@ function matrix(ois,bb,today){
      }
     }
   }
+  // CHF: when a 3M quote cannot be verified but 6M and 12M forward-start
+  // SARON contracts have individually audited values, extrapolate a 3M
+  // RESEARCH SCENARIO along the 6M→12M slope. This is NOT the 3M contract
+  // settlement (which may be calendar-derived and unquoted). Each input
+  // retains its own date, and no policy/OIS certification is inherited.
+  if(ccy==='CHF'&&x.operational_status==='WITHHELD'&&
+     x.official_status==='WITHHELD'&&x.backtest_eligible_as_official===false&&
+     !points['3m']&&['PROXY','MIXED'].includes(tier)){
+   const six=points['6m'],twelve=points['12m'];
+   if(six?.source_quote_verified===true&&twelve?.source_quote_verified===true&&
+      six.source_quote_disputed!==true&&twelve.source_quote_disputed!==true&&
+      six.legacy_mislabeled_horizon!==true&&twelve.legacy_mislabeled_horizon!==true&&
+      fresh(six.date,today)&&fresh(twelve.date,today)&&
+      number(six.value)!==null&&number(twelve.value)!==null&&
+      Math.abs(twelve.value-six.value)<=2){
+     const estimate=Math.round((six.value-(twelve.value-six.value)*0.5)*1000)/1000;
+     if(estimate>=-5&&estimate<=25){
+      points['3m']={value:estimate,date:six.date,estimated:true,
+       range:[Math.round((estimate-.25)*1000)/1000,Math.round((estimate+.25)*1000)/1000],
+       scenario_method:'CHF_3M_LINEAR_EXTRAPOLATION_FROM_DATED_6M_12M_V1',
+       scenario_input_date:six.date,scenario_other_date:twelve.date,
+       source_quote_verified:false,direct_ois_quote:false,policy_repricing_allowed:false};
+      tier='MIXED';
+      source+=(source?' · ':'')+'CHF 3M STIMA DI LAVORO: 6M − (12M−6M)/2, dati '+six.date+
+       ' / '+twelve.date+'; fascia illustrativa ±25 bp, NON quotazione SARON 3M';
+     }
+   }
+  }
   // When disputed USD 6M/12M are withheld, retain ONLY the independently
   // dated 3M futures settlement as an unjoined research observation.
   if(ccy==='USD'&&tier==='WITHHELD'&&
@@ -728,6 +756,7 @@ function miniCharts(rows){
     'Quotazioni contestate · punti non connessi · '+dates.join(' / '):
     p.length===0?'Nessuna scadenza datata verificabile':
     joined?'Serie ufficiale sincronizzata · '+dates[0]:
+    p.length===3?'Linea tratteggiata di studio, NON curva OIS osservata · '+dates.join(' / '):
     'Punti non connessi · '+dates.join(' / ');
   const header='<header><b>'+flags[r.ccy]+' '+r.ccy+'</b><small>'+esc(instrument(r))+'</small></header>';
   const strip='<div class="gmfq-mini-values" role="group" aria-label="Scadenze 3M 6M 12M">'+
@@ -763,6 +792,8 @@ function miniCharts(rows){
     '"><circle cx="'+x(a.i)+'" cy="'+y(a.v.value).toFixed(1)+
     '" r="4.5" fill="'+color+'" stroke="#071b2b" stroke-width="1.5"><title>'+
     esc(a.t.toUpperCase()+' '+fmt(a.v.value)+'% · '+a.v.date+
+      (a.v.estimated?' · STIMA NON OSSERVATA · '+(a.v.scenario_method||'scenario')+
+       ' · input '+(a.v.scenario_input_date||'')+'/'+(a.v.scenario_other_date||''):'')+
       (disputed?' · contestato, non convalidato':''))+
     '</title></circle></g>';
   }).join('');
@@ -794,7 +825,10 @@ function miniCharts(rows){
 function view(rows,moves=[]){
  const cell=(r,t)=>{const x=r.points[t];return x?
   '<b>'+(r.tier==='OFFICIAL'?'':'≈')+fmt(x.value)+'%</b><small>'+esc(x.date)+'</small>'+
-    (x.estimated?'<small>STIMA DI SCENARIO · input contestato, non OIS</small>':x.source_quote_disputed?'<small>⚠ QUOTAZIONE CONTESTATA · non convalidata</small>':
+    (x.estimated?'<small>'+(x.scenario_method==='CHF_3M_LINEAR_EXTRAPOLATION_FROM_DATED_6M_12M_V1'?
+      'STIMA 3M ESTRAPOLATA da 6M '+esc(x.scenario_input_date)+' e 12M '+esc(x.scenario_other_date)+
+      ' · fascia ±25 bp · NON contratto SARON osservato':
+      'STIMA DI SCENARIO · input contestato, non OIS')+'</small>':x.source_quote_disputed?'<small>⚠ QUOTAZIONE CONTESTATA · non convalidata</small>':
      x.legacy_mislabeled_horizon?'<small>⚠ FINE CONTRATTO, NON TASSO FORWARD '+t.toUpperCase()+' · non utilizzabile</small>':
      x.source_quote_verified?'<small>'+(x.accrual_start?'inizio matur. '+esc(x.accrual_start)+' · ':'')+
        (x.tenor_gap_days>0?'+':'')+x.tenor_gap_days+'gg vs target</small>':'')+
@@ -816,7 +850,7 @@ function view(rows,moves=[]){
  const allTenors=rows.filter(r=>r.tier!=='WITHHELD'&&tenors.every(t=>
   number(r.points[t]?.value)!==null&&r.points[t]?.date)).length;
  const brief=usable+'/8 valute con riferimenti numerici (almeno una scadenza datata); '+
-    allTenors+'/8 con tre scadenze effettivamente verificate · '+
+    allTenors+'/8 con tre livelli numerici (osservati o stimati, indicati singolarmente) · '+
    counts.OFFICIAL+' fonti certificate · '+counts.PROXY+' futures indicativi · '+
    counts.MIXED+' con date diverse · '+counts.CONFLICTED+' con quotazioni contestate · '+counts.SCENARIO+' scenario NZD'+
    (counts.WITHHELD?' · '+counts.WITHHELD+' senza fonte attendibile':'');
