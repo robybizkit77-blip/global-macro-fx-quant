@@ -277,10 +277,11 @@
         "value": 6.4
       },
       "series_id": "EA_UNEMP",
-      "source": "ECB LFSI transport; underlying source EUROSTAT",
+      "source": "Eurostat",
       "source_adapter_status": "READY",
       "transformation": "level",
-      "transport_class": "CERTIFIED_OFFICIAL_TRANSPORT_REQUIRED"
+      "transport_class": "CERTIFIED_OFFICIAL_TRANSPORT_REQUIRED",
+      "previous_transport_source_description": "ECB LFSI transport; underlying source EUROSTAT"
     },
     "GBP.inflation": {
       "adapter": "validation/sources/gbp_ons_core.py",
@@ -402,10 +403,11 @@
       },
       "replay": "validation/replay_jpy_macro_candidate.py",
       "series_id": "JP_UNEMP_RATE",
-      "source": "Statistics Bureau of Japan / e-Stat",
+      "source": "Statistics Bureau of Japan / Labour Force Survey",
       "source_adapter_status": "READY",
       "transformation": "level",
-      "transport_class": "OFFICIAL_DIRECT"
+      "transport_class": "OFFICIAL_DIRECT",
+      "previous_transport_source_description": "Statistics Bureau of Japan / e-Stat"
     },
     "NZD.inflation": {
       "authority": "Stats NZ",
