@@ -1,7 +1,29 @@
 {
-  "content_as_of": "2026-10-30",
-  "generated_at_utc": "2026-11-02T11:45:13.015234Z",
+  "content_as_of": "2026-11-02",
+  "generated_at_utc": "2026-11-02T15:48:37.768123Z",
   "items": [
+    {
+      "as_of": "2026-11-02",
+      "category": "FUTURES_IMPLIED_REPRICING",
+      "ccy": "JPY",
+      "confidence": "A",
+      "detail": "Movimento 1D -0.7 bp sul bucket 6M; variazione 1W -0.8 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "MEDIUM",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "Tokyo Financial Exchange · Three-month TONA Futures",
+      "title": "JPY: repricing implicito da futures più dovish (-0.7 bp 6M in 1D)"
+    },
+    {
+      "as_of": "2026-10-30",
+      "category": "OIS_REPRICING",
+      "ccy": "GBP",
+      "confidence": "A",
+      "detail": "Movimento 1D -6.7 bp sul bucket 12M; variazione 1W -5.6 bp.",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
+      "title": "GBP: repricing OIS più dovish (-6.7 bp 12M in 1D)"
+    },
     {
       "as_of": "2026-10-30",
       "category": "FUTURES_IMPLIED_REPRICING",
@@ -23,31 +45,9 @@
       "quality": "OFFICIAL_CERTIFIED",
       "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
       "title": "AUD: repricing implicito da futures più dovish (-4.0 bp 12M in 1D)"
-    },
-    {
-      "as_of": "2026-10-30",
-      "category": "FUTURES_IMPLIED_REPRICING",
-      "ccy": "JPY",
-      "confidence": "A",
-      "detail": "Movimento 1D -0.1 bp sul bucket 6M; variazione 1W -0.3 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
-      "importance": "MEDIUM",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "Tokyo Financial Exchange · Three-month TONA Futures",
-      "title": "JPY: repricing implicito da futures più dovish (-0.1 bp 6M in 1D)"
-    },
-    {
-      "as_of": "2026-10-29",
-      "category": "OIS_REPRICING",
-      "ccy": "GBP",
-      "confidence": "A",
-      "detail": "Movimento 1D -5.3 bp sul bucket 12M; variazione 1W +4.6 bp.",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
-      "title": "GBP: repricing OIS più dovish (-5.3 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-02T11:45:13.015234Z",
+  "last_checked_at_utc": "2026-11-02T15:48:37.768123Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -274,12 +274,12 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 1.704,
-            "date": "2026-10-30",
+            "6m_rate_pct": 1.697,
+            "date": "2026-11-02",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
             "source": "Tokyo Financial Exchange · Three-month TONA Futures",
             "status": "DAILY_CONTEXT_ONLY"
           },
@@ -329,12 +329,12 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 1.704,
-            "date": "2026-10-30",
+            "6m_rate_pct": 1.697,
+            "date": "2026-11-02",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
             "source": "Tokyo Financial Exchange · Three-month TONA Futures",
             "status": "DAILY_CONTEXT_ONLY"
           },
@@ -622,12 +622,12 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 4.5077,
-            "date": "2026-10-29",
+            "6m_rate_pct": 4.4784,
+            "date": "2026-10-30",
             "event_window_proof": false,
             "instrument": "OIS_OBSERVED",
             "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
             "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
             "status": "DAILY_CONTEXT_ONLY"
           },
@@ -780,12 +780,12 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 4.5077,
-            "date": "2026-10-29",
+            "6m_rate_pct": 4.4784,
+            "date": "2026-10-30",
             "event_window_proof": false,
             "instrument": "OIS_OBSERVED",
             "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
             "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
             "status": "DAILY_CONTEXT_ONLY"
           },
