@@ -2484,12 +2484,60 @@ function pairWhatChangedEvidence(code,pair,rates,modelDay,macroDay){
 /* Relative Rates -> FX consistency audit, not event study, attribution, signal
    or inference from model bias. Select ONLY exactly date-matched published ECB
    fixing AND official 2Y observations for both currency legs. */
+/* Read-only working context when the strict synchronized audit is unavailable.
+   Neither a carried-forward yield LEVEL nor a separately dated ECB move can
+   be substituted for an observed change in the yield differential. */
+function pairReactionWorkingContext(code,rates,fx){
+ const a=code.slice(0,3),b=code.slice(3,6);
+ if(!/^[A-Z]{6}$/.test(code)||!FX.includes(a)||!FX.includes(b)||a===b)return '';
+ const level=c=>{
+  const v=rates?.[c],h=v?.history2;
+  if(!String(v?.quality||'').includes('OFFICIAL')||num(v?.['2Y'])===null||
+     !/^\d{4}-\d{2}-\d{2}$/.test(v?.date||'')||
+     romeCalendarAge(v.date)===null||romeCalendarAge(v.date)<0||
+     romeCalendarAge(v.date)>60||!Array.isArray(h?.dates)||!Array.isArray(h?.values)||
+     h.dates.length!==h.values.length||h.dates.length<2)return null;
+  const last=h.dates.length-1,rate=num(h.values[last]);
+  if(h.dates[last]!==v.date||rate===null||Math.abs(rate-v['2Y'])>0.001)return null;
+  return {rate,date:v.date};
+ };
+ const A=level(a),B=level(b);
+ if(!A||!B)return '';
+ const bp=Math.round((A.rate-B.rate)*1000)/10;
+ if(!Number.isFinite(bp))return '';
+ const fxValid=fx?.schema==='GMFQ_ECB_G8_PRICE_HISTORY_V1'&&
+   fx.status==='CURRENT_OFFICIAL_HISTORY'&&fx.pair_count===28&&
+   fresh(fx.last_as_of,5)&&Array.isArray(fx.rows)&&fx.rows.length>=2;
+ let fxText='FX: movimento recente non certificabile';
+ if(fxValid){
+  const old=fx.rows.at(-2),now=fx.rows.at(-1),d0=old?.Date,d1=now?.Date;
+  const q0base=a==='EUR'?1:num(old?.[a]),q0quote=b==='EUR'?1:num(old?.[b]);
+  const q1base=a==='EUR'?1:num(now?.[a]),q1quote=b==='EUR'?1:num(now?.[b]);
+  const span=(Date.parse(d1+'T00:00:00Z')-Date.parse(d0+'T00:00:00Z'))/86400000;
+  if(/^\d{4}-\d{2}-\d{2}$/.test(d0||'')&&
+     /^\d{4}-\d{2}-\d{2}$/.test(d1||'')&&d1===fx.last_as_of&&
+     span>0&&span<=5&&[q0base,q0quote,q1base,q1quote].every(v=>v!==null&&v>0)){
+   const change=(((q1quote/q1base)/(q0quote/q0base))-1)*100;
+   if(Number.isFinite(change))fxText='Cambio BCE osservato '+d0+' → '+d1+
+    ': '+(change>0?'+':'')+fmt(change,2)+'%';
+  }
+ }
+ return '<div class="gmfq-reaction-study" data-study-status="LEVELS_ONLY"'+
+  ' data-study-spread-bp="'+fmt(bp,1)+'">'+
+  '<strong>STIMA DI LAVORO · confronto non sincronizzato</strong>'+
+  '<p>Spread 2Y ≈ <b>'+(bp>0?'+':'')+fmt(bp,1)+' bp</b> · '+
+   FLAG[a]+' '+a+' '+fmt(A.rate,3)+'% ('+htmlEscape(A.date)+') − '+
+   FLAG[b]+' '+b+' '+fmt(B.rate,3)+'% ('+htmlEscape(B.date)+').</p>'+
+  '<p>'+htmlEscape(fxText)+'. I rendimenti sono livelli ufficiali datati e mantenuti costanti per lo studio: questo spread è una STIMA DI CONTINUITÀ, non un dato osservato nello stesso giorno.</p>'+
+  '<small>Non calcolare un Δ spread da queste date diverse; nessun verdetto COERENTE/DIVERGENTE, repricing di banca centrale o segnale FX viene ricostruito.</small></div>';
+}
 function pairMarketReactionAudit(code,rates,fx){
  const a=code.slice(0,3),b=code.slice(3,6);
  const withheld=(why)=>'<section id="gmfq-pair-market-reaction" class="gmfq-reaction" data-reaction-status="WITHHELD" aria-label="Audit reazione dei mercati">'+
   '<h3>Il mercato ha reagito come doveva?</h3>'+
   '<p class="gmfq-reaction-verdict">NON VALUTABILE · '+htmlEscape(why)+'</p>'+
-  '<p class="gmfq-reaction-note">Per un confronto servono due date comuni con rendimenti governativi 2Y ufficiali di entrambe le valute e fixing BCE della coppia. Nessun segnale ricostruito.</p></section>';
+  '<p class="gmfq-reaction-note">Per un verdetto ufficiale servono due date comuni con rendimenti governativi 2Y e fixing BCE. Nessun segnale ricostruito.</p>'+
+  pairReactionWorkingContext(code,rates,fx)+'</section>';
  if(!/^[A-Z]{6}$/.test(code)||!FX.includes(a)||!FX.includes(b)||a===b)
   return withheld('coppia non riconosciuta');
  const hist=(c)=>{
@@ -3092,6 +3140,7 @@ async function mountPairResearch(doc){
  style.textContent='#gmfq-pair-research-path{margin-top:12px}#gmfq-pair-research-path .gmfq-path-body{padding:13px 17px 16px}#gmfq-pair-research-path p{color:#b8cad7;font-size:12px;line-height:1.55;margin:7px 0 12px}#gmfq-pair-research-path .gmfq-path-evidence{color:#e0c788;font-size:11px;line-height:1.5}#gmfq-pair-research-path .gmfq-path-legs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}#gmfq-pair-research-path .gmfq-path-leg{border:1px solid #294457;border-radius:6px;background:#0a2232;padding:12px 13px;min-width:0}#gmfq-pair-research-path .gmfq-path-leg strong{color:#ebf2f7;font-size:14px;display:block}#gmfq-pair-research-path .gmfq-path-leg small{display:block;color:#9db6c8;font-size:11px;margin:5px 0 9px;line-height:1.4}#gmfq-pair-research-path .gmfq-path-links{display:flex;flex-wrap:wrap;gap:6px}#gmfq-pair-research-path button{border:1px solid #3a596d;background:#122d40;border-radius:5px;padding:6px 9px;color:#e6edf4;font:11px Arial,sans-serif;cursor:pointer}#gmfq-pair-research-path button:hover{border-color:#e3c57c;color:#f1d894}#gmfq-pair-research-path button:focus-visible{outline:2px solid #e3c57c;outline-offset:2px}#gmfq-pair-research-path .gmfq-path-warning{color:#dfc894;border-top:1px solid #2a4759;padding-top:10px}@media(max-width:600px){#gmfq-pair-research-path .gmfq-path-legs{grid-template-columns:1fr}#gmfq-pair-research-path .gmfq-path-body{padding:11px}}';
  style.textContent+='.gmfq-compare{border-top:1px solid #2b4757;margin-top:14px;padding-top:13px}.gmfq-compare h3{margin:0 0 11px;font:600 14px/1.3 Arial,sans-serif;color:#e5eff6}.gmfq-compare-score{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.gmfq-compare-score>div{border-left:2px solid #997e4d;padding:7px 10px;background:#0e2534;min-width:0}.gmfq-compare-score span{display:block;font:10px/1.4 Arial,sans-serif;color:#a6bac7}.gmfq-compare-score strong{display:block;font:600 12px/1.5 Arial,sans-serif;color:#e5edf3;margin-top:4px}.gmfq-compare-legs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}.gmfq-compare-leg{min-width:0;padding:10px 12px;border-radius:5px;background:#0a1f2d;border:1px solid #274453}.gmfq-compare-leg strong{display:block;color:#e5eefa;font:600 12px Arial,sans-serif;margin-bottom:5px}.gmfq-compare-leg small{display:block;color:#b2c6d4;font:11px/1.5 Arial,sans-serif;margin:5px 0;overflow-wrap:anywhere}.gmfq-compare p{font:12px/1.55 Arial,sans-serif;margin:10px 0 0}.gmfq-compare .gmfq-compare-spread{color:#e1c990}.gmfq-compare .gmfq-compare-note{color:#cadbe5}.gmfq-compare .gmfq-compare-disclaimer{font-size:10px;color:#9ab4c5}@media(max-width:600px){.gmfq-compare-score,.gmfq-compare-legs{grid-template-columns:1fr}}';
  style.textContent+='.gmfq-what-changed{border-top:1px solid #284354;margin-top:16px;padding-top:14px}.gmfq-what-changed h3{margin:0;color:#e9f1f7;font:600 14px/1.4 Arial,sans-serif}.gmfq-what-changed>p{font:12px/1.55 Arial,sans-serif;color:#abc3d2;margin:7px 0 11px}.gmfq-change-legs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.gmfq-change-leg{border-left:2px solid #58718a;padding:9px 11px;background:#0d2332;min-width:0}.gmfq-change-leg strong{display:block;font:600 13px Arial,sans-serif;color:#e8f0f6;margin-bottom:8px}.gmfq-change-leg span{display:block;font:10px/1.4 Arial,sans-serif;color:#a0b6c5;letter-spacing:.02em}.gmfq-change-leg p{font:12px/1.5 Arial,sans-serif;color:#d2e0e9;margin:4px 0 11px;overflow-wrap:anywhere}.gmfq-change-leg .gmfq-change-measured{color:#e1c78a;margin-bottom:0}.gmfq-what-changed .gmfq-change-summary{color:#c5d7e2}.gmfq-what-changed .gmfq-change-warning{color:#93abba;font-size:10px}@media(max-width:600px){.gmfq-change-legs{grid-template-columns:1fr}}';
+ style.textContent+='.gmfq-reaction-study{margin:12px 0 2px;padding:12px 13px;border:1px dashed #486579;border-radius:7px;background:rgba(38,75,94,.17);overflow-wrap:anywhere}.gmfq-reaction-study>strong{display:block;font:600 12px/1.5 Arial,sans-serif;color:#e9cd93}.gmfq-reaction-study p{margin:6px 0;color:#d2dfe8}.gmfq-reaction-study small{display:block;color:#9db6c8;font:11px/1.5 Arial,sans-serif}';
  style.textContent+='.gmfq-reaction{border-top:1px solid #294557;margin-top:15px;padding-top:14px}.gmfq-reaction h3{font:600 14px/1.4 Arial,sans-serif;margin:0 0 9px;color:#e6eff5}.gmfq-reaction p{color:#b4c8d5;font:12px/1.55 Arial,sans-serif;margin:7px 0 11px}.gmfq-reaction .gmfq-reaction-window{font:11px/1.5 Arial,sans-serif;color:#dec98f;padding:5px 0}.gmfq-reaction-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:9px 0}.gmfq-reaction-metrics>div{border:1px solid #294554;border-radius:5px;padding:11px 12px;min-width:0;background:#0b2434}.gmfq-reaction-metrics span{display:block;color:#a4bbc9;font:10px/1.45 Arial,sans-serif}.gmfq-reaction-metrics strong{display:block;color:#edf2f7;font:600 21px/1.4 Arial,sans-serif;font-variant-numeric:tabular-nums;margin:3px 0}.gmfq-reaction-metrics small{display:block;color:#b4c7d5;font:11px/1.45 Arial,sans-serif;overflow-wrap:anywhere}.gmfq-reaction .gmfq-reaction-verdict{border-left:2px solid #a08b58;padding:8px 11px;background:#102638;color:#cbdce7}.gmfq-reaction-verdict strong{color:#e6d59c}.gmfq-reaction-verdict[data-reaction-verdict="COERENTE"]{border-color:#3ac998}.gmfq-reaction-verdict[data-reaction-verdict="DIVERGENTE"]{border-color:#e36a79}.gmfq-reaction .gmfq-reaction-note{color:#a9bdcb}.gmfq-reaction .gmfq-reaction-warning{color:#94abbc;font-size:10px}@media(max-width:600px){.gmfq-reaction-metrics{grid-template-columns:1fr}}';
  style.textContent+='.gmfq-v3-pair{border-top:1px solid #2c4e5d;padding-top:12px;margin-top:13px;color:#cadde9;font:12px/1.55 Arial,sans-serif}'+
   '.gmfq-v3-pair h3{font:600 14px/1.4 Arial,sans-serif;margin:0 0 7px;color:#e8f0f5}'+
