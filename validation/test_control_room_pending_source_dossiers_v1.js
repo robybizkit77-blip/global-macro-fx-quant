@@ -3,7 +3,7 @@
 'use strict';
 const fs=require('node:fs'),assert=require('node:assert/strict');
 const source=fs.readFileSync('site/control-room-preview/home-navigation-v10.js','utf8');
-const from=source.indexOf('function marketSourceReadinessHtml(view,operational){');
+const from=source.indexOf('function marketSourceReadinessHtml(view,operational,graded=[]){');
 const to=source.indexOf('\nfunction mountMarketResearch(',from);
 assert(from>0&&to>from);
 const FX=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
@@ -17,8 +17,10 @@ const op=JSON.parse(fs.readFileSync('live_data/sections/OIS_OPERATIONAL_VIEW.jso
 assert.match(view.as_of,/^20\d{2}-\d{2}-\d{2}$/);
 const today=view.as_of,dateAge=d=>(Date.parse(today+'T00:00:00Z')-Date.parse(d+'T00:00:00Z'))/86400000;
 const fresh=(day,days)=>typeof day==='string'&&dateAge(day)>=0&&dateAge(day)<=days;
-const fn=new Function('FX','FLAG','htmlEscape','fresh',source.slice(from,to)+
- ';return marketSourceReadinessHtml;')(FX,FLAG,htmlEscape,fresh);
+const num=x=>x===null||x===undefined||x===''?null:Number.isFinite(Number(x))?Number(x):null;
+const fmt=(x,d=2)=>Number(x).toFixed(d);
+const fn=new Function('FX','FLAG','htmlEscape','fresh','num','fmt',source.slice(from,to)+
+ ';return marketSourceReadinessHtml;')(FX,FLAG,htmlEscape,fresh,num,fmt);
 function ids(html){return [...html.matchAll(/data-source-ccy="([A-Z]{3})"/g)].map(x=>x[1]);}
 const pending=FX.filter(c=>['WITHHELD','GREEN_ESTIMATED'].includes(op.currencies[c]?.operational_status));
 assert.deepEqual(Object.keys(view.currencies).sort(),[...pending].sort(),'readiness identities must match source status');
@@ -26,6 +28,13 @@ const baseline=fn(view,op);
 assert.deepEqual(ids(baseline),pending,'the Home must disclose all pending sources');
 assert(baseline.includes(pending.length+' dossier di accesso'));
 assert(!baseline.includes('Stato delle fonti da aggiornare'));
+// Study-only quotes are visible even though the OFFICIAL source still needs access.
+const eur=fn(view,op,[{k:'EUR',tier:'MIXED',pts:[2.5125,2.8325,3.0975],
+ dates:['2026-10-30','2026-10-30','2026-11-02']}]);
+assert(eur.includes('data-source-study="EUR" data-study-points="3"'));
+assert(eur.includes('6M ≈2.833% (2026-10-30)'));
+assert(eur.includes('fonte ufficiale ancora non certificata'));
+assert(eur.includes('NON curva OIS')===false); // never falsely declare a curve
 const confirmed=structuredClone(op),revised=structuredClone(view);
 assert(pending.includes('USD'),'test requires an initially pending USD lane');
 confirmed.currencies.USD=structuredClone(op.currencies.GBP);
