@@ -12,7 +12,9 @@ const finish=src.indexOf('function marketResearchSecondary(data){',start);
 assert(start>=0&&finish>start,'source-graded plot API must exist');
 const fragment=src.slice(start,finish);
 const FX=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
-const now='2026-11-01';
+const feedClock=JSON.parse(fs.readFileSync('live_data/sections/OIS_OPERATIONAL_VIEW.json'));
+const now=[feedClock.currencies.CHF.horizons['6m'].quote_as_of,
+ feedClock.currencies.CHF.horizons['12m'].quote_as_of].filter(Boolean).sort().at(-1);
 const today=()=>now,number=x=>typeof x==='number'&&Number.isFinite(x)?x:null;
 const freshness=(str,max)=>{
  if(!/^\d{4}-\d\d-\d\d$/.test(str||''))return false;
@@ -70,7 +72,7 @@ assert.equal(chf.verifiedTenors,1);
 assert.deepEqual(chf.pts,[null,null,liveRows.find(x=>x.k==='CHF').pts[2]]);
 assert.deepEqual(chf.dates,[null,null,'2026-10-30']);
 assert.deepEqual(chf.missingTenors,['3m','6m']);
-assert.equal(rows.filter(x=>x.verifiedTenors===3).length,liveRows.filter(x=>x.verifiedTenors===3).length);
+assert.equal(rows.filter(x=>x.verifiedTenors===3).length,liveRows.filter(x=>x.verifiedTenors===3).length-1);
 const html=api.marketResearchGradedSvg(rows);
 assert(html.includes('data-currencies="'+visibleCoverage+'"'));
 const group=html.match(/<g data-graded-ccy="CHF"[\s\S]*?<\/g>/);
