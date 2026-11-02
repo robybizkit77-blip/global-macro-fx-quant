@@ -497,10 +497,11 @@ function expectedReactionFromMetrics(row){
     fatal.push('Home flagged currency tiles or DXY disclosure missing '+JSON.stringify(r.flags));
   if(r.pricing.length!==8||new Set(r.pricing.map(x=>x.ccy)).size!==8||
      JSON.stringify(r.pricing.filter(x=>x.status==='OFFICIAL_REPRICING').map(x=>x.ccy).sort())!==JSON.stringify(officialCurrent)||
-     r.pricing.some(x=>!['OFFICIAL_REPRICING','FUTURES_LEVEL_ONLY','CASH_CARRY_SCENARIO','BANK_BILL_PROXY','WITHHELD'].includes(x.status)||
+     r.pricing.some(x=>!['OFFICIAL_REPRICING','FUTURES_LEVEL_ONLY','CASH_CARRY_SCENARIO','WORKING_ESTIMATE','BANK_BILL_PROXY','WITHHELD'].includes(x.status)||
        (x.allowed==='true')!==(x.status==='OFFICIAL_REPRICING'))||
      r.pricing.some(x=>x.status==='FUTURES_LEVEL_ONLY'&&!x.content.includes('PX'))||
      r.pricing.some(x=>x.status==='BANK_BILL_PROXY'&&!x.content.includes('BB'))||
+     r.pricing.some(x=>x.status==='WORKING_ESTIMATE'&&(x.ccy!=='USD'||!x.content.includes('ST')||x.allowed!=='false'))||
      r.pricing.some(x=>x.status==='CASH_CARRY_SCENARIO'&&
        (x.ccy!=='NZD'||!nzdScenario||!x.content.includes(nzdDisplayed+'% ST')||x.allowed!=='false')))
     fatal.push('6M pricing source tiers wrong: '+JSON.stringify(r.pricing));
