@@ -32,7 +32,7 @@ class SourceQualityFinalE2ETests(unittest.TestCase):
             if self.currencies[c]["input_mode"] == "LIVE_SECONDARY_CONFLICT_INDICATIVE":
                 self.assertEqual(grade, "SOURCE_CONFLICT_ANNOTATED_NO_REPRICING")
 
-    def modify(self, c="EUR"):
+    def modify(self, c="USD"):
         return copy.deepcopy(self.currencies[c])
 
     def test_no_policy_or_model_promotion_on_unresolved_conflict(self):
@@ -49,7 +49,7 @@ class SourceQualityFinalE2ETests(unittest.TestCase):
                 row = self.modify()
                 modifier(row)
                 with self.assertRaises(ValueError):
-                    certify_secondary_source_state("EUR", row)
+                    certify_secondary_source_state("USD", row)
 
     def test_identity_and_raw_bar_consistency_required(self):
         for modifier in (
@@ -64,20 +64,20 @@ class SourceQualityFinalE2ETests(unittest.TestCase):
                 row = self.modify()
                 modifier(row)
                 with self.assertRaises(ValueError):
-                    certify_secondary_source_state("EUR", row)
+                    certify_secondary_source_state("USD", row)
 
     def test_conflict_mode_requires_conflict_grade_and_keys(self):
         row = self.modify()
         row["source_quality"] = "OFFICIAL_CERTIFIED"
         with self.assertRaises(ValueError):
-            certify_secondary_source_state("EUR", row)
+            certify_secondary_source_state("USD", row)
         row = self.modify()
         row["input_mode"] = "LIVE_SECONDARY_OVERLAY"
         with self.assertRaises(ValueError):
-            certify_secondary_source_state("EUR", row)
+            certify_secondary_source_state("USD", row)
 
     def test_genuine_clean_grade_remains_independent_of_quarantine(self):
-        row = self.modify()
+        row = self.modify("EUR")
         row["input_mode"] = "LIVE_SECONDARY_OVERLAY"
         row.pop("source_conflict_status", None)
         row.pop("source_conflict_keys", None)
