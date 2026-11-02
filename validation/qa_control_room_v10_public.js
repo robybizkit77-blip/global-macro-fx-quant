@@ -1591,7 +1591,7 @@ async function getState(page){
           !risk.cards.some(c=>c.name==='VIX'&&c.status.startsWith('OFFICIAL_'))||
           !risk.cards.some(c=>c.name==='WTI'&&c.status.startsWith('OFFICIAL_'))||
           !risk.cards.some(c=>c.name==='BRENT'&&c.status.startsWith('SECONDARY_'))||
-          !risk.text?.includes('Brent spot ufficiale: WITHHELD')||
+          !risk.text?.includes('Brent spot ufficiale non certificato nel feed')||
           !risk.text?.includes('Nessun confronto di spread fra spot e futures')||
           risk.width>risk.viewport+16)
           throw Error(name+' public Cross-Asset risk/energy not delivered '+JSON.stringify(risk));
