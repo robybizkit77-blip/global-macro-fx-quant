@@ -241,8 +241,11 @@ assert(home.includes("host.dataset.gmfqSixMonthUnit='RATE_PCT'"),
  'Home all-eight unit contract must remain percentage levels');
 assert(home.includes("data-six-month-coverage="),
  'Home must visibly disclose how many of the G8 have a numeric 6M');
-assert(home.includes("Tutti i valori sono livelli di tasso in %"),
- 'Home must not mix 6M deltas and absolute rate units');
+assert(home.includes("Barre su scala comune 0–")&&
+       home.includes("livelli 6M, NON Δ policy in bp")&&
+       home.includes("host.dataset.gmfqSixMonthVisualMetric='RATE_PCT_ZERO_BASED'")&&
+       home.includes('Math.max(0,x.level)/maxLevel'),
+ 'Home must chart actual 6M rate levels consistently, not mix levels with policy deltas');
 assert(home.includes("state==='CASH_CARRY_SCENARIO'?'≈'+fmt(x.scenario.value,2)+'% ST'"),
  'Home uses NZD adjusted scenario');
 assert(home.includes("pairMacroRatesComparison(code,setup.pairs[code],rates,ois,setup.price_asof,macroDay,proxy)"),

@@ -327,9 +327,15 @@ function expectedReactionFromMetrics(row){
         visible:!!x.querySelector('.tickerhead .flag')?.getClientRects().length,
         caption:x.querySelector('.gmfq-home-dxy-origin')?.textContent
       })),
-      pricing:ois.map(x=>({ccy:x.ccy,status:d.querySelector('#ois .oisrow[data-ccy="'+x.ccy+'"]')?.dataset.pricingState,
-        allowed:d.querySelector('#ois .oisrow[data-ccy="'+x.ccy+'"]')?.dataset.policyDeltaAllowed,
-        content:x.desc})),
+      pricing:ois.map(x=>{
+        const row=d.querySelector('#ois .oisrow[data-ccy="'+x.ccy+'"]');
+        return {ccy:x.ccy,status:row?.dataset.pricingState,
+         allowed:row?.dataset.policyDeltaAllowed,content:x.desc,
+         metric:row?.dataset.barMetric,level:row?.dataset.levelPct,
+         barWidth:row?.dataset.levelBarPct,renderedWidth:row?.querySelector('.fill')?.style.width};
+      }),
+      pricingScale:d.getElementById('ois')?.dataset.gmfqSixMonthVisualMax,
+      pricingMetric:d.getElementById('ois')?.dataset.gmfqSixMonthVisualMetric,
       eventRadar:(()=>{
         const h=d.getElementById('gmfq-event-radar');
         return {state:h?.dataset.calendarStatus,asof:h?.dataset.asOf,signal:h?.dataset.signalEffect,
@@ -496,6 +502,12 @@ function expectedReactionFromMetrics(row){
      r.flags.some(x=>!x.visible||!x.flag)||!r.flags.find(x=>x.symbol==='DXY')?.caption?.includes('SINTETICO'))
     fatal.push('Home flagged currency tiles or DXY disclosure missing '+JSON.stringify(r.flags));
   if(r.pricing.length!==8||new Set(r.pricing.map(x=>x.ccy)).size!==8||
+     r.pricingMetric!=='RATE_PCT_ZERO_BASED'||!(Number(r.pricingScale)>0)||
+     r.pricing.some(x=>x.metric!=='RATE_PCT_ZERO_BASED'||
+       Math.abs(parseFloat(x.renderedWidth)-Number(x.barWidth))>0.005||
+       !Number.isFinite(Number(x.barWidth))||
+       (x.level!==''&&Math.abs(Number(x.barWidth)-
+         Math.round(10000*Math.min(1,Math.max(0,Number(x.level))/Number(r.pricingScale)))/100)>0.02))||
      JSON.stringify(r.pricing.filter(x=>x.status==='OFFICIAL_REPRICING').map(x=>x.ccy).sort())!==JSON.stringify(officialCurrent)||
      r.pricing.some(x=>!['OFFICIAL_REPRICING','FUTURES_LEVEL_ONLY','CASH_CARRY_SCENARIO','WORKING_ESTIMATE','BANK_BILL_PROXY','WITHHELD'].includes(x.status)||
        (x.allowed==='true')!==(x.status==='OFFICIAL_REPRICING'))||
