@@ -120,7 +120,7 @@ items={
 "Rates explanatory text has no repeated instrument list": "Le curve sintetizzano prezzi per scadenza" in s and "Certificazione della fonte ≠ OIS puro" in s,
 "Cross-Asset reading prioritizes freshness and hides repeated methodology": "<details class=\"gmfq-cross-risk-note\">" in s and "Non sono quotazioni intraday sincronizzate" in s and "Perché lo spot non è disponibile" in s,
 "Cross-Asset Risk sources are separate and dated": "function mountCrossRisk(doc)" in s and "crossRiskObservation(d?.risk?.VIX,'VIX')" in s and "crossRiskObservation(d?.risk?.WTI,'WTI')" in s and "crossRiskBrent(res)" in s,
-"WTI benchmark and Brent futures are not conflated": "series.benchmark_key!=='RWTC'" in s and "b.vendor_symbol==='BZ=F'" in s and "Brent spot ufficiale: WITHHELD" in s,
+"WTI benchmark and Brent futures are not conflated": "series.benchmark_key!=='RWTC'" in s and "b.vendor_symbol==='BZ=F'" in s and "Brent spot ufficiale non certificato nel feed" in s,
 "Missing VIX/WTI/Brent cannot become zero": "series.last_value!==value" in s and "value:null" in s and "data-cross-status=" in s and "Nessun confronto di spread fra spot e futures" in s,
 "Cross-Asset excludes core and risk-on trading recommendations": "g.pair_engine_effect==='NONE'" in s and "nessun giudizio di risk-on/risk-off" in s,
 "Stale Macro thesis cannot be validated by newer Rates/FX": "const baselineCurrent=modelState.current" in s and "function pairModelEvidenceState(macroDay,priceDay)" in s and "baselineCurrent&&validSide&&favored" in s and "data-baseline-status=" in s and "Preferenza storica" in s,
