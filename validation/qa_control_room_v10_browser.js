@@ -843,7 +843,7 @@ function expectedReactionFromMetrics(row){
      chfRow.numeric.length!==3||!chfSlotsOk||
      sourcePriority.rows.some(x=>x.c!=='CHF'&&(
         !['OFFICIAL','PROXY','MIXED','CONFLICTED','SCENARIO'].includes(x.tier)||
-        x.numeric.length!==3||x.numeric.some(v=>!v||v==='—'))))
+        x.numeric.length!==3|| (x.c==='USD' ? (x.tier!=='MIXED'||x.numeric[0]==='—'||x.numeric[1]!=='—'||x.numeric[2]!=='—') : x.numeric.some(v=>!v||v==='—')))))
     throw Error(label+' G8 source-graded visual/count mismatch '+JSON.stringify(sourcePriority));
   // The official-only panel is intentionally collapsed behind a labelled
   // toggle in this source-first layout. Browser QA must PROVE it can open;
