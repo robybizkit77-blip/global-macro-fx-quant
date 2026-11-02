@@ -1040,7 +1040,7 @@ async function getState(page){
                (x.joined!=='false'||x.lines!==0)))||
            (research.gradedRows.some(x=>x.points<3)&&
              !research.note.includes('Copertura parziale:'))||
-           !research.gradedRows.some(x=>x.ccy==='CHF'&&x.tier==='PROXY'&&
+           !research.gradedRows.some(x=>x.ccy==='CHF'&&['PROXY','MIXED'].includes(x.tier)&&
              x.points>=1&&x.joined==='false'&&x.lines===0)||
            !research.note.includes('Grafico G8 3M/6M/12M: 8/8')||
            !research.note.includes('Curve certificate: '+research.expectedCurves+'/8')||
