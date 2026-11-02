@@ -28,6 +28,8 @@ on:
   # Early source-watch -> Calendar/News -> Macro. Serial dependency
   # avoids simultaneous main-branch writes by Calendar and Macro when an
   # independent GitHub schedule was delayed or dropped.
+  # Only recovery-triggered Calendar runs qualify; routine scheduled or
+  # orchestrator-dispatched Calendar checks must not relaunch Macro.
   workflow_run:
     workflows: ['Calendar News Operational Refresh V1']
     types: [completed]
@@ -49,7 +51,8 @@ jobs:
     if: >-
       github.event_name != 'workflow_run' ||
       (github.event.workflow_run.conclusion == 'success' &&
-       github.event.workflow_run.head_branch == 'main')
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.event == 'workflow_run')
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
