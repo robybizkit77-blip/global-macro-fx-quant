@@ -774,35 +774,9 @@ function view(rows,moves=[]){
    (counts.WITHHELD?' · '+counts.WITHHELD+' senza fonte attendibile':'');
  const incomplete=rows.filter(r=>tenors.some(t=>number(r.points[t]?.value)===null)).map(r=>r.ccy);
  const contested=rows.filter(r=>r.tier==='CONFLICTED').map(r=>r.ccy);
- const perCurrency='<section class="gmfq-currency-reading" aria-label="Lettura per valuta"><h3>Valuta per valuta · cosa controllare</h3>'+
-  '<p>Questi sono criteri di verifica, non segnali né previsioni della banca centrale.</p><div class="gmfq-currency-reading-grid">'+
-  rows.map(r=>{
-   const available=tenors.filter(t=>number(r.points[t]?.value)!==null);
-   const dates=[...new Set(available.map(t=>r.points[t].date))];
-   const reliable=r.tier==='OFFICIAL'&&available.length===3&&dates.length===1;
-   const limitation=r.tier==='CONFLICTED'?'Quotazioni contestate: non dedurre il percorso monetario.':
-    r.tier==='SCENARIO'?'Scenario modellato: non è una curva OIS negoziata.':
-    available.length<3?'Scadenze incomplete: i punti non formano una curva.':
-    dates.length>1?'Date diverse: i punti non formano una curva omogenea.':
-    reliable?'Tre orizzonti con fonte certificata; verificare la natura dello strumento.':
-    'Futures indicativi: non confondere livello e OIS.';
-   return '<article data-reading-ccy="'+r.ccy+'"><strong>'+flags[r.ccy]+' '+r.ccy+'</strong>'+
-    '<small>'+esc(labels[r.tier])+' · '+available.length+'/3 scadenze</small>'+
-    '<p><b>Situazione:</b> '+esc(limitation)+'</p>'+
-    '<p><b>Confermerebbe:</b> nuove osservazioni datate della stessa fonte e dello stesso contratto, con confronto coerente.</p>'+
-    '<p><b>Indebolirebbe:</b> revisione della fonte, cambio di contratto, disallineamento temporale o prezzo divergente.</p></article>';
-  }).join('')+'</div></section>';
- const decisionRead='<section class="gmfq-decision-read" aria-label="Come leggere il mercato monetario">'+
-  '<strong>Come leggere questi tassi</strong>'+
-  '<p><b>Cosa prezza il mercato?</b> I punti mostrano livelli monetari associati a 3, 6 e 12 mesi; non equivalgono automaticamente a tagli o rialzi attesi delle banche centrali.</p>'+
-  '<p><b>Cosa è cambiato?</b> Un valore di oggi non dimostra un repricing. Serve il confronto con la stessa fonte e lo stesso contratto della rilevazione precedente.</p>'+
-  '<p><b>Quanto fidarsi?</b> '+counts.OFFICIAL+'/8 valute hanno fonti certificate (non tutte OIS diretti). '+
-  (incomplete.length?'Scadenze incomplete: '+incomplete.join(', ')+'. ':'')+
-  (contested.length?'Quotazioni contestate: '+contested.join(', ')+'. ':'')+
-  'Le stime e gli scenari non modificano i segnali FX.</p></section>';
  return '<h2 class="desk-panel-title">G8 · OIS e stime monetarie 3M / 6M / 12M</h2>'+decisionRead+
  '<p class="gmfq-est-quick-read" data-g8-estimated-curve-coverage="'+usable+'/8" data-complete-tenors="'+allTenors+'/8"><strong>Copertura G8 · </strong>'+esc(brief)+
- '. Tutte le valute sono consultabili; le stime non diventano segnali.</p>'+miniCharts(rows)+perCurrency+
+ '. Tutte le valute sono consultabili; le stime non diventano segnali.</p>'+miniCharts(rows)+
  '<details class="gmfq-est-disclosure" open data-default="OPEN"><summary>Tabella G8 · 3M / 6M / 12M, dati e fonti (tocca per nascondere)</summary>'+
  '<div class="gmfq-est-body"><p><b>8 valute, 3 scadenze per valuta.</b> Le curve non certificate restano <b>stime/proxy</b> con date separate, non quotazioni OIS né curve sincronizzate. Le quotazioni discordanti per lo stesso contratto/data sono <b>contestate, non convalidate</b>, senza repricing e senza linee congiunte. Nessun segnale FX deriva dai valori stimati.</p>'+
  '<div role="table" class="gmfq-est-table"><div class="gmfq-est-row gmfq-est-head" role="row"><span>Valuta</span><span>3M</span><span>6M</span><span>12M</span></div>'+
@@ -813,19 +787,6 @@ function view(rows,moves=[]){
  matchedResearchHtml(moves)+'<p class="gmfq-est-note"><b>Metodo:</b> GBP OIS BoE; AUD/CAD/JPY futures monetari ufficiali; USD/EUR/CHF: ogni contratto è datato separatamente; se le date non coincidono, sono solo osservazioni individuali e non una curva sincronizzata. Su USD/EUR/CHF vengono verificati prezzo, contratto, data e scadenza; lo scarto in giorni è visibile, <b>senza inventare una correzione OIS</b>. NZD: scenario empirico su Bank Bill 90 giorni − OCR RBNZ (19 mesi, due regimi): sconto stimato 24 bp, fascia prudenziale 10–50 bp, ampliata dopo un test su luglio–settembre 2026 (errore medio del punto centrale circa 16 bp). <b>non è uno spread OIS misurato e non intervallo statistico</b>. Sono futures trimestrali, non una curva OIS spot. CHF: dalle acquisizioni di novembre i tre orizzonti seguono il primo giorno della finestra SARON; le vecchie selezioni basate sulla scadenza finale, se gia iniziate, restano evidenza storica segnalata come NON FORWARD. Nessuna stima produce variazioni OIS 1D/1W, segnali FX o backtest.</p></div></details>';
 }
 const css=[
- '#gmfq-ois-research-estimates .gmfq-currency-reading{padding:12px 15px;border-top:1px solid #294456;color:#d0e3ed;font:12px/1.55 Arial,sans-serif}',
- '#gmfq-ois-research-estimates .gmfq-currency-reading h3{font-size:15px;color:#f1f6fa;margin:0 0 5px}',
- '#gmfq-ois-research-estimates .gmfq-currency-reading>p{margin:0 0 12px;color:#afc4d1}',
- '#gmfq-ois-research-estimates .gmfq-currency-reading-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}',
- '#gmfq-ois-research-estimates .gmfq-currency-reading article{min-width:0;padding:11px 12px;border:1px solid #2d5061;border-radius:7px;background:#102536}',
- '#gmfq-ois-research-estimates .gmfq-currency-reading article strong{display:block;color:#f1f6fa;font-size:14px}',
- '#gmfq-ois-research-estimates .gmfq-currency-reading article small{display:block;color:#a9c4d0;margin:3px 0 7px}',
- '#gmfq-ois-research-estimates .gmfq-currency-reading article p{margin:5px 0;overflow-wrap:anywhere}',
- '@media(max-width:600px){#gmfq-ois-research-estimates .gmfq-currency-reading{padding:10px}#gmfq-ois-research-estimates .gmfq-currency-reading-grid{grid-template-columns:1fr}}',
- '#gmfq-ois-research-estimates .gmfq-decision-read{margin:10px 15px 12px;padding:13px 15px;border-left:3px solid #65bbd4;background:#102b3a;border-radius:3px 8px 8px 3px;color:#d5e6f0;font:13px/1.6 Arial,sans-serif}',
- '#gmfq-ois-research-estimates .gmfq-decision-read>strong{display:block;font-size:15px;color:#f1f7fb;margin-bottom:6px}',
- '#gmfq-ois-research-estimates .gmfq-decision-read p{margin:5px 0}',
- '@media(max-width:600px){#gmfq-ois-research-estimates .gmfq-decision-read{margin:9px 10px 11px;padding:12px;font-size:12px}}',
  '#gmfq-ois-research-estimates{margin:0 0 14px;min-width:0}',
  '#gmfq-ois-research-estimates .gmfq-est-quick-read{padding:4px 15px 2px;margin:5px 0;color:#b7cbd8;font:12px/1.55 Arial,sans-serif;overflow-wrap:anywhere}',
  '#gmfq-ois-research-estimates .gmfq-est-quick-read strong{color:#e4edf5}',
