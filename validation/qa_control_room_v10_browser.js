@@ -2442,8 +2442,9 @@ function expectedReactionFromMetrics(row){
       ccy:x.dataset.gmfqChangeCurrency,status:x.dataset.gmfqYieldChange,
       actual:x.querySelector('.gmfq-change-measured')?.textContent}));
   });
-  if(deltaAUDCAD.find(x=>x.ccy==='AUD')?.status!=='WITHHELD'||
+  if(deltaAUDCAD.find(x=>x.ccy==='AUD')?.status!=='HISTORICAL'||
      !deltaAUDCAD.find(x=>x.ccy==='AUD')?.actual?.includes(ratesFeed.AUD.date)||
+     !deltaAUDCAD.find(x=>x.ccy==='AUD')?.actual?.includes('STIMA DI CONTINUITÀ')||
      deltaAUDCAD.find(x=>x.ccy==='CAD')?.status!=='MEASURED')
     throw Error(label+' AUDCAD observed 2Y series gaps misclassified '+JSON.stringify(deltaAUDCAD));
   const audReaction=await page.evaluate(()=>{
