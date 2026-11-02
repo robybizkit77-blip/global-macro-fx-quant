@@ -795,8 +795,9 @@ function expectedReactionFromMetrics(row){
       throw Error(label+' unauthorized indicative OIS curve connection '+JSON.stringify(chart));
     if(chart.quality==='CONFLICTED'&&!chart.slots.some(x=>x.state==='DISPUTED'))
       throw Error(label+' disputed futures hidden in ordinary chart '+JSON.stringify(chart));
-    if(chart.ccy==='CHF'&&(chart.missing!==3-chart.points||chart.joined!=='false'))
-      throw Error(label+' CHF must disclose precisely the unavailable verified source tenors');
+    if(chart.ccy==='CHF'&&(chart.missing!==3-chart.points||chart.joined!=='false'||
+       (chart.points===3&&!chart.slots.some(x=>x.tenor==='3m'&&x.state==='SCENARIO'))))
+      throw Error(label+' CHF 3M extrapolation must be an explicit scenario, not official SARON');
     if(chart.ccy==='NZD'&&!chart.slots.every(x=>x.state==='SCENARIO'))
       throw Error(label+' NZD scenario not disclosed in every maturity');
     if(!source)throw Error(label+' missing source provenance for '+chart.ccy);
