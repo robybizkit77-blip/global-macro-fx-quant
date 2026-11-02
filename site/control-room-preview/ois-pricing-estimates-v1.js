@@ -774,24 +774,33 @@ function view(rows,moves=[]){
    (counts.WITHHELD?' · '+counts.WITHHELD+' senza fonte attendibile':'');
  const incomplete=rows.filter(r=>tenors.some(t=>number(r.points[t]?.value)===null)).map(r=>r.ccy);
  const contested=rows.filter(r=>r.tier==='CONFLICTED').map(r=>r.ccy);
- const perCurrency='<section class="gmfq-currency-reading" aria-label="Lettura per valuta"><h3>Valuta per valuta · cosa controllare</h3>'+
-  '<p>Questi sono criteri di verifica, non segnali né previsioni della banca centrale.</p><div class="gmfq-currency-reading-grid">'+
+ const perCurrency='<details class="gmfq-currency-reading" data-reading-mode="CONCISE"><summary>Approfondisci le 8 valute · fonti e prossime verifiche</summary>'+
+  '<p>La qualità del dato determina cosa possiamo concludere: questi controlli non sono segnali operativi.</p><div class="gmfq-currency-reading-grid">'+
   rows.map(r=>{
    const available=tenors.filter(t=>number(r.points[t]?.value)!==null);
    const dates=[...new Set(available.map(t=>r.points[t].date))];
-   const reliable=r.tier==='OFFICIAL'&&available.length===3&&dates.length===1;
-   const limitation=r.tier==='CONFLICTED'?'Quotazioni contestate: non dedurre il percorso monetario.':
-    r.tier==='SCENARIO'?'Scenario modellato: non è una curva OIS negoziata.':
-    available.length<3?'Scadenze incomplete: i punti non formano una curva.':
-    dates.length>1?'Date diverse: i punti non formano una curva omogenea.':
-    reliable?'Tre orizzonti con fonte certificata; verificare la natura dello strumento.':
-    'Futures indicativi: non confondere livello e OIS.';
+   const consistent=r.tier==='OFFICIAL'&&available.length===3&&dates.length===1;
+   const limitations={
+    USD:'Solo le scadenze effettivamente verificate: nessuna curva completa.',
+    EUR:'Prezzi futures con conflitti: non usare per dedurre tagli o rialzi.',
+    NZD:'Scenario Bank Bill/OCR: non equivale a un OIS quotato.',
+    CHF:'Futures SARON con date diverse: evitare confronti tra punti.'
+   };
+   const description=limitations[r.ccy]||
+    (consistent?'Tre livelli con fonte certificata; non sono automaticamente aspettative di policy.':
+     available.length<3?'Copertura incompleta: mancano scadenze.':
+     dates.length>1?'Date non omogenee: nessuna curva continua.':
+     'Livelli indicativi: verificare la fonte prima del confronto.');
+   const next=r.tier==='CONFLICTED'?'Risoluzione dei conflitti di quotazione e verifica indipendente.':
+    r.tier==='SCENARIO'?'Confronto con quotazioni OIS effettive e verifica del basis.':
+    available.length<3?'Acquisizione delle scadenze mancanti con timestamp verificato.':
+    dates.length>1?'Rilevazioni sincronizzate per tutte le scadenze.':
+    'Confronto storico omogeneo: stesso contratto, stessa fonte e data.';
    return '<article data-reading-ccy="'+r.ccy+'"><strong>'+flags[r.ccy]+' '+r.ccy+'</strong>'+
     '<small>'+esc(labels[r.tier])+' · '+available.length+'/3 scadenze</small>'+
-    '<p><b>Situazione:</b> '+esc(limitation)+'</p>'+
-    '<p><b>Confermerebbe:</b> nuove osservazioni datate della stessa fonte e dello stesso contratto, con confronto coerente.</p>'+
-    '<p><b>Indebolirebbe:</b> revisione della fonte, cambio di contratto, disallineamento temporale o prezzo divergente.</p></article>';
-  }).join('')+'</div></section>';
+    '<p>'+esc(description)+'</p>'+
+    '<p><b>Prossima verifica:</b> '+esc(next)+'</p></article>';
+  }).join('')+'</div></details>';
  const decisionRead='<section class="gmfq-decision-read" aria-label="Come leggere il mercato monetario">'+
   '<strong>Come leggere questi tassi</strong>'+
   '<p><b>Cosa prezza il mercato?</b> I punti mostrano livelli monetari associati a 3, 6 e 12 mesi; non equivalgono automaticamente a tagli o rialzi attesi delle banche centrali.</p>'+
@@ -814,7 +823,7 @@ function view(rows,moves=[]){
 }
 const css=[
  '#gmfq-ois-research-estimates .gmfq-currency-reading{padding:12px 15px;border-top:1px solid #294456;color:#d0e3ed;font:12px/1.55 Arial,sans-serif}',
- '#gmfq-ois-research-estimates .gmfq-currency-reading h3{font-size:15px;color:#f1f6fa;margin:0 0 5px}',
+ '#gmfq-ois-research-estimates .gmfq-currency-reading summary{cursor:pointer;font-size:14px;font-weight:700;color:#f1f6fa;margin:0 0 7px}',
  '#gmfq-ois-research-estimates .gmfq-currency-reading>p{margin:0 0 12px;color:#afc4d1}',
  '#gmfq-ois-research-estimates .gmfq-currency-reading-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}',
  '#gmfq-ois-research-estimates .gmfq-currency-reading article{min-width:0;padding:11px 12px;border:1px solid #2d5061;border-radius:7px;background:#102536}',
