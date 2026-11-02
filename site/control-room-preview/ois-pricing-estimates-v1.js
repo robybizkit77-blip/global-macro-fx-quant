@@ -772,7 +772,17 @@ function view(rows,moves=[]){
    counts.OFFICIAL+' fonti certificate · '+counts.PROXY+' futures indicativi · '+
    counts.MIXED+' con date diverse · '+counts.CONFLICTED+' con quotazioni contestate · '+counts.SCENARIO+' scenario NZD'+
    (counts.WITHHELD?' · '+counts.WITHHELD+' senza fonte attendibile':'');
- return '<h2 class="desk-panel-title">G8 · OIS e stime monetarie 3M / 6M / 12M</h2>'+
+ const incomplete=rows.filter(r=>tenors.some(t=>number(r.points[t]?.value)===null)).map(r=>r.ccy);
+ const contested=rows.filter(r=>r.tier==='CONFLICTED').map(r=>r.ccy);
+ const decisionRead='<section class="gmfq-decision-read" aria-label="Come leggere il mercato monetario">'+
+  '<strong>Come leggere questi tassi</strong>'+
+  '<p><b>Cosa prezza il mercato?</b> I punti mostrano livelli monetari associati a 3, 6 e 12 mesi; non equivalgono automaticamente a tagli o rialzi attesi delle banche centrali.</p>'+
+  '<p><b>Cosa è cambiato?</b> Un valore di oggi non dimostra un repricing. Serve il confronto con la stessa fonte e lo stesso contratto della rilevazione precedente.</p>'+
+  '<p><b>Quanto fidarsi?</b> '+counts.OFFICIAL+'/8 valute hanno fonti certificate (non tutte OIS diretti). '+
+  (incomplete.length?'Scadenze incomplete: '+incomplete.join(', ')+'. ':'')+
+  (contested.length?'Quotazioni contestate: '+contested.join(', ')+'. ':'')+
+  'Le stime e gli scenari non modificano i segnali FX.</p></section>';
+ return '<h2 class="desk-panel-title">G8 · OIS e stime monetarie 3M / 6M / 12M</h2>'+decisionRead+
  '<p class="gmfq-est-quick-read" data-g8-estimated-curve-coverage="'+usable+'/8" data-complete-tenors="'+allTenors+'/8"><strong>Copertura G8 · </strong>'+esc(brief)+
  '. Tutte le valute sono consultabili; le stime non diventano segnali.</p>'+miniCharts(rows)+
  '<details class="gmfq-est-disclosure" open data-default="OPEN"><summary>Tabella G8 · 3M / 6M / 12M, dati e fonti (tocca per nascondere)</summary>'+
@@ -785,6 +795,10 @@ function view(rows,moves=[]){
  matchedResearchHtml(moves)+'<p class="gmfq-est-note"><b>Metodo:</b> GBP OIS BoE; AUD/CAD/JPY futures monetari ufficiali; USD/EUR/CHF: ogni contratto è datato separatamente; se le date non coincidono, sono solo osservazioni individuali e non una curva sincronizzata. Su USD/EUR/CHF vengono verificati prezzo, contratto, data e scadenza; lo scarto in giorni è visibile, <b>senza inventare una correzione OIS</b>. NZD: scenario empirico su Bank Bill 90 giorni − OCR RBNZ (19 mesi, due regimi): sconto stimato 24 bp, fascia prudenziale 10–50 bp, ampliata dopo un test su luglio–settembre 2026 (errore medio del punto centrale circa 16 bp). <b>non è uno spread OIS misurato e non intervallo statistico</b>. Sono futures trimestrali, non una curva OIS spot. CHF: dalle acquisizioni di novembre i tre orizzonti seguono il primo giorno della finestra SARON; le vecchie selezioni basate sulla scadenza finale, se gia iniziate, restano evidenza storica segnalata come NON FORWARD. Nessuna stima produce variazioni OIS 1D/1W, segnali FX o backtest.</p></div></details>';
 }
 const css=[
+ '#gmfq-ois-research-estimates .gmfq-decision-read{margin:10px 15px 12px;padding:13px 15px;border-left:3px solid #65bbd4;background:#102b3a;border-radius:3px 8px 8px 3px;color:#d5e6f0;font:13px/1.6 Arial,sans-serif}',
+ '#gmfq-ois-research-estimates .gmfq-decision-read>strong{display:block;font-size:15px;color:#f1f7fb;margin-bottom:6px}',
+ '#gmfq-ois-research-estimates .gmfq-decision-read p{margin:5px 0}',
+ '@media(max-width:600px){#gmfq-ois-research-estimates .gmfq-decision-read{margin:9px 10px 11px;padding:12px;font-size:12px}}',
  '#gmfq-ois-research-estimates{margin:0 0 14px;min-width:0}',
  '#gmfq-ois-research-estimates .gmfq-est-quick-read{padding:4px 15px 2px;margin:5px 0;color:#b7cbd8;font:12px/1.55 Arial,sans-serif;overflow-wrap:anywhere}',
  '#gmfq-ois-research-estimates .gmfq-est-quick-read strong{color:#e4edf5}',
