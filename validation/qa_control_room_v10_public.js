@@ -1404,9 +1404,13 @@ async function getState(page){
            const d=document.getElementById('gmfq-page')?.contentDocument,
              c=d?.getElementById('gmfq-pair-market-reaction');
            return {status:c?.dataset.reactionStatus,text:c?.textContent,
+             study:c?.querySelector('.gmfq-reaction-study')?.dataset.studyStatus,
+             spread:c?.querySelector('.gmfq-reaction-study')?.dataset.studySpreadBp,
              docWidth:d?.documentElement.scrollWidth,viewport:d?.documentElement.clientWidth};
          });
-         if(reaction.status!=='WITHHELD'||
+         if(reaction.status!=='WITHHELD'||reaction.study!=='LEVELS_ONLY'||
+            !Number.isFinite(Number(reaction.spread))||
+            !reaction.text?.includes('STIMA DI CONTINUITÀ')||
             !reaction.text?.includes('2Y di una o entrambe le valute')||
             reaction.docWidth>reaction.viewport+16)
            throw Error(name+' CHF public FX/Rates audit did not fail closed '+JSON.stringify(reaction));
