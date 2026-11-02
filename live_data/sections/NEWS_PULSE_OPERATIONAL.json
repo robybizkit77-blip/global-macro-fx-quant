@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-10-30",
-  "generated_at_utc": "2026-11-02T11:18:42.334063Z",
+  "generated_at_utc": "2026-11-02T11:45:13.015234Z",
   "items": [
     {
       "as_of": "2026-10-30",
@@ -47,7 +47,7 @@
       "title": "GBP: repricing OIS più dovish (-5.3 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-02T11:18:42.334063Z",
+  "last_checked_at_utc": "2026-11-02T11:45:13.015234Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -235,13 +235,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-10-29",
+            "date": "2026-10-30",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "European Central Bank · AAA Svensson spot curve · 2026-10-29",
+            "source": "European Central Bank · AAA Svensson spot curve · 2026-10-30",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.0080012626
+            "yield_2y_pct": 3.0051075689
           }
         },
         "source": "Banca centrale europea",
@@ -400,13 +400,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-10-29",
+            "date": "2026-10-30",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "European Central Bank · AAA Svensson spot curve · 2026-10-29",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "European Central Bank · AAA Svensson spot curve · 2026-10-30",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.0080012626
+            "yield_2y_pct": 3.0051075689
           }
         },
         "source": "Banca centrale europea",
@@ -638,13 +638,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-10-29",
+            "date": "2026-10-30",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-10-29",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
+            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-10-30",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.704701439845901
+            "yield_2y_pct": 4.677533975774134
           }
         },
         "source": "Bank of England",
@@ -796,13 +796,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-10-29",
+            "date": "2026-10-30",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-10-29",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
+            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-10-30",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.704701439845901
+            "yield_2y_pct": 4.677533975774134
           }
         },
         "source": "Bank of England",
