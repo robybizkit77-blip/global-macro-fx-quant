@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-02",
-  "generated_at_utc": "2026-11-02T20:49:34.608554Z",
+  "generated_at_utc": "2026-11-02T23:57:16.383860Z",
   "items": [
     {
       "as_of": "2026-11-02",
@@ -47,7 +47,7 @@
       "title": "AUD: repricing implicito da futures più dovish (-4.0 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-02T20:49:34.608554Z",
+  "last_checked_at_utc": "2026-11-02T23:57:16.383860Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -73,7 +73,13 @@
             "status": "NO_MATCHED_POST_EVENT_SOURCE"
           },
           "ECB_FX": {
-            "status": "NO_MATCHED_POST_EVENT_SOURCE"
+            "eur_base_quote_change_pct": 0.59193,
+            "first_publication_intraday_PIT_certified": false,
+            "from": "2026-10-27",
+            "source_type": "OFFICIAL_GOVERNMENT_OR_ECB_REFERENCE",
+            "start_is_early_first_seen_not_nearest_prerelease": true,
+            "status": "DESCRIPTIVE_MULTIDAY_CHANGE_NOT_EVENT_CAUSAL",
+            "to": "2026-11-02"
           },
           "SIX_MONTH": {
             "status": "NO_OFFICIAL_PRERELEASE_SOURCE"
@@ -106,7 +112,7 @@
         },
         "scheduled_utc": "2026-10-30T12:30:00Z",
         "secondary_consensus_percent": 0.8,
-        "state": "PENDING_POST_RELEASE_DAILY_OBSERVATIONS"
+        "state": "DAILY_CONTEXT_ONLY_NO_EVENT_CAUSALITY"
       },
       {
         "CB_Want_Can_from_official_statements": null,
@@ -130,7 +136,13 @@
             "status": "NO_MATCHED_POST_EVENT_SOURCE"
           },
           "ECB_FX": {
-            "status": "NO_MATCHED_POST_EVENT_SOURCE"
+            "eur_base_quote_change_pct": 0.23663,
+            "first_publication_intraday_PIT_certified": false,
+            "from": "2026-10-27",
+            "source_type": "OFFICIAL_GOVERNMENT_OR_ECB_REFERENCE",
+            "start_is_early_first_seen_not_nearest_prerelease": true,
+            "status": "DESCRIPTIVE_MULTIDAY_CHANGE_NOT_EVENT_CAUSAL",
+            "to": "2026-11-02"
           },
           "SIX_MONTH": {
             "status": "NO_MATCHED_POST_EVENT_SOURCE"
@@ -176,7 +188,7 @@
         },
         "scheduled_utc": "2026-10-30T12:30:00Z",
         "secondary_consensus_percent": 0.2,
-        "state": "PENDING_POST_RELEASE_DAILY_OBSERVATIONS"
+        "state": "DAILY_CONTEXT_ONLY_NO_EVENT_CAUSALITY"
       }
     ],
     "no_causality_without_intraday_same_instrument_pre_post": true,
@@ -188,7 +200,7 @@
       "awaiting_release": 0,
       "events": 2,
       "issuer_event_intraday_reactions_certified": 0,
-      "observed_daily_context": 0
+      "observed_daily_context": 2
     }
   },
   "official_releases": {
@@ -893,7 +905,7 @@
         "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm"
       }
     ],
-    "last_attempt_day_rome": "2026-11-02",
+    "last_attempt_day_rome": "2026-11-03",
     "latest_published_at_utc": "2026-11-02T11:00:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
@@ -940,8 +952,8 @@
       {
         "accepted_items": 12,
         "ccy": "JPY",
-        "entries_rejected": 35,
-        "feed_entries_seen": 47,
+        "entries_rejected": 32,
+        "feed_entries_seen": 44,
         "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
         "source": "Bank of Japan",
         "source_id": "BOJ_NEWS",
