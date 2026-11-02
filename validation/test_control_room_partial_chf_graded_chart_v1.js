@@ -37,7 +37,8 @@ assert(primary.includes('data-g8-estimated-curve-coverage="'+visibleCoverage+'/8
  'Coverage must reflect verified dated observations, not a hard-coded 8/8');
 assert(primary.includes('data-complete-tenors="'+actualCoverage+'/8"'),
  'Complete-tenor tally must follow independently verified current source');
-assert.equal(liveRows.length,8,'All eight currencies must be displayed');
+assert.equal(liveRows.length,visibleCoverage,'Plot must contain only supported dated currencies');
+assert(primary.includes('data-ccy="USD"'),'G8 table retains USD even without a verified chart');
 const chfLive=liveMatrix.find(r=>r.ccy==='CHF');
 assert(chfLive&&['3m','6m','12m'].every(t=>Number.isFinite(chfLive.points[t]?.value)),
  'Actual CHF accrual-start mapped 3M/6M/12M futures should remain visible');
@@ -58,8 +59,9 @@ assert(primaryChf[0].includes('PUNTO ISOLATO, NON CURVA'));
 assert(primaryChf[0].includes('<svg ')&&primaryChf[0].includes('<circle '));
 assert(!primaryChf[0].includes('<path '),'one CHF dot must never draw an implied futures curve');
 
-assert.equal(rows.length,8,'G8 must be visible from actually sourced current points');
-assert.deepEqual(new Set(rows.map(x=>x.k)),new Set(FX));
+assert.equal(rows.length,visibleCoverage,'Graded plot must reflect verified current source points');
+assert.deepEqual(new Set(rows.map(x=>x.k)),new Set(liveRows.map(x=>x.k)));
+assert(!rows.some(x=>x.k==='USD'),'Missing USD cannot become a fabricated curve');
 const chf=rows.find(x=>x.k==='CHF');
 assert(chf,'CHF source-graded futures must not be fully hidden');
 assert.equal(chf.tier,'PROXY');
@@ -68,9 +70,9 @@ assert.equal(chf.verifiedTenors,1);
 assert.deepEqual(chf.pts,[null,null,srcFeed.currencies.CHF.horizons['12m'].rate]);
 assert.deepEqual(chf.dates,[null,null,'2026-10-30']);
 assert.deepEqual(chf.missingTenors,['3m','6m']);
-assert.equal(rows.filter(x=>x.verifiedTenors===3).length,7);
+assert.equal(rows.filter(x=>x.verifiedTenors===3).length,actualCoverage-1);
 const html=api.marketResearchGradedSvg(rows);
-assert(html.includes('data-currencies="8"'));
+assert(html.includes('data-currencies="'+visibleCoverage+'"'));
 const group=html.match(/<g data-graded-ccy="CHF"[\s\S]*?<\/g>/);
 assert(group,'CHF individual source evidence must be drawn');
 assert(group[0].includes('data-verified-tenors="1"'));
