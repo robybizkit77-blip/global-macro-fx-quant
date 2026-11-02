@@ -2034,9 +2034,8 @@ function marketResearchGraded(ois,proxy){
   const dates=terms.map((t,i)=>pts[i]===null?null:r.points[t].date);
   const count=pts.filter(v=>v!==null).length;
   if(!count)return null;
-  // Connect only independently certified sources. The CHF SARON dated
-  // futures and NZD bank-bill model remain individual levels, never a
-  // synthetic joined OIS market curve.
+  // "joined" means synchronized, source-certified only. Full indicative
+  // sets are rendered as dashed research geometry, NEVER official OIS.
   const joined=count===3&&r.tier==='OFFICIAL'&&new Set(dates).size===1;
   return {k:r.ccy,tier:r.tier,pts,dates,joined,verifiedTenors:count,
     missingTenors:terms.filter((t,i)=>pts[i]===null)};
@@ -2059,8 +2058,11 @@ function marketResearchGradedSvg(curves){
  for(const c of curves){
   svg+='<g data-graded-ccy="'+c.k+'" data-quality="'+c.tier+'" data-joined="'+c.joined+
    '" data-verified-tenors="'+c.verifiedTenors+'">';
-  if(c.joined)svg+='<polyline fill="none" stroke="'+COLOR[c.k]+'" stroke-width="3"'+
-    (c.tier==='OFFICIAL'?'':' stroke-dasharray="5 5"')+' points="'+
+  // Dashed geometry connects three INDIVIDUALLY DATED research levels
+  // for visualization; the certified "joined" flag remains false.
+  if(c.verifiedTenors===3)svg+='<polyline data-illustrative="'+(!c.joined)+
+    '" fill="none" stroke="'+COLOR[c.k]+'" stroke-width="'+(c.joined?'3':'2.4')+'"'+
+    (c.joined?'':' stroke-dasharray="7 6" opacity="0.78"')+' points="'+
     c.pts.map((v,i)=>xx[i]+','+yy(v).toFixed(1)).join(' ')+'"/>';
   c.pts.forEach((v,i)=>{
    if(num(v)===null)return; // source-invalid 3M/6M CHF are NOT drawn
@@ -2179,10 +2181,10 @@ function mountMarketResearch(doc,ois,proxy,rates,snb10,sourceReadiness){
   '<p class="gmfq-pricing-core-explanation">GBP: OIS BoE; JPY, AUD e CAD: futures monetari. Certificazione della fonte ≠ OIS puro. '+
    (curvesVerified?'Il quadro completo G8 con fonti certificate, futures indicativi e scenari è riportato nella tabella principale sopra. '+(estimated.length+withheld.length)+' valute senza OIS/futures certificati: usare le stime con i rispettivi limiti. ':'Riconciliazione delle fonti incompleta. ')+
    'I rendimenti governativi 2Y/10Y sono un layer distinto e non dimostrano da soli il percorso dei tassi.</p>'+
-  '<p class="gmfq-research-intro">Cosa sta prezzando il mercato su 3, 6 e 12 mesi? Il grafico mostra livelli monetari 3M, 6M e 12M in %, con qualità separata. Non sono Δ policy rate né probabilità per meeting.</p>'+
+  '<p class="gmfq-research-intro">Cosa sta prezzando il mercato su 3, 6 e 12 mesi? Il grafico mostra livelli monetari 3M, 6M e 12M in %. Le linee tratteggiate sono forme illustrative basate su riferimenti indicativi o stime, non OIS osservati né probabilità per meeting.</p>'+
   '<div class="gmfq-research-tabs" role="group" aria-label="Filtra riferimenti monetari G8"></div>'+
   '<div class="gmfq-research-plot"></div><div class="gmfq-research-legend"></div>'+
-  '<p class="gmfq-research-note">Le curve sintetizzano prezzi per scadenza, non un percorso certo della banca centrale. Linea piena: certificata; tratteggio: stima/scenario; punti isolati: date diverse, non collegate. Senza Δ policy, segnali FX o OIS sintetici. Strumenti, date e limiti delle fonti restano consultabili nell’analisi completa.</p>'+
+  '<p class="gmfq-research-note">Le curve sintetizzano prezzi per scadenza, non un percorso certo della banca centrale. Linea piena: serie certificata sincronizzata. Tratteggio: collegamento illustrativo fra futures indicativi, contestati o scenari anche su date diverse, NON curva OIS osservata. I punti restano isolati solo dove mancano scadenze. Nessun Δ policy né segnale FX. Date e strumenti restano consultabili.</p>'+
   '<details id="gmfq-pricing-evidence-details"><summary>Apri analisi completa · fonti, proxy e casi incompleti</summary>'+
   marketResearchSecondary(ois)+'<div class="gmfq-research-separator"><h3>Fonti incomplete</h3>'+
   '<div class="gmfq-snb-spot" id="gmfq-chf-snb-10y-context" role="note"></div>'+
