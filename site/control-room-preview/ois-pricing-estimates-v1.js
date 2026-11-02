@@ -867,7 +867,7 @@ async function mount(doc){
  // that shows WITHHELD for perfectly usable dated secondary observations.
  anchor.insertAdjacentElement('beforebegin',box);
  const st=doc.createElement('style');st.textContent=css;doc.head.appendChild(st);
- try{const [a,b,h,ledger,rates,chf,nzd,latest]=await Promise.allSettled([get('OIS_OPERATIONAL_VIEW.json'),get('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),loadSameContractArchive(),loadConflictArchive(),get('NATIVE_RATES_DATA.json'),get('CHF_SNB_10Y_SPOT_CONTEXT.json'),get('NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json'),get('NZD_B2_GOVT_LATEST_WEB_RESEARCH.json')]);
+ try{const [a,b,h,ledger,rates,chf,nzd,latest,oct30]=await Promise.allSettled([get('OIS_OPERATIONAL_VIEW.json'),get('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),loadSameContractArchive(),loadConflictArchive(),get('NATIVE_RATES_DATA.json'),get('CHF_SNB_10Y_SPOT_CONTEXT.json'),get('NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json'),get('NZD_B2_GOVT_LATEST_WEB_RESEARCH.json'),get('NZD_B2_OCT30_WEB_CONTEXT_V1.json')]);
   if(frame.contentDocument!==doc||!active())return;
   const o=a.status==='fulfilled'?a.value:null,p=b.status==='fulfilled'?b.value:null;
   if(o?.schema!=='GMFQ_OIS_OPERATIONAL_VIEW_V1'||!o.currencies)throw Error('invalid feed');
@@ -885,6 +885,30 @@ async function mount(doc){
     chf.status==='fulfilled'?chf.value:null,
     nzd.status==='fulfilled'?nzd.value:null,now,latest.status==='fulfilled'?latest.value:null);
    box.insertAdjacentHTML('beforeend',continuityHtml(research));
+   // Read-only RBNZ published benchmark context. Explicitly excluded from canonical
+   // rates, OIS policy pricing, comparison signals and historical 1D changes.
+   if(oct30.status==='fulfilled'){
+    const n=oct30.value;
+    if(n?.schema==='GMFQ_NZD_B2_OCT30_WEB_CONTEXT_V1'&&
+       n.currency==='NZD'&&n.observed==='2026-10-30'&&
+       n.published==='2026-11-02'&&n.benchmark_roll_on_observation_date===true&&
+       n.status==='RESEARCH_ONLY_PENDING_INDEPENDENT_RECONCILIATION'&&
+       n.eligible_for_trading_signals===false&&
+       number(n.government_bond_2y)!==null&&number(n.government_bond_10y)!==null){
+     const item=doc.createElement('div');
+     item.id='gmfq-nzd-oct30-research';
+     item.dataset.coreEffect='NONE';
+     item.dataset.officialPromotion='false';
+     item.style.cssText='padding:14px 16px;margin-top:14px;border:1px solid #345569;border-radius:8px;background:#102536;color:#cfdeea';
+     item.innerHTML='<strong>🇳🇿 NZD · RBNZ B2 · 30 ottobre</strong>'+
+       '<p>Rendimenti governativi benchmark: 2Y <b>'+fmt(n.government_bond_2y)+
+       '%</b> · 10Y <b>'+fmt(n.government_bond_10y)+
+       '%</b>. Pubblicati il 2 novembre. Fonte ufficiale web, confronto XLSX ancora da completare.</p>'+
+       '<p><b>Attenzione:</b> il 30 ottobre RBNZ ha cambiato i titoli di riferimento 2Y e 10Y. '+
+       'Non interpretare la variazione giornaliera come repricing omogeneo; nessun effetto su segnali FX, OIS o backtest.</p>';
+     box.appendChild(item);
+    }
+   }
   // Keep the native STRICT CERTIFIED FEED unchanged and inspectable on demand.
   // Collapse its visually duplicate, official-only gaps ONLY while a fully
   // sourced and dated 8/8 matrix is available; fail open otherwise.
