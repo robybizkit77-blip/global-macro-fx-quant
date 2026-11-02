@@ -287,7 +287,7 @@
       "source_quality": "SECONDARY_CONFLICTED_INDICATIVE_NOT_OIS"
     },
     "GBP": {
-      "as_of": "2026-10-29",
+      "as_of": "2026-10-30",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
@@ -295,22 +295,22 @@
       "direction_vs_policy": "UP",
       "horizons": {
         "12m": {
-          "change_1d_bp": -5.3,
-          "change_1w_bp": 4.6,
-          "policy_delta_bp": 114.6,
-          "rate": 4.8963
+          "change_1d_bp": -6.7,
+          "change_1w_bp": -5.6,
+          "policy_delta_bp": 107.9,
+          "rate": 4.8292
         },
         "3m": {
-          "change_1d_bp": -1.9,
-          "change_1w_bp": 3.0,
-          "policy_delta_bp": 41.1,
-          "rate": 4.1614
+          "change_1d_bp": -1.1,
+          "change_1w_bp": -0.1,
+          "policy_delta_bp": 40.0,
+          "rate": 4.1504
         },
         "6m": {
-          "change_1d_bp": -3.7,
-          "change_1w_bp": 4.5,
-          "policy_delta_bp": 75.8,
-          "rate": 4.5077
+          "change_1d_bp": -2.9,
+          "change_1w_bp": -1.5,
+          "policy_delta_bp": 72.8,
+          "rate": 4.4784
         }
       },
       "official_status": "ACTIVE",
@@ -320,7 +320,7 @@
       "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive"
     },
     "JPY": {
-      "as_of": "2026-10-30",
+      "as_of": "2026-11-02",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
@@ -328,22 +328,22 @@
       "direction_vs_policy": "UP",
       "horizons": {
         "12m": {
-          "change_1d_bp": -0.1,
-          "change_1w_bp": 6.6,
-          "policy_delta_bp": 74.8,
-          "rate": 1.998
+          "change_1d_bp": -0.7,
+          "change_1w_bp": 0.7,
+          "policy_delta_bp": 74.1,
+          "rate": 1.991
         },
         "3m": {
-          "change_1d_bp": -0.1,
-          "change_1w_bp": -0.3,
-          "policy_delta_bp": 21.7,
-          "rate": 1.467
+          "change_1d_bp": -0.7,
+          "change_1w_bp": -0.8,
+          "policy_delta_bp": 21.0,
+          "rate": 1.46
         },
         "6m": {
-          "change_1d_bp": -0.1,
-          "change_1w_bp": -0.3,
-          "policy_delta_bp": 45.4,
-          "rate": 1.704
+          "change_1d_bp": -0.7,
+          "change_1w_bp": -0.8,
+          "policy_delta_bp": 44.7,
+          "rate": 1.697
         }
       },
       "official_status": "ACTIVE",
