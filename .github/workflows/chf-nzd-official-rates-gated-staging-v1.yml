@@ -6,6 +6,8 @@ on:
     paths:
       - 'validation/build_chf_nzd_official_rates_staging_v1.py'
       - 'validation/test_chf_nzd_official_rates_staging_v1.py'
+      - 'validation/stage_chf_paired_backfill_v1.py'
+      - 'validation/test_stage_chf_paired_backfill_v1.py'
       - 'validation/rates/recover_chf_snb_paired_history_v1.py'
       - 'validation/rates/test_recover_chf_snb_paired_history_v1.py'
       - 'validation/rates/reconcile_rbnz_b2_xlsx_oct29_v1.py'
@@ -17,6 +19,8 @@ on:
     paths:
       - 'validation/build_chf_nzd_official_rates_staging_v1.py'
       - 'validation/test_chf_nzd_official_rates_staging_v1.py'
+      - 'validation/stage_chf_paired_backfill_v1.py'
+      - 'validation/test_stage_chf_paired_backfill_v1.py'
       - 'validation/rates/recover_chf_snb_paired_history_v1.py'
       - 'validation/rates/test_recover_chf_snb_paired_history_v1.py'
       - 'validation/rates/reconcile_rbnz_b2_xlsx_oct29_v1.py'
@@ -54,6 +58,7 @@ jobs:
       - name: Test CHF same-date spot recovery and independent NZD B2 XLSX mapping
         run: |
           python validation/rates/test_recover_chf_snb_paired_history_v1.py
+          python validation/test_stage_chf_paired_backfill_v1.py
           python validation/rates/test_reconcile_rbnz_b2_xlsx_oct29_v1.py
 
       - name: Attempt current SNB daily 2Y+10Y paired-source recovery (never publish)
@@ -66,6 +71,22 @@ jobs:
             echo SNB_PAIRED_SOURCE_RECOVERY_READ_ONLY_REPORT_WRITTEN
           else
             echo SNB_PAIRED_SOURCE_UNAVAILABLE_OR_AMBIGUOUS__NOT_CERTIFIED
+          fi
+
+      - name: Stage CHF complete official paired history only when verified (never publish)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -s /tmp/chf-nzd-official-staging/CHF_PAIRED_HISTORY_RECEIPT.json ]; then
+            if python validation/stage_chf_paired_backfill_v1.py \
+              --evidence /tmp/chf-nzd-official-staging/CHF_PAIRED_HISTORY_RECEIPT.json \
+              --output /tmp/chf-nzd-official-staging/CHF_FULL_HISTORY_STAGING_ONLY.json; then
+              echo CHF_PAIRED_HISTORY_STAGED_REVIEW_ONLY
+            else
+              echo CHF_PAIRED_HISTORY_NOT_ELIGIBLE_FOR_STAGING
+            fi
+          else
+            echo CHF_PAIRED_SOURCE_NOT_RECOVERED
           fi
 
       - name: Attempt independently downloaded RBNZ B2 XLSX vs Oct 29 public HTML (never publish)
