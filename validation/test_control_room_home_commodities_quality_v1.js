@@ -20,7 +20,10 @@ const exact=(name)=>{
 };
 const script=['validCrossGold','crossGoldAge','crossRiskObservation','crossRiskBrent',
  'homeCommodityResearchReadout'].map(exact).join('\n')+'\nhomeCommodityResearchReadout;';
-const today='2026-11-01';
+const residual=JSON.parse(fs.readFileSync('live_data/sections/ESTIMATED_RESIDUAL_GAPS.json','utf8'));
+const today=['GOLD.market_proxy','BRENT.market_proxy'].map(k=>residual.lanes[k].proxy_as_of).sort().at(-1);
+assert.match(today,/^20\d{2}-\d{2}-\d{2}$/);
+const tomorrow=new Date(Date.parse(today+'T00:00:00Z')+86400000).toISOString().slice(0,10);
 const context={
  num:x=>typeof x==='number'&&Number.isFinite(x)?x:null,
  romeCalendarAge:d=>{
@@ -30,17 +33,16 @@ const context={
  },Date,Number,Array,Math
 };
 const evaluate=vm.runInNewContext(script,context);
-const residual=JSON.parse(fs.readFileSync('live_data/sections/ESTIMATED_RESIDUAL_GAPS.json','utf8'));
 const model=JSON.parse(fs.readFileSync('live_data/sections/D.json','utf8'));
 const val=read=>JSON.parse(JSON.stringify(evaluate(read,model)));
 const current=val(residual);
 assert.equal(current.sourceEffect,'NONE');
 assert.equal(current.pairEffect,'NONE');
 assert.equal(current.gold.grade,'SECONDARY_FUTURES');
-assert.equal(current.gold.asof,'2026-10-30');
+assert.equal(current.gold.asof,residual.lanes['GOLD.market_proxy'].proxy_as_of);
 assert.equal(current.gold.delta,residual.lanes['GOLD.market_proxy'].change_1d_pct);
 assert.equal(current.brent.grade,'SECONDARY_FUTURES');
-assert.equal(current.brent.asof,'2026-10-30');
+assert.equal(current.brent.asof,residual.lanes['BRENT.market_proxy'].proxy_as_of);
 assert.equal(current.brent.delta,residual.lanes['BRENT.market_proxy'].change_1d_pct);
 assert.equal(current.wti.asof,model.risk.WTI.last_date);
 assert.equal(current.wti.grade,'OFFICIAL_HISTORICAL');
@@ -52,7 +54,7 @@ const reject=(mutate,field,reason)=>{
 reject(x=>{x.governance.core_score_effect='ALLOW'},'gold','never promote score-changing proxy');
 reject(x=>{x.lanes['GOLD.market_proxy'].vendor_symbol='XAUUSD'},'gold','GC futures source identity');
 reject(x=>{x.lanes['BRENT.market_proxy'].vendor_symbol='RBRTE'},'brent','BZ futures source identity');
-reject(x=>{x.lanes['GOLD.market_proxy'].proxy_as_of='2026-11-02'},'gold','future dated Gold');
+reject(x=>{x.lanes['GOLD.market_proxy'].proxy_as_of=tomorrow},'gold','future dated Gold');
 reject(x=>{x.lanes['BRENT.market_proxy'].proxy_as_of='2026-10-21'},'brent','old Brent not called current');
 reject(x=>{x.lanes['GOLD.market_proxy'].change_1d_pct=null},'gold','missing daily return is not zero');
 reject(x=>{x.lanes['BRENT.market_proxy'].source_endpoint='https://unverified.example'},'brent','Brent exact source');
