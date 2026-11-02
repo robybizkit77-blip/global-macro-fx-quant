@@ -1030,8 +1030,11 @@ async function mount(doc){
    box.insertAdjacentElement('afterend',toggle);
    const certifiedCount=rows.filter(r=>r.tier==='OFFICIAL'&&tenors.every(t=>number(r.points[t]?.value)!==null)).length;
    const certifiedLabel=certifiedCount+'/8';
-   const focus=new URLSearchParams(location.hash.split('?')[1]||'').get('focus');
-   let shown=focus==='ois';
+   // Quality-graded G8 research is the first read on every Tassi entry
+   // route, including ?focus=ois from Home. Certified-only rows remain
+   // accessible via a labelled control, but are not auto-expanded to show
+   // opaque gaps already covered by explicitly dated study values.
+   let shown=false;
    const sync=()=>{
     anchor.hidden=!shown;
     // Old approved official-only block remains intact in the DOM and can
