@@ -85,6 +85,32 @@ def run():
     ]:
         got=recover("2026-10-28T18:30:00Z",**changes)
         assert got["should_run"] is False and got["reason"]=="UNTRUSTED_OR_NON_SCHEDULED_UPSTREAM",got
+    # Morning independent path follows Source Watch -> News -> Macro.
+    macro={"upstream_name":"Macro Persistent Daily V1",
+           "upstream_event":"workflow_run", "upstream_conclusion":"success",
+           "upstream_head_branch":"main"}
+    for stamp in ("2026-11-02T04:00:00Z","2026-11-02T06:45:00Z",
+                  "2026-11-02T08:59:00Z"):
+        r=resolve("workflow_run","",iso(stamp),**macro)
+        assert r["should_run"] and r["reason"]=="TRUSTED_SERIAL_MACRO_MORNING_RATES_RECOVERY",r
+    for stamp,reason in [
+        ("2026-11-02T03:59:00Z","OUTSIDE_MORNING_MACRO_RECOVERY_WINDOW"),
+        ("2026-11-02T09:00:00Z","OUTSIDE_MORNING_MACRO_RECOVERY_WINDOW"),
+        ("2026-11-01T07:00:00Z","MORNING_RECOVERY_WEEKEND"),
+    ]:
+        r=resolve("workflow_run","",iso(stamp),**macro)
+        assert not r["should_run"] and r["reason"]==reason,r
+    for change in (
+        {"upstream_name":"Calendar News Operational Refresh V1"},
+        {"upstream_event":"push"},{"upstream_event":"schedule"},
+        {"upstream_event":"workflow_dispatch"},{"upstream_event":"pull_request"},
+        {"upstream_conclusion":"failure"},{"upstream_head_branch":"feature/test"},
+    ):
+        r=resolve("workflow_run","",iso("2026-11-02T06:30:00Z"),
+                  **{**macro,**change})
+        assert not r["should_run"] and r["reason"]=="UNTRUSTED_OR_NON_SCHEDULED_UPSTREAM",r
+    r=resolve("workflow_run","",iso("2026-11-02T19:30:00Z"),**macro)
+    assert not r["should_run"] and r["reason"]=="OUTSIDE_MORNING_MACRO_RECOVERY_WINDOW",r
     assert resolve("unrecognized_event","",iso("2026-10-28T18:30:00Z"))["reason"]=="UNKNOWN_EVENT_FAIL_CLOSED"
     try:
         resolve("schedule", "0 7 * * 1-5", dt.datetime(2026, 10, 19, 7))

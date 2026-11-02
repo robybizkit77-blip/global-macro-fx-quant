@@ -48,9 +48,10 @@ on:
       - 'validation/rates/test_build_nzd_b2_oct22_review_candidate_v1.py'
   workflow_dispatch:
   workflow_run:
-    # Reuse the already scheduled hourly alert; no new cron/workflow.
-    # Official North American government yields can arrive after Rome morning.
-    workflows: ['Hourly Certified Alert Readiness V1']
+    # Reuse existing independent producers; no new cron/workflow.
+    # Morning: only independently recovered Macro after News.
+    # Evening: scheduled hourly alert after US/Canada official releases.
+    workflows: ['Hourly Certified Alert Readiness V1', 'Macro Persistent Daily V1']
     types: [completed]
   schedule:
     # Europe/Rome target windows: 07:20-07:39, 08:00-08:19, 09:00-09:19 on working days.
