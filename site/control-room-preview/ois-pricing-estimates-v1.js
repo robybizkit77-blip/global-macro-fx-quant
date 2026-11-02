@@ -895,6 +895,8 @@ async function mount(doc){
    toggle.setAttribute('aria-controls','ois-rows');
    toggle.style.cssText='display:block;width:100%;text-align:left;margin:0 0 13px;padding:9px 13px;border:1px solid #294b61;background:#0c2131;color:#b5c8d8;border-radius:6px;font:12px/1.5 Arial,sans-serif;cursor:pointer';
    box.insertAdjacentElement('afterend',toggle);
+   const certifiedCount=rows.filter(r=>r.tier==='OFFICIAL'&&tenors.every(t=>number(r.points[t]?.value)!==null)).length;
+   const certifiedLabel=certifiedCount+'/8';
    const focus=new URLSearchParams(location.hash.split('?')[1]||'').get('focus');
    let shown=focus==='ois';
    const sync=()=>{
@@ -904,8 +906,8 @@ async function mount(doc){
     anchor.style.setProperty('display',shown?'':'none',shown?'':'important');
     toggle.setAttribute('aria-expanded',String(shown));
     toggle.textContent=shown?
-     'Nascondi dettaglio fonte certificata · copertura ufficiale 4/8':
-     'Apri dettaglio delle sole fonti certificate · 4/8 (le stime 8/8 sono sopra)';
+     'Nascondi dettaglio fonte certificata · copertura ufficiale '+certifiedLabel:
+     'Apri dettaglio delle sole fonti certificate · '+certifiedLabel+' (matrice a qualità graduata 8/8 sopra)';
    };
    toggle.addEventListener('click',()=>{shown=!shown;sync()});
    sync();
