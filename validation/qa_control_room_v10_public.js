@@ -1001,7 +1001,9 @@ async function getState(page){
               points:x.querySelectorAll('circle').length,
               expectedPoints:Number(x.dataset.verifiedTenors),
               labels:[...x.querySelectorAll('circle title')].map(y=>y.textContent),
-              joined:x.dataset.joined,lines:x.querySelectorAll('polyline').length
+              joined:x.dataset.joined,lines:x.querySelectorAll('polyline').length,
+              studyLines:x.querySelectorAll('polyline[data-illustrative="true"][stroke-dasharray="7 6"]').length,
+              officialLines:x.querySelectorAll('polyline[data-illustrative="false"]').length
             })),
            secondaryCards:panel.querySelectorAll('.gmfq-quote-card').length,expectedCards:secondary.length,
            note:panel.textContent,docWidth:d.documentElement.scrollWidth,viewport:d.documentElement.clientWidth,
@@ -1036,12 +1038,13 @@ async function getState(page){
              !['OFFICIAL','PROXY','MIXED','CONFLICTED','SCENARIO'].includes(x.tier)||
              (x.points<3&&(x.joined!=='false'||x.lines!==0||
                !x.labels.every(t=>t.includes('SCADENZA ISOLATA NON CURVA'))))||
-             (['MIXED','CONFLICTED'].includes(x.tier)&&
-               (x.joined!=='false'||x.lines!==0)))||
+             (['MIXED','CONFLICTED'].includes(x.tier)&&x.joined!=='false')||
+             (x.tier==='OFFICIAL'&&(x.officialLines!==1||x.studyLines!==0))||
+             (x.tier!=='OFFICIAL'&&(x.studyLines!==(x.points===3?1:0)||x.officialLines!==0)))||
            (research.gradedRows.some(x=>x.points<3)&&
              !research.note.includes('Copertura parziale:'))||
            !research.gradedRows.some(x=>x.ccy==='CHF'&&['PROXY','MIXED'].includes(x.tier)&&
-             x.points>=1&&x.joined==='false'&&x.lines===0)||
+             x.points>=1&&x.joined==='false'&&x.lines===(x.points===3?1:0))||
            !research.note.includes('Grafico G8 3M/6M/12M: 8/8')||
            !research.note.includes('Curve certificate: '+research.expectedCurves+'/8')||
            research.secondaryCards!==research.expectedCards||
