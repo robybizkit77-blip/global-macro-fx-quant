@@ -183,7 +183,9 @@ assert.deepEqual(indicativeSixMonth(ois,'2026-11-12'),{});
 const pairAdapter=fs.readFileSync(path.join(root,'site/control-room-preview/home-navigation-v10.js'),'utf8');
 assert(pairAdapter.includes('indicativeSixMonth('));
 assert(pairAdapter.includes('NON ΔOIS, solo contesto'));
-assert(pairAdapter.includes('6M pricing WITHHELD'));
+assert(pairAdapter.includes('workingSixMonth('));
+assert(pairAdapter.includes('6M STIMA DI LAVORO'));
+assert(pairAdapter.includes('6M · nessun riferimento numerico ricostruibile'));
 
 
 // Source-level 100-price identity and expiry-proximity: same dated contract,
