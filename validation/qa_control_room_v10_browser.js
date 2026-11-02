@@ -1110,7 +1110,8 @@ function expectedReactionFromMetrics(row){
             date:x.dataset.meetingDay,ccys:[...x.querySelectorAll('[data-meeting-ccy]')].map(y=>y.dataset.meetingCcy)
           })),
           rows:[...det?.querySelectorAll('.gmfq-cb-meeting-all li')||[]].map(x=>({
-            ccy:x.dataset.meetingCcy,date:x.dataset.meetingDate,last:x.dataset.policyAsof,tier:x.dataset.meetingTier
+            ccy:x.dataset.meetingCcy,date:x.dataset.meetingDate,last:x.dataset.policyAsof,tier:x.dataset.meetingTier,
+            six:x.dataset.study6m,text:x.textContent
           }))};
       })(),meetingDateGroups:p.dataset.meetingDateGroups,meetingUpcomingCount:p.dataset.meetingUpcomingCount,
       priority:p.querySelector('.gmfq-first-priority')?.textContent,
@@ -1160,7 +1161,9 @@ function expectedReactionFromMetrics(row){
     cbFirst.meeting.rows.every((x,i)=>{
       const expected=expectedCb[i],status=operational.currencies[x.ccy].operational_status;
       return x.ccy===expected.ccy&&x.date===expected.date&&x.last===expected.last&&
-        x.tier===(status==='GREEN_OFFICIAL'?'CERTIFIED':status==='GREEN_ESTIMATED'?'ESTIMATED':'WITHHELD');
+        x.tier===(status==='GREEN_OFFICIAL'?'CERTIFIED':status==='GREEN_ESTIMATED'?'ESTIMATED':'WITHHELD')&&
+        (x.six?Number.isFinite(Number(x.six))&&Number(x.six)>-5&&Number(x.six)<25&&
+         x.text.includes('6M: ')&&!x.text.includes('6M: WITHHELD'):true);
     })&&cbFirst.meeting.groups.length===days.length&&
     cbFirst.meeting.groups.every((x,i)=>x.date===days[i]&&
       JSON.stringify(x.ccys)===JSON.stringify(futureCb.filter(y=>y.date===x.date).map(y=>y.ccy)));
