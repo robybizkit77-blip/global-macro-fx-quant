@@ -2411,8 +2411,8 @@ function pairWhatChangedEvidence(code,pair,rates,modelDay,macroDay){
   Array.isArray(dynamic.A.details)&&Array.isArray(dynamic.B.details);
  const observation=(ccy)=>{
   const item=rates?.[ccy],history=item?.history2,date=item?.date;
-  const base=!!item&&String(item.quality||'').includes('OFFICIAL')&&fresh(date,5)&&
-   num(item['2Y'])!==null;
+  const base=!!item&&String(item.quality||'').includes('OFFICIAL')&&
+   /^\d{4}-\d{2}-\d{2}$/.test(date||'')&&num(item['2Y'])!==null;
   const dates=history?.dates,values=history?.values;
   if(!base||!Array.isArray(dates)||!Array.isArray(values)||
      dates.length!==values.length||dates.length<2)
@@ -2420,15 +2420,19 @@ function pairWhatChangedEvidence(code,pair,rates,modelDay,macroDay){
   const current=dates.length-1;
   const latest=dates[current],previous=dates[current-1],nowValue=num(values[current]),oldValue=num(values[current-1]);
   const gap=(Date.parse(latest+'T00:00:00Z')-Date.parse(previous+'T00:00:00Z'))/86400000;
-  const eligible=latest===date&&Number.isFinite(gap)&&gap>0&&gap<=5&&
+  const matched=latest===date&&Number.isFinite(gap)&&gap>0&&
    nowValue!==null&&oldValue!==null&&Math.abs(nowValue-item['2Y'])<=0.001;
-  if(!eligible)return {status:'WITHHELD',text:'2Y: variazione non confrontabile · ultima osservazione '+date+
-   (Number.isFinite(gap)&&gap>5?' · intervallo storico troppo lungo':'')};
+  if(!matched)return {status:'WITHHELD',text:'2Y: serie storica non riconciliabile · ultima osservazione '+date};
   const delta=Math.round((nowValue-oldValue)*1000)/10;
   const label=delta>0.05?'sale':delta< -0.05?'scende':'stabile';
-  return {status:'MEASURED',delta,prev:previous,latest,description:label,
-   text:'2Y '+label+' '+(delta>0?'+':'')+fmt(delta,1)+' bp · '+previous+' → '+latest+
-   ' · stessa serie ufficiale'};
+  const recent=fresh(date,5)&&gap<=5;
+  const dateSpan=Number.isInteger(gap)?gap+' giorni':fmt(gap,1)+' giorni';
+  return {status:recent?'MEASURED':'HISTORICAL',delta,prev:previous,latest,description:label,
+   text:(recent?'2Y ':'ULTIMA VARIAZIONE DOCUMENTATA · 2Y ')+label+' '+
+   (delta>0?'+':'')+fmt(delta,1)+' bp · '+previous+' → '+latest+
+   ' · stessa serie ufficiale'+(recent?'':' · confronto tra '+dateSpan+
+   ' (intervallo storico troppo lungo per interpretarlo come 1D/1W). STIMA DI CONTINUITÀ livello 2Y ≈'+
+   fmt(item['2Y'],3)+'% dal '+date+'; non è una quotazione odierna')};
  };
  const modelLeg=(ccy,key)=>{
   if(!modelValid)return '<p class="gmfq-change-model">Lettura Macro del motore non disponibile o non aggiornata.</p>';
@@ -2463,7 +2467,7 @@ function pairWhatChangedEvidence(code,pair,rates,modelDay,macroDay){
   '; prezzo Pair '+htmlEscape(modelDay||'non verificato')+'): '+phase+
   '. È una diagnosi qualitativa '+(baselineCurrent?'dello snapshot datato':'STORICA, da rivalidare')+
   ', non un nuovo rilascio economico.</p>'+
-  '<p class="gmfq-change-warning">Il confronto 2Y indica la variazione tra due date ufficiali dichiarate, non necessariamente 24 ore; con serie vecchie o intervalli troppo lunghi la variazione resta non confrontabile. Nessun dato cambia la tesi, il sizing o i trigger.</p>'+
+  '<p class="gmfq-change-warning">Il confronto 2Y indica la variazione tra due date ufficiali dichiarate, non necessariamente 24 ore. Se la serie è datata o settimanale, il delta è STORICO e il livello di continuità è una STIMA, non un repricing corrente. Nessun dato cambia la tesi, il sizing o i trigger.</p>'+
   '</section>';
 }
 

@@ -2305,8 +2305,9 @@ function expectedReactionFromMetrics(row){
      deltaCHF.price!==setupFeed.price_asof||
      deltaCHF.baselineState!==(current(setupFeed.macro_baseline_asof,10)?'DATED_SNAPSHOT':'HISTORICAL')||
      !deltaCHF.modelSummary?.includes('baseline Macro/Tassi '+setupFeed.macro_baseline_asof)||
-     deltaCHF.legs.find(x=>x.ccy==='CHF')?.status!=='WITHHELD'||
+     deltaCHF.legs.find(x=>x.ccy==='CHF')?.status!=='HISTORICAL'||
      !deltaCHF.legs.find(x=>x.ccy==='CHF')?.actual?.includes('2026-09-30')||
+     !deltaCHF.legs.find(x=>x.ccy==='CHF')?.actual?.includes('STIMA DI CONTINUITÀ')||
      !deltaCHF.legs.find(x=>x.ccy==='EUR')?.model?.includes('Crescita: peggiora')||
      !deltaCHF.disclaimer?.includes('non necessariamente 24 ore'))
     throw Error(label+' CHF what-changed narrative is not fail-closed '+JSON.stringify(deltaCHF));
@@ -2441,8 +2442,9 @@ function expectedReactionFromMetrics(row){
       ccy:x.dataset.gmfqChangeCurrency,status:x.dataset.gmfqYieldChange,
       actual:x.querySelector('.gmfq-change-measured')?.textContent}));
   });
-  if(deltaAUDCAD.find(x=>x.ccy==='AUD')?.status!=='WITHHELD'||
+  if(deltaAUDCAD.find(x=>x.ccy==='AUD')?.status!=='HISTORICAL'||
      !deltaAUDCAD.find(x=>x.ccy==='AUD')?.actual?.includes(ratesFeed.AUD.date)||
+     !deltaAUDCAD.find(x=>x.ccy==='AUD')?.actual?.includes('STIMA DI CONTINUITÀ')||
      deltaAUDCAD.find(x=>x.ccy==='CAD')?.status!=='MEASURED')
     throw Error(label+' AUDCAD observed 2Y series gaps misclassified '+JSON.stringify(deltaAUDCAD));
   const audReaction=await page.evaluate(()=>{

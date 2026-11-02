@@ -1389,8 +1389,9 @@ async function getState(page){
             change.price!==pricing.setup_date||
             change.baselineState!=='HISTORICAL'||
             !change.summary?.includes('baseline Macro/Tassi '+pricing.setup_macro_asof)||
-            change.legs.find(x=>x.ccy==='CHF')?.status!=='WITHHELD'||
+            change.legs.find(x=>x.ccy==='CHF')?.status!=='HISTORICAL'||
             !change.legs.find(x=>x.ccy==='CHF')?.text?.includes('2026-09-30')||
+            !change.legs.find(x=>x.ccy==='CHF')?.text?.includes('STIMA DI CONTINUITÀ')||
             !change.legs.find(x=>x.ccy==='EUR')?.model?.includes('Crescita: peggiora')||
             !change.note?.includes('non necessariamente 24 ore')||
             change.width>change.viewport+16)
