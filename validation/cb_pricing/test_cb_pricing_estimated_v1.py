@@ -52,9 +52,23 @@ def main():
                 assert "!" not in str(x.get("symbol") or ""), x
         assert built["currencies"]["NZD"]["input_mode"] == "NATIVE_CB_FALLBACK"
         assert built["currencies"]["NZD"]["method_id"] == mod.NATIVE_METHOD_ID
-        assert built["currencies"]["CHF"]["horizons"]["6m"]["raw_level_minus_spot_policy_bp"] == 10.0
-        assert built["currencies"]["CHF"]["horizons"]["12m"]["raw_level_minus_spot_policy_bp"] == 48.0
-        assert built["currencies"]["CHF"]["direction_vs_policy"] == "WITHHELD"
+        # Do not pin live market futures to October 30 rates: 10/48bp drift
+        # is not an integrity failure when the dated ICE SARON contract moves.
+        # Check the actual dated contract and the descriptive arithmetic
+        # instead; never infer a CB policy decision from these level gaps.
+        chf = built["currencies"]["CHF"]
+        source_chf = live["currencies"]["CHF"]
+        for h in ("6m", "12m"):
+            value = chf["horizons"][h]
+            source = source_chf["horizons"][h]
+            assert value["contract"] == source["contract"], (h, value, source)
+            assert value["rate"] == source["rate"], (h, value, source)
+            assert value["policy_delta_bp"] is None, (h, value)
+            assert value["raw_level_gap_not_policy_repricing"] is True
+            expected = (None if chf["input_mode"] == "LIVE_SECONDARY_CONFLICT_INDICATIVE"
+                        else round((source["rate"] - chf["policy_rate"]) * 100, 1))
+            assert value["raw_level_minus_spot_policy_bp"] == expected, (h, value, expected)
+        assert chf["direction_vs_policy"] == "WITHHELD"
 
     if nzd_proxy is not None:
         nzd = built["currencies"]["NZD"]
