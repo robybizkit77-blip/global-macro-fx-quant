@@ -472,7 +472,22 @@ function matrix(ois,bb,today){
     if(observed&&p.rate===null){
      points['3m']=observed;
      tier='MIXED';
-     source=(x.source||'')+' · SOLO CONTRATTO 3M VERIFICATO, 6M/12M CONTESTATI';
+     // Working scenario requested by the desk: replace missing maturities
+     // with explicitly MODELLED levels. Disputed future prices are scenario
+     // inputs, NOT authenticated settlements. Never promote into official OIS.
+     for(const tenor of ['6m','12m']){
+      const q=x.horizons?.[tenor]||{};
+      const px=number(q.futures_price);
+      if(px===null||px<75||px>105)continue;
+      const value=Math.round((100-px)*1000)/1000;
+      points[tenor]={value,date:today,estimated:true,
+       range:[Math.round((value-.50)*100)/100,Math.round((value+.50)*100)/100],
+       scenario_method:'DISPUTED_FUTURES_LEVEL_SENSITIVITY_V1',
+       scenario_input_date:q.quote_as_of||null,
+       source_quote_verified:false,source_quote_disputed:true,
+       direct_ois_quote:false,policy_repricing_allowed:false};
+     }
+     source=(x.source||'')+' · USD 3M contratto verificato; 6M/12M STIME DI SCENARIO da quotazioni contestate, +/-50 bp, non settlement certificati';
     }
   }
   return {ccy,tier,points,source,official_ois:ccy==='GBP'&&tier==='OFFICIAL',
@@ -693,9 +708,9 @@ function miniCharts(rows){
   const strip='<div class="gmfq-mini-values" role="group" aria-label="Scadenze 3M 6M 12M">'+
    tenors.map(t=>{
     const x=r.points[t],valid=number(x?.value)!==null&&fresh(x?.date,x?.date);
-    const disputed=valid&&x.source_quote_disputed===true;
+    const disputed=valid&&x.source_quote_disputed===true&&!x.estimated;
     const label=valid?(r.tier==='OFFICIAL'?'':'≈')+fmt(x.value)+'%':'—';
-    const state=!valid?'MISSING':disputed?'DISPUTED':
+    const state=!valid?'MISSING':x.estimated?'SCENARIO':disputed?'DISPUTED':
       x.range?'SCENARIO':r.tier==='OFFICIAL'?'OFFICIAL':'INDICATIVE';
     const range=valid&&x.range?'<small>Fascia '+fmt(x.range[0])+'–'+fmt(x.range[1])+'%</small>':'';
     return '<div data-horizon="'+t+'" data-point-state="'+(x?.legacy_mislabeled_horizon?'LEGACY_NOT_FORWARD':state)+'"><span>'+t.toUpperCase()+
@@ -717,7 +732,7 @@ function miniCharts(rows){
    '" fill="none" stroke="'+ink(r)+'" stroke-width="2"/>':'';
   const dots=p.map(a=>{
    const disputed=a.v.source_quote_disputed===true;
-   const color=disputed?'#b99aff':ink(r);
+   const color=a.v.estimated?'#c2b1fa':disputed?'#b99aff':ink(r);
    return '<g data-tenor="'+a.t+'" data-point-state="'+(disputed?'DISPUTED':r.tier)+
     '"><circle cx="'+x(a.i)+'" cy="'+y(a.v.value).toFixed(1)+
     '" r="4.5" fill="'+color+'" stroke="#071b2b" stroke-width="1.5"><title>'+
@@ -753,12 +768,19 @@ function miniCharts(rows){
 function view(rows,moves=[]){
  const cell=(r,t)=>{const x=r.points[t];return x?
   '<b>'+(r.tier==='OFFICIAL'?'':'≈')+fmt(x.value)+'%</b><small>'+esc(x.date)+'</small>'+
-    (x.source_quote_disputed?'<small>⚠ QUOTAZIONE CONTESTATA · non convalidata</small>':
+    (x.estimated?'<small>STIMA DI SCENARIO · input contestato, non OIS</small>':x.source_quote_disputed?'<small>⚠ QUOTAZIONE CONTESTATA · non convalidata</small>':
      x.legacy_mislabeled_horizon?'<small>⚠ FINE CONTRATTO, NON TASSO FORWARD '+t.toUpperCase()+' · non utilizzabile</small>':
      x.source_quote_verified?'<small>'+(x.accrual_start?'inizio matur. '+esc(x.accrual_start)+' · ':'')+
        (x.tenor_gap_days>0?'+':'')+x.tenor_gap_days+'gg vs target</small>':'')+
    (x.range?'<small>'+fmt(x.range[0])+'–'+fmt(x.range[1])+'%</small>':''):
   '<b>—</b><small>n.d.</small>';};
+ const modelled=rows.filter(r=>tenors.some(t=>r.points[t]?.estimated));
+ const calculations=modelled.map(r=>{
+   const a=number(r.points['3m']?.value),b=number(r.points['6m']?.value),c=number(r.points['12m']?.value);
+   if(a===null||b===null||c===null)return '';
+   const bp=x=>(x>=0?'+':'')+Math.round(x*100)+' bp';
+   return '<p class="gmfq-est-calculation" data-calculation-ccy="'+r.ccy+'"><b>'+r.ccy+' · scenario di lavoro:</b> 6M − 3M '+bp(b-a)+'; 12M − 3M '+bp(c-a)+'. <small>Calcolato sulle stime: non è un repricing OIS o una previsione di decisioni.</small></p>';
+ }).join('');
  const counts=Object.fromEntries(['OFFICIAL','PROXY','MIXED','CONFLICTED','SCENARIO','WITHHELD'].map(t=>[t,rows.filter(r=>r.tier===t).length]));
  // The user needs all eight dated 3M/6M/12M references at first glance.
  // Preserve full source provenance and leave methodology collapsible.
@@ -776,7 +798,7 @@ function view(rows,moves=[]){
  const contested=rows.filter(r=>r.tier==='CONFLICTED').map(r=>r.ccy);
  return '<h2 class="desk-panel-title">G8 · OIS e stime monetarie 3M / 6M / 12M</h2>' + 
  '<p class="gmfq-est-quick-read" data-g8-estimated-curve-coverage="'+usable+'/8" data-complete-tenors="'+allTenors+'/8"><strong>Copertura G8 · </strong>'+esc(brief)+
- '. Tutte le valute sono consultabili; le stime non diventano segnali.</p>'+miniCharts(rows)+
+ '. Tutte le valute sono consultabili; le stime non diventano segnali.</p>'+miniCharts(rows)+calculations+
  '<details class="gmfq-est-disclosure" open data-default="OPEN"><summary>Tabella G8 · 3M / 6M / 12M, dati e fonti (tocca per nascondere)</summary>'+
  '<div class="gmfq-est-body"><p><b>8 valute, 3 scadenze per valuta.</b> Le curve non certificate restano <b>stime/proxy</b> con date separate, non quotazioni OIS né curve sincronizzate. Le quotazioni discordanti per lo stesso contratto/data sono <b>contestate, non convalidate</b>, senza repricing e senza linee congiunte. Nessun segnale FX deriva dai valori stimati.</p>'+
  '<div role="table" class="gmfq-est-table"><div class="gmfq-est-row gmfq-est-head" role="row"><span>Valuta</span><span>3M</span><span>6M</span><span>12M</span></div>'+
