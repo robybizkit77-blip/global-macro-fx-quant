@@ -2667,7 +2667,11 @@ function expectedReactionFromMetrics(row){
       firstBg:p?.querySelector('.gmfq-cross-risk-card')?d.defaultView.getComputedStyle(p.querySelector('.gmfq-cross-risk-card')).backgroundColor:null,
       cards:[...p?.querySelectorAll('[data-cross-instrument]')||[]].map(c=>({
         symbol:c.dataset.crossInstrument,state:c.dataset.crossStatus,
-        text:c.textContent,price:c.querySelector('.gmfq-cross-risk-value')?.textContent})),
+        text:c.textContent,price:c.querySelector('.gmfq-cross-risk-value')?.textContent,
+        trend:c.querySelector('svg.gmfq-cross-risk-spark')?.dataset.trendSource,
+        count:Number(c.querySelector('svg.gmfq-cross-risk-spark')?.dataset.pointCount),
+        lines:c.querySelectorAll('svg.gmfq-cross-risk-spark polyline').length,
+        dashed:c.querySelector('svg.gmfq-cross-risk-spark polyline')?.getAttribute('stroke-dasharray')||''})),
       text:p?.textContent,width:d?.documentElement.scrollWidth,
       viewport:d?.documentElement.clientWidth};
   });
@@ -2685,6 +2689,11 @@ function expectedReactionFromMetrics(row){
     risk.gridCols!==(risk.viewport<=820?1:3)||
     !['transparent','rgba(0, 0, 0, 0)'].includes(risk.firstBg)||
     !risk.text.includes('Brent spot ufficiale non certificato nel feed')||
+    risk.cards.some(c=>c.lines!==1||
+      (c.symbol==='BRENT'?(c.trend!=='MODEL_BACKSOLVED'||c.count!==3||
+        c.dashed!=='7 5'||!c.text.includes('NON prezzi storici osservati')):
+       (c.trend!=='OBSERVED_DATED'||c.count!==30||c.dashed!==''||
+        !c.text.includes('30 osservazioni datate'))))||
     !risk.text.includes('Nessun confronto di spread fra spot e futures')||
     risk.width>risk.viewport+16)
     throw Error(label+' v10 cross risk layout/source disclosure missing '+JSON.stringify(risk));
