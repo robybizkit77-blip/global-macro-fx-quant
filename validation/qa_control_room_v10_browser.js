@@ -1016,11 +1016,12 @@ function expectedReactionFromMetrics(row){
     throw Error(label+' Rates/OIS decision-first evidence failed '+JSON.stringify(research));
   if(research.g8LevelSeries!==8||research.g8Levels!=='8'||
       research.qualityTypes.some(x=>x.points<1||x.points>3||
-       (x.ccy!=='CHF'&&x.points!==3)||
-       (x.ccy==='CHF'&&(x.tier!=='PROXY'||x.joined!=='false'))||
+       (!['CHF','USD'].includes(x.ccy)&&x.points!==3)||
+       (x.ccy==='USD'&&(x.tier!=='MIXED'||x.points!==1||x.joined!=='false'))||
+       (x.ccy==='CHF'&&(!['PROXY','MIXED'].includes(x.tier)||x.joined!=='false'))||
        !['OFFICIAL','PROXY','MIXED','CONFLICTED','SCENARIO'].includes(x.tier)||
        (['MIXED','CONFLICTED'].includes(x.tier)&&x.joined!=='false'))||
-      !research.qualityTypes.some(x=>x.ccy==='CHF'&&x.tier==='PROXY'&&x.points>=1&&x.points<=3&&x.joined==='false')||
+      !research.qualityTypes.some(x=>x.ccy==='CHF'&&['PROXY','MIXED'].includes(x.tier)&&x.points>=1&&x.points<=3&&x.joined==='false')||
       research.secondary!==expectedSecondaryQuotes||
      !['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'].every(c=>research.legend.includes(c))||
      !research.disclaimers.includes('NON curva OIS')&&
