@@ -2668,7 +2668,7 @@ function expectedReactionFromMetrics(row){
     !risk.leadFirst||JSON.stringify(risk.provenance)!==JSON.stringify(['vix','wti','brent'])||
     risk.gridCols!==(risk.viewport<=820?1:3)||
     !['transparent','rgba(0, 0, 0, 0)'].includes(risk.firstBg)||
-    !risk.text.includes('Brent spot ufficiale: WITHHELD')||
+    !risk.text.includes('Brent spot ufficiale non certificato nel feed')||
     !risk.text.includes('Nessun confronto di spread fra spot e futures')||
     risk.width>risk.viewport+16)
     throw Error(label+' v10 cross risk layout/source disclosure missing '+JSON.stringify(risk));
