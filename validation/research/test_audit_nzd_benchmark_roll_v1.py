@@ -12,12 +12,20 @@ class NzBenchmarkRollTests(unittest.TestCase):
     def test_roll_not_misclassified_as_repricing(self):
         out = audit(self.data)
         self.assertEqual(out["quoted_2y_difference_bp"], 19)
+        self.assertEqual(out["quoted_10y_difference_bp"], 3)
+        self.assertIsNone(out["comparable_same_instrument_10y_change_bp"])
         self.assertIsNone(out["comparable_same_instrument_change_bp"])
         self.assertFalse(out["eligible_for_pair_repricing"])
 
     def test_changing_identity_fails_closed(self):
         changed = copy.deepcopy(self.data)
         changed["currencies"]["NZD"]["observations"][1]["benchmark_2y"] = "May 2028"
+        with self.assertRaises(AssertionError):
+            audit(changed)
+
+    def test_ten_year_benchmark_identity_fails_closed(self):
+        changed = copy.deepcopy(self.data)
+        changed["currencies"]["NZD"]["observations"][1]["benchmark_10y"] = "May 2036"
         with self.assertRaises(AssertionError):
             audit(changed)
 
