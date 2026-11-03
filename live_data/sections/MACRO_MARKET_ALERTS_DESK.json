@@ -1,8 +1,51 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-02T20:49:15Z",
+  "generated_at_utc": "2026-11-03T02:56:29Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-456ec839f32ce566f49d",
+      "observed_at_utc": "2026-11-03T02:38:00Z",
+      "headline": "US has conducted defensive strikes on Iranian targets in the Strait of Hormuz, US official says",
+      "summary": "AP News riporta: US has conducted defensive strikes on Iranian targets in the Strait of Hormuz, US official says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxOSlZQOGFnNWxyTG91ZkxGMkdDdlNhd1RuRUZzblYtZGxfOGpReXI2cE5oazAzZkFQRW96Y3VrUkdfenVFWWtPS1BfaFBYYWQ1WVBMVmpuaTZuU3llOGZNMF85QnVGRHAwZlphVWVoaDFiZWhoMWVjalhyTE5na3BVWjVHcmIyWDFoU0FnU2ZBaFZyOE5GRGJqQzdR?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-1a4e21e00b687194bc4e",
+      "observed_at_utc": "2026-11-02T18:05:17Z",
+      "headline": "El Nino poses 'meaningful risk' of higher inflation in 2027, SF Fed paper says",
+      "summary": "Reuters riporta: El Nino poses 'meaningful risk' of higher inflation in 2027, SF Fed paper says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxPejhFalhZVDhQYVJiOEVjTHlzNm43MG9qTVJaQUtxS0ZZNHFkNmc4aVFaeHVGZnlBLWZLZXpIWDNJZ0RNYWloZHBybU1OeEdaS1NwVERvQkZIaW02VTNWZmk1ang1WkQ1N3B0aTZMUzVJRjNRNnhXSmV3YXlTaTZtYTVXbGg2V1g1UXVvZkFFY2V0SlNkcEwyQzI4Q0JtQVVFazVZcWdsOVdsaVBwUUJXT1NRazg1N0E?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-010810084de26c374df9",
+      "observed_at_utc": "2026-11-02T04:17:00Z",
+      "headline": "Indonesia October inflation eases slightly to 3.23% y/y",
+      "summary": "Reuters riporta: Indonesia October inflation eases slightly to 3.23% y/y. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxPR2JfRjRkMmxQTTR6ZWkydWV2ZmVfcHRNa3RKUzJpSXE2MDEySWZaLUpqVWNYRkotRTA0WTd1R0R6OHhFT24yN195bm1BLU9Sa3RPWDcyM3hPYVVUUWkyYkVGdHBWNzF5VmlXT2NSdkdmbHBqczhLSHNMWndDaFJaYU1ULU4zSDZkblNMZ193UFg5SUN0dFFadUVJM0VhZGlNNXJSbzJ5OA?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-c635480afbc82d07d5c4",
       "observed_at_utc": "2026-11-02T14:16:39Z",
@@ -1373,47 +1416,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxQQWIyeWVhRnVBaHZfV05HanpZVFJzZDZiaC1MTEFVX0JEbWc5RVhRV3htMnJFMDNCVjBPWTJISkhha3ZWc3otaXBCTGloREJidmlqOWtXMTQ4Zks2aTA5czBzNC1OdGNuVXlqLVZ4TTk3M1VUSEZvdVdCLXV3bHJsZXBHSktGcXR0dk1wS2VYdWYxTm9ueGc?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-ed612c8863ceb3124f51",
-      "observed_at_utc": "2026-10-27T02:12:00Z",
-      "headline": "Yen eases on risk-on mood ahead of central bank bonanza",
-      "summary": "Reuters riporta: Yen eases on risk-on mood ahead of central bank bonanza. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "JPY"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxPVDhUYWVaR1lyeGFScDAxOG1INFBuME5XaHhvOFNZTnhjUXFCTHVGX2k1cEJzSUMwUmpQblFZWE1WU2Z6Q0dnZTRmc2lCSEE1RklYN3VZdWV3aVRLblJ4aTFudW1aUkxUVWZXWUl6Ql8zQkVEaDBJakY4SnhyUmRwb1BQcHpKSHlOWG5DeDN3QVFIb1MyMU5mcDlESEdQS1BwdHhpaThFZjZDMDIweVVYX1VQX1VEdVdh?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-7a4c05264307398cd129",
-      "observed_at_utc": "2026-10-27T03:24:00Z",
-      "headline": "Trump and Rubio plan to visit oil tanker carrying Venezuelan crude in Texas",
-      "summary": "AP News riporta: Trump and Rubio plan to visit oil tanker carrying Venezuelan crude in Texas. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "AP News · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxPY1lQMDdtdmVjVTlZS1lRUTY4OEJGamlOTUV1TWVHelZ6VHFUYWhjZE1qYVZhSk5oamx5UkhzLXRTZks0dHZFX1A4X3BFMWpQWGhpa3ZENkhYWmFKNUxFbnJoX2E0anFtZWdIVzVCYzNjc1NIWmE3QXFNa2NyMlVxdlZMVUE4SDNBdVBjZzdtUTFlVF9uY0pzVl9ZSkM5T2V4eVE?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-c72a62e7476e5a20e989",
-      "observed_at_utc": "2026-10-26T23:17:00Z",
-      "headline": "South Korea Q3 GDP beats forecasts as AI chip boom boosts exports, investments",
-      "summary": "Reuters riporta: South Korea Q3 GDP beats forecasts as AI chip boom boosts exports, investments. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxPclJITG5OM3lQUHFQQXI0Z0QxNTEzU2RjOXNHakE5aXZiWkJNUjVpYUtiNE1OcVNIY3dNMkxsTHQ3TlpfbnFXM2M0N3VSdDdXbEktX29CaFhLWnZMYS1fWGFpSmo4aERwRkpKTTJPNmRqMVcxTVFONFBnN04yM2FoRlBoaGRkb0YxNmJmU3JTSEJIR3I5N2I0ZndDREZsU01vOEhIa1RqRzlJQ1lhODJubEllc3d4MzQ?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
