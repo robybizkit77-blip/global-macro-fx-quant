@@ -3216,7 +3216,7 @@ async function mountPairResearch(doc){
   const row=cotSeries?.[c],dates=row?.dates;
   return Array.isArray(dates)&&dates.length>=52&&
    Array.isArray(row.net)&&row.net.length===dates.length&&
-   /^20\\d{2}-\\d{2}-\\d{2}$/.test(dates.at(-1)||'')?dates.at(-1):null;
+   /^20\d{2}-\d{2}-\d{2}$/.test(dates.at(-1)||'')?dates.at(-1):null;
  });
  const cotAsOf=cotDates.every(d=>d!==null&&d===cotDates[0])?cotDates[0]:null;
  const ok=setup?.schema==='GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1'&&
