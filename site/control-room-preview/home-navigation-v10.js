@@ -1835,48 +1835,79 @@ function historicalSovereignTableRows(raw){
    usDate:last.date,usSpreadBp:(last.v-usd.get(last.date))*100,scenario:r.scenario};
  }).filter(Boolean);
 }
+/* Source-dated G8 native Rates table bridge.
+   Presentation ONLY: no edits to canonical rates, pairs, market pricing or backtests.
+   Refresh every 2Y/10Y row from the validated feed, compute USD spreads exclusively
+   from the last common historical fixing date, and label historic observations. */
 function mountHistoricalSovereignTable(doc,raw){
  const tbody=doc.getElementById('rates-rows');
- if(!tbody||tbody.dataset.gmfqHistoryAdapter==='true')return;
+ if(!tbody||tbody.dataset.gmfqHistoryAdapter==='true'||!raw)return;
  tbody.dataset.gmfqHistoryAdapter='true';
- const found=new Map(historicalSovereignTableRows(raw).map(x=>[x.ccy,x]));
- const css=doc.createElement('style');css.id='gmfq-native-history-style';
- css.textContent='#rates-rows tr[data-gmfq-historical-yield] td{vertical-align:middle}'+
-  '#rates-rows .gmfq-history-date{display:block;color:#e8c77c;font:600 10px/1.35 Arial,sans-serif;margin-top:3px}'+
-  '#rates-rows .gmfq-history-est{display:block;color:#acd2e6;font:10px/1.35 Arial,sans-serif;white-space:normal;margin-top:3px}'+
-  '#rates-rows .gmfq-history-spread-date{display:block;color:#e5c98e;font:9px/1.35 Arial,sans-serif;white-space:normal}'+
-  '#rates-rows .gmfq-history-badge{color:#e5c98e!important;border:1px solid #927a49!important;white-space:nowrap}'+
-  '#gmfq-native-history-note{color:#b9cddd;padding:7px 12px;font:11px/1.55 Arial,sans-serif}'+
-  '@media(max-width:600px){#rates-rows .gmfq-history-badge{font-size:9px}}';
+ const names={
+  USD:['Stati Uniti','USA','United States'],
+  EUR:['Eurozona','Area Euro','Area euro','Europa'],
+  GBP:['Regno Unito','UK','Gran Bretagna'],
+  JPY:['Giappone','Japan'],
+  AUD:['Australia'],
+  CAD:['Canada'],
+  NZD:['Nuova Zelanda','New Zealand'],
+  CHF:['Svizzera','Switzerland']
+ };
+ const label={USD:'Stati Uniti',EUR:'Eurozona',GBP:'Regno Unito',JPY:'Giappone',
+  AUD:'Australia',CAD:'Canada',NZD:'Nuova Zelanda',CHF:'Svizzera'};
+ const usHistory=new Map(dateHistory(raw.USD,'history2').map(x=>[x.date,x.v]));
+ const study=yieldStudySnapshot(raw,ratesAll(raw));
+ const view=new Map(study.rows.map(x=>[x.ccy,x]));
+ const css=doc.createElement('style');css.id='gmfq-native-g8-rates-style';
+ css.textContent='#rates-rows .gmfq-history-date{display:block;color:#e8c77c;font:600 10px/1.35 Arial,sans-serif;margin-top:3px}'+
+ '#rates-rows .gmfq-history-spread-date{display:block;color:#e5c98e;font:9px/1.35 Arial,sans-serif;white-space:normal}'+
+ '#rates-rows .gmfq-history-badge{color:#e5c98e!important;border:1px solid #927a49!important;white-space:nowrap}'+
+ '#gmfq-native-history-note{color:#b9cddd;padding:7px 12px;font:11px/1.55 Arial,sans-serif}';
  doc.head.appendChild(css);
+ const computed=new Map();
+ for(const ccy of FX){
+  const v=view.get(ccy),src=raw[ccy];
+  if(!v||v.status==='UNAVAILABLE'||!src)continue;
+  const hist=dateHistory(src,'history2');
+  const common=hist.filter(x=>x.date<=v.asof&&usHistory.has(x.date));
+  const last=common.at(-1),spread=last?(last.v-usHistory.get(last.date))*100:null;
+  computed.set(ccy,{...v,spread,spreadDate:last?.date||null});
+ }
  const draw=()=>{
   if(route()!=='tassi'||frame.contentDocument!==doc||!tbody.isConnected)return;
-  const rows=[...tbody.querySelectorAll(':scope > tr')];
-  if(rows.length!==8)return;
-  for(const [ccy,name] of [['NZD','Nuova Zelanda'],['CHF','Svizzera']]){
-   const row=rows.find(x=>x.cells?.[0]?.textContent.includes(name)),r=found.get(ccy);
-   if(!row||row.cells.length!==7||!r||row.dataset.gmfqHistoricalYield===r.asof)continue;
-   row.dataset.gmfqHistoricalYield=r.asof;row.dataset.gmfqHistoricalSpreadDate=r.usDate;
-   row.dataset.gmfqProvenance='OFFICIAL_HISTORICAL_SAME_DAY_2Y_10Y';
-   const pct=n=>fmt(n,3)+'%';
-   row.cells[0].innerHTML='<strong>'+FLAG[ccy]+' '+htmlEscape(name)+'</strong>'+
-    '<small class="gmfq-history-date">STORICO '+htmlEscape(r.asof)+'</small>';
-   row.cells[1].innerHTML=pct(r.v2)+(r.scenario?
-    '<small class="gmfq-history-est">β ≈'+pct(r.scenario.v2)+' · '+htmlEscape(r.scenario.date)+'</small>':'');
-   row.cells[2].innerHTML=pct(r.v10)+(r.scenario?
-    '<small class="gmfq-history-est">β ≈'+pct(r.scenario.v10)+' · '+htmlEscape(r.scenario.date)+'</small>':'');
-   row.cells[3].textContent=(r.slopeBp>=0?'+':'')+fmt(r.slopeBp,1)+' bp';
-   row.cells[4].innerHTML=(r.usSpreadBp>=0?'+':'')+fmt(r.usSpreadBp,1)+' bp'+
-    '<small class="gmfq-history-spread-date">data comune '+htmlEscape(r.usDate)+'</small>';
-   row.cells[4].title='Spread storico '+ccy+' − USA del '+r.usDate+
-    '. Data diversa dal rendimento 2Y/10Y mostrato: NON spread corrente.';
-   row.cells[5].textContent=r.asof;
-   row.cells[6].innerHTML='<span class="desk-quality gmfq-history-badge">CERTIFICATO · STORICO</span>';
+  const trs=[...tbody.querySelectorAll(':scope > tr')];
+  if(trs.length!==8)return;
+  for(const ccy of FX){
+   const row=trs.find(el=>{
+    const name=el.cells?.[0]?.textContent||'';
+    return names[ccy].some(n=>name.toLocaleLowerCase('it').includes(n.toLocaleLowerCase('it')))||
+     el.dataset.gmfqSourceCcy===ccy;
+   });
+   const item=computed.get(ccy);
+   if(!row||row.cells.length!==7||!item||row.dataset.gmfqHistoryAdapterVersion==='G8_V2')continue;
+   const old=item.status==='HISTORICAL',pct=n=>fmt(n,3)+'%',fmtbp=n=>(n>=0?'+':'')+fmt(n,1)+' bp';
+   row.dataset.gmfqSourceCcy=ccy;
+   row.dataset.gmfqHistoryAdapterVersion='G8_V2';
+   row.dataset.gmfqProvenance='OFFICIAL_SOURCE_DATED';
+   row.cells[0].innerHTML='<strong>'+FLAG[ccy]+' '+htmlEscape(label[ccy])+'</strong>'+
+    (old?'<small class="gmfq-history-date">STORICO '+htmlEscape(item.asof)+'</small>':'');
+   row.cells[1].textContent=pct(item.v2);
+   row.cells[2].textContent=pct(item.v10);
+   row.cells[3].textContent=fmtbp(item.slopeBp);
+   if(num(item.spread)!==null){
+    row.cells[4].innerHTML=fmtbp(item.spread)+'<small class="gmfq-history-spread-date">data comune '+htmlEscape(item.spreadDate)+'</small>';
+    row.cells[4].title='Spread 2Y '+ccy+' − USD calcolato soltanto su osservazioni della stessa data, '+item.spreadDate+'.';
+   }else{
+    row.cells[4].textContent='Data comune da verificare';
+   }
+   row.cells[5].textContent=item.asof;
+   row.cells[6].innerHTML='<span class="desk-quality'+(old?' gmfq-history-badge':'')+'">'+
+    (old?'CERTIFICATO · STORICO':'CERTIFICATO · DATATO')+'</span>';
   }
   const panel=tbody.closest('.desk-panel');
   if(panel&&!panel.querySelector('#gmfq-native-history-note')){
    const note=doc.createElement('p');note.id='gmfq-native-history-note';
-   note.textContent='NZD e CHF: rendimenti 2Y/10Y ufficiali ma storici, NON livelli correnti. “2Y vs US” usa l’ultima data comune verificata indicata nella cella, non la data del rendimento sopra. Eventuali stime β sono separate: nessun effetto su score, coppie o backtest.';
+   note.textContent='G8: 2Y e 10Y sono osservazioni ufficiali datate. Lo spread 2Y rispetto agli USA usa sempre l’ultima data comune delle due serie, indicata per riga. Le date storiche non diventano quotazioni correnti. Nessuno score o segnale viene modificato.';
    panel.appendChild(note);
   }
  };
