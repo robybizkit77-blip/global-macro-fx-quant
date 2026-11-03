@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark">
+<title>Global Macro FX Quant · Control Room Operativa</title>
+<style>
+:root{font-family:Inter,system-ui,-apple-system,Arial,sans-serif;color:#d9e6ef;background:#06121e}
+*{box-sizing:border-box}body{margin:0;line-height:1.55}a{color:#8fd2f5}header{border-bottom:1px solid #2b4354;background:linear-gradient(120deg,#102f49,#071726);padding:26px max(18px,calc((100vw - 1160px)/2))}
+header .eyebrow{letter-spacing:.15em;text-transform:uppercase;font-size:11px;color:#8eb6cb}header h1{font:500 clamp(26px,4vw,40px)/1.1 Georgia,serif;margin:10px 0}header p{max-width:900px;color:#b9cbda;margin:0;font-size:13px}
+nav{position:sticky;top:0;z-index:3;background:#091b2aeF;border-bottom:1px solid #30495c;display:flex;gap:4px;overflow-x:auto;padding:9px max(12px,calc((100vw - 1160px)/2));scrollbar-width:thin}
+nav a{color:#bed0dc;text-decoration:none;white-space:nowrap;border:1px solid transparent;padding:7px 11px;border-radius:5px;font-size:12px}nav a.active{color:#b3e9cb;background:#17372e;border-color:#36755d}
+main{max-width:1160px;margin:auto;padding:20px 16px 50px}.muted{color:#99b3c4}.eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#96b6c9}
+h2{font:500 26px/1.2 Georgia,serif;color:#f2f7fb;margin:0 0 8px}h3{margin:0 0 8px;font-size:15px;color:#e9f1f6}
+p{margin:6px 0 12px}.panel{background:#0b2131;border:1px solid #294556;border-radius:7px;padding:17px;margin:0 0 13px;min-width:0}
+.lead{font-size:13px;color:#c4d5e0}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.stat{font:600 24px/1.15 system-ui;margin:7px 0;color:#f0f7fc}.tiny{font-size:11px;color:#9eb6c7}.stamp{font-size:11px;color:#c3bc97}
+.picker{display:flex;flex-wrap:wrap;gap:7px;margin:13px 0}.picker button{background:#153045;color:#d5e7f2;border:1px solid #345569;border-radius:5px;padding:8px 11px;cursor:pointer}.picker button.selected{background:#275344;color:#dcffef;border-color:#5ba485}
+svg{display:block;width:100%;height:auto;max-height:300px}.legend{font-size:11px;color:#abc6d5;padding:5px 0 0}.legend b{color:#eaf5fc}
+table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:9px 8px;border-bottom:1px solid #254051;text-align:left;vertical-align:top}th{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#9eb6c4}td.num{text-align:right;font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}.tag{display:inline-block;padding:2px 6px;font-size:10px;border:1px solid #536577;border-radius:4px;color:#c5d5e0}.tag.estimate{border-color:#9a8652;color:#e9d39b}.tag.real{border-color:#4a8c79;color:#9bdecb}
+button{font:inherit}.note{border-left:2px solid #a99059;padding-left:11px;color:#d6c394;font-size:11px}
+.plot-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.plot-row>div{min-width:0}.country{min-height:140px}
+footer{padding:20px;border-top:1px solid #294556;font-size:11px;color:#91aebf}
+@media(max-width:800px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.plot-row{grid-template-columns:1fr}main{padding:13px 10px}.panel{padding:12px}}
+@media(max-width:440px){.grid.two{grid-template-columns:1fr}.grid{gap:7px}header{padding:20px 14px}.stat{font-size:21px}td,th{padding:8px 6px}}
+</style></head><body>
+<header><div class="eyebrow">Global Macro FX Quant · Research Desk</div><h1>Control Room · Operativa</h1><p>Dati disponibili subito: fonti ufficiali, proxy di mercato e scenari esplicitamente separati. Nessun valore stimato diventa automaticamente un segnale di trading.</p></header>
+<nav id="nav"></nav><main id="app"><div class="panel">Caricamento dati di mercato…</div></main>
+<footer>Ricerca informativa. Le curve basate su futures non sono OIS puri e gli scenari flat non rappresentano il pricing del mercato. Controlla sempre la data di osservazione.</footer>
+<script>
+(()=>{
+'use strict';
+const ROOT='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/';
+const FX=['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'];
+const FLAGS={USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',AUD:'🇦🇺',CAD:'🇨🇦',NZD:'🇳🇿',CHF:'🇨🇭'};
+const CB={USD:'Fed',EUR:'BCE',GBP:'BoE',JPY:'BoJ',AUD:'RBA',CAD:'BoC',NZD:'RBNZ',CHF:'SNB'};
+const routes=[['home','Panoramica'],['tassi','Tassi e OIS'],['macro','Macro'],['coppie','Coppie FX'],['screener','Screener'],['valute','Valute'],['cot','COT'],['cross','Cross-Asset']];
+const state={data:{},currency:'USD',pair:'EURUSD'};
+const num=x=>typeof x==='number'&&Number.isFinite(x)?x:null;
+const f=(v,n=2)=>num(v)===null?'—':v.toFixed(n);
+const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+const pct=x=>num(x)===null?'—':f(x)+'%';
+const ndate=d=>/^20\d{2}-\d{2}-\d{2}$/.test(d||'');
+const section=()=>((location.hash.match(/^#\/([a-z]+)/)||[])[1]||'home');
+const p=(t)=>'<div class="panel">'+t+'</div>';
+const tag=(label,estimated=false)=>'<span class="tag '+(estimated?'estimate':'real')+'">'+esc(label)+'</span>';
+const load=async name=>{try{const response=await fetch(ROOT+name+'.json?noCache='+Date.now(),{cache:'no-store'});if(!response.ok)throw Error(response.status);return await response.json()}catch(e){return null}};
+async function refresh(){
+ const names=['NATIVE_RATES_DATA','OIS_OPERATIONAL_VIEW','PAIR_SETUP_OPERATIONAL_VIEW','MACRO_THERMOMETER_DATA','ECB_G8_PRICE_HISTORY','D'];
+ const rows=await Promise.all(names.map(load)); names.forEach((x,i)=>state.data[x]=rows[i]);
+ render();
+}
+function forward(ccy){
+ const obj=state.data.OIS_OPERATIONAL_VIEW?.currencies?.[ccy]||{},policy=num(obj.policy_rate);
+ return ['3m','6m','12m'].map(tenor=>{
+  const v=obj.horizons?.[tenor]||{},official=num(v.rate),future=num(v.futures_price);
+  if(official!==null&&obj.operational_status==='GREEN_OFFICIAL')return {tenor,v:official,tier:'Fonte certificata',estimated:false,date:obj.as_of||'',source:obj.source||''};
+  if(future!==null&&future>70&&future<110&&v.quote_timestamp_verified===true)return {tenor,v:100-future,tier:'Proxy futures · non OIS',estimated:true,date:v.quote_as_of||'',source:obj.source||v.symbol||''};
+  if(official!==null)return {tenor,v:official,tier:'Livello indicativo',estimated:true,date:obj.as_of||'',source:obj.source||''};
+  if(policy!==null)return {tenor,v:policy,tier:'Scenario flat · ipotesi',estimated:true,date:obj.as_of||'',source:'Ipotesi esplicita: policy rate invariato'};
+  return {tenor,v:null,tier:'Serie non ricostruibile',estimated:true,date:'',source:''};
+ });
+}
+function svgLine(sets,opts={}){
+ const all=sets.flatMap(s=>s.values.filter(v=>num(v)!==null));
+ if(!all.length)return '<p class="note">Nessuna osservazione numerica utile in questa serie.</p>';
+ const lo=Math.min(...all),hi=Math.max(...all),pad=Math.max((hi-lo)*.15,.08),min=lo-pad,max=hi+pad,span=max-min;
+ const X=(i,n)=>55+(n<2?0:650*i/(n-1)),Y=v=>20+174*(max-v)/span;
+ let out='<svg viewBox="0 0 760 245" role="img" aria-label="'+esc(opts.label||'Grafico storico a linee')+'">';
+ for(let i=0;i<4;i++){let v=max-span*i/3,y=Y(v);out+='<line x1="55" x2="705" y1="'+y+'" y2="'+y+'" stroke="#274757"/><text x="48" y="'+(y+4)+'" text-anchor="end" fill="#9bb8ca" font-size="11">'+f(v)+'</text>';}
+ for(const set of sets){const n=set.values.length,pts=set.values.map((v,i)=>num(v)===null?null:[X(i,n),Y(v)]);let segment=[];
+ const draw=()=>{if(segment.length>1)out+='<polyline fill="none" stroke="'+set.color+'" stroke-width="3" stroke-linejoin="round" points="'+segment.map(q=>q.join(',')).join(' ')+'"/>';segment=[]};
+ pts.forEach(q=>{if(q)segment.push(q);else draw()});draw();
+ if(n<=8)pts.forEach(q=>{if(q)out+='<circle cx="'+q[0]+'" cy="'+q[1]+'" r="4" fill="'+set.color+'"/>'});
+ }
+ out+='<text x="55" y="222" fill="#a2bccb" font-size="11">'+esc(opts.start||'Inizio serie')+'</text><text x="705" y="222" text-anchor="end" fill="#a2bccb" font-size="11">'+esc(opts.end||'Ultima osservazione')+'</text></svg>';
+ return out+'<div class="legend">'+sets.map(s=>'<span style="color:'+s.color+'">●</span> '+esc(s.name)).join('　')+'</div>';
+}
+function historical(ccy){
+ const r=state.data.NATIVE_RATES_DATA?.[ccy]||{},a=r.history2||{},b=r.history10||{};
+ if(!Array.isArray(a.dates)||!Array.isArray(a.values)||!Array.isArray(b.dates)||!Array.isArray(b.values))return [];
+ const m=new Map(a.dates.map((d,i)=>[d,num(a.values[i])]));
+ return b.dates.map((d,i)=>({date:d,y2:m.get(d),y10:num(b.values[i])})).filter(x=>ndate(x.date)&&x.date<=r.date&&num(x.y2)!==null&&num(x.y10)!==null).sort((a,b)=>a.date.localeCompare(b.date)).slice(-100);
+}
+function rates(){
+ const c=state.currency,r=state.data.NATIVE_RATES_DATA?.[c]||{},h=historical(c),fwd=forward(c);
+ const choose='<div class="picker">'+FX.map(k=>'<button data-ccy="'+k+'" class="'+(k===c?'selected':'')+'">'+FLAGS[k]+' '+k+'</button>').join('')+'</div>';
+ const cards='<div class="grid">'+[
+  ['2Y governativo',pct(r['2Y']),'Osservato '+esc(r.date||'data non presente')],
+  ['10Y governativo',pct(r['10Y']),'Osservato '+esc(r.date||'data non presente')],
+  ['Pendenza 10Y−2Y',num(r['2Y'])!==null&&num(r['10Y'])!==null?f((r['10Y']-r['2Y'])*100,1)+' bp':'—','Calcolo su stessa data'],
+  ['Banca centrale',CB[c], 'Tasso policy '+pct(state.data.OIS_OPERATIONAL_VIEW?.currencies?.[c]?.policy_rate)]
+ ].map(([a,b,d])=>p('<div class="eyebrow">'+a+'</div><div class="stat">'+b+'</div><div class="tiny">'+d+'</div>')).join('')+'</div>';
+ const fwTbl='<div class="tablewrap"><table><thead><tr><th>Orizzonte</th><th>Livello</th><th>Qualità</th><th>Data</th></tr></thead><tbody>'+
+  fwd.map(x=>'<tr><td>'+x.tenor.toUpperCase()+'</td><td class="num">'+pct(x.v)+'</td><td>'+tag(x.tier,x.estimated)+'</td><td>'+esc(x.date||'Scenario ipotetico')+'</td></tr>').join('')+'</tbody></table></div>';
+ const plotF=svgLine([{name:'Livello 3M/6M/12M',color:'#65c2e8',values:fwd.map(x=>x.v)}],{start:'3M',end:'12M',label:'Curva monetaria di studio'});
+ const plotR=h.length>=2?svgLine([{name:'2Y',color:'#65c2e8',values:h.map(x=>x.y2)},{name:'10Y',color:'#ba9fee',values:h.map(x=>x.y10)}],{start:h[0].date,end:h.at(-1).date,label:'Storico rendimenti 2Y e 10Y'}):'<p>Storico non disponibile per la data scelta.</p>';
+ return '<h2>Tassi e curve · G8</h2><p class="lead">Livello → direzione → spread. Ogni curva mostra valori e qualità delle singole osservazioni.</p>'+choose+cards+
+ p('<h3>Curva monetaria 3M / 6M / 12M</h3>'+plotF+fwTbl+'<p class="note">Il prezzo futures 100−P è un proxy del tasso del contratto, non una curva OIS spot né una previsione certa del tasso di policy. Scenario flat = nessun cambiamento ipotizzato.</p>')+
+ p('<h3>Storico governativo 2Y / 10Y</h3>'+plotR+'<p class="stamp">Fonte: '+esc(r.source||'NATIVE_RATES_DATA')+' · ultima osservazione '+esc(r.date||'—')+'. Una serie storica non equivale a dato corrente.</p>');
+}
+function home(){
+ const rates=state.data.NATIVE_RATES_DATA||{},ois=state.data.OIS_OPERATIONAL_VIEW?.currencies||{},pair=state.data.PAIR_SETUP_OPERATIONAL_VIEW||{},fx=state.data.ECB_G8_PRICE_HISTORY||{};
+ const q=FX.map(c=>({c,r:rates[c],f:forward(c)}));
+ return '<h2>La fotografia di mercato</h2><p class="lead">Riepilogo G8 da feed indipendenti. I numeri sono sempre accompagnati dalla rispettiva data.</p>'+
+ '<div class="grid">'+[
+  ['Rendimenti 2Y/10Y',q.filter(x=>num(x.r?.['2Y'])!==null&&num(x.r?.['10Y'])!==null).length+'/8','Osservati, anche storici'],
+  ['Curve 3M/6M/12M',q.filter(x=>x.f.every(v=>num(v.v)!==null)).length+'/8','Certificati, proxy e scenari'],
+  ['Coppie FX',Object.keys(pair.pairs||{}).length+'/28','Setup al '+(pair.price_asof||'—')],
+  ['Fixing valutari',fx.last_as_of||'—','Ultimo ECB nel feed']
+ ].map(([a,b,d])=>p('<div class="eyebrow">'+a+'</div><div class="stat">'+b+'</div><div class="tiny">'+esc(d)+'</div>')).join('')+'</div>'+
+ p('<h3>Le otto economie in una schermata</h3><div class="tablewrap"><table><thead><tr><th>Valuta</th><th>2Y</th><th>10Y</th><th>6M monetario</th><th>Qualità 6M</th><th>Data rendimenti</th></tr></thead><tbody>'+
+ q.map(x=>'<tr><td>'+FLAGS[x.c]+' <b>'+x.c+'</b></td><td>'+pct(x.r?.['2Y'])+'</td><td>'+pct(x.r?.['10Y'])+'</td><td>'+pct(x.f[1].v)+'</td><td>'+tag(x.f[1].tier,x.f[1].estimated)+'</td><td>'+esc(x.r?.date||'—')+'</td></tr>').join('')+'</tbody></table></div>')+
+ p('<h3>Cosa verificare prima di scegliere un trade</h3><p>Macro e tassi devono raccontare una storia coerente; poi controlla la conferma del prezzo e il posizionamento. Gli scenari monetari di studio non vengono usati per promuovere automaticamente una coppia.</p>');
+}
+function macro(){
+ const t=state.data.MACRO_THERMOMETER_DATA?.currencies||{},d=state.data.D||{};
+ return '<h2>Macro · temperatura e dinamica</h2><p class="lead">Inflazione e lavoro: livello, direzione e accelerazione dalle ultime osservazioni presenti nei feed, non necessariamente del giorno.</p><div class="grid two">'+FX.map(c=>{const v=t[c]||{},m=d.macro?.[c]||{};
+ const line=(name,x)=>{if(!x)return '<p>'+name+': storico da integrare</p>';return '<p><b>'+name+': '+f(x.latest_value,2)+'</b> · '+esc(x.direction||'—')+' · '+esc(x.acceleration||'—')+'<div class="tiny">P'+f(x.percentile,0)+' · '+esc(x.as_of||'data non presente')+'</div></p>';};
+ return p('<div class="country"><h3>'+FLAGS[c]+' '+c+' · '+esc(m.cycle_it||'Quadro macro')+'</h3>'+line('Inflazione',v.inflation)+line('Lavoro',v.labour)+'<div class="tiny">'+esc(m.simple_summary||'')+'</div><p class="stamp">Snapshot Macro strutturale: '+esc(d.asOf||'—')+'</p></div>')}).join('')+'</div>';
+}
+function pricesFor(code){
+ const fx=state.data.ECB_G8_PRICE_HISTORY, a=code.slice(0,3),b=code.slice(3);
+ if(!fx?.rows)return [];
+ return fx.rows.map(r=>({date:r.Date,v:a==='EUR'?num(r[b]):b==='EUR'?(num(r[a])!==null&&r[a]>0?1/r[a]:null):num(r[a])!==null&&num(r[b])!==null&&r[a]>0?r[b]/r[a]:null}))
+ .filter(x=>ndate(x.date)&&num(x.v)!==null&&x.v>0).slice(-130);
+}
+function pairs(screener=false){
+ const book=state.data.PAIR_SETUP_OPERATIONAL_VIEW||{},rows=Object.entries(book.pairs||{}).sort((a,b)=>a[0].localeCompare(b[0]));
+ if(!rows.length)return p('Feed delle coppie temporaneamente non disponibile.'); 
+ const choices='<div class="picker">'+rows.map(([k])=>'<button data-pair="'+k+'" class="'+(k===state.pair?'selected':'')+'">'+k+'</button>').join('')+'</div>';
+ const pick=book.pairs[state.pair]||rows[0][1],code=pick?.canonical_pair?.replace('/','')||state.pair;state.pair=code;
+ const series=pricesFor(code),setup=pick.setup||{},dec=pick.decision_frame||{},last=series.at(-1)?.v;
+ const detail=p('<h3>'+code+' · '+esc(setup.quality||'Valutazione storica')+'</h3><p class="lead">'+esc(dec.relation||'')+'</p><div class="grid two">'+[
+  ['Preferenza strutturale',esc(dec.fav||'Non distinta')],
+  ['Timing',esc(dec.timing||setup.timing?.text||'Da valutare')],
+  ['Prezzo',esc(setup.price?.text||'Verifica grafica richiesta')],
+  ['COT',esc(setup.cot?.text||'Contesto storico')]
+ ].map(x=>'<div><div class="eyebrow">'+x[0]+'</div><p>'+x[1]+'</p></div>').join('')+'</div>'+
+ '<h3>Fixing FX · '+(num(last)===null?'—':f(last,5))+'</h3>'+
+ (series.length>2?svgLine([{name:code,color:'#65c2e8',values:series.map(x=>x.v)}],{start:series[0].date,end:series.at(-1).date}):'<p>Serie ECB insufficiente.</p>')+
+ '<p class="note">La preferenza del motore appartiene alla baseline '+esc(book.macro_baseline_asof||'—')+'. Il grafico prezzo è separato. Nessun livello di ingresso generato.</p>');
+ if(!screener)return '<h2>Coppie FX · 28 confronti</h2><p class="lead">Confronto Macro → Rates → COT → Prezzo. Clicca una coppia per leggere la tesi e il fixing.</p>'+choices+detail;
+ return '<h2>Screener · tutte le 28 coppie</h2>'+p('<p>Classificazioni del motore al '+esc(book.price_asof||'—')+'. I giudizi storici restano leggibili anche quando non si qualificano come setup operativo.</p><div class="tablewrap"><table><thead><tr><th>Coppia</th><th>Qualità</th><th>Preferenza</th><th>Controllo</th></tr></thead><tbody>'+
+ rows.map(([code,v])=>'<tr><td><button data-pair="'+code+'">'+code+'</button></td><td>'+esc(v.setup?.quality||'—')+'</td><td>'+esc(v.decision_frame?.fav||'—')+'</td><td>'+esc(v.decision_frame?.watch||'—')+'</td></tr>').join('')+'</tbody></table></div>')+detail;
+}
+function valute(){
+ const fx=state.data.ECB_G8_PRICE_HISTORY;
+ if(!fx?.rows?.length)return p('Fixing valutari ECB da aggiornare.');
+ const a=fx.rows[fx.rows.length-1],b=fx.rows[Math.max(0,fx.rows.length-21)];
+ return '<h2>Valute · forza relativa</h2><p class="lead">Movimenti indicativi sulle ultime 20 osservazioni ECB. Il riferimento è EUR; una variazione positiva del valore quotato per EUR indica deprezzamento della valuta estera contro EUR.</p>'+
+ p('<div class="tablewrap"><table><thead><tr><th>Valuta</th><th>Valore per EUR</th><th>Variazione 20 fixing</th><th>Data</th></tr></thead><tbody>'+
+ FX.map(c=>{const now=c==='EUR'?1:num(a[c]),old=c==='EUR'?1:num(b[c]),change=now!==null&&old!==null&&old>0?(now/old-1)*100:null;return '<tr><td>'+FLAGS[c]+' '+c+'</td><td>'+f(now,5)+'</td><td>'+pct(change)+'</td><td>'+esc(a.Date||'—')+'</td></tr>'}).join('')+'</tbody></table></div>');
+}
+function cot(){
+ const d=state.data.D||{},x=d.cot||{};
+ return '<h2>COT · contesto di posizionamento</h2><p class="lead">Snapshot del modello storico, non un COT certificato della settimana corrente. Le misure non diventano segnali autonomi.</p>'+
+ p('<div class="tablewrap"><table><thead><tr><th>Valuta</th><th>Dati presenti</th><th>Riferimento temporale</th></tr></thead><tbody>'+
+ FX.map(c=>'<tr><td>'+FLAGS[c]+' '+c+'</td><td>'+esc(typeof x[c]==='object'?Object.keys(x[c]||{}).filter(k=>['net','net_oi','percentile','pct','net_pct'].includes(k)).map(k=>k+': '+f(x[c][k],1)).join(' · ')||'Snapshot contestuale':typeof x[c]==='number'?f(x[c],2):'Snapshot storico')+'</td><td>'+esc(d.asOf||'—')+'</td></tr>').join('')+'</tbody></table></div><p class="note">Non forzo percentile, Net/OI o variazioni 1W se la singola misura non è esplicita e datata nel feed.</p>');
+}
+function cross(){
+ const d=state.data.D||{},risk=d.risk||{},names=['VIX','SPX','SP500','NASDAQ','GOLD','WTI','OIL','BTC'];
+ const found=names.filter(k=>risk[k]?.dates?.length&&risk[k]?.values?.length);
+ return '<h2>Cross-Asset · regime e rischio</h2><p class="lead">Serie storiche già presenti nella baseline; non rappresentano quotazioni intraday. L’assenza di una serie non viene sostituita da numeri casuali.</p>'+
+ found.map(k=>{const x=risk[k],n=Math.min(x.dates.length,x.values.length),data=x.values.slice(0,n).map(num),dates=x.dates.slice(0,n);const clean=data.map((v,i)=>({v,date:dates[i]})).filter(o=>ndate(o.date)&&num(o.v)!==null&&o.date<='2026-11-03').slice(-100);return p('<h3>'+k+'</h3>'+(clean.length>1?svgLine([{name:k,color:'#75c7e8',values:clean.map(x=>x.v)}],{start:clean[0].date,end:clean.at(-1).date}):'<p>Storico insufficiente.</p>')+'<p class="stamp">Serie dalla baseline · '+esc(clean.at(-1)?.date||'—')+'</p>')}).join('')+
+ p('<h3>Lettura del regime</h3><p>Equity, credito, volatilità e materie prime vanno confrontati su date omogenee. Questo pannello non attribuisce livelli intraday a serie non aggiornate.</p>');
+}
+function render(){
+ const route=routes.some(x=>x[0]===section())?section():'home';
+ document.getElementById('nav').innerHTML=routes.map(([r,label])=>'<a href="#/'+r+'" class="'+(r===route?'active':'')+'">'+label+'</a>').join('')+
+ '<a href="./legacy-loader.html#/home" title="Interfaccia precedente">Versione precedente</a>';
+ const content={home,rates,macro,pairs,valute,cot,cross};
+ document.getElementById('app').innerHTML=route==='tassi'?rates():route==='coppie'?pairs():route==='screener'?pairs(true):(content[route]||home)();
+ document.querySelectorAll('[data-ccy]').forEach(x=>x.addEventListener('click',()=>{state.currency=x.dataset.ccy;render()}));
+ document.querySelectorAll('[data-pair]').forEach(x=>x.addEventListener('click',()=>{state.pair=x.dataset.pair;if(section()==='screener')location.hash='#/coppie';else render()}));
+}
+window.addEventListener('hashchange',render);
+refresh();
+})();
+</script></body></html>
