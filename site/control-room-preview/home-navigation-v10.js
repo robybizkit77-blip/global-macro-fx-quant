@@ -1927,7 +1927,8 @@ function mountHistoricalSovereignTable(doc,raw){
    const old=item.status==='HISTORICAL',pct=n=>fmt(n,3)+'%',fmtbp=n=>(n>=0?'+':'')+fmt(n,1)+' bp';
    row.dataset.gmfqSourceCcy=ccy;
    row.dataset.gmfqHistoryAdapterVersion='G8_V2';
-   row.dataset.gmfqProvenance='OFFICIAL_SOURCE_DATED';
+   row.dataset.gmfqProvenance=old&&['CHF','NZD'].includes(ccy)?
+    'OFFICIAL_HISTORICAL_SAME_DAY_2Y_10Y':'OFFICIAL_SOURCE_DATED';
    row.cells[0].innerHTML='<strong>'+FLAG[ccy]+' '+htmlEscape(label[ccy])+'</strong>'+
     (old?'<small class="gmfq-history-date">STORICO '+htmlEscape(item.asof)+'</small>':'');
    row.cells[1].textContent=pct(item.v2);
@@ -1946,7 +1947,7 @@ function mountHistoricalSovereignTable(doc,raw){
   const panel=tbody.closest('.desk-panel');
   if(panel&&!panel.querySelector('#gmfq-native-history-note')){
    const note=doc.createElement('p');note.id='gmfq-native-history-note';
-   note.textContent='G8: 2Y e 10Y sono osservazioni ufficiali datate. Lo spread 2Y rispetto agli USA usa sempre l’ultima data comune delle due serie, indicata per riga. Le date storiche non diventano quotazioni correnti. Nessuno score o segnale viene modificato.';
+   note.textContent='G8: 2Y e 10Y sono osservazioni ufficiali datate. CHF e NZD: CERTIFICATO · STORICO, NON livelli correnti. Lo spread 2Y rispetto agli USA usa l’ultima data comune delle due serie, indicata per riga: può essere una data storica diversa, non la data del rendimento sopra. Nessuno score o segnale viene modificato.';
    panel.appendChild(note);
   }
  };
