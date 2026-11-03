@@ -2985,11 +2985,17 @@ async function mountPairRankedList(doc){
  panel.innerHTML='<h2 class="desk-panel-title">28 coppie · ordine di lettura</h2>'+
   '<p class="gmfq-rank-explain">Confronto delle evidenze del modello in verifica…</p>';
  holder.insertAdjacentElement('beforebegin',panel);
- const [setupRes,modelRes]=await Promise.allSettled([feed('PAIR_SETUP_OPERATIONAL_VIEW.json'),feed('D.json')]);
+ const [setupRes,modelRes,thermRes,v3Res]=await Promise.allSettled([
+  feed('PAIR_SETUP_OPERATIONAL_VIEW.json'),feed('D.json'),
+  feed('MACRO_THERMOMETER_DATA.json'),macroV3Feed()
+ ]);
  if(route()!=='coppie'||frame.contentDocument!==doc||!panel.isConnected)return;
  const data=setupRes.status==='fulfilled'?setupRes.value:null,
        model=modelRes.status==='fulfilled'?modelRes.value:null,
-       ranked=pairDeskOrdering(data,model);
+       therm=thermRes.status==='fulfilled'?thermRes.value:null,
+       v3Source=v3Res.status==='fulfilled'?v3Res.value:null,
+       ranked=pairDeskOrdering(data,model),
+       v3=macroV3Verified(v3Source,model,therm)?v3Source:null;
  if(!ranked){
    panel.dataset.status='WITHHELD';
    panel.innerHTML='<h2 class="desk-panel-title">Ordine delle 28 coppie · non verificabile</h2>'+
@@ -3051,6 +3057,8 @@ async function mountPairRankedList(doc){
    '<p class="gmfq-rank-method">Ordine editoriale, NON probabilità, score quantitativo o segnale. Setup: presenza della tesi → prezzo → estensione → timing → coerenza Macro/Tassi → dinamica → liquidità/COT. Tesi: coerenza Macro/Tassi → dinamica → altre conferme. Le 11 senza preferenza strutturale sono in fondo.</p></details>'+
   '<p class="gmfq-rank-source">Fonte '+htmlEscape(ranked.source)+' · prezzo del modello '+htmlEscape(ranked.priceAsOf)+
   ' · baseline Macro/Tassi '+htmlEscape(ranked.macroAsOf)+(ranked.baselineHistorical?' (STORICA, NON AGGIORNATA)':'')+
+  (v3?' · Macro V3 osservata '+htmlEscape(v3.generated_europe_rome_day)+
+   ' (CONTESTO RECENTE, NON USATO PER IL RANKING)':' · Macro V3: contesto non verificato in questa lettura')+
   '. La prima coppia non è necessariamente un trade eseguibile.</p>';
  const lead=panel.querySelector('.gmfq-rank-lead'),overlap=panel.querySelector('.gmfq-rank-overlap'),head=table.tHead?.querySelectorAll('th');
  if(head?.[3])head[3].textContent='Valutazione e principale cautela';
