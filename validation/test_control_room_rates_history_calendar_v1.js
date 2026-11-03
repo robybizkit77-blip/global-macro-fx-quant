@@ -117,6 +117,14 @@ assert.equal(sovereignHistoryPairs(tamperedPlot,'JPY').length,0,
 console.log('G8_SOVEREIGN_2Y10Y_CHART_FULL_HISTORY_PASS',
  JSON.stringify({plots:checkedPlots,jpyPoints:sovereignHistoryPairs(raw,'JPY').length}));
 
+// A mistyped narrative variable previously threw a ReferenceError after
+// painting the sovereign SVG on each G8 currency selection.
+const plotMount=js.slice(js.indexOf('function mountSovereignHistoryPlot(doc,rates){'),
+ js.indexOf('function enhanceRatesDetail(doc){'));
+assert(plotMount.includes("if(narrative)narrative.textContent="),
+ 'Sovereign chart narrative must use the defined element reference');
+assert(!/\\bif\\(narr\\)/.test(plotMount),
+ 'Undefined narr identifier must never abort a currency click');
 const hhStart=js.indexOf('function mountHistoricalSovereignTable(doc,raw){');
 const hhEnd=js.indexOf('function renderYieldStudy(doc,rates',hhStart);
 assert(hhStart>=0&&hhEnd>hhStart);
