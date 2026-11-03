@@ -36,12 +36,19 @@ def audit(evidence: dict) -> dict:
     jump = round((current["y2_pct"] - prior["y2_pct"]) * 100)
     assert jump == roll["naive_two_year_jump_bp"]
     assert roll["old_bond"] != roll["new_bond"]
+    assert prior["benchmark_10y"] == roll["old_bond_10y"]
+    assert current["benchmark_10y"] == roll["new_bond_10y"]
+    jump10 = round((current["y10_pct"] - prior["y10_pct"]) * 100)
+    assert jump10 == roll["naive_ten_year_jump_bp"]
+    assert roll["old_bond_10y"] != roll["new_bond_10y"]
     # Even if quoted rates both exist, do not estimate the economic repricing
     # without matched-ISIN prices or a defensible constant-maturity adjustment.
     return {
         "status": "PASS_RESEARCH_ONLY",
         "roll_boundary": roll["date"],
         "quoted_2y_difference_bp": jump,
+        "quoted_10y_difference_bp": jump10,
+        "comparable_same_instrument_10y_change_bp": None,
         "comparable_same_instrument_change_bp": None,
         "eligible_for_rate_change_signal": False,
         "eligible_for_pair_repricing": False,
