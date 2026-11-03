@@ -5,7 +5,9 @@ const {ratesContinuity,continuityHtml}=require('../site/control-room-preview/ois
 const rates=JSON.parse(fs.readFileSync('live_data/sections/NATIVE_RATES_DATA.json'));
 const chf=JSON.parse(fs.readFileSync('live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json'));
 const nzd=JSON.parse(fs.readFileSync('live_data/sections/NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json'));
-const now='2026-10-31',view=ratesContinuity(rates,chf,nzd,now);
+// Date-relative QA: official SNB 10Y publication may advance without changing historical 2Y.
+const shift=(iso,days)=>new Date(Date.parse(iso+'T00:00:00Z')+days*86400000).toISOString().slice(0,10);
+const now=shift(chf.as_of,1),view=ratesContinuity(rates,chf,nzd,now);
 assert.equal(view.schema,'GMFQ_CHF_NZD_2Y10Y_DATED_RESEARCH_V1');
 assert.equal(view.official_rates_modified,false);
 assert.equal(view.official_spread_signals,false);
@@ -14,8 +16,8 @@ assert(view.CHF&&view.NZD,'Both CHF and NZD study-only evidence must survive');
 assert.equal(view.CHF.official_pair_date,'2026-09-30');
 assert.equal(view.CHF.old_2y,0.287);
 assert.equal(view.CHF.old_10y,0.586);
-assert.equal(view.CHF.observed_10y_date,'2026-10-30');
-assert.equal(view.CHF.observed_10y,0.505);
+assert.equal(view.CHF.observed_10y_date,chf.as_of);
+assert.equal(view.CHF.observed_10y,chf.value_percent);
 assert.equal(view.CHF.slope_window_observations,60);
 assert.equal(view.CHF.official_2y10y_spread_available,false);
 assert.equal(view.CHF.percentile_band_is_forecast_interval,false);
@@ -47,7 +49,7 @@ function reject(label,change,check){
 reject('CHF fake 2Y present',(_,c)=>c.has_current_2y=true,x=>x.CHF===null&&x.NZD!==null);
 reject('CHF false same-day curve allowed',(_,c)=>c.eligible_for_curve_spreads=true,x=>x.CHF===null);
 reject('CHF tampered source SHA',(_,c)=>c.source_html_sha256='forged',x=>x.CHF===null);
-reject('CHF future-dated 10Y',(_,c)=>c.as_of='2026-11-02',x=>x.CHF===null);
+reject('CHF future-dated 10Y',(_,c)=>c.as_of=shift(now,1),x=>x.CHF===null);
 reject('CHF duplicate history day',(a)=>a.CHF.history2.dates[2]=a.CHF.history2.dates[1],x=>x.CHF===null);
 reject('CHF historical 2Y last value altered',(a)=>a.CHF.history2.values[a.CHF.history2.values.length-1]+=0.1,x=>x.CHF===null);
 reject('CHF current source 10Y inconsistent',(_,c)=>c.value_percent='NOT A NUMBER',x=>x.CHF===null);
