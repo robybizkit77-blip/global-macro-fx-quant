@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-02",
-  "generated_at_utc": "2026-11-03T08:17:14.674648Z",
+  "generated_at_utc": "2026-11-03T11:59:44.985772Z",
   "items": [
     {
       "as_of": "2026-11-02",
@@ -47,7 +47,7 @@
       "title": "AUD: repricing implicito da futures più dovish (-4.0 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-03T08:17:14.674648Z",
+  "last_checked_at_utc": "2026-11-03T11:59:44.985772Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -157,7 +157,13 @@
             "to": "2026-11-02"
           },
           "SIX_MONTH": {
-            "status": "NO_MATCHED_POST_EVENT_SOURCE"
+            "delta_bp": -4.5,
+            "first_publication_intraday_PIT_certified": false,
+            "from": "2026-10-27",
+            "source_type": "OFFICIAL_EXCHANGE_FUTURES_NOT_OIS",
+            "start_is_early_first_seen_not_nearest_prerelease": true,
+            "status": "DESCRIPTIVE_MULTIDAY_CHANGE_NOT_EVENT_CAUSAL",
+            "to": "2026-11-02"
           }
         },
         "pre_event_reference": {
@@ -218,6 +224,116 @@
   "official_releases": {
     "core_effect": "NONE",
     "headlines": [
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "CAD",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
+        "id": "BOC_PRESS:https://www.bankofcanada.ca/2026/11/parliamentary-appearance-governor-senior-deputy-governor-2026-11-3/",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-03T11:00:36Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "6m_rate_pct": 2.97,
+            "date": "2026-10-30",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "OFFICIAL_CERTIFIED",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
+            "status": "DAILY_CONTEXT_ONLY"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-10-30",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-10-30",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 3.28
+          }
+        },
+        "source": "Bank of Canada",
+        "source_id": "BOC_PRESS",
+        "title": "Parliamentary Appearance by the Governor and the Senior Deputy Governor of the Bank of Canada",
+        "url": "https://www.bankofcanada.ca/2026/11/parliamentary-appearance-governor-senior-deputy-governor-2026-11-3/"
+      },
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "GBP",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
+        "id": "BOE_NEWS:https://www.bankofengland.co.uk/news/2026/november/regulators-explore-credit-union-reforms-to-support-growth-innovation-and-better-outcomes-for-members",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-03T10:00:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "6m_rate_pct": 4.4784,
+            "date": "2026-10-30",
+            "event_window_proof": false,
+            "instrument": "OIS_OBSERVED",
+            "quality": "OFFICIAL_CERTIFIED",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
+            "status": "DAILY_CONTEXT_ONLY"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-10-30",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-10-30",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 4.677533975774134
+          }
+        },
+        "source": "Bank of England",
+        "source_id": "BOE_NEWS",
+        "title": "Regulators explore credit union reforms to support growth, innovation and better outcomes for members",
+        "url": "https://www.bankofengland.co.uk/news/2026/november/regulators-explore-credit-union-reforms-to-support-growth-innovation-and-better-outcomes-for-members"
+      },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "AUD",
@@ -767,61 +883,6 @@
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "CAD",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "BOC_PRESS:https://www.bankofcanada.ca/2026/10/bank-canada-webcasts-john-kuszczak-memorial-lecture-2026-10-29/",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-10-29T11:30:30Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "6m_rate_pct": 2.97,
-            "date": "2026-10-30",
-            "event_window_proof": false,
-            "instrument": "FUTURES_IMPLIED",
-            "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
-            "status": "DAILY_CONTEXT_ONLY"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-10-30",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-10-30",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.28
-          }
-        },
-        "source": "Bank of Canada",
-        "source_id": "BOC_PRESS",
-        "title": "Bank of Canada webcasts The John Kuszczak Memorial Lecture",
-        "url": "https://www.bankofcanada.ca/2026/10/bank-canada-webcasts-john-kuszczak-memorial-lecture-2026-10-29/"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "NZD",
         "desk_context": {
           "analysis_basis": "SOURCE_HEADLINE_ONLY",
@@ -867,61 +928,6 @@
         "source_id": "RBNZ_NEWS",
         "title": "RBNZ appoints Director of Prudential Supervision",
         "url": "https://www.rbnz.govt.nz/news-and-events/news/2026/10/rbnz-appoints-director-of-prudential-supervision"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "GBP",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "BOE_NEWS:https://www.bankofengland.co.uk/news/2026/october/bank-of-england-sets-out-approach-to-tokenised-collateral-in-central-clearing",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-10-29T10:00:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "6m_rate_pct": 4.4784,
-            "date": "2026-10-30",
-            "event_window_proof": false,
-            "instrument": "OIS_OBSERVED",
-            "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
-            "status": "DAILY_CONTEXT_ONLY"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-10-30",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-10-30",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.677533975774134
-          }
-        },
-        "source": "Bank of England",
-        "source_id": "BOE_NEWS",
-        "title": "Bank of England sets out approach to tokenised collateral in central clearing",
-        "url": "https://www.bankofengland.co.uk/news/2026/october/bank-of-england-sets-out-approach-to-tokenised-collateral-in-central-clearing"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
@@ -973,7 +979,7 @@
       }
     ],
     "last_attempt_day_rome": "2026-11-03",
-    "latest_published_at_utc": "2026-11-03T03:30:00Z",
+    "latest_published_at_utc": "2026-11-03T11:00:36Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -1007,9 +1013,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 3,
+        "accepted_items": 4,
         "ccy": "GBP",
-        "entries_rejected": 47,
+        "entries_rejected": 46,
         "feed_entries_seen": 50,
         "feed_url": "https://www.bankofengland.co.uk/rss/news",
         "source": "Bank of England",
@@ -1037,9 +1043,9 @@
         "status": "NO_VERIFIED_RECENT_ITEMS"
       },
       {
-        "accepted_items": 8,
+        "accepted_items": 9,
         "ccy": "CAD",
-        "entries_rejected": 2,
+        "entries_rejected": 1,
         "feed_entries_seen": 10,
         "feed_url": "https://www.bankofcanada.ca/content_type/press/feed/",
         "source": "Bank of Canada",
