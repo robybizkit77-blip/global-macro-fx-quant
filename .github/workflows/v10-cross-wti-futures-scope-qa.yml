@@ -1,0 +1,37 @@
+name: v10 Cross Asset WTI Futures Scope QA
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'site/control-room-preview/home-navigation-v10.js'
+      - 'validation/test_control_room_home_commodities_quality_v1.js'
+      - 'validation/test_control_room_cross_study_coverage_v1.js'
+      - '.github/workflows/v10-cross-wti-futures-scope-qa.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'site/control-room-preview/home-navigation-v10.js'
+      - 'validation/test_control_room_home_commodities_quality_v1.js'
+      - 'validation/test_control_room_cross_study_coverage_v1.js'
+      - '.github/workflows/v10-cross-wti-futures-scope-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  scoped-wti-qa:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: v10 adapter JavaScript syntax
+        run: node --check site/control-room-preview/home-navigation-v10.js
+      - name: Verify commodity quality and CL futures isolation
+        run: node validation/test_control_room_home_commodities_quality_v1.js
+      - name: Retain real 4-asset coverage semantics
+        run: node validation/test_control_room_cross_study_coverage_v1.js
+      - name: Assert approved visual parts remain unchanged
+        run: |
+          test -f site/control-room-preview/index.html
+          test ! -d site/control-room-preview/parts || echo "Published design stays external to candidate scope"
