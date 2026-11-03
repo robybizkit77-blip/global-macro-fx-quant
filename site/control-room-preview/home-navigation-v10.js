@@ -1672,7 +1672,7 @@ function mountSovereignHistoryPlot(doc,rates){
   const signed=v=>(v>=0?'+':'')+fmt(v,1)+' bp';
   if(status)status.textContent=FLAG[k]+' '+k+' · '+
    (old?'STORICO':'OSSERVATO')+' '+asof+' · 2Y/10Y disponibili';
-  if(narr)narr.textContent='Ultime due date comuni '+prev.d+' → '+lastRow.d+
+  if(narrative)narrative.textContent='Ultime due date comuni '+prev.d+' → '+lastRow.d+
    ': 2Y '+signed(delta2)+', 10Y '+signed(delta10)+
    '. Movimento osservato tra queste due date, NON variazione odierna se lo storico non è corrente. '+
    'La causa macroeconomica non è deducibile dai soli rendimenti.';
