@@ -46,7 +46,7 @@ function assetCards(){
   ["GOLD","Oro futures", "$"+num(g.value,2),"1D "+p(g.change1d_pct,2),g.date,"Proxy COMEX, non LBMA spot","neutral"],
   ["CHINA","China CLI", num(c.value,2),"Storico · non attuale",c.date,"Indicatore anticipatore mensile","neutral"]
  ];
- el("assetGrid").innerHTML=cards.map(function(a){return '<button type="button" class="asset '+(selected===a[0]?'active':'')+'" data-view="'+a[0]+'" aria-pressed="'+(selected===a[0]])+'"><span class="top"><span>'+safe(a[1])+'</span><span class="symbol">'+viewIcons[a[0]]+'</span></span><strong class="'+a[6]+'">'+safe(a[2])+'</strong><span class="measure">'+safe(a[3])+'</span><span class="comment">'+safe(a[5])+'</span><span class="asof">Dato: '+safe(a[4])+'</span></button>'}).join("");
+ el("assetGrid").innerHTML=cards.map(function(a){return '<button type="button" class="asset '+(selected===a[0]?'active':'')+'" data-view="'+a[0]+'" aria-pressed="'+(selected===a[0])+'"><span class="top"><span>'+safe(a[1])+'</span><span class="symbol">'+viewIcons[a[0]]+'</span></span><strong class="'+a[6]+'">'+safe(a[2])+'</strong><span class="measure">'+safe(a[3])+'</span><span class="comment">'+safe(a[5])+'</span><span class="asof">Dato: '+safe(a[4])+'</span></button>'}).join("");
  el("assetGrid").querySelectorAll("button").forEach(function(b){b.addEventListener("click",function(){selected=b.dataset.view;render();if(matchMedia("(max-width:780px)").matches){el("chart").scrollIntoView({behavior:"smooth",block:"center"})}})});
 }
 function stats(){
