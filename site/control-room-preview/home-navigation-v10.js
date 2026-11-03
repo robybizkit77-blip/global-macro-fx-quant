@@ -1619,7 +1619,18 @@ function mountSovereignHistoryPlot(doc,rates){
   if(route()!=='tassi'||frame.contentDocument!==doc||!host.isConnected)return;
   const k=(sel.querySelector('button[aria-pressed="true"][data-ccy]')||
    sel.querySelector('button.active[data-ccy]'))?.dataset.ccy||'USD';
-  const rows=sovereignHistoryPairs(rates,k);host.dataset.gmfqSovereignCcy=k;
+  const rows=sovereignHistoryPairs(rates,k);
+  // A legacy controller and this additive adapter can both repaint on a
+  // currency click. Avoid identical DOM replacements that retrigger observers
+  // and stall repeated G8 selections in the browser. Still repaint if the
+  // old controller overwrote the SVG or reset the dated status/narrative.
+  const currentSvg=host.querySelector('svg[data-gmfq-sovereign-plot]');
+  const statusText=doc.getElementById('rates-status')?.textContent||'';
+  const narrativeText=doc.getElementById('rates-narrative')?.textContent||'';
+  if(currentSvg?.dataset.ccy===k&&host.dataset.gmfqSovereignCount===String(rows.length)&&
+     currentSvg.querySelectorAll('polyline[data-tenor]').length===2&&
+     !statusText.includes('WITHHELD')&&!narrativeText.includes('Senza dati recenti'))return;
+  host.dataset.gmfqSovereignCcy=k;
   host.dataset.gmfqSovereignCount=String(rows.length);
   if(rows.length<2){host.innerHTML='<p>Storico 2Y/10Y omogeneo insufficiente per '+k+
    '. Nessuna serie ricostruita.</p>';return;}
@@ -1659,9 +1670,11 @@ function mountSovereignHistoryPlot(doc,rates){
   const prev=rows.at(-2),lastRow=rows.at(-1);
   const delta2=(lastRow.y2-prev.y2)*100,delta10=(lastRow.y10-prev.y10)*100;
   const signed=v=>(v>=0?'+':'')+fmt(v,1)+' bp';
-  if(status)status.textContent=FLAG[k]+' '+k+' · '+
+  const countryName={USD:'Stati Uniti',EUR:'Germania',GBP:'Regno Unito',JPY:'Giappone',
+   AUD:'Australia',CAD:'Canada',NZD:'Nuova Zelanda',CHF:'Svizzera'};
+  if(status)status.textContent=FLAG[k]+' '+countryName[k]+' ('+k+') · '+
    (old?'STORICO':'OSSERVATO')+' '+asof+' · 2Y/10Y disponibili';
-  if(narr)narr.textContent='Ultime due date comuni '+prev.d+' → '+lastRow.d+
+  if(narrative)narrative.textContent='Ultime due date comuni '+prev.d+' → '+lastRow.d+
    ': 2Y '+signed(delta2)+', 10Y '+signed(delta10)+
    '. Movimento osservato tra queste due date, NON variazione odierna se lo storico non è corrente. '+
    'La causa macroeconomica non è deducibile dai soli rendimenti.';
