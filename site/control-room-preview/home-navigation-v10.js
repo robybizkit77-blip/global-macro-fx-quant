@@ -2141,7 +2141,7 @@ function marketResearchGradedSvg(curves){
    svg+='<circle cx="'+xx[i]+'" cy="'+yy(v).toFixed(1)+
     '" r="5" fill="'+COLOR[c.k]+'"><title>'+c.k+' '+['3M','6M','12M'][i]+
     ' '+fmt(v,3)+'% · '+c.dates[i]+' · '+c.tier+
-    (c.estimatedTenors[i]?' · STIMA ESTRAPOLATA NON OSSERVATA':'')+
+    (c.estimatedTenors[i]?' · STIMA / SCENARIO NON OSSERVATO':'')+
     (c.verifiedTenors<3?' · SCADENZA ISOLATA NON CURVA':'')+'</title></circle>';
   });
   svg+='</g>';
