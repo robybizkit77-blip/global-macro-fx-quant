@@ -2578,6 +2578,10 @@ function pairReactionWorkingContext(code,rates,fx){
  if(!A||!B)return '';
  const bp=Math.round((A.rate-B.rate)*1000)/10;
  if(!Number.isFinite(bp))return '';
+ const sameDate=A.date===B.date;
+ const datesText=sameDate?
+  'Rendimenti 2Y osservati alla STESSA DATA · '+A.date:
+  'RENDIMENTI 2Y SU DATE DIVERSE · confronto illustrativo, NON spread giornaliero';
  const fxValid=fx?.schema==='GMFQ_ECB_G8_PRICE_HISTORY_V1'&&
    fx.status==='CURRENT_OFFICIAL_HISTORY'&&fx.pair_count===28&&
    fresh(fx.last_as_of,5)&&Array.isArray(fx.rows)&&fx.rows.length>=2;
@@ -2596,13 +2600,17 @@ function pairReactionWorkingContext(code,rates,fx){
   }
  }
  return '<div class="gmfq-reaction-study" data-study-status="LEVELS_ONLY"'+
+  ' data-spread-date-match="'+(sameDate?'SAME_DAY':'CROSS_DATE')+'"'+
   ' data-study-spread-bp="'+fmt(bp,1)+'">'+
-  '<strong>STIMA DI LAVORO · confronto non sincronizzato</strong>'+
-  '<p>Spread 2Y ≈ <b>'+(bp>0?'+':'')+fmt(bp,1)+' bp</b> · '+
+  '<strong>'+htmlEscape(datesText)+'</strong>'+
+  '<p>'+(sameDate?'Spread 2Y storico':'Spread 2Y di studio ≈')+
+   ' <b>'+(bp>0?'+':'')+fmt(bp,1)+' bp</b> · '+
    FLAG[a]+' '+a+' '+fmt(A.rate,3)+'% ('+htmlEscape(A.date)+') − '+
    FLAG[b]+' '+b+' '+fmt(B.rate,3)+'% ('+htmlEscape(B.date)+').</p>'+
-  '<p>'+htmlEscape(fxText)+'. I rendimenti sono livelli ufficiali datati e mantenuti costanti per lo studio: questo spread è una STIMA DI CONTINUITÀ, non un dato osservato nello stesso giorno.</p>'+
-  '<small>Non calcolare un Δ spread da queste date diverse; nessun verdetto COERENTE/DIVERGENTE, repricing di banca centrale o segnale FX viene ricostruito.</small></div>';
+  '<p>'+htmlEscape(fxText)+'. '+(sameDate?
+   'Il differenziale è osservabile per quella data storica, ma NON è una variazione 2Y recente e non certifica la reazione odierna.':
+   'I livelli governativi sono osservati in giornate differenti e mantenuti costanti per lo studio: lo spread è una STIMA DI CONTINUITÀ, non un dato dello stesso giorno.')+'</p>'+
+  '<small>Non dedurre un Δ spread recente da questi livelli; nessun verdetto COERENTE/DIVERGENTE, repricing di banca centrale o segnale FX viene ricostruito.</small></div>';
 }
 function pairMarketReactionAudit(code,rates,fx){
  const a=code.slice(0,3),b=code.slice(3,6);
