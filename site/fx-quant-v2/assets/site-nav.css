@@ -1,0 +1,40 @@
+
+/* FX Quant V2 unified navigation; scoped to new site only. */
+#fxv2-global-header{font:500 13px/1.4 Inter,"Segoe UI",system-ui,sans-serif;position:sticky;top:0;z-index:99999;background:rgba(7,17,29,.97);border-bottom:1px solid #274157;box-shadow:0 8px 32px rgba(0,0,0,.17);backdrop-filter:blur(18px);color:#e5edf5}
+#fxv2-global-header *{box-sizing:border-box}
+#fxv2-global-header a{color:inherit;text-decoration:none}
+#fxv2-global-header a:hover{color:#fff}
+#fxv2-global-header .fxv2-inner{width:min(1480px,calc(100% - 36px));margin:auto}
+#fxv2-global-header .fxv2-first{min-height:58px;display:flex;align-items:center;gap:16px}
+#fxv2-global-header .fxv2-brand{display:inline-flex;align-items:center;gap:10px;min-width:0;margin-right:auto}
+#fxv2-global-header .fxv2-logo{height:33px;width:33px;border:1px solid #426781;background:linear-gradient(145deg,#1a435a,#102439);display:grid;place-items:center;border-radius:8px;color:#dbe9f4;font:bold 14px Georgia,serif}
+#fxv2-global-header .fxv2-brandcopy{display:grid;gap:1px}
+#fxv2-global-header .fxv2-brandcopy strong{font-size:13px;font-weight:760;letter-spacing:.1em}
+#fxv2-global-header .fxv2-brandcopy small{font-size:10px;letter-spacing:.07em;color:#98adbf}
+#fxv2-global-header .fxv2-status{font-size:11px;color:#bbcede;border:1px solid #254256;padding:6px 10px;border-radius:999px;white-space:nowrap}
+#fxv2-global-header .fxv2-old{font-size:11px;color:#9cbbc9;text-decoration:underline;text-underline-offset:3px}
+#fxv2-global-header .fxv2-toggle{display:none;border:1px solid #33556b;background:#152c40;color:#e8f4fc;border-radius:9px;font-size:13px;padding:8px 12px;cursor:pointer}
+#fxv2-global-header .fxv2-nav{display:flex;gap:5px;align-items:center;flex-wrap:wrap;padding:0 0 10px}
+#fxv2-global-header .fxv2-nav a{display:inline-flex;align-items:center;gap:5px;min-height:33px;border:1px solid transparent;border-radius:7px;padding:6px 10px;color:#a5bacc;font-size:12px;font-weight:620;white-space:nowrap}
+#fxv2-global-header .fxv2-nav a:hover{background:#1b3446;border-color:#2b4b62;color:#f8fdff}
+#fxv2-global-header .fxv2-nav a[aria-current="page"]{background:#19384b;color:#80e0ba;border-color:#37695d}
+#fxv2-global-header .fxv2-nav a:focus-visible,#fxv2-global-header .fxv2-toggle:focus-visible{outline:2px solid #e3bd78;outline-offset:2px}
+body[data-fxv2-page] > header:not(#fxv2-global-header),body[data-fxv2-page] > .topline{display:none!important}
+#fxv2-global-header .fxv2-datameta{font:500 11px/1.3 Inter,system-ui,sans-serif;color:#9db4c6;border-top:1px solid rgba(55,82,102,.35);padding:5px 0 7px}
+#fxv2-global-header .fxv2-datameta b{color:#cadbe9;font-weight:600}
+#fxv2-global-header .fxv2-skip{position:absolute;left:-9999px;top:5px;background:#1f4b64;padding:8px 14px;z-index:2}
+#fxv2-global-header .fxv2-skip:focus{left:12px}
+@media(max-width:800px){
+#fxv2-global-header .fxv2-inner{width:min(100% - 22px,1480px)}
+#fxv2-global-header .fxv2-first{min-height:59px;gap:7px}
+#fxv2-global-header .fxv2-logo{height:31px;width:31px}
+#fxv2-global-header .fxv2-brandcopy strong{font-size:11px;letter-spacing:.06em}
+#fxv2-global-header .fxv2-brandcopy small{font-size:9px;letter-spacing:0}
+#fxv2-global-header .fxv2-status,#fxv2-global-header .fxv2-old{display:none}
+#fxv2-global-header .fxv2-toggle{display:block}
+#fxv2-global-header .fxv2-nav{display:none;padding:8px 0 13px;grid-template-columns:repeat(2,minmax(0,1fr));max-height:58vh;overflow:auto}
+#fxv2-global-header .fxv2-nav.fxv2-open{display:grid}
+#fxv2-global-header .fxv2-nav a{display:flex;white-space:normal;padding:8px 9px;font-size:12px;min-height:39px;border-color:#203b50}
+#fxv2-global-header .fxv2-datameta{font-size:10px;padding:6px 0}
+}
+@media(max-width:370px){#fxv2-global-header .fxv2-brandcopy small{display:none}#fxv2-global-header .fxv2-toggle{padding:7px 9px}}
