@@ -966,7 +966,7 @@ function mountHomeDatedFxRisk(doc,fx,model){
 // Secondary futures observations add *context*, not another certified asset
 // or a fake synchronized spot curve. Reuse exact Cross-Asset source guards.
 function homeCommodityResearchReadout(res,model){
- const result={gold:null,brent:null,wti:null,sourceEffect:'NONE',pairEffect:'NONE'};
+ const result={gold:null,brent:null,wti:null,wtiFutures:null,sourceEffect:'NONE',pairEffect:'NONE'};
  const golden=res?.lanes?.['GOLD.market_proxy'];
  if(validCrossGold(res,golden)&&crossGoldAge(golden.proxy_as_of)<=3&&
     num(golden.change_1d_pct)!==null&&Math.abs(golden.change_1d_pct)<30){
@@ -979,6 +979,11 @@ function homeCommodityResearchReadout(res,model){
     Math.abs(brent.delta)<30){
   result.brent={asof:brent.asof,value:brent.value,delta:brent.delta,
    grade:'SECONDARY_FUTURES',symbol:'BZ=F',source:'Yahoo Finance public chart JSON'};
+ }
+ const wtiFut=crossRiskWtiFutures(res);
+ if(wtiFut.state==='SECONDARY_RECENT'&&num(wtiFut.delta)!==null&&Math.abs(wtiFut.delta)<30){
+  result.wtiFutures={asof:wtiFut.asof,value:wtiFut.value,delta:wtiFut.delta,
+   grade:'SECONDARY_FUTURES',symbol:'CL=F',source:'Yahoo Finance public chart JSON'};
  }
  // Last observed WTI spot must carry its *own* date. No rollover to the
  // Gold/Brent futures as-of and no 30 October oil-return claim.
@@ -1014,6 +1019,8 @@ async function mountHomeCommodityContext(doc,model){
   ': ≈ '+fmt2(read.gold.value)+' USD/oz, '+pct(read.gold.delta)+' 1D (indicativo)');
  if(read.brent)rows.push('Brent FUT BZ=F '+read.brent.asof+
   ': ≈ '+fmt2(read.brent.value)+' USD/bbl, '+pct(read.brent.delta)+' 1D (indicativo)');
+ if(read.wtiFutures)rows.push('WTI FUT CL=F '+read.wtiFutures.asof+
+  ': ≈ '+fmt2(read.wtiFutures.value)+' USD/bbl, '+pct(read.wtiFutures.delta)+' 1D (indicativo)');
  if(read.wti)rows.push('WTI SPOT EIA '+read.wti.asof+
   ': '+fmt2(read.wti.value)+' USD/bbl, ultimo disponibile'+
   (read.wti.grade==='OFFICIAL_HISTORICAL'?' · STORICO':''));
@@ -1027,6 +1034,8 @@ async function mountHomeCommodityContext(doc,model){
  note.dataset.goldState=read.gold?'SECONDARY_FUTURES':'NOT_VERIFIED';
  note.dataset.brentState=read.brent?'SECONDARY_FUTURES':'NOT_VERIFIED';
  note.dataset.wtiState=read.wti?read.wti.grade:'NOT_VERIFIED';
+ note.dataset.wtiFuturesState=read.wtiFutures?'SECONDARY_FUTURES':'NOT_VERIFIED';
+ note.dataset.asofWtiFutures=read.wtiFutures?.asof||'';
  note.dataset.asofGold=read.gold?.asof||'';
  note.dataset.asofBrent=read.brent?.asof||'';
  note.dataset.asofWti=read.wti?.asof||'';
@@ -4234,6 +4243,27 @@ function crossRiskBrent(res){
  return {state:age<=3?'SECONDARY_RECENT':'SECONDARY_HISTORICAL',
    value:b.value,asof:b.proxy_as_of,delta:b.change_1d_pct,week:b.change_1w_pct};
 }
+function crossRiskWtiFutures(res){
+ const w=res?.lanes?.['WTI.market_proxy'],g=res?.governance||{};
+ const governed=res?.schema==='GMFQ_ESTIMATED_RESIDUAL_GAPS_V1'&&res.official_lanes_untouched===true&&
+   g.core_score_effect==='NONE'&&g.bias_effect==='NONE'&&g.sizing_effect==='NONE'&&
+   g.pair_engine_effect==='NONE'&&g.forward_logger_effect==='NONE'&&
+   g.backtest_eligible_as_official===false;
+ const valid=governed&&w?.status==='MARKET_PROXY_ACTIVE_SECONDARY'&&
+   w.vendor_symbol==='CL=F'&&w.instrument_type==='FUTURE'&&
+   w.currency==='USD'&&w.official_canonical_untouched===true&&
+   w.source_endpoint==='https://query1.finance.yahoo.com/v8/finance/chart/CL=F'&&
+   typeof w.value==='number'&&Number.isFinite(w.value)&&w.value>0&&
+   /^\d{4}-\d{2}-\d{2}$/.test(w.proxy_as_of||'');
+ if(!valid)return {state:'WITHHELD',value:null,asof:'—',delta:null,week:null};
+ const date=new Date(w.proxy_as_of+'T00:00:00Z');
+ if(!Number.isFinite(date.getTime())||date.toISOString().slice(0,10)!==w.proxy_as_of)
+   return {state:'WITHHELD',value:null,asof:'—',delta:null,week:null};
+ const age=crossGoldAge(w.proxy_as_of);
+ if(age===null||age<0)return {state:'WITHHELD',value:null,asof:'—',delta:null,week:null};
+ return {state:age<=3?'SECONDARY_RECENT':'SECONDARY_HISTORICAL',
+   value:w.value,asof:w.proxy_as_of,delta:w.change_1d_pct,week:w.change_1w_pct};
+}
 /* Cross-Asset research coverage: count actual dated observable instruments,
    not missing LBMA/Brent spots as if they were zero, and never imply synchronized
    or homogeneous market closes. */
@@ -4266,7 +4296,7 @@ function crossRiskSparkline(code,row,series){
   if(!dates.every((d,i)=>/^\d{4}-\d{2}-\d{2}$/.test(d)&&
       (i===0||d>dates[i-1]))||!vals.every(v=>num(v)!==null&&v>0))return '';
   values=vals;labels=[dates[0],dates.at(-1)];quality='OBSERVED_DATED';
- }else if(code==='BRENT'&&num(row.delta)!==null&&num(row.week)!==null&&
+ }else if(['BRENT','WTI_FUT'].includes(code)&&num(row.delta)!==null&&num(row.week)!==null&&
    row.delta>-90&&row.delta<900&&row.week>-90&&row.week<900){
   const prev=row.value/(1+row.delta/100),week=row.value/(1+row.week/100);
   if(![prev,week].every(x=>Number.isFinite(x)&&x>0))return '';
@@ -4321,7 +4351,7 @@ async function mountCrossRisk(doc){
  panel.id='gmfq-cross-risk-v10';
  panel.className='desk-panel';
  panel.dataset.sourceStatus='LOADING';
- panel.setAttribute('aria-label','VIX, WTI spot EIA e Brent futures indicativo');
+ panel.setAttribute('aria-label','VIX, WTI spot EIA, WTI futures CL=F e Brent futures BZ=F');
  panel.innerHTML='<h2 class="desk-panel-title">Volatilità e petrolio · verifica delle fonti</h2>'+
    '<div class="desk-panel-body">Caricamento fonti…</div>';
  if(goldPanel)goldPanel.insertAdjacentElement('afterend',panel);
@@ -4336,7 +4366,7 @@ async function mountCrossRisk(doc){
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-evidence{display:flex;flex-wrap:wrap;gap:4px 15px;padding:6px 16px 12px;color:#aac0cd;font:11px/1.55 Arial,sans-serif;min-width:0}'+
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-evidence span{min-width:0;overflow-wrap:anywhere}'+
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-evidence .gmfq-risk-sync{flex-basis:100%;color:#91a9b9;font-size:10px}'+
-  '#gmfq-cross-risk-v10 .gmfq-cross-risk-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;padding:0 16px;min-width:0;border-top:1px solid #294454;border-bottom:1px solid #294454}'+
+  '#gmfq-cross-risk-v10 .gmfq-cross-risk-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;padding:0 16px;min-width:0;border-top:1px solid #294454;border-bottom:1px solid #294454}'+
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-card{min-width:0;padding:13px 16px 13px 12px;background:transparent;border:0;border-right:1px solid #294454;border-radius:0}'+
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-card:last-child{border-right:0}'+
   '#gmfq-cross-risk-v10 .gmfq-cross-risk-header{display:flex;flex-wrap:wrap;gap:7px;align-items:center;justify-content:space-between}'+
@@ -4376,13 +4406,13 @@ async function mountCrossRisk(doc){
   res=settled[1].status==='fulfilled'?settled[1].value:null;
  }catch(e){console.warn('[GMFQ Cross Risk WITHHELD]',String(e))}
  const v=crossRiskObservation(d?.risk?.VIX,'VIX'),
-   w=crossRiskObservation(d?.risk?.WTI,'WTI'),b=crossRiskBrent(res);
+   w=crossRiskObservation(d?.risk?.WTI,'WTI'),b=crossRiskBrent(res),wf=crossRiskWtiFutures(res);
  const gold=res?.lanes?.['GOLD.market_proxy'];
  const goldOk=validCrossGold(res,gold),goldAge=goldOk?crossGoldAge(gold.proxy_as_of):null;
  const goldRow={state:!goldOk?'UNAVAILABLE':goldAge<=3?'SECONDARY_RECENT':'SECONDARY_HISTORICAL',
    value:goldOk?gold.value:null,asof:goldOk?gold.proxy_as_of:null};
  const coverage=crossStudyCoverage({GOLD:goldRow,VIX:v,WTI:w,BRENT:b});
- const states=[v.state,w.state,b.state];
+ const states=[v.state,w.state,b.state,wf.state];
  const global=states.every(x=>x==='WITHHELD')?'WITHHELD':
    states.some(x=>x==='WITHHELD'||x.endsWith('HISTORICAL'))?'PARTIAL':'AVAILABLE';
  panel.dataset.sourceStatus=global;
@@ -4391,7 +4421,7 @@ async function mountCrossRisk(doc){
  panel.dataset.studySecondary=String(coverage.secondary);
  panel.dataset.studyEffect='NONE';
  panel.innerHTML='<h2 class="desk-panel-title">Volatilità e petrolio · stato delle fonti</h2>'+
-  '<p class="gmfq-cross-risk-intro">VIX misura volatilità implicita, WTI è spot EIA, Brent è futures: strumenti diversi, non un unico segnale risk-on/risk-off.</p>'+
+  '<p class="gmfq-cross-risk-intro">VIX misura volatilità implicita. WTI spot EIA è separato dai futures WTI CL=F e Brent BZ=F: strumenti e date non intercambiabili.</p>'+
   '<p class="gmfq-cross-coverage" data-study-coverage="'+coverage.covered+'">'+coverage.covered+'/4 riferimenti numerici per lo studio · '+
   coverage.official+' ufficiali (VIX/WTI) · '+coverage.secondary+' futures indicativi (Gold/Brent)'+
   (coverage.historical?' · '+coverage.historical+' osservazioni storiche':' · riferimenti recenti')+
@@ -4399,17 +4429,19 @@ async function mountCrossRisk(doc){
   '<div class="gmfq-cross-risk-evidence" aria-label="Date e provenienza VIX WTI Brent">'+
   '<span data-source="vix">VIX Cboe '+htmlEscape(v.asof)+' · '+(v.state==='OFFICIAL_RECENT'?'ultimo dato recente':'dato storico/non verificato')+'</span>'+
   '<span data-source="wti">WTI EIA '+htmlEscape(w.asof)+' · '+(w.state==='OFFICIAL_RECENT'?'ultimo dato recente':'non corrente/non verificato')+'</span>'+
+  '<span data-source="wti-futures">WTI futures CL=F '+htmlEscape(wf.asof)+' · '+(wf.state==='SECONDARY_RECENT'?'indicativo recente':'non corrente/non verificato')+'</span>'+
   '<span data-source="brent">Brent futures BZ=F '+htmlEscape(b.asof)+' · '+(b.state==='SECONDARY_RECENT'?'indicativo recente':'non corrente/non verificato')+'</span>'+
   '<span class="gmfq-risk-sync">Non sono quotazioni intraday sincronizzate.</span></div>'+
   '<div class="gmfq-cross-risk-grid">'+
    crossRiskCard('VIX',v,'Volatilità implicita S&P 500','Cboe · storico ufficiale VIX',false,d?.risk?.VIX)+
    crossRiskCard('WTI',w,'Spot Cushing · RWTC','U.S. Energy Information Administration',false,d?.risk?.WTI)+
+   crossRiskCard('WTI_FUT',wf,'WTI futures CL=F · non spot','Yahoo Finance · futures secondario',true,null)+
    crossRiskCard('BRENT',b,'Futures BZ=F · non spot','Yahoo Finance · futures secondario',true,null)+
   '</div>'+
-  '<details class="gmfq-cross-risk-note"><summary>Come leggere VIX, WTI e Brent</summary><p><strong>Limiti delle fonti:</strong> il VIX misura volatilità implicita, non da solo la direzione del mercato. WTI e Brent non sono la stessa serie né lo stesso strumento: domanda, offerta, scadenza dei futures e differenze di rilevazione contano. <strong>Brent spot ufficiale non certificato nel feed.</strong> Il riferimento numerico disponibile è il futures BZ=F visualizzato sopra con data e fonte proprie. Nessun confronto di spread fra spot e futures; nessun giudizio di risk-on/risk-off, segnale o sizing automatico.</p></details>';
+  '<details class="gmfq-cross-risk-note"><summary>Come leggere VIX, WTI e Brent</summary><p><strong>Limiti delle fonti:</strong> il VIX misura volatilità implicita, non da solo la direzione del mercato. WTI spot, WTI futures e Brent futures non sono la stessa serie né lo stesso strumento: domanda, offerta, scadenza dei futures e differenze di rilevazione contano. <strong>Brent spot ufficiale non certificato nel feed.</strong> Il riferimento numerico disponibile è il futures BZ=F visualizzato sopra con data e fonte proprie. Nessun confronto di spread fra spot e futures; nessun giudizio di risk-on/risk-off, segnale o sizing automatico.</p></details>';
  doc.defaultView.GMFQ_CROSS_RISK={status:global,
    vix:{status:v.state,as_of:v.asof},wti:{status:w.state,as_of:w.asof},
-   brent:{status:b.state,as_of:b.asof},core_effect:'NONE',
+   brent:{status:b.state,as_of:b.asof},wti_futures:{status:wf.state,as_of:wf.asof},core_effect:'NONE',
    official_brent:'WITHHELD'};
 }
 
