@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-02",
-  "generated_at_utc": "2026-11-03T04:34:15.373719Z",
+  "generated_at_utc": "2026-11-03T07:04:29.465166Z",
   "items": [
     {
       "as_of": "2026-11-02",
@@ -47,7 +47,7 @@
       "title": "AUD: repricing implicito da futures più dovish (-4.0 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-03T04:34:15.373719Z",
+  "last_checked_at_utc": "2026-11-03T07:04:29.465166Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -67,10 +67,22 @@
         "official_actual_source_url": "https://www.bls.gov/news.release/eci.htm",
         "post_event_daily_comparison": {
           "10Y": {
-            "status": "NO_MATCHED_POST_EVENT_SOURCE"
+            "delta_bp": -8.0,
+            "first_publication_intraday_PIT_certified": false,
+            "from": "2026-10-27",
+            "source_type": "OFFICIAL_GOVERNMENT_OR_ECB_REFERENCE",
+            "start_is_early_first_seen_not_nearest_prerelease": true,
+            "status": "DESCRIPTIVE_MULTIDAY_CHANGE_NOT_EVENT_CAUSAL",
+            "to": "2026-11-02"
           },
           "2Y": {
-            "status": "NO_MATCHED_POST_EVENT_SOURCE"
+            "delta_bp": -11.0,
+            "first_publication_intraday_PIT_certified": false,
+            "from": "2026-10-27",
+            "source_type": "OFFICIAL_GOVERNMENT_OR_ECB_REFERENCE",
+            "start_is_early_first_seen_not_nearest_prerelease": true,
+            "status": "DESCRIPTIVE_MULTIDAY_CHANGE_NOT_EVENT_CAUSAL",
+            "to": "2026-11-02"
           },
           "ECB_FX": {
             "eur_base_quote_change_pct": 0.59193,
@@ -589,13 +601,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-10-30",
+            "date": "2026-11-02",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-10-30",
+            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-02",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.56
+            "yield_2y_pct": 4.59
           }
         },
         "source": "Federal Reserve Board",
@@ -945,13 +957,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-10-30",
+            "date": "2026-11-02",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-10-30",
+            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-02",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.56
+            "yield_2y_pct": 4.59
           }
         },
         "source": "Federal Reserve Board",
@@ -985,9 +997,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 12,
+        "accepted_items": 11,
         "ccy": "EUR",
-        "entries_rejected": 3,
+        "entries_rejected": 4,
         "feed_entries_seen": 15,
         "feed_url": "https://www.ecb.europa.eu/rss/press.html",
         "source": "Banca centrale europea",
