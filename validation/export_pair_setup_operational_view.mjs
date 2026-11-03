@@ -9,6 +9,22 @@ try{
   const page=await browser.newPage({viewport:{width:1440,height:900}});
   const errors=[];
   page.on('pageerror',e=>errors.push(String(e?.message||e)));
+
+  // The public root now redirects visitors to Control Room v10. The canonical
+  // 28-pair model still lives in the legacy payload at this SAME root, so the
+  // exporter must load it in an isolated browser response without changing the
+  // real site or the production redirect. Intercept only the root HTML request;
+  // all model/payload/ECB assets remain unmodified and use normal HTTP.
+  await page.route(url,async route=>{
+    const response=await route.fetch();
+    if(response.status()!==200)throw new Error('Canonical bootstrap HTTP '+response.status());
+    const original=await response.text();
+    const redirect=/<script\b[^>]*\bdata-gmfq-legacy-redirect=["']v10["'][^>]*>[\s\S]*?<\/script>/i;
+    if(!redirect.test(original))throw new Error('Expected legacy v10 navigation redirect in bootstrap');
+    const modelBootstrap=original.replace(redirect,'<!-- PAIR_CI_ONLY: navigation redirect isolated, original model unchanged -->');
+    await route.fulfill({response,body:modelBootstrap});
+  });
+
   await page.goto(url,{waitUntil:'domcontentloaded',timeout:120000});
   await page.waitForFunction(()=>
     typeof derivePairSetupState==='function' &&
