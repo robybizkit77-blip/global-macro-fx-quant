@@ -38,10 +38,22 @@ function officialCard(name,series,unit){
  return `<article class="rkCard" data-risk="${name}" data-freshness="${state.status}"><div class="rkTop"><div class="rkName">${name}</div><span class="${badge}">${label}</span></div><div class="rkValue">${num(last)}${state.status==='UNVERIFIED'?'':unit||''}</div><div class="rkAs">as-of ${esc(date||'—')}</div><div class="rkMoves"><div class="rkMove"><span>Δ 1 obs</span><b>${state.status==='UNVERIFIED'?'—':pct(delta(series,1))}</b></div><div class="rkMove"><span>Δ ~1W</span><b>${state.status==='UNVERIFIED'?'—':pct(delta(series,7))}</b></div></div><div class="rkMeta">Source: ${esc(series?.source|| (name==='VIX'?'Cboe official runtime':'U.S. Energy Information Administration'))}</div></article>`;
 }
 function brentCard(b){return `<article class="rkCard" data-kind="secondary" data-risk="BRENT"><div class="rkTop"><div class="rkName">Brent market proxy</div><span class="rkBadge secondary">Secondary · NON OFFICIAL</span></div><div class="rkValue">$${num(b?.value)}</div><div class="rkAs">as-of ${esc(b?.proxy_as_of||'—')}</div><div class="rkMoves"><div class="rkMove"><span>Δ 1D</span><b>${pct(b?.change_1d_pct)}</b></div><div class="rkMove"><span>Δ 1W</span><b>${pct(b?.change_1w_pct)}</b></div></div><div class="rkMeta">${esc(b?.source||'Secondary Brent futures market proxy')}</div></article>`}
+function calendarGap(a,b){
+ if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(a||'')||!/^\\d{4}-\\d{2}-\\d{2}$/.test(b||''))return null;
+ const x=Date.parse(a+'T00:00:00Z'),y=Date.parse(b+'T00:00:00Z');
+ return Number.isFinite(x)&&Number.isFinite(y)?Math.round((y-x)/86400000):null;
+}
+function oilDateWarning(wti,brent){
+ const spot=wti?.last_date,proxy=brent?.proxy_as_of,gap=calendarGap(spot,proxy);
+ const dates=`WTI spot EIA: ${esc(spot||'—')} · Brent futures BZ=F: ${esc(proxy||'—')}`;
+ if(gap===null)return `<b>Petrolio · date di riferimento:</b> ${dates}. Verificare la contemporaneità prima di interpretare lo spread.`;
+ if(gap===0)return `<b>Petrolio · date di riferimento:</b> ${dates}. Stessa data, ma spot EIA e futures Brent sono strumenti diversi: lo spread non è direttamente omogeneo.`;
+ return `<b>Petrolio · date non allineate:</b> ${dates}. ${Math.abs(gap)} giorni di calendario di differenza; il confronto dei livelli non rappresenta uno spread contemporaneo né un segnale di mercato.`;
+}
 function oldestDate(vix,wti,b){const dates=[vix?.last_date,wti?.last_date,b?.proxy_as_of];return dates.every(x=>/^\d{4}-\d{2}-\d{2}$/.test(x||''))?dates.sort()[0]:'—'}
 function html(d,res){
  const vix=d?.risk?.VIX||{},wti=d?.risk?.WTI||{},b=res?.lanes?.['BRENT.market_proxy']||{};
- return `<div class="rkOp" data-gmfq-operational="risk"><div class="rkHero"><div class="rkEye">Cross-asset risk monitor</div><div class="rkTitle">Risk operativo</div><div class="rkSub">Superficie corrente basata sui layer persistiti. VIX e WTI restano dati ufficiali/runtime; Brent è mostrato separatamente come proxy di mercato secondario e non sostituisce la lane ufficiale WITHHELD.</div></div><div class="rkGrid">${officialCard('VIX',vix,'')}${officialCard('WTI',wti,'')}${brentCard(b)}</div><div class="rkWarn"><b>Brent official:</b> WITHHELD. Il proxy BZ=F serve solo per livello/direzione di mercato e non è eleggibile come fonte ufficiale o backtest ufficiale.</div><div class="rkFoot">Oldest required source date: ${esc(oldestDate(vix,wti,b))} · Core / bias / sizing effect: NONE · Nessuna serie viene promossa o trasformata dalla UI.</div></div>`;
+ return `<div class="rkOp" data-gmfq-operational="risk"><div class="rkHero"><div class="rkEye">Cross-asset risk monitor</div><div class="rkTitle">Risk operativo</div><div class="rkSub">Superficie corrente basata sui layer persistiti. VIX e WTI restano dati ufficiali/runtime; Brent è mostrato separatamente come proxy di mercato secondario e non sostituisce la lane ufficiale WITHHELD.</div></div><div class="rkGrid">${officialCard('VIX',vix,'')}${officialCard('WTI',wti,'')}${brentCard(b)}</div><div class="rkWarn">${oilDateWarning(wti,b)} Il Brent BZ=F è un futures indicativo: non sostituisce la serie spot EIA e non è utilizzabile come storico ufficiale per backtest.</div><div class="rkFoot">Oldest required source date: ${esc(oldestDate(vix,wti,b))} · Core / bias / sizing effect: NONE · Nessuna serie viene promossa o trasformata dalla UI.</div></div>`;
 }
 let cache=null,rendering=false;
 async function load(){if(cache)return cache;const [a,b]=await Promise.all([fetch('live_data/sections/D.json',{cache:'no-store'}),fetch('live_data/sections/ESTIMATED_RESIDUAL_GAPS.json',{cache:'no-store'})]);if(!a.ok)throw new Error(`D.json:${a.status}`);if(!b.ok)throw new Error(`ESTIMATED_RESIDUAL_GAPS:${b.status}`);cache=[await a.json(),await b.json()];return cache;}
