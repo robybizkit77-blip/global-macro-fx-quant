@@ -1663,7 +1663,7 @@ function mountSovereignHistoryPlot(doc,rates){
   }
  });
  const obs=new doc.defaultView.MutationObserver(()=>{
-  if(!host.querySelector('svg[data-gmfq-sovereign-plot]'))
+  if(host.dataset.gmfqSovereignCount!=='0'&&!host.querySelector('svg[data-gmfq-sovereign-plot]'))
    doc.defaultView.queueMicrotask(paint);
  });
  obs.observe(host,{childList:true});paint();
