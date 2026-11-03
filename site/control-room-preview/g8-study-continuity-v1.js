@@ -32,6 +32,25 @@ function gov(ccy,rates){
  const r=rates?.[ccy]||{};
  return {y2:numeric(r['2Y']),y10:numeric(r['10Y']),date:r.date||'',quality:r.quality||'NON CLASSIFICATO'};
 }
+function historyPlot(rates,ccy){
+ const record=rates?.[ccy]||{},a=record.history2||{},b=record.history10||{};
+ if(!Array.isArray(a.dates)||!Array.isArray(a.values)||!Array.isArray(b.dates)||!Array.isArray(b.values))return '<p>Storico governativo non presente.</p>';
+ const second=new Map(a.dates.map((d,i)=>[d,numeric(a.values[i])]));
+ const rows=b.dates.map((d,i)=>({d,a:second.get(d),b:numeric(b.values[i])}))
+  .filter(x=>iso(x.d)&&x.d<=record.date&&x.a!==null&&x.a!==undefined&&x.b!==null&&x.a>-5&&x.a<30&&x.b>-5&&x.b<30)
+  .sort((x,y)=>x.d.localeCompare(y.d)).slice(-90);
+ if(rows.length<2)return '<p>Storico 2Y/10Y non ricostruibile.</p>';
+ const values=rows.flatMap(x=>[x.a,x.b]),lo=Math.min(...values)-.2,hi=Math.max(...values)+.2,span=hi-lo||1;
+ const x=i=>55+i*642/(rows.length-1),y=v=>25+(hi-v)/span*150;
+ const trace=(field,color)=>'<polyline fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linejoin="round" points="'+rows.map((r,i)=>x(i).toFixed(1)+','+y(r[field]).toFixed(1)).join(' ')+'"/>';
+ return '<h3 style="font:600 13px Arial;margin:18px 0 6px">Storico rendimenti governativi · 2Y / 10Y</h3>'+
+ '<svg viewBox="0 0 760 225" role="img" aria-label="Serie storiche effettive di rendimenti a 2 e 10 anni" style="display:block;width:100%;height:auto;max-height:240px">'+
+ [0,1,2,3].map(i=>{const v=hi-i*span/3,yy=y(v);return '<line x1="55" x2="697" y1="'+yy+'" y2="'+yy+'" stroke="#294b5e"/><text x="49" y="'+(yy+4)+'" text-anchor="end" fill="#a6c0d0" font-size="11">'+v.toFixed(2)+'%</text>'}).join('')+
+ trace('a','#61c3e7')+trace('b','#b8a1ef')+
+ '<text x="55" y="200" fill="#a6c0d0" font-size="11">'+rows[0].d+'</text>'+
+ '<text x="697" y="200" text-anchor="end" fill="#a6c0d0" font-size="11">'+rows.at(-1).d+'</text></svg>'+
+ '<p><span style="color:#61c3e7">●</span> 2Y · <span style="color:#b8a1ef">●</span> 10Y · '+rows.length+' osservazioni abbinate · ultimo punto '+safe(rows.at(-1).d)+'. Nessun punto futuro o interpolato.</p>';
+}
 function chart(data){
  const v=data.map(x=>x.v);
  if(v.some(x=>numeric(x)===null))return '<p>Serie non ricostruibile dai riferimenti disponibili.</p>';
@@ -71,7 +90,7 @@ function render(doc,rates,ois){
   host.innerHTML='<h2>G8 · curve e rendimenti sempre consultabili</h2>'+
    '<p>Livelli ufficiali dove disponibili; altrimenti futures indicativi o scenario flat dichiarato. Le stime non sono OIS osservati e non modificano segnali, score o backtest.</p>'+
    '<div class="gmfq-cont-grid">'+all.map(x=>'<button type="button" data-code="'+x.c+'" aria-pressed="'+(x.c===selected)+'">'+FLAG[x.c]+' '+x.c+'</button>').join('')+'</div>'+
-   chart(row.points)+
+   chart(row.points)+historyPlot(rates,selected)+
    '<div class="gmfq-cont-meta"><span><strong>2Y governativo:</strong> '+fmt(row.gov.y2)+'</span><span><strong>10Y governativo:</strong> '+fmt(row.gov.y10)+'</span><span><strong>Data rendimenti:</strong> '+safe(row.gov.date||'non presente')+'</span></div>'+
    '<div class="gmfq-cont-trace">'+row.points.map((p,i)=>'<div>'+['3M','6M','12M'][i]+': '+fmt(p.v)+' · '+safe(p.tier)+' · '+safe(p.date||'senza data')+'</div>').join('')+
    '<div>2Y/10Y: '+safe(row.gov.quality)+' · fonte NATIVE_RATES_DATA; i valori storici non sono aggiornamenti odierni.</div></div>';
