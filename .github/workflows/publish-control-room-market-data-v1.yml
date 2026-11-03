@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/publish-control-room-market-data-v1.yml'
+      - 'validation/audit_ois_rates_freshness.py'
+      - 'validation/test_audit_ois_rates_freshness.py'
       - 'live_data/sections/NATIVE_RATES_DATA.json'
       - 'live_data/sections/V250_COT_CHART_DATA.json'
       - 'live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'
@@ -17,6 +19,8 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/publish-control-room-market-data-v1.yml'
+      - 'validation/audit_ois_rates_freshness.py'
+      - 'validation/test_audit_ois_rates_freshness.py'
       - 'validation/publishing/verify_control_room_market_delivery_v1.py'
       - 'validation/publishing/test_market_mirror_after_pages_success_v1.py'
       - 'validation/publishing/test_control_room_market_delivery_v1.py'
@@ -127,6 +131,28 @@ jobs:
             setup.get('price_asof'),
             prices['rows'][-1].get('Date'),
           )
+          PY
+
+      - name: Audit dated G8 source freshness without changing market data
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/test_audit_ois_rates_freshness.py
+          python validation/audit_ois_rates_freshness.py > /tmp/control-room-v10-source-age.json
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          audit=json.loads(Path('/tmp/control-room-v10-source-age.json').read_text())
+          assert audit['schema']=='GMFQ_SOURCE_FRESHNESS_AUDIT_V1'
+          assert len(audit['rows'])==8 and not audit['integrity_issues'], audit
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as f:
+              f.write('\\n### Control Room v10 · G8 actual source dates (read-only)\\n')
+              for row in audit['rows']:
+                  f.write('- '+row['ccy']+': 2Y/10Y '+str(row['rates_as_of'])+
+                          ' — '+row['rates_source_status']+'; 3/6/12M '+
+                          str(row['ois_as_of'])+' — '+row['ois_source_class']+'\\n')
+              f.write('Historical/manual/cadence observations are not new source prints.\\n')
+          print('CONTROL_ROOM_G8_CADENCE_AWARE_SOURCE_CLOCK_PASS')
           PY
 
       - name: Test market SHA parity and bounded CDN verifier
