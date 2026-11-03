@@ -15,7 +15,7 @@ The active Control Room requested by the project owner is:
 
 The GitHub Pages repository root `/global-macro-fx-quant/` (`index.html`, `payload/part-00.txt` … `part-15.txt`, `dashboard/*`) is an older dashboard **and is not the active Control Room UI**. `site/website-v1/` is also legacy. Do not present the root URL as the user's current Control Room; do not mistake CI success on the legacy UI for proof that the Preview changed.
 
-Do not delete, redirect, overwrite, or visually redesign these historical pages without a specifically requested and tested migration. Preserve existing files and reports.
+Migration approved by the owner on 2026-11-03: legacy entrypoints (`/index.html` and `site/website-v1/index.html`) now redirect to the canonical v10 Preview. Preserve legacy payloads/assets and publishing workflows until their dependencies have been migrated and tested; never use the legacy dashboard as the active UI target.
 
 ## Where to work
 
