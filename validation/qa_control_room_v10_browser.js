@@ -934,7 +934,17 @@ function expectedReactionFromMetrics(row){
        .filter(x=>x.d&&Number.isFinite(x.y2)&&Number.isFinite(x.y10)&&
          Date.parse(x.d+'T00:00:00Z')>=latest-184*86400000&&x.d<=source.date);
      if(expected.length<2)throw Error(label+' source lacks G8 historical series '+ccy);
-     await page.frameLocator('#gmfq-page').locator('#rates-select button[data-ccy="'+ccy+'"]').click();
+     // After the real JPY pointer-click smoke test, exercise the G8 selector
+     // handlers directly for the exhaustive rate/date audit to avoid long
+     // Playwright actionability retries inside the embedded frame.
+     const dispatched=await page.evaluate(currency=>{
+       const d=document.getElementById('gmfq-page')?.contentDocument;
+       const button=d?.querySelector('#rates-select button[data-ccy="'+currency+'"]');
+       if(!button||button.disabled||!button.getClientRects().length)return false;
+       button.click();
+       return true;
+     },ccy);
+     if(!dispatched)throw Error(label+' G8 selector unavailable '+ccy);
      await page.waitForFunction(({ccy,count})=>{
        const d=document.getElementById('gmfq-page')?.contentDocument,
          h=d?.getElementById('rates-chart'),
@@ -2205,11 +2215,12 @@ function expectedReactionFromMetrics(row){
   });
   if(!reading.closed||!reading.before||!reading.decisionVisible||
      !reading.technicalHidden||!reading.sourcePresent||
-     JSON.stringify(reading.sourceKeys)!==JSON.stringify(['macro','price','fixing'])||
+     JSON.stringify(reading.sourceKeys)!==JSON.stringify(['macro','price','fixing','cot'])||
      reading.macroSource!=='HISTORICAL'||
      !reading.sourceText?.includes('Baseline Macro/Tassi: '+setupFeed.macro_baseline_asof)||
      !reading.sourceText.includes('Prezzo del modello: '+setupFeed.price_asof)||
      !reading.sourceText.includes('Fixing BCE:')||
+     !reading.sourceText.includes('COT G8')||
      reading.sourceText.includes('Valuta favorita dal motore:')||
      reading.decisionGrid!==(reading.innerWidth<=700?1:3)||
      !['transparent','rgba(0, 0, 0, 0)'].includes(reading.decisionBackground))
@@ -2687,17 +2698,18 @@ function expectedReactionFromMetrics(row){
   const expected=[
     {code:'VIX',series:riskData.risk.VIX},
     {code:'WTI',series:riskData.risk.WTI},
+    {code:'WTI_FUT',series:secondary.lanes['WTI.market_proxy'],secondary:true},
     {code:'BRENT',series:secondary.lanes['BRENT.market_proxy'],secondary:true},
   ];
   if(risk.references!=='4'||risk.official!=='2'||risk.secondary!=='2'||risk.effect!=='NONE'||
     !risk.study?.includes('4/4 riferimenti numerici per lo studio')||
-    risk.cards.length!==3||!risk.lead?.startsWith('VIX misura volatilità implicita')||
-    !risk.leadFirst||JSON.stringify(risk.provenance)!==JSON.stringify(['vix','wti','brent'])||
-    risk.gridCols!==(risk.viewport<=820?1:3)||
+    risk.cards.length!==4||!risk.lead?.startsWith('VIX misura volatilità implicita')||
+    !risk.leadFirst||JSON.stringify(risk.provenance)!==JSON.stringify(['vix','wti','wti-futures','brent'])||
+    risk.gridCols!==(risk.viewport<=820?1:4)||
     !['transparent','rgba(0, 0, 0, 0)'].includes(risk.firstBg)||
     !risk.text.includes('Brent spot ufficiale non certificato nel feed')||
     risk.cards.some(c=>c.lines!==1||
-      (c.symbol==='BRENT'?(c.trend!=='MODEL_BACKSOLVED'||c.count!==3||
+      (['BRENT','WTI_FUT'].includes(c.symbol)?(c.trend!=='MODEL_BACKSOLVED'||c.count!==3||
         c.dashed!=='7 5'||!c.text.includes('NON prezzi storici osservati')):
        (c.trend!=='OBSERVED_DATED'||c.count!==30||c.dashed!==''||
         !c.text.includes('30 osservazioni datate'))))||
