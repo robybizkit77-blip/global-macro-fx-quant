@@ -22,6 +22,12 @@ class NzdScenarioSensitivityTests(unittest.TestCase):
         cls.feed["source_url"]=(
             "https://www.asx.com.au/data/futures/reports/"
             "EODWebMarketSummary261030ZFT.htm")
+        # The fixture is the frozen 30-Oct observation: its weekly comparison
+        # must also use the corresponding 23-Oct report, independent of what
+        # the rolling production feed points to on later trading days.
+        cls.feed["weekly_reference_source_url"]=(
+            "https://www.asx.com.au/data/futures/reports/"
+            "EODWebMarketSummary261023ZFT.htm")
         cls.feed["horizons"]={
             h:{
                 "expiry_label":label, "expiration":expiry,
@@ -107,6 +113,10 @@ class NzdScenarioSensitivityTests(unittest.TestCase):
                  "asof does not match official ASX report filename")
         self.bad(lambda s:s["horizons"]["3m"].__setitem__(
             "weekly_reference_trade_date","2026-10-01"),"stale weekly reference")
+        self.bad(lambda s:s.__setitem__(
+            "weekly_reference_source_url",
+            "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261022ZFT.htm"),
+            "wrong weekly report date for same-contract reference")
         with self.assertRaises(ValueError):
             build(self.feed,self.cal,asof=date(2026,11,10))
         with self.assertRaises(ValueError):
