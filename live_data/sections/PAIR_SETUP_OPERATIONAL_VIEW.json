@@ -2,18 +2,18 @@
   "schema": "GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1",
   "status": "CURRENT_CANONICAL_ENGINE",
   "pair_count": 28,
-  "price_asof": "2026-11-02",
+  "price_asof": "2026-11-03",
   "macro_baseline_asof": "2026-09-25",
   "price_source": "ECB euro foreign exchange reference rates",
   "price_audit": {
     "status": "PASS",
-    "as_of": "2026-11-02",
+    "as_of": "2026-11-03",
     "source": "ECB euro foreign exchange reference rates",
     "current_row_source": "official history snapshot",
-    "overlay_asof": "2026-11-02",
+    "overlay_asof": "2026-11-03",
     "history_status": "CURRENT_OFFICIAL_HISTORY",
-    "history_asof": "2026-11-02",
-    "history_rows": 559,
+    "history_asof": "2026-11-03",
+    "history_rows": 560,
     "first_asof": "2024-08-26",
     "pair_count": 28,
     "complete_pair_count": 28,
@@ -48,9 +48,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 13.40782122905028,
-          "move1m": -1.0946956488588455,
-          "text": "Estensione non elevata · 1M -1.1% · P13 storico"
+          "pct": 11.524163568773234,
+          "move1m": -1.2265654797047332,
+          "text": "Estensione non elevata · 1M -1.2% · P12 storico"
         },
         "timing": {
           "state": "PARTIAL",
@@ -108,7 +108,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 167.1,
+              "bp": 169.1,
               "material": true,
               "side": "AUD"
             }
@@ -138,7 +138,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 167.1,
+            "bp": 169.1,
             "material": true,
             "side": "AUD"
           }
@@ -200,9 +200,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 21.60148975791434,
-          "move1m": -1.057760488350945,
-          "text": "Estensione non elevata · 1M -1.1% · P22 storico"
+          "pct": 38.10408921933085,
+          "move1m": -0.17487297577598593,
+          "text": "Estensione non elevata · 1M -0.2% · P38 storico"
         },
         "timing": {
           "state": "UNCERTAIN",
@@ -351,9 +351,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 51.39664804469274,
-          "move1m": 0.7773891307832903,
-          "text": "Estensione non elevata · 1M +0.8% · P51 storico"
+          "pct": 55.39033457249071,
+          "move1m": 1.0329493361485698,
+          "text": "Estensione non elevata · 1M +1.0% · P55 storico"
         },
         "timing": {
           "state": "PARTIAL",
@@ -502,9 +502,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 53.072625698324025,
-          "move1m": 0.6244046810969905,
-          "text": "Estensione non elevata · 1M +0.6% · P53 storico"
+          "pct": 46.468401486988846,
+          "move1m": 0.41920028650599406,
+          "text": "Estensione non elevata · 1M +0.4% · P46 storico"
         },
         "timing": {
           "state": "PARTIAL",
@@ -767,13 +767,13 @@
         "qualityCode": "RISKY",
         "price": {
           "state": "GOOD",
-          "text": "Prezzo conferma"
+          "text": "Prezzo conferma, ma è già avanzato · Prezzo già avanzato · 1M +1.1% · P83 storico"
         },
         "extension": {
-          "state": "NORMAL",
-          "pct": 54.93482309124767,
-          "move1m": 0.03734396324868161,
-          "text": "Estensione non elevata · 1M +0.0% · P55 storico"
+          "state": "ADVANCED",
+          "pct": 82.8996282527881,
+          "move1m": 1.064752389178758,
+          "text": "Prezzo già avanzato · 1M +1.1% · P83 storico"
         },
         "timing": {
           "state": "ADVERSE",
@@ -831,7 +831,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 299.3,
+              "bp": 297.3,
               "material": true,
               "side": "CAD"
             }
@@ -861,7 +861,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 299.3,
+            "bp": 297.3,
             "material": true,
             "side": "CAD"
           }
@@ -950,7 +950,7 @@
               "side": "B"
             },
             "ratesGap": {
-              "bp": 140.49999999999997,
+              "bp": 138.49999999999997,
               "material": true,
               "side": "CAD"
             }
@@ -980,7 +980,7 @@
             "side": "B"
           },
           "ratesGap": {
-            "bp": 140.49999999999997,
+            "bp": 138.49999999999997,
             "material": true,
             "side": "CAD"
           }
@@ -1042,9 +1042,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 25.139664804469273,
-          "move1m": -1.854768628840442,
-          "text": "Estensione non elevata · 1M -1.9% · P25 storico"
+          "pct": 36.80297397769517,
+          "move1m": -1.2099381668018827,
+          "text": "Estensione non elevata · 1M -1.2% · P37 storico"
         },
         "timing": {
           "state": "ADVERSE",
@@ -1189,13 +1189,13 @@
         "qualityCode": "RISKY",
         "price": {
           "state": "GOOD",
-          "text": "Prezzo conferma, ma è già avanzato · Prezzo già avanzato · 1M +1.5% · P82 storico"
+          "text": "Prezzo conferma"
         },
         "extension": {
-          "state": "ADVANCED",
-          "pct": 82.12290502793296,
-          "move1m": 1.5441402645339886,
-          "text": "Prezzo già avanzato · 1M +1.5% · P82 storico"
+          "state": "NORMAL",
+          "pct": 71.56133828996282,
+          "move1m": 1.0447576656775426,
+          "text": "Estensione non elevata · 1M +1.0% · P72 storico"
         },
         "timing": {
           "state": "PARTIAL",
@@ -1253,7 +1253,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -194.58924310999996,
+              "bp": -195.74940823999998,
               "material": true,
               "side": "AUD"
             }
@@ -1283,7 +1283,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -194.58924310999996,
+            "bp": -195.74940823999998,
             "material": true,
             "side": "AUD"
           }
@@ -1371,7 +1371,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": -27.48924310999996,
+              "bp": -26.649408239999993,
               "material": false,
               "side": "—"
             }
@@ -1401,7 +1401,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": -27.48924310999996,
+            "bp": -26.649408239999993,
             "material": false,
             "side": "—"
           }
@@ -1463,9 +1463,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 1.675977653631285,
-          "move1m": -2.585567447281978,
-          "text": "Estensione non elevata · 1M -2.6% · P2 storico"
+          "pct": 13.011152416356877,
+          "move1m": -1.2178036426338967,
+          "text": "Estensione non elevata · 1M -1.2% · P13 storico"
         },
         "timing": {
           "state": "ADVERSE",
@@ -1523,7 +1523,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 271.81075689000005,
+              "bp": 270.65059176,
               "material": true,
               "side": "EUR"
             }
@@ -1553,7 +1553,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 271.81075689000005,
+            "bp": 270.65059176,
             "material": true,
             "side": "EUR"
           }
@@ -1623,7 +1623,7 @@
         "structural": {
           "fav": "—",
           "quality": "SEPARAZIONE RATES MATERIALE",
-          "relation": "Il differenziale 2Y osservato è -161 pb verso GBP. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+          "relation": "Il differenziale 2Y osservato è -162 pb verso GBP. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
           "timing": "EUR: TURNING RECENTE · GBP: TURNING RECENTE",
           "priceReading": "PREZZO NON RISOLUTIVO",
           "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
@@ -1641,7 +1641,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -160.7374713804806,
+              "bp": -161.89763651048062,
               "material": true,
               "side": "GBP"
             }
@@ -1653,7 +1653,7 @@
       "decision_frame": {
         "fav": "—",
         "quality": "SEPARAZIONE RATES MATERIALE",
-        "relation": "Il differenziale 2Y osservato è -161 pb verso GBP. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+        "relation": "Il differenziale 2Y osservato è -162 pb verso GBP. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
         "timing": "EUR: TURNING RECENTE · GBP: TURNING RECENTE",
         "priceReading": "PREZZO NON RISOLUTIVO",
         "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
@@ -1671,7 +1671,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -160.7374713804806,
+            "bp": -161.89763651048062,
             "material": true,
             "side": "GBP"
           }
@@ -1740,7 +1740,7 @@
         "structural": {
           "fav": "—",
           "quality": "SEPARAZIONE RATES MATERIALE",
-          "relation": "Il differenziale 2Y osservato è +113 pb verso EUR. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+          "relation": "Il differenziale 2Y osservato è +112 pb verso EUR. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
           "timing": "EUR: TURNING RECENTE · JPY: RATES AVANTI",
           "priceReading": "PREZZO NON RISOLUTIVO",
           "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
@@ -1758,7 +1758,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 113.01075689000002,
+              "bp": 111.85059175999999,
               "material": true,
               "side": "EUR"
             }
@@ -1770,7 +1770,7 @@
       "decision_frame": {
         "fav": "—",
         "quality": "SEPARAZIONE RATES MATERIALE",
-        "relation": "Il differenziale 2Y osservato è +113 pb verso EUR. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+        "relation": "Il differenziale 2Y osservato è +112 pb verso EUR. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
         "timing": "EUR: TURNING RECENTE · JPY: RATES AVANTI",
         "priceReading": "PREZZO NON RISOLUTIVO",
         "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
@@ -1788,7 +1788,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 113.01075689000002,
+            "bp": 111.85059175999999,
             "material": true,
             "side": "EUR"
           }
@@ -1858,7 +1858,7 @@
         "structural": {
           "fav": "—",
           "quality": "SEPARAZIONE RATES MATERIALE",
-          "relation": "Il differenziale 2Y osservato è -88 pb verso NZD. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+          "relation": "Il differenziale 2Y osservato è -90 pb verso NZD. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
           "timing": "EUR: TURNING RECENTE · NZD: RATES AVANTI",
           "priceReading": "PREZZO NON RISOLUTIVO",
           "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
@@ -1876,7 +1876,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -88.48924310999999,
+              "bp": -89.64940824000003,
               "material": true,
               "side": "NZD"
             }
@@ -1888,7 +1888,7 @@
       "decision_frame": {
         "fav": "—",
         "quality": "SEPARAZIONE RATES MATERIALE",
-        "relation": "Il differenziale 2Y osservato è -88 pb verso NZD. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+        "relation": "Il differenziale 2Y osservato è -90 pb verso NZD. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
         "timing": "EUR: TURNING RECENTE · NZD: RATES AVANTI",
         "priceReading": "PREZZO NON RISOLUTIVO",
         "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
@@ -1906,7 +1906,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -88.48924310999999,
+            "bp": -89.64940824000003,
             "material": true,
             "side": "NZD"
           }
@@ -1968,9 +1968,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 61.82495344506518,
-          "move1m": 0.725792175606299,
-          "text": "Estensione non elevata · 1M +0.7% · P62 storico"
+          "pct": 55.94795539033457,
+          "move1m": 0.40979955456571515,
+          "text": "Estensione non elevata · 1M +0.4% · P56 storico"
         },
         "timing": {
           "state": "ALIGNED",
@@ -2028,7 +2028,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -158.48924310999996,
+              "bp": -159.64940824,
               "material": true,
               "side": "USD"
             }
@@ -2058,7 +2058,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -158.48924310999996,
+            "bp": -159.64940824,
             "material": true,
             "side": "USD"
           }
@@ -2118,9 +2118,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 33.14711359404097,
-          "move1m": -0.5679841253402707,
-          "text": "Estensione non elevata · 1M -0.6% · P33 storico"
+          "pct": 26.022304832713754,
+          "move1m": -0.9436541353492478,
+          "text": "Estensione non elevata · 1M -0.9% · P26 storico"
         },
         "timing": {
           "state": "ADVERSE",
@@ -2295,7 +2295,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 133.24822827048064,
+              "bp": 135.24822827048064,
               "material": true,
               "side": "GBP"
             }
@@ -2325,7 +2325,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 133.24822827048064,
+            "bp": 135.24822827048064,
             "material": true,
             "side": "GBP"
           }
@@ -2386,9 +2386,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 33.14711359404097,
-          "move1m": -0.4957842746686203,
-          "text": "Estensione non elevata · 1M -0.5% · P33 storico"
+          "pct": 65.98513011152416,
+          "move1m": 0.7671309635057355,
+          "text": "Estensione non elevata · 1M +0.8% · P66 storico"
         },
         "timing": {
           "state": "PARTIAL",
@@ -2771,9 +2771,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 24.394785847299815,
-          "move1m": -1.4038878271352306,
-          "text": "Estensione non elevata · 1M -1.4% · P24 storico"
+          "pct": 20.817843866171003,
+          "move1m": -1.5913711278655152,
+          "text": "Estensione non elevata · 1M -1.6% · P21 storico"
         },
         "timing": {
           "state": "ADVERSE",
@@ -2947,7 +2947,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 61.00000000000003,
+              "bp": 63.000000000000036,
               "material": false,
               "side": "—"
             }
@@ -2977,7 +2977,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 61.00000000000003,
+            "bp": 63.000000000000036,
             "material": false,
             "side": "—"
           }
@@ -3040,9 +3040,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 21.973929236499067,
-          "move1m": -1.671726828873299,
-          "text": "Estensione non elevata · 1M -1.7% · P22 storico"
+          "pct": 47.58364312267658,
+          "move1m": -0.5915933014672636,
+          "text": "Estensione non elevata · 1M -0.6% · P48 storico"
         },
         "timing": {
           "state": "ADVERSE",
@@ -3311,8 +3311,8 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 39.47858472998138,
-          "move1m": -0.20549491495061023,
+          "pct": 39.21933085501859,
+          "move1m": -0.22153296989215754,
           "text": "Estensione non elevata · 1M -0.2% · P39 storico"
         },
         "timing": {
@@ -3462,8 +3462,8 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 8.56610800744879,
-          "move1m": -1.910002752026474,
+          "pct": 8.736059479553903,
+          "move1m": -1.8563161291714647,
           "text": "Estensione non elevata · 1M -1.9% · P9 storico"
         },
         "timing": {
@@ -3522,7 +3522,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 131,
+              "bp": 133,
               "material": true,
               "side": "USD"
             }
@@ -3552,7 +3552,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 131,
+            "bp": 133,
             "material": true,
             "side": "USD"
           }
@@ -3613,9 +3613,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 18.24953445065177,
-          "move1m": -1.873372059503553,
-          "text": "Estensione non elevata · 1M -1.9% · P18 storico"
+          "pct": 31.78438661710037,
+          "move1m": -0.8113289103287791,
+          "text": "Estensione non elevata · 1M -0.8% · P32 storico"
         },
         "timing": {
           "state": "UNCERTAIN",
@@ -3763,9 +3763,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 40.03724394785847,
-          "move1m": -0.05335014792424708,
-          "text": "Estensione non elevata · 1M -0.1% · P40 storico"
+          "pct": 47.95539033457249,
+          "move1m": 0.3887926783287199,
+          "text": "Estensione non elevata · 1M +0.4% · P48 storico"
         },
         "timing": {
           "state": "ALIGNED",
