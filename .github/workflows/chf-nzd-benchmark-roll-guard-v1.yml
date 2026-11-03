@@ -23,6 +23,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -33,7 +35,7 @@ jobs:
       - name: Guarantee no operational data touched by this PR
         if: github.event_name == 'pull_request'
         run: |
-          git fetch origin main --depth=1
+          git fetch origin main
           git diff --name-only origin/main...HEAD > /tmp/changed.txt
           python - <<'PY'
           from pathlib import Path
