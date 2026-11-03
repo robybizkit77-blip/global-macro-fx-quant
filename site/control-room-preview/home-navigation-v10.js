@@ -1643,6 +1643,19 @@ function mountSovereignHistoryPlot(doc,rates){
   const meta=doc.getElementById('rates-chart-meta');
   if(meta)meta.textContent=k+' · '+(old?'storico non corrente':'ultima rilevazione')+
    ' '+asof+' · solo rendimenti governativi';
+  // Repair the companion status and interpretation written by the older
+  // certified-only controller. Both comparisons are on actual common dates.
+  const status=doc.getElementById('rates-status');
+  const narrative=doc.getElementById('rates-narrative');
+  const prev=rows.at(-2),lastRow=rows.at(-1);
+  const delta2=(lastRow.y2-prev.y2)*100,delta10=(lastRow.y10-prev.y10)*100;
+  const signed=v=>(v>=0?'+':'')+fmt(v,1)+' bp';
+  if(status)status.textContent=FLAG[k]+' '+k+' · '+
+   (old?'STORICO':'OSSERVATO')+' '+asof+' · 2Y/10Y disponibili';
+  if(narr)narr.textContent='Ultime due date comuni '+prev.d+' → '+lastRow.d+
+   ': 2Y '+signed(delta2)+', 10Y '+signed(delta10)+
+   '. Movimento osservato tra queste due date, NON variazione odierna se lo storico non è corrente. '+
+   'La causa macroeconomica non è deducibile dai soli rendimenti.';
  };
  sel.addEventListener('click',e=>{
   if(e.target.closest('button[data-ccy]')){
@@ -1650,7 +1663,7 @@ function mountSovereignHistoryPlot(doc,rates){
   }
  });
  const obs=new doc.defaultView.MutationObserver(()=>{
-  if(host.dataset.gmfqSovereignCount!=='0'&&!host.querySelector('svg[data-gmfq-sovereign-plot]'))
+  if(!host.querySelector('svg[data-gmfq-sovereign-plot]'))
    doc.defaultView.queueMicrotask(paint);
  });
  obs.observe(host,{childList:true});paint();
