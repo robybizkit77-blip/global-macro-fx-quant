@@ -2215,11 +2215,12 @@ function expectedReactionFromMetrics(row){
   });
   if(!reading.closed||!reading.before||!reading.decisionVisible||
      !reading.technicalHidden||!reading.sourcePresent||
-     JSON.stringify(reading.sourceKeys)!==JSON.stringify(['macro','price','fixing'])||
+     JSON.stringify(reading.sourceKeys)!==JSON.stringify(['macro','price','fixing','cot'])||
      reading.macroSource!=='HISTORICAL'||
      !reading.sourceText?.includes('Baseline Macro/Tassi: '+setupFeed.macro_baseline_asof)||
      !reading.sourceText.includes('Prezzo del modello: '+setupFeed.price_asof)||
      !reading.sourceText.includes('Fixing BCE:')||
+     !reading.sourceText.includes('COT G8')||
      reading.sourceText.includes('Valuta favorita dal motore:')||
      reading.decisionGrid!==(reading.innerWidth<=700?1:3)||
      !['transparent','rgba(0, 0, 0, 0)'].includes(reading.decisionBackground))
