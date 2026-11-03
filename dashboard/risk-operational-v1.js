@@ -39,9 +39,9 @@ function officialCard(name,series,unit,extra=''){
 }
 function brentCard(b){return `<article class="rkCard" data-kind="secondary" data-risk="BRENT"><div class="rkTop"><div class="rkName">Brent market proxy</div><span class="rkBadge secondary">Secondary · NON OFFICIAL</span></div><div class="rkValue">$${num(b?.value)}</div><div class="rkAs">as-of ${esc(b?.proxy_as_of||'—')}</div><div class="rkMoves"><div class="rkMove"><span>Δ 1D</span><b>${pct(b?.change_1d_pct)}</b></div><div class="rkMove"><span>Δ 1W</span><b>${pct(b?.change_1w_pct)}</b></div></div><div class="rkMeta">${esc(b?.source||'Secondary Brent futures market proxy')}</div></article>`}
 function wtiFuturesMarkup(w){
- if(w?.vendor_symbol!=='CL=F'||w?.instrument_type!=='FUTURE'||w?.currency!=='USD'||!validNum(w?.value)||!/^\\d{4}-\\d{2}-\\d{2}$/.test(w?.proxy_as_of||''))
+ if(w?.vendor_symbol!=='CL=F'||w?.instrument_type!=='FUTURE'||w?.currency!=='USD'||!validNum(w?.value)||!/^\d{4}-\d{2}-\d{2}$/.test(w?.proxy_as_of||''))
    return '<div class="rkMeta">WTI futures indicativo: non ancora disponibile · spot EIA conservato.</div>';
- return `<div class="rkMeta" data-risk="WTI_FUTURES"><b>WTI futures CL=F · indicativo</b> · ${num(w.value)} · ${esc(w.proxy_as_of)} · Δ 1D ${pct(w.change_1d_pct)} · Δ 1W ${pct(w.change_1w_pct)}<div>Fonte secondaria, non spot EIA e non storico ufficiale.</div></div>`;
+ return `<div class="rkMeta" data-risk="WTI_FUTURES"><b>WTI futures CL=F · indicativo</b> · &#36;${num(w.value)} · ${esc(w.proxy_as_of)} · Δ 1D ${pct(w.change_1d_pct)} · Δ 1W ${pct(w.change_1w_pct)}<div>Fonte secondaria, non spot EIA e non storico ufficiale.</div></div>`;
 }
 function calendarGap(a,b){
  if(!/^\d{4}-\d{2}-\d{2}$/.test(a||'')||!/^\d{4}-\d{2}-\d{2}$/.test(b||''))return null;
