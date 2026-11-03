@@ -97,8 +97,12 @@ class RatesWeeklyReferenceContractTests(unittest.TestCase):
         # had become no-ops as both live sources advanced, falsely failing CI.
         self.fail(lambda d:d["USD"].update(date=(
             date.fromisoformat(d["USD"]["date"])-timedelta(days=1)).isoformat()))
+        # Mutate relative to the true live weekly source receipt, never a
+        # hardcoded date that may later become the valid observation.
         self.fail(lambda d:d["GBP"]["weekly10_validation"].update(
-            start_date="2026-10-26"))
+            start_date=(date.fromisoformat(
+                d["GBP"]["weekly10_validation"]["start_date"])-
+                timedelta(days=1)).isoformat()))
         self.fail(lambda d:d["CAD"]["history2"]["dates"].__setitem__(-1,
             (date.fromisoformat(d["CAD"]["history2"]["dates"][-1])-
              timedelta(days=1)).isoformat()))
