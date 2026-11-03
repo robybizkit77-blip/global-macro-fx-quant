@@ -123,7 +123,7 @@ const plotMount=js.slice(js.indexOf('function mountSovereignHistoryPlot(doc,rate
  js.indexOf('function enhanceRatesDetail(doc){'));
 assert(plotMount.includes("if(narrative)narrative.textContent="),
  'Sovereign chart narrative must use the defined element reference');
-assert(!/\\bif\\(narr\\)/.test(plotMount),
+assert(!/\bif\(narr\)/.test(plotMount),
  'Undefined narr identifier must never abort a currency click');
 const hhStart=js.indexOf('function mountHistoricalSovereignTable(doc,raw){');
 const hhEnd=js.indexOf('function renderYieldStudy(doc,rates',hhStart);
