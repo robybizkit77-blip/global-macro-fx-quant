@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-02",
-  "generated_at_utc": "2026-11-02T23:57:16.383860Z",
+  "generated_at_utc": "2026-11-03T04:34:15.373719Z",
   "items": [
     {
       "as_of": "2026-11-02",
@@ -47,7 +47,7 @@
       "title": "AUD: repricing implicito da futures più dovish (-4.0 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-02T23:57:16.383860Z",
+  "last_checked_at_utc": "2026-11-03T04:34:15.373719Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -206,6 +206,61 @@
   "official_releases": {
     "core_effect": "NONE",
     "headlines": [
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "AUD",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "MONITOR",
+          "topic": "CB_POLICY",
+          "verify_next": "Verificare testo della decisione, confronto con consenso, repricing OIS/futures, rendimento 2Y e variazione FX dopo la pubblicazione.",
+          "why_watch": "Annuncio potenzialmente relativo a una decisione o comunicazione di politica monetaria; direzione della decisione non identificata dal titolo."
+        },
+        "id": "RBA_PRESS:https://www.rba.gov.au/media-releases/2026/mr-26-30.html",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-03T03:30:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "6m_rate_pct": 4.915,
+            "date": "2026-10-30",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "OFFICIAL_CERTIFIED",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
+            "status": "DAILY_CONTEXT_ONLY"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-10-28",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Reserve Bank of Australia · F2 Capital Market Yields – Government Bonds – Daily · 2026-10-28",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 4.951
+          }
+        },
+        "source": "Reserve Bank of Australia",
+        "source_id": "RBA_PRESS",
+        "title": "Statement by the Monetary Policy Board: Monetary Policy Decision",
+        "url": "https://www.rba.gov.au/media-releases/2026/mr-26-30.html"
+      },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "NZD",
@@ -906,7 +961,7 @@
       }
     ],
     "last_attempt_day_rome": "2026-11-03",
-    "latest_published_at_utc": "2026-11-02T11:00:00Z",
+    "latest_published_at_utc": "2026-11-03T03:30:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -980,14 +1035,14 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 0,
+        "accepted_items": 1,
         "ccy": "AUD",
-        "entries_rejected": 1,
+        "entries_rejected": 0,
         "feed_entries_seen": 1,
         "feed_url": "https://www.rba.gov.au/rss/rss-cb-media-releases.xml",
         "source": "Reserve Bank of Australia",
         "source_id": "RBA_PRESS",
-        "status": "NO_VERIFIED_RECENT_ITEMS"
+        "status": "OK_RECENT_ITEMS"
       },
       {
         "accepted_items": 3,
