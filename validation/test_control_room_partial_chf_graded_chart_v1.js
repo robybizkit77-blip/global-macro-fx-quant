@@ -71,7 +71,8 @@ assert(['PROXY','MIXED'].includes(chf.tier));
 assert.equal(chf.joined,false);
 assert.equal(chf.verifiedTenors,1);
 assert.deepEqual(chf.pts,[null,null,liveRows.find(x=>x.k==='CHF').pts[2]]);
-assert.deepEqual(chf.dates,[null,null,'2026-10-30']);
+// The actual 12M quote may advance independently of 3M/6M.
+assert.deepEqual(chf.dates,[null,null,srcFeed.currencies.CHF.horizons['12m'].quote_as_of]);
 assert.deepEqual(chf.missingTenors,['3m','6m']);
 assert.equal(rows.filter(x=>x.verifiedTenors===3).length,liveRows.filter(x=>x.verifiedTenors===3).length-1);
 const html=api.marketResearchGradedSvg(rows);

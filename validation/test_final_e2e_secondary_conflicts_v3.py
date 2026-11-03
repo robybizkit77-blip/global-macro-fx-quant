@@ -35,6 +35,34 @@ class SourceQualityFinalE2ETests(unittest.TestCase):
     def modify(self, c="USD"):
         return copy.deepcopy(self.currencies[c])
 
+    def synthetic_conflicted_usd(self):
+        """Adversarial conflict fixture only; no live quote or archived event rewritten.
+
+        Real USD can legitimately return to a clean secondary state after
+        independent source reconciliation. Always exercise the conflict guards
+        with a deliberately conflicted, correctly identified synthetic row.
+        """
+        row = self.modify()
+        row["input_mode"] = "LIVE_SECONDARY_CONFLICT_INDICATIVE"
+        row["source_quality"] = "SECONDARY_CONFLICTED_INDICATIVE_NOT_OIS"
+        row["source_conflict_status"] = "UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT"
+        row["direction_vs_policy"] = "WITHHELD"
+        row["change_status"] = "CONFLICTED_SECONDARY_NO_REPRICING"
+        row["change_1d_bp"] = None
+        row["change_1w_bp"] = None
+        point = row["horizons"]["3m"]
+        point["quote_timestamp_verified"] = False
+        point["quote_timestamp_source"] = "QUARANTINED_SAME_CONTRACT_SAME_DAY"
+        row["source_conflict_keys"] = [{
+            "horizon": "3m",
+            "contract": point["contract"],
+            "observation_date": point["quote_as_of"],
+            "event_id": "a" * 64,  # synthetic, never emitted as real evidence
+        }]
+        self.assertEqual(certify_secondary_source_state("USD", row),
+                         "SOURCE_CONFLICT_ANNOTATED_NO_REPRICING")
+        return row
+
     def test_no_policy_or_model_promotion_on_unresolved_conflict(self):
         for modifier in (
             lambda x: x["horizons"]["6m"].__setitem__("policy_delta_bp", 12),
@@ -46,7 +74,7 @@ class SourceQualityFinalE2ETests(unittest.TestCase):
             lambda x: x["governance"].__setitem__("backtest_eligible_as_official_ois", True),
         ):
             with self.subTest(modifier=str(modifier)):
-                row = self.modify()
+                row = self.synthetic_conflicted_usd()
                 modifier(row)
                 with self.assertRaises(ValueError):
                     certify_secondary_source_state("USD", row)
@@ -57,21 +85,21 @@ class SourceQualityFinalE2ETests(unittest.TestCase):
             lambda x: x["source_conflict_keys"][0].__setitem__("event_id", "forged"),
             lambda x: x["source_conflict_keys"][0].__setitem__("contract", "NOPE"),
             lambda x: x["source_conflict_keys"][0].__setitem__("horizon", "18m"),
-            lambda x: x["horizons"]["12m"].__setitem__("quote_timestamp_verified", True),
-            lambda x: x["horizons"]["12m"].__setitem__("quote_timestamp_source", "SSR_DAILY_BAR_DATA_UPDATE_TIME"),
+            lambda x: x["horizons"]["3m"].__setitem__("quote_timestamp_verified", True),
+            lambda x: x["horizons"]["3m"].__setitem__("quote_timestamp_source", "SSR_DAILY_BAR_DATA_UPDATE_TIME"),
         ):
             with self.subTest(modifier=str(modifier)):
-                row = self.modify()
+                row = self.synthetic_conflicted_usd()
                 modifier(row)
                 with self.assertRaises(ValueError):
                     certify_secondary_source_state("USD", row)
 
     def test_conflict_mode_requires_conflict_grade_and_keys(self):
-        row = self.modify()
+        row = self.synthetic_conflicted_usd()
         row["source_quality"] = "OFFICIAL_CERTIFIED"
         with self.assertRaises(ValueError):
             certify_secondary_source_state("USD", row)
-        row = self.modify()
+        row = self.synthetic_conflicted_usd()
         row["input_mode"] = "LIVE_SECONDARY_OVERLAY"
         with self.assertRaises(ValueError):
             certify_secondary_source_state("USD", row)
