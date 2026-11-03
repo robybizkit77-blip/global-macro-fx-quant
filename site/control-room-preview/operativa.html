@@ -53,8 +53,16 @@ function forward(ccy){
  return ['3m','6m','12m'].map(tenor=>{
   const v=obj.horizons?.[tenor]||{},official=num(v.rate),future=num(v.futures_price);
   if(official!==null&&obj.operational_status==='GREEN_OFFICIAL')return {tenor,v:official,tier:'Fonte certificata',estimated:false,date:obj.as_of||'',source:obj.source||''};
-  if(future!==null&&future>70&&future<110&&v.quote_timestamp_verified===true)return {tenor,v:100-future,tier:'Proxy futures · non OIS',estimated:true,date:v.quote_as_of||'',source:obj.source||v.symbol||''};
+  if(future!==null&&future>70&&future<110&&v.quote_timestamp_verified===true&&v.roster_quality!=='ICE_LISTED_QUARTER_CALENDAR_DERIVED_UNQUOTED')return {tenor,v:100-future,tier:'Proxy futures · non OIS',estimated:true,date:v.quote_as_of||'',source:obj.source||v.symbol||''};
   if(official!==null)return {tenor,v:official,tier:'Livello indicativo',estimated:true,date:obj.as_of||'',source:obj.source||''};
+  if(ccy==='CHF'&&tenor==='3m'){
+   const six=obj.horizons?.['6m']||{},twelve=obj.horizons?.['12m']||{};
+   const p6=num(six.futures_price),p12=num(twelve.futures_price);
+   if(p6!==null&&p12!==null&&six.quote_timestamp_verified===true&&twelve.quote_timestamp_verified===true&&p6>70&&p6<110&&p12>70&&p12<110){
+    const v6=100-p6,v12=100-p12;
+    return {tenor,v:v6-(v12-v6)/2,tier:'Scenario estrapolato · NON OIS',estimated:true,date:[six.quote_as_of,twelve.quote_as_of].filter(Boolean).join(' / '),source:'Scenario di pendenza lineare 6M–12M, basi temporali distinte'};
+   }
+  }
   if(policy!==null)return {tenor,v:policy,tier:'Scenario flat · ipotesi',estimated:true,date:obj.as_of||'',source:'Ipotesi esplicita: policy rate invariato'};
   return {tenor,v:null,tier:'Serie non ricostruibile',estimated:true,date:'',source:''};
  });
@@ -94,7 +102,7 @@ function rates(){
  const plotF=svgLine([{name:'Livello 3M/6M/12M',color:'#65c2e8',values:fwd.map(x=>x.v)}],{start:'3M',end:'12M',label:'Curva monetaria di studio'});
  const plotR=h.length>=2?svgLine([{name:'2Y',color:'#65c2e8',values:h.map(x=>x.y2)},{name:'10Y',color:'#ba9fee',values:h.map(x=>x.y10)}],{start:h[0].date,end:h.at(-1).date,label:'Storico rendimenti 2Y e 10Y'}):'<p>Storico non disponibile per la data scelta.</p>';
  return '<h2>Tassi e curve · G8</h2><p class="lead">Livello → direzione → spread. Ogni curva mostra valori e qualità delle singole osservazioni.</p>'+choose+cards+
- p('<h3>Curva monetaria 3M / 6M / 12M</h3>'+plotF+fwTbl+'<p class="note">Il prezzo futures 100−P è un proxy del tasso del contratto, non una curva OIS spot né una previsione certa del tasso di policy. Scenario flat = nessun cambiamento ipotizzato.</p>')+
+ p('<h3>Curva monetaria 3M / 6M / 12M</h3>'+plotF+fwTbl+'<p class="note">Il prezzo futures 100−P è un proxy del tasso del contratto, non una curva OIS spot né una previsione certa del tasso di policy. Scadenze e date diverse non formano una curva sincronizzata. CHF 3M: estrapolazione di studio, non prezzo di contratto quotato. Scenario flat = nessun cambiamento ipotizzato.</p>')+
  p('<h3>Storico governativo 2Y / 10Y</h3>'+plotR+'<p class="stamp">Fonte: '+esc(r.source||'NATIVE_RATES_DATA')+' · ultima osservazione '+esc(r.date||'—')+'. Una serie storica non equivale a dato corrente.</p>');
 }
 function home(){
