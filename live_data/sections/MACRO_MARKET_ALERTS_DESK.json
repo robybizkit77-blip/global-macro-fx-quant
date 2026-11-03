@@ -1,8 +1,51 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-03T10:57:50Z",
+  "generated_at_utc": "2026-11-03T18:28:21Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-b3d6b6eb396a1724f38e",
+      "observed_at_utc": "2026-11-03T13:58:00Z",
+      "headline": "US strikes Iranian targets in the Strait of Hormuz, official says, leaving unclear what comes next",
+      "summary": "AP News riporta: US strikes Iranian targets in the Strait of Hormuz, official says, leaving unclear what comes next. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxQbjU1Vjk0S2NySC14ZnByNG9Ld0J4cnZZaUxaTDdBeHgwMm41Q1Y3OGpVeXpKVWQ3dFNlcGtNTERub3h1Z1g3Rl93NzhqamZhWm1HYkhXVFBWNFdqbko2eWlUVU1HSmcxZmJJSlIyQlFZUjdTY1pxcU5kWjJyV3d1UTlfTjhPQXVOZW42MlBCc1Ztc3c?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-4326c0edbf0f50a90235",
+      "observed_at_utc": "2026-11-03T16:21:43Z",
+      "headline": "Bank of Canada head says fiscal policy not hitting fight against inflation",
+      "summary": "Reuters riporta: Bank of Canada head says fiscal policy not hitting fight against inflation. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "CAD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxNSHk0SGlxNVlMQ01uTXM0WFRidzIxWmo3LVhpajVZa2N1TXNfanJkZU1qTWQ1X2tkYS1uVUp1TXViVFY4cVY3Ukk5NDdLOS1jTi12MmZ4elVVaFJfcllfQTg3OG8wbUZHdV81aWxGX2pzVHBCWW9uQ1pNT2hUempQWUdpM3BOUmtNSUduQkRCNHhhamZ0YmZmUlpqNzQ3VHZ6TmhQMGhvU3cxSm5KRHRwdWZIaG1wbWVwd25EU2dudw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-ced7a6b02961bbf23831",
+      "observed_at_utc": "2026-11-03T12:21:45Z",
+      "headline": "Brazil economists raise inflation, rate forecasts after Lula reelection",
+      "summary": "Reuters riporta: Brazil economists raise inflation, rate forecasts after Lula reelection. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxQd2NpZHp3a2RSSFFqLTZzUHFPeU55RlVKdGxieUpFWkFkdGdvLXVrOHRydmhYeDFTREpIVDVDLTF2OTBOSGI4R3ZrZEpGVTdtc1Q2U0hBSTd6Z0drcHZmVkhONEFNalV6MTJaTzRYMWFORGNZV1ZQcFRkZ0MtS1dSTENuRF9MVTBHR2QwQXJ5RGFPblptUXNlNzk4V2FFRVJyb1AxcFpQZlBMbzF4TTdhNmZqNnJuM2lfUW1Jb09R?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-452ae947a61e79d414b7",
       "observed_at_utc": "2026-11-03T03:09:00Z",
@@ -1371,49 +1414,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxPVDhUYWVaR1lyeGFScDAxOG1INFBuME5XaHhvOFNZTnhjUXFCTHVGX2k1cEJzSUMwUmpQblFZWE1WU2Z6Q0dnZTRmc2lCSEE1RklYN3VZdWV3aVRLblJ4aTFudW1aUkxUVWZXWUl6Ql8zQkVEaDBJakY4SnhyUmRwb1BQcHpKSHlOWG5DeDN3QVFIb1MyMU5mcDlESEdQS1BwdHhpaThFZjZDMDIweVVYX1VQX1VEdVdh?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-c406849c2477418d789a",
-      "observed_at_utc": "2026-10-27T04:57:00Z",
-      "headline": "Taiwan central bank sees strong tech demand driving exports into 2027",
-      "summary": "Reuters riporta: Taiwan central bank sees strong tech demand driving exports into 2027. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOX0tXRFhXZDRFQUlCYmE1dG9LaG9pcUZSMElqMEd4TXFFX3VmV2xFSFpBMVVnT0tOTDUtWUJ5OHVSUUlUQm5SQ3lIb3JzTmpyNHRlNXRLQ0dhU0E2RzR3Q2ZEZGw0VlRVeHI3Q2FxX1YxbjJMUFB1dzQxbG1jU3hBdEFmcnBYalZmVDFKLXNnODRNdjNJUlp2b2JhZGZieklsb3pnTmxrX0JDbV9nYi1SUi1aMGFoMVRuazZqaUluQUpxUQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-98c7c8ea34d3efd19aa5",
-      "observed_at_utc": "2026-10-27T04:05:00Z",
-      "headline": "US futures and Asian stocks advance following a rally on Wall Street",
-      "summary": "AP News riporta: US futures and Asian stocks advance following a rally on Wall Street. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "AP News · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxOSkFDb1lyemxMSmp3U1lrVDd0a2pQZUhWT25KcmI4S1hCbkVyMm1wdVhfSHp3VXpfejFTc0VTeUlCNTNzVHRvMHBfQm43UUVOOS12anFRSGphX1pFS2V2Q1FPVm05ZHd1Q3JjdUZWWm1LWVphakxzLURUc1pjbENNbTVQS1o1ZTZmUDhMZ0RYaTdabW9F?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-a24dc2921db3b383eb9e",
-      "observed_at_utc": "2026-10-27T02:28:00Z",
-      "headline": "Indian shares muted as oil stays near 6-month high, Fed rate decision in focus",
-      "summary": "Reuters riporta: Indian shares muted as oil stays near 6-month high, Fed rate decision in focus. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxPcms4SkRwSDBJVER3QkV1VmoyX1pvTUlrcjRpSk4xSmNLNFZYNjh3Vi1LMGNfUnZPYnVscDdQZl9Xa0d4SHhKM1lDLXItNWh0aWMxNThJeVpMOEsxWXYwNUVXSWMtVWZRZjRRQlFUYk9tRUZxRUR1MWo0QUdPVE9TdzFnWDk0Qzd3NDZfYml4cGdSenVORGpfUTB6RTMyRV9BRmowWERaeWdsSFVLUU0zdFl3?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
