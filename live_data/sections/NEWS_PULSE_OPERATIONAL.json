@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-02",
-  "generated_at_utc": "2026-11-03T13:08:38.512111Z",
+  "generated_at_utc": "2026-11-03T14:11:27.082336Z",
   "items": [
     {
       "as_of": "2026-11-02",
@@ -47,7 +47,7 @@
       "title": "JPY: repricing implicito da futures più dovish (-0.7 bp 6M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-03T13:08:38.512111Z",
+  "last_checked_at_utc": "2026-11-03T14:11:27.082336Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -224,6 +224,46 @@
   "official_releases": {
     "core_effect": "NONE",
     "headlines": [
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "ENERGY",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "MONITOR",
+          "topic": "ENERGY_FUNDAMENTALS",
+          "verify_next": "Verificare dati EIA, scorte di greggio e prodotti, margini di raffinazione e prezzo WTI con date compatibili.",
+          "why_watch": "Titolo relativo a disponibilità, lavorazione o scorte energetiche: possibile contesto per il mercato petrolifero, non prova di un movimento WTI."
+        },
+        "id": "EIA_ENERGY:https://www.eia.gov/todayinenergy/detail.php?id=68404",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-03T14:00:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "energy_supply_context": {
+            "reason": "La pubblicazione EIA non fornisce in questa pipeline uno snapshot certificato di scorte/produzione prima e dopo.",
+            "status": "ARTICLE_TITLE_ONLY"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "reason": "Titolo EIA validato, ma nessuno snapshot WTI pre/post; nessuna reazione o attribuzione causale dimostrata.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "wti": {
+            "reason": "Assenti prezzi WTI intraday pre/post collegati al rilascio.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          }
+        },
+        "source": "U.S. Energy Information Administration",
+        "source_id": "EIA_ENERGY",
+        "title": "Global refinery inputs fell sharply in the second quarter of 2026 before modest recovery",
+        "url": "https://www.eia.gov/todayinenergy/detail.php?id=68404"
+      },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "CAD",
@@ -788,46 +828,6 @@
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "ENERGY",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "ENERGY_STRUCTURE",
-          "verify_next": "Leggere la pubblicazione originale; valutare soltanto dopo l'eventuale rilevanza per domanda, offerta e prezzi.",
-          "why_watch": "Approfondimento energetico o strutturale: dal titolo non emerge un nuovo segnale sul prezzo del petrolio."
-        },
-        "id": "EIA_ENERGY:https://www.eia.gov/todayinenergy/detail.php?id=68364",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-10-29T14:00:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "energy_supply_context": {
-            "reason": "La pubblicazione EIA non fornisce in questa pipeline uno snapshot certificato di scorte/produzione prima e dopo.",
-            "status": "ARTICLE_TITLE_ONLY"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "reason": "Titolo EIA validato, ma nessuno snapshot WTI pre/post; nessuna reazione o attribuzione causale dimostrata.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "wti": {
-            "reason": "Assenti prezzi WTI intraday pre/post collegati al rilascio.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          }
-        },
-        "source": "U.S. Energy Information Administration",
-        "source_id": "EIA_ENERGY",
-        "title": "LNG imports make up increasing share of Colombia's natural gas supply",
-        "url": "https://www.eia.gov/todayinenergy/detail.php?id=68364"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "GBP",
         "desk_context": {
           "analysis_basis": "SOURCE_HEADLINE_ONLY",
@@ -979,7 +979,7 @@
       }
     ],
     "last_attempt_day_rome": "2026-11-03",
-    "latest_published_at_utc": "2026-11-03T11:00:36Z",
+    "latest_published_at_utc": "2026-11-03T14:00:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -1073,10 +1073,10 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 2,
+        "accepted_items": 3,
         "ccy": "ENERGY",
         "entries_rejected": 20,
-        "feed_entries_seen": 22,
+        "feed_entries_seen": 23,
         "feed_url": "https://www.eia.gov/rss/todayinenergy.xml",
         "source": "U.S. Energy Information Administration",
         "source_id": "EIA_ENERGY",
