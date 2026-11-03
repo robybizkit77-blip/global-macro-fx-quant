@@ -1875,7 +1875,7 @@ function mountHistoricalSovereignTable(doc,raw){
  tbody.dataset.gmfqHistoryAdapter='true';
  const names={
   USD:['Stati Uniti','USA','United States'],
-  EUR:['Eurozona','Area Euro','Area euro','Europa'],
+  EUR:['Germania','Eurozona','Area Euro','Area euro','Europa'],
   GBP:['Regno Unito','UK','Gran Bretagna'],
   JPY:['Giappone','Japan'],
   AUD:['Australia'],
@@ -1883,7 +1883,7 @@ function mountHistoricalSovereignTable(doc,raw){
   NZD:['Nuova Zelanda','New Zealand'],
   CHF:['Svizzera','Switzerland']
  };
- const label={USD:'Stati Uniti',EUR:'Eurozona',GBP:'Regno Unito',JPY:'Giappone',
+ const label={USD:'Stati Uniti',EUR:'Germania · riferimento EUR',GBP:'Regno Unito',JPY:'Giappone',
   AUD:'Australia',CAD:'Canada',NZD:'Nuova Zelanda',CHF:'Svizzera'};
  const usHistory=new Map(dateHistory(raw.USD,'history2').map(x=>[x.date,x.v]));
  const study=yieldStudySnapshot(raw,ratesAll(raw));
