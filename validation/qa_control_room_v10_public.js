@@ -1347,10 +1347,11 @@ async function getState(page){
              viewport:d?.documentElement.clientWidth
            };
          });
-         if(JSON.stringify(visual.keys)!==JSON.stringify(['macro','price','fixing'])||
+         if(JSON.stringify(visual.keys)!==JSON.stringify(['macro','price','fixing','cot'])||
             visual.macroState!=='HISTORICAL'||
             !visual.sourceText?.includes('Prezzo del modello: '+pricing.setup_date)||
             !visual.sourceText?.includes('Baseline Macro/Tassi: '+pricing.setup_macro_asof)||
+            !visual.sourceText?.includes('COT G8')||
             visual.sourceText?.includes('Valuta favorita dal motore:')||
             visual.gridCols!==(visual.viewport<=700?1:3)||
             !['transparent','rgba(0, 0, 0, 0)'].includes(visual.background)||
@@ -1606,17 +1607,18 @@ async function getState(page){
        const coverageValid=process.env.GITHUB_EVENT_NAME==='pull_request'||
          (risk.references==='4'&&risk.official==='2'&&risk.secondary==='2'&&
           risk.effect==='NONE'&&risk.snapshot?.includes('4/4 riferimenti numerici per lo studio'));
-       if(!coverageValid||risk.cards.length!==3||
+       if(!coverageValid||risk.cards.length!==4||
           !risk.priority?.startsWith('VIX misura volatilità implicita')||
           !risk.priorityFirst||
-          JSON.stringify(risk.sourceKeys)!==JSON.stringify(['vix','wti','brent'])||
-          risk.grid!==(risk.viewport<=820?1:3)||
+          JSON.stringify(risk.sourceKeys)!==JSON.stringify(['vix','wti','wti-futures','brent'])||
+          risk.grid!==(risk.viewport<=820?1:4)||
           !['transparent','rgba(0, 0, 0, 0)'].includes(risk.cardBg)||
           !risk.cards.some(c=>c.name==='VIX'&&c.status.startsWith('OFFICIAL_'))||
           !risk.cards.some(c=>c.name==='WTI'&&c.status.startsWith('OFFICIAL_'))||
           !risk.cards.some(c=>c.name==='BRENT'&&c.status.startsWith('SECONDARY_'))||
+          !risk.cards.some(c=>c.name==='WTI_FUT'&&c.status.startsWith('SECONDARY_'))||
           risk.cards.some(c=>c.line!==1||
-            (c.name==='BRENT'?(c.trend!=='MODEL_BACKSOLVED'||c.points!==3||c.dashed!=='7 5'):
+            (['BRENT','WTI_FUT'].includes(c.name)?(c.trend!=='MODEL_BACKSOLVED'||c.points!==3||c.dashed!=='7 5'):
              (c.trend!=='OBSERVED_DATED'||c.points!==30||c.dashed!=='')))||
           !risk.text?.includes('Brent spot ufficiale non certificato nel feed')||
           !risk.text?.includes('Nessun confronto di spread fra spot e futures')||
