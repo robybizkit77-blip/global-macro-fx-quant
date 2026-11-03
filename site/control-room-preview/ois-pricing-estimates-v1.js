@@ -513,10 +513,13 @@ function matrix(ois,bb,today){
       const px=number(q.futures_price);
       if(px===null||px<75||px>105)continue;
       const value=Math.round((100-px)*1000)/1000;
-      points[tenor]={value,date:today,estimated:true,
+      // Display the actual disputed futures observation date, NOT the
+      // day on which the hypothetical sensitivity was computed.
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(q.quote_as_of||'')||q.quote_as_of>today)continue;
+      points[tenor]={value,date:q.quote_as_of,estimated:true,
        range:[Math.round((value-.50)*100)/100,Math.round((value+.50)*100)/100],
        scenario_method:'DISPUTED_FUTURES_LEVEL_SENSITIVITY_V1',
-       scenario_input_date:q.quote_as_of||null,
+       scenario_input_date:q.quote_as_of,
        source_quote_verified:false,source_quote_disputed:true,
        direct_ois_quote:false,policy_repricing_allowed:false};
      }
