@@ -10,7 +10,9 @@ const ctx={FX:['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'],
 const f=vm.runInNewContext(src.slice(a,b)+'\nhomeDatedFxRiskObservations',ctx);
 const fx=JSON.parse(fs.readFileSync('live_data/sections/ECB_G8_PRICE_HISTORY.json','utf8'));
 const d=JSON.parse(fs.readFileSync('live_data/sections/D.json','utf8'));
-const now='2026-11-01',actual=f(fx,d,now);
+// Use the source's actual latest observation, not a frozen calendar day.
+const shift=(day,n)=>new Date(Date.parse(day+'T00:00:00Z')+n*86400000).toISOString().slice(0,10);
+const now=shift(fx.last_as_of,1),actual=f(fx,d,now);
 assert.equal(actual.sourceEffect,'NONE');
 assert.equal(actual.pairEffect,'NONE');
 assert.equal(actual.fx.asof,fx.last_as_of);
@@ -34,10 +36,10 @@ reject((x)=>{x.last_as_of='2026-10-29'},'date metadata parity');
 reject((x)=>{x.rows.at(-1).CHF=null},'complete G8 validated quotes');
 reject((x)=>{x.rows.at(-1).USD=0},'no invalid denominator');
 reject((x)=>{x.row_count=10},'row count parity');
-reject((x)=>{x.rows.at(-1).Date='2026-11-03';x.last_as_of='2026-11-03'},'future close rejection');
-assert.equal(f(fx,d,'2026-11-10').fx,null,'stale official FX rejected');
+reject((x)=>{const future=shift(now,1);x.rows.at(-1).Date=future;x.last_as_of=future},'future close rejection');
+assert.equal(f(fx,d,shift(now,7)).fx,null,'stale official FX rejected');
 const mismatch=structuredClone(d);
-mismatch.risk.VIX.dates[mismatch.risk.VIX.dates.length-1]='2026-10-29';
+mismatch.risk.VIX.dates[mismatch.risk.VIX.dates.length-1]=shift(fx.last_as_of,-1);
 assert.equal(f(fx,mismatch,now).vix,null,'VIX cannot join unsynchronized trading sessions');
 const spoof=structuredClone(d);spoof.risk.VIX.last_value=1234;
 assert.equal(f(fx,spoof,now).vix,null,'VIX last value must match stored history');

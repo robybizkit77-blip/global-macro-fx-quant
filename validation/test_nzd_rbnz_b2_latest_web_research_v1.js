@@ -7,7 +7,8 @@ const rates=x('live_data/sections/NATIVE_RATES_DATA.json'),
 chf=x('live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json'),
 old=x('live_data/sections/NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json'),
 latest=x('live_data/sections/NZD_B2_GOVT_LATEST_WEB_RESEARCH.json');
-const now='2026-10-31';
+// Keep the SNB dated context independently current; this test primarily audits the RBNZ research-only source.
+const now=new Date(Date.parse(chf.as_of+'T00:00:00Z')+86400000).toISOString().slice(0,10);
 const result=ratesContinuity(rates,chf,old,now,latest);
 assert(result.CHF&&result.NZD);
 assert.equal(result.NZD.unapproved_pair_date,'2026-10-29');
