@@ -977,6 +977,8 @@ if(typeof document==='undefined')return;
 const frame=document.getElementById('gmfq-page');if(!frame)return;
 const ROOT='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/';
 let mounted=null;
+let studyRetries=0;
+const MAX_STUDY_RETRIES=2;
 function active(){return(location.hash||'#/home').split('?')[0]==='#/tassi';}
 async function get(p){const r=await fetch(ROOT+p,{cache:'no-store'});if(!r.ok)throw Error('feed '+p);return r.json();}
 async function loadConflictArchive(){
@@ -1018,6 +1020,7 @@ async function mount(doc){
   const o=a.status==='fulfilled'?a.value:null,p=b.status==='fulfilled'?b.value:null;
   if(o?.schema!=='GMFQ_OIS_OPERATIONAL_VIEW_V1'||!o.currencies)throw Error('invalid feed');
   const rows=visibleStudyRows(matrix(o,p,romeTodayIso()),o,romeTodayIso());
+  studyRetries=0;
   box.dataset.status='RESEARCH_ONLY';box.dataset.officalSources=''+rows.filter(r=>r.tier==='OFFICIAL').length;
   const now=romeTodayIso();
   const complete=rows.length===8&&rows.every(r=>r.tier!=='WITHHELD'&&
@@ -1092,7 +1095,18 @@ async function mount(doc){
  }catch(e){restoreCertified();box.dataset.status='DATA_ERROR';
   box.innerHTML='<h2 class="desk-panel-title">G8 · caricamento dello studio non riuscito</h2>'+
    '<p>Il dettaglio delle fonti certificate è stato ripristinato. Nessuna stima viene presentata come ufficiale.</p>';
-  console.warn('[GMFQ OIS study load failure]',String(e));}
+  console.warn('[GMFQ OIS study load failure]',String(e));
+  // A failed first network read must not permanently mark this frame loaded.
+  // Bounded retry, only for the same active Rates document; never duplicate cards.
+  if(studyRetries<MAX_STUDY_RETRIES&&active()&&frame.contentDocument===doc){
+   const delay=2000*(++studyRetries);
+   mounted=null;
+   box.remove();
+   doc.defaultView.setTimeout(()=>{
+    if(active()&&frame.contentDocument===doc)loaded();
+   },delay);
+  }
+ }
 }
 function loaded(){let doc;try{doc=frame.contentDocument}catch(_){return}
  if(doc?.body)mount(doc).catch(e=>console.warn('[GMFQ OIS research withheld]',e));}
