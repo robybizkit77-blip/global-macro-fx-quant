@@ -21,12 +21,27 @@ assert rows["AUD"]["rates_source_status"] == "SOURCE_CADENCE_VALIDATED"
 assert rows["AUD"]["rates_current_by_source_cadence"] is True
 assert rows["CHF"]["rates_current_by_source_cadence"] is False
 assert rows["NZD"]["rates_current_by_source_cadence"] is False
-assert rows["EUR"]["ois_source_class"] == "INDICATIVE_FUTURES_NOT_OFFICIAL_OIS"
+# A non-certified, informational futures proxy is not promoted to OIS.
+# The production EUR row currently says WITHHELD; this is a known source gap,
+# not a source-integrity failure or a publication blocker.
+assert rows["EUR"]["ois_source_class"] == "NO_CERTIFIED_CURRENT_OIS_CURVE"
+assert any(g["ccy"] == "EUR" and g["issue"] == "NO_CERTIFIED_CURRENT_OIS_CURVE"
+           for g in proof["known_gaps"])
 assert rows["GBP"]["ois_source_class"] == "OFFICIAL_DATED"
 assert rows["USD"]["ois_source_class"] == "NO_CERTIFIED_CURRENT_OIS_CURVE"
 assert not proof["integrity_issues"], proof["integrity_issues"]
 assert proof["writes_live_data"] is False
 assert proof["promotes_estimates_to_official"] is False
+
+# A *separate* hypothetical validated indicative input retains its
+# informational classification, never OFFICIAL_DATED.
+indicative = copy.deepcopy(ois)
+indicative["currencies"]["EUR"]["operational_status"] = "GREEN_ESTIMATED"
+flag = evaluate(rates=rates, ois=indicative, today=today)
+assert next(x for x in flag["rows"] if x["ccy"] == "EUR")["ois_source_class"] == (
+    "INDICATIVE_FUTURES_NOT_OFFICIAL_OIS"
+)
+assert not flag["integrity_issues"], flag["integrity_issues"]
 
 # Stale is not a broken publisher. An official Green that lacks a price IS.
 bad = copy.deepcopy(ois)
