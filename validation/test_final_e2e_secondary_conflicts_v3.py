@@ -85,8 +85,8 @@ class SourceQualityFinalE2ETests(unittest.TestCase):
             lambda x: x["source_conflict_keys"][0].__setitem__("event_id", "forged"),
             lambda x: x["source_conflict_keys"][0].__setitem__("contract", "NOPE"),
             lambda x: x["source_conflict_keys"][0].__setitem__("horizon", "18m"),
-            lambda x: x["horizons"]["12m"].__setitem__("quote_timestamp_verified", True),
-            lambda x: x["horizons"]["12m"].__setitem__("quote_timestamp_source", "SSR_DAILY_BAR_DATA_UPDATE_TIME"),
+            lambda x: x["horizons"]["3m"].__setitem__("quote_timestamp_verified", True),
+            lambda x: x["horizons"]["3m"].__setitem__("quote_timestamp_source", "SSR_DAILY_BAR_DATA_UPDATE_TIME"),
         ):
             with self.subTest(modifier=str(modifier)):
                 row = self.synthetic_conflicted_usd()
