@@ -934,7 +934,17 @@ function expectedReactionFromMetrics(row){
        .filter(x=>x.d&&Number.isFinite(x.y2)&&Number.isFinite(x.y10)&&
          Date.parse(x.d+'T00:00:00Z')>=latest-184*86400000&&x.d<=source.date);
      if(expected.length<2)throw Error(label+' source lacks G8 historical series '+ccy);
-     await page.frameLocator('#gmfq-page').locator('#rates-select button[data-ccy="'+ccy+'"]').click();
+     // After the real JPY pointer-click smoke test, exercise the G8 selector
+     // handlers directly for the exhaustive rate/date audit to avoid long
+     // Playwright actionability retries inside the embedded frame.
+     const dispatched=await page.evaluate(currency=>{
+       const d=document.getElementById('gmfq-page')?.contentDocument;
+       const button=d?.querySelector('#rates-select button[data-ccy="'+currency+'"]');
+       if(!button||button.disabled||!button.getClientRects().length)return false;
+       button.click();
+       return true;
+     },ccy);
+     if(!dispatched)throw Error(label+' G8 selector unavailable '+ccy);
      await page.waitForFunction(({ccy,count})=>{
        const d=document.getElementById('gmfq-page')?.contentDocument,
          h=d?.getElementById('rates-chart'),
