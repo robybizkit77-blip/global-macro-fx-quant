@@ -12,19 +12,22 @@
           "date": "2026-10-29",
           "y2_pct": 3.77,
           "y10_pct": 4.87,
-          "benchmark_2y": "May 2028"
+          "benchmark_2y": "May 2028",
+          "benchmark_10y": "May 2036"
         },
         {
           "date": "2026-10-30",
           "y2_pct": 3.96,
           "y10_pct": 4.9,
-          "benchmark_2y": "April 2029"
+          "benchmark_2y": "April 2029",
+          "benchmark_10y": "April 2037"
         },
         {
           "date": "2026-11-02",
           "y2_pct": 3.97,
           "y10_pct": 4.91,
-          "benchmark_2y": "April 2029"
+          "benchmark_2y": "April 2029",
+          "benchmark_10y": "April 2037"
         }
       ],
       "benchmark_transition": {
@@ -32,7 +35,10 @@
         "old_bond": "May 2028",
         "new_bond": "April 2029",
         "naive_two_year_jump_bp": 19,
-        "interpretation": "NOT a comparable one-day constant-instrument rate change; avoid using +19bp as monetary-policy repricing. 30 Oct to 2 Nov +1bp is same benchmark but still requires official XLSX reconciliation."
+        "interpretation": "Both 2Y and 10Y benchmarks roll on 30 October. +19bp 2Y and +3bp 10Y are non-comparable quoted changes; do not use as matched-instrument policy repricing. 30 Oct to 2 Nov are within the new benchmark; independent XLSX reconciliation still pending.",
+        "old_bond_10y": "May 2036",
+        "new_bond_10y": "April 2037",
+        "naive_ten_year_jump_bp": 3
       },
       "review_status": "OFFICIAL_PUBLIC_WEB_TABLE_READ_ONLY_PENDING_INDEPENDENT_XLSX_RECONCILIATION",
       "canonical_rate_update_approved": false
