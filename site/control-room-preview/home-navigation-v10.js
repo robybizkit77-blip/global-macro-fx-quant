@@ -1712,7 +1712,7 @@ function enhanceRatesDetail(doc){
 function focusRatesSection(doc){
  if(route()!=='tassi')return;
  const focus=new URLSearchParams(location.hash.split('?')[1]||'').get('focus');
- const sections={curve:'#rates-chart','2y':'#rates-rows',spread:'#rates-rows',ois:'#gmfq-ois-research-estimates'};
+ const sections={curve:'#rates-chart','2y':'#rates-rows',spread:'#rates-rows',ois:'#ois-rows'};
  const selector=sections[focus];
  if(!selector)return;
  const item=doc.querySelector(selector);if(!item)return;
