@@ -1929,6 +1929,10 @@ function mountHistoricalSovereignTable(doc,raw){
    row.dataset.gmfqHistoryAdapterVersion='G8_V2';
    row.dataset.gmfqProvenance=old&&['CHF','NZD'].includes(ccy)?
     'OFFICIAL_HISTORICAL_SAME_DAY_2Y_10Y':'OFFICIAL_SOURCE_DATED';
+   if(old&&['CHF','NZD'].includes(ccy)){
+    row.dataset.gmfqHistoricalYield=item.asof;
+    row.dataset.gmfqHistoricalSpreadDate=item.spreadDate||'';
+   }
    row.cells[0].innerHTML='<strong>'+FLAG[ccy]+' '+htmlEscape(label[ccy])+'</strong>'+
     (old?'<small class="gmfq-history-date">STORICO '+htmlEscape(item.asof)+'</small>':'');
    row.cells[1].textContent=pct(item.v2);
