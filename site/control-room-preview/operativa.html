@@ -120,7 +120,7 @@ function macro(){
 function pricesFor(code){
  const fx=state.data.ECB_G8_PRICE_HISTORY, a=code.slice(0,3),b=code.slice(3);
  if(!fx?.rows)return [];
- return fx.rows.map(r=>({date:r.Date,v:a==='EUR'?1/(num(r[b])||NaN):b==='EUR'?num(r[a]):num(r[a])!==null&&num(r[b])!==null?r[b]/r[a]:null}))
+ return fx.rows.map(r=>({date:r.Date,v:a==='EUR'?num(r[b]):b==='EUR'?(num(r[a])!==null&&r[a]>0?1/r[a]:null):num(r[a])!==null&&num(r[b])!==null&&r[a]>0?r[b]/r[a]:null}))
  .filter(x=>ndate(x.date)&&num(x.v)!==null&&x.v>0).slice(-130);
 }
 function pairs(screener=false){
@@ -146,7 +146,7 @@ function valute(){
  const fx=state.data.ECB_G8_PRICE_HISTORY;
  if(!fx?.rows?.length)return p('Fixing valutari ECB da aggiornare.');
  const a=fx.rows[fx.rows.length-1],b=fx.rows[Math.max(0,fx.rows.length-21)];
- return '<h2>Valute · forza relativa</h2><p class="lead">Movimenti indicativi sulle ultime 20 osservazioni ECB. Il riferimento è EUR; una variazione positiva del valore quotato indica apprezzamento della valuta estera contro EUR.</p>'+
+ return '<h2>Valute · forza relativa</h2><p class="lead">Movimenti indicativi sulle ultime 20 osservazioni ECB. Il riferimento è EUR; una variazione positiva del valore quotato per EUR indica deprezzamento della valuta estera contro EUR.</p>'+
  p('<div class="tablewrap"><table><thead><tr><th>Valuta</th><th>Valore per EUR</th><th>Variazione 20 fixing</th><th>Data</th></tr></thead><tbody>'+
  FX.map(c=>{const now=c==='EUR'?1:num(a[c]),old=c==='EUR'?1:num(b[c]),change=now!==null&&old!==null&&old>0?(now/old-1)*100:null;return '<tr><td>'+FLAGS[c]+' '+c+'</td><td>'+f(now,5)+'</td><td>'+pct(change)+'</td><td>'+esc(a.Date||'—')+'</td></tr>'}).join('')+'</tbody></table></div>');
 }
