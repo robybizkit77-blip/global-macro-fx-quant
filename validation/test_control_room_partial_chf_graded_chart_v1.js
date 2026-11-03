@@ -24,7 +24,8 @@ const freshness=(str,max)=>{
 };
 const api=new Function('window','FX','romeTodayIso','num','fresh','COLOR','fmt',
  fragment+';return {marketResearchGraded,marketResearchGradedSvg};')(
- {GMFQ_OIS_RESEARCH_V1:{matrix:addon.matrix}},FX,today,number,freshness,
+ // Source-only QA: deliberately omit presentation-only scenario completion.
+ {GMFQ_OIS_RESEARCH_V1:{matrix:addon.matrix,visibleStudyRows:rows=>rows}},FX,today,number,freshness,
  Object.fromEntries(FX.map((c,i)=>[c,['#fff','#ccc','#999','#888','#777','#666','#555','#444'][i]])),
  (v,n=2)=>Number(v).toFixed(n));
 const srcFeed=JSON.parse(fs.readFileSync('live_data/sections/OIS_OPERATIONAL_VIEW.json'));
