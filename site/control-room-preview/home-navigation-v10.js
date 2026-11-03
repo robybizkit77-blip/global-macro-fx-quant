@@ -1666,7 +1666,24 @@ function mountSovereignHistoryPlot(doc,rates){
   if(host.dataset.gmfqSovereignCount!=='0'&&!host.querySelector('svg[data-gmfq-sovereign-plot]'))
    doc.defaultView.queueMicrotask(paint);
  });
- obs.observe(host,{childList:true});paint();
+ obs.observe(host,{childList:true});
+// The legacy controller can update the status/narrative without replacing the
+// chart. Recover dated language ONLY when that older writer emits WITHHELD.
+const statusNode=doc.getElementById('rates-status');
+const narrativeNode=doc.getElementById('rates-narrative');
+const recoverLabel=()=>{
+ if(!host.isConnected||route()!=='tassi'||frame.contentDocument!==doc)return;
+ if((statusNode?.textContent||'').includes('WITHHELD')||
+    (narrativeNode?.textContent||'').includes('Senza dati recenti')){
+  doc.defaultView.queueMicrotask(paint);
+ }
+};
+for(const node of [statusNode,narrativeNode]){
+ if(!node)continue;
+ const watcher=new doc.defaultView.MutationObserver(recoverLabel);
+ watcher.observe(node,{childList:true,characterData:true,subtree:true});
+}
+paint();
 }
 function enhanceRatesDetail(doc){
  const select=doc.getElementById('rates-select');
