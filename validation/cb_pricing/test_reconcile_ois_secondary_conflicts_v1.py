@@ -5,7 +5,7 @@ from __future__ import annotations
 import copy
 import json
 import tempfile
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 from build_cb_pricing_estimated_v1 import build_currency
@@ -205,16 +205,18 @@ with tempfile.TemporaryDirectory() as td:
     assert archive.read_bytes() == frozen_archive
 
 
-# Nov 2 synthetic new-day source audit: old Oct 30 contract/day disputes
+# Next-archived-day synthetic source audit: old Oct 30 contract/day disputes
 # must persist in the append-only journal, but cannot poison fresh verified
 # quotes solely because their *contract* is the same. No market prices forged:
-# this is a deterministic governance fixture, not an actual Nov 2 quote.
+# this is a deterministic governance fixture, not an actual market quote.
 from datetime import date as _date
 from reconcile_ois_secondary_conflicts_v1 import (
     reconcile as _reconcile, validate_conflict_lineage as _validate_lineage,
 )
+archive_last_day = max(row['observation_date'] for row in load_history(HISTORY))
+synthetic_next_day = (_date.fromisoformat(archive_last_day) + timedelta(days=1)).isoformat()
 clean_monday = copy.deepcopy(template)
-clean_monday['generated_at_utc'] = '2026-11-02T20:15:00Z'
+clean_monday['generated_at_utc'] = synthetic_next_day + 'T20:15:00Z'
 for c in ('USD', 'EUR', 'CHF'):
     entry = clean_monday['currencies'][c]
     entry.pop('source_conflict_status', None)
@@ -224,13 +226,13 @@ for c in ('USD', 'EUR', 'CHF'):
     entry['freshness_status'] = 'LIVE_OR_RECENT_SESSION'
     for h, days in (('3m', 90),('6m', 180),('12m',365)):
         q = entry['horizons'][h]
-        q['quote_as_of'] = '2026-11-02'
+        q['quote_as_of'] = synthetic_next_day
         # Use exact archived price/contract, *only as a synthetic new-day
-        # source identity fixture*. The tests do not claim any Nov 2 price.
+        # source identity fixture*. The tests do not claim a live price.
         q['quote_timestamp_verified'] = True
         q['quote_timestamp_source'] = 'SSR_DAILY_BAR_DATA_UPDATE_TIME'
         q['mapping'] = f'nearest dated listed contract expiry to today+{days}d; no interpolation'
-        expiry_gap = (_date.fromisoformat(q['expiration']) - _date(2026,11,2)).days - days
+        expiry_gap = (_date.fromisoformat(q['expiration']) - _date.fromisoformat(synthetic_next_day)).days - days
         if abs(expiry_gap) > 45:
             q['quote_timestamp_verified'] = False
             q['quote_timestamp_source'] = 'UNVERIFIED'
@@ -259,7 +261,7 @@ with tempfile.TemporaryDirectory() as td:
     assert all(any(row['currency'] == k[0] and row['contract'] == k[1]
                    and row['observation_date'] == k[2] for row in stored)
                for k in old_keys)
-    assert any(row['observation_date'] == '2026-11-02' for row in stored)
+    assert any(row['observation_date'] == synthetic_next_day for row in stored)
 assert len(read_conflicts(CONFLICTS)) == len(previous_events)
 print('OIS_NEW_SESSION_ROLLOVER_QUARANTINE_PRESERVED_PASS')
 
