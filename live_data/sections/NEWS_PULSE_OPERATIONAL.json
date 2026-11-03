@@ -1,7 +1,29 @@
 {
   "content_as_of": "2026-11-02",
-  "generated_at_utc": "2026-11-03T11:59:44.985772Z",
+  "generated_at_utc": "2026-11-03T12:39:08.824577Z",
   "items": [
+    {
+      "as_of": "2026-11-02",
+      "category": "FUTURES_IMPLIED_REPRICING",
+      "ccy": "CAD",
+      "confidence": "A",
+      "detail": "Movimento 1D -4.0 bp sul bucket 12M; variazione 1W -16.0 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
+      "title": "CAD: repricing implicito da futures più dovish (-4.0 bp 12M in 1D)"
+    },
+    {
+      "as_of": "2026-11-02",
+      "category": "FUTURES_IMPLIED_REPRICING",
+      "ccy": "AUD",
+      "confidence": "A",
+      "detail": "Movimento 1D +3.5 bp sul bucket 12M; variazione 1W +3.0 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
+      "title": "AUD: repricing implicito da futures più hawkish (+3.5 bp 12M in 1D)"
+    },
     {
       "as_of": "2026-11-02",
       "category": "FUTURES_IMPLIED_REPRICING",
@@ -23,31 +45,9 @@
       "quality": "OFFICIAL_CERTIFIED",
       "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
       "title": "GBP: repricing OIS più dovish (-6.7 bp 12M in 1D)"
-    },
-    {
-      "as_of": "2026-10-30",
-      "category": "FUTURES_IMPLIED_REPRICING",
-      "ccy": "CAD",
-      "confidence": "A",
-      "detail": "Movimento 1D -10.0 bp sul bucket 12M; variazione 1W -6.5 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
-      "title": "CAD: repricing implicito da futures più dovish (-10.0 bp 12M in 1D)"
-    },
-    {
-      "as_of": "2026-10-30",
-      "category": "FUTURES_IMPLIED_REPRICING",
-      "ccy": "AUD",
-      "confidence": "A",
-      "detail": "Movimento 1D -4.0 bp sul bucket 12M; variazione 1W +1.5 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
-      "title": "AUD: repricing implicito da futures più dovish (-4.0 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-03T11:59:44.985772Z",
+  "last_checked_at_utc": "2026-11-03T12:39:08.824577Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -249,8 +249,8 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 2.97,
-            "date": "2026-10-30",
+            "6m_rate_pct": 2.95,
+            "date": "2026-11-02",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
@@ -359,8 +359,8 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 4.915,
-            "date": "2026-10-30",
+            "6m_rate_pct": 4.935,
+            "date": "2026-11-02",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
@@ -756,8 +756,8 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 2.97,
-            "date": "2026-10-30",
+            "6m_rate_pct": 2.95,
+            "date": "2026-11-02",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
