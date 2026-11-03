@@ -1,30 +1,30 @@
 {
   "currencies": {
     "AUD": {
-      "as_of": "2026-10-30",
+      "as_of": "2026-11-02",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
       "confidence": "A",
       "direction_vs_policy": "UP",
       "horizons": {
-        "12m": {
-          "change_1d_bp": -4.0,
-          "change_1w_bp": 1.5,
-          "policy_delta_bp": 23.0,
-          "rate": 4.83
-        },
         "3m": {
-          "change_1d_bp": 0.5,
-          "change_1w_bp": 6.5,
-          "policy_delta_bp": 23.5,
-          "rate": 4.835
+          "rate": 4.835,
+          "change_1d_bp": 0,
+          "change_1w_bp": 4.5,
+          "policy_delta_bp": 23.5
         },
         "6m": {
-          "change_1d_bp": -2.0,
-          "change_1w_bp": 7.0,
-          "policy_delta_bp": 31.5,
-          "rate": 4.915
+          "rate": 4.935,
+          "change_1d_bp": 2,
+          "change_1w_bp": 6.5,
+          "policy_delta_bp": 33.5
+        },
+        "12m": {
+          "rate": 4.865,
+          "change_1d_bp": 3.5,
+          "change_1w_bp": 3,
+          "policy_delta_bp": 26.5
         }
       },
       "official_status": "ACTIVE",
@@ -34,30 +34,30 @@
       "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)"
     },
     "CAD": {
-      "as_of": "2026-10-30",
+      "as_of": "2026-11-02",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
       "confidence": "A",
       "direction_vs_policy": "UP",
       "horizons": {
-        "12m": {
-          "change_1d_bp": -10.0,
-          "change_1w_bp": -6.5,
-          "policy_delta_bp": 76.0,
-          "rate": 3.26
-        },
         "3m": {
-          "change_1d_bp": -2.5,
-          "change_1w_bp": 1.5,
-          "policy_delta_bp": 23.5,
-          "rate": 2.735
+          "rate": 2.725,
+          "change_1d_bp": -1,
+          "change_1w_bp": -0.5,
+          "policy_delta_bp": 22.5
         },
         "6m": {
-          "change_1d_bp": -5.0,
-          "change_1w_bp": -1.5,
-          "policy_delta_bp": 47.0,
-          "rate": 2.97
+          "rate": 2.95,
+          "change_1d_bp": -2,
+          "change_1w_bp": -6,
+          "policy_delta_bp": 45
+        },
+        "12m": {
+          "rate": 3.22,
+          "change_1d_bp": -4,
+          "change_1w_bp": -16,
+          "policy_delta_bp": 72
         }
       },
       "official_status": "ACTIVE",
@@ -91,7 +91,7 @@
           "quote_timestamp_verified": true,
           "rate": null,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 48.0,
+          "raw_level_minus_spot_policy_bp": 48,
           "symbol": "ICEEUR:SA3Z2027"
         },
         "3m": {
@@ -111,7 +111,7 @@
           "quote_timestamp_verified": true,
           "rate": null,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 11.0,
+          "raw_level_minus_spot_policy_bp": 11,
           "roster_quality": "ICE_LISTED_QUARTER_CALENDAR_DERIVED_UNQUOTED",
           "symbol": "ICEEUR:SA3H2027"
         },
@@ -132,7 +132,7 @@
           "quote_timestamp_verified": true,
           "rate": null,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 25.0,
+          "raw_level_minus_spot_policy_bp": 25,
           "symbol": "ICEEUR:SA3M2027"
         }
       },
@@ -141,7 +141,7 @@
       "method_id": "TRADINGVIEW_DATED_FUTURES_SSR_V2",
       "official_status": "WITHHELD",
       "operational_status": "WITHHELD",
-      "policy_rate": 0.0,
+      "policy_rate": 0,
       "policy_repricing_inference_allowed": false,
       "quality": "ESTIMATED_INFORMATIONAL",
       "raw_level_gap_scope": "DESCRIPTIVE_LEVEL_ARITHMETIC_NOT_EXPECTED_CB_RATE",
@@ -323,7 +323,7 @@
         "3m": {
           "change_1d_bp": -1.1,
           "change_1w_bp": -0.1,
-          "policy_delta_bp": 40.0,
+          "policy_delta_bp": 40,
           "rate": 4.1504
         },
         "6m": {
@@ -356,7 +356,7 @@
         "3m": {
           "change_1d_bp": -0.7,
           "change_1w_bp": -0.8,
-          "policy_delta_bp": 21.0,
+          "policy_delta_bp": 21,
           "rate": 1.46
         },
         "6m": {
@@ -394,7 +394,7 @@
           "policy_delta_bp": null,
           "rate": null,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 25.0
+          "raw_level_minus_spot_policy_bp": 25
         },
         "6m": {
           "change_1d_bp": null,
@@ -412,8 +412,8 @@
         "confidence_grade": "B_FOR_DIRECTION_C_FOR_POLICY_LEVEL",
         "horizons": {
           "12m": {
-            "change_1d_bp": -6.0,
-            "change_1w_bp": -12.0,
+            "change_1d_bp": -6,
+            "change_1w_bp": -12,
             "expiration": "2027-09-15",
             "expiry_label": "Sep 2027",
             "implied_bank_bill_rate": 4.05,
@@ -423,8 +423,8 @@
             "weekly_reference_trade_date": "2026-10-23"
           },
           "3m": {
-            "change_1d_bp": -6.0,
-            "change_1w_bp": -21.0,
+            "change_1d_bp": -6,
+            "change_1w_bp": -21,
             "expiration": "2027-03-10",
             "expiry_label": "Mar 2027",
             "implied_bank_bill_rate": 3.59,
@@ -434,8 +434,8 @@
             "weekly_reference_trade_date": "2026-10-23"
           },
           "6m": {
-            "change_1d_bp": -6.0,
-            "change_1w_bp": -16.0,
+            "change_1d_bp": -6,
+            "change_1w_bp": -16,
             "expiration": "2027-06-16",
             "expiry_label": "Jun 2027",
             "implied_bank_bill_rate": 3.9,
