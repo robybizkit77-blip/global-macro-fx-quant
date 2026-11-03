@@ -2698,17 +2698,18 @@ function expectedReactionFromMetrics(row){
   const expected=[
     {code:'VIX',series:riskData.risk.VIX},
     {code:'WTI',series:riskData.risk.WTI},
+    {code:'WTI_FUT',series:secondary.lanes['WTI.market_proxy'],secondary:true},
     {code:'BRENT',series:secondary.lanes['BRENT.market_proxy'],secondary:true},
   ];
   if(risk.references!=='4'||risk.official!=='2'||risk.secondary!=='2'||risk.effect!=='NONE'||
     !risk.study?.includes('4/4 riferimenti numerici per lo studio')||
-    risk.cards.length!==3||!risk.lead?.startsWith('VIX misura volatilità implicita')||
-    !risk.leadFirst||JSON.stringify(risk.provenance)!==JSON.stringify(['vix','wti','brent'])||
-    risk.gridCols!==(risk.viewport<=820?1:3)||
+    risk.cards.length!==4||!risk.lead?.startsWith('VIX misura volatilità implicita')||
+    !risk.leadFirst||JSON.stringify(risk.provenance)!==JSON.stringify(['vix','wti','wti-futures','brent'])||
+    risk.gridCols!==(risk.viewport<=820?1:4)||
     !['transparent','rgba(0, 0, 0, 0)'].includes(risk.firstBg)||
     !risk.text.includes('Brent spot ufficiale non certificato nel feed')||
     risk.cards.some(c=>c.lines!==1||
-      (c.symbol==='BRENT'?(c.trend!=='MODEL_BACKSOLVED'||c.count!==3||
+      (['BRENT','WTI_FUT'].includes(c.symbol)?(c.trend!=='MODEL_BACKSOLVED'||c.count!==3||
         c.dashed!=='7 5'||!c.text.includes('NON prezzi storici osservati')):
        (c.trend!=='OBSERVED_DATED'||c.count!==30||c.dashed!==''||
         !c.text.includes('30 osservazioni datate'))))||
