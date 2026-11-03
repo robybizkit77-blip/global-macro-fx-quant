@@ -996,9 +996,19 @@ async function mount(doc){
  // readout; do not force the user to scroll past an official-only table
  // that shows WITHHELD for perfectly usable dated secondary observations.
  anchor.insertAdjacentElement('beforebegin',box);
+ // Hide the duplicate official-only table while preparing the primary
+ // quality-graded G8 readout. Restore it on any failure (fail-open).
+ const previousHidden=anchor.hidden,previousDisplay=anchor.style.getPropertyValue('display');
+ const previousPriority=anchor.style.getPropertyPriority('display');
+ anchor.hidden=true;anchor.style.setProperty('display','none','important');
+ const restoreCertified=()=>{
+  anchor.hidden=previousHidden;
+  if(previousDisplay)anchor.style.setProperty('display',previousDisplay,previousPriority);
+  else anchor.style.removeProperty('display');
+ };
  const st=doc.createElement('style');st.textContent=css;doc.head.appendChild(st);
  try{const [a,b,h,ledger,rates,chf,nzd,latest,oct30]=await Promise.allSettled([get('OIS_OPERATIONAL_VIEW.json'),get('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),loadSameContractArchive(),loadConflictArchive(),get('NATIVE_RATES_DATA.json'),get('CHF_SNB_10Y_SPOT_CONTEXT.json'),get('NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json'),get('NZD_B2_GOVT_LATEST_WEB_RESEARCH.json'),get('NZD_B2_OCT30_WEB_CONTEXT_V1.json')]);
-  if(frame.contentDocument!==doc||!active())return;
+  if(frame.contentDocument!==doc||!active()){restoreCertified();return;}
   const o=a.status==='fulfilled'?a.value:null,p=b.status==='fulfilled'?b.value:null;
   if(o?.schema!=='GMFQ_OIS_OPERATIONAL_VIEW_V1'||!o.currencies)throw Error('invalid feed');
   const rows=visibleStudyRows(matrix(o,p,romeTodayIso()),o,romeTodayIso());
@@ -1070,8 +1080,13 @@ async function mount(doc){
    toggle.addEventListener('click',()=>{shown=!shown;sync()});
    sync();
   }
- }catch(e){box.dataset.status='WITHHELD';box.innerHTML='<h2 class="desk-panel-title">G8 · dati non disponibili</h2>';
-  console.warn('[GMFQ OIS research withheld]',String(e));}
+  // Fallback on unexpected incomplete presentation: never leave the
+  // certified table invisibly hidden if a toggle was not mounted.
+  if(!doc.getElementById('gmfq-certified-only-toggle'))restoreCertified();
+ }catch(e){restoreCertified();box.dataset.status='DATA_ERROR';
+  box.innerHTML='<h2 class="desk-panel-title">G8 · caricamento dello studio non riuscito</h2>'+
+   '<p>Il dettaglio delle fonti certificate è stato ripristinato. Nessuna stima viene presentata come ufficiale.</p>';
+  console.warn('[GMFQ OIS study load failure]',String(e));}
 }
 function loaded(){let doc;try{doc=frame.contentDocument}catch(_){return}
  if(doc?.body)mount(doc).catch(e=>console.warn('[GMFQ OIS research withheld]',e));}
