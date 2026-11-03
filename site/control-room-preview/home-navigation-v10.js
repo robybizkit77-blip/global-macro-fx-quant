@@ -2108,7 +2108,7 @@ function marketResearchGraded(ois,proxy){
   // "joined" means synchronized, source-certified only. Full indicative
   // sets are rendered as dashed research geometry, NEVER official OIS.
   const joined=count===3&&r.tier==='OFFICIAL'&&new Set(dates).size===1;
-  const estimatedTenors=terms.map(t=>r.points?.[t]?.estimated===true);
+  const estimatedTenors=terms.map(t=>r.points?.[t]?.estimated===true||r.tier==='SCENARIO');
   return {k:r.ccy,tier:r.tier,pts,dates,estimatedTenors,joined,verifiedTenors:count,
     missingTenors:terms.filter((t,i)=>pts[i]===null)};
  }).filter(Boolean);
