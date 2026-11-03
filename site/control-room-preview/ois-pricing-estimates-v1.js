@@ -731,6 +731,28 @@ function matchedResearchHtml(moves){
   '<small>Solo contratti verificati e giorni privi di contestazioni: un conflitto su un’altra scadenza non annulla questi confronti. Un contratto contestato resta non confrontabile. Sono variazioni dello <b>stesso futures</b>. Non sono ΔOIS ufficiali, curve sincronizzate o segnali FX.</small></section>';
 }
 /* A research visual, not an OIS curve: mixed-date futures are unjoined. */
+/* Presentation-only G8 scenario fill. Never feeds certified pricing, score, pairs or backtests. */
+function visibleStudyRows(rows,operational,today){
+ return rows.map(original=>{
+  const r={...original,points:{...original.points}},x=operational?.currencies?.[original.ccy]||{};let n=0;
+  for(const t of tenors){
+   if(number(r.points[t]?.value)!==null)continue;
+   const h=x.horizons?.[t]||{},price=number(h.futures_price);
+   const quote=price!==null&&price>75&&price<105&&h.roster_quality!=='ICE_LISTED_QUARTER_CALENDAR_DERIVED_UNQUOTED';
+   const policy=number(x.policy_rate);
+   if(!quote&&policy===null)continue;
+   r.points[t]={value:quote?Math.round((100-price)*1000)/1000:policy,date:today,
+    estimated:true,
+    scenario_method:quote?'SECONDARY_FUTURES_LEVEL_HYPOTHESIS_V1':'FLAT_POLICY_NO_CHANGE_HYPOTHESIS_V1',
+    scenario_input_date:quote?(h.quote_as_of||'data mancante'):(x.as_of||'data policy non disponibile'),
+    source_quote_verified:false,source_quote_disputed:Boolean(x.source_conflict_status),
+    direct_ois_quote:false,policy_repricing_allowed:false};n++;
+  }
+  if(n){if(r.tier==='WITHHELD')r.tier='SCENARIO';
+   r.source+=(r.source?' · ':'')+'STUDIO: '+n+' valori ipotetici aggiunti (futures secondari 100−prezzo o policy invariata). NON OIS osservato né repricing policy.';}
+  return r;
+ });
+}
 function miniCharts(rows){
  // Source quality and instrument type are deliberately independent:
  // GBP is the only direct OIS series; other certified levels are futures.
@@ -833,7 +855,7 @@ function view(rows,moves=[]){
     (x.estimated?'<small>'+(x.scenario_method==='CHF_3M_LINEAR_EXTRAPOLATION_FROM_DATED_6M_12M_V1'?
       'STIMA 3M ESTRAPOLATA da 6M '+esc(x.scenario_input_date)+' e 12M '+esc(x.scenario_other_date)+
       ' · fascia ±25 bp · NON contratto SARON osservato':
-      'STIMA DI SCENARIO · input contestato, non OIS')+'</small>':x.source_quote_disputed?'<small>⚠ QUOTAZIONE CONTESTATA · non convalidata</small>':
+      (x.scenario_method==='FLAT_POLICY_NO_CHANGE_HYPOTHESIS_V1'?'SCENARIO FLAT: policy invariata · NON pricing mercato':x.scenario_method==='SECONDARY_FUTURES_LEVEL_HYPOTHESIS_V1'?'STIMA FUTURES · input '+esc(x.scenario_input_date)+' · NON OIS':'STIMA DI SCENARIO · input contestato, non OIS'))+'</small>':x.source_quote_disputed?'<small>⚠ QUOTAZIONE CONTESTATA · non convalidata</small>':
      x.legacy_mislabeled_horizon?'<small>⚠ FINE CONTRATTO, NON TASSO FORWARD '+t.toUpperCase()+' · non utilizzabile</small>':
      x.source_quote_verified?'<small>'+(x.accrual_start?'inizio matur. '+esc(x.accrual_start)+' · ':'')+
        (x.tenor_gap_days>0?'+':'')+x.tenor_gap_days+'gg vs target</small>':'')+
@@ -979,7 +1001,7 @@ async function mount(doc){
   if(frame.contentDocument!==doc||!active())return;
   const o=a.status==='fulfilled'?a.value:null,p=b.status==='fulfilled'?b.value:null;
   if(o?.schema!=='GMFQ_OIS_OPERATIONAL_VIEW_V1'||!o.currencies)throw Error('invalid feed');
-  const rows=matrix(o,p,romeTodayIso());
+  const rows=visibleStudyRows(matrix(o,p,romeTodayIso()),o,romeTodayIso());
   box.dataset.status='RESEARCH_ONLY';box.dataset.officalSources=''+rows.filter(r=>r.tier==='OFFICIAL').length;
   const now=romeTodayIso();
   const complete=rows.length===8&&rows.every(r=>r.tier!=='WITHHELD'&&
@@ -1021,7 +1043,7 @@ async function mount(doc){
   // Keep the native STRICT CERTIFIED FEED unchanged and inspectable on demand.
   // Collapse its visually duplicate, official-only gaps ONLY while a fully
   // sourced and dated 8/8 matrix is available; fail open otherwise.
-  if(complete&&anchor.isConnected&&!doc.getElementById('gmfq-certified-only-toggle')){
+  if(rows.length===8&&rows.some(r=>tenors.some(t=>number(r.points[t]?.value)!==null))&&anchor.isConnected&&!doc.getElementById('gmfq-certified-only-toggle')){
    const toggle=doc.createElement('button');
    toggle.type='button';toggle.id='gmfq-certified-only-toggle';
    toggle.dataset.scope='NATIVE_OFFICIAL_ONLY';
