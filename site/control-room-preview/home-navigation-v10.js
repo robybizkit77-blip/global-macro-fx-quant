@@ -3301,14 +3301,19 @@ async function mountPairResearch(doc){
   const v3Pair=v3?.pair_context?.[a+'/'+b];
   const v3Leg=(c)=>{
    const m=v3.countries[c],g=m.growth,l=m.labour,i=m.inflation;
-   const rate=rates?.[c],rateOk=String(rate?.quality||'').includes('OFFICIAL')&&
-    fresh(rate?.date,5)&&num(rate?.['2Y'])!==null;
+   const rate=rates?.[c],rateDated=String(rate?.quality||'').includes('OFFICIAL')&&
+    /^20\d{2}-\d{2}-\d{2}$/.test(rate?.date||'')&&
+    romeCalendarAge(rate.date)!==null&&romeCalendarAge(rate.date)>=0&&
+    num(rate?.['2Y'])!==null;
+   const rateCurrent=rateDated&&fresh(rate.date,5);
    const trend=x=>x==='UP'?'sale':x==='DOWN'?'scende':'stabile';
    return '<article><strong>'+FLAG[c]+' '+c+' · dati osservati</strong>'+
     '<span>PIL '+htmlEscape(g.reference_quarter)+': '+fmt(g.nonannualized_qoq_descriptive_pct,2)+'% trimestrale · pubblicazione '+htmlEscape(g.publisher_release_day)+'</span>'+
     '<span>Disoccupazione '+fmt(l.observation_value,2)+'% · '+htmlEscape(l.observation_period)+' · '+trend(l.change_direction)+' rispetto a tre osservazioni prima</span>'+
     '<span>Inflazione '+fmt(i.observation_value,2)+'% · '+htmlEscape(i.observation_period)+' · '+trend(i.change_direction)+' rispetto a tre osservazioni prima</span>'+
-    '<span>Rendimento 2Y '+(rateOk?fmt(rate['2Y'],3)+'% · '+htmlEscape(rate.date)+' · fonte ufficiale':'dato 2Y non attuale')+'</span></article>';
+    '<span>Rendimento 2Y '+(rateDated?fmt(rate['2Y'],3)+'% · '+htmlEscape(rate.date)+
+     (rateCurrent?' · OSSERVATO RECENTE':' · STORICO, NON CORRENTE')+
+     ' · fonte ufficiale':'riferimento datato non disponibile')+'</span></article>';
   };
   const v3Html=v3Pair&&v3Pair.base===a&&v3Pair.quote===b&&
    v3Pair.pair_trade_bias===null?
