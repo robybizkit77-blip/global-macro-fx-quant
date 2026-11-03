@@ -1619,7 +1619,18 @@ function mountSovereignHistoryPlot(doc,rates){
   if(route()!=='tassi'||frame.contentDocument!==doc||!host.isConnected)return;
   const k=(sel.querySelector('button[aria-pressed="true"][data-ccy]')||
    sel.querySelector('button.active[data-ccy]'))?.dataset.ccy||'USD';
-  const rows=sovereignHistoryPairs(rates,k);host.dataset.gmfqSovereignCcy=k;
+  const rows=sovereignHistoryPairs(rates,k);
+  // A legacy controller and this additive adapter can both repaint on a
+  // currency click. Avoid identical DOM replacements that retrigger observers
+  // and stall repeated G8 selections in the browser. Still repaint if the
+  // old controller overwrote the SVG or reset the dated status/narrative.
+  const currentSvg=host.querySelector('svg[data-gmfq-sovereign-plot]');
+  const statusText=doc.getElementById('rates-status')?.textContent||'';
+  const narrativeText=doc.getElementById('rates-narrative')?.textContent||'';
+  if(currentSvg?.dataset.ccy===k&&host.dataset.gmfqSovereignCount===String(rows.length)&&
+     currentSvg.querySelectorAll('polyline[data-tenor]').length===2&&
+     !statusText.includes('WITHHELD')&&!narrativeText.includes('Senza dati recenti'))return;
+  host.dataset.gmfqSovereignCcy=k;
   host.dataset.gmfqSovereignCount=String(rows.length);
   if(rows.length<2){host.innerHTML='<p>Storico 2Y/10Y omogeneo insufficiente per '+k+
    '. Nessuna serie ricostruita.</p>';return;}
