@@ -1670,7 +1670,9 @@ function mountSovereignHistoryPlot(doc,rates){
   const prev=rows.at(-2),lastRow=rows.at(-1);
   const delta2=(lastRow.y2-prev.y2)*100,delta10=(lastRow.y10-prev.y10)*100;
   const signed=v=>(v>=0?'+':'')+fmt(v,1)+' bp';
-  if(status)status.textContent=FLAG[k]+' '+k+' · '+
+  const countryName={USD:'Stati Uniti',EUR:'Germania',GBP:'Regno Unito',JPY:'Giappone',
+   AUD:'Australia',CAD:'Canada',NZD:'Nuova Zelanda',CHF:'Svizzera'};
+  if(status)status.textContent=FLAG[k]+' '+countryName[k]+' ('+k+') · '+
    (old?'STORICO':'OSSERVATO')+' '+asof+' · 2Y/10Y disponibili';
   if(narrative)narrative.textContent='Ultime due date comuni '+prev.d+' → '+lastRow.d+
    ': 2Y '+signed(delta2)+', 10Y '+signed(delta10)+
