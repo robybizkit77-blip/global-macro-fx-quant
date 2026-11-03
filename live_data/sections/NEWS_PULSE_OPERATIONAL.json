@@ -1,7 +1,18 @@
 {
   "content_as_of": "2026-11-02",
-  "generated_at_utc": "2026-11-03T12:39:08.824577Z",
+  "generated_at_utc": "2026-11-03T13:08:38.512111Z",
   "items": [
+    {
+      "as_of": "2026-11-02",
+      "category": "OIS_REPRICING",
+      "ccy": "GBP",
+      "confidence": "A",
+      "detail": "Movimento 1D -13.3 bp sul bucket 12M; variazione 1W -10.3 bp.",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
+      "title": "GBP: repricing OIS più dovish (-13.3 bp 12M in 1D)"
+    },
     {
       "as_of": "2026-11-02",
       "category": "FUTURES_IMPLIED_REPRICING",
@@ -34,20 +45,9 @@
       "quality": "OFFICIAL_CERTIFIED",
       "source": "Tokyo Financial Exchange · Three-month TONA Futures",
       "title": "JPY: repricing implicito da futures più dovish (-0.7 bp 6M in 1D)"
-    },
-    {
-      "as_of": "2026-10-30",
-      "category": "OIS_REPRICING",
-      "ccy": "GBP",
-      "confidence": "A",
-      "detail": "Movimento 1D -6.7 bp sul bucket 12M; variazione 1W -5.6 bp.",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
-      "title": "GBP: repricing OIS più dovish (-6.7 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-03T12:39:08.824577Z",
+  "last_checked_at_utc": "2026-11-03T13:08:38.512111Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -304,8 +304,8 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 4.4784,
-            "date": "2026-10-30",
+            "6m_rate_pct": 4.4483,
+            "date": "2026-11-02",
             "event_window_proof": false,
             "instrument": "OIS_OBSERVED",
             "quality": "OFFICIAL_CERTIFIED",
@@ -851,8 +851,8 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 4.4784,
-            "date": "2026-10-30",
+            "6m_rate_pct": 4.4483,
+            "date": "2026-11-02",
             "event_window_proof": false,
             "instrument": "OIS_OBSERVED",
             "quality": "OFFICIAL_CERTIFIED",
