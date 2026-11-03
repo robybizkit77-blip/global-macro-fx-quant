@@ -1,0 +1,49 @@
+name: CHF NZD Source Evidence and Benchmark-Roll Guard
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/research/CHF_NZD_SOURCE_EVIDENCE_2026-11-03.json'
+      - 'validation/research/audit_nzd_benchmark_roll_v1.py'
+      - 'validation/research/test_audit_nzd_benchmark_roll_v1.py'
+      - '.github/workflows/chf-nzd-benchmark-roll-guard-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/research/CHF_NZD_SOURCE_EVIDENCE_2026-11-03.json'
+      - 'validation/research/audit_nzd_benchmark_roll_v1.py'
+      - 'validation/research/test_audit_nzd_benchmark_roll_v1.py'
+      - '.github/workflows/chf-nzd-benchmark-roll-guard-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-source-boundary:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run benchmark roll regression and source-only audit
+        run: |
+          python -m unittest validation.research.test_audit_nzd_benchmark_roll_v1 -v
+          python -m validation.research.audit_nzd_benchmark_roll_v1
+      - name: Guarantee no operational data touched by this PR
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin main --depth=1
+          git diff --name-only origin/main...HEAD > /tmp/changed.txt
+          python - <<'PY'
+          from pathlib import Path
+          changed=set(Path('/tmp/changed.txt').read_text().splitlines())
+          allowed={
+              'validation/research/CHF_NZD_SOURCE_EVIDENCE_2026-11-03.json',
+              'validation/research/audit_nzd_benchmark_roll_v1.py',
+              'validation/research/test_audit_nzd_benchmark_roll_v1.py',
+              '.github/workflows/chf-nzd-benchmark-roll-guard-v1.yml',
+          }
+          assert changed <= allowed, changed-allowed
+          print('RESEARCH_ONLY_SCOPE_PASS',sorted(changed))
+          PY
