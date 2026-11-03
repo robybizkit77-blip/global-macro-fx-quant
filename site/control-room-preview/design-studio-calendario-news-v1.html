@@ -41,7 +41,7 @@ const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&
 const fmtDate=s=>{if(!s)return "Data non specificata";let d=new Date(s.slice(0,10)+"T12:00:00Z");return Number.isFinite(d.getTime())?new Intl.DateTimeFormat("it-IT",{timeZone:"UTC",day:"numeric",month:"short",year:"numeric"}).format(d):s};
 const n=(v,d=1)=>v==null||!Number.isFinite(Number(v))?"—":Number(v).toLocaleString("it-IT",{minimumFractionDigits:d,maximumFractionDigits:d});
 const signed=(v,d=1)=>v==null?"—":(v>0?"+":"")+n(v,d);
-const today=()=>new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Rome",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+const today=()=>{const parts=new Intl.DateTimeFormat("it-IT",{timeZone:"Europe/Rome",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());const v=Object.fromEntries(parts.map(x=>[x.type,x.value]));return v.year+"-"+v.month+"-"+v.day;};
 const deltaDays=(a,b)=>Math.round((Date.parse(a+"T12:00:00Z")-Date.parse(b+"T12:00:00Z"))/86400000);
 const CB="CENTRAL_BANK_DECISION",LABELS={CENTRAL_BANK_DECISION:"Banca centrale",INFLATION:"Inflazione",LABOUR:"Lavoro",GROWTH:"Crescita"};
 const types=(e)=>LABELS[e.type]||e.type;
@@ -50,7 +50,7 @@ function status(e){
  const current=today();
  if(e.release_detected)return "Comunicato ufficiale rilevato · esito da leggere";
  if(e.date<current)return "Data trascorsa · risultato da verificare";
- if(e.date===current)return "Previsto in data odierna · esito da verificare";
+ if(e.date===current)return "In calendario per oggi · esito da verificare";
  return "Programmato · data da fonte ufficiale";
 }
 function when(e){
