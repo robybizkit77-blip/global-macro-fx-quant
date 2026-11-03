@@ -1673,7 +1673,7 @@ function enhanceRatesDetail(doc){
 function focusRatesSection(doc){
  if(route()!=='tassi')return;
  const focus=new URLSearchParams(location.hash.split('?')[1]||'').get('focus');
- const sections={curve:'#rates-chart','2y':'#rates-rows',spread:'#rates-rows',ois:'#ois-rows'};
+ const sections={curve:'#rates-chart','2y':'#rates-rows',spread:'#rates-rows',ois:'#gmfq-ois-research-estimates'};
  const selector=sections[focus];
  if(!selector)return;
  const item=doc.querySelector(selector);if(!item)return;
@@ -2027,9 +2027,12 @@ function marketResearchSvg(curves){
 }
 
 function marketResearchGraded(ois,proxy){
- const make=window.GMFQ_OIS_RESEARCH_V1?.matrix;
- if(typeof make!=='function')return [];
- return make(ois,proxy,romeTodayIso()).filter(r=>
+ const api=window.GMFQ_OIS_RESEARCH_V1;
+ const make=api?.matrix,visual=api?.visibleStudyRows;
+ if(typeof make!=='function'||typeof visual!=='function')return [];
+ // ONLY the Tassi graphics receive the visual-study scenario completion.
+ // Do not change canonical G8 coverage, pair models, deltas or backtests.
+ return visual(make(ois,proxy,romeTodayIso()),ois,romeTodayIso()).filter(r=>
   FX.includes(r.ccy)&&['OFFICIAL','PROXY','MIXED','CONFLICTED','SCENARIO'].includes(r.tier))
  .map(r=>{
   // Source-verified listed futures can cover only some target tenors.
@@ -2191,8 +2194,8 @@ function mountMarketResearch(doc,ois,proxy,rates,snb10,sourceReadiness){
  host.dataset.estimatedLanes=curvesVerified?String(estimated.length):'';
  host.dataset.withheldLanes=curvesVerified?String(withheld.length):'';
  const headline=curvesVerified?
-   'Grafico G8 3M/6M/12M: '+graded.length+'/8 valute con riferimenti datati. '+
-    (incomplete.length?'Copertura parziale: '+incomplete.map(c=>c.k+' '+c.verifiedTenors+'/3 scadenze (solo punti verificati, NON curva)').join('; ')+'. ':'')+
+   'Grafico G8 3M/6M/12M: '+graded.length+'/8 valute con riferimenti osservati o scenari dichiarati. '+
+    (incomplete.length?'Copertura numerica parziale: '+incomplete.map(c=>c.k+' '+c.verifiedTenors+'/3 scadenze').join('; ')+'. ':'')+
     'Curve certificate: '+curves.length+'/8 · '+curves.map(c=>FLAG[c.k]+' '+c.k).join(', ')+'.':
    'Copertura OIS/futures non verificabile: nessuna conclusione sul pricing.';
  host.innerHTML='<h2 class="desk-panel-title">Market Pricing · curve comparate e affidabilità</h2>'+
