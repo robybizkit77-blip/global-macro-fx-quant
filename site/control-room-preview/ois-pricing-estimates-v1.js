@@ -741,10 +741,13 @@ function visibleStudyRows(rows,operational,today){
    const quote=price!==null&&price>75&&price<105&&h.roster_quality!=='ICE_LISTED_QUARTER_CALENDAR_DERIVED_UNQUOTED';
    const policy=number(x.policy_rate);
    if(!quote&&policy===null)continue;
-   r.points[t]={value:quote?Math.round((100-price)*1000)/1000:policy,date:today,
+   // A modelling calculation performed today does NOT re-date a market input.
+   const inputAsOf=quote?h.quote_as_of:x.as_of;
+   if(!/^\d{4}-\d{2}-\d{2}$/.test(inputAsOf||'')||inputAsOf>today)continue;
+   r.points[t]={value:quote?Math.round((100-price)*1000)/1000:policy,date:inputAsOf,
     estimated:true,
     scenario_method:quote?'SECONDARY_FUTURES_LEVEL_HYPOTHESIS_V1':'FLAT_POLICY_NO_CHANGE_HYPOTHESIS_V1',
-    scenario_input_date:quote?(h.quote_as_of||'data mancante'):(x.as_of||'data policy non disponibile'),
+    scenario_input_date:inputAsOf,
     source_quote_verified:false,source_quote_disputed:Boolean(x.source_conflict_status),
     direct_ois_quote:false,policy_repricing_allowed:false};n++;
   }
