@@ -3184,7 +3184,14 @@ function pairWorkingSixMonthHtml(code,ois,proxy){
  if(!left||!right||num(left.level_pct)===null||num(right.level_pct)===null)return '';
  const bp=Math.round((left.level_pct-right.level_pct)*1000)/10;
  const flagged=[left,right].some(x=>x.type!=='CERTIFIED_LEVEL');
+ const sameDate=typeof left.as_of==='string'&&left.as_of===right.as_of;
+ const datedInput=[left.as_of,right.as_of].every(d=>/^20\d{2}-\d{2}-\d{2}$/.test(d||''));
+ const gapDays=datedInput?Math.abs((Date.parse(left.as_of+'T00:00:00Z')-
+  Date.parse(right.as_of+'T00:00:00Z'))/86400000):null;
  const label=x=>x.modelled?'STIMA':x.type==='CERTIFIED_LEVEL'?'FONTE CERTIFICATA':'FUTURES INDICATIVO';
+ const synchronization=!datedInput?'DATE NON VERIFICABILI':
+  !sameDate?'DATE DIVERSE · '+gapDays+' giorni di calendario':
+  'STESSA DATA DI RIFERIMENTO · strumenti e fonti diversi';
  const sign=bp>0?'+':'';
  return '<section id="gmfq-pair-working-spread" data-pair-working="'+code+
   '" data-estimate-first="true" data-instrument="6M_MONETARY_LEVEL_SPREAD" data-trading-signal="false"'+
@@ -3194,8 +3201,11 @@ function pairWorkingSixMonthHtml(code,ois,proxy){
   ') − '+FLAG[quote]+' '+quote+' '+fmt(right.level_pct,2)+'% ('+label(right)+
   ') = <b>'+sign+fmt(bp,1)+' bp</b></p>'+
   '<small style="color:#a8bfd0">Fonti '+htmlEscape(left.as_of)+' / '+htmlEscape(right.as_of)+
+  ' · <b>'+htmlEscape(synchronization)+'</b>'+
   (flagged?' · almeno un livello stimato o indicativo':' · livelli da fonti certificate')+
-  '. Differenza fra livelli 6M; NON è carry realizzato, variazione OIS o segnale automatico.</small></section>';
+  '. Confronto di livelli 6M fra strumenti diversi'+
+  (!sameDate?'; il differenziale è ILLUSTRATIVO, NON spread osservato contemporaneamente':'')+
+  '. NON è carry realizzato, variazione OIS o segnale automatico.</small></section>';
 }
 async function mountPairResearch(doc){
  if(route()!=='coppie'||frame.contentDocument!==doc)return;
