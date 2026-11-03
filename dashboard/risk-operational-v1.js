@@ -39,7 +39,7 @@ function officialCard(name,series,unit){
 }
 function brentCard(b){return `<article class="rkCard" data-kind="secondary" data-risk="BRENT"><div class="rkTop"><div class="rkName">Brent market proxy</div><span class="rkBadge secondary">Secondary · NON OFFICIAL</span></div><div class="rkValue">$${num(b?.value)}</div><div class="rkAs">as-of ${esc(b?.proxy_as_of||'—')}</div><div class="rkMoves"><div class="rkMove"><span>Δ 1D</span><b>${pct(b?.change_1d_pct)}</b></div><div class="rkMove"><span>Δ 1W</span><b>${pct(b?.change_1w_pct)}</b></div></div><div class="rkMeta">${esc(b?.source||'Secondary Brent futures market proxy')}</div></article>`}
 function calendarGap(a,b){
- if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(a||'')||!/^\\d{4}-\\d{2}-\\d{2}$/.test(b||''))return null;
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(a||'')||!/^\d{4}-\d{2}-\d{2}$/.test(b||''))return null;
  const x=Date.parse(a+'T00:00:00Z'),y=Date.parse(b+'T00:00:00Z');
  return Number.isFinite(x)&&Number.isFinite(y)?Math.round((y-x)/86400000):null;
 }
