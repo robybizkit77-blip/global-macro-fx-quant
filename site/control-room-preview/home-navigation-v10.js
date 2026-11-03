@@ -3205,10 +3205,20 @@ async function mountPairResearch(doc){
   feed('PAIR_SETUP_OPERATIONAL_VIEW.json'),feed('ECB_G8_PRICE_HISTORY.json'),
   feed('NATIVE_RATES_DATA.json'),feed('OIS_OPERATIONAL_VIEW.json'),
   feed('D.json'),feed('NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),
-   feed('MACRO_THERMOMETER_DATA.json'),macroV3Feed()]);
+   feed('MACRO_THERMOMETER_DATA.json'),macroV3Feed(),
+   feed('V250_COT_CHART_DATA.json')]);
  if(frame.contentDocument!==doc||route()!=='coppie')return;
- const [setup,fx,rates,ois,model,proxy,therm,v3Src]=inputs.map(x=>x.status==='fulfilled'?x.value:null);
+ const [setup,fx,rates,ois,model,proxy,therm,v3Src,cotSeries]=inputs.map(x=>x.status==='fulfilled'?x.value:null);
  const v3=macroV3Verified(v3Src,model,therm)?v3Src:null;
+ // The latest CFTC observation is a separately dated context reference,
+ // never a claim that the historical setup's COT leg was recomputed.
+ const cotDates=FX.map(c=>{
+  const row=cotSeries?.[c],dates=row?.dates;
+  return Array.isArray(dates)&&dates.length>=52&&
+   Array.isArray(row.net)&&row.net.length===dates.length&&
+   /^20\\d{2}-\\d{2}-\\d{2}$/.test(dates.at(-1)||'')?dates.at(-1):null;
+ });
+ const cotAsOf=cotDates.every(d=>d!==null&&d===cotDates[0])?cotDates[0]:null;
  const ok=setup?.schema==='GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1'&&
   setup.status==='CURRENT_CANONICAL_ENGINE'&&setup.pair_count===28&&
   Object.keys(setup.pairs||{}).length===28&&setup.price_audit?.status==='PASS'&&
@@ -3335,7 +3345,10 @@ async function mountPairResearch(doc){
    '<span data-source="macro"><b>Baseline Macro/Tassi:</b> '+htmlEscape(macroDay||'non verificata')+
    (macroDay?(fresh(macroDay,10)?' · DATATA':' · STORICA'):' · WITHHELD')+'</span>'+
    '<span data-source="price"><b>Prezzo del modello:</b> '+htmlEscape(setup.price_asof)+'</span>'+
-   '<span data-source="fixing"><b>Fixing BCE:</b> '+htmlEscape(fxDay||'non verificato')+'</span></div>'+
+   '<span data-source="fixing"><b>Fixing BCE:</b> '+htmlEscape(fxDay||'non verificato')+'</span>'+
+   '<span data-source="cot"><b>COT G8 · ultima osservazione:</b> '+
+   htmlEscape(cotAsOf||'non verificata')+
+   ' · contesto CFTC separato, non aggiornamento del setup</span></div>'+
    decision+v3Html+scenario6m+
    '<details id="gmfq-pair-full-research" class="gmfq-pair-full-research"'+(analysisExpanded?' open':'')+'>'+
    '<summary>Apri analisi completa · Macro/Rates, variazioni 2Y, audit prezzo e fonti</summary>'+
