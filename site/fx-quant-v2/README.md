@@ -15,3 +15,26 @@ Site navigation and data lineage are distinct: an available link does not guaran
 ## Dedicated OIS & Market Pricing (2026-11-04)
 
 The additional `ois.html` is a standalone research section, linked in the shared 12-page navigation. It displays 8 currencies × 3 pricing horizons with per-tenor source dates and explicit instrument types (GBP BoE OIS; other official futures; secondary futures/proxy where unavailable). It reads `OIS_OPERATIONAL_VIEW`, `CB_PRICING_ESTIMATED`, and `NZD_CB_PRICING_DIRECTIONAL_PROXY`, falling back to a dated `ois-pricing-snapshot.json` without overwriting the canonical data. Quoted futures are *not* OIS; maturity spreads across them are illustrative, not policy repricing. Core FX signals, backtests and V10 are untouched.
+
+## NZD B2 — Authorized API fallback (2026-11-04)
+
+The source order for V2 CHF/NZD research is: (1) official RBNZ B2 public
+HTML (same-row 2Y/10Y and benchmark-roll guards); (2) optional authorized
+eolas API redistribution (one weekday slot or explicit workflow dispatch);
+(3) previous dated V2 research reading, never relabelled as fresh. The
+RBNZ endpoint returned HTTP 403 to GitHub-hosted runners. No attempt is
+made to bypass that access control.
+
+The vendor API requires EOLAS_API_KEY configured by the repository owner
+as a GitHub Actions secret and a valid service plan. No key is stored in
+source code, HTML, repository artifacts or logs. When unavailable, the
+optional vendor call is not made and the GitHub workflow summary states
+NZD_SOURCE=UNAVAILABLE. A free 10-requests/month plan cannot sustain daily
+requests. Choosing a plan or purchasing access is entirely a user decision.
+
+The eolas adapter insists on the RBNZ B2 daily dataset and same-row
+government 2Y/10Y series plus matching April 2029/April 2037 instrument
+columns after the 2026-10-30 benchmark roll. It rejects missing, future,
+stale and contradictory rows and labels approved data as third-party
+redistribution, NOT direct RBNZ observations or an official publication
+timestamp. No write to Core, OIS, macro scoring, FX engine or backtests.
