@@ -34,7 +34,7 @@ assert.equal(aud.base.growth.qoq_change_pp,null);
 assert.equal(aud.quote.growth.qoq_change_pp,null);
 assert.equal(aud.comparable.inflation_trend_same_period,false);
 assert(aud.summary.includes('niente confronto diretto'));
-const nz=evaluate(doc,'NZDAUD','2026-11-04',validate);
+const nz=evaluate(doc,'AUDNZD','2026-11-04',validate);
 assert.equal(nz.comparable.inflation_trend_same_period,true);
 assert.equal(nz.comparable.labour_trend_same_period,false);
 assert.equal(evaluate(doc,'EURUSD','2026-11-20',validate),null,'Stale Macro V3 never current');
