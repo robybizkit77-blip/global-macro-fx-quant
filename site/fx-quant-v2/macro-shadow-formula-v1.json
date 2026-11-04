@@ -1,0 +1,14 @@
+{
+  "schema": "GMFQ_FXV2_MACRO_SHADOW_FORMULA_RESEARCH_V1",
+  "status": "SOURCE_REFRESH_PENDING_NO_NEW_MACRO_MODEL",
+  "formula_version": "v2_domestic_activity_2026_10_27_FIXED_50_50",
+  "source_data_verified": false,
+  "eligible_for_fx_core": false,
+  "eligible_for_pair_rankings": false,
+  "eligible_for_trading": false,
+  "eligible_for_forward": false,
+  "eligible_for_backtests": false,
+  "canonical_D_untouched": true,
+  "countries": {},
+  "note": "Initial no-score placeholder. An independent audited GitHub workflow will replace this with the existing preregistered eight-country research formula only after full source-quality and tests pass. No synthetic scores and no new FX bias."
+}
