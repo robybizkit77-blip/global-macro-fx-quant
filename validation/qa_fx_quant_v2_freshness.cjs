@@ -249,14 +249,31 @@ result.summary={
   eight_government_pairs:ccy.length,fx_pairs:pair.pair_count,v2_pages:pages.length
 };
 result.status=result.hard_errors.length?'AUDIT_FAILED':result.summary.gaps?'DATA_GAPS_PRESENT':'DATE_CHECKS_PASS';
+const {readiness}=require('./fxv2_research_core_readiness_v1.cjs');
+const dualReadiness=readiness({
+ today,gov:rates,govResearch:bench,oisCore:ois,oisResearch:oisV2,
+ macroObserved:observedMacro,fxPairs:pair,sourceAudit:result
+});
+result.dual_track_readiness={
+ research:dualReadiness.research.state,core:dualReadiness.trading_core.state,
+ summary_file:'fxv2-freshness-evidence/decision-readiness.json'
+};
+
 const out=path.resolve('fxv2-freshness-evidence');
 fs.mkdirSync(out,{recursive:true});
 fs.writeFileSync(path.join(out,'freshness.json'),JSON.stringify(result,null,2)+'\n');
+fs.writeFileSync(path.join(out,'decision-readiness.json'),JSON.stringify(dualReadiness,null,2)+'\n');
 const lines=['## FX Quant V2 — Source-date freshness', '',
  'Source inspection '+today+' Europe/Rome. **Workflow green means the audit ran, not all feeds are fresh.**',
  'Status: **'+result.status+'**; '+result.summary.checks+' source checks; '+result.summary.gaps+' gaps and '+result.summary.review_notes+' review notes.', '',
+ '### Two distinct readiness tracks',
+ '**Research V2:** '+dualReadiness.research.state+' — '+dualReadiness.research.website_pages+' pages; '+dualReadiness.research.rate_pricing_horizons+' G8 pricing levels; OIS official in V2: '+dualReadiness.research.official_ois_currencies.join(', ')+' only. Others are futures/proxy, NOT OIS.',
+ '**Trading Core:** '+dualReadiness.trading_core.state+' — 28 FX pairs; original macro baseline '+dualReadiness.trading_core.baseline_macro_as_of+' (age '+dualReadiness.trading_core.baseline_macro_age_days+' days); not recalibrated from recent Macro V3. Official policy-pricing feeds '+dualReadiness.trading_core.certified_policy_pricing_count+'/8; this is not an OIS count.',
+ '**Government rate Core aged:** '+dualReadiness.trading_core.old_canonical_gov_currencies.map(x=>x.ccy+' '+x.as_of).join(', ')+'; separate newer research remains non-Core.',
+ 'Research pricing source date discrepancies: '+dualReadiness.research.source_as_of_mismatches.map(x=>x.ccy+' '+x.country_as_of+' vs tenors '+x.horizon_as_of.join('/')).join('; ')+'. Check each horizon as-of.',
+ 'The research track is not a policy-OIS certification, trading-signal recalibration, or historical backtest.', '',
  '### Concrete gaps', ...result.findings.filter(x=>x.severity==='GAP').map(x=>'- **'+x.area+' / '+x.item+'** — '+x.detail),'',
- 'JSON receipt: fxv2-freshness-evidence/freshness.json'];
+ 'JSON receipts: fxv2-freshness-evidence/freshness.json and decision-readiness.json'];
 fs.writeFileSync(path.join(out,'freshness-summary.md'),lines.join('\n')+'\n');
 if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join('\n')+'\n');
 console.log('FXV2_FRESHNESS_RESULT '+JSON.stringify({status:result.status,summary:result.summary,hard_errors:result.hard_errors,top_gaps:result.findings.filter(x=>x.severity==='GAP').slice(0,12)}));
