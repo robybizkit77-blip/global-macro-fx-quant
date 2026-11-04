@@ -98,10 +98,10 @@ function view(){
  else if(v==="VIX"){detail("VIX: domanda di protezione","VIX 21,15 il 2 novembre, +8,91% rispetto alla seduta precedente.","La volatilità implicita a breve è salita. Ciò segnala una protezione più costosa, ma non basta a classificare l'intero mercato come risk-off.","Se il VIX persiste in rialzo mentre HY/IG si allargano e la partecipazione peggiora.","È volatilità attesa derivata da opzioni, non probabilità certa di recessione o di perdita.","Volatilità implicita · Cboe","02/11/2026");
  pathChart("Indice VIX · storico recente",vol.history,"punti indice","Dato Cboe, ultime osservazioni");
  }
- else if(v==="ENERGY"){detail("Spot e futures non sono intercambiabili","WTI futures indicativi $"+num(c.WTI_FUT.value,2)+" e Brent $"+num(c.BRENT_FUT.value,2)+" al 3/11. Lo spot EIA WTI è $"+num(c.WTI_SPOT.value,2)+" al 27/10.","Un calo energetico può ridurre pressione headline, ma gli effetti su core, consumi e banche centrali vanno verificati. Futures e spot non condividono necessariamente lo stesso benchmark o timestamp.","Prezzi futures su contratti omogenei, inventari, supply, curva futures e shock geopolitico.","Non sottrarre WTI spot 27/10 al Brent futures 03/11: sarebbe uno spread fittizio.","Petrolio · confronto strumenti","Futures 03/11 · spot 27/10");
+ else if(v==="ENERGY"){detail("Spot e futures non sono intercambiabili","WTI futures indicativi $"+num(c.WTI_FUT.value,2)+" ("+c.WTI_FUT.date+") e Brent $"+num(c.BRENT_FUT.value,2)+" ("+c.BRENT_FUT.date+"). WTI spot EIA $"+num(c.WTI_SPOT.value,2)+" ("+c.WTI_SPOT.date+"). Serie non sincronizzate.","Un calo energetico può ridurre pressione headline, ma gli effetti su core, consumi e banche centrali vanno verificati. Futures e spot non condividono necessariamente lo stesso benchmark o timestamp.","Prezzi futures su contratti omogenei, inventari, supply, curva futures e shock geopolitico.","Non sottrarre spot EIA e futures di benchmark o date diverse: non è uno spread negoziabile né una curva term structure.","Petrolio · confronto strumenti","Futures "+c.WTI_FUT.date+" / "+c.BRENT_FUT.date+" · spot "+c.WTI_SPOT.date);
  pathChart("WTI Cushing spot · storico EIA",c.WTI_SPOT.history,"USD per barile","Serie storica spot fino al 27 ottobre, non un futures del 3 novembre");
  }
- else if(v==="GOLD"){detail("Oro: non basta il prezzo in USD","Futures COMEX oro a $"+num(c.GOLD_FUT.value,2)+", variazione indicativa giornaliera "+p(c.GOLD_FUT.change1d_pct,2)+" al 3/11.","L'oro può muoversi per real yields, USD, liquidità, domanda di copertura e flussi ETF. Una variazione giornaliera non isola la causa.","Real yields 10Y aggiornati e allineati, USD, ETF flows, positioning e variazioni su più sessioni.","Questo è GC=F da fonte secondaria, non fixing LBMA, spot fisico né settlement certificato.","Oro · futures indicativo","03/11/2026");
+ else if(v==="GOLD"){detail("Oro: non basta il prezzo in USD","Futures COMEX oro indicativi a $"+num(c.GOLD_FUT.value,2)+", variazione 1D "+p(c.GOLD_FUT.change1d_pct,2)+"; osservazione "+c.GOLD_FUT.date+". Il prezzo è un proxy secondario, non un fixing ufficiale.","L'oro può muoversi per real yields, USD, liquidità, domanda di copertura e flussi ETF. Una variazione giornaliera non isola la causa.","Real yields 10Y aggiornati e allineati, USD, ETF flows, positioning e variazioni su più sessioni.","Questo è GC=F da fonte secondaria, non fixing LBMA, spot fisico né settlement certificato.","Oro · futures indicativo",c.GOLD_FUT.date);
  pathChart("Oro · storico omogeneo da integrare",[],"USD/oncia","Prezzo corrente indicativo disponibile; storico completo sarà collegato nella fase dati/grafici, senza inventare punti");
  }
  else if(v==="CHINA"){detail("Cina: importante ma storico","China CLI a "+num(c.CHINA_CLI.value,2)+", ultima osservazione disponibile "+c.CHINA_CLI.date+".","La Cina è un fattore esterno soprattutto per AUD, NZD, materie prime e domanda globale, ma una rilevazione di agosto non deve diventare un segnale di novembre.","Nuovi PMI, credito, produzione e commodity imports; verifica se mercato AUD e metalli confermano.","Il CLI mensile è un indicatore anticipatore di contesto e non misura il sentiment odierno.","Cina · OECD CLI","Ultimo dato "+c.CHINA_CLI.date);
@@ -187,5 +187,32 @@ async function refreshCrossRates(){
 }
 
 refreshCrossRates();
+
+/* Informational-only secondary futures overlay. Dates are per instrument, no spot/futures joins. */
+async function refreshMarketProxies(){
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),9000);
+ try{
+  const url="https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/ESTIMATED_RESIDUAL_GAPS.json";
+  const response=await fetch(url,{cache:"no-store",signal:controller.signal});
+  if(!response.ok)throw Error("market proxies HTTP "+response.status);
+  const payload=await response.json(),lanes=payload.lanes||{},today=new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Rome",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+  const targets=[["GOLD.market_proxy","GOLD_FUT"],["WTI.market_proxy","WTI_FUT"],["BRENT.market_proxy","BRENT_FUT"]];
+  let count=0;
+  for(const [key,target] of targets){
+   const x=lanes[key],old=D.commodities[target];
+   if(!x||!old||x.instrument_type!=="FUTURE"||!/^\d{4}-\d{2}-\d{2}$/.test(x.proxy_as_of||"")||x.proxy_as_of>today||x.proxy_as_of<(old.date||"")||!Number.isFinite(x.value)||!Number.isFinite(x.change_1d_pct))continue;
+   D.commodities[target]={...old,date:x.proxy_as_of,value:x.value,change1d_pct:x.change_1d_pct,
+    source:x.source,quality:"SECONDARY_MARKET_PROXY_INFORMATIONAL",source_endpoint:x.source_endpoint||old.source_url,
+    interpretation:"Proxy futures da fonte secondaria, indicativo; non settlement ufficiale né sostituto del dato spot."};
+   count++;
+  }
+  if(count){book();render();}
+  const meta=el("sourceList");
+  if(meta)meta.insertAdjacentHTML("beforeend",'<span> · Proxy futures secondari: '+safe(count)+' serie aggiornate/verificate nel repository · date mostrate nelle schede, non dati spot ufficiali</span>');
+ }catch(err){console.warn("[FX Quant V2 Cross-Asset] Dati futures secondari non verificati; restano gli snapshot:",err);}
+ finally{clearTimeout(timer);}
+}
+refreshMarketProxies();
+
 })();
 </script></body></html>
