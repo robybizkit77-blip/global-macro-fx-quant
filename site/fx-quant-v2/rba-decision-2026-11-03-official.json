@@ -1,0 +1,26 @@
+{
+  "schema": "GMFQ_FXV2_RBA_OFFICIAL_DECISION_OVERLAY_V1",
+  "currency": "AUD",
+  "source": "Reserve Bank of Australia · Media Release 2026-30",
+  "source_url": "https://www.rba.gov.au/media-releases/2026/mr-26-30.html",
+  "cash_rate_source_url": "https://www.rba.gov.au/statistics/cash-rate/",
+  "published_date": "2026-11-03",
+  "last_date": "2026-11-03",
+  "effective_date": "2026-11-04",
+  "rate": 4.85,
+  "rate_text": "4.85%",
+  "rate_change_bp": 25,
+  "action": "RIALZO +25 pb a 4,85%",
+  "stance": "HAWKISH · rialzo deliberato; traiettoria futura dipendente dai dati",
+  "context": "RBA: il 3 novembre 2026 il Board ha alzato il cash rate target di 25 pb al 4,85%, con efficacia dal 4 novembre. Inflazione di fondo diffusa, rischi al rialzo; crescita e mercato del lavoro in rallentamento. Voto 6 a 3.",
+  "vote": {
+    "for_increase": 6,
+    "for_hold": 3
+  },
+  "next_meeting": "2026-12-08",
+  "published_status": "OFFICIAL_RBA_RELEASE_VERIFIED__V2_INFORMATIONAL_ONLY",
+  "eligible_for_core_signals": false,
+  "eligible_for_pair_engine": false,
+  "eligible_for_backtests": false,
+  "note": "Questo overlay informativo serve solo a non mostrare una decisione RBA superata nella V2. Non modifica NATIVE_CB_DATA, OIS, FX pair scoring o trading signals; i 2Y/10Y mantengono le rispettive date."
+}

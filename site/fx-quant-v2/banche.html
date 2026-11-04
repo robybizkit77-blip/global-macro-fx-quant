@@ -88,8 +88,28 @@ async function refreshBanks(){
    next.countries[k]=x;
   }
   if(decisions!==order.length)throw Error("Manca validazione per una decisione G8");
+  /* Source-verified V2 overlay only. Never overwrite canonical CB data or the pair engine. */
+  let rbaOverlay=false;
+  try {
+   const response=await fetch("./rba-decision-2026-11-03-official.json",{cache:"no-store"});
+   if(response.ok){
+    const u=await response.json(),a=next.countries.AUD;
+    if(u.schema==="GMFQ_FXV2_RBA_OFFICIAL_DECISION_OVERLAY_V1"&&u.published_status==="OFFICIAL_RBA_RELEASE_VERIFIED__V2_INFORMATIONAL_ONLY"&&
+       u.currency==="AUD"&&u.last_date<=today&&u.last_date>(a?.last_date||"")&&Number.isFinite(u.rate)&&u.rate>0&&
+       /^https:\/\/www\.rba\.gov\.au\//.test(u.source_url||"")){
+     a.last_date=u.last_date;a.rate_text=u.rate_text;a.policy_rate=u.rate;
+     a.action=u.action;a.stance=u.stance;a.context=u.context;a.next_meeting=u.next_meeting;
+     a.note.lead="RBA, decisione ufficiale del "+date(u.last_date)+": rialzo di 25 punti base al 4,85% (efficace "+date(u.effective_date)+"). Voto 6–3.";
+     a.note.why="Inflazione diffusa, pressioni interne ancora elevate; attività e lavoro in rallentamento. Fonte ufficiale: "+u.source_url+". Non implica altri rialzi già prezzati.";
+     a.note.watch="Controllare i rendimenti 2Y, futures cash rate ASX e la reazione AUD su date omogenee; prossima riunione "+date(u.next_meeting)+".";
+     a.note.confirm="Conferma soltanto se il pricing comparabile e il prezzo AUD si muovono coerentemente; il voto diviso può limitare la lettura hawkish.";
+     a.note.weaken="Il prezzo AUD o il front-end non confermano, oppure il mercato interpreta il voto 6–3 come possibile pausa.";
+     rbaOverlay=true;
+    }
+   }
+  }catch(error){console.warn("[FX Quant V2 CB] Overlay RBA informativo non disponibile:",error);}
   dataset=next;render();
-  $("dataStatus").textContent="Feed banche centrali collegato: "+decisions+" decisioni G8, "+markets+" rendimenti governativi, "+officialCurves+" strutture di mercato ufficiali aggiornate. OIS, futures e proxy sono distinti; valori residui conservano le date originarie. Letture qualitative: snapshot del 3 novembre, da rivalutare dopo nuovi comunicati.";
+  $("dataStatus").textContent="Feed banche centrali collegato: "+decisions+" decisioni G8, "+markets+" rendimenti governativi, "+officialCurves+" strutture di mercato ufficiali aggiornate."+(rbaOverlay?" RBA: pubblicazione ufficiale 03/11 collegata come contesto informativo V2; feed canonico Core invariato.":"")+" OIS, futures e proxy sono distinti; ogni fonte conserva la propria data. Narrativa precedente: snapshot del 3 novembre, da rivalutare.";
  }catch(err){
   console.warn("[FX Quant V2 CB] Feed non validati; mantengo lo snapshot:",err);
   $("dataStatus").textContent="Modalità snapshot: decisioni/rates/pricing canonici non verificati. Consultare le date di ogni paese e non presumere che una riunione trascorsa sia stata acquisita.";

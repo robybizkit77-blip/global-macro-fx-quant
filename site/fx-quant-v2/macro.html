@@ -110,9 +110,27 @@ async function refreshMacro(){
    next.currencies[k]=updated;
   }
   if(count<160)throw Error("Serie canoniche validate troppo poche: "+count);
+  /* Informational-only RBA release, never modifies the Macro score or 28 FX pair signals. */
+  let rbaOverlay=false;
+  try{
+   const response=await fetch("./rba-decision-2026-11-03-official.json",{cache:"no-store"});
+   if(response.ok){
+    const u=await response.json(),p=next.currencies.AUD;
+    if(u.schema==="GMFQ_FXV2_RBA_OFFICIAL_DECISION_OVERLAY_V1"&&
+       u.published_status==="OFFICIAL_RBA_RELEASE_VERIFIED__V2_INFORMATIONAL_ONLY"&&
+       u.currency==="AUD"&&u.last_date<=today&&u.last_date>(p?.cb?.last_date||"")&&Number.isFinite(u.rate)){
+     p.cb={...p.cb,name:"RBA",rate_text:u.rate_text,last_date:u.last_date,
+      stance:u.stance};
+     if(p.summary&&!p.summary.includes("Decisione RBA 03/11")){
+      p.summary+=" Decisione RBA 03/11 (fonte ufficiale, solo contesto informativo V2): cash rate 4,85%, +25 pb; voto 6–3. Non è un segnale automatico di forza AUD.";
+     }
+     rbaOverlay=true;
+    }
+   }
+  }catch(error){console.warn("[FX Quant V2 Macro] Overlay RBA non disponibile:",error);}
   dataset=next;mode="canonical-series";render();
   $("seriesCount").textContent=order.reduce((n,k)=>n+(dataset.currencies[k].indicators||[]).length,0);
-  $("dataStatus").textContent="Feed canonico MACRO_SERIES collegato: "+count+" serie validate con la propria data di riferimento. La presenza del feed non implica dati nuovi ogni giorno. Narrativa e giudizi settoriali restano una lettura archiviata del 3 novembre, non un segnale live.";
+  $("dataStatus").textContent="Feed canonico MACRO_SERIES collegato: "+count+" serie validate con la propria data."+(rbaOverlay?" Decisione RBA 03/11 collegata da fonte ufficiale (contesto informativo V2, motore FX invariato).":"")+" La presenza del feed non implica dati nuovi ogni giorno. Narrativa e giudizi settoriali restano ricerca archiviata, non segnali live.";
  }catch(e){
   console.warn("[FX Quant V2 Macro] Mantengo l'ultimo snapshot:",e);
   $("dataStatus").textContent="Modalità snapshot: il feed MACRO_SERIES non è stato validato. Controlla le date dei singoli indicatori, senza interpretare le sintesi come dati live.";
