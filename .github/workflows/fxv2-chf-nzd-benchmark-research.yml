@@ -73,10 +73,15 @@ jobs:
         shell: bash
         env:
           EOLAS_API_KEY: ${{ secrets.EOLAS_API_KEY }}
+          SCHEDULE_CRON: ${{ github.event.schedule }}
         run: |
           set -euo pipefail
           if [ -f /tmp/fxv2-rbnz-b2-daily-source.json ]; then
             echo 'NZD_SOURCE=RBNZ_OFFICIAL_HTML' >> "$GITHUB_STEP_SUMMARY"
+          elif [ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ] && {
+                [ "$GITHUB_EVENT_NAME" != "schedule" ] ||
+                [ "$SCHEDULE_CRON" != '45 8 * * 1-5' ]; }; then
+            echo 'NZD_SOURCE=NO_VENDOR_REQUEST_THIS_SLOT: protect API quotas' >> "$GITHUB_STEP_SUMMARY"
           elif [ -z "${EOLAS_API_KEY:-}" ]; then
             echo 'NZD_SOURCE=UNAVAILABLE: RBNZ HTTP block and EOLAS_API_KEY not configured' >> "$GITHUB_STEP_SUMMARY"
           elif python3 validation/rates/collect_fxv2_nzd_eolas_api_v1.py --output /tmp/fxv2-rbnz-b2-eolas-research.json; then
