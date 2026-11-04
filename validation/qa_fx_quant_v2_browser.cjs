@@ -69,13 +69,17 @@ async function audit(browser,name,file,selector,view,viewport){
   if(name==='tassi'&&mode==='public'){
     // This is a read-only verification of V2 research panels, never a Core rates certification.
     for(const [ccy,expected,words] of [
-      ['CHF','CHF · coppia SNB 2Y e 10Y sulla stessa base',['stessa data','non va unito']],
+      ['CHF','CHF · coppia SNB 2Y e 10Y sulla stessa base',['non è osservato','STIMA']],
       ['NZD','NZD · benchmark RBNZ cambiati',['Prima del cambio','Dopo il cambio']]
     ]){
       await page.locator('#countryTabs button[data-ccy="'+ccy+'"]').click({timeout:12000});
       await page.locator('#benchmarkResearch:not([hidden])').waitFor({timeout:12000});
       const head=((await page.locator('#benchmarkHeadline').textContent())||'').trim();
       const text=((await page.locator('#benchmarkResearch').textContent())||'');
+      const grade=((await page.locator('#asof2').textContent())||'').trim();
+      const curve=((await page.locator('#curveExplanation').textContent())||'').trim();
+      if(/STIMA|PROXY/.test(grade)&&!curve.includes('CALCOLO INDICATIVO'))
+        issue(name,view,'estimate_provenance_missing',ccy+' · '+grade+' · '+curve.slice(0,150));
       if(!head.includes(expected)||words.some(w=>!text.toLowerCase().includes(w.toLowerCase()))){
         issue(name,view,'research_benchmark_not_loaded','Source context for '+ccy+' not rendered: '+head+' '+text.slice(0,180));
       }
