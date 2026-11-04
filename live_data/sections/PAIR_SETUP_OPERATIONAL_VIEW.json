@@ -1252,7 +1252,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -195.74940823999998,
+              "bp": -196.41875092999993,
               "material": true,
               "side": "AUD"
             }
@@ -1282,7 +1282,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -195.74940823999998,
+            "bp": -196.41875092999993,
             "material": true,
             "side": "AUD"
           }
@@ -1301,12 +1301,13 @@
         "A": {
           "positive": 0,
           "negative": 3,
-          "turns": 1,
+          "turns": 2,
           "details": [
             "Crescita: peggiora",
             "Crescita: turning point",
             "Lavoro: peggiora",
-            "Rates: peggiora"
+            "Rates: peggiora",
+            "Rates: turning point"
           ],
           "withheld": false
         },
@@ -1370,7 +1371,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": -26.649408239999993,
+              "bp": -27.318750929999958,
               "material": false,
               "side": "—"
             }
@@ -1400,7 +1401,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": -26.649408239999993,
+            "bp": -27.318750929999958,
             "material": false,
             "side": "—"
           }
@@ -1419,12 +1420,13 @@
         "A": {
           "positive": 0,
           "negative": 3,
-          "turns": 1,
+          "turns": 2,
           "details": [
             "Crescita: peggiora",
             "Crescita: turning point",
             "Lavoro: peggiora",
-            "Rates: peggiora"
+            "Rates: peggiora",
+            "Rates: turning point"
           ],
           "withheld": false
         },
@@ -1522,7 +1524,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 270.65059176,
+              "bp": 269.98124907000005,
               "material": true,
               "side": "EUR"
             }
@@ -1552,7 +1554,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 270.65059176,
+            "bp": 269.98124907000005,
             "material": true,
             "side": "EUR"
           }
@@ -1571,12 +1573,13 @@
         "A": {
           "positive": 0,
           "negative": 3,
-          "turns": 1,
+          "turns": 2,
           "details": [
             "Crescita: peggiora",
             "Crescita: turning point",
             "Lavoro: peggiora",
-            "Rates: peggiora"
+            "Rates: peggiora",
+            "Rates: turning point"
           ],
           "withheld": false
         },
@@ -1622,7 +1625,7 @@
         "structural": {
           "fav": "—",
           "quality": "SEPARAZIONE RATES MATERIALE",
-          "relation": "Il differenziale 2Y osservato è -162 pb verso GBP. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+          "relation": "Il differenziale 2Y osservato è -163 pb verso GBP. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
           "timing": "EUR: TURNING RECENTE · GBP: TURNING RECENTE",
           "priceReading": "PREZZO NON RISOLUTIVO",
           "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
@@ -1640,7 +1643,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -161.89763651048062,
+              "bp": -162.5669792004806,
               "material": true,
               "side": "GBP"
             }
@@ -1652,7 +1655,7 @@
       "decision_frame": {
         "fav": "—",
         "quality": "SEPARAZIONE RATES MATERIALE",
-        "relation": "Il differenziale 2Y osservato è -162 pb verso GBP. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+        "relation": "Il differenziale 2Y osservato è -163 pb verso GBP. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
         "timing": "EUR: TURNING RECENTE · GBP: TURNING RECENTE",
         "priceReading": "PREZZO NON RISOLUTIVO",
         "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
@@ -1670,7 +1673,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -161.89763651048062,
+            "bp": -162.5669792004806,
             "material": true,
             "side": "GBP"
           }
@@ -1689,12 +1692,13 @@
         "A": {
           "positive": 0,
           "negative": 3,
-          "turns": 1,
+          "turns": 2,
           "details": [
             "Crescita: peggiora",
             "Crescita: turning point",
             "Lavoro: peggiora",
-            "Rates: peggiora"
+            "Rates: peggiora",
+            "Rates: turning point"
           ],
           "withheld": false
         },
@@ -1757,7 +1761,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 111.35059176,
+              "bp": 110.68124907000004,
               "material": true,
               "side": "EUR"
             }
@@ -1787,7 +1791,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 111.35059176,
+            "bp": 110.68124907000004,
             "material": true,
             "side": "EUR"
           }
@@ -1806,12 +1810,13 @@
         "A": {
           "positive": 0,
           "negative": 3,
-          "turns": 1,
+          "turns": 2,
           "details": [
             "Crescita: peggiora",
             "Crescita: turning point",
             "Lavoro: peggiora",
-            "Rates: peggiora"
+            "Rates: peggiora",
+            "Rates: turning point"
           ],
           "withheld": false
         },
@@ -1875,7 +1880,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -89.64940824000003,
+              "bp": -90.31875093,
               "material": true,
               "side": "NZD"
             }
@@ -1905,7 +1910,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -89.64940824000003,
+            "bp": -90.31875093,
             "material": true,
             "side": "NZD"
           }
@@ -1924,12 +1929,13 @@
         "A": {
           "positive": 0,
           "negative": 3,
-          "turns": 1,
+          "turns": 2,
           "details": [
             "Crescita: peggiora",
             "Crescita: turning point",
             "Lavoro: peggiora",
-            "Rates: peggiora"
+            "Rates: peggiora",
+            "Rates: turning point"
           ],
           "withheld": false
         },
@@ -2025,7 +2031,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -161.64940824000004,
+              "bp": -162.31875093000002,
               "material": true,
               "side": "USD"
             }
@@ -2055,7 +2061,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -161.64940824000004,
+            "bp": -162.31875093000002,
             "material": true,
             "side": "USD"
           }
@@ -2074,12 +2080,13 @@
         "A": {
           "positive": 0,
           "negative": 3,
-          "turns": 1,
+          "turns": 2,
           "details": [
             "Crescita: peggiora",
             "Crescita: turning point",
             "Lavoro: peggiora",
-            "Rates: peggiora"
+            "Rates: peggiora",
+            "Rates: turning point"
           ],
           "withheld": false
         },
