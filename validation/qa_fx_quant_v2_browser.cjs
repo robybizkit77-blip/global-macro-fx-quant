@@ -67,6 +67,39 @@ async function audit(browser,name,file,selector,view,viewport){
     const display=((await page.locator('#vixFact').textContent())||'');
     if(!/^VIX\s+[\d,.]+/.test(display))issue(name,view,'vix_render_not_synced','VIX UI value not rendered: '+display);
   }
+  if(name==='liquidita'){
+    await page.waitForFunction(()=>
+      document.querySelector('#footerDate')?.textContent?.includes('Credito ICE/FRED:'),
+      null,{timeout:13000});
+    const credit=await page.evaluate(()=>({
+      footer:document.querySelector('#footerDate')?.textContent||'',
+      rows:[...document.querySelectorAll('#assetRows .asset')].map(x=>x.textContent||'')
+    }));
+    if(credit.rows.length!==4||!credit.footer.includes('2/2 serie pubblicate')||
+       !credit.rows[2].includes('FRED/ICE · FONTE PUBBLICATA, RICERCA V2')||
+       !credit.rows[3].includes('FRED/ICE · FONTE PUBBLICATA, RICERCA V2'))
+      issue(name,view,'liquidity_ig_hy_not_live',JSON.stringify(credit).slice(0,500));
+    if(mode==='pr-local'&&view==='desktop'){
+      // Fail one published source and prove other credit leg remains independent.
+      const feed=JSON.parse(fs.readFileSync('site/fx-quant-v2/cross-asset-live-data.json','utf8'));
+      feed.streams.IG_OAS.source_url='https://example.org/NOT_ICE_FRED';
+      await page.route('**/cross-asset-live-data.json*',route=>route.fulfill({
+        status:200,contentType:'application/json',body:JSON.stringify(feed)
+      }));
+      await page.reload({waitUntil:'domcontentloaded'});
+      await page.waitForFunction(()=>
+        document.querySelector('#footerDate')?.textContent?.includes('1/2 serie pubblicate'),
+        null,{timeout:16000});
+      const partial=await page.evaluate(()=>({
+        footer:document.querySelector('#footerDate')?.textContent,
+        rows:[...document.querySelectorAll('#assetRows .asset')].map(x=>x.textContent)
+      }));
+      if(!partial.rows[2].includes('PUBLISHED_OFFICIAL_INDEX')||
+         !partial.rows[3].includes('FRED/ICE · FONTE PUBBLICATA, RICERCA V2'))
+        issue(name,view,'liquidity_partial_feed_did_not_preserve_ig',JSON.stringify(partial).slice(0,450));
+      await page.unroute('**/cross-asset-live-data.json*');
+    }
+  }
   if(name==='coppie'&&(mode==='public'||mode==='pr-local')){
     // Informative 2Y spread: research overlays must never enter pair quality signals.
     await page.locator('#allPairs').selectOption('NZDCHF');
