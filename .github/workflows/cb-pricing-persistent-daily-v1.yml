@@ -214,7 +214,9 @@ jobs:
           # A previously current JPY native summary need not change when
           # its official TONA OIS row advances. Every other currency must
           # still appear in BOTH layers or in neither layer.
-          assert (set(co)^set(cn)).issubset({'JPY'}),(co,cn)
+          # GBP may also advance only its OIS row when the already matching
+          # NATIVE_CB summary was validated by the per-currency apply guard.
+          assert (set(co)^set(cn)).issubset({'JPY','GBP'}),(co,cn)
           changed=sorted(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
           allowed=['live_data/manifest.v2.json','live_data/sections/NATIVE_CB_DATA.json','live_data/sections/OIS_DATA.json','payload/part-00.txt']
           assert set(changed).issubset(allowed),(changed,allowed)
