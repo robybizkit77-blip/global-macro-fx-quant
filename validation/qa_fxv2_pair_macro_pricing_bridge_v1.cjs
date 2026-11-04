@@ -1,0 +1,73 @@
+'use strict';
+// Research adapter contract: 8 currencies / 28 pair views; never writes Core.
+const assert=require('node:assert/strict');
+const fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
+const root=path.resolve(__dirname,'..');
+const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
+const ctx={window:{}};
+vm.createContext(ctx);
+vm.runInContext(fs.readFileSync(path.join(root,'site/fx-quant-v2/assets/pair-macro-pricing-bridge-v1.js'),'utf8'),ctx);
+const model=ctx.window.FXV2PairMacroPricing;
+assert(model&&model.SCHEMA==='GMFQ_FXV2_PAIR_MACRO_PRICING_RESEARCH_V1');
+const snap=read('site/fx-quant-v2/ois-pricing-snapshot.json');
+const ois=read('live_data/sections/OIS_OPERATIONAL_VIEW.json');
+const est=read('live_data/sections/CB_PRICING_ESTIMATED.json');
+const nzd=read('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json');
+const today='2026-11-04', currencies=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+const input=model.build(snap,ois,est,nzd,today);
+assert.equal(input.ui_only,true);assert.equal(input.eligible_for_fx_engine,false);
+assert.equal(input.eligible_for_backtests,false);
+assert.deepEqual(Object.keys(input.currencies).sort(),[...currencies].sort());
+assert.equal(Object.values(input.currencies).reduce((n,x)=>n+Object.keys(x).length,0),24);
+assert.equal(input.currencies.GBP['6m'].kind,'OIS');
+assert(currencies.filter(c=>input.currencies[c]['6m'].kind==='OIS').join(',')==='GBP');
+assert.equal(input.currencies.NZD['6m'].kind,'PROXY FUTURES');
+assert.equal(input.currencies.USD['6m'].kind,'FUTURES SECONDARI');
+assert.equal(input.currencies.USD['3m'].date,'2026-11-04');
+assert.equal(input.currencies.GBP['6m'].change_1d_bp,ois.currencies.GBP.horizons['6m'].change_1d_bp);
+const all=[];
+for(let i=0;i<currencies.length;i++)for(let j=i+1;j<currencies.length;j++){
+ const p=currencies[i]+currencies[j],v=model.view(input,p);
+ assert(v,'no 28-pair view for '+p);
+ assert.equal(v.pair,p);assert.equal(v.complete,true);
+ assert(Number.isFinite(v.sixMonthGapBp));
+ assert.equal(v.spreadChange1dBp,null);
+ assert.equal(v.spreadChange1wBp,null);
+ assert.equal(v.comparableForRateChange,false);
+ assert.equal(v.tradeSignal,null);
+ assert.equal(v.policyProbability,null);
+ assert.equal(v.priceInference,null);
+ assert.equal(v.sixMonthGapBp,Math.round((v.baseTenors['6m'].rate-v.quoteTenors['6m'].rate)*1000)/10);
+ all.push(p);
+}
+assert.equal(all.length,28);
+assert.equal(model.view(input,'EUR/EUR'),null);
+assert.equal(model.view(input,'FOOUSD'),null);
+assert.equal(model.view(input,'EURUSDextra'),null);
+assert.equal(model.view({...input,eligible_for_fx_engine:true},'EURUSD'),null);
+assert.equal(model.view({...input,eligible_for_backtests:true},'EURUSD'),null);
+assert.equal(model.view(input,'EURCHF').matchingDate,false);
+assert.equal(model.view(input,'EURCHF').spreadChange1dBp,null);
+// Snapshot fallback for temporarily unavailable 6M; never fabricate a quote.
+const partial=JSON.parse(JSON.stringify(est));
+partial.currencies.CHF.horizons['6m'].rate=null;
+const missing=model.build(snap,ois,partial,nzd,today);
+assert.equal(missing.currencies.CHF['6m'].origin,'snapshot');
+assert.equal(missing.currencies.CHF['6m'].rate,snap.currencies.CHF.horizons['6m'].rate);
+// Later quote for 6M cannot roll back a newer 3M date.
+const older=JSON.parse(JSON.stringify(est));
+older.currencies.USD.horizons['3m'].quote_as_of='2026-11-02';
+older.currencies.USD.horizons['3m'].rate=3.3;
+const testOld=model.build(snap,ois,older,nzd,today);
+assert.equal(testOld.currencies.USD['3m'].rate,snap.currencies.USD.horizons['3m'].rate);
+assert.equal(testOld.currencies.USD['3m'].origin,'snapshot');
+// Future observations and incomplete source objects must be rejected.
+const impossible=JSON.parse(JSON.stringify(ois));
+impossible.currencies.GBP.as_of='2099-11-03';
+const excluded=model.build(snap,impossible,est,nzd,today);
+assert.equal(excluded.currencies.GBP['6m'].date,snap.currencies.GBP.horizons['6m'].as_of);
+assert.equal(excluded.currencies.GBP['6m'].origin,'snapshot');
+const invalid=model.build({...snap,schema:'UNKNOWN'},ois,est,nzd,today);
+assert.equal(invalid.currencies.GBP['6m'].origin,'feed');
+assert.throws(()=>model.build(snap,ois,est,nzd,'2099-99-99'));
+console.log('FXV2_PAIR_MACRO_PRICING_BRIDGE_V1_PASS: 8 currencies / 24 tenors / 28 read-only pairs; date, source, fallback and no-signal invariants');
