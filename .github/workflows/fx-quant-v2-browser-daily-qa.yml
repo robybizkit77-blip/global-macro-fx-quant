@@ -6,12 +6,14 @@ on:
     paths:
       - 'site/fx-quant-v2/**'
       - 'validation/qa_fx_quant_v2_browser.cjs'
+      - 'validation/qa_fx_quant_v2_freshness.cjs'
       - '.github/workflows/fx-quant-v2-browser-daily-qa.yml'
   push:
     branches: [main]
     paths:
       - 'site/fx-quant-v2/**'
       - 'validation/qa_fx_quant_v2_browser.cjs'
+      - 'validation/qa_fx_quant_v2_freshness.cjs'
       - '.github/workflows/fx-quant-v2-browser-daily-qa.yml'
   schedule:
     - cron: '20 8 * * 1-5'
@@ -25,6 +27,24 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  v2-freshness-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Read all canonical source dates, grades and known stale gaps
+        run: node validation/qa_fx_quant_v2_freshness.cjs
+      - name: Save source freshness JSON and readable report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fxv2-source-freshness
+          path: fxv2-freshness-evidence/
+          if-no-files-found: error
+          retention-days: 30
   v2-browser-audit:
     runs-on: ubuntu-24.04
     timeout-minutes: 25
