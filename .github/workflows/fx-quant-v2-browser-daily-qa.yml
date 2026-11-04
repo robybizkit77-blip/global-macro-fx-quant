@@ -12,6 +12,7 @@ on:
       - 'validation/qa_fxv2_rates_working_v1.cjs'
       - 'validation/qa_fxv2_liquidity_credit_overlay_v1.cjs'
       - 'validation/qa_fxv2_macro_pair_observed_v1.cjs'
+      - 'validation/qa_fxv2_macro_dynamic_pair_research_v1.cjs'
       - 'validation/publishing/wait_fxv2_public_revision_v1.py'
       - 'validation/publishing/test_wait_fxv2_public_revision_v1.py'
       - '.github/workflows/fx-quant-v2-browser-daily-qa.yml'
@@ -26,6 +27,7 @@ on:
       - 'validation/qa_fxv2_rates_working_v1.cjs'
       - 'validation/qa_fxv2_liquidity_credit_overlay_v1.cjs'
       - 'validation/qa_fxv2_macro_pair_observed_v1.cjs'
+      - 'validation/qa_fxv2_macro_dynamic_pair_research_v1.cjs'
       - 'validation/publishing/wait_fxv2_public_revision_v1.py'
       - 'validation/publishing/test_wait_fxv2_public_revision_v1.py'
       - '.github/workflows/fx-quant-v2-browser-daily-qa.yml'
@@ -59,6 +61,7 @@ jobs:
           node validation/qa_fxv2_rates_working_v1.cjs
           node validation/qa_fxv2_liquidity_credit_overlay_v1.cjs
           node validation/qa_fxv2_macro_pair_observed_v1.cjs
+          node validation/qa_fxv2_macro_dynamic_pair_research_v1.cjs
           python3 -m unittest validation.publishing.test_wait_fxv2_public_revision_v1 -v
   v2-freshness-audit:
     if: >-
