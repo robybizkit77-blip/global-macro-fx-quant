@@ -19,7 +19,13 @@ assert.equal(live.rows.length,8);
 assert.equal(live.count,16,'8 G8 inflation + 8 unemployment independently validated');
 assert.equal((live.html.match(/data-g8-ccy=/g)||[]).length,8);
 assert(!live.html.includes('data-core-signal='));
-assert(live.html.includes('2026-06'),'older quarterly periods must remain visible');
+const quarterCurrencies=FX.filter(c=>therm.currencies[c].inflation.frequency==='Q');
+assert(quarterCurrencies.length>=2,'quarterly source currencies must remain represented');
+for(const c of quarterCurrencies){
+ const actual=live.rows.find(r=>r.ccy===c)?.inflation?.period;
+ assert(actual&&live.html.includes(actual),
+  'current observed quarterly period must remain visible for '+c);
+}
 for(const c of live.rows){
  assert(c.inflation&&c.labour,'both observed series for '+c.ccy);
  assert(live.html.includes(c.inflation.period));
