@@ -227,7 +227,7 @@ refreshMarketProxies();
 async function refreshPublishedCrossAsset(){
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
  try {
-  const root="https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/site/fx-quant-v2/cross-asset-live-data.json";
+  const root=(["localhost","127.0.0.1"].includes(location.hostname)?"./cross-asset-live-data.json":"https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/site/fx-quant-v2/cross-asset-live-data.json");
   const response=await fetch(root,{cache:"no-store",signal:controller.signal});
   if(!response.ok)throw Error("cross-asset source HTTP "+response.status);
   const feed=await response.json();
