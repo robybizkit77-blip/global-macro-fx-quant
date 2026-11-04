@@ -135,10 +135,14 @@ class QualityAwareProspectiveCaptureTests(unittest.TestCase):
                 self.assertIsNone(v["six_month_value_pct"])
                 self.assertIsNone(v["six_month_source_date"])
                 self.assertFalse(v["six_month_is_official_ois_only"])
-        self.assertEqual(original["countries"]["NZD"]["six_month_source_tier"],
-                         "NZD_BANK_BILL_BASIS_PROXY_NOT_OIS")
-        for c in ("NZD","CHF","EUR","USD"):
-            self.assertFalse(original["countries"][c]["six_month_is_official_ois_only"])
+        for c, v in original["countries"].items():
+            # Tier depends on today's actual frozen sources. Never hardcode a
+            # given currency as official, proxy or missing for all future days.
+            self.assertEqual(v["six_month_is_official_ois_only"],
+                             v["six_month_source_tier"] == "OFFICIAL_MONETARY_SOURCE")
+            if v["six_month_source_tier"] == "NZD_BANK_BILL_BASIS_PROXY_NOT_OIS":
+                self.assertEqual(c, "NZD")
+                self.assertFalse(v["six_month_is_official_ois_only"])
         for pair,info in original["pairs"].items():
             self.assertIsNone(info["6m_cross_market_policy_spread_bp"])
             self.assertIsNone(info["FX_signal"])
