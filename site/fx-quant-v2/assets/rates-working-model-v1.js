@@ -12,8 +12,12 @@
   const round = (n,d=4) => Number(n.toFixed(d));
   const age = (now,then) => Math.round((Date.parse(now+"T12:00:00Z") -
     Date.parse(then+"T12:00:00Z"))/86400000);
-  const within=(now,then,maxDays=14) => iso(now) && iso(then) &&
-    age(now,then)>=0 && age(now,then)<=maxDays;
+  // Research quotes are dated facts, not daily live prices. Never discard a
+  // later dated research observation merely because official source access
+  // remains blocked: preserve the level and label the increasing age.
+  const inPast=(now,then) => iso(now) && iso(then) && age(now,then)>=0;
+  const researchAge=(now,then) => age(now,then);
+  const olderThanResearchWindow=(now,then) => researchAge(now,then)>14;
 
   function derive(canonical, research, today) {
     const out={schema:"GMFQ_FXV2_WORKING_RATES_V1",rates:{},warnings:[],
@@ -28,7 +32,7 @@
     if(chf && chf.pair_status==="OFFICIAL_SNBSAMEBASIS_RESEARCH_REVIEW_REQUIRED" &&
        chf.eligible_for_core===false && chf.eligible_for_automatic_promotion===false &&
        chf.separate_10y?.not_joinable_with_paired_2y===true &&
-       within(today,chf.paired_date) && within(today,chf.separate_10y?.as_of) &&
+       inPast(today,chf.paired_date) && inPast(today,chf.separate_10y?.as_of) &&
        chf.separate_10y.as_of>=chf.paired_date &&
        (!iso(canonical.CHF?.date) || canonical.CHF.date<chf.separate_10y.as_of) &&
        valid(chf["2Y"]) && valid(chf["10Y"]) &&
@@ -38,14 +42,22 @@
       const observed10=chf.separate_10y["10Y"];
       const delta10=observed10-chf["10Y"];
       if(Math.abs(delta10)<=0.5) {
+        const sourceAge=researchAge(today,chf.separate_10y.as_of);
+        const dated=olderThanResearchWindow(today,chf.separate_10y.as_of) ||
+                    olderThanResearchWindow(today,chf.paired_date);
         // Scenario, NOT a newly observed 2Y: assume the same %point shift as 10Y.
         const modeled2=round(chf["2Y"]+delta10,4);
         out.rates.CHF={
           date:chf.separate_10y.as_of,"2Y":modeled2,"10Y":observed10,
           curve_bp:round((observed10-modeled2)*100,1),
-          chg2_bp:round(delta10*100,2),chg10_bp:round(delta10*100,2),
+          // After the research freshness window, historical movements must
+          // not be interpreted as today's change or as a live repricing.
+          chg2_bp:dated?null:round(delta10*100,2),
+          chg10_bp:dated?null:round(delta10*100,2),
           source:"SNB 10Y spot osservato; SNB 2Y stimato da shift parallelo della coppia "+chf.paired_date,
-          quality:"STIMA 2Y / SNB 10Y OSSERVATO",
+          quality:"STIMA 2Y / SNB 10Y OSSERVATO"+(dated?" · RIFERIMENTO STORICO":""),
+          stale_source:dated,source_age_days:sourceAge,
+          freshness:dated?"DATED_RESEARCH_NO_CURRENT_MARKET_MOVE":"RECENT_DATED_RESEARCH",
           estimated:true,source_date:chf.paired_date,
           evidence_date:chf.separate_10y.as_of,
           tenor_quality:{"2Y":"STIMATO","10Y":"OSSERVATO"},
@@ -55,7 +67,9 @@
           no_core_effect:true,
           no_inferred_market_move:true
         };
-        out.warnings.push("CHF: lo shift 2Y da 10Y è un'ipotesi, non una quotazione 2Y.");
+        out.warnings.push(dated
+          ?"CHF: scenario STORICO al "+chf.separate_10y.as_of+"; 2Y stimato, nessun movimento di oggi deducibile."
+          :"CHF: lo shift 2Y da 10Y è un'ipotesi, non una quotazione 2Y.");
       }
     }
     const nzd=research.NZD;
@@ -63,7 +77,7 @@
        nzd.cross_roll_change_allowed===false &&
        nzd.independent_xlsx_reconciled===false &&
        nzd.eligible_for_core===false &&
-       within(today,nzd.latest_date) && iso(nzd.roll_date) &&
+       inPast(today,nzd.latest_date) && iso(nzd.roll_date) &&
        nzd.roll_date<nzd.latest_date &&
        (!iso(canonical.NZD?.date) || canonical.NZD.date<nzd.latest_date) &&
        Array.isArray(nzd.after_roll) && nzd.after_roll.length>=2) {
@@ -74,13 +88,17 @@
          valid(nzd.latest_2Y)&&valid(nzd.latest_10Y) &&
          Math.abs(last["2Y"]-nzd.latest_2Y)<0.0001 &&
          Math.abs(last["10Y"]-nzd.latest_10Y)<0.0001) {
+        const sourceAge=researchAge(today,last.date);
+        const dated=olderThanResearchWindow(today,last.date);
         out.rates.NZD={
           date:last.date,"2Y":last["2Y"],"10Y":last["10Y"],
           curve_bp:round((last["10Y"]-last["2Y"])*100,1),
-          chg2_bp:round((last["2Y"]-first["2Y"])*100,2),
-          chg10_bp:round((last["10Y"]-first["10Y"])*100,2),
+          chg2_bp:dated?null:round((last["2Y"]-first["2Y"])*100,2),
+          chg10_bp:dated?null:round((last["10Y"]-first["10Y"])*100,2),
           source:"RBNZ B2, lettura web dopo roll benchmark "+nzd.roll_date+"; XLSX non riconciliato",
-          quality:"PROXY RBNZ B2 (NON CERTIFICATO XLSX)",estimated:true,
+          quality:"PROXY RBNZ B2 (NON CERTIFICATO XLSX)"+(dated?" · RIFERIMENTO STORICO":""),
+          estimated:true,stale_source:dated,source_age_days:sourceAge,
+          freshness:dated?"DATED_RESEARCH_NO_CURRENT_MARKET_MOVE":"RECENT_DATED_RESEARCH",
           source_date:first.date,evidence_date:last.date,
           tenor_quality:{"2Y":"WEB_PROXY","10Y":"WEB_PROXY"},
           working_method:"POST_ROLL_B2_SAME_BENCHMARK",
@@ -88,7 +106,9 @@
           comparison_start:first.date,no_core_effect:true,
           no_cross_roll_change:true
         };
-        out.warnings.push("NZD: livelli B2 indicativi; variazione prima/dopo il roll non utilizzata.");
+        out.warnings.push(dated
+          ?"NZD: livelli B2 STORICI al "+last.date+"; nessuna variazione giornaliera deducibile."
+          :"NZD: livelli B2 indicativi; variazione prima/dopo il roll non utilizzata.");
       }
     }
     return out;

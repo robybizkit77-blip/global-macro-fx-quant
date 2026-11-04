@@ -334,10 +334,19 @@ const WATCH_KEY='fx-quant-coppie-v6-watchlist';function loadWatch(){try{return J
 setupScreener();setupWatch();$('pairPortfolio').addEventListener('click',e=>{let b=e.target.closest('button[data-pair]');if(b){state.selected=b.dataset.pair;render();portfolio();document.getElementById('verdetto').scrollIntoView({behavior:'smooth'})}});$('allPairs').addEventListener('change',e=>{if(e.target.value&&state.pairs[e.target.value]){state.selected=e.target.value;render();document.getElementById('verdetto').scrollIntoView({behavior:'smooth'})}});portfolio();render();
 async function get(n){let controller=new AbortController(),timer=setTimeout(()=>controller.abort(),9500);try{let r=await fetch(ROOT+n,{cache:'no-store',signal:controller.signal});if(!r.ok)throw Error(r.status);return r.json()}finally{clearTimeout(timer)}}
 async function refreshPairRatesResearch(){
- const url=['localhost','127.0.0.1'].includes(location.hostname)?'./chf-nzd-benchmark-research.json':
-  'https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/site/fx-quant-v2/chf-nzd-benchmark-research.json';
- const res=await fetch(url,{cache:'no-store'});if(!res.ok)throw Error('research HTTP '+res.status);
- const research=await res.json();
+ const local='./chf-nzd-benchmark-research.json';
+ const remote='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/site/fx-quant-v2/chf-nzd-benchmark-research.json';
+ const load=async url=>{
+  const res=await fetch(url,{cache:'no-store'});
+  if(!res.ok)throw Error('research HTTP '+res.status);
+  const x=await res.json();
+  if(x.schema!=='GMFQ_FXV2_CHF_NZD_BENCHMARK_RESEARCH_V1'||
+     x.eligible_for_fx_pair_engine!==false||x.eligible_for_backtests!==false||
+     x.canonical_government_rates_untouched!==true)throw Error('research contract invalid');
+  return x;
+ };
+ let research;
+ try{research=await load(local);}catch(error){console.warn('[FXV2 Coppie] Local research unavailable; checking main',error);research=await load(remote);}
  const today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
  const model=globalThis.FXV2RatesWorking?.derive(state.rates,research,today);
  if(!model||model.schema!=='GMFQ_FXV2_WORKING_RATES_V1'||
