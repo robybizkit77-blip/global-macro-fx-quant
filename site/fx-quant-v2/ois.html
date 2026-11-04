@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark">
+<title>FX Quant V2 — OIS & Market Pricing · G8</title>
+<meta name="description" content="Ricerca sul pricing dei tassi G8: OIS, futures e proxy identificati separatamente, con as-of e confronti 3M 6M 12M.">
+<link rel="stylesheet" href="./assets/site-nav.css?v=1">
+<script src="./assets/site-nav.js?v=1" defer></script>
+<style>
+:root{--bg:#080f19;--panel:#101e2d;--panel2:#122334;--line:#26394a;--txt:#edf1f5;--muted:#a3b5c3;--quiet:#8196a7;--green:#64d9ac;--blue:#9fc6e8;--purple:#c1a0ee;--amber:#e3bb73}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 89% 1%,#17364b 0,transparent 31%),var(--bg);color:var(--txt);font:14px/1.62 Inter,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#afcee5;text-decoration:none}a:hover{text-decoration:underline}button,select{font:inherit}button{cursor:pointer}button:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+.shell{width:min(1320px,calc(100% - 70px));margin:0 auto}h1,h2,h3,p{margin-top:0}h1,h2{font-family:Georgia,"Times New Roman",serif;font-weight:500;letter-spacing:-.025em}h1{font-size:clamp(39px,5vw,70px);line-height:1.07;max-width:820px;margin-bottom:24px}h2{font-size:clamp(27px,3vw,40px);margin-bottom:12px}h3{font-size:17px}section{border-top:1px solid var(--line);padding:37px 0 39px}
+.micro{font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--amber);font-weight:750}.muted{color:var(--muted)}.hero{padding:51px 0 36px;border-top:0}.lead{font:19px/1.55 Georgia,serif;color:#ced9e2;max-width:870px}.hero-footer{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:24px;color:#9db4c4;font-size:12px}.hero-footer strong{color:#e6d3b2}
+.note{padding:18px 20px;border-left:3px solid #a3bdcd;background:#101e2db8;color:#c3d0dc;line-height:1.7;max-width:1050px}
+.section-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-end;margin-bottom:24px}.section-head p{max-width:550px;color:var(--muted);margin:0}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.currency{display:flex;flex-direction:column;gap:6px;text-align:left;background:#101e2d;border:1px solid #2a4155;padding:17px;border-radius:7px;min-width:0;min-height:164px;color:var(--txt)}.currency:hover,.currency[aria-pressed=true]{border-color:#bca87f;background:#15283a}.currency strong{font-size:20px;letter-spacing:.035em}.currency .type{font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--blue)}.currency .asof{font-size:11px;color:var(--muted)}.currency .rate-line{font-size:13px;color:#d5e0e9}.currency .rate-line b{font-size:17px;color:#fff}
+.detail{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.65fr);gap:19px}.pane{border:1px solid #294357;background:#101e2d;padding:25px;border-radius:6px;min-width:0}.detail-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:12px;margin:12px 0 18px}.chip{border:1px solid #42617a;color:#c5dcee;border-radius:4px;padding:3px 8px;font-size:10px;letter-spacing:.09em;font-weight:700}.term-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:18px 0}.term{border-top:1px solid #496073;padding-top:10px}.term small{color:var(--muted)}.term strong{display:block;font-size:22px;font-variant-numeric:tabular-nums}.term .muted{display:block;font-size:11px}
+.chart{width:100%;height:auto;display:block;max-height:280px;overflow:visible}.chart text{font:12px Inter,"Segoe UI",Arial,sans-serif;fill:#adbfcc}.chart .grid{stroke:#284356;stroke-width:1}.chart .line{fill:none;stroke:#9fc6e8;stroke-width:3;stroke-linejoin:round}.chart .point{fill:#e3bb73}
+table{width:100%;border-collapse:collapse;text-align:left;font-size:13px}th{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--quiet);font-weight:740}td,th{border-bottom:1px solid var(--line);padding:13px 11px}td.n{text-align:right;font-variant-numeric:tabular-nums}th.n{text-align:right}.table-scroll{overflow:auto;max-width:100%}.table-scroll table{min-width:660px}.table-hint{font-size:11px;color:var(--muted)}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:15px}.compare label{font-size:12px;color:var(--muted);display:grid;gap:5px}.compare select{width:100%;background:#12293b;border:1px solid #436078;padding:11px;border-radius:5px;color:#f0f5fa}.comparison-value{font:500 44px/1.2 Georgia,serif;color:#e6d5b7;margin:19px 0 9px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:28px}.foot{color:#92a6b6;padding:31px 0 65px;font-size:12px}.source{overflow-wrap:anywhere}
+@media(max-width:1050px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.detail{grid-template-columns:1fr}.section-head{align-items:flex-start;flex-direction:column}}
+@media(max-width:620px){.shell{width:calc(100% - 32px)}.hero{padding:29px 0 27px}section{padding:27px 0}.cards{gap:9px}.currency{padding:13px;min-height:164px}.currency strong{font-size:17px}.currency .rate-line b{font-size:15px}.pane{padding:17px}.term strong{font-size:18px}.two{grid-template-columns:1fr}.comparison-value{font-size:36px}.lead{font-size:18px}}
+</style></head>
+<body data-fxv2-page="ois">
+<main class="shell" id="fxv2-main">
+<section class="hero"><div class="micro">Research desk / G8 / Front-end pricing</div>
+<h1>OIS &amp; Market Pricing.<br>Che cosa sta prezzando il mercato?</h1>
+<p class="lead">I movimenti delle banche centrali non si deducono dal Treasury 2Y. Qui seguiamo il pricing dei tassi a breve, distinguendo le curve OIS vere dai futures e dagli scenari stimati.</p>
+<div class="hero-footer"><span id="feedStatus">Caricamento feed con data e qualità…</span><strong>8 valute · 3 scadenze · 24 livelli di ricerca</strong></div></section>
+<section><div class="note"><strong>Prima distinzione:</strong> una quotazione OIS misura un tasso overnight atteso su un periodo; il prezzo di un futures su tassi può risentire di indice, durata del contratto, basis e convenzioni diverse. Qui li confrontiamo come <em>contesto</em>, non come OIS equivalenti o probabilità esatte di una decisione. Le date delle valute possono essere diverse.</div></section>
+<section id="selezione"><div class="section-head"><div><div class="micro">01 / Universi e scadenze</div><h2>Le otto valute, senza buchi nascosti.</h2></div><p>Seleziona una valuta. Dove i dati ufficiali non sono disponibili, il livello resta identificato come futures secondario o proxy.</p></div>
+<div id="pricingGrid" class="cards" aria-label="Panoramica pricing G8"><p>Caricamento dati G8…</p></div></section>
+<section id="dettaglio"><div class="section-head"><div><div class="micro">02 / Curva selezionata</div><h2 id="detailTitle">Lettura del front-end</h2></div><p>Livello → pendenza tra scadenze → movimento quando osservato. Non inferiamo un repricing se abbiamo solo quotazioni non comparabili.</p></div>
+<div class="detail"><article class="pane"><h3 id="detailName">Seleziona una valuta</h3><div id="detailMeta" class="detail-meta"></div>
+<svg id="pricingChart" class="chart" role="img" aria-label="Livelli di pricing 3 6 12 mesi" viewBox="0 0 680 270"></svg>
+<div id="tenors" class="term-grid"></div><p class="muted" id="detailInterpretation"></p></article>
+<aside class="pane"><div class="micro">Fonte e qualità</div><h3 id="sourceTitle">Classificazione</h3>
+<p id="sourceType" class="muted"></p><p id="sourceDate" class="muted"></p><p id="sourceName" class="source"></p>
+<p id="sourceCaveat" class="muted"></p><a href="./tassi.html">Confronta con governativi 2Y/10Y</a></aside></div></section>
+<section id="panoramica"><div class="section-head"><div><div class="micro">03 / Confronto generale</div><h2>Pricing 3M, 6M, 12M per G8.</h2></div><p>Valori percentuali riferiti ai singoli strumenti. La tabella non è una curva OIS omogenea internazionale.</p></div>
+<div class="table-scroll"><table><thead><tr><th>Valuta</th><th>Strumento</th><th class="n">3M</th><th class="n">6M</th><th class="n">12M</th><th>Data indicativa</th></tr></thead><tbody id="pricingRows"></tbody></table></div></section>
+<section id="confronti"><div class="section-head"><div><div class="micro">04 / Pricing relativo</div><h2>Confronto tra due valute.</h2></div><p>Per la ricerca Forex: prima verificare lo strumento e la data di ciascuna gamba, poi interpretare il differenziale.</p></div>
+<div class="two"><div class="pane"><div class="compare"><label>Prima valuta<select id="compareA" aria-label="Prima valuta"></select></label><label>Seconda valuta<select id="compareB" aria-label="Seconda valuta"></select></label></div><div id="compare6" class="comparison-value">—</div><p class="muted" id="compareText">Differenziale indicativo sul pricing 6M.</p></div>
+<div class="pane"><h3>Che cosa confermerebbe la tesi?</h3><p>Un differenziale 6M più ampio è utile soltanto se cambiano aspettative comparabili e il prezzo FX conferma. Uno spread di livello non equivale a un flusso investibile, né prova che sia avvenuto un repricing della banca centrale.</p><p class="muted" id="compareFoot"></p></div></div></section>
+<section><div class="micro">05 / Metodo di ricerca</div><h2>Cosa guardare a ogni aggiornamento.</h2>
+<div class="two"><p><strong>Livello e direzione:</strong> tassi impliciti 3M/6M/12M e variazioni giornaliere solo quando la stessa fonte rende il dato confrontabile. Un livello isolato non racconta da solo cosa è cambiato.</p><p><strong>Conferma:</strong> dati macro e sorprese, comunicazioni CB, 2Y, differenziali, FX spot e positioning. Una stima non entra automaticamente nei segnali delle 28 coppie né nei backtest.</p></div></section>
+<div class="foot">FX Quant V2 · sezione research autonoma. I dati vengono letti dai feed del repository e, in caso di errore, da uno snapshot datato. Nessun calcolo di probabilità implicite, nessuna modifica al motore operativo. <a href="./index.html">Torna alla Home</a>.</div>
+</main>
+<script>
+(()=>{"use strict";
+const C=["USD","EUR","GBP","JPY","CHF","CAD","AUD","NZD"], F={USD:"🇺🇸",EUR:"🇪🇺",GBP:"🇬🇧",JPY:"🇯🇵",CHF:"🇨🇭",CAD:"🇨🇦",AUD:"🇦🇺",NZD:"🇳🇿"};
+const N={USD:"Stati Uniti",EUR:"Area euro",GBP:"Regno Unito",JPY:"Giappone",CHF:"Svizzera",CAD:"Canada",AUD:"Australia",NZD:"Nuova Zelanda"};
+const ROOT="https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/";
+const $=id=>document.getElementById(id);
+const fmt=(x,d=2)=>Number.isFinite(x)?x.toLocaleString("it-IT",{minimumFractionDigits:d,maximumFractionDigits:d}):"—";
+const date=x=>/^\d{4}-\d{2}-\d{2}$/.test(x||"")?x.slice(8,10)+"/"+x.slice(5,7)+"/"+x.slice(0,4):"n.d.";
+const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const state={currencies:{},selected:"USD",a:"EUR",b:"USD",origin:"snapshot"};
+const has=(v)=>Number.isFinite(v?.rate);
+function sourceNote(x){
+ if(x.kind==="OIS")return "Curva OIS pubblicata dalla Bank of England. I livelli dei 3 tenori sono tassi di curva, non probabilità di singoli meeting.";
+ if(x.kind==="FUTURES")return "Prezzi impliciti da futures quotati: non sono contratti OIS. Differenze di indice, calendario, scadenza e basis vanno considerate.";
+ if(x.kind==="PROXY FUTURES")return "Proxy direzionale ASX sui bank-bill NZD: non OIS e non tasso OCR esatto. Gli expiry possono essere lontani dagli orizzonti teorici.";
+ return "Futures secondari datati. Mapping al contratto quotato più vicino: non OIS, né stima certificata del tasso di policy. Una differenza rispetto al tasso corrente non è automaticamente repricing.";
+}
+function clean(c,x){if(!x||!x.horizons)return null;const hs={};for(const k of ["3m","6m","12m"]){let v=x.horizons[k];if(!has(v))return null;hs[k]={rate:v.rate,as_of:v.as_of||v.quote_as_of||x.as_of,change_1d_bp:Number.isFinite(v.change_1d_bp)?v.change_1d_bp:null,change_1w_bp:Number.isFinite(v.change_1w_bp)?v.change_1w_bp:null,contract:v.contract||v.symbol||null};}return {kind:x.kind,quality:x.quality,source:x.source,as_of:x.as_of,horizons:hs};}
+function update(c,v){const x=clean(c,v);if(!x)return;const old=state.currencies[c];if(!old||x.as_of>=old.as_of)state.currencies[c]=x;}
+function isActualOis(x){return x?.kind==="OIS";}
+function render(){
+ const curr=state.currencies;let ready=C.filter(c=>curr[c]).length;const grid=$("pricingGrid");
+ grid.innerHTML=C.map(c=>{let x=curr[c];if(!x)return '<article class="currency" aria-disabled="true">'+F[c]+" "+c+" · dati non caricati</article>";
+ return '<button type="button" class="currency" data-c="'+c+'" aria-pressed="'+(state.selected===c)+'"><strong>'+F[c]+" "+c+'</strong><span class="type">'+esc(x.kind)+'</span><span class="rate-line">6M <b>'+fmt(x.horizons["6m"].rate,3)+'%</b></span><span class="asof">'+date(x.as_of)+' · '+esc(x.quality)+'</span></button>';}).join("");
+ $("pricingRows").innerHTML=C.map(c=>{let x=curr[c];if(!x)return "<tr><td>"+c+"</td><td colspan=5>Dati non disponibili</td></tr>";return '<tr><td><b>'+F[c]+" "+c+'</b></td><td>'+esc(x.kind)+(x.kind==="OIS"?" · BOE":"")+'</td>'+["3m","6m","12m"].map(k=>'<td class="n">'+fmt(x.horizons[k].rate,3)+'%</td>').join("")+'<td>'+date(x.as_of)+'</td></tr>';}).join("");
+ $("feedStatus").textContent=ready+"/8 valute · "+(ready*3)+"/24 livelli · "+(state.origin==="live"?"Feed repository aggiornati":"Snapshot locale datato · fallback");
+ if(!curr[state.selected])state.selected=C.find(c=>curr[c])||"USD";
+ showDetail();showCompare();
+}
+function lineChart(x){
+ const values=["3m","6m","12m"].map(k=>x.horizons[k].rate),mn=Math.min(...values),mx=Math.max(...values),pad=Math.max(.06,(mx-mn)*.25),lo=mn-pad,hi=mx+pad,ys=v=>215-(v-lo)/(hi-lo)*150,xs=[115,335,555];
+ let h="";for(let i=0;i<4;i++){let y=55+i*50;h+='<line class="grid" x1="72" y1="'+y+'" x2="617" y2="'+y+'"/><text text-anchor="end" x="65" y="'+(y+4)+'">'+fmt(hi-(hi-lo)*(y-55)/150,2)+'%</text>';}
+ let points=values.map((v,i)=>xs[i]+","+ys(v).toFixed(2)).join(" ");
+ h+='<polyline class="line" points="'+points+'"/>';
+ values.forEach((v,i)=>{h+='<circle class="point" cx="'+xs[i]+'" cy="'+ys(v).toFixed(2)+'" r="5"/><text text-anchor="middle" x="'+xs[i]+'" y="244">'+["3M","6M","12M"][i]+'</text>';});
+ $("pricingChart").innerHTML=h;
+}
+function showDetail(){
+ let c=state.selected,x=state.currencies[c];if(!x)return;
+ $("detailTitle").textContent=N[c]+": quanto quota il front-end?";
+ $("detailName").textContent=F[c]+" "+c+" · "+N[c];$("detailMeta").innerHTML='<span class="chip">'+esc(x.kind)+'</span><span class="chip">'+esc(x.quality)+'</span><span>Dato '+date(x.as_of)+'</span>';
+ lineChart(x);
+ $("tenors").innerHTML=["3m","6m","12m"].map(k=>{let z=x.horizons[k];return '<div class="term"><small>'+k.toUpperCase()+'</small><strong>'+fmt(z.rate,3)+'%</strong><span class="muted">'+date(z.as_of)+(Number.isFinite(z.change_1d_bp)?" · 1D "+(z.change_1d_bp>0?"+":"")+fmt(z.change_1d_bp,1)+" pb":" · 1D non verificato")+'</span></div>';}).join("");
+ const h=x.horizons,term=100*(h["12m"].rate-h["3m"].rate);
+ $("detailInterpretation").textContent="Differenza di livello 12M − 3M: "+(term>0?"+":"")+fmt(term,1)+" pb. Non equivale a una variazione temporale o a un tasso forward, specialmente se i tenori sono futures su contratti diversi.";
+ $("sourceTitle").textContent=isActualOis(x)?"OIS pubblicato":"Non è un OIS quotato";
+ $("sourceType").textContent=x.kind+" · "+x.quality;
+ $("sourceDate").textContent="Data generale "+date(x.as_of)+"; ogni tenore conserva la propria data.";
+ $("sourceName").textContent=x.source;
+ $("sourceCaveat").textContent=sourceNote(x);
+}
+function showCompare(){
+ let a=state.currencies[state.a],b=state.currencies[state.b],za=a?.horizons?.["6m"],zb=b?.horizons?.["6m"];
+ if(!has(za)||!has(zb)){ $("compare6").textContent="—";return;}
+ let d=(za.rate-zb.rate)*100;$("compare6").textContent=(d>0?"+":d<0?"−":"")+fmt(Math.abs(d),1)+" pb";
+ $("compareText").textContent="6M "+state.a+" "+fmt(za.rate,3)+"% ("+date(za.as_of)+") − "+state.b+" "+fmt(zb.rate,3)+"% ("+date(zb.as_of)+")";
+ $("compareFoot").textContent="Strumenti: "+state.a+" "+a.kind+" / "+state.b+" "+b.kind+". Differenziale di livello INDICATIVO; non definisce carry, spread OIS omogeneo o repricing. Qualità: "+a.quality+" / "+b.quality+".";
+}
+function setup(){
+ const opts=C.map(c=>'<option value="'+c+'">'+F[c]+" "+c+"</option>").join("");
+ $("compareA").innerHTML=opts;$("compareB").innerHTML=opts;$("compareA").value=state.a;$("compareB").value=state.b;
+ $("pricingGrid").addEventListener("click",e=>{let b=e.target.closest("button[data-c]");if(b){state.selected=b.dataset.c;render();$("dettaglio").scrollIntoView({behavior:"smooth"});}});
+ for(const [id,k] of [["compareA","a"],["compareB","b"]])$(id).addEventListener("change",e=>{state[k]=e.target.value;showCompare();});
+}
+function liveNormalized(op,est,nzd){
+ const out={};
+ for(const c of C){
+  let z=op?.currencies?.[c],e=est?.currencies?.[c],v=null;
+  if(z?.operational_status==="GREEN_OFFICIAL"){
+   v={kind:c==="GBP"?"OIS":"FUTURES",quality:"FONTE UFFICIALE",source:z.source,as_of:z.as_of,
+    horizons:Object.fromEntries(["3m","6m","12m"].map(k=>[k,{...z.horizons?.[k],as_of:z.as_of}]))};
+  }else if(c==="NZD"&&nzd?.status==="LIVE_DIRECTIONAL_PROXY_READY"){
+   v={kind:"PROXY FUTURES",quality:"PROXY DIREZIONALE",source:nzd.source,as_of:nzd.as_of,
+    horizons:Object.fromEntries(["3m","6m","12m"].map(k=>[k,{rate:nzd.horizons?.[k]?.implied_bank_bill_rate,as_of:nzd.as_of,change_1d_bp:nzd.horizons?.[k]?.change_1d_bp,contract:nzd.horizons?.[k]?.expiry_label}]))};
+  }else if(e&&(e.status==="ESTIMATED_ACTIVE"||e.status==="ESTIMATED_PARTIAL")){
+   v={kind:"FUTURES SECONDARI",quality:"STIMA INDICATIVA",source:e.source,as_of:e.as_of,
+    horizons:Object.fromEntries(["3m","6m","12m"].map(k=>[k,{...e.horizons?.[k],as_of:e.horizons?.[k]?.quote_as_of||e.as_of}]))};
+  }
+  if(v)out[c]=v;
+ }
+ return out;
+}
+async function get(url){const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),10000);try{const r=await fetch(url,{cache:"no-store",signal:ctl.signal});if(!r.ok)throw Error("HTTP "+r.status);return await r.json();}finally{clearTimeout(timer);}}
+setup();
+(async()=>{
+ try{let x=await get("./ois-pricing-snapshot.json");if(x.schema==="GMFQ_FXV2_PRICING_SNAPSHOT_V1"&&x.eligible_for_fx_engine===false){for(const c of C)update(c,x.currencies?.[c]);render();}}
+ catch(e){console.warn("FXV2 OIS snapshot missing",e);}
+ const names=["OIS_OPERATIONAL_VIEW.json","CB_PRICING_ESTIMATED.json","NZD_CB_PRICING_DIRECTIONAL_PROXY.json"];
+ const rs=await Promise.allSettled(names.map(n=>get(ROOT+n)));
+ let fresh=liveNormalized(...rs.map(r=>r.status==="fulfilled"?r.value:null)),accepted=0;
+ for(const c of C){let x=clean(c,fresh[c]);if(x){update(c,x);accepted++;}}
+ if(accepted){state.origin="live";render();}
+ else if(!Object.keys(state.currencies).length){$("feedStatus").textContent="Dati momentaneamente indisponibili: nessun valore inventato";}
+})().catch(e=>console.warn("FXV2 OIS live refresh unavailable",e));
+})();
+</script></body></html>
