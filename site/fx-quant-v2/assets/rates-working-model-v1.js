@@ -31,45 +31,77 @@
     const chf=research.CHF;
     if(chf && chf.pair_status==="OFFICIAL_SNBSAMEBASIS_RESEARCH_REVIEW_REQUIRED" &&
        chf.eligible_for_core===false && chf.eligible_for_automatic_promotion===false &&
-       chf.separate_10y?.not_joinable_with_paired_2y===true &&
-       inPast(today,chf.paired_date) && inPast(today,chf.separate_10y?.as_of) &&
-       chf.separate_10y.as_of>=chf.paired_date &&
-       (!iso(canonical.CHF?.date) || canonical.CHF.date<chf.separate_10y.as_of) &&
+       chf.separate_10y && chf.separate_10y.not_joinable_with_paired_2y===
+           (chf.separate_10y.as_of!==chf.paired_date) &&
+       inPast(today,chf.paired_date) && inPast(today,chf.separate_10y.as_of) &&
+       (!iso(canonical.CHF?.date) ||
+        canonical.CHF.date<(chf.separate_10y.as_of>chf.paired_date?
+                            chf.separate_10y.as_of:chf.paired_date)) &&
        valid(chf["2Y"]) && valid(chf["10Y"]) &&
        valid(chf.separate_10y["10Y"]) &&
        valid(chf.curve_bp,-1000,2000) &&
-       Math.abs(round(100*(chf["10Y"]-chf["2Y"]),1)-chf.curve_bp)<0.11) {
-      const observed10=chf.separate_10y["10Y"];
-      const delta10=observed10-chf["10Y"];
-      if(Math.abs(delta10)<=0.5) {
-        const sourceAge=researchAge(today,chf.separate_10y.as_of);
-        const dated=olderThanResearchWindow(today,chf.separate_10y.as_of) ||
-                    olderThanResearchWindow(today,chf.paired_date);
-        // Scenario, NOT a newly observed 2Y: assume the same %point shift as 10Y.
-        const modeled2=round(chf["2Y"]+delta10,4);
+       Math.abs(round(100*(chf["10Y"]-chf["2Y"]),1)-chf.curve_bp)<0.11 &&
+       // A same-date external SNB 10Y that disagrees cannot be used as proof.
+       (chf.separate_10y.as_of!==chf.paired_date ||
+        Math.abs(chf.separate_10y["10Y"]-chf["10Y"])<=0.001)) {
+      const pairIsLatest=chf.paired_date>=chf.separate_10y.as_of;
+      if(pairIsLatest) {
+        // BOTH tenors were independently captured in a verified SAME-DATE
+        // SNB spot series. The separately published 10Y may be older.
+        // Do not manufacture a daily rate move from this one paired level.
+        const sourceAge=researchAge(today,chf.paired_date);
+        const dated=olderThanResearchWindow(today,chf.paired_date);
         out.rates.CHF={
-          date:chf.separate_10y.as_of,"2Y":modeled2,"10Y":observed10,
-          curve_bp:round((observed10-modeled2)*100,1),
-          // After the research freshness window, historical movements must
-          // not be interpreted as today's change or as a live repricing.
-          chg2_bp:dated?null:round(delta10*100,2),
-          chg10_bp:dated?null:round(delta10*100,2),
-          source:"SNB 10Y spot osservato; SNB 2Y stimato da shift parallelo della coppia "+chf.paired_date,
-          quality:"STIMA 2Y / SNB 10Y OSSERVATO"+(dated?" · RIFERIMENTO STORICO":""),
+          date:chf.paired_date,"2Y":chf["2Y"],"10Y":chf["10Y"],
+          curve_bp:round((chf["10Y"]-chf["2Y"])*100,1),
+          chg2_bp:null,chg10_bp:null,
+          source:"Swiss National Bank · spot 2J/10J sulla stessa data; ricerca V2 non promossa a Core",
+          quality:"SNB 2Y / 10Y OSSERVATI · RICERCA V2"+(dated?" · RIFERIMENTO STORICO":""),
+          research_observed:true,estimated:true,
           stale_source:dated,source_age_days:sourceAge,
           freshness:dated?"DATED_RESEARCH_NO_CURRENT_MARKET_MOVE":"RECENT_DATED_RESEARCH",
-          estimated:true,source_date:chf.paired_date,
-          evidence_date:chf.separate_10y.as_of,
-          tenor_quality:{"2Y":"STIMATO","10Y":"OSSERVATO"},
-          working_method:"PARALLEL_10Y_SHIFT_2Y",
-          assumptions:"2Y="+chf["2Y"]+"% + (10Y "+observed10+"% − "+chf["10Y"]+"%)",
+          source_date:chf.paired_date,evidence_date:chf.paired_date,
+          tenor_quality:{"2Y":"OSSERVATO","10Y":"OSSERVATO"},
+          working_method:"SNB_SAME_DATE_OBSERVED_PAIR_RESEARCH",
+          assumptions:"Rendimenti SNB 2J/10J osservati entrambi al "+chf.paired_date+
+            ". Nessuna variazione giornaliera dedotta senza seconda coppia omogenea.",
           comparison_start:chf.paired_date,
-          no_core_effect:true,
-          no_inferred_market_move:true
+          no_core_effect:true,no_inferred_market_move:true
         };
-        out.warnings.push(dated
-          ?"CHF: scenario STORICO al "+chf.separate_10y.as_of+"; 2Y stimato, nessun movimento di oggi deducibile."
-          :"CHF: lo shift 2Y da 10Y è un'ipotesi, non una quotazione 2Y.");
+        out.warnings.push("CHF: coppia SNB 2Y/10Y "+(dated?"STORICA":"osservata")+
+          " al "+chf.paired_date+"; non certificata per Core, nessuna variazione inventata.");
+      } else {
+        // Only the 10Y is newer: keep the existing *clearly estimated* 2Y
+        // parallel-shift scenario, never join two source dates as observed.
+        const observed10=chf.separate_10y["10Y"];
+        const delta10=observed10-chf["10Y"];
+        if(Math.abs(delta10)<=0.5) {
+          const sourceAge=researchAge(today,chf.separate_10y.as_of);
+          const dated=olderThanResearchWindow(today,chf.separate_10y.as_of) ||
+                      olderThanResearchWindow(today,chf.paired_date);
+          const modeled2=round(chf["2Y"]+delta10,4);
+          out.rates.CHF={
+            date:chf.separate_10y.as_of,"2Y":modeled2,"10Y":observed10,
+            curve_bp:round((observed10-modeled2)*100,1),
+            chg2_bp:dated?null:round(delta10*100,2),
+            chg10_bp:dated?null:round(delta10*100,2),
+            source:"SNB 10Y spot osservato; SNB 2Y stimato da shift parallelo della coppia "+chf.paired_date,
+            quality:"STIMA 2Y / SNB 10Y OSSERVATO"+(dated?" · RIFERIMENTO STORICO":""),
+            stale_source:dated,source_age_days:sourceAge,
+            freshness:dated?"DATED_RESEARCH_NO_CURRENT_MARKET_MOVE":"RECENT_DATED_RESEARCH",
+            estimated:true,source_date:chf.paired_date,
+            evidence_date:chf.separate_10y.as_of,
+            tenor_quality:{"2Y":"STIMATO","10Y":"OSSERVATO"},
+            working_method:"PARALLEL_10Y_SHIFT_2Y",
+            assumptions:"2Y="+chf["2Y"]+"% + (10Y "+observed10+"% − "+chf["10Y"]+"%)",
+            comparison_start:chf.paired_date,
+            no_core_effect:true,
+            no_inferred_market_move:true
+          };
+          out.warnings.push(dated
+            ?"CHF: scenario STORICO al "+chf.separate_10y.as_of+"; 2Y stimato, nessun movimento di oggi deducibile."
+            :"CHF: lo shift 2Y da 10Y è un'ipotesi, non una quotazione 2Y.");
+        }
       }
     }
     const nzd=research.NZD;
