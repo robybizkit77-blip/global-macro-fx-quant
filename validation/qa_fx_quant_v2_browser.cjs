@@ -58,6 +58,14 @@ async function audit(browser,name,file,selector,view,viewport){
    rec.feed=full.slice(0,340);
    if(!full.includes(expected))issue(name,view,'live_feed_not_confirmed',rec.feed||s+' empty');
   }
+  if(name==='cross'&&mode==='public'){
+    const full=((await page.locator('#sourceList').textContent())||'');
+    if(!full.includes('Cross-Asset FRED/Cboe:')||
+       !full.includes('SP500')||!full.includes('NASDAQCOM')||!full.includes('VIX'))
+      issue(name,view,'cross_asset_feed_not_loaded','Expected dated FRED/Cboe five-series source marker not visible: '+full.slice(-450));
+    const display=((await page.locator('#vixFact').textContent())||'');
+    if(!/^VIX\s+[\d,.]+/.test(display))issue(name,view,'vix_render_not_synced','VIX UI value not rendered: '+display);
+  }
   if(view==='mobile'){
    const b=page.locator('#fxv2-global-header .fxv2-toggle');
    await b.click({timeout:10000});
