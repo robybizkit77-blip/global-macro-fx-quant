@@ -6,6 +6,7 @@ const out='fxv2-browser-evidence';fs.mkdirSync(out,{recursive:true});
 const pages=[
  ['home','index.html','#g8Grid'],['valute','valute.html','#currencyGrid'],
  ['coppie','coppie.html','#screener'],['tassi','tassi.html','#countryTabs'],
+ ['ois','ois.html','#pricingGrid'],
  ['macro','macro.html','#currencyGrid'],['banche','banche.html','#cbGrid'],
  ['cot','cot.html','#pickGrid'],['cross','cross-asset.html','#assetGrid'],
  ['liquidita','liquidita-credito.html','#countryGrid'],
@@ -47,7 +48,7 @@ async function audit(browser,name,file,selector,view,viewport){
      textLen:s.trim().length,bad:['undefined','[object Object]','NaN'].filter(x=>s.includes(x))};
   },selector);
   Object.assign(rec,o);
-  if(o.menu!==11||o.current!==1||o.page!==name)issue(name,view,'navigation',JSON.stringify(o));
+  if(o.menu!==12||o.current!==1||o.page!==name)issue(name,view,'navigation',JSON.stringify(o));
   if(!o.exists||!o.primary)issue(name,view,'empty_content',selector);
   if(o.textLen<450)issue(name,view,'empty_page',o.textLen);
   if(o.overflow>12)issue(name,view,'overflow_px',JSON.stringify({overflow:o.overflow,offenders:o.offenders}));
@@ -85,6 +86,31 @@ async function audit(browser,name,file,selector,view,viewport){
     const ordinary=((await page.locator('#gapDate').textContent())||'');
     if(ordinary.includes('STIMA/PROXY INDICATIVO'))
       issue(name,view,'pair_estimates_leaked','EUR/USD erroneously marked estimated: '+ordinary);
+  }
+  if(name==='ois'){
+    await page.waitForFunction(()=>document.querySelectorAll('#pricingGrid button[data-c]').length===8,null,{timeout:15000});
+    const data=await page.evaluate(()=>({
+      cols:document.querySelectorAll('#pricingRows tr').length,
+      cards:document.querySelectorAll('#pricingGrid button[data-c]').length,
+      tenors:document.querySelectorAll('#tenors .term').length,
+      gbp:[...document.querySelectorAll('#pricingGrid button[data-c]')].find(x=>x.dataset.c==='GBP')?.innerText||'',
+      usd:[...document.querySelectorAll('#pricingGrid button[data-c]')].find(x=>x.dataset.c==='USD')?.innerText||'',
+      nz:[...document.querySelectorAll('#pricingGrid button[data-c]')].find(x=>x.dataset.c==='NZD')?.innerText||'',
+      status:document.querySelector('#feedStatus')?.innerText
+    }));
+    if(data.cards!==8||data.cols!==8||data.tenors!==3||
+       !data.gbp.includes('OIS')||!data.usd.includes('FUTURES SECONDARI')||
+       !data.nz.includes('PROXY FUTURES')||!data.status.includes('24/24'))
+       issue(name,view,'ois_g8_coverage_or_provenance',JSON.stringify(data));
+    await page.locator('#pricingGrid button[data-c="JPY"]').click();
+    const title=(await page.locator('#detailTitle').textContent())||'';
+    const caveat=(await page.locator('#sourceCaveat').textContent())||'';
+    if(!title.includes('Giappone')||!caveat.includes('non sono contratti OIS'))
+      issue(name,view,'ois_country_interaction_failed',title+' '+caveat);
+    await page.locator('#compareA').selectOption('GBP');
+    await page.locator('#compareB').selectOption('USD');
+    if(!((await page.locator('#compareFoot').textContent())||'').includes('Differenziale di livello INDICATIVO'))
+      issue(name,view,'ois_cross_instrument_caveat_missing','Comparison must never be called an observed OIS spread');
   }
   if(name==='tassi'&&mode==='public'){
     // This is a read-only verification of V2 research panels, never a Core rates certification.
