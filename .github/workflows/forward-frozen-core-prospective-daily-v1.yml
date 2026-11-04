@@ -302,7 +302,7 @@ jobs:
               ;;
             *)
               echo "::error::V2_RESEARCH_CAPTURE_FAILED_AFTER_LEGACY_PERSISTENCE status=$V2_SHADOW_STATUS"
-              echo '- Core/Quality-Aware service: **PERSISTED / independently certified** (see separate checks).' >> "$GITHUB_STEP_SUMMARY"
+              echo '- Primary Core ledger: **PERSISTED**; Quality-Aware status is verified by its separate independent certification job.' >> "$GITHUB_STEP_SUMMARY"
               echo '- Original numerical V2 research: **NOT CERTIFIED / FAILED**. This separate step is intentionally non-blocking; workflow GREEN must not be read as V2 predictive validation.' >> "$GITHUB_STEP_SUMMARY"
               exit 1
               ;;
