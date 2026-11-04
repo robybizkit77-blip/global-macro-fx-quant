@@ -45,7 +45,7 @@ function validate(doc,today){
  return true;
 }
 function view(doc,code,today){
- if(!validate(doc,today)||!typeof code==="string")return null;
+ if(!validate(doc,today)||typeof code!=="string")return null;
  const a=code.slice(0,3),b=code.slice(3,6),p=doc.pair_context[a+"/"+b];
  if(!p||code.length!==6)return null;
  const ca=doc.countries[a],cb=doc.countries[b];
