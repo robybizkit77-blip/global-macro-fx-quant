@@ -1,0 +1,61 @@
+name: FX Quant V2 Daily Browser QA
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'site/fx-quant-v2/**'
+      - 'validation/qa_fx_quant_v2_browser.cjs'
+      - '.github/workflows/fx-quant-v2-browser-daily-qa.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'site/fx-quant-v2/**'
+      - 'validation/qa_fx_quant_v2_browser.cjs'
+      - '.github/workflows/fx-quant-v2-browser-daily-qa.yml'
+  schedule:
+    - cron: '20 8 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fx-quant-v2-browser-daily-qa
+  cancel-in-progress: false
+
+jobs:
+  v2-browser-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium browser tooling
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Start local V2 preview for pull requests
+        if: github.event_name == 'pull_request'
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 > /tmp/fxv2-browser-server.log 2>&1 &
+          sleep 2
+      - name: Audit desktop 1440px and mobile 390px across all 11 sections
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            FXV2_MODE=pr-local FXV2_BASE=http://127.0.0.1:8000/site/fx-quant-v2 node validation/qa_fx_quant_v2_browser.cjs
+          else
+            FXV2_MODE=public FXV2_BASE=https://robybizkit77-blip.github.io/global-macro-fx-quant/site/fx-quant-v2 node validation/qa_fx_quant_v2_browser.cjs
+          fi
+      - name: Preserve QA receipt and failure screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fxv2-browser-evidence
+          path: fxv2-browser-evidence/
+          if-no-files-found: warn
+          retention-days: 14
