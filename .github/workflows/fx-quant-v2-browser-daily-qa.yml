@@ -8,6 +8,7 @@ on:
       - 'validation/qa_fx_quant_v2_browser.cjs'
       - 'validation/qa_fxv2_home_concept_v1.cjs'
       - 'validation/qa_fxv2_home_wow_v5.cjs'
+      - 'validation/qa_fxv2_home_simple_v6.cjs'
       - 'validation/qa_fx_quant_v2_freshness.cjs'
       - 'validation/fxv2_research_core_readiness_v1.cjs'
       - 'validation/test_fxv2_research_core_readiness_v1.cjs'
@@ -27,6 +28,7 @@ on:
       - 'validation/qa_fx_quant_v2_browser.cjs'
       - 'validation/qa_fxv2_home_concept_v1.cjs'
       - 'validation/qa_fxv2_home_wow_v5.cjs'
+      - 'validation/qa_fxv2_home_simple_v6.cjs'
       - 'validation/qa_fx_quant_v2_freshness.cjs'
       - 'validation/fxv2_research_core_readiness_v1.cjs'
       - 'validation/test_fxv2_research_core_readiness_v1.cjs'
@@ -153,6 +155,15 @@ jobs:
             FXV2_BASE=http://127.0.0.1:8000/site/fx-quant-v2 node validation/qa_fxv2_home_wow_v5.cjs
           else
             FXV2_BASE=https://robybizkit77-blip.github.io/global-macro-fx-quant/site/fx-quant-v2 node validation/qa_fxv2_home_wow_v5.cjs
+          fi
+      - name: Audit simplified narrative Home V6 in desktop and mobile
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            FXV2_BASE=http://127.0.0.1:8000/site/fx-quant-v2 node validation/qa_fxv2_home_simple_v6.cjs
+          else
+            FXV2_BASE=https://robybizkit77-blip.github.io/global-macro-fx-quant/site/fx-quant-v2 node validation/qa_fxv2_home_simple_v6.cjs
           fi
       - name: Preserve QA receipt and failure screenshots
         if: always()
