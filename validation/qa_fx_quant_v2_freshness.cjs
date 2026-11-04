@@ -56,9 +56,27 @@ const cb=read('NATIVE_CB_DATA');
 for(const c of ccy){
  const x=cb[c]||{};
  requireValid(Boolean(iso(x.last_date)),'Invalid CB last decision '+c);
- if(iso(x.next_meeting)&&x.next_meeting<today&&x.last_date<x.next_meeting)
-  gap('central_banks',c+' decisione non riconciliata',
-      'Ultima decisione '+x.last_date+'; riunione '+x.next_meeting+' già trascorsa senza successivo esito nel feed.');
+ if(iso(x.next_meeting)&&x.next_meeting<today&&x.last_date<x.next_meeting){
+  if(c==='AUD'){
+   const rba=JSON.parse(file('rba-decision-2026-11-03-official.json'));
+   const vetted=rba.schema==='GMFQ_FXV2_RBA_OFFICIAL_DECISION_OVERLAY_V1'&&
+    rba.currency==='AUD'&&
+    rba.published_status==='OFFICIAL_RBA_RELEASE_VERIFIED__V2_INFORMATIONAL_ONLY'&&
+    rba.source_url==='https://www.rba.gov.au/media-releases/2026/mr-26-30.html'&&
+    iso(rba.last_date)&&rba.last_date===x.next_meeting&&rba.last_date<=today&&
+    Number.isFinite(rba.rate)&&Number.isFinite(rba.rate_change_bp)&&
+    rba.rate_change_bp===25&&rba.eligible_for_core_signals===false&&
+    rba.eligible_for_pair_engine===false&&rba.eligible_for_backtests===false;
+   if(vetted){
+    check('central_banks_v2','AUD RBA official decision (V2-only)',rba.last_date,35,'OFFICIAL_RBA_RELEASE_V2_ONLY');
+    note('central_banks','AUD Core non allineato, V2 aggiornata',
+     'Feed Core NATIVE_CB_DATA resta al '+x.last_date+', mentre la V2 mostra la decisione RBA ufficiale '+rba.last_date+' tramite overlay separato. Il prossimo meeting '+rba.next_meeting+' va verificato da una nuova fonte, non considerato aggiornato automaticamente.');
+   }else gap('central_banks','AUD nuova decisione non riconciliata','Overlay V2 della riunione RBA non valido o scaduto; Core '+x.last_date);
+  }else{
+   gap('central_banks',c+' decisione non riconciliata',
+       'Ultima decisione '+x.last_date+'; riunione '+x.next_meeting+' già trascorsa senza successivo esito nel feed.');
+  }
+ }
 }
 const ois=read('OIS_OPERATIONAL_VIEW');
 let certified=0;
@@ -133,6 +151,19 @@ if(bench.NZD&&bench.NZD.status==='RBNZ_GOVT_B2_WEB_RESEARCH_UNAPPROVED'&&
 note('rates_research','Research vs Core','CHF/NZD research levels do not promote OIS, FX spreads, cross-roll changes or backtests.');
 const liq=read('NATIVE_LIQ_DATA');
 requireValid(ccy.every(c=>!!liq[c]),'Incomplete G8 liquidity/credit feed');
+const liqHtml=file('liquidita-credito.html');
+requireValid(liqHtml.includes('assets/liquidity-credit-feed-v1.js')&&
+             liqHtml.includes('cross-asset-live-data.json')&&
+             liqHtml.includes('Credito ICE/FRED:'),
+ 'V2 Liquidità/Credito must independently consume dated FRED IG/HY overlay');
+for(const k of ['IG_OAS','HY_OAS']){
+ const z=crossLive.streams?.[k];
+ if(z?.quality==='PUBLISHED_SOURCE_RESEARCH_ONLY'&&iso(z.date)&&Number.isFinite(z.value)&&
+    z.kind==='CREDIT_OAS'&&z.unit==='percent'){
+  check('liquidity_credit_live',k+' FRED published source',z.date,7,'RESEARCH_ONLY_FRED_ICE');
+ }else gap('liquidity_credit_live',k,'Feed ICE/FRED non valido; la pagina deve mantenere snapshot con data senza promozione artificiale.');
+}
+
 note('liquidity_credit','Frequenze miste','Liquidità e credito pubblicati mensilmente o trimestralmente: la data dello snapshot di pagina non certifica il giorno delle osservazioni.');
 const ratesHtml=file('tassi.html');
 requireValid(ratesHtml.includes('CHF_SNB_10Y_SPOT_CONTEXT.json')&&ratesHtml.includes('NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json'),

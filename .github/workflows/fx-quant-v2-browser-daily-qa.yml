@@ -8,6 +8,7 @@ on:
       - 'validation/qa_fx_quant_v2_browser.cjs'
       - 'validation/qa_fx_quant_v2_freshness.cjs'
       - 'validation/qa_fxv2_rates_working_v1.cjs'
+      - 'validation/qa_fxv2_liquidity_credit_overlay_v1.cjs'
       - '.github/workflows/fx-quant-v2-browser-daily-qa.yml'
   push:
     branches: [main]
@@ -16,6 +17,7 @@ on:
       - 'validation/qa_fx_quant_v2_browser.cjs'
       - 'validation/qa_fx_quant_v2_freshness.cjs'
       - 'validation/qa_fxv2_rates_working_v1.cjs'
+      - 'validation/qa_fxv2_liquidity_credit_overlay_v1.cjs'
       - '.github/workflows/fx-quant-v2-browser-daily-qa.yml'
   schedule:
     - cron: '20 8 * * 1-5'
@@ -40,8 +42,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Validate CHF/NZD estimates and differential arithmetic without modifying Core
-        run: node validation/qa_fxv2_rates_working_v1.cjs
+      - name: Validate FXV2 working rates and dated IG/HY credit overlay independently
+        run: |
+          node validation/qa_fxv2_rates_working_v1.cjs
+          node validation/qa_fxv2_liquidity_credit_overlay_v1.cjs
   v2-freshness-audit:
     if: >-
       github.event_name != 'workflow_run' ||
@@ -85,7 +89,7 @@ jobs:
         run: |
           python3 -m http.server 8000 --bind 127.0.0.1 > /tmp/fxv2-browser-server.log 2>&1 &
           sleep 2
-      - name: Audit desktop 1440px and mobile 390px across all 11 sections
+      - name: Audit desktop 1440px and mobile 390px across all 12 sections
         shell: bash
         run: |
           set -euo pipefail
