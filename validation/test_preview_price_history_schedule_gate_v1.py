@@ -10,8 +10,8 @@ def instant(raw: str) -> dt.datetime:
     return dt.datetime.fromisoformat(raw.replace("Z", "+00:00"))
 
 
-def check(event, cron, time, allowed, reason, slot=None):
-    r = resolve(event, cron, instant(time))
+def check(event, cron, time, allowed, reason, slot=None, parent=""):
+    r = resolve(event, cron, instant(time), parent=parent)
     assert r["should_run"] is allowed, (event, cron, time, r)
     assert r["reason"] == reason, (event, cron, time, r)
     if slot is not None:
@@ -59,18 +59,38 @@ def main():
     for event in ("workflow_dispatch", "pull_request", "push", "workflow_run"):
         check(event, "", "2026-10-19T11:20:00Z", True, "EXPLICIT_MANUAL_OR_CI_EVENT")
 
+    # Two existing independent workflows can recover an ECB refresh if the
+    # 17:25/17:55/18:25 Price History cron is dropped by GitHub.
+    for upstream in ("Daily Data Orchestrator V2", "CB Pricing Persistent Daily V1"):
+        check("workflow_run", "", "2026-11-04T16:59:00Z", True,
+              "POST_ECB_INDEPENDENT_SOURCE_RECOVERY", parent=upstream)
+        check("workflow_run", "", "2026-11-04T15:59:00Z", False,
+              "RECOVERY_BEFORE_ECB_PUBLICATION_WINDOW", parent=upstream)
+        check("workflow_run", "", "2026-11-07T17:05:00Z", False,
+              "RECOVERY_NOT_ROME_BUSINESS_DAY", parent=upstream)
+        check("workflow_run", "", "2026-10-19T15:10:00Z", True,
+              "POST_ECB_INDEPENDENT_SOURCE_RECOVERY", parent=upstream)
+        check("workflow_run", "", "2026-10-19T14:59:00Z", False,
+              "RECOVERY_BEFORE_ECB_PUBLICATION_WINDOW", parent=upstream)
+
     # The historical source refresh may follow an actual Price producer without
     # waiting for the next scheduled attempt; the opposite trigger has its own
     # anti-feedback guard so this never creates a workflow_run cycle.
     workflow = (Path(__file__).resolve().parents[1] /
                 ".github/workflows/price-history-persistent-daily-v1.yml").read_text(encoding="utf-8")
     trigger = workflow.split("  workflow_run:", 1)[1].split("  workflow_dispatch:", 1)[0]
-    assert "workflows: ['Price Persistent Daily V1']" in trigger
+    assert "workflows: ['Price Persistent Daily V1', 'Daily Data Orchestrator V2', 'CB Pricing Persistent Daily V1']" in trigger
     assert "types: [completed]" in trigger
     assert "github.event.workflow_run.conclusion == 'success'" in workflow
     assert "github.event.workflow_run.head_branch == 'main'" in workflow
     assert "github.event.workflow_run.event != 'pull_request'" in workflow
     assert "github.event.workflow_run.event != 'workflow_run'" in workflow
+    assert "github.event.workflow_run.name == 'Price Persistent Daily V1'" in workflow
+    assert "github.event.workflow_run.name == 'Daily Data Orchestrator V2'" in workflow
+    assert "github.event.workflow_run.name == 'CB Pricing Persistent Daily V1'" in workflow
+    assert "github.event.workflow_run.event == 'schedule'" in workflow
+    assert 'PRICE_HISTORY_PARENT: ${{ github.event.workflow_run.name }}' in workflow
+    assert '--parent "$PRICE_HISTORY_PARENT"' in workflow
     assert "queue: max" in workflow and "cancel-in-progress: false" in workflow
     assert "price-history-validation-pr-{0}" in workflow
     assert workflow.count("    - cron:") == 5
