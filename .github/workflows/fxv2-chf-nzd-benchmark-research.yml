@@ -1,0 +1,94 @@
+name: FX Quant V2 CHF NZD Same-Basis Research Refresh
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/rates/refresh_fxv2_chf_nzd_benchmark_context.py'
+      - 'validation/rates/test_refresh_fxv2_chf_nzd_benchmark_context.py'
+      - 'site/fx-quant-v2/chf-nzd-benchmark-research.json'
+      - 'site/fx-quant-v2/tassi.html'
+      - '.github/workflows/fxv2-chf-nzd-benchmark-research.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/rates/refresh_fxv2_chf_nzd_benchmark_context.py'
+      - 'validation/rates/test_refresh_fxv2_chf_nzd_benchmark_context.py'
+      - 'site/fx-quant-v2/chf-nzd-benchmark-research.json'
+      - 'site/fx-quant-v2/tassi.html'
+      - '.github/workflows/fxv2-chf-nzd-benchmark-research.yml'
+  schedule:
+    - cron: '45 8 * * 1-5'
+    - cron: '30 18 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fxv2-chf-nzd-benchmark-research
+  cancel-in-progress: false
+
+jobs:
+  research-feed:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test CHF matched SNB tenors and NZD benchmark roll safeguards
+        run: |
+          python3 -m unittest validation.rates.test_refresh_fxv2_chf_nzd_benchmark_context -v
+          python3 -m unittest validation.rates.test_recover_chf_snb_paired_history_v1 -v
+      - name: Build independently dated context from official source and archived B2 research
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            python3 validation/rates/refresh_fxv2_chf_nzd_benchmark_context.py --output /tmp/fxv2-chf-nzd-research-candidate.json
+          else
+            python3 validation/rates/refresh_fxv2_chf_nzd_benchmark_context.py
+          fi
+      - name: Publish only changed V2 research feed (no canonical Rates writes)
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE=site/fx-quant-v2/chf-nzd-benchmark-research.json
+          git diff --exit-code -- live_data payload
+          if git diff --quiet -- "$FILE"; then
+            echo 'FXV2_CHF_NZD_UNCHANGED_SOURCE_OBSERVATIONS'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$FILE"
+          git commit -m 'data(fxv2): update separate SNB matched-pair and RBNZ benchmark-roll research'
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:main; then
+              echo 'FXV2_CHF_NZD_RESEARCH_PUBLISHED_MAIN'
+              exit 0
+            fi
+            if [ "$attempt" -lt 5 ]; then
+              sleep "$((attempt*12))"
+              git fetch origin main
+              git rebase origin/main
+            fi
+          done
+          echo 'No update accepted after retries; previous research feed preserved' >&2
+          exit 1
+      - name: Keep source review evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fxv2-chf-nzd-benchmark-evidence
+          path: |
+            /tmp/fxv2-chf-nzd-research-candidate.json
+            site/fx-quant-v2/chf-nzd-benchmark-research.json
+          if-no-files-found: warn
+          retention-days: 14
