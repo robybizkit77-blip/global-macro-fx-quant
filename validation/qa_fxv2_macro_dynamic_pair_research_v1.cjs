@@ -24,7 +24,12 @@ assert.equal(yesGDP,1,'Only USD/EUR have two contiguous recent GDP quarters in s
 const eu=evaluate(doc,'EURUSD','2026-11-04',validate);
 assert.equal(eu.base.growth.qoq_change_pp,-0.2);
 assert.equal(eu.quote.growth.qoq_change_pp,0.466464);
-assert.equal(eu.comparable.inflation_trend_same_period,true);
+assert.equal(eu.comparable.inflation_trend_same_period,
+ doc.countries.EUR.inflation.observation_period===doc.countries.USD.inflation.observation_period,
+ 'same-period test must follow current Macro V3 source periods, not a frozen assumption');
+if(!eu.comparable.inflation_trend_same_period)
+ assert(eu.summary.includes('Inflazione non sincronizzata'),
+   'different release/observation periods must not be treated as direct comparison');
 assert.equal(eu.comparable.labour_trend_same_period,true);
 assert.equal(eu.base.inflation.change_pp,1);
 assert.equal(eu.quote.inflation.change_pp,0.25372);
