@@ -53,4 +53,9 @@ assert.equal(Object.keys(stale.rates).length,0,'Never promote very old levels in
 const tassi=fs.readFileSync(path.join(ROOT,'site/fx-quant-v2/tassi.html'),'utf8');
 assert.ok(tassi.includes("svgCurves(r);if(r.estimated)"),'Estimate caveat must remain after SVG rendering');
 assert.ok(tassi.includes("I differenziali sono calcoli aritmetici"),'V2 comparison must label estimates');
+const coppie=fs.readFileSync(path.join(ROOT,'site/fx-quant-v2/coppie.html'),'utf8');
+assert.ok(coppie.includes('rates-working-model-v1.js?v=1'),'Coppie must reuse the validated Tassi estimator');
+assert.ok(coppie.includes('STIMA/PROXY INDICATIVO'),'Coppie must visibly label scenario levels');
+assert.ok(coppie.includes('model.eligible_for_fx_engine!==false'),'Coppie must keep estimates out of the engine');
+assert.ok(coppie.includes('id="pairRatesSourceNote"'),'Coppie must expose research caveats');
 console.log('FXV2_WORKING_RATE_TESTS PASS CHF 2Y '+chf['2Y']+'% (estimate), CHF 10Y '+chf['10Y']+'% (observed); NZD 2Y '+nzd['2Y']+'%, NZD 10Y '+nzd['10Y']+'% (B2 web research); computed spread '+(-372.8)+' bp; canonical unchanged');
