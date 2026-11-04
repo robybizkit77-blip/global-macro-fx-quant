@@ -63,15 +63,21 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add "$FILE"
           git commit -m 'data(fxv2): refresh independently dated public index, credit and volatility sources'
-          for attempt in 1 2 3; do
+          # GitHub occasionally rejects otherwise valid pushes with HTTP 500.
+          # Space retries out so we do not hammer the same transient failure.
+          for attempt in 1 2 3 4 5 6 7; do
+            echo "FXV2_PUBLISH_ATTEMPT_${attempt}"
             if git push origin HEAD:main; then
               echo 'FXV2_CROSS_ASSET_SOURCE_PUBLISHED_MAIN'
               exit 0
             fi
-            git fetch origin main
-            git rebase origin/main
+            if [ "$attempt" -lt 7 ]; then
+              sleep "$((attempt * 12))"
+              git fetch origin main
+              git rebase origin/main
+            fi
           done
-          echo 'Unable to publish source after three optimistic main retries' >&2
+          echo 'Unable to publish source after seven spaced retries: preserve existing feed; no stale promotion' >&2
           exit 1
       - name: Record research-only source receipt
         if: always()
