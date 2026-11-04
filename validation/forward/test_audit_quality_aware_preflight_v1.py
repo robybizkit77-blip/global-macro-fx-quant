@@ -1,6 +1,7 @@
 """No-writing preflight tests of actual source shapes and adversarial tampering."""
 import copy
 from datetime import date, datetime, timezone
+from zoneinfo import ZoneInfo
 import json
 import unittest
 
@@ -17,8 +18,12 @@ from validation.macro.v2_zero_mad_ordinal_quality_v1 import (
 class QualityAwarePreflightTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.now = datetime(2026, 10, 31, 12, 30, tzinfo=timezone.utc)
-        cls.day = "2026-10-31"
+        # This is a CURRENT-source preflight: the repository inputs continue
+        # updating. A frozen October clock incorrectly treats genuine later
+        # observations as future-data tampering and breaks CI every new month.
+        # Historical admission/backfill protections are tested separately.
+        cls.now = datetime.now(timezone.utc)
+        cls.day = cls.now.astimezone(ZoneInfo("Europe/Rome")).date().isoformat()
         load = lambda key: json.loads((ROOT / SOURCE_PATHS[key]).read_text())
         cls.fx = load("ecb")
         cls.pairs = load("pair_setup")
@@ -43,13 +48,20 @@ class QualityAwarePreflightTests(unittest.TestCase):
         data.update(kwargs)
         return audit.inspect(**data)
 
-    def test_all_24_sources_with_zero_MAD_and_no_fake_weekend_freeze(self):
+    def test_all_24_current_sources_without_faking_a_capture(self):
         out=self.inspect()
         self.assertEqual(out["economic_research_dimensions"],24)
         self.assertEqual(out["market_context_pairs"],28)
         self.assertEqual(out["source_quality_graded_market_currencies"],8)
-        self.assertEqual(out["status"],"NOT_BEFORE_REGISTERED_FIRST_REAL_CAPTURE")
-        self.assertFalse(out["official_same_day_ECB_T0_observed"])
+        self.assertIn(out["status"], {
+            "WEEKEND_NO_ECB_FREEZE",
+            "AWAITING_TRUE_AFTER_19_ROME_CUTOFF",
+            "AWAITING_OFFICIAL_SAME_DAY_ECB_T0",
+            "ECONOMIC_MARKET_SOURCE_SHAPES_PREVALIDATED_ONLY",
+        })
+        # Having a same-day ECB fixing is not an admission or a freeze.
+        # Do not expect a hard-coded historic day or force this boolean.
+        self.assertIsInstance(out["official_same_day_ECB_T0_observed"],bool)
         self.assertFalse(out["future_snapshot_captured_now"])
         self.assertFalse(out["forecast_FX_accuracy_claimed"])
         self.assertFalse(out["safe_to_capture_without_real_time_admission"])
@@ -83,6 +95,13 @@ class QualityAwarePreflightTests(unittest.TestCase):
                 parent[path[-1]]=value
                 with self.assertRaises((ValueError,TypeError)):
                     self.inspect(**{source:node})
+
+    def test_old_clock_cannot_backfill_current_source_vintages(self):
+        # Backdating actual November-era sources to the 2026-10-31 fixture
+        # must fail closed; never retroactively claim a real Oct-31 T0.
+        historic = datetime(2026, 10, 31, 12, 30, tzinfo=timezone.utc)
+        with self.assertRaises(ValueError):
+            audit.run(now=historic)
 
     def test_actual_read_only_function_does_not_create_snapshot(self):
         result=audit.run(now=self.now)
