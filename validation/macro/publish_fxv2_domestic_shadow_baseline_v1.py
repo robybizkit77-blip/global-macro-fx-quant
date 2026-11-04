@@ -189,6 +189,12 @@ def partial_from_strict_source(observed:dict, readiness:dict, today:date) -> dic
             available=valid_number(z)
             need(z is None or available,c+" "+pillar+" invalid numerical z")
             status=row.get("status","UNKNOWN")
+            if available:
+                need(status in (
+                    "DESCRIPTIVE_REVISED_HISTORY_ROBUST_Z_NOT_PIT",
+                    "DESCRIPTIVE_INITIAL_WEB_GROWTH_Z_DEFINITION_CAVEAT",
+                    "DESCRIPTIVE_INITIAL_WEB_GROWTH_Z_NOT_MODEL_CERTIFIED",
+                ),c+" "+pillar+" source status cannot generate strict z")
             quality=(
                 "CURRENT_REVISED_NOT_PIT" if pillar!="growth" else
                 "FIRST_PUBLISHER_WEB_NOT_ARCHIVED_PIT"
