@@ -9,6 +9,10 @@ from recover_chf_snb_paired_history_v1 import verify, KEYS, SCHEMA
 ROOT=Path(__file__).resolve().parents[2]
 RATES=json.loads((ROOT/'live_data/sections/NATIVE_RATES_DATA.json').read_text())
 CONTEXT=json.loads((ROOT/'live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json').read_text())
+# Fixed historical test fixture: the live 10Y context advances daily while this
+# synthetic SNB paired-source scenario specifically ends on 2026-10-30.
+CONTEXT['as_of']='2026-10-30'
+CONTEXT['value_percent']=0.505
 BASE={
  'timeseries':[
   {'metadata':{'key':KEYS['2Y'],'unit':'In percent','frequency':'P1D_L'},

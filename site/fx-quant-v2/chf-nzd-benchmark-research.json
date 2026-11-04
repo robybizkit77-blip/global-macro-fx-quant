@@ -1,0 +1,14 @@
+{
+  "schema": "GMFQ_FXV2_CHF_NZD_BENCHMARK_RESEARCH_V1",
+  "generated_on": null,
+  "quality": "RESEARCH_INFORMATIONAL_NOT_CANONICAL",
+  "CHF": null,
+  "NZD": null,
+  "same_benchmark_or_date_cross_roll_only": true,
+  "source_dates_may_differ": true,
+  "eligible_for_core": false,
+  "eligible_for_fx_pair_engine": false,
+  "eligible_for_backtests": false,
+  "canonical_government_rates_untouched": true,
+  "note": "In attesa della prima verifica sulle fonti SNB e RBNZ. Non sostituisce i rendimenti governativi canonici."
+}
