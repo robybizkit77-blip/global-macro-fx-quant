@@ -10,6 +10,7 @@ on:
       - 'validation/fxv2_research_core_readiness_v1.cjs'
       - 'validation/test_fxv2_research_core_readiness_v1.cjs'
       - 'validation/qa_fxv2_rates_working_v1.cjs'
+      - 'validation/qa_fxv2_ois_provenance_v2.cjs'
       - 'validation/qa_fxv2_liquidity_credit_overlay_v1.cjs'
       - 'validation/qa_fxv2_macro_pair_observed_v1.cjs'
       - 'validation/qa_fxv2_macro_dynamic_pair_research_v1.cjs'
@@ -25,6 +26,7 @@ on:
       - 'validation/fxv2_research_core_readiness_v1.cjs'
       - 'validation/test_fxv2_research_core_readiness_v1.cjs'
       - 'validation/qa_fxv2_rates_working_v1.cjs'
+      - 'validation/qa_fxv2_ois_provenance_v2.cjs'
       - 'validation/qa_fxv2_liquidity_credit_overlay_v1.cjs'
       - 'validation/qa_fxv2_macro_pair_observed_v1.cjs'
       - 'validation/qa_fxv2_macro_dynamic_pair_research_v1.cjs'
@@ -59,6 +61,7 @@ jobs:
       - name: Validate FXV2 working rates and dated IG/HY credit overlay independently
         run: |
           node validation/qa_fxv2_rates_working_v1.cjs
+          node validation/qa_fxv2_ois_provenance_v2.cjs
           node validation/qa_fxv2_liquidity_credit_overlay_v1.cjs
           node validation/qa_fxv2_macro_pair_observed_v1.cjs
           node validation/qa_fxv2_macro_dynamic_pair_research_v1.cjs
