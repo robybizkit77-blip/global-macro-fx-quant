@@ -50,4 +50,7 @@ const wrong=copy(research);wrong.eligible_for_fx_pair_engine=true;
 assert.equal(Object.keys(derive(canonical,wrong,today).rates).length,0,'Reject write-permission drift');
 const stale=derive(canonical,research,'2026-12-01');
 assert.equal(Object.keys(stale.rates).length,0,'Never promote very old levels into fresh nowcast');
+const tassi=fs.readFileSync(path.join(ROOT,'site/fx-quant-v2/tassi.html'),'utf8');
+assert.ok(tassi.includes("svgCurves(r);if(r.estimated)"),'Estimate caveat must remain after SVG rendering');
+assert.ok(tassi.includes("I differenziali sono calcoli aritmetici"),'V2 comparison must label estimates');
 console.log('FXV2_WORKING_RATE_TESTS PASS CHF 2Y '+chf['2Y']+'% (estimate), CHF 10Y '+chf['10Y']+'% (observed); NZD 2Y '+nzd['2Y']+'%, NZD 10Y '+nzd['10Y']+'% (B2 web research); computed spread '+(-372.8)+' bp; canonical unchanged');
