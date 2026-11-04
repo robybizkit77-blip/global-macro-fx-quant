@@ -310,12 +310,12 @@ function benchmarkPanel(){
      !Number.isFinite(x.separate_10y?.["10Y"])||x.separate_10y.as_of>today)return;
   holder.hidden=false;
   assign("benchmarkHeadline","CHF · coppia SNB 2Y e 10Y sulla stessa base");
-  assign("benchmarkExplanation","La coppia SNB del "+dt(x.paired_date)+" è verificata dalla stessa serie spot. Il 10Y pubblicato successivamente resta isolato: non va unito al vecchio 2Y per calcolare la pendenza.");
+  assign("benchmarkExplanation","La coppia SNB del "+dt(x.paired_date)+" è la base omogenea. Per il "+dt(x.separate_10y.as_of)+" il 2Y non è osservato: nello scenario di lavoro lo stimiamo applicando lo spostamento del 10Y.");
   card("SNB 2Y / 10Y · "+dt(x.paired_date),"2Y "+it(x["2Y"],3)+"% · 10Y "+it(x["10Y"],3)+"% · curva +"+it(x.curve_bp,1)+" pb. Stessa data e stessa base; candidato ufficiale ancora da approvare.");
-  card("SNB 10Y isolato · "+dt(x.separate_10y.as_of),"10Y "+it(x.separate_10y["10Y"],3)+"%. Nessun 2Y contemporaneo qui certificato: non calcolare spread 10Y−2Y o variazione della curva.");
-  assign("benchmarkFoot","Fonte: SNB rendeiduebd + pagina SNB 10Y. Dato di ricerca; non sostituisce il motore FX, il confronto tra valute o il backtest.");
-  assign("ratesTitle","Svizzera: coppia 2Y/10Y SNB più recente in verifica.");
-  assign("ratesStand","La coppia governativa dello stesso giorno è separata dal 10Y SNB pubblicato dopo. Il grafico principale sopra resta riferito all'ultima curva canonica.");
+  card("SNB 10Y isolato · "+dt(x.separate_10y.as_of),"10Y "+it(x.separate_10y["10Y"],3)+"%. Il 2Y non è quotato nello stesso giorno: la pendenza mostrata sopra è una STIMA, non una curva ufficiale.");
+  assign("benchmarkFoot","Fonte SNB. Il 2Y stimato usa il movimento del 10Y tra il 30/10 e il 03/11, ipotizzando shift parallelo. Consente calcoli indicativi nella V2, non modifica il motore FX né i backtest.");
+  assign("ratesTitle","Svizzera: 2Y stimato, 10Y SNB osservato.");
+  assign("ratesStand","Usiamo un 2Y stimato e il 10Y SNB osservato. La pendenza risultante e i confronti sono scenari di lavoro, non una curva ufficiale sincronizzata.");
  }else{
   if(x.status!=="RBNZ_GOVT_B2_WEB_RESEARCH_UNAPPROVED"||x.cross_roll_change_allowed!==false||
      x.independent_xlsx_reconciled!==false||x.after_roll?.length!==2||
@@ -331,16 +331,16 @@ function benchmarkPanel(){
   card("Prima del cambio · "+dt(old.date),"2Y "+it(old["2Y"],2)+"% ("+x.old_benchmark["2Y"]+"); 10Y "+it(old["10Y"],2)+"% ("+x.old_benchmark["10Y"]+"). Nessuna linea o variazione calcolata verso la nuova serie.");
   card("Dopo il cambio · "+dt(first.date)+" → "+dt(last.date),
     "2Y "+it(first["2Y"],2)+"% → "+it(last["2Y"],2)+"% ("+x.new_benchmark["2Y"]+"); 10Y "+it(first["10Y"],2)+"% → "+it(last["10Y"],2)+"% ("+x.new_benchmark["10Y"]+"). Variazione entro lo stesso benchmark: 2Y "+plus(x.same_benchmark_change_bp["2Y"])+" pb, 10Y "+plus(x.same_benchmark_change_bp["10Y"])+" pb. Curva indicativa finale "+it(x.latest_curve_bp,0)+" pb.");
-  assign("benchmarkFoot","Fonte: tabella ufficiale RBNZ B2, letture web di ricerca. La verifica indipendente XLSX è ancora mancante; non entra nei segnali FX, OIS, differenziali operativi o backtest.");
+  assign("benchmarkFoot","Fonte: tabella ufficiale RBNZ B2, letture web di ricerca. La verifica indipendente XLSX è ancora mancante. I livelli post-roll entrano nei differenziali indicativi V2, non nei segnali FX Core, OIS ufficiali o backtest.");
   assign("ratesTitle","Nuova Zelanda: il salto del 30 ottobre è un cambio benchmark.");
-  assign("ratesStand","Il 2Y e il 10Y hanno cambiato titolo di riferimento. Confrontiamo soltanto i rendimenti all'interno del nuovo benchmark, senza collegare le due serie.");
+  assign("ratesStand","Il 2Y e il 10Y hanno cambiato titolo di riferimento. Per i calcoli indicativi usiamo solo il nuovo benchmark: non colleghiamo artificialmente le due serie.");
  }
 }
 function supplementalContext(){
  const x=state.extraRates[state.selected];
  if(x){
   const row=state.selected==="CHF"?"SNB 10Y spot separato "+it(x.tenY,3)+"%":"RBNZ B2 2Y "+it(x.twoY,2)+"%, 10Y "+it(x.tenY,2)+"%";
-  const msg="Dato informativo "+dt(x.date)+": "+row+". "+x.kind+". Non aggiorna la curva canonica, spread e backtest.";
+  const msg="Dato informativo "+dt(x.date)+": "+row+". "+x.kind+". Alimenta solo i calcoli indicativi V2; curva canonica e backtest restano invariati.";
   const area=byId("ratesNote");if(area)area.textContent+=" "+msg;
   const source=byId("yieldSource");if(source)source.textContent+=" · Contesto: "+x.source+" ("+dt(x.date)+")";
  }
