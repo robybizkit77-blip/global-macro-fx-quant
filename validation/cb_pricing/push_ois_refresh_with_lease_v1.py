@@ -28,6 +28,7 @@ ESTIMATED_PATHS = (
 )
 G8_PATHS = ESTIMATED_PATHS + (
     "validation/cb_pricing/history/OIS_G8_SNAPSHOTS_V1.jsonl",
+    "site/fx-quant-v2/ois-pricing-snapshot.json",
 )
 # Changing any of these upstream invalidates the observations or the producer
 # contract. They require a NEW refresh rather than a blind rebase.
@@ -42,6 +43,7 @@ PROTECTED = (
     "live_data/sections/OIS_SOURCE_READINESS_VIEW.json",
     ".github/workflows/ois-estimated-snapshot-repricing-v1.yml",
     ".github/workflows/ois-g8-history-persistent-daily-v1.yml",
+    "site/fx-quant-v2/ois-pricing-snapshot.json",
 )
 COMMITS = {
     "estimated": "Refresh live estimated OIS operational repricing history",

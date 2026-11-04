@@ -19,6 +19,7 @@ on:
       - 'FX Quant V2 CHF NZD Same-Basis Research Refresh'
       - 'FX Quant V2 Cross-Asset Published Source Refresh'
       - 'FX Quant V2 Macro Candidate Descriptive Baseline'
+      - 'OIS G8 History Persistent Daily V1'
     types: [completed]
   workflow_dispatch:
 
