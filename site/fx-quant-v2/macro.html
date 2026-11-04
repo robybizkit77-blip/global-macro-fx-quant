@@ -49,5 +49,61 @@ function renderChart(){const s=country().indicators.find(s=>s.id===selectedSerie
 const pts=v.map((y,i)=>({x:lpad+(W-lpad-rpad)*i/(v.length-1),y:tpad+(H-tpad-bpad)*(1-(y-lo)/range)}));const path=pts.map((p,i)=>(i?'L':'M')+p.x.toFixed(2)+','+p.y.toFixed(2)).join(' ');const fill=path+' L'+pts.at(-1).x.toFixed(2)+','+(H-bpad)+' L'+pts[0].x.toFixed(2)+','+(H-bpad)+' Z';const ticks=[0,1,2,3].map(i=>{let yy=tpad+(H-tpad-bpad)*i/3,vl=hi-(hi-lo)*i/3;return `<line x1="${lpad}" x2="${W-rpad}" y1="${yy.toFixed(2)}" y2="${yy.toFixed(2)}" stroke="#34495a" stroke-dasharray="3 5" opacity=".75"/><text x="4" y="${(yy+4).toFixed(2)}" fill="#86a4b7" font-size="11">${esc(formatChartNum(vl))}</text>`}).join('');const dots=pts.map((p,i)=>`<circle cx="${p.x.toFixed(2)}" cy="${p.y.toFixed(2)}" r="${i===pts.length-1?'5.1':'2.4'}" fill="${i===pts.length-1?'#85e2c1':'#91bcda'}"><title>${esc(a[i].date||'')}: ${esc(formatChartNum(v[i]))}</title></circle>`).join('');$('chart').innerHTML=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="${esc(s.label)} · grafico ultime ${a.length} osservazioni">${ticks}<path d="${fill}" fill="#4b9dc5" fill-opacity=".09"/><path d="${path}" fill="none" stroke="#7ebcda" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>${dots}</svg>`;$('chartFrom').textContent='Prima osservazione: '+(a[0].date||'n.d.');$('chartTo').textContent='Ultima osservazione: '+(a.at(-1).date||s.date||'n.d.');$('chartInterpretation').textContent=speakMove(s)+' La scala e l’unità sono quelle della serie; non confrontare direttamente livelli di indicatori differenti.';}
 function render(){renderGrid();renderNarrative();renderDynamics();renderFilters();renderSeriesList();}
 async function startup(){render();try{const r=await fetch('./design-studio-macro-g8-v1-data.json?v=20261103',{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const d=await r.json();if(d.schema!=='GMFQ_MACRO_DESIGN_STUDIO_G8_V1')throw Error('Schema diverso');if(order.some(k=>!d.currencies?.[k]))throw Error('Economia mancante');dataset=d;mode='snapshot';$('seriesCount').textContent=order.reduce((n,k)=>n+(d.currencies[k].indicators||[]).length,0);$('dataStatus').textContent='Snapshot completo caricato · 204 serie G8, ciascuna con data e fonte · NON live';render();}catch(e){$('dataStatus').textContent='Modalità offline: sintesi locale con 3 indicatori per paese. Per il dataset esteso, apri la pagina pubblicata su FX Quant.';console.warn('[Macro Design Studio] Dataset esteso non raggiungibile, uso fallback locale:',e.message);}}
-startup();
+
+/* Research bridge: 204 macro series from canonical feed; narratives remain dated research. */
+async function refreshMacro(){
+ const root="https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/";
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),11000);
+ const load=async n=>{const r=await fetch(root+n+".json",{cache:"no-store",signal:controller.signal});if(!r.ok)throw Error(n+" HTTP "+r.status);return r.json();};
+ const normalizeDate=s=>/^\d{4}-\d{2}$/.test(String(s||""))?s+"-01":String(s||"");
+ try{
+  const series=await load("MACRO_SERIES");
+  if(order.some(k=>!Array.isArray(series[k])||series[k].length<10))throw Error("Copertura macro G8 insufficiente");
+  const [rates,cb]=await Promise.all([
+   load("NATIVE_RATES_DATA").catch(()=>null),load("NATIVE_CB_DATA").catch(()=>null)
+  ]);
+  const today=new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Rome",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+  const next={...dataset,currencies:{...dataset.currencies}};
+  let count=0,advanced=0;
+  for(const k of order){
+   const p=dataset.currencies[k]||FALLBACK_DATA[k];if(!p)throw Error("Valuta assente "+k);
+   const current=new Map((p.indicators||[]).map(x=>[x.id,x]));
+   const mapped=[];
+   for(const s of series[k]){
+    if(!s.id||!Array.isArray(s.dates)||!Array.isArray(s.values)||s.dates.length!==s.values.length||s.dates.length<2)continue;
+    const date=String(s.last_date||s.dates.at(-1)),value=Number(s.last_value);
+    if(!/^\d{4}-\d{2}(?:-\d{2})?$/.test(date)||normalizeDate(date)>today||!Number.isFinite(value))continue;
+    const old=current.get(s.id),oldDate=normalizeDate(old?.date);
+    if(old&&date&&normalizeDate(date)<oldDate){mapped.push(old);continue;}
+    const trend=s.dates.map((d,i)=>({date:d,value:Number(s.values[i])}))
+      .filter(x=>/^\d{4}-\d{2}(?:-\d{2})?$/.test(x.date)&&Number.isFinite(x.value)&&normalizeDate(x.date)<=today).slice(-18);
+    if(trend.length<2){if(old)mapped.push(old);continue;}
+    mapped.push({...(old||{}),id:s.id,label:s.label||old?.label||s.id,category:s.category||old?.category||"Altro",unit:s.unit||old?.unit||"",frequency:s.frequency||old?.frequency||"",source_file:s.source_file||old?.source_file||"",date,value,trend});
+    if(old&&normalizeDate(date)>oldDate)advanced++;
+    count++;
+   }
+   for(const old of current.values())if(!mapped.some(x=>x.id===old.id))mapped.push(old);
+   const updated={...p,indicators:mapped};
+   const r=rates?.[k];
+   if(r&&Number.isFinite(r["2Y"])&&Number.isFinite(r["10Y"])&&/^\d{4}-\d{2}-\d{2}$/.test(r.date||"")&&r.date>=(p.rates?.date||""))
+    updated.rates={date:r.date,y2:r["2Y"],y10:r["10Y"],change2_bp:r.chg2_bp,change10_bp:r.chg10_bp};
+   const b=cb?.[k];
+   if(b&&/^\d{4}-\d{2}-\d{2}$/.test(b.last_date||"")&&b.last_date>=(p.cb?.last_date||""))
+    updated.cb={...p.cb,name:b.bank,rate_text:b.rate_text,last_date:b.last_date,stance:b.stance};
+   /* Never silently promote an archived macro thesis or sector label to a current assessment. */
+   if(p.summary&&!p.summary.startsWith("Lettura di ricerca archiviata"))
+    updated.summary="Lettura di ricerca archiviata (3 novembre 2026): "+p.summary;
+   next.currencies[k]=updated;
+  }
+  if(count<160)throw Error("Serie canoniche validate troppo poche: "+count);
+  dataset=next;mode="canonical-series";render();
+  $("seriesCount").textContent=order.reduce((n,k)=>n+(dataset.currencies[k].indicators||[]).length,0);
+  $("dataStatus").textContent="Feed canonico MACRO_SERIES collegato: "+count+" serie validate; "+advanced+" osservazioni con data successiva allo snapshot. Ogni grafico mostra la data propria. Narrativa e giudizi settoriali restano una lettura archiviata del 3 novembre, non un segnale live.";
+ }catch(e){
+  console.warn("[FX Quant V2 Macro] Mantengo l'ultimo snapshot:",e);
+  $("dataStatus").textContent="Modalità snapshot: il feed MACRO_SERIES non è stato validato. Controlla le date dei singoli indicatori, senza interpretare le sintesi come dati live.";
+ }finally{clearTimeout(timer);}
+}
+startup().then(refreshMacro);
+
 </script></body></html>
