@@ -54,6 +54,16 @@ const ROOT="https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-
 const $=id=>document.getElementById(id);
 const fmt=(x,d=2)=>Number.isFinite(x)?x.toLocaleString("it-IT",{minimumFractionDigits:d,maximumFractionDigits:d}):"—";
 const date=x=>/^\d{4}-\d{2}-\d{2}$/.test(x||"")?x.slice(8,10)+"/"+x.slice(5,7)+"/"+x.slice(0,4):"n.d.";
+const todayRome=()=>new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Rome",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+const ageDays=(x)=>{
+ const now=todayRome();
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(x||"")||x>now)return null;
+ return Math.round((Date.parse(now+"T12:00:00Z")-Date.parse(x+"T12:00:00Z"))/86400000);
+};
+const ageInfo=x=>{
+ const a=ageDays(x);return a===null?"DATA NON VERIFICATA":a>7?"OSSERVAZIONE DATATA ("+a+"g)":a+" giorni dall'osservazione";
+};
+
 const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const state={currencies:{},selected:"USD",a:"EUR",b:"USD",origin:"snapshot"};
 const has=(v)=>Number.isFinite(v?.rate);
@@ -69,9 +79,12 @@ function isActualOis(x){return x?.kind==="OIS";}
 function render(){
  const curr=state.currencies;let ready=C.filter(c=>curr[c]).length;const grid=$("pricingGrid");
  grid.innerHTML=C.map(c=>{let x=curr[c];if(!x)return '<article class="currency" aria-disabled="true">'+F[c]+" "+c+" · dati non caricati</article>";
- return '<button type="button" class="currency" data-c="'+c+'" aria-pressed="'+(state.selected===c)+'"><strong>'+F[c]+" "+c+'</strong><span class="type">'+esc(x.kind)+'</span><span class="rate-line">6M <b>'+fmt(x.horizons["6m"].rate,3)+'%</b></span><span class="asof">'+date(x.as_of)+' · '+esc(x.quality)+'</span></button>';}).join("");
+ return '<button type="button" class="currency" data-c="'+c+'" aria-pressed="'+(state.selected===c)+'"><strong>'+F[c]+" "+c+'</strong><span class="type">'+esc(x.kind)+'</span><span class="rate-line">6M <b>'+fmt(x.horizons["6m"].rate,3)+'%</b></span><span class="asof">'+date(x.as_of)+' · '+esc(x.quality)+' · '+esc(ageInfo(x.horizons["6m"].as_of))+'</span></button>';}).join("");
  $("pricingRows").innerHTML=C.map(c=>{let x=curr[c];if(!x)return "<tr><td>"+c+"</td><td colspan=5>Dati non disponibili</td></tr>";return '<tr><td><b>'+F[c]+" "+c+'</b></td><td>'+esc(x.kind)+(x.kind==="OIS"?" · BOE":"")+'</td>'+["3m","6m","12m"].map(k=>'<td class="n">'+fmt(x.horizons[k].rate,3)+'%</td>').join("")+'<td>'+date(x.as_of)+'</td></tr>';}).join("");
- $("feedStatus").textContent=ready+"/8 valute · "+(ready*3)+"/24 livelli · "+(state.origin==="live"?"Feed repository aggiornati":"Snapshot locale datato · fallback");
+ const ages=C.flatMap(c=>curr[c]?["3m","6m","12m"].map(k=>ageDays(curr[c].horizons[k].as_of)):[]);
+ const stale=ages.filter(x=>x===null||x>7).length;
+ $("feedStatus").textContent=ready+"/8 valute · "+(ready*3)+"/24 livelli · "+(state.origin==="live"?"Feed repository consultati":"Snapshot locale datato · fallback")+
+  " · "+stale+"/24 tenori oltre 7 giorni o senza data · OIS ufficiale solo GBP; altri futures/proxy";
  if(!curr[state.selected])state.selected=C.find(c=>curr[c])||"USD";
  showDetail();showCompare();
 }
@@ -88,12 +101,12 @@ function showDetail(){
  $("detailTitle").textContent=N[c]+": quanto quota il front-end?";
  $("detailName").textContent=F[c]+" "+c+" · "+N[c];$("detailMeta").innerHTML='<span class="chip">'+esc(x.kind)+'</span><span class="chip">'+esc(x.quality)+'</span><span>Dato '+date(x.as_of)+'</span>';
  lineChart(x);
- $("tenors").innerHTML=["3m","6m","12m"].map(k=>{let z=x.horizons[k];return '<div class="term"><small>'+k.toUpperCase()+'</small><strong>'+fmt(z.rate,3)+'%</strong><span class="muted">'+date(z.as_of)+(Number.isFinite(z.change_1d_bp)?" · 1D "+(z.change_1d_bp>0?"+":"")+fmt(z.change_1d_bp,1)+" pb":" · 1D non verificato")+'</span></div>';}).join("");
+ $("tenors").innerHTML=["3m","6m","12m"].map(k=>{let z=x.horizons[k];return '<div class="term"><small>'+k.toUpperCase()+'</small><strong>'+fmt(z.rate,3)+'%</strong><span class="muted">'+date(z.as_of)+" · "+ageInfo(z.as_of)+(Number.isFinite(z.change_1d_bp)?" · 1D "+(z.change_1d_bp>0?"+":"")+fmt(z.change_1d_bp,1)+" pb":" · 1D non verificato")+'</span></div>';}).join("");
  const h=x.horizons,term=100*(h["12m"].rate-h["3m"].rate);
  $("detailInterpretation").textContent="Differenza di livello 12M − 3M: "+(term>0?"+":"")+fmt(term,1)+" pb. Non equivale a una variazione temporale o a un tasso forward, specialmente se i tenori sono futures su contratti diversi.";
  $("sourceTitle").textContent=isActualOis(x)?"OIS pubblicato":"Non è un OIS quotato";
  $("sourceType").textContent=x.kind+" · "+x.quality;
- $("sourceDate").textContent="Data generale "+date(x.as_of)+"; ogni tenore conserva la propria data.";
+ $("sourceDate").textContent="Data generale "+date(x.as_of)+" · "+ageInfo(x.as_of)+"; ogni tenore conserva la propria data. Nessun refresh dell’orologio cambia la data del prezzo.";
  $("sourceName").textContent=x.source;
  $("sourceCaveat").textContent=sourceNote(x);
 }
