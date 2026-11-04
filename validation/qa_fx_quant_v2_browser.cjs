@@ -29,7 +29,15 @@ async function audit(browser,name,file,selector,view,viewport){
  const ctx=await browser.newContext({viewport,reducedMotion:'reduce'}),page=await ctx.newPage();
  const exceptions=[],network=[],rec={name,view,http:null,menu:null,primary:null,overflow:null,feed:null};
  page.on('pageerror',e=>exceptions.push(String(e)));
- page.on('requestfailed',r=>{if(/raw\.githubusercontent\.com/.test(r.url()))network.push(r.url()+' '+r.failure()?.errorText);});
+ // Chromium may cancel a completed/unused request when navigating away
+ // from a fully rendered page (net::ERR_ABORTED). Feed availability is
+ // independently asserted by mandatory page markers below. Keep real HTTP,
+ // DNS, timeout and connection errors strictly visible.
+ page.on('requestfailed',r=>{
+  const err=r.failure()?.errorText||'UNKNOWN';
+  if(/raw\.githubusercontent\.com/.test(r.url()) && err!=='net::ERR_ABORTED')
+   network.push(r.url()+' '+err);
+ });
  page.on('response',r=>{if(/raw\.githubusercontent\.com/.test(r.url())&&r.status()>=400)network.push(r.status()+' '+r.url());});
  try{
   const response=await page.goto(base+'/'+file,{waitUntil:'domcontentloaded',timeout:70000});
