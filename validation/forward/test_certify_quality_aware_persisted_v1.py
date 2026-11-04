@@ -98,9 +98,18 @@ class IndependentDurabilityTests(unittest.TestCase):
         w=(ROOT/".github/workflows/forward-frozen-core-prospective-daily-v1.yml").read_text()
         self.assertIn("certify-quality-aware-independent:",w)
         self.assertIn("needs: [test, capture]",w)
-        self.assertIn("always() && needs.test.outputs.eligible == 'true'",w)
-        self.assertIn("CAPTURE_ADMITTED: ${{ needs.capture.outputs.admitted }}",w)
-        self.assertIn("CORE_PERSISTED: ${{ needs.capture.outputs.core_persisted }}",w)
+        # The independent certification is permitted only after the test
+        # succeeds and is eligible, and the prospective capture wasn't skipped.
+        # This preserves failure isolation without claiming a phantom capture.
+        independent = w.split("  certify-quality-aware-independent:", 1)[1]
+        self.assertIn("always() && needs.test.result == 'success'",independent)
+        self.assertIn("needs.test.outputs.eligible == 'true'",independent)
+        self.assertIn("needs.capture.result != 'skipped'",independent)
+        for event in ("schedule", "workflow_dispatch", "workflow_run"):
+            self.assertIn("github.event_name == '"+event+"'",independent)
+        self.assertIn("CAPTURE_ADMITTED: ${{ needs.capture.outputs.admitted || 'false' }}",independent)
+        self.assertIn("CORE_PERSISTED: ${{ needs.capture.outputs.core_persisted || 'false' }}",independent)
+        self.assertIn("--admitted \"$CAPTURE_ADMITTED\" --core-persisted \"$CORE_PERSISTED\"",independent)
         self.assertIn("validation.forward.test_certify_quality_aware_persisted_v1",w)
         self.assertIn("ref: main",w)
         # The original model's failure remains visible in its own step,
