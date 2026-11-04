@@ -115,7 +115,11 @@ futureAsOf.NZD.latest_date='2026-12-02';
 assert.equal(derive(canonical,futureAsOf,'2026-12-01').rates.NZD,undefined,
   'No future government quote in stale fallback');
 const tassi=fs.readFileSync(path.join(ROOT,'site/fx-quant-v2/tassi.html'),'utf8');
-assert.ok(tassi.includes("svgCurves(r);if(r.estimated)"),'Estimate caveat must remain after SVG rendering');
+assert.ok(tassi.includes("svgCurves(r);if(r.research_observed)"),
+ 'Observed research source must be distinguished from an estimated curve');
+assert.ok(tassi.includes("else if(r.estimated)") &&
+          tassi.includes("Non è una curva ufficiale osservata."),
+ 'Estimated CHF scenario must retain its separate caveat');
 assert.ok(tassi.includes("I differenziali sono calcoli aritmetici"),'V2 comparison must label estimates');
 assert.ok(tassi.includes('const local="./chf-nzd-benchmark-research.json"') &&
           tassi.includes('try{x=await read(local);}'),
