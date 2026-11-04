@@ -53,6 +53,24 @@ const tamper=[
  x=>x.economic_source_cutoff_rome='2026-11-05'
 ];
 for(const fn of tamper){const z=copy(doc);fn(z);assert(!validate(z,'2026-11-04'));}
+const partial=copy(doc);
+partial.status='PARTIAL_SHADOW_SOURCE_GAPS_RESEARCH_ONLY';
+partial.countries.CHF.growth_z_research=null;
+partial.countries.CHF.activity_z_research=null;
+partial.countries.CHF.stable_for_continuous_growth_weight_25_to_75_pct=null;
+partial.countries.CHF.hypothetical_independent_axis_z_revision_stability=null;
+partial.countries.CHF.source_axes.growth.strict_z_available=false;
+partial.countries.CHF.source_axes.growth.missing_reason='NO_Z_ZERO_ROBUST_DISPERSION';
+partial.summary.countries_blocked_activity=1;
+partial.summary.countries_with_calculable_activity=7;
+assert(validate(partial,'2026-11-04'));
+const blocked=view(partial,'CHF','2026-11-04');
+assert(blocked.text.includes('Attività A NON CALCOLABILE'));
+assert(blocked.text.includes('Nessuno zero imputato'));
+assert(!blocked.text.includes('Attività A +0,00'));
+const wrong=copy(partial);
+wrong.countries.CHF.activity_z_research=0;
+assert(!validate(wrong,'2026-11-04'),'no false-neutral zero when strict z missing');
 const repo=path.resolve(__dirname,'..');
 const macro=fs.readFileSync(path.join(repo,'site/fx-quant-v2/macro.html'),'utf8');
 assert(macro.includes('macro-shadow-formula-v1.json'));
