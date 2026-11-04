@@ -308,7 +308,9 @@ jobs:
     # independent journal verification. Never certifies the original model.
     needs: [test, capture]
     if: >-
-      always() && needs.test.outputs.eligible == 'true' &&
+      always() && needs.test.result == 'success' &&
+      needs.test.outputs.eligible == 'true' &&
+      needs.capture.result != 'skipped' &&
       (github.event_name == 'schedule' ||
        github.event_name == 'workflow_dispatch' ||
        github.event_name == 'workflow_run')
@@ -327,8 +329,8 @@ jobs:
       - name: Verify future 24-axis and 28-pair Quality-Aware evidence committed to main
         shell: bash
         env:
-          CAPTURE_ADMITTED: ${{ needs.capture.outputs.admitted }}
-          CORE_PERSISTED: ${{ needs.capture.outputs.core_persisted }}
+          CAPTURE_ADMITTED: ${{ needs.capture.outputs.admitted || 'false' }}
+          CORE_PERSISTED: ${{ needs.capture.outputs.core_persisted || 'false' }}
         run: |
           set +e
           python -m validation.forward.certify_quality_aware_persisted_v1 \
