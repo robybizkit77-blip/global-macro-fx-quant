@@ -1,8 +1,51 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-04T15:28:32Z",
+  "generated_at_utc": "2026-11-04T21:55:20Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-8c21e531ef4e2b6a81e5",
+      "observed_at_utc": "2026-11-04T15:08:42Z",
+      "headline": "US services sector activity cools slightly in October; inflation remains elevated",
+      "summary": "Reuters riporta: US services sector activity cools slightly in October; inflation remains elevated. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxQVUl4VENzeTZOWHFsMFRKRGtDNG9WUDZ4dVhHNEkyd0xtR2ZaLXEzTlJndWhicHRvblVJLW1BMFowd0hXQXRDUVRDOXZhZnpIZDJoOVFyeGtHZnZOX1BPVXBRTnM4dGlGejJuWXNPWHJwblFVeTdnQ0dYRWFGZFd6ZVk2ZkJtMUloQUh4VkhjQlNrVUJlLU5oWkdqZjI0ekduVFQ4TzNiZXdHQUNMRkhla3VkSko3S01lbUhoUHhuUQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-f40a7a25e7f157d909b4",
+      "observed_at_utc": "2026-11-04T11:52:32Z",
+      "headline": "Ghana inflation rises less than expected in October",
+      "summary": "Reuters riporta: Ghana inflation rises less than expected in October. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMingFBVV95cUxPcklGemg4YkRqN1FqR2szRU5ZUTBCVy1Cd0ltWHlWaVpXVFkwZTZQN0YtUEVpTmd0MUYzeF8zblJvOFFmSUZTZnZMSlBQd3E2eUxyQmdpWUZKcWhsVVc0ZHQwcXdvbFVLVmxBaGF3RWlhcExBOHFzUlE1WW1UR3NPM25SRzU3U3ZfVGlSREtxWHd4dEpFdHhRemhBUzQ4dw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-71180682915a0afe80a8",
+      "observed_at_utc": "2026-11-04T21:01:18Z",
+      "headline": "Wall Street ends higher after Democrats win Congress; data center stocks tumble",
+      "summary": "Reuters riporta: Wall Street ends higher after Democrats win Congress; data center stocks tumble. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQbWpBY1VHMFd5a2tJXzM1RFFFQTl5Y09aVDgza095UkJKVzNnQ3F4VW1pMzBEazJKMGhlS21zUEdCLXJPOVhWdXRnZmlLRHliMDdqYmt2b2ZWYk5FeW85VnBSalpRd1E5b3BVSUZDU2VLMUNiQm41YWw1SUgxV2dWaUFZUkI2MllhY0Z5ZkZHcWNuQmdCaHBKbVRhck1meTRz?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-ccc8ea3fbd0f0cfc9723",
       "observed_at_utc": "2026-11-04T11:49:22Z",
@@ -1367,47 +1410,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxNR21qQWZsLUZqbWRjR2YtQ3FGakpEWWVjSUVFNjVDSi01MnRiWmV3Z2pPQUsyVGhJR3UxQ1o4RjRVa2tCLXNXbnJjNE9fbE5KVzlKTEZtNHpZb3lPR0hXcFFSVGVydlpnR3RQdVM5bDE3aVI3aVowN0NqY3NHb3VDN3hlaXpLTmxkeFc3NE13dUNqYUtIMHNxRFR5M3VYZmpKUDRzVE5WLUdwRHJCeEpQM1pKaw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-b8a9d66151ab475efe41",
-      "observed_at_utc": "2026-10-27T08:50:49Z",
-      "headline": "Shares in BE Semiconductor jump over 9% after Applied Materials raises stake to 20%",
-      "summary": "Reuters riporta: Shares in BE Semiconductor jump over 9% after Applied Materials raises stake to 20%. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxNNlhubjZVX0pQSl83MWpxSjRpVHR1UURJcE5UbTdQeDZFWHhtVFhZalRwTUJLVHc0NmpNRl9sUTFuenZ0cTA5X2F3a0VCNDJRaC1maUstUEZRNmJmNUpoXzlKMTJLVHJ0WmxNUlEzamtQanhrTVh1WVFIV0JpY1Z0MEEwYi00SC1lVFQyZG1HeDVlVWlFb1p3b0VEMThnUVhYN3FRVjhtY2E5aTRUWTFkZGVYU2tuS0xxN0RMNA?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-9f872952ec59efa1551b",
-      "observed_at_utc": "2026-10-27T01:46:00Z",
-      "headline": "Stocks rise and oil slips on Middle East diplomacy efforts ahead of Big Tech earnings",
-      "summary": "Reuters riporta: Stocks rise and oil slips on Middle East diplomacy efforts ahead of Big Tech earnings. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxQdEdzTDdxbEtNX1l6VDJMdF9NTGpUNEJPYy1jaUo2SkllaGhJZnZvNzZOOTd5MkZHV3p5T2ZhcjlkcWduOXp5elFKREQ0bFBib0pXUzNKdGI2QmE3eWZxRlktZXhSZG0tQzQ4U1dXNWxOZktiZVZvc1pNUERsYUFLVUJYSQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-0f702b024f59b7c8bb62",
-      "observed_at_utc": "2026-10-27T00:23:00Z",
-      "headline": "Japan's trend inflation index hits 3-year high, cements case for BOJ rate hike",
-      "summary": "Reuters riporta: Japan's trend inflation index hits 3-year high, cements case for BOJ rate hike. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "JPY"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxNclYtUXdmSlNpRWlCYkF0T3M1UEpKQTRlS3hyeXRBS3lmVms3cXZNSGl3NDl1dDZ1cUFpR1gtaW9NQ0lfaE1wSWd1ZUNsb0tkQ3JWUzdoVzJJSmd0UDUtXzFfdHhobnlfZ1A2bUFCSFZfVjVYNl9tYTR3WVlmSWRrQXFLSjFrdUcyV2sxTi1ET1NJZ3o3UXFBOEhuaDVyLS1zeHFPSVpXNkI2Y1V2Q1M0?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
