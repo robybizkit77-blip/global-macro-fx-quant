@@ -116,6 +116,18 @@ async function audit(browser,name,file,selector,view,viewport){
        !x.caveat.includes('NON leggere lo spread come repricing')||!x.canonical)
       issue(name,view,'pair_estimated_spread_missing',JSON.stringify(x));
     await page.locator('#allPairs').selectOption('EURUSD');
+    await page.waitForFunction(()=>document.querySelector('#macroV3Context')?.textContent?.includes('DINAMICA MACRO (RICERCA, NON NUOVO BIAS)'),null,{timeout:18000});
+    const dynamicEUR=(await page.locator('#macroV3Context').textContent())||'';
+    if(!dynamicEUR.includes('PIL: variazione del ritmo trimestrale')||
+       !dynamicEUR.includes('Baseline del motore 2026-09-25 invariata')||
+       !dynamicEUR.includes('Senza consenso, sorpresa, OIS e reazione del prezzo'))
+      issue(name,view,'dynamic_macro_not_read_only',dynamicEUR.slice(-650));
+    await page.locator('#allPairs').selectOption('AUDCAD');
+    const dynamicAUD=(await page.locator('#macroV3Context').textContent())||'';
+    if(!dynamicAUD.includes('PIL: accelerazione relativa NON calcolabile')||
+       !dynamicAUD.includes('Inflazione non sincronizzata'))
+      issue(name,view,'macro_noncomparable_intervals_not_flagged',dynamicAUD.slice(-550));
+    await page.locator('#allPairs').selectOption('EURUSD');
     const ordinary=((await page.locator('#gapDate').textContent())||'');
     if(ordinary.includes('STIMA/PROXY INDICATIVO'))
       issue(name,view,'pair_estimates_leaked','EUR/USD erroneously marked estimated: '+ordinary);
