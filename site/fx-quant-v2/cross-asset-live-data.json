@@ -1,0 +1,14 @@
+{
+  "schema": "GMFQ_FXV2_CROSS_ASSET_SOURCE_OVERLAY_V1",
+  "status": "AWAITING_FIRST_VALIDATED_FETCH",
+  "collected_on": null,
+  "attempted_sources": [],
+  "verified_on_attempt": [],
+  "source_errors": {},
+  "streams": {},
+  "source_dates_independent": true,
+  "eligible_for_fx_core": false,
+  "eligible_for_backtest": false,
+  "contains_market_estimates": false,
+  "note": "The V2 page retains its dated prior snapshot until official/source data are downloaded, validated, and published by the isolated job."
+}
