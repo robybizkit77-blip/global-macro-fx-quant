@@ -489,8 +489,13 @@ class QualityAwareProspectiveCaptureTests(unittest.TestCase):
         self.assertIn("QUALITY_AWARE_PROSPECTIVE_CAPTURE_MISSING_AFTER_CORE_PERSISTENCE",
                       quality_step)
         self.assertNotIn("continue-on-error: true",quality_step)
-        self.assertNotIn("continue-on-error: true",original_step)
-        # A real error remains a RED run; never silently approve a model.
+        # The original numerical V2 remains an explicit failed step, while
+        # the independently persisted Core/Quality-Aware pipeline can pass.
+        self.assertIn("continue-on-error: true",original_step[:400])
+        self.assertIn("Original numerical V2 research: **NOT CERTIFIED / FAILED**",
+                      original_step)
+        # Quality-Aware is a hard failing service gate; missing strict V2
+        # research stays RED at step level without failing the service.
         self.assertIn("exit 1",quality_step)
         self.assertIn("exit 1",original_step)
         self.assertEqual(workflow.count("git push origin HEAD:main"),1)
