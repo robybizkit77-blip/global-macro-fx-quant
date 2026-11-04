@@ -55,7 +55,7 @@ jobs:
           node validation/qa_fxv2_rates_working_v1.cjs
           node validation/qa_fxv2_liquidity_credit_overlay_v1.cjs
           node validation/qa_fxv2_macro_pair_observed_v1.cjs
-          python3 validation/publishing/test_wait_fxv2_public_revision_v1.py
+          python3 -m unittest validation.publishing.test_wait_fxv2_public_revision_v1 -v
   v2-freshness-audit:
     if: >-
       github.event_name != 'workflow_run' ||
@@ -105,7 +105,7 @@ jobs:
           sleep 2
       - name: Confirm public site exposes the same revision as approved main
         if: github.event_name != 'pull_request'
-        run: python3 validation/publishing/wait_fxv2_public_revision_v1.py
+        run: python3 -m validation.publishing.wait_fxv2_public_revision_v1
       - name: Audit desktop 1440px and mobile 390px across all 12 sections
         shell: bash
         run: |
