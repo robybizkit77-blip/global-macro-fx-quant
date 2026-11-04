@@ -140,7 +140,7 @@
 const pricingSeed={"USD":{"as_of":"2026-10-30","source_type":"Futures · indicativo (non OIS)","quality":"STIMA INFORMATIVA","horizons":{"3m":{"rate":4.01,"as_of":"2026-11-02"},"6m":{"rate":4.28,"as_of":"2026-10-30"},"12m":{"rate":4.46,"as_of":"2026-10-30"}}},"EUR":{"as_of":"2026-10-30","source_type":"Futures · indicativo (non OIS)","quality":"STIMA INFORMATIVA","horizons":{"3m":{"rate":2.5125,"as_of":"2026-10-30"},"6m":{"rate":2.8325,"as_of":"2026-10-30"},"12m":{"rate":3.0975,"as_of":"2026-11-02"}}},"CHF":{"as_of":"2026-10-30","source_type":"Futures · indicativo (non OIS)","quality":"STIMA INFORMATIVA","horizons":{"3m":{"rate":0.11,"as_of":"2026-11-02"},"6m":{"rate":0.25,"as_of":"2026-11-02"},"12m":{"rate":0.48,"as_of":"2026-10-30"}}},"NZD":{"as_of":"2026-09-02","source_type":"Proxy 3M storico · scadenze successive non quotate","quality":"STORICO PARZIALE","horizons":{"3m":{"rate":3.0,"as_of":"2026-09-02"}}},"AUD":{"as_of":"2026-10-30","source_type":"Futures impliciti · certificato","quality":"FONTE UFFICIALE","horizons":{"3m":{"rate":4.835,"as_of":"2026-10-30"},"6m":{"rate":4.915,"as_of":"2026-10-30","change_1d_bp":-2},"12m":{"rate":4.83,"as_of":"2026-10-30"}}},"CAD":{"as_of":"2026-10-30","source_type":"Futures impliciti · certificato","quality":"FONTE UFFICIALE","horizons":{"6m":{"rate":2.97,"as_of":"2026-10-30","change_1d_bp":-5}}},"GBP":{"as_of":"2026-10-30","source_type":"OIS · certificato","quality":"FONTE UFFICIALE","horizons":{"6m":{"rate":4.4784,"as_of":"2026-10-30","change_1d_bp":-2.9}}},"JPY":{"as_of":"2026-11-02","source_type":"Futures TONA impliciti · certificato","quality":"FONTE UFFICIALE","horizons":{"6m":{"rate":1.697,"as_of":"2026-11-02","change_1d_bp":-0.7}}}};
 const names={USD:'Stati Uniti',EUR:'Area euro',GBP:'Regno Unito',JPY:'Giappone',CHF:'Svizzera',CAD:'Canada',AUD:'Australia',NZD:'Nuova Zelanda'};
 const order=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
-const state={rates:seed.rates,price:pricingSeed,selected:'USD',live:0,compareA:'EUR',compareB:'USD'};
+const state={rates:seed.rates,price:pricingSeed,selected:'USD',live:0,compareA:'EUR',compareB:'USD',extraRates:{}};
 const $=s=>document.getElementById(s);const fmt=(n,d=2)=>typeof n==='number'&&isFinite(n)?n.toLocaleString('it-IT',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';const sg=(n,d=1,s='')=>typeof n==='number'&&isFinite(n)?(n>0?'+':n<0?'−':'')+fmt(Math.abs(n),d)+s:'—';const dt=s=>/^\d{4}-\d{2}-\d{2}$/.test(s||'')?s.slice(8,10)+'/'+s.slice(5,7)+'/'+s.slice(0,4):'n.d.';
 const esc=s=>String(s??'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
 const narrative=(c,r)=>{const d=r.chg2_bp, l=r.chg10_bp;const f=typeof d==='number'?(d<=-2?'scende':d>=2?'sale':'è quasi stabile'):'non è determinato';const g=typeof l==='number'?(l<=-2?'scende':l>=2?'sale':'è quasi stabile'):'non è determinato';return {f,g}};
@@ -151,7 +151,47 @@ $('countryTabs').innerHTML=order.map(c=>'<button type="button" data-ccy="'+c+'" 
 function renderCompare(){let a=state.compareA,b=state.compareB,ra=state.rates[a]||{},rb=state.rates[b]||{},pa=state.price[a]||{},pb=state.price[b]||{};$('compareA').value=a;$('compareB').value=b;let cards=[compareCard('2Y '+a+' − '+b,{rate:ra['2Y'],as_of:ra.date},{rate:rb['2Y'],as_of:rb.date},'governativi · non OIS')];for(let h of ['3m','6m','12m']){let x=pa.horizons?.[h],y=pb.horizons?.[h];cards.push(compareCard(h.toUpperCase()+' pricing '+a+' − '+b,x,y,(pa.source_type||'N/D')+' / '+(pb.source_type||'N/D')))}$('compareGrid').innerHTML=cards.join('');$('compareNote').textContent='Il 2Y è un confronto fra rendimenti sovrani ('+dt(ra.date)+' vs '+dt(rb.date)+'). Le altre celle sono differenziali di livelli di pricing disponibili: confrontabili solo se stesso orizzonte, strumento compatibile e data sufficientemente omogenea. Qui non trasformiamo futures, proxy e OIS in un unico OIS.'}
 let compareOptions=order.map(c=>'<option value="'+c+'">'+flags[c]+' '+c+'</option>').join('');$('compareA').innerHTML=compareOptions;$('compareB').innerHTML=compareOptions;$('compareA').value=state.compareA;$('compareB').value=state.compareB;['compareA','compareB'].forEach(id=>$(id).addEventListener('change',e=>{state[id]=e.target.value;renderCompare()}));renderCompare();table();draw();
 async function get(n){let controller=new AbortController(),timer=setTimeout(()=>controller.abort(),9000);try{let r=await fetch(ROOT+n,{cache:'no-store',signal:controller.signal});if(!r.ok)throw Error(r.status);return r.json()}finally{clearTimeout(timer)}}
-(async()=>{let list=await Promise.allSettled(['NATIVE_RATES_DATA.json','OIS_OPERATIONAL_VIEW.json','CB_PRICING_ESTIMATED.json'].map(get)),updated=0;if(list[0].status==='fulfilled'){state.rates=list[0].value;updated++}if(list[1].status==='fulfilled'){let x=list[1].value.currencies||{};for(let c of order){let z=x[c];if(!z||z.operational_status!=='GREEN_OFFICIAL')continue;let p=state.price[c]||{};state.price[c]={...p,as_of:z.as_of,quality:'FONTE UFFICIALE',source_type:c==='GBP'?'OIS · certificato':'Futures impliciti · certificato',horizons:Object.fromEntries(Object.entries(z.horizons||{}).map(([k,v])=>[k,{rate:v.rate,change_1d_bp:v.change_1d_bp,as_of:z.as_of}]))}}updated++}if(list[2].status==='fulfilled'){let x=list[2].value.currencies||{};for(let c of Object.keys(x)){let z=x[c];if(!state.price[c]||state.price[c].quality==='FONTE UFFICIALE')continue;state.price[c]={...state.price[c],as_of:z.as_of,quality:'STIMA INFORMATIVA',source_type:'Futures · indicativo (non OIS)',horizons:Object.fromEntries(Object.entries(z.horizons||{}).filter(([k,v])=>Number.isFinite(v.rate)).map(([k,v])=>[k,{rate:v.rate,as_of:z.as_of}]))}}updated++}if(updated){table();draw();$('feedStatus').textContent='Feed repository aggiornati · '+updated+'/3 sezioni; date originali'}else{$('feedStatus').textContent='Snapshot offline · feed repository al 02/11/2026'} })();
+const baseReady=(async()=>{let list=await Promise.allSettled(['NATIVE_RATES_DATA.json','OIS_OPERATIONAL_VIEW.json','CB_PRICING_ESTIMATED.json'].map(get)),updated=0;if(list[0].status==='fulfilled'){state.rates=list[0].value;updated++}if(list[1].status==='fulfilled'){let x=list[1].value.currencies||{};for(let c of order){let z=x[c];if(!z||z.operational_status!=='GREEN_OFFICIAL')continue;let p=state.price[c]||{};state.price[c]={...p,as_of:z.as_of,quality:'FONTE UFFICIALE',source_type:c==='GBP'?'OIS · certificato':'Futures impliciti · certificato',horizons:Object.fromEntries(Object.entries(z.horizons||{}).map(([k,v])=>[k,{rate:v.rate,change_1d_bp:v.change_1d_bp,as_of:z.as_of}]))}}updated++}if(list[2].status==='fulfilled'){let x=list[2].value.currencies||{};for(let c of Object.keys(x)){let z=x[c];if(!state.price[c]||state.price[c].quality==='FONTE UFFICIALE')continue;state.price[c]={...state.price[c],as_of:z.as_of,quality:'STIMA INFORMATIVA',source_type:'Futures · indicativo (non OIS)',horizons:Object.fromEntries(Object.entries(z.horizons||{}).filter(([k,v])=>Number.isFinite(v.rate)).map(([k,v])=>[k,{rate:v.rate,as_of:z.as_of}]))}}updated++}if(updated){table();draw();$('feedStatus').textContent='Feed repository aggiornati · '+updated+'/3 sezioni; date originali'}else{$('feedStatus').textContent='Snapshot offline · feed repository al 02/11/2026'} })();
+
+/* Informational CHF/NZD overlays; canonical government yields and Core signals are untouched. */
+async function refreshRatesContext(){
+ const items=await Promise.allSettled([
+  get("CHF_SNB_10Y_SPOT_CONTEXT.json"),get("NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json"),
+  get("NZD_CB_PRICING_DIRECTIONAL_PROXY.json"),get("CB_PRICING_ESTIMATED_LIVE_QUOTES.json")
+ ]);
+ const today=new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Rome",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+ if(items[0].status==="fulfilled"){
+  const x=items[0].value;
+  if(x.schema==="GMFQ_CHF_SNB_10Y_SPOT_CONTEXT_V1"&&x.status==="OFFICIAL_PUBLISHED_10Y_INFORMATIONAL"&&x.as_of<=today&&Number.isFinite(x.value_percent))
+   state.extraRates.CHF={date:x.as_of,tenY:x.value_percent,source:x.source,kind:"10Y spot SNB isolato; manca il 2Y omogeneo"};
+ }
+ if(items[1].status==="fulfilled"){
+  const x=items[1].value.latest_official_web_context;
+  if(x&&/^\d{4}-\d{2}-\d{2}$/.test(x.as_of||"")&&x.as_of<=today&&Number.isFinite(x.government_bond_2y_pct)&&Number.isFinite(x.government_bond_10y_pct))
+   state.extraRates.NZD={date:x.as_of,twoY:x.government_bond_2y_pct,tenY:x.government_bond_10y_pct,
+    source:"RBNZ B2 HTML di ricerca",kind:"benchmark scadenzato cambiato il 30/10; no differenza cross-roll, nessuna promozione automatica"};
+ }
+ if(items[2].status==="fulfilled"){
+  const x=items[2].value;
+  if(x.schema==="GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1"&&x.status==="LIVE_DIRECTIONAL_PROXY_READY"&&x.as_of<=today){
+   const hs=Object.fromEntries(["3m","6m","12m"].map(k=>[k,{rate:x.horizons[k]?.implied_bank_bill_rate,as_of:x.as_of,change_1d_bp:x.horizons[k]?.change_1d_bp}]));
+   if(Object.values(hs).every(v=>Number.isFinite(v.rate)))
+    state.price.NZD={as_of:x.as_of,source_type:"ASX NZ bank-bill futures · proxy direzionale, non OIS",quality:"STIMA INFORMATIVA",horizons:hs};
+  }
+ }
+ if(items[3].status==="fulfilled"){
+  const x=items[3].value.currencies?.CHF;
+  if(x&&x.status==="LIVE_SECONDARY_READY"&&x.as_of<=today){
+   const hs=Object.fromEntries(["3m","6m","12m"].map(k=>[k,{rate:x.horizons?.[k]?.rate,as_of:x.horizons?.[k]?.quote_as_of||x.as_of}]));
+   if(Object.values(hs).every(v=>Number.isFinite(v.rate)))
+    state.price.CHF={as_of:x.as_of,source_type:"SARON futures · quotazioni secondarie indicative (non OIS)",quality:"STIMA INFORMATIVA",horizons:hs};
+  }
+ }
+ table();draw();renderCompare();
+ if(state.extraRates.CHF||state.extraRates.NZD)$("feedStatus").textContent+=" · CHF/NZD: contesto separato di ricerca, escluso dai differenziali canonici";
+}
+baseReady.then(refreshRatesContext).catch(e=>console.warn("[FX Quant V2 rates] Contesto CHF/NZD non disponibile:",e));
+
 </script>
 <script>
 /* V2 interpretation layer: consumes unchanged canonical rates/pricing feed */
@@ -199,7 +239,14 @@ function narrative(){
  byId('narrativeVerdict').innerHTML='<b>Lettura operativa:</b> '+esc(advice+warning);
 }
 const BANKX={USD:'Fed',EUR:'BCE',GBP:'BoE',JPY:'BoJ',CHF:'SNB',CAD:'BoC',AUD:'RBA',NZD:'RBNZ'};
-const originalDraw=draw;draw=function(){originalDraw();narrative()};narrative();
+function supplementalContext(){
+ const x=state.extraRates[state.selected];if(!x)return;
+ const row=state.selected==="CHF"?"SNB 10Y spot separato "+it(x.tenY,3)+"%":"RBNZ B2 2Y "+it(x.twoY,2)+"%, 10Y "+it(x.tenY,2)+"%";
+ const msg="Dato informativo "+dt(x.date)+": "+row+". "+x.kind+". NON aggiorna la curva canonica, spread e backtest.";
+ const area=byId("ratesNote");if(area)area.textContent+=" "+msg;
+ const source=byId("yieldSource");if(source)source.textContent+=" · Contesto: "+x.source+" ("+dt(x.date)+")";
+}
+const originalDraw=draw;draw=function(){originalDraw();narrative();supplementalContext()};narrative();supplementalContext();
 })();
 </script>
 </body></html>
