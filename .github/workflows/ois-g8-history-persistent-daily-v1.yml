@@ -6,6 +6,8 @@ on:
     paths:
       - '.github/workflows/ois-g8-history-persistent-daily-v1.yml'
       - 'validation/cb_pricing/ois_g8_history_snapshot_v1.py'
+      - 'validation/cb_pricing/build_fxv2_ois_fallback_v1.py'
+      - 'validation/cb_pricing/test_build_fxv2_ois_fallback_v1.py'
       - 'validation/cb_pricing/test_ois_g8_history_snapshot_v1.py'
       - 'validation/cb_pricing/ois_g8_schedule_gate_v1.py'
       - 'validation/cb_pricing/test_ois_g8_schedule_gate_v1.py'
@@ -31,6 +33,8 @@ on:
     paths:
       - '.github/workflows/ois-g8-history-persistent-daily-v1.yml'
       - 'validation/cb_pricing/ois_g8_history_snapshot_v1.py'
+      - 'validation/cb_pricing/build_fxv2_ois_fallback_v1.py'
+      - 'validation/cb_pricing/test_build_fxv2_ois_fallback_v1.py'
       - 'validation/cb_pricing/test_ois_g8_history_snapshot_v1.py'
       - 'validation/cb_pricing/ois_g8_schedule_gate_v1.py'
       - 'validation/cb_pricing/test_ois_g8_schedule_gate_v1.py'
@@ -234,6 +238,14 @@ jobs:
           print('OIS_SOURCE_READINESS_PUBLIC_CONTRACT_PASS',x['as_of'],x['blocked_currency_count'])
           PY
 
+      - name: Refresh FX Quant V2 pricing fallback from dated verified tenors
+        if: steps.gate.outputs.should_run == 'true'
+        run: |
+          python -m unittest validation.cb_pricing.test_build_fxv2_ois_fallback_v1 -v
+          python validation/cb_pricing/build_fxv2_ois_fallback_v1.py
+          # A fallback is UI-only, never used for FX Core, historical PIT or OIS_DATA.
+          git diff --exit-code -- live_data/sections/OIS_DATA.json live_data/sections/D.json
+
       - name: Persist unified G8 curve history
         if: steps.gate.outputs.should_run == 'true'
         run: python validation/cb_pricing/ois_g8_history_snapshot_v1.py
@@ -292,6 +304,7 @@ jobs:
           changed=sorted(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
           allowed={
             'live_data/sections/CB_PRICING_ESTIMATED_LIVE_QUOTES.json',
+            'site/fx-quant-v2/ois-pricing-snapshot.json',
             'live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json',
             'live_data/sections/CB_PRICING_ESTIMATED.json',
             'live_data/sections/OIS_OPERATIONAL_VIEW.json',
