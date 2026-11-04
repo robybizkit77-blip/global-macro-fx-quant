@@ -33,23 +33,36 @@ fs.mkdirSync(output,{recursive:true});
      nav:document.querySelectorAll('#fxv2-nav a').length,
      hero:$('#heroTitle')?.textContent?.trim(),
      background:!!$('.macro-atmosphere')&&!!$('.hero-overline'),
-     deck:document.querySelectorAll('#oggi .pulse-card').length,
+     deck:document.querySelectorAll('#oggi .brief-section').length,
+     editorial:!!$('#briefObserved')&&!!$('#briefMacro')&&!!$('#briefPricing')&&!!$('#briefVerdict'),
+     observed:$('#briefObserved')?.textContent,
+     macro:$('#briefMacro')?.textContent,
+     pricing:$('#briefPricing')?.textContent,
+     verdict:$('#briefVerdict')?.textContent,
+     asof:$('#briefDates')?.textContent,
      links:document.querySelectorAll('.desk-links a').length,
      rows:document.querySelectorAll('#g8Grid button[data-ccy]').length,
      dxy:document.querySelectorAll('#dxyChart polyline').length,
      rates:document.querySelectorAll('#ratesChart polyline').length,
-     ratesCard:$('#pulseRatesHeadline')?.textContent,
-     fxCard:$('#pulseFxHeadline')?.textContent,
-     disclaimer:$('#pulseFxDetail')?.textContent,
+     ratesCard:$('#briefRates')?.textContent,
+     fxCard:$('#briefFX')?.textContent,
+     disclaimer:$('#briefFXNote')?.textContent,
      overflow:Math.max(0,document.documentElement.scrollWidth-innerWidth),
      current:document.querySelectorAll('#fxv2-nav a[aria-current="page"]').length,
     };
    });
    if(result.nav!==12||result.current!==1||!result.background||
-      result.deck!==3||result.links<5||result.rows!==8||
+      result.deck!==3||!result.editorial||result.links<5||result.rows!==8||
       result.dxy!==1||result.rates!==2||result.overflow>10||
       !result.hero||!result.ratesCard?.includes('%')||
-      !result.disclaimer?.includes('BCE')||!result.fxCard){
+      !result.disclaimer?.includes('BCE')||!result.fxCard||
+      !result.observed?.includes('Treasury 2Y')||
+      !result.observed?.includes('10Y')||
+      !result.verdict?.includes('Fed')||
+      !result.macro?.includes('non ha una data di rilascio')||
+      !result.pricing?.includes('OIS')||
+      !result.asof?.includes('Treasury')||
+      !result.asof?.includes('BCE')){
      throw Error('Concept QA '+label+': '+JSON.stringify(result));
    }
    await page.locator('#g8Grid button[data-ccy="JPY"]').click();
