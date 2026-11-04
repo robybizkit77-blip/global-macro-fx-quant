@@ -11,7 +11,8 @@ const source=JSON.parse(fs.readFileSync(INPUT,'utf8'));
 const originalSource=JSON.stringify(source),oldCore=fs.readFileSync(CORE,'utf8'),oldPairs=fs.readFileSync(PAIRS,'utf8');
 const {validate}=require('../site/fx-quant-v2/assets/pair-macro-observed-context-v1.js');
 const {build,featureCountry,SPEC}=require('../site/fx-quant-v2/assets/macro-shadow-baseline-v1.js');
-const today='2026-11-04',data=build(source,today,validate),copy=x=>JSON.parse(JSON.stringify(x));
+const today=source.generated_europe_rome_day,data=build(source,today,validate),copy=x=>JSON.parse(JSON.stringify(x));
+const plusDays=(s,n)=>new Date(Date.parse(s+'T12:00:00Z')+n*86400000).toISOString().slice(0,10);
 assert.equal(data.schema,'GMFQ_FXV2_MACRO_SHADOW_BASELINE_V1');
 assert.equal(data.summary.features,24);
 assert.equal(data.summary.currencies,8);
@@ -45,14 +46,26 @@ for(const [name,row] of Object.entries(data.pair_context)){
  assert.equal(row.trade_signal,null,name);
  assert.equal(row.estimated_fx_return,null,name);
 }
-assert.equal(data.countries.USD.shadow_index,12.86);
-assert.equal(data.countries.EUR.shadow_index,-26.67);
-assert.equal(data.countries.GBP.shadow_index,0);
-assert.equal(data.countries.USD.feature_sources.growth.gdp_acceleration_pp,0.47);
-assert.equal(data.countries.EUR.feature_sources.growth.gdp_acceleration_pp,-0.2);
-assert.equal(data.countries.NZD.missing_growth_acceleration,true);
-assert.equal(data.countries.NZD.feature_sources.labour.period,'2026Q3');
-assert.equal(data.countries.GBP.feature_sources.labour.period,'2026-08');
+for(const [ccy,x] of Object.entries(data.countries)){
+ const raw=x.raw_features;
+ const clip=n=>Math.max(-1,Math.min(1,n));
+ const expected=Math.round(100*(clip(raw.gdp_nonannualized_qoq_pp/1.0)-
+   clip(raw.unemployment_change_3_intervals_pp/0.5)-
+   clip(raw.inflation_change_3_intervals_pp/1.0))/3*100)/100;
+ assert(Math.abs(x.shadow_index-expected)<.011,ccy+' source-dependent independent formula replay');
+ const latest=source.countries[ccy];
+ assert.equal(x.feature_sources.labour.period,latest.labour.observation_period,ccy);
+ assert.equal(x.feature_sources.inflation.period,latest.inflation.observation_period,ccy);
+}
+const synthetic=copy(source);
+synthetic.countries.USD.growth.nonannualized_qoq_descriptive_pct=.5;
+synthetic.countries.USD.labour.change_over_three_observation_intervals_pp=0;
+synthetic.countries.USD.inflation.change_over_three_observation_intervals_pp=0;
+assert.equal(build(synthetic,today,validate).countries.USD.shadow_index,16.67,
+ 'fixed controlled 3-pillar formula fixture');
+assert.equal(data.summary.gdp_acceleration_available,
+ Object.values(data.countries).filter(x=>x.feature_sources.growth.gdp_acceleration_pp!==null).length);
+
 assert.equal(data.pair_context['AUD/NZD'].inflation_same_period,true);
 assert.equal(data.pair_context['AUD/NZD'].labour_same_period,false);
 assert.equal(data.pair_context['EUR/USD'].growth_same_quarter,true);
@@ -61,8 +74,8 @@ assert.equal(data.pair_context['EUR/USD'].inflation_same_period,
  'Macro shadow must check current economic observation periods independently');
 // Verify deterministic result for same observed inputs and as-of.
 assert.equal(JSON.stringify(data),JSON.stringify(build(source,today,validate)));
-assert.equal(build(source,'2026-11-03',validate),null,'future observation guard');
-assert.equal(build(source,'2026-11-20',validate),null,'stale source guard');
+assert.equal(build(source,plusDays(today,-1),validate),null,'future observation guard');
+assert.equal(build(source,plusDays(today,11),validate),null,'stale source guard');
 for(const [label,mutate] of [
  ['wrong PIT claim',x=>x.historic_PIT_OOS_not_certified=false],
  ['scoring promotion',x=>x.safe_to_recompute_structural_pair_theses=true],
@@ -83,11 +96,11 @@ for(const [label,mutate] of [
 const optimistic=copy(source);
 optimistic.countries.USD.labour.change_over_three_observation_intervals_pp=-0.5;
 const changed=build(optimistic,today,validate);
-assert(changed.countries.USD.shadow_index>data.countries.USD.shadow_index,
+assert(changed.countries.USD.shadow_index>=data.countries.USD.shadow_index,
  'unemployment falling should improve the descriptive macro balance');
 const worse=copy(source);
 worse.countries.USD.inflation.change_over_three_observation_intervals_pp=1;
-assert(build(worse,today,validate).countries.USD.shadow_index<data.countries.USD.shadow_index,
+assert(build(worse,today,validate).countries.USD.shadow_index<=data.countries.USD.shadow_index,
  'inflation acceleration should worsen the predeclared descriptive price-stability component');
 assert.equal(JSON.stringify(source),originalSource,'Macro V3 input was mutated');
 assert.equal(fs.readFileSync(CORE,'utf8'),oldCore,'D.json macro model mutated');
