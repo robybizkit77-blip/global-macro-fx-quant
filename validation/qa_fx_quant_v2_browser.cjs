@@ -120,6 +120,47 @@ async function audit(browser,name,file,selector,view,viewport){
     if(ordinary.includes('STIMA/PROXY INDICATIVO'))
       issue(name,view,'pair_estimates_leaked','EUR/USD erroneously marked estimated: '+ordinary);
   }
+  if(name==='coppie'){
+    await page.locator('#allPairs').selectOption('EURUSD');
+    await page.waitForFunction(()=>
+      document.querySelector('#macroV3Context')?.textContent?.includes('MACRO V3 · osservazioni pubblicate'),
+      null,{timeout:15000});
+    const first=(await page.locator('#macroV3Context').textContent())||'';
+    if(!first.includes('EUR')||!first.includes('USD')||
+       !first.includes('disoccupazione')||!first.includes('Inflazione')||
+       !first.includes('Crescita')||!first.includes('2026Q3')||
+       !first.includes('annualizzato SAAR')||!first.includes('25/09')&&
+       !first.includes('2026-09-25'))
+      issue(name,view,'macro_v3_evidence_not_loaded',first.slice(0,440));
+    const canonicalBefore=(await page.locator('#pairQuality').textContent())||'';
+    await page.locator('#allPairs').selectOption('AUDCAD');
+    const second=(await page.locator('#macroV3Context').textContent())||'';
+    if(!second.includes('AUD')||!second.includes('CAD')||
+       !second.includes('2026Q2')||!second.includes('non nuovo bias FX')||
+       second===first)
+      issue(name,view,'macro_v3_pair_swap_failed',second.slice(0,440));
+    await page.locator('#allPairs').selectOption('EURUSD');
+    const canonicalAfter=(await page.locator('#pairQuality').textContent())||'';
+    if(canonicalBefore!==canonicalAfter)
+      issue(name,view,'macro_v3_mutated_canonical_quality',
+       'before='+canonicalBefore+' after='+canonicalAfter);
+    if(mode==='pr-local'&&view==='desktop'){
+      await page.route('**/macro-v3-current-evidence.json*',route=>route.fulfill({
+        status:200,contentType:'application/json',body:JSON.stringify({
+          schema:'GMFQ_MACRO_V3_G8_28PAIR_PUBLIC_OBSERVED_CONTEXT_V1',
+          safe_to_recompute_structural_pair_theses:true,summary:{pairs:28}
+        })
+      }));
+      await page.reload({waitUntil:'domcontentloaded'});
+      await page.waitForFunction(()=>
+       document.querySelector('#macroV3Context')?.textContent?.includes('ricerca non ancora verificata'),
+       null,{timeout:17000});
+      const rejected=(await page.locator('#macroV3Context').textContent())||'';
+      if(rejected.includes('MACRO V3 · osservazioni pubblicate'))
+        issue(name,view,'unsafe_macro_v3_promoted',rejected.slice(0,400));
+      await page.unroute('**/macro-v3-current-evidence.json*');
+    }
+  }
   if(name==='ois'){
     await page.waitForFunction(()=>document.querySelectorAll('#pricingGrid button[data-c]').length===8,null,{timeout:15000});
     const data=await page.evaluate(()=>({
