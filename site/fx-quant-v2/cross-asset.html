@@ -222,5 +222,65 @@ async function refreshMarketProxies(){
 }
 refreshMarketProxies();
 
+/* Read-only independently dated source overlay: FRED distributed closes and official Cboe VIX.
+   No core signals, no mixed-session return inference, no replacement for breadth. */
+async function refreshPublishedCrossAsset(){
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
+ try {
+  const root="https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/site/fx-quant-v2/cross-asset-live-data.json";
+  const response=await fetch(root,{cache:"no-store",signal:controller.signal});
+  if(!response.ok)throw Error("cross-asset source HTTP "+response.status);
+  const feed=await response.json();
+  if(feed.schema!=="GMFQ_FXV2_CROSS_ASSET_SOURCE_OVERLAY_V1")throw Error("unexpected FXV2 source schema");
+  const today=new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Rome",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+  const rows=feed.streams||{};
+  const verified={
+   SP500:{kind:"INDEX",source:"fred.stlouisfed.org"},
+   NASDAQCOM:{kind:"INDEX",source:"fred.stlouisfed.org"},
+   IG_OAS:{kind:"CREDIT_OAS",source:"fred.stlouisfed.org"},
+   HY_OAS:{kind:"CREDIT_OAS",source:"fred.stlouisfed.org"},
+   VIX:{kind:"VOLATILITY_INDEX",source:"cboe.com"}
+  };
+  let changed=0;const updated=[];
+  for(const [key,expect] of Object.entries(verified)){
+   const x=rows[key];if(!x)continue;
+   const original=key==="SP500"?D.equity.indices[0]:
+    key==="NASDAQCOM"?D.equity.indices[1]:
+    key==="IG_OAS"?D.credit.IG:key==="HY_OAS"?D.credit.HY:D.volatility.VIX;
+   const oldDate=original.as_of||original.date;
+   const good=Array.isArray(x.history)&&x.history.length>=10&&x.history.length<=100&&
+    x.history.every(z=>Array.isArray(z)&&z.length===2&&/^20\d{2}-\d{2}-\d{2}$/.test(z[0])&&Number.isFinite(z[1]))&&
+    x.history.at(-1)[0]===x.date&&x.history.at(-1)[1]===x.value&&
+    /^20\d{2}-\d{2}-\d{2}$/.test(x.date||"")&&x.date<=today&&x.date>=oldDate&&
+    x.quality==="PUBLISHED_SOURCE_RESEARCH_ONLY"&&x.kind===expect.kind&&
+    (x.source_url||"").includes(expect.source)&&Number.isFinite(x.value)&&x.value>0&&
+    Number.isFinite(x.previous)&&x.previous>0&&Number.isFinite(x.change_1d_pct);
+   if(!good)continue;
+   if(key==="SP500"||key==="NASDAQCOM"){
+    const idx=key==="SP500"?0:1;
+    D.equity.indices[idx]={...original,code:key,value:x.value,change1d:x.change_1d_pct,
+     as_of:x.date,source:x.publisher,source_url:x.source_url,quality:x.quality,history:x.history};
+   }else if(key==="VIX"){
+    D.volatility.VIX={...original,date:x.date,value:x.value,previous:x.previous,
+     change1d_pct:x.change_1d_pct,history:x.history,source:x.publisher,
+     source_url:x.source_url,quality:x.quality};
+   }else{
+    const id=key==="IG_OAS"?"IG":"HY";
+    D.credit[id]={...original,date:x.date,value:x.value,previous:x.previous,
+     history:x.history,source:x.publisher,source_url:x.source_url,quality:x.quality};
+   }
+   changed++;updated.push(key+" "+x.date);
+  }
+  if(changed){stats();copy();book();render();}
+  const meta=el("sourceList");
+  if(meta)meta.insertAdjacentHTML("beforeend",
+   '<span> · Cross-Asset FRED/Cboe: '+safe(updated.length?updated.join(", "):"nessuna osservazione nuova validata")+
+   ' · le serie e la partecipazione mantengono date proprie · ricerca informativa, non segnali FX</span>');
+ }catch(error){
+  console.warn("[FX Quant V2 Cross-Asset] Feed FRED/Cboe non aggiornabile; archivio datato preservato:",error);
+ }finally{clearTimeout(timer);}
+}
+refreshPublishedCrossAsset();
+
 })();
 </script></body></html>
