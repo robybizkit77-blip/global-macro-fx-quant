@@ -1,0 +1,76 @@
+name: FX Quant V2 Independent 08:00 Public Proof
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/publishing/check_fxv2_morning_public_v1.py'
+      - 'validation/publishing/test_fxv2_morning_public_v1.py'
+      - '.github/workflows/fxv2-morning-public-proof.yml'
+  workflow_dispatch:
+  schedule:
+    # UTC pairs target Rome 07:11, 07:41, 07:53 in both CET and CEST.
+    # GitHub schedule may run late: measured public time is never backdated.
+    - cron: '11 5 * * 1-5'
+    - cron: '11 6 * * 1-5'
+    - cron: '41 5 * * 1-5'
+    - cron: '41 6 * * 1-5'
+    - cron: '53 5 * * 1-5'
+    - cron: '53 6 * * 1-5'
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify 08:00 delivery classification with DST and drift failures
+        run: python validation/publishing/test_fxv2_morning_public_v1.py
+
+  audit:
+    needs: contract
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check 12 public pages and core assets against approved main
+        id: check
+        run: python validation/publishing/check_fxv2_morning_public_v1.py --output /tmp/fxv2-morning-proof.json
+      - name: Record independent delivery status
+        if: always()
+        run: |
+          if [ -f /tmp/fxv2-morning-proof.json ]; then
+            python - <<'PY'
+          import json,os
+          d=json.load(open('/tmp/fxv2-morning-proof.json'))
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as out:
+              out.write('## FX Quant V2 — verifica pubblica delle 08:00 (Europe/Rome)\n')
+              out.write('- Stato: **'+d['status']+'**\n')
+              out.write('- Osservato: '+d['verified_at_rome']+'\n')
+              out.write('- File identici alla versione approvata: '+str(d['public_files_verified'])+'/'+str(d['expected_file_count'])+'\n')
+              out.write('- Freschezza economica e qualità OIS: **verifiche distinte**, non certificate da questo controllo\n')
+              out.write('- Esecuzione GitHub ritardata: mai considerata prova retroattiva di puntualità\n')
+          PY
+          else
+            echo '### FAIL: nessuna ricevuta prodotta' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Preserve dated evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fxv2-morning-public-proof
+          path: /tmp/fxv2-morning-proof.json
+          if-no-files-found: warn
+          retention-days: 21
