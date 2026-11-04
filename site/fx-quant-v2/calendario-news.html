@@ -142,7 +142,7 @@ async function refreshCalendar(){
   return response.json();
  };
  try {
-  const [calendar,news,rates]=await Promise.all([
+  const [calendar,newsFeed,rates]=await Promise.all([
    get("CALENDAR_OPERATIONAL_VIEW"),get("NEWS_PULSE_OPERATIONAL"),
    get("NATIVE_RATES_DATA").catch(()=>null)
   ]);
@@ -180,12 +180,12 @@ async function refreshCalendar(){
     target.front_end_2y=current["2Y"];target.front_end_date=current.date;
    }
   }
-  const repricing=(Array.isArray(news.items)?news.items:[]).filter(x=>/OIS_REPRICING|FUTURES_IMPLIED_REPRICING/.test(x.category||"")).map(x=>({
+  const repricing=(Array.isArray(newsFeed.items)?newsFeed.items:[]).filter(x=>/OIS_REPRICING|FUTURES_IMPLIED_REPRICING/.test(x.category||"")).map(x=>({
     ccy:x.ccy,as_of:x.as_of,title:x.title,detail:x.detail,
     instrument_type:x.category==="OIS_REPRICING"?"OIS":"FUTURES",source:x.source
   }));
   if(repricing.length)D.feeds.repricing=repricing;
-  const official=news.official_releases?.headlines;
+  const official=newsFeed.official_releases?.headlines;
   if(Array.isArray(official)){
    D.feeds.headlines=official.filter(x=>x.title&&x.published_at_utc).map(x=>({
     ccy:x.ccy||"G8",title:x.title,published_at_utc:x.published_at_utc,
@@ -197,7 +197,7 @@ async function refreshCalendar(){
   selected=D.events[0].id;showAllNews=false;
   chips();renderEvents();detail();pricing();news();
   $("feedAsOf").textContent="Calendario canonico verificato: "+D.calendar_checked_at_utc+
-   " · News Pulse: "+(news.last_checked_at_utc||news.generated_at_utc||"data non disponibile")+
+   " · News Pulse: "+(newsFeed.last_checked_at_utc||newsFeed.generated_at_utc||"data non disponibile")+
    " · Eventi e comunicazioni sono feed aggiornabili; la verifica della reazione resta distinta.";
  }catch(error){
   console.warn("[FX Quant V2 Calendar] Dati live non verificati; snapshot preservato:",error);
