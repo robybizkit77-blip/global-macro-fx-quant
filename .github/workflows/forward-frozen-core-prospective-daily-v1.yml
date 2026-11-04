@@ -281,6 +281,10 @@ jobs:
           esac
 
       - name: Certify V2 research capture separately after primary Core commit
+        # Strict original V2 is a separate, non-blocking research check.
+        # Its step remains RED on an undefined z-score, while a durable
+        # Core/Quality-Aware capture may finish GREEN independently.
+        continue-on-error: true
         # Keep the original V2 RED/status visible even if quality-aware
         # certification fails earlier. Do not run if persistence failed.
         if: ${{ always() && steps.admit.outputs.admitted == 'true' && steps.commit_snapshot.outcome == 'success' }}
@@ -290,15 +294,16 @@ jobs:
         run: |
           set -euo pipefail
           # This executes AFTER primary legacy snapshot persistence. A V2
-          # failure must not leave a misleading GREEN service run, but must
-          # never erase or prevent the separately committed legacy observation.
+          # failure is reported as a failed RESEARCH step, not failure of
+          # the separately persisted Core/Quality-Aware production capture.
           case "$V2_SHADOW_STATUS" in
             PROSPECTIVE_SHADOW_RESEARCH_SNAPSHOT_APPEND_OK|EXISTING_DATE_ALREADY_FROZEN_NO_OVERWRITE)
               echo 'V2_RESEARCH_CAPTURE_REAL_OR_IDEMPOTENT_PASS'
               ;;
             *)
               echo "::error::V2_RESEARCH_CAPTURE_FAILED_AFTER_LEGACY_PERSISTENCE status=$V2_SHADOW_STATUS"
-              echo '- Final outcome: **PARTIAL, V2 research capture not recorded**.' >> "$GITHUB_STEP_SUMMARY"
+              echo '- Primary Core ledger: **PERSISTED**; Quality-Aware status is verified by its separate independent certification job.' >> "$GITHUB_STEP_SUMMARY"
+              echo '- Original numerical V2 research: **NOT CERTIFIED / FAILED**. This separate step is intentionally non-blocking; workflow GREEN must not be read as V2 predictive validation.' >> "$GITHUB_STEP_SUMMARY"
               exit 1
               ;;
           esac

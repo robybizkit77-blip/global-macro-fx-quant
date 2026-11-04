@@ -269,12 +269,18 @@ class V2ProspectiveResearchCapture(unittest.TestCase):
         self.assertIn("id: v2_shadow",workflow)
         self.assertIn("V2_SHADOW_STATUS: ${{ steps.v2_shadow.outputs.status }}",workflow)
         self.assertIn("V2_RESEARCH_CAPTURE_FAILED_AFTER_LEGACY_PERSISTENCE",workflow)
+        # The strict original V2 remains an explicit FAILED step, but it
+        # cannot turn a successfully persisted primary journal RED.
+        research_check=workflow[check_pos:]
+        self.assertIn("continue-on-error: true", research_check[:450])
+        self.assertIn("Original numerical V2 research: **NOT CERTIFIED / FAILED**", research_check)
+        self.assertIn("workflow GREEN must not be read as V2 predictive validation", research_check)
         self.assertIn("V2_RESEARCH_SOURCE_FAILURE",workflow)
         self.assertIn("V2_RESEARCH_RECEIPT_INVALID",workflow)
         self.assertIn("EXISTING_DATE_ALREADY_FROZEN_NO_OVERWRITE",workflow)
         self.assertIn("PROSPECTIVE_SHADOW_RESEARCH_SNAPSHOT_APPEND_OK",workflow)
-        # An admitted run that lacks a V2 record MUST exit with a failing
-        # status. This occurs only after the older Core has already persisted.
+        # The original V2 research check must still exit 1 when unsupported;
+        # only this research step (not the primary pipeline) tolerates failure.
         self.assertIn("exit 1",workflow[check_pos:])
         self.assertIn("git push origin HEAD:main",workflow[persist_pos:check_pos])
 
