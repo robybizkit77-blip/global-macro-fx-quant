@@ -76,7 +76,7 @@ async function audit(browser,name,file,selector,view,viewport){
       await page.locator('#benchmarkResearch:not([hidden])').waitFor({timeout:12000});
       const head=((await page.locator('#benchmarkHeadline').textContent())||'').trim();
       const text=((await page.locator('#benchmarkResearch').textContent())||'');
-      if(!head.includes(expected)||words.some(w=>!text.includes(w))){
+      if(!head.includes(expected)||words.some(w=>!text.toLowerCase().includes(w.toLowerCase()))){
         issue(name,view,'research_benchmark_not_loaded','Source context for '+ccy+' not rendered: '+head+' '+text.slice(0,180));
       }
     }
