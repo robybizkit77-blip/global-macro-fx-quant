@@ -1,8 +1,49 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-04T06:32:58Z",
+  "generated_at_utc": "2026-11-04T15:28:32Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-ccc8ea3fbd0f0cfc9723",
+      "observed_at_utc": "2026-11-04T11:49:22Z",
+      "headline": "ECB rate hike looks nearly certain after inflation rises to three-year high",
+      "summary": "Reuters riporta: ECB rate hike looks nearly certain after inflation rises to three-year high. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "EUR"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxNSnlWVjhZeXhCME9sTHdmcC1RWTdrNUVIbUhhbE1td2t3Z2VDbzh1SW1kSmJJdWU5aVRSeW8tQ3hweVJwTDdVMGR0XzdtM0UtSGhkRnY1NWN6ZUkxR05xb2NadnJuNjEza3d4cDNOcTRnWXJBT2MzYnJjY2hkbjdHUmxoWjVsWGE0UE5NOUx0QQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-f8502071d70b1d8d946b",
+      "observed_at_utc": "2026-11-03T20:26:56Z",
+      "headline": "Brazil's Lula not weighing proposal to slash interest rates, minister says",
+      "summary": "Reuters riporta: Brazil's Lula not weighing proposal to slash interest rates, minister says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxNcWo0MGtRNFVLaHhob0s1OXhOQ3hGY1A4MGk2NHhlN1FUaTBQeVVOeUJyenFWV1ZJZ3N3bWNJVm5CTUJNSl9JTUh1NlBua29HQ3RWQW83YjE4M3NCMlFvZ1pId0wtcEE2cXR2UThwQU5ZM2E4TXlTNE5vQ1kyT1U2OFllQ1RqdHJqOEN6NlBYemtHd1FPMDB5dGFLTEE0VG5QX1JoV0YwbWxMSVZhREJleHR2NS04T08zTzFwSg?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-cfe09c6e2877aa1332ef",
+      "observed_at_utc": "2026-11-03T10:14:40Z",
+      "headline": "OPEC agrees modest hike in oil supply after Iran softens stance",
+      "summary": "Reuters riporta: OPEC agrees modest hike in oil supply after Iran softens stance. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "COMMODITIES",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiXEFVX3lxTE92SHB2ZWFTNGtUMGdRbUk0MmdzTldzMk1kTWEtLVJQNDRJUFBvYnFKMEd3QmxNdGlxWGw5anp1a19iSG8wdndjUkpZVG9jbWRiVmIxMm93N2JFNHZp?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-5a8e3a72b85bb1b21af7",
       "observed_at_utc": "2026-11-04T03:50:00Z",
@@ -1367,49 +1408,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxNclYtUXdmSlNpRWlCYkF0T3M1UEpKQTRlS3hyeXRBS3lmVms3cXZNSGl3NDl1dDZ1cUFpR1gtaW9NQ0lfaE1wSWd1ZUNsb0tkQ3JWUzdoVzJJSmd0UDUtXzFfdHhobnlfZ1A2bUFCSFZfVjVYNl9tYTR3WVlmSWRrQXFLSjFrdUcyV2sxTi1ET1NJZ3o3UXFBOEhuaDVyLS1zeHFPSVpXNkI2Y1V2Q1M0?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-e26e9c9edf409d22ad74",
-      "observed_at_utc": "2026-10-27T12:01:43Z",
-      "headline": "Indonesia secures UAE oil supply commitment for up to 30 million barrels",
-      "summary": "Reuters riporta: Indonesia secures UAE oil supply commitment for up to 30 million barrels. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "COMMODITIES",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxPQ2NPcXd3SFVMWGtBUmdNUlFxV0ZWbWx2U3pqMU5BZFZLM2VlNGNsOXVuV291TmhnUmE1M09IaDNjN21VZk5HVWxGUmVGVVhCYVptbDJaQ25FMlUwUjBPa1RudDZjQVhMSklXcWwtdUZCM0JrUnVMMEdrWS12LTlmZFZvU0FsZV9TQThmUFFIT1F4YzRlNkkzZ1JvR2xFemxlWEtHUUhvMTJWUzRldG1LVG9DWnRveG9y?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-cb9ec6a5a9d6758c7387",
-      "observed_at_utc": "2026-10-27T11:49:08Z",
-      "headline": "GM moves to Nasdaq as first legacy automaker on the exchange",
-      "summary": "Reuters riporta: GM moves to Nasdaq as first legacy automaker on the exchange. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMinwFBVV95cUxNZm9hYk1yQ3dNekhqMHROb3lfbGN4RDVGSFVSVFZkay05TWdfN3FTNnhTTXZIZ3lUM05kR0NCSVRmUlU4OWh4RWtidE5hZlZHaXJzSFU2dk5Wb25Dc044b0xPOWgySXpaRWRTbEhwcWdxN3RtQk1fcldpOFdNS0g4cVJ0MzZDWHJRYVVGMGFEdlIxa2dESjZnNnVCNTY1b1E?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-02d8d6d9122244607832",
-      "observed_at_utc": "2026-10-27T10:11:08Z",
-      "headline": "Hold or sell? High Treasury yields spur US banks to rethink bond portfolios",
-      "summary": "Reuters riporta: Hold or sell? High Treasury yields spur US banks to rethink bond portfolios. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CREDIT",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxOZlRoclI1cWxjMnVMUDNDMU1HYXoyOWRGTjlpOGs1ejBTNzRxNGtJQVJ5NVYxM2d2cjlXOThnX3dvQ0Nld2JGVWdmRmZpTjhmLTlUVlVoU0FnNENXb1pydXVQNlpaZy0zZjVfdXlOSWtwbW9KZlAybzRfNlBsNVc4VmVhSFhBajIzcTl6Y0QwR0pvWEtVbjNxTTJPdHNWcFNwakFOZE05Tk4wSTJOa2JOTWpobXFNR01WUHlqVEViaS1selhWTWc?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
