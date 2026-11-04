@@ -106,6 +106,49 @@ function table(){var list=ORDER.map(function(c){return D.currencies[c]});$('allR
 function render(){buttons();narrative();graph()}
 document.querySelectorAll(".mode").forEach(function(b){b.addEventListener("click",function(){mode=b.dataset.mode;graph()})});
 summary();table();render();
+
+/* V2 read-only bridge: certified weekly COT history, no changes to the source engine. */
+async function refreshCot(){
+ const root="https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/";
+ const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),9000);
+ try {
+  const response=await fetch(root+"V250_COT_CHART_DATA.json",{cache:"no-store",signal:controller.signal});
+  if(!response.ok)throw Error("HTTP "+response.status);
+  const live=await response.json();
+  const checked={};
+  const today=new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Rome",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+  for(const code of ORDER){
+   const s=live[code],old=D.currencies[code];
+   if(!s||!Array.isArray(s.dates)||s.dates.length<2)throw Error("Storico "+code+" insufficiente");
+   const length=s.dates.length,last=s.dates[length-1];
+   if(!/^20\d{2}-\d{2}-\d{2}$/.test(last)||last>today||last<old.as_of)throw Error("Data COT "+code+" non valida");
+   if(["net","long","short","netoi","percentile"].some(key=>!Array.isArray(s[key])||s[key].length!==length))throw Error("Serie COT "+code+" incoerente");
+   if(!["net","long","short","netoi","percentile"].every(key=>Number.isFinite(Number(s[key][length-1]))))throw Error("Valore COT "+code+" non numerico");
+   checked[code]={s,last,length};
+  }
+  for(const code of ORDER){
+   const {s,last,length}=checked[code],x=D.currencies[code],oldDate=x.as_of;
+   const net=Number(s.net[length-1]),one=Number(s.net[length-2]),four=Number(s.net[Math.max(0,length-5)]);
+   x.as_of=last;x.count=length;x.net=net;x.long=Number(s.long[length-1]);x.short=Number(s.short[length-1]);
+   x.netoi=Number(s.netoi[length-1]);x.percentile=Number(s.percentile[length-1]);
+   x.delta1=net-one;x.delta4=net-four;
+   x.prevDelta1=length>2?one-Number(s.net[length-3]):0;
+   x.netoiPrev=Number(s.netoi[length-2]);x.percentilePrev=Number(s.percentile[length-2]);
+   x.history={dates:s.dates.slice(),net:s.net.slice(),netoi:s.netoi.slice(),percentile:s.percentile.slice()};
+   if(last!==oldDate){
+    x.price1w=null;x.price4w=null;x.price1w_status="da_verificare";
+    x.notes="La nuova rilevazione CFTC non ha ancora un confronto FX a date allineate in questa pagina.";
+   }
+  }
+  summary();table();render();
+  $("freshness").innerHTML+=" <strong>Origine:</strong> feed canonico CFTC, ultimo aggiornamento "+safe(checked.USD.last)+".";
+ }catch(err){
+  console.warn("[FX Quant V2 COT] Feed non disponibile, snapshot preservato:",err);
+  $("freshness").innerHTML+=" <strong>Modalità snapshot:</strong> aggiornamento CFTC non verificato.";
+ }finally{clearTimeout(timeout);}
+}
+refreshCot();
+
 })();
 </script>
 </body></html>
