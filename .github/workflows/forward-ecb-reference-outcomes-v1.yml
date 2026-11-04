@@ -12,6 +12,8 @@ on:
       - 'validation/forward/test_observe_official_ecb_reference_outcomes_v1.py'
       - 'validation/forward/observe_v2_research_ecb_reference_returns_v1.py'
       - 'validation/forward/test_observe_v2_research_ecb_reference_returns_v1.py'
+      - 'validation/forward/observe_v2_quality_aware_ecb_reference_returns_v1.py'
+      - 'validation/forward/test_observe_v2_quality_aware_ecb_reference_returns_v1.py'
       - 'validation/forward/audit_v2_prospective_cohort_independence_v1.py'
       - 'validation/forward/test_audit_v2_prospective_cohort_independence_v1.py'
       - 'validation/forward/V2_FORWARD_COHORT_EVALUATION_CONTRACT_2026-10-28.md'
@@ -61,6 +63,7 @@ jobs:
           python -m py_compile validation/forward/observe_official_ecb_reference_outcomes_v1.py validation/forward/test_observe_official_ecb_reference_outcomes_v1.py
           python -m unittest validation.forward.test_observe_official_ecb_reference_outcomes_v1 -v
           python -m unittest validation.forward.test_observe_v2_research_ecb_reference_returns_v1 -v
+          python -m unittest validation.forward.test_observe_v2_quality_aware_ecb_reference_returns_v1 -v
           python -m unittest validation.forward.test_audit_v2_prospective_cohort_independence_v1 -v
       - name: Confirm current repository has no faux matured outcomes
         run: |
@@ -87,6 +90,19 @@ jobs:
                      r['beta_predictive_accuracy'] is None and
                      r['model_alpha_claim'] is False for r in d['new_rows'])
           print('V2_SHADOW_REFERENCE_OBSERVER_NO_PROFIT_CLAIMS_PASS',d['new_matured_reference_rows'])
+          PY
+      - name: Verify Quality-Aware observer is read-only in PR tests
+        run: |
+          python -m validation.forward.observe_v2_quality_aware_ecb_reference_returns_v1 \
+            --receipt /tmp/gmfq-quality-aware-reference-ci.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/gmfq-quality-aware-reference-ci.json'))
+          assert d['status']=='QUALITY_AWARE_FEATURE_OUTCOME_PANEL_ONLY_NOT_PREDICTIVE_VALIDATION'
+          assert d['no_actual_pnl_or_trade_claim'] and d['no_H1_or_original_V2_model_claim']
+          assert all(x['trade_net_return'] is None and x['trade_direction'] is None
+                     and x['predictive_accuracy'] is None for x in d['new_rows'])
+          print('QUALITY_AWARE_REFERENCE_OUTCOMES_NO_MODEL_CLAIM')
           PY
       - name: Require cohort/date independence audit before any V2 validation language
         run: |
@@ -250,6 +266,25 @@ jobs:
           else
             echo 'V2_REFERENCE_OBSERVER_FAILED_WITHOUT_BLOCKING_LEGACY_COMPARISONS' >> "$GITHUB_STEP_SUMMARY"
           fi
+      - name: Observe matured Quality-Aware ECB references in a separate immutable journal
+        if: steps.gate.outputs.valid == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m validation.forward.observe_v2_quality_aware_ecb_reference_returns_v1 \
+            --receipt /tmp/gmfq-quality-aware-reference-daily.json --append-journal
+          python - <<'PY'
+          import json,os
+          d=json.load(open('/tmp/gmfq-quality-aware-reference-daily.json'))
+          assert d['status']=='QUALITY_AWARE_FEATURE_OUTCOME_PANEL_ONLY_NOT_PREDICTIVE_VALIDATION'
+          assert d['no_actual_pnl_or_trade_claim'] and d['no_H1_or_original_V2_model_claim']
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as out:
+              out.write('- Quality-Aware matured ECB reference comparisons: '+
+                        str(d['new_matured_reference_rows'])+
+                        '; no original V2/H1/edge claim.\\n')
+          print('QUALITY_AWARE_REFERENCE_OUTCOMES_NO_MODEL_CLAIM',
+                d['new_matured_reference_rows'])
+          PY
       - name: Record V2 date-cluster completeness without false pair-level sample size
         if: steps.gate.outputs.valid == 'true'
         run: |
@@ -279,7 +314,8 @@ jobs:
           paths=subprocess.check_output(['git','status','--porcelain','--untracked-files=all'],text=True).splitlines()
           allowed={
               'validation/forward/reference_observations/ECB_REFERENCE_COMPARISONS_V1.jsonl',
-              'validation/forward/reference_observations/V2_RESEARCH_ECB_REFERENCE_RETURNS_V1.jsonl'
+              'validation/forward/reference_observations/V2_RESEARCH_ECB_REFERENCE_RETURNS_V1.jsonl',
+              'validation/forward/reference_observations/V2_QUALITY_AWARE_ECB_REFERENCE_RETURNS_V1.jsonl'
           }
           for line in paths:
               if line[3:] not in allowed:
@@ -291,7 +327,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [[ ! -f validation/forward/reference_observations/ECB_REFERENCE_COMPARISONS_V1.jsonl &&                 ! -f validation/forward/reference_observations/V2_RESEARCH_ECB_REFERENCE_RETURNS_V1.jsonl ]]; then
+          if [[ ! -f validation/forward/reference_observations/ECB_REFERENCE_COMPARISONS_V1.jsonl &&                 ! -f validation/forward/reference_observations/V2_RESEARCH_ECB_REFERENCE_RETURNS_V1.jsonl &&                 ! -f validation/forward/reference_observations/V2_QUALITY_AWARE_ECB_REFERENCE_RETURNS_V1.jsonl ]]; then
             echo 'NO_MATURED_REFERENCE_OBSERVATIONS_YET' >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
@@ -304,6 +340,9 @@ jobs:
           if git diff --cached --quiet; then
             echo 'REFERENCE_COMPARISONS_ALREADY_RECORDED_NO_COMMIT' >> "$GITHUB_STEP_SUMMARY"
             exit 0
+          fi
+          if test -f validation/forward/reference_observations/V2_QUALITY_AWARE_ECB_REFERENCE_RETURNS_V1.jsonl; then
+            git add validation/forward/reference_observations/V2_QUALITY_AWARE_ECB_REFERENCE_RETURNS_V1.jsonl
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
