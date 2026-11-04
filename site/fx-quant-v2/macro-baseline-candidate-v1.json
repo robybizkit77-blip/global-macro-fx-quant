@@ -1,0 +1,1017 @@
+{
+  "schema": "GMFQ_FXV2_MACRO_CANDIDATE_8X3_DESCRIPTIVE_V1",
+  "as_of_research": "2026-11-04",
+  "published_source_lineage": "MACRO_V3_OBSERVED_REVISED_NOT_PIT",
+  "formula_version": "V1_FIXED_NO_CALIBRATED_WEIGHTS",
+  "legacy_macro_as_of": "2026-09-25",
+  "axes": {
+    "growth_qoq_pct": "PERCENT_QOQ_NONANNUALIZED_WITHIN_COUNTRY",
+    "inflation_change_pp": "YOY_CHANGE_OVER_THREE_OBSERVATION_INTERVALS_PP",
+    "unemployment_change_pp": "UNEMP_RATE_CHANGE_OVER_THREE_OBSERVATION_INTERVALS_PP"
+  },
+  "features": {
+    "USD": {
+      "growth_qoq_pct": {
+        "value": 0.839373,
+        "unit": "PERCENT_QOQ_NONANNUALIZED_WITHIN_COUNTRY",
+        "period": "2026Q3",
+        "publisher_release_day": "2026-10-29",
+        "gdp_acceleration_pp": 0.466464,
+        "acceleration_quality": "TWO_CONTIGUOUS_QUARTERS",
+        "level_does_not_measure_relative_fx_strength": true
+      },
+      "inflation_change_pp": {
+        "value": 0.25372,
+        "level": 3.717251,
+        "unit": "YOY_CHANGE_OVER_THREE_OBSERVATION_INTERVALS_PP",
+        "period": "2026-09",
+        "period_frequency": "M",
+        "intervals": 3,
+        "intervals_are_not_fixed_calendar_months": true,
+        "direction": "UP",
+        "interpretation": "inflation YoY ↑ = inflation pressure ↑; not automatic CB repricing",
+        "series_id": "CPIAUCSL"
+      },
+      "unemployment_change_pp": {
+        "value": 0.1,
+        "level": 4.2,
+        "unit": "UNEMP_RATE_CHANGE_OVER_THREE_OBSERVATION_INTERVALS_PP",
+        "period": "2026-09",
+        "period_frequency": "M",
+        "intervals": 3,
+        "intervals_are_not_fixed_calendar_months": true,
+        "direction": "UP",
+        "interpretation": "unemployment ↑ = labour slack ↑; not FX signal",
+        "series_id": "UNRATE"
+      }
+    },
+    "EUR": {
+      "growth_qoq_pct": {
+        "value": 0.4,
+        "unit": "PERCENT_QOQ_NONANNUALIZED_WITHIN_COUNTRY",
+        "period": "2026Q3",
+        "publisher_release_day": "2026-10-30",
+        "gdp_acceleration_pp": -0.2,
+        "acceleration_quality": "TWO_CONTIGUOUS_QUARTERS",
+        "level_does_not_measure_relative_fx_strength": true
+      },
+      "inflation_change_pp": {
+        "value": 1.0,
+        "level": 4.0,
+        "unit": "YOY_CHANGE_OVER_THREE_OBSERVATION_INTERVALS_PP",
+        "period": "2026-10",
+        "period_frequency": "M",
+        "intervals": 3,
+        "intervals_are_not_fixed_calendar_months": true,
+        "direction": "UP",
+        "interpretation": "inflation YoY ↑ = inflation pressure ↑; not automatic CB repricing",
+        "series_id": "EA_HICP_HEADLINE_YOY"
+      },
+      "unemployment_change_pp": {
+        "value": 0.1,
+        "level": 6.5,
+        "unit": "UNEMP_RATE_CHANGE_OVER_THREE_OBSERVATION_INTERVALS_PP",
+        "period": "2026-09",
+        "period_frequency": "M",
+        "intervals": 3,
+        "intervals_are_not_fixed_calendar_months": true,
+        "direction": "UP",
+        "interpretation": "unemployment ↑ = labour slack ↑; not FX signal",
+        "series_id": "EA_UNEMP"
+      }
+    },
+    "GBP": {
+      "growth_qoq_pct": {
+        "value": 0.5,
+        "unit": "PERCENT_QOQ_NONANNUALIZED_WITHIN_COUNTRY",
+        "period": "2026Q2",
+        "publisher_release_day": "2026-09-30",
+        "gdp_acceleration_pp": null,
+        "acceleration_quality": "UNAVAILABLE_NO_MATCHED_PRIOR",
+        "level_does_not_measure_relative_fx_strength": true
+      },
+      "inflation_change_pp": {
+        "value": 0.9,
+        "level": 3.5,
+        "unit": "YOY_CHANGE_OVER_THREE_OBSERVATION_INTERVALS_PP",
+        "period": "2026-09",
+        "period_frequency": "M",
+        "intervals": 3,
+        "intervals_are_not_fixed_calendar_months": true,
+        "direction": "UP",
+        "interpretation": "inflation YoY ↑ = inflation pressure ↑; not automatic CB repricing",
+        "series_id": "D7G7"
+      },
+      "unemployment_change_pp": {
+        "value": -0.2,
+        "level": 4.7,
+        "unit": "UNEMP_RATE_CHANGE_OVER_THREE_OBSERVATION_INTERVALS_PP",
+        "period": "2026-08",
+        "period_frequency": "M",
+        "intervals": 3,
+        "intervals_are_not_fixed_calendar_months": true,
+        "direction": "DOWN",
+        "interpretation": "unemployment ↑ = labour slack ↑; not FX signal",
+        "series_id": "MGSX"
+      }
+    },
+    "JPY": {
+      "growth_qoq_pct": {
+        "value": 0.3,
+        "unit": "PERCENT_QOQ_NONANNUALIZED_WITHIN_COUNTRY",
+        "period": "2026Q2",
+        "publisher_release_day": "2026-08-17",
+        "gdp_acceleration_pp": null,
+        "acceleration_quality": "UNAVAILABLE_NO_MATCHED_PRIOR",
+        "level_does_not_measure_relative_fx_strength": true
+      },
+      "inflation_change_pp": {
+        "value": 0.5,
+        "level": 2.1,
+        "unit": "YOY_CHANGE_OVER_THREE_OBSERVATION_INTERVALS_PP",
+        "period": "2026-09",
+        "period_frequency": "M",
+        "intervals": 3,
+        "intervals_are_not_fixed_calendar_months": true,
+        "direction": "UP",
+        "interpretation": "inflation YoY ↑ = inflation pressure ↑; not automatic CB repricing",
+        "series_id": "JP_CPI_HEADLINE_YOY"
+      },
+      "unemployment_change_pp": {
+        "value": -0.1,
+        "level": 2.4,
+        "unit": "UNEMP_RATE_CHANGE_OVER_THREE_OBSERVATION_INTERVALS_PP",
+        "period": "2026-09",
+        "period_frequency": "M",
+        "intervals": 3,
+        "intervals_are_not_fixed_calendar_months": true,
+        "direction": "DOWN",
+        "interpretation": "unemployment ↑ = labour slack ↑; not FX signal",
+        "series_id": "JP_UNEMP_RATE"
+      }
+    },
+    "CHF": {
+      "growth_qoq_pct": {
+        "value": 1.5,
+        "unit": "PERCENT_QOQ_NONANNUALIZED_WITHIN_COUNTRY",
+        "period": "2026Q2",
+        "publisher_release_day": "2026-08-14",
+        "gdp_acceleration_pp": null,
+        "acceleration_quality": "UNAVAILABLE_NO_MATCHED_PRIOR",
+        "level_does_not_measure_relative_fx_strength": true
+      },
+      "inflation_change_pp": {
+        "value": 0.5,
+        "level": 1.0,
+        "unit": "YOY_CHANGE_OVER_THREE_OBSERVATION_INTERVALS_PP",
+        "period": "2026-09",
+        "period_frequency": "M",
+        "intervals": 3,
+        "intervals_are_not_fixed_calendar_months": true,
+        "direction": "UP",
+        "interpretation": "inflation YoY ↑ = inflation pressure ↑; not automatic CB repricing",
+        "series_id": "CH_CPI_HEADLINE_YOY"
+      },
+      "unemployment_change_pp": {
+        "value": 0.009022,
+        "level": 3.124988,
+        "unit": "UNEMP_RATE_CHANGE_OVER_THREE_OBSERVATION_INTERVALS_PP",
+        "period": "2026-09",
+        "period_frequency": "M",
+        "intervals": 3,
+        "intervals_are_not_fixed_calendar_months": true,
+        "direction": "FLAT_WITHIN_DESCRIPTIVE_0_05PP",
+        "interpretation": "unemployment ↑ = labour slack ↑; not FX signal",
+        "series_id": "CH_UNEMP_RATE"
+      }
+    },
+    "CAD": {
+      "growth_qoq_pct": {
+        "value": 0.8,
+        "unit": "PERCENT_QOQ_NONANNUALIZED_WITHIN_COUNTRY",
+        "period": "2026Q2",
+        "publisher_release_day": "2026-08-28",
+        "gdp_acceleration_pp": null,
+        "acceleration_quality": "UNAVAILABLE_NO_MATCHED_PRIOR",
+        "level_does_not_measure_relative_fx_strength": true
+      },
+      "inflation_change_pp": {
+        "value": 0.29473,
+        "level": 3.092784,
+        "unit": "YOY_CHANGE_OVER_THREE_OBSERVATION_INTERVALS_PP",
+        "period": "2026-09",
+        "period_frequency": "M",
+        "intervals": 3,
+        "intervals_are_not_fixed_calendar_months": true,
+        "direction": "UP",
+        "interpretation": "inflation YoY ↑ = inflation pressure ↑; not automatic CB repricing",
+        "series_id": "CA_CPI_HEADLINE_YOY"
+      },
+      "unemployment_change_pp": {
+        "value": 0.0,
+        "level": 6.5,
+        "unit": "UNEMP_RATE_CHANGE_OVER_THREE_OBSERVATION_INTERVALS_PP",
+        "period": "2026-09",
+        "period_frequency": "M",
+        "intervals": 3,
+        "intervals_are_not_fixed_calendar_months": true,
+        "direction": "FLAT_WITHIN_DESCRIPTIVE_0_05PP",
+        "interpretation": "unemployment ↑ = labour slack ↑; not FX signal",
+        "series_id": "CA_UNEMP_RATE"
+      }
+    },
+    "AUD": {
+      "growth_qoq_pct": {
+        "value": 0.4,
+        "unit": "PERCENT_QOQ_NONANNUALIZED_WITHIN_COUNTRY",
+        "period": "2026Q2",
+        "publisher_release_day": "2026-09-02",
+        "gdp_acceleration_pp": null,
+        "acceleration_quality": "UNAVAILABLE_NO_MATCHED_PRIOR",
+        "level_does_not_measure_relative_fx_strength": true
+      },
+      "inflation_change_pp": {
+        "value": 0.3,
+        "level": 3.9,
+        "unit": "YOY_CHANGE_OVER_THREE_OBSERVATION_INTERVALS_PP",
+        "period": "2026Q3",
+        "period_frequency": "Q",
+        "intervals": 3,
+        "intervals_are_not_fixed_calendar_months": true,
+        "direction": "UP",
+        "interpretation": "inflation YoY ↑ = inflation pressure ↑; not automatic CB repricing",
+        "series_id": "AU_CPI_HEADLINE_Q_YOY"
+      },
+      "unemployment_change_pp": {
+        "value": 0.268452,
+        "level": 4.7,
+        "unit": "UNEMP_RATE_CHANGE_OVER_THREE_OBSERVATION_INTERVALS_PP",
+        "period": "2026-09",
+        "period_frequency": "M",
+        "intervals": 3,
+        "intervals_are_not_fixed_calendar_months": true,
+        "direction": "UP",
+        "interpretation": "unemployment ↑ = labour slack ↑; not FX signal",
+        "series_id": "AU_UNEMP_RATE"
+      }
+    },
+    "NZD": {
+      "growth_qoq_pct": {
+        "value": 0.2,
+        "unit": "PERCENT_QOQ_NONANNUALIZED_WITHIN_COUNTRY",
+        "period": "2026Q2",
+        "publisher_release_day": "2026-09-17",
+        "gdp_acceleration_pp": null,
+        "acceleration_quality": "UNAVAILABLE_NO_MATCHED_PRIOR",
+        "level_does_not_measure_relative_fx_strength": true
+      },
+      "inflation_change_pp": {
+        "value": 0.6,
+        "level": 3.7,
+        "unit": "YOY_CHANGE_OVER_THREE_OBSERVATION_INTERVALS_PP",
+        "period": "2026Q3",
+        "period_frequency": "Q",
+        "intervals": 3,
+        "intervals_are_not_fixed_calendar_months": true,
+        "direction": "UP",
+        "interpretation": "inflation YoY ↑ = inflation pressure ↑; not automatic CB repricing",
+        "series_id": "NZ_CPI_HEADLINE_YOY"
+      },
+      "unemployment_change_pp": {
+        "value": 0.3,
+        "level": 5.7,
+        "unit": "UNEMP_RATE_CHANGE_OVER_THREE_OBSERVATION_INTERVALS_PP",
+        "period": "2026Q3",
+        "period_frequency": "Q",
+        "intervals": 3,
+        "intervals_are_not_fixed_calendar_months": true,
+        "direction": "UP",
+        "interpretation": "unemployment ↑ = labour slack ↑; not FX signal",
+        "series_id": "NZ_UNEMP_RATE"
+      }
+    }
+  },
+  "pairs": {
+    "AUD/CAD": {
+      "base": "AUD",
+      "quote": "CAD",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "unemployment_change_pp": {
+          "same_period": true,
+          "delta_base_minus_quote_pp": 0.268452,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    },
+    "AUD/CHF": {
+      "base": "AUD",
+      "quote": "CHF",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "unemployment_change_pp": {
+          "same_period": true,
+          "delta_base_minus_quote_pp": 0.25943,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    },
+    "AUD/JPY": {
+      "base": "AUD",
+      "quote": "JPY",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "unemployment_change_pp": {
+          "same_period": true,
+          "delta_base_minus_quote_pp": 0.368452,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    },
+    "AUD/NZD": {
+      "base": "AUD",
+      "quote": "NZD",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": true,
+          "delta_base_minus_quote_pp": -0.3,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+        },
+        "unemployment_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    },
+    "AUD/USD": {
+      "base": "AUD",
+      "quote": "USD",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "unemployment_change_pp": {
+          "same_period": true,
+          "delta_base_minus_quote_pp": 0.168452,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    },
+    "CAD/CHF": {
+      "base": "CAD",
+      "quote": "CHF",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": true,
+          "delta_base_minus_quote_pp": -0.20527,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+        },
+        "unemployment_change_pp": {
+          "same_period": true,
+          "delta_base_minus_quote_pp": -0.009022,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    },
+    "CAD/JPY": {
+      "base": "CAD",
+      "quote": "JPY",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": true,
+          "delta_base_minus_quote_pp": -0.20527,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+        },
+        "unemployment_change_pp": {
+          "same_period": true,
+          "delta_base_minus_quote_pp": 0.1,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    },
+    "CHF/JPY": {
+      "base": "CHF",
+      "quote": "JPY",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": true,
+          "delta_base_minus_quote_pp": 0.0,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+        },
+        "unemployment_change_pp": {
+          "same_period": true,
+          "delta_base_minus_quote_pp": 0.109022,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    },
+    "EUR/AUD": {
+      "base": "EUR",
+      "quote": "AUD",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "unemployment_change_pp": {
+          "same_period": true,
+          "delta_base_minus_quote_pp": -0.168452,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    },
+    "EUR/CAD": {
+      "base": "EUR",
+      "quote": "CAD",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "unemployment_change_pp": {
+          "same_period": true,
+          "delta_base_minus_quote_pp": 0.1,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    },
+    "EUR/CHF": {
+      "base": "EUR",
+      "quote": "CHF",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "unemployment_change_pp": {
+          "same_period": true,
+          "delta_base_minus_quote_pp": 0.090978,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    },
+    "EUR/GBP": {
+      "base": "EUR",
+      "quote": "GBP",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "unemployment_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    },
+    "EUR/JPY": {
+      "base": "EUR",
+      "quote": "JPY",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "unemployment_change_pp": {
+          "same_period": true,
+          "delta_base_minus_quote_pp": 0.2,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    },
+    "EUR/NZD": {
+      "base": "EUR",
+      "quote": "NZD",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "unemployment_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    },
+    "EUR/USD": {
+      "base": "EUR",
+      "quote": "USD",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "unemployment_change_pp": {
+          "same_period": true,
+          "delta_base_minus_quote_pp": 0.0,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": true,
+          "delta_base_minus_quote_pp": -0.666464,
+          "reason": "WITHIN_COUNTRY_ACCELERATIONS_SAME_QUARTER"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    },
+    "GBP/AUD": {
+      "base": "GBP",
+      "quote": "AUD",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "unemployment_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    },
+    "GBP/CAD": {
+      "base": "GBP",
+      "quote": "CAD",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": true,
+          "delta_base_minus_quote_pp": 0.60527,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+        },
+        "unemployment_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    },
+    "GBP/CHF": {
+      "base": "GBP",
+      "quote": "CHF",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": true,
+          "delta_base_minus_quote_pp": 0.4,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+        },
+        "unemployment_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    },
+    "GBP/JPY": {
+      "base": "GBP",
+      "quote": "JPY",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": true,
+          "delta_base_minus_quote_pp": 0.4,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+        },
+        "unemployment_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    },
+    "GBP/NZD": {
+      "base": "GBP",
+      "quote": "NZD",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "unemployment_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    },
+    "GBP/USD": {
+      "base": "GBP",
+      "quote": "USD",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": true,
+          "delta_base_minus_quote_pp": 0.64628,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+        },
+        "unemployment_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    },
+    "NZD/CAD": {
+      "base": "NZD",
+      "quote": "CAD",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "unemployment_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    },
+    "NZD/CHF": {
+      "base": "NZD",
+      "quote": "CHF",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "unemployment_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    },
+    "NZD/JPY": {
+      "base": "NZD",
+      "quote": "JPY",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "unemployment_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    },
+    "NZD/USD": {
+      "base": "NZD",
+      "quote": "USD",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "unemployment_change_pp": {
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    },
+    "USD/CAD": {
+      "base": "USD",
+      "quote": "CAD",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": true,
+          "delta_base_minus_quote_pp": -0.04101,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+        },
+        "unemployment_change_pp": {
+          "same_period": true,
+          "delta_base_minus_quote_pp": 0.1,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    },
+    "USD/CHF": {
+      "base": "USD",
+      "quote": "CHF",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": true,
+          "delta_base_minus_quote_pp": -0.24628,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+        },
+        "unemployment_change_pp": {
+          "same_period": true,
+          "delta_base_minus_quote_pp": 0.090978,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    },
+    "USD/JPY": {
+      "base": "USD",
+      "quote": "JPY",
+      "contrasts": {
+        "inflation_change_pp": {
+          "same_period": true,
+          "delta_base_minus_quote_pp": -0.24628,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+        },
+        "unemployment_change_pp": {
+          "same_period": true,
+          "delta_base_minus_quote_pp": 0.2,
+          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+        },
+        "growth_acceleration_pp": {
+          "same_quarter_and_historical_depth": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "NO_COMPARABLE_TWO_QUARTER_DEPTH"
+        }
+      },
+      "macro_fx_signal": null,
+      "expected_return": null,
+      "relative_strength_score": null,
+      "eligible_for_core": false
+    }
+  },
+  "summary": {
+    "currencies": 8,
+    "features": 24,
+    "pairs": 28,
+    "gdp_accelerations_calculable": 2,
+    "pair_gdp_acceleration_contrasts": 1,
+    "estimated_macro_scores": 0,
+    "trading_signals_generated": 0
+  },
+  "limitations": [
+    "Growth QoQ latest readings are descriptive within-country, not cross-country FX strength.",
+    "Inflation and unemployment changes span three observation intervals; monthly and quarterly histories are not synchronized automatically.",
+    "GDP acceleration requires two adjacent published quarters with compatible units; missing values remain null, not zero.",
+    "History is revised observational, not point-in-time releases. No fitted weights, 8-country scale standardization, OOS statistics or FX return calibration.",
+    "No changes to D.json, old 24 Macro score values, Core 28 pair state, backtests or policy OIS."
+  ],
+  "eligible_for_live_fx_signals": false,
+  "eligible_for_backtests": false,
+  "eligible_for_automatic_core_rebase": false,
+  "canonical_fx_core_untouched": true,
+  "source_content_sha256": "c087f8c7b9c0e1b31a16bed36f4b16cb70c833cc10ac4e072d0631ed592b835b"
+}
