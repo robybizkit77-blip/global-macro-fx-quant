@@ -110,6 +110,26 @@ for(const name of ['HY','IG']){
 if(!stored.VIX&&cross.volatility?.VIX?.date)
  check('cross_asset','Snapshot VIX',cross.volatility.VIX.date,2,'STATIC_SNAPSHOT');
 note('cross_asset','Copertura a frequenze diverse','S&P 500, Nasdaq, IG/HY OAS e VIX hanno un feed V2 di ricerca con date proprie; Russell, Dow, Euro Stoxx, partecipazione, Cina e alcuni dati spot rimangono snapshot, senza attribuzione a sedute attuali.');
+const bench=JSON.parse(file('chf-nzd-benchmark-research.json'));
+requireValid(bench.schema==='GMFQ_FXV2_CHF_NZD_BENCHMARK_RESEARCH_V1'&&
+  bench.eligible_for_fx_pair_engine===false&&
+  bench.eligible_for_backtests===false&&
+  bench.canonical_government_rates_untouched===true,
+  'CHF/NZD research source must never be mistaken for the certified FX engine');
+if(bench.CHF&&bench.CHF.pair_status==='OFFICIAL_SNBSAMEBASIS_RESEARCH_REVIEW_REQUIRED'&&
+   bench.CHF.eligible_for_pair_spreads===false&&Number.isFinite(bench.CHF['2Y'])&&Number.isFinite(bench.CHF['10Y'])){
+ check('rates_research','CHF SNB same-date spot pair (not Core)',bench.CHF.paired_date,14,'SNB_RESEARCH_REVIEW_REQUIRED');
+ requireValid(bench.CHF.separate_10y?.not_joinable_with_paired_2y===true,'CHF separate 10Y must not join stale 2Y');
+}else gap('rates_research','CHF source','No same-day SNB 2Y/10Y research pair verified');
+if(bench.NZD&&bench.NZD.status==='RBNZ_GOVT_B2_WEB_RESEARCH_UNAPPROVED'&&
+   bench.NZD.cross_roll_change_allowed===false&&
+   bench.NZD.independent_xlsx_reconciled===false&&bench.NZD.after_roll?.length===2){
+ check('rates_research','NZD RBNZ B2 post-roll web research',bench.NZD.latest_date,14,'RBNZ_WEB_NOT_XLSX_RECONCILED');
+ requireValid(bench.NZD.before_roll?.at(-1)?.date<bench.NZD.roll_date&&
+   bench.NZD.after_roll[0].date===bench.NZD.roll_date,
+   'NZD benchmark must split into nonjoined segments');
+}else gap('rates_research','NZD source','No validated RBNZ benchmark-roll split in research feed');
+note('rates_research','Research vs Core','CHF/NZD research levels do not promote OIS, FX spreads, cross-roll changes or backtests.');
 const liq=read('NATIVE_LIQ_DATA');
 requireValid(ccy.every(c=>!!liq[c]),'Incomplete G8 liquidity/credit feed');
 note('liquidity_credit','Frequenze miste','Liquidità e credito pubblicati mensilmente o trimestralmente: la data dello snapshot di pagina non certifica il giorno delle osservazioni.');
