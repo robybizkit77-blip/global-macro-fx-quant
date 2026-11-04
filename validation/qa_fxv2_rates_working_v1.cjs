@@ -52,12 +52,41 @@ assert.equal(Object.keys(derive(updated,research,today).rates).length,0,'Officia
 const wrong=copy(research);wrong.eligible_for_fx_pair_engine=true;
 assert.equal(Object.keys(derive(canonical,wrong,today).rates).length,0,'Reject write-permission drift');
 const stale=derive(canonical,research,'2026-12-01');
-assert.equal(Object.keys(stale.rates).length,0,'Never promote very old levels into fresh nowcast');
+assert.deepEqual(Object.keys(stale.rates).sort(),['CHF','NZD'],
+  'Preserve signed historical research levels when new source access is unavailable');
+for(const c of ['CHF','NZD']){
+  const row=stale.rates[c];
+  assert.equal(row.stale_source,true,'Must explicitly label stale '+c);
+  assert.equal(row.freshness,'DATED_RESEARCH_NO_CURRENT_MARKET_MOVE');
+  assert.ok(row.quality.includes('RIFERIMENTO STORICO'));
+  assert.equal(row.date,'2026-11-03','Never relabel old quote as current');
+  assert.equal(row.chg2_bp,null,'Historical move must not be represented as today');
+  assert.equal(row.chg10_bp,null,'Historical move must not be represented as today');
+  assert.equal(row.no_core_effect,true,'Scenario does not alter Core');
+  assert.equal(row.source_age_days,28);
+}
+assert.equal(JSON.stringify(canonical),before,'Stale research must never rewrite canonical source');
+const futureAsOf=copy(research);
+futureAsOf.NZD.latest_date='2026-12-02';
+assert.equal(derive(canonical,futureAsOf,'2026-12-01').rates.NZD,undefined,
+  'No future government quote in stale fallback');
 const tassi=fs.readFileSync(path.join(ROOT,'site/fx-quant-v2/tassi.html'),'utf8');
 assert.ok(tassi.includes("svgCurves(r);if(r.estimated)"),'Estimate caveat must remain after SVG rendering');
 assert.ok(tassi.includes("I differenziali sono calcoli aritmetici"),'V2 comparison must label estimates');
+assert.ok(tassi.includes('const local="./chf-nzd-benchmark-research.json"') &&
+          tassi.includes('try{x=await read(local);}'),
+  'Tassi must prefer the version-matched published research copy');
+assert.ok(tassi.includes('x=await read(remote)'),
+  'Tassi should recover from a broken local publication');
+assert.ok(tassi.includes("RIFERIMENTO STORICO")===false,
+  'Stale classification belongs in the shared working model, not hardcoded HTML');
 const coppie=fs.readFileSync(path.join(ROOT,'site/fx-quant-v2/coppie.html'),'utf8');
 assert.ok(coppie.includes('rates-working-model-v1.js?v=1'),'Coppie must reuse the validated Tassi estimator');
+assert.ok(coppie.includes("const local='./chf-nzd-benchmark-research.json'") &&
+          coppie.includes("try{research=await load(local);}"),
+  'Coppie must prefer version-matched local research');
+assert.ok(coppie.includes('research=await load(remote)'),
+  'Coppie must retain an external recovery route');
 assert.ok(coppie.includes('STIMA/PROXY INDICATIVO'),'Coppie must visibly label scenario levels');
 assert.ok(coppie.includes('model.eligible_for_fx_engine!==false'),'Coppie must keep estimates out of the engine');
 assert.ok(coppie.includes('id="pairRatesSourceNote"'),'Coppie must expose research caveats');
