@@ -61,6 +61,40 @@ class TestChfNzdResearch(unittest.TestCase):
   x=m.chf_context(SNB,WEB10,BASE,TODAY)
   self.assertNotEqual(x["paired_date"],x["separate_10y"]["as_of"])
   self.assertEqual(x["10Y"],0.505)
+ def test_chf_newer_matched_official_pair_survives_old_isolated_10y(self):
+  candidate=copy.deepcopy(SNB)
+  candidate["candidate"].update({
+   "source_as_of":"2026-11-19","2Y":.247,"10Y":.510,
+   "curve_bp":26.3,"common_date_observations":27
+  })
+  prior={"paired_date":"2026-10-30"}
+  x=m.chf_context(candidate,WEB10,BASE,dt.date(2026,11,20),prior)
+  self.assertEqual(x["paired_date"],"2026-11-19")
+  self.assertEqual((x["2Y"],x["10Y"],x["curve_bp"]),(.247,.510,26.3))
+  self.assertEqual(x["separate_10y"]["as_of"],"2026-11-03")
+  self.assertTrue(x["separate_10y"]["not_joinable_with_paired_2y"])
+  self.assertTrue(x["official_pair_independently_dated"])
+  self.assertFalse(x["eligible_for_automatic_promotion"])
+  self.assertFalse(x["eligible_for_pair_spreads"])
+ def test_chf_same_date_independent_10y_mismatch_fails_closed(self):
+  candidate=copy.deepcopy(SNB)
+  candidate["candidate"].update({"source_as_of":"2026-11-03",
+                                  "2Y":.238,"10Y":.515,"curve_bp":27.7})
+  with self.assertRaisesRegex(ValueError,"contradict"):
+   m.chf_context(candidate,WEB10,BASE,TODAY)
+ def test_chf_same_date_10y_agrees_and_is_still_research_only(self):
+  candidate=copy.deepcopy(SNB)
+  candidate["candidate"].update({"source_as_of":"2026-11-03",
+                                  "2Y":.242,"10Y":.509,"curve_bp":26.7})
+  x=m.chf_context(candidate,WEB10,BASE,TODAY)
+  self.assertEqual(x["paired_date"],x["separate_10y"]["as_of"])
+  self.assertFalse(x["separate_10y"]["not_joinable_with_paired_2y"])
+  self.assertFalse(x["eligible_for_core"])
+ def test_chf_future_isolated_10y_still_rejected(self):
+  future=copy.deepcopy(WEB10)
+  future["as_of"]="2026-11-05"
+  with self.assertRaisesRegex(ValueError,"future"):
+   m.chf_context(SNB,future,BASE,TODAY)
  def test_chf_rejects_source_basis_drift(self):
   x=copy.deepcopy(SNB);x["candidate"]["last_certified_as_of"]="2026-09-29"
   with self.assertRaises(ValueError):m.chf_context(x,WEB10,BASE,TODAY)

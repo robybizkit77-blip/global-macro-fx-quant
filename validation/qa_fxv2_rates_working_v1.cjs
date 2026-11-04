@@ -36,6 +36,50 @@ assert.equal(research.NZD.independent_xlsx_reconciled,false);
 assert.equal(Math.round((chf['2Y']-nzd['2Y'])*1000)/10,-370.8,'2Y CHF-NZD working spread in bp');
 assert.equal(Math.round((chf['10Y']-nzd['10Y'])*1000)/10,-437.1,'10Y CHF-NZD working spread in bp');
 const copy=x=>JSON.parse(JSON.stringify(x));
+// Regression: a newer VERIFIED same-row official SNB pair beats a separately
+// published 10Y that has not yet caught up. Both tenors are observed as-of
+// the pair date; absolutely no pseudo daily move is inferred.
+const newerPair=copy(research);
+newerPair.CHF.paired_date='2026-11-04';
+newerPair.CHF['2Y']=.247;
+newerPair.CHF['10Y']=.510;
+newerPair.CHF.curve_bp=26.3;
+const latest=derive(canonical,newerPair,today).rates.CHF;
+assert.equal(latest.date,'2026-11-04');
+assert.equal(latest['2Y'],.247);
+assert.equal(latest['10Y'],.510);
+assert.equal(latest.curve_bp,26.3);
+assert.equal(latest.research_observed,true);
+assert.equal(latest.working_method,'SNB_SAME_DATE_OBSERVED_PAIR_RESEARCH');
+assert.deepEqual(latest.tenor_quality,{'2Y':'OSSERVATO','10Y':'OSSERVATO'});
+assert.equal(latest.chg2_bp,null);
+assert.equal(latest.chg10_bp,null);
+assert.equal(latest.stale_source,false);
+assert.equal(latest.no_core_effect,true);
+assert.equal(latest.no_inferred_market_move,true);
+assert.equal(latest.estimated,true,'Independently observed research not canonical engine input');
+const late=derive(canonical,newerPair,'2026-12-01').rates.CHF;
+assert.equal(late.date,'2026-11-04');
+assert.equal(late.stale_source,true);
+assert.equal(late.chg2_bp,null);
+assert.equal(late.chg10_bp,null);
+assert.ok(late.quality.includes('RIFERIMENTO STORICO'));
+const same=copy(newerPair);
+same.CHF.separate_10y.as_of='2026-11-04';
+same.CHF.separate_10y.not_joinable_with_paired_2y=false;
+same.CHF.separate_10y['10Y']=.510;
+assert.equal(derive(canonical,same,today).rates.CHF.research_observed,true);
+same.CHF.separate_10y['10Y']=.509;
+assert.equal(derive(canonical,same,today).rates.CHF,undefined,
+ 'Contradictory isolated SNB 10Y on the SAME date must be rejected');
+same.CHF.separate_10y.not_joinable_with_paired_2y=true;
+assert.equal(derive(canonical,same,today).rates.CHF,undefined,
+ 'Contradictory joinable-status metadata must not be trusted');
+const canonicalAdvanced=copy(canonical);
+canonicalAdvanced.CHF.date='2026-11-05';
+assert.equal(derive(canonicalAdvanced,newerPair,'2026-11-05').rates.CHF,undefined,
+ 'Newer canonical source has priority over dated research');
+
 let future=copy(research);
 future.CHF.separate_10y.as_of='2026-11-05';
 assert.equal(derive(canonical,future,today).rates.CHF,undefined,'Never use future market data');
@@ -71,7 +115,11 @@ futureAsOf.NZD.latest_date='2026-12-02';
 assert.equal(derive(canonical,futureAsOf,'2026-12-01').rates.NZD,undefined,
   'No future government quote in stale fallback');
 const tassi=fs.readFileSync(path.join(ROOT,'site/fx-quant-v2/tassi.html'),'utf8');
-assert.ok(tassi.includes("svgCurves(r);if(r.estimated)"),'Estimate caveat must remain after SVG rendering');
+assert.ok(tassi.includes("svgCurves(r);if(r.research_observed)"),
+ 'Observed research source must be distinguished from an estimated curve');
+assert.ok(tassi.includes("else if(r.estimated)") &&
+          tassi.includes("Non è una curva ufficiale osservata."),
+ 'Estimated CHF scenario must retain its separate caveat');
 assert.ok(tassi.includes("I differenziali sono calcoli aritmetici"),'V2 comparison must label estimates');
 assert.ok(tassi.includes('const local="./chf-nzd-benchmark-research.json"') &&
           tassi.includes('try{x=await read(local);}'),

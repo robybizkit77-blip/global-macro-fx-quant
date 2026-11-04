@@ -29,7 +29,15 @@ async function audit(browser,name,file,selector,view,viewport){
  const ctx=await browser.newContext({viewport,reducedMotion:'reduce'}),page=await ctx.newPage();
  const exceptions=[],network=[],rec={name,view,http:null,menu:null,primary:null,overflow:null,feed:null};
  page.on('pageerror',e=>exceptions.push(String(e)));
- page.on('requestfailed',r=>{if(/raw\.githubusercontent\.com/.test(r.url()))network.push(r.url()+' '+r.failure()?.errorText);});
+ // Chromium may cancel a completed/unused request when navigating away
+ // from a fully rendered page (net::ERR_ABORTED). Feed availability is
+ // independently asserted by mandatory page markers below. Keep real HTTP,
+ // DNS, timeout and connection errors strictly visible.
+ page.on('requestfailed',r=>{
+  const err=r.failure()?.errorText||'UNKNOWN';
+  if(/raw\.githubusercontent\.com/.test(r.url()) && err!=='net::ERR_ABORTED')
+   network.push(r.url()+' '+err);
+ });
  page.on('response',r=>{if(/raw\.githubusercontent\.com/.test(r.url())&&r.status()>=400)network.push(r.status()+' '+r.url());});
  try{
   const response=await page.goto(base+'/'+file,{waitUntil:'domcontentloaded',timeout:70000});
@@ -258,23 +266,32 @@ async function audit(browser,name,file,selector,view,viewport){
       const text=((await page.locator('#benchmarkResearch').textContent())||'');
       const grade=((await page.locator('#asof2').textContent())||'').trim();
       const curve=((await page.locator('#curveExplanation').textContent())||'').trim();
+      const chfObserved=ccy==='CHF'&&grade.includes('OSSERVATO 2Y');
+      const expectedWords=chfObserved?['Entrambi i rendimenti','nessuna stima']:words;
       if(/STIMA|PROXY/.test(grade)&&!curve.includes('CALCOLO INDICATIVO'))
         issue(name,view,'estimate_provenance_missing',ccy+' · '+grade+' · '+curve.slice(0,150));
-      if(!head.includes(expected)||words.some(w=>!text.toLowerCase().includes(w.toLowerCase()))){
+      if(chfObserved&&!curve.includes('RICERCA SNB OSSERVATA'))
+        issue(name,view,'observed_snb_pair_provenance_missing',ccy+' · '+grade+' · '+curve.slice(0,150));
+      if(!head.includes(expected)||expectedWords.some(w=>!text.toLowerCase().includes(w.toLowerCase()))){
         issue(name,view,'research_benchmark_not_loaded','Source context for '+ccy+' not rendered: '+head+' '+text.slice(0,180));
       }
     }
   }
   if(name==='tassi'&&mode==='pr-local'){
-    for(const [ccy,expected] of [['CHF','STIMA 2Y'],['NZD','PROXY 2Y']]){
+    for(const ccy of ['CHF','NZD']){
       await page.locator('#countryTabs button[data-ccy="'+ccy+'"]').click({timeout:10000});
       await page.waitForFunction(
-        ({grade})=>document.querySelector('#asof2')?.textContent?.includes(grade),
-        {grade:expected},{timeout:12000}
+        ({currency})=>{
+          const grade=document.querySelector('#asof2')?.textContent||'';
+          return currency==='CHF'
+            ?grade.includes('STIMA 2Y')||grade.includes('OSSERVATO 2Y')
+            :grade.includes('PROXY 2Y');
+        },{currency:ccy},{timeout:12000}
       );
       const level=((await page.locator('#curveLevel').textContent())||'').trim();
       const why=((await page.locator('#curveExplanation').textContent())||'').trim();
-      if(!/\d/.test(level)||!why.includes('CALCOLO INDICATIVO'))
+      if(!/\d/.test(level)||!(why.includes('CALCOLO INDICATIVO')||
+            (ccy==='CHF'&&why.includes('RICERCA SNB OSSERVATA'))))
         issue(name,view,'working_estimate_missing',ccy+' · '+level+' · '+why);
     }
     await page.locator('#compareA').selectOption('CHF');
