@@ -42,6 +42,31 @@ requireValid(pair.pair_count===28&&Object.keys(pair.pairs||{}).length===28,'FX P
 if(pair.macro_baseline_asof&&days(pair.macro_baseline_asof)>20)
  gap('pairs','Baseline macro del motore', 'La baseline del motore usa '+pair.macro_baseline_asof+
   '; non confonderla con le serie Macro V3 aggiornate sul sito.');
+const observedMacro=JSON.parse(fs.readFileSync(path.join(site,'../control-room-preview/macro-v3-current-evidence.json'),'utf8'));
+requireValid(observedMacro.schema==='GMFQ_MACRO_V3_G8_28PAIR_PUBLIC_OBSERVED_CONTEXT_V1'&&
+ observedMacro.status==='OBSERVED_ECONOMIC_CONTEXT_NOT_FX_SIGNAL'&&
+ observedMacro.summary?.currencies===8&&
+ observedMacro.summary?.economic_dimensions===24&&
+ observedMacro.summary?.pairs===28&&
+ observedMacro.summary?.pair_trade_signals_generated===0&&
+ observedMacro.safe_to_recompute_structural_pair_theses===false&&
+ observedMacro.safe_to_republish_D===false&&
+ observedMacro.eligible_for_trading_or_forward_backtest===false&&
+ observedMacro.canonical_D_macro_baseline_as_of===pair.macro_baseline_asof&&
+ Object.keys(observedMacro.pair_context||{}).length===28,
+ 'Macro V3 observed context not fully isolated from canonical 28 pair setup');
+check('macro_observed_research','G8 / 24 osservazioni / 28 confronti V3',
+ observedMacro.generated_europe_rome_day,10,
+ 'OBSERVED_REVISED_NOT_POINT_IN_TIME_NO_FX_SIGNALS');
+note('pairs','Two independent macro vintages',
+ 'PAIR_SETUP baseline '+pair.macro_baseline_asof+
+ ' è rimasta canonica; Macro V3 al '+observedMacro.generated_europe_rome_day+
+ ' mostra 24 osservazioni, NON un nuovo score o segnale FX.');
+const pairsHtml=file('coppie.html');
+requireValid(pairsHtml.includes('assets/pair-macro-observed-context-v1.js')&&
+ pairsHtml.includes('macro-v3-current-evidence.json')&&
+ pairsHtml.includes('id="macroV3Context"'),
+ 'FXV2 pairs must display G8 observed Macro V3 separately from legacy pair thesis');
 const cot=read('V250_COT_CHART_DATA');
 for(const c of ccy){const s=cot[c]||{};
   requireValid(Array.isArray(s.dates)&&s.dates.length>=52,'COT history incomplete '+c);
