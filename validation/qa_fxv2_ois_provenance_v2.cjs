@@ -44,9 +44,9 @@ const prev3=t.state.currencies.USD.horizons['3m'];
 const prev12=t.state.currencies.USD.horizons['12m'];
 const probe={kind:'FUTURES SECONDARI',quality:'STIMA INDICATIVA',source:'dated-source-probe',
  origin:'live',as_of:'2026-11-02',horizons:{
- '3m':{rate:99,as_of:'2026-11-02'},
+ '3m':{rate:4.9,as_of:'2026-11-02'},
  '6m':{rate:4.111,as_of:'2026-11-04',change_1w_bp:7.5},
- '12m':{rate:99,as_of:'2026-11-02'}}};
+ '12m':{rate:4.9,as_of:'2026-11-02'}}};
 assert.equal(t.update('USD',probe),1,'only newer 6M date may replace old 6M');
 assert.equal(t.state.currencies.USD.horizons['3m'].rate,prev3.rate);
 assert.equal(t.state.currencies.USD.horizons['12m'].rate,prev12.rate);
