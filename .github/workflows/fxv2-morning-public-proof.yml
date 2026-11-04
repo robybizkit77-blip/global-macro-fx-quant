@@ -45,8 +45,28 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Resolve CET/CEST slot and skip duplicate UTC cron
+        id: slot
+        env:
+          CRON_SLOT: ${{ github.event.schedule }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import datetime as dt, os
+          from zoneinfo import ZoneInfo
+          event=os.environ.get('GITHUB_EVENT_NAME','')
+          scheduled=os.environ.get('CRON_SLOT','')
+          expected_utc_hour=5 if dt.datetime.now(ZoneInfo('Europe/Rome')).utcoffset().total_seconds()==7200 else 6
+          hour=int(scheduled.split()[1]) if scheduled else None
+          active=event != 'schedule' or hour == expected_utc_hour
+          with open(os.environ['GITHUB_OUTPUT'],'a') as out:
+              out.write('active='+str(active).lower()+'\n')
+          print('FXV2_MORNING_SLOT', 'ACTIVE' if active else 'DUPLICATE_DST_SKIP',
+                'schedule', scheduled, 'expected UTC hour', expected_utc_hour)
+          PY
       - name: Check 12 public pages and core assets against approved main
         id: check
+        if: steps.slot.outputs.active == 'true'
         run: python validation/publishing/check_fxv2_morning_public_v1.py --output /tmp/fxv2-morning-proof.json
       - name: Record independent delivery status
         if: always()
@@ -64,7 +84,11 @@ jobs:
               out.write('- Esecuzione GitHub ritardata: mai considerata prova retroattiva di puntualità\n')
           PY
           else
-            echo '### FAIL: nessuna ricevuta prodotta' >> "$GITHUB_STEP_SUMMARY"
+            if [ '${{ steps.slot.outputs.active }}' = 'false' ]; then
+              echo '### Duplicate UTC DST slot intentionally skipped' >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo '### FAIL: nessuna ricevuta prodotta' >> "$GITHUB_STEP_SUMMARY"
+            fi
           fi
       - name: Preserve dated evidence
         if: always()
