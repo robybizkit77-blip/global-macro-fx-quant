@@ -21,7 +21,9 @@ on:
     # An actual completed Price acquisition can promptly refresh canonical
     # ECB history. Reject a Price run that was itself triggered by history,
     # preventing a workflow_run feedback loop.
-    workflows: ['Price Persistent Daily V1']
+    # Independent post-ECB recoveries if GitHub drops the Price/History cron.
+    # Neither parent depends on this History lane: no event feedback loop.
+    workflows: ['Price Persistent Daily V1', 'Daily Data Orchestrator V2', 'CB Pricing Persistent Daily V1']
     types: [completed]
   workflow_dispatch:
   schedule:
@@ -48,7 +50,17 @@ jobs:
       (github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.head_branch == 'main' &&
        github.event.workflow_run.event != 'pull_request' &&
-       github.event.workflow_run.event != 'workflow_run')
+       (
+         (github.event.workflow_run.name == 'Price Persistent Daily V1' &&
+          github.event.workflow_run.event != 'workflow_run') ||
+         (github.event.workflow_run.name == 'Daily Data Orchestrator V2' &&
+          (github.event.workflow_run.event == 'schedule' ||
+           github.event.workflow_run.event == 'workflow_dispatch')) ||
+         (github.event.workflow_run.name == 'CB Pricing Persistent Daily V1' &&
+          (github.event.workflow_run.event == 'schedule' ||
+           github.event.workflow_run.event == 'workflow_dispatch' ||
+           github.event.workflow_run.event == 'workflow_run'))
+       ))
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -66,11 +78,13 @@ jobs:
         env:
           PRICE_HISTORY_EVENT: ${{ github.event_name }}
           PRICE_HISTORY_CRON: ${{ github.event.schedule }}
+          PRICE_HISTORY_PARENT: ${{ github.event.workflow_run.name }}
         run: |
           set -euo pipefail
           python3 validation/preview_price_history_schedule_gate_v1.py \
             --event "$PRICE_HISTORY_EVENT" \
             --cron "$PRICE_HISTORY_CRON" \
+            --parent "$PRICE_HISTORY_PARENT" \
             --output "$GITHUB_OUTPUT" \
             --summary "$GITHUB_STEP_SUMMARY"
 
