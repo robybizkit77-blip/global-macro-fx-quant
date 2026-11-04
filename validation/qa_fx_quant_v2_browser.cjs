@@ -149,6 +149,38 @@ async function audit(browser,name,file,selector,view,viewport){
     const cards=await page.locator('#compareGrid .data-card').count();
     if(cards!==4||!notes.includes('STIME')||!notes.includes('PROXY'))
       issue(name,view,'estimated_diff_missing','CHF/NZD comparison cards='+cards+' '+notes.slice(0,250));
+    await page.locator('#countryTabs button[data-ccy="AUD"]').click();
+    await page.waitForFunction(()=>document.querySelector('#ratesNote')?.textContent?.includes('RBA F2: aggiornamento SETTIMANALE'),null,{timeout:14000});
+    const audSummary=((await page.locator('#ratesNote').textContent())||'');
+    const audSource=((await page.locator('#yieldSource').textContent())||'');
+    if(!audSummary.includes('non stimiamo un 2Y/10Y giornaliero')||
+       !audSource.includes('Cadenza RBA F2'))
+      issue(name,view,'aud_cadence_missing',audSummary.slice(-240)+' '+audSource.slice(-140));
+    // Exercise a newer fully verified official same-day 2Y/10Y research feed.
+    await page.route('**/aud-rba-f2-research.json*',route=>route.fulfill({
+      status:200,contentType:'application/json',body:JSON.stringify({
+        schema:'GMFQ_FXV2_AUD_RBA_F2_RESEARCH_V1',currency:'AUD',
+        status:'OFFICIAL_F2_CSV_FETCHED_RESEARCH_ONLY',as_of:'2026-11-02',
+        '2Y':5.012,'10Y':5.234,curve_bp:22.2,
+        source_download_verified:true,publication_date:'2026-11-03',
+        source_url:'https://www.rba.gov.au/statistics/tables/csv/f2-data.csv',
+        source:'Reserve Bank of Australia · F2 weekly research',
+        series_2Y:'FCMYGBAG2D',series_10Y:'FCMYGBAG10D',
+        same_date_same_source:true,research_only:true,
+        canonical_government_rates_untouched:true,eligible_for_core:false,
+        eligible_for_fx_pair_engine:false,eligible_for_backtests:false
+      })
+    }));
+    await page.reload({waitUntil:'domcontentloaded'});
+    await page.locator('#countryTabs button[data-ccy="AUD"]').click();
+    await page.waitForFunction(()=>document.querySelector('#rate2')?.textContent?.includes('5,01'),null,{timeout:14000});
+    const audRate=(await page.locator('#rate2').textContent())||'';
+    const audQuality=(await page.locator('#asof2').textContent())||'';
+    const audCaveat=(await page.locator('#curveExplanation').textContent())||'';
+    if(!audRate.includes('5,01')||!audQuality.includes('OSSERVATO')||
+       !audCaveat.includes('CALCOLO INDICATIVO'))
+      issue(name,view,'aud_research_model_mismatch',audRate+' '+audQuality+' '+audCaveat.slice(0,180));
+    await page.unroute('**/aud-rba-f2-research.json*');
   }
   if(name==='calendario'&&mode==='pr-local'&&view==='desktop'){
     // The two feeds are independently useful: a broken News feed must not freeze Calendar.

@@ -1,0 +1,84 @@
+name: FX Quant V2 AUD Official RBA F2 Research Refresh
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/rates/refresh_fxv2_aud_rba_f2_context.py'
+      - 'validation/rates/test_refresh_fxv2_aud_rba_f2_context.py'
+      - 'site/fx-quant-v2/aud-rba-f2-research.json'
+      - 'site/fx-quant-v2/tassi.html'
+      - '.github/workflows/fxv2-aud-rba-f2-research.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/rates/refresh_fxv2_aud_rba_f2_context.py'
+      - 'validation/rates/test_refresh_fxv2_aud_rba_f2_context.py'
+      - 'site/fx-quant-v2/aud-rba-f2-research.json'
+      - 'site/fx-quant-v2/tassi.html'
+      - '.github/workflows/fxv2-aud-rba-f2-research.yml'
+  schedule:
+    # Source: RBA F2, Fridays 14:00 Sydney; multiple slots provide delays/DST resilience.
+    - cron: '35 4 * * 5'
+    - cron: '35 5 * * 5'
+    # Independent weekday catch-up if the Friday schedule is delayed or dropped.
+    - cron: '37 6 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fxv2-aud-official-f2-research
+  cancel-in-progress: false
+
+jobs:
+  research-aud:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test official source series, dates, rollback and scenario-only policy
+        run: python3 validation/rates/test_refresh_fxv2_aud_rba_f2_context.py
+      - name: Fetch RBA F2 and build dated AUD research record
+        if: github.event_name != 'pull_request'
+        run: python3 validation/rates/refresh_fxv2_aud_rba_f2_context.py
+      - name: Publish only AUD research when official observations advance
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE=site/fx-quant-v2/aud-rba-f2-research.json
+          git diff --exit-code -- live_data payload dashboard
+          if git diff --quiet -- "$FILE"; then
+            echo 'FXV2_AUD_F2_NO_NEW_OFFICIAL_PUBLICATION'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- "$FILE"
+          git commit -m 'data(fxv2): update independent RBA F2 paired government rates research'
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:main; then
+              echo 'FXV2_AUD_F2_RESEARCH_PUBLISHED'
+              exit 0
+            fi
+            git fetch origin main --no-tags
+            git rebase origin/main
+            sleep "$((attempt*3))"
+          done
+          echo 'FXV2_AUD_F2_RESEARCH_NOT_PUBLISHED' >&2
+          exit 1
+      - name: Preserve AUD source receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fxv2-aud-rba-f2-research
+          path: site/fx-quant-v2/aud-rba-f2-research.json
+          retention-days: 21
