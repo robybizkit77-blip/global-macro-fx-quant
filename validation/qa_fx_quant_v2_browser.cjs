@@ -127,7 +127,39 @@ async function audit(browser,name,file,selector,view,viewport){
     if(x.gap!=='+370,8 bp'||!x.a.includes('PROXY 2Y')||!x.b.includes('STIMA 2Y')||
        !x.caveat.includes('NON leggere lo spread come repricing')||!x.canonical)
       issue(name,view,'pair_estimated_spread_missing',JSON.stringify(x));
+    // Separate Macro -> pricing bridge: 3M/6M/12M sources must move with the
+    // selected pair and must not change the original quality verdict.
+    await page.waitForFunction(()=>
+      document.querySelector('#macroOisBase')?.textContent?.includes('3M')&&
+      document.querySelector('#macroOisQuote')?.textContent?.includes('12M')&&
+      document.querySelector('#macroOisGap')?.textContent?.includes('6M NZD'),
+      null,{timeout:18000});
+    const bridgeNZD=await page.evaluate(()=>({
+      a:document.querySelector('#macroOisBase')?.textContent,
+      b:document.querySelector('#macroOisQuote')?.textContent,
+      spread:document.querySelector('#macroOisGap')?.textContent,
+      freshness:document.querySelector('#macroOisFreshness')?.textContent,
+      caveat:document.querySelector('#macroOisCaveat')?.textContent
+    }));
+    if(!bridgeNZD.a.includes('NZD · 3M')||
+       !bridgeNZD.b.includes('CHF · 3M')||
+       !bridgeNZD.a.includes('PROXY FUTURES')||
+       !bridgeNZD.b.includes('FUTURES SECONDARI')||
+       !bridgeNZD.freshness.includes('Nessuna differenza delle variazioni 1D/1W calcolata')||
+       !bridgeNZD.caveat.includes('nessun backtest'))
+      issue(name,view,'pair_macro_pricing_bridge_nzd_chf',JSON.stringify(bridgeNZD).slice(0,600));
     await page.locator('#allPairs').selectOption('EURUSD');
+    await page.waitForFunction(()=>document.querySelector('#macroOisBase')?.textContent?.startsWith('EUR · 3M')&&
+      document.querySelector('#macroOisQuote')?.textContent?.startsWith('USD · 3M'),null,{timeout:12000});
+    const bridgeEUR=await page.evaluate(()=>({
+      spread:document.querySelector('#macroOisGap')?.textContent,
+      macro:document.querySelector('#macroOisMacroText')?.textContent,
+      sources:document.querySelector('#macroOisFreshness')?.textContent
+    }));
+    if(!bridgeEUR.spread.includes('6M EUR − USD')||
+       !bridgeEUR.macro.includes('baseline 25/09/2026')||
+       !bridgeEUR.sources.includes('Nessuna differenza delle variazioni 1D/1W calcolata'))
+      issue(name,view,'pair_macro_pricing_bridge_eur_usd',JSON.stringify(bridgeEUR));
     await page.waitForFunction(()=>document.querySelector('#macroV3Context')?.textContent?.includes('DINAMICA MACRO (RICERCA, NON NUOVO BIAS)'),null,{timeout:18000});
     const dynamicEUR=(await page.locator('#macroV3Context').textContent())||'';
     if(!dynamicEUR.includes('PIL: variazione del ritmo trimestrale')||
