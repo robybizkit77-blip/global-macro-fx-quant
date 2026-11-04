@@ -2,8 +2,8 @@
 <html lang="it">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="dark">
-<title>FX Quant V2 — Anteprima Home Global Macro / Editorial Premium</title>
-<meta name="description" content="Anteprima indipendente della Home FX Quant V2, Dark Global Macro Editorial. Grafici con feed reali e date per fonte; nessuna modifica alla Home principale.">
+<title>FX Quant V2 — Home Editorial: cosa cambia nei mercati</title>
+<meta name="description" content="Anteprima editoriale indipendente della Home FX Quant V2: evidenze di mercato, interpretazioni, dati con data e condizioni che falsificano la tesi.">
 <style>
 :root{--bg:#080f19;--bg2:#0c1724;--surface:#101e2d;--surface2:#122334;--line:#26394a;--line2:#1c2e3e;--txt:#edf1f5;--muted:#9cabb8;--quiet:#778c9c;--green:#64d9ac;--purple:#c1a0ee;--blue:#9fc6e8;--amber:#e3bb73;--serif:Georgia,'Times New Roman',serif;--sans:Inter,'Segoe UI',Arial,sans-serif}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--txt);background:radial-gradient(circle at 86% 4%,#153047 0,transparent 28%),radial-gradient(circle at 4% 31%,#10283a 0,transparent 26%),var(--bg);font-family:var(--sans);-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.58}a{color:inherit;text-decoration:none}a:hover{color:#fff}button{font:inherit;color:inherit;cursor:pointer}button:focus-visible,a:focus-visible{outline:2px solid var(--amber);outline-offset:4px}::selection{background:#375778;color:#fff}.shell{width:min(1360px,calc(100% - 88px));margin:auto}.micro{font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:var(--quiet)}.muted{color:var(--muted)}.upper{font-variant:all-small-caps;letter-spacing:1.2px}h1,h2,h3,p{margin-top:0}h1,h2,h3{font-weight:500}.serif{font-family:var(--serif)}.topline{height:3px;background:linear-gradient(90deg,#c5a879 0%,#64d9ac 40%,#a682e6 100%)}
@@ -113,6 +113,66 @@ box-shadow:0 23px 80px #0005, inset 0 1px 0 #b0c8d11a}
 @media(max-width:840px){.shell{width:calc(100% - 36px)}.hero{grid-template-columns:1fr;gap:30px;padding:38px 30px;min-height:0}.macro-atmosphere{inset:-2% -13% 0 auto;width:140%;height:80%;opacity:.55}.hero:before{background:linear-gradient(90deg,#091b2beb 0%,#0c2338b9 100%)}.hero-overline{margin-bottom:24px}.pricing{max-width:none}.pulse-grid{grid-template-columns:1fr 1fr}.pulse-card:last-child{grid-column:span 2;min-height:0}.section-heading{display:block}.section-heading p{margin-top:13px;text-align:left;max-width:700px}#lettura .reading-grid{grid-template-columns:1fr}.desk-links{gap:12px 19px}}
 @media(max-width:560px){.shell{width:calc(100% - 28px)}.concept-banner{flex-direction:column;align-items:flex-start;gap:5px;padding:11px 13px}.concept-banner>span{font-size:10px}.mast{padding:17px 0 14px}.mast .quality{white-space:normal;text-align:left;line-height:1.5}.hero{padding:29px 20px 25px;border-radius:12px;gap:24px}.macro-atmosphere{inset:-60px -39% auto auto;width:195%;height:370px;opacity:.38}.hero-overline{font-size:8.5px;letter-spacing:1.1px;margin-bottom:20px}.hero .eyebrow{font-size:9px}.hero h1{font-size:clamp(37px,9.8vw,46px);line-height:1.09;margin-bottom:17px}.hero .standfirst{font-size:17px;line-height:1.48}.hero .hero-note{font-size:11.5px;line-height:1.7}.hero-actions{gap:18px;margin-top:21px}.hero .btn{font-size:11px}.hero-method{margin-top:24px;gap:7px;font-size:8px;letter-spacing:.65px}.hero-method i{width:9px}.pricing{padding:19px 18px 15px}.pricing-head h2{font-size:22px}.pricing .metric-row{padding:10px 0}.pricing .metric-value{font-size:20px}.section{padding:39px 0;scroll-margin-top:105px}.section-heading h2{font-size:29px}.section-heading p{font-size:11px}.pulse-grid{grid-template-columns:1fr;gap:11px}.pulse-card,.pulse-card:last-child{grid-column:auto;min-height:0;padding:19px 20px}.pulse-card h3{font-size:22px}.pulse-card p{margin-bottom:15px}.desk-links{padding:20px 0 0;gap:10px 15px}.desk-links span{flex-basis:100%}.desk-links a{font-size:11px}#mercati .chart-panel{padding:19px 15px}#mercati .plot{height:195px}#mercati .chart-panel h3{font-size:22px}.g8-grid{gap:10px}.g8-item{padding:13px 11px;min-height:113px}#lettura .signal-rows{grid-template-columns:1fr}#lettura .signal{min-height:0}}
 @media(prefers-reduced-motion:reduce){.g8-item:hover{transform:none}}
+
+/* Editorial V4: less chrome, more content, keep global shared navigation intact. */
+#fxv2-global-header{background:#091520f7;box-shadow:0 5px 23px #0004;border-bottom-color:#203949}
+#fxv2-global-header .fxv2-first{min-height:57px}
+#fxv2-global-header .fxv2-status,#fxv2-global-header .fxv2-old,#fxv2-global-header .fxv2-datameta{display:none}
+#fxv2-global-header .fxv2-nav{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;gap:3px;padding:0 0 8px;scrollbar-width:thin}
+#fxv2-global-header .fxv2-nav a{font-size:11px;padding:5px 9px;min-height:30px}
+#fxv2-global-header .fxv2-brandcopy small{letter-spacing:.04em}
+.concept-banner{padding:7px 14px;background:#0e1d29;border:1px solid #23394a;border-top:0;box-shadow:none;opacity:.9}
+.mast{padding-top:19px;padding-bottom:15px}
+.hero{min-height:445px;padding:37px 42px 38px;grid-template-columns:minmax(0,1.3fr) minmax(295px,.7fr);border-color:#294659;box-shadow:0 17px 49px #0003;background:linear-gradient(110deg,#102839,#0c2131 68%,#0a1c2a)}
+.hero .macro-atmosphere{opacity:.25;filter:none;right:-23%}
+.hero:before{background:linear-gradient(90deg,#0d2232ec,#0b1e2c93 70%,#0b1d2996)}
+.hero:after{height:1px;opacity:.5}
+.hero-overline{margin-bottom:20px;letter-spacing:1.1px;font-size:9px}
+.hero .eyebrow{letter-spacing:1.5px;font-size:9px}
+.hero h1{font-size:clamp(38px,3.5vw,53px);letter-spacing:-1.05px;line-height:1.12;margin-bottom:19px}
+.hero .standfirst{font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:16px;line-height:1.7;max-width:690px;color:#d4e2ec}
+.hero .hero-note{font-size:12px;line-height:1.65;color:#9db6c6}
+.hero-method{margin-top:21px;letter-spacing:.4px;font-size:10px;color:#adc3d0}
+.hero .btn{border-radius:5px;box-shadow:none}
+.hero-actions{margin-top:22px}
+.pricing{border-radius:7px;background:#0b1c2be8;border-color:#365367;padding:22px 21px 17px;box-shadow:0 11px 40px #0004}
+.pricing-head h2{font-size:23px}
+.pricing .metric-row{padding:10px 0}
+.pricing .metric-value{font-size:20px}
+.pricing-foot{font-size:10px}
+.section{padding-top:42px;padding-bottom:44px}
+.section-heading{gap:22px;margin-bottom:22px}
+.section-heading h2{font-size:clamp(27px,2.65vw,35px);max-width:710px}
+.section-heading p{max-width:420px}
+.brief-layout{display:grid;grid-template-columns:minmax(0,1.52fr) minmax(265px,.59fr);gap:31px;align-items:start}
+.brief-story{padding:11px 6px 7px 0;min-width:0}
+.brief-kicker{font-size:10px;font-weight:740;letter-spacing:1.7px;color:#cfb886}
+.brief-dek{font:500 clamp(21px,2.1vw,27px)/1.47 Georgia,serif;color:#e6edf0;margin:15px 0 28px;max-width:760px}
+.brief-section{display:grid;grid-template-columns:156px minmax(0,1fr);column-gap:24px;row-gap:7px;border-top:1px solid #315064;padding:20px 0 22px}
+.brief-index{grid-row:span 2;font-size:10px;font-weight:750;letter-spacing:1.1px;color:#b5a0d3;padding-top:6px}
+.brief-section:nth-of-type(2) .brief-index{color:#a9d7c5}
+.brief-section:nth-of-type(3) .brief-index{color:#d8bc89}
+.brief-section h3{font:500 19px/1.32 Georgia,serif;color:#ebf3f7;margin:0}
+.brief-section p{font-size:12.5px;line-height:1.82;color:#b7c9d5;margin:0}
+.brief-verdict{padding:21px 24px;background:#132a3a;border-left:3px solid #d1b27c;margin:4px 0 0}
+.brief-verdict-label{font-size:10px;color:#e1c28a;font-weight:760;letter-spacing:1.5px}
+.brief-verdict p{font:500 16px/1.6 Georgia,serif;color:#e2edf4;margin:10px 0 0}
+.brief-evidence{border:1px solid #355367;background:linear-gradient(155deg,#122838,#0b1a27);padding:27px 23px;border-radius:7px}
+.evidence-heading{padding-bottom:21px;border-bottom:1px solid #345064}
+.evidence-heading h3{font:500 26px/1.25 Georgia,serif;margin:9px 0 0;letter-spacing:-.3px}
+.evidence-item{padding:17px 0;border-bottom:1px solid #2a4557}
+.evidence-item>span{font-size:10px;font-weight:720;color:#d4bb8d;letter-spacing:1.25px}
+.evidence-item strong{font-size:16px;font-weight:640;display:block;margin:7px 0 5px;color:#edf4f7}
+.evidence-item p{font-size:11px;color:#afc1d0;line-height:1.7;margin:0}
+.evidence-item a{display:inline-block;margin-top:9px;font-size:11px;color:#a9d7eb;text-decoration:underline;text-underline-offset:3px}
+.evidence-dates{font-size:10px;line-height:1.7;color:#94aebb;margin:20px 0 0}
+.desk-links{border-top:1px solid #294658;margin-top:22px}
+#mercati .chart-panel{padding:19px 21px 16px}
+#mercati .chart-desc{margin-top:0}
+@media(max-width:940px){.hero{grid-template-columns:1fr;gap:21px;padding:30px}.pricing{max-width:none}.brief-layout{grid-template-columns:1fr;gap:18px}.brief-story{padding-right:0}.brief-evidence{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 14px}.evidence-heading,.evidence-dates{grid-column:span 3}.evidence-item{border-right:1px solid #29495d;padding:16px 12px}.evidence-item:nth-last-of-type(1){border-right:0}}
+@media(max-width:800px){#fxv2-global-header .fxv2-nav{display:none;flex-wrap:wrap;overflow-y:auto;overflow-x:hidden;max-height:58vh}#fxv2-global-header .fxv2-nav.fxv2-open{display:grid}#fxv2-global-header .fxv2-nav a{white-space:normal;min-height:39px}}
+@media(max-width:580px){.hero{padding:27px 20px;gap:23px}.hero .macro-atmosphere{right:-56%;opacity:.14}.hero h1{font-size:clamp(35px,10vw,43px);line-height:1.12}.hero .standfirst{font-size:14px;line-height:1.7}.hero .hero-note{font-size:11.5px}.hero-overline{font-size:8px}.pricing{padding:17px 18px}.brief-dek{font-size:22px;line-height:1.43}.brief-section{grid-template-columns:1fr;gap:8px;padding:17px 0}.brief-index{grid-row:auto;font-size:9.5px;padding-top:0}.brief-section h3{font-size:18px}.brief-section p{font-size:12px;line-height:1.78}.brief-verdict{padding:19px}.brief-verdict p{font-size:15px}.brief-evidence{display:block;padding:19px}.evidence-item{padding:16px 0;border-right:0}.evidence-heading h3{font-size:24px}.section{padding:35px 0}.section-heading h2{font-size:28px}.section-heading p{font-size:11px}}
+
 </style>
 <link rel="stylesheet" href="./assets/site-nav.css?v=1">
 <script src="./assets/site-nav.js?v=1" defer></script>
@@ -154,36 +214,63 @@ box-shadow:0 23px 80px #0005, inset 0 1px 0 #b0c8d11a}
  <g fill="#91e1c2"><circle cx="934" cy="210" r="4"/><circle cx="1159" cy="195" r="4"/><circle cx="1312" cy="210" r="4"/></g>
  <g fill="#b5a5df"><circle cx="1191" cy="367" r="3.5"/><circle cx="1017" cy="333" r="3.5"/></g>
  <path d="M700 485l55-15 42 23 56-51 61 17 53-86 45 32 54-79 62 33 50-43 43 21 76-64 72 35" stroke="#72c7d0" stroke-opacity=".23" stroke-width="2" fill="none"/>
-</svg><div class="hero-text"><div class="hero-overline"><span class="live-orb"></span> GLOBAL MACRO / MARKET INTELLIGENCE <span class="hero-overline-sep">·</span> RESEARCH V2</div><div class="eyebrow">La domanda che guida la seduta</div><h1 id="heroTitle">Capex USA solido. Ma il Treasury 2Y scende.</h1><p class="standfirst" id="heroStand">La crescita mostra ancora capacità di tenuta, mentre la parte breve della curva americana non conferma una pressione immediata sui tassi. È questa divergenza, più del singolo dato, che merita attenzione.</p><p class="hero-note" id="heroNote">Gli ordini core dei beni capitali sorprendono al rialzo. Il Treasury 2Y perde 9 punti base nell'ultima seduta disponibile: lo scenario macro e la risposta del mercato, per ora, non raccontano esattamente la stessa storia.</p><div class="hero-actions"><a class="btn" href="#oggi">Leggi il quadro di mercato <span aria-hidden="true">↗</span></a><a class="inline-link" href="#mercati">Esplora i grafici e i dati →</a></div><div class="hero-method"><span>MACRO</span><i></i><span>RATES & OIS</span><i></i><span>FX</span><i></i><span>PREZZO</span></div></div>
- <aside class="pricing" aria-label="Pricing lens"><div class="pricing-head"><div><span class="micro" style="color:#c5a66f">MARKET LENS / DATI CON DATA</span><h2>La risposta<br>dei mercati</h2></div><span class="ico" aria-hidden="true">↗</span></div>
+</svg><div class="hero-text"><div class="hero-overline"><span class="live-orb"></span> FX QUANT RESEARCH DESK <span class="hero-overline-sep">·</span> RASSEGNA DEL MERCATO</div><div class="eyebrow">IL FATTO · LA DIVERGENZA · LA VERIFICA</div><h1 id="heroTitle">Il 2Y USA scende più del 10Y. Il dollaro proxy arretra.</h1><p class="standfirst" id="heroStand">Il front-end americano non sta reagendo come ci aspetteremmo da un nuovo impulso hawkish. Ma tassi e cambio non hanno sempre la stessa data: non trasformiamo una coincidenza in una spiegazione.</p><p class="hero-note" id="heroNote">Ultime osservazioni disponibili: confrontiamo Treasury, DXY sintetico BCE e contesto macro. Il repricing Fed va verificato direttamente nella sezione OIS, non dedotto dal solo 2Y.</p><div class="hero-actions"><a class="btn" href="#oggi">Leggi l’analisi <span aria-hidden="true">↘</span></a><a class="inline-link" href="#mercati">Controlla i grafici →</a></div><div class="hero-method"><span id="heroAsOf">Rates e FX · date specifiche nei dati</span></div></div>
+ <aside class="pricing" aria-label="Pricing lens"><div class="pricing-head"><div><span class="micro" style="color:#c5a66f">FATTI MISURABILI / DUE STRUMENTI</span><h2>Il mercato<br>in numeri</h2></div><span class="ico" aria-hidden="true">↗</span></div>
   <div class="metric-row"><div class="metric-label">Treasury USA · 2 anni<small id="usd2Date">Ultima osservazione · 02 nov</small></div><div><div class="metric-value" id="usd2">4,59%</div><div class="metric-delta" id="usd2delta">−9 bp · seduta</div></div></div>
   <div class="metric-row"><div class="metric-label">Treasury USA · 10 anni<small id="usd10Date">Ultima osservazione · 02 nov</small></div><div><div class="metric-value" id="usd10">4,91%</div><div class="metric-delta" id="usd10delta">−9 bp · seduta</div></div></div>
   <div class="metric-row"><div class="metric-label">DXY sintetico BCE<small id="dxyDate">Proxy giornaliero · 02 nov</small></div><div><div class="metric-value" id="dxy">101,62</div><div class="metric-delta" id="dxydelta">−0,23% · seduta</div></div></div>
   <div class="metric-row"><div class="metric-label">Pendenza curva USA 10Y − 2Y<small id="curveDate">Derivata dalle osservazioni sopra</small></div><div><div class="metric-value" id="curve">+32 bp</div><div class="metric-delta neutral">Differenziale di livello</div></div></div>
  <p class="pricing-foot">DXY: stima basata sui fixing BCE, non indice ICE ufficiale né quotazione intraday. Ogni strumento conserva il proprio riferimento temporale.</p></aside></section>
-<section id="oggi" class="section pulse-section">
+<section id="oggi" class="section editorial-section">
  <div class="section-heading">
-  <div><span class="chapter">01 / La fotografia di mercato</span><h2>Cosa è cambiato. Cosa controllare.</h2></div>
-  <p>Tre porte d'ingresso ai dati. I movimenti indicati fanno riferimento <strong>all'ultima osservazione disponibile</strong>, non necessariamente alla giornata corrente.</p>
+  <div><span class="chapter">01 / Il quadro dei mercati</span><h2>Non basta sapere che un dato sale.</h2></div>
+  <p>Qui distinguiamo <strong>osservazioni, cambiamenti e interpretazioni</strong>. Le serie possono avere date diverse: il sito non presenta automaticamente ogni variazione come un evento di oggi.</p>
  </div>
- <div class="pulse-grid">
-  <article class="pulse-card pulse-macro"><span class="pulse-no">01 / ECONOMIA</span><div class="pulse-accent">Macro</div><h3>La storia economica regge?</h3><p>Parti da crescita, lavoro e inflazione. Poi controlla se il mercato dei tassi sta raccontando la stessa storia.</p><a href="./macro.html">Esplora Macro G8 <span aria-hidden="true">↗</span></a></article>
-  <article class="pulse-card pulse-rates"><span class="pulse-no">02 / FRONT-END</span><div class="pulse-accent">Tassi &amp; OIS</div><h3 id="pulseRatesHeadline">Treasury USA 2Y · ultimo movimento</h3><p id="pulseRatesDetail">Livello, variazione e as-of del rendimento 2Y. La direzione non equivale automaticamente a repricing Fed.</p><div class="pulse-links"><a href="./tassi.html">Esamina i tassi ↗</a><a href="./ois.html">Apri il pricing ↗</a></div></article>
-  <article class="pulse-card pulse-fx"><span class="pulse-no">03 / VERIFICA PREZZO</span><div class="pulse-accent">FX &amp; mercato</div><h3 id="pulseFxHeadline">Dollaro · verifica nei prezzi</h3><p id="pulseFxDetail">Verifica se l'USD conferma la narrativa macro e il differenziale dei rendimenti. Il DXY è un proxy BCE, non ICE.</p><a href="./coppie.html">Vai alle coppie FX <span aria-hidden="true">↗</span></a></article>
+ <div class="brief-layout">
+  <article class="brief-story">
+   <div class="brief-kicker">IL FILO DEL MERCATO / USD &amp; FED</div>
+   <p class="brief-dek" id="briefDek">Il punto non è scegliere subito una direzione per il dollaro. È capire perché i rendimenti USA e il cambio si muovono come si muovono.</p>
+   <div class="brief-section">
+    <span class="brief-index">01 / COSA OSSERVIAMO</span>
+    <h3>La curva americana ha cambiato inclinazione.</h3>
+    <p id="briefObserved">2Y, 10Y e loro variazioni, con le rispettive date di fonte.</p>
+   </div>
+   <div class="brief-section">
+    <span class="brief-index">02 / COSA DICE LA MACRO</span>
+    <h3>I dati economici e la reazione non sono la stessa cosa.</h3>
+    <p id="briefMacro">Il contesto macro proviene dal feed di ricerca e non va scambiato per una pubblicazione appena uscita.</p>
+   </div>
+   <div class="brief-section">
+    <span class="brief-index">03 / COSA STA PREZZANDO IL MERCATO?</span>
+    <h3>Il Treasury 2Y non è un contratto OIS.</h3>
+    <p id="briefPricing">Il rendimento a 2 anni è un indizio; il repricing del sentiero Fed richiede i contratti pertinenti e una verifica sul cambio.</p>
+   </div>
+   <div class="brief-verdict">
+    <div class="brief-verdict-label">LA LETTURA PROVVISORIA</div>
+    <p id="briefVerdict">Non forziamo una conclusione finché i dati su tassi, pricing e prezzo non sono comparabili.</p>
+   </div>
+  </article>
+  <aside class="brief-evidence" aria-label="Riepilogo con dati e date">
+    <div class="evidence-heading"><span class="chapter">EVIDENZA / NON OPINIONE</span><h3>Tre verifiche<br>prima di agire.</h3></div>
+    <div class="evidence-item"><span>01 / TREASURY</span><strong id="briefRates">Il 2Y e il 10Y</strong><p id="briefRatesNote">Livello, variazione e data ufficiale.</p></div>
+    <div class="evidence-item"><span>02 / PREZZO FX</span><strong id="briefFX">DXY sintetico BCE</strong><p id="briefFXNote">Il proxy non è l’indice ICE e non è intraday.</p></div>
+    <div class="evidence-item"><span>03 / MARKET PRICING</span><strong>OIS e futures</strong><p>Qui non inventiamo probabilità di taglio. Apri la curva per confrontare strumenti, scadenze e date.</p><a href="./ois.html">Verifica le aspettative di policy ↗</a></div>
+    <p class="evidence-dates" id="briefDates">Date delle fonti: riportate nelle osservazioni e nei grafici.</p>
+  </aside>
  </div>
- <div class="desk-links"><span>IL TUO PERCORSO</span><a href="./macro.html">Macro G8</a><a href="./tassi.html">Tassi 2Y / 10Y</a><a href="./ois.html">OIS &amp; Pricing</a><a href="./coppie.html">Coppie FX</a><a href="./cot.html">COT &amp; positioning</a><a href="./cross-asset.html">Cross-Asset</a></div>
+ <div class="desk-links"><span>APPROFONDISCI</span><a href="./macro.html">Macro G8</a><a href="./tassi.html">Curve governative</a><a href="./ois.html">OIS &amp; Pricing</a><a href="./coppie.html">Coppie FX</a><a href="./cot.html">Posizionamento COT</a><a href="./cross-asset.html">Cross-Asset</a></div>
  </section>
- <section class="section" id="mercati"><div class="section-heading"><div><span class="chapter">02 / Evidenza visiva</span><h2>Il mercato sta confermando?</h2></div><p>Dopo i dati economici, guarda i prezzi: il dollaro e i rendimenti confermano davvero la storia?</p></div><div class="chart-grid"><article class="chart-panel"><div class="panel-top"><div><span class="micro">FX · Proxy daily</span><h3>Dollar Index sintetico</h3><p class="chart-meta" id="dxyChartMeta">Fixing BCE · 40 osservazioni recenti</p></div><div style="text-align:right"><div class="big-number" id="dxyLarge">101,62</div><span class="tiny-tag" id="dxyLargeChange">−0,23%</span></div></div><svg id="dxyChart" class="plot" role="img" aria-label="Andamento storico del DXY sintetico BCE"></svg><p class="chart-desc"><strong>Come leggerlo:</strong> è un indicatore di direzione dell'USD ricostruito da cambi ufficiali BCE. Non è la quotazione ICE in tempo reale.</p></article>
+ <section class="section" id="mercati"><div class="section-heading"><div><span class="chapter">02 / Il confronto nei dati</span><h2>Il racconto regge guardando i grafici?</h2></div><p>Dopo i dati economici, guarda i prezzi: il dollaro e i rendimenti confermano davvero la storia?</p></div><div class="chart-grid"><article class="chart-panel"><div class="panel-top"><div><span class="micro">FX · Proxy daily</span><h3>Dollar Index sintetico</h3><p class="chart-meta" id="dxyChartMeta">Fixing BCE · 40 osservazioni recenti</p></div><div style="text-align:right"><div class="big-number" id="dxyLarge">101,62</div><span class="tiny-tag" id="dxyLargeChange">−0,23%</span></div></div><svg id="dxyChart" class="plot" role="img" aria-label="Andamento storico del DXY sintetico BCE"></svg><p class="chart-desc"><strong>Come leggerlo:</strong> è un indicatore di direzione dell'USD ricostruito da cambi ufficiali BCE. Non è la quotazione ICE in tempo reale.</p></article>
  <article class="chart-panel"><div class="panel-top"><div><span class="micro">Rates · Treasury USA</span><h3>Front-end e long-end</h3><p class="chart-meta" id="ratesChartMeta">Rendimenti 2Y / 10Y · osservazioni storiche</p></div><div style="text-align:right"><div class="big-number" id="usSpread">+32 bp</div><span class="tiny-tag green">Spread 10Y − 2Y</span></div></div><svg id="ratesChart" class="plot" role="img" aria-label="Evoluzione dei rendimenti Treasury USA 2Y e 10Y"></svg><p class="chart-desc"><strong>Separiamo le cause:</strong> il 2Y è più sensibile al percorso Fed; il 10Y incorpora anche crescita, inflazione, rendimenti reali e term premium.</p></article></div></section>
  <section class="section g8-section" id="g8">
- <div class="section-heading"><div><span class="chapter">03 / FX G8 · La mappa delle valute</span><h2>Otto valute. Un quadro chiaro.</h2></div><p>Non un ranking inventato: i dati 2Y aiutano a leggere il contesto dei differenziali. Seleziona una valuta per approfondire macro, tassi e conferme.</p></div>
+ <div class="section-heading"><div><span class="chapter">03 / FX G8 · I differenziali prima dei segnali</span><h2>Otto economie, otto mercati dei tassi.</h2></div><p>Non un ranking inventato: i dati 2Y aiutano a leggere il contesto dei differenziali. Seleziona una valuta per approfondire macro, tassi e conferme.</p></div>
  <div id="g8Grid" class="g8-grid" role="group" aria-label="Otto valute, livello e variazione ultimo rendimento governativo a due anni"></div>
  <p class="g8-disclaimer">Rendimenti 2Y e variazioni provengono dalle serie sovrane del progetto, con date proprie e frequenze non uniformi. Non sono segnali direzionali FX né OIS.</p>
 </section>
-<section class="section" id="lettura"><div class="section-heading"><div><span class="chapter">04 / Dalla valuta alla tesi</span><h2>Dai mercati alle valute.</h2></div><p>Macro, pricing e prezzo diventano una lettura operativa. Seleziona la valuta per vedere conferme e possibili invalidazioni.</p></div>
- <div class="reading-grid"><article class="reading-main"><p class="lead">Non cerchiamo una previsione a tutti i costi. Cerchiamo una tesi, le sue conferme e soprattutto ciò che potrebbe smentirla.</p><div class="signal-rows"><div class="signal"><span class="signal-index">01 / MACRO</span><h3>La crescita non cede</h3><p>Gli investimenti delle imprese americane restano un sostegno. Ma la fiducia delle famiglie e le aspettative d'inflazione rendono il quadro meno lineare.</p></div><div class="signal"><span class="signal-index">02 / RATES</span><h3 id="signalRatesTitle">Il 2Y si muove in senso opposto</h3><p id="signalRatesBody">Nell'ultima osservazione il front-end scende. Prima di parlare di repricing duraturo serve verificare persistenza e origine del movimento.</p></div><div class="signal"><span class="signal-index">03 / FX & PREZZO</span><h3>La conferma è sul mercato</h3><p>Il dollaro va letto insieme ai differenziali di rendimento, al positioning e alla reazione del prezzo. Una narrativa coerente non basta.</p></div></div><div class="quote">«La domanda utile non è soltanto “chi è forte?”, ma “quale mercato sta cambiando idea — e su quali prove?”.»</div></article>
+<section class="section" id="lettura"><div class="section-heading"><div><span class="chapter">04 / Dal quadro generale alla tesi</span><h2>Quale valuta conferma? Quale no?</h2></div><p>Macro, pricing e prezzo diventano una lettura operativa. Seleziona la valuta per vedere conferme e possibili invalidazioni.</p></div>
+ <div class="reading-grid"><article class="reading-main"><p class="lead">Una lettura macro da sola non crea un trade. Per ogni valuta cerchiamo una reazione coerente nei tassi, nel pricing e nei cross; se non c'è, la tesi resta aperta.</p><div class="signal-rows"><div class="signal"><span class="signal-index">01 / MACRO</span><h3>Dinamica prima del livello</h3><p>Un indicatore forte non dice se sta accelerando o rallentando. Guarda le serie macro e la loro data, non il titolo.</p></div><div class="signal"><span class="signal-index">02 / RATES</span><h3 id="signalRatesTitle">Il 2Y si muove in senso opposto</h3><p id="signalRatesBody">Nell'ultima osservazione il front-end scende. Prima di parlare di repricing duraturo serve verificare persistenza e origine del movimento.</p></div><div class="signal"><span class="signal-index">03 / FX & PREZZO</span><h3>Il cambio può smentirci</h3><p>Un USD debole con tassi in calo è un indizio. Controlla i cross, il positioning e la reazione agli eventi prima di chiamarlo regime.</p></div></div><div class="quote">«La domanda utile non è soltanto “chi è forte?”, ma “quale mercato sta cambiando idea — e su quali prove?”.»</div></article>
  <aside class="focus"><div class="focus-header"><div><span class="micro" style="color:#d8b37b">Focus per valuta</span><h3 id="focusName">🇺🇸 Dollaro USA</h3></div><div class="selector" id="ccySelector" role="group" aria-label="Seleziona una valuta"></div></div><h4 class="focus-title" id="focusTitle">USD: capex forte, ma tassi e inflazione restano il nodo</h4><p class="focus-desc" id="focusDesc">Gli ordini core sorprendono al rialzo; il front-end e il prezzo devono confermare se il dollaro può mantenere il sostegno macro.</p><div class="watchlist"><div><span class="micro">Confermerebbe</span><strong id="focusConfirm">USD cross + curva + real yields</strong></div><div><span class="micro">Indebolirebbe</span><strong id="focusInvalidate">Front-end in calo e inflazione attesa in rientro</strong></div></div><div class="focus-stat" id="focusRates">USA · 2Y 4,59% / 10Y 4,91% · as-of 02/11</div></aside></div></section>
- <section class="section" id="tesi"><div class="section-heading"><div><span class="chapter">05 / Research monitor</span><h2>Le tesi da seguire.</h2></div><p>Non sono segnali d'ingresso. Sono ipotesi economiche con condizioni osservabili per verificarle o invalidarle.</p></div><div class="lower-grid"><article><div id="themeList"></div><p style="font-size:11px;color:#879fad;margin:13px 0 0">Seleziona una tesi per aprire il focus valutario nella stessa pagina.</p></article><aside class="news"><span class="micro" style="color:#d5b47f">News pulse / Market changes</span><h3 style="font:500 26px var(--serif);margin:8px 0 14px">Solo le notizie che cambiano il quadro.</h3><div id="newsList"></div><div class="note-box"><b>Disciplina di lettura.</b> Una variazione di tasso implicito da futures non equivale sempre a una curva OIS osservata. Le reazioni di prezzo agli eventi richiedono confronti pre/post coerenti.</div></aside></div></section>
+ <section class="section" id="tesi"><div class="section-heading"><div><span class="chapter">05 / Le ipotesi da mettere alla prova</span><h2>Non previsioni. Ipotesi falsificabili.</h2></div><p>Non sono segnali d'ingresso. Sono ipotesi economiche con condizioni osservabili per verificarle o invalidarle.</p></div><div class="lower-grid"><article><div id="themeList"></div><p style="font-size:11px;color:#879fad;margin:13px 0 0">Seleziona una tesi per aprire il focus valutario nella stessa pagina.</p></article><aside class="news"><span class="micro" style="color:#d5b47f">News pulse / Market changes</span><h3 style="font:500 26px var(--serif);margin:8px 0 14px">Solo le notizie che cambiano il quadro.</h3><div id="newsList"></div><div class="note-box"><b>Disciplina di lettura.</b> Una variazione di tasso implicito da futures non equivale sempre a una curva OIS osservata. Le reazioni di prezzo agli eventi richiedono confronti pre/post coerenti.</div></aside></div></section>
  <footer class="footer"><div><div class="footer-brand">FX Quant <span style="color:#c2a171">/</span> Research Desk</div><p>Anteprima isolata della Home Global Macro. Grafici e numeri provengono dai feed del repository o dal fallback datato. Dati, segnali, formula FX e Home V2 principale restano invariati.</p></div><div class="foot-links"><a href="#inizio">Torna su ↑</a><a href="https://robybizkit77-blip.github.io/global-macro-fx-quant/site/control-room-preview/#/home" target="_blank" rel="noopener">Sito attuale ↗</a></div></footer>
 </main>
 <script>
@@ -235,17 +322,73 @@ function renderThemes(){$('themeList').innerHTML=state.themes.slice(0,5).map((x,
 function renderNews(){$('newsList').innerHTML=state.news.slice(0,4).map(x=>'<div class="news-item"><time>'+esc(shortDate(x.as_of))+'</time><div><strong><span class="tag">'+esc(x.ccy)+'</span>'+esc(x.title.replace(/\(-/g,'(−'))+'</strong><small>'+esc(x.detail)+'</small></div></div>').join('');}
 function chartSvg(id,lines,colors,labels){const svg=$(id),W=600,H=260,left=48,right=13,top=17,bottom=34;const array=lines.flat().filter(v=>Number.isFinite(v));if(!array.length){svg.innerHTML='<text x="20" y="40">Storico non disponibile</text>';return}let min=Math.min(...array),max=Math.max(...array),pad=Math.max((max-min)*.17,.03);min-=pad;max+=pad;const X=i=>left+i*(W-left-right)/Math.max(1,lines[0].length-1), Y=v=>top+(max-v)/(max-min)*(H-top-bottom);let s='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">';for(let j=0;j<5;j++){let y=top+j*(H-top-bottom)/4,v=max-j*(max-min)/4;s+='<line class="gridline" x1="'+left+'" y1="'+y+'" x2="'+(W-right)+'" y2="'+y+'"/><text x="'+(left-9)+'" y="'+(y+3)+'" text-anchor="end">'+fmt(v,2)+'</text>'}s+='<line class="baseline" x1="'+left+'" y1="'+(H-bottom)+'" x2="'+(W-right)+'" y2="'+(H-bottom)+'"/>';for(let l=0;l<lines.length;l++){let values=lines[l],pts=values.map((v,i)=>X(i).toFixed(2)+','+Y(v).toFixed(2)).join(' ');s+='<polyline points="'+pts+'" fill="none" stroke="'+colors[l]+'" stroke-width="'+(l===0?2.6:2.2)+'" stroke-linecap="round" stroke-linejoin="round"/>';let end=values.length-1;if(end>=0)s+='<circle cx="'+X(end)+'" cy="'+Y(values[end])+'" r="4" fill="'+colors[l]+'" stroke="#0d1b28" stroke-width="2"/>';}s+='<text x="'+left+'" y="'+(H-8)+'">inizio periodo</text><text x="'+(W-right)+'" y="'+(H-8)+'" text-anchor="end">ultimo dato</text>';for(let l=0;l<labels.length;l++){let xx=left+23+l*114;s+='<line x1="'+xx+'" y1="11" x2="'+(xx+20)+'" y2="11" stroke="'+colors[l]+'" stroke-width="3"/><text x="'+(xx+26)+'" y="15">'+esc(labels[l])+'</text>';}s+='</svg>';svg.innerHTML=s;}
 function renderCharts(){const hist=state.dxy.history||[];const vals=hist.map(x=>x.value).filter(x=>Number.isFinite(x)).slice(-48);chartSvg('dxyChart',[vals],['#bd97ec'],['DXY stimato']);chartSvg('ratesChart',[state.usd2.slice(-48),state.usd10.slice(-48)],['#93c7e8','#bfa1e9'],['Treasury 2Y','Treasury 10Y']);$('dxyChartMeta').textContent='ECB, proxy sintetico · '+hist.length+' osservazioni nella vista';$('ratesChartMeta').textContent='Serie USA Treasury · 2Y / 10Y · '+state.usd2.length+' osservazioni';}
-function renderPulse(){
- const r=state.rates.USD||seed.rates.USD,d=state.dxy||seed.dxy;
- const bp=r.chg2_bp;
- $('pulseRatesHeadline').textContent='Treasury 2Y · '+fmt(r['2Y'])+'%';
- $('pulseRatesDetail').textContent='Ultima osservazione '+shortDate(r.date)+' · variazione '+signed(bp,1,' bp')+'. È il movimento dell’ultima seduta disponibile, non necessariamente quello di oggi. Confrontalo con Fed pricing e 10Y.';
- const ret=Number.isFinite(d.value)&&Number.isFinite(d.previous_value)&&d.previous_value!==0?
-   (d.value-d.previous_value)/d.previous_value*100:null;
- $('pulseFxHeadline').textContent='USD proxy · '+fmt(d.value);
- $('pulseFxDetail').textContent='DXY sintetico BCE · '+shortDate(d.as_of)+' · ultima variazione '+signed(ret,2,'%')+'. Proxy a fixing, non ICE né prezzo intraday: confronta con le coppie e il positioning.';
+function renderEditorial(){
+ const r=state.rates?.USD||seed.rates.USD,d=state.dxy||seed.dxy;
+ const has2=Number.isFinite(r.chg2_bp),has10=Number.isFinite(r.chg10_bp);
+ const rp=Number.isFinite(d.value)&&Number.isFinite(d.previous_value)&&d.previous_value>0
+  ?100*(d.value/d.previous_value-1):null;
+ const rateDate=shortDate(r.date),fxDate=shortDate(d.as_of);
+ const comparable=r.date===d.as_of;
+ const sr=has2&&has10?r.chg10_bp-r.chg2_bp:null;
+ const bothFall=has2&&r.chg2_bp< -1 && Number.isFinite(rp)&&rp<-.15;
+ const bothRise=has2&&r.chg2_bp>1 && Number.isFinite(rp)&&rp>.15;
+ const split=has2&&r.chg2_bp< -1 && Number.isFinite(rp)&&rp>.15;
+ const curveState=sr===null?'direzione non ricostruibile':
+  r.chg2_bp<0&&r.chg10_bp<0&&sr>0?'bull steepening':
+  r.chg2_bp>0&&r.chg10_bp>0&&sr<0?'bear flattening':
+  r.chg2_bp>0&&r.chg10_bp>0&&sr>0?'bear steepening':
+  r.chg2_bp<0&&r.chg10_bp<0&&sr<0?'bull flattening':'movimento misto';
+ const headline=bothFall?'I Treasury USA arretrano. Il dollaro proxy non li contraddice.':
+  bothRise?'Tassi e dollaro salgono insieme. Ma per quale motivo?':
+  split?'Il 2Y USA scende, ma il dollaro tiene. Cosa sta guidando il cambio?':
+  'Tassi USA e dollaro non raccontano ancora una storia unica.';
+ $('heroTitle').textContent=headline;
+ $('heroStand').textContent='Treasury USA 2Y '+fmt(r['2Y'])+'% ('+signed(r.chg2_bp,1,' pb')+
+  ', '+rateDate+'), 10Y '+fmt(r['10Y'])+'% ('+signed(r.chg10_bp,1,' pb')+
+  '). DXY sintetico BCE '+signed(rp,2,'%')+' ('+fxDate+
+  '). Questi sono movimenti osservati o ricostruiti, non ancora una causa dimostrata.';
+ $('heroNote').textContent='Il fronte breve può segnalare aspettative Fed in movimento, ma non è un OIS. '+
+  (comparable?'I dati mostrati hanno la stessa data; resta da verificare la sequenza intraday.':
+  'Le due serie hanno date diverse: non possiamo attribuire entrambi i movimenti a una stessa notizia.');
+ $('heroAsOf').textContent='Treasury '+rateDate+' · proxy BCE '+fxDate+' · osservazioni non intraday';
+ $('briefDek').textContent=bothFall?
+  'Due indizi vanno nella stessa direzione: il front-end USA ha perso rendimento e il proxy del dollaro è sceso. La domanda è se il mercato stia ridimensionando il percorso Fed o prezzando altro.':
+  bothRise?'Il front-end e il dollaro guadagnano. Potrebbe esserci un driver monetario, ma inflazione, crescita e risk appetite possono cambiare la lettura.':
+  'La reazione dei tassi e quella del dollaro non bastano a isolare un unico driver: serve confrontare date, curva, OIS e posizionamento.';
+ $('briefObserved').textContent='Al '+rateDate+' il Treasury 2Y è '+fmt(r['2Y'])+
+  '% con ultima variazione '+signed(r.chg2_bp,1,' pb')+'; il 10Y è '+fmt(r['10Y'])+
+  '% con '+signed(r.chg10_bp,1,' pb')+'. La pendenza 10Y−2Y è '+
+  signed((r['10Y']-r['2Y'])*100,1,' pb')+'. '+
+  (sr===null?'Non ricostruiamo il cambiamento della pendenza senza movimenti verificabili.':
+   'La pendenza è cambiata di '+signed(sr,1,' pb')+
+   ': '+curveState+'. È una descrizione della curva, non una prova sulla causa.');
+ const macro=Array.isArray(state.what)?state.what.find(x=>x.ccy==='USD'):null;
+ $('briefMacro').textContent=macro?.summary?
+  'Contesto macro presente nel feed di ricerca: '+macro.summary+
+  ' Questo riepilogo non ha una data di rilascio puntuale nel feed: NON va letto come notizia di oggi. La domanda è se i prossimi dati su crescita, lavoro e inflazione confermino o indeboliscano questo quadro.':
+  'Manca un riepilogo macro USD con data di rilascio verificabile in questa vista. Evitiamo di inventare sorprese: apri Macro G8 per le serie e le loro date.';
+ $('briefPricing').textContent='Il Treasury 2Y ha reagito '+(r.chg2_bp<0?'al ribasso':r.chg2_bp>0?'al rialzo':'senza direzione univoca')+
+  ', ma può incorporare anche term premium, liquidità e domanda di titoli. '+
+  'Per parlare di repricing Fed servono i contratti OIS/futures giusti, un confronto prima/dopo evento e la conferma dei cross USD. Nessuna probabilità implicita viene dedotta da questo rendimento.';
+ $('briefVerdict').textContent=bothFall?
+  'La lettura è compatibile con una riduzione del sostegno dei tassi al dollaro, NON dimostra che il mercato stia prezzando più tagli Fed. '+
+  (comparable?'Tassi e proxy FX hanno la stessa data ma non un riferimento intraday.':'Le date non coincidono, quindi non è una reazione congiunta certificata.')+
+  ' Controllo decisivo: OIS Fed + forza relativa dell’USD sulle coppie.':
+  bothRise?'C’è una coerenza di direzione tra front-end e proxy USD, non ancora una spiegazione economica certa. Va distinto un impulso hawkish da un repricing di crescita o inflazione.':
+  split?'Divergenza: dollaro e Treasury 2Y non seguono lo stesso verso. Questo indebolisce una lettura esclusivamente basata sui tassi e rende essenziale il contesto risk-on/risk-off.':
+  'Tesi non validata: segnali misti o variazioni mancanti. Evitiamo un bias direzionale finché rates, pricing e cross non si allineano.';
+ $('briefRates').textContent='UST 2Y '+fmt(r['2Y'])+'% · 10Y '+fmt(r['10Y'])+'%';
+ $('briefRatesNote').textContent=rateDate+' · ultima variazione 2Y '+
+  signed(r.chg2_bp,1,' pb')+' / 10Y '+signed(r.chg10_bp,1,' pb');
+ $('briefFX').textContent='USD proxy '+fmt(d.value);
+ $('briefFXNote').textContent=fxDate+' · ultima variazione '+signed(rp,2,'%')+
+  ' · indice sintetico sui fixing BCE, non ICE.';
+ $('briefDates').textContent='Fonte tassi: Treasury '+rateDate+
+  ' · fonte FX: fixing BCE '+fxDate+'. '+
+  (comparable?'Stessa data di calendario; non è un’analisi intraday.':
+  'Date diverse: non calcolare correlazioni o sorprese evento da queste due righe.');
 }
-function render(){renderHero();renderPulse();renderFocus();renderG8();renderThemes();renderNews();renderCharts();}
+function render(){renderHero();renderEditorial();renderFocus();renderG8();renderThemes();renderNews();renderCharts();}
 const picker=$('ccySelector');picker.innerHTML=sequence.map(c=>'<button type="button" class="ccy" data-ccy="'+c+'" aria-pressed="false">'+c+'</button>').join('');$('g8Grid').addEventListener('click',e=>{const b=e.target.closest('button[data-ccy]');if(!b)return;state.focus=b.dataset.ccy;renderFocus();renderG8();document.getElementById('lettura').scrollIntoView({behavior:'smooth',block:'start'});});
 picker.addEventListener('click',e=>{const b=e.target.closest('button[data-ccy]');if(!b)return;state.focus=b.dataset.ccy;renderFocus();renderG8()});$('themeList').addEventListener('click',e=>{const a=e.target.closest('[data-focus]');if(a){state.focus=a.dataset.focus;renderFocus();renderG8()}});render();
 // In un browser con connessione i feed del progetto sostituiscono lo snapshot. In locale senza rete la pagina resta perfettamente navigabile.
