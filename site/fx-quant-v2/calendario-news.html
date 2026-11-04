@@ -185,12 +185,18 @@ async function refreshCalendar(){
   calendarStatus="Calendario canonico verificato: "+D.calendar_checked_at_utc;
   }catch(calendarError){console.warn("[FXV2 Calendar] Feed non applicabile, snapshot conservato:",calendarError);}
   const flags={USD:"🇺🇸",EUR:"🇪🇺",GBP:"🇬🇧",JPY:"🇯🇵",CHF:"🇨🇭",CAD:"🇨🇦",AUD:"🇦🇺",NZD:"🇳🇿"};
+  const rateDates=[];
   if(rates&&typeof rates==="object")for(const code of Object.keys(flags)){
    const current=rates[code],target=D.countries[code];
    if(current&&target&&Number.isFinite(current["2Y"])&&/^20\d{2}-\d{2}-\d{2}$/.test(current.date||"")&&current.date>=(target.front_end_date||"")){
     target.front_end_2y=current["2Y"];target.front_end_date=current.date;
-    rateStatus="2Y live: "+code+" "+current.date+" (altre date per valuta)";
+    rateDates.push(current.date);
    }
+  }
+  if(rateDates.length){
+   rateDates.sort();
+   rateStatus="Rendimenti 2Y: "+rateDates.length+"/8 valute consultate · osservazioni dal "+
+    rateDates[0]+" al "+rateDates.at(-1)+" (non necessariamente odierne)";
   }
   if(newsFeed&&newsFeed.schema==="GMFQ_NEWS_PULSE_OPERATIONAL_V1"){
   const repricing=(Array.isArray(newsFeed.items)?newsFeed.items:[]).filter(x=>/OIS_REPRICING|FUTURES_IMPLIED_REPRICING/.test(x.category||"")).map(x=>({
@@ -199,7 +205,7 @@ async function refreshCalendar(){
   }));
   if(repricing.length)D.feeds.repricing=repricing;
   const official=newsFeed.official_releases?.headlines;
-  if(Array.isArray(official)){
+  if(Array.isArray(official)&&official.some(x=>x.title&&x.published_at_utc)){
    D.feeds.headlines=official.filter(x=>x.title&&x.published_at_utc).map(x=>({
     ccy:x.ccy||"G8",title:x.title,published_at_utc:x.published_at_utc,
     topic:x.desk_context?.topic||"INSTITUTIONAL",why_watch:x.desk_context?.why_watch||"Comunicazione ufficiale: leggere il testo prima di attribuire effetti di mercato.",
