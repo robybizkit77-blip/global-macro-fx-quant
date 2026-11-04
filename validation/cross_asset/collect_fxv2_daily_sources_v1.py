@@ -73,7 +73,7 @@ def parse_csv(source: str, payload: str, cutoff: dt.date) -> list[tuple[str, flo
         value = float(raw_value)
         if not math.isfinite(value) or value <= 0:
             raise ValueError("Invalid non-positive market level")
-        if source in ("SP500", "NASDAQCOM") and not (100 <= value <= 100000):
+        if source in ("SP500", "NASDAQCOM") and not (0 < value <= 100000):
             raise ValueError("Index level out of accepted bounds")
         if source == "VIX" and not (5 <= value <= 150):
             raise ValueError("VIX level out of accepted bounds")
