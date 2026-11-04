@@ -26,8 +26,18 @@ assert.equal(x.trading_core.baseline_macro_as_of,'2026-09-25');
 assert.equal(x.trading_core.baseline_was_recomputed,false);
 assert(x.trading_core.noncertified_policy_pricing_currencies.includes('CHF'));
 assert(x.trading_core.noncertified_policy_pricing_currencies.includes('NZD'));
-assert(x.research.source_as_of_mismatches.some(y=>y.ccy==='USD'));
-assert(x.research.source_as_of_mismatches.some(y=>y.ccy==='EUR'));
+// Never hardcode which currency has mixed tenor dates: live quote dates
+// advance independently and a repaired mismatch must not make CI fail.
+const expectedMismatches=Object.entries(args.oisResearch.currencies)
+ .filter(([,row])=>['3m','6m','12m'].some(h=>row.horizons[h].as_of!==row.as_of))
+ .map(([ccy])=>ccy).sort();
+assert.deepEqual(x.research.source_as_of_mismatches.map(z=>z.ccy).sort(),
+                 expectedMismatches,'Report only genuine per-tenor source date mismatches');
+for(const z of x.research.source_as_of_mismatches){
+ assert.equal(z.country_as_of,args.oisResearch.currencies[z.ccy].as_of);
+ assert.deepEqual(z.horizon_as_of,
+  [...new Set(['3m','6m','12m'].map(h=>args.oisResearch.currencies[z.ccy].horizons[h].as_of))].sort());
+}
 assert.equal(x.research.nzd_post_roll_research,'2026-11-03');
 assert.equal(x.research.chf_same_date_research,'2026-10-30');
 assert.equal(x.trading_core.source_data_used_for_backtests,false);
@@ -35,6 +45,10 @@ let bad=clone(args);bad.oisResearch.currencies.CHF.kind='OIS';
 assert.throws(()=>readiness(bad),/OIS/);
 bad=clone(args);bad.macroObserved.safe_to_recompute_structural_pair_theses=true;
 assert.throws(()=>readiness(bad),/isolation/);
+bad=clone(args);bad.oisResearch.currencies.USD.as_of='2026-11-03';
+const timestampReport=readiness(bad);
+assert(timestampReport.research.source_as_of_mismatches.some(z=>z.ccy==='USD'),
+  'A source-level date divergent from every USD tenor must be flagged');
 bad=clone(args);bad.oisResearch.currencies.USD.horizons['3m'].as_of='2026-11-05';
 assert.throws(()=>readiness(bad),/invalid/);
 bad=clone(args);bad.govResearch.eligible_for_fx_pair_engine=true;
