@@ -64,7 +64,7 @@ function when(e){
  return local;
 }
 function chips(){const cb=D.events.filter(x=>x.type===CB).length,macro=D.events.length-cb;
- $("metrics").innerHTML=[["8 / 8","Riunioni CB G8","Date presenti nel calendario"],["4 / 8","Copertura release macro G8","Completamento nelle fasi successive"],[D.feeds.repricing.length,"Movimenti OIS / futures","Ultimo dato registrato: 2 novembre"],[D.consensus_count,"Consensi abbinati","Non presenti, non sostituiti con zero"]].map(v=>'<div class="metric"><b>'+esc(v[0])+'</b><span>'+esc(v[1])+'</span><small>'+esc(v[2])+'</small></div>').join("");
+ $("metrics").innerHTML=[[new Set(D.events.filter(x=>x.type===CB).map(x=>x.ccy)).size+" / 8","Riunioni CB G8","Date presenti nel calendario"],[new Set(D.events.filter(x=>x.type!==CB).map(x=>x.ccy)).size+" / 8","Copertura release macro G8","Solo fonti presenti nel feed"],[D.feeds.repricing.length,"Movimenti OIS / futures","Ogni elemento ha una propria data"],[D.consensus_count,"Consensi abbinati","Assenza non equivale a zero"]].map(v=>'<div class="metric"><b>'+esc(v[0])+'</b><span>'+esc(v[1])+'</span><small>'+esc(v[2])+'</small></div>').join("");
 }
 function eventCard(e){return '<button type="button" data-event="'+esc(e.id)+'" class="event '+(selected===e.id?'selected':'')+'" aria-pressed="'+(selected===e.id)+'"><span class="meta"><span class="date">'+esc(fmtDate(e.date))+'</span><span class="tag">'+esc(e.importance==="HIGH"?"ALTA":"MEDIA")+'</span></span><h3><span class="flag">'+esc(e.flag)+'</span>'+esc(e.title)+'</h3><span class="body">'+esc(e.ccy)+" · "+esc(types(e))+" · "+esc(e.period||e.bank||"Decisione di politica monetaria")+'</span><span class="body">'+esc(e.time_local?when(e):"Orario da verificare")+'</span><span class="status">'+esc(status(e))+'</span></button>'}
 function attachEventListeners(host){host.querySelectorAll("[data-event]").forEach(b=>b.addEventListener("click",()=>{selected=b.dataset.event;renderEvents();renderDetail();if(matchMedia("(max-width:780px)").matches)$("detail").scrollIntoView({behavior:"smooth",block:"start"})}))}
@@ -131,5 +131,80 @@ function boot(){
  chips();renderEvents();detail();pricing();news();audit();
 }
 boot();
+
+/* V2 read-only bridge: canonical event schedule, official release headlines, dated repricing. */
+async function refreshCalendar(){
+ const root="https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/";
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),9500);
+ const get=async name=>{
+  const response=await fetch(root+name+".json",{cache:"no-store",signal:controller.signal});
+  if(!response.ok)throw Error(name+" HTTP "+response.status);
+  return response.json();
+ };
+ try {
+  const [calendar,news,rates]=await Promise.all([
+   get("CALENDAR_OPERATIONAL_VIEW"),get("NEWS_PULSE_OPERATIONAL"),
+   get("NATIVE_RATES_DATA").catch(()=>null)
+  ]);
+  if(calendar.schema!=="GMFQ_CALENDAR_OPERATIONAL_VIEW_V3"||!Array.isArray(calendar.events)||!calendar.events.length)throw Error("Calendario canonico incompleto");
+  const generated=String(calendar.generated_at_utc||"").slice(0,10);
+  if(!/^20\d{2}-\d{2}-\d{2}$/.test(generated)||generated<D.snapshot_date)throw Error("Calendario meno recente dello snapshot");
+  const flags={USD:"🇺🇸",EUR:"🇪🇺",GBP:"🇬🇧",JPY:"🇯🇵",CHF:"🇨🇭",CAD:"🇨🇦",AUD:"🇦🇺",NZD:"🇳🇿"};
+  const templates={};
+  for(const event of D.events){if(!templates[event.type])templates[event.type]=event;}
+  const schedule=calendar.events.filter(e=>flags[e.ccy]&&/^20\d{2}-\d{2}-\d{2}$/.test(e.date)&&e.title&&e.event_type).map((e,i)=>{
+   const kind=e.event_type,template=templates[kind]||{},cb=kind===CB;
+   const defaultFocus=cb?"Decisione sui tassi, comunicato, voti e indicazioni prospettiche.":"Dato effettivo, precedente, eventuali revisioni e sorpresa rispetto a un consenso congelato prima del rilascio.";
+   return {
+    id:"canonical-"+i+"-"+e.date+"-"+e.ccy,ccy:e.ccy,country:D.countries[e.ccy]?.country||e.ccy,
+    flag:flags[e.ccy],date:e.date,type:kind,importance:e.importance||"MEDIUM",
+    title:e.title,bank:e.bank||null,period:e.reference_period||null,time_local:e.time_local||null,
+    timezone:e.timezone||null,consensus_status:e.consensus_status||"NOT_PRESENT",
+    consensus:Number.isFinite(e.consensus)?e.consensus:null,
+    actual:Number.isFinite(e.actual)?e.actual:null,previous:Number.isFinite(e.previous)?e.previous:null,
+    quality:e.quality||"FEED_CANONICO",source_family:e.source_family||e.bank||"Fonte ufficiale",
+    release_detected:!!(e.release_url&&e.status!=="UPCOMING"),release_url:e.release_url||null,
+    focus:defaultFocus,
+    before:cb?"Verificare il pricing OIS/futures prima della riunione e lo scenario atteso.":"Controllare consenso, periodo e precedenti prima della pubblicazione.",
+    after:"Verificare documento ufficiale, tassi 2Y, pricing e cambio su finestre temporali confrontabili; non attribuire causalità senza riscontri.",
+    confirm:cb?"Repricing coerente nel front-end e conferma del prezzo, senza assumere causalità automatica.":"Sorpresa macro e risposta coerente del front-end, da verificare anche nel prezzo.",
+    weaken:"Assenza di reazione coerente, revisione opposta o dati insufficienti per attribuire il movimento."
+   };
+  });
+  if(!schedule.length)throw Error("Nessun evento riconosciuto");
+  D.events=schedule;D.snapshot_date=generated;D.consensus_count=calendar.coverage?.consensus_available_events||0;
+  D.calendar_checked_at_utc=calendar.last_checked_at_utc||calendar.generated_at_utc;
+  if(rates&&typeof rates==="object")for(const code of Object.keys(flags)){
+   const current=rates[code],target=D.countries[code];
+   if(current&&target&&Number.isFinite(current["2Y"])&&/^20\d{2}-\d{2}-\d{2}$/.test(current.date||"")&&current.date>=(target.front_end_date||"")){
+    target.front_end_2y=current["2Y"];target.front_end_date=current.date;
+   }
+  }
+  const repricing=(Array.isArray(news.items)?news.items:[]).filter(x=>/OIS_REPRICING|FUTURES_IMPLIED_REPRICING/.test(x.category||"")).map(x=>({
+    ccy:x.ccy,as_of:x.as_of,title:x.title,detail:x.detail,
+    instrument_type:x.category==="OIS_REPRICING"?"OIS":"FUTURES",source:x.source
+  }));
+  if(repricing.length)D.feeds.repricing=repricing;
+  const official=news.official_releases?.headlines;
+  if(Array.isArray(official)){
+   D.feeds.headlines=official.filter(x=>x.title&&x.published_at_utc).map(x=>({
+    ccy:x.ccy||"G8",title:x.title,published_at_utc:x.published_at_utc,
+    topic:x.desk_context?.topic||"INSTITUTIONAL",why_watch:x.desk_context?.why_watch||"Comunicazione ufficiale: leggere il testo prima di attribuire effetti di mercato.",
+    verify_next:x.desk_context?.verify_next||"Controllare la fonte e la risposta del mercato.",
+    source:x.source||"Ente ufficiale",url:/^https:\/\//.test(x.url||"")?x.url:"#"
+   }));
+  }
+  selected=D.events[0].id;showAllNews=false;
+  chips();renderEvents();detail();pricing();news();
+  $("feedAsOf").textContent="Calendario canonico verificato: "+D.calendar_checked_at_utc+
+   " · News Pulse: "+(news.last_checked_at_utc||news.generated_at_utc||"data non disponibile")+
+   " · Eventi e comunicazioni sono feed aggiornabili; la verifica della reazione resta distinta.";
+ }catch(error){
+  console.warn("[FX Quant V2 Calendar] Dati live non verificati; snapshot preservato:",error);
+  $("feedAsOf").textContent="Modalità snapshot al "+D.snapshot_date+": feed canonico non verificato. Non usare questa agenda come calendario completo.";
+ }finally{clearTimeout(timer);}
+}
+refreshCalendar();
+
 })();
 </script></body></html>
