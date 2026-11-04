@@ -71,7 +71,14 @@ def chf_context(inspection, official, canonical, today, previous=None):
            official["eligible_for_curve_spreads"] is False and
            official["has_current_2y"] is False, "Official Swiss 10Y context drift")
     ten_asof=date(official["as_of"])
-    demand(0 <= (today-ten_asof).days<=14, "SNB spot 10Y context not valid")
+    # The separately published 10Y is CONTEXT, not the source of the
+    # independently matched SNB daily spot 2Y/10Y pair. A new verified pair
+    # must not be blocked by a delayed/stale publication of isolated 10Y.
+    demand(ten_asof<=today, "SNB isolated 10Y context dated in the future")
+    ten_value=yield_rate(official["value_percent"])
+    if ten_asof==asof:
+        demand(abs(ten_value-y10)<=0.001,
+               "Same-day official SNB 10Y contexts contradict each other")
     if previous and previous.get("paired_date"):
         demand(asof>=date(previous["paired_date"]), "SNB dated pair rollback")
     return {
@@ -81,9 +88,10 @@ def chf_context(inspection, official, canonical, today, previous=None):
         "paired_observations_in_source":c["common_date_observations"],
         "source":"Swiss National Bank · CHF Confederation daily spot 2J/10J",
         "source_url":SNB_SOURCE,
-        "separate_10y":{"as_of":ten_asof.isoformat(),"10Y":yield_rate(official["value_percent"]),
+        "separate_10y":{"as_of":ten_asof.isoformat(),"10Y":ten_value,
                          "source_url":official["source_url"],"not_joinable_with_paired_2y":ten_asof!=asof},
-        "review_note":"Coppia 2Y/10Y dalla stessa serie spot SNB e stessa data, non dalla media di bond diversi. Il 10Y SNB più recente compare separatamente e NON aggiorna la curva 2Y/10Y.",
+        "official_pair_independently_dated":True,
+        "review_note":"Coppia 2Y/10Y dalla stessa serie spot SNB e stessa data, non dalla media di bond diversi. Il 10Y SNB pubblicato separatamente ha data propria e non può impedire l'uso della coppia ufficiale più recente; non si mescolano mai due date per una curva osservata.",
         "eligible_for_core":False,"eligible_for_pair_spreads":False,
         "eligible_for_backtests":False,"eligible_for_automatic_promotion":False,
     }
