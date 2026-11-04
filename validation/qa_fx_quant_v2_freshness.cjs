@@ -117,6 +117,46 @@ for(const c of ccy){
       ' (fonte '+(x.quality||'missing')+', osservazione '+(x.as_of||'none')+'). Utilizzare proxy separati e datati, non chiamarli OIS.');
  }
 }
+// Separate 24/24 V2 research coverage from official OIS certification.
+// Do not label a dated futures proxy an OIS or treat today's pipeline run as a quote.
+const oisV2=JSON.parse(file('ois-pricing-snapshot.json'));
+requireValid(oisV2.schema==='GMFQ_FXV2_PRICING_SNAPSHOT_V1'&&
+ oisV2.eligible_for_fx_engine===false&&
+ oisV2.ui_only===true&&Object.keys(oisV2.currencies||{}).length===8,
+ 'FXV2 OIS G8 research snapshot source schema/permissions invalid');
+let researchTenors=0,officialOis=0;
+for(const c of ccy){
+ const x=oisV2.currencies?.[c];
+ if(!x){gap('ois_v2_research',c,'Nessuna curva V2 a tre orizzonti');continue;}
+ if(c==='GBP'){
+  requireValid(x.kind==='OIS'&&x.quality==='FONTE UFFICIALE'&&
+    /Bank of England/.test(x.source||''),'GBP official published OIS origin missing');
+  officialOis++;
+ }else{
+  requireValid(x.kind!=='OIS'&&
+    ['FUTURES','PROXY FUTURES','FUTURES SECONDARI'].includes(x.kind),
+    c+' must not be called an official OIS');
+ }
+ check('ois_v2_research',c+' '+x.kind+' 6M',x.as_of,7,x.quality||'UNKNOWN');
+ for(const ten of ['3m','6m','12m']){
+  const v=x.horizons?.[ten];
+  if(!v||!Number.isFinite(v.rate)||v.rate<=-10||v.rate>=30||!iso(v.as_of)){
+   requireValid(false,c+' '+ten+' missing numeric, source date or implausible rate');
+  }else{
+   researchTenors++;
+   requireValid(days(v.as_of)!==null&&days(v.as_of)>=0,
+     c+' '+ten+' source date cannot be future');
+   // Daily audit actually verifies the age for each independently dated tenor.
+   if(days(v.as_of)>7)
+    gap('ois_v2_research',c+' '+ten+' osservazione datata',
+      'Valore proxy/OIS del '+v.as_of+'; non pubblicare come quotazione di oggi. Tipo '+x.kind+'.');
+  }
+ }
+}
+requireValid(researchTenors===24&&officialOis===1,
+ 'FXV2 must cover 24 dated levels and exactly GBP certified OIS');
+note('ois_v2_research','Copertura 24/24 ≠ OIS ufficiali',
+ 'La V2 mostra 8 valute x 3 livelli con date e qualità proprie: GBP OIS; 7 altre curve futures/proxy. Non utilizzare i livelli stimati come policy OIS osservati.');
 const news=read('NEWS_PULSE_OPERATIONAL'),calendar=read('CALENDAR_OPERATIONAL_VIEW');
 check('calendar','refresh operativo',String(calendar.last_checked_at_utc||'').slice(0,10),3,'OPERATIONAL');
 check('news','last check',String(news.last_checked_at_utc||'').slice(0,10),3,'OPERATIONAL');
@@ -193,6 +233,10 @@ note('liquidity_credit','Frequenze miste','Liquidità e credito pubblicati mensi
 const ratesHtml=file('tassi.html');
 requireValid(ratesHtml.includes('CHF_SNB_10Y_SPOT_CONTEXT.json')&&ratesHtml.includes('NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json'),
  'V2 missing separated CHF/NZD research context overlay');
+requireValid(file('ois.html').includes('ageInfo(')&&
+ file('ois.html').includes('tenori oltre 7 giorni')&&
+ file('ois.html').includes('Feed repository consultati'),
+ 'V2 OIS must show source vintage and not claim source consultation proves a new quote');
 const pages=['index','valute','coppie','tassi','ois','macro','banche','cot','cross-asset','liquidita-credito','calendario-news','research'];
 requireValid(pages.every(x=>fs.existsSync(path.join(site,x+'.html'))),'Missing V2 HTML section');
 result.summary={

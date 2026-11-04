@@ -174,12 +174,16 @@ async function audit(browser,name,file,selector,view,viewport){
     }));
     if(data.cards!==8||data.cols!==8||data.tenors!==3||
        !data.gbp.includes('OIS')||!data.usd.includes('FUTURES SECONDARI')||
-       !data.nz.includes('PROXY FUTURES')||!data.status.includes('24/24'))
+       !data.nz.includes('PROXY FUTURES')||!data.status.includes('24/24')||
+       !data.status.includes('tenori oltre 7 giorni')||
+       !data.status.includes('OIS ufficiale solo GBP'))
        issue(name,view,'ois_g8_coverage_or_provenance',JSON.stringify(data));
     await page.locator('#pricingGrid button[data-c="JPY"]').click();
     const title=(await page.locator('#detailTitle').textContent())||'';
     const caveat=(await page.locator('#sourceCaveat').textContent())||'';
-    if(!title.includes('Giappone')||!caveat.includes('non sono contratti OIS'))
+    const sourceAge=(await page.locator('#sourceDate').textContent())||'';
+    if(!title.includes('Giappone')||!caveat.includes('non sono contratti OIS')||
+       !sourceAge.includes('Nessun refresh dell’orologio cambia la data del prezzo.'))
       issue(name,view,'ois_country_interaction_failed',title+' '+caveat);
     await page.locator('#compareA').selectOption('GBP');
     await page.locator('#compareB').selectOption('USD');
