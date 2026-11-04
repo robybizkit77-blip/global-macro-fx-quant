@@ -43,8 +43,8 @@ jobs:
           python-version: '3.12'
       - name: Test CHF matched SNB tenors and NZD benchmark roll safeguards
         run: |
-          python3 -m unittest validation.rates.test_refresh_fxv2_chf_nzd_benchmark_context -v
-          python3 -m unittest validation.rates.test_recover_chf_snb_paired_history_v1 -v
+          python3 validation/rates/test_refresh_fxv2_chf_nzd_benchmark_context.py
+          python3 validation/rates/test_recover_chf_snb_paired_history_v1.py
       - name: Build independently dated context from official source and archived B2 research
         shell: bash
         run: |
