@@ -42,7 +42,7 @@ function assetCards(){
  var cards=[
   ["EQUITY","S&P 500",num(sp.value,2),"1D "+p(sp.change1d,2),"Chiusura · "+sp.as_of,"Chiusura · Nasdaq "+p(nq.change1d,2),"negative"],
   ["CREDIT","High Yield OAS",num(hy.value*100,0)+" bp","IG "+num(ig.value*100,0)+" bp",hy.date,"Premio credito HY vs Treasury","warning"],
-  ["RATES","US Treasury 10Y",num(r.US_10Y.value,2)+"%","2Y "+num(r.US_2Y.value,2)+"%",r.US_10Y.date,"2Y e 10Y: −9 bp nella seduta","neutral"],
+  ["RATES","US Treasury 10Y",num(r.US_10Y.value,2)+"%","2Y "+num(r.US_2Y.value,2)+"%",r.US_10Y.date,"2Y "+signed(r.US_2Y.change1d_bp,1)+" bp · 10Y "+signed(r.US_10Y.change1d_bp,1)+" bp","neutral"],
   ["VIX","VIX",num(v.value,2), "1D "+p(v.change1d_pct,2),v.date,"Volatilità attesa da opzioni","warning"],
   ["ENERGY","WTI futures", "$"+num(o.value,2),"Brent $"+num(br.value,2),o.date,"Proxy secondario · non spot EIA","neutral"],
   ["GOLD","Oro futures", "$"+num(g.value,2),"1D "+p(g.change1d_pct,2),g.date,"Proxy COMEX, non LBMA spot","neutral"],
@@ -92,7 +92,7 @@ function view(){
  else if(v==="CREDIT"){detail("Il credito è il controllo decisivo","High Yield OAS 3,43%; Investment Grade OAS 0,94% al 2 novembre.","Se HY e IG si allargano in modo persistente, gli investitori chiedono più premio per il rischio di credito; un solo giorno di spread quasi stabili non conferma una crisi sistemica.","Segui la direzione 1W e il confronto col 27/10, oltre al livello. Evita di confondere spread con rendimento dei Treasury.","Entrambi sono option-adjusted spread (OAS), non il rendimento totale dei bond.","Credito societario USA","ICE BofA · 02/11/2026");
  var cc=credit.HY.history.map(function(row,i){return [row[0],(row[1]-credit.HY.history[0][1])*100]});pathChart("High Yield OAS · Δ bp dal 27 ottobre",cc,"punti base","Il grafico misura il cambiamento dello spread HY, non il prezzo né il rendimento complessivo");
  }
- else if(v==="RATES"){detail("Treasury nominali: due scadenze","2Y a 4,59% e 10Y a 4,91%; entrambi −9 punti base nella seduta del 2 novembre.","Il ribasso parallelo non è di per sé un bull flattening. Il 2Y è sensibile alla traiettoria Fed, mentre il 10Y incorpora anche crescita, inflazione e term premium.","Controlla se il front-end scende più del long-end, e come si muovono OIS, real yields e breakevens sulle medesime date.","Real yield e breakeven disponibili sono di settembre: non scomporre il 10Y del 2 novembre con dati non contemporanei.","US Treasury · 10 anni","02/11/2026");
+ else if(v==="RATES"){detail("Treasury nominali: due scadenze","2Y a "+num(r.US_2Y.value,2)+"% ("+signed(r.US_2Y.change1d_bp,1)+" pb) e 10Y a "+num(r.US_10Y.value,2)+"% ("+signed(r.US_10Y.change1d_bp,1)+" pb), data "+r.US_10Y.date+".","Il front-end riflette soprattutto aspettative sulla Fed; il 10Y incorpora anche crescita, inflazione, tassi reali e term premium. Il tipo di movimento della curva va letto dai cambiamenti delle due scadenze.","Controlla se il front-end cambia più del long-end e verifica OIS, real yields e breakevens con date omogenee.","Real yield e breakeven disponibili sono storici: non usarli per scomporre il 10Y corrente senza dati contemporanei.","US Treasury · 10 anni",r.US_10Y.date);
  pathChart("US Treasury 10Y · storico nominale",r.US_10Y.history,"% rendimento","Rendimenti nominali osservati; non sono i tassi OIS");
  }
  else if(v==="VIX"){detail("VIX: domanda di protezione","VIX 21,15 il 2 novembre, +8,91% rispetto alla seduta precedente.","La volatilità implicita a breve è salita. Ciò segnala una protezione più costosa, ma non basta a classificare l'intero mercato come risk-off.","Se il VIX persiste in rialzo mentre HY/IG si allargano e la partecipazione peggiora.","È volatilità attesa derivata da opzioni, non probabilità certa di recessione o di perdita.","Volatilità implicita · Cboe","02/11/2026");
@@ -126,9 +126,9 @@ function book(){
   line("HY vs 30/10",signed((c.HY.value-c.HY.previous)*100,0)+" bp","comparazione omogenea ICE BofA","02/11")
  ],
  ["Treasury e curva nominale","Front-end e long-end non raccontano necessariamente la stessa storia. Il movimento parallelo del 2/11 non giustifica una causa unica.",
-  line("Treasury 2Y",num(r.US_2Y.value,2)+"% · "+signed(r.US_2Y.change1d_bp,0)+" bp","U.S. Treasury","02/11")+
-  line("Treasury 10Y",num(r.US_10Y.value,2)+"% · "+signed(r.US_10Y.change1d_bp,0)+" bp","U.S. Treasury","02/11")+
-  line("Spread 10Y−2Y",signed(r.spread_10y2y_bp,0)+" bp","calcolo su dati omogenei","02/11")+
+  line("Treasury 2Y",num(r.US_2Y.value,2)+"% · "+signed(r.US_2Y.change1d_bp,0)+" bp","U.S. Treasury",r.US_2Y.date)+
+  line("Treasury 10Y",num(r.US_10Y.value,2)+"% · "+signed(r.US_10Y.change1d_bp,0)+" bp","U.S. Treasury",r.US_10Y.date)+
+  line("Spread 10Y−2Y",signed(r.spread_10y2y_bp,0)+" bp","calcolo su dati omogenei",r.US_10Y.date)+
   line("Real yield 10Y storico",num(r.real.value,2)+"%","TIPS U.S.",""+r.real.date)+
   line("Breakeven 10Y storico",num(r.breakeven.value,2)+"%","U.S. market-based inflation comp.",""+r.breakeven.date)
  ],
@@ -164,5 +164,28 @@ function sources(){
 }
 function render(){assetCards();view()}
 stats();copy();book();sources();render();
+
+/* Canonical US Treasury overlay only: equity, credit, VIX and commodities retain their dated snapshots. */
+async function refreshCrossRates(){
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8500);
+ try {
+  const response=await fetch("https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/NATIVE_RATES_DATA.json",{cache:"no-store",signal:controller.signal});
+  if(!response.ok)throw Error("Treasury feed HTTP "+response.status);
+  const us=(await response.json()).USD;
+  const today=new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Rome",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+  if(!us||!/^\d{4}-\d{2}-\d{2}$/.test(us.date||"")||us.date>today||us.date<D.rates.US_10Y.date||!Number.isFinite(us["2Y"])||!Number.isFinite(us["10Y"]))throw Error("Treasury aggiornamento incoerente");
+  const series=(h)=>Array.isArray(h?.dates)&&h.dates.length===h.values?.length?h.dates.map((date,i)=>[date,Number(h.values[i])]).filter(z=>/^\d{4}-\d{2}-\d{2}$/.test(z[0])&&Number.isFinite(z[1])&&z[0]<=us.date).slice(-95):[];
+  const two=series(us.history2),ten=series(us.history10);
+  if(ten.length<2||two.length<2||ten.at(-1)[0]!==us.date||two.at(-1)[0]!==us.date)throw Error("Storici Treasury non sincronizzati");
+  D.rates.US_2Y={...D.rates.US_2Y,date:us.date,value:us["2Y"],change1d_bp:us.chg2_bp,history:two,source:us.source,quality:us.quality};
+  D.rates.US_10Y={...D.rates.US_10Y,date:us.date,value:us["10Y"],change1d_bp:us.chg10_bp,history:ten,source:us.source,quality:us.quality};
+  D.rates.spread_10y2y_bp=(us["10Y"]-us["2Y"])*100;
+  D.rates.note="Nominali Treasury aggiornati al "+us.date+". I tassi reali, breakeven, credito, azioni e commodities restano i dati della rispettiva osservazione; non eseguire decomposizioni con date non omogenee.";
+  book();render();
+ }catch(error){console.warn("[FX Quant V2 Cross-Asset] Overlay Treasury non aggiornato; snapshot conservato:",error);}
+ finally{clearTimeout(timer);}
+}
+
+refreshCrossRates();
 })();
 </script></body></html>
