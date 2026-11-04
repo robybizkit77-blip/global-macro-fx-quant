@@ -150,6 +150,36 @@ async function audit(browser,name,file,selector,view,viewport){
     if(cards!==4||!notes.includes('STIME')||!notes.includes('PROXY'))
       issue(name,view,'estimated_diff_missing','CHF/NZD comparison cards='+cards+' '+notes.slice(0,250));
   }
+  if(name==='calendario'&&mode==='pr-local'&&view==='desktop'){
+    // The two feeds are independently useful: a broken News feed must not freeze Calendar.
+    const newsPath='**/NEWS_PULSE_OPERATIONAL.json*',calendarPath='**/CALENDAR_OPERATIONAL_VIEW.json*';
+    await page.route(newsPath,route=>route.fulfill({
+      status:200,contentType:'application/json',body:'{"schema":"INVALID_NEWS_TEST"}'
+    }));
+    await page.reload({waitUntil:'domcontentloaded'});
+    await page.waitForFunction(()=>
+      document.querySelector('#feedAsOf')?.textContent?.includes('News snapshot'),
+      null,{timeout:18000});
+    const calendarProof=(await page.locator('#feedAsOf').textContent())||'';
+    if(!calendarProof.includes('Calendario canonico verificato:')||
+       !calendarProof.includes('News snapshot'))
+      issue(name,view,'news_outage_blocked_calendar',calendarProof);
+    await page.unroute(newsPath);
+
+    // Likewise, a broken Calendar does not suppress refreshed, dated News headlines.
+    await page.route(calendarPath,route=>route.fulfill({
+      status:200,contentType:'application/json',body:'{"schema":"INVALID_CALENDAR_TEST"}'
+    }));
+    await page.reload({waitUntil:'domcontentloaded'});
+    await page.waitForFunction(()=>
+      document.querySelector('#feedAsOf')?.textContent?.includes('News controllate:'),
+      null,{timeout:18000});
+    const newsProof=(await page.locator('#feedAsOf').textContent())||'';
+    if(!newsProof.includes('Calendario snapshot')||
+       !newsProof.includes('contenuto al '))
+      issue(name,view,'calendar_outage_blocked_news',newsProof);
+    await page.unroute(calendarPath);
+  }
   if(view==='mobile'){
    const b=page.locator('#fxv2-global-header .fxv2-toggle');
    await b.click({timeout:10000});
