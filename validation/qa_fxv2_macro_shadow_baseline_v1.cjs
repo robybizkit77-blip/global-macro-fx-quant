@@ -56,7 +56,9 @@ assert.equal(data.countries.GBP.feature_sources.labour.period,'2026-08');
 assert.equal(data.pair_context['AUD/NZD'].inflation_same_period,true);
 assert.equal(data.pair_context['AUD/NZD'].labour_same_period,false);
 assert.equal(data.pair_context['EUR/USD'].growth_same_quarter,true);
-assert.equal(data.pair_context['EUR/USD'].inflation_same_period,true);
+assert.equal(data.pair_context['EUR/USD'].inflation_same_period,
+ source.countries.EUR.inflation.observation_period===source.countries.USD.inflation.observation_period,
+ 'Macro shadow must check current economic observation periods independently');
 // Verify deterministic result for same observed inputs and as-of.
 assert.equal(JSON.stringify(data),JSON.stringify(build(source,today,validate)));
 assert.equal(build(source,'2026-11-03',validate),null,'future observation guard');
