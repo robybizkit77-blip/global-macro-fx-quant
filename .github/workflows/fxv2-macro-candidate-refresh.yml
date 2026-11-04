@@ -1,0 +1,100 @@
+name: FX Quant V2 Macro Candidate Descriptive Baseline
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/macro/build_fxv2_candidate_baseline_v1.py'
+      - 'validation/macro/test_build_fxv2_candidate_baseline_v1.py'
+      - '.github/workflows/fxv2-macro-candidate-refresh.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/macro/build_fxv2_candidate_baseline_v1.py'
+      - 'validation/macro/test_build_fxv2_candidate_baseline_v1.py'
+      - '.github/workflows/fxv2-macro-candidate-refresh.yml'
+  workflow_run:
+    workflows: ['Macro V3 Observed G8 28-Pair Public Context V1']
+    types: [completed]
+  schedule:
+    - cron: '47 8 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fxv2-macro-candidate-source
+  cancel-in-progress: false
+
+jobs:
+  macro-candidate:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || 'main' }}
+          fetch-depth: 2
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test 8x3 formulas, evidence periods, and no FX Core writes
+        run: python3 -m unittest validation.macro.test_build_fxv2_candidate_baseline_v1 -v
+      - name: Build candidate from the most recently published Macro V3 observation
+        run: |
+          set -euo pipefail
+          python3 validation/macro/build_fxv2_candidate_baseline_v1.py \
+            --output /tmp/fxv2-macro-candidate-v1.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          j=json.loads(Path('/tmp/fxv2-macro-candidate-v1.json').read_text())
+          assert (j['summary']['currencies'],j['summary']['features'],j['summary']['pairs'])==(8,24,28)
+          assert j['summary']['trading_signals_generated']==0
+          assert j['summary']['estimated_macro_scores']==0
+          assert j['eligible_for_automatic_core_rebase'] is False
+          assert j['eligible_for_backtests'] is False
+          assert j['canonical_fx_core_untouched'] is True
+          print('FXV2_MACRO_CANDIDATE_SOURCE_ACCEPTED',j['as_of_research'])
+          PY
+      - name: Write only V2 descriptive research, not Core
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          TARGET=site/fx-quant-v2/macro-baseline-candidate-v1.json
+          cp /tmp/fxv2-macro-candidate-v1.json "$TARGET"
+          git diff --exit-code -- live_data payload dashboard index.html
+          if git diff --quiet -- "$TARGET" && [ -z "$(git ls-files --others --exclude-standard -- "$TARGET")" ]; then
+            echo 'FXV2_MACRO_CANDIDATE_UNCHANGED_NO_FAKE_REFRESH'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- "$TARGET"
+          test "$(git diff --cached --name-only)" = "$TARGET"
+          git commit -m 'data(fxv2): dated descriptive 8x3 Macro candidate research'
+          for n in 1 2 3 4 5; do
+            if git push origin HEAD:main; then
+              echo 'FXV2_MACRO_CANDIDATE_PUBLISHED_TO_MAIN'
+              exit 0
+            fi
+            git fetch origin main --no-tags
+            git rebase origin/main
+            sleep "$((3*n))"
+          done
+          echo 'FXV2_MACRO_CANDIDATE_PUBLISH_FAILED' >&2
+          exit 1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fxv2-macro-candidate-${{ github.run_id }}
+          path: /tmp/fxv2-macro-candidate-v1.json
+          if-no-files-found: warn
+          retention-days: 21
