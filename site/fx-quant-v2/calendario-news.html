@@ -142,10 +142,18 @@ async function refreshCalendar(){
   return response.json();
  };
  try {
-  const [calendar,newsFeed,rates]=await Promise.all([
+  // Treat each feed independently: a News outage must never block Calendar updates.
+  const [cResult,nResult,rResult]=await Promise.allSettled([
    get("CALENDAR_OPERATIONAL_VIEW"),get("NEWS_PULSE_OPERATIONAL"),
-   get("NATIVE_RATES_DATA").catch(()=>null)
+   get("NATIVE_RATES_DATA")
   ]);
+  const calendar=cResult.status==="fulfilled"?cResult.value:null;
+  const newsFeed=nResult.status==="fulfilled"?nResult.value:null;
+  const rates=rResult.status==="fulfilled"?rResult.value:null;
+  let calendarStatus="Calendario snapshot "+D.snapshot_date+" (fonte live non verificata)";
+  let newsStatus="News snapshot (fonte live non verificata)";
+  let rateStatus="2Y snapshot (feed non verificato)";
+  if(calendar)try{
   if(calendar.schema!=="GMFQ_CALENDAR_OPERATIONAL_VIEW_V3"||!Array.isArray(calendar.events)||!calendar.events.length)throw Error("Calendario canonico incompleto");
   const generated=String(calendar.generated_at_utc||"").slice(0,10);
   if(!/^20\d{2}-\d{2}-\d{2}$/.test(generated)||generated<D.snapshot_date)throw Error("Calendario meno recente dello snapshot");
@@ -174,12 +182,17 @@ async function refreshCalendar(){
   if(!schedule.length)throw Error("Nessun evento riconosciuto");
   D.events=schedule;D.snapshot_date=generated;D.consensus_count=calendar.coverage?.consensus_available_events||0;
   D.calendar_checked_at_utc=calendar.last_checked_at_utc||calendar.generated_at_utc;
+  calendarStatus="Calendario canonico verificato: "+D.calendar_checked_at_utc;
+  }catch(calendarError){console.warn("[FXV2 Calendar] Feed non applicabile, snapshot conservato:",calendarError);}
+  const flags={USD:"🇺🇸",EUR:"🇪🇺",GBP:"🇬🇧",JPY:"🇯🇵",CHF:"🇨🇭",CAD:"🇨🇦",AUD:"🇦🇺",NZD:"🇳🇿"};
   if(rates&&typeof rates==="object")for(const code of Object.keys(flags)){
    const current=rates[code],target=D.countries[code];
    if(current&&target&&Number.isFinite(current["2Y"])&&/^20\d{2}-\d{2}-\d{2}$/.test(current.date||"")&&current.date>=(target.front_end_date||"")){
     target.front_end_2y=current["2Y"];target.front_end_date=current.date;
+    rateStatus="2Y live: "+code+" "+current.date+" (altre date per valuta)";
    }
   }
+  if(newsFeed&&newsFeed.schema==="GMFQ_NEWS_PULSE_OPERATIONAL_V1"){
   const repricing=(Array.isArray(newsFeed.items)?newsFeed.items:[]).filter(x=>/OIS_REPRICING|FUTURES_IMPLIED_REPRICING/.test(x.category||"")).map(x=>({
     ccy:x.ccy,as_of:x.as_of,title:x.title,detail:x.detail,
     instrument_type:x.category==="OIS_REPRICING"?"OIS":"FUTURES",source:x.source
@@ -194,14 +207,20 @@ async function refreshCalendar(){
     source:x.source||"Ente ufficiale",url:/^https:\/\//.test(x.url||"")?x.url:"#"
    }));
   }
+  const headlineDates=(Array.isArray(official)?official:[]).map(x=>String(x.published_at_utc||"").slice(0,10))
+   .filter(x=>/^20\d{2}-\d{2}-\d{2}$/.test(x)).sort();
+  const contentDate=newsFeed.content_as_of||headlineDates.at(-1)||"non disponibile";
+  const age=/^20\d{2}-\d{2}-\d{2}$/.test(contentDate)?deltaDays(today(),contentDate):null;
+  newsStatus="News controllate: "+(newsFeed.last_checked_at_utc||newsFeed.generated_at_utc||"n.d.")+
+   " · contenuto al "+contentDate+(age!==null&&age>2?" · CONTENUTO NON RECENTE":"");
+  }
   selected=D.events[0].id;showAllNews=false;
   chips();renderEvents();detail();pricing();news();
-  $("feedAsOf").textContent="Calendario canonico verificato: "+D.calendar_checked_at_utc+
-   " · News Pulse: "+(newsFeed.last_checked_at_utc||newsFeed.generated_at_utc||"data non disponibile")+
-   " · Eventi e comunicazioni sono feed aggiornabili; la verifica della reazione resta distinta.";
+  $("feedAsOf").textContent=calendarStatus+" · "+newsStatus+
+   " · "+rateStatus+" · La verifica del feed non significa che il contenuto sia nuovo.";
  }catch(error){
-  console.warn("[FX Quant V2 Calendar] Dati live non verificati; snapshot preservato:",error);
-  $("feedAsOf").textContent="Modalità snapshot al "+D.snapshot_date+": feed canonico non verificato. Non usare questa agenda come calendario completo.";
+  console.warn("[FX Quant V2 Calendar & News] Dati parziali; snapshot conservato:",error);
+  $("feedAsOf").textContent="Modalità parziale: il caricamento dei feed è fallito. Date e fonti presenti negli snapshot non sono aggiornamenti odierni.";
  }finally{clearTimeout(timer);}
 }
 refreshCalendar();
