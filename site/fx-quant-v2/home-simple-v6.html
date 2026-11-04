@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>FX Quant V2 · Home essenziale V6 — Macro Brief</title>
+<meta name="description" content="Home di ricerca Global Macro semplice: cosa è successo, perché conta e cosa monitorare. Anteprima separata dal sito operativo.">
+<style>
+:root{--bg:#07111b;--paper:#0d1d2b;--ink:#edf3f5;--muted:#a8bac7;--quiet:#7d99a8;--line:#2a4355;--gold:#dbbe87;--blue:#92c9e7;--green:#78ddbc;--purple:#bea2e4;--serif:Georgia,"Times New Roman",serif;--sans:Inter,"Segoe UI",Arial,sans-serif}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:linear-gradient(180deg,#081725 0,#07111b 430px,#08121d 100%);color:var(--ink);font:14px/1.65 var(--sans);-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+a:hover{color:#fff}
+button,summary{font:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--gold);outline-offset:4px}
+.shell{width:min(1100px,calc(100% - 50px));margin:auto}
+.mini{font-size:10px;font-weight:760;letter-spacing:1.7px;text-transform:uppercase;color:var(--gold)}
+header.top{position:sticky;top:0;z-index:40;background:#081724f5;border-bottom:1px solid #2e4d5e;backdrop-filter:blur(18px)}
+.headrow{display:flex;align-items:center;justify-content:space-between;gap:24px;min-height:73px}
+.brand{display:flex;align-items:center;gap:11px;flex:none}
+.brandmark{width:35px;height:35px;display:grid;place-items:center;border:1px solid #6999b3;border-radius:7px;font-family:var(--serif);font-size:17px;color:#e8cca0;background:#173047}
+.brandcopy strong{font-size:13px;letter-spacing:1.3px;font-weight:770;display:block;line-height:1.3}
+.brandcopy span{font-size:9px;letter-spacing:1.2px;color:#a5bed0;font-weight:680}
+nav.quick{display:flex;align-items:center;gap:29px;color:#b4cbd8;font-size:12px}
+nav.quick a:hover{color:#f9f3e8}
+nav.quick .active{color:#edd4ac}
+details.menu{position:relative;z-index:42;font-size:12px}
+details.menu summary{list-style:none;cursor:pointer;border:1px solid #496274;border-radius:6px;padding:7px 13px;color:#e6edf4;white-space:nowrap}
+details.menu summary::-webkit-details-marker{display:none}
+details.menu summary::after{content:"  ▾";color:#e3c58c}
+details.menu[open] summary{background:#233b4a}
+.menu-items{position:absolute;top:calc(100% + 9px);right:0;width:240px;max-height:min(70vh,570px);overflow-y:auto;display:grid;padding:8px;background:#112637;border:1px solid #496477;box-shadow:0 18px 45px #0008;border-radius:9px}
+.menu-items a{padding:10px 12px;border-radius:5px;font-size:12px}
+.menu-items a:hover{background:#254152}
+.preview{border-bottom:1px solid #243d50;background:#101f2c}
+.preview .shell{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;font-size:11px;color:#aabfcc}
+.preview a{color:#ebd09b;text-decoration:underline;text-underline-offset:3px}
+.preview strong{color:#e8d0a0;font-size:10px;letter-spacing:.5px}
+.topmeta{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:36px 0 23px;border-bottom:1px solid var(--line)}
+.topmeta .date{font-size:11px;color:#a4bbc8}
+.hero{position:relative;display:grid;grid-template-columns:minmax(0,1.48fr) minmax(265px,.62fr);gap:58px;padding:53px 0 48px;align-items:start}
+.hero:before{content:"";position:absolute;pointer-events:none;left:-25px;top:-6px;width:250px;height:250px;background:radial-gradient(circle,#25618a22,transparent 70%);z-index:-1}
+.hero h1{font:500 clamp(35px,4vw,52px)/1.13 var(--serif);letter-spacing:-1.15px;max-width:740px;margin:10px 0 24px;color:#f2f5f4;text-wrap:balance}
+.hero .lead{font-size:16px;line-height:1.84;color:#cadae4;margin:0 0 19px;max-width:735px}
+.hero .caution{font-size:12px;line-height:1.8;color:#9fb6c7;border-left:2px solid #d9b87e;padding-left:14px;margin:0}
+.hero-side{padding:9px 0 0 28px;border-left:1px solid #3a5264}
+.hero-side .tiny{font-size:10px;color:#c7b083;font-weight:740;letter-spacing:1.4px;display:block;margin-bottom:12px}
+.kpi{border-top:1px solid #314e61;padding:14px 0}
+.kpi span{display:block;font-size:11px;color:#a2b9c7}
+.kpi strong{font-size:25px;font-weight:630;font-variant-numeric:tabular-nums;color:#f4f8fb;line-height:1.25;display:block;margin:4px 0}
+.kpi small{font-size:10px;color:#a4b9c9}
+.kpi:last-child{border-bottom:1px solid #314e61}
+.section{border-top:1px solid var(--line);padding:49px 0 55px}
+.section-head{display:flex;justify-content:space-between;align-items:end;gap:32px;margin-bottom:25px}
+.section-head h2{font:500 clamp(27px,3vw,36px)/1.17 var(--serif);letter-spacing:-.5px;margin:7px 0 0}
+.section-head p{font-size:12px;line-height:1.75;color:#9fb6c5;max-width:335px;margin:0;text-align:right}
+.story-row{display:grid;grid-template-columns:55px minmax(0,1fr);gap:18px;padding:21px 0;border-top:1px solid #263f51;max-width:980px}
+.story-row:first-of-type{border-top:1px solid #53697b}
+.story-index{font:500 30px/1.3 var(--serif);color:#c7ae7e}
+.story-row h3{font:500 21px/1.3 var(--serif);letter-spacing:-.2px;margin:0 0 9px}
+.story-row p{font-size:13.2px;line-height:1.87;color:#b9cbd5;margin:0;max-width:820px}
+.story-row p.note{font-size:11px;margin-top:10px;color:#8eaabd}
+.final-reading{margin-top:20px;padding:25px 28px 24px;border-left:3px solid #d9b980;background:linear-gradient(105deg,#132a3a,#0d1d2a);max-width:1000px}
+.final-reading h3{font:500 22px var(--serif);margin:8px 0 12px}
+.final-reading p{font-size:13px;line-height:1.86;margin:0;color:#d3e0e7}
+.final-reading strong{color:#e4c991}
+.chart-tabs{display:flex;gap:7px}
+.chart-tabs button{border:1px solid #3c596b;border-radius:6px;padding:8px 13px;background:transparent;color:#a7becd;font-size:11px}
+.chart-tabs button[aria-pressed=true]{background:#1c4356;border-color:#668daa;color:#edf5fb}
+.chart-area{background:linear-gradient(160deg,#0e2231,#0b1a26);border:1px solid #355266;border-radius:8px;padding:23px 26px 20px}
+.chart-header{display:flex;align-items:center;justify-content:space-between;gap:20px}
+.chart-header h3{font:500 23px var(--serif);margin:0}
+.chart-header span{color:#98b1c0;font-size:11px}
+svg.chart{display:block;width:100%;height:260px;margin:14px 0 5px;overflow:visible}
+.chart-legend{font-size:11px;color:#b8cbd5;display:flex;gap:24px;flex-wrap:wrap}
+.chart-legend i{width:16px;height:3px;display:inline-block;vertical-align:middle;margin-right:6px;background:#a3cce7}
+.chart-legend i.second{background:#b8a3e4}
+.chart-caption{border-top:1px solid #304c5d;margin:14px 0 0;padding-top:13px;font-size:11px;line-height:1.78;color:#8fa9b9}
+.next-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+.next-grid a{display:block;border-top:2px solid #547e94;padding:15px 5px 14px 0}
+.next-grid a:hover{border-color:#e2bc84}
+.next-grid strong{font:500 19px var(--serif);display:block;margin:4px 0}
+.next-grid span{font-size:11px;line-height:1.7;color:#91acbc;display:block}
+footer{display:flex;justify-content:space-between;gap:35px;border-top:1px solid var(--line);padding:26px 0 50px;color:#859fae;font-size:10.5px}
+footer p{margin:0;max-width:700px}
+footer a{color:#c7b38e}
+@media(max-width:930px){.hero{gap:35px;grid-template-columns:minmax(0,1.4fr) minmax(220px,.65fr)}nav.quick{gap:16px}.next-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.shell{width:calc(100% - 36px)}.headrow{min-height:64px}.brandcopy strong{font-size:12px}.brandcopy span{font-size:8px}nav.quick>a{display:none}.hero{grid-template-columns:1fr;gap:25px;padding:36px 0 35px}.hero h1{font-size:clamp(33px,8vw,43px)}.hero .lead{font-size:14px;line-height:1.77}.hero-side{border-left:0;padding:7px 0 0;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 13px}.hero-side .tiny{grid-column:span 3;padding-top:8px}.kpi{min-width:0}.kpi strong{font-size:19px}.kpi small{font-size:9px;line-height:1.5;display:block}.kpi span{font-size:10px}.kpi:last-child{border-bottom:0}.topmeta{padding-top:26px;padding-bottom:16px}.section{padding:37px 0}.section-head{display:block;margin-bottom:21px}.section-head h2{font-size:29px}.section-head p{text-align:left;margin-top:11px}.story-row{grid-template-columns:36px minmax(0,1fr);gap:12px}.story-index{font-size:23px}.story-row h3{font-size:19px}.story-row p{font-size:12.5px}.final-reading{padding:19px}.chart-area{padding:18px 13px}.chart-header h3{font-size:19px}.chart-header span{font-size:10px}svg.chart{height:225px}.next-grid{gap:12px}.next-grid strong{font-size:17px}footer{flex-direction:column}}
+@media(max-width:390px){.shell{width:calc(100% - 28px)}.brandmark{width:30px;height:30px}.brandcopy strong{letter-spacing:.7px}.preview .shell{align-items:flex-start;flex-direction:column}.hero-side{grid-template-columns:repeat(2,minmax(0,1fr))}.hero-side .tiny{grid-column:span 2}.kpi:nth-last-child(1){grid-column:span 2}.hero h1{font-size:34px}.chart-tabs button{font-size:10px;padding:7px 9px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header class="top">
+ <div class="shell headrow">
+  <a href="./index.html" class="brand" aria-label="FX Quant V2, Home attuale"><span class="brandmark">FQ</span><span class="brandcopy"><strong>FX QUANT <span style="color:#d4b985">/</span> V2</strong><span>GLOBAL MACRO RESEARCH</span></span></a>
+  <nav class="quick" aria-label="Navigazione essenziale">
+   <a class="active" href="./home-simple-v6.html" aria-current="page">Home</a>
+   <a href="./macro.html">Macro</a>
+   <a href="./tassi.html">Tassi</a>
+   <a href="./ois.html">OIS</a>
+   <a href="./coppie.html">Coppie FX</a>
+   <details class="menu"><summary>Sezioni</summary><div class="menu-items">
+     <a href="./index.html">Home operativa</a>
+     <a href="./valute.html">Valute G8</a>
+     <a href="./coppie.html">Coppie FX</a>
+     <a href="./tassi.html">Tassi 2Y/10Y</a>
+     <a href="./ois.html">OIS e Pricing</a>
+     <a href="./macro.html">Macro G8</a>
+     <a href="./banche.html">Banche centrali</a>
+     <a href="./cot.html">COT</a>
+     <a href="./cross-asset.html">Cross-Asset</a>
+     <a href="./liquidita-credito.html">Liquidità e Credito</a>
+     <a href="./calendario-news.html">Calendario e News</a>
+     <a href="./research.html">Research Library</a>
+    </div></details>
+  </nav>
+ </div>
+</header>
+<div class="preview"><div class="shell"><strong>ANTEPRIMA V6 · SEMPLICE E NARRATIVA</strong><span>La Home attuale è intatta · <a href="./index.html">Aprila qui</a></span></div></div>
+<main class="shell" id="contenuto">
+ <div class="topmeta"><span class="mini">Il punto di mercato · USA / USD</span><span class="date" id="dataNote">Treasury 03/11/2026 · FX proxy BCE 04/11/2026</span></div>
+ <section class="hero" aria-labelledby="headline">
+  <div>
+   <span class="mini">QUELLO CHE CONTA, IN POCHE RIGHE</span>
+   <h1 id="headline">La curva USA si irripidisce. Il dollaro proxy arretra.</h1>
+   <p class="lead" id="lead">Il Treasury a 2 anni ha perso 9 punti base nell'ultima seduta disponibile, contro i 4 del 10 anni. Nel fixing BCE successivo, il proxy del dollaro ha ceduto lo 0,60%. Sono due osservazioni con date diverse.</p>
+   <p class="caution" id="caution">Questo quadro suggerisce una domanda precisa, non un segnale di trading: quanto del calo dei rendimenti riflette davvero un cambiamento nelle attese Fed?</p>
+  </div>
+  <aside class="hero-side" aria-label="Tre numeri a sostegno">
+   <span class="tiny">I NUMERI DEL CONTESTO</span>
+   <div class="kpi"><span>Treasury USA · 2Y</span><strong id="kpi2">4,61%</strong><small id="kpi2Note">03/11/2026 · −9 bp</small></div>
+   <div class="kpi"><span>Curva 10Y − 2Y</span><strong id="kpiCurve">+34 bp</strong><small id="kpiCurveNote">03/11/2026 · +5 bp</small></div>
+   <div class="kpi"><span>USD · proxy BCE</span><strong id="kpiUsd">−0,60%</strong><small id="kpiUsdNote">04/11/2026 · fixing</small></div>
+  </aside>
+ </section>
+ <section class="section" id="analisi" aria-labelledby="storyTitle">
+  <div class="section-head"><div><span class="mini">LA LETTURA</span><h2 id="storyTitle">Tre passaggi per capire il mercato.</h2></div><p>Solo ciò che possiamo documentare. Senza confondere dati, aspettative e interpretazioni.</p></div>
+  <article class="story-row"><span class="story-index">01</span><div><h3>Che cosa è successo?</h3><p id="observed">Il front-end USA è sceso più del 10Y, producendo un bull steepening. I due rendimenti sono datati 3 novembre; il proxy USD è datato 4 novembre.</p><p class="note" id="sourceNote">I dati hanno date diverse: non è una reazione intraday certificata.</p></div></article>
+  <article class="story-row"><span class="story-index">02</span><div><h3>Perché potrebbe essere importante?</h3><p id="interpretation">Un calo più marcato del 2Y potrebbe indicare meno pressione sul sentiero dei tassi Fed. Non basta per dimostrare più tagli: occorre controllare gli OIS e distinguere la crescita dalla politica monetaria.</p><p class="note" id="macroContext">Contesto macro precedente: capex forte, fiducia famiglie più fragile. Il riepilogo di ricerca non ha data di pubblicazione puntuale.</p></div></article>
+  <article class="story-row"><span class="story-index">03</span><div><h3>Che cosa controlliamo adesso?</h3><p id="checks">Prima gli OIS Fed a 6–12 mesi, poi EUR/USD e USD/JPY. Se il front-end torna a salire e il dollaro recupera, la lettura di minore sostegno ai tassi perde forza.</p><p class="note">Nessun segnale d'ingresso automatico: il prezzo e il pricing devono confermare.</p></div></article>
+  <div class="final-reading"><span class="mini">CONCLUSIONE PROVVISORIA</span><h3>Il mercato ha confermato davvero?</h3><p id="verdict">I movimenti osservati sono compatibili con meno sostegno dei tassi al dollaro. Ma senza OIS allineati nelle date e conferma sui cross, la tesi non è validata.</p></div>
+ </section>
+ <section class="section" id="grafico" aria-labelledby="chartSectionTitle">
+  <div class="section-head"><div><span class="mini">L'EVIDENZA</span><h2 id="chartSectionTitle">Un grafico. Un controllo alla volta.</h2></div><div class="chart-tabs" role="group" aria-label="Serie da visualizzare"><button id="ratesBtn" type="button" aria-pressed="true">Treasury 2Y / 10Y</button><button id="usdBtn" type="button" aria-pressed="false">Dollaro proxy</button></div></div>
+  <div class="chart-area">
+   <div class="chart-header"><h3 id="chartTitle">Curve USA, ultime osservazioni</h3><span id="chartDate">Dati datati</span></div>
+   <svg id="marketChart" class="chart" viewBox="0 0 890 280" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Grafico storico Treasury USA 2Y e 10Y">
+     <text x="30" y="45" fill="#a7bbc8">Caricamento grafico</text>
+   </svg>
+   <div class="chart-legend" id="chartLegend"><span><i></i>Treasury 2Y</span><span><i class="second"></i>Treasury 10Y</span></div>
+   <p class="chart-caption" id="chartCaption">Serie ufficiali Treasury con date proprie. Per il DXY si usa solo un indicatore sintetico derivato dai fixing BCE, non il DXY ICE ufficiale.</p>
+  </div>
+ </section>
+ <section class="section" id="percorso">
+  <div class="section-head"><div><span class="mini">APPROFONDISCI</span><h2>Da qui, dove guardare?</h2></div><p>La Home riassume. Ogni sezione approfondisce un aspetto diverso della stessa tesi.</p></div>
+  <div class="next-grid">
+   <a href="./ois.html"><strong>OIS e pricing</strong><span>Che cosa incorpora davvero il mercato sui prossimi mesi della Fed.</span></a>
+   <a href="./tassi.html"><strong>Tassi</strong><span>Livelli, curve, spread e differenze tra 2Y e 10Y.</span></a>
+   <a href="./coppie.html"><strong>Coppie FX</strong><span>Se EUR/USD e USD/JPY confermano o smentiscono.</span></a>
+   <a href="./macro.html"><strong>Macro G8</strong><span>Che cosa cambia in crescita, lavoro e inflazione.</span></a>
+  </div>
+ </section>
+ <footer><p>FX Quant V2 · Anteprima di design indipendente. I numeri sono letture datate dei feed Treasury e BCE del repository, con fallback locale etichettato. Nessuna modifica al motore FX o alla Home operativa. Non è un consiglio di trading.</p><a href="./index.html">Torna alla Home principale</a></footer>
+</main>
+<script>
+'use strict';
+const snapshot={"rates":{"date":"2026-11-03","2Y":4.61,"10Y":4.95,"chg2_bp":-9,"chg10_bp":-4,"history2":{"dates":["2026-08-11","2026-08-12","2026-08-13","2026-08-14","2026-08-17","2026-08-18","2026-08-19","2026-08-20","2026-08-21","2026-08-24","2026-08-25","2026-08-26","2026-08-27","2026-08-28","2026-08-31","2026-09-01","2026-09-02","2026-09-03","2026-09-04","2026-09-08","2026-09-09","2026-09-10","2026-09-11","2026-09-14","2026-09-15","2026-09-16","2026-09-17","2026-09-18","2026-09-21","2026-09-25","2026-09-28","2026-10-02","2026-10-06","2026-10-13","2026-10-15","2026-10-16","2026-10-19","2026-10-20","2026-10-21","2026-10-22","2026-10-23","2026-10-26","2026-10-27","2026-10-28","2026-10-29","2026-10-30","2026-11-02","2026-11-03"],"values":[4.22,4.2,4.15,4.17,4.19,4.19,4.19,4.19,4.24,4.24,4.17,4.19,4.2,4.34,4.34,4.39,4.39,4.34,4.37,4.39,4.43,4.56,4.63,4.65,4.67,4.74,4.67,4.76,4.76,4.81,4.92,4.83,4.79,4.79,4.77,4.74,4.77,4.79,4.81,4.65,4.69,4.68,4.7,4.67,4.61,4.56,4.59,4.61]},"history10":{"dates":["2026-08-11","2026-08-12","2026-08-13","2026-08-14","2026-08-17","2026-08-18","2026-08-19","2026-08-20","2026-08-21","2026-08-24","2026-08-25","2026-08-26","2026-08-27","2026-08-28","2026-08-31","2026-09-01","2026-09-02","2026-09-03","2026-09-04","2026-09-08","2026-09-09","2026-09-10","2026-09-11","2026-09-14","2026-09-15","2026-09-16","2026-09-17","2026-09-18","2026-09-21","2026-09-25","2026-09-28","2026-10-02","2026-10-06","2026-10-13","2026-10-15","2026-10-16","2026-10-19","2026-10-20","2026-10-21","2026-10-22","2026-10-23","2026-10-26","2026-10-27","2026-10-28","2026-10-29","2026-10-30","2026-11-02","2026-11-03"],"values":[4.7,4.68,4.63,4.68,4.72,4.71,4.65,4.69,4.74,4.7,4.64,4.66,4.67,4.73,4.75,4.79,4.79,4.77,4.78,4.8,4.83,4.95,4.96,4.97,5,5.01,4.94,5.01,4.96,5.17,5.24,5.28,5.27,5.21,5.1,5.09,5.15,5.12,5.13,4.96,5,5,4.99,5.05,4.98,4.94,4.91,4.95]}},"dxy":{"as_of":"2026-11-04","value":101.2548,"previous_value":101.8687,"history":[{"date":"2026-08-31","value":99.5506},{"date":"2026-09-01","value":99.6383},{"date":"2026-09-02","value":99.7513},{"date":"2026-09-03","value":99.1124},{"date":"2026-09-04","value":99.0668},{"date":"2026-09-07","value":98.973},{"date":"2026-09-08","value":98.9589},{"date":"2026-09-09","value":98.6088},{"date":"2026-09-10","value":98.9869},{"date":"2026-09-11","value":99.1678},{"date":"2026-09-14","value":99.4824},{"date":"2026-09-15","value":99.6222},{"date":"2026-09-16","value":99.6825},{"date":"2026-09-17","value":100.1639},{"date":"2026-09-18","value":100.5198},{"date":"2026-09-21","value":100.2299},{"date":"2026-09-22","value":100.4024},{"date":"2026-09-23","value":100.8819},{"date":"2026-09-24","value":101.293},{"date":"2026-09-25","value":100.9843},{"date":"2026-09-28","value":101.0913},{"date":"2026-09-29","value":101.269},{"date":"2026-09-30","value":101.2349},{"date":"2026-10-01","value":101.7283},{"date":"2026-10-02","value":102.0819},{"date":"2026-10-05","value":102.2408},{"date":"2026-10-06","value":101.8081},{"date":"2026-10-07","value":102.4092},{"date":"2026-10-08","value":102.3582},{"date":"2026-10-09","value":102.1859},{"date":"2026-10-12","value":102.3856},{"date":"2026-10-13","value":102.2681},{"date":"2026-10-14","value":102.2249},{"date":"2026-10-15","value":102.1129},{"date":"2026-10-16","value":101.7135},{"date":"2026-10-19","value":101.8263},{"date":"2026-10-20","value":101.8433},{"date":"2026-10-21","value":101.6534},{"date":"2026-10-22","value":101.7555},{"date":"2026-10-23","value":101.8005},{"date":"2026-10-26","value":101.9367},{"date":"2026-10-27","value":102.187},{"date":"2026-10-28","value":102.348},{"date":"2026-10-29","value":102.2818},{"date":"2026-10-30","value":101.8474},{"date":"2026-11-02","value":101.6153},{"date":"2026-11-03","value":101.8687},{"date":"2026-11-04","value":101.2548}]},"macro":{"summary":"USA: capex ancora forte (core capital goods +1,6% ad agosto), ma fiducia Michigan scende a 48,1 e aspettative inflazione 1Y salgono al 4,6%. Quadro resiliente, con pressione inflazionistica e tassi più alti."}};
+const root='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/';
+const state={rates:snapshot.rates,dxy:snapshot.dxy,macro:snapshot.macro,mode:'rates',live:0};
+const $=id=>document.getElementById(id);
+const fmt=(v,d=2)=>Number.isFinite(v)?v.toLocaleString('it-IT',{minimumFractionDigits:d,maximumFractionDigits:d}):'n.d.';
+const signed=(v,d=1,suf='')=>Number.isFinite(v)?(v>0?'+':v<0?'−':'')+fmt(Math.abs(v),d)+suf:'n.d.';
+const date=x=>/^\d{4}-\d{2}-\d{2}$/.test(x||'')?x.slice(8,10)+'/'+x.slice(5,7)+'/'+x.slice(0,4):'data n.d.';
+const valid =v=>typeof v==='number'&&Number.isFinite(v);
+function renderStory(){
+ const r=state.rates||{},d=state.dxy||{},rd=date(r.date),dd=date(d.as_of);
+ const y2=r['2Y'],y10=r['10Y'],b2=r.chg2_bp,b10=r.chg10_bp;
+ const slope=valid(y2)&&valid(y10)?100*(y10-y2):null;
+ const sd=valid(b2)&&valid(b10)?b10-b2:null;
+ const usd=valid(d.value)&&valid(d.previous_value)&&d.previous_value!==0?100*(d.value/d.previous_value-1):null;
+ const same=r.date===d.as_of;
+ const down=valid(b2)&&valid(b10)&&b2<0&&b10<0;
+ const bull=down&&valid(sd)&&sd>0;
+ const fall=valid(b2)&&b2<0&&valid(usd)&&usd<0;
+ const rise=valid(b2)&&b2>0&&valid(usd)&&usd>0;
+ $('dataNote').textContent='Treasury '+rd+' · FX proxy BCE '+dd+' · '+(state.live===3?'Feed collegati':'Snapshot datato / feed parziali');
+ $('headline').textContent=bull?'Il 2Y USA scende più del 10Y. La curva si irripidisce.':
+   fall?'Il Treasury USA scende. Anche il dollaro proxy arretra.':
+   rise?'Tassi USA e dollaro si rafforzano, ma il motivo va verificato.':
+   'Treasury e dollaro: che cosa dicono gli ultimi dati?';
+ $('lead').textContent='Il Treasury USA a 2 anni è '+fmt(y2)+'% ('+signed(b2,1,' pb')+
+   ' nell’ultima variazione del '+rd+'); il 10Y è '+fmt(y10)+'% ('+signed(b10,1,' pb')+
+   '). Nel fixing BCE del '+dd+' il proxy del dollaro è variato di '+signed(usd,2,'%')+
+   '. Sono misure con una data precisa, non quotazioni intraday.';
+ $('caution').textContent=same?'Le osservazioni hanno la stessa data, ma non provano che un dato macro abbia causato la variazione dei prezzi.':
+   'Il Treasury e il proxy BCE hanno date diverse: non possiamo chiamarli una reazione simultanea allo stesso evento.';
+ $('kpi2').textContent=fmt(y2)+'%';$('kpi2Note').textContent=rd+' · '+signed(b2,1,' pb');
+ $('kpiCurve').textContent=signed(slope,0,' pb');$('kpiCurveNote').textContent=rd+' · '+signed(sd,1,' pb');
+ $('kpiUsd').textContent=signed(usd,2,'%');$('kpiUsdNote').textContent=dd+' · proxy da fixing BCE';
+ $('observed').textContent='Al '+rd+' il 2Y è '+fmt(y2)+'% e il 10Y '+fmt(y10)+
+   '%. La curva 10Y−2Y si trova a '+signed(slope,0,' pb')+
+   (valid(sd)?' e si è mossa di '+signed(sd,1,' pb')+' nell’ultima seduta.':' e non è disponibile una variazione omogenea.')+
+   (bull?' Poiché entrambi i rendimenti scendono e il 2Y scende di più, il movimento è un bull steepening.':
+    ' Non basta il solo livello della curva per identificare un cambiamento di regime.')+
+   ' Il proxy USD BCE ha registrato '+signed(usd,2,'%')+' il '+dd+'.';
+ $('sourceNote').textContent= same?'Tassi e proxy FX hanno la stessa data, ma non una sincronizzazione intraday.':
+  'Attenzione: la fonte Treasury è al '+rd+', quella FX al '+dd+'. Non è un event study né una prova di causalità.';
+ $('interpretation').textContent= valid(b2)&&b2<0?
+   'Un 2Y in calo può indicare che il mercato pretende meno rendimento sulla scadenza breve: è compatibile con aspettative Fed più accomodanti, ma anche con un cambiamento delle prospettive di crescita o della domanda di Treasury. Il 10Y reagisce inoltre a inflazione, real yields e term premium. Per attribuire il movimento alla Fed servono OIS e futures appropriati, confrontati sulla stessa finestra temporale.':
+   valid(b2)&&b2>0?
+   'Un 2Y in rialzo può essere compatibile con aspettative di Fed più restrittiva, ma anche con movimenti di liquidità e premi. Il 10Y incorpora crescita, inflazione e term premium. Non identifichiamo un repricing monetario senza confrontare OIS e futures nella stessa finestra.':
+   'Senza un movimento affidabile del 2Y non si ricostruisce il repricing della Fed. Il rendimento governativo e un contratto OIS non sono lo stesso strumento.';
+ $('macroContext').textContent= state.macro?.summary?
+   'Sfondo macro già presente nella ricerca: '+state.macro.summary+' Il feed non associa questo riassunto a una singola release datata: non è una notizia di oggi.':
+   'Il riepilogo macro non è disponibile in questa vista; consulta Macro G8 con date delle singole pubblicazioni.';
+ $('checks').textContent='Il prossimo controllo non è una previsione: confrontare gli OIS/futures Fed a 6–12 mesi con le osservazioni precedenti, poi la reazione di EUR/USD e USD/JPY. '+
+   (valid(b2)&&b2<0?'La lettura di minore sostegno dei tassi all’USD si indebolirebbe se il front-end tornasse a salire e i cross mostrassero un recupero persistente del dollaro.':
+     'La lettura di maggior sostegno dei tassi all’USD si indebolirebbe se il front-end invertisse il movimento e i cross non confermassero.')+
+   ' Serve coerenza tra data del pricing e data del prezzo.';
+ $('verdict').textContent=fall?
+   'Due indizi vanno nella stessa direzione, ma i riferimenti temporali non coincidono necessariamente. Un USD meno sostenuto dai rendimenti è una lettura plausibile, non una relazione quantitativa dimostrata. OIS Fed e cross valutari devono confermare.':
+   rise?
+   'Il rialzo del front-end e del proxy USD è compatibile con un maggiore sostegno relativo dei tassi. È un’ipotesi: manca la prova dal pricing OIS e dai cross osservati nella stessa finestra.':
+   'Le indicazioni di tassi e cambio sono miste oppure non comparabili. Nessuna conclusione direzionale robusta: prima vanno verificati OIS, differenziali e reazione dei cross.';
+}
+function svgEl(tag,attrs,text){
+ const n=document.createElementNS('http://www.w3.org/2000/svg',tag);
+ for(const [k,v] of Object.entries(attrs||{}))n.setAttribute(k,String(v));
+ if(text!==undefined)n.textContent=text;
+ return n;
+}
+function renderChart(){
+ const rates=state.mode==='rates';
+ const r=state.rates||{},d=state.dxy||{};
+ let series=[],label='',axis='%',chartDate='',cap='';
+ if(rates){
+  const h2=r.history2||{},h10=r.history10||{};
+  const a=Array.isArray(h2.values)?h2.values:[], b=Array.isArray(h10.values)?h10.values:[];
+  const dates=Array.isArray(h2.dates)?h2.dates:[];
+  const n=Math.min(40,a.length,b.length,dates.length);
+  series=[{name:'Treasury 2Y',values:a.slice(-n),stroke:'#93c9e9'},{name:'Treasury 10Y',values:b.slice(-n),stroke:'#bca3e6'}];
+  label='Treasury USA, 2Y e 10Y';chartDate='Fino al '+date(r.date);
+  cap='Serie governative USA: non sono OIS. Le due linee condividono la stessa scala percentuale; rileva soprattutto la differenza nel movimento.';
+ }else{
+  const h=Array.isArray(d.history)?d.history.slice(-40):[];
+  series=[{name:'USD proxy BCE',values:h.map(x=>x.value),stroke:'#85dfc4'}];
+  label='Dollaro sintetico dai fixing BCE';chartDate='Fino al '+date(d.as_of);axis='punti';
+  cap='Indice ricostruito dai fixing BCE, non DXY ufficiale ICE né quotazione intraday. Non confrontare temporalmente a vista con dati Treasury di un giorno diverso.';
+ }
+ $('chartTitle').textContent=label;$('chartDate').textContent=chartDate;
+ $('chartCaption').textContent=cap;
+ $('chartLegend').replaceChildren();
+ for(let i=0;i<series.length;i++){
+  const span=document.createElement('span'),bar=document.createElement('i');
+  if(i===1)bar.className='second';else if(!rates)bar.style.background='#85dfc4';
+  span.append(bar,document.createTextNode(series[i].name));$('chartLegend').append(span);
+ }
+ const chart=$('marketChart');chart.replaceChildren();
+ const data=series.flatMap(s=>s.values).filter(valid);
+ if(data.length<5||series.some(s=>s.values.length<5)){
+   chart.append(svgEl('text',{x:35,y:55,fill:'#b3c8d5'},'Storico breve non disponibile; i livelli restano leggibili sopra.'));
+   return;
+ }
+ const W=890,H=280,L=66,R=20,T=20,B=37;
+ let lo=Math.min(...data),hi=Math.max(...data),pad=Math.max((hi-lo)*.17,.025);
+ lo-=pad;hi+=pad;
+ const maxN=Math.max(...series.map(s=>s.values.length));
+ const X=i=>L+i*(W-L-R)/Math.max(1,maxN-1),Y=v=>T+(hi-v)*(H-T-B)/(hi-lo);
+ for(let i=0;i<5;i++){
+  const val=hi-i*(hi-lo)/4,y=T+i*(H-T-B)/4;
+  chart.append(svgEl('line',{x1:L,y1:y,x2:W-R,y2:y,stroke:'#3a5363','stroke-opacity':'.68','stroke-dasharray':'3 6'}));
+  chart.append(svgEl('text',{x:L-12,y:y+4,'text-anchor':'end',fill:'#89a4b6','font-size':11},fmt(val,rates?2:1)));
+ }
+ for(const s of series){
+  let points=[];
+  for(let i=0;i<s.values.length;i++){
+   const v=s.values[i];if(valid(v))points.push(X(i).toFixed(1)+','+Y(v).toFixed(1));
+  }
+  if(points.length>2){
+   chart.append(svgEl('polyline',{points:points.join(' '),fill:'none',stroke:s.stroke,'stroke-width':2.9,'stroke-linejoin':'round','stroke-linecap':'round'}));
+   const last=s.values[s.values.length-1];
+   if(valid(last))chart.append(svgEl('circle',{cx:X(s.values.length-1),cy:Y(last),r:4.3,fill:s.stroke,stroke:'#0d1d2b','stroke-width':2}));
+  }
+ }
+ chart.append(svgEl('text',{x:L,y:H-8,fill:'#91abba','font-size':11},'Inizio finestra'));
+ chart.append(svgEl('text',{x:W-R,y:H-8,'text-anchor':'end',fill:'#91abba','font-size':11},'Ultimo dato disponibile'));
+ chart.setAttribute('aria-label',label+' · dati storici, scala in '+axis);
+}
+function render(){renderStory();renderChart();}
+$('ratesBtn').addEventListener('click',()=>{state.mode='rates';$('ratesBtn').setAttribute('aria-pressed','true');$('usdBtn').setAttribute('aria-pressed','false');renderChart();});
+$('usdBtn').addEventListener('click',()=>{state.mode='usd';$('ratesBtn').setAttribute('aria-pressed','false');$('usdBtn').setAttribute('aria-pressed','true');renderChart();});
+document.addEventListener('click',e=>{const m=document.querySelector('details.menu');if(m&&!m.contains(e.target))m.open=false;});
+render();
+(async()=>{
+ const names=['NATIVE_RATES_DATA.json','DXY_SYNTHETIC_ECB.json','WHAT_CHANGED.json'];
+ const out=await Promise.allSettled(names.map(async(name)=>{
+   const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),9000);
+   try{const req=await fetch(root+name,{cache:'no-store',signal:ctl.signal});if(!req.ok)throw Error('HTTP '+req.status);return await req.json();}
+   finally{clearTimeout(t);}
+ }));
+ if(out[0].status==='fulfilled'&&out[0].value?.USD) {state.rates=out[0].value.USD;state.live++;}
+ if(out[1].status==='fulfilled'&&valid(out[1].value?.value)) {state.dxy=out[1].value;state.live++;}
+ if(out[2].status==='fulfilled'&&Array.isArray(out[2].value)) {state.macro=out[2].value.find(x=>x.ccy==='USD')||state.macro;state.live++;}
+ render();
+})();
+</script>
+</body>
+</html>
