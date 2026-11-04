@@ -19,7 +19,7 @@ on:
     - cron: '20 8 * * 1-5'
   workflow_dispatch:
   workflow_run:
-    workflows: ['FX Quant V2 Cross-Asset Published Source Refresh']
+    workflows: ['FX Quant V2 Cross-Asset Published Source Refresh', 'FX Quant V2 CHF NZD Same-Basis Research Refresh']
     types: [completed]
 
 permissions:

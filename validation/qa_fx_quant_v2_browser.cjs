@@ -66,6 +66,21 @@ async function audit(browser,name,file,selector,view,viewport){
     const display=((await page.locator('#vixFact').textContent())||'');
     if(!/^VIX\s+[\d,.]+/.test(display))issue(name,view,'vix_render_not_synced','VIX UI value not rendered: '+display);
   }
+  if(name==='tassi'&&mode==='public'){
+    // This is a read-only verification of V2 research panels, never a Core rates certification.
+    for(const [ccy,expected,words] of [
+      ['CHF','CHF · coppia SNB 2Y e 10Y sulla stessa base',['stessa data','non va unito']],
+      ['NZD','NZD · benchmark RBNZ cambiati',['Prima del cambio','Dopo il cambio']]
+    ]){
+      await page.locator('#countryTabs button[data-ccy="'+ccy+'"]').click({timeout:12000});
+      await page.locator('#benchmarkResearch:not([hidden])').waitFor({timeout:12000});
+      const head=((await page.locator('#benchmarkHeadline').textContent())||'').trim();
+      const text=((await page.locator('#benchmarkResearch').textContent())||'');
+      if(!head.includes(expected)||words.some(w=>!text.toLowerCase().includes(w.toLowerCase()))){
+        issue(name,view,'research_benchmark_not_loaded','Source context for '+ccy+' not rendered: '+head+' '+text.slice(0,180));
+      }
+    }
+  }
   if(view==='mobile'){
    const b=page.locator('#fxv2-global-header .fxv2-toggle');
    await b.click({timeout:10000});
