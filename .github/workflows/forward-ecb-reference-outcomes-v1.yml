@@ -104,6 +104,20 @@ jobs:
                      and x['predictive_accuracy'] is None for x in d['new_rows'])
           print('QUALITY_AWARE_REFERENCE_OUTCOMES_NO_MODEL_CLAIM')
           PY
+      - name: Verify daily capture coverage audit in read-only CI
+        run: |
+          python -m unittest validation.forward.test_audit_daily_capture_coverage_v1 -v
+          python -m validation.forward.audit_daily_capture_coverage_v1 \
+            --receipt /tmp/gmfq-forward-daily-coverage-ci.json
+          python - <<'PY'
+          import json
+          with open('/tmp/gmfq-forward-daily-coverage-ci.json') as f:
+              d=json.load(f)
+          assert d['schema']=='GMFQ_FORWARD_DAILY_COVERAGE_INDEPENDENT_AUDIT_V1'
+          assert d['no_synthetic_fx_or_backfill'] and d['does_not_validate_predictive_skill']
+          assert not d['core_recomputed'] and not d['quality_aware_new_signals']
+          print('FORWARD_DAILY_COVERAGE_READONLY_CI',d['status'])
+          PY
       - name: Require cohort/date independence audit before any V2 validation language
         run: |
           python -m validation.forward.audit_v2_prospective_cohort_independence_v1             --receipt /tmp/gmfq-v2-prospective-cohort-independence.json
@@ -351,3 +365,33 @@ jobs:
           # must preserve its originating source commit and chronology.
           git push origin HEAD:main
           echo 'Immutable reference-only observations committed on main.' >> "$GITHUB_STEP_SUMMARY"
+      - name: Attest daily Core and Quality-Aware capture coverage
+        # Run AFTER the reference comparisons commit: an absent daily capture
+        # must be reported, but never suppress already-matured outcome writes.
+        if: steps.gate.outputs.valid == 'true'
+        shell: bash
+        run: |
+          set +e
+          python -m validation.forward.audit_daily_capture_coverage_v1 \
+            --receipt /tmp/gmfq-forward-daily-coverage-live.json --enforce
+          rc=$?
+          set -e
+          python - <<'PY'
+          import json,os
+          with open('/tmp/gmfq-forward-daily-coverage-live.json') as f:
+              d=json.load(f)
+          status=d['status']
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as out:
+              out.write('### Forward daily capture coverage (Core + Quality-Aware)\\n')
+              out.write('- Local date: '+d['local_date_rome']+'\\n')
+              out.write('- Status: **'+status+'**\\n')
+              out.write('- Durable dual-cohort capture certified: **'+str(d['certified_daily_capture'])+'**\\n')
+              out.write('- Historical PIT / model predictive validation: **NOT CLAIMED**\\n')
+          if d['blocks_workflow']:
+              print('::error::FORWARD_DAILY_CAPTURE_COVERAGE '+status)
+          elif not d['certified_daily_capture']:
+              print('::warning::FORWARD_DAILY_CAPTURE_NOT_CERTIFIED '+status)
+          else:
+              print('FORWARD_DAILY_CORE_QA_COVERAGE_VERIFIED',d['local_date_rome'])
+          PY
+          exit "$rc"
