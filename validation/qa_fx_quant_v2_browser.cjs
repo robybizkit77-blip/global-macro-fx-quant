@@ -67,6 +67,28 @@ async function audit(browser,name,file,selector,view,viewport){
     const display=((await page.locator('#vixFact').textContent())||'');
     if(!/^VIX\s+[\d,.]+/.test(display))issue(name,view,'vix_render_not_synced','VIX UI value not rendered: '+display);
   }
+  if(name==='macro'){
+    await page.waitForFunction(()=>
+      document.querySelector('#shadowStatus')?.textContent?.includes('Baseline Shadow V1'),
+      null,{timeout:18000});
+    await page.locator('#shadowBaseline summary').click();
+    const baseline=await page.evaluate(()=>({
+      status:document.querySelector('#shadowStatus')?.textContent||'',
+      title:document.querySelector('#shadowCountryTitle')?.textContent||'',
+      detail:document.querySelector('#shadowCountryDetail')?.textContent||'',
+      countryCount:document.querySelectorAll('#shadowGrid .driver').length
+    }));
+    if(baseline.countryCount!==8||!baseline.title.includes('USD')||
+       !baseline.status.includes('Core fermo al 2026-09-25')||
+       !baseline.detail.includes('NON probabilità')||
+       !baseline.detail.includes('Non confrontare questo indice come forza relativa FX'))
+      issue(name,view,'macro_shadow_8country_readonly_missing',JSON.stringify(baseline).slice(-700));
+    await page.locator('#currencyGrid button[data-ccy="NZD"]').click();
+    const nzTitle=(await page.locator('#shadowCountryTitle').textContent())||'';
+    const nzDetail=(await page.locator('#shadowCountryDetail').textContent())||'';
+    if(!nzTitle.includes('NZD')||!nzDetail.includes('non è calcolabile con due trimestri omogenei'))
+      issue(name,view,'macro_shadow_missing_gdp_acceleration_imputed',nzTitle+' '+nzDetail.slice(-420));
+  }
   if(name==='liquidita'){
     await page.waitForFunction(()=>
       document.querySelector('#footerDate')?.textContent?.includes('Credito ICE/FRED:'),
