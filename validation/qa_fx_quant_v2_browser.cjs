@@ -43,18 +43,20 @@ async function audit(browser,name,file,selector,view,viewport){
      page:document.body.dataset.fxv2Page||'',
      primary:root?.children.length||0,exists:!!root,
      overflow:Math.max(0,document.documentElement.scrollWidth-innerWidth),
+     offenders:[...document.querySelectorAll('body *')].map(e=>({e,box:e.getBoundingClientRect()})).filter(x=>x.box.width>0&&x.box.height>0&&x.box.right>innerWidth+12).slice(0,15).map(x=>({tag:x.e.tagName,id:x.e.id,className:String(x.e.className||'').slice(0,80),left:Math.round(x.box.left),right:Math.round(x.box.right),width:Math.round(x.box.width)})),
      textLen:s.trim().length,bad:['undefined','[object Object]','NaN'].filter(x=>s.includes(x))};
   },selector);
   Object.assign(rec,o);
   if(o.menu!==11||o.current!==1||o.page!==name)issue(name,view,'navigation',JSON.stringify(o));
   if(!o.exists||!o.primary)issue(name,view,'empty_content',selector);
   if(o.textLen<450)issue(name,view,'empty_page',o.textLen);
-  if(o.overflow>12)issue(name,view,'overflow_px',o.overflow);
+  if(o.overflow>12)issue(name,view,'overflow_px',JSON.stringify({overflow:o.overflow,offenders:o.offenders}));
   if(o.bad.length)issue(name,view,'bad_rendered_values',o.bad);
   if(markers[name]){
    const [s,expected]=markers[name];
-   rec.feed=((await page.locator(s).first().textContent().catch(()=>''))||'').trim().slice(0,340);
-   if(!rec.feed.includes(expected))issue(name,view,'live_feed_not_confirmed',rec.feed||s+' empty');
+   const full=((await page.locator(s).first().textContent().catch(()=>''))||'').trim();
+   rec.feed=full.slice(0,340);
+   if(!full.includes(expected))issue(name,view,'live_feed_not_confirmed',rec.feed||s+' empty');
   }
   if(view==='mobile'){
    const b=page.locator('#fxv2-global-header .fxv2-toggle');
