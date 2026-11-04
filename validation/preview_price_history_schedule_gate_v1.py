@@ -44,7 +44,7 @@ LATE_DUPLICATE_FALLBACKS = {
 }
 
 
-def resolve(event: str, cron: str, now: dt.datetime) -> dict:
+def resolve(event: str, cron: str, now: dt.datetime, parent: str = "") -> dict:
     if now.tzinfo is None or now.utcoffset() is None:
         raise ValueError("timezone-aware datetime required")
     local = now.astimezone(ROME)
@@ -52,11 +52,25 @@ def resolve(event: str, cron: str, now: dt.datetime) -> dict:
         "schema": "GMFQ_PREVIEW_PRICE_HISTORY_SCHEDULE_GATE_V1",
         "event": event,
         "cron": cron,
+        "parent": parent,
         "runner_started_at_rome": local.isoformat(),
         "local_slot": None,
         "should_run": False,
         "reason": "",
     }
+    # An unrelated independent source job may finish outside the ECB release
+    # window. Never let its morning/weekend success masquerade as a new quote.
+    # The actual ECB official-source fetch and main-head lease still decide
+    # whether an observation can be persisted (idempotent, no backfill).
+    if event == "workflow_run" and parent in (
+            "Daily Data Orchestrator V2", "CB Pricing Persistent Daily V1"):
+        if local.weekday() >= 5:
+            result["reason"] = "RECOVERY_NOT_ROME_BUSINESS_DAY"
+        elif local.time() < dt.time(17, 0):
+            result["reason"] = "RECOVERY_BEFORE_ECB_PUBLICATION_WINDOW"
+        else:
+            result.update(should_run=True, reason="POST_ECB_INDEPENDENT_SOURCE_RECOVERY")
+        return result
     if event != "schedule":
         result.update(should_run=True, reason="EXPLICIT_MANUAL_OR_CI_EVENT")
         return result
@@ -97,10 +111,11 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--event", required=True)
     ap.add_argument("--cron", default="")
+    ap.add_argument("--parent", default="")
     ap.add_argument("--output")
     ap.add_argument("--summary")
     args = ap.parse_args()
-    out = resolve(args.event, args.cron, dt.datetime.now(UTC))
+    out = resolve(args.event, args.cron, dt.datetime.now(UTC), parent=args.parent)
     print("PREVIEW_PRICE_HISTORY_SCHEDULE_GATE_V1 " + json.dumps(out, sort_keys=True), flush=True)
     if args.output:
         with Path(args.output).open("a", encoding="utf-8") as stream:
@@ -111,6 +126,8 @@ def main() -> None:
             stream.write("### Active Control Room Preview · ECB G8 history scheduler\n\n")
             stream.write(f"- {'RUN' if out['should_run'] else 'SKIPPED_INTENTIONALLY'}: {out['reason']}\n")
             stream.write(f"- Rome runner time: {out['runner_started_at_rome']}\n")
+            if out.get("parent"):
+                stream.write(f"- Independent source parent: {out['parent']}\n")
             stream.write(f"- Scheduled Rome slot: {out['local_slot']}\n")
             if "queue_delay_minutes" in out:
                 stream.write(f"- GitHub Actions queue delay: {out['queue_delay_minutes']} min\n")
