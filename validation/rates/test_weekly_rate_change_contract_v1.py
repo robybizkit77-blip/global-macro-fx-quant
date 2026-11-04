@@ -82,9 +82,9 @@ class RatesWeeklyReferenceContractTests(unittest.TestCase):
         self.fail(lambda d:d["USD"].update(chg2_bp=2.0))
         self.fail(lambda d:d["EUR"]["weekly2_validation"].update(change_bp=99))
         self.fail(lambda d:d["JPY"]["weekly2_validation"].update(
-            start_date="2026-10-26"))
+            start_date=(date.fromisoformat(d["JPY"]["weekly2_validation"]["start_date"])-timedelta(days=1)).isoformat()))
         self.fail(lambda d:d["CAD"]["weekly10_validation"].update(
-            end_date="2026-10-25"))
+            end_date=(date.fromisoformat(d["CAD"]["weekly10_validation"]["end_date"])-timedelta(days=1)).isoformat()))
         self.fail(lambda d:d["AUD"]["weekly2_validation"].update(
             start_value=123.456))
         self.fail(lambda d:d["GBP"]["history2"]["values"].__setitem__(-1,123))

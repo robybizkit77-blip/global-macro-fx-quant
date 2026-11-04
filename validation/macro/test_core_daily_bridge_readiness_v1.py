@@ -109,7 +109,8 @@ class CoreBridgeReadinessTests(unittest.TestCase):
         core["asOf"]=future
         with self.assertRaises(ValueError):self.check(core=core)
         h=copy.deepcopy(self.heat)
-        h["currencies"]["NZD"]["inflation"]["as_of"]="2026-11"
+        future_month=(date.fromisoformat(max("2026-10-29", self.pairs["price_asof"]))+timedelta(days=65)).strftime("%Y-%m")
+        h["currencies"]["NZD"]["inflation"]["as_of"]=future_month
         with self.assertRaises(ValueError):self.check(heat=h)
         h["currencies"]["NZD"]["inflation"]["as_of"]="2026-13"
         with self.assertRaises(ValueError):self.check(heat=h)
