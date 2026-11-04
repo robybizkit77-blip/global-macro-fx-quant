@@ -1,0 +1,22 @@
+name: NZD Latest B2 Context Integrity
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'live_data/sections/NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json'
+      - 'validation/rates/test_nzd_b2_latest_context_v1.py'
+      - '.github/workflows/nzd-latest-b2-context-integrity.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest validation.rates.test_nzd_b2_latest_context_v1 -v
+      - name: Confirm unchanged canonical rates and payload
+        run: |
+          git diff --exit-code -- live_data/sections/NATIVE_RATES_DATA.json payload
