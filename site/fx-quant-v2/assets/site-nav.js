@@ -1,10 +1,10 @@
 (()=>{
 "use strict";
 const pages=[
-["home","Home","index.html","⌂"],["valute","Valute G8","valute.html","◈"],["coppie","Coppie FX","coppie.html","⇄"],["tassi","Tassi & OIS","tassi.html","↗"],["macro","Macro G8","macro.html","▤"],["banche","Banche Centrali","banche.html","◉"],["cot","COT","cot.html","◎"],["cross","Cross-Asset","cross-asset.html","▣"],["liquidita","Liquidità & Credito","liquidita-credito.html","◌"],["calendario","Calendario & News","calendario-news.html","◷"],["ricerca","Research Library","research.html","▥"]
+["home","Home","index.html","⌂"],["valute","Valute G8","valute.html","◈"],["coppie","Coppie FX","coppie.html","⇄"],["tassi","Tassi 2Y/10Y","tassi.html","↗"],["ois","OIS & Pricing","ois.html","⌁"],["macro","Macro G8","macro.html","▤"],["banche","Banche Centrali","banche.html","◉"],["cot","COT","cot.html","◎"],["cross","Cross-Asset","cross-asset.html","▣"],["liquidita","Liquidità & Credito","liquidita-credito.html","◌"],["calendario","Calendario & News","calendario-news.html","◷"],["ricerca","Research Library","research.html","▥"]
 ];
 const statuses={
-home:"Feed misti: date e qualità nei singoli blocchi",valute:"Serie di ricerca incorporate: consultare as-of",coppie:"Pair Setup canonico; tesi non equivale a ingresso",tassi:"OIS, futures e proxy restano distinti",macro:"Snapshot macro: non è una sorpresa intraday",banche:"Snapshot CB; verificare data delle dichiarazioni",cot:"COT settimanale: non descrive le posizioni odierne",cross:"Snapshot cross-asset con date per serie",liquidita:"Fonti miste e storici: non è un indice sintetico",calendario:"Eventi e notizie con rispettive date",ricerca:"Indice di report HTML già pubblicati"
+home:"Feed misti: date e qualità nei singoli blocchi",valute:"Serie di ricerca incorporate: consultare as-of",coppie:"Pair Setup canonico; tesi non equivale a ingresso",tassi:"Governativi 2Y/10Y; stime etichettate",ois:"OIS, futures e proxy separati; non stesso strumento",macro:"Snapshot macro: non è una sorpresa intraday",banche:"Snapshot CB; verificare data delle dichiarazioni",cot:"COT settimanale: non descrive le posizioni odierne",cross:"Snapshot cross-asset con date per serie",liquidita:"Fonti miste e storici: non è un indice sintetico",calendario:"Eventi e notizie con rispettive date",ricerca:"Indice di report HTML già pubblicati"
 };
 function init(){
  const page=document.body?.dataset.fxv2Page||"home";
