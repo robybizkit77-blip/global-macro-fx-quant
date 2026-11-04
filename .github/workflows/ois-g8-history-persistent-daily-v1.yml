@@ -84,6 +84,12 @@ jobs:
           fetch-depth: 50
           persist-credentials: true
 
+      - name: Check FX Quant V2 dated pricing fallback, read-only in PR
+        run: |
+          python -m unittest validation.cb_pricing.test_build_fxv2_ois_fallback_v1 -v
+          python validation/cb_pricing/build_fxv2_ois_fallback_v1.py --check
+          git diff --exit-code -- site/fx-quant-v2 live_data/sections
+
       - name: Rome schedule gate (DST and GitHub cron delay tolerant)
         id: gate
         shell: bash
