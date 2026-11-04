@@ -81,6 +81,25 @@ async function audit(browser,name,file,selector,view,viewport){
       }
     }
   }
+  if(name==='tassi'&&mode==='pr-local'){
+    for(const [ccy,expected] of [['CHF','STIMA 2Y'],['NZD','PROXY 2Y']]){
+      await page.locator('#countryTabs button[data-ccy="'+ccy+'"]').click({timeout:10000});
+      await page.waitForFunction(
+        ({grade})=>document.querySelector('#asof2')?.textContent?.includes(grade),
+        {grade:expected},{timeout:12000}
+      );
+      const level=((await page.locator('#curveLevel').textContent())||'').trim();
+      const why=((await page.locator('#curveExplanation').textContent())||'').trim();
+      if(!/\d/.test(level)||!why.includes('CALCOLO INDICATIVO'))
+        issue(name,view,'working_estimate_missing',ccy+' · '+level+' · '+why);
+    }
+    await page.locator('#compareA').selectOption('CHF');
+    await page.locator('#compareB').selectOption('NZD');
+    const notes=((await page.locator('#compareNote').textContent())||'');
+    const cards=await page.locator('#compareGrid .data-card').count();
+    if(cards!==4||!notes.includes('STIME')||!notes.includes('PROXY'))
+      issue(name,view,'estimated_diff_missing','CHF/NZD comparison cards='+cards+' '+notes.slice(0,250));
+  }
   if(view==='mobile'){
    const b=page.locator('#fxv2-global-header .fxv2-toggle');
    await b.click({timeout:10000});
