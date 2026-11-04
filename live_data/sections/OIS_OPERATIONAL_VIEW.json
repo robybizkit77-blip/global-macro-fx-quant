@@ -72,7 +72,7 @@
       "change_1d_available": false,
       "change_1w_available": false,
       "confidence": "B",
-      "direction_vs_policy": "WITHHELD",
+      "direction_vs_policy": null,
       "horizons": {
         "12m": {
           "accrual_start": "2027-12-15",
@@ -89,7 +89,7 @@
           "quote_as_of": "2026-11-03",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 0.505,
+          "rate": null,
           "raw_level_gap_not_policy_repricing": true,
           "raw_level_minus_spot_policy_bp": 50.5,
           "symbol": "ICEEUR:SA3Z2027"
@@ -109,7 +109,7 @@
           "quote_as_of": "2026-11-03",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 0.13,
+          "rate": null,
           "raw_level_gap_not_policy_repricing": true,
           "raw_level_minus_spot_policy_bp": 13.0,
           "roster_quality": "ICE_LISTED_QUARTER_CALENDAR_DERIVED_UNQUOTED",
@@ -117,22 +117,22 @@
         },
         "6m": {
           "accrual_start": "2027-06-16",
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "SA3M2027",
           "contract_description": "Jun 2027",
           "expiration": "2027-09-14",
-          "futures_price": 99.7,
+          "futures_price": 99.725,
           "mapping": "nearest ICE SARON accrual start to today+180d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-03T11:38:39Z",
-          "quote_as_of": "2026-11-03",
+          "price_valid_until": "2026-11-04T12:00:13Z",
+          "quote_as_of": "2026-11-04",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 0.3,
+          "rate": null,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 30.0,
+          "raw_level_minus_spot_policy_bp": 27.5,
           "symbol": "ICEEUR:SA3M2027"
         }
       },
@@ -140,7 +140,7 @@
       "market_direction_proxy": null,
       "method_id": "TRADINGVIEW_DATED_FUTURES_SSR_V2",
       "official_status": "WITHHELD",
-      "operational_status": "GREEN_ESTIMATED",
+      "operational_status": "WITHHELD",
       "policy_rate": 0.0,
       "policy_repricing_inference_allowed": false,
       "quality": "ESTIMATED_INFORMATIONAL",
@@ -154,7 +154,39 @@
         "weekly_min_age_days": 5,
         "weekly_reference_captured_at_utc": null
       },
-      "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures"
+      "secondary_quote_context": {
+        "backtest_eligible_as_official": false,
+        "cross_date_join_allowed": false,
+        "date_mismatch": true,
+        "full_curve_usable": false,
+        "horizons": {
+          "12m": {
+            "contract": "SA3Z2027",
+            "quote_as_of": "2026-11-03",
+            "rate_indicative": 0.505,
+            "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
+          },
+          "3m": {
+            "contract": "SA3H2027",
+            "quote_as_of": "2026-11-03",
+            "rate_indicative": 0.13,
+            "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
+          },
+          "6m": {
+            "contract": "SA3M2027",
+            "quote_as_of": "2026-11-04",
+            "rate_indicative": 0.275,
+            "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
+          }
+        },
+        "method_id": "TRADINGVIEW_DATED_FUTURES_SSR_V2",
+        "policy_delta_allowed": false,
+        "repricing_signal_allowed": false,
+        "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+        "status": "INDICATIVE_OBSERVATIONS_NON_OIS"
+      },
+      "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+      "withheld_reason": "STALE_OR_INCOMPLETE_PRICING"
     },
     "EUR": {
       "as_of": "2026-11-02",
@@ -203,7 +235,7 @@
           "symbol": "EUREX:FST3V2026"
         },
         "6m": {
-          "business_day_lag": 2,
+          "business_day_lag": 1,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "FST3G2027",
@@ -212,8 +244,8 @@
           "futures_price": 97.1625,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-02T22:05:03Z",
-          "quote_as_of": "2026-11-02",
+          "price_valid_until": "2026-11-03T22:36:11Z",
+          "quote_as_of": "2026-11-03",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": null,
@@ -260,7 +292,7 @@
           },
           "6m": {
             "contract": "FST3G2027",
-            "quote_as_of": "2026-11-02",
+            "quote_as_of": "2026-11-03",
             "rate_indicative": 2.8375,
             "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
           }
@@ -275,7 +307,7 @@
       "withheld_reason": "STALE_OR_INCOMPLETE_PRICING"
     },
     "GBP": {
-      "as_of": "2026-11-02",
+      "as_of": "2026-11-03",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
@@ -283,22 +315,22 @@
       "direction_vs_policy": "UP",
       "horizons": {
         "12m": {
-          "change_1d_bp": -13.3,
-          "change_1w_bp": -10.3,
-          "policy_delta_bp": 98.0,
-          "rate": 4.7295
+          "change_1d_bp": 6.3,
+          "change_1w_bp": -14.2,
+          "policy_delta_bp": 104.2,
+          "rate": 4.7921
         },
         "3m": {
-          "change_1d_bp": 7.9,
-          "change_1w_bp": 11.0,
-          "policy_delta_bp": 40.7,
-          "rate": 4.1568
+          "change_1d_bp": 1.1,
+          "change_1w_bp": -0.8,
+          "policy_delta_bp": 41.8,
+          "rate": 4.1676
         },
         "6m": {
-          "change_1d_bp": 1.4,
-          "change_1w_bp": 5.2,
-          "policy_delta_bp": 69.8,
-          "rate": 4.4483
+          "change_1d_bp": 3.2,
+          "change_1w_bp": -5.7,
+          "policy_delta_bp": 73.0,
+          "rate": 4.4804
         }
       },
       "official_status": "ACTIVE",
@@ -308,7 +340,7 @@
       "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive"
     },
     "JPY": {
-      "as_of": "2026-11-02",
+      "as_of": "2026-11-04",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
@@ -316,22 +348,22 @@
       "direction_vs_policy": "UP",
       "horizons": {
         "12m": {
-          "change_1d_bp": -0.7,
-          "change_1w_bp": 0.7,
-          "policy_delta_bp": 74.1,
-          "rate": 1.991
+          "change_1d_bp": -3.6,
+          "change_1w_bp": -4.3,
+          "policy_delta_bp": 70.5,
+          "rate": 1.955
         },
         "3m": {
-          "change_1d_bp": -0.7,
-          "change_1w_bp": -0.8,
-          "policy_delta_bp": 21.0,
-          "rate": 1.46
+          "change_1d_bp": -0.5,
+          "change_1w_bp": -1.2,
+          "policy_delta_bp": 20.5,
+          "rate": 1.455
         },
         "6m": {
-          "change_1d_bp": -0.7,
-          "change_1w_bp": -0.8,
-          "policy_delta_bp": 44.7,
-          "rate": 1.697
+          "change_1d_bp": -2.5,
+          "change_1w_bp": -3.2,
+          "policy_delta_bp": 42.2,
+          "rate": 1.672
         }
       },
       "official_status": "ACTIVE",
@@ -565,9 +597,9 @@
   "status": "PARTIAL_WITHHELD",
   "summary": {
     "g8_total": 8,
-    "green_estimated": 1,
+    "green_estimated": 0,
     "green_official": 4,
-    "operational_green": 5,
-    "operational_withheld": 3
+    "operational_green": 4,
+    "operational_withheld": 4
   }
 }
