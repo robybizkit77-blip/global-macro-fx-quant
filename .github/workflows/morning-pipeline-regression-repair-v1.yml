@@ -1,0 +1,31 @@
+name: Morning Pipeline Regression Repair V1
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/test_audit_ois_rates_freshness.py'
+      - 'validation/rates/test_weekly_rate_change_contract_v1.py'
+      - 'validation/macro/test_core_daily_bridge_readiness_v1.py'
+      - '.github/workflows/morning-pipeline-regression-repair-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Source-age OIS estimate and date regression
+        run: python validation/test_audit_ois_rates_freshness.py
+      - name: Rates seven-day references
+        run: python -m unittest validation.rates.test_weekly_rate_change_contract_v1 -v
+      - name: Macro bridge clock and frozen-score protections
+        run: python -m unittest validation.macro.test_core_daily_bridge_readiness_v1 -v
+      - name: No runtime data mutations
+        run: |
+          git diff --exit-code -- live_data payload site dashboard
+          test -z "$(git status --porcelain -- live_data payload site dashboard)"
