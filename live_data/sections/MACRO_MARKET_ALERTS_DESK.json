@@ -1,8 +1,51 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-03T18:28:21Z",
+  "generated_at_utc": "2026-11-04T00:00:32Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-fa327cef39bcc603fd3c",
+      "observed_at_utc": "2026-11-03T19:11:00Z",
+      "headline": "US strikes in the Strait of Hormuz create more questions about what’s ahead",
+      "summary": "AP News riporta: US strikes in the Strait of Hormuz create more questions about what’s ahead. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxQbjU1Vjk0S2NySC14ZnByNG9Ld0J4cnZZaUxaTDdBeHgwMm41Q1Y3OGpVeXpKVWQ3dFNlcGtNTERub3h1Z1g3Rl93NzhqamZhWm1HYkhXVFBWNFdqbko2eWlUVU1HSmcxZmJJSlIyQlFZUjdTY1pxcU5kWjJyV3d1UTlfTjhPQXVOZW42MlBCc1Ztc3c?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-38fb2d319d77a169e705",
+      "observed_at_utc": "2026-11-02T23:36:09Z",
+      "headline": "South Korea October headline inflation moderates ahead of expected rate hike",
+      "summary": "Reuters riporta: South Korea October headline inflation moderates ahead of expected rate hike. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxPSFk2a29WR0k2QjdaaDd5LTNsR0gxYlhRdVZrY09GcmxWTG1ZMlFGTEVPVDgxclZpUDNrZk16Zl9mMnpFUEZTZnk0ekIzYTAwRTEtZUxDaGU0UElSQzJ5SC1xdy04aWliVTBDVWw5NTdSMDhlYldyU0xkeVpRUEMzTzdUS19jN3otUUVjdmsyRkIwRjJRZFF4YTJ6TkpEQWFxajFlSmpXYk1GLUNfZVE0b0V0YTA0b3ZSZlVZUFdEMnlqMjlSVlE0?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-63cddc9c8d96da66f4b4",
+      "observed_at_utc": "2026-11-03T21:15:02Z",
+      "headline": "Nasdaq ends higher as AI heavyweights rebound ahead of midterm results",
+      "summary": "Reuters riporta: Nasdaq ends higher as AI heavyweights rebound ahead of midterm results. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxNWVp0N2w0REZqOUJ3YkRxcmliYkhtX25yTkFtdmJDUFdSVm5CcXRQYjdMeFFLU0gxcHk1STM2R0xXaGJ6TW9ZN2ZQS2RReVRiXzNtY1B3Qm5fZ1lfTUFaMVpRM2d2ZVZodnZtbUFFLUtkcURfUEtENElyNG5YcFRGcncteEFaZFUwOGxVUmpTMWFkMEtvb09VTG50a2NSbjhLUm5Zc3EtZS1XUU5lWm9B?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-b3d6b6eb396a1724f38e",
       "observed_at_utc": "2026-11-03T13:58:00Z",
@@ -1371,49 +1414,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxNeDN5b2ZWSHU5c0ZoTHhWNXR4ekdKZDJVeXdYZjlDcDRzVDYyakRURVVPRTlHU3Z0MFBfc0E5RWNTME1HRmhvSHA5X0ZoVHExbVNhLUFIY3VJazctT2FPdVdrQThUd3ZETnpYQ05kbzViX3h1MFpjR25rOVhPOEJlODVzZXBvSW9MT3hoem9VYWZHQjFyNENVSUEwakxZV0JJZGtNM2tidG8weFZ5Sm1XbHRB?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-e5e5dd1df348a86f1ef7",
-      "observed_at_utc": "2026-10-27T05:46:00Z",
-      "headline": "Gold retreats on stronger dollar; traders brace for Fed",
-      "summary": "Reuters riporta: Gold retreats on stronger dollar; traders brace for Fed. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxQQWIyeWVhRnVBaHZfV05HanpZVFJzZDZiaC1MTEFVX0JEbWc5RVhRV3htMnJFMDNCVjBPWTJISkhha3ZWc3otaXBCTGloREJidmlqOWtXMTQ4Zks2aTA5czBzNC1OdGNuVXlqLVZ4TTk3M1VUSEZvdVdCLXV3bHJsZXBHSktGcXR0dk1wS2VYdWYxTm9ueGc?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-d5b53f96f977b0180fd9",
-      "observed_at_utc": "2026-10-27T09:28:09Z",
-      "headline": "OPEC+ oil producers set to keep output targets steady at Sunday meeting, sources say",
-      "summary": "Reuters riporta: OPEC+ oil producers set to keep output targets steady at Sunday meeting, sources say. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "COMMODITIES",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxNMk1rLTI4Z1oza3I5SDJ2YUR0WUhiQ0RmWV9KLUpCSHMyY1FoSFgwWUFOc010MzIyWThVNEZvRFl0YzBzNHFmazA3ZEV2ZzRPX2pNWU9GSVd5Z1VnaVRGdmdSZDVEVVlGTmxuNVlsdzNSMGlBdW5UYVRpelBBXzhLOWkwd2pST0NmQjRMek82VS1ncXZTWjk5Q09reDQtQmNON3NfRF9ld1FUWG1hQW5QRFZySkdIM1VKRzVvbGZLVEE0V1hPQ2dsTkNnZw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-d9ad236c9056ed5c8bc0",
-      "observed_at_utc": "2026-10-27T02:12:00Z",
-      "headline": "Dollar firms ahead of central bank meetings, steadier stocks stall safe haven play",
-      "summary": "Reuters riporta: Dollar firms ahead of central bank meetings, steadier stocks stall safe haven play. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxPVDhUYWVaR1lyeGFScDAxOG1INFBuME5XaHhvOFNZTnhjUXFCTHVGX2k1cEJzSUMwUmpQblFZWE1WU2Z6Q0dnZTRmc2lCSEE1RklYN3VZdWV3aVRLblJ4aTFudW1aUkxUVWZXWUl6Ql8zQkVEaDBJakY4SnhyUmRwb1BQcHpKSHlOWG5DeDN3QVFIb1MyMU5mcDlESEdQS1BwdHhpaThFZjZDMDIweVVYX1VQX1VEdVdh?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
