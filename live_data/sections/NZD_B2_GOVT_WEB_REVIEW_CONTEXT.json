@@ -33,5 +33,33 @@
     "eligible_for_automatic_promotion": false,
     "live_data_promotion_allowed": false
   },
-  "note": "Doppia lettura della tabella HTML B2, non riconciliazione indipendente XLSX; solo contesto di studio. 2Y e 10Y sono benchmark government bond indicativi, non OIS o swap."
+  "note": "Doppia lettura della tabella HTML B2, non riconciliazione indipendente XLSX; solo contesto di studio. 2Y e 10Y sono benchmark government bond indicativi, non OIS o swap.",
+  "latest_official_web_context": {
+    "as_of": "2026-11-02",
+    "published": "2026-11-03",
+    "government_bond_2y_pct": 3.97,
+    "government_bond_10y_pct": 4.91,
+    "quoted_curve_bp": 94,
+    "source_url": "https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates",
+    "source_method": "OFFICIAL_RBNZ_PUBLIC_HTML_TABLE_RESEARCH_READ",
+    "quality": "OFFICIAL_WEB_DISPLAY_RESEARCH_NOT_XLSX_RECONCILED",
+    "status": "LATEST_INDICATIVE_CONTEXT_NOT_CANONICAL",
+    "benchmarks": {
+      "roll_date": "2026-10-30",
+      "two_year_before": "May 2028",
+      "two_year_from": "April 2029",
+      "ten_year_before": "May 2036",
+      "ten_year_from": "April 2037"
+    },
+    "guards": {
+      "same_instrument_weekly_change_allowed": false,
+      "cross_roll_bp_change_allowed": false,
+      "eligible_for_rate_spreads": false,
+      "eligible_for_OIS": false,
+      "eligible_for_live_pair_signals": false,
+      "eligible_for_backtests": false,
+      "official_canonical_untouched": true,
+      "independent_xlsx_review_completed": false
+    }
+  }
 }
