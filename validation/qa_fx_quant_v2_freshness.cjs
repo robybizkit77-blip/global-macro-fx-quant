@@ -86,16 +86,30 @@ for(const name of ['GOLD.market_proxy','WTI.market_proxy','BRENT.market_proxy'])
  check('cross_asset',name,x.proxy_as_of,4,'SECONDARY_FUTURES_INFORMATIONAL');
 }
 const cross=JSON.parse(file('design-studio-cross-asset-v1-data.json'));
-for(const x of cross.equity?.indices||[]){
+const crossLive=JSON.parse(file('cross-asset-live-data.json'));
+requireValid(crossLive.schema==='GMFQ_FXV2_CROSS_ASSET_SOURCE_OVERLAY_V1','Unexpected V2 Cross-Asset source-feed schema');
+const sourceIds={SP500:'S&P 500',NASDAQCOM:'Nasdaq Composite',IG_OAS:'IG OAS',HY_OAS:'HY OAS',VIX:'VIX Cboe'};
+const stored=crossLive.streams||{};
+for(const [id,label] of Object.entries(sourceIds)){
+ const s=stored[id];
+ if(s&&iso(s.date)&&Number.isFinite(s.value)&&s.value>0&&s.quality==='PUBLISHED_SOURCE_RESEARCH_ONLY'){
+  check('cross_asset_live',label,s.date,s.max_source_age_days||7,s.publisher||'FRED/Cboe');
+ }else{
+  gap('cross_asset_live',label,'Nessuna serie recente e validata nel feed V2; conservare lo snapshot datato senza attribuire aggiornamenti alla seduta odierna.');
+ }
+}
+for(const [idx,x] of (cross.equity?.indices||[]).entries()){
+ if(idx<2&&stored[idx===0?'SP500':'NASDAQCOM'])continue;
  if(iso(x.as_of))check('cross_asset','Snapshot equity '+x.name,x.as_of,2,'STATIC_SNAPSHOT');
 }
 for(const name of ['HY','IG']){
  const x=cross.credit?.[name];
+ if(stored[name+'_OAS'])continue;
  if(x&&iso(x.as_of||x.date))check('cross_asset','Snapshot credit '+name,x.as_of||x.date,2,'STATIC_SNAPSHOT');
 }
-if(cross.volatility?.VIX?.as_of)
- check('cross_asset','Snapshot VIX',cross.volatility.VIX.as_of,2,'STATIC_SNAPSHOT');
-note('cross_asset','Copertura feed','Azioni, OAS, VIX e partecipazione non hanno ancora nella V2 un feed canonico giornaliero: i soli proxy futures e Treasury si aggiornano.');
+if(!stored.VIX&&cross.volatility?.VIX?.date)
+ check('cross_asset','Snapshot VIX',cross.volatility.VIX.date,2,'STATIC_SNAPSHOT');
+note('cross_asset','Copertura a frequenze diverse','S&P 500, Nasdaq, IG/HY OAS e VIX hanno un feed V2 di ricerca con date proprie; Russell, Dow, Euro Stoxx, partecipazione, Cina e alcuni dati spot rimangono snapshot, senza attribuzione a sedute attuali.');
 const liq=read('NATIVE_LIQ_DATA');
 requireValid(ccy.every(c=>!!liq[c]),'Incomplete G8 liquidity/credit feed');
 note('liquidity_credit','Frequenze miste','Liquidità e credito pubblicati mensilmente o trimestralmente: la data dello snapshot di pagina non certifica il giorno delle osservazioni.');
