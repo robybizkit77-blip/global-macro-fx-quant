@@ -117,10 +117,16 @@ def rebuild(existing, operational, estimated, nzd, *, today):
             if previous != quote:
                 row["horizons"][h] = quote
                 updated = True
+        latest_tenor_day = max(x["as_of"] for x in row["horizons"].values())
+        # The previous frozen fallback can have an out-of-sync aggregate date
+        # even while an individual tenor already has the newer quote date.
+        # Correct the summary from its actual tenor stamps, never from today.
+        if row.get("as_of") != latest_tenor_day:
+            row["as_of"] = latest_tenor_day
+            updated = True
         if updated:
             row["quality"] = fresh["quality"]
             row["source"] = fresh["source"]
-            row["as_of"] = max(x["as_of"] for x in row["horizons"].values())
             changed.append(currency)
     if changed:
         result["snapshot_built_from_repo_date"] = today.isoformat()
