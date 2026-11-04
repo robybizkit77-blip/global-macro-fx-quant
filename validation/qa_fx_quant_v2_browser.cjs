@@ -100,6 +100,18 @@ async function audit(browser,name,file,selector,view,viewport){
       await page.unroute('**/cross-asset-live-data.json*');
     }
   }
+  if(name==='macro'){
+    await page.waitForFunction(()=>document.querySelector('#macroCandidateNote')?.textContent?.includes('BASELINE MACRO V1 · ricerca descrittiva al'),null,{timeout:15000});
+    const usdCandidate=((await page.locator('#macroCandidateNote').textContent())||'');
+    if(!usdCandidate.includes('USD')||!usdCandidate.includes('Disoccupazione: variazione')||
+       !usdCandidate.includes('Nessuna forza FX')||
+       !usdCandidate.includes('Inflazione: variazione'))
+      issue(name,view,'macro_candidate_read_only_missing',usdCandidate.slice(0,480));
+    await page.locator('#currencyGrid button[data-ccy="NZD"]').click();
+    const nzdCandidate=((await page.locator('#macroCandidateNote').textContent())||'');
+    if(!nzdCandidate.includes('NZD')||!nzdCandidate.includes('accelerazione NON calcolabile'))
+      issue(name,view,'macro_candidate_gdp_missing_not_explicit',nzdCandidate.slice(0,480));
+  }
   if(name==='coppie'&&(mode==='public'||mode==='pr-local')){
     // Informative 2Y spread: research overlays must never enter pair quality signals.
     await page.locator('#allPairs').selectOption('NZDCHF');
