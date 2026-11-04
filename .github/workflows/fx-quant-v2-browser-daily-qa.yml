@@ -10,6 +10,8 @@ on:
       - 'validation/qa_fxv2_rates_working_v1.cjs'
       - 'validation/qa_fxv2_liquidity_credit_overlay_v1.cjs'
       - 'validation/qa_fxv2_macro_pair_observed_v1.cjs'
+      - 'validation/publishing/wait_fxv2_public_revision_v1.py'
+      - 'validation/publishing/test_wait_fxv2_public_revision_v1.py'
       - '.github/workflows/fx-quant-v2-browser-daily-qa.yml'
   push:
     branches: [main]
@@ -20,12 +22,16 @@ on:
       - 'validation/qa_fxv2_rates_working_v1.cjs'
       - 'validation/qa_fxv2_liquidity_credit_overlay_v1.cjs'
       - 'validation/qa_fxv2_macro_pair_observed_v1.cjs'
+      - 'validation/publishing/wait_fxv2_public_revision_v1.py'
+      - 'validation/publishing/test_wait_fxv2_public_revision_v1.py'
       - '.github/workflows/fx-quant-v2-browser-daily-qa.yml'
   schedule:
     - cron: '20 8 * * 1-5'
   workflow_dispatch:
   workflow_run:
-    workflows: ['FX Quant V2 Cross-Asset Published Source Refresh', 'FX Quant V2 CHF NZD Same-Basis Research Refresh']
+    # A source writer may commit with GITHUB_TOKEN: browser QA must follow
+    # the successful isolated site publisher, never race the source commit.
+    workflows: ['Publish FX Quant V2 (isolated site)']
     types: [completed]
 
 permissions:
@@ -49,6 +55,7 @@ jobs:
           node validation/qa_fxv2_rates_working_v1.cjs
           node validation/qa_fxv2_liquidity_credit_overlay_v1.cjs
           node validation/qa_fxv2_macro_pair_observed_v1.cjs
+          python3 -m unittest validation.publishing.test_wait_fxv2_public_revision_v1 -v
   v2-freshness-audit:
     if: >-
       github.event_name != 'workflow_run' ||
@@ -72,14 +79,18 @@ jobs:
           if-no-files-found: error
           retention-days: 30
   v2-browser-audit:
+    # Public browser QA is deferred until publisher completion; PR tests run locally.
     if: >-
-      github.event_name != 'workflow_run' ||
-      (github.event.workflow_run.conclusion == 'success' &&
-       github.event.workflow_run.head_branch == 'main')
+      github.event_name != 'push' &&
+      (github.event_name != 'workflow_run' ||
+       (github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_branch == 'main'))
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 28
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && 'main' || github.ref }}
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -92,6 +103,9 @@ jobs:
         run: |
           python3 -m http.server 8000 --bind 127.0.0.1 > /tmp/fxv2-browser-server.log 2>&1 &
           sleep 2
+      - name: Confirm public site exposes the same revision as approved main
+        if: github.event_name != 'pull_request'
+        run: python3 -m validation.publishing.wait_fxv2_public_revision_v1
       - name: Audit desktop 1440px and mobile 390px across all 12 sections
         shell: bash
         run: |
