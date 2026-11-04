@@ -51,7 +51,7 @@ class FxV2CrossAssetDatedCollector(unittest.TestCase):
         vix=source_csv("VIX",[20]*12)
         out=module.produce(DAY,BASE,{"VIX":vix})
         self.assertEqual(out["status"],"PARTIAL_SOURCE_SUCCESS")
-        self.assertEqual(list(out["streams"]),"VIX")
+        self.assertEqual(list(out["streams"]),["VIX"])
         self.assertIn("SP500",out["source_errors"])
     def test_bad_source_does_not_poison_other_streams(self):
         current={"schema":module.SCHEMA,"streams":{"SP500":{"date":"2026-11-02","value":7541.4}}}
