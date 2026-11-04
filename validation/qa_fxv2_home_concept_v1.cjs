@@ -16,7 +16,15 @@ fs.mkdirSync(output,{recursive:true});
    page.on('pageerror',e=>errors.push(label+': '+String(e)));
    const res=await page.goto(base+'/home-concept-global-macro.html',{waitUntil:'domcontentloaded',timeout:60000});
    if(res?.status()!==200)throw Error('Concept HTTP '+res?.status());
-   await page.locator('#fxv2-nav a').first().waitFor({timeout:15000});
+   // On mobile the shared site menu is intentionally collapsed by default.
+   // Presence is the invariant; verify it becomes visible when explicitly opened.
+   await page.locator('#fxv2-nav a').first().waitFor({state:'attached',timeout:15000});
+   if(label==='mobile'){
+    const toggle=page.locator('#fxv2-global-header .fxv2-toggle');
+    await toggle.click();
+    await page.locator('#fxv2-nav a').first().waitFor({state:'visible',timeout:5000});
+    await toggle.click();
+   }
    await page.locator('#dxyChart polyline').first().waitFor({timeout:14000});
    await page.locator('#ratesChart polyline').first().waitFor({timeout:14000});
    const result=await page.evaluate(()=>{
