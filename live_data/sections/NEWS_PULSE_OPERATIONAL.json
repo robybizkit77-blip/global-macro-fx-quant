@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-02",
-  "generated_at_utc": "2026-11-04T03:53:35.373861Z",
+  "generated_at_utc": "2026-11-04T06:49:16.481805Z",
   "items": [
     {
       "as_of": "2026-11-02",
@@ -47,7 +47,7 @@
       "title": "JPY: repricing implicito da futures più dovish (-0.7 bp 6M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-04T03:53:35.373861Z",
+  "last_checked_at_utc": "2026-11-04T06:49:16.481805Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -277,13 +277,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-10-30",
+            "date": "2026-11-02",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-10-30",
+            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-02",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 1.875
+            "yield_2y_pct": 1.88
           }
         },
         "source": "Bank of Japan",
@@ -332,13 +332,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-10-30",
+            "date": "2026-11-02",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-10-30",
+            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-02",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 1.875
+            "yield_2y_pct": 1.88
           }
         },
         "source": "Bank of Japan",
@@ -831,13 +831,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-02",
+            "date": "2026-11-03",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-02",
+            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-03",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.59
+            "yield_2y_pct": 4.61
           }
         },
         "source": "Federal Reserve Board",
@@ -989,13 +989,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-02",
+            "date": "2026-11-03",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-02",
+            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-03",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.59
+            "yield_2y_pct": 4.61
           }
         },
         "source": "Federal Reserve Board",
