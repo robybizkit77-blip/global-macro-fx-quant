@@ -114,7 +114,23 @@ def main():
 
     changed_ois = [k for k in ois['currencies'] if ois['currencies'][k] != before_ois['currencies'][k]]
     changed_native = [k for k in native if native[k] != before_native[k]]
-    if (changed_ois, changed_native) not in [(['GBP'], ['GBP']), ([], [])]:
+    if (changed_ois, changed_native) == (['GBP'], []):
+        # The native summary can already match a newly refreshed BoE OIS row.
+        # Accept OIS-only only when the unchanged summary is EXACTLY aligned
+        # to this dated candidate, not simply because it did not change.
+        mp = before_native['GBP'].get('market_pricing') or {}
+        aligned = (
+            mp.get('as_of') == cand['as_of']
+            and mp.get('quality') == 'COMPLETO_OFFICIAL_BOE_OIS_HISTORY'
+            and all(mp.get('h' + k) == r4(h[k]['rate'])
+                    for k in ('3m', '6m', '12m'))
+            and before_native['GBP'].get('market_3m') == f"{r4(h['3m']['rate']):.4f}%"
+            and before_native['GBP'].get('market_6m') == f"{r4(h['6m']['rate']):.4f}%"
+            and before_native['GBP'].get('market_12m') == f"{r4(h['12m']['rate']):.4f}%"
+        )
+        if not aligned:
+            raise SystemExit('GBP OIS-only delta lacks matching dated native market pricing')
+    elif (changed_ois, changed_native) not in [(['GBP'], ['GBP']), ([], [])]:
         raise SystemExit(f'non-GBP semantic delta: OIS={changed_ois} NATIVE={changed_native}')
 
     raw = PAYLOAD.read_bytes()
