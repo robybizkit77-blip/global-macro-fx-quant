@@ -85,6 +85,16 @@ def main():
     assert "cancel-in-progress: false" in workflow
     assert "price-validation-pr-{0}" in workflow
     assert workflow.count("    - cron:") == 6
+    # Source and manifest must be regenerated from the latest main on each
+    # bounded race retry; no force push, fabricated quote or old manifest.
+    assert "for attempt in 1 2 3 4 5; do" in workflow
+    assert 'git reset --hard "refs/remotes/origin/$TARGET_BRANCH"' in workflow
+    assert "PRICE_REBASE_SOURCE_AGE_GUARD_PASS" in workflow
+    assert "PRICE_REBASE_SCOPE_PASS" in workflow
+    assert "PRICE_MANIFEST_ALREADY_CURRENT_ON_MAIN" in workflow
+    assert "PRICE_MAIN_HEAD_RACE_RETRY_EXHAUSTED_NO_FORCED_PUSH" in workflow
+    assert "git push --force" not in workflow
+    assert "git push -f" not in workflow
 
     try:
         gate("schedule", "10 15 * * 1-5", dt.datetime(2026, 10, 19))

@@ -184,17 +184,57 @@ jobs:
           TARGET_BRANCH: main
         run: |
           set -euo pipefail
-          REMOTE_SHA="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
-          test "$REMOTE_SHA" = "$GITHUB_SHA"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add payload/part-15.txt live_data/manifest.v2.json
-          git diff --cached --quiet && { echo 'No Price/manifest changes to persist'; exit 0; }
-          git commit -m 'Refresh daily FX Price runtime and live manifest'
-          REMOTE_SHA_2="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
-          test "$REMOTE_SHA_2" = "$GITHUB_SHA"
-          git push origin "HEAD:$TARGET_BRANCH"
-          echo PRICE_MANIFEST_MAIN_UPDATE_PUSHED
+          # A source-independent main write may race between our checkout and
+          # the push. Do not force/rebase the previously calculated manifest:
+          # rebuild BOTH price and its manifest from the latest main each time.
+          # The official ECB candidate remains the same verified source input.
+          for attempt in 1 2 3 4 5; do
+            echo "PRICE_REMOTE_HEAD_LEASE_ATTEMPT=$attempt"
+            git fetch --no-tags origin "+refs/heads/$TARGET_BRANCH:refs/remotes/origin/$TARGET_BRANCH"
+            git reset --hard "refs/remotes/origin/$TARGET_BRANCH"
+            BASE_SHA="$(git rev-parse HEAD)"
+            python3 - <<'PY'
+          import json,pathlib,re
+          candidate=json.loads(pathlib.Path('/tmp/price-persistent/candidate.json').read_text())
+          text=pathlib.Path('payload/part-15.txt').read_text(encoding='utf-8')
+          marks=re.findall(r'<script id="gmfq-price-ecb-(\d{8})">',text)
+          assert len(marks)==1,marks
+          previous=marks[0][:4]+'-'+marks[0][4:6]+'-'+marks[0][6:]
+          assert candidate['status']=='CANDIDATE_OFFICIAL'
+          assert candidate['as_of']>=previous,(candidate['as_of'],previous)
+          print('PRICE_REBASE_SOURCE_AGE_GUARD_PASS',previous,'->',candidate['as_of'])
+          PY
+            python3 validation/apply_ecb_g8_price_candidate.py \
+              --candidate /tmp/price-persistent/candidate.json --apply > /tmp/price-persistent/retry-apply.json
+            python3 validation/refresh_live_manifest_v2.py --apply > /tmp/price-persistent/retry-manifest.json
+            python3 validation/check_live_update_contract.py > /tmp/price-persistent/retry-contract.json
+            python3 - <<'PY'
+          import json,subprocess
+          a=json.load(open('/tmp/price-persistent/retry-apply.json'))
+          m=json.load(open('/tmp/price-persistent/retry-manifest.json'))
+          assert a['status'] in ('NO_CHANGE','UPDATE_AVAILABLE'),a
+          assert m['status'] in ('NO_CHANGE','UPDATE_AVAILABLE'),m
+          diff=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          assert diff <= {'payload/part-15.txt','live_data/manifest.v2.json'},diff
+          print('PRICE_REBASE_SCOPE_PASS',sorted(diff))
+          PY
+            git add payload/part-15.txt live_data/manifest.v2.json
+            if git diff --cached --quiet; then
+              echo "PRICE_MANIFEST_ALREADY_CURRENT_ON_MAIN"
+              exit 0
+            fi
+            git commit -m 'Refresh daily FX Price runtime and live manifest'
+            if git push origin "HEAD:$TARGET_BRANCH"; then
+              echo PRICE_MANIFEST_MAIN_UPDATE_PUSHED
+              exit 0
+            fi
+            echo "::warning::Concurrent main update; refreshing both files from latest official-source head (attempt $attempt/5)"
+            sleep 2
+          done
+          echo "::error::PRICE_MAIN_HEAD_RACE_RETRY_EXHAUSTED_NO_FORCED_PUSH"
+          exit 1
 
       - name: Upload Price evidence
         if: always() && steps.gate.outputs.should_run == 'true'
