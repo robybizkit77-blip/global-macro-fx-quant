@@ -279,8 +279,8 @@ class V2ProspectiveResearchCapture(unittest.TestCase):
         self.assertIn("V2_RESEARCH_RECEIPT_INVALID",workflow)
         self.assertIn("EXISTING_DATE_ALREADY_FROZEN_NO_OVERWRITE",workflow)
         self.assertIn("PROSPECTIVE_SHADOW_RESEARCH_SNAPSHOT_APPEND_OK",workflow)
-        # An admitted run that lacks a V2 record MUST exit with a failing
-        # status. This occurs only after the older Core has already persisted.
+        # The original V2 research check must still exit 1 when unsupported;
+        # only this research step (not the primary pipeline) tolerates failure.
         self.assertIn("exit 1",workflow[check_pos:])
         self.assertIn("git push origin HEAD:main",workflow[persist_pos:check_pos])
 
