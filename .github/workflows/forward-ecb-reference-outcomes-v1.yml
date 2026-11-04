@@ -337,12 +337,12 @@ jobs:
           if test -f validation/forward/reference_observations/V2_RESEARCH_ECB_REFERENCE_RETURNS_V1.jsonl; then
             git add validation/forward/reference_observations/V2_RESEARCH_ECB_REFERENCE_RETURNS_V1.jsonl
           fi
+          if test -f validation/forward/reference_observations/V2_QUALITY_AWARE_ECB_REFERENCE_RETURNS_V1.jsonl; then
+            git add validation/forward/reference_observations/V2_QUALITY_AWARE_ECB_REFERENCE_RETURNS_V1.jsonl
+          fi
           if git diff --cached --quiet; then
             echo 'REFERENCE_COMPARISONS_ALREADY_RECORDED_NO_COMMIT' >> "$GITHUB_STEP_SUMMARY"
             exit 0
-          fi
-          if test -f validation/forward/reference_observations/V2_QUALITY_AWARE_ECB_REFERENCE_RETURNS_V1.jsonl; then
-            git add validation/forward/reference_observations/V2_QUALITY_AWARE_ECB_REFERENCE_RETURNS_V1.jsonl
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
