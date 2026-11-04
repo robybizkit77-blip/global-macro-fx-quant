@@ -6,6 +6,8 @@ on:
     paths:
       - 'validation/rates/refresh_fxv2_chf_nzd_benchmark_context.py'
       - 'validation/rates/collect_rbnz_b2_daily_web_v1.py'
+      - 'validation/rates/collect_fxv2_nzd_eolas_api_v1.py'
+      - 'validation/rates/test_collect_fxv2_nzd_eolas_api_v1.py'
       - 'validation/rates/test_collect_rbnz_b2_daily_web_v1.py'
       - 'validation/rates/test_refresh_fxv2_chf_nzd_benchmark_context.py'
       - 'site/fx-quant-v2/chf-nzd-benchmark-research.json'
@@ -16,6 +18,8 @@ on:
     paths:
       - 'validation/rates/refresh_fxv2_chf_nzd_benchmark_context.py'
       - 'validation/rates/collect_rbnz_b2_daily_web_v1.py'
+      - 'validation/rates/collect_fxv2_nzd_eolas_api_v1.py'
+      - 'validation/rates/test_collect_fxv2_nzd_eolas_api_v1.py'
       - 'validation/rates/test_collect_rbnz_b2_daily_web_v1.py'
       - 'validation/rates/test_refresh_fxv2_chf_nzd_benchmark_context.py'
       - 'site/fx-quant-v2/chf-nzd-benchmark-research.json'
@@ -49,6 +53,7 @@ jobs:
         run: |
           python3 validation/rates/test_refresh_fxv2_chf_nzd_benchmark_context.py
           python3 validation/rates/test_collect_rbnz_b2_daily_web_v1.py
+          python3 validation/rates/test_collect_fxv2_nzd_eolas_api_v1.py
           python3 validation/rates/test_recover_chf_snb_paired_history_v1.py
       - name: Fetch the newest NZD B2 same-row government yields from RBNZ public HTML
         shell: bash
@@ -63,18 +68,51 @@ jobs:
             echo 'FXV2_RBNZ_B2_LIVE_SOURCE_UNAVAILABLE: previous dated NZD context retained'
             rm -f /tmp/fxv2-rbnz-b2-daily-source.json
           fi
+      - name: Use authorized eolas API only if the public RBNZ reader failed
+        if: github.event_name != 'pull_request'
+        shell: bash
+        env:
+          EOLAS_API_KEY: ${{ secrets.EOLAS_API_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -f /tmp/fxv2-rbnz-b2-daily-source.json ]; then
+            echo 'NZD_SOURCE=RBNZ_OFFICIAL_HTML' >> "$GITHUB_STEP_SUMMARY"
+          elif [ -z "${EOLAS_API_KEY:-}" ]; then
+            echo 'NZD_SOURCE=UNAVAILABLE: RBNZ HTTP block and EOLAS_API_KEY not configured' >> "$GITHUB_STEP_SUMMARY"
+          elif python3 validation/rates/collect_fxv2_nzd_eolas_api_v1.py --output /tmp/fxv2-rbnz-b2-eolas-research.json; then
+            echo 'NZD_SOURCE=EO_AUTHORIZED_RBNZ_REPUBLISHED_RESEARCH' >> "$GITHUB_STEP_SUMMARY"
+          else
+            rm -f /tmp/fxv2-rbnz-b2-eolas-research.json
+            echo 'NZD_SOURCE=UNAVAILABLE: eolas API failed; previous dated observations retained' >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Build independently dated CHF source and NZD post-roll research
         shell: bash
         run: |
           set -euo pipefail
+          CANDIDATE=/tmp/fxv2-rbnz-b2-daily-source.json
+          if [ ! -f "$CANDIDATE" ] && [ -f /tmp/fxv2-rbnz-b2-eolas-research.json ]; then
+            CANDIDATE=/tmp/fxv2-rbnz-b2-eolas-research.json
+          fi
           if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
             python3 validation/rates/refresh_fxv2_chf_nzd_benchmark_context.py \
-              --nzd-daily-candidate /tmp/fxv2-rbnz-b2-daily-source.json \
+              --nzd-daily-candidate "$CANDIDATE" \
               --output /tmp/fxv2-chf-nzd-research-candidate.json
           else
             python3 validation/rates/refresh_fxv2_chf_nzd_benchmark_context.py \
-              --nzd-daily-candidate /tmp/fxv2-rbnz-b2-daily-source.json
+              --nzd-daily-candidate "$CANDIDATE"
           fi
+          python3 - <<'PY'
+          import json,os
+          from pathlib import Path
+          path=Path('site/fx-quant-v2/chf-nzd-benchmark-research.json')
+          j=json.loads(path.read_text())['NZD']
+          note=('NZD latest research observation: '+j['latest_date']+
+                ', method: '+j.get('source_capture_method','ARCHIVED_CONTEXT')+
+                '. GitHub workflow green does not guarantee a new RBNZ observation.')
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as out:
+              out.write('\n'+note+'\n')
+          print('FXV2_NZD_SOURCE_STATUS',note)
+          PY
       - name: Publish only changed V2 research feed (no canonical Rates writes)
         if: github.event_name != 'pull_request'
         shell: bash
@@ -110,6 +148,7 @@ jobs:
           name: fxv2-chf-nzd-benchmark-evidence
           path: |
             /tmp/fxv2-rbnz-b2-daily-source.json
+            /tmp/fxv2-rbnz-b2-eolas-research.json
             /tmp/fxv2-chf-nzd-research-candidate.json
             site/fx-quant-v2/chf-nzd-benchmark-research.json
           if-no-files-found: warn
