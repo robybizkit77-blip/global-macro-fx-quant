@@ -111,7 +111,7 @@ async function refreshMacro(){
   if(count<160)throw Error("Serie canoniche validate troppo poche: "+count);
   dataset=next;mode="canonical-series";render();
   $("seriesCount").textContent=order.reduce((n,k)=>n+(dataset.currencies[k].indicators||[]).length,0);
-  $("dataStatus").textContent="Feed canonico MACRO_SERIES collegato: "+count+" serie validate; "+advanced+" osservazioni con data successiva allo snapshot. Ogni grafico mostra la data propria. Narrativa e giudizi settoriali restano una lettura archiviata del 3 novembre, non un segnale live.";
+  $("dataStatus").textContent="Feed canonico MACRO_SERIES collegato: "+count+" serie validate con la propria data di riferimento. La presenza del feed non implica dati nuovi ogni giorno. Narrativa e giudizi settoriali restano una lettura archiviata del 3 novembre, non un segnale live.";
  }catch(e){
   console.warn("[FX Quant V2 Macro] Mantengo l'ultimo snapshot:",e);
   $("dataStatus").textContent="Modalità snapshot: il feed MACRO_SERIES non è stato validato. Controlla le date dei singoli indicatori, senza interpretare le sintesi come dati live.";
