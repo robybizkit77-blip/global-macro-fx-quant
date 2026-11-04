@@ -507,15 +507,15 @@
           "text": "Estensione non elevata · 1M +0.4% · P46 storico"
         },
         "timing": {
-          "state": "PARTIAL",
-          "text": "Timing da monitorare · NZD sta peggiorando · AUD è in possibile svolta",
+          "state": "UNCERTAIN",
+          "text": "Timing da monitorare · AUD è in possibile svolta · NZD è in possibile svolta",
           "favChange": {
             "side": "TRANSITION",
             "text": "AUD è in possibile svolta"
           },
           "otherChange": {
-            "side": "NEG",
-            "text": "NZD sta peggiorando"
+            "side": "TRANSITION",
+            "text": "NZD è in possibile svolta"
           }
         },
         "cot": {
@@ -545,7 +545,7 @@
           "fav": "AUD",
           "quality": "VANTAGGIO RELATIVO PARZIALE",
           "relation": "La Macro favorisce AUD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
-          "timing": "AUD: TURNING RECENTE · NZD: RATES AVANTI",
+          "timing": "AUD: TURNING RECENTE · NZD: TURNING RECENTE",
           "priceReading": "MERCATO GIÀ ALLINEATO",
           "priceNote": "Il Prezzo è già dalla parte di AUD. È conferma descrittiva, non prova di ulteriore continuazione.",
           "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -575,7 +575,7 @@
         "fav": "AUD",
         "quality": "VANTAGGIO RELATIVO PARZIALE",
         "relation": "La Macro favorisce AUD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
-        "timing": "AUD: TURNING RECENTE · NZD: RATES AVANTI",
+        "timing": "AUD: TURNING RECENTE · NZD: TURNING RECENTE",
         "priceReading": "MERCATO GIÀ ALLINEATO",
         "priceNote": "Il Prezzo è già dalla parte di AUD. È conferma descrittiva, non prova di ulteriore continuazione.",
         "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -622,20 +622,18 @@
         },
         "B": {
           "positive": 1,
-          "negative": 2,
-          "turns": 2,
+          "negative": 1,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
-            "Lavoro: peggiora",
-            "Lavoro: turning point",
             "Rates: peggiora",
             "Rates: turning point"
           ],
           "withheld": false
         },
         "aNet": 0,
-        "bNet": -1,
-        "state": "DINAMICA FAVOREVOLE A",
+        "bNet": 0,
+        "state": "TURNING POINT ASIMMETRICO",
         "fav": "AUD"
       },
       "price_state": null
@@ -1859,7 +1857,7 @@
           "fav": "—",
           "quality": "SEPARAZIONE RATES MATERIALE",
           "relation": "Il differenziale 2Y osservato è -90 pb verso NZD. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
-          "timing": "EUR: TURNING RECENTE · NZD: RATES AVANTI",
+          "timing": "EUR: TURNING RECENTE · NZD: TURNING RECENTE",
           "priceReading": "PREZZO NON RISOLUTIVO",
           "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
           "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
@@ -1889,7 +1887,7 @@
         "fav": "—",
         "quality": "SEPARAZIONE RATES MATERIALE",
         "relation": "Il differenziale 2Y osservato è -90 pb verso NZD. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
-        "timing": "EUR: TURNING RECENTE · NZD: RATES AVANTI",
+        "timing": "EUR: TURNING RECENTE · NZD: TURNING RECENTE",
         "priceReading": "PREZZO NON RISOLUTIVO",
         "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
         "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
@@ -1936,19 +1934,17 @@
         },
         "B": {
           "positive": 1,
-          "negative": 2,
-          "turns": 2,
+          "negative": 1,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
-            "Lavoro: peggiora",
-            "Lavoro: turning point",
             "Rates: peggiora",
             "Rates: turning point"
           ],
           "withheld": false
         },
         "aNet": -3,
-        "bNet": -1,
+        "bNet": 0,
         "state": "DINAMICA FAVOREVOLE B",
         "fav": "NZD"
       },
@@ -2663,7 +2659,7 @@
           "fav": "—",
           "quality": "NESSUN CONTRASTO",
           "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
-          "timing": "GBP: TURNING RECENTE · NZD: RATES AVANTI",
+          "timing": "GBP: TURNING RECENTE · NZD: TURNING RECENTE",
           "priceReading": "PREZZO NON RISOLUTIVO",
           "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
           "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
@@ -2693,7 +2689,7 @@
         "fav": "—",
         "quality": "NESSUN CONTRASTO",
         "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
-        "timing": "GBP: TURNING RECENTE · NZD: RATES AVANTI",
+        "timing": "GBP: TURNING RECENTE · NZD: TURNING RECENTE",
         "priceReading": "PREZZO NON RISOLUTIVO",
         "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
         "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
@@ -2739,19 +2735,17 @@
         },
         "B": {
           "positive": 1,
-          "negative": 2,
-          "turns": 2,
+          "negative": 1,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
-            "Lavoro: peggiora",
-            "Lavoro: turning point",
             "Rates: peggiora",
             "Rates: turning point"
           ],
           "withheld": false
         },
         "aNet": 2,
-        "bNet": -1,
+        "bNet": 0,
         "state": "DINAMICA FAVOREVOLE A",
         "fav": "GBP"
       },
@@ -2930,7 +2924,7 @@
           "fav": "—",
           "quality": "PILASTRI DIVISI",
           "relation": "Macro e Tassi/CB favoriscono valute opposte: nessun vantaggio strutturale pulito.",
-          "timing": "NZD: RATES AVANTI · CAD: RATES AVANTI",
+          "timing": "NZD: TURNING RECENTE · CAD: RATES AVANTI",
           "priceReading": "PREZZO NON RISOLUTIVO",
           "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
           "missing": "Macro e Tassi/CB sono in conflitto: serve convergenza prima di promuovere il pair.",
@@ -2960,7 +2954,7 @@
         "fav": "—",
         "quality": "PILASTRI DIVISI",
         "relation": "Macro e Tassi/CB favoriscono valute opposte: nessun vantaggio strutturale pulito.",
-        "timing": "NZD: RATES AVANTI · CAD: RATES AVANTI",
+        "timing": "NZD: TURNING RECENTE · CAD: RATES AVANTI",
         "priceReading": "PREZZO NON RISOLUTIVO",
         "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
         "missing": "Macro e Tassi/CB sono in conflitto: serve convergenza prima di promuovere il pair.",
@@ -2995,12 +2989,10 @@
         "b": "CAD",
         "A": {
           "positive": 1,
-          "negative": 2,
-          "turns": 2,
+          "negative": 1,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
-            "Lavoro: peggiora",
-            "Lavoro: turning point",
             "Rates: peggiora",
             "Rates: turning point"
           ],
@@ -3019,10 +3011,10 @@
           ],
           "withheld": false
         },
-        "aNet": -1,
+        "aNet": 0,
         "bNet": -1,
-        "state": "MISTO",
-        "fav": "—"
+        "state": "DINAMICA FAVOREVOLE A",
+        "fav": "NZD"
       },
       "price_state": null
     },
@@ -3045,11 +3037,11 @@
           "text": "Estensione non elevata · 1M -0.6% · P48 storico"
         },
         "timing": {
-          "state": "ADVERSE",
-          "text": "Timing contrario · NZD sta peggiorando",
+          "state": "UNCERTAIN",
+          "text": "Timing da monitorare · NZD è in possibile svolta · CHF è in possibile svolta",
           "favChange": {
-            "side": "NEG",
-            "text": "NZD sta peggiorando"
+            "side": "TRANSITION",
+            "text": "NZD è in possibile svolta"
           },
           "otherChange": {
             "side": "TRANSITION",
@@ -3083,7 +3075,7 @@
           "fav": "NZD",
           "quality": "VANTAGGIO RELATIVO PARZIALE",
           "relation": "Tassi/CB favoriscono NZD, mentre la Macro non separa le due valute: vantaggio presente ma incompleto.",
-          "timing": "NZD: RATES AVANTI · CHF: TURNING RECENTE",
+          "timing": "NZD: TURNING RECENTE · CHF: TURNING RECENTE",
           "priceReading": "DIVERGENZA DA MONITORARE",
           "priceNote": "La struttura Macro + Tassi/CB favorisce NZD, ma il Prezzo favorisce CHF.",
           "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -3113,7 +3105,7 @@
         "fav": "NZD",
         "quality": "VANTAGGIO RELATIVO PARZIALE",
         "relation": "Tassi/CB favoriscono NZD, mentre la Macro non separa le due valute: vantaggio presente ma incompleto.",
-        "timing": "NZD: RATES AVANTI · CHF: TURNING RECENTE",
+        "timing": "NZD: TURNING RECENTE · CHF: TURNING RECENTE",
         "priceReading": "DIVERGENZA DA MONITORARE",
         "priceNote": "La struttura Macro + Tassi/CB favorisce NZD, ma il Prezzo favorisce CHF.",
         "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -3148,12 +3140,10 @@
         "b": "CHF",
         "A": {
           "positive": 1,
-          "negative": 2,
-          "turns": 2,
+          "negative": 1,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
-            "Lavoro: peggiora",
-            "Lavoro: turning point",
             "Rates: peggiora",
             "Rates: turning point"
           ],
@@ -3171,7 +3161,7 @@
           ],
           "withheld": false
         },
-        "aNet": -1,
+        "aNet": 0,
         "bNet": 1,
         "state": "DINAMICA FAVOREVOLE B",
         "fav": "CHF"
@@ -3202,7 +3192,7 @@
           "fav": "—",
           "quality": "SEPARAZIONE RATES MATERIALE",
           "relation": "Il differenziale 2Y osservato è +202 pb verso NZD. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
-          "timing": "NZD: RATES AVANTI · JPY: RATES AVANTI",
+          "timing": "NZD: TURNING RECENTE · JPY: RATES AVANTI",
           "priceReading": "PREZZO NON RISOLUTIVO",
           "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
           "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
@@ -3232,7 +3222,7 @@
         "fav": "—",
         "quality": "SEPARAZIONE RATES MATERIALE",
         "relation": "Il differenziale 2Y osservato è +202 pb verso NZD. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
-        "timing": "NZD: RATES AVANTI · JPY: RATES AVANTI",
+        "timing": "NZD: TURNING RECENTE · JPY: RATES AVANTI",
         "priceReading": "PREZZO NON RISOLUTIVO",
         "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
         "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
@@ -3267,12 +3257,10 @@
         "b": "JPY",
         "A": {
           "positive": 1,
-          "negative": 2,
-          "turns": 2,
+          "negative": 1,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
-            "Lavoro: peggiora",
-            "Lavoro: turning point",
             "Rates: peggiora",
             "Rates: turning point"
           ],
@@ -3290,9 +3278,9 @@
           ],
           "withheld": false
         },
-        "aNet": -1,
+        "aNet": 0,
         "bNet": -1,
-        "state": "TURNING POINT ASIMMETRICO",
+        "state": "DINAMICA FAVOREVOLE A",
         "fav": "NZD"
       },
       "price_state": null
@@ -3316,15 +3304,15 @@
           "text": "Estensione non elevata · 1M -0.2% · P39 storico"
         },
         "timing": {
-          "state": "ALIGNED",
-          "text": "Timing favorevole · NZD sta peggiorando",
+          "state": "UNCERTAIN",
+          "text": "Timing da monitorare · NZD è in possibile svolta",
           "favChange": {
             "side": "NEUTRAL",
             "text": "USD è stabile"
           },
           "otherChange": {
-            "side": "NEG",
-            "text": "NZD sta peggiorando"
+            "side": "TRANSITION",
+            "text": "NZD è in possibile svolta"
           }
         },
         "cot": {
@@ -3354,7 +3342,7 @@
           "fav": "USD",
           "quality": "VANTAGGIO RELATIVO PARZIALE",
           "relation": "La Macro favorisce USD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
-          "timing": "NZD: RATES AVANTI · USD: NESSUN TIMING CHIARO",
+          "timing": "NZD: TURNING RECENTE · USD: NESSUN TIMING CHIARO",
           "priceReading": "MERCATO GIÀ ALLINEATO",
           "priceNote": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione.",
           "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -3384,7 +3372,7 @@
         "fav": "USD",
         "quality": "VANTAGGIO RELATIVO PARZIALE",
         "relation": "La Macro favorisce USD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
-        "timing": "NZD: RATES AVANTI · USD: NESSUN TIMING CHIARO",
+        "timing": "NZD: TURNING RECENTE · USD: NESSUN TIMING CHIARO",
         "priceReading": "MERCATO GIÀ ALLINEATO",
         "priceNote": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione.",
         "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
@@ -3419,12 +3407,10 @@
         "b": "USD",
         "A": {
           "positive": 1,
-          "negative": 2,
-          "turns": 2,
+          "negative": 1,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
-            "Lavoro: peggiora",
-            "Lavoro: turning point",
             "Rates: peggiora",
             "Rates: turning point"
           ],
@@ -3441,7 +3427,7 @@
           ],
           "withheld": false
         },
-        "aNet": -1,
+        "aNet": 0,
         "bNet": 1,
         "state": "DINAMICA FAVOREVOLE B",
         "fav": "USD"
