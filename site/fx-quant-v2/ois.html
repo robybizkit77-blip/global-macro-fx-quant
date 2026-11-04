@@ -81,18 +81,56 @@ function sourceNote(x){
  if(x.kind==="PROXY FUTURES")return "Proxy direzionale ASX sui bank-bill NZD: non OIS e non tasso OCR esatto. Gli expiry possono essere lontani dagli orizzonti teorici.";
  return "Futures secondari datati. Mapping al contratto quotato più vicino: non OIS, né stima certificata del tasso di policy. Una differenza rispetto al tasso corrente non è automaticamente repricing.";
 }
-function clean(c,x){if(!x||!x.horizons)return null;const hs={};for(const k of ["3m","6m","12m"]){let v=x.horizons[k];if(!has(v))return null;hs[k]={rate:v.rate,as_of:v.as_of||v.quote_as_of||x.as_of,change_1d_bp:Number.isFinite(v.change_1d_bp)?v.change_1d_bp:null,change_1w_bp:Number.isFinite(v.change_1w_bp)?v.change_1w_bp:null,contract:v.contract||v.symbol||null};}return {kind:x.kind,quality:x.quality,source:x.source,as_of:x.as_of,horizons:hs};}
-function update(c,v){const x=clean(c,v);if(!x)return;const old=state.currencies[c];if(!old||x.as_of>=old.as_of)state.currencies[c]=x;}
+function clean(c,x){
+ if(!x?.horizons||!["OIS","FUTURES","FUTURES SECONDARI","PROXY FUTURES"].includes(x.kind))return null;
+ const hs={};
+ for(const k of T){
+  const v=x.horizons[k],stamp=v?.as_of||v?.quote_as_of||x.as_of;
+  if(!has(v)||!dated(stamp)||v.rate<=-5||v.rate>=30)continue;
+  hs[k]={rate:v.rate,as_of:stamp,change_1d_bp:Number.isFinite(v.change_1d_bp)?v.change_1d_bp:null,
+   change_1w_bp:Number.isFinite(v.change_1w_bp)?v.change_1w_bp:null,
+   contract:v.contract||v.symbol||null,kind:x.kind,quality:x.quality,source:x.source,
+   origin:x.origin==="live"?"live":"snapshot"};
+ }
+ return Object.keys(hs).length?{horizons:hs}:null;
+}
+function update(c,v){
+ const incoming=clean(c,v);if(!incoming)return 0;
+ const row=state.currencies[c]||{horizons:{}};
+ let accepted=0;
+ for(const k of T){
+  const z=incoming.horizons[k],old=row.horizons[k];if(!z)continue;
+  if(old&&(z.as_of<old.as_of||(z.as_of===old.as_of&&old.origin==="live"&&z.origin!=="live")))continue;
+  row.horizons[k]=z;accepted++;
+ }
+ const list=Object.values(row.horizons);
+ const kinds=[...new Set(list.map(h=>h.kind))],qualities=[...new Set(list.map(h=>h.quality))];
+ row.kind=kinds.length===1?kinds[0]:"FONTI MISTE";
+ row.quality=qualities.length===1?qualities[0]:"QUALITÀ MISTA";
+ row.source=[...new Set(list.map(h=>h.source))].join(" | ");
+ row.as_of=list.map(h=>h.as_of).sort().at(-1);
+ state.currencies[c]=row;
+ return accepted;
+}
 function isActualOis(x){return x?.kind==="OIS";}
 function render(){
- const curr=state.currencies;let ready=C.filter(c=>curr[c]).length;const grid=$("pricingGrid");
- grid.innerHTML=C.map(c=>{let x=curr[c];if(!x)return '<article class="currency" aria-disabled="true">'+F[c]+" "+c+" · dati non caricati</article>";
- return '<button type="button" class="currency" data-c="'+c+'" aria-pressed="'+(state.selected===c)+'"><strong>'+F[c]+" "+c+'</strong><span class="type">'+esc(x.kind)+'</span><span class="rate-line">6M <b>'+fmt(x.horizons["6m"].rate,3)+'%</b></span><span class="asof">'+date(x.as_of)+' · '+esc(x.quality)+' · '+esc(ageInfo(x.horizons["6m"].as_of))+'</span></button>';}).join("");
- $("pricingRows").innerHTML=C.map(c=>{let x=curr[c];if(!x)return "<tr><td>"+c+"</td><td colspan=5>Dati non disponibili</td></tr>";return '<tr><td><b>'+F[c]+" "+c+'</b></td><td>'+esc(x.kind)+(x.kind==="OIS"?" · BOE":"")+'</td>'+["3m","6m","12m"].map(k=>'<td class="n">'+fmt(x.horizons[k].rate,3)+'%</td>').join("")+'<td>'+date(x.as_of)+'</td></tr>';}).join("");
- const ages=C.flatMap(c=>curr[c]?["3m","6m","12m"].map(k=>ageDays(curr[c].horizons[k].as_of)):[]);
- const stale=ages.filter(x=>x===null||x>7).length;
- $("feedStatus").textContent=ready+"/8 valute · "+(ready*3)+"/24 livelli · "+(state.origin==="live"?"Feed repository consultati":"Snapshot locale datato · fallback")+
-  " · "+stale+"/24 tenori oltre 7 giorni o senza data · OIS ufficiale solo GBP; altri futures/proxy";
+ const curr=state.currencies,all=C.flatMap(c=>T.map(k=>curr[c]?.horizons?.[k]).filter(has));
+ const ready=C.filter(c=>T.every(k=>has(curr[c]?.horizons?.[k]))).length;
+ const live=all.filter(x=>x.origin==="live").length,snapshot=all.length-live;
+ $("pricingGrid").innerHTML=C.map(c=>{
+  const x=curr[c],six=x?.horizons?.["6m"];
+  if(!x)return '<article class="currency" aria-disabled="true">'+F[c]+" "+c+" · dati non caricati</article>";
+  return '<button type="button" class="currency" data-c="'+c+'" aria-pressed="'+(state.selected===c)+'"><strong>'+F[c]+" "+c+'</strong><span class="type">'+esc(x.kind)+'</span><span class="rate-line">6M <b>'+fmt(six?.rate,3)+'%</b></span><span class="asof">6M '+date(six?.as_of)+' · '+esc(six?.quality||x.quality)+' · '+esc(ageInfo(six?.as_of))+'</span></button>';
+ }).join("");
+ $("pricingRows").innerHTML=C.map(c=>{
+  const x=curr[c],six=x?.horizons?.["6m"];if(!x)return "<tr><td>"+c+"</td><td colspan=7>Dati non disponibili</td></tr>";
+  return '<tr><td><b>'+F[c]+" "+c+'</b></td><td>'+esc(x.kind)+(x.kind==="OIS"?" · BOE":"")+'</td>'+
+   T.map(k=>'<td class="n">'+fmt(x.horizons[k]?.rate,3)+'%</td>').join("")+
+   '<td class="n">'+esc(bp(six?.change_1d_bp))+'</td><td class="n">'+esc(bp(six?.change_1w_bp))+'</td><td>'+dateRange(x)+'</td></tr>';
+ }).join("");
+ const stale=all.filter(x=>{const a=ageDays(x.as_of);return a===null||a>7}).length;
+ $("feedStatus").textContent=ready+"/8 valute · "+all.length+"/24 livelli · "+live+" tenori da feed / "+snapshot+
+  " da snapshot · "+stale+"/24 tenori oltre 7 giorni o senza data · OIS ufficiale solo GBP; altri futures/proxy";
  if(!curr[state.selected])state.selected=C.find(c=>curr[c])||"USD";
  showDetail();showCompare();
 }
@@ -106,25 +144,44 @@ function lineChart(x){
  $("pricingChart").innerHTML=h;
 }
 function showDetail(){
- let c=state.selected,x=state.currencies[c];if(!x)return;
+ const c=state.selected,x=state.currencies[c];if(!x)return;
  $("detailTitle").textContent=N[c]+": quanto quota il front-end?";
- $("detailName").textContent=F[c]+" "+c+" · "+N[c];$("detailMeta").innerHTML='<span class="chip">'+esc(x.kind)+'</span><span class="chip">'+esc(x.quality)+'</span><span>Dato '+date(x.as_of)+'</span>';
+ $("detailName").textContent=F[c]+" "+c+" · "+N[c];
+ $("detailMeta").innerHTML='<span class="chip">'+esc(x.kind)+'</span><span class="chip">'+esc(x.quality)+'</span><span>Osservazioni '+dateRange(x)+'</span>';
  lineChart(x);
- $("tenors").innerHTML=["3m","6m","12m"].map(k=>{let z=x.horizons[k];return '<div class="term"><small>'+k.toUpperCase()+'</small><strong>'+fmt(z.rate,3)+'%</strong><span class="muted">'+date(z.as_of)+" · "+ageInfo(z.as_of)+(Number.isFinite(z.change_1d_bp)?" · 1D "+(z.change_1d_bp>0?"+":"")+fmt(z.change_1d_bp,1)+" pb":" · 1D non verificato")+'</span></div>';}).join("");
- const h=x.horizons,term=100*(h["12m"].rate-h["3m"].rate);
- $("detailInterpretation").textContent="Differenza di livello 12M − 3M: "+(term>0?"+":"")+fmt(term,1)+" pb. Non equivale a una variazione temporale o a un tasso forward, specialmente se i tenori sono futures su contratti diversi.";
- $("sourceTitle").textContent=isActualOis(x)?"OIS pubblicato":"Non è un OIS quotato";
+ $("tenors").innerHTML=T.map(k=>{
+  const z=x.horizons[k];if(!z)return '<div class="term"><small>'+k.toUpperCase()+'</small><strong>—</strong><span class="muted">Nessuna fonte utilizzabile</span></div>';
+  return '<div class="term"><small>'+k.toUpperCase()+'</small><strong>'+fmt(z.rate,3)+'%</strong>'+
+   '<span class="muted">'+date(z.as_of)+" · "+ageInfo(z.as_of)+'</span>'+
+   '<span class="muted">1D '+esc(bp(z.change_1d_bp))+' · 1W '+esc(bp(z.change_1w_bp))+'</span>'+
+   '<span class="muted">'+esc(z.kind)+" · "+(z.origin==="live"?"feed":"snapshot")+
+   (z.contract?" · "+esc(z.contract):"")+'</span></div>';
+ }).join("");
+ const a=x.horizons["3m"],b=x.horizons["12m"];
+ const term=has(a)&&has(b)?100*(b.rate-a.rate):null;
+ $("detailInterpretation").textContent=Number.isFinite(term)?
+  "Differenza di livello 12M − 3M: "+bp(term)+". Non è una variazione temporale né un forward; controlla le date e gli strumenti dei due tenori.":
+  "Curva parziale: non calcoliamo la pendenza senza entrambi i livelli 3M e 12M.";
+ $("sourceTitle").textContent=isActualOis(x)?"OIS pubblicato":"Non è una curva OIS omogenea";
  $("sourceType").textContent=x.kind+" · "+x.quality;
- $("sourceDate").textContent="Data generale "+date(x.as_of)+" · "+ageInfo(x.as_of)+"; ogni tenore conserva la propria data. Nessun refresh dell’orologio cambia la data del prezzo.";
+ $("sourceDate").textContent="Date dei tenori "+dateRange(x)+
+  "; ogni tenore conserva la propria data. Nessun refresh dell’orologio cambia la data del prezzo.";
  $("sourceName").textContent=x.source;
  $("sourceCaveat").textContent=sourceNote(x);
 }
 function showCompare(){
- let a=state.currencies[state.a],b=state.currencies[state.b],za=a?.horizons?.["6m"],zb=b?.horizons?.["6m"];
- if(!has(za)||!has(zb)){ $("compare6").textContent="—";return;}
- let d=(za.rate-zb.rate)*100;$("compare6").textContent=(d>0?"+":d<0?"−":"")+fmt(Math.abs(d),1)+" pb";
+ const a=state.currencies[state.a],b=state.currencies[state.b],za=a?.horizons?.["6m"],zb=b?.horizons?.["6m"];
+ if(state.a===state.b){$("compare6").textContent="—";$("compareText").textContent="Seleziona due valute differenti."; $("compareFoot").textContent="";return;}
+ if(!has(za)||!has(zb)){$("compare6").textContent="—";$("compareText").textContent="Dati 6M insufficienti: nessuno spread inventato."; $("compareFoot").textContent="";return;}
+ const d=(za.rate-zb.rate)*100;
+ $("compare6").textContent=(d>0?"+":d<0?"−":"")+fmt(Math.abs(d),1)+" pb";
  $("compareText").textContent="6M "+state.a+" "+fmt(za.rate,3)+"% ("+date(za.as_of)+") − "+state.b+" "+fmt(zb.rate,3)+"% ("+date(zb.as_of)+")";
- $("compareFoot").textContent="Strumenti: "+state.a+" "+a.kind+" / "+state.b+" "+b.kind+". Differenziale di livello INDICATIVO; non definisce carry, spread OIS omogeneo o repricing. Qualità: "+a.quality+" / "+b.quality+".";
+ const aligned=za.as_of===zb.as_of,comparable=za.kind===zb.kind;
+ $("compareFoot").textContent="Strumenti: "+state.a+" "+za.kind+" / "+state.b+" "+zb.kind+
+  ". Differenziale di livello INDICATIVO; "+(aligned?"stessa data":"date NON allineate")+
+  "; "+(comparable?"stessa famiglia nominale (non certifica basis identico)":"strumenti differenti")+
+  ". Non definisce carry, spread OIS omogeneo o repricing. Fonti 6M: "+
+  (za.origin==="live"?"feed":"snapshot")+" / "+(zb.origin==="live"?"feed":"snapshot")+".";
 }
 function setup(){
  const opts=C.map(c=>'<option value="'+c+'">'+F[c]+" "+c+"</option>").join("");
