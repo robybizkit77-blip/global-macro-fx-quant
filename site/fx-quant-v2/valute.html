@@ -170,7 +170,16 @@ async function refreshValute(){
   const last=rows.at(-1);
   const today=new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Rome",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
   if(!last||last.Date>today||last.Date<D.source_as_of||history.last_as_of!==last.Date)throw Error("Ultimo fixing ECB non coerente");
-  if(last.Date===D.source_as_of){feedMode="live";render();return;}
+  if(last.Date===D.source_as_of){
+   for(const code of ORDER){
+    const country=D.country[code],r=rates?.[code],s=cot?.[code],end=s?.dates?.length||0;
+    if(r&&Number.isFinite(r["2Y"])&&r.date>=(country.market_rates.as_of||""))
+     country.market_rates={...country.market_rates,y2:r["2Y"],y10:r["10Y"],delta2bp:r.chg2_bp,as_of:r.date,quality:r.quality};
+    if(end>1&&s.dates[end-1]>=(country.cot.as_of||"")&&["net","netoi","percentile"].every(k=>Array.isArray(s[k])&&s[k].length===end))
+     country.cot={as_of:s.dates[end-1],net:s.net[end-1],netoi:s.netoi[end-1],percentile:s.percentile[end-1],delta_week:s.net[end-1]-s.net[end-2]};
+   }
+   feedMode="live";render();return;
+  }
   const stamp=d=>d.toISOString().slice(0,10);
   const offset=(date,kind)=>{
    const d=new Date(date+"T12:00:00Z");
