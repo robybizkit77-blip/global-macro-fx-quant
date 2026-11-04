@@ -1,0 +1,68 @@
+name: Publish FX Quant V2 (isolated site)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'site/fx-quant-v2/**'
+      - '.github/workflows/publish-fx-quant-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-fx-quant-v2-isolated
+  cancel-in-progress: false
+
+jobs:
+  sync-v2:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout approved main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Publish only site/fx-quant-v2 without altering V10 or any other path
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_root="$PWD/site/fx-quant-v2"
+          test -f "$source_root/index.html"
+          test -f "$source_root/ois.html"
+          test -f "$source_root/ois-pricing-snapshot.json"
+          test -f "$source_root/assets/site-nav.js"
+
+          git fetch origin gh-pages --no-tags
+          git worktree add --detach ../fxv2-publish-worktree origin/gh-pages
+          target="../fxv2-publish-worktree"
+          mkdir -p "$target/site/fx-quant-v2"
+          rsync -a --delete "$source_root/" "$target/site/fx-quant-v2/"
+
+          cd "$target"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A -- site/fx-quant-v2
+          if git diff --cached --quiet; then
+            echo "V2_PAGES_ALREADY_IN_SYNC"
+            exit 0
+          fi
+          if git diff --cached --name-only | grep -v '^site/fx-quant-v2/' ; then
+            echo "SCOPE_VIOLATION: refusing non-V2 path changes" >&2
+            exit 1
+          fi
+          git commit -m 'Publish approved FX Quant V2 site from main'
+          for attempt in 1 2 3 4 5 6; do
+            if git push origin HEAD:gh-pages; then
+              echo "V2_PAGES_SYNC_PUBLISHED"
+              exit 0
+            fi
+            echo "Concurrent gh-pages update, fetch + rebase retry $attempt" >&2
+            git fetch origin gh-pages --no-tags
+            git rebase origin/gh-pages
+            sleep "$((attempt * 2))"
+          done
+          echo 'V2_PAGES_SYNC_FAILED: no false success claimed' >&2
+          exit 1
