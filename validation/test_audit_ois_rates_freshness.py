@@ -28,7 +28,14 @@ assert rows["EUR"]["ois_source_class"] == "NO_CERTIFIED_CURRENT_OIS_CURVE"
 assert any(g["ccy"] == "EUR" and g["issue"] == "NO_CERTIFIED_CURRENT_OIS_CURVE"
            for g in proof["known_gaps"])
 assert rows["GBP"]["ois_source_class"] == "OFFICIAL_DATED"
-assert rows["USD"]["ois_source_class"] == "NO_CERTIFIED_CURRENT_OIS_CURVE"
+expected_usd = {
+    "WITHHELD": "NO_CERTIFIED_CURRENT_OIS_CURVE",
+    "GREEN_ESTIMATED": "INDICATIVE_FUTURES_NOT_OFFICIAL_OIS",
+    "GREEN_OFFICIAL": "OFFICIAL_DATED",
+}
+assert rows["USD"]["ois_source_class"] == expected_usd[ois["currencies"]["USD"]["operational_status"]]
+if ois["currencies"]["USD"]["operational_status"] == "GREEN_ESTIMATED":
+    assert rows["USD"]["ois_source_class"] != "OFFICIAL_DATED"
 assert not proof["integrity_issues"], proof["integrity_issues"]
 assert proof["writes_live_data"] is False
 assert proof["promotes_estimates_to_official"] is False
