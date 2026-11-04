@@ -141,6 +141,43 @@ class TestChfNzdResearch(unittest.TestCase):
   bad=copy.deepcopy(live);bad["post_roll_table_rows"][0]["2Y"]=4.19
   with self.assertRaises(ValueError):
    m.extend_nzd_with_live_public_table(base,bad,TODAY)
+ def test_authenticated_vendor_republication_cannot_claim_direct_RBNZ(self):
+  base=m.nzd_context(RBNZ_OLD,ROLL,NEW,TODAY)
+  vendor={
+   "schema":"GMFQ_FXV2_NZD_RBNZ_B2_REPUBLISHED_API_RESEARCH_V1",
+   "status":"THIRD_PARTY_API_RBNZ_B2_REPUBLISHED_RESEARCH_ONLY",
+   "official_html_observed":False,
+   "third_party_redistribution":True,
+   "provider":"eolas",
+   "source_url":"https://eolas.fyi/datasets/rbnz_b2_wholesale_rates_daily",
+   "provider_api_url":"https://api.eolas.nz/v1/datasets/rbnz_b2_wholesale_rates_daily/data",
+   "release_date_quality":"UNVERIFIED_PROVIDER_AS_OF_ONLY",
+   "independent_xlsx_reconciled":False,
+   "eligible_for_core":False,"eligible_for_fx_pair_engine":False,
+   "eligible_for_backtests":False,
+   "benchmark_roll_date":"2026-10-30","benchmark_2Y":"April 2029",
+   "benchmark_10Y":"April 2037","benchmark_note_date":"2026-11-02",
+   "as_of":"2026-11-03","2Y":3.95,"10Y":4.88,
+   "curve_bp":93,"release_date":"2026-11-03",
+   "post_roll_table_rows":[
+    {"date":"2026-10-30","2Y":3.96,"10Y":4.9},
+    {"date":"2026-11-03","2Y":3.95,"10Y":4.88}]
+  }
+  out=m.extend_nzd_with_live_public_table(base,vendor,TODAY)
+  self.assertEqual(out["latest_date"],"2026-11-03")
+  self.assertEqual(out["source_capture_method"],"EO_API_LICENSED_RBNZ_B2_REPUBLISHED_RESEARCH")
+  self.assertEqual(out["source_release_date_quality"],"NOT_VERIFIED_PROVIDER_AS_OF_ONLY")
+  self.assertIsNone(out["source_release_date"])
+  self.assertFalse(out["independent_xlsx_reconciled"])
+  self.assertFalse(out["eligible_for_core"])
+  for key,value in [
+    ("official_html_observed",True),("third_party_redistribution",False),
+    ("provider","unapproved"),("release_date_quality","OFFICIAL_RBNZ_DATE"),
+    ("eligible_for_core",True),("source_url","https://unknown.example.org")
+  ]:
+   tampered=copy.deepcopy(vendor);tampered[key]=value
+   with self.subTest(key=key),self.assertRaises(ValueError):
+    m.extend_nzd_with_live_public_table(base,tampered,TODAY)
  def test_feed_contains_no_core_permissions(self):
   a=m.chf_context(SNB,WEB10,BASE,TODAY);b=m.nzd_context(RBNZ_OLD,ROLL,NEW,TODAY)
   x=m.create_report(a,b,TODAY.isoformat())

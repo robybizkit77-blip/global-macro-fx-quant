@@ -162,17 +162,27 @@ def extend_nzd_with_live_public_table(base: dict, live: dict, today: dt.date) ->
            base.get("independent_xlsx_reconciled") is False,
            "prior NZD research benchmark invariants invalid")
     demand(isinstance(live,dict) and
-           live.get("schema")=="GMFQ_FXV2_NZD_RBNZ_B2_PUBLIC_HTML_RESEARCH_V1" and
-           live.get("status")=="OFFICIAL_PUBLIC_HTML_TABLE_CAPTURED_RESEARCH_ONLY" and
-           live.get("official_html_observed") is True and
            live.get("independent_xlsx_reconciled") is False and
            live.get("eligible_for_core") is False and
            live.get("eligible_for_fx_pair_engine") is False and
            live.get("eligible_for_backtests") is False,
-           "not a verified HTML-only research record")
-    demand(live.get("source_url")==
-           "https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates",
-           "NZD official source changed")
+           "not a research-only RBNZ B2 record")
+    official=(live.get("schema")=="GMFQ_FXV2_NZD_RBNZ_B2_PUBLIC_HTML_RESEARCH_V1" and
+              live.get("status")=="OFFICIAL_PUBLIC_HTML_TABLE_CAPTURED_RESEARCH_ONLY" and
+              live.get("official_html_observed") is True and
+              live.get("source_url")==
+              "https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates")
+    vendor=(live.get("schema")=="GMFQ_FXV2_NZD_RBNZ_B2_REPUBLISHED_API_RESEARCH_V1" and
+            live.get("status")=="THIRD_PARTY_API_RBNZ_B2_REPUBLISHED_RESEARCH_ONLY" and
+            live.get("official_html_observed") is False and
+            live.get("third_party_redistribution") is True and
+            live.get("provider")=="eolas" and
+            live.get("release_date_quality")=="UNVERIFIED_PROVIDER_AS_OF_ONLY" and
+            live.get("source_url")==
+            "https://eolas.fyi/datasets/rbnz_b2_wholesale_rates_daily" and
+            live.get("provider_api_url")==
+            "https://api.eolas.nz/v1/datasets/rbnz_b2_wholesale_rates_daily/data")
+    demand(official or vendor,"unsupported B2 feed provenance, source, or entitlement")
     demand(live.get("benchmark_roll_date")==base["roll_date"]=="2026-10-30" and
            live.get("benchmark_2Y")==base["new_benchmark"]["2Y"]=="April 2029" and
            live.get("benchmark_10Y")==base["new_benchmark"]["10Y"]=="April 2037" and
@@ -211,11 +221,20 @@ def extend_nzd_with_live_public_table(base: dict, live: dict, today: dt.date) ->
         "10Y":round((y10-start["10Y"])*100,1),
         "start":start["date"],"end":last.isoformat()
     }
-    new["source"]="Reserve Bank of New Zealand · B2 government benchmarks (live public HTML research)"
+    new["source"]=("Reserve Bank of New Zealand · B2 government benchmarks (public HTML research)"
+                   if official else "eolas API · RBNZ B2 redistributed research, not direct RBNZ fetch")
     new["source_url"]=live["source_url"]
-    new["source_release_date"]=live["release_date"]
-    new["source_capture_method"]="OFFICIAL_HTML_PUBLIC_TABLE_NOT_INDEPENDENT_XLSX"
-    new["research_only_note"]="RBNZ B2 same-row government benchmark closing yields, public HTML only; not XLSX-reconciled. Roll 30 October preserved, no pre/post-roll movement. No FX Core or backtests."
+    if official:
+        new["source_release_date"]=live["release_date"]
+        new["source_release_date_quality"]="OFFICIAL_RBNZ_PUBLIC_PAGE_DATE"
+        new["source_capture_method"]="OFFICIAL_HTML_PUBLIC_TABLE_NOT_INDEPENDENT_XLSX"
+        new["research_only_note"]="RBNZ government benchmark closing yields, public HTML; not XLSX-reconciled. Roll 30 Oct preserved; no Core or backtests."
+    else:
+        # Do NOT equate provider row date with RBNZ publication timestamp.
+        new["source_release_date"]=None
+        new["source_release_date_quality"]="NOT_VERIFIED_PROVIDER_AS_OF_ONLY"
+        new["source_capture_method"]="EO_API_LICENSED_RBNZ_B2_REPUBLISHED_RESEARCH"
+        new["research_only_note"]="Licensed eolas API redistributed RBNZ B2; new 2Y April 2029 and 10Y April 2037 instruments explicitly reconciled within each row. RBNZ publication timestamp and source XLSX not independently checked. Research only; no Core, FX pair signals, OIS or backtests."
     new["independent_xlsx_reconciled"]=False
     new["eligible_for_automatic_promotion"]=False
     return new
@@ -283,7 +302,7 @@ def main():
     new_chf=report.get("CHF") or {}
     new_nzd=report.get("NZD") or {}
     watched_chf=("paired_date","2Y","10Y","separate_10y")
-    watched_nzd=("latest_date","latest_2Y","latest_10Y","source_release_date")
+    watched_nzd=("latest_date","latest_2Y","latest_10Y","source_release_date","source_capture_method")
     if old_chf and old_nzd and all(old_chf.get(k)==new_chf.get(k) for k in watched_chf) and all(
        old_nzd.get(k)==new_nzd.get(k) for k in watched_nzd):
         print("FXV2_BENCHMARK_RESEARCH_SAME_OBSERVATIONS; no synthetic clock refresh")
