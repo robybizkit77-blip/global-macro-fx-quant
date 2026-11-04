@@ -144,6 +144,8 @@ for(const c of ccy){
    requireValid(false,c+' '+ten+' missing numeric, source date or implausible rate');
   }else{
    researchTenors++;
+   requireValid(days(v.as_of)!==null&&days(v.as_of)>=0,
+     c+' '+ten+' source date cannot be future');
    // Daily audit actually verifies the age for each independently dated tenor.
    if(days(v.as_of)>7)
     gap('ois_v2_research',c+' '+ten+' osservazione datata',
