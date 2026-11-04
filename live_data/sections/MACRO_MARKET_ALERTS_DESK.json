@@ -1,8 +1,49 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-04T00:00:32Z",
+  "generated_at_utc": "2026-11-04T06:32:58Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-5a8e3a72b85bb1b21af7",
+      "observed_at_utc": "2026-11-04T03:50:00Z",
+      "headline": "Iran's IRGC says four tankers ablaze after hitting mines near Strait of Hormuz",
+      "summary": "Reuters riporta: Iran's IRGC says four tankers ablaze after hitting mines near Strait of Hormuz. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQbjcyLUxfeTMxaHFnbENrc2tqdlowSDFqWU5DUWtqOWhVUUdSYWdSbFpBRGQ4VHI3Rm5DbDVsLTV6bkM4d3FjcmVPRnpsQlJ6RkNSLWNZX0ZtWURvUExKaGZ2M2diWUFvZWZfSE5FN01PR2FXc1pSN1kyeXhHX0ZFS0k4S1FjSDJLc2ZfbGx2cm9TYW9JSThiZVZIeFQxTnVBXzAwYnhlaGxsN3lwQkxOZTdFRVVpc3RPa2J2M0JZNVduZXA3Z2pz?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-cdb3b1d5689a64dfcb72",
+      "observed_at_utc": "2026-11-03T15:43:43Z",
+      "headline": "Mexico analysts slightly lift inflation, growth forecasts",
+      "summary": "Reuters riporta: Mexico analysts slightly lift inflation, growth forecasts. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxNM3Vac3pIanBDMDJreFdmYnU5amxGRDUwVXNfVUVhdnoyMGE2R1ZsZUlMMVBxU3UtQ1p0WHVwYTl0M3dhVzQ1a2FqOUJZaERwT2VRNGxZLVJzWlktN0pPYk9mRnFFOU1fdmNwUzhvM2FTV3RDZXNSeTlGcWkyX0NRb1VBLWtWSXQ1WFJiSVBoMmEybmU3NzlfSHBhb3FKR0ViTGZVSGhQckVPZTg?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-5631b0208c424fcc486e",
+      "observed_at_utc": "2026-11-04T01:06:00Z",
+      "headline": "Stocks wilt, dollar slides as early midterm results point to blue sweep",
+      "summary": "Reuters riporta: Stocks wilt, dollar slides as early midterm results point to blue sweep. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMie0FVX3lxTFBWZWFDY2tZeDZfbXdVWnE2QWZwVlNpX3NqVm1OdmR0bDBGTlJjU3dJWG5yWEFpSG4tSHVhY2NEeVBsNnllVFQyb0tWRU1naXZQLWN3Tlk4VE1PV3o2cU1tVHFYX1hDT1ZtRkVWUWtYR3JwWFRyTXZIRldDWQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-fa327cef39bcc603fd3c",
       "observed_at_utc": "2026-11-03T19:11:00Z",
@@ -1369,51 +1410,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxOZlRoclI1cWxjMnVMUDNDMU1HYXoyOWRGTjlpOGs1ejBTNzRxNGtJQVJ5NVYxM2d2cjlXOThnX3dvQ0Nld2JGVWdmRmZpTjhmLTlUVlVoU0FnNENXb1pydXVQNlpaZy0zZjVfdXlOSWtwbW9KZlAybzRfNlBsNVc4VmVhSFhBajIzcTl6Y0QwR0pvWEtVbjNxTTJPdHNWcFNwakFOZE05Tk4wSTJOa2JOTWpobXFNR01WUHlqVEViaS1selhWTWc?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-e32edc495944a4ddb117",
-      "observed_at_utc": "2026-10-27T02:28:00Z",
-      "headline": "Indian equity benchmarks muted as elevated oil, Fed in focus",
-      "summary": "Reuters riporta: Indian equity benchmarks muted as elevated oil, Fed in focus. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxPcms4SkRwSDBJVER3QkV1VmoyX1pvTUlrcjRpSk4xSmNLNFZYNjh3Vi1LMGNfUnZPYnVscDdQZl9Xa0d4SHhKM1lDLXItNWh0aWMxNThJeVpMOEsxWXYwNUVXSWMtVWZRZjRRQlFUYk9tRUZxRUR1MWo0QUdPVE9TdzFnWDk0Qzd3NDZfYml4cGdSenVORGpfUTB6RTMyRV9BRmowWERaeWdsSFVLUU0zdFl3?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-f3ce8ff886438050566b",
-      "observed_at_utc": "2026-10-27T09:53:44Z",
-      "headline": "US stock futures muted as oil holds near April highs ahead of Fed decision",
-      "summary": "Reuters riporta: US stock futures muted as oil holds near April highs ahead of Fed decision. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxNR21qQWZsLUZqbWRjR2YtQ3FGakpEWWVjSUVFNjVDSi01MnRiWmV3Z2pPQUsyVGhJR3UxQ1o4RjRVa2tCLXNXbnJjNE9fbE5KVzlKTEZtNHpZb3lPR0hXcFFSVGVydlpnR3RQdVM5bDE3aVI3aVowN0NqY3NHb3VDN3hlaXpLTmxkeFc3NE13dUNqYUtIMHNxRFR5M3VYZmpKUDRzVE5WLUdwRHJCeEpQM1pKaw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-26636fbaa742bb7739d1",
-      "observed_at_utc": "2026-10-27T09:06:09Z",
-      "headline": "Euro zone mortgage demand falls as rates rise, ECB survey shows",
-      "summary": "Reuters riporta: Euro zone mortgage demand falls as rates rise, ECB survey shows. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "EUR"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxNeDN5b2ZWSHU5c0ZoTHhWNXR4ekdKZDJVeXdYZjlDcDRzVDYyakRURVVPRTlHU3Z0MFBfc0E5RWNTME1HRmhvSHA5X0ZoVHExbVNhLUFIY3VJazctT2FPdVdrQThUd3ZETnpYQ05kbzViX3h1MFpjR25rOVhPOEJlODVzZXBvSW9MT3hoem9VYWZHQjFyNENVSUEwakxZV0JJZGtNM2tidG8weFZ5Sm1XbHRB?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
