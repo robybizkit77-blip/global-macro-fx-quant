@@ -59,7 +59,7 @@ async function refreshMacro(){
   const v=String(s||"").trim(),pad=x=>String(x).padStart(2,"0");
   if(/^\d{4}-\d{2}-\d{2}/.test(v))return v.slice(0,10);
   if(/^\d{4}-\d{2}$/.test(v))return v+"-01";
-  let m=v.match(/^(\d{4})-?Q([1-4])$/i);if(m)return m[1]+"-"+pad(Number(m[2])*3)+"-28";
+  let m=v.match(/^(\d{4})-?Q([1-4])$/i);if(m){const dt=new Date(Date.UTC(Number(m[1]),Number(m[2])*3,0));return dt.toISOString().slice(0,10);}
   m=v.match(/^(\d{4})-W(\d{1,2})$/i);
   if(m){const week=Number(m[2]);if(week<1||week>53)return "";const d=new Date(Date.UTC(Number(m[1]),0,4));d.setUTCDate(d.getUTCDate()-((d.getUTCDay()+6)%7)+7*(week-1));return d.toISOString().slice(0,10);}
   m=v.match(/^(\d{4})\/(\d{1,2})(?:\/(\d{1,2}))?$/);if(m)return m[1]+"-"+pad(m[2])+"-"+pad(m[3]||1);
@@ -84,14 +84,15 @@ async function refreshMacro(){
    const mapped=[];
    for(const s of series[k]){
     if(!s.id||!Array.isArray(s.dates)||!Array.isArray(s.values)||s.dates.length!==s.values.length||s.dates.length<2)continue;
-    const date=normalizeDate(s.last_date||s.dates.at(-1)),value=Number(s.last_value);
+    const rawDate=String(s.last_date||s.dates.at(-1)),date=normalizeDate(rawDate),value=Number(s.last_value);
     if(!date||date>today||!Number.isFinite(value))continue;
     const old=current.get(s.id),oldDate=normalizeDate(old?.date);
     if(old&&date&&normalizeDate(date)<oldDate){mapped.push(old);continue;}
-    const trend=s.dates.map((d,i)=>({date:normalizeDate(d),value:Number(s.values[i])}))
-      .filter(x=>!!x.date&&Number.isFinite(x.value)&&x.date<=today).slice(-18);
+    const showDate=d=>/^\d{4}-?Q[1-4]$|^\d{4}-W\d{1,2}$/.test(String(d))?String(d):normalizeDate(d);
+    const trend=s.dates.map((d,i)=>({date:showDate(d),value:Number(s.values[i])}))
+      .filter(x=>!!normalizeDate(x.date)&&Number.isFinite(x.value)&&normalizeDate(x.date)<=today).slice(-18);
     if(trend.length<2){if(old)mapped.push(old);continue;}
-    mapped.push({...(old||{}),id:s.id,label:s.label||old?.label||s.id,category:s.category||old?.category||"Altro",unit:s.unit||old?.unit||"",frequency:s.frequency||old?.frequency||"",source_file:s.source_file||old?.source_file||"",date,value,trend});
+    mapped.push({...(old||{}),id:s.id,label:s.label||old?.label||s.id,category:s.category||old?.category||"Altro",unit:s.unit||old?.unit||"",frequency:s.frequency||old?.frequency||"",source_file:s.source_file||old?.source_file||"",date:showDate(rawDate),value,trend});
     if(old&&normalizeDate(date)>oldDate)advanced++;
     count++;
    }
