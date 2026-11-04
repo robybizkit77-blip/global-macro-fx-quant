@@ -107,7 +107,7 @@ function view(){
   pathChart("VIX · storico ufficiale Cboe",vol.history,"punti indice","Valori osservati alla chiusura, non indicazioni intraday.");
  }
  else if(v==="ENERGY"){detail("Spot e futures non sono intercambiabili","WTI futures indicativi $"+num(c.WTI_FUT.value,2)+" ("+c.WTI_FUT.date+") e Brent $"+num(c.BRENT_FUT.value,2)+" ("+c.BRENT_FUT.date+"). WTI spot EIA $"+num(c.WTI_SPOT.value,2)+" ("+c.WTI_SPOT.date+"). Serie non sincronizzate.","Un calo energetico può ridurre pressione headline, ma gli effetti su core, consumi e banche centrali vanno verificati. Futures e spot non condividono necessariamente lo stesso benchmark o timestamp.","Prezzi futures su contratti omogenei, inventari, supply, curva futures e shock geopolitico.","Non sottrarre spot EIA e futures di benchmark o date diverse: non è uno spread negoziabile né una curva term structure.","Petrolio · confronto strumenti","Futures "+c.WTI_FUT.date+" / "+c.BRENT_FUT.date+" · spot "+c.WTI_SPOT.date);
- pathChart("WTI Cushing spot · storico EIA",c.WTI_SPOT.history,"USD per barile","Serie storica spot fino al 27 ottobre, non un futures del 3 novembre");
+ pathChart("WTI Cushing spot · storico EIA",c.WTI_SPOT.history,"USD per barile","Serie storica spot fino al "+c.WTI_SPOT.date+", distinta dai futures");
  }
  else if(v==="GOLD"){detail("Oro: non basta il prezzo in USD","Futures COMEX oro indicativi a $"+num(c.GOLD_FUT.value,2)+", variazione 1D "+p(c.GOLD_FUT.change1d_pct,2)+"; osservazione "+c.GOLD_FUT.date+". Il prezzo è un proxy secondario, non un fixing ufficiale.","L'oro può muoversi per real yields, USD, liquidità, domanda di copertura e flussi ETF. Una variazione giornaliera non isola la causa.","Real yields 10Y aggiornati e allineati, USD, ETF flows, positioning e variazioni su più sessioni.","Questo è GC=F da fonte secondaria, non fixing LBMA, spot fisico né settlement certificato.","Oro · futures indicativo",c.GOLD_FUT.date);
  pathChart("Oro · storico omogeneo da integrare",[],"USD/oncia","Prezzo corrente indicativo disponibile; storico completo sarà collegato nella fase dati/grafici, senza inventare punti");
@@ -121,19 +121,19 @@ function book(){
  var e=D.equity,c=D.credit,r=D.rates,v=D.volatility.VIX,q=D.commodities,pv=e.participation;
  var chapters=[
  ['Azionario e partecipazione',"Il 2 novembre i grandi indici USA sono stati deboli, ma la maggioranza dei componenti S&P 500 è salita. Non scambiare l'indice ponderato con la partecipazione.",
-  line("S&P 500",num(e.indices[0].value,2)+" · "+p(e.indices[0].change1d,2),"Associated Press","02/11")+
-  line("Nasdaq Composite",num(e.indices[1].value,2)+" · "+p(e.indices[1].change1d,2),"Associated Press","02/11")+
-  line("Russell 2000",p(e.indices[2].change1d,2),"Associated Press","02/11")+
-  line("Euro Stoxx 50",p(e.indices[4].change1d,2),"PrimerIQ, secondaria","02/11")+
-  line("Partecipazione S&P 500",num(pv.sp500.percent_advancers,1)+"% in rialzo",pv.sp500.source,"02/11")+
-  line("Tutte le azioni USA idonee",num(pv.us_all.percent_advancers,1)+"% in rialzo",pv.us_all.source,"02/11")
+  line("S&P 500",num(e.indices[0].value,2)+" · "+p(e.indices[0].change1d,2),e.indices[0].source,e.indices[0].as_of)+
+  line("Nasdaq Composite",num(e.indices[1].value,2)+" · "+p(e.indices[1].change1d,2),e.indices[1].source,e.indices[1].as_of)+
+  line("Russell 2000",p(e.indices[2].change1d,2),e.indices[2].source,e.indices[2].as_of)+
+  line("Euro Stoxx 50",p(e.indices[4].change1d,2),e.indices[4].source,e.indices[4].as_of)+
+  line("Partecipazione S&P 500",num(pv.sp500.percent_advancers,1)+"% in rialzo",pv.sp500.source,pv.sp500.date)+
+  line("Tutte le azioni USA idonee",num(pv.us_all.percent_advancers,1)+"% in rialzo",pv.us_all.source,pv.us_all.date)
  ],
  ["Credito · IG e HY","Il premio al rischio credito è un controllo importante, ma lo spread non equivale alla probabilità numerica di default né al rendimento dei bond.",
-  line("High Yield OAS",num(c.HY.value*100,0)+" bp",c.HY.source,"02/11")+
-  line("IG OAS",num(c.IG.value*100,0)+" bp",c.IG.source,"02/11")+
-  line("HY vs 30/10",signed((c.HY.value-c.HY.previous)*100,0)+" bp","comparazione omogenea ICE BofA","02/11")
+  line("High Yield OAS",num(c.HY.value*100,0)+" bp",c.HY.source,c.HY.date)+
+  line("IG OAS",num(c.IG.value*100,0)+" bp",c.IG.source,c.IG.date)+
+  line("HY vs precedente",signed((c.HY.value-c.HY.previous)*100,0)+" bp","variazione della stessa serie ICE BofA",c.HY.date)
  ],
- ["Treasury e curva nominale","Front-end e long-end non raccontano necessariamente la stessa storia. Il movimento parallelo del 2/11 non giustifica una causa unica.",
+ ["Treasury e curva nominale","Front-end e long-end non raccontano necessariamente la stessa storia. Non attribuire una causa unica sulla base delle sole variazioni.",
   line("Treasury 2Y",num(r.US_2Y.value,2)+"% · "+signed(r.US_2Y.change1d_bp,0)+" bp","U.S. Treasury",r.US_2Y.date)+
   line("Treasury 10Y",num(r.US_10Y.value,2)+"% · "+signed(r.US_10Y.change1d_bp,0)+" bp","U.S. Treasury",r.US_10Y.date)+
   line("Spread 10Y−2Y",signed(r.spread_10y2y_bp,0)+" bp","calcolo su dati omogenei",r.US_10Y.date)+
@@ -141,8 +141,8 @@ function book(){
   line("Breakeven 10Y storico",num(r.breakeven.value,2)+"%","U.S. market-based inflation comp.",""+r.breakeven.date)
  ],
  ["Volatilità implicita","Un VIX in salita indica maggiore premio per la volatilità, non certifica da solo vendite pervasive né recessione.",
-  line("VIX",num(v.value,2),"Cboe","02/11")+
-  line("Δ VIX 1D",p(v.change1d_pct,2),"Cboe","02/11")
+  line("VIX",num(v.value,2),"Cboe",v.date)+
+  line("Δ VIX 1D",p(v.change1d_pct,2),"Cboe",v.date)
  ],
  ["Oro, WTI e Brent","Non mescolare spot con futures e timestamp diversi: il confronto dei livelli è illustrativo, non uno spread di raffinazione o un segnale.",
   line("Oro GC=F", "$"+num(q.GOLD_FUT.value,2)+" · "+p(q.GOLD_FUT.change1d_pct,2),"Yahoo · futures secondari",q.GOLD_FUT.date)+
