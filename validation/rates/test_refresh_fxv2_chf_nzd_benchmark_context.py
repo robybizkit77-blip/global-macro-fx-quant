@@ -90,6 +90,57 @@ class TestChfNzdResearch(unittest.TestCase):
   # +19bp from 10/29 to 10/30 is a benchmark-change gap, NOT a policy repricing.
   self.assertEqual(round((x["after_roll"][0]["2Y"]-x["before_roll"][0]["2Y"])*100),19)
   self.assertFalse(x["cross_roll_change_allowed"])
+ def test_new_official_html_public_row_advances_post_roll_only(self):
+  base=m.nzd_context(RBNZ_OLD,ROLL,NEW,TODAY)
+  live={
+   "schema":"GMFQ_FXV2_NZD_RBNZ_B2_PUBLIC_HTML_RESEARCH_V1",
+   "status":"OFFICIAL_PUBLIC_HTML_TABLE_CAPTURED_RESEARCH_ONLY",
+   "official_html_observed":True,"independent_xlsx_reconciled":False,
+   "eligible_for_core":False,"eligible_for_fx_pair_engine":False,
+   "eligible_for_backtests":False,
+   "source_url":"https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates",
+   "as_of":"2026-11-03","release_date":"2026-11-04",
+   "benchmark_roll_date":"2026-10-30","benchmark_2Y":"April 2029",
+   "benchmark_10Y":"April 2037","benchmark_note_date":"2026-11-02",
+   "2Y":3.95,"10Y":4.88,"curve_bp":93,
+   "post_roll_table_rows":[{"date":"2026-11-03","2Y":3.95,"10Y":4.88}]
+  }
+  recent=m.extend_nzd_with_live_public_table(base,live,TODAY)
+  self.assertEqual(recent["latest_date"],"2026-11-03")
+  self.assertEqual(recent["latest_2Y"],3.95)
+  self.assertEqual(recent["latest_10Y"],4.88)
+  self.assertEqual(recent["latest_curve_bp"],93)
+  self.assertEqual(recent["same_benchmark_change_bp"],{
+      "2Y":-1.0,"10Y":-2.0,"start":"2026-10-30","end":"2026-11-03"})
+  self.assertFalse(recent["cross_roll_change_allowed"])
+  self.assertFalse(recent["independent_xlsx_reconciled"])
+  self.assertFalse(recent["eligible_for_core"])
+  self.assertFalse(recent["eligible_for_automatic_promotion"])
+  self.assertEqual(m.extend_nzd_with_live_public_table(recent,live,TODAY),recent)
+ def test_rbnz_public_reader_rejects_false_certification_roll_and_future(self):
+  base=m.nzd_context(RBNZ_OLD,ROLL,NEW,TODAY)
+  live={
+   "schema":"GMFQ_FXV2_NZD_RBNZ_B2_PUBLIC_HTML_RESEARCH_V1",
+   "status":"OFFICIAL_PUBLIC_HTML_TABLE_CAPTURED_RESEARCH_ONLY",
+   "official_html_observed":True,"independent_xlsx_reconciled":False,
+   "eligible_for_core":False,"eligible_for_fx_pair_engine":False,
+   "eligible_for_backtests":False,
+   "source_url":"https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates",
+   "as_of":"2026-11-03","release_date":"2026-11-04",
+   "benchmark_roll_date":"2026-10-30","benchmark_2Y":"April 2029",
+   "benchmark_10Y":"April 2037","benchmark_note_date":"2026-11-02",
+   "2Y":3.95,"10Y":4.88,"curve_bp":93,
+   "post_roll_table_rows":[{"date":"2026-11-03","2Y":3.95,"10Y":4.88}]
+  }
+  for k,v in [("independent_xlsx_reconciled",True),("benchmark_2Y","May 2028"),
+              ("as_of","2026-11-05"),("eligible_for_core",True),
+              ("curve_bp",85)]:
+   bad=copy.deepcopy(live);bad[k]=v
+   with self.subTest(k=k),self.assertRaises(ValueError):
+    m.extend_nzd_with_live_public_table(base,bad,TODAY)
+  bad=copy.deepcopy(live);bad["post_roll_table_rows"][0]["2Y"]=4.19
+  with self.assertRaises(ValueError):
+   m.extend_nzd_with_live_public_table(base,bad,TODAY)
  def test_feed_contains_no_core_permissions(self):
   a=m.chf_context(SNB,WEB10,BASE,TODAY);b=m.nzd_context(RBNZ_OLD,ROLL,NEW,TODAY)
   x=m.create_report(a,b,TODAY.isoformat())

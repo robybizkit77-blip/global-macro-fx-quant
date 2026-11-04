@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'validation/rates/refresh_fxv2_chf_nzd_benchmark_context.py'
+      - 'validation/rates/collect_rbnz_b2_daily_web_v1.py'
+      - 'validation/rates/test_collect_rbnz_b2_daily_web_v1.py'
       - 'validation/rates/test_refresh_fxv2_chf_nzd_benchmark_context.py'
       - 'site/fx-quant-v2/chf-nzd-benchmark-research.json'
       - 'site/fx-quant-v2/tassi.html'
@@ -13,6 +15,8 @@ on:
     branches: [main]
     paths:
       - 'validation/rates/refresh_fxv2_chf_nzd_benchmark_context.py'
+      - 'validation/rates/collect_rbnz_b2_daily_web_v1.py'
+      - 'validation/rates/test_collect_rbnz_b2_daily_web_v1.py'
       - 'validation/rates/test_refresh_fxv2_chf_nzd_benchmark_context.py'
       - 'site/fx-quant-v2/chf-nzd-benchmark-research.json'
       - 'site/fx-quant-v2/tassi.html'
@@ -44,15 +48,32 @@ jobs:
       - name: Test CHF matched SNB tenors and NZD benchmark roll safeguards
         run: |
           python3 validation/rates/test_refresh_fxv2_chf_nzd_benchmark_context.py
+          python3 validation/rates/test_collect_rbnz_b2_daily_web_v1.py
           python3 validation/rates/test_recover_chf_snb_paired_history_v1.py
-      - name: Build independently dated context from official source and archived B2 research
+      - name: Fetch the newest NZD B2 same-row government yields from RBNZ public HTML
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Do not convert a source outage into a false 'fresh' observation.
+          # CHF remains independently refreshable if RBNZ is unavailable.
+          if python3 validation/rates/collect_rbnz_b2_daily_web_v1.py \
+            --output /tmp/fxv2-rbnz-b2-daily-source.json; then
+            echo 'FXV2_RBNZ_B2_LIVE_SOURCE_READ_SUCCEEDED'
+          else
+            echo 'FXV2_RBNZ_B2_LIVE_SOURCE_UNAVAILABLE: previous dated NZD context retained'
+            rm -f /tmp/fxv2-rbnz-b2-daily-source.json
+          fi
+      - name: Build independently dated CHF source and NZD post-roll research
         shell: bash
         run: |
           set -euo pipefail
           if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
-            python3 validation/rates/refresh_fxv2_chf_nzd_benchmark_context.py --output /tmp/fxv2-chf-nzd-research-candidate.json
+            python3 validation/rates/refresh_fxv2_chf_nzd_benchmark_context.py \
+              --nzd-daily-candidate /tmp/fxv2-rbnz-b2-daily-source.json \
+              --output /tmp/fxv2-chf-nzd-research-candidate.json
           else
-            python3 validation/rates/refresh_fxv2_chf_nzd_benchmark_context.py
+            python3 validation/rates/refresh_fxv2_chf_nzd_benchmark_context.py \
+              --nzd-daily-candidate /tmp/fxv2-rbnz-b2-daily-source.json
           fi
       - name: Publish only changed V2 research feed (no canonical Rates writes)
         if: github.event_name != 'pull_request'
@@ -88,6 +109,7 @@ jobs:
         with:
           name: fxv2-chf-nzd-benchmark-evidence
           path: |
+            /tmp/fxv2-rbnz-b2-daily-source.json
             /tmp/fxv2-chf-nzd-research-candidate.json
             site/fx-quant-v2/chf-nzd-benchmark-research.json
           if-no-files-found: warn
