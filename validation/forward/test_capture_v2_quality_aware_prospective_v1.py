@@ -88,8 +88,19 @@ class QualityAwareProspectiveCaptureTests(unittest.TestCase):
         self.assertEqual(len(snap["market_context"]["pairs"]),28)
         self.assertEqual(snap["market_context"]["summary"]["FX_scores"],0)
         self.assertTrue(snap["market_context"]["no_2y_yield_spread_as_trading_signal"])
-        self.assertEqual(snap["market_context"]["summary"]["official_6m"],4)
-        self.assertEqual(snap["market_context"]["summary"]["estimated_or_proxy_6m"],4)
+        # Live source availability changes: missing 6M must remain missing,
+        # not silently reclassified as an estimate or fabricated official OIS.
+        tiers=[v["six_month_source_tier"] for v in
+               snap["market_context"]["countries"].values()]
+        totals=snap["market_context"]["summary"]
+        self.assertEqual(totals["official_6m"],tiers.count("OFFICIAL_MONETARY_SOURCE"))
+        self.assertEqual(totals["estimated_or_proxy_6m"],sum(t in (
+            "ESTIMATED_DATED_FUTURES_NOT_OIS",
+            "INDICATIVE_SECONDARY_FUTURES_NOT_OIS",
+            "NZD_BANK_BILL_BASIS_PROXY_NOT_OIS") for t in tiers))
+        self.assertEqual(totals["missing_6m"],tiers.count("NO_VERIFIED_6M_MARKET_CONTEXT"))
+        self.assertEqual(totals["official_6m"]+totals["estimated_or_proxy_6m"]+
+                         totals["missing_6m"],8)
         self.assertEqual(
             sum(len([c["inflation"],c["labour"],c["growth"]])
                 for c in snap["economic_observations"].values()),24)
@@ -116,11 +127,22 @@ class QualityAwareProspectiveCaptureTests(unittest.TestCase):
     def test_resigned_noncomparable_6m_or_unmatched_2y_cannot_become_fx_signal(self):
         valid=self.make()
         original=valid["market_context"]
-        self.assertEqual(original["summary"]["estimated_or_proxy_6m"],4)
-        self.assertEqual(original["countries"]["NZD"]["six_month_source_tier"],
-                         "NZD_BANK_BILL_BASIS_PROXY_NOT_OIS")
-        for c in ("NZD","CHF","EUR","USD"):
-            self.assertFalse(original["countries"][c]["six_month_is_official_ois_only"])
+        self.assertEqual(sum(original["summary"][k] for k in
+                             ("official_6m","estimated_or_proxy_6m","missing_6m")),8)
+        # A missing 6M is not a proxy rate of zero and cannot enter FX.
+        for v in original["countries"].values():
+            if v["six_month_source_tier"]=="NO_VERIFIED_6M_MARKET_CONTEXT":
+                self.assertIsNone(v["six_month_value_pct"])
+                self.assertIsNone(v["six_month_source_date"])
+                self.assertFalse(v["six_month_is_official_ois_only"])
+        for c, v in original["countries"].items():
+            # Tier depends on today's actual frozen sources. Never hardcode a
+            # given currency as official, proxy or missing for all future days.
+            self.assertEqual(v["six_month_is_official_ois_only"],
+                             v["six_month_source_tier"] == "OFFICIAL_MONETARY_SOURCE")
+            if v["six_month_source_tier"] == "NZD_BANK_BILL_BASIS_PROXY_NOT_OIS":
+                self.assertEqual(c, "NZD")
+                self.assertFalse(v["six_month_is_official_ois_only"])
         for pair,info in original["pairs"].items():
             self.assertIsNone(info["6m_cross_market_policy_spread_bp"])
             self.assertIsNone(info["FX_signal"])
