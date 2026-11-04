@@ -149,6 +149,78 @@ def nzd_context(before, change, current, today, previous=None):
     }
 
 
+
+def extend_nzd_with_live_public_table(base: dict, live: dict, today: dt.date) -> dict:
+    """Upgrade a dated *research-only* post-roll context from newly read RBNZ HTML.
+
+    The official web page is a genuine primary publication, but it is not an
+    independent XLSX reconciliation or a verified pre/post intraday market move.
+    """
+    demand(isinstance(base,dict) and base.get("status")=="RBNZ_GOVT_B2_WEB_RESEARCH_UNAPPROVED" and
+           base.get("cross_roll_change_allowed") is False and
+           base.get("eligible_for_core") is False and
+           base.get("independent_xlsx_reconciled") is False,
+           "prior NZD research benchmark invariants invalid")
+    demand(isinstance(live,dict) and
+           live.get("schema")=="GMFQ_FXV2_NZD_RBNZ_B2_PUBLIC_HTML_RESEARCH_V1" and
+           live.get("status")=="OFFICIAL_PUBLIC_HTML_TABLE_CAPTURED_RESEARCH_ONLY" and
+           live.get("official_html_observed") is True and
+           live.get("independent_xlsx_reconciled") is False and
+           live.get("eligible_for_core") is False and
+           live.get("eligible_for_fx_pair_engine") is False and
+           live.get("eligible_for_backtests") is False,
+           "not a verified HTML-only research record")
+    demand(live.get("source_url")==
+           "https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates",
+           "NZD official source changed")
+    demand(live.get("benchmark_roll_date")==base["roll_date"]=="2026-10-30" and
+           live.get("benchmark_2Y")==base["new_benchmark"]["2Y"]=="April 2029" and
+           live.get("benchmark_10Y")==base["new_benchmark"]["10Y"]=="April 2037" and
+           live.get("benchmark_note_date")=="2026-11-02",
+           "RBNZ benchmark roll changed or needs review")
+    last=date(live["as_of"])
+    release=date(live["release_date"])
+    demand(base["roll_date"]<=last.isoformat()<=today.isoformat() and
+           last<=release and 0<=(today-last).days<=9 and
+           release<=today,"NZD web daily source date invalid or old")
+    if last.isoformat()<=base["latest_date"]:
+        return base
+    y2,y10=yield_rate(live["2Y"]),yield_rate(live["10Y"])
+    demand(abs(round((y10-y2)*100,2)-live["curve_bp"])<.02,
+           "NZD B2 official HTML daily curve arithmetic mismatch")
+    start=base["after_roll"][0]
+    demand(start["date"]==base["roll_date"] and
+           start["date"]<last.isoformat() and
+           yield_rate(start["2Y"])==3.96 and yield_rate(start["10Y"])==4.9,
+           "NZD post-roll anchor has changed unexpectedly")
+    # Need the official table row for the most recent observation, not a
+    # synthetic extrapolation; no 29Oct->30Oct cross-roll movement is computed.
+    rows=live.get("post_roll_table_rows",[])
+    demand(isinstance(rows,list) and any(
+        isinstance(row,dict) and row.get("date")==live["as_of"] and
+        row.get("2Y")==y2 and row.get("10Y")==y10 for row in rows),
+        "latest daily B2 observation not present in same-row public table")
+    new=dict(base)
+    new["latest_date"]=last.isoformat()
+    new["latest_2Y"]=y2
+    new["latest_10Y"]=y10
+    new["latest_curve_bp"]=round((y10-y2)*100,1)
+    new["after_roll"]=[start,{"date":last.isoformat(),"2Y":y2,"10Y":y10}]
+    new["same_benchmark_change_bp"]={
+        "2Y":round((y2-start["2Y"])*100,1),
+        "10Y":round((y10-start["10Y"])*100,1),
+        "start":start["date"],"end":last.isoformat()
+    }
+    new["source"]="Reserve Bank of New Zealand · B2 government benchmarks (live public HTML research)"
+    new["source_url"]=live["source_url"]
+    new["source_release_date"]=live["release_date"]
+    new["source_capture_method"]="OFFICIAL_HTML_PUBLIC_TABLE_NOT_INDEPENDENT_XLSX"
+    new["research_only_note"]="RBNZ B2 same-row government benchmark closing yields, public HTML only; not XLSX-reconciled. Roll 30 October preserved, no pre/post-roll movement. No FX Core or backtests."
+    new["independent_xlsx_reconciled"]=False
+    new["eligible_for_automatic_promotion"]=False
+    return new
+
+
 def create_report(chf, nzd, inspected_as_of, old=None):
     demand(chf is not None or nzd is not None,"No validated context available")
     prior=old or {}
@@ -171,6 +243,8 @@ def main():
                    default=dt.datetime.now(dt.timezone.utc).date())
     p.add_argument("--output",type=Path,default=TARGET)
     p.add_argument("--no-network",action="store_true")
+    p.add_argument("--nzd-daily-candidate",type=Path,
+                   help="Already fetched official public RBNZ B2 HTML research receipt, or absent on source failure")
     args=p.parse_args()
     today=args.as_of
     old=json.loads(TARGET.read_text(encoding="utf-8"))
@@ -184,21 +258,37 @@ def main():
             chf=chf_context(inspection,official,canonical,today,old.get("CHF"))
         except (ValueError,KeyError,TypeError) as exc:
             print("CHF_SAME_BASIS_RESEARCH_NOT_ADVANCED "+str(exc))
-    nzd=None
+    nzd=old.get("NZD")
     try:
-        nzd=nzd_context(obj("NZD_B2_GOVT_LATEST_WEB_RESEARCH"),
-                        obj("NZD_B2_OCT30_WEB_CONTEXT_V1"),
-                        obj("NZD_B2_GOVT_WEB_REVIEW_CONTEXT"),
-                        today,old.get("NZD"))
+        base=nzd_context(obj("NZD_B2_GOVT_LATEST_WEB_RESEARCH"),
+                         obj("NZD_B2_OCT30_WEB_CONTEXT_V1"),
+                         obj("NZD_B2_GOVT_WEB_REVIEW_CONTEXT"),today)
+        if not nzd or base["latest_date"]>nzd["latest_date"]:
+            nzd=base
     except (ValueError,KeyError,TypeError) as exc:
-        print("NZD_BENCHMARK_RESEARCH_NOT_ADVANCED "+str(exc))
+        print("NZD_ARCHIVED_WEB_RESEARCH_NOT_ADVANCED "+str(exc))
+    if args.nzd_daily_candidate and args.nzd_daily_candidate.is_file() and nzd:
+        try:
+            daily=json.loads(args.nzd_daily_candidate.read_text(encoding="utf-8"))
+            nzd=extend_nzd_with_live_public_table(nzd,daily,today)
+        except (ValueError,KeyError,TypeError, OSError) as exc:
+            print("NZD_PUBLIC_B2_DAILY_RESEARCH_REJECTED "+str(exc))
+    else:
+        print("NZD_PUBLIC_B2_DAILY_SOURCE_UNAVAILABLE_PREVIOUS_RETAINED")
     report=create_report(chf,nzd,today.isoformat(),old)
-    # Preserve original content when neither source observation has changed.
-    old_dates=(old.get("CHF") or {}).get("paired_date"),(old.get("NZD") or {}).get("latest_date")
-    new_dates=(report.get("CHF") or {}).get("paired_date"),(report.get("NZD") or {}).get("latest_date")
-    if old_dates==new_dates and old.get("CHF") and old.get("NZD"):
+    # Neither a fresh pipeline run nor an unchanged source date can create
+    # a new market observation. Also detect genuine same-day revisions.
+    old_chf=old.get("CHF") or {}
+    old_nzd=old.get("NZD") or {}
+    new_chf=report.get("CHF") or {}
+    new_nzd=report.get("NZD") or {}
+    watched_chf=("paired_date","2Y","10Y","separate_10y")
+    watched_nzd=("latest_date","latest_2Y","latest_10Y","source_release_date")
+    if old_chf and old_nzd and all(old_chf.get(k)==new_chf.get(k) for k in watched_chf) and all(
+       old_nzd.get(k)==new_nzd.get(k) for k in watched_nzd):
         print("FXV2_BENCHMARK_RESEARCH_SAME_OBSERVATIONS; no synthetic clock refresh")
         return
+    new_dates=new_chf.get("paired_date"),new_nzd.get("latest_date")
     args.output.parent.mkdir(parents=True,exist_ok=True)
     args.output.write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
     print(json.dumps({"status":"RESEARCH_V2_ONLY","CHF_paired":new_dates[0],"NZD_roll_segment":new_dates[1],
