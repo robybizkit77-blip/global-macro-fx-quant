@@ -13,6 +13,8 @@ on:
       - 'validation/qa_fxv2_liquidity_credit_overlay_v1.cjs'
       - 'validation/qa_fxv2_macro_pair_observed_v1.cjs'
       - 'validation/qa_fxv2_macro_dynamic_pair_research_v1.cjs'
+      - 'validation/qa_fxv2_macro_shadow_baseline_v1.cjs'
+      - 'validation/macro/MACRO_SHADOW_BASELINE_V1_SPEC.md'
       - 'validation/publishing/wait_fxv2_public_revision_v1.py'
       - 'validation/publishing/test_wait_fxv2_public_revision_v1.py'
       - '.github/workflows/fx-quant-v2-browser-daily-qa.yml'
@@ -28,6 +30,8 @@ on:
       - 'validation/qa_fxv2_liquidity_credit_overlay_v1.cjs'
       - 'validation/qa_fxv2_macro_pair_observed_v1.cjs'
       - 'validation/qa_fxv2_macro_dynamic_pair_research_v1.cjs'
+      - 'validation/qa_fxv2_macro_shadow_baseline_v1.cjs'
+      - 'validation/macro/MACRO_SHADOW_BASELINE_V1_SPEC.md'
       - 'validation/publishing/wait_fxv2_public_revision_v1.py'
       - 'validation/publishing/test_wait_fxv2_public_revision_v1.py'
       - '.github/workflows/fx-quant-v2-browser-daily-qa.yml'
@@ -62,7 +66,16 @@ jobs:
           node validation/qa_fxv2_liquidity_credit_overlay_v1.cjs
           node validation/qa_fxv2_macro_pair_observed_v1.cjs
           node validation/qa_fxv2_macro_dynamic_pair_research_v1.cjs
+          FXV2_SHADOW_EVIDENCE=1 node validation/qa_fxv2_macro_shadow_baseline_v1.cjs
           python3 -m unittest validation.publishing.test_wait_fxv2_public_revision_v1 -v
+      - name: Preserve current Macro Shadow V1 score receipt (research only)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fxv2-shadow-macro-evidence
+          path: fxv2-shadow-baseline-evidence/
+          if-no-files-found: warn
+          retention-days: 30
   v2-freshness-audit:
     if: >-
       github.event_name != 'workflow_run' ||
