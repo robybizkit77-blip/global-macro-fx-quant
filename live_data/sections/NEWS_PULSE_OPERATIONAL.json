@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-04",
-  "generated_at_utc": "2026-11-04T14:30:10.177069Z",
+  "generated_at_utc": "2026-11-04T15:28:52.408921Z",
   "items": [
     {
       "as_of": "2026-11-04",
@@ -47,7 +47,7 @@
       "title": "CAD: repricing implicito da futures più hawkish (+1.5 bp 3M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-04T14:30:10.177069Z",
+  "last_checked_at_utc": "2026-11-04T15:28:52.408921Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -482,11 +482,11 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-02",
+            "date": "2026-11-03",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-02",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-03",
             "status": "DAILY_CONTEXT_ONLY",
             "yield_2y_pct": 3.26
           }
@@ -537,11 +537,11 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-02",
+            "date": "2026-11-03",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-02",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-03",
             "status": "DAILY_CONTEXT_ONLY",
             "yield_2y_pct": 3.26
           }
