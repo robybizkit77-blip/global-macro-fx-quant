@@ -47,10 +47,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - name: Test preregistered formula, source quality and frozen Core
         run: |
           python -m unittest validation.macro.test_publish_fxv2_domestic_shadow_baseline_v1 -v
           python -m unittest validation.macro.test_v2_domestic_candidate_explicit_formula_v1 -v
+          node validation/qa_fxv2_macro_shadow_display_v1.cjs
       - name: Produce independent research receipt with real source periods
         shell: bash
         run: |
