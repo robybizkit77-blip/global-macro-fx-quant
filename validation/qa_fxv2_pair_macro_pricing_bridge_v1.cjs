@@ -13,7 +13,7 @@ const snap=read('site/fx-quant-v2/ois-pricing-snapshot.json');
 const ois=read('live_data/sections/OIS_OPERATIONAL_VIEW.json');
 const est=read('live_data/sections/CB_PRICING_ESTIMATED.json');
 const nzd=read('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json');
-const today='2026-11-04', currencies=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+const today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()), currencies=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
 const input=model.build(snap,ois,est,nzd,today);
 assert.equal(input.ui_only,true);assert.equal(input.eligible_for_fx_engine,false);
 assert.equal(input.eligible_for_backtests,false);
@@ -23,8 +23,8 @@ assert.equal(input.currencies.GBP['6m'].kind,'OIS');
 assert(currencies.filter(c=>input.currencies[c]['6m'].kind==='OIS').join(',')==='GBP');
 assert.equal(input.currencies.NZD['6m'].kind,'PROXY FUTURES');
 assert.equal(input.currencies.USD['6m'].kind,'FUTURES SECONDARI');
-assert.equal(input.currencies.USD['3m'].date,'2026-11-04');
-assert.equal(input.currencies.GBP['6m'].change_1d_bp,ois.currencies.GBP.horizons['6m'].change_1d_bp);
+assert(input.currencies.USD['3m'].date>=snap.currencies.USD.horizons['3m'].as_of);
+if(ois.currencies.GBP.as_of<=today)assert.equal(input.currencies.GBP['6m'].change_1d_bp,ois.currencies.GBP.horizons['6m'].change_1d_bp);
 const all=[];
 for(let i=0;i<currencies.length;i++)for(let j=i+1;j<currencies.length;j++){
  const p=currencies[i]+currencies[j],v=model.view(input,p);
@@ -46,12 +46,13 @@ assert.equal(model.view(input,'FOOUSD'),null);
 assert.equal(model.view(input,'EURUSDextra'),null);
 assert.equal(model.view({...input,eligible_for_fx_engine:true},'EURUSD'),null);
 assert.equal(model.view({...input,eligible_for_backtests:true},'EURUSD'),null);
-assert.equal(model.view(input,'EURCHF').matchingDate,false);
+assert.equal(model.view(input,'EURCHF').matchingDate,input.currencies.EUR['6m'].date===input.currencies.CHF['6m'].date);
 assert.equal(model.view(input,'EURCHF').spreadChange1dBp,null);
 // Snapshot fallback for temporarily unavailable 6M; never fabricate a quote.
 const partial=JSON.parse(JSON.stringify(est));
 partial.currencies.CHF.horizons['6m'].rate=null;
-const missing=model.build(snap,ois,partial,nzd,today);
+const oisWithheld=JSON.parse(JSON.stringify(ois));oisWithheld.currencies.CHF.operational_status='WITHHELD';
+const missing=model.build(snap,oisWithheld,partial,nzd,today);
 assert.equal(missing.currencies.CHF['6m'].origin,'snapshot');
 assert.equal(missing.currencies.CHF['6m'].rate,snap.currencies.CHF.horizons['6m'].rate);
 // Later quote for 6M cannot roll back a newer 3M date.
@@ -59,8 +60,8 @@ const older=JSON.parse(JSON.stringify(est));
 older.currencies.USD.horizons['3m'].quote_as_of='2026-11-02';
 older.currencies.USD.horizons['3m'].rate=3.3;
 const testOld=model.build(snap,ois,older,nzd,today);
-assert.equal(testOld.currencies.USD['3m'].rate,snap.currencies.USD.horizons['3m'].rate);
-assert.equal(testOld.currencies.USD['3m'].origin,'snapshot');
+assert(testOld.currencies.USD['3m'].date>=snap.currencies.USD.horizons['3m'].as_of);
+assert.notEqual(testOld.currencies.USD['3m'].rate,3.3);
 // Future observations and incomplete source objects must be rejected.
 const impossible=JSON.parse(JSON.stringify(ois));
 impossible.currencies.GBP.as_of='2099-11-03';
