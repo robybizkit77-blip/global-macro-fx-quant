@@ -233,10 +233,17 @@ note('liquidity_credit','Frequenze miste','Liquidità e credito pubblicati mensi
 const ratesHtml=file('tassi.html');
 requireValid(ratesHtml.includes('CHF_SNB_10Y_SPOT_CONTEXT.json')&&ratesHtml.includes('NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json'),
  'V2 missing separated CHF/NZD research context overlay');
-requireValid(file('ois.html').includes('ageInfo(')&&
- file('ois.html').includes('tenori oltre 7 giorni')&&
- file('ois.html').includes('Feed repository consultati'),
- 'V2 OIS must show source vintage and not claim source consultation proves a new quote');
+// Check the new per-tenor provenance contract, not an obsolete UI label.
+// Availability of the repository feed is NOT proof that every tenor was refreshed.
+const oisHtml=file('ois.html');
+requireValid(oisHtml.includes('ageInfo(')&&
+ oisHtml.includes('tenori oltre 7 giorni')&&
+ oisHtml.includes('tenori da feed /')&&
+ oisHtml.includes(' da snapshot')&&
+ oisHtml.includes('z.as_of<old.as_of')&&
+ oisHtml.includes('origin:x.origin==="live"?"live":"snapshot"')&&
+ oisHtml.includes('change_1w_bp'),
+ 'V2 OIS must show dated per-tenor source provenance, reject older quotes and distinguish feed from fallback');
 const pages=['index','valute','coppie','tassi','ois','macro','banche','cot','cross-asset','liquidita-credito','calendario-news','research'];
 requireValid(pages.every(x=>fs.existsSync(path.join(site,x+'.html'))),'Missing V2 HTML section');
 result.summary={
