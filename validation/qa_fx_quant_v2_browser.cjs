@@ -66,6 +66,26 @@ async function audit(browser,name,file,selector,view,viewport){
     const display=((await page.locator('#vixFact').textContent())||'');
     if(!/^VIX\s+[\d,.]+/.test(display))issue(name,view,'vix_render_not_synced','VIX UI value not rendered: '+display);
   }
+  if(name==='coppie'&&(mode==='public'||mode==='pr-local')){
+    // Informative 2Y spread: research overlays must never enter pair quality signals.
+    await page.locator('#allPairs').selectOption('NZDCHF');
+    await page.waitForFunction(()=>document.querySelector('#gapDate')?.textContent?.includes('STIMA/PROXY INDICATIVO'),null,{timeout:15000});
+    const x=await page.evaluate(()=>({
+      gap:document.querySelector('#pairGap')?.textContent,
+      quality:document.querySelector('#gapDate')?.textContent,
+      a:document.querySelector('#legADate')?.textContent,
+      b:document.querySelector('#legBDate')?.textContent,
+      caveat:document.querySelector('#pairRatesSourceNote')?.textContent,
+      canonical:document.querySelector('#pairQuality')?.textContent
+    }));
+    if(x.gap!=='+372,8 bp'||!x.a.includes('PROXY 2Y')||!x.b.includes('STIMA 2Y')||
+       !x.caveat.includes('NON leggere lo spread come repricing')||!x.canonical)
+      issue(name,view,'pair_estimated_spread_missing',JSON.stringify(x));
+    await page.locator('#allPairs').selectOption('EURUSD');
+    const ordinary=((await page.locator('#gapDate').textContent())||'');
+    if(ordinary.includes('STIMA/PROXY INDICATIVO'))
+      issue(name,view,'pair_estimates_leaked','EUR/USD erroneously marked estimated: '+ordinary);
+  }
   if(name==='tassi'&&mode==='public'){
     // This is a read-only verification of V2 research panels, never a Core rates certification.
     for(const [ccy,expected,words] of [
