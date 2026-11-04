@@ -39,7 +39,7 @@
 (function(){
 "use strict";
 const D=JSON.parse(document.getElementById("embeddedValute").textContent),ORDER=D.currencies,PERIODS=["1D","1W","1M","3M","6M","1Y"];
-let period="1W",selected="CHF",peer="USD",range="3M",pairFilter="ALL",pairSort="ABS",expandPairs=false;
+let period="1W",selected="CHF",peer="USD",range="3M",pairFilter="ALL",pairSort="ABS",expandPairs=false,feedMode="snapshot";
 const $=id=>document.getElementById(id);
 const esc=x=>String(x==null?"":x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const num=(v,d=2)=>v===null||v===undefined||!Number.isFinite(Number(v))?"—":Number(v).toLocaleString("it-IT",{minimumFractionDigits:d,maximumFractionDigits:d});
@@ -61,7 +61,7 @@ function metrics(){
 }
 function tiles(){
  const p=D.periods[period],scores=rnk();
- $("periodContext").textContent="Confronto omogeneo: "+interval(period);
+ $("periodContext").textContent="Confronto omogeneo: "+interval(period)+(feedMode==="live"?" · fixing BCE dal feed canonico":" · snapshot locale, verificare la data");
  document.querySelectorAll("[data-period]").forEach(el=>{const active=el.dataset.period===period;el.classList.toggle("on",active);el.setAttribute("aria-pressed",String(active))});
  $("currencyGrid").innerHTML=scores.map((v,i)=>{
  const c=D.country[v.code],trend=period==="1W"?"1W precedente "+signed(D.prior_week.scores[v.code],2):"Prezzo vs paniere G8";return '<button type="button" class="ccy '+(selected===v.code?"active":"")+'" data-ccy="'+v.code+'" aria-pressed="'+(selected===v.code)+'"><div class="top"><span class="flag">'+c.flag+'</span><span class="rank">#'+(i+1)+' / 8</span></div><span class="name">'+esc(c.name)+' · '+esc(v.code)+'</span><span class="score '+cls(v.value)+'">'+signed(v.value,2)+'</span><span class="small">Punti log vs G8</span><span class="delta">'+esc(trend)+'</span></button>'
@@ -76,18 +76,18 @@ function narrative(){
  $("headline").textContent=v>0?"Il "+selected+" sta guidando parte del movimento relativo.":v<0?"Il "+selected+" resta indietro rispetto al paniere.":"Il "+selected+" è vicino alla media G8.";
  $("lead").textContent="Sul periodo "+period+" ("+interval(period)+") il "+selected+" è al posto "+rank+" su 8: performance relativa "+scoreText+".";
  $("dynamics").textContent="Nell'ultima settimana il punteggio è "+signed(v1,2)+", contro "+signed(prior,2)+" nella settimana precedente: la dinamica "+(improves>0?"migliora":improves<0?"peggiora":"rimane invariata")+" di "+num(Math.abs(improves),2)+" punti log. "+compares;
- $("macroText").textContent=c.macro_summary+" La banca centrale di riferimento è "+c.central_bank+"; ultimo orientamento archiviato: "+c.policy_stance+" (decisione del "+c.policy_asof+"). Queste informazioni non sostituiscono il confronto con i dati macro più recenti.";
+ $("macroText").textContent=c.macro_summary+" La banca centrale di riferimento è "+c.central_bank+"; ultimo orientamento archiviato: "+c.policy_stance+" (decisione del "+c.policy_asof+"). Contesto macro archiviato al "+(c.macro_context_baseline||"data non disponibile")+"; non sostituisce i dati macro più recenti.";
  $("ratesCot").textContent="Il rendimento governativo 2Y è "+num(c.market_rates.y2,2)+"% (dato "+c.market_rates.as_of+", Δ ultimo "+signed(c.market_rates.delta2bp,1)+" bp). Questo rendimento NON è un OIS e non misura da solo le probabilità di mosse della banca centrale. Il COT è al "+c.cot.as_of+": saldo "+signed(c.cot.net,0)+" contratti, Net/OI "+signed(c.cot.netoi,1)+"%, percentile "+num(c.cot.percentile,1)+"; variazione settimanale "+signed(c.cot.delta_week,0)+". Il fixing FX arriva al "+D.source_as_of+", quindi prezzo e COT non sono contemporanei.";
  $("verdict").textContent="La forza del prezzo è "+(v>0?"positiva":v<0?"negativa":"neutrale")+" rispetto al paniere. "+(v1*vM<0?"Il cambio di segno tra settimana e mese richiede particolare prudenza. ":"")+"Un giudizio operativo richiede anche tesi relativa, prezzi tecnici, pricing OIS, timing e rischio.";
  $("asideTitle").textContent=selected+" · "+D.source_as_of;
  const rows=[
  ["Forza relativa · "+period,signed(v,2)+" punti log","Ranking "+rank+" su 8"],
- ["Prezzo · 1W vs paniere",signed(v1,2)+" punti log","26/10 → 02/11"],
+ ["Prezzo · 1W vs paniere",signed(v1,2)+" punti log",D.periods["1W"].anchor+" → "+D.source_as_of],
  ["Prezzo · 1M vs paniere",signed(vM,2)+" punti log",D.periods["1M"].anchor+" → "+D.source_as_of],
  ["Treasury/governativo 2Y",num(c.market_rates.y2,2)+"%",c.market_rates.as_of+" · non OIS"],
  ["Tasso banca centrale",c.policy_rate_text,c.policy_asof],
  ["COT Legacy",signed(c.cot.netoi,1)+"% Net/OI",c.cot.as_of+" · P"+Math.round(c.cot.percentile)],
- ["Flusso COT 1W",signed(c.cot.delta_week,0)+" contratti","Non sincronizzato al fixing del 2/11"]
+ ["Flusso COT 1W",signed(c.cot.delta_week,0)+" contratti","Non sincronizzato al fixing del "+D.source_as_of]
  ];
  $("asideData").innerHTML=rows.map(row=>'<div class="datum"><small>'+esc(row[0])+'</small><strong>'+esc(row[1])+'</strong><p>'+esc(row[2])+'</p></div>').join("");
  $("asideFoot").textContent="Prezzo, Macro, CB, rendimenti e COT provengono da layer diversi. Non unificarne le date o le unità per calcolare una convinzione sintetica non validata.";
@@ -151,6 +151,89 @@ function setup(){
  render();
 }
 setup();
+
+/* V2 read-only bridge: recalculate full FX G8 ranking from canonical ECB matched-date fixing. */
+async function refreshValute(){
+ const root="https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/";
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
+ const get=async name=>{
+  const response=await fetch(root+name+".json",{cache:"no-store",signal:controller.signal});
+  if(!response.ok)throw Error(name+" HTTP "+response.status);
+  return response.json();
+ };
+ try {
+  const [history,rates,cot]=await Promise.all([
+   get("ECB_G8_PRICE_HISTORY"),get("NATIVE_RATES_DATA").catch(()=>null),get("V250_COT_CHART_DATA").catch(()=>null)
+  ]);
+  if(history.schema!=="GMFQ_ECB_G8_PRICE_HISTORY_V1"||!Array.isArray(history.rows)||history.rows.length<280)throw Error("Storico ECB non valido");
+  const rows=history.rows.filter(r=>/^20\d{2}-\d{2}-\d{2}$/.test(r.Date||"")&&ORDER.every(k=>Number.isFinite(Number(r[k]))&&Number(r[k])>0)).sort((a,b)=>a.Date.localeCompare(b.Date));
+  const last=rows.at(-1);
+  const today=new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Rome",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+  if(!last||last.Date>today||last.Date<D.source_as_of||history.last_as_of!==last.Date)throw Error("Ultimo fixing ECB non coerente");
+  if(last.Date===D.source_as_of){feedMode="live";render();return;}
+  const stamp=d=>d.toISOString().slice(0,10);
+  const offset=(date,kind)=>{
+   const d=new Date(date+"T12:00:00Z");
+   if(kind==="1W")d.setUTCDate(d.getUTCDate()-7);
+   else if(kind==="1M")d.setUTCMonth(d.getUTCMonth()-1);
+   else if(kind==="3M")d.setUTCMonth(d.getUTCMonth()-3);
+   else if(kind==="6M")d.setUTCMonth(d.getUTCMonth()-6);
+   else if(kind==="1Y")d.setUTCFullYear(d.getUTCFullYear()-1);
+   return stamp(d);
+  };
+  const atOrBefore=date=>{
+   for(let i=rows.length-1;i>=0;i--)if(rows[i].Date<=date)return i;
+   return -1;
+  };
+  const calc=(a,b)=>{
+   const returns={};for(const k of ORDER)returns[k]=100*Math.log(Number(a[k])/Number(b[k]));
+   const avg=ORDER.reduce((s,k)=>s+returns[k],0)/ORDER.length;
+   const strength={};for(const k of ORDER)strength[k]=returns[k]-avg;
+   return {returns,strength};
+  };
+  const periods={};
+  for(const p of PERIODS){
+   const idx=p==="1D"?rows.length-2:atOrBefore(offset(last.Date,p));
+   if(idx<0||idx>=rows.length-1)throw Error("Anchor ECB non disponibile: "+p);
+   const prev=rows[idx],score=calc(prev,last),pairMap={};
+   for(const x of D.pairs){
+    const key=x.a+x.b,rateNow=Number(last[x.b])/Number(last[x.a]);
+    const delta=100*(Math.exp((score.returns[x.a]-score.returns[x.b])/100)-1);
+    pairMap[key]={pair:x.a+"/"+x.b,value:rateNow,delta_pct:delta};
+   }
+   periods[p]={anchor:prev.Date,as_of:last.Date,returns:score.returns,strength:score.strength,pairs:pairMap};
+  }
+  const idxPrior=atOrBefore(offset(periods["1W"].anchor,"1W"));
+  const idx3m=atOrBefore(periods["3M"].anchor);
+  if(idxPrior<0||idx3m<0)throw Error("Base storica relativa non disponibile");
+  const priorScore=calc(rows[idxPrior],rows[atOrBefore(periods["1W"].anchor)]).strength;
+  const hist=rows.slice(idx3m).map(row=>({date:row.Date,score:calc(rows[idx3m],row).strength}));
+  if(hist.length<3||Object.keys(periods["1W"].strength).length!==8)throw Error("Paniere storico incompleto");
+  D.source_as_of=last.Date;D.periods=periods;
+  D.prior_week={start:rows[idxPrior].Date,end:periods["1W"].anchor,scores:priorScore};
+  D.history_3m=hist;
+  D.pairs=D.pairs.map(x=>({
+   ...x,value:Number(last[x.b])/Number(last[x.a]),
+   periods:Object.fromEntries(PERIODS.map(p=>[p,periods[p].pairs[x.a+x.b].delta_pct]))
+  }));
+  for(const code of ORDER){
+   const country=D.country[code],r=rates?.[code];
+   if(r&&Number.isFinite(r["2Y"])&&/^20\d{2}-\d{2}-\d{2}$/.test(r.date||"")&&r.date>=(country.market_rates.as_of||"")){
+    country.market_rates={...country.market_rates,y2:r["2Y"],y10:r["10Y"],delta2bp:r.chg2_bp,as_of:r.date,quality:r.quality};
+   }
+   const s=cot?.[code],end=s?.dates?.length||0;
+   if(end>1&&s.dates[end-1]>=(country.cot.as_of||"")&&["net","netoi","percentile"].every(k=>Array.isArray(s[k])&&s[k].length===end)){
+    country.cot={as_of:s.dates[end-1],net:s.net[end-1],netoi:s.netoi[end-1],percentile:s.percentile[end-1],delta_week:s.net[end-1]-s.net[end-2]};
+   }
+  }
+  feedMode="live";render();
+ }catch(error){
+  console.warn("[FX Quant V2 Valute] ECB non verificato; snapshot preservato:",error);
+  feedMode="snapshot";render();
+ }finally{clearTimeout(timer);}
+}
+refreshValute();
+
 })();
 </script>
 </body></html>
