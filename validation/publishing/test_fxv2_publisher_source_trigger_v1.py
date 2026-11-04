@@ -8,6 +8,7 @@ must=[
     "FX Quant V2 AUD Official RBA F2 Research Refresh",
     "FX Quant V2 CHF NZD Same-Basis Research Refresh",
     "FX Quant V2 Cross-Asset Published Source Refresh",
+    "FX Quant V2 Macro Shadow Formula Research Refresh",
     "types: [completed]",
     "github.event.workflow_run.conclusion == 'success'",
     "github.event.workflow_run.head_branch == 'main'",

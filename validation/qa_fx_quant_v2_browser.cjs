@@ -100,6 +100,54 @@ async function audit(browser,name,file,selector,view,viewport){
       await page.unroute('**/cross-asset-live-data.json*');
     }
   }
+  if(name==='macro'&&mode==='pr-local'&&view==='desktop'){
+    // Synthetic QA fixture ONLY: browser must render the new 50/50 formula as
+    // descriptive domestic research, not a fresh FX signal or point-in-time backtest.
+    const ccys=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+    const example=ccy=>({
+      activity_z_research:0.25,growth_z_research:0.5,
+      labour_tightness_z_research:0,inflation_pressure_z_research:1,
+      stable_for_continuous_growth_weight_25_to_75_pct:true,
+      hypothetical_independent_axis_z_revision_stability:{'10':true,'25':false,'50':false},
+      official_first_publication_PIT_replay_complete:false,fx_policy_or_return_signal:null,
+      source_axes:{
+        growth:{period:'2026Q2',method:'PRIOR_12Q_RESEARCH',quality:'RESEARCH_NO_PIT',is_estimate:false},
+        labour:{period:'2026-09',method:'PRIOR_24M_RESEARCH',quality:'REVISED',is_estimate:ccy==='USD'},
+        inflation:{period:'2026-09',method:'PRIOR_24M_RESEARCH',quality:'REVISED',is_estimate:false}
+      }
+    });
+    const mock={
+      schema:'GMFQ_FXV2_MACRO_SHADOW_FORMULA_RESEARCH_V1',
+      status:'RESEARCH_SHADOW_FORMULA_READY_NOT_FX_MODEL',
+      economic_source_cutoff_rome:'2026-11-04',
+      formula_version:'v2_domestic_activity_2026_10_27_FIXED_50_50',
+      formula:'Activity = 0.50 * GDP_z + 0.50 * (- unemployment_rate_z); inflation_pressure = CPI_z separately',
+      weights:{growth_z:0.5,labour_tightness_z:0.5,inflation_in_activity:0},
+      country_z_scores_not_cross_country_strength:true,
+      source_and_revision_quality_is_not_historical_PIT:true,
+      eligible_for_fx_core:false,eligible_for_pair_rankings:false,
+      eligible_for_trading:false,eligible_for_forward:false,eligible_for_backtests:false,
+      canonical_D_untouched:true,original_frozen_legacy_D_asof:'2026-09-25',
+      summary:{currencies:8,research_axes:24,fx_directional_signals_generated:0,fx_pairs_unchanged:28},
+      countries:Object.fromEntries(ccys.map(c=>[c,example(c)]))
+    };
+    await page.route('**/macro-shadow-formula-v1.json*',route=>route.fulfill({
+      status:200,contentType:'application/json',body:JSON.stringify(mock)
+    }));
+    await page.reload({waitUntil:'domcontentloaded'});
+    await page.waitForFunction(()=>document.querySelector('#countrySummary')?.textContent?.includes('FORMULA MACRO SPERIMENTALE'),null,{timeout:22000});
+    const usd=((await page.locator('#countrySummary').textContent())||'');
+    if(!usd.includes('STIMA dichiarata')||!usd.includes('NON è un punteggio FX')||
+       !usd.includes('25/09/2026 invariata'))
+      issue(name,view,'shadow_not_observational',usd.slice(-480));
+    await page.locator('#currencyGrid button[data-ccy="EUR"]').click();
+    const eur=((await page.locator('#countrySummary').textContent())||'');
+    if(!eur.includes('FORMULA MACRO SPERIMENTALE')||
+       !eur.includes('Nessuna stima dichiarata')||
+       eur.includes('baseline operativa 25/09/2026 aggiornata'))
+      issue(name,view,'shadow_country_interaction_or_false_core_promotion',eur.slice(-480));
+    await page.unroute('**/macro-shadow-formula-v1.json*');
+  }
   if(name==='coppie'&&(mode==='public'||mode==='pr-local')){
     // Informative 2Y spread: research overlays must never enter pair quality signals.
     await page.locator('#allPairs').selectOption('NZDCHF');

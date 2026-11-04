@@ -1,0 +1,103 @@
+name: FX Quant V2 Macro Shadow Formula Research Refresh
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/macro/publish_fxv2_domestic_shadow_baseline_v1.py'
+      - 'validation/macro/test_publish_fxv2_domestic_shadow_baseline_v1.py'
+      - 'validation/macro/v2_domestic_candidate_explicit_formula_v1.py'
+      - 'site/fx-quant-v2/macro-shadow-formula-v1.json'
+      - 'site/fx-quant-v2/macro.html'
+      - 'site/fx-quant-v2/assets/macro-shadow-display-v1.js'
+      - '.github/workflows/fxv2-macro-shadow-formula-refresh.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/macro/publish_fxv2_domestic_shadow_baseline_v1.py'
+      - 'validation/macro/test_publish_fxv2_domestic_shadow_baseline_v1.py'
+      - 'validation/macro/v2_domestic_candidate_explicit_formula_v1.py'
+      - '.github/workflows/fxv2-macro-shadow-formula-refresh.yml'
+  workflow_run:
+    workflows: ['Macro Persistent Daily V1']
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fxv2-macro-shadow-source-refresh
+  cancel-in-progress: false
+
+jobs:
+  shadow-research-only:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && 'main' || github.ref }}
+          fetch-depth: 2
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test preregistered formula, source quality and frozen Core
+        run: |
+          python -m unittest validation.macro.test_publish_fxv2_domestic_shadow_baseline_v1 -v
+          python -m unittest validation.macro.test_v2_domestic_candidate_explicit_formula_v1 -v
+          node validation/qa_fxv2_macro_shadow_display_v1.cjs
+      - name: Produce independent research receipt with real source periods
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_EVENT_NAME" = 'pull_request' ]; then
+            python -m validation.macro.publish_fxv2_domestic_shadow_baseline_v1 --output /tmp/fxv2-macro-shadow-formula-research.json
+          else
+            python -m validation.macro.publish_fxv2_domestic_shadow_baseline_v1
+          fi
+      - name: Commit ONLY new V2 research receipt, never canonical signal inputs
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEST=site/fx-quant-v2/macro-shadow-formula-v1.json
+          git diff --exit-code -- live_data payload dashboard index.html
+          if git diff --quiet -- "$DEST"; then
+            echo 'FXV2_MACRO_SHADOW_SAME_SOURCE_VALUES_NO_NEW_COMMIT' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- "$DEST"
+          git diff --cached --name-only | grep -x "$DEST"
+          git commit -m 'data(fxv2): publish independently dated experimental G8 Macro shadow formula'
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:main; then
+              echo 'FXV2_MACRO_SHADOW_RESEARCH_COMMITTED_TO_MAIN' >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            git fetch origin main --no-tags
+            git rebase origin/main
+            sleep "$((attempt*3))"
+          done
+          echo 'FXV2_MACRO_SHADOW_RESEARCH_NOT_PUBLISHED' >&2
+          exit 1
+      - name: Preserve research and audit receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fxv2-macro-shadow-formula-research
+          path: |
+            /tmp/fxv2-macro-shadow-formula-research.json
+            site/fx-quant-v2/macro-shadow-formula-v1.json
+          retention-days: 21
+          if-no-files-found: warn
