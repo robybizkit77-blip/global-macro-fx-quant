@@ -28,7 +28,7 @@
     "source": "Reserve Bank of New Zealand B2 · secondary government bond closes",
     "source_url": "https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates",
     "roll_date": "2026-10-30",
-    "latest_date": "2026-11-02",
+    "latest_date": "2026-11-03",
     "old_benchmark": {
       "2Y": "May 2028",
       "10Y": "May 2036"
@@ -51,27 +51,29 @@
         "10Y": 4.9
       },
       {
-        "date": "2026-11-02",
-        "2Y": 3.97,
-        "10Y": 4.91
+        "date": "2026-11-03",
+        "2Y": 3.95,
+        "10Y": 4.88
       }
     ],
-    "latest_2Y": 3.97,
-    "latest_10Y": 4.91,
-    "latest_curve_bp": 94.0,
+    "latest_2Y": 3.95,
+    "latest_10Y": 4.88,
+    "latest_curve_bp": 93,
     "same_benchmark_change_bp": {
-      "2Y": 1.0,
-      "10Y": 1.0,
+      "2Y": -1,
+      "10Y": -2,
       "start": "2026-10-30",
-      "end": "2026-11-02"
+      "end": "2026-11-03"
     },
     "cross_roll_change_allowed": false,
-    "research_only_note": "Cambio benchmark alla data indicata: due serie distinte. Le variazioni dopo il cambio si riferiscono agli stessi titoli, ma restano letture RBNZ HTML non riconciliate con XLSX.",
+    "research_only_note": "Osservazione 3 novembre 2026, 2Y 3,95%, 10Y 4,88%, letta da pagina RBNZ B2 pubblicata il 4 novembre. Benchmark nuovi dal 30 ottobre. Non è un download automatizzato GitHub, né riconciliazione XLSX. Nessuna promozione a Core, OIS o backtest.",
     "eligible_for_core": false,
     "eligible_for_pair_spreads": false,
     "eligible_for_backtests": false,
     "eligible_for_automatic_promotion": false,
-    "independent_xlsx_reconciled": false
+    "independent_xlsx_reconciled": false,
+    "source_release_date": "2026-11-04",
+    "source_capture_method": "OFFICIAL_WEB_PAGE_RESEARCH_CAPTURE_NOT_GITHUB_DOWNLOAD"
   },
   "same_benchmark_or_date_cross_roll_only": true,
   "source_dates_may_differ": true,

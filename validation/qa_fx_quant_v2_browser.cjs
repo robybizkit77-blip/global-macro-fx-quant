@@ -79,7 +79,7 @@ async function audit(browser,name,file,selector,view,viewport){
       caveat:document.querySelector('#pairRatesSourceNote')?.textContent,
       canonical:document.querySelector('#pairQuality')?.textContent
     }));
-    if(x.gap!=='+372,8 bp'||!x.a.includes('PROXY 2Y')||!x.b.includes('STIMA 2Y')||
+    if(x.gap!=='+370,8 bp'||!x.a.includes('PROXY 2Y')||!x.b.includes('STIMA 2Y')||
        !x.caveat.includes('NON leggere lo spread come repricing')||!x.canonical)
       issue(name,view,'pair_estimated_spread_missing',JSON.stringify(x));
     await page.locator('#allPairs').selectOption('EURUSD');

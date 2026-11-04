@@ -124,7 +124,8 @@ if(bench.CHF&&bench.CHF.pair_status==='OFFICIAL_SNBSAMEBASIS_RESEARCH_REVIEW_REQ
 if(bench.NZD&&bench.NZD.status==='RBNZ_GOVT_B2_WEB_RESEARCH_UNAPPROVED'&&
    bench.NZD.cross_roll_change_allowed===false&&
    bench.NZD.independent_xlsx_reconciled===false&&bench.NZD.after_roll?.length===2){
- check('rates_research','NZD RBNZ B2 post-roll web research',bench.NZD.latest_date,14,'RBNZ_WEB_NOT_XLSX_RECONCILED');
+ check('rates_research','NZD RBNZ B2 post-roll web research',bench.NZD.latest_date,7,'RBNZ_WEB_NOT_XLSX_RECONCILED');
+ requireValid(Math.abs((bench.NZD.latest_10Y-bench.NZD.latest_2Y)*100-bench.NZD.latest_curve_bp)<.11,'NZD B2 post-roll curve arithmetic invalid');
  requireValid(bench.NZD.before_roll?.at(-1)?.date<bench.NZD.roll_date&&
    bench.NZD.after_roll[0].date===bench.NZD.roll_date,
    'NZD benchmark must split into nonjoined segments');
@@ -136,7 +137,7 @@ note('liquidity_credit','Frequenze miste','Liquidità e credito pubblicati mensi
 const ratesHtml=file('tassi.html');
 requireValid(ratesHtml.includes('CHF_SNB_10Y_SPOT_CONTEXT.json')&&ratesHtml.includes('NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json'),
  'V2 missing separated CHF/NZD research context overlay');
-const pages=['index','valute','coppie','tassi','macro','banche','cot','cross-asset','liquidita-credito','calendario-news','research'];
+const pages=['index','valute','coppie','tassi','ois','macro','banche','cot','cross-asset','liquidita-credito','calendario-news','research'];
 requireValid(pages.every(x=>fs.existsSync(path.join(site,x+'.html'))),'Missing V2 HTML section');
 result.summary={
   checks:result.checks.length,
