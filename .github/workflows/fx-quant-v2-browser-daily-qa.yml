@@ -7,6 +7,8 @@ on:
       - 'site/fx-quant-v2/**'
       - 'validation/qa_fx_quant_v2_browser.cjs'
       - 'validation/qa_fx_quant_v2_freshness.cjs'
+      - 'validation/fxv2_research_core_readiness_v1.cjs'
+      - 'validation/test_fxv2_research_core_readiness_v1.cjs'
       - 'validation/qa_fxv2_rates_working_v1.cjs'
       - 'validation/qa_fxv2_liquidity_credit_overlay_v1.cjs'
       - 'validation/qa_fxv2_macro_pair_observed_v1.cjs'
@@ -19,6 +21,8 @@ on:
       - 'site/fx-quant-v2/**'
       - 'validation/qa_fx_quant_v2_browser.cjs'
       - 'validation/qa_fx_quant_v2_freshness.cjs'
+      - 'validation/fxv2_research_core_readiness_v1.cjs'
+      - 'validation/test_fxv2_research_core_readiness_v1.cjs'
       - 'validation/qa_fxv2_rates_working_v1.cjs'
       - 'validation/qa_fxv2_liquidity_credit_overlay_v1.cjs'
       - 'validation/qa_fxv2_macro_pair_observed_v1.cjs'
@@ -68,7 +72,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Read all canonical source dates, grades and known stale gaps
+      - name: Test two-track V2 research vs Core certification contract
+        run: node validation/test_fxv2_research_core_readiness_v1.cjs
+      - name: Read canonical source dates and emit separate research/Core readiness receipts
         run: node validation/qa_fx_quant_v2_freshness.cjs
       - name: Save source freshness JSON and readable report
         if: always()
