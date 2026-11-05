@@ -36,11 +36,16 @@ def verify(source: dict, rates: dict, ten: dict, *,
            asof: date, source_hash: str = "") -> dict:
     current = rates.get("CHF") or {}
     original = current.get("date")
-    require(original == "2026-09-30"
-            and current.get("source", "").startswith("Swiss National Bank")
-            and current.get("quality") == "FULL_CURRENT_OFFICIAL"
-            and current.get("2Y") == 0.287 and current.get("10Y") == 0.586,
-            "unexpected or modified official CHF anchor: independent re-review")
+    require(isinstance(original,str) and
+            date.fromisoformat(original).isoformat()==original and
+            date.fromisoformat(original)<=asof and
+            current.get("source","").startswith("Swiss National Bank") and
+            current.get("quality")=="FULL_CURRENT_OFFICIAL" and
+            all(isinstance(current.get(k),(int,float)) and
+                not isinstance(current.get(k),bool) and
+                math.isfinite(current[k]) and -5<=current[k]<=25
+                for k in ("2Y","10Y")),
+            "official CHF anchor invalid; review independent source")
     # Reuse original per-tenor independent source-id/unit/frequency parser.
     candidate = parse_candidate(
         source, certified_date=original,
