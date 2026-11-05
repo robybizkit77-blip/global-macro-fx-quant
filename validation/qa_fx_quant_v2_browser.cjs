@@ -192,6 +192,29 @@ async function audit(browser,name,file,selector,view,viewport){
        !bridgeEUR.macro.includes('baseline 25/09/2026')||
        !bridgeEUR.sources.includes('Nessuna differenza delle variazioni 1D/1W calcolata'))
       issue(name,view,'pair_macro_pricing_bridge_eur_usd',JSON.stringify(bridgeEUR));
+    // New 28-pair research triangulation must be visible only as dated
+    // independent evidence, never as a live signal or upgrade of pair quality.
+    await page.waitForFunction(()=>
+      document.querySelector('#macroOisTriangRates')?.textContent?.includes('PRICING RELATIVO')&&
+      document.querySelector('#macroOisTriangMacro')?.textContent?.includes('MACRO V3')&&
+      document.querySelector('#macroOisTriangPrice')?.textContent?.includes('PREZZO FX'),
+      null,{timeout:15000});
+    const triang=await page.evaluate(()=>({
+      rates:document.querySelector('#macroOisTriangRates')?.textContent,
+      macro:document.querySelector('#macroOisTriangMacro')?.textContent,
+      price:document.querySelector('#macroOisTriangPrice')?.textContent,
+      caveat:document.querySelector('#macroOisTriangCaveat')?.textContent
+    }));
+    if(!triang.rates.includes('EUR/USD')||
+       !triang.rates.includes('3M')||
+       !triang.rates.includes('6M')||
+       !triang.rates.includes('12M')||
+       !triang.rates.includes('non variazioni OIS')||
+       !triang.macro.includes('nessun nuovo voto FX')||
+       !/fixing 20\d\d-\d\d-\d\d/.test(triang.price)||
+       !triang.price.includes('variazione 1M')||
+       !triang.caveat.includes('Nessun segnale'))
+      issue(name,view,'macro_rates_price_triangulation_missing',JSON.stringify(triang).slice(0,1400));
     await page.waitForFunction(()=>document.querySelector('#macroV3Context')?.textContent?.includes('DINAMICA MACRO (RICERCA, NON NUOVO BIAS)'),null,{timeout:18000});
     const dynamicEUR=(await page.locator('#macroV3Context').textContent())||'';
     if(!dynamicEUR.includes('PIL: variazione del ritmo trimestrale')||
