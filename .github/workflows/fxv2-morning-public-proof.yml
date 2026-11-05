@@ -96,6 +96,7 @@ jobs:
               s=d['source_evidence']
               out.write('- Audit economico: '+s['status']+'; ritardi/invalidi: '+str(s['date_delays_or_invalid'])+'; gap: '+str(s['unresolved_gaps'])+'\n')
               out.write('- Ricerca: '+s['research_readiness']+'; Core: '+s['trading_core_readiness']+'\n')
+              out.write('- **Utilizzabile entro le 08:00 per la ricerca V2:** '+str(d.get('research_usable_by_0800',False))+'; fonti critiche a cadenza: '+str(s.get('research_sources_on_cadence',False))+'\n')
               out.write('- Macro V3: '+str(s['macro_v3_as_of'])+'; baseline del motore FX: '+str(s['macro_legacy_baseline_as_of'])+'\n')
               out.write('- Fonte governativa Core per valuta: '+str(s['canonical_gov_as_of'])+'\n')
               out.write('- Dati interamente a cadenza: '+str(d['all_sections_ready_with_current_data'])+'; non equivale a OIS 8/8 certificati o segnali validati\n')
