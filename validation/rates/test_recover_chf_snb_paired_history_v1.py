@@ -77,7 +77,7 @@ class PairedRecovery(unittest.TestCase):
   self.assertEqual(self.audit(rates=a)['status'],'SOURCE_BASIS_NOT_RECONCILED')
  def test_new_certified_anchor_does_not_break_source_history_verification(self):
   newer=copy.deepcopy(RATES)
-  newer['CHF'].update(date='2026-10-29','2Y':.144,'10Y':.536)
+  newer['CHF'].update({'date':'2026-10-29','2Y':.144,'10Y':.536})
   r=self.audit(rates=newer)
   self.assertEqual(r['status'],'PAIRED_OFFICIAL_HISTORY_READY_FOR_REVIEW')
   self.assertEqual(r['base_date'],'2026-10-29')
