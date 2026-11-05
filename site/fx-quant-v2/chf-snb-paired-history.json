@@ -1,0 +1,159 @@
+{
+  "schema": "GMFQ_FXV2_CHF_SNB_PAIRED_HISTORY_V1",
+  "currency": "CHF",
+  "quality": "SNB_OFFICIAL_OBSERVED_HISTORICAL_RESEARCH",
+  "source": "Swiss National Bank, Confederation spot yields, 2J / 10J",
+  "source_url": "https://data.snb.ch/api/cube/rendeiduebd/data/json/en",
+  "source_response_sha256": "ee9769099355e55277be5456ae565c037f7d029051afd7dad69a40e5f10db0de",
+  "source_latest_vintage_not_point_in_time": true,
+  "anchor_date": "2026-09-30",
+  "last_observation_date": "2026-10-30",
+  "observation_count": 23,
+  "observations": [
+    {
+      "date": "2026-09-30",
+      "2Y": 0.287,
+      "10Y": 0.586,
+      "curve_bp": 29.9
+    },
+    {
+      "date": "2026-10-01",
+      "2Y": 0.324,
+      "10Y": 0.639,
+      "curve_bp": 31.5
+    },
+    {
+      "date": "2026-10-02",
+      "2Y": 0.216,
+      "10Y": 0.57,
+      "curve_bp": 35.4
+    },
+    {
+      "date": "2026-10-05",
+      "2Y": 0.227,
+      "10Y": 0.556,
+      "curve_bp": 32.9
+    },
+    {
+      "date": "2026-10-06",
+      "2Y": 0.208,
+      "10Y": 0.55,
+      "curve_bp": 34.2
+    },
+    {
+      "date": "2026-10-07",
+      "2Y": 0.219,
+      "10Y": 0.558,
+      "curve_bp": 33.9
+    },
+    {
+      "date": "2026-10-08",
+      "2Y": 0.234,
+      "10Y": 0.566,
+      "curve_bp": 33.2
+    },
+    {
+      "date": "2026-10-09",
+      "2Y": 0.256,
+      "10Y": 0.579,
+      "curve_bp": 32.3
+    },
+    {
+      "date": "2026-10-12",
+      "2Y": 0.269,
+      "10Y": 0.572,
+      "curve_bp": 30.3
+    },
+    {
+      "date": "2026-10-13",
+      "2Y": 0.278,
+      "10Y": 0.561,
+      "curve_bp": 28.3
+    },
+    {
+      "date": "2026-10-14",
+      "2Y": 0.26,
+      "10Y": 0.568,
+      "curve_bp": 30.8
+    },
+    {
+      "date": "2026-10-15",
+      "2Y": 0.26,
+      "10Y": 0.53,
+      "curve_bp": 27.0
+    },
+    {
+      "date": "2026-10-16",
+      "2Y": 0.278,
+      "10Y": 0.572,
+      "curve_bp": 29.4
+    },
+    {
+      "date": "2026-10-19",
+      "2Y": 0.269,
+      "10Y": 0.577,
+      "curve_bp": 30.8
+    },
+    {
+      "date": "2026-10-20",
+      "2Y": 0.255,
+      "10Y": 0.539,
+      "curve_bp": 28.4
+    },
+    {
+      "date": "2026-10-21",
+      "2Y": 0.272,
+      "10Y": 0.553,
+      "curve_bp": 28.1
+    },
+    {
+      "date": "2026-10-22",
+      "2Y": 0.272,
+      "10Y": 0.525,
+      "curve_bp": 25.3
+    },
+    {
+      "date": "2026-10-23",
+      "2Y": 0.235,
+      "10Y": 0.491,
+      "curve_bp": 25.6
+    },
+    {
+      "date": "2026-10-26",
+      "2Y": 0.251,
+      "10Y": 0.526,
+      "curve_bp": 27.5
+    },
+    {
+      "date": "2026-10-27",
+      "2Y": 0.223,
+      "10Y": 0.487,
+      "curve_bp": 26.4
+    },
+    {
+      "date": "2026-10-28",
+      "2Y": 0.232,
+      "10Y": 0.495,
+      "curve_bp": 26.3
+    },
+    {
+      "date": "2026-10-29",
+      "2Y": 0.267,
+      "10Y": 0.536,
+      "curve_bp": 26.9
+    },
+    {
+      "date": "2026-10-30",
+      "2Y": 0.238,
+      "10Y": 0.505,
+      "curve_bp": 26.7
+    }
+  ],
+  "meaning": "Same-date SNB 2Y and 10Y observations; dated history, not current market levels",
+  "current_session_government_rates_certified": false,
+  "eligible_for_core": false,
+  "eligible_for_fx_engine": false,
+  "eligible_for_backtests": false,
+  "eligible_for_automatic_promotion": false,
+  "canonical_government_rates_untouched": true
+}
