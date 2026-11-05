@@ -50,6 +50,7 @@ table{width:100%;border-collapse:collapse;text-align:left;font-size:13px}th{font
 <div class="two"><p><strong>Livello e direzione:</strong> tassi impliciti 3M/6M/12M e variazioni giornaliere solo quando la stessa fonte rende il dato confrontabile. Un livello isolato non racconta da solo cosa è cambiato.</p><p><strong>Conferma:</strong> dati macro e sorprese, comunicazioni CB, 2Y, differenziali, FX spot e positioning. Una stima non entra automaticamente nei segnali delle 28 coppie né nei backtest.</p></div></section>
 <div class="foot">FX Quant V2 · sezione research autonoma. I dati vengono letti dai feed del repository e, in caso di errore, da uno snapshot datato. Nessun calcolo di probabilità implicite, nessuna modifica al motore operativo. <a href="./index.html">Torna alla Home</a>.</div>
 </main>
+<script src="./assets/ois-relative-parity-v1.js"></script>
 <script>
 (()=>{"use strict";
 const C=["USD","EUR","GBP","JPY","CHF","CAD","AUD","NZD"], F={USD:"🇺🇸",EUR:"🇪🇺",GBP:"🇬🇧",JPY:"🇯🇵",CHF:"🇨🇭",CAD:"🇨🇦",AUD:"🇦🇺",NZD:"🇳🇿"};
@@ -69,7 +70,7 @@ const ageInfo=x=>{
 };
 
 const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const state={currencies:{},selected:"USD",a:"EUR",b:"USD"};
+const state={currencies:{},selected:"USD",a:"EUR",b:"USD",relativeResearch:null};
 const has=(v)=>Number.isFinite(v?.rate);
 const T=["3m","6m","12m"];
 const dated=x=>/^\d{4}-\d{2}-\d{2}$/.test(x||"")&&ageDays(x)!==null;
@@ -136,7 +137,7 @@ function render(){
  $("feedStatus").textContent=ready+"/8 valute · "+all.length+"/24 livelli · "+live+" tenori da feed / "+snapshot+
   " da snapshot · "+stale+"/24 tenori oltre 7 giorni o senza data · OIS ufficiale solo GBP; altri futures/proxy";
  if(!curr[state.selected])state.selected=C.find(c=>curr[c])||"USD";
- showDetail();showCompare();
+ showDetail();showCompare();renderRelativeResearch();
 }
 function lineChart(x){
  if(!T.every(k=>has(x.horizons[k]))){$("pricingChart").innerHTML='<text x="30" y="130">Curva incompleta: nessun valore inventato</text>';return;}
@@ -212,6 +213,42 @@ function liveNormalized(op,est,nzd){
  return out;
 }
 async function get(url){const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),10000);try{const r=await fetch(url,{cache:"no-store",signal:ctl.signal});if(!r.ok)throw Error("HTTP "+r.status);return await r.json();}finally{clearTimeout(timer);}}
+function renderRelativeResearch(){
+ const target=$("relativeRows"),info=$("relativeStatus"),x=state.relativeResearch;
+ if(!x)return;
+ const result=window.FXV2OisRelativeParity?.compare(x,state.currencies);
+ if(!result||result.status==="INVALID_RESEARCH_SOURCE"||result.status==="INVALID_PAIR_ORIENTATION"){
+  target.innerHTML='<tr><td colspan="6">Confronto non verificabile: provenienza o orientamento non validi.</td></tr>';
+  info.textContent="Ricerca relativa non verificata. Nessuno spread mostrato come corrente.";
+  target.dataset.parity="INVALID";return;
+ }
+ if(result.status==="WAITING_FOR_24_DATED_LEVELS"){
+  target.innerHTML='<tr><td colspan="6">In attesa dei 24 livelli datati. Non vengono inventati differenziali.</td></tr>';
+  info.textContent="Riconciliazione 28 coppie sospesa: mancano livelli o date verificate.";
+  target.dataset.parity="INCOMPLETE";return;
+ }
+ target.dataset.parity=result.status;
+ target.dataset.comparisons=String(result.compared);
+ target.dataset.mismatches=String(result.mismatches.length);
+ target.dataset.changedLegs=result.changedLegs.join(",");
+ target.innerHTML=result.rows.map(p=>{
+  const h=p.horizons,s=h["6m"];
+  const values=T.map(t=>'<td class="n">'+esc(bp(h[t].spread_bp))+'</td>').join("");
+  const quality=s.proxy_involved?"Proxy incluso":s.estimate_involved?"Stima inclusa":"Fonti ufficiali, non omogenee";
+  const dates=date(s.base_as_of)+" / "+date(s.quote_as_of);
+  const aligned=s.same_date?"stessa data":"date differenti ("+s.date_gap_days+"g)";
+  return '<tr data-pair="'+esc(p.name)+'"><td><b>'+esc(p.name)+'</b></td>'+values+
+   '<td>'+esc(dates)+' · '+esc(aligned)+'</td><td>'+esc(quality)+'</td></tr>';
+ }).join("");
+ const changed=result.mismatches.length;
+ info.textContent="Ricerca V2 · "+result.rows.length+" coppie · "+result.compared+
+  " confronti · "+(changed?
+   changed+" confronti ricalcolati sui livelli ora VISUALIZZATI ("+result.changedLegs.join(", ")+
+   " differenti rispetto allo snapshot di ricerca "+date(x.pricing_source_snapshot_date)+"). ":
+   "tutti i confronti coerenti con lo snapshot di ricerca "+date(x.pricing_source_snapshot_date)+". ")+
+  "Le date e gli strumenti di ciascuna gamba restano indipendenti. "+
+  "Differenziali aritmetici descrittivi: NON variazioni giornaliere, non OIS omogenei, non carry, non segnali FX.";
+}
 async function loadRelativeResearch(){
  const target=$("relativeRows"),info=$("relativeStatus");
  try{
@@ -221,28 +258,15 @@ async function loadRelativeResearch(){
      x.eligible_for_automatic_core_rebase!==false||x.not_fx_carry!==true||
      x.not_ois_equivalent!==true||x.not_policy_repricing!==true||
      x.summary?.pairs!==28||x.summary?.horizon_comparisons!==84)
-     throw Error("source contract invalid");
+    throw Error("source contract invalid");
   const names=Object.keys(x.pairs||{});
   if(names.length!==28||names.some(k=>!x.pairs[k]?.horizons?.["6m"]))
-     throw Error("pair coverage incomplete");
-  target.innerHTML=names.map(name=>{
-   const p=x.pairs[name],h=p.horizons,s=h["6m"];
-   const values=["3m","6m","12m"].map(t=>
-     '<td class="n">'+esc(bp(h[t]?.spread_bp))+'</td>').join("");
-   const quality=s.proxy_involved?"Proxy incluso":s.estimate_involved?"Stima inclusa":"Fonti ufficiali, non omogenee";
-   const dates=date(s.base_as_of)+" / "+date(s.quote_as_of);
-   const aligned=s.same_date?"stessa data":"date differenti ("+s.date_gap_days+"g)";
-   return '<tr><td><b>'+esc(name)+'</b></td>'+values+
-     '<td>'+esc(dates)+' · '+esc(aligned)+'</td>'+
-     '<td>'+esc(quality)+'</td></tr>';
-  }).join("");
-  info.textContent="Ricerca V2 · "+x.summary.pairs+" coppie · "+x.summary.horizon_comparisons+
-   " confronti · snapshot "+date(x.pricing_source_snapshot_date)+
-   " · "+x.summary.mixed_date_comparisons+" confronti con date diverse."+
-   " Importante: valori descrittivi, non un segnale, un forward o uno spread di policy confrontabile.";
+    throw Error("pair coverage incomplete");
+  state.relativeResearch=x;
+  renderRelativeResearch();
  }catch(e){
   target.innerHTML='<tr><td colspan="6">Dataset relativo non disponibile: nessun differenziale inventato.</td></tr>';
-  info.textContent="Dataset 28 coppie non ancora pubblicato o non verificato. Il confronto diretto tra due valute nella sezione precedente rimane disponibile.";
+  info.textContent="Dataset 28 coppie non pubblicato o non verificato. Il confronto diretto nella sezione precedente rimane disponibile.";
   console.warn("FXV2 relative pricing research unavailable",e);
  }
 }

@@ -319,6 +319,45 @@ async function audit(browser,name,file,selector,view,viewport){
        !data.status.includes('tenori oltre 7 giorni')||
        !data.status.includes('OIS ufficiale solo GBP'))
        issue(name,view,'ois_g8_coverage_or_provenance',JSON.stringify(data));
+    // The 28 research spreads must use exactly the same *currently displayed*
+    // tenor sources, even when live feeds advance past the published snapshot.
+    await page.waitForFunction(()=>document.querySelector('#relativeRows')?.dataset.comparisons==='84',
+      null,{timeout:18000});
+    const rel=await page.evaluate(()=>{
+      const rows=[...document.querySelectorAll('#relativeRows tr')];
+      const cur=[...document.querySelectorAll('#pricingRows tr')];
+      const nums=x=>Number(String(x||'').replace(/[^0-9,.\u2212-]/g,'')
+          .replace(/\u2212/g,'-').replace(',','.'));
+      const rates={};
+      for(const tr of cur){
+        const cells=[...tr.querySelectorAll('td')];
+        const code=(cells[0]?.textContent||'').match(/\b(USD|EUR|GBP|JPY|CHF|CAD|AUD|NZD)\b/)?.[0];
+        if(code)rates[code]=[2,3,4].map(i=>nums(cells[i]?.textContent));
+      }
+      const errors=[];
+      for(const tr of rows){
+        const td=[...tr.querySelectorAll('td')],pair=tr.dataset.pair||'';
+        const [a,b]=pair.split('/');
+        if(!rates[a]||!rates[b]){errors.push('missing '+pair);continue;}
+        for(let t=0;t<3;t++){
+          const observed=nums(td[t+1]?.textContent),
+            expected=100*(rates[a][t]-rates[b][t]);
+          // 3dp currency display may round each leg by <= 0.05 bp;
+          // table reports 1dp, so allow <0.2 bp total presentation error.
+          if(!Number.isFinite(observed)||Math.abs(observed-expected)>0.2)
+            errors.push(pair+' '+t+': '+observed+' != '+expected);
+        }
+      }
+      const ds=document.querySelector('#relativeRows')?.dataset||{};
+      return {count:rows.length,comparisons:ds.comparisons,parity:ds.parity,
+        mismatches:ds.mismatches,changedLegs:ds.changedLegs||'',
+        note:document.querySelector('#relativeStatus')?.textContent||'',
+        errors:errors.slice(0,12)};
+    });
+    if(rel.count!==28||rel.comparisons!=='84'||rel.errors.length||
+      !['RECALCULATED_FROM_DISPLAYED_TENORS','MATCHED_PUBLISHED_RESEARCH'].includes(rel.parity)||
+      !rel.note.includes('non carry')&&!rel.note.includes('non OIS omogenei'))
+      issue(name,view,'ois_28pair_live_parity_mismatch',JSON.stringify(rel));
     await page.locator('#pricingGrid button[data-c="JPY"]').click();
     const title=(await page.locator('#detailTitle').textContent())||'';
     const caveat=(await page.locator('#sourceCaveat').textContent())||'';
