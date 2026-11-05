@@ -94,7 +94,7 @@ assert.equal(latest.stale_source,false);
 assert.equal(latest.no_core_effect,true);
 assert.equal(latest.no_inferred_market_move,true);
 assert.equal(latest.estimated,true,'Research observations cannot be promoted to FX Core');
-const staleAt=shiftDays(pairDate,40);
+const staleAt=shiftDays(maxDate(pairDate,today),40);
 const late=derive(fixture,newerPair,staleAt).rates.CHF;
 assert.equal(late.date,pairDate);
 assert.equal(late.stale_source,true);
