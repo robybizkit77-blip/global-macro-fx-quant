@@ -60,6 +60,72 @@ class SourceScheduleGate(unittest.TestCase):
         self.assertIn("report_fxv2_chf_nzd_freshness_v1.py", workflow)
         self.assertIn("fxv2-chf-nzd-freshness-receipt.json", workflow)
 
+    def test_successful_same_day_main_rates_recovers_without_paid_vendor(self):
+        parent = {
+            "upstream_name": "Rates Persistent Daily V1",
+            "upstream_branch": "main",
+            "upstream_conclusion": "success",
+            "upstream_event": "workflow_run",
+            "upstream_started_at": "2026-11-05T07:10:21Z",
+        }
+        self.assertEqual(
+            gate("workflow_run", "", utc(2026,11,5,8,32), **parent),
+            (True, False, "INDEPENDENT_SUCCESSFUL_MAIN_RATES_RECOVERY"))
+        self.assertEqual(
+            gate("workflow_run", "", utc(2026,11,5,5,15), **dict(
+                parent, upstream_started_at="2026-11-05T04:50:00Z")),
+            (False, False, "BEFORE_MORNING_LOCAL_SLOT"))
+        self.assertEqual(
+            gate("workflow_run", "", utc(2026,7,2,6,24), **dict(
+                parent, upstream_started_at="2026-07-02T05:01:00Z")),
+            (True, False, "INDEPENDENT_SUCCESSFUL_MAIN_RATES_RECOVERY"))
+
+    def test_recovery_rejects_failure_pr_stale_weekend_and_future(self):
+        parent = {
+            "upstream_name": "Rates Persistent Daily V1",
+            "upstream_branch": "main",
+            "upstream_conclusion": "success",
+            "upstream_event": "schedule",
+            "upstream_started_at": "2026-11-05T07:10:21Z",
+        }
+        for field, value in (
+            ("upstream_name","Other workflow"),
+            ("upstream_branch","feature/fix"),
+            ("upstream_conclusion","failure"),
+            ("upstream_event","pull_request"),
+        ):
+            with self.subTest(field=field):
+                bad = dict(parent, **{field:value})
+                self.assertEqual(
+                    gate("workflow_run","",utc(2026,11,5,8,32),**bad),
+                    (False,False,"UNTRUSTED_OR_FAILED_RATES_PARENT"))
+        for value in ("2026-11-04T07:10:21Z", "2026-11-06T07:10:21Z"):
+            self.assertEqual(
+                gate("workflow_run","",utc(2026,11,5,8,32),**dict(
+                    parent,upstream_started_at=value)),
+                (False,False,"PARENT_OUTSIDE_CURRENT_ROME_DAY"))
+        for value in ("invalid", "", "2026-11-05T07:10:21"):
+            self.assertEqual(
+                gate("workflow_run","",utc(2026,11,5,8,32),**dict(
+                    parent,upstream_started_at=value)),
+                (False,False,"UNVERIFIED_PARENT_START_TIME"))
+        self.assertEqual(
+            gate("workflow_run","",utc(2026,11,7,8,32),**dict(
+                parent,upstream_started_at="2026-11-07T07:10:21Z")),
+            (False,False,"NOT_A_ROMAN_WORKDAY"))
+
+    def test_rated_recovery_is_wired_and_vendor_retries_not_duplicated(self):
+        from pathlib import Path
+        workflow=(Path(__file__).resolve().parents[2] /
+                  ".github/workflows/fxv2-chf-nzd-benchmark-research.yml").read_text()
+        self.assertIn("workflows: ['Rates Persistent Daily V1']",workflow)
+        self.assertIn("types: [completed]",workflow)
+        for argument in ("--upstream-name", "--upstream-branch",
+                         "--upstream-conclusion", "--upstream-event",
+                         "--upstream-started-at"):
+            self.assertIn(argument,workflow)
+        self.assertIn("VENDOR_SLOT: ${{ steps.gate.outputs.vendor_slot }}", workflow)
+
     def test_reject_naive_clock_and_early_run(self):
         with self.assertRaisesRegex(ValueError, "aware"):
             gate("schedule",MORNING_CET,dt.datetime(2026,11,5,5,30))
