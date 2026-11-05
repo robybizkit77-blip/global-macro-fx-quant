@@ -7,12 +7,78 @@ const ROOT=path.resolve(__dirname,'..');
 require('../site/fx-quant-v2/assets/rates-working-model-v1.js');
 const {apply,load}=require('../site/fx-quant-v2/assets/rates-research-overlay-v1.js');
 const read=path=>JSON.parse(fs.readFileSync(ROOT+'/'+path,'utf8'));
-const original=read('live_data/sections/NATIVE_RATES_DATA.json');
-const research=read('site/fx-quant-v2/chf-nzd-benchmark-research.json');
-const aud=read('site/fx-quant-v2/aud-rba-f2-research.json');
+// Actual feeds are allowed to advance: verify current source contracts
+// separately, never assert that live observations remain frozen on Nov 4.
+const canonicalLive=read('live_data/sections/NATIVE_RATES_DATA.json');
+const researchLive=read('site/fx-quant-v2/chf-nzd-benchmark-research.json');
+const audLive=read('site/fx-quant-v2/aud-rba-f2-research.json');
+const proxyLive=read('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json');
 const anchor=read('site/fx-quant-v2/nzd-asx-government-anchor-v1.json');
-const proxy=read('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json');
-const clone=x=>JSON.parse(JSON.stringify(x)), before=JSON.stringify(original);
+const clone=x=>JSON.parse(JSON.stringify(x));
+assert.equal(researchLive.schema,'GMFQ_FXV2_CHF_NZD_BENCHMARK_RESEARCH_V1');
+assert.equal(researchLive.eligible_for_fx_pair_engine,false);
+assert.equal(researchLive.eligible_for_backtests,false);
+assert.equal(researchLive.canonical_government_rates_untouched,true);
+assert.equal(audLive.schema,'GMFQ_FXV2_AUD_RBA_F2_RESEARCH_V1');
+assert.equal(audLive.eligible_for_core,false);
+assert.equal(audLive.eligible_for_fx_pair_engine,false);
+assert.equal(audLive.eligible_for_backtests,false);
+assert.equal(audLive.source_download_verified,true);
+assert.equal(audLive.same_date_same_source,true);
+assert.equal(proxyLive.schema,'GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1');
+assert.equal(proxyLive.governance.pair_engine_effect,'NONE');
+assert.equal(proxyLive.governance.policy_delta_from_proxy_allowed,false);
+assert.equal(proxyLive.source_quality,'OFFICIAL_EXCHANGE_DIRECTIONAL_PROXY');
+assert.ok(proxyLive.as_of>=anchor.asx_6m_as_of,
+ 'New genuine exchange data may advance from the scenario anchor');
+assert.ok(audLive.as_of>='2026-10-28',
+ 'A newly published RBA F2 observation must not roll back');
+assert.ok(researchLive.NZD.latest_date>=anchor.government_as_of,
+ 'Source-verified RBNZ B2 research can advance, not roll backwards');
+
+// Static regression fixture: never reuse changing live rates/dates as
+// assumptions in the deterministic Nov 2026 scenario tests.
+const original=clone(canonicalLive);
+original.AUD={...original.AUD,date:'2026-10-28','2Y':4.951,'10Y':5.208};
+original.CHF={...original.CHF,date:'2026-09-30','2Y':0.287,'10Y':0.586};
+original.NZD={...original.NZD,date:'2026-10-16','2Y':3.89,'10Y':5.00};
+const research=clone(researchLive);
+research.CHF={
+ pair_status:'OFFICIAL_SNBSAMEBASIS_RESEARCH_REVIEW_REQUIRED',
+ paired_date:'2026-10-30','2Y':0.238,'10Y':0.505,curve_bp:26.7,
+ separate_10y:{as_of:'2026-11-04','10Y':0.525,not_joinable_with_paired_2y:true},
+ eligible_for_core:false,eligible_for_automatic_promotion:false
+};
+research.NZD={
+ status:'RBNZ_GOVT_B2_WEB_RESEARCH_UNAPPROVED',
+ roll_date:'2026-10-30',latest_date:'2026-11-04',
+ latest_2Y:3.83,latest_10Y:4.81,
+ new_benchmark:{'2Y':anchor.gov_benchmark_2y,'10Y':anchor.gov_benchmark_10y},
+ after_roll:[{date:'2026-10-30','2Y':3.96,'10Y':4.90},
+             {date:'2026-11-04','2Y':3.83,'10Y':4.81}],
+ cross_roll_change_allowed:false,independent_xlsx_reconciled:false,
+ eligible_for_core:false
+};
+const aud=clone(audLive);
+Object.assign(aud,{
+ as_of:'2026-10-28',publication_date:'2026-10-30',
+ previous_same_series_as_of:'2026-10-27',
+ '2Y':4.951,'10Y':5.208,curve_bp:25.7,
+ change_2y_bp:6.8,change_10y_bp:5.6,
+ status:'OFFICIAL_F2_CSV_FETCHED_RESEARCH_ONLY',
+ source_download_verified:true,same_date_same_source:true,
+ research_only:true,eligible_for_core:false,eligible_for_fx_pair_engine:false,
+ eligible_for_backtests:false,canonical_government_rates_untouched:true,
+ source_url:'https://www.rba.gov.au/statistics/tables/csv/f2-data.csv',
+ series_2Y:'FCMYGBAG2D',series_10Y:'FCMYGBAG10D'
+});
+const proxy=clone(proxyLive);
+proxy.as_of=anchor.asx_6m_as_of;
+proxy.horizons['6m'].implied_bank_bill_rate=anchor.asx_6m_rate;
+proxy.horizons['6m'].expiration=anchor.asx_6m_expiration;
+proxy.horizons['6m'].expiry_label=anchor.asx_6m_contract;
+proxy.status='LIVE_DIRECTIONAL_PROXY_READY';
+const before=JSON.stringify(original);
 const observed=apply({canonical:original,research,aud,proxy,anchor,today:'2026-11-05'});
 assert.equal(observed.schema,'GMFQ_FXV2_RESEARCH_RATES_SHARED_V1');
 assert.equal(observed.eligible_for_fx_engine,false);
