@@ -59,7 +59,8 @@ fs.mkdirSync(output,{recursive:true});
       !result.observed?.includes('Treasury 2Y')||
       !result.observed?.includes('10Y')||
       !result.verdict?.includes('Fed')||
-      !result.macro?.includes('non ha una data di rilascio')||
+      !(result.macro?.includes('non ha una data di rilascio')||
+        result.macro?.includes('Manca un riepilogo macro USD con data di rilascio verificabile'))||
       !result.pricing?.includes('OIS')||
       !result.asof?.includes('Treasury')||
       !result.asof?.includes('BCE')){
