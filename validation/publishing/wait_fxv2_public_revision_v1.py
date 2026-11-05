@@ -32,6 +32,7 @@ PROBES=(
   "pricing-relative-28pairs-research.json",
   "assets/ois-relative-parity-v1.js",
   "ois-same-contract-repricing-research.json",
+  "assets/ois-same-contract-reading-v1.js",
 )
 SCHEMA="GMFQ_FXV2_POST_PUBLISH_PUBLIC_REVISION_GATE_V1"
 

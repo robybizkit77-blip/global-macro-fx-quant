@@ -20,7 +20,7 @@ const app=program.slice(0,program.indexOf(boot))+
  'globalThis.__oisQA={clean,update,render,showDetail,showCompare,liveNormalized,state};\nsetup();\n})();';
 const nodes={};
 for(const id of ['pricingGrid','pricingRows','feedStatus','detailTitle','detailName','detailMeta','pricingChart',
- 'tenors','contractHistory','contractHistoryRows','contractHistoryFoot','detailInterpretation','sourceTitle','sourceType','sourceDate','sourceName','sourceCaveat',
+ 'tenors','contractHistory','contractHistoryRows','contractHistoryFoot','contractHistoryInterpretation','detailInterpretation','sourceTitle','sourceType','sourceDate','sourceName','sourceCaveat',
  'compare6','compareText','compareFoot','compareA','compareB','dettaglio']){
  nodes[id]={innerHTML:'',textContent:'',value:'',hidden:false,dataset:{},addEventListener(){},scrollIntoView(){}};
 }
