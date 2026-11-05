@@ -86,7 +86,7 @@ function show(pair,p,macro,priceMeta){
      "Fixing BCE disponibile: verificare esecuzione e persistenza del processo. ":
      "Fixing BCE della seduta non ancora disponibile nel repository: acquisizione bloccata, non simulata. ")+
     "Ultima data BCE: "+d.latest_observed_ecb_fixing+
-    ". "+sourceNote+"Nessun risultato predittivo; Core invariato.";
+    ". "+sourceNote+"Nessuna evidenza predittiva; Core invariato.";
   }else if(totals.actual_prospective_capture_days===0){
    experiment.textContent="ESPERIMENTO 6M · preregistrato, raccolta non ancora iniziata. "+
     "Prima data ammissibile 06/11/2026; 0 osservazioni congelate e 0 risultati maturati. "+
