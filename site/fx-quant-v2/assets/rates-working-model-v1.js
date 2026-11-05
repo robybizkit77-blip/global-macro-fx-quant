@@ -19,7 +19,7 @@
   const researchAge=(now,then) => age(now,then);
   const olderThanResearchWindow=(now,then) => researchAge(now,then)>14;
 
-  function derive(canonical, research, today) {
+  function derive(canonical, research, today, asxProxy=null, asxAnchor=null) {
     const out={schema:"GMFQ_FXV2_WORKING_RATES_V1",rates:{},warnings:[],
       eligible_for_fx_engine:false,eligible_for_backtests:false,
       scenario_only:true};
@@ -152,6 +152,61 @@
           ?"NZD: livelli B2 STORICI al "+last.date+"; nessuna variazione giornaliera deducibile."
           :"NZD: livelli B2 indicativi; variazione prima/dopo il roll non utilizzata.");
       }
+    }
+    // Research-only model. No sovereign yield is inferred as an observed quote.
+    // Only SAME-CONTRACT listed NZD bank-bill 6M changes can move the scenario.
+    const a=asxAnchor, q=asxProxy, h=q?.horizons?.["6m"];
+    if(nzd && out.rates.NZD &&
+       a?.schema==="GMFQ_FXV2_NZD_ASX_6M_GOVT_SCENARIO_ANCHOR_V1" &&
+       a.eligible_for_fx_engine===false && a.eligible_for_backtests===false &&
+       a.government_as_of===nzd.latest_date &&
+       a.gov_benchmark_2y===nzd.new_benchmark?.["2Y"] &&
+       a.gov_benchmark_10y===nzd.new_benchmark?.["10Y"] &&
+       a["2Y"]===nzd.latest_2Y && a["10Y"]===nzd.latest_10Y &&
+       a.asx_6m_as_of===a.government_as_of &&
+       q?.schema==="GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1" &&
+       q.currency==="NZD" && q.status==="LIVE_DIRECTIONAL_PROXY_READY" &&
+       q.governance?.pair_engine_effect==="NONE" &&
+       q.governance?.policy_delta_from_proxy_allowed===false &&
+       q.source_quality==="OFFICIAL_EXCHANGE_DIRECTIONAL_PROXY" &&
+       inPast(today,q.as_of) && q.as_of>a.asx_6m_as_of &&
+       h?.expiration===a.asx_6m_expiration &&
+       h?.expiry_label===a.asx_6m_contract &&
+       valid(h.implied_bank_bill_rate,0,20) &&
+       valid(a.asx_6m_rate,0,20) &&
+       Math.abs(h.implied_bank_bill_rate-a.asx_6m_rate)<=0.75 &&
+       (!iso(canonical.NZD?.date)||canonical.NZD.date<q.as_of)) {
+      const shift=round(h.implied_bank_bill_rate-a.asx_6m_rate,4);
+      const dateAge=researchAge(today,q.as_of);
+      const old=olderThanResearchWindow(today,q.as_of);
+      out.rates.NZD={
+        date:q.as_of,"2Y":round(a["2Y"]+shift,4),
+        "10Y":round(a["10Y"]+shift,4),
+        curve_bp:round((a["10Y"]-a["2Y"])*100,1),
+        chg2_bp:null,chg10_bp:null,
+        source:"SCENARIO: RBNZ B2 "+a.government_as_of+
+          " + variazione futures ASX NZ bank-bill 6M sul contratto "+a.asx_6m_contract,
+        quality:"STIMA PARALLEL SHIFT ASX 6M · NON GOVERNATIVO QUOTATO"+
+          (old?" · RIFERIMENTO STORICO":""),
+        estimated:true,stale_source:old,source_age_days:dateAge,
+        freshness:old?"DATED_RESEARCH_NO_CURRENT_MARKET_MOVE":"RECENT_DATED_ESTIMATE",
+        source_date:a.government_as_of,evidence_date:q.as_of,
+        tenor_quality:{"2Y":"STIMATO","10Y":"STIMATO"},
+        working_method:"NZD_ASX_6M_PARALLEL_SHIFT_SCENARIO",
+        assumptions:"2Y/10Y proiettati da RBNZ B2 del "+a.government_as_of+
+          " con identico shift ASX 6M "+round(shift*100,1)+
+          " pb; nessuna evidenza che bond 2Y e 10Y abbiano mosso in parallelo.",
+        comparison_window:{
+          start:a.asx_6m_as_of,end:q.as_of,
+          futures_6m_bp:round(shift*100,2),
+          contract:a.asx_6m_contract,
+          kind:"BILL_FUTURES_PARALLEL_SHIFT_SCENARIO_NOT_SOVEREIGN_1D"
+        },
+        no_core_effect:true,no_inferred_market_move:true,
+        no_cross_roll_change:true,scenario_only:true
+      };
+      out.warnings.push("NZD: scenario automatico ASX al "+q.as_of+
+        " riferito al futures bank-bill 6M; 2Y/10Y governativi NON osservati.");
     }
     return out;
   }

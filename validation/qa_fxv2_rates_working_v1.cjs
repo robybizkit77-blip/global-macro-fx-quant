@@ -5,6 +5,8 @@ const ROOT=path.resolve(__dirname,'..');
 const {derive}=require('../site/fx-quant-v2/assets/rates-working-model-v1.js');
 const research=JSON.parse(fs.readFileSync(path.join(ROOT,'site/fx-quant-v2/chf-nzd-benchmark-research.json')));
 const canonical=JSON.parse(fs.readFileSync(path.join(ROOT,'live_data/sections/NATIVE_RATES_DATA.json')));
+const asx=JSON.parse(fs.readFileSync(path.join(ROOT,'live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json')));
+const anchor=JSON.parse(fs.readFileSync(path.join(ROOT,'site/fx-quant-v2/nzd-asx-government-anchor-v1.json')));
 const copy=x=>JSON.parse(JSON.stringify(x));
 const shiftDays=(day,days)=>new Date(Date.parse(day+'T00:00:00Z')+
   86400000*days).toISOString().slice(0,10);
@@ -165,11 +167,62 @@ for(const c of ['CHF','NZD']){
   Math.round((Date.parse(staleAt)-Date.parse(originalDate))/86400000));
 }
 assert.equal(JSON.stringify(canonical),before,'Stale research must never rewrite canonical source');
+// ASX settlement AFTER B2 research observation: 6M bank-bill futures only,
+// a hypothetical parallel 2Y/10Y shift, never a sovereign daily movement.
+assert.equal(asx.as_of,anchor.asx_6m_as_of,
+ 'Initial 6M futures reference must match the dated ASX feed fixture');
+assert.equal(asx.horizons['6m'].implied_bank_bill_rate,anchor.asx_6m_rate);
+assert.equal(asx.horizons['6m'].expiration,anchor.asx_6m_expiration);
+assert.equal(research.NZD.latest_date,anchor.government_as_of);
+assert.equal(research.NZD.latest_2Y,anchor['2Y']);
+assert.equal(research.NZD.latest_10Y,anchor['10Y']);
+const quote=copy(asx);
+quote.as_of=shiftDays(anchor.asx_6m_as_of,1);
+quote.horizons['6m'].implied_bank_bill_rate=Number((anchor.asx_6m_rate-.12).toFixed(4));
+const scenarioToday=maxDate(today,quote.as_of);
+const z=derive(fixture,research,scenarioToday,quote,anchor).rates.NZD;
+assert.equal(z.date,quote.as_of);
+assert.equal(z['2Y'],Number((anchor['2Y']-.12).toFixed(4)));
+assert.equal(z['10Y'],Number((anchor['10Y']-.12).toFixed(4)));
+assert.equal(z.estimated,true);
+assert.deepEqual(z.tenor_quality,{'2Y':'STIMATO','10Y':'STIMATO'});
+assert.equal(z.working_method,'NZD_ASX_6M_PARALLEL_SHIFT_SCENARIO');
+assert.equal(z.chg2_bp,null);
+assert.equal(z.chg10_bp,null);
+assert.equal(z.comparison_window.futures_6m_bp,-12);
+assert.equal(z.no_core_effect,true);
+assert.equal(z.no_inferred_market_move,true);
+assert.ok(z.quality.includes('NON GOVERNATIVO QUOTATO'));
+assert.equal(derive(fixture,research,scenarioToday,asx,anchor).rates.NZD.date,
+ research.NZD.latest_date,'Same-day ASX observation must retain B2 observed date');
+const rolled=copy(quote);rolled.horizons['6m'].expiration='2027-09-15';
+assert.equal(derive(fixture,research,scenarioToday,rolled,anchor).rates.NZD.date,
+ research.NZD.latest_date,'A different futures maturity must not be chained');
+const abnormal=copy(quote);abnormal.horizons['6m'].implied_bank_bill_rate=anchor.asx_6m_rate+1;
+assert.equal(derive(fixture,research,scenarioToday,abnormal,anchor).rates.NZD.date,
+ research.NZD.latest_date,'Guard against 100bp jump since anchor');
+const fake=copy(quote);fake.status='WITHHELD';
+assert.equal(derive(fixture,research,scenarioToday,fake,anchor).rates.NZD.date,
+ research.NZD.latest_date,'Unvalidated futures status must not displace dated B2');
+const canonicalNewer=copy(fixture);canonicalNewer.NZD.date=quote.as_of;
+assert.equal(derive(canonicalNewer,research,scenarioToday,quote,anchor).rates.NZD,undefined,
+ 'Fresh official canonical yields supersede a model scenario');
+const researchAdvanced=copy(research);researchAdvanced.NZD.latest_date=quote.as_of;
+researchAdvanced.NZD.after_roll.at(-1).date=quote.as_of;
+const advanced=derive(fixture,researchAdvanced,scenarioToday,quote,anchor).rates.NZD;
+assert.equal(advanced.date,researchAdvanced.NZD.latest_date);
+assert.equal(advanced.working_method,'POST_ROLL_B2_SAME_BENCHMARK',
+ 'A new B2 research date must supersede old futures-anchor modelling');
+assert.equal(JSON.stringify(canonical),before,'ASX scenario must not mutate canonical rates');
 const futureAsOf=copy(research);
 futureAsOf.NZD.latest_date=shiftDays(staleAt,1);
 assert.equal(derive(fixture,futureAsOf,staleAt).rates.NZD,undefined,
  'No future government quote in stale fallback');
 const tassi=fs.readFileSync(path.join(ROOT,'site/fx-quant-v2/tassi.html'),'utf8');
+assert.ok(tassi.includes('state.nzdAsxProxy=val(3)'));
+assert.ok(tassi.includes('nzd-asx-government-anchor-v1.json'));
+assert.ok(tassi.includes('state.nzdAsxProxy,anchor'));
+
 assert.ok(tassi.includes("svgCurves(r);if(r.research_observed)"),
  'Observed research source must be distinguished from an estimated curve');
 assert.ok(tassi.includes("else if(r.estimated)") &&
@@ -186,6 +239,9 @@ assert.ok(tassi.includes('x=await read(remote)'),
 assert.ok(tassi.includes("RIFERIMENTO STORICO")===false,
   'Stale classification belongs in the shared working model, not hardcoded HTML');
 const coppie=fs.readFileSync(path.join(ROOT,'site/fx-quant-v2/coppie.html'),'utf8');
+assert.ok(coppie.includes("get('NZD_CB_PRICING_DIRECTIONAL_PROXY.json')"));
+assert.ok(coppie.includes('nzd-asx-government-anchor-v1.json'));
+assert.ok(coppie.includes('derive(state.rates,research,today,proxy,anchor)'));
 assert.ok(coppie.includes('rates-working-model-v1.js?v=1'),'Coppie must reuse the validated Tassi estimator');
 assert.ok(coppie.includes("const local='./chf-nzd-benchmark-research.json'") &&
           coppie.includes("try{research=await load(local);}"),
