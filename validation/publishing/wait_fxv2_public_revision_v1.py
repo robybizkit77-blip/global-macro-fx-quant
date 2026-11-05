@@ -15,11 +15,19 @@ from validation.publishing.check_fxv2_morning_public_v1 import fetch_one
 
 # One atomic gh-pages V2 sync should serve exactly these canonical surfaces.
 # This is a deployment gate, not a claim that the latest market sources exist.
+# Check every navigable V2 page, not merely a subset. In particular tassi.html
+# must match the served CDN revision before rate-provenance browser assertions.
+# The CHF/NZD research sidecars must be from the same synced deployment.
 PROBES=(
-  "index.html","coppie.html","ois.html","liquidita-credito.html",
-  "macro.html","banche.html","calendario-news.html",
+  "index.html","valute.html","coppie.html","tassi.html",
+  "ois.html","macro.html","banche.html","cot.html",
+  "cross-asset.html","liquidita-credito.html","calendario-news.html","research.html",
   "assets/pair-macro-observed-context-v1.js",
   "assets/liquidity-credit-feed-v1.js",
+  "assets/rates-working-model-v1.js",
+  "chf-nzd-benchmark-research.json",
+  "chf-snb-paired-history.json",
+  "nzd-asx-government-anchor-v1.json",
   "ois-pricing-snapshot.json",
 )
 SCHEMA="GMFQ_FXV2_POST_PUBLISH_PUBLIC_REVISION_GATE_V1"
