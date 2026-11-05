@@ -1,0 +1,113 @@
+name: FX Quant V2 Rates FX Temporal Research Audit
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/quant/fxv2_rates_fx_temporal_readiness_v1.py'
+      - 'validation/quant/test_fxv2_rates_fx_temporal_readiness_v1.py'
+      - 'site/fx-quant-v2/quant-temporal-readiness-v1.json'
+      - '.github/workflows/fxv2-rates-fx-temporal-research.yml'
+      - 'validation/cb_pricing/history/OIS_SAME_CONTRACT_QUOTES_V1.jsonl'
+      - 'live_data/sections/ECB_G8_PRICE_HISTORY.json'
+      - 'site/fx-quant-v2/macro-baseline-candidate-v1.json'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/quant/fxv2_rates_fx_temporal_readiness_v1.py'
+      - 'validation/quant/test_fxv2_rates_fx_temporal_readiness_v1.py'
+      - '.github/workflows/fxv2-rates-fx-temporal-research.yml'
+      - 'validation/cb_pricing/history/OIS_SAME_CONTRACT_QUOTES_V1.jsonl'
+      - 'live_data/sections/ECB_G8_PRICE_HISTORY.json'
+      - 'site/fx-quant-v2/macro-baseline-candidate-v1.json'
+  workflow_run:
+    # GITHUB_TOKEN data writes do not trigger a new push workflow. Both source
+    # producers run independently and this read-only audit recovers afterwards.
+    workflows:
+      - 'OIS G8 History Persistent Daily V1'
+      - 'Price History Persistent Daily V1'
+      - 'FX Quant V2 Macro Candidate Descriptive Baseline'
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('fxv2-temporal-pr-{0}', github.event.pull_request.number) || 'fxv2-temporal-audit-main' }}
+  cancel-in-progress: false
+
+jobs:
+  quant-temporal-audit:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+          fetch-depth: 3
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Adversarial tests of futures rolls, source first-seen dates and ECB chronology
+        run: python -m unittest validation.quant.test_fxv2_rates_fx_temporal_readiness_v1 -v
+      - name: Build descriptive 28-pair sample sufficiency with no outcome fitting
+        run: |
+          set -euo pipefail
+          python validation/quant/fxv2_rates_fx_temporal_readiness_v1.py --output /tmp/fxv2-temporal-research.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('/tmp/fxv2-temporal-research.json').read_text())
+          s=x['summary']
+          assert s['fx_pairs']==28 and s['fx_reference_rows']>=100
+          assert s['strict_relative_pair_moves']==len(x['relative_rate_observations'])
+          assert not x['eligible_for_signals'] and not x['eligible_for_backtests']
+          assert not x['eligible_for_automatic_core_rebase']
+          assert x['statistical_significance'] is None and x['sharpe_ratio'] is None
+          assert x['out_of_sample_skill'] is None
+          assert s['out_of_sample_predictions']==0 and s['generated_fx_signals']==0
+          print('FXV2_QUANT_READINESS_ACCEPTED',s)
+          PY
+      - name: Publish only the V2 quant sample audit; no Core or trading engine writes
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          TARGET=site/fx-quant-v2/quant-temporal-readiness-v1.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main --no-tags
+            git reset --hard origin/main
+            python validation/quant/fxv2_rates_fx_temporal_readiness_v1.py --output "$TARGET"
+            python validation/quant/fxv2_rates_fx_temporal_readiness_v1.py --output "$TARGET" --check
+            git add -- "$TARGET"
+            if git diff --cached --quiet; then
+              echo 'FXV2_QUANT_AUDIT_UNCHANGED_NO_FAKE_UPDATE'
+              exit 0
+            fi
+            test "$(git diff --cached --name-only)" = "$TARGET"
+            git commit -m 'data(fxv2): date-aware contract-price research readiness'
+            if git push origin HEAD:main; then
+              echo 'FXV2_QUANT_AUDIT_PUBLISHED_MAIN'
+              exit 0
+            fi
+            echo "Main advanced; regenerate from newest sources, retry $attempt" >&2
+            sleep "$((attempt*2))"
+          done
+          echo 'FXV2_QUANT_AUDIT_PUBLISH_FAILED' >&2
+          exit 1
+      - name: Preserve quantitative research-only audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fxv2-temporal-research-receipt
+          path: /tmp/fxv2-temporal-research.json
+          if-no-files-found: warn
+          retention-days: 30
