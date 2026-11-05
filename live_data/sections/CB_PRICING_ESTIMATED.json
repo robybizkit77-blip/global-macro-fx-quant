@@ -1,7 +1,7 @@
 {
   "currencies": {
     "CHF": {
-      "as_of": "2026-11-03",
+      "as_of": "2026-11-04",
       "change_1d_bp": null,
       "change_1w_bp": null,
       "change_status": "DERIVED_ONLY_FROM_HOMOGENEOUS_SNAPSHOT_HISTORY",
@@ -24,21 +24,21 @@
           "contract": "SA3Z2027",
           "contract_description": "Dec 2027",
           "expiration": "2028-03-14",
-          "futures_price": 99.495,
+          "futures_price": 99.565,
           "mapping": "nearest ICE SARON accrual start to today+365d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-03T17:59:48Z",
-          "quote_as_of": "2026-11-03",
+          "price_valid_until": "2026-11-04T17:39:53Z",
+          "quote_as_of": "2026-11-04",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 0.505,
+          "rate": 0.435,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 50.5,
+          "raw_level_minus_spot_policy_bp": 43.5,
           "symbol": "ICEEUR:SA3Z2027"
         },
         "3m": {
           "accrual_start": "2027-03-17",
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "SA3H2027",
           "contract_description": "ICE quarter 2027-03 (calendar-derived identity)",
           "expiration": "2027-06-15",
@@ -57,7 +57,7 @@
         },
         "6m": {
           "accrual_start": "2027-06-16",
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "SA3M2027",
           "contract_description": "Jun 2027",
           "expiration": "2027-09-14",
@@ -106,7 +106,7 @@
       },
       "horizons": {
         "12m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "FST3U2027",
           "contract_description": "Sep 2027",
           "expiration": "2027-12-15",
@@ -123,7 +123,7 @@
           "symbol": "EUREX:FST3U2027"
         },
         "3m": {
-          "business_day_lag": 1,
+          "business_day_lag": 2,
           "contract": "FST3V2026",
           "contract_description": "Oct 2026",
           "expiration": "2027-01-20",
@@ -140,7 +140,7 @@
           "symbol": "EUREX:FST3V2026"
         },
         "6m": {
-          "business_day_lag": 1,
+          "business_day_lag": 2,
           "contract": "FST3G2027",
           "contract_description": "Feb 2027",
           "expiration": "2027-05-19",
@@ -287,7 +287,7 @@
       },
       "horizons": {
         "12m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "ZQV2027",
           "contract_description": "Oct 2027",
           "expiration": "2027-11-01",
@@ -304,7 +304,7 @@
           "symbol": "CBOT:ZQV2027"
         },
         "3m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "ZQG2027",
           "contract_description": "Feb 2027",
           "expiration": "2027-03-01",
@@ -321,7 +321,7 @@
           "symbol": "CBOT:ZQG2027"
         },
         "6m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "contract": "ZQJ2027",
           "contract_description": "Apr 2027",
           "expiration": "2027-05-03",
