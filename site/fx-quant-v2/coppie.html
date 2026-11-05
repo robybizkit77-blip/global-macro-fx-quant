@@ -170,13 +170,26 @@ const order=['EURUSD','AUDCAD','USDJPY','EURGBP','AUDNZD','CADJPY','EURCHF','GBP
 const state={pairs:pairSeed,rates:seed.rates,workingRates:null,macroV3:null,selected:'EURUSD',snapshot:true,screener:{thesis:'ALL',timing:'ALL',price:'ALL',cot:'ALL',fav:'ALL'}};const $=s=>document.getElementById(s);const fmt=(n,d=2)=>typeof n==='number'&&Number.isFinite(n)?n.toLocaleString('it-IT',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';const sg=(n,d=1,s='')=>typeof n==='number'&&Number.isFinite(n)?(n>0?'+':n<0?'−':'')+fmt(Math.abs(n),d)+s:'—';const dt=s=>/^\d{4}-\d{2}-\d{2}$/.test(s||'')?s.slice(8,10)+'/'+s.slice(5,7)+'/'+s.slice(0,4):'n.d.';const esc=s=>String(s??'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
 function getObj(code){let p=state.pairs[code]||{};if(p.setup){let s=p.setup,t=s.structural||{},d=p.decision_frame||{};return {fav:s.structuralFav,quality:s.quality,pstate:s.price?.state,price:s.price?.text,struct:t.relation,priceNote:t.priceNote,cot:s.cot?.text,liq:s.liquidity?.text,timing:s.timing?.text,ret1m:s.extension?.move1m,macroSide:t.macroSide,policySide:t.policySide,relDynFav:p.relative_dynamics?.fav,change:p.transition?.state}}return p}
 // Livelli indicativi esclusivamente per la pagina di ricerca: non entrano nel motore FX.
-function twoYearQuality(r){const q=r?.tenor_quality?.['2Y'];return q==='STIMATO'?'STIMA 2Y':q==='WEB_PROXY'?'PROXY 2Y':'FEED CANONICO 2Y'}
+function twoYearQuality(r){
+ const q=r?.tenor_quality?.['2Y'];
+ if(q==='STIMATO')return 'STIMA 2Y';
+ if(q==='WEB_PROXY')return 'PROXY 2Y';
+ if(q==='OSSERVATO'&&r?.research_observed===true&&r?.no_core_effect===true)
+  return 'SNB 2Y · RICERCA';
+ return 'FEED CANONICO 2Y';
+}
 function rateLegText(r){return twoYearQuality(r)+' · '+dt(r?.date)}
 function isIndicative(r1,r2){return !!(r1?.estimated||r2?.estimated)}
 function researchSpreadNote(a,b,r1,r2){
  if(!isIndicative(r1,r2))return 'Livelli governativi del feed canonico, con date di osservazione potenzialmente diverse. Lo spread di livello non è OIS, carry negoziabile o variazione del differenziale.';
  const legs=[[a,r1],[b,r2]].filter(([,r])=>r.estimated).map(([c,r])=>c+': '+r.quality+' ('+dt(r.date)+')');
- return 'CALCOLO INDICATIVO · '+legs.join(' · ')+'. CHF 2Y è uno scenario da movimento parallelo del 10Y; NZD 2Y usa il proxy B2 dopo il cambio benchmark. Date delle due valute non necessariamente allineate: NON leggere lo spread come repricing, OIS o carry. Solo research, non modifica qualità e segnali delle 28 coppie.';
+ const chf=[[a,r1],[b,r2]].find(([c,r])=>c==='CHF'&&r?.estimated)?.[1];
+ const nzd=[[a,r1],[b,r2]].find(([c,r])=>c==='NZD'&&r?.estimated)?.[1];
+ const facts=[];
+ if(chf?.research_observed===true)facts.push('CHF 2Y e 10Y osservati nella stessa coppia SNB, ricerca non promossa al motore');
+ else if(chf?.tenor_quality?.['2Y']==='STIMATO')facts.push('CHF 2Y stimato con spostamento parallelo del 10Y SNB');
+ if(nzd)facts.push('NZD 2Y usa il proxy B2 dopo il cambio benchmark');
+ return 'CALCOLO INDICATIVO · '+legs.join(' · ')+'. '+(facts.length?facts.join('; ')+'. ':'')+'Date delle valute non necessariamente allineate: NON leggere lo spread come repricing, OIS o carry. Solo research, non modifica qualità e segnali delle 28 coppie.';
 }
 const QUALITY_ORDER=['PULITO','CON RISCHI','DA CONFERMARE','DA MONITORARE','NON VALUTABILE'];
 const QUALITY_MEANING={
