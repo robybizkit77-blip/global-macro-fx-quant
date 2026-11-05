@@ -371,13 +371,19 @@ async function audit(browser,name,file,selector,view,viewport){
         rows:[...document.querySelectorAll('#contractHistoryRows [data-horizon]')].map(x=>({
           horizon:x.dataset.horizon,proof:x.dataset.proof,text:x.textContent
         })),
-        foot:document.querySelector('#contractHistoryFoot')?.textContent||''
+        foot:document.querySelector('#contractHistoryFoot')?.textContent||'',
+        explanation:document.querySelector('#contractHistoryInterpretation')?.textContent||''
       }));
       if(details.hidden||details.rows.length!==3||
          details.rows.some(x=>!['SAME_CONTRACT_VALIDATED','MISMATCH_OR_UNAVAILABLE'].includes(x.proof))||
          details.rows.some(x=>x.proof==='SAME_CONTRACT_VALIDATED'&&
            (!x.text.includes('1D:')||!x.text.includes('1W:')))||
-         (details.parity==='VERIFIED_SAME_CONTRACT'&&!details.foot.includes('non OIS ufficiale')))
+         (details.parity==='VERIFIED_SAME_CONTRACT'&&!details.foot.includes('non OIS ufficiale'))||
+         !details.explanation||
+         (details.parity==='VERIFIED_SAME_CONTRACT'&&
+           (!details.explanation.includes('Ultima data osservata')||
+            !details.explanation.includes('non dimostrano da soli')))||
+         /(?:undefined|NaN|Invalid Date)/.test(details.explanation))
         issue(name,view,'ois_same_contract_repricing_source_parity',c+' '+JSON.stringify(details).slice(0,800));
     }
     await page.locator('#pricingGrid button[data-c="JPY"]').click();
