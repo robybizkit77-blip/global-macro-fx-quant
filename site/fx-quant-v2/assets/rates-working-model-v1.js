@@ -83,8 +83,13 @@
           out.rates.CHF={
             date:chf.separate_10y.as_of,"2Y":modeled2,"10Y":observed10,
             curve_bp:round((observed10-modeled2)*100,1),
-            chg2_bp:dated?null:round(delta10*100,2),
-            chg10_bp:dated?null:round(delta10*100,2),
+            chg2_bp:null,chg10_bp:null,
+            comparison_window:{
+              start:chf.paired_date,end:chf.separate_10y.as_of,
+              observed_10y_bp:round(delta10*100,2),
+              assumed_2y_bp:round(delta10*100,2),
+              kind:"MULTI_SESSION_PARALLEL_SHIFT_SCENARIO_NOT_1D"
+            },
             source:"SNB 10Y spot osservato; SNB 2Y stimato da shift parallelo della coppia "+chf.paired_date,
             quality:"STIMA 2Y / SNB 10Y OSSERVATO"+(dated?" · RIFERIMENTO STORICO":""),
             stale_source:dated,source_age_days:sourceAge,
@@ -125,8 +130,13 @@
         out.rates.NZD={
           date:last.date,"2Y":last["2Y"],"10Y":last["10Y"],
           curve_bp:round((last["10Y"]-last["2Y"])*100,1),
-          chg2_bp:dated?null:round((last["2Y"]-first["2Y"])*100,2),
-          chg10_bp:dated?null:round((last["10Y"]-first["10Y"])*100,2),
+          chg2_bp:null,chg10_bp:null,
+          comparison_window:{
+            start:first.date,end:last.date,
+            observed_2y_bp:round((last["2Y"]-first["2Y"])*100,2),
+            observed_10y_bp:round((last["10Y"]-first["10Y"])*100,2),
+            kind:"POST_ROLL_CUMULATIVE_NOT_1D"
+          },
           source:"RBNZ B2, lettura web dopo roll benchmark "+nzd.roll_date+"; XLSX non riconciliato",
           quality:"PROXY RBNZ B2 (NON CERTIFICATO XLSX)"+(dated?" · RIFERIMENTO STORICO":""),
           estimated:true,stale_source:dated,source_age_days:sourceAge,
