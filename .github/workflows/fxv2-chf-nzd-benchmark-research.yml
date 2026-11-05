@@ -17,6 +17,8 @@ on:
       - 'validation/rates/test_refresh_fxv2_chf_nzd_benchmark_context.py'
       - 'validation/rates/recover_chf_snb_paired_history_v1.py'
       - 'validation/rates/test_recover_chf_snb_paired_history_v1.py'
+      - 'validation/rates/build_fxv2_chf_snb_history_feed_v1.py'
+      - 'validation/rates/test_build_fxv2_chf_snb_history_feed_v1.py'
       - 'site/fx-quant-v2/chf-nzd-benchmark-research.json'
       - 'site/fx-quant-v2/tassi.html'
       - '.github/workflows/fxv2-chf-nzd-benchmark-research.yml'
@@ -36,6 +38,8 @@ on:
       - 'validation/rates/test_refresh_fxv2_chf_nzd_benchmark_context.py'
       - 'validation/rates/recover_chf_snb_paired_history_v1.py'
       - 'validation/rates/test_recover_chf_snb_paired_history_v1.py'
+      - 'validation/rates/build_fxv2_chf_snb_history_feed_v1.py'
+      - 'validation/rates/test_build_fxv2_chf_snb_history_feed_v1.py'
       - 'site/fx-quant-v2/chf-nzd-benchmark-research.json'
       - 'site/fx-quant-v2/tassi.html'
       - '.github/workflows/fxv2-chf-nzd-benchmark-research.yml'
@@ -82,6 +86,7 @@ jobs:
           python3 validation/rates/test_fxv2_nzd_manual_public_source_v1.py
           python3 validation/rates/test_collect_fxv2_nzd_eolas_api_v1.py
           python3 validation/rates/test_recover_chf_snb_paired_history_v1.py
+          python3 validation/rates/test_build_fxv2_chf_snb_history_feed_v1.py
       - name: Rome 06:30 DST-safe source collection gate
         id: gate
         shell: bash
@@ -187,6 +192,22 @@ jobs:
             rm -f "$OUT"
             echo 'SNB paired 2Y/10Y source UNAVAILABLE; keep prior research. No new observation or Core rate update.' | tee -a "$GITHUB_STEP_SUMMARY"
           fi
+      - name: Publish separately verified SNB 2Y/10Y historical research (not a live rate)
+        if: steps.gate.outputs.should_run == 'true' && github.event_name != 'pull_request' && github.event_name != 'workflow_run'
+        shell: bash
+        run: |
+          set -euo pipefail
+          EVIDENCE=/tmp/fxv2-snb-paired-historical-review.json
+          OUTPUT=site/fx-quant-v2/chf-snb-paired-history.json
+          if [ -s "$EVIDENCE" ]; then
+            if python3 validation/rates/build_fxv2_chf_snb_history_feed_v1.py --evidence "$EVIDENCE" --output "$OUTPUT"; then
+              echo 'CHF_SNBSAMEBASIS_HISTORY_RESEARCH_READY (no Core writes)' | tee -a "$GITHUB_STEP_SUMMARY"
+            else
+              echo 'CHF history not eligible/reconciled: retain previous published research if any.' | tee -a "$GITHUB_STEP_SUMMARY"
+            fi
+          else
+            echo 'CHF official source unavailable: retaining previous dated research.' | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Check dated CHF/NZD source age and preserve exact source evidence
         if: steps.gate.outputs.should_run == 'true'
         shell: bash
@@ -204,15 +225,17 @@ jobs:
         run: |
           set -euo pipefail
           FILE=site/fx-quant-v2/chf-nzd-benchmark-research.json
+          CHF_HISTORY=site/fx-quant-v2/chf-snb-paired-history.json
           git diff --exit-code -- live_data payload
-          if git diff --quiet -- "$FILE"; then
+          git add "$FILE"
+          if [ -f "$CHF_HISTORY" ]; then git add "$CHF_HISTORY"; fi
+          if git diff --cached --quiet -- "$FILE" "$CHF_HISTORY"; then
             echo 'FXV2_CHF_NZD_UNCHANGED_SOURCE_OBSERVATIONS'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add "$FILE"
-          git commit -m 'data(fxv2): update separate SNB matched-pair and RBNZ benchmark-roll research'
+          git commit -m 'data(fxv2): refresh separate CHF SNB historical research and NZD benchmark context'
           for attempt in 1 2 3 4 5; do
             if git push origin HEAD:main; then
               echo 'FXV2_CHF_NZD_RESEARCH_PUBLISHED_MAIN'
@@ -237,6 +260,7 @@ jobs:
             /tmp/fxv2-chf-nzd-research-candidate.json
             /tmp/fxv2-chf-nzd-freshness-receipt.json
             /tmp/fxv2-snb-paired-historical-review.json
+            site/fx-quant-v2/chf-snb-paired-history.json
             site/fx-quant-v2/chf-nzd-benchmark-research.json
           if-no-files-found: warn
           retention-days: 14
