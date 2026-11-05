@@ -398,13 +398,20 @@ function benchmarkPanel(){
   assign("ratesStand","Usiamo un 2Y stimato e il 10Y SNB osservato. La pendenza risultante e i confronti sono scenari di lavoro, non una curva ufficiale sincronizzata.");
  }else{
   if(x.status!=="RBNZ_GOVT_B2_WEB_RESEARCH_UNAPPROVED"||x.cross_roll_change_allowed!==false||
-     x.independent_xlsx_reconciled!==false||x.after_roll?.length!==2||
-     !x.before_roll?.length||x.latest_date>today)return;
-  const old=x.before_roll.at(-1),first=x.after_roll[0],last=x.after_roll[1];
+     x.independent_xlsx_reconciled!==false||!Array.isArray(x.after_roll)||
+     x.after_roll.length<2||!x.before_roll?.length||x.latest_date>today)return;
+  const old=x.before_roll.at(-1),first=x.after_roll[0],last=x.after_roll.at(-1);
   if(!Number.isFinite(old["2Y"])||!Number.isFinite(old["10Y"])||
-     !Number.isFinite(first["2Y"])||!Number.isFinite(first["10Y"])||
-     !Number.isFinite(last["2Y"])||!Number.isFinite(last["10Y"])||
-     old.date>=x.roll_date||first.date!==x.roll_date||last.date<first.date)return;
+     !x.after_roll.every((v,i)=>Number.isFinite(v["2Y"])&&Number.isFinite(v["10Y"])&&
+       /^\d{4}-\d{2}-\d{2}$/.test(v.date||"")&&
+       (i===0||v.date>x.after_roll[i-1].date))||
+     old.date>=x.roll_date||first.date!==x.roll_date||
+     last.date!==x.latest_date||last.date>today||
+     last["2Y"]!==x.latest_2Y||last["10Y"]!==x.latest_10Y||
+     x.same_benchmark_change_bp?.start!==first.date||
+     x.same_benchmark_change_bp?.end!==last.date||
+     Math.abs((last["2Y"]-first["2Y"])*100-x.same_benchmark_change_bp["2Y"])>.11||
+     Math.abs((last["10Y"]-first["10Y"])*100-x.same_benchmark_change_bp["10Y"])>.11)return;
   holder.hidden=false;
   assign("benchmarkHeadline","NZD · benchmark RBNZ cambiati il "+dt(x.roll_date));
   assign("benchmarkExplanation","Sono due gruppi separati. Il salto fra "+dt(old.date)+" e "+dt(first.date)+" non è un repricing confrontabile: cambiano i titoli di riferimento.");
