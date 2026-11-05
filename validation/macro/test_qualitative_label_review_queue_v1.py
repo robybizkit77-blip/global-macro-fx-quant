@@ -119,10 +119,18 @@ class QualitativeReviewTests(unittest.TestCase):
     def test_new_monthly_release_impacts_seven_pairs(self):
         def modify(x):
             row = next(t for t in x[2]["EUR"] if t.get("id") == "EA_HICP_HEADLINE_YOY_history_value")
-            row["dates"].append("2026-10")
+            # The actual HICP series has already moved past September, and
+            # may use YYYY-MM-DD on its newest row rather than YYYY-MM.
+            # Always append one strictly later monthly period in same format.
+            last = row["dates"][-1]
+            year, month = map(int, last[:7].split("-"))
+            year += month // 12
+            month = (month % 12) + 1
+            next_period = f"{year:04d}-{month:02d}" + last[7:]
+            row["dates"].append(next_period)
             row["values"].append(row["values"][-1] + .1)
             h = x[3]["currencies"]["EUR"]["inflation"]
-            h["as_of"] = "2026-10"
+            h["as_of"] = next_period
             h["latest_value"] += .1
         r = self.run_review(modify)
         self.assertTrue(any("NEW_OBSERVATION" in e["flags"]

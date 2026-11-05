@@ -21,6 +21,30 @@ class LatestReleaseLedgerTests(unittest.TestCase):
     def run_receipt(self, records=None):
         return build_ledger(ROOT, TODAY, self.anchors if records is None else records)
 
+    def synthetic_current_eur_date_only(self):
+        """Test-only current-period evidence, never committed as an official release.
+
+        The live EUR release period advances each month; mutating a pinned
+        September 2026 anchor must not be mistaken for testing today's source.
+        The ledger still must reject future, pre-period, conflicting values and
+        duplicate first-release dates for the CURRENT source period.
+        """
+        live = self.run_receipt()["observations"]["EUR.inflation"]
+        period = live["current_observation_period"][:7]
+        row = {
+            "date": TODAY.isoformat(),
+            "value": live["latest_transformed_observation"],
+            "source_path": "TEST_ONLY/synthetic_current_eur_date_only",
+            "source_kind": "TEST_NEGATIVE_CONTROL_NOT_OFFICIAL",
+            "official_reference": None,
+            "source_sha256": None,
+            "release_time_utc": None,
+            "release_time_jst": None,
+        }
+        records = copy.deepcopy(self.anchors)
+        records[("EUR.inflation", period)] = [row]
+        return records, period
+
     def test_strict_latest_period_evidence_and_withheld(self):
         out = self.run_receipt()
         self.assertEqual(out["source_lineage"], "PASS")
@@ -105,11 +129,18 @@ class LatestReleaseLedgerTests(unittest.TestCase):
         self.assertFalse(r["release"]["historical_backtest_safe_for_all_periods"])
 
     def test_date_only_is_never_intraday_eligible(self):
-        out = self.run_receipt()
-        eur = out["observations"]["EUR.inflation"]["release"]
-        self.assertEqual(eur["first_release_date"], "2026-10-02")
+        # The pinned 2-Oct date belongs to a HISTORICAL EUR observation.
+        # If the live source has advanced, it must not be stamped current.
+        previous = self.anchors.get(("EUR.inflation", "2026-09"), [])
+        self.assertTrue(any(r["date"] == "2026-10-02" for r in previous))
+        records, _period = self.synthetic_current_eur_date_only()
+        eur = self.run_receipt(records)["observations"]["EUR.inflation"]["release"]
+        self.assertEqual(eur["status"], "DATE_ONLY")
+        self.assertEqual(eur["first_release_date"], TODAY.isoformat())
         self.assertIsNone(eur["first_release_timestamp_utc"])
+        self.assertFalse(eur["release_clock_verified"])
         self.assertTrue(eur["date_only_not_eligible_for_intraday_PIT"])
+        self.assertFalse(eur["historical_backtest_safe_for_all_periods"])
 
     def test_chf_archival_utc_instant_is_properly_converted(self):
         chf = self.run_receipt()["observations"]["CHF.inflation"]["release"]
@@ -188,33 +219,32 @@ class LatestReleaseLedgerTests(unittest.TestCase):
                 source_web_attestations(Path(temp))
 
     def test_future_release_in_evidence_fails_closed(self):
-        data = copy.deepcopy(self.anchors)
-        row = data[("EUR.inflation", "2026-09")][0]
-        row["date"] = (TODAY + timedelta(days=1)).isoformat()
+        data, period = self.synthetic_current_eur_date_only()
+        data[("EUR.inflation", period)][0]["date"] = (TODAY + timedelta(days=1)).isoformat()
         with self.assertRaisesRegex(ValueError, "future official release metadata"):
             self.run_receipt(data)
 
     def test_same_period_wrong_value_fails_closed(self):
-        data = copy.deepcopy(self.anchors)
-        row = data[("EUR.inflation", "2026-09")][0]
-        row["value"] = 99.5
-        # The other anchored sources for the same period still agree; test
-        # that a single inconsistent official source cannot be silently used.
+        data, period = self.synthetic_current_eur_date_only()
+        data[("EUR.inflation", period)][0]["value"] = 99.5
         with self.assertRaisesRegex(ValueError, "conflicting current-period pinned official value"):
             self.run_receipt(data)
 
     def test_inconsistent_same_period_official_dates_fail_closed(self):
-        data = copy.deepcopy(self.anchors)
-        row = copy.deepcopy(data[("EUR.inflation", "2026-09")][0])
-        row["date"] = "2026-10-03"
-        data[("EUR.inflation", "2026-09")].append(row)
+        data, period = self.synthetic_current_eur_date_only()
+        first_day = date.fromisoformat(period + "-01")
+        if TODAY <= first_day:
+            self.skipTest("Only one permissible release day inside the live reference period")
+        row = copy.deepcopy(data[("EUR.inflation", period)][0])
+        row["date"] = first_day.isoformat()
+        data[("EUR.inflation", period)].append(row)
         with self.assertRaisesRegex(ValueError, "incompatible official first-release"):
             self.run_receipt(data)
 
     def test_pre_observation_release_date_fails_closed(self):
-        data = copy.deepcopy(self.anchors)
-        for row in data[("EUR.inflation", "2026-09")]:
-            row["date"] = "2026-08-29"
+        data, period = self.synthetic_current_eur_date_only()
+        for row in data[("EUR.inflation", period)]:
+            row["date"] = (date.fromisoformat(period + "-01") - timedelta(days=1)).isoformat()
         with self.assertRaisesRegex(ValueError, "publication before reference month"):
             self.run_receipt(data)
 
