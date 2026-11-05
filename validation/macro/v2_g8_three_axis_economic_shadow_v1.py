@@ -218,7 +218,7 @@ def build(observed):
             "growth_relative_to_own_history_z": growth["raw_z"],
             "labour_tightness_relative_to_own_history_z": tightness,
             "inflation_pressure_relative_to_own_history_z": price,
-            "illustrative_activity_labour_balance_z": round(activity, 12),
+            "illustrative_activity_labour_balance_z": (round(activity, 12) if activity is not None else None),
             "axis_classification_relative_to_own_history": {
                 "activity": (zone(activity, "RELATIVELY_FIRM", "RELATIVELY_SOFT")
                              if activity is not None else "INSUFFICIENT_STRICT_HISTORY"),
