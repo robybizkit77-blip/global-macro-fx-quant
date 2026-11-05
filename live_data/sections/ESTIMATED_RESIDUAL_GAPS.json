@@ -88,17 +88,17 @@
     "BRENT.market_proxy": {
       "status": "MARKET_PROXY_ACTIVE_SECONDARY",
       "confidence": "B_FOR_DIRECTION_ONLY",
-      "proxy_as_of": "2026-11-03",
-      "value": 104.83,
-      "change_1d_pct": 0.0573,
-      "change_1w_pct": -7.947,
+      "proxy_as_of": "2026-11-05",
+      "value": 98.17,
+      "change_1d_pct": 3.7518,
+      "change_1w_pct": -14.5456,
       "source": "Yahoo Finance public chart JSON · Brent Crude Oil Last Day Financial Futures (BZ=F)",
       "source_endpoint": "https://query1.finance.yahoo.com/v8/finance/chart/BZ=F",
       "vendor_symbol": "BZ=F",
       "currency": "USD",
       "exchange_name": "NYM",
       "instrument_type": "FUTURE",
-      "fetched_at_utc": "2026-11-03T03:29:16.847443Z",
+      "fetched_at_utc": "2026-11-05T20:40:54.788674Z",
       "official_canonical_untouched": true,
       "same_date_source_vintages": [
         {
