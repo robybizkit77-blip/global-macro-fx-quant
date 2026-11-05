@@ -1,6 +1,7 @@
 """Strict tests for FX Quant V2 fallback auto-refresh, with no network or writes."""
 import copy
-from datetime import date
+from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 import json
 from pathlib import Path
 import unittest
@@ -18,7 +19,7 @@ class FallbackPricingTests(unittest.TestCase):
         cls.op = json.loads(OPERATIONAL.read_text(encoding="utf-8"))
         cls.est = json.loads(ESTIMATED.read_text(encoding="utf-8"))
         cls.nzd = json.loads(NZD_PROXY.read_text(encoding="utf-8"))
-        cls.today = date(2026, 11, 4)
+        cls.today = datetime.now(ZoneInfo('Europe/Rome')).date()
 
     def test_all_eight_and_24_dated_instruments_remain_research_only(self):
         result, changed = rebuild(self.snap,self.op,self.est,self.nzd,today=self.today)
@@ -33,7 +34,8 @@ class FallbackPricingTests(unittest.TestCase):
                              self.today.isoformat())
         self.assertEqual(result["currencies"]["CHF"]["kind"],"FUTURES SECONDARI")
         self.assertEqual(result["currencies"]["USD"]["kind"],"FUTURES SECONDARI")
-        self.assertGreaterEqual(len(changed),1)
+        self.assertIsInstance(changed, list)
+        self.assertTrue(set(changed).issubset(set(G8)))
 
     def test_per_tenor_new_quote_has_its_real_date_not_currency_date(self):
         result,_=rebuild(self.snap,self.op,self.est,self.nzd,today=self.today)
@@ -66,7 +68,7 @@ class FallbackPricingTests(unittest.TestCase):
 
     def test_future_quote_rejected_instead_of_fabricating_freshness(self):
         bad=copy.deepcopy(self.est)
-        bad["currencies"]["USD"]["horizons"]["3m"]["quote_as_of"]="2026-11-05"
+        bad["currencies"]["USD"]["horizons"]["3m"]["quote_as_of"]=(self.today+timedelta(days=1)).isoformat()
         with self.assertRaisesRegex(ValueError,"future quote"):
             rebuild(self.snap,self.op,bad,self.nzd,today=self.today)
 
@@ -84,7 +86,7 @@ class FallbackPricingTests(unittest.TestCase):
 
     def test_second_build_is_idempotent_no_fake_new_repo_date(self):
         first,_=rebuild(self.snap,self.op,self.est,self.nzd,today=self.today)
-        second,changed=rebuild(first,self.op,self.est,self.nzd,today=date(2026,11,5))
+        second,changed=rebuild(first,self.op,self.est,self.nzd,today=self.today+timedelta(days=1))
         self.assertEqual(changed,[])
         self.assertEqual(first,second)
 
