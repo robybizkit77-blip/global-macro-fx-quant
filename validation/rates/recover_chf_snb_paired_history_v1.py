@@ -104,7 +104,7 @@ def verify(source: dict, rates: dict, ten: dict, *,
         "schema": SCHEMA,
         "status": (
             "PAIRED_OFFICIAL_HISTORY_READY_FOR_REVIEW"
-            if 0 <= age <= 5 and len(pairs) > 1
+            if 0 <= age <= 45 and len(pairs) > 1
             else "OFFICIAL_PAIRED_HISTORY_NOT_CURRENT"
         ),
         "source": SOURCE,
@@ -115,6 +115,11 @@ def verify(source: dict, rates: dict, ten: dict, *,
         "last_common_10Y": latest["10Y"],
         "last_common_curve_bp": latest["curve_bp"],
         "last_common_age_days": age,
+        "paired_source_ready_for_historical_review": len(pairs)>1 and 0 <= age <= 45,
+        "current_session_government_rates_certified": False,
+        "latest_paired_market_session_fresh": 0 <= age <= 5,
+        "research_age_rule": "45_DAY_MONTH_END_STATISTICAL_REFERENCE_NOT_DAILY_LIVE_RATE",
+        "source_date_not_refresh_timestamp": True,
         "paired_source_rows": pairs,
         "matched_paired_rows": len(pairs),
         "new_paired_rows": len(pairs) - 1,
