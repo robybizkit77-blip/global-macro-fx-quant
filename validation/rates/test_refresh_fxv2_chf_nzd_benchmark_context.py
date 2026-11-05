@@ -102,8 +102,23 @@ class TestChfNzdResearch(unittest.TestCase):
   x=copy.deepcopy(SNB);x["candidate"]["eligible_for_automatic_promotion"]=True
   with self.assertRaises(ValueError):m.chf_context(x,WEB10,BASE,TODAY)
  def test_chf_rejects_old_pair(self):
-  x=copy.deepcopy(SNB);x["candidate"]["source_as_of"]="2026-10-01"
-  with self.assertRaises(ValueError):m.chf_context(x,WEB10,BASE,TODAY)
+  # Older than a full statistical publication cycle, not merely 14 days.
+  with self.assertRaisesRegex(ValueError,"45-day"):
+   m.chf_context(SNB,WEB10,BASE,dt.date(2026,12,20))
+ def test_chf_month_end_anchor_remains_usable_during_intervening_sessions(self):
+  # The 2Y/10Y SAME-DATE observation is an older month-end source, but
+  # the 10Y published separately is still a newer, independently dated fact.
+  ten=copy.deepcopy(WEB10)
+  ten["as_of"]="2026-12-03"
+  x=m.chf_context(SNB,ten,BASE,dt.date(2026,12,4))
+  self.assertEqual(x["paired_date"],"2026-10-30")
+  self.assertEqual(x["matched_source_cadence"],"SNB_STATISTICAL_MONTH_END_ANCHOR")
+  self.assertTrue(x["separate_10y"]["not_joinable_with_paired_2y"])
+  self.assertFalse(x["eligible_for_core"])
+ def test_chf_anchor_46_days_old_rejected(self):
+  ten=copy.deepcopy(WEB10);ten["as_of"]="2026-12-14"
+  with self.assertRaisesRegex(ValueError,"45-day"):
+   m.chf_context(SNB,ten,BASE,dt.date(2026,12,15))
  def test_nzd_separates_benchmark_segments_and_computes_same_bond_change(self):
   x=m.nzd_context(RBNZ_OLD,ROLL,NEW,TODAY)
   self.assertEqual(x["before_roll"][0]["date"],"2026-10-29")

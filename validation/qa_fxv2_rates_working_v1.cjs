@@ -86,6 +86,31 @@ assert.equal(bp(chf['2Y']-nzd['2Y']),
 assert.equal(bp(chf['10Y']-nzd['10Y']),
  bp(independentlyExpected10-research.NZD.latest_10Y),'CHF-NZD 10Y spread arithmetic');
 
+// A current daily 10Y must remain usable even when the statistically
+// published same-basis 2Y/10Y anchor is >14 days but <=45 days old.
+const monthEnd=copy(research);
+const monthlyAsOf=shiftDays(monthEnd.CHF.paired_date,30);
+monthEnd.CHF.separate_10y.as_of=monthlyAsOf;
+monthEnd.CHF.separate_10y.not_joinable_with_paired_2y=true;
+const monthlyToday=shiftDays(monthlyAsOf,1);
+const monthScenario=derive(fixture,monthEnd,monthlyToday).rates.CHF;
+assert.equal(monthScenario.stale_source,false,
+ 'Fresh daily SNB 10Y cannot be discarded because month-end spot curve is >14d old');
+assert.equal(monthScenario.source_date,monthEnd.CHF.paired_date);
+assert.equal(monthScenario.evidence_date,monthlyAsOf);
+assert.equal(monthScenario.source_age_days,1);
+assert.equal(monthScenario.anchor_age_days,31);
+assert.equal(monthScenario.anchor_cadence,'STATISTICAL_MONTH_END');
+assert.equal(monthScenario.tenor_quality['2Y'],'STIMATO');
+assert.equal(monthScenario.tenor_quality['10Y'],'OSSERVATO');
+assert.equal(monthScenario.chg2_bp,null);
+const monthExpired=copy(monthEnd);
+monthExpired.CHF.separate_10y.as_of=shiftDays(monthEnd.CHF.paired_date,46);
+const monthlyTooOld=derive(fixture,monthExpired,shiftDays(monthEnd.CHF.paired_date,47)).rates.CHF;
+assert.equal(monthlyTooOld.source_age_days,1);
+assert.equal(monthlyTooOld.anchor_age_days,47);
+assert.equal(monthlyTooOld.stale_source,true,
+ '45-day statistical anchor expiry must be enforced even with a 1-day-old observed 10Y');
 // An official same-date SNB pair newer than the isolated 10Y must replace the
 // estimate; a single newly paired reading never manufactures an observed delta.
 const newerPair=copy(research);
@@ -108,7 +133,7 @@ assert.equal(latest.stale_source,false);
 assert.equal(latest.no_core_effect,true);
 assert.equal(latest.no_inferred_market_move,true);
 assert.equal(latest.estimated,true,'Research observations cannot be promoted to FX Core');
-const staleAt=shiftDays(maxDate(pairDate,today),40);
+const staleAt=shiftDays(maxDate(pairDate,today),50);
 const late=derive(fixture,newerPair,staleAt).rates.CHF;
 assert.equal(late.date,pairDate);
 assert.equal(late.stale_source,true);

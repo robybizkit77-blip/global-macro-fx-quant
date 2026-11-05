@@ -60,8 +60,13 @@ def chf_context(inspection, official, canonical, today, previous=None):
     demand(c.get("last_certified_as_of")==canonical["CHF"]["date"],
            "CHF canonical anchor changed")
     asof=date(c["source_as_of"])
-    demand(0 <= (today-asof).days <= 14,
-           "SNB matched spot pair outside research freshness window")
+    # The matched 2J/10J spot data arrive on the SNB statistical publication
+    # cadence, whereas the separately published 10Y can advance each trading
+    # day. A 14-day guard wrongly blocks refreshing the daily 10Y during
+    # the middle/end of the monthly statistical publication interval.
+    # Keep the original observation date and cap the dated anchor at 45 days.
+    demand(0 <= (today-asof).days <= 45,
+           "SNB matched spot pair outside 45-day statistical anchor window")
     y2,y10=yield_rate(c["2Y"]),yield_rate(c["10Y"])
     demand(abs(round((y10-y2)*100,1)-c["curve_bp"])<.11,
            "SNB 10Y−2Y arithmetic mismatch")
@@ -91,6 +96,7 @@ def chf_context(inspection, official, canonical, today, previous=None):
         "separate_10y":{"as_of":ten_asof.isoformat(),"10Y":ten_value,
                          "source_url":official["source_url"],"not_joinable_with_paired_2y":ten_asof!=asof},
         "official_pair_independently_dated":True,
+        "matched_source_cadence":"SNB_STATISTICAL_MONTH_END_ANCHOR",
         "review_note":"Coppia 2Y/10Y dalla stessa serie spot SNB e stessa data, non dalla media di bond diversi. Il 10Y SNB pubblicato separatamente ha data propria e non può impedire l'uso della coppia ufficiale più recente; non si mescolano mai due date per una curva osservata.",
         "eligible_for_core":False,"eligible_for_pair_spreads":False,
         "eligible_for_backtests":False,"eligible_for_automatic_promotion":False,

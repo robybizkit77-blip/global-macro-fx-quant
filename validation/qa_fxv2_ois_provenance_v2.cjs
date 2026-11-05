@@ -79,7 +79,11 @@ assert.match(nodes.tenors.innerHTML,/1W/);
 assert.match(nodes.sourceCaveat.textContent,/Bank of England/);
 t.state.a='GBP';t.state.b='USD';t.showCompare();
 assert.match(nodes.compareFoot.textContent,/Differenziale di livello INDICATIVO/);
-assert.match(nodes.compareFoot.textContent,/date NON allineate/);
+const gbp6Date=t.state.currencies.GBP.horizons['6m'].as_of;
+const usd6Date=t.state.currencies.USD.horizons['6m'].as_of;
+assert.match(nodes.compareFoot.textContent,
+ gbp6Date===usd6Date?/stessa data/:/date NON allineate/,
+ 'OIS compare date caveat must reflect the actual per-tenor source dates');
 t.state.a='USD';t.state.b='USD';t.showCompare();
 assert.equal(nodes.compare6.textContent,'—');
 assert.match(nodes.compareText.textContent,/due valute differenti/);
