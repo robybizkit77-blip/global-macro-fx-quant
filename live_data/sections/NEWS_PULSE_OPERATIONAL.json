@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-04",
-  "generated_at_utc": "2026-11-05T14:38:05.594587Z",
+  "generated_at_utc": "2026-11-05T16:30:13.200882Z",
   "items": [
     {
       "as_of": "2026-11-04",
@@ -47,7 +47,7 @@
       "title": "AUD: repricing implicito da futures più hawkish (+1.0 bp 6M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-05T14:38:05.594587Z",
+  "last_checked_at_utc": "2026-11-05T16:30:13.200882Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -238,6 +238,54 @@
     "headlines": [
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "USD",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
+        "id": "FED_PRESS:https://www.federalreserve.gov/newsevents/pressreleases/enforcement20261105a.htm",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-05T16:00:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "status": "NOT_VALIDATED_DAILY_CONTEXT"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-11-04",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-04",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 4.58
+          }
+        },
+        "source": "Federal Reserve Board",
+        "source_id": "FED_PRESS",
+        "title": "Federal Reserve Board announces termination of enforcement action with Allegiant United Holdings, LLC, Nano Financial Holdings, Inc., and Nano Banc",
+        "url": "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20261105a.htm"
+      },
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "ENERGY",
         "desk_context": {
           "analysis_basis": "SOURCE_HEADLINE_ONLY",
@@ -317,19 +365,74 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-03",
+            "date": "2026-11-04",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-11-03",
+            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-11-04",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.643618594365325
+            "yield_2y_pct": 4.578473062292777
           }
         },
         "source": "Bank of England",
         "source_id": "BOE_NEWS",
         "title": "Bank rate increased to 4% - November 2026 Monetary Policy Summary and Minutes",
         "url": "https://www.bankofengland.co.uk/monetary-policy-summary-and-minutes/2026/november-2026"
+      },
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "CAD",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
+        "id": "BOC_PRESS:https://www.bankofcanada.ca/2026/11/opening-statement-standing-senate-committee-banking-commerce-and-economy-2026-11-05/",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-05T10:30:59Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "6m_rate_pct": 2.935,
+            "date": "2026-11-04",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "OFFICIAL_CERTIFIED",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
+            "status": "DAILY_CONTEXT_ONLY"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-11-04",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-04",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 3.22
+          }
+        },
+        "source": "Bank of Canada",
+        "source_id": "BOC_PRESS",
+        "title": "Opening Statement to the Standing Senate Committee on Banking, Commerce and the Economy",
+        "url": "https://www.bankofcanada.ca/2026/11/opening-statement-standing-senate-committee-banking-commerce-and-economy-2026-11-05/"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
@@ -372,13 +475,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-03",
+            "date": "2026-11-04",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-03",
+            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-04",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.26
+            "yield_2y_pct": 3.22
           }
         },
         "source": "Bank of Canada",
@@ -647,13 +750,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-03",
+            "date": "2026-11-04",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-11-03",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-11-04",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.643618594365325
+            "yield_2y_pct": 4.578473062292777
           }
         },
         "source": "Bank of England",
@@ -700,61 +803,6 @@
         "source_id": "EIA_ENERGY",
         "title": "Global refinery inputs fell sharply in the second quarter of 2026 before modest recovery",
         "url": "https://www.eia.gov/todayinenergy/detail.php?id=68404"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "CAD",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "BOC_PRESS:https://www.bankofcanada.ca/2026/11/opening-statement-house-commons-standing-committee-finance-2026-11-03/",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-03T11:00:54Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "6m_rate_pct": 2.935,
-            "date": "2026-11-04",
-            "event_window_proof": false,
-            "instrument": "FUTURES_IMPLIED",
-            "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
-            "status": "DAILY_CONTEXT_ONLY"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-11-03",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-03",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.26
-          }
-        },
-        "source": "Bank of Canada",
-        "source_id": "BOC_PRESS",
-        "title": "Opening Statement before the House of Commons Standing Committee on Finance",
-        "url": "https://www.bankofcanada.ca/2026/11/opening-statement-house-commons-standing-committee-finance-2026-11-03/"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
@@ -954,58 +1002,10 @@
         "source_id": "RBNZ_NEWS",
         "title": "RBNZ appoints Director of Prudential Supervision",
         "url": "https://www.rbnz.govt.nz/news-and-events/news/2026/10/rbnz-appoints-director-of-prudential-supervision"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "USD",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "FED_PRESS:https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-10-28T18:00:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-11-04",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-04",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.58
-          }
-        },
-        "source": "Federal Reserve Board",
-        "source_id": "FED_PRESS",
-        "title": "Federal Reserve issues FOMC statement",
-        "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm"
       }
     ],
     "last_attempt_day_rome": "2026-11-05",
-    "latest_published_at_utc": "2026-11-05T14:00:00Z",
+    "latest_published_at_utc": "2026-11-05T16:00:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -1019,9 +1019,9 @@
     "source_failures": 0,
     "sources": [
       {
-        "accepted_items": 2,
+        "accepted_items": 3,
         "ccy": "USD",
-        "entries_rejected": 18,
+        "entries_rejected": 17,
         "feed_entries_seen": 20,
         "feed_url": "https://www.federalreserve.gov/feeds/press_all.xml",
         "source": "Federal Reserve Board",
