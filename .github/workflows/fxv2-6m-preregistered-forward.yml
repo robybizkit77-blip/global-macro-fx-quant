@@ -7,6 +7,8 @@ on:
       - 'validation/quant/FXV2_6M_PREREGISTERED_PROTOCOL_V1.json'
       - 'validation/quant/fxv2_6m_prospective_trial_v1.py'
       - 'validation/quant/test_fxv2_6m_prospective_trial_v1.py'
+      - 'validation/quant/fxv2_6m_schedule_gate_v1.py'
+      - 'validation/quant/test_fxv2_6m_schedule_gate_v1.py'
       - '.github/workflows/fxv2-6m-preregistered-forward.yml'
   push:
     branches: [main]
@@ -14,6 +16,8 @@ on:
       - 'validation/quant/FXV2_6M_PREREGISTERED_PROTOCOL_V1.json'
       - 'validation/quant/fxv2_6m_prospective_trial_v1.py'
       - 'validation/quant/test_fxv2_6m_prospective_trial_v1.py'
+      - 'validation/quant/fxv2_6m_schedule_gate_v1.py'
+      - 'validation/quant/test_fxv2_6m_schedule_gate_v1.py'
       - '.github/workflows/fxv2-6m-preregistered-forward.yml'
   workflow_run:
     # The pre-existing Forward suite freezes its ECB T0 in the evening.
@@ -57,25 +61,29 @@ jobs:
         run: |
           python -m unittest validation.quant.test_fxv2_6m_prospective_trial_v1 -v
           python -m validation.quant.fxv2_6m_prospective_trial_v1 --verify-only
+      - name: Run deterministic DST and authorized recovery gate tests
+        run: python -m unittest validation.quant.test_fxv2_6m_schedule_gate_v1 -v
       - name: Admit genuine Rome evening before appending any research observation
         id: gate
         shell: bash
         env:
           EVENT: ${{ github.event_name }}
+          SCHEDULE_CRON: ${{ github.event.schedule }}
+          UPSTREAM_NAME: ${{ github.event.workflow_run.name }}
+          UPSTREAM_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          UPSTREAM_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          UPSTREAM_EVENT: ${{ github.event.workflow_run.event }}
+          UPSTREAM_STARTED_AT: ${{ github.event.workflow_run.run_started_at }}
         run: |
           set -euo pipefail
-          day="$(TZ=Europe/Rome date +%F)"
-          weekday="$(TZ=Europe/Rome date +%u)"
-          hour="$(TZ=Europe/Rome date +%H)"
-          allowed=false
-          if [[ "$EVENT" != "pull_request" ]] &&
-             [[ "$day" > "2026-11-05" ]] &&
-             [[ "$weekday" -le 5 ]] &&
-             [[ "$hour" -ge 19 ]]; then
-            allowed=true
-          fi
-          echo "allowed=$allowed" >> "$GITHUB_OUTPUT"
-          echo "FXV2_6M_REAL_CLOCK event=$EVENT day=$day hour=$hour weekday=$weekday allowed=$allowed" >> "$GITHUB_STEP_SUMMARY"
+          python -m validation.quant.fxv2_6m_schedule_gate_v1.py \
+            --event "$EVENT" --cron "$SCHEDULE_CRON" \
+            --upstream-name "$UPSTREAM_NAME" \
+            --upstream-branch "$UPSTREAM_BRANCH" \
+            --upstream-conclusion "$UPSTREAM_CONCLUSION" \
+            --upstream-event "$UPSTREAM_EVENT" \
+            --upstream-started-at "$UPSTREAM_STARTED_AT" \
+            --output "$GITHUB_OUTPUT" --summary "$GITHUB_STEP_SUMMARY"
       - name: New future-only 6M / ECB price freeze and matured reference observer
         if: steps.gate.outputs.allowed == 'true'
         shell: bash
