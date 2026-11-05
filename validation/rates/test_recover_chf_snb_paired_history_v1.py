@@ -74,8 +74,28 @@ class PairedRecovery(unittest.TestCase):
   self.assertEqual(self.audit(b)['status'],'SOURCE_BASIS_NOT_RECONCILED')
  def test_live_rate_tamper_fails(self):
   a=copy.deepcopy(RATES);a['CHF']['2Y']+=.01
-  with self.assertRaises(ValueError):
-   self.audit(rates=a)
+  self.assertEqual(self.audit(rates=a)['status'],'SOURCE_BASIS_NOT_RECONCILED')
+ def test_new_certified_anchor_does_not_break_source_history_verification(self):
+  newer=copy.deepcopy(RATES)
+  newer['CHF'].update(date='2026-10-29','2Y':.144,'10Y':.536)
+  r=self.audit(rates=newer)
+  self.assertEqual(r['status'],'PAIRED_OFFICIAL_HISTORY_READY_FOR_REVIEW')
+  self.assertEqual(r['base_date'],'2026-10-29')
+  self.assertEqual(r['new_paired_rows'],1)
+  self.assertFalse(r['eligible_for_automatic_promotion'])
+ def test_aged_month_end_pair_is_historical_evidence_not_fresh_market_price(self):
+  result=verify(copy.deepcopy(BASE),copy.deepcopy(RATES),copy.deepcopy(CONTEXT),
+                asof=date(2026,11,6),source_hash='b'*64)
+  self.assertEqual(result['status'],'PAIRED_OFFICIAL_HISTORY_READY_FOR_REVIEW')
+  self.assertEqual(result['last_common_age_days'],7)
+  self.assertFalse(result['latest_paired_market_session_fresh'])
+  self.assertFalse(result['current_session_government_rates_certified'])
+  self.assertTrue(result['source_date_not_refresh_timestamp'])
+ def test_pair_stale_after_full_reference_window(self):
+  result=verify(copy.deepcopy(BASE),copy.deepcopy(RATES),copy.deepcopy(CONTEXT),
+                asof=date(2026,12,16),source_hash='b'*64)
+  self.assertEqual(result['status'],'OFFICIAL_PAIRED_HISTORY_NOT_CURRENT')
+  self.assertFalse(result['paired_source_ready_for_historical_review'])
  def test_expired_source_no_current_promotion(self):
   b=copy.deepcopy(BASE)
   for row in b['timeseries']:row['values']=row['values'][:1]
