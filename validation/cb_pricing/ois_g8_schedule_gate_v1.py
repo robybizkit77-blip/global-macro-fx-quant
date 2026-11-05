@@ -16,7 +16,8 @@ RATES_PARENT = "Rates Persistent Daily V1"
 
 def gate(event: str, cron: str, utc_now: dt.datetime, *,
          upstream_name: str = "", upstream_branch: str = "",
-         upstream_conclusion: str = "", upstream_event: str = "") -> tuple[bool, str]:
+         upstream_conclusion: str = "", upstream_event: str = "",
+         upstream_started_at: str = "") -> tuple[bool, str]:
     if utc_now.tzinfo is None:
         raise ValueError("UTC-aware clock required")
     local = utc_now.astimezone(ROME)
@@ -29,6 +30,15 @@ def gate(event: str, cron: str, utc_now: dt.datetime, *,
             upstream_conclusion != "success" or
             upstream_event not in {"schedule", "workflow_run", "workflow_dispatch", "push"}):
             return False, "UNTRUSTED_OR_FAILED_RATES_PARENT"
+        try:
+            started = dt.datetime.fromisoformat(
+                upstream_started_at.replace("Z", "+00:00"))
+            if started.tzinfo is None:
+                raise ValueError("upstream datetime not timezone-aware")
+        except ValueError:
+            return False, "UNVERIFIED_PARENT_START_TIME"
+        if started.astimezone(ROME).date() != local.date():
+            return False, "PARENT_OUTSIDE_CURRENT_ROME_DAY"
         if local.weekday() >= 5:
             return False, "NOT_WORKDAY"
         if local.time() < dt.time(8, 15):
@@ -58,6 +68,7 @@ def main() -> None:
     parser.add_argument("--upstream-branch", default="")
     parser.add_argument("--upstream-conclusion", default="")
     parser.add_argument("--upstream-event", default="")
+    parser.add_argument("--upstream-started-at", default="")
     args = parser.parse_args()
     now = dt.datetime.now(dt.timezone.utc)
     allowed, reason = gate(
@@ -65,7 +76,8 @@ def main() -> None:
         upstream_name=args.upstream_name,
         upstream_branch=args.upstream_branch,
         upstream_conclusion=args.upstream_conclusion,
-        upstream_event=args.upstream_event)
+        upstream_event=args.upstream_event,
+        upstream_started_at=args.upstream_started_at)
     receipt = {
         "status": "RUN" if allowed else "SKIPPED_INTENTIONALLY",
         "reason": reason,
