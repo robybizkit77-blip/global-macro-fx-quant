@@ -79,6 +79,59 @@ def evaluate(now: dt.datetime, rows: list[dict], *, expected=FILES) -> dict:
     }
 
 
+
+# Research-grade delivery is a different product from certified trading Core:
+# official CHF/NZD gaps and unavailable policy OIS are still reported, but
+# cannot by themselves invalidate a dated, complete, source-labeled V2 website.
+# However, a single missing/stale critical *research* feed fails this gate.
+RESEARCH_REQUIRED = {
+    "prices": {"ECB G8 matched-date fixing", "DXY synthetic (not ICE)"},
+    "pairs": {"28-cross market price"},
+    "macro_observed_research": {"G8 / 24 osservazioni / 28 confronti V3"},
+    "rates_research": {
+        "CHF SNB same-date spot pair (not Core)",
+        "NZD RBNZ B2 post-roll web research",
+    },
+    "calendar": {"refresh operativo"},
+    "news": {"last check"},
+    "cross_asset_live": {
+        "S&P 500", "Nasdaq Composite", "IG OAS", "HY OAS", "VIX Cboe",
+    },
+    "liquidity_credit_live": {
+        "IG_OAS FRED published source", "HY_OAS FRED published source",
+    },
+}
+G8 = ("USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD")
+
+
+def research_sources_usable(checks: list[dict], freshness: dict, research: dict) -> bool:
+    """Only dated, on-cadence and independently sourced V2 research is usable.
+
+    This explicitly does NOT certify lagging sovereign *Core* yields,
+    unlicensed OIS, backtested signals or static secondary equity snapshots.
+    """
+    if (freshness.get("status") == "AUDIT_FAILED" or
+        freshness.get("hard_errors") or
+        research.get("state") != "AVAILABLE_WITH_SOURCE_QUALITY_LIMITS" or
+        research.get("website_pages") != 12 or
+        research.get("rate_pricing_horizons") != 24):
+        return False
+    observed = {}
+    for row in checks:
+        if row.get("state") == "ON_CADENCE":
+            observed.setdefault(row.get("area"), set()).add(row.get("item"))
+    if any(not items.issubset(observed.get(area, set()))
+           for area, items in RESEARCH_REQUIRED.items()):
+        return False
+    if any(c+" CFTC weekly" not in observed.get("positioning", set())
+           for c in G8):
+        return False
+    if any(c+" "+ten not in observed.get("ois_v2_research_tenor", set())
+           for c in G8 for ten in ("3m", "6m", "12m")):
+        return False
+    return True
+
+
 def attach_source_evidence(report: dict, freshness: dict | None, decision: dict | None) -> dict:
     """Attach existing source-date and Research/Core audits; never infer updates.
 
@@ -101,6 +154,7 @@ def attach_source_evidence(report: dict, freshness: dict | None, decision: dict 
         "macro_legacy_baseline_as_of": None,
         "data_currentness_proven": False,
         "signal_model_revalidated": False,
+        "research_sources_on_cadence": False,
     }
     if isinstance(freshness, dict) and isinstance(decision, dict):
         summary = freshness.get("summary") or {}
@@ -148,7 +202,9 @@ def attach_source_evidence(report: dict, freshness: dict | None, decision: dict 
                     "all_sections_ready_with_current_data": False,
                     "official_ois_8_of_8_certified": False,
                     "signal_model_revalidated": False,
+                    "research_usable_by_0800": False,
                 }
+            research_usable = research_sources_usable(checks, freshness, research)
             result["source_evidence"] = {
                 "status": freshness["status"],
                 "freshness_as_of": freshness["as_of_rome"],
@@ -167,6 +223,7 @@ def attach_source_evidence(report: dict, freshness: dict | None, decision: dict 
                   and summary["gaps"] == 0 and summary["late_or_invalid"] == 0
                   and not freshness["hard_errors"],
                 "signal_model_revalidated": False,
+                "research_sources_on_cadence": research_usable,
             }
     source = result["source_evidence"]
     result["joint_status"] = (
@@ -174,12 +231,16 @@ def attach_source_evidence(report: dict, freshness: dict | None, decision: dict 
         if not result["on_time_proven"] else
         "PUBLIC_BY_0800_SOURCE_AUDIT_MISSING"
         if source["status"] == "SOURCE_AUDIT_MISSING_OR_INCOMPLETE" else
+        "PUBLIC_BY_0800_RESEARCH_AVAILABLE_CORE_SOURCE_GAPS_VISIBLE"
+        if source["research_sources_on_cadence"] and not source["data_currentness_proven"] else
         "PUBLIC_BY_0800_SOURCE_GAPS_VISIBLE"
         if not source["data_currentness_proven"] else
         "PUBLIC_BY_0800_DATA_CADENCE_CHECKS_PASS"
     )
     result["all_sections_ready_with_current_data"] = (
         result["on_time_proven"] and source["data_currentness_proven"])
+    result["research_usable_by_0800"] = (
+        result["on_time_proven"] and source["research_sources_on_cadence"])
     result["official_ois_8_of_8_certified"] = False
     result["signal_model_revalidated"] = False
     result["note"] += (
@@ -259,9 +320,10 @@ def main() -> int:
     for row in rows:
         if row["status"] != "MATCH":
             print("PUBLIC_MISMATCH", row["path"], row.get("error", ""))
-    # Distinguish successful publication from complete data readiness.
-    # A red operational run must not masquerade as a clean 08:00 report.
-    return 0 if report["all_sections_ready_with_current_data"] else 1
+    # An on-time, independently usable research website can pass despite
+    # explicitly reported non-certified trading Core or static snapshot gaps.
+    # Missing page / missing receipt / stale critical research / late run FAIL.
+    return 0 if report.get("research_usable_by_0800") is True else 1
 
 
 if __name__ == "__main__":
