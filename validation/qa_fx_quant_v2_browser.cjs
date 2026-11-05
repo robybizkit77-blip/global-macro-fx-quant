@@ -224,6 +224,13 @@ async function audit(browser,name,file,selector,view,viewport){
         (!auditText.includes('non evidenza predittiva')||
          !auditText.includes('nessuna stima di alpha, hit rate o Sharpe'))))
       issue(name,view,'quant_temporal_research_missing_or_overclaimed',auditText.slice(0,700));
+    await page.waitForFunction(()=>
+      document.querySelector('#macroOisProspectiveStatus')?.textContent?.includes('ESPERIMENTO 6M'),
+      null,{timeout:15000});
+    const  sixMonthState=(await page.locator('#macroOisProspectiveStatus').textContent())||'';
+    if(!sixMonthState.includes('ESPERIMENTO 6M')||
+       !(/nessun risultato predittivo|Nessuna evidenza predittiva|non è ancora una validazione predittiva/.test(sixMonthState)))
+      issue(name,view,'prospective_6m_research_mislabelled',sixMonthState.slice(0,720));
     await page.waitForFunction(()=>document.querySelector('#macroV3Context')?.textContent?.includes('DINAMICA MACRO (RICERCA, NON NUOVO BIAS)'),null,{timeout:18000});
     const dynamicEUR=(await page.locator('#macroV3Context').textContent())||'';
     if(!dynamicEUR.includes('PIL: variazione del ritmo trimestrale')||
