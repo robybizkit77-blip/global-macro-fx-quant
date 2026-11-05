@@ -14,15 +14,15 @@ const nzd=JSON.parse(fs.readFileSync(path.join(ROOT,'live_data/sections/NZD_CB_P
 const match=html.match(/<script>\s*([\s\S]*?)<\/script><\/body>/);
 assert(match,'OIS inline application must exist');
 const program=match[1];
-const boot='setup();\nloadRelativeResearch();\n(async()=>{';
+const boot='setup();\nloadRelativeResearch();\nloadSameContractResearch();\n(async()=>{';
 assert(program.includes(boot),'OIS QA fixture must suppress only the network bootstrap');
 const app=program.slice(0,program.indexOf(boot))+
  'globalThis.__oisQA={clean,update,render,showDetail,showCompare,liveNormalized,state};\nsetup();\n})();';
 const nodes={};
 for(const id of ['pricingGrid','pricingRows','feedStatus','detailTitle','detailName','detailMeta','pricingChart',
- 'tenors','detailInterpretation','sourceTitle','sourceType','sourceDate','sourceName','sourceCaveat',
+ 'tenors','contractHistory','contractHistoryRows','contractHistoryFoot','detailInterpretation','sourceTitle','sourceType','sourceDate','sourceName','sourceCaveat',
  'compare6','compareText','compareFoot','compareA','compareB','dettaglio']){
- nodes[id]={innerHTML:'',textContent:'',value:'',addEventListener(){},scrollIntoView(){}};
+ nodes[id]={innerHTML:'',textContent:'',value:'',hidden:false,dataset:{},addEventListener(){},scrollIntoView(){}};
 }
 const context={document:{getElementById:id=>nodes[id]},console};
 vm.createContext(context);
