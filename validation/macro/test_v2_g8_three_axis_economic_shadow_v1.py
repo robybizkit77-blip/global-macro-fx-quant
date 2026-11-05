@@ -36,6 +36,13 @@ class ThreeAxisResearchTests(unittest.TestCase):
                          data["summary"]["research_activity_balances_unavailable"], 8)
         self.assertEqual(data["summary"]["research_source_axes_unavailable"],
                          len(data["summary"]["unavailable_source_axis_keys"]))
+        self.assertEqual(set(data["summary"]["unavailable_source_axis_keys"]),
+                         set(data["summary"]["unavailable_source_axis_reasons"]))
+        self.assertEqual(data["summary"]["unavailable_source_axis_reasons"].get("EUR.labour"),
+                         "NO_Z_ZERO_ROBUST_DISPERSION")
+        self.assertEqual(data["countries"]["EUR"]["dimensions"]["labour"]["missing_prior_periods"], [])
+        self.assertTrue(data["countries"]["EUR"]["dimensions"]["labour"]["history_window_complete"])
+        self.assertTrue(data["countries"]["EUR"]["dimensions"]["labour"]["dispersion_failure_not_history_gap"])
         self.assertEqual(data["summary"]["macro_model_scores_approved"], 0)
         self.assertEqual(data["summary"]["FX_scores_approved"], 0)
         self.assertEqual(data["summary"]["pair_rankings_recalculated"], 0)
@@ -56,7 +63,7 @@ class ThreeAxisResearchTests(unittest.TestCase):
                 if row[k] is not None:
                     self.assertTrue(math.isfinite(row[k]), (c, k))
                 else:
-                    self.assertTrue(any("STRICT_HISTORY_UNAVAILABLE" in flag
+                    self.assertTrue(any("STRICT_Z_UNAVAILABLE" in flag
                                         for flag in row["quality_flags"]), (c, k))
             if row["labour_tightness_relative_to_own_history_z"] is not None:
                 self.assertAlmostEqual(
@@ -67,7 +74,7 @@ class ThreeAxisResearchTests(unittest.TestCase):
             else:
                 self.assertIsNone(row["illustrative_activity_labour_balance_z"])
                 self.assertEqual(row["axis_classification_relative_to_own_history"]["activity"],
-                                 "INSUFFICIENT_STRICT_HISTORY")
+                                 "STRICT_Z_UNAVAILABLE")
             self.assertIsNone(row["economic_cycle_certified"])
             self.assertIsNone(row["fx_currency_strength_score"])
             self.assertIsNone(row["fx_directional_bias"])
@@ -89,8 +96,8 @@ class ThreeAxisResearchTests(unittest.TestCase):
             if any(rows[c]["dimensions"][d]["raw_z"] is None
                    for d in ("labour", "inflation")):
                 self.assertEqual(rows[c]["qualitative_quality"],
-                                 "INCOMPLETE_SOURCE_HISTORY_RESEARCH_ONLY")
-                self.assertTrue(any("STRICT_HISTORY_UNAVAILABLE" in q
+                                 "UNAVAILABLE_STRICT_INTENSITY_RESEARCH_ONLY")
+                self.assertTrue(any("STRICT_Z_UNAVAILABLE" in q
                                     for q in rows[c]["quality_flags"]))
             else:
                 self.assertEqual(rows[c]["qualitative_quality"],
@@ -99,8 +106,8 @@ class ThreeAxisResearchTests(unittest.TestCase):
             if any(rows[c]["dimensions"][d]["raw_z"] is None
                    for d in ("labour", "inflation")):
                 self.assertEqual(rows[c]["qualitative_quality"],
-                                 "INCOMPLETE_SOURCE_HISTORY_RESEARCH_ONLY")
-                self.assertTrue(any("STRICT_HISTORY_UNAVAILABLE" in q
+                                 "UNAVAILABLE_STRICT_INTENSITY_RESEARCH_ONLY")
+                self.assertTrue(any("STRICT_Z_UNAVAILABLE" in q
                                     for q in rows[c]["quality_flags"]))
             else:
                 self.assertEqual(rows[c]["quality_flags"], [])
@@ -187,8 +194,8 @@ class ThreeAxisResearchTests(unittest.TestCase):
             self.assertIsNone(dimension["raw_z"])
             self.assertFalse(dimension["is_estimate"])
             self.assertEqual(dimension["quality"],
-                             "SOURCE_HISTORY_INSUFFICIENT_NO_IMPUTATION")
-            self.assertIn(d.upper() + "_STRICT_HISTORY_UNAVAILABLE",
+                             "STRICT_INTENSITY_UNAVAILABLE_NO_IMPUTATION")
+            self.assertIn(d.upper() + "_STRICT_Z_UNAVAILABLE",
                           row["quality_flags"])
             if d == "labour":
                 self.assertIsNone(row["illustrative_activity_labour_balance_z"])

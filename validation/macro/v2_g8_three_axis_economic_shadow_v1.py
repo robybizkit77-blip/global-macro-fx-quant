@@ -95,21 +95,26 @@ def _pillar(inp, gaps, currency, pillar):
                 "is_estimate": False, "reference_period": entry["observation_period"],
                 "source_id": entry["canonical_series_id"],
                 "quality": "RESEARCH_CURRENT_REVISED_HISTORY_NO_HISTORIC_PIT"}
-    # Incomplete historical windows for non-US pillars are valid *missing*
-    # research observations, not valid zero-z nor authorized estimates.
-    # The bridge still exposes the original periods and source identity.
+    # Strict research z may be absent for two different honest reasons:
+    # (a) missing prior periods; (b) complete, quantized history with MAD=0.
+    # Never represent a zero-MAD intensity as missing historical observations.
+    # Neither case authorizes a fabricated z, a zero fill or an FX signal.
     if currency != "USD" and key not in gaps:
         need(entry.get("status") in
              ("NO_Z_MISSING_PRIOR_ECONOMIC_PERIODS",
               "NO_Z_ZERO_ROBUST_DISPERSION"),
              "unapproved non-US missing-intensity status")
-        return {"raw_z": None, "method": "UNAVAILABLE_STRICT_HISTORY",
+        return {"raw_z": None, "method": "UNAVAILABLE_STRICT_INTENSITY",
                 "is_estimate": False,
                 "reference_period": entry["observation_period"],
                 "source_id": entry["canonical_series_id"],
-                "quality": "SOURCE_HISTORY_INSUFFICIENT_NO_IMPUTATION",
+                "quality": "STRICT_INTENSITY_UNAVAILABLE_NO_IMPUTATION",
                 "missing_prior_periods": entry.get("missing_prior_periods", []),
-                "reason": entry["status"]}
+                "reason": entry["status"],
+                "history_window_complete": (
+                    entry["status"] == "NO_Z_ZERO_ROBUST_DISPERSION"),
+                "dispersion_failure_not_history_gap": (
+                    entry["status"] == "NO_Z_ZERO_ROBUST_DISPERSION")}
     need(currency == "USD" and key in gaps and
          entry.get("status") == "NO_Z_MISSING_PRIOR_ECONOMIC_PERIODS",
          "missing strict z cannot be replaced by unapproved estimates")
@@ -211,7 +216,7 @@ def build(observed):
             flags.append("US_BLS_ESTIMATED_INFLATION_LABOUR_Z")
         for dimension, row in (("LABOUR", labour), ("INFLATION", inflation)):
             if row["raw_z"] is None:
-                flags.append(dimension + "_STRICT_HISTORY_UNAVAILABLE")
+                flags.append(dimension + "_STRICT_Z_UNAVAILABLE")
         flags.extend(growth["definition_caveats"])
         rows[currency] = {
             "currency": currency,
@@ -221,14 +226,14 @@ def build(observed):
             "illustrative_activity_labour_balance_z": (round(activity, 12) if activity is not None else None),
             "axis_classification_relative_to_own_history": {
                 "activity": (zone(activity, "RELATIVELY_FIRM", "RELATIVELY_SOFT")
-                             if activity is not None else "INSUFFICIENT_STRICT_HISTORY"),
+                             if activity is not None else "STRICT_Z_UNAVAILABLE"),
                 "price_pressure": (zone(price, "RELATIVELY_ELEVATED", "RELATIVELY_SUBDUED")
-                                   if price is not None else "INSUFFICIENT_STRICT_HISTORY"),
+                                   if price is not None else "STRICT_Z_UNAVAILABLE"),
             },
             "dimensions": {"growth": growth, "labour": labour, "inflation": inflation},
             "quality_flags": flags,
             "qualitative_quality": (
-                "INCOMPLETE_SOURCE_HISTORY_RESEARCH_ONLY" if
+                "UNAVAILABLE_STRICT_INTENSITY_RESEARCH_ONLY" if
                     (labour["raw_z"] is None or inflation["raw_z"] is None) else
                 "ESTIMATED_WITH_DEFINITION_CAVEAT" if (
                     (labour["is_estimate"] or inflation["is_estimate"]) and
@@ -276,6 +281,12 @@ def build(observed):
                 f"{c}.{d}" for c, x in rows.items()
                 for d in ("labour", "inflation")
                 if x["dimensions"][d]["raw_z"] is None),
+            "unavailable_source_axis_reasons": {
+                f"{c}.{d}": x["dimensions"][d]["reason"]
+                for c, x in rows.items()
+                for d in ("labour", "inflation")
+                if x["dimensions"][d]["raw_z"] is None
+            },
             "countries_with_estimated_source_axes": sum(
                 "US_BLS_ESTIMATED_INFLATION_LABOUR_Z" in x["quality_flags"]
                 for x in rows.values()),
