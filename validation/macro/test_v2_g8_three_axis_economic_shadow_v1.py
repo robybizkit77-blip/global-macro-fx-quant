@@ -84,10 +84,17 @@ class ThreeAxisResearchTests(unittest.TestCase):
         self.assertTrue(rows["USD"]["dimensions"]["inflation"]["is_estimate"])
         self.assertTrue(rows["USD"]["dimensions"]["inflation"]["source_evidence_url"].startswith("https://www.bls.gov/"))
         for c in ("EUR", "CHF"):
-            self.assertEqual(rows[c]["qualitative_quality"],
-                             "GDP_DEFINITION_CAVEAT_RESEARCH_ONLY")
             self.assertFalse(rows[c]["dimensions"]["growth"]["is_estimate"])
             self.assertTrue(rows[c]["dimensions"]["growth"]["definition_caveats"])
+            if any(rows[c]["dimensions"][d]["raw_z"] is None
+                   for d in ("labour", "inflation")):
+                self.assertEqual(rows[c]["qualitative_quality"],
+                                 "INCOMPLETE_SOURCE_HISTORY_RESEARCH_ONLY")
+                self.assertTrue(any("STRICT_HISTORY_UNAVAILABLE" in q
+                                    for q in rows[c]["quality_flags"]))
+            else:
+                self.assertEqual(rows[c]["qualitative_quality"],
+                                 "GDP_DEFINITION_CAVEAT_RESEARCH_ONLY")
         for c in set(FX) - {"USD", "EUR", "CHF"}:
             if any(rows[c]["dimensions"][d]["raw_z"] is None
                    for d in ("labour", "inflation")):
