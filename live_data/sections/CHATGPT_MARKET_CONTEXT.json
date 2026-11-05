@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_CHATGPT_MARKET_CONTEXT_V1",
-  "generated_at_utc": "2026-11-05T02:17:05Z",
+  "generated_at_utc": "2026-11-05T10:43:21Z",
   "evaluation_date_europe_rome": "2026-11-05",
   "reference_only": true,
   "policy": {
@@ -77,58 +77,58 @@
       },
       "CHF": {
         "state": "UNAVAILABLE",
-        "as_of": "2026-11-03",
+        "as_of": "2026-11-04",
         "reason": "Only GBP, JPY, CAD and AUD have the certified OIS contract; estimated/proxy OIS is informational only, never alert-certified."
       },
       "CAD": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-11-03",
+        "as_of": "2026-11-04",
         "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
         "policy_rate_pct": 2.5,
         "horizons": {
           "3m": {
-            "rate_pct": 2.74,
-            "delta_vs_policy_bp": 24.0,
-            "change_1d_bp": 1.5,
-            "change_1w_bp": 2.5
+            "rate_pct": 2.73,
+            "delta_vs_policy_bp": 23.0,
+            "change_1d_bp": -1.0,
+            "change_1w_bp": -3.0
           },
           "6m": {
-            "rate_pct": 2.96,
-            "delta_vs_policy_bp": 46.0,
-            "change_1d_bp": 1.0,
-            "change_1w_bp": -3.5
+            "rate_pct": 2.935,
+            "delta_vs_policy_bp": 43.5,
+            "change_1d_bp": -2.5,
+            "change_1w_bp": -10.5
           },
           "12m": {
-            "rate_pct": 3.225,
-            "delta_vs_policy_bp": 72.5,
-            "change_1d_bp": 0.5,
-            "change_1w_bp": -13.5
+            "rate_pct": 3.18,
+            "delta_vs_policy_bp": 68.0,
+            "change_1d_bp": -4.5,
+            "change_1w_bp": -24.0
           }
         }
       },
       "AUD": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-11-03",
+        "as_of": "2026-11-04",
         "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
         "policy_rate_pct": 4.6,
         "horizons": {
           "3m": {
-            "rate_pct": 4.85,
-            "delta_vs_policy_bp": 25.0,
-            "change_1d_bp": 1.5,
-            "change_1w_bp": 6.5
+            "rate_pct": 4.86,
+            "delta_vs_policy_bp": 26.0,
+            "change_1d_bp": 1.0,
+            "change_1w_bp": 1.5
           },
           "6m": {
-            "rate_pct": 4.915,
-            "delta_vs_policy_bp": 31.5,
-            "change_1d_bp": -2.0,
-            "change_1w_bp": 5.0
+            "rate_pct": 4.925,
+            "delta_vs_policy_bp": 32.5,
+            "change_1d_bp": 1.0,
+            "change_1w_bp": -1.5
           },
           "12m": {
-            "rate_pct": 4.8,
-            "delta_vs_policy_bp": 20.0,
-            "change_1d_bp": -6.5,
-            "change_1w_bp": -3.5
+            "rate_pct": 4.795,
+            "delta_vs_policy_bp": 19.5,
+            "change_1d_bp": -0.5,
+            "change_1w_bp": -10.5
           }
         }
       },
@@ -141,13 +141,13 @@
     "government_rates": {
       "USD": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-11-03",
-        "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-03",
-        "government_2y_pct": 4.61,
-        "government_10y_pct": 4.95,
-        "10y_minus_2y_bp": 34.0,
+        "as_of": "2026-11-04",
+        "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-04",
+        "government_2y_pct": 4.58,
+        "government_10y_pct": 4.9,
+        "10y_minus_2y_bp": 32.0,
         "change_2y_bp": -9.0,
-        "change_10y_bp": -4.0
+        "change_10y_bp": -15.0
       },
       "EUR": {
         "state": "AVAILABLE_CERTIFIED",
@@ -171,13 +171,13 @@
       },
       "JPY": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-11-02",
-        "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-02",
-        "government_2y_pct": 1.88,
-        "government_10y_pct": 2.817,
-        "10y_minus_2y_bp": 93.7,
-        "change_2y_bp": -0.8,
-        "change_10y_bp": -0.7
+        "as_of": "2026-11-04",
+        "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-04",
+        "government_2y_pct": 1.891,
+        "government_10y_pct": 2.855,
+        "10y_minus_2y_bp": 96.4,
+        "change_2y_bp": -2.4,
+        "change_10y_bp": -1.2
       },
       "CHF": {
         "state": "STALE",
