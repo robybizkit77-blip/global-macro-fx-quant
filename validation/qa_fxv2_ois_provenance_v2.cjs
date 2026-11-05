@@ -36,18 +36,20 @@ assert.match(nodes.feedStatus.textContent,/8\/8 valute · 24\/24 livelli/);
 assert.match(nodes.feedStatus.textContent,/0 tenori da feed \/ 24 da snapshot/);
 assert.equal(t.state.currencies.GBP.horizons['6m'].kind,'OIS');
 assert.equal(t.state.currencies.USD.horizons['6m'].kind,'FUTURES SECONDARI');
-assert.equal(t.state.currencies.USD.horizons['3m'].as_of,'2026-11-04');
+assert.equal(t.state.currencies.USD.horizons['3m'].as_of,snapshot.currencies.USD.horizons['3m'].as_of);
 assert.match(nodes.sourceDate.textContent,/Nessun refresh dell’orologio cambia la data del prezzo/);
 
-// A newer value on ONE tenor must not overwrite other, newer tenors.
+// A same-date live 6M quote may replace a snapshot; deliberately older
+// 3M and 12M must NOT roll the source clock backwards.
 const prev3=t.state.currencies.USD.horizons['3m'];
 const prev12=t.state.currencies.USD.horizons['12m'];
+const sixDate=t.state.currencies.USD.horizons['6m'].as_of;
 const probe={kind:'FUTURES SECONDARI',quality:'STIMA INDICATIVA',source:'dated-source-probe',
- origin:'live',as_of:'2026-11-02',horizons:{
- '3m':{rate:4.9,as_of:'2026-11-02'},
- '6m':{rate:4.111,as_of:'2026-11-04',change_1w_bp:7.5},
- '12m':{rate:4.9,as_of:'2026-11-02'}}};
-assert.equal(t.update('USD',probe),1,'only newer 6M date may replace old 6M');
+ origin:'live',as_of:sixDate,horizons:{
+ '3m':{rate:4.9,as_of:'2000-01-01'},
+ '6m':{rate:4.111,as_of:sixDate,change_1w_bp:7.5},
+ '12m':{rate:4.9,as_of:'2000-01-01'}}};
+assert.equal(t.update('USD',probe),1,'only same-date live 6M may replace snapshot 6M');
 assert.equal(t.state.currencies.USD.horizons['3m'].rate,prev3.rate);
 assert.equal(t.state.currencies.USD.horizons['12m'].rate,prev12.rate);
 assert.equal(t.state.currencies.USD.horizons['6m'].origin,'live');
@@ -55,7 +57,7 @@ assert.equal(t.state.currencies.USD.horizons['6m'].change_1w_bp,7.5);
 assert.equal(t.update('USD',{...probe,horizons:{
  '3m':{rate:7.7,as_of:'2999-01-01'}}}),0,'future observation must be rejected');
 assert.equal(t.update('USD',{...probe,horizons:{
- '6m':{rate:null,as_of:'2026-11-04'}}}),0,'missing 6M cannot overwrite a valid quote');
+ '6m':{rate:null,as_of:sixDate}}}),0,'missing 6M cannot overwrite a valid quote');
 t.render();
 assert.match(nodes.feedStatus.textContent,/1 tenori da feed \/ 23 da snapshot/);
 assert.match(nodes.pricingRows.innerHTML,/6M Δ1W|7,5 pb|7.5 pb|7,5/);
