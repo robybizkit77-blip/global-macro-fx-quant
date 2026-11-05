@@ -14,10 +14,11 @@ from zoneinfo import ZoneInfo
 
 from validation.quant.fxv2_6m_prospective_trial_v1 import (
     FX_PATH, POLICY_PATH, JOURNAL, OUTCOMES,
-    policy_ok, verified_journal, verified_outcomes, read_jsonl
+    policy_ok, verified_journal, verified_outcomes, read_jsonl, seal, CANDIDATES as TRIAL_CANDIDATES
 )
 from validation.quant.fxv2_rates_fx_temporal_readiness_v1 import (
-    validate_fx, validate_macro, MACRO_PATH
+    validate_fx, validate_macro, validate_quotes, utc_first_seen,
+    MACRO_PATH, QUOTES_PATH
 )
 
 ROOT=Path(__file__).resolve().parents[2]
@@ -32,7 +33,80 @@ def need(v,reason):
         raise ValueError("FXV2_PROSPECTIVE_STATUS_REJECTED: "+reason)
 
 
-def build(policy,fx,macro,snaps,observed,now):
+
+
+def inspect_dated_6m_source(fx_dates, quote_rows, now):
+    """Source audit only: never compute a forecast or fill missing futures.
+
+    The newest quote's first-seen time is required to be <= actual inspection
+    time. Two adjacent ECB sessions must contain exactly one identical
+    listed contract per leg. This read-only audit can precede actual T0 and
+    cannot create a prospective prediction.
+    """
+    if quote_rows is None:
+        return {
+            "available":False,
+            "reason":"NO_FUTURES_SOURCE_INSPECTED",
+            "currency_latest_market_date":{},
+            "pair_recent_same_contract_source":{}
+        }
+    by_quote=validate_quotes(quote_rows)
+    available={}
+    for ccy in ("USD","EUR","CHF"):
+        candidates=[
+            row for (source_ccy,tenor,_),entries in by_quote.items()
+            if source_ccy==ccy and tenor=="6m"
+            for row in entries
+            if utc_first_seen(row["first_seen_at_utc"],"source")<=now
+        ]
+        available[ccy]=max((r["observation_date"] for r in candidates),
+                           default=None)
+    pair_recent={}
+    # The same 2-fixing-session lookback limit already registered in the
+    # protocol, evaluated relative to latest ACTUALLY available ECB fixing.
+    for pair in CANDIDATES:
+        base,quote=pair.split("/")
+        matched_date=None
+        for lag in range(3):
+            ix=len(fx_dates)-1-lag
+            if ix<1:
+                break
+            pday,nday=fx_dates[ix-1],fx_dates[ix]
+            consistent=True
+            for ccy in (base,quote):
+                older={r["contract"]:r for r in by_quote.get((ccy,"6m",pday),())}
+                newer={r["contract"]:r for r in by_quote.get((ccy,"6m",nday),())}
+                common=older.keys() & newer.keys()
+                if len(common)!=1:
+                    consistent=False
+                    break
+                contract=next(iter(common))
+                if max(
+                    utc_first_seen(older[contract]["first_seen_at_utc"],"old"),
+                    utc_first_seen(newer[contract]["first_seen_at_utc"],"new")
+                )>now:
+                    consistent=False
+                    break
+            if consistent:
+                matched_date=nday.isoformat()
+                break
+        pair_recent[pair]={
+            "has_recent_matched_same_contract_6m_quote_change":
+                matched_date is not None,
+            "last_eligible_source_market_day":matched_date,
+            "not_a_frozen_hypothesis":True,
+            "not_an_OIS_repricing_signal":True
+        }
+    return {
+        "available":True,
+        "source_as_of_last_available_ecb_fixing":fx_dates[-1].isoformat(),
+        "currency_latest_market_date":available,
+        "pair_recent_same_contract_source":pair_recent,
+        "no_forecast_generated":True,
+        "no_automatic_core_effect":True
+    }
+
+def build(policy,fx,macro,snaps,observed,now,quote_rows=None):
     need(isinstance(now,datetime) and now.tzinfo and now.utcoffset() is not None,
          "timezone-aware status clock required")
     policy_ok(policy)
@@ -40,15 +114,23 @@ def build(policy,fx,macro,snaps,observed,now):
     names=validate_macro(macro)
     registered=policy.get("preregistration_date_utc")
     need(registered=="2026-11-05","research registration date changed")
-    policy_sha=__import__("validation.quant.fxv2_6m_prospective_trial_v1",
-                         fromlist=["seal"]).seal(policy)
+    policy_sha=seal(policy)
     verified_journal(snaps,policy_sha)
     indexed={s["rome_day"]:s for s in snaps}
     verified_outcomes(observed,indexed)
     need([s["rome_day"] for s in snaps]==sorted(indexed),
          "append-only captures out of chronological order")
-    current=now.astimezone(ROME).date()
+    local=now.astimezone(ROME)
+    current=local.date()
     need(fx_dates[-1]<=current,"future dated ECB history")
+    preflight=inspect_dated_6m_source(fx_dates,quote_rows,
+                                       now.astimezone(timezone.utc))
+    scheduled_evening_reached=(current>=date.fromisoformat(
+        policy["earliest_eligible_capture_rome"])
+        and local.weekday()<5 and (local.hour,local.minute)>=(20,45))
+    same_day_ecb_available=(fx_dates[-1].isoformat()==current.isoformat())
+    todays_capture_exists=current.isoformat() in indexed
+    capture_attention=scheduled_evening_reached and not todays_capture_exists
     fx_map={d.isoformat():i for i,d in enumerate(fx_dates)}
     by_event={(r["snapshot_id"],r["pair"]):r for r in observed}
     per_pair={}
@@ -122,7 +204,11 @@ def build(policy,fx,macro,snaps,observed,now):
     min_outcomes=thresholds["minimum_matured_pair_events_for_inferential_review"]
     review=(days>=min_days and weeks>=min_weeks and len(observed)>=min_outcomes
             and matured_unobserved==0)
-    if not snaps:
+    if capture_attention:
+        status=("CAPTURE_MISSED_WITH_SAME_DAY_ECB_AVAILABLE_ATTENTION"
+                if same_day_ecb_available else
+                "CAPTURE_BLOCKED_MISSING_SAME_DAY_ECB_FIXING_ATTENTION")
+    elif not snaps:
         status=("PREREGISTERED_BEFORE_FIRST_ELIGIBLE_CAPTURE"
                 if current<date.fromisoformat(policy["earliest_eligible_capture_rome"])
                 else "AWAITING_FIRST_ACTUAL_EVENING_SNAPSHOT")
@@ -139,6 +225,15 @@ def build(policy,fx,macro,snaps,observed,now):
         "registration_date_utc":registered,
         "first_eligible_rome_date":policy["earliest_eligible_capture_rome"],
         "latest_observed_ecb_fixing":fx["last_as_of"],
+        "input_readiness":{
+            "capture_gate_local_time":"20:45 Europe/Rome",
+            "capture_gate_reached_for_rome_business_day":scheduled_evening_reached,
+            "official_ecb_t0_available_for_rome_day":same_day_ecb_available,
+            "prospective_capture_already_frozen_for_rome_day":todays_capture_exists,
+            "capture_due_but_missing":capture_attention,
+            "last_valid_6m_source_audit":preflight,
+            "preflight_is_not_an_experimental_prediction":True
+        },
         "reference_price_type":"ECB_REFERENCE_NOT_EXECUTABLE",
         "rate_instrument_type":"SECONDARY_LISTED_FUTURES_6M_NOT_OIS",
         "source_protocol":"validation/quant/FXV2_6M_PREREGISTERED_PROTOCOL_V1.json",
@@ -181,7 +276,8 @@ def main():
     policy=json.loads(POLICY_PATH.read_text())
     fx=json.loads(FX_PATH.read_text())
     macro=json.loads(MACRO_PATH.read_text())
-    report=build(policy,fx,macro,read_jsonl(JOURNAL),read_jsonl(OUTCOMES),now)
+    report=build(policy,fx,macro,read_jsonl(JOURNAL),read_jsonl(OUTCOMES),
+                 now,read_jsonl(QUOTES_PATH))
     if args.check:
         need(args.output.exists() and json.loads(args.output.read_text())==report,
              "published report not equal to sealed prospective journals")
@@ -191,6 +287,11 @@ def main():
         args.output.write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n",
                                encoding="utf-8")
         print("FXV2_PROSPECTIVE_STATUS_BUILT",report["report_status"],report["summary"])
+        if report["input_readiness"]["capture_due_but_missing"]:
+            print("::warning::FXV2_6M_PROSPECTIVE_CAPTURE_BLOCKED "+
+                  report["report_status"]+"; BCE as-of="+
+                  report["latest_observed_ecb_fixing"]+
+                  "; no fabricated or backfilled experiment observation")
 
 if __name__=="__main__":
     main()
