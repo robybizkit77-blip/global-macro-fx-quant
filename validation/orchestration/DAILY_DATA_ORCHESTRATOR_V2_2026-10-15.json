@@ -22,6 +22,7 @@
       "publish-dashboard-pages-v1.yml"
     ],
     "premorning": [
+      "macro-persistent-daily-v1.yml",
       "calendar-news-operational-refresh-v1.yml",
       "rates-persistent-daily-v1.yml",
       "vix-persistent-apply-v1.yml",
@@ -61,7 +62,10 @@
   "rules": {
     "dispatch_ref": "main",
     "strict_sequence": true,
-    "stop_on_child_failure": true,
+    "stop_on_child_failure": false,
+    "continue_independent_collectors_after_failure": true,
+    "failed_collector_never_certifies_phase": true,
+    "degraded_morning_publication_requires_strict_current_source_integrity": true,
     "reuse_existing_workflows": true,
     "duplicate_collectors_forbidden": true,
     "core_scoring_effect": "NONE",
