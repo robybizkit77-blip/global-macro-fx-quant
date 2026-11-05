@@ -6,7 +6,7 @@ const live=n=>JSON.parse(fs.readFileSync(path.join(root,'live_data/sections',n+'
 const site=n=>JSON.parse(fs.readFileSync(path.join(root,'site/fx-quant-v2',n),'utf8'));
 const {readiness}=require('./fxv2_research_core_readiness_v1.cjs');
 const args={
- today:'2026-11-04',
+ today:new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()),
  gov:live('NATIVE_RATES_DATA'),
  govResearch:site('chf-nzd-benchmark-research.json'),
  oisCore:live('OIS_OPERATIONAL_VIEW'),
@@ -38,18 +38,19 @@ for(const z of x.research.source_as_of_mismatches){
  assert.deepEqual(z.horizon_as_of,
   [...new Set(['3m','6m','12m'].map(h=>args.oisResearch.currencies[z.ccy].horizons[h].as_of))].sort());
 }
-assert.equal(x.research.nzd_post_roll_research,'2026-11-03');
-assert.equal(x.research.chf_same_date_research,'2026-10-30');
+assert.equal(x.research.nzd_post_roll_research,args.govResearch.NZD.latest_date);
+assert.equal(x.research.chf_same_date_research,args.govResearch.CHF.paired_date);
 assert.equal(x.trading_core.source_data_used_for_backtests,false);
 let bad=clone(args);bad.oisResearch.currencies.CHF.kind='OIS';
 assert.throws(()=>readiness(bad),/OIS/);
 bad=clone(args);bad.macroObserved.safe_to_recompute_structural_pair_theses=true;
 assert.throws(()=>readiness(bad),/isolation/);
-bad=clone(args);bad.oisResearch.currencies.USD.as_of='2026-11-03';
+bad=clone(args);bad.oisResearch.currencies.USD.as_of='2000-01-01';
 const timestampReport=readiness(bad);
 assert(timestampReport.research.source_as_of_mismatches.some(z=>z.ccy==='USD'),
   'A source-level date divergent from every USD tenor must be flagged');
-bad=clone(args);bad.oisResearch.currencies.USD.horizons['3m'].as_of='2026-11-05';
+bad=clone(args);bad.oisResearch.currencies.USD.horizons['3m'].as_of=
+ new Date(Date.parse(args.today+'T00:00:00Z')+86400000).toISOString().slice(0,10);
 assert.throws(()=>readiness(bad),/invalid/);
 bad=clone(args);bad.govResearch.eligible_for_fx_pair_engine=true;
 assert.throws(()=>readiness(bad),/not isolated/);

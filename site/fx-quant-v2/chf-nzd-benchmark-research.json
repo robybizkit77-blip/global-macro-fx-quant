@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_FXV2_CHF_NZD_BENCHMARK_RESEARCH_V1",
-  "generated_on": "2026-11-04",
+  "generated_on": "2026-11-05",
   "quality": "RESEARCH_INFORMATIONAL_NOT_CANONICAL",
   "CHF": {
     "pair_status": "OFFICIAL_SNBSAMEBASIS_RESEARCH_REVIEW_REQUIRED",
@@ -29,7 +29,7 @@
     "source": "Reserve Bank of New Zealand B2 · secondary government bond closes",
     "source_url": "https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates",
     "roll_date": "2026-10-30",
-    "latest_date": "2026-11-03",
+    "latest_date": "2026-11-04",
     "old_benchmark": {
       "2Y": "May 2028",
       "10Y": "May 2036"
@@ -55,26 +55,32 @@
         "date": "2026-11-03",
         "2Y": 3.95,
         "10Y": 4.88
+      },
+      {
+        "date": "2026-11-04",
+        "2Y": 3.83,
+        "10Y": 4.81
       }
     ],
-    "latest_2Y": 3.95,
-    "latest_10Y": 4.88,
-    "latest_curve_bp": 93,
+    "latest_2Y": 3.83,
+    "latest_10Y": 4.81,
+    "latest_curve_bp": 98,
     "same_benchmark_change_bp": {
-      "2Y": -1,
-      "10Y": -2,
+      "2Y": -13,
+      "10Y": -9,
       "start": "2026-10-30",
-      "end": "2026-11-03"
+      "end": "2026-11-04"
     },
     "cross_roll_change_allowed": false,
-    "research_only_note": "Osservazione 3 novembre 2026, 2Y 3,95%, 10Y 4,88%, letta da pagina RBNZ B2 pubblicata il 4 novembre. Benchmark nuovi dal 30 ottobre. Non è un download automatizzato GitHub, né riconciliazione XLSX. Nessuna promozione a Core, OIS o backtest.",
+    "research_only_note": "Osservazione ufficiale RBNZ B2 del 4 novembre 2026: governativo 2Y 3,83%, 10Y 4,81%; pubblicata sulla pagina pubblica RBNZ il 5 novembre 2026. Controllo editoriale di ricerca tramite pagina pubblica, NON download automatizzato GitHub e NON riconciliazione indipendente XLSX. Benchmark nuovi dal 30 ottobre (April 2029/April 2037); nessuna variazione cross-roll; nessuna promozione a Core, OIS, FX pair signals o backtest.",
     "eligible_for_core": false,
     "eligible_for_pair_spreads": false,
     "eligible_for_backtests": false,
     "eligible_for_automatic_promotion": false,
     "independent_xlsx_reconciled": false,
-    "source_release_date": "2026-11-04",
-    "source_capture_method": "OFFICIAL_WEB_PAGE_RESEARCH_CAPTURE_NOT_GITHUB_DOWNLOAD"
+    "source_release_date": "2026-11-05",
+    "source_capture_method": "OFFICIAL_WEB_PAGE_RESEARCH_CAPTURE_NOT_GITHUB_DOWNLOAD",
+    "source_release_date_quality": "OFFICIAL_RBNZ_PUBLIC_PAGE_DATE"
   },
   "same_benchmark_or_date_cross_roll_only": true,
   "source_dates_may_differ": true,

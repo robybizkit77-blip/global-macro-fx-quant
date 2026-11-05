@@ -38,3 +38,34 @@ columns after the 2026-10-30 benchmark roll. It rejects missing, future,
 stale and contradictory rows and labels approved data as third-party
 redistribution, NOT direct RBNZ observations or an official publication
 timestamp. No write to Core, OIS, macro scoring, FX engine or backtests.
+
+## RBNZ source access rights + Nov 5 manual public-page reading
+
+On November 5, 2026, the public RBNZ B2 release page displayed **November 4
+closing yields** (2Y April 2029: **3.83%**, 10Y April 2037: **4.81%**). These
+were entered into the V2 **research-only** CHF/NZD feed as a dated reviewed
+public-page observation. This was **not** an automated runner download and was
+**not** independently XLSX-reconciled. The Oct 30 benchmark transition is
+still kept separate and no FX Core, official OIS or backtest is changed.
+
+Source: https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates
+and the official benchmark rollover note dated Nov 2, 2026.
+
+**Automated access:** Under RBNZ's Terms of Use, prior written permission is
+required for automated website access (the index of published XLSX files does
+not waive that requirement). The scheduled GitHub HTML reader is now
+**disabled by default**. It can only run when the repository owner has
+received the written authorization and explicitly sets
+`RBNZ_AUTOMATED_ACCESS_AUTHORIZED=true` as a GitHub Actions secret.
+Do not set this flag merely because the webpage is public. Do not bypass HTTP
+403 controls. Official policy and allow-list request:
+- https://www.rbnz.govt.nz/about-our-site/terms-of-use
+- https://www.rbnz.govt.nz/about-our-site/terms-of-use/allow-list-request
+
+The optional `EOLAS_API_KEY` source is separate: it needs its own valid
+license/subscription and is only used in the daily quota-protected slot or
+explicit dispatch. Without one of those authorized paths, the research feed
+retains the **last dated** observation without claiming a fresh close.
+
+The V2 UI displays dated estimates/observations for informational purposes;
+Core, certified rates, pair signals, OIS_DATA and backtests are unchanged.

@@ -13,6 +13,7 @@ on:
       - 'validation/rates/collect_fxv2_nzd_eolas_api_v1.py'
       - 'validation/rates/test_collect_fxv2_nzd_eolas_api_v1.py'
       - 'validation/rates/test_collect_rbnz_b2_daily_web_v1.py'
+      - 'validation/rates/test_fxv2_nzd_manual_public_source_v1.py'
       - 'validation/rates/test_refresh_fxv2_chf_nzd_benchmark_context.py'
       - 'site/fx-quant-v2/chf-nzd-benchmark-research.json'
       - 'site/fx-quant-v2/tassi.html'
@@ -29,6 +30,7 @@ on:
       - 'validation/rates/collect_fxv2_nzd_eolas_api_v1.py'
       - 'validation/rates/test_collect_fxv2_nzd_eolas_api_v1.py'
       - 'validation/rates/test_collect_rbnz_b2_daily_web_v1.py'
+      - 'validation/rates/test_fxv2_nzd_manual_public_source_v1.py'
       - 'validation/rates/test_refresh_fxv2_chf_nzd_benchmark_context.py'
       - 'site/fx-quant-v2/chf-nzd-benchmark-research.json'
       - 'site/fx-quant-v2/tassi.html'
@@ -68,6 +70,7 @@ jobs:
           python3 validation/rates/test_fxv2_chf_nzd_schedule_gate_v1.py
           python3 validation/rates/test_report_fxv2_chf_nzd_freshness_v1.py
           python3 validation/rates/test_collect_rbnz_b2_daily_web_v1.py
+          python3 validation/rates/test_fxv2_nzd_manual_public_source_v1.py
           python3 validation/rates/test_collect_fxv2_nzd_eolas_api_v1.py
           python3 validation/rates/test_recover_chf_snb_paired_history_v1.py
       - name: Rome 06:30 DST-safe source collection gate
@@ -82,18 +85,25 @@ jobs:
             --event "$GH_EVENT_NAME" --cron "$GH_EVENT_SCHEDULE" \
             --output "$GITHUB_OUTPUT" --summary "$GITHUB_STEP_SUMMARY"
 
-      - name: Fetch the newest NZD B2 same-row government yields from RBNZ public HTML
+      - name: Read RBNZ B2 official HTML only with the owner's prior written permission
         if: steps.gate.outputs.should_run == 'true'
         shell: bash
+        env:
+          RBNZ_AUTOMATED_ACCESS_AUTHORIZED: ${{ secrets.RBNZ_AUTOMATED_ACCESS_AUTHORIZED }}
         run: |
           set -euo pipefail
-          # Do not convert a source outage into a false 'fresh' observation.
-          # CHF remains independently refreshable if RBNZ is unavailable.
-          if python3 validation/rates/collect_rbnz_b2_daily_web_v1.py \
-            --output /tmp/fxv2-rbnz-b2-daily-source.json; then
-            echo 'FXV2_RBNZ_B2_LIVE_SOURCE_READ_SUCCEEDED'
+          # RBNZ terms require PRIOR WRITTEN PERMISSION for automated access.
+          # An undocumented HTTP 403 is not authorization to retry/bypass.
+          # This flag is owner-provided ONLY after obtaining written permission.
+          if [ "${RBNZ_AUTOMATED_ACCESS_AUTHORIZED:-}" != "true" ]; then
+            echo 'NZD_RBNZ_DIRECT=SKIPPED_NO_AUTOMATED_ACCESS_PERMISSION'
+            echo 'NZD_RBNZ_DIRECT=SKIPPED_NO_AUTOMATED_ACCESS_PERMISSION' >> "$GITHUB_STEP_SUMMARY"
+            rm -f /tmp/fxv2-rbnz-b2-daily-source.json
+          elif python3 validation/rates/collect_rbnz_b2_daily_web_v1.py \
+              --output /tmp/fxv2-rbnz-b2-daily-source.json; then
+            echo 'FXV2_RBNZ_B2_AUTHORIZED_SOURCE_READ_SUCCEEDED'
           else
-            echo 'FXV2_RBNZ_B2_LIVE_SOURCE_UNAVAILABLE: previous dated NZD context retained'
+            echo 'FXV2_RBNZ_B2_AUTHORIZED_SOURCE_UNAVAILABLE: previous dated NZD context retained'
             rm -f /tmp/fxv2-rbnz-b2-daily-source.json
           fi
       - name: Use authorized eolas API only when the quota-safe slot is permitted
@@ -109,7 +119,7 @@ jobs:
           elif [ "$VENDOR_SLOT" != "true" ]; then
             echo 'NZD_SOURCE=NO_VENDOR_REQUEST_THIS_SLOT: protect API quotas' >> "$GITHUB_STEP_SUMMARY"
           elif [ -z "${EOLAS_API_KEY:-}" ]; then
-            echo 'NZD_SOURCE=UNAVAILABLE: RBNZ HTTP block and EOLAS_API_KEY not configured' >> "$GITHUB_STEP_SUMMARY"
+            echo 'NZD_SOURCE=UNAVAILABLE: no authorized direct RBNZ reader or EOLAS_API_KEY; previous dated research retained' >> "$GITHUB_STEP_SUMMARY"
           elif python3 validation/rates/collect_fxv2_nzd_eolas_api_v1.py --output /tmp/fxv2-rbnz-b2-eolas-research.json; then
             echo 'NZD_SOURCE=EO_AUTHORIZED_RBNZ_REPUBLISHED_RESEARCH' >> "$GITHUB_STEP_SUMMARY"
           else
