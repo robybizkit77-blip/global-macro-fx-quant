@@ -116,3 +116,33 @@ observed Macro V3, and the canonically dated ECB FX fixing context.
 - This is narrative evidence **only**. No new weighting, macro score,
   FX recommendation, carry calculation, meeting probability or backtest.
   No Core, FX signals, alerts or previously approved styling changed.
+
+## Quant temporal readiness, strict same-contract sample (2026-11-05)
+
+`validation/quant/fxv2_rates_fx_temporal_readiness_v1.py` counts only
+USD/EUR/CHF **listed futures** changes when the *same exact contract*
+appears for each of two **consecutive ECB fixing sessions** and the
+two currency legs share the same two market days. A roll, nonmatching
+horizon, missing day or ambiguous contract is not interpreted as
+policy repricing.
+
+The source-availability timestamp is the latest first-seen UTC of
+the four required leg quotes. Any future ECB reference price could be
+admitted no earlier than the *first reference-fixing date strictly after
+that UTC capture calendar date*. The audit does **not** produce
+same-day reaction, FX expected returns, realized forward returns,
+hit rate, significance, Sharpe or profit.
+
+The research sidecar `quant-temporal-readiness-v1.json` includes
+28/28 pair coverage (including explicit zero-history rows), the
+underlying 561+ official ECB FX sessions, rate quote provenance and a
+small descriptive futures variation sample. It is updated only when
+its source history changes, via `FX Quant V2 Rates FX Temporal Research Audit`
+after OIS G8, ECB FX price history or Macro candidate producer runs.
+The isolated V2 publisher handles the bot-written report.
+
+This is **NOT** a point-in-time macro backtest: the new Macro V3
+history uses revised values, no preregistered directional FX rule
+exists, and 28 cross pairs are not 28 statistically independent
+assets. The original Core, strategy signals, website style and
+backtests remain unchanged.

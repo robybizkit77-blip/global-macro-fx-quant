@@ -215,6 +215,15 @@ async function audit(browser,name,file,selector,view,viewport){
        !triang.price.includes('variazione 1M')||
        !triang.caveat.includes('Nessun segnale'))
       issue(name,view,'macro_rates_price_triangulation_missing',JSON.stringify(triang).slice(0,1400));
+    await page.waitForFunction(()=>
+      document.querySelector('#macroOisQuantReadiness')?.textContent?.includes('STORICO QUANT'),
+      null,{timeout:17000});
+    const auditText=await page.locator('#macroOisQuantReadiness').textContent();
+    if(!auditText.includes('STORICO QUANT')||
+       (auditText.includes('confronti datati')&&
+        (!auditText.includes('non evidenza predittiva')||
+         !auditText.includes('nessuna stima di alpha, hit rate o Sharpe'))))
+      issue(name,view,'quant_temporal_research_missing_or_overclaimed',auditText.slice(0,700));
     await page.waitForFunction(()=>document.querySelector('#macroV3Context')?.textContent?.includes('DINAMICA MACRO (RICERCA, NON NUOVO BIAS)'),null,{timeout:18000});
     const dynamicEUR=(await page.locator('#macroV3Context').textContent())||'';
     if(!dynamicEUR.includes('PIL: variazione del ritmo trimestrale')||
