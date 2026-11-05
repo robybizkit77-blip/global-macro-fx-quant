@@ -40,6 +40,13 @@ table{width:100%;border-collapse:collapse;text-align:left;font-size:13px}th{font
 <p id="contractHistoryInterpretation" class="muted" role="status">Lettura storica in attesa di fonte verificata.</p>
 <div id="contractHistoryRows" aria-live="polite">Caricamento storico verificato…</div>
 <p id="contractHistoryFoot" class="muted"></p>
+</div>
+<div id="ratesFxContext" class="note" hidden aria-label="Confronto tra futures, rendimenti governativi 2Y e fixing FX">
+<strong>Che cosa confermano i rendimenti 2Y e il cambio?</strong>
+<p class="muted">Confronto descrittivo fra strumenti diversi, con date separate. Il fixing BCE non è sincronizzato con i futures; non è un segnale operativo.</p>
+<p id="rates2YContextText" class="muted" role="status">Verifica dello storico 2Y…</p>
+<p id="fxFixingContextText" class="muted">Verifica del fixing FX…</p>
+<p id="ratesFxCaveat" class="muted"></p>
 </div><p class="muted" id="detailInterpretation"></p></article>
 <aside class="pane"><div class="micro">Fonte e qualità</div><h3 id="sourceTitle">Classificazione</h3>
 <p id="sourceType" class="muted"></p><p id="sourceDate" class="muted"></p><p id="sourceName" class="source"></p>
@@ -59,6 +66,7 @@ table{width:100%;border-collapse:collapse;text-align:left;font-size:13px}th{font
 </main>
 <script src="./assets/ois-relative-parity-v1.js"></script>
 <script src="./assets/ois-same-contract-reading-v1.js"></script>
+<script src="./assets/ois-rates-fx-context-v1.js"></script>
 <script>
 (()=>{"use strict";
 const C=["USD","EUR","GBP","JPY","CHF","CAD","AUD","NZD"], F={USD:"🇺🇸",EUR:"🇪🇺",GBP:"🇬🇧",JPY:"🇯🇵",CHF:"🇨🇭",CAD:"🇨🇦",AUD:"🇦🇺",NZD:"🇳🇿"};
@@ -78,7 +86,7 @@ const ageInfo=x=>{
 };
 
 const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const state={currencies:{},selected:"USD",a:"EUR",b:"USD",relativeResearch:null,sameContractResearch:null};
+const state={currencies:{},selected:"USD",a:"EUR",b:"USD",relativeResearch:null,sameContractResearch:null,ratesReference:null,fxReference:null};
 const has=(v)=>Number.isFinite(v?.rate);
 const T=["3m","6m","12m"];
 const dated=x=>/^\d{4}-\d{2}-\d{2}$/.test(x||"")&&ageDays(x)!==null;
@@ -182,6 +190,7 @@ function showDetail(){
  $("sourceName").textContent=x.source;
  $("sourceCaveat").textContent=sourceNote(x);
  showSameContract();
+ showRatesFxContext();
 }
 function showSameContract(){
  const c=state.selected,pane=$("contractHistory"),rows=$("contractHistoryRows"),foot=$("contractHistoryFoot");
@@ -233,7 +242,7 @@ async function loadSameContractResearch(){
      x.strict_reference_dates?.cross_contract_joins!==false||
      ["USD","EUR","CHF"].some(c=>T.some(t=>!x.currencies?.[c]?.[t])))
    throw Error("same-contract governance or coverage invalid");
-  state.sameContractResearch=x;showSameContract();
+  state.sameContractResearch=x;showSameContract();showRatesFxContext();
  }catch(e){
   state.sameContractResearch=null;
   const p=$("contractHistory");
@@ -241,9 +250,46 @@ async function loadSameContractResearch(){
    p.dataset.parity="UNAVAILABLE";
    $("contractHistoryRows").textContent="Storico stesso contratto non disponibile: nessun movimento inferito.";
    $("contractHistoryInterpretation").textContent="Fonte non accessibile: impossibile commentare i movimenti verificati.";
+   showRatesFxContext();
   }
   console.warn("FXV2 same-contract history unavailable",e);
  }
+}
+function showRatesFxContext(){
+ const c=state.selected,pane=$("ratesFxContext");
+ if(!["USD","EUR","CHF"].includes(c)){pane.hidden=true;return;}
+ pane.hidden=false;
+ const raw=state.sameContractResearch,shown=state.currencies[c];
+ const reading=raw&&shown?window.FXV2OisMovementReading?.interpret(c,raw,shown):null;
+ if(!reading||reading.status!=="LETTURA_DESCRITTIVA_FUTURES"){
+  pane.dataset.status="SOURCE_PENDING";
+  $("rates2YContextText").textContent="Rendimento 2Y: in attesa dei futures dello stesso contratto verificati.";
+  $("fxFixingContextText").textContent="Fixing FX: confronto sospeso fino all'arrivo delle date dei futures.";
+  $("ratesFxCaveat").textContent="Nessun segnale FX o repricing monetario dedotto.";return;
+ }
+ const v=window.FXV2OisRatesFxContext?.evaluate(c,reading,
+   state.ratesReference,state.fxReference,todayRome());
+ if(!v||v.status!=="READ_ONLY_TRIANGULATION"){
+  pane.dataset.status="SOURCE_INVALID";
+  $("rates2YContextText").textContent="Confronto 2Y non certificato.";
+  $("fxFixingContextText").textContent="Confronto FX non certificato.";
+  $("ratesFxCaveat").textContent="Nessun dato non verificato trasformato in conferma.";return;
+ }
+ pane.dataset.status="READ_ONLY_TRIANGULATION";
+ pane.dataset.twoYearStatus=v.rate?.state||"NOT_VERIFIED";
+ pane.dataset.fxStatus=v.fx?.state||"NOT_VERIFIED";
+ pane.dataset.twoYearMismatch=v.rate?.deltaMismatch?"true":"false";
+ pane.dataset.alignedTenors=String(v.aligned.length);
+ $("rates2YContextText").textContent=v.rateText;
+ $("fxFixingContextText").textContent=v.fxText;
+ $("ratesFxCaveat").textContent=v.summary;
+}
+async function loadRatesFxContext(){
+ const names=["NATIVE_RATES_DATA.json","ECB_G8_PRICE_HISTORY.json"];
+ const results=await Promise.allSettled(names.map(n=>get(ROOT+n)));
+ state.ratesReference=results[0].status==="fulfilled"?results[0].value:null;
+ state.fxReference=results[1].status==="fulfilled"?results[1].value:null;
+ showRatesFxContext();
 }
 function showCompare(){
  const a=state.currencies[state.a],b=state.currencies[state.b],za=a?.horizons?.["6m"],zb=b?.horizons?.["6m"];
@@ -344,6 +390,7 @@ async function loadRelativeResearch(){
 setup();
 loadRelativeResearch();
 loadSameContractResearch();
+loadRatesFxContext();
 (async()=>{
  try{let x=await get("./ois-pricing-snapshot.json");if(x.schema==="GMFQ_FXV2_PRICING_SNAPSHOT_V1"&&x.eligible_for_fx_engine===false){for(const c of C)update(c,x.currencies?.[c]);render();}}
  catch(e){console.warn("FXV2 OIS snapshot missing",e);}
