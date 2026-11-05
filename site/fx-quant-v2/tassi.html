@@ -196,7 +196,12 @@ function noteCHFHistory(){
  if(state.selected!=='CHF'||!state.chfHistory)return;
  const hist=state.chfHistory,rows=hist.observations,last=rows[rows.length-1];
  $('chartCountryTitle').textContent='Svizzera · storico ufficiale SNB 2Y / 10Y';
- $('curveExplanation').textContent=rows.length+' date osservate (2Y e 10Y SNB nello stesso giorno), dal '+dt(rows[0].date)+' al '+dt(last.date)+'. Linee fra punti osservati: nessuna nuova quotazione o stima giornaliera. Ultimo dato storico, non livello di mercato in tempo reale.';
+ const chfWorking=state.rates.CHF||{};
+ const estimateInHeadline=chfWorking.tenor_quality?.['2Y']==='STIMATO';
+ const label=estimateInHeadline
+  ?'CALCOLO INDICATIVO: il livello CHF 2Y in alto è STIMATO da uno shift parallelo del 10Y SNB fra '+dt(chfWorking.source_date)+' e '+dt(chfWorking.date)+', non è una quotazione ufficiale 2Y. Il grafico sotto usa invece SOLO osservazioni SNB ufficiali appaiate. '
+  :'RICERCA SNB OSSERVATA: i livelli 2Y e 10Y del grafico sono osservazioni ufficiali sulla stessa data, non quotazioni in tempo reale. ';
+ $('curveExplanation').textContent=label+rows.length+' date osservate (2Y e 10Y SNB nello stesso giorno), dal '+dt(rows[0].date)+' al '+dt(last.date)+'. Linee fra punti osservati: nessuna nuova quotazione o stima giornaliera. Ultimo dato storico, non livello di mercato in tempo reale.';
  $('yieldSource').textContent+=' · Grafico storico SNB: '+rows.length+' date appaiate, fino al '+dt(last.date)+'; vintage più recente, non point-in-time.';
 }
 async function refreshCHFHistory(){
