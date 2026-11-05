@@ -49,7 +49,10 @@ def main() -> None:
     assert "queue: max" in block
     assert "cancel-in-progress: false" in block
 
-    assert c["rules"]["stop_on_child_failure"] is True
+    assert c["rules"]["stop_on_child_failure"] is False
+    assert c["rules"]["continue_independent_collectors_after_failure"] is True
+    assert c["rules"]["failed_collector_never_certifies_phase"] is True
+    assert c["rules"]["degraded_morning_publication_requires_strict_current_source_integrity"] is True
     assert c["rules"]["duplicate_collectors_forbidden"] is True
     assert c["rules"]["core_scoring_effect"] == "NONE"
     assert c["rules"]["official_promotion_effect"] == "NONE"
@@ -106,6 +109,7 @@ def main() -> None:
     assert c["rules"]["prebrief_recovers_official_previous_close_vix"] is True
     assert c["rules"]["morning_0910_is_catch_up_not_first_refresh"] is True
     assert c["phases"]["premorning"] == [
+        "macro-persistent-daily-v1.yml",
         "calendar-news-operational-refresh-v1.yml",
         "rates-persistent-daily-v1.yml",
         "vix-persistent-apply-v1.yml",
@@ -117,7 +121,7 @@ def main() -> None:
     assert "git show origin/main:live_data/sections/D.json" in WORKFLOW.read_text()
     assert "07:45 VIX: **SKIPPED**" in WORKFLOW.read_text()
     assert "07:45 VIX: **RETRY**" in WORKFLOW.read_text()
-    assert "macro-persistent-daily-v1.yml" not in c["phases"]["premorning"]
+    assert "macro-persistent-daily-v1.yml" in c["phases"]["premorning"]
     assert "ois-estimated-snapshot-repricing-v1.yml" not in c["phases"]["premorning"]
     assert "calendar-news-operational-refresh-v1.yml" in c["phases"]["premorning"]
     assert 'plan_premorning_calendar_news_recovery_v1.py' in WORKFLOW.read_text()
@@ -214,8 +218,10 @@ def main() -> None:
     assert 'git fetch origin --no-tags --depth=1' in text
     assert 'git reset --hard origin/main' in text
     assert 'python3 validation/orchestration/check_morning_readiness_v1.py' in text
-    assert '--strict-daily --pipeline-outcome success' in text
-    assert 'Main changed after pre-publication readiness audit' in text
+    assert '"$strict_flag" --pipeline-outcome "$source_outcome"' in text
+    assert 'strict_flag="--strict-sources"' in text
+    assert 'local source_outcome="success" strict_flag="--strict-daily"' in text
+    assert 'main changed after source audit; no stale approval' in text
     assert 'path: |' in text
     assert '/tmp/morning-readiness*.json' in text
     assert '/tmp/morning-delivery-sla-v1.json' in text
@@ -242,7 +248,14 @@ def main() -> None:
     assert '--workflow "$wf"' in text
     assert 'CHILD_REQUIRED_STEPS_NOT_EXECUTED' in text
     assert 'Retain exact child-step proof for all orchestration phases' in text
-    assert 'path: /tmp/orchestration-child-step-evidence/*-proof.json' in text
+    assert '/tmp/orchestration-child-step-evidence/*-proof.json' in text
+    assert '/tmp/orchestration-child-step-evidence/source-failures.txt' in text
+    assert 'if ! dispatch_and_wait "$wf"; then' in text
+    assert 'source_failures+=("$wf")' in text
+    assert 'final_gate_passed=false' in text
+    assert 'ORCHESTRATOR_DEGRADED_FAIL_CLOSED' in text
+    assert 'return 1' in text[text.index('ORCHESTRATOR_DEGRADED_FAIL_CLOSED'):]
+    assert text.index('source_failures+=("$wf")') < text.index('ORCHESTRATOR_DEGRADED_FAIL_CLOSED')
     step_gate_call = 'if python3 validation/orchestration/check_child_execution_steps_v1.py'
     assert text.index('[[ "$conclusion" == "success" ]] || return 1') < text.index(step_gate_call)
     assert text.index(step_gate_call) < text.index('return 0', text.index(step_gate_call))

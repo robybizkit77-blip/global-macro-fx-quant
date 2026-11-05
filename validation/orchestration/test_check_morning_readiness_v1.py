@@ -3,7 +3,7 @@
 import copy
 import datetime as dt
 from zoneinfo import ZoneInfo
-from check_morning_readiness_v1 import read_feeds, inspect, prior_weekday, rome_build_day
+from check_morning_readiness_v1 import read_feeds, inspect, prior_weekday, rome_build_day, critical_source_blockers
 
 ROME = ZoneInfo("Europe/Rome")
 data = read_feeds()
@@ -210,6 +210,13 @@ partial = inspect(data, asof, pipeline_outcome="failure")
 assert partial["operational_state"] == "DAILY_INPUTS_INCOMPLETE"
 assert partial["critical_daily_problems"] == ["REFRESH_PIPELINE_NOT_SUCCESS"]
 assert partial["refresh_pipeline_outcome"] == "failure"
+# Independent sources can be published only when source integrity is intact;
+# the failed collector is never reclassified as a successful pipeline.
+assert critical_source_blockers(partial) == []
+assert critical_source_blockers({}) == ["MISSING_OR_INVALID_MORNING_RECEIPT"]
+assert critical_source_blockers(dict(partial, critical_daily_problems=[
+    "REFRESH_PIPELINE_NOT_SUCCESS", "FX_SOURCE_INTEGRITY"
+])) == ["FX_SOURCE_INTEGRITY"]
 
 # A future time on the same Rome date must NOT certify the 08:00 briefing.
 for feed_name,problem in (

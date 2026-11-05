@@ -15,6 +15,7 @@ on:
       - 'validation/orchestration/test_check_morning_delivery_sla_v1.py'
       - 'validation/orchestration/check_child_execution_steps_v1.py'
       - 'validation/orchestration/test_check_child_execution_steps_v1.py'
+      - 'validation/orchestration/test_orchestrator_failure_continuation_v1.py'
       - 'validation/orchestration/test_orchestrator_readonly_api_retry_v1.py'
       - 'validation/orchestration/plan_premorning_calendar_news_recovery_v1.py'
       - 'validation/orchestration/test_plan_premorning_calendar_news_recovery_v1.py'
@@ -34,6 +35,7 @@ on:
       - 'validation/orchestration/test_check_morning_delivery_sla_v1.py'
       - 'validation/orchestration/check_child_execution_steps_v1.py'
       - 'validation/orchestration/test_check_child_execution_steps_v1.py'
+      - 'validation/orchestration/test_orchestrator_failure_continuation_v1.py'
       - 'validation/orchestration/test_orchestrator_readonly_api_retry_v1.py'
       - 'validation/orchestration/plan_premorning_calendar_news_recovery_v1.py'
       - 'validation/orchestration/test_plan_premorning_calendar_news_recovery_v1.py'
@@ -113,6 +115,8 @@ jobs:
         run: python validation/orchestration/test_check_morning_delivery_sla_v1.py
       - name: Test fail-closed evidence for all orchestrated child steps
         run: python validation/orchestration/test_check_child_execution_steps_v1.py
+      - name: Exercise real phase runner with failed independent sources and final-gate failure
+        run: python -m unittest validation.orchestration.test_orchestrator_failure_continuation_v1 -v
       - name: Bash syntax-check serialized refresh before any dispatch
         shell: bash
         run: |
@@ -276,6 +280,12 @@ jobs:
           run_phase() {
             local phase="$1"
             local workflows=()
+            # Failures in one *independent* collector do not suppress the
+            # remaining collectors. But the phase MUST end non-green and
+            # preserve dated failure receipts, even if partial publish succeeds.
+            local source_failures=()
+            local stage_failed=0
+            local final_gate_passed=true
             case "$phase" in
               prebrief)
                 # Strictly serial: official/estimated daily data, then a final
@@ -415,27 +425,80 @@ jobs:
                 fi
                 echo "- 07:45 VIX: **RETRY** (last official Cboe date/integrity still needs verification)" >> "$GITHUB_STEP_SUMMARY"
               fi
+              # The final E2E gate itself remains fail-closed. A source
+              # failure never becomes full-phase SUCCESS, even if other data
+              # are usable and independently updated on main.
+              if [[ "$wf" == "publish-dashboard-pages-v1.yml" &&
+                    "$final_gate_passed" != true ]]; then
+                echo "- Pages: **SKIPPED**: final structural certification did not pass" >> "$GITHUB_STEP_SUMMARY"
+                stage_failed=1
+                continue
+              fi
+              # Close/night have no morning source-integrity audit. Do not
+              # explicitly publish partially refreshed data in those phases.
+              if [[ "$wf" == "publish-dashboard-pages-v1.yml" ]] &&
+                 [[ "$phase" == "close" || "$phase" == "night" ]] &&
+                 (( ${#source_failures[@]} > 0 )); then
+                echo "- Pages: **SKIPPED**, collector failures in ${phase}; independent source commits remain" >> "$GITHUB_STEP_SUMMARY"
+                stage_failed=1
+                continue
+              fi
               # Final E2E is a structural check, not proof that dated
-              # market sources are ready. Refuse the explicit 04:43/07:45
-              # Pages dispatch unless the actual refreshed main feeds pass.
+              # market sources are ready. Before an 04:43/07:45 Pages
+              # dispatch, check actual current sources on latest main.
               if [[ "$wf" == "publish-dashboard-pages-v1.yml" ]] &&
                  [[ "$phase" == "prebrief" || "$phase" == "premorning" ]]; then
                 git fetch origin --no-tags --depth=1 '+refs/heads/main:refs/remotes/origin/main'
                 git reset --hard origin/main
                 audited_sha=$(git rev-parse HEAD)
-                python3 validation/orchestration/check_morning_readiness_v1.py \
-                  --strict-daily --pipeline-outcome success \
+                local source_outcome="success" strict_flag="--strict-daily"
+                if (( ${#source_failures[@]} > 0 )); then
+                  source_outcome="failure"
+                  strict_flag="--strict-sources"
+                fi
+                # A failed independent collector stays in the report, but
+                # separately validated, fresh sources can still be published.
+                # No on-time/full-run certification is given to this phase.
+                if ! python3 validation/orchestration/check_morning_readiness_v1.py \
+                  "$strict_flag" --pipeline-outcome "$source_outcome" \
                   --output /tmp/morning-readiness-prepublish.json \
-                  > /tmp/morning-readiness-prepublish.log
+                  > /tmp/morning-readiness-prepublish.log; then
+                  echo "- Pages: **SKIPPED**, critical source freshness/integrity failed" >> "$GITHUB_STEP_SUMMARY"
+                  stage_failed=1
+                  continue
+                fi
                 latest_main_sha=$(git ls-remote origin refs/heads/main | awk '{print $1}')
                 if [[ "$latest_main_sha" != "$audited_sha" ]]; then
-                  echo "Main changed after pre-publication readiness audit; refusing stale approval" >&2
-                  return 1
+                  echo "- Pages: **SKIPPED**, main changed after source audit; no stale approval" >> "$GITHUB_STEP_SUMMARY"
+                  stage_failed=1
+                  continue
                 fi
-                echo "- Pre-publication source readiness **PASS** on main \`${audited_sha}\` for ${phase}" >> "$GITHUB_STEP_SUMMARY"
+                echo "- Pre-publication source integrity **PASS** on main \`${audited_sha}\`; independent source failures: ${#source_failures[@]}" >> "$GITHUB_STEP_SUMMARY"
               fi
-              dispatch_and_wait "$wf"
+              if ! dispatch_and_wait "$wf"; then
+                if [[ "$wf" == "final-e2e-certification-gate-v3.yml" ]]; then
+                  final_gate_passed=false
+                  echo "- FINAL CERTIFICATION: **FAILED**, downstream publish will be skipped" >> "$GITHUB_STEP_SUMMARY"
+                elif [[ "$wf" == "publish-dashboard-pages-v1.yml" ]]; then
+                  stage_failed=1
+                else
+                  source_failures+=("$wf")
+                  echo "- DEGRADED: **${wf}** failed; remaining independent collectors continue" >> "$GITHUB_STEP_SUMMARY"
+                fi
+              fi
             done
+            mkdir -p /tmp/orchestration-child-step-evidence
+            # Keep the receipts even when this job exits non-zero.
+            : > /tmp/orchestration-child-step-evidence/source-failures.txt
+            if (( ${#source_failures[@]} > 0 )); then
+              printf '%s\n' "${source_failures[@]}" >> /tmp/orchestration-child-step-evidence/source-failures.txt
+            fi
+            echo "- Collector failures in ${phase}: ${#source_failures[@]} (full certification requires ZERO)" >> "$GITHUB_STEP_SUMMARY"
+            if (( ${#source_failures[@]} > 0 )) ||
+               [[ "$final_gate_passed" != true || "$stage_failed" -ne 0 ]]; then
+              echo "ORCHESTRATOR_DEGRADED_FAIL_CLOSED phase=${phase}, failed_sources=${source_failures[*]}, certified=${final_gate_passed}, downstream_failed=${stage_failed}" >&2
+              return 1
+            fi
           }
 
           case "$PHASE" in
@@ -455,7 +518,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: orchestrator-child-step-proof-${{ github.run_id }}
-          path: /tmp/orchestration-child-step-evidence/*-proof.json
+          path: |
+            /tmp/orchestration-child-step-evidence/*-proof.json
+            /tmp/orchestration-child-step-evidence/source-failures.txt
           if-no-files-found: warn
           retention-days: 21
 

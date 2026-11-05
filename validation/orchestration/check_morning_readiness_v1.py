@@ -305,6 +305,21 @@ def inspect(feeds: dict, now: dt.datetime, pipeline_outcome: str = "success") ->
     }
 
 
+def critical_source_blockers(report: dict) -> list[str]:
+    """For publication only: distinguish data integrity from pipeline failure.
+
+    A failed collector must remain in the audit and cannot certify the 08:00
+    delivery. Existing independently checked daily sources may nevertheless
+    be safely published if they pass *all* current-source integrity checks.
+    """
+    if not isinstance(report, dict) or report.get("schema") != "GMFQ_MORNING_READINESS_V1":
+        return ["MISSING_OR_INVALID_MORNING_RECEIPT"]
+    problems = report.get("critical_daily_problems")
+    if not isinstance(problems, list) or not all(isinstance(x, str) for x in problems):
+        return ["MISSING_SOURCE_PROBLEMS"]
+    return sorted(x for x in problems if x != "REFRESH_PIPELINE_NOT_SUCCESS")
+
+
 def read_feeds() -> dict:
     return {p: json.loads((FEEDS / p).read_text(encoding="utf-8")) for p in REQUIRED}
 
@@ -314,6 +329,8 @@ def main() -> int:
     ap.add_argument("--as-of", help="Override current instant using ISO-8601 timezone-aware timestamp")
     ap.add_argument("--output")
     ap.add_argument("--strict-daily", action="store_true")
+    ap.add_argument("--strict-sources", action="store_true",
+                    help="Block only current-source integrity errors; never certify pipeline success")
     ap.add_argument("--pipeline-outcome", default="success",
                     choices=("success", "failure", "cancelled", "skipped", "unknown"))
     args = ap.parse_args()
@@ -324,7 +341,8 @@ def main() -> int:
     if args.output:
         Path(args.output).write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(json.dumps(report, indent=2, ensure_ascii=False))
-    return int(args.strict_daily and bool(report["critical_daily_problems"]))
+    return int((args.strict_daily and bool(report["critical_daily_problems"]))
+               or (args.strict_sources and bool(critical_source_blockers(report))))
 
 
 if __name__ == "__main__":
