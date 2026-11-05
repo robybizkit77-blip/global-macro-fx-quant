@@ -489,7 +489,10 @@ jobs:
             done
             mkdir -p /tmp/orchestration-child-step-evidence
             # Keep the receipts even when this job exits non-zero.
-            printf '%s\n' "${source_failures[@]}" > /tmp/orchestration-child-step-evidence/source-failures.txt
+            : > /tmp/orchestration-child-step-evidence/source-failures.txt
+            if (( ${#source_failures[@]} > 0 )); then
+              printf '%s\n' "${source_failures[@]}" >> /tmp/orchestration-child-step-evidence/source-failures.txt
+            fi
             echo "- Collector failures in ${phase}: ${#source_failures[@]} (full certification requires ZERO)" >> "$GITHUB_STEP_SUMMARY"
             if (( ${#source_failures[@]} > 0 )) ||
                [[ "$final_gate_passed" != true || "$stage_failed" -ne 0 ]]; then
