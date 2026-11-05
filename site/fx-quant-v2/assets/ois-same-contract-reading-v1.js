@@ -32,7 +32,7 @@
   }
   function currentParity(ccy,tenor,doc,shown){
     const r=doc?.currencies?.[ccy]?.[tenor],z=shown?.horizons?.[tenor];
-    return Boolean(r&&z&&r.status==="VERIFIED_SAME_CONTRACT_PRICE_CHANGE"&&
+    return Boolean(r&&z&&["VERIFIED_SAME_CONTRACT_PRICE_CHANGE","VERIFIED_CONTRACT_NO_MATCHED_REFERENCE"].includes(r.status)&&
       r.source_type==="SECONDARY_LISTED_FUTURES_NOT_OIS"&&r.official_ois===false&&
       r.policy_repricing_signal===false&&r.fx_signal===null&&
       z.kind==="FUTURES SECONDARI"&&z.quality==="STIMA INDICATIVA"&&
