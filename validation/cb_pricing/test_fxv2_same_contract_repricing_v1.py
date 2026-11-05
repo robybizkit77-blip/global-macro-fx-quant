@@ -33,6 +33,20 @@ class SameContractResearchTests(unittest.TestCase):
         self.assertTrue(a["unknown_is_null_not_zero"])
         self.assertEqual(json.loads(TARGET.read_text(encoding="utf-8")), a)
 
+    def test_no_fake_source_update_from_rechecking_same_market_bars(self):
+        refreshed = copy.deepcopy(self.feed)
+        # A later collector run with the exact same dated bars must NOT
+        # manufacture a newer observation or republish a timestamp-only file.
+        from datetime import datetime, timedelta, timezone
+        previous = datetime.fromisoformat(
+            self.feed["generated_at_utc"].replace("Z", "+00:00"))
+        refreshed["generated_at_utc"] = (
+            previous + timedelta(hours=1)).isoformat().replace("+00:00", "Z")
+        result = build(refreshed, self.archive, self.conflicts)
+        self.assertEqual(result, self.result)
+        self.assertNotEqual(result["source_capture_at_utc"],
+                            refreshed["generated_at_utc"])
+
     def test_exact_previous_weekday_and_seven_day_identity(self):
         for ccy, tenors in self.result["currencies"].items():
             for tenor, row in tenors.items():
