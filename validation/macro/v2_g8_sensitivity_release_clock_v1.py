@@ -90,7 +90,7 @@ def sensitivity(three_axis):
              "missing or nonfinite economic axis")
         for axis, x in (("LABOUR", l), ("INFLATION", p)):
             if x is None:
-                must(axis + "_STRICT_HISTORY_UNAVAILABLE" in
+                must(axis + "_STRICT_Z_UNAVAILABLE" in
                      row.get("quality_flags", []) and
                      row["dimensions"][axis.lower()]["raw_z"] is None and
                      row["dimensions"][axis.lower()]["is_estimate"] is False,
@@ -105,7 +105,7 @@ def sensitivity(three_axis):
             details[c] = {
                 "currency": c,
                 "baseline_activity_balance_z": None,
-                "baseline_bucket": "INSUFFICIENT_STRICT_HISTORY",
+                "baseline_bucket": "STRICT_Z_UNAVAILABLE",
                 "alternative_weights_growth_25_50_75": {},
                 "weight_variant_activity_buckets": {},
                 "weight_variation_min_z": None,
@@ -119,7 +119,7 @@ def sensitivity(three_axis):
                 "inflation_pressure_z_stays_separate": (float(p) if p is not None else None),
                 "source_quality_flags": row["quality_flags"],
                 "source_quality_label": row["qualitative_quality"],
-                "research_sensitivity_status": "UNAVAILABLE_INCOMPLETE_LABOUR_HISTORY",
+                "research_sensitivity_status": "UNAVAILABLE_LABOUR_STRICT_Z",
                 "one_country_only_not_cross_currency_comparable": True,
                 "estimated_uncertainty_interval": False,
                 "live_currency_score": None,
@@ -186,7 +186,7 @@ def sensitivity(three_axis):
                 x["research_sensitivity_status"] == "COMPUTED_RESEARCH_ONLY"
                 for x in details.values()),
             "countries_with_unavailable_activity_sensitivity": sum(
-                x["research_sensitivity_status"] == "UNAVAILABLE_INCOMPLETE_LABOUR_HISTORY"
+                x["research_sensitivity_status"] == "UNAVAILABLE_LABOUR_STRICT_Z"
                 for x in details.values()),
             "countries_where_bucket_changes_with_weights": sum(
                 x["weight_category_changes"] for x in details.values()),
