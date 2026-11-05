@@ -16,6 +16,20 @@ Site navigation and data lineage are distinct: an available link does not guaran
 
 The additional `ois.html` is a standalone research section, linked in the shared 12-page navigation. It displays 8 currencies × 3 pricing horizons with per-tenor source dates and explicit instrument types (GBP BoE OIS; other official futures; secondary futures/proxy where unavailable). It reads `OIS_OPERATIONAL_VIEW`, `CB_PRICING_ESTIMATED`, and `NZD_CB_PRICING_DIRECTIONAL_PROXY`, falling back to a dated `ois-pricing-snapshot.json` without overwriting the canonical data. Quoted futures are *not* OIS; maturity spreads across them are illustrative, not policy repricing. Core FX signals, backtests and V10 are untouched.
 
+## CHF same-basis statistical cadence vs daily 10Y (2026-11-05)
+
+The CHF SNB *matched* 2J/10J spot curve comes from a distinct statistical
+source with a slower publication cadence than the standalone official
+Confederation 10Y website quotation. Both remain source-dated facts, but
+must not be assessed using the same 14-calendar-day freshness cutoff.
+The V2 research refresh now accepts a last same-basis curve **anchor up to
+45 calendar days old**, without changing its source date, while the *separately
+published* 10Y market quote retains the stricter **14-day evidence cutoff**.
+The CHF 2Y beyond the matched anchor remains a clearly labelled parallel
+shift **estimate** and not an observed 2Y. After 45 days without an updated
+paired source the scenario is marked historical; no 1D move is inferred.
+This does not change the canonical source, FX engine or backtests.
+
 ## NZD ASX research-only automatic fallback (2026-11-05)
 
 The V2 Tassi and Coppie research pages now share an optional **scenario**,
