@@ -209,8 +209,10 @@ assert.equal(derive(canonicalNewer,research,scenarioToday,quote,anchor).rates.NZ
  'Fresh official canonical yields supersede a model scenario');
 const researchAdvanced=copy(research);researchAdvanced.NZD.latest_date=quote.as_of;
 researchAdvanced.NZD.after_roll.at(-1).date=quote.as_of;
-assert.equal(derive(fixture,researchAdvanced,scenarioToday,quote,anchor).rates.NZD,undefined,
- 'Updated B2 source must require a new futures anchor, never silently reuse old one');
+const advanced=derive(fixture,researchAdvanced,scenarioToday,quote,anchor).rates.NZD;
+assert.equal(advanced.date,researchAdvanced.NZD.latest_date);
+assert.equal(advanced.working_method,'POST_ROLL_B2_SAME_BENCHMARK',
+ 'A new B2 research date must supersede old futures-anchor modelling');
 assert.equal(JSON.stringify(canonical),before,'ASX scenario must not mutate canonical rates');
 const futureAsOf=copy(research);
 futureAsOf.NZD.latest_date=shiftDays(staleAt,1);
