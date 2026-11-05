@@ -15,6 +15,7 @@ on:
       - 'validation/orchestration/test_check_morning_delivery_sla_v1.py'
       - 'validation/orchestration/check_child_execution_steps_v1.py'
       - 'validation/orchestration/test_check_child_execution_steps_v1.py'
+      - 'validation/orchestration/test_orchestrator_failure_continuation_v1.py'
       - 'validation/orchestration/test_orchestrator_readonly_api_retry_v1.py'
       - 'validation/orchestration/plan_premorning_calendar_news_recovery_v1.py'
       - 'validation/orchestration/test_plan_premorning_calendar_news_recovery_v1.py'
@@ -34,6 +35,7 @@ on:
       - 'validation/orchestration/test_check_morning_delivery_sla_v1.py'
       - 'validation/orchestration/check_child_execution_steps_v1.py'
       - 'validation/orchestration/test_check_child_execution_steps_v1.py'
+      - 'validation/orchestration/test_orchestrator_failure_continuation_v1.py'
       - 'validation/orchestration/test_orchestrator_readonly_api_retry_v1.py'
       - 'validation/orchestration/plan_premorning_calendar_news_recovery_v1.py'
       - 'validation/orchestration/test_plan_premorning_calendar_news_recovery_v1.py'
@@ -113,6 +115,8 @@ jobs:
         run: python validation/orchestration/test_check_morning_delivery_sla_v1.py
       - name: Test fail-closed evidence for all orchestrated child steps
         run: python validation/orchestration/test_check_child_execution_steps_v1.py
+      - name: Exercise real phase runner with failed independent sources and final-gate failure
+        run: python -m unittest validation.orchestration.test_orchestrator_failure_continuation_v1 -v
       - name: Bash syntax-check serialized refresh before any dispatch
         shell: bash
         run: |
