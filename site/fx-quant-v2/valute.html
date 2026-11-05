@@ -165,6 +165,44 @@ function setup(){
 setup();
 
 /* V2 read-only bridge: recalculate full FX G8 ranking from canonical ECB matched-date fixing. */
+// Rates/COT are independent of an ECB FX price-file outage.
+async function refreshValuteRatesOnly(){
+ const root="https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/";
+ const read=async name=>{
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),9000);
+  try{
+   const r=await fetch(root+name+".json",{cache:"no-store",signal:controller.signal});
+   if(!r.ok)throw Error(name+" HTTP "+r.status);
+   return r.json();
+  }finally{clearTimeout(timer);}
+ };
+ const [rates,cot]=await Promise.all([read("NATIVE_RATES_DATA"),read("V250_COT_CHART_DATA").catch(()=>null)]);
+ const today=new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Rome",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+ const effective=await globalThis.FXV2RatesResearchOverlay?.load({canonical:rates,today});
+ const view=effective?.rates||rates;
+ let changed=0;
+ for(const code of ORDER){
+  const c=D.country[code],r=view?.[code],p=c?.market_rates;
+  if(r&&p&&Number.isFinite(r["2Y"])&&Number.isFinite(r["10Y"])&&
+     /^\d{4}-\d{2}-\d{2}$/.test(r.date||"")&&r.date<=today&&
+     r.date>=(p.as_of||"")){
+   c.market_rates={...p,y2:r["2Y"],y10:r["10Y"],
+    delta2bp:Number.isFinite(r.chg2_bp)?r.chg2_bp:null,
+    as_of:r.date,quality:r.quality,tenor_quality:r.tenor_quality||null,
+    working_method:r.working_method||null,source_date:r.source_date||r.date};
+   changed++;
+  }
+  const cft=cot?.[code],end=cft?.dates?.length||0;
+  if(end>1&&cft.dates[end-1]<=today&&cft.dates[end-1]>=(c.cot.as_of||"")&&
+     ["net","netoi","percentile"].every(k=>Array.isArray(cft[k])&&cft[k].length===end)){
+   c.cot={as_of:cft.dates[end-1],net:cft.net[end-1],netoi:cft.netoi[end-1],
+     percentile:cft.percentile[end-1],delta_week:cft.net[end-1]-cft.net[end-2]};
+  }
+ }
+ // The FX price benchmark still has the original dated ECB snapshot.
+ feedMode="snapshot";render();
+ console.info("[FXV2 Valute] FX fixing snapshot retained; rates independently updated",changed);
+}
 async function refreshValute(){
  const root="https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/";
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
@@ -259,6 +297,8 @@ async function refreshValute(){
  }catch(error){
   console.warn("[FX Quant V2 Valute] ECB non verificato; snapshot preservato:",error);
   feedMode="snapshot";render();
+  try{await refreshValuteRatesOnly();}
+  catch(sourceError){console.warn("[FX Quant V2 Valute] Rates/COT fallback failed; dated snapshots kept:",sourceError);}
  }finally{clearTimeout(timer);}
 }
 refreshValute();

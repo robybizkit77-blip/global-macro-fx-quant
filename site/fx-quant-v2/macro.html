@@ -105,6 +105,51 @@ function render(){renderGrid();renderNarrative();renderDynamics();renderFilters(
 async function startup(){render();try{const r=await fetch('./design-studio-macro-g8-v1-data.json?v=20261103',{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const d=await r.json();if(d.schema!=='GMFQ_MACRO_DESIGN_STUDIO_G8_V1')throw Error('Schema diverso');if(order.some(k=>!d.currencies?.[k]))throw Error('Economia mancante');dataset=d;mode='snapshot';$('seriesCount').textContent=order.reduce((n,k)=>n+(d.currencies[k].indicators||[]).length,0);$('dataStatus').textContent='Snapshot completo caricato · 204 serie G8, ciascuna con data e fonte · NON live';render();}catch(e){$('dataStatus').textContent='Modalità offline: sintesi locale con 3 indicatori per paese. Per il dataset esteso, apri la pagina pubblicata su FX Quant.';console.warn('[Macro Design Studio] Dataset esteso non raggiungibile, uso fallback locale:',e.message);}}
 
 /* Research bridge: 204 macro series from canonical feed; narratives remain dated research. */
+// Missing MACRO_SERIES must not block independently available Rates/CB context.
+async function refreshMacroRatesOnly(){
+ const root="https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/";
+ const fetchJson=async name=>{
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),9000);
+  try{
+   const r=await fetch(root+name+".json",{cache:"no-store",signal:controller.signal});
+   if(!r.ok)throw Error(name+" HTTP "+r.status);
+   return r.json();
+  }finally{clearTimeout(timer);}
+ };
+ const [rates,cb]=await Promise.all([
+  fetchJson("NATIVE_RATES_DATA"),fetchJson("NATIVE_CB_DATA").catch(()=>null)
+ ]);
+ const today=new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Rome",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+ const effective=await globalThis.FXV2RatesResearchOverlay?.load({canonical:rates,today});
+ const view=effective?.rates||rates;
+ const next={...dataset,currencies:{...dataset.currencies}};
+ let refreshed=0;
+ for(const code of order){
+  const p=dataset.currencies[code];if(!p)continue;
+  const updated={...p};
+  const r=view?.[code];
+  if(r&&Number.isFinite(r["2Y"])&&Number.isFinite(r["10Y"])&&
+     /^\d{4}-\d{2}-\d{2}$/.test(r.date||"")&&r.date<=today&&
+     r.date>=(p.rates?.date||"")){
+   updated.rates={date:r.date,y2:r["2Y"],y10:r["10Y"],
+     change2_bp:Number.isFinite(r.chg2_bp)?r.chg2_bp:null,
+     change10_bp:Number.isFinite(r.chg10_bp)?r.chg10_bp:null,
+     quality:r.quality,tenor_quality:r.tenor_quality||null,
+     working_method:r.working_method||null};
+   refreshed++;
+  }
+  const b=cb?.[code];
+  if(b&&/^\d{4}-\d{2}-\d{2}$/.test(b.last_date||"")&&
+     b.last_date<=today&&b.last_date>=(p.cb?.last_date||"")){
+   updated.cb={...p.cb,name:b.bank,rate_text:b.rate_text,last_date:b.last_date,stance:b.stance};
+  }
+  next.currencies[code]=updated;
+ }
+ dataset=next;render();
+ $("dataStatus").textContent="Serie MACRO_SERIES non disponibili/validate: restano indicatori e narrativa datati. "+
+  "Rendimenti e banche centrali aggiornati indipendentemente da fonti datate ("+refreshed+
+  "/8). Livelli stimati e letture web restano ricerca V2, non Core o segnale di trading.";
+}
 async function refreshMacro(){
  const root="https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/";
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),11000);
@@ -195,6 +240,8 @@ async function refreshMacro(){
  }catch(e){
   console.warn("[FX Quant V2 Macro] Mantengo l'ultimo snapshot:",e);
   $("dataStatus").textContent="Modalità snapshot: il feed MACRO_SERIES non è stato validato. Controlla le date dei singoli indicatori, senza interpretare le sintesi come dati live.";
+  try{await refreshMacroRatesOnly();}
+  catch(sourceError){console.warn("[FXV2 Macro] Rates/CB recovery failed; keep original dated snapshot:",sourceError);}
  }finally{clearTimeout(timer);}
 }
 startup().then(refreshMacro);
