@@ -181,25 +181,48 @@ class BrentMarketProxyTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "vintage audit"):
             build_output(invalid, revised_rows, meta, STAMP + dt.timedelta(minutes=30))
 
-    def test_backfilled_october_30_source_vintages_are_explicitly_not_returns(self):
+    def test_historical_vendor_vintages_remain_audit_only_after_source_advances(self):
+        # The live residual can legitimately advance beyond 30 October.
+        # Historical vendor-revision receipts MUST retain their own market_date
+        # and never be mistaken for today's market return.
         path = Path(__file__).resolve().parents[2] / "live_data/sections/ESTIMATED_RESIDUAL_GAPS.json"
         doc = json.loads(path.read_text(encoding="utf-8"))
         lane = doc["lanes"][LANE]
         self.assertEqual(lane["vendor_symbol"], SYMBOL)
-        self.assertEqual(lane["proxy_as_of"], "2026-10-30")
-        self.assertEqual(lane["vintage_audit_count"], len(lane["same_date_source_vintages"]))
-        self.assertGreaterEqual(lane["vintage_audit_count"], 1)
-        event = lane["same_date_source_vintages"][0]
-        self.assertEqual(event["market_date"], lane["proxy_as_of"])
-        self.assertEqual(event["prior_value"], 112.33)
-        self.assertEqual(event["new_value"], 113.43)
-        self.assertEqual(event["source_snapshot_commit_before"],
-                         "c5382192ea73e32e559e1f252ed3b0476e1ca513")
-        self.assertEqual(event["source_snapshot_commit_after"],
-                         "2fb6d671d1707eecdafaf037814c6eb1d56502ab")
-        self.assertEqual(lane["value"], event["new_value"])
-        self.assertNotEqual(event["prior_change_1d_pct"], event["new_change_1d_pct"])
-        self.assertIn("not a new market session", event["interpretation"])
+        current_date = dt.date.fromisoformat(lane["proxy_as_of"])
+        self.assertGreaterEqual(current_date, dt.date(2026, 10, 30))
+        self.assertGreater(lane["value"], 0)
+        events = lane["same_date_source_vintages"]
+        self.assertEqual(lane["vintage_audit_count"], len(events))
+        self.assertGreaterEqual(len(events), 1)
+        for event in events:
+            # A revision is not a new trading session, even when the source
+            # later moves forward. Never compare old event values with the
+            # current quote unless both carry the SAME market date.
+            self.assertLessEqual(
+                dt.date.fromisoformat(event["market_date"]), current_date
+            )
+            self.assertIn("not a new market session", event["interpretation"])
+            self.assertGreater(event["prior_value"], 0)
+            self.assertGreater(event["new_value"], 0)
+            if event["market_date"] == lane["proxy_as_of"]:
+                self.assertEqual(lane["value"], event["new_value"])
+        # Check the specifically reviewed October 30 event if still within
+        # the bounded vintage archive. A later source date is NOT a failure.
+        historical = [
+            e for e in events
+            if e["market_date"] == "2026-10-30"
+            and e.get("source_snapshot_commit_before")
+                == "c5382192ea73e32e559e1f252ed3b0476e1ca513"
+        ]
+        if historical:
+            event = historical[0]
+            self.assertEqual(event["prior_value"], 112.33)
+            self.assertEqual(event["new_value"], 113.43)
+            self.assertEqual(event["source_snapshot_commit_after"],
+                             "2fb6d671d1707eecdafaf037814c6eb1d56502ab")
+            self.assertNotEqual(event["prior_change_1d_pct"],
+                                event["new_change_1d_pct"])
 
     def test_friday_close_saturday_catchup_admissible(self):
         rows, _ = parse_chart(fixture(), TODAY + dt.timedelta(days=1))
