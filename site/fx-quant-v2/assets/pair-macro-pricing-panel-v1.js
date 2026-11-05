@@ -1,7 +1,7 @@
 /* FX Quant V2 — pair research view: reads source quotes without changing Core. */
 (function(root){"use strict";
 const ROOT="https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/";
-let data=null,relative=null,quantReadiness=null,latest={pair:"EURUSD",p:null,macro:null,priceMeta:null};
+let data=null,relative=null,quantReadiness=null,prospective=null,latest={pair:"EURUSD",p:null,macro:null,priceMeta:null};
 const $=id=>document.getElementById(id);
 const fmt=(n,d)=>Number.isFinite(n)?n.toLocaleString("it-IT",{minimumFractionDigits:d,maximumFractionDigits:d}):"—";
 const bp=v=>Number.isFinite(v)?(v>0?"+":"")+fmt(v,1)+" pb":"non verificata";
@@ -67,6 +67,37 @@ function show(pair,p,macro,priceMeta){
    $("macroOisQuantReadiness").textContent="STORICO QUANT · audit temporale non ancora pubblicato o non verificato. Nessun risultato predittivo assunto.";
   }
  }
+ const experiment=$("macroOisProspectiveStatus");
+ if(experiment){
+  const d=prospective,entry=d?.pairs?.[a+"/"+b],totals=d?.summary;
+  if(!entry || !totals){
+   experiment.textContent="ESPERIMENTO 6M · protocollo registrato il 05/11/2026, prime osservazioni ammesse dal 06/11/2026. Ricevuta di avanzamento non ancora disponibile; nessun risultato predittivo.";
+  }else if(totals.actual_prospective_capture_days===0){
+   experiment.textContent="ESPERIMENTO 6M · preregistrato, raccolta non ancora iniziata. "+
+    "Prima data ammissibile 06/11/2026; 0 osservazioni congelate e 0 risultati maturati. "+
+    (entry.futures_6m_history_potentially_supported?
+      "Futures 6M potenzialmente confrontabili; verifica richiesta alla prima acquisizione.":
+      "Non disponibile uno storico 6M omogeneo per questa coppia.")+
+    " Nessuna evidenza predittiva.";
+  }else{
+   const stateText={
+    FROZEN_EXPERIMENTAL_DIRECTION:"ipotesi di ricerca congelata, NON segnale di trading",
+    ABSTAIN_NO_SUPPORTED_6M_SOURCE:"mancano fonti futures 6M compatibili",
+    ABSTAIN_NO_RECENT_SAME_CONTRACT_6M_PAIR:"assenza di due quotazioni recenti sullo stesso contratto per entrambe le valute",
+    ABSTAIN_REPEATED_SAME_SOURCE_FEATURE:"stesso evento di tasso già registrato",
+    ABSTAIN_SMALL_RELATIVE_MOVE:"variazione inferiore alla soglia preregistrata di 2 pb",
+    NOT_YET_OBSERVED:"nessuna osservazione"
+   };
+   experiment.textContent="ESPERIMENTO 6M · "+a+"/"+b+" · "+
+    totals.actual_prospective_capture_days+" giornate di raccolta; "+
+    entry.frozen_experimental_directions+" ipotesi sperimentali congelate; "+
+    entry.matured_ecb_reference_outcomes+" risultati FX osservati dopo 5 sedute BCE. "+
+    "Ultima fotografia: "+(stateText[entry.last_capture_state]||"astensione registrata")+
+    ". "+(totals.matured_outcomes_not_recorded?
+     "ATTENZIONE: esiti già maturati ma non ancora registrati. ":"")+
+    "Il campione non è ancora una validazione predittiva e non modifica il Core.";
+  }
+ }
 }
 async function get(path){
  const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),10000);
@@ -99,6 +130,16 @@ async function refresh(){
     throw Error("Quant audit safety or coverage contract invalid");
   quantReadiness=q;
  }catch(e){quantReadiness=null;console.warn("[FXV2 Pair] Temporal evidence audit unavailable",e);}
+ try{
+  const q=await get("./6m-prospective-status-v1.json");
+  if(q?.schema!=="GMFQ_FXV2_6M_PROSPECTIVE_STATUS_READONLY_V1"||
+     q?.no_live_fx_signals!==true||q?.eligible_for_predictive_claim!==false||
+     q?.predictive_skill_validated!==false||q?.summary?.pair_universe!==28||
+     q?.summary?.unsupported_rate_source_pair_universe!==25||
+     Object.keys(q?.pairs||{}).length!==28)
+     throw Error("6M prospective research-only contract drift");
+  prospective=q;
+ }catch(e){prospective=null;console.warn("[FXV2 Pair] Preregistered 6M research status unavailable",e);}
  const publish=(op,est,nzd)=>{
   data=adapter.build(snapshot,op,est,nzd,today());
   show(latest.pair,latest.p,latest.macro,latest.priceMeta);
