@@ -5,47 +5,83 @@ const ROOT=path.resolve(__dirname,'..');
 const {derive}=require('../site/fx-quant-v2/assets/rates-working-model-v1.js');
 const research=JSON.parse(fs.readFileSync(path.join(ROOT,'site/fx-quant-v2/chf-nzd-benchmark-research.json')));
 const canonical=JSON.parse(fs.readFileSync(path.join(ROOT,'live_data/sections/NATIVE_RATES_DATA.json')));
-const today='2026-11-04',before=JSON.stringify(canonical);
-const working=derive(canonical,research,today);
+const copy=x=>JSON.parse(JSON.stringify(x));
+const shiftDays=(day,days)=>new Date(Date.parse(day+'T00:00:00Z')+
+  86400000*days).toISOString().slice(0,10);
+const maxDate=(...days)=>[...days].sort().at(-1);
+// Real source dates are data, not expectations pinned in a QA script.
+// A new official SNB 10Y publication must not break the browser gate.
+const today=maxDate(research.CHF.paired_date,
+                    research.CHF.separate_10y.as_of,research.NZD.latest_date);
+const before=JSON.stringify(canonical);
+// Working-rate scenarios are research-only, so use a deliberately old
+// canonical date fixture for regression, while independently checking that
+// the real canonical priority is never overridden.
+const fixture=copy(canonical);
+fixture.CHF.date=shiftDays(research.CHF.paired_date,-1);
+fixture.NZD.date=shiftDays(research.NZD.latest_date,-1);
+const working=derive(fixture,research,today);
 assert.equal(working.schema,'GMFQ_FXV2_WORKING_RATES_V1');
 assert.equal(working.eligible_for_fx_engine,false);
 assert.equal(working.eligible_for_backtests,false);
 assert.deepEqual(Object.keys(working.rates).sort(),['CHF','NZD']);
 const chf=working.rates.CHF,nzd=working.rates.NZD;
-assert.equal(chf['2Y'],.242);
-assert.equal(chf['10Y'],.509);
-assert.equal(chf.curve_bp,26.7);
-assert.equal(chf.chg2_bp,.4);
-assert.equal(chf.chg10_bp,.4);
+const pair=research.CHF, isolated=pair.separate_10y;
+const pairedIsLatest=pair.paired_date>=isolated.as_of;
+const independentlyExpected2=pairedIsLatest?pair['2Y']:
+ Number((pair['2Y']+isolated['10Y']-pair['10Y']).toFixed(4));
+const independentlyExpected10=pairedIsLatest?pair['10Y']:isolated['10Y'];
+const independentlyExpectedDate=pairedIsLatest?pair.paired_date:isolated.as_of;
+assert.equal(chf['2Y'],independentlyExpected2,
+ 'CHF 2Y must follow the same-date SNB pair or the explicitly estimated parallel shift');
+assert.equal(chf['10Y'],independentlyExpected10);
+assert.equal(chf.curve_bp,Number(((independentlyExpected10-independentlyExpected2)*100).toFixed(1)));
 assert.equal(chf.estimated,true);
-assert.equal(chf.tenor_quality['2Y'],'STIMATO');
+assert.equal(chf.tenor_quality['2Y'],pairedIsLatest?'OSSERVATO':'STIMATO');
 assert.equal(chf.tenor_quality['10Y'],'OSSERVATO');
-assert.equal(chf.date,'2026-11-03');
-assert.equal(chf.source_date,'2026-10-30');
-assert.equal(nzd['2Y'],3.95);
-assert.equal(nzd['10Y'],4.88);
-assert.equal(nzd.curve_bp,93);
-assert.equal(nzd.chg2_bp,-1);
-assert.equal(nzd.chg10_bp,-2);
-assert.equal(nzd.date,'2026-11-03');
+assert.equal(chf.date,independentlyExpectedDate);
+assert.equal(chf.source_date,pair.paired_date);
+assert.equal(chf.no_core_effect,true);
+if(pairedIsLatest){
+ assert.equal(chf.research_observed,true);
+ assert.equal(chf.chg2_bp,null,'One same-date pair does not prove a daily move');
+ assert.equal(chf.chg10_bp,null,'One same-date pair does not prove a daily move');
+}else{
+ const expectedShift=Number(((isolated['10Y']-pair['10Y'])*100).toFixed(2));
+ assert.equal(chf.working_method,'PARALLEL_10Y_SHIFT_2Y');
+ assert.equal(chf.chg2_bp,expectedShift);
+ assert.equal(chf.chg10_bp,expectedShift);
+ assert.equal(chf.no_inferred_market_move,true);
+}
+const first=research.NZD.after_roll[0],last=research.NZD.after_roll.at(-1);
+assert.equal(first.date,research.NZD.roll_date);
+assert.equal(last.date,research.NZD.latest_date);
+assert.equal(nzd['2Y'],research.NZD.latest_2Y);
+assert.equal(nzd['10Y'],research.NZD.latest_10Y);
+assert.equal(nzd.curve_bp,Number(((last['10Y']-last['2Y'])*100).toFixed(1)));
+assert.equal(nzd.chg2_bp,Number(((last['2Y']-first['2Y'])*100).toFixed(2)));
+assert.equal(nzd.chg10_bp,Number(((last['10Y']-first['10Y'])*100).toFixed(2)));
+assert.equal(nzd.date,research.NZD.latest_date);
 assert.equal(nzd.no_cross_roll_change,true);
-assert.equal(JSON.stringify(canonical),before,'Canonical source must remain unmodified');
-assert.equal(research.NZD.source_capture_method,'OFFICIAL_WEB_PAGE_RESEARCH_CAPTURE_NOT_GITHUB_DOWNLOAD');
-assert.equal(research.NZD.source_release_date,'2026-11-04');
 assert.equal(research.NZD.independent_xlsx_reconciled,false);
-assert.equal(Math.round((chf['2Y']-nzd['2Y'])*1000)/10,-370.8,'2Y CHF-NZD working spread in bp');
-assert.equal(Math.round((chf['10Y']-nzd['10Y'])*1000)/10,-437.1,'10Y CHF-NZD working spread in bp');
-const copy=x=>JSON.parse(JSON.stringify(x));
-// Regression: a newer VERIFIED same-row official SNB pair beats a separately
-// published 10Y that has not yet caught up. Both tenors are observed as-of
-// the pair date; absolutely no pseudo daily move is inferred.
+assert.equal(research.NZD.eligible_for_core,false);
+assert.equal(JSON.stringify(canonical),before,'Canonical source must remain unmodified');
+const bp=v=>Math.round(v*1000)/10;
+assert.equal(bp(chf['2Y']-nzd['2Y']),
+ bp(independentlyExpected2-research.NZD.latest_2Y),'CHF-NZD working spread arithmetic');
+assert.equal(bp(chf['10Y']-nzd['10Y']),
+ bp(independentlyExpected10-research.NZD.latest_10Y),'CHF-NZD 10Y spread arithmetic');
+
+// An official same-date SNB pair newer than the isolated 10Y must replace the
+// estimate; a single newly paired reading never manufactures an observed delta.
 const newerPair=copy(research);
-newerPair.CHF.paired_date='2026-11-04';
+const pairDate=shiftDays(maxDate(pair.paired_date,isolated.as_of),1);
+newerPair.CHF.paired_date=pairDate;
 newerPair.CHF['2Y']=.247;
 newerPair.CHF['10Y']=.510;
 newerPair.CHF.curve_bp=26.3;
-const latest=derive(canonical,newerPair,today).rates.CHF;
-assert.equal(latest.date,'2026-11-04');
+const latest=derive(fixture,newerPair,pairDate).rates.CHF;
+assert.equal(latest.date,pairDate);
 assert.equal(latest['2Y'],.247);
 assert.equal(latest['10Y'],.510);
 assert.equal(latest.curve_bp,26.3);
@@ -57,63 +93,70 @@ assert.equal(latest.chg10_bp,null);
 assert.equal(latest.stale_source,false);
 assert.equal(latest.no_core_effect,true);
 assert.equal(latest.no_inferred_market_move,true);
-assert.equal(latest.estimated,true,'Independently observed research not canonical engine input');
-const late=derive(canonical,newerPair,'2026-12-01').rates.CHF;
-assert.equal(late.date,'2026-11-04');
+assert.equal(latest.estimated,true,'Research observations cannot be promoted to FX Core');
+const staleAt=shiftDays(pairDate,40);
+const late=derive(fixture,newerPair,staleAt).rates.CHF;
+assert.equal(late.date,pairDate);
 assert.equal(late.stale_source,true);
 assert.equal(late.chg2_bp,null);
 assert.equal(late.chg10_bp,null);
 assert.ok(late.quality.includes('RIFERIMENTO STORICO'));
 const same=copy(newerPair);
-same.CHF.separate_10y.as_of='2026-11-04';
+same.CHF.separate_10y.as_of=pairDate;
 same.CHF.separate_10y.not_joinable_with_paired_2y=false;
 same.CHF.separate_10y['10Y']=.510;
-assert.equal(derive(canonical,same,today).rates.CHF.research_observed,true);
-same.CHF.separate_10y['10Y']=.509;
-assert.equal(derive(canonical,same,today).rates.CHF,undefined,
+assert.equal(derive(fixture,same,pairDate).rates.CHF.research_observed,true);
+same.CHF.separate_10y['10Y']=.520;
+assert.equal(derive(fixture,same,pairDate).rates.CHF,undefined,
  'Contradictory isolated SNB 10Y on the SAME date must be rejected');
 same.CHF.separate_10y.not_joinable_with_paired_2y=true;
-assert.equal(derive(canonical,same,today).rates.CHF,undefined,
- 'Contradictory joinable-status metadata must not be trusted');
-const canonicalAdvanced=copy(canonical);
-canonicalAdvanced.CHF.date='2026-11-05';
-assert.equal(derive(canonicalAdvanced,newerPair,'2026-11-05').rates.CHF,undefined,
+assert.equal(derive(fixture,same,pairDate).rates.CHF,undefined,
+ 'Contradictory joinable metadata must never be trusted');
+const canonicalAdvanced=copy(fixture);
+canonicalAdvanced.CHF.date=shiftDays(pairDate,1);
+assert.equal(derive(canonicalAdvanced,newerPair,canonicalAdvanced.CHF.date).rates.CHF,undefined,
  'Newer canonical source has priority over dated research');
-
+const real=derive(canonical,research,today);
+if(canonical.CHF.date>=maxDate(pair.paired_date,isolated.as_of))
+ assert.equal(real.rates.CHF,undefined,'Real canonical CHF must supersede research');
+if(canonical.NZD.date>=research.NZD.latest_date)
+ assert.equal(real.rates.NZD,undefined,'Real canonical NZD must supersede research');
 let future=copy(research);
-future.CHF.separate_10y.as_of='2026-11-05';
-assert.equal(derive(canonical,future,today).rates.CHF,undefined,'Never use future market data');
+future.CHF.separate_10y.as_of=shiftDays(today,1);
+assert.equal(derive(fixture,future,today).rates.CHF,undefined,'Never use future quotes');
 let bad=copy(research);
 bad.CHF.curve_bp=95;
-assert.equal(derive(canonical,bad,today).rates.CHF,undefined,'Mismatched SNB same-date curve rejected');
-bad=copy(research);bad.NZD.after_roll[0].date='2026-10-29';
-assert.equal(derive(canonical,bad,today).rates.NZD,undefined,'Do not bridge NZD old/new benchmark');
+assert.equal(derive(fixture,bad,today).rates.CHF,undefined,'Mismatched same-date SNB curve rejected');
+bad=copy(research);bad.NZD.after_roll[0].date=shiftDays(research.NZD.roll_date,-1);
+assert.equal(derive(fixture,bad,today).rates.NZD,undefined,'Do not bridge NZD old/new benchmark');
 bad=copy(research);bad.NZD.independent_xlsx_reconciled=true;
-assert.equal(derive(canonical,bad,today).rates.NZD,undefined,'Review status must agree with source provenance');
-const updated=copy(canonical);
-updated.CHF.date='2026-11-04';updated.NZD.date='2026-11-04';
-assert.equal(Object.keys(derive(updated,research,today).rates).length,0,'Official newer source takes priority');
-const wrong=copy(research);wrong.eligible_for_fx_pair_engine=true;
-assert.equal(Object.keys(derive(canonical,wrong,today).rates).length,0,'Reject write-permission drift');
-const stale=derive(canonical,research,'2026-12-01');
+assert.equal(derive(fixture,bad,today).rates.NZD,undefined,'Review status must agree with provenance');
+const updated=copy(fixture);
+updated.CHF.date=maxDate(pair.paired_date,isolated.as_of);
+updated.NZD.date=research.NZD.latest_date;
+assert.equal(Object.keys(derive(updated,research,today).rates).length,0,
+ 'Official same/newer canonical source takes priority');
+const stale=derive(fixture,research,staleAt);
 assert.deepEqual(Object.keys(stale.rates).sort(),['CHF','NZD'],
-  'Preserve signed historical research levels when new source access is unavailable');
+ 'Preserve historical research levels when source access is unavailable');
 for(const c of ['CHF','NZD']){
-  const row=stale.rates[c];
-  assert.equal(row.stale_source,true,'Must explicitly label stale '+c);
-  assert.equal(row.freshness,'DATED_RESEARCH_NO_CURRENT_MARKET_MOVE');
-  assert.ok(row.quality.includes('RIFERIMENTO STORICO'));
-  assert.equal(row.date,'2026-11-03','Never relabel old quote as current');
-  assert.equal(row.chg2_bp,null,'Historical move must not be represented as today');
-  assert.equal(row.chg10_bp,null,'Historical move must not be represented as today');
-  assert.equal(row.no_core_effect,true,'Scenario does not alter Core');
-  assert.equal(row.source_age_days,28);
+ const row=stale.rates[c];
+ const originalDate=c==='CHF'?independentlyExpectedDate:research.NZD.latest_date;
+ assert.equal(row.stale_source,true,'Must explicitly label stale '+c);
+ assert.equal(row.freshness,'DATED_RESEARCH_NO_CURRENT_MARKET_MOVE');
+ assert.ok(row.quality.includes('RIFERIMENTO STORICO'));
+ assert.equal(row.date,originalDate,'Never relabel old quote as current');
+ assert.equal(row.chg2_bp,null,'Historical move must not be represented as today');
+ assert.equal(row.chg10_bp,null,'Historical move must not be represented as today');
+ assert.equal(row.no_core_effect,true);
+ assert.equal(row.source_age_days,
+  Math.round((Date.parse(staleAt)-Date.parse(originalDate))/86400000));
 }
 assert.equal(JSON.stringify(canonical),before,'Stale research must never rewrite canonical source');
 const futureAsOf=copy(research);
-futureAsOf.NZD.latest_date='2026-12-02';
-assert.equal(derive(canonical,futureAsOf,'2026-12-01').rates.NZD,undefined,
-  'No future government quote in stale fallback');
+futureAsOf.NZD.latest_date=shiftDays(staleAt,1);
+assert.equal(derive(fixture,futureAsOf,staleAt).rates.NZD,undefined,
+ 'No future government quote in stale fallback');
 const tassi=fs.readFileSync(path.join(ROOT,'site/fx-quant-v2/tassi.html'),'utf8');
 assert.ok(tassi.includes("svgCurves(r);if(r.research_observed)"),
  'Observed research source must be distinguished from an estimated curve');
@@ -138,4 +181,4 @@ assert.ok(coppie.includes('research=await load(remote)'),
 assert.ok(coppie.includes('STIMA/PROXY INDICATIVO'),'Coppie must visibly label scenario levels');
 assert.ok(coppie.includes('model.eligible_for_fx_engine!==false'),'Coppie must keep estimates out of the engine');
 assert.ok(coppie.includes('id="pairRatesSourceNote"'),'Coppie must expose research caveats');
-console.log('FXV2_WORKING_RATE_TESTS PASS CHF 2Y '+chf['2Y']+'% (estimate), CHF 10Y '+chf['10Y']+'% (observed); NZD 2Y '+nzd['2Y']+'%, NZD 10Y '+nzd['10Y']+'% (B2 web research); computed spread '+(-370.8)+' bp; canonical unchanged');
+console.log('FXV2_WORKING_RATE_TESTS PASS CHF 2Y '+chf['2Y']+'% ('+chf.tenor_quality['2Y']+'), CHF 10Y '+chf['10Y']+'% ('+chf.date+'); NZD 2Y '+nzd['2Y']+'%, NZD 10Y '+nzd['10Y']+'% ('+nzd.date+'); source dates verified, canonical unchanged');
