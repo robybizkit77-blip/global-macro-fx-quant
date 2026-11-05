@@ -163,7 +163,9 @@ assert.ok(tassi.includes("svgCurves(r);if(r.research_observed)"),
 assert.ok(tassi.includes("else if(r.estimated)") &&
           tassi.includes("Non è una curva ufficiale osservata."),
  'Estimated CHF scenario must retain its separate caveat');
-assert.ok(tassi.includes("I differenziali sono calcoli aritmetici"),'V2 comparison must label estimates');
+assert.ok(tassi.includes("Differenziali aritmetici")&&
+          tassi.includes("DATE DIVERSE, spread indicativo non sincronizzato"),
+ 'V2 comparison must label estimates and asynchronous tenor dates');
 assert.ok(tassi.includes('const local="./chf-nzd-benchmark-research.json"') &&
           tassi.includes('try{x=await read(local);}'),
   'Tassi must prefer the version-matched published research copy');

@@ -31,7 +31,7 @@ const pages=[
 const viewports=[['desktop',{width:1440,height:900}],['mobile',{width:390,height:844}]];
 const markers={
  valute:['#periodContext','fixing BCE dal feed canonico'],
- tassi:['#feedStatus','Feed repository aggiornati'],
+ tassi:['#feedStatus','Feed repository acquisiti'],
  macro:['#dataStatus','Feed canonico MACRO_SERIES collegato'],
  banche:['#dataStatus','Feed banche centrali collegato'],
  cot:['#freshness','Origine:'],cross:['#sourceList','Proxy futures secondari'],
@@ -83,6 +83,16 @@ async function audit(browser,name,file,selector,view,viewport){
    const full=((await page.locator(s).first().textContent().catch(()=>''))||'').trim();
    rec.feed=full.slice(0,340);
    if(!full.includes(expected))issue(name,view,'live_feed_not_confirmed',rec.feed||s+' empty');
+  }
+  if(name==='tassi'){
+    await page.waitForFunction(()=>
+      document.querySelector('#feedStatus')?.textContent?.includes('date e qualità per scadenza')&&
+      document.querySelectorAll('#pricingGrid .data-card').length===3,
+      null,{timeout:14000});
+    const detail=await page.locator('#pricingGrid').textContent();
+    if(!detail.includes('FUTURES')&&!detail.includes('STIMA')&&
+       !detail.includes('INFORMATIVA'))
+      issue(name,view,'rates_per_horizon_provenance_not_visible',detail.slice(0,700));
   }
   if(name==='cross'&&mode==='public'){
     const full=((await page.locator('#sourceList').textContent())||'');
