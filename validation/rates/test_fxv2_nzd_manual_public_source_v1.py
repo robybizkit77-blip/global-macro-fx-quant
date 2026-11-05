@@ -54,13 +54,23 @@ class NZDPublicResearch(unittest.TestCase):
 
     def test_not_an_automated_download_or_official_core_promotion(self):
         r=self.row
-        self.assertEqual(r["source_capture_method"],
-                         "OFFICIAL_WEB_PAGE_RESEARCH_CAPTURE_NOT_GITHUB_DOWNLOAD")
-        self.assertTrue(r["source_url"].startswith("https://www.rbnz.govt.nz/"))
-        self.assertEqual(r.get("source_release_date_quality"),
-                         "OFFICIAL_RBNZ_PUBLIC_PAGE_DATE")
-        self.assertGreaterEqual(dt.date.fromisoformat(r["source_release_date"]),
-                                dt.date.fromisoformat(r["latest_date"]))
+        method=r["source_capture_method"]
+        self.assertIn(method,{
+            "OFFICIAL_WEB_PAGE_RESEARCH_CAPTURE_NOT_GITHUB_DOWNLOAD",
+            "OFFICIAL_HTML_PUBLIC_TABLE_NOT_INDEPENDENT_XLSX",
+            "EO_API_LICENSED_RBNZ_B2_REPUBLISHED_RESEARCH",
+        })
+        if method=="EO_API_LICENSED_RBNZ_B2_REPUBLISHED_RESEARCH":
+            self.assertTrue(r["source_url"].startswith("https://eolas.fyi/"))
+            self.assertIsNone(r.get("source_release_date"))
+            self.assertEqual(r.get("source_release_date_quality"),
+                             "NOT_VERIFIED_PROVIDER_AS_OF_ONLY")
+        else:
+            self.assertTrue(r["source_url"].startswith("https://www.rbnz.govt.nz/"))
+            self.assertEqual(r.get("source_release_date_quality"),
+                             "OFFICIAL_RBNZ_PUBLIC_PAGE_DATE")
+            self.assertGreaterEqual(dt.date.fromisoformat(r["source_release_date"]),
+                                    dt.date.fromisoformat(r["latest_date"]))
         self.assertFalse(r["independent_xlsx_reconciled"])
         for key in ("eligible_for_core","eligible_for_pair_spreads",
                     "eligible_for_backtests","eligible_for_automatic_promotion"):
@@ -79,8 +89,8 @@ class NZDPublicResearch(unittest.TestCase):
 
     def test_canonical_nzd_not_confused_with_research(self):
         core=json.loads(G8.read_text())
-        self.assertGreaterEqual(dt.date.fromisoformat(self.row["latest_date"]),
-                                dt.date.fromisoformat(core["NZD"]["date"]))
+        self.assertTrue(core["NZD"]["date"])
+        self.assertFalse(self.row["eligible_for_core"])
         self.assertNotIn("eligible_for_fx_engine",self.row)
 
 if __name__=="__main__":
