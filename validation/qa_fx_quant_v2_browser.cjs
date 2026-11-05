@@ -372,8 +372,25 @@ async function audit(browser,name,file,selector,view,viewport){
           horizon:x.dataset.horizon,proof:x.dataset.proof,text:x.textContent
         })),
         foot:document.querySelector('#contractHistoryFoot')?.textContent||'',
-        explanation:document.querySelector('#contractHistoryInterpretation')?.textContent||''
+        explanation:document.querySelector('#contractHistoryInterpretation')?.textContent||'',
+        context:{
+          hidden:document.querySelector('#ratesFxContext')?.hidden,
+          status:document.querySelector('#ratesFxContext')?.dataset.status||'',
+          twoYear:document.querySelector('#ratesFxContext')?.dataset.twoYearStatus||'',
+          fx:document.querySelector('#ratesFxContext')?.dataset.fxStatus||'',
+          mismatch:document.querySelector('#ratesFxContext')?.dataset.twoYearMismatch||'',
+          ratesText:document.querySelector('#rates2YContextText')?.textContent||'',
+          fxText:document.querySelector('#fxFixingContextText')?.textContent||'',
+          caveat:document.querySelector('#ratesFxCaveat')?.textContent||''
+        }
       }));
+      const ctx=details.context;
+      if(ctx.hidden||!['SOURCE_PENDING','READ_ONLY_TRIANGULATION'].includes(ctx.status)||
+         (ctx.status==='READ_ONLY_TRIANGULATION'&&
+          (!ctx.ratesText||!ctx.fxText||
+           !ctx.caveat.includes('non dimostrano causalità')))||
+         /(?:undefined|NaN|Invalid Date)/.test(ctx.ratesText+ctx.fxText))
+        issue(name,view,'ois_2y_fx_crosscheck_broken',c+' '+JSON.stringify(ctx).slice(0,850));
       if(details.hidden||details.rows.length!==3||
          details.rows.some(x=>!['SAME_CONTRACT_VALIDATED','MISMATCH_OR_UNAVAILABLE'].includes(x.proof))||
          details.rows.some(x=>x.proof==='SAME_CONTRACT_VALIDATED'&&
