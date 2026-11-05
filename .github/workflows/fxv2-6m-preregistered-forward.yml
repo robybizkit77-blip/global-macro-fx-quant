@@ -76,7 +76,7 @@ jobs:
           UPSTREAM_STARTED_AT: ${{ github.event.workflow_run.run_started_at }}
         run: |
           set -euo pipefail
-          python -m validation.quant.fxv2_6m_schedule_gate_v1.py \
+          python -m validation.quant.fxv2_6m_schedule_gate_v1 \
             --event "$EVENT" --cron "$SCHEDULE_CRON" \
             --upstream-name "$UPSTREAM_NAME" \
             --upstream-branch "$UPSTREAM_BRANCH" \
