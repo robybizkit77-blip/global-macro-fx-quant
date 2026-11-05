@@ -110,7 +110,7 @@ class TestChfNzdResearch(unittest.TestCase):
   # the 10Y published separately is still a newer, independently dated fact.
   ten=copy.deepcopy(WEB10)
   ten["as_of"]="2026-12-03"
-  x=m.chf_context(SNB,ten,BASE,dt.date(2026,12,04))
+  x=m.chf_context(SNB,ten,BASE,dt.date(2026,12,4))
   self.assertEqual(x["paired_date"],"2026-10-30")
   self.assertEqual(x["matched_anchor_age_days"],35)
   self.assertEqual(x["separate_10y_age_days"],1)
