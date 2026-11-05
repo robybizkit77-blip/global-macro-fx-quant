@@ -33,7 +33,13 @@ table{width:100%;border-collapse:collapse;text-align:left;font-size:13px}th{font
 <section id="dettaglio"><div class="section-head"><div><div class="micro">02 / Curva selezionata</div><h2 id="detailTitle">Lettura del front-end</h2></div><p>Livello → pendenza tra scadenze → movimento quando osservato. Non inferiamo un repricing se abbiamo solo quotazioni non comparabili.</p></div>
 <div class="detail"><article class="pane"><h3 id="detailName">Seleziona una valuta</h3><div id="detailMeta" class="detail-meta"></div>
 <svg id="pricingChart" class="chart" role="img" aria-label="Livelli di pricing 3 6 12 mesi" viewBox="0 0 680 270"></svg>
-<div id="tenors" class="term-grid"></div><p class="muted" id="detailInterpretation"></p></article>
+<div id="tenors" class="term-grid"></div>
+<div id="contractHistory" class="note" hidden aria-label="Storico per identico contratto futures">
+<strong>Quanto è cambiato lo stesso contratto futures?</strong>
+<p class="muted">1D = precedente giorno feriale; 1W = stessa quotazione esattamente 7 giorni prima. Solo contratti e date confrontabili: non è una curva OIS né una probabilità di decisione CB.</p>
+<div id="contractHistoryRows" aria-live="polite">Caricamento storico verificato…</div>
+<p id="contractHistoryFoot" class="muted"></p>
+</div><p class="muted" id="detailInterpretation"></p></article>
 <aside class="pane"><div class="micro">Fonte e qualità</div><h3 id="sourceTitle">Classificazione</h3>
 <p id="sourceType" class="muted"></p><p id="sourceDate" class="muted"></p><p id="sourceName" class="source"></p>
 <p id="sourceCaveat" class="muted"></p><a href="./tassi.html">Confronta con governativi 2Y/10Y</a></aside></div></section>
@@ -70,7 +76,7 @@ const ageInfo=x=>{
 };
 
 const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const state={currencies:{},selected:"USD",a:"EUR",b:"USD",relativeResearch:null};
+const state={currencies:{},selected:"USD",a:"EUR",b:"USD",relativeResearch:null,sameContractResearch:null};
 const has=(v)=>Number.isFinite(v?.rate);
 const T=["3m","6m","12m"];
 const dated=x=>/^\d{4}-\d{2}-\d{2}$/.test(x||"")&&ageDays(x)!==null;
@@ -173,6 +179,68 @@ function showDetail(){
   "; ogni tenore conserva la propria data. Nessun refresh dell’orologio cambia la data del prezzo.";
  $("sourceName").textContent=x.source;
  $("sourceCaveat").textContent=sourceNote(x);
+ showSameContract();
+}
+function showSameContract(){
+ const c=state.selected,pane=$("contractHistory"),rows=$("contractHistoryRows"),foot=$("contractHistoryFoot");
+ if(!["USD","EUR","CHF"].includes(c)){pane.hidden=true;return;}
+ pane.hidden=false;
+ const doc=state.sameContractResearch;
+ if(!doc){rows.textContent="In attesa dello storico verificato.";foot.textContent="";pane.dataset.parity="PENDING";return;}
+ const terms=doc.currencies?.[c],shown=state.currencies?.[c];
+ if(!terms||!shown){rows.textContent="Storico non disponibile.";foot.textContent="";pane.dataset.parity="INVALID";return;}
+ let matching=0,available1d=0,available1w=0;
+ rows.innerHTML=T.map(t=>{
+  const r=terms[t],z=shown.horizons?.[t];
+  const same=r&&z&&z.kind==="FUTURES SECONDARI"&&z.quality==="STIMA INDICATIVA"&&
+   r.status==="VERIFIED_SAME_CONTRACT_PRICE_CHANGE"&&
+   z.contract===r.contract&&z.as_of===r.as_of&&
+   Number.isFinite(r.rate_pct)&&Math.abs(z.rate-r.rate_pct)<1e-8;
+  if(!same)return '<div class="term" data-horizon="'+t+'" data-proof="MISMATCH_OR_UNAVAILABLE">'+
+   '<small>'+t.toUpperCase()+'</small><span class="muted">Confronto sospeso: contratto, data o quotazione non coincidono con lo storico pubblicato.</span></div>';
+  matching++;
+  const a=r.one_day,b=r.one_week;
+  if(a)available1d++;
+  if(b)available1w++;
+  const cell=v=>v?
+   bp(v.change_bp)+" ("+date(v.from_date)+" → "+date(v.to_date)+")":
+   "— (stesso contratto e data di riferimento non disponibili)";
+  return '<div class="term" data-horizon="'+t+'" data-proof="SAME_CONTRACT_VALIDATED"><small>'+t.toUpperCase()+
+   " · "+esc(r.contract)+'</small><strong>'+fmt(r.rate_pct,3)+'%</strong>'+
+   '<span class="muted">Data '+date(r.as_of)+' · futures secondario</span>'+
+   '<span class="muted">Δ 1D: '+esc(cell(a))+'</span>'+
+   '<span class="muted">Δ 1W: '+esc(cell(b))+'</span></div>';
+ }).join("");
+ pane.dataset.parity=matching===3?"VERIFIED_SAME_CONTRACT":"SOURCE_PARITY_PENDING";
+ pane.dataset.verifiedTenors=String(matching);
+ pane.dataset.oneDayCount=String(available1d);
+ pane.dataset.oneWeekCount=String(available1w);
+ foot.textContent="Ricerca secondaria, non OIS ufficiale · "+matching+"/3 contratti allineati, "+
+  available1d+" confronti 1D e "+available1w+" confronti 1W verificati. "+
+  "Data massima delle quotazioni archiviate "+date(doc.data_as_of)+
+  ". Cambi di contratto, revisioni contestate e dati assenti non producono movimenti fittizi.";
+}
+async function loadSameContractResearch(){
+ try{
+  const x=await get("./ois-same-contract-repricing-research.json");
+  if(x?.schema!=="GMFQ_FXV2_SAME_CONTRACT_FUTURES_MOVES_V1"||
+     x.snapshot_research_only!==true||x.eligible_for_fx_engine!==false||
+     x.eligible_for_policy_repricing_signals!==false||
+     x.unknown_is_null_not_zero!==true||
+     x.summary?.horizons!==9||x.summary?.generated_fx_signals!==0||
+     x.strict_reference_dates?.cross_contract_joins!==false||
+     ["USD","EUR","CHF"].some(c=>T.some(t=>!x.currencies?.[c]?.[t])))
+   throw Error("same-contract governance or coverage invalid");
+  state.sameContractResearch=x;showSameContract();
+ }catch(e){
+  state.sameContractResearch=null;
+  const p=$("contractHistory");
+  if(["USD","EUR","CHF"].includes(state.selected)){
+   p.dataset.parity="UNAVAILABLE";
+   $("contractHistoryRows").textContent="Storico stesso contratto non disponibile: nessun movimento inferito.";
+  }
+  console.warn("FXV2 same-contract history unavailable",e);
+ }
 }
 function showCompare(){
  const a=state.currencies[state.a],b=state.currencies[state.b],za=a?.horizons?.["6m"],zb=b?.horizons?.["6m"];
@@ -272,6 +340,7 @@ async function loadRelativeResearch(){
 }
 setup();
 loadRelativeResearch();
+loadSameContractResearch();
 (async()=>{
  try{let x=await get("./ois-pricing-snapshot.json");if(x.schema==="GMFQ_FXV2_PRICING_SNAPSHOT_V1"&&x.eligible_for_fx_engine===false){for(const c of C)update(c,x.currencies?.[c]);render();}}
  catch(e){console.warn("FXV2 OIS snapshot missing",e);}
