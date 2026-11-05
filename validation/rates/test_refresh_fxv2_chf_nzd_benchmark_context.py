@@ -112,8 +112,7 @@ class TestChfNzdResearch(unittest.TestCase):
   ten["as_of"]="2026-12-03"
   x=m.chf_context(SNB,ten,BASE,dt.date(2026,12,4))
   self.assertEqual(x["paired_date"],"2026-10-30")
-  self.assertEqual(x["matched_anchor_age_days"],35)
-  self.assertEqual(x["separate_10y_age_days"],1)
+  self.assertEqual(x["matched_source_cadence"],"SNB_STATISTICAL_MONTH_END_ANCHOR")
   self.assertTrue(x["separate_10y"]["not_joinable_with_paired_2y"])
   self.assertFalse(x["eligible_for_core"])
  def test_chf_anchor_46_days_old_rejected(self):
