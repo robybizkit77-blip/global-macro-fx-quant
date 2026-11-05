@@ -9,6 +9,7 @@ must=[
     "FX Quant V2 CHF NZD Same-Basis Research Refresh",
     "FX Quant V2 Cross-Asset Published Source Refresh",
     "OIS G8 History Persistent Daily V1",
+    "FX Quant V2 Relative Pricing 28-Pair Research",
     "types: [completed]",
     "github.event.workflow_run.conclusion == 'success'",
     "github.event.workflow_run.head_branch == 'main'",

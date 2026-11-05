@@ -1,0 +1,104 @@
+name: FX Quant V2 Relative Pricing 28-Pair Research
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/cb_pricing/build_fxv2_relative_pricing_v1.py'
+      - 'validation/cb_pricing/test_build_fxv2_relative_pricing_v1.py'
+      - 'site/fx-quant-v2/ois-pricing-snapshot.json'
+      - 'site/fx-quant-v2/macro-baseline-candidate-v1.json'
+      - 'site/fx-quant-v2/pricing-relative-28pairs-research.json'
+      - '.github/workflows/fxv2-relative-pricing-28pair-research.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/cb_pricing/build_fxv2_relative_pricing_v1.py'
+      - 'validation/cb_pricing/test_build_fxv2_relative_pricing_v1.py'
+      - 'site/fx-quant-v2/ois-pricing-snapshot.json'
+      - 'site/fx-quant-v2/macro-baseline-candidate-v1.json'
+      - '.github/workflows/fxv2-relative-pricing-28pair-research.yml'
+  workflow_run:
+    workflows:
+      - 'OIS G8 History Persistent Daily V1'
+      - 'FX Quant V2 Macro Candidate Descriptive Baseline'
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('fxv2-relative-pricing-pr-{0}', github.event.pull_request.number) || 'fxv2-relative-pricing-main' }}
+  cancel-in-progress: false
+
+jobs:
+  research:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+          fetch-depth: 3
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test 28 pair contracts, dates and no FX or policy signals
+        run: python -m unittest validation.cb_pricing.test_build_fxv2_relative_pricing_v1 -v
+      - name: Build dated research contrasts from exact published V2 snapshot
+        run: |
+          set -euo pipefail
+          python validation/cb_pricing/build_fxv2_relative_pricing_v1.py --output /tmp/fxv2-relative-pricing-28pair.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path("/tmp/fxv2-relative-pricing-28pair.json").read_text())
+          assert d["summary"]["pairs"] == 28 and d["summary"]["horizon_comparisons"] == 84
+          assert not d["eligible_for_fx_engine"] and not d["eligible_for_backtests"]
+          assert not d["eligible_for_automatic_core_rebase"]
+          assert d["not_fx_carry"] and d["not_ois_equivalent"] and d["not_policy_repricing"]
+          assert d["summary"]["generated_fx_signals"] == 0
+          print("FXV2_28PAIR_INDICATIVE_RESEARCH_ACCEPTED",d["pricing_source_snapshot_date"],d["summary"])
+          PY
+      - name: Publish ONLY the FX Quant V2 research JSON (never Core)
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          TARGET=site/fx-quant-v2/pricing-relative-28pairs-research.json
+          cp /tmp/fxv2-relative-pricing-28pair.json "$TARGET"
+          git diff --exit-code -- live_data payload dashboard
+          if git diff --quiet -- "$TARGET" && [ -z "$(git ls-files --others --exclude-standard -- "$TARGET")" ]; then
+            echo 'FXV2_RELATIVE_PRICING_UNCHANGED_NO_FAKE_UPDATE'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- "$TARGET"
+          test "$(git diff --cached --name-only)" = "$TARGET"
+          git commit -m 'data(fxv2): refresh dated 28-pair arithmetic pricing research'
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:main; then
+              echo 'FXV2_RELATIVE_PRICING_PUBLISHED_MAIN'
+              exit 0
+            fi
+            git fetch origin main --no-tags
+            git rebase origin/main
+            sleep "$((attempt*3))"
+          done
+          echo 'FXV2_RELATIVE_PRICING_PUBLISH_FAILED: no fake success' >&2
+          exit 1
+      - name: Preserve dated research receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fxv2-relative-pricing-28pairs
+          path: /tmp/fxv2-relative-pricing-28pair.json
+          if-no-files-found: warn
+          retention-days: 21

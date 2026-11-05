@@ -42,7 +42,11 @@ table{width:100%;border-collapse:collapse;text-align:left;font-size:13px}th{font
 <section id="confronti"><div class="section-head"><div><div class="micro">04 / Pricing relativo</div><h2>Confronto tra due valute.</h2></div><p>Per la ricerca Forex: prima verificare lo strumento e la data di ciascuna gamba, poi interpretare il differenziale.</p></div>
 <div class="two"><div class="pane"><div class="compare"><label>Prima valuta<select id="compareA" aria-label="Prima valuta"></select></label><label>Seconda valuta<select id="compareB" aria-label="Seconda valuta"></select></label></div><div id="compare6" class="comparison-value">—</div><p class="muted" id="compareText">Differenziale indicativo sul pricing 6M.</p></div>
 <div class="pane"><h3>Che cosa confermerebbe la tesi?</h3><p>Un differenziale 6M più ampio è utile soltanto se cambiano aspettative comparabili e il prezzo FX conferma. Uno spread di livello non equivale a un flusso investibile, né prova che sia avvenuto un repricing della banca centrale.</p><p class="muted" id="compareFoot"></p></div></div></section>
-<section><div class="micro">05 / Metodo di ricerca</div><h2>Cosa guardare a ogni aggiornamento.</h2>
+<section id="contrasti-28"><div class="section-head"><div><div class="micro">05 / Ricerca relativa delle 28 coppie</div><h2>Quanto differiscono i livelli tra due valute?</h2></div><p>Confronti aritmetici dei livelli 3M/6M/12M, inclusi stimati e proxy. Servono a formulare ipotesi: non sono un ranking FX né una previsione di rendimento.</p></div>
+<div class="note" id="relativeStatus" role="status">Caricamento confronto 28 coppie dal motore di ricerca V2…</div>
+<div class="table-scroll"><table><thead><tr><th>Coppia</th><th class="n">3M · pb</th><th class="n">6M · pb</th><th class="n">12M · pb</th><th>Osservazioni 6M</th><th>Qualità 6M</th></tr></thead><tbody id="relativeRows"><tr><td colspan="6">Ricerca in caricamento…</td></tr></tbody></table></div>
+<p class="table-hint">Differenziale = tasso indicativo della valuta base meno tasso della valuta quotata, in punti base. Le date e le scadenze contrattuali possono differire: non è uno spread OIS omogeneo, non è carry e non prova un repricing. <a href="./coppie.html">Apri l'analisi FX delle coppie</a>.</p></section>
+<section><div class="micro">06 / Metodo di ricerca</div><h2>Cosa guardare a ogni aggiornamento.</h2>
 <div class="two"><p><strong>Livello e direzione:</strong> tassi impliciti 3M/6M/12M e variazioni giornaliere solo quando la stessa fonte rende il dato confrontabile. Un livello isolato non racconta da solo cosa è cambiato.</p><p><strong>Conferma:</strong> dati macro e sorprese, comunicazioni CB, 2Y, differenziali, FX spot e positioning. Una stima non entra automaticamente nei segnali delle 28 coppie né nei backtest.</p></div></section>
 <div class="foot">FX Quant V2 · sezione research autonoma. I dati vengono letti dai feed del repository e, in caso di errore, da uno snapshot datato. Nessun calcolo di probabilità implicite, nessuna modifica al motore operativo. <a href="./index.html">Torna alla Home</a>.</div>
 </main>
@@ -208,7 +212,42 @@ function liveNormalized(op,est,nzd){
  return out;
 }
 async function get(url){const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),10000);try{const r=await fetch(url,{cache:"no-store",signal:ctl.signal});if(!r.ok)throw Error("HTTP "+r.status);return await r.json();}finally{clearTimeout(timer);}}
+async function loadRelativeResearch(){
+ const target=$("relativeRows"),info=$("relativeStatus");
+ try{
+  const x=await get("./pricing-relative-28pairs-research.json");
+  if(x?.schema!=="GMFQ_FXV2_RELATIVE_PRICING_28PAIR_RESEARCH_V1"||
+     x.eligible_for_fx_engine!==false||x.eligible_for_backtests!==false||
+     x.eligible_for_automatic_core_rebase!==false||x.not_fx_carry!==true||
+     x.not_ois_equivalent!==true||x.not_policy_repricing!==true||
+     x.summary?.pairs!==28||x.summary?.horizon_comparisons!==84)
+     throw Error("source contract invalid");
+  const names=Object.keys(x.pairs||{});
+  if(names.length!==28||names.some(k=>!x.pairs[k]?.horizons?.["6m"]))
+     throw Error("pair coverage incomplete");
+  target.innerHTML=names.map(name=>{
+   const p=x.pairs[name],h=p.horizons,s=h["6m"];
+   const values=["3m","6m","12m"].map(t=>
+     '<td class="n">'+esc(bp(h[t]?.spread_bp))+'</td>').join("");
+   const quality=s.proxy_involved?"Proxy incluso":s.estimate_involved?"Stima inclusa":"Fonti ufficiali, non omogenee";
+   const dates=date(s.base_as_of)+" / "+date(s.quote_as_of);
+   const aligned=s.same_date?"stessa data":"date differenti ("+s.date_gap_days+"g)";
+   return '<tr><td><b>'+esc(name)+'</b></td>'+values+
+     '<td>'+esc(dates)+' · '+esc(aligned)+'</td>'+
+     '<td>'+esc(quality)+'</td></tr>';
+  }).join("");
+  info.textContent="Ricerca V2 · "+x.summary.pairs+" coppie · "+x.summary.horizon_comparisons+
+   " confronti · snapshot "+date(x.pricing_source_snapshot_date)+
+   " · "+x.summary.mixed_date_comparisons+" confronti con date diverse."+
+   " Importante: valori descrittivi, non un segnale, un forward o uno spread di policy confrontabile.";
+ }catch(e){
+  target.innerHTML='<tr><td colspan="6">Dataset relativo non disponibile: nessun differenziale inventato.</td></tr>';
+  info.textContent="Dataset 28 coppie non ancora pubblicato o non verificato. Il confronto diretto tra due valute nella sezione precedente rimane disponibile.";
+  console.warn("FXV2 relative pricing research unavailable",e);
+ }
+}
 setup();
+loadRelativeResearch();
 (async()=>{
  try{let x=await get("./ois-pricing-snapshot.json");if(x.schema==="GMFQ_FXV2_PRICING_SNAPSHOT_V1"&&x.eligible_for_fx_engine===false){for(const c of C)update(c,x.currencies?.[c]);render();}}
  catch(e){console.warn("FXV2 OIS snapshot missing",e);}

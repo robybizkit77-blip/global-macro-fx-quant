@@ -14,7 +14,7 @@ const nzd=JSON.parse(fs.readFileSync(path.join(ROOT,'live_data/sections/NZD_CB_P
 const match=html.match(/<script>\s*([\s\S]*?)<\/script><\/body>/);
 assert(match,'OIS inline application must exist');
 const program=match[1];
-const boot='setup();\n(async()=>{';
+const boot='setup();\nloadRelativeResearch();\n(async()=>{';
 assert(program.includes(boot),'OIS QA fixture must suppress only the network bootstrap');
 const app=program.slice(0,program.indexOf(boot))+
  'globalThis.__oisQA={clean,update,render,showDetail,showCompare,liveNormalized,state};\nsetup();\n})();';
