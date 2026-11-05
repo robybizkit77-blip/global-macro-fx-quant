@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-04",
-  "generated_at_utc": "2026-11-05T11:34:09.253340Z",
+  "generated_at_utc": "2026-11-05T12:28:04.766787Z",
   "items": [
     {
       "as_of": "2026-11-04",
@@ -47,7 +47,7 @@
       "title": "GBP: repricing OIS più hawkish (+6.3 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-05T11:34:09.253340Z",
+  "last_checked_at_utc": "2026-11-05T12:28:04.766787Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -499,61 +499,6 @@
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "GBP",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "BOE_NEWS:https://www.bankofengland.co.uk/minutes/2026/october/rtgs-chaps-industry-forum-13-october-2026",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-04T14:51:45Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "6m_rate_pct": 4.4804,
-            "date": "2026-11-03",
-            "event_window_proof": false,
-            "instrument": "OIS_OBSERVED",
-            "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
-            "status": "DAILY_CONTEXT_ONLY"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-11-03",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-11-03",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.643618594365325
-          }
-        },
-        "source": "Bank of England",
-        "source_id": "BOE_NEWS",
-        "title": "Summary of the RTGS CHAPS Industry Forum - 13 October 2026",
-        "url": "https://www.bankofengland.co.uk/minutes/2026/october/rtgs-chaps-industry-forum-13-october-2026"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "ENERGY",
         "desk_context": {
           "analysis_basis": "SOURCE_HEADLINE_ONLY",
@@ -895,6 +840,61 @@
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "GBP",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
+        "id": "BOE_NEWS:https://www.bankofengland.co.uk/minutes/2026/september/court-minutes-17-september-2026",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-10-29T14:00:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "6m_rate_pct": 4.4804,
+            "date": "2026-11-03",
+            "event_window_proof": false,
+            "instrument": "OIS_OBSERVED",
+            "quality": "OFFICIAL_CERTIFIED",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
+            "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
+            "status": "DAILY_CONTEXT_ONLY"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-11-03",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
+            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-11-03",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 4.643618594365325
+          }
+        },
+        "source": "Bank of England",
+        "source_id": "BOE_NEWS",
+        "title": "Minutes of the Meeting of the Court of Directors held on 17 September 2026",
+        "url": "https://www.bankofengland.co.uk/minutes/2026/september/court-minutes-17-september-2026"
+      },
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "NZD",
         "desk_context": {
           "analysis_basis": "SOURCE_HEADLINE_ONLY",
@@ -1025,9 +1025,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 5,
+        "accepted_items": 4,
         "ccy": "GBP",
-        "entries_rejected": 45,
+        "entries_rejected": 46,
         "feed_entries_seen": 50,
         "feed_url": "https://www.bankofengland.co.uk/rss/news",
         "source": "Bank of England",
