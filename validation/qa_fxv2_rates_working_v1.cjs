@@ -194,18 +194,52 @@ for(const c of ['CHF','NZD']){
 assert.equal(JSON.stringify(canonical),before,'Stale research must never rewrite canonical source');
 // ASX settlement AFTER B2 research observation: 6M bank-bill futures only,
 // a hypothetical parallel 2Y/10Y shift, never a sovereign daily movement.
-assert.equal(asx.as_of,anchor.asx_6m_as_of,
- 'Initial 6M futures reference must match the dated ASX feed fixture');
-assert.equal(asx.horizons['6m'].implied_bank_bill_rate,anchor.asx_6m_rate);
-assert.equal(asx.horizons['6m'].expiration,anchor.asx_6m_expiration);
-assert.equal(research.NZD.latest_date,anchor.government_as_of);
-assert.equal(research.NZD.latest_2Y,anchor['2Y']);
-assert.equal(research.NZD.latest_10Y,anchor['10Y']);
-const quote=copy(asx);
+// Current external feeds advance independently of the historical starting
+// point. Never pin automated daily ASX or refreshed RBNZ observations to the
+// Nov 4 initial scenario anchor: that would fail on the FIRST good update.
+assert.equal(asx.schema,'GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1');
+assert.equal(asx.currency,'NZD');
+assert.equal(asx.source_quality,'OFFICIAL_EXCHANGE_DIRECTIONAL_PROXY');
+assert.equal(asx.governance.pair_engine_effect,'NONE');
+assert.equal(asx.governance.policy_delta_from_proxy_allowed,false);
+assert.ok(asx.as_of>=anchor.asx_6m_as_of,
+ 'Actual ASX feed may advance but must not regress behind the dated anchor');
+assert.ok(Number.isFinite(asx.horizons['6m'].implied_bank_bill_rate));
+assert.ok(research.NZD.latest_date>=anchor.government_as_of,
+ 'New official B2 research may advance but must not regress behind its anchor');
+assert.ok(Number.isFinite(research.NZD.latest_2Y)&&
+          Number.isFinite(research.NZD.latest_10Y));
+// Freeze a synthetic INITIAL research-source fixture for regression tests.
+// New market observations are tested against a reference fixture, never
+// against assumed unchanged live source files.
+const frozenResearch=copy(research);
+frozenResearch.NZD={
+ status:'RBNZ_GOVT_B2_WEB_RESEARCH_UNAPPROVED',
+ cross_roll_change_allowed:false,independent_xlsx_reconciled:false,
+ eligible_for_core:false,roll_date:'2026-10-30',
+ new_benchmark:{'2Y':anchor.gov_benchmark_2y,'10Y':anchor.gov_benchmark_10y},
+ latest_date:anchor.government_as_of,
+ latest_2Y:anchor['2Y'],latest_10Y:anchor['10Y'],
+ after_roll:[{date:'2026-10-30','2Y':3.96,'10Y':4.90},
+             {date:anchor.government_as_of,'2Y':anchor['2Y'],'10Y':anchor['10Y']}]
+};
+const frozenAsx={
+ schema:'GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1',
+ currency:'NZD',status:'LIVE_DIRECTIONAL_PROXY_READY',
+ source_quality:'OFFICIAL_EXCHANGE_DIRECTIONAL_PROXY',
+ governance:{pair_engine_effect:'NONE',policy_delta_from_proxy_allowed:false},
+ as_of:anchor.asx_6m_as_of,
+ horizons:{'6m':{implied_bank_bill_rate:anchor.asx_6m_rate,
+                 expiration:anchor.asx_6m_expiration,
+                 expiry_label:anchor.asx_6m_contract}}
+};
+const frozenCanonical=copy(fixture);
+frozenCanonical.NZD.date=shiftDays(anchor.government_as_of,-1);
+const quote=copy(frozenAsx);
 quote.as_of=shiftDays(anchor.asx_6m_as_of,1);
 quote.horizons['6m'].implied_bank_bill_rate=Number((anchor.asx_6m_rate-.12).toFixed(4));
 const scenarioToday=maxDate(today,quote.as_of);
-const z=derive(fixture,research,scenarioToday,quote,anchor).rates.NZD;
+const z=derive(frozenCanonical,frozenResearch,scenarioToday,quote,anchor).rates.NZD;
 assert.equal(z.date,quote.as_of);
 assert.equal(z['2Y'],Number((anchor['2Y']-.12).toFixed(4)));
 assert.equal(z['10Y'],Number((anchor['10Y']-.12).toFixed(4)));
@@ -218,30 +252,49 @@ assert.equal(z.comparison_window.futures_6m_bp,-12);
 assert.equal(z.no_core_effect,true);
 assert.equal(z.no_inferred_market_move,true);
 assert.ok(z.quality.includes('NON GOVERNATIVO QUOTATO'));
-assert.equal(derive(fixture,research,scenarioToday,asx,anchor).rates.NZD.date,
- research.NZD.latest_date,'Same-day ASX observation must retain B2 observed date');
+assert.equal(derive(frozenCanonical,frozenResearch,scenarioToday,frozenAsx,anchor).rates.NZD.date,
+ frozenResearch.NZD.latest_date,'Same-day ASX observation must retain B2 observed date');
 const rolled=copy(quote);rolled.horizons['6m'].expiration='2027-09-15';
-assert.equal(derive(fixture,research,scenarioToday,rolled,anchor).rates.NZD.date,
- research.NZD.latest_date,'A different futures maturity must not be chained');
+assert.equal(derive(frozenCanonical,frozenResearch,scenarioToday,rolled,anchor).rates.NZD.date,
+ frozenResearch.NZD.latest_date,'A different futures maturity must not be chained');
 const abnormal=copy(quote);abnormal.horizons['6m'].implied_bank_bill_rate=anchor.asx_6m_rate+1;
-assert.equal(derive(fixture,research,scenarioToday,abnormal,anchor).rates.NZD.date,
- research.NZD.latest_date,'Guard against 100bp jump since anchor');
+assert.equal(derive(frozenCanonical,frozenResearch,scenarioToday,abnormal,anchor).rates.NZD.date,
+ frozenResearch.NZD.latest_date,'Guard against 100bp jump since anchor');
 const fake=copy(quote);fake.status='WITHHELD';
-assert.equal(derive(fixture,research,scenarioToday,fake,anchor).rates.NZD.date,
- research.NZD.latest_date,'Unvalidated futures status must not displace dated B2');
-const canonicalNewer=copy(fixture);canonicalNewer.NZD.date=quote.as_of;
-assert.equal(derive(canonicalNewer,research,scenarioToday,quote,anchor).rates.NZD,undefined,
+assert.equal(derive(frozenCanonical,frozenResearch,scenarioToday,fake,anchor).rates.NZD.date,
+ frozenResearch.NZD.latest_date,'Unvalidated futures status must not displace dated B2');
+const canonicalNewer=copy(frozenCanonical);canonicalNewer.NZD.date=quote.as_of;
+assert.equal(derive(canonicalNewer,frozenResearch,scenarioToday,quote,anchor).rates.NZD,undefined,
  'Fresh official canonical yields supersede a model scenario');
-const researchAdvanced=copy(research);researchAdvanced.NZD.latest_date=quote.as_of;
+const researchAdvanced=copy(frozenResearch);researchAdvanced.NZD.latest_date=quote.as_of;
 researchAdvanced.NZD.after_roll.at(-1).date=quote.as_of;
-const advanced=derive(fixture,researchAdvanced,scenarioToday,quote,anchor).rates.NZD;
+const advanced=derive(frozenCanonical,researchAdvanced,scenarioToday,quote,anchor).rates.NZD;
 assert.equal(advanced.date,researchAdvanced.NZD.latest_date);
 assert.equal(advanced.working_method,'POST_ROLL_B2_SAME_BENCHMARK',
  'A new B2 research date must supersede old futures-anchor modelling');
+// When live RBNZ research advances beyond the frozen ASX anchor, the
+// hypothesis is disabled without breaking either the model or this QA.
+const laterB2=copy(frozenResearch);
+laterB2.NZD.latest_date=shiftDays(anchor.government_as_of,2);
+laterB2.NZD.after_roll.at(-1).date=laterB2.NZD.latest_date;
+laterB2.NZD.latest_2Y=3.81;
+laterB2.NZD.latest_10Y=4.79;
+laterB2.NZD.after_roll.at(-1)['2Y']=laterB2.NZD.latest_2Y;
+laterB2.NZD.after_roll.at(-1)['10Y']=laterB2.NZD.latest_10Y;
+const laterQuote=copy(frozenAsx);
+laterQuote.as_of=shiftDays(anchor.asx_6m_as_of,3);
+laterQuote.horizons['6m'].implied_bank_bill_rate=
+ Number((anchor.asx_6m_rate-.08).toFixed(4));
+const laterResult=derive(frozenCanonical,laterB2,laterQuote.as_of,laterQuote,anchor).rates.NZD;
+assert.equal(laterResult.working_method,'POST_ROLL_B2_SAME_BENCHMARK',
+ 'A newer B2 research observation must deactivate the old ASX scenario');
+assert.equal(laterResult.date,laterB2.NZD.latest_date);
+assert.equal(laterResult['2Y'],3.81);
+assert.equal(laterResult['10Y'],4.79);
 assert.equal(JSON.stringify(canonical),before,'ASX scenario must not mutate canonical rates');
-const futureAsOf=copy(research);
+const futureAsOf=copy(frozenResearch);
 futureAsOf.NZD.latest_date=shiftDays(staleAt,1);
-assert.equal(derive(fixture,futureAsOf,staleAt).rates.NZD,undefined,
+assert.equal(derive(frozenCanonical,futureAsOf,staleAt).rates.NZD,undefined,
  'No future government quote in stale fallback');
 const tassi=fs.readFileSync(path.join(ROOT,'site/fx-quant-v2/tassi.html'),'utf8');
 assert.ok(tassi.includes('state.nzdAsxProxy=val(3)'));
