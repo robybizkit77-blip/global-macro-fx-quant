@@ -33,26 +33,34 @@
       "backtest_eligible_as_official": false,
       "currency": "EUR",
       "dates_joinable": false,
-      "indicative_quote_dates": {},
-      "obstacle": "Fonte indicativa: manca certificazione operativa.",
+      "indicative_quote_dates": {
+        "12m": "2026-11-05",
+        "3m": "2026-11-04",
+        "6m": "2026-11-04"
+      },
+      "obstacle": "Eurex FST3: settlement ufficiali non accessibili con il percorso privato richiesto; contratti secondari su date diverse, non curva OIS.",
       "operational_as_of": "2026-11-04",
       "price_or_curve_embedded": false,
       "research_context": {
         "cross_date_join_allowed": false,
         "eligible_as_ois": false,
-        "full_horizon_set": false,
+        "full_horizon_set": true,
         "instrument": "Eurex FST3 individual dated secondary contract observations",
         "kind": "DATED_ESTR_FUTURES_QUOTES_NOT_OIS",
         "policy_delta_allowed": false,
-        "quote_dates": {},
+        "quote_dates": {
+          "12m": "2026-11-05",
+          "3m": "2026-11-04",
+          "6m": "2026-11-04"
+        },
         "rates_embedded": false,
         "same_date_across_horizons": false,
-        "status": "PARTIAL_QUOTES"
+        "status": "MIXED_DATE_QUOTES"
       },
       "source_reviewed_as_of": "2026-10-23",
       "source_title": "Eurex Three-Month Euro STR Futures, product FST3, daily exchange settlements",
       "source_url": "https://www.eurex.com/ex-en/markets/int/mon/3m-euro-str-futures/estr/Three-Month-Euro-STR-Futures-3402480",
-      "status": "GREEN_ESTIMATED",
+      "status": "WITHHELD",
       "usable_for_policy_pricing": false
     },
     "NZD": {
@@ -85,18 +93,14 @@
       "backtest_eligible_as_official": false,
       "currency": "USD",
       "dates_joinable": false,
-      "indicative_quote_dates": {
-        "12m": "2026-11-04",
-        "3m": "2026-11-05",
-        "6m": "2026-11-04"
-      },
-      "obstacle": "Settlement CME Fed Funds incompleti (manca una serie storica sincronizzata con diritti d'uso verificati).",
-      "operational_as_of": "2026-11-04",
+      "indicative_quote_dates": {},
+      "obstacle": "Fonte indicativa: manca certificazione operativa.",
+      "operational_as_of": "2026-11-05",
       "price_or_curve_embedded": false,
       "source_reviewed_as_of": "2026-10-23",
       "source_title": "CME/CBOT official 30-Day Federal Funds futures settlements (ZQ)",
       "source_url": "https://www.cmegroup.com/markets/interest-rates/stirs/30-day-federal-fund.settlements.html",
-      "status": "WITHHELD",
+      "status": "GREEN_ESTIMATED",
       "usable_for_policy_pricing": false
     }
   },
