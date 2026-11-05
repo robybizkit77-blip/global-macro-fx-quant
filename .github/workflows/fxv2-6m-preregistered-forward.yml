@@ -92,7 +92,11 @@ jobs:
             python -m validation.quant.fxv2_6m_prospective_trial_v1 > /tmp/fxv2-6m/receipt.json
             cat /tmp/fxv2-6m/receipt.json
             python -m validation.quant.fxv2_6m_prospective_trial_v1 --verify-only
-            git add -A -- validation/quant/prospective/FXV2_6M_FROZEN_EXPERIMENT_V1.jsonl validation/quant/prospective/FXV2_6M_FUTURE_ECB_REFERENCE_V1.jsonl
+            for journal in validation/quant/prospective/FXV2_6M_FROZEN_EXPERIMENT_V1.jsonl validation/quant/prospective/FXV2_6M_FUTURE_ECB_REFERENCE_V1.jsonl; do
+              if [[ -f "$journal" ]]; then
+                git add -- "$journal"
+              fi
+            done
             changed="$(git diff --cached --name-only)"
             if [[ -z "$changed" ]]; then
               echo 'FXV2_6M_PROSPECTIVE_NO_NEW_OBSERVATIONS_NO_FAKE_UPDATE'
