@@ -104,7 +104,7 @@ def verify(source: dict, rates: dict, ten: dict, *,
         "schema": SCHEMA,
         "status": (
             "PAIRED_OFFICIAL_HISTORY_READY_FOR_REVIEW"
-            if 0 <= age <= 45 and len(pairs) > 1
+            if 0 <= age <= 5 and len(pairs) > 1
             else "OFFICIAL_PAIRED_HISTORY_NOT_CURRENT"
         ),
         "source": SOURCE,
