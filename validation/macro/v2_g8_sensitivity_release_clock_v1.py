@@ -85,9 +85,47 @@ def sensitivity(three_axis):
         g, l, p = (row.get("growth_relative_to_own_history_z"),
                    row.get("labour_tightness_relative_to_own_history_z"),
                    row.get("inflation_pressure_relative_to_own_history_z"))
-        must(all(type(x) in (int, float) and math.isfinite(x) and
-                 -3.00000001 <= x <= 3.00000001 for x in (g, l, p)),
+        must(type(g) in (int, float) and math.isfinite(g) and
+             -3.00000001 <= g <= 3.00000001,
              "missing or nonfinite economic axis")
+        for axis, x in (("LABOUR", l), ("INFLATION", p)):
+            if x is None:
+                must(axis + "_STRICT_HISTORY_UNAVAILABLE" in
+                     row.get("quality_flags", []) and
+                     row["dimensions"][axis.lower()]["raw_z"] is None and
+                     row["dimensions"][axis.lower()]["is_estimate"] is False,
+                     "missing or nonfinite economic axis without source evidence")
+            else:
+                must(type(x) in (int, float) and math.isfinite(x) and
+                     -3.00000001 <= x <= 3.00000001,
+                     "missing or nonfinite economic axis")
+        if l is None:
+            must(row["illustrative_activity_labour_balance_z"] is None,
+                 "missing labour cannot produce baseline activity")
+            details[c] = {
+                "currency": c,
+                "baseline_activity_balance_z": None,
+                "baseline_bucket": "INSUFFICIENT_STRICT_HISTORY",
+                "alternative_weights_growth_25_50_75": {},
+                "weight_variant_activity_buckets": {},
+                "weight_variation_min_z": None,
+                "weight_variation_max_z": None,
+                "weight_variation_range_z": None,
+                "weight_category_changes": False,
+                "one_axis_plus_minus_0_25z_shocks": {},
+                "input_shock_min_activity_z": None,
+                "input_shock_max_activity_z": None,
+                "input_shock_changes_baseline_category": False,
+                "inflation_pressure_z_stays_separate": (float(p) if p is not None else None),
+                "source_quality_flags": row["quality_flags"],
+                "source_quality_label": row["qualitative_quality"],
+                "research_sensitivity_status": "UNAVAILABLE_INCOMPLETE_LABOUR_HISTORY",
+                "one_country_only_not_cross_currency_comparable": True,
+                "estimated_uncertainty_interval": False,
+                "live_currency_score": None,
+                "pair_ranking_eligible": False,
+            }
+            continue
         baseline = activity(g, l, 0.5)
         must(abs(baseline - row["illustrative_activity_labour_balance_z"]) < 1e-9,
              "shadow reported value disagrees with preregistered baseline")
@@ -123,7 +161,8 @@ def sensitivity(three_axis):
             "input_shock_changes_baseline_category":
                 any(v["activity_bucket"] != activity_bucket(baseline)
                     for v in shocks.values()),
-            "inflation_pressure_z_stays_separate": float(p),
+            "inflation_pressure_z_stays_separate": (float(p) if p is not None else None),
+            "research_sensitivity_status": "COMPUTED_RESEARCH_ONLY",
             "source_quality_flags": row["quality_flags"],
             "source_quality_label": row["qualitative_quality"],
             "one_country_only_not_cross_currency_comparable": True,
@@ -143,6 +182,12 @@ def sensitivity(three_axis):
         "summary": {
             "currencies": len(details),
             "within_country_weights_per_currency": len(WEIGHT_GROWTH),
+            "countries_with_calculated_activity_sensitivity": sum(
+                x["research_sensitivity_status"] == "COMPUTED_RESEARCH_ONLY"
+                for x in details.values()),
+            "countries_with_unavailable_activity_sensitivity": sum(
+                x["research_sensitivity_status"] == "UNAVAILABLE_INCOMPLETE_LABOUR_HISTORY"
+                for x in details.values()),
             "countries_where_bucket_changes_with_weights": sum(
                 x["weight_category_changes"] for x in details.values()),
             "countries_where_bucket_changes_with_input_shock": sum(

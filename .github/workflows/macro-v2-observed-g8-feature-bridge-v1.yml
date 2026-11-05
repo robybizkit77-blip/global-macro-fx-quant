@@ -283,7 +283,10 @@ jobs:
           d=json.load(open('/tmp/macro-v2-three-axis-g8-research.json'))
           assert d['summary']['economies']==8
           assert d['summary']['research_axes']==24
-          assert d['summary']['research_activity_balances_calculated']==8
+          assert (d['summary']['research_activity_balances_calculated'] +
+                  d['summary']['research_activity_balances_unavailable'])==8
+          assert d['summary']['research_source_axes_unavailable']==len(
+              d['summary']['unavailable_source_axis_keys'])
           assert d['summary']['countries_with_estimated_source_axes']==1
           assert d['summary']['countries_with_GDP_measurement_caveats']==2
           assert d['summary']['macro_model_scores_approved']==0
@@ -301,6 +304,11 @@ jobs:
               w.write('- Shadow economies: **8/8**, axes: **24/24** (growth, labour tightness, price pressure).\n')
               w.write('- USD: two **estimated** source axes; EUR/CHF: GDP definition caveats.\n')
               w.write('- Activity combines only growth and labour 50/50 (hypothesis). Inflation stands alone.\n')
+              w.write('- Valid descriptive activity balances: **%s/8**. Missing strict-source axes: **%s/16**; NOT estimated or filled.\n' %
+                      (d['summary']['research_activity_balances_calculated'],
+                       d['summary']['research_source_axes_unavailable']))
+              for key in d['summary']['unavailable_source_axis_keys']:
+                  w.write('- Unavailable source axis: **%s** (no z or FX signal emitted).\n' % key)
               w.write('- Economic regime/model approval: **0**. No core scores, FX ranks, Beta or Forward.\n')
           PY
       - name: Test sensitivity and GDP cutoff replay (NO score approval)
@@ -326,6 +334,9 @@ jobs:
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as out:
               out.write('\n### G8 Macro V2 sensitivity / GDP research release-clock audit\n')
               out.write('- GDP first-web cutoff gates: **64/64** (8 economies × 8 quarters).\n')
+              out.write('- Country scenarios with complete strict activity sources: **%s/8**; unavailable: **%s/8** (no invented scenarios).\n' %
+                        (r['summary']['countries_with_calculated_activity_sensitivity'],
+                         r['summary']['countries_with_unavailable_activity_sensitivity']))
               out.write('- Country activity bucket sensitivity to alternative weights: **%s/8** cases.\n' %
                         r['summary']['countries_where_bucket_changes_with_weights'])
               out.write('- Country activity bucket sensitivity to chosen ±0.25z shocks: **%s/8** cases.\n' %

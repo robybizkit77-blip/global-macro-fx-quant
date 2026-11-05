@@ -95,6 +95,21 @@ def _pillar(inp, gaps, currency, pillar):
                 "is_estimate": False, "reference_period": entry["observation_period"],
                 "source_id": entry["canonical_series_id"],
                 "quality": "RESEARCH_CURRENT_REVISED_HISTORY_NO_HISTORIC_PIT"}
+    # Incomplete historical windows for non-US pillars are valid *missing*
+    # research observations, not valid zero-z nor authorized estimates.
+    # The bridge still exposes the original periods and source identity.
+    if currency != "USD" and key not in gaps:
+        need(entry.get("status") in
+             ("NO_Z_MISSING_PRIOR_ECONOMIC_PERIODS",
+              "NO_Z_ZERO_ROBUST_DISPERSION"),
+             "unapproved non-US missing-intensity status")
+        return {"raw_z": None, "method": "UNAVAILABLE_STRICT_HISTORY",
+                "is_estimate": False,
+                "reference_period": entry["observation_period"],
+                "source_id": entry["canonical_series_id"],
+                "quality": "SOURCE_HISTORY_INSUFFICIENT_NO_IMPUTATION",
+                "missing_prior_periods": entry.get("missing_prior_periods", []),
+                "reason": entry["status"]}
     need(currency == "USD" and key in gaps and
          entry.get("status") == "NO_Z_MISSING_PRIOR_ECONOMIC_PERIODS",
          "missing strict z cannot be replaced by unapproved estimates")
@@ -183,29 +198,38 @@ def build(observed):
         growth = _growth(g[currency], currency)
         labour = _pillar(p, gaps, currency, "labour")
         inflation = _pillar(p, gaps, currency, "inflation")
-        tightness = -labour["raw_z"]
-        # Fixed, NOT fit to FX returns or the old D vector. Price pressure
-        # must NOT act as a proxy for economic health or currency strength.
-        activity = WEIGHTS["growth"] * growth["raw_z"] + (
-            WEIGHTS["labour_tightness"] * tightness)
+        tightness = (-labour["raw_z"] if labour["raw_z"] is not None
+                     else None)
+        # Missing intensity remains NULL. No zero fill or silent reweighting.
+        # Inflation is descriptive price pressure, not currency desirability.
+        activity = (WEIGHTS["growth"] * growth["raw_z"] +
+                    WEIGHTS["labour_tightness"] * tightness
+                    if tightness is not None else None)
         price = inflation["raw_z"]
         flags = []
         if labour["is_estimate"] or inflation["is_estimate"]:
             flags.append("US_BLS_ESTIMATED_INFLATION_LABOUR_Z")
+        for dimension, row in (("LABOUR", labour), ("INFLATION", inflation)):
+            if row["raw_z"] is None:
+                flags.append(dimension + "_STRICT_HISTORY_UNAVAILABLE")
         flags.extend(growth["definition_caveats"])
         rows[currency] = {
             "currency": currency,
             "growth_relative_to_own_history_z": growth["raw_z"],
             "labour_tightness_relative_to_own_history_z": tightness,
             "inflation_pressure_relative_to_own_history_z": price,
-            "illustrative_activity_labour_balance_z": round(activity, 12),
+            "illustrative_activity_labour_balance_z": (round(activity, 12) if activity is not None else None),
             "axis_classification_relative_to_own_history": {
-                "activity": zone(activity, "RELATIVELY_FIRM", "RELATIVELY_SOFT"),
-                "price_pressure": zone(price, "RELATIVELY_ELEVATED", "RELATIVELY_SUBDUED"),
+                "activity": (zone(activity, "RELATIVELY_FIRM", "RELATIVELY_SOFT")
+                             if activity is not None else "INSUFFICIENT_STRICT_HISTORY"),
+                "price_pressure": (zone(price, "RELATIVELY_ELEVATED", "RELATIVELY_SUBDUED")
+                                   if price is not None else "INSUFFICIENT_STRICT_HISTORY"),
             },
             "dimensions": {"growth": growth, "labour": labour, "inflation": inflation},
             "quality_flags": flags,
             "qualitative_quality": (
+                "INCOMPLETE_SOURCE_HISTORY_RESEARCH_ONLY" if
+                    (labour["raw_z"] is None or inflation["raw_z"] is None) else
                 "ESTIMATED_WITH_DEFINITION_CAVEAT" if (
                     (labour["is_estimate"] or inflation["is_estimate"]) and
                     bool(growth["definition_caveats"])) else
@@ -239,7 +263,19 @@ def build(observed):
         "countries": rows,
         "summary": {
             "economies": len(rows), "research_axes": 3 * len(rows),
-            "research_activity_balances_calculated": len(rows),
+            "research_activity_balances_calculated": sum(
+                x["illustrative_activity_labour_balance_z"] is not None
+                for x in rows.values()),
+            "research_activity_balances_unavailable": sum(
+                x["illustrative_activity_labour_balance_z"] is None
+                for x in rows.values()),
+            "research_source_axes_unavailable": sum(
+                x["dimensions"][d]["raw_z"] is None
+                for x in rows.values() for d in ("labour", "inflation")),
+            "unavailable_source_axis_keys": sorted(
+                f"{c}.{d}" for c, x in rows.items()
+                for d in ("labour", "inflation")
+                if x["dimensions"][d]["raw_z"] is None),
             "countries_with_estimated_source_axes": sum(
                 "US_BLS_ESTIMATED_INFLATION_LABOUR_Z" in x["quality_flags"]
                 for x in rows.values()),

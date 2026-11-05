@@ -12,7 +12,10 @@ from validation.macro.v2_g8_sensitivity_release_clock_v1 import (
     audit, gdp_publication_clock_replay, sensitivity
 )
 from validation.macro.v2_g8_gdp_unified_web_research_v1 import unified_research_rows
-from validation.macro.v2_g8_three_axis_economic_shadow_v1 import run as run_three_axis
+from validation.macro.v2_g8_three_axis_economic_shadow_v1 import (
+    run as run_three_axis, build as build_three_axis
+)
+from validation.macro.v2_g8_observed_feature_bridge_v1 import run as observed_run
 from validation.macro.v2_g8_observed_feature_bridge_v1 import ROOT
 
 
@@ -21,6 +24,12 @@ class EconomicSensitivityAndGdpClocks(unittest.TestCase):
     def setUpClass(cls):
         cls.today = datetime.now(ZoneInfo("Europe/Rome")).date().isoformat()
         cls.three = run_three_axis(as_of=cls.today)
+        raw_fixture = observed_run(as_of=cls.today)
+        for key, entry in raw_fixture["inflation_labour"].items():
+            if entry["research_robust_z"] is None and not key.startswith("USD."):
+                entry["research_robust_z"] = 0.25
+                entry["status"] = "DESCRIPTIVE_REVISED_HISTORY_ROBUST_Z_NOT_PIT"
+        cls.synthetic_full = build_three_axis(raw_fixture)
         cls.rows = unified_research_rows()
 
     def test_exactly_64_historical_GDP_release_date_cutoffs(self):
@@ -51,18 +60,25 @@ class EconomicSensitivityAndGdpClocks(unittest.TestCase):
         self.assertTrue(r["no_cross_currency_ranking_authorized"])
         for c in FX:
             x = r["countries"][c]
-            self.assertEqual(len(x["alternative_weights_growth_25_50_75"]), 3)
-            self.assertEqual(len(x["one_axis_plus_minus_0_25z_shocks"]), 4)
+            expected = 0 if x["research_sensitivity_status"] == "UNAVAILABLE_INCOMPLETE_LABOUR_HISTORY" else 3
+            self.assertEqual(len(x["alternative_weights_growth_25_50_75"]), expected)
+            self.assertEqual(len(x["one_axis_plus_minus_0_25z_shocks"]), 0 if expected == 0 else 4)
+            if expected == 0:
+                self.assertIsNone(x["baseline_activity_balance_z"])
+                self.assertEqual(x["baseline_bucket"], "INSUFFICIENT_STRICT_HISTORY")
             self.assertIsNone(x["live_currency_score"])
             self.assertFalse(x["pair_ranking_eligible"])
             self.assertFalse(x["estimated_uncertainty_interval"])
             self.assertTrue(x["one_country_only_not_cross_currency_comparable"])
         self.assertEqual(r["summary"]["FX_rankings_computed"], 0)
+        self.assertEqual(
+            r["summary"]["countries_with_calculated_activity_sensitivity"] +
+            r["summary"]["countries_with_unavailable_activity_sensitivity"], 8)
 
     def test_linear_growth_weight_stress_has_correct_math(self):
-        r = sensitivity(self.three)
+        r = sensitivity(self.synthetic_full)
         for c in FX:
-            row = self.three["countries"][c]
+            row = self.synthetic_full["countries"][c]
             g, l = (row["growth_relative_to_own_history_z"],
                     row["labour_tightness_relative_to_own_history_z"])
             alt = r["countries"][c]["alternative_weights_growth_25_50_75"]
@@ -73,8 +89,8 @@ class EconomicSensitivityAndGdpClocks(unittest.TestCase):
                                    0.5*(g-l), places=10)
 
     def test_inflation_independent_of_activity_in_all_weight_variants(self):
-        base = sensitivity(self.three)
-        changed = copy.deepcopy(self.three)
+        base = sensitivity(self.synthetic_full)
+        changed = copy.deepcopy(self.synthetic_full)
         old = changed["countries"]["GBP"]["inflation_pressure_relative_to_own_history_z"]
         changed["countries"]["GBP"]["inflation_pressure_relative_to_own_history_z"] = (
             3.0 if old <= 0 else -3.0)
@@ -86,32 +102,47 @@ class EconomicSensitivityAndGdpClocks(unittest.TestCase):
                             r["countries"]["GBP"]["inflation_pressure_z_stays_separate"])
 
     def test_high_weights_must_not_become_fx_score_or_model_promotions(self):
-        fake = copy.deepcopy(self.three)
+        fake = copy.deepcopy(self.synthetic_full)
         fake["countries"]["CAD"]["fx_currency_strength_score"] = 0.8
         with self.assertRaisesRegex(ValueError, "unknown or promoted"):
             sensitivity(fake)
-        fake = copy.deepcopy(self.three)
+        fake = copy.deepcopy(self.synthetic_full)
         fake["scope"]["activity_weights"]["inflation_in_activity"] = .2
         with self.assertRaisesRegex(ValueError, "baseline weights"):
             sensitivity(fake)
-        fake = copy.deepcopy(self.three)
+        fake = copy.deepcopy(self.synthetic_full)
         fake["summary"]["FX_scores_approved"] = 8
         with self.assertRaisesRegex(ValueError, "remain research-only"):
             sensitivity(fake)
 
     def test_nonfinite_and_spoofed_currency_inputs_fail_closed(self):
-        fake = copy.deepcopy(self.three)
+        fake = copy.deepcopy(self.synthetic_full)
         fake["countries"]["JPY"]["growth_relative_to_own_history_z"] = float("nan")
         with self.assertRaisesRegex(ValueError, "nonfinite economic"):
             sensitivity(fake)
-        fake = copy.deepcopy(self.three)
+        fake = copy.deepcopy(self.synthetic_full)
         fake["countries"]["NZD"]["currency"] = "CAD"
         with self.assertRaisesRegex(ValueError, "unknown or promoted"):
             sensitivity(fake)
-        fake = copy.deepcopy(self.three)
+        fake = copy.deepcopy(self.synthetic_full)
         fake["countries"]["CHF"]["illustrative_activity_labour_balance_z"] = 888
         with self.assertRaisesRegex(ValueError, "disagrees"):
             sensitivity(fake)
+
+    def test_nullable_source_axis_cannot_be_turned_into_stress_scenario(self):
+        altered = copy.deepcopy(self.synthetic_full)
+        row = altered["countries"]["AUD"]
+        row["labour_tightness_relative_to_own_history_z"] = None
+        row["dimensions"]["labour"]["raw_z"] = None
+        row["dimensions"]["labour"]["is_estimate"] = False
+        row["quality_flags"].append("LABOUR_STRICT_HISTORY_UNAVAILABLE")
+        row["illustrative_activity_labour_balance_z"] = None
+        report = sensitivity(altered)
+        self.assertEqual(report["countries"]["AUD"]["alternative_weights_growth_25_50_75"], {})
+        self.assertIsNone(report["countries"]["AUD"]["baseline_activity_balance_z"])
+        row["illustrative_activity_labour_balance_z"] = 0.25
+        with self.assertRaisesRegex(ValueError, "missing labour cannot produce"):
+            sensitivity(altered)
 
     def test_missing_one_first_web_GDP_quarter_blocks_historical_replay(self):
         bad = [x for x in self.rows if not
