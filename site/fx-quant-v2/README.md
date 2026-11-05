@@ -12,6 +12,27 @@ Site navigation and data lineage are distinct: an available link does not guaran
 
 **No promotion to primary site until end-to-end QA (all pages, on-device/browser, data freshness, mobile navigation, report URLs, chart interactions) and owner approval.**
 
+## 08:00 — Public delivery is not economic-source freshness (2026-11-05)
+
+The existing scheduled `FX Quant V2 Independent 08:00 Public Proof` workflow
+now saves one joined read-only receipt using the already-established V2
+source-date audit (`freshness.json`), the dual Research-vs-Core classification
+(`decision-readiness.json`) and exact public GitHub Pages byte comparison.
+It compares all 12 page files and additional key research sidecars; the
+receipt includes source-data delay/gap counts, government quote dates,
+the separate Macro V3 evidence date and legacy macro baseline.
+
+**A successful page publication is never equivalent to all market feeds being
+fresh.** When source checks are absent, delayed or incomplete the operational
+proof fails closed, even if page bytes match. Expected limitations (CHF/NZD
+canonical government observations, nonofficial OIS/proxy and unrevalidated
+Macro Core) remain explicitly recorded rather than being masked. A late
+GitHub Actions run cannot retroactively prove site availability at 08:00.
+Both CET/CEST slots retain an explicit duplicate-skip summary, not proof.
+
+This does not refresh data, enable licensed feeds, change Core/28 FX signals,
+or alter any site HTML or design.
+
 ## Dedicated OIS & Market Pricing (2026-11-04)
 
 The additional `ois.html` is a standalone research section, linked in the shared 12-page navigation. It displays 8 currencies × 3 pricing horizons with per-tenor source dates and explicit instrument types (GBP BoE OIS; other official futures; secondary futures/proxy where unavailable). It reads `OIS_OPERATIONAL_VIEW`, `CB_PRICING_ESTIMATED`, and `NZD_CB_PRICING_DIRECTIONAL_PROXY`, falling back to a dated `ois-pricing-snapshot.json` without overwriting the canonical data. Quoted futures are *not* OIS; maturity spreads across them are illustrative, not policy repricing. Core FX signals, backtests and V10 are untouched.
