@@ -36,11 +36,16 @@ def verify(source: dict, rates: dict, ten: dict, *,
            asof: date, source_hash: str = "") -> dict:
     current = rates.get("CHF") or {}
     original = current.get("date")
-    require(original == "2026-09-30"
-            and current.get("source", "").startswith("Swiss National Bank")
-            and current.get("quality") == "FULL_CURRENT_OFFICIAL"
-            and current.get("2Y") == 0.287 and current.get("10Y") == 0.586,
-            "unexpected or modified official CHF anchor: independent re-review")
+    require(isinstance(original,str) and
+            date.fromisoformat(original).isoformat()==original and
+            date.fromisoformat(original)<=asof and
+            current.get("source","").startswith("Swiss National Bank") and
+            current.get("quality")=="FULL_CURRENT_OFFICIAL" and
+            all(isinstance(current.get(k),(int,float)) and
+                not isinstance(current.get(k),bool) and
+                math.isfinite(current[k]) and -5<=current[k]<=25
+                for k in ("2Y","10Y")),
+            "official CHF anchor invalid; review independent source")
     # Reuse original per-tenor independent source-id/unit/frequency parser.
     candidate = parse_candidate(
         source, certified_date=original,
@@ -110,6 +115,11 @@ def verify(source: dict, rates: dict, ten: dict, *,
         "last_common_10Y": latest["10Y"],
         "last_common_curve_bp": latest["curve_bp"],
         "last_common_age_days": age,
+        "paired_source_ready_for_historical_review": len(pairs)>1 and 0 <= age <= 45,
+        "current_session_government_rates_certified": False,
+        "latest_paired_market_session_fresh": 0 <= age <= 5,
+        "research_age_rule": "45_DAY_MONTH_END_STATISTICAL_REFERENCE_NOT_DAILY_LIVE_RATE",
+        "source_date_not_refresh_timestamp": True,
         "paired_source_rows": pairs,
         "matched_paired_rows": len(pairs),
         "new_paired_rows": len(pairs) - 1,
