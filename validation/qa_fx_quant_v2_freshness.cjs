@@ -146,10 +146,9 @@ for(const c of ccy){
    researchTenors++;
    requireValid(days(v.as_of)!==null&&days(v.as_of)>=0,
      c+' '+ten+' source date cannot be future');
-   // Daily audit actually verifies the age for each independently dated tenor.
-   if(days(v.as_of)>7)
-    gap('ois_v2_research',c+' '+ten+' osservazione datata',
-      'Valore proxy/OIS del '+v.as_of+'; non pubblicare come quotazione di oggi. Tipo '+x.kind+'.');
+   // Keep an explicit, separate dated receipt for all 24 levels.
+   // Missing source freshness must not be hidden behind an aggregate page date.
+   check('ois_v2_research_tenor',c+' '+ten,v.as_of,7,x.quality||'UNKNOWN','pricing_tenor');
   }
  }
 }
