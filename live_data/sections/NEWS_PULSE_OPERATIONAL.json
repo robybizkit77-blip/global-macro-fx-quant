@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-04",
-  "generated_at_utc": "2026-11-05T11:02:22.254266Z",
+  "generated_at_utc": "2026-11-05T11:34:09.253340Z",
   "items": [
     {
       "as_of": "2026-11-04",
@@ -47,7 +47,7 @@
       "title": "GBP: repricing OIS più hawkish (+6.3 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-05T11:02:22.254266Z",
+  "last_checked_at_utc": "2026-11-05T11:34:09.253340Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -325,13 +325,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-03",
+            "date": "2026-11-04",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "European Central Bank · AAA Svensson spot curve · 2026-11-03",
+            "source": "European Central Bank · AAA Svensson spot curve · 2026-11-04",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 2.9868124907
+            "yield_2y_pct": 2.9982582172
           }
         },
         "source": "Banca centrale europea",
@@ -373,13 +373,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-03",
+            "date": "2026-11-04",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "European Central Bank · AAA Svensson spot curve · 2026-11-03",
+            "source": "European Central Bank · AAA Svensson spot curve · 2026-11-04",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 2.9868124907
+            "yield_2y_pct": 2.9982582172
           }
         },
         "source": "Banca centrale europea",
