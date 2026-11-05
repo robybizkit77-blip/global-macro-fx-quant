@@ -236,6 +236,7 @@ jobs:
             /tmp/fxv2-rbnz-b2-eolas-research.json
             /tmp/fxv2-chf-nzd-research-candidate.json
             /tmp/fxv2-chf-nzd-freshness-receipt.json
+            /tmp/fxv2-snb-paired-historical-review.json
             site/fx-quant-v2/chf-nzd-benchmark-research.json
           if-no-files-found: warn
           retention-days: 14
