@@ -306,7 +306,11 @@ async function refreshBenchmarkResearch(){
   try{x=await read(local);}catch(err){console.warn("[FXV2 Rates] local research fallback unavailable",err);x=await read(remote);}
   const now=new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Rome",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
   let anchor=null;
-  try{anchor=await read("./nzd-asx-government-anchor-v1.json");}
+  try{
+   const response=await fetch("./nzd-asx-government-anchor-v1.json",{cache:"no-store"});
+   if(response.ok)anchor=await response.json();
+   else throw Error("anchor HTTP "+response.status);
+  }
   catch(err){console.warn("[FXV2 Rates] No NZD futures reference; keeping dated B2",err);}
   const working=globalThis.FXV2RatesWorking?.derive(state.rates,x,now,state.nzdAsxProxy,anchor);
   state.benchmarkResearch=x;
