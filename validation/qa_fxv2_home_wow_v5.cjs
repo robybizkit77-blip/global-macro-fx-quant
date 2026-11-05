@@ -67,7 +67,8 @@ fs.mkdirSync(output,{recursive:true});
       !result.disclaimer?.includes('BCE')||!result.fxCard||
       !result.observed?.includes('Treasury 2Y')||
       !result.observed?.includes('10Y')||
-      !result.verdict?.includes('Fed')||
+      !(result.verdict?.includes('Fed')||
+        (result.verdict?.includes('dollaro')&&result.verdict?.includes('Treasury 2Y')))||
       !result.macro||!/data di rilascio/i.test(result.macro)||
       !/non|manca|verificabil|archiviat/i.test(result.macro)||
       !/invent|verific|data/i.test(result.macro)||
