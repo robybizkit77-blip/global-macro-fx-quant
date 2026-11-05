@@ -14,7 +14,10 @@ from validation.quant.fxv2_6m_prospective_status_v1 import build,SCHEMA
 class ResearchStatusTests(unittest.TestCase):
     def test_real_pre_registration_is_explicitly_zero(self):
         policy,fx,quotes,macro=fixture()
-        # The synthetic price fixtures are only a test of status presentation.
+        # Before registration, use the REAL available ECB archive; synthetic
+        # Nov 6 test fixtures must not leak into a Nov 5 status report.
+        from validation.quant.fxv2_6m_prospective_trial_v1 import FX_PATH
+        fx=json.loads(FX_PATH.read_text())
         report=build(policy,fx,macro,[],[],at("2026-11-05T15:00:00"))
         self.assertEqual(report["schema"],SCHEMA)
         self.assertEqual(report["report_status"],
