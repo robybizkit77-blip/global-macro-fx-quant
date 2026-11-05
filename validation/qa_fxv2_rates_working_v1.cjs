@@ -104,9 +104,13 @@ assert.equal(monthScenario.anchor_cadence,'STATISTICAL_MONTH_END');
 assert.equal(monthScenario.tenor_quality['2Y'],'STIMATO');
 assert.equal(monthScenario.tenor_quality['10Y'],'OSSERVATO');
 assert.equal(monthScenario.chg2_bp,null);
-const monthlyTooOld=derive(fixture,monthEnd,shiftDays(monthEnd.CHF.paired_date,47)).rates.CHF;
+const monthExpired=copy(monthEnd);
+monthExpired.CHF.separate_10y.as_of=shiftDays(monthEnd.CHF.paired_date,46);
+const monthlyTooOld=derive(fixture,monthExpired,shiftDays(monthEnd.CHF.paired_date,47)).rates.CHF;
+assert.equal(monthlyTooOld.source_age_days,1);
+assert.equal(monthlyTooOld.anchor_age_days,47);
 assert.equal(monthlyTooOld.stale_source,true,
- 'Month-end government curve anchor older than 45 days must be labelled historical');
+ '45-day statistical anchor expiry must be enforced even with a 1-day-old observed 10Y');
 // An official same-date SNB pair newer than the isolated 10Y must replace the
 // estimate; a single newly paired reading never manufactures an observed delta.
 const newerPair=copy(research);
