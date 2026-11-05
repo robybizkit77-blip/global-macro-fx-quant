@@ -75,6 +75,10 @@ class RatesSafePublishTests(unittest.TestCase):
             source.write_text("source-date=2026-11-05\n")
             git(producer, "add", ".")
             git(producer, "commit", "-m", "validated rates")
+            # The production audit creates untracked evidence. Such files are
+            # not staged, do not enter a push, and must not block the retry.
+            scratch = producer / "local-audit-evidence.json"
+            scratch.write_text('{"status":"PASS"}\n')
             (writer / "docs/info.md").write_text("new notes\n")
             git(writer, "add", ".")
             git(writer, "commit", "-m", "unrelated docs")
@@ -84,6 +88,8 @@ class RatesSafePublishTests(unittest.TestCase):
             self.assertEqual(result["status"], "RATES_SAFE_PUSH_CONFIRMED")
             self.assertTrue(result["disjoint_remote_rebase"])
             self.assertFalse(result["force_push"])
+            self.assertTrue(scratch.exists())
+            self.assertNotIn("local-audit-evidence.json", result["changed_files"])
             git(producer, "fetch", "origin", "main")
             self.assertEqual(source.read_text(), "source-date=2026-11-05\n")
             git(writer, "pull", "--ff-only", "origin", "main")
