@@ -373,7 +373,11 @@ async function refreshPairRatesResearch(){
  let proxy=null,anchor=null;
  try{proxy=await get('NZD_CB_PRICING_DIRECTIONAL_PROXY.json');}
  catch(error){console.warn('[FXV2 Coppie] NZD ASX 6M proxy unavailable; dated B2 retained',error);}
- try{anchor=await load('./nzd-asx-government-anchor-v1.json');}
+ try{
+  const response=await fetch('./nzd-asx-government-anchor-v1.json',{cache:'no-store'});
+  if(response.ok)anchor=await response.json();
+  else throw Error('anchor HTTP '+response.status);
+ }
  catch(error){console.warn('[FXV2 Coppie] NZD ASX anchor unavailable; dated B2 retained',error);}
  const model=globalThis.FXV2RatesWorking?.derive(state.rates,research,today,proxy,anchor);
  if(!model||model.schema!=='GMFQ_FXV2_WORKING_RATES_V1'||
