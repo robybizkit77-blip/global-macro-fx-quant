@@ -221,7 +221,7 @@ def main() -> None:
     assert '"$strict_flag" --pipeline-outcome "$source_outcome"' in text
     assert 'strict_flag="--strict-sources"' in text
     assert 'local source_outcome="success" strict_flag="--strict-daily"' in text
-    assert 'Main changed after pre-publication readiness audit' in text
+    assert 'main changed after source audit; no stale approval' in text
     assert 'path: |' in text
     assert '/tmp/morning-readiness*.json' in text
     assert '/tmp/morning-delivery-sla-v1.json' in text
