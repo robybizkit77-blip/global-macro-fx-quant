@@ -219,7 +219,8 @@ def attach_source_evidence(report: dict, freshness: dict | None, decision: dict 
                 "macro_v3_as_of": next((c.get("as_of") for c in checks
                                       if c.get("area") == "macro_observed_research"), None),
                 "macro_legacy_baseline_as_of": core.get("baseline_macro_as_of"),
-                "data_currentness_proven": freshness["status"] == "DATE_CHECKS_PASS"
+                "data_currentness_proven": research_usable
+                  and freshness["status"] == "DATE_CHECKS_PASS"
                   and summary["gaps"] == 0 and summary["late_or_invalid"] == 0
                   and not freshness["hard_errors"],
                 "signal_model_revalidated": False,
