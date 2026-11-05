@@ -90,7 +90,7 @@ def publish(
         raise ValueError("Invalid Rates publish base SHA or mode")
     if max_attempts < 1 or max_attempts > 5:
         raise ValueError("Attempt count outside bounded safety range")
-    if git("status", "--porcelain", cwd=cwd):
+    if git("status", "--porcelain", "--untracked-files=no", cwd=cwd):
         raise RuntimeError("RATES_UNCOMMITTED_CHANGES_REFUSED")
     last_replayed_base = base_sha
     rebased = False
@@ -117,7 +117,7 @@ def publish(
                 "HEAD", cwd=cwd)
             last_replayed_base = remote_sha
             rebased = True
-            if git("status", "--porcelain", cwd=cwd):
+            if git("status", "--porcelain", "--untracked-files=no", cwd=cwd):
                 raise RuntimeError("RATES_REBASE_NOT_CLEAN")
             validate(cwd)
 
