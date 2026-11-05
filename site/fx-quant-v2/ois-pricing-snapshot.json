@@ -41,8 +41,8 @@
       "as_of": "2026-11-04",
       "horizons": {
         "3m": {
-          "rate": 2.515,
-          "as_of": "2026-11-03",
+          "rate": 2.5175,
+          "as_of": "2026-11-04",
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "FST3V2026"
@@ -67,27 +67,27 @@
       "kind": "OIS",
       "quality": "FONTE UFFICIALE",
       "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
-      "as_of": "2026-11-03",
+      "as_of": "2026-11-04",
       "horizons": {
         "3m": {
-          "rate": 4.1676,
-          "as_of": "2026-11-03",
-          "change_1d_bp": 1.1,
-          "change_1w_bp": -0.8,
+          "rate": 4.137,
+          "as_of": "2026-11-04",
+          "change_1d_bp": -3.1,
+          "change_1w_bp": -4.3,
           "contract": null
         },
         "6m": {
-          "rate": 4.4804,
-          "as_of": "2026-11-03",
-          "change_1d_bp": 3.2,
-          "change_1w_bp": -5.7,
+          "rate": 4.4049,
+          "as_of": "2026-11-04",
+          "change_1d_bp": -7.6,
+          "change_1w_bp": -14.0,
           "contract": null
         },
         "12m": {
-          "rate": 4.7921,
-          "as_of": "2026-11-03",
-          "change_1d_bp": 6.3,
-          "change_1w_bp": -14.2,
+          "rate": 4.6805,
+          "as_of": "2026-11-04",
+          "change_1d_bp": -11.2,
+          "change_1w_bp": -26.9,
           "contract": null
         }
       }

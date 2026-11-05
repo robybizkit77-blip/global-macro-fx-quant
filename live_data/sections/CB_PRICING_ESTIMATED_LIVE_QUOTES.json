@@ -60,7 +60,7 @@
       "status": "LIVE_SECONDARY_READY"
     },
     "EUR": {
-      "as_of": "2026-11-03",
+      "as_of": "2026-11-04",
       "confidence_grade": "B",
       "freshness_status": "LIVE_OR_RECENT_SESSION",
       "horizons": {
@@ -79,17 +79,17 @@
           "symbol": "EUREX:FST3U2027"
         },
         "3m": {
-          "business_day_lag": 2,
+          "business_day_lag": 1,
           "contract": "FST3V2026",
           "contract_description": "Oct 2026",
           "expiration": "2027-01-20",
-          "futures_price": 97.485,
+          "futures_price": 97.4825,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
-          "price_valid_until": "2026-11-03T22:36:09Z",
-          "quote_as_of": "2026-11-03",
+          "price_valid_until": "2026-11-04T22:05:26Z",
+          "quote_as_of": "2026-11-04",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 2.515,
+          "rate": 2.5175,
           "symbol": "EUREX:FST3V2026"
         },
         "6m": {
@@ -170,7 +170,7 @@
       "status": "LIVE_SECONDARY_READY"
     }
   },
-  "generated_at_utc": "2026-11-05T13:29:49.963773Z",
+  "generated_at_utc": "2026-11-05T13:59:15.461497Z",
   "governance": {
     "backtest_eligible_as_official_ois": false,
     "bias_effect": "NONE",
