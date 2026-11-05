@@ -152,9 +152,17 @@ const valute=fs.readFileSync(ROOT+'/site/fx-quant-v2/valute.html','utf8');
 assert.ok(valute.includes('const ratesView=effective?.rates||rates'));
 assert.ok(valute.includes("q2==='STIMATO'"));
 assert.ok(valute.includes('Δ giornaliera non inferita'));
+assert.ok(valute.includes('async function refreshValuteRatesOnly()'),
+ 'ECB failure must not freeze dated Rates/COT context');
+assert.ok(valute.includes('try{await refreshValuteRatesOnly();}'),
+ 'Rates/COT fallback should execute after ECB failure without rewriting FX fixing');
 const macro=fs.readFileSync(ROOT+'/site/fx-quant-v2/macro.html','utf8');
 assert.ok(macro.includes('const ratesView=effective?.rates||rates'));
 assert.ok(macro.includes("r.tenor_quality?.['10Y']"));
+assert.ok(macro.includes('async function refreshMacroRatesOnly()'),
+ 'A failed MACRO_SERIES source should not freeze sovereign/CB context');
+assert.ok(macro.includes('try{await refreshMacroRatesOnly();}'),
+ 'Rates/CB recovery should execute after macro source failure');
 const coppie=fs.readFileSync(ROOT+'/site/fx-quant-v2/coppie.html','utf8');
 assert.ok(coppie.includes("update?.applied?.includes('AUD')"));
 assert.ok(coppie.includes('RBA F2 2Y · RICERCA'));
