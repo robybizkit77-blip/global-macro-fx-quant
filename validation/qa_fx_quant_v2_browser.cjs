@@ -358,6 +358,28 @@ async function audit(browser,name,file,selector,view,viewport){
       !['RECALCULATED_FROM_DISPLAYED_TENORS','MATCHED_PUBLISHED_RESEARCH'].includes(rel.parity)||
       !rel.note.includes('non carry')&&!rel.note.includes('non OIS omogenei'))
       issue(name,view,'ois_28pair_live_parity_mismatch',JSON.stringify(rel));
+    // Same listed futures contract, day and rate must match the displayed tenor.
+    for(const c of ['USD','EUR','CHF']){
+      await page.locator('#pricingGrid button[data-c="'+c+'"]').click();
+      await page.waitForFunction(()=>
+        ['VERIFIED_SAME_CONTRACT','SOURCE_PARITY_PENDING','UNAVAILABLE'].includes(
+          document.querySelector('#contractHistory')?.dataset.parity),
+        null,{timeout:15000});
+      const details=await page.evaluate(()=>({
+        hidden:document.querySelector('#contractHistory')?.hidden,
+        parity:document.querySelector('#contractHistory')?.dataset.parity,
+        rows:[...document.querySelectorAll('#contractHistoryRows [data-horizon]')].map(x=>({
+          horizon:x.dataset.horizon,proof:x.dataset.proof,text:x.textContent
+        })),
+        foot:document.querySelector('#contractHistoryFoot')?.textContent||''
+      }));
+      if(details.hidden||details.rows.length!==3||
+         details.rows.some(x=>!['SAME_CONTRACT_VALIDATED','MISMATCH_OR_UNAVAILABLE'].includes(x.proof))||
+         details.rows.some(x=>x.proof==='SAME_CONTRACT_VALIDATED'&&
+           (!x.text.includes('1D:')||!x.text.includes('1W:')))||
+         (details.parity==='VERIFIED_SAME_CONTRACT'&&!details.foot.includes('non OIS ufficiale')))
+        issue(name,view,'ois_same_contract_repricing_source_parity',c+' '+JSON.stringify(details).slice(0,800));
+    }
     await page.locator('#pricingGrid button[data-c="JPY"]').click();
     const title=(await page.locator('#detailTitle').textContent())||'';
     const caveat=(await page.locator('#sourceCaveat').textContent())||'';
