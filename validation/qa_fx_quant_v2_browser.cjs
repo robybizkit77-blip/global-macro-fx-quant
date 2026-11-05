@@ -362,7 +362,7 @@ async function audit(browser,name,file,selector,view,viewport){
           const grade=document.querySelector('#asof2')?.textContent||'';
           return currency==='CHF'
             ?grade.includes('STIMA 2Y')||grade.includes('OSSERVATO 2Y')
-            :grade.includes('PROXY 2Y');
+            :(grade.includes('PROXY 2Y')||grade.includes('STIMA 2Y'));
         },{currency:ccy},{timeout:12000}
       );
       const level=((await page.locator('#curveLevel').textContent())||'').trim();
