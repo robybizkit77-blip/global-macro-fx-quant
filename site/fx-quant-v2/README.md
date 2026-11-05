@@ -16,6 +16,30 @@ Site navigation and data lineage are distinct: an available link does not guaran
 
 The additional `ois.html` is a standalone research section, linked in the shared 12-page navigation. It displays 8 currencies × 3 pricing horizons with per-tenor source dates and explicit instrument types (GBP BoE OIS; other official futures; secondary futures/proxy where unavailable). It reads `OIS_OPERATIONAL_VIEW`, `CB_PRICING_ESTIMATED`, and `NZD_CB_PRICING_DIRECTIONAL_PROXY`, falling back to a dated `ois-pricing-snapshot.json` without overwriting the canonical data. Quoted futures are *not* OIS; maturity spreads across them are illustrative, not policy repricing. Core FX signals, backtests and V10 are untouched.
 
+## NZD ASX research-only automatic fallback (2026-11-05)
+
+The V2 Tassi and Coppie research pages now share an optional **scenario**,
+not an observed 2Y/10Y New Zealand government yield. A frozen reference
+`nzd-asx-government-anchor-v1.json` documents both the RBNZ B2 2Y/10Y
+government reading and the ASX NZ 6M bank-bill futures rate on **2026-11-04**.
+If the existing ASX feed acquires a **newer closing rate on the same Jun 2027
+contract**, the V2-only working model shifts *both* dated government levels by
+the futures-rate change. The one-for-one **parallel shift** is an assumption,
+not a measured economic sensitivity or observed bond price. It is particularly
+weak for the 10Y. The scenario is labelled STIMA with the true source date.
+
+When the ASX observation is unavailable or unchanged, the future contract
+rolls, the government anchor moves, or the quote is anomalous, the model
+retains the latest dated B2 research reading. It never re-dates a stale source,
+creates false 1D yield changes, or modifies canonical rates, official OIS,
+Core, FX trade signals, backtests or prior history. The ASX bill futures rate
+contains credit/basis components and is not the RBNZ OCR OIS or sovereign
+yield. The fallback needs no unauthorized RBNZ access or paid data subscription.
+
+This is a practical retail research approximation only, not an empirically
+validated forecast. Source freshness and validity remain independently
+checkable in the scheduled CHF/NZD source workflow.
+
 ## NZD B2 — Authorized API fallback (2026-11-04)
 
 The source order for V2 CHF/NZD research is: (1) official RBNZ B2 public
