@@ -37,6 +37,7 @@ table{width:100%;border-collapse:collapse;text-align:left;font-size:13px}th{font
 <div id="contractHistory" class="note" hidden aria-label="Storico per identico contratto futures">
 <strong>Quanto è cambiato lo stesso contratto futures?</strong>
 <p class="muted">1D = precedente giorno feriale; 1W = stessa quotazione esattamente 7 giorni prima. Solo contratti e date confrontabili: non è una curva OIS né una probabilità di decisione CB.</p>
+<p id="contractHistoryInterpretation" class="muted" role="status">Lettura storica in attesa di fonte verificata.</p>
 <div id="contractHistoryRows" aria-live="polite">Caricamento storico verificato…</div>
 <p id="contractHistoryFoot" class="muted"></p>
 </div><p class="muted" id="detailInterpretation"></p></article>
@@ -57,6 +58,7 @@ table{width:100%;border-collapse:collapse;text-align:left;font-size:13px}th{font
 <div class="foot">FX Quant V2 · sezione research autonoma. I dati vengono letti dai feed del repository e, in caso di errore, da uno snapshot datato. Nessun calcolo di probabilità implicite, nessuna modifica al motore operativo. <a href="./index.html">Torna alla Home</a>.</div>
 </main>
 <script src="./assets/ois-relative-parity-v1.js"></script>
+<script src="./assets/ois-same-contract-reading-v1.js"></script>
 <script>
 (()=>{"use strict";
 const C=["USD","EUR","GBP","JPY","CHF","CAD","AUD","NZD"], F={USD:"🇺🇸",EUR:"🇪🇺",GBP:"🇬🇧",JPY:"🇯🇵",CHF:"🇨🇭",CAD:"🇨🇦",AUD:"🇦🇺",NZD:"🇳🇿"};
@@ -186,20 +188,20 @@ function showSameContract(){
  if(!["USD","EUR","CHF"].includes(c)){pane.hidden=true;return;}
  pane.hidden=false;
  const doc=state.sameContractResearch;
- if(!doc){rows.textContent="In attesa dello storico verificato.";foot.textContent="";pane.dataset.parity="PENDING";return;}
+ if(!doc){rows.textContent="In attesa dello storico verificato.";foot.textContent="";$("contractHistoryInterpretation").textContent="Storico in caricamento; nessuna direzione dedotta.";pane.dataset.parity="PENDING";return;}
  const terms=doc.currencies?.[c],shown=state.currencies?.[c];
- if(!terms||!shown){rows.textContent="Storico non disponibile.";foot.textContent="";pane.dataset.parity="INVALID";return;}
+ if(!terms||!shown){rows.textContent="Storico non disponibile.";foot.textContent="";$("contractHistoryInterpretation").textContent="Dati mancanti: nessuna direzione dedotta.";pane.dataset.parity="INVALID";return;}
+ const reading=window.FXV2OisMovementReading?.interpret(c,doc,shown);
+ $("contractHistoryInterpretation").textContent=reading?.narrative||"Fonte del commento non verificata: nessuna variazione interpretata.";
  let matching=0,available1d=0,available1w=0;
  rows.innerHTML=T.map(t=>{
   const r=terms[t],z=shown.horizons?.[t];
-  const same=r&&z&&z.kind==="FUTURES SECONDARI"&&z.quality==="STIMA INDICATIVA"&&
-   r.status==="VERIFIED_SAME_CONTRACT_PRICE_CHANGE"&&
-   z.contract===r.contract&&z.as_of===r.as_of&&
-   Number.isFinite(r.rate_pct)&&Math.abs(z.rate-r.rate_pct)<1e-8;
+  const same=Boolean(reading?.matchedTenors?.includes(t));
   if(!same)return '<div class="term" data-horizon="'+t+'" data-proof="MISMATCH_OR_UNAVAILABLE">'+
    '<small>'+t.toUpperCase()+'</small><span class="muted">Confronto sospeso: contratto, data o quotazione non coincidono con lo storico pubblicato.</span></div>';
   matching++;
-  const a=r.one_day,b=r.one_week;
+  const a=window.FXV2OisMovementReading?.validMove(r,r.one_day,1)?r.one_day:null;
+  const b=window.FXV2OisMovementReading?.validMove(r,r.one_week,7)?r.one_week:null;
   if(a)available1d++;
   if(b)available1w++;
   const cell=v=>v?
@@ -238,6 +240,7 @@ async function loadSameContractResearch(){
   if(["USD","EUR","CHF"].includes(state.selected)){
    p.dataset.parity="UNAVAILABLE";
    $("contractHistoryRows").textContent="Storico stesso contratto non disponibile: nessun movimento inferito.";
+   $("contractHistoryInterpretation").textContent="Fonte non accessibile: impossibile commentare i movimenti verificati.";
   }
   console.warn("FXV2 same-contract history unavailable",e);
  }
