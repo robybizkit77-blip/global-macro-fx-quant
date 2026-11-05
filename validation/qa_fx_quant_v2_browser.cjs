@@ -1,5 +1,22 @@
 'use strict';
-const {chromium}=require('playwright'),fs=require('fs');
+const {chromium}=require('playwright'),fs=require('fs'),path=require('node:path');
+const projectRoot=path.resolve(__dirname,'..');
+const sourceJSON=p=>JSON.parse(fs.readFileSync(path.join(projectRoot,p),'utf8'));
+const baseRates=sourceJSON('live_data/sections/NATIVE_RATES_DATA.json');
+const chfNzdResearch=sourceJSON('site/fx-quant-v2/chf-nzd-benchmark-research.json');
+const {derive:deriveWorking}=require('../site/fx-quant-v2/assets/rates-working-model-v1.js');
+const todayRome=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+const workingResearch=deriveWorking(baseRates,chfNzdResearch,todayRome);
+const spreadLegNZD=workingResearch.rates.NZD||baseRates.NZD;
+const spreadLegCHF=workingResearch.rates.CHF||baseRates.CHF;
+const expectedIndicativeSpread=!!(spreadLegNZD.estimated||spreadLegCHF.estimated);
+const expected2yGap=(spreadLegNZD['2Y']-spreadLegCHF['2Y'])*100;
+const expectedGapText=(expected2yGap>=0?'+':'−')+
+ Math.abs(expected2yGap).toLocaleString('it-IT',{minimumFractionDigits:1,maximumFractionDigits:1})+' bp';
+const expectedLegTag=r=>r.tenor_quality?.['2Y']==='STIMATO'?'STIMA 2Y':
+ r.tenor_quality?.['2Y']==='WEB_PROXY'?'PROXY 2Y':
+ r.tenor_quality?.['2Y']==='OSSERVATO'&&r.research_observed===true&&r.no_core_effect===true?
+ 'SNB 2Y · RICERCA':'FEED CANONICO 2Y';
 const base=(process.env.FXV2_BASE||'http://127.0.0.1:8000/site/fx-quant-v2').replace(/\/+$/,'');
 const mode=process.env.FXV2_MODE||'local';
 const out='fxv2-browser-evidence';fs.mkdirSync(out,{recursive:true});
@@ -123,7 +140,7 @@ async function audit(browser,name,file,selector,view,viewport){
   if(name==='coppie'&&(mode==='public'||mode==='pr-local')){
     // Informative 2Y spread: research overlays must never enter pair quality signals.
     await page.locator('#allPairs').selectOption('NZDCHF');
-    await page.waitForFunction(()=>document.querySelector('#gapDate')?.textContent?.includes('STIMA/PROXY INDICATIVO'),null,{timeout:15000});
+    await page.waitForFunction(()=>document.querySelector('#pairGap')?.textContent?.includes('bp')&&document.querySelector('#gapDate')?.textContent?.trim().length>0,null,{timeout:15000});
     const x=await page.evaluate(()=>({
       gap:document.querySelector('#pairGap')?.textContent,
       quality:document.querySelector('#gapDate')?.textContent,
@@ -132,9 +149,16 @@ async function audit(browser,name,file,selector,view,viewport){
       caveat:document.querySelector('#pairRatesSourceNote')?.textContent,
       canonical:document.querySelector('#pairQuality')?.textContent
     }));
-    if(x.gap!=='+370,8 bp'||!x.a.includes('PROXY 2Y')||!x.b.includes('STIMA 2Y')||
-       !x.caveat.includes('NON leggere lo spread come repricing')||!x.canonical)
-      issue(name,view,'pair_estimated_spread_missing',JSON.stringify(x));
+    const baseLabel=expectedLegTag(spreadLegNZD),quoteLabel=expectedLegTag(spreadLegCHF);
+    const validSource=x.a.includes(baseLabel)&&x.b.includes(quoteLabel);
+    const validProvenance=expectedIndicativeSpread?
+      x.quality.includes('STIMA/PROXY INDICATIVO')&&
+      x.caveat.includes('NON leggere lo spread come repricing'):
+      !x.quality.includes('STIMA/PROXY INDICATIVO')&&
+      x.caveat.includes('Lo spread di livello non è OIS');
+    if(x.gap!==expectedGapText||!validSource||!validProvenance||!x.canonical)
+      issue(name,view,'pair_estimated_spread_missing',
+       JSON.stringify({...x,expectedGapText,baseLabel,quoteLabel,expectedIndicativeSpread}));
     // Separate Macro -> pricing bridge: 3M/6M/12M sources must move with the
     // selected pair and must not change the original quality verdict.
     await page.waitForFunction(()=>
