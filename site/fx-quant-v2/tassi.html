@@ -403,7 +403,7 @@ function benchmarkPanel(){
   const old=x.before_roll.at(-1),first=x.after_roll[0],last=x.after_roll.at(-1);
   if(!Number.isFinite(old["2Y"])||!Number.isFinite(old["10Y"])||
      !x.after_roll.every((v,i)=>Number.isFinite(v["2Y"])&&Number.isFinite(v["10Y"])&&
-       /^\\d{4}-\\d{2}-\\d{2}$/.test(v.date||"")&&
+       /^\d{4}-\d{2}-\d{2}$/.test(v.date||"")&&
        (i===0||v.date>x.after_roll[i-1].date))||
      old.date>=x.roll_date||first.date!==x.roll_date||
      last.date!==x.latest_date||last.date>today||
