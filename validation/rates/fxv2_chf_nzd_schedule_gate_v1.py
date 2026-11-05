@@ -17,12 +17,37 @@ ROME = ZoneInfo("Europe/Rome")
 MORNING_CEST = "30 4 * * 1-5"  # 06:30 Rome summer
 MORNING_CET = "30 5 * * 1-5"   # 06:30 Rome winter
 LATER_SOURCE_SLOTS = ("45 8 * * 1-5", "30 18 * * 1-5")
+RATES_PARENT = "Rates Persistent Daily V1"
 
 
-def gate(event: str, cron: str, now: dt.datetime) -> tuple[bool, bool, str]:
+def gate(event: str, cron: str, now: dt.datetime, *,
+         upstream_name: str = "", upstream_branch: str = "",
+         upstream_conclusion: str = "", upstream_event: str = "",
+         upstream_started_at: str = "") -> tuple[bool, bool, str]:
     """(refresh, paid-vendor-eligible, reason). No live market API calls."""
     if now.tzinfo is None:
         raise ValueError("UTC-aware clock required")
+    if event == "workflow_run":
+        # A distinct, successful same-Rome-day Rates run recovers missed
+        # source refreshes; NEVER spend a second vendor quota slot.
+        local = now.astimezone(ROME)
+        if (upstream_name != RATES_PARENT or upstream_branch != "main" or
+            upstream_conclusion != "success" or
+            upstream_event not in {"schedule", "workflow_run", "workflow_dispatch", "push"}):
+            return False, False, "UNTRUSTED_OR_FAILED_RATES_PARENT"
+        try:
+            started = dt.datetime.fromisoformat(upstream_started_at.replace("Z", "+00:00"))
+            if started.tzinfo is None:
+                raise ValueError("upstream datetime must be timezone-aware")
+        except (TypeError, ValueError, AttributeError):
+            return False, False, "UNVERIFIED_PARENT_START_TIME"
+        if started > now or started.astimezone(ROME).date() != local.date():
+            return False, False, "PARENT_OUTSIDE_CURRENT_ROME_DAY"
+        if local.weekday() >= 5:
+            return False, False, "NOT_A_ROMAN_WORKDAY"
+        if local.time() < dt.time(6, 30):
+            return False, False, "BEFORE_MORNING_LOCAL_SLOT"
+        return True, False, "INDEPENDENT_SUCCESSFUL_MAIN_RATES_RECOVERY"
     if event != "schedule":
         return True, event == "workflow_dispatch", "EVENT_OR_MANUAL_SOURCE_REFRESH"
     local = now.astimezone(ROME)
@@ -44,11 +69,22 @@ def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--event", required=True)
     p.add_argument("--cron", default="")
+    p.add_argument("--upstream-name", default="")
+    p.add_argument("--upstream-branch", default="")
+    p.add_argument("--upstream-conclusion", default="")
+    p.add_argument("--upstream-event", default="")
+    p.add_argument("--upstream-started-at", default="")
     p.add_argument("--output", type=Path)
     p.add_argument("--summary", type=Path)
     args = p.parse_args()
     now = dt.datetime.now(dt.timezone.utc)
-    refresh, vendor, reason = gate(args.event, args.cron, now)
+    refresh, vendor, reason = gate(
+        args.event, args.cron, now,
+        upstream_name=args.upstream_name,
+        upstream_branch=args.upstream_branch,
+        upstream_conclusion=args.upstream_conclusion,
+        upstream_event=args.upstream_event,
+        upstream_started_at=args.upstream_started_at)
     result = {
         "source_refresh": "RUN" if refresh else "SKIP_INTENTIONALLY",
         "authorized_optional_vendor_retry_eligible": vendor,

@@ -44,6 +44,11 @@ on:
     - cron: '45 8 * * 1-5'
     - cron: '30 18 * * 1-5'
   workflow_dispatch:
+  workflow_run:
+    # Independent recovery if GitHub misses or delays CHF/NZD source cron.
+    # Only successful same-Rome-day Rates/main runs pass the gate.
+    workflows: ['Rates Persistent Daily V1']
+    types: [completed]
 
 permissions:
   contents: write
@@ -79,10 +84,20 @@ jobs:
         env:
           GH_EVENT_NAME: ${{ github.event_name }}
           GH_EVENT_SCHEDULE: ${{ github.event.schedule }}
+          UPSTREAM_NAME: ${{ github.event.workflow_run.name }}
+          UPSTREAM_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          UPSTREAM_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          UPSTREAM_EVENT: ${{ github.event.workflow_run.event }}
+          UPSTREAM_STARTED_AT: ${{ github.event.workflow_run.run_started_at }}
         run: |
           set -euo pipefail
           python3 validation/rates/fxv2_chf_nzd_schedule_gate_v1.py \
             --event "$GH_EVENT_NAME" --cron "$GH_EVENT_SCHEDULE" \
+            --upstream-name "$UPSTREAM_NAME" \
+            --upstream-branch "$UPSTREAM_BRANCH" \
+            --upstream-conclusion "$UPSTREAM_CONCLUSION" \
+            --upstream-event "$UPSTREAM_EVENT" \
+            --upstream-started-at "$UPSTREAM_STARTED_AT" \
             --output "$GITHUB_OUTPUT" --summary "$GITHUB_STEP_SUMMARY"
 
       - name: Read RBNZ B2 official HTML only with the owner's prior written permission
