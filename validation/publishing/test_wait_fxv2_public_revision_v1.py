@@ -37,7 +37,8 @@ class DeployGate(unittest.TestCase):
                     "nzd-asx-government-anchor-v1.json",
                     "assets/rates-working-model-v1.js",
                     "assets/ois-relative-parity-v1.js",
-                    "pricing-relative-28pairs-research.json"}
+                    "pricing-relative-28pairs-research.json",
+                    "ois-same-contract-repricing-research.json"}
         self.assertTrue(pages.issubset(set(PROBES)))
         self.assertTrue(research.issubset(set(PROBES)))
         self.assertEqual(len(PROBES), len(set(PROBES)))
