@@ -197,7 +197,10 @@ function researchSpreadNote(a,b,r1,r2){
  const facts=[];
  if(chf?.research_observed===true)facts.push('CHF 2Y e 10Y osservati nella stessa coppia SNB, ricerca non promossa al motore');
  else if(chf?.tenor_quality?.['2Y']==='STIMATO')facts.push('CHF 2Y stimato con spostamento parallelo del 10Y SNB');
- if(nzd)facts.push('NZD 2Y usa il proxy B2 dopo il cambio benchmark');
+ if(nzd?.working_method==='NZD_ASX_6M_PARALLEL_SHIFT_SCENARIO')
+  facts.push('NZD 2Y e 10Y STIMATI dallo shift ipotetico del futures ASX bank-bill 6M rispetto al B2 '+dt(nzd.source_date)+'; NON sono rendimenti governativi osservati');
+ else if(nzd)
+  facts.push('NZD 2Y usa la lettura web B2 dopo il cambio benchmark; verifica indipendente non completata');
  return 'CALCOLO INDICATIVO · '+legs.join(' · ')+'. '+(facts.length?facts.join('; ')+'. ':'')+'Date delle valute non necessariamente allineate: NON leggere lo spread come repricing, OIS o carry. Solo research, non modifica qualità e segnali delle 28 coppie.';
 }
 const QUALITY_ORDER=['PULITO','CON RISCHI','DA CONFERMARE','DA MONITORARE','NON VALUTABILE'];
