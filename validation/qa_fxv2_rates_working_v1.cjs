@@ -49,8 +49,12 @@ if(pairedIsLatest){
 }else{
  const expectedShift=Number(((isolated['10Y']-pair['10Y'])*100).toFixed(2));
  assert.equal(chf.working_method,'PARALLEL_10Y_SHIFT_2Y');
- assert.equal(chf.chg2_bp,expectedShift);
- assert.equal(chf.chg10_bp,expectedShift);
+ assert.equal(chf.chg2_bp,null,'CHF multi-session hypothetical shift is not a 1D change');
+ assert.equal(chf.chg10_bp,null,'CHF isolated 10Y movement is not a 1D change');
+ assert.deepEqual(chf.comparison_window,{
+  start:pair.paired_date,end:isolated.as_of,
+  observed_10y_bp:expectedShift,assumed_2y_bp:expectedShift,
+  kind:'MULTI_SESSION_PARALLEL_SHIFT_SCENARIO_NOT_1D'});
  assert.equal(chf.no_inferred_market_move,true);
 }
 const first=research.NZD.after_roll[0],last=research.NZD.after_roll.at(-1);
@@ -59,10 +63,18 @@ assert.equal(last.date,research.NZD.latest_date);
 assert.equal(nzd['2Y'],research.NZD.latest_2Y);
 assert.equal(nzd['10Y'],research.NZD.latest_10Y);
 assert.equal(nzd.curve_bp,Number(((last['10Y']-last['2Y'])*100).toFixed(1)));
-assert.equal(nzd.chg2_bp,Number(((last['2Y']-first['2Y'])*100).toFixed(2)));
-assert.equal(nzd.chg10_bp,Number(((last['10Y']-first['10Y'])*100).toFixed(2)));
+assert.equal(nzd.chg2_bp,null,'NZD post-roll window cannot be represented as 1D');
+assert.equal(nzd.chg10_bp,null,'NZD post-roll window cannot be represented as 1D');
+assert.deepEqual(nzd.comparison_window,{
+ start:first.date,end:last.date,
+ observed_2y_bp:Number(((last['2Y']-first['2Y'])*100).toFixed(2)),
+ observed_10y_bp:Number(((last['10Y']-first['10Y'])*100).toFixed(2)),
+ kind:'POST_ROLL_CUMULATIVE_NOT_1D'});
 assert.equal(nzd.date,research.NZD.latest_date);
 assert.equal(nzd.no_cross_roll_change,true);
+assert.equal(nzd.chg2_bp,null);
+assert.equal(chf.chg2_bp,null);
+
 assert.equal(research.NZD.independent_xlsx_reconciled,false);
 assert.equal(research.NZD.eligible_for_core,false);
 assert.equal(JSON.stringify(canonical),before,'Canonical source must remain unmodified');
