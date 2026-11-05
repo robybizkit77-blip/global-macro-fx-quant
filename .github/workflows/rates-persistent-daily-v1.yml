@@ -11,6 +11,8 @@ on:
       - 'validation/rates/verify_weekly_rate_change_contract_v1.py'
       - 'validation/rates/test_weekly_rate_change_contract_v1.py'
       - 'validation/test_eur_daily_rates_history_source_guard_v1.py'
+      - 'validation/fetch_rates_eur_gbp.py'
+      - 'validation/test_fetch_rates_eur_gbp_retry_v1.py'
       - 'validation/rates_schedule_gate_v2.py'
       - 'validation/test_rates_schedule_gate_v2.py'
       - 'validation/build_rates_audit_metadata.py'
@@ -32,6 +34,8 @@ on:
       - 'validation/rates/verify_weekly_rate_change_contract_v1.py'
       - 'validation/rates/test_weekly_rate_change_contract_v1.py'
       - 'validation/test_eur_daily_rates_history_source_guard_v1.py'
+      - 'validation/fetch_rates_eur_gbp.py'
+      - 'validation/test_fetch_rates_eur_gbp_retry_v1.py'
       - 'validation/rates_schedule_gate_v2.py'
       - 'validation/test_rates_schedule_gate_v2.py'
       - 'validation/build_rates_audit_metadata.py'
@@ -78,6 +82,9 @@ jobs:
         with:
           fetch-depth: 2
           persist-credentials: true
+
+      - name: Test transient ECB/BoE official transport retry and fail-closed access
+        run: python3 -m unittest validation.test_fetch_rates_eur_gbp_retry_v1 -v
 
       - name: Test delayed DST-safe Rates schedule gate
         run: python3 validation/test_rates_schedule_gate_v2.py

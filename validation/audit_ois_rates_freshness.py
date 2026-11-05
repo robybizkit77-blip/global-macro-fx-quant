@@ -11,6 +11,7 @@ from __future__ import annotations
 import datetime as dt
 import json
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from build_rates_audit_metadata import source_status
 
@@ -35,7 +36,7 @@ def parse_age(value, today):
 def evaluate(*, rates=None, ois=None, today=None):
     """Keep known historical gaps separate from actionable source contradictions."""
     if today is None:
-        today = dt.datetime.now(dt.timezone.utc).date()
+        today = dt.datetime.now(ZoneInfo('Europe/Rome')).date()
     if rates is None:
         rates = json.loads((SECTIONS / "NATIVE_RATES_DATA.json").read_text())
     if ois is None:

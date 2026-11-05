@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import csv, io, json, urllib.request, zipfile
+import csv, io, json, time, urllib.error, urllib.request, zipfile
 from datetime import datetime
 from pathlib import Path
 
@@ -8,9 +8,24 @@ BOE_ZIP = 'https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-cu
 BOE_NOMINAL_FILE = 'GLC Nominal daily data current month.xlsx'
 
 def get(url):
+    """Retry transient official publisher outages, never synthesize a yield.
+
+    ECB sometimes returns HTTP 504 for one of the same-day tenor requests.
+    Only 429 / 5xx or transport/timeouts are retryable; a permanently bad
+    endpoint, permission denial or malformed response still fails closed.
+    """
     req = urllib.request.Request(url, headers={'User-Agent':'GMFQ-Rates-Audit/1.0'})
-    with urllib.request.urlopen(req, timeout=60) as r:
-        return r.read()
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(req, timeout=45) as response:
+                return response.read()
+        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as exc:
+            if isinstance(exc, urllib.error.HTTPError) and exc.code not in (429, 500, 502, 503, 504):
+                raise
+            if attempt == 2:
+                raise
+            time.sleep(2 ** (attempt + 1))
+    raise AssertionError('unreachable retry state')
 
 def ecb(series):
     raw = get(ECB_TMPL.format(series=series)).decode('utf-8-sig')
