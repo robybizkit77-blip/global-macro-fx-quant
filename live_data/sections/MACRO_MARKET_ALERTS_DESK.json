@@ -1,8 +1,47 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-05T02:30:19Z",
+  "generated_at_utc": "2026-11-05T11:02:03Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-2a6ff6e68448a3919336",
+      "observed_at_utc": "2026-11-05T04:21:00Z",
+      "headline": "Iran's IRGC says two tankers and tugboat caught fire in Strait of Hormuz",
+      "summary": "Reuters riporta: Iran's IRGC says two tankers and tugboat caught fire in Strait of Hormuz. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxQN2pHcmkxeDJDM184TXNiS2xIOUdXdHNrTXcyVHFKcUNGZEgtanhxTm9TR0UxWjA5cGlXSy12RVBLT3JYYVVBVEltbXFTNWtFT09OMVBIUkFEVlZiaW1mcVhPM3JfQ2tnZm1uRnJSQlVoX1FfNTl5bmh1c1pZMUJBVlVZeVdoWnlQMURoR0g0WVZYcjU4WDloZzRxMHh3Q24zMlRSYXV3MUFZTGxEQXM3NXNuNExxUQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-d887f088c8596a5ecfa1",
+      "observed_at_utc": "2026-11-04T23:38:07Z",
+      "headline": "Brazil's central bank ends run of rate cuts after Lula election win",
+      "summary": "Reuters riporta: Brazil's central bank ends run of rate cuts after Lula election win. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxQZEFUME9sYnFseThMNGczNTU1OGwtT1ZzWk5yNXpVWGpfZWpFbjVYcHJ0NS1iRjNVNGcyQnZ4cXp3WkRuVTJ3UF8takxXTnV6ZjZ5RXFsVkVGazQwbkdkZ3czRTZ1QXp6RVo4eVZxRGpJSkN0dXhzSWZ6V0N4RGwzdTVsTF9vYlFHdUlrakdlZGF4bnFPYzlNZ1dUT2FHTnlJZTlYSWlYZ1psV2NQSHB2RExDZUg?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-bc612a90cccbf278eb0f",
+      "observed_at_utc": "2026-11-05T05:04:00Z",
+      "headline": "Inflation, tariffs and a voter revolt: The midterm verdict on Trump’s economy",
+      "summary": "AP News riporta: Inflation, tariffs and a voter revolt: The midterm verdict on Trump’s economy. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxOQ21uZTBtcHVVa1pjcFN6eHhxWllCcEpzV2hpTmN6SWhMY3dqY2dpOWtxd0dtdGFPRV9RSUM1SEhrSDVHUHI3YmIwZzZucVoyZDd2V1hzNGJLT2w4OG5VRGpDRkNYbmJ4V2xadVlUVldoOUJ1THc2RVA0WkFtZmpaRDdWdG9iU3pZX285WkRhRi1MUF90UF9SekFzVjMyRzZNTmZoQmlEMVdmb3lHaUV2WTBZdFU?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-672cfc1e708775ef0830",
       "observed_at_utc": "2026-11-05T01:54:00Z",
@@ -1365,49 +1404,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxOcHhTdWhkbjVIbnJ1NFVfN2YwYUtEQlVQTWhWVW93TGdKdWJVVlRVX0t2anMySThWOVpkRkdaelMtb3ZYS3E5QUQzNFhKMndFY2l0d3ZpWHh6eTQ4ZUJvQlY3R25odnRuQV8tVzFlelFPQkxnSVpsQXV0S1YzZUIxMU90WktKSjA5ZjY2cmw2elkwd29aLUZHaFlCM0JhVVdqTGg0VUg4WDNxNTI1ZjZvMF9JUkpJd0VMdXZsWGZLdmJUUEZaUkpB?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-3aed6c5fa0f28e711f44",
-      "observed_at_utc": "2026-10-27T14:32:33Z",
-      "headline": "S&P 500, Nasdaq advance as oil eases ahead of Fed decision",
-      "summary": "Reuters riporta: S&P 500, Nasdaq advance as oil eases ahead of Fed decision. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxNR21qQWZsLUZqbWRjR2YtQ3FGakpEWWVjSUVFNjVDSi01MnRiWmV3Z2pPQUsyVGhJR3UxQ1o4RjRVa2tCLXNXbnJjNE9fbE5KVzlKTEZtNHpZb3lPR0hXcFFSVGVydlpnR3RQdVM5bDE3aVI3aVowN0NqY3NHb3VDN3hlaXpLTmxkeFc3NE13dUNqYUtIMHNxRFR5M3VYZmpKUDRzVE5WLUdwRHJCeEpQM1pKaw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-af42344e83eaeca2e3e9",
-      "observed_at_utc": "2026-10-27T10:15:01Z",
-      "headline": "Bond investors are thinking less about the Fed and more about AI, deficits",
-      "summary": "Reuters riporta: Bond investors are thinking less about the Fed and more about AI, deficits. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxOTVZDTFViUjF0VS1rM2FQX1ZjYmpIQncyQi1pMldoZ1N2U2JXUjIydVFJUGN1dXV4STlvYlVEM3FPSEZaSEt3Rnkxc0R5c3JrOEg2b0g2d2pUemFMbXpKNjZ6M1NabkwxcmJrbE5sdWtnU2pDd3R0X3ZkakhTNTZraUU0ejJKdDVRR0NheWhzcXBLUnU2dGxGUXFURnJZaExIM1hTRW9LWE5KbkNJN2RZ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-c46b84d9ec8e6335d5a3",
-      "observed_at_utc": "2026-10-27T13:41:44Z",
-      "headline": "High inflation to persist globally into next year, Reuters poll shows",
-      "summary": "Reuters riporta: High inflation to persist globally into next year, Reuters poll shows. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxQSGlkNFRUdUxnaVVWLTVGV2pJeEdyQzVIUTBoak15M0dBVjMzcGZrV0NjMnVISDZud2U2RGdDcXc3NUZpSU5QNGtSS0xpc2F3QkR0Y05OOE00czlTSUV6ZUQ1V1Vrdk9BT2x6Qzk1a1IycThjeEJ0bk5MT3FjN0FxTEpvdFV1aEZ6MkRfTkJpbVU5eEZVdlhOVzdxVkJENXpjazlRVk0yZlROcTByLVluVXp0MA?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
