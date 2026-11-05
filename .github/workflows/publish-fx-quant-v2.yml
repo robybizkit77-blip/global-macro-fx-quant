@@ -11,6 +11,8 @@ on:
     paths:
       - '.github/workflows/publish-fx-quant-v2.yml'
       - 'validation/publishing/test_fxv2_publisher_source_trigger_v1.py'
+      - 'validation/publishing/wait_gh_pages_idle_before_fxv2_push_v1.py'
+      - 'validation/publishing/test_wait_gh_pages_idle_before_fxv2_push_v1.py'
   workflow_run:
     # GITHUB_TOKEN commits do NOT emit a new push workflow. Use the producer's
     # completed run as an independent publication signal after its main write.
@@ -28,6 +30,7 @@ on:
 
 permissions:
   contents: write
+  actions: read
 
 concurrency:
   group: ${{ github.event_name == 'pull_request' && format('fxv2-publish-validation-pr-{0}', github.event.pull_request.number) || 'publish-fx-quant-v2-isolated' }}
@@ -42,7 +45,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Validate event filters, source producers and V2-only scope
-        run: python3 validation/publishing/test_fxv2_publisher_source_trigger_v1.py
+        run: |
+          python3 validation/publishing/test_fxv2_publisher_source_trigger_v1.py
+          python3 -m unittest validation.publishing.test_wait_gh_pages_idle_before_fxv2_push_v1 -v
   sync-v2:
     if: >-
       github.event_name != 'pull_request' &&
@@ -50,12 +55,34 @@ jobs:
        (github.event.workflow_run.conclusion == 'success' &&
         github.event.workflow_run.head_branch == 'main'))
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - name: Checkout approved main
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+
+      - name: Verify the Pages collision guard with deterministic tests
+        run: python3 -m unittest validation.publishing.test_wait_gh_pages_idle_before_fxv2_push_v1 -v
+
+      - name: Wait until preceding official Pages build/deployment has finished
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          python3 validation/publishing/wait_gh_pages_idle_before_fxv2_push_v1.py \
+            --output "$RUNNER_TEMP/fxv2-pages-idle-before-publish.json" \
+            --attempts 90 --delay 10
+
+      - name: Re-fetch the latest approved main after deployment queue wait
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main --no-tags
+          git checkout --detach origin/main
+          echo "FXV2_APPROVED_MAIN_AFTER_QUEUE=$(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish only site/fx-quant-v2 without altering V10 or any other path
         shell: bash
