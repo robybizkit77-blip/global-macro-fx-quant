@@ -93,6 +93,18 @@ alteredWeek.currencies.EUR['12m'].one_week={
 };
 assert.equal(validMove(alteredWeek.currencies.EUR['12m'],
   alteredWeek.currencies.EUR['12m'].one_week,7),false);
+// A newly selected listed contract may have a verified current quote but
+// no previous same-contract observation. Show the quote, not a fake move.
+const debut=structuredClone(fake);
+debut.currencies.EUR['12m'].status='VERIFIED_CONTRACT_NO_MATCHED_REFERENCE';
+debut.currencies.EUR['12m'].one_day=null;
+debut.currencies.EUR['12m'].one_week=null;
+const debutReading=interpret('EUR',debut,view);
+assert.ok(debutReading.matchedTenors.includes('12m'));
+assert.equal(debutReading.latestDate,'2026-11-05');
+assert.equal(debutReading.verified1D,0);
+assert.match(debutReading.narrative,/Manca il confronto verificato/);
+assert.doesNotMatch(debutReading.narrative,/12M \+0,75 pb/);
 assert.equal(interpret('GBP',fake,view).status,'NON_VERIFICABILE');
 assert.equal(interpret('EUR',{...fake,eligible_for_fx_engine:true},view).matchedTenors.length,0);
 assert.equal(fmtBp(-9.5),'−9,5 pb');
