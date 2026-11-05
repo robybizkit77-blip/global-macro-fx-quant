@@ -17,7 +17,11 @@
   // remains blocked: preserve the level and label the increasing age.
   const inPast=(now,then) => iso(now) && iso(then) && age(now,then)>=0;
   const researchAge=(now,then) => age(now,then);
+  // Daily market evidence and SNB month-end statistical curve anchors are
+  // different publication cadences. Never label the 10Y daily observation
+  // stale merely because the last paired 2Y/10Y statistical anchor is monthly.
   const olderThanResearchWindow=(now,then) => researchAge(now,then)>14;
+  const olderThanSnbStatisticalAnchor=(now,then) => researchAge(now,then)>45;
 
   function derive(canonical, research, today, asxProxy=null, asxAnchor=null) {
     const out={schema:"GMFQ_FXV2_WORKING_RATES_V1",rates:{},warnings:[],
@@ -50,7 +54,7 @@
         // SNB spot series. The separately published 10Y may be older.
         // Do not manufacture a daily rate move from this one paired level.
         const sourceAge=researchAge(today,chf.paired_date);
-        const dated=olderThanResearchWindow(today,chf.paired_date);
+        const dated=olderThanSnbStatisticalAnchor(today,chf.paired_date);
         out.rates.CHF={
           date:chf.paired_date,"2Y":chf["2Y"],"10Y":chf["10Y"],
           curve_bp:round((chf["10Y"]-chf["2Y"])*100,1),
@@ -59,7 +63,8 @@
           quality:"SNB 2Y / 10Y OSSERVATI · RICERCA V2"+(dated?" · RIFERIMENTO STORICO":""),
           research_observed:true,estimated:true,
           stale_source:dated,source_age_days:sourceAge,
-          freshness:dated?"DATED_RESEARCH_NO_CURRENT_MARKET_MOVE":"RECENT_DATED_RESEARCH",
+          anchor_age_days:sourceAge,anchor_cadence:"STATISTICAL_MONTH_END",
+          freshness:dated?"DATED_RESEARCH_NO_CURRENT_MARKET_MOVE":"DATED_MONTH_END_OBSERVATION",
           source_date:chf.paired_date,evidence_date:chf.paired_date,
           tenor_quality:{"2Y":"OSSERVATO","10Y":"OSSERVATO"},
           working_method:"SNB_SAME_DATE_OBSERVED_PAIR_RESEARCH",
@@ -78,7 +83,7 @@
         if(Math.abs(delta10)<=0.5) {
           const sourceAge=researchAge(today,chf.separate_10y.as_of);
           const dated=olderThanResearchWindow(today,chf.separate_10y.as_of) ||
-                      olderThanResearchWindow(today,chf.paired_date);
+                      olderThanSnbStatisticalAnchor(today,chf.paired_date);
           const modeled2=round(chf["2Y"]+delta10,4);
           out.rates.CHF={
             date:chf.separate_10y.as_of,"2Y":modeled2,"10Y":observed10,
@@ -93,7 +98,9 @@
             source:"SNB 10Y spot osservato; SNB 2Y stimato da shift parallelo della coppia "+chf.paired_date,
             quality:"STIMA 2Y / SNB 10Y OSSERVATO"+(dated?" · RIFERIMENTO STORICO":""),
             stale_source:dated,source_age_days:sourceAge,
-            freshness:dated?"DATED_RESEARCH_NO_CURRENT_MARKET_MOVE":"RECENT_DATED_RESEARCH",
+            anchor_age_days:researchAge(today,chf.paired_date),
+            anchor_cadence:"STATISTICAL_MONTH_END",
+            freshness:dated?"DATED_RESEARCH_NO_CURRENT_MARKET_MOVE":"RECENT_DAILY_10Y_WITH_MONTH_END_2Y_ESTIMATE",
             estimated:true,source_date:chf.paired_date,
             evidence_date:chf.separate_10y.as_of,
             tenor_quality:{"2Y":"STIMATO","10Y":"OSSERVATO"},
