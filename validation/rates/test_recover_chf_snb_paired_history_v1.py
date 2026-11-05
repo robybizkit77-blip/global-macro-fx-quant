@@ -86,7 +86,8 @@ class PairedRecovery(unittest.TestCase):
  def test_aged_month_end_pair_is_historical_evidence_not_fresh_market_price(self):
   result=verify(copy.deepcopy(BASE),copy.deepcopy(RATES),copy.deepcopy(CONTEXT),
                 asof=date(2026,11,6),source_hash='b'*64)
-  self.assertEqual(result['status'],'PAIRED_OFFICIAL_HISTORY_READY_FOR_REVIEW')
+  self.assertEqual(result['status'],'OFFICIAL_PAIRED_HISTORY_NOT_CURRENT')
+  self.assertTrue(result['paired_source_ready_for_historical_review'])
   self.assertEqual(result['last_common_age_days'],7)
   self.assertFalse(result['latest_paired_market_session_fresh'])
   self.assertFalse(result['current_session_government_rates_certified'])
