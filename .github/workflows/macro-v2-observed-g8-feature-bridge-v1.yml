@@ -304,11 +304,11 @@ jobs:
               w.write('- Shadow economies: **8/8**, axes: **24/24** (growth, labour tightness, price pressure).\n')
               w.write('- USD: two **estimated** source axes; EUR/CHF: GDP definition caveats.\n')
               w.write('- Activity combines only growth and labour 50/50 (hypothesis). Inflation stands alone.\n')
-              w.write('- Valid descriptive activity balances: **%s/8**. Missing strict-source axes: **%s/16**; NOT estimated or filled.\n' %
+              w.write('- Valid descriptive activity balances: **%s/8**. Unavailable strict z values: **%s/16**; no fabricated data.\n' %
                       (d['summary']['research_activity_balances_calculated'],
                        d['summary']['research_source_axes_unavailable']))
-              for key in d['summary']['unavailable_source_axis_keys']:
-                  w.write('- Unavailable source axis: **%s** (no z or FX signal emitted).\n' % key)
+              for key, reason in d['summary']['unavailable_source_axis_reasons'].items():
+                  w.write('- Unavailable strict source intensity: **%s** — **%s** (zero robust dispersion is NOT missing history).\n' % (key, reason))
               w.write('- Economic regime/model approval: **0**. No core scores, FX ranks, Beta or Forward.\n')
           PY
       - name: Test sensitivity and GDP cutoff replay (NO score approval)
