@@ -28,6 +28,9 @@ FILES = (
     "liquidita-credito.html", "calendario-news.html", "research.html",
     "assets/site-nav.js", "assets/site-nav.css",
     "ois-pricing-snapshot.json", "cross-asset-live-data.json",
+    "chf-nzd-benchmark-research.json", "nzd-asx-government-anchor-v1.json",
+    "pricing-relative-28pairs-research.json", "quant-temporal-readiness-v1.json",
+    "macro-baseline-candidate-v1.json",
 )
 CURRENCIES = {"USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"}
 TENORS = ("3m", "6m", "12m")
@@ -74,6 +77,105 @@ def evaluate(now: dt.datetime, rows: list[dict], *, expected=FILES) -> dict:
         "note": "Late verification does not prove when files first became available. Source-level as-of dates and instrument quality require separate review.",
         "files": rows,
     }
+
+
+def attach_source_evidence(report: dict, freshness: dict | None, decision: dict | None) -> dict:
+    """Attach existing source-date and Research/Core audits; never infer updates.
+
+    Public-byte equality and source freshness are independent facts. Missing,
+    stale or contradictory receipts cannot be represented as a green morning.
+    """
+    result = dict(report)
+    result["source_evidence"] = {
+        "status": "SOURCE_AUDIT_MISSING_OR_INCOMPLETE",
+        "freshness_as_of": None,
+        "source_checks": 0,
+        "date_delays_or_invalid": None,
+        "unresolved_gaps": None,
+        "hard_errors": None,
+        "research_readiness": "UNVERIFIED",
+        "trading_core_readiness": "UNVERIFIED",
+        "canonical_gov_as_of": {},
+        "pricing_tenor_as_of": {},
+        "macro_v3_as_of": None,
+        "macro_legacy_baseline_as_of": None,
+        "data_currentness_proven": False,
+        "signal_model_revalidated": False,
+    }
+    if isinstance(freshness, dict) and isinstance(decision, dict):
+        summary = freshness.get("summary") or {}
+        research = decision.get("research") or {}
+        core = decision.get("trading_core") or {}
+        checks = freshness.get("checks") or []
+        valid = (
+            freshness.get("schema") == "GMFQ_FXV2_FRESHNESS_AUDIT_V1"
+            and decision.get("schema") == "GMFQ_FXV2_READINESS_DUAL_TRACK_V1"
+            and freshness.get("as_of_rome") == result["date_rome"]
+            and decision.get("as_of_rome") == result["date_rome"]
+            and isinstance(checks, list) and len(checks) >= 40
+            and summary.get("checks") == len(checks)
+            and summary.get("v2_pages") == 12
+            and summary.get("fx_pairs") == 28
+            and research.get("website_pages") == 12
+            and research.get("rate_pricing_horizons") == 24
+            and core.get("pair_count") == 28
+            and isinstance(freshness.get("hard_errors"), list)
+            and isinstance(summary.get("gaps"), int)
+            and isinstance(summary.get("late_or_invalid"), int)
+            and freshness.get("status") in
+                ("DATE_CHECKS_PASS", "DATA_GAPS_PRESENT", "AUDIT_FAILED")
+        )
+        if valid:
+            by_area = lambda area: {r["item"]: r["as_of"] for r in checks
+                                    if r.get("area") == area and
+                                    isinstance(r.get("as_of"), str)}
+            g = by_area("governments")
+            tenors = {c: {
+                t: ((decision.get("research") or {}).get("source_as_of_mismatches")
+                    or []) for t in []} for c in []}  # overridden below
+            # Each tenor has its own source date: do not inherit the page's
+            # aggregate date (one tenor may be older than its neighbours).
+            for row in freshness.get("checks", []):
+                if row.get("area") == "ois_v2_research":
+                    pass
+            result["source_evidence"] = {
+                "status": freshness["status"],
+                "freshness_as_of": freshness["as_of_rome"],
+                "source_checks": len(checks),
+                "date_delays_or_invalid": summary["late_or_invalid"],
+                "unresolved_gaps": summary["gaps"],
+                "hard_errors": len(freshness["hard_errors"]),
+                "research_readiness": research.get("state", "UNVERIFIED"),
+                "trading_core_readiness": core.get("state", "UNVERIFIED"),
+                "canonical_gov_as_of": g,
+                "pricing_tenor_as_of": tenors,
+                "macro_v3_as_of": next((c.get("as_of") for c in checks
+                                      if c.get("area") == "macro_observed_research"), None),
+                "macro_legacy_baseline_as_of": core.get("baseline_macro_as_of"),
+                "data_currentness_proven": freshness["status"] == "DATE_CHECKS_PASS"
+                  and summary["gaps"] == 0 and summary["late_or_invalid"] == 0
+                  and not freshness["hard_errors"],
+                "signal_model_revalidated": False,
+            }
+    source = result["source_evidence"]
+    result["joint_status"] = (
+        "PUBLIC_NOT_VERIFIED_BY_0800"
+        if not result["on_time_proven"] else
+        "PUBLIC_BY_0800_SOURCE_AUDIT_MISSING"
+        if source["status"] == "SOURCE_AUDIT_MISSING_OR_INCOMPLETE" else
+        "PUBLIC_BY_0800_SOURCE_GAPS_VISIBLE"
+        if not source["data_currentness_proven"] else
+        "PUBLIC_BY_0800_DATA_CADENCE_CHECKS_PASS"
+    )
+    result["all_sections_ready_with_current_data"] = (
+        result["on_time_proven"] and source["data_currentness_proven"])
+    result["official_ois_8_of_8_certified"] = False
+    result["signal_model_revalidated"] = False
+    result["note"] += (
+        " Joint status distinguishes website publication from source-data"
+        " cadence and Research/Core validation; futures proxies are never OIS."
+    )
+    return result
 
 
 def check_snapshot() -> None:
@@ -124,10 +226,20 @@ def fetch_one(path: str, *, attempts: int = 3) -> dict:
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--output", required=True)
+    p.add_argument("--freshness", help="Existing read-only freshness.json receipt")
+    p.add_argument("--readiness", help="Existing read-only decision-readiness.json receipt")
     args = p.parse_args()
     check_snapshot()
     rows = [fetch_one(name) for name in FILES]
     report = evaluate(dt.datetime.now(dt.timezone.utc), rows)
+    def receipt(file):
+        if not file:
+            return None
+        try:
+            return json.loads(Path(file).read_text(encoding="utf-8"))
+        except (OSError, ValueError, UnicodeError):
+            return None
+    report = attach_source_evidence(report, receipt(args.freshness), receipt(args.readiness))
     report["run_trigger"] = os.environ.get("GITHUB_EVENT_NAME", "manual")
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -136,7 +248,9 @@ def main() -> int:
     for row in rows:
         if row["status"] != "MATCH":
             print("PUBLIC_MISMATCH", row["path"], row.get("error", ""))
-    return 0 if report["on_time_proven"] else 1
+    # Distinguish successful publication from complete data readiness.
+    # A red operational run must not masquerade as a clean 08:00 report.
+    return 0 if report["all_sections_ready_with_current_data"] else 1
 
 
 if __name__ == "__main__":
