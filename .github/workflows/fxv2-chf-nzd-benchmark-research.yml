@@ -174,6 +174,19 @@ jobs:
               out.write('\n'+note+'\n')
           print('FXV2_NZD_SOURCE_STATUS',note)
           PY
+      - name: Recover actual official paired CHF 2Y/10Y history (read-only)
+        # Run only on scheduled/source-code refresh, never every Rates retry.
+        if: steps.gate.outputs.should_run == 'true' && github.event_name != 'pull_request' && github.event_name != 'workflow_run'
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=/tmp/fxv2-snb-paired-historical-review.json
+          if python3 validation/rates/recover_chf_snb_paired_history_v1.py --output "$OUT"; then
+            jq -r '"SNB 2Y/10Y source: "+.status+"; last matched official date: "+(.last_common_date//"n.d.")+"; dated rows after anchor: "+((.new_paired_rows//0)|tostring)+"; Core untouched."' "$OUT" | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            rm -f "$OUT"
+            echo 'SNB paired 2Y/10Y source UNAVAILABLE; keep prior research. No new observation or Core rate update.' | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Check dated CHF/NZD source age and preserve exact source evidence
         if: steps.gate.outputs.should_run == 'true'
         shell: bash
