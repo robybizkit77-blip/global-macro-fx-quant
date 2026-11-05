@@ -29,6 +29,8 @@ PROBES=(
   "chf-snb-paired-history.json",
   "nzd-asx-government-anchor-v1.json",
   "ois-pricing-snapshot.json",
+  "pricing-relative-28pairs-research.json",
+  "assets/ois-relative-parity-v1.js",
 )
 SCHEMA="GMFQ_FXV2_POST_PUBLISH_PUBLIC_REVISION_GATE_V1"
 
