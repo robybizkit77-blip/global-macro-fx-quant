@@ -1,0 +1,20 @@
+{
+  "schema": "GMFQ_FXV2_NZD_ASX_6M_GOVT_SCENARIO_ANCHOR_V1",
+  "currency": "NZD",
+  "government_as_of": "2026-11-04",
+  "2Y": 3.83,
+  "10Y": 4.81,
+  "gov_benchmark_2y": "April 2029",
+  "gov_benchmark_10y": "April 2037",
+  "government_source": "RBNZ B2 official public webpage; dated research, independent XLSX not reconciled",
+  "asx_6m_as_of": "2026-11-04",
+  "asx_6m_rate": 3.7,
+  "asx_6m_contract": "Jun 2027",
+  "asx_6m_expiration": "2027-06-16",
+  "asx_source": "ASX NZ 90 Day Bank Accepted Bill Futures 6M, 2026-11-04 EOD",
+  "assumption": "Both government 2Y and 10Y shift 1:1 with SAME-contract 6M bank-bill futures rate since 2026-11-04. NOT a measured beta or observed government yield.",
+  "eligible_for_fx_engine": false,
+  "eligible_for_backtests": false,
+  "eligible_for_canonical_rates": false,
+  "eligible_for_official_ois": false
+}
