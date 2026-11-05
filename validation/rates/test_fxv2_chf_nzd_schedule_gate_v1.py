@@ -47,6 +47,19 @@ class SourceScheduleGate(unittest.TestCase):
         self.assertEqual(gate("schedule","0 0 * * 1-5",utc(2026,11,5,7,30)),
                          (False,False,"UNKNOWN_SCHEDULE_SLOT"))
 
+    def test_workflow_preopen_contract_and_vendor_limit(self):
+        from pathlib import Path
+        root = Path(__file__).resolve().parents[2]
+        workflow = (root / ".github/workflows/fxv2-chf-nzd-benchmark-research.yml").read_text()
+        for name in (MORNING_CEST, MORNING_CET):
+            self.assertIn("cron: '" + name + "'", workflow)
+        self.assertIn("id: gate", workflow)
+        self.assertIn("steps.gate.outputs.should_run == 'true'", workflow)
+        self.assertIn("VENDOR_SLOT: ${{ steps.gate.outputs.vendor_slot }}", workflow)
+        self.assertIn('if [ "$VENDOR_SLOT" != "true" ]; then', workflow)
+        self.assertIn("report_fxv2_chf_nzd_freshness_v1.py", workflow)
+        self.assertIn("fxv2-chf-nzd-freshness-receipt.json", workflow)
+
     def test_reject_naive_clock_and_early_run(self):
         with self.assertRaisesRegex(ValueError, "aware"):
             gate("schedule",MORNING_CET,dt.datetime(2026,11,5,5,30))
