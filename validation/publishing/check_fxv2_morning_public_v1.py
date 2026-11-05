@@ -130,14 +130,25 @@ def attach_source_evidence(report: dict, freshness: dict | None, decision: dict 
                                     if r.get("area") == area and
                                     isinstance(r.get("as_of"), str)}
             g = by_area("governments")
-            tenors = {c: {
-                t: ((decision.get("research") or {}).get("source_as_of_mismatches")
-                    or []) for t in []} for c in []}  # overridden below
-            # Each tenor has its own source date: do not inherit the page's
-            # aggregate date (one tenor may be older than its neighbours).
-            for row in freshness.get("checks", []):
-                if row.get("area") == "ois_v2_research":
-                    pass
+            tenors = {}
+            for row in checks:
+                if row.get("area") != "ois_v2_research_tenor":
+                    continue
+                bits = str(row.get("item", "")).split()
+                if len(bits) != 2 or bits[1] not in TENORS:
+                    continue
+                tenors.setdefault(bits[0], {})[bits[1]] = row.get("as_of")
+            # An old or incomplete audit must never be called complete.
+            if set(g) != CURRENCIES or set(tenors) != CURRENCIES or any(
+                    set(tenors.get(c, {})) != set(TENORS) for c in CURRENCIES):
+                return result | {
+                    "joint_status": (
+                        "PUBLIC_BY_0800_SOURCE_AUDIT_MISSING"
+                        if result["on_time_proven"] else "PUBLIC_NOT_VERIFIED_BY_0800"),
+                    "all_sections_ready_with_current_data": False,
+                    "official_ois_8_of_8_certified": False,
+                    "signal_model_revalidated": False,
+                }
             result["source_evidence"] = {
                 "status": freshness["status"],
                 "freshness_as_of": freshness["as_of_rome"],
