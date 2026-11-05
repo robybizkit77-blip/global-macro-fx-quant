@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-04",
-  "generated_at_utc": "2026-11-05T02:30:38.577444Z",
+  "generated_at_utc": "2026-11-05T07:08:54.142714Z",
   "items": [
     {
       "as_of": "2026-11-04",
@@ -47,7 +47,7 @@
       "title": "CAD: repricing implicito da futures più hawkish (+1.5 bp 3M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-05T02:30:38.577444Z",
+  "last_checked_at_utc": "2026-11-05T07:08:54.142714Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -248,6 +248,61 @@
           "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
           "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
         },
+        "id": "BOJ_NEWS:https://www.boj.or.jp/en/paym/bond/mbond_list/mbond261105.pdf",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-05T07:00:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "6m_rate_pct": 1.672,
+            "date": "2026-11-04",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "OFFICIAL_CERTIFIED",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Tokyo Financial Exchange · Three-month TONA Futures",
+            "status": "DAILY_CONTEXT_ONLY"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-11-04",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-04",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 1.891
+          }
+        },
+        "source": "Bank of Japan",
+        "source_id": "BOJ_NEWS",
+        "title": "Holding the Twenty-fifth Round of the \"Bond Market Group\" Meetings",
+        "url": "https://www.boj.or.jp/en/paym/bond/mbond_list/mbond261105.pdf"
+      },
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "JPY",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
         "id": "BOJ_NEWS:https://www.boj.or.jp/en/statistics/boj/fm/juqp/juqp2611.xlsx",
         "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
         "published_at_utc": "2026-11-04T23:50:00Z",
@@ -277,74 +332,19 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-02",
+            "date": "2026-11-04",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-02",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-04",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 1.88
+            "yield_2y_pct": 1.891
           }
         },
         "source": "Bank of Japan",
         "source_id": "BOJ_NEWS",
         "title": "Sources of Changes in Current Account Balances (Projections for Nov.)",
         "url": "https://www.boj.or.jp/en/statistics/boj/fm/juqp/juqp2611.xlsx"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "JPY",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "BOJ_NEWS:https://www.boj.or.jp/en/mopo/mpmsche_minu/minu_2026/g260918.pdf",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-04T23:50:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "6m_rate_pct": 1.672,
-            "date": "2026-11-04",
-            "event_window_proof": false,
-            "instrument": "FUTURES_IMPLIED",
-            "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "Tokyo Financial Exchange · Three-month TONA Futures",
-            "status": "DAILY_CONTEXT_ONLY"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-11-02",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-02",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 1.88
-          }
-        },
-        "source": "Bank of Japan",
-        "source_id": "BOJ_NEWS",
-        "title": "Minutes of the Monetary Policy Meeting on September 17 and 18, 2026",
-        "url": "https://www.boj.or.jp/en/mopo/mpmsche_minu/minu_2026/g260918.pdf"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
@@ -886,13 +886,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-03",
+            "date": "2026-11-04",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-03",
+            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-04",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.61
+            "yield_2y_pct": 4.58
           }
         },
         "source": "Federal Reserve Board",
@@ -989,13 +989,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-03",
+            "date": "2026-11-04",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-03",
+            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-04",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.61
+            "yield_2y_pct": 4.58
           }
         },
         "source": "Federal Reserve Board",
@@ -1005,7 +1005,7 @@
       }
     ],
     "last_attempt_day_rome": "2026-11-05",
-    "latest_published_at_utc": "2026-11-04T23:50:00Z",
+    "latest_published_at_utc": "2026-11-05T07:00:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -1029,9 +1029,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 12,
+        "accepted_items": 11,
         "ccy": "EUR",
-        "entries_rejected": 3,
+        "entries_rejected": 4,
         "feed_entries_seen": 15,
         "feed_url": "https://www.ecb.europa.eu/rss/press.html",
         "source": "Banca centrale europea",
@@ -1049,10 +1049,10 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 18,
+        "accepted_items": 19,
         "ccy": "JPY",
         "entries_rejected": 30,
-        "feed_entries_seen": 48,
+        "feed_entries_seen": 49,
         "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
         "source": "Bank of Japan",
         "source_id": "BOJ_NEWS",
