@@ -45,6 +45,7 @@ def build(feed: dict, archive: list[dict], conflicts: list[dict]) -> dict:
     result = {}
     all_status = []
     latest = []
+    first_verified_captures = []
     for ccy in CURRENCIES:
         out = {}
         for tenor in TENORS:
@@ -82,6 +83,9 @@ def build(feed: dict, archive: list[dict], conflicts: list[dict]) -> dict:
                     signed = known[key]
                     require(quote_fingerprint(row) == quote_fingerprint(signed),
                             f"{ccy}/{tenor}: immutable current quote changed")
+                    # Stable first-seen evidence, NOT a new timestamp from
+                    # a source recheck with unchanged market bars.
+                    first_verified_captures.append(signed["first_seen_at_utc"])
                     item["rate_pct"] = row["implied_rate"]
                     item["status"] = "VERIFIED_CONTRACT_NO_MATCHED_REFERENCE"
                     present = date.fromisoformat(row["observation_date"])
@@ -125,7 +129,7 @@ def build(feed: dict, archive: list[dict], conflicts: list[dict]) -> dict:
     return {
         "schema": SCHEMA,
         "data_as_of": max(latest) if latest else None,
-        "source_capture_at_utc": feed.get("generated_at_utc"),
+        "source_capture_at_utc": max(first_verified_captures) if first_verified_captures else None,
         "source_description": "Secondary source daily futures bars · immutable same-listed-contract archive",
         "source_archive_rows": len(archive),
         "unresolved_source_conflict_events": len(conflicts),
