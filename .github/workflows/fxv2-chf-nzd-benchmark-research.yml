@@ -5,6 +5,10 @@ on:
     branches: [main]
     paths:
       - 'validation/rates/refresh_fxv2_chf_nzd_benchmark_context.py'
+      - 'validation/rates/fxv2_chf_nzd_schedule_gate_v1.py'
+      - 'validation/rates/test_fxv2_chf_nzd_schedule_gate_v1.py'
+      - 'validation/rates/report_fxv2_chf_nzd_freshness_v1.py'
+      - 'validation/rates/test_report_fxv2_chf_nzd_freshness_v1.py'
       - 'validation/rates/collect_rbnz_b2_daily_web_v1.py'
       - 'validation/rates/collect_fxv2_nzd_eolas_api_v1.py'
       - 'validation/rates/test_collect_fxv2_nzd_eolas_api_v1.py'
@@ -17,6 +21,10 @@ on:
     branches: [main]
     paths:
       - 'validation/rates/refresh_fxv2_chf_nzd_benchmark_context.py'
+      - 'validation/rates/fxv2_chf_nzd_schedule_gate_v1.py'
+      - 'validation/rates/test_fxv2_chf_nzd_schedule_gate_v1.py'
+      - 'validation/rates/report_fxv2_chf_nzd_freshness_v1.py'
+      - 'validation/rates/test_report_fxv2_chf_nzd_freshness_v1.py'
       - 'validation/rates/collect_rbnz_b2_daily_web_v1.py'
       - 'validation/rates/collect_fxv2_nzd_eolas_api_v1.py'
       - 'validation/rates/test_collect_fxv2_nzd_eolas_api_v1.py'
@@ -26,6 +34,11 @@ on:
       - 'site/fx-quant-v2/tassi.html'
       - '.github/workflows/fxv2-chf-nzd-benchmark-research.yml'
   schedule:
+    # Early source attempt at 06:30 Europe/Rome before the 08:00 V2 check.
+    # The gate below skips the duplicate UTC slot in CET/CEST.
+    - cron: '30 4 * * 1-5'  # 06:30 CEST
+    - cron: '30 5 * * 1-5'  # 06:30 CET
+    # Retain the existing late official source retry slots.
     - cron: '45 8 * * 1-5'
     - cron: '30 18 * * 1-5'
   workflow_dispatch:
@@ -52,10 +65,25 @@ jobs:
       - name: Test CHF matched SNB tenors and NZD benchmark roll safeguards
         run: |
           python3 validation/rates/test_refresh_fxv2_chf_nzd_benchmark_context.py
+          python3 validation/rates/test_fxv2_chf_nzd_schedule_gate_v1.py
+          python3 validation/rates/test_report_fxv2_chf_nzd_freshness_v1.py
           python3 validation/rates/test_collect_rbnz_b2_daily_web_v1.py
           python3 validation/rates/test_collect_fxv2_nzd_eolas_api_v1.py
           python3 validation/rates/test_recover_chf_snb_paired_history_v1.py
+      - name: Rome 06:30 DST-safe source collection gate
+        id: gate
+        shell: bash
+        env:
+          GH_EVENT_NAME: ${{ github.event_name }}
+          GH_EVENT_SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          set -euo pipefail
+          python3 validation/rates/fxv2_chf_nzd_schedule_gate_v1.py \
+            --event "$GH_EVENT_NAME" --cron "$GH_EVENT_SCHEDULE" \
+            --output "$GITHUB_OUTPUT" --summary "$GITHUB_STEP_SUMMARY"
+
       - name: Fetch the newest NZD B2 same-row government yields from RBNZ public HTML
+        if: steps.gate.outputs.should_run == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -68,19 +96,17 @@ jobs:
             echo 'FXV2_RBNZ_B2_LIVE_SOURCE_UNAVAILABLE: previous dated NZD context retained'
             rm -f /tmp/fxv2-rbnz-b2-daily-source.json
           fi
-      - name: Use authorized eolas API only if the public RBNZ reader failed
-        if: github.event_name != 'pull_request'
+      - name: Use authorized eolas API only when the quota-safe slot is permitted
+        if: steps.gate.outputs.should_run == 'true' && github.event_name != 'pull_request'
         shell: bash
         env:
           EOLAS_API_KEY: ${{ secrets.EOLAS_API_KEY }}
-          SCHEDULE_CRON: ${{ github.event.schedule }}
+          VENDOR_SLOT: ${{ steps.gate.outputs.vendor_slot }}
         run: |
           set -euo pipefail
           if [ -f /tmp/fxv2-rbnz-b2-daily-source.json ]; then
             echo 'NZD_SOURCE=RBNZ_OFFICIAL_HTML' >> "$GITHUB_STEP_SUMMARY"
-          elif [ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ] && {
-                [ "$GITHUB_EVENT_NAME" != "schedule" ] ||
-                [ "$SCHEDULE_CRON" != '45 8 * * 1-5' ]; }; then
+          elif [ "$VENDOR_SLOT" != "true" ]; then
             echo 'NZD_SOURCE=NO_VENDOR_REQUEST_THIS_SLOT: protect API quotas' >> "$GITHUB_STEP_SUMMARY"
           elif [ -z "${EOLAS_API_KEY:-}" ]; then
             echo 'NZD_SOURCE=UNAVAILABLE: RBNZ HTTP block and EOLAS_API_KEY not configured' >> "$GITHUB_STEP_SUMMARY"
@@ -91,6 +117,7 @@ jobs:
             echo 'NZD_SOURCE=UNAVAILABLE: eolas API failed; previous dated observations retained' >> "$GITHUB_STEP_SUMMARY"
           fi
       - name: Build independently dated CHF source and NZD post-roll research
+        if: steps.gate.outputs.should_run == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -118,8 +145,19 @@ jobs:
               out.write('\n'+note+'\n')
           print('FXV2_NZD_SOURCE_STATUS',note)
           PY
+      - name: Check dated CHF/NZD source age and preserve exact source evidence
+        if: steps.gate.outputs.should_run == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 validation/rates/report_fxv2_chf_nzd_freshness_v1.py \
+            --official-html-file /tmp/fxv2-rbnz-b2-daily-source.json \
+            --vendor-file /tmp/fxv2-rbnz-b2-eolas-research.json \
+            --output /tmp/fxv2-chf-nzd-freshness-receipt.json \
+            --summary "$GITHUB_STEP_SUMMARY"
+
       - name: Publish only changed V2 research feed (no canonical Rates writes)
-        if: github.event_name != 'pull_request'
+        if: steps.gate.outputs.should_run == 'true' && github.event_name != 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
@@ -155,6 +193,7 @@ jobs:
             /tmp/fxv2-rbnz-b2-daily-source.json
             /tmp/fxv2-rbnz-b2-eolas-research.json
             /tmp/fxv2-chf-nzd-research-candidate.json
+            /tmp/fxv2-chf-nzd-freshness-receipt.json
             site/fx-quant-v2/chf-nzd-benchmark-research.json
           if-no-files-found: warn
           retention-days: 14
