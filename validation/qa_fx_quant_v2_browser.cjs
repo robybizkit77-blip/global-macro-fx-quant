@@ -6,7 +6,11 @@ const baseRates=sourceJSON('live_data/sections/NATIVE_RATES_DATA.json');
 const chfNzdResearch=sourceJSON('site/fx-quant-v2/chf-nzd-benchmark-research.json');
 const {derive:deriveWorking}=require('../site/fx-quant-v2/assets/rates-working-model-v1.js');
 const todayRome=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
-const workingResearch=deriveWorking(baseRates,chfNzdResearch,todayRome);
+const nzdAsxSource=sourceJSON('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json');
+const nzdAsxAnchor=sourceJSON('site/fx-quant-v2/nzd-asx-government-anchor-v1.json');
+// Mirror the V2 Coppie research-only derive with SAME-CONTRACT ASX 6M scenario.
+// This does not update any canonical rates or FX Core signals.
+const workingResearch=deriveWorking(baseRates,chfNzdResearch,todayRome,nzdAsxSource,nzdAsxAnchor);
 const spreadLegNZD=workingResearch.rates.NZD||baseRates.NZD;
 const spreadLegCHF=workingResearch.rates.CHF||baseRates.CHF;
 const expectedIndicativeSpread=!!(spreadLegNZD.estimated||spreadLegCHF.estimated);
@@ -358,7 +362,7 @@ async function audit(browser,name,file,selector,view,viewport){
           const grade=document.querySelector('#asof2')?.textContent||'';
           return currency==='CHF'
             ?grade.includes('STIMA 2Y')||grade.includes('OSSERVATO 2Y')
-            :grade.includes('PROXY 2Y');
+            :(grade.includes('PROXY 2Y')||grade.includes('STIMA 2Y'));
         },{currency:ccy},{timeout:12000}
       );
       const level=((await page.locator('#curveLevel').textContent())||'').trim();
