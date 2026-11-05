@@ -8,6 +8,9 @@ on:
       - 'validation/cb_pricing/ois_g8_history_snapshot_v1.py'
       - 'validation/cb_pricing/build_fxv2_ois_fallback_v1.py'
       - 'validation/cb_pricing/test_build_fxv2_ois_fallback_v1.py'
+      - 'validation/cb_pricing/build_fxv2_same_contract_repricing_v1.py'
+      - 'validation/cb_pricing/test_fxv2_same_contract_repricing_v1.py'
+      - 'site/fx-quant-v2/ois-same-contract-repricing-research.json'
       - 'validation/cb_pricing/test_ois_g8_history_snapshot_v1.py'
       - 'validation/cb_pricing/ois_g8_schedule_gate_v1.py'
       - 'validation/cb_pricing/test_ois_g8_schedule_gate_v1.py'
@@ -41,6 +44,9 @@ on:
       - 'validation/cb_pricing/ois_g8_history_snapshot_v1.py'
       - 'validation/cb_pricing/build_fxv2_ois_fallback_v1.py'
       - 'validation/cb_pricing/test_build_fxv2_ois_fallback_v1.py'
+      - 'validation/cb_pricing/build_fxv2_same_contract_repricing_v1.py'
+      - 'validation/cb_pricing/test_fxv2_same_contract_repricing_v1.py'
+      - 'site/fx-quant-v2/ois-same-contract-repricing-research.json'
       - 'validation/cb_pricing/test_ois_g8_history_snapshot_v1.py'
       - 'validation/cb_pricing/ois_g8_schedule_gate_v1.py'
       - 'validation/cb_pricing/test_ois_g8_schedule_gate_v1.py'
@@ -95,6 +101,12 @@ jobs:
           python -m unittest validation.cb_pricing.test_build_fxv2_ois_fallback_v1 -v
           python validation/cb_pricing/build_fxv2_ois_fallback_v1.py --check
           git diff --exit-code -- site/fx-quant-v2 live_data/sections
+
+      - name: Test FXV2 same-listed-futures research and forbidden OIS/policy promotions
+        if: github.event_name == 'pull_request'
+        run: |
+          python validation/cb_pricing/test_fxv2_same_contract_repricing_v1.py
+          python validation/cb_pricing/build_fxv2_same_contract_repricing_v1.py --check
 
       - name: Rome schedule gate (DST and GitHub cron delay tolerant)
         id: gate
@@ -185,6 +197,15 @@ jobs:
         run: |
           python validation/cb_pricing/test_ois_same_contract_history_v1.py
           python validation/cb_pricing/ois_same_contract_history_v1.py --write
+
+      - name: Refresh FXV2 research-only same-futures-contract 1D/1W observations
+        if: steps.gate.outputs.should_run == 'true'
+        run: |
+          python validation/cb_pricing/build_fxv2_same_contract_repricing_v1.py
+          python validation/cb_pricing/test_fxv2_same_contract_repricing_v1.py
+          python validation/cb_pricing/build_fxv2_same_contract_repricing_v1.py --check
+          # Does not promote secondary listed futures to official OIS.
+          git diff --exit-code -- live_data/sections/OIS_DATA.json live_data/sections/NATIVE_CB_DATA.json
 
       - name: Audit independently verified clean contracts despite other conflicted tenors
         if: steps.gate.outputs.should_run == 'true'
@@ -327,6 +348,7 @@ jobs:
           allowed={
             'live_data/sections/CB_PRICING_ESTIMATED_LIVE_QUOTES.json',
             'site/fx-quant-v2/ois-pricing-snapshot.json',
+            'site/fx-quant-v2/ois-same-contract-repricing-research.json',
             'live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json',
             'live_data/sections/CB_PRICING_ESTIMATED.json',
             'live_data/sections/OIS_OPERATIONAL_VIEW.json',
