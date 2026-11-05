@@ -1,0 +1,291 @@
+{
+  "schema": "GMFQ_FXV2_6M_PROSPECTIVE_STATUS_READONLY_V1",
+  "as_of_rome_day": "2026-11-05",
+  "report_status": "PREREGISTERED_BEFORE_FIRST_ELIGIBLE_CAPTURE",
+  "registration_date_utc": "2026-11-05",
+  "first_eligible_rome_date": "2026-11-06",
+  "latest_observed_ecb_fixing": "2026-11-04",
+  "reference_price_type": "ECB_REFERENCE_NOT_EXECUTABLE",
+  "rate_instrument_type": "SECONDARY_LISTED_FUTURES_6M_NOT_OIS",
+  "source_protocol": "validation/quant/FXV2_6M_PREREGISTERED_PROTOCOL_V1.json",
+  "summary": {
+    "pair_universe": 28,
+    "supported_rate_source_pair_universe": 3,
+    "unsupported_rate_source_pair_universe": 25,
+    "actual_prospective_capture_days": 0,
+    "frozen_28_pair_rows": 0,
+    "experimental_direction_observations": 0,
+    "outcomes_observed_after_5_future_fixings": 0,
+    "frozen_directions_awaiting_maturity": 0,
+    "matured_outcomes_not_recorded": 0,
+    "elapsed_full_weeks_since_first_capture": 0,
+    "min_distinct_days_for_review": 60,
+    "min_elapsed_weeks_for_review": 12,
+    "min_matured_events_for_review": 100
+  },
+  "pairs": {
+    "AUD/CAD": {
+      "futures_6m_history_potentially_supported": false,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    },
+    "AUD/CHF": {
+      "futures_6m_history_potentially_supported": false,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    },
+    "AUD/JPY": {
+      "futures_6m_history_potentially_supported": false,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    },
+    "AUD/NZD": {
+      "futures_6m_history_potentially_supported": false,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    },
+    "AUD/USD": {
+      "futures_6m_history_potentially_supported": false,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    },
+    "CAD/CHF": {
+      "futures_6m_history_potentially_supported": false,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    },
+    "CAD/JPY": {
+      "futures_6m_history_potentially_supported": false,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    },
+    "CHF/JPY": {
+      "futures_6m_history_potentially_supported": false,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    },
+    "EUR/AUD": {
+      "futures_6m_history_potentially_supported": false,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    },
+    "EUR/CAD": {
+      "futures_6m_history_potentially_supported": false,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    },
+    "EUR/CHF": {
+      "futures_6m_history_potentially_supported": true,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    },
+    "EUR/GBP": {
+      "futures_6m_history_potentially_supported": false,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    },
+    "EUR/JPY": {
+      "futures_6m_history_potentially_supported": false,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    },
+    "EUR/NZD": {
+      "futures_6m_history_potentially_supported": false,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    },
+    "EUR/USD": {
+      "futures_6m_history_potentially_supported": true,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    },
+    "GBP/AUD": {
+      "futures_6m_history_potentially_supported": false,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    },
+    "GBP/CAD": {
+      "futures_6m_history_potentially_supported": false,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    },
+    "GBP/CHF": {
+      "futures_6m_history_potentially_supported": false,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    },
+    "GBP/JPY": {
+      "futures_6m_history_potentially_supported": false,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    },
+    "GBP/NZD": {
+      "futures_6m_history_potentially_supported": false,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    },
+    "GBP/USD": {
+      "futures_6m_history_potentially_supported": false,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    },
+    "NZD/CAD": {
+      "futures_6m_history_potentially_supported": false,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    },
+    "NZD/CHF": {
+      "futures_6m_history_potentially_supported": false,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    },
+    "NZD/JPY": {
+      "futures_6m_history_potentially_supported": false,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    },
+    "NZD/USD": {
+      "futures_6m_history_potentially_supported": false,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    },
+    "USD/CAD": {
+      "futures_6m_history_potentially_supported": false,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    },
+    "USD/CHF": {
+      "futures_6m_history_potentially_supported": true,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    },
+    "USD/JPY": {
+      "futures_6m_history_potentially_supported": false,
+      "frozen_capture_days": 0,
+      "last_capture_state": "NOT_YET_OBSERVED",
+      "all_capture_state_counts": {},
+      "frozen_experimental_directions": 0,
+      "matured_ecb_reference_outcomes": 0,
+      "eligible_for_live_fx_signals": false
+    }
+  },
+  "pre_registered_hypothesis": "sign(delta base-minus-quote 6M listed-futures rate spread) vs 5-fixing momentum; next 5 ECB fixings",
+  "no_live_fx_signals": true,
+  "no_trades": true,
+  "no_backfilled_decisions": true,
+  "no_point_in_time_macro_validation_claimed": true,
+  "no_independent_28_pair_sample_claim": true,
+  "eligible_for_predictive_claim": false,
+  "inference_review_threshold_reached": false,
+  "predictive_skill_validated": false,
+  "sharpe": null,
+  "alpha": null
+}
