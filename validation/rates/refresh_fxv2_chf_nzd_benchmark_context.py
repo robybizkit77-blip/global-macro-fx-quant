@@ -97,8 +97,6 @@ def chf_context(inspection, official, canonical, today, previous=None):
                          "source_url":official["source_url"],"not_joinable_with_paired_2y":ten_asof!=asof},
         "official_pair_independently_dated":True,
         "matched_source_cadence":"SNB_STATISTICAL_MONTH_END_ANCHOR",
-        "matched_anchor_age_days":(today-asof).days,
-        "separate_10y_age_days":(today-ten_asof).days,
         "review_note":"Coppia 2Y/10Y dalla stessa serie spot SNB e stessa data, non dalla media di bond diversi. Il 10Y SNB pubblicato separatamente ha data propria e non può impedire l'uso della coppia ufficiale più recente; non si mescolano mai due date per una curva osservata.",
         "eligible_for_core":False,"eligible_for_pair_spreads":False,
         "eligible_for_backtests":False,"eligible_for_automatic_promotion":False,
