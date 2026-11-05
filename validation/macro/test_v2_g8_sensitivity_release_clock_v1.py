@@ -60,12 +60,12 @@ class EconomicSensitivityAndGdpClocks(unittest.TestCase):
         self.assertTrue(r["no_cross_currency_ranking_authorized"])
         for c in FX:
             x = r["countries"][c]
-            expected = 0 if x["research_sensitivity_status"] == "UNAVAILABLE_INCOMPLETE_LABOUR_HISTORY" else 3
+            expected = 0 if x["research_sensitivity_status"] == "UNAVAILABLE_LABOUR_STRICT_Z" else 3
             self.assertEqual(len(x["alternative_weights_growth_25_50_75"]), expected)
             self.assertEqual(len(x["one_axis_plus_minus_0_25z_shocks"]), 0 if expected == 0 else 4)
             if expected == 0:
                 self.assertIsNone(x["baseline_activity_balance_z"])
-                self.assertEqual(x["baseline_bucket"], "INSUFFICIENT_STRICT_HISTORY")
+                self.assertEqual(x["baseline_bucket"], "STRICT_Z_UNAVAILABLE")
             self.assertIsNone(x["live_currency_score"])
             self.assertFalse(x["pair_ranking_eligible"])
             self.assertFalse(x["estimated_uncertainty_interval"])
@@ -135,7 +135,7 @@ class EconomicSensitivityAndGdpClocks(unittest.TestCase):
         row["labour_tightness_relative_to_own_history_z"] = None
         row["dimensions"]["labour"]["raw_z"] = None
         row["dimensions"]["labour"]["is_estimate"] = False
-        row["quality_flags"].append("LABOUR_STRICT_HISTORY_UNAVAILABLE")
+        row["quality_flags"].append("LABOUR_STRICT_Z_UNAVAILABLE")
         row["illustrative_activity_labour_balance_z"] = None
         report = sensitivity(altered)
         self.assertEqual(report["countries"]["AUD"]["alternative_weights_growth_25_50_75"], {})
