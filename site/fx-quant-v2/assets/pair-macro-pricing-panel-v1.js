@@ -70,15 +70,30 @@ function show(pair,p,macro,priceMeta){
  const experiment=$("macroOisProspectiveStatus");
  if(experiment){
   const d=prospective,entry=d?.pairs?.[a+"/"+b],totals=d?.summary;
+  const source=d?.input_readiness;
+  const sourceDays=source?.last_valid_6m_source_audit?.currency_latest_market_date||{};
+  const sourceNote=entry?.futures_6m_history_potentially_supported?
+    "Fonti: BCE "+(d?.latest_observed_ecb_fixing||"n.d.")+
+    " · futures 6M "+a+" "+(sourceDays[a]||"assente")+
+    ", "+b+" "+(sourceDays[b]||"assente")+
+    " (date di mercato, non OIS). ":"";
   if(!entry || !totals){
    experiment.textContent="ESPERIMENTO 6M · protocollo registrato il 05/11/2026, prime osservazioni ammesse dal 06/11/2026. Ricevuta di avanzamento non ancora disponibile; nessun risultato predittivo.";
+  }else if(source?.capture_due_but_missing){
+   experiment.textContent="ESPERIMENTO 6M · ATTENZIONE: la fotografia prevista per oggi "+
+    d.as_of_rome_day+" non risulta registrata. "+
+    (source.official_ecb_t0_available_for_rome_day?
+     "Fixing BCE disponibile: verificare esecuzione e persistenza del processo. ":
+     "Fixing BCE della seduta non ancora disponibile nel repository: acquisizione bloccata, non simulata. ")+
+    "Ultima data BCE: "+d.latest_observed_ecb_fixing+
+    ". "+sourceNote+"Nessun risultato predittivo; Core invariato.";
   }else if(totals.actual_prospective_capture_days===0){
    experiment.textContent="ESPERIMENTO 6M · preregistrato, raccolta non ancora iniziata. "+
     "Prima data ammissibile 06/11/2026; 0 osservazioni congelate e 0 risultati maturati. "+
     (entry.futures_6m_history_potentially_supported?
       "Futures 6M potenzialmente confrontabili; verifica richiesta alla prima acquisizione.":
       "Non disponibile uno storico 6M omogeneo per questa coppia.")+
-    " Nessuna evidenza predittiva.";
+    " "+sourceNote+"Nessuna evidenza predittiva.";
   }else{
    const stateText={
     FROZEN_EXPERIMENTAL_DIRECTION:"ipotesi di ricerca congelata, NON segnale di trading",
@@ -95,7 +110,7 @@ function show(pair,p,macro,priceMeta){
     "Ultima fotografia: "+(stateText[entry.last_capture_state]||"astensione registrata")+
     ". "+(totals.matured_outcomes_not_recorded?
      "ATTENZIONE: esiti già maturati ma non ancora registrati. ":"")+
-    "Il campione non è ancora una validazione predittiva e non modifica il Core.";
+    sourceNote+"Il campione non è ancora una validazione predittiva e non modifica il Core.";
   }
  }
 }
