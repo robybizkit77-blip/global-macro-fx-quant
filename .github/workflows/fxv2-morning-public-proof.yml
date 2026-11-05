@@ -6,6 +6,8 @@ on:
     paths:
       - 'validation/publishing/check_fxv2_morning_public_v1.py'
       - 'validation/publishing/test_fxv2_morning_public_v1.py'
+      - 'validation/qa_fx_quant_v2_freshness.cjs'
+      - 'validation/fxv2_research_core_readiness_v1.cjs'
       - '.github/workflows/fxv2-morning-public-proof.yml'
   workflow_dispatch:
   schedule:
@@ -45,6 +47,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - name: Resolve CET/CEST slot and skip duplicate UTC cron
         id: slot
         env:
@@ -64,10 +69,17 @@ jobs:
           print('FXV2_MORNING_SLOT', 'ACTIVE' if active else 'DUPLICATE_DST_SKIP',
                 'schedule', scheduled, 'expected UTC hour', expected_utc_hour)
           PY
-      - name: Check 12 public pages and core assets against approved main
-        id: check
+      - name: Audit per-source freshness separately from publication
         if: steps.slot.outputs.active == 'true'
-        run: python validation/publishing/check_fxv2_morning_public_v1.py --output /tmp/fxv2-morning-proof.json
+        run: node validation/qa_fx_quant_v2_freshness.cjs
+      - name: Check public site AND attach source-date / Research-Core receipts
+        id: check
+        if: always() && steps.slot.outputs.active == 'true'
+        run: |
+          python validation/publishing/check_fxv2_morning_public_v1.py \
+            --output /tmp/fxv2-morning-proof.json \
+            --freshness fxv2-freshness-evidence/freshness.json \
+            --readiness fxv2-freshness-evidence/decision-readiness.json
       - name: Record independent delivery status
         if: always()
         run: |
@@ -80,7 +92,13 @@ jobs:
               out.write('- Stato: **'+d['status']+'**\n')
               out.write('- Osservato: '+d['verified_at_rome']+'\n')
               out.write('- File identici alla versione approvata: '+str(d['public_files_verified'])+'/'+str(d['expected_file_count'])+'\n')
-              out.write('- Freschezza economica e qualità OIS: **verifiche distinte**, non certificate da questo controllo\n')
+              out.write('- Stato congiunto pubblicazione/dati: **'+d['joint_status']+'**\n')
+              s=d['source_evidence']
+              out.write('- Audit economico: '+s['status']+'; ritardi/invalidi: '+str(s['date_delays_or_invalid'])+'; gap: '+str(s['unresolved_gaps'])+'\n')
+              out.write('- Ricerca: '+s['research_readiness']+'; Core: '+s['trading_core_readiness']+'\n')
+              out.write('- Macro V3: '+str(s['macro_v3_as_of'])+'; baseline del motore FX: '+str(s['macro_legacy_baseline_as_of'])+'\n')
+              out.write('- Fonte governativa Core per valuta: '+str(s['canonical_gov_as_of'])+'\n')
+              out.write('- Dati interamente a cadenza: '+str(d['all_sections_ready_with_current_data'])+'; non equivale a OIS 8/8 certificati o segnali validati\n')
               out.write('- Esecuzione GitHub ritardata: mai considerata prova retroattiva di puntualità\n')
           PY
           else
@@ -95,6 +113,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: fxv2-morning-public-proof
-          path: /tmp/fxv2-morning-proof.json
+          path: |
+            /tmp/fxv2-morning-proof.json
+            fxv2-freshness-evidence/
           if-no-files-found: warn
           retention-days: 21

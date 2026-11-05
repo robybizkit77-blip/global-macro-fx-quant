@@ -3,7 +3,7 @@
 import datetime as dt
 import unittest
 from zoneinfo import ZoneInfo
-from check_fxv2_morning_public_v1 import FILES, evaluate
+from check_fxv2_morning_public_v1 import FILES, evaluate, attach_source_evidence
 
 ROME = ZoneInfo("Europe/Rome")
 SHA = "a" * 64
@@ -15,6 +15,63 @@ def rows():
 
 
 class MorningProofTest(unittest.TestCase):
+    def test_joint_public_delivery_and_source_gaps_are_separate(self):
+        public = evaluate(dt.datetime(2026, 11, 5, 7, 50, tzinfo=ROME), rows())
+        checks = [
+            {"area": "governments", "item": c, "as_of": "2026-11-04"}
+            for c in ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"]
+        ] + [
+            {"area": "ois_v2_research_tenor", "item": c + " " + t,
+             "as_of": "2026-11-04"}
+            for c in ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"]
+            for t in ["3m", "6m", "12m"]
+        ] + [
+            {"area": "positioning", "item": "CFTC", "as_of": "2026-10-27"}
+            for _ in range(8)
+        ]
+        audit = {"schema": "GMFQ_FXV2_FRESHNESS_AUDIT_V1",
+                 "as_of_rome": "2026-11-05",
+                 "status": "DATA_GAPS_PRESENT",
+                 "summary": {"checks": len(checks), "v2_pages": 12, "fx_pairs": 28,
+                             "gaps": 4, "late_or_invalid": 3},
+                 "checks": checks, "hard_errors": []}
+        decision = {"schema": "GMFQ_FXV2_READINESS_DUAL_TRACK_V1",
+                    "as_of_rome": "2026-11-05",
+                    "research": {"website_pages": 12, "rate_pricing_horizons": 24,
+                                 "state": "AVAILABLE_WITH_SOURCE_QUALITY_LIMITS"},
+                    "trading_core": {"pair_count": 28,
+                                     "state": "NOT_REVALIDATED_FROM_RESEARCH",
+                                     "baseline_macro_as_of": "2026-09-25"}}
+        mixed = attach_source_evidence(public, audit, decision)
+        self.assertTrue(mixed["on_time_proven"])
+        self.assertFalse(mixed["all_sections_ready_with_current_data"])
+        self.assertEqual(mixed["source_evidence"]["unresolved_gaps"], 4)
+        self.assertEqual(len(mixed["source_evidence"]["canonical_gov_as_of"]), 8)
+        self.assertEqual(sum(map(len, mixed["source_evidence"]["pricing_tenor_as_of"].values())), 24)
+        self.assertEqual(mixed["joint_status"], "PUBLIC_BY_0800_SOURCE_GAPS_VISIBLE")
+        self.assertEqual(mixed["source_evidence"]["macro_legacy_baseline_as_of"], "2026-09-25")
+        self.assertFalse(mixed["signal_model_revalidated"])
+        audit["status"] = "DATE_CHECKS_PASS"
+        audit["summary"]["gaps"] = 0
+        audit["summary"]["late_or_invalid"] = 0
+        complete = attach_source_evidence(public, audit, decision)
+        self.assertTrue(complete["all_sections_ready_with_current_data"])
+        self.assertEqual(complete["joint_status"], "PUBLIC_BY_0800_DATA_CADENCE_CHECKS_PASS")
+        self.assertFalse(attach_source_evidence(public, None, decision)
+                         ["all_sections_ready_with_current_data"])
+        bad = dict(audit)
+        bad["as_of_rome"] = "2026-11-04"
+        self.assertEqual(attach_source_evidence(public, bad, decision)["joint_status"],
+                         "PUBLIC_BY_0800_SOURCE_AUDIT_MISSING")
+        incomplete = dict(audit)
+        incomplete["checks"] = audit["checks"][:-1]
+        incomplete["summary"] = dict(audit["summary"], checks=len(incomplete["checks"]))
+        self.assertFalse(attach_source_evidence(public, incomplete, decision)
+                         ["all_sections_ready_with_current_data"])
+        delayed = evaluate(dt.datetime(2026, 11, 5, 8, 20, tzinfo=ROME), rows())
+        self.assertFalse(attach_source_evidence(delayed, audit, decision)
+                         ["all_sections_ready_with_current_data"])
+
     def test_complete_before_deadline(self):
         result = evaluate(dt.datetime(2026, 11, 4, 7, 51, tzinfo=ROME), rows())
         self.assertEqual(result["status"], "PASS_12_PAGES_PUBLIC_BY_0800")
