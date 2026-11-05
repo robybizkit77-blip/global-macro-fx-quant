@@ -33,6 +33,30 @@ Both CET/CEST slots retain an explicit duplicate-skip summary, not proof.
 This does not refresh data, enable licensed feeds, change Core/28 FX signals,
 or alter any site HTML or design.
 
+## Shared CHF/NZD/AUD Rates Research Across V2 (2026-11-05)
+
+`assets/rates-research-overlay-v1.js` applies the existing dated CHF/NZD
+working-rate model and independently downloaded RBA F2 AUD 2Y/10Y same-row
+observations to **Valute G8** and **Macro G8**, and the AUD overlay to
+**Coppie FX** (where the CHF/NZD research source already existed).
+The original Tassi page retains its own reviewed research presentation.
+
+Only newer, source-dated, numerically consistent, permission-gated evidence
+may replace a historical level **in the V2 research page's local in-memory
+view**. A CHF 2Y parallel-shift estimate, an NZD ASX 6M scenario, RBNZ
+B2 public web reading without independent XLSX verification, and RBA weekly
+F2 government observation have distinct quality labels. No fake daily move
+is inferred from CHF/NZD research; any AUD F2 delta is from its own dated
+same-series predecessor. Missing source or a rolled futures contract
+preserves the prior dated reading.
+
+The connector cannot change canonical `NATIVE_RATES_DATA`, FX pair
+ranking/signal weights, policy-OIS certification, Macro V3 score,
+backtest history or rate spread validations. The same dated source and
+quality is visible on three V2 pages without a separate collector.
+The shared overlay has deterministic offline tests that run with the V2
+browser quality gate.
+
 ## Dedicated OIS & Market Pricing (2026-11-04)
 
 The additional `ois.html` is a standalone research section, linked in the shared 12-page navigation. It displays 8 currencies × 3 pricing horizons with per-tenor source dates and explicit instrument types (GBP BoE OIS; other official futures; secondary futures/proxy where unavailable). It reads `OIS_OPERATIONAL_VIEW`, `CB_PRICING_ESTIMATED`, and `NZD_CB_PRICING_DIRECTIONAL_PROXY`, falling back to a dated `ois-pricing-snapshot.json` without overwriting the canonical data. Quoted futures are *not* OIS; maturity spreads across them are illustrative, not policy repricing. Core FX signals, backtests and V10 are untouched.
