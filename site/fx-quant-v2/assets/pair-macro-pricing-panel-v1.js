@@ -1,7 +1,7 @@
 /* FX Quant V2 — pair research view: reads source quotes without changing Core. */
 (function(root){"use strict";
 const ROOT="https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/";
-let data=null,relative=null,latest={pair:"EURUSD",p:null,macro:null,priceMeta:null};
+let data=null,relative=null,quantReadiness=null,latest={pair:"EURUSD",p:null,macro:null,priceMeta:null};
 const $=id=>document.getElementById(id);
 const fmt=(n,d)=>Number.isFinite(n)?n.toLocaleString("it-IT",{minimumFractionDigits:d,maximumFractionDigits:d}):"—";
 const bp=v=>Number.isFinite(v)?(v>0?"+":"")+fmt(v,1)+" pb":"non verificata";
@@ -52,6 +52,21 @@ function show(pair,p,macro,priceMeta){
   "Prezzo: controllo distinto da pricing; nessuna inferenza automatica.";
  if($("macroOisTriangCaveat"))$("macroOisTriangCaveat").textContent=insight?.caveatText||
   "Servono osservazioni datate su macro, repricing e risposta del prezzo; nessun nuovo segnale.";
+ const readiness=quantReadiness?.pairs?.[a+"/"+b];
+ if($("macroOisQuantReadiness")){
+  if(readiness){
+   const n=readiness.matched_changes,days=readiness.distinct_market_days;
+   $("macroOisQuantReadiness").textContent="STORICO QUANT · "+a+"/"+b+
+    ": "+n+" confronti datati di variazioni su contratti futures identici tra sedute consecutive, distribuiti su "+
+    days+" giorni di mercato. "+(n?
+     "Campione breve e sovrapposto: osservazione descrittiva, non evidenza predittiva.":
+     "Serie relativa omogenea non ancora disponibile: nessun risultato quantitativo ricostruito.")+
+    " Archivio FX BCE: "+quantReadiness.summary.fx_reference_rows+
+    " fixing, ma il periodo di tassi è molto più corto. Macro storica non PIT; nessuna stima di alpha, hit rate o Sharpe.";
+  }else{
+   $("macroOisQuantReadiness").textContent="STORICO QUANT · audit temporale non ancora pubblicato o non verificato. Nessun risultato predittivo assunto.";
+  }
+ }
 }
 async function get(path){
  const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),10000);
@@ -71,6 +86,19 @@ async function refresh(){
    throw Error("28-pair research schema or source-date contract failed");
   relative=r;
  }catch(e){relative=null;console.warn("[FXV2 Pair] Relative dated research unavailable",e);}
+ try{
+  const q=await get("./quant-temporal-readiness-v1.json");
+  const sum=q?.summary;
+  if(q.schema!=="GMFQ_FXV2_RATE_FX_TEMPORAL_READINESS_V1"||
+     q.eligible_for_signals!==false||q.eligible_for_backtests!==false||
+     q.eligible_for_automatic_core_rebase!==false||
+     q.registered_prospective_prediction_available!==false||
+     q.macro_point_in_time_feature_history_available!==false||
+     sum?.fx_pairs!==28||sum?.out_of_sample_predictions!==0||
+     sum?.generated_fx_signals!==0||Object.keys(q.pairs||{}).length!==28)
+    throw Error("Quant audit safety or coverage contract invalid");
+  quantReadiness=q;
+ }catch(e){quantReadiness=null;console.warn("[FXV2 Pair] Temporal evidence audit unavailable",e);}
  const publish=(op,est,nzd)=>{
   data=adapter.build(snapshot,op,est,nzd,today());
   show(latest.pair,latest.p,latest.macro,latest.priceMeta);
