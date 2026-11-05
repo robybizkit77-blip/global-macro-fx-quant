@@ -1,15 +1,15 @@
 /* FX Quant V2 — pair research view: reads source quotes without changing Core. */
 (function(root){"use strict";
 const ROOT="https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/";
-let data=null,latest={pair:"EURUSD",p:null,macro:null};
+let data=null,relative=null,latest={pair:"EURUSD",p:null,macro:null,priceMeta:null};
 const $=id=>document.getElementById(id);
 const fmt=(n,d)=>Number.isFinite(n)?n.toLocaleString("it-IT",{minimumFractionDigits:d,maximumFractionDigits:d}):"—";
 const bp=v=>Number.isFinite(v)?(v>0?"+":"")+fmt(v,1)+" pb":"non verificata";
 const date=v=>/^\d{4}-\d{2}-\d{2}$/.test(v||"")?v.slice(8,10)+"/"+v.slice(5,7)+"/"+v.slice(0,4):"n.d.";
 const today=()=>new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Rome",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
-function show(pair,p,macro){
+function show(pair,p,macro,priceMeta){
  if(!$( "macroOisBridge" ))return;
- latest={pair,p,macro};
+ latest={pair,p,macro,priceMeta};
  const model=root.FXV2PairMacroPricing;
  const v=model?.view(data,pair);
  const a=pair.slice(0,3),b=pair.slice(3),observed=root.FXV2MacroPairResearch?.view(macro,pair,today());
@@ -41,6 +41,17 @@ function show(pair,p,macro){
   " · "+(v.matchingType?"categoria strumento simile; basis da verificare":"STRUMENTI DIVERSI")+
   ". Nessuna differenza delle variazioni 1D/1W calcolata.":"Data 6M non confrontabile; nessun repricing dedotto.";
  $("macroOisCaveat").textContent="Solo ricerca V2: futures, OIS e proxy con fonte e data specifiche. Nessuna probabilità di meeting, carry, nuovo punteggio o segnale FX, nessun backtest.";
+ const insight=root.FXV2PairTriangulation?.view(
+   relative,pair,today(),macro,root.FXV2MacroPairResearch,
+   root.FXV2MacroDynamics,p,priceMeta);
+ const pending="Ricerca 28 coppie non ancora sincronizzata o fonte non verificata: nessuna conferma aggiuntiva.";
+ if($("macroOisTriangRates"))$("macroOisTriangRates").textContent=insight?.ratesText||pending;
+ if($("macroOisTriangMacro"))$("macroOisTriangMacro").textContent=insight?.macroText||
+  "Macro V3 non valutabile in questa lettura incrociata.";
+ if($("macroOisTriangPrice"))$("macroOisTriangPrice").textContent=insight?.priceText||
+  "Prezzo: controllo distinto da pricing; nessuna inferenza automatica.";
+ if($("macroOisTriangCaveat"))$("macroOisTriangCaveat").textContent=insight?.caveatText||
+  "Servono osservazioni datate su macro, repricing e risposta del prezzo; nessun nuovo segnale.";
 }
 async function get(path){
  const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),10000);
@@ -53,9 +64,16 @@ async function refresh(){
  let snapshot=null;
  try{snapshot=await get("./ois-pricing-snapshot.json");}
  catch(e){console.warn("[FXV2 Pair] OIS dated snapshot unavailable",e);}
+ // Independent precomputed research is not a live OIS curve or FX Core score.
+ try{
+  const r=await get("./pricing-relative-28pairs-research.json");
+  if(!root.FXV2PairTriangulation?.validate(r,today()))
+   throw Error("28-pair research schema or source-date contract failed");
+  relative=r;
+ }catch(e){relative=null;console.warn("[FXV2 Pair] Relative dated research unavailable",e);}
  const publish=(op,est,nzd)=>{
   data=adapter.build(snapshot,op,est,nzd,today());
-  show(latest.pair,latest.p,latest.macro);
+  show(latest.pair,latest.p,latest.macro,latest.priceMeta);
  };
  try{publish(null,null,null);}catch(e){console.warn("[FXV2 Pair] OIS fallback rejected",e);}
  const names=["OIS_OPERATIONAL_VIEW.json","CB_PRICING_ESTIMATED.json","NZD_CB_PRICING_DIRECTIONAL_PROXY.json"];

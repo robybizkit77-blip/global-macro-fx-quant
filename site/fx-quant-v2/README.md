@@ -94,3 +94,25 @@ GitHub Pages, even when the data update was committed with GITHUB_TOKEN.
 The workflow refuses missing dates, missing pairs and source classification
 drift. Only the V2 research JSON is writable. Canonical FX Core and all 28
 existing trading signals remain unchanged.
+
+## FX-pair research triangulation (2026-11-05)
+
+The existing V2 `coppie.html` research area now shows a separate
+Macro / relative front-end levels / FX price evidence reading for each
+of the 28 pairs. The independent
+`assets/pair-relative-triangulation-v1.js` adapter consumes the
+published `pricing-relative-28pairs-research.json` (28×3 observations),
+observed Macro V3, and the canonically dated ECB FX fixing context.
+
+- OIS / futures / indicative / NZD bank-bill proxy contrast levels retain
+  the original quote date and instrument type. Different dates/bases are
+  never treated as one synchronized change or policy-rate surprise.
+- Macro V3 reports whether inflation, labour and GDP acceleration
+  observations are comparable by period; revised observations are **not**
+  point-in-time or a new structural FX score.
+- FX price 1M return and the pre-existing price confirmation description
+  are displayed with the actual fixing date and source validation status.
+  An old snapshot is explicitly marked; it is **not** a newly observed price.
+- This is narrative evidence **only**. No new weighting, macro score,
+  FX recommendation, carry calculation, meeting probability or backtest.
+  No Core, FX signals, alerts or previously approved styling changed.
