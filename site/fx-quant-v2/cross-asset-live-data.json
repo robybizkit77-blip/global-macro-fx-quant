@@ -1,7 +1,7 @@
 {
   "schema": "GMFQ_FXV2_CROSS_ASSET_SOURCE_OVERLAY_V1",
   "status": "FIVE_STREAMS_VERIFIED",
-  "collected_on": "2026-11-04",
+  "collected_on": "2026-11-05",
   "attempted_sources": [
     "SP500",
     "NASDAQCOM",
@@ -19,16 +19,12 @@
   "source_errors": {},
   "streams": {
     "SP500": {
-      "date": "2026-11-02",
-      "previous_date": "2026-10-30",
-      "value": 7541.4,
-      "previous": 7580.07,
-      "change_1d_pct": -0.5102,
+      "date": "2026-11-03",
+      "previous_date": "2026-11-02",
+      "value": 7568.92,
+      "previous": 7541.4,
+      "change_1d_pct": 0.3649,
       "history": [
-        [
-          "2026-06-11",
-          7394.3
-        ],
         [
           "2026-06-12",
           7431.46
@@ -424,6 +420,10 @@
         [
           "2026-11-02",
           7541.4
+        ],
+        [
+          "2026-11-03",
+          7568.92
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -850,21 +850,17 @@
       "kind": "INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 1,
+      "source_age_calendar_days": 2,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
     "IG_OAS": {
-      "date": "2026-11-02",
-      "previous_date": "2026-10-30",
-      "value": 0.94,
+      "date": "2026-11-03",
+      "previous_date": "2026-11-02",
+      "value": 0.93,
       "previous": 0.94,
-      "change_1d_pct": 0.0,
+      "change_1d_pct": -1.0638,
       "history": [
-        [
-          "2026-06-16",
-          0.75
-        ],
         [
           "2026-06-17",
           0.74
@@ -1260,6 +1256,10 @@
         [
           "2026-11-02",
           0.94
+        ],
+        [
+          "2026-11-03",
+          0.93
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -1273,16 +1273,12 @@
       "no_core_or_backtest_effect": true
     },
     "HY_OAS": {
-      "date": "2026-11-02",
-      "previous_date": "2026-10-30",
-      "value": 3.43,
-      "previous": 3.44,
-      "change_1d_pct": -0.2907,
+      "date": "2026-11-03",
+      "previous_date": "2026-11-02",
+      "value": 3.4,
+      "previous": 3.43,
+      "change_1d_pct": -0.8746,
       "history": [
-        [
-          "2026-06-16",
-          2.71
-        ],
         [
           "2026-06-17",
           2.63
@@ -1678,6 +1674,10 @@
         [
           "2026-11-02",
           3.43
+        ],
+        [
+          "2026-11-03",
+          3.4
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -1691,16 +1691,12 @@
       "no_core_or_backtest_effect": true
     },
     "VIX": {
-      "date": "2026-11-03",
-      "previous_date": "2026-11-02",
-      "value": 20.83,
-      "previous": 21.15,
-      "change_1d_pct": -1.513,
+      "date": "2026-11-04",
+      "previous_date": "2026-11-03",
+      "value": 16.61,
+      "previous": 20.83,
+      "change_1d_pct": -20.2592,
       "history": [
-        [
-          "2026-06-17",
-          18.44
-        ],
         [
           "2026-06-18",
           16.4
@@ -2096,6 +2092,10 @@
         [
           "2026-11-03",
           20.83
+        ],
+        [
+          "2026-11-04",
+          16.61
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
