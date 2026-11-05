@@ -17,14 +17,24 @@ def rows():
 class MorningProofTest(unittest.TestCase):
     def test_joint_public_delivery_and_source_gaps_are_separate(self):
         public = evaluate(dt.datetime(2026, 11, 5, 7, 50, tzinfo=ROME), rows())
+        checks = [
+            {"area": "governments", "item": c, "as_of": "2026-11-04"}
+            for c in ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"]
+        ] + [
+            {"area": "ois_v2_research_tenor", "item": c + " " + t,
+             "as_of": "2026-11-04"}
+            for c in ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD"]
+            for t in ["3m", "6m", "12m"]
+        ] + [
+            {"area": "positioning", "item": "CFTC", "as_of": "2026-10-27"}
+            for _ in range(8)
+        ]
         audit = {"schema": "GMFQ_FXV2_FRESHNESS_AUDIT_V1",
                  "as_of_rome": "2026-11-05",
                  "status": "DATA_GAPS_PRESENT",
-                 "summary": {"checks": 40, "v2_pages": 12, "fx_pairs": 28,
+                 "summary": {"checks": len(checks), "v2_pages": 12, "fx_pairs": 28,
                              "gaps": 4, "late_or_invalid": 3},
-                 "checks": [{"area": "governments", "item": "CHF",
-                             "as_of": "2026-09-30"}] * 40,
-                 "hard_errors": []}
+                 "checks": checks, "hard_errors": []}
         decision = {"schema": "GMFQ_FXV2_READINESS_DUAL_TRACK_V1",
                     "as_of_rome": "2026-11-05",
                     "research": {"website_pages": 12, "rate_pricing_horizons": 24,
@@ -36,6 +46,8 @@ class MorningProofTest(unittest.TestCase):
         self.assertTrue(mixed["on_time_proven"])
         self.assertFalse(mixed["all_sections_ready_with_current_data"])
         self.assertEqual(mixed["source_evidence"]["unresolved_gaps"], 4)
+        self.assertEqual(len(mixed["source_evidence"]["canonical_gov_as_of"]), 8)
+        self.assertEqual(sum(map(len, mixed["source_evidence"]["pricing_tenor_as_of"].values())), 24)
         self.assertEqual(mixed["joint_status"], "PUBLIC_BY_0800_SOURCE_GAPS_VISIBLE")
         self.assertEqual(mixed["source_evidence"]["macro_legacy_baseline_as_of"], "2026-09-25")
         self.assertFalse(mixed["signal_model_revalidated"])
@@ -51,6 +63,11 @@ class MorningProofTest(unittest.TestCase):
         bad["as_of_rome"] = "2026-11-04"
         self.assertEqual(attach_source_evidence(public, bad, decision)["joint_status"],
                          "PUBLIC_BY_0800_SOURCE_AUDIT_MISSING")
+        incomplete = dict(audit)
+        incomplete["checks"] = audit["checks"][:-1]
+        incomplete["summary"] = dict(audit["summary"], checks=len(incomplete["checks"]))
+        self.assertFalse(attach_source_evidence(public, incomplete, decision)
+                         ["all_sections_ready_with_current_data"])
         delayed = evaluate(dt.datetime(2026, 11, 5, 8, 20, tzinfo=ROME), rows())
         self.assertFalse(attach_source_evidence(delayed, audit, decision)
                          ["all_sections_ready_with_current_data"])
