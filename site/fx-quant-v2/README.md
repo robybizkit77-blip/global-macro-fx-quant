@@ -69,3 +69,28 @@ retains the **last dated** observation without claiming a fresh close.
 
 The V2 UI displays dated estimates/observations for informational purposes;
 Core, certified rates, pair signals, OIS_DATA and backtests are unchanged.
+
+## Relative pricing research for all 28 FX pairs (2026-11-05)
+
+`pricing-relative-28pairs-research.json` is a separately dated **research-only**
+dataset built from `ois-pricing-snapshot.json` using the exact 28 pair
+orientations published in the V2 Macro descriptive candidate. It provides
+84 arithmetic level contrasts (28 pairs × 3 horizons), including estimates
+and the NZD ASX bank-bill proxy. The OIS page displays the results under
+"Ricerca relativa delle 28 coppie".
+
+Calculation: `spread_bp = 100 × (base level in % − quote level in %)`.
+Each leg retains its own observation date, instrument family, source quality
+and specific contract when available. Same display horizon **does not**
+guarantee the same maturity, underlying index, benchmark convention, or basis.
+Mixed-date differences are not same-time market spreads. These values **are
+not** investable FX carry, homogeneous OIS spreads, central-bank policy
+repricing, inferred direction, expected return, pair signal, or backtest input.
+
+`FX Quant V2 Relative Pricing 28-Pair Research` refreshes the data after
+successful OIS / Macro V2 source producers (or changes to the relevant
+files). A separate publication trigger carries the produced sidecar into
+GitHub Pages, even when the data update was committed with GITHUB_TOKEN.
+The workflow refuses missing dates, missing pairs and source classification
+drift. Only the V2 research JSON is writable. Canonical FX Core and all 28
+existing trading signals remain unchanged.
