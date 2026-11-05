@@ -27,6 +27,19 @@ class DeployGate(unittest.TestCase):
     def test_missing_one_surface_blocks_claim(self):
         r=wait(lambda p:entry(p,p!="ois.html"),lambda x:None,attempts=1)
         self.assertEqual([x["path"] for x in r["unmatched"]],["ois.html"])
+    def test_v2_all_12_pages_and_chf_nzd_source_contract_probed(self):
+        pages = {"index.html", "valute.html", "coppie.html", "tassi.html",
+                 "ois.html", "macro.html", "banche.html", "cot.html",
+                 "cross-asset.html", "liquidita-credito.html",
+                 "calendario-news.html", "research.html"}
+        research = {"chf-nzd-benchmark-research.json",
+                    "chf-snb-paired-history.json",
+                    "nzd-asx-government-anchor-v1.json",
+                    "assets/rates-working-model-v1.js"}
+        self.assertTrue(pages.issubset(set(PROBES)))
+        self.assertTrue(research.issubset(set(PROBES)))
+        self.assertEqual(len(PROBES), len(set(PROBES)))
+
     def test_empty_attempts_rejected(self):
         with self.assertRaises(ValueError):
             wait(lambda p:entry(p),lambda x:None,attempts=0)
