@@ -10,6 +10,8 @@ on:
       - 'validation/build_rates_candidate_from_audit.py'
       - 'validation/rates/verify_weekly_rate_change_contract_v1.py'
       - 'validation/rates/test_weekly_rate_change_contract_v1.py'
+      - 'validation/rates/push_rates_safe_v1.py'
+      - 'validation/rates/test_push_rates_safe_v1.py'
       - 'validation/test_eur_daily_rates_history_source_guard_v1.py'
       - 'validation/fetch_rates_eur_gbp.py'
       - 'validation/test_fetch_rates_eur_gbp_retry_v1.py'
@@ -33,6 +35,8 @@ on:
       - 'validation/build_rates_candidate_from_audit.py'
       - 'validation/rates/verify_weekly_rate_change_contract_v1.py'
       - 'validation/rates/test_weekly_rate_change_contract_v1.py'
+      - 'validation/rates/push_rates_safe_v1.py'
+      - 'validation/rates/test_push_rates_safe_v1.py'
       - 'validation/test_eur_daily_rates_history_source_guard_v1.py'
       - 'validation/fetch_rates_eur_gbp.py'
       - 'validation/test_fetch_rates_eur_gbp_retry_v1.py'
@@ -94,6 +98,9 @@ jobs:
         run: python3 -m unittest validation.test_eur_daily_rates_history_source_guard_v1 -v
       - name: Test real 2Y/10Y weekly seven-calendar-day change semantics (not adjacent-day)
         run: python3 -m unittest validation.rates.test_weekly_rate_change_contract_v1 -v
+
+      - name: Test safe Rates publish under concurrent non-Rates/overlapping source writers
+        run: python3 -m unittest validation.rates.test_push_rates_safe_v1 -v
 
       - name: Resolve Rates schedule from UTC cron and Rome offset
         id: gate
@@ -385,8 +392,6 @@ jobs:
           assert 'live_data/sections/NATIVE_RATES_DATA.json' not in changed
           print('RATES_METADATA_NO_OBSERVATION_CHANGE_PASS',sorted(changed))
           PY
-          REMOTE_SHA="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
-          test "$REMOTE_SHA" = "$GITHUB_SHA"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -- live_data/sections/RATES_AUDIT_METADATA.json live_data/manifest.v2.json payload/part-15.txt
@@ -395,9 +400,8 @@ jobs:
             exit 0
           fi
           git commit -m 'Refresh dated G8 Rates source-age metadata without new yields'
-          REMOTE_SHA_2="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
-          test "$REMOTE_SHA_2" = "$GITHUB_SHA"
-          git push origin "HEAD:$TARGET_BRANCH"
+          # Move forward only when newer main commits touch no Rates-owned data.
+          python3 validation/rates/push_rates_safe_v1.py --mode metadata --base "$GITHUB_SHA"
           echo RATES_SOURCE_AGE_ONLY_MAIN_UPDATE_PUSHED
 
       - name: Apply validated Rates candidate
@@ -465,8 +469,6 @@ jobs:
           TARGET_BRANCH: main
         run: |
           set -euo pipefail
-          REMOTE_SHA="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
-          test "$REMOTE_SHA" = "$GITHUB_SHA"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add \
@@ -477,9 +479,9 @@ jobs:
             payload/part-15.txt
           git diff --cached --quiet && { echo 'No Rates changes to persist'; exit 0; }
           git commit -m 'Refresh daily Rates runtime from official sources'
-          REMOTE_SHA_2="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
-          test "$REMOTE_SHA_2" = "$GITHUB_SHA"
-          git push origin "HEAD:$TARGET_BRANCH"
+          # Bounded non-force retry for disjoint concurrent main changes.
+          # Overlapping Rates data/manifest changes remain a hard failure.
+          python3 validation/rates/push_rates_safe_v1.py --mode rates --base "$GITHUB_SHA"
           echo RATES_PERSISTENT_MAIN_UPDATE_PUSHED
 
       - name: Upload Rates evidence
