@@ -202,16 +202,31 @@ requireValid(bench.schema==='GMFQ_FXV2_CHF_NZD_BENCHMARK_RESEARCH_V1'&&
 if(bench.CHF&&bench.CHF.pair_status==='OFFICIAL_SNBSAMEBASIS_RESEARCH_REVIEW_REQUIRED'&&
    bench.CHF.eligible_for_pair_spreads===false&&Number.isFinite(bench.CHF['2Y'])&&Number.isFinite(bench.CHF['10Y'])){
  check('rates_research','CHF SNB same-date spot pair (not Core)',bench.CHF.paired_date,14,'SNB_RESEARCH_REVIEW_REQUIRED');
- requireValid(bench.CHF.separate_10y?.not_joinable_with_paired_2y===true,'CHF separate 10Y must not join stale 2Y');
+ requireValid(bench.CHF.separate_10y?.not_joinable_with_paired_2y===
+   (bench.CHF.separate_10y?.as_of!==bench.CHF.paired_date),
+   'CHF isolated 10Y must only be joinable with an independently same-date paired SNB curve');
 }else gap('rates_research','CHF source','No same-day SNB 2Y/10Y research pair verified');
 if(bench.NZD&&bench.NZD.status==='RBNZ_GOVT_B2_WEB_RESEARCH_UNAPPROVED'&&
    bench.NZD.cross_roll_change_allowed===false&&
-   bench.NZD.independent_xlsx_reconciled===false&&bench.NZD.after_roll?.length===2){
+   bench.NZD.independent_xlsx_reconciled===false&&bench.NZD.after_roll?.length>=2){
  check('rates_research','NZD RBNZ B2 post-roll web research',bench.NZD.latest_date,7,'RBNZ_WEB_NOT_XLSX_RECONCILED');
  requireValid(Math.abs((bench.NZD.latest_10Y-bench.NZD.latest_2Y)*100-bench.NZD.latest_curve_bp)<.11,'NZD B2 post-roll curve arithmetic invalid');
  requireValid(bench.NZD.before_roll?.at(-1)?.date<bench.NZD.roll_date&&
    bench.NZD.after_roll[0].date===bench.NZD.roll_date,
    'NZD benchmark must split into nonjoined segments');
+ const afterRoll=bench.NZD.after_roll;
+ requireValid(afterRoll.every((x,i)=>i===0||x.date>afterRoll[i-1].date)&&
+   afterRoll.at(-1).date===bench.NZD.latest_date&&
+   afterRoll.at(-1)['2Y']===bench.NZD.latest_2Y&&
+   afterRoll.at(-1)['10Y']===bench.NZD.latest_10Y,
+   'NZD post-roll observations must advance monotonically and match the final same-benchmark yield row');
+ requireValid(bench.NZD.same_benchmark_change_bp?.start===bench.NZD.roll_date&&
+   bench.NZD.same_benchmark_change_bp?.end===bench.NZD.latest_date&&
+   Math.abs(bench.NZD.same_benchmark_change_bp['2Y']-
+     (bench.NZD.latest_2Y-afterRoll[0]['2Y'])*100)<.11&&
+   Math.abs(bench.NZD.same_benchmark_change_bp['10Y']-
+     (bench.NZD.latest_10Y-afterRoll[0]['10Y'])*100)<.11,
+   'NZD change may use only the same post-roll benchmark pair');
 }else gap('rates_research','NZD source','No validated RBNZ benchmark-roll split in research feed');
 note('rates_research','Research vs Core','CHF/NZD research levels do not promote OIS, FX spreads, cross-roll changes or backtests.');
 const liq=read('NATIVE_LIQ_DATA');
