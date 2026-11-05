@@ -105,11 +105,11 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p /tmp/chf-nzd-official-staging
-          python validation/build_chf_nzd_official_rates_staging_v1.py \
+          if python validation/build_chf_nzd_official_rates_staging_v1.py \
             --currency CHF --live \
             --output /tmp/chf-nzd-official-staging/CHF_NZD_STAGING_ONLY.json \
-            --receipt /tmp/chf-nzd-official-staging/CHF_receipt.json
-          python - <<'PY'
+            --receipt /tmp/chf-nzd-official-staging/CHF_receipt.json; then
+            python - <<'PY'
           import json
           from pathlib import Path
           receipt=json.loads(Path('/tmp/chf-nzd-official-staging/CHF_receipt.json').read_text())
@@ -121,6 +121,12 @@ jobs:
               assert not Path('/tmp/chf-nzd-official-staging/CHF_NZD_STAGING_ONLY.json').exists()
           print('CHF_OFFICIAL_STAGING_READ_ONLY_PASS',receipt['status'],receipt['as_of'])
           PY
+          else
+            rm -f /tmp/chf-nzd-official-staging/CHF_NZD_STAGING_ONLY.json
+            rm -f /tmp/chf-nzd-official-staging/CHF_receipt.json
+            echo 'CHF_OFFICIAL_STAGING_NOT_ELIGIBLE: no verified *current* same-date pair; stale/source-error guards remain enforced.'
+            echo 'CHF official staging NOT ELIGIBLE: source outdated, inaccessible or not reconciled. No new market observation or Core write.' >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Enforce immutable operational Rates, manifests and entire legacy payload
         shell: bash
         run: |
