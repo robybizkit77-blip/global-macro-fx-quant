@@ -1,0 +1,83 @@
+{
+  "schema": "GMFQ_FXV2_PREREGISTERED_6M_FX_FUTURES_TRIAL_V1",
+  "preregistration_date_utc": "2026-11-05",
+  "earliest_eligible_capture_rome": "2026-11-06",
+  "description": "Does the direction of a newly observed change in base-minus-quote 6m futures implied-rate difference predict the direction of the FX cross five subsequent ECB sessions after the evening freeze, beyond a simple fixed 5-session FX momentum benchmark?",
+  "hypothesis_H0": "On paired newly registered forward observations, a fixed 6m rate-change direction has no predictive directional advantage over the frozen 5-fixing FX momentum baseline.",
+  "hypothesis_H1": "Positive base-minus-quote 6m futures-implied-rate change predicts appreciation of the base currency over the next five ECB reference-fixing sessions, with incremental directional accuracy against a fixed five-session momentum sign.",
+  "source_rate": "validation/cb_pricing/history/OIS_SAME_CONTRACT_QUOTES_V1.jsonl",
+  "source_rate_classification": "SECONDARY_LISTED_FUTURES_NOT_OIS_AND_NOT_POLICY_REPRICING",
+  "source_fx": "live_data/sections/ECB_G8_PRICE_HISTORY.json",
+  "source_fx_classification": "OFFICIAL_ECB_REFERENCE_NOT_EXECUTABLE",
+  "pair_universe_all_28": true,
+  "rate_data_eligible_pairs": [
+    "EUR/USD",
+    "EUR/CHF",
+    "USD/CHF"
+  ],
+  "all_other_pairs": "NO_COMPATIBLE_DATED_6M_RATE_HISTORY_OBSERVED_NO_SYNTHETIC_INPUT",
+  "tenor": "6m",
+  "rate_feature": "rate_change_bp_base_minus_rate_change_bp_quote_same_two_consecutive_ECB_sessions_with_same_expiry_on_each_currency",
+  "pre_capture_rules": {
+    "capture_time": "AFTER_19_00_EUROPE_ROME_ON_REAL_BUSINESS_DAY",
+    "official_ECB_T0_day": "MUST_EQUAL_CAPTURE_ROME_DAY",
+    "first_seen_utc": "ALL_FOUR_SOURCE_QUOTES_MUST_BE_FIRST_SEEN_BY_ACTUAL_CAPTURE_INSTANT",
+    "source_market_dates": "THE_SAME_TWO_ADJACENT_ECB_SESSIONS_FOR_BOTH_CURRENCIES",
+    "max_lag_ECB_sessions_between_feature_last_market_day_and_T0": 2,
+    "ambiguous_multiple_contracts": "REJECT_PAIR_DAY",
+    "contract_roll": "REJECT_IF_NOT_IDENTICAL_WITHIN_EACH_CURRENCY_TWO_SESSIONS",
+    "duplicate_pair_source_day": "ABSTAIN_NOT_A_NEW_INDEPENDENT_FEATURE",
+    "unit": "basis_points_in_implied_futures_rate_not_OIS"
+  },
+  "signal_definition": {
+    "magnitude_threshold_abs_bp": 2,
+    "positive": "PREDICT_BASE_APPRECIATION",
+    "negative": "PREDICT_BASE_DEPRECIATION",
+    "less_than_threshold": "ABSTAIN",
+    "no_comparable_quote": "ABSTAIN",
+    "no_parameter_fit": true,
+    "no_market_orders": true
+  },
+  "baseline": {
+    "name": "FIVE_ECB_FIXING_SESSIONS_FX_MOMENTUM",
+    "formula": "sign(ln(FX_T0 / FX_Tminus5))",
+    "threshold_log_return": 0,
+    "no_optimization": true
+  },
+  "target": {
+    "horizon": "FIVE_FUTURE_ECB_REFERENCE_FIXING_SESSIONS",
+    "numerator": "FX_price_quote_units_per_base_at_Tplus5",
+    "denominator": "FX_price_quote_units_per_base_at_T0",
+    "method": "ln(numerator/denominator)",
+    "direction": "positive_log_return_means_base_appreciation",
+    "first_result": "ONLY_AFTER_FIVE_FUTURE_FIXINGS_ARE_IN_OFFICIAL_HISTORY_AND_LOCAL_TIME_IS_AFTER_19_00",
+    "trade_price": false,
+    "returns_not_PNL": true
+  },
+  "analysis_controls": {
+    "denominator": "PROSPECTIVELY_FROZEN_QUALIFYING_PAIR_DAYS_ONLY; all source-deficient days retained with abstention",
+    "compare": "directional_hit_rate_RATE_MINUS_MOMENTUM_ON_SAME_MATURED_PAIR_DAYS",
+    "clustering": "BY_CAPTURE_DATE; currencies share macro shocks and EUR-referenced FX cross structure",
+    "daily_cross_section_max_independent_dimensions": 7,
+    "monthly_holdouts": "NOT_CLAIMED_TILL_DATA_SUFFICIENT",
+    "no_tuning_after_outcomes": true,
+    "no_data_snooping": true,
+    "no_annualized_sharpe_from_reference_prices": true,
+    "minimum_distinct_capture_days_for_inferential_review": 60,
+    "minimum_calendar_weeks_elapsed": 12,
+    "minimum_matured_pair_events_for_inferential_review": 100,
+    "if_not_met": "DESCRIPTIVE_COHORT_ONLY_NOT_VALIDATED"
+  },
+  "prohibited": [
+    "HISTORIC_PSEUDO_PROSPECTIVE_BACKFILL",
+    "AUTOMATIC_FX_CORE_REBASE",
+    "TRADING_OR_PORTFOLIO_SIZING",
+    "INTERPRET_RATE_LEVEL_AS_OIS_OR_POLICY_VOTE",
+    "MODEL_SELECTION_AFTER_SEEING_OUTCOMES",
+    "UNLABELED_ESTIMATES_AS_OFFICIAL_RATES"
+  ],
+  "eligible_for_live_fx_engine": false,
+  "eligible_for_trading": false,
+  "eligible_for_backtest_before_prospective_maturity": false,
+  "original_28_pair_signals_untouched": true
+}

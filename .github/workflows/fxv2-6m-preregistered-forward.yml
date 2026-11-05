@@ -1,0 +1,126 @@
+name: FX Quant V2 Preregistered 6M Prospective Research
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/quant/FXV2_6M_PREREGISTERED_PROTOCOL_V1.json'
+      - 'validation/quant/fxv2_6m_prospective_trial_v1.py'
+      - 'validation/quant/test_fxv2_6m_prospective_trial_v1.py'
+      - '.github/workflows/fxv2-6m-preregistered-forward.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/quant/FXV2_6M_PREREGISTERED_PROTOCOL_V1.json'
+      - 'validation/quant/fxv2_6m_prospective_trial_v1.py'
+      - 'validation/quant/test_fxv2_6m_prospective_trial_v1.py'
+      - '.github/workflows/fxv2-6m-preregistered-forward.yml'
+  workflow_run:
+    # The pre-existing Forward suite freezes its ECB T0 in the evening.
+    # Independent backstop below avoids losing an entire experiment date
+    # if its parent workflow completes with unrelated quality issues.
+    workflows: ['Forward Frozen Core Prospective Daily V1']
+    types: [completed]
+  schedule:
+    # 20:45 Europe/Rome in CET/CEST; actual clock gate rejects wrong slot,
+    # weekends and all days before protocol effective date.
+    - cron: '45 18 * * 1-5'
+    - cron: '45 19 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('fxv2-6m-pr-{0}', github.event.pull_request.number) || 'fxv2-6m-forward-main' }}
+  cancel-in-progress: false
+
+jobs:
+  prospective-observation:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.event != 'pull_request')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+          fetch-depth: 4
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Adversarial tests of preregistration, no backfill and future ECB maturity
+        run: |
+          python -m unittest validation.quant.test_fxv2_6m_prospective_trial_v1 -v
+          python -m validation.quant.fxv2_6m_prospective_trial_v1 --verify-only
+      - name: Admit genuine Rome evening before appending any research observation
+        id: gate
+        shell: bash
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          day="$(TZ=Europe/Rome date +%F)"
+          weekday="$(TZ=Europe/Rome date +%u)"
+          hour="$(TZ=Europe/Rome date +%H)"
+          allowed=false
+          if [[ "$EVENT" != "pull_request" ]] &&
+             [[ "$day" > "2026-11-05" ]] &&
+             [[ "$weekday" -le 5 ]] &&
+             [[ "$hour" -ge 19 ]]; then
+            allowed=true
+          fi
+          echo "allowed=$allowed" >> "$GITHUB_OUTPUT"
+          echo "FXV2_6M_REAL_CLOCK event=$EVENT day=$day hour=$hour weekday=$weekday allowed=$allowed" >> "$GITHUB_STEP_SUMMARY"
+      - name: New future-only 6M / ECB price freeze and matured reference observer
+        if: steps.gate.outputs.allowed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          # In a race with a source writer, always re-evaluate at ACTUAL NOW
+          # on the newest main; do not replay a prior clock or force a push.
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          mkdir -p /tmp/fxv2-6m
+          for attempt in 1 2 3 4; do
+            git fetch --no-tags origin main
+            git reset --hard origin/main
+            python -m validation.quant.fxv2_6m_prospective_trial_v1 > /tmp/fxv2-6m/receipt.json
+            cat /tmp/fxv2-6m/receipt.json
+            python -m validation.quant.fxv2_6m_prospective_trial_v1 --verify-only
+            for journal in validation/quant/prospective/FXV2_6M_FROZEN_EXPERIMENT_V1.jsonl validation/quant/prospective/FXV2_6M_FUTURE_ECB_REFERENCE_V1.jsonl; do
+              if [[ -f "$journal" ]]; then
+                git add -- "$journal"
+              fi
+            done
+            changed="$(git diff --cached --name-only)"
+            if [[ -z "$changed" ]]; then
+              echo 'FXV2_6M_PROSPECTIVE_NO_NEW_OBSERVATIONS_NO_FAKE_UPDATE'
+              exit 0
+            fi
+            if echo "$changed" | grep -Ev '^validation/quant/prospective/FXV2_6M_(FROZEN_EXPERIMENT|FUTURE_ECB_REFERENCE)_V1.jsonl$'; then
+              echo 'UNEXPECTED_FXV2_6M_WRITE' >&2
+              exit 1
+            fi
+            git commit -m 'data(fxv2): append observed 6M research hypothesis freeze and mature ECB references'
+            if git push origin HEAD:main; then
+              echo 'FXV2_6M_PROSPECTIVE_DURABLY_PUBLISHED'
+              exit 0
+            fi
+            echo "FXV2_6M_CONCURRENT_MAIN_SOURCE_CHANGE retry=$attempt" >&2
+            sleep "$((attempt * 3))"
+          done
+          echo 'FXV2_6M_NO_DURABLE_PERSISTENCE' >&2
+          exit 1
+      - name: Retain transparent research-only receipt even without new signals
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fxv2-preregistered-6m-research
+          path: /tmp/fxv2-6m/receipt.json
+          if-no-files-found: warn
+          retention-days: 30
