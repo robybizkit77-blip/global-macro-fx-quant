@@ -12,12 +12,13 @@
     "source": "Swiss National Bank · CHF Confederation daily spot 2J/10J",
     "source_url": "https://data.snb.ch/api/cube/rendeiduebd/data/json/en",
     "separate_10y": {
-      "as_of": "2026-11-04",
-      "10Y": 0.525,
+      "as_of": "2026-11-05",
+      "10Y": 0.475,
       "source_url": "https://www.snb.ch/en/the-snb/mandates-goals/statistics/statistics-pub/current_interest_exchange_rates",
       "not_joinable_with_paired_2y": true
     },
     "official_pair_independently_dated": true,
+    "matched_source_cadence": "SNB_STATISTICAL_MONTH_END_ANCHOR",
     "review_note": "Coppia 2Y/10Y dalla stessa serie spot SNB e stessa data, non dalla media di bond diversi. Il 10Y SNB pubblicato separatamente ha data propria e non può impedire l'uso della coppia ufficiale più recente; non si mescolano mai due date per una curva osservata.",
     "eligible_for_core": false,
     "eligible_for_pair_spreads": false,
