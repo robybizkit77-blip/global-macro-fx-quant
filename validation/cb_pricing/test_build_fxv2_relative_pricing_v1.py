@@ -3,6 +3,7 @@
 import copy
 import hashlib
 import json
+from datetime import date, timedelta
 from pathlib import Path
 import unittest
 
@@ -37,21 +38,67 @@ class RelativePricingResearchTests(unittest.TestCase):
             self.assertIsNone(row["carry_estimate"])
 
     def test_arithmetic_orientation_and_published_real_inputs(self):
-        r = self.report["pairs"]
-        eurusd = r["EUR/USD"]["horizons"]["6m"]
-        self.assertAlmostEqual(eurusd["spread_bp"], -145.25)
-        self.assertEqual(eurusd["base_as_of"], "2026-11-03")
-        self.assertEqual(eurusd["quote_as_of"], "2026-11-04")
-        self.assertFalse(eurusd["same_date"])
-        self.assertEqual(eurusd["date_gap_days"], 1)
-        self.assertTrue(eurusd["estimate_involved"])
-        self.assertFalse(eurusd["proxy_involved"])
-        self.assertAlmostEqual(r["GBP/JPY"]["horizons"]["6m"]["spread_bp"], 280.84)
-        audnzd = r["AUD/NZD"]["horizons"]["6m"]
-        self.assertAlmostEqual(audnzd["spread_bp"], 122.5)
-        self.assertTrue(audnzd["proxy_involved"])
-        self.assertTrue(audnzd["same_date"])
-        self.assertEqual(audnzd["quote_contract"], "Jun 2027")
+        # Current exchange/pricing snapshots MUST be allowed to advance.
+        # Inspect latest real inputs, never pin an old EUR/USD level or date.
+        for name in ("EUR/USD", "GBP/JPY", "AUD/NZD"):
+            base, quote = name.split("/")
+            a = self.pricing["currencies"][base]
+            b = self.pricing["currencies"][quote]
+            x, y = a["horizons"]["6m"], b["horizons"]["6m"]
+            observed = self.report["pairs"][name]["horizons"]["6m"]
+            self.assertAlmostEqual(
+                observed["spread_bp"], round(100 * (x["rate"] - y["rate"]), 3),
+                places=3, msg=name + " orientation/base-minus-quote")
+            self.assertEqual(observed["base_rate_pct"], x["rate"])
+            self.assertEqual(observed["quote_rate_pct"], y["rate"])
+            self.assertEqual(observed["base_as_of"], x["as_of"])
+            self.assertEqual(observed["quote_as_of"], y["as_of"])
+            days = abs((date.fromisoformat(x["as_of"]) -
+                        date.fromisoformat(y["as_of"])).days)
+            self.assertEqual(observed["date_gap_days"], days)
+            self.assertEqual(observed["same_date"], days == 0)
+            self.assertEqual(observed["estimate_involved"],
+                             "STIMA INDICATIVA" in (a["quality"], b["quality"]))
+            self.assertEqual(observed["proxy_involved"],
+                             "PROXY FUTURES" in (a["kind"], b["kind"]))
+            self.assertEqual(observed["base_contract"], x.get("contract"))
+            self.assertEqual(observed["quote_contract"], y.get("contract"))
+
+        # Independent *frozen synthetic scenario* certifies the original
+        # -145.25 bp orientation, one-day mismatch, and 122.5bp AUD/NZD
+        # proxy. It must not depend on daily published quotes or expiry rolls.
+        p = copy.deepcopy(self.pricing)
+        asof = date.fromisoformat(p["snapshot_built_from_repo_date"])
+        older = (asof - timedelta(days=1)).isoformat()
+        current = asof.isoformat()
+        eur = p["currencies"]["EUR"]
+        usd = p["currencies"]["USD"]
+        eur["quality"] = usd["quality"] = "STIMA INDICATIVA"
+        eur["kind"] = usd["kind"] = "FUTURES SECONDARI"
+        eur["horizons"]["6m"].update(rate=2.8275, as_of=older)
+        usd["horizons"]["6m"].update(rate=4.28, as_of=current)
+        aud = p["currencies"]["AUD"]
+        nzd = p["currencies"]["NZD"]
+        aud["kind"], aud["quality"] = "FUTURES", "FONTE UFFICIALE"
+        nzd["kind"], nzd["quality"] = "PROXY FUTURES", "PROXY DIREZIONALE"
+        aud["horizons"]["6m"].update(rate=4.925, as_of=current)
+        nzd["horizons"]["6m"].update(rate=3.7, as_of=current, contract="Jun 2027")
+        sample = build(p, self.macro, b"frozen-synthetic-2026-11-05")
+        e = sample["pairs"]["EUR/USD"]["horizons"]["6m"]
+        self.assertEqual(e["spread_bp"], -145.25)
+        self.assertEqual(e["base_as_of"], older)
+        self.assertEqual(e["quote_as_of"], current)
+        self.assertFalse(e["same_date"])
+        self.assertEqual(e["date_gap_days"], 1)
+        self.assertTrue(e["estimate_involved"])
+        self.assertFalse(e["proxy_involved"])
+        q = sample["pairs"]["AUD/NZD"]["horizons"]["6m"]
+        self.assertEqual(q["spread_bp"], 122.5)
+        self.assertTrue(q["proxy_involved"])
+        self.assertTrue(q["same_date"])
+        self.assertEqual(q["quote_contract"], "Jun 2027")
+        self.assertTrue(sample["not_ois_equivalent"])
+        self.assertFalse(sample["eligible_for_fx_engine"])
 
     def test_all_observations_dated_and_only_arithmetic(self):
         r = self.report
