@@ -8,7 +8,7 @@ const core=fs.readFileSync(path.join(ROOT,'live_data/sections/D.json'),'utf8');
 const pairs=fs.readFileSync(path.join(ROOT,'live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'),'utf8');
 const clone=x=>JSON.parse(JSON.stringify(x));
 const dateOffset=(day,delta)=>new Date(Date.parse(day+'T00:00:00Z')+delta*86400000).toISOString().slice(0,10);
-const sourceDay=d.generated_europe_rome_day;
+const sourceDay=doc.generated_europe_rome_day;
 assert.match(sourceDay,/^\d{4}-\d{2}-\d{2}$/);
 const todayRome=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 assert(sourceDay<=todayRome,'Macro V3 source cannot be dated in the future');
