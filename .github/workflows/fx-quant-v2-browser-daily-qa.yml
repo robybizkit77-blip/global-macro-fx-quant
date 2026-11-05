@@ -19,6 +19,7 @@ on:
       - 'validation/qa_fxv2_ois_provenance_v2.cjs'
       - 'validation/qa_fxv2_ois_relative_live_parity_v1.cjs'
       - 'validation/qa_fxv2_same_contract_reading_v1.cjs'
+      - 'validation/qa_fxv2_ois_2y_fx_context_v1.cjs'
       - 'validation/qa_fxv2_pair_macro_pricing_bridge_v1.cjs'
       - 'validation/qa_fxv2_liquidity_credit_overlay_v1.cjs'
       - 'validation/qa_fxv2_macro_pair_observed_v1.cjs'
@@ -45,6 +46,7 @@ on:
       - 'validation/qa_fxv2_ois_provenance_v2.cjs'
       - 'validation/qa_fxv2_ois_relative_live_parity_v1.cjs'
       - 'validation/qa_fxv2_same_contract_reading_v1.cjs'
+      - 'validation/qa_fxv2_ois_2y_fx_context_v1.cjs'
       - 'validation/qa_fxv2_pair_macro_pricing_bridge_v1.cjs'
       - 'validation/qa_fxv2_liquidity_credit_overlay_v1.cjs'
       - 'validation/qa_fxv2_macro_pair_observed_v1.cjs'
@@ -88,6 +90,7 @@ jobs:
           node validation/qa_fxv2_ois_provenance_v2.cjs
           node validation/qa_fxv2_ois_relative_live_parity_v1.cjs
           node validation/qa_fxv2_same_contract_reading_v1.cjs
+          node validation/qa_fxv2_ois_2y_fx_context_v1.cjs
           node validation/qa_fxv2_pair_macro_pricing_bridge_v1.cjs
           node validation/qa_fxv2_liquidity_credit_overlay_v1.cjs
           node validation/qa_fxv2_macro_pair_observed_v1.cjs

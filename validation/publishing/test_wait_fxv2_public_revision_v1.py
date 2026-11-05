@@ -39,7 +39,8 @@ class DeployGate(unittest.TestCase):
                     "assets/ois-relative-parity-v1.js",
                     "pricing-relative-28pairs-research.json",
                     "ois-same-contract-repricing-research.json",
-                    "assets/ois-same-contract-reading-v1.js"}
+                    "assets/ois-same-contract-reading-v1.js",
+                    "assets/ois-rates-fx-context-v1.js"}
         self.assertTrue(pages.issubset(set(PROBES)))
         self.assertTrue(research.issubset(set(PROBES)))
         self.assertEqual(len(PROBES), len(set(PROBES)))

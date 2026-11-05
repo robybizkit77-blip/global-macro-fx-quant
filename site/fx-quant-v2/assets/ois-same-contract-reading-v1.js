@@ -101,8 +101,14 @@
     if(matched.length<3)parts.push(
       "Altri tenori sospesi: lo storico non coincide con la fonte visualizzata.");
     parts.push("Sono movimenti di futures secondari: non dimostrano da soli un repricing Fed/BCE/BNS; servono OIS comparabili, eventi e conferma del mercato FX.");
+    // Auditable metadata for the Rates/FX companion. Each 1D comparison has
+    // already passed exact contract/date and mathematical source checks.
+    const sourceDates=Object.fromEntries(matched.map(t=>[t,doc.currencies[ccy][t].as_of]));
+    const oneDayBp=Object.fromEntries(matched.map(t=>[t,
+      validMove(doc.currencies[ccy][t],doc.currencies[ccy][t].one_day,1)?
+        doc.currencies[ccy][t].one_day.change_bp:null]));
     return {status:"LETTURA_DESCRITTIVA_FUTURES",matchedTenors:matched,
-      latestDate,latestTenors:latest,olderTenors:older,
+      latestDate,latestTenors:latest,olderTenors:older,sourceDates,oneDayBp,
       narrative:parts.join(" "),verified1D:movements.length,
       verified1W:weekly.length,read_only:true,fx_signals:0,policy_deltas:0};
   }
