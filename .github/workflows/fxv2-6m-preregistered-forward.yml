@@ -9,6 +9,8 @@ on:
       - 'validation/quant/test_fxv2_6m_prospective_trial_v1.py'
       - 'validation/quant/fxv2_6m_schedule_gate_v1.py'
       - 'validation/quant/test_fxv2_6m_schedule_gate_v1.py'
+      - 'validation/quant/fxv2_6m_prospective_status_v1.py'
+      - 'validation/quant/test_fxv2_6m_prospective_status_v1.py'
       - '.github/workflows/fxv2-6m-preregistered-forward.yml'
   push:
     branches: [main]
@@ -18,6 +20,8 @@ on:
       - 'validation/quant/test_fxv2_6m_prospective_trial_v1.py'
       - 'validation/quant/fxv2_6m_schedule_gate_v1.py'
       - 'validation/quant/test_fxv2_6m_schedule_gate_v1.py'
+      - 'validation/quant/fxv2_6m_prospective_status_v1.py'
+      - 'validation/quant/test_fxv2_6m_prospective_status_v1.py'
       - '.github/workflows/fxv2-6m-preregistered-forward.yml'
   workflow_run:
     # The pre-existing Forward suite freezes its ECB T0 in the evening.
@@ -61,6 +65,8 @@ jobs:
         run: |
           python -m unittest validation.quant.test_fxv2_6m_prospective_trial_v1 -v
           python -m validation.quant.fxv2_6m_prospective_trial_v1 --verify-only
+          python -m unittest validation.quant.test_fxv2_6m_prospective_status_v1 -v
+          python -m validation.quant.fxv2_6m_prospective_status_v1 --output /tmp/fxv2-6m-preregistration-status-test.json
       - name: Run deterministic DST and authorized recovery gate tests
         run: python -m unittest validation.quant.test_fxv2_6m_schedule_gate_v1 -v
       - name: Admit genuine Rome evening before appending any research observation
@@ -100,7 +106,9 @@ jobs:
             python -m validation.quant.fxv2_6m_prospective_trial_v1 > /tmp/fxv2-6m/receipt.json
             cat /tmp/fxv2-6m/receipt.json
             python -m validation.quant.fxv2_6m_prospective_trial_v1 --verify-only
-            for journal in validation/quant/prospective/FXV2_6M_FROZEN_EXPERIMENT_V1.jsonl validation/quant/prospective/FXV2_6M_FUTURE_ECB_REFERENCE_V1.jsonl; do
+            python -m validation.quant.fxv2_6m_prospective_status_v1 --output site/fx-quant-v2/6m-prospective-status-v1.json
+            python -m validation.quant.fxv2_6m_prospective_status_v1 --output site/fx-quant-v2/6m-prospective-status-v1.json --check
+            for journal in validation/quant/prospective/FXV2_6M_FROZEN_EXPERIMENT_V1.jsonl validation/quant/prospective/FXV2_6M_FUTURE_ECB_REFERENCE_V1.jsonl site/fx-quant-v2/6m-prospective-status-v1.json; do
               if [[ -f "$journal" ]]; then
                 git add -- "$journal"
               fi
@@ -110,7 +118,7 @@ jobs:
               echo 'FXV2_6M_PROSPECTIVE_NO_NEW_OBSERVATIONS_NO_FAKE_UPDATE'
               exit 0
             fi
-            if echo "$changed" | grep -Ev '^validation/quant/prospective/FXV2_6M_(FROZEN_EXPERIMENT|FUTURE_ECB_REFERENCE)_V1.jsonl$'; then
+            if echo "$changed" | grep -Ev '^validation/quant/prospective/FXV2_6M_(FROZEN_EXPERIMENT|FUTURE_ECB_REFERENCE)_V1.jsonl$|^site/fx-quant-v2/6m-prospective-status-v1.json$'; then
               echo 'UNEXPECTED_FXV2_6M_WRITE' >&2
               exit 1
             fi
@@ -123,6 +131,34 @@ jobs:
             sleep "$((attempt * 3))"
           done
           echo 'FXV2_6M_NO_DURABLE_PERSISTENCE' >&2
+          exit 1
+      - name: Publish explicit preregistration status on code integration, no live capture
+        if: github.event_name == 'push' && steps.gate.outputs.allowed == 'false'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          TARGET=site/fx-quant-v2/6m-prospective-status-v1.json
+          for attempt in 1 2 3 4; do
+            git fetch --no-tags origin main
+            git reset --hard origin/main
+            python -m validation.quant.fxv2_6m_prospective_status_v1 --output "$TARGET"
+            python -m validation.quant.fxv2_6m_prospective_status_v1 --output "$TARGET" --check
+            git add -- "$TARGET"
+            if git diff --cached --quiet; then
+              echo 'FXV2_6M_PREREGISTRATION_STATUS_ALREADY_PUBLISHED'
+              exit 0
+            fi
+            test "$(git diff --cached --name-only)" = "$TARGET"
+            git commit -m 'data(fxv2): publish unstarted preregistered 6M prospective study status'
+            if git push origin HEAD:main; then
+              echo 'FXV2_6M_PRE_REGISTRATION_STATUS_PUBLISHED'
+              exit 0
+            fi
+            sleep "$((attempt * 2))"
+          done
+          echo 'FXV2_6M_PREREGISTRATION_STATUS_PUBLICATION_FAILED' >&2
           exit 1
       - name: Retain transparent research-only receipt even without new signals
         if: always()
