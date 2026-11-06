@@ -1,30 +1,26 @@
 # GLOBAL MACRO FX QUANT
 
-## Control Room operativa — versione di riferimento
+## Sito operativo ufficiale — FX Quant V2
 
-**Apri la [Control Room Preview v10](https://robybizkit77-blip.github.io/global-macro-fx-quant/site/control-room-preview/#/home)**
+**[Apri FX Quant V2 — Research Desk](https://robybizkit77-blip.github.io/global-macro-fx-quant/site/fx-quant-v2/)**
 
-L'interfaccia approvata e attualmente in sviluppo si trova in `site/control-room-preview/`. Questa è la destinazione corretta per miglioramenti alle card, ai grafici, alla navigazione e all'esperienza mobile.
+La versione approvata e operativa è `site/fx-quant-v2/` (12 sezioni). La grafica V2, le 28 coppie FX e il Core restano congelati; nuove modifiche richiedono un difetto riproducibile o una fonte verificata.
 
-Le pagine d'ingresso della vecchia dashboard (`/` e `site/website-v1/index.html`) reindirizzano alla Control Room Preview v10. I file storici e i workflow che utilizzano ancora il runtime precedente restano conservati per compatibilità, **non sono bersagli di sviluppo UI**.
+### Ingressi e versioni storiche
 
-Le serie di mercato sono condivise tra più interfacce: i workflow Price, Rates, OIS e COT possono aggiornare dati riutilizzabili, ma **una modifica alla dashboard precedente non equivale a un aggiornamento della Preview**. Per verificare la Control Room usare `validation/qa_control_room_v10_public.js` e `control-room-v10-public-browser-qa.yml`.
+- Il repository root `/` e `site/website-v1/index.html` rimandano alla V2 per navigazione; **non** sono il codice sorgente della V2.
+- `site/control-room-preview/`, `site/website-v1/`, `dashboard/` e `payload/` restano archivi *di compatibilità*: non cancellarli o disattivarne i workflow senza tracciare chi li utilizza.
+- I workflow storici continuano ad alimentare alcuni feed condivisi, pubblicare dati su Pages, fare audit oppure mantenere la retrocompatibilità. Un workflow vecchio non equivale a un workflow inutilizzato.
 
-Per le regole di sviluppo e le condizioni per non confondere le due interfacce, vedi [AGENTS.md](AGENTS.md).
+### Fonti e qualità
 
----
+I feed `live_data/sections/` sono condivisi. L'interfaccia V2 separa valori ufficiali, stime, futures secondari, proxy e dati storici. **24 livelli visualizzati non implicano 24 quotazioni OIS ufficiali.** Le osservazioni CHF/NZD di ricerca non sono automaticamente promosse a dati canonici o segnali FX.
 
-## Nota storica: vecchia architettura v490
+### Collaudo
 
-Staging pulito della **v490 Runtime Validated**.
+- V2 desktop/mobile: `.github/workflows/fx-quant-v2-browser-daily-qa.yml`
+- Pubblicazione V2: `.github/workflows/publish-fx-quant-v2.yml`
+- Prova pubblica delle 08:00: `.github/workflows/fxv2-morning-public-proof.yml`
+- Gate di ricerca/Core: `.github/workflows/final-e2e-certification-gate-v3.yml`
 
-Questa branch è separata da `main` e non alimenta il sito live.
-
-Struttura:
-- `index.html` loader minimale
-- `payload/part-00.txt` … `part-15.txt`: contenuto completo della v490
-- nessun file legacy della precedente architettura
-
-La v490 viene ricomposta integralmente nel browser e verificata tramite il manifest runtime già incorporato nel payload.
-
-Production deployment: v490 OIS audit validated and browser-tested on 2026-09-30.
+Vedi [AGENTS.md](AGENTS.md) per le regole di intervento e [manutenzione e archiviazione](MAINTENANCE_V2.md) per la politica di pulizia.
