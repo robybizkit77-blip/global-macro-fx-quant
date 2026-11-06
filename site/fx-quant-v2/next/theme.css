@@ -232,3 +232,13 @@ body{background:radial-gradient(ellipse 70% 45% at 90% 0,rgba(20,62,82,.28),tran
 #nav .nav-count{font-size:9px;letter-spacing:.04em}
 #nav a[data-route="currencies"] .nav-count{border-radius:4px;color:#a2ebd0;border:1px solid rgba(111,205,173,.31);background:rgba(46,116,103,.13);padding:2px 5px}
 @media(max-width:600px){#nav .nav-subheading{margin-top:15px;padding-top:10px}}
+
+
+/* Home starts with market facts, not a product slogan. */
+.home-desk-line{display:inline-flex;align-items:center;color:#8bd5c8;font-size:10px;font-weight:850;letter-spacing:.14em;margin-bottom:18px}
+.pro-masthead .masthead-copy h1{font-size:clamp(32px,3.5vw,54px);line-height:1.2;max-width:830px}
+.pro-masthead .masthead-copy .home-desk-lead{color:#d4e5eb;font-size:13px;line-height:1.85;max-width:730px;margin:17px 0 10px}
+.pro-masthead .masthead-copy .home-desk-context{color:#9cbcc9;font-size:12px;line-height:1.7;margin:0 0 13px}
+.pro-masthead .masthead-copy .home-desk-watch{color:#a5d0c8;font-size:12px;line-height:1.8;padding:12px 0 12px 14px;border-left:2px solid #81d8bf;margin:11px 0 20px}
+.pro-masthead .masthead-copy .home-desk-watch strong{color:#a5ebd6}
+@media(max-width:650px){.home-desk-line{font-size:9px;margin-bottom:11px}.pro-masthead .masthead-copy h1{font-size:29px}.pro-masthead .masthead-copy .home-desk-lead{font-size:12px}.pro-masthead .masthead-copy .home-desk-watch{font-size:11px}}
