@@ -261,8 +261,7 @@ function overview(){
  +'<section class="chapter-section"><div class="chapter-head"><div><span class="chapter-kicker">03 / FX RESEARCH</span><h2>Trova una tesi.<br><em>Mettila alla prova.</em></h2></div><p>Il modello monitora 28 coppie. Qui scegli cosa investigare, non cosa comprare.</p></div><div class="fx-workbench"><div class="fx-pair-choices"><div class="pair-choices-head"><span>SELEZIONA UNA COPPIA</span><span>28 PAIR · MOTORE CANONICO</span></div>'+choices.map(k=>{
   const s=all[k]?.setup||{},active=k===state.spotPair;
   return '<button class="fx-pair-choice'+(active?' selected':'')+'" type="button" data-home-pair="'+k+'" aria-pressed="'+String(active)+'"><span class="choice-pair">'+esc(getPairName(k))+'</span><span class="choice-status">'+esc(s.quality||'n.d.')+'</span><span class="choice-arrow">↗</span></button>';
- }).join('')+'</div><div class="fx-focus-story">'+homePairPreview(state.spotPair||'EURUSD')+'</div></div><div class="chapter-smallprint">I dossier FX sono diagnostici e non costituiscono segnali di ingresso. COT, prezzo, macro e pricing possono essere divergenti.</div></section>'
- +'<section class="chapter-section end-note"><div><span class="chapter-kicker">IL METODO FX QUANT</span><h2>Non ti diciamo cosa pensare.<br><em>Ti aiutiamo a verificare.</em></h2><p>Dati osservati, fonti datate, ipotesi falsificabili e un percorso coerente fra le sezioni. Questa è la differenza fra una dashboard e un research terminal.</p></div><a href="#currencies" class="action-primary">Inizia la ricerca <span>↗</span></a></section>';
+ }).join('')+'</div><div class="fx-focus-story">'+homePairPreview(state.spotPair||'EURUSD')+'</div></div><div class="chapter-smallprint">I dossier FX sono diagnostici e non costituiscono segnali di ingresso. COT, prezzo, macro e pricing possono essere divergenti.</div></section>';
 }
 
 function currencies(){
