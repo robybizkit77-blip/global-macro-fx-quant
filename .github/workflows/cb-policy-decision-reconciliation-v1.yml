@@ -68,7 +68,9 @@ jobs:
                    'live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/OIS_SOURCE_READINESS_VIEW.json',
                    'live_data/manifest.v2.json','payload/part-00.txt'}
           assert changes and changes.issubset(allowed),('unexpected mutation',changes)
-          assert {'live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/OIS_SOURCE_READINESS_VIEW.json'}.issubset(changes),('derived OIS feeds not rebuilt',changes)
+          assert 'live_data/sections/OIS_OPERATIONAL_VIEW.json' in changes,('derived OIS feed not updated',changes)
+          # The source-readiness dossier only changes if access/coverage changed.
+          # No decision-only rate update should force a fabricated source change.
           print('CB_POLICY_DECISIONS_RECONCILED',sorted(changes))
           PY
       - name: Persist to main only after full runtime and audit proof
