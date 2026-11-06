@@ -69,7 +69,7 @@
         "instrument": "ASX NZ 90-Day Bank Bill futures",
         "kind": "ASX_NZD_BANK_BILL_DIRECTION_NOT_OIS",
         "policy_delta_allowed": false,
-        "proxy_as_of": "2026-11-05",
+        "proxy_as_of": "2026-11-06",
         "rates_embedded": false,
         "status": "RECENT_DIRECTIONAL",
         "substitutes_for_ois_level": false
@@ -88,7 +88,7 @@
       "indicative_quote_dates": {
         "12m": "2026-11-05",
         "3m": "2026-11-06",
-        "6m": "2026-11-05"
+        "6m": "2026-11-06"
       },
       "obstacle": "Settlement CME Fed Funds incompleti (manca una serie storica sincronizzata con diritti d'uso verificati).",
       "operational_as_of": "2026-11-05",
