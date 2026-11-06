@@ -35,6 +35,8 @@ fs.mkdirSync(evidence,{recursive:true});
 
    // NEXT EDITION: evidence-led market map, data theatre and cross-market navigation.
    await page.evaluate(()=>{location.hash='#overview'});
+   assert(await page.locator('.home-desk-lead').count()===1,'Home dated market narrative missing');
+   assert((await page.locator('.home-desk-lead').innerText()).includes('Treasury 2Y'),'Home desk must refer to observed front-end');
    await page.locator('[data-atlas="fx"]').click();
    assert((await page.locator('.lens-article h3').innerText()).includes('dollaro'),'Market atlas did not switch to FX evidence');
    await page.locator('[data-atlas="risk"]').click();
@@ -69,6 +71,8 @@ fs.mkdirSync(evidence,{recursive:true});
    assert((await page.locator('.orient-status').innerText()).includes('BCE'),'ECB fixing reference missing');
    assert((await page.locator('.orient-evidence-item[data-evidence="rates"]').innerText()).includes('6M'),'Rates evidence summary absent');
    assert((await page.locator('.orient-evidence-item[data-evidence="cot"]').innerText()).includes('percentile'),'COT evidence explanation absent');
+   assert(await page.locator('.orient-verdict').count()===1,'G8 editorial verdict missing');
+   assert((await page.locator('.orient-intro').innerText()).includes('fixing BCE'),'G8 narrative missing price observation');
    const usdQuote=Number((await page.locator('.orient-spot>strong').innerText()).replace(',','.'));
    assert(usdQuote>0.85&&usdQuote<1,'USD/EUR inverse cross convention incorrect');
    await page.locator('.orient-country[data-cs-country="EUR"]').click();
@@ -139,6 +143,9 @@ fs.mkdirSync(evidence,{recursive:true});
    // G8 within-country percentiles, real source series and quarterly frequency.
    await page.evaluate(()=>{location.hash='#macro'});
    assert(await page.locator('.macro-country').count()===8,'Macro G8 country strip incomplete');
+   assert(await page.locator('.macro-narrative-edition h2').count()===1,'Editorial Macro market verdict missing');
+   assert(await page.locator('.macro-verdict-line').count()===1,'Macro strength/weakness verdict missing');
+   assert(await page.locator('.macro-advanced').evaluate(el=>!el.open),'Advanced Macro data should remain optional at first view');
    assert(await page.locator('.macro-heat-row').count()===8,'Macro historical heatmap incomplete');
    await page.locator('.macro-country[data-ms-country="USD"]').click();
    assert((await page.locator('.macro-studio-status').innerText()).includes('204 SERIE STORICHE'),'Full source-backed macro archive not loaded');
@@ -162,6 +169,8 @@ fs.mkdirSync(evidence,{recursive:true});
    assert((await page.locator('.macro-chart-heading').innerText()).includes('Spesa famiglie'),'Series selection did not change chart');
    await page.locator('.macro-country[data-ms-country="NZD"]').click();
    assert((await page.locator('.macro-chart-heading').innerText()).includes('PIL reale YoY'),'Quarterly NZD growth series missing');
+   await page.locator('.macro-advanced > summary').click();
+   assert(await page.locator('.macro-advanced').evaluate(el=>el.open),'Advanced Macro content did not expand');
    await page.locator('[data-ms-heat="labour"]').click();
    assert((await page.locator('.macro-heat-controls').innerText()).includes('Disoccupazione'),'Heatmap dimension toggle missing');
    await page.locator('#ms-other').selectOption('USD');
