@@ -111,6 +111,19 @@ class CoverageTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "falsely promoted"):
             analyze(self.data, self.today)
 
+    def test_official_curve_can_withhold_unaligned_policy_comparison(self):
+        # The underlying observed curve stays official; a null policy delta
+        # is permissible ONLY when the comparison is explicitly unaligned.
+        row = self.data["ois"]["currencies"]["GBP"]
+        for horizon in row["horizons"].values():
+            horizon["policy_delta_bp"] = None
+            horizon["policy_comparison_temporally_aligned"] = False
+        result = analyze(self.data, self.today)
+        self.assertEqual(result["integrity"], "PASS")
+        row["horizons"]["3m"]["policy_comparison_temporally_aligned"] = True
+        with self.assertRaisesRegex(ValueError, "falsely promoted"):
+            analyze(self.data, self.today)
+
     def test_fake_official_ois_is_rejected(self):
         self.data["ois"]["currencies"]["USD"]["quality"] = "ESTIMATED_INFORMATIONAL"
         with self.assertRaisesRegex(ValueError, "falsely promoted"):
