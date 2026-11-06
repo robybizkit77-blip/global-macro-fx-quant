@@ -337,6 +337,24 @@ function news(){
  +'<section class="panel glow"><span class="mini-overline">METODO / NEWS</span><h2 class="focus-headline" style="font-size:22px">Un evento non spiega sempre una candela.</h2><p class="focus-subtitle">Per affermare che il mercato ha reagito a un dato, servono confronti prima/dopo sullo stesso strumento e su un orario coerente.</p><div class="divider"></div><div class="flow-track"><div class="flow-item"><label>Fatto</label><p>Che cosa è stato pubblicato, da chi e quando.</p></div><div class="flow-item"><label>Surprise</label><p>Se disponibile: effettivo meno consenso, distinto da revisione del dato precedente.</p></div><div class="flow-item"><label>Market pricing</label><p>Quale curva o futures hanno reagito. Se non è verificato, la causa rimane un’ipotesi.</p></div></div></section></div>';
 }
 
+
+function quickEntries(){
+ const sections=Object.entries(ROUTES).map(([value,label])=>({key:value,label,subtitle:'SEZIONE · Research terminal',kind:'route',value}));
+ const currencies=FX.map(k=>({key:k,label:FLAGS[k]+' '+k+' · '+NAMES[k],subtitle:'VALUTA G8 · Ricerca multidimensionale',kind:'ccy',value:k}));
+ const pairs=Object.keys(eurPairs()).sort().map(k=>({key:k,label:getPairName(k),subtitle:'COPPIA FX · Setup e tesi del motore',kind:'pair',value:k}));
+ return [...sections,...currencies,...pairs];
+}
+function renderQuick(q=''){
+ const query=String(q||'').toLocaleUpperCase('it-IT').replace(/[\/\s]/g,'').trim();
+ const items=quickEntries().filter(x=>!query||((x.label+' '+x.key+' '+x.subtitle).toLocaleUpperCase('it-IT').replace(/[\/\s]/g,'')).includes(query)).slice(0,14);
+ $('quick-results').innerHTML=items.length?items.map(e=>'<button type="button" class="quick-entry" data-command="'+esc(e.kind)+':'+esc(e.value)+'"><span><b>'+esc(e.label)+'</b><small>'+esc(e.subtitle)+'</small></span><span>↗</span></button>').join(''):'<div class="empty"><strong>Nessun risultato</strong><p>Prova il nome di una valuta, una coppia o una sezione.</p></div>';
+}
+function setQuick(open){
+ $('quick-layer').classList.toggle('open',!!open);$('quick-layer').setAttribute('aria-hidden',String(!open));
+ if(open){$('quick-input').value='';renderQuick();$('quick-input').focus();}
+ else $('quicklaunch').focus();
+}
+
 function researchRibbon(route){
  const parts=[['macro','Macro'],['rates','Rates'],['currencies','FX G8'],['pairs','Coppie'],['cot','COT'],['risk','Risk']];
  return '<div class="research-ribbon"><div class="ribbon-meta"><span class="ribbon-signal">◉</span> RESEARCH JOURNEY <span class="ribbon-current">'+FLAGS[state.ccy]+' '+state.ccy+' · '+esc(getPairName(state.pair))+'</span></div><div class="ribbon-path">'+parts.map((p,i)=>'<a href="#'+p[0]+'"'+(route===p[0]?' class="current"':'')+'>'+(i?'<small>›</small>':'')+p[1]+'</a>').join('')+'</div></div>';
@@ -354,6 +372,7 @@ function render(){
  $('top-quality').classList.toggle('warn',missing>0);
  $('top-quality').innerHTML='<span class="live-dot"></span>'+(missing===0?'FEED DISPONIBILI':ok+'/'+Object.keys(SOURCES).length+' FEED');
  $('sidebar-feed').textContent=ok+'/'+Object.keys(SOURCES).length+' fonti caricate · dati non intraday';
+ const sf=$('sidebar-focus');if(sf)sf.textContent=FLAGS[state.ccy]+' '+state.ccy+' · '+getPairName(state.pair);
  document.title='FX Quant Next — '+ROUTES[route];
 }
 function saveWatch(){try{localStorage.setItem('fxquant-next-watch',JSON.stringify([...state.watch]))}catch(e){}}
@@ -363,9 +382,26 @@ function navigate(){
  $('app').classList.remove('menu-open');$('menu-toggle').setAttribute('aria-expanded','false');
 }
 window.addEventListener('hashchange',navigate);
+$('quicklaunch').addEventListener('click',()=>setQuick(true));
+$('quickclose').addEventListener('click',()=>setQuick(false));
+$('quick-input').addEventListener('input',e=>renderQuick(e.target.value));
+$('quick-layer').addEventListener('click',e=>{if(e.target.id==='quick-layer')setQuick(false);});
+window.addEventListener('keydown',e=>{
+ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();setQuick(!$('quick-layer').classList.contains('open'));return;}
+ if(e.key==='/'&&!/INPUT|TEXTAREA/.test(e.target?.tagName||'')){e.preventDefault();setQuick(true);}
+ if(e.key==='Escape'&&$('quick-layer').classList.contains('open')){e.preventDefault();setQuick(false);}
+});
 $('menu-toggle').addEventListener('click',()=>{const open=!$('app').classList.contains('menu-open');$('app').classList.toggle('menu-open',open);$('menu-toggle').setAttribute('aria-expanded',String(open))});
 $('mobile-overlay').addEventListener('click',()=>{$('app').classList.remove('menu-open');$('menu-toggle').setAttribute('aria-expanded','false')});
 document.addEventListener('click',e=>{
+ const pick=e.target.closest('[data-command]');
+ if(pick){
+   const [kind,value]=String(pick.dataset.command||'').split(':');
+   if(kind==='ccy'){state.ccy=value;location.hash='#currencies';}
+   else if(kind==='pair'){state.pair=value;state.spotPair=value;location.hash='#pairs';}
+   else if(kind==='route'){location.hash='#'+value;}
+   setQuick(false);render();return;
+ }
  const atlas=e.target.closest('[data-atlas]');if(atlas){state.atlasLens=atlas.dataset.atlas;render();return}
  const hc=e.target.closest('[data-hchart]');if(hc){state.homeChart=hc.dataset.hchart;render();return}
  const hw=e.target.closest('[data-hwindow]');if(hw){state.homeWindow=Number(hw.dataset.hwindow);render();return}
