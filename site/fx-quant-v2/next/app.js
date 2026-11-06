@@ -15,12 +15,14 @@ const SOURCES={
  macro:'../../../live_data/sections/MACRO_THERMOMETER_DATA.json',
  cb:'../../../live_data/sections/NATIVE_CB_DATA.json',
  cot:'../../../live_data/sections/V247_COT_STORIES.json',
+ cotHistory:'../../../live_data/sections/V250_COT_CHART_DATA.json',
+ cotPrice:'../design-studio-cot-v1-data.json',
  risk:'../cross-asset-live-data.json',
  ois:'../ois-pricing-snapshot.json',
  news:'../../../live_data/sections/NEWS_PULSE_OPERATIONAL.json',
  themes:'../../../live_data/sections/TOP_THEMES.json'
 };
-const state={data:{},errors:{},route:'overview',ccy:'USD',against:'EUR',pair:'EURUSD',pairFilter:'all',pairSearch:'',watch:new Set(),window:20,rateMode:'both',riskStream:'VIX',riskWindow:20,macroMetric:'inflation',newsMode:'pulse',chartIndex:0,charts:{},atlasLens:'rates',homeChart:'rates',homeWindow:20,spotPair:'EURUSD'};
+const state={data:{},errors:{},route:'overview',ccy:'USD',against:'EUR',pair:'EURUSD',pairFilter:'all',pairSearch:'',watch:new Set(),window:20,rateMode:'both',riskStream:'VIX',riskWindow:20,macroMetric:'inflation',newsMode:'pulse',chartIndex:0,charts:{},atlasLens:'rates',homeChart:'rates',homeWindow:20,spotPair:'EURUSD',cotWindow:26,cotMode:'net',cotFilter:'all',cotSort:'percentile',cotSortAsc:false};
 try{const w=JSON.parse(localStorage.getItem('fxquant-next-watch')||'[]');if(Array.isArray(w))state.watch=new Set(w.filter(s=>typeof s==='string'))}catch(e){}
 const $=id=>document.getElementById(id);
 const esc=x=>String(x===undefined||x===null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -307,12 +309,8 @@ function rates(){
  +'<div class="story-steps"><div class="step"><span class="step-kicker"><span class="step-number">1</span> FRONT-END</span><h3>Banca centrale e percorso atteso</h3><p>OIS o futures indicativi aiutano a capire le aspettative. Un 2Y governativo da solo non basta ad attribuire la causa.</p></div><div class="step"><span class="step-kicker"><span class="step-number">2</span> LONG-END</span><h3>Crescita, inflazione e duration</h3><p>Nel 10Y possono pesare rendimenti reali, breakeven, term premium, offerta e domanda di titoli.</p></div><div class="step"><span class="step-kicker"><span class="step-number">3</span> MERCATO FX</span><h3>Contano i differenziali</h3><p>Confronta scadenze, date, qualità e prezzo prima di trasformare un differenziale in una tesi valutaria.</p></div></div>';
 }
 function cot(){
- const cot=get('cot')||{};
- return pageHero('COT / POSITIONING','Il positioning è <em>una fotografia, non un ordine.</em>','Stock, flussi settimanali e persistenza aiutano a leggere dove il mercato potrebbe essere affollato. Gli estremi richiedono conferme da prezzo e macro.')
- +'<div class="currency-grid">'+FX.map(k=>{const c=cot[k];return '<button class="currency-chip" type="button" data-ccy="'+k+'" aria-pressed="'+String(k===state.ccy)+'"><span class="flag">'+FLAGS[k]+'</span><strong>'+k+'</strong><span class="meta">'+esc(concise(c?.signal||'Non disponibile',40))+'</span><span class="latest" style="font-size:10px">'+esc(concise(c?.w1||'Nessun aggiornamento',65))+'</span></button>'}).join('')+'</div>'
- +sectionTitle(FLAGS[state.ccy]+' '+state.ccy+' · Il posizionamento dei fondi','CFTC con data propria')
- +'<div class="grid tilted"><section class="panel glow"><div class="focus-row"><span class="mini-overline">CFTC / POSITIONING MONITOR</span>'+qBadge(cot[state.ccy]?.signal||'NON VALIDATO')+'</div><h2 class="focus-headline" style="font-size:24px">Com’è cambiata la posizione?</h2><p class="focus-subtitle" style="font-size:13px;margin:14px 0">'+esc(cot[state.ccy]?.today||'Nessun dato COT verificato')+'</p><div class="flow-track"><div class="flow-item"><label>1 settimana</label><p>'+esc(cot[state.ccy]?.w1||'Dato non disponibile')+'</p></div><div class="flow-item"><label>4 settimane</label><p>'+esc(cot[state.ccy]?.w4||'Dato non disponibile')+'</p></div><div class="flow-item"><label>Fondi</label><p>'+esc(cot[state.ccy]?.funds_detail||'Nessun dettaglio')+'</p></div></div></section>'
- +'<section class="panel"><div class="panel-head"><div><span class="mini-overline">LETTURA DELLA QUALITÀ</span><h2>Quando uno stock estremo conta</h2></div></div><p class="focus-subtitle">'+esc(cot[state.ccy]?.why||'Il COT deve essere analizzato con prezzo e dati macro.')+'</p><div class="divider"></div><div class="notice warn"><strong>Prezzo non confermato:</strong> '+esc(cot[state.ccy]?.price_detail||'Il collegamento fra COT e prezzo richiede verifiche specifiche.')+'</div><p class="source-caption">Un valore estremo e un flusso che si muove rapidamente sono due condizioni diverse. La classificazione storica non indica necessariamente un trade da aprire.</p></section></div>';
+ if(window.FXQuantCOT?.render)return window.FXQuantCOT.render({get,FX,FLAGS,state,plot,pageHero,esc,fmt,sign,date,finite,validDay,dayNow,qBadge});
+ return pageHero('CFTC / POSITIONING','Ricerca COT da caricare','Il modulo COT non è disponibile. Controlla la pubblicazione del relativo script.');
 }
 function risk(){
  const streams=get('risk')?.streams||{},a=streams[state.riskStream],x=riskAligned();
@@ -394,6 +392,14 @@ window.addEventListener('keydown',e=>{
 $('menu-toggle').addEventListener('click',()=>{const open=!$('app').classList.contains('menu-open');$('app').classList.toggle('menu-open',open);$('menu-toggle').setAttribute('aria-expanded',String(open))});
 $('mobile-overlay').addEventListener('click',()=>{$('app').classList.remove('menu-open');$('menu-toggle').setAttribute('aria-expanded','false')});
 document.addEventListener('click',e=>{
+ const cm=e.target.closest('[data-cot-mode]');if(cm){state.cotMode=cm.dataset.cotMode;render();return;}
+ const cw=e.target.closest('[data-cot-window]');if(cw){state.cotWindow=Number(cw.dataset.cotWindow);render();return;}
+ const cf=e.target.closest('[data-cot-filter]');if(cf){state.cotFilter=cf.dataset.cotFilter;render();return;}
+ const cs=e.target.closest('[data-cot-sort]');if(cs){
+   if(state.cotSort===cs.dataset.cotSort)state.cotSortAsc=!state.cotSortAsc;
+   else{state.cotSort=cs.dataset.cotSort;state.cotSortAsc=false;}
+   render();return;
+ }
  const pick=e.target.closest('[data-command]');
  if(pick){
    const [kind,value]=String(pick.dataset.command||'').split(':');
