@@ -21,7 +21,7 @@ fs.mkdirSync(evidence,{recursive:true});
    assert(resp&&resp.ok(),'Home HTTP failed: '+resp?.status());
    await page.waitForFunction(()=>/fonti caricate/.test(document.getElementById('sidebar-feed')?.textContent||''),{timeout:20000});
    const sourceText=await page.locator('#sidebar-feed').innerText();
-   assert(/13\/13 fonti caricate/.test(sourceText),'Feed mismatch: '+sourceText);
+   assert(/14\/14 fonti caricate/.test(sourceText),'Feed mismatch: '+sourceText);
    for(const route of ROUTES){
     await page.evaluate(r=>{location.hash='#'+r},route);
     await page.waitForFunction(r=>document.querySelector('#crumb-page')?.textContent===({overview:'Panoramica',currencies:'Valute G8',pairs:'Coppie FX',macro:'Macro Lab',rates:'Tassi & OIS',cot:'Positioning',risk:'Risk Radar',news:'News Pulse'})[r],route);
@@ -29,7 +29,7 @@ fs.mkdirSync(evidence,{recursive:true});
     assert(h1.length>12,'Missing heading '+route);
     const overflow=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));
     assert(overflow.scroll<=overflow.client+2,'Horizontal overflow on '+route+' '+width+': '+JSON.stringify(overflow));
-    await page.screenshot({path:evidence+'/'+route+'-'+width+'.png',fullPage:route==='overview'||route==='pairs'||route==='cot'||route==='rates'||route==='macro'});
+    await page.screenshot({path:evidence+'/'+route+'-'+width+'.png',fullPage:route==='overview'||route==='pairs'||route==='cot'||route==='rates'||route==='macro'||route==='currencies'});
     results.push({width,route,h1,overflow:'PASS'});
    }
 
@@ -57,6 +57,45 @@ fs.mkdirSync(evidence,{recursive:true});
    assert((await page.locator('.focus-headline').first().innerText()).includes('AUD/CAD'),'Pair select failed');
    await page.locator('[data-watch="AUDCAD"]').click();
    assert((await page.locator('[data-watch="AUDCAD"]').innerText()).includes('Nella watchlist'),'Watchlist failed');
+
+   // COUNTRY RESEARCH STUDIO: true ECB 561-session history, 7 comparable crosses,
+   // synchronized government differentials, COT, macro and forward price tenors.
+   await page.evaluate(()=>{location.hash='#currencies'});
+   assert(await page.locator('.cs-country').count()===8,'Country G8 selector incomplete');
+   assert((await page.locator('.cs-sourceband').innerText()).includes('05/11/2026'),'ECB last fixing date missing');
+   assert(await page.locator('.cs-pair-table tbody tr').count()===7,'Seven FX counterparts missing');
+   assert(await page.locator('.cs-two-charts .chart svg').count()===2,'FX and sovereign charts missing');
+   assert(await page.locator('.cs-evidence-grid .chart svg').count()===2,'Macro and COT charts missing');
+   assert(await page.locator('.cs-tenor-table tbody tr').count()===3,'Monetary pricing audit missing 3M/6M/12M');
+   assert(await page.locator('.cs-story-grid article').count()===4,'Country research narrative incomplete');
+   const usdQuote=await page.locator('.cs-hero-fx>b').innerText();
+   assert(+usdQuote.replace(',','.')>0.85&&+usdQuote.replace(',','.')<1,'USD/EUR inverted FX quotation');
+   await page.locator('[data-cs-country="EUR"]').click();
+   assert((await page.locator('.cs-hero-fx strong').innerText())==='EUR/USD','EUR USD pair cross derivation failed');
+   const eurQuote=await page.locator('.cs-hero-fx>b').innerText();
+   assert(+eurQuote.replace(',','.')>1.1&&+eurQuote.replace(',','.')<1.2,'EUR/USD ECB history cross rate incorrect');
+   await page.locator('#cs-other').selectOption('JPY');
+   assert((await page.locator('.cs-chart-head').first().innerText()).includes('EUR/JPY'),'Pair countercurrency did not update FX chart');
+   await page.locator('[data-cs-pricewindow="20"]').click();
+   assert(await page.locator('.cs-two-charts .chart').first().count()===1,'FX price window switch failed');
+   await page.locator('[data-cs-ratesmode="curve"]').click();
+   assert((await page.locator('.cs-two-charts .chart-legend').last().innerText()).includes('10Y'),'2Y and 10Y chart switch failed');
+   await page.locator('[data-cs-macro="labour"]').click();
+   assert((await page.locator('.cs-evidence-grid .chart-legend').first().innerText()).includes('Disoccupazione'),'Unemployment chart switch failed');
+   await page.locator('[data-cs-cotwindow="52"]').click();
+   assert((await page.locator('.cs-evidence-grid .chart-legend').last().innerText()).includes('Net long'),'COT 52W control failed');
+   await page.locator('.cs-pair-table [data-cs-other="CHF"]').click();
+   assert((await page.locator('.cs-hero-fx strong').innerText())==='EUR/CHF','Seven counterpart comparison did not update selection');
+   await page.locator('.cs-pair-table [data-cs-openpair="EURCHF"]').click();
+   assert((await page.locator('#crumb-page').innerText())==='Coppie FX','Deep Dive link did not navigate');
+   assert((await page.locator('.focus-headline').first().innerText()).includes('EUR/CHF'),'Deep Dive did not select correct canonical pair');
+   await page.evaluate(()=>{location.hash='#currencies'});
+   await page.locator('[data-cs-country="CHF"]').click();
+   assert((await page.locator('.cs-sourceband').innerText()).includes('30/09/2026'),'CHF stale benchmark not visible');
+   await page.locator('[data-cs-country="NZD"]').click();
+   assert((await page.locator('.cs-sourceband').innerText()).includes('16/10/2026'),'NZD old government data not visible');
+   assert((await page.locator('.cs-policy-status').innerText()).includes('PROXY'),'NZD rate pricing estimate not identified');
+   assert((await page.locator('.cs-cross-table').innerText()).includes('20 sedute'),'NZD G8 FX counterpart table not loaded');
    // Rates & OIS research: eight currencies, actual sovereign histories and source-specific tenor pricing.
    await page.evaluate(()=>{location.hash='#rates'});
    assert(await page.locator('.rates-country').count()===8,'G8 rate countries incomplete');
@@ -152,6 +191,6 @@ fs.mkdirSync(evidence,{recursive:true});
    await page.close();
   }
   fs.writeFileSync(evidence+'/report.json',JSON.stringify({status:'PASS',base:BASE,results},null,2));
-  console.log('FXQUANT_NEXT_VISUAL_AND_INTERACTION_QA_PASS',JSON.stringify({views:results.length,viewports:[1440,390],feed:'13/13',interactions:'PASS'}));
+  console.log('FXQUANT_NEXT_VISUAL_AND_INTERACTION_QA_PASS',JSON.stringify({views:results.length,viewports:[1440,390],feed:'14/14',interactions:'PASS'}));
  }finally{await browser.close();}
 })().catch(e=>{console.error('FXQUANT_NEXT_QA_FAIL',e.stack||e);process.exit(1)});
