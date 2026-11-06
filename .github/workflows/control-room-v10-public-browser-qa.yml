@@ -62,7 +62,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: control-room-v10-public-browser-qa
+  group: ${{ github.event_name == 'pull_request' && format('control-room-public-qa-pr-{0}', github.event.pull_request.number) || 'control-room-v10-public-browser-qa' }}
   cancel-in-progress: false
 
 jobs:
