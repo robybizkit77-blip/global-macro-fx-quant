@@ -118,7 +118,7 @@ async function refreshBanks(){
     if(u.schema==="GMFQ_FXV2_BOE_OFFICIAL_DECISION_OVERLAY_V1"&&
        u.published_status==="OFFICIAL_BOE_RELEASE_VERIFIED__V2_INFORMATIONAL_ONLY"&&
        u.currency==="GBP"&&u.last_date<=today&&u.last_date>(b?.last_date||"")&&
-       u.rate===4&&/^https:\\/\\/www\\.bankofengland\\.co\\.uk\\//.test(u.source_url||"")){
+       u.rate===4&&(u.source_url||"").startsWith("https://www.bankofengland.co.uk/")){
      b.last_date=u.last_date;b.rate_text=u.rate_text;b.policy_rate=u.rate;
      b.action=u.action;b.stance=u.stance;b.context=u.context;b.next_meeting=u.next_meeting;
      b.note.lead="BoE, decisione ufficiale del "+date(u.last_date)+": Bank Rate al 4,00% (+25 pb), voto 8–1.";
