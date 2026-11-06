@@ -77,7 +77,8 @@ concurrency:
   # A new post-publish run must not cancel a queued pull-request test.
   # Keep one production queue while separating each PR's proof.
   group: ${{ github.event_name == 'pull_request' && format('fxv2-browser-qa-pr-{0}', github.event.pull_request.number) || 'fx-quant-v2-browser-daily-qa' }}
-  cancel-in-progress: false
+  # PR revisions supersede their own obsolete browser jobs; never cancel production QA.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   v2-working-rate-model-tests:
