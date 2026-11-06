@@ -166,13 +166,14 @@ const feedNames=['NATIVE_RATES_DATA.json','DXY_SYNTHETIC_ECB.json','TOP_THEMES.j
 const isDay=d=>typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&Number.isFinite(Date.parse(d+'T00:00:00Z'));
 const ageDays=d=>{
  if(!isDay(d))return null;
- const rome=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+ const rome=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
  return Math.round((Date.parse(rome+'T00:00:00Z')-Date.parse(d+'T00:00:00Z'))/86400000);
 };
 const validFeed=(name,v)=>{
  if(name==='NATIVE_RATES_DATA.json'){
   const u=v?.USD;
-  return !!u&&isDay(u.date)&&Number.isFinite(u['2Y'])&&Number.isFinite(u['10Y'])&&
+  return !!u&&['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'].every(c=>
+   !!v?.[c]&&isDay(v[c].date)&&Number.isFinite(v[c]['2Y'])&&Number.isFinite(v[c]['10Y']))&&
    Array.isArray(u.history2?.values)&&Array.isArray(u.history10?.values);
  }
  if(name==='DXY_SYNTHETIC_ECB.json')
