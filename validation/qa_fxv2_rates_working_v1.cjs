@@ -301,8 +301,10 @@ assert.ok(tassi.includes('state.nzdAsxProxy=val(3)'));
 assert.ok(tassi.includes('nzd-asx-government-anchor-v1.json'));
 assert.ok(tassi.includes('state.nzdAsxProxy,anchor'));
 
-assert.ok(tassi.includes("svgCurves(r);if(r.research_observed)"),
- 'Observed research source must be distinguished from an estimated curve');
+assert.ok(tassi.includes("svgCurves(r);if((r.research_observed&&c==='CHF'))") &&
+          tassi.includes("else if(r.research_observed&&c==='AUD')") &&
+          tassi.includes('RICERCA RBA F2 OSSERVATA'),
+ 'CHF SNB and AUD RBA observed research must have distinct provenance labels');
 assert.ok(tassi.includes("else if(r.estimated)") &&
           tassi.includes("Non è una curva ufficiale osservata."),
  'Estimated CHF scenario must retain its separate caveat');
