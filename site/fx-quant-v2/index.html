@@ -96,7 +96,7 @@
 const flags={USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',CHF:'🇨🇭',CAD:'🇨🇦',AUD:'🇦🇺',NZD:'🇳🇿'};
 const names={USD:'Dollaro USA',EUR:'Euro',GBP:'Sterlina',JPY:'Yen',CHF:'Franco svizzero',CAD:'Dollaro canadese',AUD:'Dollaro australiano',NZD:'Dollaro NZ'};
 const sequence=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
-const base='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/';
+const base='../../live_data/sections/'; // Same-origin, published Pages mirror; not the GitHub raw API.
 // Fallback editoriale del 03/11/2026. I valori si aggiornano da fonti datate; la narrativa storica non viene trattata come ricerca nuova.
 const seed={
  rates:{USD:{date:'2026-11-02','2Y':4.59,'10Y':4.91,chg2_bp:-9,chg10_bp:-9,curve_bp:32},EUR:{date:'2026-10-30','2Y':3.0051075689,'10Y':3.3650469366,chg2_bp:2.2,chg10_bp:-0.4},GBP:{date:'2026-10-30','2Y':4.6775339758,'10Y':5.2767254021,chg2_bp:-3,chg10_bp:-7.1},JPY:{date:'2026-10-30','2Y':1.875,'10Y':2.817,chg2_bp:0.3,chg10_bp:-2},CHF:{date:'2026-09-30','2Y':0.287,'10Y':0.586,chg2_bp:-3.7,chg10_bp:1.1},CAD:{date:'2026-10-30','2Y':3.28,'10Y':3.78,chg2_bp:6,chg10_bp:0},AUD:{date:'2026-10-28','2Y':4.951,'10Y':5.208,chg2_bp:3.4,chg10_bp:-6.9},NZD:{date:'2026-10-16','2Y':3.89,'10Y':5,chg2_bp:6,chg10_bp:-4}},
@@ -114,7 +114,7 @@ const seed={
  what:[{ccy:'NZD',summary:'Nuova Zelanda in recupero sul PIL ma con lavoro ancora debole e inflazione headline sopra il core. Il layer liquidità NZD non è determinato in modo robusto.'}],
  news:[{ccy:'JPY',as_of:'2026-11-02',title:'JPY: repricing implicito da futures più dovish (−0,7 bp 6M in 1D)',detail:'Futures TONA: non equivale a una curva OIS osservata.'},{ccy:'GBP',as_of:'2026-10-30',title:'GBP: repricing OIS più dovish (−6,7 bp 12M in 1D)',detail:'Variazione settimanale −5,6 bp.'},{ccy:'CAD',as_of:'2026-10-30',title:'CAD: futures più dovish (−10,0 bp 12M in 1D)',detail:'Proxy futures, non curva OIS osservata.'},{ccy:'AUD',as_of:'2026-10-30',title:'AUD: futures più dovish (−4,0 bp 12M in 1D)',detail:'Variazione settimanale +1,5 bp.'}]
 };
-const state={rates:seed.rates,dxy:seed.dxy,themes:seed.themes,what:seed.what,news:seed.news,usd2:seed.usd2,usd10:seed.usd10,focus:'USD',live:false};
+const state={rates:seed.rates,dxy:seed.dxy,themes:seed.themes,what:seed.what,news:seed.news,usd2:seed.usd2,usd10:seed.usd10,focus:'USD',live:false,liveRates:false,liveDxy:false,liveNews:false,feedState:'LOADING'};
 const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=(x,d=2)=>typeof x==='number'&&Number.isFinite(x)?x.toLocaleString('it-IT',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';
 const signed=(x,d=1,suffix='')=>typeof x==='number'&&Number.isFinite(x)?(x>0?'+':x<0?'−':'')+fmt(Math.abs(x),d)+suffix:'—';
@@ -153,14 +153,79 @@ function renderCharts(){const hist=state.dxy.history||[];const vals=hist.map(x=>
 function render(){
  renderHero();renderFocus();renderG8();renderThemes();renderNews();renderCharts();
  const rateDate=state.rates?.USD?.date;
- const valid=/^\d{4}-\d{2}-\d{2}$/.test(rateDate||'');
+ const valid=state.liveRates&&/^\d{4}-\d{2}-\d{2}$/.test(rateDate||'');
  $('today').textContent=valid?
    'Tassi USA al '+shortDate(rateDate)+' · temi editoriali 03/11':
-   'Temi editoriali 03/11 · tassi USA non verificati';
+   'SNAPSHOT 03/11 · tassi non verificati';
 }
 const picker=$('ccySelector');picker.innerHTML=sequence.map(c=>'<button type="button" class="ccy" data-ccy="'+c+'" aria-pressed="false">'+c+'</button>').join('');$('g8Grid').addEventListener('click',e=>{const b=e.target.closest('button[data-ccy]');if(!b)return;state.focus=b.dataset.ccy;renderFocus();renderG8();document.getElementById('lettura').scrollIntoView({behavior:'smooth',block:'start'});});
 picker.addEventListener('click',e=>{const b=e.target.closest('button[data-ccy]');if(!b)return;state.focus=b.dataset.ccy;renderFocus();renderG8()});$('themeList').addEventListener('click',e=>{const a=e.target.closest('[data-focus]');if(a){state.focus=a.dataset.focus;renderFocus();renderG8()}});render();
-// In un browser con connessione i feed del progetto sostituiscono lo snapshot. In locale senza rete la pagina resta perfettamente navigabile.
-(async()=>{const names=['NATIVE_RATES_DATA.json','DXY_SYNTHETIC_ECB.json','TOP_THEMES.json','WHAT_CHANGED.json','NEWS_PULSE_OPERATIONAL.json'];const requests=names.map(async n=>{const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),8500);try{const res=await fetch(base+n,{cache:'no-store',signal:ctl.signal});if(!res.ok)throw Error('HTTP '+res.status);return await res.json()}finally{clearTimeout(timer)}});const r=await Promise.allSettled(requests);let n=0;if(r[0].status==='fulfilled'){state.rates=r[0].value;let usd=state.rates.USD;if(Array.isArray(usd?.history2?.values)&&Array.isArray(usd?.history10?.values)){state.usd2=usd.history2.values.slice(-48);state.usd10=usd.history10.values.slice(-48)}n++}if(r[1].status==='fulfilled'){state.dxy=r[1].value;n++}if(r[2].status==='fulfilled'){state.themes=r[2].value;n++}if(r[3].status==='fulfilled'){state.what=r[3].value;n++}if(r[4].status==='fulfilled'){state.news=r[4].value.items||[];n++}if(n>0){$('feedStatus').textContent='Fonti acquisite '+n+'/5 · tassi USA '+(r[0].status==='fulfilled'?shortDate(state.rates?.USD?.date):'snapshot')+' · temi editoriali 03/11';render()}else{$('feedStatus').textContent='Modalità offline · snapshot editoriale 03/11/2026 · dati non aggiornati';}})();
+// Five independently date-validated feeds from the SAME published Pages origin.
+// An acquired editorial list is not equivalent to a current market observation.
+const feedNames=['NATIVE_RATES_DATA.json','DXY_SYNTHETIC_ECB.json','TOP_THEMES.json','WHAT_CHANGED.json','NEWS_PULSE_OPERATIONAL.json'];
+const isDay=d=>typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&Number.isFinite(Date.parse(d+'T00:00:00Z'));
+const ageDays=d=>{
+ if(!isDay(d))return null;
+ const rome=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+ return Math.round((Date.parse(rome+'T00:00:00Z')-Date.parse(d+'T00:00:00Z'))/86400000);
+};
+const validFeed=(name,v)=>{
+ if(name==='NATIVE_RATES_DATA.json'){
+  const u=v?.USD;
+  return !!u&&isDay(u.date)&&Number.isFinite(u['2Y'])&&Number.isFinite(u['10Y'])&&
+   Array.isArray(u.history2?.values)&&Array.isArray(u.history10?.values);
+ }
+ if(name==='DXY_SYNTHETIC_ECB.json')
+  return v?.not_official_ice===true&&isDay(v.as_of)&&Number.isFinite(v.value)&&
+   Number.isFinite(v.previous_value)&&Array.isArray(v.history);
+ if(name==='TOP_THEMES.json'||name==='WHAT_CHANGED.json')
+  return Array.isArray(v)&&v.length>=7&&v.every(x=>typeof x.ccy==='string');
+ if(name==='NEWS_PULSE_OPERATIONAL.json')
+  return isDay(v?.content_as_of)&&Array.isArray(v.items);
+ return false;
+};
+(async()=>{
+ const requests=feedNames.map(async name=>{
+  const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),8500);
+  try{
+   const res=await fetch(base+name,{cache:'no-store',signal:ctl.signal});
+   if(!res.ok)throw Error('HTTP '+res.status);
+   const value=await res.json();
+   if(!validFeed(name,value))throw Error('schema non valido: '+name);
+   return value;
+  }finally{clearTimeout(timer);}
+ });
+ const results=await Promise.allSettled(requests);
+ const fetched=results.map(x=>x.status==='fulfilled'?x.value:null);
+ if(fetched[0]){
+  state.rates=fetched[0];state.liveRates=true;
+  const usd=state.rates.USD;
+  state.usd2=usd.history2.values.slice(-48);state.usd10=usd.history10.values.slice(-48);
+ }
+ if(fetched[1]){state.dxy=fetched[1];state.liveDxy=true;}
+ if(fetched[2])state.themes=fetched[2];
+ if(fetched[3])state.what=fetched[3];
+ if(fetched[4]){state.news=fetched[4].items;state.liveNews=true;}
+ const count=fetched.filter(Boolean).length;
+ const rateAge=state.liveRates?ageDays(state.rates.USD.date):null;
+ const newsAge=state.liveNews?ageDays(fetched[4].content_as_of):null;
+ const dxyAge=state.liveDxy?ageDays(state.dxy.as_of):null;
+ const ratesOK=rateAge!==null&&rateAge>=0&&rateAge<=4;
+ const newsOK=newsAge!==null&&newsAge>=0&&newsAge<=4;
+ const dxyOK=dxyAge!==null&&dxyAge>=0&&dxyAge<=4;
+ state.live=ratesOK&&dxyOK&&newsOK;
+ state.feedState=state.live?'CURRENT':!count?'OFFLINE':'DEGRADED';
+ $('feedStatus').dataset.integrity=state.feedState;
+ $('feedStatus').textContent=
+   'Fonti '+count+'/5 · Treasury '+(state.liveRates?shortDate(state.rates.USD.date):'NON CARICATO')+
+   (ratesOK?'':' · TASSI DA VERIFICARE')+
+   ' · DXY '+(state.liveDxy?shortDate(state.dxy.as_of):'NON CARICATO')+
+   (dxyOK?'':' · PROXY DA VERIFICARE')+
+   ' · News '+(state.liveNews?shortDate(fetched[4].content_as_of):'NON CARICATE')+
+   (newsOK?'':' · NEWS DA VERIFICARE')+
+   ' · temi editoriali 03/11';
+ render();
+})();
+
 </script>
 </body></html>
