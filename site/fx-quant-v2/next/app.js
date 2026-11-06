@@ -20,7 +20,7 @@ const SOURCES={
  news:'../../../live_data/sections/NEWS_PULSE_OPERATIONAL.json',
  themes:'../../../live_data/sections/TOP_THEMES.json'
 };
-const state={data:{},errors:{},route:'overview',ccy:'USD',against:'EUR',pair:'EURUSD',pairFilter:'all',pairSearch:'',watch:new Set(),window:20,rateMode:'both',riskStream:'VIX',riskWindow:20,macroMetric:'inflation',newsMode:'pulse',chartIndex:0,charts:{}};
+const state={data:{},errors:{},route:'overview',ccy:'USD',against:'EUR',pair:'EURUSD',pairFilter:'all',pairSearch:'',watch:new Set(),window:20,rateMode:'both',riskStream:'VIX',riskWindow:20,macroMetric:'inflation',newsMode:'pulse',chartIndex:0,charts:{},atlasLens:'rates',homeChart:'rates',homeWindow:20,spotPair:'EURUSD'};
 try{const w=JSON.parse(localStorage.getItem('fxquant-next-watch')||'[]');if(Array.isArray(w))state.watch=new Set(w.filter(s=>typeof s==='string'))}catch(e){}
 const $=id=>document.getElementById(id);
 const esc=x=>String(x===undefined||x===null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -148,32 +148,107 @@ function currentStory(){
  const text=u.chg2_bp< -1?'Il rendimento Treasury USA a 2 anni scende':u.chg2_bp>1?'Il rendimento Treasury USA a 2 anni sale':'Il Treasury 2Y USA varia poco';
  return {headline:'Il front-end USA<br><em>'+verb+'.</em> E il resto del mercato?',lead:text+' di '+sign(u.chg2_bp,1,' pb')+' al '+date(u.date)+'. '+(risk.same?'Nasdaq, VIX e credito HY permettono anche una lettura cross-asset sincronizzata.':'VIX, azionario e credito HY hanno date non tutte coincidenti: una diagnosi simultanea di risk-off sarebbe prematura.'),date:'UST 2Y '+date(u.date)+' · DXY '+date(d?.as_of)};
 }
-function overview(){
- const r=get('rates')?.USD,d=get('dxy'),ri=get('risk')?.streams||{},story=currentStory(),f=get('pairs'),ph=ri.HY_OAS;
- const kpis=[
- stat('Treasury USA · 2Y',r?fmt(r['2Y'])+'%':'—',r?'Al '+date(r.date):'Nessun dato',finite(r?.chg2_bp)?sign(r.chg2_bp,1,' pb'):'',r?.chg2_bp>0?'up':'down','rates'),
- stat('USD · Proxy BCE',d?fmt(d.value):'—',d?'Al '+date(d.as_of):'Nessun dato',finite(d?.value)&&finite(d?.previous_value)?sign((d.value/d.previous_value-1)*100,2,'%'):'','neutral','currencies'),
- stat('VIX · Volatilità',ri.VIX?fmt(ri.VIX.value):'—',ri.VIX?'Al '+date(ri.VIX.date):'Nessun dato',finite(ri.VIX?.change_1d_pct)?sign(ri.VIX.change_1d_pct,1,'%'):'',ri.VIX?.change_1d_pct>0?'down':'up','risk'),
- stat('Credito HY · OAS',ph?fmt(ph.value)+'%':'—',ph?'Al '+date(ph.date):'Nessun dato',finite(ph?.previous)?sign((ph.value-ph.previous)*100,0,' pb'):'',ph?.value>ph?.previous?'down':'up','risk')].join('');
- const ar=historyRates('USD').slice(-Number(state.window)),ls=[{name:'Treasury 2Y',color:'#9dcfec',values:ar.map(x=>({label:x.label,value:x.v2}))},{name:'Treasury 10Y',color:'#ee6475',values:ar.map(x=>({label:x.label,value:x.v10}))}];
- const snapshot=f?.pairs||{};const ideas=Object.keys(snapshot).filter(k=>snapshot[k]?.setup?.quality!=='NON VALUTABILE').sort().slice(0,5);
- const n=get('news'); const news=(n?.items||[]).slice(0,2);
- const aligned=riskAligned();
- return pageHero('IL TUO BRIEFING VISIVO','Benvenuto nel tuo <em>Market Desk.</em>','Una piattaforma da esplorare, non una parete di numeri. Prima la storia, poi i prezzi che la confermano o la smentiscono.',routeLink('pairs','Esplora 28 coppie ⇄','solid-btn'))
- +'<div class="overview-stage"><section class="stage-story"><div><span class="pretitle">◉ IL TEMA DA INDAGARE</span><h2>'+story.headline+'</h2><p>'+esc(story.lead)+'</p></div><div class="stage-bottom">'+routeLink('rates','Esplora tassi & pricing →','solid-btn')+'<span class="hero-fact">'+esc(story.date)+'</span></div></section>'
- +'<section class="panel stage-right polished"><div class="panel-head"><div><span class="mini-overline">DATI CHE PARLANO</span><h2>Il mercato dei tassi USA</h2><p>Due scadenze, una storia da interpretare</p></div><span class="badge">UST 2Y / 10Y</span></div>'
- +plot({lines:ls,unit:'%',label:'Storico Treasury USA 2Y e 10Y',window:state.window})
- +'<div class="chart-summary">Le due linee sono rendimenti governativi, non tassi OIS. Un movimento del 10Y può riflettere crescita, inflazione, real yields e term premium.</div></section></div>'
- +sectionTitle('La fotografia dei mercati','Dati con date proprie')+'<div class="kpi-grid grid cols-4">'+kpis+'</div>'
- +sectionTitle('Capire prima di decidere','Tre passaggi, sempre nello stesso ordine')
- +'<div class="story-steps"><div class="step"><span class="step-kicker"><span class="step-number">1</span> OSSERVAZIONE</span><h3>Cosa è successo?</h3><p>'+esc(r?'Treasury USA 2Y '+sign(r.chg2_bp,1,' pb')+' nella seduta del '+date(r.date)+'.':'Serve un dato Treasury datato.')+'</p></div>'
- +'<div class="step"><span class="step-kicker"><span class="step-number">2</span> INTERPRETAZIONE</span><h3>Cosa potrebbe significare?</h3><p>Il front-end è sensibile alle attese sui tassi ufficiali, ma per attribuire il movimento alla banca centrale occorre leggere anche OIS e shock macro.</p></div>'
- +'<div class="step"><span class="step-kicker"><span class="step-number">3</span> VERIFICA</span><h3>Il mercato conferma?</h3><p>'+esc(aligned.same?aligned.assessment:'Nasdaq, VIX e credito HY non sono su date identiche. Confronto da completare, senza dedurre causalità.')+'</p></div></div>'
- +sectionTitle('Research playground','Scegli cosa approfondire','pairs','Apri il selettore FX')
- +'<div class="grid tilted"><section class="panel"><div class="panel-head"><div><span class="mini-overline">FX / SETUP MONITOR</span><h2>Le coppie da studiare</h2><p>Stati del motore, non un ranking né segnali d’ingresso</p></div>'+qBadge('28 CROSS')+'</div><div class="pair-list">'+(ideas.length?ideas.map(k=>pairRow(k,true)).join(''):'<p class="no-result">Feed delle coppie non disponibile.</p>')+'</div></section>'
- +'<section class="panel glow"><div class="panel-head"><div><span class="mini-overline">NEWS / ULTIMO SNAPSHOT</span><h2>Perché oggi conta</h2><p>Notizie con fonte, data e categoria</p></div></div>'+(news.length?news.map(item=>'<div class="timeline-item" style="margin:0 0 9px"><span class="mini-overline">'+esc(item.ccy||item.category||'G8')+' · '+date(item.as_of)+'</span><h3>'+esc(item.title)+'</h3><p>'+esc(concise(item.detail,155))+'</p></div>').join(''):'<div class="empty"><strong>News non disponibili</strong></div>')+routeLink('news','Vai al News Pulse ↗','ghost-btn small')+'</section></div>'
- +'<div class="data-status"><span class="live-dot"></span><div><strong>Regola FX Quant:</strong> niente segnali ricavati automaticamente da uno shock non verificato. Ogni mercato mantiene la propria data, lo strumento e la qualità della fonte.</div></div>';
+
+function atlasEvidence(key){
+ const u=get('rates')?.USD, d=get('dxy'),m=get('macro')?.currencies?.USD,ri=get('risk')?.streams||{},p=get('ois')?.currencies?.USD;
+ const rr=riskAligned(),validR=finite(u?.['2Y'])&&finite(u?.chg2_bp)&&validDay(u?.date),validD=finite(d?.value)&&finite(d?.previous_value)&&d.previous_value!==0;
+ const dd=validD?(d.value/d.previous_value-1)*100:null;
+ const info={
+  macro:{
+   eyebrow:'01 / MACRO DYNAMICS',name:'MACRO',metric:finite(m?.inflation?.latest_value)?fmt(m.inflation.latest_value,2)+'%':'—',tag:'CPI USA · '+esc(m?.inflation?.as_of||'n.d.'),
+   headline:'L’inflazione accelera o perde slancio?',main:finite(m?.inflation?.latest_value)?'L’ultimo CPI USA nel feed è '+fmt(m.inflation.latest_value,2)+'%, con direzione '+esc(m.inflation.direction||'n.d.').toLowerCase()+' e dinamica '+esc(m.inflation.acceleration||'n.d.').toLowerCase()+'.':'La serie CPI non è validata.',
+   secondary:'Un livello elevato e una nuova accelerazione non sono sinonimi. Per capire se la politica monetaria cambia servono sorpresa, composizione e persistenza.',check:'Confrontare dati lavoro e inflazione core con le attese, non soltanto l’headline.',date:m?.inflation?.as_of||'',next:'Apri Macro Lab',route:'macro',kind:'Osservazione macro',tone:'amber'
+  },
+  rates:{
+   eyebrow:'02 / FRONT-END & EXPECTATIONS',name:'RATES',metric:validR?sign(u.chg2_bp,1,' pb'):'—',tag:'Treasury 2Y · '+date(u?.date),
+   headline:validR?(u.chg2_bp<0?'Il 2Y scende. È repricing Fed?':'Il 2Y si muove. Qual è la causa?'):'Front-end non verificato',
+   main:validR?'Al '+date(u.date)+' il Treasury 2Y è '+fmt(u['2Y'])+'% e varia di '+sign(u.chg2_bp,1,' pb')+'. La variazione è osservata. Il suo motivo non è dimostrato.':'Rendimento e variazione non disponibili in modo validato.',
+   secondary:'L’OIS/Fed funds futures è la verifica più utile del percorso atteso. Non mescoliamo tasso governativo e OIS come se fossero lo stesso strumento.',
+   check:'Prezzi 3M/6M/12M USA: '+(finite(p?.horizons?.['6m']?.rate)?fmt(p.horizons['6m'].rate,3)+'% sul 6M ('+date(p.horizons['6m'].as_of)+', '+esc(p.quality||'')+').':'Dato 6M non validato.')+' Confrontare a orari e basi coerenti.',
+   date:u?.date||'',next:'Esplora tassi & OIS',route:'rates',kind:'Rendimenti osservati',tone:'blue'
+  },
+  fx:{
+   eyebrow:'03 / DOLLAR & CONFIRMATION',name:'FX',metric:validD?sign(dd,2,'%'):'—',tag:'DXY proxy · '+date(d?.as_of),
+   headline:'Il dollaro sta confermando la storia?',
+   main:validD?'Il proxy DXY ricavato da fixing BCE varia di '+sign(dd,2,'%')+' fino al '+date(d.as_of)+'. È un indicatore giornaliero, non il DXY ICE e non una quotazione intraday.':'Nessuna variazione del proxy DXY con data validata.',
+   secondary:'Anche quando 2Y e USD si muovono insieme è una co-occorrenza, non una dimostrazione causale. Contano risk sentiment e prezzi delle singole coppie.',
+   check:validR&&validD&&u.date===d.as_of?'Il confronto 2Y/DXY è sulla stessa data: esamina se la direzione è coerente, poi verifica le coppie.':'Le date 2Y e USD non coincidono o i dati sono incompleti: la conferma giornaliera resta sospesa.',
+   date:d?.as_of||'',next:'Esplora le valute',route:'currencies',kind:'Prezzo proxy, non indice ICE',tone:'green'
+  },
+  risk:{
+   eyebrow:'04 / CROSS-ASSET',name:'RISK',metric:finite(ri.VIX?.value)?fmt(ri.VIX.value):'—',tag:'VIX · '+date(ri.VIX?.date),
+   headline:'Lo stress si sta propagando?',
+   main:finite(ri.VIX?.value)?'VIX a '+fmt(ri.VIX.value)+' al '+date(ri.VIX.date)+'. '+(finite(ri.HY_OAS?.value)?'Lo spread HY è '+fmt(ri.HY_OAS.value)+'% al '+date(ri.HY_OAS.date)+'.':'Spread credito non disponibile.'):'Non sono disponibili osservazioni VIX validate.',
+   secondary:rr.same?'Nasdaq, VIX e HY hanno la stessa data; questo consente di verificare movimenti congiunti, senza attribuire automaticamente causalità.':'Azionario, volatilità e credito hanno timestamp differenti: evitare una lettura simultanea impropria.',
+   check:'Valutare se il prezzo azionario conferma l’aumento di volatilità e se il credito amplifica o assorbe lo shock.',
+   date:ri.VIX?.date||'',next:'Apri Risk Radar',route:'risk',kind:'Mercati correlati, non causalità',tone:'red'
+  }
+ };
+ return info[key]||info.rates;
 }
+function homeScreenChart(){
+ let keys=state.homeChart||'rates',w=Number(state.homeWindow||20),lines=[],label='',unit='',result='',asof='';
+ const u=get('rates')?.USD,d=get('dxy'),r=get('risk')?.streams||{};
+ if(keys==='rates'){
+  const a=historyRates('USD').slice(-w);
+  lines=[{name:'Treasury 2Y',color:'#95d8ef',values:a.map(x=>({label:x.label,value:x.v2}))},{name:'Treasury 10Y',color:'#ef6479',values:a.map(x=>({label:x.label,value:x.v10}))}];
+  label='UST · Front-end e long-end';unit='%';asof=u?.date;
+  result='2Y '+sign(u?.chg2_bp,1,' pb')+' · 10Y '+sign(u?.chg10_bp,1,' pb')+'. Sono rendimenti, non OIS.';
+ }else if(keys==='dxy'){
+  lines=[{name:'DXY proxy BCE',color:'#86dfba',values:dxyHistory().slice(-w)}];label='Dollaro · fixing BCE';asof=d?.as_of;
+  result='Proxy sintetico, non indice ICE o prezzo intraday.';
+ }else{
+  const s=r[keys==='vix'?'VIX':'HY_OAS'];
+  lines=[{name:keys==='vix'?'VIX':'HY OAS',color:keys==='vix'?'#ef6578':'#ebba79',values:priceHistory(keys==='vix'?'VIX':'HY_OAS').slice(-w)}];label=keys==='vix'?'Volatilità · VIX':'Credito · High Yield OAS';asof=s?.date;
+  unit=keys==='hy'?'%':'';
+  result='Fonte '+String(s?.publisher||'non disponibile')+'. Serie daily close, non intraday.';
+ }
+ return '<div class="analysis-chart-head"><div><span class="micro-over">LAB / DATI DATATI</span><h3>'+esc(label)+'</h3></div><span class="time-label">Ultimo '+date(asof)+'</span></div>'
+ +'<div class="analyst-toolbar"><div class="chart-tabset">'+choose('',[{label:'2Y / 10Y',value:'rates'},{label:'USD proxy',value:'dxy'},{label:'VIX',value:'vix'},{label:'HY',value:'hy'}],keys,'data-hchart')+'</div><div class="chart-tabset">'+choose('',[{label:'5',value:5},{label:'20',value:20},{label:'60',value:60}],w,'data-hwindow')+'</div></div>'
+ +plot({lines,unit,label:'Storico '+label,window:w})
+ +'<div class="chart-footnote"><span class="footnote-dot"></span>'+esc(result)+' <strong>Le date delle serie restano indipendenti.</strong></div>';
+}
+function homePairPreview(k){
+ const p=eurPairs()?.[k],s=p?.setup||{},f=p?.decision_frame||s?.structural||{},q=s?.quality||'NON VALUTABILE';
+ return '<div class="pair-highlight-top"><span class="micro-over">DOSSIER FX / '+date(get('pairs')?.price_asof)+'</span>'+qBadge(q)+'</div>'
+ +'<h3>'+esc(getPairName(k))+'<span class="pair-fav"> '+(s.structuralFav?'→ vantaggio '+esc(s.structuralFav):'')+'</span></h3>'
+ +'<p>'+esc(f.relation||'Dossier in attesa di valutazione relativa.')+'</p>'
+ +'<div class="pair-conditions"><span><b>PREZZO</b><strong>'+esc(s?.price?.text||'Non classificato')+'</strong></span><span><b>CONFERMA MANCANTE</b><strong>'+esc(concise(f.missing||'Da verificare',95))+'</strong></span></div>'
+ +'<a class="text-link" href="#pairs">Apri la tesi completa <span>↗</span></a>';
+}
+function overview(){
+ const node=atlasEvidence(state.atlasLens||'rates'),u=get('rates')?.USD,d=get('dxy'),risk=get('risk')?.streams||{};
+ const all=eurPairs(),pairs=Object.keys(all);
+ const choices=[state.spotPair||'EURUSD','AUDCAD','CADJPY','EURGBP','GBPNZD'].filter((p,i,a)=>a.indexOf(p)===i&&!!all[p]).slice(0,5);
+ const macro=get('macro')?.currencies?.USD;
+ const rr=riskAligned();
+ const snap=[
+  {name:'U.S. FRONT-END',big:finite(u?.['2Y'])?fmt(u['2Y'])+'%':'—',move:sign(u?.chg2_bp,1,' pb'),tone:finite(u?.chg2_bp)&&u.chg2_bp<0?'neutral':'warning',date:u?.date,route:'rates',tip:'UST 2Y'},
+  {name:'DOLLARO',big:finite(d?.value)?fmt(d.value):'—',move:finite(d?.value)&&finite(d?.previous_value)?sign((d.value/d.previous_value-1)*100,2,'%'):'—',tone:'neutral',date:d?.as_of,route:'currencies',tip:'DXY sintetico BCE'},
+  {name:'VOLATILITÀ',big:finite(risk.VIX?.value)?fmt(risk.VIX.value):'—',move:sign(risk.VIX?.change_1d_pct,1,'%'),tone:finite(risk.VIX?.change_1d_pct)&&risk.VIX.change_1d_pct>0?'danger':'good',date:risk.VIX?.date,route:'risk',tip:'VIX chiusura'},
+  {name:'CREDITO HY',big:finite(risk.HY_OAS?.value)?fmt(risk.HY_OAS.value)+'%':'—',move:finite(risk.HY_OAS?.value)&&finite(risk.HY_OAS?.previous)?sign((risk.HY_OAS.value-risk.HY_OAS.previous)*100,0,' pb'):'—',tone:'warning',date:risk.HY_OAS?.date,route:'risk',tip:'HY OAS'}
+ ];
+ let dataPanel='<div class="market-glance">'+snap.map(x=>'<a class="glance-item" href="#'+x.route+'"><div class="glance-head"><span>'+esc(x.name)+'</span><span class="glance-chev">↗</span></div><strong>'+esc(x.big)+'</strong><div class="glance-base"><span>'+esc(x.tip)+' · '+date(x.date)+'</span><b class="'+x.tone+'">'+esc(x.move)+'</b></div></a>').join('')+'</div>';
+ let atlasBtns=['macro','rates','fx','risk'].map((key,i)=>{
+  const v=atlasEvidence(key),active=key===state.atlasLens;
+  return '<button class="atlas-hotspot atlas-'+key+(active?' active':'')+'" type="button" data-atlas="'+key+'" aria-pressed="'+String(active)+'">'
+    +'<span class="atlas-position">0'+(i+1)+'</span><span class="atlas-label">'+esc(v.name)+'</span><strong>'+esc(v.metric)+'</strong><span class="atlas-minor">'+esc(v.tag)+'</span></button>';
+ }).join('');
+ const datesGood=rr.same;
+ return '<div class="market-edition"><span class="edition-eyebrow"><span class="edition-blink"></span> DAILY RESEARCH / FX QUANT NEXT</span><span class="edition-date">GLOBAL MACRO · '+dayNow().split('-').reverse().join('.')+' · DATI NON INTRADAY</span></div>'
+ +'<div class="pro-masthead"><div class="masthead-copy"><h1>Il mercato non è una lista di numeri.<br><em>È una storia da verificare.</em></h1><p>Unisci i punti tra inflazione, tassi, posizionamento e prezzo. Esplora cosa sta cambiando, quali mercati lo confermano e dove la narrativa potrebbe essere sbagliata.</p><div class="masthead-actions"><a class="action-primary" href="#pairs">Esplora le coppie FX <span>↗</span></a><a class="action-minimal" href="#macro">Inizia dalla macro <span>→</span></a></div></div><div class="masthead-visual" aria-hidden="true"><div class="wave-halo"></div><svg viewBox="0 0 440 290" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="fmGrad" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#62d9bd" stop-opacity=".12"/><stop offset=".45" stop-color="#72c6ee"/><stop offset="1" stop-color="#e35d75"/></linearGradient></defs><g fill="none" stroke="#537b97" stroke-opacity=".17"><path d="M0 46H440M0 100H440M0 154H440M0 208H440M0 262H440"/><path d="M44 0V290M111 0V290M178 0V290M245 0V290M312 0V290M379 0V290"/></g><path d="M3 198 C50 186 73 145 109 157 S174 232 213 175 S272 93 314 122 S370 63 438 49" fill="none" stroke="url(#fmGrad)" stroke-width="3.4" stroke-linecap="round"/><path d="M3 215 C53 213 91 229 127 201 S198 124 239 170 S302 208 356 119 S398 161 438 128" fill="none" stroke="#70a9c4" stroke-opacity=".55" stroke-width="1.9" stroke-linecap="round"/><g fill="#86dcce" stroke="#12334a" stroke-width="4"><circle cx="109" cy="157" r="6"/><circle cx="213" cy="175" r="6"/><circle cx="314" cy="122" r="6"/></g><g fill="#b1d6e9" font-size="9" letter-spacing="1.8"><text x="18" y="24">MACRO</text><text x="146" y="24">RATES</text><text x="288" y="24">FX</text><text x="395" y="24">RISK</text></g></svg><div class="visual-caption"><span class="caption-orbit"></span> QUATTRO LENTI · UN UNICO CONTESTO</div></div></div>'
+ +dataPanel
+ +'<section class="chapter-section core-story"><div class="chapter-intro"><div class="chapter-count">01 <span> / MARKET INTELLIGENCE</span></div><h2>Cosa sta guidando<br><em>i mercati?</em></h2><p>Non scegliamo una spiegazione prima dei dati. Apri i quattro driver: il contesto cambia, e con lui le evidenze da controllare.</p></div>'
+ +'<div class="pulse-grid"><div class="pulse-diagram"><div class="atlas-title"><span>◉ MARKET CONNECTIONS</span><span>TOCCA UN DRIVER ↗</span></div><div class="atlas-field"><svg class="atlas-connector" viewBox="0 0 520 310" preserveAspectRatio="none" aria-hidden="true"><path d="M133 82 L385 82 L385 223 L133 223 Z" fill="none" stroke="#6093ad" stroke-opacity=".33" stroke-dasharray="5 8"/><path d="M133 82 L385 223 M385 82 L133 223" fill="none" stroke="#6093ad" stroke-opacity=".18"/><circle cx="259" cy="153" r="72" fill="none" stroke="#547b95" stroke-opacity=".26"/><circle cx="259" cy="153" r="50" fill="none" stroke="#547b95" stroke-opacity=".16"/></svg><div class="atlas-center"><span>FX QUANT</span><strong>CONTEXT</strong><small>DATI • EVIDENZE • RISCHI</small></div>'+atlasBtns+'</div><div class="atlas-footer"><span>Le connessioni sono una <strong>mappa investigativa</strong>, non relazioni causali certificate.</span></div></div>'
+ +'<div class="lens-article" data-tone="'+esc(node.tone)+'"><div class="lens-article-head"><span class="micro-over">'+esc(node.eyebrow)+'</span><span class="article-index">ESPLORA / 04</span></div><div><div class="lens-metric">'+esc(node.metric)+'</div><div class="lens-when">'+esc(node.tag)+'</div><h3>'+esc(node.headline)+'</h3><p class="article-lead">'+esc(node.main)+'</p><p class="article-secondary">'+esc(node.secondary)+'</p></div><div class="lens-what"><span>CHE COSA CONTROLLARE</span><p>'+esc(node.check)+'</p></div><a class="action-line" href="#'+node.route+'">'+esc(node.next)+' <span>↗</span></a></div></div></section>'
+ +'<section class="chapter-section"><div class="chapter-head"><div><span class="chapter-kicker">02 / LABORATORIO</span><h2>Le curve <em>dietro la narrativa.</em></h2></div><p>Seleziona una serie e cambia periodo. Le osservazioni sono datate, le interpretazioni restano verificabili.</p></div><div class="theatre"><div class="theatre-chart">'+homeScreenChart()+'</div><aside class="theatre-interpretation"><span class="micro-over">LA LETTURA</span><h3>Che cosa vediamo.<br><em>Che cosa non sappiamo.</em></h3><div class="theatre-rule"><span class="rule-index">01</span><div><strong>Fatto osservato</strong><p>'+esc(finite(u?.chg2_bp)?'Treasury 2Y USA '+sign(u.chg2_bp,1,' pb')+' al '+date(u.date)+'.':'Treasury 2Y da validare.')+'</p></div></div><div class="theatre-rule"><span class="rule-index">02</span><div><strong>Interpretazione possibile</strong><p>Il movimento potrebbe riflettere attese monetarie, ma va confrontato con futures/OIS e shock macro.</p></div></div><div class="theatre-rule"><span class="rule-index">03</span><div><strong>Conferma richiesta</strong><p>'+(datesGood?'Le date di Nasdaq, VIX e credito HY sono allineate; verifica direzione e intensità.':'Gli orologi di Nasdaq, VIX e HY non coincidono: non attribuire una reazione simultanea.')+'</p></div></div><a href="#rates" class="text-link">Vai al Research Rates ↗</a></aside></div></section>'
+ +'<section class="chapter-section"><div class="chapter-head"><div><span class="chapter-kicker">03 / FX RESEARCH</span><h2>Trova una tesi.<br><em>Mettila alla prova.</em></h2></div><p>Il modello monitora 28 coppie. Qui scegli cosa investigare, non cosa comprare.</p></div><div class="fx-workbench"><div class="fx-pair-choices"><div class="pair-choices-head"><span>SELEZIONA UNA COPPIA</span><span>28 PAIR · MOTORE CANONICO</span></div>'+choices.map(k=>{
+  const s=all[k]?.setup||{},active=k===state.spotPair;
+  return '<button class="fx-pair-choice'+(active?' selected':'')+'" type="button" data-home-pair="'+k+'" aria-pressed="'+String(active)+'"><span class="choice-pair">'+esc(getPairName(k))+'</span><span class="choice-status">'+esc(s.quality||'n.d.')+'</span><span class="choice-arrow">↗</span></button>';
+ }).join('')+'</div><div class="fx-focus-story">'+homePairPreview(state.spotPair||'EURUSD')+'</div></div><div class="chapter-smallprint">I dossier FX sono diagnostici e non costituiscono segnali di ingresso. COT, prezzo, macro e pricing possono essere divergenti.</div></section>'
+ +'<section class="chapter-section end-note"><div><span class="chapter-kicker">IL METODO FX QUANT</span><h2>Non ti diciamo cosa pensare.<br><em>Ti aiutiamo a verificare.</em></h2><p>Dati osservati, fonti datate, ipotesi falsificabili e un percorso coerente fra le sezioni. Questa è la differenza fra una dashboard e un research terminal.</p></div><a href="#currencies" class="action-primary">Inizia la ricerca <span>↗</span></a></section>';
+}
+
 function currencies(){
  const c=state.ccy,x=currencyInfo(c),rate=x.rate,cb=x.cb,macro=x.macro,ois=x.ois,cot=x.cot;
  const inflation=macro?.inflation,labour=macro?.labour;
@@ -261,11 +336,16 @@ function news(){
  +'<div class="grid tilted"><section class="panel"><div class="panel-head"><div><span class="mini-overline">EVENT FEED / DATATO</span><h2>'+(state.newsMode==='pulse'?'Le notizie che meritano attenzione':'Comunicazioni degli emittenti')+'</h2></div></div><div class="timeline">'+(list.length?list.slice(0,20).map(x=>'<article class="timeline-item"><span class="mini-overline">'+esc(x.ccy||x.source||x.category||'Fonte')+' · '+date(x.as_of||x.published_at||x.date)+'</span><h3>'+esc(x.title||x.headline||'Comunicazione')+'</h3><p>'+esc(x.detail||x.summary||x.description||'Apri la fonte ufficiale per il dettaglio.')+'</p></article>').join(''):'<div class="empty"><strong>Nessuna voce validata</strong></div>')+'</div></section>'
  +'<section class="panel glow"><span class="mini-overline">METODO / NEWS</span><h2 class="focus-headline" style="font-size:22px">Un evento non spiega sempre una candela.</h2><p class="focus-subtitle">Per affermare che il mercato ha reagito a un dato, servono confronti prima/dopo sullo stesso strumento e su un orario coerente.</p><div class="divider"></div><div class="flow-track"><div class="flow-item"><label>Fatto</label><p>Che cosa è stato pubblicato, da chi e quando.</p></div><div class="flow-item"><label>Surprise</label><p>Se disponibile: effettivo meno consenso, distinto da revisione del dato precedente.</p></div><div class="flow-item"><label>Market pricing</label><p>Quale curva o futures hanno reagito. Se non è verificato, la causa rimane un’ipotesi.</p></div></div></section></div>';
 }
+
+function researchRibbon(route){
+ const parts=[['macro','Macro'],['rates','Rates'],['currencies','FX G8'],['pairs','Coppie'],['cot','COT'],['risk','Risk']];
+ return '<div class="research-ribbon"><div class="ribbon-meta"><span class="ribbon-signal">◉</span> RESEARCH JOURNEY <span class="ribbon-current">'+FLAGS[state.ccy]+' '+state.ccy+' · '+esc(getPairName(state.pair))+'</span></div><div class="ribbon-path">'+parts.map((p,i)=>'<a href="#'+p[0]+'"'+(route===p[0]?' class="current"':'')+'>'+(i?'<small>›</small>':'')+p[1]+'</a>').join('')+'</div></div>';
+}
 function render(){
  const route=ROUTES[state.route]?state.route:'overview';
  state.charts={};state.chartIndex=0;
  const views={overview,currencies,pairs,macro,rates,cot,risk,news};
- $('content').innerHTML=views[route]();
+ $('content').innerHTML=(route==='overview'?'':researchRibbon(route))+views[route]();
  $('crumb-page').textContent=ROUTES[route];
  document.querySelectorAll('#nav [data-route]').forEach(a=>{if(a.dataset.route===route)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
  const ok=Object.keys(state.data).length,missing=Object.keys(SOURCES).length-ok;
@@ -286,6 +366,10 @@ window.addEventListener('hashchange',navigate);
 $('menu-toggle').addEventListener('click',()=>{const open=!$('app').classList.contains('menu-open');$('app').classList.toggle('menu-open',open);$('menu-toggle').setAttribute('aria-expanded',String(open))});
 $('mobile-overlay').addEventListener('click',()=>{$('app').classList.remove('menu-open');$('menu-toggle').setAttribute('aria-expanded','false')});
 document.addEventListener('click',e=>{
+ const atlas=e.target.closest('[data-atlas]');if(atlas){state.atlasLens=atlas.dataset.atlas;render();return}
+ const hc=e.target.closest('[data-hchart]');if(hc){state.homeChart=hc.dataset.hchart;render();return}
+ const hw=e.target.closest('[data-hwindow]');if(hw){state.homeWindow=Number(hw.dataset.hwindow);render();return}
+ const hp=e.target.closest('[data-home-pair]');if(hp){state.spotPair=hp.dataset.homePair;state.pair=state.spotPair;render();return}
  const c=e.target.closest('[data-ccy]');if(c){state.ccy=c.dataset.ccy;if(state.against===state.ccy)state.against=FX.find(k=>k!==state.ccy);render();return}
  const p=e.target.closest('[data-pair]');if(p){state.pair=p.dataset.pair;if(state.route==='overview')location.hash='#pairs';else render();return}
  const f=e.target.closest('[data-pfilter]');if(f){state.pairFilter=f.dataset.pfilter;render();return}
