@@ -51,7 +51,10 @@ jobs:
               && curl -fsSL --connect-timeout 8 --max-time 20 "https://robybizkit77-blip.github.io/global-macro-fx-quant/live_data/sections/ECB_G8_PRICE_HISTORY.json?verify=$GITHUB_RUN_ID" -o /tmp/next-ecb-cross.json \
               && grep -q 'currency-studio.js' /tmp/next-index.html \
               && grep -q 'FXQuantCurrencies' /tmp/next-country.js \
-              && grep -q 'currency-studio-selector' /tmp/next-country.css \
+              && grep -q 'orient-evidence-item' /tmp/next-country.js \
+              && grep -q 'orient-peer-row' /tmp/next-country.js \
+              && grep -q 'ORIENTAMENTO E DECISIONE' /tmp/next-index.html \
+              && grep -q 'country-orient-list' /tmp/next-country.css \
               && grep -Eq '"pair_count"[[:space:]]*:[[:space:]]*28' /tmp/next-ecb-cross.json; then
               echo "NEXT_PUBLIC_HTTP_200_VALIDATED"
               echo "PUBLIC_MAIN_NAV_READY=true"
@@ -63,6 +66,7 @@ jobs:
               echo "PUBLIC_G8_MACRO_DYNAMICS_READY=true"
               echo "PUBLIC_MACRO_204_SERIES_FEED_READY=true"
               echo "PUBLIC_G8_COUNTRY_RESEARCH_READY=true"
+              echo "PUBLIC_COUNTRY_G8_NO_DUPLICATE_STUDIOS_READY=true"
               echo "PUBLIC_ECB_561_FX_FIXINGS_READY=true"
               exit 0
             fi
