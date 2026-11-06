@@ -11,6 +11,7 @@ const ROUTES={overview:'Panoramica',currencies:'Valute G8',pairs:'Coppie FX',mac
 const SOURCES={
  rates:'../../../live_data/sections/NATIVE_RATES_DATA.json',
  dxy:'../../../live_data/sections/DXY_SYNTHETIC_ECB.json',
+ currencyPrices:'../../../live_data/sections/ECB_G8_PRICE_HISTORY.json',
  pairs:'../../../live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json',
  macro:'../../../live_data/sections/MACRO_THERMOMETER_DATA.json',
  macroSeries:'../../../live_data/sections/MACRO_SERIES.json',
@@ -23,7 +24,7 @@ const SOURCES={
  news:'../../../live_data/sections/NEWS_PULSE_OPERATIONAL.json',
  themes:'../../../live_data/sections/TOP_THEMES.json'
 };
-const state={data:{},errors:{},route:'overview',ccy:'USD',against:'EUR',pair:'EURUSD',pairFilter:'all',pairSearch:'',watch:new Set(),window:20,rateMode:'both',riskStream:'VIX',riskWindow:20,macroMetric:'inflation',newsMode:'pulse',chartIndex:0,charts:{},atlasLens:'rates',homeChart:'rates',homeWindow:20,spotPair:'EURUSD',cotWindow:26,cotMode:'net',cotFilter:'all',cotSort:'percentile',cotSortAsc:false,rsWindow:60,rsGovMode:'both',rsDiffMode:'2y',msCategory:'Inflazione',msSeriesId:null,msView:'level',msWindow:24,msHeat:'inflation',msHeatSort:'ccy',msHeatAsc:true,msOther:'EUR',msCompareMetric:'inflation'};
+const state={data:{},errors:{},route:'overview',ccy:'USD',against:'EUR',pair:'EURUSD',pairFilter:'all',pairSearch:'',watch:new Set(),window:20,rateMode:'both',riskStream:'VIX',riskWindow:20,macroMetric:'inflation',newsMode:'pulse',chartIndex:0,charts:{},atlasLens:'rates',homeChart:'rates',homeWindow:20,spotPair:'EURUSD',cotWindow:26,cotMode:'net',cotFilter:'all',cotSort:'percentile',cotSortAsc:false,rsWindow:60,rsGovMode:'both',rsDiffMode:'2y',msCategory:'Inflazione',msSeriesId:null,msView:'level',msWindow:24,msHeat:'inflation',msHeatSort:'ccy',msHeatAsc:true,msOther:'EUR',msCompareMetric:'inflation',csOther:'EUR',csPriceWindow:60,csRatesMode:'spread',csRatesWindow:60,csMacroMode:'inflation',csMacroWindow:36,csCotWindow:26,csSort:'currency'};
 try{const w=JSON.parse(localStorage.getItem('fxquant-next-watch')||'[]');if(Array.isArray(w))state.watch=new Set(w.filter(s=>typeof s==='string'))}catch(e){}
 const $=id=>document.getElementById(id);
 const esc=x=>String(x===undefined||x===null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -253,20 +254,8 @@ function overview(){
 }
 
 function currencies(){
- const c=state.ccy,x=currencyInfo(c),rate=x.rate,cb=x.cb,macro=x.macro,ois=x.ois,cot=x.cot;
- const inflation=macro?.inflation,labour=macro?.labour;
- const rateCards=rate?'<div class="metric-split"><div class="stat"><small>Government 2Y</small><strong>'+fmt(rate['2Y'])+'%</strong><em>'+date(rate.date)+'</em></div><div class="stat"><small>Government 10Y</small><strong>'+fmt(rate['10Y'])+'%</strong><em>'+date(rate.date)+'</em></div><div class="stat"><small>10Y − 2Y</small><strong>'+sign(rate.curve_bp,1,' pb')+'</strong><em>'+esc(rate.curve_state||'Pendenza')+'</em></div></div>':'<p class="no-result">Serie rendimenti non disponibile</p>';
- return pageHero('FX G8 / COUNTRY DEEP DIVE','Una valuta. <em>Molti driver.</em>','Seleziona una valuta: cambia l’intero quadro, dai dati macro ai rendimenti, al pricing dei tassi e al positioning. Nessun punteggio di forza inventato.')
- +'<div class="currency-grid">'+FX.map(k=>{const r=get('rates')?.[k];return '<button class="currency-chip" type="button" data-ccy="'+k+'" aria-pressed="'+String(k===c)+'"><span class="flag">'+FLAGS[k]+'</span><strong>'+k+'</strong><span class="meta">Gov 2Y · '+date(r?.date)+'</span><span class="latest">'+labelR(k)+'</span></button>'}).join('')+'</div>'
- +sectionTitle(FLAGS[c]+' '+NAMES[c]+' · '+c,'Lettura multidimensionale')
- +'<div class="grid tilted"><section class="panel glow"><div class="focus-row"><span class="mini-overline">MERCATO DEI TASSI</span>'+qBadge(rate?.quality||'DATO NON VALIDATO')+'</div><h2 class="focus-headline">'+(rate?'Il 2Y '+(rate.chg2_bp<0?'scende':rate.chg2_bp>0?'sale':'è stabile')+'. Cosa prezza il mercato?':'La serie 2Y è da verificare')+'</h2><p class="focus-subtitle">La direzione del governo 2Y non dimostra da sola il percorso della banca centrale. Confrontiamo OIS, timing e macro.</p><div class="divider"></div>'+rateCards+'<div class="chart-summary" style="margin-top:15px">'+(rate?'2Y '+sign(rate.chg2_bp,1,' pb')+' · 10Y '+sign(rate.chg10_bp,1,' pb')+' nell’ultima variazione indicata dalla fonte.':'Nessuna variazione verificata.')+'</div></section>'
- +'<section class="panel"><div class="panel-head"><div><span class="mini-overline">BANCA CENTRALE</span><h2>'+esc(cb?.bank||c)+'</h2><p>Decisione politica e pricing non sono la stessa cosa</p></div></div><div class="metric-split"><div class="stat"><small>Tasso ufficiale</small><strong>'+esc(cb?.rate_text||'—')+'</strong><em>'+date(cb?.last_date)+'</em></div><div class="stat"><small>Prossima riunione</small><strong style="font-size:17px">'+date(cb?.next_meeting)+'</strong></div><div class="stat"><small>Indicazione</small><strong style="font-size:13px">'+esc(concise(cb?.stance||'n.d.',65))+'</strong></div></div><p class="source-caption">'+esc(concise(cb?.official_next||'Nessuna guidance validata.',210))+'</p></section></div>'
- +sectionTitle('Macro + Pricing + Positioning','Leggi gli elementi insieme, senza forzare una tesi')
- +'<div class="grid cols-3">'
- +'<section class="panel"><span class="mini-overline">01 / MACRO</span><h3 class="focus-headline" style="font-size:19px">Inflazione e lavoro</h3><div class="flow-track"><div class="flow-item"><label>Inflazione</label><p><b>'+fmt(inflation?.latest_value,2)+'%</b> · '+esc(inflation?.direction||'n.d.')+' · '+esc(inflation?.acceleration||'n.d.')+'<br>Dato: '+esc(inflation?.as_of||'n.d.')+'</p></div><div class="flow-item"><label>Disoccupazione</label><p><b>'+fmt(labour?.latest_value,2)+'%</b> · '+esc(labour?.direction||'n.d.')+' · '+esc(labour?.acceleration||'n.d.')+'<br>Dato: '+esc(labour?.as_of||'n.d.')+'</p></div></div>'+routeLink('macro','Apri Macro Lab ↗')+'</section>'
- +'<section class="panel"><span class="mini-overline">02 / PRICING</span><h3 class="focus-headline" style="font-size:19px">3M · 6M · 12M</h3><div class="flow-track">'+['3m','6m','12m'].map(k=>'<div class="flow-item"><label>'+k.toUpperCase()+'</label><p><b>'+fmt(ois?.horizons?.[k]?.rate,3)+'%</b> · '+date(ois?.horizons?.[k]?.as_of)+'</p></div>').join('')+'</div><p class="source-caption">'+esc(ois?.kind||'Strumento non disponibile')+' · '+esc(ois?.quality||'Qualità da verificare')+'</p>'+routeLink('rates','Apri OIS & tassi ↗')+'</section>'
- +'<section class="panel"><span class="mini-overline">03 / COT</span><h3 class="focus-headline" style="font-size:19px">Come sono posizionati i fondi?</h3>'+qBadge(cot?.signal||'NON DISPONIBILE')+'<p class="focus-subtitle" style="margin:12px 0">'+esc(concise(cot?.today||'COT non caricato',245))+'</p><p class="source-caption">'+esc(cot?.w1||'')+'</p>'+routeLink('cot','Apri il positioning ↗')+'</section></div>'
- +'<div class="notice" style="margin-top:18px"><strong>Attenzione ai confronti:</strong> government yield, OIS e futures secondari hanno convenzioni diverse. Non usare direttamente lo spread tra strumenti diversi come segnale FX.</div>';
+ if(window.FXQuantCurrencies?.render)return window.FXQuantCurrencies.render({get,FX,FLAGS,NAMES,state,plot,pageHero,esc,fmt,sign,date,finite,validDay,dayNow});
+ return pageHero('FX G8 / COUNTRY RESEARCH','Country Research Studio non disponibile','Il modulo Valute G8 non è stato caricato. Verifica i feed e lo script.');
 }
 function pairs(){
  const all=eurPairs(),keys=pairListKeys(),s=all[state.pair]?.setup,fr=all[state.pair]?.decision_frame||s?.structural||{},price=s?.price,qual=pQuality(s);
@@ -371,6 +360,21 @@ window.addEventListener('keydown',e=>{
 $('menu-toggle').addEventListener('click',()=>{const open=!$('app').classList.contains('menu-open');$('app').classList.toggle('menu-open',open);$('menu-toggle').setAttribute('aria-expanded',String(open))});
 $('mobile-overlay').addEventListener('click',()=>{$('app').classList.remove('menu-open');$('menu-toggle').setAttribute('aria-expanded','false')});
 document.addEventListener('click',e=>{
+ const cs_country=e.target.closest('[data-cs-country]');if(cs_country){state.ccy=cs_country.dataset.csCountry;if(state.csOther===state.ccy)state.csOther=FX.find(k=>k!==state.ccy);render();return;}
+ const cs_other=e.target.closest('[data-cs-other]');if(cs_other){state.csOther=cs_other.dataset.csOther;render();return;}
+ const cs_pw=e.target.closest('[data-cs-pricewindow]');if(cs_pw){state.csPriceWindow=Number(cs_pw.dataset.csPricewindow);render();return;}
+ const cs_rm=e.target.closest('[data-cs-ratesmode]');if(cs_rm){state.csRatesMode=cs_rm.dataset.csRatesmode;render();return;}
+ const cs_rw=e.target.closest('[data-cs-rateswindow]');if(cs_rw){state.csRatesWindow=Number(cs_rw.dataset.csRateswindow);render();return;}
+ const cs_ma=e.target.closest('[data-cs-macro]');if(cs_ma){state.csMacroMode=cs_ma.dataset.csMacro;render();return;}
+ const cs_mw=e.target.closest('[data-cs-macrowindow]');if(cs_mw){state.csMacroWindow=Number(cs_mw.dataset.csMacrowindow);render();return;}
+ const cs_cw=e.target.closest('[data-cs-cotwindow]');if(cs_cw){state.csCotWindow=Number(cs_cw.dataset.csCotwindow);render();return;}
+ const cs_so=e.target.closest('[data-cs-sort]');if(cs_so){state.csSort=cs_so.dataset.csSort;render();return;}
+ const cs_op=e.target.closest('[data-cs-openpair]');if(cs_op){
+  const key=cs_op.dataset.csOpenpair;
+  state.pair=(get('pairs')?.pairs?.[key]?key:key.slice(3)+key.slice(0,3));
+  state.spotPair=state.pair;
+  state.route='pairs';location.hash='#pairs';render();return;
+ }
  const mcc=e.target.closest('[data-ms-country]');if(mcc){state.ccy=mcc.dataset.msCountry;state.msSeriesId=null;if(state.msOther===state.ccy)state.msOther=FX.find(k=>k!==state.ccy);render();return;}
  const mcat=e.target.closest('[data-ms-category]');if(mcat){state.msCategory=mcat.dataset.msCategory;state.msSeriesId=null;render();return;}
  const mv=e.target.closest('[data-ms-view]');if(mv){state.msView=mv.dataset.msView;render();return;}
@@ -415,6 +419,7 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('input',e=>{if(e.target.id==='pair-search'){state.pairSearch=e.target.value;const list=$('pair-results');if(!list)return;const keys=pairListKeys();list.innerHTML=keys.length?keys.map(k=>pairRow(k)).join(''):'<div class="empty"><strong>Nessuna coppia trovata</strong><p>Prova un nome o un filtro diverso.</p></div>';}})
 document.addEventListener('change',e=>{
+ if(e.target.id==='cs-other'){state.csOther=e.target.value;render();return;}
  if(e.target.id==='ms-series'){state.msSeriesId=e.target.value;render();return;}
  if(e.target.id==='ms-primary'){state.ccy=e.target.value;state.msSeriesId=null;if(state.msOther===state.ccy)state.msOther=FX.find(k=>k!==state.ccy);render();return;}
  if(e.target.id==='ms-other'){state.msOther=e.target.value;render();return;}
