@@ -84,16 +84,16 @@
       "inflation_accelerating_yoy": true,
       "inflation_decelerating_yoy": false,
       "labour": {
-        "change_direction": "FLAT",
-        "change_over_three_observation_intervals_pp": 0.0,
+        "change_direction": "UP",
+        "change_over_three_observation_intervals_pp": 0.3,
         "normalization_not_required_for_observed_value": true,
         "observation_intervals_not_fixed_calendar_months": true,
-        "observation_period": "2026-09",
+        "observation_period": "2026-10",
         "observation_period_is_not_release_instant": true,
-        "observation_value": 6.5,
+        "observation_value": 6.7,
         "observed_history_revised_not_historic_PIT": true,
         "reported_unit": "PERCENT_OR_PERCENTAGE_POINTS",
-        "research_z_only_when_available": -0.6744907594765952,
+        "research_z_only_when_available": 0.0,
         "research_z_was_not_imputed": false,
         "series_id": "CA_UNEMP_RATE",
         "source": "Statistics Canada"
@@ -101,7 +101,7 @@
       "macro_score": null,
       "not_a_trade_or_policy_signal": true,
       "unemployment_falling": false,
-      "unemployment_rising": false
+      "unemployment_rising": true
     },
     "CHF": {
       "FX_strength": null,
@@ -416,13 +416,13 @@
       "inflation_accelerating_yoy": true,
       "inflation_decelerating_yoy": false,
       "labour": {
-        "change_direction": "UP",
-        "change_over_three_observation_intervals_pp": 0.1,
+        "change_direction": "FLAT",
+        "change_over_three_observation_intervals_pp": 0.0,
         "normalization_not_required_for_observed_value": true,
         "observation_intervals_not_fixed_calendar_months": true,
-        "observation_period": "2026-09",
+        "observation_period": "2026-10",
         "observation_period_is_not_release_instant": true,
-        "observation_value": 4.2,
+        "observation_value": 4.1,
         "observed_history_revised_not_historic_PIT": true,
         "reported_unit": "PERCENT_OR_PERCENTAGE_POINTS",
         "research_z_only_when_available": null,
@@ -433,7 +433,7 @@
       "macro_score": null,
       "not_a_trade_or_policy_signal": true,
       "unemployment_falling": false,
-      "unemployment_rising": true
+      "unemployment_rising": false
     }
   },
   "economic_data_coverage": "8/8_G8_THREE_PILLARS",
@@ -467,11 +467,11 @@
       "labour_change_does_not_prove_FX_appreciation": true,
       "labour_changes_pp": {
         "AUD": 0.268452,
-        "CAD": 0.0
+        "CAD": 0.3
       },
       "labour_periods": {
         "AUD": "2026-09",
-        "CAD": "2026-09"
+        "CAD": "2026-10"
       },
       "pair_trade_bias": null,
       "quote": "CAD",
@@ -607,11 +607,11 @@
       "labour_change_does_not_prove_FX_appreciation": true,
       "labour_changes_pp": {
         "AUD": 0.268452,
-        "USD": 0.1
+        "USD": 0.0
       },
       "labour_periods": {
         "AUD": "2026-09",
-        "USD": "2026-09"
+        "USD": "2026-10"
       },
       "pair_trade_bias": null,
       "quote": "USD",
@@ -641,11 +641,11 @@
       "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
       "labour_change_does_not_prove_FX_appreciation": true,
       "labour_changes_pp": {
-        "CAD": 0.0,
+        "CAD": 0.3,
         "CHF": 0.009022
       },
       "labour_periods": {
-        "CAD": "2026-09",
+        "CAD": "2026-10",
         "CHF": "2026-09"
       },
       "pair_trade_bias": null,
@@ -673,14 +673,14 @@
         "CAD": 0.29473,
         "JPY": 0.5
       },
-      "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
+      "labour_change_contrast": "BASE_UNEMPLOYMENT_RISING_QUOTE_FALLING",
       "labour_change_does_not_prove_FX_appreciation": true,
       "labour_changes_pp": {
-        "CAD": 0.0,
+        "CAD": 0.3,
         "JPY": -0.1
       },
       "labour_periods": {
-        "CAD": "2026-09",
+        "CAD": "2026-10",
         "JPY": "2026-09"
       },
       "pair_trade_bias": null,
@@ -781,11 +781,11 @@
       "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
       "labour_change_does_not_prove_FX_appreciation": true,
       "labour_changes_pp": {
-        "CAD": 0.0,
+        "CAD": 0.3,
         "EUR": 0.1
       },
       "labour_periods": {
-        "CAD": "2026-09",
+        "CAD": "2026-10",
         "EUR": "2026-09"
       },
       "pair_trade_bias": null,
@@ -957,11 +957,11 @@
       "labour_change_does_not_prove_FX_appreciation": true,
       "labour_changes_pp": {
         "EUR": 0.1,
-        "USD": 0.1
+        "USD": 0.0
       },
       "labour_periods": {
         "EUR": "2026-09",
-        "USD": "2026-09"
+        "USD": "2026-10"
       },
       "pair_trade_bias": null,
       "quote": "USD",
@@ -1023,14 +1023,14 @@
         "CAD": 0.29473,
         "GBP": 0.9
       },
-      "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
+      "labour_change_contrast": "BASE_UNEMPLOYMENT_FALLING_QUOTE_RISING",
       "labour_change_does_not_prove_FX_appreciation": true,
       "labour_changes_pp": {
-        "CAD": 0.0,
+        "CAD": 0.3,
         "GBP": -0.2
       },
       "labour_periods": {
-        "CAD": "2026-09",
+        "CAD": "2026-10",
         "GBP": "2026-08"
       },
       "pair_trade_bias": null,
@@ -1163,15 +1163,15 @@
         "GBP": 0.9,
         "USD": 0.25372
       },
-      "labour_change_contrast": "BASE_UNEMPLOYMENT_FALLING_QUOTE_RISING",
+      "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
       "labour_change_does_not_prove_FX_appreciation": true,
       "labour_changes_pp": {
         "GBP": -0.2,
-        "USD": 0.1
+        "USD": 0.0
       },
       "labour_periods": {
         "GBP": "2026-08",
-        "USD": "2026-09"
+        "USD": "2026-10"
       },
       "pair_trade_bias": null,
       "quote": "USD",
@@ -1201,11 +1201,11 @@
       "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
       "labour_change_does_not_prove_FX_appreciation": true,
       "labour_changes_pp": {
-        "CAD": 0.0,
+        "CAD": 0.3,
         "NZD": 0.3
       },
       "labour_periods": {
-        "CAD": "2026-09",
+        "CAD": "2026-10",
         "NZD": "2026Q3"
       },
       "pair_trade_bias": null,
@@ -1307,11 +1307,11 @@
       "labour_change_does_not_prove_FX_appreciation": true,
       "labour_changes_pp": {
         "NZD": 0.3,
-        "USD": 0.1
+        "USD": 0.0
       },
       "labour_periods": {
         "NZD": "2026Q3",
-        "USD": "2026-09"
+        "USD": "2026-10"
       },
       "pair_trade_bias": null,
       "quote": "USD",
@@ -1341,12 +1341,12 @@
       "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
       "labour_change_does_not_prove_FX_appreciation": true,
       "labour_changes_pp": {
-        "CAD": 0.0,
-        "USD": 0.1
+        "CAD": 0.3,
+        "USD": 0.0
       },
       "labour_periods": {
-        "CAD": "2026-09",
-        "USD": "2026-09"
+        "CAD": "2026-10",
+        "USD": "2026-10"
       },
       "pair_trade_bias": null,
       "quote": "CAD",
@@ -1377,11 +1377,11 @@
       "labour_change_does_not_prove_FX_appreciation": true,
       "labour_changes_pp": {
         "CHF": 0.009022,
-        "USD": 0.1
+        "USD": 0.0
       },
       "labour_periods": {
         "CHF": "2026-09",
-        "USD": "2026-09"
+        "USD": "2026-10"
       },
       "pair_trade_bias": null,
       "quote": "CHF",
@@ -1408,15 +1408,15 @@
         "JPY": 0.5,
         "USD": 0.25372
       },
-      "labour_change_contrast": "BASE_UNEMPLOYMENT_RISING_QUOTE_FALLING",
+      "labour_change_contrast": "NO_OPPOSITE_LABOUR_CHANGE",
       "labour_change_does_not_prove_FX_appreciation": true,
       "labour_changes_pp": {
         "JPY": -0.1,
-        "USD": 0.1
+        "USD": 0.0
       },
       "labour_periods": {
         "JPY": "2026-09",
-        "USD": "2026-09"
+        "USD": "2026-10"
       },
       "pair_trade_bias": null,
       "quote": "JPY",
@@ -1426,9 +1426,9 @@
   "safe_to_recompute_structural_pair_theses": false,
   "safe_to_republish_D": false,
   "schema": "GMFQ_MACRO_V3_G8_28PAIR_PUBLIC_OBSERVED_CONTEXT_V1",
-  "snapshot_content_sha256": "187c819f7234626e0b7999ed1402af510db332e6f662c07cd506eaced445e6da",
+  "snapshot_content_sha256": "35b34d4d88b566e48082392f8c9bc12d3e8c7f96b290d34849c587521409ed1c",
   "source_observation_periods_not_release_days": true,
-  "source_receipt_sha256": "d13927102a43f2a0db58972c8b1bf0c80fbac17bc0d4d45d545431b83e31ca4d",
+  "source_receipt_sha256": "b90d0940cb05a6d88b7eaf178fe7fe2c8542df7b145ab61aeb24f8a1cefc53aa",
   "source_value_quality": "OBSERVED_REVISED_SERIES_AND_PUBLISHER_WEB_GDP",
   "status": "OBSERVED_ECONOMIC_CONTEXT_NOT_FX_SIGNAL",
   "summary": {
