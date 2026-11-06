@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_FXV2_MACRO_CANDIDATE_8X3_DESCRIPTIVE_V1",
-  "as_of_research": "2026-11-05",
+  "as_of_research": "2026-11-06",
   "published_source_lineage": "MACRO_V3_OBSERVED_REVISED_NOT_PIT",
   "formula_version": "V1_FIXED_NO_CALIBRATED_WEIGHTS",
   "legacy_macro_as_of": "2026-09-25",
@@ -33,14 +33,14 @@
         "series_id": "CPIAUCSL"
       },
       "unemployment_change_pp": {
-        "value": 0.1,
-        "level": 4.2,
+        "value": 0.0,
+        "level": 4.1,
         "unit": "UNEMP_RATE_CHANGE_OVER_THREE_OBSERVATION_INTERVALS_PP",
-        "period": "2026-09",
+        "period": "2026-10",
         "period_frequency": "M",
         "intervals": 3,
         "intervals_are_not_fixed_calendar_months": true,
-        "direction": "UP",
+        "direction": "FLAT_WITHIN_DESCRIPTIVE_0_05PP",
         "interpretation": "unemployment ↑ = labour slack ↑; not FX signal",
         "series_id": "UNRATE"
       }
@@ -208,14 +208,14 @@
         "series_id": "CA_CPI_HEADLINE_YOY"
       },
       "unemployment_change_pp": {
-        "value": 0.0,
-        "level": 6.5,
+        "value": 0.3,
+        "level": 6.7,
         "unit": "UNEMP_RATE_CHANGE_OVER_THREE_OBSERVATION_INTERVALS_PP",
-        "period": "2026-09",
+        "period": "2026-10",
         "period_frequency": "M",
         "intervals": 3,
         "intervals_are_not_fixed_calendar_months": true,
-        "direction": "FLAT_WITHIN_DESCRIPTIVE_0_05PP",
+        "direction": "UP",
         "interpretation": "unemployment ↑ = labour slack ↑; not FX signal",
         "series_id": "CA_UNEMP_RATE"
       }
@@ -302,9 +302,9 @@
           "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "unemployment_change_pp": {
-          "same_period": true,
-          "delta_base_minus_quote_pp": 0.268452,
-          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "growth_acceleration_pp": {
           "same_quarter_and_historical_depth": false,
@@ -402,9 +402,9 @@
           "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "unemployment_change_pp": {
-          "same_period": true,
-          "delta_base_minus_quote_pp": 0.168452,
-          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "growth_acceleration_pp": {
           "same_quarter_and_historical_depth": false,
@@ -427,9 +427,9 @@
           "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
         },
         "unemployment_change_pp": {
-          "same_period": true,
-          "delta_base_minus_quote_pp": -0.009022,
-          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "growth_acceleration_pp": {
           "same_quarter_and_historical_depth": false,
@@ -452,9 +452,9 @@
           "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
         },
         "unemployment_change_pp": {
-          "same_period": true,
-          "delta_base_minus_quote_pp": 0.1,
-          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "growth_acceleration_pp": {
           "same_quarter_and_historical_depth": false,
@@ -527,9 +527,9 @@
           "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "unemployment_change_pp": {
-          "same_period": true,
-          "delta_base_minus_quote_pp": 0.1,
-          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "growth_acceleration_pp": {
           "same_quarter_and_historical_depth": false,
@@ -652,9 +652,9 @@
           "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "unemployment_change_pp": {
-          "same_period": true,
-          "delta_base_minus_quote_pp": 0.0,
-          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "growth_acceleration_pp": {
           "same_quarter_and_historical_depth": true,
@@ -928,7 +928,7 @@
         },
         "unemployment_change_pp": {
           "same_period": true,
-          "delta_base_minus_quote_pp": 0.1,
+          "delta_base_minus_quote_pp": -0.3,
           "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
         },
         "growth_acceleration_pp": {
@@ -952,9 +952,9 @@
           "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
         },
         "unemployment_change_pp": {
-          "same_period": true,
-          "delta_base_minus_quote_pp": 0.090978,
-          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "growth_acceleration_pp": {
           "same_quarter_and_historical_depth": false,
@@ -977,9 +977,9 @@
           "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
         },
         "unemployment_change_pp": {
-          "same_period": true,
-          "delta_base_minus_quote_pp": 0.2,
-          "reason": "SAME_OBSERVATION_PERIOD_ONLY_NO_FX_BIAS"
+          "same_period": false,
+          "delta_base_minus_quote_pp": null,
+          "reason": "PERIOD_MISMATCH_NOT_COMPARABLE"
         },
         "growth_acceleration_pp": {
           "same_quarter_and_historical_depth": false,
@@ -1013,5 +1013,5 @@
   "eligible_for_backtests": false,
   "eligible_for_automatic_core_rebase": false,
   "canonical_fx_core_untouched": true,
-  "source_content_sha256": "665e63dbcbb3c5bea8636724a89c93f8a295286069ffd9a70152c5d588b4085a"
+  "source_content_sha256": "eef2227d836d4005b0a538190479b7fb0e5f7fb21a816dc8a78cea8e535e3e10"
 }
