@@ -21,7 +21,7 @@ fs.mkdirSync(evidence,{recursive:true});
    assert(resp&&resp.ok(),'Home HTTP failed: '+resp?.status());
    await page.waitForFunction(()=>/fonti caricate/.test(document.getElementById('sidebar-feed')?.textContent||''),{timeout:20000});
    const sourceText=await page.locator('#sidebar-feed').innerText();
-   assert(/10\/10 fonti caricate/.test(sourceText),'Feed mismatch: '+sourceText);
+   assert(/12\/12 fonti caricate/.test(sourceText),'Feed mismatch: '+sourceText);
    for(const route of ROUTES){
     await page.evaluate(r=>{location.hash='#'+r},route);
     await page.waitForFunction(r=>document.querySelector('#crumb-page')?.textContent===({overview:'Panoramica',currencies:'Valute G8',pairs:'Coppie FX',macro:'Macro Lab',rates:'Tassi & OIS',cot:'Positioning',risk:'Risk Radar',news:'News Pulse'})[r],route);
@@ -29,7 +29,7 @@ fs.mkdirSync(evidence,{recursive:true});
     assert(h1.length>12,'Missing heading '+route);
     const overflow=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));
     assert(overflow.scroll<=overflow.client+2,'Horizontal overflow on '+route+' '+width+': '+JSON.stringify(overflow));
-    await page.screenshot({path:evidence+'/'+route+'-'+width+'.png',fullPage:route==='overview'||route==='pairs'});
+    await page.screenshot({path:evidence+'/'+route+'-'+width+'.png',fullPage:route==='overview'||route==='pairs'||route==='cot'});
     results.push({width,route,h1,overflow:'PASS'});
    }
 
@@ -67,6 +67,28 @@ fs.mkdirSync(evidence,{recursive:true});
    await page.evaluate(()=>{location.hash='#macro'});
    await page.locator('[data-metric="labour"]').click();
    assert((await page.locator('.panel-head h2').first().innerText()).toLowerCase().includes('disoccupazione'),'Macro toggle failed');
+   // COT research studio: complete G8 chart, flow, price and explanatory controls.
+   await page.evaluate(()=>{location.hash='#cot'});
+   assert(await page.locator('.cot-country-selector .cot-country-button').count()===8,'COT G8 selector incomplete');
+   assert((await page.locator('.cot-source-band').innerText()).includes('27/10/2026'),'COT historical timestamp missing');
+   assert(await page.locator('.cot-graph-grid .chart svg').count()===2,'COT history and price charts missing');
+   assert(await page.locator('.cot-detailed-table .data-table tbody tr').count()===12,'COT last 12 weekly rows missing');
+   assert(await page.locator('.cot-universe .data-table tbody tr').count()===8,'COT G8 comparison table incomplete');
+   await page.locator('[data-cot-mode="gross"]').click();
+   const cotLegend=await page.locator('.cot-plot-card .chart-legend').first().innerText();
+   assert(cotLegend.includes('Long')&&cotLegend.includes('Short'),'COT long short overlay failed');
+   await page.locator('[data-cot-mode="netoi"]').click();
+   assert((await page.locator('.cot-figure-title').first().innerText()).includes('Open Interest'),'COT Net/OI graph switch failed');
+   await page.locator('[data-cot-window="104"]').click();
+   assert((await page.locator('.cot-figure-title').first().innerText()).includes('104 settimane'),'COT historical window control failed');
+   await page.locator('.cot-country-selector [data-ccy="CHF"]').click();
+   const chfText=await page.locator('.cot-hero').innerText();
+   assert(chfText.includes('Gli short prevalgono'),'COT CHF net-short reading missing');
+   assert((await page.locator('.cot-analysis-grid').innerText()).includes('P alto non significa net long'),'COT percentile direction caveat missing');
+   await page.locator('[data-cot-filter="extreme"]').click();
+   assert((await page.locator('.cot-universe tbody tr').count())>=1,'COT extreme universe filter failed');
+   await page.locator('[data-cot-sort="delta1"]').click();
+   assert((await page.locator('.cot-universe th').allInnerTexts()).join(' ').includes('Δ 1W'),'COT sorting failed');
    // Cross asset controls.
    await page.evaluate(()=>{location.hash='#risk'});
    await page.locator('[data-risk="SP500"]').click();
@@ -79,6 +101,6 @@ fs.mkdirSync(evidence,{recursive:true});
    await page.close();
   }
   fs.writeFileSync(evidence+'/report.json',JSON.stringify({status:'PASS',base:BASE,results},null,2));
-  console.log('FXQUANT_NEXT_VISUAL_AND_INTERACTION_QA_PASS',JSON.stringify({views:results.length,viewports:[1440,390],feed:'10/10',interactions:'PASS'}));
+  console.log('FXQUANT_NEXT_VISUAL_AND_INTERACTION_QA_PASS',JSON.stringify({views:results.length,viewports:[1440,390],feed:'12/12',interactions:'PASS'}));
  }finally{await browser.close();}
 })().catch(e=>{console.error('FXQUANT_NEXT_QA_FAIL',e.stack||e);process.exit(1)});
