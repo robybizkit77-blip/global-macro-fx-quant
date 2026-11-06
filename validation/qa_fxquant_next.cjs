@@ -85,11 +85,11 @@ fs.mkdirSync(evidence,{recursive:true});
    assert((await page.locator('.orient-spot .micro-over').innerText()).includes('EUR/CHF'),'Peer comparison did not select CHF');
    // Research hyperlinks retain the chosen currency rather than resetting each studio.
    await page.locator('.orient-evidence-item[data-evidence="macro"] a').click();
-   assert((await page.locator('#crumb-page').innerText())==='Macro Lab','Macro research link failed');
+   await page.waitForFunction(()=>document.querySelector('#crumb-page')?.textContent==='Macro Lab',{timeout:6000});
    assert(await page.locator('.macro-country.active[data-ms-country="EUR"]').count()===1,'EUR context lost opening Macro Lab');
    await page.evaluate(()=>{location.hash='#currencies'});
    await page.locator('.orient-evidence-item[data-evidence="cot"] a').click();
-   assert((await page.locator('#crumb-page').innerText())==='Positioning','COT research link failed');
+   await page.waitForFunction(()=>document.querySelector('#crumb-page')?.textContent==='Positioning',{timeout:6000});
    assert(await page.locator('.cot-country-button.active[data-ccy="EUR"]').count()===1,'EUR context lost opening COT');
    await page.evaluate(()=>{location.hash='#currencies'});
    await page.locator('[data-cs-openpair="EURCHF"]').last().click();
