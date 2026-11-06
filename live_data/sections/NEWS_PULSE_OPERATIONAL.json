@@ -1,7 +1,40 @@
 {
-  "content_as_of": "2026-11-04",
-  "generated_at_utc": "2026-11-06T03:42:56.802424Z",
+  "content_as_of": "2026-11-05",
+  "generated_at_utc": "2026-11-06T07:00:31.015053Z",
   "items": [
+    {
+      "as_of": "2026-11-05",
+      "category": "FUTURES_IMPLIED_REPRICING",
+      "ccy": "JPY",
+      "confidence": "A",
+      "detail": "Movimento 1D -2.0 bp sul bucket 12M; variazione 1W -6.3 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "Tokyo Financial Exchange · Three-month TONA Futures",
+      "title": "JPY: repricing implicito da futures più dovish (-2.0 bp 12M in 1D)"
+    },
+    {
+      "as_of": "2026-11-05",
+      "category": "FUTURES_IMPLIED_REPRICING",
+      "ccy": "CAD",
+      "confidence": "A",
+      "detail": "Movimento 1D -6.5 bp sul bucket 12M; variazione 1W -24.5 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
+      "title": "CAD: repricing implicito da futures più dovish (-6.5 bp 12M in 1D)"
+    },
+    {
+      "as_of": "2026-11-05",
+      "category": "FUTURES_IMPLIED_REPRICING",
+      "ccy": "AUD",
+      "confidence": "A",
+      "detail": "Movimento 1D -3.0 bp sul bucket 12M; variazione 1W -10.5 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
+      "title": "AUD: repricing implicito da futures più dovish (-3.0 bp 12M in 1D)"
+    },
     {
       "as_of": "2026-11-04",
       "category": "OIS_REPRICING",
@@ -12,42 +45,9 @@
       "quality": "OFFICIAL_CERTIFIED",
       "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
       "title": "GBP: repricing OIS più dovish (-11.2 bp 12M in 1D)"
-    },
-    {
-      "as_of": "2026-11-04",
-      "category": "FUTURES_IMPLIED_REPRICING",
-      "ccy": "JPY",
-      "confidence": "A",
-      "detail": "Movimento 1D -3.6 bp sul bucket 12M; variazione 1W -4.3 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "Tokyo Financial Exchange · Three-month TONA Futures",
-      "title": "JPY: repricing implicito da futures più dovish (-3.6 bp 12M in 1D)"
-    },
-    {
-      "as_of": "2026-11-04",
-      "category": "FUTURES_IMPLIED_REPRICING",
-      "ccy": "CAD",
-      "confidence": "A",
-      "detail": "Movimento 1D -4.5 bp sul bucket 12M; variazione 1W -24.0 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
-      "title": "CAD: repricing implicito da futures più dovish (-4.5 bp 12M in 1D)"
-    },
-    {
-      "as_of": "2026-11-04",
-      "category": "FUTURES_IMPLIED_REPRICING",
-      "ccy": "AUD",
-      "confidence": "A",
-      "detail": "Movimento 1D +1.0 bp sul bucket 6M; variazione 1W -1.5 bp. Indicazione tratta da futures: non equivale a una curva OIS osservata.",
-      "importance": "MEDIUM",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
-      "title": "AUD: repricing implicito da futures più hawkish (+1.0 bp 6M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-06T03:42:56.802424Z",
+  "last_checked_at_utc": "2026-11-06T07:00:31.015053Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -169,13 +169,13 @@
             "to": "2026-11-02"
           },
           "SIX_MONTH": {
-            "delta_bp": -6.0,
+            "delta_bp": -11.0,
             "first_publication_intraday_PIT_certified": false,
             "from": "2026-10-27",
             "source_type": "OFFICIAL_EXCHANGE_FUTURES_NOT_OIS",
             "start_is_early_first_seen_not_nearest_prerelease": true,
             "status": "DESCRIPTIVE_MULTIDAY_CHANGE_NOT_EVENT_CAUSAL",
-            "to": "2026-11-04"
+            "to": "2026-11-05"
           }
         },
         "pre_event_reference": {
@@ -248,9 +248,9 @@
           "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
           "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
         },
-        "id": "BOJ_NEWS:https://www.boj.or.jp/en/research/imes/dps/dps26.htm",
+        "id": "BOJ_NEWS:https://www.boj.or.jp/en/about/release_2026/rel261106b.htm",
         "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-06T02:00:00Z",
+        "published_at_utc": "2026-11-06T07:00:00Z",
         "quality": "OFFICIAL_RSS_DATED_LINK",
         "reaction_evidence": {
           "causal_attribution": "NOT_ESTABLISHED",
@@ -261,8 +261,8 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 1.672,
-            "date": "2026-11-04",
+            "6m_rate_pct": 1.662,
+            "date": "2026-11-05",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
@@ -277,13 +277,68 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-04",
+            "date": "2026-11-05",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-04",
+            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-05",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 1.891
+            "yield_2y_pct": 1.86
+          }
+        },
+        "source": "Bank of Japan",
+        "source_id": "BOJ_NEWS",
+        "title": "(IMES Newsletter) 2026 BoC - Philadelphia Fed - BOJ Joint Workshop",
+        "url": "https://www.boj.or.jp/en/about/release_2026/rel261106b.htm"
+      },
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "JPY",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
+        "id": "BOJ_NEWS:https://www.boj.or.jp/en/research/imes/dps/dps26.htm",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-06T02:00:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "6m_rate_pct": 1.662,
+            "date": "2026-11-05",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "OFFICIAL_CERTIFIED",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Tokyo Financial Exchange · Three-month TONA Futures",
+            "status": "DAILY_CONTEXT_ONLY"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-11-05",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-05",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 1.86
           }
         },
         "source": "Bank of Japan",
@@ -316,12 +371,12 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 4.925,
-            "date": "2026-11-04",
+            "6m_rate_pct": 4.92,
+            "date": "2026-11-05",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
             "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
             "status": "DAILY_CONTEXT_ONLY"
           },
@@ -332,13 +387,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-10-28",
+            "date": "2026-11-04",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Reserve Bank of Australia · F2 Capital Market Yields – Government Bonds – Daily · 2026-10-28",
+            "source": "Reserve Bank of Australia · F2 Capital Market Yields – Government Bonds – Daily · 2026-11-04",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.951
+            "yield_2y_pct": 4.826
           }
         },
         "source": "Reserve Bank of Australia",
@@ -371,12 +426,12 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 2.935,
-            "date": "2026-11-04",
+            "6m_rate_pct": 2.885,
+            "date": "2026-11-05",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
             "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
             "status": "DAILY_CONTEXT_ONLY"
           },
@@ -624,12 +679,12 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 2.935,
-            "date": "2026-11-04",
+            "6m_rate_pct": 2.885,
+            "date": "2026-11-05",
             "event_window_proof": false,
             "instrument": "FUTURES_IMPLIED",
             "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
             "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
             "status": "DAILY_CONTEXT_ONLY"
           },
@@ -749,61 +804,6 @@
         "source_id": "ECB_PRESS",
         "title": "Piero Cipollone: Shaping the future of money",
         "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261105~6495a0df6f.en.html"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "JPY",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "BOJ_NEWS:https://www.boj.or.jp/en/paym/bond/mbond_list/mbond261105.pdf",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-05T07:00:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "6m_rate_pct": 1.672,
-            "date": "2026-11-04",
-            "event_window_proof": false,
-            "instrument": "FUTURES_IMPLIED",
-            "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Tokyo Financial Exchange · Three-month TONA Futures",
-            "status": "DAILY_CONTEXT_ONLY"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-11-04",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-04",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 1.891
-          }
-        },
-        "source": "Bank of Japan",
-        "source_id": "BOJ_NEWS",
-        "title": "Holding the Twenty-fifth Round of the \"Bond Market Group\" Meetings",
-        "url": "https://www.boj.or.jp/en/paym/bond/mbond_list/mbond261105.pdf"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
@@ -1005,7 +1005,7 @@
       }
     ],
     "last_attempt_day_rome": "2026-11-06",
-    "latest_published_at_utc": "2026-11-06T02:00:00Z",
+    "latest_published_at_utc": "2026-11-06T07:00:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
