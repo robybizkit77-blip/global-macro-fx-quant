@@ -98,6 +98,7 @@ fs.mkdirSync(evidence,{recursive:true});
    assert(await page.locator('.cs-pair-table tbody tr').count()===7,'NZD seven-currency FX comparator not loaded');
    // Rates & OIS research: eight currencies, actual sovereign histories and source-specific tenor pricing.
    await page.evaluate(()=>{location.hash='#rates'});
+   await page.locator('[data-rate-ccy="USD"]').first().click(); // isolate against prior NZD country selection
    assert(await page.locator('.rates-country').count()===8,'G8 rate countries incomplete');
    assert(await page.locator('.rates-shape-col').count()===3,'3M/6M/12M bars missing');
    assert(await page.locator('.rates-universe-table tbody tr').count()===8,'G8 pricing table incomplete');
