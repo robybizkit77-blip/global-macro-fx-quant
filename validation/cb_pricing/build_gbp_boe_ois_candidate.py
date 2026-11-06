@@ -51,6 +51,8 @@ def main():
     if live.get("source") != s.get("source"):
         raise SystemExit("Snapshot source differs from canonical authorized GBP source")
 
+    if live.get("policy_decision") and s["as_of"] < live["policy_decision"]["date"]:
+        raise SystemExit("GBP BoE OIS observation predates newest official policy decision; no post-decision repricing candidate")
     policy = float(live["policy_rate"])
     horizons = {}
     for k in ("3m", "6m", "12m"):
