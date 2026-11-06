@@ -52,7 +52,7 @@ jobs:
               && grep -q 'currency-studio.js' /tmp/next-index.html \
               && grep -q 'FXQuantCurrencies' /tmp/next-country.js \
               && grep -q 'currency-studio-selector' /tmp/next-country.css \
-              && grep -q '"pair_count":28' /tmp/next-ecb-cross.json; then
+              && grep -Eq '"pair_count"[[:space:]]*:[[:space:]]*28' /tmp/next-ecb-cross.json; then
               echo "NEXT_PUBLIC_HTTP_200_VALIDATED"
               echo "PUBLIC_MAIN_NAV_READY=true"
               echo "PUBLIC_ATLAS_JS_READY=true"
