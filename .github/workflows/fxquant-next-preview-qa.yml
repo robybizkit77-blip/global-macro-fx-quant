@@ -6,6 +6,7 @@ on:
     paths:
       - 'site/fx-quant-v2/next/**'
       - 'validation/qa_fxquant_next.cjs'
+      - 'validation/build_fxquant_next_offline.py'
       - '.github/workflows/fxquant-next-preview-qa.yml'
   workflow_dispatch:
 
@@ -41,6 +42,16 @@ jobs:
           exit 1
       - name: QA eight research sections, live data wiring and interactive controls on desktop/mobile
         run: node validation/qa_fxquant_next.cjs
+      - name: Package the real site as one offline-review HTML
+        run: python3 validation/build_fxquant_next_offline.py
+      - name: Deliver standalone HTML review build
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fxquant-next-offline-review
+          path: fxquant-next-offline/FX_Quant_NEXT_Anteprima_Offline.html
+          if-no-files-found: warn
+          retention-days: 14
       - name: Retain 16 screenshots and functional proof
         if: always()
         uses: actions/upload-artifact@v4
