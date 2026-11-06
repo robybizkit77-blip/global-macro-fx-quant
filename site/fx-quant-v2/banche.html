@@ -108,8 +108,34 @@ async function refreshBanks(){
     }
    }
   }catch(error){console.warn("[FX Quant V2 CB] Overlay RBA informativo non disponibile:",error);}
+  /* Official BoE decision is later than the canonical policy snapshot.
+     Research-only: do not treat pre-meeting SONIA curve as post-event repricing. */
+  let boeOverlay=false;
+  try {
+   const response=await fetch("./boe-decision-2026-11-05-official.json",{cache:"no-store"});
+   if(response.ok){
+    const u=await response.json(),b=next.countries.GBP;
+    if(u.schema==="GMFQ_FXV2_BOE_OFFICIAL_DECISION_OVERLAY_V1"&&
+       u.published_status==="OFFICIAL_BOE_RELEASE_VERIFIED__V2_INFORMATIONAL_ONLY"&&
+       u.currency==="GBP"&&u.last_date<=today&&u.last_date>(b?.last_date||"")&&
+       u.rate===4&&(u.source_url||"").startsWith("https://www.bankofengland.co.uk/")){
+     b.last_date=u.last_date;b.rate_text=u.rate_text;b.policy_rate=u.rate;
+     b.action=u.action;b.stance=u.stance;b.context=u.context;b.next_meeting=u.next_meeting;
+     b.note.lead="BoE, decisione ufficiale del "+date(u.last_date)+": Bank Rate al 4,00% (+25 pb), voto 8–1.";
+     b.note.why="La banca centrale considera aumentati i rischi di trasmissione dell'inflazione energetica; nessun percorso di rialzi prestabilito. Fonte: "+u.source_url+".";
+     b.note.watch="Attendere una curva SONIA/OIS datata dopo la decisione prima di calcolare il repricing post-meeting. Prossima decisione "+date(u.next_meeting)+".";
+     b.note.confirm="Conferma hawkish solo con pricing post-evento e reazione del cambio su date comparabili.";
+     b.note.weaken="Una curva post-evento più dovish e la mancata conferma di GBP indeboliscono la tesi.";
+     if(b.pricing?.as_of<u.last_date){
+      b.pricing.description="CURVA PRE-DECISIONE: la rilevazione SONIA/OIS del "+date(b.pricing.as_of)+" precede il rialzo BoE del "+date(u.last_date)+". Non rappresenta un repricing post-annuncio né una misura sincronizzata delle aspettative rispetto al nuovo Bank Rate.";
+      b.pricing.quality_it=(b.pricing.quality_it||"OIS da fonte ufficiale")+" · PRE-EVENTO";
+     }
+     boeOverlay=true;
+    }
+   }
+  }catch(error){console.warn("[FX Quant V2 CB] Overlay BoE informativo non disponibile:",error);}
   dataset=next;render();
-  $("dataStatus").textContent="Feed banche centrali collegato: "+decisions+" decisioni G8, "+markets+" rendimenti governativi, "+officialCurves+" strutture di mercato ufficiali aggiornate."+(rbaOverlay?" RBA: pubblicazione ufficiale 03/11 collegata come contesto informativo V2; feed canonico Core invariato.":"")+" OIS, futures e proxy sono distinti; ogni fonte conserva la propria data. Narrativa precedente: snapshot del 3 novembre, da rivalutare.";
+  $("dataStatus").textContent="Feed banche centrali collegato: "+decisions+" decisioni G8, "+markets+" rendimenti governativi, "+officialCurves+" strutture di mercato ufficiali aggiornate."+(rbaOverlay?" RBA: pubblicazione ufficiale 03/11 collegata come contesto informativo V2; feed canonico Core invariato.":"")+(boeOverlay?" BoE: decisione ufficiale 05/11 collegata come contesto informativo; pricing OIS 04/11 pre-evento, non repricing post-decisione.":"")+" OIS, futures e proxy sono distinti; ogni fonte conserva la propria data. Narrativa precedente: snapshot del 3 novembre, da rivalutare.";
  }catch(err){
   console.warn("[FX Quant V2 CB] Feed non validati; mantengo lo snapshot:",err);
   $("dataStatus").textContent="Modalità snapshot: decisioni/rates/pricing canonici non verificati. Consultare le date di ogni paese e non presumere che una riunione trascorsa sia stata acquisita.";

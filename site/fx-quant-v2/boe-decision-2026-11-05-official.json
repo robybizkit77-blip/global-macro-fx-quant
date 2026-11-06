@@ -1,0 +1,24 @@
+{
+  "schema": "GMFQ_FXV2_BOE_OFFICIAL_DECISION_OVERLAY_V1",
+  "currency": "GBP",
+  "source": "Bank of England · Monetary Policy Summary and Minutes, November 2026",
+  "source_url": "https://www.bankofengland.co.uk/monetary-policy-summary-and-minutes/2026/november-2026",
+  "published_date": "2026-11-05",
+  "last_date": "2026-11-05",
+  "rate": 4,
+  "rate_text": "4.00%",
+  "rate_change_bp": 25,
+  "action": "RIALZO +25 pb a 4,00%",
+  "stance": "HAWKISH · rialzo di assicurazione, percorso non prestabilito",
+  "context": "BoE: decisione pubblicata il 5 novembre 2026, Bank Rate al 4,00% (+25 pb), voto 8–1; un membro preferiva +50 pb. Rischio persistente di trasmissione dell'inflazione energetica ai salari e ai prezzi interni. Nessun percorso di ulteriori rialzi preimpostato.",
+  "vote": {
+    "for_25bp": 8,
+    "for_50bp": 1
+  },
+  "next_meeting": "2026-12-17",
+  "published_status": "OFFICIAL_BOE_RELEASE_VERIFIED__V2_INFORMATIONAL_ONLY",
+  "eligible_for_core_signals": false,
+  "eligible_for_pair_engine": false,
+  "eligible_for_backtests": false,
+  "note": "Overlay informativo con data e fonte ufficiali. Un OIS osservato il 4 novembre è precedente alla decisione pubblicata il 5 novembre e non può essere interpretato come repricing post-annuncio. Nessuna modifica a OIS_DATA, NATIVE_CB_DATA o segnali FX."
+}
