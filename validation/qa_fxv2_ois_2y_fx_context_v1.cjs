@@ -11,7 +11,10 @@ const futures=load('site/fx-quant-v2/ois-same-contract-repricing-research.json')
 const estimates=load('live_data/sections/CB_PRICING_ESTIMATED.json');
 const rates=load('live_data/sections/NATIVE_RATES_DATA.json');
 const fx=load('live_data/sections/ECB_G8_PRICE_HISTORY.json');
-const today=fx.last_as_of,tenors=['3m','6m','12m'];
+const today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+// The latest ECB fixing is an observation, NOT today's clock date. Futures may legitimately be newer.
+assert.ok(fx.last_as_of<=today,'ECB fixing cannot be from the future');
+const tenors=['3m','6m','12m'];
 const clone=x=>JSON.parse(JSON.stringify(x));
 const observed={};
 for(const c of ['USD','EUR','CHF']){
