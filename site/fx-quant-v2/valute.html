@@ -167,7 +167,7 @@ setup();
 /* V2 read-only bridge: recalculate full FX G8 ranking from canonical ECB matched-date fixing. */
 // Rates/COT are independent of an ECB FX price-file outage.
 async function refreshValuteRatesOnly(){
- const root="https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/";
+ const root="../../live_data/sections/";
  const read=async name=>{
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),9000);
   try{
@@ -204,7 +204,7 @@ async function refreshValuteRatesOnly(){
  console.info("[FXV2 Valute] FX fixing snapshot retained; rates independently updated",changed);
 }
 async function refreshValute(){
- const root="https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/";
+ const root="../../live_data/sections/";
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
  const get=async name=>{
   const response=await fetch(root+name+".json",{cache:"no-store",signal:controller.signal});
