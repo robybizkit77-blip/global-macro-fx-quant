@@ -31,7 +31,11 @@ assert.equal(eu.base.growth.qoq_change_pp,-0.2);
 assert.equal(eu.quote.growth.qoq_change_pp,0.466464);
 assert.equal(eu.comparable.inflation_trend_same_period,false,'EUR October and USD September are not synchronized');
 assert(eu.summary.includes('Inflazione non sincronizzata'),'source-period mismatch must be visible');
-assert.equal(eu.comparable.labour_trend_same_period,true);
+// Labour source periods can move independently (EUR September / USD October).
+// Test comparison parity against actual published periods, never a frozen expectation.
+const labourPeriodsAligned=doc.countries.EUR.labour.observation_period===doc.countries.USD.labour.observation_period;
+assert.equal(eu.comparable.labour_trend_same_period,labourPeriodsAligned);
+if(!labourPeriodsAligned)assert(eu.summary.includes('Disoccupazione con periodi/frequenze diversi'),'unsynchronized labour context must be visible');
 assert.equal(eu.base.inflation.change_pp,1);
 assert.equal(eu.quote.inflation.change_pp,0.25372);
 assert(eu.summary.includes('PIL: variazione del ritmo'));
