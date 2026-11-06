@@ -89,16 +89,16 @@
       "status": "MARKET_PROXY_ACTIVE_SECONDARY",
       "confidence": "B_FOR_DIRECTION_ONLY",
       "proxy_as_of": "2026-11-06",
-      "value": 99.85,
-      "change_1d_pct": 1.5871,
-      "change_1w_pct": -15.1224,
+      "value": 100.27,
+      "change_1d_pct": 2.0144,
+      "change_1w_pct": -14.7654,
       "source": "Yahoo Finance public chart JSON · Brent Crude Oil Last Day Financial Futures (BZ=F)",
       "source_endpoint": "https://query1.finance.yahoo.com/v8/finance/chart/BZ=F",
       "vendor_symbol": "BZ=F",
       "currency": "USD",
       "exchange_name": "NYM",
       "instrument_type": "FUTURE",
-      "fetched_at_utc": "2026-11-06T02:31:33.898899Z",
+      "fetched_at_utc": "2026-11-06T03:42:34.726151Z",
       "official_canonical_untouched": true,
       "same_date_source_vintages": [
         {
@@ -115,9 +115,22 @@
           "source_snapshot_commit_before": "c5382192ea73e32e559e1f252ed3b0476e1ca513",
           "source_snapshot_commit_after": "2fb6d671d1707eecdafaf037814c6eb1d56502ab",
           "interpretation": "Vendor snapshot changed; not a new market session or official settlement revision."
+        },
+        {
+          "kind": "SECONDARY_SAME_DATE_SNAPSHOT_DIFFERENCE",
+          "market_date": "2026-11-06",
+          "prior_fetched_at_utc": "2026-11-06T02:31:33.898899Z",
+          "new_fetched_at_utc": "2026-11-06T03:42:34.726151Z",
+          "prior_value": 99.85,
+          "new_value": 100.27,
+          "prior_change_1d_pct": 1.5871,
+          "new_change_1d_pct": 2.0144,
+          "prior_change_1w_pct": -15.1224,
+          "new_change_1w_pct": -14.7654,
+          "interpretation": "Vendor snapshot changed; not a new market session or official settlement revision."
         }
       ],
-      "vintage_audit_count": 1,
+      "vintage_audit_count": 2,
       "interpretation": "Secondary futures market proxy for live Brent level/direction only. It does not replace canonical EIA Brent spot, does not certify ICE history, and has no Core/backtest effect."
     },
     "GOLD.market_proxy": {

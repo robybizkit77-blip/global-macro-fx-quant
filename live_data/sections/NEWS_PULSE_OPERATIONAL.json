@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-04",
-  "generated_at_utc": "2026-11-06T00:21:06.168685Z",
+  "generated_at_utc": "2026-11-06T03:42:56.802424Z",
   "items": [
     {
       "as_of": "2026-11-04",
@@ -47,7 +47,7 @@
       "title": "AUD: repricing implicito da futures più hawkish (+1.0 bp 6M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-06T00:21:06.168685Z",
+  "last_checked_at_utc": "2026-11-06T03:42:56.802424Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -236,6 +236,61 @@
   "official_releases": {
     "core_effect": "NONE",
     "headlines": [
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "JPY",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
+        "id": "BOJ_NEWS:https://www.boj.or.jp/en/research/imes/dps/dps26.htm",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-06T02:00:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "6m_rate_pct": 1.672,
+            "date": "2026-11-04",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "OFFICIAL_CERTIFIED",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Tokyo Financial Exchange · Three-month TONA Futures",
+            "status": "DAILY_CONTEXT_ONLY"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-11-04",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-04",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 1.891
+          }
+        },
+        "source": "Bank of Japan",
+        "source_id": "BOJ_NEWS",
+        "title": "IMES Discussion Paper Series (2026)",
+        "url": "https://www.boj.or.jp/en/research/imes/dps/dps26.htm"
+      },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "AUD",
@@ -498,6 +553,54 @@
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "NZD",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
+        "id": "RBNZ_NEWS:https://www.rbnz.govt.nz/news-and-events/news/2026/11/reserve-bank-files-dcs-disclosure-charge-against-westpac-new-zealand-limited",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-05T11:00:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "status": "NOT_VALIDATED_DAILY_CONTEXT"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-10-16",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL_MANUAL_VERIFIED",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Reserve Bank of New Zealand · B2 government bond closing yields · 2026-10-16 · reviewed public table",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 3.89
+          }
+        },
+        "source": "Reserve Bank of New Zealand",
+        "source_id": "RBNZ_NEWS",
+        "title": "Reserve Bank files DCS disclosure charge against Westpac New Zealand Limited",
+        "url": "https://www.rbnz.govt.nz/news-and-events/news/2026/11/reserve-bank-files-dcs-disclosure-charge-against-westpac-new-zealand-limited"
+      },
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "CAD",
         "desk_context": {
           "analysis_basis": "SOURCE_HEADLINE_ONLY",
@@ -704,61 +807,6 @@
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "JPY",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "BOJ_NEWS:https://www.boj.or.jp/en/statistics/boj/fm/juqp/juqp2611.xlsx",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-04T23:50:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "6m_rate_pct": 1.672,
-            "date": "2026-11-04",
-            "event_window_proof": false,
-            "instrument": "FUTURES_IMPLIED",
-            "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "Tokyo Financial Exchange · Three-month TONA Futures",
-            "status": "DAILY_CONTEXT_ONLY"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-11-04",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-04",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 1.891
-          }
-        },
-        "source": "Bank of Japan",
-        "source_id": "BOJ_NEWS",
-        "title": "Sources of Changes in Current Account Balances (Projections for Nov.)",
-        "url": "https://www.boj.or.jp/en/statistics/boj/fm/juqp/juqp2611.xlsx"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "GBP",
         "desk_context": {
           "analysis_basis": "SOURCE_HEADLINE_ONLY",
@@ -954,58 +1002,10 @@
         "source_id": "FED_PRESS",
         "title": "Federal Reserve Board announces approval of application by The Bank of Nova Scotia",
         "url": "https://www.federalreserve.gov/newsevents/pressreleases/orders20261029a.htm"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "NZD",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "RBNZ_NEWS:https://www.rbnz.govt.nz/news-and-events/news/2026/10/rbnz-appoints-director-of-prudential-supervision",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-10-29T11:00:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-10-16",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL_MANUAL_VERIFIED",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Reserve Bank of New Zealand · B2 government bond closing yields · 2026-10-16 · reviewed public table",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.89
-          }
-        },
-        "source": "Reserve Bank of New Zealand",
-        "source_id": "RBNZ_NEWS",
-        "title": "RBNZ appoints Director of Prudential Supervision",
-        "url": "https://www.rbnz.govt.nz/news-and-events/news/2026/10/rbnz-appoints-director-of-prudential-supervision"
       }
     ],
     "last_attempt_day_rome": "2026-11-06",
-    "latest_published_at_utc": "2026-11-05T23:45:00Z",
+    "latest_published_at_utc": "2026-11-06T02:00:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -1049,9 +1049,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 18,
+        "accepted_items": 19,
         "ccy": "JPY",
-        "entries_rejected": 29,
+        "entries_rejected": 28,
         "feed_entries_seen": 47,
         "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
         "source": "Bank of Japan",
@@ -1089,9 +1089,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 3,
+        "accepted_items": 4,
         "ccy": "NZD",
-        "entries_rejected": 47,
+        "entries_rejected": 46,
         "feed_entries_seen": 50,
         "feed_url": "https://www.rbnz.govt.nz/feeds/news",
         "source": "Reserve Bank of New Zealand",
