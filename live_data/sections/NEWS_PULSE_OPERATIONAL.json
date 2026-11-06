@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-05",
-  "generated_at_utc": "2026-11-06T14:15:09.013605Z",
+  "generated_at_utc": "2026-11-06T15:07:35.073399Z",
   "items": [
     {
       "as_of": "2026-11-05",
@@ -47,7 +47,7 @@
       "title": "GBP: repricing OIS più dovish (-11.2 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-06T14:15:09.013605Z",
+  "last_checked_at_utc": "2026-11-06T15:07:35.073399Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -537,13 +537,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-04",
+            "date": "2026-11-05",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-04",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-05",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.22
+            "yield_2y_pct": 3.17
           }
         },
         "source": "Bank of Canada",
@@ -783,13 +783,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-04",
+            "date": "2026-11-05",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-04",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-05",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.22
+            "yield_2y_pct": 3.17
           }
         },
         "source": "Bank of Canada",
