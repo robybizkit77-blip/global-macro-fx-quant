@@ -39,6 +39,9 @@ jobs:
         run: |
           set -euo pipefail
           python3 validation/cb_pricing/reconcile_november_policy_decisions_v1.py --apply
+          python3 validation/cb_pricing/build_ois_operational_view_v1.py
+          python3 validation/cb_pricing/build_ois_source_readiness_view_v1.py
+          python3 validation/cb_pricing/check_ois_readiness_parity_v1.py
           python3 validation/build_live_manifest_v2.py --write live_data/manifest.v2.json >/tmp/reconciled-policy-manifest.json
           python3 validation/check_cb_pricing_source_registry.py >/tmp/reconciled-policy-registry.json
           python3 validation/check_live_update_contract.py >/tmp/reconciled-policy-contract.json
@@ -53,13 +56,19 @@ jobs:
           assert o['AUD']['policy_comparison_temporally_aligned'] is True
           assert o['GBP']['policy_comparison_temporally_aligned'] is False
           assert all(o['GBP']['horizons'][k]['policy_delta_bp'] is None for k in ('3m','6m','12m'))
+          op=json.loads(Path('live_data/sections/OIS_OPERATIONAL_VIEW.json').read_text())['currencies']
+          assert op['AUD']['policy_rate']==4.85 and op['GBP']['policy_rate']==4.0
+          assert op['GBP']['direction_vs_policy']=='PRE_DECISION_NO_POST_EVENT_PRICING'
+          assert all(op['GBP']['horizons'][k]['policy_delta_bp'] is None for k in ('3m','6m','12m'))
           for file in ('/tmp/reconciled-policy-manifest.json','/tmp/reconciled-policy-registry.json','/tmp/reconciled-policy-contract.json','/tmp/reconciled-policy-roundtrip.json'):
            r=json.loads(Path(file).read_text())
            assert r['status']=='PASS',(file,r)
           changes=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
-          expected={'live_data/sections/OIS_DATA.json','live_data/sections/NATIVE_CB_DATA.json',
-                    'live_data/manifest.v2.json','payload/part-00.txt'}
-          assert changes==expected,('unexpected mutation',changes)
+          allowed={'live_data/sections/OIS_DATA.json','live_data/sections/NATIVE_CB_DATA.json',
+                   'live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/OIS_SOURCE_READINESS_VIEW.json',
+                   'live_data/manifest.v2.json','payload/part-00.txt'}
+          assert changes and changes.issubset(allowed),('unexpected mutation',changes)
+          assert {'live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/OIS_SOURCE_READINESS_VIEW.json'}.issubset(changes),('derived OIS feeds not rebuilt',changes)
           print('CB_POLICY_DECISIONS_RECONCILED',sorted(changes))
           PY
       - name: Persist to main only after full runtime and audit proof
@@ -72,7 +81,7 @@ jobs:
           test "$REMOTE_SHA" = "$GITHUB_SHA"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add live_data/sections/OIS_DATA.json live_data/sections/NATIVE_CB_DATA.json live_data/manifest.v2.json payload/part-00.txt
-          git commit -m "Reconcile verified RBA and BoE November policy rates in Core runtime"
+          git add live_data/sections/OIS_DATA.json live_data/sections/NATIVE_CB_DATA.json live_data/sections/OIS_OPERATIONAL_VIEW.json live_data/sections/OIS_SOURCE_READINESS_VIEW.json live_data/manifest.v2.json payload/part-00.txt
+          git commit -m "Synchronize official RBA/BoE policy rates across Core and OIS operational views"
           test "$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')" = "$GITHUB_SHA"
           git push origin "HEAD:$TARGET_BRANCH"
