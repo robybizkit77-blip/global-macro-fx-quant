@@ -13,7 +13,7 @@ for(const p of pages){
   assert(html.includes('RESEARCH_RAW_FALLBACK'),p+': unpublished estimated research must be explicit');
   assert(html.includes('CB_PRICING_ESTIMATED'),p+': fallback must remain research-only');
  }
- const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(m=>m[1]).filter(x=>x.trim());
+ const scripts=[...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].filter(m=>!/type=[\"']application\/(?:json|ld\+json)[\"']/.test(m[1])).map(m=>m[2]).filter(x=>x.trim());
  const vm=require('node:vm');
  for(const [i,script] of scripts.entries())new vm.Script(script,{filename:p+':inline-script-'+i});
  console.log('FXV2_PAGES_FEED_SCOPE_PASS',p,'same_origin=yes','unpublished_external_fallbacks='+allowable);
