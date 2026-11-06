@@ -16,6 +16,7 @@ DEST = ROOT / "fxquant-next-offline" / "FX_Quant_NEXT_Anteprima_Offline.html"
 SOURCES = {
     "rates": "live_data/sections/NATIVE_RATES_DATA.json",
     "dxy": "live_data/sections/DXY_SYNTHETIC_ECB.json",
+    "currencyPrices": "live_data/sections/ECB_G8_PRICE_HISTORY.json",
     "pairs": "live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json",
     "macro": "live_data/sections/MACRO_THERMOMETER_DATA.json",
     "macroSeries": "live_data/sections/MACRO_SERIES.json",
@@ -39,8 +40,10 @@ def main() -> None:
     rates_css = (SITE / "rates-studio.css").read_text(encoding="utf-8")
     macro_js = (SITE / "macro-studio.js").read_text(encoding="utf-8")
     macro_css = (SITE / "macro-studio.css").read_text(encoding="utf-8")
+    currency_js = (SITE / "currency-studio.js").read_text(encoding="utf-8")
+    currency_css = (SITE / "currency-studio.css").read_text(encoding="utf-8")
     docs = {k: json.loads((ROOT / path).read_text(encoding="utf-8")) for k, path in SOURCES.items()}
-    assert len(docs) == 13
+    assert len(docs) == 14
     assert docs["pairs"].get("pair_count") == 28
     assert docs["dxy"].get("not_official_ice") is True
 
@@ -49,9 +52,11 @@ def main() -> None:
     contents = contents.replace('<link rel="stylesheet" href="./cot-studio.css?v=1">', "<style>"+cot_css+"</style>")
     contents = contents.replace('<link rel="stylesheet" href="./rates-studio.css?v=1">', "<style>"+rates_css+"</style>")
     contents = contents.replace('<link rel="stylesheet" href="./macro-studio.css?v=1">', "<style>"+macro_css+"</style>")
+    contents = contents.replace('<link rel="stylesheet" href="./currency-studio.css?v=1">', "<style>"+currency_css+"</style>")
     contents = contents.replace('<script src="./cot-studio.js?v=1" defer></script>', "<script>"+cot_js+"</script>")
     contents = contents.replace('<script src="./rates-studio.js?v=1" defer></script>', "<script>"+rates_js+"</script>")
     contents = contents.replace('<script src="./macro-studio.js?v=1" defer></script>', "<script>"+macro_js+"</script>")
+    contents = contents.replace('<script src="./currency-studio.js?v=1" defer></script>', "<script>"+currency_js+"</script>")
     contents = contents.replace('<script src="./app.js?v=2" defer></script>', "")
     contents = contents.replace('<span class="live-dot"></span> NEXT / DESIGN LAB', '<span class="live-dot"></span> NEXT / DESIGN LAB')
     contents = contents.replace('NEXT / DESIGN LAB <span class="edition-sep">', 'NEXT / OFFLINE PREVIEW <span class="edition-sep">')
@@ -64,6 +69,7 @@ def main() -> None:
  const captured=JSON.parse(document.getElementById('fxquant-next-offline-data').textContent);
  const targets={
  'NATIVE_RATES_DATA.json':'rates','DXY_SYNTHETIC_ECB.json':'dxy',
+ 'ECB_G8_PRICE_HISTORY.json':'currencyPrices',
  'MACRO_SERIES.json':'macroSeries',
  'PAIR_SETUP_OPERATIONAL_VIEW.json':'pairs','MACRO_THERMOMETER_DATA.json':'macro',
  'NATIVE_CB_DATA.json':'cb','V247_COT_STORIES.json':'cot',
@@ -90,6 +96,8 @@ def main() -> None:
     assert 'function rates()' in contents
     assert 'FXQuantRates' in contents
     assert 'FXQuantMacro' in contents
+    assert 'FXQuantCurrencies' in contents
+    assert 'ECB_G8_PRICE_HISTORY.json' in contents
     assert 'rates-instrument-card' in contents
     assert '<style>' in contents
     print(json.dumps({"status":"PASS","output":str(DEST),"bytes":DEST.stat().st_size,
