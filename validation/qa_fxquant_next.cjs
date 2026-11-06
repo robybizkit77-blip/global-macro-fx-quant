@@ -21,7 +21,7 @@ fs.mkdirSync(evidence,{recursive:true});
    assert(resp&&resp.ok(),'Home HTTP failed: '+resp?.status());
    await page.waitForFunction(()=>/fonti caricate/.test(document.getElementById('sidebar-feed')?.textContent||''),{timeout:20000});
    const sourceText=await page.locator('#sidebar-feed').innerText();
-   assert(/12\/12 fonti caricate/.test(sourceText),'Feed mismatch: '+sourceText);
+   assert(/13\/13 fonti caricate/.test(sourceText),'Feed mismatch: '+sourceText);
    for(const route of ROUTES){
     await page.evaluate(r=>{location.hash='#'+r},route);
     await page.waitForFunction(r=>document.querySelector('#crumb-page')?.textContent===({overview:'Panoramica',currencies:'Valute G8',pairs:'Coppie FX',macro:'Macro Lab',rates:'Tassi & OIS',cot:'Positioning',risk:'Risk Radar',news:'News Pulse'})[r],route);
@@ -29,7 +29,7 @@ fs.mkdirSync(evidence,{recursive:true});
     assert(h1.length>12,'Missing heading '+route);
     const overflow=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));
     assert(overflow.scroll<=overflow.client+2,'Horizontal overflow on '+route+' '+width+': '+JSON.stringify(overflow));
-    await page.screenshot({path:evidence+'/'+route+'-'+width+'.png',fullPage:route==='overview'||route==='pairs'||route==='cot'||route==='rates'});
+    await page.screenshot({path:evidence+'/'+route+'-'+width+'.png',fullPage:route==='overview'||route==='pairs'||route==='cot'||route==='rates'||route==='macro'});
     results.push({width,route,h1,overflow:'PASS'});
    }
 
@@ -85,10 +85,37 @@ fs.mkdirSync(evidence,{recursive:true});
    assert((await page.locator('.rates-instrument-card').innerText()).includes('PROXY DIREZIONALE'),'NZD proxy not labeled');
    await page.locator('#rs-other').selectOption('USD');
    assert((await page.locator('.rates-spread .rates-graph-head').innerText()).includes('NZD − USD'),'Cross-country switch failed');
-   // Macro selector drives the graph.
+   // Macro Dynamics Research Studio: dated multi-category indicator archive,
+   // G8 within-country percentiles, real source series and quarterly frequency.
    await page.evaluate(()=>{location.hash='#macro'});
-   await page.locator('[data-metric="labour"]').click();
-   assert((await page.locator('.panel-head h2').first().innerText()).toLowerCase().includes('disoccupazione'),'Macro toggle failed');
+   assert(await page.locator('.macro-country').count()===8,'Macro G8 country strip incomplete');
+   assert(await page.locator('.macro-heat-row').count()===8,'Macro historical heatmap incomplete');
+   await page.locator('.macro-country[data-ms-country="USD"]').click();
+   assert((await page.locator('.macro-studio-status').innerText()).includes('204 SERIE STORICHE'),'Full source-backed macro archive not loaded');
+   assert(await page.locator('.macro-main-chart .chart svg').count()>0,'Macro indicator history plot absent');
+   assert(await page.locator('.macro-audit tbody tr').count()===12,'Macro last 12 observations audit incomplete');
+   assert(await page.locator('.macro-definitions details').count()>=8,'Macro glossary incomplete');
+   await page.locator('[data-ms-category="Crescita"]').click();
+   assert((await page.locator('.macro-chart-heading').innerText()).includes('Consumi reali'),'Macro growth default selector failed');
+   await page.locator('[data-ms-view="change"]').click();
+   assert((await page.locator('.macro-main-chart .chart-legend').innerText()).includes('Δ'),'Macro change chart failed');
+   await page.locator('[data-ms-view="velocity"]').click();
+   assert((await page.locator('.macro-main-chart .chart-legend').innerText()).includes('ΔΔ'),'Macro acceleration chart failed');
+   await page.locator('[data-ms-window="12"]').click();
+   assert(await page.locator('.macro-main-chart .chart svg').count()>0,'Macro 12-observation window failed');
+   await page.locator('.macro-country[data-ms-country="AUD"]').click();
+   assert((await page.locator('.macro-chart-heading').innerText()).includes('PIL reale QoQ'),'Quarterly AUD growth series missing');
+   assert((await page.locator('.macro-chart-caption').innerText()).includes('trimestrale'),'Frequency methodology caveat missing');
+   await page.locator('#ms-series').selectOption({label:/Spesa famiglie/});
+   assert((await page.locator('.macro-chart-heading').innerText()).includes('Spesa famiglie'),'Series selection did not change chart');
+   await page.locator('.macro-country[data-ms-country="NZD"]').click();
+   assert((await page.locator('.macro-chart-heading').innerText()).includes('PIL reale YoY'),'Quarterly NZD growth series missing');
+   await page.locator('[data-ms-heat="labour"]').click();
+   assert((await page.locator('.macro-heat-controls').innerText()).includes('Disoccupazione'),'Heatmap dimension toggle missing');
+   await page.locator('#ms-other').selectOption('USD');
+   assert((await page.locator('.macro-relative').innerText()).includes('USD'),'Cross-country macro comparison not updated');
+   await page.locator('[data-ms-compare="labour"]').click();
+   assert((await page.locator('.macro-relative').innerText()).includes('disoccupazione'),'Relative unemployment comparison missing');
    // COT research studio: complete G8 chart, flow, price and explanatory controls.
    await page.evaluate(()=>{location.hash='#cot'});
    assert(await page.locator('.cot-country-selector .cot-country-button').count()===8,'COT G8 selector incomplete');
@@ -123,6 +150,6 @@ fs.mkdirSync(evidence,{recursive:true});
    await page.close();
   }
   fs.writeFileSync(evidence+'/report.json',JSON.stringify({status:'PASS',base:BASE,results},null,2));
-  console.log('FXQUANT_NEXT_VISUAL_AND_INTERACTION_QA_PASS',JSON.stringify({views:results.length,viewports:[1440,390],feed:'12/12',interactions:'PASS'}));
+  console.log('FXQUANT_NEXT_VISUAL_AND_INTERACTION_QA_PASS',JSON.stringify({views:results.length,viewports:[1440,390],feed:'13/13',interactions:'PASS'}));
  }finally{await browser.close();}
 })().catch(e=>{console.error('FXQUANT_NEXT_QA_FAIL',e.stack||e);process.exit(1)});
