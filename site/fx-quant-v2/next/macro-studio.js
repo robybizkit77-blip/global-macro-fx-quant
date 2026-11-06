@@ -98,15 +98,53 @@ function build(api){
    +'<div class="macro-thermometer"><span style="--pct:'+Math.max(0,Math.min(100,x.percentile))+'%"></span></div><div class="macro-temp-bottom"><span>'+esc(x.temperature_label||'—').replace(/_/g,' ')+'</span><b>P'+fmt(x.percentile,1)+'</b></div>'
    +'<p>Direzione: '+esc(x.direction||'—')+' · Velocità: '+esc(x.acceleration||'—')+'</p></div>';
  }
+ function countryNarrative(){
+   const i=thermoRecord(country,'inflation'),l=thermoRecord(country,'labour');
+   const ih=Array.isArray(i?.history)?i.history:[],lh=Array.isArray(l?.history)?l.history:[];
+   const di=ih.length>1?ih.at(-1)-ih.at(-2):null,dl=lh.length>1?lh.at(-1)-lh.at(-2):null;
+   const id=finite(di)?di>0.025?1:di<-.025?-1:0:null;
+   const ld=finite(dl)?dl>.025?1:dl<-.025?-1:0:null;
+   const title=id===1&&ld===1?'I prezzi risalgono, mentre il lavoro perde terreno.'
+     :id===1&&ld===-1?'I prezzi accelerano, ma il lavoro per ora tiene.'
+     :id===-1&&ld===1?'La pressione sui prezzi cala; il lavoro si indebolisce.'
+     :id===-1&&ld===-1?'L’inflazione rallenta senza un netto deterioramento del lavoro.'
+     :id===0&&ld===1?'Prezzi quasi fermi, ma la disoccupazione sale.'
+     :id===1&&ld===0?'La pressione dei prezzi aumenta; il lavoro è più stabile.'
+     :id===-1&&ld===0?'I prezzi rallentano, il lavoro non cambia molto.'
+     :'I dati non indicano ancora una direzione unica.';
+   const countryName=NAMES[country]||country;
+   const a=finite(i?.latest_value)?'l’inflazione è '+fmt(i.latest_value,2)+'% al '+(i.as_of||'n.d.')+(finite(di)?' ('+sign(di,2,' punti percentuali')+' dalla rilevazione precedente)':'')
+     :'non abbiamo un dato d’inflazione validato';
+   const b=finite(l?.latest_value)?'la disoccupazione è '+fmt(l.latest_value,2)+'% al '+(l.as_of||'n.d.')+(finite(dl)?' ('+sign(dl,2,' punti percentuali')+' dalla rilevazione precedente)':'')
+     :'non abbiamo un dato di disoccupazione validato';
+   const facts='In '+countryName+' '+a+', mentre '+b+'. I periodi possono essere diversi: è una fotografia macro, non una reazione a una singola pubblicazione.';
+   const why=id===1&&ld===1?'È un mix delicato: prezzi più persistenti possono limitare lo spazio per tagliare, mentre un lavoro meno solido aumenta il rischio sulla crescita.'
+     :id===1&&ld===-1?'Un lavoro che non peggiora insieme a prezzi in risalita rende meno immediata una lettura monetaria accomodante.'
+     :id===-1&&ld===1?'La combinazione rende più plausibile una pressione verso politiche meno restrittive, ma il mercato potrebbe averla già anticipata.'
+     :id===-1&&ld===-1?'Un’inflazione meno forte con disoccupazione in calo può migliorare il quadro senza implicare automaticamente tagli dei tassi.'
+     :id===1?'La pressione inflazionistica merita attenzione, ma un singolo dato non basta a determinare la prossima decisione della banca centrale.'
+     :ld===1?'Il lavoro manda un segnale di cautela. Servono conferme da occupazione, salari e credito.'
+     :'Non forzo una narrativa unica: aspetterei conferme dagli altri indicatori e da come reagiscono i tassi.';
+   const r=get('rates')?.[country],validR=r&&finite(r.chg2_bp)&&validDay(r.date)&&r.date<=dayNow();
+   const reading=validR?'Intanto il rendimento governativo 2Y '+country+' ha registrato '+sign(r.chg2_bp,1,' pb')+' nel feed, al '+date(r.date)+'. Questo movimento non misura da solo il repricing OIS.':'Per questa economia non abbiamo una variazione 2Y sufficientemente datata per confermare il repricing.';
+   const verdict=id===1&&ld===1?'TENSIONE PREZZI / LAVORO'
+     :id===1&&ld===-1?'PRESSIONE INFLAZIONISTICA'
+     :id===-1&&ld===1?'POSSIBILE ALLENTAMENTO'
+     :id===-1&&ld===-1?'MIX PIÙ COSTRUTTIVO':'QUADRO DA CONFERMARE';
+   const watch='Prossima verifica: inflazione core, occupazione e salari; poi curva OIS e risposta del 2Y. Senza sorpresa rispetto al consenso, questa è una lettura di contesto, non una previsione.';
+   return {title,facts,why,reading,verdict,watch};
+ }
  function countryHero(){
-   const infl=thermoRecord(country,'inflation'),lab=thermoRecord(country,'labour'),cb=get('cb')?.[country];
-   const inflText=infl?'Inflazione '+fmt(infl.latest_value,2)+'% ('+infl.as_of+')':'inflazione da verificare';
-   const labText=lab?'disoccupazione '+fmt(lab.latest_value,2)+'% ('+lab.as_of+')':'disoccupazione da verificare';
-   return '<section class="macro-country-hero"><div class="macro-country-narrative"><span class="chapter-kicker">01 / '+FLAGS[country]+' '+esc(NAMES[country])+' · COUNTRY BRIEF</span>'
-     +'<h2>Due segnali diversi.<br><em>Un’economia da interpretare.</em></h2>'
-     +'<p>Per '+country+' abbiamo '+inflText+' e '+labText+'. Il livello descrive il contesto; per parlare di cambiamento dobbiamo leggere direzione, velocità e serie storica. Sono pubblicazioni con date diverse.</p>'
-     +'<div class="macro-country-links"><a href="#rates" class="action-minimal">Confronta con i tassi ↗</a><span>'+esc(cb?.bank||'Banca centrale')+' · '+esc(cb?.rate_text||'policy rate non disponibile')+'</span></div></div>'
-     +'<div class="macro-two-thermometers">'+thermo(country,'inflation')+thermo(country,'labour')+'</div></section>';
+   const story=countryNarrative(),i=thermoRecord(country,'inflation'),l=thermoRecord(country,'labour');
+   return '<section class="macro-country-hero macro-narrative-edition"><div class="macro-country-narrative">'
+     +'<span class="chapter-kicker">IL DESK LEGGE / '+FLAGS[country]+' '+esc(NAMES[country])+'</span>'
+     +'<span class="macro-verdict-line"><i></i>'+esc(story.verdict)+'</span>'
+     +'<h2>'+esc(story.title)+'</h2>'
+     +'<p class="macro-opening">'+esc(story.facts)+'</p>'
+     +'<p class="macro-why">'+esc(story.why)+'</p>'
+     +'<p class="macro-market-note">'+esc(story.reading)+'</p>'
+     +'<div class="macro-next-evidence"><strong>CHE COSA CAMBIEREBBE IL GIUDIZIO</strong><p>'+esc(story.watch)+'</p></div>'
+     +'</div><div class="macro-two-thermometers">'+thermo(country,'inflation')+thermo(country,'labour')+'</div></section>';
  }
  function sourceChart(s,st){
    const mode=state.msView||'level',window=Number(state.msWindow||24),pts=st.h.slice(-window);
@@ -139,7 +177,7 @@ function build(api){
     +'<h3>Non basta sapere<br><em>quanto vale.</em></h3>'
     +'<div class="macro-dynamic-kpi"><span>ULTIMO LIVELLO</span><strong>'+n(st.cur?.value,2)+'</strong><small>'+esc(s.unit||'unità non indicata')+' · '+esc(st.cur?.period||'n.d.')+'</small></div>'
     +'<div class="macro-mini-stats"><div><span>DIREZIONE</span><b>'+esc(direction)+'</b></div><div><span>Δ ULTIMA OSS.</span><b>'+sign(st.d1,3,' '+st.unit)+'</b></div><div><span>ΔΔ VARIAZIONE</span><b>'+sign(st.speed,3,' '+st.unit)+'</b></div></div>'
-    +'<p>'+esc(dynamics(st))+'</p><div class="macro-reading-caveat">Un cambiamento fra osservazioni non è una sorpresa rispetto al consenso né la conferma di un turning point economico.</div></aside></div></section>';
+    +'<p><strong>La lettura del grafico:</strong> '+esc(explDelta(s,st)+' '+dynamics(st))+'</p><div class="macro-reading-caveat">Un cambiamento fra osservazioni non è una sorpresa rispetto al consenso né la conferma di un turning point economico.</div></aside></div></section>';
  }
  function interpretation(){
    const s=selectedSeries(),st=stats(s||{});if(!s)return '';
@@ -204,9 +242,11 @@ function build(api){
  }
  function render(){
    const count=FX.reduce((acc,k)=>acc+list(k).length,0),cat=category(),s=selectedSeries(),st=stats(s||{});
-   return pageHero('GLOBAL MACRO / DYNAMICS STUDIO','Non basta sapere il livello.<br><em>Conta il cambiamento.</em>','Inflazione, lavoro, crescita, credito, liquidità e condizioni finanziarie: da un dato osservato alla dinamica che conta, con grafici, tabelle e confronti G8.')
+   return pageHero('GLOBAL MACRO / ANALISI','Macro Lab. <em>Prima la lettura, poi i dati.</em>','Scegli un’economia: trovi il quadro in parole semplici, il grafico utile e, soltanto se vuoi, tutto l’archivio storico.')
     +'<div class="macro-studio-status"><span>◉ MACRO DYNAMICS · '+count+' SERIE STORICHE G8</span><span>FONTE REVISIONABILE · PERIODI INDIPENDENTI · NON POINT-IN-TIME</span></div>'
-    +countryStrip()+countryHero()+macroResearch()+interpretation()+datedAudit()+heatUniverse()+relativePanel()+glossary()
+    +countryStrip()+countryHero()+macroResearch()
+    +'<details class="macro-advanced"><summary><span><strong>Vuoi andare più a fondo?</strong><small>Tabella storica, heatmap G8, confronto tra economie e definizioni: disponibili quando ti servono.</small></span><b>Apri gli approfondimenti ↗</b></summary><div class="macro-advanced-content">'
+    +datedAudit()+heatUniverse()+relativePanel()+glossary()+'</div></details>'
     +'<section class="macro-endnote"><div><span class="chapter-kicker">DAL DATO AL MERCATO</span><h2>Macro → Pricing → Posizionamento → Prezzo.</h2><p>La narrativa macro è un’ipotesi. Diventa una tesi più solida soltanto quando cambiamento dei dati, aspettative monetarie e risposta del mercato sono coerenti.</p></div><a class="action-primary" href="#rates">Apri Rates & OIS <span>↗</span></a></section>'
     +'<p class="source-caption">Archivi: MACRO_SERIES.json (periodi, unità e serie storiche originali) e MACRO_THERMOMETER_DATA.json (percentili storici descrittivi). Nessun valore sintetico viene introdotto nel motore Core delle 28 coppie; mancano consenso puntuale e timestamp di rilascio per stimare le sorprese.</p>';
  }
