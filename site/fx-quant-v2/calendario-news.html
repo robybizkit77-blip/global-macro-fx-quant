@@ -134,7 +134,7 @@ boot();
 
 /* V2 read-only bridge: canonical event schedule, official release headlines, dated repricing. */
 async function refreshCalendar(){
- const root="https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/";
+ const root="../../live_data/sections/";
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),9500);
  const get=async name=>{
   const response=await fetch(root+name+".json",{cache:"no-store",signal:controller.signal});

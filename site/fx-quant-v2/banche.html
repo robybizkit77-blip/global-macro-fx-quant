@@ -38,7 +38,7 @@ async function startup(){render();try{const res=await fetch('./design-studio-ban
 
 /* Read-only CB bridge. Official decisions, government bonds and market pricing retain separate as-of dates. */
 async function refreshBanks(){
- const root="https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/";
+ const root="../../live_data/sections/";
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),11000);
  const load=async n=>{const response=await fetch(root+n+".json",{cache:"no-store",signal:controller.signal});if(!response.ok)throw Error(n+" HTTP "+response.status);return response.json();};
  try{

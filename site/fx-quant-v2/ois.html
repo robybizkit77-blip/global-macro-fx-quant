@@ -71,7 +71,7 @@ table{width:100%;border-collapse:collapse;text-align:left;font-size:13px}th{font
 (()=>{"use strict";
 const C=["USD","EUR","GBP","JPY","CHF","CAD","AUD","NZD"], F={USD:"🇺🇸",EUR:"🇪🇺",GBP:"🇬🇧",JPY:"🇯🇵",CHF:"🇨🇭",CAD:"🇨🇦",AUD:"🇦🇺",NZD:"🇳🇿"};
 const N={USD:"Stati Uniti",EUR:"Area euro",GBP:"Regno Unito",JPY:"Giappone",CHF:"Svizzera",CAD:"Canada",AUD:"Australia",NZD:"Nuova Zelanda"};
-const ROOT="https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/";
+const ROOT="../../live_data/sections/";
 const $=id=>document.getElementById(id);
 const fmt=(x,d=2)=>Number.isFinite(x)?x.toLocaleString("it-IT",{minimumFractionDigits:d,maximumFractionDigits:d}):"—";
 const date=x=>/^\d{4}-\d{2}-\d{2}$/.test(x||"")?x.slice(8,10)+"/"+x.slice(5,7)+"/"+x.slice(0,4):"n.d.";

@@ -10,6 +10,8 @@ on:
       - 'validation/qa_fxv2_home_wow_v5.cjs'
       - 'validation/qa_fxv2_home_simple_v6.cjs'
       - 'validation/test_fxv2_home_source_dates_20261106.cjs'
+      - 'validation/test_fxv2_same_origin_multi_page_feeds_v1.cjs'
+      - 'validation/qa_fxv2_ois_2y_fx_context_v1.cjs'
       - 'validation/qa_fx_quant_v2_freshness.cjs'
       - 'validation/fxv2_research_core_readiness_v1.cjs'
       - 'validation/test_fxv2_research_core_readiness_v1.cjs'
@@ -38,6 +40,8 @@ on:
       - 'validation/qa_fxv2_home_wow_v5.cjs'
       - 'validation/qa_fxv2_home_simple_v6.cjs'
       - 'validation/test_fxv2_home_source_dates_20261106.cjs'
+      - 'validation/test_fxv2_same_origin_multi_page_feeds_v1.cjs'
+      - 'validation/qa_fxv2_ois_2y_fx_context_v1.cjs'
       - 'validation/qa_fx_quant_v2_freshness.cjs'
       - 'validation/fxv2_research_core_readiness_v1.cjs'
       - 'validation/test_fxv2_research_core_readiness_v1.cjs'
@@ -73,7 +77,8 @@ concurrency:
   # A new post-publish run must not cancel a queued pull-request test.
   # Keep one production queue while separating each PR's proof.
   group: ${{ github.event_name == 'pull_request' && format('fxv2-browser-qa-pr-{0}', github.event.pull_request.number) || 'fx-quant-v2-browser-daily-qa' }}
-  cancel-in-progress: false
+  # PR revisions supersede their own obsolete browser jobs; never cancel production QA.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   v2-working-rate-model-tests:
@@ -87,6 +92,7 @@ jobs:
       - name: Validate FXV2 working rates and dated IG/HY credit overlay independently
         run: |
           node validation/test_fxv2_home_source_dates_20261106.cjs
+          node validation/test_fxv2_same_origin_multi_page_feeds_v1.cjs
           node validation/qa_fxv2_rates_working_v1.cjs
           node validation/qa_fxv2_rates_research_overlay_v1.cjs
           node validation/qa_fxv2_rates_per_tenor_dates_v1.cjs
