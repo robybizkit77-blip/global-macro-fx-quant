@@ -55,20 +55,35 @@ function renderCandidate(){
  const note=$('macroCandidateNote');if(!note)return;
  const d=macroCandidate;
  if(!d||!d.features?.[ccy]){
-  note.textContent='Baseline Macro V1 sperimentale non disponibile: resta la lettura G8 datata, senza nuovi punteggi o segnali FX.';
+  note.textContent='LETTURA MACRO AGGIORNABILE NON DISPONIBILE · La sintesi principale è ricerca archiviata; consulta date e fonti dei singoli indicatori. Nessun nuovo segnale FX.';
   return;
  }
  const f=d.features[ccy],g=f.growth_qoq_pct,i=f.inflation_change_pp,l=f.unemployment_change_pp;
- const fmt=x=>Number(x).toLocaleString('it-IT',{maximumFractionDigits:3});
+ const fmt=x=>Number(x).toLocaleString('it-IT',{maximumFractionDigits:2});
  const signed=x=>(x>0?'+':x<0?'−':'')+fmt(Math.abs(x));
- const accel=g.gdp_acceleration_pp===null?'accelerazione NON calcolabile (manca il trimestre precedente omogeneo)':
-   'variazione del ritmo '+signed(g.gdp_acceleration_pp)+' punti percentuali rispetto al trimestre prima';
- note.textContent='BASELINE MACRO V1 · ricerca descrittiva al '+d.as_of_research+' · '+ccy+
-  '. Crescita: '+fmt(g.value)+'% QoQ ('+g.period+'; '+accel+'). '+
-  'Inflazione: variazione '+signed(i.value)+' pp su 3 intervalli osservati ('+i.period+'). '+
-  'Disoccupazione: variazione '+signed(l.value)+' pp su 3 intervalli osservati ('+l.period+'). '+
-  'Periodi e frequenze non necessariamente allineati; dati revisionati e non point-in-time. '+
-  'Nessuna forza FX, nessun OIS dedotto, nessun nuovo segnale o backtest.';
+ const inflation=i.value>.05?'in accelerazione':i.value<-.05?'in decelerazione':'sostanzialmente stabile';
+ const labour=l.value>.05?'disoccupazione in aumento (mercato del lavoro meno teso)':l.value<-.05?'disoccupazione in calo (mercato del lavoro più teso)':'disoccupazione sostanzialmente stabile';
+ const growth=g.gdp_acceleration_pp===null
+  ?'Il ritmo di crescita non è confrontabile con un trimestre precedente omogeneo.'
+  :g.gdp_acceleration_pp>.05?'La crescita accelera rispetto al trimestre precedente.'
+   :g.gdp_acceleration_pp<-.05?'La crescita rallenta rispetto al trimestre precedente.'
+   :'Il ritmo trimestrale di crescita è sostanzialmente stabile.';
+ const tension=(i.value>.05&&l.value>.05)
+  ?'Inflazione in aumento e mercato del lavoro meno teso: segnali contrastanti, non univoci per la banca centrale.'
+  :(i.value<-.05&&l.value>.05)
+   ?'Inflazione in decelerazione e disoccupazione in aumento: combinazione compatibile con minori pressioni sui tassi, ma non prova di repricing.'
+   :(i.value>.05&&l.value<-.05)
+    ?'Prezzi e lavoro mostrano pressioni congiunte, ma la risposta monetaria non è deducibile senza OIS.'
+    :'Il quadro non basta a stabilire una direzione univoca per la politica monetaria.';
+ const when='Crescita '+g.period+' (rilascio '+g.publisher_release_day+'), inflazione '+i.period+', lavoro '+l.period+'.';
+ note.textContent='LETTURA MACRO G8 · '+ccy+' · fonte di ricerca aggiornata al '+d.as_of_research+' (non significa nuovi dati oggi). '+
+  'COSA SUCCEDE: PIL '+fmt(g.value)+'% trimestrale; '+growth+' '+
+  'COSA CAMBIA: inflazione '+inflation+' ('+signed(i.value)+' pp su tre intervalli osservati); '+labour+
+  ' ('+signed(l.value)+' pp su tre intervalli osservati). '+
+  'COME INTERPRETARLO: '+tension+' '+
+  'COSA CONTROLLARE: prossimo rilascio macro, OIS/front-end 2Y e reazione effettiva della valuta; senza conferma del pricing non attribuire un bias FX. '+
+  'DATE DELLE OSSERVAZIONI: '+when+' '+
+  'LIMITI: periodi non necessariamente allineati, storia revisionata non point-in-time; nessuna sorpresa contro consenso, segnale FX, o backtest validato.';
 }
 async function refreshMacroCandidate(){
  const source='./macro-baseline-candidate-v1.json';
