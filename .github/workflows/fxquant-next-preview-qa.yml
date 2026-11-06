@@ -1,0 +1,51 @@
+name: FX Quant NEXT isolated design and interaction QA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'site/fx-quant-v2/next/**'
+      - 'validation/qa_fxquant_next.cjs'
+      - '.github/workflows/fxquant-next-preview-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fxquant-next-preview-qa
+  cancel-in-progress: true
+
+jobs:
+  browser-qa:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install headless browser
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Start local reference-data web server
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8000 --bind 127.0.0.1 > /tmp/fxquant-next-server.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:8000/site/fx-quant-v2/next/index.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - name: QA eight research sections, live data wiring and interactive controls on desktop/mobile
+        run: node validation/qa_fxquant_next.cjs
+      - name: Retain 16 screenshots and functional proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fxquant-next-browser-proof
+          path: fxquant-next-browser-evidence/
+          if-no-files-found: warn
+          retention-days: 14
