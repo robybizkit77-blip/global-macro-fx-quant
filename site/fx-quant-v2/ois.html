@@ -71,7 +71,7 @@ table{width:100%;border-collapse:collapse;text-align:left;font-size:13px}th{font
 (()=>{"use strict";
 const C=["USD","EUR","GBP","JPY","CHF","CAD","AUD","NZD"], F={USD:"🇺🇸",EUR:"🇪🇺",GBP:"🇬🇧",JPY:"🇯🇵",CHF:"🇨🇭",CAD:"🇨🇦",AUD:"🇦🇺",NZD:"🇳🇿"};
 const N={USD:"Stati Uniti",EUR:"Area euro",GBP:"Regno Unito",JPY:"Giappone",CHF:"Svizzera",CAD:"Canada",AUD:"Australia",NZD:"Nuova Zelanda"};
-const ROOT="../../live_data/sections/";const RESEARCH_RAW_FALLBACK="https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/";
+const ROOT="../../live_data/sections/";
 const $=id=>document.getElementById(id);
 const fmt=(x,d=2)=>Number.isFinite(x)?x.toLocaleString("it-IT",{minimumFractionDigits:d,maximumFractionDigits:d}):"—";
 const date=x=>/^\d{4}-\d{2}-\d{2}$/.test(x||"")?x.slice(8,10)+"/"+x.slice(5,7)+"/"+x.slice(0,4):"n.d.";
@@ -395,7 +395,7 @@ loadRatesFxContext();
  try{let x=await get("./ois-pricing-snapshot.json");if(x.schema==="GMFQ_FXV2_PRICING_SNAPSHOT_V1"&&x.eligible_for_fx_engine===false){for(const c of C)update(c,x.currencies?.[c]);render();}}
  catch(e){console.warn("FXV2 OIS snapshot missing",e);}
  const names=["OIS_OPERATIONAL_VIEW.json","CB_PRICING_ESTIMATED.json","NZD_CB_PRICING_DIRECTIONAL_PROXY.json"];
- const rs=await Promise.allSettled(names.map(n=>get((n==="CB_PRICING_ESTIMATED.json"?RESEARCH_RAW_FALLBACK:ROOT)+n)));
+ const rs=await Promise.allSettled(names.map(n=>get(ROOT+n)));
  let fresh=liveNormalized(...rs.map(r=>r.status==="fulfilled"?r.value:null)),accepted=0;
  for(const c of C)accepted+=update(c,fresh[c]);
  if(accepted)render();
