@@ -58,18 +58,29 @@ function build(api){
    }).join('')+'</div>';
  }
  function story(){
-  let caption=finite(price20)?'Nelle ultime 20 sedute '+country+' '+priceDir+' rispetto a '+against+' del '+priceMove+' (fixing BCE, '+date(asof)+').':'Il rendimento a 20 sedute non è validato.';
-  let rateText=r?'Il 2Y governativo di '+country+' è '+fmt(r['2Y'],3)+'% al '+date(r.date)+'.':'Il dato governativo 2Y non è disponibile.';
-  let pos=finite(cot?.net)?'Il COT mostra una posizione '+(cot.net>0?'net long':cot.net<0?'net short':'neutra')+' al '+date(cot.asof)+'.':'Il COT non è disponibile.';
-  return '<section class="orient-lead"><div class="orient-lead-copy"><span class="chapter-kicker">COUNTRY DESK / '+FLAGS[country]+' '+esc(NAMES[country]).toUpperCase()+'</span>'
-    +'<h2>Prima il quadro.<br><em>Poi l’approfondimento.</em></h2>'
-    +'<p>'+esc(caption+' '+rateText+' '+pos)+'</p>'
-    +'<div class="orient-lead-qualifier"><span>FATTO</span> Dati con date indipendenti. <span>NON DIMOSTRATO</span> Causalità fra rendimento, COT e cambio.</div>'
-    +'<div class="orient-focus-actions"><button class="action-primary" type="button" data-cs-openpair="'+country+against+'">Valuta la coppia <span>↗</span></button><a href="#macro" class="action-minimal">Studia il contesto macro →</a></div></div>'
-    +'<div class="orient-spot"><span class="micro-over">FX RELATIVO · '+esc(country)+'/'+esc(against)+'</span>'
-    +'<strong>'+fmt(target?.quote?.value,5)+'</strong><small>1 '+country+' = '+against+' · BCE fixing '+date(asof)+'</small>'
+  const price=finite(price20),positive=price&&price20>0.025,negative=price&&price20<-.025;
+  const cotDirection=finite(cot?.delta)?cot.delta>0?'migliora':cot.delta<0?'peggiora':'non cambia':'non è validato';
+  const headline=positive?country+' sta guadagnando terreno su '+against+'.'
+    :negative?country+' sta perdendo terreno contro '+against+'.'
+    :'Per '+country+'/'+against+' non emerge ancora un movimento netto.';
+  const opening=price?'Negli ultimi 20 fixing BCE, '+country+'/'+against+' è passato a '+fmt(target?.quote?.value,5)+', con una variazione di '+sign(price20,2,'%')+' fino al '+date(asof)+'.'
+    :'Il confronto su 20 fixing BCE non è disponibile: non attribuiamo una direzione al prezzo.';
+  const i=macro?.inflation,l=macro?.labour;
+  const context='L’inflazione di '+country+' è '+(finite(i?.latest_value)?fmt(i.latest_value,2)+'% ('+i.as_of+')':'non disponibile')+
+   ' e il 2Y governativo è '+(r?fmt(r['2Y'],3)+'% al '+date(r.date):'non validato')+'.';
+  const pos=finite(cot?.net)?'Fra i fondi, la posizione COT è '+(cot.net>0?'net long':cot.net<0?'net short':'neutra')+' e il netto '+cotDirection+' di '+sign(cot.delta,0)+' contratti nell’ultima settimana disponibile ('+date(cot.asof)+').':'Non abbiamo COT validato per questa valuta.';
+  const verdict=positive?'PREZZO FAVOREVOLE A '+country:negative?'PREZZO SFAVOREVOLE A '+country:'PREZZO DA CONFERMARE';
+  const watch='Il mio giudizio è sul prezzo osservato, non sulla direzione futura. Per validare la tesi relativa servono differenziali comparabili, dati macro nuovi e tenuta del movimento FX.';
+  return '<section class="orient-lead orient-voice"><div class="orient-lead-copy"><span class="chapter-kicker">IL DESK / '+FLAGS[country]+' '+esc(NAMES[country])+' CONTRO '+against+'</span>'
+    +'<span class="orient-verdict">'+esc(verdict)+'</span>'
+    +'<h2>'+esc(headline)+'</h2>'
+    +'<p class="orient-intro">'+esc(opening)+'</p>'
+    +'<p class="orient-context">'+esc(context+' '+pos)+'</p>'
+    +'<p class="orient-desk-judgment"><strong>La lettura:</strong> '+esc(watch)+'</p>'
+    +'<div class="orient-focus-actions"><button class="action-primary" type="button" data-cs-openpair="'+country+against+'">Apri la tesi '+country+'/'+against+' <span>↗</span></button><a href="#macro" class="action-minimal">Approfondisci la macro →</a></div></div>'
+    +'<div class="orient-spot"><span class="micro-over">IL PREZZO · '+country+'/'+against+'</span><strong>'+fmt(target?.quote?.value,5)+'</strong><small>1 '+country+' = '+against+' · BCE fixing '+date(asof)+'</small>'
     +'<div class="orient-spot-parts">'+[['5 sedute',target?.move5],['20 sedute',target?.move20],['60 sedute',target?.move60]].map(([k,v])=>'<div><span>'+k+'</span><b class="'+(v<0?'orient-neg':'')+'">'+sign(v,2,'%')+'</b></div>').join('')+'</div>'
-    +'<label class="orient-counterparty">Controvaluta<select class="select" id="cs-other">'+FX.filter(k=>k!==country).map(k=>'<option value="'+k+'" '+(k===against?'selected':'')+'>'+FLAGS[k]+' '+k+' — '+NAMES[k]+'</option>').join('')+'</select></label>'
+    +'<label class="orient-counterparty">Confronta con<select class="select" id="cs-other">'+FX.filter(k=>k!==country).map(k=>'<option value="'+k+'" '+(k===against?'selected':'')+'>'+FLAGS[k]+' '+k+' — '+NAMES[k]+'</option>').join('')+'</select></label>'
     +'</div></section>';
  }
  function evidence(){
@@ -122,9 +133,9 @@ function build(api){
    +'<div class="orient-route-links"><a href="#macro">Macro Lab ↗</a><a href="#rates">Tassi & OIS ↗</a><a href="#cot">COT ↗</a><a href="#pairs">Coppie FX ↗</a></div></section>';
  }
  function render(){
-  return pageHero('G8 / CURRENCY ORIENTATION','Otto valute. <em>Una visione chiara.</em>','Qui scegli cosa investigare. I grafici macro, le curve e le analisi COT complete restano nei laboratori specializzati, senza ripetizioni.')
+  return pageHero('FX G8 / VALUTE','Le valute, <em>raccontate dal mercato.</em>','Seleziona una valuta e una controvaluta: la prima cosa che trovi è una lettura concreta, non un elenco di indicatori.')
    +'<div class="orient-status"><span>◉ COUNTRY ORIENTATION · '+FLAGS[country]+' '+country+'</span><span>G8 · 7 CONFRONTI · BCE '+date(FXDATA?.last_as_of||asof)+'</span></div>'
-   +selector()+story()+evidence()+peers()+checkpoint()+closing()
+   +selector()+story()+evidence()+peers()+checkpoint()
    +'<p class="source-caption">Contesto: Macro Thermometer; NATIVE_RATES_DATA; NATIVE_CB_DATA; CFTC Legacy V250; pricing OIS/futures/proxy con fonte per valuta. Performance FX calcolata da ECB_G8_PRICE_HISTORY (EUR cross). Ogni dato è datato. La V2 operativa e i suoi segnali rimangono invariati.</p>';
  }
  return render();
