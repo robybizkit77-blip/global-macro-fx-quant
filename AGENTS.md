@@ -1,28 +1,22 @@
-# Global Macro FX Quant — active website target (19 October 2026)
+# Global Macro FX Quant — operational target (6 November 2026)
 
-## Canonical active user interface — DO NOT CONFUSE WITH LEGACY
+## One canonical website: FX Quant V2
 
-The active Control Room requested by the project owner is:
+**Approved public URL:** https://robybizkit77-blip.github.io/global-macro-fx-quant/site/fx-quant-v2/
 
-- **PUBLIC URL:** https://robybizkit77-blip.github.io/global-macro-fx-quant/site/control-room-preview/#/home
-- **SOURCE LOADER:** `site/control-room-preview/index.html`
-- **LIVE NAVIGATION / ADDITIVE HOME ADAPTER:** `site/control-room-preview/home-navigation-v10.js`
-- **RENDERED DESIGN:** 32 `site/control-room-preview/parts/part-00.txt` … `part-31.txt` files published on the `gh-pages` branch.
-- **PUBLIC BROWSER TEST:** `validation/qa_control_room_v10_public.js` / `.github/workflows/control-room-v10-public-browser-qa.yml`.
-- **FEED PUBLISHER:** `.github/workflows/publish-control-room-market-data-v1.yml`.
+**Approved source:** `site/fx-quant-v2/` with 12 pages. **Public validation:** `validation/qa_fx_quant_v2_browser.cjs`; scheduled QA `.github/workflows/fx-quant-v2-browser-daily-qa.yml`.
 
-### Historical / non-target UI
+### Preserve
 
-The GitHub Pages repository root `/global-macro-fx-quant/` (`index.html`, `payload/part-00.txt` … `part-15.txt`, `dashboard/*`) is an older dashboard **and is not the active Control Room UI**. `site/website-v1/` is also legacy. Do not present the root URL as the user's current Control Room; do not mistake CI success on the legacy UI for proof that the Preview changed.
+1. Do not restyle V2 without the owner's explicit request. Preserve its page structure and the 28-pair FX engine and Core.
+2. Keep distinct official and estimated OIS/futures/proxy/historical observations, original as-of, contract and source dates; no proxy promotion or invented policy repricing.
+3. Preserve `live_data/`, `validation/`, historical `payload/`, `dashboard/`, `site/website-v1/` and `site/control-room-preview/` until dependency analysis and staged deactivation verify they are unused. Legacy is **not** the default interface but may still supply shared feeds or audit contracts.
+4. Publication `main` -> `gh-pages` must be checked for the requested path; do not confuse a successful workflow with fresh underlying source observations.
+5. For V2 changes, check `publish-fx-quant-v2.yml`, `fx-quant-v2-browser-daily-qa.yml` and `fxv2-morning-public-proof.yml`. Quote exact outcomes and remaining gaps. Do not change FX signals in UI-only PRs.
+6. Do not delete or disable a GitHub workflow without checking references by workflow name (workflow_run triggers), producer/consumer data paths, schedules, secrets, publication, tests and rollback.
 
-Migration approved by the owner on 2026-11-03: legacy entrypoints (`/index.html` and `site/website-v1/index.html`) now redirect to the canonical v10 Preview. Preserve legacy payloads/assets and publishing workflows until their dependencies have been migrated and tested; never use the legacy dashboard as the active UI target.
+### Legacy entrances
 
-## Where to work
+`index.html` and `site/website-v1/index.html` navigate to V2; they keep their legacy fallback payload for compatibility. Direct URLs to old dashboards may remain accessible but are no longer the reference for new UI work.
 
-1. **UI changes** to the active Control Room: work in `site/control-room-preview/` and its authoritative design sources; check the 32-part published loader contract. Keep the approved dark institutional visual design, globe, flag labels, G8 charts and mobile layout. Do not regenerate or replace the approved visual design in an unrelated HTML root.
-2. **Shared market-data pipeline** changes may correctly occur under `live_data/sections/`, `validation/`, `.github/workflows/`. Confirm that the active Preview actually consumes the affected file before claiming a visible change. In particular `home-navigation-v10.js` fetches `NATIVE_RATES_DATA.json`, `OIS_OPERATIONAL_VIEW.json`, `NZD_CB_PRICING_DIRECTIONAL_PROXY.json`, `DXY_SYNTHETIC_ECB.json` from the GitHub `main` raw feed, while other Preview views may read the published `gh-pages` data mirrors. The Price overlay in `payload/part-15.txt` belongs to the older root dashboard, not automatically to the Preview.
-3. **Certification**: distinguish official, estimated, secondary and WITHHELD data. Do not promote incomplete or mismatched source-date curves into signals, official pricing, or backtests. Preserve no-impact isolation for presentation overlays.
-4. **Verify the requested target**: on completion compare the *active Preview* source/gh-pages files, run its real public browser QA desktop + mobile, and quote its canonical URL. Do not cite unrelated legacy UI QA as proof for the Preview.
-5. **Explain exact scope**: separate 'shared data improvement', 'active Preview improvement' and 'legacy-only change' in all future PR summaries.
-
-**Current user directive:** active development targets the Control Room Preview route above. Existing historical sites are preserved, not the default target.
+For the staged cleanup boundary, see `MAINTENANCE_V2.md`.
