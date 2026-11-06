@@ -126,6 +126,10 @@ async function refreshBanks(){
      b.note.watch="Attendere una curva SONIA/OIS datata dopo la decisione prima di calcolare il repricing post-meeting. Prossima decisione "+date(u.next_meeting)+".";
      b.note.confirm="Conferma hawkish solo con pricing post-evento e reazione del cambio su date comparabili.";
      b.note.weaken="Una curva post-evento più dovish e la mancata conferma di GBP indeboliscono la tesi.";
+     if(b.pricing?.as_of<u.last_date){
+      b.pricing.description="CURVA PRE-DECISIONE: la rilevazione SONIA/OIS del "+date(b.pricing.as_of)+" precede il rialzo BoE del "+date(u.last_date)+". Non rappresenta un repricing post-annuncio né una misura sincronizzata delle aspettative rispetto al nuovo Bank Rate.";
+      b.pricing.quality_it=(b.pricing.quality_it||"OIS da fonte ufficiale")+" · PRE-EVENTO";
+     }
      boeOverlay=true;
     }
    }
