@@ -20,6 +20,7 @@ def main():
  if rg.get('status')!='ACTIVE' or rg.get('official_source')!='ASX': raise SystemExit('registry does not authorize AUD ASX pricing')
  live=json.loads(OIS.read_text())['currencies']['AUD']
  if live.get('status')!='ACTIVE' or live.get('policy_rate') is None or not live.get('meetings'): raise SystemExit('canonical AUD metadata mismatch')
+ if live.get('policy_decision') and s['as_of']<live['policy_decision']['date']: raise SystemExit('AUD source observation predates newest official policy decision; do not infer repricing')
  policy=float(live['policy_rate']); h={}
  for k in ('3m','6m','12m'):
   rate=float(s['observations']['current'][k]); h[k]={'rate':rate,'change_1d_bp':float(s['change_1d_bp'][k]),'change_1w_bp':float(s['change_1w_bp'][k]),'policy_delta_bp':round((rate-policy)*100,4)}

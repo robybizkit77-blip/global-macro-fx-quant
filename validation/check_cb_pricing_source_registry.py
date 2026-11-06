@@ -77,11 +77,24 @@ def main() -> int:
                 failures.append(f'{ccy}: ACTIVE missing as_of/policy_rate')
             if not live.get('meetings'):
                 failures.append(f'{ccy}: ACTIVE missing mapped meeting path')
+            decision=live.get('policy_decision') or {}
+            pre_decision=(live.get('policy_comparison_temporally_aligned') is False
+                          and isinstance(decision.get('date'),str)
+                          and isinstance(live.get('as_of'),str)
+                          and live['as_of'] < decision['date']
+                          and live.get('direction')=='PRE_DECISION_NO_POST_EVENT_PRICING')
+            if live.get('policy_comparison_temporally_aligned') is False and not pre_decision:
+                failures.append(f'{ccy}: invalid pre-decision exception')
             for tenor in ('3m','6m','12m'):
                 h=horizons.get(tenor) or {}
-                for field in ('rate','change_1d_bp','change_1w_bp','policy_delta_bp'):
+                for field in ('rate','change_1d_bp','change_1w_bp'):
                     if h.get(field) is None:
                         failures.append(f'{ccy}: ACTIVE missing {tenor}.{field}')
+                if pre_decision:
+                    if h.get('policy_delta_bp') is not None or h.get('policy_comparison_temporally_aligned') is not False:
+                        failures.append(f'{ccy}: PRE_DECISION {tenor} cannot assert policy repricing')
+                elif h.get('policy_delta_bp') is None:
+                    failures.append(f'{ccy}: ACTIVE missing {tenor}.policy_delta_bp')
             for flag in ('source_validated','asof_validated','meeting_path_validated','changes_validated'):
                 if validation.get(flag) is not True:
                     failures.append(f'{ccy}: ACTIVE validation.{flag} must be true')
