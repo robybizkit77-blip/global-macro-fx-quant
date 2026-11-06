@@ -35,7 +35,7 @@ positive.last_as_of=fixtureLast;
 const r=context(tue,positive);
 assert(r,'A historically synchronized COT-to-ECB fixture should be available');
 assert.equal(r.cftc_day,tue);
-assert.equal(r.fx_end_day,fx.last_as_of);
+assert.equal(r.fx_end_day,positive.last_as_of);
 assert.equal(r.lines.length,8);
 assert.equal(r.is_position_price_confirmation,false);
 assert.equal(r.causal_claim,false);
