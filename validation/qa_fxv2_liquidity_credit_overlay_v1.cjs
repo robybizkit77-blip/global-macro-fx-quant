@@ -5,7 +5,9 @@ const {merge}=require('../site/fx-quant-v2/assets/liquidity-credit-feed-v1.js');
 const snap=JSON.parse(fs.readFileSync(path.join(ROOT,'site/fx-quant-v2/design-studio-cross-asset-v1-data.json')));
 const live=JSON.parse(fs.readFileSync(path.join(ROOT,'site/fx-quant-v2/cross-asset-live-data.json')));
 const originalSnapshot=JSON.stringify(snap),originalFeed=JSON.stringify(live);
-const today='2026-11-04',copy=x=>JSON.parse(JSON.stringify(x));
+const today=[live.streams.IG_OAS.date,live.streams.HY_OAS.date].sort().at(-1);
+const nextDay=new Date(Date.parse(today+'T12:00:00Z')+86400000).toISOString().slice(0,10);
+const copy=x=>JSON.parse(JSON.stringify(x));
 const actual=merge(snap,live,today);
 assert.equal(actual.source_status,'CREDIT_2_OF_2_LIVE_SOURCE');
 assert.deepEqual(actual.applied.map(x=>x.ccy),['IG','HY']);
@@ -27,7 +29,7 @@ assert.equal(merge(snap,broken,today).data.credit.IG.date,snap.credit.IG.date,
 assert.equal(merge(snap,broken,today).data.credit.HY.source_type,'AUTOMATIC_FRED_PUBLISHED_CREDIT_OAS',
  'valid HY should advance independently');
 broken.streams.IG_OAS=copy(live.streams.IG_OAS);
-broken.streams.IG_OAS.date='2026-11-05';
+broken.streams.IG_OAS.date=nextDay;
 assert.equal(merge(snap,broken,today).applied.length,1,'future IG is rejected');
 broken.streams.IG_OAS=copy(live.streams.IG_OAS);
 broken.streams.IG_OAS.history.at(-1)[1]+=0.2;
