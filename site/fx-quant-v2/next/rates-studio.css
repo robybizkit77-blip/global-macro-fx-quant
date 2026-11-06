@@ -1,0 +1,107 @@
+
+/* FX Quant Next / Rates & OIS Research Studio — scoped component styles */
+.rates-status{display:flex;justify-content:space-between;gap:15px;align-items:center;flex-wrap:wrap;padding:12px 15px;margin-bottom:13px;border:1px solid #376275;background:linear-gradient(90deg,#173b4c,#122c3c);border-radius:11px;color:#a5cbd6;font-weight:800;letter-spacing:.09em;font-size:10px}
+.rates-status>span:first-child{color:#9ee4d2}
+.rates-country-strip{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;margin:0 0 22px}
+.rates-country{min-width:0;display:flex;flex-direction:column;gap:6px;padding:13px 11px;color:#e5f2f4;background:#112d40;border:1px solid #31566a;border-radius:10px;text-align:left;transition:transform .17s,background .17s}
+.rates-country:hover{transform:translateY(-2px);background:#1d4355}
+.rates-country.selected{background:#214a56;box-shadow:inset 0 2px 0 #76ddbf;border-color:#73d5c6}
+.rates-country span{font-size:13px;font-weight:750}.rates-country strong{font:760 21px/1.2 Manrope,sans-serif;letter-spacing:-.045em}
+.rates-country small{font-size:9px;line-height:1.5;color:#98b8c7}
+.rates-hero{display:grid;grid-template-columns:minmax(0,1fr) 240px;background:radial-gradient(circle at 70% 0,rgba(76,152,171,.16),transparent 55%),linear-gradient(120deg,#194050,#102b3c);border:1px solid #3c6976;border-radius:16px;overflow:hidden;min-height:255px}
+.rates-hero-title{padding:29px 34px;display:flex;flex-direction:column;align-items:start}
+.rates-hero-title h2{font:790 clamp(24px,2.8vw,38px)/1.22 Manrope,sans-serif;letter-spacing:-.05em;margin:18px 0 10px}
+.rates-hero-title h2 em{font-style:normal;color:#9ee6cc}
+.rates-hero-title p{font-size:12px;line-height:1.8;color:#b3cdda;max-width:750px;margin:0 0 19px}
+.rates-chipline{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:10px;color:#a2c0ce;margin-top:auto}
+.rates-hero-side{border-left:1px solid #456b7b;display:grid;place-items:center;padding:22px}
+.rates-hero-orbit{width:174px;height:174px;border-radius:50%;border:1px solid #6fb5b5;box-shadow:0 0 0 12px rgba(119,200,190,.05),0 0 0 38px rgba(119,200,190,.025);background:radial-gradient(circle at 50% 44%,#235464,#133647 74%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center}
+.rates-hero-orbit span{font-size:9px;font-weight:850;letter-spacing:.13em;color:#9bc3ca}
+.rates-hero-orbit strong{font:770 36px/1.1 Manrope,sans-serif;color:#d4f4e7;letter-spacing:-.05em}
+.rates-hero-orbit small{font-size:9px;color:#94b4bf}
+.rates-stats{margin:14px 0 40px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid #35596b;border-radius:11px;overflow:hidden;background:#112e40}
+.rates-stat{display:flex;flex-direction:column;gap:6px;padding:17px 20px;min-width:0}
+.rates-stat+.rates-stat{border-left:1px solid #315568}
+.rates-stat span{color:#8eafc3;letter-spacing:.11em;font-size:10px;font-weight:850}
+.rates-stat strong{color:#e8f4f5;font:780 clamp(18px,2.2vw,28px)/1.3 Manrope,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.035em}
+.rates-stat small{font-size:10px;color:#8fb0bf}
+.rates-chapter{margin:38px 0 50px}
+.rates-section-head{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:18px}
+.rates-section-head h2{font:770 clamp(23px,2.65vw,36px)/1.23 Manrope,sans-serif;margin:9px 0 0;letter-spacing:-.053em}
+.rates-section-head h2 em{font-style:normal;color:#95d5d8}
+.rates-section-head>p{font-size:12px;line-height:1.7;color:#9cb7c7;max-width:470px;margin:0}
+.rates-research-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(310px,.45fr);gap:12px}
+.rates-primary-plot,.rates-qa-panel,.rates-figure,.rates-instrument-card,.rates-reprice,.rates-spread{background:linear-gradient(145deg,#143446,#0c2536);border:1px solid #385e70;border-radius:14px;min-width:0;padding:22px 21px}
+.rates-qa-panel{background:linear-gradient(145deg,#1b3d4f,#102b3b)}
+.rates-graph-head{display:flex;align-items:start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.rates-graph-head h3{font:760 18px/1.35 Manrope,sans-serif;letter-spacing:-.03em;margin:5px 0 0}
+.rates-controls{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin:17px 0 12px}
+.rates-controls .pill,.rates-compare-controls .pill{font-size:10px;min-height:30px;padding:6px 10px}
+.rates-primary-plot .chart{height:275px}
+.rates-plot-note{font-size:10px;line-height:1.75;color:#91afbf;margin:14px 0 0;border-top:1px solid rgba(134,180,197,.2);padding-top:12px}
+.rates-qa-panel h3{font:760 22px Manrope,sans-serif;margin:13px 0 25px;letter-spacing:-.04em}
+.rates-qa-panel p{font-size:12px;color:#b2ccda;line-height:1.75;margin:18px 0 0}
+.rates-qa-panel p.rates-warning{font-size:10px;color:#f0c995;border-left:2px solid #d7aa68;padding-left:11px;margin-top:16px}
+.rates-shift-row{display:flex;justify-content:space-between;gap:12px;border-top:1px solid #365e6f;padding:11px 0;align-items:center}
+.rates-shift-row span{font-size:11px;color:#9dbbca}
+.rates-shift-row b{font-size:13px;font-variant-numeric:tabular-nums;color:#e8f0f2}
+.rates-pricing-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:12px}
+.rates-figure{background:linear-gradient(140deg,#1a4050,#103041)}
+.rates-shape{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;min-height:237px;margin:20px 0 4px;align-items:end}
+.rates-shape-col{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}
+.rates-shape-slot{width:70%;max-width:85px;height:140px;display:flex;align-items:flex-end;justify-content:center;border-bottom:1px solid #608293;background:linear-gradient(0deg,rgba(129,210,199,.05),transparent)}
+.rates-shape-bar{display:block;width:100%;min-height:4px;border-radius:6px 6px 0 0;background:linear-gradient(0deg,#2d8da0,#87d8c3);border:1px solid #6db9bc}
+.rates-shape-col strong{font:760 18px Manrope,sans-serif;letter-spacing:-.045em;font-variant-numeric:tabular-nums}
+.rates-shape-col b{font-size:11px;color:#8fe4c7}
+.rates-shape-col small{font-size:9px;color:#8bafbe}
+.rates-instrument-card .rates-smalltext{font-size:11px;color:#adcad5;line-height:1.8;margin:17px 0 10px}
+.rates-instrument-card .rates-smalltext strong{color:#eaf6f5}
+.rates-curve-table{min-width:510px}
+.rates-curve-table th{font-size:9px;padding:12px 8px}
+.rates-curve-table td{font-size:10px;padding:13px 8px;white-space:nowrap}
+.rates-curve-table th:last-child,.rates-curve-table td:last-child{text-align:left}
+.rates-reprice{margin-top:13px;background:#102c3f}
+.rates-repricing-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin-top:16px}
+.rates-repricing-cards>div{display:flex;flex-direction:column;gap:5px;background:#16384a;border:1px solid #416375;border-radius:10px;padding:14px 16px}
+.rates-repricing-cards span{font-size:10px;font-weight:800;color:#9dbdc9}
+.rates-repricing-cards strong{font:760 20px Manrope,sans-serif}
+.rates-repricing-cards small{color:#80a6b7;font-size:10px}
+.rates-missing{padding:19px 20px;background:#273126;border:1px solid #5c6848;border-radius:11px;font-size:12px;line-height:1.8;color:#e6cfad;margin-top:15px}
+.rates-compare-select{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:13px}
+.rates-compare-select label{display:flex;flex-direction:column;gap:7px;font-size:9px;letter-spacing:.11em;font-weight:800;color:#96b8ca;min-width:200px;flex:1}
+.rates-compare-select select{max-width:none;width:100%;font-size:12px}
+.rates-spread{background:linear-gradient(140deg,#122e41,#0c2638)}
+.rates-spread .chart{height:260px}
+.rates-compare-controls{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin:19px 0 13px}
+.rates-compare-controls>strong{font:770 25px Manrope,sans-serif;color:#a8eddb;letter-spacing:-.04em}
+.rates-compare-controls>span{font-size:10px;color:#93b4c5}
+.rates-explanations{margin:44px 0}
+.rates-explain-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.rates-explain-grid article{padding:21px 22px;background:linear-gradient(145deg,#163a4c,#102b3d);border:1px solid #375e70;border-radius:13px}
+.rates-index{display:inline-grid;place-items:center;height:25px;width:25px;border:1px solid #6bbdb1;background:#20544f;border-radius:7px;color:#c2f2df;font-size:10px;font-weight:850;margin-right:11px}
+.rates-explain-grid h3{font:770 16px/1.4 Manrope,sans-serif;margin:14px 0 10px;letter-spacing:-.025em}
+.rates-explain-grid p{font-size:12px;line-height:1.75;color:#adcad7;margin:0}
+.rates-universe{margin:45px 0}
+.rates-universe-table{min-width:960px;background:#102c3e}
+.rates-universe-table th{font-size:9px;padding:11px 9px}
+.rates-universe-table td{font-size:10px;padding:12px 9px;white-space:nowrap}
+.rates-universe-table th:last-child,.rates-universe-table td:last-child{text-align:left}
+.rates-universe-table td button{border:0;padding:0;background:none;color:#b9ecdf;text-decoration:underline;text-underline-offset:3px;font-weight:760;font-size:11px}
+.rates-universe-table td small,.rates-cell small{display:block;margin-top:3px;font-size:9px;color:#95afc2}
+.rates-universe-table tr.active td{background:#1a4858}
+.rates-glossary{margin:45px 0}
+.rates-definitions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.rates-definitions details{background:#123244;border:1px solid #365f71;border-radius:11px;overflow:hidden;align-self:start}
+.rates-definitions summary{list-style:none;cursor:pointer;padding:14px 16px;font-size:11px;font-weight:770;color:#e2f0f3;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.rates-definitions summary::-webkit-details-marker{display:none}
+.rates-definitions summary span{font-size:18px;color:#99dfd6}
+.rates-definitions details[open]{background:#1a4253;border-color:#63a4a6}
+.rates-definitions details[open] summary span{transform:rotate(45deg)}
+.rates-definitions details p{padding:0 16px 17px;margin:0;font-size:11px;line-height:1.75;color:#b0ccd8}
+.rates-end-note{display:flex;align-items:center;justify-content:space-between;gap:22px;background:linear-gradient(95deg,#173f4c,#102c3e);border:1px solid #48747a;border-radius:13px;padding:25px 29px;margin:45px 0 23px}
+.rates-end-note h2{font:760 clamp(20px,2vw,27px)/1.4 Manrope,sans-serif;letter-spacing:-.04em;margin:11px 0 6px}
+.rates-end-note p{font-size:11px;line-height:1.65;color:#aec9d6;margin:0;max-width:850px}
+.rates-end-note>.action-primary{white-space:nowrap}
+@media(max-width:1400px){.rates-country-strip{grid-template-columns:repeat(4,minmax(0,1fr))}.rates-research-grid,.rates-pricing-grid{grid-template-columns:1fr}.rates-primary-plot .chart{height:280px}}
+@media(max-width:810px){.rates-section-head{display:block}.rates-section-head>p{margin-top:10px;max-width:770px}.rates-hero{grid-template-columns:minmax(0,1fr) 180px}.rates-hero-title{padding:23px}.rates-hero-orbit{width:137px;height:137px}.rates-hero-orbit strong{font-size:28px}.rates-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.rates-stat:nth-child(3){border-left:0;border-top:1px solid #315568}.rates-stat:nth-child(4){border-top:1px solid #315568}}
+@media(max-width:600px){.rates-status{font-size:9px}.rates-country-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.rates-country{padding:12px}.rates-country strong{font-size:19px}.rates-hero{grid-template-columns:1fr}.rates-hero-title{padding:22px 19px}.rates-hero-title h2{font-size:28px}.rates-hero-side{border-left:0;border-top:1px solid #416a78;min-height:148px}.rates-hero-orbit{height:112px;width:112px}.rates-hero-orbit strong{font-size:23px}.rates-stats{margin-bottom:30px}.rates-stat{padding:13px}.rates-stat strong{font-size:19px}.rates-section-head h2{font-size:26px}.rates-section-head>p{font-size:11px}.rates-primary-plot,.rates-qa-panel,.rates-figure,.rates-instrument-card,.rates-reprice,.rates-spread{padding:16px 12px}.rates-primary-plot .chart,.rates-spread .chart{height:210px}.rates-controls .pill{font-size:9px;padding:5px 7px}.rates-shape-slot{height:126px}.rates-shape-col strong{font-size:15px}.rates-repricing-cards{grid-template-columns:1fr 1fr}.rates-repricing-cards>div{padding:11px}.rates-compare-select{gap:9px}.rates-compare-select label{min-width:150px}.rates-explain-grid,.rates-definitions{grid-template-columns:1fr}.rates-explain-grid article{padding:18px}.rates-end-note{display:block;padding:20px}.rates-end-note>.action-primary{margin-top:19px}.rates-universe-table{min-width:900px}}
