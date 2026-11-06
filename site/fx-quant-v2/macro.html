@@ -107,7 +107,7 @@ async function startup(){render();try{const r=await fetch('./design-studio-macro
 /* Research bridge: 204 macro series from canonical feed; narratives remain dated research. */
 // Missing MACRO_SERIES must not block independently available Rates/CB context.
 async function refreshMacroRatesOnly(){
- const root="https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/";
+ const root="../../live_data/sections/";
  const fetchJson=async name=>{
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),9000);
   try{
@@ -151,7 +151,7 @@ async function refreshMacroRatesOnly(){
   "/8). Livelli stimati e letture web restano ricerca V2, non Core o segnale di trading.";
 }
 async function refreshMacro(){
- const root="https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/";
+ const root="../../live_data/sections/";
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),11000);
  const load=async n=>{const r=await fetch(root+n+".json",{cache:"no-store",signal:controller.signal});if(!r.ok)throw Error(n+" HTTP "+r.status);return r.json();};
  const normalizeDate=s=>{
