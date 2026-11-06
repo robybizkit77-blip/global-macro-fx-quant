@@ -1,0 +1,17 @@
+'use strict';
+const fs=require('node:fs'),assert=require('node:assert/strict');
+const source=fs.readFileSync('site/fx-quant-v2/index.html','utf8');
+const rates=JSON.parse(fs.readFileSync('live_data/sections/NATIVE_RATES_DATA.json','utf8'));
+const match=source.match(/<script>([\s\S]*?)<\/script>/g);
+assert(match&&match.length,'Home executable script absent');
+const script=match.at(-1).replace(/^<script>/,'').replace(/<\/script>$/,'');
+new (require('node:vm').Script)(script,{filename:'fxv2-home.js'});
+assert(!source.includes('id="today">Analisi 03 novembre 2026'));
+assert(source.includes("'Tassi USA al '+shortDate(rateDate)"));
+assert(source.includes("'Fonti acquisite '+n+'/5"));
+assert(source.includes('temi editoriali 03/11'));
+assert(source.includes('Treasury USA 2Y: '));
+assert(!source.includes("'Capex USA solido. Ma il Treasury 2Y '+verb"));
+const dataDate=rates.USD.date;
+assert(/^\d{4}-\d{2}-\d{2}$/.test(dataDate));
+console.log('FXV2_HOME_SOURCE_DATED_LABEL_AND_EDITORIAL_GUARD_PASS',JSON.stringify({rates_date:dataDate,stale_editorial_not_promoted:true}));
