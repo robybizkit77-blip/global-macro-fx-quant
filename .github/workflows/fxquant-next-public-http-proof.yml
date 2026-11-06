@@ -45,7 +45,14 @@ jobs:
               && grep -q 'macro-studio.js' /tmp/next-index.html \
               && grep -q 'FXQuantMacro' /tmp/next-macro.js \
               && grep -q 'macro-country-strip' /tmp/next-macro.css \
-              && grep -q '"USD"' /tmp/next-macro-data.json; then
+              && grep -q '"USD"' /tmp/next-macro-data.json \
+              && curl -fsSL --connect-timeout 8 --max-time 20 "$BASE/currency-studio.js?verify=$GITHUB_RUN_ID" -o /tmp/next-country.js \
+              && curl -fsSL --connect-timeout 8 --max-time 20 "$BASE/currency-studio.css?verify=$GITHUB_RUN_ID" -o /tmp/next-country.css \
+              && curl -fsSL --connect-timeout 8 --max-time 20 "https://robybizkit77-blip.github.io/global-macro-fx-quant/live_data/sections/ECB_G8_PRICE_HISTORY.json?verify=$GITHUB_RUN_ID" -o /tmp/next-ecb-cross.json \
+              && grep -q 'currency-studio.js' /tmp/next-index.html \
+              && grep -q 'FXQuantCurrencies' /tmp/next-country.js \
+              && grep -q 'currency-studio-selector' /tmp/next-country.css \
+              && grep -q '"pair_count":28' /tmp/next-ecb-cross.json; then
               echo "NEXT_PUBLIC_HTTP_200_VALIDATED"
               echo "PUBLIC_MAIN_NAV_READY=true"
               echo "PUBLIC_ATLAS_JS_READY=true"
@@ -55,6 +62,8 @@ jobs:
               echo "PUBLIC_G8_RATES_OIS_RESEARCH_READY=true"
               echo "PUBLIC_G8_MACRO_DYNAMICS_READY=true"
               echo "PUBLIC_MACRO_204_SERIES_FEED_READY=true"
+              echo "PUBLIC_G8_COUNTRY_RESEARCH_READY=true"
+              echo "PUBLIC_ECB_561_FX_FIXINGS_READY=true"
               exit 0
             fi
             echo "NEXT_PUBLIC_NOT_READY attempt=$attempt"
