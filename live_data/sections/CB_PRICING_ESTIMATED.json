@@ -1,7 +1,7 @@
 {
   "currencies": {
     "CHF": {
-      "as_of": "2026-11-04",
+      "as_of": "2026-11-05",
       "change_1d_bp": null,
       "change_1w_bp": null,
       "change_status": "DERIVED_ONLY_FROM_HOMOGENEOUS_SNAPSHOT_HISTORY",
@@ -20,20 +20,20 @@
       "horizons": {
         "12m": {
           "accrual_start": "2027-12-15",
-          "business_day_lag": 2,
+          "business_day_lag": 1,
           "contract": "SA3Z2027",
           "contract_description": "Dec 2027",
           "expiration": "2028-03-14",
-          "futures_price": 99.565,
+          "futures_price": 99.58,
           "mapping": "nearest ICE SARON accrual start to today+365d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-04T17:39:53Z",
-          "quote_as_of": "2026-11-04",
+          "price_valid_until": "2026-11-05T17:59:00Z",
+          "quote_as_of": "2026-11-05",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 0.435,
+          "rate": 0.42,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 43.5,
+          "raw_level_minus_spot_policy_bp": 42.0,
           "symbol": "ICEEUR:SA3Z2027"
         },
         "3m": {
@@ -123,20 +123,20 @@
           "symbol": "EUREX:FST3U2027"
         },
         "3m": {
-          "business_day_lag": 2,
+          "business_day_lag": 1,
           "contract": "FST3X2026",
           "contract_description": "Nov 2026",
           "expiration": "2027-02-17",
-          "futures_price": 97.4075,
+          "futures_price": 97.425,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-04T22:05:11Z",
-          "quote_as_of": "2026-11-04",
+          "price_valid_until": "2026-11-05T22:05:27Z",
+          "quote_as_of": "2026-11-05",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 2.5925,
+          "rate": 2.575,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 9.2,
+          "raw_level_minus_spot_policy_bp": 7.5,
           "symbol": "EUREX:FST3X2026"
         },
         "6m": {
