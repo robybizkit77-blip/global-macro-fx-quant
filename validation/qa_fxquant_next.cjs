@@ -1,0 +1,65 @@
+'use strict';
+/* Standalone visual/functional smoke test for isolated FX Quant NEXT preview.
+ * Never mutates the operational FX V2 or any core data.
+ */
+const fs=require('fs');
+const assert=require('assert');
+const {chromium}=require('playwright');
+const BASE=process.env.FXQN_BASE||'http://127.0.0.1:8000/site/fx-quant-v2/next/index.html';
+const ROUTES=['overview','currencies','pairs','macro','rates','cot','risk','news'];
+const evidence='fxquant-next-browser-evidence';
+fs.mkdirSync(evidence,{recursive:true});
+(async()=>{
+ const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+ const results=[];
+ try{
+  for(const width of [1440,390]){
+   const page=await browser.newPage({viewport:{width,height:900},deviceScaleFactor:1});
+   const errors=[];
+   page.on('pageerror',e=>errors.push(String(e)));
+   const resp=await page.goto(BASE,{waitUntil:'domcontentloaded',timeout:25000});
+   assert(resp&&resp.ok(),'Home HTTP failed: '+resp?.status());
+   await page.waitForFunction(()=>/fonti caricate/.test(document.getElementById('sidebar-feed')?.textContent||''),{timeout:20000});
+   const sourceText=await page.locator('#sidebar-feed').innerText();
+   assert(/10\/10 fonti caricate/.test(sourceText),'Feed mismatch: '+sourceText);
+   for(const route of ROUTES){
+    await page.evaluate(r=>{location.hash='#'+r},route);
+    await page.waitForFunction(r=>document.querySelector('#crumb-page')?.textContent===({overview:'Panoramica',currencies:'Valute G8',pairs:'Coppie FX',macro:'Macro Lab',rates:'Tassi & OIS',cot:'Positioning',risk:'Risk Radar',news:'News Pulse'})[r],route);
+    const h1=await page.locator('main h1').first().innerText();
+    assert(h1.length>12,'Missing heading '+route);
+    const overflow=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));
+    assert(overflow.scroll<=overflow.client+2,'Horizontal overflow on '+route+' '+width+': '+JSON.stringify(overflow));
+    await page.screenshot({path:evidence+'/'+route+'-'+width+'.png',fullPage:route==='overview'||route==='pairs'});
+    results.push({width,route,h1,overflow:'PASS'});
+   }
+   // The FX selector changes the deep dive and the watchlist is interactive.
+   await page.evaluate(()=>{location.hash='#pairs'});
+   await page.locator('[data-pair="AUDCAD"]').click();
+   assert((await page.locator('.focus-headline').first().innerText()).includes('AUD/CAD'),'Pair select failed');
+   await page.locator('[data-watch="AUDCAD"]').click();
+   assert((await page.locator('[data-watch="AUDCAD"]').innerText()).includes('Nella watchlist'),'Watchlist failed');
+   // Rates selectors redraw source-backed chart.
+   await page.evaluate(()=>{location.hash='#rates'});
+   await page.locator('[data-window="5"]').click();
+   assert(await page.locator('.chart svg').count()>0,'Rates chart absent');
+   await page.locator('[data-rate-mode="10y"]').click();
+   assert((await page.locator('.chart-legend').innerText()).includes('10Y'),'Rate mode failed');
+   // Macro selector drives the graph.
+   await page.evaluate(()=>{location.hash='#macro'});
+   await page.locator('[data-metric="labour"]').click();
+   assert((await page.locator('.panel-head h2').first().innerText()).toLowerCase().includes('disoccupazione'),'Macro toggle failed');
+   // Cross asset controls.
+   await page.evaluate(()=>{location.hash='#risk'});
+   await page.locator('[data-risk="SP500"]').click();
+   assert((await page.locator('.panel-head h2').first().innerText()).includes('S&P 500'),'Risk switch failed');
+   // News toggles.
+   await page.evaluate(()=>{location.hash='#news'});
+   await page.locator('[data-news-mode="official"]').click();
+   assert((await page.locator('.panel-head h2').first().innerText()).includes('Comunicazioni'),'News tab failed');
+   assert(errors.length===0,'Browser errors: '+errors.join(' | '));
+   await page.close();
+  }
+  fs.writeFileSync(evidence+'/report.json',JSON.stringify({status:'PASS',base:BASE,results},null,2));
+  console.log('FXQUANT_NEXT_VISUAL_AND_INTERACTION_QA_PASS',JSON.stringify({views:results.length,viewports:[1440,390],feed:'10/10',interactions:'PASS'}));
+ }finally{await browser.close();}
+})().catch(e=>{console.error('FXQUANT_NEXT_QA_FAIL',e.stack||e);process.exit(1)});
