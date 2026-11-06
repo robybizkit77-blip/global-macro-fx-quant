@@ -45,6 +45,11 @@ on:
     workflows: ['Rates Persistent Daily V1','COT Persistent Weekly V1','Pair Setup Operational View V1','Price History Persistent Daily V1','DXY Synthetic ECB Research V1','Publish Dashboard Pages V1']
     types: [completed]
   workflow_dispatch:
+  # Independent convergence pass: producer writes via GITHUB_TOKEN do not reliably
+  # trigger another push workflow, and Pages release may lag one source date.
+  # This does not refresh market data; it mirrors only already validated files.
+  schedule:
+    - cron: '17,47 * * * *'
 
 permissions:
   contents: write
