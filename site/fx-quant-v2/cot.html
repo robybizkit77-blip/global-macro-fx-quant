@@ -109,7 +109,7 @@ summary();table();render();
 
 /* V2 read-only bridge: certified weekly COT history, no changes to the source engine. */
 async function refreshCot(){
- const root="https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/";
+ const root="../../live_data/sections/";
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),9000);
  try {
   const response=await fetch(root+"V250_COT_CHART_DATA.json",{cache:"no-store",signal:controller.signal});
