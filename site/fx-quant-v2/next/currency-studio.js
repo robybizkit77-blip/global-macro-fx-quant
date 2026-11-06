@@ -42,7 +42,7 @@ function build(api){
  const price20=target?.move20;
  const cpi=macro?.inflation,unemp=macro?.labour;
  const priceDir=finite(price20)?price20>0?'si è apprezzata':price20<0?'si è indebolita':'non ha cambiato valore':'non è valutabile';
- const priceMove=finite(price20)?sign(Math.abs(price20),2,'%'):'—';
+ const priceMove=finite(price20)?fmt(Math.abs(price20),2)+'%':'—';
  const facts=[
   {key:'macro',n:'01',title:'Macro',subtitle:'COME STA CAMBIANDO L’ECONOMIA',hint:'Contesto, non sorpresa',metric:finite(cpi?.latest_value)?fmt(cpi.latest_value,2)+'%':'—',label:'Inflazione · '+period(cpi?.as_of),detail:'Inflazione '+(cpi?.direction||'n.d.').toLowerCase()+', disoccupazione '+(unemp?.direction||'n.d.').toLowerCase()+' ('+(finite(unemp?.latest_value)?fmt(unemp.latest_value,2)+'%':'—')+' · '+period(unemp?.as_of)+'.',dest:'macro',action:'Apri gli storici macro'},
   {key:'rates',n:'02',title:'Tassi & policy',subtitle:'IL FRONT-END E LE ATTESE',hint:ois?.quality||'Qualità da verificare',metric:finite(r?.['2Y'])?fmt(r['2Y'],3)+'%':'—',label:'Government 2Y · '+date(r?.date),detail:(bank?.bank||'Banca centrale')+': '+(bank?.rate_text||'—')+'. Pricing 6M '+(finite(six?.rate)?fmt(six.rate,3)+'%':'—')+' ('+(ois?.kind||'non disponibile')+', '+date(six?.as_of)+').',dest:'rates',action:'Esplora curve e OIS'},
@@ -65,7 +65,7 @@ function build(api){
     +'<h2>Prima il quadro.<br><em>Poi l’approfondimento.</em></h2>'
     +'<p>'+esc(caption+' '+rateText+' '+pos)+'</p>'
     +'<div class="orient-lead-qualifier"><span>FATTO</span> Dati con date indipendenti. <span>NON DIMOSTRATO</span> Causalità fra rendimento, COT e cambio.</div>'
-    +'<div class="orient-focus-actions"><a class="action-primary" href="#pairs">Valuta la coppia <span>↗</span></a><a href="#macro" class="action-minimal">Studia il contesto macro →</a></div></div>'
+    +'<div class="orient-focus-actions"><button class="action-primary" type="button" data-cs-openpair="'+country+against+'">Valuta la coppia <span>↗</span></button><a href="#macro" class="action-minimal">Studia il contesto macro →</a></div></div>'
     +'<div class="orient-spot"><span class="micro-over">FX RELATIVO · '+esc(country)+'/'+esc(against)+'</span>'
     +'<strong>'+fmt(target?.quote?.value,5)+'</strong><small>1 '+country+' = '+against+' · BCE fixing '+date(asof)+'</small>'
     +'<div class="orient-spot-parts">'+[['5 sedute',target?.move5],['20 sedute',target?.move20],['60 sedute',target?.move60]].map(([k,v])=>'<div><span>'+k+'</span><b class="'+(v<0?'orient-neg':'')+'">'+sign(v,2,'%')+'</b></div>').join('')+'</div>'
@@ -76,7 +76,7 @@ function build(api){
   return '<section class="orient-chapter"><div class="orient-chapter-head"><div><span class="chapter-kicker">01 / QUATTRO LENTI, ZERO DUPLICAZIONI</span><h2>Il contesto <em>in quattro letture.</em></h2></div><p>Qui trovi ciò che serve a orientarti. Grafici, storici, curve OIS e tabelle CFTC sono nei laboratori dedicati.</p></div>'
    +'<div class="orient-evidence">'+facts.map(f=>'<article class="orient-evidence-item" data-evidence="'+f.key+'"><div class="orient-evidence-intro"><span class="orient-index">'+f.n+'</span><div><strong>'+esc(f.title)+'</strong><small>'+esc(f.subtitle)+'</small></div></div>'
     +'<div class="orient-number">'+esc(f.metric)+'</div><div class="orient-data-label">'+esc(f.label)+'</div><p>'+esc(f.detail)+'</p>'
-    +'<div class="orient-evidence-bottom"><span>'+esc(f.hint)+'</span><a href="#'+f.dest+'">'+esc(f.action)+' ↗</a></div></article>').join('')+'</div></section>';
+    +'<div class="orient-evidence-bottom"><span>'+esc(f.hint)+'</span>'+(f.key==='price'?'<button class="orient-investigate" type="button" data-cs-openpair="'+country+against+'">'+esc(f.action)+' ↗</button>':'<a href="#'+f.dest+'">'+esc(f.action)+' ↗</a>')+'</div></article>').join('')+'</div></section>';
  }
  function bar(x,max){
   if(!finite(x))return '<span class="orient-bar-none">—</span>';
