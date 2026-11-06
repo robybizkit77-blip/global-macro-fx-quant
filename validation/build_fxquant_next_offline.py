@@ -20,6 +20,8 @@ SOURCES = {
     "macro": "live_data/sections/MACRO_THERMOMETER_DATA.json",
     "cb": "live_data/sections/NATIVE_CB_DATA.json",
     "cot": "live_data/sections/V247_COT_STORIES.json",
+    "cotHistory": "live_data/sections/V250_COT_CHART_DATA.json",
+    "cotPrice": "site/fx-quant-v2/design-studio-cot-v1-data.json",
     "risk": "site/fx-quant-v2/cross-asset-live-data.json",
     "ois": "site/fx-quant-v2/ois-pricing-snapshot.json",
     "news": "live_data/sections/NEWS_PULSE_OPERATIONAL.json",
@@ -30,13 +32,17 @@ def main() -> None:
     contents = (SITE / "index.html").read_text(encoding="utf-8")
     css = (SITE / "theme.css").read_text(encoding="utf-8")
     js = (SITE / "app.js").read_text(encoding="utf-8")
+    cot_js = (SITE / "cot-studio.js").read_text(encoding="utf-8")
+    cot_css = (SITE / "cot-studio.css").read_text(encoding="utf-8")
     docs = {k: json.loads((ROOT / path).read_text(encoding="utf-8")) for k, path in SOURCES.items()}
-    assert len(docs) == 10
+    assert len(docs) == 12
     assert docs["pairs"].get("pair_count") == 28
     assert docs["dxy"].get("not_official_ice") is True
 
     css = css.replace("@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;450;500;550;600;650;700;750;800&family=Manrope:wght@400;500;600;650;700;800&display=swap');", "")
     contents = contents.replace('<link rel="stylesheet" href="./theme.css?v=2">', "<style>"+css+"</style>")
+    contents = contents.replace('<link rel="stylesheet" href="./cot-studio.css?v=1">', "<style>"+cot_css+"</style>")
+    contents = contents.replace('<script src="./cot-studio.js?v=1" defer></script>', "<script>"+cot_js+"</script>")
     contents = contents.replace('<script src="./app.js?v=2" defer></script>', "")
     contents = contents.replace('<span class="live-dot"></span> NEXT / DESIGN LAB', '<span class="live-dot"></span> NEXT / DESIGN LAB')
     contents = contents.replace('NEXT / DESIGN LAB <span class="edition-sep">', 'NEXT / OFFLINE PREVIEW <span class="edition-sep">')
@@ -51,6 +57,8 @@ def main() -> None:
  'NATIVE_RATES_DATA.json':'rates','DXY_SYNTHETIC_ECB.json':'dxy',
  'PAIR_SETUP_OPERATIONAL_VIEW.json':'pairs','MACRO_THERMOMETER_DATA.json':'macro',
  'NATIVE_CB_DATA.json':'cb','V247_COT_STORIES.json':'cot',
+ 'V250_COT_CHART_DATA.json':'cotHistory',
+ 'design-studio-cot-v1-data.json':'cotPrice',
  'cross-asset-live-data.json':'risk','ois-pricing-snapshot.json':'ois',
  'NEWS_PULSE_OPERATIONAL.json':'news','TOP_THEMES.json':'themes'};
  const original=window.fetch?window.fetch.bind(window):null;
