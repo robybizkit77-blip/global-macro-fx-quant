@@ -3,11 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Global Macro FX Quant — Control Room</title><script data-gmfq-canonical-redirect="fx-quant-v2">
+  <title>Global Macro FX Quant — Control Room</title><script data-gmfq-legacy-redirect="v10">
 (function(){
-  // Navigation only: preserve legacy payloads and downstream feed producers.
-  // One official entrypoint; old site files remain accessible by explicit URL.
-  location.replace('../fx-quant-v2/index.html');
+  // The legacy HTML is retained for pipeline compatibility and archival history.
+  // Navigation only: never alter shared feeds, templates or the approved v10.
+  const target='../control-room-preview/'+(location.hash && /^#\/(home|tassi|valute|macro|coppie|banche|cross|cot|calendario|screener)(\?|$)/.test(location.hash)?location.hash:'#/home');
+  location.replace(target);
 })();
 </script>
   <link rel="stylesheet" href="styles.css?v=20261017-purple3">
