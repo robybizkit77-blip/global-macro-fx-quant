@@ -33,13 +33,19 @@ jobs:
               && grep -q 'cot-studio.js' /tmp/next-index.html \
               && grep -q 'function verifiedRows' /tmp/next-cot.js \
               && grep -q 'cot-country-selector' /tmp/next-cot.css \
-              && grep -q '"EUR"' /tmp/next-cot-data.json; then
+              && grep -q '"EUR"' /tmp/next-cot-data.json \
+              && curl -fsSL --connect-timeout 8 --max-time 20 "$BASE/rates-studio.js?verify=$GITHUB_RUN_ID" -o /tmp/next-rates.js \
+              && curl -fsSL --connect-timeout 8 --max-time 20 "$BASE/rates-studio.css?verify=$GITHUB_RUN_ID" -o /tmp/next-rates.css \
+              && grep -q 'rates-studio.js' /tmp/next-index.html \
+              && grep -q 'FXQuantRates' /tmp/next-rates.js \
+              && grep -q 'rates-repricing-cards' /tmp/next-rates.css; then
               echo "NEXT_PUBLIC_HTTP_200_VALIDATED"
               echo "PUBLIC_MAIN_NAV_READY=true"
               echo "PUBLIC_ATLAS_JS_READY=true"
               echo "PUBLIC_REDESIGN_CSS_READY=true"
               echo "PUBLIC_COT_104W_CHARTS_READY=true"
               echo "PUBLIC_COT_CFTC_DATA_READY=true"
+              echo "PUBLIC_G8_RATES_OIS_RESEARCH_READY=true"
               exit 0
             fi
             echo "NEXT_PUBLIC_NOT_READY attempt=$attempt"
