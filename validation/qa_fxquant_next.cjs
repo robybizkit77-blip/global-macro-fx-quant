@@ -95,7 +95,7 @@ fs.mkdirSync(evidence,{recursive:true});
    await page.locator('[data-cs-country="NZD"]').click();
    assert((await page.locator('.cs-sourceband').innerText()).includes('16/10/2026'),'NZD old government data not visible');
    assert((await page.locator('.cs-policy-status').innerText()).includes('PROXY'),'NZD rate pricing estimate not identified');
-   assert((await page.locator('.cs-cross-table').innerText()).includes('20 sedute'),'NZD G8 FX counterpart table not loaded');
+   assert(await page.locator('.cs-pair-table tbody tr').count()===7,'NZD seven-currency FX comparator not loaded');
    // Rates & OIS research: eight currencies, actual sovereign histories and source-specific tenor pricing.
    await page.evaluate(()=>{location.hash='#rates'});
    assert(await page.locator('.rates-country').count()===8,'G8 rate countries incomplete');
