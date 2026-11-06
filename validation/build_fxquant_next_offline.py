@@ -34,6 +34,8 @@ def main() -> None:
     js = (SITE / "app.js").read_text(encoding="utf-8")
     cot_js = (SITE / "cot-studio.js").read_text(encoding="utf-8")
     cot_css = (SITE / "cot-studio.css").read_text(encoding="utf-8")
+    rates_js = (SITE / "rates-studio.js").read_text(encoding="utf-8")
+    rates_css = (SITE / "rates-studio.css").read_text(encoding="utf-8")
     docs = {k: json.loads((ROOT / path).read_text(encoding="utf-8")) for k, path in SOURCES.items()}
     assert len(docs) == 12
     assert docs["pairs"].get("pair_count") == 28
@@ -42,7 +44,9 @@ def main() -> None:
     css = css.replace("@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;450;500;550;600;650;700;750;800&family=Manrope:wght@400;500;600;650;700;800&display=swap');", "")
     contents = contents.replace('<link rel="stylesheet" href="./theme.css?v=2">', "<style>"+css+"</style>")
     contents = contents.replace('<link rel="stylesheet" href="./cot-studio.css?v=1">', "<style>"+cot_css+"</style>")
+    contents = contents.replace('<link rel="stylesheet" href="./rates-studio.css?v=1">', "<style>"+rates_css+"</style>")
     contents = contents.replace('<script src="./cot-studio.js?v=1" defer></script>', "<script>"+cot_js+"</script>")
+    contents = contents.replace('<script src="./rates-studio.js?v=1" defer></script>', "<script>"+rates_js+"</script>")
     contents = contents.replace('<script src="./app.js?v=2" defer></script>', "")
     contents = contents.replace('<span class="live-dot"></span> NEXT / DESIGN LAB', '<span class="live-dot"></span> NEXT / DESIGN LAB')
     contents = contents.replace('NEXT / DESIGN LAB <span class="edition-sep">', 'NEXT / OFFLINE PREVIEW <span class="edition-sep">')
@@ -78,6 +82,8 @@ def main() -> None:
     DEST.write_text(contents,encoding="utf-8")
     assert 'fxquant-next-offline-data' in contents
     assert 'function rates()' in contents
+    assert 'FXQuantRates' in contents
+    assert 'rates-instrument-card' in contents
     assert '<style>' in contents
     print(json.dumps({"status":"PASS","output":str(DEST),"bytes":DEST.stat().st_size,
       "snapshot_sources":list(docs),"pairs":docs["pairs"]["pair_count"],
