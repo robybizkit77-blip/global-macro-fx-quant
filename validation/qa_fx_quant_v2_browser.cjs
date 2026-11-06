@@ -88,6 +88,58 @@ async function audit(browser,name,file,selector,view,viewport){
    rec.feed=full.slice(0,340);
    if(!full.includes(expected))issue(name,view,'live_feed_not_confirmed',rec.feed||s+' empty');
   }
+  if(name==='home'){
+    // A 200 HTML response is not an operational Home. Verify the rendered
+    // source receipt and observed Treasury date against the same-origin feed.
+    await page.waitForFunction(()=>['CURRENT','DEGRADED','OFFLINE'].includes(
+      document.querySelector('#feedStatus')?.dataset.integrity),null,{timeout:15000});
+    const home=await page.evaluate(async()=>{
+      const status=document.querySelector('#feedStatus');
+      const today=document.querySelector('#today')?.textContent||'';
+      const hero=document.querySelector('#heroTitle')?.textContent||'';
+      const receipt=status?.textContent||'';
+      const rawBase=new URL('../../live_data/sections/',location.href);
+      let actualDate=null;
+      try{
+        const resp=await fetch(new URL('NATIVE_RATES_DATA.json',rawBase),{cache:'no-store'});
+        if(resp.ok)actualDate=(await resp.json()).USD?.date||null;
+      }catch(_){}
+      return {integrity:status?.dataset.integrity,today,hero,receipt,actualDate,
+        rawBase:rawBase.href};
+    });
+    rec.feed=home.receipt;
+    if(!home.rawBase.startsWith(new URL('../../live_data/sections/',base+'/'+file).href))
+      issue(name,view,'wrong_home_feed_origin',home.rawBase);
+    if(home.integrity!=='CURRENT')
+      issue(name,view,'home_not_operational',JSON.stringify(home));
+    if(home.actualDate){
+      const readable=home.actualDate.slice(8,10)+'/'+home.actualDate.slice(5,7)+'/'+home.actualDate.slice(0,4);
+      if(!home.today.includes(readable))
+        issue(name,view,'home_treasury_date_mismatch',JSON.stringify(home));
+    }
+    if(home.hero.includes('Capex USA solido'))
+      issue(name,view,'home_hardcoded_editorial_headline',home.hero);
+    if(mode==='pr-local'&&view==='desktop'){
+      await page.route('**/live_data/sections/NATIVE_RATES_DATA.json',route=>route.fulfill({
+        status:503,contentType:'application/json',body:'{"error":"source unavailable"}'
+      }));
+      await page.reload({waitUntil:'domcontentloaded'});
+      await page.waitForFunction(()=>['CURRENT','DEGRADED','OFFLINE'].includes(
+        document.querySelector('#feedStatus')?.dataset.integrity),null,{timeout:15000});
+      const degraded=await page.evaluate(()=>({
+        state:document.querySelector('#feedStatus')?.dataset.integrity,
+        date:document.querySelector('#today')?.textContent,
+        receipt:document.querySelector('#feedStatus')?.textContent
+      }));
+      if(degraded.state!=='DEGRADED'||!degraded.date.includes('SNAPSHOT')||
+         !degraded.receipt.includes('TASSI DA VERIFICARE'))
+        issue(name,view,'home_missing_treasury_failclosed',JSON.stringify(degraded));
+      await page.unroute('**/live_data/sections/NATIVE_RATES_DATA.json');
+      await page.reload({waitUntil:'domcontentloaded'});
+      await page.waitForFunction(()=>['CURRENT','DEGRADED','OFFLINE'].includes(
+        document.querySelector('#feedStatus')?.dataset.integrity),null,{timeout:15000});
+    }
+  }
   if(name==='tassi'){
     try {
       await page.waitForFunction(()=>

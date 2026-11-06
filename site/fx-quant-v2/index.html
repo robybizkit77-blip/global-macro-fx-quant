@@ -8,7 +8,7 @@
 :root{--bg:#080f19;--bg2:#0c1724;--surface:#101e2d;--surface2:#122334;--line:#26394a;--line2:#1c2e3e;--txt:#edf1f5;--muted:#9cabb8;--quiet:#778c9c;--green:#64d9ac;--purple:#c1a0ee;--blue:#9fc6e8;--amber:#e3bb73;--serif:Georgia,'Times New Roman',serif;--sans:Inter,'Segoe UI',Arial,sans-serif}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--txt);background:radial-gradient(circle at 86% 4%,#153047 0,transparent 28%),radial-gradient(circle at 4% 31%,#10283a 0,transparent 26%),var(--bg);font-family:var(--sans);-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.58}a{color:inherit;text-decoration:none}a:hover{color:#fff}button{font:inherit;color:inherit;cursor:pointer}button:focus-visible,a:focus-visible{outline:2px solid var(--amber);outline-offset:4px}::selection{background:#375778;color:#fff}.shell{width:min(1360px,calc(100% - 88px));margin:auto}.micro{font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:var(--quiet)}.muted{color:var(--muted)}.upper{font-variant:all-small-caps;letter-spacing:1.2px}h1,h2,h3,p{margin-top:0}h1,h2,h3{font-weight:500}.serif{font-family:var(--serif)}.topline{height:3px;background:linear-gradient(90deg,#c5a879 0%,#64d9ac 40%,#a682e6 100%)}
 .header{position:sticky;z-index:20;top:0;background:#091522ec;border-bottom:1px solid #283848;backdrop-filter:blur(22px)}.header-row{height:78px;display:flex;align-items:center;gap:34px}.brand{display:flex;align-items:center;gap:16px;white-space:nowrap}.brand-mark{border:1px solid #657889;width:40px;height:40px;display:grid;place-items:center;color:#ead5af;font-family:var(--serif);font-size:19px}.brand-name{font-size:17px;font-weight:740;letter-spacing:1.3px}.brand-sub{display:block;font-size:9px;font-weight:600;letter-spacing:2px;color:#91a5b5;margin-top:1px}.nav{display:flex;align-items:center;gap:28px;margin-left:auto}.nav a{font-size:12px;font-weight:600;color:#aabac7;white-space:nowrap}.nav a.active{color:#f6f7f8;position:relative}.nav a.active:after{content:"";height:2px;background:#d4b47c;bottom:-30px;left:0;right:0;position:absolute}.nav a:hover{color:#fff}.nav .nav-dot{height:3px;width:3px;background:#59778a;border-radius:50%}.preview-label{border:1px solid #48596b;background:#172b3d;color:#c8daeb;border-radius:4px;padding:6px 10px;font-size:10px;letter-spacing:.75px;text-transform:uppercase;font-weight:750;white-space:nowrap}
-.mast{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:29px 0 17px;border-bottom:1px solid var(--line)}.mast-left{display:flex;gap:16px;align-items:center;flex-wrap:wrap}.mast .edition{color:#d6bf93}.mast .dot{color:#475969}.mast-date{font-size:11px;color:#91a6b6;letter-spacing:.2px}.quality{display:flex;gap:7px;align-items:center;white-space:nowrap;font-size:10px;color:#b7cad9}.quality i{width:6px;height:6px;background:var(--amber);border-radius:50%;display:inline-block;box-shadow:0 0 0 4px #e3bb7313}
+.mast{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:29px 0 17px;border-bottom:1px solid var(--line)}.mast-left{display:flex;gap:16px;align-items:center;flex-wrap:wrap}.mast .edition{color:#d6bf93}.mast .dot{color:#475969}.mast-date{font-size:11px;color:#91a6b6;letter-spacing:.2px}.quality{display:flex;gap:7px;align-items:flex-start;min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere;line-height:1.5;font-size:10px;color:#b7cad9}.quality i{width:6px;height:6px;flex:0 0 6px;margin-top:5px;background:var(--amber);border-radius:50%;display:inline-block;box-shadow:0 0 0 4px #e3bb7313}
 .hero{display:grid;grid-template-columns:minmax(0,1.29fr) minmax(320px,.71fr);gap:56px;padding:48px 0 39px;border-bottom:1px solid var(--line)}.hero-text{position:relative;padding:0 0 2px}.eyebrow{display:flex;gap:11px;align-items:center;color:var(--amber);font-size:11px;font-weight:750;letter-spacing:1.7px;text-transform:uppercase;margin-bottom:22px}.eyebrow::before{content:"";height:1px;width:27px;background:var(--amber)}h1{font-family:var(--serif);font-size:clamp(39px,4.75vw,70px);line-height:1.075;letter-spacing:-2px;max-width:780px;margin:0 0 22px}.standfirst{max-width:700px;font-family:var(--serif);font-size:clamp(18px,1.65vw,22px);line-height:1.5;color:#c8d2dc;letter-spacing:.05px;margin:0 0 24px}.hero-note{color:#9bb0bf;max-width:660px;font-size:13px;line-height:1.8;border-left:2px solid #7b9db1;padding-left:17px;margin:0}.hero-actions{display:flex;gap:18px;align-items:center;margin-top:29px;flex-wrap:wrap}.btn{display:inline-flex;align-items:center;gap:10px;border:1px solid #bdac91;color:#e8d9bc;background:#283c48;padding:11px 17px;font-weight:700;font-size:12px;border-radius:4px;transition:background .18s}.btn:hover{background:#365063}.inline-link{color:#d6c4a6;font-size:12px;border-bottom:1px solid #5b564b;padding-bottom:2px}.inline-link:hover{color:#fff}
 .pricing{background:linear-gradient(145deg,#172c3c 0%,#101f2c 65%,#122232 100%);border:1px solid #395062;position:relative;min-height:400px;padding:25px 28px 20px;box-shadow:0 24px 75px #0003}.pricing:before{content:"";display:block;position:absolute;inset:0 0 auto auto;height:2px;width:125px;background:linear-gradient(90deg,transparent,#e0bf84)}.pricing-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:19px;border-bottom:1px solid #3a5060}.pricing-head h2{font:500 25px/1.18 var(--serif);letter-spacing:-.45px;margin:8px 0 0}.pricing-head .ico{font-size:20px;color:var(--amber)}.metric-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:15px;padding:15px 0;border-bottom:1px solid #263b4c}.metric-row:last-of-type{border-bottom:0}.metric-label{color:#a8bac7;font-size:12px}.metric-label small{display:block;color:#7f97a8;font-size:10px;margin-top:2px}.metric-value{font-size:23px;font-variant-numeric:tabular-nums;line-height:1.2;letter-spacing:-.4px;text-align:right;font-weight:650}.metric-delta{font-size:11px;font-weight:650;text-align:right;color:var(--purple);font-variant-numeric:tabular-nums}.metric-delta.up{color:var(--green)}.metric-delta.neutral{color:var(--blue)}.pricing-foot{font-size:10px;color:#839bab;line-height:1.6;margin:9px 0 0}
 .insights{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border-bottom:1px solid var(--line)}.insight{min-width:0;padding:24px 24px 25px 0;margin-right:24px;position:relative}.insight:not(:last-child):after{content:"";height:53px;width:1px;background:var(--line);position:absolute;right:0;top:29px}.insight .kicker{font-size:10px;letter-spacing:1.7px;font-weight:700;color:#7e96a7;text-transform:uppercase}.insight strong{font-size:20px;font-weight:600;display:block;color:#e7edf3;margin-top:7px;font-variant-numeric:tabular-nums}.insight .sub{font-size:11px;color:#8ea8b9;display:block;margin-top:2px;line-height:1.45}.insight .sub.accent{color:var(--purple)}
@@ -96,7 +96,7 @@
 const flags={USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',CHF:'🇨🇭',CAD:'🇨🇦',AUD:'🇦🇺',NZD:'🇳🇿'};
 const names={USD:'Dollaro USA',EUR:'Euro',GBP:'Sterlina',JPY:'Yen',CHF:'Franco svizzero',CAD:'Dollaro canadese',AUD:'Dollaro australiano',NZD:'Dollaro NZ'};
 const sequence=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
-const base='https://raw.githubusercontent.com/robybizkit77-blip/global-macro-fx-quant/main/live_data/sections/';
+const base='../../live_data/sections/'; // Same-origin, published Pages mirror; not the GitHub raw API.
 // Fallback editoriale del 03/11/2026. I valori si aggiornano da fonti datate; la narrativa storica non viene trattata come ricerca nuova.
 const seed={
  rates:{USD:{date:'2026-11-02','2Y':4.59,'10Y':4.91,chg2_bp:-9,chg10_bp:-9,curve_bp:32},EUR:{date:'2026-10-30','2Y':3.0051075689,'10Y':3.3650469366,chg2_bp:2.2,chg10_bp:-0.4},GBP:{date:'2026-10-30','2Y':4.6775339758,'10Y':5.2767254021,chg2_bp:-3,chg10_bp:-7.1},JPY:{date:'2026-10-30','2Y':1.875,'10Y':2.817,chg2_bp:0.3,chg10_bp:-2},CHF:{date:'2026-09-30','2Y':0.287,'10Y':0.586,chg2_bp:-3.7,chg10_bp:1.1},CAD:{date:'2026-10-30','2Y':3.28,'10Y':3.78,chg2_bp:6,chg10_bp:0},AUD:{date:'2026-10-28','2Y':4.951,'10Y':5.208,chg2_bp:3.4,chg10_bp:-6.9},NZD:{date:'2026-10-16','2Y':3.89,'10Y':5,chg2_bp:6,chg10_bp:-4}},
@@ -114,7 +114,7 @@ const seed={
  what:[{ccy:'NZD',summary:'Nuova Zelanda in recupero sul PIL ma con lavoro ancora debole e inflazione headline sopra il core. Il layer liquidità NZD non è determinato in modo robusto.'}],
  news:[{ccy:'JPY',as_of:'2026-11-02',title:'JPY: repricing implicito da futures più dovish (−0,7 bp 6M in 1D)',detail:'Futures TONA: non equivale a una curva OIS osservata.'},{ccy:'GBP',as_of:'2026-10-30',title:'GBP: repricing OIS più dovish (−6,7 bp 12M in 1D)',detail:'Variazione settimanale −5,6 bp.'},{ccy:'CAD',as_of:'2026-10-30',title:'CAD: futures più dovish (−10,0 bp 12M in 1D)',detail:'Proxy futures, non curva OIS osservata.'},{ccy:'AUD',as_of:'2026-10-30',title:'AUD: futures più dovish (−4,0 bp 12M in 1D)',detail:'Variazione settimanale +1,5 bp.'}]
 };
-const state={rates:seed.rates,dxy:seed.dxy,themes:seed.themes,what:seed.what,news:seed.news,usd2:seed.usd2,usd10:seed.usd10,focus:'USD',live:false};
+const state={rates:seed.rates,dxy:seed.dxy,themes:seed.themes,what:seed.what,news:seed.news,usd2:seed.usd2,usd10:seed.usd10,focus:'USD',live:false,liveRates:false,liveDxy:false,liveNews:false,feedState:'LOADING'};
 const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=(x,d=2)=>typeof x==='number'&&Number.isFinite(x)?x.toLocaleString('it-IT',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';
 const signed=(x,d=1,suffix='')=>typeof x==='number'&&Number.isFinite(x)?(x>0?'+':x<0?'−':'')+fmt(Math.abs(x),d)+suffix:'—';
@@ -153,14 +153,80 @@ function renderCharts(){const hist=state.dxy.history||[];const vals=hist.map(x=>
 function render(){
  renderHero();renderFocus();renderG8();renderThemes();renderNews();renderCharts();
  const rateDate=state.rates?.USD?.date;
- const valid=/^\d{4}-\d{2}-\d{2}$/.test(rateDate||'');
+ const valid=state.liveRates&&/^\d{4}-\d{2}-\d{2}$/.test(rateDate||'');
  $('today').textContent=valid?
    'Tassi USA al '+shortDate(rateDate)+' · temi editoriali 03/11':
-   'Temi editoriali 03/11 · tassi USA non verificati';
+   'SNAPSHOT 03/11 · tassi non verificati';
 }
 const picker=$('ccySelector');picker.innerHTML=sequence.map(c=>'<button type="button" class="ccy" data-ccy="'+c+'" aria-pressed="false">'+c+'</button>').join('');$('g8Grid').addEventListener('click',e=>{const b=e.target.closest('button[data-ccy]');if(!b)return;state.focus=b.dataset.ccy;renderFocus();renderG8();document.getElementById('lettura').scrollIntoView({behavior:'smooth',block:'start'});});
 picker.addEventListener('click',e=>{const b=e.target.closest('button[data-ccy]');if(!b)return;state.focus=b.dataset.ccy;renderFocus();renderG8()});$('themeList').addEventListener('click',e=>{const a=e.target.closest('[data-focus]');if(a){state.focus=a.dataset.focus;renderFocus();renderG8()}});render();
-// In un browser con connessione i feed del progetto sostituiscono lo snapshot. In locale senza rete la pagina resta perfettamente navigabile.
-(async()=>{const names=['NATIVE_RATES_DATA.json','DXY_SYNTHETIC_ECB.json','TOP_THEMES.json','WHAT_CHANGED.json','NEWS_PULSE_OPERATIONAL.json'];const requests=names.map(async n=>{const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),8500);try{const res=await fetch(base+n,{cache:'no-store',signal:ctl.signal});if(!res.ok)throw Error('HTTP '+res.status);return await res.json()}finally{clearTimeout(timer)}});const r=await Promise.allSettled(requests);let n=0;if(r[0].status==='fulfilled'){state.rates=r[0].value;let usd=state.rates.USD;if(Array.isArray(usd?.history2?.values)&&Array.isArray(usd?.history10?.values)){state.usd2=usd.history2.values.slice(-48);state.usd10=usd.history10.values.slice(-48)}n++}if(r[1].status==='fulfilled'){state.dxy=r[1].value;n++}if(r[2].status==='fulfilled'){state.themes=r[2].value;n++}if(r[3].status==='fulfilled'){state.what=r[3].value;n++}if(r[4].status==='fulfilled'){state.news=r[4].value.items||[];n++}if(n>0){$('feedStatus').textContent='Fonti acquisite '+n+'/5 · tassi USA '+(r[0].status==='fulfilled'?shortDate(state.rates?.USD?.date):'snapshot')+' · temi editoriali 03/11';render()}else{$('feedStatus').textContent='Modalità offline · snapshot editoriale 03/11/2026 · dati non aggiornati';}})();
+// Five independently date-validated feeds from the SAME published Pages origin.
+// An acquired editorial list is not equivalent to a current market observation.
+const feedNames=['NATIVE_RATES_DATA.json','DXY_SYNTHETIC_ECB.json','TOP_THEMES.json','WHAT_CHANGED.json','NEWS_PULSE_OPERATIONAL.json'];
+const isDay=d=>typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&Number.isFinite(Date.parse(d+'T00:00:00Z'));
+const ageDays=d=>{
+ if(!isDay(d))return null;
+ const rome=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+ return Math.round((Date.parse(rome+'T00:00:00Z')-Date.parse(d+'T00:00:00Z'))/86400000);
+};
+const validFeed=(name,v)=>{
+ if(name==='NATIVE_RATES_DATA.json'){
+  const u=v?.USD;
+  return !!u&&['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'].every(c=>
+   !!v?.[c]&&isDay(v[c].date)&&Number.isFinite(v[c]['2Y'])&&Number.isFinite(v[c]['10Y']))&&
+   Array.isArray(u.history2?.values)&&Array.isArray(u.history10?.values);
+ }
+ if(name==='DXY_SYNTHETIC_ECB.json')
+  return v?.not_official_ice===true&&isDay(v.as_of)&&Number.isFinite(v.value)&&
+   Number.isFinite(v.previous_value)&&Array.isArray(v.history);
+ if(name==='TOP_THEMES.json'||name==='WHAT_CHANGED.json')
+  return Array.isArray(v)&&v.length>=7&&v.every(x=>typeof x.ccy==='string');
+ if(name==='NEWS_PULSE_OPERATIONAL.json')
+  return isDay(v?.content_as_of)&&Array.isArray(v.items);
+ return false;
+};
+(async()=>{
+ const requests=feedNames.map(async name=>{
+  const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),8500);
+  try{
+   const res=await fetch(base+name,{cache:'no-store',signal:ctl.signal});
+   if(!res.ok)throw Error('HTTP '+res.status);
+   const value=await res.json();
+   if(!validFeed(name,value))throw Error('schema non valido: '+name);
+   return value;
+  }finally{clearTimeout(timer);}
+ });
+ const results=await Promise.allSettled(requests);
+ const fetched=results.map(x=>x.status==='fulfilled'?x.value:null);
+ if(fetched[0]){
+  state.rates=fetched[0];state.liveRates=true;
+  const usd=state.rates.USD;
+  state.usd2=usd.history2.values.slice(-48);state.usd10=usd.history10.values.slice(-48);
+ }
+ if(fetched[1]){state.dxy=fetched[1];state.liveDxy=true;}
+ if(fetched[2])state.themes=fetched[2];
+ if(fetched[3])state.what=fetched[3];
+ if(fetched[4]){state.news=fetched[4].items;state.liveNews=true;}
+ const count=fetched.filter(Boolean).length;
+ const rateAge=state.liveRates?ageDays(state.rates.USD.date):null;
+ const newsAge=state.liveNews?ageDays(fetched[4].content_as_of):null;
+ const dxyAge=state.liveDxy?ageDays(state.dxy.as_of):null;
+ const ratesOK=rateAge!==null&&rateAge>=0&&rateAge<=4;
+ const newsOK=newsAge!==null&&newsAge>=0&&newsAge<=4;
+ const dxyOK=dxyAge!==null&&dxyAge>=0&&dxyAge<=4;
+ state.live=ratesOK&&dxyOK&&newsOK;
+ state.feedState=state.live?'CURRENT':!count?'OFFLINE':'DEGRADED';
+ $('feedStatus').dataset.integrity=state.feedState;
+ $('feedStatus').textContent=
+   'Fonti '+count+'/5 · Treasury '+(state.liveRates?shortDate(state.rates.USD.date):'NON CARICATO')+
+   (ratesOK?'':' · TASSI DA VERIFICARE')+
+   ' · DXY '+(state.liveDxy?shortDate(state.dxy.as_of):'NON CARICATO')+
+   (dxyOK?'':' · PROXY DA VERIFICARE')+
+   ' · News '+(state.liveNews?shortDate(fetched[4].content_as_of):'NON CARICATE')+
+   (newsOK?'':' · NEWS DA VERIFICARE')+
+   ' · temi editoriali 03/11';
+ render();
+})();
+
 </script>
 </body></html>
