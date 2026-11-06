@@ -116,9 +116,12 @@ def analyze(feeds, asof):
                     o.get("quality") == "OFFICIAL_CERTIFIED" and
                     o.get("official_status") == "ACTIVE" and
                     o.get("backtest_eligible_as_official") is True and
-                    all(metric((o.get("horizons") or {}).get(t, {}).get(k))
-                        for t in ("3m", "6m", "12m")
-                        for k in ("rate", "policy_delta_bp")))
+                    all(metric((o.get("horizons") or {}).get(t, {}).get("rate"))
+                        and (metric((o.get("horizons") or {}).get(t, {}).get("policy_delta_bp"))
+                             or ((o.get("horizons") or {}).get(t, {}).get("policy_delta_bp") is None
+                                 and (o.get("horizons") or {}).get(t, {}).get(
+                                     "policy_comparison_temporally_aligned") is False))
+                        for t in ("3m", "6m", "12m")))
         if status == "GREEN_OFFICIAL":
             require(official, f"{c}: falsely promoted OIS official status")
         required_ois[c] = bool(official and oage <= LIMITS["ois"])
