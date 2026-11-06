@@ -76,7 +76,7 @@
       "horizons": {
         "12m": {
           "accrual_start": "2027-12-15",
-          "business_day_lag": 1,
+          "business_day_lag": 2,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "SA3Z2027",
@@ -96,7 +96,7 @@
         },
         "3m": {
           "accrual_start": "2027-03-17",
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "SA3H2027",
@@ -117,7 +117,7 @@
         },
         "6m": {
           "accrual_start": "2027-06-16",
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "SA3M2027",
@@ -197,7 +197,7 @@
       "direction_vs_policy": null,
       "horizons": {
         "12m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "FST3U2027",
@@ -216,26 +216,26 @@
           "symbol": "EUREX:FST3U2027"
         },
         "3m": {
-          "business_day_lag": 1,
+          "business_day_lag": 2,
           "change_1d_bp": null,
           "change_1w_bp": null,
-          "contract": "FST3V2026",
-          "contract_description": "Oct 2026",
-          "expiration": "2027-01-20",
-          "futures_price": 97.4825,
+          "contract": "FST3X2026",
+          "contract_description": "Nov 2026",
+          "expiration": "2027-02-17",
+          "futures_price": 97.4075,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-04T22:05:26Z",
+          "price_valid_until": "2026-11-04T22:05:11Z",
           "quote_as_of": "2026-11-04",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": null,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 1.8,
-          "symbol": "EUREX:FST3V2026"
+          "raw_level_minus_spot_policy_bp": 9.2,
+          "symbol": "EUREX:FST3X2026"
         },
         "6m": {
-          "business_day_lag": 1,
+          "business_day_lag": 2,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "FST3G2027",
@@ -285,9 +285,9 @@
             "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
           },
           "3m": {
-            "contract": "FST3V2026",
+            "contract": "FST3X2026",
             "quote_as_of": "2026-11-04",
-            "rate_indicative": 2.5175,
+            "rate_indicative": 2.5925,
             "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
           },
           "6m": {
@@ -482,7 +482,7 @@
       "direction_vs_policy": "WITHHELD",
       "horizons": {
         "12m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "ZQV2027",
@@ -501,7 +501,7 @@
           "symbol": "CBOT:ZQV2027"
         },
         "3m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "ZQG2027",
@@ -520,7 +520,7 @@
           "symbol": "CBOT:ZQG2027"
         },
         "6m": {
-          "business_day_lag": 0,
+          "business_day_lag": 1,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "ZQJ2027",
