@@ -135,7 +135,7 @@ async function refreshBanks(){
    }
   }catch(error){console.warn("[FX Quant V2 CB] Overlay BoE informativo non disponibile:",error);}
   dataset=next;render();
-  $("dataStatus").textContent="Feed banche centrali collegato: "+decisions+" decisioni G8, "+markets+" rendimenti governativi, "+officialCurves+" strutture di mercato ufficiali aggiornate."+(rbaOverlay?" RBA: pubblicazione ufficiale 03/11 collegata come contesto informativo V2; feed canonico Core invariato.":"")++(boeOverlay?" BoE: decisione ufficiale 05/11 collegata come contesto informativo; pricing OIS 04/11 pre-evento, non repricing post-decisione.":"")+" OIS, futures e proxy sono distinti; ogni fonte conserva la propria data. Narrativa precedente: snapshot del 3 novembre, da rivalutare.";
+  $("dataStatus").textContent="Feed banche centrali collegato: "+decisions+" decisioni G8, "+markets+" rendimenti governativi, "+officialCurves+" strutture di mercato ufficiali aggiornate."+(rbaOverlay?" RBA: pubblicazione ufficiale 03/11 collegata come contesto informativo V2; feed canonico Core invariato.":"")+(boeOverlay?" BoE: decisione ufficiale 05/11 collegata come contesto informativo; pricing OIS 04/11 pre-evento, non repricing post-decisione.":"")+" OIS, futures e proxy sono distinti; ogni fonte conserva la propria data. Narrativa precedente: snapshot del 3 novembre, da rivalutare.";
  }catch(err){
   console.warn("[FX Quant V2 CB] Feed non validati; mantengo lo snapshot:",err);
   $("dataStatus").textContent="Modalità snapshot: decisioni/rates/pricing canonici non verificati. Consultare le date di ogni paese e non presumere che una riunione trascorsa sia stata acquisita.";
