@@ -8,7 +8,7 @@ La versione approvata e operativa è `site/fx-quant-v2/` (12 sezioni). La grafic
 
 ### Ingressi e versioni storiche
 
-- Il repository root `/` e `site/website-v1/index.html` rimandano alla V2 per navigazione; **non** sono il codice sorgente della V2.
+- Il repository root `/` e `site/website-v1/index.html` mantengono temporaneamente i reindirizzamenti alla precedente Control Room V10 per non interrompere i test storici; **non** sono il sito operativo approvato. Utilizzare direttamente l'URL V2 qui sopra.
 - `site/control-room-preview/`, `site/website-v1/`, `dashboard/` e `payload/` restano archivi *di compatibilità*: non cancellarli o disattivarne i workflow senza tracciare chi li utilizza.
 - I workflow storici continuano ad alimentare alcuni feed condivisi, pubblicare dati su Pages, fare audit oppure mantenere la retrocompatibilità. Un workflow vecchio non equivale a un workflow inutilizzato.
 
