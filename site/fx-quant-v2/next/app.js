@@ -22,7 +22,7 @@ const SOURCES={
  news:'../../../live_data/sections/NEWS_PULSE_OPERATIONAL.json',
  themes:'../../../live_data/sections/TOP_THEMES.json'
 };
-const state={data:{},errors:{},route:'overview',ccy:'USD',against:'EUR',pair:'EURUSD',pairFilter:'all',pairSearch:'',watch:new Set(),window:20,rateMode:'both',riskStream:'VIX',riskWindow:20,macroMetric:'inflation',newsMode:'pulse',chartIndex:0,charts:{},atlasLens:'rates',homeChart:'rates',homeWindow:20,spotPair:'EURUSD',cotWindow:26,cotMode:'net',cotFilter:'all',cotSort:'percentile',cotSortAsc:false};
+const state={data:{},errors:{},route:'overview',ccy:'USD',against:'EUR',pair:'EURUSD',pairFilter:'all',pairSearch:'',watch:new Set(),window:20,rateMode:'both',riskStream:'VIX',riskWindow:20,macroMetric:'inflation',newsMode:'pulse',chartIndex:0,charts:{},atlasLens:'rates',homeChart:'rates',homeWindow:20,spotPair:'EURUSD',cotWindow:26,cotMode:'net',cotFilter:'all',cotSort:'percentile',cotSortAsc:false,rsWindow:60,rsGovMode:'both',rsDiffMode:'2y'};
 try{const w=JSON.parse(localStorage.getItem('fxquant-next-watch')||'[]');if(Array.isArray(w))state.watch=new Set(w.filter(s=>typeof s==='string'))}catch(e){}
 const $=id=>document.getElementById(id);
 const esc=x=>String(x===undefined||x===null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -294,19 +294,8 @@ function macro(){
  +'<section class="panel"><div class="table-wrap"><table class="data-table"><thead><tr><th>Economia</th><th>Inflazione</th><th>Direzione</th><th>Disoccupazione</th><th>Direzione</th><th>Ultimo CPI</th></tr></thead><tbody>'+FX.map(k=>{const x=m[k];return '<tr class="'+(k===c?'active':'')+'"><td><button type="button" data-ccy="'+k+'">'+FLAGS[k]+' '+k+'</button></td><td>'+fmt(x?.inflation?.latest_value,1)+'%</td><td>'+esc(x?.inflation?.direction||'—')+'</td><td>'+fmt(x?.labour?.latest_value,1)+'%</td><td>'+esc(x?.labour?.direction||'—')+'</td><td>'+esc(x?.inflation?.as_of||'—')+'</td></tr>'}).join('')+'</tbody></table></div></section>';
 }
 function rates(){
- const c=state.ccy,other=state.against;
- const a=currencyInfo(c),b=currencyInfo(other),r=a.rate,rr=b.rate,common=historyRates(c).slice(-Number(state.window));
- const govDiff=finite(r?.['2Y'])&&finite(rr?.['2Y'])?(r['2Y']-rr['2Y'])*100:null;
- return pageHero('RATES / MARKET PRICING','I tassi non sono <em>una sola storia.</em>','Front-end, long-end, curva e aspettative di banca centrale. Distinguiamo Treasury e governativi da OIS e futures, con scadenze e date esplicite.')
- +'<div class="panel glow"><div class="focus-row"><div><span class="mini-overline">RATE EXPLORER</span><h2 class="focus-headline" style="font-size:23px">'+FLAGS[c]+' '+c+' · Rendimenti & pricing</h2></div><div class="select-controls"><select class="select" id="rate-country" aria-label="Scegli valuta">'+FX.map(k=>'<option value="'+k+'" '+(k===c?'selected':'')+'>'+FLAGS[k]+' '+k+'</option>').join('')+'</select><span class="mini-overline">vs</span><select class="select" id="rate-compare" aria-label="Scegli valuta di confronto">'+FX.filter(k=>k!==c).map(k=>'<option value="'+k+'" '+(k===other?'selected':'')+'>'+FLAGS[k]+' '+k+'</option>').join('')+'</select></div></div><div class="divider"></div>'
- +'<div class="metric-split"><div class="stat"><small>Gov 2Y</small><strong>'+fmt(r?.['2Y'])+'%</strong><em>'+date(r?.date)+'</em></div><div class="stat"><small>Gov 10Y</small><strong>'+fmt(r?.['10Y'])+'%</strong><em>'+date(r?.date)+'</em></div><div class="stat"><small>Spread '+c+' − '+other+' · 2Y</small><strong>'+sign(govDiff,1,' pb')+'</strong><em>'+date(r?.date)+' / '+date(rr?.date)+'</em></div></div>'
- +'<p class="source-caption">2Y differenziale indicativo tra rendimenti sovrani. Date '+(r?.date===rr?.date?'coincidenti':'non coincidenti')+'; curva e tipo di benchmark potrebbero differire. Non equivale a uno spread OIS o a un segnale FX.</p></div>'
- +sectionTitle('Il movimento dei rendimenti','Cambia finestra e scadenza')
- +'<div class="grid tilted"><section class="panel"><div class="panel-head"><div><span class="mini-overline">GOVERNMENT YIELDS</span><h2>'+c+' · Storico 2Y e 10Y</h2><p>'+esc(r?.source||'Fonte non caricata')+'</p></div></div><div class="filters"><div class="pill-controls">'+choose('',timeWindows,state.window,'data-window')+'</div><div class="pill-controls">'+choose('',[{label:'2Y + 10Y',value:'both'},{label:'Solo 2Y',value:'2y'},{label:'Solo 10Y',value:'10y'}],state.rateMode,'data-rate-mode')+'</div></div>'
- +ratesPlot(c)+'<div class="chart-summary" style="margin-top:12px">Ultimo movimento osservato: 2Y '+sign(r?.chg2_bp,1,' pb')+' · 10Y '+sign(r?.chg10_bp,1,' pb')+'. La causa richiede analisi macro e pricing.</div></section>'
- +'<section class="panel">'+oisDetail(c)+'</section></div>'
- +sectionTitle('Il perché dei prezzi','Tre fattori che vanno separati')
- +'<div class="story-steps"><div class="step"><span class="step-kicker"><span class="step-number">1</span> FRONT-END</span><h3>Banca centrale e percorso atteso</h3><p>OIS o futures indicativi aiutano a capire le aspettative. Un 2Y governativo da solo non basta ad attribuire la causa.</p></div><div class="step"><span class="step-kicker"><span class="step-number">2</span> LONG-END</span><h3>Crescita, inflazione e duration</h3><p>Nel 10Y possono pesare rendimenti reali, breakeven, term premium, offerta e domanda di titoli.</p></div><div class="step"><span class="step-kicker"><span class="step-number">3</span> MERCATO FX</span><h3>Contano i differenziali</h3><p>Confronta scadenze, date, qualità e prezzo prima di trasformare un differenziale in una tesi valutaria.</p></div></div>';
+ if(window.FXQuantRates?.render)return window.FXQuantRates.render({get,FX,FLAGS,NAMES,state,plot,pageHero,esc,fmt,sign,date,finite,validDay,dayNow});
+ return pageHero('RATES / MONETARY PRICING','Rates Studio non disponibile','Il modulo Rates & OIS non è stato caricato. Verifica il collegamento agli script.');
 }
 function cot(){
  if(window.FXQuantCOT?.render)return window.FXQuantCOT.render({get,FX,FLAGS,state,plot,pageHero,esc,fmt,sign,date,finite,validDay,dayNow,qBadge});
@@ -392,6 +381,10 @@ window.addEventListener('keydown',e=>{
 $('menu-toggle').addEventListener('click',()=>{const open=!$('app').classList.contains('menu-open');$('app').classList.toggle('menu-open',open);$('menu-toggle').setAttribute('aria-expanded',String(open))});
 $('mobile-overlay').addEventListener('click',()=>{$('app').classList.remove('menu-open');$('menu-toggle').setAttribute('aria-expanded','false')});
 document.addEventListener('click',e=>{
+ const rc=e.target.closest('[data-rate-ccy]');if(rc){state.ccy=rc.dataset.rateCcy;if(state.against===state.ccy)state.against=FX.find(x=>x!==state.ccy);render();return;}
+ const rg=e.target.closest('[data-rs-gov]');if(rg){state.rsGovMode=rg.dataset.rsGov;render();return;}
+ const rsw=e.target.closest('[data-rs-window]');if(rsw){state.rsWindow=Number(rsw.dataset.rsWindow);render();return;}
+ const rd=e.target.closest('[data-rs-diff]');if(rd){state.rsDiffMode=rd.dataset.rsDiff;render();return;}
  const cm=e.target.closest('[data-cot-mode]');if(cm){state.cotMode=cm.dataset.cotMode;render();return;}
  const cw=e.target.closest('[data-cot-window]');if(cw){state.cotWindow=Number(cw.dataset.cotWindow);render();return;}
  const cf=e.target.closest('[data-cot-filter]');if(cf){state.cotFilter=cf.dataset.cotFilter;render();return;}
@@ -425,6 +418,8 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('input',e=>{if(e.target.id==='pair-search'){state.pairSearch=e.target.value;const list=$('pair-results');if(!list)return;const keys=pairListKeys();list.innerHTML=keys.length?keys.map(k=>pairRow(k)).join(''):'<div class="empty"><strong>Nessuna coppia trovata</strong><p>Prova un nome o un filtro diverso.</p></div>';}})
 document.addEventListener('change',e=>{
+ if(e.target.id==='rs-country'){state.ccy=e.target.value;if(state.against===state.ccy)state.against=FX.find(k=>k!==state.ccy);render();return;}
+ if(e.target.id==='rs-other'){state.against=e.target.value;render();return;}
  if(e.target.id==='rate-country'){state.ccy=e.target.value;if(state.against===state.ccy)state.against=FX.find(k=>k!==state.ccy);render();}
  if(e.target.id==='rate-compare'){state.against=e.target.value;render();}
 });
