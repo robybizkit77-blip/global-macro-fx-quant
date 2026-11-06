@@ -60,7 +60,7 @@ reject('NZD unvalidated spread status',(_,__,n)=>n.governance.eligible_for_rate_
 reject('NZD false policy effect',(_,__,n)=>n.governance.pair_engine_effect='BUY',x=>x.NZD===null);
 reject('NZD future source date',(_,__,n)=>n.as_of=shift(now,1),x=>x.NZD===null);
 reject('NZD curve arithmetic mismatch',(_,__,n)=>n.curve_bp=95,x=>x.NZD===null);
-const stale=ratesContinuity(rates,chf,nzd,'2026-11-10');
+const stale=ratesContinuity(rates,chf,nzd,shift(chf.as_of,6));
 assert(stale.CHF&&stale.CHF.estimated_2y===null,'Stale CHF cannot be represented as current synthetic 2Y');
 assert(stale.NZD&&stale.NZD.no_observations_claimed_after==='2026-10-22');
 const empty=ratesContinuity({},null,null,now);
