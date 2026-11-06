@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#07121e">
 <meta name="color-scheme" content="dark">
 <meta name="description" content="FX Quant — Un nuovo research terminal Global Macro, Forex e Cross-Asset.">
-<title>FX Quant — Market Intelligence · Concept Next</title>
+<title>FX Quant — Market Intelligence</title>
 <link rel="stylesheet" href="./theme.css?v=2">
 <script src="./app.js?v=2" defer></script>
 </head>
@@ -17,7 +17,7 @@
   <aside class="sidebar" id="sidebar" aria-label="Navigazione principale">
     <a class="brand" href="#overview" aria-label="FX Quant - panoramica">
       <span class="brand-symbol"><svg viewBox="0 0 45 45" aria-hidden="true"><path d="M7 33V13l10 11 9-14 12 9v14" fill="none" stroke="currentColor" stroke-width="3.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 38h31" stroke="#62cfa9" stroke-width="2.5" stroke-linecap="round"/></svg></span>
-      <span class="brand-copy"><strong>FX QUANT<span class="brand-dot">.</span></strong><small>GLOBAL MACRO INTELLIGENCE</small></span>
+      <span class="brand-copy"><strong>FX QUANT<span class="brand-dot">.</span></strong><small>GLOBAL MACRO RESEARCH</small></span>
     </a>
     <div class="edition-tag"><span class="live-dot"></span> NEXT / DESIGN LAB <span class="edition-sep">·</span> 01</div>
     <div class="nav-heading">IL TUO WORKSPACE</div>
@@ -34,7 +34,7 @@
     <div class="nav-heading nav-heading-other">RICERCA E METODO</div>
     <div class="sidebar-mini">
       <span class="mini-label">DAL DATO ALLA TESI</span>
-      <strong>Macro → Pricing → Prezzo</strong>
+      <strong id="sidebar-focus">Macro → Pricing → Prezzo</strong>
       <p>Una storia chiara. Evidenze datate. Ipotesi sempre falsificabili.</p>
       <span class="mini-deco"><i></i><i></i><i></i><i></i></span>
     </div>
@@ -46,14 +46,22 @@
     <header class="topbar">
       <div class="topbar-left">
         <button id="menu-toggle" class="menu-toggle" type="button" aria-label="Apri menu" aria-expanded="false"><span></span><span></span><span></span></button>
-        <div class="breadcrumb"><span>RESEARCH TERMINAL</span><span class="crumb-sep">/</span><strong id="crumb-page">Panoramica</strong></div>
+        <div class="breadcrumb"><span>MARKET INTELLIGENCE</span><span class="crumb-sep">/</span><strong id="crumb-page">Panoramica</strong></div><button id="quicklaunch" class="quick-launch" type="button" title="Cerca valute, coppie e sezioni — Ctrl K" aria-label="Ricerca rapida">⌕ <span>Ricerca rapida</span><kbd>⌘ K</kbd></button>
       </div>
       <div class="topbar-right"><span id="top-asof" class="top-asof">Caricamento fonti…</span><span id="top-quality" class="quality-pill"><span class="live-dot"></span> DATI IN VERIFICA</span><a href="../index.html" class="original-link" title="Torna alla V2 operativa">V2 originale ↗</a></div>
     </header>
     <main id="content" class="content" tabindex="-1">
       <div class="loading-view"><div class="loading-orbit"></div><p>Prepariamo la tua lettura dei mercati…</p><span>Macro, tassi, FX e cross-asset</span></div>
     </main>
-    <footer class="footer"><span>FX QUANT / NEXT · Concept di prodotto</span><span>Le analisi non costituiscono raccomandazioni personalizzate. Dati e qualità sempre espliciti.</span></footer>
+    <footer class="footer"><span>FX QUANT / NEXT · Design & Research Release</span><span>Le analisi non costituiscono raccomandazioni personalizzate. Dati e qualità sempre espliciti.</span></footer>
+  </div>
+</div>
+
+<div id="quick-layer" class="quick-layer" aria-hidden="true">
+  <div class="quick-box" role="dialog" aria-modal="true" aria-label="Ricerca rapida mercati">
+    <div class="quick-search-line"><span aria-hidden="true">⌕</span><input type="search" id="quick-input" placeholder="Cerca una sezione, valuta o coppia FX..." autocomplete="off" aria-label="Cerca nel sito"><button id="quickclose" type="button">ESC</button></div>
+    <div id="quick-results" class="quick-results" aria-live="polite"></div>
+    <div class="quick-hint"><span>Ricerca unificata · 8 sezioni · G8 · 28 coppie</span><span>Esc per chiudere</span></div>
   </div>
 </div>
 </body>
