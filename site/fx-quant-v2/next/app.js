@@ -397,9 +397,9 @@ document.addEventListener('click',e=>{
  const pick=e.target.closest('[data-command]');
  if(pick){
    const [kind,value]=String(pick.dataset.command||'').split(':');
-   if(kind==='ccy'){state.ccy=value;location.hash='#currencies';}
-   else if(kind==='pair'){state.pair=value;state.spotPair=value;location.hash='#pairs';}
-   else if(kind==='route'){location.hash='#'+value;}
+   if(kind==='ccy'){state.ccy=value;state.route='currencies';location.hash='#currencies';}
+   else if(kind==='pair'){state.pair=value;state.spotPair=value;state.route='pairs';location.hash='#pairs';}
+   else if(kind==='route'&&ROUTES[value]){state.route=value;location.hash='#'+value;}
    setQuick(false);render();return;
  }
  const atlas=e.target.closest('[data-atlas]');if(atlas){state.atlasLens=atlas.dataset.atlas;render();return}
