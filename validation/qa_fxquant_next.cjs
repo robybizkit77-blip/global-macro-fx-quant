@@ -29,7 +29,7 @@ fs.mkdirSync(evidence,{recursive:true});
     assert(h1.length>12,'Missing heading '+route);
     const overflow=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));
     assert(overflow.scroll<=overflow.client+2,'Horizontal overflow on '+route+' '+width+': '+JSON.stringify(overflow));
-    await page.screenshot({path:evidence+'/'+route+'-'+width+'.png',fullPage:route==='overview'||route==='pairs'||route==='cot'});
+    await page.screenshot({path:evidence+'/'+route+'-'+width+'.png',fullPage:route==='overview'||route==='pairs'||route==='cot'||route==='rates'});
     results.push({width,route,h1,overflow:'PASS'});
    }
 
@@ -57,12 +57,34 @@ fs.mkdirSync(evidence,{recursive:true});
    assert((await page.locator('.focus-headline').first().innerText()).includes('AUD/CAD'),'Pair select failed');
    await page.locator('[data-watch="AUDCAD"]').click();
    assert((await page.locator('[data-watch="AUDCAD"]').innerText()).includes('Nella watchlist'),'Watchlist failed');
-   // Rates selectors redraw source-backed chart.
+   // Rates & OIS research: eight currencies, actual sovereign histories and source-specific tenor pricing.
    await page.evaluate(()=>{location.hash='#rates'});
-   await page.locator('[data-window="5"]').click();
-   assert(await page.locator('.chart svg').count()>0,'Rates chart absent');
-   await page.locator('[data-rate-mode="10y"]').click();
-   assert((await page.locator('.chart-legend').innerText()).includes('10Y'),'Rate mode failed');
+   assert(await page.locator('.rates-country').count()===8,'G8 rate countries incomplete');
+   assert(await page.locator('.rates-shape-col').count()===3,'3M/6M/12M bars missing');
+   assert(await page.locator('.rates-universe-table tbody tr').count()===8,'G8 pricing table incomplete');
+   assert(await page.locator('.rates-primary-plot .chart svg').count()>0,'Rates yield chart absent');
+   assert(await page.locator('.rates-spread .chart svg').count()>0,'Synchronized FX sovereign spread chart absent');
+   const usdWarning=await page.locator('.rates-reprice').innerText();
+   assert(usdWarning.includes('non le variazioni storiche 1D/1W'),'USD unavailable repricing not disclosed');
+   assert((await page.locator('.rates-figure').innerText()).includes('DATE MISTE'),'Mixed-date USD pricing incorrectly looks simultaneous');
+   await page.locator('[data-rs-window="20"]').click();
+   assert(await page.locator('.rates-primary-plot .chart svg').count()>0,'Rates 20-day selector failed');
+   await page.locator('[data-rs-gov="10y"]').click();
+   assert((await page.locator('.rates-primary-plot .chart-legend').innerText()).includes('10Y'),'Rate 10Y mode failed');
+   await page.locator('[data-rs-gov="slope"]').click();
+   assert((await page.locator('.rates-primary-plot .chart-legend').innerText()).includes('10Y − 2Y'),'Curve slope mode failed');
+   await page.locator('[data-rs-diff="10y"]').click();
+   assert((await page.locator('.rates-spread .rates-graph-head').innerText()).includes('10Y'),'10Y sovereign cross-country spread failed');
+   await page.locator('[data-rate-ccy="GBP"]').first().click();
+   assert((await page.locator('.rates-figure').innerText()).includes('OIS'),'GBP official OIS layer missing');
+   assert((await page.locator('.rates-reprice').innerText()).includes('1 settimana'),'GBP repricing 1W missing');
+   await page.locator('[data-rate-ccy="CHF"]').first().click();
+   assert((await page.locator('.rates-status').innerText()).includes('30/09/2026'),'CHF stale government benchmark date not disclosed');
+   await page.locator('#rs-country').selectOption('NZD');
+   assert((await page.locator('.rates-hero').innerText()).includes('NZD')||(await page.locator('.rates-status').innerText()).includes('NZD'),'NZD country selector failed');
+   assert((await page.locator('.rates-instrument-card').innerText()).includes('PROXY DIREZIONALE'),'NZD proxy not labeled');
+   await page.locator('#rs-other').selectOption('USD');
+   assert((await page.locator('.rates-spread .rates-graph-head').innerText()).includes('NZD − USD'),'Cross-country switch failed');
    // Macro selector drives the graph.
    await page.evaluate(()=>{location.hash='#macro'});
    await page.locator('[data-metric="labour"]').click();
