@@ -104,20 +104,20 @@ function build(api){
    const di=ih.length>1?ih.at(-1)-ih.at(-2):null,dl=lh.length>1?lh.at(-1)-lh.at(-2):null;
    const id=finite(di)?di>0.025?1:di<-.025?-1:0:null;
    const ld=finite(dl)?dl>.025?1:dl<-.025?-1:0:null;
-   const title=id===1&&ld===1?'I prezzi risalgono, mentre il lavoro perde terreno.'
-     :id===1&&ld===-1?'I prezzi accelerano, ma il lavoro per ora tiene.'
+   const title=id===1&&ld===1?'L’inflazione risale, mentre il lavoro perde terreno.'
+     :id===1&&ld===-1?'L’inflazione risale, ma il lavoro per ora tiene.'
      :id===-1&&ld===1?'La pressione sui prezzi cala; il lavoro si indebolisce.'
      :id===-1&&ld===-1?'L’inflazione rallenta senza un netto deterioramento del lavoro.'
      :id===0&&ld===1?'Prezzi quasi fermi, ma la disoccupazione sale.'
      :id===1&&ld===0?'La pressione dei prezzi aumenta; il lavoro è più stabile.'
      :id===-1&&ld===0?'I prezzi rallentano, il lavoro non cambia molto.'
      :'I dati non indicano ancora una direzione unica.';
-   const countryName=NAMES[country]||country;
+   const countryName=({USD:'Negli Stati Uniti',EUR:'Nell’Eurozona',GBP:'Nel Regno Unito',JPY:'In Giappone',CHF:'In Svizzera',AUD:'In Australia',NZD:'In Nuova Zelanda',CAD:'In Canada'})[country]||'Nel Paese selezionato';
    const a=finite(i?.latest_value)?'l’inflazione è '+fmt(i.latest_value,2)+'% al '+(i.as_of||'n.d.')+(finite(di)?' ('+sign(di,2,' punti percentuali')+' dalla rilevazione precedente)':'')
      :'non abbiamo un dato d’inflazione validato';
    const b=finite(l?.latest_value)?'la disoccupazione è '+fmt(l.latest_value,2)+'% al '+(l.as_of||'n.d.')+(finite(dl)?' ('+sign(dl,2,' punti percentuali')+' dalla rilevazione precedente)':'')
      :'non abbiamo un dato di disoccupazione validato';
-   const facts='In '+countryName+' '+a+', mentre '+b+'. I periodi possono essere diversi: è una fotografia macro, non una reazione a una singola pubblicazione.';
+   const facts=countryName+' '+a+', mentre '+b+'. I periodi possono essere diversi: è una fotografia macro, non una reazione a una singola pubblicazione.';
    const why=id===1&&ld===1?'È un mix delicato: prezzi più persistenti possono limitare lo spazio per tagliare, mentre un lavoro meno solido aumenta il rischio sulla crescita.'
      :id===1&&ld===-1?'Un lavoro che non peggiora insieme a prezzi in risalita rende meno immediata una lettura monetaria accomodante.'
      :id===-1&&ld===1?'La combinazione rende più plausibile una pressione verso politiche meno restrittive, ma il mercato potrebbe averla già anticipata.'
