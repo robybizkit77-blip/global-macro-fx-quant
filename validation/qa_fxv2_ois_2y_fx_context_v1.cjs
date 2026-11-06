@@ -53,8 +53,15 @@ assert.equal(observed.CHF.model.aligned.length,0);
 assert.match(observed.CHF.model.rateText,/troppo datata/);
 assert.ok(observed.USD.model.aligned.includes('6m'));
 assert.ok(observed.USD.model.aligned.includes('12m'));
-assert.equal(observed.EUR.model.aligned.includes('12m'),false,
-  '4 Nov EUR 2Y cannot certify a 5 Nov EUR 12M futures observation');
+const eurRateDate=observed.EUR.model.rate.day;
+const eurFuturesDate=observed.EUR.reading.sourceDates['12m'];
+assert.equal(observed.EUR.model.aligned.includes('12m'),eurRateDate===eurFuturesDate,
+  'EUR 2Y and 12M futures must share their real observation date');
+const eurMixedDates={...observed.EUR.reading,
+ sourceDates:{...observed.EUR.reading.sourceDates,
+  '12m':eurFuturesDate===eurRateDate?'2026-11-04':eurRateDate}};
+assert.equal(adapter.evaluate('EUR',eurMixedDates,rates,fx,today).aligned.includes('12m'),false,
+  'Different 2Y and futures observation dates must never be silently joined');
 assert.equal(observed.USD.model.fx.pair,'EUR/USD');
 assert.equal(observed.EUR.model.fx.pair,'EUR/USD');
 assert.equal(observed.CHF.model.fx.pair,'EUR/CHF');
