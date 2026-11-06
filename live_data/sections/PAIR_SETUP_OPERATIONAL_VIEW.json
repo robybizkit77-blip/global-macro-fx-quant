@@ -108,7 +108,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 160.59999999999994,
+              "bp": 165.59999999999997,
               "material": true,
               "side": "AUD"
             }
@@ -138,7 +138,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 160.59999999999994,
+            "bp": 165.59999999999997,
             "material": true,
             "side": "AUD"
           }
@@ -147,9 +147,9 @@
         "policySide": "AUD"
       },
       "transition": {
-        "state": "DIVERGENZA RELATIVA DA MONITORARE",
-        "cls": "transWatch",
-        "note": "il driver strutturale favorisce AUD, ma la dinamica relativa favorisce CAD: divergenza da monitorare, non segnale automatico"
+        "state": "NESSUNA DIVERGENZA RELATIVA CHIARA",
+        "cls": "transNeutral",
+        "note": "la dinamica relativa non contraddice né rafforza chiaramente il vantaggio strutturale di AUD"
       },
       "relative_dynamics": {
         "a": "AUD",
@@ -169,20 +169,19 @@
         "B": {
           "positive": 1,
           "negative": 2,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
             "Lavoro: turning point",
-            "Rates: peggiora",
-            "Rates: turning point"
+            "Rates: peggiora"
           ],
           "withheld": false
         },
         "aNet": -1,
         "bNet": -1,
-        "state": "TURNING POINT ASIMMETRICO",
-        "fav": "CAD"
+        "state": "MISTO",
+        "fav": "—"
       },
       "price_state": null
     },
@@ -830,7 +829,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 293.3,
+              "bp": 288.3,
               "material": true,
               "side": "CAD"
             }
@@ -860,7 +859,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 293.3,
+            "bp": 288.3,
             "material": true,
             "side": "CAD"
           }
@@ -879,13 +878,12 @@
         "A": {
           "positive": 1,
           "negative": 2,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
             "Lavoro: turning point",
-            "Rates: peggiora",
-            "Rates: turning point"
+            "Rates: peggiora"
           ],
           "withheld": false
         },
@@ -949,7 +947,7 @@
               "side": "B"
             },
             "ratesGap": {
-              "bp": 136,
+              "bp": 130.99999999999997,
               "material": true,
               "side": "CAD"
             }
@@ -979,7 +977,7 @@
             "side": "B"
           },
           "ratesGap": {
-            "bp": 136,
+            "bp": 130.99999999999997,
             "material": true,
             "side": "CAD"
           }
@@ -998,13 +996,12 @@
         "A": {
           "positive": 1,
           "negative": 2,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
             "Lavoro: turning point",
-            "Rates: peggiora",
-            "Rates: turning point"
+            "Rates: peggiora"
           ],
           "withheld": false
         },
@@ -1023,8 +1020,8 @@
         },
         "aNet": -1,
         "bNet": -1,
-        "state": "MISTO",
-        "fav": "—"
+        "state": "TURNING POINT ASIMMETRICO",
+        "fav": "JPY"
       },
       "price_state": null
     },
@@ -1372,7 +1369,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": -26.159849880000017,
+              "bp": -21.159849879999992,
               "material": false,
               "side": "—"
             }
@@ -1402,7 +1399,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": -26.159849880000017,
+            "bp": -21.159849879999992,
             "material": false,
             "side": "—"
           }
@@ -1433,13 +1430,12 @@
         "B": {
           "positive": 1,
           "negative": 2,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
             "Lavoro: turning point",
-            "Rates: peggiora",
-            "Rates: turning point"
+            "Rates: peggiora"
           ],
           "withheld": false
         },
@@ -2295,7 +2291,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 139.2482282704806,
+              "bp": 144.24822827048064,
               "material": true,
               "side": "GBP"
             }
@@ -2325,7 +2321,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 139.2482282704806,
+            "bp": 144.24822827048064,
             "material": true,
             "side": "GBP"
           }
@@ -2355,13 +2351,12 @@
         "B": {
           "positive": 1,
           "negative": 2,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
             "Lavoro: turning point",
-            "Rates: peggiora",
-            "Rates: turning point"
+            "Rates: peggiora"
           ],
           "withheld": false
         },
@@ -2946,7 +2941,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 67,
+              "bp": 72.00000000000001,
               "material": false,
               "side": "—"
             }
@@ -2976,7 +2971,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 67,
+            "bp": 72.00000000000001,
             "material": false,
             "side": "—"
           }
@@ -3006,13 +3001,12 @@
         "B": {
           "positive": 1,
           "negative": 2,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
             "Lavoro: turning point",
-            "Rates: peggiora",
-            "Rates: turning point"
+            "Rates: peggiora"
           ],
           "withheld": false
         },
@@ -3514,7 +3508,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 123.99999999999997,
+              "bp": 129,
               "material": true,
               "side": "USD"
             }
@@ -3544,7 +3538,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 123.99999999999997,
+            "bp": 129,
             "material": true,
             "side": "USD"
           }
@@ -3574,13 +3568,12 @@
         "B": {
           "positive": 1,
           "negative": 2,
-          "turns": 2,
+          "turns": 1,
           "details": [
             "Crescita: migliora",
             "Lavoro: peggiora",
             "Lavoro: turning point",
-            "Rates: peggiora",
-            "Rates: turning point"
+            "Rates: peggiora"
           ],
           "withheld": false
         },
