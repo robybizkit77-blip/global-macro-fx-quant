@@ -75,7 +75,9 @@ jobs:
         with:
           node-version: '22'
       - name: Verify CFTC versus ECB point-in-time seven-day gate
-        run: node validation/test_control_room_cot_bce_price_context_v1.js
+        run: |
+          node validation/test_control_room_cot_bce_price_context_v1.js
+          node validation/test_control_room_chf_nzd_rates_research_v1.js
   validate-public-site:
     if: >-
       github.event_name != 'workflow_run' ||
