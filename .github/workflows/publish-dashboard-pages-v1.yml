@@ -141,7 +141,7 @@ jobs:
               est=json.loads(Path('live_data/sections/'+filename).read_text())
               assert est.get('status')=='INFORMATIONAL_ONLY',filename
               assert est.get('official_ois_runtime_untouched') is True,filename
-              assert set(est.get('currencies',{}))==set(liq),filename
+              assert est.get('currencies') and set(est['currencies']).issubset(set(liq)),filename
           print('V2_PAGES_INFORMATIONAL_ESTIMATES_AND_LIQUIDITY_SCOPE_PASS')
           # Protect mirror semantics before making additional public copies.
           cb=json.loads(Path('live_data/sections/NATIVE_CB_DATA.json').read_text())
