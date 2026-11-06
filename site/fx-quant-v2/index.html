@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="dark">
 <title>FX Quant V2 — Research Desk · Home V3 / Tassi / Coppie</title>
-<meta name="description" content="Prototipo HTML funzionante della nuova Home FX Quant. Il sito principale non viene modificato.">
+<meta name="description" content="FX Quant V2 Research Desk: Macro, tassi, rischio cross-asset e FX con fonti datate.">
 <style>
 :root{--bg:#080f19;--bg2:#0c1724;--surface:#101e2d;--surface2:#122334;--line:#26394a;--line2:#1c2e3e;--txt:#edf1f5;--muted:#9cabb8;--quiet:#778c9c;--green:#64d9ac;--purple:#c1a0ee;--blue:#9fc6e8;--amber:#e3bb73;--serif:Georgia,'Times New Roman',serif;--sans:Inter,'Segoe UI',Arial,sans-serif}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--txt);background:radial-gradient(circle at 86% 4%,#153047 0,transparent 28%),radial-gradient(circle at 4% 31%,#10283a 0,transparent 26%),var(--bg);font-family:var(--sans);-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.58}a{color:inherit;text-decoration:none}a:hover{color:#fff}button{font:inherit;color:inherit;cursor:pointer}button:focus-visible,a:focus-visible{outline:2px solid var(--amber);outline-offset:4px}::selection{background:#375778;color:#fff}.shell{width:min(1360px,calc(100% - 88px));margin:auto}.micro{font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:var(--quiet)}.muted{color:var(--muted)}.upper{font-variant:all-small-caps;letter-spacing:1.2px}h1,h2,h3,p{margin-top:0}h1,h2,h3{font-weight:500}.serif{font-family:var(--serif)}.topline{height:3px;background:linear-gradient(90deg,#c5a879 0%,#64d9ac 40%,#a682e6 100%)}
@@ -86,10 +86,10 @@
  <p class="g8-disclaimer">Rendimenti 2Y e variazioni provengono dalle serie sovrane del progetto, con date proprie e frequenze non uniformi. Non sono segnali direzionali FX né OIS.</p>
 </section>
 <section class="section" id="lettura"><div class="section-heading"><div><span class="chapter">03 / Dalla valuta alla tesi</span><h2>Dai mercati alle valute.</h2></div><p>Macro, pricing e prezzo diventano una lettura operativa. Seleziona la valuta per vedere conferme e possibili invalidazioni.</p></div>
- <div class="reading-grid"><article class="reading-main"><p class="lead">Non cerchiamo una previsione a tutti i costi. Cerchiamo una tesi, le sue conferme e soprattutto ciò che potrebbe smentirla.</p><div class="signal-rows"><div class="signal"><span class="signal-index">01 / MACRO</span><h3>La crescita non cede</h3><p>Gli investimenti delle imprese americane restano un sostegno. Ma la fiducia delle famiglie e le aspettative d'inflazione rendono il quadro meno lineare.</p></div><div class="signal"><span class="signal-index">02 / RATES</span><h3 id="signalRatesTitle">Il 2Y si muove in senso opposto</h3><p id="signalRatesBody">Nell'ultima osservazione il front-end scende. Prima di parlare di repricing duraturo serve verificare persistenza e origine del movimento.</p></div><div class="signal"><span class="signal-index">03 / FX & PREZZO</span><h3>La conferma è sul mercato</h3><p>Il dollaro va letto insieme ai differenziali di rendimento, al positioning e alla reazione del prezzo. Una narrativa coerente non basta.</p></div></div><div class="quote">«La domanda utile non è soltanto “chi è forte?”, ma “quale mercato sta cambiando idea — e su quali prove?”.»</div></article>
+ <div class="reading-grid"><article class="reading-main"><p class="lead">Non cerchiamo una previsione a tutti i costi. Cerchiamo una tesi, le sue conferme e soprattutto ciò che potrebbe smentirla.</p><div class="signal-rows"><div class="signal"><span class="signal-index">01 / MACRO</span><h3>La crescita non cede</h3><p>Gli investimenti delle imprese americane restano un sostegno. Ma la fiducia delle famiglie e le aspettative d'inflazione rendono il quadro meno lineare.</p></div><div class="signal"><span class="signal-index">02 / RATES</span><h3 id="signalRatesTitle">Il 2Y si muove in senso opposto</h3><p id="signalRatesBody">Nell'ultima osservazione il front-end scende. Prima di parlare di repricing duraturo serve verificare persistenza e origine del movimento.</p></div><div class="signal"><span class="signal-index">03 / FX & PREZZO</span><h3>La conferma è sul mercato</h3><p>Il dollaro va letto insieme ai differenziali di rendimento, al positioning e alla reazione del prezzo. Una narrativa coerente non basta.</p></div></div><div id="marketPulse" aria-live="polite" style="margin-top:23px;border-top:1px solid var(--line);padding-top:18px"><h3 style="font:500 22px var(--serif);margin:0 0 10px">Cosa è cambiato nei mercati</h3><p id="pulseObserved" class="muted">Caricamento delle fonti cross-asset…</p><p id="pulseInterpretation" class="muted">Lettura disponibile con date e fonti verificabili.</p><p id="pulseWatch" class="muted">Monitorare conferme da tassi, credito e FX.</p><p id="pulseSources" class="quality">Fonti con date indipendenti.</p></div><div class="quote">«La domanda utile non è soltanto “chi è forte?”, ma “quale mercato sta cambiando idea — e su quali prove?”.»</div></article>
  <aside class="focus"><div class="focus-header"><div><span class="micro" style="color:#d8b37b">Focus per valuta</span><h3 id="focusName">🇺🇸 Dollaro USA</h3></div><div class="selector" id="ccySelector" role="group" aria-label="Seleziona una valuta"></div></div><h4 class="focus-title" id="focusTitle">USD: capex forte, ma tassi e inflazione restano il nodo</h4><p class="focus-desc" id="focusDesc">Gli ordini core sorprendono al rialzo; il front-end e il prezzo devono confermare se il dollaro può mantenere il sostegno macro.</p><div class="watchlist"><div><span class="micro">Confermerebbe</span><strong id="focusConfirm">USD cross + curva + real yields</strong></div><div><span class="micro">Indebolirebbe</span><strong id="focusInvalidate">Front-end in calo e inflazione attesa in rientro</strong></div></div><div class="focus-stat" id="focusRates">USA · 2Y 4,59% / 10Y 4,91% · as-of 02/11</div></aside></div></section>
  <section class="section" id="tesi"><div class="section-heading"><div><span class="chapter">04 / Research monitor</span><h2>Le tesi da seguire.</h2></div><p>Non sono segnali d'ingresso. Sono ipotesi economiche con condizioni osservabili per verificarle o invalidarle.</p></div><div class="lower-grid"><article><div id="themeList"></div><p style="font-size:11px;color:#879fad;margin:13px 0 0">Seleziona una tesi per aprire il focus valutario nella stessa pagina.</p></article><aside class="news"><span class="micro" style="color:#d5b47f">News pulse / Market changes</span><h3 style="font:500 26px var(--serif);margin:8px 0 14px">Solo le notizie che cambiano il quadro.</h3><div id="newsList"></div><div class="note-box"><b>Disciplina di lettura.</b> Una variazione di tasso implicito da futures non equivale sempre a una curva OIS osservata. Le reazioni di prezzo agli eventi richiedono confronti pre/post coerenti.</div></aside></div></section>
- <footer class="footer"><div><div class="footer-brand">FX Quant <span style="color:#c2a171">/</span> Research Desk</div><p>Prototipo grafico funzionante, costruito con HTML, CSS e JavaScript. I dati provengono dai feed del repository del progetto o, offline, dallo snapshot datato indicato. Non altera la Control Room operativa.</p></div><div class="foot-links"><a href="#inizio">Torna su ↑</a><a href="https://robybizkit77-blip.github.io/global-macro-fx-quant/site/control-room-preview/#/home" target="_blank" rel="noopener">Sito attuale ↗</a></div></footer>
+ <footer class="footer"><div><div class="footer-brand">FX Quant <span style="color:#c2a171">/</span> Research Desk</div><p>FX Quant V2 è il Research Desk operativo. Ogni dato conserva la propria data e le note storiche non vengono presentate come notizie correnti.</p></div><div class="foot-links"><a href="#inizio">Torna su ↑</a><a href="ois.html">OIS e pricing ↗</a></div></footer>
 </main>
 <script>
 'use strict';
@@ -227,6 +227,38 @@ const validFeed=(name,v)=>{
    ' · temi editoriali 03/11';
  render();
 })();
+
+
+(async function updateMarketPulse(){
+ const el=id=>document.getElementById(id);
+ const day=d=>typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d);
+ const num=(x,d=2)=>Number.isFinite(x)?x.toLocaleString('it-IT',{minimumFractionDigits:d,maximumFractionDigits:d}):'n.d.';
+ const get=async path=>{const r=await fetch(path,{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);return r.json()};
+ const results=await Promise.allSettled([get('cross-asset-live-data.json'),get('../../live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'),get('ois-pricing-snapshot.json')]);
+ const risk=results[0].status==='fulfilled'&&results[0].value.schema==='GMFQ_FXV2_CROSS_ASSET_SOURCE_OVERLAY_V1'?results[0].value:null;
+ const pairs=results[1].status==='fulfilled'&&results[1].value.pair_count===28?results[1].value:null;
+ const pricing=results[2].status==='fulfilled'&&results[2].value.ui_only===true?results[2].value:null;
+ const n=risk?.streams?.NASDAQCOM,v=risk?.streams?.VIX,hy=risk?.streams?.HY_OAS,ig=risk?.streams?.IG_OAS;
+ const synced=day(n?.date)&&n.date===v?.date&&n.date===hy?.date&&Number.isFinite(n.change_1d_pct)&&Number.isFinite(v.value)&&Number.isFinite(hy.value)&&Number.isFinite(hy.previous);
+ if(synced){
+  const creditBp=(hy.value-hy.previous)*100;
+  const sign=x=>x>0?'+':'';
+  el('pulseObserved').textContent='Al '+shortDate(n.date)+': Nasdaq Composite '+sign(n.change_1d_pct)+num(n.change_1d_pct)+'%, VIX '+num(v.value)+' (precedente '+num(v.previous)+'), HY OAS '+num(hy.value)+'% ('+sign(creditBp)+num(creditBp,0)+' pb).'+(ig?.date===n.date?' IG OAS '+num(ig.value)+'%.':'');
+  const stress=n.change_1d_pct<=-2&&v.value>=25&&creditBp>0;
+  el('pulseInterpretation').textContent=stress?'Azionario, volatilità e credito HY segnalano insieme maggiore avversione al rischio. Non dimostrano da soli recessione o repricing Fed.':'Non ci sono tre conferme simultanee di stress intenso: evitare diagnosi di regime basate su una sola misura.';
+ }else{
+  el('pulseObserved').textContent='Nasdaq, VIX e credito non sono disponibili sulla stessa data: nessuna variazione cross-asset viene spacciata per simultanea.';
+  el('pulseInterpretation').textContent='Lettura di rischio sospesa; controllare le date delle singole fonti.';
+ }
+ if(pairs&&day(pairs.price_asof)){
+  const info=['EURUSD','USDCAD'].map(k=>{const p=pairs.pairs?.[k]?.setup;return p?(k==='EURUSD'?'EUR/USD':'USD/CAD')+' '+p.quality.toLowerCase():null}).filter(Boolean);
+  el('pulseWatch').textContent='FX '+shortDate(pairs.price_asof)+': '+info.join(' · ')+'. Confermare su tassi comparabili, positioning e prezzo; non sono segnali d’ingresso.';
+ }else el('pulseWatch').textContent='FX: classificazioni non verificate; non usare uno snapshot storico come setup corrente.';
+ el('pulseSources').textContent='Fonti: Nasdaq e VIX via FRED, OAS ICE/FRED'+(day(n?.date)?' · Nasdaq '+shortDate(n.date):'')+(day(v?.date)?' · VIX '+shortDate(v.date):'')+(day(hy?.date)?' · HY '+shortDate(hy.date):'')+(pricing&&day(pricing.snapshot_built_from_repo_date)?' · pricing '+shortDate(pricing.snapshot_built_from_repo_date)+' (OIS/futures/proxy non equivalenti)':'')+'. Nessuna inferenza causale automatica.';
+})().catch(()=>{
+ document.getElementById('pulseObserved').textContent='Feed cross-asset non disponibili: nessuna narrativa recente validata.';
+ document.getElementById('pulseInterpretation').textContent='Controllare le date in Cross-Asset, OIS e Coppie.';
+});
 
 </script>
 </body></html>
