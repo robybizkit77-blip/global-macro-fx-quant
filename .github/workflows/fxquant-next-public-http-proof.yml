@@ -1,0 +1,40 @@
+name: FX Quant NEXT public HTTP delivery proof
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fxquant-next-public-http-proof.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  public-http:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Verify published Next page and assets over real public HTTPS
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="https://robybizkit77-blip.github.io/global-macro-fx-quant/site/fx-quant-v2/next"
+          for attempt in $(seq 1 12); do
+            if curl -fsSL --connect-timeout 8 --max-time 20 "$BASE/index.html?verify=$GITHUB_RUN_ID" -o /tmp/next-index.html \
+              && curl -fsSL --connect-timeout 8 --max-time 20 "$BASE/app.js?verify=$GITHUB_RUN_ID" -o /tmp/next-app.js \
+              && curl -fsSL --connect-timeout 8 --max-time 20 "$BASE/theme.css?verify=$GITHUB_RUN_ID" -o /tmp/next-theme.css \
+              && grep -q 'id="quick-layer"' /tmp/next-index.html \
+              && grep -q 'function atlasEvidence' /tmp/next-app.js \
+              && grep -q 'market-edition' /tmp/next-theme.css; then
+              echo "NEXT_PUBLIC_HTTP_200_VALIDATED"
+              echo "PUBLIC_MAIN_NAV_READY=true"
+              echo "PUBLIC_ATLAS_JS_READY=true"
+              echo "PUBLIC_REDESIGN_CSS_READY=true"
+              exit 0
+            fi
+            echo "NEXT_PUBLIC_NOT_READY attempt=$attempt"
+            sleep 12
+          done
+          echo "NEXT_PUBLIC_HTTP_UNVERIFIED"
+          exit 1
