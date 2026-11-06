@@ -202,16 +202,19 @@ async function audit(browser,name,file,selector,view,viewport){
     }
   }
   if(name==='macro'){
-    await page.waitForFunction(()=>document.querySelector('#macroCandidateNote')?.textContent?.includes('BASELINE MACRO V1 · ricerca descrittiva al'),null,{timeout:15000});
+    await page.waitForFunction(()=>document.querySelector('#macroCandidateNote')?.textContent?.includes('LETTURA MACRO G8 · USD'),null,{timeout:15000});
     const usdCandidate=((await page.locator('#macroCandidateNote').textContent())||'');
-    if(!usdCandidate.includes('USD')||!usdCandidate.includes('Disoccupazione: variazione')||
-       !usdCandidate.includes('Nessuna forza FX')||
-       !usdCandidate.includes('Inflazione: variazione'))
-      issue(name,view,'macro_candidate_read_only_missing',usdCandidate.slice(0,480));
+    const required=['COSA SUCCEDE:','COSA CAMBIA:','COME INTERPRETARLO:','COSA CONTROLLARE:',
+      'DATE DELLE OSSERVAZIONI:','LIMITI:','non point-in-time','nessuna sorpresa contro consenso',
+      'segnale FX','USD','OIS/front-end 2Y'];
+    if(required.some(t=>!usdCandidate.includes(t)))
+      issue(name,view,'macro_explanatory_candidate_missing',usdCandidate.slice(0,1000));
     await page.locator('#currencyGrid button[data-ccy="NZD"]').click();
     const nzdCandidate=((await page.locator('#macroCandidateNote').textContent())||'');
-    if(!nzdCandidate.includes('NZD')||!nzdCandidate.includes('accelerazione NON calcolabile'))
-      issue(name,view,'macro_candidate_gdp_missing_not_explicit',nzdCandidate.slice(0,480));
+    if(!nzdCandidate.includes('LETTURA MACRO G8 · NZD')||
+       !nzdCandidate.includes('non è confrontabile con un trimestre precedente omogeneo')||
+       !nzdCandidate.includes('periodi non necessariamente allineati'))
+      issue(name,view,'macro_missing_gdp_or_date_guard',nzdCandidate.slice(0,1000));
   }
   if(name==='coppie'&&(mode==='public'||mode==='pr-local')){
     // Informative 2Y spread: research overlays must never enter pair quality signals.
