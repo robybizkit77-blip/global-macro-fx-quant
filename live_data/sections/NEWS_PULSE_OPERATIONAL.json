@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-05",
-  "generated_at_utc": "2026-11-06T11:33:39.800197Z",
+  "generated_at_utc": "2026-11-06T14:15:09.013605Z",
   "items": [
     {
       "as_of": "2026-11-05",
@@ -47,7 +47,7 @@
       "title": "GBP: repricing OIS più dovish (-11.2 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-06T11:33:39.800197Z",
+  "last_checked_at_utc": "2026-11-06T14:15:09.013605Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -238,6 +238,46 @@
     "headlines": [
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "ENERGY",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "MONITOR",
+          "topic": "ENERGY_FUNDAMENTALS",
+          "verify_next": "Verificare dati EIA, scorte di greggio e prodotti, margini di raffinazione e prezzo WTI con date compatibili.",
+          "why_watch": "Titolo relativo a disponibilità, lavorazione o scorte energetiche: possibile contesto per il mercato petrolifero, non prova di un movimento WTI."
+        },
+        "id": "EIA_ENERGY:https://www.eia.gov/todayinenergy/detail.php?id=68425",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-06T14:00:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "energy_supply_context": {
+            "reason": "La pubblicazione EIA non fornisce in questa pipeline uno snapshot certificato di scorte/produzione prima e dopo.",
+            "status": "ARTICLE_TITLE_ONLY"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "reason": "Titolo EIA validato, ma nessuno snapshot WTI pre/post; nessuna reazione o attribuzione causale dimostrata.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "wti": {
+            "reason": "Assenti prezzi WTI intraday pre/post collegati al rilascio.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          }
+        },
+        "source": "U.S. Energy Information Administration",
+        "source_id": "EIA_ENERGY",
+        "title": "U.S. crude oil imports from Venezuela in July were highest since 2017",
+        "url": "https://www.eia.gov/todayinenergy/detail.php?id=68425"
+      },
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "EUR",
         "desk_context": {
           "analysis_basis": "SOURCE_HEADLINE_ONLY",
@@ -261,7 +301,14 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
+            "6m_rate_pct": 2.7725,
+            "date": "2026-11-05",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "ESTIMATED_INFORMATIONAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+            "status": "DAILY_CONTEXT_ONLY"
           },
           "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
           "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
@@ -775,7 +822,14 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
+            "6m_rate_pct": 2.7725,
+            "date": "2026-11-05",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "ESTIMATED_INFORMATIONAL",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+            "status": "DAILY_CONTEXT_ONLY"
           },
           "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
           "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
@@ -852,46 +906,6 @@
         "source_id": "BOE_NEWS",
         "title": "Summary of the RTGS CHAPS Industry Forum - 13 October 2026",
         "url": "https://www.bankofengland.co.uk/minutes/2026/october/rtgs-chaps-industry-forum-13-october-2026"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "ENERGY",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "MONITOR",
-          "topic": "ENERGY_FUNDAMENTALS",
-          "verify_next": "Verificare dati EIA, scorte di greggio e prodotti, margini di raffinazione e prezzo WTI con date compatibili.",
-          "why_watch": "Titolo relativo a disponibilità, lavorazione o scorte energetiche: possibile contesto per il mercato petrolifero, non prova di un movimento WTI."
-        },
-        "id": "EIA_ENERGY:https://www.eia.gov/todayinenergy/detail.php?id=68404",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-03T14:00:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "energy_supply_context": {
-            "reason": "La pubblicazione EIA non fornisce in questa pipeline uno snapshot certificato di scorte/produzione prima e dopo.",
-            "status": "ARTICLE_TITLE_ONLY"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "reason": "Titolo EIA validato, ma nessuno snapshot WTI pre/post; nessuna reazione o attribuzione causale dimostrata.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "wti": {
-            "reason": "Assenti prezzi WTI intraday pre/post collegati al rilascio.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          }
-        },
-        "source": "U.S. Energy Information Administration",
-        "source_id": "EIA_ENERGY",
-        "title": "Global refinery inputs fell sharply in the second quarter of 2026 before modest recovery",
-        "url": "https://www.eia.gov/todayinenergy/detail.php?id=68404"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
@@ -991,7 +1005,7 @@
       }
     ],
     "last_attempt_day_rome": "2026-11-06",
-    "latest_published_at_utc": "2026-11-06T09:00:00Z",
+    "latest_published_at_utc": "2026-11-06T14:00:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -1085,10 +1099,10 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 4,
+        "accepted_items": 5,
         "ccy": "ENERGY",
         "entries_rejected": 20,
-        "feed_entries_seen": 24,
+        "feed_entries_seen": 25,
         "feed_url": "https://www.eia.gov/rss/todayinenergy.xml",
         "source": "U.S. Energy Information Administration",
         "source_id": "EIA_ENERGY",
