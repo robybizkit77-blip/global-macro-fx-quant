@@ -56,10 +56,7 @@ function build(api){
    const span=finite(x)&&finite(four)?x-four.value:null;
    const percent=finite(x)&&finite(p)&&p!==0?(x/p-1)*100:null;
    const turn=finite(d1)&&finite(dprev)&&Math.sign(d1)!==0&&Math.sign(dprev)!==0&&Math.sign(d1)!==Math.sign(dprev);
-   const tooOld=cur?.period?monthKey(cur.period)<monthKey(locDate.slice(0,7).replace(/-(\d\d)$/,(_,m)=>{
-     const d=new Date(locDate+'T12:00:00Z');d.setUTCMonth(d.getUTCMonth()-7);return '-'+String(d.getUTCMonth()+1).padStart(2,'0');
-   })):true; // only a coarse warning; individual series always show dates
-   return {h,cur,pr,d1,dprev,speed,span,percent,turn,unit:measure(s),quality:eligible(s)&&h.length>=3,tooOld};
+   return {h,cur,pr,d1,dprev,speed,span,percent,turn,unit:measure(s),quality:eligible(s)&&h.length>=3};
  }
  function n(v,d=2){return finite(v)?fmt(v,d):'—'}
  function labelDirection(delta){
@@ -113,7 +110,7 @@ function build(api){
  }
  function sourceChart(s,st){
    const mode=state.msView||'level',window=Number(state.msWindow||24),pts=st.h.slice(-window);
-   const derived=pts.map((x,i)=>mode==='change'?(i?{label:x.period,value:x.value-pts[i-1].value}:null):mode==='velocity'&&i>=2?{label:x.period,value:(x.value-pts[i-1].value)-(pts[i-1].value-pts[i-2].value)}:{label:x.period,value:x.value})
+   const derived=pts.map((x,i)=>mode==='change'?(i?{label:x.period,value:x.value-pts[i-1].value}:null):mode==='velocity'?(i>=2?{label:x.period,value:(x.value-pts[i-1].value)-(pts[i-1].value-pts[i-2].value)}:null):{label:x.period,value:x.value})
      .filter(x=>x&&finite(x.value));
    const legend=mode==='level'?'Valore osservato':mode==='change'?'Δ osservazione precedente':'ΔΔ variazione';
    const unit=mode==='level'?String(s.unit||'unità non specificata'):(st.unit==='p.p.'?'p.p.':'unità originali');
@@ -122,7 +119,7 @@ function build(api){
     +'<div class="macro-graph-controls"><div class="pill-controls">'
     +[['level','Livello'],['change','Variazione'],['velocity','Accelerazione']].map(([v,l])=>'<button type="button" data-ms-view="'+v+'" aria-pressed="'+String(mode===v)+'" class="pill '+(mode===v?'active':'')+'">'+l+'</button>').join('')+'</div><div class="pill-controls">'
     +[12,24,60,240].map(w=>'<button type="button" data-ms-window="'+w+'" aria-pressed="'+String(window===w)+'" class="pill '+(window===w?'active':'')+'">'+(w===240?'Tutto':w)+' </button>').join('')+'</div></div>'
-    +plot({lines:[{name:legend,color:mode==='level'?'#80d4c2':mode==='change'?'#8bcbe9':'#e6bb79',values:derived}],label:s.label+' / '+legend,precision:3,axisDates:false})
+    +plot({lines:[{name:legend,color:mode==='level'?'#80d4c2':mode==='change'?'#8bcbe9':'#e6bb79',values:derived}],label:s.label+' / '+legend,precision:3})
     +'<div class="macro-chart-caption">Asse orizzontale: periodi originali della fonte ('+esc(st.h.at(0)?.period||'—')+' → '+esc(st.cur?.period||'—')+'). Finestra: ultime '+Math.min(window,st.h.length)+' osservazioni disponibili. Un grafico trimestrale non è convertito artificialmente in mensile.</div>'
     +'<div class="macro-datatype">Fonte: '+esc(s.source_file||'metadati non disponibili')+' · Unità '+esc(unit)+' · Frequenza '+esc(s.frequency||'non specificata')+'. Dati storici revisionabili, non archiviati point-in-time.</div>';
  }
