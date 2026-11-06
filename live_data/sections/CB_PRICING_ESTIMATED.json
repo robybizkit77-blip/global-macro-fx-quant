@@ -57,20 +57,20 @@
         },
         "6m": {
           "accrual_start": "2027-06-16",
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "SA3M2027",
           "contract_description": "Jun 2027",
           "expiration": "2027-09-14",
-          "futures_price": 99.765,
+          "futures_price": 99.81,
           "mapping": "nearest ICE SARON accrual start to today+180d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-05T12:15:35Z",
-          "quote_as_of": "2026-11-05",
+          "price_valid_until": "2026-11-06T12:15:40Z",
+          "quote_as_of": "2026-11-06",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 0.235,
+          "rate": 0.19,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 23.5,
+          "raw_level_minus_spot_policy_bp": 19.0,
           "symbol": "ICEEUR:SA3M2027"
         }
       },
@@ -88,7 +88,7 @@
       "status": "ESTIMATED_ACTIVE"
     },
     "EUR": {
-      "as_of": "2026-11-04",
+      "as_of": "2026-11-05",
       "change_1d_bp": null,
       "change_1w_bp": null,
       "change_status": "DERIVED_ONLY_FROM_HOMOGENEOUS_SNAPSHOT_HISTORY",
@@ -140,20 +140,20 @@
           "symbol": "EUREX:FST3X2026"
         },
         "6m": {
-          "business_day_lag": 2,
+          "business_day_lag": 1,
           "contract": "FST3G2027",
           "contract_description": "Feb 2027",
           "expiration": "2027-05-19",
-          "futures_price": 97.1725,
+          "futures_price": 97.2275,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-04T22:05:11Z",
-          "quote_as_of": "2026-11-04",
+          "price_valid_until": "2026-11-05T22:05:22Z",
+          "quote_as_of": "2026-11-05",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 2.8275,
+          "rate": 2.7725,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 32.8,
+          "raw_level_minus_spot_policy_bp": 27.2,
           "symbol": "EUREX:FST3G2027"
         }
       },
