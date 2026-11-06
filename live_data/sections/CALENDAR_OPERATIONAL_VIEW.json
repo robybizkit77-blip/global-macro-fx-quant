@@ -1,12 +1,12 @@
 {
   "coverage": {
-    "cb_schedule_available": 6,
+    "cb_schedule_available": 8,
     "consensus_available_events": 0,
     "g8_total": 8,
     "macro_ccy_coverage": 4,
     "previous_only_events": 0,
     "upcoming_macro_events": 5,
-    "upcoming_total_events": 11
+    "upcoming_total_events": 13
   },
   "events": [
     {
@@ -68,6 +68,20 @@
       "time_local": "09:00",
       "timezone": "Europe/Zurich",
       "title": "Swiss GDP flash"
+    },
+    {
+      "bank": "Reserve Bank of Australia",
+      "ccy": "AUD",
+      "consensus_status": "NOT_APPLICABLE",
+      "current_rate": 4.85,
+      "date": "2026-12-08",
+      "event_type": "CENTRAL_BANK_DECISION",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_SCHEDULE_FROM_CERTIFIED_CB_LAYER",
+      "source_layer": "NATIVE_CB_DATA",
+      "stance": "HAWKISH · nuovo cash rate 4,85%",
+      "status": "UPCOMING",
+      "title": "RBA · decisione di politica monetaria"
     },
     {
       "bank": "Federal Reserve",
@@ -140,6 +154,20 @@
       "title": "ECB · decisione di politica monetaria"
     },
     {
+      "bank": "Bank of England",
+      "ccy": "GBP",
+      "consensus_status": "NOT_APPLICABLE",
+      "current_rate": 4.0,
+      "date": "2026-12-17",
+      "event_type": "CENTRAL_BANK_DECISION",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_SCHEDULE_FROM_CERTIFIED_CB_LAYER",
+      "source_layer": "NATIVE_CB_DATA",
+      "stance": "HAWKISH · aumento Bank Rate al 4,00%, percorso dipendente dai dati",
+      "status": "UPCOMING",
+      "title": "BoE · decisione di politica monetaria"
+    },
+    {
       "ccy": "NZD",
       "consensus_status": "NOT_PRESENT",
       "date": "2026-12-17",
@@ -169,8 +197,8 @@
       "title": "BoJ · decisione di politica monetaria"
     }
   ],
-  "generated_at_utc": "2026-11-06T00:21:06.084350Z",
-  "last_checked_at_utc": "2026-11-06T00:21:06.084350Z",
+  "generated_at_utc": "2026-11-06T10:17:24.493644Z",
+  "last_checked_at_utc": "2026-11-06T10:17:24.493644Z",
   "schema": "GMFQ_CALENDAR_OPERATIONAL_VIEW_V3",
   "scope": {
     "central_bank_schedule": "ACTIVE_OFFICIAL",
