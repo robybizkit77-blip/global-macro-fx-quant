@@ -32,6 +32,25 @@ fs.mkdirSync(evidence,{recursive:true});
     await page.screenshot({path:evidence+'/'+route+'-'+width+'.png',fullPage:route==='overview'||route==='pairs'});
     results.push({width,route,h1,overflow:'PASS'});
    }
+
+   // NEXT EDITION: evidence-led market map, data theatre and cross-market navigation.
+   await page.evaluate(()=>{location.hash='#overview'});
+   await page.locator('[data-atlas="fx"]').click();
+   assert((await page.locator('.lens-article h3').innerText()).includes('dollaro'),'Market atlas did not switch to FX evidence');
+   await page.locator('[data-atlas="risk"]').click();
+   assert((await page.locator('.lens-article').innerText()).includes('VIX'),'Market atlas risk narrative missing');
+   await page.locator('[data-hchart="vix"]').click();
+   assert((await page.locator('.theatre-chart .chart-legend').innerText()).includes('VIX'),'Market chart explorer did not switch to VIX');
+   await page.locator('[data-hwindow="5"]').click();
+   assert(await page.locator('.theatre-chart .chart svg').count()>0,'Market chart 5 observations missing');
+   await page.locator('[data-home-pair="AUDCAD"]').click();
+   assert((await page.locator('.fx-focus-story h3').innerText()).includes('AUD/CAD'),'FX workbench does not switch the selected pair');
+   await page.locator('#quicklaunch').click();
+   assert(await page.locator('#quick-layer').evaluate(el=>el.classList.contains('open')),'Quick search did not open');
+   await page.locator('#quick-input').fill('EURGBP');
+   await page.locator('[data-command="pair:EURGBP"]').click();
+   assert((await page.locator('#crumb-page').innerText())==='Coppie FX','Quick search failed to navigate to pair dossier');
+   assert((await page.locator('.focus-headline').first().innerText()).includes('EUR/GBP'),'Quick search did not update selected pair');
    // The FX selector changes the deep dive and the watchlist is interactive.
    await page.evaluate(()=>{location.hash='#pairs'});
    await page.locator('[data-pair="AUDCAD"]').click();
