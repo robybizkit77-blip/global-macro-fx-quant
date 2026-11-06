@@ -478,13 +478,22 @@ async function audit(browser,name,file,selector,view,viewport){
     if(!audSummary.includes('non stimiamo un 2Y/10Y giornaliero')||
        !audSource.includes('Cadenza RBA F2'))
       issue(name,view,'aud_cadence_missing',audSummary.slice(-240)+' '+audSource.slice(-140));
-    // Exercise a newer fully verified official same-day 2Y/10Y research feed.
+    // A dated RBA F2 snapshot OLDER than canonical AUD must not replace
+    // the more recent observed yields, regardless of its numeric value.
+    // Positive promotion of a newer, fully validated source is covered by
+    // independent model tests; this browser check protects against regression.
+    const audBefore=await page.evaluate(()=>({
+      rate:document.querySelector('#rate2')?.textContent,
+      asof:document.querySelector('#asof2')?.textContent
+    }));
     await page.route('**/aud-rba-f2-research.json*',route=>route.fulfill({
       status:200,contentType:'application/json',body:JSON.stringify({
         schema:'GMFQ_FXV2_AUD_RBA_F2_RESEARCH_V1',currency:'AUD',
         status:'OFFICIAL_F2_CSV_FETCHED_RESEARCH_ONLY',as_of:'2026-11-02',
         '2Y':5.012,'10Y':5.234,curve_bp:22.2,
         source_download_verified:true,publication_date:'2026-11-03',
+        previous_same_series_as_of:'2026-10-30',
+        change_2y_bp:1.0,change_10y_bp:1.0,
         source_url:'https://www.rba.gov.au/statistics/tables/csv/f2-data.csv',
         source:'Reserve Bank of Australia · F2 weekly research',
         series_2Y:'FCMYGBAG2D',series_10Y:'FCMYGBAG10D',
@@ -495,13 +504,14 @@ async function audit(browser,name,file,selector,view,viewport){
     }));
     await page.reload({waitUntil:'domcontentloaded'});
     await page.locator('#countryTabs button[data-ccy="AUD"]').click();
-    await page.waitForFunction(()=>document.querySelector('#rate2')?.textContent?.includes('5,01'),null,{timeout:14000});
-    const audRate=(await page.locator('#rate2').textContent())||'';
-    const audQuality=(await page.locator('#asof2').textContent())||'';
-    const audCaveat=(await page.locator('#curveExplanation').textContent())||'';
-    if(!audRate.includes('5,01')||!audQuality.includes('OSSERVATO')||
-       !audCaveat.includes('CALCOLO INDICATIVO'))
-      issue(name,view,'aud_research_model_mismatch',audRate+' '+audQuality+' '+audCaveat.slice(0,180));
+    await page.waitForFunction(()=>document.querySelector('#ratesNote')?.textContent?.includes('RBA F2: aggiornamento SETTIMANALE'),null,{timeout:14000});
+    const audAfter=await page.evaluate(()=>({
+      rate:document.querySelector('#rate2')?.textContent,
+      asof:document.querySelector('#asof2')?.textContent
+    }));
+    if(audAfter.rate!==audBefore.rate||audAfter.asof!==audBefore.asof||
+       audAfter.asof?.includes('02/11/2026'))
+      issue(name,view,'stale_aud_source_promoted',JSON.stringify({audBefore,audAfter}));
     await page.unroute('**/aud-rba-f2-research.json*');
   }
   if(name==='calendario'&&mode==='pr-local'&&view==='desktop'){
