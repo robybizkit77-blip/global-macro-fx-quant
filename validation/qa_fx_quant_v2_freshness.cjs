@@ -200,7 +200,11 @@ requireValid(bench.schema==='GMFQ_FXV2_CHF_NZD_BENCHMARK_RESEARCH_V1'&&
   'CHF/NZD research source must never be mistaken for the certified FX engine');
 if(bench.CHF&&bench.CHF.pair_status==='OFFICIAL_SNBSAMEBASIS_RESEARCH_REVIEW_REQUIRED'&&
    bench.CHF.eligible_for_pair_spreads===false&&Number.isFinite(bench.CHF['2Y'])&&Number.isFinite(bench.CHF['10Y'])){
- check('rates_research','CHF SNB same-date spot pair (not Core)',bench.CHF.paired_date,14,'SNB_RESEARCH_REVIEW_REQUIRED');
+ // SNB matched-date 2Y/10Y statistical anchor has a monthly cadence; do not
+ // apply the 14-day cutoff intended for the independently published 10Y spot.
+ check('rates_research','CHF SNB same-date spot pair (not Core)',bench.CHF.paired_date,45,'SNB_RESEARCH_MONTH_END_ANCHOR');
+ if(bench.CHF.separate_10y?.as_of)
+  check('rates_research_context','CHF separate 10Y spot (not joinable)',bench.CHF.separate_10y.as_of,14,'SNB_SEPARATE_DAILY_SPOT_NOT_A_PAIRED_CURVE');
  requireValid(bench.CHF.separate_10y?.not_joinable_with_paired_2y===
    (bench.CHF.separate_10y?.as_of!==bench.CHF.paired_date),
    'CHF isolated 10Y must only be joinable with an independently same-date paired SNB curve');
