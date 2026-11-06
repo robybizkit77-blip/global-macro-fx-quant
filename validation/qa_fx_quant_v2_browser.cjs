@@ -89,10 +89,20 @@ async function audit(browser,name,file,selector,view,viewport){
    if(!full.includes(expected))issue(name,view,'live_feed_not_confirmed',rec.feed||s+' empty');
   }
   if(name==='tassi'){
-    await page.waitForFunction(()=>
-      document.querySelector('#feedStatus')?.textContent?.includes('date e qualità per scadenza')&&
-      document.querySelectorAll('#pricingGrid .data-card').length===3,
-      null,{timeout:14000});
+    try {
+      await page.waitForFunction(()=>
+        document.querySelector('#feedStatus')?.textContent?.includes('date e qualità per scadenza')&&
+        document.querySelectorAll('#pricingGrid .data-card').length===3,
+        null,{timeout:14000});
+    } catch (error) {
+      const observed=await page.evaluate(()=>({
+        feedStatus:document.querySelector('#feedStatus')?.textContent,
+        pricingGridCards:document.querySelectorAll('#pricingGrid .data-card').length,
+        pricingGridText:document.querySelector('#pricingGrid')?.textContent?.slice(0,500),
+        selectedCountry:document.querySelector('#countryTabs [aria-pressed="true"]')?.textContent
+      }));
+      throw Error('Tassi pricing readiness: '+JSON.stringify(observed)+'; '+error.message);
+    }
     const detail=await page.locator('#pricingGrid').textContent();
     if(!detail.includes('FUTURES')&&!detail.includes('STIMA')&&
        !detail.includes('INFORMATIVA'))
