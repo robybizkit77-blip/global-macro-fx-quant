@@ -13,6 +13,7 @@ const SOURCES={
  dxy:'../../../live_data/sections/DXY_SYNTHETIC_ECB.json',
  pairs:'../../../live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json',
  macro:'../../../live_data/sections/MACRO_THERMOMETER_DATA.json',
+ macroSeries:'../../../live_data/sections/MACRO_SERIES.json',
  cb:'../../../live_data/sections/NATIVE_CB_DATA.json',
  cot:'../../../live_data/sections/V247_COT_STORIES.json',
  cotHistory:'../../../live_data/sections/V250_COT_CHART_DATA.json',
@@ -22,7 +23,7 @@ const SOURCES={
  news:'../../../live_data/sections/NEWS_PULSE_OPERATIONAL.json',
  themes:'../../../live_data/sections/TOP_THEMES.json'
 };
-const state={data:{},errors:{},route:'overview',ccy:'USD',against:'EUR',pair:'EURUSD',pairFilter:'all',pairSearch:'',watch:new Set(),window:20,rateMode:'both',riskStream:'VIX',riskWindow:20,macroMetric:'inflation',newsMode:'pulse',chartIndex:0,charts:{},atlasLens:'rates',homeChart:'rates',homeWindow:20,spotPair:'EURUSD',cotWindow:26,cotMode:'net',cotFilter:'all',cotSort:'percentile',cotSortAsc:false,rsWindow:60,rsGovMode:'both',rsDiffMode:'2y'};
+const state={data:{},errors:{},route:'overview',ccy:'USD',against:'EUR',pair:'EURUSD',pairFilter:'all',pairSearch:'',watch:new Set(),window:20,rateMode:'both',riskStream:'VIX',riskWindow:20,macroMetric:'inflation',newsMode:'pulse',chartIndex:0,charts:{},atlasLens:'rates',homeChart:'rates',homeWindow:20,spotPair:'EURUSD',cotWindow:26,cotMode:'net',cotFilter:'all',cotSort:'percentile',cotSortAsc:false,rsWindow:60,rsGovMode:'both',rsDiffMode:'2y',msCategory:'Inflazione',msSeriesId:null,msView:'level',msWindow:24,msHeat:'inflation',msHeatSort:'ccy',msHeatAsc:true,msOther:'EUR',msCompareMetric:'inflation'};
 try{const w=JSON.parse(localStorage.getItem('fxquant-next-watch')||'[]');if(Array.isArray(w))state.watch=new Set(w.filter(s=>typeof s==='string'))}catch(e){}
 const $=id=>document.getElementById(id);
 const esc=x=>String(x===undefined||x===null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -279,19 +280,8 @@ function pairs(){
  +'<div class="data-status"><span class="live-dot"></span><div>La watchlist è salvata esclusivamente in questo browser. Nessuna coppia rappresenta un ordine, un segnale di ingresso o una stima di rendimento futuro.</div></div>';
 }
 function macro(){
- const m=get('macro')?.currencies||{},c=state.ccy,row=m[c]||{},metric=state.macroMetric,series=row[metric]||{},other=row[metric==='inflation'?'labour':'inflation']||{};
- const h=Array.isArray(series.history)?series.history.filter(finite):[];
- const nums=h.slice(-60).map((v,i)=>({label:'Obs '+String(Math.max(1,h.length-Math.min(h.length,60)+i+1)),value:v}));
- return pageHero('MACRO / DYNAMIC LAB','Il dato conta. <em>Il cambiamento di più.</em>','Livello → Direzione → Velocità → Accelerazione → Turning point. Scegli paese e variabile: leggi la dinamica, non soltanto l’ultimo numero.')
- +'<div class="macro-grid">'+FX.map(k=>{const x=m[k];return '<button class="macro-tile" type="button" data-ccy="'+k+'" aria-pressed="'+String(k===c)+'"><strong>'+FLAGS[k]+' '+k+'</strong><span class="macro-detail">Inflazione · '+esc(x?.inflation?.as_of||'n.d.')+'</span><span class="mini-number">'+fmt(x?.inflation?.latest_value,1)+'%</span></button>'}).join('')+'</div>'
- +sectionTitle(FLAGS[c]+' '+NAMES[c]+' · Esplora le serie','Selezione interattiva')
- +'<div class="grid tilted"><section class="panel glow"><div class="panel-head"><div><span class="mini-overline">SERIE MACRO / '+esc(c)+'</span><h2>'+esc(series.label||'Seleziona una serie')+'</h2><p>Ultimo dato: '+esc(series.as_of||'n.d.')+' · '+h.length+' osservazioni storiche</p></div><div class="pill-controls">'+choose('',[{label:'Inflazione',value:'inflation'},{label:'Lavoro',value:'labour'}],metric,'data-metric')+'</div></div>'
- +'<div class="metric-split"><div class="stat"><small>Livello</small><strong>'+fmt(series.latest_value,2)+(metric==='inflation'?'%':'%')+'</strong></div><div class="stat"><small>Direzione</small><strong style="font-size:15px">'+esc(series.direction||'—')+'</strong></div><div class="stat"><small>Accelerazione</small><strong style="font-size:15px">'+esc(series.acceleration||'—')+'</strong></div></div>'
- +'<div style="margin-top:18px">'+plot({lines:[{name:series.label||'Serie macro',color:metric==='inflation'?'#eb7585':'#8bbfeb',values:nums}],unit:'%',label:'Serie '+(series.label||'macro')+', osservazioni ordinate',axisDates:false})+'</div>'
- +'<p class="source-caption">Questa serie non include date per ogni punto dello storico nell’overlay corrente: l’asse indica la sequenza, non mesi attribuiti artificialmente. Fonte '+esc(series.source||'da verificare')+'.</p></section>'
- +'<section class="panel"><div class="panel-head"><div><span class="mini-overline">COME LEGGERE I DATI</span><h2>Quando una variazione conta davvero?</h2></div></div><div class="flow-track"><div class="flow-item"><label>Livello</label><p>'+esc(series.label||'La variabile')+' è al '+fmt(series.latest_value,2)+'%. Un livello elevato o basso non equivale da solo a un segnale FX.</p></div><div class="flow-item"><label>Direzione</label><p>'+esc(series.direction||'Non classificata')+'. Conta se la variazione persiste rispetto al passato, non il singolo dato.</p></div><div class="flow-item"><label>Accelerazione</label><p>'+esc(series.acceleration||'Non classificata')+'. Anche un indicatore che sale può iniziare a perdere velocità.</p></div><div class="flow-item"><label>Altra dimensione</label><p>'+esc(other.label||'Altra serie')+': '+fmt(other.latest_value,2)+'% · '+esc(other.direction||'n.d.')+' · '+esc(other.as_of||'n.d.')+'.</p></div></div></section></div>'
- +sectionTitle('Heatmap G8','Un confronto descrittivo, non un ranking tra economie')
- +'<section class="panel"><div class="table-wrap"><table class="data-table"><thead><tr><th>Economia</th><th>Inflazione</th><th>Direzione</th><th>Disoccupazione</th><th>Direzione</th><th>Ultimo CPI</th></tr></thead><tbody>'+FX.map(k=>{const x=m[k];return '<tr class="'+(k===c?'active':'')+'"><td><button type="button" data-ccy="'+k+'">'+FLAGS[k]+' '+k+'</button></td><td>'+fmt(x?.inflation?.latest_value,1)+'%</td><td>'+esc(x?.inflation?.direction||'—')+'</td><td>'+fmt(x?.labour?.latest_value,1)+'%</td><td>'+esc(x?.labour?.direction||'—')+'</td><td>'+esc(x?.inflation?.as_of||'—')+'</td></tr>'}).join('')+'</tbody></table></div></section>';
+ if(window.FXQuantMacro?.render)return window.FXQuantMacro.render({get,FX,FLAGS,NAMES,state,plot,pageHero,esc,fmt,sign,date,finite,validDay,dayNow});
+ return pageHero('GLOBAL MACRO / DYNAMICS','Macro Studio non disponibile','Il modulo Macro non è stato caricato. Verifica gli script e le serie storiche.');
 }
 function rates(){
  if(window.FXQuantRates?.render)return window.FXQuantRates.render({get,FX,FLAGS,NAMES,state,plot,pageHero,esc,fmt,sign,date,finite,validDay,dayNow});
@@ -381,6 +371,13 @@ window.addEventListener('keydown',e=>{
 $('menu-toggle').addEventListener('click',()=>{const open=!$('app').classList.contains('menu-open');$('app').classList.toggle('menu-open',open);$('menu-toggle').setAttribute('aria-expanded',String(open))});
 $('mobile-overlay').addEventListener('click',()=>{$('app').classList.remove('menu-open');$('menu-toggle').setAttribute('aria-expanded','false')});
 document.addEventListener('click',e=>{
+ const mcc=e.target.closest('[data-ms-country]');if(mcc){state.ccy=mcc.dataset.msCountry;state.msSeriesId=null;if(state.msOther===state.ccy)state.msOther=FX.find(k=>k!==state.ccy);render();return;}
+ const mcat=e.target.closest('[data-ms-category]');if(mcat){state.msCategory=mcat.dataset.msCategory;state.msSeriesId=null;render();return;}
+ const mv=e.target.closest('[data-ms-view]');if(mv){state.msView=mv.dataset.msView;render();return;}
+ const mw=e.target.closest('[data-ms-window]');if(mw){state.msWindow=Number(mw.dataset.msWindow);render();return;}
+ const mh=e.target.closest('[data-ms-heat]');if(mh){state.msHeat=mh.dataset.msHeat;render();return;}
+ const msort=e.target.closest('[data-ms-heat-sort]');if(msort){state.msHeatSort=msort.dataset.msHeatSort;state.msHeatAsc=!state.msHeatAsc;render();return;}
+ const mcomp=e.target.closest('[data-ms-compare]');if(mcomp){state.msCompareMetric=mcomp.dataset.msCompare;render();return;}
  const rc=e.target.closest('[data-rate-ccy]');if(rc){state.ccy=rc.dataset.rateCcy;if(state.against===state.ccy)state.against=FX.find(x=>x!==state.ccy);render();return;}
  const rg=e.target.closest('[data-rs-gov]');if(rg){state.rsGovMode=rg.dataset.rsGov;render();return;}
  const rsw=e.target.closest('[data-rs-window]');if(rsw){state.rsWindow=Number(rsw.dataset.rsWindow);render();return;}
@@ -418,6 +415,9 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('input',e=>{if(e.target.id==='pair-search'){state.pairSearch=e.target.value;const list=$('pair-results');if(!list)return;const keys=pairListKeys();list.innerHTML=keys.length?keys.map(k=>pairRow(k)).join(''):'<div class="empty"><strong>Nessuna coppia trovata</strong><p>Prova un nome o un filtro diverso.</p></div>';}})
 document.addEventListener('change',e=>{
+ if(e.target.id==='ms-series'){state.msSeriesId=e.target.value;render();return;}
+ if(e.target.id==='ms-primary'){state.ccy=e.target.value;state.msSeriesId=null;if(state.msOther===state.ccy)state.msOther=FX.find(k=>k!==state.ccy);render();return;}
+ if(e.target.id==='ms-other'){state.msOther=e.target.value;render();return;}
  if(e.target.id==='rs-country'){state.ccy=e.target.value;if(state.against===state.ccy)state.against=FX.find(k=>k!==state.ccy);render();return;}
  if(e.target.id==='rs-other'){state.against=e.target.value;render();return;}
  if(e.target.id==='rate-country'){state.ccy=e.target.value;if(state.against===state.ccy)state.against=FX.find(k=>k!==state.ccy);render();}
