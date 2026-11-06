@@ -38,7 +38,14 @@ jobs:
               && curl -fsSL --connect-timeout 8 --max-time 20 "$BASE/rates-studio.css?verify=$GITHUB_RUN_ID" -o /tmp/next-rates.css \
               && grep -q 'rates-studio.js' /tmp/next-index.html \
               && grep -q 'FXQuantRates' /tmp/next-rates.js \
-              && grep -q 'rates-repricing-cards' /tmp/next-rates.css; then
+              && grep -q 'rates-repricing-cards' /tmp/next-rates.css \
+              && curl -fsSL --connect-timeout 8 --max-time 20 "$BASE/macro-studio.js?verify=$GITHUB_RUN_ID" -o /tmp/next-macro.js \
+              && curl -fsSL --connect-timeout 8 --max-time 20 "$BASE/macro-studio.css?verify=$GITHUB_RUN_ID" -o /tmp/next-macro.css \
+              && curl -fsSL --connect-timeout 8 --max-time 20 "https://robybizkit77-blip.github.io/global-macro-fx-quant/live_data/sections/MACRO_SERIES.json?verify=$GITHUB_RUN_ID" -o /tmp/next-macro-data.json \
+              && grep -q 'macro-studio.js' /tmp/next-index.html \
+              && grep -q 'FXQuantMacro' /tmp/next-macro.js \
+              && grep -q 'macro-country-strip' /tmp/next-macro.css \
+              && grep -q '"USD"' /tmp/next-macro-data.json; then
               echo "NEXT_PUBLIC_HTTP_200_VALIDATED"
               echo "PUBLIC_MAIN_NAV_READY=true"
               echo "PUBLIC_ATLAS_JS_READY=true"
@@ -46,6 +53,8 @@ jobs:
               echo "PUBLIC_COT_104W_CHARTS_READY=true"
               echo "PUBLIC_COT_CFTC_DATA_READY=true"
               echo "PUBLIC_G8_RATES_OIS_RESEARCH_READY=true"
+              echo "PUBLIC_G8_MACRO_DYNAMICS_READY=true"
+              echo "PUBLIC_MACRO_204_SERIES_FEED_READY=true"
               exit 0
             fi
             echo "NEXT_PUBLIC_NOT_READY attempt=$attempt"
