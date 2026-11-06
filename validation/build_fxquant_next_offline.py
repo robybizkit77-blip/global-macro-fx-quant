@@ -18,6 +18,7 @@ SOURCES = {
     "dxy": "live_data/sections/DXY_SYNTHETIC_ECB.json",
     "pairs": "live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json",
     "macro": "live_data/sections/MACRO_THERMOMETER_DATA.json",
+    "macroSeries": "live_data/sections/MACRO_SERIES.json",
     "cb": "live_data/sections/NATIVE_CB_DATA.json",
     "cot": "live_data/sections/V247_COT_STORIES.json",
     "cotHistory": "live_data/sections/V250_COT_CHART_DATA.json",
@@ -36,8 +37,10 @@ def main() -> None:
     cot_css = (SITE / "cot-studio.css").read_text(encoding="utf-8")
     rates_js = (SITE / "rates-studio.js").read_text(encoding="utf-8")
     rates_css = (SITE / "rates-studio.css").read_text(encoding="utf-8")
+    macro_js = (SITE / "macro-studio.js").read_text(encoding="utf-8")
+    macro_css = (SITE / "macro-studio.css").read_text(encoding="utf-8")
     docs = {k: json.loads((ROOT / path).read_text(encoding="utf-8")) for k, path in SOURCES.items()}
-    assert len(docs) == 12
+    assert len(docs) == 13
     assert docs["pairs"].get("pair_count") == 28
     assert docs["dxy"].get("not_official_ice") is True
 
@@ -45,8 +48,10 @@ def main() -> None:
     contents = contents.replace('<link rel="stylesheet" href="./theme.css?v=2">', "<style>"+css+"</style>")
     contents = contents.replace('<link rel="stylesheet" href="./cot-studio.css?v=1">', "<style>"+cot_css+"</style>")
     contents = contents.replace('<link rel="stylesheet" href="./rates-studio.css?v=1">', "<style>"+rates_css+"</style>")
+    contents = contents.replace('<link rel="stylesheet" href="./macro-studio.css?v=1">', "<style>"+macro_css+"</style>")
     contents = contents.replace('<script src="./cot-studio.js?v=1" defer></script>', "<script>"+cot_js+"</script>")
     contents = contents.replace('<script src="./rates-studio.js?v=1" defer></script>', "<script>"+rates_js+"</script>")
+    contents = contents.replace('<script src="./macro-studio.js?v=1" defer></script>', "<script>"+macro_js+"</script>")
     contents = contents.replace('<script src="./app.js?v=2" defer></script>', "")
     contents = contents.replace('<span class="live-dot"></span> NEXT / DESIGN LAB', '<span class="live-dot"></span> NEXT / DESIGN LAB')
     contents = contents.replace('NEXT / DESIGN LAB <span class="edition-sep">', 'NEXT / OFFLINE PREVIEW <span class="edition-sep">')
@@ -59,6 +64,7 @@ def main() -> None:
  const captured=JSON.parse(document.getElementById('fxquant-next-offline-data').textContent);
  const targets={
  'NATIVE_RATES_DATA.json':'rates','DXY_SYNTHETIC_ECB.json':'dxy',
+ 'MACRO_SERIES.json':'macroSeries',
  'PAIR_SETUP_OPERATIONAL_VIEW.json':'pairs','MACRO_THERMOMETER_DATA.json':'macro',
  'NATIVE_CB_DATA.json':'cb','V247_COT_STORIES.json':'cot',
  'V250_COT_CHART_DATA.json':'cotHistory',
@@ -83,6 +89,7 @@ def main() -> None:
     assert 'fxquant-next-offline-data' in contents
     assert 'function rates()' in contents
     assert 'FXQuantRates' in contents
+    assert 'FXQuantMacro' in contents
     assert 'rates-instrument-card' in contents
     assert '<style>' in contents
     print(json.dumps({"status":"PASS","output":str(DEST),"bytes":DEST.stat().st_size,
