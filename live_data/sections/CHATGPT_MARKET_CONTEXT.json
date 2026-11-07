@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_CHATGPT_MARKET_CONTEXT_V1",
-  "generated_at_utc": "2026-11-07T00:51:34Z",
+  "generated_at_utc": "2026-11-07T07:01:11Z",
   "evaluation_date_europe_rome": "2026-11-07",
   "reference_only": true,
   "policy": {
@@ -15,7 +15,7 @@
     "ois_official": {
       "USD": {
         "state": "UNAVAILABLE",
-        "as_of": "2026-11-05",
+        "as_of": "2026-11-06",
         "reason": "Only GBP, JPY, CAD and AUD have the certified OIS contract; estimated/proxy OIS is informational only, never alert-certified."
       },
       "EUR": {
@@ -189,9 +189,93 @@
       }
     },
     "cot_weekly": {
-      "state": "STALE",
-      "as_of": "2026-10-27",
-      "reason": "Age 11d exceeds the 10d alert limit."
+      "state": "AVAILABLE_CERTIFIED",
+      "as_of": "2026-11-03",
+      "source": "CFTC Legacy Commitments of Traders (weekly, Tuesday position date)",
+      "percentile_rule": "Display rounded integer; classify on rounded percentile: >=80 extreme long, <=20 extreme short.",
+      "net_oi_rule": "Display one decimal; alert inclusive if abs(displayed Net/OI)>=30.0%",
+      "currencies": {
+        "USD": {
+          "net_noncommercial": 14190,
+          "delta_net_1w": 69,
+          "long": 33054,
+          "short": 18864,
+          "net_oi_pct": 28.9,
+          "net_oi_alert_abs_ge_30pct": false,
+          "percentile_104w_rounded": 84,
+          "signal": "EXTREME_LONG"
+        },
+        "EUR": {
+          "net_noncommercial": -157791,
+          "delta_net_1w": -13897,
+          "long": 229383,
+          "short": 387174,
+          "net_oi_pct": -18.0,
+          "net_oi_alert_abs_ge_30pct": false,
+          "percentile_104w_rounded": 1,
+          "signal": "EXTREME_SHORT"
+        },
+        "GBP": {
+          "net_noncommercial": -59821,
+          "delta_net_1w": 19593,
+          "long": 63780,
+          "short": 123601,
+          "net_oi_pct": -24.4,
+          "net_oi_alert_abs_ge_30pct": false,
+          "percentile_104w_rounded": 25,
+          "signal": "NEUTRAL"
+        },
+        "JPY": {
+          "net_noncommercial": 102321,
+          "delta_net_1w": 730,
+          "long": 227198,
+          "short": 124877,
+          "net_oi_pct": 26.9,
+          "net_oi_alert_abs_ge_30pct": false,
+          "percentile_104w_rounded": 79,
+          "signal": "NEUTRAL"
+        },
+        "CHF": {
+          "net_noncommercial": -16589,
+          "delta_net_1w": 3460,
+          "long": 29482,
+          "short": 46071,
+          "net_oi_pct": -12.5,
+          "net_oi_alert_abs_ge_30pct": false,
+          "percentile_104w_rounded": 100,
+          "signal": "EXTREME_LONG"
+        },
+        "CAD": {
+          "net_noncommercial": -41775,
+          "delta_net_1w": 24649,
+          "long": 99234,
+          "short": 141009,
+          "net_oi_pct": -12.0,
+          "net_oi_alert_abs_ge_30pct": false,
+          "percentile_104w_rounded": 84,
+          "signal": "EXTREME_LONG"
+        },
+        "AUD": {
+          "net_noncommercial": -129457,
+          "delta_net_1w": -1142,
+          "long": 101093,
+          "short": 230550,
+          "net_oi_pct": -39.4,
+          "net_oi_alert_abs_ge_30pct": true,
+          "percentile_104w_rounded": 1,
+          "signal": "EXTREME_SHORT"
+        },
+        "NZD": {
+          "net_noncommercial": -60015,
+          "delta_net_1w": -2325,
+          "long": 18469,
+          "short": 78484,
+          "net_oi_pct": -45.3,
+          "net_oi_alert_abs_ge_30pct": true,
+          "percentile_104w_rounded": 4,
+          "signal": "EXTREME_SHORT"
+        }
+      }
     },
     "fx_ecb_fixing": {
       "state": "AVAILABLE_CERTIFIED",
