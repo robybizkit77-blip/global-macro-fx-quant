@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-05",
-  "generated_at_utc": "2026-11-07T14:06:24.079606Z",
+  "generated_at_utc": "2026-11-07T18:50:18.032080Z",
   "items": [
     {
       "as_of": "2026-11-05",
@@ -47,7 +47,7 @@
       "title": "GBP: repricing OIS più dovish (-11.2 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-07T14:06:24.079606Z",
+  "last_checked_at_utc": "2026-11-07T18:50:18.032080Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -1019,9 +1019,9 @@
     "source_failures": 0,
     "sources": [
       {
-        "accepted_items": 3,
+        "accepted_items": 2,
         "ccy": "USD",
-        "entries_rejected": 17,
+        "entries_rejected": 18,
         "feed_entries_seen": 20,
         "feed_url": "https://www.federalreserve.gov/feeds/press_all.xml",
         "source": "Federal Reserve Board",
@@ -1039,9 +1039,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 6,
+        "accepted_items": 5,
         "ccy": "GBP",
-        "entries_rejected": 44,
+        "entries_rejected": 45,
         "feed_entries_seen": 50,
         "feed_url": "https://www.bankofengland.co.uk/rss/news",
         "source": "Bank of England",
