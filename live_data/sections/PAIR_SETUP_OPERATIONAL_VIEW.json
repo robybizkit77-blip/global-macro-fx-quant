@@ -40,8 +40,8 @@
         "pair": "AUD/CAD",
         "structuralFav": "AUD",
         "other": "CAD",
-        "quality": "DA CONFERMARE",
-        "qualityCode": "NEEDS_CONFIRMATION",
+        "quality": "CON RISCHI",
+        "qualityCode": "RISKY",
         "price": {
           "state": "NEUTRAL",
           "text": "Prezzo non conferma ancora"
@@ -65,21 +65,21 @@
           }
         },
         "cot": {
-          "state": "DIVERGENT",
-          "kind": "CROWDED_AGAINST_TRADE",
-          "text": "AUD: COT affollato · Net/OI -39.5% · posizionamento contro il trade",
+          "state": "HIGH",
+          "kind": "EXTREME_POSITIONING_WITH_TRADE",
+          "text": "CAD: COT estremo · P84 · già allineato al trade",
           "legs": [
             {
               "level": "HIGH",
               "source": "CONCENTRATION",
               "relation": "AGAINST_TRADE",
-              "text": "AUD: COT affollato · Net/OI -39.5% · posizionamento contro il trade"
+              "text": "AUD: COT affollato · Net/OI -39.4% · posizionamento contro il trade"
             },
             {
-              "level": "MEDIUM",
-              "source": "PERCENTILE_WARNING",
+              "level": "HIGH",
+              "source": "PERCENTILE_EXTREME",
               "relation": "WITH_TRADE",
-              "text": "CAD: COT da monitorare · P75 · già allineato al trade"
+              "text": "CAD: COT estremo · P84 · già allineato al trade"
             }
           ]
         },
@@ -218,19 +218,19 @@
         "cot": {
           "state": "HIGH",
           "kind": "EXTREME_POSITIONING_WITH_TRADE",
-          "text": "CHF: COT estremo · P98 · già allineato al trade",
+          "text": "CHF: COT estremo · P100 · già allineato al trade",
           "legs": [
             {
               "level": "HIGH",
               "source": "CONCENTRATION",
               "relation": "AGAINST_TRADE",
-              "text": "AUD: COT affollato · Net/OI -39.5% · posizionamento contro il trade"
+              "text": "AUD: COT affollato · Net/OI -39.4% · posizionamento contro il trade"
             },
             {
               "level": "HIGH",
               "source": "PERCENTILE_EXTREME",
               "relation": "WITH_TRADE",
-              "text": "CHF: COT estremo · P98 · già allineato al trade"
+              "text": "CHF: COT estremo · P100 · già allineato al trade"
             }
           ]
         },
@@ -369,13 +369,13 @@
         "cot": {
           "state": "DIVERGENT",
           "kind": "CROWDED_AGAINST_TRADE",
-          "text": "AUD: COT affollato · Net/OI -39.5% · posizionamento contro il trade",
+          "text": "AUD: COT affollato · Net/OI -39.4% · posizionamento contro il trade",
           "legs": [
             {
               "level": "HIGH",
               "source": "CONCENTRATION",
               "relation": "AGAINST_TRADE",
-              "text": "AUD: COT affollato · Net/OI -39.5% · posizionamento contro il trade"
+              "text": "AUD: COT affollato · Net/OI -39.4% · posizionamento contro il trade"
             },
             {
               "level": "MEDIUM",
@@ -521,19 +521,19 @@
         "cot": {
           "state": "HIGH",
           "kind": "CROWDED_WITH_TRADE",
-          "text": "NZD: COT affollato · Net/OI -44.7% · già allineato al trade",
+          "text": "NZD: COT affollato · Net/OI -45.3% · già allineato al trade",
           "legs": [
             {
               "level": "HIGH",
               "source": "CONCENTRATION",
               "relation": "AGAINST_TRADE",
-              "text": "AUD: COT affollato · Net/OI -39.5% · posizionamento contro il trade"
+              "text": "AUD: COT affollato · Net/OI -39.4% · posizionamento contro il trade"
             },
             {
               "level": "HIGH",
               "source": "CONCENTRATION",
               "relation": "WITH_TRADE",
-              "text": "NZD: COT affollato · Net/OI -44.7% · già allineato al trade"
+              "text": "NZD: COT affollato · Net/OI -45.3% · già allineato al trade"
             }
           ]
         },
@@ -788,19 +788,19 @@
         "cot": {
           "state": "HIGH",
           "kind": "EXTREME_POSITIONING_WITH_TRADE",
-          "text": "CHF: COT estremo · P98 · già allineato al trade",
+          "text": "CHF: COT estremo · P100 · già allineato al trade",
           "legs": [
             {
-              "level": "MEDIUM",
-              "source": "PERCENTILE_WARNING",
+              "level": "HIGH",
+              "source": "PERCENTILE_EXTREME",
               "relation": "AGAINST_TRADE",
-              "text": "CAD: COT da monitorare · P75 · posizionamento contro il trade"
+              "text": "CAD: COT estremo · P84 · posizionamento contro il trade"
             },
             {
               "level": "HIGH",
               "source": "PERCENTILE_EXTREME",
               "relation": "WITH_TRADE",
-              "text": "CHF: COT estremo · P98 · già allineato al trade"
+              "text": "CHF: COT estremo · P100 · già allineato al trade"
             }
           ]
         },
@@ -1058,7 +1058,7 @@
         "cot": {
           "state": "HIGH",
           "kind": "EXTREME_POSITIONING_WITH_TRADE",
-          "text": "CHF: COT estremo · P98 · già allineato al trade",
+          "text": "CHF: COT estremo · P100 · già allineato al trade",
           "legs": [
             {
               "level": "MEDIUM",
@@ -1070,7 +1070,7 @@
               "level": "HIGH",
               "source": "PERCENTILE_EXTREME",
               "relation": "WITH_TRADE",
-              "text": "CHF: COT estremo · P98 · già allineato al trade"
+              "text": "CHF: COT estremo · P100 · già allineato al trade"
             }
           ]
         },
@@ -1216,7 +1216,7 @@
               "level": "HIGH",
               "source": "CONCENTRATION",
               "relation": "AGAINST_TRADE",
-              "text": "AUD: COT affollato · Net/OI -39.5% · posizionamento contro il trade"
+              "text": "AUD: COT affollato · Net/OI -39.4% · posizionamento contro il trade"
             },
             {
               "level": "HIGH",
@@ -1479,7 +1479,7 @@
         "cot": {
           "state": "HIGH",
           "kind": "EXTREME_POSITIONING_WITH_TRADE",
-          "text": "CHF: COT estremo · P98 · già allineato al trade",
+          "text": "CHF: COT estremo · P100 · già allineato al trade",
           "legs": [
             {
               "level": "HIGH",
@@ -1491,7 +1491,7 @@
               "level": "HIGH",
               "source": "PERCENTILE_EXTREME",
               "relation": "WITH_TRADE",
-              "text": "CHF: COT estremo · P98 · già allineato al trade"
+              "text": "CHF: COT estremo · P100 · già allineato al trade"
             }
           ]
         },
@@ -2106,8 +2106,8 @@
         "pair": "GBP/AUD",
         "structuralFav": "AUD",
         "other": "GBP",
-        "quality": "CON RISCHI",
-        "qualityCode": "RISKY",
+        "quality": "DA MONITORARE",
+        "qualityCode": "WATCH",
         "price": {
           "state": "GOOD",
           "text": "Prezzo conferma"
@@ -2131,21 +2131,21 @@
           }
         },
         "cot": {
-          "state": "HIGH",
-          "kind": "CROWDED_WITH_TRADE",
-          "text": "GBP: COT affollato · Net/OI -31.3% · già allineato al trade",
+          "state": "DIVERGENT",
+          "kind": "CROWDED_AGAINST_TRADE",
+          "text": "AUD: COT affollato · Net/OI -39.4% · posizionamento contro il trade",
           "legs": [
             {
               "level": "HIGH",
               "source": "CONCENTRATION",
               "relation": "AGAINST_TRADE",
-              "text": "AUD: COT affollato · Net/OI -39.5% · posizionamento contro il trade"
+              "text": "AUD: COT affollato · Net/OI -39.4% · posizionamento contro il trade"
             },
             {
-              "level": "HIGH",
-              "source": "CONCENTRATION",
+              "level": "MEDIUM",
+              "source": "PERCENTILE_WARNING",
               "relation": "WITH_TRADE",
-              "text": "GBP: COT affollato · Net/OI -31.3% · già allineato al trade"
+              "text": "GBP: COT da monitorare · P25 · già allineato al trade"
             }
           ]
         },
@@ -2400,19 +2400,19 @@
         "cot": {
           "state": "HIGH",
           "kind": "EXTREME_POSITIONING_WITH_TRADE",
-          "text": "CHF: COT estremo · P98 · già allineato al trade",
+          "text": "CHF: COT estremo · P100 · già allineato al trade",
           "legs": [
             {
-              "level": "HIGH",
-              "source": "CONCENTRATION",
+              "level": "MEDIUM",
+              "source": "PERCENTILE_WARNING",
               "relation": "AGAINST_TRADE",
-              "text": "GBP: COT affollato · Net/OI -31.3% · posizionamento contro il trade"
+              "text": "GBP: COT da monitorare · P25 · posizionamento contro il trade"
             },
             {
               "level": "HIGH",
               "source": "PERCENTILE_EXTREME",
               "relation": "WITH_TRADE",
-              "text": "CHF: COT estremo · P98 · già allineato al trade"
+              "text": "CHF: COT estremo · P100 · già allineato al trade"
             }
           ]
         },
@@ -2783,8 +2783,8 @@
         },
         "cot": {
           "state": "HIGH",
-          "kind": "CROWDED_WITH_TRADE",
-          "text": "USD: COT estremo · P84 · già allineato al trade · GBP: COT affollato · Net/OI -31.3% · già allineato al trade",
+          "kind": "EXTREME_POSITIONING_WITH_TRADE",
+          "text": "USD: COT estremo · P84 · già allineato al trade",
           "legs": [
             {
               "level": "HIGH",
@@ -2793,10 +2793,10 @@
               "text": "USD: COT estremo · P84 · già allineato al trade"
             },
             {
-              "level": "HIGH",
-              "source": "CONCENTRATION",
+              "level": "MEDIUM",
+              "source": "PERCENTILE_WARNING",
               "relation": "WITH_TRADE",
-              "text": "GBP: COT affollato · Net/OI -31.3% · già allineato al trade"
+              "text": "GBP: COT da monitorare · P25 · già allineato al trade"
             }
           ]
         },
@@ -3050,19 +3050,19 @@
         "cot": {
           "state": "HIGH",
           "kind": "EXTREME_POSITIONING_WITH_TRADE",
-          "text": "CHF: COT estremo · P98 · già allineato al trade",
+          "text": "CHF: COT estremo · P100 · già allineato al trade",
           "legs": [
             {
               "level": "HIGH",
               "source": "CONCENTRATION",
               "relation": "AGAINST_TRADE",
-              "text": "NZD: COT affollato · Net/OI -44.7% · posizionamento contro il trade"
+              "text": "NZD: COT affollato · Net/OI -45.3% · posizionamento contro il trade"
             },
             {
               "level": "HIGH",
               "source": "PERCENTILE_EXTREME",
               "relation": "WITH_TRADE",
-              "text": "CHF: COT estremo · P98 · già allineato al trade"
+              "text": "CHF: COT estremo · P100 · già allineato al trade"
             }
           ]
         },
@@ -3318,7 +3318,7 @@
         "cot": {
           "state": "HIGH",
           "kind": "CROWDED_WITH_TRADE",
-          "text": "USD: COT estremo · P84 · già allineato al trade · NZD: COT affollato · Net/OI -44.7% · già allineato al trade",
+          "text": "USD: COT estremo · P84 · già allineato al trade · NZD: COT affollato · Net/OI -45.3% · già allineato al trade",
           "legs": [
             {
               "level": "HIGH",
@@ -3330,7 +3330,7 @@
               "level": "HIGH",
               "source": "CONCENTRATION",
               "relation": "WITH_TRADE",
-              "text": "NZD: COT affollato · Net/OI -44.7% · già allineato al trade"
+              "text": "NZD: COT affollato · Net/OI -45.3% · già allineato al trade"
             }
           ]
         },
@@ -3467,7 +3467,7 @@
         "cot": {
           "state": "HIGH",
           "kind": "EXTREME_POSITIONING_WITH_TRADE",
-          "text": "USD: COT estremo · P84 · già allineato al trade",
+          "text": "USD: COT estremo · P84 · già allineato al trade · CAD: COT estremo · P84 · già allineato al trade",
           "legs": [
             {
               "level": "HIGH",
@@ -3476,10 +3476,10 @@
               "text": "USD: COT estremo · P84 · già allineato al trade"
             },
             {
-              "level": "MEDIUM",
-              "source": "PERCENTILE_WARNING",
+              "level": "HIGH",
+              "source": "PERCENTILE_EXTREME",
               "relation": "WITH_TRADE",
-              "text": "CAD: COT da monitorare · P75 · già allineato al trade"
+              "text": "CAD: COT estremo · P84 · già allineato al trade"
             }
           ]
         },
@@ -3617,7 +3617,7 @@
         "cot": {
           "state": "HIGH",
           "kind": "EXTREME_POSITIONING_WITH_TRADE",
-          "text": "USD: COT estremo · P84 · già allineato al trade · CHF: COT estremo · P98 · già allineato al trade",
+          "text": "USD: COT estremo · P84 · già allineato al trade · CHF: COT estremo · P100 · già allineato al trade",
           "legs": [
             {
               "level": "HIGH",
@@ -3629,7 +3629,7 @@
               "level": "HIGH",
               "source": "PERCENTILE_EXTREME",
               "relation": "WITH_TRADE",
-              "text": "CHF: COT estremo · P98 · già allineato al trade"
+              "text": "CHF: COT estremo · P100 · già allineato al trade"
             }
           ]
         },
@@ -3887,9 +3887,10 @@
     }
   },
   "quality_distribution": {
-    "DA CONFERMARE": 2,
     "CON RISCHI": 15,
-    "NON VALUTABILE": 11
+    "DA CONFERMARE": 1,
+    "NON VALUTABILE": 11,
+    "DA MONITORARE": 1
   },
   "browser_page_errors": []
 }
