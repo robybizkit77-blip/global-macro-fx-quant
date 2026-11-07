@@ -1,7 +1,7 @@
 {
   "schema": "GMFQ_FXV2_CROSS_ASSET_SOURCE_OVERLAY_V1",
   "status": "FIVE_STREAMS_VERIFIED",
-  "collected_on": "2026-11-06",
+  "collected_on": "2026-11-07",
   "attempted_sources": [
     "SP500",
     "NASDAQCOM",
@@ -19,16 +19,12 @@
   "source_errors": {},
   "streams": {
     "SP500": {
-      "date": "2026-11-04",
-      "previous_date": "2026-11-03",
-      "value": 7688.62,
-      "previous": 7568.92,
-      "change_1d_pct": 1.5815,
+      "date": "2026-11-05",
+      "previous_date": "2026-11-04",
+      "value": 7353.73,
+      "previous": 7688.62,
+      "change_1d_pct": -4.3557,
       "history": [
-        [
-          "2026-06-15",
-          7554.29
-        ],
         [
           "2026-06-16",
           7511.35
@@ -424,6 +420,10 @@
         [
           "2026-11-04",
           7688.62
+        ],
+        [
+          "2026-11-05",
+          7353.73
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -850,7 +850,7 @@
       "kind": "INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 1,
+      "source_age_calendar_days": 2,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
@@ -1268,7 +1268,7 @@
       "kind": "CREDIT_OAS",
       "unit": "percent",
       "max_source_age_days": 7,
-      "source_age_calendar_days": 1,
+      "source_age_calendar_days": 2,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
@@ -1686,7 +1686,7 @@
       "kind": "CREDIT_OAS",
       "unit": "percent",
       "max_source_age_days": 7,
-      "source_age_calendar_days": 1,
+      "source_age_calendar_days": 2,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
@@ -2104,7 +2104,7 @@
       "kind": "VOLATILITY_INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 1,
+      "source_age_calendar_days": 2,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     }
