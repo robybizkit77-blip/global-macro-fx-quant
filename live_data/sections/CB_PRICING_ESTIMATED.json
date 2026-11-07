@@ -106,20 +106,20 @@
       },
       "horizons": {
         "12m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "FST3U2027",
           "contract_description": "Sep 2027",
           "expiration": "2027-12-15",
-          "futures_price": 96.99,
+          "futures_price": 97.02,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-05T17:27:47Z",
-          "quote_as_of": "2026-11-05",
+          "price_valid_until": "2026-11-06T22:09:42Z",
+          "quote_as_of": "2026-11-06",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 3.01,
+          "rate": 2.98,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 51.0,
+          "raw_level_minus_spot_policy_bp": 48.0,
           "symbol": "EUREX:FST3U2027"
         },
         "3m": {
@@ -269,7 +269,7 @@
       "status": "ESTIMATED_PARTIAL"
     },
     "USD": {
-      "as_of": "2026-11-05",
+      "as_of": "2026-11-06",
       "change_1d_bp": null,
       "change_1w_bp": null,
       "change_status": "DERIVED_ONLY_FROM_HOMOGENEOUS_SNAPSHOT_HISTORY",
@@ -287,20 +287,20 @@
       },
       "horizons": {
         "12m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "ZQV2027",
           "contract_description": "Oct 2027",
           "expiration": "2027-11-01",
-          "futures_price": 95.71,
+          "futures_price": 95.66,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-05T20:52:30Z",
-          "quote_as_of": "2026-11-05",
+          "price_valid_until": "2026-11-06T20:48:49Z",
+          "quote_as_of": "2026-11-06",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 4.29,
+          "rate": 4.34,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 41.5,
+          "raw_level_minus_spot_policy_bp": 46.5,
           "symbol": "CBOT:ZQV2027"
         },
         "3m": {

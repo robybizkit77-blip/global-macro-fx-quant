@@ -65,17 +65,17 @@
       "freshness_status": "LIVE_OR_RECENT_SESSION",
       "horizons": {
         "12m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "FST3U2027",
           "contract_description": "Sep 2027",
           "expiration": "2027-12-15",
-          "futures_price": 96.99,
+          "futures_price": 97.02,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
-          "price_valid_until": "2026-11-05T17:27:47Z",
-          "quote_as_of": "2026-11-05",
+          "price_valid_until": "2026-11-06T22:09:42Z",
+          "quote_as_of": "2026-11-06",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 3.01,
+          "rate": 2.98,
           "symbol": "EUREX:FST3U2027"
         },
         "3m": {
@@ -115,22 +115,22 @@
       "status": "LIVE_SECONDARY_READY"
     },
     "USD": {
-      "as_of": "2026-11-05",
+      "as_of": "2026-11-06",
       "confidence_grade": "B",
       "freshness_status": "LIVE_OR_RECENT_SESSION",
       "horizons": {
         "12m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "ZQV2027",
           "contract_description": "Oct 2027",
           "expiration": "2027-11-01",
-          "futures_price": 95.71,
+          "futures_price": 95.66,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
-          "price_valid_until": "2026-11-05T20:52:30Z",
-          "quote_as_of": "2026-11-05",
+          "price_valid_until": "2026-11-06T20:48:49Z",
+          "quote_as_of": "2026-11-06",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 4.29,
+          "rate": 4.34,
           "symbol": "CBOT:ZQV2027"
         },
         "3m": {
@@ -170,7 +170,7 @@
       "status": "LIVE_SECONDARY_READY"
     }
   },
-  "generated_at_utc": "2026-11-06T20:50:50.841728Z",
+  "generated_at_utc": "2026-11-07T00:52:09.761179Z",
   "governance": {
     "backtest_eligible_as_official_ois": false,
     "bias_effect": "NONE",
