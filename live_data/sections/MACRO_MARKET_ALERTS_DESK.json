@@ -1,8 +1,51 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-07T00:57:28Z",
+  "generated_at_utc": "2026-11-07T07:14:56Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-7a73eab5e6bb76b82dd0",
+      "observed_at_utc": "2026-11-06T18:33:44Z",
+      "headline": "Daly says Fed rate hike likely, despite 'painful' tech-stock dive",
+      "summary": "Reuters riporta: Daly says Fed rate hike likely, despite 'painful' tech-stock dive. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxOYm1MU1hqV0tGaTZraWhpaVdqOGZCdzZjLUt3ZVZFU3BCaGFwdE9ham9MYktoSlF1SWF0eXRRR0V1QVhPUUZlRjdqZHdwMVlRS3pNaGUtWktTUmJhSUR3bW56MzdObWlZd0E0XzZSaUNnelUxR2FReTNkNTkwSVNEX3l6cmVveVRlNm1LWGNJdGs2WUt5c1BtS3o5TU9XbzRVNC1tT0ZydXREcmM?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-f39f9b1fcfd8aee6e826",
+      "observed_at_utc": "2026-11-06T05:09:00Z",
+      "headline": "Markets fret over growth and inflation, just as tech rout gains speed",
+      "summary": "Reuters riporta: Markets fret over growth and inflation, just as tech rout gains speed. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxONUh4V2hzQnA1Rk9zNTN6d3ZxcVZycGZQVmNUNjR3NmpXSmphZHh4LWZvaGJmTTVEWDdBc0lNWmZyUUp3MTFndk5uZl80Qnk0QXotRmo5S1g0MVhDejlwMjJlczNLVWY1eHRLZ1c4dExyOUNqdjJPaUFhVnE2WC16QUc4aTVfUlAwQUtKMktZYi1STk94cXBnSXF5OEQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-3fe9e58037c6ede83f76",
+      "observed_at_utc": "2026-11-06T03:46:00Z",
+      "headline": "Gold drops as strong US payrolls boost dollar, yields",
+      "summary": "Reuters riporta: Gold drops as strong US payrolls boost dollar, yields. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxQQVNBUlY0RkQ3Vm5qcDFmbS12Nlo0Wjd4RWNEWkROOFRSX0hha1VobWJkTW82YTM1QzNMUXlzX1V5bktiSHJDYklFR2ZDUnN4aEhGM3U0UmlRT3pDcjVFRkR5ak9IZ1NVbG4wempaX1Y0R2JXb0U2THRLcE80d0l1NFppQ3l5b2M4c3RQZU1sS1RNRHdiYmFsYmw0czRoUnVJRVJLNTl0VmVNODg3NWVR?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-645c98a6f7b179aacd1f",
       "observed_at_utc": "2026-11-06T20:58:34Z",
@@ -1366,49 +1409,6 @@
       "related_pairs": [],
       "source_label": "AP News · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxQdmpNR3hXT3B1c2RacHY4TFZnNjlfaTY2c0tXMXZjSWE5Z2JCZlNDZTE0dGRQYjNEejl5ZXFILTNPQ05pX0NyRWpwNW1YVzdpREhYblpHWTZMZkkzNFZnVTZ1NWV4M3FtR0VMUmRNTjczY1NGaTEtSFptWEY0NF9RZ1otWWdjMTZDYXE3SHRWM0NhdEtyczFDeXFYT3RWVF9DTmdGTHdGWHR1QQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-6c4a76351111f0d87f75",
-      "observed_at_utc": "2026-10-28T18:14:42Z",
-      "headline": "Israeli stocks fall, shekel weakens as Netanyahu bloc beats election forecasts",
-      "summary": "Reuters riporta: Israeli stocks fall, shekel weakens as Netanyahu bloc beats election forecasts. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQR2dvdWxfRENKT1lOMGpCdThiazlMa2wyLUdPbi14UUFEaFJXVHVNd1JTcjRpTnJTZUNOYnZERkl4cHkxVUVtNkF6aFdoakd1djRYc0F0ZVZjakVKNVJiX3Z3bGRTTUtlZ3ZtOVlMek1LZks1WnR6VTRvcWhqeVkyUWtBa1UzMFQ4cUVwRE1tcXk4TEpXTzF6MWVEXzJGZEZTZHQ2R2JldW9EcXhUcVhkcnQwaEdjZDN5RkxJTktXY05teTc1RTRB?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-380e4239b70190a52f1c",
-      "observed_at_utc": "2026-10-28T20:06:00Z",
-      "headline": "The bond market swings, but US stocks remain steady after the Fed says it won't raise interest rates",
-      "summary": "AP News riporta: The bond market swings, but US stocks remain steady after the Fed says it won't raise interest rates. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "AP News · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxOWjdOaHZoX3J6U1JBZU92Q1VkV2F0OFI0WUo5b2l0UHh5WXVNWDZHVElxNktfMUh0WEh6REdiVXZxWlNHdm1hV2RBMHE1TnZjamY4dDA5VWZlMjhDV3I0Z1I4MDh4WDJnbG9fRVBZZW1FZHZCaHVPRUhMc29Fa0ZDNVJ5X3NYVFUteDhlVXNtVzN0cHc?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-dd4050146a8fffe0bfb8",
-      "observed_at_utc": "2026-10-28T14:23:31Z",
-      "headline": "UK inflation forecast to average 3.4% in 2027, OBR says",
-      "summary": "Reuters riporta: UK inflation forecast to average 3.4% in 2027, OBR says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [
-        "GBP"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxNVU1ZLWRfOWJKSjgzSzVnU0lRT1c0ZHZ4N1RNc2RKV3RHNEhiVFlRTEYtOXduN05ISVE1VDN6NXlMSUl4QXNtZ2dPRGNoLW5xeEhjeUZjdGQ3M2EwRHpmWnlPLWltVmN0d3Q3RWU1ekZRTFUwcTlLTjRvREtPUXZPS00tOXI1RGZEYkJ6VXItVnlNVzgzQWh3UUpR?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
