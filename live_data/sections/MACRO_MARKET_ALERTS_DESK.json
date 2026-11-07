@@ -1,8 +1,51 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-07T07:14:56Z",
+  "generated_at_utc": "2026-11-07T14:06:04Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-663994d72c68ceec0ed1",
+      "observed_at_utc": "2026-11-06T15:41:00Z",
+      "headline": "US continues to generate jobs, yet inflation is eroding the spending power of millions of Americans",
+      "summary": "AP News riporta: US continues to generate jobs, yet inflation is eroding the spending power of millions of Americans. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "AP News · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxNdC02VzNDWTRMSy1CbmNhLWl2akxnTjZDNldNZW9IUC00ZTJGWWxyZEljUW5ZZHRVZEdHS2lsR3p1VkRod19USGJhR1N0b0lvaDBaZXNhazNaZVFOMXZRT21kQXBHX2QxWW43TkJrVlhOTzV5V21vZVRwQl9oZlR1U1BXSEh4S1ZjQVczMHNuc1F3UFIyaUliRnJqTFRMaEpTSEpZ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-a9980f5d28faaadbfac5",
+      "observed_at_utc": "2026-11-06T10:51:00Z",
+      "headline": "PODCAST: Susie Wiles replaced, tech stocks rebound, Cybertruck wind down (Updated)",
+      "summary": "Reuters riporta: PODCAST: Susie Wiles replaced, tech stocks rebound, Cybertruck wind down (Updated). È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxONUtJQ05FYi1TTzhaWlRpN0lmSFIxdG42TnQ1dzhnRExMamJRMXVoVnR2VXIyczdoc0FLMy1hMlJyZU0xOGxLZlFvNndZcEhMLUFobXdxV25iUkJlTG93bDhBOFdFYUVROGlMMDB6QjM0d0tndU54YTRydFh2SlM5TXVPWXVVU0RndTRacVBZQ0txUkpFbExld19Ya0Vfd0gwbkNVeVFScw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-3b1c078167539d60e952",
+      "observed_at_utc": "2026-11-06T09:41:00Z",
+      "headline": "Nasdaq rebounds but posts fourth straight weekly decline",
+      "summary": "Reuters riporta: Nasdaq rebounds but posts fourth straight weekly decline. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxQang5czlMS1c0LVRiTWdNdXItcDlKcTgyOXplSVVGRHljMGVrVG1KVGJTclR0TmtjWjFob0t1QWh6OTdkNzltaDJhTi1fdUdkM2tOb01JaVVlaVRWcWVTdkZFbmdBYlgxY2ktWVh6eFdZRVczekVTdFRCSWtOSzBGVnNCWHpFNFFXWFE2WDVQUjFCa19tbUhzNzdlNksyNFBqek4tcXdrcjVIVTQxMkE?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-7a73eab5e6bb76b82dd0",
       "observed_at_utc": "2026-11-06T18:33:44Z",
@@ -1366,49 +1409,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxQYlhrT3hjaWJ0VXJlcHYxRUdvdVJsVEpGN2lzQXA4a1pLNW5SdklwTFpMYmRNTGRNQ2w2MTRTR2g0UUJfMkx0c21Ja1Fqbzd4eVk1U1gySHF5cnYwQ0FqUzFWWVVMVXpWaUMtQ3d2VGs1TERHQ0dtbFpMWWgxbVpoVS13bGRORTByVkZaS0piSjNxYTk0eUtoZ0ItV2wxbzNnOXhCM2R1bW1Sa1laZUE?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-2086ce04d28da4ae902d",
-      "observed_at_utc": "2026-10-28T15:22:01Z",
-      "headline": "US crude and distillate inventories fall, gasoline stocks rise, EIA says",
-      "summary": "Reuters riporta: US crude and distillate inventories fall, gasoline stocks rise, EIA says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPa1hhSE9qcjBnV05nbUJKNmwxbmFFUmM4MG5QdEVCaUoteHJQNVFwaXJUemg3RU5yWVMtWnh4U19tLW14Znl6dWZIUDRZdm5rcENwaUZVOEUyQlR6azA1bGRMX00ydXJ5UU1fRE14SE1nQTVxdUt5bkNDTV8tMmE0Z0JYdEtQdnBUbXhOSU9JMFpzdnltMjRjNVBFX1E3YmpIbXpPdU5OM3BvU0tkMmN2LWk3NHkzZFI4eE51eGE3Q29LekU?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-de1b11352a0811eb473d",
-      "observed_at_utc": "2026-10-28T07:15:26Z",
-      "headline": "German consumer sentiment slips on inflation fears, survey shows",
-      "summary": "Reuters riporta: German consumer sentiment slips on inflation fears, survey shows. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxQU2NSMlpDSUlVX01lX1hOSWNrTzJwNHhPY0ZtcXJWUnEwd0RTS05GRnE1VDl5SEFONzlFNkVXNjBaZ1pBSVg2M09yd0xVMWdpTDVxNWM5alI1M2ZVdFNmZzl3QW9idzFOa3FXZXc3d04zc3FEM2FkdS14dDRJTmx3MDdqMUNvckZnV25YMGtRdjRkR085b2tuOFg1SjQtQ2FKMkV4Q2kzMDY?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-e8bfe341bb47ccd4e3c5",
-      "observed_at_utc": "2026-10-28T21:54:00Z",
-      "headline": "Federal Reserve keeps rates unchanged despite elevated inflation",
-      "summary": "AP News riporta: Federal Reserve keeps rates unchanged despite elevated inflation. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "AP News · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxQdmpNR3hXT3B1c2RacHY4TFZnNjlfaTY2c0tXMXZjSWE5Z2JCZlNDZTE0dGRQYjNEejl5ZXFILTNPQ05pX0NyRWpwNW1YVzdpREhYblpHWTZMZkkzNFZnVTZ1NWV4M3FtR0VMUmRNTjczY1NGaTEtSFptWEY0NF9RZ1otWWdjMTZDYXE3SHRWM0NhdEtyczFDeXFYT3RWVF9DTmdGTHdGWHR1QQ?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
