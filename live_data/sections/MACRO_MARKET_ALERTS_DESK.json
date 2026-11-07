@@ -1,8 +1,53 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-06T20:55:35Z",
+  "generated_at_utc": "2026-11-07T00:57:28Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-645c98a6f7b179aacd1f",
+      "observed_at_utc": "2026-11-06T20:58:34Z",
+      "headline": "Fed policymakers consider rate hike after strong jobs report",
+      "summary": "Reuters riporta: Fed policymakers consider rate hike after strong jobs report. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxQMF93ekZ4N2wtdW4zX1llS2FoZWpNVlhMLTRNOGVJTUktZmpLQUNBSzY2bW16Mm9mb3lrZERqNFZ6WkRmYkhBTG00Z2k2NFYyNTVLcmVBSkV5eVJRU1RwZFc5blM4MkRmcUxYU2hadXRWbVh0VXpjektqM1BGS3ZlZlNMeW43VWxmeE5TQm13d0E3bTVwUnp5dzFFNA?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-98c097267c4f471ba5ea",
+      "observed_at_utc": "2026-11-06T20:28:16Z",
+      "headline": "BOJ chief Ueda sees 'some upside risks' to inflation",
+      "summary": "Reuters riporta: BOJ chief Ueda sees 'some upside risks' to inflation. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "JPY"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxQNE9OOEdkZXV1VkxiQTllZGVwRFFnazBCZEhxMm8ybDdrZXM2RzVVVXlZLVY3enZtRk1KRlBHSVNLcVZNQ3dxTm1qNVNLU3kwNVZ6dXVIeVpUbHE0aWdTdUdvcUk4eHBXOTM5SmlPNXNhVHZHNGQwbi1EbEFDZnpTTXpHLW5oc1J0bHNyYldYSnpZeGluWExDLVZNdkVZbGlUNjJQbA?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-dfda84c8ffadf57aeae1",
+      "observed_at_utc": "2026-11-06T10:32:09Z",
+      "headline": "US inflation too high; essential to get back to 2%: Fed's Williams",
+      "summary": "Reuters riporta: US inflation too high; essential to get back to 2%: Fed's Williams. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxNVTNvM3BqdWl4SmprODlFb250cjZNZU1FOVdHWEEtdU9QczJHVmVlUFA3dVRGd3BSUmNvN1hYQ0RQZzZ6N0NWLUFJOGhBTGhoUWNKTUE2Zmpqcmt2cWV4V1dQSmgzYW1Yb3VXN3lidjlBdE0zQ2hIc1ZnVlZJM2N0RlZCYlJPemdvcEhndWNnLWtiSVBQeEYxQ1BGbmVYeUdneWFn?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-49ddd635cc925be95005",
       "observed_at_utc": "2026-11-06T16:04:55Z",
@@ -1364,49 +1409,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxNVU1ZLWRfOWJKSjgzSzVnU0lRT1c0ZHZ4N1RNc2RKV3RHNEhiVFlRTEYtOXduN05ISVE1VDN6NXlMSUl4QXNtZ2dPRGNoLW5xeEhjeUZjdGQ3M2EwRHpmWnlPLWltVmN0d3Q3RWU1ekZRTFUwcTlLTjRvREtPUXZPS00tOXI1RGZEYkJ6VXItVnlNVzgzQWh3UUpR?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-0e9be0f5115ad544fc93",
-      "observed_at_utc": "2026-10-28T08:54:49Z",
-      "headline": "Unilever India slips after joining peers in flagging commodity inflation",
-      "summary": "Reuters riporta: Unilever India slips after joining peers in flagging commodity inflation. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMingFBVV95cUxPR2lZaWpqX2hBMm8xc0dpVXBXc1JsTUQyTUVjWWhGTXpxUlRYWEM2Ni1RT3djTkgyQ191dmZucXoxTUxqOVJSZV9udzRKTVRNUjNfUGN1eFgzVzhpeG9kR2M4NFZkTlNEcEZZS09QVk51emtFZXNDZ21lcUgtNUFLcG5vRld3UVVFZEZpRjNIYkFScVhWV3dvZXpvcXJWdw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-d47a136340a1f3e87f85",
-      "observed_at_utc": "2026-10-28T15:54:00Z",
-      "headline": "US stocks hold steady as the countdown ticks to a Federal Reserve decision on interest rates",
-      "summary": "AP News riporta: US stocks hold steady as the countdown ticks to a Federal Reserve decision on interest rates. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "AP News · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxOWjdOaHZoX3J6U1JBZU92Q1VkV2F0OFI0WUo5b2l0UHh5WXVNWDZHVElxNktfMUh0WEh6REdiVXZxWlNHdm1hV2RBMHE1TnZjamY4dDA5VWZlMjhDV3I0Z1I4MDh4WDJnbG9fRVBZZW1FZHZCaHVPRUhMc29Fa0ZDNVJ5X3NYVFUteDhlVXNtVzN0cHc?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-157a2746f12566db0114",
-      "observed_at_utc": "2026-10-28T14:38:07Z",
-      "headline": "Bank of Canada raises key interest rate, says another hike possible",
-      "summary": "Reuters riporta: Bank of Canada raises key interest rate, says another hike possible. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "CAD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxOQUNfMFh2VXFuRUpyWjNldzQ4dmZROU5kNjhfUlNoXzd1UXNWV0NiTXJiclpmYUlnS1dFUXJ0QkVPVno1VkJxaEpOUDc5Qk5PS2ZBR1NUbE5RSU5ja2FRQmVpd1VZZWhmdjl6dzRFTE9hNGJvWHNCc2VFN2NFQlNvYzNtdjYwWnVoNmdIZUdMRkZBbHY2OTJ1OEpvMFlRYkRHY2ZVZmZKM2RUdU9IckpCMzV2Wm4?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
