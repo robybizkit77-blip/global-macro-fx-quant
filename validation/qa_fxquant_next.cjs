@@ -21,7 +21,7 @@ fs.mkdirSync(evidence,{recursive:true});
    assert(resp&&resp.ok(),'Home HTTP failed: '+resp?.status());
    await page.waitForFunction(()=>/fonti caricate/.test(document.getElementById('sidebar-feed')?.textContent||''),{timeout:20000});
    const sourceText=await page.locator('#sidebar-feed').innerText();
-   assert(/15\/15 fonti caricate/.test(sourceText),'Feed mismatch after AUD RBA F2 source addition: '+sourceText);
+   assert(/17\/17 fonti caricate/.test(sourceText),'Feed mismatch after AUD RBA F2 source addition: '+sourceText);
    for(const route of ROUTES){
     await page.evaluate(r=>{location.hash='#'+r},route);
     await page.waitForFunction(r=>document.querySelector('#crumb-page')?.textContent===({overview:'Panoramica',currencies:'Valute G8',pairs:'Coppie FX',macro:'Scenario macro',rates:'Tassi & OIS',cot:'COT',risk:'Rischio',news:'Notizie'})[r],route);
@@ -125,6 +125,19 @@ fs.mkdirSync(evidence,{recursive:true});
    assert((await page.locator('.decision-daily-watch').innerText()).includes('Sopra'),'AUD/CAD base-favoured threshold should test upside in quoted pair');
    await page.locator('[data-watch="AUDCAD"]').click();
    assert((await page.locator('[data-watch="AUDCAD"]').innerText()).includes('Nella watchlist'),'Watchlist failed');
+   // Research only: dated CHF/NZD sources must NEVER become a live 2Y confirmation.
+   await page.locator('#pair-results [data-pair="EURCHF"]').click();
+   assert(await page.locator('.decision-rates-bridge [data-source-context="CHF"]').count()===1,'CHF source history must be visible');
+   assert((await page.locator('.decision-source-evidence').innerText()).includes('2026-10-30'),'CHF last official source date not shown');
+   assert(await page.locator('.decision-rates-bridge .chart svg').count()===0,'Stale CHF must not draw current rates evidence');
+   assert((await page.locator('.decision-gate-rates').innerText()).includes('non verificabili'),'CHF must remain non-valid');
+   await page.locator('#pair-results [data-pair="NZDUSD"]').click();
+   assert(await page.locator('.decision-rates-bridge [data-source-context="NZD"]').count()===1,'NZD post-roll provenance missing');
+   assert((await page.locator('.decision-source-evidence').innerText()).includes('4/5 intervalli'),'NZD post-roll count must be explicit');
+   assert((await page.locator('.decision-source-evidence').innerText()).includes('2026-11-05'),'NZD last actual close date missing');
+   assert((await page.locator('.decision-source-evidence').innerText()).includes('riconciliazione XLSX'),'NZD outstanding verification must be explicit');
+   assert(await page.locator('.decision-rates-bridge .chart svg').count()===0,'NZD must not show 5/20 chart with only 4 intervals');
+   assert((await page.locator('.decision-gate-rates').innerText()).includes('non verificabili'),'NZD is research, never valid signals');
 
    // Information architecture: G8 is an orientation layer, not four duplicate studios.
    await page.evaluate(()=>{location.hash='#currencies'});
@@ -281,6 +294,6 @@ fs.mkdirSync(evidence,{recursive:true});
    await page.close();
   }
   fs.writeFileSync(evidence+'/report.json',JSON.stringify({status:'PASS',base:BASE,results},null,2));
-  console.log('FXQUANT_NEXT_VISUAL_AND_INTERACTION_QA_PASS',JSON.stringify({views:results.length,viewports:[1440,390],feed:'15/15',interactions:'PASS'}));
+  console.log('FXQUANT_NEXT_VISUAL_AND_INTERACTION_QA_PASS',JSON.stringify({views:results.length,viewports:[1440,390],feed:'17/17',interactions:'PASS'}));
  }finally{await browser.close();}
 })().catch(e=>{console.error('FXQUANT_NEXT_QA_FAIL',e.stack||e);process.exit(1)});
