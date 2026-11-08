@@ -144,7 +144,13 @@
    const item=profile(state.pair||'EURUSD',market,history,now),isFull=item.closes.length>=22;
    const window=[20,60,120].includes(Number(state.pairPriceWindow))?Number(state.pairPriceWindow):60;
    const selected=item.closes.slice(-window);
-   const graph=selected.length>1&&isFull?plot({lines:[{name:pairName(item.key)+' · fixing BCE daily',color:'#9bd9cc',values:selected}],precision:item.key.endsWith('JPY')?3:5,label:'Prezzo daily BCE per '+pairName(item.key)})
+   const watch=item.watch||{ready:false};
+   const showReferences=watch.ready&&state.pairShowReferences!==false;
+   const referenceLines=showReferences?[
+     {kind:'favorable',value:watch.favorable},
+     {kind:'adverse',value:watch.adverse}
+   ]:[];
+   const graph=selected.length>1&&isFull?plot({lines:[{name:pairName(item.key)+' · fixing BCE daily',color:'#9bd9cc',values:selected}],referenceLines,precision:item.key.endsWith('JPY')?3:5,label:'Prezzo daily BCE per '+pairName(item.key)})
      :'<div class="empty"><strong>Grafico daily non validato</strong><p>Servono almeno 22 fixing con l’ultima data esattamente coincidente con il modello della coppia. Non ricostruiamo prezzi mancanti.</p></div>';
    const gain=Number.isFinite(item.m20)?sign(item.m20,2,'%'):'—';
    const lastDay=Number.isFinite(item.m1)?sign(item.m1,2,'%'):'—';
@@ -166,7 +172,6 @@
        'Non disponibile';
    const quote=item.latest!==null?fmt(item.latest,item.key.endsWith('JPY')?3:5):'—';
    const pxDigits=item.key.endsWith('JPY')?3:5;
-   const watch=item.watch||{ready:false};
    const watchFavor=watch.ready?watch.favorableDirection+' '+fmt(watch.favorable,pxDigits):'Non disponibile';
    const watchAdverse=watch.ready?watch.adverseDirection+' '+fmt(watch.adverse,pxDigits):'Non disponibile';
    const watchNext=watch.ready
@@ -195,8 +200,10 @@
      +'<div><span>TRADE ATTRACTIVENESS</span><strong>'+esc(attractive)+'</strong><small>'+esc(item.why)+'</small></div>'
      +'<div><span>LA PROSSIMA VERIFICA</span><strong>Che cosa aspettiamo?</strong><small>'+esc(gateNext)+'</small></div></div>'
      +'<div class="decision-price-grid"><div class="decision-price-chart"><div class="decision-price-head"><div><span>PREZZO REALE · ECB DAILY</span><h3>'+pairName(item.key)+' · '+quote+'</h3><small>Fixing BCE '+date(item.asof)+' · ultima seduta '+lastDay+' · 5 sedute '+move+' · 20 sedute '+gain+'</small></div>'
-     +'<div class="pill-controls">'+[20,60,120].map(w=>'<button type="button" data-v9-price-window="'+w+'" class="pill '+(w===window?'active':'')+'" aria-pressed="'+String(w===window)+'">'+w+'</button>').join('')+'</div></div>'
-     +graph+'<div class="decision-price-evidence"><div class="decision-evidence-cell"><span>5 FIXING</span><strong>'+move+'</strong><small>'+esc(item.fiveState)+'</small></div><div class="decision-evidence-cell"><span>20 FIXING</span><strong>'+gain+'</strong><small>'+esc(item.twentyState)+'</small></div><div class="decision-evidence-cell"><span>RANGE 20 FIXING PRECEDENTI</span><strong class="range">'+esc(range)+'</strong><small>'+esc(item.structure)+'</small></div></div><p class="decision-price-context">'+esc(discordance)+' '+esc(pulse)+'</p>'+watchHtml+'<p class="decision-source">Cross '+pairName(item.key)+' ricostruito dai fixing BCE giornalieri (quote/base). Nessun OHLC o candela H4. Il segno di 5/20 sedute non misura significatività statistica né individua breakout intraday.</p></div>'
+     +'<div class="decision-chart-tools"><div class="pill-controls">'+[20,60,120].map(w=>'<button type="button" data-v9-price-window="'+w+'" class="pill '+(w===window?'active':'')+'" aria-pressed="'+String(w===window)+'">'+w+'</button>').join('')+'</div>'
+     +(watch.ready?'<button type="button" data-v12-reference-toggle="1" class="pill decision-reference-toggle '+(showReferences?'active':'')+'" aria-pressed="'+String(showReferences)+'">'+(showReferences?'Riferimenti visibili':'Mostra riferimenti')+'</button>':'')+'</div></div>'
+     +graph+(showReferences?'<p class="decision-reference-caption">Tratti <strong>verdi</strong> e <strong>rossi</strong> a destra: riferimenti calcolati con gli ultimi 20 fixing precedenti al '+date(item.asof)+'. Non sono livelli storici costanti né segnali.</p>':'')
+     +'<div class="decision-price-evidence"><div class="decision-evidence-cell"><span>5 FIXING</span><strong>'+move+'</strong><small>'+esc(item.fiveState)+'</small></div><div class="decision-evidence-cell"><span>20 FIXING</span><strong>'+gain+'</strong><small>'+esc(item.twentyState)+'</small></div><div class="decision-evidence-cell"><span>RANGE 20 FIXING PRECEDENTI</span><strong class="range">'+esc(range)+'</strong><small>'+esc(item.structure)+'</small></div></div><p class="decision-price-context">'+esc(discordance)+' '+esc(pulse)+'</p>'+watchHtml+'<p class="decision-source">Cross '+pairName(item.key)+' ricostruito dai fixing BCE giornalieri (quote/base). Nessun OHLC o candela H4. Il segno di 5/20 sedute non misura significatività statistica né individua breakout intraday.</p></div>'
      +'<aside class="decision-price-reading"><span>IL GIUDIZIO SUL PREZZO</span><h3>'+esc(item.priceText)+'</h3><p>'+esc(item.timingText)+'</p><div class="decision-stop"><strong>Che cosa dicono le 5 e 20 sedute?</strong><p>'+esc(discordance)+'</p></div><div class="decision-stop"><strong>Che cosa frena il trade?</strong><p>'+esc(item.caution)+'</p></div>'
      +'<div class="decision-stop"><strong>Cosa invaliderebbe la tesi?</strong><p>'+esc(item.missing)+'</p></div>'
      +'<div class="decision-stop"><strong>Positioning e flussi</strong><p>'+esc(item.cot)+' · '+esc(item.liquidity)+'</p></div></aside></div>'
