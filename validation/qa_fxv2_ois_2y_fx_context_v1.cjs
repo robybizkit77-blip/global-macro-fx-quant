@@ -54,8 +54,11 @@ assert.equal(observed.EUR.model.rate.state,'HISTORY_VERIFIED');
 assert.equal(observed.CHF.model.rate.state,'DATED_HISTORICAL');
 assert.equal(observed.CHF.model.aligned.length,0);
 assert.match(observed.CHF.model.rateText,/troppo datata/);
-assert.ok(observed.USD.model.aligned.includes('6m'));
-assert.ok(observed.USD.model.aligned.includes('12m'));
+for(const tenor of ['6m','12m']){
+ const isAligned=observed.USD.model.rate.day===observed.USD.reading.sourceDates[tenor];
+ assert.equal(observed.USD.model.aligned.includes(tenor),isAligned,
+  'USD 2Y and '+tenor+' futures are aligned only with the same observed date');
+}
 const eurRateDate=observed.EUR.model.rate.day;
 const eurFuturesDate=observed.EUR.reading.sourceDates['12m'];
 assert.equal(observed.EUR.model.aligned.includes('12m'),eurRateDate===eurFuturesDate,
