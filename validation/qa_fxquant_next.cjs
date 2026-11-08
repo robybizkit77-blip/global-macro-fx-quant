@@ -24,7 +24,7 @@ fs.mkdirSync(evidence,{recursive:true});
    assert(/14\/14 fonti caricate/.test(sourceText),'Feed mismatch: '+sourceText);
    for(const route of ROUTES){
     await page.evaluate(r=>{location.hash='#'+r},route);
-    await page.waitForFunction(r=>document.querySelector('#crumb-page')?.textContent===({overview:'La ricerca',currencies:'Valute G8',pairs:'Coppie FX',macro:'Scenario macro',rates:'Tassi & OIS',cot:'COT',risk:'Rischio',news:'Notizie'})[r],route);
+    await page.waitForFunction(r=>document.querySelector('#crumb-page')?.textContent===({overview:'Panoramica',currencies:'Valute G8',pairs:'Coppie FX',macro:'Scenario macro',rates:'Tassi & OIS',cot:'COT',risk:'Rischio',news:'Notizie'})[r],route);
     if(route!=='overview'){
       assert(await page.locator('main .research-essay').count()===1,'Narrative research missing on '+route);
       assert(await page.locator('main .research-essay .essay-prose p').count()===3,'Research incomplete on '+route);
@@ -42,6 +42,10 @@ fs.mkdirSync(evidence,{recursive:true});
    await page.evaluate(()=>{location.hash='#overview'});
    await page.waitForFunction(()=>document.querySelector('.market-letter')!==null);
    assert(await page.locator('.market-letter .letter-opening').count()===1,'Narrative opening missing');
+   assert(await page.locator('.dashboard-kpi').count()===4,'Dashboard market indicators missing');
+   assert(await page.locator('.dashboard-chart-grid').count()===1,'Dashboard chart and desk analysis not side by side');
+   assert(await page.locator('.dashboard-dossier').count()===1,'Optional deep research panel missing');
+   assert(await page.locator('.dashboard-dossier').evaluate(el=>!el.open),'Deep research must not displace charts by default');
    assert(await page.locator('.letter-argument .letter-section').count()>=4,'Research reasoning too shallow');
    const evidenceRows=await page.locator('.letter-evidence .letter-proof-row').count();
    assert(evidenceRows>=2,'Supporting observations missing');
