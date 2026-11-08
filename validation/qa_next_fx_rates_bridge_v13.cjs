@@ -88,6 +88,9 @@ assert(injected.includes('&lt;img')&&!injected.includes('<img'),'Untrusted sourc
 const model=fs.readFileSync('site/fx-quant-v2/next/decision-journey.js','utf8');
 const page=fs.readFileSync('site/fx-quant-v2/next/index.html','utf8');
 assert(model.includes('FXQuantRatesBridge')&&model.includes('ratesEvidence'),'Pair dossier must integrate rates comparison');
+const dossierFn=model.slice(model.indexOf('  function pair(){'),model.indexOf('  return {overview,pair,data};'));
+assert(!/\bconst window\s*=/.test(dossierFn),'A local window variable hides global browser module access');
+assert(dossierFn.includes('const chartWindow='),'Price chart lookback must not shadow the Window global');
 assert(page.includes('fx-rates-bridge.js?v=13'));
 assert(page.indexOf('fx-rates-bridge.js?v=13')<page.indexOf('decision-journey.js?v=13'));
 assert(page.includes('editorial-v4.css?v=13'));
