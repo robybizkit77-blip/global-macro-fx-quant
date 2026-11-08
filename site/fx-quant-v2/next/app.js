@@ -274,6 +274,12 @@ function researchEvidence(ctx){
   +'<p class="letter-proof-note">Variazioni osservate, non prova di causalità. Ogni riga usa la data e la fonte che la sostengono.</p></div>';
 }
 function researchBridge(route){
+ if(typeof window!=='undefined'&&window.FXQuantResearchEditorial?.create){
+  return window.FXQuantResearchEditorial.create({
+   get,state,caseNow:researchCase(),finite,validDay,fmt,sign,date,dayNow,esc,NAMES
+  }).render(route);
+ }
+
  const c=researchCase(),m=get('macro')?.currencies?.USD||{},p=get('pairs')||{},o=get('ois')?.currencies?.USD||{},cot=get('cot')||{};
  const message={
   macro:finite(m.inflation?.latest_value)&&finite(m.labour?.latest_value)
