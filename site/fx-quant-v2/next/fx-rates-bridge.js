@@ -93,7 +93,7 @@
      x?.no_interpolation===true&&x?.eligible_for_core===false&&
      x?.eligible_for_fx_pair_engine===false&&x?.eligible_for_backtests===false&&
      x?.eligible_for_automatic_promotion===false&&
-     eligible(x?.source_release_date)&&eligible(x?.source_capture_date)&&
+     eligible(x?.source_release_date)&&isDay(x?.source_capture_date)&&x.source_capture_date<=now&&
      Array.isArray(o)&&o.length>=2&&o.length<=15&&o[0]?.date===x.benchmark_roll_date&&
      eligible(o.at(-1)?.date)&&o.at(-1).date<=x.source_release_date){
     let valid=true,prev='';
