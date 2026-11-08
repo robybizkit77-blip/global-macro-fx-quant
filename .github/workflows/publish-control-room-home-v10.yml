@@ -160,3 +160,42 @@ jobs:
               assert hashlib.sha256(a).digest()==hashlib.sha256(b).digest(), f'published file mismatches main: {path}'
           print('CONTROL_ROOM_V10_PAGES_BRANCH_PROOF_PASS')
           PY
+
+      - name: Verify actual public V10 HTML and source-quality JS by exact HTTP SHA256
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The branch can be current while the Pages CDN is still serving
+          # older bytes. Reuse the bounded fail-closed HTTP checker.
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from validation.publishing.verify_pages_http_delivery_v1 import BASE_URL, verify
+          files=(
+            'site/control-room-preview/index.html',
+            'site/control-room-preview/home-navigation-v10.js',
+            'site/control-room-preview/ois-pricing-estimates-v1.js',
+          )
+          result=verify(Path('.'),BASE_URL,files,
+                        budget_seconds=300,interval_seconds=8)
+          receipt=Path('/tmp/control-room-v10-public-http-proof.json')
+          receipt.write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
+          print('CONTROL_ROOM_V10_PUBLIC_HTTP_PROOF',json.dumps({
+             'status':result['status'],'conclusion':result['conclusion'],
+             'verified_at_utc':result['verified_at_utc'],
+             'files_verified':sum(x['http_200_and_sha256_match'] for x in result['checks']),
+             'files_expected':len(files),'attempts':result['attempts']
+          }),flush=True)
+          if result['status']!='PASS':
+              raise SystemExit('V10_PUBLIC_HTTP_NOT_CONVERGED_FAIL_CLOSED')
+          PY
+
+      - name: Retain separate public V10 HTTP bytes receipt
+        if: always() && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: control-room-v10-exact-public-loader
+          path: /tmp/control-room-v10-public-http-proof.json
+          if-no-files-found: warn
+          retention-days: 14
