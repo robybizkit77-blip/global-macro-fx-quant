@@ -89,7 +89,7 @@ jobs:
               const original=await response.text();
               const marker='<script data-gmfq-legacy-redirect="v10">';
               if(original.split(marker).length!==2)throw new Error('Legacy redirect contract changed');
-              const body=original.replace(/<script data-gmfq-legacy-redirect="v10">[\\s\\S]*?<\\/script>/,'');
+              const body=original.replace(/<script data-gmfq-legacy-redirect="v10">[\s\S]*?<\/script>/,'');
               if(body===original)throw new Error('Legacy redirect test isolation failed');
               await route.fulfill({response,body});
             });
