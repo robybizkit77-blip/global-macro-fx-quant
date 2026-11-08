@@ -105,6 +105,10 @@ jobs:
       - name: Test FXV2 same-listed-futures research and forbidden OIS/policy promotions
         if: github.event_name == 'pull_request'
         run: |
+          # A PR checkout may contain last-published research from a prior
+          # session. Rebuild ONLY in this disposable runner worktree before
+          # asserting exact derived parity, never promote or commit it.
+          python validation/cb_pricing/build_fxv2_same_contract_repricing_v1.py
           python validation/cb_pricing/test_fxv2_same_contract_repricing_v1.py
           python validation/cb_pricing/build_fxv2_same_contract_repricing_v1.py --check
 
