@@ -197,7 +197,7 @@ assert.equal(plotOpts.referenceLines.length,0,'Stale history must not create fre
 
 const index=fs.readFileSync('site/fx-quant-v2/next/index.html','utf8');
 const app=fs.readFileSync('site/fx-quant-v2/next/app.js','utf8');
-assert(index.includes('decision-journey.js?v=13')&&index.indexOf('decision-journey.js')<index.indexOf('app.js?v=12'));
+assert(index.includes('decision-journey.js?v=13.1')&&index.indexOf('decision-journey.js')<index.indexOf('app.js?v=12'));
 assert(index.includes('editorial-v4.css?v=13'));
 assert(app.includes('window.FXQuantDecisionJourney?.build'));
 assert(app.includes('[data-v9-price-window]'));
