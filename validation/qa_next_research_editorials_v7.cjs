@@ -39,7 +39,8 @@ for(const route of routes){
  assert.match(html,/class="research-essay research-essay-dashboard"/,route+' has no dashboard editorial');
  assert.match(html,/class="essay-details"/,route+' missing optional deeper analysis');
  assert.equal((html.match(/<div class="essay-prose">/g)||[]).length,1);
- assert.equal((html.match(/<p>/g)||[]).length,3,route+' missing coherent prose');
+ assert.equal((html.match(/<div class="essay-prose">[\s\S]*?<\/div>/)||[''])[0].match(/<p>/g)?.length,3,route+' missing three analytical paragraphs');
+ assert.match(html,/class="essay-visual-guide"/,route+' missing chart-focused guide');
  assert.match(html,/<a href="#(?:macro|rates|currencies|pairs|cot|risk|news|overview)"/,route+' missing valid next-study link');
  assert(!html.includes('WITHHELD'),route+' exposes internal data quality marker');
  headlines.push(html.match(/<h2>([^<]+)<\/h2>/)?.[1]);
