@@ -56,7 +56,23 @@ jobs:
             const errors=[];
             page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
             page.on('pageerror',e=>errors.push(String(e)));
+            // The public / path now redirects to the approved Control Room v10.
+            // This audit explicitly checks the *legacy operational runtime*
+            // and its 43 mirrored source assets, not the v10 wrapper. Strip
+            // ONLY the navigation redirect inside this isolated local test
+            // response; never change the production public redirect.
+            await page.route('http://127.0.0.1:8000/',async route=>{
+              const response=await route.fetch();
+              const original=await response.text();
+              const marker='<script data-gmfq-legacy-redirect="v10">';
+              if(original.split(marker).length!==2)throw new Error('Legacy redirect contract changed');
+              const body=original.replace(/<script data-gmfq-legacy-redirect="v10">[\\s\\S]*?<\\/script>/,'');
+              if(body===original)throw new Error('Legacy redirect test isolation failed');
+              await route.fulfill({response,body});
+            });
             const response=await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
+            if(page.url()!=='http://127.0.0.1:8000/')throw new Error('Unexpected public redirect inside isolated legacy audit');
+            console.log('LEGACY_RUNTIME_ISOLATED_FROM_APPROVED_V10_PUBLIC_REDIRECT');
             if(!response||!response.ok())throw new Error(label+' HTTP load failed');
             // This audit normally settles after 650ms. When it does not,
             // report the actual page state instead of burning two minutes on
