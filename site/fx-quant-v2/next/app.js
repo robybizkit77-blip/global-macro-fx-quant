@@ -412,7 +412,7 @@ function overview(){
  return '<article class="market-letter market-dashboard" aria-label="Dashboard di ricerca FX Quant">'
  +'<header class="dashboard-heading"><div class="dashboard-topline"><span>FX QUANT / PANORAMICA DI MERCATO</span><span>Ultima evidenza '+date(latest)+' · '+dayNow().split('-').reverse().join('.')+'</span></div>'
  +'<div class="dashboard-title-row"><div><h1>'+esc(headline)+'</h1><div class="letter-opening"><p class="letter-lead">'+esc(opening)+'</p></div></div>'
- +'<div class="dashboard-context"><span>LA LETTURA DEL DESK</span><p>'+esc(thesis)+'</p></div></div>'
+ +'<div class="dashboard-context"><span>FOCUS DI MERCATO</span><strong>'+esc(stress?'Stress di rischio':relief?'Distensione del rischio':bonds?'Rendimenti in discesa':yieldsUp?'Rendimenti in rialzo':divergent?'Divergenza tassi–USD':'Regime in verifica')+'</strong><p>Una fotografia costruita da osservazioni datate. La tesi e le sue conferme sono accanto ai grafici, non nascoste in un lungo articolo.</p><a href="#risk">Esplora il rischio ↗</a></div></div>'
  +(tooOld?'<p class="letter-stale">Dati storici: le ultime osservazioni non sono recenti. Non rappresentano un aggiornamento intraday.</p>':'')
  +'</header>'
  +'<section class="dashboard-metrics" aria-label="Indicatori che supportano il tema di mercato"><div class="dashboard-section-head"><span>01 / INDICATORI</span><p>Le variazioni riportano la propria data, non un’unica fotografia in tempo reale.</p></div><div class="dashboard-kpi-grid">'+kpis+'</div></section>'
