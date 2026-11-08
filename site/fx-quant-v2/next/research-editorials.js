@@ -165,11 +165,14 @@
    const item=build();
    const asof=item.asof||'Data da validare';
    const link=item.next&&item.next!=='overview'?item.next:'overview';
-   return '<section class="research-essay" aria-label="Interpretazione editoriale '+esc(route)+'">'
-    +'<div class="essay-top"><span>FX QUANT / NOTA DI RICERCA</span><span>'+esc(item.scope||'Mercati')+' · '+esc(asof)+'</span></div>'
-    +'<h2>'+esc(item.title)+'</h2><div class="essay-prose">'+(item.paragraphs||[]).map(p=>'<p>'+esc(p)+'</p>').join('')+'</div>'
-    +'<div class="essay-foot"><span>Una lettura di ricerca, non una raccomandazione. Date e qualità delle fonti restano indipendenti.</span>'
-    +'<a href="#'+link+'">'+esc(item.nextLabel||'Torna alla ricerca')+' ↗</a></div></section>';
+   const ps=item.paragraphs||[];
+   return '<section class="research-essay research-essay-dashboard" aria-label="Interpretazione editoriale '+esc(route)+'">'
+    +'<div class="essay-top"><span>FX QUANT / LETTURA DEL DESK</span><span>'+esc(item.scope||'Mercati')+' · '+esc(asof)+'</span></div>'
+    +'<div class="essay-dashboard-grid"><div><h2>'+esc(item.title)+'</h2><div class="essay-prose"><p>'+esc(ps[0]||'Non abbiamo una lettura sufficientemente verificata.')+'</p>'
+    +'<details class="essay-details"><summary>Approfondisci il ragionamento <span aria-hidden="true">＋</span></summary>'
+    +ps.slice(1).map(p=>'<p>'+esc(p)+'</p>').join('')+'</details></div></div>'
+    +'<aside class="essay-visual-guide"><span>IL LABORATORIO QUI SOTTO</span><strong>Prima osserva i dati.</strong><p>I grafici, le curve e le tabelle restano al centro di questa pagina. La lettura del desk spiega cosa cercare, quali limiti considerare e come verificare la tesi.</p><a href="#'+link+'">'+esc(item.nextLabel||'Torna alla ricerca')+' ↗</a></aside></div>'
+    +'<div class="essay-foot"><span>Fonti con date proprie. Analisi descrittiva, non raccomandazione di trading.</span></div></section>';
   }
   return {render};
  }

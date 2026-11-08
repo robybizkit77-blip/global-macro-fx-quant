@@ -43,8 +43,11 @@ function evaluate(data,now='2026-11-08'){
  return ctx.qa;
 }
 const baseline=evaluate(initial);
-assert.match(baseline.article,/class="market-letter"/);
+assert.match(baseline.article,/class="market-letter market-dashboard"/);
 assert.match(baseline.article,/class="letter-evidence"/);
+assert.match(baseline.article,/class="dashboard-kpi-grid"/);
+assert.match(baseline.article,/class="dashboard-analysis"/);
+assert.match(baseline.article,/class="dashboard-dossier"/);
 assert.match(baseline.article,/Che cosa mi farebbe cambiare idea/);
 assert.match(baseline.rates,/Rileggi la tesi del desk/);
 assert.match(baseline.risk,/Nasdaq|Le osservazioni azionario/);
@@ -99,6 +102,6 @@ assert.match(app,/state\.data=nextData/);
 assert.match(app,/cache:'no-store'/);
 assert.match(app,/visibilitychange/);
 const page=read('site/fx-quant-v2/next/index.html');
-assert.match(page,/editorial-v4\.css\?v=7/);
-assert.match(page,/app\.js\?v=7/);
+assert.match(page,/editorial-v4\.css\?v=8/);
+assert.match(page,/app\.js\?v=8/);
 console.log('NEXT_RESEARCH_COHERENCE_PASS: regimes=stress,relief,yield-selloff,fx-divergence,mixed; matched evidence; fresh/stale/missing; XSS; page continuity; cache refresh');
