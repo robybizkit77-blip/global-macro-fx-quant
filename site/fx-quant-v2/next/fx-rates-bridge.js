@@ -79,14 +79,19 @@
    const figure=plot({lines:[{name:r.base+' 2Y − '+r.quote+' 2Y',color:'#e2b985',values:line}],precision:1,unit:' bp',label:'Differenziale rendimenti governativi 2 anni '+r.base+' meno '+r.quote});
    const pill=x=>x?'<div class="decision-rate-horizon" data-horizon="'+x.n+'"><span>'+x.n+' DATE COMUNI · '+x.days+' GIORNI</span><strong>'+sign(x.fxPct,2,'%')+' FX <b>vs</b> '+sign(x.spreadBp,1,' bp')+' 2Y</strong><small>'+esc(x.direction)+' · '+date(x.start)+' → '+date(x.end)+'</small></div>':'';
    const short=r.short;
-   const verdict=short.direction==='STESSO SEGNO'?'Il prezzo e il differenziale dei governativi 2Y si sono mossi nello stesso verso sulle cinque osservazioni comuni.'
-    :short.direction==='SEGNO OPPOSTO'?'Il prezzo si è mosso in senso opposto al differenziale 2Y sulle cinque osservazioni comuni. Questa divergenza va verificata, non trasformata automaticamente in un trade.'
-    :'Le cinque osservazioni comuni non mostrano una direzione congiunta conclusiva.';
+   const shortText=short.direction==='STESSO SEGNO'?'Nelle ultime 5 date comuni il prezzo FX e lo spread 2Y si sono mossi nello stesso verso.'
+    :short.direction==='SEGNO OPPOSTO'?'Nelle ultime 5 date comuni il prezzo FX e lo spread 2Y hanno segni opposti.'
+    :'Le ultime 5 date comuni non mostrano un verso congiunto definito.';
+   const mediumText=r.medium
+     ?r.medium.direction===short.direction?' Anche sulle 20 date comuni il confronto è '+(r.medium.direction==='STESSO SEGNO'?'concorde nel segno.':r.medium.direction==='SEGNO OPPOSTO'?'discordante nel segno.':'non conclusivo.')
+       :' Sulle 20 date comuni il risultato cambia: '+(r.medium.direction==='STESSO SEGNO'?'si muovono nello stesso verso.':r.medium.direction==='SEGNO OPPOSTO'?'si muovono in versi opposti.':'non emerge un verso conclusivo.')
+     :' Il confronto su 20 date comuni non è sufficientemente continuo per una conclusione.';
+   const verdict=shortText+mediumText+' Non dimostra causalità, rendimento atteso o una relazione quantitativa validata.';
    const recentDifferent=r.lag>0?' Attenzione: il grafico si ferma al '+date(r.latest.date)+', mentre lo snapshot FX arriva al '+date(doc?.price_asof)+'. Il fixing più recente NON è stato abbinato a un tasso di un altro giorno.':'';
    return '<section class="decision-rates-bridge" aria-label="Prezzo e repricing 2Y" data-rate-asof="'+esc(r.latest.date)+'">'
     +'<div class="decision-rates-heading"><div><span>PREZZO FX / PRICING RELATIVO</span><h2>'+esc(r.base+'/'+r.quote)+' · i tassi confermano il prezzo?</h2><p>Due evidenze sullo stesso calendario, senza mischiare scale: fixing BCE e differenziale governativo 2Y.</p></div><a href="#rates" class="decision-rates-link">Apri Tassi & OIS</a></div>'
     +'<div class="decision-rates-body"><div class="decision-rates-visual"><span>GRAFICO · '+esc(r.base)+' 2Y − '+esc(r.quote)+' 2Y</span>'+figure+'<small>Rendimenti governativi 2Y ufficiali. Spread espresso in punti base, non OIS né differenziale di carry. Visualizzazione sulle ultime '+line.length+' date comuni.</small></div>'
-    +'<div class="decision-rates-analysis"><span>COSA CONFERMANO I DATI?</span><h3>'+esc(short.direction==='STESSO SEGNO'?'Movimenti concordi, ma non prova causale.':short.direction==='SEGNO OPPOSTO'?'Il prezzo non segue il differenziale 2Y.':'Segnale di conferma non conclusivo.')+'</h3>'
+    +'<div class="decision-rates-analysis"><span>COSA CONFERMANO I DATI?</span><h3>'+esc(r.medium&&r.medium.direction!==short.direction?'Segnali diversi tra breve e medio periodo.':short.direction==='STESSO SEGNO'?'Movimenti concordi, ma non prova causale.':short.direction==='SEGNO OPPOSTO'?'Prezzo e spread 2Y divergono.':'Confronto direzionale non conclusivo.')+'</h3>'
     +pill(short)
     +(r.medium?pill(r.medium):'<p class="decision-rate-data-gap">Orizzonte 20 date comuni non comparabile: osservazioni troppo rade o intervallo superiore a 45 giorni.</p>')
     +'<p class="decision-rates-verdict">'+esc(verdict+recentDifferent)+'</p></div></div>'
