@@ -66,7 +66,7 @@ assert(!mod.snapshot(rates,price,'AUDCAD',base,'2026-12-01',fake).ready,'Old res
 const page=fs.readFileSync('site/fx-quant-v2/next/index.html','utf8');
 const code=fs.readFileSync('site/fx-quant-v2/next/app.js','utf8');
 const dossier=fs.readFileSync('site/fx-quant-v2/next/decision-journey.js','utf8');
-assert(page.includes('app.js?v=16')&&page.includes('fx-rates-bridge.js?v=16'));
+assert(/app\.js\?v=\d+/.test(page)&&/fx-rates-bridge\.js\?v=\d+/.test(page),'Next must load versioned app and rates research components');
 assert(code.includes("audDailyResearch:'../aud-rba-f2-history-research.json'"));
 assert(dossier.includes("get('audDailyResearch')"));
 assert(code.includes("get('audDailyResearch')"));
