@@ -10,7 +10,7 @@ from pathlib import Path
 
 from ois_same_contract_history_v1 import HISTORY, SOURCE, load_history
 from reconcile_ois_secondary_conflicts_v1 import (
-    CONFLICTS, apply, read_conflicts, validate_conflict_lineage,
+    CONFLICTS, apply, read_conflicts, reconcile, validate_conflict_lineage,
 )
 from ois_uncontested_contract_moves_v1 import evaluate
 
@@ -30,7 +30,16 @@ class UncontestedContractEvidenceTests(unittest.TestCase):
         )
 
     def test_current_live_is_not_ois_and_preserves_healthy_contracts(self):
-        result = self.case()
+        # A fresh same-contract/day quote can contradict the first immutable
+        # print. Run the real read-only quarantine transform before testing
+        # the uncontested subset; never waive fingerprint/lineage checks.
+        clean, new_events, receipt = reconcile(
+            copy.deepcopy(self.source), copy.deepcopy(self.archive),
+            copy.deepcopy(self.events)
+        )
+        self.assertFalse(receipt["official_ois_promoted"])
+        self.assertFalse(receipt["market_repricing_from_conflicts"])
+        result = self.case(source=clean, events=self.events + new_events)
         self.assertEqual(result["summary"]["total_horizons"], 9)
         self.assertFalse(result["writes_live_data"])
         self.assertFalse(result["writes_history"])
