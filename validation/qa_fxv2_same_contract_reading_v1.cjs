@@ -26,10 +26,26 @@ for(const c of ccys){
 }
 for(const c of ccys){
   const output=interpret(c,research,displayed[c]);
-  assert.equal(output.status,'LETTURA_DESCRITTIVA_FUTURES',c);
   assert.equal(output.read_only,true);
   assert.equal(output.fx_signals,0);
   assert.equal(output.policy_deltas,0);
+  if(output.status==='NON_VERIFICABILE'){
+    // If every tenor is quarantined/not yet archived, no descriptive move
+    // can be made. This is a valid fail-closed state, not a missing signal.
+    assert.deepEqual(output.matchedTenors,[],c);
+    assert.deepEqual(output.latestTenors,[],c);
+    assert.equal(output.verified1D,0,c);
+    assert.ok(T.every(t=>{
+      const row=research.currencies[c][t],s=source.currencies[c].horizons[t];
+      return ['QUARANTINED_CURRENT_DAY','UNVERIFIED_CURRENT_SOURCE',
+        'CURRENT_NOT_YET_ARCHIVED'].includes(row.status)&&
+        row.as_of===s.quote_as_of&&row.contract===s.contract&&
+        (row.status!=='QUARANTINED_CURRENT_DAY'||
+          s.quote_timestamp_source==='QUARANTINED_SAME_CONTRACT_SAME_DAY');
+    }),c+' unavailable tenors must have source-matched, dated evidence');
+    continue;
+  }
+  assert.equal(output.status,'LETTURA_DESCRITTIVA_FUTURES',c);
   assert.ok(output.narrative.includes('Ultima data osservata:'));
   assert.ok(output.narrative.includes('futures secondari'));
   assert.ok(output.narrative.includes('non dimostrano da soli'));
