@@ -591,3 +591,13 @@ button,a{touch-action:manipulation}
 .decision-watch-unavailable{font-size:12px;color:#e1c9a2;line-height:1.7;margin:4px 0}
 .decision-watch-caveat{display:block;padding-top:10px;border-top:1px solid rgba(174,210,200,.17);font-size:10px;line-height:1.7;color:#9eb9bf}
 @media(max-width:650px){.decision-daily-watch{padding:14px 12px}.decision-watch-columns{grid-template-columns:1fr;gap:7px}.decision-watch-line{padding:12px}.decision-watch-line>strong{font-size:24px}}
+
+
+/* V12: reference segment overlay belongs to the latest fixing, not history. */
+.decision-chart-tools{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap}
+.decision-reference-toggle{font-size:11px;white-space:nowrap}
+.decision-reference-toggle.active{border-color:rgba(153,216,179,.55);color:#b5e0c9;background:rgba(148,201,169,.11)}
+.decision-reference-caption{font-size:11px;line-height:1.65;color:#a7c1c2;margin:8px 0 1px}
+.decision-reference-caption strong{font-weight:750;color:#a9d9c2}
+.decision-reference-caption strong:nth-child(2){color:#e5aaa3}
+@media(max-width:650px){.decision-chart-tools{justify-content:flex-start;gap:7px}.decision-reference-toggle{font-size:10px}.decision-reference-caption{padding:0 4px;font-size:10px}}
