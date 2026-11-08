@@ -7,7 +7,7 @@
 (function(){
  function create(api){
   const {get,state,caseNow,finite,validDay,fmt,sign,date,dayNow,esc,NAMES}=api;
-  const country=state.ccy||'USD',other=(state.csOther&&state.csOther!==country?state.csOther:'EUR');
+  const country=state.ccy||'USD',other=(state.csOther&&state.csOther!==country?state.csOther:(country==='EUR'?'USD':'EUR'));
   const names=NAMES||{},pairs=get('pairs')?.pairs||{},rates=get('rates')||{},macro=get('macro')?.currencies||{};
   const ois=get('ois')?.currencies||{},cot=get('cot')||{},risk=get('risk')?.streams||{};
   const raw=String;
