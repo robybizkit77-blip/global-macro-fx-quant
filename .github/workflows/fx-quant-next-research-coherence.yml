@@ -17,6 +17,7 @@ on:
       - 'live_data/sections/NEWS_PULSE_OPERATIONAL.json'
       - 'validation/qa_next_research_editorials_v7.cjs'
       - 'validation/qa_next_research_decision_v9.cjs'
+      - 'validation/qa_next_fx_rates_bridge_v13.cjs'
       - 'live_data/sections/ECB_G8_PRICE_HISTORY.json'
       - '.github/workflows/fx-quant-next-research-coherence.yml'
   workflow_dispatch:
@@ -46,3 +47,5 @@ jobs:
         run: node validation/qa_next_research_editorials_v7.cjs
       - name: Verify FX research-to-decision journey, prices and conservative shortlist
         run: node validation/qa_next_research_decision_v9.cjs
+      - name: Verify source-aligned FX and government 2Y evidence, without OIS fiction
+        run: node validation/qa_next_fx_rates_bridge_v13.cjs
