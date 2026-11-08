@@ -1,0 +1,39 @@
+name: FX Quant Next Research Coherence QA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'site/fx-quant-v2/next/**'
+      - 'live_data/sections/NATIVE_RATES_DATA.json'
+      - 'live_data/sections/DXY_SYNTHETIC_ECB.json'
+      - 'live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json'
+      - 'live_data/sections/MACRO_THERMOMETER_DATA.json'
+      - 'live_data/sections/V247_COT_STORIES.json'
+      - 'site/fx-quant-v2/cross-asset-live-data.json'
+      - 'site/fx-quant-v2/ois-pricing-snapshot.json'
+      - 'validation/qa_next_research_coherence_v1.cjs'
+      - '.github/workflows/fx-quant-next-research-coherence.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '18 8 * * 1-5'
+    - cron: '18 18 * * 1-5'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fx-quant-next-research-coherence
+  cancel-in-progress: true
+
+jobs:
+  research-coherence:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check changing story, matched evidence, source dates and missing data
+        run: node validation/qa_next_research_coherence_v1.cjs
