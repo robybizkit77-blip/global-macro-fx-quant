@@ -138,8 +138,14 @@ for(const row of contested){
  assert.equal(src.source_conflict_status,'UNRESOLVED_SECONDARY_SOURCE_SAME_DAY_CONFLICT');
  const disputed=Object.entries(row.points).filter(([,p])=>p.source_quote_disputed);
  assert(disputed.length>=1,row.ccy+' conflict lost from graph');
- assert(rendered.includes('data-chart-ccy="'+row.ccy+'" data-quality="CONFLICTED" data-points="3" data-joined="false"'),
-  row.ccy+' disputed points must be individually visible, never joined');
+ const sourceCount=['3m','6m','12m'].filter(h=>Number.isFinite(row.points[h]?.value)).length;
+ assert(sourceCount>=1&&sourceCount<=3,row.ccy+' must have real date-scoped source evidence');
+ assert(rendered.includes('data-chart-ccy="'+row.ccy+'" data-quality="CONFLICTED" data-points="'+sourceCount+'" data-joined="false"'),
+  row.ccy+' source-backed disputed points must be individually visible, never joined');
+ if(row.ccy==='CHF'&&src.horizons['3m'].roster_quality===
+    'ICE_LISTED_QUARTER_CALENDAR_DERIVED_UNQUOTED')
+   assert.equal(row.points['3m'],undefined,
+     'An unquoted SARON roster date must not become an observed 3M price');
  for(const [term,p] of disputed){
   assert.equal(p.source_quote_verified,false);
   assert.equal(p.policy_repricing_allowed,false);
