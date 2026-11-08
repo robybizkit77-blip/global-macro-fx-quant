@@ -220,6 +220,71 @@ function homePairPreview(k){
  +'<div class="pair-conditions"><span><b>PREZZO</b><strong>'+esc(s?.price?.text||'Non classificato')+'</strong></span><span><b>CONFERMA MANCANTE</b><strong>'+esc(concise(f.missing||'Da verificare',95))+'</strong></span></div>'
  +'<a class="text-link" href="#pairs">Apri la tesi completa <span>↗</span></a>';
 }
+
+/* Shared editorial case. Only same-session, sufficiently recent observations can lead
+   the story. Monthly Macro and weekly COT are context, never intraday corroboration. */
+function researchCase(){
+ const r=get('risk')?.streams||{},u=get('rates')?.USD||{},d=get('dxy')||{};
+ const pairDate=get('pairs')?.price_asof;
+ const max=[r.NASDAQCOM?.date,r.VIX?.date,r.HY_OAS?.date,u.date,d.as_of,pairDate].filter(validDay).sort().pop()||null;
+ const near=d=>validDay(d)&&validDay(max)&&d<=max&&
+   (Date.parse(max+'T12:00:00Z')-Date.parse(d+'T12:00:00Z'))/864e5<=4;
+ const n=r.NASDAQCOM||{},v=r.VIX||{},h=r.HY_OAS||{};
+ const aligned=validDay(n.date)&&n.date===v.date&&n.date===h.date&&near(n.date)
+   &&finite(n.change_1d_pct)&&finite(v.previous)&&finite(v.value)&&finite(h.previous)&&finite(h.value);
+ const usRates=near(u.date)&&finite(u['2Y'])&&finite(u['10Y'])&&finite(u.chg2_bp)&&finite(u.chg10_bp);
+ const fxAligned=near(d.as_of)&&d.as_of===u.date&&finite(d.value)&&finite(d.previous_value)&&d.previous_value!==0&&usRates;
+ const usdDelta=fxAligned?(d.value/d.previous_value-1)*100:null;
+ let kind='mixed';
+ if(aligned&&n.change_1d_pct<=-1.5&&v.value>v.previous&&h.value>h.previous)kind='stress';
+ else if(aligned&&n.change_1d_pct>=1.5&&v.value<v.previous&&h.value<h.previous)kind='relief';
+ else if(usRates&&u.chg2_bp<=-2&&u.chg10_bp<=-2)kind='bond-rally';
+ else if(usRates&&u.chg2_bp>=2&&u.chg10_bp>=2)kind='yield-selloff';
+ else if(fxAligned&&Math.abs(u.chg2_bp)>=2&&Math.abs(usdDelta)>=.08&&u.chg2_bp*usdDelta<0)kind='fx-divergence';
+ const leadDate=kind==='stress'||kind==='relief'?n.date:kind==='mixed'?max:u.date;
+ const focus={stress:'nasdaq',relief:'nasdaq','bond-rally':'rates','yield-selloff':'rates','fx-divergence':'dxy',mixed:'rates'}[kind];
+ return {kind,leadDate,latest:max,focus,aligned,usRates,fxAligned,n,v,h,u,d,usdDelta};
+}
+function researchEvidence(ctx){
+ const {kind,n,v,h,u,d,leadDate}=ctx;
+ const rows=[];
+ const add=(title,move,detail,day,source)=>{if(validDay(day)&&day===leadDate&&move!=='—')rows.push({title,move,detail,day,source});};
+ if(kind==='stress'||kind==='relief'){
+  add('Nasdaq Composite',sign(n.change_1d_pct,2,'%'),'Chiusura rispetto alla seduta precedente',n.date,'Nasdaq / FRED');
+  add('Volatilità VIX',sign(v.value-v.previous,2,' pt'),'Da '+fmt(v.previous,2)+' a '+fmt(v.value,2),v.date,'Cboe');
+  add('Credito High Yield',sign((h.value-h.previous)*100,0,' pb'),'Variazione dello spread OAS',h.date,'ICE / FRED');
+  if(ctx.usRates&&u.date===n.date)add('Treasury USA 2Y',sign(u.chg2_bp,1,' pb'),'Variazione del rendimento',u.date,'U.S. Treasury');
+ }else if(ctx.usRates){
+  add('Treasury USA 2Y',sign(u.chg2_bp,1,' pb'),'Front-end governativo, non OIS',u.date,'U.S. Treasury');
+  add('Treasury USA 10Y',sign(u.chg10_bp,1,' pb'),'Long-end, premio a termine incluso',u.date,'U.S. Treasury');
+  if(ctx.fxAligned)add('USD · proxy BCE',sign(ctx.usdDelta,2,'%'),'Indice sintetico, non DXY ICE',d.as_of,'Fixing BCE');
+ }else{
+  if(finite(n.change_1d_pct)&&validDay(n.date)&&n.date===leadDate)
+   add('Nasdaq Composite',sign(n.change_1d_pct,2,'%'),'Ultima seduta disponibile',n.date,'Nasdaq / FRED');
+  if(validDay(d.as_of)&&d.as_of===leadDate&&finite(d.value)&&finite(d.previous_value)&&d.previous_value)
+   add('USD · proxy BCE',sign((d.value/d.previous_value-1)*100,2,'%'),'Fixing BCE, non ICE',d.as_of,'BCE');
+ }
+ return '<div class="letter-evidence" data-research-kind="'+esc(kind)+'"><div class="letter-evidence-heading"><span>LE PROVE DELLA TESI</span><strong>'+(leadDate?'Seduta '+date(leadDate):'Data da verificare')+'</strong></div>'
+  +(rows.length?'<div class="letter-proof-list">'+rows.map(x=>'<div class="letter-proof-row"><span class="proof-name">'+esc(x.title)+'</span><strong>'+esc(x.move)+'</strong><span class="proof-detail">'+esc(x.detail)+'</span><small>'+esc(x.source)+' · '+date(x.day)+'</small></div>').join('')+'</div>':'<p class="letter-proof-empty">Mancano osservazioni della stessa seduta sufficienti per costruire una prova coerente. Non accostiamo date diverse come se fossero una conferma.</p>')
+  +'<p class="letter-proof-note">Variazioni osservate, non prova di causalità. Ogni riga usa la data e la fonte che la sostengono.</p></div>';
+}
+function researchBridge(route){
+ const c=researchCase(),m=get('macro')?.currencies?.USD||{},p=get('pairs')||{},o=get('ois')?.currencies?.USD||{},cot=get('cot')||{};
+ const message={
+  macro:finite(m.inflation?.latest_value)&&finite(m.labour?.latest_value)
+    ?'L’inflazione USA è '+fmt(m.inflation.latest_value,2)+'% ('+esc(m.inflation.as_of)+'); disoccupazione '+fmt(m.labour.latest_value,1)+'% ('+esc(m.labour.as_of)+'). Prima di parlare di svolta, confronta periodi e velocità.'
+    :'Il ciclo USA non è validabile con entrambe le serie: il punto da verificare è la persistenza della crescita e dell’inflazione.',
+  rates:c.usRates?'Il 2Y USA si è mosso di '+sign(c.u.chg2_bp,1,' pb')+' e il 10Y di '+sign(c.u.chg10_bp,1,' pb')+' al '+date(c.u.date)+'. Distingui questa reazione dalle attese OIS/futures.':'La conferma dei Treasury è da verificare: mantieni separate osservazioni e stime.',
+  currencies:c.fxAligned?'Il proxy USD varia '+sign(c.usdDelta,2,'%')+' nella stessa data del 2Y USA ('+date(c.d.as_of)+'). Co-movimento o divergenza non dimostrano causalità.':'Verifica il dollaro contro la data delle curve: fixing e Treasury non risultano sincroni o completi.',
+  pairs:validDay(p.price_asof)?'Le 28 coppie riflettono il fixing del '+date(p.price_asof)+'. Usa la struttura relativa e il prezzo per verificare la tesi, non per creare segnali automatici.':'Le date del prezzo FX non permettono ancora di confermare una tesi sulla coppia.',
+  cot:cot.EUR?.today?'La lettura EUR è '+esc(cot.EUR.signal||'da validare')+'; il COT si riferisce a una settimana diversa dai fixing FX. Verifica il flusso, non il solo estremo.':'Il positioning non può essere promosso a conferma finché non è datato e verificato.',
+  risk:c.aligned?'Nasdaq '+sign(c.n.change_1d_pct,2,'%')+', VIX '+sign(c.v.value-c.v.previous,2,' pt')+', HY '+sign((c.h.value-c.h.previous)*100,0,' pb')+' nella seduta del '+date(c.n.date)+'.':'Le osservazioni azionario, VIX e credito non hanno una conferma simultanea aggiornata.',
+  news:'Ogni notizia deve essere collegata al dato pubblicato, alla sorpresa e alla reazione misurabile dei prezzi. Senza questa catena non attribuiamo causalità.'
+ };
+ const prompts={macro:'È davvero cambiato il ciclo?',rates:'I rendimenti confermano un repricing?',currencies:'Le valute stanno confermando?',pairs:'Quali coppie superano la verifica?',cot:'Il positioning anticipa o insegue?',risk:'Lo stress è diffuso o concentrato?',news:'Quale evento cambia davvero la tesi?'};
+ return '<aside class="research-continuity" aria-label="Collegamento alla ricerca principale"><div><span>DALLA RICERCA / '+esc(ROUTES[route]||route).toUpperCase()+'</span><h2>'+esc(prompts[route]||'Approfondisci la tesi')+'</h2><p>'+message[route]+'</p></div><a href="#overview">Rileggi la tesi del desk ↗</a></aside>';
+}
+
 function overview(){
  const u=get('rates')?.USD||{},d=get('dxy')||{},risk=get('risk')?.streams||{};
  const n=risk.NASDAQCOM||{},sp=risk.SP500||{},vx=risk.VIX||{},hy=risk.HY_OAS||{};
