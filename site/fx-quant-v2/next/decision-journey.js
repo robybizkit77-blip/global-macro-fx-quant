@@ -142,8 +142,8 @@
   }
   function pair(){
    const item=profile(state.pair||'EURUSD',market,history,now),isFull=item.closes.length>=22;
-   const window=[20,60,120].includes(Number(state.pairPriceWindow))?Number(state.pairPriceWindow):60;
-   const selected=item.closes.slice(-window);
+   const chartWindow=[20,60,120].includes(Number(state.pairPriceWindow))?Number(state.pairPriceWindow):60;
+   const selected=item.closes.slice(-chartWindow);
    const watch=item.watch||{ready:false};
    const showReferences=watch.ready&&state.pairShowReferences!==false;
    const referenceLines=showReferences?[
@@ -206,7 +206,7 @@
      +'<div><span>TRADE ATTRACTIVENESS</span><strong>'+esc(attractive)+'</strong><small>'+esc(item.why)+'</small></div>'
      +'<div><span>LA PROSSIMA VERIFICA</span><strong>Che cosa aspettiamo?</strong><small>'+esc(gateNext)+'</small></div></div>'
      +'<div class="decision-price-grid"><div class="decision-price-chart"><div class="decision-price-head"><div><span>PREZZO REALE · ECB DAILY</span><h3>'+pairName(item.key)+' · '+quote+'</h3><small>Fixing BCE '+date(item.asof)+' · ultima seduta '+lastDay+' · 5 sedute '+move+' · 20 sedute '+gain+'</small></div>'
-     +'<div class="decision-chart-tools"><div class="pill-controls">'+[20,60,120].map(w=>'<button type="button" data-v9-price-window="'+w+'" class="pill '+(w===window?'active':'')+'" aria-pressed="'+String(w===window)+'">'+w+'</button>').join('')+'</div>'
+     +'<div class="decision-chart-tools"><div class="pill-controls">'+[20,60,120].map(w=>'<button type="button" data-v9-price-window="'+w+'" class="pill '+(w===chartWindow?'active':'')+'" aria-pressed="'+String(w===chartWindow)+'">'+w+'</button>').join('')+'</div>'
      +(watch.ready?'<button type="button" data-v12-reference-toggle="1" class="pill decision-reference-toggle '+(showReferences?'active':'')+'" aria-pressed="'+String(showReferences)+'">'+(showReferences?'Riferimenti visibili':'Mostra riferimenti')+'</button>':'')+'</div></div>'
      +graph+(showReferences?'<p class="decision-reference-caption">Tratti <strong>verdi</strong> e <strong>rossi</strong> a destra: riferimenti calcolati con gli ultimi 20 fixing precedenti al '+date(item.asof)+'. Non sono livelli storici costanti né segnali.</p>':'')
      +'<div class="decision-price-evidence"><div class="decision-evidence-cell"><span>5 FIXING</span><strong>'+move+'</strong><small>'+esc(item.fiveState)+'</small></div><div class="decision-evidence-cell"><span>20 FIXING</span><strong>'+gain+'</strong><small>'+esc(item.twentyState)+'</small></div><div class="decision-evidence-cell"><span>RANGE 20 FIXING PRECEDENTI</span><strong class="range">'+esc(range)+'</strong><small>'+esc(item.structure)+'</small></div></div><p class="decision-price-context">'+esc(discordance)+' '+esc(pulse)+'</p>'+watchHtml+'<p class="decision-source">Cross '+pairName(item.key)+' ricostruito dai fixing BCE giornalieri (quote/base). Nessun OHLC o candela H4. Il segno di 5/20 sedute non misura significatività statistica né individua breakout intraday.</p></div>'
