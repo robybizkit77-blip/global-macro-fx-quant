@@ -231,8 +231,8 @@ function homePairPreview(k){
 function researchCase(){
  const r=get('risk')?.streams||{},u=get('rates')?.USD||{},d=get('dxy')||{};
  const pairDate=get('pairs')?.price_asof;
- const max=[r.NASDAQCOM?.date,r.VIX?.date,r.HY_OAS?.date,u.date,d.as_of,pairDate].filter(validDay).sort().pop()||null;
- const near=d=>validDay(d)&&validDay(max)&&d<=max&&
+ const max=[r.NASDAQCOM?.date,r.VIX?.date,r.HY_OAS?.date,u.date,d.as_of,pairDate].filter(x=>validDay(x)&&x<=dayNow()).sort().pop()||null;
+ const near=d=>validDay(d)&&validDay(max)&&d<=dayNow()&&d<=max&&
    (Date.parse(max+'T12:00:00Z')-Date.parse(d+'T12:00:00Z'))/864e5<=4;
  const n=r.NASDAQCOM||{},v=r.VIX||{},h=r.HY_OAS||{};
  const aligned=validDay(n.date)&&n.date===v.date&&n.date===h.date&&near(n.date)
@@ -308,7 +308,7 @@ function overview(){
  const divergent=context.kind==='fx-divergence';
  const bonds=context.kind==='bond-rally'||(context.kind==='stress'&&context.usRates&&u.chg2_bp<-2&&u.chg10_bp<-2);
  const sharedDate=stress&&bonds&&u.date===n.date;
- const latest=[u.date,d.as_of,n.date,hy.date,pairAsOf].filter(validDay).sort().pop();
+ const latest=context.latest;
  const tooOld=!latest||!fresh(latest,8);
  const dx=finite(d.value)&&finite(d.previous_value)&&d.previous_value!==0&&validDay(d.as_of)?(d.value/d.previous_value-1)*100:null;
  const headlineBase=sharedDate
