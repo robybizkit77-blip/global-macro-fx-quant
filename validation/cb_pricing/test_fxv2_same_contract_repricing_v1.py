@@ -78,34 +78,50 @@ class SameContractResearchTests(unittest.TestCase):
             if row["one_day"]:
                 self.assertNotEqual(row["one_day"]["from_date"], row["one_day"]["to_date"])
 
+    def clean_signed_contract(self, require_one_day=False):
+        # The latest USD 12M can legitimately be quarantined. Select an
+        # *actually verified* current contract rather than invent a move.
+        # Every negative test still exercises the real signed archive.
+        choices = [
+            (ccy, tenor, row)
+            for ccy, horizons in self.result["currencies"].items()
+            for tenor, row in horizons.items()
+            if row["status"] in (
+                "VERIFIED_CONTRACT_NO_MATCHED_REFERENCE",
+                "VERIFIED_SAME_CONTRACT_PRICE_CHANGE",
+            ) and (not require_one_day or row["one_day"] is not None)
+        ]
+        self.assertTrue(choices, "no uncontested signed contract available for adversarial check")
+        return choices[0]
+
     def test_missing_previous_session_is_null_not_older_rate(self):
+        ccy, tenor, source = self.clean_signed_contract(require_one_day=True)
         data = copy.deepcopy(self.archive)
-        source = self.result["currencies"]["USD"]["12m"]
-        self.assertIsNotNone(source["one_day"])
         reference = source["one_day"]["from_date"]
-        data = [r for r in data if not (r["currency"] == "USD" and
+        data = [r for r in data if not (r["currency"] == ccy and
                 r["contract"] == source["contract"] and
                 r["observation_date"] == reference)]
         result = build(self.feed, data, self.conflicts)
-        row = result["currencies"]["USD"]["12m"]
+        row = result["currencies"][ccy][tenor]
         self.assertIsNone(row["one_day"])
         self.assertIsNone(row["change_1d_bp"])
 
     def test_missing_current_archive_never_becomes_verified(self):
+        ccy, tenor, source = self.clean_signed_contract()
         data = copy.deepcopy(self.archive)
-        source = self.result["currencies"]["USD"]["12m"]
-        data = [r for r in data if not (r["currency"] == "USD" and
+        data = [r for r in data if not (r["currency"] == ccy and
                 r["contract"] == source["contract"] and
                 r["observation_date"] == source["as_of"])]
         result = build(self.feed, data, self.conflicts)
-        row = result["currencies"]["USD"]["12m"]
+        row = result["currencies"][ccy][tenor]
         self.assertEqual(row["status"], "CURRENT_NOT_YET_ARCHIVED")
         self.assertIsNone(row["one_day"])
         self.assertIsNone(row["one_week"])
 
     def test_current_source_mutation_is_rejected(self):
+        ccy, tenor, _ = self.clean_signed_contract()
         fed = copy.deepcopy(self.feed)
-        q = fed["currencies"]["USD"]["horizons"]["12m"]
+        q = fed["currencies"][ccy]["horizons"][tenor]
         q["rate"] += 0.01
         q["futures_price"] -= 0.01
         with self.assertRaisesRegex(ValueError, "immutable current quote changed"):
