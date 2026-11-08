@@ -18,6 +18,7 @@ on:
       - 'validation/qa_next_research_editorials_v7.cjs'
       - 'validation/qa_next_research_decision_v9.cjs'
       - 'validation/qa_next_fx_rates_bridge_v13.cjs'
+      - 'validation/qa_next_pair_coverage_v15.cjs'
       - 'live_data/sections/ECB_G8_PRICE_HISTORY.json'
       - '.github/workflows/fx-quant-next-research-coherence.yml'
   workflow_dispatch:
@@ -49,3 +50,5 @@ jobs:
         run: node validation/qa_next_research_decision_v9.cjs
       - name: Verify source-aligned FX and government 2Y evidence, without OIS fiction
         run: node validation/qa_next_fx_rates_bridge_v13.cjs
+      - name: Verify per-pair status across all 28 G8 crosses and missing-data guardrails
+        run: node validation/qa_next_pair_coverage_v15.cjs

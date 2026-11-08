@@ -146,9 +146,41 @@ function pairListKeys(){
  const rows=eurPairs(),q=state.pairSearch.trim().toUpperCase().replace(/[^A-Z]/g,'');
  return Object.keys(rows).sort().filter(k=>{const qual=pQuality(rows[k].setup);return (!q||k.includes(q))&&(state.pairFilter==='all'||state.pairFilter==='watch'&&state.watch.has(k)||qual===state.pairFilter)});
 }
+function pairCoverage(k){
+ const model=get('pairs'),prices=get('currencyPrices'),rates=get('rates'),today=dayNow();
+ const p=typeof window!=='undefined'&&window.FXQuantDecisionJourney?.profile?
+  window.FXQuantDecisionJourney.profile(k,model,prices,today):null;
+ const y=typeof window!=='undefined'&&window.FXQuantRatesBridge?.snapshot?
+  window.FXQuantRatesBridge.snapshot(rates,prices,k,model?.price_asof,today):null;
+ return {price:!!(p?.fresh&&p.closes?.length>=22),reference:!!p?.watch?.ready,
+  rateShort:!!(y?.ready&&y.short),rateMedium:!!(y?.ready&&y.medium)};
+}
+function pairCoverageLabels(c){
+ const items=[['FX daily',c.price,'fixing BCE'],['Rif. daily',c.reference,'riferimenti nella direzione favorita'],
+  ['2Y breve',c.rateShort,'5 intervalli comuni governativi 2Y'],['2Y medio',c.rateMedium,'20 intervalli comuni governativi 2Y']];
+ return '<span class="pair-data-coverage" aria-label="Disponibilità dei dati">'+
+  items.map(([label,ok,meaning])=>'<span class="pair-data-state '+(ok?'available':'missing')+
+   '" title="'+(ok?'Disponibile: ':'Non verificabile: ')+meaning+'"><span aria-hidden="true">'+
+   (ok?'✓':'–')+'</span>'+label+'</span>').join('')+'</span>';
+}
 function pairRow(k,compact=false){
  const p=eurPairs()[k],s=p?.setup||{},q=pQuality(s);
- return '<button type="button" class="pair-row '+(state.pair===k?'active':'')+'" data-pair="'+k+'"><span><strong>'+esc(getPairName(k))+'</strong><span class="subtitle">'+esc(s.structuralFav?'Contesto: '+s.structuralFav:'Valutazione da approfondire')+' · '+esc(s.price?.text||'Prezzo non classificato')+'</span></span><span class="right">'+qBadge(q)+'<span class="arrow">›</span></span>'+(compact?'':'')+'</button>';
+ return '<button type="button" class="pair-row '+(state.pair===k?'active':'')+'" data-pair="'+k+
+  '"><span><strong>'+esc(getPairName(k))+'</strong><span class="subtitle">'+
+  esc(s.structuralFav?'Contesto: '+s.structuralFav:'Valutazione da approfondire')+' · '+
+  esc(s.price?.text||'Prezzo non classificato')+'</span>'+pairCoverageLabels(pairCoverage(k))+
+  '</span><span class="right">'+qBadge(q)+'<span class="arrow">›</span></span>'+(compact?'':'')+'</button>';
+}
+function pairCoverageIntro(){
+ const all=Object.keys(eurPairs()),counts={price:0,reference:0,rateShort:0,rateMedium:0};
+ all.forEach(k=>{const c=pairCoverage(k);Object.keys(counts).forEach(t=>{if(c[t])counts[t]++})});
+ if(!all.length)return '<p class="pair-coverage-intro">Stato copertura non verificabile: nessuna coppia caricata.</p>';
+ return '<p class="pair-coverage-intro" aria-label="Copertura verificata delle 28 coppie">'+
+  '<strong>'+counts.price+'/'+all.length+'</strong> FX daily · '+
+  '<strong>'+counts.reference+'/'+all.length+'</strong> rif. daily · '+
+  '<strong>'+counts.rateShort+'/'+all.length+'</strong> 2Y breve · '+
+  '<strong>'+counts.rateMedium+'/'+all.length+'</strong> 2Y medio'+
+  '<small>2Y = governativi, non OIS. Il trattino indica dati insufficienti o direzione non definita, non un giudizio sul trade.</small></p>';
 }
 function riskAligned(){
  const a=get('risk')?.streams||{},n=a.NASDAQCOM,v=a.VIX,h=a.HY_OAS;
@@ -460,7 +492,7 @@ function pairs(){
  const watchLabel=state.watch.has(state.pair)?'★ Nella watchlist':'☆ Salva per dopo';
  return pageHero('FX / PAIR EXPLORER','28 coppie. <em>Una tesi alla volta.</em>','Qui non cerchiamo soltanto chi è forte. Leggiamo vantaggio macro, pricing, COT, prezzo e soprattutto cosa potrebbe smentire la tesi.')
  +(typeof window!=='undefined'&&window.FXQuantDecisionJourney?.build?window.FXQuantDecisionJourney.build({get,state,plot,fmt,sign,date,dayNow,esc}).pair():'<div class="empty">Lettura prezzo FX non disponibile. Non presentiamo livelli operativi.</div>')
- +'<div class="grid tilted"><section class="panel"><div class="panel-head"><div><span class="mini-overline">ESPLORA E FILTRA</span><h2>Il tuo universo FX</h2><p>Prezzi ECB: '+date(get('pairs')?.price_asof)+' · '+Object.keys(all).length+' coppie</p></div></div><div class="filters"><input id="pair-search" class="input" type="search" placeholder="Cerca EUR/USD, AUDCAD..." autocomplete="off" value="'+esc(state.pairSearch)+'" aria-label="Cerca coppia FX"><div class="filter-group" id="pair-filters">'+choose('',pairFilterOptions(),state.pairFilter,'data-pfilter')+'</div></div><div class="pair-list" id="pair-results">'+(keys.length?keys.map(k=>pairRow(k)).join(''):'<div class="empty"><strong>Nessuna coppia</strong><p>Prova a cambiare filtro o ricerca.</p></div>')+'</div><p class="source-caption">“Pulito”, “Con rischi”, “Da confermare” e “Non valutabile” sono stati del motore, non raccomandazioni operative.</p></section>'
+ +'<div class="grid tilted"><section class="panel"><div class="panel-head"><div><span class="mini-overline">ESPLORA E FILTRA</span><h2>Il tuo universo FX</h2><p>Prezzi ECB: '+date(get('pairs')?.price_asof)+' · '+Object.keys(all).length+' coppie</p>'+pairCoverageIntro()+'</div></div><div class="filters"><input id="pair-search" class="input" type="search" placeholder="Cerca EUR/USD, AUDCAD..." autocomplete="off" value="'+esc(state.pairSearch)+'" aria-label="Cerca coppia FX"><div class="filter-group" id="pair-filters">'+choose('',pairFilterOptions(),state.pairFilter,'data-pfilter')+'</div></div><div class="pair-list" id="pair-results">'+(keys.length?keys.map(k=>pairRow(k)).join(''):'<div class="empty"><strong>Nessuna coppia</strong><p>Prova a cambiare filtro o ricerca.</p></div>')+'</div><p class="source-caption">“Pulito”, “Con rischi”, “Da confermare” e “Non valutabile” sono stati del motore, non raccomandazioni operative.</p></section>'
  +'<div class="grid"><section class="panel glow"><div class="focus-row"><span class="mini-overline">PAIR DEEP DIVE</span>'+qBadge(qual)+'</div><h2 class="focus-headline">'+(s?esc(s.pair||getPairName(state.pair)):'Seleziona una coppia')+'</h2><p class="focus-subtitle">'+esc(s?.structural?.relation||fr?.relation||'Scegli una coppia per leggere la relazione tra macro e prezzi.')+'</p><div style="display:flex;gap:8px;flex-wrap:wrap;margin:17px 0"><button class="watch-btn '+(state.watch.has(state.pair)?'saved':'')+'" type="button" data-watch="'+state.pair+'">'+watchLabel+'</button><span class="badge info">Prezzo '+date(get('pairs')?.price_asof)+'</span></div>'
  +'<div class="lens-grid"><div class="lens"><label>Struttura</label><strong>'+esc(s?.structuralFav?'Vantaggio: '+s.structuralFav:'Non definita')+'</strong><p>'+esc(concise(fr.quality||'Da confermare',130))+'</p></div><div class="lens"><label>Prezzo</label><strong>'+esc(price?.text||'Non classificato')+'</strong><p>'+esc(concise(fr.priceNote||'',120))+'</p></div><div class="lens"><label>Timing</label><strong>'+esc(concise(s?.timing?.text,70))+'</strong></div><div class="lens"><label>COT</label><strong>'+esc(concise(s?.cot?.text,145))+'</strong></div></div></section>'
  +'<section class="panel"><div class="panel-head"><div><span class="mini-overline">DALLA TESI ALLA DECISIONE</span><h2>Cosa deve succedere adesso?</h2></div></div><div class="flow-track"><div class="flow-item"><label>Confermerebbe</label><p>'+esc(fr.priceNote||s?.price?.text||'Prezzo e pricing da verificare')+'</p></div><div class="flow-item"><label>Invalida / frena</label><p>'+esc(fr.missing||'Mancano conferme da macro, tassi e prezzo.')+'</p></div><div class="flow-item"><label>Monitorare</label><p>'+esc(fr.watch||s?.structural?.watch||'Aspettare una conferma osservabile, non dedurre ingressi automatici.')+'</p></div></div></section></div></div>'
