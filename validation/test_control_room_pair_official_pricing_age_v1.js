@@ -33,6 +33,10 @@ for(const ccy of candidates){
     assert(!real.includes(ccy),ccy+' incomplete source must not be promoted');
 }
 const x=structuredClone(feed.currencies.GBP);
+// The live source may carry valid absolute OIS levels but no certified
+// repricing delta. Create positive eligibility test values IN MEMORY ONLY.
+for(const [i,t] of ['3m','6m','12m'].entries())
+ x.horizons[t].policy_delta_bp=i;
 x.as_of=offsetDays(-4);
 assert.equal(official(x),true,'official age day four remains usable');
 x.as_of=offsetDays(-5);
