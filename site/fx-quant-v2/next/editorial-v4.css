@@ -573,3 +573,21 @@ button,a{touch-action:manipulation}
 .decision-case-horizon{border-left:2px solid #a5c6bb;padding:5px 0 5px 11px!important;font-size:12px!important;color:#d2ddda!important}
 @media(max-width:1100px){.decision-price-evidence{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:650px){.decision-price-evidence{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.decision-evidence-cell{padding:11px}.decision-evidence-cell:last-child{grid-column:1/-1}.decision-evidence-cell strong{font-size:21px}.decision-evidence-cell strong.range{font-size:15px}.decision-price-context{font-size:12px}}
+
+
+/* V11: date-bounded daily fixing observations, explicitly not execution levels. */
+.decision-daily-watch{margin:16px 0 12px;padding:18px 18px 15px;border:1px solid rgba(162,206,195,.28);background:#122936;border-radius:8px}
+.decision-daily-watch-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;padding-bottom:11px}
+.decision-daily-watch-head>span{font-size:10px;letter-spacing:.13em;font-weight:800;color:#b3dac9}
+.decision-daily-watch-head>small{color:#9bbcc3;font-size:10px;line-height:1.5}
+.decision-watch-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.decision-watch-line{background:rgba(118,171,154,.09);padding:14px 15px;border:1px solid rgba(140,190,172,.21);border-radius:6px;min-width:0}
+.decision-watch-line.contrary{background:rgba(216,149,132,.055);border-color:rgba(209,150,139,.2)}
+.decision-watch-line>span{font-size:10px;color:#a8d6c0;letter-spacing:.09em;font-weight:750}
+.decision-watch-line.contrary>span{color:#e5aea5}
+.decision-watch-line>strong{display:block;font-size:clamp(20px,2vw,27px);font-weight:650;line-height:1.25;margin:7px 0;color:#f0f1e9;font-variant-numeric:tabular-nums}
+.decision-watch-line>small{font-size:11px;line-height:1.55;color:#b0c9c8}
+.decision-watch-next{font-size:12px;color:#e1e6dc;line-height:1.72;margin:15px 0 8px}
+.decision-watch-unavailable{font-size:12px;color:#e1c9a2;line-height:1.7;margin:4px 0}
+.decision-watch-caveat{display:block;padding-top:10px;border-top:1px solid rgba(174,210,200,.17);font-size:10px;line-height:1.7;color:#9eb9bf}
+@media(max-width:650px){.decision-daily-watch{padding:14px 12px}.decision-watch-columns{grid-template-columns:1fr;gap:7px}.decision-watch-line{padding:12px}.decision-watch-line>strong{font-size:24px}}
