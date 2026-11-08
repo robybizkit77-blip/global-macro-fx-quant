@@ -1,8 +1,53 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-07T22:47:48Z",
+  "generated_at_utc": "2026-11-08T17:05:42Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-663c606fd721533aad22",
+      "observed_at_utc": "2026-11-08T14:01:48Z",
+      "headline": "Pacer Cash COWZ 100-Nasdaq 100 Rotator ETF (QQWZ.O) | Stock Price & Latest News",
+      "summary": "Reuters riporta: Pacer Cash COWZ 100-Nasdaq 100 Rotator ETF (QQWZ.O) | Stock Price & Latest News. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE4yX3VWbUN4T1E4eVNxejliYXVKa0o1MU9UYmZhREMwWGJPZ2U5TEFYZ1hhZ05XOTVOTDlPSWl0MkQ4SnJheUJkekJ3dXVBaGF5Nk5tVUVKbTA?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-f4a68f3b5bae5b141cf1",
+      "observed_at_utc": "2026-11-08T13:19:42Z",
+      "headline": "Defiance Nasdaq 100 LightningSpread Income ETF (QLDY.O) | Stock Price & Latest News",
+      "summary": "Reuters riporta: Defiance Nasdaq 100 LightningSpread Income ETF (QLDY.O) | Stock Price & Latest News. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTFBMalNMelhXQ3pmV2ZFTUhpUVlYSkh4UUJxYnJpa2JTeDVzcFdrbGFxTmlfdVVRY1R1QmR3OHBDQXd5QTdpQ3BBU2NBR002T2tLXzJlUXJhTF8?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-11f1f3d6795e7fda6218",
+      "observed_at_utc": "2026-11-08T12:19:33Z",
+      "headline": "ProShares Nasdaq-100 Dynamic Buffer ETF (QB.O) | Stock Price & Latest News",
+      "summary": "Reuters riporta: ProShares Nasdaq-100 Dynamic Buffer ETF (QB.O) | Stock Price & Latest News. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE9uaVdLcVFseGVVOVd3UG9ZamxvUjBwQk9YY0tZc1FlR1Mwc3kwdE92dXZDNm1vUjB5d2Rwc1BWS0dpTnlrdGNhUXJuQ2xDRnhkYi1DTTln?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-9c52808200bbde147d0a",
       "observed_at_utc": "2026-11-07T14:32:00Z",
@@ -1363,52 +1408,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxPN3J6WGNOeVpGVUFtLVBCWkItVWVEQmQwMnhTeldWYko5SnR6akxlQTJOR2ZMbnZodUhnMk8zMjRLaFpsQm5iMVFlTnJheVlnQzVhOW5WVFRYdnZHMUFxRWJBMVpUMHhubklkaFJ0dVloc3d0dTItcnJ5NEFMYlBXY1F1ZTFHV3lpN3NOSDNKQkJ6THNpbUp0MlMwRlpSQU4yNzdUMmZQOVFFSS1mVWROaUJpSjNBNXJZQS1nV2xEU1FJQmJaZ1FBenROYkM4UQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-037167c1ce165f9a6255",
-      "observed_at_utc": "2026-10-28T20:44:49Z",
-      "headline": "Canadian dollar strengthens, bond yields rise after BoC's rate hike",
-      "summary": "Reuters riporta: Canadian dollar strengthens, bond yields rise after BoC's rate hike. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD",
-        "CAD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxPclpLdEx1LThWT3M0WnFzLXZvTk1aU2IzaE5RV29PdzlVR29oX29ya2dqWWt5bXJTMlF0LUtFbV9VWVNXcjhMN0UxZTZyUHl4TVpNSGdRNEk2SGNoYXlRbUlpRzdfb3A5TVZzRG5SRG1GTVZvOG5CQjVLSHhKMFlKdy16QmZ0eFJhLXpwTGYtbkZ5dEFmclNPa0xSMkhmOUh4dXFXY2NBX1ZmTzhraExN?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-9811ea79c81c5c201b3a",
-      "observed_at_utc": "2026-10-29T17:06:20Z",
-      "headline": "UK inflation expectations fall in October, Citi/YouGov survey shows",
-      "summary": "Reuters riporta: UK inflation expectations fall in October, Citi/YouGov survey shows. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [
-        "GBP"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxPOWRhWERQcmcydHFCRTJEbmJKeTQ5U2oxYjg4QXdrSDhqUlp2bFBMTUs5Zm9JaXMxUUZOcUVOYmZ5ZXJXaDhaUlIwMm8zT3hJV0hjQmdDMEZiQlpiRm1UYjMyazFjek55TTFjQlFGd21xVlY2NFdfV0ZKMTcxc3JuNVBNcXBYamVGamdSOEpkWDZpSUxSc3VaMWtVUGNvTnZocnZkcXhXY0pMTEU?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-45d9f6aacd01cb925e00",
-      "observed_at_utc": "2026-10-29T13:15:50Z",
-      "headline": "US inflation heats up in September; consumer spending rises",
-      "summary": "Reuters riporta: US inflation heats up in September; consumer spending rises. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxNamNwQk5mVXlad05tREVFeXVRU29iOGZLMHJLQ3dhQURxb2s2OXNfYzhjQ2tmakJEUFpJcU9FUlZrZmY1czdGVXpsYzVaY21EaVR3R2NDM3pfeEpXYVpRQmZOSXphSXdSMDlyM0plUnlvVnJCdkVhd2Q2dlhOTjUwQm42TE1uYVpsUEJEX1V0WHJ1cVZXajFSNm9zcHlGTUprQWc?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
