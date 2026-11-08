@@ -100,10 +100,55 @@ const missingPrice=profile('EURUSD',doc,{},now);
 assert.equal(missingPrice.fiveState,'NON VALUTABILE','Missing daily series must not imply evidence');
 assert.equal(missingPrice.m1,null);
 
+
+/* V11: next fixing references are exact prior 20 ECB price observations, not entries. */
+const eurWatch=profile('EURUSD',doc,prices,now);
+const cadWatch=profile('USDCAD',doc,prices,now);
+assert.equal(eurWatch.direction,-1,'Favoured USD is EURUSD quote');
+assert.equal(eurWatch.watch.favorable,eurWatch.breakLow);
+assert.equal(eurWatch.watch.adverse,eurWatch.breakHigh);
+assert.equal(eurWatch.watch.favorableDirection,'Sotto');
+assert.equal(cadWatch.direction,1,'Favoured USD is USDCAD base');
+assert.equal(cadWatch.watch.favorable,cadWatch.breakHigh);
+assert.equal(cadWatch.watch.adverse,cadWatch.breakLow);
+assert.equal(cadWatch.watch.favorableDirection,'Sopra');
+assert(eurWatch.watch.favorableDistancePct>0&&eurWatch.watch.adverseDistancePct>0,'EURUSD inside reference range');
+assert(cadWatch.watch.favorableDistancePct>0&&cadWatch.watch.adverseDistancePct>0,'USDCAD inside reference range');
+const currentDailyRow=prices.rows.find(x=>x.Date===doc.price_asof);
+assert(currentDailyRow,'Current daily fixing row missing');
+function revisedToday(mutator){
+ const data=JSON.parse(JSON.stringify(prices));
+ const row=data.rows.find(x=>x.Date===doc.price_asof);
+ mutator(row);return data;
+}
+const eurStrong=profile('EURUSD',doc,revisedToday(row=>{row.USD=eurWatch.breakLow*.99*row.EUR;}),now);
+assert.equal(eurStrong.watch.favorablePassed,true,'EURUSD below prior 20D low must be flagged as already beyond');
+assert.equal(eurStrong.watch.adversePassed,false);
+assert.equal(eurStrong.watch.favorable,eurWatch.watch.favorable,'Current fixing may not leak into previous 20-fixing range');
+const eurWeak=profile('EURUSD',doc,revisedToday(row=>{row.USD=eurWatch.breakHigh*1.01*row.EUR;}),now);
+assert.equal(eurWeak.watch.adversePassed,true,'EURUSD above prior 20D high contrasts USD thesis');
+const cadStrong=profile('USDCAD',doc,revisedToday(row=>{row.CAD=cadWatch.breakHigh*1.01*row.USD;}),now);
+assert.equal(cadStrong.watch.favorablePassed,true,'USDCAD above previous 20D high favours USD');
+const cadWeak=profile('USDCAD',doc,revisedToday(row=>{row.CAD=cadWatch.breakLow*.99*row.USD;}),now);
+assert.equal(cadWeak.watch.adversePassed,true,'USDCAD below previous 20D low contrasts USD thesis');
+assert.equal(profile('AUDUSD',doc,prices,now).watch.ready,false,'No validated favourite means no directional threshold');
+assert.equal(profile('EURUSD',doc,{},now).watch.ready,false,'Missing ECB history must not produce levels');
+assert.equal(profile('EURUSD',doc,prices,'2027-01-05').watch.ready,false,'Stale snapshots must not generate watch levels');
+const v11Pair=build(base).pair();
+assert.match(v11Pair,/decision-daily-watch/);
+assert.match(v11Pair,/VERSO FAVOREVOLE/);
+assert.match(v11Pair,/VERSO CONTRARIO/);
+assert.match(v11Pair,/20 fixing precedenti/);
+assert.match(v11Pair,/non supporti o resistenze intraday/);
+const staleBase={...base,dayNow:()=> '2027-01-05'};
+const staleHtml=build(staleBase).pair();
+assert.match(staleHtml,/Riferimenti di prezzo non verificabili/);
+assert.doesNotMatch(staleHtml,/decision-watch-columns/);
+
 const index=fs.readFileSync('site/fx-quant-v2/next/index.html','utf8');
 const app=fs.readFileSync('site/fx-quant-v2/next/app.js','utf8');
-assert(index.includes('decision-journey.js?v=10')&&index.indexOf('decision-journey.js')<index.indexOf('app.js?v=9'));
-assert(index.includes('editorial-v4.css?v=10'));
+assert(index.includes('decision-journey.js?v=11')&&index.indexOf('decision-journey.js')<index.indexOf('app.js?v=9'));
+assert(index.includes('editorial-v4.css?v=11'));
 assert(app.includes('window.FXQuantDecisionJourney?.build'));
 assert(app.includes('[data-v9-price-window]'));
-console.log('NEXT_V10_DECISION_PASS: 28 FX pairs, honest shortlist, ECB cross price, daily chart, no H4 fiction, data gaps, safe rendering');
+console.log('NEXT_V11_DECISION_PASS: 28 FX pairs, honest shortlist, ECB cross price, daily chart, no H4 fiction, data gaps, safe rendering');
