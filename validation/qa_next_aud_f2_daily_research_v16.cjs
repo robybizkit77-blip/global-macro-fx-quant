@@ -1,0 +1,79 @@
+'use strict';
+/* V16 AUD F2: strict research-only daily coverage is never Core or live OIS. */
+const fs=require('node:fs'),assert=require('node:assert/strict');
+const json=p=>JSON.parse(fs.readFileSync(p,'utf8'));
+const rates=json('live_data/sections/NATIVE_RATES_DATA.json');
+const price=json('live_data/sections/ECB_G8_PRICE_HISTORY.json');
+const model=json('live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json');
+const sidecar=json('site/fx-quant-v2/aud-rba-f2-history-research.json');
+const mod=require('../site/fx-quant-v2/next/fx-rates-bridge.js');
+const audDate=rates.AUD.date,now='2026-11-08',base=model.price_asof;
+assert(sidecar.schema==='GMFQ_AUD_RBA_F2_DAILY_HISTORY_RESEARCH_V1');
+assert(sidecar.eligible_for_core===false&&sidecar.eligible_for_fx_pair_engine===false);
+assert(sidecar.eligible_for_backtests===false);
+assert(mod.snapshot(rates,price,'AUDCAD',base,now).ready===false,
+ 'Canonical weekly-sampled AUD history alone must not be treated as daily FX/2Y evidence');
+const dates=price.rows.map(x=>x.Date).filter(x=>x<=audDate).slice(-70);
+assert(dates.length===70&&dates.at(-1)===audDate,'Fixture dates must be real ECB fixing dates');
+const fake=JSON.parse(JSON.stringify(sidecar));
+fake.status='OFFICIAL_F2_DAILY_RESEARCH_ONLY_NOT_POINT_IN_TIME';
+fake.schema='GMFQ_AUD_RBA_F2_DAILY_HISTORY_RESEARCH_V1';
+fake.source_url='https://www.rba.gov.au/statistics/tables/csv/f2-data.csv';
+fake.series_2Y='FCMYGBAG2D';fake.series_10Y='FCMYGBAG10D';
+fake.source_response_sha256='a'.repeat(64);
+fake.publication_date='2026-11-06';
+fake.last_observation_date=audDate;
+fake.research_only=true;
+fake.no_interpolation=true;fake.same_date_same_source=true;
+fake.eligible_for_core=false;
+fake.eligible_for_fx_pair_engine=false;
+fake.eligible_for_backtests=false;
+fake.observations=dates.map((date,i)=>({
+ date,'2Y':Math.round((4.4+i*.006)*1000)/1000,'10Y':Math.round((4.7+i*.006)*1000)/1000
+}));
+fake.observations.at(-1)['2Y']=rates.AUD['2Y'];
+fake.observations.at(-1)['10Y']=rates.AUD['10Y'];
+const before=JSON.stringify(rates);
+const improved=mod.snapshot(rates,price,'AUDCAD',base,now,fake);
+assert(improved.ready&&improved.short&&improved.medium,'70 synthetic QA fixture dates must validate both horizons');
+assert(improved.researchOnly&&improved.kind.includes('RBA F2 RICERCA'));
+assert.equal(improved.latest.date,audDate);
+assert.equal(improved.lag,2);
+assert.equal(improved.rows.at(-1).date,audDate);
+assert.deepEqual(rates,JSON.parse(before),'Canonical rates must remain unchanged after research overlay');
+assert.match(mod.brief(improved).label,/RBA F2 ricerca/);
+for(const [label,mutation] of [
+ ['wrong source',x=>x.source_url='https://example.invalid'],
+ ['bad authority',x=>x.series_2Y='WRONG'],
+ ['no digest',x=>x.source_response_sha256='unknown'],
+ ['not research',x=>x.research_only=false],
+ ['forbidden promotion',x=>x.eligible_for_core=true],
+ ['date mismatch',x=>x.last_observation_date='2026-11-05'],
+ ['source rollback',x=>x.publication_date='2026-11-03'],
+ ['duplicate dates',x=>x.observations[1].date=x.observations[0].date],
+ ['broken history',x=>x.observations=x.observations.slice(0,10)],
+ ['last yield mismatch',x=>x.observations.at(-1)['2Y']+=0.01],
+ ['last 10y mismatch',x=>x.observations.at(-1)['10Y']+=0.01],
+ ['future release',x=>x.publication_date='2026-11-12']
+]){
+ const changed=JSON.parse(JSON.stringify(fake));
+ mutation(changed);
+ assert(!mod.snapshot(rates,price,'AUDCAD',base,now,changed).ready,label+' must not produce false ready status');
+}
+assert(!mod.snapshot(rates,price,'EURCHF',base,now,fake).ready,'CHF remains separate and stale');
+assert(!mod.snapshot(rates,price,'NZDUSD',base,now,fake).ready,'NZD remains separate and stale');
+assert(!mod.snapshot(rates,price,'AUDCAD',base,'2026-12-01',fake).ready,'Old research cannot remain current');
+const page=fs.readFileSync('site/fx-quant-v2/next/index.html','utf8');
+const code=fs.readFileSync('site/fx-quant-v2/next/app.js','utf8');
+const dossier=fs.readFileSync('site/fx-quant-v2/next/decision-journey.js','utf8');
+assert(page.includes('app.js?v=16')&&page.includes('fx-rates-bridge.js?v=16'));
+assert(code.includes("audDailyResearch:'../aud-rba-f2-history-research.json'"));
+assert(dossier.includes("get('audDailyResearch')"));
+assert(code.includes("get('audDailyResearch')"));
+if(sidecar.status==='OFFICIAL_F2_DAILY_RESEARCH_ONLY_NOT_POINT_IN_TIME'){
+ const actual=mod.snapshot(rates,price,'AUDCAD',base,now,sidecar);
+ assert(actual.ready&&actual.researchOnly,'Official AUD F2 sidecar must validate independently');
+ assert(actual.rows.length>30);
+}else assert.equal(sidecar.status,'AWAITING_OFFICIAL_F2_DAILY_HISTORY');
+console.log('NEXT_V16_AUD_F2_RESEARCH_PASS',JSON.stringify({
+ sidecar:sidecar.status,syntheticTestOnly:true,officialReady:sidecar.status!=='AWAITING_OFFICIAL_F2_DAILY_HISTORY'}));
