@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_CHATGPT_MARKET_CONTEXT_V1",
-  "generated_at_utc": "2026-11-08T16:59:49Z",
+  "generated_at_utc": "2026-11-08T21:04:51Z",
   "evaluation_date_europe_rome": "2026-11-08",
   "reference_only": true,
   "policy": {
@@ -20,7 +20,7 @@
       },
       "EUR": {
         "state": "UNAVAILABLE",
-        "as_of": "2026-11-05",
+        "as_of": "2026-11-06",
         "reason": "Only GBP, JPY, CAD and AUD have the certified OIS contract; estimated/proxy OIS is informational only, never alert-certified."
       },
       "GBP": {
