@@ -59,10 +59,51 @@ assert(malicious.includes('&lt;img')&&!malicious.includes('<img'),'escape source
 const empty=build({...base,get:()=>null});
 assert.match(empty.overview(),/feed delle 28 coppie non è disponibile/);
 assert.match(empty.pair(),/Grafico daily non validato/);
+
+/* V10: daily directional evidence follows the denominator/numerator of the pair. */
+const profiles=all.cases.filter(x=>Number.isFinite(x.m5)&&Number.isFinite(x.m20));
+assert(profiles.length>=20,'Insufficient validated G8 daily price data for directional audit');
+for(const pair of profiles){
+ const expected=pair.fav===pair.key.slice(0,3)?1:pair.fav===pair.key.slice(3)?-1:0;
+ assert.equal(pair.direction,expected,'Incorrect quote orientation for '+pair.key);
+ if(expected){
+  assert.equal(pair.fiveState,pair.m5*expected>0?'COERENTE':pair.m5*expected<0?'CONTRARIO':'STABILE');
+  assert.equal(pair.twentyState,pair.m20*expected>0?'COERENTE':pair.m20*expected<0?'CONTRARIO':'STABILE');
+  assert.equal(pair.horizonConflict,pair.fiveState==='CONTRARIO'||pair.twentyState==='CONTRARIO');
+ }
+ assert(pair.breakHigh>=pair.breakLow,'Invalid historical fixing range '+pair.key);
+}
+const v10=build(base).pair();
+assert.match(v10,/decision-price-evidence/,'Daily confirmation indicators missing');
+assert.match(v10,/5 FIXING/);
+assert.match(v10,/20 FIXING/);
+assert.match(v10,/RANGE 20 FIXING PRECEDENTI/);
+assert.match(v10,/Rispetto al fixing precedente/);
+assert.match(v10,/significatività statistica/);
+const compare=profile('EURUSD',doc,prices,now);
+const r5=compare.closes.at(-6).value,r6=compare.closes.at(-7).value,r1=compare.closes.at(-2).value;
+assert(Math.abs(compare.change5-(compare.m5-(r1/r6-1)*100))<1e-10,'5D change calculation incorrect');
+const changedMarket=JSON.parse(JSON.stringify(prices));
+const lastRow=changedMarket.rows.find(x=>x.Date===doc.price_asof);
+const row5=changedMarket.rows.find(x=>x.Date===compare.closes.at(-6).label);
+const row20=changedMarket.rows.find(x=>x.Date===compare.closes.at(-21).label);
+assert(lastRow&&row5&&row20,'Need exact fixing dates to test direction inversion');
+row5.USD=lastRow.USD*.99;
+row20.USD=lastRow.USD*1.01;
+const changedProfile=profile('EURUSD',doc,changedMarket,now);
+if(changedProfile.fav==='USD'){
+ assert.equal(changedProfile.fiveState,'CONTRARIO','5D reversal must be shown for USD as EURUSD denominator');
+ assert.equal(changedProfile.twentyState,'COERENTE','20D alignment must be shown for USD as EURUSD denominator');
+ assert.match(changedProfile.alignment,/PAUSA A 5 SEDUTE/);
+}
+const missingPrice=profile('EURUSD',doc,{},now);
+assert.equal(missingPrice.fiveState,'NON VALUTABILE','Missing daily series must not imply evidence');
+assert.equal(missingPrice.m1,null);
+
 const index=fs.readFileSync('site/fx-quant-v2/next/index.html','utf8');
 const app=fs.readFileSync('site/fx-quant-v2/next/app.js','utf8');
-assert(index.includes('decision-journey.js?v=9')&&index.indexOf('decision-journey.js')<index.indexOf('app.js?v=9'));
-assert(index.includes('editorial-v4.css?v=9'));
+assert(index.includes('decision-journey.js?v=10')&&index.indexOf('decision-journey.js')<index.indexOf('app.js?v=9'));
+assert(index.includes('editorial-v4.css?v=10'));
 assert(app.includes('window.FXQuantDecisionJourney?.build'));
 assert(app.includes('[data-v9-price-window]'));
-console.log('NEXT_V9_DECISION_PASS: 28 FX pairs, honest shortlist, ECB cross price, daily chart, no H4 fiction, data gaps, safe rendering');
+console.log('NEXT_V10_DECISION_PASS: 28 FX pairs, honest shortlist, ECB cross price, daily chart, no H4 fiction, data gaps, safe rendering');

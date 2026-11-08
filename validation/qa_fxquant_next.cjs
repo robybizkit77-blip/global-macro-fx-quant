@@ -71,6 +71,8 @@ fs.mkdirSync(evidence,{recursive:true});
    assert(await page.locator('.decision-deepdive').count()===1,'FX thesis and timing audit missing');
    assert(await page.locator('.decision-price-grid .chart svg').count()===1,'Real ECB daily pair chart missing');
    assert((await page.locator('.decision-footer').innerText()).includes('Nessun livello'),'H4 data limitation must remain visible');
+   assert(await page.locator('.decision-evidence-cell').count()===3,'5D/20D price evidence and historical range missing');
+   assert((await page.locator('.decision-price-context').innerText()).includes('sedute'),'Relative-horizon interpretation missing');
    await page.locator('[data-v9-price-window="20"]').click();
    assert(await page.locator('.decision-price-grid .chart svg').count()===1,'Daily 20-fixing chart did not update');
    // The FX selector changes the deep dive and the watchlist is interactive.
