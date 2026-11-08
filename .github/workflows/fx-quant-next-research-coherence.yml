@@ -20,6 +20,9 @@ on:
       - 'validation/qa_next_fx_rates_bridge_v13.cjs'
       - 'validation/qa_next_pair_coverage_v15.cjs'
       - 'validation/qa_next_aud_f2_daily_research_v16.cjs'
+      - 'validation/qa_next_chf_nzd_provenance_v17.cjs'
+      - 'site/fx-quant-v2/chf-snb-paired-history.json'
+      - 'site/fx-quant-v2/nzd-b2-postroll-web-research.json'
       - 'site/fx-quant-v2/aud-rba-f2-history-research.json'
       - 'live_data/sections/ECB_G8_PRICE_HISTORY.json'
       - '.github/workflows/fx-quant-next-research-coherence.yml'
@@ -56,3 +59,5 @@ jobs:
         run: node validation/qa_next_pair_coverage_v15.cjs
       - name: Verify quarantined RBA F2 daily research source and no Core promotion
         run: node validation/qa_next_aud_f2_daily_research_v16.cjs
+      - name: Verify dated CHF SNB and NZD post-roll provenance without trading confirmation
+        run: node validation/qa_next_chf_nzd_provenance_v17.cjs
