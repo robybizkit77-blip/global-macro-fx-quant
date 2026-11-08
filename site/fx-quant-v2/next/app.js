@@ -7,7 +7,7 @@
 const FX=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
 const FLAGS={USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',CHF:'🇨🇭',AUD:'🇦🇺',NZD:'🇳🇿',CAD:'🇨🇦'};
 const NAMES={USD:'Stati Uniti',EUR:'Area euro',GBP:'Regno Unito',JPY:'Giappone',CHF:'Svizzera',AUD:'Australia',NZD:'Nuova Zelanda',CAD:'Canada'};
-const ROUTES={overview:'Panoramica',currencies:'Valute G8',pairs:'Coppie FX',macro:'Macro Lab',rates:'Tassi & OIS',cot:'Positioning',risk:'Risk Radar',news:'News Pulse'};
+const ROUTES={overview:'Oggi',currencies:'Valute G8',pairs:'Coppie FX',macro:'Scenario macro',rates:'Tassi & OIS',cot:'COT',risk:'Rischio',news:'Notizie'};
 const SOURCES={
  rates:'../../../live_data/sections/NATIVE_RATES_DATA.json',
  dxy:'../../../live_data/sections/DXY_SYNTHETIC_ECB.json',
