@@ -7,7 +7,7 @@
 const FX=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
 const FLAGS={USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',CHF:'🇨🇭',AUD:'🇦🇺',NZD:'🇳🇿',CAD:'🇨🇦'};
 const NAMES={USD:'Stati Uniti',EUR:'Area euro',GBP:'Regno Unito',JPY:'Giappone',CHF:'Svizzera',AUD:'Australia',NZD:'Nuova Zelanda',CAD:'Canada'};
-const ROUTES={overview:'Oggi',currencies:'Valute G8',pairs:'Coppie FX',macro:'Scenario macro',rates:'Tassi & OIS',cot:'COT',risk:'Rischio',news:'Notizie'};
+const ROUTES={overview:'La ricerca',currencies:'Valute G8',pairs:'Coppie FX',macro:'Scenario macro',rates:'Tassi & OIS',cot:'COT',risk:'Rischio',news:'Notizie'};
 const SOURCES={
  rates:'../../../live_data/sections/NATIVE_RATES_DATA.json',
  dxy:'../../../live_data/sections/DXY_SYNTHETIC_ECB.json',
@@ -237,11 +237,12 @@ function overview(){
  const latest=[u.date,d.as_of,n.date,hy.date,pairAsOf].filter(validDay).sort().pop();
  const tooOld=!latest||!fresh(latest,8);
  const dx=finite(d.value)&&finite(d.previous_value)&&d.previous_value!==0&&validDay(d.as_of)?(d.value/d.previous_value-1)*100:null;
- const headline=sharedDate
+ const headlineBase=sharedDate
    ?'Non è soltanto una correzione azionaria. Il mercato sta cambiando idea sulla crescita?'
    :stress?'Il rischio torna al centro. Che cosa ci stanno dicendo i mercati?'
    :bonds?'I rendimenti scendono. È davvero cambiata la storia macro?'
    :'Quale storia stanno raccontando, insieme, tassi e mercati?';
+ const headline=tooOld?'Archivio di ricerca: che cosa ci ha raccontato il mercato?':headlineBase;
  const opening=stress
    ?'La seduta del '+date(n.date)+' non racconta soltanto un ribasso del Nasdaq. L’indice ha perso '+fmt(Math.abs(n.change_1d_pct),2)+'%'+(finite(sp.change_1d_pct)&&sp.date===n.date?', contro '+fmt(Math.abs(sp.change_1d_pct),2)+'% dell’S&P 500':'')+'. Nello stesso giorno il VIX è passato da '+fmt(vx.previous,2)+' a '+fmt(vx.value,2)+' e lo spread high yield si è allargato di '+sign((hy.value-hy.previous)*100,0,' punti base')+'. Quando anche il credito si muove, la questione non riguarda più soltanto la valutazione delle società tecnologiche: entra in gioco il costo del rischio.'
    :equity?'Nell’ultima seduta disponibile, il Nasdaq ha registrato '+sign(n.change_1d_pct,2,'%')+' al '+date(n.date)+'. '+(vix?'Il VIX è a '+fmt(vx.value,2)+' al '+date(vx.date)+'. ':'')+'Il punto non è trovare subito una spiegazione unica, ma distinguere ciò che si è mosso insieme da ciò che richiede ancora conferma.'
@@ -253,11 +254,11 @@ function overview(){
  const shape=bonds?'Se il front-end scende più del long-end, la curva può irripidirsi anche mentre tutti i rendimenti calano; se accade il contrario, può appiattirsi. In entrambi i casi serve misurare l’ampiezza del movimento prima di parlare di cambio di regime.':'Il 2Y reagisce più direttamente alle attese di politica monetaria; il 10Y può riflettere anche rendimenti reali, inflazione attesa e premio a termine. Non sono due voti identici sulla stessa notizia.';
  const macroInf=m.inflation,macroLab=m.labour;
  const macroReading=finite(macroInf?.latest_value)&&finite(macroLab?.latest_value)
-   ?'Il quadro macro complica la lettura. L’ultimo dato di inflazione headline USA presente nel nostro archivio è '+fmt(macroInf.latest_value,2)+'% ('+esc(macroInf.as_of||'periodo da verificare')+'), con direzione '+esc((macroInf.direction||'non disponibile').toLowerCase())+'. Il tasso di disoccupazione è '+fmt(macroLab.latest_value,1)+'% ('+esc(macroLab.as_of||'periodo da verificare')+'), con direzione '+esc((macroLab.direction||'non disponibile').toLowerCase())+'. Sono osservazioni riferite a periodi diversi e non necessariamente a prime pubblicazioni point-in-time. Non autorizzano la conclusione che crescita e inflazione siano già entrambe in discesa.'
+   ?'Il quadro macro complica la lettura. L’ultimo dato di inflazione headline USA presente nel nostro archivio è '+fmt(macroInf.latest_value,2)+'% ('+(macroInf.as_of||'periodo da verificare')+'), con direzione '+(macroInf.direction||'non disponibile').toLowerCase()+'. Il tasso di disoccupazione è '+fmt(macroLab.latest_value,1)+'% ('+(macroLab.as_of||'periodo da verificare')+'), con direzione '+(macroLab.direction||'non disponibile').toLowerCase()+'. Sono osservazioni riferite a periodi diversi e non necessariamente a prime pubblicazioni point-in-time. Non autorizzano la conclusione che crescita e inflazione siano già entrambe in discesa.'
    :'La fotografia macro di inflazione e lavoro non è abbastanza completa per sostenere una tesi sul ciclo. In particolare, non attribuiamo al mercato un turning point che non è verificato dai dati.';
  const o6=oc.horizons?.['6m'];
  const pricingReading=finite(o6?.rate)&&validDay(o6.as_of)
-   ?'Il contratto indicativo a sei mesi per gli Stati Uniti riporta '+fmt(o6.rate,3)+'% al '+date(o6.as_of)+' ('+esc(oc.kind||'strumento da classificare')+', qualità '+esc(oc.quality||'non classificata')+'). Questo livello non è un tasso OIS ufficiale e non va confrontato meccanicamente con il range Fed. '+(finite(o6.change_1d_bp)?'La variazione a un giorno riportata è '+sign(o6.change_1d_bp,1,' pb')+'.':'In questo snapshot manca una variazione giornaliera certificata: non possiamo dire di quanto siano cambiate le aspettative in questa seduta.')
+   ?'Il contratto indicativo a sei mesi per gli Stati Uniti riporta '+fmt(o6.rate,3)+'% al '+date(o6.as_of)+' ('+(oc.kind||'strumento da classificare')+', qualità '+(oc.quality||'non classificata')+'). Questo livello non è un tasso OIS ufficiale e non va confrontato meccanicamente con il range Fed. '+(finite(o6.change_1d_bp)?'La variazione a un giorno riportata è '+sign(o6.change_1d_bp,1,' pb')+'.':'In questo snapshot manca una variazione giornaliera certificata: non possiamo dire di quanto siano cambiate le aspettative in questa seduta.')
    :'Il feed non offre una scadenza 6M USA con strumento e data verificabili. Per parlare di repricing monetario occorre un confronto omogeneo tra scadenze e sessioni.';
  const fxReading=finite(dx)
    ?'La prova valutaria, poi, va trattata con attenzione. Il proxy del dollaro ricavato dai fixing BCE ha registrato '+sign(dx,2,'%')+' al '+date(d.as_of)+'. '+(usd2&&u.date===d.as_of?'Si riferisce alla stessa data del 2Y, ma resta un indice sintetico, non il DXY ICE e non una prova di causalità.':'Il suo fixing non coincide con la data dell’ultimo 2Y USA: confrontarli come se fossero una reazione simultanea sarebbe fuorviante.')+' Il Forex può rispondere anche a differenziali relativi, coperture e avversione al rischio.'
@@ -269,7 +270,7 @@ function overview(){
  const eurText=eur?.decision_frame?.relation||eur?.setup?.structural?.relation;
  const audText=aud?.decision_frame?.relation||aud?.setup?.structural?.relation;
  const pairStory=eurText&&audText&&validDay(pairAsOf)
-   ?'Il controllo più utile arriva dalle singole coppie. Nel dossier EUR/USD al '+date(pairAsOf)+' il modello descrive: «'+esc(eurText)+'». Sul cross AUD/CAD, invece: «'+esc(audText)+'». Il primo caso e il secondo non devono produrre la stessa conclusione per il solo fatto di appartenere al Forex: contano il differenziale relativo e la conferma del prezzo. '+(eur.setup?.price?.text?'Per EUR/USD il prezzo risulta «'+esc(eur.setup.price.text.toLowerCase())+'»; ':'')+(aud.setup?.price?.text?'per AUD/CAD «'+esc(aud.setup.price.text.toLowerCase())+'».':'')
+   ?'Il controllo più utile arriva dalle singole coppie. Nel dossier EUR/USD al '+date(pairAsOf)+' il modello descrive: «'+eurText+'». Sul cross AUD/CAD, invece: «'+audText+'». Il primo caso e il secondo non devono produrre la stessa conclusione per il solo fatto di appartenere al Forex: contano il differenziale relativo e la conferma del prezzo. '+(eur.setup?.price?.text?'Per EUR/USD il prezzo risulta «'+eur.setup.price.text.toLowerCase()+'»; ':'')+(aud.setup?.price?.text?'per AUD/CAD «'+aud.setup.price.text.toLowerCase()+'».':'')
    :'Le tesi relative sulle coppie non sono disponibili con un fixing sufficientemente tracciabile. È meglio non nominare un candidato che attribuirgli una forza non dimostrata.';
  const thesis=sharedDate
    ?'La mia ipotesi di lavoro è che il mercato stia rivalutando il premio richiesto per detenere rischio, e che questa rivalutazione abbia raggiunto anche le aspettative sui tassi. È una tesi coerente con la seduta osservata, non un verdetto sulla recessione né una previsione di tagli della Fed.'
@@ -279,7 +280,7 @@ function overview(){
  const falsify='Questa lettura perderebbe forza se la volatilità rientrasse e gli spread creditizi si restringessero mentre i prezzi azionari recuperano. Guadagnerebbe forza se lo stress restasse diffuso e un repricing OIS/futures sulla stessa base temporale accompagnasse il calo del 2Y. Una nuova accelerazione dell’inflazione, invece, potrebbe riportare l’attenzione sul long-end e complicare ogni conclusione semplicistica sui tagli.';
  const sourceDates=[
   ['Cross-asset',n.date],['Treasury 2Y',u.date],['Dollaro proxy BCE',d.as_of],
-  ['CPI USA',macroInf?.as_of],['Lavoro USA',macroLab?.as_of],['Futures USD 6M',o6?.as_of],['Coppie FX',pairAsOf]
+  ['CPI USA',macroInf?.as_of],['Lavoro USA',macroLab?.as_of],['Futures USD 6M',o6?.as_of],['Coppie FX',pairAsOf],['COT',cot.AUD?.today?.match(/CFTC al (\d{4}-\d{2}-\d{2})/)?.[1]]
  ].filter(x=>x[1]).map(([k,v])=>esc(k)+' '+date(v)).join(' · ');
  const section=(title,body,cl='')=>'<section class="letter-section '+cl+'"><h2>'+title+'</h2><p>'+body+'</p></section>';
  return '<div class="letter-issue"><span>FX QUANT / LETTERA DAI MERCATI</span><span>Ultima evidenza '+date(latest)+' · Consultato '+dayNow().split('-').reverse().join('.')+'</span></div>'
