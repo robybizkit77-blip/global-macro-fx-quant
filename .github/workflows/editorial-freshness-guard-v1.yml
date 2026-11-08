@@ -81,7 +81,28 @@ jobs:
             page.on('pageerror',e=>errors.push(String(e)));
             const response=await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
             if(!response||!response.ok())throw new Error(label+' HTTP load failed');
-            await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true,null,{timeout:120000});
+            // This audit normally settles after 650ms. When it does not,
+            // report the actual page state instead of burning two minutes on
+            // an opaque timeout. A missing/failed audit still FAILS CLOSED.
+            try{
+              await page.waitForFunction(()=>window.GMFQ_POST_GATE_FINAL_AUDIT?.settled_after_cad_chain===true,null,{timeout:20000});
+            }catch(e){
+              const diag=await page.evaluate(()=>({
+                ready:document.readyState,
+                title:document.title,
+                finalAudit:window.GMFQ_POST_GATE_FINAL_AUDIT||null,
+                realign:window.GMFQ_RUNTIME_AUDIT_REALIGN||null,
+                gateAttribute:document.documentElement.getAttribute('data-post-gate-final-audit'),
+                cadAttribute:document.documentElement.getAttribute('data-cad-rates-audit'),
+                scriptCount:document.scripts.length,
+                settlementScript:!!document.getElementById('gmfq-post-gate-final-audit-settlement'),
+                payloadScripts:[...document.scripts].filter(s=>s.id.startsWith('gmfq-')).length,
+                inlinePayloadSize:[...document.scripts].reduce((n,s)=>n+(s.textContent||'').length,0),
+                bodyText:document.body?.innerText?.slice(0,350)||null
+              }));
+              console.error('CONTROL_ROOM_BOOT_DIAGNOSTIC',JSON.stringify({label,diag,errors:errors.slice(0,12)}));
+              throw e;
+            }
             await page.waitForFunction(()=>window.GMFQ_EDITORIAL_FRESHNESS?.operational_loaded===true,null,{timeout:30000});
             await page.waitForFunction(()=>window.GMFQ_CALENDAR_NEWS_OPERATIONAL?.status==='ACTIVE',null,{timeout:30000});
             await page.waitForFunction(()=>window.GMFQ_TOP_THEMES_OPERATIONAL?.status==='ACTIVE',null,{timeout:30000});
