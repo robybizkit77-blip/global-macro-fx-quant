@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-05",
-  "generated_at_utc": "2026-11-08T10:28:58.119106Z",
+  "generated_at_utc": "2026-11-08T13:22:52.735558Z",
   "items": [
     {
       "as_of": "2026-11-05",
@@ -47,7 +47,7 @@
       "title": "GBP: repricing OIS più dovish (-11.2 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-08T10:28:58.119106Z",
+  "last_checked_at_utc": "2026-11-08T13:22:52.735558Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -1029,9 +1029,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 12,
+        "accepted_items": 11,
         "ccy": "EUR",
-        "entries_rejected": 3,
+        "entries_rejected": 4,
         "feed_entries_seen": 15,
         "feed_url": "https://www.ecb.europa.eu/rss/press.html",
         "source": "Banca centrale europea",
@@ -1069,9 +1069,9 @@
         "status": "NO_VERIFIED_RECENT_ITEMS"
       },
       {
-        "accepted_items": 8,
+        "accepted_items": 6,
         "ccy": "CAD",
-        "entries_rejected": 2,
+        "entries_rejected": 4,
         "feed_entries_seen": 10,
         "feed_url": "https://www.bankofcanada.ca/content_type/press/feed/",
         "source": "Bank of Canada",
@@ -1089,9 +1089,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 3,
+        "accepted_items": 2,
         "ccy": "NZD",
-        "entries_rejected": 47,
+        "entries_rejected": 48,
         "feed_entries_seen": 50,
         "feed_url": "https://www.rbnz.govt.nz/feeds/news",
         "source": "Reserve Bank of New Zealand",
