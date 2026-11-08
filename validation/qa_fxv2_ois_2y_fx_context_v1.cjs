@@ -125,10 +125,10 @@ assert.equal(mixed.aligned.includes('12m'),false);
 assert.equal(adapter.rateTwoYear('CHF',rates,today).day,'2026-09-30');
 assert.equal(adapter.evaluate('USD',null,rates,fx,today).status,'NOT_VERIFIED');
 console.log('FXV2_OIS_2Y_FX_CONTEXT_PASS',JSON.stringify({
-  currencies:3,usd2y:observed.USD.model.rate.changeBp,
-  eur2y:observed.EUR.model.rate.changeBp,
-  chf2y_as_of:observed.CHF.model.rate.day,
-  checked_fx_fixing_date:observed.USD.model.fx.date,
+  currencies:3,usd2y:observed.USD.rate.changeBp,
+  eur2y:observed.EUR.rate.changeBp,
+  chf2y_as_of:observed.CHF.rate.day,
+  checked_fx_fixing_date:observed.USD.fx.date,
   dated_evidence_only:true,no_core_mutation:true,
   policy_probability:null,trade_signal:null
 }));
