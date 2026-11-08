@@ -110,7 +110,7 @@
       text:'NZD · RBNZ B2: '+o.length+' chiusure sui nuovi benchmark dal 30/10, '+intervals+
        '/5 intervalli minimi; ultima '+o.at(-1).date+' (2Y '+o.at(-1)['2Y'].toFixed(2)+
        '%, 10Y '+o.at(-1)['10Y'].toFixed(2)+'%). '+(shortfall?
-       'Mancano '+shortfall+' intervalli, oltre alla riconciliazione XLSX.':
+       (shortfall===1?'Manca 1 intervallo e serve la riconciliazione XLSX.':'Mancano '+shortfall+' intervalli e serve la riconciliazione XLSX.'):
        'Copertura temporale sufficiente, ma riconciliazione XLSX ancora mancante.')+
        ' Nessun collegamento attraverso il cambio del titolo del 30/10.'});
     }
