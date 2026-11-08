@@ -640,3 +640,15 @@ button,a{touch-action:manipulation}
 .decision-case-rates[data-rates-tone="divergent"],.decision-gate-rates[data-rates-tone="divergent"]{border-color:#d4a19c;color:#e6b7ae!important}
 .decision-case-rates[data-rates-tone="unavailable"],.decision-gate-rates[data-rates-tone="unavailable"]{color:#9bb2b8!important}
 .decision-gates>div>small.decision-gate-rates{display:block;margin-top:11px;padding:9px 0 0 10px;border-left:2px solid #9eb9bd;border-top:1px solid rgba(183,209,202,.18);font-size:11px;line-height:1.65}
+
+
+/* Next V15 — data availability audit in the EXISTING 28-pair explorer. */
+.pair-coverage-intro{font-size:12px;line-height:1.75;color:#c5d6d4;margin:9px 0 3px}
+.pair-coverage-intro>strong{color:#f1eee7;font-size:13px;font-weight:750;font-variant-numeric:tabular-nums}
+.pair-coverage-intro>small{display:block;font-size:10.5px;line-height:1.6;color:#9eb9bd;margin-top:6px}
+.pair-data-coverage{display:flex;flex-wrap:wrap;align-items:center;gap:5px 10px;margin-top:9px}
+.pair-data-state{display:inline-flex;gap:4px;align-items:center;font-size:10px;line-height:1.5;white-space:nowrap}
+.pair-data-state>span{font-weight:850}
+.pair-data-state.available{color:#a9d5be}
+.pair-data-state.missing{color:#a1b2b6}
+@media(max-width:650px){.pair-data-coverage{gap:4px 8px}.pair-data-state{font-size:9.5px}.pair-coverage-intro{font-size:11px}}
