@@ -13,6 +13,9 @@ on:
       - 'site/fx-quant-v2/cross-asset-live-data.json'
       - 'site/fx-quant-v2/ois-pricing-snapshot.json'
       - 'validation/qa_next_research_coherence_v1.cjs'
+      - 'live_data/sections/V250_COT_CHART_DATA.json'
+      - 'live_data/sections/NEWS_PULSE_OPERATIONAL.json'
+      - 'validation/qa_next_research_editorials_v7.cjs'
       - '.github/workflows/fx-quant-next-research-coherence.yml'
   workflow_dispatch:
   schedule:
@@ -37,3 +40,5 @@ jobs:
           node-version: '22'
       - name: Check changing story, matched evidence, source dates and missing data
         run: node validation/qa_next_research_coherence_v1.cjs
+      - name: Verify editorial continuity across every Next research studio
+        run: node validation/qa_next_research_editorials_v7.cjs
