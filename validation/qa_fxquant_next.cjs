@@ -73,7 +73,8 @@ fs.mkdirSync(evidence,{recursive:true});
    assert((await page.locator('.decision-footer').innerText()).includes('Nessun livello'),'H4 data limitation must remain visible');
    assert(await page.locator('.decision-evidence-cell').count()===3,'5D/20D price evidence and historical range missing');
    assert(await page.locator('.decision-daily-watch').count()===1,'No next-fixing monitoring conditions');
-   assert(await page.locator('.decision-watch-line').count()===2,'Missing favorable and adverse ECB daily references');
+   assert(await page.locator('.decision-watch-line').count()===0,'EUR/GBP has no validated favourite; must not invent directional thresholds');
+   assert(await page.locator('.decision-watch-unavailable').count()===1,'A pair without a validated favourite must show why levels are unavailable');
    assert((await page.locator('.decision-watch-caveat').innerText()).includes('non supporti o resistenze intraday'),'Reference levels must not be presented as trade levels');
    assert((await page.locator('.decision-price-context').innerText()).includes('sedute'),'Relative-horizon interpretation missing');
    await page.locator('[data-v9-price-window="20"]').click();
@@ -82,6 +83,8 @@ fs.mkdirSync(evidence,{recursive:true});
    await page.evaluate(()=>{location.hash='#pairs'});
    await page.locator('[data-pair="AUDCAD"]').click();
    assert((await page.locator('.focus-headline').first().innerText()).includes('AUD/CAD'),'Pair select failed');
+   assert(await page.locator('.decision-watch-line').count()===2,'AUD/CAD with a dated price history must show favorable and contrary references');
+   assert((await page.locator('.decision-daily-watch').innerText()).includes('Sopra'),'AUD/CAD base-favoured threshold should test upside in quoted pair');
    await page.locator('[data-watch="AUDCAD"]').click();
    assert((await page.locator('[data-watch="AUDCAD"]').innerText()).includes('Nella watchlist'),'Watchlist failed');
 
