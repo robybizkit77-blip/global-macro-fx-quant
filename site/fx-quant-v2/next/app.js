@@ -24,7 +24,7 @@ const SOURCES={
  news:'../../../live_data/sections/NEWS_PULSE_OPERATIONAL.json',
  themes:'../../../live_data/sections/TOP_THEMES.json'
 };
-const state={data:{},errors:{},route:'overview',ccy:'USD',against:'EUR',pair:'EURUSD',pairFilter:'all',pairSearch:'',pairPriceWindow:60,watch:new Set(),window:20,rateMode:'both',riskStream:'VIX',riskWindow:20,macroMetric:'inflation',newsMode:'pulse',chartIndex:0,charts:{},atlasLens:'rates',homeChart:null,homeWindow:20,spotPair:'EURUSD',cotWindow:26,cotMode:'net',cotFilter:'all',cotSort:'percentile',cotSortAsc:false,rsWindow:60,rsGovMode:'both',rsDiffMode:'2y',msCategory:'Inflazione',msSeriesId:null,msView:'level',msWindow:24,msHeat:'inflation',msHeatSort:'ccy',msHeatAsc:true,msOther:'EUR',msCompareMetric:'inflation',msAdvanced:false,csOther:'EUR',csPriceWindow:60,csRatesMode:'spread',csRatesWindow:60,csMacroMode:'inflation',csMacroWindow:36,csCotWindow:26,csSort:'currency',csReturnWindow:20};
+const state={data:{},errors:{},route:'overview',ccy:'USD',against:'EUR',pair:'EURUSD',pairFilter:'all',pairSearch:'',pairPriceWindow:60,pairShowReferences:true,watch:new Set(),window:20,rateMode:'both',riskStream:'VIX',riskWindow:20,macroMetric:'inflation',newsMode:'pulse',chartIndex:0,charts:{},atlasLens:'rates',homeChart:null,homeWindow:20,spotPair:'EURUSD',cotWindow:26,cotMode:'net',cotFilter:'all',cotSort:'percentile',cotSortAsc:false,rsWindow:60,rsGovMode:'both',rsDiffMode:'2y',msCategory:'Inflazione',msSeriesId:null,msView:'level',msWindow:24,msHeat:'inflation',msHeatSort:'ccy',msHeatAsc:true,msOther:'EUR',msCompareMetric:'inflation',msAdvanced:false,csOther:'EUR',csPriceWindow:60,csRatesMode:'spread',csRatesWindow:60,csMacroMode:'inflation',csMacroWindow:36,csCotWindow:26,csSort:'currency',csReturnWindow:20};
 try{const w=JSON.parse(localStorage.getItem('fxquant-next-watch')||'[]');if(Array.isArray(w))state.watch=new Set(w.filter(s=>typeof s==='string'))}catch(e){}
 const $=id=>document.getElementById(id);
 const esc=x=>String(x===undefined||x===null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -74,9 +74,11 @@ function plot(opts){
  const id='plot-'+(++state.chartIndex);
  const all=opts.lines||[];
  const normalized=all.map(line=>({name:line.name,color:line.color||'#96cbe6',values:(line.values||[]).filter(x=>x&&finite(x.value)).slice(-Number(opts.window||9999))}));
+ const referenceLines=(Array.isArray(opts.referenceLines)?opts.referenceLines:[])
+  .filter(r=>r&&finite(r.value)&&(r.kind==='favorable'||r.kind==='adverse')).slice(0,2);
  const count=Math.max(0,...normalized.map(x=>x.values.length));
  if(count<2||!normalized.some(x=>x.values.length>1))return '<div class="empty"><strong>Storico non disponibile</strong><p>Non disegniamo curve se mancano osservazioni validate e confrontabili.</p></div>';
- const values=normalized.flatMap(l=>l.values.map(p=>p.value));
+ const values=normalized.flatMap(l=>l.values.map(p=>p.value)).concat(referenceLines.map(r=>r.value));
  let min=Math.min(...values),max=Math.max(...values),pad=(max-min)*.16;
  if(pad===0)pad=Math.max(.01,Math.abs(max)*.004);min-=pad;max+=pad;
  const W=700,H=240,L=53,R=18,T=21,B=31;
@@ -89,6 +91,15 @@ function plot(opts){
   const coords=line.values.map((p,i)=>[X(i),Y(p.value)]);
   body+='<polyline points="'+coords.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')+'" fill="none" stroke="'+line.color+'" stroke-width="2.7" stroke-linejoin="round" stroke-linecap="round"/>';
   const last=coords[coords.length-1];body+='<circle cx="'+last[0]+'" cy="'+last[1]+'" r="3.8" fill="'+line.color+'" stroke="#0a1827" stroke-width="2"/>';
+ });
+ // Reference marks are deliberately short and anchored at the RIGHT EDGE.
+ // They describe thresholds computed from the last valid fixing ONLY;
+ // drawing a full-width line would falsely imply an unchanged historical level.
+ referenceLines.forEach(r=>{
+  const color=r.kind==='favorable'?'#9bd4b2':'#e3a19a',label=r.kind==='favorable'?'FAV.':'CONTR.';
+  const y=Y(r.value),xStart=W-R-134,xEnd=W-R;
+  body+='<g data-reference-marker="'+r.kind+'"><line data-reference-line="'+r.kind+'" x1="'+xStart+'" x2="'+xEnd+'" y1="'+y.toFixed(2)+'" y2="'+y.toFixed(2)+'" stroke="'+color+'" stroke-width="1.9" stroke-dasharray="7 5" opacity=".98"/>';
+  body+='<text data-reference-label="'+r.kind+'" x="'+(W-R-5)+'" y="'+(y-6).toFixed(2)+'" font-size="10" font-weight="650" text-anchor="end" fill="'+color+'">'+label+' '+fmt(r.value,opts.precision??2)+'</text></g>';
  });
  const base=normalized.find(x=>x.values.length===count)||normalized[0],left=base.values[0]?.label,right=base.values.at(-1)?.label;
  body+='<text x="'+L+'" y="'+(H-6)+'" font-size="10" fill="#7899ad">'+esc(opts.axisDates===false?'Inizio finestra':validDay(left)?date(left):left||'')+'</text><text x="'+(W-R)+'" y="'+(H-6)+'" text-anchor="end" font-size="10" fill="#7899ad">'+esc(opts.axisDates===false?'Ultima osservazione':validDay(right)?date(right):right||'')+'</text>';
@@ -548,6 +559,7 @@ window.addEventListener('keydown',e=>{
 $('menu-toggle').addEventListener('click',()=>{const open=!$('app').classList.contains('menu-open');$('app').classList.toggle('menu-open',open);$('menu-toggle').setAttribute('aria-expanded',String(open))});
 $('mobile-overlay').addEventListener('click',()=>{$('app').classList.remove('menu-open');$('menu-toggle').setAttribute('aria-expanded','false')});
 document.addEventListener('click',e=>{
+ const pv12=e.target.closest('[data-v12-reference-toggle]');if(pv12){state.pairShowReferences=!state.pairShowReferences;render();return;}
  const pv9=e.target.closest('[data-v9-price-window]');if(pv9){state.pairPriceWindow=Number(pv9.dataset.v9PriceWindow);render();return;}
  const cs_ret=e.target.closest('[data-cs-returnwindow]');
  if(cs_ret){state.csReturnWindow=Number(cs_ret.dataset.csReturnwindow);render();return;}
