@@ -379,22 +379,61 @@ function overview(){
   ['CPI USA',macroInf?.as_of],['Lavoro USA',macroLab?.as_of],['Futures USD 6M',o6?.as_of],['Coppie FX',pairAsOf],['COT',cot.AUD?.today?.match(/CFTC al (\d{4}-\d{2}-\d{2})/)?.[1]]
  ].filter(x=>x[1]).map(([k,v])=>esc(k)+' '+date(v)).join(' · ');
  const section=(title,body,cl='')=>'<section class="letter-section '+cl+'"><h2>'+title+'</h2><p>'+body+'</p></section>';
- return '<div class="letter-issue"><span>FX QUANT / LETTERA DAI MERCATI</span><span>Ultima evidenza '+date(latest)+' · Consultato '+dayNow().split('-').reverse().join('.')+'</span></div>'
- +'<article class="market-letter"><header class="letter-header"><div class="letter-category">GLOBAL MACRO <span> / </span> RESEARCH NOTE</div><h1>'+esc(headline)+'</h1><p class="letter-subtitle">Quando i prezzi smettono di confermare una storia, è proprio lì che comincia il lavoro dell’analista.</p>'+(tooOld?'<p class="letter-stale">Attenzione: le fonti disponibili non risultano recenti. Questa è una lettura di archivio, non una fotografia live dei mercati.</p>':'')+'</header>'
- +'<div class="letter-opening"><p class="letter-lead">'+esc(opening)+'</p><p>'+esc(follow)+'</p></div>'+researchEvidence(context)
- +'<div class="letter-argument"><span class="letter-margin">IL FILO DEL RAGIONAMENTO</span><div class="letter-main">'
+ const metric=(label,value,day,source,key)=>({label,value:validDay(day)&&day<=dayNow()?value:'—',day:validDay(day)&&day<=dayNow()?date(day):'n.d.',source,key});
+ const nasdaq=metric('Nasdaq · 1D',sign(n?.change_1d_pct,2,'%'),n?.date,'Nasdaq / FRED','risk');
+ const vixMove=metric('VIX · variazione',finite(vx?.value)&&finite(vx?.previous)?sign(vx.value-vx.previous,2,' pt'):'—',vx?.date,'Cboe','risk');
+ const hyMove=metric('High Yield · OAS',finite(hy?.value)&&finite(hy?.previous)?sign((hy.value-hy.previous)*100,0,' pb'):'—',hy?.date,'ICE / FRED','risk');
+ const us2=metric('Treasury USA · 2Y',sign(u?.chg2_bp,1,' pb'),u?.date,'Treasury','rates');
+ const us10=metric('Treasury USA · 10Y',sign(u?.chg10_bp,1,' pb'),u?.date,'Treasury','rates');
+ const dollar=metric('USD · proxy BCE',sign(dx,2,'%'),d?.as_of,'BCE / fixing','currencies');
+ const headlineMetrics=(stress||relief)
+  ?[nasdaq,vixMove,hyMove,us2]
+  :(bonds||yieldsUp)?[us2,us10,dollar,hyMove]
+  :divergent?[dollar,us2,us10,hyMove]
+  :[us2,nasdaq,dollar,hyMove];
+ const kpis=headlineMetrics.map(x=>'<a href="#'+x.key+'" class="dashboard-kpi">'
+   +'<span class="dashboard-kpi-label">'+esc(x.label)+'</span><strong>'+esc(x.value)+'</strong>'
+   +'<span class="dashboard-kpi-meta">'+esc(x.source)+' · '+esc(x.day)+'</span></a>').join('');
+ const firstChart=stress||relief?'Nasdaq, volatilità e credito: il movimento è condiviso?':
+   bonds||yieldsUp?'Treasury 2Y e 10Y: che cosa cambia davvero?':
+   divergent?'Dollaro e front-end: perché non confermano?':
+   'Confronta i prezzi prima di scegliere una spiegazione';
+ const focusText=stress||relief?'Partiamo dal Nasdaq perché è una delle tre prove che definiscono il quadro di rischio. Sotto trovi la stessa seduta per VIX e credito.':
+  bonds||yieldsUp?'Partiamo dai Treasury perché il movimento dei rendimenti è il centro della tesi. Il livello OIS/futures è un’altra misura e va letto separatamente.':
+  divergent?'Partiamo dal proxy del dollaro perché diverge dalla variazione del front-end sulla stessa data. La divergenza non è una strategia automatica.':
+  'Il grafico visualizza uno stream reale con la propria data. Dove le fonti non coincidono, non deduciamo simultaneità.';
+ const internalLinks=[
+  {url:'macro',head:'Scenario Macro',lead:'Inflazione, lavoro e ciclo: il quadro sta accelerando o rallentando?'},
+  {url:'rates',head:'Tassi & OIS',lead:'Che cosa si muove nei governativi e cosa è già nel pricing monetario?'},
+  {url:'pairs',head:'28 coppie FX',lead:'Il vantaggio relativo trova conferma nel prezzo?'},
+  {url:'cot',head:'Positioning COT',lead:'Nuovi long/short o liquidazioni? Il flusso conferma la tesi?'}
+ ];
+ const links=internalLinks.map(x=>'<a class="dashboard-research-link" href="#'+x.url+'"><strong>'+esc(x.head)+'</strong><span>'+esc(x.lead)+'</span><b aria-hidden="true">↗</b></a>').join('');
+ return '<article class="market-letter market-dashboard" aria-label="Dashboard di ricerca FX Quant">'
+ +'<header class="dashboard-heading"><div class="dashboard-topline"><span>FX QUANT / PANORAMICA DI MERCATO</span><span>Ultima evidenza '+date(latest)+' · '+dayNow().split('-').reverse().join('.')+'</span></div>'
+ +'<div class="dashboard-title-row"><div><h1>'+esc(headline)+'</h1><div class="letter-opening"><p class="letter-lead">'+esc(opening)+'</p></div></div>'
+ +'<div class="dashboard-context"><span>LA LETTURA DEL DESK</span><p>'+esc(thesis)+'</p></div></div>'
+ +(tooOld?'<p class="letter-stale">Dati storici: le ultime osservazioni non sono recenti. Non rappresentano un aggiornamento intraday.</p>':'')
+ +'</header>'
+ +'<section class="dashboard-metrics" aria-label="Indicatori che supportano il tema di mercato"><div class="dashboard-section-head"><span>01 / INDICATORI</span><p>Le variazioni riportano la propria data, non un’unica fotografia in tempo reale.</p></div><div class="dashboard-kpi-grid">'+kpis+'</div></section>'
+ +'<section class="dashboard-main"><div class="dashboard-section-head"><span>02 / GRAFICI E INTERPRETAZIONE</span><p>Scegli uno strumento per cercare conferme e divergenze.</p></div>'
+ +'<div class="dashboard-chart-grid"><figure class="letter-chart dashboard-chart"><figcaption><span>DATI DI MERCATO</span><strong>'+esc(firstChart)+'</strong><p>'+esc(focusText)+'</p></figcaption>'
+ +'<div class="letter-chart-visual">'+homeScreenChart()+'</div></figure>'
+ +'<aside class="dashboard-analysis"><span class="dashboard-analysis-kicker">CHE COSA CONCLUDIAMO?</span><h2>Una tesi, non un segnale.</h2><p>'+esc(follow)+'</p>'
+ +'<div class="dashboard-analysis-judgment"><strong>Il giudizio del desk</strong><p>'+esc(thesis)+'</p></div>'
+ +'<div class="dashboard-analysis-watch"><strong>Che cosa potrebbe smentirci?</strong><p>'+esc(falsify)+'</p></div></aside></div></section>'
+ +'<section class="dashboard-proof"><div class="dashboard-section-head"><span>03 / PROVE CHE SOSTENGONO LA TESI</span><p>Solo movimenti verificabili nella seduta considerata.</p></div>'+researchEvidence(context)+'</section>'
+ +'<section class="dashboard-deep-links"><div class="dashboard-section-head"><span>04 / ESPLORA IL RESEARCH DESK</span><p>Grafici e analisi approfondite, senza duplicare l’intera Home.</p></div><div class="dashboard-link-grid">'+links+'</div></section>'
+ +'<details class="dashboard-dossier"><summary><span>PER CHI VUOLE APPROFONDIRE</span><strong>Apri il ragionamento macro completo</strong><small>Curva, inflazione, lavoro, pricing, Forex e condizioni di invalidazione.</small></summary>'
+ +'<div class="letter-argument"><span class="letter-margin">LA TESI IN PROFONDITÀ</span><div class="letter-main">'
  +section('Il movimento dei bond non basta a spiegare tutto',esc(shape)+' '+esc(pricingReading))
  +section('La macroeconomia non ci concede ancora una risposta facile',esc(macroReading))
- +'<blockquote class="letter-pullquote">«'+esc(thesis)+'»</blockquote>'
  +section('Il dollaro deve ancora dire la sua',esc(fxReading)+' '+esc(crowded))
- +'</div></div>'
- +'<figure class="letter-chart"><figcaption><span>LA PROVA GRAFICA</span><strong>'+esc(stress||relief?'Partiamo dall’azionario, poi cerchiamo conferme.':bonds||yieldsUp?'Partiamo dai Treasury, poi confrontiamo il pricing.':divergent?'Partiamo dal dollaro, poi torniamo ai differenziali.':'Partiamo dalla serie più verificabile.')+'</strong><p>Il primo grafico segue la tesi appena letta; puoi passare alle altre serie per cercare conferme o divergenze. Nessun confronto simultaneo tra date diverse.</p></figcaption><div class="letter-chart-visual">'+homeScreenChart()+'</div></figure>'
- +'<div class="letter-argument letter-argument-after"><span class="letter-margin">DALLA TESI AL PREZZO</span><div class="letter-main">'
+ +'</div></div><div class="letter-argument letter-argument-after"><span class="letter-margin">DALLA TESI AL PREZZO</span><div class="letter-main">'
  +section('Il passaggio decisivo è sempre relativo',esc(pairStory))
  +section('Che cosa mi farebbe cambiare idea?',esc(falsify))
- +'<p class="letter-outro">Non abbiamo bisogno di una previsione a tutti i costi. Abbiamo bisogno di riconoscere quando una tesi acquista evidenza e quando il mercato smette di sostenerla. È questo il punto di partenza di ogni vera ricerca.</p>'
- +'</div></div>'
- +'<footer class="letter-footer"><div><strong>Continua la ricerca</strong><p>Se vuoi approfondire il nodo centrale della tesi, entra nel <a href="#rates">laboratorio Tassi & OIS</a>; per capire se il ciclo sta girando, leggi la <a href="#macro">Macro</a>; per mettere l’ipotesi alla prova sul prezzo, passa alle <a href="#pairs">28 coppie FX</a> e al <a href="#cot">COT</a>.</p></div><small>'+sourceDates+'</small><small>Rendimenti Treasury ≠ OIS · DXY sintetico ≠ indice ICE · COT settimanale ≠ flusso intraday · Tesi di ricerca ≠ segnale di ingresso.</small></footer>'
+ +'</div></div></details>'
+ +'<footer class="letter-footer dashboard-footer"><small>'+sourceDates+'</small><small>Rendimenti Treasury ≠ OIS · USD proxy BCE ≠ indice ICE · COT settimanale ≠ flusso intraday. Nessun dato qui è un ordine operativo.</small></footer>'
  +'</article>';
 }
 
