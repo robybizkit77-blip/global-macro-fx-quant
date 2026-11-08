@@ -53,13 +53,29 @@
   const reason=!sourceOK?'Mancano due rendimenti governativi 2Y ufficiali confrontabili come serie di origine.'
     :!latest?'Non esistono abbastanza fixing BCE e rendimenti 2Y sulle stesse date.'
     :!ready?'Ultima osservazione FX/2Y comune troppo vecchia per confrontare i movimenti recenti.'
-    :!short?'Storico troppo discontinuo: cinque osservazioni comuni coprono più di 12 giorni o sono insufficienti.'
+    :!short?'Storico troppo discontinuo: 5 intervalli fra date comuni coprono più di 12 giorni o sono insufficienti.'
     :'';
   return {pair,base,quote,rows,latest,age,lag,ready:ready&&Boolean(short),
    short,medium,reason,
    firstSource:a?.source||'',secondSource:b?.source||'',
    // This series is a relative sovereign yield difference; never an OIS spread.
    kind:'2Y GOV · DIFFERENZIALE INDICATIVO (NON OIS)'};
+ }
+ // A short, source-dated research observation, never a trade decision.
+ function brief(r){
+  if(!r?.ready||!r.short||!r.latest?.date)return {
+   ready:false,asof:null,tone:'unavailable',label:'2Y governativi non verificabili',
+   explanation:r?.reason||'Dati tassi/FX non disponibili su date comuni.'
+  };
+  const sign=m=>m?.direction==='STESSO SEGNO'?'concordi':
+    m?.direction==='SEGNO OPPOSTO'?'discordi':'non conclusivi';
+  const short=sign(r.short),long=r.medium?sign(r.medium):'non verificabili';
+  const tone=r.medium&&r.short.direction!==r.medium.direction?'mixed':
+    r.short.direction==='SEGNO OPPOSTO'?'divergent':
+    r.short.direction==='STESSO SEGNO'?'aligned':'uncertain';
+  const label='5 intervalli '+short+' · 20 '+long;
+  return {ready:true,asof:r.latest.date,tone,label,
+   explanation:'Confronto di segno su fixing BCE e governativi 2Y con le stesse date; non OIS, non causalità né segnale.'};
  }
  function build(api){
   const {get,state,plot,fmt,sign,date,esc,dayNow}=api;
@@ -70,22 +86,22 @@
    const direction=x.direction==='STESSO SEGNO'?'si sono mossi nello stesso verso'
     :x.direction==='SEGNO OPPOSTO'?'si sono mossi in versi opposti'
     :'non danno un confronto direzionale conclusivo';
-   return 'Tra '+date(x.start)+' e '+date(x.end)+' ('+x.n+' osservazioni comuni, '+x.days+' giorni) prezzo FX e differenziale 2Y '+direction+'.';
+   return 'Tra '+date(x.start)+' e '+date(x.end)+' ('+x.n+' intervalli fra '+(x.n+1)+' date comuni, '+x.days+' giorni) prezzo FX e differenziale 2Y '+direction+'.';
   }
   function render(){
    if(!r.ready)return '<section class="decision-rates-bridge" aria-label="Conferma tassi e prezzo"><div class="decision-rates-heading"><span>PREZZO FX / TASSI 2Y</span><h2>La verifica sui tassi non è disponibile.</h2></div><p class="decision-rate-unavailable">'+esc(r.reason)+'</p><small>Per evitare una falsa divergenza non confrontiamo serie di date diverse o osservazioni troppo distanti. Le curve OIS storiche non sono disponibili qui.</small></section>';
    const sel=[20,60,120].includes(Number(state.pairPriceWindow))?Number(state.pairPriceWindow):60;
    const line=r.rows.slice(-sel).map(x=>({label:x.date,value:x.spread}));
    const figure=plot({lines:[{name:r.base+' 2Y − '+r.quote+' 2Y',color:'#e2b985',values:line}],precision:1,unit:' bp',label:'Differenziale rendimenti governativi 2 anni '+r.base+' meno '+r.quote});
-   const pill=x=>x?'<div class="decision-rate-horizon" data-horizon="'+x.n+'"><span>'+x.n+' DATE COMUNI · '+x.days+' GIORNI</span><strong>'+sign(x.fxPct,2,'%')+' FX <b>vs</b> '+sign(x.spreadBp,1,' bp')+' 2Y</strong><small>'+esc(x.direction)+' · '+date(x.start)+' → '+date(x.end)+'</small></div>':'';
+   const pill=x=>x?'<div class="decision-rate-horizon" data-horizon="'+x.n+'"><span>'+x.n+' INTERVALLI · '+(x.n+1)+' DATE COMUNI · '+x.days+' GIORNI</span><strong>'+sign(x.fxPct,2,'%')+' FX <b>vs</b> '+sign(x.spreadBp,1,' bp')+' 2Y</strong><small>'+esc(x.direction)+' · '+date(x.start)+' → '+date(x.end)+'</small></div>':'';
    const short=r.short;
-   const shortText=short.direction==='STESSO SEGNO'?'Nelle ultime 5 date comuni il prezzo FX e lo spread 2Y si sono mossi nello stesso verso.'
-    :short.direction==='SEGNO OPPOSTO'?'Nelle ultime 5 date comuni il prezzo FX e lo spread 2Y hanno segni opposti.'
-    :'Le ultime 5 date comuni non mostrano un verso congiunto definito.';
+   const shortText=short.direction==='STESSO SEGNO'?'Nei 5 intervalli tra le ultime 6 date comuni il prezzo FX e lo spread 2Y si sono mossi nello stesso verso.'
+    :short.direction==='SEGNO OPPOSTO'?'Nei 5 intervalli tra le ultime 6 date comuni il prezzo FX e lo spread 2Y hanno segni opposti.'
+    :'I 5 intervalli tra le ultime 6 date comuni non mostrano un verso congiunto definito.';
    const mediumText=r.medium
-     ?r.medium.direction===short.direction?' Anche sulle 20 date comuni il confronto è '+(r.medium.direction==='STESSO SEGNO'?'concorde nel segno.':r.medium.direction==='SEGNO OPPOSTO'?'discordante nel segno.':'non conclusivo.')
-       :' Sulle 20 date comuni il risultato cambia: '+(r.medium.direction==='STESSO SEGNO'?'si muovono nello stesso verso.':r.medium.direction==='SEGNO OPPOSTO'?'si muovono in versi opposti.':'non emerge un verso conclusivo.')
-     :' Il confronto su 20 date comuni non è sufficientemente continuo per una conclusione.';
+     ?r.medium.direction===short.direction?' Anche sui 20 intervalli tra 21 date comuni il confronto è '+(r.medium.direction==='STESSO SEGNO'?'concorde nel segno.':r.medium.direction==='SEGNO OPPOSTO'?'discordante nel segno.':'non conclusivo.')
+       :' Sui 20 intervalli tra 21 date comuni il risultato cambia: '+(r.medium.direction==='STESSO SEGNO'?'si muovono nello stesso verso.':r.medium.direction==='SEGNO OPPOSTO'?'si muovono in versi opposti.':'non emerge un verso conclusivo.')
+     :' Il confronto su 20 intervalli tra 21 date comuni non è sufficientemente continuo per una conclusione.';
    const verdict=shortText+mediumText+' Non dimostra causalità, rendimento atteso o una relazione quantitativa validata.';
    const recentDifferent=r.lag>0?' Attenzione: il grafico si ferma al '+date(r.latest.date)+', mentre lo snapshot FX arriva al '+date(doc?.price_asof)+'. Il fixing più recente NON è stato abbinato a un tasso di un altro giorno.':'';
    return '<section class="decision-rates-bridge" aria-label="Prezzo e repricing 2Y" data-rate-asof="'+esc(r.latest.date)+'">'
@@ -93,13 +109,13 @@
     +'<div class="decision-rates-body"><div class="decision-rates-visual"><span>GRAFICO · '+esc(r.base)+' 2Y − '+esc(r.quote)+' 2Y</span>'+figure+'<small>Rendimenti governativi 2Y ufficiali. Spread espresso in punti base, non OIS né differenziale di carry. Visualizzazione sulle ultime '+line.length+' date comuni.</small></div>'
     +'<div class="decision-rates-analysis"><span>COSA CONFERMANO I DATI?</span><h3>'+esc(r.medium&&r.medium.direction!==short.direction?'Segnali diversi tra breve e medio periodo.':short.direction==='STESSO SEGNO'?'Movimenti concordi, ma non prova causale.':short.direction==='SEGNO OPPOSTO'?'Prezzo e spread 2Y divergono.':'Confronto direzionale non conclusivo.')+'</h3>'
     +pill(short)
-    +(r.medium?pill(r.medium):'<p class="decision-rate-data-gap">Orizzonte 20 date comuni non comparabile: osservazioni troppo rade o intervallo superiore a 45 giorni.</p>')
+    +(r.medium?pill(r.medium):'<p class="decision-rate-data-gap">Orizzonte 20 intervalli (21 date comuni) non comparabile: osservazioni troppo rade o intervallo superiore a 45 giorni.</p>')
     +'<p class="decision-rates-verdict">'+esc(verdict+recentDifferent)+'</p></div></div>'
     +'<details class="decision-rates-method"><summary>Fonti, date e limiti del confronto</summary><p>'+esc(read(short))+' '+esc(read(r.medium))+'</p>'
     +'<p>'+esc(r.base)+': '+esc(r.firstSource)+'; '+esc(r.quote)+': '+esc(r.secondSource)+'. I benchmark governativi e le metodologie possono differire (par, spot, zero-coupon): lo spread è indicativo. Non stiamo confrontando curve OIS e non inferiamo che i tassi causino il movimento FX.</p></details></section>';
   }
   return {data:r,render};
  }
- if(typeof window!=='undefined')window.FXQuantRatesBridge={snapshot,commonObservations,metrics,build};
- if(typeof module!=='undefined'&&module.exports)module.exports={snapshot,commonObservations,metrics,build};
+ if(typeof window!=='undefined')window.FXQuantRatesBridge={snapshot,commonObservations,metrics,brief,build};
+ if(typeof module!=='undefined'&&module.exports)module.exports={snapshot,commonObservations,metrics,brief,build};
 })();

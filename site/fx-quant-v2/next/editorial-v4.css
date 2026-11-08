@@ -632,3 +632,11 @@ button,a{touch-action:manipulation}
 .decision-rates-method p{font-size:11px;line-height:1.7;color:#a7c2c4}
 @media(max-width:900px){.decision-rates-body{grid-template-columns:1fr}}
 @media(max-width:650px){.decision-rates-bridge{padding:15px 12px}.decision-rates-heading h2{font-size:25px}.decision-rates-visual{padding:13px 9px}.decision-rates-visual .chart{height:212px}.decision-rates-analysis{padding:14px}.decision-rate-horizon strong{font-size:16px}}
+
+
+/* V14 — dated sovereign-rate confirmation belongs inside the decision, not a new dashboard section. */
+.decision-case-rates{border-left:2px solid #9eb9bd;padding:5px 0 5px 11px!important;font-size:11px!important;line-height:1.65!important;color:#b6d0ce!important;margin:0!important}
+.decision-case-rates[data-rates-tone="mixed"],.decision-gate-rates[data-rates-tone="mixed"]{border-color:#d8bc83;color:#e0caa4!important}
+.decision-case-rates[data-rates-tone="divergent"],.decision-gate-rates[data-rates-tone="divergent"]{border-color:#d4a19c;color:#e6b7ae!important}
+.decision-case-rates[data-rates-tone="unavailable"],.decision-gate-rates[data-rates-tone="unavailable"]{color:#9bb2b8!important}
+.decision-gates>div>small.decision-gate-rates{display:block;margin-top:11px;padding:9px 0 0 10px;border-left:2px solid #9eb9bd;border-top:1px solid rgba(183,209,202,.18);font-size:11px;line-height:1.65}

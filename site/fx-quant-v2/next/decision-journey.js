@@ -122,6 +122,16 @@
   const {get,state,plot,fmt,sign,date,dayNow,esc}=api;
   const market=get('pairs'),history=get('currencyPrices');
   const now=dayNow();
+  // One shared quality-gated 2Y reading powers the homepage and the FX dossier.
+  // It is never folded into the model's trade-quality classification.
+  const rateBridge=typeof window!=='undefined'&&window.FXQuantRatesBridge?.snapshot?
+    window.FXQuantRatesBridge:
+    typeof require==='function'?require('./fx-rates-bridge.js'):null;
+  function rateBrief(key){
+   return rateBridge?.snapshot&&rateBridge?.brief?
+    rateBridge.brief(rateBridge.snapshot(get('rates'),history,key,market?.price_asof,now)):
+    {ready:false,asof:null,tone:'unavailable',label:'2Y governativi non verificabili'};
+  }
   const data=snapshot(market,history,now);
   function overview(){
    if(data.total===0)return '<section class="decision-overview"><h2>Dal research alla decisione</h2><p>Il feed delle 28 coppie non è disponibile: nessuna selezione operativa viene ricostruita artificialmente.</p></section>';
@@ -129,15 +139,15 @@
     ?'I fixing FX non sono recenti: osservazione storica, non selezione operativa corrente.'
     :data.clean===0?'Nessuna delle '+data.total+' coppie è attualmente classificata pulita. Non proponiamo ingressi.'
     :'La classificazione del motore include '+data.clean+' coppie pulite: la verifica tecnica H4/Daily resta comunque necessaria.';
-   const examples=data.examples.map(x=>'<button class="decision-case" type="button" data-pair="'+x.key+'" aria-label="Esamina '+pairName(x.key)+'">'
+   const examples=data.examples.map(x=>{const r=rateBrief(x.key);return '<button class="decision-case" type="button" data-pair="'+x.key+'" aria-label="Esamina '+pairName(x.key)+'">'
      +'<span class="decision-case-head"><strong>'+pairName(x.key)+'</strong><small>'+esc(x.quality)+'</small></span>'
-     +'<p>'+esc(x.why)+'</p><p class="decision-case-horizon">Controllo daily BCE: '+esc(x.alignment.toLowerCase())+'.</p><span class="decision-case-bottom">Da confermare: '+esc(x.next)+' <b>↗</b></span></button>').join('');
+     +'<p>'+esc(x.why)+'</p><p class="decision-case-horizon">Controllo daily BCE: '+esc(x.alignment.toLowerCase())+'.</p><p class="decision-case-rates" data-rates-tone="'+esc(r.tone)+'">GOV 2Y, non OIS: '+esc(r.label)+(r.ready?' · '+date(r.asof):'')+'</p><span class="decision-case-bottom">Da confermare: '+esc(x.next)+' <b>↗</b></span></button>'}).join('');
    return '<section class="decision-overview" aria-label="Dalla panoramica alla scelta delle coppie">'
      +'<div class="dashboard-section-head"><span>05 / DALLA TESI ALLA DECISIONE</span><p>Solo casi di studio, non una classifica di trade.</p></div>'
      +'<div class="decision-overview-layout"><div class="decision-summary"><span class="decision-kicker">VERDETTO OPERATIVO</span>'
      +'<h2>'+esc(data.clean===0?'Nessun setup pulito. Ma ci sono casi da studiare.':'Dalla struttura alla verifica del prezzo.')+'</h2>'
      +'<p>'+esc(status)+'</p><div class="decision-totals"><span><strong>'+data.qualified+'</strong> con prezzo e timing coerenti</span><span><strong>'+data.invalid+'</strong> non valutabili</span><span><strong>'+data.atRisk+'</strong> con rischi</span></div>'
-     +'<small>Snapshot FX '+date(data.asof)+' · fixing BCE '+date(history?.last_as_of)+'. La presenza di una coppia qui non indica convenienza al prezzo attuale.</small></div>'
+     +'<small>Snapshot FX '+date(data.asof)+' · fixing BCE '+date(history?.last_as_of)+'. Segni FX/2Y osservati, non causalità né conferme di ingresso.</small></div>'
      +'<div class="decision-cases">'+(examples||'<div class="empty"><strong>Non emergono coppie con prezzo e timing coerenti.</strong><p>La selezione resta vuota anziché produrre suggerimenti artificiali.</p></div>')+'</div></div></section>';
   }
   function pair(){
@@ -170,9 +180,7 @@
    const range=Number.isFinite(item.breakLow)&&Number.isFinite(item.breakHigh)?
        fmt(item.breakLow,item.key.endsWith('JPY')?3:5)+' – '+fmt(item.breakHigh,item.key.endsWith('JPY')?3:5):
        'Non disponibile';
-   const rateBridge=typeof window!=='undefined'&&window.FXQuantRatesBridge?.build?
-     window.FXQuantRatesBridge:
-     typeof require==='function'?require('./fx-rates-bridge.js'):null;
+   const rateView=rateBrief(item.key);
    const ratesEvidence=rateBridge?.build?
      rateBridge.build({get,state,plot,fmt,sign,date,dayNow,esc}).render():
      '<section class="decision-rates-bridge"><h2>Confronto FX/2Y non disponibile</h2><p>Manca il modulo di verifica delle date comuni.</p></section>';
@@ -203,7 +211,7 @@
      +'<div class="decision-dossier-head"><span>RESEARCH → PRICING → PREZZO → DECISIONE</span><h2>'+pairName(item.key)+' · Che cosa sappiamo, che cosa aspettiamo?</h2>'
      +'<p>Il motore può segnalare una direzione favorevole senza che esista un ingresso interessante. Separiamo le due cose.</p></div>'
      +'<div class="decision-gates"><div><span>THESIS STRENGTH</span><strong>'+esc(item.fav?'Vantaggio '+item.fav+' · '+item.quality:'Nessun vantaggio verificato')+'</strong><small>'+esc(item.relation)+'</small></div>'
-     +'<div><span>TRADE ATTRACTIVENESS</span><strong>'+esc(attractive)+'</strong><small>'+esc(item.why)+'</small></div>'
+     +'<div><span>TRADE ATTRACTIVENESS</span><strong>'+esc(attractive)+'</strong><small>'+esc(item.why)+'</small><small class="decision-gate-rates" data-rates-tone="'+esc(rateView.tone)+'">GOV 2Y (non OIS): '+esc(rateView.label)+(rateView.ready?' · '+date(rateView.asof):'')+'</small></div>'
      +'<div><span>LA PROSSIMA VERIFICA</span><strong>Che cosa aspettiamo?</strong><small>'+esc(gateNext)+'</small></div></div>'
      +'<div class="decision-price-grid"><div class="decision-price-chart"><div class="decision-price-head"><div><span>PREZZO REALE · ECB DAILY</span><h3>'+pairName(item.key)+' · '+quote+'</h3><small>Fixing BCE '+date(item.asof)+' · ultima seduta '+lastDay+' · 5 sedute '+move+' · 20 sedute '+gain+'</small></div>'
      +'<div class="decision-chart-tools"><div class="pill-controls">'+[20,60,120].map(w=>'<button type="button" data-v9-price-window="'+w+'" class="pill '+(w===chartWindow?'active':'')+'" aria-pressed="'+String(w===chartWindow)+'">'+w+'</button>').join('')+'</div>'
