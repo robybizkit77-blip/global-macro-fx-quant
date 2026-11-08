@@ -26,6 +26,21 @@ for(const c of ['USD','EUR','CHF']){
     kind:'FUTURES SECONDARI',quality:'STIMA INDICATIVA'};
  }
  const reading=readingApi.interpret(c,futures,shown);
+ if(reading.status==='NON_VERIFICABILE'){
+  assert.deepEqual(reading.matchedTenors,[]);
+  assert.ok(tenors.every(t=>
+    futures.currencies[c][t].status==='QUARANTINED_CURRENT_DAY'&&
+    futures.currencies[c][t].contract===shown.horizons[t].contract&&
+    futures.currencies[c][t].as_of===shown.horizons[t].as_of),
+    c+' must have source-matched quarantined futures');
+  const model=adapter.evaluate(c,reading,rates,fx,today);
+  assert.equal(model.status,'NOT_VERIFIED');
+  assert.equal(model.trade_signal,null);
+  assert.equal(model.policy_probability,null);
+  observed[c]={model,reading,rate:adapter.rateTwoYear(c,rates,today),
+    fx:adapter.fxFixing(c,fx,today)};
+  continue;
+ }
  assert.equal(reading.status,'LETTURA_DESCRITTIVA_FUTURES');
  assert.ok(reading.matchedTenors.length>0);
  for(const t of reading.matchedTenors){
@@ -47,15 +62,17 @@ for(const c of ['USD','EUR','CHF']){
  assert.equal(model.rate.changeBp,delta,'derive 2Y delta from last two dated bars, never opaque chg2_bp');
  assert.equal(model.rate.deltaMismatch,
    Math.abs(delta-rates[c].chg2_bp)>0.2);
- observed[c]={model,reading};
+ observed[c]={model,reading,rate:model.rate,fx:model.fx};
 }
-assert.equal(observed.USD.model.rate.state,'HISTORY_VERIFIED');
-assert.equal(observed.EUR.model.rate.state,'HISTORY_VERIFIED');
-assert.equal(observed.CHF.model.rate.state,'DATED_HISTORICAL');
+assert.equal(observed.USD.rate.state,'HISTORY_VERIFIED');
+assert.equal(observed.EUR.rate.state,'HISTORY_VERIFIED');
+assert.equal(observed.CHF.rate.state,'DATED_HISTORICAL');
 assert.equal(observed.CHF.model.aligned.length,0);
 assert.match(observed.CHF.model.rateText,/troppo datata/);
 for(const tenor of ['6m','12m']){
- const isAligned=observed.USD.model.rate.day===observed.USD.reading.sourceDates[tenor];
+ const active=observed.USD.model.status==='READ_ONLY_TRIANGULATION';
+  const isAligned=active&&observed.USD.rate.day===observed.USD.reading.sourceDates[tenor]&&
+    Number.isFinite(observed.USD.reading.oneDayBp?.[tenor]);
  assert.equal(observed.USD.model.aligned.includes(tenor),isAligned,
   'USD 2Y and '+tenor+' futures are aligned only with the same observed date');
 }
@@ -65,15 +82,15 @@ assert.equal(observed.EUR.model.aligned.includes('12m'),eurRateDate===eurFutures
   'EUR 2Y and 12M futures must share their real observation date');
 const eurMixedDates={...observed.EUR.reading,
  sourceDates:{...observed.EUR.reading.sourceDates,
-  '12m':eurFuturesDate===eurRateDate?'2026-11-04':eurRateDate}};
+  '12m':new Date(Date.parse(eurRateDate+'T12:00:00Z')-86400000).toISOString().slice(0,10)}};
 assert.equal(adapter.evaluate('EUR',eurMixedDates,rates,fx,today).aligned.includes('12m'),false,
   'Different 2Y and futures observation dates must never be silently joined');
-assert.equal(observed.USD.model.fx.pair,'EUR/USD');
-assert.equal(observed.EUR.model.fx.pair,'EUR/USD');
-assert.equal(observed.CHF.model.fx.pair,'EUR/CHF');
-assert.ok(Math.abs(observed.USD.model.fx.changePct-
+assert.equal(observed.USD.fx.pair,'EUR/USD');
+assert.equal(observed.EUR.fx.pair,'EUR/USD');
+assert.equal(observed.CHF.fx.pair,'EUR/CHF');
+assert.ok(Math.abs(observed.USD.fx.changePct-
   (fx.rows.at(-1).USD/fx.rows.at(-2).USD-1)*100)<0.0002);
-assert.ok(Math.abs(observed.CHF.model.fx.changePct-
+assert.ok(Math.abs(observed.CHF.fx.changePct-
   (fx.rows.at(-1).CHF/fx.rows.at(-2).CHF-1)*100)<0.0002);
 // A source carrying an apparent current date without consistent dated 2Y
 // history is unsafe, even if chg2_bp claims a large or attractive move.
@@ -90,7 +107,7 @@ assert.equal(adapter.rateTwoYear('USD',duplicated,today).state,'NOT_VERIFIED');
 const dishonest=clone(rates);
 dishonest.USD.chg2_bp=999;
 const computed=adapter.rateTwoYear('USD',dishonest,today);
-assert.equal(computed.changeBp,observed.USD.model.rate.changeBp);
+assert.equal(computed.changeBp,observed.USD.rate.changeBp);
 assert.equal(computed.deltaMismatch,true);
 // A future or forged ECB FX fixing must never be treated as a verified price.
 const badFx=clone(fx);badFx.rows.at(-1).Date='2099-01-01';
@@ -108,10 +125,10 @@ assert.equal(mixed.aligned.includes('12m'),false);
 assert.equal(adapter.rateTwoYear('CHF',rates,today).day,'2026-09-30');
 assert.equal(adapter.evaluate('USD',null,rates,fx,today).status,'NOT_VERIFIED');
 console.log('FXV2_OIS_2Y_FX_CONTEXT_PASS',JSON.stringify({
-  currencies:3,usd2y:observed.USD.model.rate.changeBp,
-  eur2y:observed.EUR.model.rate.changeBp,
-  chf2y_as_of:observed.CHF.model.rate.day,
-  checked_fx_fixing_date:observed.USD.model.fx.date,
+  currencies:3,usd2y:observed.USD.rate.changeBp,
+  eur2y:observed.EUR.rate.changeBp,
+  chf2y_as_of:observed.CHF.rate.day,
+  checked_fx_fixing_date:observed.USD.fx.date,
   dated_evidence_only:true,no_core_mutation:true,
   policy_probability:null,trade_signal:null
 }));
