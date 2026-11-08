@@ -472,10 +472,11 @@ function render(){
  $('crumb-page').textContent=ROUTES[route];
  document.querySelectorAll('#nav [data-route]').forEach(a=>{if(a.dataset.route===route)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
  const ok=Object.keys(state.data).length,missing=Object.keys(SOURCES).length-ok;
+ const caseNow=researchCase(),caseOld=!caseNow.latest||!fresh(caseNow.latest,8);
  const dates=[get('rates')?.USD?.date,get('dxy')?.as_of,get('pairs')?.price_asof].filter(validDay);
  $('top-asof').textContent='Riferimenti '+(dates.length?dates.map(date).join(' · '):'da verificare');
- $('top-quality').classList.toggle('warn',missing>0);
- $('top-quality').innerHTML='<span class="live-dot"></span>'+(missing===0?'FEED DISPONIBILI':ok+'/'+Object.keys(SOURCES).length+' FEED');
+ $('top-quality').classList.toggle('warn',missing>0||caseOld);
+ $('top-quality').innerHTML='<span class="live-dot"></span>'+(missing>0?ok+'/'+Object.keys(SOURCES).length+' FEED':caseOld?'DATI STORICI':'FONTI CARICATE');
  $('sidebar-feed').textContent=ok+'/'+Object.keys(SOURCES).length+' fonti caricate · dati non intraday';
  const sf=$('sidebar-focus');if(sf)sf.textContent=FLAGS[state.ccy]+' '+state.ccy+' · '+getPairName(state.pair);
  document.title='FX Quant Next — '+ROUTES[route];
@@ -573,7 +574,12 @@ document.addEventListener('change',e=>{
 document.addEventListener('pointermove',chartEvents);
 document.addEventListener('pointerout',e=>{if(e.target.closest('.chart')&&!e.relatedTarget?.closest?.('.chart'))chartHide(e)});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('app').classList.remove('menu-open');$('menu-toggle').setAttribute('aria-expanded','false')}});
+let refreshInProgress=false;
+let lastResearchRefresh=0;
 async function loadAll(){
+ if(refreshInProgress)return;
+ refreshInProgress=true;
+ const nextData={},nextErrors={};
  const jobs=Object.entries(SOURCES).map(async([key,path])=>{
   const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),10000);
   try{
@@ -585,13 +591,29 @@ async function loadAll(){
    if(key==='risk'&&!d.streams)throw Error('Stream cross-asset mancanti');
    if(key==='ois'&&!d.currencies)throw Error('Pricing assente');
    if(key==='dxy'&&d.not_official_ice!==true)throw Error('DXY non classificato');
-   state.data[key]=d;
-  }catch(e){state.errors[key]=String(e.message||e);}
+   nextData[key]=d;
+  }catch(e){nextErrors[key]=String(e.message||e);}
   finally{clearTimeout(timer)}
  });
- await Promise.allSettled(jobs);
- render();
+ try{
+  await Promise.allSettled(jobs);
+  // Rebuild the entire research from the same fetch cycle. A failed source is
+  // not silently reused from the previous edition as a current observation.
+  state.data=nextData;
+  state.errors=nextErrors;
+  lastResearchRefresh=Date.now();
+  render();
+ }finally{refreshInProgress=false;}
 }
+// Refresh when the reader returns to a long-open tab, and while the site stays
+// open. This never claims an edition changed unless the underlying feeds did.
+document.addEventListener('visibilitychange',()=>{
+ if(document.visibilityState==='visible'&&Date.now()-lastResearchRefresh>30*60*1000)loadAll();
+});
+setInterval(()=>{
+ if(document.visibilityState==='visible'&&Date.now()-lastResearchRefresh>30*60*1000)loadAll();
+},30*60*1000);
+
 navigate();
 loadAll();
 })();
