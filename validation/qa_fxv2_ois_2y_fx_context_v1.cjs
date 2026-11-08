@@ -82,7 +82,7 @@ assert.equal(observed.EUR.model.aligned.includes('12m'),eurRateDate===eurFutures
   'EUR 2Y and 12M futures must share their real observation date');
 const eurMixedDates={...observed.EUR.reading,
  sourceDates:{...observed.EUR.reading.sourceDates,
-  '12m':eurFuturesDate===eurRateDate?'2026-11-04':eurRateDate}};
+  '12m':new Date(Date.parse(eurRateDate+'T12:00:00Z')-86400000).toISOString().slice(0,10)}};
 assert.equal(adapter.evaluate('EUR',eurMixedDates,rates,fx,today).aligned.includes('12m'),false,
   'Different 2Y and futures observation dates must never be silently joined');
 assert.equal(observed.USD.fx.pair,'EUR/USD');
