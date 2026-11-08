@@ -23,13 +23,21 @@ const curves=new Function('FX','fresh','num',guard+source.slice(a,b)+
  ';return marketResearchCurves;')(FX,fresh,num);
 const official=Object.entries(real.currencies).filter(([c,r])=>
  r.operational_status==='GREEN_OFFICIAL'&&r.official_status==='ACTIVE'&&
- r.quality==='OFFICIAL_CERTIFIED'&&r.backtest_eligible_as_official===true&&fresh(r.as_of,4))
+ r.quality==='OFFICIAL_CERTIFIED'&&r.backtest_eligible_as_official===true&&fresh(r.as_of,4)&&
+ ['3m','6m','12m'].every(t=>Number.isFinite(r.horizons?.[t]?.rate)&&
+   Number.isFinite(r.horizons?.[t]?.policy_delta_bp)))
  .map(([c])=>c).sort();
 assert.deepEqual(curves(real).map(x=>x.k).sort(),official,'live certified scope reconciliation');
-assert(official.includes('GBP'),'need one verified source as synthetic template');
+assert(real.currencies.GBP.operational_status==='GREEN_OFFICIAL'&&
+ real.currencies.GBP.backtest_eligible_as_official===true,
+ 'synthetic template requires an actual source-certified official GBP lane');
 const novel=structuredClone(real);
 const clone=structuredClone(real.currencies.GBP);
 clone.source='SYNTHETIC_OFFICIAL_FIFTH_SOURCE_FIXTURE_NOT_FOR_PUBLICATION';
+// Production can carry null policy deltas even when the source's absolute
+// levels are official. Populate this synthetic counterfactual IN MEMORY only.
+for(const [i,t] of ['3m','6m','12m'].entries())
+ clone.horizons[t].policy_delta_bp=i;
 novel.currencies.USD=clone;
 const approved=[...official.filter(c=>c!=='USD'),'USD'].sort();
 assert.deepEqual(curves(novel).map(x=>x.k).sort(),approved,

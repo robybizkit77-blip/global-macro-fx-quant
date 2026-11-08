@@ -326,7 +326,11 @@ function saronAccrualWindow(contract){
 }
 function auditDatedFuture(ccy,term,primary,rate,quoteDate,today){
  const spec=FUTURE_SPEC[ccy],target=TENOR_TARGET[term];
- if(!spec||!target||!primary||number(primary.futures_price)===null||
+ if(!spec||!target||!primary||
+    // An exchange contract roster is not an observed market price. A 99.xx
+    // placeholder cannot become a dated futures point, even in dispute mode.
+    primary.roster_quality==='ICE_LISTED_QUARTER_CALENDAR_DERIVED_UNQUOTED'||
+    number(primary.futures_price)===null||
     number(rate)===null||!fresh(quoteDate,today)||primary.quote_as_of!==quoteDate||
     primary.quote_timestamp_verified!==true||
     primary.quote_timestamp_source!=='SSR_DAILY_BAR_DATA_UPDATE_TIME')return null;

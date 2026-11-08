@@ -71,6 +71,9 @@ for(const ccy of ['USD','EUR','CHF']){
      const target={'3m':90,'6m':180,'12m':365}[t];
      h.mapping='nearest dated listed contract expiry to today+'+target+'d; no interpolation';
      delete h.accrual_start;
+     // This fixture replays a signed 2026-10-20 quote. Do NOT inherit the
+     // unquoted 2026-11-06 calendar roster flag from the live 3M object.
+     delete h.roster_quality;
    }
    if(ccy==='EUR'){
      Object.assign(row.secondary_quote_context.horizons[t],{

@@ -1,0 +1,38 @@
+name: CHF SARON Unquoted Source QA V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'site/control-room-preview/ois-pricing-estimates-v1.js'
+      - 'validation/test_control_room_partial_chf_graded_chart_v1.js'
+      - 'validation/test_control_room_g8_visible_pricing_v1.js'
+      - 'validation/qa_ois_g8_estimates_v1.js'
+      - '.github/workflows/chf-saron-unquoted-source-qa-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'site/control-room-preview/ois-pricing-estimates-v1.js'
+      - 'validation/test_control_room_partial_chf_graded_chart_v1.js'
+      - 'validation/test_control_room_g8_visible_pricing_v1.js'
+      - 'validation/qa_ois_g8_estimates_v1.js'
+      - '.github/workflows/chf-saron-unquoted-source-qa-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  chf-source-quality:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify current and historical CHF futures with fail-closed source identity
+        run: |
+          node validation/qa_ois_g8_estimates_v1.js
+          node validation/test_control_room_g8_visible_pricing_v1.js
+          node validation/test_control_room_partial_chf_graded_chart_v1.js
