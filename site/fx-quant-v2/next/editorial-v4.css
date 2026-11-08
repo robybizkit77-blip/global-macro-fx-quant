@@ -486,3 +486,77 @@ button,a{touch-action:manipulation}
  .research-essay-dashboard h2{font-size:27px}
  .research-essay-dashboard .essay-prose p{font-size:13.5px}
 }
+
+
+/* V9: Operational research to decision. Charts and risk gates, not trade signals. */
+.decision-overview{margin:6px 0 34px;max-width:1500px}
+.decision-overview-layout{display:grid;grid-template-columns:minmax(250px,.75fr) minmax(0,1.3fr);gap:12px}
+.decision-summary,.decision-case,.decision-deepdive{background:#102432;border:1px solid rgba(173,207,201,.22);border-radius:9px}
+.decision-summary{padding:21px 23px}
+.decision-kicker,.decision-dossier-head>span,.decision-price-reading>span{color:#add8c1;letter-spacing:.135em;font-size:10px;font-weight:850}
+.decision-summary h2{font:400 clamp(26px,2.3vw,35px)/1.18 Georgia,serif;letter-spacing:-.026em;color:#f1eee8;margin:13px 0}
+.decision-summary>p{font-size:13px;line-height:1.78;color:#d1dcda;margin:0 0 17px}
+.decision-totals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:15px 0 17px}
+.decision-totals span{padding-top:11px;border-top:1px solid rgba(171,202,200,.23);font-size:10px;color:#adc4c7;line-height:1.55}
+.decision-totals strong{display:block;color:#ecf1e9;font-size:27px;line-height:1.15;font-variant-numeric:tabular-nums}
+.decision-summary>small{font-size:10px;line-height:1.65;color:#91aeb4}
+.decision-cases{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;align-content:stretch}
+.decision-case{font:inherit;display:flex;flex-direction:column;gap:12px;min-height:0;text-align:left;cursor:pointer;padding:19px 20px;color:inherit;transition:background .15s,border-color .15s}
+.decision-case:hover,.decision-case:focus-visible{background:#192f3a;border-color:#8cc5b4}
+.decision-case-head{display:flex;align-items:baseline;gap:8px;justify-content:space-between;flex-wrap:wrap}
+.decision-case-head strong{font:400 28px/1.15 Georgia,serif;color:#f3efe9}
+.decision-case-head small{color:#e7c796;font-size:10px;font-weight:700}
+.decision-case>p{font-size:12.5px;line-height:1.7;color:#c4d2cf;margin:0}
+.decision-case-bottom{display:block;font-size:11px;line-height:1.64;color:#a2c7bc;margin-top:auto;padding-top:12px;border-top:1px solid rgba(170,211,197,.19)}
+.decision-case-bottom b{color:#d2ebdd;font-size:16px;font-weight:400;margin-left:5px}
+.decision-deepdive{margin:15px 0 23px;overflow:hidden;padding:22px 23px 20px}
+.decision-dossier-head h2{font:400 clamp(27px,2.6vw,37px)/1.2 Georgia,serif;letter-spacing:-.025em;color:#f2eee9;margin:12px 0 9px}
+.decision-dossier-head>p{margin:0 0 20px;color:#b9cccb;font-size:13px;line-height:1.73;max-width:950px}
+.decision-gates{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 20px}
+.decision-gates>div{border:1px solid rgba(178,208,205,.17);border-radius:7px;padding:16px 16px 14px;background:#152c39;min-width:0}
+.decision-gates>div>span{display:block;font-size:10px;letter-spacing:.09em;font-weight:800;color:#a9d6c2}
+.decision-gates strong{display:block;font-size:15px;line-height:1.46;color:#f1eee8;margin:11px 0 9px}
+.decision-gates small{display:block;color:#b7c9c8;font-size:11.5px;line-height:1.65}
+.decision-gates>div:nth-child(2){border-top:2px solid #dfbc83}
+.decision-price-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(245px,.65fr);gap:13px;align-items:stretch}
+.decision-price-chart{border:1px solid rgba(180,209,205,.18);border-radius:7px;padding:20px;background:#0d1f2a;min-width:0}
+.decision-price-head{display:flex;align-items:start;justify-content:space-between;gap:13px;margin-bottom:15px;flex-wrap:wrap}
+.decision-price-head>div>span{display:block;font-size:10px;color:#aed2c4;letter-spacing:.12em;font-weight:830}
+.decision-price-head h3{font:400 31px/1.13 Georgia,serif;color:#f3eee8;margin:8px 0}
+.decision-price-head small{color:#aabfc2;font-size:11px;line-height:1.5}
+.decision-price-grid .chart{height:300px}
+.decision-price-grid .chart-legend{margin-top:8px}
+.decision-source{font-size:11px;color:#a4bdc2;line-height:1.75;margin:13px 0 0}
+.decision-price-reading{background:linear-gradient(145deg,#182d38,#102532);border-radius:7px;border:1px solid rgba(185,208,205,.19);padding:20px}
+.decision-price-reading h3{font:400 25px/1.2 Georgia,serif;color:#f3f0e8;margin:12px 0}
+.decision-price-reading>p{color:#c5d3d0;line-height:1.7;font-size:12px;margin:0 0 17px}
+.decision-stop{border-top:1px solid rgba(183,211,201,.18);padding:14px 0 0}
+.decision-stop strong{display:block;color:#d9dbbb;font-size:12px}
+.decision-stop p{color:#bdd0cd;font-size:11.5px;line-height:1.73;margin:8px 0 12px}
+.decision-footer{font-size:11px;color:#a1bbc0;line-height:1.7;margin:19px 0 0;padding-top:13px;border-top:1px solid rgba(183,208,206,.18)}
+@media(max-width:1100px){
+ .decision-overview-layout{grid-template-columns:1fr}
+ .decision-price-grid{grid-template-columns:minmax(0,1fr) minmax(245px,.7fr)}
+}
+@media(max-width:850px){
+ .decision-gates{grid-template-columns:1fr}
+ .decision-price-grid{grid-template-columns:1fr}
+ .decision-price-grid .chart{height:260px}
+}
+@media(max-width:650px){
+ .decision-overview{margin-bottom:24px}
+ .decision-summary{padding:17px 15px}
+ .decision-summary h2{font-size:28px}
+ .decision-totals strong{font-size:24px}
+ .decision-cases{grid-template-columns:1fr}
+ .decision-case{padding:15px}
+ .decision-case-head strong{font-size:25px}
+ .decision-deepdive{padding:17px 13px}
+ .decision-dossier-head h2{font-size:27px}
+ .decision-dossier-head>p{font-size:12px}
+ .decision-gates>div{padding:13px}
+ .decision-price-chart{padding:13px 9px}
+ .decision-price-grid .chart{height:215px}
+ .decision-price-head h3{font-size:28px}
+ .decision-price-reading{padding:15px}
+}
