@@ -652,3 +652,8 @@ button,a{touch-action:manipulation}
 .pair-data-state.available{color:#a9d5be}
 .pair-data-state.missing{color:#a1b2b6}
 @media(max-width:650px){.pair-data-coverage{gap:4px 8px}.pair-data-state{font-size:9.5px}.pair-coverage-intro{font-size:11px}}
+
+
+/* Next V16: official RBA F2 weekly release, daily observed points, research only. */
+.pair-data-state.research{color:#dfc28f}
+.pair-data-state.research>span{color:#e8cb95}
