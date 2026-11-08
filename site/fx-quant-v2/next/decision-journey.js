@@ -176,6 +176,11 @@
          ?'Il prezzo è già oltre il riferimento contrario: verificare se la tesi relativa regge ancora.'
          :'Al prossimo fixing, osservare un superamento di '+watchFavor+' nella direzione favorita; un movimento '+watchAdverse+' indicherebbe invece contrasto del prezzo.'
      :'Nessun riferimento operativo daily verificabile. Serve una nuova sequenza allineata o un vantaggio strutturale definito.';
+   const gateNext=watch.ready
+     ?watch.favorablePassed?'Riferimento favorevole già superato: controllare la persistenza.'
+       :watch.adversePassed?'Riferimento contrario già superato: riesaminare prezzo e tesi.'
+       :'Riferimento favorevole '+watchFavor+'; contrario '+watchAdverse+'.'
+     :item.next;
    const watchHtml='<div class="decision-daily-watch"><div class="decision-daily-watch-head"><span>COSA OSSERVARE AL PROSSIMO FIXING BCE</span><small>Riferimenti dagli ultimi 20 fixing precedenti · '+date(watch.asof||item.asof)+'</small></div>'
      +(watch.ready
        ?'<div class="decision-watch-columns"><div class="decision-watch-line"><span>VERSO FAVOREVOLE</span><strong>'+esc(watchFavor)+'</strong><small>'+esc(watch.favorableStatus)+' · '+(watch.favorablePassed?'già oltre il livello':fmt(watch.favorableDistancePct,2)+'% di distanza dal fixing')+'</small></div>'
@@ -188,7 +193,7 @@
      +'<p>Il motore può segnalare una direzione favorevole senza che esista un ingresso interessante. Separiamo le due cose.</p></div>'
      +'<div class="decision-gates"><div><span>THESIS STRENGTH</span><strong>'+esc(item.fav?'Vantaggio '+item.fav+' · '+item.quality:'Nessun vantaggio verificato')+'</strong><small>'+esc(item.relation)+'</small></div>'
      +'<div><span>TRADE ATTRACTIVENESS</span><strong>'+esc(attractive)+'</strong><small>'+esc(item.why)+'</small></div>'
-     +'<div><span>LA PROSSIMA VERIFICA</span><strong>Che cosa aspettiamo?</strong><small>'+esc(watch.ready?watchNext:item.next)+'</small></div></div>'
+     +'<div><span>LA PROSSIMA VERIFICA</span><strong>Che cosa aspettiamo?</strong><small>'+esc(gateNext)+'</small></div></div>'
      +'<div class="decision-price-grid"><div class="decision-price-chart"><div class="decision-price-head"><div><span>PREZZO REALE · ECB DAILY</span><h3>'+pairName(item.key)+' · '+quote+'</h3><small>Fixing BCE '+date(item.asof)+' · ultima seduta '+lastDay+' · 5 sedute '+move+' · 20 sedute '+gain+'</small></div>'
      +'<div class="pill-controls">'+[20,60,120].map(w=>'<button type="button" data-v9-price-window="'+w+'" class="pill '+(w===window?'active':'')+'" aria-pressed="'+String(w===window)+'">'+w+'</button>').join('')+'</div></div>'
      +graph+'<div class="decision-price-evidence"><div class="decision-evidence-cell"><span>5 FIXING</span><strong>'+move+'</strong><small>'+esc(item.fiveState)+'</small></div><div class="decision-evidence-cell"><span>20 FIXING</span><strong>'+gain+'</strong><small>'+esc(item.twentyState)+'</small></div><div class="decision-evidence-cell"><span>RANGE 20 FIXING PRECEDENTI</span><strong class="range">'+esc(range)+'</strong><small>'+esc(item.structure)+'</small></div></div><p class="decision-price-context">'+esc(discordance)+' '+esc(pulse)+'</p>'+watchHtml+'<p class="decision-source">Cross '+pairName(item.key)+' ricostruito dai fixing BCE giornalieri (quote/base). Nessun OHLC o candela H4. Il segno di 5/20 sedute non misura significatività statistica né individua breakout intraday.</p></div>'
