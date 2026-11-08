@@ -345,3 +345,144 @@ button,a{touch-action:manipulation}
  .essay-foot a{display:inline-block;font-size:11px;white-space:normal}
  .research-essay+.page-hero h1{font-size:29px}
 }
+
+
+/* V8 — Financial dashboard first; narrative is an interpretative layer. */
+.market-dashboard{width:100%;max-width:1490px;margin:0 auto;padding-bottom:8px}
+.dashboard-heading{padding:9px 0 26px}
+.dashboard-topline,.dashboard-section-head{display:flex;align-items:baseline;justify-content:space-between;gap:15px}
+.dashboard-topline{padding:3px 0 16px;border-bottom:1px solid rgba(192,219,208,.21);font-size:10px;font-weight:800;letter-spacing:.135em;color:#a5d8c5}
+.dashboard-topline span:last-child{font-weight:560;letter-spacing:.03em;color:#9db7ba}
+.dashboard-title-row{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(250px,.62fr);align-items:stretch;gap:clamp(18px,3.2vw,44px);padding-top:25px}
+.dashboard-title-row h1{font:450 clamp(34px,3.2vw,54px)/1.12 Georgia,'Times New Roman',serif;letter-spacing:-.034em;color:#f4f0e8;max-width:850px;margin:0 0 14px;text-wrap:balance}
+.dashboard-title-row .letter-opening{border:0;padding:0;max-width:900px}
+.dashboard-title-row .letter-opening p{font-size:clamp(15px,1.15vw,17px);line-height:1.73;color:#d0dad7;margin:0}
+.dashboard-context{border-left:2px solid #93cbb3;background:linear-gradient(95deg,rgba(150,199,176,.07),transparent);padding:17px 21px 13px;align-self:stretch}
+.dashboard-context>span,.dashboard-analysis-kicker{font-size:10px;color:#b3dbc9;font-weight:850;letter-spacing:.14em}
+.dashboard-context>strong{display:block;font:400 26px/1.28 Georgia,'Times New Roman',serif;color:#eeeae2;letter-spacing:-.02em;margin:14px 0 9px}
+.dashboard-context p{font-size:12px;line-height:1.75;color:#adc1c3;margin:0 0 13px}
+.dashboard-context a{font-size:12px;color:#c7e3d3;text-decoration:underline;text-underline-offset:4px}
+.dashboard-section-head{margin:0 0 17px}
+.dashboard-section-head span{font-size:10px;color:#b8d8c6;font-weight:800;letter-spacing:.14em;line-height:1.6}
+.dashboard-section-head p{font-size:11px;color:#a6bac2;max-width:510px;margin:0;line-height:1.6;text-align:right}
+.dashboard-metrics{margin:0 0 29px}
+.dashboard-kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}
+.dashboard-kpi{background:linear-gradient(160deg,#132632,#0f1d29);border:1px solid rgba(171,203,205,.19);border-radius:8px;padding:19px 19px 17px;display:flex;flex-direction:column;min-width:0;gap:7px;text-decoration:none;transition:border-color .16s,transform .16s}
+.dashboard-kpi:hover{border-color:#7eaea4;transform:translateY(-2px);background:#182d37}
+.dashboard-kpi-label{font-size:12px;font-weight:720;color:#bacdcc;line-height:1.5}
+.dashboard-kpi strong{font-size:clamp(25px,2.2vw,35px);font-weight:650;font-variant-numeric:tabular-nums;line-height:1.3;letter-spacing:-.02em;color:#f3f1eb}
+.dashboard-kpi-meta{font-size:11px;color:#94afb8;line-height:1.5;margin-top:auto}
+.dashboard-main{margin:0 0 29px}
+.dashboard-chart-grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(310px,.83fr);gap:13px;align-items:stretch}
+.market-dashboard .letter-chart.dashboard-chart{margin:0;padding:0;border:1px solid rgba(172,204,206,.20);background:#10232f;border-radius:9px;overflow:hidden;display:flex;flex-direction:column}
+.market-dashboard .dashboard-chart figcaption{display:block;margin:0;padding:24px 25px 13px}
+.market-dashboard .dashboard-chart figcaption>span{display:block;font-size:10px;margin-bottom:9px}
+.market-dashboard .dashboard-chart figcaption strong{font:400 clamp(22px,2.1vw,30px)/1.24 Georgia,serif;max-width:none;color:#f1eee8}
+.market-dashboard .dashboard-chart figcaption p{font-size:12px;line-height:1.6;margin-top:11px;max-width:750px}
+.market-dashboard .dashboard-chart .letter-chart-visual{border:0;border-radius:0;background:transparent;padding:11px 18px 20px;flex:1}
+.market-dashboard .dashboard-chart .chart{height:clamp(230px,24vw,330px)}
+.dashboard-analysis{background:linear-gradient(155deg,#1b303a,#142431);border:1px solid rgba(177,208,205,.24);border-radius:9px;padding:26px 25px;display:flex;flex-direction:column;min-width:0}
+.dashboard-analysis h2{font:400 clamp(24px,2vw,31px)/1.22 Georgia,serif;color:#f4f0e8;letter-spacing:-.03em;margin:11px 0 14px}
+.dashboard-analysis>p{color:#bac9c9;font-size:13px;line-height:1.78;margin:0 0 17px}
+.dashboard-analysis-judgment,.dashboard-analysis-watch{padding-top:16px;border-top:1px solid rgba(173,210,207,.19)}
+.dashboard-analysis-judgment strong,.dashboard-analysis-watch strong{display:block;color:#c4ddce;font-size:12px;margin-bottom:8px}
+.dashboard-analysis-judgment p,.dashboard-analysis-watch p{font-size:13px;line-height:1.72;color:#c9d4d2;margin:0 0 14px}
+.dashboard-analysis-watch{margin-top:auto}
+.dashboard-analysis-watch strong{color:#e2cb9f}
+.dashboard-proof{margin:10px 0 35px}
+.dashboard-proof .letter-evidence{max-width:none;margin:0;border:1px solid rgba(176,207,207,.2);border-radius:9px;padding:18px 21px;background:#10212c}
+.dashboard-proof .letter-evidence-heading{margin:0 0 6px}
+.dashboard-proof .letter-proof-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:0 23px}
+.dashboard-proof .letter-proof-row{grid-template-columns:minmax(0,1fr) auto;gap:7px 13px;padding:14px 0}
+.dashboard-proof .letter-proof-row .proof-detail,.dashboard-proof .letter-proof-row small{grid-column:1/-1;text-align:left}
+.dashboard-proof .letter-proof-row>strong{font-size:22px}
+.dashboard-deep-links{margin:0 0 36px}
+.dashboard-link-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}
+.dashboard-research-link{background:#10222f;border:1px solid rgba(171,207,207,.19);border-radius:8px;min-height:157px;padding:19px;display:flex;flex-direction:column;align-items:flex-start;gap:10px;text-decoration:none;transition:background .15s,border-color .15s}
+.dashboard-research-link:hover{background:#183240;border-color:#75aa9a}
+.dashboard-research-link strong{font:400 23px/1.2 Georgia,serif;color:#f0ede6;letter-spacing:-.02em}
+.dashboard-research-link span{font-size:12px;color:#b0c7c9;line-height:1.65}
+.dashboard-research-link b{margin-top:auto;font-size:18px;color:#a8d9c4;font-weight:400}
+.dashboard-dossier{border:1px solid rgba(171,206,207,.23);border-radius:9px;background:#0f202b;margin:0 0 23px;overflow:hidden}
+.dashboard-dossier>summary{list-style:none;cursor:pointer;position:relative;display:flex;flex-direction:column;gap:7px;padding:21px 26px}
+.dashboard-dossier>summary::-webkit-details-marker{display:none}
+.dashboard-dossier>summary>span{font-size:10px;letter-spacing:.14em;color:#a4d8c2;font-weight:800}
+.dashboard-dossier>summary>strong{font:400 27px/1.23 Georgia,serif;color:#f2eee8}
+.dashboard-dossier>summary>small{color:#9fb7ba;font-size:12px}
+.dashboard-dossier>summary:after{position:absolute;right:28px;top:34px;content:'＋';font-size:24px;color:#b2d7c4}
+.dashboard-dossier[open]>summary:after{content:'−'}
+.dashboard-dossier .letter-argument{padding:25px 30px 6px}
+.dashboard-dossier .letter-main{max-width:840px}
+.dashboard-dossier .letter-section h2{font-size:28px}
+.dashboard-dossier .letter-section p{font-size:15px;line-height:1.82}
+.dashboard-dossier .letter-argument-after{border-top:0}
+.dashboard-footer{margin:0;padding-top:18px}
+.research-essay-dashboard{max-width:none;border:1px solid rgba(174,205,206,.2);background:#10222e;border-radius:9px;padding:21px 25px 19px;margin:0 0 22px}
+.research-essay-dashboard .essay-top{margin:0 0 13px}
+.essay-dashboard-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(235px,.65fr);gap:30px}
+.research-essay-dashboard h2{font:400 clamp(24px,2.1vw,34px)/1.23 Georgia,serif;max-width:800px;margin:0 0 12px;letter-spacing:-.025em}
+.research-essay-dashboard .essay-prose p{font-size:14px;line-height:1.76;margin:0 0 10px;color:#d4dbd7}
+.research-essay-dashboard .essay-prose p:first-child{font-size:14.5px;line-height:1.76}
+.essay-details{border-top:1px solid rgba(173,206,203,.2);margin-top:13px;padding-top:9px}
+.essay-details summary{cursor:pointer;color:#bce0cd;font-weight:720;font-size:12px}
+.essay-details summary span{margin-left:6px}
+.essay-details[open] summary{margin-bottom:14px}
+.essay-details p{margin-bottom:12px!important;color:#bdcdcd!important}
+.essay-visual-guide{border-left:1px solid rgba(172,211,206,.2);padding:5px 0 7px 20px;display:flex;flex-direction:column}
+.essay-visual-guide>span{font-size:10px;letter-spacing:.13em;color:#accdbc;font-weight:800}
+.essay-visual-guide>strong{font:400 23px/1.24 Georgia,serif;color:#f1ede7;margin:14px 0 9px}
+.essay-visual-guide p{color:#acc1c6;font-size:12px;line-height:1.72;margin:0 0 10px}
+.essay-visual-guide a{font-size:12px;color:#bfe1cd;margin-top:auto;text-decoration:underline;text-underline-offset:4px}
+.research-essay-dashboard .essay-foot{padding:10px 0 0;margin:14px 0 0}
+.research-essay-dashboard .essay-foot>span{font-size:10px}
+.research-essay-dashboard+.page-hero{margin-bottom:24px}
+@media(max-width:1250px){
+ .dashboard-chart-grid{grid-template-columns:minmax(0,1.3fr) minmax(285px,.7fr)}
+ .dashboard-kpi{padding:15px}
+ .dashboard-link-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .dashboard-research-link{min-height:130px}
+}
+@media(max-width:950px){
+ .dashboard-title-row{grid-template-columns:1fr}
+ .dashboard-context{padding:12px 16px}
+ .dashboard-context>strong{font-size:22px}
+ .dashboard-chart-grid{grid-template-columns:1fr}
+ .dashboard-analysis{padding:22px;display:block}
+ .dashboard-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .essay-dashboard-grid{grid-template-columns:1fr;gap:12px}
+ .essay-visual-guide{border-left:0;border-top:1px solid rgba(172,211,206,.2);padding:15px 0 5px}
+}
+@media(max-width:650px){
+ .dashboard-topline{display:block;line-height:1.6}
+ .dashboard-topline span{display:block}
+ .dashboard-topline span:last-child{margin-top:5px}
+ .dashboard-heading{padding-bottom:22px}
+ .dashboard-title-row{padding-top:21px;gap:18px}
+ .dashboard-title-row h1{font-size:clamp(30px,8.2vw,42px)}
+ .dashboard-title-row .letter-opening p{font-size:14px;line-height:1.72}
+ .dashboard-section-head{display:block;margin-bottom:12px}
+ .dashboard-section-head p{text-align:left;margin-top:4px;font-size:11px}
+ .dashboard-kpi-grid{gap:8px}
+ .dashboard-kpi{padding:13px 12px}
+ .dashboard-kpi-label{font-size:10.5px}
+ .dashboard-kpi strong{font-size:25px}
+ .dashboard-kpi-meta{font-size:9.5px}
+ .market-dashboard .dashboard-chart figcaption{padding:18px 15px 8px}
+ .market-dashboard .dashboard-chart figcaption strong{font-size:24px}
+ .market-dashboard .dashboard-chart .letter-chart-visual{padding:8px 9px 15px}
+ .market-dashboard .dashboard-chart .chart{height:215px}
+ .dashboard-analysis{padding:18px 16px}
+ .dashboard-proof .letter-evidence{padding:13px}
+ .dashboard-proof .letter-proof-list{grid-template-columns:1fr}
+ .dashboard-proof .letter-proof-row{padding:12px 0}
+ .dashboard-link-grid{grid-template-columns:1fr}
+ .dashboard-research-link{min-height:0;padding:15px}
+ .dashboard-research-link strong{font-size:23px}
+ .dashboard-dossier>summary{padding:18px 16px}
+ .dashboard-dossier>summary>strong{font-size:23px;padding-right:15px}
+ .dashboard-dossier>summary:after{right:16px;top:25px}
+ .dashboard-dossier .letter-argument{padding:22px 15px 0}
+ .research-essay-dashboard{padding:16px 14px}
+ .research-essay-dashboard h2{font-size:27px}
+ .research-essay-dashboard .essay-prose p{font-size:13.5px}
+}
