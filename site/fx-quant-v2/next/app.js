@@ -416,6 +416,7 @@ function overview(){
  +(tooOld?'<p class="letter-stale">Dati storici: questa è una lettura di archivio, non un aggiornamento intraday. Le ultime osservazioni non sono recenti.</p>':'')
  +'</header>'
  +'<section class="dashboard-metrics" aria-label="Indicatori che supportano il tema di mercato"><div class="dashboard-section-head"><span>01 / INDICATORI</span><p>Le variazioni riportano la propria data, non un’unica fotografia in tempo reale.</p></div><div class="dashboard-kpi-grid">'+kpis+'</div></section>'
+ +(typeof window!=='undefined'&&window.FXQuantDecisionJourney?.build?window.FXQuantDecisionJourney.build({get,state,plot,fmt,sign,date,dayNow,esc}).overview():'<section class="decision-overview"><p>Percorso operativo non caricato. Nessuna selezione viene proposta.</p></section>')
  +'<section class="dashboard-main"><div class="dashboard-section-head"><span>02 / GRAFICI E INTERPRETAZIONE</span><p>Scegli uno strumento per cercare conferme e divergenze.</p></div>'
  +'<div class="dashboard-chart-grid"><figure class="letter-chart dashboard-chart"><figcaption><span>DATI DI MERCATO</span><strong>'+esc(firstChart)+'</strong><p>'+esc(focusText)+'</p></figcaption>'
  +'<div class="letter-chart-visual">'+homeScreenChart()+'</div></figure>'
@@ -424,7 +425,7 @@ function overview(){
  +'<div class="dashboard-analysis-watch"><strong>Che cosa potrebbe smentirci?</strong><p>'+esc(falsify)+'</p></div></aside></div></section>'
  +'<section class="dashboard-proof"><div class="dashboard-section-head"><span>03 / PROVE CHE SOSTENGONO LA TESI</span><p>Solo movimenti verificabili nella seduta considerata.</p></div>'+researchEvidence(context)+'</section>'
  +'<section class="dashboard-deep-links"><div class="dashboard-section-head"><span>04 / ESPLORA IL RESEARCH DESK</span><p>Grafici e analisi approfondite, senza duplicare l’intera Home.</p></div><div class="dashboard-link-grid">'+links+'</div></section>'
- +(typeof window!=='undefined'&&window.FXQuantDecisionJourney?.build?window.FXQuantDecisionJourney.build({get,state,plot,fmt,sign,date,dayNow,esc}).overview():'<section class="decision-overview"><p>Percorso operativo non caricato. Nessuna selezione viene proposta.</p></section>')
+
  +'<details class="dashboard-dossier"><summary><span>PER CHI VUOLE APPROFONDIRE</span><strong>Apri il ragionamento macro completo</strong><small>Curva, inflazione, lavoro, pricing, Forex e condizioni di invalidazione.</small></summary>'
  +'<div class="letter-argument"><span class="letter-margin">LA TESI IN PROFONDITÀ</span><div class="letter-main">'
  +section('Il movimento dei bond non basta a spiegare tutto',esc(shape)+' '+esc(pricingReading))
