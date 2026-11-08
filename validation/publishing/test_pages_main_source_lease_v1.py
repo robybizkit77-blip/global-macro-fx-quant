@@ -67,20 +67,29 @@ for remote, should_pass in (
 
 print("PAGES_MAIN_SOURCE_LEASE_CONTRACT_PASS")
 
-# A GITHUB_TOKEN commit from the date-gated Oct-30 official-actual job
-# does not fan out into the publisher's plain push trigger. Its completed
-# workflow_run must therefore be an explicit source of Pages publication.
-producer = (root / ".github/workflows/macro-official-actual-fast-poll-20261030.yml").read_text()
-import re as _re
-source_name = _re.search(r"(?m)^name:\s*(.+?)\s*$", producer)
-assert source_name, "OCT30_OFFICIAL_ACTUAL_PRODUCER_NAME_MISSING"
+# GitHub Actions GITHUB_TOKEN producer commits do not reliably trigger a
+# downstream 'push' workflow. Verify the *current, existing* source producer
+# is registered through workflow_run; do not depend on a retired event file.
+producer_path = root / ".github/workflows/ois-estimated-snapshot-repricing-v1.yml"
+assert producer_path.is_file(), "PAGES_OIS_PRODUCER_WORKFLOW_MISSING"
+producer = producer_path.read_text(encoding="utf-8")
+source_name = re.search(r"(?m)^name:\s*(.+?)\s*$", producer)
+assert source_name and source_name.group(1) == "OIS Estimated Snapshot Repricing V1", (
+    "PAGES_OIS_PRODUCER_IDENTITY_MISMATCH"
+)
 triggers = workflow.split("\n  workflow_run:\n", 1)[1].split("\n  workflow_dispatch:", 1)[0]
 assert triggers.count("'" + source_name.group(1) + "'") == 1, (
-    "OCT30_OFFICIAL_ACTUAL_PAGES_TRIGGER_MISSING_OR_DUPLICATED"
+    "PAGES_OIS_PRODUCER_TRIGGER_MISSING_OR_DUPLICATED"
 )
 assert "types: [completed]" in triggers, "PAGES_WORKFLOW_RUN_COMPLETED_EVENT_MISSING"
 assert "github.event.workflow_run.conclusion == 'success'" in workflow, (
     "PAGES_PUBLISHER_MUST_REQUIRE_SUCCESSFUL_PRODUCER"
 )
-print("PAGES_OCT30_OFFICIAL_ACTUAL_TRIGGER_PASS")
+assert "github.event.workflow_run.head_branch == 'main'" in workflow, (
+    "PAGES_PUBLISHER_MUST_RESTRICT_PRODUCER_TO_MAIN"
+)
+assert "NZD_CB_PRICING_DIRECTIONAL_PROXY.json" in producer, (
+    "PAGES_OIS_PRODUCER_NO_LONGER_OWNS_NZD_PROXY"
+)
+print("PAGES_OIS_ESTIMATED_SOURCE_TRIGGER_PASS")
 
