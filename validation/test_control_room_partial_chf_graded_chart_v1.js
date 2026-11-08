@@ -42,13 +42,26 @@ assert(primary.includes('data-complete-tenors="'+actualCoverage+'/8"'),
  'Complete-tenor tally must follow independently verified current source');
 assert.equal(liveRows.length,visibleCoverage,'Plot contains only sourced currencies');
 const chfLive=liveMatrix.find(r=>r.ccy==='CHF');
-assert(chfLive&&['3m','6m','12m'].some(t=>Number.isFinite(chfLive.points[t]?.value)),
- 'Actual CHF accrual-start mapped 3M/6M/12M futures should remain visible');
-// The negative fixture models missing 3M/6M quotes WITHOUT changing repo feeds.
+assert(chfLive&&['6m','12m'].some(t=>Number.isFinite(chfLive.points[t]?.value)),
+ 'Independently dated CHF futures 6M/12M must remain visible');
+assert.equal(chfLive.points['3m'],undefined,
+ 'An unquoted SARON roster contract must never render as observed 3M rate');
+// The negative fixture removes 3M/6M *source evidence* in-memory only;
+// merely setting verified=false is insufficient when the real feed has
+// explicit conflict identities for those tenors.
 const partialFeed=structuredClone(srcFeed);
 for(const term of ['3m','6m']){
-  partialFeed.currencies.CHF.horizons[term].quote_timestamp_verified=false;
+  const p=partialFeed.currencies.CHF.horizons[term];
+  p.quote_timestamp_verified=false;
+  p.quote_timestamp_source='MISSING_UNVERIFIED_SOURCE';
+  p.futures_price=null;
+  p.rate=null;
 }
+const rosterReactivated=structuredClone(srcFeed);
+rosterReactivated.currencies.CHF.horizons['3m'].quote_timestamp_verified=true;
+rosterReactivated.currencies.CHF.horizons['3m'].quote_timestamp_source='SSR_DAILY_BAR_DATA_UPDATE_TIME';
+assert.equal(addon.matrix(rosterReactivated,bb,now).find(r=>r.ccy==='CHF').points['3m'],undefined,
+ 'A forged verification flag cannot revive a calendar-only unquoted 3M source');
 const rows=api.marketResearchGraded(partialFeed,bb);
 const partialPrimary=addon.view(addon.matrix(partialFeed,bb,now));
 const partialMatrix=addon.matrix(partialFeed,bb,now);
@@ -74,7 +87,10 @@ assert.deepEqual(chf.pts,[null,null,liveRows.find(x=>x.k==='CHF').pts[2]]);
 // The actual 12M quote may advance independently of 3M/6M.
 assert.deepEqual(chf.dates,[null,null,srcFeed.currencies.CHF.horizons['12m'].quote_as_of]);
 assert.deepEqual(chf.missingTenors,['3m','6m']);
-assert.equal(rows.filter(x=>x.verifiedTenors===3).length,liveRows.filter(x=>x.verifiedTenors===3).length-1);
+const liveFullCount=liveRows.filter(x=>x.verifiedTenors===3).length;
+const expectedFullCount=liveFullCount-(liveRows.find(x=>x.k==='CHF').verifiedTenors===3?1:0);
+assert.equal(rows.filter(x=>x.verifiedTenors===3).length,expectedFullCount,
+ 'Full-tenor coverage must follow live source, not frozen CHF coverage');
 const html=api.marketResearchGradedSvg(rows);
 assert(html.includes('data-currencies="'+visibleCoverage+'"'));
 const group=html.match(/<g data-graded-ccy="CHF"[\s\S]*?<\/g>/);
