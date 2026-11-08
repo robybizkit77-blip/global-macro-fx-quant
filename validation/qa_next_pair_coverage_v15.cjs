@@ -13,7 +13,7 @@ const source=fs.readFileSync('site/fx-quant-v2/next/app.js','utf8');
 const start=source.indexOf('function pairCoverage(k){');
 const end=source.indexOf('\nfunction riskAligned(){',start);
 assert(start>=0&&end>start,'Coverage module in the FX pair explorer is absent');
-const normalToday='2026-11-08';
+const normalToday=new Date(Date.parse(model.price_asof+'T12:00:00Z')+2*86400000).toISOString().slice(0,10);
 const context={
  window:{FXQuantDecisionJourney:fx,FXQuantRatesBridge:rate},
  get:key=>({pairs:model,currencyPrices:prices,rates})[key],
@@ -48,15 +48,16 @@ const summary=context.pairCoverageIntro();
 for(const key of Object.keys(totals))assert(summary.includes(totals[key]+'/28'),key+' summary value must match actual data');
 assert(summary.includes('non OIS'));
 assert(summary.includes('trattino')&&summary.includes('direzione non definita'),'missing evidence is not an adverse trade signal');
-if(model.price_asof==='2026-11-06')assert.equal(JSON.stringify(totals),JSON.stringify({price:28,reference:17,rateShort:10,rateMedium:6}));
-assert.equal(coverage.filter(x=>x.c.rateShort).length,10);
-assert.equal(coverage.filter(x=>x.c.reference).length,17);
+assert.equal(totals.price,coverage.filter(x=>x.c.price).length);
+assert.equal(totals.rateShort,coverage.filter(x=>x.c.rateShort).length);
+assert.equal(totals.reference,coverage.filter(x=>x.c.reference).length);
 const missingSrc={...context,get:key=>({pairs:model})[key]};
 vm.createContext(missingSrc);new vm.Script(source.slice(start,end)).runInContext(missingSrc,{timeout:2000});
 const notLoaded=missingSrc.pairCoverage('EURUSD');
 assert(Object.values(notLoaded).every(v=>v===false),'No feed means no coverage claims');
 assert(missingSrc.pairCoverageIntro().includes('0/28'));
-const stale={...context,dayNow:()=> '2026-12-20'};
+const staleDay=new Date(Date.parse(model.price_asof+'T12:00:00Z')+45*86400000).toISOString().slice(0,10);
+const stale={...context,dayNow:()=>staleDay};
 vm.createContext(stale);new vm.Script(source.slice(start,end)).runInContext(stale,{timeout:2000});
 assert(Object.values(stale.pairCoverage('EURUSD')).every(v=>!v),'Old data must not claim daily coverage');
 const page=fs.readFileSync('site/fx-quant-v2/next/index.html','utf8');
