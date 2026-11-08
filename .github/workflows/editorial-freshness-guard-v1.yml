@@ -84,7 +84,7 @@ jobs:
             // and its 43 mirrored source assets, not the v10 wrapper. Strip
             // ONLY the navigation redirect inside this isolated local test
             // response; never change the production public redirect.
-            await page.route('http://127.0.0.1:8000/',async route=>{
+            const isolateLegacyRuntime=async route=>{
               const response=await route.fetch();
               const original=await response.text();
               const marker='<script data-gmfq-legacy-redirect="v10">';
@@ -92,7 +92,8 @@ jobs:
               const body=original.replace(/<script data-gmfq-legacy-redirect="v10">[\s\S]*?<\/script>/,'');
               if(body===original)throw new Error('Legacy redirect test isolation failed');
               await route.fulfill({response,body});
-            });
+            };
+            await page.route('http://127.0.0.1:8000/',isolateLegacyRuntime);
             const response=await page.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
             if(page.url()!=='http://127.0.0.1:8000/')throw new Error('Unexpected public redirect inside isolated legacy audit');
             console.log('LEGACY_RUNTIME_ISOLATED_FROM_APPROVED_V10_PUBLIC_REDIRECT');
@@ -187,9 +188,13 @@ jobs:
               body.risk.VIX.last_value=null;
               await route.fulfill({response,contentType:'application/json',body:JSON.stringify(body)});
             });
+            // Negative VIX regression needs the same isolated legacy
+            // runtime. Otherwise / redirects to v10 and the old global
+            // can never load, yielding a misleading two-minute timeout.
+            await damaged.route('http://127.0.0.1:8000/',isolateLegacyRuntime);
             await damaged.goto('http://127.0.0.1:8000/',{waitUntil:'domcontentloaded',timeout:120000});
             await damaged.waitForFunction(()=>window.GMFQ_RISK_OPERATIONAL?.status==='ACTIVE'&&
-              window.GMFQ_EDITORIAL_FRESHNESS?.operational_loaded===true,null,{timeout:120000});
+              window.GMFQ_EDITORIAL_FRESHNESS?.operational_loaded===true,null,{timeout:30000});
             const negative=await damaged.evaluate(()=>{
               const card=document.querySelector('#risk [data-risk="VIX"]');
               const audit=window.gmfqEditorialFreshnessAudit?.().sections?.risk;
