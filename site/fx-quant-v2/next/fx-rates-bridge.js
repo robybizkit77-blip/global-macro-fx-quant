@@ -7,13 +7,50 @@
  const isDay=s=>typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s);
  const isNum=x=>typeof x==='number'&&Number.isFinite(x);
  const days=(a,b)=>isDay(a)&&isDay(b)?Math.round((Date.parse(b+'T12:00:00Z')-Date.parse(a+'T12:00:00Z'))/864e5):null;
+
+ const isGovSource=r=>/^FULL_CURRENT_OFFICIAL/.test(r?.quality||'')||
+  r?.quality==='OFFICIAL_RBA_F2_DAILY_RESEARCH_ONLY';
+ // RBA daily observations remain independent research: no Core or FX engine writes.
+ function researchRates(rateData,research,modelDate,now){
+  const a=rateData?.AUD,o=research?.observations;
+  if(!a||!/^FULL_CURRENT_OFFICIAL/.test(a.quality||'')||
+    research?.schema!=='GMFQ_AUD_RBA_F2_DAILY_HISTORY_RESEARCH_V1'||
+    research?.status!=='OFFICIAL_F2_DAILY_RESEARCH_ONLY_NOT_POINT_IN_TIME'||
+    research?.source_url!=='https://www.rba.gov.au/statistics/tables/csv/f2-data.csv'||
+    research?.series_2Y!=='FCMYGBAG2D'||research?.series_10Y!=='FCMYGBAG10D'||
+    !/^[0-9a-f]{64}$/.test(research?.source_response_sha256||'')||
+    research?.research_only!==true||research?.same_date_same_source!==true||
+    research?.no_interpolation!==true||
+    research?.eligible_for_core!==false||research?.eligible_for_fx_pair_engine!==false||
+    research?.eligible_for_backtests!==false||
+    !isDay(research?.publication_date)||research.publication_date>now||
+    !isDay(research?.last_observation_date)||research.last_observation_date>modelDate||
+    research.last_observation_date>research.publication_date||
+    research.last_observation_date!==a.date||
+    !Array.isArray(o)||o.length<30||o.length>150)return rateData;
+  let previous='',valid=true;
+  for(const item of o){
+   if(!isDay(item?.date)||item.date<=previous||item.date>research.last_observation_date||
+    !isNum(item['2Y'])||!isNum(item['10Y'])||
+    !(item['2Y']>-5&&item['2Y']<25)||
+    !(item['10Y']>-5&&item['10Y']<25)){valid=false;break}
+   previous=item.date;
+  }
+  const last=o.at(-1);
+  if(!valid||last.date!==research.last_observation_date||
+   Math.abs(last['2Y']-a['2Y'])>0.00001||
+   Math.abs(last['10Y']-a['10Y'])>0.00001)return rateData;
+  return {...rateData,AUD:{...a,quality:'OFFICIAL_RBA_F2_DAILY_RESEARCH_ONLY',
+   source:'Reserve Bank of Australia F2 · assessed government 2Y/10Y daily, research only',
+   history2:{dates:o.map(v=>v.date),values:o.map(v=>v['2Y'])},
+   researchOnly:true,sourcePublicationDate:research.publication_date}};
+ }
  function commonObservations(rateData,prices,pair,modelDate,now){
   if(!/^[A-Z]{6}$/.test(pair||'')||!isDay(modelDate)||modelDate>now||
    !Array.isArray(prices?.rows))return [];
   const base=pair.slice(0,3),quote=pair.slice(3),a=rateData?.[base],b=rateData?.[quote];
   if(!a||!b||!isDay(a.date)||!isDay(b.date)||
-    !/^FULL_CURRENT_OFFICIAL/.test(a.quality||'')||
-    !/^FULL_CURRENT_OFFICIAL/.test(b.quality||''))return [];
+    !isGovSource(a)||!isGovSource(b))return [];
   const makeMap=r=>{
    const d=r.history2?.dates,v=r.history2?.values,acc=new Map();
    if(!Array.isArray(d)||!Array.isArray(v)||d.length!==v.length)return null;
@@ -42,11 +79,12 @@
   const direction=(Math.abs(fx)<1e-10||Math.abs(bp)<1e-10)?'NEUTRO':fx*bp>0?'STESSO SEGNO':'SEGNO OPPOSTO';
   return {n,start:start.date,end:last.date,days:span,fxPct:fx,spreadBp:bp,direction};
  }
- function snapshot(rateData,prices,pair,modelDate,now){
+ function snapshot(rateData,prices,pair,modelDate,now,audHistory){
+  const eff=String(pair||'').includes('AUD')?researchRates(rateData,audHistory,modelDate,now):rateData;
   const base=String(pair||'').slice(0,3),quote=String(pair||'').slice(3,6);
-  const a=rateData?.[base],b=rateData?.[quote],rows=commonObservations(rateData,prices,pair,modelDate,now),latest=rows.at(-1);
+  const a=eff?.[base],b=eff?.[quote],rows=commonObservations(eff,prices,pair,modelDate,now),latest=rows.at(-1);
   const lag=latest?days(latest.date,modelDate):null,age=latest?days(latest.date,now):null;
-  const sourceOK=Boolean(a&&b&&/^FULL_CURRENT_OFFICIAL/.test(a.quality||'')&&/^FULL_CURRENT_OFFICIAL/.test(b.quality||''));
+  const sourceOK=Boolean(isGovSource(a)&&isGovSource(b));
   const ready=Boolean(latest&&sourceOK&&lag!==null&&lag>=0&&lag<=3&&age!==null&&age>=0&&age<=5);
   const short=ready?metrics(rows,5,12):null;
   const medium=ready?metrics(rows,20,45):null;
@@ -55,11 +93,11 @@
     :!ready?'Ultima osservazione FX/2Y comune troppo vecchia per confrontare i movimenti recenti.'
     :!short?'Storico troppo discontinuo: 5 intervalli fra date comuni coprono più di 12 giorni o sono insufficienti.'
     :'';
-  return {pair,base,quote,rows,latest,age,lag,ready:ready&&Boolean(short),
+  return {pair,base,quote,rows,latest,age,lag,ready:ready&&Boolean(short),researchOnly:!!(a?.researchOnly||b?.researchOnly),
    short,medium,reason,
    firstSource:a?.source||'',secondSource:b?.source||'',
    // This series is a relative sovereign yield difference; never an OIS spread.
-   kind:'2Y GOV · DIFFERENZIALE INDICATIVO (NON OIS)'};
+   kind:(a?.researchOnly||b?.researchOnly)?'2Y GOV · RBA F2 RICERCA (NON CORE / NON OIS)':'2Y GOV · DIFFERENZIALE INDICATIVO (NON OIS)'};
  }
  // A short, source-dated research observation, never a trade decision.
  function brief(r){
@@ -73,14 +111,14 @@
   const tone=r.medium&&r.short.direction!==r.medium.direction?'mixed':
     r.short.direction==='SEGNO OPPOSTO'?'divergent':
     r.short.direction==='STESSO SEGNO'?'aligned':'uncertain';
-  const label='5 intervalli '+short+' · 20 '+long;
+  const label='5 intervalli '+short+' · 20 '+long+(r.researchOnly?' · RBA F2 ricerca':'');
   return {ready:true,asof:r.latest.date,tone,label,
    explanation:'Confronto di segno su fixing BCE e governativi 2Y con le stesse date; non OIS, non causalità né segnale.'};
  }
  function build(api){
   const {get,state,plot,fmt,sign,date,esc,dayNow}=api;
   const pair=state.pair||'EURUSD',doc=get('pairs');
-  const r=snapshot(get('rates'),get('currencyPrices'),pair,doc?.price_asof,dayNow());
+  const r=snapshot(get('rates'),get('currencyPrices'),pair,doc?.price_asof,dayNow(),get('audDailyResearch'));
   function read(x){
    if(!x)return 'Non verificabile con la copertura attuale.';
    const direction=x.direction==='STESSO SEGNO'?'si sono mossi nello stesso verso'
@@ -116,6 +154,6 @@
   }
   return {data:r,render};
  }
- if(typeof window!=='undefined')window.FXQuantRatesBridge={snapshot,commonObservations,metrics,brief,build};
- if(typeof module!=='undefined'&&module.exports)module.exports={snapshot,commonObservations,metrics,brief,build};
+ if(typeof window!=='undefined')window.FXQuantRatesBridge={snapshot,commonObservations,metrics,brief,build,researchRates};
+ if(typeof module!=='undefined'&&module.exports)module.exports={snapshot,commonObservations,metrics,brief,build,researchRates};
 })();
