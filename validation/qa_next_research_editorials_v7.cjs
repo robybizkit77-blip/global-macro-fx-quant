@@ -39,7 +39,7 @@ for(const route of routes){
  assert.match(html,/class="research-essay"/,route+' has no editorial');
  assert.equal((html.match(/<div class="essay-prose">/g)||[]).length,1);
  assert.equal((html.match(/<p>/g)||[]).length,3,route+' missing coherent prose');
- assert.match(html,/Rileggi|Confronta|Esamina|Verifica|Torna/,route+' missing relevant next study');
+ assert.match(html,/<a href="#(?:macro|rates|currencies|pairs|cot|risk|news|overview)"/,route+' missing valid next-study link');
  assert(!html.includes('WITHHELD'),route+' exposes internal data quality marker');
  headlines.push(html.match(/<h2>([^<]+)<\/h2>/)?.[1]);
 }
