@@ -10,6 +10,7 @@ const NAMES={USD:'Stati Uniti',EUR:'Area euro',GBP:'Regno Unito',JPY:'Giappone',
 const ROUTES={overview:'Panoramica',currencies:'Valute G8',pairs:'Coppie FX',macro:'Scenario macro',rates:'Tassi & OIS',cot:'COT',risk:'Rischio',news:'Notizie'};
 const SOURCES={
  rates:'../../../live_data/sections/NATIVE_RATES_DATA.json',
+ audDailyResearch:'../aud-rba-f2-history-research.json',
  dxy:'../../../live_data/sections/DXY_SYNTHETIC_ECB.json',
  currencyPrices:'../../../live_data/sections/ECB_G8_PRICE_HISTORY.json',
  pairs:'../../../live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json',
@@ -151,15 +152,15 @@ function pairCoverage(k){
  const p=typeof window!=='undefined'&&window.FXQuantDecisionJourney?.profile?
   window.FXQuantDecisionJourney.profile(k,model,prices,today):null;
  const y=typeof window!=='undefined'&&window.FXQuantRatesBridge?.snapshot?
-  window.FXQuantRatesBridge.snapshot(rates,prices,k,model?.price_asof,today):null;
+  window.FXQuantRatesBridge.snapshot(rates,prices,k,model?.price_asof,today,get('audDailyResearch')):null;
  return {price:!!(p?.fresh&&p.closes?.length>=22),reference:!!p?.watch?.ready,
-  rateShort:!!(y?.ready&&y.short),rateMedium:!!(y?.ready&&y.medium)};
+  rateShort:!!(y?.ready&&y.short),rateMedium:!!(y?.ready&&y.medium),rateResearch:!!(y?.ready&&y.researchOnly)};
 }
 function pairCoverageLabels(c){
  const items=[['FX daily',c.price,'fixing BCE'],['Rif. daily',c.reference,'riferimenti nella direzione favorita'],
   ['2Y breve',c.rateShort,'5 intervalli comuni governativi 2Y'],['2Y medio',c.rateMedium,'20 intervalli comuni governativi 2Y']];
  return '<span class="pair-data-coverage" aria-label="Disponibilità dei dati">'+
-  items.map(([label,ok,meaning])=>'<span class="pair-data-state '+(ok?'available':'missing')+
+  items.map(([label,ok,meaning])=>'<span class="pair-data-state '+(ok&&c.rateResearch&&label.startsWith('2Y')?'research':ok?'available':'missing')+
    '" title="'+(ok?'Disponibile: ':'Non verificabile: ')+meaning+'"><span aria-hidden="true">'+
    (ok?'✓':'–')+'</span>'+label+'</span>').join('')+'</span>';
 }
@@ -180,7 +181,7 @@ function pairCoverageIntro(){
   '<strong>'+counts.reference+'/'+all.length+'</strong> rif. daily · '+
   '<strong>'+counts.rateShort+'/'+all.length+'</strong> 2Y breve · '+
   '<strong>'+counts.rateMedium+'/'+all.length+'</strong> 2Y medio'+
-  '<small>2Y = governativi, non OIS. Il trattino indica dati insufficienti o direzione non definita, non un giudizio sul trade.</small></p>';
+  '<small>2Y = governativi, non OIS. Per AUD i controlli possono usare storico RBA F2 di ricerca (ambra, non Core). Il trattino indica dati insufficienti o direzione non definita, non un giudizio sul trade.</small></p>';
 }
 function riskAligned(){
  const a=get('risk')?.streams||{},n=a.NASDAQCOM,v=a.VIX,h=a.HY_OAS;

@@ -133,7 +133,7 @@ assert(model.includes('FXQuantRatesBridge')&&model.includes('ratesEvidence'),'Pa
 const dossierFn=model.slice(model.indexOf('  function pair(){'),model.indexOf('  return {overview,pair,data};'));
 assert(!/\bconst window\s*=/.test(dossierFn),'A local window variable hides global browser module access');
 assert(dossierFn.includes('const chartWindow='),'Price chart lookback must not shadow the Window global');
-assert(page.includes('fx-rates-bridge.js?v=14'));
-assert(page.indexOf('fx-rates-bridge.js?v=14')<page.indexOf('decision-journey.js?v=14'));
-assert(page.includes('editorial-v4.css?v=15'));
+assert(page.includes('fx-rates-bridge.js?v=16'));
+assert(page.indexOf('fx-rates-bridge.js?v=16')<page.indexOf('decision-journey.js?v=16'));
+assert(page.includes('editorial-v4.css?v=16'));
 console.log('NEXT_V14_FX_RATES_PASS: common observation dates, 5/20 horizons, sovereign 2Y versus FX, basis risk, no OIS fiction');

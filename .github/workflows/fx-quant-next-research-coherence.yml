@@ -19,6 +19,8 @@ on:
       - 'validation/qa_next_research_decision_v9.cjs'
       - 'validation/qa_next_fx_rates_bridge_v13.cjs'
       - 'validation/qa_next_pair_coverage_v15.cjs'
+      - 'validation/qa_next_aud_f2_daily_research_v16.cjs'
+      - 'site/fx-quant-v2/aud-rba-f2-history-research.json'
       - 'live_data/sections/ECB_G8_PRICE_HISTORY.json'
       - '.github/workflows/fx-quant-next-research-coherence.yml'
   workflow_dispatch:
@@ -52,3 +54,5 @@ jobs:
         run: node validation/qa_next_fx_rates_bridge_v13.cjs
       - name: Verify per-pair status across all 28 G8 crosses and missing-data guardrails
         run: node validation/qa_next_pair_coverage_v15.cjs
+      - name: Verify quarantined RBA F2 daily research source and no Core promotion
+        run: node validation/qa_next_aud_f2_daily_research_v16.cjs

@@ -5,6 +5,7 @@ const json=p=>JSON.parse(fs.readFileSync(p,'utf8'));
 const model=json('live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json');
 const prices=json('live_data/sections/ECB_G8_PRICE_HISTORY.json');
 const rates=json('live_data/sections/NATIVE_RATES_DATA.json');
+const audResearch=json('site/fx-quant-v2/aud-rba-f2-history-research.json');
 const fx=require('../site/fx-quant-v2/next/decision-journey.js');
 const rate=require('../site/fx-quant-v2/next/fx-rates-bridge.js');
 const keys=Object.keys(model.pairs||{}).sort();
@@ -16,7 +17,7 @@ assert(start>=0&&end>start,'Coverage module in the FX pair explorer is absent');
 const normalToday=new Date(Date.parse(model.price_asof+'T12:00:00Z')+2*86400000).toISOString().slice(0,10);
 const context={
  window:{FXQuantDecisionJourney:fx,FXQuantRatesBridge:rate},
- get:key=>({pairs:model,currencyPrices:prices,rates})[key],
+ get:key=>({pairs:model,currencyPrices:prices,rates,audDailyResearch:audResearch})[key],
  dayNow:()=>normalToday,
  eurPairs:()=>model.pairs,
  state:{pair:'EURUSD'},
@@ -30,11 +31,12 @@ new vm.Script(source.slice(start,end)).runInContext(context,{timeout:2000});
 const coverage=keys.map(key=>({key,c:context.pairCoverage(key)}));
 for(const {key,c}of coverage){
  const p=fx.profile(key,model,prices,normalToday);
- const r=rate.snapshot(rates,prices,key,model.price_asof,normalToday);
+ const r=rate.snapshot(rates,prices,key,model.price_asof,normalToday,audResearch);
  assert.equal(c.price,!!(p.fresh&&p.closes.length>=22),key+' fixing evidence');
  assert.equal(c.reference,!!p.watch.ready,key+' directional reference');
  assert.equal(c.rateShort,!!(r.ready&&r.short),key+' source-dated 2Y short');
  assert.equal(c.rateMedium,!!(r.ready&&r.medium),key+' source-dated 2Y medium');
+ assert.equal(c.rateResearch,!!(r.ready&&r.researchOnly),key+' source-dated RBA research indicator');
  assert(!c.reference||c.price,'Cannot show levels with unusable price history');
  assert(!c.rateMedium||c.rateShort,'20-period rate evidence cannot bypass short-date gate');
  const html=context.pairRow(key);
@@ -61,6 +63,6 @@ const stale={...context,dayNow:()=>staleDay};
 vm.createContext(stale);new vm.Script(source.slice(start,end)).runInContext(stale,{timeout:2000});
 assert(Object.values(stale.pairCoverage('EURUSD')).every(v=>!v),'Old data must not claim daily coverage');
 const page=fs.readFileSync('site/fx-quant-v2/next/index.html','utf8');
-assert(page.includes('app.js?v=15')&&page.includes('editorial-v4.css?v=15'));
+assert(page.includes('app.js?v=16')&&page.includes('editorial-v4.css?v=16'));
 assert(source.includes("'+pairCoverageIntro()+'"),'Coverage counter not visible in existing explorer');
 console.log('NEXT_V15_COVERAGE_PASS',JSON.stringify(totals), 'of',keys.length,'G8 FX pairs');
