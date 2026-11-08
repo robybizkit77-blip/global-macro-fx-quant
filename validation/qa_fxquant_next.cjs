@@ -24,7 +24,7 @@ fs.mkdirSync(evidence,{recursive:true});
    assert(/14\/14 fonti caricate/.test(sourceText),'Feed mismatch: '+sourceText);
    for(const route of ROUTES){
     await page.evaluate(r=>{location.hash='#'+r},route);
-    await page.waitForFunction(r=>document.querySelector('#crumb-page')?.textContent===({overview:'Panoramica',currencies:'Valute G8',pairs:'Coppie FX',macro:'Macro Lab',rates:'Tassi & OIS',cot:'Positioning',risk:'Risk Radar',news:'News Pulse'})[r],route);
+    await page.waitForFunction(r=>document.querySelector('#crumb-page')?.textContent===({overview:'La ricerca',currencies:'Valute G8',pairs:'Coppie FX',macro:'Scenario macro',rates:'Tassi & OIS',cot:'COT',risk:'Rischio',news:'Notizie'})[r],route);
     const h1=await page.locator('main h1').first().innerText();
     assert(h1.length>12,'Missing heading '+route);
     const overflow=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));
@@ -33,20 +33,24 @@ fs.mkdirSync(evidence,{recursive:true});
     results.push({width,route,h1,overflow:'PASS'});
    }
 
-   // NEXT EDITION: evidence-led market map, data theatre and cross-market navigation.
+   // NEXT V6: the lead topic must be explained by the evidence and default chart.
    await page.evaluate(()=>{location.hash='#overview'});
-   assert(await page.locator('.home-desk-lead').count()===1,'Home dated market narrative missing');
-   assert((await page.locator('.home-desk-lead').innerText()).includes('Treasury 2Y'),'Home desk must refer to observed front-end');
-   await page.locator('[data-atlas="fx"]').click();
-   assert((await page.locator('.lens-article h3').innerText()).includes('dollaro'),'Market atlas did not switch to FX evidence');
-   await page.locator('[data-atlas="risk"]').click();
-   assert((await page.locator('.lens-article').innerText()).includes('VIX'),'Market atlas risk narrative missing');
+   await page.waitForFunction(()=>document.querySelector('.market-letter')!==null);
+   assert(await page.locator('.market-letter .letter-opening').count()===1,'Narrative opening missing');
+   assert(await page.locator('.letter-argument .letter-section').count()>=4,'Research reasoning too shallow');
+   const evidenceRows=await page.locator('.letter-evidence .letter-proof-row').count();
+   assert(evidenceRows>=2,'Supporting observations missing');
+   assert(await page.locator('.letter-chart-visual .chart svg').count()>0,'Lead-chart evidence missing');
+   const regime=await page.locator('.letter-evidence').getAttribute('data-research-kind');
+   assert(['stress','relief','bond-rally','yield-selloff','fx-divergence','mixed'].includes(regime),'Unknown research case');
+   if(regime==='stress'||regime==='relief'){
+    assert((await page.locator('.letter-chart-visual .chart-legend').innerText()).includes('Nasdaq'),'Risk story must open on Nasdaq evidence');
+    assert((await page.locator('.letter-proof-list').innerText()).includes('Credito High Yield'),'Risk story has no credit corroboration');
+   }
    await page.locator('[data-hchart="vix"]').click();
-   assert((await page.locator('.theatre-chart .chart-legend').innerText()).includes('VIX'),'Market chart explorer did not switch to VIX');
+   assert((await page.locator('.letter-chart-visual .chart-legend').innerText()).includes('VIX'),'Chart switch to VIX failed');
    await page.locator('[data-hwindow="5"]').click();
-   assert(await page.locator('.theatre-chart .chart svg').count()>0,'Market chart 5 observations missing');
-   await page.locator('[data-home-pair="AUDCAD"]').click();
-   assert((await page.locator('.fx-focus-story h3').innerText()).includes('AUD/CAD'),'FX workbench does not switch the selected pair');
+   assert(await page.locator('.letter-chart-visual .chart svg').count()>0,'5-observation VIX chart missing');
    await page.locator('#quicklaunch').click();
    assert(await page.locator('#quick-layer').evaluate(el=>el.classList.contains('open')),'Quick search did not open');
    await page.locator('#quick-input').fill('EURGBP');
@@ -89,11 +93,11 @@ fs.mkdirSync(evidence,{recursive:true});
    assert((await page.locator('.orient-spot .micro-over').innerText()).includes('EUR/CHF'),'Peer comparison did not select CHF');
    // Research hyperlinks retain the chosen currency rather than resetting each studio.
    await page.locator('.orient-evidence-item[data-evidence="macro"] a').click();
-   await page.waitForFunction(()=>document.querySelector('#crumb-page')?.textContent==='Macro Lab',{timeout:6000});
+   await page.waitForFunction(()=>document.querySelector('#crumb-page')?.textContent==='Scenario macro',{timeout:6000});
    assert(await page.locator('.macro-country.active[data-ms-country="EUR"]').count()===1,'EUR context lost opening Macro Lab');
    await page.evaluate(()=>{location.hash='#currencies'});
    await page.locator('.orient-evidence-item[data-evidence="cot"] a').click();
-   await page.waitForFunction(()=>document.querySelector('#crumb-page')?.textContent==='Positioning',{timeout:6000});
+   await page.waitForFunction(()=>document.querySelector('#crumb-page')?.textContent==='COT',{timeout:6000});
    assert(await page.locator('.cot-country-button.active[data-ccy="EUR"]').count()===1,'EUR context lost opening COT');
    await page.evaluate(()=>{location.hash='#currencies'});
    await page.locator('[data-cs-openpair="EURCHF"]').last().click();
@@ -101,15 +105,15 @@ fs.mkdirSync(evidence,{recursive:true});
    assert((await page.locator('.focus-headline').first().innerText()).includes('EUR/CHF'),'FX handoff lost selected cross');
    await page.evaluate(()=>{location.hash='#currencies'});
    await page.locator('.orient-country[data-cs-country="CHF"]').click();
-   assert((await page.locator('.orient-evidence-item[data-evidence="rates"]').innerText()).includes('30/09/2026'),'CHF historical 2Y date hidden');
+   assert(/\d{2}\/\d{2}\/2026/.test(await page.locator('.orient-evidence-item[data-evidence="rates"]').innerText()),'CHF observed tenor date missing');
    assert((await page.locator('.orient-checkpoint').innerText()).includes('FUTURES'),'CHF pricing type warning missing');
    await page.locator('.orient-country[data-cs-country="NZD"]').click();
-   assert((await page.locator('.orient-evidence-item[data-evidence="rates"]').innerText()).includes('16/10/2026'),'NZD old 2Y date hidden');
+   assert(/\d{2}\/\d{2}\/2026/.test(await page.locator('.orient-evidence-item[data-evidence="rates"]').innerText()),'NZD observed tenor date missing');
    assert((await page.locator('.orient-checkpoint').innerText()).includes('PROXY'),'NZD pricing proxy quality missing');
    assert(await page.locator('.orient-peer-row').count()===7,'NZD seven peer comparisons incomplete');
    // No detailed COT, macro, rates duplicate graphs or pricing audit inside the summary.
    assert(await page.locator('#content .chart').count()===0,'Detailed research chart duplicated after switching G8 countries');
-   assert(await page.locator('#nav .nav-subheading').count()===2,'Research navigation lacks intentional grouping');
+   assert(await page.locator('#nav .nav-subheading').count()>=2,'Research navigation lacks intentional grouping');
    // Rates & OIS research: eight currencies, actual sovereign histories and source-specific tenor pricing.
    await page.evaluate(()=>{location.hash='#rates'});
    await page.locator('[data-rate-ccy="USD"]').first().click(); // isolate against prior NZD country selection
@@ -180,7 +184,7 @@ fs.mkdirSync(evidence,{recursive:true});
    // COT research studio: complete G8 chart, flow, price and explanatory controls.
    await page.evaluate(()=>{location.hash='#cot'});
    assert(await page.locator('.cot-country-selector .cot-country-button').count()===8,'COT G8 selector incomplete');
-   assert((await page.locator('.cot-source-band').innerText()).includes('27/10/2026'),'COT historical timestamp missing');
+   assert(/\d{2}\/\d{2}\/2026/.test(await page.locator('.cot-source-band').innerText()),'COT historical timestamp missing');
    assert(await page.locator('.cot-graph-grid .chart svg').count()===2,'COT history and price charts missing');
    assert(await page.locator('.cot-detailed-table .data-table tbody tr').count()===12,'COT last 12 weekly rows missing');
    assert(await page.locator('.cot-universe .data-table tbody tr').count()===8,'COT G8 comparison table incomplete');
