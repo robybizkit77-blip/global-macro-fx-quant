@@ -59,6 +59,14 @@ class SourceQualityFinalE2ETests(unittest.TestCase):
             "observation_date": point["quote_as_of"],
             "event_id": "a" * 64,  # synthetic, never emitted as real evidence
         }]
+        # The real USD can have several *independent* disputed tenors. This
+        # fixture intentionally disputes only 3M, so mark 6M/12M as clean
+        # synthetic witnesses instead of inheriting their live quarantine.
+        # No live JSON or real archived event is modified.
+        for tenor in ("6m", "12m"):
+            other = row["horizons"][tenor]
+            other["quote_timestamp_verified"] = True
+            other["quote_timestamp_source"] = "SSR_DAILY_BAR_DATA_UPDATE_TIME"
         self.assertEqual(certify_secondary_source_state("USD", row),
                          "SOURCE_CONFLICT_ANNOTATED_NO_REPRICING")
         return row
