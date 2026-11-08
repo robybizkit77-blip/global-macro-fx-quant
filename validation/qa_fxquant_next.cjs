@@ -75,6 +75,8 @@ fs.mkdirSync(evidence,{recursive:true});
    assert(await page.locator('.decision-daily-watch').count()===1,'No next-fixing monitoring conditions');
    assert(await page.locator('.decision-watch-line').count()===0,'EUR/GBP has no validated favourite; must not invent directional thresholds');
    assert(await page.locator('.decision-rates-bridge').count()===1,'Rates/FX companion is absent in EUR/GBP research dossier');
+   const rateDebug=await page.evaluate(()=>({loaded:!!window.FXQuantRatesBridge,now:new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()),text:document.querySelector('.decision-rates-bridge')?.innerText?.slice(0,700),chartCount:document.querySelectorAll('.decision-rates-bridge .chart svg').length}));
+   console.log('FX_NEXT_V13_RATES_DIAGNOSTIC',JSON.stringify(rateDebug));
    assert(await page.locator('.decision-rates-bridge .chart svg').count()===1,'Valid same-date EUR/GBP 2Y differential chart is missing');
    assert(await page.locator('.decision-rates-bridge [data-horizon="5"]').count()===1,'Rates/FX short comparison missing');
    assert((await page.locator('.decision-rates-bridge').innerText()).includes('non OIS'),'Sovereign 2Y versus OIS distinction missing');
