@@ -25,6 +25,11 @@ fs.mkdirSync(evidence,{recursive:true});
    for(const route of ROUTES){
     await page.evaluate(r=>{location.hash='#'+r},route);
     await page.waitForFunction(r=>document.querySelector('#crumb-page')?.textContent===({overview:'La ricerca',currencies:'Valute G8',pairs:'Coppie FX',macro:'Scenario macro',rates:'Tassi & OIS',cot:'COT',risk:'Rischio',news:'Notizie'})[r],route);
+    if(route!=='overview'){
+      assert(await page.locator('main .research-essay').count()===1,'Narrative research missing on '+route);
+      assert(await page.locator('main .research-essay .essay-prose p').count()===3,'Research incomplete on '+route);
+      assert(await page.locator('main .research-essay a[href^="#"]').count()===1,'Research handoff link missing on '+route);
+    }
     const h1=await page.locator('main h1').first().innerText();
     assert(h1.length>12,'Missing heading '+route);
     const overflow=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));
