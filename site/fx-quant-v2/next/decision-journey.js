@@ -42,8 +42,9 @@
       :latest.value<breakLow?'Sotto i minimi dei 20 fixing precedenti'
       :'All’interno del range dei 20 fixing precedenti'
     :'Struttura daily da verificare';
-  const eligible=Boolean(fav)&&fresh&&q==='PULITO'&&price.state==='GOOD'&&timing.state==='ALIGNED';
-  const research=Boolean(fav)&&fresh&&q!=='NON VALUTABILE'&&price.state==='GOOD'&&timing.state==='ALIGNED';
+  const alignedDaily=closes.length>=22;
+  const eligible=Boolean(fav)&&fresh&&alignedDaily&&q==='PULITO'&&price.state==='GOOD'&&timing.state==='ALIGNED';
+  const research=Boolean(fav)&&fresh&&alignedDaily&&q!=='NON VALUTABILE'&&price.state==='GOOD'&&timing.state==='ALIGNED';
   const caution=q==='CON RISCHI'?'Il motore segnala rischi: controlla soprattutto COT, liquidità e fattori contrari.'
     :q==='DA MONITORARE'||q==='DA CONFERMARE'?'La struttura non è ancora completamente convincente.'
     :q==='NON VALUTABILE'?'Il modello non dispone di un confronto abbastanza solido per questa coppia.'
