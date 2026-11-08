@@ -92,6 +92,6 @@ const dossierFn=model.slice(model.indexOf('  function pair(){'),model.indexOf(' 
 assert(!/\bconst window\s*=/.test(dossierFn),'A local window variable hides global browser module access');
 assert(dossierFn.includes('const chartWindow='),'Price chart lookback must not shadow the Window global');
 assert(page.includes('fx-rates-bridge.js?v=13'));
-assert(page.indexOf('fx-rates-bridge.js?v=13')<page.indexOf('decision-journey.js?v=13'));
+assert(page.indexOf('fx-rates-bridge.js?v=13')<page.indexOf('decision-journey.js?v=13.1'));
 assert(page.includes('editorial-v4.css?v=13'));
 console.log('NEXT_V13_FX_RATES_PASS: common observation dates, 5/20 horizons, sovereign 2Y versus FX, basis risk, no OIS fiction');
