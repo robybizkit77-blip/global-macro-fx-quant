@@ -102,6 +102,6 @@ assert.match(app,/state\.data=nextData/);
 assert.match(app,/cache:'no-store'/);
 assert.match(app,/visibilitychange/);
 const page=read('site/fx-quant-v2/next/index.html');
-assert.match(page,/editorial-v4\.css\?v=10/);
+assert.match(page,/editorial-v4\.css\?v=11/);
 assert.match(page,/app\.js\?v=9/);
 console.log('NEXT_RESEARCH_COHERENCE_PASS: regimes=stress,relief,yield-selloff,fx-divergence,mixed; matched evidence; fresh/stale/missing; XSS; page continuity; cache refresh');

@@ -22,6 +22,27 @@
   // The chart must end at the exact date used for the pair model.
   return rows.at(-1)?.label===asof?rows:[];
  }
+ // Conservative DAILY reference thresholds from the previous 20 ECB fixings.
+ // These are not intraday highs/lows, entries, stops or tested trading triggers.
+ function watchLevels({asof,fresh,latest,direction,breakHigh,breakLow}){
+  const ready=Boolean(fresh)&&validDay(asof)&&finite(latest)&&latest>0&&
+   (direction===1||direction===-1)&&finite(breakHigh)&&finite(breakLow)&&
+   breakHigh>=breakLow&&breakLow>0;
+  if(!ready)return {ready:false,asof:validDay(asof)?asof:null,
+   reason:'Riferimenti di prezzo non verificabili sulla stessa data, oppure vantaggio valutario non definito.'};
+  const favorable=direction===1?breakHigh:breakLow;
+  const adverse=direction===1?breakLow:breakHigh;
+  const favorablePassed=direction*(latest-favorable)>0;
+  const adversePassed=direction*(latest-adverse)<0;
+  const favorableDistancePct=direction*(favorable/latest-1)*100;
+  const adverseDistancePct=-direction*(adverse/latest-1)*100;
+  return {ready:true,asof,favorable,adverse,
+   favorableDirection:direction>0?'Sopra':'Sotto',
+   adverseDirection:direction>0?'Sotto':'Sopra',
+   favorablePassed,adversePassed,favorableDistancePct,adverseDistancePct,
+   favorableStatus:favorablePassed?'OLTRE IL RIFERIMENTO':'DA VERIFICARE',
+   adverseStatus:adversePassed?'CONTRASTO GIÀ OSSERVATO':'DA MONITORARE'};
+ }
  function profile(key,doc,prices,now){
   const obj=doc?.pairs?.[key],s=obj?.setup||{},f=obj?.decision_frame||{};
   const asof=doc?.price_asof;
@@ -58,6 +79,7 @@
       :'All’interno del range dei 20 fixing precedenti'
     :'Struttura daily da verificare';
   const alignedDaily=closes.length>=22;
+  const watch=watchLevels({asof,fresh,latest:latest?.value??null,direction,breakHigh,breakLow});
   const eligible=Boolean(fav)&&fresh&&alignedDaily&&q==='PULITO'&&price.state==='GOOD'&&timing.state==='ALIGNED';
   const research=Boolean(fav)&&fresh&&alignedDaily&&q!=='NON VALUTABILE'&&price.state==='GOOD'&&timing.state==='ALIGNED';
   const caution=q==='CON RISCHI'?'Il motore segnala rischi: controlla soprattutto COT, liquidità e fattori contrari.'
@@ -77,7 +99,7 @@
     :'Attendere maggiore coerenza tra vantaggio macro/pricing, prezzo e cambiamenti del timing.';
   return {key,asof,age,fresh,eligible,research,fav,direction,fiveState,twentyState,alignment,horizonConflict,quality:q,price:price.state||'UNKNOWN',
     priceText:price.text||'Non disponibile',timing:timing.state||'UNKNOWN',timingText:timing.text||'Non disponibile',
-    why,next,caution,structure,closes,latest:latest?.value??null,m1,m5,m20,prior5,change5,breakHigh,breakLow,
+    why,next,caution,structure,closes,latest:latest?.value??null,m1,m5,m20,prior5,change5,breakHigh,breakLow,watch,
     relation:f.relation||s.structural?.relation||'Nessuna tesi verificabile',
     missing:f.missing||'La conferma indipendente è ancora aperta',
     cot:s.cot?.text||'Dato COT non classificato',
@@ -143,15 +165,38 @@
        fmt(item.breakLow,item.key.endsWith('JPY')?3:5)+' – '+fmt(item.breakHigh,item.key.endsWith('JPY')?3:5):
        'Non disponibile';
    const quote=item.latest!==null?fmt(item.latest,item.key.endsWith('JPY')?3:5):'—';
+   const pxDigits=item.key.endsWith('JPY')?3:5;
+   const watch=item.watch||{ready:false};
+   const watchFavor=watch.ready?watch.favorableDirection+' '+fmt(watch.favorable,pxDigits):'Non disponibile';
+   const watchAdverse=watch.ready?watch.adverseDirection+' '+fmt(watch.adverse,pxDigits):'Non disponibile';
+   const watchNext=watch.ready
+     ?watch.favorablePassed
+       ?'Il fixing è già oltre il massimo/minimo di riferimento nella direzione favorita: osservare persistenza e nuovo contesto, senza considerarlo un ingresso.'
+       :watch.adversePassed
+         ?'Il prezzo è già oltre il riferimento contrario: verificare se la tesi relativa regge ancora.'
+         :'Al prossimo fixing, osservare un superamento di '+watchFavor+' nella direzione favorita; un movimento '+watchAdverse+' indicherebbe invece contrasto del prezzo.'
+     :'Nessun riferimento operativo daily verificabile. Serve una nuova sequenza allineata o un vantaggio strutturale definito.';
+   const gateNext=watch.ready
+     ?watch.favorablePassed?'Riferimento favorevole già superato: controllare la persistenza.'
+       :watch.adversePassed?'Riferimento contrario già superato: riesaminare prezzo e tesi.'
+       :'Riferimento favorevole '+watchFavor+'; contrario '+watchAdverse+'.'
+     :item.next;
+   const watchHtml='<div class="decision-daily-watch"><div class="decision-daily-watch-head"><span>COSA OSSERVARE AL PROSSIMO FIXING BCE</span><small>Riferimenti dagli ultimi 20 fixing precedenti · '+date(watch.asof||item.asof)+'</small></div>'
+     +(watch.ready
+       ?'<div class="decision-watch-columns"><div class="decision-watch-line"><span>VERSO FAVOREVOLE</span><strong>'+esc(watchFavor)+'</strong><small>'+esc(watch.favorableStatus)+' · '+(watch.favorablePassed?'già oltre il livello':fmt(watch.favorableDistancePct,2)+'% di distanza dal fixing')+'</small></div>'
+       +'<div class="decision-watch-line contrary"><span>VERSO CONTRARIO</span><strong>'+esc(watchAdverse)+'</strong><small>'+esc(watch.adverseStatus)+' · '+(watch.adversePassed?'già oltre il livello':fmt(watch.adverseDistancePct,2)+'% di distanza dal fixing')+'</small></div></div>'
+       :'<p class="decision-watch-unavailable">'+esc(watch.reason||'Dati da verificare')+'</p>')
+     +'<p class="decision-watch-next">'+esc(watchNext)+'</p>'
+     +'<small class="decision-watch-caveat">Livelli statistici di fixing, non supporti o resistenze intraday. Un superamento non basta: servono conferme di prezzo e contesto aggiornato.</small></div>';
    return '<section class="decision-deepdive" aria-label="Dalla tesi al timing di '+esc(pairName(item.key))+'">'
      +'<div class="decision-dossier-head"><span>RESEARCH → PRICING → PREZZO → DECISIONE</span><h2>'+pairName(item.key)+' · Che cosa sappiamo, che cosa aspettiamo?</h2>'
      +'<p>Il motore può segnalare una direzione favorevole senza che esista un ingresso interessante. Separiamo le due cose.</p></div>'
      +'<div class="decision-gates"><div><span>THESIS STRENGTH</span><strong>'+esc(item.fav?'Vantaggio '+item.fav+' · '+item.quality:'Nessun vantaggio verificato')+'</strong><small>'+esc(item.relation)+'</small></div>'
      +'<div><span>TRADE ATTRACTIVENESS</span><strong>'+esc(attractive)+'</strong><small>'+esc(item.why)+'</small></div>'
-     +'<div><span>LA PROSSIMA VERIFICA</span><strong>Che cosa aspettiamo?</strong><small>'+esc(item.next)+'</small></div></div>'
+     +'<div><span>LA PROSSIMA VERIFICA</span><strong>Che cosa aspettiamo?</strong><small>'+esc(gateNext)+'</small></div></div>'
      +'<div class="decision-price-grid"><div class="decision-price-chart"><div class="decision-price-head"><div><span>PREZZO REALE · ECB DAILY</span><h3>'+pairName(item.key)+' · '+quote+'</h3><small>Fixing BCE '+date(item.asof)+' · ultima seduta '+lastDay+' · 5 sedute '+move+' · 20 sedute '+gain+'</small></div>'
      +'<div class="pill-controls">'+[20,60,120].map(w=>'<button type="button" data-v9-price-window="'+w+'" class="pill '+(w===window?'active':'')+'" aria-pressed="'+String(w===window)+'">'+w+'</button>').join('')+'</div></div>'
-     +graph+'<div class="decision-price-evidence"><div class="decision-evidence-cell"><span>5 FIXING</span><strong>'+move+'</strong><small>'+esc(item.fiveState)+'</small></div><div class="decision-evidence-cell"><span>20 FIXING</span><strong>'+gain+'</strong><small>'+esc(item.twentyState)+'</small></div><div class="decision-evidence-cell"><span>RANGE 20 FIXING PRECEDENTI</span><strong class="range">'+esc(range)+'</strong><small>'+esc(item.structure)+'</small></div></div><p class="decision-price-context">'+esc(discordance)+' '+esc(pulse)+'</p><p class="decision-source">Cross '+pairName(item.key)+' ricostruito dai fixing BCE giornalieri (quote/base). Nessun OHLC o candela H4. Il segno di 5/20 sedute non misura significatività statistica né individua breakout intraday.</p></div>'
+     +graph+'<div class="decision-price-evidence"><div class="decision-evidence-cell"><span>5 FIXING</span><strong>'+move+'</strong><small>'+esc(item.fiveState)+'</small></div><div class="decision-evidence-cell"><span>20 FIXING</span><strong>'+gain+'</strong><small>'+esc(item.twentyState)+'</small></div><div class="decision-evidence-cell"><span>RANGE 20 FIXING PRECEDENTI</span><strong class="range">'+esc(range)+'</strong><small>'+esc(item.structure)+'</small></div></div><p class="decision-price-context">'+esc(discordance)+' '+esc(pulse)+'</p>'+watchHtml+'<p class="decision-source">Cross '+pairName(item.key)+' ricostruito dai fixing BCE giornalieri (quote/base). Nessun OHLC o candela H4. Il segno di 5/20 sedute non misura significatività statistica né individua breakout intraday.</p></div>'
      +'<aside class="decision-price-reading"><span>IL GIUDIZIO SUL PREZZO</span><h3>'+esc(item.priceText)+'</h3><p>'+esc(item.timingText)+'</p><div class="decision-stop"><strong>Che cosa dicono le 5 e 20 sedute?</strong><p>'+esc(discordance)+'</p></div><div class="decision-stop"><strong>Che cosa frena il trade?</strong><p>'+esc(item.caution)+'</p></div>'
      +'<div class="decision-stop"><strong>Cosa invaliderebbe la tesi?</strong><p>'+esc(item.missing)+'</p></div>'
      +'<div class="decision-stop"><strong>Positioning e flussi</strong><p>'+esc(item.cot)+' · '+esc(item.liquidity)+'</p></div></aside></div>'
@@ -159,6 +204,6 @@
   }
   return {overview,pair,data};
  }
- if(typeof window!=='undefined')window.FXQuantDecisionJourney={build,snapshot,profile,series};
- if(typeof module!=='undefined'&&module.exports)module.exports={build,snapshot,profile,series};
+ if(typeof window!=='undefined')window.FXQuantDecisionJourney={build,snapshot,profile,series,watchLevels};
+ if(typeof module!=='undefined'&&module.exports)module.exports={build,snapshot,profile,series,watchLevels};
 })();
