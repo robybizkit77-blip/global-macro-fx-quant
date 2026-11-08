@@ -601,3 +601,34 @@ button,a{touch-action:manipulation}
 .decision-reference-caption strong{font-weight:750;color:#a9d9c2}
 .decision-reference-caption strong:nth-child(2){color:#e5aaa3}
 @media(max-width:650px){.decision-chart-tools{justify-content:flex-start;gap:7px}.decision-reference-toggle{font-size:10px}.decision-reference-caption{padding:0 4px;font-size:10px}}
+
+
+/* V13 FX vs 2Y sovereign evidence: two synchronized date sources, separate scales. */
+.decision-rates-bridge{margin:17px 0 0;background:#102532;border:1px solid rgba(169,204,205,.23);border-radius:9px;padding:22px}
+.decision-rates-heading{display:flex;justify-content:space-between;gap:15px;align-items:flex-start;margin-bottom:18px;flex-wrap:wrap}
+.decision-rates-heading span,.decision-rates-visual>span,.decision-rates-analysis>span{font-size:10px;letter-spacing:.13em;font-weight:850;color:#a9d4c3}
+.decision-rates-heading h2{font:400 clamp(24px,2vw,31px)/1.17 Georgia,serif;color:#f0f0e8;letter-spacing:-.023em;margin:9px 0}
+.decision-rates-heading p{font-size:12px;color:#bdd0d0;line-height:1.68;margin:3px 0;max-width:740px}
+.decision-rates-link{font-size:11px;color:#beddd6;text-decoration:none;border-bottom:1px solid rgba(170,204,194,.4);padding:9px 0 4px}
+.decision-rates-link:hover{color:#f5f5ed}
+.decision-rates-body{display:grid;grid-template-columns:minmax(0,1.27fr) minmax(255px,.73fr);gap:15px}
+.decision-rates-visual{min-width:0;background:#0c1e2a;border:1px solid rgba(169,204,205,.17);border-radius:7px;padding:18px}
+.decision-rates-visual .chart{height:253px;margin:12px 0 3px}
+.decision-rates-visual .chart-legend{margin:7px 0 8px}
+.decision-rates-visual>small{display:block;font-size:10px;color:#9db9c0;line-height:1.7}
+.decision-rates-analysis{border-radius:7px;background:#172e39;border:1px solid rgba(173,207,205,.17);padding:18px}
+.decision-rates-analysis h3{font:400 23px/1.25 Georgia,serif;color:#f0ece3;margin:12px 0 17px}
+.decision-rate-horizon{padding:12px 0;border-top:1px solid rgba(175,208,201,.2)}
+.decision-rate-horizon span{display:block;color:#a2c9b8;font-size:10px;font-weight:850;letter-spacing:.04em}
+.decision-rate-horizon strong{display:block;margin:8px 0;font-size:17px;line-height:1.36;color:#f3ede4;font-variant-numeric:tabular-nums}
+.decision-rate-horizon strong b{font-size:11px;font-weight:450;color:#a6b9b9;margin:0 6px}
+.decision-rate-horizon small{display:block;font-size:10px;color:#b4c7c6;line-height:1.7}
+.decision-rate-data-gap{font-size:11px;color:#e1c7a0;line-height:1.6;border-top:1px solid rgba(178,209,203,.19);padding-top:12px}
+.decision-rates-verdict{font-size:12px;line-height:1.72;color:#d9e1d9;margin:14px 0 0;padding:12px;border-left:2px solid #abc7ac;background:rgba(164,202,176,.04)}
+.decision-rate-unavailable{font-size:13px;color:#e0c7a4;margin:4px 0 15px;line-height:1.7}
+.decision-rates-bridge>small{font-size:11px;color:#afc1bf;line-height:1.7}
+.decision-rates-method{margin-top:15px;border-top:1px solid rgba(181,211,202,.15);padding-top:12px}
+.decision-rates-method>summary{font-size:11px;color:#c3d8d1;cursor:pointer}
+.decision-rates-method p{font-size:11px;line-height:1.7;color:#a7c2c4}
+@media(max-width:900px){.decision-rates-body{grid-template-columns:1fr}}
+@media(max-width:650px){.decision-rates-bridge{padding:15px 12px}.decision-rates-heading h2{font-size:25px}.decision-rates-visual{padding:13px 9px}.decision-rates-visual .chart{height:212px}.decision-rates-analysis{padding:14px}.decision-rate-horizon strong{font-size:16px}}

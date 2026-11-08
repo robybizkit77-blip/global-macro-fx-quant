@@ -170,6 +170,12 @@
    const range=Number.isFinite(item.breakLow)&&Number.isFinite(item.breakHigh)?
        fmt(item.breakLow,item.key.endsWith('JPY')?3:5)+' – '+fmt(item.breakHigh,item.key.endsWith('JPY')?3:5):
        'Non disponibile';
+   const rateBridge=typeof window!=='undefined'&&window.FXQuantRatesBridge?.build?
+     window.FXQuantRatesBridge:
+     typeof require==='function'?require('./fx-rates-bridge.js'):null;
+   const ratesEvidence=rateBridge?.build?
+     rateBridge.build({get,state,plot,fmt,sign,date,dayNow,esc}).render():
+     '<section class="decision-rates-bridge"><h2>Confronto FX/2Y non disponibile</h2><p>Manca il modulo di verifica delle date comuni.</p></section>';
    const quote=item.latest!==null?fmt(item.latest,item.key.endsWith('JPY')?3:5):'—';
    const pxDigits=item.key.endsWith('JPY')?3:5;
    const watchFavor=watch.ready?watch.favorableDirection+' '+fmt(watch.favorable,pxDigits):'Non disponibile';
@@ -207,6 +213,7 @@
      +'<aside class="decision-price-reading"><span>IL GIUDIZIO SUL PREZZO</span><h3>'+esc(item.priceText)+'</h3><p>'+esc(item.timingText)+'</p><div class="decision-stop"><strong>Che cosa dicono le 5 e 20 sedute?</strong><p>'+esc(discordance)+'</p></div><div class="decision-stop"><strong>Che cosa frena il trade?</strong><p>'+esc(item.caution)+'</p></div>'
      +'<div class="decision-stop"><strong>Cosa invaliderebbe la tesi?</strong><p>'+esc(item.missing)+'</p></div>'
      +'<div class="decision-stop"><strong>Positioning e flussi</strong><p>'+esc(item.cot)+' · '+esc(item.liquidity)+'</p></div></aside></div>'
+     +ratesEvidence
      +'<p class="decision-footer">Nessun livello d’ingresso, stop o conferma H4 è generato: il feed contiene fixing giornalieri, non candele intraday. Lo storico e la narrativa non dimostrano un edge forward.</p></section>';
   }
   return {overview,pair,data};
