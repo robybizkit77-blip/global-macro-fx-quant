@@ -145,16 +145,29 @@ function mutate(fn){const input=structuredClone(setup);fn(input);return rank(inp
 const allBuckets=['DA CONFERMARE','DA MONITORARE','CON RISCHI','NON VALUTABILE'];
 const counts=Object.fromEntries(allBuckets.map(k=>[k,Object.values(setup.pairs)
   .filter(p=>p.setup.quality===k).length]));
-const zeroBucket=allBuckets.find(k=>counts[k]===0);
-assert(zeroBucket,'fixture must exercise an empty quality bucket');
-const withExplicitZero=structuredClone(setup);
+// Current canonical market data may legitimately contain all four quality
+// categories. Exercise an omitted-zero bucket with a *synthetic* in-memory
+// classification, never by asserting that live market data must be empty.
+const eligibleBuckets=allBuckets.filter(k=>k!=='NON VALUTABILE'&&counts[k]>0);
+assert(eligibleBuckets.length>=2,'synthetic quality fixture needs two eligible buckets');
+const zeroBucket=eligibleBuckets.slice().sort((a,b)=>counts[a]-counts[b])[0];
+const otherBucket=eligibleBuckets.find(k=>k!==zeroBucket);
+const zeroFixture=structuredClone(setup);
+for(const pair of Object.values(zeroFixture.pairs)){
+ if(pair.setup.quality===zeroBucket)pair.setup.quality=otherBucket;
+}
+zeroFixture.quality_distribution[otherBucket]=counts[otherBucket]+counts[zeroBucket];
+delete zeroFixture.quality_distribution[zeroBucket];
+assert(rank(zeroFixture,model),'synthetic omitted-zero distribution must remain valid');
+const withExplicitZero=structuredClone(zeroFixture);
 withExplicitZero.quality_distribution[zeroBucket]=0;
 assert(rank(withExplicitZero,model),'explicit zero count must equal omitted zero');
-assert.equal(mutate(x=>{x.quality_distribution[zeroBucket]=1}),null,
+const mutateZero=fn=>{const input=structuredClone(zeroFixture);fn(input);return rank(input,model);};
+assert.equal(mutateZero(x=>{x.quality_distribution[zeroBucket]=1}),null,
   'invented positive count in empty bucket must be rejected');
-assert.equal(mutate(x=>{x.quality_distribution.UNKNOWN=0}),null,
+assert.equal(mutateZero(x=>{x.quality_distribution.UNKNOWN=0}),null,
   'unknown category cannot be treated as a certified bucket');
-assert.equal(mutate(x=>{x.quality_distribution[zeroBucket]=-1}),null,
+assert.equal(mutateZero(x=>{x.quality_distribution[zeroBucket]=-1}),null,
   'negative counts are rejected');
 assert.equal(mutate(x=>{x.quality_distribution['CON RISCHI']+=1}),null);
 // The canonical runtime can emit EXTENDED for an overextended price. The
