@@ -6,11 +6,15 @@ on:
     paths:
       - 'site/fx-quant-v2/**'
       - '.github/workflows/publish-fx-quant-v2.yml'
+      - 'validation/publishing/check_fxv2_publication_tree_v1.py'
+      - 'validation/publishing/test_check_fxv2_publication_tree_v1.py'
   pull_request:
     branches: [main]
     paths:
       - '.github/workflows/publish-fx-quant-v2.yml'
       - 'validation/publishing/test_fxv2_publisher_source_trigger_v1.py'
+      - 'validation/publishing/check_fxv2_publication_tree_v1.py'
+      - 'validation/publishing/test_check_fxv2_publication_tree_v1.py'
       - 'validation/publishing/wait_gh_pages_idle_before_fxv2_push_v1.py'
       - 'validation/publishing/test_wait_gh_pages_idle_before_fxv2_push_v1.py'
   workflow_run:
@@ -47,6 +51,7 @@ jobs:
       - name: Validate event filters, source producers and V2-only scope
         run: |
           python3 validation/publishing/test_fxv2_publisher_source_trigger_v1.py
+          python3 -m unittest validation.publishing.test_check_fxv2_publication_tree_v1 -v
           python3 -m unittest validation.publishing.test_wait_gh_pages_idle_before_fxv2_push_v1 -v
   sync-v2:
     if: >-
@@ -62,10 +67,30 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Detect V2-only changes before entering the Pages deployment queue
+        id: v2-tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Refresh BOTH tracked references: queued workflow_run events can
+          # represent already-published older producer snapshots.
+          git fetch --no-tags origin \
+            '+refs/heads/main:refs/remotes/origin/main' \
+            '+refs/heads/gh-pages:refs/remotes/origin/gh-pages'
+          python3 validation/publishing/check_fxv2_publication_tree_v1.py --github-output "$GITHUB_OUTPUT"
+
+      - name: Report branch-exact V2 no-op without claiming public HTTP delivery
+        if: steps.v2-tree.outputs.publish_needed == 'false'
+        run: echo FXV2_NO_NEW_GH_PAGES_WRITE_BRANCH_TREE_IN_SYNC
+
       - name: Verify the Pages collision guard with deterministic tests
-        run: python3 -m unittest validation.publishing.test_wait_gh_pages_idle_before_fxv2_push_v1 -v
+        if: steps.v2-tree.outputs.publish_needed == 'true'
+        run: |
+          python3 -m unittest validation.publishing.test_check_fxv2_publication_tree_v1 -v
+          python3 -m unittest validation.publishing.test_wait_gh_pages_idle_before_fxv2_push_v1 -v
 
       - name: Wait until preceding official Pages build/deployment has finished
+        if: steps.v2-tree.outputs.publish_needed == 'true'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -77,6 +102,7 @@ jobs:
             --attempts 90 --delay 10
 
       - name: Re-fetch the latest approved main after deployment queue wait
+        if: steps.v2-tree.outputs.publish_needed == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -85,6 +111,7 @@ jobs:
           echo "FXV2_APPROVED_MAIN_AFTER_QUEUE=$(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish only site/fx-quant-v2 without altering V10 or any other path
+        if: steps.v2-tree.outputs.publish_needed == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -95,6 +122,14 @@ jobs:
           test -f "$source_root/assets/site-nav.js"
 
           git fetch origin gh-pages --no-tags
+          # Another publisher may have made the exact V2 tree current during
+          # the Pages build wait. Recheck the complete subtree before writing.
+          current_source_tree="$(git rev-parse HEAD:site/fx-quant-v2)"
+          current_pages_tree="$(git rev-parse origin/gh-pages:site/fx-quant-v2)"
+          if [[ "$current_source_tree" == "$current_pages_tree" ]]; then
+            echo FXV2_PAGES_ALREADY_IN_SYNC_AFTER_WAIT
+            exit 0
+          fi
           git worktree add --detach ../fxv2-publish-worktree origin/gh-pages
           target="../fxv2-publish-worktree"
           mkdir -p "$target/site/fx-quant-v2"
