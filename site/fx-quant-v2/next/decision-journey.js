@@ -31,8 +31,11 @@
   const age=isoDays(asof,now),fresh=age!==null&&age>=0&&age<=5;
   const closes=series(prices,key,asof,now);
   const usable=fresh&&closes.length>=22;
-  const latest=closes.at(-1),p5=closes.at(-6),p20=closes.at(-21);
+  const latest=closes.at(-1),p1=closes.at(-2),p5=closes.at(-6),p6=closes.at(-7),p20=closes.at(-21);
+  const m1=usable&&p1?.value>0?(latest.value/p1.value-1)*100:null;
   const m5=usable&&p5?.value>0?(latest.value/p5.value-1)*100:null;
+  const prior5=usable&&p6?.value>0&&p1?.value>0?(p1.value/p6.value-1)*100:null;
+  const change5=finite(m5)&&finite(prior5)?m5-prior5:null;
   const m20=usable&&p20?.value>0?(latest.value/p20.value-1)*100:null;
   // Direction matters: EUR/USD falling favours USD, while USD/CAD rising favours USD.
   // These signs are descriptive observations, not statistically validated thresholds.
@@ -74,7 +77,7 @@
     :'Attendere maggiore coerenza tra vantaggio macro/pricing, prezzo e cambiamenti del timing.';
   return {key,asof,age,fresh,eligible,research,fav,direction,fiveState,twentyState,alignment,horizonConflict,quality:q,price:price.state||'UNKNOWN',
     priceText:price.text||'Non disponibile',timing:timing.state||'UNKNOWN',timingText:timing.text||'Non disponibile',
-    why,next,caution,structure,closes,latest:latest?.value??null,m5,m20,breakHigh,breakLow,
+    why,next,caution,structure,closes,latest:latest?.value??null,m1,m5,m20,prior5,change5,breakHigh,breakLow,
     relation:f.relation||s.structural?.relation||'Nessuna tesi verificabile',
     missing:f.missing||'La conferma indipendente è ancora aperta',
     cot:s.cot?.text||'Dato COT non classificato',
@@ -122,10 +125,14 @@
    const graph=selected.length>1&&isFull?plot({lines:[{name:pairName(item.key)+' · fixing BCE daily',color:'#9bd9cc',values:selected}],precision:item.key.endsWith('JPY')?3:5,label:'Prezzo daily BCE per '+pairName(item.key)})
      :'<div class="empty"><strong>Grafico daily non validato</strong><p>Servono almeno 22 fixing con l’ultima data esattamente coincidente con il modello della coppia. Non ricostruiamo prezzi mancanti.</p></div>';
    const gain=Number.isFinite(item.m20)?sign(item.m20,2,'%'):'—';
+   const lastDay=Number.isFinite(item.m1)?sign(item.m1,2,'%'):'—';
    const move=Number.isFinite(item.m5)?sign(item.m5,2,'%'):'—';
    const attractive=item.horizonConflict&&item.research?'OSSERVAZIONE · MOMENTUM DAILY DISCORDANTE':
      item.eligible?'STRUTTURA PULITA · TIMING DA VALIDARE':item.research?'SOLO OSSERVAZIONE · RISCHI APERTI':'ATTENDERE · CONFERME INSUFFICIENTI';
    const side=item.direction>0?'rialzo di '+pairName(item.key):item.direction<0?'ribasso di '+pairName(item.key):'direzione relativa non validata';
+   const pulse=item.direction&&Number.isFinite(item.change5)?
+     'Rispetto al fixing precedente, il rendimento sulle 5 sedute è cambiato di '+sign(item.change5,2,' punti percentuali')+'; il suo contributo alla direzione favorita è '+(item.change5*item.direction>0?'migliorato':item.change5*item.direction<0?'peggiorato':'invariato')+'. Non è una prova di persistenza.':
+     'La variazione dell’impulso a 5 sedute rispetto al fixing precedente non è verificabile.';
    const discordance=item.direction===0?'Il vantaggio strutturale non è definito: non esiste un verso da confermare.'
       :item.alignment==='COERENTE SU 5 E 20 SEDUTE'?'Le ultime 5 e 20 sedute hanno entrambe un segno coerente con '+side+'. La direzione osservata non garantisce la prosecuzione.'
       :item.alignment==='RECUPERO A 5 SEDUTE, 20 SEDUTE CONTRARIE'?'Il movimento delle ultime 5 sedute favorisce '+side+', ma quello sulle 20 sedute è ancora contrario. È un recupero, non un trend uniformemente confermato.'
@@ -142,9 +149,9 @@
      +'<div class="decision-gates"><div><span>THESIS STRENGTH</span><strong>'+esc(item.fav?'Vantaggio '+item.fav+' · '+item.quality:'Nessun vantaggio verificato')+'</strong><small>'+esc(item.relation)+'</small></div>'
      +'<div><span>TRADE ATTRACTIVENESS</span><strong>'+esc(attractive)+'</strong><small>'+esc(item.why)+'</small></div>'
      +'<div><span>LA PROSSIMA VERIFICA</span><strong>Che cosa aspettiamo?</strong><small>'+esc(item.next)+'</small></div></div>'
-     +'<div class="decision-price-grid"><div class="decision-price-chart"><div class="decision-price-head"><div><span>PREZZO REALE · ECB DAILY</span><h3>'+pairName(item.key)+' · '+quote+'</h3><small>Chiusura / fixing di riferimento '+date(item.asof)+' · 5 sedute '+move+' · 20 sedute '+gain+'</small></div>'
+     +'<div class="decision-price-grid"><div class="decision-price-chart"><div class="decision-price-head"><div><span>PREZZO REALE · ECB DAILY</span><h3>'+pairName(item.key)+' · '+quote+'</h3><small>Fixing BCE '+date(item.asof)+' · ultima seduta '+lastDay+' · 5 sedute '+move+' · 20 sedute '+gain+'</small></div>'
      +'<div class="pill-controls">'+[20,60,120].map(w=>'<button type="button" data-v9-price-window="'+w+'" class="pill '+(w===window?'active':'')+'" aria-pressed="'+String(w===window)+'">'+w+'</button>').join('')+'</div></div>'
-     +graph+'<div class="decision-price-evidence"><div class="decision-evidence-cell"><span>5 FIXING</span><strong>'+move+'</strong><small>'+esc(item.fiveState)+'</small></div><div class="decision-evidence-cell"><span>20 FIXING</span><strong>'+gain+'</strong><small>'+esc(item.twentyState)+'</small></div><div class="decision-evidence-cell"><span>RANGE 20 FIXING PRECEDENTI</span><strong class="range">'+esc(range)+'</strong><small>'+esc(item.structure)+'</small></div></div><p class="decision-price-context">'+esc(discordance)+'</p><p class="decision-source">Cross '+pairName(item.key)+' ricostruito dai fixing BCE giornalieri (quote/base). Nessun OHLC o candela H4. Il segno di 5/20 sedute non misura significatività statistica né individua breakout intraday.</p></div>'
+     +graph+'<div class="decision-price-evidence"><div class="decision-evidence-cell"><span>5 FIXING</span><strong>'+move+'</strong><small>'+esc(item.fiveState)+'</small></div><div class="decision-evidence-cell"><span>20 FIXING</span><strong>'+gain+'</strong><small>'+esc(item.twentyState)+'</small></div><div class="decision-evidence-cell"><span>RANGE 20 FIXING PRECEDENTI</span><strong class="range">'+esc(range)+'</strong><small>'+esc(item.structure)+'</small></div></div><p class="decision-price-context">'+esc(discordance)+' '+esc(pulse)+'</p><p class="decision-source">Cross '+pairName(item.key)+' ricostruito dai fixing BCE giornalieri (quote/base). Nessun OHLC o candela H4. Il segno di 5/20 sedute non misura significatività statistica né individua breakout intraday.</p></div>'
      +'<aside class="decision-price-reading"><span>IL GIUDIZIO SUL PREZZO</span><h3>'+esc(item.priceText)+'</h3><p>'+esc(item.timingText)+'</p><div class="decision-stop"><strong>Che cosa dicono le 5 e 20 sedute?</strong><p>'+esc(discordance)+'</p></div><div class="decision-stop"><strong>Che cosa frena il trade?</strong><p>'+esc(item.caution)+'</p></div>'
      +'<div class="decision-stop"><strong>Cosa invaliderebbe la tesi?</strong><p>'+esc(item.missing)+'</p></div>'
      +'<div class="decision-stop"><strong>Positioning e flussi</strong><p>'+esc(item.cot)+' · '+esc(item.liquidity)+'</p></div></aside></div>'
