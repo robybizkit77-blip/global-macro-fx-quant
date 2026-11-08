@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-05",
-  "generated_at_utc": "2026-11-08T13:22:52.735558Z",
+  "generated_at_utc": "2026-11-08T17:06:03.069957Z",
   "items": [
     {
       "as_of": "2026-11-05",
@@ -47,7 +47,7 @@
       "title": "GBP: repricing OIS più dovish (-11.2 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-08T13:22:52.735558Z",
+  "last_checked_at_utc": "2026-11-08T17:06:03.069957Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -1029,9 +1029,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 11,
+        "accepted_items": 9,
         "ccy": "EUR",
-        "entries_rejected": 4,
+        "entries_rejected": 6,
         "feed_entries_seen": 15,
         "feed_url": "https://www.ecb.europa.eu/rss/press.html",
         "source": "Banca centrale europea",
@@ -1039,9 +1039,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 4,
+        "accepted_items": 3,
         "ccy": "GBP",
-        "entries_rejected": 46,
+        "entries_rejected": 47,
         "feed_entries_seen": 50,
         "feed_url": "https://www.bankofengland.co.uk/rss/news",
         "source": "Bank of England",
@@ -1069,9 +1069,9 @@
         "status": "NO_VERIFIED_RECENT_ITEMS"
       },
       {
-        "accepted_items": 6,
+        "accepted_items": 5,
         "ccy": "CAD",
-        "entries_rejected": 4,
+        "entries_rejected": 5,
         "feed_entries_seen": 10,
         "feed_url": "https://www.bankofcanada.ca/content_type/press/feed/",
         "source": "Bank of Canada",
@@ -1099,9 +1099,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 5,
+        "accepted_items": 4,
         "ccy": "ENERGY",
-        "entries_rejected": 20,
+        "entries_rejected": 21,
         "feed_entries_seen": 25,
         "feed_url": "https://www.eia.gov/rss/todayinenergy.xml",
         "source": "U.S. Energy Information Administration",
