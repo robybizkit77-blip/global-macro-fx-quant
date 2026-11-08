@@ -296,9 +296,9 @@ function overview(){
  const n=risk.NASDAQCOM||{},sp=risk.SP500||{},vx=risk.VIX||{},hy=risk.HY_OAS||{};
  const m=get('macro')?.currencies?.USD||{},oc=get('ois')?.currencies?.USD||{},cb=get('cb')?.USD||{};
  const cot=get('cot')||{},pairData=eurPairs(),pairAsOf=get('pairs')?.price_asof;
- const usd2=finite(u['2Y'])&&finite(u.chg2_bp)&&validDay(u.date);
- const usd10=finite(u['10Y'])&&finite(u.chg10_bp)&&validDay(u.date);
- const equity=finite(n.change_1d_pct)&&validDay(n.date);
+ const usd2=finite(u['2Y'])&&finite(u.chg2_bp)&&context.usRates;
+ const usd10=finite(u['10Y'])&&finite(u.chg10_bp)&&context.usRates;
+ const equity=finite(n.change_1d_pct)&&validDay(n.date)&&context.aligned;
  const vix=finite(vx.value)&&finite(vx.previous)&&validDay(vx.date);
  const credit=finite(hy.value)&&finite(hy.previous)&&validDay(hy.date);
  const oneSession=equity&&vix&&credit&&n.date===vx.date&&n.date===hy.date;
@@ -323,6 +323,9 @@ function overview(){
  const opening=stress
    ?'La seduta del '+date(n.date)+' non racconta soltanto un ribasso del Nasdaq. L’indice ha perso '+fmt(Math.abs(n.change_1d_pct),2)+'%'+(finite(sp.change_1d_pct)&&sp.date===n.date?', contro '+fmt(Math.abs(sp.change_1d_pct),2)+'% dell’S&P 500':'')+'. Nello stesso giorno il VIX è passato da '+fmt(vx.previous,2)+' a '+fmt(vx.value,2)+' e lo spread high yield si è allargato di '+sign((hy.value-hy.previous)*100,0,' punti base')+'. Quando anche il credito si muove, la questione non riguarda più soltanto la valutazione delle società tecnologiche: entra in gioco il costo del rischio.'
    :relief?'Nella seduta del '+date(n.date)+' il Nasdaq è avanzato del '+fmt(n.change_1d_pct,2)+'%, mentre il VIX è passato da '+fmt(vx.previous,2)+' a '+fmt(vx.value,2)+' e lo spread HY si è ristretto di '+fmt((hy.previous-hy.value)*100,0)+' punti base. È una distensione del rischio osservata sulla stessa data, non ancora una prova che il ciclo macro abbia invertito la rotta.'
+   :bonds?'Il movimento che merita attenzione parte dai Treasury: il 2Y USA è sceso di '+fmt(Math.abs(u.chg2_bp),1)+' punti base e il 10Y di '+fmt(Math.abs(u.chg10_bp),1)+' al '+date(u.date)+'. Potrebbe essere un nuovo percorso atteso della Fed, ma l’ipotesi va verificata sui futures e non dedotta dal solo governativo.'
+   :yieldsUp?'I Treasury si muovono nella direzione opposta: il 2Y USA sale di '+fmt(u.chg2_bp,1)+' punti base e il 10Y di '+fmt(u.chg10_bp,1)+' al '+date(u.date)+'. Dobbiamo capire se il movimento riguarda le attese di banca centrale o i premi sul lungo termine.'
+   :divergent?'Al '+date(u.date)+' il Treasury 2Y si è mosso di '+sign(u.chg2_bp,1,' punti base')+', mentre il proxy del dollaro è variato di '+sign(context.usdDelta,2,'%')+'. La divergenza è sulla stessa data ma non dimostra che uno dei due mercati sia in errore.'
    :equity?'Nell’ultima seduta disponibile, il Nasdaq ha registrato '+sign(n.change_1d_pct,2,'%')+' al '+date(n.date)+'. '+(finite(vx.value)&&validDay(vx.date)?'Il VIX è a '+fmt(vx.value,2)+' al '+date(vx.date)+'. ':'')+'Il punto non è trovare subito una spiegazione unica, ma distinguere ciò che si è mosso insieme da ciò che richiede ancora conferma.'
    :'Non tutti i feed cross-asset sono disponibili con date confrontabili. In questo caso un’analisi seria comincia da ciò che possiamo documentare e segnala ciò che non possiamo ancora concludere.';
  const follow=sharedDate
