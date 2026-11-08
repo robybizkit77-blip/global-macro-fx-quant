@@ -17,7 +17,7 @@
       "source_sheet": "末残（Amounts at end of period）",
       "source_column": 7,
       "source_header_context": "4298428 | 4247068 | 4210409 | 4346010 | 4216365 | 4072435 | 4028129 | 3905362",
-      "fetched_at_utc": "2026-11-06T14:38:10.260978Z",
+      "fetched_at_utc": "2026-11-06T15:57:35.214031Z",
       "official_canonical_untouched": true,
       "original_runtime_validation": {
         "period": "2026-08",
@@ -56,7 +56,7 @@
         "editionDate": "20261021_0900",
         "publicSinceDate": "20261021_0900"
       },
-      "fetched_at_utc": "2026-11-06T14:34:45.672341Z",
+      "fetched_at_utc": "2026-11-06T15:57:10.021344Z",
       "official_canonical_untouched": true
     },
     "CHF.sight_deposits": {
@@ -82,23 +82,23 @@
         "editionDate": "20261021_0942",
         "publicSinceDate": "20261021_0942"
       },
-      "fetched_at_utc": "2026-11-06T14:34:46.623020Z",
+      "fetched_at_utc": "2026-11-06T15:57:10.741477Z",
       "official_canonical_untouched": true
     },
     "BRENT.market_proxy": {
       "status": "MARKET_PROXY_ACTIVE_SECONDARY",
       "confidence": "B_FOR_DIRECTION_ONLY",
       "proxy_as_of": "2026-11-06",
-      "value": 100.27,
-      "change_1d_pct": 2.0144,
-      "change_1w_pct": -14.7654,
+      "value": 97.76,
+      "change_1d_pct": -0.5392,
+      "change_1w_pct": -16.899,
       "source": "Yahoo Finance public chart JSON · Brent Crude Oil Last Day Financial Futures (BZ=F)",
       "source_endpoint": "https://query1.finance.yahoo.com/v8/finance/chart/BZ=F",
       "vendor_symbol": "BZ=F",
       "currency": "USD",
       "exchange_name": "NYM",
       "instrument_type": "FUTURE",
-      "fetched_at_utc": "2026-11-06T03:42:34.726151Z",
+      "fetched_at_utc": "2026-11-07T01:59:33.022949Z",
       "official_canonical_untouched": true,
       "same_date_source_vintages": [
         {
@@ -128,18 +128,31 @@
           "prior_change_1w_pct": -15.1224,
           "new_change_1w_pct": -14.7654,
           "interpretation": "Vendor snapshot changed; not a new market session or official settlement revision."
+        },
+        {
+          "kind": "SECONDARY_SAME_DATE_SNAPSHOT_DIFFERENCE",
+          "market_date": "2026-11-06",
+          "prior_fetched_at_utc": "2026-11-06T03:42:34.726151Z",
+          "new_fetched_at_utc": "2026-11-07T01:59:33.022949Z",
+          "prior_value": 100.27,
+          "new_value": 97.76,
+          "prior_change_1d_pct": 2.0144,
+          "new_change_1d_pct": -0.5392,
+          "prior_change_1w_pct": -14.7654,
+          "new_change_1w_pct": -16.899,
+          "interpretation": "Vendor snapshot changed; not a new market session or official settlement revision."
         }
       ],
-      "vintage_audit_count": 2,
+      "vintage_audit_count": 3,
       "interpretation": "Secondary futures market proxy for live Brent level/direction only. It does not replace canonical EIA Brent spot, does not certify ICE history, and has no Core/backtest effect."
     },
     "GOLD.market_proxy": {
       "status": "MARKET_PROXY_ACTIVE_SECONDARY",
       "confidence": "B_FOR_DIRECTION_ONLY",
       "proxy_as_of": "2026-11-06",
-      "value": 4070.6001,
-      "change_1d_pct": -1.0429,
-      "change_1w_pct": 4.4038,
+      "value": 4074.8999,
+      "change_1d_pct": -0.9384,
+      "change_1w_pct": 4.5141,
       "source": "Yahoo Finance public chart JSON · COMEX Gold Futures (GC=F)",
       "source_endpoint": "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
       "vendor_symbol": "GC=F",
@@ -147,8 +160,8 @@
       "unit": "USD per troy ounce",
       "exchange_name": "CMX",
       "instrument_type": "FUTURE",
-      "observation_count_1mo": 25,
-      "fetched_at_utc": "2026-11-06T02:55:39.992530Z",
+      "observation_count_1mo": 23,
+      "fetched_at_utc": "2026-11-07T17:52:41.316335Z",
       "official_canonical_untouched": true,
       "interpretation": "Informational delayed futures market proxy, not LBMA Gold Price, not physical spot, not certified exchange settlement, and not eligible for canonical Gold history, core, signals, sizing or official backtests."
     },
@@ -156,19 +169,33 @@
       "status": "MARKET_PROXY_ACTIVE_SECONDARY",
       "confidence": "B_FOR_DIRECTION_ONLY",
       "proxy_as_of": "2026-11-06",
-      "value": 91.69,
-      "change_1d_pct": 1.2925,
-      "change_1w_pct": -11.9381,
+      "value": 90.34,
+      "change_1d_pct": -0.1989,
+      "change_1w_pct": -13.2347,
       "source": "Yahoo Finance public chart JSON · WTI Crude Oil Last Day Financial Futures (CL=F)",
       "source_endpoint": "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "vendor_symbol": "CL=F",
       "currency": "USD",
       "exchange_name": "NYM",
       "instrument_type": "FUTURE",
-      "fetched_at_utc": "2026-11-06T02:46:45.068593Z",
+      "fetched_at_utc": "2026-11-07T02:19:47.557606Z",
       "official_canonical_untouched": true,
-      "same_date_source_vintages": [],
-      "vintage_audit_count": 0,
+      "same_date_source_vintages": [
+        {
+          "kind": "SECONDARY_SAME_DATE_SNAPSHOT_DIFFERENCE",
+          "market_date": "2026-11-06",
+          "prior_fetched_at_utc": "2026-11-06T02:46:45.068593Z",
+          "new_fetched_at_utc": "2026-11-07T02:19:47.557606Z",
+          "prior_value": 91.69,
+          "new_value": 90.34,
+          "prior_change_1d_pct": 1.2925,
+          "new_change_1d_pct": -0.1989,
+          "prior_change_1w_pct": -11.9381,
+          "new_change_1w_pct": -13.2347,
+          "interpretation": "Vendor snapshot changed; not a new market session or official settlement revision."
+        }
+      ],
+      "vintage_audit_count": 1,
       "interpretation": "Secondary futures market proxy for live WTI level/direction only. It does not replace canonical EIA WTI spot, does not certify NYMEX history, and has no Core/backtest effect."
     }
   },

@@ -1,7 +1,7 @@
 {
   "currencies": {
     "CHF": {
-      "as_of": "2026-11-05",
+      "as_of": "2026-11-06",
       "change_1d_bp": null,
       "change_1w_bp": null,
       "change_status": "DERIVED_ONLY_FROM_HOMOGENEOUS_SNAPSHOT_HISTORY",
@@ -20,20 +20,20 @@
       "horizons": {
         "12m": {
           "accrual_start": "2027-12-15",
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "SA3Z2027",
           "contract_description": "Dec 2027",
           "expiration": "2028-03-14",
-          "futures_price": 99.58,
+          "futures_price": 99.605,
           "mapping": "nearest ICE SARON accrual start to today+365d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-05T17:59:00Z",
-          "quote_as_of": "2026-11-05",
+          "price_valid_until": "2026-11-06T17:55:36Z",
+          "quote_as_of": "2026-11-06",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 0.42,
+          "rate": 0.395,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 42.0,
+          "raw_level_minus_spot_policy_bp": 39.5,
           "symbol": "ICEEUR:SA3Z2027"
         },
         "3m": {
@@ -106,37 +106,37 @@
       },
       "horizons": {
         "12m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "FST3U2027",
           "contract_description": "Sep 2027",
           "expiration": "2027-12-15",
-          "futures_price": 96.99,
+          "futures_price": 97.02,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-05T17:27:47Z",
-          "quote_as_of": "2026-11-05",
+          "price_valid_until": "2026-11-06T22:09:42Z",
+          "quote_as_of": "2026-11-06",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 3.01,
+          "rate": 2.98,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 51.0,
+          "raw_level_minus_spot_policy_bp": 48.0,
           "symbol": "EUREX:FST3U2027"
         },
         "3m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "FST3X2026",
           "contract_description": "Nov 2026",
           "expiration": "2027-02-17",
-          "futures_price": 97.425,
+          "futures_price": 97.4225,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-05T22:05:27Z",
-          "quote_as_of": "2026-11-05",
+          "price_valid_until": "2026-11-06T22:09:32Z",
+          "quote_as_of": "2026-11-06",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 2.575,
+          "rate": 2.5775,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 7.5,
+          "raw_level_minus_spot_policy_bp": 7.8,
           "symbol": "EUREX:FST3X2026"
         },
         "6m": {
@@ -210,42 +210,42 @@
       "input_mode": "NATIVE_CB_FALLBACK",
       "instrument": "RBNZ-reported market pricing / NZ interest-rate market",
       "market_direction_proxy": {
-        "as_of": "2026-11-05",
+        "as_of": "2026-11-06",
         "basis_warning": "Bank-bill/FRA rates contain bank-credit and term/basis components. Do not treat these levels as OCR OIS and do not compute OCR policy deltas from them.",
         "confidence_grade": "B_FOR_DIRECTION_C_FOR_POLICY_LEVEL",
         "horizons": {
           "12m": {
-            "change_1d_bp": -4.0,
-            "change_1w_bp": -28.0,
+            "change_1d_bp": -2.0,
+            "change_1w_bp": -26.0,
             "expiration": "2027-12-15",
             "expiry_label": "Dec 2027",
-            "implied_bank_bill_rate": 3.89,
+            "implied_bank_bill_rate": 3.87,
             "mapping": "nearest listed expiry to trade_date+365d; no interpolation",
-            "settlement_change": 0.04,
-            "settlement_price": 96.11,
-            "weekly_reference_trade_date": "2026-10-29"
+            "settlement_change": 0.02,
+            "settlement_price": 96.13,
+            "weekly_reference_trade_date": "2026-10-30"
           },
           "3m": {
-            "change_1d_bp": -2.0,
-            "change_1w_bp": -20.0,
+            "change_1d_bp": -1.0,
+            "change_1w_bp": -15.0,
             "expiration": "2027-03-10",
             "expiry_label": "Mar 2027",
-            "implied_bank_bill_rate": 3.45,
+            "implied_bank_bill_rate": 3.44,
             "mapping": "nearest listed expiry to trade_date+90d; no interpolation",
-            "settlement_change": 0.02,
-            "settlement_price": 96.55,
-            "weekly_reference_trade_date": "2026-10-29"
+            "settlement_change": 0.01,
+            "settlement_price": 96.56,
+            "weekly_reference_trade_date": "2026-10-30"
           },
           "6m": {
-            "change_1d_bp": -3.0,
-            "change_1w_bp": -29.0,
+            "change_1d_bp": -2.0,
+            "change_1w_bp": -25.0,
             "expiration": "2027-06-16",
             "expiry_label": "Jun 2027",
-            "implied_bank_bill_rate": 3.67,
+            "implied_bank_bill_rate": 3.65,
             "mapping": "nearest listed expiry to trade_date+180d; no interpolation",
-            "settlement_change": 0.03,
-            "settlement_price": 96.33,
-            "weekly_reference_trade_date": "2026-10-29"
+            "settlement_change": 0.02,
+            "settlement_price": 96.35,
+            "weekly_reference_trade_date": "2026-10-30"
           }
         },
         "instrument": "ASX New Zealand 90 Day Bank Accepted Bill Futures (BB)",
@@ -253,7 +253,7 @@
         "policy_delta_from_proxy_allowed": false,
         "source": "ASX official NZ futures end-of-day total traded report",
         "source_quality": "OFFICIAL_EXCHANGE_DIRECTIONAL_PROXY",
-        "source_url": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261105ZFT.htm",
+        "source_url": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261106ZFT.htm",
         "status": "LIVE_DIRECTIONAL_PROXY_READY",
         "substitutes_for_ois_level": false
       },
@@ -269,7 +269,7 @@
       "status": "ESTIMATED_PARTIAL"
     },
     "USD": {
-      "as_of": "2026-11-05",
+      "as_of": "2026-11-06",
       "change_1d_bp": null,
       "change_1w_bp": null,
       "change_status": "DERIVED_ONLY_FROM_HOMOGENEOUS_SNAPSHOT_HISTORY",
@@ -287,20 +287,20 @@
       },
       "horizons": {
         "12m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "ZQV2027",
           "contract_description": "Oct 2027",
           "expiration": "2027-11-01",
-          "futures_price": 95.71,
+          "futures_price": 95.66,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-05T20:52:30Z",
-          "quote_as_of": "2026-11-05",
+          "price_valid_until": "2026-11-06T20:48:49Z",
+          "quote_as_of": "2026-11-06",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 4.29,
+          "rate": 4.34,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 41.5,
+          "raw_level_minus_spot_policy_bp": 46.5,
           "symbol": "CBOT:ZQV2027"
         },
         "3m": {
@@ -321,20 +321,20 @@
           "symbol": "CBOT:ZQG2027"
         },
         "6m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "ZQJ2027",
           "contract_description": "Apr 2027",
           "expiration": "2027-05-03",
-          "futures_price": 95.805,
+          "futures_price": 95.78,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-05T18:43:30Z",
-          "quote_as_of": "2026-11-05",
+          "price_valid_until": "2026-11-06T18:56:16Z",
+          "quote_as_of": "2026-11-06",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 4.195,
+          "rate": 4.22,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 32.0,
+          "raw_level_minus_spot_policy_bp": 34.5,
           "symbol": "CBOT:ZQJ2027"
         }
       },
