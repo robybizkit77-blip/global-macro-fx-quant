@@ -1,0 +1,55 @@
+{
+  "schema": "GMFQ_NZD_RBNZ_B2_POSTROLL_WEB_RESEARCH_V1",
+  "status": "PUBLIC_OFFICIAL_WEB_RESEARCH_NOT_XLSX_RECONCILED",
+  "currency": "NZD",
+  "source": "Reserve Bank of New Zealand · Wholesale Interest Rates B2 · NZFMA indicative government closing yields",
+  "source_url": "https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates",
+  "source_release_date": "2026-11-06",
+  "source_capture_date": "2026-11-08",
+  "source_capture_method": "PUBLIC_OFFICIAL_PAGE_MANUAL_RESEARCH_NOT_AUTOMATED_FETCH",
+  "observation_basis": "Government bond closing yields 2-year and 10-year, NOT overnight index swaps or bank bill yields",
+  "benchmark_roll_date": "2026-10-30",
+  "benchmark_2Y": "April 2029",
+  "benchmark_10Y": "April 2037",
+  "before_roll_2Y": "May 2028",
+  "before_roll_10Y": "May 2036",
+  "daily_observations": [
+    {
+      "date": "2026-10-30",
+      "2Y": 3.96,
+      "10Y": 4.9
+    },
+    {
+      "date": "2026-11-02",
+      "2Y": 3.97,
+      "10Y": 4.91
+    },
+    {
+      "date": "2026-11-03",
+      "2Y": 3.95,
+      "10Y": 4.88
+    },
+    {
+      "date": "2026-11-04",
+      "2Y": 3.83,
+      "10Y": 4.81
+    },
+    {
+      "date": "2026-11-05",
+      "2Y": 3.78,
+      "10Y": 4.74
+    }
+  ],
+  "official_web_display_observed": true,
+  "independent_xlsx_reconciled": false,
+  "automated_access_authorized": false,
+  "historical_benchmark_roll_continuity": false,
+  "no_interpolation": true,
+  "research_only": true,
+  "eligible_for_core": false,
+  "eligible_for_fx_pair_engine": false,
+  "eligible_for_backtests": false,
+  "eligible_for_automatic_promotion": false,
+  "canonical_government_rates_untouched": true,
+  "note": "Manual research transcription of official RBNZ public B2 page as released 6 Nov 2026. Five post-roll market dates = four intervals; minimum five intervals for FX/2Y directional verdict not reached. No crossing 29-Oct/30-Oct benchmark rollover. Scheduled automation MUST NOT scrape RBNZ unless documented written permission exists."
+}
