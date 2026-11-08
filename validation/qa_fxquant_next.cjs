@@ -185,7 +185,11 @@ fs.mkdirSync(evidence,{recursive:true});
    await page.evaluate(()=>{location.hash='#cot'});
    assert(await page.locator('.cot-country-selector .cot-country-button').count()===8,'COT G8 selector incomplete');
    assert(/\d{2}\/\d{2}\/2026/.test(await page.locator('.cot-source-band').innerText()),'COT historical timestamp missing');
-   assert(await page.locator('.cot-graph-grid .chart svg').count()===2,'COT history and price charts missing');
+   assert(await page.locator('.cot-plot-card .chart svg').first().count()===1,'Validated COT position chart missing');
+   const pricePlot=await page.locator('.cot-price-card .chart svg').count();
+   if(pricePlot===0){
+    assert((await page.locator('.cot-price-card .empty').innerText()).includes('Prezzo allineato non validato'),'Missing source-quality reason for unavailable COT price');
+   }else assert(pricePlot===1,'Unexpected duplicate COT price charts');
    assert(await page.locator('.cot-detailed-table .data-table tbody tr').count()===12,'COT last 12 weekly rows missing');
    assert(await page.locator('.cot-universe .data-table tbody tr').count()===8,'COT G8 comparison table incomplete');
    await page.locator('[data-cot-mode="gross"]').click();
