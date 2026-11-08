@@ -45,6 +45,79 @@
    history2:{dates:o.map(v=>v.date),values:o.map(v=>v['2Y'])},
    researchOnly:true,sourcePublicationDate:research.publication_date}};
  }
+ // Research-only CHF & NZD source context, never a market-grade confirmation.
+ // No historical 2Y is merged into canonical rates; no interpolation or roll splice.
+ function researchedSources(rateData,pair,modelDate,now,chfHistory,nzdPostroll){
+  const notes=[],pairName=String(pair||'');
+  const eligible=d=>isDay(d)&&d<=modelDate&&d<=now;
+  if(pairName.includes('CHF')){
+   const x=chfHistory,o=x?.observations,base=rateData?.CHF;
+   if(x?.schema==='GMFQ_FXV2_CHF_SNB_PAIRED_HISTORY_V1'&&
+     x?.quality==='SNB_OFFICIAL_OBSERVED_HISTORICAL_RESEARCH'&&
+     x?.source_url==='https://data.snb.ch/api/cube/rendeiduebd/data/json/en'&&
+     /^[0-9a-f]{64}$/.test(x?.source_response_sha256||'')&&
+     x?.source_latest_vintage_not_point_in_time===true&&
+     x?.current_session_government_rates_certified===false&&
+     x?.eligible_for_core===false&&x?.eligible_for_fx_engine===false&&
+     x?.eligible_for_backtests===false&&x?.eligible_for_automatic_promotion===false&&
+     Array.isArray(o)&&o.length>=10&&o.length<=300&&o.length===x.observation_count&&
+     /^FULL_CURRENT_OFFICIAL/.test(base?.quality||'')&&
+     o[0]?.date===base?.date&&eligible(x?.last_observation_date)&&
+     o.at(-1)?.date===x.last_observation_date&&
+     Math.abs(o[0]['2Y']-base['2Y'])<0.00001&&
+     Math.abs(o[0]['10Y']-base['10Y'])<0.00001){
+    let valid=true,prev='';
+    for(const r of o){
+     if(!eligible(r.date)||r.date<=prev||
+      !isNum(r['2Y'])||!isNum(r['10Y'])||
+      Math.abs((r['10Y']-r['2Y'])*100-r.curve_bp)>0.01){valid=false;break}
+     prev=r.date;
+    }
+    if(valid)notes.push({currency:'CHF',lastDate:x.last_observation_date,count:o.length,
+     text:'CHF · SNB: '+o.length+' osservazioni 2Y/10Y sulla stessa data, ultima '+x.last_observation_date+
+       ' (storico ufficiale di ricerca, non certificato come quotazione corrente).',
+     status:'HISTORICAL_ONLY'});
+   }
+  }
+  if(pairName.includes('NZD')){
+   const x=nzdPostroll,o=x?.daily_observations;
+   if(x?.schema==='GMFQ_NZD_RBNZ_B2_POSTROLL_WEB_RESEARCH_V1'&&
+     x?.status==='PUBLIC_OFFICIAL_WEB_RESEARCH_NOT_XLSX_RECONCILED'&&
+     x?.source_url==='https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates'&&
+     x?.source_capture_method==='PUBLIC_OFFICIAL_PAGE_MANUAL_RESEARCH_NOT_AUTOMATED_FETCH'&&
+     x?.benchmark_roll_date==='2026-10-30'&&
+     x?.benchmark_2Y==='April 2029'&&x?.benchmark_10Y==='April 2037'&&
+     x?.before_roll_2Y==='May 2028'&&x?.before_roll_10Y==='May 2036'&&
+     x?.official_web_display_observed===true&&x?.independent_xlsx_reconciled===false&&
+     x?.historical_benchmark_roll_continuity===false&&x?.research_only===true&&
+     x?.no_interpolation===true&&x?.eligible_for_core===false&&
+     x?.eligible_for_fx_pair_engine===false&&x?.eligible_for_backtests===false&&
+     x?.eligible_for_automatic_promotion===false&&
+     eligible(x?.source_release_date)&&isDay(x?.source_capture_date)&&x.source_capture_date<=now&&
+     Array.isArray(o)&&o.length>=2&&o.length<=15&&o[0]?.date===x.benchmark_roll_date&&
+     eligible(o.at(-1)?.date)&&o.at(-1).date<=x.source_release_date){
+    let valid=true,prev='';
+    for(const r of o){
+     if(!eligible(r.date)||r.date<=prev||r.date<x.benchmark_roll_date||
+      !isNum(r['2Y'])||!isNum(r['10Y'])||
+      !(r['2Y']>-5&&r['2Y']<25&&r['10Y']>-5&&r['10Y']<25)){valid=false;break}
+     prev=r.date;
+    }
+    if(valid){
+     const intervals=o.length-1,shortfall=Math.max(0,5-intervals);
+     notes.push({currency:'NZD',lastDate:o.at(-1).date,count:o.length,intervals,
+      status:'POST_ROLL_NOT_APPROVED',
+      text:'NZD · RBNZ B2: '+o.length+' chiusure sui nuovi benchmark dal 30/10, '+intervals+
+       '/5 intervalli minimi; ultima '+o.at(-1).date+' (2Y '+o.at(-1)['2Y'].toFixed(2)+
+       '%, 10Y '+o.at(-1)['10Y'].toFixed(2)+'%). '+(shortfall?
+       (shortfall===1?'Manca 1 intervallo e serve la riconciliazione XLSX.':'Mancano '+shortfall+' intervalli e serve la riconciliazione XLSX.'):
+       'Copertura temporale sufficiente, ma riconciliazione XLSX ancora mancante.')+
+       ' Nessun collegamento attraverso il cambio del titolo del 30/10.'});
+    }
+   }
+  }
+  return notes;
+ }
  function commonObservations(rateData,prices,pair,modelDate,now){
   if(!/^[A-Z]{6}$/.test(pair||'')||!isDay(modelDate)||modelDate>now||
    !Array.isArray(prices?.rows))return [];
@@ -79,7 +152,7 @@
   const direction=(Math.abs(fx)<1e-10||Math.abs(bp)<1e-10)?'NEUTRO':fx*bp>0?'STESSO SEGNO':'SEGNO OPPOSTO';
   return {n,start:start.date,end:last.date,days:span,fxPct:fx,spreadBp:bp,direction};
  }
- function snapshot(rateData,prices,pair,modelDate,now,audHistory){
+ function snapshot(rateData,prices,pair,modelDate,now,audHistory,chfHistory,nzdPostroll){
   const eff=String(pair||'').includes('AUD')?researchRates(rateData,audHistory,modelDate,now):rateData;
   const base=String(pair||'').slice(0,3),quote=String(pair||'').slice(3,6);
   const a=eff?.[base],b=eff?.[quote],rows=commonObservations(eff,prices,pair,modelDate,now),latest=rows.at(-1);
@@ -93,7 +166,8 @@
     :!ready?'Ultima osservazione FX/2Y comune troppo vecchia per confrontare i movimenti recenti.'
     :!short?'Storico troppo discontinuo: 5 intervalli fra date comuni coprono più di 12 giorni o sono insufficienti.'
     :'';
-  return {pair,base,quote,rows,latest,age,lag,ready:ready&&Boolean(short),researchOnly:!!(a?.researchOnly||b?.researchOnly),
+  const context=researchedSources(rateData,pair,modelDate,now,chfHistory,nzdPostroll);
+  return {pair,base,quote,rows,latest,age,lag,ready:ready&&Boolean(short),researchOnly:!!(a?.researchOnly||b?.researchOnly),context,
    short,medium,reason,
    firstSource:a?.source||'',secondSource:b?.source||'',
    // This series is a relative sovereign yield difference; never an OIS spread.
@@ -102,8 +176,9 @@
  // A short, source-dated research observation, never a trade decision.
  function brief(r){
   if(!r?.ready||!r.short||!r.latest?.date)return {
-   ready:false,asof:null,tone:'unavailable',label:'2Y governativi non verificabili',
-   explanation:r?.reason||'Dati tassi/FX non disponibili su date comuni.'
+   ready:false,asof:null,tone:'unavailable',label:'2Y governativi non verificabili'+(r?.context?.length?' · '+r.context.map(x=>x.currency==='NZD'?'NZD '+x.intervals+'/5 post-roll':'CHF SNB '+x.lastDate).join(' / '):''),
+   explanation:r?.reason||'Dati tassi/FX non disponibili su date comuni.',
+   context:r?.context||[]
   };
   const sign=m=>m?.direction==='STESSO SEGNO'?'concordi':
     m?.direction==='SEGNO OPPOSTO'?'discordi':'non conclusivi';
@@ -119,7 +194,7 @@
  function build(api){
   const {get,state,plot,fmt,sign,date,esc,dayNow}=api;
   const pair=state.pair||'EURUSD',doc=get('pairs');
-  const r=snapshot(get('rates'),get('currencyPrices'),pair,doc?.price_asof,dayNow(),get('audDailyResearch'));
+  const r=snapshot(get('rates'),get('currencyPrices'),pair,doc?.price_asof,dayNow(),get('audDailyResearch'),get('chfResearch'),get('nzdPostroll'));
   function read(x){
    if(!x)return 'Non verificabile con la copertura attuale.';
    const direction=x.direction==='STESSO SEGNO'?'si sono mossi nello stesso verso'
@@ -128,7 +203,7 @@
    return 'Tra '+date(x.start)+' e '+date(x.end)+' ('+x.n+' intervalli fra '+(x.n+1)+' date comuni, '+x.days+' giorni) prezzo FX e differenziale 2Y '+direction+'.';
   }
   function render(){
-   if(!r.ready)return '<section class="decision-rates-bridge" aria-label="Conferma tassi e prezzo"><div class="decision-rates-heading"><span>PREZZO FX / TASSI 2Y</span><h2>La verifica sui tassi non è disponibile.</h2></div><p class="decision-rate-unavailable">'+esc(r.reason)+'</p><small>Per evitare una falsa divergenza non confrontiamo serie di date diverse o osservazioni troppo distanti. Le curve OIS storiche non sono disponibili qui.</small></section>';
+   if(!r.ready)return '<section class="decision-rates-bridge" aria-label="Conferma tassi e prezzo"><div class="decision-rates-heading"><span>PREZZO FX / TASSI 2Y</span><h2>La verifica sui tassi non è disponibile.</h2></div><p class="decision-rate-unavailable">'+esc(r.reason)+'</p>'+(r.context.length?'<div class="decision-source-evidence"><span>FONTI DI RICERCA OSSERVATE · NON IDONEE AL VERDETTO 5/20</span>'+r.context.map(x=>'<p data-source-context="'+x.currency+'">'+esc(x.text)+'</p>').join('')+'</div>':'')+'<small>Per evitare una falsa divergenza non confrontiamo serie di date diverse o osservazioni troppo distanti. Le curve OIS storiche non sono disponibili qui.</small></section>';
    const sel=[20,60,120].includes(Number(state.pairPriceWindow))?Number(state.pairPriceWindow):60;
    const line=r.rows.slice(-sel).map(x=>({label:x.date,value:x.spread}));
    const figure=plot({lines:[{name:r.base+' 2Y − '+r.quote+' 2Y',color:'#e2b985',values:line}],precision:1,unit:' bp',label:'Differenziale rendimenti governativi 2 anni '+r.base+' meno '+r.quote});
@@ -155,6 +230,6 @@
   }
   return {data:r,render};
  }
- if(typeof window!=='undefined')window.FXQuantRatesBridge={snapshot,commonObservations,metrics,brief,build,researchRates};
- if(typeof module!=='undefined'&&module.exports)module.exports={snapshot,commonObservations,metrics,brief,build,researchRates};
+ if(typeof window!=='undefined')window.FXQuantRatesBridge={snapshot,commonObservations,metrics,brief,build,researchRates,researchedSources};
+ if(typeof module!=='undefined'&&module.exports)module.exports={snapshot,commonObservations,metrics,brief,build,researchRates,researchedSources};
 })();
