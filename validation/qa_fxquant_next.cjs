@@ -104,9 +104,17 @@ fs.mkdirSync(evidence,{recursive:true});
    assert((await page.locator('.focus-headline').first().innerText()).includes('AUD/CAD'),'Pair select failed');
    assert(await page.locator('.decision-watch-line').count()===2,'AUD/CAD with a dated price history must show favorable and contrary references');
    assert(await page.locator('.decision-rates-bridge').count()===1,'AUD/CAD FX/rates validation panel missing');
-   assert(await page.locator('.decision-rates-bridge .chart').count()===0,'Sparse AUD 2Y observations must NOT produce a fake daily chart');
-   assert((await page.locator('.decision-rates-bridge').innerText()).includes('discontinuo'),'Sparse AUD rates should be explained clearly');
-   assert((await page.locator('.decision-gate-rates').innerText()).includes('non verificabili'),'No false FX/2Y confirmation for sparse AUD history');
+   const audResearch=await page.locator('.decision-rates-bridge').getAttribute('data-aud-research');
+   if(audResearch==='true'){
+     assert(await page.locator('.decision-rates-bridge .chart svg').count()===1,'Reconciled RBA F2 daily rates must produce paired-date chart');
+     assert((await page.locator('.decision-rates-bridge').innerText()).includes('ricerca non canonica'),'RBA research provenance must be visible');
+     assert((await page.locator('.decision-gate-rates').innerText()).includes('RBA F2 ricerca'),'Top verdict must label research not Core');
+     assert(await page.locator('#pair-results [data-pair="AUDCAD"] .pair-data-state.research').count()===2,'2Y coverage must be research amber');
+   }else{
+     assert(await page.locator('.decision-rates-bridge .chart').count()===0,'Without validated F2 daily history no AUD rates chart');
+     assert((await page.locator('.decision-rates-bridge').innerText()).includes('discontinuo'),'Sparse AUD rates should be explained clearly');
+     assert((await page.locator('.decision-gate-rates').innerText()).includes('non verificabili'),'No false FX/2Y confirmation for sparse AUD history');
+   }
    assert(await page.locator('.decision-price-grid [data-reference-line]').count()===2,'Current FX levels must appear on the price chart');
    assert(await page.locator('.decision-reference-caption').count()===1,'Chart line provenance not explained');
    await page.locator('[data-v12-reference-toggle]').click();
