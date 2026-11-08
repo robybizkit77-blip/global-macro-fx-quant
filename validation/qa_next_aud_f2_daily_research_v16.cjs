@@ -74,6 +74,17 @@ if(sidecar.status==='OFFICIAL_F2_DAILY_RESEARCH_ONLY_NOT_POINT_IN_TIME'){
  const actual=mod.snapshot(rates,price,'AUDCAD',base,now,sidecar);
  assert(actual.ready&&actual.researchOnly,'Official AUD F2 sidecar must validate independently');
  assert(actual.rows.length>30);
+ if(sidecar.last_observation_date==='2026-11-04'&&model.price_asof==='2026-11-06'){
+  const all=Object.keys(model.pairs);
+  const matched=all.map(key=>({key,info:mod.snapshot(rates,price,key,base,now,sidecar)}));
+  const short=matched.filter(x=>x.info.ready&&x.info.short).map(x=>x.key);
+  const medium=matched.filter(x=>x.info.ready&&x.info.medium).map(x=>x.key);
+  const aud=matched.filter(x=>x.info.ready&&x.info.researchOnly).map(x=>x.key).sort();
+  assert.equal(short.length,15,'Verified official RBA daily history must cover 15/28 short rates research comparisons');
+  assert.equal(medium.length,10,'Actual daily source must cover 10/28 medium rates comparisons');
+  assert.deepEqual(aud,['AUDCAD','AUDJPY','AUDUSD','EURAUD','GBPAUD'],'Five genuine AUD research comparisons, not synthetic live quotes');
+  assert(matched.filter(x=>x.info.researchOnly).every(x=>x.key.includes('AUD')),'RBA research must not contaminate unrelated FX crosses');
+ }
 }else assert.equal(sidecar.status,'AWAITING_OFFICIAL_F2_DAILY_HISTORY');
 console.log('NEXT_V16_AUD_F2_RESEARCH_PASS',JSON.stringify({
  sidecar:sidecar.status,syntheticTestOnly:true,officialReady:sidecar.status!=='AWAITING_OFFICIAL_F2_DAILY_HISTORY'}));

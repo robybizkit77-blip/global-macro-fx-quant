@@ -21,7 +21,7 @@ fs.mkdirSync(evidence,{recursive:true});
    assert(resp&&resp.ok(),'Home HTTP failed: '+resp?.status());
    await page.waitForFunction(()=>/fonti caricate/.test(document.getElementById('sidebar-feed')?.textContent||''),{timeout:20000});
    const sourceText=await page.locator('#sidebar-feed').innerText();
-   assert(/14\/14 fonti caricate/.test(sourceText),'Feed mismatch: '+sourceText);
+   assert(/15\/15 fonti caricate/.test(sourceText),'Feed mismatch after AUD RBA F2 source addition: '+sourceText);
    for(const route of ROUTES){
     await page.evaluate(r=>{location.hash='#'+r},route);
     await page.waitForFunction(r=>document.querySelector('#crumb-page')?.textContent===({overview:'Panoramica',currencies:'Valute G8',pairs:'Coppie FX',macro:'Scenario macro',rates:'Tassi & OIS',cot:'COT',risk:'Rischio',news:'Notizie'})[r],route);
@@ -281,6 +281,6 @@ fs.mkdirSync(evidence,{recursive:true});
    await page.close();
   }
   fs.writeFileSync(evidence+'/report.json',JSON.stringify({status:'PASS',base:BASE,results},null,2));
-  console.log('FXQUANT_NEXT_VISUAL_AND_INTERACTION_QA_PASS',JSON.stringify({views:results.length,viewports:[1440,390],feed:'14/14',interactions:'PASS'}));
+  console.log('FXQUANT_NEXT_VISUAL_AND_INTERACTION_QA_PASS',JSON.stringify({views:results.length,viewports:[1440,390],feed:'15/15',interactions:'PASS'}));
  }finally{await browser.close();}
 })().catch(e=>{console.error('FXQUANT_NEXT_QA_FAIL',e.stack||e);process.exit(1)});
