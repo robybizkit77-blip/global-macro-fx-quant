@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-05",
-  "generated_at_utc": "2026-11-08T02:31:43.648131Z",
+  "generated_at_utc": "2026-11-08T10:28:58.119106Z",
   "items": [
     {
       "as_of": "2026-11-05",
@@ -47,7 +47,7 @@
       "title": "GBP: repricing OIS più dovish (-11.2 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-08T02:31:43.648131Z",
+  "last_checked_at_utc": "2026-11-08T10:28:58.119106Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -1029,9 +1029,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 13,
+        "accepted_items": 12,
         "ccy": "EUR",
-        "entries_rejected": 2,
+        "entries_rejected": 3,
         "feed_entries_seen": 15,
         "feed_url": "https://www.ecb.europa.eu/rss/press.html",
         "source": "Banca centrale europea",
@@ -1039,9 +1039,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 5,
+        "accepted_items": 4,
         "ccy": "GBP",
-        "entries_rejected": 45,
+        "entries_rejected": 46,
         "feed_entries_seen": 50,
         "feed_url": "https://www.bankofengland.co.uk/rss/news",
         "source": "Bank of England",
@@ -1051,8 +1051,8 @@
       {
         "accepted_items": 20,
         "ccy": "JPY",
-        "entries_rejected": 24,
-        "feed_entries_seen": 44,
+        "entries_rejected": 22,
+        "feed_entries_seen": 42,
         "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
         "source": "Bank of Japan",
         "source_id": "BOJ_NEWS",
