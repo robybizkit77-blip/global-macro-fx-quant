@@ -1,8 +1,23 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-08T17:05:42Z",
+  "generated_at_utc": "2026-11-08T21:13:06Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-c2cc045e42b4cfd61f2b",
+      "observed_at_utc": "2026-11-08T19:26:09Z",
+      "headline": "Iraq has reached understandings with US to allow oil exports through Hormuz, minister says",
+      "summary": "Reuters riporta: Iraq has reached understandings with US to allow oil exports through Hormuz, minister says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxQcVp2dDBwekFJVEtlai1lemtaZVNTb2FaallsZHhyT2FHTlZHdmpwY3B0SU9HRUpQV2JQQ3E0NWo0VEJpS3B4N1JCTGhkTUhJTHFYUUY3ZkttWmc2RUl1V2dicHdLODBaUEFQSmdySXdHcTJ2VGpIeUlOTlZZd05LZ29wYVdWajhrMzVYa1ZJQl9FTnNjZjFQRmNGc1FoV1dmOFZyOWYzTE1pRndvaGxzSTg1S1B1Z1lxSDZNM3hZWEZmZw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-663c606fd721533aad22",
       "observed_at_utc": "2026-11-08T14:01:48Z",
@@ -1393,21 +1408,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxQbHJKOFdCa1lNa3I2Y01DOVFLMDhSR3lhVnBGTmd3cG1UZXQ5LWdudTlhOUotYVZpUlktR09YbzhfR19RUkFCTzFnUmNjY2hxeVl3ejRscWNRV2t2TkpYdGNMWVhZZ0tOYkpEQmtxNDN3d2dhU2NSNktwMFJ6bUZkVVluUmJuNW1vYnhkZjJDMWhDTThvQ0l4NjdNc0tyTDM1cllSa2llM1MwSWN4WjZ3YnQ1VQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-077f501514a427e351f9",
-      "observed_at_utc": "2026-10-29T03:17:00Z",
-      "headline": "Hong Kong Monetary Authority leaves interest rates unchanged, tracking Fed move",
-      "summary": "Reuters riporta: Hong Kong Monetary Authority leaves interest rates unchanged, tracking Fed move. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxPN3J6WGNOeVpGVUFtLVBCWkItVWVEQmQwMnhTeldWYko5SnR6akxlQTJOR2ZMbnZodUhnMk8zMjRLaFpsQm5iMVFlTnJheVlnQzVhOW5WVFRYdnZHMUFxRWJBMVpUMHhubklkaFJ0dVloc3d0dTItcnJ5NEFMYlBXY1F1ZTFHV3lpN3NOSDNKQkJ6THNpbUp0MlMwRlpSQU4yNzdUMmZQOVFFSS1mVWROaUJpSjNBNXJZQS1nV2xEU1FJQmJaZ1FBenROYkM4UQ?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
