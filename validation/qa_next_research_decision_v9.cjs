@@ -145,10 +145,60 @@ const staleHtml=build(staleBase).pair();
 assert.match(staleHtml,/Riferimenti di prezzo non verificabili/);
 assert.doesNotMatch(staleHtml,/decision-watch-columns/);
 
+
+/* V12: visible reference segments describe the CURRENT fixing, never full-width history. */
+const vm=require('node:vm');
+const appCode=fs.readFileSync('site/fx-quant-v2/next/app.js','utf8');
+const plotStart=appCode.indexOf('function plot(opts){');
+const plotEnd=appCode.indexOf('\nfunction chartEvents(e){',plotStart);
+assert(plotStart>=0&&plotEnd>plotStart,'Missing generic chart renderer');
+const chartContext={state:{chartIndex:0,charts:{}},finite:Number.isFinite,
+ validDay:s=>typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s),
+ fmt,esc,date,
+ values:eurWatch.closes.slice(-20),refs:[
+  {kind:'favorable',value:eurWatch.watch.favorable},
+  {kind:'adverse',value:eurWatch.watch.adverse}]};
+vm.createContext(chartContext);
+new vm.Script(appCode.slice(plotStart,plotEnd)+
+ "\nvar drawn=plot({lines:[{name:'EURUSD BCE',color:'#9bd9cc',values}],referenceLines:refs,precision:5});"+
+ "\nvar plain=plot({lines:[{name:'EURUSD BCE',values}],referenceLines:[],precision:5});"+
+ "\nvar malformed=plot({lines:[{name:'EURUSD BCE',values}],referenceLines:[{kind:'untrusted',value:1000000}],precision:5});"
+).runInContext(chartContext,{timeout:1500});
+assert.match(chartContext.drawn,/data-reference-line="favorable"/);
+assert.match(chartContext.drawn,/data-reference-line="adverse"/);
+assert.match(chartContext.drawn,/data-reference-label="favorable"/);
+assert.match(chartContext.drawn,/data-reference-label="adverse"/);
+assert.doesNotMatch(chartContext.plain,/data-reference-line=/);
+assert.doesNotMatch(chartContext.malformed,/data-reference-line=/);
+const segments=[...chartContext.drawn.matchAll(/<line data-reference-line="(favorable|adverse)" x1="(\d+)" x2="(\d+)" y1="([\d.]+)"/g)];
+assert.equal(segments.length,2,'Only two valid current reference segments are drawn');
+assert(segments.every(m=>Number(m[2])>400&&Number(m[3])===682),'Reference must be a short right-side segment, not a fake historical line');
+const pricePlotState={pair:'EURUSD',pairPriceWindow:60,pairShowReferences:true};
+let plotOpts=null;
+const plotAudit=o=>{plotOpts=o;return '<div class="chart">ECB</div>'};
+const controls={...base,state:pricePlotState,plot:plotAudit};
+let rendered=build(controls).pair();
+assert.equal(plotOpts.referenceLines.length,2);
+assert.match(rendered,/data-v12-reference-toggle="1"/);
+assert.match(rendered,/Riferimenti visibili/);
+pricePlotState.pairShowReferences=false;
+rendered=build(controls).pair();
+assert.equal(plotOpts.referenceLines.length,0,'Chart toggle must remove only overlays');
+assert.match(rendered,/Mostra riferimenti/);
+assert.match(rendered,/decision-watch-columns/,'Hiding chart overlays must preserve factual watch levels');
+pricePlotState.pair='EURGBP';
+pricePlotState.pairShowReferences=true;
+rendered=build(controls).pair();
+assert.equal(plotOpts.referenceLines.length,0,'No structural thesis must not create chart references');
+assert.doesNotMatch(rendered,/data-v12-reference-toggle/);
+const staleControls={...base,state:{pair:'EURUSD',pairPriceWindow:60,pairShowReferences:true},dayNow:()=> '2027-01-05',plot:plotAudit};
+build(staleControls).pair();
+assert.equal(plotOpts.referenceLines.length,0,'Stale history must not create fresh references');
+
 const index=fs.readFileSync('site/fx-quant-v2/next/index.html','utf8');
 const app=fs.readFileSync('site/fx-quant-v2/next/app.js','utf8');
-assert(index.includes('decision-journey.js?v=11')&&index.indexOf('decision-journey.js')<index.indexOf('app.js?v=9'));
-assert(index.includes('editorial-v4.css?v=11'));
+assert(index.includes('decision-journey.js?v=12')&&index.indexOf('decision-journey.js')<index.indexOf('app.js?v=12'));
+assert(index.includes('editorial-v4.css?v=12'));
 assert(app.includes('window.FXQuantDecisionJourney?.build'));
 assert(app.includes('[data-v9-price-window]'));
-console.log('NEXT_V11_DECISION_PASS: 28 FX pairs, honest shortlist, ECB cross price, daily chart, no H4 fiction, data gaps, safe rendering');
+console.log('NEXT_V12_DECISION_PASS: 28 FX pairs, honest shortlist, ECB cross price, daily chart, no H4 fiction, data gaps, safe rendering');
