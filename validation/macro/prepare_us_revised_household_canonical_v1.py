@@ -48,6 +48,9 @@ def prepare(note, current, *, as_of=None):
          len(note["bea_issuer"]["issuer_html_sha256"])==64,
          "BEA source issuer not attested")
     period=note["latest_release_month"]
+    gate(all(datetime.fromisoformat(note[k].replace("Z","+00:00"))
+             <=at for k in ("source_observed_at_utc","research_processed_at_utc")),
+         "revised research snapshot was observed in the future")
     gate(period==note["bea_issuer"]["period"] and
          period+"-01"<=at.date().isoformat() and
          "revised_series" in note and
@@ -98,10 +101,22 @@ def prepare(note, current, *, as_of=None):
              math.isclose(x["old_last_level"],old["last_value"],rel_tol=0,
                           abs_tol=1e-6),
              fred+" research notes not tied to actual canonical base")
-        # The BEA issuer independently checked the current monthly rate.
-        gate(abs(x["latest_mom_pct_from_revised_levels"]-
-                 x["latest_mom_pct_BEA_published"])<=0.051,
+        # Independently recompute both the current m/m change AND all old
+        # overlap revision rows; a changed/stale research artifact fails.
+        calculated=100*(vs[-1]/vs[-2]-1)
+        gate(abs(calculated-x["latest_mom_pct_from_revised_levels"])<0.000011
+             and abs(calculated-x["latest_mom_pct_BEA_published"])<=0.051,
              fred+" levels no longer agree with BEA latest monthly rate")
+        revised_lookup=dict(zip(ds,vs))
+        expected_revision_rows=[
+            {"date":d,"old":v,"revised":revised_lookup[d],
+             "delta":round(revised_lookup[d]-v,6)}
+            for d,v in zip(old["dates"],old["values"])
+            if not math.isclose(v,revised_lookup[d],rel_tol=0,abs_tol=1e-7)
+        ]
+        gate(expected_revision_rows==x["revisions"] and
+             len(expected_revision_rows)==x["overlap_revised_observation_count"],
+             fred+" revised overlap no longer matches immutable original")
         newer=ds[-1]>=old["last_date"]
         gate(newer,fred+" cannot regress to an older vintage")
         # Idempotence: do not rewrite provenance or create a new commit when
