@@ -134,8 +134,11 @@ check('Future matched observations recalculate dynamically without hardcoded Sep
  for(const [id,next] of [['US_PCEC96_history_value',17010],
                           ['US_DSPIC96_history_DSPIC96',18400]]){
    const row=byid(d,id);
-   row.dates[row.dates.length-1]='2026-10-01';
-   row.values[row.values.length-1]=next;
+   // A new monthly edition shifts the complete 3-month tail; do not
+   // accidentally create an August -> October hole in the test fixture.
+   row.dates=['2026-08-01','2026-09-01','2026-10-01'];
+   row.values=(id==='US_PCEC96_history_value'?
+     [16975,16977.6,next]:[18416.2,18366.1,next]);
    row.last_date='2026-10-01';
    row.last_value=next;
    row.current_vintage_provenance.issuer_release_reference_month='2026-10';
