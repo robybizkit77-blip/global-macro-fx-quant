@@ -1,0 +1,41 @@
+name: G8 Credit Liquidity Transmission V4 - Research
+
+on:
+  pull_request:
+    paths:
+      - 'validation/macro/build_g8_credit_liquidity_v4.py'
+      - 'validation/macro/test_build_g8_credit_liquidity_v4.py'
+      - '.github/workflows/test-g8-credit-liquidity-v4.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/macro/build_g8_credit_liquidity_v4.py'
+      - 'validation/macro/test_build_g8_credit_liquidity_v4.py'
+      - '.github/workflows/test-g8-credit-liquidity-v4.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  credit-research-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate eight G8 credit channels, meaning, publication gaps and no FX signals
+        run: python -m unittest validation.macro.test_build_g8_credit_liquidity_v4 -v
+      - name: Produce research-only narrative and evidence JSON
+        run: |
+          python -m validation.macro.build_g8_credit_liquidity_v4 --json-out /tmp/g8-credit-liquidity-v4.json --md-out /tmp/g8-credit-liquidity-v4.md
+          cat /tmp/g8-credit-liquidity-v4.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: g8-credit-liquidity-research-v4
+          path: |
+            /tmp/g8-credit-liquidity-v4.json
+            /tmp/g8-credit-liquidity-v4.md
+          retention-days: 14
