@@ -68,10 +68,17 @@ class RelativeG8PairsV5Tests(unittest.TestCase):
         self.assertIsNone(a["flow_inference"])
         self.assertIn(a["price_status"],(
             "OFFICIAL_ECB_FIXING_REFERENCE_NOT_LIVE","DATED_ECB_REFERENCE_NOT_LIVE"))
-        from_eur={"EUR":1,"USD":1.1165,"GBP":.83415,"AUD":1.625,"CAD":1.5705}
-        self.assertAlmostEqual(a["reference_price_quote_per_base"],1.1165,places=7)
-        self.assertAlmostEqual(b["reference_price_quote_per_base"],.83415,places=7)
-        self.assertAlmostEqual(c["reference_price_quote_per_base"],1.5705/1.625,places=7)
+        # Compare to the LAST persisted official ECB row, not a stale constant.
+        # Separate calculation here tests the publisher quote/cross identity.
+        fx=m.json.loads((m.ROOT/m.PRICE_FILE).read_text())
+        last=fx["rows"][-1]
+        self.assertEqual(last["Date"],book["fx_price_last_asof"])
+        self.assertAlmostEqual(a["reference_price_quote_per_base"],
+                               last["USD"]/last["EUR"],places=7)
+        self.assertAlmostEqual(b["reference_price_quote_per_base"],
+                               last["GBP"]/last["EUR"],places=7)
+        self.assertAlmostEqual(c["reference_price_quote_per_base"],
+                               last["CAD"]/last["AUD"],places=7)
         self.assertNotEqual(book["pairs"]["AUD/CAD"]["price_ecb_reference"]["five_observation_change_pct"],None)
 
     def test_full_market_6m_official_is_not_homogeneous_ois(self):
@@ -95,11 +102,31 @@ class RelativeG8PairsV5Tests(unittest.TestCase):
 
     def test_same_date_two_year_spreads_but_not_asynchronous_inferences(self):
         b=self.book
-        self.assertEqual(b["scope"]["synchronized_2y_references"],6)
-        for pair in ("EUR/USD","GBP/USD","USD/JPY","EUR/GBP","EUR/JPY","GBP/JPY"):
-            self.assertIsNotNone(b["pairs"][pair]["rates_2y"]["spread_2y_bp"])
-        for pair in ("USD/CAD","AUD/CAD","NZD/CHF","NZD/CAD","GBP/AUD"):
-            self.assertIsNone(b["pairs"][pair]["rates_2y"]["spread_2y_bp"])
+        # The number of same-day official 2Y comparisons changes as live
+        # sources refresh; validate every pair's real dates, not a frozen 6/28.
+        references=m.json.loads((m.ROOT/m.RATE_FILE).read_text())
+        eligible=0
+        for pair,item in b["pairs"].items():
+            a,c=pair.split("/")
+            r1,r2=references[a],references[c]
+            date_ok=r1["date"]==r2["date"]
+            fresh=all(0<=(self.today-date.fromisoformat(r["date"])).days<=7
+                      for r in (r1,r2))
+            official=all(r["quality"].startswith("FULL_CURRENT_OFFICIAL")
+                         for r in (r1,r2))
+            expected=date_ok and fresh and official
+            value=item["rates_2y"]["spread_2y_bp"]
+            self.assertEqual(value is not None,expected,pair)
+            if expected:
+                eligible+=1
+                self.assertAlmostEqual(value,
+                    round((r1["2Y"]-r2["2Y"])*100,2),places=2)
+                self.assertEqual(item["rates_2y"]["rate_gap_status"],
+                    "ILLUSTRATIVE_SAME_DAY_DIFFERENT_GOVERNMENT_BENCHMARKS")
+            else:
+                self.assertEqual(item["rates_2y"]["rate_gap_status"],
+                    "NO_SYNCHRONIZED_RECENT_2Y_COMPARISON")
+        self.assertEqual(b["scope"]["synchronized_2y_references"],eligible)
         self.assertEqual(
             b["pairs"]["EUR/USD"]["rates_2y"]["rate_gap_status"],
             "ILLUSTRATIVE_SAME_DAY_DIFFERENT_GOVERNMENT_BENCHMARKS")
