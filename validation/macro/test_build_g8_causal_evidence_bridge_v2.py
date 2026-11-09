@@ -91,6 +91,38 @@ class EvidenceBridgeV2Tests(unittest.TestCase):
         self.assertEqual(r["direction_of_reported_series"],"NO_CONTIGUOUS_COMPARISON")
         self.assertIsNone(r["change_raw_units"])
 
+    def test_australian_nominal_spending_not_misread_as_real_consumption(self):
+        row=self.book["countries"]["AUD"]
+        obs=row["economic_transmission_observations"]["households"][0]
+        self.assertEqual(obs["id"],"AU_HOUSEHOLD_SPENDING_history_value")
+        self.assertEqual(obs["household_price_volume_basis"],
+                         "NOMINAL_CURRENT_PRICE")
+        self.assertFalse(obs["real_consumption_change_certified"])
+        text=row["economic_transmission_narrative_it"][4]
+        self.assertIn("prezzi correnti",text)
+        self.assertIn("non dimostra maggiori volumi reali",text)
+
+    def test_japanese_retail_index_is_not_automatically_real_consumption(self):
+        row=self.book["countries"]["JPY"]
+        obs=row["economic_transmission_observations"]["households"][0]
+        self.assertEqual(obs["id"],"JP_RETAIL_history_value")
+        self.assertEqual(obs["household_price_volume_basis"],
+                         "REAL_VOLUME_BASIS_NOT_VERIFIED")
+        self.assertFalse(obs["real_consumption_change_certified"])
+        text=row["economic_transmission_narrative_it"][4]
+        self.assertIn("non è dimostrato",text)
+
+    def test_australian_spending_basis_change_fails_closed(self):
+        from validation.macro.build_g8_causal_evidence_bridge_v2 import evidence_row
+        sample={"id":"AU_HOUSEHOLD_SPENDING_history_value",
+                "label":"Spesa famiglie","dates":["2026-06","2026-07"],
+                "values":[100,105],"last_date":"2026-07","last_value":105,
+                "frequency":"M","unit":"AUD million SA",
+                "source_file":"fixture.csv"}
+        with self.assertRaisesRegex(ValueError,
+                                    "no longer attested as current price"):
+            evidence_row(sample,today=date(2026,11,9))
+
     def test_no_core_signal_and_no_external_write(self):
         b=self.book
         for c in m.v1.FX:
