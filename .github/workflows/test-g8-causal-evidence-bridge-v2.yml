@@ -6,6 +6,8 @@ on:
       - 'validation/macro/build_g8_causal_evidence_bridge_v2.py'
       - 'validation/macro/collect_us_nz_household_firm_sources_v1.py'
       - 'validation/macro/reconcile_us_real_households_countrybook_v2.py'
+      - 'validation/macro/prepare_us_revised_household_canonical_v1.py'
+      - 'validation/macro/test_prepare_us_revised_household_canonical_v1.py'
       - 'validation/macro/test_reconcile_us_real_households_countrybook_v2.py'
       - 'validation/macro/test_collect_us_nz_household_firm_sources_v1.py'
       - 'validation/macro/G8_US_NZ_PUBLISHED_RELEASE_CONTEXT_2026-11-09.json'
@@ -17,6 +19,8 @@ on:
       - 'validation/macro/build_g8_causal_evidence_bridge_v2.py'
       - 'validation/macro/collect_us_nz_household_firm_sources_v1.py'
       - 'validation/macro/reconcile_us_real_households_countrybook_v2.py'
+      - 'validation/macro/prepare_us_revised_household_canonical_v1.py'
+      - 'validation/macro/test_prepare_us_revised_household_canonical_v1.py'
       - 'validation/macro/test_reconcile_us_real_households_countrybook_v2.py'
       - 'validation/macro/test_collect_us_nz_household_firm_sources_v1.py'
       - 'validation/macro/G8_US_NZ_PUBLISHED_RELEASE_CONTEXT_2026-11-09.json'
@@ -49,6 +53,8 @@ jobs:
         run: python -m unittest validation.macro.test_collect_us_nz_household_firm_sources_v1 -v
       - name: Verify 2-series revised-vintage Country Book reconciliation offline
         run: python -m unittest validation.macro.test_reconcile_us_real_households_countrybook_v2 -v
+      - name: Verify safe full-history USD household promotion offline
+        run: python -m unittest validation.macro.test_prepare_us_revised_household_canonical_v1 -v
       - name: Try real public publisher sources on PR (research receipt, nonblocking)
         if: github.event_name == 'pull_request'
         continue-on-error: true
@@ -74,6 +80,48 @@ jobs:
             --json-out /tmp/g8-us-households-revised-live-reconciliation-v2.json \
             --md-out /tmp/g8-us-households-revised-live-reconciliation-v2.md
           cat /tmp/g8-us-households-revised-live-reconciliation-v2.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Test real BEA/FRED canonical replacement on isolated PR checkout
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          python -m validation.macro.prepare_us_revised_household_canonical_v1 \
+            --research-note /tmp/g8-us-households-revised-live-reconciliation-v2.json \
+            --candidate-out /tmp/g8-us-households-revised-canonical-candidate-v1.json \
+            --report-out /tmp/g8-us-households-revised-canonical-preflight-v1.json
+          python validation/update_live_direct_section.py \
+            --section MACRO_SERIES \
+            --replacement /tmp/g8-us-households-revised-canonical-candidate-v1.json \
+            --apply > /tmp/g8-us-households-revised-direct-section-check-v1.json
+          python validation/build_live_manifest_v2.py --write live_data/manifest.v2.json \
+            > /tmp/g8-us-households-revised-manifest-check-v1.json
+          python validation/check_live_update_contract.py > /tmp/g8-us-households-revised-live-contract-v1.json
+          python validation/rebuild_live_data_runtime.py --verify-only \
+            > /tmp/g8-us-households-revised-runtime-check-v1.json
+          python -m validation.macro.build_g8_causal_evidence_bridge_v2 \
+            --json-out /tmp/g8-us-households-revised-g8-bridge.json \
+            --md-out /tmp/g8-us-households-revised-g8-bridge.md
+          python - <<'PY'
+          import json,subprocess
+          from pathlib import Path
+          r=json.load(open('/tmp/g8-us-households-revised-canonical-preflight-v1.json'))
+          assert r['status']=='REVISED_US_HOUSEHOLDS_READY_FOR_CANONICAL_APPLY'
+          assert r['g8_unchanged_other_than_two_us_household_series'] is True
+          assert r['first_release_pit_eligible'] is False
+          d=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          byid={x['id']:x for x in d['USD']}
+          for ident in ('US_PCEC96_history_value','US_DSPIC96_history_DSPIC96'):
+              x=byid[ident]
+              assert x['last_date']=='2026-09-01'
+              assert x['frequency']=='M'
+              assert x['unit']=='Billions of Chained 2017 Dollars SAAR'
+              assert x['current_vintage_provenance']['source_series_first_release_PIT_certified'] is False
+          allowed={'live_data/sections/MACRO_SERIES.json','live_data/manifest.v2.json',
+                   'payload/part-00.txt','payload/part-01.txt'}
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          assert changed and changed.issubset(allowed),changed
+          PY
+          git restore --source=HEAD --worktree -- live_data payload
+          git diff --exit-code -- live_data payload
       - uses: actions/upload-artifact@v4
         if: github.event_name == 'pull_request' && always()
         with:
@@ -82,6 +130,10 @@ jobs:
             /tmp/g8-us-nz-live-publisher-intake-pr-v1.json
             /tmp/g8-us-households-revised-live-reconciliation-v2.json
             /tmp/g8-us-households-revised-live-reconciliation-v2.md
+            /tmp/g8-us-households-revised-canonical-preflight-v1.json
+            /tmp/g8-us-households-revised-direct-section-check-v1.json
+            /tmp/g8-us-households-revised-manifest-check-v1.json
+            /tmp/g8-us-households-revised-runtime-check-v1.json
           if-no-files-found: warn
           retention-days: 7
       - name: Produce research-only narrative and evidence JSON
