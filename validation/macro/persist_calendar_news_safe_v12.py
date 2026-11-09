@@ -81,10 +81,10 @@ def persist(repo: Path = ROOT, *, managed=MANAGED, max_attempts=MAX_ATTEMPTS):
         if git(repo, "merge-base", "--is-ancestor", before, "origin/main",
                check=False).returncode != 0:
             raise RuntimeError("REMOTE_MAIN_DIVERGED_FROM_CHECKOUT_NO_REWRITE")
-        # Compare the complete managed file set to checkout BASE, not just
-        # the files we changed. Never overwrite a different source vintage.
+        # A remote change only conflicts if it touches a file this runner
+        # is writing. Other managed files can move safely without overwrite.
         overlap = changed_files(
-            repo, before, "origin/main", "--", *managed)
+            repo, before, "origin/main", "--", *sorted(dirty))
         if overlap:
             raise RuntimeError(
                 "REMOTE_MANAGED_FILES_MOVED_FAIL_CLOSED: "
