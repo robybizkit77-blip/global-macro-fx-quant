@@ -23,7 +23,8 @@ from validation.macro.v2_domestic_candidate_explicit_formula_v1 import run as do
 # fixture IN MEMORY, never in live_data or the prospective ledger.
 V2_SOURCE_Z_UNAVAILABLE = (
     "MACRO_V2_THREE_AXIS_REJECTED: "
-    "missing strict z cannot be replaced by unapproved estimates"
+    "missing strict z cannot be replaced by unapproved estimates",
+    "MACRO_V2_DOMESTIC_CANDIDATE_REJECTED: EUR.labour must be a finite pre-clipped z",
 )
 
 
@@ -31,7 +32,7 @@ def optional_v2_test_candidate(day):
     try:
         return domestic(as_of=day)
     except ValueError as exc:
-        if str(exc) != V2_SOURCE_Z_UNAVAILABLE:
+        if str(exc) not in V2_SOURCE_Z_UNAVAILABLE:
             raise
         from validation.macro.v2_g8_observed_feature_bridge_v1 import (
             run as observed_run
@@ -76,6 +77,12 @@ class OptionalV2SourceGatePolicy(unittest.TestCase):
                     side_effect=ValueError(unexpected),
                 ), self.assertRaisesRegex(ValueError, unexpected):
                     optional_v2_test_candidate("2026-10-30")
+
+    def test_specific_zero_mad_candidate_rejection_is_registered(self):
+        self.assertIn(
+            "MACRO_V2_DOMESTIC_CANDIDATE_REJECTED: EUR.labour must be a finite pre-clipped z",
+            V2_SOURCE_Z_UNAVAILABLE,
+        )
 
     def test_synthetic_candidate_is_not_written_to_real_forward_journals(self):
         # Static boundary: only synthetic tests call this helper, and the

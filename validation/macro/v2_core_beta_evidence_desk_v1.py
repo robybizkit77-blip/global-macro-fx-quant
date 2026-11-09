@@ -206,8 +206,16 @@ def build(candidate, legacy, pairs, banks, ois, rates, *, as_of=RESEARCH_DAY):
                    and six.get("rate") is None and
                    six.get("policy_delta_bp") is None,
                    ccy + " WITHHELD is never an official policy delta")
-            secondary = curve.get("secondary_quote_context", {})
-            proxy = curve.get("market_direction_proxy", {})
+            # Optional source contexts can be explicitly null for currencies
+            # without that instrument. Null means unavailable, NEVER a level.
+            secondary = curve.get("secondary_quote_context")
+            proxy = curve.get("market_direction_proxy")
+            ensure(secondary is None or isinstance(secondary, dict),
+                   ccy + " malformed secondary quote context")
+            ensure(proxy is None or isinstance(proxy, dict),
+                   ccy + " malformed market direction proxy")
+            secondary = secondary or {}
+            proxy = proxy or {}
             if secondary.get("status") == "INDICATIVE_OBSERVATIONS_NON_OIS":
                 indicative = secondary.get("horizons", {}).get("6m", {})
                 ensure(secondary.get("policy_delta_allowed") is False

@@ -332,9 +332,16 @@ class CandidateFormulaTests(unittest.TestCase):
             self.assertIn({"currency":"EUR","pillar":"labour",
                            "reason":"NO_Z_ZERO_ROBUST_DISPERSION"}, readiness["blocked"])
             self.assertFalse(readiness["strict_eight_country_candidate_allowed_now"])
-            with self.assertRaisesRegex(ValueError,
-                    "missing strict z cannot be replaced by unapproved estimates"):
-                shadow_run(as_of=now)
+            # A missing EUR z is now represented as NULL research context
+            # rather than forcing the entire shadow to reject. It must never
+            # become a numeric value, a forward feature, or an FX signal.
+            shadow = shadow_run(as_of=now)
+            self.assertIsNone(
+                shadow["countries"]["EUR"]["labour_tightness_relative_to_own_history_z"]
+            )
+            self.assertIsNone(shadow["countries"]["EUR"]["illustrative_activity_labour_balance_z"])
+            self.assertFalse(shadow["safe_for_forward"])
+            self.assertFalse(shadow["safe_to_publish_new_D"])
         else:
             # Source may advance. Only a genuinely computable current G8
             # snapshot can pass; do not force a historical source status.
