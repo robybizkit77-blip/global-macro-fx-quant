@@ -53,22 +53,30 @@ class TestG8CausalCountryBookPilot(unittest.TestCase):
         b=m.build(today=self.day)
         self.assertEqual(
             b["countries"]["CHF"]["rates_and_pricing"]["yield_freshness"],
-            "2Y_STALE_NOT_SAME_DAY")
+            "2Y_OLDER_THAN_7_CALENDAR_DAYS")
         self.assertEqual(
             b["countries"]["NZD"]["rates_and_pricing"]["yield_freshness"],
-            "2Y_STALE_NOT_SAME_DAY")
+            "2Y_OLDER_THAN_7_CALENDAR_DAYS")
         self.assertEqual(
             b["countries"]["USD"]["rates_and_pricing"]["yield_freshness"],
-            "2Y_DATED_OFFICIAL_CONTEXT")
+            "2Y_DATED_REFERENCE_NOT_LIVE")
 
     def test_non_official_curve_never_policy_delta(self):
         b=m.build(today=self.day)
         for c in ("USD","EUR","CHF","NZD"):
             self.assertIsNone(b["countries"][c]["rates_and_pricing"]["six_month_rate_pct"])
-        for c in ("AUD","CAD","GBP","JPY"):
+        for c in ("AUD","CAD","JPY"):
             self.assertEqual(
                 b["countries"][c]["rates_and_pricing"]["six_month_quality"],
                 "OFFICIAL_FUTURES_CONTEXT_NOT_OIS_LEVEL")
+
+    def test_gbp_is_official_boe_ois_not_futures(self):
+        b=m.build(today=self.day)
+        self.assertEqual(
+            b["countries"]["GBP"]["rates_and_pricing"]["six_month_quality"],
+            "OFFICIAL_BOE_ESTIMATED_OIS_CURVE_NOT_EVENT_REPRICING")
+        self.assertIn("WANT:",b["countries"]["GBP"]["central_bank_conditional_reaction"])
+        self.assertIn("CAN:",b["countries"]["GBP"]["central_bank_conditional_reaction"])
 
     def test_false_official_ois_rate_rejected(self):
         d=copy.deepcopy(self.source)
