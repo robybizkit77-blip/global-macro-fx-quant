@@ -261,33 +261,33 @@
       "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures"
     },
     "GBP": {
-      "as_of": "2026-11-05",
+      "as_of": "2026-11-06",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
       "confidence": "A",
-      "direction_vs_policy": "DECISION_DAY_TIMESTAMP_UNVERIFIED_NO_POLICY_REPRICING",
+      "direction_vs_policy": "UP",
       "horizons": {
         "12m": {
-          "change_1d_bp": 1.5,
-          "change_1w_bp": -20.1,
-          "policy_comparison_temporally_aligned": false,
-          "policy_delta_bp": null,
-          "rate": 4.6956
+          "change_1d_bp": 2.4,
+          "change_1w_bp": -11.0,
+          "policy_comparison_temporally_aligned": true,
+          "policy_delta_bp": 71.9,
+          "rate": 4.7192
         },
         "3m": {
-          "change_1d_bp": 7.3,
-          "change_1w_bp": 4.8,
-          "policy_comparison_temporally_aligned": false,
-          "policy_delta_bp": null,
-          "rate": 4.2096
+          "change_1d_bp": 0.2,
+          "change_1w_bp": 6.2,
+          "policy_comparison_temporally_aligned": true,
+          "policy_delta_bp": 21.2,
+          "rate": 4.2119
         },
         "6m": {
-          "change_1d_bp": 4.8,
-          "change_1w_bp": -5.5,
-          "policy_comparison_temporally_aligned": false,
-          "policy_delta_bp": null,
-          "rate": 4.4526
+          "change_1d_bp": 0.9,
+          "change_1w_bp": -1.7,
+          "policy_comparison_temporally_aligned": true,
+          "policy_delta_bp": 46.1,
+          "rate": 4.4615
         }
       },
       "official_status": "ACTIVE",
