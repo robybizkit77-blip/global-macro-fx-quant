@@ -93,7 +93,7 @@ def parse(*,raw,month=MONTH,year=YEAR,release_label=RELEASE_LABEL):
     )
     # BLS reports the unadjusted 12-month all-items rate in the opening
     # paragraph. Restrict to the same target release header's lead.
-    y/y=(
+    headline_yoy_pattern=(
       r"Over the last 12 months,?\s+the all items index\s+"
       +positive_or_negative()+r"\s+"+quantity+
       r"\s+before seasonal adjustment"
@@ -125,7 +125,7 @@ def parse(*,raw,month=MONTH,year=YEAR,release_label=RELEASE_LABEL):
                  core_year_matches[0].groupdict().get("value"))
     metrics={
       "US_CPI_U_HEADLINE_MOM_SA":sole(lead,lead_text,"HEADLINE_MOM"),
-      "US_CPI_U_HEADLINE_YOY_NSA":sole(y/y,lead_text,"HEADLINE_YOY"),
+      "US_CPI_U_HEADLINE_YOY_NSA":sole(headline_yoy_pattern,lead_text,"HEADLINE_YOY"),
       "US_CPI_U_CORE_MOM_SA":sole(core_m,lead_text,"CORE_MOM"),
       "US_CPI_U_CORE_YOY_NSA":core_yr,
     }
