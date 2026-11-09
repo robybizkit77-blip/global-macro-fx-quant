@@ -10,6 +10,9 @@ on:
       - 'validation/macro/capture_official_postrelease_actuals_v1.py'
       - 'validation/macro/build_macro_event_market_context_v1.py'
       - 'validation/macro/build_g8_macro_event_lifecycle_v7.py'
+      - 'validation/macro/g8_metric_issuer_contract_v8.py'
+      - 'validation/macro/preflight_us_cpi_official_actual_v8.py'
+      - 'validation/macro/test_g8_metric_issuer_readiness_v8.py'
       - 'validation/macro/test_build_g8_macro_event_lifecycle_v7.py'
       - 'validation/macro/test_build_macro_event_market_context_v1.py'
       - 'validation/macro/fixtures/macro_event_market_preanchor_oct28_v1.json'
@@ -45,6 +48,9 @@ on:
       - 'validation/macro/capture_official_postrelease_actuals_v1.py'
       - 'validation/macro/build_macro_event_market_context_v1.py'
       - 'validation/macro/build_g8_macro_event_lifecycle_v7.py'
+      - 'validation/macro/g8_metric_issuer_contract_v8.py'
+      - 'validation/macro/preflight_us_cpi_official_actual_v8.py'
+      - 'validation/macro/test_g8_metric_issuer_readiness_v8.py'
       - 'validation/macro/test_build_g8_macro_event_lifecycle_v7.py'
       - 'validation/macro/test_build_macro_event_market_context_v1.py'
       - 'validation/macro/fixtures/macro_event_market_preanchor_oct28_v1.json'
@@ -298,6 +304,38 @@ jobs:
              echo "::warning::G8_V7_RESEARCH_AUDIT_FAILED -- Calendar/News operational refresh remains independent"
              echo "- G8 V7 lifecycle research audit unavailable on this run; it did not update any market signals." >> "$GITHUB_STEP_SUMMARY"
           fi
+      - name: BLS CPI four explicit measures V8 (issuer-only research preview)
+        shell: bash
+        run: |
+          set -euo pipefail
+          # No HTTP before the verified BLS publication clock. Afterwards
+          # official issuer page is examined, never promoted as a frozen
+          # surprise and never written to the operational actual ledger.
+          if python -m validation.macro.preflight_us_cpi_official_actual_v8 \
+               --check-issuer \
+               --output /tmp/g8-us-cpi-preflight-v8.json \
+               | tee /tmp/g8-us-cpi-preflight-v8-receipt.json; then
+             python - <<'PY'
+          import json,os
+          x=json.load(open('/tmp/g8-us-cpi-preflight-v8.json'))
+          assert x['source_first_publication_PIT_verified'] is False
+          assert x['surprise_pp'] is None and x['fx_signal'] is None
+          assert x['actual_not_promoted_to_live_data'] is True
+          assert x['status'] in {
+             'BEFORE_RELEASE_NO_HTTP',
+             'ISSUER_SOURCE_PENDING_OR_UNPARSABLE',
+             'BLS_TARGET_CPI_METRICS_PARSED_RESEARCH_ONLY_NOT_PIT',
+             'OUTSIDE_FIRST_OBSERVATION_REVIEW_WINDOW_NO_HTTP'
+          },x
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as fp:
+              fp.write('### BLS CPI component audit V8 (research only)\\n')
+              fp.write('- October 2026 CPI: **'+x['status']+'**. '
+                       'Headline/core monthly and yearly series are separated; '
+                       'no consensus/surprise or FX inference.\\n')
+          PY
+          else
+             echo "::warning::BLS CPI V8 preflight unavailable; Calendar/News refresh unchanged"
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -305,6 +343,7 @@ jobs:
           path: |
             /tmp/g8-macro-event-lifecycle-v7.json
             /tmp/g8-macro-event-lifecycle-v7.md
+            /tmp/g8-us-cpi-preflight-v8.json
           if-no-files-found: ignore
           retention-days: 7
 
