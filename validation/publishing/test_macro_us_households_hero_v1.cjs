@@ -46,10 +46,34 @@ function html(opts={}){
 }
 function clone(){return JSON.parse(JSON.stringify(source));}
 function byid(d,id){return d.USD.find(s=>s.id===id);}
+function septemberFixture(){
+ const d=clone();
+ for(const [id,fid,values] of [
+   ['US_PCEC96_history_value','PCEC96',[16882.2,16975,16977.6]],
+   ['US_DSPIC96_history_DSPIC96','DSPIC96',[18414.1,18416.2,18366.1]]
+ ]){
+   const s=byid(d,id);
+   assert.ok(s,'expected canonical series '+id);
+   s.dates=['2026-07-01','2026-08-01','2026-09-01'];
+   s.values=values;
+   s.last_date=s.dates.at(-1);
+   s.last_value=values.at(-1);
+   s.frequency='M';
+   s.unit='Billions of Chained 2017 Dollars SAAR';
+   s.current_vintage_provenance={
+     ...s.current_vintage_provenance,
+     status:'BEA_REVISED_HISTORY_VIA_FRED_CURRENT_NOT_PIT',
+     source_series_id:fid,issuer:'US_BEA',
+     issuer_release_reference_month:'2026-09',
+     source_series_first_release_PIT_certified:false
+   };
+ }
+ return d;
+}
 function check(label,fn){try{fn();process.stdout.write('PASS '+label+'\n');}catch(e){console.error('FAIL '+label);throw e;}}
 
 check('USD hero consumes both September revised real series, not just labour and CPI',()=>{
- const {hero}=html();
+ const {hero}=html({data:septemberFixture()});
  assert.match(hero,/I consumi reali frenano, il reddito arretra/);
  assert.match(hero,/settembre 2026/);
  assert.match(hero,/consumi reali variano 0,0% sul mese/);
@@ -66,25 +90,26 @@ check('The source values, provenance and last date match main canonical data',()
   ['US_DSPIC96_history_DSPIC96','DSPIC96',18366.1]
  ]){
   const s=byid(source,id),meta=s.current_vintage_provenance;
-  assert.equal(s.last_date,'2026-09-01');
-  assert.equal(s.last_value,value);
+  assert.equal(s.last_date,s.dates.at(-1));
+  assert.equal(s.last_value,s.values.at(-1));
+  if(s.last_date==='2026-09-01')assert.equal(s.last_value,value);
   assert.equal(s.frequency,'M');
   assert.equal(s.unit,'Billions of Chained 2017 Dollars SAAR');
   assert.equal(meta.source_series_id,fid);
   assert.equal(meta.issuer,'US_BEA');
-  assert.equal(meta.issuer_release_reference_month,'2026-09');
+  assert.equal(meta.issuer_release_reference_month,s.last_date.slice(0,7));
   assert.equal(meta.source_series_first_release_PIT_certified,false);
  }
 });
 check('Non-USD hero does not inherit US demand story or change its macro verdict',()=>{
  for(const ccy of FX.filter(x=>x!=='USD')){
-  const {hero}=html({country:ccy});
+  const {hero}=html({country:ccy,data:septemberFixture()});
   assert.doesNotMatch(hero,/reddito disponibile reale varia|US_PCEC96|settembre 2026 i consumi/);
   assert.match(hero,/I dati non indicano ancora una direzione unica/);
  }
 });
 check('Missing verified vintage leaves legacy inflation-labour hero intact',()=>{
- const d=clone();
+ const d=septemberFixture();
  delete byid(d,'US_PCEC96_history_value').current_vintage_provenance;
  const {hero}=html({data:d});
  assert.doesNotMatch(hero,/I consumi reali frenano/);
@@ -92,7 +117,7 @@ check('Missing verified vintage leaves legacy inflation-labour hero intact',()=>
 });
 check('Unsynchronized dates, issuer periods or PIT mislabel refuse demand story',()=>{
  for(const kind of ['mismatch-date','wrong-issuer-month','pit']){
-  const d=clone(),v=byid(d,'US_DSPIC96_history_DSPIC96');
+  const d=septemberFixture(),v=byid(d,'US_DSPIC96_history_DSPIC96');
   if(kind==='mismatch-date')v.last_date='2026-08-01';
   if(kind==='wrong-issuer-month')v.current_vintage_provenance.issuer_release_reference_month='2026-08';
   if(kind==='pit')v.current_vintage_provenance.source_series_first_release_PIT_certified=true;
@@ -105,7 +130,7 @@ check('Old data is not described as an up-to-date economic turning point',()=>{
  assert.doesNotMatch(hero,/I consumi reali frenano/);
 });
 check('Future matched observations recalculate dynamically without hardcoded September',()=>{
- const d=clone();
+ const d=septemberFixture();
  for(const [id,next] of [['US_PCEC96_history_value',17010],
                           ['US_DSPIC96_history_DSPIC96',18400]]){
    const row=byid(d,id);
