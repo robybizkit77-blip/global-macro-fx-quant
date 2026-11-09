@@ -112,6 +112,34 @@ class BLSActualV10Tests(unittest.TestCase):
             "US_CPI_U_CORE_YOY_NSA": 2.6,
         })
 
+    def test_official_september_archive_replay_reports_source_or_explicit_unavailable(self):
+        from validation.macro.verify_bls_archived_issuer_replay_v12 import (
+            ARCHIVE, run as verify_archive
+        )
+        archive_raw = mock_bls(
+            "September", "Wednesday, October 14, 2026",
+            hmo="increased 0.6", hyo="increased 3.7",
+            cmo="rose 0.3", cyo="rose 2.6")
+        def available(url, host):
+            self.assertEqual((url, host), (ARCHIVE, "www.bls.gov"))
+            return archive_raw, url
+        got = verify_archive(fetch=available)
+        self.assertEqual(
+            got["status"], "HISTORICAL_BLS_ARCHIVE_FOUR_EXACT_ACTUALS_VERIFIED")
+        self.assertTrue(got["verified_historical_issuer_html"])
+        self.assertFalse(got["October_2026_actual_observed"])
+        def blocked(url, host):
+            raise OSError("HTTP intentionally unavailable")
+        missing = verify_archive(fetch=blocked)
+        self.assertEqual(
+            missing["status"],
+            "HISTORICAL_BLS_ARCHIVE_HTTP_UNAVAILABLE_NO_VALIDATION_CLAIM")
+        self.assertFalse(missing["verified_historical_issuer_html"])
+        with self.assertRaises(AssertionError):
+            verify_archive(fetch=lambda url, host: (
+                mock_bls("September", "Wednesday, October 14, 2026",
+                    hmo="increased 0.8"), url))
+
     def test_pre_release_never_fetches_future_actual(self):
         calls = []
         def prohibited(*args):
