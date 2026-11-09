@@ -96,8 +96,28 @@ def prepare(note, current, *, as_of=None):
              fred+" gap, future or bad numeric revised history")
         gate(all(d in set(ds) for d in old["dates"]),
              fred+" revised history does not cover canonical past")
-        gate(math.isclose(vs[-1],x["latest_level"],rel_tol=0,abs_tol=1e-7)
-             and x["original_last_month"]==old["last_date"] and
+        # Idempotence: do not rewrite provenance or create a new commit when
+        # the fully revised vintage has not changed since yesterday.
+        old_prov=old.get("current_vintage_provenance",{})
+        same_data=(
+            old.get("dates")==ds and old.get("values")==vs
+            and old.get("unit")==EXPECTED_UNIT and old.get("frequency")=="M"
+            and old_prov.get("source_csv_sha256")==x["source_csv_sha256"]
+            and old_prov.get("source_html_sha256")==
+                note["bea_issuer"]["issuer_html_sha256"]
+            and old_prov.get("source_series_first_release_PIT_certified") is False
+        )
+        if same_data:
+            changes.append({"id":ident,"before_last_date":old["last_date"],
+                            "after_last_date":ds[-1],
+                            "old_unit":old.get("unit",""),
+                            "new_unit":EXPECTED_UNIT,
+                            "fully_replaced_observations":len(ds),
+                            "revised_overlap_count":0,"changed":False})
+            continue
+        gate(math.isclose(vs[-1],x["latest_level"],rel_tol=0,abs_tol=1e-7),
+             fred+" latest level does not match revised vintage")
+        gate(x["original_last_month"]==old["last_date"] and
              math.isclose(x["old_last_level"],old["last_value"],rel_tol=0,
                           abs_tol=1e-6),
              fred+" research notes not tied to actual canonical base")
@@ -119,25 +139,6 @@ def prepare(note, current, *, as_of=None):
              fred+" revised overlap no longer matches immutable original")
         newer=ds[-1]>=old["last_date"]
         gate(newer,fred+" cannot regress to an older vintage")
-        # Idempotence: do not rewrite provenance or create a new commit when
-        # the fully revised vintage has not changed since yesterday.
-        old_prov=old.get("current_vintage_provenance",{})
-        same_data=(
-            old.get("dates")==ds and old.get("values")==vs
-            and old.get("unit")==EXPECTED_UNIT and old.get("frequency")=="M"
-            and old_prov.get("source_csv_sha256")==x["source_csv_sha256"]
-            and old_prov.get("source_html_sha256")==
-                note["bea_issuer"]["issuer_html_sha256"]
-            and old_prov.get("source_series_first_release_PIT_certified") is False
-        )
-        if same_data:
-            changes.append({"id":ident,"before_last_date":old["last_date"],
-                            "after_last_date":ds[-1],
-                            "old_unit":old.get("unit",""),
-                            "new_unit":EXPECTED_UNIT,
-                            "fully_replaced_observations":len(ds),
-                            "revised_overlap_count":0,"changed":False})
-            continue
         r["dates"]=ds
         r["values"]=vs
         r["last_date"]=ds[-1]
