@@ -1,0 +1,49 @@
+name: G8 Macro Event Lifecycle V7 - Research Audit
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/macro/build_g8_macro_event_lifecycle_v7.py'
+      - 'validation/macro/test_build_g8_macro_event_lifecycle_v7.py'
+      - '.github/workflows/test-g8-macro-event-lifecycle-v7.yml'
+      - '.github/workflows/calendar-news-operational-refresh-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/macro/build_g8_macro_event_lifecycle_v7.py'
+      - 'validation/macro/test_build_g8_macro_event_lifecycle_v7.py'
+      - '.github/workflows/test-g8-macro-event-lifecycle-v7.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lifecycle-research-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check all official G8 event states, clocks and source validity
+        run: python -m unittest validation.macro.test_build_g8_macro_event_lifecycle_v7 -v
+      - name: Export audit research-only (no synthetic consensus)
+        run: |
+          python -m validation.macro.build_g8_macro_event_lifecycle_v7 \
+            --json-out /tmp/g8-macro-event-lifecycle-v7.json \
+            --md-out /tmp/g8-macro-event-lifecycle-v7.md
+          cat /tmp/g8-macro-event-lifecycle-v7.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: g8-macro-event-lifecycle-v7-readiness
+          path: |
+            /tmp/g8-macro-event-lifecycle-v7.json
+            /tmp/g8-macro-event-lifecycle-v7.md
+          retention-days: 14
+      - name: Verify no operational payload changed
+        run: test -z "$(git status --porcelain -- live_data/sections site payload)"
