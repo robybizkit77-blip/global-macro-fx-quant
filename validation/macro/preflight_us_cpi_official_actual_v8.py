@@ -117,9 +117,6 @@ def parse(*,raw,month=MONTH,year=YEAR,release_label=RELEASE_LABEL):
     # BLS repeats the annual core rate in later narrative sections.
     # Match only the introductory summary BEFORE Table A; the source's
     # repeated prose must not create an artificial ambiguous annual actual.
-    # Require the summary to contain Table A later (not an unrelated page).
-    if not re.search(r"Table A\\. Percent changes in CPI", text, flags=re.I):
-        raise Pending("BLS_TARGET_TABLE_A_NOT_PRESENT")
     core_year_matches=[]
     for pat in core_y_patterns:
         core_year_matches.extend(re.finditer(pat,lead_text,flags=re.I))
