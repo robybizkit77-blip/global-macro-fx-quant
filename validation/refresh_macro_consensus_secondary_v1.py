@@ -197,6 +197,16 @@ def main():
         })
 
     status='ACTIVE_PARTIAL' if rows else 'PROVIDER_ACTIVE_NO_MATCHED_VALUES'
+    # Metric-aware research candidates are deliberately separate from
+    # consensus.events, which remains the legacy issuer release layer.
+    # This is an unverified provider *label* only, not a frozen pre-release
+    # expectation and never admissible to the existing surprise ledger.
+    from validation.macro.g8_metric_issuer_contract_v8 import (
+        enumerate_secondary_candidates, verify_contract
+    )
+    seed=json.loads(OFFICIAL.read_text(encoding='utf-8'))
+    verify_contract(seed)
+    metric_candidates=enumerate_secondary_candidates(seed,provider_rows)
     out={
         'schema':'GMFQ_MACRO_CONSENSUS_SECONDARY_V1',
         'status':status,
@@ -206,6 +216,7 @@ def main():
         'provider_previous_field':'previous',
         'generated_at_utc':datetime.now(timezone.utc).isoformat().replace('+00:00','Z'),
         'events':rows,
+        'metric_candidates_research_v8':metric_candidates,
         'rules':{
             'never_promote_to_official':True,
             'never_fill_missing_with_zero':True,
@@ -216,7 +227,8 @@ def main():
             'actual_not_used_as_pre_release_consensus':True,
             'official_calendar_remains_primary':True,
             'public_json_secondary_source':True,
-            'weekly_feed_scope':True
+            'weekly_feed_scope':True,
+            'metric_candidates_not_frozen_and_never_promoted':True
         }
     }
     old=OUT.read_text(encoding='utf-8') if OUT.exists() else ''
@@ -224,7 +236,7 @@ def main():
     changed=old!=new
     if changed:
         OUT.write_text(new,encoding='utf-8')
-    print(json.dumps({'status':'PASS','provider':'FOREX_FACTORY_FAIR_ECONOMY_WEEKLY','changed':changed,'provider_rows':len(provider_rows),'matched_events':len(rows),'consensus_available':sum(r['status']=='AVAILABLE' for r in rows),'output':str(OUT.relative_to(ROOT))}))
+    print(json.dumps({'status':'PASS','provider':'FOREX_FACTORY_FAIR_ECONOMY_WEEKLY','changed':changed,'provider_rows':len(provider_rows),'matched_events':len(rows),'metric_candidates_research_only':len(metric_candidates),'consensus_available':sum(r['status']=='AVAILABLE' for r in rows),'output':str(OUT.relative_to(ROOT))}))
 
 
 if __name__=='__main__':
