@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-06",
-  "generated_at_utc": "2026-11-09T15:13:36.040151Z",
+  "generated_at_utc": "2026-11-09T16:15:37.536244Z",
   "items": [
     {
       "as_of": "2026-11-06",
@@ -47,7 +47,7 @@
       "title": "JPY: repricing implicito da futures invariato (+0.0 bp 6M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-09T15:13:36.040151Z",
+  "last_checked_at_utc": "2026-11-09T16:15:37.536244Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -981,9 +981,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 7,
+        "accepted_items": 6,
         "ccy": "EUR",
-        "entries_rejected": 8,
+        "entries_rejected": 9,
         "feed_entries_seen": 15,
         "feed_url": "https://www.ecb.europa.eu/rss/press.html",
         "source": "Banca centrale europea",
