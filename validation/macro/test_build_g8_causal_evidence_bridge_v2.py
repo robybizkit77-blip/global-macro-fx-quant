@@ -1,5 +1,8 @@
 """Fail-closed V2 test suite: 8 currencies, role depth, provenance, no fake signals."""
 import copy
+import json
+import tempfile
+from pathlib import Path
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 import unittest
@@ -122,6 +125,72 @@ class EvidenceBridgeV2Tests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,
                                     "no longer attested as current price"):
             evidence_row(sample,today=date(2026,11,9))
+
+    def test_us_new_bea_real_nominal_release_is_supplement_not_revised_history(self):
+        row=self.book["countries"]["USD"]
+        release=row["publisher_release_context"]
+        self.assertIsNotNone(release)
+        self.assertTrue(release["static_not_auto_refreshed"])
+        self.assertFalse(release["replaces_historical_source"])
+        byid={x["id"]:x for x in release["source_facts"]}
+        self.assertEqual(byid["US_BEA_SEP2026_REAL_PCE_MOM"]["value"],0.0)
+        self.assertEqual(byid["US_BEA_SEP2026_REAL_PCE_MOM"]["previous_value"],0.5)
+        self.assertEqual(byid["US_BEA_SEP2026_NOMINAL_PCE_MOM"]["value"],0.5)
+        self.assertEqual(byid["US_BEA_SEP2026_REAL_DPI_MOM"]["value"],-0.3)
+        self.assertIn("NOMINALE",row["economic_transmission_narrative_it"][4])
+        self.assertIn("REALE",row["economic_transmission_narrative_it"][4])
+        self.assertEqual(row["economic_transmission_observations"]["households"][0]
+                         ["observation_period"],"2026-07-01")
+        self.assertFalse(row["safe_for_site"])
+        self.assertFalse(row["safe_for_reports"])
+
+    def test_nzd_survey_vs_volume_not_promoted_as_direct_firm_sales(self):
+        row=self.book["countries"]["NZD"]
+        self.assertEqual(row["economic_evidence_summary"]["missing_roles"],["firms"])
+        release=row["publisher_release_context"]
+        facts={x["id"]:x for x in release["source_facts"]}
+        self.assertEqual(facts["NZ_NZIER_QSBO_SEP2026_GENERAL_CONFIDENCE"]["value"],40.0)
+        self.assertEqual(facts["NZ_NZIER_QSBO_SEP2026_OWN_DOMESTIC_ACTIVITY"]["value"],-1.0)
+        self.assertEqual(facts["NZ_STATS_JUN2026_RETAIL_REAL_QOQ"]["value"],-0.5)
+        self.assertEqual(facts["NZ_STATS_JUN2026_RETAIL_NOMINAL_QOQ"]["value"],0.9)
+        self.assertEqual(facts["NZ_STATS_SEP2026_ECT_RETAIL_VALUE_QOQ"]["value"],0.1)
+        self.assertIn("survey non è produzione",row["economic_transmission_narrative_it"][4])
+        self.assertIn("transazioni elettroniche",row["economic_transmission_narrative_it"][4])
+        self.assertFalse(release["proves_causal_chain"])
+        self.assertIn("NZD.firms",self.book["coverage"]["roles_missing_direct_observation"])
+
+    def test_release_snapshot_not_visible_before_our_own_research_clock(self):
+        old=m.publisher_release_facts(today=date(2026,11,8))
+        self.assertEqual(old["countries"],{})
+        self.assertFalse(old["publisher_release_dates_are_first_desktop_observations"])
+        fresh=m.publisher_release_facts(today=date(2026,11,9))
+        self.assertEqual(sorted(fresh["countries"]),["NZD","USD"])
+        self.assertTrue(fresh["static_not_auto_refreshed"])
+
+    def test_publisher_url_and_real_nominal_identity_fail_closed(self):
+        src=(m.v1.ROOT / m.SOURCE_RELEASE_CONTEXT).read_text(encoding="utf-8")
+        orig=json.loads(src)
+        cases=[]
+        broken=copy.deepcopy(orig)
+        broken["countries"]["USD"]["release_facts"][0]["price_basis"]="NOMINAL_CURRENT_DOLLAR"
+        cases.append(broken)
+        broken=copy.deepcopy(orig)
+        broken["countries"]["NZD"]["release_facts"][2]["source_url"]="https://fake.example.com"
+        cases.append(broken)
+        broken=copy.deepcopy(orig)
+        broken["countries"]["USD"]["release_facts"][0]["release_date"]="2026-11-25"
+        cases.append(broken)
+        broken=copy.deepcopy(orig)
+        broken["countries"]["NZD"]["release_facts"][4]["group"]="actual_firm_sales"
+        cases.append(broken)
+        for item in cases:
+            with self.subTest(case=cases.index(item)):
+                with tempfile.TemporaryDirectory() as tmp:
+                    p=Path(tmp)/m.SOURCE_RELEASE_CONTEXT
+                    p.parent.mkdir(parents=True)
+                    p.write_text(json.dumps(item),encoding="utf-8")
+                    with self.assertRaisesRegex(ValueError,"G8_EVIDENCE_V2_REJECTED"):
+                        m.publisher_release_facts(today=date(2026,11,9),root=Path(tmp))
 
     def test_no_core_signal_and_no_external_write(self):
         b=self.book
