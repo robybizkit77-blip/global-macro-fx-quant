@@ -339,7 +339,7 @@ class CandidateFormulaTests(unittest.TestCase):
             self.assertIsNone(
                 shadow["countries"]["EUR"]["labour_tightness_relative_to_own_history_z"]
             )
-            self.assertIsNone(shadow["countries"]["EUR"]["domestic_activity_candidate_z"])
+            self.assertIsNone(shadow["countries"]["EUR"]["illustrative_activity_labour_balance_z"])
             self.assertFalse(shadow["safe_for_forward"])
             self.assertFalse(shadow["safe_to_publish_new_D"])
         else:
