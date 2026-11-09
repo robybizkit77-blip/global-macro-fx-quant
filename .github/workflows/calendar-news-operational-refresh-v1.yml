@@ -13,6 +13,8 @@ on:
       - 'validation/macro/g8_metric_issuer_contract_v8.py'
       - 'validation/macro/preflight_us_cpi_official_actual_v8.py'
       - 'validation/macro/capture_us_cpi_exact_actuals_v10.py'
+      - 'validation/macro/build_us_cpi_desk_research_note_v13.py'
+      - 'validation/macro/test_build_us_cpi_desk_research_note_v13.py'
       - 'validation/macro/persist_calendar_news_safe_v12.py'
       - 'validation/macro/test_persist_calendar_news_safe_v12.py'
       - 'validation/macro/capture_uk_ch_gdp_official_firstseen_v11.py'
@@ -62,6 +64,8 @@ on:
       - 'validation/macro/g8_metric_issuer_contract_v8.py'
       - 'validation/macro/preflight_us_cpi_official_actual_v8.py'
       - 'validation/macro/capture_us_cpi_exact_actuals_v10.py'
+      - 'validation/macro/build_us_cpi_desk_research_note_v13.py'
+      - 'validation/macro/test_build_us_cpi_desk_research_note_v13.py'
       - 'validation/macro/persist_calendar_news_safe_v12.py'
       - 'validation/macro/test_persist_calendar_news_safe_v12.py'
       - 'validation/macro/capture_uk_ch_gdp_official_firstseen_v11.py'
@@ -418,6 +422,26 @@ jobs:
                        str(x['metric_actuals_archived'])+'.\n')
               fp.write('- No first public delivery PIT, certified survey surprise, rates attribution, FX signal or model writes.\n')
           PY
+      - name: Read-only CPI official economic desk note V13 (no model or site writes)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest validation.macro.test_build_us_cpi_desk_research_note_v13 -v
+          python -m validation.macro.build_us_cpi_desk_research_note_v13 \
+            --json-out /tmp/g8-us-cpi-desk-v13.json \
+            --md-out /tmp/g8-us-cpi-desk-v13.md \
+            --github-summary "$GITHUB_STEP_SUMMARY" \
+            | tee /tmp/g8-us-cpi-desk-v13-receipt.json
+          python - <<'PY'
+          import json
+          x=json.load(open('/tmp/g8-us-cpi-desk-v13.json'))
+          assert x['schema']=='GMFQ_US_CPI_DESK_RESEARCH_READOUT_V13'
+          assert x['metric_count'] in (0,4)
+          assert x['market_context']['synchronized_release_window_quotes_verified']==0
+          assert x['market_context']['market_causality_established'] is False
+          assert x['FX_signal'] is None and x['eligible_for_Core_Beta_Forward'] is False
+          assert x['writes_live_data'] is False
+          PY
       - name: Verify UK Q3 first quarterly GDP and CH Q3 flash first-seen V11 (research only)
         shell: bash
         run: |
@@ -453,6 +477,9 @@ jobs:
             /tmp/g8-us-cpi-preflight-v8.json
             /tmp/g8-metric-first-seen-v9-receipt.json
             /tmp/g8-us-cpi-first-observed-v10-receipt.json
+            /tmp/g8-us-cpi-desk-v13.json
+            /tmp/g8-us-cpi-desk-v13.md
+            /tmp/g8-us-cpi-desk-v13-receipt.json
             /tmp/g8-gdp-uk-ch-firstseen-v11-receipt.json
           if-no-files-found: ignore
           retention-days: 7
