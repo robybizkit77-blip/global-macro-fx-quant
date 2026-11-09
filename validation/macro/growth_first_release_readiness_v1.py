@@ -264,7 +264,8 @@ def build(root, now, attestations=None, feeds=None, core_ledger=None):
         "growth": rows,
         "blockers": [
             "19 remaining latest Growth series need period-specific official release value, date and metric identity evidence",
-            "4 US Growth sources have no declared frequency or unit in canonical metadata",
+            f"{len(freq_missing)} Growth series lack declared frequency; "
+            f"{len(unitless)} lack declared unit in current canonical metadata",
             "No full growth historical first-release archive or release timestamps per period",
             "No versioned 3-pillar FX score weights or qualitative directional-label promotion contract",
         ],
