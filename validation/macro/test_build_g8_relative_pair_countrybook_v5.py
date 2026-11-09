@@ -20,7 +20,12 @@ class RelativeG8PairsV5Tests(unittest.TestCase):
         self.assertEqual(b["schema"],m.SCHEMA)
         self.assertEqual(b["scope"]["pairs"],28)
         self.assertEqual(b["scope"]["currencies"],8)
-        self.assertEqual(tuple(b["pairs"]),m.PAIR_KEYS)
+        registry=m.json.loads((m.ROOT/m.PAIR_REGISTRY_FILE).read_text())
+        self.assertEqual(tuple(b["pairs"]),
+                         tuple(rec["canonical_pair"] for rec in registry["pairs"].values()))
+        self.assertIn("AUD/CAD",b["pairs"])
+        self.assertIn("EUR/USD",b["pairs"])
+        self.assertNotIn("CAD/AUD",b["pairs"])
         self.assertEqual(len(set(b["pairs"])),28)
         self.assertEqual(b["scope"]["fx_signals"],0)
         self.assertEqual(b["scope"]["validated_policy_repricing"],0)
@@ -51,7 +56,7 @@ class RelativeG8PairsV5Tests(unittest.TestCase):
 
     def test_price_cross_pair_math_and_observation_as_of(self):
         book=self.book
-        a=book["pairs"]["USD/EUR"]["price_ecb_reference"]
+        a=book["pairs"]["EUR/USD"]["price_ecb_reference"]
         b=book["pairs"]["EUR/GBP"]["price_ecb_reference"]
         c=book["pairs"]["AUD/CAD"]["price_ecb_reference"]
         self.assertEqual(a["as_of"],book["fx_price_last_asof"])
@@ -64,7 +69,7 @@ class RelativeG8PairsV5Tests(unittest.TestCase):
         self.assertIn(a["price_status"],(
             "OFFICIAL_ECB_FIXING_REFERENCE_NOT_LIVE","DATED_ECB_REFERENCE_NOT_LIVE"))
         from_eur={"EUR":1,"USD":1.1165,"GBP":.83415,"AUD":1.625,"CAD":1.5705}
-        self.assertAlmostEqual(a["reference_price_quote_per_base"],1/1.1165,places=7)
+        self.assertAlmostEqual(a["reference_price_quote_per_base"],1.1165,places=7)
         self.assertAlmostEqual(b["reference_price_quote_per_base"],.83415,places=7)
         self.assertAlmostEqual(c["reference_price_quote_per_base"],1.5705/1.625,places=7)
         self.assertNotEqual(book["pairs"]["AUD/CAD"]["price_ecb_reference"]["five_observation_change_pct"],None)
@@ -78,7 +83,7 @@ class RelativeG8PairsV5Tests(unittest.TestCase):
             if (x["base"] in ("USD","EUR","CHF","NZD") or
                 x["quote"] in ("USD","EUR","CHF","NZD")):
                 self.assertIsNone(x["money_market_6m"]["six_month_arithmetic_reference_spread_bp"])
-        for pair in ("AUD/CAD","AUD/GBP","AUD/JPY","CAD/GBP","CAD/JPY","GBP/JPY"):
+        for pair in ("AUD/CAD","GBP/AUD","AUD/JPY","GBP/CAD","CAD/JPY","GBP/JPY"):
             self.assertEqual(
                 b["pairs"][pair]["money_market_6m"]["status"],
                 "OFFICIAL_SAME_DAY_HETEROGENEOUS_REFERENCE_NOT_POLICY_SPREAD"
@@ -91,12 +96,12 @@ class RelativeG8PairsV5Tests(unittest.TestCase):
     def test_same_date_two_year_spreads_but_not_asynchronous_inferences(self):
         b=self.book
         self.assertEqual(b["scope"]["synchronized_2y_references"],6)
-        for pair in ("USD/EUR","USD/GBP","USD/JPY","EUR/GBP","EUR/JPY","GBP/JPY"):
+        for pair in ("EUR/USD","GBP/USD","USD/JPY","EUR/GBP","EUR/JPY","GBP/JPY"):
             self.assertIsNotNone(b["pairs"][pair]["rates_2y"]["spread_2y_bp"])
-        for pair in ("USD/CAD","AUD/CAD","CHF/NZD","CAD/NZD","GBP/AUD"):
+        for pair in ("USD/CAD","AUD/CAD","NZD/CHF","NZD/CAD","GBP/AUD"):
             self.assertIsNone(b["pairs"][pair]["rates_2y"]["spread_2y_bp"])
         self.assertEqual(
-            b["pairs"]["USD/EUR"]["rates_2y"]["rate_gap_status"],
+            b["pairs"]["EUR/USD"]["rates_2y"]["rate_gap_status"],
             "ILLUSTRATIVE_SAME_DAY_DIFFERENT_GOVERNMENT_BENCHMARKS")
         self.assertEqual(
             b["pairs"]["USD/EUR"]["rates_2y"]["observed_change_1d_relative_bp"],None)
