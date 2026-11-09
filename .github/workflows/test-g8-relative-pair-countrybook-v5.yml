@@ -1,0 +1,41 @@
+name: G8 Relative Macro Pricing 28 Pairs V5 - Research
+
+on:
+  pull_request:
+    paths:
+      - 'validation/macro/build_g8_relative_pair_countrybook_v5.py'
+      - 'validation/macro/test_build_g8_relative_pair_countrybook_v5.py'
+      - '.github/workflows/test-g8-relative-pair-countrybook-v5.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/macro/build_g8_relative_pair_countrybook_v5.py'
+      - 'validation/macro/test_build_g8_relative_pair_countrybook_v5.py'
+      - '.github/workflows/test-g8-relative-pair-countrybook-v5.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pair-countrybook-research-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Audit 28 two-leg macro narratives, pricing comparability, ECB crosses, no FX signals
+        run: python -m unittest validation.macro.test_build_g8_relative_pair_countrybook_v5 -v
+      - name: Export research-only 28-pair Country Book
+        run: |
+          python -m validation.macro.build_g8_relative_pair_countrybook_v5 --json-out /tmp/g8-relative-28pairs-v5.json --md-out /tmp/g8-relative-28pairs-v5.md
+          cat /tmp/g8-relative-28pairs-v5.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: g8-relative-28pairs-causal-research-v5
+          path: |
+            /tmp/g8-relative-28pairs-v5.json
+            /tmp/g8-relative-28pairs-v5.md
+          retention-days: 14
