@@ -133,6 +133,13 @@ function expectedReactionFromMetrics(row){
     current(x.as_of,4)&&
     ['3m','6m','12m'].every(k=>Number.isFinite(x.horizons?.[k]?.rate)&&
       Number.isFinite(x.horizons?.[k]?.policy_delta_bp))).map(([ccy])=>ccy).sort();
+  // Certified 6M LEVEL does not imply an independently verified policy
+  // delta. BoE can satisfy the former without satisfying the latter.
+  const officialLevelOnly=Object.entries(expectedOis.currencies).filter(([ccy,x])=>
+    x.operational_status==='GREEN_OFFICIAL'&&x.official_status==='ACTIVE'&&
+    x.quality==='OFFICIAL_CERTIFIED'&&x.backtest_eligible_as_official===true&&
+    current(x.as_of,4)&&Number.isFinite(x.horizons?.['6m']?.rate)&&
+    !officialCurrent.includes(ccy)).map(([ccy])=>ccy).sort();
   const certified=officialCurrent.length;
   const expectedFx=current(fxData.last_as_of,4);
   await page.waitForFunction(()=>!!document.getElementById('gmfq-page')?.contentDocument?.getElementById('gmfq-home-data-audit'),
@@ -509,11 +516,15 @@ function expectedReactionFromMetrics(row){
        (x.level!==''&&Math.abs(Number(x.barWidth)-
          Math.round(10000*Math.min(1,Math.max(0,Number(x.level))/Number(r.pricingScale)))/100)>0.02))||
      JSON.stringify(r.pricing.filter(x=>x.status==='OFFICIAL_REPRICING').map(x=>x.ccy).sort())!==JSON.stringify(officialCurrent)||
-     r.pricing.some(x=>!['OFFICIAL_REPRICING','FUTURES_LEVEL_ONLY','CASH_CARRY_SCENARIO','WORKING_ESTIMATE','BANK_BILL_PROXY','WITHHELD'].includes(x.status)||
+     JSON.stringify(r.pricing.filter(x=>x.status==='OFFICIAL_LEVEL_ONLY').map(x=>x.ccy).sort())!==JSON.stringify(officialLevelOnly)||
+     r.pricing.some(x=>!['OFFICIAL_REPRICING','OFFICIAL_LEVEL_ONLY','FUTURES_LEVEL_ONLY','CASH_CARRY_SCENARIO','WORKING_ESTIMATE','BANK_BILL_PROXY','WITHHELD'].includes(x.status)||
        (x.allowed==='true')!==(x.status==='OFFICIAL_REPRICING'))||
+     r.pricing.some(x=>x.status==='OFFICIAL_LEVEL_ONLY'&&
+       (x.allowed!=='false'||!x.content.includes('%')||x.content.includes(' ST')||x.content.includes(' PX')))||
      r.pricing.some(x=>x.status==='FUTURES_LEVEL_ONLY'&&!x.content.includes('PX'))||
      r.pricing.some(x=>x.status==='BANK_BILL_PROXY'&&!x.content.includes('BB'))||
-     r.pricing.some(x=>x.status==='WORKING_ESTIMATE'&&(x.ccy!=='USD'||!x.content.includes('ST')||x.allowed!=='false'))||
+     r.pricing.some(x=>x.status==='WORKING_ESTIMATE'&&
+       (!['USD','CHF'].includes(x.ccy)||!x.content.includes('% ST')||x.allowed!=='false'))||
      r.pricing.some(x=>x.status==='CASH_CARRY_SCENARIO'&&
        (x.ccy!=='NZD'||!nzdScenario||!x.content.includes(nzdDisplayed+'% ST')||x.allowed!=='false')))
     fatal.push('6M pricing source tiers wrong: '+JSON.stringify(r.pricing));
