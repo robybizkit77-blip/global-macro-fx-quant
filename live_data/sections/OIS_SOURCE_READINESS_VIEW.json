@@ -69,7 +69,7 @@
         "instrument": "ASX NZ 90-Day Bank Bill futures",
         "kind": "ASX_NZD_BANK_BILL_DIRECTION_NOT_OIS",
         "policy_delta_allowed": false,
-        "proxy_as_of": "2026-11-06",
+        "proxy_as_of": "2026-11-09",
         "rates_embedded": false,
         "status": "RECENT_DIRECTIONAL",
         "substitutes_for_ois_level": false
