@@ -1,7 +1,7 @@
 {
   "schema": "GMFQ_FXV2_CROSS_ASSET_SOURCE_OVERLAY_V1",
   "status": "FIVE_STREAMS_VERIFIED",
-  "collected_on": "2026-11-07",
+  "collected_on": "2026-11-09",
   "attempted_sources": [
     "SP500",
     "NASDAQCOM",
@@ -432,21 +432,17 @@
       "kind": "INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 2,
+      "source_age_calendar_days": 4,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
     "NASDAQCOM": {
-      "date": "2026-11-05",
-      "previous_date": "2026-11-04",
-      "value": 24315.0,
-      "previous": 25736.51,
-      "change_1d_pct": -5.5233,
+      "date": "2026-11-06",
+      "previous_date": "2026-11-05",
+      "value": 24579.42,
+      "previous": 24315.0,
+      "change_1d_pct": 1.0875,
       "history": [
-        [
-          "2026-06-16",
-          26376.34
-        ],
         [
           "2026-06-17",
           26021.66
@@ -842,6 +838,10 @@
         [
           "2026-11-05",
           24315.0
+        ],
+        [
+          "2026-11-06",
+          24579.42
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -850,21 +850,17 @@
       "kind": "INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 2,
+      "source_age_calendar_days": 3,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
     "IG_OAS": {
-      "date": "2026-11-05",
-      "previous_date": "2026-11-04",
+      "date": "2026-11-06",
+      "previous_date": "2026-11-05",
       "value": 0.93,
-      "previous": 0.91,
-      "change_1d_pct": 2.1978,
+      "previous": 0.93,
+      "change_1d_pct": 0.0,
       "history": [
-        [
-          "2026-06-19",
-          0.74
-        ],
         [
           "2026-06-22",
           0.74
@@ -1260,6 +1256,10 @@
         [
           "2026-11-05",
           0.93
+        ],
+        [
+          "2026-11-06",
+          0.93
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -1268,21 +1268,17 @@
       "kind": "CREDIT_OAS",
       "unit": "percent",
       "max_source_age_days": 7,
-      "source_age_calendar_days": 2,
+      "source_age_calendar_days": 3,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
     "HY_OAS": {
-      "date": "2026-11-05",
-      "previous_date": "2026-11-04",
-      "value": 3.48,
-      "previous": 3.32,
-      "change_1d_pct": 4.8193,
+      "date": "2026-11-06",
+      "previous_date": "2026-11-05",
+      "value": 3.42,
+      "previous": 3.48,
+      "change_1d_pct": -1.7241,
       "history": [
-        [
-          "2026-06-19",
-          2.66
-        ],
         [
           "2026-06-22",
           2.65
@@ -1678,6 +1674,10 @@
         [
           "2026-11-05",
           3.48
+        ],
+        [
+          "2026-11-06",
+          3.42
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -1686,21 +1686,17 @@
       "kind": "CREDIT_OAS",
       "unit": "percent",
       "max_source_age_days": 7,
-      "source_age_calendar_days": 2,
+      "source_age_calendar_days": 3,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
     "VIX": {
-      "date": "2026-11-05",
-      "previous_date": "2026-11-04",
-      "value": 28.18,
-      "previous": 16.61,
-      "change_1d_pct": 69.6568,
+      "date": "2026-11-06",
+      "previous_date": "2026-11-05",
+      "value": 25.64,
+      "previous": 28.18,
+      "change_1d_pct": -9.0135,
       "history": [
-        [
-          "2026-06-19",
-          16.78
-        ],
         [
           "2026-06-22",
           17.28
@@ -2096,6 +2092,10 @@
         [
           "2026-11-05",
           28.18
+        ],
+        [
+          "2026-11-06",
+          25.64
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -2104,7 +2104,7 @@
       "kind": "VOLATILITY_INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 2,
+      "source_age_calendar_days": 3,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     }
