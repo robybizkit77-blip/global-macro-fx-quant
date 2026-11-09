@@ -43,12 +43,12 @@ class CausalCountryBookContract(unittest.TestCase):
              "CENTRAL_BANK_REACTION", "RATES_MARKET_PRICING", "RELATIVE_FX_AND_RISK"],
         )
         self.assertTrue(x["method"]["hypotheses_are_not_forecasts"])
-        self.assertFalse(x["relative_pair_application"]["no_automatic_signal"] is False)
+        self.assertTrue(x["relative_pair_application"]["no_automatic_signal"])
         self.assertFalse(x["scope"]["connected_to_live_site"])
         self.assertFalse(x["scope"]["prospective_tests_completed"])
         self.assertFalse(x["scope"]["production_eligible"])
-        self.assertIn("NO_DASHBOARD", " ".join(
-            rule.upper() for rule in x["method"]["causal_guardrails"]).replace("NEW DASHBOARDS", "NO_DASHBOARD"))
+        self.assertIn("NO NEW DASHBOARDS", " ".join(
+            rule.upper() for rule in x["method"]["causal_guardrails"]))
 
     def test_country_central_bank_mandates_not_identical(self):
         d = self.data["countries"]
