@@ -163,13 +163,22 @@ def yoy_index_values(row, current_index):
     return 100*(new/old-1)
 
 def inflation_row(row, *, today, meaning):
-    base=v2.evidence_row(row,today=today)
+    # RBNZ expectations are quarterly surveys even when tokens are YYYY-MM.
+    # Without this override, a 3-month survey gap is falsely flagged as missing month.
+    prepared=dict(row)
+    if prepared["id"].startswith("NZ_RBNZ_M15_BUSINESS_EXPECTATIONS_recent_"):
+        prepared["frequency"]="Q"
+    base=v2.evidence_row(prepared,today=today)
     ident=base["id"]
     if is_index(row):
         require(base["frequency"]=="M",ident+" only monthly index YoY supported")
-        rate=yoy_index_values(row,-1 if False else len(row["values"])-1)
+        rate=yoy_index_values(row,len(row["values"])-1)
         earlier=yoy_index_values(row,len(row["values"])-2)
         transform="DERIVED_YOY_FROM_MATCHED_12M_SEASONALLY_ADJUSTED_INDEX"
+    elif meaning=="wages" and ident=="US_AHE_TOTAL_PRIVATE_history_value":
+        rate=yoy_index_values(row,len(row["values"])-1)
+        earlier=yoy_index_values(row,len(row["values"])-2)
+        transform="NOMINAL_WAGE_YOY_DERIVED_FROM_HOURLY_PAY_LEVEL"
     elif is_yoy_rate(row):
         rate=row["last_value"]
         earlier=row["values"][-2]
@@ -200,13 +209,17 @@ def inflation_sentence(rec, *,kind):
     if not rec:
         return f"{kind}: componente non disponibile nel dataset G8 selezionato."
     v=rec[0]
-    p=pct(v["latest_rate_pct_or_proxy_value"])
+    is_survey_index=(v["transformation"]=="BUSINESS_PRICE_SURVEY_INDICATOR_NOT_CPI")
+    p=(f"{v['latest_rate_pct_or_proxy_value']:.2f}".replace(".",",")
+       if is_survey_index else pct(v["latest_rate_pct_or_proxy_value"]))
     d=v["rate_change_pp_or_proxy_units"]
     if d is None:
         m="non è possibile confrontare due osservazioni contigue"
     else:
         m=("in aumento" if d>.05 else "in diminuzione" if d<-.05 else "sostanzialmente invariata")
-        m+=f" ({point_delta(d)} rispetto alla rilevazione precedente)"
+        suffix=(" punti indice" if is_survey_index else " pp")
+        formatted=(("+" if d>0 else "")+f"{d:.2f}").replace(".",",")
+        m+=f" ({formatted}{suffix} rispetto alla rilevazione precedente)"
     status=v["status"]
     quality=(
         "Osservazione non recente"
@@ -296,8 +309,9 @@ def build(*,today,root=ROOT):
             inflation_sentence(recs["expectations"],kind="Aspettative"),
             interpretation,
             supply,
-            f"Meccanismo da testare: {source_fact} "
-            f"{profile['reaction']}",
+            "Imprese → lavoro → famiglie (periodi osservati, non causalità provata): "
+            + " ".join(base["countries"][c]["economic_transmission_narrative_it"][2:5]),
+            f"Meccanismo da testare: {source_fact} {profile['reaction']}",
             f"Conferme/invalidazioni da cercare: {profile['check']} "
             "Solo dopo confrontare la sorpresa con OIS, futures e 2Y, "
             "senza dedurre un segnale valutario automatico.",
@@ -374,7 +388,7 @@ def markdown(book):
         "La stessa variazione headline può essere domanda, offerta o un mix. "
         "Senza dati componenti puntuali e rilascio/prezzi prima/dopo non è "
         "certificabile la spiegazione causale né il repricing. "
-        "I dati sono revisited, non first-release PIT.",
+        "I dati disponibili sono revisionati, non prime pubblicazioni point-in-time.",
         "",
     ]
     for c in v2.v1.FX:
