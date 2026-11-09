@@ -8,6 +8,8 @@ on:
       - 'validation/macro_adapter_pit_handoff.py'
       - 'validation/macro/check_macro_source_registry.py'
       - 'validation/macro/collect_us_nz_household_firm_sources_v1.py'
+      - 'validation/macro/reconcile_us_real_households_countrybook_v2.py'
+      - 'validation/macro/test_reconcile_us_real_households_countrybook_v2.py'
       - 'validation/macro/test_collect_us_nz_household_firm_sources_v1.py'
       - 'validation/macro/test_macro_official_source_label_contract_v1.py'
       - 'validation/sources/cad_statcan_core.py'
@@ -26,6 +28,8 @@ on:
       # Registry preflight fixes must be exercised by the actual production child.
       - 'validation/macro/check_macro_source_registry.py'
       - 'validation/macro/collect_us_nz_household_firm_sources_v1.py'
+      - 'validation/macro/reconcile_us_real_households_countrybook_v2.py'
+      - 'validation/macro/test_reconcile_us_real_households_countrybook_v2.py'
       - 'validation/macro/test_collect_us_nz_household_firm_sources_v1.py'
       - 'validation/macro/test_macro_official_source_label_contract_v1.py'
   workflow_dispatch:
@@ -360,6 +364,35 @@ jobs:
               out.write('- New revised series candidates: '+
                         (', '.join(j['usable_new_revised_monthly_candidates']) or 'none')+'\n')
               out.write('- No current-live series / 28-pair signal modifications\n')
+          PY
+
+      - name: Verify BEA/FRED revised-vintage Country Book (research only)
+        if: success()
+        shell: bash
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          python -m unittest validation.macro.test_reconcile_us_real_households_countrybook_v2 -v
+          if [[ ! -s /tmp/macro-persistent/household-firm-publisher-intake-v1.json ]]; then
+            echo 'US_HOUSEHOLDS_RESEARCH_WITHHELD: no source intake receipt'
+            exit 1
+          fi
+          python -m validation.macro.reconcile_us_real_households_countrybook_v2 \
+            --intake /tmp/macro-persistent/household-firm-publisher-intake-v1.json \
+            --json-out /tmp/macro-persistent/us-households-revised-countrybook-v2.json \
+            --md-out /tmp/macro-persistent/us-households-revised-countrybook-v2.md
+          python - <<'PY'
+          import json,os
+          from pathlib import Path
+          j=json.loads(Path('/tmp/macro-persistent/us-households-revised-countrybook-v2.json').read_text())
+          assert j['status']=='TWO_REVISED_REAL_SERIES_RECONCILED_WITH_BEA_ISSUER_RESEARCH_ONLY'
+          assert j['replaces_live_macro_series'] is False
+          assert j['affects_28_pair_core'] is False
+          assert j['series_pit_certified'] is False
+          assert len(j['revised_series']['PCEC96']['complete_revised_history'])>=82
+          assert len(j['revised_series']['DSPIC96']['complete_revised_history'])>=82
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as out:
+              out.write('\n'+Path('/tmp/macro-persistent/us-households-revised-countrybook-v2.md').read_text()+'\n')
           PY
 
       - uses: actions/upload-artifact@v4
