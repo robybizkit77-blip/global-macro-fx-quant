@@ -157,6 +157,8 @@ def freeze(official,consensus,existing,captured_at):
             skip("NOT_EXACT_OFFICIAL_EVENT");continue
         if key in seen:
             skip("ALREADY_FROZEN_KEEP_FIRST_OBSERVATION");continue
+        if key not in CERTIFIED_ISSUER_ACTUAL_METRIC_KEYS_V1:
+            skip("METRIC_UNIT_AND_ISSUER_ACTUAL_PARSER_NOT_CERTIFIED");continue
         stamp=scheduled(e)
         if stamp is None:
             skip("OFFICIAL_SCHEDULE_HAS_NO_INTRADAY_CLOCK");continue
