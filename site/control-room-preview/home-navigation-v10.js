@@ -4527,9 +4527,20 @@ async function mountCentralBankFirstReading(doc){
  const operational=ois?.schema==='GMFQ_OIS_OPERATIONAL_VIEW_V1'&&
   FX.every(c=>acceptable.includes(ois.currencies?.[c]?.operational_status));
  const certified=operational?marketResearchCurves(ois):[];
- const expectedOfficial=operational?FX.filter(c=>ois.currencies[c].operational_status==='GREEN_OFFICIAL'):[];
- const reconciled=core&&operational&&certified.length===expectedOfficial.length&&
-  expectedOfficial.every(c=>certified.some(v=>v.k===c));
+ // A source-certified 6M level can coexist with an unavailable policy delta.
+ // Preserve valid BoE official levels without inventing intraday repricing.
+ const officialLevels=operational?FX.filter(c=>
+  ois.currencies[c].operational_status==='GREEN_OFFICIAL'):[];
+ const levelSourcesValid=officialLevels.every(c=>{
+  const x=ois.currencies[c];
+  return x.official_status==='ACTIVE'&&x.quality==='OFFICIAL_CERTIFIED'&&
+   x.backtest_eligible_as_official===true&&fresh(x.as_of,4)&&
+   ['3m','6m','12m'].every(t=>num(x.horizons?.[t]?.rate)!==null);
+ });
+ const expectedRepricing=officialLevels.filter(c=>officialPricingCurrent(ois.currencies[c]));
+ const reconciled=core&&operational&&levelSourcesValid&&
+  certified.length===expectedRepricing.length&&
+  expectedRepricing.every(c=>certified.some(v=>v.k===c));
  const estimated=operational?FX.filter(c=>ois.currencies[c].operational_status==='GREEN_ESTIMATED'):[];
  const withheld=operational?FX.filter(c=>ois.currencies[c].operational_status==='WITHHELD'):[];
  const dates=core?FX.map(c=>cb[c].last_date).sort():[];
