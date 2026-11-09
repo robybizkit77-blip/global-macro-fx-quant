@@ -9,6 +9,7 @@ import unittest
 from validation.macro import g8_metric_issuer_contract_v8 as m
 from validation.macro import preflight_us_cpi_official_actual_v8 as cpi
 from validation.macro import build_g8_macro_event_lifecycle_v7 as v7
+from validation.macro.freeze_pre_release_consensus_v1 import freeze
 
 NOW=datetime(2026,11,9,15,10,tzinfo=timezone.utc)
 
@@ -180,6 +181,36 @@ class G8MetricIssuerV8Tests(unittest.TestCase):
             b"The all items less food and energy index rose 3.3 percent over the year."
         with self.assertRaises(cpi.Pending):
             cpi.parse(raw=duplicated)
+
+    def test_old_generic_forecast_ledger_blocks_future_cpi_release_title(self):
+        # The exact headline release title would have matched legacy matcher
+        # despite not specifying MoM, YoY, SA, NSA or headline/core.
+        event=self.event("USD","2026-11-10")
+        forecast={
+          "schema":"GMFQ_MACRO_CONSENSUS_SECONDARY_V1",
+          "provider":"FOREX_FACTORY_FAIR_ECONOMY_WEEKLY",
+          "provider_field":"forecast","generated_at_utc":"2026-11-09T15:00:00Z",
+          "rules":{"never_promote_to_official":True,
+                   "actual_not_used_as_pre_release_consensus":True,
+                   "official_calendar_remains_primary":True},
+          "events":[{
+            "event_key":m.exact_event_key(event),
+            "ccy":"USD","official_date":event["date"],
+            "official_title":event["title"],"event_type":event["event_type"],
+            "provider":"FOREX_FACTORY_FAIR_ECONOMY_WEEKLY",
+            "provider_event":"Consumer Price Index",
+            "consensus":"0.4%","status":"AVAILABLE",
+            "confidence_grade":"B","date_match_gap_days":0,
+            "actual_ignored_for_pre_release_consensus":True,
+            "official_date_overridden":False,
+          }]
+        }
+        rows,receipt=freeze(
+            self.calendar,forecast,[],"2026-11-09T15:10:00Z")
+        self.assertEqual(rows,[])
+        self.assertEqual(receipt["new_forecasts_frozen"],0)
+        self.assertEqual(receipt["skipped"][
+            "METRIC_UNIT_AND_ISSUER_ACTUAL_PARSER_NOT_CERTIFIED"],1)
 
     def test_after_release_official_parser_is_readonly_candidate_not_surprise(self):
         sample=mock_bls("October","Tuesday, November 10, 2026")
