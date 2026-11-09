@@ -1,0 +1,386 @@
+{
+  "schema": "GMFQ_G8_CAUSAL_CB_REACTION_COUNTRY_BOOK_V1",
+  "authored_on": "2026-11-09",
+  "status": "RESEARCH_METHODOLOGY_SPEC_ONLY",
+  "purpose": "Apply one causal macro-to-central-bank-reaction method to each G8 FX currency, with country-specific economic mechanisms and evidence requirements; not 8 independent scores.",
+  "country_order": [
+    "USD",
+    "EUR",
+    "GBP",
+    "JPY",
+    "CHF",
+    "CAD",
+    "AUD",
+    "NZD"
+  ],
+  "method": {
+    "always_start_with": "Narrative of current level, direction, speed, breadth and persistence in real economy (firms, jobs, households) before model output.",
+    "stages": [
+      {
+        "id": "01",
+        "key": "WHAT_IS_HAPPENING",
+        "question": "What is observed in firms, hiring/firing, wages, households, credit, inflation and growth? Separate levels, direction, acceleration, breadth and persistence.",
+        "required_tags": [
+          "observation_as_of",
+          "evidence_source",
+          "data_quality",
+          "source_release_time_or_unknown",
+          "revision_status"
+        ]
+      },
+      {
+        "id": "02",
+        "key": "WHAT_IS_CHANGING",
+        "question": "Which mechanisms change the outlook over the next 1-2 quarters? Express an explicit cause-effect chain and say what is uncertain.",
+        "required_tags": [
+          "drivers",
+          "causal_mechanism_hypothesis",
+          "counterevidence"
+        ]
+      },
+      {
+        "id": "03",
+        "key": "CENTRAL_BANK_REACTION",
+        "question": "What does the central bank WANT to achieve; what CAN it do given its mandate, inflation, jobs and financial conditions? Define what makes hold, tighten, or ease more/less plausible, WITHOUT asserting a decision.",
+        "required_tags": [
+          "mandate_specificity",
+          "WANT",
+          "CAN",
+          "conditional_scenarios",
+          "confirmation",
+          "invalidation"
+        ]
+      },
+      {
+        "id": "04",
+        "key": "RATES_MARKET_PRICING",
+        "question": "What was already priced in OIS/futures and 2Y BEFORE the macro release; what repriced afterwards? Separate front-end from 10Y growth, inflation expectations, term premium and supply.",
+        "required_tags": [
+          "as_of",
+          "3m_6m_12m_with_source_quality",
+          "2y",
+          "10y_optional",
+          "pre_release_expectation",
+          "observed_repricing_or_unknown"
+        ]
+      },
+      {
+        "id": "05",
+        "key": "RELATIVE_FX_AND_RISK",
+        "question": "Compare both legs of a pair, global risk, carry, positioning and price. Is the economic thesis valid but the trade unattractive?",
+        "required_tags": [
+          "currency_a_drivers",
+          "currency_b_drivers",
+          "relative_policy_path",
+          "risk_sensitivity",
+          "price_confirmation",
+          "thesis_strength_qualitative",
+          "trade_attractiveness_qualitative"
+        ]
+      }
+    ],
+    "causal_guardrails": [
+      "No claim that a statistical correlation proves a causal transmission mechanism.",
+      "Do not infer what firms/consumers actually did from one proxy; phrase as a hypothesis until observed.",
+      "No numerical odds without calibrated evidence; base, upside and downside are qualitative.",
+      "A central bank decision today is not a commitment for future meetings.",
+      "Never infer 10Y movements solely from expected policy rates.",
+      "Do not label macro data 'point in time' unless released_at and vintage genuinely attest availability.",
+      "Do not fabricate OIS 3m/6m/12m readings; show quality-certified estimates separately from official rates.",
+      "Missing data must remain missing: no zero-fill, no invented consensus or releases.",
+      "Country narratives do not generate new directional FX signals until prospective tests warrant them.",
+      "No new dashboards, no redesign, no changes to D.json, approved FX Core or 28-pair ranking."
+    ],
+    "audience_output": "Five to seven coherent sentences per currency: what we see; what changed; why it matters for firms/workers/households; possible bank reaction if data continues; markets priced vs surprise; counter-scenario and next decisive release.",
+    "hypotheses_are_not_forecasts": true
+  },
+  "countries": {
+    "USD": {
+      "region": "United States",
+      "bank": "Federal Reserve",
+      "mandate_focus": "price stability and maximum employment",
+      "firms": [
+        "ISM manufacturing/services new orders and employment",
+        "corporate hiring plans and profit margins",
+        "lending and credit availability",
+        "AI capex vs broad-economy investment"
+      ],
+      "labor": [
+        "payroll growth breadth by industry",
+        "initial and continuing unemployment claims",
+        "JOLTS hiring/quits/layoffs",
+        "wage growth vs productivity"
+      ],
+      "households": [
+        "real disposable income",
+        "PCE and retail spending composition",
+        "saving rate and consumer credit",
+        "confidence and household delinquency"
+      ],
+      "inflation": [
+        "core PCE services and housing trends",
+        "energy and goods supply shocks",
+        "wage-driven versus supply-driven persistence"
+      ],
+      "reaction_question": "Can Fed hold/tighten if demand stays firm and core inflation persists, or will labour weakness and slowing household demand rebalance risks?",
+      "market_check": [
+        "Fed Funds and SOFR curves / OIS quality",
+        "US Treasury 2Y versus 10Y",
+        "USD versus other bank trajectories",
+        "risk regime and funding demand"
+      ],
+      "official_bank_url": "https://www.federalreserve.gov/monetarypolicy.htm"
+    },
+    "EUR": {
+      "region": "Euro Area",
+      "bank": "European Central Bank",
+      "mandate_focus": "price stability; activity and labour matter primarily through future inflation and transmission",
+      "firms": [
+        "manufacturing/services PMIs and new orders",
+        "industrial production and German industry",
+        "bank lending standards, loans and funding costs",
+        "fiscal and sovereign-spread transmission"
+      ],
+      "labor": [
+        "negotiated wage tracker and compensation per employee",
+        "employment and labour shortages by country",
+        "unemployment and hours worked"
+      ],
+      "households": [
+        "retail volumes and household consumption",
+        "real income and saving behaviour",
+        "mortgage/lending demand",
+        "consumer confidence and energy bills"
+      ],
+      "inflation": [
+        "HICP services versus goods",
+        "wages and domestic price pressure",
+        "energy import pass-through"
+      ],
+      "reaction_question": "Will domestic wage/services persistence justify holding policy tighter, or will weaker bank credit and domestic demand support easing?",
+      "market_check": [
+        "€STR and ECB OIS/futures by tenor with quality labels",
+        "EUR sovereign 2Y and 10Y plus cross-country spreads",
+        "EUR external-demand sensitivity"
+      ],
+      "official_bank_url": "https://www.ecb.europa.eu/mopo/html/index.en.html"
+    },
+    "GBP": {
+      "region": "United Kingdom",
+      "bank": "Bank of England",
+      "mandate_focus": "2% CPI price stability; subject to that, support government policy including growth and employment",
+      "firms": [
+        "services PMI and business input costs",
+        "vacancies and hiring plans",
+        "investment and finance conditions"
+      ],
+      "labor": [
+        "private-sector pay growth and wage settlements",
+        "vacancy-to-unemployment developments",
+        "employment and inactivity"
+      ],
+      "households": [
+        "retail sales and household consumption",
+        "mortgage refinancing rates and debt servicing",
+        "real disposable income and consumer credit"
+      ],
+      "inflation": [
+        "services CPI persistence",
+        "core CPI and energy pass-through",
+        "wage/service interactions"
+      ],
+      "reaction_question": "How much can BoE ease if demand weakens but services inflation and wages remain sticky?",
+      "market_check": [
+        "SONIA OIS tenor curves with dated provenance",
+        "UK 2Y and 10Y Gilts",
+        "sterling sensitivity to real rates and UK risk premium"
+      ],
+      "official_bank_url": "https://www.bankofengland.co.uk/monetary-policy"
+    },
+    "JPY": {
+      "region": "Japan",
+      "bank": "Bank of Japan",
+      "mandate_focus": "sustainable 2% price stability, including wage-price dynamics",
+      "firms": [
+        "Tankan sentiment and pricing plans",
+        "export orders and industrial production",
+        "investment plans and overseas demand"
+      ],
+      "labor": [
+        "Shunto wage settlements",
+        "base pay and cash earnings",
+        "labour shortages and vacancies"
+      ],
+      "households": [
+        "real wages and consumption expenditure",
+        "consumer confidence",
+        "energy and imported cost squeeze"
+      ],
+      "inflation": [
+        "underlying trend inflation vs import costs",
+        "services and domestically generated price pressure",
+        "inflation expectations"
+      ],
+      "reaction_question": "Will sustained wage and domestic-demand improvements support further normalization despite external slowdown or import-price pressure?",
+      "market_check": [
+        "TONA OIS/futures quality and JGB 2Y/10Y",
+        "USDJPY/AUDJPY relative rate paths",
+        "safe haven and funding/carry unwinds"
+      ],
+      "official_bank_url": "https://www.boj.or.jp/en/mopo/"
+    },
+    "CHF": {
+      "region": "Switzerland",
+      "bank": "Swiss National Bank",
+      "mandate_focus": "price stability; interest rate AND exchange rate influence monetary conditions",
+      "firms": [
+        "manufacturing PMI and export orders",
+        "European demand and industry",
+        "business investment"
+      ],
+      "labor": [
+        "employment, hours and unemployment",
+        "nominal and real wage pressure",
+        "skills shortages and recruiting plans by industry"
+      ],
+      "households": [
+        "domestic consumption and retail",
+        "household price expectations",
+        "mortgage and credit conditions"
+      ],
+      "inflation": [
+        "Swiss CPI, domestic and imported inflation",
+        "CHF exchange-rate pass-through",
+        "conditional SNB inflation forecast"
+      ],
+      "reaction_question": "Will CHF appreciation and weak inflation warrant easing or intervention, or could stronger domestic demand reduce that need?",
+      "market_check": [
+        "SARON/OIS provenance and Swiss 2Y/10Y",
+        "EURCHF and global risk-off flow hypotheses",
+        "FX intervention possibility is NOT proof of actual intervention"
+      ],
+      "official_bank_url": "https://www.snb.ch/en/the-snb/mandates-goals/monetary-policy/strategy"
+    },
+    "CAD": {
+      "region": "Canada",
+      "bank": "Bank of Canada",
+      "mandate_focus": "2% inflation target with flexible attention to growth and labour outcomes",
+      "firms": [
+        "business outlook surveys and capex",
+        "bank credit and lending conditions",
+        "energy-sector versus non-energy activity",
+        "exports and trade exposure"
+      ],
+      "labor": [
+        "employment change and participation",
+        "unemployment and wage trends",
+        "regional and industry divergence"
+      ],
+      "households": [
+        "mortgage renewals and debt service",
+        "housing resale/building activity",
+        "real consumption and household credit"
+      ],
+      "inflation": [
+        "CPI trim/median and services",
+        "shelter inflation",
+        "energy direct versus demand effects"
+      ],
+      "reaction_question": "Can the BoC maintain restrictive rates if household refinancing and labour weaken, or does persistent underlying inflation require patience?",
+      "market_check": [
+        "CORRA futures/OIS quality and Canada 2Y/10Y",
+        "US-Canada short-rate gap",
+        "oil exposure relative to US and global risk"
+      ],
+      "official_bank_url": "https://www.bankofcanada.ca/core-functions/monetary-policy/"
+    },
+    "AUD": {
+      "region": "Australia",
+      "bank": "Reserve Bank of Australia",
+      "mandate_focus": "dual price stability and full employment; CPI target 2-3%",
+      "firms": [
+        "NAB business conditions/orders",
+        "capital expenditure and construction",
+        "China demand/iron ore export sensitivity",
+        "private-sector credit"
+      ],
+      "labor": [
+        "employment and unemployment",
+        "underemployment/hours worked",
+        "Wage Price Index and hiring intentions"
+      ],
+      "households": [
+        "real consumer spending and retail volumes",
+        "household mortgage burden and refinancing",
+        "savings buffer and confidence"
+      ],
+      "inflation": [
+        "trimmed mean inflation and service prices",
+        "rent and domestic cost persistence",
+        "external import/energy pressures"
+      ],
+      "reaction_question": "Does persistent domestic inflation outweigh slowing indebted households and labour, and how might China/global risk change the AUD response?",
+      "market_check": [
+        "RBA cash-rate futures and OIS quality",
+        "Australia versus US/NZ 2Y differentials",
+        "AUDJPY/AUDUSD global risk channel"
+      ],
+      "official_bank_url": "https://www.rba.gov.au/education/resources/explainers/dual-mandate-of-monetary-policy.html"
+    },
+    "NZD": {
+      "region": "New Zealand",
+      "bank": "Reserve Bank of New Zealand",
+      "mandate_focus": "future annual CPI between 1-3% medium term, near 2%; maximum employment is not a coequal primary objective since 2023",
+      "firms": [
+        "business outlook and price plans",
+        "construction and investment",
+        "agricultural export income and China exposure",
+        "credit availability"
+      ],
+      "labor": [
+        "employment and unemployment",
+        "hours and wages",
+        "vacancies and hiring intention"
+      ],
+      "households": [
+        "house prices and housing turnover",
+        "mortgage repricing and household leverage",
+        "real household consumption and saving"
+      ],
+      "inflation": [
+        "non-tradables and services CPI",
+        "tradables/imported inflation",
+        "inflation expectations"
+      ],
+      "reaction_question": "Does weakening household demand and non-tradables inflation permit RBNZ easing while financial stability and import-price risks remain?",
+      "market_check": [
+        "RBNZ OCR pricing with honest proxy/estimation labels",
+        "NZ 2Y/10Y freshness and benchmark identity",
+        "NZD-AUD/USD rate differentials and China/risk beta"
+      ],
+      "official_bank_url": "https://www.rbnz.govt.nz/monetary-policy/about-monetary-policy"
+    }
+  },
+  "relative_pair_application": {
+    "universe": "28 unique unordered pairs among eight currencies; direction assessed for both BASE and QUOTE, not 8 independent single-currency trade signals",
+    "questions": [
+      "Which economy has the stronger change in activity and the more durable inflation-labour cycle?",
+      "Which bank's future path has more room to surprise relative to what each front-end curve ALREADY prices?",
+      "Could risk-off, funding, safe-haven flows or commodity exposure dominate the rate spread?",
+      "Do actual relative 2Y/OIS repricing and FX price confirm that causal story?",
+      "What evidence would overturn this contrast and why might the right thesis be a bad entry now?"
+    ],
+    "interpretive_rule": "A bullish economy narrative DOES NOT automatically imply an appreciation of its currency; the relative unpriced change matters.",
+    "no_automatic_signal": true,
+    "no_formal_score_without_validation": true
+  },
+  "scope": {
+    "designed": true,
+    "implemented_as_versioned_method": true,
+    "connected_to_live_site": false,
+    "current_G8_data_loaded_into_new_causal_model": false,
+    "official_ECB_FX_and_rates_core_untouched": true,
+    "prospective_tests_completed": false,
+    "production_eligible": false
+  }
+}
