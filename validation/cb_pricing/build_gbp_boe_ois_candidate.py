@@ -51,8 +51,15 @@ def main():
     if live.get("source") != s.get("source"):
         raise SystemExit("Snapshot source differs from canonical authorized GBP source")
 
-    if live.get("policy_decision") and s["as_of"] < live["policy_decision"]["date"]:
+    decision = live.get("policy_decision") or {}
+    decision_day = decision.get("date")
+    if decision_day and s["as_of"] < decision_day:
         raise SystemExit("GBP BoE OIS observation predates newest official policy decision; no post-decision repricing candidate")
+    # The official DAILY archive has a source day but no verified quote
+    # timestamp. A print dated the decision day is not proof it was recorded
+    # after the BoE announcement. Preserve its 3M/6M/12M levels and actual
+    # historical 1D/1W changes, but WITHHOLD post-event policy comparison.
+    event_day_timing_unknown = bool(decision_day and s["as_of"] == decision_day)
     policy = float(live["policy_rate"])
     horizons = {}
     for k in ("3m", "6m", "12m"):
@@ -61,7 +68,7 @@ def main():
             "rate": rate,
             "change_1d_bp": float(s["change_1d_bp"][k]),
             "change_1w_bp": float(s["change_1w_bp"][k]),
-            "policy_delta_bp": round((rate - policy) * 100.0, 4),
+            "policy_delta_bp": None if event_day_timing_unknown else round((rate - policy) * 100.0, 4),
         }
 
     obs = {}
@@ -88,7 +95,15 @@ def main():
         },
         "horizons": horizons,
         "cuts_hikes_priced": {f"{k}_bp": horizons[k]["policy_delta_bp"] for k in ("3m", "6m", "12m")},
-        "direction": classify({k: horizons[k]["policy_delta_bp"] for k in horizons}),
+        "direction": ("DECISION_DAY_TIMESTAMP_UNVERIFIED_NO_POLICY_REPRICING"
+                      if event_day_timing_unknown else
+                      classify({k: horizons[k]["policy_delta_bp"] for k in horizons})),
+        "policy_decision_date": decision_day,
+        "policy_comparison_temporally_aligned": not event_day_timing_unknown,
+        "policy_reference_note": ("Decision-day official OIS daily observation: exact intraday timestamp absent. "
+                                  "Quoted levels and dated 1D/1W changes only; post-decision policy repricing WITHHELD."
+                                  if event_day_timing_unknown else
+                                  "Official OIS observation date follows latest verified policy decision."),
         "change_direction_1d": classify(s["change_1d_bp"]),
         "change_direction_1w": classify(s["change_1w_bp"]),
         "observations": obs,
