@@ -31,6 +31,7 @@ async function getState(page){
      dxyEst:d?.querySelector('#valute .cc[data-filter="DXY"] .move')?.textContent.trim(),
      chartCount:d?.querySelectorAll('#ylegend .gmfq-legend-item').length,
      pricingCount:d?.querySelectorAll('#ois .oisrow').length,
+     rateBarTexts:[...(d?.querySelectorAll('#ratesbars svg text')||[])].map(x=>x.textContent.trim()),
      notes:d?.querySelector('#ratesbars + .gmfq-chart-note')?.textContent.trim(),
      badApprofondisci:d?.body?.textContent.includes('Approfondisci ↗'),
      globe:!!d?.querySelector('.hero .globe'),
@@ -63,7 +64,12 @@ async function getState(page){
              && d.querySelector('#valute .cc[data-filter="DXY"] .move')?.textContent.includes('STIMA');
          },null,{timeout:12000});
          lastObserved=await getState(page);
-         if(lastObserved.notes?.includes('R²')&&lastObserved.notes?.includes('base ')){
+         // If all modelled rates expire, a source-qualified WITHHELD state
+         // is valid and must not be misdiagnosed as a CDN deployment timeout.
+         if(lastObserved.notes&&(
+           (lastObserved.notes.includes('STIMA β (non operativa)')&&
+            lastObserved.notes.includes('R²')&&lastObserved.notes.includes('base '))||
+           lastObserved.notes==='Rendimenti governativi verificati.')){
            deployed=true;break;
          }
          console.log('PUBLIC_V10_VERSION_PENDING',name,attempt,lastObserved.notes);
