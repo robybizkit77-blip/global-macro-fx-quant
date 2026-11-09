@@ -208,7 +208,7 @@ class G8MetricIssuerV8Tests(unittest.TestCase):
         self.assertEqual(len(usd["metric_identity_v8"]),4)
         self.assertTrue(all(x["metric_specific_surprise_pp"] is None for x in usd["metric_identity_v8"]))
         self.assertTrue(all(x["frozen_metric_specific_consensus"] is None for x in usd["metric_identity_v8"]))
-        self.assertIn("metric",v7.markdown(d).lower())
+        self.assertIn("Misure esplicite",v7.markdown(d))
 
 if __name__=="__main__":
     unittest.main()
