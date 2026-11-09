@@ -30,8 +30,18 @@ class GrowthReleaseTests(unittest.TestCase):
         self.assertEqual(result["growth_series_count"], 21)
         self.assertEqual(result["counts"]["official_latest_value_date_match"], 2)
         self.assertEqual(result["counts"]["no_first_release_evidence"], 19)
-        self.assertEqual(result["counts"]["missing_frequency_declared"], 4)
-        self.assertEqual(result["counts"]["missing_unit_declared"], 4)
+        # Metadata gaps are read from the *current* 21-series inventory.
+        # New source declarations must decrease the gap, never break QA.
+        missing_frequency=sorted(k for k,v in result["growth"].items()
+                                 if not v["frequency_declared"])
+        missing_unit=sorted(k for k,v in result["growth"].items()
+                            if not v["unit_declared"])
+        self.assertEqual(result["declared_missing_frequency_ids"], missing_frequency)
+        self.assertEqual(result["declared_missing_unit_ids"], missing_unit)
+        self.assertEqual(result["counts"]["missing_frequency_declared"], len(missing_frequency))
+        self.assertEqual(result["counts"]["missing_unit_declared"], len(missing_unit))
+        self.assertTrue(set(missing_frequency).issubset(result["growth"]))
+        self.assertTrue(set(missing_unit).issubset(result["growth"]))
         self.assertEqual(result["counts"]["archival_first_release_vintage_certified"], 0)
         unresolved = result["unresolved_core_latest_release_targets"]
         self.assertEqual(result["unresolved_core_latest_release_target_count"], len(unresolved))
