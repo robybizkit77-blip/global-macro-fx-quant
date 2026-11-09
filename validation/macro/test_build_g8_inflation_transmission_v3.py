@@ -58,7 +58,7 @@ class InflationTransmissionResearchV3Tests(unittest.TestCase):
 
     def test_uk_japan_core_semantics_cannot_relabel_as_demand(self):
         jp=self.book["countries"]["JPY"]["inflation_layer"]
-        self.assertIn("include energia",jp["core_definition"])
+        self.assertIn("includere energia",jp["core_definition"])
         self.assertFalse(jp["demand_driven_inflation_verified"])
         uk=self.book["countries"]["GBP"]["inflation_layer"]
         self.assertEqual(uk["services"],[])
