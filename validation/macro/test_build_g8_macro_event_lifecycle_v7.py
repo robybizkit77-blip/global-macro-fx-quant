@@ -163,7 +163,7 @@ class G8MacroEventLifecycleV7Tests(unittest.TestCase):
         s=copy.deepcopy(self.sources)
         before=m.build(now=datetime(2026,11,10,13,29,tzinfo=timezone.utc),inputs=s)
         after=m.build(now=datetime(2026,11,10,13,31,tzinfo=timezone.utc),inputs=s)
-         us_pre=next(x for x in before["events"] if x["ccy"]=="USD" and x["issuer_date"]=="2026-11-10")
+        us_pre=next(x for x in before["events"] if x["ccy"]=="USD" and x["issuer_date"]=="2026-11-10")
         us_post=next(x for x in after["events"] if x["ccy"]=="USD" and x["issuer_date"]=="2026-11-10")
         self.assertEqual(us_pre["status"],"UPCOMING_NO_VERIFIED_EXACT_CONSENSUS")
         self.assertEqual(us_post["status"],"PAST_EVENT_NO_FROZEN_CONSENSUS")
