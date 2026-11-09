@@ -1,0 +1,32 @@
+name: Test G8 Causal Reaction Method V1
+
+on:
+  pull_request:
+    paths:
+      - 'validation/macro/G8_CAUSAL_REACTION_COUNTRY_BOOK_V1.json'
+      - 'validation/macro/G8_CAUSAL_REACTION_METHOD_V1.md'
+      - 'validation/macro/test_g8_causal_reaction_country_book_v1.py'
+      - '.github/workflows/test-g8-causal-reaction-method-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/macro/G8_CAUSAL_REACTION_COUNTRY_BOOK_V1.json'
+      - 'validation/macro/G8_CAUSAL_REACTION_METHOD_V1.md'
+      - 'validation/macro/test_g8_causal_reaction_country_book_v1.py'
+      - '.github/workflows/test-g8-causal-reaction-method-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  g8-method-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify all G8 economic mechanisms and no live FX promotion
+        run: python -m unittest validation.macro.test_g8_causal_reaction_country_book_v1 -v
