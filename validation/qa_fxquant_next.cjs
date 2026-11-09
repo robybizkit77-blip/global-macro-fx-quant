@@ -112,7 +112,9 @@ fs.mkdirSync(evidence,{recursive:true});
      assert(await page.locator('#pair-results [data-pair="AUDCAD"] .pair-data-state.research').count()===2,'2Y coverage must be research amber');
    }else{
      assert(await page.locator('.decision-rates-bridge .chart').count()===0,'Without validated F2 daily history no AUD rates chart');
-     assert((await page.locator('.decision-rates-bridge').innerText()).includes('discontinuo'),'Sparse AUD rates should be explained clearly');
+     const audGap=await page.locator('.decision-rate-unavailable').innerText();
+     assert(/troppo vecchia|discontinuo|date comuni/i.test(audGap),
+       'Unavailable AUD 2Y must explain the real freshness/continuity failure: '+audGap);
      assert((await page.locator('.decision-gate-rates').innerText()).includes('non verificabili'),'No false FX/2Y confirmation for sparse AUD history');
    }
    assert(await page.locator('.decision-price-grid [data-reference-line]').count()===2,'Current FX levels must appear on the price chart');
