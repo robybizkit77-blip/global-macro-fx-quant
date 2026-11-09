@@ -71,7 +71,7 @@ ROLE_IT = {"firms":"Imprese", "labor":"Lavoro e salari", "households":"Famiglie 
 # Recency of observation period only. They are descriptive editorial limits,
 # NOT official release freshness/service-level guarantees.
 RECENT_DAYS = {"M":75, "Q":135, "W":21}
-DATED_DAYS = {"M":150, "Q":235, "W":56}
+DATED_DAYS = {"M":150, "Q":210, "W":56}
 FREQ_OVERRIDES = {
     "JP_BOJ_TANKAN_LEAD_INDICATORS_history_Large_Manufacturing_Forecast": "Q",
     "UK_BOE_DMP_LEAD_INDICATORS_history_SalesExpected": "M",
