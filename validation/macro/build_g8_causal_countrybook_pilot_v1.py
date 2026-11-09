@@ -84,6 +84,51 @@ COUNTRY = {
     },
 }
 
+
+# Country-specific monetary mandates and transmission constraints.
+CB_REACTION = {
+    "USD": (
+        "stabilità dei prezzi e massima occupazione",
+        "Il deterioramento di assunzioni e salari deve essere separato da singoli settori; "
+        "un CPI headline alto da energia non dimostra da solo domanda eccessiva."
+    ),
+    "EUR": (
+        "stabilità dei prezzi, inclusa persistenza salari-servizi",
+        "La BCE valuta anche la trasmissione attraverso banche e credito: "
+        "un'industria debole con servizi inflazionistici può imporre cautela."
+    ),
+    "GBP": (
+        "riportare il CPI al 2% in modo sostenibile",
+        "Salari e servizi possono rallentare più tardi dei mutui e dei consumi; "
+        "la BoE deve verificare che lo shock non rimanga nei prezzi domestici."
+    ),
+    "JPY": (
+        "inflazione al 2% sostenibile, non soltanto importata",
+        "La BoJ ha bisogno di conferme nel ciclo salari reali-consumi-prezzi; "
+        "un rincaro dell'energia senza salari reali più alti non equivale a domanda forte."
+    ),
+    "CHF": (
+        "stabilità dei prezzi considerate anche le condizioni del cambio",
+        "La SNB deve distinguere debolezza dei prezzi domestici, importazioni "
+        "e forza del franco: tassi e cambio trasmettono entrambi restrizione."
+    ),
+    "CAD": (
+        "stabilizzazione dell'inflazione al 2% nel medio periodo",
+        "Il passaggio dei mutui a tassi più alti può frenare le famiglie con ritardo; "
+        "la BoC deve distinguere prezzi energetici da inflazione di fondo."
+    ),
+    "AUD": (
+        "inflazione 2–3% nel tempo e piena occupazione",
+        "La RBA affronta un doppio obiettivo: servizi/trimmed mean resistenti "
+        "non escludono il futuro deterioramento di ore, assunzioni e spesa delle famiglie."
+    ),
+    "NZD": (
+        "inflazione 1–3% nel medio periodo, vicino al 2%",
+        "La RBNZ deve verificare prezzi domestici e aspettative, pur osservando "
+        "come mutui e domanda reagiscono; l'occupazione non è un mandato co-primario."
+    ),
+}
+
 def require(ok, msg):
     if not ok:
         raise ValueError("G8_CAUSAL_PILOT_REJECTED: " + msg)
@@ -207,25 +252,53 @@ def study_country(ccy, data, date_today):
     else:
         synthesis = ("Il quadro è misto: il solo PIL o la sola headline non "
                      "identificano il cambiamento del ciclo domestico.")
+    want, can_specific = CB_REACTION[ccy]
+    if opposing:
+        dilemma = ("Inflazione headline e disoccupazione in aumento "
+                   "creano pressioni opposte; va verificato se la spinta sui prezzi "
+                   "è da offerta o da domanda.")
+    elif i["value"] > .05:
+        dilemma = ("Prezzi headline in aumento e lavoro non chiaramente indebolito "
+                   "possono rendere la banca prudente prima di allentare.")
+    elif j["value"] > .05:
+        dilemma = ("La disoccupazione in aumento potrebbe spostare il bilanciamento "
+                   "verso la crescita, se l'inflazione di fondo rallenta.")
+    else:
+        dilemma = ("I dati aggregati non definiscono da soli una nuova "
+                   "traiettoria di policy.")
     bank_text = (
-        f"Per {config['bank']} la questione non è prevedere automaticamente la prossima "
-        "decisione, ma capire se lavoro, prezzi e domanda cambiano il "
-        "bilanciamento dei rischi secondo il mandato specifico. "
-        "Se i prezzi di fondo persistono, la banca potrebbe restare restrittiva; "
-        "se la debolezza di domanda e occupazione si diffonde e l'inflazione "
-        "si modera, potrebbe aumentare lo spazio per allentare."
+        f"{config['bank']} — WANT: {want}. CAN: {dilemma} "
+        f"{can_specific} Il prossimo passo è condizionato ai dati, "
+        "non è una previsione certa della prossima riunione."
     )
     six = curve.get("horizons",{}).get("6m",{})
     quality = curve["operational_status"]
     if quality=="GREEN_OFFICIAL":
         require(curve["quality"]=="OFFICIAL_CERTIFIED" and finite(six.get("rate")),
                 ccy+" false official six-month rate")
-        pricing = (f"Contratto a 6 mesi da fonte di mercato certificata: "
-                   f"{pct(six['rate'])} (riferimento {curve['as_of']}); "
-                   f"tasso ufficiale corrente {pct(cb['rate'])}. "
-                   "Il livello di un futures non è una probabilità di decisione "
-                   "né una misura diretta del repricing senza confronto sullo stesso contratto.")
-        pricing_type = "OFFICIAL_FUTURES_CONTEXT_NOT_OIS_LEVEL"
+        official_ois = ccy=="GBP"
+        if official_ois:
+            require("Bank of England" in curve.get("source","")
+                    and "OIS" in curve.get("source",""),
+                    "GBP falsely labelled official BoE OIS")
+            pricing_type = "OFFICIAL_BOE_ESTIMATED_OIS_CURVE_NOT_EVENT_REPRICING"
+            label = "Curva OIS stimata e pubblicata dalla BoE"
+        else:
+            require(("Futures" in curve.get("source","") or
+                     "futures" in curve.get("source","")),
+                    ccy+" falsely labelled official futures")
+            pricing_type = "OFFICIAL_FUTURES_CONTEXT_NOT_OIS_LEVEL"
+            label = "Futures ufficiali sul tasso overnight"
+        weekly = six.get("change_1w_bp")
+        weekly_text = (f" Variazione 1W della stessa serie: {weekly:+.1f} pb, "
+                       "non attribuibile a un singolo dato."
+                       if finite(weekly) else "")
+        pricing = (f"{label} a 6 mesi: {pct(six['rate'])} "
+                   f"(riferimento {curve['as_of']}); "
+                   f"tasso di policy osservato {pct(cb['rate'])}."
+                   + weekly_text +
+                   " Il livello non dimostra da solo il percorso dei meeting "
+                   "o un nuovo repricing dopo un rilascio macro.")
     elif quality=="GREEN_ESTIMATED":
         pricing = (f"Contesto futures secondario indicativo ({curve['as_of']}): "
                    "non può essere convertito in rialzi/tagli impliciti "
@@ -236,8 +309,8 @@ def study_country(ccy, data, date_today):
                    "per dedurre oggi il percorso della banca centrale.")
         pricing_type = "WITHHELD_NO_6M_POLICY_PRICING"
     age_2y = (date_today-date.fromisoformat(rate["date"])).days
-    price_quality = ("2Y_STALE_NOT_SAME_DAY"
-                     if age_2y>7 else "2Y_DATED_OFFICIAL_CONTEXT")
+    price_quality = ("2Y_OLDER_THAN_7_CALENDAR_DAYS"
+                     if age_2y>7 else "2Y_DATED_REFERENCE_NOT_LIVE")
     rates_text = (f"Rendimento governativo 2Y {pct(rate['2Y'])} e 10Y "
                   f"{pct(rate['10Y'])} ({rate['date']}); "
                   + ("la serie è datata e non si può usarla per confermare un repricing recente."
@@ -251,13 +324,14 @@ def study_country(ccy, data, date_today):
         "e confronto OIS pre/post-evento."
     )
     narrative = [
-        f"{config['name']}. {activity}",
-        job_text+" "+inflation_text,
-        synthesis,
-        config["chain"],
+        f"{config['name']} — {synthesis}",
+        f"{activity} {job_text} {inflation_text}",
+        "Imprese, lavoratori e famiglie — ipotesi da verificare: "+config["chain"],
         bank_text,
-        f"{pricing} {rates_text}",
-        "Alternativa: "+config["counter"]+" Da verificare: "+config["next"]+".",
+        f"Pricing e tassi: {pricing} {rates_text}",
+        "Scenario alternativo: "+config["counter"]+
+        " Catalizzatori e falsificazioni: "+config["next"]+".",
+        "Qualità delle evidenze: "+quality_note,
     ]
     return {
         "currency":ccy, "country":config["name"],"bank":config["bank"],
