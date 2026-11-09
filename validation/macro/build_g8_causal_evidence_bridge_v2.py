@@ -15,12 +15,14 @@ import json
 import math
 from pathlib import Path
 import re
+from urllib.parse import urlparse
 from zoneinfo import ZoneInfo
 
 from validation.macro import build_g8_causal_countrybook_pilot_v1 as v1
 
 SCHEMA = "GMFQ_G8_CAUSAL_EVIDENCE_BRIDGE_RESEARCH_V2"
 MACRO_SERIES = "live_data/sections/MACRO_SERIES.json"
+SOURCE_RELEASE_CONTEXT = "validation/macro/G8_US_NZ_PUBLISHED_RELEASE_CONTEXT_2026-11-09.json"
 
 # Direct, actual source indicators selected for each domestic channel.
 # Absence is deliberate: NZD has no direct firm series in this source.
@@ -222,11 +224,116 @@ def describe_role(role, evidence):
                "confermare da soli l'evoluzione attuale.")
     return desc
 
+def publisher_release_facts(*,today,root=v1.ROOT):
+    """Separate manually verified 9 Nov source facts from revised series.
+
+    NEVER assume the publication date means first available to our desk.
+    A backtest/replay before research observation must see no new source facts.
+    """
+    raw=(root/SOURCE_RELEASE_CONTEXT).read_bytes()
+    doc=json.loads(raw)
+    gate(doc.get("schema")=="GMFQ_US_NZ_ISSUER_RELEASE_CONTEXT_RESEARCH_V1"
+         and doc.get("research_observed_date")=="2026-11-09"
+         and doc.get("status")=="MANUAL_PUBLISHER_RELEASE_FACTS_RESEARCH_STATIC_NOT_AUTOMATIC_DATA_REFRESH"
+         and doc.get("safe_for_site") is False
+         and doc.get("safe_for_reports") is False
+         and doc.get("fx_signal") is None,
+         "unreviewed release research snapshot")
+    gate(set(doc.get("countries",{}))=={"USD","NZD"},
+         "publisher release research has wrong currency set")
+    domains={"BEA":"www.bea.gov","STATS_NZ":"www.stats.govt.nz",
+             "NZIER_PRIVATE_SURVEY_PUBLISHER":"www.nzier.org.nz"}
+    expected={"USD":5,"NZD":6}
+    for c, block in doc["countries"].items():
+        facts=block["release_facts"]
+        gate(len(facts)==expected[c] and
+             all(isinstance(block[k],str) and len(block[k])>40
+                 for k in ("why_this_matters_it","alternative_it")),
+             c+" manual release fact count or analysis changed")
+        seen=set()
+        for x in facts:
+            gate(x["id"] not in seen,c+" duplicate publisher statistic")
+            seen.add(x["id"])
+            url=urlparse(x["source_url"])
+            publisher=x["publisher"]
+            gate(publisher in domains and url.scheme=="https"
+                 and url.netloc==domains[publisher] and
+                 not url.username and not url.password,
+                 c+" source URL outside named publisher")
+            gate((c=="USD" and x["id"].startswith("US_BEA_")
+                  and publisher=="BEA") or
+                 (c=="NZD" and
+                  ((x["id"].startswith("NZ_STATS_") and publisher=="STATS_NZ")
+                   or (x["id"].startswith("NZ_NZIER_")
+                       and publisher=="NZIER_PRIVATE_SURVEY_PUBLISHER"))),
+                 c+" metric identity/publisher conflict")
+            gate(date(2026,8,1)<=date.fromisoformat(x["release_date"])
+                 <=date(2026,11,9),c+" unverified release date")
+            gate(type(x.get("value")) in (int,float) and math.isfinite(x["value"])
+                 and abs(x["value"])<1000,c+" invalid statistic")
+            if "previous_value" in x:
+                gate(type(x["previous_value"]) in (int,float)
+                     and math.isfinite(x["previous_value"])
+                     and x.get("previous_period"),c+" invalid previous comparator")
+            if x["id"].startswith("NZ_NZIER_"):
+                gate(x["group"]=="firms_survey"
+                     and x["unit"]=="NET_PERCENT_SA"
+                     and x["price_basis"]=="NOT_APPLICABLE",
+                     "NZIER survey cannot become firm sales or production")
+            if "REAL_PCE" in x["id"] or "REAL_DPI" in x["id"]:
+                gate(x["price_basis"]=="REAL_DEFLATED",
+                     "nominal US observation cannot replace real")
+            if "RETAIL_REAL" in x["id"]:
+                gate(x["price_basis"]=="REAL_VOLUME",
+                     "nominal retail cannot replace real volume")
+            if "ECT_" in x["id"]:
+                gate(x["price_basis"]=="NOMINAL_CARD_TRANSACTIONS",
+                     "electronic card spend cannot replace real retail")
+    return {
+        "source_sha256":hashlib.sha256(raw).hexdigest(),
+        "research_observed_date":"2026-11-09",
+        "publisher_release_dates_are_first_desktop_observations":False,
+        "static_not_auto_refreshed":True,
+        "countries":doc["countries"] if today>=date(2026,11,9) else {},
+    }
+
+
+def source_context_story(c,context):
+    if context is None:
+        return ""
+    rows={x["id"]:x for x in context["release_facts"]}
+    def value(s):
+        return str(rows[s]["value"]).replace(".",",")
+    if c=="USD":
+        return ("AGGIORNAMENTO BEA, settembre 2026 (pubblicato il 29 ottobre): "
+            "spesa NOMINALE +"+value("US_BEA_SEP2026_NOMINAL_PCE_MOM")
+            +"% m/m, spesa REALE "+value("US_BEA_SEP2026_REAL_PCE_MOM")
+            +"% m/m, reddito disponibile reale "
+            +value("US_BEA_SEP2026_REAL_DPI_MOM")+"% m/m, risparmio "
+            +value("US_BEA_SEP2026_SAVING_RATE")
+            +"%. Nominale e reale non sono quantità intercambiabili. "
+            "Dato revisionabile, un mese non prova una tendenza persistente.")
+    if c=="NZD":
+        return ("AGGIORNAMENTO FONTI: NZIER Q3 2026, fiducia netta "
+            +value("NZ_NZIER_QSBO_SEP2026_GENERAL_CONFIDENCE")
+            +"% (da +14%); attività domestica effettiva dichiarata saldo "
+            +value("NZ_NZIER_QSBO_SEP2026_OWN_DOMESTIC_ACTIVITY")
+            +"%: una survey non è produzione/retail misurato. Stats NZ Q2: "
+            "retail VOLUMI "+value("NZ_STATS_JUN2026_RETAIL_REAL_QOQ")
+            +"% q/q, retail VALORE +"
+            +value("NZ_STATS_JUN2026_RETAIL_NOMINAL_QOQ")
+            +"% q/q. Q3: transazioni elettroniche retail VALORE +"
+            +value("NZ_STATS_SEP2026_ECT_RETAIL_VALUE_QOQ")
+            +"% q/q. I pagamenti nominali non provano consumi reali.")
+    return ""
+
+
 def build(*,today,root=v1.ROOT):
     base=v1.build(today=today,root=root)
     rel=MACRO_SERIES
     raw=(root/rel).read_bytes()
     series=json.loads(raw)
+    releases=publisher_release_facts(today=today,root=root)
     gate(tuple(base["countries"])==v1.FX and
          set(series)==set(v1.FX) and set(SELECTORS)==set(v1.FX),
          "G8 evidence/source mismatch")
@@ -250,6 +357,10 @@ def build(*,today,root=v1.ROOT):
                 missing.append(c+"."+role)
             if out and all(x["status"]!="RECENT_PERIOD_NOT_RELEASE_VERIFIED" for x in out):
                 stale.append(c+"."+role)
+        release_entry=releases["countries"].get(c)
+        editorial_release=source_context_story(c,release_entry)
+        if release_entry and (today-date(2026,11,9)).days>90:
+            editorial_release="FONTE ARCHIVIATA, non aggiornamento corrente. "+editorial_release
         note=("La direzione delle serie osservate è una descrizione, non una prova "
               "del canale imprese → salari → consumi. Le date sono periodi "
               "economici, NON date di disponibilità al desk; le serie sono "
@@ -259,7 +370,8 @@ def build(*,today,root=v1.ROOT):
             original["narrative_it"][1],
             describe_role("firms",found["firms"]),
             describe_role("labor",found["labor"]),
-            describe_role("households",found["households"]),
+            describe_role("households",found["households"])+
+                (" "+editorial_release if editorial_release else ""),
             original["central_bank_conditional_reaction"],
             original["narrative_it"][4], # rates/pricing
             original["narrative_it"][5], # counter, catalysts
@@ -277,6 +389,14 @@ def build(*,today,root=v1.ROOT):
               "human_review_required":True,
           },
           "economic_transmission_narrative_it":narrative,
+          "publisher_release_context":({
+              "research_observed_date":releases["research_observed_date"],
+              "static_not_auto_refreshed":True,
+              "source_facts":release_entry["release_facts"],
+              "alternative_it":release_entry["alternative_it"],
+              "replaces_historical_source":False,
+              "proves_causal_chain":False,
+          } if release_entry else None),
           "human_review_status":"UNREVIEWED_RESEARCH_PILOT",
           "safe_for_reports":False,
           "safe_for_site":False,
@@ -286,13 +406,17 @@ def build(*,today,root=v1.ROOT):
         "run_date_rome":today.isoformat(),
         "base_countrybook_schema":base["schema"],
         "macro_as_of":base["macro_observation_snapshot_as_of"],
-        "source_shas":{**base["source_sha256"],"macro_series":hashlib.sha256(raw).hexdigest()},
-        "source_paths":{**base["source_files"],"macro_series":rel},
+        "source_shas":{**base["source_sha256"],"macro_series":hashlib.sha256(raw).hexdigest(),
+                      "manual_release_context":releases["source_sha256"]},
+        "source_paths":{**base["source_files"],"macro_series":rel,
+                       "manual_release_context":SOURCE_RELEASE_CONTEXT},
         "coverage":{
             "countries":8,"roles_possible":24,
             "roles_missing_direct_observation":sorted(missing),
             "roles_without_all_recent_periods":sorted(stale),
             "causal_channels_proven":0,"new_fx_signals":0,
+            "supplementary_release_currencies":sorted(releases["countries"]),
+            "source_release_context_not_automated":True,
         },
         "no_new_fx_ranking":True,"no_live_site_publication":True,
         "no_report_promotion":True,"publication_timestamps_verified":False,

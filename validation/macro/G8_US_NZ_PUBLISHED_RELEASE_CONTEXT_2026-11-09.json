@@ -1,0 +1,181 @@
+{
+  "schema": "GMFQ_US_NZ_ISSUER_RELEASE_CONTEXT_RESEARCH_V1",
+  "research_observed_date": "2026-11-09",
+  "status": "MANUAL_PUBLISHER_RELEASE_FACTS_RESEARCH_STATIC_NOT_AUTOMATIC_DATA_REFRESH",
+  "quality": "PUBLISHED_RELEASE_VERIFIED_AS_OF_RESEARCH_NOT_FIRST_DELIVERY_PIT",
+  "methodology": "Standalone published-release facts. Preserve selected historical-series vintages, do not splice monthly/quarterly series, conflate nominal and real, call private surveys official statistics, or treat observations as pre-release consensus surprises.",
+  "safe_for_site": false,
+  "safe_for_reports": false,
+  "fx_signal": null,
+  "countries": {
+    "USD": {
+      "why_this_matters_it": "La spesa nominale cresce, ma quella reale perde velocità e il reddito reale disponibile cala. La forza in dollari spesi non prova più volumi acquistati: servono persistenza, composizione e revisioni prima di attribuire una svolta della domanda o un cambio di rotta della Fed.",
+      "alternative_it": "Un singolo mese può essere rumore o una normalizzazione dopo agosto. I servizi e altre componenti possono resistere e il dato viene revisionato: nessuna causalità Fed/FX dimostrata.",
+      "release_facts": [
+        {
+          "id": "US_BEA_SEP2026_REAL_PCE_MOM",
+          "group": "households",
+          "component": "Real personal consumption expenditures",
+          "period": "2026-09",
+          "previous_period": "2026-08",
+          "value": 0,
+          "previous_value": 0.5,
+          "unit": "PERCENT_MONTH_OVER_MONTH",
+          "adjustment": "SEASONALLY_ADJUSTED_REAL",
+          "price_basis": "REAL_DEFLATED",
+          "publisher": "BEA",
+          "release_date": "2026-10-29",
+          "source_url": "https://www.bea.gov/news/2026/personal-income-and-outlays-september-2026"
+        },
+        {
+          "id": "US_BEA_SEP2026_NOMINAL_PCE_MOM",
+          "group": "households",
+          "component": "Current-dollar personal consumption expenditures",
+          "period": "2026-09",
+          "previous_period": "2026-08",
+          "value": 0.5,
+          "previous_value": 0.9,
+          "unit": "PERCENT_MONTH_OVER_MONTH",
+          "adjustment": "MONTHLY_NOMINAL",
+          "price_basis": "NOMINAL_CURRENT_DOLLAR",
+          "publisher": "BEA",
+          "release_date": "2026-10-29",
+          "source_url": "https://www.bea.gov/news/2026/personal-income-and-outlays-september-2026"
+        },
+        {
+          "id": "US_BEA_SEP2026_REAL_DPI_MOM",
+          "group": "households",
+          "component": "Real disposable personal income",
+          "period": "2026-09",
+          "previous_period": "2026-08",
+          "value": -0.3,
+          "previous_value": 0,
+          "unit": "PERCENT_MONTH_OVER_MONTH",
+          "adjustment": "MONTHLY_REAL",
+          "price_basis": "REAL_DEFLATED",
+          "publisher": "BEA",
+          "release_date": "2026-10-29",
+          "source_url": "https://www.bea.gov/news/2026/personal-income-and-outlays-september-2026"
+        },
+        {
+          "id": "US_BEA_SEP2026_SAVING_RATE",
+          "group": "households",
+          "component": "Personal saving rate",
+          "period": "2026-09",
+          "value": 3.8,
+          "unit": "PERCENT_LEVEL",
+          "adjustment": "MONTHLY_RATE",
+          "price_basis": "NOT_APPLICABLE",
+          "publisher": "BEA",
+          "release_date": "2026-10-29",
+          "source_url": "https://www.bea.gov/news/2026/personal-income-and-outlays-september-2026"
+        },
+        {
+          "id": "US_BEA_SEP2026_PCE_PRICE_MOM",
+          "group": "inflation",
+          "component": "PCE price index change",
+          "period": "2026-09",
+          "previous_period": "2026-08",
+          "value": 0.5,
+          "previous_value": 0.3,
+          "unit": "PERCENT_MONTH_OVER_MONTH",
+          "adjustment": "MONTHLY_PRICE_INDEX_CHANGE",
+          "price_basis": "PRICE_INDEX_CHANGE",
+          "publisher": "BEA",
+          "release_date": "2026-10-29",
+          "source_url": "https://www.bea.gov/news/2026/personal-income-and-outlays-september-2026"
+        }
+      ]
+    },
+    "NZD": {
+      "why_this_matters_it": "Nel settembre 2026 l'ottimismo delle imprese NZIER migliora nettamente, ma l'attività commerciale domestica riferita dalle aziende rimane leggermente negativa. Il retail reale del trimestre di giugno era in calo; i pagamenti elettronici del trimestre di settembre sono quasi fermi in VALORE. Fiducia, attività, consumi reali e spesa nominale non sono lo stesso indicatore.",
+      "alternative_it": "La fiducia può anticipare una ripresa e la domanda può migliorare con ritardo: i pagamenti elettronici non coprono tutta la spesa e gli indicatori NZIER e Stats NZ hanno campioni e orizzonti diversi. Non dedurre svolta o decisione RBNZ.",
+      "release_facts": [
+        {
+          "id": "NZ_STATS_JUN2026_RETAIL_REAL_QOQ",
+          "group": "households",
+          "component": "Seasonally adjusted total retail sales volumes",
+          "period": "2026-Q2",
+          "previous_period": "2026-Q1",
+          "value": -0.5,
+          "unit": "PERCENT_QUARTER_OVER_QUARTER",
+          "adjustment": "SEASONALLY_ADJUSTED",
+          "price_basis": "REAL_VOLUME",
+          "publisher": "STATS_NZ",
+          "release_date": "2026-08-24",
+          "source_url": "https://www.stats.govt.nz/information-releases/retail-trade-survey-june-2026-quarter/"
+        },
+        {
+          "id": "NZ_STATS_JUN2026_RETAIL_NOMINAL_QOQ",
+          "group": "households",
+          "component": "Seasonally adjusted retail sales values",
+          "period": "2026-Q2",
+          "previous_period": "2026-Q1",
+          "value": 0.9,
+          "unit": "PERCENT_QUARTER_OVER_QUARTER",
+          "adjustment": "SEASONALLY_ADJUSTED",
+          "price_basis": "NOMINAL_SALES_VALUE",
+          "publisher": "STATS_NZ",
+          "release_date": "2026-08-24",
+          "source_url": "https://www.stats.govt.nz/information-releases/retail-trade-survey-june-2026-quarter/"
+        },
+        {
+          "id": "NZ_STATS_SEP2026_ECT_RETAIL_VALUE_QOQ",
+          "group": "households",
+          "component": "Retail electronic card transaction value",
+          "period": "2026-Q3",
+          "previous_period": "2026-Q2",
+          "value": 0.1,
+          "unit": "PERCENT_QUARTER_OVER_QUARTER",
+          "adjustment": "SEASONALLY_ADJUSTED",
+          "price_basis": "NOMINAL_CARD_TRANSACTIONS",
+          "publisher": "STATS_NZ",
+          "release_date": "2026-10-16",
+          "source_url": "https://www.stats.govt.nz/information-releases/electronic-card-transactions-september-2026/"
+        },
+        {
+          "id": "NZ_STATS_SEP2026_ECT_CORE_RETAIL_VALUE_QOQ",
+          "group": "households",
+          "component": "Core retail electronic card transaction value",
+          "period": "2026-Q3",
+          "previous_period": "2026-Q2",
+          "value": 0.4,
+          "unit": "PERCENT_QUARTER_OVER_QUARTER",
+          "adjustment": "SEASONALLY_ADJUSTED",
+          "price_basis": "NOMINAL_CARD_TRANSACTIONS",
+          "publisher": "STATS_NZ",
+          "release_date": "2026-10-16",
+          "source_url": "https://www.stats.govt.nz/information-releases/electronic-card-transactions-september-2026/"
+        },
+        {
+          "id": "NZ_NZIER_QSBO_SEP2026_GENERAL_CONFIDENCE",
+          "group": "firms_survey",
+          "component": "Net firms expecting a better general economic outlook",
+          "period": "2026-Q3",
+          "previous_period": "2026-Q2",
+          "value": 40,
+          "previous_value": 14,
+          "unit": "NET_PERCENT_SA",
+          "adjustment": "SEASONALLY_ADJUSTED_SURVEY_BALANCE",
+          "price_basis": "NOT_APPLICABLE",
+          "publisher": "NZIER_PRIVATE_SURVEY_PUBLISHER",
+          "release_date": "2026-10-06",
+          "source_url": "https://www.nzier.org.nz/news/nziers-qsbo-shows-a-further-lift-in-business-confidence-despite-soft-activity"
+        },
+        {
+          "id": "NZ_NZIER_QSBO_SEP2026_OWN_DOMESTIC_ACTIVITY",
+          "group": "firms_survey",
+          "component": "Net firms reporting change in own domestic trading activity",
+          "period": "2026-Q3",
+          "value": -1,
+          "unit": "NET_PERCENT_SA",
+          "adjustment": "SEASONALLY_ADJUSTED_SURVEY_BALANCE",
+          "price_basis": "NOT_APPLICABLE",
+          "publisher": "NZIER_PRIVATE_SURVEY_PUBLISHER",
+          "release_date": "2026-10-06",
+          "source_url": "https://www.nzier.org.nz/news/nziers-qsbo-shows-a-further-lift-in-business-confidence-despite-soft-activity"
+        }
+      ]
+    }
+  }
+}
