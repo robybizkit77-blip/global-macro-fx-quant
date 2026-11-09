@@ -7,6 +7,8 @@ on:
       - '.github/workflows/macro-persistent-daily-v1.yml'
       - 'validation/macro_adapter_pit_handoff.py'
       - 'validation/macro/check_macro_source_registry.py'
+      - 'validation/macro/collect_us_nz_household_firm_sources_v1.py'
+      - 'validation/macro/test_collect_us_nz_household_firm_sources_v1.py'
       - 'validation/macro/test_macro_official_source_label_contract_v1.py'
       - 'validation/sources/cad_statcan_core.py'
       - 'validation/test_cad_statcan_transport.py'
@@ -23,6 +25,8 @@ on:
       - '.github/workflows/macro-persistent-daily-v1.yml'
       # Registry preflight fixes must be exercised by the actual production child.
       - 'validation/macro/check_macro_source_registry.py'
+      - 'validation/macro/collect_us_nz_household_firm_sources_v1.py'
+      - 'validation/macro/test_collect_us_nz_household_firm_sources_v1.py'
       - 'validation/macro/test_macro_official_source_label_contract_v1.py'
   workflow_dispatch:
   # Early source-watch -> Calendar/News -> Macro. Serial dependency
@@ -327,6 +331,36 @@ jobs:
       - name: Confirm no-change case
         if: steps.refresh.outputs.updated == '0'
         run: git diff --exit-code -- live_data payload
+
+      # Source observation is deliberately outside the 16-series PIT adapter.
+      # It produces a dated research artifact, NOT canonical financial data.
+      # One existing weekday workflow / same cron; no new scheduler.
+      - name: Verify and collect US/NZ household-firm sources (research only)
+        if: success()
+        shell: bash
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          python -m unittest validation.macro.test_collect_us_nz_household_firm_sources_v1 -v
+          python -m validation.macro.collect_us_nz_household_firm_sources_v1 \
+            --out /tmp/macro-persistent/household-firm-publisher-intake-v1.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('/tmp/macro-persistent/household-firm-publisher-intake-v1.json')
+          j=json.loads(p.read_text())
+          assert j['schema']=='GMFQ_HOUSEHOLD_FIRMS_ISSUER_INTAKE_RESEARCH_V1'
+          assert len(j['sources'])==4
+          assert j['source_series_modified'] is False
+          assert j['fx_signal_generated'] is False
+          assert j['new_scheduler_created'] is False
+          with Path(__import__('os').environ['GITHUB_STEP_SUMMARY']).open('a') as out:
+              out.write('### Households / firms source read-only intake\n')
+              out.write('- '+str(j['source_count_verified'])+'/4 sources independently fetched and checked\n')
+              out.write('- New revised series candidates: '+
+                        (', '.join(j['usable_new_revised_monthly_candidates']) or 'none')+'\n')
+              out.write('- No current-live series / 28-pair signal modifications\n')
+          PY
 
       - uses: actions/upload-artifact@v4
         if: always()
