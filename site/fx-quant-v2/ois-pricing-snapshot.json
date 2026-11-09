@@ -125,18 +125,18 @@
       "kind": "FUTURES SECONDARI",
       "quality": "STIMA INDICATIVA",
       "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
-      "as_of": "2026-11-06",
+      "as_of": "2026-11-09",
       "horizons": {
         "3m": {
-          "rate": 0.07,
-          "as_of": "2026-11-06",
+          "rate": 0.085,
+          "as_of": "2026-11-09",
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "SA3H2027"
         },
         "6m": {
-          "rate": 0.195,
-          "as_of": "2026-11-06",
+          "rate": 0.2,
+          "as_of": "2026-11-09",
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "SA3M2027"
