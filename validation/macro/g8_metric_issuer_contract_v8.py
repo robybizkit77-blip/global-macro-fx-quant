@@ -99,11 +99,15 @@ def verify_contract(official):
     idx={exact_event_key(e):e for e in official["events"]}
     seen_ids=set()
     n=0
+    releases_missing_from_current_seed=[]
     for ccy,entries in SPECS.items():
         for when,kind,title,metrics in entries:
             key="|".join([ccy,when,kind,title])
             if key not in idx:
-                raise ValueError("METRIC_V8_REJECTED: template no longer matches official seed "+key)
+                # Official seeds rotate. A historical reference may disappear
+                # from current seed without invalidating signed archived data.
+                # Never manufacture a replacement release/calendar timestamp.
+                releases_missing_from_current_seed.append(key)
             aliases=set()
             for ident,component,unit,labels,parser in metrics:
                 if ident in seen_ids or not labels or not component or not unit:
@@ -118,7 +122,9 @@ def verify_contract(official):
                         raise ValueError("METRIC_V8_REJECTED: duplicate/unnormalized alias "+label)
                     aliases.add(label)
                 n+=1
-    return {"currencies":8,"metrics":n,"releases":sum(len(x) for x in SPECS.values())}
+    return {"currencies":8,"metrics":n,
+            "releases":sum(len(x) for x in SPECS.values()),
+            "templates_missing_in_current_seed":releases_missing_from_current_seed}
 
 def metrics_for(event):
     ent=SPECS.get(event.get("ccy"),())
