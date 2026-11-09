@@ -104,7 +104,7 @@ class RelativeG8PairsV5Tests(unittest.TestCase):
             b["pairs"]["EUR/USD"]["rates_2y"]["rate_gap_status"],
             "ILLUSTRATIVE_SAME_DAY_DIFFERENT_GOVERNMENT_BENCHMARKS")
         self.assertEqual(
-            b["pairs"]["USD/EUR"]["rates_2y"]["observed_change_1d_relative_bp"],None)
+            b["pairs"]["EUR/USD"]["rates_2y"]["observed_change_1d_relative_bp"],None)
 
     def test_currency_a_b_symmetry_in_ecb_pricing(self):
         row={"Date":"2026-11-06","EUR":1.0,"AUD":1.625,"CAD":1.5705}
