@@ -6,6 +6,9 @@ on:
     paths:
       - 'validation/macro/g8_metric_issuer_contract_v8.py'
       - 'validation/macro/preflight_us_cpi_official_actual_v8.py'
+      - 'validation/macro/capture_us_cpi_exact_actuals_v10.py'
+      - 'validation/macro/test_capture_us_cpi_exact_actuals_v10.py'
+      - 'validation/macro/MACRO_BLS_CPI_EXACT_ACTUAL_FIRST_SEEN_V10.jsonl'
       - 'validation/macro/freeze_exact_metric_forecasts_v9.py'
       - 'validation/macro/test_freeze_exact_metric_forecasts_v9.py'
       - 'validation/macro/MACRO_EXACT_METRIC_FORECAST_FIRST_SEEN_V9.jsonl'
@@ -20,6 +23,9 @@ on:
     paths:
       - 'validation/macro/g8_metric_issuer_contract_v8.py'
       - 'validation/macro/preflight_us_cpi_official_actual_v8.py'
+      - 'validation/macro/capture_us_cpi_exact_actuals_v10.py'
+      - 'validation/macro/test_capture_us_cpi_exact_actuals_v10.py'
+      - 'validation/macro/MACRO_BLS_CPI_EXACT_ACTUAL_FIRST_SEEN_V10.jsonl'
       - 'validation/macro/freeze_exact_metric_forecasts_v9.py'
       - 'validation/macro/test_freeze_exact_metric_forecasts_v9.py'
       - 'validation/macro/MACRO_EXACT_METRIC_FORECAST_FIRST_SEEN_V9.jsonl'
@@ -50,7 +56,8 @@ jobs:
             validation.macro.test_freeze_pre_release_consensus_v1 \
             validation.macro.test_build_g8_macro_event_lifecycle_v7 \
             validation.macro.test_g8_metric_issuer_readiness_v8 \
-            validation.macro.test_freeze_exact_metric_forecasts_v9 -v
+            validation.macro.test_freeze_exact_metric_forecasts_v9 \
+            validation.macro.test_capture_us_cpi_exact_actuals_v10 -v
       - name: Run offline BLS source gate with no HTTP or model writes
         run: |
           python -m validation.macro.preflight_us_cpi_official_actual_v8 \

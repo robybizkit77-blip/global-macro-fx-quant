@@ -113,12 +113,13 @@ def parse(*,raw,month=MONTH,year=YEAR,release_label=RELEASE_LABEL):
     ]
     # The news release's lead starts AFTER the exact heading, not the menu
     # or a future release mentioned in boilerplate.
-    lead_text=text.split(required,1)[1][:3300]
-    # A single headline core result may appear later in the release, so
-    # split only the 12-month core patterns from next unrelated tables.
+    lead_text=text.split(required,1)[1].split("Table A. Percent changes",1)[0][:3300]
+    # BLS repeats the annual core rate in later narrative sections.
+    # Match only the introductory summary BEFORE Table A; the source's
+    # repeated prose must not create an artificial ambiguous annual actual.
     core_year_matches=[]
     for pat in core_y_patterns:
-        core_year_matches.extend(re.finditer(pat,text,flags=re.I))
+        core_year_matches.extend(re.finditer(pat,lead_text,flags=re.I))
     if len(core_year_matches)!=1:
         raise Pending("CORE_YOY_NOT_SINGLE_UNAMBIGUOUS_VALUE")
     core_yr=rate(core_year_matches[0].group("verb"),
