@@ -201,6 +201,12 @@ def main():
     # consensus.events, which remains the legacy issuer release layer.
     # This is an unverified provider *label* only, not a frozen pre-release
     # expectation and never admissible to the existing surprise ledger.
+    # Existing Calendar invokes this file directly, not as a package module.
+    # Resolve project root for research contract imports without changing
+    # existing CLI consumers or launching any new workflow.
+    import sys
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0,str(ROOT))
     from validation.macro.g8_metric_issuer_contract_v8 import (
         enumerate_secondary_candidates, verify_contract
     )
