@@ -1,0 +1,41 @@
+name: G8 Inflation Transmission V3 - Research
+
+on:
+  pull_request:
+    paths:
+      - 'validation/macro/build_g8_inflation_transmission_v3.py'
+      - 'validation/macro/test_build_g8_inflation_transmission_v3.py'
+      - '.github/workflows/test-g8-inflation-transmission-v3.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/macro/build_g8_inflation_transmission_v3.py'
+      - 'validation/macro/test_build_g8_inflation_transmission_v3.py'
+      - '.github/workflows/test-g8-inflation-transmission-v3.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inflation-research-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate all G8 component definitions, source clocks, causal caveats and no FX promotion
+        run: python -m unittest validation.macro.test_build_g8_inflation_transmission_v3 -v
+      - name: Render read-only narrative research Country Book
+        run: |
+          python -m validation.macro.build_g8_inflation_transmission_v3 --json-out /tmp/g8-inflation-transmission-v3.json --md-out /tmp/g8-inflation-transmission-v3.md
+          cat /tmp/g8-inflation-transmission-v3.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: g8-inflation-transmission-research-v3
+          path: |
+            /tmp/g8-inflation-transmission-v3.json
+            /tmp/g8-inflation-transmission-v3.md
+          retention-days: 14
