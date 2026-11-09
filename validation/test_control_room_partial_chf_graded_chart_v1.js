@@ -44,8 +44,24 @@ assert.equal(liveRows.length,visibleCoverage,'Plot contains only sourced currenc
 const chfLive=liveMatrix.find(r=>r.ccy==='CHF');
 assert(chfLive&&['6m','12m'].some(t=>Number.isFinite(chfLive.points[t]?.value)),
  'Independently dated CHF futures 6M/12M must remain visible');
-assert.equal(chfLive.points['3m'],undefined,
- 'An unquoted SARON roster contract must never render as observed 3M rate');
+// The quoted 3M SARON roster contract is NOT an observed 3M print.
+ // The current source can instead show an explicitly estimated 3M scenario
+ // derived from individually verified 6M and 12M futures observations.
+const chf3=chfLive.points['3m'];
+if(chf3){
+ assert.equal(chf3.estimated,true,'Unquoted SARON 3M must never be shown as observed');
+ assert.equal(chf3.scenario_method,'CHF_3M_LINEAR_EXTRAPOLATION_FROM_DATED_6M_12M_V1');
+ assert.equal(chf3.source_quote_verified,false);
+ assert.equal(chf3.direct_ois_quote,false);
+ assert.equal(chf3.policy_repricing_allowed,false);
+ assert(!chf3.contract,'Scenario must not inherit an unquoted ICE contract identity');
+ assert(chfLive.points['6m']?.source_quote_verified&&chfLive.points['12m']?.source_quote_verified,
+  'CHF 3M estimation requires genuine verified 6M and 12M inputs');
+ assert.equal(chf3.scenario_input_date,chfLive.points['6m'].date);
+ assert.equal(chf3.scenario_other_date,chfLive.points['12m'].date);
+}
+assert(srcFeed.currencies.CHF.horizons['3m'].roster_quality===
+ 'ICE_LISTED_QUARTER_CALENDAR_DERIVED_UNQUOTED','Calendar-only 3M roster must remain unquoted');
 // The negative fixture removes 3M/6M *source evidence* in-memory only;
 // merely setting verified=false is insufficient when the real feed has
 // explicit conflict identities for those tenors.
@@ -60,8 +76,11 @@ for(const term of ['3m','6m']){
 const rosterReactivated=structuredClone(srcFeed);
 rosterReactivated.currencies.CHF.horizons['3m'].quote_timestamp_verified=true;
 rosterReactivated.currencies.CHF.horizons['3m'].quote_timestamp_source='SSR_DAILY_BAR_DATA_UPDATE_TIME';
-assert.equal(addon.matrix(rosterReactivated,bb,now).find(r=>r.ccy==='CHF').points['3m'],undefined,
- 'A forged verification flag cannot revive a calendar-only unquoted 3M source');
+const rosterAfter=addon.matrix(rosterReactivated,bb,now).find(r=>r.ccy==='CHF').points['3m'];
+assert(!rosterAfter||rosterAfter.estimated===true,
+ 'A forged 3M verification flag must not revive an unquoted SARON rate as observed');
+assert(!rosterAfter||rosterAfter.scenario_method==='CHF_3M_LINEAR_EXTRAPOLATION_FROM_DATED_6M_12M_V1',
+ 'Only the independently labelled 6M/12M-derived scenario may appear');
 const rows=api.marketResearchGraded(partialFeed,bb);
 const partialPrimary=addon.view(addon.matrix(partialFeed,bb,now));
 const partialMatrix=addon.matrix(partialFeed,bb,now);
