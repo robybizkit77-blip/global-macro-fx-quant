@@ -92,7 +92,7 @@ def validate_event_ledgers(forecasts,actuals,anchors,today):
         calc=a["actual_percent"]-f["consensus_value_percent"]
         require(math.isclose(calc,a["actual_minus_frozen_consensus_pp"],abs_tol=1e-9),
                 key+" official actual minus immutable forecast mismatch")
-        require(a["actual_percent"]==0.0 or a["actual_percent"]!=None,
+        require(a["actual_percent"] is not None,
                 key+" zero actual cannot be replaced by null")
     return fm,am,xm
 
@@ -191,7 +191,7 @@ def relative_2y_multiday(pair,rates,anchor,release,today):
 
 def event_scenario(event):
     c=event["currency"]
-    surprise=event["actual_minus_frozen_consensus_pp"]
+    surprise=event["surprise_pp"]
     if c=="CAD":
         return (
             "Il PIL mensile canadese è sotto il consenso congelato: "
