@@ -57,7 +57,9 @@ def check_policy():
 
 def can_capture(now, policy):
     local = now.astimezone(ROME)
-    time_ok = (20, 30) <= (local.hour, local.minute) <= (21, 5)
+    # GitHub scheduled jobs can be delayed: allow same-evening fallback,
+    # preserving ACTUAL capture timestamp and never backdating a missed day.
+    time_ok = (20, 30) <= (local.hour, local.minute) <= (23, 30)
     return (local.weekday() < 5 and
             local.date().isoformat() >= policy["earliest_eligible_capture_rome"] and
             time_ok)
