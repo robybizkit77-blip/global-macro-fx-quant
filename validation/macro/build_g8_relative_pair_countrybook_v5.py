@@ -207,6 +207,11 @@ def compare(a,b,book,rd,ois,rows,today):
     # Distinct and explicit two-leg mechanisms, not two country "scores".
     p2=(f"{a} — {one['bank']}: "+one["monetary_transmission_hypothesis"]+
         f" {b} — {two['bank']}: "+two["monetary_transmission_hypothesis"])
+    want_a,can_a=v4.v3.v2.v1.CB_REACTION[a]
+    want_b,can_b=v4.v3.v2.v1.CB_REACTION[b]
+    p2b=(f"Funzione di reazione relativa: {one['bank']} persegue {want_a}; "
+         f"{can_a} {two['bank']} persegue {want_b}; {can_b} "
+         "Le differenze di mandato non implicano direzioni FX senza surprise e pricing.")
     if rates["spread_2y_bp"] is not None:
         p3=(f"Due anni governativi sullo stesso giorno ({rates['base']['as_of']}): "
             f"differenza {a} meno {b} {num(rates['spread_2y_bp'],' pb')}. "
@@ -252,7 +257,9 @@ def compare(a,b,book,rd,ois,rows,today):
         "trade_attractiveness":None,
         "positioning_flow_inference":None,
         "fx_signal":None,"position_size":None,"probability_of_fx_move":None,
-        "pair_narrative_it":[p1,p2,p3,p4,p5,p6],
+        "base_bank_want_can":one["central_bank_conditional_reaction"],
+        "quote_bank_want_can":two["central_bank_conditional_reaction"],
+        "pair_narrative_it":[p1,p2,p2b,p3,p4,p5,p6],
         "research_gate":"DESCRIPTIVE_HYPOTHESES_NOT_TRADABLE",
     }
 
