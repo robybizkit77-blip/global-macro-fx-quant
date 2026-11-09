@@ -97,6 +97,20 @@ class UsNzSourceResearchIntakeTests(unittest.TestCase):
         self.assertEqual(mod.compare_to_existing(cand,SERIES["USD"][0])["status"],
                          "SAME_PERIOD_REVISION_CANDIDATE_NOT_APPLIED")
 
+    def test_statsnz_partial_source_identity_not_counted_fully_verified(self):
+        altered=NZ.replace(b"16 October 2026",b"client-side date loaded").replace(
+            b"not adjusted for price changes",b"methodology in another document")
+        def fetch(url):
+            if "PCEC96" in url:return fred("PCEC96"),url
+            if "DSPIC96" in url:return fred("DSPIC96"),url
+            if "bea.gov" in url:return BEA,url
+            return altered,url
+        x=mod.capture(now=NOW,fetcher=fetch,series=SERIES)
+        self.assertEqual(x["source_count_verified"],3)
+        self.assertEqual(x["source_count_partial"],1)
+        self.assertEqual(x["sources"]["STATS_NZ_ECT_KNOWN_SOURCE"]["status"],
+                         "PARTIAL_ISSUER_IDENTITY_ONLY")
+
     def test_issuer_source_failure_explicit_withheld_no_fake_numbers(self):
         def missing(url):
             if "fred" in url:raise OSError("blocked")
@@ -114,15 +128,20 @@ class UsNzSourceResearchIntakeTests(unittest.TestCase):
         self.assertFalse(x["latest_release_certified"])
         self.assertTrue(x["not_real_retail_volumes"])
         self.assertTrue(x["release_date_verified_in_current_html"])
+        self.assertTrue(x["nominal_basis_verified_in_current_html"])
         partial=mod.statsnz_known_release(
             NZ.replace(b"16 October 2026",b"date loaded in client script"),mod.NZ_ECT)
         self.assertFalse(partial["release_date_verified_in_current_html"])
         self.assertEqual(partial["status"],
-                         "KNOWN_STATIC_RELEASE_TITLE_ONLY_DATE_FROM_PRIOR_RESEARCH")
+                         "PARTIAL_ISSUER_IDENTITY_ONLY_PRIOR_RESEARCH_METADATA")
         with self.assertRaisesRegex(ValueError,"identity changed"):
             mod.statsnz_known_release(NZ.replace(b"September",b"October"),mod.NZ_ECT)
-        with self.assertRaisesRegex(ValueError,"nominal nature"):
-            mod.statsnz_known_release(NZ.replace(b"not adjusted",b"adjusted"),mod.NZ_ECT)
+        with self.assertRaisesRegex(ValueError,"reclassified"):
+            mod.statsnz_known_release(NZ.replace(b"not adjusted",b"are adjusted"),mod.NZ_ECT)
+        no_basis=mod.statsnz_known_release(
+            NZ.replace(b"not adjusted",b"unknown whether adjusted"),mod.NZ_ECT)
+        self.assertFalse(no_basis["nominal_basis_verified_in_current_html"])
+        self.assertTrue(no_basis["status"].startswith("PARTIAL_ISSUER_IDENTITY"))
 
     def test_source_host_redirect_violation_and_no_faked_identity(self):
         def poisoned(url):
