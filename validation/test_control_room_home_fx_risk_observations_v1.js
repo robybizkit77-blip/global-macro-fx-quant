@@ -22,11 +22,28 @@ const changes=['USD','GBP','JPY','AUD','CAD','NZD','CHF']
  .map(c=>({code:c,pct:100*(last[c]/prev[c]-1)}));
 assert.equal(actual.fx.strongest.code,changes.reduce((a,b)=>a.pct>b.pct?a:b).code);
 assert.equal(actual.fx.weakest.code,changes.reduce((a,b)=>a.pct<b.pct?a:b).code);
-assert.equal(actual.vix.asof,last.Date);
-assert.equal(actual.vix.previous,prev.Date);
-assert.equal(actual.vix.value,d.risk.VIX.values.at(-1));
-assert.equal(actual.vix.points,d.risk.VIX.values.at(-1)-d.risk.VIX.values.at(-2));
-assert.equal(actual.vix.source,'VIX · dated close in operational risk dataset');
+// Production may advance the ECB fixing before the independently dated VIX feed.
+// Absence is the correct fail-closed outcome, never a synthetic same-day VIX.
+const vixDates=d.risk.VIX.dates;
+const aligned=last.Date===vixDates.at(-1)&&prev.Date===vixDates.at(-2);
+if(!aligned)assert.equal(actual.vix,null,'No VIX claim when the latest FX and risk sessions differ');
+// Independently verify that matching genuine dates DO show the published VIX,
+// without changing the live FX/VIX files or weakening source provenance.
+const matchIndex=fx.rows.findIndex(row=>row.Date===vixDates.at(-1));
+assert(matchIndex>=1,'Official ECB FX history must contain the dated VIX close');
+const matchedFx=structuredClone(fx);
+matchedFx.rows=matchedFx.rows.slice(0,matchIndex+1);
+matchedFx.row_count=matchedFx.rows.length;
+matchedFx.last_as_of=matchedFx.rows.at(-1).Date;
+assert.equal(matchedFx.rows.at(-2).Date,vixDates.at(-2),'A genuine previous matching session is required');
+const matched=f(matchedFx,d,shift(matchedFx.last_as_of,1));
+assert(matched.fx&&matched.vix,'Dated FX/VIX from the same actual sessions must validate');
+assert.equal(matched.vix.asof,matchedFx.last_as_of);
+assert.equal(matched.vix.previous,matchedFx.rows.at(-2).Date);
+assert.equal(matched.vix.value,d.risk.VIX.values.at(-1));
+assert.equal(matched.vix.points,d.risk.VIX.values.at(-1)-d.risk.VIX.values.at(-2));
+assert.equal(matched.vix.source,'VIX · dated close in operational risk dataset');
+if(aligned)assert.deepEqual(actual.vix,matched.vix,'Current aligned data must agree with historical test');
 const reject=(edit,reason)=>{
  const x=structuredClone(fx),y=structuredClone(d);edit(x,y);
  assert.equal(f(x,y,now).fx,null,reason);
@@ -40,14 +57,14 @@ reject((x)=>{const future=shift(now,1);x.rows.at(-1).Date=future;x.last_as_of=fu
 assert.equal(f(fx,d,shift(now,7)).fx,null,'stale official FX rejected');
 const mismatch=structuredClone(d);
 mismatch.risk.VIX.dates[mismatch.risk.VIX.dates.length-1]=shift(fx.last_as_of,-1);
-assert.equal(f(fx,mismatch,now).vix,null,'VIX cannot join unsynchronized trading sessions');
+assert.equal(f(matchedFx,mismatch,shift(matchedFx.last_as_of,1)).vix,null,'VIX cannot join unsynchronized trading sessions');
 const spoof=structuredClone(d);spoof.risk.VIX.last_value=1234;
-assert.equal(f(fx,spoof,now).vix,null,'VIX last value must match stored history');
-assert.equal(f(fx,{risk:{VIX:{}}},now).vix,null,'no invented VIX value');
+assert.equal(f(matchedFx,spoof,shift(matchedFx.last_as_of,1)).vix,null,'VIX last value must match stored history');
+assert.equal(f(matchedFx,{risk:{VIX:{}}},shift(matchedFx.last_as_of,1)).vix,null,'no invented VIX value');
 assert.equal(f(fx,null,now).fx.asof,last.Date,'FX source independent of missing cross asset');
 assert(src.includes("root.dataset.sourceEffect='NONE';root.dataset.pairEffect='NONE'"));
 assert(src.includes('non è un ranking G8 né un prezzo intraday.'));
 assert(src.includes('non è un segnale risk-off'));
 console.log('HOME_ECB_FX_VIX_DATED_FIRST_READ_GREEN',
  JSON.stringify({asof:actual.fx.asof,previous:actual.fx.previous,
-  strongest:actual.fx.strongest,weakest:actual.fx.weakest,vix:actual.vix,sourceEffect:'NONE'}));
+  strongest:actual.fx.strongest,weakest:actual.fx.weakest,currentVix:actual.vix,matchedVix:matched.vix,sourceEffect:'NONE'}));
