@@ -828,10 +828,11 @@ function expectedReactionFromMetrics(row){
   if(!chartAudit.visible||chartAudit.count!==8||
      chartAudit.charts.some(x=>!x.svg||x.points<1||x.points>3||
        (!['CHF','USD'].includes(x.ccy)&&x.points!==3)||
-       (x.ccy==='CHF'&&(!['PROXY','MIXED'].includes(x.quality)||x.joined!=='false'))||
-       (x.ccy==='USD'&&(x.quality!=='MIXED'||x.points!==3||x.joined!=='false'||
-          !x.slots.every(t=>['INDICATIVE','SCENARIO'].includes(t.state))||
-          x.slots.every(t=>t.state==='SCENARIO'))))||
+       (x.ccy==='CHF'&&(!['PROXY','MIXED','CONFLICTED'].includes(x.quality)||x.joined!=='false'))||
+       (x.ccy==='USD'&&(!['MIXED','CONFLICTED'].includes(x.quality)||x.points!==3||x.joined!=='false'||
+          (x.quality==='MIXED'&&(!x.slots.every(t=>['INDICATIVE','SCENARIO'].includes(t.state))||
+            x.slots.every(t=>t.state==='SCENARIO')))||
+          (x.quality==='CONFLICTED'&&!x.slots.some(t=>t.state==='DISPUTED')))))||
      chartAudit.charts.some(x=>x.quality==='MIXED'&&x.joined!=='false'))
     throw Error(label+' Missing/unverified source-graded G8 charts '+JSON.stringify(chartAudit));
   const visualTypes={GBP:'DIRECT_OIS',AUD:'OFFICIAL_FUTURES',CAD:'OFFICIAL_FUTURES',
@@ -899,11 +900,11 @@ function expectedReactionFromMetrics(row){
      // certified-source panel remains accessible through its real toggle.
      (sourcePriority.officialOnlyHidden&&
        (!sourcePriority.toggle||sourcePriority.expanded!=='false'))||
-     sourcePriority.rows.length!==8||!chfRow||!['PROXY','MIXED'].includes(chfRow.tier)||
+     sourcePriority.rows.length!==8||!chfRow||!['PROXY','MIXED','CONFLICTED'].includes(chfRow.tier)||
      chfRow.numeric.length!==3||!chfSlotsOk||
      sourcePriority.rows.some(x=>x.c!=='CHF'&&(
         !['OFFICIAL','PROXY','MIXED','CONFLICTED','SCENARIO'].includes(x.tier)||
-        x.numeric.length!==3|| (x.c==='USD' ? (x.tier!=='MIXED'||x.numeric.some(v=>!v||v==='—')) : x.numeric.some(v=>!v||v==='—')))))
+        x.numeric.length!==3|| (x.c==='USD' ? (!['MIXED','CONFLICTED'].includes(x.tier)||x.numeric.some(v=>!v||v==='—')) : x.numeric.some(v=>!v||v==='—')))))
     throw Error(label+' G8 source-graded visual/count mismatch '+JSON.stringify(sourcePriority));
   // The official-only panel is intentionally collapsed behind a labelled
   // toggle in this source-first layout. Browser QA must PROVE it can open;
