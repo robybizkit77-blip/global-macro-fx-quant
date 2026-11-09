@@ -104,8 +104,9 @@ class G8MacroEventLifecycleV7Tests(unittest.TestCase):
         self.assertIsNone(e["frozen_consensus_pct"])
         self.assertIsNone(e["actual_minus_frozen_consensus_pp"])
         self.assertEqual(e["provider_candidate_status"],
-                         "CANDIDATE_AVAILABLE_NOT_YET_FROZEN")
-        self.assertEqual(e["status"],"READY_TO_FREEZE_FUTURE_CONSENSUS")
+                         "MATCHED_RELEASE_TITLE_METRIC_NOT_EXPLICITLY_CERTIFIED")
+        self.assertEqual(e["status"],
+                         "MATCHED_RELEASE_TITLE_METRIC_NOT_EXPLICITLY_CERTIFIED")
         # Actual freeze pipeline additionally refuses an unspecified CPI
         # economic rate: V7 does not misreport that this candidate was frozen.
         self.assertFalse(e["official_issuer_parser_supported"])
@@ -153,17 +154,16 @@ class G8MacroEventLifecycleV7Tests(unittest.TestCase):
         s["official_calendar"]["events"]=[
             x for x in s["official_calendar"]["events"]
             if not (x["ccy"]=="USD" and x["date"]=="2026-10-30")]
-        with self.assertRaises(ValueError):
-            m.build(now=NOW,inputs=s)
+        b=m.build(now=NOW,inputs=s)
+        self.assertEqual(
+            len(b["coverage"]["archived_frozen_events_missing_current_calendar_crosswalk"]),1)
+        self.assertEqual(b["coverage"]["archived_complete_events_not_currently_in_seed"],1)
 
     def test_due_day_utc_clock_pre_and_post_not_calendar_guess(self):
         s=copy.deepcopy(self.sources)
         before=m.build(now=datetime(2026,11,10,13,29,tzinfo=timezone.utc),inputs=s)
         after=m.build(now=datetime(2026,11,10,13,31,tzinfo=timezone.utc),inputs=s)
-        def find(book):
-            return next(x for x in book["events"] if
-                        x["ccy"]=="USD" and x["date"]=="2026-11-10") # date via issuer_date
-        us_pre=next(x for x in before["events"] if x["ccy"]=="USD" and x["issuer_date"]=="2026-11-10")
+         us_pre=next(x for x in before["events"] if x["ccy"]=="USD" and x["issuer_date"]=="2026-11-10")
         us_post=next(x for x in after["events"] if x["ccy"]=="USD" and x["issuer_date"]=="2026-11-10")
         self.assertEqual(us_pre["status"],"UPCOMING_NO_VERIFIED_EXACT_CONSENSUS")
         self.assertEqual(us_post["status"],"PAST_EVENT_NO_FROZEN_CONSENSUS")
