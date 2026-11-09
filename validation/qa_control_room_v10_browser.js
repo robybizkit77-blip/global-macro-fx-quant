@@ -1093,13 +1093,13 @@ function expectedReactionFromMetrics(row){
   if(research.g8LevelSeries!==8||research.g8Levels!=='8'||
       research.qualityTypes.some(x=>x.points<1||x.points>3||
        (!['CHF','USD'].includes(x.ccy)&&x.points!==3)||
-       (x.ccy==='USD'&&(x.tier!=='MIXED'||x.points!==3||x.joined!=='false'))||
-       (x.ccy==='CHF'&&(!['PROXY','MIXED'].includes(x.tier)||x.joined!=='false'))||
+       (x.ccy==='USD'&&(!['MIXED','CONFLICTED'].includes(x.tier)||x.points!==3||x.joined!=='false'))||
+       (x.ccy==='CHF'&&(!['PROXY','MIXED','CONFLICTED'].includes(x.tier)||x.joined!=='false'))||
        !['OFFICIAL','PROXY','MIXED','CONFLICTED','SCENARIO'].includes(x.tier)||
        (['MIXED','CONFLICTED'].includes(x.tier)&&x.joined!=='false')||
        (x.tier==='OFFICIAL'&&(x.officialLines!==1||x.studyLines!==0))||
        (x.tier!=='OFFICIAL'&&(x.studyLines!==(x.points===3?1:0)||x.officialLines!==0)))||
-      !research.qualityTypes.some(x=>x.ccy==='CHF'&&['PROXY','MIXED'].includes(x.tier)&&x.points>=1&&x.points<=3&&x.joined==='false')||
+      !research.qualityTypes.some(x=>x.ccy==='CHF'&&['PROXY','MIXED','CONFLICTED'].includes(x.tier)&&x.points>=1&&x.points<=3&&x.joined==='false')||
       research.secondary!==expectedSecondaryQuotes||
      !['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'].every(c=>research.legend.includes(c))||
      !research.disclaimers.includes('NON curva OIS')&&
