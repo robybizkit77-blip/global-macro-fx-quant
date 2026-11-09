@@ -560,10 +560,12 @@ vix_workflow = (Path(__file__).resolve().parents[1] /
 assert "queue: max" in calendar_workflow
 assert "cancel-in-progress: false" in calendar_workflow
 assert "calendar-news-validation-pr-{0}" in calendar_workflow
-# Two ongoing operational checks plus one strictly targeted November 10
-# CPI after-release source capture (same workflow, not a new pipeline).
-assert calendar_workflow.count("    - cron:") == 3
+# Keep the original two operational checks, V10 CPI rechecks,
+# and two V11 targeted UK/Swiss GDP issuer checks (no new workflow).
+assert calendar_workflow.count("    - cron:") == 5
 assert "    - cron: '39,59 13 10 11 *'" in calendar_workflow
+assert "    - cron: '11 7 12 11 *'" in calendar_workflow
+assert "    - cron: '11 8 16 11 *'" in calendar_workflow
 assert "    - cron: '17 4 * * 1-5'" in calendar_workflow
 assert "    - cron: '17 6 * * *'" in calendar_workflow
 assert "workflows: ['Calendar News Operational Refresh V1']" in vix_workflow
