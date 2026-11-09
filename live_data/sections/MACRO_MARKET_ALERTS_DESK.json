@@ -1,8 +1,47 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-09T00:57:24Z",
+  "generated_at_utc": "2026-11-09T08:02:02Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-c2e6163aeaf7ae8a2cec",
+      "observed_at_utc": "2026-11-09T04:23:00Z",
+      "headline": "Iran says no unauthorised vessels transited Strait of Hormuz overnight after navigation aids destroyed",
+      "summary": "Reuters riporta: Iran says no unauthorised vessels transited Strait of Hormuz overnight after navigation aids destroyed. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxPNFkyaVpFU2VKQUVYc0xKQ1NmMFhuUmhEZXpCRFF5Ym5HaVpwSENiYk9QaWJhd1BtcU9sSEVyeGVoZ1RxUS1UamJHbEJOTUJwQjhzWUhrYko5RmZCMXJZQ04wZ2tyeFJZTGNFdUotNURHOXpDQTdGdXlMMEpaU3pWT0lvVzNPVkV1aHRIdjVYTE5yM2dwdVpDM0pQdV9TTDhTLXRQTlgxRkVlVFZtU0haT29fdEpyZw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-7af084ef620ed9ceb586",
+      "observed_at_utc": "2026-11-08T23:50:00Z",
+      "headline": "Oil falls as Trump signals restraint on Iran amid fresh Hormuz shipping attacks",
+      "summary": "Reuters riporta: Oil falls as Trump signals restraint on Iran amid fresh Hormuz shipping attacks. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNWnV4VENDNkFNVllVVEpoVTJLcC13SlhHREstWFZZQ252QTRiU3dKeW5EYWYxVUJjNnQzVzh1M1FsWjNGTmRKMVFEYjhxT3M2VmF4aVpERWwwczh6dV9OTG5NcFJCMFVZZ0toWEEyMnRRTnBZUm9iQVVzblIzcmJMOTR4V29sUDFVME1jcFQ5VVhoMHVUM0YzWHM2bmE1b3VCV0s0R2JmUUQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-f90b8393e451cdfb5a79",
+      "observed_at_utc": "2026-11-09T03:01:00Z",
+      "headline": "Gold rises over 1% as softer oil prices ease inflation worries",
+      "summary": "Reuters riporta: Gold rises over 1% as softer oil prices ease inflation worries. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxNbEdIVXlJc2RaUEw2RmFrR2FZcXYzYlBKUG9Cdl9WUVFfalVxT0hGcGFCdW1DS3JMT2daanhDYktBeXVGNGt5TGlsOGZJVWVSMFpnT3ZVa2RBUjZYakRlVlQ3SXd1ZkpTQVNXVkpoNUZoemdycWY0MG02dVk0cWRuWG4taG5VMm9kbEluSHctTVZVMXJwWXNWSWdVcmxQeWtRSW1EWDQ2dTJ6QVV2TzhoeQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-96567632082db469ad0f",
       "observed_at_utc": "2026-11-09T00:26:00Z",
@@ -1362,47 +1401,6 @@
       "observed_at_utc": "2026-10-30T02:27:00Z",
       "headline": "Oil set for fourth monthly gain as Hormuz tanker attack highlights supply risks",
       "summary": "Reuters riporta: Oil set for fourth monthly gain as Hormuz tanker attack highlights supply risks. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxOWE5IUkRJTVJvTFE5SUdOdFFCM2tVN1lKcDI3ci01cjlleVVuXzB1SjI0MDhuWkhwakZFSzl3SGNUZk9uUUYwdHNfMGJOUXExaW1RdmRRVy1Cd0tHb3RqblJCQWczeXdORDVKbVMxMGFrbnVMM3FCY2h5Xzl6T0ZoeTBtbGdnbW9jdWF6VEtqNi14ZnlFaVVpb0xZcHlGTDhtM0ZmY2RYZ2Q?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-71fbb53f74130d064229",
-      "observed_at_utc": "2026-10-30T09:59:04Z",
-      "headline": "French output shrinks and inflation accelerates, leaving economy at standstill, minister says",
-      "summary": "Reuters riporta: French output shrinks and inflation accelerates, leaving economy at standstill, minister says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxQMTdoamxfRUk4YjdHU3NHR3lXY2VZUDFKUEVLdnZnQ1dMeGJSelBQc01rZDZVV0tWblZtX2EzNnRMTGNSUkJZcWRiUGEyWHFOUkVrWlIteFVWUjJXS3ZpbTl6SHdnVktDYTJIWEppdFhUVWRrS1oxbm5DSkd1QmtvM0pMcFpuUWFoMzlDT3JtYll2NTc5dzFySWNGMnBsOTlNYU02TnlBN1U1NlF5SG5J?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-5ce1aac03e63ac93be55",
-      "observed_at_utc": "2026-10-30T03:15:00Z",
-      "headline": "BOJ keeps interest rates steady, signals further rate hikes",
-      "summary": "Reuters riporta: BOJ keeps interest rates steady, signals further rate hikes. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "JPY"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxPckM0NUFNY0hHSVN5Y3Z2OWR6Zk9yLTVIdEtxX1JIMkR2Sjd2c2VCY01BT3QzOWQ5WmF5QmNyTC03X1VsV2V1SVZRbk9mc2lxZG9FNnBaVm1fSWVpeFdJRUxnTXJTbFdxZnFNUEtBMjRxc2FpTFJVdk0yTkxmSFM2a3Njek9JcExYRldGRFVXSEpTY1hRam1CMVBpZ3Vrc1h1MGQ2UXdScnR4dUNlUzBOamEzcw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-6d1c5ee467b34ceeb144",
-      "observed_at_utc": "2026-10-30T02:27:00Z",
-      "headline": "Oil set for fourth monthly gain as Hormuz tanker attack highlights supply risks from war",
-      "summary": "Reuters riporta: Oil set for fourth monthly gain as Hormuz tanker attack highlights supply risks from war. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
       "category": "GEOPOLITICS",
       "currencies": [],
       "related_pairs": [],
