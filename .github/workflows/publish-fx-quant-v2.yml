@@ -11,6 +11,9 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - 'site/fx-quant-v2/next/macro-studio.js'
+      - 'site/fx-quant-v2/next/index.html'
+      - 'validation/publishing/test_macro_us_households_hero_v1.cjs'
       - '.github/workflows/publish-fx-quant-v2.yml'
       - 'validation/publishing/test_fxv2_publisher_source_trigger_v1.py'
       - 'validation/publishing/check_fxv2_publication_tree_v1.py'
@@ -53,6 +56,8 @@ jobs:
           python3 validation/publishing/test_fxv2_publisher_source_trigger_v1.py
           python3 -m unittest validation.publishing.test_check_fxv2_publication_tree_v1 -v
           python3 -m unittest validation.publishing.test_wait_gh_pages_idle_before_fxv2_push_v1 -v
+          node --check site/fx-quant-v2/next/macro-studio.js
+          node validation/publishing/test_macro_us_households_hero_v1.cjs
   sync-v2:
     if: >-
       github.event_name != 'pull_request' &&
@@ -109,6 +114,12 @@ jobs:
           git fetch origin main --no-tags
           git checkout --detach origin/main
           echo "FXV2_APPROVED_MAIN_AFTER_QUEUE=$(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Recheck published Macro narrative after refreshing approved main
+        if: steps.v2-tree.outputs.publish_needed == 'true'
+        run: |
+          node --check site/fx-quant-v2/next/macro-studio.js
+          node validation/publishing/test_macro_us_households_hero_v1.cjs
 
       - name: Publish only site/fx-quant-v2 without altering V10 or any other path
         if: steps.v2-tree.outputs.publish_needed == 'true'

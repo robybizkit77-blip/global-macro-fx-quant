@@ -98,6 +98,53 @@ function build(api){
    +'<div class="macro-thermometer"><span style="--pct:'+Math.max(0,Math.min(100,x.percentile))+'%"></span></div><div class="macro-temp-bottom"><span>'+esc(x.temperature_label||'—').replace(/_/g,' ')+'</span><b>P'+fmt(x.percentile,1)+'</b></div>'
    +'<p>Direzione: '+esc(x.direction||'—')+' · Velocità: '+esc(x.acceleration||'—')+'</p></div>';
  }
+ function usdHouseholdEvidence(){
+   // A revised BEA/FRED vintage can describe today; it is never historical PIT.
+   const pce=list('USD').find(x=>x.id==='US_PCEC96_history_value');
+   const dpi=list('USD').find(x=>x.id==='US_DSPIC96_history_DSPIC96');
+   const certified=(r,id)=>r&&valid(r)&&r.frequency==='M'&&
+     r.unit==='Billions of Chained 2017 Dollars SAAR'&&
+     r.current_vintage_provenance?.status==='BEA_REVISED_HISTORY_VIA_FRED_CURRENT_NOT_PIT'&&
+     r.current_vintage_provenance?.issuer==='US_BEA'&&
+     r.current_vintage_provenance?.source_series_id===id&&
+     r.current_vintage_provenance?.source_series_first_release_PIT_certified===false;
+   if(!certified(pce,'PCEC96')||!certified(dpi,'DSPIC96'))return null;
+   const p=history(pce),d=history(dpi);
+   if(p.length<3||d.length<2)return null;
+   const ord=s=>Number(s.slice(0,4))*12+Number(s.slice(5,7));
+   const period=monthKey(p.at(-1).period),current=locDate.slice(0,7);
+   if(!period||period!==monthKey(d.at(-1).period)||
+      period!==monthKey(pce.last_date)||period!==monthKey(dpi.last_date)||
+      period!==pce.current_vintage_provenance.issuer_release_reference_month||
+      period!==dpi.current_vintage_provenance.issuer_release_reference_month||
+      ord(current)-ord(period)<0||ord(current)-ord(period)>3||
+      ord(period)-ord(monthKey(p.at(-2).period))!==1||
+      ord(period)-ord(monthKey(d.at(-2).period))!==1||
+      ord(monthKey(p.at(-2).period))-ord(monthKey(p.at(-3).period))!==1)return null;
+   const [p0,p1,p2]=[p.at(-1).value,p.at(-2).value,p.at(-3).value];
+   const [d0,d1]=[d.at(-1).value,d.at(-2).value];
+   if(![p0,p1,p2,d0,d1].every(x=>finite(x)&&x>0))return null;
+   const pc=(p0/p1-1)*100,prior=(p1/p2-1)*100,dc=(d0/d1-1)*100;
+   const pct=x=>{const r=Math.round(x*10)/10;return (r>0?'+':r<0?'−':'')+fmt(Math.abs(r),1)+'%';};
+   const months=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto',
+                 'settembre','ottobre','novembre','dicembre'];
+   const time=months[Number(period.slice(5,7))-1]+' '+period.slice(0,4);
+   const soft=Math.abs(pc)<.05,falling=dc<-.05;
+   return {
+     title:soft&&falling?'I consumi reali frenano, il reddito arretra.':
+       'Consumi e reddito reali: cosa sta cambiando?',
+     facts:'A '+time+' i consumi reali variano '+pct(pc)+' sul mese (contro '+
+       pct(prior)+' nel mese precedente); il reddito disponibile reale varia '+
+       pct(dc)+'. Sono valori al netto dei prezzi.',
+     why:soft&&falling?
+       'La spesa reale perde slancio mentre il reddito disponibile reale cala: è un segnale di cautela sulla domanda, non la prova di una recessione. Un mese non basta per confermare una svolta.':
+       'Il confronto fra spesa e reddito reali aiuta a leggere la domanda; composizione e persistenza vanno ancora verificate. Una sola pubblicazione non dimostra una svolta.',
+     limit:'I dati BEA/FRED sono storici revisionati, non prime pubblicazioni point-in-time. Non dimostrano da soli variazioni nelle attese Fed, nei futures OIS o nell’USD.',
+     verdict:soft&&falling?'DOMANDA REALE / FRENO DA CONFERMARE':
+       'DOMANDA REALE / QUADRO DA CONFERMARE',
+     watch:'Controlla le prossime letture di spesa reale, redditi e servizi, poi inflazione core e lavoro. Una tesi USD richiede anche conferme da aspettative Fed, tassi e prezzo.'
+   };
+ }
  function countryNarrative(){
    const i=thermoRecord(country,'inflation'),l=thermoRecord(country,'labour');
    const ih=Array.isArray(i?.history)?i.history:[],lh=Array.isArray(l?.history)?l.history:[];
@@ -132,6 +179,17 @@ function build(api){
      :id===-1&&ld===1?'POSSIBILE ALLENTAMENTO'
      :id===-1&&ld===-1?'MIX PIÙ COSTRUTTIVO':'QUADRO DA CONFERMARE';
    const watch='Prossima verifica: inflazione core, occupazione e salari; poi curva OIS e risposta del 2Y. Senza sorpresa rispetto al consenso, questa è una lettura di contesto, non una previsione.';
+   if(country==='USD'){
+     const demand=usdHouseholdEvidence();
+     if(demand)return {
+       title:demand.title,
+       facts:facts+' '+demand.facts,
+       why:demand.why,
+       reading:reading+' '+demand.limit,
+       verdict:demand.verdict,
+       watch:demand.watch
+     };
+   }
    return {title,facts,why,reading,verdict,watch};
  }
  function countryHero(){
