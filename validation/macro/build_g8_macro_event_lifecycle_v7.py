@@ -26,6 +26,9 @@ from validation.macro.capture_official_postrelease_actuals_v1 import (
 )
 from validation.macro.build_macro_event_market_context_v1 import validate_anchors
 from validation.refresh_macro_consensus_secondary_v1 import series_compatible
+from validation.macro.g8_metric_issuer_contract_v8 import (
+    verify_contract, metrics_for
+)
 
 ROOT=v6.ROOT
 SCHEMA="GMFQ_G8_MACRO_EVENT_LIFECYCLE_READINESS_V7"
@@ -103,6 +106,7 @@ def build(*,now,inputs=None,root=ROOT):
             and con.get("rules",{}).get("actual_not_used_as_pre_release_consensus") is True
             and con.get("rules",{}).get("never_change_release_date") is True,
             "untrusted secondary consensus input")
+    metric_coverage=verify_contract(seed)
     validate_existing(frozen)
     validate_actual_log(actual,frozen)
     validate_anchors(anchors,frozen)
@@ -117,6 +121,19 @@ def build(*,now,inputs=None,root=ROOT):
     actual_idx={x["event_key"]:x for x in actual}
     anchor_idx={x["event_key"]:x for x in anchors}
     live_idx={x["event_key"]:x for x in con["events"]}
+    metric_candidates=con.get("metric_candidates_research_v8",[])
+    if "metric_candidates_research_v8" in con:
+        require(con.get("rules",{}).get("metric_candidates_not_frozen_and_never_promoted") is True,
+                "research metric label candidates must never be frozen through existing calendar")
+    metric_idx={}
+    for candidate in metric_candidates:
+        identity=(candidate.get("event_key"),candidate.get("metric_id"))
+        require(identity not in metric_idx,"duplicate metric candidate")
+        require(candidate.get("eligible_for_macro_surprise") is False
+                and candidate.get("eligible_for_fx_signals") is False
+                and candidate.get("eligible_for_existing_v1_freeze") is False,
+                "untrusted metric candidate can never promote to surprise or FX")
+        metric_idx[identity]=candidate
     # A rolling official seed may stop listing earlier real events. Preserve
     # their historical ledgers; report the missing calendar crosswalk rather
     # than blocking the entire scheduled Calendar/News refresh.
@@ -198,12 +215,41 @@ def build(*,now,inputs=None,root=ROOT):
         if future and clock is not None and not parser:
             action+=(" Parser actual ufficiale per questa serie NON "
                      "ancora validato: occorre implementarlo e testarlo.")
+        # Each named metric is a distinct forecast/actual object. The old
+        # release-level frozen receipts for ECI and CAD GDP remain untouched.
+        metric_rows=[]
+        for spec in metrics_for(e):
+            identity=(key,spec["metric_id"])
+            cand=metric_idx.get(identity)
+            is_existing=(actual_row is not None and
+                         spec["issuer_parser_status"]=="EXISTING_VERIFIED_FIRST_SEEN_ISSUER_PARSER")
+            metric_rows.append({
+                "metric_id":spec["metric_id"],
+                "component":spec["component"],
+                "change_unit":spec["unit"],
+                "candidate_provider_event":cand["provider_event"] if cand else None,
+                "secondary_candidate_forecast_unfrozen":cand.get("forecast") if cand else None,
+                "issuer_actual_parser_status":spec["issuer_parser_status"],
+                "historical_signed_release_actual_available":is_existing,
+                "status":(
+                    "HISTORICAL_SIGNED_ISSUER_ACTUAL_AND_FROZEN_RELEASE_FORECAST"
+                    if is_existing else
+                    "PROVIDER_LABEL_MATCHED_NOT_FROZEN_AND_NOT_SOURCE_CERTIFIED"
+                    if cand else "EXACT_METRIC_DEFINED_NO_PROVIDER_FORECAST"
+                ),
+                "frozen_metric_specific_consensus":None,
+                "actual_metric_specific_verified":False,
+                "metric_specific_surprise_pp":None,
+                "safe_to_promote":False,
+            })
         surprise=(round(actual_row["actual_minus_frozen_consensus_pp"],6)
                   if actual_row is not None else None)
         rows.append({
             "event_key":key,"ccy":e["ccy"],"event_type":e["event_type"],
             "title":e["title"],"reference_period":e["reference_period"],
             "issuer_family":e["source_family"],"issuer_date":e["date"],
+            "metric_identity_v8":metric_rows,
+            "metric_candidates_are_not_frozen_consensus":True,
             "issuer_time_local":e.get("time_local"),"issuer_timezone":e.get("timezone"),
             "scheduled_release_utc":clock.isoformat().replace("+00:00","Z") if clock else None,
             "days_until_calendar_event":(release_day-today).days,
@@ -251,6 +297,12 @@ def build(*,now,inputs=None,root=ROOT):
             "upcoming_35d_with_approved_actual_parser":sum(
                 r["official_issuer_parser_supported"] for r in near),
             "events_with_genuine_frozen_consensus_and_issuer_actual":complete,
+            "metric_contract_releases_v8":metric_coverage["releases"],
+            "metric_definitions_v8":metric_coverage["metrics"],
+            "metric_definitions_in_next_35d":sum(
+                len(r["metric_identity_v8"]) for r in near),
+            "provider_metric_labels_matched_not_frozen_v8":len(metric_candidates),
+            "verified_metric_specific_surprises_v8":0,
             "archived_complete_events_not_currently_in_seed":sum(
                 k in actual_idx for k in archived_orphans),
             "unverified_intraday_event_reactions":len(rows),
@@ -301,7 +353,13 @@ def markdown(book):
         lines+=[
           f"### {e['ccy']} · {e['issuer_date']} — {e['title']}",
           f"**Stato:** {e['status']} · {stamp}",
-          f"**Cosa manca:** {e['next_action_it']}", "",
+          f"**Cosa manca:** {e['next_action_it']}",
+          "**Misure esplicite:** "+(
+              "; ".join(m["metric_id"]+" ("+m["change_unit"]+") — "+m["status"]
+                        for m in e["metric_identity_v8"])
+              if e["metric_identity_v8"] else
+              "nessuna metrica certificata definita per questo evento"
+          ), "",
         ]
     lines+=["## Sorprese archiviate e non ricostruite", ""]
     for e in book["events"]:
@@ -343,6 +401,10 @@ def main():
         with a.github_summary.open("a",encoding="utf-8") as f:
             f.write("### G8 Macro Event Lifecycle V7 — evidence gaps (no signals)\n")
             r=result["coverage"]
+            f.write("- Distinct G8 metric definitions (research V8): "
+                    +str(r["metric_definitions_v8"])+
+                    "; matched UNFROZEN provider labels: "
+                    +str(r["provider_metric_labels_matched_not_frozen_v8"])+".\\n")
             f.write(
               f"- Scheduled seed events: {r['issuer_calendar_events']}; "
               f"next 35d: {r['upcoming_35d']}; "
