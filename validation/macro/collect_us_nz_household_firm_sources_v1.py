@@ -180,7 +180,9 @@ def capture(*,now=None,fetcher=fetch,series=None):
         except (HTTPError,URLError,OSError,TimeoutError,UnicodeError,
                 ValueError,KeyError,TypeError) as e:
             output["sources"][name]={"status":"WITHHELD_FETCH_OR_PARSER_UNAVAILABLE",
-                                     "attempted_url":url,"reason_type":type(e).__name__}
+                                     "attempted_url":url,
+                                     "reason_type":type(e).__name__,
+                                     "reason_detail":str(e)[:180]}
     for ident,target in FRED_IDS.items():
         url="https://fred.stlouisfed.org/graph/fredgraph.csv?id="+ident
         hits=[r for r in series["USD"] if r.get("id")==target]
