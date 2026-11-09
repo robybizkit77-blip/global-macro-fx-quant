@@ -361,6 +361,13 @@ function oisAll(doc,ois,proxy){
  const rows=names.map(k=>{
   const x=ois?.currencies?.[k];
   const official=officialPricingCurrent(x),delta=official?num(x.horizons['6m'].policy_delta_bp):null;
+  // Quote level and monetary-policy repricing are distinct contracts.
+  // BoE on a policy-decision date may be official and source-certified,
+  // while policy_delta_bp MUST remain NULL without an intraday timestamp.
+  const officialLevel=!!x&&x.operational_status==='GREEN_OFFICIAL'&&
+    x.official_status==='ACTIVE'&&x.quality==='OFFICIAL_CERTIFIED'&&
+    x.backtest_eligible_as_official===true&&fresh(x.as_of,4)&&
+    num(x.horizons?.['6m']?.rate)!==null;
   const p=indicative[k],v=p&&p.is_official_ois===false&&p.policy_delta_allowed===false&&
     p.pair_effect==='NONE'&&num(p.value)!==null&&fresh(p.quote_as_of,4)?p:null;
   const q=k==='NZD'?scenarios.NZD:null;
@@ -375,15 +382,15 @@ function oisAll(doc,ois,proxy){
   const bill=k==='NZD'&&nzReady?num(proxy.horizons?.['6m']?.implied_bank_bill_rate):null;
   // All G8 lanes show the same financial quantity: 6M level in %.
   // Certified Δ-policy is available separately, never the main displayed unit.
-  const level=official?num(x?.horizons?.['6m']?.rate):
+  const level=officialLevel?num(x.horizons['6m'].rate):
     v?num(v.value):sc?num(sc.value):study?num(study.level_pct):bill;
-  return {k,delta,official,indicative:v,scenario:sc,study,bill,level};
+  return {k,delta,official,officialLevel,indicative:v,scenario:sc,study,bill,level};
  });
  // Bars show 6M RATE LEVEL (%), the same quantity as their numeric labels.
  // Prior official-policy delta scaling made every estimated bar zero-length.
  const maxLevel=Math.max(1,...rows.map(x=>num(x.level)!==null?Math.max(0,x.level):0));
  const displayed=rows.filter(x=>num(x.level)!==null).length;
- const certified=rows.filter(x=>x.official&&num(x.level)!==null).length;
+ const certified=rows.filter(x=>x.officialLevel&&num(x.level)!==null).length;
  const estimated=displayed-certified;
  host.dataset.gmfqSixMonthDisplayed=String(displayed);
  host.dataset.gmfqSixMonthOfficial=String(certified);
@@ -392,17 +399,20 @@ function oisAll(doc,ois,proxy){
  host.dataset.gmfqSixMonthVisualMetric='RATE_PCT_ZERO_BASED';
  host.dataset.gmfqSixMonthVisualMax=fmt(maxLevel,3);
  host.innerHTML=rows.map(x=>{
-  const state=x.official?'OFFICIAL_REPRICING':x.indicative?'FUTURES_LEVEL_ONLY':
+  const state=x.official?'OFFICIAL_REPRICING':x.officialLevel?'OFFICIAL_LEVEL_ONLY':
+   x.indicative?'FUTURES_LEVEL_ONLY':
    x.scenario?'CASH_CARRY_SCENARIO':x.study?'WORKING_ESTIMATE':x.k==='NZD'&&x.bill!==null?'BANK_BILL_PROXY':'WITHHELD';
-  const day=x.official?ois.currencies[x.k].as_of:
+  const day=x.officialLevel?ois.currencies[x.k].as_of:
    x.indicative?x.indicative.quote_as_of:x.scenario?x.scenario.quote_as_of:x.study?x.study.as_of:
    state==='BANK_BILL_PROXY'?proxy.as_of:'—';
   const subtitle=state==='OFFICIAL_REPRICING'?'Δ 6M da fonte certificata':
+   state==='OFFICIAL_LEVEL_ONLY'?(x.k==='GBP'?'OIS BoE ufficiale':'Livello monetario ufficiale')+
+     ' · solo livello osservato; confronto policy non verificato':
    state==='FUTURES_LEVEL_ONLY'?'Futures indicativo · solo livello':
    state==='CASH_CARRY_SCENARIO'?'Stima Bank Bill–OCR · fascia '+fmt(x.scenario.range[0],2)+'–'+fmt(x.scenario.range[1],2)+'% · NON ΔOIS':
    state==='WORKING_ESTIMATE'?'Stima di lavoro · '+x.study.type+' · non OIS certificato':
    state==='BANK_BILL_PROXY'?'Bank Bill · non OIS':'OIS/6M non certificato';
-  const readable=state==='OFFICIAL_REPRICING'?
+  const readable=(state==='OFFICIAL_REPRICING'||state==='OFFICIAL_LEVEL_ONLY')?
    fmt(x.level,2)+'%':
    state==='FUTURES_LEVEL_ONLY'?'≈'+fmt(x.indicative.value,2)+'% PX':
    state==='CASH_CARRY_SCENARIO'?'≈'+fmt(x.scenario.value,2)+'% ST':
@@ -416,14 +426,15 @@ function oisAll(doc,ois,proxy){
    ' title="'+htmlEscape(x.k+' · '+subtitle+' · '+day)+'">'+
    '<span class="gmfq-six-month-name"><i aria-hidden="true">'+FLAG[x.k]+'</i><b>'+x.k+'</b><small>'+BANK[x.k]+'</small></span>'+
    '<div class="track" role="img" aria-label="6M '+htmlEscape(readable)+
-   ' · scala comune da zero a '+fmt(maxLevel,2)+'%"><div class="fill'+(!x.official?' gmfq-estimated-level':'')+
+   ' · scala comune da zero a '+fmt(maxLevel,2)+'%"><div class="fill'+(!x.officialLevel?' gmfq-estimated-level':'')+
    '" style="width:'+fmt(w,2)+'%"></div></div>'+
    '<strong>'+readable+'</strong></div>';
  }).join('')+
  '<div class="oisnote" data-six-month-coverage="'+displayed+'/8"><b>6M · '+displayed+
  '/8 valute</b> · '+certified+' fonti certificate · '+estimated+
  ' stime/proxy. Barre su scala comune 0–'+fmt(maxLevel,2)+'%: livelli 6M, NON Δ policy in bp. '+
- 'PX = futures indicativi (non OIS); ST = stima di lavoro (USD da input contestati; NZD da Bank Bill–OCR). PROXY BB ≠ OIS. '+
+ 'Fonte certificata = livello osservato, NON necessariamente Δ policy confrontabile. '+
+ 'PX = futures indicativi (non OIS); ST = stima di lavoro (USD/CHF da input contestati; NZD da Bank Bill–OCR). PROXY BB ≠ OIS. '+
  'Δ policy e date nel dettaglio; 3M / 6M / 12M nella pagina Tassi. '+
  'Nessuna stima è una quotazione OIS ufficiale o un segnale FX.</div>';
 }
