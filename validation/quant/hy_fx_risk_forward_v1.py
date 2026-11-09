@@ -191,7 +191,10 @@ def capture():
         fx_rows = json.loads(FX.read_text(encoding="utf-8"))["rows"]
         try:
             hy = fred_csv(source_text(policy["sources"]["hy_source_url"]), "BAMLH0A0HYM2")
-            vix = fred_csv(source_text(policy["sources"]["vix_source_url"]), "VIXCLS")
+            try:
+                vix = fred_csv(source_text(policy["sources"]["vix_source_url"]), "VIXCLS")
+            except (OSError, ValueError, KeyError, TimeoutError):
+                vix = []  # Optional market context must not block the HY primary test.
             snap = build_snapshot(now, sha, fx_rows, hy, vix)
         except (OSError, ValueError, KeyError, TimeoutError) as exc:
             snap = {
