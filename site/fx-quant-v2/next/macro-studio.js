@@ -115,6 +115,8 @@ function build(api){
    const period=monthKey(p.at(-1).period),current=locDate.slice(0,7);
    if(!period||period!==monthKey(d.at(-1).period)||
       period!==monthKey(pce.last_date)||period!==monthKey(dpi.last_date)||
+      period!==pce.current_vintage_provenance.issuer_release_reference_month||
+      period!==dpi.current_vintage_provenance.issuer_release_reference_month||
       ord(current)-ord(period)<0||ord(current)-ord(period)>3||
       ord(period)-ord(monthKey(p.at(-2).period))!==1||
       ord(period)-ord(monthKey(d.at(-2).period))!==1||
