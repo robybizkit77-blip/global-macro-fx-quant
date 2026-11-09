@@ -104,6 +104,25 @@ def prepare(note, current, *, as_of=None):
              fred+" levels no longer agree with BEA latest monthly rate")
         newer=ds[-1]>=old["last_date"]
         gate(newer,fred+" cannot regress to an older vintage")
+        # Idempotence: do not rewrite provenance or create a new commit when
+        # the fully revised vintage has not changed since yesterday.
+        old_prov=old.get("current_vintage_provenance",{})
+        same_data=(
+            old.get("dates")==ds and old.get("values")==vs
+            and old.get("unit")==EXPECTED_UNIT and old.get("frequency")=="M"
+            and old_prov.get("source_csv_sha256")==x["source_csv_sha256"]
+            and old_prov.get("source_html_sha256")==
+                note["bea_issuer"]["issuer_html_sha256"]
+            and old_prov.get("source_series_first_release_PIT_certified") is False
+        )
+        if same_data:
+            changes.append({"id":ident,"before_last_date":old["last_date"],
+                            "after_last_date":ds[-1],
+                            "old_unit":old.get("unit",""),
+                            "new_unit":EXPECTED_UNIT,
+                            "fully_replaced_observations":len(ds),
+                            "revised_overlap_count":0,"changed":False})
+            continue
         r["dates"]=ds
         r["values"]=vs
         r["last_date"]=ds[-1]
@@ -116,7 +135,7 @@ def prepare(note, current, *, as_of=None):
         r["current_vintage_provenance"]={
             "status":"BEA_REVISED_HISTORY_VIA_FRED_CURRENT_NOT_PIT",
             "source_series_id":fred,
-            "issuer":"US_BEa",
+            "issuer":"US_BEA",
             "data_mirror":"FRED_ST_LOUIS_FED",
             "issuer_release_url":note["bea_issuer"]["url"],
             "issuer_release_reference_month":period,
