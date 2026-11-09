@@ -34,6 +34,112 @@ class BLSActualV10Tests(unittest.TestCase):
         cls.forecasts = read_rows(V9_LEDGER)
         assert len(cls.forecasts) >= 3
 
+    def test_bls_official_secondary_summary_fallback_only_after_release(self):
+        called = []
+        def fetch(url, host):
+            called.append(url)
+            if url == bls.SOURCE:
+                raise OSError("BLS main temporarily unavailable")
+            self.assertEqual(url, v10.ISSUER_URLS[1])
+            self.assertEqual(host, "www.bls.gov")
+            return RAW, url
+        rows, receipt = v10.capture(
+            self.forecasts, [], AFTER, fetch, observed_clock=lambda: SEEN)
+        self.assertEqual(called, list(v10.ISSUER_URLS))
+        self.assertEqual(len(rows), 4)
+        self.assertTrue(all(x["source_url"] == v10.ISSUER_URLS[1]
+                            for x in rows))
+        self.assertEqual(receipt["issuer_source_url"], v10.ISSUER_URLS[1])
+        self.assertEqual(receipt["new_metrics_archived"], 4)
+        v10.validate_actual_log(rows, self.forecasts)
+
+    def test_old_main_bls_page_then_fresh_official_summary(self):
+        old = mock_bls("September", "Wednesday, October 14, 2026")
+        called = []
+        def fetch(url, host):
+            called.append(url)
+            return (old if url == bls.SOURCE else RAW), url
+        rows, receipt = v10.capture(
+            self.forecasts, [], AFTER, fetch, observed_clock=lambda: SEEN)
+        self.assertEqual(called, list(v10.ISSUER_URLS))
+        self.assertEqual(len(rows), 4)
+        self.assertEqual(receipt["issuer_source_url"], v10.ISSUER_URLS[1])
+
+    def test_no_actual_if_both_bls_pages_stale_or_unavailable(self):
+        old = mock_bls("September", "Wednesday, October 14, 2026")
+        called = []
+        def old_pages(url, host):
+            called.append(url)
+            return old, url
+        rows, receipt = v10.capture(
+            self.forecasts, [], AFTER, old_pages, observed_clock=lambda: SEEN)
+        self.assertEqual(rows, [])
+        self.assertEqual(called, list(v10.ISSUER_URLS))
+        self.assertEqual(receipt["new_metrics_archived"], 0)
+        self.assertEqual(receipt["failure_types"], ["Pending", "Pending"])
+
+    def test_historical_bls_september_verbatim_opening_wording(self):
+        # Excerpt transcribed from the actual BLS September 2026 archived
+        # news release (2026-10-14); NOT downloaded issuer HTML bytes.
+        # Source: https://www.bls.gov/news.release/archives/cpi_10142026.htm
+        sample = b"""<html>
+        Transmission of material in this release is embargoed until
+        8:30 a.m. (ET) Wednesday, October 14, 2026 USDL-26-1574
+        <h2>CONSUMER PRICE INDEX - SEPTEMBER 2026</h2>
+        <p>The Consumer Price Index for All Urban Consumers (CPI-U)
+        increased 0.6 percent on a seasonally adjusted basis in
+        September after rising 0.4 percent in August, the U.S. Bureau
+        of Labor Statistics reported today. Over the last 12 months,
+        the all items index increased 3.7 percent before seasonal adjustment.</p>
+        <p>The index for gasoline rose 9.1 percent in September,
+        accounting for over half of the monthly all items increase.</p>
+        <p>The index for all items less food and energy rose 0.3 percent
+        in September, as it did in August.</p>
+        <p>The all items index rose 3.7 percent for the 12 months ending
+        September, a larger increase than in August. The all items less
+        food and energy index rose 2.6 percent over the year,
+        following a 2.4-percent increase over the 12 months ending August.</p>
+        <h3>Table A. Percent changes in CPI</h3>
+        <p>The index for all items less food and energy rose 2.6 percent
+        over the past 12 months.</p></html>"""
+        parsed = bls.parse(
+            raw=sample, month="September",
+            release_label="Wednesday, October 14, 2026")
+        self.assertEqual(parsed["metric_actual_pct"], {
+            "US_CPI_U_HEADLINE_MOM_SA": 0.6,
+            "US_CPI_U_HEADLINE_YOY_NSA": 3.7,
+            "US_CPI_U_CORE_MOM_SA": 0.3,
+            "US_CPI_U_CORE_YOY_NSA": 2.6,
+        })
+
+    def test_official_september_archive_replay_reports_source_or_explicit_unavailable(self):
+        from validation.macro.verify_bls_archived_issuer_replay_v12 import (
+            ARCHIVE, run as verify_archive
+        )
+        archive_raw = mock_bls(
+            "September", "Wednesday, October 14, 2026",
+            hmo="increased 0.6", hyo="increased 3.7",
+            cmo="rose 0.3", cyo="rose 2.6")
+        def available(url, host):
+            self.assertEqual((url, host), (ARCHIVE, "www.bls.gov"))
+            return archive_raw, url
+        got = verify_archive(fetch=available)
+        self.assertEqual(
+            got["status"], "HISTORICAL_BLS_ARCHIVE_FOUR_EXACT_ACTUALS_VERIFIED")
+        self.assertTrue(got["verified_historical_issuer_html"])
+        self.assertFalse(got["October_2026_actual_observed"])
+        def blocked(url, host):
+            raise OSError("HTTP intentionally unavailable")
+        missing = verify_archive(fetch=blocked)
+        self.assertEqual(
+            missing["status"],
+            "HISTORICAL_BLS_ARCHIVE_HTTP_UNAVAILABLE_NO_VALIDATION_CLAIM")
+        self.assertFalse(missing["verified_historical_issuer_html"])
+        with self.assertRaises(AssertionError):
+            verify_archive(fetch=lambda url, host: (
+                mock_bls("September", "Wednesday, October 14, 2026",
+                    hmo="increased 0.8"), url))
+
     def test_pre_release_never_fetches_future_actual(self):
         calls = []
         def prohibited(*args):

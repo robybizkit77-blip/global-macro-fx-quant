@@ -35,6 +35,9 @@ KEY = "USD|2026-11-10|INFLATION|Consumer Price Index"
 MAX_LAG = timedelta(days=7)
 METRICS = tuple(bls.KEYS)
 QUALITY = "ISSUER_BLS_HTML_FIRST_RUNNER_OBSERVATION_NOT_PUBLISHER_PIT"
+# Independent BLS-owned summary URL protects against a temporarily stale
+# or unavailable primary page; both still require the exact dated issuer issue.
+ISSUER_URLS = (bls.SOURCE, "https://www.bls.gov/news.release/cpi.nr0.htm")
 
 
 def need(ok, why):
@@ -92,7 +95,7 @@ def validate_actual_log(rows, forecasts):
         need(row.get("official_scheduled_release_utc") == utc_text(release) and
              row.get("reference_period") == "October 2026",
              "wrong BLS date or reference period")
-        need(row.get("source_url") == bls.SOURCE and
+        need(row.get("source_url") in ISSUER_URLS and
              isinstance(row.get("source_html_sha256"), str) and
              re.fullmatch("[0-9a-f]{64}", row["source_html_sha256"]),
              "unverified issuer URL or source fingerprint")
@@ -153,14 +156,22 @@ def capture(forecasts, existing, now, fetch=retrieve, observed_clock=None):
         return existing, {**base, "source_status": "BEFORE_RELEASE_NO_HTTP"}
     if now > release + MAX_LAG:
         return existing, {**base, "source_status": "OUTSIDE_OBSERVATION_WINDOW_NO_HTTP"}
-    try:
-        raw, url = fetch(bls.SOURCE, "www.bls.gov")
-        need(url == bls.SOURCE, "BLS current release URL changed unexpectedly")
-        parsed = bls.parse(raw=raw)
-    except (Pending, OSError, TimeoutError, UnicodeError, ValueError) as exc:
+    failure_types = []
+    raw = url = parsed = None
+    for issuer_url in ISSUER_URLS:
+        try:
+            candidate_raw, final_url = fetch(issuer_url, "www.bls.gov")
+            need(final_url == issuer_url,
+                 "BLS final URL must equal approved HTTPS publisher URL")
+            candidate_parsed = bls.parse(raw=candidate_raw)
+            raw, url, parsed = candidate_raw, final_url, candidate_parsed
+            break
+        except (Pending, OSError, TimeoutError, UnicodeError, ValueError) as exc:
+            failure_types.append(type(exc).__name__)
+    if parsed is None:
         return existing, {**base,
             "source_status": "ISSUER_NOT_AVAILABLE_OR_EXACT_RELEASE_NOT_PARSABLE",
-            "failure_type": type(exc).__name__}
+            "failure_types": failure_types}
     actuals = parsed["metric_actual_pct"]
     need(set(actuals) == set(METRICS), "not all four CPI metrics were parsed")
     observed = observed_clock()
@@ -188,7 +199,7 @@ def capture(forecasts, existing, now, fetch=retrieve, observed_clock=None):
             "reference_period": parsed["reference_period"],
             "official_scheduled_release_utc": utc_text(release),
             "observed_at_utc": utc_text(observed),
-            "source_url": bls.SOURCE,
+            "source_url": url,
             "source_html_sha256": source_hash,
             "actual_percent": actual,
             "v9_provider_observation_sha256": f["record_sha256"] if f else None,
@@ -218,6 +229,7 @@ def capture(forecasts, existing, now, fetch=retrieve, observed_clock=None):
         "provider_observation_links": sum(
             x["v9_provider_observation_sha256"] is not None for x in added),
         "source_html_sha256": source_hash,
+        "issuer_source_url": url,
         "observed_at_utc": utc_text(observed),
         "metric_actual_percent": {
             x["metric_id"]: x["actual_percent"] for x in added},

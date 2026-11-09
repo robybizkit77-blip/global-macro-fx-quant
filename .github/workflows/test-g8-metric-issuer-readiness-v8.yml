@@ -7,6 +7,7 @@ on:
       - 'validation/macro/g8_metric_issuer_contract_v8.py'
       - 'validation/macro/preflight_us_cpi_official_actual_v8.py'
       - 'validation/macro/capture_us_cpi_exact_actuals_v10.py'
+      - 'validation/macro/verify_bls_archived_issuer_replay_v12.py'
       - 'validation/macro/capture_uk_ch_gdp_official_firstseen_v11.py'
       - 'validation/macro/test_capture_uk_ch_gdp_firstseen_v11.py'
       - 'validation/macro/MACRO_UK_CH_GDP_OFFICIAL_FIRST_SEEN_V11.jsonl'
@@ -27,6 +28,7 @@ on:
       - 'validation/macro/g8_metric_issuer_contract_v8.py'
       - 'validation/macro/preflight_us_cpi_official_actual_v8.py'
       - 'validation/macro/capture_us_cpi_exact_actuals_v10.py'
+      - 'validation/macro/verify_bls_archived_issuer_replay_v12.py'
       - 'validation/macro/capture_uk_ch_gdp_official_firstseen_v11.py'
       - 'validation/macro/test_capture_uk_ch_gdp_firstseen_v11.py'
       - 'validation/macro/MACRO_UK_CH_GDP_OFFICIAL_FIRST_SEEN_V11.jsonl'
@@ -81,10 +83,33 @@ jobs:
           assert x['source_first_publication_PIT_verified'] is False
           print('G8_METRIC_V8_OFFLINE_CONTRACT_PASS')
           PY
+      - name: Replay archived official BLS CPI HTML when accessible
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m validation.macro.verify_bls_archived_issuer_replay_v12 \
+            | tee /tmp/g8-bls-cpi-real-september-archive-replay.json
+          python - <<'PY'
+          import json,os
+          r=json.load(open('/tmp/g8-bls-cpi-real-september-archive-replay.json'))
+          assert r['status'] in {
+            'HISTORICAL_BLS_ARCHIVE_FOUR_EXACT_ACTUALS_VERIFIED',
+            'HISTORICAL_BLS_ARCHIVE_HTTP_UNAVAILABLE_NO_VALIDATION_CLAIM'
+          },r
+          assert r['October_2026_actual_observed'] is False
+          if not r['verified_historical_issuer_html']:
+              print('::warning::BLS historical archive HTTP unavailable; real issuer parser NOT verified')
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as fp:
+              fp.write('### Historical BLS CPI release HTML regression\n')
+              fp.write('- '+r['status']+'\n')
+              fp.write('- This is September data for parser validation only, not October actuals.\n')
+          PY
       - uses: actions/upload-artifact@v4
         with:
           name: g8-exact-metric-bls-cpi-preflight-v8
-          path: /tmp/g8-us-cpi-preflight-v8.json
+          path: |
+            /tmp/g8-us-cpi-preflight-v8.json
+            /tmp/g8-bls-cpi-real-september-archive-replay.json
           retention-days: 14
       - name: No operational payload changed
         run: test -z "$(git status --porcelain -- live_data site payload)"
