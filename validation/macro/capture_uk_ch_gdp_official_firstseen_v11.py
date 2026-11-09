@@ -126,8 +126,8 @@ def parse_seco(raw, *, q="third", year=2026):
     first = re.split(r"\bFurther information\b|\bPublication schedule\b",
                      first, maxsplit=1, flags=re.I)[0][:2000]
     rate = (
-        r"(?:Swiss economy|Switzerland(?:'s|’s)?\s+quarterly real GDP)"
-        r".{0,240}?"
+        r"Swiss economy"
+        r".{0,80}?"
         r"(?P<verb>grew|grown|increased|rose|contracted|decreased|fell|"
         r"declined|shrunk|shrank)"
         r"\s+by\s+(?P<rate>\d+(?:\.\d+)?)\s*%"
