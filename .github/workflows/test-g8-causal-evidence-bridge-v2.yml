@@ -43,6 +43,28 @@ jobs:
         run: python -m pip install --disable-pip-version-check beautifulsoup4
       - name: Fail closed source-intake regression (no network or live writes)
         run: python -m unittest validation.macro.test_collect_us_nz_household_firm_sources_v1 -v
+      - name: Try real public publisher sources on PR (research receipt, nonblocking)
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        timeout-minutes: 3
+        run: |
+          python -m validation.macro.collect_us_nz_household_firm_sources_v1 \
+            --out /tmp/g8-us-nz-live-publisher-intake-pr-v1.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/g8-us-nz-live-publisher-intake-pr-v1.json'))
+          assert r['source_series_modified'] is False
+          assert len(r['sources'])==4
+          print('PUBLISHER_LIVE_TEST_ONLY',r['source_count_verified'],'/',len(r['sources']))
+          print('SOURCE_STATUSES',[(k,v['status']) for k,v in r['sources'].items()])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'pull_request' && always()
+        with:
+          name: g8-us-nz-publisher-source-live-probe-pr
+          path: /tmp/g8-us-nz-live-publisher-intake-pr-v1.json
+          if-no-files-found: warn
+          retention-days: 7
       - name: Produce research-only narrative and evidence JSON
         run: |
           python -m validation.macro.build_g8_causal_evidence_bridge_v2 --json-out /tmp/g8-evidence-v2.json --md-out /tmp/g8-evidence-v2.md
