@@ -1,0 +1,95 @@
+{
+  "schema": "GMFQ_HY_FX_RISK_FORWARD_PREREGISTRATION_V1",
+  "frozen_date_rome": "2026-11-09",
+  "earliest_eligible_capture_rome": "2026-11-10",
+  "status": "RESEARCH_SHADOW_ONLY",
+  "hypothesis": "The US HY OAS widening rule reduces extreme losses and drawdown in a predefined 20-ECB-fixing long-only FX momentum baseline, beyond constant lower exposure; it may not improve returns and is not a universal FX directional predictor.",
+  "primary_pair": "AUDJPY",
+  "secondary_pairs": [
+    "NZDJPY",
+    "AUDCHF",
+    "AUDUSD"
+  ],
+  "pairs_are_preselected_not_independent": true,
+  "sources": {
+    "fx": "live_data/sections/ECB_G8_PRICE_HISTORY.json",
+    "fx_reference": "Official ECB euro foreign exchange reference rates; not executable",
+    "fx_must_have_exact_capture_rome_date": true,
+    "hy": "FRED BAMLH0A0HYM2 (ICE US HY OAS)",
+    "hy_source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2",
+    "vix": "FRED VIXCLS (Cboe VIX close), descriptive context only",
+    "vix_source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=VIXCLS",
+    "availability_rule": "Acquire all source observations during actual future capture; preserve timestamp, source observation dates and raw values; never substitute current vintage for past capture"
+  },
+  "time": {
+    "intended_capture": "20:45 Europe/Rome on ECB business days",
+    "must_be_capture_date_in_rome": true,
+    "not_before_local_time": "20:30",
+    "macro_and_fx_cutoff": "At capture instant all reported inputs must be already fetched and source FX latest must equal capture date",
+    "hy_rule": "Exclude current or future US observations, then use the second-most-recent valid US HY daily observation before Rome capture date, paired with the observation five valid US dates earlier",
+    "hy_threshold_bp": 10,
+    "hy_threshold_inclusive": true,
+    "hy_difference_round_bp": 0.01,
+    "max_age_days_for_selected_hy": 8,
+    "vix_rule": "Most recent VIX US close dated strictly before Rome capture date, optional/record-only",
+    "no_backfill": true
+  },
+  "signal": {
+    "baseline": "For each pair: long 1 unit if ECB FX cross at capture T0 exceeds cross 20 ECB fixing sessions earlier, otherwise cash",
+    "filtered": "Identical baseline, but position=0 when lagged HY five-session widening >=10 bp",
+    "cross_definition": "For BASE/QUOTE, ECB quote-per-EUR divided by ECB base-per-EUR",
+    "primary_direction": "Long-only, no short or automatic reverse",
+    "secondary": "Descriptive only",
+    "no_tuning_after_first_capture": true,
+    "no_historical_entry_synthesis": true
+  },
+  "outcome": {
+    "entry": "First ECB FX fixing session STRICTLY AFTER T0",
+    "exit": "Second ECB FX fixing session STRICTLY AFTER T0",
+    "gross_log_return_pct": "100 * ln(FX_exit / FX_entry)",
+    "signal_held_fixed_between_entry_exit": true,
+    "turnover_cost_pct_per_full_unit": 0.05,
+    "tracking": "Record gross reference return separately from model reference PnL; 5 bps assumed per unit of changing exposure including initial entry; no carry/swap, slippage or executable price",
+    "outcome_must_be_appended_only_when_both_future_fixings_present": true,
+    "no_same_day_post_release_fx_reaction_claim": true
+  },
+  "controls": {
+    "snapshots": "validation/quant/prospective/HY_FX_RISK_FROZEN_SNAPSHOTS_V1.jsonl",
+    "outcomes": "validation/quant/prospective/HY_FX_RISK_FUTURE_ECB_OUTCOMES_V1.jsonl",
+    "unique_record_key": "capture_rome_date",
+    "snapshots_append_only": true,
+    "outcomes_append_only": true,
+    "incomplete_source_policy": "Append dated ABSTAIN snapshot; do not backfill or silently omit a scheduled trial day",
+    "cohort_reanalysis": "Treat correlated pairs and calendar days as a cluster, not independent events",
+    "benchmarks": [
+      "same momentum long-only",
+      "same momentum with HY filter",
+      "constant scaling of momentum to the prospective filter's exposure, scale locked only after a training-free monitoring threshold; no retroactive optimizing"
+    ],
+    "metrics": [
+      "max_drawdown_log_pct",
+      "realized_volatility_daily_pct",
+      "worst_daily_log_pct",
+      "CVaR_5pct",
+      "cumulative_reference_return_pct",
+      "turnover",
+      "source_and_capture_coverage"
+    ],
+    "exclude_historical_pre_freeze_results_from_prospective_cohort": true,
+    "minimum_calendar_weeks_before_inferential_review": 12,
+    "minimum_distinct_eligible_capture_days_before_inferential_review": 60,
+    "no_automatic_model_promotion": true
+  },
+  "forbidden": [
+    "NO_FX_CORE_CHANGES",
+    "NO_28_PAIR_RANKING_CHANGES",
+    "NO_DASHBOARD_CHANGES",
+    "NO_AUTOMATED_TRADES",
+    "NO_LIVE_SIZING",
+    "NO_REPLAY_OF_PAST_DAYS_AS_FORWARD",
+    "NO_TUNING_BASED_ON_FUTURE_OUTCOMES"
+  ],
+  "original_FX_quant_site_untouched": true,
+  "eligible_for_live_engine": false,
+  "eligible_for_trading": false
+}

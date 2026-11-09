@@ -1,0 +1,72 @@
+name: Research HY FX Risk Forward Shadow V1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/quant/HY_FX_RISK_FORWARD_PREREGISTERED_V1.json'
+      - 'validation/quant/hy_fx_risk_forward_v1.py'
+      - 'validation/quant/test_hy_fx_risk_forward_v1.py'
+      - '.github/workflows/research-hy-fx-risk-forward-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/quant/HY_FX_RISK_FORWARD_PREREGISTERED_V1.json'
+      - 'validation/quant/hy_fx_risk_forward_v1.py'
+      - 'validation/quant/test_hy_fx_risk_forward_v1.py'
+      - '.github/workflows/research-hy-fx-risk-forward-v1.yml'
+  schedule:
+    # Either UTC slot is 20:45 Rome in one season; the actual clock gate
+    # rejects the other slot, weekends, and missed scheduling windows.
+    - cron: '45 18 * * 1-5'
+    - cron: '45 19 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: hy-fx-forward-shadow-main
+  cancel-in-progress: false
+
+jobs:
+  research-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 3
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Frozen protocol and adversarial capture tests
+        run: |
+          python -m unittest validation.quant.test_hy_fx_risk_forward_v1 -v
+          python -m validation.quant.hy_fx_risk_forward_v1
+      - name: Research-only future ECB snapshot; no Core or UI changes
+        if: github.event_name == 'schedule' && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            python -m validation.quant.hy_fx_risk_forward_v1 --capture
+            git add -- validation/quant/prospective/HY_FX_RISK_FROZEN_SNAPSHOTS_V1.jsonl validation/quant/prospective/HY_FX_RISK_FUTURE_ECB_OUTCOMES_V1.jsonl
+            if git diff --cached --quiet; then
+              echo "No new prospective observations at this actual capture instant"
+              exit 0
+            fi
+            git commit -m "research: append actual-date HY FX shadow observations"
+            if git push origin HEAD:main; then
+              echo "Research snapshots persisted"
+              exit 0
+            fi
+            echo "Concurrent update; recalculate from newest main (no historical replay)"
+          done
+          echo "Failed to persist shadow observation; workflow must report failure" >&2
+          exit 1
