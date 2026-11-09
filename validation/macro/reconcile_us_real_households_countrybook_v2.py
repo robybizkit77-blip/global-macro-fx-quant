@@ -258,11 +258,15 @@ def research_countrybook_snapshot(result, *,today,root=ROOT):
     }
     # Replace only the stale wording in the RESEARCH export. Keep the
     # original economic_transmission_observations and its period flags.
+    observed=row["economic_transmission_observations"]["households"][0]
+    original_period=observed["observation_period"]
     row["economic_transmission_narrative_it"][4]=(
         "Famiglie e consumi: "+result["countrybook_us_households_narrative_it"]+
         " Fonte BEA, coerente con i livelli reali FRED. "
-        "Le serie storiche del Country Book originale restano a luglio "
-        "e non sono usate per inferire un'accelerazione recente."
+        "L'osservazione della serie canonica selezionata è datata "+
+        original_period+
+        "; il dato attualmente revisionato NON costituisce una prima "
+        "pubblicazione storica e non dimostra un'accelerazione causale."
     )
     return book
 

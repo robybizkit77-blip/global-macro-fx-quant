@@ -9,6 +9,8 @@ on:
       - 'validation/macro/check_macro_source_registry.py'
       - 'validation/macro/collect_us_nz_household_firm_sources_v1.py'
       - 'validation/macro/reconcile_us_real_households_countrybook_v2.py'
+      - 'validation/macro/prepare_us_revised_household_canonical_v1.py'
+      - 'validation/macro/test_prepare_us_revised_household_canonical_v1.py'
       - 'validation/macro/test_reconcile_us_real_households_countrybook_v2.py'
       - 'validation/macro/test_collect_us_nz_household_firm_sources_v1.py'
       - 'validation/macro/test_macro_official_source_label_contract_v1.py'
@@ -29,6 +31,8 @@ on:
       - 'validation/macro/check_macro_source_registry.py'
       - 'validation/macro/collect_us_nz_household_firm_sources_v1.py'
       - 'validation/macro/reconcile_us_real_households_countrybook_v2.py'
+      - 'validation/macro/prepare_us_revised_household_canonical_v1.py'
+      - 'validation/macro/test_prepare_us_revised_household_canonical_v1.py'
       - 'validation/macro/test_reconcile_us_real_households_countrybook_v2.py'
       - 'validation/macro/test_collect_us_nz_household_firm_sources_v1.py'
       - 'validation/macro/test_macro_official_source_label_contract_v1.py'
@@ -367,6 +371,7 @@ jobs:
           PY
 
       - name: Verify BEA/FRED revised-vintage Country Book (research only)
+        id: us_households_reconcile
         if: success()
         shell: bash
         continue-on-error: true
@@ -393,6 +398,98 @@ jobs:
           assert len(j['revised_series']['DSPIC96']['complete_revised_history'])>=82
           with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as out:
               out.write('\n'+Path('/tmp/macro-persistent/us-households-revised-countrybook-v2.md').read_text()+'\n')
+          PY
+
+      # Independent off-core gate: if BEA/FRED is unavailable, do not change
+      # either series. The existing 16 official inflation/labour series
+      # remain operational, and research receipt records the failure.
+      - name: Prepare two-series revised US household canonical replacement
+        id: us_households_prep
+        if: steps.us_households_reconcile.outcome == 'success'
+        shell: bash
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          python -m unittest validation.macro.test_prepare_us_revised_household_canonical_v1 -v
+          python -m validation.macro.prepare_us_revised_household_canonical_v1 \
+            --research-note /tmp/macro-persistent/us-households-revised-countrybook-v2.json \
+            --candidate-out /tmp/macro-persistent/MACRO_SERIES_US_REVISED_PREP.json \
+            --report-out /tmp/macro-persistent/us-households-revised-promotion-preflight-v1.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          j=json.loads(Path('/tmp/macro-persistent/us-households-revised-promotion-preflight-v1.json').read_text())
+          assert j['status'] in {
+              'REVISED_US_HOUSEHOLDS_READY_FOR_CANONICAL_APPLY',
+              'NO_CHANGE_VERIFIED_REVISED_VINTAGE'
+          },j
+          assert j['first_release_pit_eligible'] is False
+          assert j['g8_unchanged_other_than_two_us_household_series'] is True
+          PY
+
+      # The same gate was exercised on real BEA/FRED sources and validated
+      # using the direct payload/manifest round trip on the PR branch.
+      # Persist MAIN only with checked fast-forward; never force-push
+      # overlapping CPI/news/macro edits. No other currencies or FX signals.
+      - name: Promote verified revised US real PCE/DPI canonical pair safely
+        if: github.ref == 'refs/heads/main' && steps.us_households_prep.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          status="$(python - <<'PY'
+          import json
+          j=json.load(open('/tmp/macro-persistent/us-households-revised-promotion-preflight-v1.json'))
+          print(j['status'])
+          PY
+          )"
+          if [ "$status" = NO_CHANGE_VERIFIED_REVISED_VINTAGE ]; then
+            echo 'US_REVISED_HOUSEHOLDS_ALREADY_CURRENT_NO_COMMIT'
+            exit 0
+          fi
+          test "$status" = REVISED_US_HOUSEHOLDS_READY_FOR_CANONICAL_APPLY
+          python validation/update_live_direct_section.py \
+            --section MACRO_SERIES \
+            --replacement /tmp/macro-persistent/MACRO_SERIES_US_REVISED_PREP.json \
+            --apply > /tmp/macro-persistent/us-households-canonical-direct-apply-v1.json
+          python validation/build_live_manifest_v2.py \
+            --write live_data/manifest.v2.json \
+            > /tmp/macro-persistent/us-households-canonical-manifest-v1.json
+          python validation/check_live_update_contract.py \
+            > /tmp/macro-persistent/us-households-canonical-live-contract-v1.json
+          python validation/rebuild_live_data_runtime.py --verify-only \
+            > /tmp/macro-persistent/us-households-canonical-runtime-v1.json
+          python -m validation.macro.build_g8_causal_evidence_bridge_v2 \
+            --json-out /tmp/macro-persistent/us-households-canonical-g8-research.json \
+            --md-out /tmp/macro-persistent/us-households-canonical-g8-research.md
+          python - <<'PY'
+          import json,subprocess
+          from pathlib import Path
+          d=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          prepared=json.load(open('/tmp/macro-persistent/us-households-revised-promotion-preflight-v1.json'))
+          expected_month=prepared['reference_month']+'-01'
+          rows={r['id']:r for r in d['USD']}
+          for ident in ('US_PCEC96_history_value','US_DSPIC96_history_DSPIC96'):
+              row=rows[ident]
+              assert row['last_date']==expected_month
+              assert row['frequency']=='M'
+              assert row['unit']=='Billions of Chained 2017 Dollars SAAR'
+              assert row['current_vintage_provenance']['source_series_first_release_PIT_certified'] is False
+          allowed={'live_data/sections/MACRO_SERIES.json',
+                   'live_data/manifest.v2.json',
+                   'payload/part-00.txt','payload/part-01.txt'}
+          diff=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          assert diff and diff.issubset(allowed),diff
+          PY
+          python - <<'PY'
+          import json
+          from validation.macro.persist_calendar_news_safe_v12 import persist
+          managed=(
+            'live_data/sections/MACRO_SERIES.json',
+            'live_data/manifest.v2.json',
+            'payload/part-00.txt',
+            'payload/part-01.txt',
+          )
+          print(json.dumps(persist(managed=managed),sort_keys=True))
           PY
 
       - uses: actions/upload-artifact@v4
