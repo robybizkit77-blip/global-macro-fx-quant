@@ -603,7 +603,7 @@ function expectedReactionFromMetrics(row){
   // Each ACTUAL modelled bar must have the matching common-date historical
   // anchor, numerical R², and its OWN confidence (can legitimately be MEDIA).
   const expectedEstimates=Number(Boolean(chfEstimated))+Number(Boolean(nzEstimated));
-  const modelEntries=[...r.rateBarNote.matchAll(/(CHF\\/EUR|NZD\\/AUD) (ALTA|MEDIA|BASSA) \\(R² ([0-9]+\\.[0-9]+), base (20\\d{2}-\\d{2}-\\d{2})\\)/g)];
+  const modelEntries=[...r.rateBarNote.matchAll(/(CHF\/EUR|NZD\/AUD) (ALTA|MEDIA|BASSA) \(R² ([0-9]+\.[0-9]+), base (20\d{2}-\d{2}-\d{2})\)/g)];
   if(r.rateBarTexts.filter(x=>x.endsWith('*')).length!==expectedEstimates||
      modelEntries.length!==expectedEstimates||
      (expectedEstimates>0&&!r.rateBarNote.includes('STIMA β (non operativa)')))
