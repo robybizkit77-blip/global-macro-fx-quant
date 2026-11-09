@@ -57,10 +57,18 @@ def reconcile(ois:dict, native:dict):
         x["policy_decision"]={"date":p["date"],"effective_date":p["effective_date"],
             "source":p["source"],"old_rate":p["old_rate"],"new_rate":p["rate"],
             "change_bp":25,"quality":"OFFICIAL_VERIFIED"}
-        post=x["as_of"]>=p["date"]
+        # A dated daily quote equal to the decision calendar day has no
+        # independently verified *intraday* timestamp. A calendar equality
+        # cannot prove that the observation followed the policy announcement.
+        event_day=x["as_of"]==p["date"]
+        post=x["as_of"]>p["date"]
         x["policy_comparison_temporally_aligned"]=post
-        x["policy_reference_note"]=("Market quote dated on/after decision. Descriptive rate minus policy, not meeting probability."
-            if post else "PRE-DECISION OIS: no post-announcement repricing inference; keep historical quoted levels.")
+        x["policy_reference_note"]=(
+            "Market quote after decision day. Descriptive rate minus policy, not meeting probability."
+            if post else
+            "Decision-day daily observation: intraday quote timestamp unavailable; post-event pricing WITHHELD."
+            if event_day else
+            "PRE-DECISION OIS: no post-announcement repricing inference; keep historical quoted levels.")
         for ten in ("3m","6m","12m"):
             h=x["horizons"][ten]
             if not isinstance(h.get("rate"),(int,float)): raise ValueError(c+" missing "+ten+" rate")
@@ -70,6 +78,8 @@ def reconcile(ois:dict, native:dict):
         if post:
             vals=[x["horizons"][ten]["policy_delta_bp"] for ten in ("3m","6m","12m")]
             x["direction"]="UP" if all(v>1 for v in vals) else "DOWN" if all(v< -1 for v in vals) else "MIXED"
+        elif event_day:
+            x["direction"]="DECISION_DAY_TIMESTAMP_UNVERIFIED_NO_POLICY_REPRICING"
         else:
             x["direction"]="PRE_DECISION_NO_POST_EVENT_PRICING"
         y.update({"rate":p["rate"],"rate_text":f'{p["rate"]:.2f}%',"last_date":p["date"],
@@ -83,11 +93,19 @@ def reconcile(ois:dict, native:dict):
         if isinstance(y.get("market_pricing"),dict):
             y["market_pricing"]["policy_comparison_temporally_aligned"]=post
             y["market_pricing"]["policy_reference_as_of"]=p["date"]
-            if not post:
+            if event_day:
+                y["market_pricing"]["freshness_status"]="DECISION_DAY_TIMING_UNVERIFIED"
+                y["market_pricing"]["note"]=x["policy_reference_note"]
+            elif not post:
                 y["market_pricing"]["freshness_status"]="PRE_DECISION_MARKET_CURVE"
                 y["market_pricing"]["note"]="OIS curve precedes latest official policy decision; levels preserved; no post-event repricing asserted."
+            elif y["market_pricing"].get("freshness_status") in (
+                    "PRE_DECISION_MARKET_CURVE","DECISION_DAY_TIMING_UNVERIFIED"):
+                y["market_pricing"]["freshness_status"]="CURRENT_VALIDATED"
+                y["market_pricing"]["note"]=x["policy_reference_note"]
         report[c]={"policy_rate":p["rate"],"policy_decision_date":p["date"],
-          "market_quote_as_of":x["as_of"],"policy_comparison_aligned":post}
+          "market_quote_as_of":x["as_of"],"policy_comparison_aligned":post,
+          "decision_day_timing_unverified":event_day}
     for c in set(o["currencies"])-set(DECISIONS):
         if o["currencies"][c]!=ois["currencies"][c] or n[c]!=native[c]:
             raise ValueError("non-target currency mutated: "+c)
