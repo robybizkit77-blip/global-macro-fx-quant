@@ -1,0 +1,41 @@
+name: G8 Macro Surprise Event and 28 Pairs V6 - Research
+
+on:
+  pull_request:
+    paths:
+      - 'validation/macro/build_g8_event_surprise_relative_pairs_v6.py'
+      - 'validation/macro/test_build_g8_event_surprise_relative_pairs_v6.py'
+      - '.github/workflows/test-g8-event-surprise-relative-pairs-v6.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/macro/build_g8_event_surprise_relative_pairs_v6.py'
+      - 'validation/macro/test_build_g8_event_surprise_relative_pairs_v6.py'
+      - '.github/workflows/test-g8-event-surprise-relative-pairs-v6.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  macro-event-surprise-research-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test frozen pre/post surprise, relative two-year clocks and FX causality blocks
+        run: python -m unittest validation.macro.test_build_g8_event_surprise_relative_pairs_v6 -v
+      - name: Export read-only G8 event-surprise Country Book
+        run: |
+          python -m validation.macro.build_g8_event_surprise_relative_pairs_v6 --json-out /tmp/g8-event-surprise-v6.json --md-out /tmp/g8-event-surprise-v6.md
+          cat /tmp/g8-event-surprise-v6.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: g8-event-surprise-28pairs-research-v6
+          path: |
+            /tmp/g8-event-surprise-v6.json
+            /tmp/g8-event-surprise-v6.md
+          retention-days: 14
