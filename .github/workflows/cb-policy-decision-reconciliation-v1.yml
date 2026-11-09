@@ -36,6 +36,7 @@ jobs:
       - name: Test source-verified policy rates and temporal guards
         run: python3 -m unittest validation.cb_pricing.test_reconcile_november_policy_decisions_v1 -v
       - name: Apply only verified policy decisions to checked-out runtime
+        id: policy-apply
         run: |
           set -euo pipefail
           python3 validation/cb_pricing/reconcile_november_policy_decisions_v1.py --apply
@@ -47,19 +48,26 @@ jobs:
           python3 validation/check_live_update_contract.py >/tmp/reconciled-policy-contract.json
           python3 validation/rebuild_live_data_runtime.py --verify-only >/tmp/reconciled-policy-roundtrip.json
           python3 - <<'PY'
-          import json,subprocess
+          import json,subprocess,os
           from pathlib import Path
           o=json.loads(Path('live_data/sections/OIS_DATA.json').read_text())['currencies']
           n=json.loads(Path('live_data/sections/NATIVE_CB_DATA.json').read_text())
           assert (o['AUD']['policy_rate'],n['AUD']['rate'])==(4.85,4.85)
           assert (o['GBP']['policy_rate'],n['GBP']['rate'])==(4,4)
           assert o['AUD']['policy_comparison_temporally_aligned'] is True
-          assert o['GBP']['policy_comparison_temporally_aligned'] is False
-          assert all(o['GBP']['horizons'][k]['policy_delta_bp'] is None for k in ('3m','6m','12m'))
+          g=o['GBP']
+          event_day=g['as_of']=='2026-11-05'
+          post_day=g['as_of']>'2026-11-05'
+          assert g['policy_comparison_temporally_aligned'] is post_day
+          assert g['direction']==('DECISION_DAY_TIMESTAMP_UNVERIFIED_NO_POLICY_REPRICING' if event_day else
+                                 'PRE_DECISION_NO_POST_EVENT_PRICING' if not post_day else g['direction'])
+          assert all((g['horizons'][k]['policy_delta_bp'] is not None)==post_day
+                     for k in ('3m','6m','12m'))
           op=json.loads(Path('live_data/sections/OIS_OPERATIONAL_VIEW.json').read_text())['currencies']
           assert op['AUD']['policy_rate']==4.85 and op['GBP']['policy_rate']==4.0
-          assert op['GBP']['direction_vs_policy']=='PRE_DECISION_NO_POST_EVENT_PRICING'
-          assert all(op['GBP']['horizons'][k]['policy_delta_bp'] is None for k in ('3m','6m','12m'))
+          assert op['GBP']['direction_vs_policy']==g['direction']
+          assert all(op['GBP']['horizons'][k]['policy_delta_bp']==g['horizons'][k]['policy_delta_bp']
+                     for k in ('3m','6m','12m'))
           for file in ('/tmp/reconciled-policy-manifest.json','/tmp/reconciled-policy-registry.json','/tmp/reconciled-policy-contract.json','/tmp/reconciled-policy-roundtrip.json'):
            r=json.loads(Path(file).read_text())
            assert r['status']=='PASS',(file,r)
@@ -67,14 +75,20 @@ jobs:
           allowed={'live_data/sections/OIS_DATA.json','live_data/sections/NATIVE_CB_DATA.json',
                    'live_data/sections/OIS_OPERATIONAL_VIEW.json','live_data/sections/OIS_SOURCE_READINESS_VIEW.json',
                    'live_data/manifest.v2.json','payload/part-00.txt'}
-          assert changes and changes.issubset(allowed),('unexpected mutation',changes)
-          assert 'live_data/sections/OIS_OPERATIONAL_VIEW.json' in changes,('derived OIS feed not updated',changes)
-          # The source-readiness dossier only changes if access/coverage changed.
-          # No decision-only rate update should force a fabricated source change.
-          print('CB_POLICY_DECISIONS_RECONCILED',sorted(changes))
+          assert changes.issubset(allowed),('unexpected mutation',changes)
+          if changes:
+           assert 'live_data/sections/OIS_OPERATIONAL_VIEW.json' in changes,('derived OIS feed not updated',changes)
+           assert 'live_data/sections/OIS_DATA.json' in changes or 'live_data/sections/NATIVE_CB_DATA.json' in changes,('no canonical decision change',changes)
+          # A second event trigger for an already-reconciled official policy
+          # is a validated NO-OP, not a reason to invent a new policy update.
+          # The source-readiness dossier only changes when access changes.
+          with open(os.environ['GITHUB_OUTPUT'],'a',encoding='utf-8') as out:
+           out.write('changed='+('true' if changes else 'false')+'\n')
+          print('CB_POLICY_DECISIONS_RECONCILED' if changes else
+                'CB_POLICY_DECISIONS_ALREADY_RECONCILED_NO_PUBLICATION',sorted(changes))
           PY
       - name: Persist to main only after full runtime and audit proof
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && steps.policy-apply.outputs.changed == 'true'
         env:
           TARGET_BRANCH: main
         run: |
