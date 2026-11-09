@@ -39,7 +39,14 @@ class USOfficialShutdownCalendarGapTests(unittest.TestCase):
             with self.subTest(key=key):
                 entry=r["slots"][key]
                 self.assertEqual(entry["prior_24_missing_periods"],["2025-10"])
-                self.assertEqual(entry["economic_period_last_available"],"2026-09")
+                # The source is a CURRENT revised archive, not a frozen
+                # historical as-of vintage. Its newest period may advance.
+                self.assertEqual(
+                    entry["economic_period_last_available"],
+                    self.observed["inflation_labour"][key]["observation_period"],
+                )
+                self.assertGreaterEqual(entry["economic_period_last_available"], "2026-09")
+                self.assertTrue(entry["current_research_z_not_historic_first_release_PIT"])
                 self.assertEqual(entry["never_published_reference_period"],"2025-10")
                 self.assertFalse(entry["oct_2025_observation_exists"])
                 self.assertTrue(entry["strict_current_research_z_is_null"])
