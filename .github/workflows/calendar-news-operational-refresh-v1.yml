@@ -9,6 +9,8 @@ on:
       - 'validation/macro/freeze_pre_release_consensus_v1.py'
       - 'validation/macro/capture_official_postrelease_actuals_v1.py'
       - 'validation/macro/build_macro_event_market_context_v1.py'
+      - 'validation/macro/build_g8_macro_event_lifecycle_v7.py'
+      - 'validation/macro/test_build_g8_macro_event_lifecycle_v7.py'
       - 'validation/macro/test_build_macro_event_market_context_v1.py'
       - 'validation/macro/fixtures/macro_event_market_preanchor_oct28_v1.json'
       - 'validation/macro/MACRO_EVENT_PRE_RELEASE_MARKET_ANCHORS_V1.jsonl'
@@ -42,6 +44,8 @@ on:
       - 'validation/macro/freeze_pre_release_consensus_v1.py'
       - 'validation/macro/capture_official_postrelease_actuals_v1.py'
       - 'validation/macro/build_macro_event_market_context_v1.py'
+      - 'validation/macro/build_g8_macro_event_lifecycle_v7.py'
+      - 'validation/macro/test_build_g8_macro_event_lifecycle_v7.py'
       - 'validation/macro/test_build_macro_event_market_context_v1.py'
       - 'validation/macro/fixtures/macro_event_market_preanchor_oct28_v1.json'
       - 'validation/macro/MACRO_EVENT_PRE_RELEASE_MARKET_ANCHORS_V1.jsonl'
@@ -276,6 +280,33 @@ jobs:
                   o.write('- '+e['event_key']+': **'+e['state']+'**.\n')
               o.write('- 2Y government yields are not pure CB policy; CAD futures are not OIS, USD 6M remains estimated/absent from official source.\n')
           PY
+
+      - name: Audit G8 upcoming macro releases and missing surprise inputs (V7 read-only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Reuse this existing scheduled Calendar/News clock. Do not write to
+          # live_data, append actuals, change rankings or introduce a cron.
+          # Standalone V7 CI is the strict test gate; a research audit problem
+          # must not stop the established Calendar/News refresh and publication.
+          if python -m validation.macro.build_g8_macro_event_lifecycle_v7 \
+               --json-out /tmp/g8-macro-event-lifecycle-v7.json \
+               --md-out /tmp/g8-macro-event-lifecycle-v7.md \
+               --github-summary "$GITHUB_STEP_SUMMARY"; then
+             echo G8_MACRO_EVENT_LIFECYCLE_AUDIT_READY
+          else
+             echo "::warning::G8_V7_RESEARCH_AUDIT_FAILED -- Calendar/News operational refresh remains independent"
+             echo "- G8 V7 lifecycle research audit unavailable on this run; it did not update any market signals." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calendar-news-g8-macro-lifecycle-v7
+          path: |
+            /tmp/g8-macro-event-lifecycle-v7.json
+            /tmp/g8-macro-event-lifecycle-v7.md
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Test source recheck distinct from content modification
         run: python validation/test_calendar_news_daily_recheck_v1.py
