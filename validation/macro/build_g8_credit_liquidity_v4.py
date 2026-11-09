@@ -129,6 +129,8 @@ def require(ok,msg):
     if not ok:
         raise ValueError("G8_CREDIT_V4_REJECTED: "+msg)
 
+FREQ_OVERRIDES={"US_MORTGAGE30US_history_MORTGAGE30US":"W"}
+
 def parse_period(raw,freq):
     txt=str(raw).strip()
     week=re.fullmatch(r"(\d{4})-W(\d{2})",txt)
@@ -152,8 +154,12 @@ def parse_period(raw,freq):
             except ValueError:
                 continue
         require(day is not None,"unsupported observation date token "+txt)
-    return (date(day.year,day.month,calendar.monthrange(day.year,day.month)[1])
-            if freq in ("M","Q") else day),freq
+    if freq=="Q":
+        final_month=((day.month-1)//3+1)*3
+        return date(day.year,final_month,calendar.monthrange(day.year,final_month)[1]),freq
+    if freq=="M":
+        return date(day.year,day.month,calendar.monthrange(day.year,day.month)[1]),freq
+    return day,freq
 
 def observation(row,kind,*,today):
     require(kind in KINDS,row["id"]+" unsupported credit semantic kind")
@@ -166,7 +172,7 @@ def observation(row,kind,*,today):
             row["id"]+" non-finite credit observations")
     require(math.isclose(row["last_value"],vals[-1],rel_tol=1e-10,abs_tol=1e-8),
             row["id"]+" last_value mismatch")
-    freq=str(row.get("frequency") or "").upper()
+    freq=FREQ_OVERRIDES.get(row["id"],str(row.get("frequency") or "").upper())
     if freq not in ("M","Q","W","D"):
         sample=str(dates[-1])
         freq="Q" if re.fullmatch(r"\d{4}-?Q[1-4]",sample) else (
@@ -227,11 +233,11 @@ def describe(role,rows):
             shift=f"{d['change_bp_if_borrower_rate']:+.1f} pb sul tasso applicato"
         elif d["kind"]=="survey_tightening":
             is_tight=d["net_tightening_status_if_verified"]=="NET_TIGHTENING"
-            shift=("saldo ancora positivo di irrigidimento; " if is_tight
-                   else "saldo non positivo di irrigidimento; ")+
-                ("intensità in aumento" if move>0 else
-                 "intensità in diminuzione" if move<0 else
-                 "intensità stabile")
+            shift=(("saldo ancora positivo di irrigidimento; " if is_tight
+                    else "saldo non positivo di irrigidimento; ") +
+                   ("intensità in aumento" if move>0 else
+                    "intensità in diminuzione" if move<0 else
+                    "intensità stabile"))
         elif d["kind"] in ("loan_stock","bank_reserves_stock","cb_balance_sheet_stock"):
             shift=(f"{d['within_series_stock_change_pct_not_credit_growth_rate']:+.2f}% "
                    "rispetto al periodo prima (stock, non erogazioni)"
