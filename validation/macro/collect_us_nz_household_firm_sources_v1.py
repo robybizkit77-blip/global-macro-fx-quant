@@ -141,14 +141,21 @@ def statsnz_known_release(raw, url):
     t=" ".join(soup.get_text(" ",strip=True).split())
     if not re.search(r"Electronic card transactions:\s*September 2026",t,re.I):
         raise ValueError("Stats NZ issuer release identity changed")
-    if not re.search(r"16 October 2026",t,re.I):
-        raise ValueError("Stats NZ release date mismatch")
+    # On the Stats NZ production HTML the publication date can be rendered
+    # outside the readable body. The title is checked live; date comes from
+    # the earlier independently verified manual publisher snapshot unless
+    # this run can also see it. Never label that as a new release-day PIT.
+    date_seen=bool(re.search(r"16\\s+October\\s+2026|2026-10-16",t,re.I))
     if not re.search(r"Values.*not adjusted for price changes",t,re.I):
         raise ValueError("Stats NZ nominal nature not verified")
     # Do not equate this with retail *volume* or a new retail survey quarter.
-    return {"status":"OFFICIAL_STATIC_KNOWN_RELEASE_VERIFIED_NO_LATEST_DISCOVERY",
+    return {"status":("KNOWN_STATIC_RELEASE_DATE_AND_TITLE_CONFIRMED" if date_seen
+                      else "KNOWN_STATIC_RELEASE_TITLE_ONLY_DATE_FROM_PRIOR_RESEARCH"),
             "issuer_url":url,"reference_period":"2026-09",
-            "release_date":"2026-10-16","metric_type":"NOMINAL_ELECTRONIC_CARD_TRANSACTION_VALUE",
+            "release_date":"2026-10-16",
+            "release_date_verified_in_current_html":date_seen,
+            "release_date_otherwise_from":"G8_US_NZ_PUBLISHED_RELEASE_CONTEXT_2026-11-09",
+            "metric_type":"NOMINAL_ELECTRONIC_CARD_TRANSACTION_VALUE",
             "not_real_retail_volumes":True,"latest_release_certified":False}
 
 
