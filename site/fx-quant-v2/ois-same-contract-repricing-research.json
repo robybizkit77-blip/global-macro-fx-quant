@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_FXV2_SAME_CONTRACT_FUTURES_MOVES_V1",
-  "data_as_of": "2026-11-06",
-  "source_capture_at_utc": "2026-11-08T21:04:10.152767Z",
+  "data_as_of": "2026-11-09",
+  "source_capture_at_utc": "2026-11-09T12:11:13.520049Z",
   "source_description": "Secondary source daily futures bars · immutable same-listed-contract archive",
-  "source_archive_rows": 142,
+  "source_archive_rows": 143,
   "unresolved_source_conflict_events": 10,
   "source_conflict_lineage_verified": 10,
   "snapshot_research_only": true,
@@ -30,12 +30,12 @@
   "currencies": {
     "USD": {
       "3m": {
-        "status": "QUARANTINED_CURRENT_DAY",
+        "status": "VERIFIED_CONTRACT_NO_MATCHED_REFERENCE",
         "contract": "ZQG2027",
         "symbol": "CBOT:ZQG2027",
         "expiration": "2027-03-01",
-        "as_of": "2026-11-06",
-        "rate_pct": null,
+        "as_of": "2026-11-09",
+        "rate_pct": 4.135,
         "change_1d_bp": null,
         "change_1w_bp": null,
         "one_day": null,
