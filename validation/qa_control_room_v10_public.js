@@ -7,6 +7,8 @@ const {readApproved,verifyPublicNzd}=require('./control_room_nzd_public_contract
 const {matrix:expectedOisResearchMatrix,romeTodayIso}=require('../site/control-room-preview/ois-pricing-estimates-v1.js');
 const {expectedOfficialCurrencies}=require('./control_room_public_ois_eligibility_v1.js');
 const approvedNzdrates=readApproved('.');
+const nzdWebReviewContext=JSON.parse(
+  fs.readFileSync('live_data/sections/NZD_B2_GOVT_WEB_REVIEW_CONTEXT.json','utf8'));
 // PR browser QA targets the *currently published* main; its new loader
 // and version token will appear on GitHub Pages only after merge.
 const loader=process.env.GITHUB_EVENT_NAME==='pull_request'?
@@ -1025,16 +1027,23 @@ async function getState(page){
              note:note?.textContent,noteDate:note?.textContent?.includes('2026-10-22'),
              noteLink:note?.querySelector('a')?.getAttribute('href'),core:p?.dataset.coreEffect,pair:p?.dataset.pairEffect};
          });
-         const noteExpected=webReview.liveNZD==='2026-10-16';
+         // RBNZ B2: an unapproved web read is never eligible after 14 days.
+         // Compare the canonical NZD source to the true dated research anchor.
+         const reviewAgeDays=(Date.parse(romeTodayIso()+'T00:00:00Z')-
+           Date.parse(nzdWebReviewContext.as_of+'T00:00:00Z'))/86400000;
+         const noteExpected=webReview.liveNZD===nzdWebReviewContext.canonical_at_review?.as_of&&
+           Number.isFinite(reviewAgeDays)&&reviewAgeDays>=0&&reviewAgeDays<=14;
          if(webReview.core!=='NONE'||webReview.pair!=='NONE'||
             (noteExpected&&(webReview.status!=='RESEARCH_UNAPPROVED'||!webReview.noteDate||
               !webReview.note?.includes('3.910%')||!webReview.note?.includes('4.980%')||
               !webReview.note?.includes('NON APPROVATO')||
               !webReview.noteLink?.startsWith('https://www.rbnz.govt.nz/')))||
-            (!noteExpected&&webReview.status!=='UNAVAILABLE'))
-           throw Error(name+' RBNZ web-review must remain study only '+JSON.stringify(webReview));
+            (!noteExpected&&(webReview.status!=='UNAVAILABLE'||webReview.note)))
+           throw Error(name+' RBNZ web-review expiry/provenance mismatch '+
+             JSON.stringify({reviewAgeDays,noteExpected,webReview}));
          console.log('CONTROL_ROOM_PUBLIC_NZD_B2_UNAPPROVED_STUDY_GREEN',name,
-           JSON.stringify({reviewStatus:webReview.status,liveNZD:webReview.liveNZD}));
+           JSON.stringify({reviewStatus:webReview.status,liveNZD:webReview.liveNZD,
+             reviewAsOf:nzdWebReviewContext.as_of,reviewAgeDays,noteExpected}));
        }
        const research=await page.evaluate(async()=>{
          const d=document.getElementById('gmfq-page').contentDocument;
