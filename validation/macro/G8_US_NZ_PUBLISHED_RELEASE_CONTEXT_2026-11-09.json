@@ -103,7 +103,7 @@
           "price_basis": "REAL_VOLUME",
           "publisher": "STATS_NZ",
           "release_date": "2026-08-24",
-          "source_url": "https://www.stats.govt.nz/news/economic-snapshot-households-and-businesses-experience-higher-fuel-prices-in-the-june-2026-quarter/"
+          "source_url": "https://www.stats.govt.nz/information-releases/retail-trade-survey-june-2026-quarter/"
         },
         {
           "id": "NZ_STATS_JUN2026_RETAIL_NOMINAL_QOQ",
@@ -117,7 +117,7 @@
           "price_basis": "NOMINAL_SALES_VALUE",
           "publisher": "STATS_NZ",
           "release_date": "2026-08-24",
-          "source_url": "https://www.stats.govt.nz/news/economic-snapshot-households-and-businesses-experience-higher-fuel-prices-in-the-june-2026-quarter/"
+          "source_url": "https://www.stats.govt.nz/information-releases/retail-trade-survey-june-2026-quarter/"
         },
         {
           "id": "NZ_STATS_SEP2026_ECT_RETAIL_VALUE_QOQ",
