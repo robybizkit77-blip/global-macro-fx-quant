@@ -113,6 +113,12 @@ class UsNzSourceResearchIntakeTests(unittest.TestCase):
         x=mod.statsnz_known_release(NZ,mod.NZ_ECT)
         self.assertFalse(x["latest_release_certified"])
         self.assertTrue(x["not_real_retail_volumes"])
+        self.assertTrue(x["release_date_verified_in_current_html"])
+        partial=mod.statsnz_known_release(
+            NZ.replace(b"16 October 2026",b"date loaded in client script"),mod.NZ_ECT)
+        self.assertFalse(partial["release_date_verified_in_current_html"])
+        self.assertEqual(partial["status"],
+                         "KNOWN_STATIC_RELEASE_TITLE_ONLY_DATE_FROM_PRIOR_RESEARCH")
         with self.assertRaisesRegex(ValueError,"identity changed"):
             mod.statsnz_known_release(NZ.replace(b"September",b"October"),mod.NZ_ECT)
         with self.assertRaisesRegex(ValueError,"nominal nature"):
