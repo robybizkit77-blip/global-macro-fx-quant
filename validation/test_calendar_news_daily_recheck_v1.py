@@ -564,6 +564,11 @@ assert "calendar-news-validation-pr-{0}" in calendar_workflow
 # and two V11 targeted UK/Swiss GDP issuer checks (no new workflow).
 assert calendar_workflow.count("    - cron:") == 5
 assert "    - cron: '34,39,49,59 13 10 11 *'" in calendar_workflow
+# The CPI desk interpretation must run inside the existing Calendar job.
+# Artifacts are research-only and must not create another cron/workflow.
+assert "python -m validation.macro.build_us_cpi_desk_research_note_v13" in calendar_workflow
+assert "validation.macro.test_build_us_cpi_desk_research_note_v13" in calendar_workflow
+assert "/tmp/g8-us-cpi-desk-v13.md" in calendar_workflow
 assert "    - cron: '11 7 12 11 *'" in calendar_workflow
 assert "    - cron: '11 8 16 11 *'" in calendar_workflow
 assert "python -m validation.macro.persist_calendar_news_safe_v12" in calendar_workflow
