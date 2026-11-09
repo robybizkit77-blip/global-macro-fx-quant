@@ -113,7 +113,7 @@ def parse(*,raw,month=MONTH,year=YEAR,release_label=RELEASE_LABEL):
     ]
     # The news release's lead starts AFTER the exact heading, not the menu
     # or a future release mentioned in boilerplate.
-    lead_text=text.split(required,1)[1][:3300]
+    lead_text=text.split(required,1)[1].split("Table A. Percent changes",1)[0][:3300]
     # BLS repeats the annual core rate in later narrative sections.
     # Match only the introductory summary BEFORE Table A; the source's
     # repeated prose must not create an artificial ambiguous annual actual.
