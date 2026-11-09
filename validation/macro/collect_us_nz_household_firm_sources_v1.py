@@ -83,7 +83,17 @@ def fred_monthly_csv(raw, ident, now):
         a,b=date.fromisoformat(a),date.fromisoformat(b)
         if 12*(b.year-a.year)+(b.month-a.month)!=1:
             raise ValueError("last year FRED months are not contiguous")
+    # Keep the ENTIRE comparable macro research window, including months
+    # affected by BEA annual revisions; never append only the last observation
+    # to an older historical vintage.
+    revision_window=[{"date":d,"value":v} for d,v in zip(ds,values)
+                     if d>="2019-10-01"]
+    if len(revision_window)<24:
+        raise ValueError("insufficient revised-vintage monthly history")
     return {"series_id":ident,"last_date":ds[-1],"last_value":values[-1],
+            "revised_vintage_monthly_history":revision_window,
+            "revised_vintage_window_start":revision_window[0]["date"],
+            "revised_vintage_is_point_in_time":False,
             "previous_date":ds[-2],"previous_value":values[-2],
             "observations":len(ds),"source_lineage":"FRED_FEDERAL_RESERVE_MIRROR_OF_BEA_REVISED_NOT_ISSUER_PIT",
             "metric_kind":"MONTHLY_SA_CHAINED_DOLLAR_REAL_LEVEL_NOT_MOM_PCT"}
