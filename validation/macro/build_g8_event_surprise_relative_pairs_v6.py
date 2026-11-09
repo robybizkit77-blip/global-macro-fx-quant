@@ -212,7 +212,7 @@ def event_scenario(event):
             "Il costo del lavoro si discosta dal consenso: verificare "
             "composizione e implicazioni per Fed senza dedurre un trade."
         )
-    return "Nessuna funzione di reazione automatico da sorpresa isolata."
+    return "Nessuna funzione di reazione automatica dalla sorpresa isolata."
 
 def build(*,today,root=ROOT,forecast_records=None,actual_records=None,anchor_records=None,
           rates_override=None,fx_override=None):
@@ -367,7 +367,7 @@ def markdown(book):
         f"Due eventi con consenso congelato ed actual ufficiale osservato. "
         f"{s['pairs_exposed_to_frozen_events']} coppie esposte, "
         f"{s['pair_event_exposures']} esposizioni evento-coppia. "
-        "**ZERO attribuzioni causali intraday**.",
+        "**ZERO attribuzioni causali intraday; nessun segnale FX.**",
         ""
     ]
     for e in book["events"]:
