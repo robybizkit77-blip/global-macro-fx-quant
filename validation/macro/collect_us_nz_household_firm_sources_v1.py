@@ -167,6 +167,12 @@ def capture(*,now=None,fetcher=fetch,series=None):
     def attempt(name,url,parser):
         try:
             raw,final=fetcher(url)
+            # Defense-in-depth even for an injected retrieval implementation.
+            from urllib.parse import urlparse
+            supplied,returned=urlparse(url),urlparse(final)
+            if (returned.scheme!="https" or
+                returned.hostname.removeprefix("www.")!=supplied.hostname.removeprefix("www.")):
+                raise ValueError("publisher host changed under fetch")
             value=parser(raw,final)
             output["sources"][name]={"status":"VERIFIED_RESEARCH_ONLY",
                 "issuer_url":final,"sha256":sha256(raw).hexdigest(),
