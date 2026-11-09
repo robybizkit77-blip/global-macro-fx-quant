@@ -209,11 +209,11 @@ def study_country(ccy, data, date_today):
                      "identificano il cambiamento del ciclo domestico.")
     bank_text = (
         f"Per {config['bank']} la questione non è prevedere automaticamente la prossima "
-        f"decisione, ma capire se questa combinazione di lavoro, prezzi e domanda "
-        f"cambia il bilanciamento dei rischi secondo il mandato specifico. "
-        f"{'Se i prezzi di fondo persistono, la banca potrebbe restare più restrittiva; '
-           'se il rallentamento di domanda e occupazione si diffonde e l’inflazione '
-           'si modera, potrebbe aumentare lo spazio per allentare.'}"
+        "decisione, ma capire se lavoro, prezzi e domanda cambiano il "
+        "bilanciamento dei rischi secondo il mandato specifico. "
+        "Se i prezzi di fondo persistono, la banca potrebbe restare restrittiva; "
+        "se la debolezza di domanda e occupazione si diffonde e l'inflazione "
+        "si modera, potrebbe aumentare lo spazio per allentare."
     )
     six = curve.get("horizons",{}).get("6m",{})
     quality = curve["operational_status"]
