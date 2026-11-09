@@ -465,10 +465,12 @@ jobs:
           import json,subprocess
           from pathlib import Path
           d=json.loads(Path('live_data/sections/MACRO_SERIES.json').read_text())
+          prepared=json.load(open('/tmp/macro-persistent/us-households-revised-promotion-preflight-v1.json'))
+          expected_month=prepared['reference_month']+'-01'
           rows={r['id']:r for r in d['USD']}
           for ident in ('US_PCEC96_history_value','US_DSPIC96_history_DSPIC96'):
               row=rows[ident]
-              assert row['last_date']=='2026-09-01'
+              assert row['last_date']==expected_month
               assert row['frequency']=='M'
               assert row['unit']=='Billions of Chained 2017 Dollars SAAR'
               assert row['current_vintage_provenance']['source_series_first_release_PIT_certified'] is False
