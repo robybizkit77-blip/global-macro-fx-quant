@@ -1,8 +1,51 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-08T21:13:06Z",
+  "generated_at_utc": "2026-11-09T00:57:24Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-96567632082db469ad0f",
+      "observed_at_utc": "2026-11-09T00:26:00Z",
+      "headline": "Brazil's Lula, worried about high interest rates, pledges budget discipline",
+      "summary": "Reuters riporta: Brazil's Lula, worried about high interest rates, pledges budget discipline. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxOTmRxVlVzb3VXRTFVRFRoNi12OFZQMDRRNGpoQWJNckR5R0p0SFU3VHRwVDZCTkdGZnRra3lueG5maDl0bVRMQkxKVGg2dU1uMjhFMV81bTVSc01HYW1USWo5bGRXZXRES1I1MkhNckRTMThqLTV0M0UwSVkyVHhJZEQ2c0JNekZXcDZPTWg1dktPcXdYZThtWk56ZTNJbW5ORGl6NGlVeDFDcVZWem1EeTZDX0Ywam1jbEJTZUZMR1I?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-6b4e0800a03c0c2ecec1",
+      "observed_at_utc": "2026-11-08T08:38:37Z",
+      "headline": "iShares Nasdaq Top 30 Stocks ETF (QTOP.OQ) | Stock Price & Latest News",
+      "summary": "Reuters riporta: iShares Nasdaq Top 30 Stocks ETF (QTOP.OQ) | Stock Price & Latest News. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMibEFVX3lxTE9ab3BZYlF6WFZMNm9ab0JLT3dCZjdXcDE0Z09ERm4zSmhHMjdmYkVEVWV3YkdWSzFQR3dzSTdrekVlT2ZQZ0UzUExpTkZiekw3OXduRF9yNkRxMHdEUUdtdDhTVDI2Unk1anVidg?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-c7b165a8b7c74b2f82f0",
+      "observed_at_utc": "2026-11-08T07:48:33Z",
+      "headline": "Calamos Nasdaq-100 Structured Alt Prot ETF - June (CPNJ.N) | Stock Price & Latest News",
+      "summary": "Reuters riporta: Calamos Nasdaq-100 Structured Alt Prot ETF - June (CPNJ.N) | Stock Price & Latest News. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "EQUITY",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMia0FVX3lxTE9CMmNTN1JQVmY5dTgxeGR2NzkwS0RhS2NESFVibUlXZDA4blFFV2FtRTZpanR1cWloSUREaXFiSnpaV3NNR0diNkttMy15aUNYcU1UZVZjNGdEbmtWMEJCRS00MjZkbldVMVAw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-c2cc045e42b4cfd61f2b",
       "observed_at_utc": "2026-11-08T19:26:09Z",
@@ -1365,49 +1408,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxOWE5IUkRJTVJvTFE5SUdOdFFCM2tVN1lKcDI3ci01cjlleVVuXzB1SjI0MDhuWkhwakZFSzl3SGNUZk9uUUYwdHNfMGJOUXExaW1RdmRRVy1Cd0tHb3RqblJCQWczeXdORDVKbVMxMGFrbnVMM3FCY2h5Xzl6T0ZoeTBtbGdnbW9jdWF6VEtqNi14ZnlFaVVpb0xZcHlGTDhtM0ZmY2RYZ2Q?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-f9c065287a4dc0ef18a8",
-      "observed_at_utc": "2026-10-30T03:24:00Z",
-      "headline": "Gold slips as higher oil, US inflation data bolster Fed hike bets",
-      "summary": "Reuters riporta: Gold slips as higher oil, US inflation data bolster Fed hike bets. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxOMFY2WEZOWHhyVDVPMkM2ZVUxM01TR09lcUZ0RlBWNF96QkJzWXhUZWpIbmlRSUlxN3FiZ0pEYWVXOW1YcVBQcHQ4cjU1NFpCQVlnS3pneWlKeTZIRjJzWkJuek9OeDhNSGxTU1ozV1g0czltbldNNkJORWRWS0ZBU25WdURjNWNpREdpdmZoV1c2ZzBnUmM5cm5HTG16OFpEdVhLWC13RkxHM3IxX1E?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-09ed3f212b59ef3ce5cc",
-      "observed_at_utc": "2026-10-29T23:52:39Z",
-      "headline": "Tokyo core inflation exceeds BOJ target in October",
-      "summary": "Reuters riporta: Tokyo core inflation exceeds BOJ target in October. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "CENTRAL_BANK",
-      "currencies": [
-        "JPY"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxPUVJOQjlQV2RMWlM5UDhDcTIxN1RCOFVwYWxOOElaZGxWRTRJajZ2YzNLM2wzeGlBNW9KYkxiVW1LZUNrbjlpNUdFeGJQQmYxdnhDZXR0TTRSWkpGUGdxdFA4RUtOdWJMUmdQR0lmd1RIQVAxa2FaMURNaVVkZEZzTkg3X0pnY1d0MEhLOVhDVkxzS2p1VWpkbjkxTjcxSG1VYW90cg?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-5b3ae674619f8719f94e",
-      "observed_at_utc": "2026-10-29T09:33:44Z",
-      "headline": "India's finance ministry sees FY27 growth at 7.3%, flags inflation risks",
-      "summary": "Reuters riporta: India's finance ministry sees FY27 growth at 7.3%, flags inflation risks. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxQbHJKOFdCa1lNa3I2Y01DOVFLMDhSR3lhVnBGTmd3cG1UZXQ5LWdudTlhOUotYVZpUlktR09YbzhfR19RUkFCTzFnUmNjY2hxeVl3ejRscWNRV2t2TkpYdGNMWVhZZ0tOYkpEQmtxNDN3d2dhU2NSNktwMFJ6bUZkVVluUmJuNW1vYnhkZjJDMWhDTThvQ0l4NjdNc0tyTDM1cllSa2llM1MwSWN4WjZ3YnQ1VQ?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
