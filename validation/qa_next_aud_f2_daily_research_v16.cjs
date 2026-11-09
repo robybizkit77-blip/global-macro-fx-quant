@@ -7,7 +7,8 @@ const price=json('live_data/sections/ECB_G8_PRICE_HISTORY.json');
 const model=json('live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json');
 const sidecar=json('site/fx-quant-v2/aud-rba-f2-history-research.json');
 const mod=require('../site/fx-quant-v2/next/fx-rates-bridge.js');
-const audDate=rates.AUD.date,now='2026-11-08',base=model.price_asof;
+// The 6 Nov 2026 research fixture must not inherit tomorrow's live FX fixing.
+const audDate=rates.AUD.date,now='2026-11-08',base='2026-11-06';
 assert(sidecar.schema==='GMFQ_AUD_RBA_F2_DAILY_HISTORY_RESEARCH_V1');
 assert(sidecar.eligible_for_core===false&&sidecar.eligible_for_fx_pair_engine===false);
 assert(sidecar.eligible_for_backtests===false);
@@ -63,6 +64,15 @@ for(const [label,mutation] of [
 assert(!mod.snapshot(rates,price,'EURCHF',base,now,fake).ready,'CHF remains separate and stale');
 assert(!mod.snapshot(rates,price,'NZDUSD',base,now,fake).ready,'NZD remains separate and stale');
 assert(!mod.snapshot(rates,price,'AUDCAD',base,'2026-12-01',fake).ready,'Old research cannot remain current');
+// Separately exercise the actual moving model date. A source that was valid
+// on 6 Nov must not be promoted when the FX snapshot has moved past its 3d lag.
+const liveAsOf=model.price_asof;
+assert(/^\d{4}-\d{2}-\d{2}$/.test(liveAsOf),'Live pair FX as-of missing');
+const liveResearch=mod.snapshot(rates,price,'AUDCAD',liveAsOf,liveAsOf,sidecar);
+if(liveResearch.ready){
+ assert(liveResearch.researchOnly&&liveResearch.lag<=3&&liveResearch.age<=5&&liveResearch.short,
+  'Live AUD 2Y research must satisfy provenance, date match and continuity gates');
+}else assert.equal(mod.brief(liveResearch).ready,false,'Stale AUD research cannot become live FX/2Y confirmation');
 const page=fs.readFileSync('site/fx-quant-v2/next/index.html','utf8');
 const code=fs.readFileSync('site/fx-quant-v2/next/app.js','utf8');
 const dossier=fs.readFileSync('site/fx-quant-v2/next/decision-journey.js','utf8');
