@@ -80,6 +80,8 @@ def candidate_ready(event,candidate,now_utc):
     stamp=scheduled(event)
     if stamp is None or now_utc>=stamp:
         return "TOO_LATE_TO_FREEZE_FORECAST"
+    if exact_event_key(event) not in ISSUER_PARSER_KEYS:
+        return "MATCHED_RELEASE_TITLE_METRIC_NOT_EXPLICITLY_CERTIFIED"
     return "CANDIDATE_AVAILABLE_NOT_YET_FROZEN"
 
 def build(*,now,inputs=None,root=ROOT):
@@ -106,8 +108,8 @@ def build(*,now,inputs=None,root=ROOT):
     validate_anchors(anchors,frozen)
     expected={exact_event_key(e):e for e in seed["events"]}
     require(len(expected)==len(seed["events"]),"duplicate issuer schedule event")
-    require(set(x["ccy"] for x in seed["events"])==set(ORDER),
-            "official calendar lacks historical G8 representation")
+    require(all(e.get("ccy") in ORDER for e in seed["events"]),
+            "non-G8 issuer calendar event")
     require(len(pairs)==28 and
             all(x["canonical_pair"] for x in pairs.values()),
             "28 canonical FX pairs source unavailable")
@@ -115,9 +117,10 @@ def build(*,now,inputs=None,root=ROOT):
     actual_idx={x["event_key"]:x for x in actual}
     anchor_idx={x["event_key"]:x for x in anchors}
     live_idx={x["event_key"]:x for x in con["events"]}
-    require(all(x in expected for x in frozen_idx),"frozen forecast missing issuer identity")
-    require(all(x in expected for x in actual_idx),"official actual missing issuer identity")
-    require(all(x in expected for x in anchor_idx),"pre-event market anchor missing issuer identity")
+    # A rolling official seed may stop listing earlier real events. Preserve
+    # their historical ledgers; report the missing calendar crosswalk rather
+    # than blocking the entire scheduled Calendar/News refresh.
+    archived_orphans=sorted(set(frozen_idx)-set(expected))
     require(len(live_idx)==len(con["events"]),"duplicated candidate consensus keys")
     rows=[]
     for key,e in sorted(expected.items(),key=lambda kv:(
@@ -189,7 +192,9 @@ def build(*,now,inputs=None,root=ROOT):
             else:
                 state=status
                 action=("Correggere la corrispondenza della metrica e del consenso "
-                        "secondario prima della pubblicazione; mai retrodatare.")
+                        "secondario prima della pubblicazione; mai retrodatare. "
+                        "Il titolo del comunicato non basta a certificare q/q, "
+                        "m/m, y/y, headline o core.")
         if future and clock is not None and not parser:
             action+=(" Parser actual ufficiale per questa serie NON "
                      "ancora validato: occorre implementarlo e testarlo.")
@@ -232,7 +237,10 @@ def build(*,now,inputs=None,root=ROOT):
         "secondary_consensus_generated_at_utc":con.get("generated_at_utc"),
         "source_paths":PATHS,"source_sha256":hashes,
         "coverage":{
-            "currencies_in_historical_calendar":8,
+            "currencies_in_historical_calendar":len({e["ccy"] for e in seed["events"]}),
+            "currencies_without_any_calendar_rows":sorted(
+                set(ORDER)-{e["ccy"] for e in seed["events"]}),
+            "archived_frozen_events_missing_current_calendar_crosswalk":archived_orphans,
             "currencies_with_upcoming_35d":len(future),
             "countries_without_upcoming_35d":sorted(set(ORDER)-future),
             "issuer_calendar_events":len(rows),
@@ -243,6 +251,8 @@ def build(*,now,inputs=None,root=ROOT):
             "upcoming_35d_with_approved_actual_parser":sum(
                 r["official_issuer_parser_supported"] for r in near),
             "events_with_genuine_frozen_consensus_and_issuer_actual":complete,
+            "archived_complete_events_not_currently_in_seed":sum(
+                k in actual_idx for k in archived_orphans),
             "unverified_intraday_event_reactions":len(rows),
             "new_trading_signals":0,
             "status_counts":counts,
@@ -260,6 +270,7 @@ def build(*,now,inputs=None,root=ROOT):
             "Official seed calendar includes all eight G8 historically but NOT full 35-day future G8 coverage.",
             "Only exact frozen pre-release forecasts can become surprises.",
             "The provider's latest forecast is NOT a frozen forecast.",
+            "An event release title is not a metric-specific CPI/GDP subseries forecast.",
             "Missing official scheduled local time blocks valid timestamp freeze.",
             "Missing or unsupported issuer actual parser is not a numeric zero.",
             "No post-event market-causality claim from daily ECB fixes or sovereign 2Y levels.",
