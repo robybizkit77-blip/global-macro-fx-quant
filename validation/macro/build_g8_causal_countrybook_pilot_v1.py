@@ -220,9 +220,9 @@ def study_country(ccy, data, date_today):
         require(g.get("acceleration_quality")=="TWO_CONTIGUOUS_QUARTERS",
                 ccy+" GDP comparison not supported")
     activity = (
-        f"Il PIL è cresciuto del {pct(g['value'])} nell'ultimo trimestre disponibile "
+        f"Il PIL reale è cresciuto: {pct(g['value'])} nell'ultimo trimestre disponibile "
         f"({g['period']})" if g["value"]>=0
-        else f"Il PIL si è contratto del {pct(abs(g['value']))} "
+        else f"Il PIL reale si è contratto: {pct(abs(g['value']))} "
              f"nell'ultimo trimestre disponibile ({g['period']})"
     )
     activity += (
@@ -266,6 +266,32 @@ def study_country(ccy, data, date_today):
     else:
         dilemma = ("I dati aggregati non definiscono da soli una nuova "
                    "traiettoria di policy.")
+    # Interpret the same economic configuration through different domestic
+    # transmission channels rather than repeating one generic G8 paragraph.
+    if i["value"] > .05 and j["value"] > .05:
+        headlines = {
+            "USD": "Inflazione in aumento, lavoro meno teso: la Fed affronta un conflitto fra i due obiettivi.",
+            "EUR": "Prezzi più alti e disoccupazione in salita: BCE tra persistenza inflazionistica e rischio sulla domanda.",
+            "GBP": "Inflazione e disoccupazione salgono insieme: la BoE deve separare pressioni di costo da domanda.",
+            "JPY": "Prezzi più forti ma lavoro meno solido: la BoJ deve verificare quanto è sostenibile il ciclo salari-prezzi.",
+            "CHF": "L'inflazione sale ma il lavoro perde forza: il franco può amplificare o mitigare la restrizione.",
+            "CAD": "Lavoro in raffreddamento e inflazione in aumento: mutui e consumi sono il canale da osservare per la BoC.",
+            "AUD": "Prezzi più tesi mentre il lavoro rallenta: la RBA deve misurare i rischi su entrambe le parti del mandato.",
+            "NZD": "Disoccupazione e inflazione aumentano: la RBNZ deve capire se i prezzi interni resistono alla domanda più fragile.",
+        }
+        synthesis = headlines[ccy]
+    elif i["value"] > .05 and j["value"] <= .05:
+        headlines = {
+            "USD": "Inflazione headline in rialzo senza chiaro peggioramento del lavoro: non è ancora prova di inflazione da domanda.",
+            "EUR": "Prezzi più forti e lavoro che tiene: per la BCE conta se salari e servizi confermano la persistenza.",
+            "GBP": "Prezzi in rialzo con lavoro ancora resistente: la BoE deve capire quando mutui e redditi peseranno sui servizi.",
+            "JPY": "Prezzi e lavoro sostengono la normalizzazione solo se il ciclo salari reali-consumi diventa duraturo.",
+            "CHF": "Prezzi in rialzo da livelli contenuti e lavoro stabile: la SNB deve includere la forza del franco nella lettura.",
+            "CAD": "Inflazione più alta e lavoro resistente: la BoC deve misurare quanto pesa sui consumi il costo dei mutui.",
+            "AUD": "Prezzi più forti senza chiara debolezza del lavoro: per la RBA sono decisivi i servizi e la spesa delle famiglie.",
+            "NZD": "Inflazione più alta con lavoro che tiene: la RBNZ deve distinguere pressioni domestiche e importate.",
+        }
+        synthesis = headlines[ccy]
     bank_text = (
         f"{config['bank']} — WANT: {want}. CAN: {dilemma} "
         f"{can_specific} Il prossimo passo è condizionato ai dati, "
@@ -451,7 +477,7 @@ def main():
         "pricing_quality_by_currency":{
             c:book["countries"][c]["rates_and_pricing"]["six_month_quality"] for c in FX},
         "stale_2y_currencies":[c for c in FX if
-            book["countries"][c]["rates_and_pricing"]["yield_freshness"]=="2Y_STALE_NOT_SAME_DAY"]
+            book["countries"][c]["rates_and_pricing"]["yield_freshness"]=="2Y_OLDER_THAN_7_CALENDAR_DAYS"]
     },ensure_ascii=False,sort_keys=True))
     for c in FX:
         r=book["countries"][c]
