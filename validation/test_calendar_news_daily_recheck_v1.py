@@ -566,6 +566,8 @@ assert calendar_workflow.count("    - cron:") == 5
 assert "    - cron: '34,39,49,59 13 10 11 *'" in calendar_workflow
 assert "    - cron: '11 7 12 11 *'" in calendar_workflow
 assert "    - cron: '11 8 16 11 *'" in calendar_workflow
+assert "python -m validation.macro.persist_calendar_news_safe_v12" in calendar_workflow
+assert "python -m unittest validation.macro.test_persist_calendar_news_safe_v12" in calendar_workflow
 assert "    - cron: '17 4 * * 1-5'" in calendar_workflow
 assert "    - cron: '17 6 * * *'" in calendar_workflow
 assert "workflows: ['Calendar News Operational Refresh V1']" in vix_workflow
