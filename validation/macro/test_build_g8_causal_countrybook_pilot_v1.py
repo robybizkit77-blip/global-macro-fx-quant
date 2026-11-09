@@ -1,9 +1,10 @@
 """Research pilot contract, source quality and no implicit FX signal promotion."""
 from __future__ import annotations
 import copy
-from datetime import date
+from datetime import date, datetime, timedelta
 import json
 from pathlib import Path
+from zoneinfo import ZoneInfo
 import tempfile
 import unittest
 
@@ -13,7 +14,7 @@ from validation.macro import build_g8_causal_countrybook_pilot_v1 as m
 class TestG8CausalCountryBookPilot(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.day=date(2026,11,9)
+        cls.day=datetime.now(ZoneInfo("Europe/Rome")).date()
         cls.source,cls.hashes=m.sources()
 
     def test_all_eight_distinct_causal_narratives_and_24_axes(self):
@@ -48,18 +49,16 @@ class TestG8CausalCountryBookPilot(unittest.TestCase):
                 self.assertIsNone(p["rates_and_pricing"]["same_contract_event_repricing_bp"])
                 chains.add(p["causal_hypothesis"])
         self.assertEqual(len(chains),8)
+        self.assertEqual(len({p["narrative_it"][0] for p in b["countries"].values()}),8)
 
-    def test_stale_two_year_not_false_current(self):
+    def test_two_year_freshness_is_computed_not_trusted_from_source_label(self):
         b=m.build(today=self.day)
-        self.assertEqual(
-            b["countries"]["CHF"]["rates_and_pricing"]["yield_freshness"],
-            "2Y_OLDER_THAN_7_CALENDAR_DAYS")
-        self.assertEqual(
-            b["countries"]["NZD"]["rates_and_pricing"]["yield_freshness"],
-            "2Y_OLDER_THAN_7_CALENDAR_DAYS")
-        self.assertEqual(
-            b["countries"]["USD"]["rates_and_pricing"]["yield_freshness"],
-            "2Y_DATED_REFERENCE_NOT_LIVE")
+        for c in m.FX:
+            reported=b["countries"][c]["rates_and_pricing"]
+            age=(self.day-date.fromisoformat(reported["yield_as_of"])).days
+            expected=("2Y_OLDER_THAN_7_CALENDAR_DAYS"
+                      if age>7 else "2Y_DATED_REFERENCE_NOT_LIVE")
+            self.assertEqual(reported["yield_freshness"],expected)
 
     def test_non_official_curve_never_policy_delta(self):
         b=m.build(today=self.day)
@@ -86,7 +85,7 @@ class TestG8CausalCountryBookPilot(unittest.TestCase):
 
     def test_future_published_rates_rejected(self):
         d=copy.deepcopy(self.source)
-        d["rates"]["CAD"]["date"]="2026-11-10"
+        d["rates"]["CAD"]["date"]=(self.day+timedelta(days=1)).isoformat()
         with self.assertRaisesRegex(ValueError,"two-year quote in future"):
             m.study_country("CAD",d,self.day)
 
