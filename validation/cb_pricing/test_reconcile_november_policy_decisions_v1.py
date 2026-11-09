@@ -31,6 +31,32 @@ class PolicyReconciliationTest(unittest.TestCase):
   again,nn,_=reconcile(o,n)
   self.assertEqual(o,again)
   self.assertEqual(n,nn)
+ def test_on_decision_day_without_timestamp_never_promotes_policy_delta(self):
+  self.o["currencies"]["GBP"]["as_of"]=DECISIONS["GBP"]["date"]
+  o,n,receipt=reconcile(self.o,self.n)
+  g=o["currencies"]["GBP"]
+  self.assertFalse(g["policy_comparison_temporally_aligned"])
+  self.assertTrue(receipt["GBP"]["decision_day_timing_unverified"])
+  self.assertEqual(g["direction"],"DECISION_DAY_TIMESTAMP_UNVERIFIED_NO_POLICY_REPRICING")
+  self.assertIn("WITHHELD",g["policy_reference_note"])
+  self.assertEqual(n["GBP"]["market_pricing"]["freshness_status"],"DECISION_DAY_TIMING_UNVERIFIED")
+  for t in ("3m","6m","12m"):
+   self.assertIsNone(g["horizons"][t]["policy_delta_bp"])
+   self.assertFalse(g["horizons"][t]["policy_comparison_temporally_aligned"])
+   self.assertIsNone(g["cuts_hikes_priced"][t+"_bp"])
+  again,nn,_=reconcile(o,n)
+  self.assertEqual(o,again)
+  self.assertEqual(n,nn)
+ def test_next_day_after_event_day_restores_only_descriptive_deltas(self):
+  self.o["currencies"]["GBP"]["as_of"]=DECISIONS["GBP"]["date"]
+  o,n,_=reconcile(self.o,self.n)
+  o["currencies"]["GBP"]["as_of"]="2026-11-06"
+  after,native,receipt=reconcile(o,n)
+  self.assertTrue(receipt["GBP"]["policy_comparison_aligned"])
+  self.assertFalse(receipt["GBP"]["decision_day_timing_unverified"])
+  self.assertTrue(after["currencies"]["GBP"]["policy_comparison_temporally_aligned"])
+  self.assertEqual(native["GBP"]["market_pricing"]["freshness_status"],"CURRENT_VALIDATED")
+  self.assertIsNotNone(after["currencies"]["GBP"]["horizons"]["6m"]["policy_delta_bp"])
  def test_unexpected_policy_baseline_fails(self):
   self.o["currencies"]["AUD"]["policy_rate"]=4.0
   with self.assertRaisesRegex(ValueError,"unexpected policy baseline"):

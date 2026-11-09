@@ -67,6 +67,22 @@ def main():
 
     live = ois['currencies']['GBP']
     h = cand['horizons']
+    decision_date = (live.get('policy_decision') or {}).get('date')
+    event_day = bool(decision_date and cand['as_of'] == decision_date)
+    aligned = not event_day
+    if (cand.get('policy_decision_date') != decision_date or
+        cand.get('policy_comparison_temporally_aligned') is not aligned):
+        raise SystemExit('GBP candidate temporal policy decision contract mismatch')
+    if decision_date and cand['as_of'] < decision_date:
+        raise SystemExit('GBP stale before latest decision')
+    if event_day:
+        if (cand.get('direction') != 'DECISION_DAY_TIMESTAMP_UNVERIFIED_NO_POLICY_REPRICING' or
+            any(h[k].get('policy_delta_bp') is not None for k in ('3m','6m','12m')) or
+            any(cand.get('cuts_hikes_priced',{}).get(k+'_bp') is not None for k in ('3m','6m','12m')) or
+            'WITHHELD' not in cand.get('policy_reference_note','')):
+            raise SystemExit('GBP same-day policy comparison must be withheld')
+    elif any(h[k].get('policy_delta_bp') is None for k in ('3m','6m','12m')):
+        raise SystemExit('GBP dated post-decision OIS cannot omit valid descriptive deltas')
     live.update({
         'status': 'ACTIVE',
         'as_of': cand['as_of'],
@@ -80,8 +96,16 @@ def main():
         },
         'policy_rate': cand['policy_rate'],
         'meetings': cand['meeting_path'],
-        'horizons': {k:{'rate':r4(h[k]['rate']),'change_1d_bp':r1(h[k]['change_1d_bp']),'change_1w_bp':r1(h[k]['change_1w_bp']),'policy_delta_bp':r1(h[k]['policy_delta_bp'])} for k in ('3m','6m','12m')},
-        'cuts_hikes_priced': {f'{k}_bp': r1(h[k]['policy_delta_bp']) for k in ('3m','6m','12m')},
+        'horizons': {k:{'rate':r4(h[k]['rate']),
+                         'change_1d_bp':r1(h[k]['change_1d_bp']),
+                         'change_1w_bp':r1(h[k]['change_1w_bp']),
+                         'policy_delta_bp':None if event_day else r1(h[k]['policy_delta_bp']),
+                         'policy_comparison_temporally_aligned':aligned}
+                     for k in ('3m','6m','12m')},
+        'cuts_hikes_priced': {f'{k}_bp': None if event_day else r1(h[k]['policy_delta_bp'])
+                               for k in ('3m','6m','12m')},
+        'policy_comparison_temporally_aligned': aligned,
+        'policy_reference_note': cand['policy_reference_note'],
         'direction': cand['direction'],
         'change_direction_1d': cand['change_direction_1d'],
         'change_direction_1w': cand['change_direction_1w'],
@@ -105,11 +129,16 @@ def main():
         'instrument': cand['instrument'],
         'quality': 'COMPLETO_OFFICIAL_BOE_OIS_HISTORY',
         'h3m': a, 'h6m': b, 'h12m': c,
-        'near_term': 'Official BoE short-end SONIA OIS forward-curve columns; current, 1D and homogeneous 1W history validated.',
+        'near_term': ('Official BoE dated SONIA OIS forward-curve levels and homogeneous 1D/1W history; '
+                      'decision-day quote timing unverified, no post-decision repricing.'
+                      if event_day else
+                      'Official BoE short-end SONIA OIS forward-curve columns; current, 1D and homogeneous 1W history validated.'),
         'source': cand['source'],
         'source_url': cand['source_url'],
-        'note': cand['provenance']['methodology_note'],
-        'freshness_status': 'CURRENT_VALIDATED'
+        'note': cand['provenance']['methodology_note']+' '+cand['policy_reference_note'],
+        'freshness_status': 'DECISION_DAY_TIMING_UNVERIFIED' if event_day else 'CURRENT_VALIDATED',
+        'policy_comparison_temporally_aligned': aligned,
+        'policy_reference_as_of': decision_date
     }
 
     changed_ois = [k for k in ois['currencies'] if ois['currencies'][k] != before_ois['currencies'][k]]

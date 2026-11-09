@@ -11,6 +11,9 @@ on:
       - 'validation/cb_pricing/apply_aud_asx_ib_candidate.py'
       - 'validation/cb_pricing/apply_cad_mx_corra_candidate.py'
       - 'validation/cb_pricing/apply_gbp_boe_ois_candidate.py'
+      - 'validation/cb_pricing/build_gbp_boe_ois_candidate.py'
+      - 'validation/cb_pricing/test_gbp_boe_event_day_temporal_safety_v1.py'
+      - 'validation/check_cb_pricing_source_registry.py'
       - 'validation/cb_pricing/apply_jpy_tfx_tona_candidate.py'
       - 'validation/cb_pricing/test_apply_jpy_tfx_tona_candidate.py'
       - 'validation/cb_pricing/cb_pricing_schedule_gate_v1.py'
@@ -24,6 +27,9 @@ on:
       - 'validation/cb_pricing/apply_aud_asx_ib_candidate.py'
       - 'validation/cb_pricing/apply_cad_mx_corra_candidate.py'
       - 'validation/cb_pricing/apply_gbp_boe_ois_candidate.py'
+      - 'validation/cb_pricing/build_gbp_boe_ois_candidate.py'
+      - 'validation/cb_pricing/test_gbp_boe_event_day_temporal_safety_v1.py'
+      - 'validation/check_cb_pricing_source_registry.py'
       - 'validation/cb_pricing/apply_jpy_tfx_tona_candidate.py'
       - 'validation/cb_pricing/test_apply_jpy_tfx_tona_candidate.py'
       - 'validation/cb_pricing/cb_pricing_schedule_gate_v1.py'
@@ -101,6 +107,9 @@ jobs:
 
       - name: "Regression: JPY TONA OIS-only and native-only apply must remain isolated"
         run: python3 -m unittest validation.cb_pricing.test_apply_jpy_tfx_tona_candidate -v
+
+      - name: "Regression: GBP BoE decision-day without timestamp never claims post-event policy pricing"
+        run: python3 -m unittest validation.cb_pricing.test_gbp_boe_event_day_temporal_safety_v1 -v
 
       - name: Test Rome DST, duplicate UTC slots and delayed starts
         if: steps.gate.outputs.should_run == 'true'
