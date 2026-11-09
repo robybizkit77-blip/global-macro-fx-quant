@@ -1,7 +1,18 @@
 {
   "content_as_of": "2026-11-06",
-  "generated_at_utc": "2026-11-09T12:11:48.079363Z",
+  "generated_at_utc": "2026-11-09T12:58:41.859771Z",
   "items": [
+    {
+      "as_of": "2026-11-06",
+      "category": "OIS_REPRICING",
+      "ccy": "GBP",
+      "confidence": "A",
+      "detail": "Movimento 1D +2.4 bp sul bucket 12M; variazione 1W -11.0 bp.",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CERTIFIED",
+      "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
+      "title": "GBP: repricing OIS più hawkish (+2.4 bp 12M in 1D)"
+    },
     {
       "as_of": "2026-11-06",
       "category": "FUTURES_IMPLIED_REPRICING",
@@ -34,20 +45,9 @@
       "quality": "OFFICIAL_CERTIFIED",
       "source": "Tokyo Financial Exchange · Three-month TONA Futures",
       "title": "JPY: repricing implicito da futures invariato (+0.0 bp 6M in 1D)"
-    },
-    {
-      "as_of": "2026-11-05",
-      "category": "OIS_REPRICING",
-      "ccy": "GBP",
-      "confidence": "A",
-      "detail": "Movimento 1D +7.3 bp sul bucket 3M; variazione 1W +4.8 bp.",
-      "importance": "HIGH",
-      "quality": "OFFICIAL_CERTIFIED",
-      "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
-      "title": "GBP: repricing OIS più hawkish (+7.3 bp 3M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-09T12:11:48.079363Z",
+  "last_checked_at_utc": "2026-11-09T12:58:41.859771Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -719,12 +719,12 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 4.4526,
-            "date": "2026-11-05",
+            "6m_rate_pct": 4.4615,
+            "date": "2026-11-06",
             "event_window_proof": false,
             "instrument": "OIS_OBSERVED",
             "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
             "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
             "status": "DAILY_CONTEXT_ONLY"
           },
@@ -877,8 +877,8 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 4.4526,
-            "date": "2026-11-05",
+            "6m_rate_pct": 4.4615,
+            "date": "2026-11-06",
             "event_window_proof": false,
             "instrument": "OIS_OBSERVED",
             "quality": "OFFICIAL_CERTIFIED",
