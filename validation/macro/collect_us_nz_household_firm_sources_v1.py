@@ -145,7 +145,7 @@ def statsnz_known_release(raw, url):
     # outside the readable body. The title is checked live; date comes from
     # the earlier independently verified manual publisher snapshot unless
     # this run can also see it. Never label that as a new release-day PIT.
-    date_seen=bool(re.search(r"16\\s+October\\s+2026|2026-10-16",t,re.I))
+    date_seen=bool(re.search(r"16\s+October\s+2026|2026-10-16",t,re.I))
     if not re.search(r"Values.*not adjusted for price changes",t,re.I):
         raise ValueError("Stats NZ nominal nature not verified")
     # Do not equate this with retail *volume* or a new retail survey quarter.
