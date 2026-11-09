@@ -31,6 +31,7 @@ async function getState(page){
      dxyEst:d?.querySelector('#valute .cc[data-filter="DXY"] .move')?.textContent.trim(),
      chartCount:d?.querySelectorAll('#ylegend .gmfq-legend-item').length,
      pricingCount:d?.querySelectorAll('#ois .oisrow').length,
+     rateBarTexts:[...(d?.querySelectorAll('#ratesbars svg text')||[])].map(x=>x.textContent.trim()),
      notes:d?.querySelector('#ratesbars + .gmfq-chart-note')?.textContent.trim(),
      badApprofondisci:d?.body?.textContent.includes('Approfondisci ↗'),
      globe:!!d?.querySelector('.hero .globe'),
@@ -63,7 +64,12 @@ async function getState(page){
              && d.querySelector('#valute .cc[data-filter="DXY"] .move')?.textContent.includes('STIMA');
          },null,{timeout:12000});
          lastObserved=await getState(page);
-         if(lastObserved.notes?.includes('R²')&&lastObserved.notes?.includes('base ')){
+         // If all modelled rates expire, a source-qualified WITHHELD state
+         // is valid and must not be misdiagnosed as a CDN deployment timeout.
+         if(lastObserved.notes&&(
+           (lastObserved.notes.includes('STIMA β (non operativa)')&&
+            lastObserved.notes.includes('R²')&&lastObserved.notes.includes('base '))||
+           lastObserved.notes==='Rendimenti governativi verificati.')){
            deployed=true;break;
          }
          console.log('PUBLIC_V10_VERSION_PENDING',name,attempt,lastObserved.notes);
@@ -495,22 +501,62 @@ async function getState(page){
          JSON.stringify({state:audit.state,stamp:audit.stamp,viewport:audit.viewport}));
      }
      const state=await getState(page);
-     console.log('PUBLIC_V10_SMOKE',name,JSON.stringify(state));
+     // Compare actual PUBLIC 2Y labels with the same dates the active site
+     // loads. A CHF beta model expires after 35 calendar days; no quote may
+     // be invented just because the old browser test expected CHF/EUR.
+     const ratesMirror=await page.evaluate(async()=>{
+       const res=await fetch('/global-macro-fx-quant/live_data/sections/NATIVE_RATES_DATA.json',{cache:'no-store'});
+       if(!res.ok)throw Error('Rates mirror HTTP '+res.status);
+       return res.json();
+     });
+     const daysBetween=(later,earlier)=>
+       (Date.parse(later+'T00:00:00Z')-Date.parse(earlier+'T00:00:00Z'))/86400000;
+     const chfGap=daysBetween(ratesMirror.EUR.date,ratesMirror.CHF.date);
+     const shown=ccy=>{
+       const index=state.rateBarTexts.indexOf(ccy);
+       return index>0?state.rateBarTexts[index-1]:null;
+     };
+     const chfBar=shown('CHF'),nzdBar=shown('NZD');
+     const modelRows=[...state.notes.matchAll(/(CHF\/EUR|NZD\/AUD) (ALTA|MEDIA|BASSA) \(R² ([0-9]+\.[0-9]+), base (20\d{2}-\d{2}-\d{2})\)/g)];
+     const modelValid=modelRows.length>0?
+       state.notes.startsWith('* STIMA β (non operativa): ')&&
+       modelRows.every(m=>Number(m[3])>=0&&Number(m[3])<=1):
+       state.notes==='Rendimenti governativi verificati.';
      if(state.mode!=='live'||state.chartCount!==8||state.pricingCount!==8||!state.globe||
         state.badApprofondisci||!state.dxy||state.dxy==='—'||state.width>state.viewport+16||
-        !state.notes.includes('R²')||!state.notes.includes('CHF/EUR')||
-        !state.notes.includes('base ')){
+        !modelValid){
        throw Error(name+' public Home contract failed: '+JSON.stringify(state));
      }
-     // The manually reviewed RBNZ B2 snapshot can advance through the registry.
-     // Once its observation is historical, an explicitly labelled AUD proxy
-     // may appear. That is not a retroactive loss of source certification.
-     const ratesMirror=await page.evaluate(async()=>{
-       const r=await fetch('/global-macro-fx-quant/live_data/sections/NATIVE_RATES_DATA.json',{cache:'no-store'});
-       if(!r.ok)throw Error('Rates mirror HTTP '+r.status);
-       const x=await r.json();return x.NZD;
-     });
-     const nzdProof=verifyPublicNzd(ratesMirror,approvedNzdrates.approved,
+     const chfModel=modelRows.find(m=>m[1]==='CHF/EUR');
+     const nzdModel=modelRows.find(m=>m[1]==='NZD/AUD');
+     if(chfGap>35&&(chfBar!=='—'||chfModel||state.notes.includes('CHF/EUR'))){
+       throw Error(name+' expired CHF source improperly displayed as observed or estimated '+JSON.stringify({
+         chfSource:ratesMirror.CHF.date,eurSource:ratesMirror.EUR.date,chfGap,chfBar,note:state.notes
+       }));
+     }
+     if((chfModel&&(!chfBar?.endsWith('*')||chfGap<=0||chfGap>35))||
+        (nzdModel&&!nzdBar?.endsWith('*'))||
+        state.rateBarTexts.filter(x=>x.endsWith('*')).length!==modelRows.length){
+       throw Error(name+' 2Y beta bar/source disclosure mismatch '+JSON.stringify({
+         chfBar,nzdBar,note:state.notes
+       }));
+     }
+     for(const model of modelRows){
+       const [target,proxy]=model[1].split('/');
+       const observedDates=new Set(ratesMirror[proxy].history2.dates);
+       const common=ratesMirror[target].history2.dates.filter(d=>
+         d<=ratesMirror[target].date&&observedDates.has(d));
+       if(model[4]!==common.at(-1))
+         throw Error(name+' beta anchor mismatch '+JSON.stringify({model:model[1],date:model[4],expected:common.at(-1)}));
+     }
+     console.log('PUBLIC_V10_SOURCE_GRADED_2Y_GREEN',name,JSON.stringify({
+       CHF:ratesMirror.CHF.date,EUR:ratesMirror.EUR.date,chfGap,
+       shownCHF:chfBar,models:modelRows.map(m=>m[1])
+     }));
+     console.log('PUBLIC_V10_SMOKE',name,JSON.stringify(state));
+     // Once the manually reviewed RBNZ snapshot is historical, an explicitly
+     // labelled AUD proxy may appear instead of a certified NZD yield.
+     const nzdProof=verifyPublicNzd(ratesMirror.NZD,approvedNzdrates.approved,
        approvedNzdrates.canonical,state.notes);
      console.log('PUBLIC_NZD_REVIEWED_RATES_MIRROR_GREEN',name,JSON.stringify(nzdProof));
      // This is the active Control Room Preview, not the legacy root dashboard.
