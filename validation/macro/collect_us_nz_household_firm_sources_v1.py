@@ -146,16 +146,20 @@ def statsnz_known_release(raw, url):
     # the earlier independently verified manual publisher snapshot unless
     # this run can also see it. Never label that as a new release-day PIT.
     date_seen=bool(re.search(r"16\s+October\s+2026|2026-10-16",t,re.I))
-    if not re.search(r"Values.*not adjusted for price changes",t,re.I):
-        raise ValueError("Stats NZ nominal nature not verified")
-    # Do not equate this with retail *volume* or a new retail survey quarter.
-    return {"status":("KNOWN_STATIC_RELEASE_DATE_AND_TITLE_CONFIRMED" if date_seen
-                      else "KNOWN_STATIC_RELEASE_TITLE_ONLY_DATE_FROM_PRIOR_RESEARCH"),
+    nominal_seen=bool(re.search(r"Values.*not adjusted for price changes",t,re.I))
+    if re.search(r"Values.*(?:are|were) adjusted for price changes",t,re.I):
+        raise ValueError("Stats NZ price-basis identity was reclassified")
+    # Identity is checked on the live official HTML, but missing page-body
+    # metadata cannot be silently promoted from the earlier manual review.
+    complete=date_seen and nominal_seen
+    return {"status":("KNOWN_STATIC_RELEASE_ISSUER_METADATA_CONFIRMED" if complete
+                      else "PARTIAL_ISSUER_IDENTITY_ONLY_PRIOR_RESEARCH_METADATA"),
             "issuer_url":url,"reference_period":"2026-09",
             "release_date":"2026-10-16",
             "release_date_verified_in_current_html":date_seen,
+            "nominal_basis_verified_in_current_html":nominal_seen,
             "release_date_otherwise_from":"G8_US_NZ_PUBLISHED_RELEASE_CONTEXT_2026-11-09",
-            "metric_type":"NOMINAL_ELECTRONIC_CARD_TRANSACTION_VALUE",
+            "metric_type":"NOMINAL_ELECTRONIC_CARD_TRANSACTION_VALUE_FROM_PRIOR_REVIEW",
             "not_real_retail_volumes":True,"latest_release_certified":False}
 
 
@@ -181,7 +185,10 @@ def capture(*,now=None,fetcher=fetch,series=None):
                 returned.hostname.removeprefix("www.")!=supplied.hostname.removeprefix("www.")):
                 raise ValueError("publisher host changed under fetch")
             value=parser(raw,final)
-            output["sources"][name]={"status":"VERIFIED_RESEARCH_ONLY",
+            partial=(value.get("status","").startswith("PARTIAL_ISSUER_IDENTITY"))
+            output["sources"][name]={
+                "status":("PARTIAL_ISSUER_IDENTITY_ONLY" if partial
+                          else "VERIFIED_RESEARCH_ONLY"),
                 "issuer_url":final,"sha256":sha256(raw).hexdigest(),
                 "value":value}
         except (HTTPError,URLError,OSError,TimeoutError,UnicodeError,
@@ -207,6 +214,8 @@ def capture(*,now=None,fetcher=fetch,series=None):
     ]
     output["source_count_verified"]=sum(
         x["status"]=="VERIFIED_RESEARCH_ONLY" for x in output["sources"].values())
+    output["source_count_partial"]=sum(
+        x["status"]=="PARTIAL_ISSUER_IDENTITY_ONLY" for x in output["sources"].values())
     output["no_claim_of_current_nzd_retail_volume"]=True
     return output
 
