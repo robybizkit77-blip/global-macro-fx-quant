@@ -64,7 +64,7 @@ def reconcile(ois:dict, native:dict):
         post=x["as_of"]>p["date"]
         x["policy_comparison_temporally_aligned"]=post
         x["policy_reference_note"]=(
-            "Market quote after decision day. Descriptive rate minus policy, not meeting probability."
+            "Market quote dated on/after decision. Descriptive rate minus policy, not meeting probability."
             if post else
             "Decision-day daily observation: intraday quote timestamp unavailable; post-event pricing WITHHELD."
             if event_day else
