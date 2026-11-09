@@ -68,6 +68,21 @@ SELECTORS = {
 }
 
 ROLE_IT = {"firms":"Imprese", "labor":"Lavoro e salari", "households":"Famiglie e consumi"}
+# Source identity, not an inferred change in the economic cycle.
+# AUD household spending is in *current prices*; Japan's selected retail
+# index does not attest its real-volume basis from the runtime unit label.
+HOUSEHOLD_PRICE_BASIS = {
+    "AU_HOUSEHOLD_SPENDING_history_value": (
+        "NOMINAL_CURRENT_PRICE",
+        "La spesa delle famiglie è misurata in prezzi correnti: un aumento può "
+        "riflettere prezzi più alti e non dimostra maggiori volumi reali."
+    ),
+    "JP_RETAIL_history_value": (
+        "REAL_VOLUME_BASIS_NOT_VERIFIED",
+        "La fonte riporta un indice delle vendite: senza metadati sul deflatore "
+        "non è dimostrato che il movimento rappresenti consumi reali."
+    ),
+}
 # Recency of observation period only. They are descriptive editorial limits,
 # NOT official release freshness/service-level guarantees.
 RECENT_DAYS = {"M":75, "Q":135, "W":21}
@@ -144,6 +159,11 @@ def evidence_row(row, *, today):
     state=("RECENT_PERIOD_NOT_RELEASE_VERIFIED" if days<=RECENT_DAYS[freq]
            else "DATED_PERIOD_NOT_CURRENT" if days<=DATED_DAYS[freq]
            else "STALE_HISTORICAL_PERIOD")
+    # Fail closed when the AUD nominal-price series changes identity.
+    if ident == "AU_HOUSEHOLD_SPENDING_history_value":
+        gate("current price" in str(row.get("unit") or "").lower(),
+             "AUD household spending is no longer attested as current price")
+    price_basis=HOUSEHOLD_PRICE_BASIS.get(ident)
     trend=("SALITA" if change is not None and change>1e-8
            else "DISCESA" if change is not None and change< -1e-8
            else "STABILE" if change is not None else "NO_CONTIGUOUS_COMPARISON")
@@ -158,6 +178,9 @@ def evidence_row(row, *, today):
         "direction_of_reported_series":trend,
         "status":state,"contiguous_latest_observations":contiguous,
         "source_file":row.get("source_file"),
+        "household_price_volume_basis":(
+            price_basis[0] if price_basis else "SOURCE_UNIT_ONLY_NOT_HARMONIZED"),
+        "real_consumption_change_certified":False,
         "source_data_lineage":"REVISED_CURRENT_VINTAGE_NOT_FIRST_RELEASE",
         "publisher_release_timestamp":None,
         "direction_not_equivalent_to_causal_evidence":True,
@@ -186,6 +209,11 @@ def describe_role(role, evidence):
                 "NO_CONTIGUOUS_COMPARISON":"non confrontabile"}[
                     second["direction_of_reported_series"]]
         desc+=f" «{second['label']}» è {status} ({second['observation_period']})."
+    if role=="households":
+        for record in evidence:
+            caveat=HOUSEHOLD_PRICE_BASIS.get(record["id"])
+            if caveat:
+                desc+=" "+caveat[1]
     if all(x["status"]=="RECENT_PERIOD_NOT_RELEASE_VERIFIED" for x in evidence):
         desc+=(" Periodi relativamente recenti, ma mancano ancora timestamp "
                "di prima pubblicazione e verifica dell'eventuale revisione.")
