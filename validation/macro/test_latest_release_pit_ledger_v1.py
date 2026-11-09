@@ -83,8 +83,22 @@ class LatestReleaseLedgerTests(unittest.TestCase):
         self.assertEqual(usd["release"]["first_release_timestamp_utc"],
                          "2026-10-14T12:30:00+00:00")
         self.assertTrue(usd["release"]["latest_web_release_unhashed"])
-        self.assertEqual(out["observations"]["CAD.labour"]["release"]["first_release_date"],
-                         "2026-10-09")
+        # The official 9 October LFS release belongs to September's
+        # observation. Once the canonical series advances to October,
+        # retaining this date as the new first release would be PIT leakage.
+        cad_september = self.anchors.get(("CAD.labour", "2026-09"), [])
+        self.assertTrue(any(row["date"] == "2026-10-09" and row["value"] == 6.5
+                            for row in cad_september))
+        cad = out["observations"]["CAD.labour"]
+        if cad["current_observation_period"][:7] == "2026-09":
+            self.assertEqual(cad["release"]["first_release_date"], "2026-10-09")
+            self.assertEqual(cad["latest_transformed_observation"], 6.5)
+        else:
+            self.assertGreater(cad["current_observation_period"][:7], "2026-09")
+            self.assertEqual(cad["release"]["status"], "WITHHELD_EXACT_PERIOD_EVIDENCE")
+            self.assertIsNone(cad["release"]["first_release_date"])
+            self.assertIsNone(cad["release"]["first_release_timestamp_utc"])
+            self.assertFalse(cad["release"]["historical_backtest_safe_for_all_periods"])
         self.assertEqual(out["observations"]["AUD.labour"]["release"]["first_release_timestamp_utc"],
                          "2026-10-15T00:30:00+00:00")
         self.assertEqual(out["observations"]["CAD.inflation"]["release"]["first_release_date"],
