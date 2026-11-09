@@ -228,6 +228,69 @@ def inflation_sentence(rec, *,kind):
     )
     return f"{kind}: {v['label']} {p} ({v['observation_period']}), {m}. {quality}."
 
+
+def compare_recent_vs_three_observations(headline, macro_axis):
+    """Compare direction of latest YoY change with the previous 3-observation window.
+
+    Only if same country, period, frequency, meaning, and explicitly linked series.
+    A three-observation change is NOT an acceleration and cannot imply causality.
+    """
+    c_id=macro_axis.get("series_id")
+    same_alias=(isinstance(c_id,str) and c_id in headline["id"])
+    same_frequency=(macro_axis.get("period_frequency")==headline["frequency"])
+    try:
+        e,_=v2.observation_end(macro_axis["period"],headline["frequency"])
+        same_period=e.isoformat()==headline["observation_end_assumed"]
+    except (ValueError,KeyError):
+        same_period=False
+    same_level=(v2.v1.finite(macro_axis.get("level")) and
+                abs(macro_axis["level"]-headline["latest_rate_pct_or_proxy_value"])<=.06)
+    recent=headline["rate_change_pp_or_proxy_units"]
+    three=macro_axis.get("value")
+    good=(same_alias and same_frequency and same_period and same_level
+          and v2.v1.finite(recent) and v2.v1.finite(three))
+    if not good:
+        return {"status":"NOT_COMPARABLE_UNVERIFIED_ID_PERIOD_LEVEL_OR_CLOCK",
+                "latest_change_pp":recent,
+                "three_observations_change_pp":three,
+                "matching_period":same_period,
+                "matching_level":same_level,
+                "matching_series_id":same_alias,
+                "narrative_it":"Ultima variazione e finestra sulle tre osservazioni non confrontabili con sufficiente certezza: nessun punto di svolta dedotto."}
+    def sign(v):
+        return "UP" if v>.05 else "DOWN" if v<-.05 else "FLAT"
+    a,b=sign(recent),sign(three)
+    if a=="DOWN" and b=="UP":
+        status="RECENT_DOWN_WHILE_THREE_OBSERVATIONS_UP"
+        msg=("L'inflazione annua scende nell'ultima osservazione, ma resta "
+             "in aumento rispetto alla finestra di tre osservazioni: "
+             "possibile perdita di slancio, NON svolta già confermata.")
+    elif a=="FLAT" and b=="UP":
+        status="RECENT_FLAT_WHILE_THREE_OBSERVATIONS_UP"
+        msg=("L'ultimo tasso annuo è stabile, mentre sulle tre osservazioni "
+             "precedenti risulta ancora una crescita: "
+             "possibile decelerazione da verificare nei dati successivi.")
+    elif a=="UP" and b=="DOWN":
+        status="RECENT_UP_WHILE_THREE_OBSERVATIONS_DOWN"
+        msg=("Ultimo tasso annuo in rialzo nonostante un confronto più lungo "
+             "ancora negativo: segnale di possibile cambiamento da confermare.")
+    elif a==b:
+        status="SAME_DIRECTION_ACROSS_WINDOWS"
+        msg=("La direzione dell'ultima osservazione coincide con quella "
+             "delle tre osservazioni; non prova da sola persistenza né "
+             "una pressione da domanda.")
+    else:
+        status="MIXED_WINDOWS_NO_CONFIRMED_TURN"
+        msg=("Le due finestre danno segnali diversi; è necessario verificare "
+             "componenti, effetti base e pubblicazioni successive.")
+    msg+=(" Ultima variazione "+point_delta(recent)+
+          "; tre osservazioni "+point_delta(three)+".")
+    return {"status":status,"latest_change_pp":round(recent,4),
+            "three_observations_change_pp":round(three,4),
+            "matching_period":True,"matching_level":True,"matching_series_id":True,
+            "narrative_it":msg}
+
+
 def build(*,today,root=ROOT):
     base=v2.build(today=today,root=root)
     raw=(root/SOURCE).read_bytes()
@@ -257,6 +320,9 @@ def build(*,today,root=ROOT):
                 c+" missing headline or underlying inflation")
         headline=recs["headline"][0]
         core=recs["core"][0]
+        window_compare=compare_recent_vs_three_observations(
+            headline,
+            base["countries"][c]["observed_axes"]["inflation_headline_three_observations_pp"])
         aligned=(headline["observation_end_assumed"]==core["observation_end_assumed"])
         core_is_recent=(core["status"]=="RECENT_PERIOD_NOT_RELEASE_VERIFIED")
         head_is_recent=(headline["status"]=="RECENT_PERIOD_NOT_RELEASE_VERIFIED")
@@ -308,6 +374,7 @@ def build(*,today,root=ROOT):
             inflation_sentence(recs["wages"],kind="Salari"),
             inflation_sentence(recs["expectations"],kind="Aspettative"),
             interpretation,
+            window_compare["narrative_it"],
             supply,
             "Imprese → lavoro → famiglie (periodi osservati, non causalità provata): "
             + " ".join(base["countries"][c]["economic_transmission_narrative_it"][2:5]),
@@ -333,6 +400,7 @@ def build(*,today,root=ROOT):
                 "monthly_context":recs["other_frequencies"],
                 "wage_expectations":recs["wage_expectations"],
                 "headline_core_same_economic_period":aligned,
+                "latest_vs_three_observations":window_compare,
                 "headline_core_yoy_gap_pp_same_period_only":gap,
                 "core_definition":profile["core_definition"],
                 "wage_evidence_definition":profile["wages_definition"],
