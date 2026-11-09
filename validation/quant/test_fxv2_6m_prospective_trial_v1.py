@@ -21,7 +21,15 @@ def fixture():
     fx=json.loads(FX_PATH.read_text())
     quotes=[json.loads(s) for s in QUOTES_PATH.read_text().splitlines() if s.strip()]
     macro=json.loads(MACRO_PATH.read_text())
-    # Deliberate synthetic, test-only future BCE fixings.
+    # Fixed pre-registration fixture: the LIVE ECB history now extends past
+    # Nov 06. Truncate to the *real* Nov 04 reference fixing before appending
+    # two synthetic test-only sessions. Never append backward/duplicate dates
+    # or relax the strict chronological validator.
+    base_day="2026-11-04"
+    base_idx=next((i for i,r in enumerate(fx["rows"]) if r["Date"]==base_day),None)
+    assert base_idx is not None and base_idx >= 100, "Missing real Nov 04 ECB fixture anchor"
+    fx["rows"]=fx["rows"][:base_idx+1]
+    assert fx["rows"][-1]["Date"]==base_day
     last=copy.deepcopy(fx["rows"][-1])
     for d in ("2026-11-05","2026-11-06"):
         row={**last,"Date":d,"USD":last["USD"]*1.002,"CHF":last["CHF"]*.999}
