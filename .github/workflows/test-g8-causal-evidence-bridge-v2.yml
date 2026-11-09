@@ -1,0 +1,41 @@
+name: G8 Causal Evidence Bridge V2 - Research
+
+on:
+  pull_request:
+    paths:
+      - 'validation/macro/build_g8_causal_evidence_bridge_v2.py'
+      - 'validation/macro/test_build_g8_causal_evidence_bridge_v2.py'
+      - '.github/workflows/test-g8-causal-evidence-bridge-v2.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/macro/build_g8_causal_evidence_bridge_v2.py'
+      - 'validation/macro/test_build_g8_causal_evidence_bridge_v2.py'
+      - '.github/workflows/test-g8-causal-evidence-bridge-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  research-evidence-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate economic period, provenance, freshness and 8-country evidence
+        run: python -m unittest validation.macro.test_build_g8_causal_evidence_bridge_v2 -v
+      - name: Produce research-only narrative and evidence JSON
+        run: |
+          python -m validation.macro.build_g8_causal_evidence_bridge_v2 --json-out /tmp/g8-evidence-v2.json --md-out /tmp/g8-evidence-v2.md
+          cat /tmp/g8-evidence-v2.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: g8-causal-evidence-research-v2
+          path: |
+            /tmp/g8-evidence-v2.json
+            /tmp/g8-evidence-v2.md
+          retention-days: 14
