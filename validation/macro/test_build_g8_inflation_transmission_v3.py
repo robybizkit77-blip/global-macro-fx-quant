@@ -30,7 +30,7 @@ class InflationTransmissionResearchV3Tests(unittest.TestCase):
             with self.subTest(ccy=c):
                 self.assertEqual(len(p["inflation_layer"]["headline"]),1)
                 self.assertGreaterEqual(len(p["inflation_layer"]["core"]),1)
-                self.assertEqual(len(p["inflation_narrative_it"]),11)
+                self.assertEqual(len(p["inflation_narrative_it"]),12)
                 self.assertIsNone(p["automatic_fx_signal"])
                 self.assertFalse(p["ready_for_site"])
                 self.assertFalse(p["ready_for_reports"])
@@ -39,7 +39,7 @@ class InflationTransmissionResearchV3Tests(unittest.TestCase):
                 self.assertFalse(p["inflation_layer"]["persistent_services_inflation_verified"])
                 self.assertIsNone(p["inflation_layer"]["central_bank_next_move_forecast"])
                 self.assertIsNone(p["inflation_layer"]["supply_causality_proof"])
-                self.assertIn(p["bank"],p["inflation_narrative_it"][9])
+                self.assertIn(p["bank"],p["inflation_narrative_it"][10])
 
     def test_us_headline_and_core_indexes_transformed_to_yoy_not_levels(self):
         usd=self.book["countries"]["USD"]["inflation_layer"]
@@ -55,6 +55,33 @@ class InflationTransmissionResearchV3Tests(unittest.TestCase):
         self.assertTrue(w["is_actual_wage"])
         self.assertEqual(w["transformation"],"NOMINAL_WAGE_YOY_DERIVED_FROM_HOURLY_PAY_LEVEL")
         self.assertLess(w["latest_rate_pct_or_proxy_value"],20)
+
+    def test_nz_recent_falls_even_though_three_observations_up(self):
+        x=self.book["countries"]["NZD"]["inflation_layer"]["latest_vs_three_observations"]
+        self.assertEqual(x["status"],"RECENT_DOWN_WHILE_THREE_OBSERVATIONS_UP")
+        self.assertLess(x["latest_change_pp"],0)
+        self.assertGreater(x["three_observations_change_pp"],0)
+        self.assertTrue(x["matching_period"])
+        self.assertIn("NON svolta già confermata",x["narrative_it"])
+
+    def test_aud_recent_flat_with_medium_up_not_forced_acceleration(self):
+        x=self.book["countries"]["AUD"]["inflation_layer"]["latest_vs_three_observations"]
+        self.assertEqual(x["status"],"RECENT_FLAT_WHILE_THREE_OBSERVATIONS_UP")
+        self.assertEqual(x["latest_change_pp"],0)
+        self.assertGreater(x["three_observations_change_pp"],0)
+        self.assertIn("decelerazione",x["narrative_it"])
+
+    def test_unknown_alias_fails_closed_even_when_levels_match(self):
+        g=self.book["countries"]["GBP"]["inflation_layer"]["latest_vs_three_observations"]
+        self.assertEqual(g["status"],"NOT_COMPARABLE_UNVERIFIED_ID_PERIOD_LEVEL_OR_CLOCK")
+        sample={"id":"FAKE_ID","observation_end_assumed":"2026-09-30",
+                "frequency":"M","latest_rate_pct_or_proxy_value":3.5,
+                "rate_change_pp_or_proxy_units":.4}
+        comparison=m.compare_recent_vs_three_observations(
+            sample,{"series_id":"OTHER_NAME","period":"2026-09",
+                    "period_frequency":"M","level":3.5,"value":.9})
+        self.assertFalse(comparison["matching_series_id"])
+        self.assertIn("NOT_COMPARABLE",comparison["status"])
 
     def test_uk_japan_core_semantics_cannot_relabel_as_demand(self):
         jp=self.book["countries"]["JPY"]["inflation_layer"]
