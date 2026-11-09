@@ -1113,7 +1113,7 @@ async function getState(page){
              (x.tier!=='OFFICIAL'&&(x.studyLines!==(x.points===3?1:0)||x.officialLines!==0)))||
            (research.gradedRows.some(x=>x.points<3)&&
              !research.note.includes('Copertura parziale:'))||
-           !research.gradedRows.some(x=>x.ccy==='CHF'&&['PROXY','MIXED'].includes(x.tier)&&
+           !research.gradedRows.some(x=>x.ccy==='CHF'&&['PROXY','MIXED','CONFLICTED'].includes(x.tier)&&
              x.points>=1&&x.joined==='false'&&x.lines===(x.points===3?1:0))||
            !research.note.includes('Grafico G8 3M/6M/12M: 8/8')||
            !research.note.includes('Curve certificate: '+research.expectedCurves+'/8')||
