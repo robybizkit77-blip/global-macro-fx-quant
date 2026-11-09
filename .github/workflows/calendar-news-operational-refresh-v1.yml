@@ -102,7 +102,7 @@ on:
     - cron: '17 6 * * *'
     # Targeted CPI October 2026 read-only source rechecks after 08:30 ET
     # on November 10. No new workflow; V10 is no-op outside 7-day window.
-    - cron: '39,59 13 10 11 *'
+    - cron: '34,39,49,59 13 10 11 *'
     # Single-event-source follow-ups in the existing Calendar run, no new workflow.
     # Year-specific V11 parsing guards block future/unrelated releases.
     - cron: '11 7 12 11 *'
