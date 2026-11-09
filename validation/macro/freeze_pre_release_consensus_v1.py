@@ -29,6 +29,13 @@ CONSENSUS=ROOT/"live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json"
 LEDGER=ROOT/"validation/macro/MACRO_PRE_RELEASE_CONSENSUS_LEDGER_V1.jsonl"
 SCHEMA="GMFQ_MACRO_FORECAST_FROZEN_BEFORE_SCHEDULED_RELEASE_V1"
 G8={"USD","EUR","GBP","JPY","CHF","CAD","AUD","NZD"}
+# Prospective gating: until a new metric+issuer actual parser is audited,
+# only these two existing signed contracts may enter the immutable V1 ledger.
+# CPI release titles without MoM/YoY/core unit must not be frozen generically.
+CERTIFIED_ISSUER_ACTUAL_METRIC_KEYS_V1=frozenset({
+    "USD|2026-10-30|LABOUR_COST|Employment Cost Index",
+    "CAD|2026-10-30|GROWTH|Gross domestic product by industry",
+})
 FORECAST_RE=re.compile(r"^\s*([+-]?(?:\d+(?:\.\d*)?|\.\d+))\s*(%)\s*$")
 
 def must(ok,why):
@@ -150,6 +157,8 @@ def freeze(official,consensus,existing,captured_at):
             skip("NOT_EXACT_OFFICIAL_EVENT");continue
         if key in seen:
             skip("ALREADY_FROZEN_KEEP_FIRST_OBSERVATION");continue
+        if key not in CERTIFIED_ISSUER_ACTUAL_METRIC_KEYS_V1:
+            skip("METRIC_UNIT_AND_ISSUER_ACTUAL_PARSER_NOT_CERTIFIED");continue
         stamp=scheduled(e)
         if stamp is None:
             skip("OFFICIAL_SCHEDULE_HAS_NO_INTRADAY_CLOCK");continue
