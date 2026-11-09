@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'validation/macro/build_g8_causal_evidence_bridge_v2.py'
+      - 'validation/macro/collect_us_nz_household_firm_sources_v1.py'
+      - 'validation/macro/test_collect_us_nz_household_firm_sources_v1.py'
       - 'validation/macro/G8_US_NZ_PUBLISHED_RELEASE_CONTEXT_2026-11-09.json'
       - 'validation/macro/test_build_g8_causal_evidence_bridge_v2.py'
       - '.github/workflows/test-g8-causal-evidence-bridge-v2.yml'
@@ -11,6 +13,8 @@ on:
     branches: [main]
     paths:
       - 'validation/macro/build_g8_causal_evidence_bridge_v2.py'
+      - 'validation/macro/collect_us_nz_household_firm_sources_v1.py'
+      - 'validation/macro/test_collect_us_nz_household_firm_sources_v1.py'
       - 'validation/macro/G8_US_NZ_PUBLISHED_RELEASE_CONTEXT_2026-11-09.json'
       - 'validation/macro/test_build_g8_causal_evidence_bridge_v2.py'
       - '.github/workflows/test-g8-causal-evidence-bridge-v2.yml'
@@ -35,6 +39,8 @@ jobs:
             validation.macro.test_build_g8_inflation_transmission_v3 \
             validation.macro.test_build_g8_credit_liquidity_v4 \
             validation.macro.test_build_g8_relative_pair_countrybook_v5 -v
+      - name: Fail closed source-intake regression (no network or live writes)
+        run: python -m unittest validation.macro.test_collect_us_nz_household_firm_sources_v1 -v
       - name: Produce research-only narrative and evidence JSON
         run: |
           python -m validation.macro.build_g8_causal_evidence_bridge_v2 --json-out /tmp/g8-evidence-v2.json --md-out /tmp/g8-evidence-v2.md
