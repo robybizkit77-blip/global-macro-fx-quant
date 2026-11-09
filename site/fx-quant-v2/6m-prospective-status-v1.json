@@ -1,40 +1,40 @@
 {
   "schema": "GMFQ_FXV2_6M_PROSPECTIVE_STATUS_READONLY_V1",
-  "as_of_rome_day": "2026-11-05",
-  "report_status": "PREREGISTERED_BEFORE_FIRST_ELIGIBLE_CAPTURE",
+  "as_of_rome_day": "2026-11-09",
+  "report_status": "CAPTURE_MISSED_WITH_SAME_DAY_ECB_AVAILABLE_ATTENTION",
   "registration_date_utc": "2026-11-05",
   "first_eligible_rome_date": "2026-11-06",
-  "latest_observed_ecb_fixing": "2026-11-04",
+  "latest_observed_ecb_fixing": "2026-11-09",
   "input_readiness": {
     "capture_gate_local_time": "20:45 Europe/Rome",
-    "capture_gate_reached_for_rome_business_day": false,
-    "official_ecb_t0_available_for_rome_day": false,
+    "capture_gate_reached_for_rome_business_day": true,
+    "official_ecb_t0_available_for_rome_day": true,
     "prospective_capture_already_frozen_for_rome_day": false,
-    "capture_due_but_missing": false,
+    "capture_due_but_missing": true,
     "last_valid_6m_source_audit": {
       "available": true,
-      "source_as_of_last_available_ecb_fixing": "2026-11-04",
+      "source_as_of_last_available_ecb_fixing": "2026-11-09",
       "currency_latest_market_date": {
-        "USD": "2026-11-04",
-        "EUR": "2026-11-03",
-        "CHF": "2026-11-04"
+        "USD": "2026-11-09",
+        "EUR": "2026-11-06",
+        "CHF": "2026-11-09"
       },
       "pair_recent_same_contract_source": {
         "EUR/USD": {
           "has_recent_matched_same_contract_6m_quote_change": true,
-          "last_eligible_source_market_day": "2026-11-03",
+          "last_eligible_source_market_day": "2026-11-06",
           "not_a_frozen_hypothesis": true,
           "not_an_OIS_repricing_signal": true
         },
         "EUR/CHF": {
           "has_recent_matched_same_contract_6m_quote_change": true,
-          "last_eligible_source_market_day": "2026-11-03",
+          "last_eligible_source_market_day": "2026-11-06",
           "not_a_frozen_hypothesis": true,
           "not_an_OIS_repricing_signal": true
         },
         "USD/CHF": {
           "has_recent_matched_same_contract_6m_quote_change": true,
-          "last_eligible_source_market_day": "2026-11-04",
+          "last_eligible_source_market_day": "2026-11-09",
           "not_a_frozen_hypothesis": true,
           "not_an_OIS_repricing_signal": true
         }
