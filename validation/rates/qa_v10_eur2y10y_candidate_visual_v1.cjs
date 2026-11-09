@@ -22,8 +22,17 @@ async function run(){
      Math.abs((Date.parse(raw.EUR.date)-Date.parse(day))/86400000)<=days,Date};
  vm.createContext(ctx);vm.runInContext(addon.slice(st,en),ctx);
  const derived=ctx.estimate(raw.CHF,raw.EUR,'history10');
- assert(derived&&Number.isFinite(derived.v)&&derived.confidence==='BASSA',
-   'actual low-confidence CHF proxy cannot be reproduced from canonical source');
+ const gapDays=(Date.parse(raw.EUR.date)-Date.parse(raw.CHF.date))/86400000;
+ const expired=gapDays>35;
+ // Once the CHF official 2Y/10Y source is >35 calendar days behind EUR,
+ // the production beta estimator MUST return null (fail closed). A visual
+ // regression must not demand a fabricated CHF 10Y scenario.
+ if(expired){
+   assert.equal(derived,null,'expired CHF/EUR 10Y model incorrectly returned a quote');
+ }else{
+   assert(derived&&Number.isFinite(derived.v)&&derived.confidence==='BASSA',
+     'eligible low-confidence CHF proxy cannot be reproduced from canonical source');
+ }
  const browser=await chromium.launch({headless:true}),cases=[],issues=[];
  try{
   for(const [label,viewport] of [['desktop',{width:1440,height:950}],['mobile',{width:390,height:844}]]){
@@ -41,7 +50,7 @@ async function run(){
    assert(response?.ok(),'v10 preview failed to load');
    await page.waitForFunction(()=>{
      const d=document.getElementById('gmfq-page')?.contentDocument;
-     return Boolean(d?.querySelector('#gmfq-yields-study .gmfq-yield-row[data-ccy="CHF"] .gmfq-yield-scenario'));
+     return Boolean(d?.querySelector('#gmfq-yields-study .gmfq-yield-row[data-ccy="CHF"]'));
    },null,{timeout:45000});
    const observed=await page.evaluate(()=>{
      const d=document.getElementById('gmfq-page')?.contentDocument,
@@ -50,7 +59,10 @@ async function run(){
        host=d?.getElementById('gmfq-yields-study');
      return {viewport:d?.documentElement.clientWidth,
        document_width:d?.documentElement.scrollWidth,
-       chf_scenario:c?.querySelector('.gmfq-yield-scenario')?.textContent,
+       chf_scenario:c?.querySelector('.gmfq-yield-scenario')?.textContent||null,
+       chf_scenario_count:c?.querySelectorAll('.gmfq-yield-scenario').length||0,
+       chf_state:c?.dataset.state,
+       chf_values:c?.textContent,
        source_rebase_status:host?.dataset.eurSourceRebase,
        chf_source_rebase_notice:c?.querySelector('.gmfq-yield-rebase')?.textContent||null,
        chf_source_rebase_count:c?.querySelectorAll('.gmfq-yield-rebase').length||0,
@@ -66,14 +78,23 @@ async function run(){
    assert(['NONE','RESEARCH_CANDIDATE_NOT_PUBLISHED',
            'PUBLISHED_AFTER_SOURCE_AND_BROWSER_QA'].includes(observed.source_rebase_status),
        'rebase status invalid '+JSON.stringify(observed));
-   const expectedRendered=published?derived.v:expected10;
-   assert(observed.chf_scenario?.includes('10Y ≈'+expectedRendered.toFixed(3)+'% (BASSA)'),
-     label+' CHF low-confidence 10Y beta disagrees with available source '+JSON.stringify({
-       expected:expectedRendered,observed:observed.chf_scenario}));
+   if(expired){
+     assert(observed.chf_state==='HISTORICAL'&&
+       observed.chf_scenario===null&&observed.chf_scenario_count===0&&
+       observed.chf_values?.includes(raw.CHF['10Y'].toFixed(3)+'%')&&
+       observed.chf_source_rebase_count===0,
+       label+' expired CHF/EUR beta must be suppressed, historical CHF must remain visible '+
+       JSON.stringify({gapDays,observed}));
+   }else{
+     const expectedRendered=published?derived.v:expected10;
+     assert(observed.chf_scenario?.includes('10Y ≈'+expectedRendered.toFixed(3)+'% (BASSA)'),
+       label+' CHF low-confidence 10Y beta disagrees with eligible source '+JSON.stringify({
+         expected:expectedRendered,observed:observed.chf_scenario}));
+   }
    if(observed.source_rebase_status==='NONE'){
      assert.equal(scenario,'before','no candidate rebase on an after-only scenario');
      assert.equal(observed.chf_source_rebase_notice,null);
-   }else{
+   }else if(!expired){
      const title=published?'STORICO BCE RICALIBRATO':'ANTEPRIMA RICERCA';
      assert.equal(observed.chf_source_rebase_count,1);
      assert(observed.chf_source_rebase_notice?.includes(title)&&
