@@ -90,7 +90,9 @@ class BLSActualV10Tests(unittest.TestCase):
         # of the introductory annual core line.
         repeated = RAW.replace(
             b"</body>",
-            b" <h3>All items less food and energy</h3>"
+            b" <h3>Table A. Percent changes in CPI</h3>"
+            b"<p>All items | 0.4 | 3.4</p>"
+            b"<h3>All items less food and energy</h3>"
             b"The index for all items less food and energy rose 2.7 percent "
             b"over the past 12 months. </body>")
         got = bls.parse(raw=repeated)["metric_actual_pct"]
