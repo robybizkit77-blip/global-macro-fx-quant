@@ -1,0 +1,43 @@
+name: G8 Causal Country Book Pilot V1 Research
+
+on:
+  pull_request:
+    paths:
+      - 'validation/macro/G8_CAUSAL_REACTION_COUNTRY_BOOK_V1.json'
+      - 'validation/macro/build_g8_causal_countrybook_pilot_v1.py'
+      - 'validation/macro/test_build_g8_causal_countrybook_pilot_v1.py'
+      - '.github/workflows/test-g8-causal-countrybook-pilot-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/macro/G8_CAUSAL_REACTION_COUNTRY_BOOK_V1.json'
+      - 'validation/macro/build_g8_causal_countrybook_pilot_v1.py'
+      - 'validation/macro/test_build_g8_causal_countrybook_pilot_v1.py'
+      - '.github/workflows/test-g8-causal-countrybook-pilot-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  countrybook-pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test source provenance, 24 axes and eight qualitative G8 chains
+        run: python -m unittest validation.macro.test_build_g8_causal_countrybook_pilot_v1 -v
+      - name: Produce research-only eight-country narrative preview
+        run: |
+          python -m validation.macro.build_g8_causal_countrybook_pilot_v1 --json-out /tmp/g8-causal-countrybook-v1.json --md-out /tmp/g8-causal-countrybook-v1.md
+          cat /tmp/g8-causal-countrybook-v1.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: g8-causal-countrybook-research-preview
+          path: |
+            /tmp/g8-causal-countrybook-v1.json
+            /tmp/g8-causal-countrybook-v1.md
+          retention-days: 14
