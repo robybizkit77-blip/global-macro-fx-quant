@@ -18,6 +18,13 @@ class ResearchStatusTests(unittest.TestCase):
         # Nov 6 test fixtures must not leak into a Nov 5 status report.
         from validation.quant.fxv2_6m_prospective_trial_v1 import FX_PATH
         fx=json.loads(FX_PATH.read_text())
+        # A true historical Nov 05 report cannot load the live Nov 09 tail.
+        # Keep authentic published ECB rows, but only those observable by T0.
+        fx["rows"]=[r for r in fx["rows"] if r["Date"]<="2026-11-05"]
+        self.assertGreaterEqual(len(fx["rows"]),100)
+        self.assertEqual(fx["rows"][-1]["Date"],"2026-11-05")
+        fx["last_as_of"]=fx["rows"][-1]["Date"]
+        fx["row_count"]=len(fx["rows"])
         report=build(policy,fx,macro,[],[],at("2026-11-05T15:00:00"))
         self.assertEqual(report["schema"],SCHEMA)
         self.assertEqual(report["report_status"],
@@ -144,14 +151,22 @@ class ResearchStatusTests(unittest.TestCase):
                          "2026-11-06")
         self.assertTrue(inventory["pair_recent_same_contract_source"]["USD/CHF"][
                          "has_recent_matched_same_contract_6m_quote_change"])
+        selected_day=inventory["pair_recent_same_contract_source"]["USD/CHF"][
+            "last_eligible_source_market_day"]
+        self.assertIsNotNone(selected_day)
         late=copy.deepcopy(quotes)
-        for row in late:
-            if row["currency"]=="CHF" and row["observed_under_horizon"]=="6m" and row["observation_date"]=="2026-11-04":
-                row["first_seen_at_utc"]="2026-11-06T23:30:00Z"
+        affected=[r for r in late
+            if r["currency"]=="CHF" and r["observed_under_horizon"]=="6m"
+            and r["observation_date"]==selected_day]
+        self.assertGreater(len(affected),0)
+        for row in affected:
+            row["first_seen_at_utc"]="2026-11-06T23:30:00Z"
         future=build(policy,fx,macro,[],[],moment,late)
-        self.assertFalse(future["input_readiness"]["last_valid_6m_source_audit"][
-                         "pair_recent_same_contract_source"]["USD/CHF"][
-                         "has_recent_matched_same_contract_6m_quote_change"])
+        next_day=future["input_readiness"]["last_valid_6m_source_audit"][
+            "pair_recent_same_contract_source"]["USD/CHF"][
+            "last_eligible_source_market_day"]
+        self.assertNotEqual(next_day,selected_day,
+            "A quote first-seen after inspection cannot remain the verified latest quote")
         self.assertEqual(future["summary"]["experimental_direction_observations"],0)
         self.assertFalse(future["predictive_skill_validated"])
 
