@@ -25,7 +25,7 @@ FX=v4.FX
 RATE_FILE="live_data/sections/NATIVE_RATES_DATA.json"
 OIS_FILE="live_data/sections/OIS_OPERATIONAL_VIEW.json"
 PRICE_FILE="live_data/sections/ECB_G8_PRICE_HISTORY.json"
-PAIR_KEYS=tuple(f"{a}/{b}" for a,b in itertools.combinations(FX,2))
+PAIR_REGISTRY_FILE="live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json"
 # Other benchmark definitions must remain visible, not silently normalized.
 FRONT_END_DEF={
     "USD":"US Treasury daily par curve",
@@ -267,7 +267,8 @@ def build(*,today,root=ROOT):
     book=v4.build(today=today,root=root)
     inputs={}
     shas={}
-    for k,path in {"rates":RATE_FILE,"ois":OIS_FILE,"price":PRICE_FILE}.items():
+    for k,path in {"rates":RATE_FILE,"ois":OIS_FILE,"price":PRICE_FILE,
+                   "canonical_pair_registry":PAIR_REGISTRY_FILE}.items():
         raw=(root/path).read_bytes()
         inputs[k]=json.loads(raw)
         shas[k]=hashlib.sha256(raw).hexdigest()
@@ -282,10 +283,30 @@ def build(*,today,root=ROOT):
             "unexpected ECB FX reference provenance")
     require(fx["rows"][-1]["Date"]==fx.get("last_as_of"),
             "ECB latest quote metadata mismatch")
+    registry=inputs["canonical_pair_registry"]
+    require(registry.get("schema")=="GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1"
+            and registry.get("pair_count")==28
+            and len(registry.get("pairs",{}))==28,
+            "unexpected canonical pair registry")
+    keys=[]
+    combinations=set()
+    for code,rec in registry["pairs"].items():
+        pair=rec["canonical_pair"]
+        vals=pair.split("/")
+        require(len(vals)==2 and all(v in FX for v in vals)
+                and vals[0]!=vals[1] and code=="".join(vals),
+                "invalid canonical pair naming "+pair)
+        combo=frozenset(vals)
+        require(combo not in combinations,"canonical duplicate of "+pair)
+        keys.append((pair,vals[0],vals[1]))
+        combinations.add(combo)
+    expect={frozenset([a,b]) for a,b in itertools.combinations(FX,2)}
+    require(combinations==expect,"canonical 28-pair G8 universe incomplete")
     rows=fx["rows"]
-    pairs={f"{a}/{b}":compare(a,b,book,rd,ois,rows,today)
-           for a,b in itertools.combinations(FX,2)}
-    require(len(pairs)==28 and tuple(pairs)==PAIR_KEYS,"not exactly 28 G8 pairs")
+    pairs={pair:compare(a,b,book,rd,ois,rows,today)
+           for pair,a,b in keys}
+    require(len(pairs)==28 and tuple(pairs)==tuple(p for p,_,_ in keys),
+            "not exactly 28 canonical G8 pairs")
     official6=sum(p["money_market_6m"]["six_month_arithmetic_reference_spread_bp"]
                   is not None for p in pairs.values())
     current2=sum(p["rates_2y"]["spread_2y_bp"] is not None for p in pairs.values())
@@ -294,7 +315,8 @@ def build(*,today,root=ROOT):
         "macro_as_of":book["countries"]["USD"]["observed_axes"]["GDP_quarterly_pct"]["period"],
         "source_sha256":{**book["source_sha256"],**shas},
         "source_paths":{**book["source_paths"],
-                        "rates":RATE_FILE,"ois":OIS_FILE,"price":PRICE_FILE},
+                        "rates":RATE_FILE,"ois":OIS_FILE,"price":PRICE_FILE,
+                        "canonical_pair_registry":PAIR_REGISTRY_FILE},
         "fx_price_last_asof":fx["last_as_of"],
         "scope":{
             "currencies":8,"pairs":28,"price_series":28,
@@ -359,7 +381,7 @@ def main():
         "scope":book["scope"],
         "sample_pairs":{
             p:book["pairs"][p]["pair_narrative_it"][0]
-            for p in ("USD/EUR","GBP/JPY","AUD/NZD","CAD/NZD")
+            for p in ("EUR/USD","GBP/JPY","AUD/NZD","NZD/CAD")
         }
     },ensure_ascii=False))
     return 0
