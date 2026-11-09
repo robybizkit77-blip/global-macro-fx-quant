@@ -64,17 +64,26 @@ class Preregistered6mProspectiveTests(unittest.TestCase):
         for v in doc["pairs"].values():
             self.assertIsNone(v["expected_fx_return"])
             self.assertIsNone(v["trade_signal"])
-        # The next available identical-contract pair has last market date
-        # Wed Nov 4, captured no later than Fri Nov 6; directional but not
-        # a bank OIS signal. The USD leg rose less than CHF fell.
+        # The archive can acquire genuinely newer same-contract quotes.
+        # Verify the selected leg pair's dates, identity, arithmetic and
+        # first-seen gate instead of pinning an obsolete Nov 04 snapshot.
         row=doc["pairs"]["USD/CHF"]
-        self.assertEqual(row["last_rate_market_date"],"2026-11-04")
-        self.assertEqual(row["source_lag_ecb_sessions"],2)
         self.assertEqual(row["status"],"FROZEN_EXPERIMENTAL_DIRECTION")
-        self.assertEqual(row["rate_change_bp"],2.0)
-        self.assertEqual(row["experimental_rate_hypothesis_sign"],1)
-        self.assertEqual(row["base_contract"],"ZQJ2027")
-        self.assertEqual(row["quote_contract"],"SA3M2027")
+        self.assertIn(row["last_rate_market_date"],
+                      [item["Date"] for item in fx["rows"][-3:]])
+        last_index=[item["Date"] for item in fx["rows"]].index(row["last_rate_market_date"])
+        self.assertEqual(row["source_lag_ecb_sessions"],len(fx["rows"])-1-last_index)
+        self.assertIn(row["base_contract"],{x["contract"] for x in q
+            if x["currency"]=="USD" and x["observed_under_horizon"]=="6m"
+            and x["observation_date"]==row["last_rate_market_date"]})
+        self.assertIn(row["quote_contract"],{x["contract"] for x in q
+            if x["currency"]=="CHF" and x["observed_under_horizon"]=="6m"
+            and x["observation_date"]==row["last_rate_market_date"]})
+        self.assertAlmostEqual(row["rate_change_bp"],
+                               row["base_rate_change_bp"]-row["quote_rate_change_bp"],places=3)
+        self.assertGreaterEqual(abs(row["rate_change_bp"]),2)
+        self.assertEqual(row["experimental_rate_hypothesis_sign"],
+                         1 if row["rate_change_bp"]>0 else -1)
         self.assertLessEqual(row["feature_first_usable_at_utc"],doc["captured_at_utc"])
         self.assertEqual(verified_journal([doc],seal(p)),{"2026-11-06"})
         duplicate,msg=freeze(now,p,fx,q,m,[doc])
@@ -96,14 +105,23 @@ class Preregistered6mProspectiveTests(unittest.TestCase):
 
     def test_no_future_quote_used_or_roll_signal(self):
         p,fx,q,m=fixture()
+        original,_=freeze(at("2026-11-06T20:00:00"),p,fx,q,m,[])
+        used=original["pairs"]["USD/CHF"]["last_rate_market_date"]
+        self.assertIsNotNone(used)
         delayed=copy.deepcopy(q)
-        for r in delayed:
-            if (r["currency"]=="CHF" and r["observed_under_horizon"]=="6m"
-                and r["observation_date"]=="2026-11-04"):
-                r["first_seen_at_utc"]="2026-11-07T06:00:00Z"
+        delayed_rows=[r for r in delayed
+            if r["currency"]=="CHF" and r["observed_under_horizon"]=="6m"
+            and r["observation_date"]==used]
+        self.assertGreater(len(delayed_rows),0)
+        for r in delayed_rows:
+            r["first_seen_at_utc"]="2026-11-07T06:00:00Z"
         doc,_=freeze(at("2026-11-06T20:00:00"),p,fx,delayed,m,[])
-        self.assertNotEqual(doc["pairs"]["USD/CHF"]["status"],"FROZEN_EXPERIMENTAL_DIRECTION")
-        self.assertIsNone(doc["pairs"]["USD/CHF"]["experimental_rate_hypothesis_sign"])
+        result=doc["pairs"]["USD/CHF"]
+        self.assertNotEqual(result["last_rate_market_date"],used,
+                            "A quote first seen on Nov 07 cannot support the Nov 06 freeze")
+        if result["experimental_rate_hypothesis_sign"] is not None:
+            self.assertLessEqual(result["feature_first_usable_at_utc"],
+                                 doc["captured_at_utc"])
 
     def test_future_observer_after_five_REAL_future_fixings_only(self):
         p,fx,q,m=fixture()
