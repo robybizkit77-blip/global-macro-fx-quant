@@ -565,28 +565,57 @@ function expectedReactionFromMetrics(row){
     fatal.push('NZD dated scenario / directional proxy mismatch');
   const g8=['USD','EUR','GBP','JPY','AUD','CAD','NZD','CHF'];
   if(g8.some(c=>!r.rateBarTexts.includes(c)))fatal.push('G8 2Y bars missing currency labels');
-  // A recently certified NZD yield supersedes the earlier NZD/AUD estimate.
-  // Still enforce an anchored CHF estimate, and an NZD estimate only when missing.
-  // WITHHELD is the correct outcome when neither a fresh NZD official rate
-  // nor a properly anchored NZD proxy estimate is available.
-  const nzIndex=r.rateBarTexts.indexOf('NZD'),nzDisplayed=nzIndex>0?r.rateBarTexts[nzIndex-1]:'';
+  // A mathematically possible beta is NOT automatically eligible for
+  // publication. The real CHF 2Y source may be over 35 calendar days behind
+  // its EUR proxy; this is a deliberate model expiry, not missing site data.
+  // No test may demand inventing a new CHF observation to turn CI green.
+  const shown=ccy=>{
+    const ix=r.rateBarTexts.indexOf(ccy);
+    return ix>0?r.rateBarTexts[ix-1]:null;
+  };
+  const days=(later,earlier)=>
+    (Date.parse(later+'T00:00:00Z')-Date.parse(earlier+'T00:00:00Z'))/86400000;
+  const chfValue=shown('CHF'),nzDisplayed=shown('NZD');
+  const chfOfficial=recentOfficialRate(ratesFeed.CHF);
+  const chfGap=days(ratesFeed.EUR.date,ratesFeed.CHF.date);
+  const chfProxyEligibleByDate=chfGap>0&&chfGap<=35;
+  const chfWithheld=chfValue==='—';
+  const chfEstimated=!chfOfficial&&!chfWithheld&&chfValue?.endsWith('*');
   const nzWithheld=nzDisplayed==='—';
-  const nzEstimated=!nzdOfficial&&!nzWithheld&&nzDisplayed.endsWith('*');
-  const expectedEstimates=1+(nzEstimated?1:0);
-  if(r.rateBarTexts.filter(x=>x.endsWith('*')).length<expectedEstimates||
-     !r.rateBarNote.includes('STIMA'))
-    fatal.push('Unlabelled or absent CHF anchored model estimate');
-  if(!r.rateBarNote.includes('base '+chfAnchor)||
-     (nzEstimated&&!r.rateBarNote.includes('base '+nzdAnchor)))
-    fatal.push('Displayed model estimates must have common-date anchors: '+r.rateBarNote);
+  const nzEstimated=!nzdOfficial&&!nzWithheld&&nzDisplayed?.endsWith('*');
+  // An expired 35-day model MUST show an unavailable rate, not a synthetic
+  // number or a provenance label for an estimate that was never calculated.
+  if(!chfOfficial&&!chfProxyEligibleByDate&&
+      (!chfWithheld||r.rateBarNote.includes('CHF/EUR')))
+    fatal.push('CHF stale 2Y estimate promoted despite 35-day source gap '+JSON.stringify({
+      chfSource:ratesFeed.CHF.date,eurSource:ratesFeed.EUR.date,gapDays:chfGap,
+      shown:chfValue,note:r.rateBarNote}));
+  if(!chfOfficial&&!chfWithheld&&!chfEstimated)
+    fatal.push('CHF neither sourced nor visibly WITHHELD/estimated: '+chfValue);
+  if(chfOfficial&&(chfWithheld||chfEstimated))
+    fatal.push('CHF official 2Y incorrectly withheld/estimated');
   if(!nzdOfficial&&!nzWithheld&&!nzEstimated)
     fatal.push('NZD without current official data must be estimated or WITHHELD: '+nzDisplayed);
   if(nzdOfficial&&(r.rateBarNote.includes('NZD/AUD')||nzWithheld||
       !r.rateBarTexts.includes('NZD')||
       r.rateBarTexts.includes(Number(ratesFeed.NZD['2Y']).toFixed(2)+'*')))
     fatal.push('Certified NZD yield incorrectly shown as estimate/WITHHELD');
-  if(!r.rateBarNote.includes('R² ')||!r.rateBarNote.includes('BASSA'))
-    fatal.push('Model confidence/disclaimer is not visible: '+r.rateBarNote);
+  // Each ACTUAL modelled bar must have the matching common-date historical
+  // anchor, numerical R², and its OWN confidence (can legitimately be MEDIA).
+  const expectedEstimates=Number(Boolean(chfEstimated))+Number(Boolean(nzEstimated));
+  const modelEntries=[...r.rateBarNote.matchAll(/(CHF\\/EUR|NZD\\/AUD) (ALTA|MEDIA|BASSA) \\(R² ([0-9]+\\.[0-9]+), base (20\\d{2}-\\d{2}-\\d{2})\\)/g)];
+  if(r.rateBarTexts.filter(x=>x.endsWith('*')).length!==expectedEstimates||
+     modelEntries.length!==expectedEstimates||
+     (expectedEstimates>0&&!r.rateBarNote.includes('STIMA β (non operativa)')))
+    fatal.push('Source-qualified 2Y model count or disclaimer mismatch '+JSON.stringify({
+      expectedEstimates,shownCHF:chfValue,shownNZD:nzDisplayed,note:r.rateBarNote}));
+  for(const [code,active,anchor] of [['CHF/EUR',chfEstimated,chfAnchor],['NZD/AUD',nzEstimated,nzdAnchor]]){
+    const match=modelEntries.find(x=>x[1]===code);
+    if(active&&(!match||match[4]!==anchor||Number(match[3])<0||Number(match[3])>1))
+      fatal.push('Displayed model missing verified common-date anchor or R² '+code+' '+r.rateBarNote);
+    if(!active&&match)
+      fatal.push('Unqualified model disclosed despite no eligible estimated bar '+code);
+  }
   if(!r.bars2y||!r.spread||!r.designGlobe)fatal.push('cards/approved design missing');
   if(r.oisPanel.scrollHeight>r.oisPanel.clientHeight+8)fatal.push('OIS clipped');
   if(r.ratesChart.scrollHeight>r.ratesChart.clientHeight+8)fatal.push('Yield panel clipped');
