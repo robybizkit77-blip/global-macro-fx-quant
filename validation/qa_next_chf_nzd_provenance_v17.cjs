@@ -10,7 +10,9 @@ const chf=j('site/fx-quant-v2/chf-snb-paired-history.json');
 const nzd=j('site/fx-quant-v2/nzd-b2-postroll-web-research.json');
 const legacy=j('site/fx-quant-v2/chf-nzd-benchmark-research.json');
 const mod=require('../site/fx-quant-v2/next/fx-rates-bridge.js');
-const now='2026-11-08',asof=pairs.price_asof;
+// Preserve the reviewed 6 Nov fixture; the production FX fixing moves independently.
+const now='2026-11-08',asof='2026-11-06';
+const fixturePairs={...pairs,price_asof:asof};
 assert.equal(nzd.source_release_date,'2026-11-06');
 assert.equal(nzd.source_capture_method,'PUBLIC_OFFICIAL_PAGE_MANUAL_RESEARCH_NOT_AUTOMATED_FETCH');
 assert.equal(nzd.automated_access_authorized,false);
@@ -47,7 +49,21 @@ assert(!mod.snapshot(rates,prices,'CHFNZD',asof,now,aud,chf,nzd).ready);
 const all=Object.keys(pairs.pairs).map(key=>mod.snapshot(rates,prices,key,asof,now,aud,chf,nzd));
 assert.equal(all.length,28);
 assert.equal(all.filter(x=>x.ready&&x.short).length,15);
-assert.equal(all.filter(x=>x.ready&&x.medium).length,10);
+const mediumCount=all.filter(x=>x.ready&&x.medium).length;
+assert(mediumCount>=10&&mediumCount<=all.filter(x=>x.ready&&x.short).length,
+ '20-interval research coverage must be supported by validated short comparisons');
+// Check production clock separately. Research sidecars must not silently promote
+// stale CHF/NZD rates or create a 5/20 signal from non-core provenance.
+const liveAsOf=pairs.price_asof;
+assert(/^\d{4}-\d{2}-\d{2}$/.test(liveAsOf),'Live FX as-of date missing');
+for(const pair of ['EURCHF','NZDUSD','CHFNZD']){
+ const live=mod.snapshot(rates,prices,pair,liveAsOf,liveAsOf,aud,chf,nzd);
+ assert(!live.researchOnly,'CHF/NZD research must not overwrite official 2Y');
+ if(live.ready){
+  assert(live.lag>=0&&live.lag<=3&&live.age>=0&&live.age<=5&&live.short,
+   'Only verified contemporary sovereign 2Y may validate '+pair);
+ }else assert.equal(mod.brief(live).ready,false,'Stale/noncanonical CHF/NZD must remain unavailable: '+pair);
+}
 const before=JSON.stringify(rates);
 for(const x of all)assert(typeof x.ready==='boolean');
 assert.equal(JSON.stringify(rates),before,'Research must not mutate native rates');
@@ -82,7 +98,7 @@ const date=s=>s,fmt=(v,n=2)=>Number(v).toFixed(n);
 const sign=(v,n=2,u='')=>(v>0?'+':'')+Number(v).toFixed(n)+u;
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const state={pair:'EURCHF',pairPriceWindow:60};
-const get=k=>({rates,pairs,currencyPrices:prices,audDailyResearch:aud,chfResearch:chf,nzdPostroll:nzd})[k];
+const get=k=>({rates,pairs:fixturePairs,currencyPrices:prices,audDailyResearch:aud,chfResearch:chf,nzdPostroll:nzd})[k];
 const api={get,state,plot:()=>{throw Error('Stale CHF/NZD must not draw a current FX/rates chart')},fmt,sign,date,esc,dayNow:()=>now};
 let html=mod.build(api).render();
 assert.match(html,/data-source-context="CHF"/);
@@ -109,4 +125,4 @@ assert(page.includes('fx-rates-bridge.js?v=17')&&page.includes('app.js?v=17'));
 assert(app.includes("chfResearch:'../chf-snb-paired-history.json'"));
 assert(app.includes("nzdPostroll:'../nzd-b2-postroll-web-research.json'"));
 assert(journey.includes("get('chfResearch')")&&journey.includes("get('nzdPostroll')"));
-console.log('NEXT_V17_SOURCE_PROVENANCE_PASS',JSON.stringify({CHF:chfContext[0].lastDate,NZD:nzdContext[0].lastDate,NZD_intervals:nzdContext[0].intervals,short:15,medium:10,core_changed:false}));
+console.log('NEXT_V17_SOURCE_PROVENANCE_PASS',JSON.stringify({CHF:chfContext[0].lastDate,NZD:nzdContext[0].lastDate,NZD_intervals:nzdContext[0].intervals,short:all.filter(x=>x.ready&&x.short).length,medium:mediumCount,core_changed:false}));
