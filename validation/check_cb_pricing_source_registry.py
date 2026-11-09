@@ -83,16 +83,30 @@ def main() -> int:
                           and isinstance(live.get('as_of'),str)
                           and live['as_of'] < decision['date']
                           and live.get('direction')=='PRE_DECISION_NO_POST_EVENT_PRICING')
-            if live.get('policy_comparison_temporally_aligned') is False and not pre_decision:
+            # Exact decision-calendar day is not proof of a post-announcement
+            # quote: a daily archive row has no intraday time stamp. Retain
+            # levels and historical changes, but require ALL policy deltas null.
+            event_day_unverified=(live.get('policy_comparison_temporally_aligned') is False
+                                  and isinstance(decision.get('date'),str)
+                                  and isinstance(live.get('as_of'),str)
+                                  and live['as_of'] == decision['date']
+                                  and live.get('direction') ==
+                                  'DECISION_DAY_TIMESTAMP_UNVERIFIED_NO_POLICY_REPRICING'
+                                  and 'WITHHELD' in str(live.get('policy_reference_note') or ''))
+            if live.get('policy_comparison_temporally_aligned') is False and not (pre_decision or event_day_unverified):
                 failures.append(f'{ccy}: invalid pre-decision exception')
+            if event_day_unverified:
+                if any((live.get('cuts_hikes_priced') or {}).get(t+'_bp') is not None
+                       for t in ('3m','6m','12m')):
+                    failures.append(f'{ccy}: decision-day priced hikes must be null')
             for tenor in ('3m','6m','12m'):
                 h=horizons.get(tenor) or {}
                 for field in ('rate','change_1d_bp','change_1w_bp'):
                     if h.get(field) is None:
                         failures.append(f'{ccy}: ACTIVE missing {tenor}.{field}')
-                if pre_decision:
+                if pre_decision or event_day_unverified:
                     if h.get('policy_delta_bp') is not None or h.get('policy_comparison_temporally_aligned') is not False:
-                        failures.append(f'{ccy}: PRE_DECISION {tenor} cannot assert policy repricing')
+                        failures.append(f'{ccy}: UNALIGNED_POLICY_DECISION {tenor} cannot assert policy repricing')
                 elif h.get('policy_delta_bp') is None:
                     failures.append(f'{ccy}: ACTIVE missing {tenor}.policy_delta_bp')
             for flag in ('source_validated','asof_validated','meeting_path_validated','changes_validated'):
