@@ -86,7 +86,7 @@ class UsNzSourceResearchIntakeTests(unittest.TestCase):
             mod.fred_monthly_csv(fred("PCEC96",last="2026-12-01"),"PCEC96",NOW.date())
         with self.assertRaisesRegex(ValueError,"not contiguous"):
             bad=fred("PCEC96").decode().splitlines()
-            bad[-2]=bad[-2].replace("2026-08-01","2026-07-01")
+            bad.pop(-2)
             mod.fred_monthly_csv(("\n".join(bad)+"\n").encode(),"PCEC96",NOW.date())
 
     def test_fred_source_behind_and_same_period_revision_are_not_live(self):
@@ -124,8 +124,8 @@ class UsNzSourceResearchIntakeTests(unittest.TestCase):
                 return fred("PCEC96"),"https://www.evil.invalid/fake"
             return BEA if "bea.gov" in url else NZ,url
         x=mod.capture(now=NOW,fetcher=poisoned,series=SERIES)
-        # Injected fetcher is outside real network boundary: text parser still
-        # refuses wrong FRED identity for DSPIC96.
+        self.assertEqual(x["sources"]["FRED_BEAMIRROR_PCEC96"]["status"],
+                         "WITHHELD_FETCH_OR_PARSER_UNAVAILABLE")
         self.assertEqual(x["sources"]["FRED_BEAMIRROR_DSPIC96"]["status"],
                          "WITHHELD_FETCH_OR_PARSER_UNAVAILABLE")
         self.assertFalse(x["source_series_modified"])
