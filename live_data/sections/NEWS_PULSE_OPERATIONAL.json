@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-05",
-  "generated_at_utc": "2026-11-09T03:39:56.920615Z",
+  "generated_at_utc": "2026-11-09T06:59:10.501283Z",
   "items": [
     {
       "as_of": "2026-11-05",
@@ -47,7 +47,7 @@
       "title": "GBP: repricing OIS più dovish (-11.2 bp 12M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-09T03:39:56.920615Z",
+  "last_checked_at_utc": "2026-11-09T06:59:10.501283Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -248,9 +248,9 @@
           "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
           "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
         },
-        "id": "BOJ_NEWS:https://www.boj.or.jp/en/statistics/boj/other/tseifu/release/2026/seifu2610.pdf",
+        "id": "BOJ_NEWS:https://www.boj.or.jp/en/statistics/market/short/call/call.xlsx",
         "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-08T23:50:00Z",
+        "published_at_utc": "2026-11-09T06:00:00Z",
         "quality": "OFFICIAL_RSS_DATED_LINK",
         "reaction_evidence": {
           "causal_attribution": "NOT_ESTABLISHED",
@@ -288,8 +288,8 @@
         },
         "source": "Bank of Japan",
         "source_id": "BOJ_NEWS",
-        "title": "Bank of Japan's Transactions with the Government (Oct.)",
-        "url": "https://www.boj.or.jp/en/statistics/boj/other/tseifu/release/2026/seifu2610.pdf"
+        "title": "Amounts Outstanding in the Call Money Market (Oct.)",
+        "url": "https://www.boj.or.jp/en/statistics/market/short/call/call.xlsx"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
@@ -303,9 +303,9 @@
           "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
           "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
         },
-        "id": "BOJ_NEWS:https://www.boj.or.jp/en/statistics/boj/other/mbt/mbt2610.pdf",
+        "id": "BOJ_NEWS:https://www.boj.or.jp/en/research/research_data/cai/index.htm",
         "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-08T23:50:00Z",
+        "published_at_utc": "2026-11-09T05:00:00Z",
         "quality": "OFFICIAL_RSS_DATED_LINK",
         "reaction_evidence": {
           "causal_attribution": "NOT_ESTABLISHED",
@@ -343,8 +343,8 @@
         },
         "source": "Bank of Japan",
         "source_id": "BOJ_NEWS",
-        "title": "Monetary Base and the Bank of Japan's Transactions (Oct.)",
-        "url": "https://www.boj.or.jp/en/statistics/boj/other/mbt/mbt2610.pdf"
+        "title": "Consumption Activity Index",
+        "url": "https://www.boj.or.jp/en/research/research_data/cai/index.htm"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
@@ -964,7 +964,7 @@
       }
     ],
     "last_attempt_day_rome": "2026-11-09",
-    "latest_published_at_utc": "2026-11-08T23:50:00Z",
+    "latest_published_at_utc": "2026-11-09T06:00:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -1008,10 +1008,10 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 20,
+        "accepted_items": 19,
         "ccy": "JPY",
-        "entries_rejected": 24,
-        "feed_entries_seen": 44,
+        "entries_rejected": 26,
+        "feed_entries_seen": 45,
         "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
         "source": "Bank of Japan",
         "source_id": "BOJ_NEWS",
