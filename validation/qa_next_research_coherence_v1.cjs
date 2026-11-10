@@ -55,7 +55,7 @@ assert.match(baseline.article,/LA LETTURA FX DEL DESK/);
 assert.match(baseline.article,/NZD/);
 assert.match(baseline.article,/CHF/);
 assert.match(baseline.article,/AUD/);
-assert.match(baseline.article,/Forza G8/);
+assert.match(baseline.article,/FORZA RELATIVA G8/);
 assert.match(baseline.article,/class="dashboard-reading-story"/);
 assert.match(baseline.article,/dashboard-reading-source-links/,'Narrative must link to the underlying research');
 for(const route of ['risk','rates','macro','currencies','pairs','cot','news'])
@@ -65,7 +65,7 @@ assert.doesNotMatch(firstReading,/Il 2Y reagisce più direttamente|Se il front-e
  'Home must interpret current observations, not teach generic yield definitions');
 
 assert.match(baseline.article,/data-home-evidence/);
-assert.match(baseline.article,/Forza G8 FX/);
+assert.match(baseline.article,/FORZA RELATIVA G8/);
 assert.match(baseline.article,/28 coppie/);
 assert.match(baseline.article,/USD\/JPY/);
 const forexOpening=baseline.article.split('<details class="dashboard-technical"')[0];
@@ -98,7 +98,7 @@ assert.match(x.article,/disoccupazione/,'The Home must connect macro to the mark
 assert.match(x.article,/EUR\/USD/,'The Home must connect FX pairs to the market narrative');
 assert.match(x.article,/USD\/JPY/,'The Home must surface price-vs-thesis divergence');
 assert.match(x.article,/Credito High Yield/);
-assert.match(x.article,/Focus 09\/11\/2026/);
+assert.match(x.article,/Fixing FX 09\/11\/2026/);
 const mismatchedPricing=clone(stress);
 mismatchedPricing.ois.currencies.USD.horizons['6m'].as_of='2026-11-06';
 mismatchedPricing.ois.currencies.USD.horizons['6m'].change_1d_bp=9;
