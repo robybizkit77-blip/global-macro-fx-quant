@@ -1,7 +1,98 @@
 {
-  "content_as_of": "2026-11-06",
-  "generated_at_utc": "2026-11-10T11:51:39.382008Z",
+  "content_as_of": "2026-11-09",
+  "generated_at_utc": "2026-11-10T12:04:13.967840Z",
   "items": [
+    {
+      "as_of": "2026-11-09",
+      "category": "MARKET_VOLATILITY_CLOSE",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 19.92; confronto con chiusura 2026-11-06. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "HIGH",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-06",
+      "source": "Cboe Global Markets, VIX daily close",
+      "source_url": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+      "title": "VIX: -5.72 punti nella chiusura del 2026-11-09"
+    },
+    {
+      "as_of": "2026-11-09",
+      "category": "MARKET_FX_ECB_FIXING",
+      "ccy": "USD",
+      "confidence": "A",
+      "detail": "1 USD = 157.94693 JPY al fixing 2026-11-09; variazione vs 2026-11-06. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
+      "importance": "MEDIUM",
+      "pair": "USDJPY",
+      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
+      "reference_previous_date": "2026-11-06",
+      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
+      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+      "title": "USD/JPY: -0.24% fra due fixing BCE"
+    },
+    {
+      "as_of": "2026-11-09",
+      "category": "MARKET_GOVERNMENT_RATES",
+      "ccy": "USD",
+      "confidence": "A",
+      "detail": "Fra 2026-11-06 e 2026-11-09; 2Y 4.560%, 10Y 4.880%. Rendimenti governativi: non è una curva OIS e non prova di per sé un repricing della banca centrale.",
+      "importance": "MEDIUM",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "reference_previous_date": "2026-11-06",
+      "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-09",
+      "title": "USD: governativo 2Y +5.0 pb, 10Y +2.0 pb"
+    },
+    {
+      "as_of": "2026-11-09",
+      "category": "MARKET_FX_ECB_FIXING",
+      "ccy": "EUR",
+      "confidence": "A",
+      "detail": "1 EUR = 1.11930 USD al fixing 2026-11-09; variazione vs 2026-11-06. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
+      "importance": "MEDIUM",
+      "pair": "EURUSD",
+      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
+      "reference_previous_date": "2026-11-06",
+      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
+      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+      "title": "EUR/USD: +0.25% fra due fixing BCE"
+    },
+    {
+      "as_of": "2026-11-09",
+      "category": "MARKET_GOVERNMENT_RATES",
+      "ccy": "EUR",
+      "confidence": "A",
+      "detail": "Fra 2026-11-06 e 2026-11-09; 2Y 2.939%, 10Y 3.272%. Rendimenti governativi: non è una curva OIS e non prova di per sé un repricing della banca centrale.",
+      "importance": "MEDIUM",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "reference_previous_date": "2026-11-06",
+      "source": "European Central Bank · AAA Svensson spot curve · 2026-11-09",
+      "title": "EUR: governativo 2Y +0.9 pb, 10Y -1.4 pb"
+    },
+    {
+      "as_of": "2026-11-09",
+      "category": "MARKET_GOVERNMENT_RATES",
+      "ccy": "JPY",
+      "confidence": "A",
+      "detail": "Fra 2026-11-06 e 2026-11-09; 2Y 1.778%, 10Y 2.724%. Rendimenti governativi: non è una curva OIS e non prova di per sé un repricing della banca centrale.",
+      "importance": "MEDIUM",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "reference_previous_date": "2026-11-06",
+      "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-09",
+      "title": "JPY: governativo 2Y +4.6 pb, 10Y +2.8 pb"
+    },
+    {
+      "as_of": "2026-11-09",
+      "category": "MARKET_FX_ECB_FIXING",
+      "ccy": "AUD",
+      "confidence": "A",
+      "detail": "1 AUD = 0.97222 CAD al fixing 2026-11-09; variazione vs 2026-11-06. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
+      "importance": "MEDIUM",
+      "pair": "AUDCAD",
+      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
+      "reference_previous_date": "2026-11-06",
+      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
+      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+      "title": "AUD/CAD: +0.60% fra due fixing BCE"
+    },
     {
       "as_of": "2026-11-06",
       "category": "OIS_REPRICING",
@@ -37,6 +128,45 @@
     },
     {
       "as_of": "2026-11-06",
+      "category": "MARKET_EQUITY_CLOSE",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 24579.42; confronto con chiusura 2026-11-05. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "MEDIUM",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-05",
+      "source": "Nasdaq, Inc. via FRED",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
+      "title": "Nasdaq Composite: +1.09% nella chiusura del 2026-11-06"
+    },
+    {
+      "as_of": "2026-11-06",
+      "category": "MARKET_CREDIT_OAS",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 3.42%; confronto con chiusura 2026-11-05. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "MEDIUM",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-05",
+      "source": "ICE Data Indices via FRED",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2",
+      "title": "Credito HY OAS: -6.0 pb nella chiusura del 2026-11-06"
+    },
+    {
+      "as_of": "2026-11-06",
+      "category": "MARKET_CREDIT_OAS",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 0.93%; confronto con chiusura 2026-11-05. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "MEDIUM",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-05",
+      "source": "ICE Data Indices via FRED",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLC0A0CM",
+      "title": "Credito IG OAS: +0.0 pb nella chiusura del 2026-11-06"
+    },
+    {
+      "as_of": "2026-11-06",
       "category": "FUTURES_IMPLIED_REPRICING",
       "ccy": "JPY",
       "confidence": "A",
@@ -45,9 +175,22 @@
       "quality": "OFFICIAL_CERTIFIED",
       "source": "Tokyo Financial Exchange · Three-month TONA Futures",
       "title": "JPY: repricing implicito da futures invariato (+0.0 bp 6M in 1D)"
+    },
+    {
+      "as_of": "2026-11-05",
+      "category": "MARKET_EQUITY_CLOSE",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 7353.73; confronto con chiusura 2026-11-04. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "HIGH",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-04",
+      "source": "S&P Dow Jones Indices via FRED",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
+      "title": "S&P 500: -4.36% nella chiusura del 2026-11-05"
     }
   ],
-  "last_checked_at_utc": "2026-11-10T11:51:39.382008Z",
+  "last_checked_at_utc": "2026-11-10T12:04:13.967840Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -236,6 +379,61 @@
   "official_releases": {
     "core_effect": "NONE",
     "headlines": [
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "GBP",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
+        "id": "BOE_NEWS:https://www.bankofengland.co.uk/letter/2026/asset-purchase-facility-november-2026",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-10T12:00:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "6m_rate_pct": 4.4615,
+            "date": "2026-11-06",
+            "event_window_proof": false,
+            "instrument": "OIS_OBSERVED",
+            "quality": "OFFICIAL_CERTIFIED",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
+            "status": "DAILY_CONTEXT_ONLY"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-11-09",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-11-09",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 4.556867564845618
+          }
+        },
+        "source": "Bank of England",
+        "source_id": "BOE_NEWS",
+        "title": "Exchange of letters between the Governor and the Chancellor on the Asset Purchase Facility - November 2026",
+        "url": "https://www.bankofengland.co.uk/letter/2026/asset-purchase-facility-november-2026"
+      },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "JPY",
@@ -888,61 +1086,6 @@
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "GBP",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "BOE_NEWS:https://www.bankofengland.co.uk/minutes/2026/october/rtgs-chaps-industry-forum-13-october-2026",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-04T14:51:45Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "6m_rate_pct": 4.4615,
-            "date": "2026-11-06",
-            "event_window_proof": false,
-            "instrument": "OIS_OBSERVED",
-            "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
-            "status": "DAILY_CONTEXT_ONLY"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-11-09",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-11-09",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.556867564845618
-          }
-        },
-        "source": "Bank of England",
-        "source_id": "BOE_NEWS",
-        "title": "Summary of the RTGS CHAPS Industry Forum - 13 October 2026",
-        "url": "https://www.bankofengland.co.uk/minutes/2026/october/rtgs-chaps-industry-forum-13-october-2026"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "NZD",
         "desk_context": {
           "analysis_basis": "SOURCE_HEADLINE_ONLY",
@@ -991,7 +1134,7 @@
       }
     ],
     "last_attempt_day_rome": "2026-11-10",
-    "latest_published_at_utc": "2026-11-09T23:50:00Z",
+    "latest_published_at_utc": "2026-11-10T12:00:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -1025,9 +1168,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 3,
+        "accepted_items": 4,
         "ccy": "GBP",
-        "entries_rejected": 47,
+        "entries_rejected": 46,
         "feed_entries_seen": 50,
         "feed_url": "https://www.bankofengland.co.uk/rss/news",
         "source": "Bank of England",
@@ -1103,7 +1246,10 @@
     "external_news_feed": "OFFICIAL_G8_CB_EIA_RSS_SEPARATE_HEADLINE_ONLY",
     "inputs": [
       "OIS_OPERATIONAL_VIEW",
-      "MACRO_THERMOMETER_DATA"
+      "MACRO_THERMOMETER_DATA",
+      "ECB_G8_PRICE_HISTORY",
+      "NATIVE_RATES_DATA",
+      "CROSS_ASSET_LIVE_RESEARCH"
     ]
   },
   "status": "ACTIVE_DETERMINISTIC_LAYERS"
