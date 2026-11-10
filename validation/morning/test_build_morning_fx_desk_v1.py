@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Contract checks for the Morning Macro/FX reader: no hindsight or fabricated signals."""
 import copy
+import json
 from datetime import date, datetime, timezone
 from pathlib import Path
 import unittest
@@ -24,7 +25,7 @@ class MorningFXDeskTests(unittest.TestCase):
         self.assertEqual(len(x["charts"]),2)
         self.assertTrue(len(x["paragraphs"][0])>110)
         self.assertIn("USD/JPY",x["paragraphs"][3])
-        self.assertIn("prova",x["paragraphs"][1])
+        self.assertIn("stesse date",x["paragraphs"][1])
         self.assertEqual(x["relative_evidence"]["companion_pair"],"USDJPY")
         self.assertNotIn("actual +0,4", " ".join(x["paragraphs"]).lower())
 
@@ -74,6 +75,19 @@ class MorningFXDeskTests(unittest.TestCase):
         for r in reports:
             self.assertIn(r["pair"][:3]+"/"+r["pair"][3:],r["paragraphs"][3])
             self.assertNotEqual(r["scenarios"][0]["text"],r["scenarios"][1]["text"])
+
+    def test_editorial_cross_regime_trace(self):
+        # Short human-reviewable evidence for what the actual generator says,
+        # not just green structural test counts.
+        for part in [(2026,11,10),(2026,11,11),(2026,11,12),(2026,11,13)]:
+            x=build(ROOT,date(*part),datetime(*part,7,0,tzinfo=timezone.utc))
+            print("MORNING_EDITORIAL_EXAMPLE "+json.dumps({
+                "day":x["edition_date"],"stage":x["event_status"],
+                "headline":x["headline"],"lead":x["lead"],
+                "paragraphs":x["paragraphs"],"catalyst":x["catalyst"]["title"],
+                "scenarios":x["scenarios"],"verdict":x["verdict"],
+                "evidence":x["relative_evidence"],"sources":x["sources"]},
+                ensure_ascii=False),flush=True)
 
     def test_no_forecast_promoted_to_market_surprise(self):
         x=build(ROOT,date(2026,11,10),datetime(2026,11,10,7,0,tzinfo=timezone.utc))
