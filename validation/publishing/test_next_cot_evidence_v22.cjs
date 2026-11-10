@@ -59,7 +59,7 @@ const page=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/index.html'),'u
 const app=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/app.js'),'utf8');
 const studio=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/cot-studio.js'),'utf8');
 assert(page.indexOf('cot-evidence-reading.js?v=22')<page.indexOf('cot-studio.js?v=2'));
-assert(page.includes('app.js?v=18.22'));
+assert(/app\\.js\\?v=18\\.\\d+/.test(page),'COT requires versioned Next application asset');
 assert(app.includes("route==='overview'||route==='pairs'||route==='cot'"));
 assert(studio.includes("get('currencyPrices')"));
 assert(!studio.includes("get('cotPrice')"),'Stale price pack should no longer control COT comparison');
