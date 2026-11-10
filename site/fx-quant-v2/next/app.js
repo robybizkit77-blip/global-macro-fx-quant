@@ -606,6 +606,8 @@ function researchRibbon(route){
 }
 function render(){
  const route=ROUTES[state.route]?state.route:'overview';
+ // Presentation-only hook for route-scoped colors; no change to calculations or data.
+ $('content').dataset.view=route;
  state.charts={};state.chartIndex=0;
  const views={overview,currencies,pairs,macro,rates,cot,risk,news};
  $('content').innerHTML=(route==='overview'||route==='pairs'||route==='cot'||route==='risk'||route==='news'?'':researchBridge(route))+views[route]();
