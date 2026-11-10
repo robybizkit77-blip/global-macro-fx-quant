@@ -381,17 +381,55 @@ def build(root,day,now):
     pair_setup=pairs.get("pairs",{}).get(pair,{}) if to_date(pairs.get("price_asof")) and to_date(pairs["price_asof"])<day else {}
     fav=(pair_setup.get("setup") or {}).get("structuralFav")
     price_state=((pair_setup.get("setup") or {}).get("price") or {}).get("state")
-    pair_clause=("Il modello datato delle coppie " + (
-        f"indica un vantaggio strutturale parziale per {fav}" if fav else
-        "non certifica un vantaggio strutturale completo") +
-        (", ma il prezzo diverge." if price_state=="BAD" else
-         ", con prezzo coerente." if price_state=="GOOD" else
-         "; resta da controllare il prezzo."))
-    forex_context=(f"Il passaggio al Forex è su {pair[:3]}/{pair[3:]}. {pair_clause} "
-                   "Osserviamo poi una seconda coppia della valuta coinvolta, per distinguere "
-                   "forza della valuta da debolezza della controparte. "
-                   "La conclusione non è un segnale d'ingresso: serve capire "
-                   "che cosa il mercato abbia già incorporato e quale conferma manchi.")
+    pair_quality=((pair_setup.get("setup") or {}).get("quality") or "NON VALUTABILE")
+    if fav:
+        pair_clause=(f"Nel modello delle coppie del {pretty(pairs.get('price_asof'))}, "
+                     f"{fav} ha il vantaggio relativo; il quadro resta "
+                     f"{pair_quality.lower()}. ")
+    else:
+        pair_clause=("Il dossier della coppia non fornisce un vantaggio "
+                     "strutturale verificabile prima dell'apertura. ")
+    if price_state=="BAD":
+        pair_clause+="Nel modello il prezzo diverge dalla struttura, non è una conferma operativa. "
+    elif price_state=="GOOD":
+        pair_clause+="Il prezzo è coerente nell'orizzonte del modello, non necessariamente nell'ultimo fixing. "
+    else:
+        pair_clause+="La conferma del prezzo resta insufficiente. "
+    companions={"USD":"USDJPY","EUR":"EURGBP","GBP":"EURGBP","JPY":"EURJPY",
+                "CHF":"USDCHF","CAD":"CADJPY","AUD":"AUDJPY","NZD":"NZDJPY"}
+    secondary=companions[ccy]
+    sec_now=get_pair_price(fxlast,secondary)
+    sec_before=get_pair_price(fxprev,secondary)
+    if isnum(sec_now) and isnum(sec_before) and sec_before>0:
+        secondary_story=(f"Nel medesimo fixing {secondary[:3]}/{secondary[3:]} "
+                         f"si muove di {signed((sec_now/sec_before-1)*100,2,'%')} "
+                         "dal giorno precedente. Una sola controparte non dimostra "
+                         "forza generalizzata della valuta.")
+    else:
+        secondary_story=("Non abbiamo una seconda coppia comparabile per "
+                         "distinguere forza valutaria da debolezza della controparte.")
+    forex_context=(f"Il banco di prova FX è {pair_label}. "+pair_clause+secondary_story+
+                   " La tesi economica non è un segnale d'ingresso finché "
+                   "pricing relativo e prezzo non convergono.")
+    verdict=(f"Al {pretty(cutoff)} lo spread 2Y {u}–{v} è "
+             f"{signed(spread,0,' pb')}; il confronto allineato col cambio è "
+             +("divergente" if cross_state=="DIVERGENTE" else
+               "concorde, senza prova causale" if cross_state=="COERENTE" else
+               "non conclusivo")+". "
+             +("Il dato di oggi può modificare le attese monetarie, "
+               if stage=="TODAY" else
+               "L'effetto del dato precedente resta da certificare, "
+               if stage=="PREVIOUS_CPI" else
+               "Il prossimo evento va preparato, non anticipato, "
+               if stage=="UPCOMING" else
+               "Un movimento relativo non è automaticamente un nuovo regime, ")
+             +f"ma {pair_label} richiede una conferma specifica. "
+             "Questa lettura non produce un segnale di ingresso.")
+    watch=(f"Seguire {pair_label} e {secondary[:3]}/{secondary[3:]}, "
+           f"aggiornamenti dello spread {u}–{v} su date omogenee, "
+           "eventuali OIS/futures comparabili e pubblicazioni ufficiali "
+           "rispetto ad attese documentate. Il COT è settimanale, "
+           "non misura flussi intraday.")
     now_rome=now.astimezone(ROME)
     edition_status=("MORNING_SNAPSHOT" if now_rome.date()==day and now_rome.hour<9 else
                     "LATE_MORNING_SNAPSHOT" if now_rome.date()==day and now_rome.hour<11 else
@@ -409,17 +447,17 @@ def build(root,day,now):
         "paragraphs":[cb_context,rates_context,catalyst,forex_context],
         "catalyst":{"title":title,"text":catalyst,"date":event["date"] if event else None,
                     "currency":ccy,"time_rome":clock},
-        "scenarios":[
-            {"title":"Se la lettura diventa più restrittiva","text":
-             "La sorpresa e le componenti del dato dovrebbero trovare conferma nei differenziali monetari e nel prezzo FX; senza questo, la tesi perde attrattività."},
-            {"title":"Se la lettura diventa più accomodante","text":
-             "Una sorpresa più debole può attenuare la pressione monetaria, ma serve una risposta relativa dei tassi e delle valute; crescita e rischio possono cambiare la conclusione."}],
-        "verdict":("La tesi macro rimane condizionata al catalizzatore e alle verifiche del mercato. "
-                   f"Su {pair[:3]}/{pair[3:]} il livello dei tassi da solo non costituisce un'opportunità. "
-                   "Thesis Strength e Trade Attractiveness restano valutazioni distinte."),
-        "watch":("Monitorare la pubblicazione ufficiale, il confronto con le attese certificate, "
-                 "il repricing OIS/futures omogeneo e la risposta del prezzo valutario. "
-                 "Se una di queste prove manca, esplicitarlo."),
+        "scenarios":[scenario_main,scenario_alt],
+        "verdict":verdict,
+        "watch":watch,
+        "relative_evidence":{
+            "aligned_from":aligned_first,"aligned_to":aligned_last,
+            "two_year_spread_bp":round(spread,3),
+            "spread_change_aligned_bp":round(observed_diff,3),
+            "pair_change_aligned_pct":round(observed_fx,4),
+            "alignment":cross_state,
+            "companion_pair":secondary,
+            "pair_model_quality":pair_quality},
         "pair":pair,
         "charts":[
             {"label":f"Differenziale 2Y {u}–{v}", "unit":"pb","precision":0,"as_of":cutoff,
