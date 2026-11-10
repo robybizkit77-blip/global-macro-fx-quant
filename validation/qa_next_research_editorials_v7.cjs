@@ -57,7 +57,7 @@ const reversed=view('currencies',current,{...baseState,ccy:'EUR',csOther:'EUR'})
 assert.match(reversed,/EUR\/USD/,'Never compare one currency with itself');
 const changed=clone(current);
 changed.rates.USD.chg2_bp=15;
-assert.notEqual(view('rates'),view('rates',changed),'Rates editorial did not change with the rates feed');
+assert.notEqual(view('rates',current,baseState,'stress','2026-11-10'),view('rates',changed,baseState,'stress','2026-11-10'),'Rates editorial did not change with a valid same-date rates feed');
 const empty={};
 for(const route of routes)assert.match(view(route,empty),/research-essay/,'Missing feed crashes '+route);
 const attack=clone(current);
@@ -68,6 +68,6 @@ assert(!escaped.includes('<img'));
 assert.match(view('rates',current,baseState,'yield-selloff'),/aspettative|premi/);
 const site=fs.readFileSync('site/fx-quant-v2/next/index.html','utf8');
 assert.match(site,/research-editorials\.js\?v=8/);
-assert.match(site,/editorial-v4\.css\?v=17/);
-assert(site.indexOf('research-editorials.js')<site.indexOf('app.js?v=17'),'Research script must load first');
+assert.match(site,/editorial-v4\.css\?v=18/);
+assert(site.indexOf('research-editorials.js')<site.indexOf('app.js?v=18'),'Research script must load first');
 console.log('NEXT_RESEARCH_EDITORIAL_V7_PASS routes=7 countries=8 selected_pair=yes dates=distinct fallback=explicit XSS=escaped no_signal_write=true');
