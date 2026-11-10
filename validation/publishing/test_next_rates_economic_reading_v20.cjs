@@ -21,12 +21,12 @@ for(const c of names){
   bp10:end&&prev?(end.y10-prev.y10)*100:null,
   kind:money[c]?.kind,quality:money[c]?.quality,h6:money[c]?.horizons?.['6m']};
  const x=read(args);
- assert(x.headline.length>20&&x.meaning.length>30&&x.pricing.length>25&&x.watch.length>25,c);
- assert(!/undefined|NaN|Infinity/.test(x.headline+x.meaning+x.pricing+x.watch),c);
+ assert(x.headline.length>20&&x.meaning.length>30&&x.pricingEvidence.length>25&&x.watch.length>25,c);
+ assert(!/undefined|NaN|Infinity/.test(x.headline+x.meaning+x.pricingEvidence+x.watch),c);
  if(end&&prev)assert(x.meaning.includes(end.d)&&x.meaning.includes(prev.d),c+' source dates');
  if(end?.d!=='2026-11-09'&&args.h6?.as_of!==end?.d&&
    args.h6?.rate!==null&&args.h6?.rate!==undefined&&args.h6?.as_of<=today&&end&&prev)
-  assert(x.pricing.includes('non sono simultanee'),c+' different dates');
+  assert(x.pricingEvidence.includes('non sono simultanee'),c+' different dates');
 }
 const mk=(bp2,bp10,asof='2026-11-09',extra={})=>read({
  country:'USD',now:today,asof,previous:'2026-11-06',bp2,bp10,
@@ -40,19 +40,19 @@ assert.match(mk(3,12).meaning,/bear steepening/);
 assert.match(mk(-12,-3).headline,/2Y guida/);
 assert.match(mk(-3,-12).headline,/10Y guida/);
 assert.match(mk(-3,-12,'2026-09-30').headline,/storica/);
-assert.match(mk(4,8,'2026-11-09',{h6:{rate:4.10,as_of:'2026-11-06',change_1d_bp:17}}).pricing,
+assert.match(mk(4,8,'2026-11-09',{h6:{rate:4.10,as_of:'2026-11-06',change_1d_bp:17}}).pricingEvidence,
  /non sono simultanee/);
-assert.doesNotMatch(mk(4,8,'2026-11-09',{h6:{rate:4.10,as_of:'2026-11-06',change_1d_bp:17}}).pricing,
+assert.doesNotMatch(mk(4,8,'2026-11-09',{h6:{rate:4.10,as_of:'2026-11-06',change_1d_bp:17}}).pricingEvidence,
  /Variazione 1D/);
-assert.match(mk(4,8).pricing,/Variazione 1D/);
-assert.match(mk(4,8,'2026-11-09',{h6:{rate:4.10,as_of:'2026-11-09',change_1d_bp:null}}).pricing,
+assert.match(mk(4,8).pricingEvidence,/Variazione 1D/);
+assert.match(mk(4,8,'2026-11-09',{h6:{rate:4.10,as_of:'2026-11-09',change_1d_bp:null}}).pricingEvidence,
  /Manca una variazione 1D/);
-assert.match(mk(4,8,'2026-11-09',{h6:{rate:4.10,as_of:'2026-12-01',change_1d_bp:4}}).pricing,
+assert.match(mk(4,8,'2026-11-09',{h6:{rate:4.10,as_of:'2026-12-01',change_1d_bp:4}}).pricingEvidence,
  /non abbiamo un 6M/i);
 const page=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/index.html'),'utf8');
 const rates=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/rates-studio.js'),'utf8');
 assert(page.includes('rates-economic-reading.js?v=20'));
 assert(page.includes('rates-studio.js?v=2'));
 assert(page.indexOf('rates-economic-reading.js')<page.indexOf('rates-studio.js'));
-assert(rates.includes('m.headline')&&rates.includes('m.pricing')&&rates.includes('m.watch'));
+assert(rates.includes('m.headline')&&rates.includes('m.pricingEvidence')&&rates.includes('m.watch'));
 console.log('NEXT_RATES_V20_PASS: G8 8/8, four curve regimes, source-date and stale guards, 6M unavailable/non-simultaneous/same-date.');
