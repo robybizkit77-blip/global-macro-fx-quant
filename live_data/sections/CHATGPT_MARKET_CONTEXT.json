@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_CHATGPT_MARKET_CONTEXT_V1",
-  "generated_at_utc": "2026-11-10T09:38:47Z",
+  "generated_at_utc": "2026-11-10T17:40:34Z",
   "evaluation_date_europe_rome": "2026-11-10",
   "reference_only": true,
   "policy": {
@@ -20,33 +20,117 @@
       },
       "EUR": {
         "state": "UNAVAILABLE",
-        "as_of": "2026-11-06",
+        "as_of": "2026-11-09",
         "reason": "Only GBP, JPY, CAD and AUD have the certified OIS contract; estimated/proxy OIS is informational only, never alert-certified."
       },
       "GBP": {
-        "state": "STALE",
-        "as_of": "2026-11-06",
-        "reason": "Age 4d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-11-09",
+        "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
+        "policy_rate_pct": 4.0,
+        "horizons": {
+          "3m": {
+            "rate_pct": 4.2184,
+            "delta_vs_policy_bp": 21.8,
+            "change_1d_bp": 0.7,
+            "change_1w_bp": 6.2
+          },
+          "6m": {
+            "rate_pct": 4.4643,
+            "delta_vs_policy_bp": 46.4,
+            "change_1d_bp": 0.3,
+            "change_1w_bp": 1.6
+          },
+          "12m": {
+            "rate_pct": 4.6804,
+            "delta_vs_policy_bp": 68.0,
+            "change_1d_bp": -3.9,
+            "change_1w_bp": -4.9
+          }
+        }
       },
       "JPY": {
-        "state": "STALE",
-        "as_of": "2026-11-06",
-        "reason": "Age 4d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-11-09",
+        "source": "Tokyo Financial Exchange · Three-month TONA Futures",
+        "policy_rate_pct": 1.25,
+        "horizons": {
+          "3m": {
+            "rate_pct": 1.437,
+            "delta_vs_policy_bp": 18.7,
+            "change_1d_bp": -1.8,
+            "change_1w_bp": -1.8
+          },
+          "6m": {
+            "rate_pct": 1.606,
+            "delta_vs_policy_bp": 35.6,
+            "change_1d_bp": -5.6,
+            "change_1w_bp": -6.6
+          },
+          "12m": {
+            "rate_pct": 1.879,
+            "delta_vs_policy_bp": 62.9,
+            "change_1d_bp": -5.6,
+            "change_1w_bp": -7.6
+          }
+        }
       },
       "CHF": {
         "state": "UNAVAILABLE",
-        "as_of": "2026-11-06",
+        "as_of": "2026-11-10",
         "reason": "Only GBP, JPY, CAD and AUD have the certified OIS contract; estimated/proxy OIS is informational only, never alert-certified."
       },
       "CAD": {
-        "state": "STALE",
-        "as_of": "2026-11-06",
-        "reason": "Age 4d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-11-09",
+        "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
+        "policy_rate_pct": 2.5,
+        "horizons": {
+          "3m": {
+            "rate_pct": 2.685,
+            "delta_vs_policy_bp": 18.5,
+            "change_1d_bp": 0.5,
+            "change_1w_bp": -4.0
+          },
+          "6m": {
+            "rate_pct": 2.85,
+            "delta_vs_policy_bp": 35.0,
+            "change_1d_bp": 2.0,
+            "change_1w_bp": -10.0
+          },
+          "12m": {
+            "rate_pct": 3.055,
+            "delta_vs_policy_bp": 55.5,
+            "change_1d_bp": 1.0,
+            "change_1w_bp": -16.5
+          }
+        }
       },
       "AUD": {
-        "state": "STALE",
-        "as_of": "2026-11-06",
-        "reason": "Age 4d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-11-09",
+        "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
+        "policy_rate_pct": 4.85,
+        "horizons": {
+          "3m": {
+            "rate_pct": 4.85,
+            "delta_vs_policy_bp": 0.0,
+            "change_1d_bp": 0.0,
+            "change_1w_bp": 1.5
+          },
+          "6m": {
+            "rate_pct": 4.885,
+            "delta_vs_policy_bp": 3.5,
+            "change_1d_bp": 0.5,
+            "change_1w_bp": -5.0
+          },
+          "12m": {
+            "rate_pct": 4.71,
+            "delta_vs_policy_bp": -14.0,
+            "change_1d_bp": 0.5,
+            "change_1w_bp": -15.5
+          }
+        }
       },
       "NZD": {
         "state": "UNAVAILABLE",
@@ -66,14 +150,24 @@
         "change_10y_bp": -3.0
       },
       "EUR": {
-        "state": "STALE",
-        "as_of": "2026-11-06",
-        "reason": "Age 4d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-11-09",
+        "source": "European Central Bank · AAA Svensson spot curve · 2026-11-09",
+        "government_2y_pct": 2.9391,
+        "government_10y_pct": 3.272,
+        "10y_minus_2y_bp": 33.3,
+        "change_2y_bp": -5.4,
+        "change_10y_bp": -5.5
       },
       "GBP": {
-        "state": "STALE",
-        "as_of": "2026-11-06",
-        "reason": "Age 4d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-11-09",
+        "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-11-09",
+        "government_2y_pct": 4.5569,
+        "government_10y_pct": 5.1268,
+        "10y_minus_2y_bp": 57.0,
+        "change_2y_bp": -5.9,
+        "change_10y_bp": -5.5
       },
       "JPY": {
         "state": "AVAILABLE_CERTIFIED",
@@ -91,9 +185,14 @@
         "reason": "Age 41d exceeds the 3d alert limit."
       },
       "CAD": {
-        "state": "STALE",
-        "as_of": "2026-11-06",
-        "reason": "Age 4d exceeds the 3d alert limit."
+        "state": "AVAILABLE_CERTIFIED",
+        "as_of": "2026-11-09",
+        "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-09",
+        "government_2y_pct": 3.13,
+        "government_10y_pct": 3.63,
+        "10y_minus_2y_bp": 50.0,
+        "change_2y_bp": -13.0,
+        "change_10y_bp": -11.0
       },
       "AUD": {
         "state": "STALE",
@@ -197,123 +296,123 @@
     },
     "fx_ecb_fixing": {
       "state": "AVAILABLE_CERTIFIED",
-      "as_of": "2026-11-09",
+      "as_of": "2026-11-10",
       "source": "ECB euro foreign exchange reference rates",
       "kind": "ECB_EUR_BASED_REFERENCE_FIXINGS_NOT_INTRADAY_SPOT_OR_CLOSE",
-      "prior_fixing_as_of": "2026-11-06",
+      "prior_fixing_as_of": "2026-11-09",
       "note": "Pair quote is units of second currency per one of first; crosses derived from ECB EUR fixing. Invert explicitly if discussing reverse ticker.",
       "pairs": {
         "AUDCAD": {
-          "fixing": 0.97222,
-          "change_since_prior_fixing_pct": 0.596
+          "fixing": 0.97587,
+          "change_since_prior_fixing_pct": 0.375
         },
         "AUDCHF": {
-          "fixing": 0.56442,
-          "change_since_prior_fixing_pct": 0.316
+          "fixing": 0.56655,
+          "change_since_prior_fixing_pct": 0.376
         },
         "AUDJPY": {
-          "fixing": 108.88766,
-          "change_since_prior_fixing_pct": 0.098
+          "fixing": 109.19724,
+          "change_since_prior_fixing_pct": 0.284
         },
         "AUDNZD": {
-          "fixing": 1.2282,
-          "change_since_prior_fixing_pct": -0.908
+          "fixing": 1.22661,
+          "change_since_prior_fixing_pct": -0.129
         },
         "AUDUSD": {
-          "fixing": 0.68939,
-          "change_since_prior_fixing_pct": 0.337
+          "fixing": 0.69035,
+          "change_since_prior_fixing_pct": 0.138
         },
         "CADCHF": {
-          "fixing": 0.58055,
-          "change_since_prior_fixing_pct": -0.278
+          "fixing": 0.58056,
+          "change_since_prior_fixing_pct": 0.001
         },
         "CADJPY": {
-          "fixing": 111.99873,
-          "change_since_prior_fixing_pct": -0.496
+          "fixing": 111.89755,
+          "change_since_prior_fixing_pct": -0.09
         },
         "CHFJPY": {
-          "fixing": 192.91794,
-          "change_since_prior_fixing_pct": -0.218
+          "fixing": 192.7415,
+          "change_since_prior_fixing_pct": -0.091
         },
         "EURAUD": {
-          "fixing": 1.6236,
-          "change_since_prior_fixing_pct": -0.086
+          "fixing": 1.6244,
+          "change_since_prior_fixing_pct": 0.049
         },
         "EURCAD": {
-          "fixing": 1.5785,
-          "change_since_prior_fixing_pct": 0.509
+          "fixing": 1.5852,
+          "change_since_prior_fixing_pct": 0.424
         },
         "EURCHF": {
-          "fixing": 0.9164,
-          "change_since_prior_fixing_pct": 0.23
+          "fixing": 0.9203,
+          "change_since_prior_fixing_pct": 0.426
         },
         "EURGBP": {
-          "fixing": 0.8343,
-          "change_since_prior_fixing_pct": 0.018
+          "fixing": 0.83545,
+          "change_since_prior_fixing_pct": 0.138
         },
         "EURJPY": {
-          "fixing": 176.79,
-          "change_since_prior_fixing_pct": 0.011
+          "fixing": 177.38,
+          "change_since_prior_fixing_pct": 0.334
         },
         "EURNZD": {
-          "fixing": 1.9941,
-          "change_since_prior_fixing_pct": -0.993
+          "fixing": 1.9925,
+          "change_since_prior_fixing_pct": -0.08
         },
         "EURUSD": {
-          "fixing": 1.1193,
-          "change_since_prior_fixing_pct": 0.251
+          "fixing": 1.1214,
+          "change_since_prior_fixing_pct": 0.188
         },
         "GBPAUD": {
-          "fixing": 1.94606,
-          "change_since_prior_fixing_pct": -0.104
+          "fixing": 1.94434,
+          "change_since_prior_fixing_pct": -0.088
         },
         "GBPCAD": {
-          "fixing": 1.89201,
-          "change_since_prior_fixing_pct": 0.491
+          "fixing": 1.89742,
+          "change_since_prior_fixing_pct": 0.286
         },
         "GBPCHF": {
-          "fixing": 1.09841,
-          "change_since_prior_fixing_pct": 0.212
+          "fixing": 1.10156,
+          "change_since_prior_fixing_pct": 0.287
         },
         "GBPJPY": {
-          "fixing": 211.90219,
-          "change_since_prior_fixing_pct": -0.007
+          "fixing": 212.31672,
+          "change_since_prior_fixing_pct": 0.196
         },
         "GBPNZD": {
-          "fixing": 2.39015,
-          "change_since_prior_fixing_pct": -1.011
+          "fixing": 2.38494,
+          "change_since_prior_fixing_pct": -0.218
         },
         "GBPUSD": {
-          "fixing": 1.3416,
-          "change_since_prior_fixing_pct": 0.233
+          "fixing": 1.34227,
+          "change_since_prior_fixing_pct": 0.05
         },
         "NZDCAD": {
-          "fixing": 0.79159,
-          "change_since_prior_fixing_pct": 1.517
+          "fixing": 0.79558,
+          "change_since_prior_fixing_pct": 0.505
         },
         "NZDCHF": {
-          "fixing": 0.45956,
-          "change_since_prior_fixing_pct": 1.235
+          "fixing": 0.46188,
+          "change_since_prior_fixing_pct": 0.506
         },
         "NZDJPY": {
-          "fixing": 88.65654,
-          "change_since_prior_fixing_pct": 1.014
+          "fixing": 89.02384,
+          "change_since_prior_fixing_pct": 0.414
         },
         "NZDUSD": {
-          "fixing": 0.56131,
-          "change_since_prior_fixing_pct": 1.256
+          "fixing": 0.56281,
+          "change_since_prior_fixing_pct": 0.268
         },
         "USDCAD": {
-          "fixing": 1.41026,
-          "change_since_prior_fixing_pct": 0.258
+          "fixing": 1.41359,
+          "change_since_prior_fixing_pct": 0.236
         },
         "USDCHF": {
-          "fixing": 0.81873,
-          "change_since_prior_fixing_pct": -0.021
+          "fixing": 0.82067,
+          "change_since_prior_fixing_pct": 0.238
         },
         "USDJPY": {
-          "fixing": 157.94693,
-          "change_since_prior_fixing_pct": -0.239
+          "fixing": 158.17728,
+          "change_since_prior_fixing_pct": 0.146
         }
       }
     }
