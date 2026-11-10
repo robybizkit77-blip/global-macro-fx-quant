@@ -100,6 +100,14 @@ def get_pair_price(row,pair):
     b=1 if quote=="EUR" else row.get(quote)
     return b/a if isnum(a) and isnum(b) and a>0 else None
 
+def skipped_market_sessions(last_seen,edition):
+    """Missing completed weekdays between the last fixing and edition date."""
+    last=to_date(last_seen)
+    if not last or last>=edition:
+        return 0
+    return sum((last+timedelta(days=i)).weekday()<5
+               for i in range(1,(edition-last).days))
+
 def source_snapshots(d,day):
     fx=load(d,"fx")
     rows=sorted([x for x in fx.get("rows",[]) if to_date(x.get("Date"))
@@ -108,6 +116,8 @@ def source_snapshots(d,day):
                 key=lambda x:x["Date"])
     if len(rows)<8 or to_date(rows[-1]["Date"])<day-timedelta(days=6):
         raise ValueError("G8 fixing incomplete or too old for an opening edition")
+    if skipped_market_sessions(rows[-1]["Date"],day)>1:
+        raise ValueError("G8 missing more than one completed weekday: no current Morning story")
     rates=load(d,"rates")
     return rows,rates
 
@@ -147,13 +157,14 @@ def validate(report):
         raise ValueError("Future information leaked into the morning")
     return report
 
-def build(root,day,now):
+def build(root,day,now,*,event_seed=None):
     if day.weekday()>4 or now.tzinfo is None:
         raise ValueError("Requires weekday and timezone-aware clock")
     if day>now.astimezone(ROME).date():
         raise ValueError("Cannot generate tomorrow's briefing as if already available")
     rows,rates=source_snapshots(root,day)
-    seed=load(root,"events");cb=load(root,"cb");pairs=load(root,"pairs")
+    seed=load(root,"events") if event_seed is None else event_seed
+    cb=load(root,"cb");pairs=load(root,"pairs")
     event,stage=choose_event(seed,day)
     ccy=event["ccy"] if event else "USD"
     pair=FX_PAIRS[ccy]
@@ -166,6 +177,8 @@ def build(root,day,now):
     common=sorted(set(series[u]) & set(series[v]))
     if len(common)<8 or to_date(common[-1])<day-timedelta(days=7):
         raise ValueError("Insufficient same-date 2Y observations")
+    if skipped_market_sessions(common[-1],day)>2:
+        raise ValueError("2Y differential too stale: cannot publish a current Morning story")
     cutoff=common[-1]
     first=next((x for x in common if to_date(x)>=to_date(cutoff)-timedelta(days=8)),common[0])
     spread=(series[u][cutoff]-series[v][cutoff])*100
