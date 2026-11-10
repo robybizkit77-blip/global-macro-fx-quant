@@ -1,7 +1,62 @@
 {
-  "content_as_of": "2026-11-09",
-  "generated_at_utc": "2026-11-10T14:52:16.123150Z",
+  "content_as_of": "2026-11-10",
+  "generated_at_utc": "2026-11-10T16:28:31.736361Z",
   "items": [
+    {
+      "as_of": "2026-11-10",
+      "category": "MARKET_FX_ECB_FIXING",
+      "ccy": "USD",
+      "confidence": "A",
+      "detail": "1 USD = 158.17728 JPY al fixing 2026-11-10; variazione vs 2026-11-09. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
+      "importance": "MEDIUM",
+      "pair": "USDJPY",
+      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
+      "reference_previous_date": "2026-11-09",
+      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
+      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+      "title": "USD/JPY: +0.15% fra due fixing BCE"
+    },
+    {
+      "as_of": "2026-11-10",
+      "category": "MARKET_FX_ECB_FIXING",
+      "ccy": "EUR",
+      "confidence": "A",
+      "detail": "1 EUR = 1.12140 USD al fixing 2026-11-10; variazione vs 2026-11-09. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
+      "importance": "MEDIUM",
+      "pair": "EURUSD",
+      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
+      "reference_previous_date": "2026-11-09",
+      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
+      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+      "title": "EUR/USD: +0.19% fra due fixing BCE"
+    },
+    {
+      "as_of": "2026-11-10",
+      "category": "MARKET_FX_ECB_FIXING",
+      "ccy": "AUD",
+      "confidence": "A",
+      "detail": "1 AUD = 0.97587 CAD al fixing 2026-11-10; variazione vs 2026-11-09. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
+      "importance": "MEDIUM",
+      "pair": "AUDCAD",
+      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
+      "reference_previous_date": "2026-11-09",
+      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
+      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+      "title": "AUD/CAD: +0.37% fra due fixing BCE"
+    },
+    {
+      "as_of": "2026-11-09",
+      "category": "MARKET_EQUITY_CLOSE",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 25253.14; confronto con chiusura 2026-11-06. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "HIGH",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-06",
+      "source": "Nasdaq, Inc. via FRED",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
+      "title": "Nasdaq Composite: +2.74% nella chiusura del 2026-11-09"
+    },
     {
       "as_of": "2026-11-09",
       "category": "MARKET_VOLATILITY_CLOSE",
@@ -50,20 +105,6 @@
     },
     {
       "as_of": "2026-11-09",
-      "category": "MARKET_FX_ECB_FIXING",
-      "ccy": "USD",
-      "confidence": "A",
-      "detail": "1 USD = 157.94693 JPY al fixing 2026-11-09; variazione vs 2026-11-06. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
-      "importance": "MEDIUM",
-      "pair": "USDJPY",
-      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
-      "reference_previous_date": "2026-11-06",
-      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
-      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "title": "USD/JPY: -0.24% fra due fixing BCE"
-    },
-    {
-      "as_of": "2026-11-09",
       "category": "MARKET_GOVERNMENT_RATES",
       "ccy": "USD",
       "confidence": "A",
@@ -73,20 +114,6 @@
       "reference_previous_date": "2026-11-06",
       "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-09",
       "title": "USD: governativo 2Y +5.0 pb, 10Y +2.0 pb"
-    },
-    {
-      "as_of": "2026-11-09",
-      "category": "MARKET_FX_ECB_FIXING",
-      "ccy": "EUR",
-      "confidence": "A",
-      "detail": "1 EUR = 1.11930 USD al fixing 2026-11-09; variazione vs 2026-11-06. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
-      "importance": "MEDIUM",
-      "pair": "EURUSD",
-      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
-      "reference_previous_date": "2026-11-06",
-      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
-      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "title": "EUR/USD: +0.25% fra due fixing BCE"
     },
     {
       "as_of": "2026-11-09",
@@ -122,33 +149,6 @@
       "quality": "OFFICIAL_CERTIFIED",
       "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
       "title": "AUD: repricing implicito da futures più hawkish (+0.5 bp 6M in 1D)"
-    },
-    {
-      "as_of": "2026-11-09",
-      "category": "MARKET_FX_ECB_FIXING",
-      "ccy": "AUD",
-      "confidence": "A",
-      "detail": "1 AUD = 0.97222 CAD al fixing 2026-11-09; variazione vs 2026-11-06. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
-      "importance": "MEDIUM",
-      "pair": "AUDCAD",
-      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
-      "reference_previous_date": "2026-11-06",
-      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
-      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "title": "AUD/CAD: +0.60% fra due fixing BCE"
-    },
-    {
-      "as_of": "2026-11-06",
-      "category": "MARKET_EQUITY_CLOSE",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 24579.42; confronto con chiusura 2026-11-05. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "MEDIUM",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-05",
-      "source": "Nasdaq, Inc. via FRED",
-      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQCOM",
-      "title": "Nasdaq Composite: +1.09% nella chiusura del 2026-11-06"
     },
     {
       "as_of": "2026-11-06",
@@ -190,7 +190,7 @@
       "title": "S&P 500: -4.36% nella chiusura del 2026-11-05"
     }
   ],
-  "last_checked_at_utc": "2026-11-10T14:52:16.123150Z",
+  "last_checked_at_utc": "2026-11-10T16:28:31.736361Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -404,7 +404,14 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
+            "6m_rate_pct": 2.8,
+            "date": "2026-11-09",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "ESTIMATED_INFORMATIONAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+            "status": "DAILY_CONTEXT_ONLY"
           },
           "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
           "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
@@ -468,13 +475,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-06",
+            "date": "2026-11-09",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-06",
+            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-09",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.12
+            "yield_2y_pct": 3.13
           }
         },
         "source": "Bank of Canada",
@@ -720,7 +727,14 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
+            "6m_rate_pct": 2.8,
+            "date": "2026-11-09",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "ESTIMATED_INFORMATIONAL",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
+            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+            "status": "DAILY_CONTEXT_ONLY"
           },
           "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
           "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
@@ -879,13 +893,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-06",
+            "date": "2026-11-09",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-06",
+            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-09",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.12
+            "yield_2y_pct": 3.13
           }
         },
         "source": "Bank of Canada",
