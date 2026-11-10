@@ -89,7 +89,7 @@ for(const k of ['NASDAQCOM','VIX','HY_OAS'])stress.risk.streams[k].date='2026-11
 stress.risk.streams.NASDAQCOM.change_1d_pct=-4;
 stress.risk.streams.VIX.previous=20;stress.risk.streams.VIX.value=31;
 stress.risk.streams.HY_OAS.previous=3.1;stress.risk.streams.HY_OAS.value=3.45;
-stress.pairs.price_asof='2026-11-09';
+stress.pairs.price_asof=initial.currencyPrices.last_as_of;
 let x=evaluate(stress,'2026-11-10');
 assert.equal(x.context.kind,'stress');
 assert.match(x.article,/NZD/,'A risk shock cannot replace G8 currency analysis');
@@ -101,7 +101,7 @@ assert.match(x.article,/disoccupazione/,'The Home must connect macro to the mark
 assert.match(x.article,/EUR\/USD/,'The Home must connect FX pairs to the market narrative');
 assert.match(x.article,/USD\/JPY/,'The Home must surface price-vs-thesis divergence');
 assert.match(x.article,/Credito High Yield/);
-assert.match(x.article,/Fixing FX 09\/11\/2026/);
+assert.match(x.article,/Fixing FX 10\/11\/2026/);
 const mismatchedPricing=clone(stress);
 mismatchedPricing.ois.currencies.USD.horizons['6m'].as_of='2026-11-06';
 mismatchedPricing.ois.currencies.USD.horizons['6m'].change_1d_bp=9;
