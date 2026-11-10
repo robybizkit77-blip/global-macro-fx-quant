@@ -170,7 +170,7 @@
       "status": "LIVE_SECONDARY_READY"
     }
   },
-  "generated_at_utc": "2026-11-10T15:02:39.828114Z",
+  "generated_at_utc": "2026-11-10T15:11:03.455716Z",
   "governance": {
     "backtest_eligible_as_official_ois": false,
     "bias_effect": "NONE",
