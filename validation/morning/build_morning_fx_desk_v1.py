@@ -256,66 +256,128 @@ def build(root,day,now):
         except (ValueError,KeyError,TypeError):
             continue
     certified_actuals=len(observed_metrics)==4
+    pair_label=f"{pair[:3]}/{pair[3:]}"
     if stage=="TODAY":
         if ccy=="USD" and event["event_type"]=="INFLATION":
-            headline="Il CPI mette alla prova una Fed ancora restrittiva. Per il dollaro conta ciò che è già prezzato."
-            lead=("Arriviamo alla giornata con un vantaggio di rendimento USA, ma senza una prova "
-                  "che questo produca automaticamente nuova forza del dollaro. "
-                  "L'inflazione di oggi può modificare il quadro: sarà decisiva la conferma dei mercati.")
-            catalyst=(f"Alle {clock} italiane è previsto il CPI USA di ottobre. {reference}"
-                      "Una lettura superiore alle attese, soprattutto nel core persistente, "
-                      "potrebbe sostenere aspettative Fed più restrittive; una disinflazione credibile "
-                      "potrebbe ridurre quella pressione. Ma il numero isolato non dimostra il repricing: "
-                      "cercheremo la risposta del front-end relativo e poi del Forex.")
-        else:
-            headline=f"{COUNTRIES[ccy]}: {event['title']} è il test macro della giornata."
-            lead=(f"Il mercato arriva all'appuntamento con una struttura di tassi già prezzata "
-                  f"e una valuta da verificare. Oggi il dato {event['title']} potrebbe "
-                  "cambiare le aspettative, ma soltanto una sorpresa misurata e confermata "
-                  "dagli strumenti monetari può diventare una tesi direzionale convincente.")
-            catalyst=(f"Oggi alle {clock} italiane è previsto {event['title']} "
+            headline=("Il CPI mette alla prova la prudenza della Fed: "
+                      "il dollaro ha bisogno di una conferma dai differenziali.")
+            lead=(f"Dopo la Fed del 28 ottobre arriviamo al CPI con un differenziale "
+                  f"nominale a due anni USD–EUR di {signed(spread,0,' pb')}, "
+                  f"ma il cambio {pair_label} non replica necessariamente quel vantaggio. "
+                  "La domanda di oggi è se l'inflazione cambierà il percorso dei tassi "
+                  "già incorporato nei prezzi, non se il numero sarà soltanto alto o basso.")
+            catalyst=(f"Alle {clock} italiane è previsto il CPI USA "
                       f"({event.get('reference_period','periodo da verificare')}). {reference}"
-                      "Guarderemo la composizione e le eventuali revisioni prima di interpretare "
-                      "la risposta della banca centrale. Il differenziale di rendimento e il cambio "
-                      "sono le conferme successive, non prove automatiche del significato economico.")
+                      "Conta la componente core e la sua persistenza: una sorpresa più forte "
+                      "potrebbe rafforzare il rischio di Fed restrittiva più a lungo; una "
+                      "decelerazione diffusa potrebbe fare il contrario. Prima servono "
+                      "la pubblicazione e le revisioni ufficiali; poi variazioni confrontabili "
+                      "Fed funds/€STR e la risposta di EUR/USD e USD/JPY.")
+            scenario_main={"title":"CPI più persistente del previsto",
+              "text":"La tesi USD si rafforza soltanto se il front-end USA sale rispetto all'Eurozona e il dollaro è confermato da più cambi, non da EUR/USD isolato."}
+            scenario_alt={"title":"CPI più debole e disinflazione convincente",
+              "text":"Il mercato potrebbe ridurre il rischio Fed restrittivo; cerchiamo calo relativo del front-end USD e prezzo FX coerente, separando effetto tassi e risk-off."}
+        elif ccy=="GBP" and event["event_type"]=="GROWTH":
+            headline=("Dopo il rialzo della BoE, il PIL britannico mette alla prova "
+                      "la tenuta della sterlina.")
+            lead=("La BoE ha appena alzato il Bank Rate al 4,00%. Ora il mercato "
+                  "deve capire se l'attività britannica possa reggere tassi più alti: "
+                  "il PIL del terzo trimestre è un test sulla sostenibilità del percorso "
+                  "monetario, non un numero da tradurre direttamente in acquisti di GBP.")
+            catalyst=(f"Alle {clock} italiane arriva la prima stima del PIL UK "
+                      f"({event.get('reference_period','periodo non verificato')}). {reference}"
+                      "Una crescita migliore delle attese potrebbe limitare il rischio "
+                      "di una BoE più accomodante, ma potrebbe anche essere già prezzata. "
+                      "Una crescita più debole aumenterebbe il conflitto fra domanda e "
+                      "stretta monetaria. Confronteremo BoE SONIA, front-end USA e "
+                      "GBP/USD prima di attribuire un significato operativo.")
+            scenario_main={"title":"PIL UK più resistente",
+              "text":"Una crescita che regge la restrizione potrebbe sostenere GBP solo se il pricing BoE si irrigidisce rispetto alla Fed e il cambio conferma."}
+            scenario_alt={"title":"PIL UK deludente",
+              "text":"Il mercato potrebbe ridurre le attese di ulteriori rialzi BoE. Una sterlina debole senza conferma dei tassi richiederebbe prudenza sulla causalità."}
+        else:
+            headline=(f"{COUNTRIES[ccy]}: {event['title']} misura se la "
+                      f"lettura macro per {ccy} regge alla prossima prova.")
+            lead=(f"Arriviamo a {event['title']} con un differenziale di tasso "
+                  f"{u}–{v} di {signed(spread,0,' pb')} e un prezzo {pair_label} "
+                  "da confrontare con il percorso della banca centrale. "
+                  "Non basta sapere che l'evento è importante: il punto è quale "
+                  "parte delle aspettative possa ancora essere sorpresa.")
+            catalyst=(f"Alle {clock} italiane è previsto {event['title']} "
+                      f"({event.get('reference_period','periodo da verificare')}). {reference}"
+                      "Una sorpresa va giudicata per composizione, revisioni, "
+                      "aspettative pre-evento e confronto dei tassi relativi. "
+                      "Se pricing e prezzo non concordano, la tesi resta aperta "
+                      "anche in presenza di un dato economico chiaro.")
+            scenario_main={"title":"Sorpresa restrittiva per la banca centrale",
+              "text":f"Il segnale su {ccy} sarebbe più solido con aumento del differenziale relativo e conferma su {pair_label}."}
+            scenario_alt={"title":"Sorpresa più accomodante",
+              "text":f"Attese monetarie meno rigide potrebbero pesare su {ccy}; il cambio deve confermarlo senza che il rischio globale domini il movimento."}
         status="EVENT_TODAY"
         title=f"Oggi · {event['title']} · {clock}"
     elif stage=="PREVIOUS_CPI":
-        headline="Dopo il CPI, il mercato deve dimostrare se il percorso Fed è davvero cambiato."
-        lead=("Il catalizzatore di ieri è passato, ma la lettura economica richiede ancora "
-              "un controllo delle fonti ufficiali, del pricing e delle valute. "
-              "Non confondiamo la volatilità successiva al dato con un nuovo regime già consolidato.")
-        catalyst=("Il CPI USA era previsto ieri alle 14:30 italiane. "+
-                  ("Il registro contiene quattro misure ufficiali, da leggere separatamente. " if certified_actuals else
-                   "Il registro del progetto non ha ancora quattro misure ufficiali complete e validate: "
-                   "non attribuiamo una sorpresa, un movimento Fed o un segnale FX non verificati. ")+
-                   "Per cambiare view occorrono confronto esatto con le aspettative pre-evento, "
-                   "componenti persistenti, repricing monetario omogeneo e risposta EUR/USD e USD/JPY.")
+        headline=("Il CPI è passato, ma la direzione del dollaro dipende "
+                  "da ciò che è verificabile nel repricing.")
+        lead=("La giornata riparte dopo l'inflazione USA. La domanda ora non è "
+              "ripetere la narrativa pre-CPI: dobbiamo distinguere ciò che sappiamo "
+              "dal comunicato, ciò che è cambiato nelle attese Fed e la risposta "
+              "effettiva del dollaro nelle varie coppie.")
+        catalyst=("Il CPI era atteso ieri alle 14:30 italiane. "+
+                  ("Il nostro registro contiene quattro misure da confrontare per componente, non un singolo numero. " if certified_actuals else
+                   "Nel registro ufficiale del progetto non sono ancora presenti "
+                   "misure pubblicate con provenienza e timestamp certificati. "
+                   "Non attribuiamo quindi una sorpresa né un nuovo percorso Fed sulla base "
+                   "di dati assenti; alcuni confronti annuali potrebbero non essere disponibili. ")+
+                   "Un'interpretazione post-evento richiede scarto dalle attese disponibili, "
+                   "revisione delle componenti persistenti, OIS/futures e risposte delle valute "
+                   "nelle medesime finestre temporali.")
         status="AFTERMATH_UNVERIFIED" if not certified_actuals else "AFTERMATH_TO_VERIFY"
-        title="Dopo il CPI · verifica della reazione e del pricing"
+        title="Dopo il CPI · cosa sappiamo e cosa manca"
+        scenario_main={"title":"Repricing monetario USA verificato",
+          "text":"Se le misure ufficiali confermano pressione core e il front-end USA si rafforza relativamente, rivalutare la tesi USD con EUR/USD e USD/JPY."}
+        scenario_alt={"title":"Dollaro e rendimenti non confermano",
+          "text":"Se il pricing relativo o le coppie non seguono, non attribuire un regime hawkish all'evento: distinguere liquidazioni, rischio e debolezza della controparte."}
     elif stage=="UPCOMING":
-        headline=f"Verso {event['title']}: il mercato prepara il prossimo test per {ccy}."
-        lead=("Oggi non emerge un evento dominante dal calendario ufficiale, ma il confronto "
-              "fra le economie si muove già in vista del prossimo dato. "
-              "L'obiettivo della mattina è capire quali aspettative siano incorporate "
-              "nei tassi e dove il prezzo valutario le confermi o le contraddica.")
-        catalyst=(f"Il prossimo appuntamento di rilievo è {event['title']}, "
-                  f"il {pretty(event['date'])} alle {clock} italiane. "
-                  "Non anticipiamo una sorpresa: la preparazione corretta è osservare "
-                  "se il differenziale monetario si muove prima del dato, come reagisce il cambio "
-                  "e cosa potrebbe falsificare l'ipotesi sulla banca centrale.")
+        headline=(f"Verso {event['title']}: {ccy} aspetta un test "
+                  "che il prezzo potrebbe aver già anticipato.")
+        lead=(f"Oggi il calendario non presenta un dato dominante. Il prossimo "
+              f"catalizzatore è {event['title']} il {pretty(event['date'])}, "
+              "ma prima del rilascio conta capire se tassi e cambio abbiano "
+              "già incorporato un esito e con quale convinzione.")
+        catalyst=(f"L'appuntamento è {event['title']}, il {pretty(event['date'])} "
+                  f"alle {clock} italiane. Prepariamo l'evento confrontando il "
+                  f"differenziale {u}–{v} con {pair_label}: una lettura plausibile "
+                  "non è ancora una sorpresa, e il mercato potrebbe aver già "
+                  "anticipato il dato.")
         title=f"Prossimo · {event['title']} · {pretty(event['date'])}"
         status="NEXT_CATALYST"
+        scenario_main={"title":"Prezzo e differenziale anticipano il dato",
+          "text":f"Un movimento concorde {ccy} richiede ancora verifica della sorpresa, altrimenti può essere già nel prezzo."}
+        scenario_alt={"title":"La relazione si interrompe prima dell'evento",
+          "text":"Una divergenza fra cambio e tassi riduce l'attrattiva di anticipare il rilascio, anche con una tesi macro plausibile."}
     else:
-        headline="È il repricing relativo il tema del giorno: il Forex deve confermare la macro."
-        lead=("Nessuna pubblicazione domina il calendario ufficiale di oggi. "
-              "Per questo non creiamo un catalizzatore artificiale: seguiamo la traiettoria "
-              "delle aspettative monetarie e il modo in cui le valute stanno realmente reagendo.")
-        catalyst=("Il test della giornata è la convergenza tra differenziale di rendimento, "
-                  "aspettative monetarie e prezzo. Se i dati non sono sincronizzati, "
-                  "la tesi può essere ragionevole ma non abbastanza verificata per un'operazione.")
-        title="Oggi · conferme o divergenze nel pricing relativo"
+        headline=(f"{pair_label}: " +
+                  ("tassi e cambio divergono; il problema macro è capire perché." if cross_state=="DIVERGENTE" else
+                   "il movimento relativo richiede conferme, non una nuova storia." if cross_state=="NON_CONCLUSIVO" else
+                   "tassi e prezzo convergono, ma serve capire cosa è già prezzato."))
+        lead=(f"Nessun dato domina oggi il calendario ufficiale. "
+              f"Fra {pretty(aligned_first)} e {pretty(aligned_last)} lo spread "
+              f"{u}–{v} si è mosso di {signed(observed_diff,1,' pb')}, mentre "
+              f"{pair_label} ha registrato {signed(observed_fx,2,'%')} "
+              "nelle stesse date. Il catalizzatore della mattina è dunque "
+              "verificare se questa relazione prosegua e quale aspettativa "
+              "monetaria, se presente, l'abbia determinata.")
+        catalyst=(f"Non forziamo un evento inesistente. Il punto da osservare oggi è "
+                  f"se il differenziale {u}–{v} e {pair_label} confermino o "
+                  "smentiscano la relazione recente. Senza variazioni comparabili "
+                  "OIS/futures non attribuiamo automaticamente uno shock di banca "
+                  "centrale al movimento governativo.")
+        title="Oggi · tassi relativi e conferma valutaria"
         status="RELATIVE_PRICING"
+        scenario_main={"title":"La relazione prezzi–tassi si consolida",
+          "text":f"Un movimento coerente e persistente del differenziale {u}–{v} e di {pair_label} rafforzerebbe la lettura relativa, ma non crea da solo un ingresso."}
+        scenario_alt={"title":"La divergenza persiste o il differenziale si arresta",
+          "text":f"Se il prezzo di {pair_label} non conferma la direzione del tasso relativo, cercare altri driver prima di assegnare un bias FX."}
     pair_setup=pairs.get("pairs",{}).get(pair,{}) if to_date(pairs.get("price_asof")) and to_date(pairs["price_asof"])<day else {}
     fav=(pair_setup.get("setup") or {}).get("structuralFav")
     price_state=((pair_setup.get("setup") or {}).get("price") or {}).get("state")
