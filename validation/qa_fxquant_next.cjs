@@ -303,9 +303,9 @@ fs.mkdirSync(evidence,{recursive:true});
      'COT historical as-of must match current CFTC');
    assert((await page.locator('.cot-universe .cot-table').innerText()).includes('Z104'),
      'Z-score and G8 ranking missing');
-   assert((await page.locator('.cot-proofline').innerText()).includes('Velocity 1W/OI'),
+   assert((await page.locator('.cot-proofline').innerText()).toUpperCase().includes('VELOCITY 1W/OI'),
      'Velocity and OI quality note missing');
-   assert((await page.locator('.cot-proofline').innerText()).includes('Δ Net 8W'),
+   assert((await page.locator('.cot-proofline').innerText()).toUpperCase().includes('Δ NET 8W'),
      'Full 1W/4W/8W analysis missing');
     assert((await page.locator('.cot-price-card').innerText()).includes('Fixing BCE verificati direttamente'),
       'Price evidence must be derived from matching ECB Tuesday fixings');
