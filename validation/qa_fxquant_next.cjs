@@ -367,8 +367,22 @@ fs.mkdirSync(evidence,{recursive:true});
    assert((await page.locator('.panel-head h2').first().innerText()).includes('Comunicazioni'),'News tab failed');
    assert(await page.locator('.news-evidence-item[data-news-kind="official"]').count()===15,
      'All fifteen official release headlines must remain accessible');
-   assert((await page.locator('.news-evidence-item').first().innerText()).includes('00:50 IT'),
-     'Late UTC official releases must display the correct Italy-local day/time');
+   const currentOfficial=await page.evaluate(async()=>{
+     const resp=await fetch('../../../live_data/sections/NEWS_PULSE_OPERATIONAL.json',{cache:'no-store'});
+     if(!resp.ok)throw new Error('Official news source not available for date proof');
+     const payload=await resp.json(),headlines=payload.official_releases?.headlines||[];
+     const latest=headlines.filter(x=>x.published_at_utc&&x.title)
+       .sort((x,y)=>y.published_at_utc.localeCompare(x.published_at_utc))[0];
+     if(!latest)throw new Error('No sourced official news release');
+     const clock=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Rome',
+       hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(latest.published_at_utc));
+     return {clock:clock+' IT',title:latest.title};
+   });
+   const firstOfficialText=await page.locator('.news-evidence-item').first().innerText();
+   assert(firstOfficialText.includes(currentOfficial.clock),
+     'Official release hour must match latest source in Europe/Rome: '+currentOfficial.clock);
+   assert(firstOfficialText.includes(currentOfficial.title),
+     'Latest official release must be the first dated item');
    assert(await page.locator('.news-evidence-item a[href^="https://"]').count()===15,
      'Official release source links missing');
    assert((await page.locator('.news-evidence-item').first().innerText()).includes('NON verificata'),
