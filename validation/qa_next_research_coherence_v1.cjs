@@ -135,7 +135,7 @@ const html=evaluate(malicious).article;
 assert(html.includes('&lt;img'));
 assert(!html.includes('<img'));
 const stale=evaluate(initial,'2026-12-01');
-assert.match(stale.article,/lettura d’archivio/);
+assert.match(stale.article,/osservazioni disponibili sono storiche/);
 assert.match(app,/state\.data=nextData/);
 assert.match(app,/cache:'no-store'/);
 assert.match(app,/visibilitychange/);
