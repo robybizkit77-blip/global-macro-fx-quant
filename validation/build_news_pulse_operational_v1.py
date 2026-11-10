@@ -286,7 +286,7 @@ def government_curve_items(data, today):
             'as_of': new, 'reference_previous_date': old,
             'title': f'{ccy}: governativo 2Y {dfront:+.1f} pb, 10Y {dlong:+.1f} pb',
             'detail': f'Fra {old} e {new}; 2Y {m2[new]:.3f}%, 10Y {m10[new]:.3f}%. '
-                      'Rendimenti governativi, non curva OIS né prova di repricing della banca centrale.',
+                      'Rendimenti governativi: non è una curva OIS e non prova di per sé un repricing della banca centrale.',
             'quality': 'FULL_CURRENT_OFFICIAL', 'confidence': 'A',
             'source': r['source'], 'importance': 'MEDIUM', '_date': vintage,
         })
