@@ -1,5 +1,5 @@
 'use strict';
-/* FX Quant NEXT COT desk V26.
+/* FX Quant NEXT COT desk V26.1 — normalized G8 comparison and causal-neutral narratives.
  * Read-only view layer; CFTC V250 and weekly report stay untouched.
  * Current P104/Z104 use 104 STRICTLY PRECEDING net observations; older net
  * bridge comes from the previously archived CFTC Design Studio net series
@@ -93,60 +93,104 @@
  }
  function reading(a){
   if(!a||!finite(a.delta1))return null;
-  const stock=a.net>0?'net long':a.net<0?'net short':'net neutri';
-  const trend=a.delta1>0?'migliora':a.delta1<0?'peggiora':'resta invariato';
-  const impulse=finite(a.velocity)&&Math.abs(a.velocity)<0.25;
-  const p=a.rounded===null?'classificazione storica non verificata':
-   a.level+' (P'+a.rounded+', Z '+(finite(a.z)?sign(a.z,2):'n.d.')+')';
-  const fact='Il netto '+trend+' di '+sign(a.delta1)+' contratti: Δ long '+sign(a.dLong)+
-    ', Δ short '+sign(a.dShort)+'. I fondi restano '+stock+' ('+sign(a.net)+
-    '). Il confronto 1W / 4W / 8W è '+sign(a.delta1)+' / '+sign(a.delta4)+
-    ' / '+sign(a.delta8)+'; '+speed(a)+'.';
+  const stock=a.net>0?'net long':a.net<0?'net short':'neutri';
+  const size=finite(a.velocity)?Math.abs(a.velocity):null;
+  const normalized=finite(a.velocity)?sign(a.velocity,2)+'% dell’OI stimato':'non confrontabile senza OI affidabile';
+  const total=Math.abs(a.dLong)+Math.abs(a.dShort);
+  const longShare=total?Math.abs(a.dLong)/total:0;
+  const shortShare=total?Math.abs(a.dShort)/total:0;
+  const cause=a.delta1>0?(
+    a.dLong>0&&a.dShort<0?
+      (shortShare>longShare?'ricoperture short prevalenti, insieme a nuovi long':'nuovi long prevalenti, insieme a ricoperture short'):
+    a.dLong>0?'aumento dei long al netto dei nuovi short':
+    a.dShort<0?'ricoperture short al netto delle liquidazioni long':'saldo in miglioramento senza componente lorda dominante'):
+    a.delta1<0?(
+    a.dLong<0&&a.dShort>0?
+      (shortShare>longShare?'nuovi short prevalenti, insieme a liquidazioni long':'liquidazioni long prevalenti, insieme a nuovi short'):
+    a.dShort>0?'nuovi short al netto degli acquisti long':
+    a.dLong<0?'liquidazioni long al netto delle ricoperture short':'saldo in calo senza componente lorda dominante'):
+    'saldo stabile nonostante i movimenti lordi';
+  const stockTransition=a.net<0&&a.delta1>0?'I fondi rimangono net short: si riduce lo sbilanciamento ribassista, non si crea ancora un netto long. ':
+    a.net>0&&a.delta1<0?'I fondi rimangono net long: si sta alleggerendo il netto rialzista. ':'';
+  const weekTrend=a.delta1*a.delta4<0?
+    'L’ultima settimana va contro il bilancio delle quattro settimane: possibile cambio di passo, non ancora svolta dimostrata. ':
+    a.delta1===0?'Nessun impulso netto nell’ultima settimana. ':
+    'Il verso della settimana coincide con il bilancio delle quattro settimane; '+speed(a)+'. ';
+  const intensity=size===null?'Non possiamo misurare la forza relativa del flusso senza un denominatore comparabile. ':
+    size<.25?'Il movimento pesa poco rispetto all’OI stimato: non va sovrainterpretato. ':
+    size>=2?'Il movimento è consistente rispetto al mercato futures di questa valuta. ':
+    'Il movimento è visibile rispetto all’OI stimato, ma serve continuità. ';
   const price=finite(a.price1)?
-   'Sul fixing BCE '+a.priceLabel+' fra i due martedì: '+sign(a.price1,2)+
-   '%. Il confronto dei segni è '+(impulse?'poco informativo perché il flusso netto è quasi fermo':a.priceState)+'.':
-   'Il prezzo BCE della stessa settimana non è validato: nessuna conferma o divergenza attribuibile.';
-  const position= 'Il posizionamento è '+p+'. '+
-   (a.net<0&&a.rounded>=80?'Fascia storica alta NON significa che i fondi siano net long. ': '')+
-   (a.crowd?'Il rapporto Net/OI supera la soglia di concentrazione ±30,0%: segnala affollamento, non inversione imminente. ':'')+
-   (impulse?'L’ultimo netto si è mosso poco rispetto alla dimensione stimata del mercato futures. ':'')+
-   (a.delta1>0?'Il pessimismo si riduce oppure aumenta il peso dei long, ma la composizione conta.':
-    a.delta1<0?'La pressione ribassista cresce oppure si riducono i long; le due cause vanno separate.':
-    'Il saldo quasi fermo può nascondere variazioni importanti nelle due gambe.');
-  let judgment=position+' '+price+' Un flusso CFTC non dimostra ordini spot o un cambio macro; la tesi FX resta separata dal timing.';
-  let verify=a.delta1>0?
-   'Confermerebbero il recupero nuovi long persistenti e/o ulteriori short in calo, accompagnati da prezzo e differenziali di tasso coerenti.':
-   a.delta1<0?
-   'Confermerebbero la pressione ulteriori aumenti short o liquidazioni long, insieme a debolezza del prezzo e differenziali coerenti.':
-   'Serve una nuova variazione netta significativa, verificando se arriva da long, short o entrambe le gambe.';
-  verify+=' Indebolirebbero questa interpretazione flussi di verso opposto e prezzo divergente; non trasformiamo il solo estremo in un ingresso.';
-  return {headline:(a.delta1>0?'I fondi riducono il posizionamento ribassista / aumentano i long.':
-    a.delta1<0?'I fondi aumentano la pressione netta ribassista / riducono i long.':
-    'Il netto è stabile: serve leggere long e short.') ,
-    fact,flow:flowLabel(a),judgment,verify,price,speed:speed(a)};
+    'Fixing BCE '+a.priceLabel+' fra i due martedì: '+sign(a.price1,2)+'%. Il confronto è '+a.priceState+
+    ' (non è la reazione alla pubblicazione del COT).':
+    'Prezzo BCE sulla stessa settimana non validato: non attribuiamo alcuna conferma.';
+  const priceJudgment=!finite(a.price1)?
+    'Manca la verifica del prezzo nelle stesse date. ':
+    size!==null&&size<.25?
+    'Il confronto con il prezzo è poco informativo perché il netto varia appena. ':
+    a.priceState==='coerente'?
+    'Prezzo e cambiamento del netto sono coerenti nella settimana osservata, senza provare causalità. ':
+    a.priceState==='divergente'?
+    'Il prezzo non accompagna il cambiamento dei fondi: la lettura FX resta non confermata. ':
+    'Il prezzo non dà una conferma conclusiva. ';
+  const extreme=a.rounded===null?'Percentile storico non verificato. ':
+    a.rounded>=80?'Il netto è nella parte alta dello storico P104, non necessariamente positivo. ':
+    a.rounded<=20?'Il netto è nella parte bassa dello storico P104; un estremo può durare. ':'';
+  const crowd=a.crowd?'Net/OI oltre ±30%: esposizione concentrata, non segnale automatico di inversione. ':'';
+  const causePhrase=a.delta1>0?'miglioramento':a.delta1<0?'deterioramento':'stabilità';
+  const fact='Il netto '+stock+' ('+sign(a.net)+' contratti) registra '+causePhrase+
+    ' di '+sign(a.delta1)+' contratti: long '+sign(a.dLong)+
+    ', short '+sign(a.dShort)+'. Motore principale: '+cause+
+    '. Variazione normalizzata: '+normalized+'. Δ Net su 4W / 8W: '+
+    sign(a.delta4)+' / '+sign(a.delta8)+' contratti.';
+  const judgment=stockTransition+intensity+weekTrend+priceJudgment+extreme+crowd;
+  const verify=a.delta1>0?
+    (shortShare>longShare?
+      'Controlla se il prossimo COT conferma ulteriori ricoperture e soprattutto se iniziano nuovi long persistenti. ':
+      'Controlla se i nuovi long proseguono senza essere compensati da nuovi short. '):
+    a.delta1<0?
+    (shortShare>longShare?
+      'Controlla se gli short aumentano ancora o se iniziano ricoperture. ':
+      'Controlla se le liquidazioni long continuano o si stabilizzano. '):
+    'Verifica quale componente lorda rompe la stabilità del netto. ';
+  const monitoring=verify+(a.priceState==='divergente'?
+    'Per rafforzare la tesi serve anche che il prezzo smetta di divergere e i differenziali di tasso siano coerenti.':
+    'Confronta il nuovo flusso con prezzo e differenziali di tasso; una settimana opposta indebolirebbe la lettura.');
+  return {headline:flowLabel(a),fact,flow:flowLabel(a),judgment,verify:monitoring,
+    price,speed:speed(a),normalized,cause};
  }
  function desk(all){
   if(!Array.isArray(all)||all.length!==8||all.some(a=>!a?.deskStats)||
      new Set(all.map(a=>a.last?.date)).size!==1)return null;
-  const list=all.map(statisticsWithRef).filter(Boolean);
-  function statisticsWithRef(a){return a.deskStats||null;}
-  if(list.length!==8||list.some(x=>x.rounded===null))return null;
-  const gains=[...list].sort((a,b)=>b.delta1-a.delta1);
-  const losses=[...list].sort((a,b)=>a.delta1-b.delta1);
+  const list=all.map(a=>a.deskStats);
+  if(list.some(x=>!x||x.rounded===null))return null;
+  const comparable=list.every(x=>finite(x.velocity));
+  const ranked=comparable?[...list].sort((a,b)=>b.velocity-a.velocity):[];
+  const up=ranked.find(x=>x.velocity>0)||null;
+  const down=[...ranked].reverse().find(x=>x.velocity<0)||null;
+  const rises=list.filter(x=>x.delta1>0).length;
+  const falls=list.filter(x=>x.delta1<0).length;
   const crowd=[...list].filter(x=>x.crowd).sort((a,b)=>Math.abs(b.netoi)-Math.abs(a.netoi));
   const divergent=list.filter(x=>x.priceState==='divergente'&&finite(x.price1)&&
     finite(x.velocity)&&Math.abs(x.velocity)>=.25);
-  const top=gains[0],down=losses[0];
-  return {asof:all[0].last.date,up:top,down,crowd,divergent,all:list,
-   headline:'Il maggiore recupero del netto è '+top.ccy+' ('+sign(top.delta1)+
-    ' contratti); la pressione più intensa della settimana è '+down.ccy+
-    ' ('+sign(down.delta1)+').',
-   summary: 'La fotografia CFTC racconta movimenti diversi: '+top.ccy+
-    ' guida il recupero, '+down.ccy+' il deterioramento. '+
-    (crowd.length?'L’alert Net/OI ±30% riguarda '+crowd.map(x=>x.ccy).join(' e ')+'. ':'')+
+  const format=x=>x.ccy+' ('+sign(x.velocity,2)+'% dell’OI stimato)';
+  const headline=!comparable?
+    'Classifica normalizzata sospesa: l’Open Interest stimato non è verificabile per tutte le otto valute.':
+    up&&down?
+      'Il recupero proporzionalmente più ampio è '+format(up)+
+      '; la pressione ribassista relativa maggiore è '+format(down)+'.':
+    up?'Prevale il recupero del netto; il maggiore è '+format(up)+'.':
+    down?'Prevale il deterioramento del netto; il più intenso è '+format(down)+'.':
+    'Nessuna variazione netta significativa nel G8 rispetto all’OI.';
+  const summary='Nell’ultima rilevazione '+rises+' valute migliorano il netto, '+
+    falls+' lo peggiorano e '+(8-rises-falls)+' restano stabili. '+
+    (comparable?'La graduatoria usa Δ Net 1W / OI stimato, non i contratti assoluti dei diversi futures. ':
+      'Senza denominatori comparabili non attribuiamo primati fra mercati diversi. ')+
+    (crowd.length?'Concentrazione Net/OI oltre ±30%: '+crowd.map(x=>x.ccy).join(', ')+'. ':'')+
     (divergent.length?'Prezzo e netto divergono in '+divergent.map(x=>x.ccy).join(', ')+'. ':'')+
-    'Sono variazioni di posizioni aggregate rilevate martedì, non flussi FX di oggi.',
-   question:'Per capire se la rotazione continuerà servono nuovi long o short in modo persistente, fixing FX coerenti, macro relativa e differenziali dei tassi. Prezzo e COT non dimostrano causalità.'};
+    'Sono stock di posizioni CFTC riferiti al martedì, non ordini spot odierni.';
+  return {asof:all[0].last.date,up,down,comparable,crowd,divergent,all:list,headline,summary,
+    question:'Il passo successivo è capire quali cambiamenti vengono da nuovi long o short e quali da chiusure. Solo persistenza, prezzo e tassi coerenti possono rafforzare la tesi FX: il COT non detta il timing.'};
  }
  root.FXQuantCOTDeskV26={validatePrior,statistics,reading,desk,flowLabel,speed,sign};
  if(typeof module!=='undefined'&&module.exports)module.exports=root.FXQuantCOTDeskV26;
