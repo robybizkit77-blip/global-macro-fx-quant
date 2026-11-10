@@ -6,7 +6,7 @@
   "source_hashes_sha256": {
     "ecb_fx_history": "34498a0dbbfed18ae930c644ae37e90a40f8aedc6069aaf981af7668537524b9",
     "same_contract_futures_history": "ee8e0d9a9db9418806fe035738f72ee204e6b8d4340917bf9bca5629cda98e6a",
-    "macro_candidate_pair_universe": "a2f5c9a9e97d7067ec2a44a8ab2802e307b529c7db5033e81628cafff184f9ce"
+    "macro_candidate_pair_universe": "67ee5509c6dab0ce542b5ad23211c9647eaee02482b6b35bda720a704ddddd54"
   },
   "method": "SAME_LISTED_FUTURES_CONTRACT_TWO_CONSECUTIVE_ECB_SESSIONS",
   "source_timing": "MAX_OF_BOTH_LEGS_FIRST_SEEN_UTC_BEFORE_ANY_FUTURE_ECB_OUTCOME",
