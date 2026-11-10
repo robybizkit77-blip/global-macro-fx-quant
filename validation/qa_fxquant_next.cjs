@@ -42,6 +42,11 @@ fs.mkdirSync(evidence,{recursive:true});
         'Generic risk essay must not duplicate the matched-session desk interpretation');
       assert(await page.locator('main .risk-research-reading').count()===1,
         'Missing source-dated risk desk reading');
+    }else if(route==='news'){
+      assert(await page.locator('main .research-essay').count()===0,
+        'Generic news essay must not duplicate the source-backed event explanation');
+      assert(await page.locator('main .news-research-reading').count()===1,
+        'News proof narrative missing');
     }else if(route!=='overview'){
       assert(await page.locator('main .research-essay').count()===1,'Narrative research missing on '+route);
       assert(await page.locator('main .research-essay .essay-prose p').count()===3,'Research incomplete on '+route);
@@ -323,8 +328,22 @@ fs.mkdirSync(evidence,{recursive:true});
      'Credit spread changes must be in basis points, not relative percentage');
    // News toggles.
    await page.evaluate(()=>{location.hash='#news'});
+   assert(await page.locator('.news-evidence-item[data-news-kind="pulse"]').count()===4,
+     'All four dated monetary-pricing observations must appear in Market Pulse');
+   assert((await page.locator('.news-research-reading').innerText()).includes('6M/12M'),
+     'Market repricing must be explicitly separated from event-window reaction');
+   assert((await page.locator('.news-evidence-item').first().innerText()).includes('Reazione di mercato'),
+     'News facts must carry explicit market-reaction verification status');
    await page.locator('[data-news-mode="official"]').click();
    assert((await page.locator('.panel-head h2').first().innerText()).includes('Comunicazioni'),'News tab failed');
+   assert(await page.locator('.news-evidence-item[data-news-kind="official"]').count()===15,
+     'All fifteen official release headlines must remain accessible');
+   assert((await page.locator('.news-evidence-item').first().innerText()).includes('00:50 IT'),
+     'Late UTC official releases must display the correct Italy-local day/time');
+   assert(await page.locator('.news-evidence-item a[href^="https://"]').count()===15,
+     'Official release source links missing');
+   assert((await page.locator('.news-evidence-item').first().innerText()).includes('NON verificata'),
+     'Event impact must not be claimed without measured market-window evidence');
    assert(errors.length===0,'Browser errors: '+errors.join(' | '));
    await page.close();
   }

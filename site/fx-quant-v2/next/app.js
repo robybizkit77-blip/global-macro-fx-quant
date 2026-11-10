@@ -547,15 +547,42 @@ function risk(){
  +'<div class="notice '+(x.stale||!x.ready?'warn':'')+'" style="margin-top:14px">'+esc(x.quality+' · Ultimi feed indipendenti: '+x.sourceDates+'. Sono prezzi di chiusura e spread OAS, non ordini o flussi di copertura dimostrati.')+'</div></section></div>';
 }
 function news(){
- const n=get('news'),items=(n?.items||[]),official=n?.official_releases?.headlines||[];
- const list=state.newsMode==='pulse'?items:official;
- return pageHero('NEWS / EVENT MONITOR','Meno rumore. <em>Più contesto.</em>','Le novità servono solo se cambiano la lettura di Macro, tassi o prezzo. Ogni voce riporta data e origine, senza attribuire reazioni causali non misurate.')
- +'<div class="filters"><div class="pill-controls">'+choose('',[{label:'Market Pulse',value:'pulse'},{label:'Comunicazioni ufficiali',value:'official'}],state.newsMode,'data-news-mode')+'</div><span class="data-date">Contenuti market pulse: '+date(n?.content_as_of)+' · '+items.length+' aggiornamenti</span></div>'
- +'<div class="grid tilted"><section class="panel"><div class="panel-head"><div><span class="mini-overline">EVENT FEED / DATATO</span><h2>'+(state.newsMode==='pulse'?'Le notizie che meritano attenzione':'Comunicazioni degli emittenti')+'</h2></div></div><div class="timeline">'+(list.length?list.slice(0,20).map(x=>'<article class="timeline-item"><span class="mini-overline">'+esc(x.ccy||x.source||x.category||'Fonte')+' · '+date(x.as_of||x.published_at||x.date)+'</span><h3>'+esc(x.title||x.headline||'Comunicazione')+'</h3><p>'+esc(x.detail||x.summary||x.description||'Apri la fonte ufficiale per il dettaglio.')+'</p></article>').join(''):'<div class="empty"><strong>Nessuna voce validata</strong></div>')+'</div></section>'
- +'<section class="panel glow"><span class="mini-overline">METODO / NEWS</span><h2 class="focus-headline" style="font-size:22px">Un evento non spiega sempre una candela.</h2><p class="focus-subtitle">Per affermare che il mercato ha reagito a un dato, servono confronti prima/dopo sullo stesso strumento e su un orario coerente.</p><div class="divider"></div><div class="flow-track"><div class="flow-item"><label>Fatto</label><p>Che cosa è stato pubblicato, da chi e quando.</p></div><div class="flow-item"><label>Surprise</label><p>Se disponibile: effettivo meno consenso, distinto da revisione del dato precedente.</p></div><div class="flow-item"><label>Market pricing</label><p>Quale curva o futures hanno reagito. Se non è verificato, la causa rimane un’ipotesi.</p></div></div></section></div>';
+ const n=get('news');
+ const evidence=window.FXQuantNewsEvidence?.parse?.(n,dayNow())||{
+  pulse:[],official:[],latest:null,gap:'I dati sulle notizie non sono validati.',quality:'NON VALIDATO'};
+ const list=state.newsMode==='pulse'?evidence.pulse:evidence.official;
+ const type=state.newsMode==='pulse'?'MOVIMENTI MONETARI DATATI':'COMUNICAZIONI UFFICIALI';
+ const newsCard=x=>'<article class="timeline-item news-evidence-item" data-news-kind="'+esc(state.newsMode)+'" data-news-asof="'+esc(x.asof)+'">'
+  +'<span class="mini-overline">'+esc(x.kind)+' · '+esc(x.ccy||x.source)+' · '+date(x.asof)+(x.time?' · '+esc(x.time)+' IT':'')+'</span>'
+  +'<h3>'+esc(x.title)+'</h3>'
+  +'<p><strong>Il fatto.</strong> '+esc(x.body)+'</p>'
+  +'<p><strong>Perché potrebbe contare.</strong> '+esc(x.why)+'</p>'
+  +'<p><strong>Cosa verificare.</strong> '+esc(x.verify)+'</p>'
+  +'<p class="source-caption"><strong>Reazione di mercato.</strong> '+esc(x.impact)+'</p>'
+  +'<p class="source-caption">Fonte: '+esc(x.source)+' · Qualità: '+esc(x.quality)+
+    (x.url?' · <a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer">Leggi il comunicato ufficiale ↗</a>':'')+'</p></article>';
+ return pageHero('NEWS / EVENT MONITOR','Dalla notizia <em>alla prova.</em>',
+    'Distingui ciò che è stato pubblicato da quello che cambia davvero le aspettative. Una variazione dei futures non è automaticamente una sorpresa macro o la reazione a un comunicato.')
+  +'<div class="filters"><div class="pill-controls">'+choose('',[
+    {label:'Market Pulse ('+evidence.pulse.length+')',value:'pulse'},
+    {label:'Comunicazioni ufficiali ('+evidence.official.length+')',value:'official'}
+   ],state.newsMode,'data-news-mode')+'</div><span class="data-date">Ultima data disponibile '+date(evidence.latest)+'</span></div>'
+  +'<div class="grid tilted"><section class="panel"><div class="panel-head"><div><span class="mini-overline">'+type+'</span>'
+  +'<h2>'+(state.newsMode==='pulse'?'Come si sono mosse le aspettative':'Cosa hanno pubblicato le istituzioni')+'</h2>'
+  +'<p>'+esc(evidence.gap)+'</p></div></div>'
+  +'<div class="timeline">'+(list.length?list.slice(0,20).map(newsCard).join(''):
+    '<div class="empty"><strong>Nessuna voce con data verificabile</strong><p>Non sostituiamo eventi mancanti con notizie presunte.</p></div>')
+  +'</div></section>'
+  +'<section class="panel glow news-research-reading"><span class="mini-overline">IL GIUDIZIO DEL DESK / NEWS</span>'
+  +'<h2 class="focus-headline" style="font-size:22px">Una notizia conta quando cambia una tesi.</h2>'
+  +'<p class="focus-subtitle">'+esc(evidence.gap)+'</p><div class="divider"></div>'
+  +'<div class="flow-track">'
+  +'<div class="flow-item"><label>Fatto</label><p>Fonte, titolo, data e contenuto riportato. Le pubblicazioni ufficiali possono essere importanti anche senza una reazione di prezzo.</p></div>'
+  +'<div class="flow-item"><label>Sorpresa e revisioni</label><p>Il feed non riporta coppie dato effettivo/consenso con vintage verificato: non calcoliamo sorprese né attribuiamo revisioni.</p></div>'
+  +'<div class="flow-item"><label>Market pricing e conferme</label><p>Gli strumenti 6M/12M del Market Pulse descrivono movimenti sulle proprie date; i comunicati non dispongono di una finestra FX/OIS pre/post certificata. Per parlare di impatto servono dati allineati all’orario di rilascio.</p></div>'
+  +'</div><div class="notice warn" style="margin-top:14px">'+esc(evidence.quality)+
+   '. Nessun impatto intraday o segnale di trading viene inventato da un titolo.</div></section></div>';
 }
-
-
 function quickEntries(){
  const sections=Object.entries(ROUTES).map(([value,label])=>({key:value,label,subtitle:'SEZIONE · Research terminal',kind:'route',value}));
  const currencies=FX.map(k=>({key:k,label:FLAGS[k]+' '+k+' · '+NAMES[k],subtitle:'VALUTA G8 · Ricerca multidimensionale',kind:'ccy',value:k}));
@@ -581,7 +608,7 @@ function render(){
  const route=ROUTES[state.route]?state.route:'overview';
  state.charts={};state.chartIndex=0;
  const views={overview,currencies,pairs,macro,rates,cot,risk,news};
- $('content').innerHTML=(route==='overview'||route==='pairs'||route==='cot'||route==='risk'?'':researchBridge(route))+views[route]();
+ $('content').innerHTML=(route==='overview'||route==='pairs'||route==='cot'||route==='risk'||route==='news'?'':researchBridge(route))+views[route]();
  $('crumb-page').textContent=ROUTES[route];
  document.querySelectorAll('#nav [data-route]').forEach(a=>{if(a.dataset.route===route)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
  const ok=Object.keys(state.data).length,missing=Object.keys(SOURCES).length-ok;

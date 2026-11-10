@@ -1,0 +1,54 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const root=path.resolve(__dirname,'../..');
+const {parse,romeDate,link}=require(path.join(root,'site/fx-quant-v2/next/news-evidence-reading.js'));
+const feed=JSON.parse(fs.readFileSync(path.join(root,'live_data/sections/NEWS_PULSE_OPERATIONAL.json'),'utf8'));
+const today='2026-11-10';
+const x=parse(feed,today);
+assert.equal(x.pulse.length,4,'Keep all four dated monetary-pricing observations');
+assert.equal(x.official.length,15,'Keep all fifteen sourced institutional releases');
+assert.equal(x.pulseAsOf,'2026-11-06','Pulse vintage must be visible');
+assert.equal(x.officialAsOf,'2026-11-10','UTC late-night release must use Italy-local day');
+assert.equal(x.latest,'2026-11-10');
+assert.match(x.gap,/orologi diversi/);
+assert.equal(x.pulse.filter(y=>y.kind==='OIS osservato').length,1);
+assert.equal(x.pulse.filter(y=>y.kind==='Futures: pricing implicito').length,3);
+assert(x.pulse.every(y=>y.impact.includes('NON reazione provata')&&!y.macroSurprise&&!y.reactionProven));
+assert(x.official.every(y=>!y.reactionProven&&y.impact.includes('NON verificata')));
+assert(x.official.every(y=>y.why.length>30&&y.verify.length>25),'Evidence-driven official relevance');
+assert(x.official.every(y=>y.url?.startsWith('https://')),'Original official source links');
+assert.equal(x.official.find(y=>y.title.startsWith('Summary of Opinions'))?.asof,'2026-11-10');
+assert.equal(x.official.find(y=>y.title.startsWith('Summary of Opinions'))?.time,'00:50');
+assert(x.official.find(y=>y.title.startsWith('Bank rate increased'))?.verify.includes('Consultare'));
+assert(x.official.some(y=>y.kind==='Fondamentali energia'));
+assert(x.official.some(y=>y.kind==='Comunicazione banca centrale'));
+assert(x.pulse.some(y=>y.title.startsWith('AUD:')&&y.why.includes('non sono la stessa misura')));
+const past=parse(feed,'2026-11-06');
+assert.equal(past.official.some(y=>y.asof>'2026-11-06'),false,'No lookahead into later news');
+const empty=parse(null,today);
+assert.equal(empty.pulse.length,0);
+assert.equal(empty.official.length,0);
+assert.equal(link('javascript:alert(1)'),null);
+assert.equal(link('https://user:pass@www.boj.or.jp/path'),null);
+assert.equal(link('http://www.ecb.europa.eu'),null);
+assert.equal(link('https://www.ecb.europa.eu/test?a=1&b=2'),'https://www.ecb.europa.eu/test?a=1&b=2');
+const fake=structuredClone(feed);
+fake.official_releases.headlines.push({...fake.official_releases.headlines[0],
+ title:'<img src=x onerror=alert(1)>',url:'javascript:alert(1)',published_at_utc:'2026-11-09T23:50:00Z'});
+const test=parse(fake,today);
+assert.equal(test.official.at(0)?.url===null||test.official.some(y=>y.title.includes('<img')&&y.url===null),true,'Reject dangerous hyperlink values');
+assert.equal(romeDate('2026-11-09T23:50:00Z').date,'2026-11-10');
+assert.equal(romeDate('2026-11-09T21:00:00Z').date,'2026-11-09');
+assert.equal(romeDate('invalid'),null);
+const html=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/index.html'),'utf8');
+const app=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/app.js'),'utf8');
+assert(html.indexOf('news-evidence-reading.js?v=24')<html.indexOf('app.js?v=18.24'));
+for(const field of ['x.title','x.body','x.why','x.verify','x.impact','x.source','x.url']){
+ assert(app.includes('esc('+field+')'),'News output is not escaped: '+field);
+}
+assert(app.includes('evidence.official.length')&&app.includes('evidence.pulse.length'));
+assert(app.includes("route==='overview'||route==='pairs'||route==='cot'||route==='risk'||route==='news'"),
+ 'Generic news essay must not duplicate source-specific reading');
+console.log('NEXT_NEWS_V24_PASS: 4/4 dated pricing items, 15/15 official releases, UTC->Rome, no false surprise/reaction, safe source URLs and no duplicate essay.');
