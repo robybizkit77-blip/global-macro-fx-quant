@@ -205,8 +205,15 @@ class BrentMarketProxyTests(unittest.TestCase):
             self.assertIn("not a new market session", event["interpretation"])
             self.assertGreater(event["prior_value"], 0)
             self.assertGreater(event["new_value"], 0)
-            if event["market_date"] == lane["proxy_as_of"]:
-                self.assertEqual(lane["value"], event["new_value"])
+        # Multiple *sequential* same-date vendor revisions are retained as
+        # historical receipts. Only the last revision is the current quote.
+        same_date_events = [
+            e for e in events if e["market_date"] == lane["proxy_as_of"]
+        ]
+        if same_date_events:
+            self.assertEqual(lane["value"], same_date_events[-1]["new_value"])
+            for previous, subsequent in zip(same_date_events, same_date_events[1:]):
+                self.assertEqual(previous["new_value"], subsequent["prior_value"])
         # Check the specifically reviewed October 30 event if still within
         # the bounded vintage archive. A later source date is NOT a failure.
         historical = [

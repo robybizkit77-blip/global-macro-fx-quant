@@ -41,9 +41,22 @@ assert.equal(current.pairEffect,'NONE');
 assert.equal(current.gold.grade,'SECONDARY_FUTURES');
 assert.equal(current.gold.asof,residual.lanes['GOLD.market_proxy'].proxy_as_of);
 assert.equal(current.gold.delta,residual.lanes['GOLD.market_proxy'].change_1d_pct);
-assert.equal(current.brent.grade,'SECONDARY_FUTURES');
-assert.equal(current.brent.asof,residual.lanes['BRENT.market_proxy'].proxy_as_of);
-assert.equal(current.brent.delta,residual.lanes['BRENT.market_proxy'].change_1d_pct);
+const brentAge=(Date.parse(today+'T00:00:00Z')-
+  Date.parse(residual.lanes['BRENT.market_proxy'].proxy_as_of+'T00:00:00Z'))/86400000;
+assert.equal(Number.isInteger(brentAge),true,'dated Brent market reference');
+const historicalBrent=vm.runInNewContext(
+  ['crossRiskBrent'].map(exact).join('\n')+'\ncrossRiskBrent',
+  {num:context.num,romeCalendarAge:context.romeCalendarAge,Date,Number,Array,Math,crossGoldAge:context.romeCalendarAge}
+)(residual);
+assert.equal(historicalBrent.state,brentAge<=3?'SECONDARY_RECENT':'SECONDARY_HISTORICAL');
+assert.equal(historicalBrent.asof,residual.lanes['BRENT.market_proxy'].proxy_as_of);
+if(brentAge<=3){
+  assert.equal(current.brent.grade,'SECONDARY_FUTURES');
+  assert.equal(current.brent.asof,residual.lanes['BRENT.market_proxy'].proxy_as_of);
+  assert.equal(current.brent.delta,residual.lanes['BRENT.market_proxy'].change_1d_pct);
+}else{
+  assert.equal(current.brent,null,'historical Brent must not appear as a current daily move');
+}
 assert.equal(current.wti.asof,model.risk.WTI.last_date);
 assert.equal(current.wtiFutures.grade,'SECONDARY_FUTURES');
 assert.equal(current.wtiFutures.symbol,'CL=F');
