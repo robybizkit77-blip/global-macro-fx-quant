@@ -25,7 +25,14 @@ fs.mkdirSync(evidence,{recursive:true});
    for(const route of ROUTES){
     await page.evaluate(r=>{location.hash='#'+r},route);
     await page.waitForFunction(r=>document.querySelector('#crumb-page')?.textContent===({overview:'Panoramica',currencies:'Valute G8',pairs:'Coppie FX',macro:'Scenario macro',rates:'Tassi & OIS',cot:'COT',risk:'Rischio',news:'Notizie'})[r],route);
-    if(route!=='overview'){
+    if(route==='pairs'){
+      assert(await page.locator('main .decision-desk-story[data-serafini-pair]').count()===1,
+        'Source-backed desk reading missing for selected FX pair');
+      assert(await page.locator('main .decision-desk-story p').count()===5,
+        'Five-part economic reasoning incomplete for selected pair');
+      assert(await page.locator('main .research-essay').count()===0,
+        'Generic FX essay must not duplicate the new narrative');
+    }else if(route!=='overview'){
       assert(await page.locator('main .research-essay').count()===1,'Narrative research missing on '+route);
       assert(await page.locator('main .research-essay .essay-prose p').count()===3,'Research incomplete on '+route);
       assert(await page.locator('main .research-essay a[href^="#"]').count()===1,'Research handoff link missing on '+route);
@@ -102,6 +109,8 @@ fs.mkdirSync(evidence,{recursive:true});
    await page.evaluate(()=>{location.hash='#pairs'});
    await page.locator('[data-pair="AUDCAD"]').click();
    assert((await page.locator('.focus-headline').first().innerText()).includes('AUD/CAD'),'Pair select failed');
+   assert(await page.locator('.decision-desk-story[data-serafini-pair="AUDCAD"]').count()===1,
+     'Desk narrative must switch to the newly selected FX pair');
    assert(await page.locator('.decision-watch-line').count()===2,'AUD/CAD with a dated price history must show favorable and contrary references');
    assert(await page.locator('.decision-rates-bridge').count()===1,'AUD/CAD FX/rates validation panel missing');
    const audResearch=await page.locator('.decision-rates-bridge').getAttribute('data-aud-research');
