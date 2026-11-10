@@ -353,10 +353,10 @@ fs.mkdirSync(evidence,{recursive:true});
    assert(pulseCount>=4,'The four original dated monetary items must remain in Market Pulse');
    if(pulseCount>4){
      const pulseText=await page.locator('.news-evidence-item[data-news-kind="pulse"]').allInnerTexts();
-     const merged=pulseText.join(' ');
+     const merged=pulseText.join(' ').toLocaleLowerCase('it-IT');
      for(const kind of ['Forex · fixing BCE','Azionario · chiusura','Credito · spread OAS',
                         'Volatilità · VIX','Government bond · 2Y/10Y']){
-       assert(merged.includes(kind),'Widened market evidence lane is incomplete: '+kind);
+       assert(merged.includes(kind.toLocaleLowerCase('it-IT')),'Widened market evidence lane is incomplete: '+kind);
      }
    }
    assert((await page.locator('.news-research-reading').innerText()).includes('6M/12M'),
