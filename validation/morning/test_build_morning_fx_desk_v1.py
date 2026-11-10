@@ -7,7 +7,7 @@ from pathlib import Path
 import unittest
 
 from validation.morning.build_morning_fx_desk_v1 import (
-    ROOT, build, validate, choose_event, fmt, get_pair_price, to_date
+    ROOT, build, validate, choose_event, fmt, signed, get_pair_price, to_date
 )
 
 class MorningFXDeskTests(unittest.TestCase):
@@ -50,7 +50,8 @@ class MorningFXDeskTests(unittest.TestCase):
         self.assertEqual(len(x["charts"]),2)
 
     def test_quiet_day_without_fake_calendar_catalyst(self):
-        x=build(ROOT,date(2026,11,13),datetime(2026,11,13,7,0,tzinfo=timezone.utc))
+        x=build(ROOT,date(2026,11,11),datetime(2026,11,11,7,0,tzinfo=timezone.utc),
+                event_seed={"events":[]})
         self.assertEqual(x["event_status"],"RELATIVE_PRICING")
         self.assertIsNone(x["catalyst"]["date"])
         self.assertIn("spread",x["lead"])
@@ -59,9 +60,10 @@ class MorningFXDeskTests(unittest.TestCase):
         self.assertLess(x["sources"]["rates"],x["edition_date"])
 
     def test_event_scenarios_are_distinct_and_specific(self):
-        days=[(2026,11,10),(2026,11,11),(2026,11,12),(2026,11,13)]
-        reports=[build(ROOT,date(*part),datetime(*part,7,0,tzinfo=timezone.utc))
-                 for part in days]
+        days=[((2026,11,10),None),((2026,11,11),None),
+              ((2026,11,12),None),((2026,11,11),{"events":[]})]
+        reports=[build(ROOT,date(*part),datetime(*part,7,0,tzinfo=timezone.utc),
+                       event_seed=seed) for part,seed in days]
         titles=[tuple(s["title"] for s in r["scenarios"]) for r in reports]
         self.assertEqual(len(set(titles)),4,
                          "Two generic scenarios repeated across every macro regime")
@@ -79,8 +81,11 @@ class MorningFXDeskTests(unittest.TestCase):
     def test_editorial_cross_regime_trace(self):
         # Short human-reviewable evidence for what the actual generator says,
         # not just green structural test counts.
-        for part in [(2026,11,10),(2026,11,11),(2026,11,12),(2026,11,13)]:
-            x=build(ROOT,date(*part),datetime(*part,7,0,tzinfo=timezone.utc))
+        cases=[((2026,11,10),None),((2026,11,11),None),
+               ((2026,11,12),None),((2026,11,11),{"events":[]})]
+        for part,seed in cases:
+            x=build(ROOT,date(*part),datetime(*part,7,0,tzinfo=timezone.utc),
+                    event_seed=seed)
             print("MORNING_EDITORIAL_EXAMPLE "+json.dumps({
                 "day":x["edition_date"],"stage":x["event_status"],
                 "headline":x["headline"],"lead":x["lead"],
@@ -88,6 +93,21 @@ class MorningFXDeskTests(unittest.TestCase):
                 "scenarios":x["scenarios"],"verdict":x["verdict"],
                 "evidence":x["relative_evidence"],"sources":x["sources"]},
                 ensure_ascii=False),flush=True)
+
+    def test_stale_friday_is_blocked_and_provisional_swiss_is_not_promoted(self):
+        # This deliberately uses November 10 market data on November 13:
+        # the historical quiet-day template must not masquerade as fresh.
+        with self.assertRaisesRegex(ValueError,"missing more than one completed weekday"):
+            build(ROOT,date(2026,11,13),datetime(2026,11,13,7,0,tzinfo=timezone.utc))
+        seed=json.loads((ROOT/"live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json").read_text(encoding="utf-8"))
+        self.assertEqual(choose_event(seed,date(2026,11,13))[1],"RELATIVE_PRICING")
+
+    def test_small_spread_not_negative_zero(self):
+        self.assertEqual(signed(-0.313,0," pb"),"−0,3 pb")
+        self.assertEqual(signed(0,0," pb"),"0 pb")
+        x=build(ROOT,date(2026,11,12),datetime(2026,11,12,7,0,tzinfo=timezone.utc))
+        self.assertIn("−0,3 punti base",x["paragraphs"][1])
+        self.assertEqual(x["charts"][0]["precision"],1)
 
     def test_no_forecast_promoted_to_market_surprise(self):
         x=build(ROOT,date(2026,11,10),datetime(2026,11,10,7,0,tzinfo=timezone.utc))
