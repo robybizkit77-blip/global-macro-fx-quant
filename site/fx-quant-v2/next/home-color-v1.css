@@ -413,3 +413,31 @@
  }
  .market-dashboard .dashboard-original-reading{padding:14px 13px}
 }
+
+
+/* HOME SOURCE LINKS V1: unobtrusive jumps to the evidence behind the desk story. */
+.market-dashboard .dashboard-reading-source-links{
+ display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+ margin:13px 0 12px clamp(15px,2vw,24px);
+}
+.market-dashboard .dashboard-reading-source-links a{
+ text-decoration:none;white-space:nowrap;font-size:11px;font-weight:750;
+ line-height:1.4;color:#b3e8ef;
+ padding:7px 11px;border-radius:8px;
+ border:1px solid rgba(104,192,222,.30);
+ background:rgba(45,117,153,.10);
+ transition:background .15s,border-color .15s;
+}
+.market-dashboard .dashboard-reading-source-links a:hover,
+.market-dashboard .dashboard-reading-source-links a:focus-visible{
+ color:#f1fcff;background:rgba(69,161,187,.24);
+ border-color:rgba(111,225,221,.7);
+}
+@media(max-width:650px){
+ .market-dashboard .dashboard-reading-source-links{
+  gap:6px;margin-left:15px;
+ }
+ .market-dashboard .dashboard-reading-source-links a{
+  padding:6px 8px;font-size:10.5px;
+ }
+}
