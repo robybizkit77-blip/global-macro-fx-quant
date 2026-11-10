@@ -22,6 +22,7 @@ on:
       - 'validation/publishing/test_next_rates_economic_reading_v20.cjs'
       - 'validation/publishing/test_next_currency_relative_v21.cjs'
       - 'validation/publishing/test_next_cot_evidence_v22.cjs'
+      - 'validation/publishing/test_next_cot_report_desk_v26.cjs'
       - 'validation/publishing/test_next_risk_economic_v23.cjs'
       - 'validation/publishing/test_next_news_evidence_v24.cjs'
       - 'validation/publishing/test_macro_us_households_hero_v1.cjs'
@@ -79,6 +80,9 @@ jobs:
           node --check site/fx-quant-v2/next/cot-evidence-reading.js
           node --check site/fx-quant-v2/next/cot-studio.js
           node validation/publishing/test_next_cot_evidence_v22.cjs
+          node --check site/fx-quant-v2/next/cot-report-reading-v26.js
+          node --check site/fx-quant-v2/next/cot-studio.js
+          node validation/publishing/test_next_cot_report_desk_v26.cjs
           node --check site/fx-quant-v2/next/risk-evidence-reading.js
           node --check site/fx-quant-v2/next/app.js
           node validation/publishing/test_next_risk_economic_v23.cjs
@@ -157,6 +161,9 @@ jobs:
           node --check site/fx-quant-v2/next/cot-evidence-reading.js
           node --check site/fx-quant-v2/next/cot-studio.js
           node validation/publishing/test_next_cot_evidence_v22.cjs
+          node --check site/fx-quant-v2/next/cot-report-reading-v26.js
+          node --check site/fx-quant-v2/next/cot-studio.js
+          node validation/publishing/test_next_cot_report_desk_v26.cjs
           node --check site/fx-quant-v2/next/risk-evidence-reading.js
           node --check site/fx-quant-v2/next/app.js
           node validation/publishing/test_next_risk_economic_v23.cjs
