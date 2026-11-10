@@ -18,6 +18,7 @@ on:
       - 'live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json'
       - 'live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json'
       - 'index.html'
+      - 'validation/calendar/calendar_news_legacy_test_route_v1.cjs'
       - '.github/workflows/calendar-news-operational-ui-audit-v1.yml'
   push:
     branches: [main]
@@ -36,6 +37,7 @@ on:
       - 'live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json'
       - 'live_data/sections/MACRO_CONSENSUS_SECONDARY_V1.json'
       - 'index.html'
+      - 'validation/calendar/calendar_news_legacy_test_route_v1.cjs'
       - '.github/workflows/calendar-news-operational-ui-audit-v1.yml'
   workflow_dispatch:
 
@@ -64,12 +66,14 @@ jobs:
         run: |
           cat > calendar-news-ui-audit.js <<'JS'
           const {chromium}=require('playwright');
+          const {enableCalendarNewsLegacyHarness}=require('./validation/calendar/calendar_news_legacy_test_route_v1.cjs');
           const devices=[['desktop',{width:1440,height:1000}],['mobile',{width:390,height:844}]];
           (async()=>{
             const browser=await chromium.launch({headless:true});
             for(const [name,viewport] of devices){
               const page=await browser.newPage({viewport});
               const errors=[];page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});page.on('pageerror',e=>errors.push(String(e)));
+              await enableCalendarNewsLegacyHarness(page);
               await page.goto('http://127.0.0.1:8765/',{waitUntil:'networkidle'});
               await page.waitForFunction(()=>window.GMFQ_CALENDAR_NEWS_OPERATIONAL?.status==='ACTIVE',{timeout:20000});
               await page.evaluate(()=>window.showView&&window.showView('calendar'));
