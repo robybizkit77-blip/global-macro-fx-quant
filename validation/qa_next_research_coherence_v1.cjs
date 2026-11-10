@@ -36,6 +36,7 @@ function evaluate(data,now='2026-11-10'){
   fresh:(d,window=8)=>validDay(d)&&d<=now&&
     (Date.parse(now+'T12:00:00Z')-Date.parse(d+'T12:00:00Z'))/864e5<=window,
   eurPairs:()=>data.pairs?.pairs||{},
+  getPairName:key=>key.slice(0,3)+'/'+key.slice(3),
   homeScreenChart:()=>'<div class="test-chart"></div>',
   state:{homeEvidenceOpen:false,homeDossierOpen:false},
   FX:['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'],
