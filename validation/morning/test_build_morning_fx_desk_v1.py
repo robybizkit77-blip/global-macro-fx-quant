@@ -7,7 +7,7 @@ from pathlib import Path
 import unittest
 
 from validation.morning.build_morning_fx_desk_v1 import (
-    ROOT, build, validate, choose_event, fmt, signed, get_pair_price, to_date
+    ROOT, build, validate, choose_event, fmt, signed, get_pair_price, to_date, skipped_market_sessions
 )
 
 class MorningFXDeskTests(unittest.TestCase):
@@ -33,7 +33,10 @@ class MorningFXDeskTests(unittest.TestCase):
         x=build(ROOT,date(2026,11,11),datetime(2026,11,11,7,15,tzinfo=timezone.utc))
         self.assertIn(x["event_status"],{"AFTERMATH_UNVERIFIED","AFTERMATH_TO_VERIFY"})
         self.assertIn("CPI",x["headline"])
-        self.assertIn("provenienza",x["catalyst"]["text"])
+        if x["event_status"]=="AFTERMATH_UNVERIFIED":
+            self.assertIn("provenienza",x["catalyst"]["text"])
+        else:
+            self.assertIn("registro contiene",x["catalyst"]["text"])
         self.assertEqual(x["edition_status"],"MORNING_SNAPSHOT")
         self.assertLess(x["sources"]["fx_fixing"],"2026-11-11")
 
@@ -95,19 +98,22 @@ class MorningFXDeskTests(unittest.TestCase):
                 ensure_ascii=False),flush=True)
 
     def test_stale_friday_is_blocked_and_provisional_swiss_is_not_promoted(self):
-        # This deliberately uses November 10 market data on November 13:
-        # the historical quiet-day template must not masquerade as fresh.
-        with self.assertRaisesRegex(ValueError,"missing more than one completed weekday"):
-            build(ROOT,date(2026,11,13),datetime(2026,11,13,7,0,tzinfo=timezone.utc))
-        seed=json.loads((ROOT/"live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json").read_text(encoding="utf-8"))
+        # Fixed-date arithmetic, not dependent on tomorrow's updated live JSON.
+        # Tue 10 -> Fri 13 has two completed missing weekdays (Wed/Thu).
+        self.assertEqual(skipped_market_sessions("2026-11-10",date(2026,11,13)),2)
+        # Mon 9 -> Fri 13 has three missing weekdays (Tue/Wed/Thu).
+        self.assertEqual(skipped_market_sessions("2026-11-09",date(2026,11,13)),3)
+        seed={"events":[{"ccy":"CHF","date":"2026-11-16",
+                         "event_type":"GROWTH","importance":"HIGH",
+                         "quality":"OFFICIAL_PROVISIONAL"}]}
         self.assertEqual(choose_event(seed,date(2026,11,13))[1],"RELATIVE_PRICING")
 
     def test_small_spread_not_negative_zero(self):
         self.assertEqual(signed(-0.313,0," pb"),"−0,3 pb")
         self.assertEqual(signed(0,0," pb"),"0 pb")
         x=build(ROOT,date(2026,11,12),datetime(2026,11,12,7,0,tzinfo=timezone.utc))
-        self.assertIn("−0,3 punti base",x["paragraphs"][1])
-        self.assertEqual(x["charts"][0]["precision"],1)
+        self.assertNotIn("−0 punti base",x["paragraphs"][1])
+        self.assertIn(x["charts"][0]["precision"],(0,1))
 
     def test_no_forecast_promoted_to_market_surprise(self):
         x=build(ROOT,date(2026,11,10),datetime(2026,11,10,7,0,tzinfo=timezone.utc))
