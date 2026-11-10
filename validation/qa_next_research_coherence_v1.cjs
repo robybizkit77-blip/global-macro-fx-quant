@@ -81,6 +81,8 @@ const futurePricing=clone(stress);
 futurePricing.ois.currencies.USD.horizons['6m'].as_of='2026-11-20';
 assert.match(evaluate(futurePricing,'2026-11-10').article,
  /non abbiamo una scadenza monetaria USA a sei mesi utilizzabile/);
+assert.doesNotMatch(evaluate(futurePricing,'2026-11-10').article,
+ /20\/11\/2026/,'Future-dated monetary reference must not appear in the analysis');
 const relief=clone(stress);
 relief.risk.streams.NASDAQCOM.change_1d_pct=3.2;
 relief.risk.streams.VIX.previous=31;relief.risk.streams.VIX.value=23;
