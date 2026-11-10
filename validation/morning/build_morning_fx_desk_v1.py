@@ -171,6 +171,38 @@ def build(root,day,now):
     if not isnum(spot) or not isnum(before):
         raise ValueError("FX pair missing from historical ECB fixing")
     spot_change=(spot/before-1)*100
+
+    # Compare rate differentials and FX only at identical ECB fixing/rate dates.
+    # The most recent FX fixing can be later than the last comparable 2Y quote:
+    # state that gap rather than calling the movement confirmation.
+    fx_by_date={r["Date"]:r for r in rows}
+    aligned=[d for d in common if d in fx_by_date and isnum(get_pair_price(fx_by_date[d],pair))]
+    if len(aligned)<4:
+        raise ValueError("Insufficient same-day paired FX / 2Y evidence")
+    aligned_last=aligned[-1]
+    aligned_first=next((d for d in aligned if to_date(d)>=to_date(aligned_last)-timedelta(days=8)),aligned[0])
+    if aligned_last==aligned_first:
+        raise ValueError("Single aligned FX/rates date cannot establish a change")
+    observed_diff=(series[u][aligned_last]-series[v][aligned_last]
+                   -series[u][aligned_first]+series[v][aligned_first])*100
+    aligned_fx_start=get_pair_price(fx_by_date[aligned_first],pair)
+    aligned_fx_end=get_pair_price(fx_by_date[aligned_last],pair)
+    observed_fx=(aligned_fx_end/aligned_fx_start-1)*100
+    orient=-1 if pair=="EURUSD" else 1
+    if abs(observed_diff)<1 or abs(observed_fx)<0.05:
+        cross_reading=("La variazione comparabile è troppo piccola o poco direzionale "
+                       "per certificare una conferma del differenziale nel cambio.")
+        cross_state="NON_CONCLUSIVO"
+    elif observed_diff*observed_fx*orient>0:
+        cross_reading=("Nell'intervallo sulle stesse date, spread e prezzo si muovono "
+                       "nella direzione economicamente coerente; non dimostrano causalità.")
+        cross_state="COERENTE"
+    else:
+        cross_reading=("Nell'intervallo sulle stesse date, il prezzo non segue "
+                       "la direzione suggerita dal differenziale: divergenza da indagare, "
+                       "non automaticamente un'opportunità.")
+        cross_state="DIVERGENTE"
+
     central=cb.get(ccy) or {}
     if to_date(central.get("last_date")) and to_date(central["last_date"])>=day:
         central={}
@@ -178,22 +210,36 @@ def build(root,day,now):
     cb_name=central.get("bank") or ccy
     cb_context=(f"La {cb_name} arriva alla seduta dopo la decisione del {pretty(meeting)}, "
                 f"con tasso di riferimento {central.get('rate_text') or 'da verificare'}. "
-                "La questione non è ripetere il livello dei tassi, ma stabilire quali "
-                "condizioni economiche possano modificare il percorso atteso.")
+                "Il punto economico è se crescita e inflazione consentano a quella banca "
+                "di mantenere il percorso atteso, non il semplice livello del tasso.")
     if ccy=="USD" and meeting=="2026-10-28":
-        cb_context=("Partiamo dalla Federal Reserve del 28 ottobre: tassi invariati al "
-                    "3,75–4,00% e due membri favorevoli a un rialzo. "
-                    "La crescita è ancora descritta come resistente, mentre l'inflazione "
-                    "rimane un vincolo. Per il dollaro questa postura conta soltanto "
-                    "nella misura in cui il mercato la modifica rispetto alle attese già incorporate.")
-    rates_context=(f"Il differenziale governativo a due anni {u}–{v} è {signed(spread,0,' punti base')} "
-                   f"al {pretty(cutoff)}, cambiato di {signed(spread-previous_spread,1,' pb')} "
-                   f"rispetto al {pretty(first)}. Nello stesso arco, il fixing BCE di "
-                   f"{pair[:3]}/{pair[3:]} è {fmt(spot,4)} al {pretty(fxlast['Date'])}, "
-                   f"contro {fmt(before,4)} alla rilevazione precedente ({signed(spot_change,2,'%')}). "
-                   "I due mercati non vanno trattati come una reazione causale già dimostrata. "
-                   "Per misurare un repricing monetario servono variazioni omogenee OIS/futures, "
-                   "che il semplice livello governativo non sostituisce.")
+        cb_context=("Il contesto viene dalla Fed del 28 ottobre: tassi invariati al "
+                    "3,75–4,00%, con due membri favorevoli a un rialzo. "
+                    "La crescita continua a essere descritta come resistente, ma "
+                    "l'inflazione rimane il vincolo per un eventuale allentamento. "
+                    "Per il dollaro la domanda è quanto di questa prudenza sia già "
+                    "incorporato nei tassi e quanto possa ancora sorprendere il mercato.")
+    elif ccy=="GBP" and meeting=="2026-11-05":
+        cb_context=("Arriviamo dalla decisione della BoE del 5 novembre: Bank Rate "
+                    "portato al 4,00% con un rialzo di 25 punti base. "
+                    "Questo rende la crescita britannica un test particolarmente "
+                    "delicato: una banca centrale più restrittiva deve capire se "
+                    "la domanda interna può reggere condizioni finanziarie più rigide. "
+                    "Per la sterlina conta la differenza fra le nuove aspettative BoE "
+                    "e quelle Fed, non il solo livello del Bank Rate.")
+    rates_context=(f"Il differenziale governativo a due anni {u}–{v} è "
+                   f"{signed(spread,0,' punti base')} al {pretty(cutoff)}; "
+                   f"rispetto al {pretty(first)} è cambiato di "
+                   f"{signed(spread-previous_spread,1,' pb')}. "
+                   f"Il fixing BCE di {pair[:3]}/{pair[3:]} è {fmt(spot,4)} "
+                   f"al {pretty(fxlast['Date'])}, {signed(spot_change,2,'%')} "
+                   "sul fixing precedente. "
+                   f"Confrontando invece rigorosamente le stesse date "
+                   f"({pretty(aligned_first)}–{pretty(aligned_last)}), "
+                   f"lo spread si è mosso di {signed(observed_diff,1,' pb')} "
+                   f"e il cambio di {signed(observed_fx,2,'%')}. "
+                   f"{cross_reading} Il livello del governativo 2Y non "
+                   "sostituisce un confronto delle variazioni OIS/futures.")
     reference=forecast_reference(load(root,"forecast"),event,day)
     clock=event_clock(event) if event else None
     actual=load(root,"actual")
