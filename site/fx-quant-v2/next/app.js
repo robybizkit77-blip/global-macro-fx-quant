@@ -567,6 +567,7 @@ function news(){
     {label:'Market Pulse ('+evidence.pulse.length+')',value:'pulse'},
     {label:'Comunicazioni ufficiali ('+evidence.official.length+')',value:'official'}
    ],state.newsMode,'data-news-mode')+'</div><span class="data-date">Ultima data disponibile '+date(evidence.latest)+'</span></div>'
+  +'<p class="source-caption news-source-audit">'+esc(evidence.auditLine)+'</p>'
   +'<div class="grid tilted"><section class="panel"><div class="panel-head"><div><span class="mini-overline">'+type+'</span>'
   +'<h2>'+(state.newsMode==='pulse'?'Come si sono mosse le aspettative':'Comunicazioni ufficiali: cosa hanno pubblicato le istituzioni')+'</h2>'
   +'<p>'+esc(evidence.gap)+'</p></div></div>'
