@@ -59,6 +59,26 @@
       const shown=sign(value,1,'%');
       return netOiCrowded(value)?'<span class="cot-netoi-alert">⚠ '+shown+'</span>':esc(shown);
     }
+    // Table tones describe signed COT quantities, not bullish/bearish FX calls.
+    function tableSignCell(value,decimals=0,suffix=''){
+      const cls=finite(value)?value>0?'cot-table-up':value<0?'cot-table-down':'cot-table-flat':'cot-table-flat';
+      return '<td class="cot-number-cell '+cls+'">'+(finite(value)?sign(value,decimals,suffix):'—')+'</td>';
+    }
+    function percentileCell(value,current=true){
+      const valid=finite(value);
+      const cls=!valid||!current?'cot-p-archive':value>=80?'cot-p-high':value<=20?'cot-p-low':'cot-p-middle';
+      return '<td class="cot-percentile-cell '+cls+'">'+
+        (valid?'<span class="cot-p-value">'+(current?fmt(value,0)+'°':'≈'+fmt(value,1))+'</span>':'—')+'</td>';
+    }
+    function zScoreCell(value){
+      const cls=!finite(value)?'cot-z-normal':value>=2?'cot-z-hot-up':value<=-2?'cot-z-hot-down':
+        value>0?'cot-z-up':value<0?'cot-z-down':'cot-z-normal';
+      return '<td class="cot-z-cell"><span class="cot-z-chip '+cls+'">'+
+        (finite(value)?sign(value,2):'—')+'</span></td>';
+    }
+    function netOiTableCell(value){
+      return '<td class="'+(netOiCrowded(value)?'cot-netoi-cell-alert':'cot-netoi-cell-normal')+'">'+netOiCell(value)+'</td>';
+    }
     function stat(a,b,note,cls=''){
       return '<div class="cot-stat'+(cls==='cot-netoi-alert'?' cot-stat-crowded':'')+'"><span>'+esc(a)+'</span><strong class="'+cls+'">'+esc(b)+'</strong><small>'+esc(note)+'</small></div>';
     }
@@ -170,16 +190,17 @@
       return '<section class="cot-detailed-table"><div class="cot-analysis-head"><div><span class="chapter-kicker">06 / AUDIT STORICO</span>'
        +'<h2>Le ultime 12 settimane. <em>Long, short e saldo.</em></h2></div>'
        +'<p>Le variazioni delle due gambe spiegano il netto. P104 più recente: metodo esclusivo; i ranghi delle settimane vecchie hanno una definizione differente.</p></div>'
-       +'<div class="table-wrap"><table class="data-table cot-table"><thead><tr><th>Martedì CFTC</th><th>Long</th><th>Short</th><th>Net</th><th>Δ Net 1W</th><th>Net/OI</th><th>Rango P*</th></tr></thead><tbody>'
+       +'<div class="table-wrap"><table class="data-table cot-table cot-history-table"><thead><tr><th>Martedì CFTC</th><th>Long</th><th>Short</th><th>Net</th><th>Δ Net 1W</th><th>Net/OI</th><th>Rango P*</th></tr></thead><tbody>'
        +a.hist.slice(-12).reverse().map(r=>{
          const i=a.hist.findIndex(x=>x.date===r.date),prev=a.hist[i-1];
          const current=r.date===a.last.date,rank=current?a.deskStats?.rounded:r.percentile;
-         return '<tr><td>'+date(r.date)+'</td><td>'+fmt(r.long,0)+'</td><td>'+fmt(r.short,0)+'</td>'
-          +'<td>'+sign(r.net,0)+'</td><td>'+sign(prev?r.net-prev.net:null,0)+'</td>'
-          +'<td>'+netOiCell(r.netoi)+'</td><td>'+(rank===null||rank===undefined?'—':
-             (current?'P'+fmt(rank,0):'≈'+fmt(rank,1)))+'</td></tr>';
+         return '<tr class="'+(current?'cot-history-current':'')+'"><td class="cot-date-cell">'+date(r.date)+'</td>'+
+            '<td class="cot-gross-long">'+fmt(r.long,0)+'</td>'+
+            '<td class="cot-gross-short">'+fmt(r.short,0)+'</td>'+
+            tableSignCell(r.net)+tableSignCell(prev?r.net-prev.net:null)+
+            netOiTableCell(r.netoi)+percentileCell(rank,current)+'</tr>';
        }).join('')+'</tbody></table></div>'
-       +'<p class="source-caption">Net/OI evidenziato in rosso con ⚠ quando arrotondato a un decimale raggiunge ±30,0%, come nel report settimanale. Ultima riga: percentile P104 rispetto alle 104 osservazioni precedenti, verificato contro archivio CFTC. Righe più vecchie: percentili archiviati della serie inclusiva; il simbolo ≈ indica metodo diverso, non precisione inferiore del Net. Long, short, Net e Net/OI provengono dal CFTC.</p></section>';
+       +'<p class="source-caption">Colori dei numeri e Net/OI critico riprendono il report settimanale: ⚠ rosso da ±30,0% dopo arrotondamento. Il colore non rappresenta una previsione. Ultima riga: percentile P104 rispetto alle 104 osservazioni precedenti, verificato contro archivio CFTC. Righe più vecchie: percentili archiviati della serie inclusiva; il simbolo ≈ indica metodo diverso, non precisione inferiore del Net. Long, short, Net e Net/OI provengono dal CFTC.</p></section>';
     }
         function universe(){
       const all=FX.map(report).filter(Boolean),filter=state.cotFilter||'all',sort=state.cotSort||'percentile',asc=state.cotSortAsc===true;
@@ -209,17 +230,14 @@
         '<th>As of</th></tr></thead><tbody>'
        +rows.map(a=>{
         const q=a.deskStats,p=q?.rounded,netoi=a.last.netoi;
-        return '<tr class="'+(a.ccy===state.ccy?'active':'')+'"><td><button type="button" data-ccy="'+a.ccy+'">'+FLAGS[a.ccy]+' '+a.ccy+
-         '</button><small class="cot-row-state '+(p>=80?'cot-long':p<=20?'cot-short':'')+'">'+esc(q?.level||'DA VERIFICARE')+'</small></td>'
-         +'<td>'+(p===null||p===undefined?'—':fmt(p,0)+'°')+'</td>'
-         +'<td>'+(finite(q?.z)?sign(q.z,2):'—')+'</td><td>'+sign(a.last.net,0)+'</td>'
-         +'<td class="'+(q?.velocity>0?'tone-up':q?.velocity<0?'tone-down':'')+'">'+(finite(q?.velocity)?sign(q.velocity,2,'%'):'—')+'</td>'
-         +'<td class="'+(a.delta1>0?'tone-up':a.delta1<0?'tone-down':'')+'">'+sign(a.delta1,0)+'</td>'
-         +'<td>'+sign(a.delta4,0)+'</td><td>'+sign(q?.delta8,0)+'</td>'
-         +'<td class="'+(q?.crowd?'cot-netoi-cell-alert':'')+'">'+netOiCell(netoi)+'</td>'
-         +'<td>'+date(a.last.date)+'</td></tr>';
+        return '<tr data-cot-band="'+(p>=80?'high':p<=20?'low':'middle')+'" class="'+(a.ccy===state.ccy?'active':'')+'"><td class="cot-currency-cell"><button type="button" data-ccy="'+a.ccy+'">'+FLAGS[a.ccy]+' '+a.ccy+
+         '</button><small class="cot-row-state '+(p>=80?'cot-long':p<=20?'cot-short':'')+'">'+esc(q?.level||'DA VERIFICARE')+'</small></td>'+
+         percentileCell(p)+zScoreCell(q?.z)+tableSignCell(a.last.net)+
+         tableSignCell(q?.velocity,2,'%')+tableSignCell(a.delta1)+
+         tableSignCell(a.delta4)+tableSignCell(q?.delta8)+
+         netOiTableCell(netoi)+'<td class="cot-date-cell">'+date(a.last.date)+'</td></tr>';
        }).join('')+'</tbody></table></div>'
-       +'<p class="source-caption">Net/OI in rosso con ⚠ quando arrotondato a un decimale raggiunge ±30,0%. * Δ 1W/OI: Δ Net diviso Open Interest stimato dal rapporto Net/NetOI CFTC; serve a confrontare l’intensità relativa, non è OI certificato come serie separata. P104: 104 Net precedenti esclusa la settimana corrente; soglie 80/20 dopo arrotondamento. Z104: deviazione standard campionaria. ⚠ Net/OI ≥ ±30,0% dopo arrotondamento. Estremo NON significa inversione.</p></section>';
+       +'<p class="source-caption">Colori nelle celle: verde/rosso indicano il segno dei numeri, non un segnale di trading; P104 evidenzia il rango relativo, non lo stock long/short. Net/OI in rosso con ⚠ da ±30,0% dopo arrotondamento. * Δ 1W/OI: Δ Net diviso Open Interest stimato dal rapporto Net/NetOI CFTC; serve a confrontare l’intensità relativa, non è OI certificato come serie separata. P104: 104 Net precedenti esclusa la settimana corrente; soglie 80/20 dopo arrotondamento. Z104: deviazione standard campionaria. ⚠ Net/OI ≥ ±30,0% dopo arrotondamento. Estremo NON significa inversione.</p></section>';
     }
         function glossary(){
       const terms=[
@@ -264,11 +282,13 @@
         sign(e.price1,2,'%')+' '+e.priceLabel,'Net '+sign(e.delta1,0)+' nella stessa settimana. Non è una risposta post-report.',''):
        card('CONFERME DI PREZZO','G8','Nessuna divergenza forte','Non forziamo conclusioni da flussi quasi fermi o prezzi mancanti.','');
       const cross=d.all.slice().sort((x,y)=>y.rounded-x.rounded).map(x=>
-       '<tr><td>'+FLAGS[x.ccy]+' '+x.ccy+'</td><td>'+(finite(x.velocity)?sign(x.velocity,2,'%'):'—')+'</td><td>'+sign(x.delta1,0)+'</td><td>'+
-       (finite(x.price1)?sign(x.price1,2,'%'):'—')+'</td><td>'+
-       esc(finite(x.velocity)&&Math.abs(x.velocity)<.25?'flusso quasi fermo':
-        finite(x.price1)?x.priceState:'prezzo non validato')+'</td></tr>').join('');
-      return '<section class="cot-desk-overview" data-cot-desk-asof="'+esc(d.asof)+'"><div class="cot-analysis-head">'
+        '<tr data-cot-band="'+(x.rounded>=80?'high':x.rounded<=20?'low':'middle')+'">'+
+        '<td class="cot-currency-cell">'+FLAGS[x.ccy]+' '+x.ccy+'</td>'+
+        tableSignCell(x.velocity,2,'%')+tableSignCell(x.delta1)+tableSignCell(x.price1,2,'%')+
+        '<td class="cot-state-cell '+(x.priceState==='coerente'?'cot-state-agree':x.priceState==='divergente'?'cot-state-diverge':'cot-state-unknown')+'">'+
+        esc(finite(x.velocity)&&Math.abs(x.velocity)<.25?'flusso quasi fermo':
+         finite(x.price1)?x.priceState:'prezzo non validato')+'</td></tr>').join('');
+       return '<section class="cot-desk-overview" data-cot-desk-asof="'+esc(d.asof)+'"><div class="cot-analysis-head">'
        +'<div><span class="chapter-kicker">01 / DESK G8 · CFTC '+date(d.asof)+'</span>'
        +'<h2>Cosa vedo davvero. <em>Il fatto della settimana.</em></h2></div></div>'
        +'<h3 class="cot-desk-headline">'+esc(d.headline)+'</h3>'
@@ -276,7 +296,7 @@
        +'<div class="cot-desk-cards">'+top+pressure+overcrowd+mismatch+'</div>'
        +'<p class="cot-desk-monitor"><strong>Il giudizio del desk.</strong> '+esc(d.question)+'</p>'
        +'<details class="cot-desk-breakdown"><summary>COT vs prezzo · tutte le 8 valute · stesso martedì</summary>'
-       +'<div class="table-wrap"><table class="data-table cot-table"><thead><tr><th>Valuta</th><th>Δ Net/OI*</th><th>Δ Net 1W</th><th>Prezzo BCE 1W</th><th>Lettura</th></tr></thead><tbody>'
+       +'<div class="table-wrap"><table class="data-table cot-table cot-compare-table"><thead><tr><th>Valuta</th><th>Δ Net/OI*</th><th>Δ Net 1W</th><th>Prezzo BCE 1W</th><th>Lettura</th></tr></thead><tbody>'
        +cross+'</tbody></table></div>'
        +'<p class="source-caption">* Δ Net/OI confronta il movimento settimanale con OI stimato: non è un flusso spot né un Open Interest certificato a parte. Il prezzo usa fixing BCE sugli stessi martedì CFTC; per USD usa USD/EUR come proxy, non il future Dollar Index. Nessuna inferenza causale o post-pubblicazione.</p></details></section>';
     }
