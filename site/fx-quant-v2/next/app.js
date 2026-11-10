@@ -568,7 +568,7 @@ function news(){
     {label:'Comunicazioni ufficiali ('+evidence.official.length+')',value:'official'}
    ],state.newsMode,'data-news-mode')+'</div><span class="data-date">Ultima data disponibile '+date(evidence.latest)+'</span></div>'
   +'<div class="grid tilted"><section class="panel"><div class="panel-head"><div><span class="mini-overline">'+type+'</span>'
-  +'<h2>'+(state.newsMode==='pulse'?'Come si sono mosse le aspettative':'Cosa hanno pubblicato le istituzioni')+'</h2>'
+  +'<h2>'+(state.newsMode==='pulse'?'Come si sono mosse le aspettative':'Comunicazioni ufficiali: cosa hanno pubblicato le istituzioni')+'</h2>'
   +'<p>'+esc(evidence.gap)+'</p></div></div>'
   +'<div class="timeline">'+(list.length?list.slice(0,20).map(newsCard).join(''):
     '<div class="empty"><strong>Nessuna voce con data verificabile</strong><p>Non sostituiamo eventi mancanti con notizie presunte.</p></div>')
