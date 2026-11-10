@@ -179,7 +179,7 @@
       const v=(a,k)=>{
        const q=a.deskStats;
        return k==='percentile'?q?.rounded:k==='z'?q?.z:k==='net'?a.last.net:
-        k==='netoi'?a.last.netoi:k==='delta1'?a.delta1:k==='delta4'?a.delta4:q?.delta8;
+        k==='netoi'?a.last.netoi:k==='velocity'?q?.velocity:k==='delta1'?a.delta1:k==='delta4'?a.delta4:q?.delta8;
       };
       rows.sort((a,b)=>{
        const x=v(a,sort),y=v(b,sort);
@@ -188,7 +188,7 @@
        return (x-y)*(asc?1:-1)||a.ccy.localeCompare(b.ccy);
       });
       const filters=[['all','Tutte'],['extreme','P20 / P80'],['rising','Net in aumento'],['falling','Net in calo']];
-      const heads=[['percentile','P104'],['z','Z104'],['net','Net'],['delta1','Δ 1W'],['delta4','Δ 4W'],['delta8','Δ 8W'],['netoi','Net/OI']];
+      const heads=[['percentile','P104'],['z','Z104'],['net','Net'],['velocity','Δ 1W/OI*'],['delta1','Δ 1W'],['delta4','Δ 4W'],['delta8','Δ 8W'],['netoi','Net/OI']];
       return '<section class="cot-universe"><div class="cot-analysis-head"><div><span class="chapter-kicker">02 / CLASSIFICA G8</span>'
        +'<h2>La mappa dei fondi. <em>Dal percentile alto al basso.</em></h2></div>'
        +'<p>Stock, velocità, persistenza e affollamento. I contratti dei diversi futures non misurano la forza relativa delle valute.</p></div>'
@@ -204,12 +204,13 @@
          '</button><small class="cot-row-state '+(p>=80?'cot-long':p<=20?'cot-short':'')+'">'+esc(q?.level||'DA VERIFICARE')+'</small></td>'
          +'<td>'+(p===null||p===undefined?'—':fmt(p,0)+'°')+'</td>'
          +'<td>'+(finite(q?.z)?sign(q.z,2):'—')+'</td><td>'+sign(a.last.net,0)+'</td>'
+         +'<td class="'+(q?.velocity>0?'tone-up':q?.velocity<0?'tone-down':'')+'">'+(finite(q?.velocity)?sign(q.velocity,2,'%'):'—')+'</td>'
          +'<td class="'+(a.delta1>0?'tone-up':a.delta1<0?'tone-down':'')+'">'+sign(a.delta1,0)+'</td>'
          +'<td>'+sign(a.delta4,0)+'</td><td>'+sign(q?.delta8,0)+'</td>'
          +'<td class="'+(q?.crowd?'tone-down':'')+'">'+(q?.crowd?'⚠ ':'')+sign(netoi,1,'%')+'</td>'
          +'<td>'+date(a.last.date)+'</td></tr>';
        }).join('')+'</tbody></table></div>'
-       +'<p class="source-caption">P104: 104 Net precedenti escludendo il martedì attuale, arrotondamento intero prima delle soglie 80/20. Z104: deviazioni standard campionarie (ddof=1). ⚠ Net/OI ≥ ±30,0% dopo arrotondamento a un decimale. Estremo NON significa inversione imminente.</p></section>';
+       +'<p class="source-caption">* Δ 1W/OI: Δ Net diviso Open Interest stimato dal rapporto Net/NetOI CFTC; serve a confrontare l’intensità relativa, non è OI certificato come serie separata. P104: 104 Net precedenti esclusa la settimana corrente; soglie 80/20 dopo arrotondamento. Z104: deviazione standard campionaria. ⚠ Net/OI ≥ ±30,0% dopo arrotondamento. Estremo NON significa inversione.</p></section>';
     }
         function glossary(){
       const terms=[
@@ -232,10 +233,18 @@
       const card=(title,code,main,detail,cls)=>'<article class="cot-desk-card '+cls+'"><span class="micro-over">'+esc(title)+'</span>'
        +'<h3>'+esc(code)+'</h3><strong>'+esc(main)+'</strong><p>'+esc(detail)+'</p></article>';
       const a=d.up,b=d.down,c=d.crowd[0]||null,e=d.divergent[0]||null;
-      const top=card('RECUPERO PIÙ AMPIO · 1W',FLAGS[a.ccy]+' '+a.ccy,
-        sign(a.delta1,0,' contratti'),'Δ long '+sign(a.dLong,0)+' · Δ short '+sign(a.dShort,0)+'; '+root.FXQuantCOTDeskV26.speed(a)+'.','cot-desk-positive');
-      const pressure=card('PRESSIONE IN AUMENTO',FLAGS[b.ccy]+' '+b.ccy,
-        sign(b.delta1,0,' contratti'),'Δ long '+sign(b.dLong,0)+' · Δ short '+sign(b.dShort,0)+'.','cot-desk-negative');
+      const top=a?card('RECUPERO RELATIVO PIÙ INTENSO · 1W',FLAGS[a.ccy]+' '+a.ccy,
+        sign(a.velocity,2,'% OI stimato'),
+        'Δ Net '+sign(a.delta1,0)+' contratti · long '+sign(a.dLong,0)+
+        ' / short '+sign(a.dShort,0)+'.','cot-desk-positive'):
+        card('RECUPERO RELATIVO','G8','Non verificabile',
+        'Manca una variazione positiva normalizzata confrontabile per tutte le valute.','');
+      const pressure=b?card('PRESSIONE RELATIVA PIÙ INTENSA · 1W',FLAGS[b.ccy]+' '+b.ccy,
+        sign(b.velocity,2,'% OI stimato'),
+        'Δ Net '+sign(b.delta1,0)+' contratti · long '+sign(b.dLong,0)+
+        ' / short '+sign(b.dShort,0)+'.','cot-desk-negative'):
+        card('PRESSIONE RELATIVA','G8','Non verificabile',
+        'Manca una variazione negativa normalizzata confrontabile per tutte le valute.','');
       const overcrowd=c?card('SQUILIBRIO NET/OI',FLAGS[c.ccy]+' '+c.ccy,
         sign(c.netoi,1,'%'),'⚠ Soglia ±30,0% superata. Non significa svolta imminente.','cot-desk-negative'):
        card('CONCENTRAZIONE','G8','Nessun alert','Nessun Net/OI oltre la soglia ±30,0%.','');
@@ -243,7 +252,7 @@
         sign(e.price1,2,'%')+' '+e.priceLabel,'Net '+sign(e.delta1,0)+' nella stessa settimana. Non è una risposta post-report.',''):
        card('CONFERME DI PREZZO','G8','Nessuna divergenza forte','Non forziamo conclusioni da flussi quasi fermi o prezzi mancanti.','');
       const cross=d.all.slice().sort((x,y)=>y.rounded-x.rounded).map(x=>
-       '<tr><td>'+FLAGS[x.ccy]+' '+x.ccy+'</td><td>'+sign(x.delta1,0)+'</td><td>'+
+       '<tr><td>'+FLAGS[x.ccy]+' '+x.ccy+'</td><td>'+(finite(x.velocity)?sign(x.velocity,2,'%'):'—')+'</td><td>'+sign(x.delta1,0)+'</td><td>'+
        (finite(x.price1)?sign(x.price1,2,'%'):'—')+'</td><td>'+
        esc(finite(x.velocity)&&Math.abs(x.velocity)<.25?'flusso quasi fermo':
         finite(x.price1)?x.priceState:'prezzo non validato')+'</td></tr>').join('');
@@ -255,9 +264,9 @@
        +'<div class="cot-desk-cards">'+top+pressure+overcrowd+mismatch+'</div>'
        +'<p class="cot-desk-monitor"><strong>Il giudizio del desk.</strong> '+esc(d.question)+'</p>'
        +'<details class="cot-desk-breakdown"><summary>COT vs prezzo · tutte le 8 valute · stesso martedì</summary>'
-       +'<div class="table-wrap"><table class="data-table cot-table"><thead><tr><th>Valuta</th><th>Δ Net 1W</th><th>Prezzo BCE 1W</th><th>Lettura</th></tr></thead><tbody>'
+       +'<div class="table-wrap"><table class="data-table cot-table"><thead><tr><th>Valuta</th><th>Δ Net/OI*</th><th>Δ Net 1W</th><th>Prezzo BCE 1W</th><th>Lettura</th></tr></thead><tbody>'
        +cross+'</tbody></table></div>'
-       +'<p class="source-caption">Il confronto usa fixing BCE sui due martedì CFTC. Per USD si utilizza USD/EUR come proxy, NON il future Dollar Index; il COT è pubblicato dopo la data fotografata. Convergenza e divergenza non dimostrano causalità.</p></details></section>';
+       +'<p class="source-caption">* Δ Net/OI confronta il movimento settimanale con OI stimato: non è un flusso spot né un Open Interest certificato a parte. Il prezzo usa fixing BCE sugli stessi martedì CFTC; per USD usa USD/EUR come proxy, non il future Dollar Index. Nessuna inferenza causale o post-pubblicazione.</p></details></section>';
     }
     function render(){
       const ccy=state.ccy,a=report(ccy),all=FX.map(report).filter(Boolean);
