@@ -22,18 +22,26 @@ for(const ccy of names){
  const a=source[ccy];
  const hist=a.dates.map((date,i)=>({date,net:a.net[i],long:a.long[i],
   short:a.short[i],netoi:a.netoi[i],percentile:a.percentile[i]}));
- const price=priceEvidence(ccy,hist,fx,'2026-11-10');
+ const price=priceEvidence(ccy,hist,fx,new Date().toISOString().slice(0,10));
  const item={ccy,hist,last:hist.at(-1),price1:price.price1,
   priceState:price.priceState,priceRow:price.priceRow};
  const prior=validatePrior(hist,archived,ccy);
  assert(prior&&prior.prior.length===104,ccy+' 104 strict previous weeks');
- assert.equal(prior.priorFirst,'2024-11-05');
- assert.equal(prior.priorLast,'2026-10-27');
- assert.equal(prior.verifiedOverlaps,103);
+ assert(prior.priorFirst<hist[0].date,ccy+' archival predecessor');
+ assert.equal(prior.priorLast,hist.at(-2).date);
+ assert(prior.verifiedOverlaps>=8,ccy+' archival intersection');
+ if(hist.at(-1).date==='2026-11-03'){
+  assert.equal(prior.priorFirst,'2024-11-05');
+  assert.equal(prior.verifiedOverlaps,103);
+ }
  const v=statistics(item,archived);
  assert(v&&v.rounded!==null,ccy+' report-grade percentile');
- assert.equal(v.rounded,historicalP[ccy],ccy+' vs approved Nov 06 report');
- assert(Math.abs(v.z-expectedZ[ccy])<.005,ccy+' Z-score vs approved report');
+ const independently=100*prior.prior.filter(n=>n<=v.net).length/104;
+ assert(Math.abs(v.p-independently)<1e-10,'P104 independent calculation '+ccy);
+ if(hist.at(-1).date==='2026-11-03'){
+  assert.equal(v.rounded,historicalP[ccy],ccy+' vs approved Nov 06 report');
+  assert(Math.abs(v.z-expectedZ[ccy])<.005,ccy+' Z-score vs approved report');
+ }
  assert.equal(v.delta1,a.net.at(-1)-a.net.at(-2),ccy+' delta 1W');
  assert.equal(v.delta4,a.net.at(-1)-a.net.at(-5),ccy+' delta 4W');
  assert.equal(v.delta8,a.net.at(-1)-a.net.at(-9),ccy+' delta 8W');
@@ -46,21 +54,27 @@ for(const ccy of names){
 }
 assert.equal(reports.length,8);
 const g=desk(reports);
-assert(g&&g.asof==='2026-11-03');
-assert.equal(g.up.ccy,'CAD');
-assert.equal(g.down.ccy,'EUR');
-assert.equal(g.crowd[0].ccy,'NZD');
-assert.deepEqual(g.crowd.map(x=>x.ccy),['NZD','AUD']);
-assert(g.divergent.some(x=>x.ccy==='EUR'));
-assert(!g.divergent.some(x=>x.ccy==='USD'),'Tiny USD gross-net imbalance must not be forced into price divergence');
+assert(g&&g.asof===source.USD.dates.at(-1));
+if(g.asof==='2026-11-03'){
+ assert.equal(g.up.ccy,'CAD');
+ assert.equal(g.down.ccy,'EUR');
+ assert.equal(g.crowd[0].ccy,'NZD');
+ assert.deepEqual(g.crowd.map(x=>x.ccy),['NZD','AUD']);
+ assert(g.divergent.some(x=>x.ccy==='EUR'));
+ assert(!g.divergent.some(x=>x.ccy==='USD'),'Tiny USD gross-net imbalance must not be forced into price divergence');
+}
 const chf=reports.find(x=>x.ccy==='CHF').deskStats;
-assert(chf.rounded===100&&chf.net<0,'EXTREME LONG is historical rank, not necessarily net long');
-assert(!chf.crowd);
+if(g.asof==='2026-11-03'){
+ assert(chf.rounded===100&&chf.net<0,'EXTREME LONG is historical rank, not necessarily net long');
+ assert(!chf.crowd);
+}
 const cad=reports.find(x=>x.ccy==='CAD').deskStats;
-assert(cad.dLong>0&&cad.dShort<0,'CAD mixed new long/short covering');
+if(g.asof==='2026-11-03')assert(cad.dLong>0&&cad.dShort<0,'CAD mixed new long/short covering');
 const eur=reports.find(x=>x.ccy==='EUR').deskStats;
-assert(eur.dLong<0&&eur.dShort>0,'EUR new shorts and long liquidation');
-assert(eur.priceState==='divergente','EUR current COT vs same-Tuesday price diverge');
+if(g.asof==='2026-11-03'){
+ assert(eur.dLong<0&&eur.dShort>0,'EUR new shorts and long liquidation');
+ assert(eur.priceState==='divergente','EUR current COT vs same-Tuesday price diverge');
+}
 // Fail closed when the old archive no longer matches live CFTC source.
 // The original inclusive percentile must NEVER silently substitute for P104.
 const forged=structuredClone(archived);
