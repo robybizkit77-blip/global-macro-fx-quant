@@ -32,6 +32,11 @@ fs.mkdirSync(evidence,{recursive:true});
         'Five-part economic reasoning incomplete for selected pair');
       assert(await page.locator('main .research-essay').count()===0,
         'Generic FX essay must not duplicate the new narrative');
+    }else if(route==='cot'){
+      assert(await page.locator('main .research-essay').count()===0,
+        'Outdated generic COT essay must not duplicate the source-backed studio');
+      assert(await page.locator('main .cot-analysis-grid article').count()===4,
+        'COT research narrative must preserve four evidence-backed questions');
     }else if(route!=='overview'){
       assert(await page.locator('main .research-essay').count()===1,'Narrative research missing on '+route);
       assert(await page.locator('main .research-essay .essay-prose p').count()===3,'Research incomplete on '+route);
@@ -272,7 +277,12 @@ fs.mkdirSync(evidence,{recursive:true});
    assert(await page.locator('.cot-country-selector .cot-country-button').count()===8,'COT G8 selector incomplete');
    assert(/\d{2}\/\d{2}\/2026/.test(await page.locator('.cot-source-band').innerText()),'COT historical timestamp missing');
    assert(await page.locator('.cot-plot-card .chart svg').first().count()===1,'Validated COT position chart missing');
-   const pricePlot=await page.locator('.cot-price-card .chart svg').count();
+   assert((await page.locator('.cot-source-band').innerText()).includes('03/11/2026'),
+      'COT must follow latest CFTC date, not the outdated price pack');
+    assert((await page.locator('.cot-price-card').innerText()).includes('Fixing BCE verificati direttamente'),
+      'Price evidence must be derived from matching ECB Tuesday fixings');
+    const pricePlot=await page.locator('.cot-price-card .chart svg').count();
+    assert.equal(pricePlot,1,'Current same-Tuesday ECB comparator must render, not stale price');
    if(pricePlot===0){
     assert((await page.locator('.cot-price-card .empty').innerText()).includes('Prezzo allineato non validato'),'Missing source-quality reason for unavailable COT price');
    }else assert(pricePlot===1,'Unexpected duplicate COT price charts');

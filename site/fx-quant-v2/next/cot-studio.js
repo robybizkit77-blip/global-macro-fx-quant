@@ -34,17 +34,10 @@
       const hist=verifiedRows(ccy);
       if(hist.length<5)return null;
       const last=hist.at(-1),prev=hist.at(-2),four=hist.at(-5);
-      const priceDoc=get('cotPrice'),priceRow=priceDoc?.currencies?.[ccy];
-      const matched=priceDoc?.price_alignment===last.date&&priceRow?.as_of===last.date
-        &&priceRow?.net===last.net&&Array.isArray(priceRow.priceSeries)
-        &&priceRow.priceSeries.length===hist.length
-        &&priceRow.priceSeries.every(x=>finite(x)&&x>0);
-      const prices=matched?priceRow.priceSeries.map((v,i)=>({label:hist[i].date,value:v})):[];
-      const firstPrice=prices.at(-2)?.value,secondPrice=prices.at(-1)?.value;
-      const price1=finite(firstPrice)&&finite(secondPrice)&&firstPrice>0?(secondPrice/firstPrice-1)*100:null;
+      const fx=root.FXQuantCOTEvidence?.priceEvidence?.(ccy,hist,get('currencyPrices'),dayNow())||null;
+      const prices=fx?.prices||[],priceRow=fx?.priceRow||null,price1=fx?.price1??null;
       const delta1=last.net-prev.net,delta4=last.net-four.net;
-      const priceState= !finite(price1)||delta1===0||price1===0?'non conclusivo'
-        :Math.sign(delta1)===Math.sign(price1)?'coerente':'divergente';
+      const priceState=fx?.priceState||'non conclusivo';
       const level=last.percentile>=PCTS.upper?'alto':last.percentile<=PCTS.lower?'basso':'intermedio';
       return {ccy,hist,last,prev,four,delta1,delta4,longFlow:last.long-prev.long,
         shortFlow:last.short-prev.short,prices,priceRow,price1,priceState,level};
@@ -67,17 +60,8 @@
         'Il percentile indica dove si colloca la posizione rispetto alla propria storia, non misura da solo il rischio di inversione.';
     }
     function flowText(a){
-      const n=a.delta1,l=a.longFlow,s=a.shortFlow;
-      let drive;
-      if(l>0&&s<0)drive='Nuovi long e coperture di short contribuiscono entrambi al miglioramento netto.';
-      else if(l<0&&s>0)drive='Riduzione dei long e nuovi short contribuiscono entrambi al peggioramento netto.';
-      else if(n>0&&s<0)drive='La chiusura di short contribuisce al miglioramento netto: non attribuirlo automaticamente a nuovi compratori.';
-      else if(n>0&&l>0)drive='L’aumento dei long contribuisce al miglioramento netto.';
-      else if(n<0&&l<0)drive='La contrazione dei long contribuisce al peggioramento netto.';
-      else if(n<0&&s>0)drive='L’aumento degli short contribuisce al peggioramento netto.';
-      else drive='I flussi long e short si compensano parzialmente.';
-      return 'Nell’ultima settimana il netto '+(n>0?'migliora':n<0?'peggiora':'è invariato')+
-        ' di '+sign(n,0,' contratti')+'. Long '+sign(l,0)+'; short '+sign(s,0)+'. '+drive;
+      return root.FXQuantCOTEvidence?.flowReading?.(a)?.detail||
+        'Flussi long e short da verificare sulle ultime quattro rilevazioni; nessun trade deducibile dal netto.';
     }
     function priceText(a){
       if(!a.prices.length||!finite(a.price1))return 'Serie prezzo BCE non validata sullo stesso storico CFTC. Non attribuiamo conferme al prezzo.';
@@ -95,7 +79,7 @@
       +'<article><span class="cot-number">01</span><span class="micro-over">STOCK / LIVELLO</span><h3>Dove sono posizionati i fondi?</h3><p>'+esc(levelText(a))+'</p></article>'
       +'<article><span class="cot-number">02</span><span class="micro-over">FLOW / CAMBIAMENTO</span><h3>Come si stanno muovendo?</h3><p>'+esc(flowText(a))+'</p></article>'
       +'<article><span class="cot-number">03</span><span class="micro-over">PRICE / CONFERMA</span><h3>Il prezzo racconta la stessa storia?</h3><p>'+esc(priceText(a))+'</p></article>'
-      +'<article><span class="cot-number">04</span><span class="micro-over">RISK / TESI</span><h3>Cosa monitorare adesso?</h3><p>'+esc(s?.why||'Verificare prezzi successivi, OIS, dati macro e persistenza del flusso prima di attribuire un bias operativo.')+
+      +'<article><span class="cot-number">04</span><span class="micro-over">RISK / TESI</span><h3>Cosa monitorare adesso?</h3><p>'+esc((root.FXQuantCOTEvidence?.flowReading?.(a)?.monitor||'Verificare la persistenza del dato CFTC.')+' '+(finite(a.price1)?'Il confronto dei martedì ha una variazione FX osservata, ma non identifica causa né movimento post-pubblicazione.':'Senza prezzi BCE su entrambi i martedì, il posizionamento non trova conferma nel prezzo.')+' '+(s?.why||''))+
       '</p></article></div></section>';
     }
     function countrySelector(){
@@ -152,7 +136,7 @@
       return '<div class="cot-figure-title"><div><span class="micro-over">BCE FIXING · STESSE DATE CFTC</span><h3>'+esc(a.priceRow?.priceLabel||a.ccy+'/USD')+' · comparatore prezzo</h3></div>'
         +'<span class="data-date">Al '+date(a.last.date)+'</span></div>'
         +plot({lines:[{name:a.priceRow?.priceLabel||'FX',color:'#a9d6ec',values:pts}],precision:4,label:'Prezzo FX su date COT'})
-        +'<p class="cot-footnote">Grafico riferito ai martedì COT, non al momento di pubblicazione del report. Quota '+esc(a.priceRow?.priceLabel||'FX')+
+        +'<p class="cot-footnote">Fixing BCE verificati direttamente sulle date dei martedì COT ('+a.prices.length+' osservazioni abbinate), senza interpolazione; non rappresentano la reazione al report pubblicato più tardi. Quota '+esc(a.priceRow?.priceLabel||'FX')+
         ': quando il prezzo sale si apprezza la valuta al numeratore.</p>';
     }
     function last12(a){
@@ -212,7 +196,8 @@
         +countrySelector();
       if(!a)return body+'<div class="empty"><strong>Storico COT non validato per '+esc(ccy)+'</strong><p>Il dataset non supera il controllo su date, long, short e net. Non mostriamo segnali sostitutivi.</p></div>';
       const last=a.last,p=a.last.percentile,netDesc=last.net>0?'I long prevalgono':last.net<0?'Gli short prevalgono':'Long e short si equivalgono';
-      const summary=a.delta1>0?'Il netto migliora.':a.delta1<0?'Il netto peggiora.':'Il netto non cambia.';
+      const summary=root.FXQuantCOTEvidence?.flowReading?.(a)?.headline||
+        (a.delta1>0?'Il netto migliora.':a.delta1<0?'Il netto peggiora.':'Il netto non cambia.');
       body+='<section class="cot-hero"><div class="cot-hero-narrative"><span class="chapter-kicker">01 / '+FLAGS[ccy]+' '+ccy+' · LETTURA EVIDENCE-FIRST</span>'
        +'<h2>'+esc(summary)+'<br><em>'+esc(netDesc)+'.</em></h2><p>'+esc(levelText(a))+'</p>'
        +'<div class="cot-status-line">'+classify(a)+'<span>Ultima rilevazione '+date(last.date)+'</span></div></div>'
