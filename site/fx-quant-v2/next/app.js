@@ -489,7 +489,7 @@ function overview(){
    :!finite(o6.change_1d_bp)
     ?'Il riferimento monetario USA a sei mesi coincide con la data del focus, ma non offre una variazione giornaliera omogenea. È ancora troppo poco per dire che il mercato abbia cambiato idea sulla Fed.'
     :'Anche la scadenza monetaria USA a sei mesi si è mossa nella seduta osservata. È un elemento da confrontare con i Treasury, senza scambiarlo per una misura completa del sentiero della Fed.';
- const readingMarket=fxAligned
+ const readingMarket=context.fxAligned
   ?'Il proxy valutario del dollaro è confrontabile con il Treasury breve nella stessa seduta. Questo aiuta a vedere conferme o divergenze, ma non dimostra che sia stato il rendimento a causare il movimento FX.'
   : 'Sul dollaro manca una reazione perfettamente allineata al Treasury breve. Per ora non la useremo come conferma della tesi.';
  const readingWatch=stress
