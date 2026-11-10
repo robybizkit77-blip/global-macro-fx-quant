@@ -44,7 +44,7 @@
        ' nella stessa seduta dei governativi: confronto datato, non prova causale né curva OIS universale.'
      :intro+'Manca una variazione 1D validata: il livello da solo non dimostra un cambiamento delle aspettative.';
   }
-  return {headline,meaning,pricing,watch};
+  return {headline,meaning,pricingEvidence:pricing,watch};
  }
  root.FXQuantRatesEconomic={read};
  if(typeof module!=='undefined'&&module.exports)module.exports={read};
