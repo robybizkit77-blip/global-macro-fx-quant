@@ -53,7 +53,11 @@ def fmt(x,n=2):
     return f"{x:,.{n}f}".replace(",", "_").replace(".", ",").replace("_", ".") if isnum(x) else "n.d."
 
 def signed(x,n=1,unit=""):
-    return ("+" if x>0 else "−" if x<0 else "")+fmt(abs(x),n)+unit if isnum(x) else "n.d."
+    if not isnum(x):
+        return "n.d."
+    precision=1 if n==0 and 0<abs(x)<0.5 else n
+    rounded=round(x,precision)
+    return ("+" if rounded>0 else "−" if rounded<0 else "")+fmt(abs(rounded),precision)+unit
 
 def load(root,name):
     p=root/FILES[name]
@@ -460,7 +464,7 @@ def build(root,day,now):
             "pair_model_quality":pair_quality},
         "pair":pair,
         "charts":[
-            {"label":f"Differenziale 2Y {u}–{v}", "unit":"pb","precision":0,"as_of":cutoff,
+            {"label":f"Differenziale 2Y {u}–{v}", "unit":"pb","precision":1 if 0<abs(spread)<0.5 else 0,"as_of":cutoff,
              "last_value":round(spread,3),
              "points":[{"date":x,"value":round((series[u][x]-series[v][x])*100,4)}
                        for x in common[-28:]]},
