@@ -11,7 +11,9 @@
    ||f.observation_cutoff_exclusive!==f.edition_date
    ||!Array.isArray(f.paragraphs)||f.paragraphs.length!==4
    ||!Array.isArray(f.charts)||f.charts.length!==2
-   ||f.eligible_for_fx_signal!==false)return false;
+   ||f.eligible_for_fx_signal!==false
+   ||!goodDay(f.sources?.fx_fixing)||!goodDay(f.sources?.rates)
+   ||f.sources.fx_fixing>=f.edition_date||f.sources.rates>=f.edition_date)return false;
   return f.charts.every(c=>goodDay(c.as_of)&&c.as_of<f.edition_date
    &&Array.isArray(c.points)&&c.points.length>=8
    &&c.points.every(p=>goodDay(p.date)&&p.date<f.edition_date&&finite(p.value)));
