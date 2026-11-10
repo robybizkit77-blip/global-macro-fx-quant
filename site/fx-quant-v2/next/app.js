@@ -391,7 +391,7 @@ function overview(){
    ?'Il quadro macro complica la lettura. L’ultimo dato di inflazione headline USA presente nel nostro archivio è '+fmt(macroInf.latest_value,2)+'% ('+(macroInf.as_of||'periodo da verificare')+'), con direzione '+(macroInf.direction||'non disponibile').toLowerCase()+'. Il tasso di disoccupazione è '+fmt(macroLab.latest_value,1)+'% ('+(macroLab.as_of||'periodo da verificare')+'), con direzione '+(macroLab.direction||'non disponibile').toLowerCase()+'. Sono osservazioni riferite a periodi diversi e non necessariamente a prime pubblicazioni point-in-time. Non autorizzano la conclusione che crescita e inflazione siano già entrambe in discesa.'
    :'La fotografia macro di inflazione e lavoro non è abbastanza completa per sostenere una tesi sul ciclo. In particolare, non attribuiamo al mercato un turning point che non è verificato dai dati.';
  const o6=oc.horizons?.['6m'];
- const pricingReading=finite(o6?.rate)&&validDay(o6.as_of)
+ const pricingReading=finite(o6?.rate)&&validDay(o6.as_of)&&o6.as_of<=dayNow()
    ?'Il contratto indicativo a sei mesi per gli Stati Uniti riporta '+fmt(o6.rate,3)+'% al '+date(o6.as_of)+' ('+(oc.kind||'strumento da classificare')+', qualità '+(oc.quality||'non classificata')+'). Questo livello non è un tasso OIS ufficiale e non va confrontato meccanicamente con il range Fed. '+(finite(o6.change_1d_bp)?'La variazione a un giorno riportata è '+sign(o6.change_1d_bp,1,' pb')+'.':'In questo snapshot manca una variazione giornaliera certificata: non possiamo dire di quanto siano cambiate le aspettative in questa seduta.')
    :'Il feed non offre una scadenza 6M USA con strumento e data verificabili. Per parlare di repricing monetario occorre un confronto omogeneo tra scadenze e sessioni.';
  // The 6M level is context, not evidence of a same-session Fed repricing.
@@ -436,7 +436,7 @@ function overview(){
  const sourceDates=[
   ['Cross-asset',n.date],['Treasury 2Y',u.date],['Dollaro proxy BCE',d.as_of],
   ['CPI USA',macroInf?.as_of],['Lavoro USA',macroLab?.as_of],['Futures USD 6M',o6?.as_of],['Coppie FX',pairAsOf],['COT',cot.AUD?.today?.match(/CFTC al (\d{4}-\d{2}-\d{2})/)?.[1]]
- ].filter(x=>x[1]).map(([k,v])=>esc(k)+' '+date(v)).join(' · ');
+ ].filter(x=>x[1]&&(!validDay(x[1])||x[1]<=dayNow())).map(([k,v])=>esc(k)+' '+date(v)).join(' · ');
  const section=(title,body,cl='')=>'<section class="letter-section '+cl+'"><h2>'+title+'</h2><p>'+body+'</p></section>';
  const metric=(label,value,day,source,key)=>({label,value:validDay(day)&&day<=dayNow()?value:'—',day:validDay(day)&&day<=dayNow()?date(day):'n.d.',source,key});
  const nasdaq=metric('Nasdaq · 1D',sign(n?.change_1d_pct,2,'%'),n?.date,'Nasdaq / FRED','risk');
