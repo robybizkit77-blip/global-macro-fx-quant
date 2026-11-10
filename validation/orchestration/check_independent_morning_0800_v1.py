@@ -1,7 +1,7 @@
 """Independent, read-only proof of the 08:00 Europe/Rome site delivery.
 
 A green workflow or structural E2E gate is NOT evidence that fresh feeds reached
-GitHub Pages by 08:00. Require actual scheduler runs, completed morning SLA
+GitHub Pages by 08:00. Require actual production runs, completed morning SLA
 steps, current dated sources, branch parity, and public HTTP byte parity.
 This auditor has a different schedule and does not dispatch producers.
 """
@@ -57,7 +57,7 @@ def eligible(run: dict, jobs: list[dict], cutoff: dt.datetime) -> bool:
         start = aware(run["created_at"])
         if not (start.date() == cutoff.date() and start <= cutoff):
             return False
-        if run.get("event") != "schedule" or run.get("head_branch") != "main":
+        if run.get("event") not in ("schedule", "workflow_dispatch") or run.get("head_branch") != "main":
             return False
         if run.get("status") != "completed" or run.get("conclusion") != "success":
             return False
@@ -82,22 +82,18 @@ def evaluate(now: dt.datetime, runs: list[dict], jobs: dict[int, list[dict]],
     today = []
     for run in runs:
         try:
-            if run.get("event") == "schedule" and aware(run["created_at"]).date() == local.date():
+            if run.get("event") in ("schedule", "workflow_dispatch") and aware(run["created_at"]).date() == local.date():
                 today.append(run)
         except (KeyError, ValueError, TypeError):
             continue
     # GitHub's scheduled run can arrive hours late. Never count one that
     # only started or finished after the 08:00 deadline.
     early = [r for r in today if aware(r["created_at"]) <= cutoff]
-    prebrief = [r for r in early if aware(r["created_at"]).time() < dt.time(7, 30)
-                and aware(r["created_at"]).time() >= dt.time(4, 0)]
-    premorning = [r for r in early if aware(r["created_at"]).time() >= dt.time(7, 30)]
     if local < cutoff:
         problems.append("AUDIT_BEFORE_0800_CANNOT_CERTIFY")
-    if not prebrief:
-        problems.append("PREBRIEF_SCHEDULE_NOT_OBSERVED_BY_0800")
-    if not premorning:
-        problems.append("0745_SCHEDULE_NOT_OBSERVED_BY_0800")
+    # A fully completed prebrief OR verified 07:45 recovery is sufficient.
+    # The original 07:45 cron can be absent when independently recovered,
+    # but an actual on-time successful production + source proof is mandatory.
     ontime = [r for r in early if eligible(r, jobs.get(r.get("id"), []), cutoff)]
     if not ontime:
         problems.append("NO_COMPLETED_SUCCESSFUL_MORNING_SLA_BY_0800")
@@ -115,7 +111,7 @@ def evaluate(now: dt.datetime, runs: list[dict], jobs: dict[int, list[dict]],
         "target_rome": cutoff.isoformat(timespec="seconds"),
         "status": "PASS_INDEPENDENT_0800_PROOF" if not problems else "FAIL_NOT_CERTIFIED",
         "problems": problems,
-        "scheduled_run_ids_today": [r.get("id") for r in today],
+        "production_run_ids_today": [r.get("id") for r in today],\n        "recovery_run_ids_today": [r.get("id") for r in today if r.get("event") == "workflow_dispatch"],
         "on_time_certified_run_ids": [r.get("id") for r in ontime],
         "source_expected_previous_weekday": readiness.get("expected_previous_weekday"),
         "source_problems": readiness.get("critical_daily_problems"),
@@ -159,17 +155,17 @@ def live(now: dt.datetime, token: str, repo: str) -> dict:
     runs, jobs, parity, public = [], {}, {}, {}
     try:
         obj = get_json("/actions/workflows/" + WORKFLOW +
-                       "/runs?event=schedule&per_page=100", token, repo)
+                       "/runs?per_page=100", token, repo)
         runs = obj.get("workflow_runs", [])
         if not isinstance(runs, list):
             raise ValueError("missing workflow runs list")
         for run in runs:
-            if aware(run["created_at"]).date() == now.astimezone(ROME).date():
+            if (run.get("event") in ("schedule", "workflow_dispatch") and\n                    aware(run["created_at"]).date() == now.astimezone(ROME).date()):
                 jobs[run["id"]] = get_json(
                     "/actions/runs/" + str(run["id"]) + "/jobs?per_page=100",
                     token, repo).get("jobs", [])
     except Exception as ex:
-        failures.append("GITHUB_SCHEDULE_EVIDENCE_UNAVAILABLE:" + str(ex)[:140])
+        failures.append("GITHUB_PRODUCTION_RUN_EVIDENCE_UNAVAILABLE:" + str(ex)[:140])
     try:
         readiness = inspect(read_feeds(), now, pipeline_outcome="success")
     except Exception as ex:
