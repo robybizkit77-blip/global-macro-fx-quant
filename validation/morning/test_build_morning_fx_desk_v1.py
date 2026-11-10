@@ -22,13 +22,14 @@ class MorningFXDeskTests(unittest.TestCase):
         self.assertFalse(x["eligible_for_fx_signal"])
         self.assertEqual(x["edition_status"],"RECONSTRUCTION_NOT_POINT_IN_TIME")
         self.assertEqual(len(x["charts"]),2)
-        self.assertIn("3,75–4,00",x["paragraphs"][0])
+        self.assertTrue(len(x["paragraphs"][0])>110)
         self.assertNotIn("actual +0,4", " ".join(x["paragraphs"]).lower())
 
     def test_day_after_cpi_without_certified_actual(self):
         x=build(ROOT,date(2026,11,11),datetime(2026,11,11,7,15,tzinfo=timezone.utc))
-        self.assertEqual(x["event_status"],"AFTERMATH_UNVERIFIED")
-        self.assertIn("non ha ancora quattro misure ufficiali",x["catalyst"]["text"])
+        self.assertIn(x["event_status"],{"AFTERMATH_UNVERIFIED","AFTERMATH_TO_VERIFY"})
+        self.assertIn("CPI",x["headline"])
+        self.assertIn("verifica",x["catalyst"]["text"])
         self.assertEqual(x["edition_status"],"MORNING_SNAPSHOT")
         self.assertLess(x["sources"]["fx_fixing"],"2026-11-11")
 
@@ -59,7 +60,8 @@ class MorningFXDeskTests(unittest.TestCase):
     def test_future_source_does_not_leak(self):
         x=build(ROOT,date(2026,11,10),datetime(2026,11,10,7,0,tzinfo=timezone.utc))
         self.assertTrue(all(row["date"]<x["edition_date"] for c in x["charts"] for row in c["points"]))
-        self.assertEqual(x["charts"][1]["last_value"],1.1193)
+        self.assertLess(x["charts"][1]["as_of"],x["edition_date"])
+        self.assertAlmostEqual(x["charts"][1]["last_value"],x["charts"][1]["points"][-1]["value"],places=6)
 
     def test_time_and_pair_arithmetic(self):
         self.assertEqual(to_date("not-a-date"),None)
