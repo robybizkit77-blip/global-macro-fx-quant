@@ -226,43 +226,88 @@
       return '<section class="cot-glossary"><div class="cot-analysis-head"><div><span class="chapter-kicker">06 / METODO & DEFINIZIONI</span><h2>Ogni numero ha <em>un significato preciso.</em></h2></div><p>Le definizioni non sono nascoste: sono parte del processo di ricerca.</p></div>'
         +'<div class="cot-definitions">'+terms.map(([title,body])=>'<details><summary>'+esc(title)+'<span>＋</span></summary><p>'+esc(body)+'</p></details>').join('')+'</div></section>';
     }
+    function deskOverview(all){
+      const d=root.FXQuantCOTDeskV26?.desk?.(all);
+      if(!d)return '<section class="cot-desk-overview"><h2>Cosa vedo davvero nel G8</h2><p>La sintesi G8 non è disponibile: servono otto Net CFTC con stessa data e 104 osservazioni precedenti verificate. Le schede di ciascuna valuta rimangono consultabili con qualità esplicita.</p></section>';
+      const card=(title,code,main,detail,cls)=>'<article class="cot-desk-card '+cls+'"><span class="micro-over">'+esc(title)+'</span>'
+       +'<h3>'+esc(code)+'</h3><strong>'+esc(main)+'</strong><p>'+esc(detail)+'</p></article>';
+      const a=d.up,b=d.down,c=d.crowd[0]||null,e=d.divergent[0]||null;
+      const top=card('RECUPERO PIÙ AMPIO · 1W',FLAGS[a.ccy]+' '+a.ccy,
+        sign(a.delta1,0,' contratti'),'Δ long '+sign(a.dLong,0)+' · Δ short '+sign(a.dShort,0)+'; '+root.FXQuantCOTDeskV26.speed(a)+'.','cot-desk-positive');
+      const pressure=card('PRESSIONE IN AUMENTO',FLAGS[b.ccy]+' '+b.ccy,
+        sign(b.delta1,0,' contratti'),'Δ long '+sign(b.dLong,0)+' · Δ short '+sign(b.dShort,0)+'.','cot-desk-negative');
+      const overcrowd=c?card('SQUILIBRIO NET/OI',FLAGS[c.ccy]+' '+c.ccy,
+        sign(c.netoi,1,'%'),'⚠ Soglia ±30,0% superata. Non significa svolta imminente.','cot-desk-negative'):
+       card('CONCENTRAZIONE','G8','Nessun alert','Nessun Net/OI oltre la soglia ±30,0%.','');
+      const mismatch=e?card('PREZZO DIVERGENTE',FLAGS[e.ccy]+' '+e.ccy,
+        sign(e.price1,2,'%')+' '+e.priceLabel,'Net '+sign(e.delta1,0)+' nella stessa settimana. Non è una risposta post-report.',''):
+       card('CONFERME DI PREZZO','G8','Nessuna divergenza forte','Non forziamo conclusioni da flussi quasi fermi o prezzi mancanti.','');
+      const cross=d.all.slice().sort((x,y)=>y.rounded-x.rounded).map(x=>
+       '<tr><td>'+FLAGS[x.ccy]+' '+x.ccy+'</td><td>'+sign(x.delta1,0)+'</td><td>'+
+       (finite(x.price1)?sign(x.price1,2,'%'):'—')+'</td><td>'+
+       esc(finite(x.velocity)&&Math.abs(x.velocity)<.25?'flusso quasi fermo':
+        finite(x.price1)?x.priceState:'prezzo non validato')+'</td></tr>').join('');
+      return '<section class="cot-desk-overview" data-cot-desk-asof="'+esc(d.asof)+'"><div class="cot-analysis-head">'
+       +'<div><span class="chapter-kicker">01 / DESK G8 · CFTC '+date(d.asof)+'</span>'
+       +'<h2>Cosa vedo davvero. <em>Il fatto della settimana.</em></h2></div></div>'
+       +'<h3 class="cot-desk-headline">'+esc(d.headline)+'</h3>'
+       +'<p class="cot-desk-narrative">'+esc(d.summary)+'</p>'
+       +'<div class="cot-desk-cards">'+top+pressure+overcrowd+mismatch+'</div>'
+       +'<p class="cot-desk-monitor"><strong>Il giudizio del desk.</strong> '+esc(d.question)+'</p>'
+       +'<details class="cot-desk-breakdown"><summary>COT vs prezzo · tutte le 8 valute · stesso martedì</summary>'
+       +'<div class="table-wrap"><table class="data-table cot-table"><thead><tr><th>Valuta</th><th>Δ Net 1W</th><th>Prezzo BCE 1W</th><th>Lettura</th></tr></thead><tbody>'
+       +cross+'</tbody></table></div>'
+       +'<p class="source-caption">Il confronto usa fixing BCE sui due martedì CFTC. Per USD si utilizza USD/EUR come proxy, NON il future Dollar Index; il COT è pubblicato dopo la data fotografata. Convergenza e divergenza non dimostrano causalità.</p></details></section>';
+    }
     function render(){
       const ccy=state.ccy,a=report(ccy),all=FX.map(report).filter(Boolean);
       const sourceDate=a?.last.date;
-      const common=all.length===8&&all.every(x=>x.last.date===all[0].last.date);
-      const header=pageHero('CFTC / POSITIONING INTELLIGENCE','Leggi lo stock.<br><em>Segui il flusso.</em> Verifica il prezzo.','Un vero laboratorio settimanale: posizione netta, long/short, flussi, Net/OI, percentile, prezzo allineato e tabella completa delle otto valute.');
+      const common=all.length===8&&all.every(x=>x.last.date===all[0].last.date)&&
+        all.every(x=>x.deskStats?.rounded!==null&&x.deskStats?.rounded!==undefined);
+      const header=pageHero('CFTC / POSITIONING INTELLIGENCE',
+       'Dove sono i fondi.<br><em>Cosa sta cambiando davvero.</em>',
+       'Prima il giudizio sulle 8 valute; poi percentile, Z-score, long/short, velocità e confronto con il prezzo. Dati settimanali, nessun segnale automatico.');
       let body=header+
-        '<div class="cot-source-band"><span><span class="live-dot"></span> CFTC NON-COMMERCIAL · ULTIMO DATO '+date(sourceDate)+'</span>'
-         +'<span>'+((a?.hist.length||0))+' SETTIMANE · '+(common?'G8 ALLINEATE':'DATE G8 DA VERIFICARE')+'</span></div>'
-        +countrySelector();
-      if(!a)return body+'<div class="empty"><strong>Storico COT non validato per '+esc(ccy)+'</strong><p>Il dataset non supera il controllo su date, long, short e net. Non mostriamo segnali sostitutivi.</p></div>';
-      const last=a.last,p=a.last.percentile,netDesc=last.net>0?'I long prevalgono':last.net<0?'Gli short prevalgono':'Long e short si equivalgono';
-      const summary=root.FXQuantCOTEvidence?.flowReading?.(a)?.headline||
-        (a.delta1>0?'Il netto migliora.':a.delta1<0?'Il netto peggiora.':'Il netto non cambia.');
-      body+='<section class="cot-hero"><div class="cot-hero-narrative"><span class="chapter-kicker">01 / '+FLAGS[ccy]+' '+ccy+' · LETTURA EVIDENCE-FIRST</span>'
-       +'<h2>'+esc(summary)+'<br><em>'+esc(netDesc)+'.</em></h2><p>'+esc(levelText(a))+'</p>'
-       +'<div class="cot-status-line">'+classify(a)+'<span>Ultima rilevazione '+date(last.date)+'</span></div></div>'
-       +'<div class="cot-hero-visual"><div class="cot-ring" style="--pct:'+Math.min(100,Math.max(0,p))+'"><div><span>PERCENTILE</span><strong>'+fmt(p,1)+'</strong><small>su 104 settimane</small></div></div>'
-       +'<span class="cot-risk-label">P20 e P80: fasce storiche, non timing</span></div></section>'
+        '<div class="cot-source-band"><span><span class="live-dot"></span> CFTC NON-COMMERCIAL · AS OF '+date(sourceDate)+'</span>'
+         +'<span>'+((a?.hist.length||0))+' SETTIMANE V250 · '+(common?'P104 G8 VERIFICATI':'RIFERIMENTO P104 DA VERIFICARE')+'</span></div>'
+        +deskOverview(all)+universe()+countrySelector();
+      if(!a)return body+'<div class="empty"><strong>Storico COT non validato per '+esc(ccy)+'</strong><p>Il dataset non supera il controllo su date, long, short e netto. Nessun segnale sostitutivo.</p></div>';
+      const last=a.last,q=a.deskStats,p=q?.p,netDesc=last.net>0?'I long prevalgono':last.net<0?'Gli short prevalgono':'Long e short si equivalgono';
+      const story=root.FXQuantCOTDeskV26?.reading?.(q);
+      const summary=story?.flow||root.FXQuantCOTEvidence?.flowReading?.(a)?.headline||'Flussi non validati.';
+      body+='<section class="cot-hero"><div class="cot-hero-narrative"><span class="chapter-kicker">03 / '+FLAGS[ccy]+' '+ccy+' · DIAGNOSI PER VALUTA</span>'
+       +'<h2>'+esc(summary)+'.<br><em>'+esc(netDesc)+'.</em></h2><p>'+esc(levelText(a))+'</p>'
+       +'<div class="cot-status-line">'+classify(a)+'<span>Ultima rilevazione '+date(last.date)+'</span>'
+       +(q?.crowd?'<span class="cot-crowd-alert">⚠ NET/OI OLTRE ±30%</span>':'')+'</div></div>'
+       +'<div class="cot-hero-visual"><div class="cot-ring" style="--pct:'+(finite(p)?Math.min(100,Math.max(0,p)):0)+'"><div>'
+       +'<span>P104 ESCLUSIVO</span><strong>'+ (q?.rounded===null||q?.rounded===undefined?'—':fmt(q.rounded,0))+
+       '</strong><small>104 settimane precedenti</small></div></div>'
+       +'<span class="cot-risk-label">P20 / P80: storico, non timing</span></div></section>'
        +'<div class="cot-statstrip">'
        +stat('NET POSITION',sign(last.net,0),'contratti · long − short')
-       +stat('Δ NET 1W',sign(a.delta1,0),'variazione settimanale',a.delta1>0?'tone-up':a.delta1<0?'tone-down':'')
-       +stat('Δ NET 4W',sign(a.delta4,0),'variazione su quattro settimane',a.delta4>0?'tone-up':a.delta4<0?'tone-down':'')
-       +stat('NET / OPEN INTEREST',sign(last.netoi,2,'%'),'normalizzazione percentuale')
+       +stat('Δ NET 1W',sign(a.delta1,0),'flusso settimanale',a.delta1>0?'tone-up':a.delta1<0?'tone-down':'')
+       +stat('Δ NET 4W',sign(a.delta4,0),'persistenza su quattro settimane',a.delta4>0?'tone-up':a.delta4<0?'tone-down':'')
+       +stat('NET / OPEN INTEREST',sign(last.netoi,1,'%'),q?.crowd?'⚠ concentrazione oltre ±30,0%':'soglia alert ±30,0%',q?.crowd?'tone-down':'')
        +'</div>'
-       +'<section class="cot-graph-theatre"><div class="cot-analysis-head"><div><span class="chapter-kicker">02 / CHART STUDIO</span>'
-       +'<h2>Il positioning, <em>senza perdere la profondità.</em></h2></div>'
-       +'<p>Seleziona metrica e intervallo. Il prezzo è su un secondo grafico per evitare scale incompatibili e confronti ingannevoli.</p></div>'
+       +'<div class="cot-proofline"><span><b>Z-score 104W</b> '+(finite(q?.z)?sign(q.z,2):'n.d.')+'</span>'
+       +'<span><b>Δ Net 8W</b> '+sign(q?.delta8,0)+'</span>'
+       +'<span><b>Velocity 1W/OI</b> '+(finite(q?.velocity)?sign(q.velocity,2,'%')+' (stimata)':'n.d.')+'</span>'
+       +'<span><b>Composizione 1W</b> long '+sign(q?.dLong,0)+' / short '+sign(q?.dShort,0)+'</span></div>'
+       +'<p class="cot-velocity-note">Velocity stimata da Net e Net/OI arrotondato: utile per confrontare il ritmo dei fondi, non è Open Interest certificato come serie separata.</p>'
+       +interpretation(a)
+       +'<section class="cot-graph-theatre"><div class="cot-analysis-head"><div><span class="chapter-kicker">05 / CHART STUDIO</span>'
+       +'<h2>Le evidenze. <em>Stock, flusso e prezzo.</em></h2></div>'
+       +'<p>Seleziona metrica e intervallo. I due grafici hanno scale indipendenti; nessuna correlazione forzata.</p></div>'
        +'<div class="cot-graph-grid"><div class="cot-plot-card">'+graphFor(a)+'</div><div class="cot-plot-card cot-price-card">'
        +priceGraph(a)+'</div></div></section>'
-       +interpretation(a)+last12(a)+universe()+glossary()
-       +'<section class="cot-after"><div><span class="chapter-kicker">DALLA RICERCA AL MERCATO</span><h2>Il COT racconta il posizionamento.<br><em>La tesi FX richiede molto di più.</em></h2>'
-       +'<p>Confronta questa valuta con macro, tassi, pricing e prezzo prima di valutare una coppia. Una concentrazione estrema può persistere a lungo.</p></div>'
+       +last12(a)+glossary()
+       +'<section class="cot-after"><div><span class="chapter-kicker">DALLA RICERCA ALLA DECISIONE</span><h2>Il COT chiarisce le posizioni.<br><em>Il trade richiede macro, rates e prezzo.</em></h2>'
+       +'<p>Confronta le valute in termini relativi: scenario economico, differenziali di tasso, condizioni di rischio e timing tecnico. Un estremo può persistere a lungo.</p></div>'
        +'<a href="#pairs" class="action-primary">Apri l’esploratore FX <span>↗</span></a></section>'
-       +'<p class="source-caption">Fonti: CFTC Legacy Non-Commercial (V250_COT_CHART_DATA), comparatore BCE fixing (Design Studio COT V1). Tutte le osservazioni sono fotografie settimanali, non quote intraday. Lo storico del percentile è di 104 settimane. Ultimo martedì nel dataset: '+date(last.date)+'.</p>';
+       +'<p class="source-caption">Fonti: CFTC Legacy Futures Only Non-Commercial (V250), archivio CFTC storico precedente verificato sui Net comuni e fixing BCE aggiornati alle date CFTC. Percentile e Z-score esatti SOLO sull’ultima rilevazione (104 precedenti, corrente esclusa). I vecchi percentili inclusivi sono marcati ≈. Nessun dato intraday. COT del '+date(last.date)+'.</p>';
       return body;
     }
-    return render();
+        return render();
   }
   root.FXQuantCOT={render:make};
 })(window);
