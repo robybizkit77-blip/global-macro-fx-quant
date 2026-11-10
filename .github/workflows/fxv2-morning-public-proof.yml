@@ -21,6 +21,7 @@ on:
   schedule:
     # UTC pairs target Rome 07:11, 07:41, 07:53 in both CET and CEST.
     # GitHub schedule may run late: measured public time is never backdated.
+    # These existing slots also generate the independently dated morning editorial snapshot.
     - cron: '11 5 * * 1-5'
     - cron: '11 6 * * 1-5'
     - cron: '41 5 * * 1-5'
@@ -129,3 +130,136 @@ jobs:
             fxv2-freshness-evidence/
           if-no-files-found: warn
           retention-days: 21
+
+
+  # Reuses the existing 07:11/07:41/07:53 Rome audit slots.
+  # One immutable edition per Rome weekday; delayed runs never backdate their clock.
+  morning-editorial:
+    needs: contract
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 28
+    permissions:
+      contents: write
+      actions: read
+    concurrency:
+      group: fxv2-morning-macro-editorial-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Select correct Rome weekday schedule and reject late reconstruction
+        id: editorial-slot
+        shell: bash
+        env:
+          CRON_SLOT: ${{ github.event.schedule }}
+        run: |
+          python3 - <<'PY'
+          from datetime import datetime
+          from zoneinfo import ZoneInfo
+          import os
+          rome=datetime.now(ZoneInfo('Europe/Rome'))
+          cron=os.environ.get('CRON_SLOT','')
+          actual_hour=int(cron.split()[1]) if cron else None
+          correct_utc=5 if rome.utcoffset().total_seconds()==7200 else 6
+          active=(rome.weekday()<5 and rome.hour<11 and
+                  (os.environ.get('GITHUB_EVENT_NAME')!='schedule' or actual_hour==correct_utc))
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:
+              f.write('active='+str(active).lower()+'\n')
+              f.write('edition='+rome.date().isoformat()+'\n')
+          print('MORNING_MACRO_EDITORIAL_SLOT', 'ACTIVE' if active else 'SKIPPED',
+                'clock',rome.isoformat(),'cron',cron)
+          PY
+      - name: Create immutable evidence-dated morning edition and mirror to Pages
+        if: steps.editorial-slot.outputs.active == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          EDITION: ${{ steps.editorial-slot.outputs.edition }}
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin main gh-pages --no-tags
+          git checkout -B morning-editorial-build origin/main
+          python3 -m unittest validation.morning.test_build_morning_fx_desk_v1 -q
+
+          target=site/fx-quant-v2/next/morning-desk-current.json
+          if [[ -f "$target" ]] && python3 - "$target" "$EDITION" <<'PY'
+          import json,sys
+          try:
+              x=json.load(open(sys.argv[1],encoding='utf-8'))
+              assert x['schema']=='GMFQ_MORNING_MACRO_FX_V1'
+              assert x['edition_date']==sys.argv[2]
+          except (OSError,KeyError,ValueError,AssertionError):
+              raise SystemExit(1)
+          PY
+          then
+            echo "MORNING_EDITION_ALREADY_FROZEN $EDITION"
+          else
+            python3 validation/morning/build_morning_fx_desk_v1.py \
+              --edition-date "$EDITION" --output "$target"
+            git add -- "$target"
+            git commit -m "Freeze Morning Macro FX Desk edition $EDITION"
+            for attempt in 1 2 3; do
+              if git push origin HEAD:main; then
+                echo "MORNING_EDITION_MAIN_COMMITTED"
+                break
+              fi
+              if [[ "$attempt" == 3 ]]; then
+                echo "MORNING_EDITION_MAIN_LEASE_FAILED" >&2
+                exit 1
+              fi
+              git fetch origin main --no-tags
+              git rebase origin/main
+              sleep 4
+            done
+          fi
+
+          # A main GITHUB_TOKEN push does not trigger a push-publisher workflow.
+          # Publish the identical frozen JSON explicitly, without modifying other files.
+          python3 validation/publishing/wait_gh_pages_idle_before_fxv2_push_v1.py \
+            --output "$RUNNER_TEMP/morning-pages-idle.json" --attempts 100 --delay 10
+          git fetch origin gh-pages --no-tags
+          git worktree add --detach "$RUNNER_TEMP/morning-ghpages" origin/gh-pages
+          cp "$target" "$RUNNER_TEMP/morning-ghpages/$target"
+          git -C "$RUNNER_TEMP/morning-ghpages" add -- "$target"
+          if git -C "$RUNNER_TEMP/morning-ghpages" diff --cached --quiet; then
+            echo "MORNING_EDITION_PUBLIC_SOURCE_ALREADY_CURRENT"
+          else
+            git -C "$RUNNER_TEMP/morning-ghpages" -c user.name='github-actions[bot]' \
+              -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+              commit -m "Publish frozen Morning Macro FX Desk $EDITION"
+            for attempt in 1 2 3; do
+              if git -C "$RUNNER_TEMP/morning-ghpages" push origin HEAD:gh-pages; then
+                echo "MORNING_EDITION_GH_PAGES_SOURCE_COMMITTED"
+                break
+              fi
+              if [[ "$attempt" == 3 ]]; then
+                echo "MORNING_EDITION_GH_PAGES_LEASE_FAILED" >&2
+                exit 1
+              fi
+              git -C "$RUNNER_TEMP/morning-ghpages" fetch origin gh-pages --no-tags
+              git -C "$RUNNER_TEMP/morning-ghpages" rebase origin/gh-pages
+              sleep 4
+            done
+          fi
+          python3 - "$target" "$GITHUB_STEP_SUMMARY" <<'PY'
+          import json,sys
+          x=json.load(open(sys.argv[1],encoding='utf-8'))
+          with open(sys.argv[2],'a',encoding='utf-8') as out:
+              out.write('## Morning Macro & FX Desk — editione congelata\n')
+              out.write('- Data: '+x['edition_date']+'; creato: '+x.get('created_at_utc','n.d.')+'\n')
+              out.write('- Stato: '+x['edition_status']+'; tema: '+x['headline']+'\n')
+              out.write('- Fonti pre-evento: '+str(x['sources'])+'\n')
+              out.write('- JSON scritto su main e gh-pages; **la disponibilità HTTP pubblica richiede una verifica separata del deployment.**\n')
+          PY
+      - name: Document absent morning publication instead of green no-op
+        if: steps.editorial-slot.outputs.active != 'true'
+        run: echo 'Morning editorial skipped — DST duplicate, weekend or run outside morning window; no claimed delivery.' >> "$GITHUB_STEP_SUMMARY"
