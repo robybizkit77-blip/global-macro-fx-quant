@@ -328,8 +328,16 @@ fs.mkdirSync(evidence,{recursive:true});
      'Credit spread changes must be in basis points, not relative percentage');
    // News toggles.
    await page.evaluate(()=>{location.hash='#news'});
-   assert(await page.locator('.news-evidence-item[data-news-kind="pulse"]').count()===4,
-     'All four dated monetary-pricing observations must appear in Market Pulse');
+   const pulseCount=await page.locator('.news-evidence-item[data-news-kind="pulse"]').count();
+   assert(pulseCount>=4,'The four original dated monetary items must remain in Market Pulse');
+   if(pulseCount>4){
+     const pulseText=await page.locator('.news-evidence-item[data-news-kind="pulse"]').allInnerTexts();
+     const merged=pulseText.join(' ');
+     for(const kind of ['Forex · fixing BCE','Azionario · chiusura','Credito · spread OAS',
+                        'Volatilità · VIX','Government bond · 2Y/10Y']){
+       assert(merged.includes(kind),'Widened market evidence lane is incomplete: '+kind);
+     }
+   }
    assert((await page.locator('.news-research-reading').innerText()).includes('6M/12M'),
      'Market repricing must be explicitly separated from event-window reaction');
    assert((await page.locator('.news-evidence-item').first().innerText()).includes('Reazione di mercato'),
