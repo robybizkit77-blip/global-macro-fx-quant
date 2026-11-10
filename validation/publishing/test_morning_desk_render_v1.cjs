@@ -26,6 +26,7 @@ assert(html.includes('non certificata come fotografia point-in-time'));
 assert(html.includes('EUR/USD')&&html.includes('USD/JPY'));
 assert(html.includes('Tassi & OIS')&&html.includes('28 coppie FX'));
 const last={...feed,edition_date:'2026-11-09',observation_cutoff_exclusive:'2026-11-09',
+sources:{...feed.sources,fx_fixing:'2026-11-08',rates:'2026-11-08'},
 charts:feed.charts.map(c=>({...c,as_of:'2026-11-08',points:c.points.filter(p=>p.date<'2026-11-09')}))};
 assert(sound(last));
 const stale=build({...args,feed:last,dayNow:()=> '2026-11-10'});
