@@ -257,6 +257,7 @@ earlyCad.state='OFFICIAL_ACTUAL_PRESENT_PRE_EVENT_MARKET_ANCHOR_ABSENT';
         await probe.route('**/live_data/sections/NEWS_PULSE_OPERATIONAL.json',
           async route=>route.fulfill({status:200,contentType:'application/json',
                                      body:JSON.stringify(fixture)}));
+        await enableCalendarNewsLegacyHarness(probe);
         await probe.goto('http://127.0.0.1:8765/',{waitUntil:'networkidle'});
         await probe.waitForFunction(
           ()=>window.GMFQ_CALENDAR_NEWS_OPERATIONAL?.status==='ACTIVE',
