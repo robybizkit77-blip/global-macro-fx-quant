@@ -115,13 +115,11 @@
   return '<div class="decision-desk-story" data-serafini-pair="'+esc(item.key)+'">'+
    '<span class="decision-desk-kicker">LA LETTURA DEL DESK · '+esc(item.key.slice(0,3)+'/'+item.key.slice(3))+'</span>'+
    '<h3>'+esc(item.headline)+'</h3>'+
-   para('La tesi.',item.structural)+
-   para('Che cosa cambia nella macro.',item.macro)+
-   para('Che cosa prezzano gli strumenti.',item.pricing)+
-   para('La verifica FX/2Y.',item.relation)+
-   para('Prezzo e posizionamento.',item.price+' '+item.positioning)+
-   para('Il mio giudizio.',item.judgment)+
-   para('Cosa monitorare.',item.watch)+
+   para('Il punto di partenza.',item.structural)+
+   para('Che cosa cambia nell’economia.',item.macro)+
+   para('Cosa prezza e cosa conferma il mercato.',item.pricing+' '+item.relation)+
+   para('Cosa stanno facendo prezzo e operatori.',item.price+' '+item.positioning)+
+   para('Giudizio e prossima verifica.',item.judgment+' '+item.watch)+
    '<small>Snapshot coppia '+esc(item.asof)+' · baseline macro del modello '+esc(item.macroDate)+
    '. Osservazioni macro aggiornabili separatamente; nessun consenso/sorpresa macro pubblicato nel feed, nessuna causalità o probabilità di trade inferita.</small></div>';
  }
