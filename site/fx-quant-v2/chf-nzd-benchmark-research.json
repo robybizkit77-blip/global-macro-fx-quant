@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_FXV2_CHF_NZD_BENCHMARK_RESEARCH_V1",
-  "generated_on": "2026-11-09",
+  "generated_on": "2026-11-10",
   "quality": "RESEARCH_INFORMATIONAL_NOT_CANONICAL",
   "CHF": {
     "pair_status": "OFFICIAL_SNBSAMEBASIS_RESEARCH_REVIEW_REQUIRED",
@@ -12,8 +12,8 @@
     "source": "Swiss National Bank · CHF Confederation daily spot 2J/10J",
     "source_url": "https://data.snb.ch/api/cube/rendeiduebd/data/json/en",
     "separate_10y": {
-      "as_of": "2026-11-06",
-      "10Y": 0.45,
+      "as_of": "2026-11-09",
+      "10Y": 0.459,
       "source_url": "https://www.snb.ch/en/the-snb/mandates-goals/statistics/statistics-pub/current_interest_exchange_rates",
       "not_joinable_with_paired_2y": true
     },
