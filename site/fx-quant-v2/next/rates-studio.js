@@ -54,8 +54,15 @@ function make(api){
    const d1=h6?.change_1d_bp,d7=h6?.change_1w_bp;
    const genuine=finite(d1)||finite(d7);
    const intro=!r?'Nessun rendimento verificabile alla data richiesta.':('L’ultimo 2Y '+c+' è '+fmt(r['2Y'],3)+'% e il 10Y '+fmt(r['10Y'],3)+'% (rilevazione '+date(r.date)+').');
+   const desk=root.FXQuantRatesEconomic?.read?.({
+     country:c,now:dayNow(),asof:last?.date,previous:prev?.date,bp2:f2,bp10:f10,
+     kind:o?.kind,quality:o?.quality,h6
+   })||{headline:'La curva va verificata prima di concludere.',
+     meaning:'L’interpretazione economica non è disponibile; restano validi i dati datati sotto.',
+     pricing:'Non attribuiamo un repricing senza una verifica temporale.',
+     watch:'Esaminare le fonti originali prima di assumere una tesi.'};
    return {
-     intro,
+     ...desk,intro,
      gov:finite(f2)&&finite(f10)?'Tra le ultime due date comuni dei rendimenti: 2Y '+sign(f2,1,' pb')+', 10Y '+sign(f10,1,' pb')+'; '+movement+'.':'Non bastano due date comuni per misurare il movimento della curva.',
      pricing:genuine?'Nel feed '+(o?.kind||'pricing')+' la scadenza 6M registra '+(finite(d1)?sign(d1,1,' pb in 1D'):'variazione 1D non disponibile')+' e '+(finite(d7)?sign(d7,1,' pb in 1W'):'variazione 1W non disponibile')+' (riferimento '+date(h6.as_of)+').'
        :'Per il 6M non ci sono variazioni 1D/1W validate: dai livelli delle scadenze non possiamo ricostruire un repricing avvenuto oggi.',
@@ -202,7 +209,10 @@ function make(api){
     +'<div class="rates-status"><span>◉ RATES & POLICY LAB · '+FLAGS[c]+' '+c+'</span><span>GOV '+date(r?.date)+' · PRICING '+date(o?.as_of)+' · '+esc(o?.kind||'strumento da verificare')+'</span></div>'
     +countrySelect()
     +'<section class="rates-hero"><div class="rates-hero-title"><span class="chapter-kicker">01 / '+FLAGS[c]+' '+esc(NAMES[c])+' · FRONT-END VS LONG-END</span>'
-    +'<h2>Il 2Y si muove.<br><em>La causa va dimostrata.</em></h2><p>'+esc(m.intro+' '+m.gov)+'</p>'
+    +'<h2>'+esc(m.headline)+'</h2>'
+    +'<p class="rates-economic-observation"><strong>Cosa vediamo.</strong> '+esc(m.meaning)+'</p>'
+    +'<p class="rates-economic-pricing"><strong>Cosa è prezzato.</strong> '+esc(m.pricingEvidence)+'</p>'
+    +'<p class="rates-economic-watch"><strong>Cosa monitorare.</strong> '+esc(m.watch)+'</p>'
     +'<div class="rates-chipline"><span class="badge '+(freshness(r?.date)==='STORICO'?'warning':'info')+'">'+esc(freshness(r?.date))+'</span><span>'+esc(r?.quality||'QUALITÀ DA VERIFICARE')+'</span></div></div>'
     +'<div class="rates-hero-side"><div class="rates-hero-orbit"><span>CURVE SLOPE</span><strong>'+sign(r?(r['10Y']-r['2Y'])*100:null,1)+'</strong><small>punti base · '+date(r?.date)+'</small></div></div></section>'
     +govCard(c)
