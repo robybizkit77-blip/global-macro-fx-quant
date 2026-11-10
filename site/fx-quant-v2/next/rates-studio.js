@@ -211,7 +211,7 @@ function make(api){
     +'<section class="rates-hero"><div class="rates-hero-title"><span class="chapter-kicker">01 / '+FLAGS[c]+' '+esc(NAMES[c])+' · FRONT-END VS LONG-END</span>'
     +'<h2>'+esc(m.headline)+'</h2>'
     +'<p class="rates-economic-observation"><strong>Cosa vediamo.</strong> '+esc(m.meaning)+'</p>'
-    +'<p class="rates-economic-pricing"><strong>Cosa è prezzato.</strong> '+esc(m.pricing)+'</p>'
+    +'<p class="rates-economic-pricing"><strong>Cosa è prezzato.</strong> '+esc(m.pricingEvidence)+'</p>'
     +'<p class="rates-economic-watch"><strong>Cosa monitorare.</strong> '+esc(m.watch)+'</p>'
     +'<div class="rates-chipline"><span class="badge '+(freshness(r?.date)==='STORICO'?'warning':'info')+'">'+esc(freshness(r?.date))+'</span><span>'+esc(r?.quality||'QUALITÀ DA VERIFICARE')+'</span></div></div>'
     +'<div class="rates-hero-side"><div class="rates-hero-orbit"><span>CURVE SLOPE</span><strong>'+sign(r?(r['10Y']-r['2Y'])*100:null,1)+'</strong><small>punti base · '+date(r?.date)+'</small></div></div></section>'
