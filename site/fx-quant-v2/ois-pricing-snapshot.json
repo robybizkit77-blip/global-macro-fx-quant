@@ -41,8 +41,8 @@
       "as_of": "2026-11-09",
       "horizons": {
         "3m": {
-          "rate": 2.5775,
-          "as_of": "2026-11-06",
+          "rate": 2.585,
+          "as_of": "2026-11-09",
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "FST3X2026"
@@ -67,27 +67,27 @@
       "kind": "OIS",
       "quality": "FONTE UFFICIALE",
       "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
-      "as_of": "2026-11-06",
+      "as_of": "2026-11-09",
       "horizons": {
         "3m": {
-          "rate": 4.2119,
-          "as_of": "2026-11-06",
-          "change_1d_bp": 0.2,
+          "rate": 4.2184,
+          "as_of": "2026-11-09",
+          "change_1d_bp": 0.7,
           "change_1w_bp": 6.2,
           "contract": null
         },
         "6m": {
-          "rate": 4.4615,
-          "as_of": "2026-11-06",
-          "change_1d_bp": 0.9,
-          "change_1w_bp": -1.7,
+          "rate": 4.4643,
+          "as_of": "2026-11-09",
+          "change_1d_bp": 0.3,
+          "change_1w_bp": 1.6,
           "contract": null
         },
         "12m": {
-          "rate": 4.7192,
-          "as_of": "2026-11-06",
-          "change_1d_bp": 2.4,
-          "change_1w_bp": -11.0,
+          "rate": 4.6804,
+          "as_of": "2026-11-09",
+          "change_1d_bp": -3.9,
+          "change_1w_bp": -4.9,
           "contract": null
         }
       }
@@ -96,27 +96,27 @@
       "kind": "FUTURES",
       "quality": "FONTE UFFICIALE",
       "source": "Tokyo Financial Exchange · Three-month TONA Futures",
-      "as_of": "2026-11-06",
+      "as_of": "2026-11-09",
       "horizons": {
         "3m": {
-          "rate": 1.455,
-          "as_of": "2026-11-06",
-          "change_1d_bp": 0.0,
-          "change_1w_bp": -1.2,
+          "rate": 1.437,
+          "as_of": "2026-11-09",
+          "change_1d_bp": -1.8,
+          "change_1w_bp": -1.8,
           "contract": null
         },
         "6m": {
-          "rate": 1.662,
-          "as_of": "2026-11-06",
-          "change_1d_bp": 0.0,
-          "change_1w_bp": -4.2,
+          "rate": 1.606,
+          "as_of": "2026-11-09",
+          "change_1d_bp": -5.6,
+          "change_1w_bp": -6.6,
           "contract": null
         },
         "12m": {
-          "rate": 1.935,
-          "as_of": "2026-11-06",
-          "change_1d_bp": 0.0,
-          "change_1w_bp": -6.3,
+          "rate": 1.879,
+          "as_of": "2026-11-09",
+          "change_1d_bp": -5.6,
+          "change_1w_bp": -7.6,
           "contract": null
         }
       }
@@ -154,27 +154,27 @@
       "kind": "FUTURES",
       "quality": "FONTE UFFICIALE",
       "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
-      "as_of": "2026-11-06",
+      "as_of": "2026-11-09",
       "horizons": {
         "3m": {
-          "rate": 2.68,
-          "as_of": "2026-11-06",
-          "change_1d_bp": -3.0,
-          "change_1w_bp": -5.5,
+          "rate": 2.685,
+          "as_of": "2026-11-09",
+          "change_1d_bp": 0.5,
+          "change_1w_bp": -4.0,
           "contract": null
         },
         "6m": {
-          "rate": 2.83,
-          "as_of": "2026-11-06",
-          "change_1d_bp": -5.5,
-          "change_1w_bp": -14.0,
+          "rate": 2.85,
+          "as_of": "2026-11-09",
+          "change_1d_bp": 2.0,
+          "change_1w_bp": -10.0,
           "contract": null
         },
         "12m": {
-          "rate": 3.045,
-          "as_of": "2026-11-06",
-          "change_1d_bp": -7.0,
-          "change_1w_bp": -21.5,
+          "rate": 3.055,
+          "as_of": "2026-11-09",
+          "change_1d_bp": 1.0,
+          "change_1w_bp": -16.5,
           "contract": null
         }
       }
@@ -183,27 +183,27 @@
       "kind": "FUTURES",
       "quality": "FONTE UFFICIALE",
       "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
-      "as_of": "2026-11-06",
+      "as_of": "2026-11-09",
       "horizons": {
         "3m": {
           "rate": 4.85,
-          "as_of": "2026-11-06",
-          "change_1d_bp": -0.5,
+          "as_of": "2026-11-09",
+          "change_1d_bp": 0.0,
           "change_1w_bp": 1.5,
           "contract": null
         },
         "6m": {
-          "rate": 4.88,
-          "as_of": "2026-11-06",
-          "change_1d_bp": -4.0,
-          "change_1w_bp": -3.5,
+          "rate": 4.885,
+          "as_of": "2026-11-09",
+          "change_1d_bp": 0.5,
+          "change_1w_bp": -5.0,
           "contract": null
         },
         "12m": {
-          "rate": 4.705,
-          "as_of": "2026-11-06",
-          "change_1d_bp": -6.0,
-          "change_1w_bp": -12.5,
+          "rate": 4.71,
+          "as_of": "2026-11-09",
+          "change_1d_bp": 0.5,
+          "change_1w_bp": -15.5,
           "contract": null
         }
       }
