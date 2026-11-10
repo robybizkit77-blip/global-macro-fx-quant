@@ -80,7 +80,12 @@ def choose_event(seed,day):
             and x.get("ccy")=="USD" and x.get("event_type")=="INFLATION"]
     if recent:
         return max(recent,key=lambda x:x["date"]),"PREVIOUS_CPI"
-    future=[x for x in events if day<to_date(x["date"])<=day+timedelta(days=3)]
+    # Upcoming is a *candidate* catalyst, not an automatic daily headline.
+    # Provisional/medium-relevance events are not promoted above today's
+    # observable FX/rates question just because the calendar has a slot.
+    future=[x for x in events if day<to_date(x["date"])<=day+timedelta(days=2)
+            and x.get("quality")=="OFFICIAL_CONFIRMED"
+            and EVENT_SCORE.get(x.get("event_type"),0)>=3]
     if future:
         return min(future,key=lambda x:(x["date"],-EVENT_SCORE.get(x.get("event_type"),0))),"UPCOMING"
     return None,"RELATIVE_PRICING"
