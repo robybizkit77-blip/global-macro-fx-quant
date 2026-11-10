@@ -32,34 +32,46 @@
     }
     function report(ccy){
       const hist=verifiedRows(ccy);
-      if(hist.length<5)return null;
+      if(hist.length<9)return null;
       const last=hist.at(-1),prev=hist.at(-2),four=hist.at(-5);
       const fx=root.FXQuantCOTEvidence?.priceEvidence?.(ccy,hist,get('currencyPrices'),dayNow())||null;
       const prices=fx?.prices||[],priceRow=fx?.priceRow||null,price1=fx?.price1??null;
-      const delta1=last.net-prev.net,delta4=last.net-four.net;
-      const priceState=fx?.priceState||'non conclusivo';
-      const level=last.percentile>=PCTS.upper?'alto':last.percentile<=PCTS.lower?'basso':'intermedio';
-      return {ccy,hist,last,prev,four,delta1,delta4,longFlow:last.long-prev.long,
-        shortFlow:last.short-prev.short,prices,priceRow,price1,priceState,level};
+      const out={ccy,hist,last,prev,four,delta1:last.net-prev.net,delta4:last.net-four.net,
+        longFlow:last.long-prev.long,shortFlow:last.short-prev.short,prices,priceRow,price1,
+        priceState:fx?.priceState||'non conclusivo',level:'non validato'};
+      const q=root.FXQuantCOTDeskV26?.statistics?.(out,get('cotPriorReference'))||null;
+      out.deskStats=q;
+      // Only the latest exclusive-current 104W percentile is report-comparable.
+      // Historical stored percentiles use an older inclusive method and retain
+      // an explicit marker; never silently relabel them as exact.
+      out.last={...last,percentile:q?.p??null};
+      out.hist=[...hist.slice(0,-1),out.last];
+      out.level=q?.level==='EXTREME LONG'?'alto':
+        q?.level==='EXTREME SHORT'?'basso':
+        q?.level==='NEUTRALE'?'intermedio':'non validato';
+      return out;
     }
-    function stat(a,b,note,cls=''){
+        function stat(a,b,note,cls=''){
       return '<div class="cot-stat"><span>'+esc(a)+'</span><strong class="'+cls+'">'+esc(b)+'</strong><small>'+esc(note)+'</small></div>';
     }
     function classify(a){
-      if(!a)return '<span class="badge warning">NON VALIDATO</span>';
-      const p=a.last.percentile;
-      return '<span class="badge '+(p>=80?'warning':p<=20?'danger':'info')+'">P'+fmt(p,1)
-          +' · '+(a.level==='alto'?'FASCIA ALTA':a.level==='basso'?'FASCIA BASSA':'FASCIA INTERMEDIA')+'</span>';
+      const q=a?.deskStats;
+      if(!q||q.rounded===null)return '<span class="badge warning">P104 DA VERIFICARE</span>';
+      return '<span class="badge '+(q.rounded>=80?'good':q.rounded<=20?'danger':'info')+
+        '">P'+fmt(q.rounded,0)+' · '+esc(q.level)+'</span>';
     }
-    function levelText(a){
-      const r=a.last,position=r.net>0?'net long':r.net<0?'net short':'neutri';
-      return 'La posizione complessiva è '+position+' ('+sign(r.net,0,' contratti')+
-        '). Il percentile storico è P'+fmt(r.percentile,1)+' sulla finestra disponibile di 104 settimane. '+
-        (r.net<0&&r.percentile>=80?'Attenzione: P alto non significa net long; la posizione è ancora net short. ':
-         r.net>0&&r.percentile<=20?'Attenzione: P basso non significa net short; la posizione è ancora net long. ':'')+
-        'Il percentile indica dove si colloca la posizione rispetto alla propria storia, non misura da solo il rischio di inversione.';
+        function levelText(a){
+      const r=a.last,q=a.deskStats;
+      const position=r.net>0?'net long':r.net<0?'net short':'neutri';
+      const rank=q?.rounded===null||!q?'non disponibile':
+        'P'+fmt(q.rounded,0)+' e Z-score '+sign(q.z,2);
+      return 'I fondi risultano '+position+' ('+sign(r.net,0,' contratti')+
+        '). Posizione relativa: '+rank+'. '+
+        (r.net<0&&q?.rounded>=80?
+          'La fascia EXTREME LONG è relativa allo storico: gli operatori restano net short. ':'')+
+        'Un estremo storico non prova né l’inversione né l’attrattività di un trade.';
     }
-    function flowText(a){
+        function flowText(a){
       return root.FXQuantCOTEvidence?.flowReading?.(a)?.detail||
         'Flussi long e short da verificare sulle ultime quattro rilevazioni; nessun trade deducibile dal netto.';
     }
@@ -71,28 +83,34 @@
         '. I segni sono '+a.priceState+'. È un confronto fra due osservazioni settimanali, non un test causale né il rendimento successivo alla pubblicazione COT.';
     }
     function interpretation(a){
-      const s=get('cot')?.[a.ccy];
-      return '<section class="cot-analysis">'
-      +'<div class="cot-analysis-head"><div><span class="chapter-kicker">02 / LETTURA INVESTIGATIVA</span><h2>Quattro domande, <em>quattro risposte.</em></h2></div>'
-      +'<p>Separiamo i fatti e le interpretazioni. Un posizionamento estremo o un’inversione del flusso non basta a formulare un segnale.</p></div>'
-      +'<div class="cot-analysis-grid">'
-      +'<article><span class="cot-number">01</span><span class="micro-over">STOCK / LIVELLO</span><h3>Dove sono posizionati i fondi?</h3><p>'+esc(levelText(a))+'</p></article>'
-      +'<article><span class="cot-number">02</span><span class="micro-over">FLOW / CAMBIAMENTO</span><h3>Come si stanno muovendo?</h3><p>'+esc(flowText(a))+'</p></article>'
-      +'<article><span class="cot-number">03</span><span class="micro-over">PRICE / CONFERMA</span><h3>Il prezzo racconta la stessa storia?</h3><p>'+esc(priceText(a))+'</p></article>'
-      +'<article><span class="cot-number">04</span><span class="micro-over">RISK / TESI</span><h3>Cosa monitorare adesso?</h3><p>'+esc((root.FXQuantCOTEvidence?.flowReading?.(a)?.monitor||'Verificare la persistenza del dato CFTC.')+' '+(finite(a.price1)?'Il confronto dei martedì ha una variazione FX osservata, ma non identifica causa né movimento post-pubblicazione.':'Senza prezzi BCE su entrambi i martedì, il posizionamento non trova conferma nel prezzo.')+' '+(s?.why||''))+
-      '</p></article></div></section>';
+      const q=a.deskStats,r=root.FXQuantCOTDeskV26?.reading?.(q);
+      const fact=r?.fact||'Flussi netti e lordi non validati su base storica omogenea.';
+      const view=r?.judgment||'Per un giudizio coerente col report servono 104 osservazioni precedenti certificate.';
+      const verify=r?.verify||'Verificare la qualità dello storico precedente e attendere la prossima pubblicazione CFTC.';
+      const price=r?.price||priceText(a);
+      return '<section class="cot-analysis cot-judgment">'
+       +'<div class="cot-analysis-head"><div><span class="chapter-kicker">04 / COSA VEDO DAVVERO · '+FLAGS[a.ccy]+' '+a.ccy+'</span>'
+       +'<h2>Il giudizio del desk. <em>Senza copiare le tabelle.</em></h2></div>'
+       +'<p>Stock → composizione dei flussi → accelerazione → prezzo → verifica. Le tesi e il timing FX restano distinti.</p></div>'
+       +'<div class="cot-analysis-grid">'
+       +'<article><span class="cot-number">01</span><span class="micro-over">IL CAMBIAMENTO</span><h3>Che cosa stanno facendo i fondi?</h3><p>'+esc(fact)+'</p></article>'
+       +'<article><span class="cot-number">02</span><span class="micro-over">LA CONFERMA DI PREZZO</span><h3>Il prezzo sostiene questa lettura?</h3><p>'+esc(price)+'</p></article>'
+       +'<article><span class="cot-number">03</span><span class="micro-over">IL MIO GIUDIZIO</span><h3>Quanto è credibile la tesi?</h3><p>'+esc(view)+'</p></article>'
+       +'<article><span class="cot-number">04</span><span class="micro-over">CONFERMA / INVALIDAZIONE</span><h3>Cosa controllare nel prossimo COT?</h3><p>'+esc(verify)+'</p></article>'
+       +'</div></section>';
     }
-    function countrySelector(){
+        function countrySelector(){
       return '<div class="cot-country-selector" role="group" aria-label="Valute G8 COT">'
-      +FX.map(k=>{
-        const a=report(k),r=a?.last;
-        return '<button type="button" data-ccy="'+k+'" aria-pressed="'+String(k===state.ccy)+'" class="cot-country-button '+(k===state.ccy?'active':'')+'">'
-        +'<span class="cot-country-symbol">'+FLAGS[k]+' '+k+'</span>'
-        +'<strong>'+ (finite(r?.percentile)?'P'+fmt(r.percentile,0):'—')+'</strong>'
-        +'<small>'+esc(r?.net>0?'Net long':r?.net<0?'Net short':'Net non validato')+' · '+esc(a?sign(a.delta1,0,' 1W'):'—')+'</small></button>';
-      }).join('')+'</div>';
+       +FX.map(k=>{
+         const a=report(k),q=a?.deskStats,r=a?.last;
+         return '<button type="button" data-ccy="'+k+'" aria-pressed="'+String(k===state.ccy)+'" class="cot-country-button '+(k===state.ccy?'active':'')+'">'
+         +'<span class="cot-country-symbol">'+FLAGS[k]+' '+k+'</span>'
+         +'<strong>'+(q?.rounded!==null&&q?.rounded!==undefined?'P'+fmt(q.rounded,0):'P—')+'</strong>'
+         +'<small>'+esc(r?.net>0?'Net long':r?.net<0?'Net short':'Net non validato')+
+          ' · '+esc(a?sign(a.delta1,0,' 1W'):'—')+'</small></button>';
+       }).join('')+'</div>';
     }
-    function graphFor(a){
+        function graphFor(a){
       const mode=state.cotMode||'net',w=Number(state.cotWindow||26),rows=a.hist.slice(-w);
       let lines,unit='',label,precision=1,note;
       if(mode==='net'){
