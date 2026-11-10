@@ -23,13 +23,16 @@ class MorningFXDeskTests(unittest.TestCase):
         self.assertEqual(x["edition_status"],"RECONSTRUCTION_NOT_POINT_IN_TIME")
         self.assertEqual(len(x["charts"]),2)
         self.assertTrue(len(x["paragraphs"][0])>110)
+        self.assertIn("USD/JPY",x["paragraphs"][3])
+        self.assertIn("prova",x["paragraphs"][1])
+        self.assertEqual(x["relative_evidence"]["companion_pair"],"USDJPY")
         self.assertNotIn("actual +0,4", " ".join(x["paragraphs"]).lower())
 
     def test_day_after_cpi_without_certified_actual(self):
         x=build(ROOT,date(2026,11,11),datetime(2026,11,11,7,15,tzinfo=timezone.utc))
         self.assertIn(x["event_status"],{"AFTERMATH_UNVERIFIED","AFTERMATH_TO_VERIFY"})
         self.assertIn("CPI",x["headline"])
-        self.assertIn("verifica",x["catalyst"]["text"])
+        self.assertIn("provenienza",x["catalyst"]["text"])
         self.assertEqual(x["edition_status"],"MORNING_SNAPSHOT")
         self.assertLess(x["sources"]["fx_fixing"],"2026-11-11")
 
@@ -37,10 +40,40 @@ class MorningFXDeskTests(unittest.TestCase):
         x=build(ROOT,date(2026,11,12),datetime(2026,11,12,7,10,tzinfo=timezone.utc))
         self.assertEqual(x["event_status"],"EVENT_TODAY")
         self.assertEqual(x["pair"],"GBPUSD")
-        self.assertIn("GDP",x["headline"])
+        self.assertIn("PIL",x["headline"])
+        self.assertIn("rialzo di 25 punti base",x["paragraphs"][0])
+        self.assertIn("BoE",x["lead"])
+        self.assertIn("GBP/USD",x["paragraphs"][3])
         self.assertIn("08:00",x["catalyst"]["title"])
         self.assertLess(x["sources"]["rates"],"2026-11-12")
         self.assertEqual(len(x["charts"]),2)
+
+    def test_quiet_day_without_fake_calendar_catalyst(self):
+        x=build(ROOT,date(2026,11,13),datetime(2026,11,13,7,0,tzinfo=timezone.utc))
+        self.assertEqual(x["event_status"],"RELATIVE_PRICING")
+        self.assertIsNone(x["catalyst"]["date"])
+        self.assertIn("spread",x["lead"])
+        self.assertIn("EUR/USD",x["headline"])
+        self.assertIn("non forziamo",x["paragraphs"][2].lower())
+        self.assertLess(x["sources"]["rates"],x["edition_date"])
+
+    def test_event_scenarios_are_distinct_and_specific(self):
+        days=[(2026,11,10),(2026,11,11),(2026,11,12),(2026,11,13)]
+        reports=[build(ROOT,date(*part),datetime(*part,7,0,tzinfo=timezone.utc))
+                 for part in days]
+        titles=[tuple(s["title"] for s in r["scenarios"]) for r in reports]
+        self.assertEqual(len(set(titles)),4,
+                         "Two generic scenarios repeated across every macro regime")
+        self.assertTrue(all(r["relative_evidence"]["aligned_from"] <
+                            r["relative_evidence"]["aligned_to"] < r["edition_date"]
+                            for r in reports))
+        self.assertTrue(all(r["relative_evidence"]["alignment"] in
+                            ("COERENTE","DIVERGENTE","NON_CONCLUSIVO")
+                            for r in reports))
+        self.assertTrue(all("Verifica" not in r["headline"] for r in reports))
+        for r in reports:
+            self.assertIn(r["pair"][:3]+"/"+r["pair"][3:],r["paragraphs"][3])
+            self.assertNotEqual(r["scenarios"][0]["text"],r["scenarios"][1]["text"])
 
     def test_no_forecast_promoted_to_market_surprise(self):
         x=build(ROOT,date(2026,11,10),datetime(2026,11,10,7,0,tzinfo=timezone.utc))
