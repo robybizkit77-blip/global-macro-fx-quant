@@ -551,7 +551,7 @@ function news(){
  const evidence=window.FXQuantNewsEvidence?.parse?.(n,dayNow())||{
   pulse:[],official:[],latest:null,gap:'I dati sulle notizie non sono validati.',quality:'NON VALIDATO'};
  const list=state.newsMode==='pulse'?evidence.pulse:evidence.official;
- const type=state.newsMode==='pulse'?'MOVIMENTI MONETARI DATATI':'COMUNICAZIONI UFFICIALI';
+ const type=state.newsMode==='pulse'?'MERCATI / OSSERVAZIONI DATATE':'COMUNICAZIONI UFFICIALI';
  const newsCard=x=>'<article class="timeline-item news-evidence-item" data-news-kind="'+esc(state.newsMode)+'" data-news-asof="'+esc(x.asof)+'">'
   +'<span class="mini-overline">'+esc(x.kind)+' · '+esc(x.ccy||x.source)+' · '+date(x.asof)+(x.time?' · '+esc(x.time)+' IT':'')+'</span>'
   +'<h3>'+esc(x.title)+'</h3>'
@@ -560,7 +560,7 @@ function news(){
   +'<p><strong>Cosa verificare.</strong> '+esc(x.verify)+'</p>'
   +'<p class="source-caption"><strong>Reazione di mercato.</strong> '+esc(x.impact)+'</p>'
   +'<p class="source-caption">Fonte: '+esc(x.source)+' · Qualità: '+esc(x.quality)+
-    (x.url?' · <a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer">Leggi il comunicato ufficiale ↗</a>':'')+'</p></article>';
+    (x.url?' · <a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer">'+(state.newsMode==='pulse'?'Verifica la fonte ↗':'Leggi il comunicato ufficiale ↗')+'</a>':'')+'</p></article>';
  return pageHero('NEWS / EVENT MONITOR','Dalla notizia <em>alla prova.</em>',
     'Distingui ciò che è stato pubblicato da quello che cambia davvero le aspettative. Una variazione dei futures non è automaticamente una sorpresa macro o la reazione a un comunicato.')
   +'<div class="filters"><div class="pill-controls">'+choose('',[
@@ -568,7 +568,7 @@ function news(){
     {label:'Comunicazioni ufficiali ('+evidence.official.length+')',value:'official'}
    ],state.newsMode,'data-news-mode')+'</div><span class="data-date">Ultima data disponibile '+date(evidence.latest)+'</span></div>'
   +'<div class="grid tilted"><section class="panel"><div class="panel-head"><div><span class="mini-overline">'+type+'</span>'
-  +'<h2>'+(state.newsMode==='pulse'?'Come si sono mosse le aspettative':'Comunicazioni ufficiali: cosa hanno pubblicato le istituzioni')+'</h2>'
+  +'<h2>'+(state.newsMode==='pulse'?'Cosa è cambiato nei mercati':'Comunicazioni ufficiali: cosa hanno pubblicato le istituzioni')+'</h2>'
   +'<p>'+esc(evidence.gap)+'</p></div></div>'
   +'<div class="timeline">'+(list.length?list.slice(0,20).map(newsCard).join(''):
     '<div class="empty"><strong>Nessuna voce con data verificabile</strong><p>Non sostituiamo eventi mancanti con notizie presunte.</p></div>')
@@ -578,8 +578,8 @@ function news(){
   +'<p class="focus-subtitle">'+esc(evidence.gap)+'</p><div class="divider"></div>'
   +'<div class="flow-track">'
   +'<div class="flow-item"><label>Fatto</label><p>Fonte, titolo, data e contenuto riportato. Le pubblicazioni ufficiali possono essere importanti anche senza una reazione di prezzo.</p></div>'
-  +'<div class="flow-item"><label>Sorpresa e revisioni</label><p>Il feed non riporta coppie dato effettivo/consenso con vintage verificato: non calcoliamo sorprese né attribuiamo revisioni.</p></div>'
-  +'<div class="flow-item"><label>Market pricing e conferme</label><p>Gli strumenti 6M/12M del Market Pulse descrivono movimenti sulle proprie date; i comunicati non dispongono di una finestra FX/OIS pre/post certificata. Per parlare di impatto servono dati allineati all’orario di rilascio.</p></div>'
+  +'<div class="flow-item"><label>Sorpresa e revisioni</label><p>Le chiusure azionarie, FX, credito e tassi non contengono il consenso di un evento. Senza una coppia effettivo/consenso con vintage verificato non calcoliamo sorprese né attribuiamo revisioni.</p></div>'
+  +'<div class="flow-item"><label>Market pricing e conferme</label><p>Il Pulse mostra chiusure FX, azionarie e creditizie, governativi e strumenti 6M/12M con le rispettive date; non sono reazioni a notizie dimostrate. I comunicati non hanno una finestra FX/OIS pre/post certificata: per attribuire impatto servono dati allineati all’orario.</p></div>'
   +'</div><div class="notice warn" style="margin-top:14px">'+esc(evidence.quality)+
    '. Nessun impatto intraday o segnale di trading viene inventato da un titolo.</div></section></div>';
 }
