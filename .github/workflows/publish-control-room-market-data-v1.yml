@@ -53,6 +53,7 @@ on:
 
 permissions:
   contents: write
+  actions: read
 
 # Preserve pending morning writes/retries instead of replacing an older
 # pending run when another workflow/event is triggered in the same group.
@@ -71,7 +72,7 @@ jobs:
       github.event_name != 'workflow_run' ||
       (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
         with:
@@ -168,6 +169,21 @@ jobs:
           python validation/publishing/test_verify_pages_http_delivery_v1.py
           python validation/publishing/test_verify_control_room_v10_preview_parts_v1.py
           python validation/publishing/test_control_room_v10_0800_public_sla_v1.py
+
+      # A new gh-pages commit cancels an active GitHub Pages deployment.
+      # Shared writer serialization protects git leases, but not the live CDN.
+      # Reuse the previously tested FXV2 idle-deployment gate, fail closed.
+      - name: Wait for current GitHub Pages deployment before mirror update
+        if: github.event_name != 'pull_request'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          python3 -m unittest validation.publishing.test_wait_gh_pages_idle_before_fxv2_push_v1 -q
+          python3 validation/publishing/wait_gh_pages_idle_before_fxv2_push_v1.py \\
+            --output /tmp/control-room-pages-idle.json --attempts 108 --delay 10
 
       - name: Publish exact feed scope to gh-pages with lease
         if: github.event_name != 'pull_request'
