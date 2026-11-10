@@ -21,7 +21,7 @@ const SOURCES={
  cb:'../../../live_data/sections/NATIVE_CB_DATA.json',
  cot:'../../../live_data/sections/V247_COT_STORIES.json',
  cotHistory:'../../../live_data/sections/V250_COT_CHART_DATA.json',
- cotPrice:'../design-studio-cot-v1-data.json',
+ cotPriorReference:'../design-studio-cot-v1-data.json',
  risk:'../cross-asset-live-data.json',
  ois:'../ois-pricing-snapshot.json',
  news:'../../../live_data/sections/NEWS_PULSE_OPERATIONAL.json',
