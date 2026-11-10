@@ -10,6 +10,42 @@
  * No consensus/surprises, probabilistic forecasts, causal claims or PIT backtests.
  */
 (function(root){
+function explainEconomy(s,st){
+ const category=String(s?.category||''),label=String(s?.label||'').toLowerCase(),unit=String(s?.unit||'').toLowerCase();
+ const delta=st?.d1;
+ if(typeof delta!=='number'||!Number.isFinite(delta)||!st.cur?.period||!st.pr?.period)
+  return {meaning:'Mancano osservazioni comparabili: non assegniamo una direzione economica.',check:'Verificare date, frequenza e unità della fonte.'};
+ const trend=delta>0?'in aumento':delta<0?'in calo':'stabile';
+ const cases={
+  'Inflazione':()=>/aspettativ|survey|bos/.test(label)
+   ?['Sono cambiate le aspettative dichiarate nel sondaggio ('+trend+'), non necessariamente i prezzi effettivi.','Confrontare prezzi osservati, servizi e aspettative monetarie; un sondaggio non è un OIS.']
+   :/index|indice/.test(unit)
+   ?['È cambiato il livello dell’indice dei prezzi ('+trend+'), non il tasso di inflazione annuo. Un indice in aumento non prova accelerazione dei prezzi.','Calcolare le variazioni percentuali fra periodi e distinguere headline, core, servizi ed effetti base.']
+   :['Cambia la misura di inflazione riportata ('+trend+'). Un tasso annuo in discesa non significa necessariamente prezzi mensili in calo.','Distinguere inflazione core e headline, composizione ed effetti base; cercare sorpresa e risposta monetaria solo con dati datati.'],
+  'Crescita':()=>/qoq|yoy|y\/y|%/.test(unit+' '+label)
+   ?['Cambia il tasso di crescita ('+trend+'). Un rallentamento della crescita può restare compatibile con un livello di attività in aumento.','Controllare frequenza, componenti e revisioni; confrontare domanda, produzione e redditi reali.']
+   :['Cambia il livello di un indicatore di attività ('+trend+'). Non equivale automaticamente a un’accelerazione o contrazione del PIL.','Confrontare consumi, ordini, produzione e redditi reali usando trasformazioni omogenee.'],
+  'Lavoro':()=>/disoccup|unemp|claims/.test(label)
+   ?['La disoccupazione o le richieste di sussidio risultano '+trend+'. La misura non distingue da sola minori assunzioni da più licenziamenti.','Verificare occupazione, assunzioni, cessazioni e salari, oltre alla partecipazione.']
+   :/salari|wage|earnings|costo unitario/.test(label)
+   ?['La misura salariale risulta '+trend+'. Il legame con inflazione e margini dipende anche dalla produttività.','Separare salari nominali, reali e produttività; osservare la persistenza nei servizi.']
+   :['La misura di occupazione o domanda di lavoro risulta '+trend+'. Il livello non basta per valutare la dinamica delle assunzioni.','Confrontare ore lavorate, partecipazione, vacancies e retribuzioni.'],
+  'Housing':()=>/tasso|rate/.test(label)
+   ?['Il costo del credito immobiliare risulta '+trend+'. La trasmissione a vendite e costruzioni può essere ritardata.','Verificare richieste di mutui, approvazioni, prezzi e offerta di abitazioni.']
+   :['L’indicatore immobiliare risulta '+trend+'. Stock di mutui, nuovi prestiti e compravendite misurano fenomeni distinti.','Incrociare finanziamenti, domanda di case e prezzi reali.'],
+  'Credito':()=>/standard|condizion|slos|bls|survey/.test(label)
+   ?['Cambia un sondaggio sul credito ('+trend+'). Il verso economico dipende dalla scala: un saldo più alto non significa sempre condizioni migliori.','Verificare la convenzione della fonte, domanda di credito, nuove erogazioni e insolvenze.']
+   :/tasso|rate|spread/.test(label)
+   ?['Il prezzo del credito risulta '+trend+'. Spread e tassi di riferimento sono componenti diverse.','Controllare standard bancari, domanda e quantità di prestiti concessi.']
+   :['I volumi o gli stock di credito risultano '+trend+'. La crescita dello stock non dimostra maggiore disponibilità di nuovi prestiti.','Verificare domanda, condizioni, costo e flussi di nuove erogazioni.'],
+  'Liquidità':()=>['La misura di liquidità o bilancio monetario risulta '+trend+'. Riserve, M2/M3 e attivi delle banche centrali non equivalgono a acquisti di azioni.','Separare bilanci, credito, finanziamento bancario e prezzi della liquidità.'],
+  'Condizioni finanziarie':()=>['L’indicatore di condizioni o cambio effettivo risulta '+trend+'. Serve la convenzione della serie per parlare di allentamento o restrizione.','Verificare cambio, rendimenti reali, credito ed equity senza inferire causalità.'],
+  'Rates':()=>['Il rendimento o tasso osservato risulta '+trend+'. Un governativo non misura soltanto il percorso atteso della banca centrale.','Separare 2Y, 10Y, rendimenti reali, breakeven e term premium; confrontare il vero pricing monetario.'],
+  'Lead / survey':()=>['Il sondaggio o indicatore anticipatore risulta '+trend+'. Un indice di diffusione non è crescita reale del PIL.','Verificare soglie e componenti, poi conferme da produzione, ordini e occupazione.']
+ };
+ const [meaning,check]=(cases[category]||(()=>['Manca una classificazione economica sufficientemente specifica.','Verificare definizione, trasformazione, fonte e frequenza.']))();
+ return {meaning,check};
+}
 function build(api){
  const {get,FX,FLAGS,NAMES,state,plot,pageHero,esc,fmt,sign,date,finite,validDay,dayNow}=api;
  const mdata=get('macro')?.currencies||{},catalog=get('macroSeries')||{},locDate=dayNow();
@@ -235,7 +271,10 @@ function build(api){
     +'<h3>Non basta sapere<br><em>quanto vale.</em></h3>'
     +'<div class="macro-dynamic-kpi"><span>ULTIMO LIVELLO</span><strong>'+n(st.cur?.value,2)+'</strong><small>'+esc(s.unit||'unità non indicata')+' · '+esc(st.cur?.period||'n.d.')+'</small></div>'
     +'<div class="macro-mini-stats"><div><span>DIREZIONE</span><b>'+esc(direction)+'</b></div><div><span>Δ ULTIMA OSS.</span><b>'+sign(st.d1,3,' '+st.unit)+'</b></div><div><span>ΔΔ VARIAZIONE</span><b>'+sign(st.speed,3,' '+st.unit)+'</b></div></div>'
-    +'<p><strong>La lettura del grafico:</strong> '+esc(explDelta(s,st)+' '+dynamics(st))+'</p><div class="macro-reading-caveat">Un cambiamento fra osservazioni non è una sorpresa rispetto al consenso né la conferma di un turning point economico.</div></aside></div></section>';
+    +'<p><strong>La lettura del grafico:</strong> '+esc(explDelta(s,st)+' '+dynamics(st))+'</p>'
+     +'<p><strong>Perché conta economicamente:</strong> '+esc(explainEconomy(s,st).meaning)+'</p>'
+     +'<p><strong>Cosa controllare adesso:</strong> '+esc(explainEconomy(s,st).check)+'</p>'
+     +'<div class="macro-reading-caveat">Un cambiamento fra osservazioni non è una sorpresa rispetto al consenso né la conferma di un turning point economico.</div></aside></div></section>';
  }
  function interpretation(){
    const s=selectedSeries(),st=stats(s||{});if(!s)return '';
@@ -310,5 +349,6 @@ function build(api){
  }
  return render();
 }
-root.FXQuantMacro={render:build};
+root.FXQuantMacro={render:build,explainIndicator:explainEconomy};
+if(typeof module!=='undefined'&&module.exports)module.exports={explainIndicator:explainEconomy};
 })(window);
