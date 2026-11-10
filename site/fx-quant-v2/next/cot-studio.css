@@ -160,3 +160,148 @@
  .cot-stat strong.cot-netoi-alert{font-size:18px;padding:5px 7px}
  .cot-country-button .cot-netoi-selector{font-size:8.5px;white-space:normal}
 }
+
+
+/* COT report-style colored table cells V1.
+   Entire cells (not badges only) distinguish the signs, percentile bands and
+   statistical distance. Red Net/OI >= +/-30% overrides any other number tone.
+   No color represents a forecast or an FX trading recommendation. */
+#content[data-view="cot"] .cot-table{
+ border-color:rgba(105,172,217,.32);
+ border-collapse:separate;
+ border-spacing:0;
+ font-variant-numeric:tabular-nums;
+}
+#content[data-view="cot"] .cot-table thead th{
+ background:#0e2436;color:#a8d9f9;
+ border-bottom:1px solid rgba(100,171,214,.32);
+}
+#content[data-view="cot"] .cot-table tbody tr:nth-child(odd) td{
+ background-color:rgba(28,54,78,.33);
+}
+#content[data-view="cot"] .cot-table tbody tr:nth-child(even) td{
+ background-color:rgba(13,34,52,.32);
+}
+#content[data-view="cot"] .cot-table tbody td.cot-number-cell{
+ font-weight:760;
+ font-size:12px;
+}
+#content[data-view="cot"] .cot-table tbody td.cot-number-cell.cot-table-up{
+ color:#81e8b7;
+ background:rgba(49,190,138,.105);
+}
+#content[data-view="cot"] .cot-table tbody td.cot-number-cell.cot-table-down{
+ color:#ff96a4;
+ background:rgba(234,89,113,.105);
+}
+#content[data-view="cot"] .cot-table tbody td.cot-number-cell.cot-table-flat{
+ color:#a9becd;
+}
+#content[data-view="cot"] .cot-table tbody td.cot-percentile-cell{
+ font-weight:850;
+ text-align:center;
+}
+#content[data-view="cot"] .cot-table tbody td.cot-percentile-cell.cot-p-high{
+ color:#7de7b4;
+ background:rgba(52,192,133,.15);
+}
+#content[data-view="cot"] .cot-table tbody td.cot-percentile-cell.cot-p-low{
+ color:#ff8999;
+ background:rgba(234,89,113,.16);
+}
+#content[data-view="cot"] .cot-table tbody td.cot-percentile-cell.cot-p-middle{
+ color:#aedfff;
+ background:rgba(62,142,212,.095);
+}
+#content[data-view="cot"] .cot-table tbody td.cot-percentile-cell.cot-p-archive{
+ color:#a9b9c4;
+ background:rgba(107,141,168,.065);
+}
+#content[data-view="cot"] .cot-table tbody td.cot-percentile-cell .cot-p-value{
+ font-weight:900;
+ font-size:12px;
+}
+#content[data-view="cot"] .cot-table tbody td.cot-z-cell{
+ text-align:center;
+}
+#content[data-view="cot"] .cot-table .cot-z-chip{
+ display:inline-flex;min-width:53px;
+ justify-content:center;align-items:center;
+ border:1px solid rgba(126,164,203,.25);
+ border-radius:7px;
+ padding:5px 7px;font-size:11px;
+ font-weight:900;background:rgba(81,133,192,.09);
+ color:#bacfe0;
+}
+#content[data-view="cot"] .cot-table .cot-z-chip.cot-z-hot-up{
+ color:#7cecb8;
+ border-color:rgba(77,212,148,.42);
+ background:rgba(54,181,125,.18);
+}
+#content[data-view="cot"] .cot-table .cot-z-chip.cot-z-hot-down{
+ color:#ff96a4;
+ border-color:rgba(255,114,133,.42);
+ background:rgba(226,72,100,.19);
+}
+#content[data-view="cot"] .cot-table .cot-z-chip.cot-z-up{color:#a3e7c8}
+#content[data-view="cot"] .cot-table .cot-z-chip.cot-z-down{color:#f6b2bd}
+#content[data-view="cot"] .cot-table tbody td.cot-netoi-cell-alert,
+#content[data-view="cot"] .cot-table tbody tr.active td.cot-netoi-cell-alert{
+ background:rgba(220,56,84,.27)!important;
+ color:#ffb1bb!important;
+ border-left:1px solid rgba(255,105,129,.4);
+ border-right:1px solid rgba(255,105,129,.4);
+ box-shadow:inset 0 2px 0 rgba(255,115,137,.58);
+}
+#content[data-view="cot"] .cot-table tbody td.cot-netoi-cell-alert .cot-netoi-alert{
+ color:#ffb6bf!important;
+ border-color:rgba(255,144,163,.68)!important;
+ background:rgba(255,122,135,.19)!important;
+ font-weight:900!important;
+}
+#content[data-view="cot"] .cot-table tbody td.cot-netoi-cell-normal{
+ color:#cbdde8;
+}
+#content[data-view="cot"] .cot-table tbody td.cot-currency-cell{
+ border-left:3px solid rgba(98,153,184,.5);
+ background:rgba(80,135,176,.08);
+}
+#content[data-view="cot"] .cot-table tbody tr[data-cot-band="high"] td.cot-currency-cell{
+ border-left-color:#5fe0a1;
+ background:rgba(52,180,123,.10);
+}
+#content[data-view="cot"] .cot-table tbody tr[data-cot-band="low"] td.cot-currency-cell{
+ border-left-color:#ff7280;
+ background:rgba(232,79,102,.10);
+}
+#content[data-view="cot"] .cot-table tbody tr.active td.cot-currency-cell{
+ box-shadow:inset 0 0 0 1px rgba(132,202,244,.28);
+}
+#content[data-view="cot"] .cot-history-table tbody tr.cot-history-current td.cot-date-cell{
+ color:#bdeaff;
+ font-weight:850;
+ background:rgba(61,150,208,.14);
+}
+#content[data-view="cot"] .cot-history-table tbody td.cot-gross-long{
+ color:#80dbb0;
+}
+#content[data-view="cot"] .cot-history-table tbody td.cot-gross-short{
+ color:#f4a1ac;
+}
+#content[data-view="cot"] .cot-compare-table tbody td.cot-state-cell.cot-state-agree{
+ color:#80dfb5;background:rgba(52,178,131,.12);
+}
+#content[data-view="cot"] .cot-compare-table tbody td.cot-state-cell.cot-state-diverge{
+ color:#ffcf86;background:rgba(233,174,73,.13);
+}
+#content[data-view="cot"] .cot-compare-table tbody td.cot-state-cell.cot-state-unknown{
+ color:#a8bdce;
+}
+#content[data-view="cot"] .cot-table tbody tr:hover td:not(.cot-netoi-cell-alert){
+ filter:brightness(1.12);
+}
+@media(max-width:650px){
+ #content[data-view="cot"] .cot-table tbody td.cot-number-cell{font-size:11px}
+ #content[data-view="cot"] .cot-table .cot-z-chip{padding:4px 6px;font-size:10px}
+ #content[data-view="cot"] .cot-table tbody td.cot-netoi-cell-alert .cot-netoi-alert{font-size:10px}
+}
