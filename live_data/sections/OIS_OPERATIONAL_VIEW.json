@@ -117,22 +117,22 @@
         },
         "6m": {
           "accrual_start": "2027-06-16",
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "SA3M2027",
           "contract_description": "Jun 2027",
           "expiration": "2027-09-14",
-          "futures_price": 99.8,
+          "futures_price": 99.745,
           "mapping": "nearest ICE SARON accrual start to today+180d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-09T13:33:59Z",
-          "quote_as_of": "2026-11-09",
+          "price_valid_until": "2026-11-10T13:43:00Z",
+          "quote_as_of": "2026-11-10",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": null,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 20.0,
+          "raw_level_minus_spot_policy_bp": 25.5,
           "symbol": "ICEEUR:SA3M2027"
         }
       },
@@ -174,8 +174,8 @@
           },
           "6m": {
             "contract": "SA3M2027",
-            "quote_as_of": "2026-11-09",
-            "rate_indicative": 0.2,
+            "quote_as_of": "2026-11-10",
+            "rate_indicative": 0.255,
             "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
           }
         },
