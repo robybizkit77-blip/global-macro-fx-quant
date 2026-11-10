@@ -70,6 +70,18 @@ fs.mkdirSync(evidence,{recursive:true});
    await page.evaluate(()=>{location.hash='#overview'});
    await page.waitForFunction(()=>document.querySelector('.market-letter')!==null);
    assert(await page.locator('.market-letter .letter-opening').count()===1,'Narrative opening missing');
+   assert(await page.locator('.dashboard-reading-story').count()===1,
+     'Home must lead with a continuous market narrative');
+   assert(await page.locator('details[data-home-evidence]').count()===1,
+     'The numerical layer must remain available');
+   assert(await page.locator('details[data-home-evidence]').evaluate(el=>!el.open),
+     'First reading must not be interrupted by the full numerical dossier');
+   await page.locator('details[data-home-evidence] > summary').click();
+   assert(await page.locator('details[data-home-evidence]').evaluate(el=>el.open),
+     'The numerical dossier must expand on request');
+   assert(await page.locator('.decision-summary').isVisible(),
+     'The operational verdict must be visible once evidence is expanded');
+
    assert(await page.locator('.dashboard-kpi').count()===4,'Dashboard market indicators missing');
    assert(await page.locator('.dashboard-chart-grid').count()===1,'Dashboard chart and desk analysis not side by side');
    assert(await page.locator('.dashboard-dossier').count()===1,'Optional deep research panel missing');
