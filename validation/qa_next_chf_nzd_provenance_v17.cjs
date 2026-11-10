@@ -121,7 +121,7 @@ assert.doesNotMatch(html,/data-source-context=/,'Official fully current pair mus
 const page=fs.readFileSync('site/fx-quant-v2/next/index.html','utf8');
 const app=fs.readFileSync('site/fx-quant-v2/next/app.js','utf8');
 const journey=fs.readFileSync('site/fx-quant-v2/next/decision-journey.js','utf8');
-assert(page.includes('fx-rates-bridge.js?v=17')&&page.includes('app.js?v=17'));
+assert(page.includes('fx-rates-bridge.js?v=17')&&page.includes('app.js?v=18'));
 assert(app.includes("chfResearch:'../chf-snb-paired-history.json'"));
 assert(app.includes("nzdPostroll:'../nzd-b2-postroll-web-research.json'"));
 assert(journey.includes("get('chfResearch')")&&journey.includes("get('nzdPostroll')"));
