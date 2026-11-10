@@ -441,3 +441,35 @@
   padding:6px 8px;font-size:10.5px;
  }
 }
+
+
+/* FX FIRST HOME NAV V1 — understated pair handoffs, no new global restyling. */
+.market-dashboard .dashboard-fx-shortlist{
+ display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+ margin:13px 0 0 clamp(15px,2vw,24px);
+}
+.market-dashboard .dashboard-fx-shortlist>span{
+ display:block;width:100%;font-size:10px;letter-spacing:.12em;
+ font-weight:850;color:#88e6cf;
+}
+.market-dashboard .dashboard-fx-shortlist button{
+ appearance:none;cursor:pointer;border-radius:9px;
+ border:1px solid rgba(106,191,217,.39);
+ color:#e5f5ff;background:linear-gradient(130deg,rgba(61,145,176,.16),rgba(24,71,99,.15));
+ font-family:inherit;font-weight:700;font-size:12px;line-height:1.4;letter-spacing:.01em;
+ padding:9px 12px;text-align:left;
+}
+.market-dashboard .dashboard-fx-shortlist button:hover,
+.market-dashboard .dashboard-fx-shortlist button:focus-visible{
+ background:rgba(65,159,185,.22);border-color:#76d9db;color:white;
+ outline-offset:3px;
+}
+.market-dashboard .dashboard-reading-source-links{margin-top:16px}
+@media(max-width:650px){
+ .market-dashboard .dashboard-fx-shortlist{
+  gap:7px;margin-left:15px;margin-right:8px
+ }
+ .market-dashboard .dashboard-fx-shortlist button{
+  font-size:11px;padding:8px 9px
+ }
+}

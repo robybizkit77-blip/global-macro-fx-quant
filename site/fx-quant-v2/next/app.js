@@ -237,9 +237,22 @@ function atlasEvidence(key){
  return info[key]||info.rates;
 }
 function homeScreenChart(){
- let keys=state.homeChart||researchCase().focus,w=Number(state.homeWindow||20),lines=[],label='',unit='',result='',asof='';
+ let keys=state.homeChart||'fx',w=Number(state.homeWindow||20),lines=[],label='',unit='',result='',asof='';
  const u=get('rates')?.USD,d=get('dxy'),r=get('risk')?.streams||{};
- if(keys==='nasdaq'){
+ if(keys==='fx'){
+  const h=fxHomeDesk(),rows=(get('currencyPrices')?.rows||[])
+    .filter(x=>validDay(x?.Date)&&x.Date<=dayNow()&&FX.every(c=>c==='EUR'||finite(x[c])&&x[c]>0))
+    .sort((a,b)=>a.Date.localeCompare(b.Date));
+  if(!h.ready||rows.length<6)return '<div class="empty"><strong>Forza G8 non disponibile</strong><p>Servono sei fixing BCE completi e un modello delle 28 coppie sulla stessa data.</p></div>';
+  const subset=rows.slice(-Math.max(6,w+1)),base=subset[0];
+  const selected=[h.strength5[0]?.ccy,h.strength5.at(-1)?.ccy,h.strength1[0]?.ccy,'USD']
+   .filter((c,i,a)=>c&&a.indexOf(c)===i).slice(0,4);
+  const colors=['#81e8b7','#ff8290','#ffc77f','#65cfff'];
+  lines=selected.map((c,i)=>({name:FLAGS[c]+' '+c+' / EUR',color:colors[i],
+    values:subset.map(x=>({label:x.Date,value:c==='EUR'?0:Math.log(base[c]/x[c])*100}))}));
+  label='G8 · performance relativa vs EUR';unit='%';asof=h.asof;
+  result='Ogni linea mostra la variazione della valuta rispetto all’euro dal primo fixing del grafico. Prezzi BCE, stesso calendario, non quotazioni live né segnali.';
+ }else if(keys==='nasdaq'){
   const a=r.NASDAQCOM;
   lines=[{name:'Nasdaq Composite',color:'#95d8ef',values:priceHistory('NASDAQCOM').slice(-w)}];
   label='Azionario USA · Nasdaq Composite';unit='';asof=a?.date;
@@ -259,7 +272,7 @@ function homeScreenChart(){
   result='Fonte '+String(s?.publisher||'non disponibile')+'. Serie daily close, non intraday.';
  }
  return '<div class="analysis-chart-head"><div><span class="micro-over">LAB / DATI DATATI</span><h3>'+esc(label)+'</h3></div><span class="time-label">Ultimo '+date(asof)+'</span></div>'
- +'<div class="analyst-toolbar"><div class="chart-tabset">'+choose('',[{label:'Nasdaq',value:'nasdaq'},{label:'2Y / 10Y',value:'rates'},{label:'USD proxy',value:'dxy'},{label:'VIX',value:'vix'},{label:'HY',value:'hy'}],keys,'data-hchart')+'</div><div class="chart-tabset">'+choose('',[{label:'5',value:5},{label:'20',value:20},{label:'60',value:60}],w,'data-hwindow')+'</div></div>'
+ +'<div class="analyst-toolbar"><div class="chart-tabset">'+choose('',[{label:'Forza G8 FX',value:'fx'},{label:'Nasdaq',value:'nasdaq'},{label:'2Y / 10Y',value:'rates'},{label:'USD proxy',value:'dxy'},{label:'VIX',value:'vix'},{label:'HY',value:'hy'}],keys,'data-hchart')+'</div><div class="chart-tabset">'+choose('',[{label:'5',value:5},{label:'20',value:20},{label:'60',value:60}],w,'data-hwindow')+'</div></div>'
  +plot({lines,unit,label:'Storico '+label,window:w})
  +'<div class="chart-footnote"><span class="footnote-dot"></span>'+esc(result)+' <strong>Le date delle serie restano indipendenti.</strong></div>';
 }
@@ -342,8 +355,130 @@ function researchBridge(route){
  return '<aside class="research-continuity" aria-label="Collegamento alla ricerca principale"><div><span>DALLA RICERCA / '+esc(ROUTES[route]||route).toUpperCase()+'</span><h2>'+esc(prompts[route]||'Approfondisci la tesi')+'</h2><p>'+message[route]+'</p></div><a href="#overview">Rileggi la tesi del desk ↗</a></aside>';
 }
 
+
+/* FX FIRST — the homepage is a currency research desk, not a cross-asset newsletter.
+   ECB EUR-base fixings are converted into relative value changes consistently:
+   positive % = the named currency strengthened against EUR. No spot/intraday claim.
+   Never classify a pair as a trade merely because its model favours one currency. */
+function fxHomeDesk(){
+ const prices=get('currencyPrices'),pairs=get('pairs'),pairMap=pairs?.pairs||{};
+ const rows=(prices?.rows||[]).filter(x=>validDay(x?.Date)&&x.Date<=dayNow()
+   &&FX.every(c=>c==='EUR'||finite(x[c])&&x[c]>0)).sort((a,b)=>a.Date.localeCompare(b.Date));
+ const end=rows.at(-1),previous=rows.at(-2),baseline=rows.at(-6);
+ const ready=!!(end&&previous&&baseline&&end.Date===prices.last_as_of&&end.Date===pairs?.price_asof);
+ const recent=ready&&fresh(end.Date,8);
+ const empty='Il fixing BCE delle otto valute e il motore delle 28 coppie non sono allineati su una data recente. Non attribuiamo forza relativa o vantaggi FX al mercato attuale senza una fotografia coerente.';
+ if(!ready)return {ready:false,recent:false,asof:end?.Date||null,headline:'FOREX G8 · Perché manca ancora una lettura relativa verificabile',
+  opening:empty,why:'Prima di parlare di valute forti o deboli servono almeno sei fixing G8 completi e lo stesso giorno di riferimento per il modello delle 28 coppie.',
+  policy:'Nessuna conclusione monetaria o macro viene sostituita a una misura di prezzo mancante.',
+  market:'Le coppie rimangono accessibili nella sezione FX, ma non vengono presentate come opportunità attuali.',
+  verdict:'Tesi FX non valutabile con le fonti disponibili; nessuna selezione automatica.',watch:'Verificare la pubblicazione dei fixing e l’allineamento del modello FX.',
+  meta:'G8 e 28 coppie non allineati',metrics:[],strength1:[],strength5:[]};
+ const getMove=(from,to,c)=>c==='EUR'?0:100*Math.log(from[c]/to[c]);
+ const calc=from=>FX.map(ccy=>({ccy,value:getMove(from,end,ccy)})).sort((a,b)=>b.value-a.value);
+ const strength1=calc(previous),strength5=calc(baseline);
+ const lead1=strength1[0],lag1=strength1.at(-1),lead5=strength5[0],lag5=strength5.at(-1);
+ const move1=c=>strength1.find(x=>x.ccy===c)?.value;
+ const move5=c=>strength5.find(x=>x.ccy===c)?.value;
+ const fmtMove=x=>sign(x,2,'%');
+ const label=c=>FLAGS[c]+' '+c;
+ const dayPhrase='Nel fixing BCE del '+date(end.Date);
+ const yesterday=label(lead1.ccy)+' '+fmtMove(lead1.value)+' e '+label(lag1.ccy)+' '+fmtMove(lag1.value);
+ const five=label(lead5.ccy)+' '+fmtMove(lead5.value)+' e '+label(lag5.ccy)+' '+fmtMove(lag5.value);
+ const shortLeader5=move5(lead1.ccy);
+ const nzdContext=lead1.ccy==='NZD'&&finite(shortLeader5)?
+  'Il recupero del NZD non equivale ancora a un cambio di trend: sulle cinque sedute precedenti il suo saldo relativo è '+fmtMove(shortLeader5)+'.':
+  'La seduta e il movimento a cinque fixing non vanno confusi: una giornata forte può essere un recupero all’interno di una tendenza più debole.';
+ const eurusd=pairMap.EURUSD,usdjpy=pairMap.USDJPY,audchf=pairMap.AUDCHF;
+ const pFav=p=>p?.setup?.structuralFav||p?.decision_frame?.fav||null;
+ const pQuality=p=>p?.setup?.quality||'NON VALUTABILE';
+ const pPrice=p=>p?.setup?.price?.state||'NEUTRAL';
+ const knownPair=(p)=>p&&['GOOD','BAD','NEUTRAL'].includes(pPrice(p));
+ const pairEvidence=knownPair(eurusd)&&knownPair(usdjpy)?
+  (pFav(eurusd)==='USD'?'EUR/USD: il modello attribuisce a USD un vantaggio parziale'+
+   (pPrice(eurusd)==='GOOD'?' che il prezzo già riflette':' che il prezzo non conferma ancora')+
+   '; stato '+pQuality(eurusd)+'. ':'EUR/USD non ha una prevalenza strutturale USD verificata. ')+
+  (pFav(usdjpy)==='USD'&&pPrice(usdjpy)==='BAD'?
+   'USD/JPY: la struttura favorisce USD, ma il prezzo favorisce JPY; divergenza da monitorare, non segnale di acquisto. ':
+   'USD/JPY richiede il confronto autonomo tra struttura e prezzo. '):
+  'Non ci sono dati sufficienti per una conclusione puntuale e confrontabile su EUR/USD e USD/JPY. ';
+ const aussieEvidence=audchf&&pFav(audchf)==='AUD'&&pPrice(audchf)==='GOOD'?
+  'AUD/CHF: la struttura e il prezzo del modello favoriscono AUD, ma negli ultimi cinque fixing '+label('CHF')+
+  ' ha sovraperformato '+label('AUD')+'. Gli orizzonti del modello e del movimento breve differiscono; è una verifica da fare, non una contraddizione automaticamente risolta.':
+  '';
+ const qdist=pairs?.quality_distribution||{};
+ const clean=qdist.PULITO||0,total=pairs?.pair_count||28;
+ const riskPairs=(qdist['CON RISCHI']||0),unusable=(qdist['NON VALUTABILE']||0),pending=(qdist['DA CONFERMARE']||0),watching=(qdist['DA MONITORARE']||0);
+ const policyUSD=get('ois')?.currencies?.USD?.horizons?.['6m'],policyEUR=get('ois')?.currencies?.EUR?.horizons?.['6m'];
+ const govUSD=get('rates')?.USD,govEUR=get('rates')?.EUR;
+ const sameGov=govUSD?.date===end.Date&&govEUR?.date===end.Date&&finite(govUSD['2Y'])&&finite(govEUR['2Y']);
+ const diff=sameGov?(govUSD['2Y']-govEUR['2Y'])*100:null;
+ const comparableMoney=policyUSD?.as_of===end.Date&&policyEUR?.as_of===end.Date&&
+    finite(policyUSD.change_1d_bp)&&finite(policyEUR.change_1d_bp);
+ const ratesText=sameGov?
+  'Il differenziale governativo 2Y USA–Eurozona è '+sign(diff,0,' pb')+' alla stessa data. '+
+   (comparableMoney?'Anche i contratti monetari a sei mesi riportano variazioni giornaliere comparabili, da verificare per strumento.':
+    'Ma non c’è una coppia omogenea di variazioni giornaliere 6M USA/EUR: non posso chiamarlo un nuovo repricing relativo delle banche centrali.'):
+  'Non abbiamo due rendimenti governativi 2Y USA/EUR sulla stessa data del fixing: nessun differenziale corrente viene forzato.';
+ const ma=get('macro')?.currencies||{},usdInf=ma.USD?.inflation,eurInf=ma.EUR?.inflation;
+ const macroContext=eurusd?.decision_frame?.macroSide==='USD'?
+   'La componente Macro del modello favorisce USD rispetto a EUR, mentre il confronto Tassi/CB non produce un vincitore completo.':
+   'Il motore Macro/Tassi non dà un orientamento completo per EUR/USD.';
+ const cot=get('cot')||{},dateMatch=cot.AUD?.today?.match(/CFTC al (\d{4}-\d{2}-\d{2})/)?.[1];
+ const cotValid=validDay(dateMatch)&&dateMatch<=end.Date;
+ const nzdCrowded=cot.NZD?.today?.match(/Net\/OI\s+([+-]?\d+(?:\.\d+)?)%/);
+ const audCrowded=cot.AUD?.today?.match(/Net\/OI\s+([+-]?\d+(?:\.\d+)?)%/);
+ const crowded=cotValid&&nzdCrowded&&audCrowded&&
+   Math.abs(Number(nzdCrowded[1]).toFixed(1))>=30&&Math.abs(Number(audCrowded[1]).toFixed(1))>=30;
+ const positioning=crowded?
+  'Nel COT del '+date(dateMatch)+' NZD e AUD sono entrambi net short con Net/OI oltre −30%: il posizionamento è concentrato. '+
+  'Il rialzo giornaliero del NZD potrebbe includere ricoperture, ma i dati non identificano le operazioni né dimostrano flussi di short covering.':
+  'Il COT è settimanale: non lo usiamo per attribuire gli ultimi movimenti FX a ricoperture che non possiamo osservare.';
+ const r=get('risk')?.streams||{},vix=r.VIX||{};
+ const vixSame=vix.date===end.Date&&finite(vix.value)&&finite(vix.previous);
+ const vixDelta=vixSame?vix.value-vix.previous:null;
+ const riskContext=vixSame&&finite(vixDelta)?
+  'Il VIX nello stesso giorno '+(vixDelta<0?'è sceso':'è salito')+' di '+fmt(Math.abs(vixDelta),2)+
+  ' punti: '+(vixDelta<0?'è compatibile con un allentamento della pressione sulle valute sensibili al rischio.':
+   'potrebbe rendere più fragile un recupero delle valute cicliche.')+
+  ' Tuttavia il VIX da solo non spiega il NZD né dimostra un flusso FX; il confronto azioni/credito richiede altre date.':
+  'La lettura cross-asset non ha una conferma di volatilità sulla stessa data FX; non la useremo per spiegare i movimenti delle valute.';
+ const staleLead=!recent?'Il quadro seguente è storico, non una lettura della seduta in corso. ':'';
+ const metrics=[
+  {label:label(lead1.ccy)+' · ultimo fixing',value:fmtMove(lead1.value),source:'BCE · vs EUR',day:end.Date,key:'currencies'},
+  {label:label(lag1.ccy)+' · ultimo fixing',value:fmtMove(lag1.value),source:'BCE · vs EUR',day:end.Date,key:'currencies'},
+  {label:label(lead5.ccy)+' · 5 fixing',value:fmtMove(lead5.value),source:'BCE · vs EUR',day:end.Date,key:'currencies'},
+  {label:label(lag5.ccy)+' · 5 fixing',value:fmtMove(lag5.value),source:'BCE · vs EUR',day:end.Date,key:'currencies'}
+ ];
+ const prefix='FX G8 · ';
+ const headline=recent?
+   prefix+label(lead1.ccy)+(lead1.value>0?' guida l’ultimo fixing':' tiene meglio nell’ultimo fixing')+
+   ', mentre il confronto su cinque sedute premia '+label(lead5.ccy):
+   prefix+'fotografia storica: confrontare prima i fixing e le 28 coppie';
+ const opening=staleLead+dayPhrase+' la valuta più forte rispetto al fixing precedente è '+label(lead1.ccy)+
+   ' ('+fmtMove(lead1.value)+'), la più debole è '+label(lag1.ccy)+' ('+fmtMove(lag1.value)+
+   '). Nelle ultime cinque sedute, invece, in testa c’è '+label(lead5.ccy)+' ('+fmtMove(lead5.value)+
+   ') e in fondo '+label(lag5.ccy)+' ('+fmtMove(lag5.value)+'). Sono confronti valutari relativi, non prezzi live.';
+ const why=nzdContext+' '+(sameGov?ratesText:'')+' '+macroContext;
+ const policy=pairEvidence+aussieEvidence;
+ const market=positioning+' '+riskContext;
+ const verdict=recent?
+   'Il messaggio FX è una rotazione di forza relativa, non una direzione unica del dollaro o delle valute cicliche. '+
+   (clean===0?'Sulle '+total+' coppie non ci sono setup classificati puliti: ':'Il motore segnala '+clean+' coppie pulite, ma serve ancora il timing tecnico: ')+
+   riskPairs+' con rischi, '+unusable+' non valutabili, '+pending+' da confermare e '+watching+' da monitorare. La solidità di una tesi non equivale a un ingresso interessante.':
+   'Le variazioni dei fixing sono datate e non supportano un verdetto operativo aggiornato. Non promuoviamo coppie fuori dalla loro finestra di validità.';
+ const watch='Prima osserverei se '+label(lead1.ccy)+' consolida il recupero oltre un solo fixing e se '+label(lag5.ccy)+
+   ' smette di perdere terreno. Poi controllerei se su USD/JPY il prezzo smette di contraddire la struttura e se EUR/USD offre qualcosa di nuovo oltre alla conferma già prezzata. Per attribuire i movimenti alla politica monetaria serviranno variazioni OIS/futures USA–Europa comparabili.';
+ return {ready:true,recent,asof:end.Date,headline,opening,why,policy,market,verdict,watch,
+  meta:'Fixing BCE '+date(end.Date)+' · 1 e 5 fixing · '+total+' coppie',
+  strength1,strength5,metrics,
+  highlight:[lead1.ccy,lag1.ccy,lead5.ccy,lag5.ccy],
+  last:end.Date,positioning};
+}
+
 function overview(){
  const context=researchCase();
+ const fxDesk=fxHomeDesk();
  const u=get('rates')?.USD||{},d=get('dxy')||{},risk=get('risk')?.streams||{};
  const n=risk.NASDAQCOM||{},sp=risk.SP500||{},vx=risk.VIX||{},hy=risk.HY_OAS||{};
  const m=get('macro')?.currencies?.USD||{},oc=get('ois')?.currencies?.USD||{},cb=get('cb')?.USD||{};
@@ -453,11 +588,12 @@ function overview(){
  const us2=metric('Treasury USA · 2Y',sign(u?.chg2_bp,1,' pb'),u?.date,'Treasury','rates');
  const us10=metric('Treasury USA · 10Y',sign(u?.chg10_bp,1,' pb'),u?.date,'Treasury','rates');
  const dollar=metric('USD · proxy BCE',sign(dx,2,'%'),d?.as_of,'BCE / fixing','currencies');
- const headlineMetrics=(stress||relief)
+ const legacyHeadlineMetrics=(stress||relief)
   ?[nasdaq,vixMove,hyMove,us2]
   :(bonds||yieldsUp)?[us2,us10,dollar,hyMove]
   :divergent?[dollar,us2,us10,hyMove]
   :[us2,nasdaq,dollar,hyMove];
+ const headlineMetrics=fxDesk.ready?fxDesk.metrics:legacyHeadlineMetrics;
  const kpis=headlineMetrics.map(x=>'<a href="#'+x.key+'" class="dashboard-kpi">'
    +'<span class="dashboard-kpi-label">'+esc(x.label)+'</span><strong>'+esc(x.value)+'</strong>'
    +'<span class="dashboard-kpi-meta">'+esc(x.source)+' · '+esc(x.day)+'</span></a>').join('');
@@ -470,11 +606,11 @@ function overview(){
   divergent?'Partiamo dal proxy del dollaro perché diverge dalla variazione del front-end sulla stessa data. La divergenza non è una strategia automatica.':
   'Il grafico visualizza uno stream reale con la propria data. Dove le fonti non coincidono, non deduciamo simultaneità.';
  const internalLinks=[
-  {url:'macro',head:'Scenario Macro',lead:'Inflazione, lavoro e ciclo: il quadro sta accelerando o rallentando?'},
-  {url:'rates',head:'Tassi & OIS',lead:'Che cosa si muove nei governativi e cosa è già nel pricing monetario?'},
-  {url:'pairs',head:'28 coppie FX',lead:'Il vantaggio relativo trova conferma nel prezzo?'},
-  {url:'cot',head:'Positioning COT',lead:'Nuovi long/short o liquidazioni? Il flusso conferma la tesi?'}
- ];
+   {url:'currencies',head:'Valute G8',lead:'Perché una valuta guadagna o perde forza relativa?'},
+   {url:'pairs',head:'28 coppie FX',lead:'Vantaggio relativo, prezzo e rischi: cosa è già incorporato?'},
+   {url:'rates',head:'Tassi & OIS',lead:'Differenziali e aspettative monetarie: confermano i cambi?'},
+   {url:'cot',head:'Positioning COT',lead:'Posizioni concentrate e cambiamenti dei fondi.'}
+  ];
  const links=internalLinks.map(x=>'<a class="dashboard-research-link" href="#'+x.url+'"><strong>'+esc(x.head)+'</strong><span>'+esc(x.lead)+'</span><b aria-hidden="true">↗</b></a>').join('');
  // Evidence-led story. Separate dates, rate expectations, currency confirmation and COT.
  const deskVixDate=validDay(vx.date)&&vx.date<=dayNow()?vx.date:null;
@@ -606,26 +742,30 @@ function overview(){
      'Il test decisivo è il prossimo repricing OIS/futures sulla stessa data: se non segue il movimento del 2Y USA, la lettura monetaria perde forza. Poi verifico se USD/JPY e EUR/USD seguono davvero il vantaggio relativo.':
      'Monitorerei prima date allineate tra rischio e tassi, poi la risposta dei prezzi FX: un movimento isolato non cambia il giudizio.';
  return '<article class="market-letter market-dashboard" aria-label="Dashboard di ricerca FX Quant">'
- +'<header class="dashboard-heading"><div class="dashboard-topline"><span>FX QUANT / PANORAMICA DI MERCATO</span><span>Focus '+date(focusDate)+' · Ultimo feed '+date(latest)+' · '+dayNow().split('-').reverse().join('.')+'</span></div>'
- +'<div class="dashboard-title-row dashboard-reading-title"><div><h1>'+esc(storyHeadline)+'</h1><div class="letter-opening"><p class="letter-lead">'+esc(readingOpening)+'</p></div></div></div>'
- +(tooOld?'<p class="letter-stale">Dati storici: non rappresentano un aggiornamento intraday.</p>':'')
+ +'<header class="dashboard-heading"><div class="dashboard-topline"><span>FX QUANT / FOREX G8 & 28 COPPIE</span><span>Fixing FX '+date(fxDesk.asof)+' · Ultimo feed '+date(latest)+' · '+dayNow().split('-').reverse().join('.')+'</span></div>'
+ +'<div class="dashboard-title-row dashboard-reading-title"><div><h1>'+esc(fxDesk.headline)+'</h1><div class="letter-opening"><p class="letter-lead">'+esc(fxDesk.opening)+'</p></div></div></div>'
+ +(fxDesk.ready&&!fxDesk.recent?'<p class="letter-stale">Fixing FX storici: non rappresentano dati di mercato attuali.</p>':'')
  +'</header>'
- +'<section class="dashboard-reading-story" aria-label="Il racconto del desk"><div class="dashboard-reading-eyebrow">LA LETTURA DEL DESK · '+date(focusDate)+'</div>'
- +'<div class="dashboard-reading-body"><p>'+esc(readingWhy)+'</p><p>'+esc(readingPricing)+'</p><p>'+esc(readingMarket)+'</p>'
- +'<p class="dashboard-reading-verdict"><strong>Il mio giudizio.</strong> '+esc(readingVerdict)+'</p>'
- +'<p class="dashboard-reading-watch"><strong>Che cosa monitorare.</strong> '+esc(readingWatch)+'</p></div>'
- +'<nav class="dashboard-reading-source-links" aria-label="Verifica la lettura nei dossier"><a href="#risk">Rischio ↗</a><a href="#rates">Tassi & OIS ↗</a><a href="#macro">Macro ↗</a><a href="#currencies">Valute G8 ↗</a><a href="#pairs">Coppie FX ↗</a><a href="#cot">COT ↗</a><a href="#news">Notizie ↗</a></nav>'
- +'<p class="dashboard-reading-quality">Le osservazioni mantengono le date originali; ipotesi, prove e prezzi sono distinti. Numeri e verifiche completi restano consultabili qui sotto.</p></section>'
- +'<section class="dashboard-main dashboard-reading-chart"><div class="dashboard-section-head"><span>IL GRAFICO CHE ACCOMPAGNA LA LETTURA</span><p>Un’evidenza visiva, senza trasformare il grafico in una conclusione.</p></div>'
- +'<div class="dashboard-chart-grid"><figure class="letter-chart dashboard-chart"><figcaption><span>DATI DI MERCATO</span><strong>'+esc(firstChart)+'</strong><p>'+esc(focusText)+'</p></figcaption>'
+ +'<section class="dashboard-reading-story" aria-label="Il racconto del desk"><div class="dashboard-reading-eyebrow">LA LETTURA FX DEL DESK · '+date(fxDesk.asof)+'</div>'
+ +'<div class="dashboard-reading-body"><p>'+esc(fxDesk.why)+'</p><p>'+esc(fxDesk.policy)+'</p><p>'+esc(fxDesk.market)+'</p>'
+ +'<p class="dashboard-reading-verdict"><strong>Il mio giudizio.</strong> '+esc(fxDesk.verdict)+'</p>'
+ +'<p class="dashboard-reading-watch"><strong>Che cosa monitorare.</strong> '+esc(fxDesk.watch)+'</p></div>'
+ +'<div class="dashboard-fx-shortlist" aria-label="Coppie da approfondire">'+(fxDesk.ready?
+ '<span>APRI I DOSSIER FX</span>'+['EURUSD','USDJPY','AUDCHF']
+ .filter(k=>pairData[k]).map(k=>'<button type="button" data-pair="'+k+'">'+esc(getPairName(k))+
+ ' · '+esc(pairData[k].setup?.price?.text||'Prezzo da verificare')+' ↗</button>').join(''):'')+'</div>'
+ +'<nav class="dashboard-reading-source-links" aria-label="Verifica la lettura nei dossier"><a href="#currencies">Valute G8 ↗</a><a href="#pairs">28 coppie FX ↗</a><a href="#rates">Tassi & OIS ↗</a><a href="#macro">Macro ↗</a><a href="#cot">COT ↗</a><a href="#risk">Rischio ↗</a><a href="#news">Notizie ↗</a></nav>'
+ +'<p class="dashboard-reading-quality">I fixing BCE e le 28 coppie guidano la lettura. Macro, tassi, COT, volatilità e credito servono a spiegare o mettere alla prova le tesi FX, non a sostituirle.</p></section>'
+ +'<section class="dashboard-main dashboard-reading-chart"><div class="dashboard-section-head"><span>IL PREZZO FX DIETRO LA LETTURA</span><p>Confronta i movimenti delle valute prima di cercare conferme in altri mercati.</p></div>'
+ +'<div class="dashboard-chart-grid"><figure class="letter-chart dashboard-chart"><figcaption><span>DATI DI MERCATO</span><strong>Chi sta guadagnando terreno nel G8?</strong><p>Forza relativa nei fixing BCE, confrontabile tra valute e date; nessuna quotazione intraday.</p></figcaption>'
  +'<div class="letter-chart-visual">'+homeScreenChart()+'</div></figure></div></section>'
  +'<details class="dashboard-technical" data-home-evidence'+(state.homeEvidenceOpen?' open':'')+'>'
  +'<summary><span class="dashboard-technical-overline">SE VUOI VERIFICARE I NUMERI</span><strong>Apri dati, scenari e prove del desk</strong><small>Indicatori con date e fonti, percorso decisionale, conferme e invalidazioni. Tutto il contenuto resta disponibile.</small></summary>'
  +'<div class="dashboard-technical-content">'
- +'<section class="dashboard-metrics" aria-label="Indicatori che supportano il tema di mercato"><div class="dashboard-section-head"><span>INDICATORI DATATI</span><p>Ogni variazione mantiene la data della propria fonte.</p></div><div class="dashboard-kpi-grid">'+kpis+'</div></section>'
- +'<section class="dashboard-original-reading"><span class="dashboard-analysis-kicker">OSSERVAZIONI NUMERICHE E IPOTESI</span><p>'+esc(opening)+'</p></section>'
+ +'<section class="dashboard-metrics" aria-label="Indicatori che supportano il tema di mercato"><div class="dashboard-section-head"><span>FORZA RELATIVA G8</span><p>Variazioni contro EUR, stesso fixing BCE per tutte le valute.</p></div><div class="dashboard-kpi-grid">'+kpis+'</div></section>'
+ +'<section class="dashboard-original-reading"><span class="dashboard-analysis-kicker">CONTESTO CROSS-ASSET SECONDARIO</span><p>'+esc(opening)+'</p></section>'
  +(typeof window!=='undefined'&&window.FXQuantDecisionJourney?.build?window.FXQuantDecisionJourney.build({get,state,plot,fmt,sign,date,dayNow,esc}).overview():'<section class="decision-overview"><p>Percorso operativo non caricato. Nessuna selezione viene proposta.</p></section>')
- +'<aside class="dashboard-analysis"><span class="dashboard-analysis-kicker">L’ANALISI COMPLETA</span><h2>Una tesi, non un segnale.</h2><p>'+esc(follow)+'</p>'
+ +'<aside class="dashboard-analysis"><span class="dashboard-analysis-kicker">CONTESTO INTER-MERCATO</span><h2>Quali segnali esterni possono influire sulle valute?</h2><p>'+esc(follow)+'</p>'
  +'<div class="dashboard-analysis-judgment"><strong>Che cosa sta già prezzando il mercato?</strong><p>'+esc(pricingQuick)+'</p></div>'
  +'<div class="dashboard-analysis-watch"><strong>Che cosa potrebbe smentirci?</strong><p>'+esc(falsify)+'</p></div></aside>'
  +'<section class="dashboard-proof"><div class="dashboard-section-head"><span>LE PROVE CHE SOSTENGONO LA TESI</span><p>Solo osservazioni verificabili nella seduta considerata.</p></div>'+researchEvidence(context)+'</section>'
@@ -639,7 +779,7 @@ function overview(){
  +section('Che cosa mi farebbe cambiare idea?',esc(falsify))
  +'</div></div></details>'
  +'</div></details>'
- +'<section class="dashboard-deep-links"><div class="dashboard-section-head"><span>ESPLORA IL RESEARCH DESK</span><p>Apri una sezione soltanto quando vuoi approfondire.</p></div><div class="dashboard-link-grid">'+links+'</div></section>'
+ +'<section class="dashboard-deep-links"><div class="dashboard-section-head"><span>APPROFONDISCI LA TESI FX</span><p>I mercati esterni hanno valore quando modificano una lettura valutaria.</p></div><div class="dashboard-link-grid">'+links+'</div></section>'
  +'<footer class="letter-footer dashboard-footer"><small>'+sourceDates+'</small><small>Rendimenti Treasury ≠ OIS · USD proxy BCE ≠ indice ICE · COT settimanale ≠ flusso intraday. Nessun dato qui è un ordine operativo.</small></footer>'
  +'</article>';
 }
