@@ -192,8 +192,19 @@ def build(root,day,now):
     reference=forecast_reference(load(root,"forecast"),event,day)
     clock=event_clock(event) if event else None
     actual=load(root,"actual")
-    certified_actuals=len({x.get("metric_id") for x in actual
-                           if x.get("event_key")=="USD|2026-11-10|INFLATION|Consumer Price Index"})==4
+    # Even a future research replay cannot show an actual that was first
+    # observed after this edition's opening; checked archive ≠ publisher PIT.
+    observed_metrics=set()
+    for entry in actual:
+        if entry.get("event_key")!="USD|2026-11-10|INFLATION|Consumer Price Index":
+            continue
+        try:
+            observed=datetime.fromisoformat(entry["observed_at_utc"].replace("Z","+00:00"))
+            if observed.tzinfo and observed<=now and observed.astimezone(ROME).date()<day:
+                observed_metrics.add(entry.get("metric_id"))
+        except (ValueError,KeyError,TypeError):
+            continue
+    certified_actuals=len(observed_metrics)==4
     if stage=="TODAY":
         if ccy=="USD" and event["event_type"]=="INFLATION":
             headline="Il CPI mette alla prova una Fed ancora restrittiva. Per il dollaro conta ciò che è già prezzato."
