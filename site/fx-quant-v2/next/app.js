@@ -361,7 +361,8 @@ function overview(){
  const bonds=context.kind==='bond-rally'||(context.kind==='stress'&&context.usRates&&u.chg2_bp<-2&&u.chg10_bp<-2);
  const sharedDate=stress&&bonds&&u.date===n.date;
  const latest=context.latest;
- const tooOld=!latest||!fresh(latest,8);
+ const focusDate=context.leadDate||latest;
+ const tooOld=!focusDate||!fresh(focusDate,8);
  const dx=finite(d.value)&&finite(d.previous_value)&&d.previous_value!==0&&validDay(d.as_of)?(d.value/d.previous_value-1)*100:null;
  const headlineBase=sharedDate
    ?'Non è soltanto una correzione azionaria. Il mercato sta cambiando idea sulla crescita?'
@@ -390,9 +391,21 @@ function overview(){
    ?'Il quadro macro complica la lettura. L’ultimo dato di inflazione headline USA presente nel nostro archivio è '+fmt(macroInf.latest_value,2)+'% ('+(macroInf.as_of||'periodo da verificare')+'), con direzione '+(macroInf.direction||'non disponibile').toLowerCase()+'. Il tasso di disoccupazione è '+fmt(macroLab.latest_value,1)+'% ('+(macroLab.as_of||'periodo da verificare')+'), con direzione '+(macroLab.direction||'non disponibile').toLowerCase()+'. Sono osservazioni riferite a periodi diversi e non necessariamente a prime pubblicazioni point-in-time. Non autorizzano la conclusione che crescita e inflazione siano già entrambe in discesa.'
    :'La fotografia macro di inflazione e lavoro non è abbastanza completa per sostenere una tesi sul ciclo. In particolare, non attribuiamo al mercato un turning point che non è verificato dai dati.';
  const o6=oc.horizons?.['6m'];
- const pricingReading=finite(o6?.rate)&&validDay(o6.as_of)
+ const pricingReading=finite(o6?.rate)&&validDay(o6.as_of)&&o6.as_of<=dayNow()
    ?'Il contratto indicativo a sei mesi per gli Stati Uniti riporta '+fmt(o6.rate,3)+'% al '+date(o6.as_of)+' ('+(oc.kind||'strumento da classificare')+', qualità '+(oc.quality||'non classificata')+'). Questo livello non è un tasso OIS ufficiale e non va confrontato meccanicamente con il range Fed. '+(finite(o6.change_1d_bp)?'La variazione a un giorno riportata è '+sign(o6.change_1d_bp,1,' pb')+'.':'In questo snapshot manca una variazione giornaliera certificata: non possiamo dire di quanto siano cambiate le aspettative in questa seduta.')
    :'Il feed non offre una scadenza 6M USA con strumento e data verificabili. Per parlare di repricing monetario occorre un confronto omogeneo tra scadenze e sessioni.';
+ // The 6M level is context, not evidence of a same-session Fed repricing.
+ // Do not align different dates or instruments; no absent daily delta is inferred.
+ const money6Valid=finite(o6?.rate)&&validDay(o6?.as_of)&&o6.as_of<=dayNow();
+ const money6SameSession=money6Valid&&o6.as_of===focusDate;
+ const pricingQuick=!money6Valid
+   ?'Per la seduta esaminata non abbiamo una scadenza monetaria USA a sei mesi utilizzabile. Il movimento dei Treasury, da solo, non dimostra un riprezzamento Fed.'
+   :'Il riferimento USA a sei mesi è '+fmt(o6.rate,3)+'% ('+(oc.kind||'strumento da verificare')+
+    ', '+(oc.quality||'qualità non classificata')+', '+date(o6.as_of)+'). '+
+    (!money6SameSession?'Non coincide con la data del focus ('+date(focusDate)+'): non prova che le aspettative siano cambiate durante quel movimento.':
+     finite(o6.change_1d_bp)?'La variazione dichiarata è '+sign(o6.change_1d_bp,1,' pb')+
+      ', sullo stesso giorno del focus. È una misura dello strumento indicato, non automaticamente dell’intero sentiero Fed.':
+      'Manca una variazione giornaliera omogenea: conosciamo il livello indicativo, non il repricing di quella seduta.');
  const fxReading=finite(dx)
    ?'La prova valutaria, poi, va trattata con attenzione. Il proxy del dollaro ricavato dai fixing BCE ha registrato '+sign(dx,2,'%')+' al '+date(d.as_of)+'. '+(usd2&&u.date===d.as_of?'Si riferisce alla stessa data del 2Y, ma resta un indice sintetico, non il DXY ICE e non una prova di causalità.':'Il suo fixing non coincide con la data dell’ultimo 2Y USA: confrontarli come se fossero una reazione simultanea sarebbe fuorviante.')+' Il Forex può rispondere anche a differenziali relativi, coperture e avversione al rischio.'
    :'Non abbiamo una variazione datata del proxy USD sufficiente a verificare la reazione del dollaro. Non trasformiamo il silenzio del feed in un segnale FX.';
@@ -423,7 +436,7 @@ function overview(){
  const sourceDates=[
   ['Cross-asset',n.date],['Treasury 2Y',u.date],['Dollaro proxy BCE',d.as_of],
   ['CPI USA',macroInf?.as_of],['Lavoro USA',macroLab?.as_of],['Futures USD 6M',o6?.as_of],['Coppie FX',pairAsOf],['COT',cot.AUD?.today?.match(/CFTC al (\d{4}-\d{2}-\d{2})/)?.[1]]
- ].filter(x=>x[1]).map(([k,v])=>esc(k)+' '+date(v)).join(' · ');
+ ].filter(x=>x[1]&&(!validDay(x[1])||x[1]<=dayNow())).map(([k,v])=>esc(k)+' '+date(v)).join(' · ');
  const section=(title,body,cl='')=>'<section class="letter-section '+cl+'"><h2>'+title+'</h2><p>'+body+'</p></section>';
  const metric=(label,value,day,source,key)=>({label,value:validDay(day)&&day<=dayNow()?value:'—',day:validDay(day)&&day<=dayNow()?date(day):'n.d.',source,key});
  const nasdaq=metric('Nasdaq · 1D',sign(n?.change_1d_pct,2,'%'),n?.date,'Nasdaq / FRED','risk');
@@ -456,9 +469,9 @@ function overview(){
  ];
  const links=internalLinks.map(x=>'<a class="dashboard-research-link" href="#'+x.url+'"><strong>'+esc(x.head)+'</strong><span>'+esc(x.lead)+'</span><b aria-hidden="true">↗</b></a>').join('');
  return '<article class="market-letter market-dashboard" aria-label="Dashboard di ricerca FX Quant">'
- +'<header class="dashboard-heading"><div class="dashboard-topline"><span>FX QUANT / PANORAMICA DI MERCATO</span><span>Ultima evidenza '+date(latest)+' · '+dayNow().split('-').reverse().join('.')+'</span></div>'
+ +'<header class="dashboard-heading"><div class="dashboard-topline"><span>FX QUANT / PANORAMICA DI MERCATO</span><span>Focus '+date(focusDate)+' · Ultimo feed '+date(latest)+' · '+dayNow().split('-').reverse().join('.')+'</span></div>'
  +'<div class="dashboard-title-row"><div><h1>'+esc(headline)+'</h1><div class="letter-opening"><p class="letter-lead">'+esc(opening)+'</p></div></div>'
- +'<div class="dashboard-context"><span>FOCUS DI MERCATO</span><strong>'+esc(stress?'Stress di rischio':relief?'Distensione del rischio':bonds?'Rendimenti in discesa':yieldsUp?'Rendimenti in rialzo':divergent?'Divergenza tassi–USD':'Regime in verifica')+'</strong><p>Una fotografia costruita da osservazioni datate. La tesi e le sue conferme sono accanto ai grafici, non nascoste in un lungo articolo.</p><a href="#risk">Esplora il rischio ↗</a></div></div>'
+ +'<div class="dashboard-context"><span>IL GIUDIZIO DEL DESK · '+date(focusDate)+'</span><strong>'+esc(stress?'Stress di rischio':relief?'Distensione del rischio':bonds?'Rendimenti in discesa':yieldsUp?'Rendimenti in rialzo':divergent?'Divergenza tassi–USD':'Regime in verifica')+'</strong><p>'+esc(thesis)+'</p><a href="#risk">Esplora le prove ↗</a></div></div>'
  +(tooOld?'<p class="letter-stale">Dati storici: questa è una lettura di archivio, non un aggiornamento intraday. Le ultime osservazioni non sono recenti.</p>':'')
  +'</header>'
  +'<section class="dashboard-metrics" aria-label="Indicatori che supportano il tema di mercato"><div class="dashboard-section-head"><span>01 / INDICATORI</span><p>Le variazioni riportano la propria data, non un’unica fotografia in tempo reale.</p></div><div class="dashboard-kpi-grid">'+kpis+'</div></section>'
@@ -467,7 +480,7 @@ function overview(){
  +'<div class="dashboard-chart-grid"><figure class="letter-chart dashboard-chart"><figcaption><span>DATI DI MERCATO</span><strong>'+esc(firstChart)+'</strong><p>'+esc(focusText)+'</p></figcaption>'
  +'<div class="letter-chart-visual">'+homeScreenChart()+'</div></figure>'
  +'<aside class="dashboard-analysis"><span class="dashboard-analysis-kicker">CHE COSA CONCLUDIAMO?</span><h2>Una tesi, non un segnale.</h2><p>'+esc(follow)+'</p>'
- +'<div class="dashboard-analysis-judgment"><strong>Il giudizio del desk</strong><p>'+esc(thesis)+'</p></div>'
+ +'<div class="dashboard-analysis-judgment"><strong>Che cosa sta già prezzando il mercato?</strong><p>'+esc(pricingQuick)+'</p></div>'
  +'<div class="dashboard-analysis-watch"><strong>Che cosa potrebbe smentirci?</strong><p>'+esc(falsify)+'</p></div></aside></div></section>'
  +'<section class="dashboard-proof"><div class="dashboard-section-head"><span>03 / PROVE CHE SOSTENGONO LA TESI</span><p>Solo movimenti verificabili nella seduta considerata.</p></div>'+researchEvidence(context)+'</section>'
  +'<section class="dashboard-deep-links"><div class="dashboard-section-head"><span>04 / ESPLORA IL RESEARCH DESK</span><p>Grafici e analisi approfondite, senza duplicare l’intera Home.</p></div><div class="dashboard-link-grid">'+links+'</div></section>'
