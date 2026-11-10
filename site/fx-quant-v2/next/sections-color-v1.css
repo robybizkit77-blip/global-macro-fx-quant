@@ -1,0 +1,242 @@
+/* FX Quant Next / Sections Color V1
+   Seven research sections, Home Color V1 untouched.
+   Presentation only. Data, signal colors and graph series retain their meaning. */
+
+/* Each chapter receives a distinct editorial accent — never a trading signal. */
+#content[data-view="currencies"]{--section-accent:#53e4cb;--section-rgb:83,228,203;--section-soft:#aff9e7}
+#content[data-view="pairs"]{--section-accent:#85aaff;--section-rgb:133,170,255;--section-soft:#c4d5ff}
+#content[data-view="macro"]{--section-accent:#ffc77f;--section-rgb:255,199,127;--section-soft:#ffe2b1}
+#content[data-view="rates"]{--section-accent:#65cfff;--section-rgb:101,207,255;--section-soft:#bcecff}
+#content[data-view="cot"]{--section-accent:#72dcb8;--section-rgb:114,220,184;--section-soft:#c0f6df}
+#content[data-view="risk"]{--section-accent:#ff8290;--section-rgb:255,130,144;--section-soft:#ffc2c7}
+#content[data-view="news"]{--section-accent:#ffc77f;--section-rgb:255,199,127;--section-soft:#ffe8c2}
+
+/* Shared page introduction: recognizable signature without a new component. */
+#content[data-view]:not([data-view="overview"]) .page-hero{
+ position:relative;isolation:isolate;overflow:hidden;
+ padding:clamp(21px,3vw,37px);
+ border:1px solid rgba(var(--section-rgb),.30);
+ border-radius:18px;
+ background:
+ radial-gradient(ellipse 65% 115% at 100% 0%,rgba(var(--section-rgb),.16),transparent 72%),
+ radial-gradient(ellipse 45% 80% at 0% 100%,rgba(36,147,211,.095),transparent 75%),
+ linear-gradient(125deg,#122a40,#0d2032 63%,#0c1b2b);
+ box-shadow:inset 0 1px 0 rgba(195,236,255,.06),0 14px 35px rgba(0,8,23,.16);
+}
+#content[data-view]:not([data-view="overview"]) .page-hero:before{
+ content:"";height:3px;position:absolute;top:0;left:0;right:0;
+ background:linear-gradient(90deg,var(--section-accent),#68c9f7 58%,rgba(255,199,127,.65));
+}
+#content[data-view]:not([data-view="overview"]) .page-hero .eyebrow,
+#content[data-view]:not([data-view="overview"]) .chapter-kicker{
+ color:var(--section-accent);
+}
+#content[data-view]:not([data-view="overview"]) .page-hero h1{color:#f6f9fe;text-shadow:0 6px 24px rgba(70,161,226,.11)}
+#content[data-view]:not([data-view="overview"]) .page-hero h1 em{color:var(--section-soft)}
+#content[data-view]:not([data-view="overview"]) .page-hero .lead{color:#c2d6e3}
+#content[data-view]:not([data-view="overview"]) .sectionline h2{color:#f2f7fc}
+#content[data-view]:not([data-view="overview"]) .sectionline:before{background:var(--section-accent)}
+#content[data-view]:not([data-view="overview"]) .mini-overline{color:var(--section-soft)}
+#content[data-view]:not([data-view="overview"]) .action-primary{
+ border-color:var(--section-accent);
+ background:var(--section-accent);
+ color:#071f2a;
+}
+#content[data-view]:not([data-view="overview"]) .action-primary:hover{filter:brightness(1.09)}
+#content[data-view]:not([data-view="overview"]) .pill.active:not(.good):not(.danger):not(.warning),
+#content[data-view]:not([data-view="overview"]) .pill[aria-pressed="true"]:not(.good):not(.danger):not(.warning){
+ background:rgba(var(--section-rgb),.16);
+ color:var(--section-soft);
+ border-color:rgba(var(--section-rgb),.55);
+}
+#content[data-view]:not([data-view="overview"]) .research-continuity{
+ border-color:rgba(var(--section-rgb),.28);
+ background:linear-gradient(100deg,rgba(var(--section-rgb),.095),rgba(14,35,51,.85));
+}
+#content[data-view]:not([data-view="overview"]) .research-continuity>div>span{color:var(--section-accent)}
+
+/* Generic panels appear mainly in FX Pairs, Risk and News. */
+#content[data-view="pairs"] .panel,
+#content[data-view="risk"] .panel,
+#content[data-view="news"] .panel{
+ border:1px solid rgba(var(--section-rgb),.28);
+ background:linear-gradient(145deg,#152f42,#102438);
+ border-radius:14px;
+ box-shadow:inset 0 1px 0 rgba(216,238,255,.035);
+}
+#content[data-view="pairs"] .panel.glow,
+#content[data-view="risk"] .panel.glow,
+#content[data-view="news"] .panel.glow{
+ background:
+ radial-gradient(ellipse 80% 65% at 100% 0%,rgba(var(--section-rgb),.14),transparent 65%),
+ linear-gradient(145deg,#183749,#102838);
+}
+#content[data-view="pairs"] .panel-head h2,
+#content[data-view="risk"] .panel-head h2,
+#content[data-view="news"] .panel-head h2{color:#f5f8ff}
+
+/* 1 — Currencies: turquoise country book, readable economic comparison. */
+#content[data-view="currencies"] .orient-status{border-color:rgba(83,228,203,.4);background:linear-gradient(100deg,#184b51,#112b41)}
+#content[data-view="currencies"] .orient-lead{
+ border-color:rgba(83,228,203,.37);
+ border-radius:16px;
+ background:
+ radial-gradient(circle at 84% 11%,rgba(83,228,203,.23),transparent 55%),
+ linear-gradient(115deg,#18485a,#0f2b42);
+ box-shadow:0 14px 34px rgba(0,8,22,.14);
+}
+#content[data-view="currencies"] .orient-spot{background:linear-gradient(135deg,#1b5360,#112b43)}
+#content[data-view="currencies"] .orient-country.active{border-color:#64edd4;box-shadow:inset 0 3px 0 #64edd4,0 6px 22px rgba(41,170,158,.11)}
+#content[data-view="currencies"] .orient-evidence-item{
+ border-color:rgba(87,194,219,.32);
+ background:linear-gradient(145deg,#173b4f,#102e42);
+ box-shadow:inset 0 2px 0 rgba(83,228,203,.18);
+}
+#content[data-view="currencies"] .orient-evidence-item:nth-child(even){box-shadow:inset 0 2px 0 rgba(101,207,255,.24)}
+#content[data-view="currencies"] .orient-index{background:#235869;border-color:#59a7bc}
+#content[data-view="currencies"] .orient-peer-panel{border-color:rgba(83,228,203,.29);background:linear-gradient(145deg,#143b4e,#102938)}
+#content[data-view="currencies"] .orient-chapter-head h2 em{color:#86e4d5}
+
+/* 2 — FX Pairs: cooler blue for research, not for direction/bias. */
+#content[data-view="pairs"] .decision-summary{border-color:rgba(133,170,255,.36);border-top:3px solid #85aaff;background:linear-gradient(135deg,#1a344f,#112639)}
+#content[data-view="pairs"] .decision-case{border-color:rgba(133,170,255,.31);border-left:3px solid #85aaff;background:#172d43}
+#content[data-view="pairs"] .decision-case:nth-child(even){border-left-color:#53e4cb}
+#content[data-view="pairs"] .decision-deepdive,
+#content[data-view="pairs"] .decision-rates-bridge{border-color:rgba(133,170,255,.34);background:linear-gradient(145deg,#162f46,#102537)}
+#content[data-view="pairs"] .decision-desk-story{border-left-color:#85aaff;background:linear-gradient(90deg,rgba(133,170,255,.10),transparent)}
+#content[data-view="pairs"] .pair-row.active{box-shadow:inset 3px 0 0 #85aaff}
+#content[data-view="pairs"] .lens{background:#17354b;border-color:rgba(133,170,255,.24)}
+#content[data-view="pairs"] .lens:nth-child(2n){border-top:2px solid rgba(83,228,203,.6)}
+#content[data-view="pairs"] .flow-item:first-child{border-left:2px solid rgba(83,228,203,.65);padding-left:11px}
+#content[data-view="pairs"] .focus-headline{color:#f3f7ff}
+
+/* 3 — Macro: warm amber for context, existing cycle status colors untouched. */
+#content[data-view="macro"] .macro-country-hero{
+ border-color:rgba(255,199,127,.36);
+ border-top:3px solid #ffc77f;
+ border-radius:16px;
+ background:
+ radial-gradient(circle at 80% 0%,rgba(255,199,127,.17),transparent 59%),
+ linear-gradient(120deg,#24404b,#132e41);
+}
+#content[data-view="macro"] .macro-country-hero .chapter-kicker{color:#ffd59d}
+#content[data-view="macro"] .macro-country.active{border-color:#ffc77f;box-shadow:inset 0 3px 0 #ffc77f,0 7px 22px rgba(234,173,93,.10)}
+#content[data-view="macro"] .macro-main-chart{border-color:rgba(101,207,255,.32);background:linear-gradient(145deg,#193e51,#102b41)}
+#content[data-view="macro"] .macro-dynamic-reading{border-color:rgba(255,199,127,.30);background:linear-gradient(135deg,#243b48,#112a3a)}
+#content[data-view="macro"] .macro-universe,
+#content[data-view="macro"] .macro-relative{border-color:rgba(255,199,127,.24)}
+#content[data-view="macro"] .macro-research .macro-section-head h2 em{color:#ffdda9}
+#content[data-view="macro"] .macro-country-narrative h2 em{color:#ffe1b2}
+
+/* 4 — Rates & OIS: electric blue for market-pricing analysis. */
+#content[data-view="rates"] .rates-status{border-color:rgba(101,207,255,.36);background:linear-gradient(95deg,#174457,#112d42)}
+#content[data-view="rates"] .rates-hero{
+ border-color:rgba(101,207,255,.42);
+ border-top:3px solid #65cfff;
+ border-radius:16px;
+ background:
+ radial-gradient(ellipse 50% 100% at 85% 0%,rgba(101,207,255,.20),transparent 76%),
+ linear-gradient(120deg,#173e57,#10293f);
+}
+#content[data-view="rates"] .rates-hero-title h2 em{color:#bcecff}
+#content[data-view="rates"] .rates-hero-orbit{border-color:#65cfff;box-shadow:0 0 0 13px rgba(101,207,255,.055),0 0 0 36px rgba(101,207,255,.023)}
+#content[data-view="rates"] .rates-country.selected{border-color:#65cfff;box-shadow:inset 0 3px 0 #65cfff}
+#content[data-view="rates"] .rates-stats{border-color:rgba(101,207,255,.28);background:#15364d}
+#content[data-view="rates"] .rates-stat:nth-child(even){background:rgba(101,207,255,.055)}
+#content[data-view="rates"] .rates-primary-plot,
+#content[data-view="rates"] .rates-figure,
+#content[data-view="rates"] .rates-instrument-card{border-color:rgba(101,207,255,.30);background:linear-gradient(150deg,#153b52,#0d293d)}
+#content[data-view="rates"] .rates-qa-panel,
+#content[data-view="rates"] .rates-reprice,
+#content[data-view="rates"] .rates-spread{border-color:rgba(255,199,127,.26);background:linear-gradient(145deg,#203644,#11293a)}
+
+/* 5 — COT: reserve green/red for positioning status, not decoration. */
+#content[data-view="cot"] .cot-source-band{border-color:rgba(114,220,184,.36)}
+#content[data-view="cot"] .cot-desk-overview{
+ border-color:rgba(114,220,184,.38);
+ border-top:3px solid #72dcb8;
+ background:
+ radial-gradient(ellipse 65% 70% at 100% 0%,rgba(114,220,184,.13),transparent 68%),
+ linear-gradient(145deg,#163a4b,#102a3d);
+}
+#content[data-view="cot"] .cot-hero{
+ border-color:rgba(101,207,255,.39);
+ border-top:3px solid #65cfff;
+ background:linear-gradient(120deg,#1a4356,#102a3e);
+}
+#content[data-view="cot"] .cot-country-button.active{border-color:#72dcb8;box-shadow:inset 0 3px 0 #72dcb8}
+#content[data-view="cot"] .cot-analysis-grid article{
+ border-color:rgba(109,183,221,.33);
+ background:linear-gradient(148deg,#183d50,#112c40);
+}
+#content[data-view="cot"] .cot-analysis-grid article:nth-child(2){border-top:2px solid #65cfff}
+#content[data-view="cot"] .cot-analysis-grid article:nth-child(3){border-top:2px solid #ffc77f}
+#content[data-view="cot"] .cot-analysis-grid article:nth-child(4){border-top:2px solid #85aaff}
+#content[data-view="cot"] .cot-plot-card{border-color:rgba(101,207,255,.33);background:linear-gradient(145deg,#143b51,#102a3e)}
+#content[data-view="cot"] .cot-plot-card.cot-price-card{border-color:rgba(133,170,255,.35)}
+#content[data-view="cot"] .cot-desk-card:not(.cot-desk-positive):not(.cot-desk-negative){border-top:2px solid rgba(101,207,255,.6)}
+
+/* 6 — Risk: coral frames the risk topic; it does not replace actual directional labels. */
+#content[data-view="risk"] .grid.cols-4 .kpi{
+ --risk-card:#65cfff;
+ border:1px solid rgba(130,188,225,.26);
+ border-top:3px solid var(--risk-card);
+ border-radius:12px;
+ background:linear-gradient(150deg,#17364a,#112638);
+}
+#content[data-view="risk"] .grid.cols-4 .kpi:nth-child(2){--risk-card:#85aaff}
+#content[data-view="risk"] .grid.cols-4 .kpi:nth-child(3){--risk-card:#ffc77f}
+#content[data-view="risk"] .grid.cols-4 .kpi:nth-child(4){--risk-card:#ff8290}
+#content[data-view="risk"] .grid.cols-4 .kpi-label{color:var(--risk-card)}
+#content[data-view="risk"] .risk-research-reading{
+ border-left:3px solid #ff8290;
+ background:
+ radial-gradient(ellipse 85% 50% at 100% 0%,rgba(255,130,144,.14),transparent),
+ linear-gradient(145deg,#263244,#122a3a);
+}
+#content[data-view="risk"] .chart-summary{background:#163247;border-color:rgba(101,207,255,.27)}
+#content[data-view="risk"] .flow-item label{color:#f5c1b9}
+
+/* 7 — News: warm editorial atmosphere and visual chronology, not invented alerts. */
+#content[data-view="news"] .filters{border-bottom:1px solid rgba(255,199,127,.23);padding-bottom:17px}
+#content[data-view="news"] .timeline{border-left-color:rgba(255,199,127,.50)}
+#content[data-view="news"] .timeline-item{
+ border:1px solid rgba(255,199,127,.27);
+ border-radius:12px;
+ background:
+ radial-gradient(ellipse 80% 80% at 100% 0%,rgba(255,199,127,.075),transparent 60%),
+ linear-gradient(150deg,#1c3344,#112b3a);
+}
+#content[data-view="news"] .timeline-item:nth-child(even){border-color:rgba(101,207,255,.29);background:linear-gradient(150deg,#15364a,#112738)}
+#content[data-view="news"] .timeline-item:before{border-color:#ffc77f;background:#233747}
+#content[data-view="news"] .news-evidence-item h3{color:#f9f2e9}
+#content[data-view="news"] .news-evidence-item .mini-overline{color:#ffd59a}
+#content[data-view="news"] .news-research-reading{
+ border-left:3px solid #65cfff;
+ background:linear-gradient(155deg,#23394a,#112839);
+}
+#content[data-view="news"] .news-research-reading .flow-item label{color:#ffd49a}
+
+/* Active navigation matches the current chapter without remapping market state. */
+#nav a[data-route="currencies"][aria-current="page"]{box-shadow:inset 3px 0 0 #53e4cb}
+#nav a[data-route="pairs"][aria-current="page"]{box-shadow:inset 3px 0 0 #85aaff}
+#nav a[data-route="macro"][aria-current="page"]{box-shadow:inset 3px 0 0 #ffc77f}
+#nav a[data-route="rates"][aria-current="page"]{box-shadow:inset 3px 0 0 #65cfff}
+#nav a[data-route="cot"][aria-current="page"]{box-shadow:inset 3px 0 0 #72dcb8}
+#nav a[data-route="risk"][aria-current="page"]{box-shadow:inset 3px 0 0 #ff8290}
+#nav a[data-route="news"][aria-current="page"]{box-shadow:inset 3px 0 0 #ffc77f}
+
+@media(max-width:650px){
+ #content[data-view]:not([data-view="overview"]) .page-hero{padding:20px 17px;border-radius:14px}
+ #content[data-view="currencies"] .orient-lead,
+ #content[data-view="macro"] .macro-country-hero,
+ #content[data-view="rates"] .rates-hero,
+ #content[data-view="cot"] .cot-hero{border-radius:13px}
+ #content[data-view="cot"] .cot-analysis-grid article{padding:17px}
+ #content[data-view="news"] .timeline-item{padding:14px}
+}
+@media(prefers-reduced-motion:reduce){
+ #content[data-view]:not([data-view="overview"]) .page-hero,
+ #content[data-view="pairs"] .decision-case,
+ #content[data-view="news"] .timeline-item{transition:none}
+}
