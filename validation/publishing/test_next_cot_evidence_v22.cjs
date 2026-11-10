@@ -8,15 +8,15 @@ const {priceEvidence,flowReading}=require(path.join(root,'site/fx-quant-v2/next/
 const cot=load('live_data/sections/V250_COT_CHART_DATA.json');
 const fx=load('live_data/sections/ECB_G8_PRICE_HISTORY.json');
 const names=['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
-const today='2026-11-10';
+const today=new Date().toISOString().slice(0,10);
 for(const name of names){
  const s=cot[name],h=s.dates.map((date,i)=>({date,net:s.net[i],long:s.long[i],short:s.short[i]}));
  const p=priceEvidence(name,h,fx,today),f=flowReading({hist:h});
  assert(p.aligned,name+' ECB price not aligned to latest CFTC Tuesday');
- assert.equal(p.priceRow.as_of,'2026-11-03',name+' source vintage');
+ assert.equal(p.priceRow.as_of,s.dates.at(-1),name+' source vintage');
  assert(p.prices.length>40,name+' historical ECB samples missing');
- assert(p.prices.at(-1).label==='2026-11-03',name+' latest date');
- assert(p.prices.at(-2).label==='2026-10-27',name+' previous date');
+ assert(p.prices.at(-1).label===s.dates.at(-1),name+' latest date');
+ assert(p.prices.at(-2).label===s.dates.at(-2),name+' previous date');
  assert(Number.isFinite(p.price1),name+' 1W aligned price delta missing');
  assert(['coerente','divergente','non conclusivo'].includes(p.priceState));
  assert(f.headline.length>15&&f.detail.length>100&&f.monitor.length>35,name+' incomplete desk narrative');
@@ -26,18 +26,19 @@ for(const name of names){
 }
 const h=cot.USD.dates.map((date,i)=>({date,net:cot.USD.net[i],long:cot.USD.long[i],short:cot.USD.short[i]}));
 const usd=priceEvidence('USD',h,fx,today);
-const x03=fx.rows.find(x=>x.Date==='2026-11-03'),x27=fx.rows.find(x=>x.Date==='2026-10-27');
+const lastCFTC=cot.USD.dates.at(-1),prevCFTC=cot.USD.dates.at(-2);
+const x03=fx.rows.find(x=>x.Date===lastCFTC),x27=fx.rows.find(x=>x.Date===prevCFTC);
 const expectedUSD=((1/x03.USD)/(1/x27.USD)-1)*100;
 assert(Math.abs(usd.price1-expectedUSD)<1e-10,'USD/EUR inverse FX convention');
 const eur=priceEvidence('EUR',cot.EUR.dates.map((date,i)=>({date,net:cot.EUR.net[i]})),fx,today);
 assert(Math.abs(eur.price1-((x03.USD/x27.USD)-1)*100)<1e-10,'EUR/USD FX convention');
 const missing=structuredClone(fx);
-missing.rows=missing.rows.filter(x=>x.Date!=='2026-11-03');
+missing.rows=missing.rows.filter(x=>x.Date!==lastCFTC);
 const absent=priceEvidence('USD',h,missing,today);
 assert.equal(absent.aligned,false,'Do not forward-fill missing Tuesday');
 assert.equal(absent.priceState,'non conclusivo');
-assert(absent.prices.at(-1).label==='2026-10-27','Missing Tuesday must not be interpolated');
-const future=priceEvidence('USD',h,fx,'2026-10-27');
+assert(absent.prices.at(-1).label===prevCFTC,'Missing Tuesday must not be interpolated');
+const future=priceEvidence('USD',h,fx,prevCFTC);
 assert.equal(future.aligned,false,'No future COT/release alignment');
 const q=priceEvidence('GBP',h,{source:'random spot',rows:fx.rows},today);
 assert.equal(q.aligned,false,'Reject unverified FX origin');
@@ -63,4 +64,4 @@ assert(page.includes('app.js?v=18.'),'COT requires versioned Next application as
 assert(app.includes("route==='overview'||route==='pairs'||route==='cot'"));
 assert(studio.includes("get('currencyPrices')"));
 assert(!studio.includes("get('cotPrice')"),'Stale price pack should no longer control COT comparison');
-console.log('NEXT_COT_V22_PASS: 8/8 current COT/ECB Tuesday prices 2026-11-03, CFTC gross/4W persistence, missing/future and quote-direction guards.');
+console.log('NEXT_COT_V22_PASS: 8/8 COT/ECB Tuesday prices '+lastCFTC+', CFTC gross/4W persistence, missing/future and quote-direction guards.');
