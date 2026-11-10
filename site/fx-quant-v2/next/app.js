@@ -385,7 +385,15 @@ function overview(){
    ?'Nella stessa seduta il rendimento Treasury a due anni è diminuito di '+fmt(Math.abs(u.chg2_bp),1)+' punti base e quello a dieci anni di '+fmt(Math.abs(u.chg10_bp),1)+'. I prezzi dei Treasury si muovono in senso opposto ai rendimenti: è un quadro compatibile con domanda di duration. Ma dai prezzi non possiamo sapere chi abbia comprato, né attribuire automaticamente il movimento al timore di recessione.'
    :usd2?'Il Treasury USA a due anni, nell’osservazione del '+date(u.date)+', quota '+fmt(u['2Y'],3)+'% e varia di '+sign(u.chg2_bp,1,' punti base')+'. '+(usd10?'Il dieci anni varia di '+sign(u.chg10_bp,1,' punti base')+'. ':'')+'I due rendimenti descrivono una reazione di mercato; da soli non identificano la notizia che l’ha prodotta.'
    :'Sul Treasury USA a due anni manca una variazione datata utilizzabile. La diagnosi sul mercato obbligazionario resta quindi aperta.';
- const shape=bonds?'Se il front-end scende più del long-end, la curva può irripidirsi anche mentre tutti i rendimenti calano; se accade il contrario, può appiattirsi. In entrambi i casi serve misurare l’ampiezza del movimento prima di parlare di cambio di regime.':'Il 2Y reagisce più direttamente alle attese di politica monetaria; il 10Y può riflettere anche rendimenti reali, inflazione attesa e premio a termine. Non sono due voti identici sulla stessa notizia.';
+ const spreadShift=usd2&&usd10?u.chg10_bp-u.chg2_bp:null;
+ const shape=finite(spreadShift)?
+   'Al '+date(u.date)+' il Treasury USA 2Y è variato di '+sign(u.chg2_bp,1,' pb')+
+   ' e il 10Y di '+sign(u.chg10_bp,1,' pb')+'. '+
+   (Math.abs(spreadShift)<1?'La curva 10Y−2Y è rimasta pressoché ferma: movimento quasi parallelo, non una rotazione tra scadenze. ':
+     'Lo spread 10Y−2Y si è '+(spreadShift>0?'allargato':'ristretto')+' di '+fmt(Math.abs(spreadShift),1)+
+     ' pb: il movimento non è parallelo. ')+
+   'Per attribuirlo alla banca centrale servono variazioni OIS/futures della stessa scadenza e data; il prezzo dei Treasury non identifica da solo gli operatori né il motivo.':
+   'Non abbiamo 2Y e 10Y USA con variazioni verificabili sulla stessa seduta: non attribuiamo al mercato una modifica della curva non misurata.';
  const macroInf=m.inflation,macroLab=m.labour;
  const macroReading=finite(macroInf?.latest_value)&&finite(macroLab?.latest_value)
    ?'Il quadro macro complica la lettura. L’ultimo dato di inflazione headline USA presente nel nostro archivio è '+fmt(macroInf.latest_value,2)+'% ('+(macroInf.as_of||'periodo da verificare')+'), con direzione '+(macroInf.direction||'non disponibile').toLowerCase()+'. Il tasso di disoccupazione è '+fmt(macroLab.latest_value,1)+'% ('+(macroLab.as_of||'periodo da verificare')+'), con direzione '+(macroLab.direction||'non disponibile').toLowerCase()+'. Sono osservazioni riferite a periodi diversi e non necessariamente a prime pubblicazioni point-in-time. Non autorizzano la conclusione che crescita e inflazione siano già entrambe in discesa.'
@@ -454,11 +462,11 @@ function overview(){
    +'<span class="dashboard-kpi-label">'+esc(x.label)+'</span><strong>'+esc(x.value)+'</strong>'
    +'<span class="dashboard-kpi-meta">'+esc(x.source)+' · '+esc(x.day)+'</span></a>').join('');
  const firstChart=stress||relief?'Nasdaq, volatilità e credito: il movimento è condiviso?':
-   bonds||yieldsUp?'Treasury 2Y e 10Y: che cosa cambia davvero?':
+   bonds||yieldsUp?'Treasury USA: calo dei rendimenti o repricing monetario?':
    divergent?'Dollaro e front-end: perché non confermano?':
    'Confronta i prezzi prima di scegliere una spiegazione';
  const focusText=stress||relief?'Partiamo dal Nasdaq perché è una delle tre prove che definiscono il quadro di rischio. Sotto trovi la stessa seduta per VIX e credito.':
-  bonds||yieldsUp?'Partiamo dai Treasury perché il movimento dei rendimenti è il centro della tesi. Il livello OIS/futures è un’altra misura e va letto separatamente.':
+  bonds||yieldsUp?'Il movimento della curva USA va confrontato con EUR e JPY, e con eventuali variazioni monetarie sulla stessa data. Non ogni calo dei rendimenti è un nuovo taglio Fed prezzato.':
   divergent?'Partiamo dal proxy del dollaro perché diverge dalla variazione del front-end sulla stessa data. La divergenza non è una strategia automatica.':
   'Il grafico visualizza uno stream reale con la propria data. Dove le fonti non coincidono, non deduciamo simultaneità.';
  const internalLinks=[
