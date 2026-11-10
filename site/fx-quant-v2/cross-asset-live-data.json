@@ -437,16 +437,12 @@
       "no_core_or_backtest_effect": true
     },
     "NASDAQCOM": {
-      "date": "2026-11-06",
-      "previous_date": "2026-11-05",
-      "value": 24579.42,
-      "previous": 24315.0,
-      "change_1d_pct": 1.0875,
+      "date": "2026-11-09",
+      "previous_date": "2026-11-06",
+      "value": 25253.14,
+      "previous": 24579.42,
+      "change_1d_pct": 2.741,
       "history": [
-        [
-          "2026-06-17",
-          26021.66
-        ],
         [
           "2026-06-18",
           26517.93
@@ -842,6 +838,10 @@
         [
           "2026-11-06",
           24579.42
+        ],
+        [
+          "2026-11-09",
+          25253.14
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -850,7 +850,7 @@
       "kind": "INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 4,
+      "source_age_calendar_days": 1,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
