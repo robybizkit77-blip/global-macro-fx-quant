@@ -63,6 +63,6 @@ const stale={...context,dayNow:()=>staleDay};
 vm.createContext(stale);new vm.Script(source.slice(start,end)).runInContext(stale,{timeout:2000});
 assert(Object.values(stale.pairCoverage('EURUSD')).every(v=>!v),'Old data must not claim daily coverage');
 const page=fs.readFileSync('site/fx-quant-v2/next/index.html','utf8');
-assert(page.includes('app.js?v=17')&&page.includes('editorial-v4.css?v=17'));
+assert(page.includes('app.js?v=18')&&page.includes('editorial-v4.css?v=18'));
 assert(source.includes("'+pairCoverageIntro()+'"),'Coverage counter not visible in existing explorer');
 console.log('NEXT_V15_COVERAGE_PASS',JSON.stringify(totals), 'of',keys.length,'G8 FX pairs');
