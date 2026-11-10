@@ -50,6 +50,13 @@ assert.match(baseline.article,/class="dashboard-kpi-grid"/);
 assert.match(baseline.article,/class="dashboard-analysis"/);
 assert.match(baseline.article,/LA LETTURA DEL DESK/);
 assert.match(baseline.article,/class="dashboard-reading-story"/);
+assert.match(baseline.article,/dashboard-reading-source-links/,'Narrative must link to the underlying research');
+for(const route of ['risk','rates','macro','currencies','pairs','cot','news'])
+ assert.match(baseline.article,new RegExp('href="#'+route+'"'),'Missing research link '+route);
+const firstReading=baseline.article.split('<details class="dashboard-technical"')[0];
+assert.doesNotMatch(firstReading,/Il 2Y reagisce più direttamente|Se il front-end scende più del long-end/,
+ 'Home must interpret current observations, not teach generic yield definitions');
+
 assert.match(baseline.article,/data-home-evidence/);
 assert.doesNotMatch(baseline.article,/data-home-evidence open/,'Quantitative layer must start collapsed');
 assert(baseline.article.indexOf('dashboard-reading-story') <
@@ -71,6 +78,10 @@ let x=evaluate(stress,'2026-11-10');
 assert.equal(x.context.kind,'stress');
 assert.equal(x.context.focus,'nasdaq');
 assert.match(x.article,/data-research-kind="stress"/);
+assert.match(x.article,/Il mio giudizio\./,'The Home needs an explicit market verdict');
+assert.match(x.article,/disoccupazione/,'The Home must connect macro to the market narrative');
+assert.match(x.article,/EUR\/USD/,'The Home must connect FX pairs to the market narrative');
+assert.match(x.article,/USD\/JPY/,'The Home must surface price-vs-thesis divergence');
 assert.match(x.article,/Credito High Yield/);
 assert.match(x.article,/Focus 09\/11\/2026/);
 const mismatchedPricing=clone(stress);
