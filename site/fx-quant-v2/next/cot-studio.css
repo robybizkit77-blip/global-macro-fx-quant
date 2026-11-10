@@ -115,3 +115,48 @@
 @media(max-width:1250px){.cot-desk-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.cot-proofline{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){.cot-desk-overview{padding:17px 14px}.cot-desk-headline{font-size:20px}.cot-desk-narrative{font-size:11.5px}.cot-desk-cards{gap:7px}.cot-desk-card{padding:12px}.cot-desk-card h3{font-size:15px}.cot-desk-card>strong{font-size:12px}.cot-desk-card p{font-size:10px}.cot-desk-monitor{font-size:11px;padding:10px}.cot-proofline{margin:-22px 0 9px;gap:6px}.cot-proofline span{font-size:10px;padding:9px}.cot-velocity-note{font-size:9px}.cot-rank-table{min-width:850px}}
 @media(max-width:380px){.cot-desk-cards{grid-template-columns:1fr}}
+
+
+/* COT Net/OI report-style concentration alert (same as approved Friday v10).
+   Both signs use red: concentration, not bullish/bearish directional signal.
+   Threshold is applied in JS after rounding the CFTC Net/OI to 1 decimal. */
+.cot-netoi-alert{
+ display:inline-flex;align-items:center;gap:4px;max-width:100%;
+ padding:4px 7px;border-radius:8px;
+ font-weight:900!important;line-height:1.3;
+ white-space:nowrap;font-variant-numeric:tabular-nums;
+ color:#ff6b79!important;background:rgba(255,122,135,.12)!important;
+ border:1px solid rgba(255,122,135,.38)!important;
+ box-shadow:inset 0 1px 0 rgba(255,170,177,.055);
+}
+.cot-rank-table .cot-netoi-alert,.cot-detailed-table .cot-netoi-alert{font-size:11px}
+.cot-rank-table td.cot-netoi-cell-alert{background:rgba(255,122,135,.045)}
+.cot-desk-card.cot-desk-crowd{
+ border-top:3px solid #ff7280;
+ border-color:rgba(255,122,135,.40);
+ background:linear-gradient(155deg,rgba(120,44,62,.29),#112b3e 70%);
+}
+.cot-desk-crowd .micro-over{color:#ffadb5}
+.cot-desk-crowd .cot-crowd-list{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 12px;align-items:flex-start}
+.cot-desk-crowd .cot-netoi-alert{font-size:12px}
+.cot-country-button .cot-netoi-selector{
+ align-self:flex-start;font-size:9px;letter-spacing:0;padding:3px 5px;
+}
+.cot-country-button:has(.cot-netoi-selector){border-bottom-color:rgba(255,122,135,.50)}
+.cot-status-line .cot-netoi-hero{font-size:11px;letter-spacing:.015em}
+.cot-stat.cot-stat-crowded{
+ background:linear-gradient(160deg,rgba(123,42,62,.22),#102c3e 78%);
+ box-shadow:inset 0 3px 0 #ff7280;
+}
+.cot-stat strong.cot-netoi-alert{
+ display:inline-flex;width:max-content;max-width:100%;font-size:clamp(18px,1.75vw,24px);
+ margin-top:7px;padding:6px 10px;
+}
+.cot-stat.cot-stat-crowded>span{color:#ffc0c7}
+.cot-stat.cot-stat-crowded small{color:#efafb5}
+@media(max-width:650px){
+ .cot-desk-crowd .cot-crowd-list{flex-direction:column;align-items:flex-start}
+ .cot-desk-crowd .cot-netoi-alert{font-size:11px}
+ .cot-stat strong.cot-netoi-alert{font-size:18px;padding:5px 7px}
+ .cot-country-button .cot-netoi-selector{font-size:8.5px;white-space:normal}
+}
