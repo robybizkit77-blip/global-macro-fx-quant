@@ -20,8 +20,13 @@ function build(api){
  const number=x=>finite(x)?fmt(x,2):'—';
  const period=x=>String(x||'n.d.');
  function observedRate(k){const v=GOV[k];return v&&validDay(v.date)&&v.date<=dayNow()&&finite(v['2Y'])?v:null}
- function dataMarket(k){const a=COT[k];if(!a||!Array.isArray(a.net)||!a.net.length||!Array.isArray(a.dates))return null;
-  const i=a.net.length-1;return {net:a.net[i],delta:i>0?a.net[i]-a.net[i-1]:null,percentile:a.percentile?.[i],asof:a.dates[i]};}
+ function dataMarket(k){const a=COT[k];if(!a||!Array.isArray(a.net)||a.net.length<2||
+   !Array.isArray(a.dates)||a.dates.length!==a.net.length)return null;
+  const i=a.net.length-1;
+  if(!validDay(a.dates[i])||a.dates[i]>dayNow()||
+     !finite(a.net[i])||!finite(a.net[i-1]))return null;
+  return {net:a.net[i],delta:a.net[i]-a.net[i-1],
+    percentile:finite(a.percentile?.[i])?a.percentile[i]:null,asof:a.dates[i]};}
  function prices(a,b){
   if(!Array.isArray(FXDATA?.rows)||FXDATA?.source!=='ECB euro foreign exchange reference rates')return [];
   return FXDATA.rows.filter(row=>validDay(row.Date)&&row.Date<=dayNow()
@@ -59,24 +64,34 @@ function build(api){
  }
  function story(){
   const price=finite(price20),positive=price&&price20>0.025,negative=price&&price20<-.025;
-  const cotDirection=finite(cot?.delta)?cot.delta>0?'migliora':cot.delta<0?'peggiora':'non cambia':'non è validato';
   const headline=positive?country+' sta guadagnando terreno su '+against+'.'
     :negative?country+' sta perdendo terreno contro '+against+'.'
     :'Per '+country+'/'+against+' non emerge ancora un movimento netto.';
-  const opening=price?'Negli ultimi 20 fixing BCE, '+country+'/'+against+' è passato a '+fmt(target?.quote?.value,5)+', con una variazione di '+sign(price20,2,'%')+' fino al '+date(asof)+'.'
+  const opening=price?'Negli ultimi 20 fixing BCE, '+country+'/'+against+' è passato a '+fmt(target?.quote?.value,5)+
+    ', con una variazione di '+sign(price20,2,'%')+' fino al '+date(asof)+'.'
     :'Il confronto su 20 fixing BCE non è disponibile: non attribuiamo una direzione al prezzo.';
-  const i=macro?.inflation,l=macro?.labour;
-  const context='L’inflazione di '+country+' è '+(finite(i?.latest_value)?fmt(i.latest_value,2)+'% ('+i.as_of+')':'non disponibile')+
-   ' e il 2Y governativo è '+(r?fmt(r['2Y'],3)+'% al '+date(r.date):'non validato')+'.';
-  const pos=finite(cot?.net)?'Fra i fondi, la posizione COT è '+(cot.net>0?'net long':cot.net<0?'net short':'neutra')+' e il netto '+cotDirection+' di '+sign(cot.delta,0)+' contratti nell’ultima settimana disponibile ('+date(cot.asof)+').':'Non abbiamo COT validato per questa valuta.';
-  const verdict=positive?'PREZZO FAVOREVOLE A '+country:negative?'PREZZO SFAVOREVOLE A '+country:'PREZZO DA CONFERMARE';
-  const watch='Il mio giudizio è sul prezzo osservato, non sulla direzione futura. Per validare la tesi relativa servono differenziali comparabili, dati macro nuovi e tenuta del movimento FX.';
+  const relative=root.FXQuantCurrencyRelative?.read?.({
+    base:country,quote:against,macro:M,gov:GOV,ois:get('ois'),
+    cot:COT,now:dayNow(),price20,priceAsOf:asof
+  })||null;
+  const macroText=relative?.available?relative.macroStory:
+    'Manca il confronto bilaterale delle due economie.';
+  const ratesText=relative?.available?relative.govStory+' '+relative.moneyStory:
+    'Tassi e aspettative monetarie non verificati per entrambe le valute.';
+  const cotText=relative?.available?relative.cotStory:
+    'COT bilaterale non verificato.';
+  const judgement=relative?.available?relative.verdict+' '+relative.timing+' '+relative.watch:
+    'Il prezzo osservato non basta a dimostrare una tesi operativa.';
+  const verdict=positive?'PREZZO FAVOREVOLE A '+country:
+    negative?'PREZZO SFAVOREVOLE A '+country:'PREZZO DA CONFERMARE';
   return '<section class="orient-lead orient-voice"><div class="orient-lead-copy"><span class="chapter-kicker">IL DESK / '+FLAGS[country]+' '+esc(NAMES[country])+' CONTRO '+against+'</span>'
     +'<span class="orient-verdict">'+esc(verdict)+'</span>'
     +'<h2>'+esc(headline)+'</h2>'
     +'<p class="orient-intro">'+esc(opening)+'</p>'
-    +'<p class="orient-context">'+esc(context+' '+pos)+'</p>'
-    +'<p class="orient-desk-judgment"><strong>La lettura:</strong> '+esc(watch)+'</p>'
+    +'<p class="orient-context"><strong>Macro relativa.</strong> '+esc(macroText)+'</p>'
+    +'<p class="orient-context"><strong>Tassi e aspettative.</strong> '+esc(ratesText)+'</p>'
+    +'<p class="orient-context"><strong>Posizionamento.</strong> '+esc(cotText)+'</p>'
+    +'<p class="orient-desk-judgment"><strong>Il giudizio del desk.</strong> '+esc(judgement)+'</p>'
     +'<div class="orient-focus-actions"><button class="action-primary" type="button" data-cs-openpair="'+country+against+'">Apri la tesi '+country+'/'+against+' <span>↗</span></button><a href="#macro" class="action-minimal">Approfondisci la macro →</a></div></div>'
     +'<div class="orient-spot"><span class="micro-over">IL PREZZO · '+country+'/'+against+'</span><strong>'+fmt(target?.quote?.value,5)+'</strong><small>1 '+country+' = '+against+' · BCE fixing '+date(asof)+'</small>'
     +'<div class="orient-spot-parts">'+[['5 sedute',target?.move5],['20 sedute',target?.move20],['60 sedute',target?.move60]].map(([k,v])=>'<div><span>'+k+'</span><b class="'+(v<0?'orient-neg':'')+'">'+sign(v,2,'%')+'</b></div>').join('')+'</div>'
