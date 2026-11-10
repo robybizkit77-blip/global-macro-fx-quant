@@ -606,11 +606,11 @@ function overview(){
   divergent?'Partiamo dal proxy del dollaro perché diverge dalla variazione del front-end sulla stessa data. La divergenza non è una strategia automatica.':
   'Il grafico visualizza uno stream reale con la propria data. Dove le fonti non coincidono, non deduciamo simultaneità.';
  const internalLinks=[
-  {url:'macro',head:'Scenario Macro',lead:'Inflazione, lavoro e ciclo: il quadro sta accelerando o rallentando?'},
-  {url:'rates',head:'Tassi & OIS',lead:'Che cosa si muove nei governativi e cosa è già nel pricing monetario?'},
-  {url:'pairs',head:'28 coppie FX',lead:'Il vantaggio relativo trova conferma nel prezzo?'},
-  {url:'cot',head:'Positioning COT',lead:'Nuovi long/short o liquidazioni? Il flusso conferma la tesi?'}
- ];
+   {url:'currencies',head:'Valute G8',lead:'Perché una valuta guadagna o perde forza relativa?'},
+   {url:'pairs',head:'28 coppie FX',lead:'Vantaggio relativo, prezzo e rischi: cosa è già incorporato?'},
+   {url:'rates',head:'Tassi & OIS',lead:'Differenziali e aspettative monetarie: confermano i cambi?'},
+   {url:'cot',head:'Positioning COT',lead:'Posizioni concentrate e cambiamenti dei fondi.'}
+  ];
  const links=internalLinks.map(x=>'<a class="dashboard-research-link" href="#'+x.url+'"><strong>'+esc(x.head)+'</strong><span>'+esc(x.lead)+'</span><b aria-hidden="true">↗</b></a>').join('');
  // Evidence-led story. Separate dates, rate expectations, currency confirmation and COT.
  const deskVixDate=validDay(vx.date)&&vx.date<=dayNow()?vx.date:null;
@@ -751,7 +751,9 @@ function overview(){
  +'<p class="dashboard-reading-verdict"><strong>Il mio giudizio.</strong> '+esc(fxDesk.verdict)+'</p>'
  +'<p class="dashboard-reading-watch"><strong>Che cosa monitorare.</strong> '+esc(fxDesk.watch)+'</p></div>'
  +'<div class="dashboard-fx-shortlist" aria-label="Coppie da approfondire">'+(fxDesk.ready?
- '<span>VERIFICA SULLE COPPIE</span><button type="button" data-pair="EURUSD">EUR/USD · già nel prezzo ↗</button><button type="button" data-pair="USDJPY">USD/JPY · divergenza ↗</button><button type="button" data-pair="AUDCHF">AUD/CHF · orizzonti da confrontare ↗</button>':'')+'</div>'
+ '<span>APRI I DOSSIER FX</span>'+['EURUSD','USDJPY','AUDCHF']
+ .filter(k=>pairData[k]).map(k=>'<button type="button" data-pair="'+k+'">'+esc(getPairName(k))+
+ ' · '+esc(pairData[k].setup?.price?.text||'Prezzo da verificare')+' ↗</button>').join(''):'')+'</div>'
  +'<nav class="dashboard-reading-source-links" aria-label="Verifica la lettura nei dossier"><a href="#currencies">Valute G8 ↗</a><a href="#pairs">28 coppie FX ↗</a><a href="#rates">Tassi & OIS ↗</a><a href="#macro">Macro ↗</a><a href="#cot">COT ↗</a><a href="#risk">Rischio ↗</a><a href="#news">Notizie ↗</a></nav>'
  +'<p class="dashboard-reading-quality">I fixing BCE e le 28 coppie guidano la lettura. Macro, tassi, COT, volatilità e credito servono a spiegare o mettere alla prova le tesi FX, non a sostituirle.</p></section>'
  +'<section class="dashboard-main dashboard-reading-chart"><div class="dashboard-section-head"><span>IL PREZZO FX DIETRO LA LETTURA</span><p>Confronta i movimenti delle valute prima di cercare conferme in altri mercati.</p></div>'
