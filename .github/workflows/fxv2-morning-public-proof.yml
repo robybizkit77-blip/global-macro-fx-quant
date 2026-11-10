@@ -11,11 +11,15 @@ on:
       - '.github/workflows/fxv2-morning-public-proof.yml'
       - 'validation/morning/build_morning_fx_desk_v1.py'
       - 'validation/morning/test_build_morning_fx_desk_v1.py'
+      - 'validation/publishing/test_morning_desk_render_v1.cjs'
+      - 'site/fx-quant-v2/next/morning-desk-v1.js'
   push:
     branches: [main]
     paths:
       - 'validation/morning/build_morning_fx_desk_v1.py'
       - 'validation/morning/test_build_morning_fx_desk_v1.py'
+      - 'validation/publishing/test_morning_desk_render_v1.cjs'
+      - 'site/fx-quant-v2/next/morning-desk-v1.js'
       - '.github/workflows/fxv2-morning-public-proof.yml'
   workflow_dispatch:
   schedule:
@@ -45,6 +49,13 @@ jobs:
         run: python validation/publishing/test_fxv2_morning_public_v1.py
       - name: Morning FX narrative contract — CPI, aftermath, GDP, no lookahead
         run: python -m unittest validation.morning.test_build_morning_fx_desk_v1 -v
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify narrative-first Morning Home and historical chart safety
+        run: |
+          node --check site/fx-quant-v2/next/morning-desk-v1.js
+          node validation/publishing/test_morning_desk_render_v1.cjs
 
   audit:
     needs: contract
