@@ -36,6 +36,7 @@ function evaluate(data,now='2026-11-08'){
     (Date.parse(now+'T12:00:00Z')-Date.parse(d+'T12:00:00Z'))/864e5<=window,
   eurPairs:()=>data.pairs?.pairs||{},
   homeScreenChart:()=>'<div class="test-chart"></div>',
+  state:{homeEvidenceOpen:false,homeDossierOpen:false},
   FLAGS:{USD:'USA'},ROUTES:{rates:'Tassi & OIS',risk:'Rischio'}
  };
  vm.createContext(ctx);
@@ -47,7 +48,13 @@ assert.match(baseline.article,/class="market-letter market-dashboard"/);
 assert.match(baseline.article,/class="letter-evidence"/);
 assert.match(baseline.article,/class="dashboard-kpi-grid"/);
 assert.match(baseline.article,/class="dashboard-analysis"/);
-assert.match(baseline.article,/IL GIUDIZIO DEL DESK/);
+assert.match(baseline.article,/LA LETTURA DEL DESK/);
+assert.match(baseline.article,/class="dashboard-reading-story"/);
+assert.match(baseline.article,/data-home-evidence/);
+assert.doesNotMatch(baseline.article,/data-home-evidence open/,'Quantitative layer must start collapsed');
+assert(baseline.article.indexOf('dashboard-reading-story') <
+       baseline.article.indexOf('dashboard-kpi-grid'),
+       'The narrative must precede numerical cards');
 assert.match(baseline.article,/Che cosa sta già prezzando il mercato/);
 assert.match(baseline.article,/class="dashboard-dossier"/);
 assert.match(baseline.article,/Che cosa mi farebbe cambiare idea/);
