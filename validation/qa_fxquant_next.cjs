@@ -37,6 +37,12 @@ fs.mkdirSync(evidence,{recursive:true});
         'Outdated generic COT essay must not duplicate the source-backed studio');
       assert(await page.locator('main .cot-analysis-grid article').count()===4,
         'COT research narrative must preserve four evidence-backed questions');
+      assert(await page.locator('main .cot-desk-overview').count()===1,
+        'Source-backed COT G8 desk overview missing');
+      assert(await page.locator('main .cot-desk-card').count()===4,
+        'Four COT report-style desk facts missing');
+      assert((await page.locator('main .cot-desk-overview').innerText()).includes('Cosa vedo davvero'),
+        'G8 research must open with the substantive desk narrative');
     }else if(route==='risk'){
       assert(await page.locator('main .research-essay').count()===0,
         'Generic risk essay must not duplicate the matched-session desk interpretation');
@@ -287,8 +293,20 @@ fs.mkdirSync(evidence,{recursive:true});
    assert(await page.locator('.cot-country-selector .cot-country-button').count()===8,'COT G8 selector incomplete');
    assert(/\d{2}\/\d{2}\/2026/.test(await page.locator('.cot-source-band').innerText()),'COT historical timestamp missing');
    assert(await page.locator('.cot-plot-card .chart svg').first().count()===1,'Validated COT position chart missing');
-   assert((await page.locator('.cot-source-band').innerText()).includes('03/11/2026'),
-      'COT must follow latest CFTC date, not the outdated price pack');
+   const cotSourceDay=await page.evaluate(async()=>{
+     const r=await fetch('../../../live_data/sections/V250_COT_CHART_DATA.json',{cache:'no-store'});
+     if(!r.ok)throw new Error('No current CFTC source for COT QA');
+     const d=await r.json();return d.USD.dates.at(-1);
+   });
+   assert((await page.locator('.cot-source-band').innerText()).includes(
+     cotSourceDay.slice(8,10)+'/'+cotSourceDay.slice(5,7)+'/'+cotSourceDay.slice(0,4)),
+     'COT historical as-of must match current CFTC');
+   assert((await page.locator('.cot-universe .cot-table').innerText()).includes('Z104'),
+     'Z-score and G8 ranking missing');
+   assert((await page.locator('.cot-proofline').innerText()).includes('Velocity 1W/OI'),
+     'Velocity and OI quality note missing');
+   assert((await page.locator('.cot-proofline').innerText()).includes('Δ Net 8W'),
+     'Full 1W/4W/8W analysis missing');
     assert((await page.locator('.cot-price-card').innerText()).includes('Fixing BCE verificati direttamente'),
       'Price evidence must be derived from matching ECB Tuesday fixings');
     const pricePlot=await page.locator('.cot-price-card .chart svg').count();
@@ -308,7 +326,10 @@ fs.mkdirSync(evidence,{recursive:true});
    await page.locator('.cot-country-selector [data-ccy="CHF"]').click();
    const chfText=await page.locator('.cot-hero').innerText();
    assert(chfText.includes('Gli short prevalgono'),'COT CHF net-short reading missing');
-   assert((await page.locator('.cot-analysis-grid').innerText()).includes('P alto non significa net long'),'COT percentile direction caveat missing');
+   assert(chfText.includes('EXTREME LONG')||chfText.includes('fascia storica alta'),
+     'CHF net short must stay separate from relative high P104');
+   if(cotSourceDay==='2026-11-03')
+     assert(chfText.includes('100'),'Approved report CHFs exact P104 must render');
    await page.locator('[data-cot-filter="extreme"]').click();
    assert((await page.locator('.cot-universe tbody tr').count())>=1,'COT extreme universe filter failed');
    await page.locator('[data-cot-sort="delta1"]').click();
