@@ -47,15 +47,21 @@ class AuditTest(unittest.TestCase):
         self.assertEqual(self.audit()["status"], "PASS_INDEPENDENT_0800_PROOF")
         self.assertEqual(self.audit()["on_time_certified_run_ids"], [100, 101])
 
-    def test_missing_0745_cannot_pass_even_if_prebrief_successful(self):
+    def test_prebrief_genuinely_completed_even_when_0745_schedule_missing(self):
         out = self.audit(runs=self.runs[:1])
-        self.assertIn("0745_SCHEDULE_NOT_OBSERVED_BY_0800", out["problems"])
-        self.assertEqual(out["status"], "FAIL_NOT_CERTIFIED")
+        self.assertEqual(out["status"], "PASS_INDEPENDENT_0800_PROOF")
+        self.assertEqual(out["on_time_certified_run_ids"], [100])
 
-    def test_late_0745_cannot_impersonate_on_time(self):
+    def test_late_run_cannot_impersonate_on_time(self):
         late = fake(101, "2026-11-10T08:10:00+01:00")
-        out = self.audit(runs=[self.runs[0], late])
-        self.assertIn("0745_SCHEDULE_NOT_OBSERVED_BY_0800", out["problems"])
+        out = self.audit(runs=[late], jobs={101: proof("2026-11-10T08:11:00+01:00")})
+        self.assertIn("NO_COMPLETED_SUCCESSFUL_MORNING_SLA_BY_0800", out["problems"])
+
+    def test_recovered_manual_full_pipeline_is_eligible(self):
+        rescue = {**self.runs[0], "event": "workflow_dispatch"}
+        out = self.audit(runs=[rescue], jobs={100: self.jobs[100]})
+        self.assertEqual(out["status"], "PASS_INDEPENDENT_0800_PROOF")
+        self.assertEqual(out["recovery_run_ids_today"], [100])
 
     def test_green_workflow_with_skipped_audit_step_is_not_proof(self):
         broken = {100: proof(steps={REQUIRED_STEPS[2]: "skipped"}),
