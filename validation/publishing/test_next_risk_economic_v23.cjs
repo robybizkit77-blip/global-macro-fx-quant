@@ -61,7 +61,7 @@ assert(!fresh.headline.includes('storica'),'Same-day case must be recognized as 
 const next='site/fx-quant-v2/next/';
 const html=fs.readFileSync(path.join(root,next+'index.html'),'utf8');
 const app=fs.readFileSync(path.join(root,next+'app.js'),'utf8');
-assert(html.indexOf('risk-evidence-reading.js?v=23')<html.indexOf('app.js?v=18.23'));
+assert(html.indexOf('risk-evidence-reading.js?v=23')<html.indexOf('app.js?v=18.'),'Risk evidence must load before versioned Next app');
 assert(app.includes('risk-research-reading'),'Risk panel must render economic analysis');
 assert(app.includes("route==='overview'||route==='pairs'||route==='cot'||route==='risk'"),'Old duplicate risk essay must be hidden');
 assert(app.includes('Variazione dello spread'),'OAS displayed as bps, not OAS percent changes');
