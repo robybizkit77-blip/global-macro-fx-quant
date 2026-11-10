@@ -14,6 +14,7 @@ const SOURCES={
  chfResearch:'../chf-snb-paired-history.json',
  nzdPostroll:'../nzd-b2-postroll-web-research.json',
  dxy:'../../../live_data/sections/DXY_SYNTHETIC_ECB.json',
+ morningDesk:'./morning-desk-current.json',
  currencyPrices:'../../../live_data/sections/ECB_G8_PRICE_HISTORY.json',
  pairs:'../../../live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json',
  macro:'../../../live_data/sections/MACRO_THERMOMETER_DATA.json',
@@ -477,6 +478,11 @@ function fxHomeDesk(){
 }
 
 function overview(){
+ const morning=get('morningDesk');
+ if(typeof window!=='undefined' && window.FXQuantMorningDesk?.build && morning){
+  const edition=window.FXQuantMorningDesk.build({feed:morning,plot,esc,date,dayNow});
+  if(edition)return edition;
+ }
  const context=researchCase();
  const fxDesk=fxHomeDesk();
  const u=get('rates')?.USD||{},d=get('dxy')||{},risk=get('risk')?.streams||{};

@@ -1,0 +1,153 @@
+/* Morning Macro & FX Desk V1 — derived from approved 10-Nov standalone preview.
+ * Scoped to Home, no changes to G8 / pairs / COT / other pages.
+ */
+.morning-dashboard{
+ --morning-teal:#6ee3c4;--morning-blue:#7dc9ed;--morning-amber:#f4bf80;
+ color:#f0f6f9;max-width:1180px;margin:0 auto 40px;
+}
+.morning-dashboard .morning-edition-header{
+ display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:12px;
+ padding:0 0 21px;border-bottom:1px solid rgba(139,179,204,.24);
+ color:#9cbfd0;font-size:10px;font-weight:800;letter-spacing:.09em;
+}
+.morning-dashboard .morning-edition-header>span:first-child{color:var(--morning-teal)}
+.morning-dashboard .morning-archive-note{
+ margin:17px 0 18px;padding:11px 15px;border:1px solid rgba(239,183,108,.38);
+ border-radius:9px;background:rgba(215,153,64,.09);color:#efdfc3;
+ font-size:11px;line-height:1.7;
+}
+.morning-dashboard .morning-archive-note.current{
+ border-color:rgba(114,200,190,.28);background:rgba(56,151,135,.06);color:#b6dacf;
+}
+.morning-dashboard .morning-lead{
+ position:relative;overflow:hidden;isolation:isolate;
+ border:1px solid rgba(121,180,215,.30);border-radius:17px;
+ padding:clamp(22px,4vw,46px);
+ background:radial-gradient(ellipse 60% 90% at 100% 0%,rgba(53,122,192,.20),transparent 70%),
+ linear-gradient(128deg,#112c41,#0b1e30 61%,#0b1829);
+ box-shadow:inset 0 1px 0 rgba(192,234,251,.07),0 20px 49px rgba(1,9,21,.13);
+}
+.morning-dashboard .morning-lead:before{
+ content:"";position:absolute;top:0;left:0;right:0;height:3px;
+ background:linear-gradient(90deg,#67dabb,#65c2e7,#a6baff,#d9ae77);
+}
+.morning-dashboard .morning-kicker,
+.morning-dashboard .morning-section-label{
+ color:var(--morning-teal);display:block;font-size:10px;line-height:1.7;
+ font-weight:850;letter-spacing:.14em;text-transform:uppercase;
+}
+.morning-dashboard .morning-lead h1{
+ font-family:Georgia,'Times New Roman',serif;font-size:clamp(31px,4vw,53px);
+ font-weight:500;line-height:1.16;letter-spacing:-.027em;
+ color:#f8fbfc;max-width:1060px;margin:18px 0 23px;text-wrap:balance;
+}
+.morning-dashboard .morning-deck{
+ max-width:950px;font-size:clamp(16px,1.5vw,19px);line-height:1.78;color:#d6e4ea;margin:0;
+}
+.morning-dashboard .morning-edition-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:25px}
+.morning-dashboard .morning-edition-tags span{
+ border-radius:6px;border:1px solid rgba(136,194,217,.25);
+ padding:5px 9px;font-size:10px;color:#b7d1df;line-height:1.4;
+}
+.morning-dashboard .morning-prose{
+ max-width:972px;margin:clamp(29px,4.2vw,49px) auto 0;padding:0 19px 0 22px;
+ border-left:2px solid rgba(98,222,200,.5);
+}
+.morning-dashboard .morning-prose .morning-section-label{margin-bottom:18px}
+.morning-dashboard .morning-prose p{
+ font-size:clamp(15px,1.32vw,17.5px);line-height:1.88;
+ color:#dbe6eb;font-weight:420;margin:0 0 22px;max-width:910px;
+ overflow-wrap:anywhere;
+}
+.morning-dashboard .morning-catalyst{
+ max-width:978px;margin:29px auto 0;padding:22px 26px;
+ border:1px solid rgba(231,184,113,.36);border-radius:12px;
+ background:linear-gradient(120deg,rgba(209,155,84,.10),rgba(55,124,162,.06));
+}
+.morning-dashboard .morning-catalyst .morning-section-label{color:#f3c287}
+.morning-dashboard .morning-catalyst h2{
+ font-family:Georgia,serif;font-weight:500;font-size:clamp(22px,2vw,27px);
+ color:#f5e9d9;line-height:1.3;margin:9px 0;
+}
+.morning-dashboard .morning-catalyst p{
+ color:#d9e5e8;font-size:14px;line-height:1.75;margin:9px 0 0;
+}
+.morning-dashboard .morning-time-note{
+ color:#9ebccc;font-size:11px;line-height:1.76;max-width:978px;
+ margin:13px auto 0;padding:0 3px;
+}
+.morning-dashboard .morning-evidence{margin:55px 0 40px}
+.morning-dashboard .morning-evidence>h2,
+.morning-dashboard .morning-outlook>h2{
+ font-family:Georgia,serif;font-weight:500;font-size:clamp(26px,2.8vw,36px);
+ color:#f4fafb;line-height:1.3;margin:10px 0;
+}
+.morning-dashboard .morning-subtitle{
+ font-size:13px;line-height:1.7;color:#aac2ce;max-width:800px;margin:0 0 23px;
+}
+.morning-dashboard .morning-chart-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;
+}
+.morning-dashboard .morning-chart-card{
+ min-width:0;margin:0;padding:20px 17px;
+ border:1px solid rgba(119,182,216,.29);border-radius:13px;
+ background:linear-gradient(145deg,#112a3d,#0c1e2d);
+}
+.morning-dashboard .morning-chart-top{
+ display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:13px;
+}
+.morning-dashboard .morning-chart-top h3{font-size:13px;font-weight:750;color:#e6f3f7;margin:0;line-height:1.5}
+.morning-dashboard .morning-chart-top strong{
+ font-size:23px;color:#a8f4d9;font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+.morning-dashboard .morning-chart-card:nth-child(2) .morning-chart-top strong{color:#a4d8f1}
+.morning-dashboard .morning-chart-card .chart{max-width:100%;min-width:0;overflow:visible}
+.morning-dashboard .morning-chart-card svg{width:100%;height:auto;display:block}
+.morning-dashboard .morning-chart-card .chart-legend{font-size:11px}
+.morning-dashboard .morning-chart-card figcaption{
+ font-size:11px;line-height:1.7;color:#a9c1ce;margin-top:13px;
+}
+.morning-dashboard .morning-outlook{margin-top:42px}
+.morning-dashboard .morning-scenario-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px;margin:21px 0 25px;
+}
+.morning-dashboard .morning-scenario{
+ border:1px solid rgba(138,187,215,.25);
+ background:#112639;border-top:3px solid var(--morning-amber);
+ border-radius:10px;padding:18px 21px;
+}
+.morning-dashboard .morning-scenario.acc{border-top-color:#7edfc3}
+.morning-dashboard .morning-scenario h3{font-size:13px;color:#eaf3f9;line-height:1.5;margin:0 0 10px}
+.morning-dashboard .morning-scenario p{font-size:12px;color:#b9d0db;line-height:1.78;margin:0}
+.morning-dashboard .morning-judgment{
+ border-radius:0 10px 10px 0;border-left:3px solid #7de0bf;
+ background:linear-gradient(100deg,rgba(63,168,139,.13),transparent);
+ padding:19px 24px;margin:20px 0 31px;
+}
+.morning-dashboard .morning-judgment strong{color:#b6f4dc;font-size:13px}
+.morning-dashboard .morning-judgment p{color:#dbeae5;font-size:13px;line-height:1.8;margin:9px 0 0}
+.morning-dashboard .morning-research-links{display:flex;flex-wrap:wrap;gap:9px;margin:26px 0 36px}
+.morning-dashboard .morning-research-links a{
+ border:1px solid rgba(139,192,219,.34);background:#163042;
+ padding:9px 13px;border-radius:8px;font-size:11px;color:#c0e6f4;
+}
+.morning-dashboard .morning-research-links a:hover,
+.morning-dashboard .morning-research-links a:focus-visible{
+ background:#1d4355;border-color:rgba(107,233,208,.75);color:#f6ffff;
+}
+.morning-dashboard .morning-source-notes{
+ border-top:1px solid rgba(130,178,202,.23);padding:15px 0 4px;
+}
+.morning-dashboard .morning-source-notes p{
+ color:#8eabbc;font-size:10.5px;line-height:1.8;margin:0 0 8px;
+}
+@media(max-width:780px){
+ .morning-dashboard .morning-chart-grid,
+ .morning-dashboard .morning-scenario-grid{grid-template-columns:1fr}
+ .morning-dashboard .morning-prose{padding:0 3px 0 15px;margin-top:31px}
+ .morning-dashboard .morning-prose p{font-size:14.5px;line-height:1.81;margin-bottom:18px}
+ .morning-dashboard .morning-catalyst{padding:19px 17px}
+ .morning-dashboard .morning-chart-card{padding:17px 12px}
+ .morning-dashboard .morning-evidence{margin-top:44px}
+ .morning-dashboard .morning-edition-header{font-size:9px}
+}
