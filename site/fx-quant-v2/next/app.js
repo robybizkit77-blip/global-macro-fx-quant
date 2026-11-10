@@ -342,6 +342,126 @@ function researchBridge(route){
  return '<aside class="research-continuity" aria-label="Collegamento alla ricerca principale"><div><span>DALLA RICERCA / '+esc(ROUTES[route]||route).toUpperCase()+'</span><h2>'+esc(prompts[route]||'Approfondisci la tesi')+'</h2><p>'+message[route]+'</p></div><a href="#overview">Rileggi la tesi del desk ↗</a></aside>';
 }
 
+
+/* FX FIRST — the homepage is a currency research desk, not a cross-asset newsletter.
+   ECB EUR-base fixings are converted into relative value changes consistently:
+   positive % = the named currency strengthened against EUR. No spot/intraday claim.
+   Never classify a pair as a trade merely because its model favours one currency. */
+function fxHomeDesk(){
+ const prices=get('currencyPrices'),pairs=get('pairs'),pairMap=pairs?.pairs||{};
+ const rows=(prices?.rows||[]).filter(x=>validDay(x?.Date)&&x.Date<=dayNow()
+   &&FX.every(c=>c==='EUR'||finite(x[c])&&x[c]>0)).sort((a,b)=>a.Date.localeCompare(b.Date));
+ const end=rows.at(-1),previous=rows.at(-2),baseline=rows.at(-6);
+ const ready=!!(end&&previous&&baseline&&end.Date===prices.last_as_of&&end.Date===pairs?.price_asof);
+ const recent=ready&&fresh(end.Date,8);
+ const empty='Il fixing BCE delle otto valute e il motore delle 28 coppie non sono allineati su una data recente. Non attribuiamo forza relativa o vantaggi FX al mercato attuale senza una fotografia coerente.';
+ if(!ready)return {ready:false,recent:false,asof:end?.Date||null,headline:'FOREX G8 · Perché manca ancora una lettura relativa verificabile',
+  opening:empty,why:'Prima di parlare di valute forti o deboli servono almeno sei fixing G8 completi e lo stesso giorno di riferimento per il modello delle 28 coppie.',
+  policy:'Nessuna conclusione monetaria o macro viene sostituita a una misura di prezzo mancante.',
+  market:'Le coppie rimangono accessibili nella sezione FX, ma non vengono presentate come opportunità attuali.',
+  verdict:'Tesi FX non valutabile con le fonti disponibili; nessuna selezione automatica.',watch:'Verificare la pubblicazione dei fixing e l’allineamento del modello FX.',
+  meta:'G8 e 28 coppie non allineati',metrics:[],strength1:[],strength5:[]};
+ const getMove=(from,to,c)=>c==='EUR'?0:100*Math.log(from[c]/to[c]);
+ const calc=from=>FX.map(ccy=>({ccy,value:getMove(from,end,ccy)})).sort((a,b)=>b.value-a.value);
+ const strength1=calc(previous),strength5=calc(baseline);
+ const lead1=strength1[0],lag1=strength1.at(-1),lead5=strength5[0],lag5=strength5.at(-1);
+ const move1=c=>strength1.find(x=>x.ccy===c)?.value;
+ const move5=c=>strength5.find(x=>x.ccy===c)?.value;
+ const fmtMove=x=>sign(x,2,'%');
+ const label=c=>FLAGS[c]+' '+c;
+ const dayPhrase='Nel fixing BCE del '+date(end.Date);
+ const yesterday=label(lead1.ccy)+' '+fmtMove(lead1.value)+' e '+label(lag1.ccy)+' '+fmtMove(lag1.value);
+ const five=label(lead5.ccy)+' '+fmtMove(lead5.value)+' e '+label(lag5.ccy)+' '+fmtMove(lag5.value);
+ const shortLeader5=move5(lead1.ccy);
+ const nzdContext=lead1.ccy==='NZD'&&finite(shortLeader5)?
+  'Il recupero del NZD non equivale ancora a un cambio di trend: sulle cinque sedute precedenti il suo saldo relativo è '+fmtMove(shortLeader5)+'.':
+  'La seduta e il movimento a cinque fixing non vanno confusi: una giornata forte può essere un recupero all’interno di una tendenza più debole.';
+ const eurusd=pairMap.EURUSD,usdjpy=pairMap.USDJPY,audchf=pairMap.AUDCHF;
+ const pFav=p=>p?.setup?.structuralFav||p?.decision_frame?.fav||null;
+ const pQuality=p=>p?.setup?.quality||'NON VALUTABILE';
+ const pPrice=p=>p?.setup?.price?.state||'NEUTRAL';
+ const knownPair=(p)=>p&&['GOOD','BAD','NEUTRAL'].includes(pPrice(p));
+ const pairEvidence=knownPair(eurusd)&&knownPair(usdjpy)?
+  (pFav(eurusd)==='USD'?'EUR/USD: il modello attribuisce a USD un vantaggio parziale'+
+   (pPrice(eurusd)==='GOOD'?' che il prezzo già riflette':' che il prezzo non conferma ancora')+
+   '; stato '+pQuality(eurusd)+'. ':'EUR/USD non ha una prevalenza strutturale USD verificata. ')+
+  (pFav(usdjpy)==='USD'&&pPrice(usdjpy)==='BAD'?
+   'USD/JPY: la struttura favorisce USD, ma il prezzo favorisce JPY; divergenza da monitorare, non segnale di acquisto. ':
+   'USD/JPY richiede il confronto autonomo tra struttura e prezzo. '):
+  'Non ci sono dati sufficienti per una conclusione puntuale e confrontabile su EUR/USD e USD/JPY. ';
+ const aussieEvidence=audchf&&pFav(audchf)==='AUD'&&pPrice(audchf)==='GOOD'?
+  'AUD/CHF: la struttura e il prezzo del modello favoriscono AUD, ma negli ultimi cinque fixing '+label('CHF')+
+  ' ha sovraperformato '+label('AUD')+'. Gli orizzonti del modello e del movimento breve differiscono; è una verifica da fare, non una contraddizione automaticamente risolta.':
+  '';
+ const qdist=pairs?.quality_distribution||{};
+ const clean=qdist.PULITO||0,total=pairs?.pair_count||28;
+ const riskPairs=(qdist['CON RISCHI']||0),unusable=(qdist['NON VALUTABILE']||0);
+ const policyUSD=get('ois')?.currencies?.USD?.horizons?.['6m'],policyEUR=get('ois')?.currencies?.EUR?.horizons?.['6m'];
+ const govUSD=get('rates')?.USD,govEUR=get('rates')?.EUR;
+ const sameGov=govUSD?.date===end.Date&&govEUR?.date===end.Date&&finite(govUSD['2Y'])&&finite(govEUR['2Y']);
+ const diff=sameGov?(govUSD['2Y']-govEUR['2Y'])*100:null;
+ const comparableMoney=policyUSD?.as_of===end.Date&&policyEUR?.as_of===end.Date&&
+    finite(policyUSD.change_1d_bp)&&finite(policyEUR.change_1d_bp);
+ const ratesText=sameGov?
+  'Il differenziale governativo 2Y USA–Eurozona è '+sign(diff,0,' pb')+' alla stessa data. '+
+   (comparableMoney?'Anche i contratti monetari a sei mesi riportano variazioni giornaliere comparabili, da verificare per strumento.':
+    'Ma non c’è una coppia omogenea di variazioni giornaliere 6M USA/EUR: non posso chiamarlo un nuovo repricing relativo delle banche centrali.'):
+  'Non abbiamo due rendimenti governativi 2Y USA/EUR sulla stessa data del fixing: nessun differenziale corrente viene forzato.';
+ const ma=get('macro')?.currencies||{},usdInf=ma.USD?.inflation,eurInf=ma.EUR?.inflation;
+ const macroContext=eurusd?.decision_frame?.macroSide==='USD'?
+   'La componente Macro del modello favorisce USD rispetto a EUR, mentre il confronto Tassi/CB non produce un vincitore completo.':
+   'Il motore Macro/Tassi non dà un orientamento completo per EUR/USD.';
+ const cot=get('cot')||{},dateMatch=cot.AUD?.today?.match(/CFTC al (\d{4}-\d{2}-\d{2})/)?.[1];
+ const cotValid=validDay(dateMatch)&&dateMatch<=end.Date;
+ const nzdCrowded=cot.NZD?.today?.match(/Net\/OI\s+([+-]?\d+(?:\.\d+)?)%/);
+ const audCrowded=cot.AUD?.today?.match(/Net\/OI\s+([+-]?\d+(?:\.\d+)?)%/);
+ const crowded=cotValid&&nzdCrowded&&audCrowded&&
+   Math.abs(Number(nzdCrowded[1]).toFixed(1))>=30&&Math.abs(Number(audCrowded[1]).toFixed(1))>=30;
+ const positioning=crowded?
+  'Nel COT del '+date(dateMatch)+' NZD e AUD sono entrambi net short con Net/OI oltre −30%: il posizionamento è concentrato. '+
+  'Il rialzo giornaliero del NZD potrebbe includere ricoperture, ma i dati non identificano le operazioni né dimostrano flussi di short covering.':
+  'Il COT è settimanale: non lo usiamo per attribuire gli ultimi movimenti FX a ricoperture che non possiamo osservare.';
+ const r=get('risk')?.streams||{},vix=r.VIX||{};
+ const vixSame=vix.date===end.Date&&finite(vix.value)&&finite(vix.previous);
+ const vixDelta=vixSame?vix.value-vix.previous:null;
+ const riskContext=vixSame&&finite(vixDelta)?
+  'Il VIX nello stesso giorno '+(vixDelta<0?'è sceso':'è salito')+' di '+fmt(Math.abs(vixDelta),2)+
+  ' punti: '+(vixDelta<0?'è compatibile con un allentamento della pressione sulle valute sensibili al rischio.':
+   'potrebbe rendere più fragile un recupero delle valute cicliche.')+
+  ' Tuttavia il VIX da solo non spiega il NZD né dimostra un flusso FX; il confronto azioni/credito richiede altre date.':
+  'La lettura cross-asset non ha una conferma di volatilità sulla stessa data FX; non la useremo per spiegare i movimenti delle valute.';
+ const staleLead=!recent?'Il quadro seguente è storico, non una lettura della seduta in corso. ':'';
+ const metrics=[
+  {label:label(lead1.ccy)+' · ultimo fixing',value:fmtMove(lead1.value),source:'BCE · vs EUR',day:end.Date,key:'currencies'},
+  {label:label(lag1.ccy)+' · ultimo fixing',value:fmtMove(lag1.value),source:'BCE · vs EUR',day:end.Date,key:'currencies'},
+  {label:label(lead5.ccy)+' · 5 fixing',value:fmtMove(lead5.value),source:'BCE · vs EUR',day:end.Date,key:'currencies'},
+  {label:label(lag5.ccy)+' · 5 fixing',value:fmtMove(lag5.value),source:'BCE · vs EUR',day:end.Date,key:'currencies'}
+ ];
+ const prefix='FX G8 · ';
+ const headline=recent?
+   prefix+label(lead1.ccy)+' recupera, ma la forza a cinque sedute favorisce '+label(lead5.ccy):
+   prefix+'fotografia storica: confrontare prima i fixing e le 28 coppie';
+ const opening=staleLead+dayPhrase+' la valuta più forte rispetto al fixing precedente è '+label(lead1.ccy)+
+   ' ('+fmtMove(lead1.value)+'), la più debole è '+label(lag1.ccy)+' ('+fmtMove(lag1.value)+
+   '). Nelle ultime cinque sedute, invece, in testa c’è '+label(lead5.ccy)+' ('+fmtMove(lead5.value)+
+   ') e in fondo '+label(lag5.ccy)+' ('+fmtMove(lag5.value)+'). Sono confronti valutari relativi, non prezzi live.';
+ const why=nzdContext+' '+(sameGov?ratesText:'')+' '+macroContext;
+ const policy=pairEvidence+aussieEvidence;
+ const market=positioning+' '+riskContext;
+ const verdict=recent?
+   'Il messaggio FX è una rotazione di forza relativa, non una direzione unica del dollaro o delle valute cicliche. '+
+   (clean===0?'Sulle '+total+' coppie non ci sono setup classificati puliti: ':'Il motore segnala '+clean+' coppie pulite, ma serve ancora il timing tecnico: ')+
+   riskPairs+' con rischi e '+unusable+' non valutabili. La solidità di una tesi non equivale a un ingresso interessante.':
+   'Le variazioni dei fixing sono datate e non supportano un verdetto operativo aggiornato. Non promuoviamo coppie fuori dalla loro finestra di validità.';
+ const watch='Prima osserverei se '+label(lead1.ccy)+' consolida il recupero oltre un solo fixing e se '+label(lag5.ccy)+
+   ' smette di perdere terreno. Poi controllerei se su USD/JPY il prezzo smette di contraddire la struttura e se EUR/USD offre qualcosa di nuovo oltre alla conferma già prezzata. Per attribuire i movimenti alla politica monetaria serviranno variazioni OIS/futures USA–Europa comparabili.';
+ return {ready:true,recent,asof:end.Date,headline,opening,why,policy,market,verdict,watch,
+  meta:'Fixing BCE '+date(end.Date)+' · 1 e 5 fixing · '+total+' coppie',
+  strength1,strength5,metrics,
+  highlight:[lead1.ccy,lag1.ccy,lead5.ccy,lag5.ccy],
+  last:end.Date,positioning};
+}
+
 function overview(){
  const context=researchCase();
  const u=get('rates')?.USD||{},d=get('dxy')||{},risk=get('risk')?.streams||{};
