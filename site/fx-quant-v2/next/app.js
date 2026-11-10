@@ -498,16 +498,21 @@ function overview(){
  const deskCotDate=cot.USD?.today?.match(/CFTC al (\d{4}-\d{2}-\d{2})/)?.[1]||null;
  const deskCotOk=validDay(deskCotDate)&&deskCotDate<=dayNow();
  const deskVixRecent=deskVixDate&&fresh(deskVixDate,8);
+ // A newer rates/FX observation takes editorial precedence over an older VIX close.
+ const deskRiskLeading=deskVixRecent&&(!validDay(focusDate)||deskVixDate>=focusDate);
  const storyHeadline=tooOld?'Cosa dicono i dati disponibili, senza fingere un mercato in tempo reale':
-   deskVixRecent&&deskVixDelta<0&&deskRatesOk&&u.chg2_bp<0?
+   deskRiskLeading&&deskVixDelta<0&&deskRatesOk&&u.chg2_bp<0?
      'La volatilità arretra, scendono i Treasury: il Forex non dà una conferma uniforme':
-   deskVixRecent&&deskVixDelta>0&&deskRatesOk&&u.chg2_bp<0?
+   deskRiskLeading&&deskVixDelta>0&&deskRatesOk&&u.chg2_bp<0?
      'Volatilità più alta e Treasury più bassi: i mercati stanno riducendo rischio?':
-   deskVixRecent&&deskVixDelta<0?'Il rischio si distende, ma la conferma tra mercati è incompleta':
+   deskRiskLeading&&deskVixDelta<0?'Il rischio si distende, ma la conferma tra mercati è incompleta':
+   context.kind==='yield-selloff'?'I rendimenti risalgono: è repricing monetario o pressione sulle obbligazioni?':
+   context.kind==='bond-rally'?'I rendimenti scendono: l’aspettativa Fed non è ancora misurata':
+   context.kind==='fx-divergence'?'Treasury e dollaro divergono: il prezzo FX racconta un’altra storia':
    headline;
  const readingOpening=tooOld?
   'Le ultime osservazioni disponibili sono storiche. Ricostruiamo il quadro e le contraddizioni senza presentarlo come un aggiornamento intraday.':
-  deskVixRecent&&finite(deskVixDelta)?
+  deskRiskLeading&&finite(deskVixDelta)?
    'Il cambiamento più chiaro sul rischio è nel VIX: al '+date(deskVixDate)+' '+
    (deskVixDelta<0?'è sceso di ':'è salito di ')+fmt(Math.abs(deskVixDelta),2)+' punti a '+fmt(vx.value,2)+
    '. '+(finite(deskNasMove)&&finite(deskHYBp)&&deskNasDate===deskHYDate?
@@ -569,24 +574,37 @@ function overview(){
      'Il COT del '+date(deskCotDate)+' misura posizioni settimanali, non i flussi della seduta.'):
    'Il posizionamento CFTC non ha una data validata per confermare il prezzo.';
  const readingMarket=deskFxText+deskPairText+deskCotText;
+ const deskUSD6MoveConfirmed=money6Valid&&o6?.as_of===deskRateDate&&finite(o6.change_1d_bp);
+ const deskRatesJudgment=deskRatesOk?
+   (u.chg2_bp<0?
+     'I rendimenti USA sono scesi; '+(deskUSD6MoveConfirmed?'lo strumento USD a sei mesi mostra anche una variazione osservata, ma non esaurisce il percorso Fed. ':'non c’è una variazione USD a sei mesi omogenea per attribuire la seduta alla Fed. '):
+    u.chg2_bp>0?'I rendimenti USA sono saliti: '+(deskUSD6MoveConfirmed?'il contratto monetario offre una verifica, ma non prova l’intera narrativa. ':'senza variazione USD a sei mesi omogenea non è dimostrato un nuovo sentiero Fed. '):
+    'Il breve USA non fornisce un nuovo impulso netto. '):'Le variazioni governative omogenee restano incomplete. ';
+ const deskPairsJudgment=deskPairValid&&deskCount===28&&deskClean===0?
+   'Nel motore delle 28 coppie nessuna è classificata “pulita” al '+date(pairAsOf)+
+   ': la tesi può avere senso senza offrire un trade interessante.':
+   'La tesi FX deve ancora essere verificata sul prezzo delle singole coppie.';
  const readingVerdict=tooOld?
-   'Non promuovo una fotografia d’archivio a giudizio attuale: prima servono osservazioni aggiornate e confrontabili.':
-   deskVixRecent&&finite(deskVixDelta)&&deskVixDelta<0?
-    'L’evidenza principale è un allentamento della tensione di volatilità, non un miglioramento macro già provato. '+
-    (deskRatesOk?'I Treasury sono in calo, ma il 6M USD non certifica un riprezzamento Fed. ':'')+
-    (deskPairValid&&deskCount===28&&deskClean===0?
-      'Nel motore delle 28 coppie, nessuna risulta “pulita” al '+date(pairAsOf)+
-      ': la forza di una tesi non coincide oggi con l’attrattività di un trade.':
-      'Sulle coppie aspetterei conferme di prezzo prima di attribuire un vantaggio operativo.'):
-   deskVixRecent&&deskVixDelta>0?
-    'La volatilità sta segnalando cautela, ma senza una seduta comune di azioni e credito non si può parlare di stress generalizzato verificato. Il timing FX resta separato dalla tesi.':
-    'Non emerge ancora un regime dominante con prove sincronizzate. Il giudizio corretto è prudente: nessun segnale operativo deriva dal solo quadro generale.';
- const readingWatch=deskVixRecent&&finite(deskVixDelta)?
-   'Cercherei la prossima chiusura comune di Nasdaq, VIX e spread HY: '+
-   (deskVixDelta<0?'ulteriore rientro del credito rafforzerebbe la distensione; un nuovo allargamento la indebolirebbe.':
-     'stress contemporaneo su azioni e credito renderebbe più solida la lettura difensiva; una normalizzazione la indebolirebbe.')+
-   ' Sui tassi serve una variazione OIS/futures confrontabile. In FX seguirei la divergenza su USD/JPY e la possibilità che EUR/USD abbia già incorporato il vantaggio USD.':
-   'Monitorerei prima l’allineamento delle fonti di rischio, poi il repricing monetario misurabile e la risposta del prezzo sulle coppie.';
+   'Questa è una fotografia storica, non un verdetto sulla seduta attuale. Servono osservazioni nuove e confrontabili.':
+   deskRiskLeading&&finite(deskVixDelta)&&deskVixDelta<0?
+     'La tensione di volatilità si sta attenuando, ma le chiusure di azionario e credito non sono tutte sulla stessa data: non chiamerei ancora questo un miglioramento macro generalizzato. '+deskRatesJudgment+deskPairsJudgment:
+   deskRiskLeading&&finite(deskVixDelta)&&deskVixDelta>0?
+     'Il rischio mostra maggiore tensione, ma servono azioni e credito allineati alla stessa seduta per parlare di stress diffuso. '+deskRatesJudgment+deskPairsJudgment:
+   context.kind==='yield-selloff'?
+     'Il cambiamento principale è il rialzo dei rendimenti USA, non la vecchia chiusura del VIX. '+deskRatesJudgment+deskPairsJudgment:
+   context.kind==='bond-rally'?
+     'Il cambiamento principale è il calo dei rendimenti, ma non è ancora possibile identificarne la causa monetaria. '+deskRatesJudgment+deskPairsJudgment:
+   context.kind==='fx-divergence'?
+     'La divergenza tra dollaro e rendimenti è il punto da spiegare. Non forzerei un trade sulla base del solo tasso USA. '+deskPairsJudgment:
+   'Le prove disponibili non individuano un regime unico abbastanza solido. Nessun segnale operativo è dimostrato dal quadro generale.';
+ const readingWatch=deskRiskLeading&&finite(deskVixDelta)?
+   'Cercherei una prossima chiusura comune di Nasdaq, VIX e spread HY: '+
+   (deskVixDelta<0?'credito e volatilità ancora in rientro confermerebbero la distensione; un nuovo allargamento HY la indebolirebbe.':
+     'stress condiviso con azionario e credito rafforzerebbe la lettura difensiva; la normalizzazione la indebolirebbe.')+
+   ' Nei tassi servono variazioni OIS/futures comparabili. Sulle coppie, controllo USD/JPY e se EUR/USD ha già incorporato il vantaggio USD.':
+   deskRatesOk?
+     'Il test decisivo è il prossimo repricing OIS/futures sulla stessa data: se non segue il movimento del 2Y USA, la lettura monetaria perde forza. Poi verifico se USD/JPY e EUR/USD seguono davvero il vantaggio relativo.':
+     'Monitorerei prima date allineate tra rischio e tassi, poi la risposta dei prezzi FX: un movimento isolato non cambia il giudizio.';
  return '<article class="market-letter market-dashboard" aria-label="Dashboard di ricerca FX Quant">'
  +'<header class="dashboard-heading"><div class="dashboard-topline"><span>FX QUANT / PANORAMICA DI MERCATO</span><span>Focus '+date(focusDate)+' · Ultimo feed '+date(latest)+' · '+dayNow().split('-').reverse().join('.')+'</span></div>'
  +'<div class="dashboard-title-row dashboard-reading-title"><div><h1>'+esc(storyHeadline)+'</h1><div class="letter-opening"><p class="letter-lead">'+esc(readingOpening)+'</p></div></div></div>'
