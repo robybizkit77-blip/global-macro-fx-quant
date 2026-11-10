@@ -70,7 +70,9 @@ assert.match(baseline.article,/FORZA RELATIVA G8/);
 assert.match(baseline.article,/28 coppie/);
 assert.match(baseline.article,/USD\/JPY/);
 const forexOpening=baseline.article.split('<details class="dashboard-technical"')[0];
-assert(forexOpening.indexOf('FX G8')<forexOpening.indexOf('VIX'),'Currencies must lead the interpretation, cross-asset follows');
+assert(forexOpening.includes('FX G8'),'Fallback Home must remain oriented toward currencies');
+if(forexOpening.includes('VIX'))
+ assert(forexOpening.indexOf('FX G8')<forexOpening.indexOf('VIX'),'Fallback Home cannot lead with VIX');
 
 assert.doesNotMatch(baseline.article,/data-home-evidence open/,'Quantitative layer must start collapsed');
 assert(baseline.article.indexOf('dashboard-reading-story') <
