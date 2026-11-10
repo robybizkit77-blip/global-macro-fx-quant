@@ -12,6 +12,7 @@ assert(helperStart>=0&&overviewStart>helperStart&&overviewEnd>overviewStart,'Mis
 new vm.Script(app,{filename:'next-app.js'});
 const functions=app.slice(helperStart,overviewEnd);
 const initial={
+ currencyPrices:json('live_data/sections/ECB_G8_PRICE_HISTORY.json'),
  rates:json('live_data/sections/NATIVE_RATES_DATA.json'),
  dxy:json('live_data/sections/DXY_SYNTHETIC_ECB.json'),
  risk:json('site/fx-quant-v2/cross-asset-live-data.json'),
@@ -28,7 +29,7 @@ const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const date=x=>validDay(x)?x.slice(8,10)+'/'+x.slice(5,7)+'/'+x.slice(0,4):esc(x||'n.d.');
 const fmt=(v,n=2)=>finite(v)?v.toLocaleString('it-IT',{minimumFractionDigits:n,maximumFractionDigits:n}):'—';
 const sign=(v,n=1,suffix='')=>finite(v)?(v>0?'+':v<0?'−':'')+fmt(Math.abs(v),n)+suffix:'—';
-function evaluate(data,now='2026-11-08'){
+function evaluate(data,now='2026-11-10'){
  const ctx={
   get:k=>data[k]||null,finite,validDay,esc,date,fmt,sign,
   dayNow:()=>now,
@@ -37,7 +38,9 @@ function evaluate(data,now='2026-11-08'){
   eurPairs:()=>data.pairs?.pairs||{},
   homeScreenChart:()=>'<div class="test-chart"></div>',
   state:{homeEvidenceOpen:false,homeDossierOpen:false},
-  FLAGS:{USD:'USA'},ROUTES:{rates:'Tassi & OIS',risk:'Rischio'}
+  FX:['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'],
+  FLAGS:{USD:'USD',EUR:'EUR',GBP:'GBP',JPY:'JPY',CHF:'CHF',AUD:'AUD',NZD:'NZD',CAD:'CAD'},
+  ROUTES:{rates:'Tassi & OIS',risk:'Rischio'}
  };
  vm.createContext(ctx);
  new vm.Script(functions+'\nvar qa={context:researchCase(),article:overview(),rates:researchBridge("rates"),risk:researchBridge("risk")};').runInContext(ctx,{timeout:1000});
@@ -48,7 +51,11 @@ assert.match(baseline.article,/class="market-letter market-dashboard"/);
 assert.match(baseline.article,/class="letter-evidence"/);
 assert.match(baseline.article,/class="dashboard-kpi-grid"/);
 assert.match(baseline.article,/class="dashboard-analysis"/);
-assert.match(baseline.article,/LA LETTURA DEL DESK/);
+assert.match(baseline.article,/LA LETTURA FX DEL DESK/);
+assert.match(baseline.article,/NZD/);
+assert.match(baseline.article,/CHF/);
+assert.match(baseline.article,/AUD/);
+assert.match(baseline.article,/Forza G8/);
 assert.match(baseline.article,/class="dashboard-reading-story"/);
 assert.match(baseline.article,/dashboard-reading-source-links/,'Narrative must link to the underlying research');
 for(const route of ['risk','rates','macro','currencies','pairs','cot','news'])
@@ -58,6 +65,12 @@ assert.doesNotMatch(firstReading,/Il 2Y reagisce più direttamente|Se il front-e
  'Home must interpret current observations, not teach generic yield definitions');
 
 assert.match(baseline.article,/data-home-evidence/);
+assert.match(baseline.article,/Forza G8 FX/);
+assert.match(baseline.article,/28 coppie/);
+assert.match(baseline.article,/USD\/JPY/);
+const forexOpening=baseline.article.split('<details class="dashboard-technical"')[0];
+assert(forexOpening.indexOf('FX G8')<forexOpening.indexOf('VIX'),'Currencies must lead the interpretation, cross-asset follows');
+
 assert.doesNotMatch(baseline.article,/data-home-evidence open/,'Quantitative layer must start collapsed');
 assert(baseline.article.indexOf('dashboard-reading-story') <
        baseline.article.indexOf('dashboard-kpi-grid'),
@@ -76,6 +89,8 @@ stress.risk.streams.HY_OAS.previous=3.1;stress.risk.streams.HY_OAS.value=3.45;
 stress.pairs.price_asof='2026-11-09';
 let x=evaluate(stress,'2026-11-10');
 assert.equal(x.context.kind,'stress');
+assert.match(x.article,/NZD/,'A risk shock cannot replace G8 currency analysis');
+assert.match(x.article,/CHF/);
 assert.equal(x.context.focus,'nasdaq');
 assert.match(x.article,/data-research-kind="stress"/);
 assert.match(x.article,/Il mio giudizio\./,'The Home needs an explicit market verdict');
@@ -114,7 +129,7 @@ bond.dxy.as_of='2026-11-12';bond.pairs.price_asof='2026-11-12';
 x=evaluate(bond,'2026-11-12');
 assert.equal(x.context.kind,'yield-selloff');
 assert.equal(x.context.focus,'rates');
-assert.match(x.article,/I rendimenti risalgono/);
+assert.match(x.article,/FX G8/,'New rates must not hijack the Forex-first Home');
 assert.doesNotMatch(x.article,/data-research-kind="stress"/);
 const fx=clone(bond);
 fx.rates.USD.chg2_bp=4;fx.rates.USD.chg10_bp=0;
@@ -122,10 +137,13 @@ fx.dxy.previous_value=101;fx.dxy.value=99;
 x=evaluate(fx,'2026-11-12');
 assert.equal(x.context.kind,'fx-divergence');
 assert.equal(x.context.focus,'dxy');
-assert.match(x.article,/Treasury e dollaro divergono/);
+assert.match(x.article,/FX G8/,'USD/2Y divergence stays a secondary FX diagnostic');
 const outOfSync=clone(stress);
 outOfSync.risk.streams.VIX.date='2026-11-08';
 assert.notEqual(evaluate(outOfSync,'2026-11-10').context.kind,'stress');
+const fxMissing=clone(initial);fxMissing.currencyPrices.rows=[];
+const noFx=evaluate(fxMissing,'2026-11-10');
+assert.match(noFx.article,/non sono allineati/,'Missing G8 must never turn into fabricated market leadership');
 const empty=evaluate({});
 assert.equal(empty.context.kind,'mixed');
 assert.match(empty.article,/letter-proof-empty/);
@@ -135,11 +153,11 @@ const html=evaluate(malicious).article;
 assert(html.includes('&lt;img'));
 assert(!html.includes('<img'));
 const stale=evaluate(initial,'2026-12-01');
-assert.match(stale.article,/osservazioni disponibili sono storiche/);
+assert.match(stale.article,/fotografia storica/,'FX source age must be explicit');
 assert.match(app,/state\.data=nextData/);
 assert.match(app,/cache:'no-store'/);
 assert.match(app,/visibilitychange/);
 const page=read('site/fx-quant-v2/next/index.html');
 assert.match(page,/editorial-v4\.css\?v=18/);
 assert.match(page,/app\.js\?v=18/);
-console.log('NEXT_RESEARCH_COHERENCE_PASS: regimes=stress,relief,yield-selloff,fx-divergence,mixed; matched evidence; fresh/stale/missing; XSS; page continuity; cache refresh');
+console.log('NEXT_RESEARCH_COHERENCE_FX_FIRST_PASS: regimes=stress,relief,yield-selloff,fx-divergence,mixed; matched evidence; fresh/stale/missing; XSS; page continuity; cache refresh');
