@@ -12,9 +12,11 @@ TODAY=date(2026,11,10)
 def load(path):
     return json.loads((ROOT/path).read_text(encoding='utf-8'))
 
-fx=load('live_data/sections/ECB_G8_PRICE_HISTORY.json')
-rates=load('live_data/sections/NATIVE_RATES_DATA.json')
-risk=load('site/fx-quant-v2/cross-asset-live-data.json')
+# Immutable observed 10 November sample: regression must not break when live sources roll.
+snapshot=load('validation/fixtures/market_pulse_v25_observed_2026_11_10.json')
+fx=snapshot['fx']
+rates=snapshot['rates']
+risk=snapshot['cross_asset']
 fx_items=pulse.fx_fixing_items(fx,TODAY)
 rate_items=pulse.government_curve_items(rates,TODAY)
 cross_items=pulse.cross_asset_items(risk,TODAY)
@@ -61,4 +63,14 @@ assert len(pulse.government_curve_items(tampered,TODAY))==2
 assert pulse.load_market_input(ROOT/'does-not-exist-market-input-v25.json')=={}
 # No commodities, geopolitics, macro-release surprise unless sourced separately.
 assert not any('COMMODITY' in x['category'] or 'GEOPOLITIC' in x['category'] for x in fx_items+rate_items+cross_items)
-print('MARKET_PULSE_V25_REAL_SOURCE_PASS: FX 3/3, government curves 3/3, cross-asset 5/5; as-of, missing, stale, future, unit and ECB quote guards.')
+# Source snapshots move independently. Today's coverage is reported, never faked and
+# never required to stay at the frozen sample's exact dates or counts.
+from datetime import datetime
+from zoneinfo import ZoneInfo
+current_day=datetime.now(ZoneInfo('Europe/Rome')).date()
+fx_live=pulse.fx_fixing_items(load('live_data/sections/ECB_G8_PRICE_HISTORY.json'),current_day)
+rates_live=pulse.government_curve_items(load('live_data/sections/NATIVE_RATES_DATA.json'),current_day)
+cross_live=pulse.cross_asset_items(load('site/fx-quant-v2/cross-asset-live-data.json'),current_day)
+for observation in fx_live+rates_live+cross_live:
+    assert observation['_date']<=current_day and observation.get('source') and observation.get('quality')
+print('MARKET_PULSE_V25_REAL_SOURCE_PASS: frozen FX 3/3, government curves 3/3, cross-asset 5/5; as-of, missing, stale, future, unit and ECB quote guards; current source coverage FX={} rates={} cross={}.'.format(len(fx_live),len(rates_live),len(cross_live)))
