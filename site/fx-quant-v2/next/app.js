@@ -575,7 +575,7 @@ function render(){
  const route=ROUTES[state.route]?state.route:'overview';
  state.charts={};state.chartIndex=0;
  const views={overview,currencies,pairs,macro,rates,cot,risk,news};
- $('content').innerHTML=(route==='overview'||route==='pairs'?'':researchBridge(route))+views[route]();
+ $('content').innerHTML=(route==='overview'||route==='pairs'||route==='cot'?'':researchBridge(route))+views[route]();
  $('crumb-page').textContent=ROUTES[route];
  document.querySelectorAll('#nav [data-route]').forEach(a=>{if(a.dataset.route===route)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
  const ok=Object.keys(state.data).length,missing=Object.keys(SOURCES).length-ok;
