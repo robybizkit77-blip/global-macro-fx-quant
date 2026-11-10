@@ -37,6 +37,11 @@ fs.mkdirSync(evidence,{recursive:true});
         'Outdated generic COT essay must not duplicate the source-backed studio');
       assert(await page.locator('main .cot-analysis-grid article').count()===4,
         'COT research narrative must preserve four evidence-backed questions');
+    }else if(route==='risk'){
+      assert(await page.locator('main .research-essay').count()===0,
+        'Generic risk essay must not duplicate the matched-session desk interpretation');
+      assert(await page.locator('main .risk-research-reading').count()===1,
+        'Missing source-dated risk desk reading');
     }else if(route!=='overview'){
       assert(await page.locator('main .research-essay').count()===1,'Narrative research missing on '+route);
       assert(await page.locator('main .research-essay .essay-prose p').count()===3,'Research incomplete on '+route);
@@ -305,8 +310,17 @@ fs.mkdirSync(evidence,{recursive:true});
    assert((await page.locator('.cot-universe th').allInnerTexts()).join(' ').includes('Δ 1W'),'COT sorting failed');
    // Cross asset controls.
    await page.evaluate(()=>{location.hash='#risk'});
+   assert(await page.locator('.risk-research-reading').getAttribute('data-risk-asof')==='2026-11-05',
+     'Latest common five-asset date must be Nov 05, not latest standalone VIX');
+   assert((await page.locator('.risk-research-reading').innerText()).includes('fotografia storica'),
+     'Historical 05 Nov stress must not be described as live Nov 10');
+   assert((await page.locator('.risk-research-reading').innerText()).includes('HY_OAS 2026-11-06'),
+     'Later credit data must retain its independent as-of');
    await page.locator('[data-risk="SP500"]').click();
    assert((await page.locator('.panel-head h2').first().innerText()).includes('S&P 500'),'Risk switch failed');
+   await page.locator('[data-risk="HY_OAS"]').click();
+   assert((await page.locator('.chart-summary').innerText()).includes('Variazione dello spread'),
+     'Credit spread changes must be in basis points, not relative percentage');
    // News toggles.
    await page.evaluate(()=>{location.hash='#news'});
    await page.locator('[data-news-mode="official"]').click();
