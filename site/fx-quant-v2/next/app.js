@@ -520,17 +520,22 @@ function overview(){
     sign(u.chg2_bp,1,' pb')+' sul 2Y e '+sign(u.chg10_bp,1,' pb')+' sul 10Y. Mancano però dati cross-asset sincronizzati per attribuire una causa.':
     'La fotografia più recente non permette ancora di stabilire un movimento comune tra azioni, credito e tassi.';
  const readingWhy=deskRatesOk?
-   'I tassi mostrano un secondo pezzo del quadro: al '+date(deskRateDate)+' il Treasury USA 2Y ha registrato '+
-    sign(u.chg2_bp,1,' pb')+' e il 10Y '+sign(u.chg10_bp,1,' pb')+'. '+
-    (deskOtherRates.length?'Anche '+deskOtherRates.map(x=>x[0]+' 2Y '+sign(x[1].chg2_bp,1,' pb')).join(' e ')+' nella stessa data: il movimento non è soltanto americano. ':
-      'Il confronto internazionale della stessa seduta non è ancora disponibile. ')+
-    (money6Valid&&finite(o6?.change_1d_bp)&&o6.as_of===deskRateDate?
-      'Lo strumento USD a sei mesi riporta '+sign(o6.change_1d_bp,1,' pb')+' nello stesso giorno, ma non misura da solo tutto il sentiero Fed. ':
-      'Nel riferimento monetario USD a sei mesi non compare una variazione giornaliera omogenea: non possiamo certificare un repricing Fed. ')+
-    (deskFuturesJpy?.as_of===deskRateDate&&finite(deskFuturesJpy.change_1d_bp)?
-      'Per il Giappone i futures a sei mesi segnano invece '+sign(deskFuturesJpy.change_1d_bp,1,' pb')+
-      ': un movimento monetario osservato, distinto dai Treasury.':''):
-   'I tassi non hanno ancora una variazione giornaliera abbastanza documentata. Non attribuiamo ai futures una reazione non osservata.';
+  'Sui bond si vede un movimento più ampio degli Stati Uniti. Al '+date(deskRateDate)+
+   ' i Treasury 2Y e 10Y sono scesi rispettivamente di '+fmt(Math.abs(u.chg2_bp),1)+
+   ' e '+fmt(Math.abs(u.chg10_bp),1)+' punti base. '+
+   (deskOtherRates.length?
+     'Anche '+deskOtherRates.map(x=>x[0]).join(' e ')+' registra rendimenti brevi in '+
+     (deskOtherRates.every(x=>x[1].chg2_bp<0)?'calo':'movimento')+' nella stessa seduta. ':
+     'Le curve estere non hanno ancora date confrontabili. ')+
+   'Questo rende debole una spiegazione basata soltanto sulla Fed. '+
+   (money6Valid&&finite(o6?.change_1d_bp)&&o6.as_of===deskRateDate?
+     'La variazione USD a sei mesi è '+sign(o6.change_1d_bp,1,' pb')+
+     ': è un’indicazione sul singolo contratto, non sull’intero sentiero della banca centrale. ':
+     'Nel pricing USD a sei mesi manca una variazione giornaliera omogenea: non possiamo certificare un repricing Fed. ')+
+   (deskFuturesJpy?.as_of===deskRateDate&&finite(deskFuturesJpy.change_1d_bp)?
+     'Il future monetario giapponese a sei mesi, invece, segna '+sign(deskFuturesJpy.change_1d_bp,1,' pb')+
+     ': qui il repricing è osservabile, ma sullo strumento specifico.':''):
+  'I tassi non hanno ancora variazioni giornaliere abbastanza documentate: attribuire la seduta alla Fed sarebbe una conclusione non sostenuta.';
  const readingPricing=finite(macroInf?.latest_value)&&finite(macroLab?.latest_value)?
    'La macro USA non dà un via libera alla narrativa di recessione e tagli. Nell’archivio del sito l’inflazione è '+
    fmt(macroInf.latest_value,2)+'% ('+deskPeriod(macroInf.as_of)+')'+
@@ -591,7 +596,7 @@ function overview(){
  +'<div class="dashboard-reading-body"><p>'+esc(readingWhy)+'</p><p>'+esc(readingPricing)+'</p><p>'+esc(readingMarket)+'</p>'
  +'<p class="dashboard-reading-verdict"><strong>Il mio giudizio.</strong> '+esc(readingVerdict)+'</p>'
  +'<p class="dashboard-reading-watch"><strong>Che cosa monitorare.</strong> '+esc(readingWatch)+'</p></div>'
- +'<nav class="dashboard-reading-source-links" aria-label="Verifica la lettura nei dossier"><a href="#risk">Rischio ↗</a><a href="#rates">Tassi & OIS ↗</a><a href="#macro">Macro ↗</a><a href="#currencies">Valute G8 ↗</a><a href="#pairs">Coppie FX ↗</a><a href="#cot">COT ↗</a></nav>'
+ +'<nav class="dashboard-reading-source-links" aria-label="Verifica la lettura nei dossier"><a href="#risk">Rischio ↗</a><a href="#rates">Tassi & OIS ↗</a><a href="#macro">Macro ↗</a><a href="#currencies">Valute G8 ↗</a><a href="#pairs">Coppie FX ↗</a><a href="#cot">COT ↗</a><a href="#news">Notizie ↗</a></nav>'
  +'<p class="dashboard-reading-quality">Le osservazioni mantengono le date originali; ipotesi, prove e prezzi sono distinti. Numeri e verifiche completi restano consultabili qui sotto.</p></section>'
  +'<section class="dashboard-main dashboard-reading-chart"><div class="dashboard-section-head"><span>IL GRAFICO CHE ACCOMPAGNA LA LETTURA</span><p>Un’evidenza visiva, senza trasformare il grafico in una conclusione.</p></div>'
  +'<div class="dashboard-chart-grid"><figure class="letter-chart dashboard-chart"><figcaption><span>DATI DI MERCATO</span><strong>'+esc(firstChart)+'</strong><p>'+esc(focusText)+'</p></figcaption>'
