@@ -45,7 +45,7 @@ assert.equal(money('USD',ois,'2026-11-01'),null,'Cannot import future money-mark
 assert.equal(flow('USD',cot,'2026-10-31'),null,'Cannot import future CFTC data');
 assert.equal(macroAxis('EUR','inflation',macro,'2026-09-01'),null,'Macro observation cannot come from future');
 const unpaired=structuredClone(gov);
-unpaired.EUR.date='2026-11-09';
+unpaired.EUR.date=gov.GBP?.date==='2026-11-09'?'2026-11-08':'2026-11-09';
 const mismatch=read({base:'EUR',quote:'GBP',macro,gov:unpaired,ois,cot,now,price20:0,priceAsOf:'2026-11-09'});
 assert.equal(mismatch.spreadComparable,false);
 assert.match(mismatch.govStory,/date diverse/);
