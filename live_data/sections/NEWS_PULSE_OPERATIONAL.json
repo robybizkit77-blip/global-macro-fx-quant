@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-06",
-  "generated_at_utc": "2026-11-10T02:12:39.113563Z",
+  "generated_at_utc": "2026-11-10T07:36:01.973154Z",
   "items": [
     {
       "as_of": "2026-11-06",
@@ -47,7 +47,7 @@
       "title": "JPY: repricing implicito da futures invariato (+0.0 bp 6M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-10T02:12:39.113563Z",
+  "last_checked_at_utc": "2026-11-10T07:36:01.973154Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -277,13 +277,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-06",
+            "date": "2026-11-09",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-06",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-09",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 1.732
+            "yield_2y_pct": 1.778
           }
         },
         "source": "Bank of Japan",
@@ -332,13 +332,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-06",
+            "date": "2026-11-09",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-06",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-09",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 1.732
+            "yield_2y_pct": 1.778
           }
         },
         "source": "Bank of Japan",
@@ -387,13 +387,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-06",
+            "date": "2026-11-09",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-06",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-09",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.51
+            "yield_2y_pct": 4.56
           }
         },
         "source": "Federal Reserve Board",
@@ -688,13 +688,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-06",
+            "date": "2026-11-09",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-06",
+            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-09",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.51
+            "yield_2y_pct": 4.56
           }
         },
         "source": "Federal Reserve Board",
@@ -1051,8 +1051,8 @@
       {
         "accepted_items": 19,
         "ccy": "JPY",
-        "entries_rejected": 28,
-        "feed_entries_seen": 47,
+        "entries_rejected": 27,
+        "feed_entries_seen": 46,
         "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
         "source": "Bank of Japan",
         "source_id": "BOJ_NEWS",
