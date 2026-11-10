@@ -22,8 +22,38 @@
    return parsed.href;
   }catch(e){return null;}
  };
+ function sourceAudit(feed,now){
+  const checked=romeDate(feed?.last_checked_at_utc);
+  const validChecked=checked&&day(now)&&checked.date<=now;
+  const official=feed?.official_releases||{},sources=official.sources;
+  const validSources=validChecked&&Array.isArray(sources)&&sources.length>0&&
+    official.last_attempt_day_rome===checked.date&&
+    Number.isInteger(official.source_count)&&official.source_count===sources.length;
+  const dateLabel=d=>d.slice(8,10)+'/'+d.slice(5,7)+'/'+d.slice(0,4);
+  const checkText=validChecked?'Ultimo controllo: '+dateLabel(checked.date)+' ore '+checked.time+' (Italia)':
+    'Ultimo controllo delle fonti non verificabile';
+  let rssText='Stato delle fonti RSS non certificabile per questa verifica';
+  let failures=null,withoutRecent=null;
+  if(validSources){
+   failures=sources.filter(x=>x.status==='FETCH_OR_PARSE_FAILED').length;
+   withoutRecent=sources.filter(x=>x.status==='NO_VERIFIED_RECENT_ITEMS').length;
+   const unknown=sources.some(x=>!['OK_RECENT_ITEMS','NO_VERIFIED_RECENT_ITEMS','FETCH_OR_PARSE_FAILED'].includes(x.status));
+   if(!unknown&&failures===official.source_failures){
+    rssText='RSS ufficiali: '+sources.length+' fonti controllate, '+failures+' errori; '+
+      withoutRecent+' senza articoli recenti verificabili';
+   }else{
+    rssText='Stato RSS incoerente con i dettagli delle fonti: verifica incompleta';
+    failures=null;withoutRecent=null;
+   }
+  }
+  return {checkedAt:validChecked?checked.date:null,checkedTime:validChecked?checked.time:null,
+    sourceCount:validSources?sources.length:null,failures,withoutRecent,
+    auditLine:checkText+' · '+rssText,
+    sourceCoverageValid:validSources&&failures!==null};
+ }
  function parse(feed,now){
   const empty={pulse:[],official:[],pulseAsOf:null,officialAsOf:null,latest:null,
+   ...sourceAudit(feed,now),
    gap:'Il feed non contiene una finestra pre/post degli strumenti di mercato; non possiamo attribuire reazioni causali.',quality:'NON VALIDATO'};
   if(!day(now)||!feed||typeof feed!=='object')return empty;
   const pulse=(Array.isArray(feed.items)?feed.items:[]).flatMap((x,i)=>{
@@ -65,8 +95,9 @@
   const gap='Market Pulse: '+(pulseAsOf||'data assente')+' · Comunicazioni ufficiali: '+
    (official[0]?.asof||'data assente')+'. Le due sezioni hanno orologi diversi: nessuna pubblicazione equivale automaticamente a sorpresa o a reazione del mercato.';
   return {pulse,official,pulseAsOf,officialAsOf:official[0]?.asof||null,latest,gap,
+   ...sourceAudit(feed,now),
    quality:pulse.length||official.length?'FATTI DATATI; IMPATTO DA VERIFICARE':'NON VALIDATO'};
  }
- root.FXQuantNewsEvidence={parse,romeDate,link};
- if(typeof module!=='undefined'&&module.exports)module.exports={parse,romeDate,link};
+ root.FXQuantNewsEvidence={parse,romeDate,link,sourceAudit};
+ if(typeof module!=='undefined'&&module.exports)module.exports={parse,romeDate,link,sourceAudit};
 })(typeof window!=='undefined'?window:{});
