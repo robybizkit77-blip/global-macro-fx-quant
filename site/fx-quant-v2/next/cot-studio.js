@@ -129,9 +129,9 @@
         lines=[{name:'Net/OI',color:'#9ccde9',values:rows.map(r=>({label:r.date,value:r.netoi}))}];unit='%';
         note='Normalizzazione sulla base di open interest del relativo mercato, non un rendimento.';
       }else if(mode==='percentile'){
-        label='Percentile storico · 104 settimane';
+        label='Percentile storico · fonte archiviata';
         lines=[{name:'Percentile',color:'#edbf7c',values:rows.map(r=>({label:r.date,value:r.percentile}))}];
-        note='P80 / P20 descrivono code della distribuzione storica: non livelli di ingresso.';
+        note='Ultimo punto: P104 esatto contro 104 settimane precedenti. I punti storici sono percentili della fonte originale inclusiva: non direttamente confrontabili con il nuovo calcolo. P80/P20 non sono timing.';
       }else{
         label='Variazione netta settimanale';
         lines=[{name:'Δ netto 1W',color:'#abafd7',values:rows.slice(1).map((r,i)=>({label:r.date,value:r.net-rows[i].net}))}];precision=0;
@@ -158,45 +158,68 @@
         ': quando il prezzo sale si apprezza la valuta al numeratore.</p>';
     }
     function last12(a){
-      return '<section class="cot-detailed-table"><div class="cot-analysis-head"><div><span class="chapter-kicker">04 / AUDIT STORICO</span><h2>Le ultime 12 settimane. <em>Senza scorciatoie.</em></h2></div>'
-       +'<p>Il dato va verificato anche nella sua composizione: long, short, netto, flusso, Net/OI e percentile.</p></div>'
-       +'<div class="table-wrap"><table class="data-table cot-table"><thead><tr><th>Martedì CFTC</th><th>Long</th><th>Short</th><th>Net</th><th>Δ Net 1W</th><th>Net/OI</th><th>P104</th></tr></thead><tbody>'
+      return '<section class="cot-detailed-table"><div class="cot-analysis-head"><div><span class="chapter-kicker">06 / AUDIT STORICO</span>'
+       +'<h2>Le ultime 12 settimane. <em>Long, short e saldo.</em></h2></div>'
+       +'<p>Le variazioni delle due gambe spiegano il netto. P104 più recente: metodo esclusivo; i ranghi delle settimane vecchie hanno una definizione differente.</p></div>'
+       +'<div class="table-wrap"><table class="data-table cot-table"><thead><tr><th>Martedì CFTC</th><th>Long</th><th>Short</th><th>Net</th><th>Δ Net 1W</th><th>Net/OI</th><th>Rango P*</th></tr></thead><tbody>'
        +a.hist.slice(-12).reverse().map(r=>{
          const i=a.hist.findIndex(x=>x.date===r.date),prev=a.hist[i-1];
+         const current=r.date===a.last.date,rank=current?a.deskStats?.rounded:r.percentile;
          return '<tr><td>'+date(r.date)+'</td><td>'+fmt(r.long,0)+'</td><td>'+fmt(r.short,0)+'</td>'
-         +'<td>'+sign(r.net,0)+'</td><td>'+sign(prev?r.net-prev.net:null,0)+'</td>'
-         +'<td>'+sign(r.netoi,2,'%')+'</td><td>'+fmt(r.percentile,1)+'</td></tr>';
-       }).join('')+'</tbody></table></div></section>';
+          +'<td>'+sign(r.net,0)+'</td><td>'+sign(prev?r.net-prev.net:null,0)+'</td>'
+          +'<td>'+sign(r.netoi,2,'%')+'</td><td>'+(rank===null||rank===undefined?'—':
+             (current?'P'+fmt(rank,0):'≈'+fmt(rank,1)))+'</td></tr>';
+       }).join('')+'</tbody></table></div>'
+       +'<p class="source-caption">* Ultima riga: percentile P104 rispetto alle 104 osservazioni precedenti, verificato contro archivio CFTC. Righe più vecchie: percentili archiviati della serie inclusiva; il simbolo ≈ indica metodo diverso, non precisione inferiore del Net. Long, short, Net e Net/OI provengono dal CFTC.</p></section>';
     }
-    function universe(){
-      const universe=FX.map(report).filter(Boolean),filter=state.cotFilter||'all',sort=state.cotSort||'percentile';
-      const asc=state.cotSortAsc===true;
-      const rows=universe.filter(a=>filter==='all'||filter==='extreme'&&a.level!=='intermedio'
+        function universe(){
+      const all=FX.map(report).filter(Boolean),filter=state.cotFilter||'all',sort=state.cotSort||'percentile',asc=state.cotSortAsc===true;
+      const rows=all.filter(a=>filter==='all'||filter==='extreme'&&a.level!=='intermedio'&&a.level!=='non validato'
         ||filter==='rising'&&a.delta1>0||filter==='falling'&&a.delta1<0);
-      const v=(a,k)=>k==='net'?a.last.net:k==='netoi'?a.last.netoi:k==='delta1'?a.delta1:k==='delta4'?a.delta4:a.last.percentile;
-      rows.sort((a,b)=>(v(a,sort)-v(b,sort))*(asc?1:-1));
+      const v=(a,k)=>{
+       const q=a.deskStats;
+       return k==='percentile'?q?.rounded:k==='z'?q?.z:k==='net'?a.last.net:
+        k==='netoi'?a.last.netoi:k==='delta1'?a.delta1:k==='delta4'?a.delta4:q?.delta8;
+      };
+      rows.sort((a,b)=>{
+       const x=v(a,sort),y=v(b,sort);
+       if(!finite(x)&&!finite(y))return a.ccy.localeCompare(b.ccy);
+       if(!finite(x))return 1;if(!finite(y))return -1;
+       return (x-y)*(asc?1:-1)||a.ccy.localeCompare(b.ccy);
+      });
       const filters=[['all','Tutte'],['extreme','P20 / P80'],['rising','Net in aumento'],['falling','Net in calo']];
-      const headers=[['net','Net'],['delta1','Δ 1W'],['delta4','Δ 4W'],['netoi','Net/OI'],['percentile','P104']];
-      return '<section class="cot-universe"><div class="cot-analysis-head"><div><span class="chapter-kicker">05 / COMPARAZIONE G8</span><h2>La mappa del positioning. <em>Valuta per valuta.</em></h2></div>'
-       +'<p>Ordina e filtra. I contratti hanno dimensioni diverse: gli stock assoluti non rappresentano una graduatoria della forza FX.</p></div>'
+      const heads=[['percentile','P104'],['z','Z104'],['net','Net'],['delta1','Δ 1W'],['delta4','Δ 4W'],['delta8','Δ 8W'],['netoi','Net/OI']];
+      return '<section class="cot-universe"><div class="cot-analysis-head"><div><span class="chapter-kicker">02 / CLASSIFICA G8</span>'
+       +'<h2>La mappa dei fondi. <em>Dal percentile alto al basso.</em></h2></div>'
+       +'<p>Stock, velocità, persistenza e affollamento. I contratti dei diversi futures non misurano la forza relativa delle valute.</p></div>'
        +'<div class="cot-table-filters"><div class="pill-controls">'+filters.map(([k,l])=>
-         '<button class="pill '+(k===filter?'active':'')+'" data-cot-filter="'+k+'" aria-pressed="'+String(k===filter)+'" type="button">'+l+'</button>').join('')+'</div><small>Clicca le intestazioni per ordinare</small></div>'
-       +'<div class="table-wrap"><table class="data-table cot-table"><thead><tr><th>Valuta</th>'
-       +headers.map(([k,l])=>'<th><button type="button" data-cot-sort="'+k+'">'+l+(sort===k?(asc?' ↑':' ↓'):' ↕')+'</button></th>').join('')+'<th>Rilevazione</th></tr></thead><tbody>'
-       +rows.map(a=>'<tr class="'+(a.ccy===state.ccy?'active':'')+'"><td><button type="button" data-ccy="'+a.ccy+'">'+FLAGS[a.ccy]+' '+a.ccy+'</button></td>'
-         +'<td>'+sign(a.last.net,0)+'</td><td class="'+(a.delta1>0?'tone-up':a.delta1<0?'tone-down':'')+'">'+sign(a.delta1,0)+'</td>'
-         +'<td>'+sign(a.delta4,0)+'</td><td>'+sign(a.last.netoi,2,'%')+'</td><td>'+fmt(a.last.percentile,1)+'</td>'
-         +'<td>'+date(a.last.date)+'</td></tr>').join('')
-       +'</tbody></table></div><p class="source-caption">Fonte CFTC Legacy Non-Commercial; rilevazione settimanale martedì. P104 è il percentile storico per la singola valuta. Nessuna interpretazione automatica come segnale di trading.</p></section>';
+        '<button class="pill '+(k===filter?'active':'')+'" data-cot-filter="'+k+'" aria-pressed="'+String(k===filter)+'" type="button">'+l+'</button>').join('')+
+         '</div><small>Clicca sulle intestazioni per ordinare</small></div>'
+       +'<div class="table-wrap"><table class="data-table cot-table cot-rank-table"><thead><tr><th>Valuta / fascia</th>'
+       +heads.map(([k,l])=>'<th><button type="button" data-cot-sort="'+k+'">'+l+(sort===k?(asc?' ↑':' ↓'):' ↕')+'</button></th>').join('')+
+        '<th>As of</th></tr></thead><tbody>'
+       +rows.map(a=>{
+        const q=a.deskStats,p=q?.rounded,netoi=a.last.netoi;
+        return '<tr class="'+(a.ccy===state.ccy?'active':'')+'"><td><button type="button" data-ccy="'+a.ccy+'">'+FLAGS[a.ccy]+' '+a.ccy+
+         '</button><small class="cot-row-state '+(p>=80?'cot-long':p<=20?'cot-short':'')+'">'+esc(q?.level||'DA VERIFICARE')+'</small></td>'
+         +'<td>'+(p===null||p===undefined?'—':fmt(p,0)+'°')+'</td>'
+         +'<td>'+(finite(q?.z)?sign(q.z,2):'—')+'</td><td>'+sign(a.last.net,0)+'</td>'
+         +'<td class="'+(a.delta1>0?'tone-up':a.delta1<0?'tone-down':'')+'">'+sign(a.delta1,0)+'</td>'
+         +'<td>'+sign(a.delta4,0)+'</td><td>'+sign(q?.delta8,0)+'</td>'
+         +'<td class="'+(q?.crowd?'tone-down':'')+'">'+(q?.crowd?'⚠ ':'')+sign(netoi,1,'%')+'</td>'
+         +'<td>'+date(a.last.date)+'</td></tr>';
+       }).join('')+'</tbody></table></div>'
+       +'<p class="source-caption">P104: 104 Net precedenti escludendo il martedì attuale, arrotondamento intero prima delle soglie 80/20. Z104: deviazioni standard campionarie (ddof=1). ⚠ Net/OI ≥ ±30,0% dopo arrotondamento a un decimale. Estremo NON significa inversione imminente.</p></section>';
     }
-    function glossary(){
+        function glossary(){
       const terms=[
         ['Long','Contratti futures detenuti in posizione rialzista dai non-commercial; non equivalgono a un ordine di acquisto nel mercato spot FX.'],
         ['Short','Contratti futures detenuti in posizione ribassista dai non-commercial.'],
         ['Net = Long − Short','Differenza fra long e short. Net positivo = prevalenza long; negativo = prevalenza short.'],
         ['Δ Net 1W / 4W','Variazione del netto rispetto a una o quattro rilevazioni prima. Misura il flusso, non il rendimento della valuta.'],
         ['Net/Open Interest','Net rapportato all’open interest complessivo del contratto, espresso in %. È un indicatore relativo del grado di concentrazione.'],
-        ['Percentile 104W','Rango relativo del netto dentro le ultime 104 settimane. P90 significa più alto rispetto alla maggior parte della propria storia, non necessariamente net long.'],
+        ['Percentile 104W e Z-score','Ultimo martedì: confronto con 104 Net precedenti, settimana corrente esclusa. Percentile arrotondato all’intero prima delle soglie 80/20; Z=(Net−media)/deviazione standard campionaria. L’archivio storico precedente usa un percentile inclusivo, esplicitamente marcato.'],
+         ['Velocità e Net/OI','Velocity = Δ Net 1W / Open Interest. Qui l’OI è ricostruito approssimativamente da Net/NetOI arrotondato, quindi è una stima e non l’OI osservato. Alert se |Net/OI| arrotondato a un decimale raggiunge 30%.'],
         ['Prezzo coerente / divergente','Confronto descrittivo tra segno della variazione di prezzo e variazione netta nel medesimo intervallo. Non certifica una relazione causale.'],
         ['Ritardo COT','Il report CFTC fotografa tipicamente il martedì e viene pubblicato successivamente. La situazione reale può cambiare prima che il dato sia accessibile.']
       ];
