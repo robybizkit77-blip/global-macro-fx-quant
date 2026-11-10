@@ -174,7 +174,7 @@
 #content[data-view="cot"] .cot-analysis-grid article:nth-child(4){border-top:2px solid #85aaff}
 #content[data-view="cot"] .cot-plot-card{border-color:rgba(101,207,255,.33);background:linear-gradient(145deg,#143b51,#102a3e)}
 #content[data-view="cot"] .cot-plot-card.cot-price-card{border-color:rgba(133,170,255,.35)}
-#content[data-view="cot"] .cot-desk-card:not(.cot-desk-positive):not(.cot-desk-negative){border-top:2px solid rgba(101,207,255,.6)}
+#content[data-view="cot"] .cot-desk-card:not(.cot-desk-positive):not(.cot-desk-negative):not(.cot-desk-crowd){border-top:2px solid rgba(101,207,255,.6)}
 
 /* 6 — Risk: coral frames the risk topic; it does not replace actual directional labels. */
 #content[data-view="risk"] .grid.cols-4 .kpi{
