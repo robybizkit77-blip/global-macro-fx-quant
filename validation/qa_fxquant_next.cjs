@@ -96,10 +96,12 @@ fs.mkdirSync(evidence,{recursive:true});
    assert(await page.locator('.letter-chart-visual .chart svg').count()>0,'Lead-chart evidence missing');
    const regime=await page.locator('.letter-evidence').getAttribute('data-research-kind');
    assert(['stress','relief','bond-rally','yield-selloff','fx-divergence','mixed'].includes(regime),'Unknown research case');
-   if(regime==='stress'||regime==='relief'){
-    assert((await page.locator('.letter-chart-visual .chart-legend').innerText()).includes('Nasdaq'),'Risk story must open on Nasdaq evidence');
-    assert((await page.locator('.letter-proof-list').innerText()).includes('Credito High Yield'),'Risk story has no credit corroboration');
-   }
+   assert((await page.locator('.letter-chart-visual .chart-legend').innerText()).includes('/ EUR'),
+     'Main Home chart must start with real G8 relative currency prices, not Nasdaq or Treasury');
+   assert((await page.locator('.dashboard-reading-story').innerText()).includes('EUR/USD'),
+     'Forex-first interpretation must reach actual 28-pair evidence');
+   assert(await page.locator('.dashboard-fx-shortlist button[data-pair]').count()===3,
+     'FX dossier links must be directly usable from the Home');
    await page.locator('[data-hchart="vix"]').click();
    assert((await page.locator('.letter-chart-visual .chart-legend').innerText()).includes('VIX'),'Chart switch to VIX failed');
    await page.locator('[data-hwindow="5"]').click();
