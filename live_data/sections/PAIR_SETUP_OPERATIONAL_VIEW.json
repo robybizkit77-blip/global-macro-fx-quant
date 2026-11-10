@@ -410,7 +410,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 309.3999999999999,
+              "bp": 304.79999999999995,
               "material": true,
               "side": "AUD"
             }
@@ -440,7 +440,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 309.3999999999999,
+            "bp": 304.79999999999995,
             "material": true,
             "side": "AUD"
           }
@@ -678,7 +678,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 31.599999999999984,
+              "bp": 26.6,
               "material": false,
               "side": "—"
             }
@@ -708,7 +708,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 31.599999999999984,
+            "bp": 26.6,
             "material": false,
             "side": "—"
           }
@@ -946,7 +946,7 @@
               "side": "B"
             },
             "ratesGap": {
-              "bp": 138.8,
+              "bp": 134.20000000000002,
               "material": true,
               "side": "CAD"
             }
@@ -976,7 +976,7 @@
             "side": "B"
           },
           "ratesGap": {
-            "bp": 138.8,
+            "bp": 134.20000000000002,
             "material": true,
             "side": "CAD"
           }
@@ -1097,7 +1097,7 @@
               "side": "B"
             },
             "ratesGap": {
-              "bp": -144.5,
+              "bp": -149.10000000000002,
               "material": true,
               "side": "JPY"
             }
@@ -1127,7 +1127,7 @@
             "side": "B"
           },
           "ratesGap": {
-            "bp": -144.5,
+            "bp": -149.10000000000002,
             "material": true,
             "side": "JPY"
           }
@@ -1734,7 +1734,7 @@
         "structural": {
           "fav": "—",
           "quality": "SEPARAZIONE RATES MATERIALE",
-          "relation": "Il differenziale 2Y osservato è +120 pb verso EUR. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+          "relation": "Il differenziale 2Y osservato è +115 pb verso EUR. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
           "timing": "EUR: TURNING RECENTE · JPY: RATES AVANTI",
           "priceReading": "PREZZO NON RISOLUTIVO",
           "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
@@ -1752,7 +1752,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 119.84955110000001,
+              "bp": 115.24955110000002,
               "material": true,
               "side": "EUR"
             }
@@ -1764,7 +1764,7 @@
       "decision_frame": {
         "fav": "—",
         "quality": "SEPARAZIONE RATES MATERIALE",
-        "relation": "Il differenziale 2Y osservato è +120 pb verso EUR. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+        "relation": "Il differenziale 2Y osservato è +115 pb verso EUR. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
         "timing": "EUR: TURNING RECENTE · JPY: RATES AVANTI",
         "priceReading": "PREZZO NON RISOLUTIVO",
         "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
@@ -1782,7 +1782,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 119.84955110000001,
+            "bp": 115.24955110000002,
             "material": true,
             "side": "EUR"
           }
@@ -2020,7 +2020,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -157.95044889999997,
+              "bp": -162.95044889999994,
               "material": true,
               "side": "USD"
             }
@@ -2050,7 +2050,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -157.95044889999997,
+            "bp": -162.95044889999994,
             "material": true,
             "side": "USD"
           }
@@ -2536,7 +2536,7 @@
         "structural": {
           "fav": "—",
           "quality": "SEPARAZIONE RATES MATERIALE",
-          "relation": "Il differenziale 2Y osservato è +288 pb verso GBP. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+          "relation": "Il differenziale 2Y osservato è +283 pb verso GBP. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
           "timing": "GBP: TURNING RECENTE · JPY: RATES AVANTI",
           "priceReading": "PREZZO NON RISOLUTIVO",
           "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
@@ -2554,7 +2554,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 288.0482282704806,
+              "bp": 283.4482282704806,
               "material": true,
               "side": "GBP"
             }
@@ -2566,7 +2566,7 @@
       "decision_frame": {
         "fav": "—",
         "quality": "SEPARAZIONE RATES MATERIALE",
-        "relation": "Il differenziale 2Y osservato è +288 pb verso GBP. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+        "relation": "Il differenziale 2Y osservato è +283 pb verso GBP. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
         "timing": "GBP: TURNING RECENTE · JPY: RATES AVANTI",
         "priceReading": "PREZZO NON RISOLUTIVO",
         "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
@@ -2584,7 +2584,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 288.0482282704806,
+            "bp": 283.4482282704806,
             "material": true,
             "side": "GBP"
           }
@@ -2820,7 +2820,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 10.248228270480642,
+              "bp": 5.248228270480659,
               "material": false,
               "side": "—"
             }
@@ -2850,7 +2850,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 10.248228270480642,
+            "bp": 5.248228270480659,
             "material": false,
             "side": "—"
           }
@@ -3185,7 +3185,7 @@
         "structural": {
           "fav": "—",
           "quality": "SEPARAZIONE RATES MATERIALE",
-          "relation": "Il differenziale 2Y osservato è +216 pb verso NZD. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+          "relation": "Il differenziale 2Y osservato è +211 pb verso NZD. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
           "timing": "NZD: TURNING RECENTE · JPY: RATES AVANTI",
           "priceReading": "PREZZO NON RISOLUTIVO",
           "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
@@ -3203,7 +3203,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 215.80000000000004,
+              "bp": 211.20000000000002,
               "material": true,
               "side": "NZD"
             }
@@ -3215,7 +3215,7 @@
       "decision_frame": {
         "fav": "—",
         "quality": "SEPARAZIONE RATES MATERIALE",
-        "relation": "Il differenziale 2Y osservato è +216 pb verso NZD. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+        "relation": "Il differenziale 2Y osservato è +211 pb verso NZD. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
         "timing": "NZD: TURNING RECENTE · JPY: RATES AVANTI",
         "priceReading": "PREZZO NON RISOLUTIVO",
         "priceNote": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara.",
@@ -3233,7 +3233,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 215.80000000000004,
+            "bp": 211.20000000000002,
             "material": true,
             "side": "NZD"
           }
@@ -3353,7 +3353,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": -61.999999999999964,
+              "bp": -66.99999999999994,
               "material": false,
               "side": "—"
             }
@@ -3383,7 +3383,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": -61.999999999999964,
+            "bp": -66.99999999999994,
             "material": false,
             "side": "—"
           }
@@ -3502,7 +3502,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 138.99999999999997,
+              "bp": 143.99999999999994,
               "material": true,
               "side": "USD"
             }
@@ -3532,7 +3532,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 138.99999999999997,
+            "bp": 143.99999999999994,
             "material": true,
             "side": "USD"
           }
@@ -3652,7 +3652,7 @@
               "side": "A"
             },
             "ratesGap": {
-              "bp": 422.3,
+              "bp": 427.29999999999995,
               "material": true,
               "side": "USD"
             }
@@ -3682,7 +3682,7 @@
             "side": "A"
           },
           "ratesGap": {
-            "bp": 422.3,
+            "bp": 427.29999999999995,
             "material": true,
             "side": "USD"
           }
@@ -3802,7 +3802,7 @@
               "side": "TIE"
             },
             "ratesGap": {
-              "bp": 277.79999999999995,
+              "bp": 278.19999999999993,
               "material": true,
               "side": "USD"
             }
@@ -3832,7 +3832,7 @@
             "side": "TIE"
           },
           "ratesGap": {
-            "bp": 277.79999999999995,
+            "bp": 278.19999999999993,
             "material": true,
             "side": "USD"
           }
