@@ -408,7 +408,7 @@ function fxHomeDesk(){
   '';
  const qdist=pairs?.quality_distribution||{};
  const clean=qdist.PULITO||0,total=pairs?.pair_count||28;
- const riskPairs=(qdist['CON RISCHI']||0),unusable=(qdist['NON VALUTABILE']||0);
+ const riskPairs=(qdist['CON RISCHI']||0),unusable=(qdist['NON VALUTABILE']||0),pending=(qdist['DA CONFERMARE']||0),watching=(qdist['DA MONITORARE']||0);
  const policyUSD=get('ois')?.currencies?.USD?.horizons?.['6m'],policyEUR=get('ois')?.currencies?.EUR?.horizons?.['6m'];
  const govUSD=get('rates')?.USD,govEUR=get('rates')?.EUR;
  const sameGov=govUSD?.date===end.Date&&govEUR?.date===end.Date&&finite(govUSD['2Y'])&&finite(govEUR['2Y']);
@@ -452,7 +452,8 @@ function fxHomeDesk(){
  ];
  const prefix='FX G8 · ';
  const headline=recent?
-   prefix+label(lead1.ccy)+' recupera, ma la forza a cinque sedute favorisce '+label(lead5.ccy):
+   prefix+label(lead1.ccy)+(lead1.value>0?' guida l’ultimo fixing':' tiene meglio nell’ultimo fixing')+
+   ', mentre il confronto su cinque sedute premia '+label(lead5.ccy):
    prefix+'fotografia storica: confrontare prima i fixing e le 28 coppie';
  const opening=staleLead+dayPhrase+' la valuta più forte rispetto al fixing precedente è '+label(lead1.ccy)+
    ' ('+fmtMove(lead1.value)+'), la più debole è '+label(lag1.ccy)+' ('+fmtMove(lag1.value)+
@@ -464,7 +465,7 @@ function fxHomeDesk(){
  const verdict=recent?
    'Il messaggio FX è una rotazione di forza relativa, non una direzione unica del dollaro o delle valute cicliche. '+
    (clean===0?'Sulle '+total+' coppie non ci sono setup classificati puliti: ':'Il motore segnala '+clean+' coppie pulite, ma serve ancora il timing tecnico: ')+
-   riskPairs+' con rischi e '+unusable+' non valutabili. La solidità di una tesi non equivale a un ingresso interessante.':
+   riskPairs+' con rischi, '+unusable+' non valutabili, '+pending+' da confermare e '+watching+' da monitorare. La solidità di una tesi non equivale a un ingresso interessante.':
    'Le variazioni dei fixing sono datate e non supportano un verdetto operativo aggiornato. Non promuoviamo coppie fuori dalla loro finestra di validità.';
  const watch='Prima osserverei se '+label(lead1.ccy)+' consolida il recupero oltre un solo fixing e se '+label(lag5.ccy)+
    ' smette di perdere terreno. Poi controllerei se su USD/JPY il prezzo smette di contraddire la struttura e se EUR/USD offre qualcosa di nuovo oltre alla conferma già prezzata. Per attribuire i movimenti alla politica monetaria serviranno variazioni OIS/futures USA–Europa comparabili.';
