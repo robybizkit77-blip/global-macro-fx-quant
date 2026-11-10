@@ -527,7 +527,7 @@ function cot(){
  return pageHero('CFTC / POSITIONING','Ricerca COT da caricare','Il modulo COT non è disponibile. Controlla la pubblicazione del relativo script.');
 }
 function risk(){
- const streams=get('risk')?.streams||{},a=streams[state.riskStream],x=riskAligned();
+ const streams=get('risk')?.streams||{},a=streams[state.riskStream],x=window.FXQuantRiskEvidence?.read?.(streams,dayNow())||{ready:false,asof:null,headline:'Date cross-asset non verificabili',observation:'Mancano intervalli comuni verificati.',judgement:'Il regime non può essere certificato.',monitor:'Controllare fonti e date.',sourceDates:'date da verificare',quality:'NON VALIDATO'};
  const streamOpts=[['SP500','S&P 500'],['NASDAQCOM','Nasdaq'],['VIX','VIX'],['IG_OAS','Credito IG'],['HY_OAS','Credito HY']];
  const pts=priceHistory(state.riskStream).slice(-Number(state.riskWindow));
  return pageHero('CROSS-ASSET / RISK RADAR','Il rischio non ha <em>un solo termometro.</em>','Unisci azionario, volatilità e credito. Tocca un indicatore per esplorare le serie; le conferme valgono soltanto quando gli orologi sono coerenti.')
@@ -535,10 +535,16 @@ function risk(){
  +stat('Nasdaq Composite',fmt(streams.NASDAQCOM?.value),date(streams.NASDAQCOM?.date),sign(streams.NASDAQCOM?.change_1d_pct,2,'%'),streams.NASDAQCOM?.change_1d_pct>0?'up':'down')
  +stat('VIX',fmt(streams.VIX?.value),date(streams.VIX?.date),sign(streams.VIX?.change_1d_pct,2,'%'),streams.VIX?.change_1d_pct>0?'down':'up')
  +stat('HY OAS',fmt(streams.HY_OAS?.value)+'%',date(streams.HY_OAS?.date),finite(streams.HY_OAS?.previous)?sign((streams.HY_OAS.value-streams.HY_OAS.previous)*100,0,' pb'):'',streams.HY_OAS?.value>streams.HY_OAS?.previous?'down':'up')+'</div>'
+ +'<p class="source-caption">Indicatori rapidi: ciascuno mostra la propria ultima rilevazione, NON necessariamente la stessa seduta. '+esc(x.sourceDates)+'</p>'
  +sectionTitle('Risk Radar interattivo','Cinque stream, nessun proxy confuso con un altro')
  +'<div class="grid tilted"><section class="panel"><div class="panel-head"><div><span class="mini-overline">CROSS-ASSET / SCELTA LIBERA</span><h2>'+esc(streamOpts.find(v=>v[0]===state.riskStream)?.[1]||state.riskStream)+'</h2><p>'+esc(a?.publisher||'Fonte da verificare')+' · '+date(a?.date)+'</p></div></div><div class="filters"><div class="pill-controls">'+streamOpts.map(v=>'<button class="pill '+(v[0]===state.riskStream?'active':'')+'" data-risk="'+v[0]+'" type="button" aria-pressed="'+String(v[0]===state.riskStream)+'">'+v[1]+'</button>').join('')+'</div><div class="pill-controls">'+choose('',[{label:'5 sedute',value:5},{label:'20 sedute',value:20},{label:'Tutto',value:9999}],state.riskWindow,'data-risk-window')+'</div></div>'
- +plot({lines:[{name:streamOpts.find(v=>v[0]===state.riskStream)?.[1],color:state.riskStream==='VIX'||state.riskStream.includes('OAS')?'#ed6679':'#83cdec',values:pts}],unit:state.riskStream.includes('OAS')?'%':'',label:'Grafico '+state.riskStream})+'<div class="chart-summary" style="margin-top:11px">Ultima rilevazione: '+fmt(a?.value)+' · Variazione giornaliera '+sign(a?.change_1d_pct,2,'%')+'. '+esc(a?.not_intraday?'Dato di chiusura, non intraday.':'Verificare orario di rilevazione.')+'</div></section>'
- +'<section class="panel glow"><span class="mini-overline">REGIME / INTERPRETAZIONE</span><h2 class="focus-headline" style="font-size:22px">'+esc(x.assessment)+'</h2><p class="focus-subtitle">Il rischio si legge meglio quando azioni, credito e volatilità si muovono nello stesso intervallo.</p><div class="divider"></div><div class="flow-track"><div class="flow-item"><label>Nasdaq</label><p>'+date(x.n?.date)+' · '+sign(x.n?.change_1d_pct,2,'%')+'</p></div><div class="flow-item"><label>VIX</label><p>'+date(x.v?.date)+' · '+fmt(x.v?.value)+'</p></div><div class="flow-item"><label>HY OAS</label><p>'+date(x.h?.date)+' · '+fmt(x.h?.value)+'%</p></div></div>'+(x.same?'<div class="notice" style="margin-top:14px">Date allineate: puoi descrivere la co-occorrenza, non attribuire automaticamente la causa.</div>':'<div class="notice warn" style="margin-top:14px">Date differenti: non attribuiamo simultaneità a movimenti che possono appartenere a sedute diverse.</div>')+'</section></div>';
+ +plot({lines:[{name:streamOpts.find(v=>v[0]===state.riskStream)?.[1],color:state.riskStream==='VIX'||state.riskStream.includes('OAS')?'#ed6679':'#83cdec',values:pts}],unit:state.riskStream.includes('OAS')?'%':'',label:'Grafico '+state.riskStream})+'<div class="chart-summary" style="margin-top:11px">Ultima rilevazione: '+fmt(a?.value)+' · '+(state.riskStream.includes('OAS')?'Variazione dello spread '+sign(finite(a?.value)&&finite(a?.previous)?(a.value-a.previous)*100:null,1,' pb'):'Variazione percentuale '+sign(a?.change_1d_pct,2,'%'))+'. '+esc(a?.not_intraday?'Dato di chiusura, non intraday.':'Verificare orario di rilevazione.')+'</div></section>'
+ +'<section class="panel glow risk-research-reading" data-risk-asof="'+esc(x.asof||'')+'"><span class="mini-overline">LETTURA DEL DESK · '+date(x.asof)+'</span>'
+ +'<h2 class="focus-headline" style="font-size:22px">'+esc(x.headline)+'</h2>'
+ +'<p class="focus-subtitle"><strong>Cosa è successo.</strong> '+esc(x.observation)+'</p>'
+ +'<div class="divider"></div><div class="flow-track"><div class="flow-item"><label>Perché conta</label><p>'+esc(x.judgement)+'</p></div>'
+ +'<div class="flow-item"><label>Cosa potrebbe smentire la tesi</label><p>'+esc(x.monitor)+'</p></div></div>'
+ +'<div class="notice '+(x.stale||!x.ready?'warn':'')+'" style="margin-top:14px">'+esc(x.quality+' · Ultimi feed indipendenti: '+x.sourceDates+'. Sono prezzi di chiusura e spread OAS, non ordini o flussi di copertura dimostrati.')+'</div></section></div>';
 }
 function news(){
  const n=get('news'),items=(n?.items||[]),official=n?.official_releases?.headlines||[];
@@ -575,7 +581,7 @@ function render(){
  const route=ROUTES[state.route]?state.route:'overview';
  state.charts={};state.chartIndex=0;
  const views={overview,currencies,pairs,macro,rates,cot,risk,news};
- $('content').innerHTML=(route==='overview'||route==='pairs'||route==='cot'?'':researchBridge(route))+views[route]();
+ $('content').innerHTML=(route==='overview'||route==='pairs'||route==='cot'||route==='risk'?'':researchBridge(route))+views[route]();
  $('crumb-page').textContent=ROUTES[route];
  document.querySelectorAll('#nav [data-route]').forEach(a=>{if(a.dataset.route===route)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
  const ok=Object.keys(state.data).length,missing=Object.keys(SOURCES).length-ok;
