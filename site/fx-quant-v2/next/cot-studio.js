@@ -51,8 +51,16 @@
         q?.level==='NEUTRALE'?'intermedio':'non validato';
       return out;
     }
-        function stat(a,b,note,cls=''){
-      return '<div class="cot-stat"><span>'+esc(a)+'</span><strong class="'+cls+'">'+esc(b)+'</strong><small>'+esc(note)+'</small></div>';
+        function netOiCrowded(value){
+      return finite(value)&&Math.abs(Number(value.toFixed(1)))>=30;
+    }
+    function netOiCell(value){
+      if(!finite(value))return '—';
+      const shown=sign(value,1,'%');
+      return netOiCrowded(value)?'<span class="cot-netoi-alert">⚠ '+shown+'</span>':esc(shown);
+    }
+    function stat(a,b,note,cls=''){
+      return '<div class="cot-stat'+(cls==='cot-netoi-alert'?' cot-stat-crowded':'')+'"><span>'+esc(a)+'</span><strong class="'+cls+'">'+esc(b)+'</strong><small>'+esc(note)+'</small></div>';
     }
     function classify(a){
       const q=a?.deskStats;
@@ -107,7 +115,8 @@
          +'<span class="cot-country-symbol">'+FLAGS[k]+' '+k+'</span>'
          +'<strong>'+(q?.rounded!==null&&q?.rounded!==undefined?'P'+fmt(q.rounded,0):'P—')+'</strong>'
          +'<small>'+esc(r?.net>0?'Net long':r?.net<0?'Net short':'Net non validato')+
-          ' · '+esc(a?sign(a.delta1,0,' 1W'):'—')+'</small></button>';
+          ' · '+esc(a?sign(a.delta1,0,' 1W'):'—')+'</small>'+
+          (q?.crowd?'<span class="cot-netoi-alert cot-netoi-selector">⚠ Net/OI '+sign(r.netoi,1,'%')+'</span>':'')+'</button>';
        }).join('')+'</div>';
     }
         function graphFor(a){
@@ -167,10 +176,10 @@
          const current=r.date===a.last.date,rank=current?a.deskStats?.rounded:r.percentile;
          return '<tr><td>'+date(r.date)+'</td><td>'+fmt(r.long,0)+'</td><td>'+fmt(r.short,0)+'</td>'
           +'<td>'+sign(r.net,0)+'</td><td>'+sign(prev?r.net-prev.net:null,0)+'</td>'
-          +'<td>'+sign(r.netoi,2,'%')+'</td><td>'+(rank===null||rank===undefined?'—':
+          +'<td>'+netOiCell(r.netoi)+'</td><td>'+(rank===null||rank===undefined?'—':
              (current?'P'+fmt(rank,0):'≈'+fmt(rank,1)))+'</td></tr>';
        }).join('')+'</tbody></table></div>'
-       +'<p class="source-caption">* Ultima riga: percentile P104 rispetto alle 104 osservazioni precedenti, verificato contro archivio CFTC. Righe più vecchie: percentili archiviati della serie inclusiva; il simbolo ≈ indica metodo diverso, non precisione inferiore del Net. Long, short, Net e Net/OI provengono dal CFTC.</p></section>';
+       +'<p class="source-caption">Net/OI evidenziato in rosso con ⚠ quando arrotondato a un decimale raggiunge ±30,0%, come nel report settimanale. Ultima riga: percentile P104 rispetto alle 104 osservazioni precedenti, verificato contro archivio CFTC. Righe più vecchie: percentili archiviati della serie inclusiva; il simbolo ≈ indica metodo diverso, non precisione inferiore del Net. Long, short, Net e Net/OI provengono dal CFTC.</p></section>';
     }
         function universe(){
       const all=FX.map(report).filter(Boolean),filter=state.cotFilter||'all',sort=state.cotSort||'percentile',asc=state.cotSortAsc===true;
@@ -207,10 +216,10 @@
          +'<td class="'+(q?.velocity>0?'tone-up':q?.velocity<0?'tone-down':'')+'">'+(finite(q?.velocity)?sign(q.velocity,2,'%'):'—')+'</td>'
          +'<td class="'+(a.delta1>0?'tone-up':a.delta1<0?'tone-down':'')+'">'+sign(a.delta1,0)+'</td>'
          +'<td>'+sign(a.delta4,0)+'</td><td>'+sign(q?.delta8,0)+'</td>'
-         +'<td class="'+(q?.crowd?'tone-down':'')+'">'+(q?.crowd?'⚠ ':'')+sign(netoi,1,'%')+'</td>'
+         +'<td class="'+(q?.crowd?'cot-netoi-cell-alert':'')+'">'+netOiCell(netoi)+'</td>'
          +'<td>'+date(a.last.date)+'</td></tr>';
        }).join('')+'</tbody></table></div>'
-       +'<p class="source-caption">* Δ 1W/OI: Δ Net diviso Open Interest stimato dal rapporto Net/NetOI CFTC; serve a confrontare l’intensità relativa, non è OI certificato come serie separata. P104: 104 Net precedenti esclusa la settimana corrente; soglie 80/20 dopo arrotondamento. Z104: deviazione standard campionaria. ⚠ Net/OI ≥ ±30,0% dopo arrotondamento. Estremo NON significa inversione.</p></section>';
+       +'<p class="source-caption">Net/OI in rosso con ⚠ quando arrotondato a un decimale raggiunge ±30,0%. * Δ 1W/OI: Δ Net diviso Open Interest stimato dal rapporto Net/NetOI CFTC; serve a confrontare l’intensità relativa, non è OI certificato come serie separata. P104: 104 Net precedenti esclusa la settimana corrente; soglie 80/20 dopo arrotondamento. Z104: deviazione standard campionaria. ⚠ Net/OI ≥ ±30,0% dopo arrotondamento. Estremo NON significa inversione.</p></section>';
     }
         function glossary(){
       const terms=[
@@ -232,7 +241,7 @@
       if(!d)return '<section class="cot-desk-overview"><h2>Cosa vedo davvero nel G8</h2><p>La sintesi G8 non è disponibile: servono otto Net CFTC con stessa data e 104 osservazioni precedenti verificate. Le schede di ciascuna valuta rimangono consultabili con qualità esplicita.</p></section>';
       const card=(title,code,main,detail,cls)=>'<article class="cot-desk-card '+cls+'"><span class="micro-over">'+esc(title)+'</span>'
        +'<h3>'+esc(code)+'</h3><strong>'+esc(main)+'</strong><p>'+esc(detail)+'</p></article>';
-      const a=d.up,b=d.down,c=d.crowd[0]||null,e=d.divergent[0]||null;
+      const a=d.up,b=d.down,e=d.divergent[0]||null;
       const top=a?card('RECUPERO RELATIVO PIÙ INTENSO · 1W',FLAGS[a.ccy]+' '+a.ccy,
         sign(a.velocity,2,'% OI stimato'),
         'Δ Net '+sign(a.delta1,0)+' contratti · long '+sign(a.dLong,0)+
@@ -245,10 +254,13 @@
         ' / short '+sign(b.dShort,0)+'.','cot-desk-negative'):
         card('PRESSIONE RELATIVA','G8','Non verificabile',
         'Manca una variazione negativa normalizzata confrontabile per tutte le valute.','');
-      const overcrowd=c?card('SQUILIBRIO NET/OI',FLAGS[c.ccy]+' '+c.ccy,
-        sign(c.netoi,1,'%'),'⚠ Soglia ±30,0% superata. Non significa svolta imminente.','cot-desk-negative'):
-       card('CONCENTRAZIONE','G8','Nessun alert','Nessun Net/OI oltre la soglia ±30,0%.','');
-      const mismatch=e?card('PREZZO DIVERGENTE',FLAGS[e.ccy]+' '+e.ccy,
+      const overcrowd=d.crowd.length?
+        '<article class="cot-desk-card cot-desk-crowd"><span class="micro-over">CONCENTRAZIONE NET/OI</span>'+
+        '<h3>'+d.crowd.length+' alert G8</h3><div class="cot-crowd-list">'+
+        d.crowd.map(x=>'<span class="cot-netoi-alert">⚠ '+FLAGS[x.ccy]+' '+x.ccy+' '+sign(x.netoi,1,'%')+'</span>').join('')+
+        '</div><p>Soglia ±30,0% raggiunta (arrotondamento a un decimale). Non è un segnale di inversione.</p></article>':
+        card('CONCENTRAZIONE NET/OI','G8','Nessun alert','Nessun Net/OI raggiunge ±30,0%.','');
+       const mismatch=e?card('PREZZO DIVERGENTE',FLAGS[e.ccy]+' '+e.ccy,
         sign(e.price1,2,'%')+' '+e.priceLabel,'Net '+sign(e.delta1,0)+' nella stessa settimana. Non è una risposta post-report.',''):
        card('CONFERME DI PREZZO','G8','Nessuna divergenza forte','Non forziamo conclusioni da flussi quasi fermi o prezzi mancanti.','');
       const cross=d.all.slice().sort((x,y)=>y.rounded-x.rounded).map(x=>
@@ -287,7 +299,7 @@
       body+='<section class="cot-hero"><div class="cot-hero-narrative"><span class="chapter-kicker">03 / '+FLAGS[ccy]+' '+ccy+' · DIAGNOSI PER VALUTA</span>'
        +'<h2>'+esc(summary)+'.<br><em>'+esc(netDesc)+'.</em></h2><p>'+esc(levelText(a))+'</p>'
        +'<div class="cot-status-line">'+classify(a)+'<span>Ultima rilevazione '+date(last.date)+'</span>'
-       +(q?.crowd?'<span class="cot-crowd-alert">⚠ NET/OI OLTRE ±30%</span>':'')+'</div></div>'
+       +(q?.crowd?'<span class="cot-netoi-alert cot-netoi-hero">⚠ Net/OI '+sign(last.netoi,1,'%')+'</span>':'')+'</div></div>'
        +'<div class="cot-hero-visual"><div class="cot-ring" style="--pct:'+(finite(p)?Math.min(100,Math.max(0,p)):0)+'"><div>'
        +'<span>P104 ESCLUSIVO</span><strong>'+ (q?.rounded===null||q?.rounded===undefined?'—':fmt(q.rounded,0))+
        '</strong><small>104 settimane precedenti</small></div></div>'
@@ -296,7 +308,7 @@
        +stat('NET POSITION',sign(last.net,0),'contratti · long − short')
        +stat('Δ NET 1W',sign(a.delta1,0),'flusso settimanale',a.delta1>0?'tone-up':a.delta1<0?'tone-down':'')
        +stat('Δ NET 4W',sign(a.delta4,0),'persistenza su quattro settimane',a.delta4>0?'tone-up':a.delta4<0?'tone-down':'')
-       +stat('NET / OPEN INTEREST',sign(last.netoi,1,'%'),q?.crowd?'⚠ concentrazione oltre ±30,0%':'soglia alert ±30,0%',q?.crowd?'tone-down':'')
+       +stat('NET / OPEN INTEREST',(q?.crowd?'⚠ ':'')+sign(last.netoi,1,'%'),q?.crowd?'concentrazione ≥ ±30,0%':'soglia alert ±30,0%',q?.crowd?'cot-netoi-alert':'')
        +'</div>'
        +'<div class="cot-proofline"><span><b>Z-score 104W</b> '+(finite(q?.z)?sign(q.z,2):'n.d.')+'</span>'
        +'<span><b>Δ Net 8W</b> '+sign(q?.delta8,0)+'</span>'
