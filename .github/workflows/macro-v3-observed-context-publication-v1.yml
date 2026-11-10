@@ -153,7 +153,7 @@ jobs:
             echo "PAGES_BUILD_ALREADY_TARGETING_V3 $TARGET_SHA"
           else
             r="$(gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds")"
-            jq -e '.status == "queued" || .status == "building"' <<<"$r" >/dev/null
+            jq -e '.status == "queued" or .status == "building"' <<<"$r" >/dev/null
             echo "MACRO_V3_PAGES_BUILD_EXPLICITLY_QUEUED $TARGET_SHA"
           fi
       - name: Certify actual public Macro V3 HTTP bytes after Pages build
