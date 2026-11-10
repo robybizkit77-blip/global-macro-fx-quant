@@ -20,6 +20,7 @@ on:
       - 'validation/publishing/test_next_pair_desk_narrative_v18.cjs'
       - 'validation/publishing/test_next_macro_economic_reading_v19.cjs'
       - 'validation/publishing/test_next_rates_economic_reading_v20.cjs'
+      - 'validation/publishing/test_next_currency_relative_v21.cjs'
       - 'validation/publishing/test_macro_us_households_hero_v1.cjs'
       - '.github/workflows/publish-fx-quant-v2.yml'
       - 'validation/publishing/test_fxv2_publisher_source_trigger_v1.py'
@@ -70,6 +71,8 @@ jobs:
           node validation/publishing/test_next_macro_economic_reading_v19.cjs
           node --check site/fx-quant-v2/next/rates-economic-reading.js
           node validation/publishing/test_next_rates_economic_reading_v20.cjs
+          node --check site/fx-quant-v2/next/currency-relative-reading.js
+          node validation/publishing/test_next_currency_relative_v21.cjs
   sync-v2:
     if: >-
       github.event_name != 'pull_request' &&
@@ -137,6 +140,8 @@ jobs:
           node validation/publishing/test_next_macro_economic_reading_v19.cjs
           node --check site/fx-quant-v2/next/rates-economic-reading.js
           node validation/publishing/test_next_rates_economic_reading_v20.cjs
+          node --check site/fx-quant-v2/next/currency-relative-reading.js
+          node validation/publishing/test_next_currency_relative_v21.cjs
 
       - name: Publish only site/fx-quant-v2 without altering V10 or any other path
         if: steps.v2-tree.outputs.publish_needed == 'true'
