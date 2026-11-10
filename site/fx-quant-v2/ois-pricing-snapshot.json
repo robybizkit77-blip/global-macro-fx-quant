@@ -128,8 +128,8 @@
       "as_of": "2026-11-10",
       "horizons": {
         "3m": {
-          "rate": 0.085,
-          "as_of": "2026-11-09",
+          "rate": 0.125,
+          "as_of": "2026-11-10",
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "SA3H2027"
