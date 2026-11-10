@@ -31,6 +31,7 @@
   const overlap=hist.filter(x=>m.has(x.date)).length;
   if(mismatches.length||overlap<8)return null;
   const sample=hist.slice(-104);
+  if(week(sample.at(-1).date,sample.at(-2).date)>10||week(sample.at(-1).date,sample.at(-2).date)<4)return null;
   const predecessor=[...m.keys()].filter(d=>d<sample[0].date).sort().at(-1);
   if(!predecessor||week(sample[0].date,predecessor)!==7)return null;
   const prior=[m.get(predecessor),...sample.slice(0,-1).map(x=>x.net)];
