@@ -1,0 +1,88 @@
+name: Independent 08:00 Delivery Audit V1
+
+# Separate scheduler and read-only verdict: the production orchestrator cannot
+# certify its own absence. A Github Actions outage can still delay this audit.
+on:
+  schedule:
+    # Europe/Rome 08:08 CEST and CET. The nonmatching DST twin is explicitly
+    # recorded as SKIPPED, never as a successful 08:00 certification.
+    - cron: '08 6 * * 1-5'
+    - cron: '08 7 * * 1-5'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/independent-morning-0800-audit-v1.yml'
+      - 'validation/orchestration/check_independent_morning_0800_v1.py'
+      - 'validation/orchestration/test_independent_morning_0800_v1.py'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/independent-morning-0800-audit-v1.yml'
+      - 'validation/orchestration/check_independent_morning_0800_v1.py'
+      - 'validation/orchestration/test_independent_morning_0800_v1.py'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('independent-0800-ci-pr-{0}', github.event.pull_request.number) || 'independent-0800-audit' }}
+  cancel-in-progress: false
+
+jobs:
+  regression:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test fail-closed 08:00 logic and DST handling
+        run: |
+          python -m compileall -q validation/orchestration/check_independent_morning_0800_v1.py
+          python -m unittest validation.orchestration.test_independent_morning_0800_v1 -v
+
+  audit:
+    needs: regression
+    if: ${{ github.event_name != 'pull_request' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Read latest canonical source and published branches
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin \
+            '+refs/heads/main:refs/remotes/origin/main' \
+            '+refs/heads/gh-pages:refs/remotes/origin/gh-pages'
+          git checkout --detach origin/main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Evaluate actual 08:00 production completion and public HTTP bytes
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          AUDIT_CRON: ${{ github.event.schedule }}
+        run: |
+          set -euo pipefail
+          python -m validation.orchestration.check_independent_morning_0800_v1 \
+            --schedule "$AUDIT_CRON" --output "$RUNNER_TEMP/independent-0800-audit.json"
+
+      - name: Retain independent evidence even when certification fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: independent-0800-audit-${{ github.run_id }}
+          path: ${{ runner.temp }}/independent-0800-audit.json
+          if-no-files-found: warn
