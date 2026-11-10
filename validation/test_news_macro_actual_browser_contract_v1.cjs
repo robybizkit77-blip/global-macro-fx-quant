@@ -10,6 +10,7 @@
  * (h) fail-closed source host and first-observation clock integrity.
  */
 const {chromium}=require('playwright');
+const {enableCalendarNewsLegacyHarness}=require('./calendar/calendar_news_legacy_test_route_v1.cjs');
 const fs=require('node:fs');
 const assert=require('node:assert/strict');
 
@@ -118,6 +119,7 @@ earlyCad.state='OFFICIAL_ACTUAL_PRESENT_PRE_EVENT_MARKET_ANCHOR_ABSENT';
         await route.fulfill({status:200,contentType:'application/json',
                             body:JSON.stringify(body)});
       });
+      await enableCalendarNewsLegacyHarness(page);
       await page.goto('http://127.0.0.1:8765/',{waitUntil:'networkidle'});
       await page.waitForFunction(()=>window.GMFQ_CALENDAR_NEWS_OPERATIONAL?.status==='ACTIVE',
                                 {timeout:20000});
