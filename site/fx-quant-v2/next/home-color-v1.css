@@ -456,7 +456,7 @@
  appearance:none;cursor:pointer;border-radius:9px;
  border:1px solid rgba(106,191,217,.39);
  color:#e5f5ff;background:linear-gradient(130deg,rgba(61,145,176,.16),rgba(24,71,99,.15));
- font:700 12px/1.4 inherit;letter-spacing:.01em;
+ font-family:inherit;font-weight:700;font-size:12px;line-height:1.4;letter-spacing:.01em;
  padding:9px 12px;text-align:left;
 }
 .market-dashboard .dashboard-fx-shortlist button:hover,
