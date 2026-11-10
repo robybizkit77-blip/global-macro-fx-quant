@@ -66,9 +66,37 @@ fs.mkdirSync(evidence,{recursive:true});
     results.push({width,route,h1,overflow:'PASS'});
    }
 
-   // NEXT V6: the lead topic must be explained by the evidence and default chart.
+   // Approved Morning Macro Home: prior days → macro catalyst → Forex →
+   // two matched charts. Retain the previous diagnostic only for fallback.
    await page.evaluate(()=>{location.hash='#overview'});
    await page.waitForFunction(()=>document.querySelector('.market-letter')!==null);
+   if(await page.locator('.morning-dashboard').count()===1){
+     assert(await page.locator('.morning-lead h1').count()===1,
+       'Morning Macro Desk must start with a headline');
+     assert(await page.locator('.morning-prose p').count()===4,
+       'Narrative must contain four connected paragraphs');
+     assert(await page.locator('.morning-catalyst h2').count()===1,
+       'The daily catalyst is missing');
+     assert(await page.locator('.morning-chart-card .chart svg').count()===2,
+       'Two evidence charts must accompany the narrative');
+     assert(await page.locator('.morning-scenario').count()===2,
+       'Macro scenarios must be visible');
+     assert(await page.locator('.morning-judgment').count()===1,
+       'A distinct desk judgment is required');
+     const story=await page.locator('.morning-prose').innerText();
+     assert(story.includes('Fed')&&story.includes('Forex'),
+       'Narrative must link macro expectations to FX interpretation');
+     const positions=await page.evaluate(()=>({
+       story:document.querySelector('.morning-prose').getBoundingClientRect().top,
+       charts:document.querySelector('.morning-evidence').getBoundingClientRect().top
+     }));
+     assert(positions.story<positions.charts,'Narrative must precede graphics');
+     const dated=await page.locator('.morning-edition-header').innerText();
+     assert(dated.includes('Fixing')&&dated.includes('Tassi'),
+       'Source dates must be visible');
+     assert((await page.locator('.morning-archive-note').innerText()).length>20,
+       'Historical or current-edition status must remain visible');
+   }else{
    assert(await page.locator('.market-letter .letter-opening').count()===1,'Narrative opening missing');
    assert(await page.locator('.dashboard-reading-story').count()===1,
      'Home must lead with a continuous market narrative');
@@ -106,6 +134,7 @@ fs.mkdirSync(evidence,{recursive:true});
    assert((await page.locator('.letter-chart-visual .chart-legend').innerText()).includes('VIX'),'Chart switch to VIX failed');
    await page.locator('[data-hwindow="5"]').click();
    assert(await page.locator('.letter-chart-visual .chart svg').count()>0,'5-observation VIX chart missing');
+   }
    await page.locator('#quicklaunch').click();
    assert(await page.locator('#quick-layer').evaluate(el=>el.classList.contains('open')),'Quick search did not open');
    await page.locator('#quick-input').fill('EURGBP');
