@@ -7,9 +7,9 @@ const {parse,romeDate,link}=require(path.join(root,'site/fx-quant-v2/next/news-e
 const feed=JSON.parse(fs.readFileSync(path.join(root,'live_data/sections/NEWS_PULSE_OPERATIONAL.json'),'utf8'));
 const today='2026-11-10';
 const x=parse(feed,today);
-assert.equal(x.pulse.length,4,'Keep all four dated monetary-pricing observations');
+assert(x.pulse.length>=4,'Keep all four dated monetary-pricing observations, plus any certified cross-asset evidence');
 assert.equal(x.official.length,15,'Keep all fifteen sourced institutional releases');
-assert.equal(x.pulseAsOf,'2026-11-06','Pulse vintage must be visible');
+assert.equal(x.pulseAsOf,feed.content_as_of,'Pulse must show source-content vintage, not the check timestamp');
 assert.equal(x.officialAsOf,'2026-11-10','UTC late-night release must use Italy-local day');
 assert.equal(x.latest,'2026-11-10');
 assert.match(x.gap,/orologi diversi/);
@@ -44,11 +44,11 @@ assert.equal(romeDate('2026-11-09T21:00:00Z').date,'2026-11-09');
 assert.equal(romeDate('invalid'),null);
 const html=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/index.html'),'utf8');
 const app=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/app.js'),'utf8');
-assert(html.indexOf('news-evidence-reading.js?v=24')<html.indexOf('app.js?v=18.24'));
+assert(html.indexOf('news-evidence-reading.js?v=25')<html.indexOf('app.js?v=18.'),'News source interpreter must load before current Next app');
 for(const field of ['x.title','x.body','x.why','x.verify','x.impact','x.source','x.url']){
  assert(app.includes('esc('+field+')'),'News output is not escaped: '+field);
 }
 assert(app.includes('evidence.official.length')&&app.includes('evidence.pulse.length'));
 assert(app.includes("route==='overview'||route==='pairs'||route==='cot'||route==='risk'||route==='news'"),
  'Generic news essay must not duplicate source-specific reading');
-console.log('NEXT_NEWS_V24_PASS: 4/4 dated pricing items, 15/15 official releases, UTC->Rome, no false surprise/reaction, safe source URLs and no duplicate essay.');
+console.log('NEXT_NEWS_V24_PASS: at least 4 dated pricing items, 15/15 official releases, UTC->Rome, no false surprise/reaction, safe source URLs and no duplicate essay.');
