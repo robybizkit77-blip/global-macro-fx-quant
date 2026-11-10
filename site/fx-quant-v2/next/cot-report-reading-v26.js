@@ -112,7 +112,6 @@
    (a.delta1>0?'Il pessimismo si riduce oppure aumenta il peso dei long, ma la composizione conta.':
     a.delta1<0?'La pressione ribassista cresce oppure si riducono i long; le due cause vanno separate.':
     'Il saldo quasi fermo può nascondere variazioni importanti nelle due gambe.');
-  const view='**'+''; // Explicit textual labels are emitted by the view, not markdown.
   let judgment=position+' '+price+' Un flusso CFTC non dimostra ordini spot o un cambio macro; la tesi FX resta separata dal timing.';
   let verify=a.delta1>0?
    'Confermerebbero il recupero nuovi long persistenti e/o ulteriori short in calo, accompagnati da prezzo e differenziali di tasso coerenti.':
@@ -126,7 +125,7 @@
     fact,flow:flowLabel(a),judgment,verify,price,speed:speed(a)};
  }
  function desk(all){
-  if(!Array.isArray(all)||all.length!==8||all.some(a=>!statistics(a))||
+  if(!Array.isArray(all)||all.length!==8||all.some(a=>!a?.deskStats)||
      new Set(all.map(a=>a.last?.date)).size!==1)return null;
   const list=all.map(statisticsWithRef).filter(Boolean);
   function statisticsWithRef(a){return a.deskStats||null;}
