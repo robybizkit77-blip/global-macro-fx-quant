@@ -111,7 +111,8 @@ def evaluate(now: dt.datetime, runs: list[dict], jobs: dict[int, list[dict]],
         "target_rome": cutoff.isoformat(timespec="seconds"),
         "status": "PASS_INDEPENDENT_0800_PROOF" if not problems else "FAIL_NOT_CERTIFIED",
         "problems": problems,
-        "production_run_ids_today": [r.get("id") for r in today],\n        "recovery_run_ids_today": [r.get("id") for r in today if r.get("event") == "workflow_dispatch"],
+        "production_run_ids_today": [r.get("id") for r in today],
+        "recovery_run_ids_today": [r.get("id") for r in today if r.get("event") == "workflow_dispatch"],
         "on_time_certified_run_ids": [r.get("id") for r in ontime],
         "source_expected_previous_weekday": readiness.get("expected_previous_weekday"),
         "source_problems": readiness.get("critical_daily_problems"),
@@ -160,7 +161,8 @@ def live(now: dt.datetime, token: str, repo: str) -> dict:
         if not isinstance(runs, list):
             raise ValueError("missing workflow runs list")
         for run in runs:
-            if (run.get("event") in ("schedule", "workflow_dispatch") and\n                    aware(run["created_at"]).date() == now.astimezone(ROME).date()):
+            if (run.get("event") in ("schedule", "workflow_dispatch") and
+                    aware(run["created_at"]).date() == now.astimezone(ROME).date()):
                 jobs[run["id"]] = get_json(
                     "/actions/runs/" + str(run["id"]) + "/jobs?per_page=100",
                     token, repo).get("jobs", [])
