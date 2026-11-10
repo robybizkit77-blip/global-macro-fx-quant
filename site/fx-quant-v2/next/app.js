@@ -498,16 +498,18 @@ function overview(){
  const deskCotDate=cot.USD?.today?.match(/CFTC al (\d{4}-\d{2}-\d{2})/)?.[1]||null;
  const deskCotOk=validDay(deskCotDate)&&deskCotDate<=dayNow();
  const deskVixRecent=deskVixDate&&fresh(deskVixDate,8);
+ // A newer rates/FX observation takes editorial precedence over an older VIX close.
+ const deskRiskLeading=deskVixRecent&&(!validDay(focusDate)||deskVixDate>=focusDate);
  const storyHeadline=tooOld?'Cosa dicono i dati disponibili, senza fingere un mercato in tempo reale':
-   deskVixRecent&&deskVixDelta<0&&deskRatesOk&&u.chg2_bp<0?
+   deskRiskLeading&&deskVixDelta<0&&deskRatesOk&&u.chg2_bp<0?
      'La volatilità arretra, scendono i Treasury: il Forex non dà una conferma uniforme':
-   deskVixRecent&&deskVixDelta>0&&deskRatesOk&&u.chg2_bp<0?
+   deskRiskLeading&&deskVixDelta>0&&deskRatesOk&&u.chg2_bp<0?
      'Volatilità più alta e Treasury più bassi: i mercati stanno riducendo rischio?':
-   deskVixRecent&&deskVixDelta<0?'Il rischio si distende, ma la conferma tra mercati è incompleta':
+   deskRiskLeading&&deskVixDelta<0?'Il rischio si distende, ma la conferma tra mercati è incompleta':
    headline;
  const readingOpening=tooOld?
   'Le ultime osservazioni disponibili sono storiche. Ricostruiamo il quadro e le contraddizioni senza presentarlo come un aggiornamento intraday.':
-  deskVixRecent&&finite(deskVixDelta)?
+  deskRiskLeading&&finite(deskVixDelta)?
    'Il cambiamento più chiaro sul rischio è nel VIX: al '+date(deskVixDate)+' '+
    (deskVixDelta<0?'è sceso di ':'è salito di ')+fmt(Math.abs(deskVixDelta),2)+' punti a '+fmt(vx.value,2)+
    '. '+(finite(deskNasMove)&&finite(deskHYBp)&&deskNasDate===deskHYDate?
@@ -571,7 +573,7 @@ function overview(){
  const readingMarket=deskFxText+deskPairText+deskCotText;
  const readingVerdict=tooOld?
    'Non promuovo una fotografia d’archivio a giudizio attuale: prima servono osservazioni aggiornate e confrontabili.':
-   deskVixRecent&&finite(deskVixDelta)&&deskVixDelta<0?
+   deskRiskLeading&&finite(deskVixDelta)&&deskVixDelta<0?
     'L’evidenza principale è un allentamento della tensione di volatilità, non un miglioramento macro già provato. '+
     (deskRatesOk?'I Treasury sono in calo, ma il 6M USD non certifica un riprezzamento Fed. ':'')+
     (deskPairValid&&deskCount===28&&deskClean===0?
@@ -581,7 +583,7 @@ function overview(){
    deskVixRecent&&deskVixDelta>0?
     'La volatilità sta segnalando cautela, ma senza una seduta comune di azioni e credito non si può parlare di stress generalizzato verificato. Il timing FX resta separato dalla tesi.':
     'Non emerge ancora un regime dominante con prove sincronizzate. Il giudizio corretto è prudente: nessun segnale operativo deriva dal solo quadro generale.';
- const readingWatch=deskVixRecent&&finite(deskVixDelta)?
+ const readingWatch=deskRiskLeading&&finite(deskVixDelta)?
    'Cercherei la prossima chiusura comune di Nasdaq, VIX e spread HY: '+
    (deskVixDelta<0?'ulteriore rientro del credito rafforzerebbe la distensione; un nuovo allargamento la indebolirebbe.':
      'stress contemporaneo su azioni e credito renderebbe più solida la lettura difensiva; una normalizzazione la indebolirebbe.')+
