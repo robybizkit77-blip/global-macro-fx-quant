@@ -180,7 +180,16 @@
    const range=Number.isFinite(item.breakLow)&&Number.isFinite(item.breakHigh)?
        fmt(item.breakLow,item.key.endsWith('JPY')?3:5)+' – '+fmt(item.breakHigh,item.key.endsWith('JPY')?3:5):
        'Non disponibile';
-   const rateView=rateBrief(item.key);
+   const rateSnapshot=rateBridge?.snapshot?
+     rateBridge.snapshot(get('rates'),history,item.key,market?.price_asof,now,
+       get('audDailyResearch'),get('chfResearch'),get('nzdPostroll')):null;
+   const rateView=rateBridge?.brief?rateBridge.brief(rateSnapshot):rateBrief(item.key);
+   const deskStory=typeof window!=='undefined'&&window.FXQuantPairDesk?.render?
+     window.FXQuantPairDesk.render({
+       key:item.key,model:market,macro:get('macro')?.currencies,
+       ois:get('ois'),cot:get('cotHistory'),profile:item,ratesView:rateSnapshot,
+       now,esc
+     }):'';
    const ratesEvidence=rateBridge?.build?
      rateBridge.build({get,state,plot,fmt,sign,date,dayNow,esc}).render():
      '<section class="decision-rates-bridge"><h2>Confronto FX/2Y non disponibile</h2><p>Manca il modulo di verifica delle date comuni.</p></section>';
@@ -210,6 +219,7 @@
    return '<section class="decision-deepdive" aria-label="Dalla tesi al timing di '+esc(pairName(item.key))+'">'
      +'<div class="decision-dossier-head"><span>RESEARCH → PRICING → PREZZO → DECISIONE</span><h2>'+pairName(item.key)+' · Che cosa sappiamo, che cosa aspettiamo?</h2>'
      +'<p>Il motore può segnalare una direzione favorevole senza che esista un ingresso interessante. Separiamo le due cose.</p></div>'
+     +deskStory
      +'<div class="decision-gates"><div><span>THESIS STRENGTH</span><strong>'+esc(item.fav?'Vantaggio '+item.fav+' · '+item.quality:'Nessun vantaggio verificato')+'</strong><small>'+esc(item.relation)+'</small></div>'
      +'<div><span>TRADE ATTRACTIVENESS</span><strong>'+esc(attractive)+'</strong><small>'+esc(item.why)+'</small><small class="decision-gate-rates" data-rates-tone="'+esc(rateView.tone)+'">GOV 2Y (non OIS): '+esc(rateView.label)+(rateView.ready?' · '+date(rateView.asof):'')+'</small></div>'
      +'<div><span>LA PROSSIMA VERIFICA</span><strong>Che cosa aspettiamo?</strong><small>'+esc(gateNext)+'</small></div></div>'

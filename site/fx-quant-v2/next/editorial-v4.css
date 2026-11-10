@@ -664,3 +664,12 @@ button,a{touch-action:manipulation}
 .decision-source-evidence>span{font-size:10px;font-weight:800;letter-spacing:.09em;color:#e0c393}
 .decision-source-evidence>p{font-size:11px;line-height:1.75;color:#c8d5d2;margin:7px 0 0}
 @media(max-width:650px){.decision-source-evidence{padding:11px}.decision-source-evidence>p{font-size:10.5px}}
+
+/* Next V18 — one source-backed desk reading, no extra dashboard cards. */
+.decision-desk-story{margin:0 0 18px;padding:18px 21px 16px;background:rgba(157,202,184,.055);border:1px solid rgba(162,204,192,.22);border-left:3px solid #9dcfba;border-radius:6px;min-width:0}
+.decision-desk-kicker{display:block;font-size:10px;font-weight:850;letter-spacing:.12em;color:#a7d7c3}
+.decision-desk-story h3{font:400 clamp(21px,2vw,26px)/1.28 Georgia,serif;color:#f0eee8;margin:8px 0 15px}
+.decision-desk-story p{font-size:13px;line-height:1.7;color:#d2dfdc;margin:10px 0;max-width:105ch}
+.decision-desk-story p strong{color:#f1ede4;font-weight:750}
+.decision-desk-story>small{display:block;border-top:1px solid rgba(157,196,185,.18);padding-top:11px;margin-top:15px;color:#9fbcb9;font-size:10.5px;line-height:1.6}
+@media(max-width:650px){.decision-desk-story{padding:14px 13px;margin-bottom:14px}.decision-desk-story h3{font-size:22px}.decision-desk-story p{font-size:12px;line-height:1.67}}
