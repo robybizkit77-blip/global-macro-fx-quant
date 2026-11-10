@@ -385,7 +385,15 @@ function overview(){
    ?'Nella stessa seduta il rendimento Treasury a due anni è diminuito di '+fmt(Math.abs(u.chg2_bp),1)+' punti base e quello a dieci anni di '+fmt(Math.abs(u.chg10_bp),1)+'. I prezzi dei Treasury si muovono in senso opposto ai rendimenti: è un quadro compatibile con domanda di duration. Ma dai prezzi non possiamo sapere chi abbia comprato, né attribuire automaticamente il movimento al timore di recessione.'
    :usd2?'Il Treasury USA a due anni, nell’osservazione del '+date(u.date)+', quota '+fmt(u['2Y'],3)+'% e varia di '+sign(u.chg2_bp,1,' punti base')+'. '+(usd10?'Il dieci anni varia di '+sign(u.chg10_bp,1,' punti base')+'. ':'')+'I due rendimenti descrivono una reazione di mercato; da soli non identificano la notizia che l’ha prodotta.'
    :'Sul Treasury USA a due anni manca una variazione datata utilizzabile. La diagnosi sul mercato obbligazionario resta quindi aperta.';
- const shape=bonds?'Se il front-end scende più del long-end, la curva può irripidirsi anche mentre tutti i rendimenti calano; se accade il contrario, può appiattirsi. In entrambi i casi serve misurare l’ampiezza del movimento prima di parlare di cambio di regime.':'Il 2Y reagisce più direttamente alle attese di politica monetaria; il 10Y può riflettere anche rendimenti reali, inflazione attesa e premio a termine. Non sono due voti identici sulla stessa notizia.';
+ const spreadShift=usd2&&usd10?u.chg10_bp-u.chg2_bp:null;
+ const shape=finite(spreadShift)?
+   'Al '+date(u.date)+' il Treasury USA 2Y è variato di '+sign(u.chg2_bp,1,' pb')+
+   ' e il 10Y di '+sign(u.chg10_bp,1,' pb')+'. '+
+   (Math.abs(spreadShift)<1?'La curva 10Y−2Y è rimasta pressoché ferma: movimento quasi parallelo, non una rotazione tra scadenze. ':
+     'Lo spread 10Y−2Y si è '+(spreadShift>0?'allargato':'ristretto')+' di '+fmt(Math.abs(spreadShift),1)+
+     ' pb: il movimento non è parallelo. ')+
+   'Per attribuirlo alla banca centrale servono variazioni OIS/futures della stessa scadenza e data; il prezzo dei Treasury non identifica da solo gli operatori né il motivo.':
+   'Non abbiamo 2Y e 10Y USA con variazioni verificabili sulla stessa seduta: non attribuiamo al mercato una modifica della curva non misurata.';
  const macroInf=m.inflation,macroLab=m.labour;
  const macroReading=finite(macroInf?.latest_value)&&finite(macroLab?.latest_value)
    ?'Il quadro macro complica la lettura. L’ultimo dato di inflazione headline USA presente nel nostro archivio è '+fmt(macroInf.latest_value,2)+'% ('+(macroInf.as_of||'periodo da verificare')+'), con direzione '+(macroInf.direction||'non disponibile').toLowerCase()+'. Il tasso di disoccupazione è '+fmt(macroLab.latest_value,1)+'% ('+(macroLab.as_of||'periodo da verificare')+'), con direzione '+(macroLab.direction||'non disponibile').toLowerCase()+'. Sono osservazioni riferite a periodi diversi e non necessariamente a prime pubblicazioni point-in-time. Non autorizzano la conclusione che crescita e inflazione siano già entrambe in discesa.'
@@ -454,11 +462,11 @@ function overview(){
    +'<span class="dashboard-kpi-label">'+esc(x.label)+'</span><strong>'+esc(x.value)+'</strong>'
    +'<span class="dashboard-kpi-meta">'+esc(x.source)+' · '+esc(x.day)+'</span></a>').join('');
  const firstChart=stress||relief?'Nasdaq, volatilità e credito: il movimento è condiviso?':
-   bonds||yieldsUp?'Treasury 2Y e 10Y: che cosa cambia davvero?':
+   bonds||yieldsUp?'Treasury USA: calo dei rendimenti o repricing monetario?':
    divergent?'Dollaro e front-end: perché non confermano?':
    'Confronta i prezzi prima di scegliere una spiegazione';
  const focusText=stress||relief?'Partiamo dal Nasdaq perché è una delle tre prove che definiscono il quadro di rischio. Sotto trovi la stessa seduta per VIX e credito.':
-  bonds||yieldsUp?'Partiamo dai Treasury perché il movimento dei rendimenti è il centro della tesi. Il livello OIS/futures è un’altra misura e va letto separatamente.':
+  bonds||yieldsUp?'Il movimento della curva USA va confrontato con EUR e JPY, e con eventuali variazioni monetarie sulla stessa data. Non ogni calo dei rendimenti è un nuovo taglio Fed prezzato.':
   divergent?'Partiamo dal proxy del dollaro perché diverge dalla variazione del front-end sulla stessa data. La divergenza non è una strategia automatica.':
   'Il grafico visualizza uno stream reale con la propria data. Dove le fonti non coincidono, non deduciamo simultaneità.';
  const internalLinks=[
@@ -468,46 +476,128 @@ function overview(){
   {url:'cot',head:'Positioning COT',lead:'Nuovi long/short o liquidazioni? Il flusso conferma la tesi?'}
  ];
  const links=internalLinks.map(x=>'<a class="dashboard-research-link" href="#'+x.url+'"><strong>'+esc(x.head)+'</strong><span>'+esc(x.lead)+'</span><b aria-hidden="true">↗</b></a>').join('');
- const readingOpening=tooOld
-  ?'Questa è una lettura d’archivio. Le osservazioni più recenti non consentono di descrivere la seduta in corso: possiamo comunque capire quali domande stavano ponendo i mercati.'
-  :stress?'La debolezza azionaria si è accompagnata a un aumento della volatilità e a un allargamento del credito. È un movimento più ampio di una semplice oscillazione di Borsa.'
-  :relief?'Le azioni hanno recuperato mentre volatilità e premio per il rischio sul credito si sono ridotti. Il mercato ha mostrato una distensione, ma una buona seduta non basta a certificare una svolta.'
-  :bonds?'I rendimenti dei Treasury sono scesi insieme. È un segnale importante, ma occorre capire se il mercato sta riprezzando la Fed o se sta cercando protezione nei titoli di Stato.'
-  :yieldsUp?'I rendimenti Treasury stanno salendo. La domanda vera non è soltanto quanto salgano, ma quale parte del movimento dipenda dalle attese monetarie e quale dal lungo termine.'
-  :divergent?'Il dollaro e il rendimento USA a breve si sono mossi in direzioni diverse nella stessa seduta. La divergenza merita attenzione, non una conclusione automatica.'
-  :'Non emerge ancora un unico movimento capace di spiegare tutti i mercati. È più utile distinguere le prove disponibili che forzare una storia comune.';
- const readingWhy=stress
-  ?'Quando aumentano insieme volatilità e spread high yield, gli investitori sembrano richiedere più compenso per assumere rischio. Non possiamo però identificare dai soli prezzi chi stia vendendo, né concludere che la crescita sia già entrata in recessione.'
-  :relief?'Il miglioramento è coerente con una minore richiesta di protezione. Per capire se durerà, bisogna vedere se si estende oltre l’azionario e se trova sostegno nel credito e nelle aspettative economiche.'
-  :(bonds||yieldsUp)?'Il rendimento a due anni è legato soprattutto alle aspettative di politica monetaria; quello a dieci anni risente anche di crescita, inflazione, rendimenti reali e premio a termine. Leggerli come la stessa informazione porterebbe fuori strada.'
-  :divergent?'La forza di una valuta dipende da un confronto relativo. Il rendimento statunitense, preso da solo, non ci dice se il dollaro debba salire: contano i differenziali con gli altri paesi e la risposta effettiva dei prezzi.'
-  :'Il primo passo è cercare osservazioni confrontabili per data e strumento. Senza questa verifica, un movimento azionario, un rendimento e un fixing valutario possono raccontare tre storie diverse.';
- const readingPricing=!money6Valid
-  ?'Sul pricing monetario non abbiamo una scadenza statunitense a sei mesi abbastanza verificabile. Quindi non attribuiamo ai futures un riprezzamento che non possiamo misurare.'
-  :!money6SameSession
-   ?'La scadenza monetaria USA a sei mesi è disponibile, ma non sulla stessa data del movimento esaminato. Conosciamo un livello indicativo, non la variazione delle attese durante quella seduta.'
-   :!finite(o6.change_1d_bp)
-    ?'Il riferimento monetario USA a sei mesi coincide con la data del focus, ma non offre una variazione giornaliera omogenea. È ancora troppo poco per dire che il mercato abbia cambiato idea sulla Fed.'
-    :'Anche la scadenza monetaria USA a sei mesi si è mossa nella seduta osservata. È un elemento da confrontare con i Treasury, senza scambiarlo per una misura completa del sentiero della Fed.';
- const readingMarket=context.fxAligned
-  ?'Il proxy valutario del dollaro è confrontabile con il Treasury breve nella stessa seduta. Questo aiuta a vedere conferme o divergenze, ma non dimostra che sia stato il rendimento a causare il movimento FX.'
-  : 'Sul dollaro manca una reazione perfettamente allineata al Treasury breve. Per ora non la useremo come conferma della tesi.';
- const readingWatch=stress
-  ?'La tesi di maggiore avversione al rischio si indebolirebbe con un recupero azionario accompagnato da VIX e spread HY in discesa; si rafforzerebbe se lo stress restasse diffuso anche al credito.'
-  :relief?'La distensione sarebbe più credibile se proseguisse con credito stabile e partecipazione più ampia. Una nuova salita della volatilità o degli spread la metterebbe in discussione.'
-  :(bonds||yieldsUp)?'Il prossimo controllo è sul pricing OIS/futures confrontabile: se non conferma il movimento del breve termine, bisogna cercare una spiegazione alternativa nei premi sul lungo termine.'
-  :divergent?'Verificheremo se la divergenza persiste anche nei differenziali di tasso con le altre valute e se il prezzo FX ne conferma il significato.'
-  :'Per cambiare giudizio servono movimenti coerenti, sulla stessa data, tra macro, tassi e prezzi. Un solo indicatore non basta.';
+ // Evidence-led story. Separate dates, rate expectations, currency confirmation and COT.
+ const deskVixDate=validDay(vx.date)&&vx.date<=dayNow()?vx.date:null;
+ const deskVixDelta=deskVixDate&&finite(vx.value)&&finite(vx.previous)?vx.value-vx.previous:null;
+ const deskNasDate=validDay(n.date)&&n.date<=dayNow()?n.date:null;
+ const deskNasMove=deskNasDate&&finite(n.change_1d_pct)?n.change_1d_pct:null;
+ const deskHYDate=validDay(hy.date)&&hy.date<=dayNow()?hy.date:null;
+ const deskHYBp=deskHYDate&&finite(hy.value)&&finite(hy.previous)?(hy.value-hy.previous)*100:null;
+ const deskRateDate=validDay(u.date)&&u.date<=dayNow()?u.date:null;
+ const deskRatesOk=deskRateDate&&finite(u.chg2_bp)&&finite(u.chg10_bp);
+ const deskSameRisk=deskVixDate&&deskVixDate===deskNasDate&&deskNasDate===deskHYDate&&finite(deskVixDelta)&&finite(deskNasMove)&&finite(deskHYBp);
+ const deskOtherRates=[['Eurozona',get('rates')?.EUR],['Giappone',get('rates')?.JPY]].filter(x=>x[1]?.date===deskRateDate&&finite(x[1]?.chg2_bp));
+ const deskFuturesJpy=get('ois')?.currencies?.JPY?.horizons?.['6m'];
+ const deskInfChange=Array.isArray(macroInf?.history)&&macroInf.history.length>1&&finite(macroInf.history.at(-1))&&finite(macroInf.history.at(-2))?macroInf.history.at(-1)-macroInf.history.at(-2):null;
+ const deskLabChange=Array.isArray(macroLab?.history)&&macroLab.history.length>1&&finite(macroLab.history.at(-1))&&finite(macroLab.history.at(-2))?macroLab.history.at(-1)-macroLab.history.at(-2):null;
+ const deskPeriod=x=>/^\d{4}-\d{2}$/.test(String(x||''))?x.slice(5,7)+'/'+x.slice(0,4):date(x);
+ const deskFxDate=validDay(d.as_of)&&d.as_of<=dayNow()?d.as_of:null;
+ const deskPairValid=validDay(pairAsOf)&&pairAsOf<=dayNow()&&fresh(pairAsOf,8);
+ const deskClean=get('pairs')?.quality_distribution?.PULITO||0;
+ const deskCount=get('pairs')?.pair_count||0;
+ const deskCotDate=cot.USD?.today?.match(/CFTC al (\d{4}-\d{2}-\d{2})/)?.[1]||null;
+ const deskCotOk=validDay(deskCotDate)&&deskCotDate<=dayNow();
+ const deskVixRecent=deskVixDate&&fresh(deskVixDate,8);
+ const storyHeadline=tooOld?'Cosa dicono i dati disponibili, senza fingere un mercato in tempo reale':
+   deskVixRecent&&deskVixDelta<0&&deskRatesOk&&u.chg2_bp<0?
+     'La volatilità arretra, scendono i Treasury: il Forex non dà una conferma uniforme':
+   deskVixRecent&&deskVixDelta>0&&deskRatesOk&&u.chg2_bp<0?
+     'Volatilità più alta e Treasury più bassi: i mercati stanno riducendo rischio?':
+   deskVixRecent&&deskVixDelta<0?'Il rischio si distende, ma la conferma tra mercati è incompleta':
+   headline;
+ const readingOpening=tooOld?
+  'Le ultime osservazioni disponibili sono storiche. Ricostruiamo il quadro e le contraddizioni senza presentarlo come un aggiornamento intraday.':
+  deskVixRecent&&finite(deskVixDelta)?
+   'Il cambiamento più chiaro sul rischio è nel VIX: al '+date(deskVixDate)+' '+
+   (deskVixDelta<0?'è sceso di ':'è salito di ')+fmt(Math.abs(deskVixDelta),2)+' punti a '+fmt(vx.value,2)+
+   '. '+(finite(deskNasMove)&&finite(deskHYBp)&&deskNasDate===deskHYDate?
+     'Nell’ultima seduta comune a Nasdaq e credito ('+date(deskNasDate)+'), il Nasdaq ha fatto '+
+     sign(deskNasMove,2,'%')+' e lo spread high yield '+sign(deskHYBp,0,' punti base')+'. ':
+     'Non abbiamo ancora una chiusura completa e sincronizzata di azioni e credito. ')+
+   (deskSameRisk?'Le tre osservazioni sono riferite allo stesso giorno.':
+     'Queste rilevazioni non appartengono tutte alla stessa seduta: è un possibile allentamento dello stress, non un risk-on simultaneo già provato.'):
+  deskRatesOk?'Nella seduta del '+date(deskRateDate)+' i governativi USA si sono mossi di '+
+    sign(u.chg2_bp,1,' pb')+' sul 2Y e '+sign(u.chg10_bp,1,' pb')+' sul 10Y. Mancano però dati cross-asset sincronizzati per attribuire una causa.':
+    'La fotografia più recente non permette ancora di stabilire un movimento comune tra azioni, credito e tassi.';
+ const readingWhy=deskRatesOk?
+  'Sui bond si vede un movimento più ampio degli Stati Uniti. Al '+date(deskRateDate)+
+   ' i Treasury 2Y e 10Y sono scesi rispettivamente di '+fmt(Math.abs(u.chg2_bp),1)+
+   ' e '+fmt(Math.abs(u.chg10_bp),1)+' punti base. '+
+   (deskOtherRates.length?
+     'Anche '+deskOtherRates.map(x=>x[0]).join(' e ')+' registra rendimenti brevi in '+
+     (deskOtherRates.every(x=>x[1].chg2_bp<0)?'calo':'movimento')+' nella stessa seduta. ':
+     'Le curve estere non hanno ancora date confrontabili. ')+
+   'Questo rende debole una spiegazione basata soltanto sulla Fed. '+
+   (money6Valid&&finite(o6?.change_1d_bp)&&o6.as_of===deskRateDate?
+     'La variazione USD a sei mesi è '+sign(o6.change_1d_bp,1,' pb')+
+     ': è un’indicazione sul singolo contratto, non sull’intero sentiero della banca centrale. ':
+     'Nel pricing USD a sei mesi manca una variazione giornaliera omogenea: non possiamo certificare un repricing Fed. ')+
+   (deskFuturesJpy?.as_of===deskRateDate&&finite(deskFuturesJpy.change_1d_bp)?
+     'Il future monetario giapponese a sei mesi, invece, segna '+sign(deskFuturesJpy.change_1d_bp,1,' pb')+
+     ': qui il repricing è osservabile, ma sullo strumento specifico.':''):
+  'I tassi non hanno ancora variazioni giornaliere abbastanza documentate: attribuire la seduta alla Fed sarebbe una conclusione non sostenuta.';
+ const readingPricing=finite(macroInf?.latest_value)&&finite(macroLab?.latest_value)?
+   'La macro USA non dà un via libera alla narrativa di recessione e tagli. Nell’archivio del sito l’inflazione è '+
+   fmt(macroInf.latest_value,2)+'% ('+deskPeriod(macroInf.as_of)+')'+
+   (finite(deskInfChange)?', '+(deskInfChange>0?'in aumento':'in diminuzione')+' rispetto alla rilevazione precedente':'')+
+   ', mentre la disoccupazione è '+fmt(macroLab.latest_value,1)+'% ('+deskPeriod(macroLab.as_of)+')'+
+   (finite(deskLabChange)?', '+(deskLabChange>0?'in aumento':'in calo')+' sul dato precedente':'')+
+   '. I periodi sono differenti e non abbiamo qui la sorpresa rispetto al consenso: sono un controllo della tesi, non la causa dimostrata dei prezzi.':
+   'L’archivio macro non consente di incrociare inflazione e lavoro con sufficiente qualità: la tesi sul ciclo resta aperta.';
+ const deskFxText=deskFxDate&&finite(dx)?
+   'Sul Forex il proxy USD dai fixing BCE ha fatto '+sign(dx,2,'%')+' al '+date(deskFxDate)+'. '+
+   (deskRatesOk&&deskRateDate===deskFxDate?
+     (Math.sign(dx)===Math.sign(u.chg2_bp)?
+       'Anche il Treasury breve si è mosso nello stesso verso, ma questo non prova un rapporto causale. ':
+       'Il Treasury breve si è mosso in senso diverso: i rendimenti USA da soli non spiegano il prezzo. '):
+    'Il fixing ha una data diversa dai tassi, quindi non è una reazione simultanea. '):
+   'La reazione valutaria del dollaro non ha ancora data e variazione verificabili. ';
+ const deskPairText=deskPairValid?
+   (pairData.EURUSD?.decision_frame?.fav==='USD'?
+     'EUR/USD presenta un vantaggio strutturale soltanto parziale per USD; '+
+     (pairData.EURUSD?.setup?.price?.state==='GOOD'?
+       'il prezzo è già dalla parte del dollaro, non è una nuova opportunità dimostrata. ':
+       'il prezzo non ha ancora confermato pienamente. '):
+    'EUR/USD non offre un vantaggio completo e verificato. ')+
+   (pairData.USDJPY?.decision_frame?.fav==='USD'&&pairData.USDJPY?.setup?.price?.state==='BAD'?
+     'Su USD/JPY il prezzo invece favorisce JPY nonostante la struttura orientata a USD: è una divergenza concreta. ':
+     'USD/JPY richiede un controllo autonomo di struttura e prezzo. '):
+   'Il dossier delle coppie non è allineato a un fixing recente, quindi non viene usato come conferma. ';
+ const deskCotText=deskCotOk?
+   (cot.USD?.signal==='EXTREME LONG'&&cot.EUR?.signal==='EXTREME SHORT'?
+     'Il COT del '+date(deskCotDate)+' vede USD estremo long ed EUR estremo short: la posizione è già affollata e una ricopertura è un rischio, non una previsione.':
+     'Il COT del '+date(deskCotDate)+' misura posizioni settimanali, non i flussi della seduta.'):
+   'Il posizionamento CFTC non ha una data validata per confermare il prezzo.';
+ const readingMarket=deskFxText+deskPairText+deskCotText;
+ const readingVerdict=tooOld?
+   'Non promuovo una fotografia d’archivio a giudizio attuale: prima servono osservazioni aggiornate e confrontabili.':
+   deskVixRecent&&finite(deskVixDelta)&&deskVixDelta<0?
+    'L’evidenza principale è un allentamento della tensione di volatilità, non un miglioramento macro già provato. '+
+    (deskRatesOk?'I Treasury sono in calo, ma il 6M USD non certifica un riprezzamento Fed. ':'')+
+    (deskPairValid&&deskCount===28&&deskClean===0?
+      'Nel motore delle 28 coppie, nessuna risulta “pulita” al '+date(pairAsOf)+
+      ': la forza di una tesi non coincide oggi con l’attrattività di un trade.':
+      'Sulle coppie aspetterei conferme di prezzo prima di attribuire un vantaggio operativo.'):
+   deskVixRecent&&deskVixDelta>0?
+    'La volatilità sta segnalando cautela, ma senza una seduta comune di azioni e credito non si può parlare di stress generalizzato verificato. Il timing FX resta separato dalla tesi.':
+    'Non emerge ancora un regime dominante con prove sincronizzate. Il giudizio corretto è prudente: nessun segnale operativo deriva dal solo quadro generale.';
+ const readingWatch=deskVixRecent&&finite(deskVixDelta)?
+   'Cercherei la prossima chiusura comune di Nasdaq, VIX e spread HY: '+
+   (deskVixDelta<0?'ulteriore rientro del credito rafforzerebbe la distensione; un nuovo allargamento la indebolirebbe.':
+     'stress contemporaneo su azioni e credito renderebbe più solida la lettura difensiva; una normalizzazione la indebolirebbe.')+
+   ' Sui tassi serve una variazione OIS/futures confrontabile. In FX seguirei la divergenza su USD/JPY e la possibilità che EUR/USD abbia già incorporato il vantaggio USD.':
+   'Monitorerei prima l’allineamento delle fonti di rischio, poi il repricing monetario misurabile e la risposta del prezzo sulle coppie.';
  return '<article class="market-letter market-dashboard" aria-label="Dashboard di ricerca FX Quant">'
  +'<header class="dashboard-heading"><div class="dashboard-topline"><span>FX QUANT / PANORAMICA DI MERCATO</span><span>Focus '+date(focusDate)+' · Ultimo feed '+date(latest)+' · '+dayNow().split('-').reverse().join('.')+'</span></div>'
- +'<div class="dashboard-title-row dashboard-reading-title"><div><h1>'+esc(headline)+'</h1><div class="letter-opening"><p class="letter-lead">'+esc(readingOpening)+'</p></div></div></div>'
+ +'<div class="dashboard-title-row dashboard-reading-title"><div><h1>'+esc(storyHeadline)+'</h1><div class="letter-opening"><p class="letter-lead">'+esc(readingOpening)+'</p></div></div></div>'
  +(tooOld?'<p class="letter-stale">Dati storici: non rappresentano un aggiornamento intraday.</p>':'')
  +'</header>'
  +'<section class="dashboard-reading-story" aria-label="Il racconto del desk"><div class="dashboard-reading-eyebrow">LA LETTURA DEL DESK · '+date(focusDate)+'</div>'
  +'<div class="dashboard-reading-body"><p>'+esc(readingWhy)+'</p><p>'+esc(readingPricing)+'</p><p>'+esc(readingMarket)+'</p>'
- +'<p class="dashboard-reading-verdict"><strong>Il mio giudizio.</strong> '+esc(thesis)+'</p>'
+ +'<p class="dashboard-reading-verdict"><strong>Il mio giudizio.</strong> '+esc(readingVerdict)+'</p>'
  +'<p class="dashboard-reading-watch"><strong>Che cosa monitorare.</strong> '+esc(readingWatch)+'</p></div>'
- +'<p class="dashboard-reading-quality">La lettura distingue fatti, ipotesi e dati con date diverse. Gli indicatori completi sono consultabili qui sotto.</p></section>'
+ +'<nav class="dashboard-reading-source-links" aria-label="Verifica la lettura nei dossier"><a href="#risk">Rischio ↗</a><a href="#rates">Tassi & OIS ↗</a><a href="#macro">Macro ↗</a><a href="#currencies">Valute G8 ↗</a><a href="#pairs">Coppie FX ↗</a><a href="#cot">COT ↗</a><a href="#news">Notizie ↗</a></nav>'
+ +'<p class="dashboard-reading-quality">Le osservazioni mantengono le date originali; ipotesi, prove e prezzi sono distinti. Numeri e verifiche completi restano consultabili qui sotto.</p></section>'
  +'<section class="dashboard-main dashboard-reading-chart"><div class="dashboard-section-head"><span>IL GRAFICO CHE ACCOMPAGNA LA LETTURA</span><p>Un’evidenza visiva, senza trasformare il grafico in una conclusione.</p></div>'
  +'<div class="dashboard-chart-grid"><figure class="letter-chart dashboard-chart"><figcaption><span>DATI DI MERCATO</span><strong>'+esc(firstChart)+'</strong><p>'+esc(focusText)+'</p></figcaption>'
  +'<div class="letter-chart-visual">'+homeScreenChart()+'</div></figure></div></section>'
