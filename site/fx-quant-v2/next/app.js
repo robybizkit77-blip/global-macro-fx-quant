@@ -27,7 +27,7 @@ const SOURCES={
  news:'../../../live_data/sections/NEWS_PULSE_OPERATIONAL.json',
  themes:'../../../live_data/sections/TOP_THEMES.json'
 };
-const state={data:{},errors:{},route:'overview',ccy:'USD',against:'EUR',pair:'EURUSD',pairFilter:'all',pairSearch:'',pairPriceWindow:60,pairShowReferences:true,watch:new Set(),window:20,rateMode:'both',riskStream:'VIX',riskWindow:20,macroMetric:'inflation',newsMode:'pulse',chartIndex:0,charts:{},atlasLens:'rates',homeChart:null,homeWindow:20,spotPair:'EURUSD',cotWindow:26,cotMode:'net',cotFilter:'all',cotSort:'percentile',cotSortAsc:false,rsWindow:60,rsGovMode:'both',rsDiffMode:'2y',msCategory:'Inflazione',msSeriesId:null,msView:'level',msWindow:24,msHeat:'inflation',msHeatSort:'ccy',msHeatAsc:true,msOther:'EUR',msCompareMetric:'inflation',msAdvanced:false,csOther:'EUR',csPriceWindow:60,csRatesMode:'spread',csRatesWindow:60,csMacroMode:'inflation',csMacroWindow:36,csCotWindow:26,csSort:'currency',csReturnWindow:20};
+const state={data:{},errors:{},route:'overview',ccy:'USD',against:'EUR',pair:'EURUSD',pairFilter:'all',pairSearch:'',pairPriceWindow:60,pairShowReferences:true,watch:new Set(),window:20,rateMode:'both',riskStream:'VIX',riskWindow:20,macroMetric:'inflation',newsMode:'pulse',chartIndex:0,charts:{},atlasLens:'rates',homeChart:null,homeWindow:20,homeEvidenceOpen:false,homeDossierOpen:false,spotPair:'EURUSD',cotWindow:26,cotMode:'net',cotFilter:'all',cotSort:'percentile',cotSortAsc:false,rsWindow:60,rsGovMode:'both',rsDiffMode:'2y',msCategory:'Inflazione',msSeriesId:null,msView:'level',msWindow:24,msHeat:'inflation',msHeatSort:'ccy',msHeatAsc:true,msOther:'EUR',msCompareMetric:'inflation',msAdvanced:false,csOther:'EUR',csPriceWindow:60,csRatesMode:'spread',csRatesWindow:60,csMacroMode:'inflation',csMacroWindow:36,csCotWindow:26,csSort:'currency',csReturnWindow:20};
 try{const w=JSON.parse(localStorage.getItem('fxquant-next-watch')||'[]');if(Array.isArray(w))state.watch=new Set(w.filter(s=>typeof s==='string'))}catch(e){}
 const $=id=>document.getElementById(id);
 const esc=x=>String(x===undefined||x===null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -468,24 +468,60 @@ function overview(){
   {url:'cot',head:'Positioning COT',lead:'Nuovi long/short o liquidazioni? Il flusso conferma la tesi?'}
  ];
  const links=internalLinks.map(x=>'<a class="dashboard-research-link" href="#'+x.url+'"><strong>'+esc(x.head)+'</strong><span>'+esc(x.lead)+'</span><b aria-hidden="true">↗</b></a>').join('');
+ const readingOpening=tooOld
+  ?'Questa è una lettura d’archivio. Le osservazioni più recenti non consentono di descrivere la seduta in corso: possiamo comunque capire quali domande stavano ponendo i mercati.'
+  :stress?'La debolezza azionaria si è accompagnata a un aumento della volatilità e a un allargamento del credito. È un movimento più ampio di una semplice oscillazione di Borsa.'
+  :relief?'Le azioni hanno recuperato mentre volatilità e premio per il rischio sul credito si sono ridotti. Il mercato ha mostrato una distensione, ma una buona seduta non basta a certificare una svolta.'
+  :bonds?'I rendimenti dei Treasury sono scesi insieme. È un segnale importante, ma occorre capire se il mercato sta riprezzando la Fed o se sta cercando protezione nei titoli di Stato.'
+  :yieldsUp?'I rendimenti Treasury stanno salendo. La domanda vera non è soltanto quanto salgano, ma quale parte del movimento dipenda dalle attese monetarie e quale dal lungo termine.'
+  :divergent?'Il dollaro e il rendimento USA a breve si sono mossi in direzioni diverse nella stessa seduta. La divergenza merita attenzione, non una conclusione automatica.'
+  :'Non emerge ancora un unico movimento capace di spiegare tutti i mercati. È più utile distinguere le prove disponibili che forzare una storia comune.';
+ const readingWhy=stress
+  ?'Quando aumentano insieme volatilità e spread high yield, gli investitori sembrano richiedere più compenso per assumere rischio. Non possiamo però identificare dai soli prezzi chi stia vendendo, né concludere che la crescita sia già entrata in recessione.'
+  :relief?'Il miglioramento è coerente con una minore richiesta di protezione. Per capire se durerà, bisogna vedere se si estende oltre l’azionario e se trova sostegno nel credito e nelle aspettative economiche.'
+  :(bonds||yieldsUp)?'Il rendimento a due anni è legato soprattutto alle aspettative di politica monetaria; quello a dieci anni risente anche di crescita, inflazione, rendimenti reali e premio a termine. Leggerli come la stessa informazione porterebbe fuori strada.'
+  :divergent?'La forza di una valuta dipende da un confronto relativo. Il rendimento statunitense, preso da solo, non ci dice se il dollaro debba salire: contano i differenziali con gli altri paesi e la risposta effettiva dei prezzi.'
+  :'Il primo passo è cercare osservazioni confrontabili per data e strumento. Senza questa verifica, un movimento azionario, un rendimento e un fixing valutario possono raccontare tre storie diverse.';
+ const readingPricing=!money6Valid
+  ?'Sul pricing monetario non abbiamo una scadenza statunitense a sei mesi abbastanza verificabile. Quindi non attribuiamo ai futures un riprezzamento che non possiamo misurare.'
+  :!money6SameSession
+   ?'La scadenza monetaria USA a sei mesi è disponibile, ma non sulla stessa data del movimento esaminato. Conosciamo un livello indicativo, non la variazione delle attese durante quella seduta.'
+   :!finite(o6.change_1d_bp)
+    ?'Il riferimento monetario USA a sei mesi coincide con la data del focus, ma non offre una variazione giornaliera omogenea. È ancora troppo poco per dire che il mercato abbia cambiato idea sulla Fed.'
+    :'Anche la scadenza monetaria USA a sei mesi si è mossa nella seduta osservata. È un elemento da confrontare con i Treasury, senza scambiarlo per una misura completa del sentiero della Fed.';
+ const readingMarket=context.fxAligned
+  ?'Il proxy valutario del dollaro è confrontabile con il Treasury breve nella stessa seduta. Questo aiuta a vedere conferme o divergenze, ma non dimostra che sia stato il rendimento a causare il movimento FX.'
+  : 'Sul dollaro manca una reazione perfettamente allineata al Treasury breve. Per ora non la useremo come conferma della tesi.';
+ const readingWatch=stress
+  ?'La tesi di maggiore avversione al rischio si indebolirebbe con un recupero azionario accompagnato da VIX e spread HY in discesa; si rafforzerebbe se lo stress restasse diffuso anche al credito.'
+  :relief?'La distensione sarebbe più credibile se proseguisse con credito stabile e partecipazione più ampia. Una nuova salita della volatilità o degli spread la metterebbe in discussione.'
+  :(bonds||yieldsUp)?'Il prossimo controllo è sul pricing OIS/futures confrontabile: se non conferma il movimento del breve termine, bisogna cercare una spiegazione alternativa nei premi sul lungo termine.'
+  :divergent?'Verificheremo se la divergenza persiste anche nei differenziali di tasso con le altre valute e se il prezzo FX ne conferma il significato.'
+  :'Per cambiare giudizio servono movimenti coerenti, sulla stessa data, tra macro, tassi e prezzi. Un solo indicatore non basta.';
  return '<article class="market-letter market-dashboard" aria-label="Dashboard di ricerca FX Quant">'
  +'<header class="dashboard-heading"><div class="dashboard-topline"><span>FX QUANT / PANORAMICA DI MERCATO</span><span>Focus '+date(focusDate)+' · Ultimo feed '+date(latest)+' · '+dayNow().split('-').reverse().join('.')+'</span></div>'
- +'<div class="dashboard-title-row"><div><h1>'+esc(headline)+'</h1><div class="letter-opening"><p class="letter-lead">'+esc(opening)+'</p></div></div>'
- +'<div class="dashboard-context"><span>IL GIUDIZIO DEL DESK · '+date(focusDate)+'</span><strong>'+esc(stress?'Stress di rischio':relief?'Distensione del rischio':bonds?'Rendimenti in discesa':yieldsUp?'Rendimenti in rialzo':divergent?'Divergenza tassi–USD':'Regime in verifica')+'</strong><p>'+esc(thesis)+'</p><a href="#risk">Esplora le prove ↗</a></div></div>'
- +(tooOld?'<p class="letter-stale">Dati storici: questa è una lettura di archivio, non un aggiornamento intraday. Le ultime osservazioni non sono recenti.</p>':'')
+ +'<div class="dashboard-title-row dashboard-reading-title"><div><h1>'+esc(headline)+'</h1><div class="letter-opening"><p class="letter-lead">'+esc(readingOpening)+'</p></div></div></div>'
+ +(tooOld?'<p class="letter-stale">Dati storici: non rappresentano un aggiornamento intraday.</p>':'')
  +'</header>'
- +'<section class="dashboard-metrics" aria-label="Indicatori che supportano il tema di mercato"><div class="dashboard-section-head"><span>01 / INDICATORI</span><p>Le variazioni riportano la propria data, non un’unica fotografia in tempo reale.</p></div><div class="dashboard-kpi-grid">'+kpis+'</div></section>'
- +(typeof window!=='undefined'&&window.FXQuantDecisionJourney?.build?window.FXQuantDecisionJourney.build({get,state,plot,fmt,sign,date,dayNow,esc}).overview():'<section class="decision-overview"><p>Percorso operativo non caricato. Nessuna selezione viene proposta.</p></section>')
- +'<section class="dashboard-main"><div class="dashboard-section-head"><span>02 / GRAFICI E INTERPRETAZIONE</span><p>Scegli uno strumento per cercare conferme e divergenze.</p></div>'
+ +'<section class="dashboard-reading-story" aria-label="Il racconto del desk"><div class="dashboard-reading-eyebrow">LA LETTURA DEL DESK · '+date(focusDate)+'</div>'
+ +'<div class="dashboard-reading-body"><p>'+esc(readingWhy)+'</p><p>'+esc(readingPricing)+'</p><p>'+esc(readingMarket)+'</p>'
+ +'<p class="dashboard-reading-verdict"><strong>Il mio giudizio.</strong> '+esc(thesis)+'</p>'
+ +'<p class="dashboard-reading-watch"><strong>Che cosa monitorare.</strong> '+esc(readingWatch)+'</p></div>'
+ +'<p class="dashboard-reading-quality">La lettura distingue fatti, ipotesi e dati con date diverse. Gli indicatori completi sono consultabili qui sotto.</p></section>'
+ +'<section class="dashboard-main dashboard-reading-chart"><div class="dashboard-section-head"><span>IL GRAFICO CHE ACCOMPAGNA LA LETTURA</span><p>Un’evidenza visiva, senza trasformare il grafico in una conclusione.</p></div>'
  +'<div class="dashboard-chart-grid"><figure class="letter-chart dashboard-chart"><figcaption><span>DATI DI MERCATO</span><strong>'+esc(firstChart)+'</strong><p>'+esc(focusText)+'</p></figcaption>'
- +'<div class="letter-chart-visual">'+homeScreenChart()+'</div></figure>'
- +'<aside class="dashboard-analysis"><span class="dashboard-analysis-kicker">CHE COSA CONCLUDIAMO?</span><h2>Una tesi, non un segnale.</h2><p>'+esc(follow)+'</p>'
+ +'<div class="letter-chart-visual">'+homeScreenChart()+'</div></figure></div></section>'
+ +'<details class="dashboard-technical" data-home-evidence'+(state.homeEvidenceOpen?' open':'')+'>'
+ +'<summary><span class="dashboard-technical-overline">SE VUOI VERIFICARE I NUMERI</span><strong>Apri dati, scenari e prove del desk</strong><small>Indicatori con date e fonti, percorso decisionale, conferme e invalidazioni. Tutto il contenuto resta disponibile.</small></summary>'
+ +'<div class="dashboard-technical-content">'
+ +'<section class="dashboard-metrics" aria-label="Indicatori che supportano il tema di mercato"><div class="dashboard-section-head"><span>INDICATORI DATATI</span><p>Ogni variazione mantiene la data della propria fonte.</p></div><div class="dashboard-kpi-grid">'+kpis+'</div></section>'
+ +'<section class="dashboard-original-reading"><span class="dashboard-analysis-kicker">OSSERVAZIONI NUMERICHE E IPOTESI</span><p>'+esc(opening)+'</p></section>'
+ +(typeof window!=='undefined'&&window.FXQuantDecisionJourney?.build?window.FXQuantDecisionJourney.build({get,state,plot,fmt,sign,date,dayNow,esc}).overview():'<section class="decision-overview"><p>Percorso operativo non caricato. Nessuna selezione viene proposta.</p></section>')
+ +'<aside class="dashboard-analysis"><span class="dashboard-analysis-kicker">L’ANALISI COMPLETA</span><h2>Una tesi, non un segnale.</h2><p>'+esc(follow)+'</p>'
  +'<div class="dashboard-analysis-judgment"><strong>Che cosa sta già prezzando il mercato?</strong><p>'+esc(pricingQuick)+'</p></div>'
- +'<div class="dashboard-analysis-watch"><strong>Che cosa potrebbe smentirci?</strong><p>'+esc(falsify)+'</p></div></aside></div></section>'
- +'<section class="dashboard-proof"><div class="dashboard-section-head"><span>03 / PROVE CHE SOSTENGONO LA TESI</span><p>Solo movimenti verificabili nella seduta considerata.</p></div>'+researchEvidence(context)+'</section>'
- +'<section class="dashboard-deep-links"><div class="dashboard-section-head"><span>04 / ESPLORA IL RESEARCH DESK</span><p>Grafici e analisi approfondite, senza duplicare l’intera Home.</p></div><div class="dashboard-link-grid">'+links+'</div></section>'
-
- +'<details class="dashboard-dossier"><summary><span>PER CHI VUOLE APPROFONDIRE</span><strong>Apri il ragionamento macro completo</strong><small>Curva, inflazione, lavoro, pricing, Forex e condizioni di invalidazione.</small></summary>'
+ +'<div class="dashboard-analysis-watch"><strong>Che cosa potrebbe smentirci?</strong><p>'+esc(falsify)+'</p></div></aside>'
+ +'<section class="dashboard-proof"><div class="dashboard-section-head"><span>LE PROVE CHE SOSTENGONO LA TESI</span><p>Solo osservazioni verificabili nella seduta considerata.</p></div>'+researchEvidence(context)+'</section>'
+ +'<details class="dashboard-dossier" data-home-dossier'+(state.homeDossierOpen?' open':'')+'><summary><span>PER CHI VUOLE APPROFONDIRE</span><strong>Il ragionamento macro completo</strong><small>Curva, inflazione, lavoro, pricing, Forex e invalidazioni.</small></summary>'
  +'<div class="letter-argument"><span class="letter-margin">LA TESI IN PROFONDITÀ</span><div class="letter-main">'
  +section('Il movimento dei bond non basta a spiegare tutto',esc(shape)+' '+esc(pricingReading))
  +section('La macroeconomia non ci concede ancora una risposta facile',esc(macroReading))
@@ -494,6 +530,8 @@ function overview(){
  +section('Il passaggio decisivo è sempre relativo',esc(pairStory))
  +section('Che cosa mi farebbe cambiare idea?',esc(falsify))
  +'</div></div></details>'
+ +'</div></details>'
+ +'<section class="dashboard-deep-links"><div class="dashboard-section-head"><span>ESPLORA IL RESEARCH DESK</span><p>Apri una sezione soltanto quando vuoi approfondire.</p></div><div class="dashboard-link-grid">'+links+'</div></section>'
  +'<footer class="letter-footer dashboard-footer"><small>'+sourceDates+'</small><small>Rendimenti Treasury ≠ OIS · USD proxy BCE ≠ indice ICE · COT settimanale ≠ flusso intraday. Nessun dato qui è un ordine operativo.</small></footer>'
  +'</article>';
 }
@@ -704,7 +742,11 @@ document.addEventListener('click',e=>{
  const nn=e.target.closest('[data-news-mode]');if(nn){state.newsMode=nn.dataset.newsMode;render();return}
 });
 document.addEventListener('input',e=>{if(e.target.id==='pair-search'){state.pairSearch=e.target.value;const list=$('pair-results');if(!list)return;const keys=pairListKeys();list.innerHTML=keys.length?keys.map(k=>pairRow(k)).join(''):'<div class="empty"><strong>Nessuna coppia trovata</strong><p>Prova un nome o un filtro diverso.</p></div>';}})
-document.addEventListener('toggle',e=>{if(e.target?.matches?.('details.macro-advanced'))state.msAdvanced=e.target.open;},true);
+document.addEventListener('toggle',e=>{
+ if(e.target?.matches?.('details.macro-advanced'))state.msAdvanced=e.target.open;
+ if(e.target?.matches?.('details[data-home-evidence]'))state.homeEvidenceOpen=e.target.open;
+ if(e.target?.matches?.('details[data-home-dossier]'))state.homeDossierOpen=e.target.open;
+},true);
 document.addEventListener('change',e=>{
  if(e.target.id==='cs-other'){state.csOther=e.target.value;render();return;}
  if(e.target.id==='ms-series'){state.msSeriesId=e.target.value;render();return;}
