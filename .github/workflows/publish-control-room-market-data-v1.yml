@@ -182,8 +182,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 -m unittest validation.publishing.test_wait_gh_pages_idle_before_fxv2_push_v1 -q
-          python3 validation/publishing/wait_gh_pages_idle_before_fxv2_push_v1.py \\
-            --output /tmp/control-room-pages-idle.json --attempts 108 --delay 10
+          python3 validation/publishing/wait_gh_pages_idle_before_fxv2_push_v1.py --output /tmp/control-room-pages-idle.json --attempts 108 --delay 10
 
       - name: Publish exact feed scope to gh-pages with lease
         if: github.event_name != 'pull_request'
