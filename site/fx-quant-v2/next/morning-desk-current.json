@@ -1,0 +1,293 @@
+{
+  "schema": "GMFQ_MORNING_MACRO_FX_V1",
+  "edition_date": "2026-11-10",
+  "edition_status": "RECONSTRUCTION_NOT_POINT_IN_TIME",
+  "event_status": "EVENT_TODAY",
+  "editorial_quality": "APPROVED_EDITORIAL_PREVIEW_RECONSTRUCTED_NOT_PIT",
+  "observation_cutoff_exclusive": "2026-11-10",
+  "sources": {
+    "fx_fixing": "2026-11-09",
+    "rates": "2026-11-09",
+    "pair_setup": null,
+    "calendar": "OFFICIAL_SEED"
+  },
+  "headline": "Il CPI mette alla prova una Fed ancora restrittiva. Per il dollaro conta ciò che il mercato ha già prezzato.",
+  "lead": "Arriviamo alla giornata con un vantaggio di rendimento USA ancora evidente, ma con EUR/USD che non conferma automaticamente una nuova fase di forza del dollaro. Il dato sull’inflazione può cambiare questo equilibrio: dipenderà dalla sorpresa e dalla reazione dei differenziali.",
+  "paragraphs": [
+    "Negli ultimi giorni il mercato ha dovuto conciliare una crescita americana descritta ancora come robusta dalla Federal Reserve con un'inflazione che la banca centrale considera troppo elevata. Il 28 ottobre la Fed ha mantenuto i tassi al 3,75–4,00%, ma due membri avrebbero preferito un rialzo. Le aspettative monetarie non hanno quindi spazio per diventare molto più accomodanti senza nuove prove sul rallentamento dei prezzi.",
+    "La fotografia prima del dato non è uniforme. Al 9 novembre il Treasury USA a due anni rende 4,56% contro 2,94% dell'Eurozona: un differenziale di circa 162 punti base a favore degli Stati Uniti. Eppure EUR/USD è passato da 1,1165 del 6 novembre a 1,1193 nel fixing BCE del 9 novembre, con un rialzo dell'euro dello 0,25%. Il vantaggio nominale dei tassi è reale, ma non basta a spiegare il movimento del cambio; non disponiamo di una variazione Fed/€STR a sei mesi omogenea per dimostrare un nuovo repricing relativo.",
+    "Il catalizzatore di oggi è il CPI americano di ottobre, atteso alle 14:30 italiane. I riferimenti secondari raccolti il 9 novembre indicano +0,3% mensile per l’indice generale e +0,2% per il core; non sono un consenso di sondaggio certificato. Il punto centrale è se le pressioni persistenti consentiranno alla Fed di mantenere più a lungo un'impostazione restrittiva o se ci saranno prove per ridimensionare le attese sui tassi. Il dato isolato non identifica la reazione dei mercati.",
+    "Per il Forex non basta la formula «inflazione alta = dollaro forte». Una sorpresa superiore alle attese avrebbe più valore se producesse un rialzo relativo del front-end americano e una risposta convincente dell'USD contro più valute. Una lettura inferiore alle attese potrebbe favorire l'euro, ma andrebbe distinta da un eventuale deterioramento delle aspettative di crescita. EUR/USD è il primo confronto; USD/JPY ci aiuterà a capire se il segnale sul dollaro sia ampio o specifico della controparte. Prima cerchiamo la conferma, poi il timing."
+  ],
+  "catalyst": {
+    "title": "Oggi · CPI USA di ottobre · 14:30 italiane",
+    "text": "Monitorare pubblicazione ufficiale headline/core, scarto dalle attese, riprezzamento monetario e risposta relativa del dollaro.",
+    "date": "2026-11-10",
+    "currency": "USD",
+    "time_rome": "14:30"
+  },
+  "scenarios": [
+    {
+      "title": "Se il CPI supera le attese",
+      "text": "Potrebbe rafforzarsi la lettura di una Fed restrittiva più a lungo, ma la tesi USD necessita di conferma nei differenziali di rendimento e nelle coppie."
+    },
+    {
+      "title": "Se il CPI è inferiore alle attese",
+      "text": "Una disinflazione convincente potrebbe alleggerire la pressione monetaria sul dollaro; la risposta FX va verificata rispetto ai tassi esteri e al rischio globale."
+    }
+  ],
+  "verdict": "La Fed ha ragioni per mantenersi prudente e il differenziale USA è significativo, ma non è dimostrato un nuovo impulso direzionale del dollaro. Il catalizzatore è la possibile revisione delle aspettative dopo il CPI, non una posizione da anticipare. Thesis Strength e Trade Attractiveness restano separati.",
+  "watch": "Dopo le 14:30: verificare quattro componenti del CPI se disponibili, attese correttamente etichettate, OIS/futures confrontabili e reazione di EUR/USD e USD/JPY. Se manca la prova, non attribuire causalità.",
+  "pair": "EURUSD",
+  "charts": [
+    {
+      "label": "Differenziale governativo 2Y USD–EUR",
+      "unit": "pb",
+      "precision": 0,
+      "as_of": "2026-11-09",
+      "last_value": 162.087,
+      "points": [
+        {
+          "date": "2026-09-15",
+          "value": 148.2196
+        },
+        {
+          "date": "2026-09-16",
+          "value": 157.4224
+        },
+        {
+          "date": "2026-09-17",
+          "value": 152.1806
+        },
+        {
+          "date": "2026-09-18",
+          "value": 154.4788
+        },
+        {
+          "date": "2026-09-21",
+          "value": 161.2391
+        },
+        {
+          "date": "2026-09-25",
+          "value": 155.8933
+        },
+        {
+          "date": "2026-09-28",
+          "value": 168.697
+        },
+        {
+          "date": "2026-10-02",
+          "value": 183.8104
+        },
+        {
+          "date": "2026-10-06",
+          "value": 173.7703
+        },
+        {
+          "date": "2026-10-13",
+          "value": 170.8484
+        },
+        {
+          "date": "2026-10-15",
+          "value": 177.7259
+        },
+        {
+          "date": "2026-10-16",
+          "value": 171.0027
+        },
+        {
+          "date": "2026-10-19",
+          "value": 171.6675
+        },
+        {
+          "date": "2026-10-20",
+          "value": 176.1925
+        },
+        {
+          "date": "2026-10-21",
+          "value": 178.1813
+        },
+        {
+          "date": "2026-10-22",
+          "value": 164.2505
+        },
+        {
+          "date": "2026-10-23",
+          "value": 170.6539
+        },
+        {
+          "date": "2026-10-26",
+          "value": 165.462
+        },
+        {
+          "date": "2026-10-27",
+          "value": 168.4968
+        },
+        {
+          "date": "2026-10-28",
+          "value": 161.0198
+        },
+        {
+          "date": "2026-10-29",
+          "value": 160.1999
+        },
+        {
+          "date": "2026-10-30",
+          "value": 155.4892
+        },
+        {
+          "date": "2026-11-02",
+          "value": 159.6494
+        },
+        {
+          "date": "2026-11-03",
+          "value": 162.3188
+        },
+        {
+          "date": "2026-11-04",
+          "value": 158.1742
+        },
+        {
+          "date": "2026-11-05",
+          "value": 150.1598
+        },
+        {
+          "date": "2026-11-06",
+          "value": 157.9504
+        },
+        {
+          "date": "2026-11-09",
+          "value": 162.0874
+        }
+      ]
+    },
+    {
+      "label": "EUR/USD · fixing BCE",
+      "unit": "",
+      "precision": 4,
+      "as_of": "2026-11-09",
+      "last_value": 1.1193,
+      "points": [
+        {
+          "date": "2026-10-01",
+          "value": 1.1298
+        },
+        {
+          "date": "2026-10-02",
+          "value": 1.1225
+        },
+        {
+          "date": "2026-10-05",
+          "value": 1.1204
+        },
+        {
+          "date": "2026-10-06",
+          "value": 1.1269
+        },
+        {
+          "date": "2026-10-07",
+          "value": 1.1177
+        },
+        {
+          "date": "2026-10-08",
+          "value": 1.1186
+        },
+        {
+          "date": "2026-10-09",
+          "value": 1.1206
+        },
+        {
+          "date": "2026-10-12",
+          "value": 1.1181
+        },
+        {
+          "date": "2026-10-13",
+          "value": 1.1188
+        },
+        {
+          "date": "2026-10-14",
+          "value": 1.1195
+        },
+        {
+          "date": "2026-10-15",
+          "value": 1.1208
+        },
+        {
+          "date": "2026-10-16",
+          "value": 1.1253
+        },
+        {
+          "date": "2026-10-19",
+          "value": 1.1225
+        },
+        {
+          "date": "2026-10-20",
+          "value": 1.1215
+        },
+        {
+          "date": "2026-10-21",
+          "value": 1.1234
+        },
+        {
+          "date": "2026-10-22",
+          "value": 1.1205
+        },
+        {
+          "date": "2026-10-23",
+          "value": 1.1193
+        },
+        {
+          "date": "2026-10-26",
+          "value": 1.1188
+        },
+        {
+          "date": "2026-10-27",
+          "value": 1.115
+        },
+        {
+          "date": "2026-10-28",
+          "value": 1.1133
+        },
+        {
+          "date": "2026-10-29",
+          "value": 1.113
+        },
+        {
+          "date": "2026-10-30",
+          "value": 1.1172
+        },
+        {
+          "date": "2026-11-02",
+          "value": 1.1216
+        },
+        {
+          "date": "2026-11-03",
+          "value": 1.1179
+        },
+        {
+          "date": "2026-11-04",
+          "value": 1.1267
+        },
+        {
+          "date": "2026-11-05",
+          "value": 1.1224
+        },
+        {
+          "date": "2026-11-06",
+          "value": 1.1165
+        },
+        {
+          "date": "2026-11-09",
+          "value": 1.1193
+        }
+      ]
+    }
+  ],
+  "eligible_for_fx_signal": false,
+  "modifies_28_pair_engine": false,
+  "limitations": [
+    "Ricostruzione editoriale: non certifica una fotografia del sito esattamente alle 08:00.",
+    "Dati di rendimento e fixing giornalieri, non reazione all’evento.",
+    "Stime secondarie non equivalgono a consenso certificato."
+  ]
+}
