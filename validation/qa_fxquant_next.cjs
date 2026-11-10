@@ -21,7 +21,9 @@ fs.mkdirSync(evidence,{recursive:true});
    assert(resp&&resp.ok(),'Home HTTP failed: '+resp?.status());
    await page.waitForFunction(()=>/fonti caricate/.test(document.getElementById('sidebar-feed')?.textContent||''),{timeout:20000});
    const sourceText=await page.locator('#sidebar-feed').innerText();
-   assert(/17\/17 fonti caricate/.test(sourceText),'Feed mismatch after AUD RBA F2 source addition: '+sourceText);
+   const fullFeeds=sourceText.match(/^(\d+)\/(\d+) fonti caricate/);
+   assert(fullFeeds&&fullFeeds[1]===fullFeeds[2]&&Number(fullFeeds[2])>=18,
+     'All required sources must load, including the morning editorial: '+sourceText);
    for(const route of ROUTES){
     await page.evaluate(r=>{location.hash='#'+r},route);
     await page.waitForFunction(r=>document.querySelector('#crumb-page')?.textContent===({overview:'Panoramica',currencies:'Valute G8',pairs:'Coppie FX',macro:'Scenario macro',rates:'Tassi & OIS',cot:'COT',risk:'Rischio',news:'Notizie'})[r],route);
