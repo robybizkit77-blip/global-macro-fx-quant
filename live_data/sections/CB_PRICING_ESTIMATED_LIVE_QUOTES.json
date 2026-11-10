@@ -1,23 +1,23 @@
 {
   "currencies": {
     "CHF": {
-      "as_of": "2026-11-06",
+      "as_of": "2026-11-09",
       "confidence_grade": "B",
       "freshness_status": "LIVE_OR_RECENT_SESSION",
       "horizons": {
         "12m": {
           "accrual_start": "2027-12-15",
-          "business_day_lag": 2,
+          "business_day_lag": 0,
           "contract": "SA3Z2027",
           "contract_description": "Dec 2027",
           "expiration": "2028-03-14",
-          "futures_price": 99.605,
+          "futures_price": 99.575,
           "mapping": "nearest ICE SARON accrual start to today+365d; no interpolation",
-          "price_valid_until": "2026-11-06T17:55:36Z",
-          "quote_as_of": "2026-11-06",
+          "price_valid_until": "2026-11-10T07:42:50Z",
+          "quote_as_of": "2026-11-10",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 0.395,
+          "rate": 0.425,
           "symbol": "ICEEUR:SA3Z2027"
         },
         "3m": {
@@ -134,17 +134,17 @@
           "symbol": "CBOT:ZQV2027"
         },
         "3m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "ZQG2027",
           "contract_description": "Feb 2027",
           "expiration": "2027-03-01",
-          "futures_price": 95.865,
+          "futures_price": 95.855,
           "mapping": "nearest dated listed contract expiry to today+90d; no interpolation",
-          "price_valid_until": "2026-11-09T08:43:19Z",
-          "quote_as_of": "2026-11-09",
+          "price_valid_until": "2026-11-10T08:42:03Z",
+          "quote_as_of": "2026-11-10",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 4.135,
+          "rate": 4.145,
           "symbol": "CBOT:ZQG2027"
         },
         "6m": {
@@ -170,7 +170,7 @@
       "status": "LIVE_SECONDARY_READY"
     }
   },
-  "generated_at_utc": "2026-11-10T02:00:10.474584Z",
+  "generated_at_utc": "2026-11-10T09:39:39.610863Z",
   "governance": {
     "backtest_eligible_as_official_ois": false,
     "bias_effect": "NONE",
