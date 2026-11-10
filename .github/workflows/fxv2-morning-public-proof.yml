@@ -9,6 +9,14 @@ on:
       - 'validation/qa_fx_quant_v2_freshness.cjs'
       - 'validation/fxv2_research_core_readiness_v1.cjs'
       - '.github/workflows/fxv2-morning-public-proof.yml'
+      - 'validation/morning/build_morning_fx_desk_v1.py'
+      - 'validation/morning/test_build_morning_fx_desk_v1.py'
+  push:
+    branches: [main]
+    paths:
+      - 'validation/morning/build_morning_fx_desk_v1.py'
+      - 'validation/morning/test_build_morning_fx_desk_v1.py'
+      - '.github/workflows/fxv2-morning-public-proof.yml'
   workflow_dispatch:
   schedule:
     # UTC pairs target Rome 07:11, 07:41, 07:53 in both CET and CEST.
@@ -34,10 +42,12 @@ jobs:
           python-version: '3.12'
       - name: Verify 08:00 delivery classification with DST and drift failures
         run: python validation/publishing/test_fxv2_morning_public_v1.py
+      - name: Morning FX narrative contract — CPI, aftermath, GDP, no lookahead
+        run: python -m unittest validation.morning.test_build_morning_fx_desk_v1 -v
 
   audit:
     needs: contract
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     steps:
