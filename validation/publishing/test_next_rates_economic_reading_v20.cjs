@@ -29,7 +29,7 @@ for(const c of names){
   assert(x.pricingEvidence.includes('non sono simultanee'),c+' different dates');
 }
 const mk=(bp2,bp10,asof='2026-11-09',extra={})=>read({
- country:'USD',now:today,asof,previous:'2026-11-06',bp2,bp10,
+ country:'USD',now:today,asof,previous:asof<'2026-11-06'?'2026-09-29':'2026-11-06',bp2,bp10,
  kind:'OIS',quality:'FONTE UFFICIALE',
  h6:{rate:4.10,as_of:asof,change_1d_bp:2},...extra
 });
