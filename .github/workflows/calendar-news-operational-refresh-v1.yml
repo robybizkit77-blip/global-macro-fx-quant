@@ -38,6 +38,7 @@ on:
       - 'validation/build_news_pulse_operational_v1.py'
       - 'validation/macro/build_g8_official_news_items_v1.py'
       - 'validation/macro/test_build_g8_official_news_items_v1.py'
+      - 'validation/orchestration/test_calendar_news_hourly_clock_gate_v1.py'
       - 'validation/test_market_pulse_cross_asset_v25.py'
       - 'validation/fixtures/market_pulse_v25_observed_2026_11_10.json'
       - 'validation/news_reaction_evidence_v1.py'
@@ -93,6 +94,7 @@ on:
       - 'validation/build_news_pulse_operational_v1.py'
       - 'validation/macro/build_g8_official_news_items_v1.py'
       - 'validation/macro/test_build_g8_official_news_items_v1.py'
+      - 'validation/orchestration/test_calendar_news_hourly_clock_gate_v1.py'
       - 'validation/test_market_pulse_cross_asset_v25.py'
       - 'validation/fixtures/market_pulse_v25_observed_2026_11_10.json'
       - 'validation/news_reaction_evidence_v1.py'
@@ -145,10 +147,15 @@ concurrency:
 
 jobs:
   refresh:
+    # Parent workflow_run supplies only an existing hourly clock, NEVER data.
+    # A failed market-headline publication must not suppress official G8
+    # release acquisition. Reject PR/push/cancelled parent completions.
     if: >-
       github.event_name != 'workflow_run' ||
-      (github.event.workflow_run.conclusion == 'success' &&
-       github.event.workflow_run.head_branch == 'main')
+      (github.event.workflow_run.event == 'schedule' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       contains(fromJSON('["success","failure","timed_out"]'),
+                github.event.workflow_run.conclusion))
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -495,6 +502,8 @@ jobs:
 
       - name: Test source recheck distinct from content modification
         run: python validation/test_calendar_news_daily_recheck_v1.py
+      - name: Test scheduled hourly clock independence and PR isolation
+        run: python -m unittest validation.orchestration.test_calendar_news_hourly_clock_gate_v1 -v
       - name: Test G8 first-observed official macro actuals and publication clocks
         run: python -m unittest validation.macro.test_build_g8_official_news_items_v1 -v
       - name: Validate FX, rates and cross-asset source-date contracts for Market Pulse
