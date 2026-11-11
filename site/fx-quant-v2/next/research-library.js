@@ -19,7 +19,7 @@ const REPORTS=Object.freeze([
 const CATEGORIES=Object.freeze([['all','Tutti'],['daily','Daily Forex'],['macro','Global Macro'],['bank','Banche FX'],['cb','Banche centrali'],['ois','Curve OIS'],['cot','COT'],['cross','Cross-Asset'],['pairs','Coppie FX']]);
 const MONTHS=Object.freeze({GEN:1,FEB:2,MAR:3,APR:4,MAG:5,GIU:6,LUG:7,AGO:8,SET:9,OTT:10,NOV:11,DIC:12});
 const BLOCKED=/(_PROVA|_TEST|_BOZZA|_DRAFT|_BACKUP|_ANTEPRIMA|_PREVIEW|_LEGACY|_OLD)(_|\.|$)/i;
-let category='all',query='',remoteReports=[],lookupDone=false,lookupStatus='NON VERIFICATO';
+let category='all',query='',remoteReports=[],lastLookupAt=0,refreshInFlight=false;
 const esc=x=>String(x==null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
 const norm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('it-IT').trim();
 const label=x=>(CATEGORIES.find(c=>c[0]===x)||['','Report'])[1];
@@ -44,7 +44,7 @@ function reportDate(file){
 }
 function revisionScore(file){
  const versions=[...file.matchAll(/(?:^|_)V(\d+)(?:_|\.|$)/gi)].map(m=>+m[1]);
- return Math.max(0,...versions)+(/(DEFINITIV|CORRETT|FINAL|APPROVAT)/i.test(file)?1000:0);
+ return Math.max(0,...versions)*100+(/(DEFINITIV|CORRETT|FINAL|APPROVAT)/i.test(file)?1:0);
 }
 function remoteReport(file){
  if(typeof file!=='string'||!file.endsWith('.html')||BLOCKED.test(file))return null;
@@ -78,7 +78,7 @@ function rows(){
 }
 function filters(){return CATEGORIES.map(([id,name])=>'<button type="button" data-library-type="'+id+'" aria-pressed="'+String(id===category)+'">'+esc(name)+'</button>').join('');}
 function render(){
- if(root.document&&!lookupDone){lookupDone=true;Promise.resolve().then(refresh);}
+ if(root.document&&!refreshInFlight&&Date.now()-lastLookupAt>30*60*1000){lastLookupAt=Date.now();Promise.resolve().then(refresh);}
  const latest=latestPerType([...REPORTS,...remoteReports]);
  return '<section class="rl-head"><div><span class="rl-eyebrow">FX QUANT / RESEARCH LIBRARY</span>'+
   '<h1>Solo l’ultima edizione.</h1>'+
@@ -107,7 +107,8 @@ function sync(){
  if(dateEl){const top=latestPerType([...REPORTS,...remoteReports])[0];dateEl.textContent=top?datestr(top.date):'—';}
 }
 async function refresh(){
- if(typeof root.fetch!=='function')return;
+ if(typeof root.fetch!=='function'||refreshInFlight)return;
+ refreshInFlight=true;lastLookupAt=Date.now();
  try{
   const response=await root.fetch(PUBLIC_API,{headers:{Accept:'application/vnd.github+json'},cache:'no-store'});
   if(!response.ok)throw Error('Repo API '+response.status);
@@ -119,8 +120,8 @@ async function refresh(){
    catch(_){return null;}
   }));
   remoteReports=published.filter(Boolean);
-  lookupStatus='VERIFICATO';  
- }catch(_){lookupStatus='CATALOGO LOCALE';}
+ }catch(_){/* Keep last verified edition or pinned catalog. */}
+ finally{refreshInFlight=false;}
  if(root.document?.getElementById('library-grid'))sync();
 }
 const api={REPORTS,CATEGORIES,filterReports,reportType,reportDate,remoteReport,latestPerType,render,rows,setCategory,setQuery,sync,url,refresh};
