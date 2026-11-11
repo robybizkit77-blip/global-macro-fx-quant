@@ -172,7 +172,7 @@ class G8MacroEventLifecycleV7Tests(unittest.TestCase):
 
     def test_separate_economic_event_from_28_pair_exposure(self):
         b=self.book
-        self.assertEqual(len(b["events"]),21)
+        self.assertEqual(len(b["events"]),22)
         for event in b["events"]:
             self.assertEqual(len(event["affected_pair_references"]),7)
             self.assertEqual(len(set(event["affected_pair_references"])),7)
