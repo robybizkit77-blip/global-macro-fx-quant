@@ -5,7 +5,7 @@
   "first_fx_reference_fixing": "2024-09-02",
   "source_hashes_sha256": {
     "ecb_fx_history": "437990e0eb915149874324a6fee122c8a1e125d4775d6a4ec7170155b906cd7d",
-    "same_contract_futures_history": "23d48e1674a64be9f031adff8317b0197e9f0f9f233727264af108737e662c78",
+    "same_contract_futures_history": "723bcd884a0e5bb28bd121ae9d963f8c1c49e188c7cc745447b6689982584532",
     "macro_candidate_pair_universe": "e110ea68916d4cc586c9f8598dbb730a1f468243cb0078dc06cfb59e3d44fe04"
   },
   "method": "SAME_LISTED_FUTURES_CONTRACT_TWO_CONSECUTIVE_ECB_SESSIONS",
@@ -29,16 +29,16 @@
   "summary": {
     "fx_reference_rows": 560,
     "fx_pairs": 28,
-    "archived_same_contract_quotes": 162,
+    "archived_same_contract_quotes": 163,
     "contract_currencies": 3,
-    "strict_currency_rate_moves": 133,
-    "strict_relative_pair_moves": 117,
+    "strict_currency_rate_moves": 134,
+    "strict_relative_pair_moves": 119,
     "distinct_relative_market_days": 17,
     "pairs_with_any_relative_history": 3,
     "pairs_without_relative_history": 25,
     "excluded_roll_or_ambiguous_instrument_groups": 3,
     "relative_events_with_future_ecb_t0": 107,
-    "relative_events_without_future_ecb_t0": 10,
+    "relative_events_without_future_ecb_t0": 12,
     "out_of_sample_predictions": 0,
     "generated_fx_signals": 0
   },
@@ -216,7 +216,7 @@
     "EUR/CHF": {
       "base": "EUR",
       "quote": "CHF",
-      "matched_changes": 37,
+      "matched_changes": 38,
       "market_days": [
         "2026-10-19",
         "2026-10-20",
@@ -238,7 +238,7 @@
       ],
       "horizons": {
         "3m": 12,
-        "6m": 13,
+        "6m": 14,
         "12m": 12
       },
       "fx_signal": null,
@@ -302,7 +302,7 @@
     "EUR/USD": {
       "base": "EUR",
       "quote": "USD",
-      "matched_changes": 39,
+      "matched_changes": 40,
       "market_days": [
         "2026-10-19",
         "2026-10-20",
@@ -324,7 +324,7 @@
       ],
       "horizons": {
         "3m": 12,
-        "6m": 13,
+        "6m": 14,
         "12m": 14
       },
       "fx_signal": null,
@@ -1353,6 +1353,27 @@
       "fx_signal": null
     },
     {
+      "pair": "EUR/CHF",
+      "tenor": "6m",
+      "previous_market_date": "2026-11-09",
+      "market_date": "2026-11-10",
+      "base_contract": "FST3G2027",
+      "quote_contract": "SA3M2027",
+      "base_rate_change_bp": 3.0,
+      "quote_rate_change_bp": 5.5,
+      "relative_rate_change_bp": -2.5,
+      "source_usable_at_utc": "2026-11-11T15:58:46.803243Z",
+      "first_strictly_post_capture_ecb_date": null,
+      "following_ecb_date": null,
+      "same_day_fx_return": null,
+      "future_fx_return": null,
+      "outcome_used_in_model": false,
+      "is_out_of_sample_prediction": false,
+      "rate_instrument_quality": "SECONDARY_FUTURES_NOT_OIS",
+      "policy_repricing_bp": null,
+      "fx_signal": null
+    },
+    {
       "pair": "EUR/USD",
       "tenor": "3m",
       "previous_market_date": "2026-10-16",
@@ -2140,6 +2161,27 @@
       "quote_rate_change_bp": 1.0,
       "relative_rate_change_bp": 0.5,
       "source_usable_at_utc": "2026-11-11T12:44:43.767989Z",
+      "first_strictly_post_capture_ecb_date": null,
+      "following_ecb_date": null,
+      "same_day_fx_return": null,
+      "future_fx_return": null,
+      "outcome_used_in_model": false,
+      "is_out_of_sample_prediction": false,
+      "rate_instrument_quality": "SECONDARY_FUTURES_NOT_OIS",
+      "policy_repricing_bp": null,
+      "fx_signal": null
+    },
+    {
+      "pair": "EUR/USD",
+      "tenor": "6m",
+      "previous_market_date": "2026-11-09",
+      "market_date": "2026-11-10",
+      "base_contract": "FST3G2027",
+      "quote_contract": "ZQJ2027",
+      "base_rate_change_bp": 3.0,
+      "quote_rate_change_bp": 20.5,
+      "relative_rate_change_bp": -17.5,
+      "source_usable_at_utc": "2026-11-11T15:58:46.803243Z",
       "first_strictly_post_capture_ecb_date": null,
       "following_ecb_date": null,
       "same_day_fx_return": null,
