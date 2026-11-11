@@ -6,6 +6,10 @@ import copy
 import unittest
 
 from validation.macro.build_g8_official_news_items_v1 import build
+from validation.macro import capture_aud_labour_official_firstseen_v12 as aud
+from validation.macro.test_capture_aud_labour_firstseen_v12 import (
+    AFTER as AUD_AFTER, SEEN as AUD_SEEN, fetch as aud_fetch,
+)
 from validation.macro import capture_uk_ch_gdp_official_firstseen_v11 as v11
 from validation.macro.test_capture_uk_ch_gdp_firstseen_v11 import (
     OFFICIAL, FORECASTS, UK_RELEASED, UK_OBSERVED, CH_RELEASED,
@@ -59,6 +63,25 @@ class G8OfficialNewsTests(unittest.TestCase):
         bad[0]["actual_percent"]=19.0
         with self.assertRaises(ValueError):
             build(UK_OBSERVED+timedelta(minutes=1),v11_actuals=bad)
+
+    def test_abs_sa_unemployment_rate_is_not_a_positive_fx_change_or_survey_surprise(self):
+        rows,_=aud.capture([],AUD_AFTER,aud_fetch,observed_clock=lambda:AUD_SEEN)
+        before=build(AUD_AFTER,v12_aud_actuals=rows)
+        self.assertEqual(before,[], "Source not observed until runner's actual parse timestamp")
+        news=build(AUD_SEEN+timedelta(minutes=1),v12_aud_actuals=rows)
+        item=next(x for x in news if x["metric_id"]=="AU_UNEMP_RATE_SA")
+        self.assertEqual(item["ccy"],"AUD")
+        self.assertEqual(item["event_type"],"LABOUR")
+        self.assertEqual(item["as_of"],"2026-11-19")
+        self.assertIn("4,9%",item["title"])
+        self.assertNotIn("+4,9%",item["title"],"Unemployment is a level, not positive change")
+        self.assertIn("non disponibile",item["detail"])
+        self.assertIn("Non attribuiamo causalmente",item["detail"])
+        self.assertFalse(item.get("FX_signal"))
+        changed=copy.deepcopy(rows)
+        changed[0]["survey_consensus_percent"]=4.7
+        with self.assertRaises(ValueError):
+            build(AUD_SEEN+timedelta(minutes=1),v12_aud_actuals=changed)
 
     def test_unsupported_g8_calendar_alone_does_not_create_actuals(self):
         rows=build(datetime(2026,11,11,9,tzinfo=UTC))

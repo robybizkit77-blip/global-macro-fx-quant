@@ -20,6 +20,11 @@ on:
       - 'validation/macro/capture_uk_ch_gdp_official_firstseen_v11.py'
       - 'validation/macro/test_capture_uk_ch_gdp_firstseen_v11.py'
       - 'validation/macro/MACRO_UK_CH_GDP_OFFICIAL_FIRST_SEEN_V11.jsonl'
+      - 'validation/macro/capture_aud_labour_official_firstseen_v12.py'
+      - 'validation/macro/test_capture_aud_labour_firstseen_v12.py'
+      - 'validation/macro/MACRO_AUD_LABOUR_OFFICIAL_FIRST_SEEN_V12.jsonl'
+      - 'validation/macro/g8_metric_issuer_contract_v8.py'
+      - 'live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json'
       - 'validation/macro/test_capture_us_cpi_exact_actuals_v10.py'
       - 'validation/macro/MACRO_BLS_CPI_EXACT_ACTUAL_FIRST_SEEN_V10.jsonl'
       - 'validation/macro/freeze_exact_metric_forecasts_v9.py'
@@ -76,6 +81,11 @@ on:
       - 'validation/macro/capture_uk_ch_gdp_official_firstseen_v11.py'
       - 'validation/macro/test_capture_uk_ch_gdp_firstseen_v11.py'
       - 'validation/macro/MACRO_UK_CH_GDP_OFFICIAL_FIRST_SEEN_V11.jsonl'
+      - 'validation/macro/capture_aud_labour_official_firstseen_v12.py'
+      - 'validation/macro/test_capture_aud_labour_firstseen_v12.py'
+      - 'validation/macro/MACRO_AUD_LABOUR_OFFICIAL_FIRST_SEEN_V12.jsonl'
+      - 'validation/macro/g8_metric_issuer_contract_v8.py'
+      - 'live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json'
       - 'validation/macro/test_capture_us_cpi_exact_actuals_v10.py'
       - 'validation/macro/MACRO_BLS_CPI_EXACT_ACTUAL_FIRST_SEEN_V10.jsonl'
       - 'validation/macro/freeze_exact_metric_forecasts_v9.py'
@@ -500,6 +510,31 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+      - name: Verify ABS October 2026 unemployment official first-observed V12 (research only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest validation.macro.test_capture_aud_labour_firstseen_v12 -v
+          python -m validation.macro.capture_aud_labour_official_firstseen_v12 \
+            | tee /tmp/g8-aud-labour-firstseen-v12-receipt.json
+          python - <<'PY'
+          import json, os
+          d=json.load(open('/tmp/g8-aud-labour-firstseen-v12-receipt.json'))
+          assert d['status']=='AUD_ABS_OFFICIAL_FIRST_OBSERVED_RESEARCH_V12'
+          assert d['new_actuals'] in (0,1) and d['total_actuals'] in (0,1)
+          assert d['writes_live_data'] is False
+          assert d['state'] in {
+              'BEFORE_RELEASE_NO_HTTP',
+              'OUTSIDE_FIRST_OBSERVATION_WINDOW_NO_HTTP',
+              'TARGET_ISSUER_RELEASE_NOT_YET_OBSERVED',
+              'ALREADY_ARCHIVED_NO_HTTP',
+              'OFFICIAL_SA_OCTOBER_UNEMPLOYMENT_FIRST_OBSERVED',
+          }
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as f:
+              f.write('### Australia ABS SA unemployment first-seen\n')
+              f.write('- Actual status: '+d['state']+'; archived: '+str(d['total_actuals'])+'\n')
+              f.write('- 19 Nov 11:30 AEDT; no forecast survey, no FX model promotion.\n')
+          PY
       - name: Test source recheck distinct from content modification
         run: python validation/test_calendar_news_daily_recheck_v1.py
       - name: Test scheduled hourly clock independence and PR isolation

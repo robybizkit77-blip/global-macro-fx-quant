@@ -44,8 +44,8 @@ class G8MetricIssuerV8Tests(unittest.TestCase):
     def test_all_eight_g8_metric_contracts_and_no_spurious_actual_claim(self):
         d=m.verify_contract(self.calendar)
         self.assertEqual(d["currencies"],8)
-        self.assertEqual(d["releases"],11)
-        self.assertEqual(d["metrics"],16)
+        self.assertEqual(d["releases"],12)
+        self.assertEqual(d["metrics"],17)
         self.assertEqual(d["templates_missing_in_current_seed"],[])
         keys=[]
         for country,entries in m.SPECS.items():
@@ -56,8 +56,8 @@ class G8MetricIssuerV8Tests(unittest.TestCase):
                     self.assertTrue(item["provider_alias_is_not_official_metric_proof"])
                     self.assertTrue(item["issuer_parser_status"])
                     self.assertTrue(item["unit"].startswith("PCT_"))
-        self.assertEqual(len(keys),16)
-        self.assertEqual(len(set(keys)),16)
+        self.assertEqual(len(keys),17)
+        self.assertEqual(len(set(keys)),17)
         self.assertEqual(set(m.SPECS),set(m.FX))
 
     def test_bls_four_cpi_components_are_not_interchangeable(self):
@@ -232,8 +232,8 @@ class G8MetricIssuerV8Tests(unittest.TestCase):
     def test_existing_countrybook_v7_still_has_exact_signed_two_historical_surprises(self):
         d=v7.build(now=NOW,inputs=copy.deepcopy(self.inputs))
         self.assertEqual(d["coverage"]["events_with_genuine_frozen_consensus_and_issuer_actual"],2)
-        self.assertEqual(d["coverage"]["metric_definitions_v8"],16)
-        self.assertEqual(d["coverage"]["metric_contract_releases_v8"],11)
+        self.assertEqual(d["coverage"]["metric_definitions_v8"],17)
+        self.assertEqual(d["coverage"]["metric_contract_releases_v8"],12)
         self.assertEqual(d["coverage"]["verified_metric_specific_surprises_v8"],0)
         usd=next(x for x in d["priority_queue"] if x["ccy"]=="USD")
         self.assertEqual(len(usd["metric_identity_v8"]),4)
