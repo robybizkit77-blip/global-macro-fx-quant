@@ -17,6 +17,7 @@ const SOURCES={
  morningDesk:'./morning-desk-current.json',
  currencyPrices:'../../../live_data/sections/ECB_G8_PRICE_HISTORY.json',
  pairs:'../../../live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json',
+ thesisHistory:'./pair-thesis-history.json',
  macro:'../../../live_data/sections/MACRO_THERMOMETER_DATA.json',
  macroSeries:'../../../live_data/sections/MACRO_SERIES.json',
  cb:'../../../live_data/sections/NATIVE_CB_DATA.json',
@@ -803,6 +804,7 @@ function pairs(){
  const d=all[state.pair]?.relative_dynamics||{};
  const watchLabel=state.watch.has(state.pair)?'★ Nella watchlist':'☆ Salva per dopo';
  return pageHero('FX / PAIR EXPLORER','28 coppie. <em>Una tesi alla volta.</em>','Qui non cerchiamo soltanto chi è forte. Leggiamo vantaggio macro, pricing, COT, prezzo e soprattutto cosa potrebbe smentire la tesi.')
+ +(window.FXQuantThesisMonitor?.render?.(get('pairs'),get('thesisHistory'),state.pair)||'<section class="panel"><p>Monitor storico FX da verificare.</p></section>')
  +(typeof window!=='undefined'&&window.FXQuantDecisionJourney?.build?window.FXQuantDecisionJourney.build({get,state,plot,fmt,sign,date,dayNow,esc}).pair():'<div class="empty">Lettura prezzo FX non disponibile. Non presentiamo livelli operativi.</div>')
  +'<div class="grid tilted"><section class="panel"><div class="panel-head"><div><span class="mini-overline">ESPLORA E FILTRA</span><h2>Il tuo universo FX</h2><p>Prezzi ECB: '+date(get('pairs')?.price_asof)+' · '+Object.keys(all).length+' coppie</p>'+pairCoverageIntro()+'</div></div><div class="filters"><input id="pair-search" class="input" type="search" placeholder="Cerca EUR/USD, AUDCAD..." autocomplete="off" value="'+esc(state.pairSearch)+'" aria-label="Cerca coppia FX"><div class="filter-group" id="pair-filters">'+choose('',pairFilterOptions(),state.pairFilter,'data-pfilter')+'</div></div><div class="pair-list" id="pair-results">'+(keys.length?keys.map(k=>pairRow(k)).join(''):'<div class="empty"><strong>Nessuna coppia</strong><p>Prova a cambiare filtro o ricerca.</p></div>')+'</div><p class="source-caption">“Pulito”, “Con rischi”, “Da confermare” e “Non valutabile” sono stati del motore, non raccomandazioni operative.</p></section>'
  +'<div class="grid"><section class="panel glow"><div class="focus-row"><span class="mini-overline">PAIR DEEP DIVE</span>'+qBadge(qual)+'</div><h2 class="focus-headline">'+(s?esc(s.pair||getPairName(state.pair)):'Seleziona una coppia')+'</h2><p class="focus-subtitle">'+esc(s?.structural?.relation||fr?.relation||'Scegli una coppia per leggere la relazione tra macro e prezzi.')+'</p><div style="display:flex;gap:8px;flex-wrap:wrap;margin:17px 0"><button class="watch-btn '+(state.watch.has(state.pair)?'saved':'')+'" type="button" data-watch="'+state.pair+'">'+watchLabel+'</button><span class="badge info">Prezzo '+date(get('pairs')?.price_asof)+'</span></div>'

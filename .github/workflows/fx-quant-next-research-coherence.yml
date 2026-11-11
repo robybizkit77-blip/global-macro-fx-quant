@@ -24,6 +24,8 @@ on:
       - 'validation/qa_next_chf_nzd_provenance_v17.cjs'
       - 'validation/qa_next_research_library_v1.cjs'
       - 'validation/qa_next_macro_calendar_v1.cjs'
+      - 'validation/pair_thesis/update_history_v1.cjs'
+      - 'validation/pair_thesis/test_history_v1.cjs'
       - 'site/fx-quant-v2/chf-snb-paired-history.json'
       - 'site/fx-quant-v2/nzd-b2-postroll-web-research.json'
       - 'site/fx-quant-v2/aud-rba-f2-history-research.json'
@@ -68,3 +70,5 @@ jobs:
         run: node validation/qa_next_research_library_v1.cjs
       - name: Verify operational G8 macro calendar with Rome times and missing-consensus safety
         run: node validation/qa_next_macro_calendar_v1.cjs
+      - name: Verify pair thesis history for all 28 G8 crosses without invented signals
+        run: node validation/pair_thesis/test_history_v1.cjs

@@ -7,6 +7,9 @@ on:
     paths:
       - '.github/workflows/pair-setup-operational-view-v1.yml'
       - 'validation/export_pair_setup_operational_view.mjs'
+      - 'validation/pair_thesis/update_history_v1.cjs'
+      - 'validation/pair_thesis/test_history_v1.cjs'
+      - 'site/fx-quant-v2/next/pair-thesis-history.json'
       - 'validation/pair_price_handoff_contract_v2.py'
       - 'validation/test_pair_price_handoff_contract_v2.py'
       - 'live_data/sections/ECB_G8_PRICE_HISTORY.json'
@@ -16,6 +19,9 @@ on:
     paths:
       - '.github/workflows/pair-setup-operational-view-v1.yml'
       - 'validation/export_pair_setup_operational_view.mjs'
+      - 'validation/pair_thesis/update_history_v1.cjs'
+      - 'validation/pair_thesis/test_history_v1.cjs'
+      - 'site/fx-quant-v2/next/pair-thesis-history.json'
       - 'validation/pair_price_handoff_contract_v2.py'
       - 'validation/test_pair_price_handoff_contract_v2.py'
       - 'live_data/sections/ECB_G8_PRICE_HISTORY.json'
@@ -65,6 +71,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Verify dated FX thesis-monitor snapshots and safeguards
+        run: node validation/pair_thesis/test_history_v1.cjs
       - name: Install Chromium
         run: |
           npm init -y >/dev/null 2>&1
@@ -111,9 +119,14 @@ jobs:
             echo 'Main moved since validation. Safe retry required.' >&2; exit 1;
           }
           cp /tmp/pair-setup/PAIR_SETUP_OPERATIONAL_VIEW.json live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
+          node validation/pair_thesis/update_history_v1.cjs \
+            /tmp/pair-setup/PAIR_SETUP_OPERATIONAL_VIEW.json \
+            site/fx-quant-v2/next/pair-thesis-history.json \
+            /tmp/pair-setup/pair-thesis-history.json "$BASE_SHA"
+          cp /tmp/pair-setup/pair-thesis-history.json site/fx-quant-v2/next/pair-thesis-history.json
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json
+          git add live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json site/fx-quant-v2/next/pair-thesis-history.json
           git diff --cached --quiet && { echo 'No changed canonical Pair dataset'; exit 0; }
           git commit -m 'Refresh Pair Price context from ECB (Macro baseline frozen)'
           test "$(git ls-remote origin refs/heads/main | awk '{print $1}')" = "$BASE_SHA" || {
