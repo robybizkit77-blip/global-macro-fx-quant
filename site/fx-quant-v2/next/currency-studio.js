@@ -54,6 +54,38 @@ function build(api){
   {key:'cot',n:'03',title:'Positioning',subtitle:'COME SONO ESPOSTI I FONDI',hint:'Dato CFTC settimanale',metric:finite(cot?.net)?sign(cot.net,0):'—',label:'Net contratti · '+date(cot?.asof),detail:'Flusso 1W '+sign(cot?.delta,0)+' contratti · percentile P'+fmt(cot?.percentile,1)+'. P alto non significa automaticamente net long.',dest:'cot',action:'Apri l’analisi COT'},
   {key:'price',n:'04',title:'Prezzo relativo',subtitle:'IL CAMBIO CONFERMA?',hint:'Fixing BCE, non intraday',metric:finite(price20)?sign(price20,2,'%'):'—',label:country+'/'+against+' · ultime 20 sedute',detail:'Ultimo fixing '+fmt(target?.quote?.value,5)+' al '+date(asof)+'. Il rendimento osservato non dimostra quale driver lo abbia causato.',dest:'pairs',action:'Apri la tesi della coppia'}
  ];
+ function ranking(){
+  // Same G8/20-common-fixing methodology used by the 28-pair page.
+  // Price strength is not macro strength, carry, a signal or a forecast.
+  const view=root.FXQuantPairRankings?.currencyRanking?.(FXDATA,dayNow(),FX);
+  if(!view)return '<section class="orient-ranking orient-ranking-unavailable"><h2>Forza relativa G8</h2>'+
+   '<p>La classifica richiede almeno 21 fixing BCE comuni verificabili. Seleziona una valuta qui sotto per la sua analisi.</p>'+
+   selector()+'</section>';
+  const scale=Math.max(.00001,...view.items.map(x=>Math.abs(x.percent)));
+  const here=view.items.findIndex(x=>x.ccy===country);
+  const rows=view.items.map((x,i)=>{
+   const tone=x.percent>0.00001?'positive':x.percent<-.00001?'negative':'neutral';
+   return '<button type="button" class="orient-rank-row '+(x.ccy===country?'selected ':'')+tone+
+     '" data-cs-country="'+x.ccy+'" aria-pressed="'+String(x.ccy===country)+
+     '" aria-label="'+(i+1)+' posizione '+x.ccy+', '+sign(x.percent,2,'%')+
+     ', seleziona per approfondire">'+
+     '<span class="orient-rank-order">'+(i+1)+'</span>'+
+     '<strong>'+esc(FLAGS[x.ccy]||'')+' '+x.ccy+'</strong>'+
+     '<span class="orient-rank-track"><i style="width:'+
+        Math.max(2,Math.abs(x.percent)/scale*100).toFixed(1)+'%"></i></span>'+
+     '<b>'+esc(sign(x.percent,2,'%'))+'</b></button>';
+  }).join('');
+  return '<section class="orient-ranking" id="orient-ranking" aria-label="Graduatoria relativa delle otto valute">'+
+   '<div class="orient-ranking-head"><div><span class="chapter-kicker">01 / PARTI DALLA CLASSIFICA</span>'+
+   '<h2>Quali valute stanno <em>guadagnando o perdendo terreno?</em></h2>'+
+   '<p>Ordine dalla più forte alla più debole contro le altre sette valute. Seleziona una riga per capire cosa sappiamo e cosa manca.</p></div>'+
+   '<div class="orient-ranking-current"><small>VALUTA SELEZIONATA</small><strong>'+
+   esc(FLAGS[country]||'')+' '+country+'</strong><span>Posizione '+(here>=0?here+1:'—')+' di 8</span></div></div>'+
+   '<div class="orient-ranking-list">'+rows+'</div>'+
+   '<p class="orient-ranking-foot">Forza di <strong>prezzo osservata</strong>, media geometrica su '+
+   view.commonSessions+' intervalli BCE comuni · '+date(view.from)+' → '+date(view.asof)+
+   '. Non misura la qualità macro o la convenienza di un trade.</p></section>';
+ }
  function selector(){
   return '<div class="country-orient-list" role="group" aria-label="Scegli una delle otto valute">'
    +FX.map(k=>{const gov=observedRate(k),cotK=dataMarket(k);
@@ -84,14 +116,42 @@ function build(api){
     'Il prezzo osservato non basta a dimostrare una tesi operativa.';
   const verdict=positive?'PREZZO FAVOREVOLE A '+country:
     negative?'PREZZO SFAVOREVOLE A '+country:'PREZZO DA CONFERMARE';
+  const last5=target?.move5;
+  const shortVsMedium=finite(last5)&&finite(price20)?
+    price20>.025&&last5<-.025?'Il prezzo ha guadagnato sulle 20 sedute, ma nelle ultime 5 è arretrato: il movimento recente non conferma quello più ampio.':
+    price20<-.025&&last5>.025?'Le 20 sedute restano negative, ma nelle ultime 5 il cambio recupera: è un tentativo di ripresa, non ancora una svolta confermata.':
+    price20>.025&&last5>.025?'Le ultime 5 e le ultime 20 sedute sono entrambe positive. La continuità del prezzo è osservata; la causa rimane da verificare.':
+    price20<-.025&&last5<-.025?'Le ultime 5 e le ultime 20 sedute sono entrambe negative. Il prezzo mostra debolezza relativa persistente nei due intervalli.':
+    'La variazione recente non identifica ancora una tendenza chiara.':
+    'Per confrontare breve e medio termine servono fixing BCE sufficienti e allineati.';
+  const otherRate=observedRate(against);
+  const shared2Y=r&&otherRate&&r.date===otherRate.date;
+  const differential=shared2Y?(r['2Y']-otherRate['2Y'])*100:null;
+  const ratesBrief=shared2Y?
+    'Al '+date(r.date)+' il differenziale governativo a 2 anni '+country+'−'+against+
+    ' è '+sign(differential,1,' punti base')+
+    '. È una fotografia del rendimento relativo, non un repricing di banca centrale né una spiegazione automatica del cambio.':
+    'Non abbiamo un confronto 2Y '+country+'−'+against+
+    ' riferito alla stessa seduta. Non attribuiamo quindi il movimento del cambio ai differenziali di rendimento.';
+  const nextStep=finite(last5)&&finite(price20)&&
+    ((last5>0&&price20<0)||(last5<0&&price20>0))?
+    'La prima conferma è capire se il movimento delle ultime 5 sedute prosegue o si esaurisce. Poi verificare aspettative monetarie comparabili e nuove sorprese macro.':
+    'Cercare persistenza nei fixing e aggiornamenti macro/rates sulle stesse date. Il COT è settimanale e da solo non conferma i movimenti di oggi.';
   return '<section class="orient-lead orient-voice"><div class="orient-lead-copy"><span class="chapter-kicker">IL DESK / '+FLAGS[country]+' '+esc(NAMES[country])+' CONTRO '+against+'</span>'
     +'<span class="orient-verdict">'+esc(verdict)+'</span>'
     +'<h2>'+esc(headline)+'</h2>'
-    +'<p class="orient-intro">'+esc(opening)+'</p>'
+    +'<div class="orient-first-read" aria-label="Lettura immediata della coppia">'
+    +'<div><span>01 / COSA VEDIAMO</span><p>'+esc(opening)+' '+esc(shortVsMedium)+'</p></div>'
+    +'<div><span>02 / COSA DICONO I TASSI</span><p>'+esc(ratesBrief)+'</p></div>'
+    +'<div><span>03 / COSA CONTROLLARE</span><p>'+esc(nextStep)+'</p></div></div>'
+    +'<details class="orient-thesis-details"><summary><strong>Perché? Apri macro, pricing, COT e giudizio completo</strong>'
+    +'<small>Dati e spiegazioni con la propria data, separati dal movimento del prezzo</small></summary>'
+    +'<div class="orient-thesis-body">'
     +'<p class="orient-context"><strong>Macro relativa.</strong> '+esc(macroText)+'</p>'
     +'<p class="orient-context"><strong>Tassi e aspettative.</strong> '+esc(ratesText)+'</p>'
     +'<p class="orient-context"><strong>Posizionamento.</strong> '+esc(cotText)+'</p>'
     +'<p class="orient-desk-judgment"><strong>Il giudizio del desk.</strong> '+esc(judgement)+'</p>'
+    +'</div></details>'
     +'<div class="orient-focus-actions"><button class="action-primary" type="button" data-cs-openpair="'+country+against+'">Apri la tesi '+country+'/'+against+' <span>↗</span></button><a href="#macro" class="action-minimal">Approfondisci la macro →</a></div></div>'
     +'<div class="orient-spot"><span class="micro-over">IL PREZZO · '+country+'/'+against+'</span><strong>'+fmt(target?.quote?.value,5)+'</strong><small>1 '+country+' = '+against+' · BCE fixing '+date(asof)+'</small>'
     +'<div class="orient-spot-parts">'+[['5 sedute',target?.move5],['20 sedute',target?.move20],['60 sedute',target?.move60]].map(([k,v])=>'<div><span>'+k+'</span><b class="'+(v<0?'orient-neg':'')+'">'+sign(v,2,'%')+'</b></div>').join('')+'</div>'
@@ -148,9 +208,12 @@ function build(api){
    +'<div class="orient-route-links"><a href="#macro">Macro Lab ↗</a><a href="#rates">Tassi & OIS ↗</a><a href="#cot">COT ↗</a><a href="#pairs">Coppie FX ↗</a></div></section>';
  }
  function render(){
-  return pageHero('FX G8 / VALUTE','Le valute, <em>raccontate dal mercato.</em>','Seleziona una valuta e una controvaluta: la prima cosa che trovi è una lettura concreta, non un elenco di indicatori.')
+  return pageHero('FX G8 / VALUTE','Le valute, <em>raccontate dal mercato.</em>','Prima la classifica di forza osservata, poi il confronto scelto e le tre verifiche essenziali. Il dossier completo resta disponibile.')
    +'<div class="orient-status"><span>◉ COUNTRY ORIENTATION · '+FLAGS[country]+' '+country+'</span><span>G8 · 7 CONFRONTI · BCE '+date(FXDATA?.last_as_of||asof)+'</span></div>'
-   +selector()+story()+evidence()+peers()+checkpoint()
+   +ranking()+story()+peers()
+   +'<details class="orient-evidence-fold"><summary><strong>Consulta i dati completi</strong>'
+   +'<span>Inflazione, lavoro, tassi, COT e qualità delle fonti</span></summary>'
+   +evidence()+'</details>'+checkpoint()
    +'<p class="source-caption">Contesto: Macro Thermometer; NATIVE_RATES_DATA; NATIVE_CB_DATA; CFTC Legacy V250; pricing OIS/futures/proxy con fonte per valuta. Performance FX calcolata da ECB_G8_PRICE_HISTORY (EUR cross). Ogni dato è datato. La V2 operativa e i suoi segnali rimangono invariati.</p>';
  }
  return render();
