@@ -20,6 +20,7 @@ on:
       - 'validation/rates/build_fxv2_chf_snb_history_feed_v1.py'
       - 'validation/rates/test_build_fxv2_chf_snb_history_feed_v1.py'
       - 'site/fx-quant-v2/chf-nzd-benchmark-research.json'
+      - 'site/fx-quant-v2/nzd-b2-postroll-web-research.json'
       - 'site/fx-quant-v2/tassi.html'
       - '.github/workflows/fxv2-chf-nzd-benchmark-research.yml'
   push:
@@ -41,6 +42,7 @@ on:
       - 'validation/rates/build_fxv2_chf_snb_history_feed_v1.py'
       - 'validation/rates/test_build_fxv2_chf_snb_history_feed_v1.py'
       - 'site/fx-quant-v2/chf-nzd-benchmark-research.json'
+      - 'site/fx-quant-v2/nzd-b2-postroll-web-research.json'
       - 'site/fx-quant-v2/tassi.html'
       - '.github/workflows/fxv2-chf-nzd-benchmark-research.yml'
   schedule:
