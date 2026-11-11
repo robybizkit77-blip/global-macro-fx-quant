@@ -26,6 +26,7 @@ const SOURCES={
  risk:'../cross-asset-live-data.json',
  ois:'../ois-pricing-snapshot.json',
  news:'../../../live_data/sections/NEWS_PULSE_OPERATIONAL.json',
+ calendar:'../../../live_data/sections/CALENDAR_OPERATIONAL_VIEW.json',
  themes:'../../../live_data/sections/TOP_THEMES.json'
 };
 const state={data:{},errors:{},route:'overview',ccy:'USD',against:'EUR',pair:'EURUSD',pairFilter:'all',pairSearch:'',pairPriceWindow:60,pairShowReferences:true,watch:new Set(),window:20,rateMode:'both',riskStream:'VIX',riskWindow:20,macroMetric:'inflation',newsMode:'pulse',chartIndex:0,charts:{},atlasLens:'rates',homeChart:null,homeWindow:20,homeEvidenceOpen:false,homeDossierOpen:false,spotPair:'EURUSD',cotWindow:26,cotMode:'net',cotFilter:'all',cotSort:'percentile',cotSortAsc:false,rsWindow:60,rsGovMode:'both',rsDiffMode:'2y',msCategory:'Inflazione',msSeriesId:null,msView:'level',msWindow:24,msHeat:'inflation',msHeatSort:'ccy',msHeatAsc:true,msOther:'EUR',msCompareMetric:'inflation',msAdvanced:false,csOther:'EUR',csPriceWindow:60,csRatesMode:'spread',csRatesWindow:60,csMacroMode:'inflation',csMacroWindow:36,csCotWindow:26,csSort:'currency',csReturnWindow:20};
@@ -843,6 +844,9 @@ function risk(){
 }
 function news(){
  const n=get('news');
+ const calendarFeed=get('calendar');
+ const operationalCalendar=window.FXQuantMacroCalendar?.render?.(calendarFeed,dayNow())||
+  '<section class="panel"><div class="empty">Calendario macro operativo non disponibile: verifica il caricamento del modulo e delle fonti.</div></section>';
  const evidence=window.FXQuantNewsEvidence?.parse?.(n,dayNow())||{
   pulse:[],official:[],latest:null,gap:'I dati sulle notizie non sono validati.',quality:'NON VALIDATO'};
  const list=state.newsMode==='pulse'?evidence.pulse:evidence.official;
@@ -858,6 +862,7 @@ function news(){
     (x.url?' · <a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer">'+(state.newsMode==='pulse'?'Verifica la fonte ↗':'Leggi il comunicato ufficiale ↗')+'</a>':'')+'</p></article>';
  return pageHero('NEWS / EVENT MONITOR','Dalla notizia <em>alla prova.</em>',
     'Distingui ciò che è stato pubblicato da quello che cambia davvero le aspettative. Una variazione dei futures non è automaticamente una sorpresa macro o la reazione a un comunicato.')
+  +operationalCalendar
   +'<div class="filters"><div class="pill-controls">'+choose('',[
     {label:'Market Pulse ('+evidence.pulse.length+')',value:'pulse'},
     {label:'Comunicazioni ufficiali ('+evidence.official.length+')',value:'official'}
