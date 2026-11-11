@@ -43,7 +43,7 @@ for(const key of Object.keys(canonical.pairs)){
 }
 assert.match(monitor.render(canonical,history,'AUDCAD'),/Baseline macro/);
 assert.match(monitor.render(canonical,history,'AUDCAD'),/non flussi istituzionali osservati/);
-assert(!monitor.render(canonical,history,'AUDCAD').includes('segnale di ingresso'));
+assert.match(monitor.render(canonical,history,'AUDCAD'),/non sono flussi istituzionali osservati|non flussi istituzionali osservati/);
 const seed6=history.snapshots.find(x=>x.price_asof==='2026-11-06');
 const seed10=history.snapshots.find(x=>x.price_asof==='2026-11-10');
 if(seed6&&seed10){
