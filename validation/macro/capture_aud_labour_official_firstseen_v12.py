@@ -64,7 +64,7 @@ def parse_abs(raw):
     rates = re.findall(
         r"\bthe unemployment rate\s+(?:increased|decreased|rose|fell|"
         r"remained unchanged|was unchanged|remained)\b"
-        r"[^.;]{0,90}?\b(?:to|at)\s+(\d+(?:\.\d+)?)\s*%",
+        r"[^;]{0,90}?\b(?:to|at)\s+(\d+(?:\.\d+)?)\s*%",
         section, re.I)
     if len(rates) != 1:
         raise Pending("ABS_SA_UNEMPLOYMENT_OCT_VALUE_NOT_UNIQUE")
