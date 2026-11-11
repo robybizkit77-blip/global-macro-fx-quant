@@ -96,27 +96,27 @@
       "kind": "FUTURES",
       "quality": "FONTE UFFICIALE",
       "source": "Tokyo Financial Exchange · Three-month TONA Futures",
-      "as_of": "2026-11-09",
+      "as_of": "2026-11-10",
       "horizons": {
         "3m": {
           "rate": 1.437,
-          "as_of": "2026-11-09",
-          "change_1d_bp": -1.8,
+          "as_of": "2026-11-10",
+          "change_1d_bp": 0.0,
           "change_1w_bp": -1.8,
           "contract": null
         },
         "6m": {
           "rate": 1.606,
-          "as_of": "2026-11-09",
-          "change_1d_bp": -5.6,
-          "change_1w_bp": -6.6,
+          "as_of": "2026-11-10",
+          "change_1d_bp": 0.0,
+          "change_1w_bp": -5.6,
           "contract": null
         },
         "12m": {
           "rate": 1.879,
-          "as_of": "2026-11-09",
-          "change_1d_bp": -5.6,
-          "change_1w_bp": -7.6,
+          "as_of": "2026-11-10",
+          "change_1d_bp": 0.0,
+          "change_1w_bp": -5.6,
           "contract": null
         }
       }
@@ -154,27 +154,27 @@
       "kind": "FUTURES",
       "quality": "FONTE UFFICIALE",
       "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
-      "as_of": "2026-11-09",
+      "as_of": "2026-11-10",
       "horizons": {
         "3m": {
-          "rate": 2.685,
-          "as_of": "2026-11-09",
-          "change_1d_bp": 0.5,
-          "change_1w_bp": -4.0,
+          "rate": 2.735,
+          "as_of": "2026-11-10",
+          "change_1d_bp": 5.0,
+          "change_1w_bp": -0.5,
           "contract": null
         },
         "6m": {
-          "rate": 2.85,
-          "as_of": "2026-11-09",
-          "change_1d_bp": 2.0,
-          "change_1w_bp": -10.0,
+          "rate": 2.965,
+          "as_of": "2026-11-10",
+          "change_1d_bp": 11.5,
+          "change_1w_bp": 0.5,
           "contract": null
         },
         "12m": {
-          "rate": 3.055,
-          "as_of": "2026-11-09",
-          "change_1d_bp": 1.0,
-          "change_1w_bp": -16.5,
+          "rate": 3.205,
+          "as_of": "2026-11-10",
+          "change_1d_bp": 15.0,
+          "change_1w_bp": -2.0,
           "contract": null
         }
       }
@@ -183,27 +183,27 @@
       "kind": "FUTURES",
       "quality": "FONTE UFFICIALE",
       "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
-      "as_of": "2026-11-09",
+      "as_of": "2026-11-10",
       "horizons": {
         "3m": {
           "rate": 4.85,
-          "as_of": "2026-11-09",
+          "as_of": "2026-11-10",
           "change_1d_bp": 0.0,
-          "change_1w_bp": 1.5,
+          "change_1w_bp": 0.0,
           "contract": null
         },
         "6m": {
           "rate": 4.885,
-          "as_of": "2026-11-09",
-          "change_1d_bp": 0.5,
-          "change_1w_bp": -5.0,
+          "as_of": "2026-11-10",
+          "change_1d_bp": 0.0,
+          "change_1w_bp": -3.0,
           "contract": null
         },
         "12m": {
-          "rate": 4.71,
-          "as_of": "2026-11-09",
-          "change_1d_bp": 0.5,
-          "change_1w_bp": -15.5,
+          "rate": 4.705,
+          "as_of": "2026-11-10",
+          "change_1d_bp": -0.5,
+          "change_1w_bp": -9.5,
           "contract": null
         }
       }
