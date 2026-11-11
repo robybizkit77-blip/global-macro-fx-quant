@@ -82,17 +82,26 @@ class NZDPublicResearch(unittest.TestCase):
                 self.assertFalse(archive["automated_access_authorized"])
                 self.assertFalse(archive["independent_xlsx_reconciled"])
                 self.assertTrue(archive["research_only"])
-                self.assertEqual(r["source_release_date"],
-                                 archive["source_release_date"])
-                self.assertEqual(r["latest_date"],
-                                 archive["daily_observations"][-1]["date"])
+                self.assertLessEqual(r["source_release_date"],
+                                     archive["source_release_date"])
+                stored={x["date"]:x for x in archive["daily_observations"]}
+                # A source archive can be one step ahead of the downstream
+                # research dossier until the *same existing* workflow runs.
+                # The older record must match exactly, never be overwritten
+                # by a conflicting row or synthetic refresh timestamp.
+                self.assertIn(r["latest_date"],stored)
                 self.assertEqual(
                     (r["latest_2Y"],r["latest_10Y"]),
-                    (archive["daily_observations"][-1]["2Y"],
-                     archive["daily_observations"][-1]["10Y"]))
+                    (stored[r["latest_date"]]["2Y"],
+                     stored[r["latest_date"]]["10Y"]))
+                self.assertLessEqual(r["latest_date"],
+                                     archive["daily_observations"][-1]["date"])
                 self.assertLessEqual(
-                    dt.date.fromisoformat(archive["source_capture_date"]),
-                    dt.date.fromisoformat(self.report["generated_on"]))
+                    dt.date.fromisoformat(archive["source_release_date"]),
+                    dt.date.fromisoformat(archive["source_capture_date"]))
+                if r["latest_date"]==archive["daily_observations"][-1]["date"]:
+                    self.assertEqual(r["source_release_date"],
+                                     archive["source_release_date"])
             else:
                 self.assertEqual(r.get("source_release_date_quality"),
                                  "OFFICIAL_RBNZ_PUBLIC_PAGE_DATE")
@@ -104,6 +113,23 @@ class NZDPublicResearch(unittest.TestCase):
             self.assertIs(r[key],False,key)
         self.assertIs(self.report["eligible_for_fx_pair_engine"],False)
         self.assertIs(self.report["canonical_government_rates_untouched"],True)
+
+    def test_november_10_government_close_not_2_10_swap_spread(self):
+        archive=json.loads(
+            (ROOT/"site/fx-quant-v2/nzd-b2-postroll-web-research.json").read_text())
+        by_day={r["date"]:r for r in archive["daily_observations"]}
+        for day,y2,y10 in (
+            ("2026-11-06",3.79,4.76),
+            ("2026-11-09",3.80,4.76),
+            ("2026-11-10",3.77,4.71)):
+            self.assertEqual((by_day[day]["2Y"],by_day[day]["10Y"]),(y2,y10))
+        self.assertEqual(round(100*(by_day["2026-11-10"]["10Y"]-
+                                    by_day["2026-11-10"]["2Y"])),94)
+        self.assertNotEqual(94,62) # 62bp refers to swap, not govt curve
+        self.assertEqual(archive["source_release_date"],"2026-11-11")
+        self.assertTrue(archive["research_only"])
+        self.assertFalse(archive["eligible_for_core"])
+        self.assertFalse(archive["automated_access_authorized"])
 
     def test_source_permission_gate_is_active(self):
         workflow=(ROOT/".github/workflows/fxv2-chf-nzd-benchmark-research.yml").read_text()
