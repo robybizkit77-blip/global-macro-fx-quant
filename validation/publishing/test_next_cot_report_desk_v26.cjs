@@ -57,8 +57,10 @@ assert.equal(reports.length,8);
 const g=desk(reports);
 assert(g&&g.asof===source.USD.dates.at(-1));
 if(g.asof==='2026-11-03'){
- assert.equal(g.up.ccy,'CAD');
- assert.equal(g.down.ccy,'EUR');
+ // Rankings use normalized 1W/OI, not raw contract changes or a historic label.
+ const normalized=[...reports].map(x=>x.deskStats).sort((a,b)=>b.velocity-a.velocity);
+ assert.equal(g.up?.ccy,normalized.find(x=>x.velocity>0)?.ccy);
+ assert.equal(g.down?.ccy,[...normalized].reverse().find(x=>x.velocity<0)?.ccy);
  assert.equal(g.crowd[0].ccy,'NZD');
  assert.deepEqual(g.crowd.map(x=>x.ccy),['NZD','AUD']);
  assert(g.divergent.some(x=>x.ccy==='EUR'));
