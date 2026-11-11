@@ -30,7 +30,7 @@ function filterReports(type=category,search=query){
  return REPORTS.filter(r=>(type==='all'||r.type===type)&&(!term||norm([r.title,r.type,label(r.type),r.desc,r.date,r.file].join(' ')).includes(term)))
    .sort((a,b)=>b.date.localeCompare(a.date)||a.title.localeCompare(b.title));
 }
-function url(r){return BASE+encodeURIComponent(r.file);}
+function url(r){return (r.date>='2026-11-01'?'./reports/':BASE)+encodeURIComponent(r.file);}
 function rows(){
  const list=filterReports();
  return list.length?list.map(r=>
