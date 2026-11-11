@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-10",
-  "generated_at_utc": "2026-11-11T03:07:55.763466Z",
+  "generated_at_utc": "2026-11-11T06:53:56.372022Z",
   "items": [
     {
       "as_of": "2026-11-10",
@@ -18,6 +18,18 @@
     },
     {
       "as_of": "2026-11-10",
+      "category": "MARKET_GOVERNMENT_RATES",
+      "ccy": "USD",
+      "confidence": "A",
+      "detail": "Fra 2026-11-09 e 2026-11-10; 2Y 4.730%, 10Y 4.980%. Rendimenti governativi: non è una curva OIS e non prova di per sé un repricing della banca centrale.",
+      "importance": "MEDIUM",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "reference_previous_date": "2026-11-09",
+      "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-10",
+      "title": "USD: governativo 2Y +17.0 pb, 10Y +10.0 pb"
+    },
+    {
+      "as_of": "2026-11-10",
       "category": "MARKET_FX_ECB_FIXING",
       "ccy": "EUR",
       "confidence": "A",
@@ -29,6 +41,18 @@
       "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
       "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
       "title": "EUR/USD: +0.19% fra due fixing BCE"
+    },
+    {
+      "as_of": "2026-11-10",
+      "category": "MARKET_GOVERNMENT_RATES",
+      "ccy": "JPY",
+      "confidence": "A",
+      "detail": "Fra 2026-11-09 e 2026-11-10; 2Y 1.784%, 10Y 2.748%. Rendimenti governativi: non è una curva OIS e non prova di per sé un repricing della banca centrale.",
+      "importance": "MEDIUM",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "reference_previous_date": "2026-11-09",
+      "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-10",
+      "title": "JPY: governativo 2Y +0.6 pb, 10Y +2.4 pb"
     },
     {
       "as_of": "2026-11-10",
@@ -118,18 +142,6 @@
     },
     {
       "as_of": "2026-11-09",
-      "category": "MARKET_GOVERNMENT_RATES",
-      "ccy": "USD",
-      "confidence": "A",
-      "detail": "Fra 2026-11-06 e 2026-11-09; 2Y 4.560%, 10Y 4.880%. Rendimenti governativi: non è una curva OIS e non prova di per sé un repricing della banca centrale.",
-      "importance": "MEDIUM",
-      "quality": "FULL_CURRENT_OFFICIAL",
-      "reference_previous_date": "2026-11-06",
-      "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-09",
-      "title": "USD: governativo 2Y +5.0 pb, 10Y +2.0 pb"
-    },
-    {
-      "as_of": "2026-11-09",
       "category": "MARKET_CREDIT_OAS",
       "ccy": "",
       "confidence": "B",
@@ -168,18 +180,6 @@
     },
     {
       "as_of": "2026-11-09",
-      "category": "MARKET_GOVERNMENT_RATES",
-      "ccy": "JPY",
-      "confidence": "A",
-      "detail": "Fra 2026-11-06 e 2026-11-09; 2Y 1.778%, 10Y 2.724%. Rendimenti governativi: non è una curva OIS e non prova di per sé un repricing della banca centrale.",
-      "importance": "MEDIUM",
-      "quality": "FULL_CURRENT_OFFICIAL",
-      "reference_previous_date": "2026-11-06",
-      "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-09",
-      "title": "JPY: governativo 2Y +4.6 pb, 10Y +2.8 pb"
-    },
-    {
-      "as_of": "2026-11-09",
       "category": "FUTURES_IMPLIED_REPRICING",
       "ccy": "AUD",
       "confidence": "A",
@@ -190,7 +190,7 @@
       "title": "AUD: repricing implicito da futures più hawkish (+0.5 bp 6M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-11T03:07:55.763466Z",
+  "last_checked_at_utc": "2026-11-11T06:53:56.372022Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -420,13 +420,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-09",
+            "date": "2026-11-10",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-09",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-10",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 1.778
+            "yield_2y_pct": 1.784
           }
         },
         "source": "Bank of Japan",
@@ -695,13 +695,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-09",
+            "date": "2026-11-10",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-09",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
+            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-10",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 1.778
+            "yield_2y_pct": 1.784
           }
         },
         "source": "Bank of Japan",
@@ -750,13 +750,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-09",
+            "date": "2026-11-10",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-09",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
+            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-10",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.56
+            "yield_2y_pct": 4.73
           }
         },
         "source": "Federal Reserve Board",
@@ -955,13 +955,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-09",
+            "date": "2026-11-10",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-09",
+            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-10",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.56
+            "yield_2y_pct": 4.73
           }
         },
         "source": "Federal Reserve Board",
