@@ -30,7 +30,7 @@ const SOURCES={
  calendar:'../../../live_data/sections/CALENDAR_OPERATIONAL_VIEW.json',
  themes:'../../../live_data/sections/TOP_THEMES.json'
 };
-const state={data:{},errors:{},route:'overview',ccy:'USD',against:'EUR',pair:'EURUSD',pairFilter:'all',pairSearch:'',pairPriceWindow:60,pairShowReferences:true,watch:new Set(),window:20,rateMode:'both',riskStream:'VIX',riskWindow:20,macroMetric:'inflation',newsMode:'pulse',chartIndex:0,charts:{},atlasLens:'rates',homeChart:null,homeWindow:20,homeEvidenceOpen:false,homeDossierOpen:false,spotPair:'EURUSD',cotWindow:26,cotMode:'net',cotFilter:'all',cotSort:'percentile',cotSortAsc:false,rsWindow:60,rsGovMode:'both',rsDiffMode:'2y',msCategory:'Inflazione',msSeriesId:null,msView:'level',msWindow:24,msHeat:'inflation',msHeatSort:'ccy',msHeatAsc:true,msOther:'EUR',msCompareMetric:'inflation',msAdvanced:false,csOther:'EUR',csPriceWindow:60,csRatesMode:'spread',csRatesWindow:60,csMacroMode:'inflation',csMacroWindow:36,csCotWindow:26,csSort:'currency',csReturnWindow:20};
+const state={data:{},errors:{},route:'overview',ccy:'USD',against:'EUR',pair:'EURUSD',pairFilter:'all',pairSearch:'',pairDetailOpen:false,pairPriceWindow:60,pairShowReferences:true,watch:new Set(),window:20,rateMode:'both',riskStream:'VIX',riskWindow:20,macroMetric:'inflation',newsMode:'pulse',chartIndex:0,charts:{},atlasLens:'rates',homeChart:null,homeWindow:20,homeEvidenceOpen:false,homeDossierOpen:false,spotPair:'EURUSD',cotWindow:26,cotMode:'net',cotFilter:'all',cotSort:'percentile',cotSortAsc:false,rsWindow:60,rsGovMode:'both',rsDiffMode:'2y',msCategory:'Inflazione',msSeriesId:null,msView:'level',msWindow:24,msHeat:'inflation',msHeatSort:'ccy',msHeatAsc:true,msOther:'EUR',msCompareMetric:'inflation',msAdvanced:false,csOther:'EUR',csPriceWindow:60,csRatesMode:'spread',csRatesWindow:60,csMacroMode:'inflation',csMacroWindow:36,csCotWindow:26,csSort:'currency',csReturnWindow:20};
 try{const w=JSON.parse(localStorage.getItem('fxquant-next-watch')||'[]');if(Array.isArray(w))state.watch=new Set(w.filter(s=>typeof s==='string'))}catch(e){}
 const $=id=>document.getElementById(id);
 const esc=x=>String(x===undefined||x===null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -837,14 +837,17 @@ function pairs(){
  const chooser='<section class="pairs-chooser"><div class="pairs-chooser-top">'+choice+
   '<button class="watch-btn '+(state.watch.has(state.pair)?'saved':'')+'" type="button" data-watch="'+state.pair+'">'+watchLabel+'</button></div>'+
   '<p>28 coppie G8, una sola tesi alla volta. Parti dal giudizio; approfondisci soltanto ciò che conta.</p></section>';
- const browse='<details class="pairs-optional-panel pairs-browse"><summary><span><strong>Confronta e filtra le 28 coppie</strong><small>Ricerca, qualità del dossier, copertura dei dati e watchlist</small></span><span class="pairs-open-icon">+</span></summary>'+
-  '<div class="pairs-browse-inside"><div class="filters"><input id="pair-search" class="input" type="search" placeholder="Cerca EUR/USD, AUDCAD..." autocomplete="off" value="'+esc(state.pairSearch)+'" aria-label="Cerca coppia FX"><div class="filter-group" id="pair-filters">'+choose('',pairFilterOptions(),state.pairFilter,'data-pfilter')+'</div></div>'+
-  '<div class="pair-list" id="pair-results">'+(pairListKeys().length?pairListKeys().map(k=>pairRow(k)).join(''):'<div class="empty">Nessuna coppia corrispondente.</div>')+'</div>'+
-  pairCoverageIntro()+'</div></details>';
- return pageHero('FX / PAIR EXPLORER','28 coppie. <em>Una tesi alla volta.</em>',
-  'Scegli una coppia, leggi il giudizio e scopri cosa può confermarlo o smentirlo. Grafici e confronti restano disponibili senza appesantire la lettura.')
-  +chooser+main+historyDetail+detail+browse+
-  '<p class="pairs-compact-footer">Stati descrittivi del modello, non segnali o ordini. I fixing BCE sono giornalieri, non prezzi intraday; COT e macro hanno frequenze differenti.</p>';
+ const ranking=window.FXQuantPairRankings?.render?
+  window.FXQuantPairRankings.render({get,FX,FLAGS,state,esc,sign,date,dayNow}):
+  '<section class="panel"><p>Ranking non caricato. I feed e le tesi restano consultabili dal selettore.</p></section>';
+ const drill=state.pairDetailOpen?
+  '<div class="fx-rank-detail-head" id="fx-selected-thesis"><h2>Tesi completa · '+esc(getPairName(state.pair))+
+  '</h2><button type="button" class="fx-rank-back" data-pair-close="1">↑ Torna alla classifica</button></div>'+
+  chooser+main+historyDetail+detail:'';
+ return pageHero('FX / PAIR EXPLORER','Dal G8 alle <em>coppie da approfondire.</em>',
+  'Prima la classifica visiva delle valute e delle 28 coppie; poi, scegliendo una coppia, trovi il ragionamento completo su macro, pricing, COT e prezzo.')
+  +ranking+drill+
+  '<p class="pairs-compact-footer">Classifiche descrittive, non segnali di trading: forza relativa BCE e priorità di ricerca non sono un backtest. Ogni fonte conserva la propria data.</p>';
 }
 function macro(){
  if(window.FXQuantMacro?.render)return window.FXQuantMacro.render({get,FX,FLAGS,NAMES,state,plot,pageHero,esc,fmt,sign,date,finite,validDay,dayNow});
@@ -1000,6 +1003,7 @@ document.addEventListener('click',e=>{
   const key=cs_op.dataset.csOpenpair;
   state.pair=(get('pairs')?.pairs?.[key]?key:key.slice(3)+key.slice(0,3));
   state.spotPair=state.pair;
+  state.pairDetailOpen=true;
   state.route='pairs';location.hash='#pairs';render();return;
  }
  const mcc=e.target.closest('[data-ms-country]');if(mcc){state.ccy=mcc.dataset.msCountry;state.msSeriesId=null;if(state.msOther===state.ccy)state.msOther=FX.find(k=>k!==state.ccy);render();return;}
@@ -1025,7 +1029,7 @@ document.addEventListener('click',e=>{
  if(pick){
    const [kind,value]=String(pick.dataset.command||'').split(':');
    if(kind==='ccy'){state.ccy=value;state.route='currencies';location.hash='#currencies';}
-   else if(kind==='pair'){state.pair=value;state.spotPair=value;state.route='pairs';location.hash='#pairs';}
+   else if(kind==='pair'){state.pair=value;state.spotPair=value;state.pairDetailOpen=true;state.route='pairs';location.hash='#pairs';}
    else if(kind==='route'&&ROUTES[value]){state.route=value;location.hash='#'+value;}
    setQuick(false);render();return;
  }
@@ -1034,7 +1038,8 @@ document.addEventListener('click',e=>{
  const hw=e.target.closest('[data-hwindow]');if(hw){state.homeWindow=Number(hw.dataset.hwindow);render();return}
  const hp=e.target.closest('[data-home-pair]');if(hp){state.spotPair=hp.dataset.homePair;state.pair=state.spotPair;render();return}
  const c=e.target.closest('[data-ccy]');if(c){state.ccy=c.dataset.ccy;if(state.against===state.ccy)state.against=FX.find(k=>k!==state.ccy);render();return}
- const p=e.target.closest('[data-pair]');if(p){state.pair=p.dataset.pair;if(state.route==='overview')location.hash='#pairs';else render();return}
+ const closePair=e.target.closest('[data-pair-close]');if(closePair){state.pairDetailOpen=false;render();document.getElementById('fx-ranking-desk')?.scrollIntoView({behavior:'smooth',block:'start'});return;}
+ const p=e.target.closest('[data-pair]');if(p){state.pair=p.dataset.pair;state.pairDetailOpen=true;if(state.route!=='pairs')location.hash='#pairs';else{render();document.getElementById('fx-selected-thesis')?.scrollIntoView({behavior:'smooth',block:'start'});}return}
  const f=e.target.closest('[data-pfilter]');if(f){state.pairFilter=f.dataset.pfilter;render();return}
  const w=e.target.closest('[data-watch]');if(w){state.watch.has(w.dataset.watch)?state.watch.delete(w.dataset.watch):state.watch.add(w.dataset.watch);saveWatch();render();return}
  const a=e.target.closest('[data-window]');if(a){state.window=Number(a.dataset.window);render();return}
@@ -1056,7 +1061,7 @@ document.addEventListener('toggle',e=>{
  if(e.target?.matches?.('details[data-home-dossier]'))state.homeDossierOpen=e.target.open;
 },true);
 document.addEventListener('change',e=>{
- if(e.target.id==='pair-primary-select'){const k=e.target.value;if(eurPairs()[k]){state.pair=k;render()}return;}
+ if(e.target.id==='pair-primary-select'){const k=e.target.value;if(eurPairs()[k]){state.pair=k;state.pairDetailOpen=true;render()}return;}
  if(e.target.id==='cs-other'){state.csOther=e.target.value;render();return;}
  if(e.target.id==='ms-series'){state.msSeriesId=e.target.value;render();return;}
  if(e.target.id==='ms-primary'){state.ccy=e.target.value;state.msSeriesId=null;if(state.msOther===state.ccy)state.msOther=FX.find(k=>k!==state.ccy);render();return;}

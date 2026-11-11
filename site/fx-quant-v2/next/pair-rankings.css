@@ -1,0 +1,73 @@
+/* FX Quant Next: pair/currency research ranking. Extends DARK DESK, no restyle. */
+.fx-ranking-desk{display:grid;gap:16px;margin-bottom:17px}
+.fx-rank-intro{display:flex;align-items:center;justify-content:space-between;gap:15px;margin:4px 0 0}
+.fx-rank-intro h2{font:760 clamp(20px,2.6vw,29px)/1.22 Manrope,'DM Sans',sans-serif;letter-spacing:-.035em;margin:7px 0 8px}
+.fx-rank-intro h2 em{color:var(--green);font-style:normal}
+.fx-rank-intro p{font-size:12px;line-height:1.7;color:var(--soft);max-width:950px;margin:0}
+.fx-rank-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:13px;align-items:start}
+.fx-rank-box{min-width:0;background:var(--layer);border:1px solid var(--line2);border-radius:14px;padding:17px 17px 15px}
+.fx-rank-head{display:flex;justify-content:space-between;align-items:start;gap:10px}
+.fx-rank-head span{display:block;color:var(--green);font-size:10px;font-weight:800;letter-spacing:.10em}
+.fx-rank-head h3{font:760 clamp(17px,1.65vw,21px)/1.25 Manrope,'DM Sans',sans-serif;letter-spacing:-.02em;margin:7px 0}
+.fx-rank-head>small{flex:none;max-width:100px;text-align:right;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.075em}
+.fx-rank-sub{margin:0 0 14px;font-size:11px;line-height:1.6;color:var(--muted)}
+.fx-rank-top-caution{margin:0 0 11px;padding:10px 11px;border:1px solid rgba(190,139,58,.28);border-radius:8px;color:#e6c28a;background:rgba(163,112,46,.11);font-size:10px;line-height:1.55}
+.fx-rank-source{font-size:10px;line-height:1.6;color:var(--muted);margin:13px 0 0;border-top:1px solid var(--line);padding-top:10px}
+.fx-rank-currency-list{display:grid;gap:8px}
+.fx-rank-currency{display:grid;grid-template-columns:19px 78px minmax(35px,1fr) 70px;gap:8px;align-items:center;min-height:28px}
+.fx-rank-number{font-size:11px;font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums}
+.fx-rank-currency>strong{font-size:13px;font-weight:760;color:var(--text);white-space:nowrap}
+.fx-rank-track{height:11px;background:rgba(120,158,188,.10);border-radius:10px;overflow:hidden}
+.fx-rank-track span{display:block;height:100%;border-radius:10px}
+.fx-rank-track .positive{background:#2fac76}.fx-rank-track .negative{background:#de6465}.fx-rank-track .neutral{background:#65a4d4}
+.fx-rank-return{text-align:right;font-weight:800;font-size:11px;font-variant-numeric:tabular-nums}
+.fx-rank-return.positive{color:#68d6a2}.fx-rank-return.negative{color:#ee8b8d}.fx-rank-return.neutral{color:#8cc5ed}
+.fx-rank-featured,.fx-rank-all-list{display:grid;gap:7px}
+.fx-rank-pair{appearance:none;cursor:pointer;width:100%;text-align:left;display:grid;
+ grid-template-columns:20px 76px minmax(0,1fr) 154px 62px;gap:10px;align-items:center;min-width:0;
+ background:rgba(10,30,44,.68);border:1px solid var(--line2);border-left:3px solid #71869a;border-radius:9px;
+ padding:10px 12px;color:var(--text);font:inherit}
+.fx-rank-pair.tier-1{border-left-color:#39b981}.fx-rank-pair.tier-2{border-left-color:#cda04c}
+.fx-rank-pair.tier-3{border-left-color:#df6a6a}.fx-rank-pair.tier-4{border-left-color:#758ca0}
+.fx-rank-pair:hover,.fx-rank-pair:focus-visible{background:rgba(30,75,96,.55);border-color:#5b9ec0;outline:none}
+.fx-rank-pair.selected{background:rgba(43,115,105,.20);border-color:var(--green)}
+.fx-rank-pair-id strong{display:block;font-size:13px;font-weight:850;letter-spacing:.01em}
+.fx-rank-pair-id small{font-size:9px;font-weight:750;color:var(--muted);letter-spacing:.05em;white-space:nowrap}
+.fx-rank-pair-copy{min-width:0}
+.fx-rank-pair-copy strong{display:block;font-size:11px;font-weight:650;line-height:1.48;color:var(--soft);overflow-wrap:anywhere}
+.fx-rank-pair-copy small{display:block;color:var(--muted);font-size:10px;line-height:1.4;margin-top:3px;overflow-wrap:anywhere}
+.fx-rank-pair-badges{display:flex;justify-content:flex-start;align-items:flex-start;flex-direction:column;gap:5px}
+.fx-rank-pill{display:inline-block;border-radius:5px;font-size:9px;font-weight:800;letter-spacing:.005em;padding:5px 7px;line-height:1.3}
+.fx-rank-pill.tier-1{color:#7cdbac;background:rgba(44,160,112,.16)}
+.fx-rank-pill.tier-2{color:#e7c582;background:rgba(197,140,57,.18)}
+.fx-rank-pill.tier-3{color:#efa2a2;background:rgba(204,82,83,.16)}
+.fx-rank-pill.tier-4{color:#a6c0d1;background:rgba(100,132,153,.19)}
+.fx-rank-risk{color:#f0a0a0;font-size:9px;font-weight:850;letter-spacing:.045em}
+.fx-rank-minor{color:var(--muted);font-size:9px;font-weight:760}
+.fx-rank-open{font-size:10px;color:var(--blue);font-weight:750;text-align:right;white-space:nowrap}
+.fx-rank-featured .fx-rank-pair{grid-template-columns:17px 74px minmax(0,1fr) 130px}
+.fx-rank-featured .fx-rank-open{display:none}
+.fx-rank-all{padding:18px}
+.fx-rank-all .fx-rank-sub{margin-bottom:13px}
+.fx-rank-warning{font-size:11px;line-height:1.6;color:#e2bf80;background:rgba(175,121,42,.10);border:1px solid rgba(175,121,42,.26);border-radius:8px;padding:11px 12px;margin:11px 0 0}
+.fx-rank-unavailable{font-size:12px;color:var(--muted);line-height:1.6;border:1px dashed var(--line2);padding:13px;border-radius:9px}
+.fx-rank-detail-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:20px 0 10px}
+.fx-rank-detail-head h2{font-size:18px;line-height:1.35;margin:0}
+.fx-rank-back{appearance:none;cursor:pointer;border:1px solid var(--line2);border-radius:8px;background:var(--layer2);color:var(--soft);padding:9px 11px;font:700 11px Manrope,'DM Sans',sans-serif}
+.fx-rank-back:hover,.fx-rank-back:focus-visible{border-color:var(--green);color:var(--text)}
+@media(max-width:1240px){
+ .fx-rank-two{grid-template-columns:1fr}
+ .fx-rank-featured .fx-rank-pair{grid-template-columns:20px 78px minmax(0,1fr) 154px}
+}
+@media(max-width:720px){
+ .fx-rank-box{padding:13px}
+ .fx-rank-currency{grid-template-columns:17px 69px minmax(35px,1fr) 65px;gap:5px}
+ .fx-rank-currency>strong{font-size:12px}
+ .fx-rank-pair,.fx-rank-featured .fx-rank-pair{grid-template-columns:21px 79px minmax(0,1fr);gap:7px;padding:10px}
+ .fx-rank-pair-copy{grid-column:2/-1}
+ .fx-rank-pair-badges{grid-column:2/-1;flex-direction:row;align-items:center;flex-wrap:wrap}
+ .fx-rank-open{display:none}
+ .fx-rank-featured .fx-rank-pair{grid-template-columns:21px 79px minmax(0,1fr)}
+ .fx-rank-detail-head{flex-direction:column;align-items:stretch}
+ .fx-rank-back{align-self:flex-start}
+}
