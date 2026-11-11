@@ -3,10 +3,10 @@
     "cb_schedule_available": 8,
     "consensus_available_events": 0,
     "g8_total": 8,
-    "macro_ccy_coverage": 3,
+    "macro_ccy_coverage": 4,
     "previous_only_events": 0,
-    "upcoming_macro_events": 3,
-    "upcoming_total_events": 11
+    "upcoming_macro_events": 4,
+    "upcoming_total_events": 12
   },
   "events": [
     {
@@ -38,6 +38,21 @@
       "time_local": "09:00",
       "timezone": "Europe/Zurich",
       "title": "Swiss GDP flash"
+    },
+    {
+      "ccy": "AUD",
+      "consensus_status": "NOT_PRESENT",
+      "date": "2026-11-19",
+      "event_type": "LABOUR",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CONFIRMED",
+      "reference_period": "October 2026",
+      "source_family": "ABS",
+      "source_layer": "MACRO_RELEASE_OFFICIAL_SEED_V1",
+      "status": "UPCOMING",
+      "time_local": "11:30",
+      "timezone": "Australia/Sydney",
+      "title": "Labour Force, Australia"
     },
     {
       "bank": "Reserve Bank of Australia",
@@ -167,8 +182,8 @@
       "title": "BoJ · decisione di politica monetaria"
     }
   ],
-  "generated_at_utc": "2026-11-10T23:27:57.357350Z",
-  "last_checked_at_utc": "2026-11-10T23:27:57.357350Z",
+  "generated_at_utc": "2026-11-11T10:41:29.008890Z",
+  "last_checked_at_utc": "2026-11-11T10:41:29.008890Z",
   "schema": "GMFQ_CALENDAR_OPERATIONAL_VIEW_V3",
   "scope": {
     "central_bank_schedule": "ACTIVE_OFFICIAL",
@@ -178,6 +193,7 @@
     "consensus_provider": "FOREX_FACTORY_FAIR_ECONOMY_WEEKLY",
     "core_score_impact": 0,
     "macro_release_currencies": [
+      "AUD",
       "CHF",
       "GBP",
       "NZD"
