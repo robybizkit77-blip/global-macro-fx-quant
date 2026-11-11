@@ -1,0 +1,59 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
+const root=path.resolve(__dirname,'../..');
+const read=p=>fs.readFileSync(path.join(root,p),'utf8');
+const load=p=>JSON.parse(read(p));
+const dir='site/fx-quant-v2/next/';
+const ctx={window:{}};
+for(const file of ['pair-rankings.js','currency-relative-reading.js','currency-studio.js']){
+  vm.runInNewContext(read(dir+file),ctx,{filename:file,timeout:5000});
+}
+const FX=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
+const FLAGS=Object.fromEntries(FX.map(x=>[x,x]));
+const NAMES=Object.fromEntries(FX.map(x=>[x,x]));
+const data={
+currencyPrices:load('live_data/sections/ECB_G8_PRICE_HISTORY.json'),
+rates:load('live_data/sections/NATIVE_RATES_DATA.json'),
+macro:load('live_data/sections/MACRO_THERMOMETER_DATA.json'),
+cb:load('live_data/sections/NATIVE_CB_DATA.json'),
+ois:load('site/fx-quant-v2/ois-pricing-snapshot.json'),
+cotHistory:load('live_data/sections/V250_COT_CHART_DATA.json'),
+pairs:load('live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json')
+};
+const now=data.currencyPrices.last_as_of;
+assert.match(now,/^\d{4}-\d{2}-\d{2}$/);
+const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const finite=x=>typeof x==='number'&&Number.isFinite(x);
+const fmt=(x,n=2)=>finite(x)?x.toLocaleString('it-IT',{minimumFractionDigits:n,maximumFractionDigits:n}):'—';
+const sign=(x,n=1,suffix='')=>finite(x)?(x>0?'+':x<0?'−':'')+fmt(Math.abs(x),n)+suffix:'—';
+const date=d=>typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d)?d.slice(8,10)+'/'+d.slice(5,7)+'/'+d.slice(0,4):'n.d.';
+const common={get:k=>data[k],FX,FLAGS,NAMES,pageHero:()=>'<header>G8</header>',
+esc,fmt,sign,date,finite,validDay:d=>typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d),dayNow:()=>now};
+const canonical=ctx.window.FXQuantPairRankings.currencyRanking(data.currencyPrices,now,FX);
+assert(canonical&&canonical.items.length===8);
+for(const ccy of FX){
+  const html=ctx.window.FXQuantCurrencies.render({...common,state:{ccy,csOther:ccy==='EUR'?'USD':'EUR',csReturnWindow:20}});
+  assert.equal((html.match(/class="orient-rank-row /g)||[]).length,8,'Eight ranked G8 rows: '+ccy);
+  assert.equal((html.match(/class="orient-first-read"/g)||[]).length,1,'First read: '+ccy);
+  const rows=[...html.matchAll(/class="orient-rank-row[^"]*" data-cs-country="([A-Z]{3})"/g)].map(x=>x[1]);
+  assert.deepEqual(rows,canonical.items.map(x=>x.ccy),'Same ranking as Pair Explorer: '+ccy);
+  assert(html.includes('class="orient-rank-row selected '),'Selected currency highlighted: '+ccy);
+  assert(html.includes('class="orient-thesis-details"'),'Macro/rates/COT details still available: '+ccy);
+  assert(html.includes('class="orient-evidence-fold"'),'Four supporting facts accessible: '+ccy);
+  assert(html.indexOf('class="orient-ranking"')<html.indexOf('class="orient-lead '),
+    'Ranking precedes full individual analysis: '+ccy);
+  for(const label of ['COSA VEDIAMO','COSA DICONO I TASSI','COSA CONTROLLARE']){
+    assert(html.includes(label),'Missing concise action question '+label);
+  }
+  assert(!/\bundefined\b|\bNaN\b|\[object Object\]/.test(html), 'No broken narrative '+ccy);
+}
+const fallback=ctx.window.FXQuantCurrencies.render({...common,get:k=>k==='currencyPrices'?{}:data[k],
+ state:{ccy:'USD',csOther:'EUR',csReturnWindow:20}});
+assert(fallback.includes('orient-ranking-unavailable'),'Do not rank absent common fixing prices');
+assert(fallback.includes('class="country-orient-list"'),'Keep currency selection even without rank data');
+assert(!fallback.includes('class="orient-rank-row '),'Do not fabricate ranking rows');
+const page=read(dir+'index.html');
+assert(page.includes('currency-studio.js?v=4')&&page.includes('currency-studio.css?v=3'));
+assert(page.indexOf('pair-rankings.js')<page.indexOf('app.js'),
+ 'Shared currency rank must be available before route render');
+console.log('NEXT_CURRENCY_FIRST_READ_PASS: 8 G8 currencies, canonical price rank, compact FX reading and missing-data fallback');

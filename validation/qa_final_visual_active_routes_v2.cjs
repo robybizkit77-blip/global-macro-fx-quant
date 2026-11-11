@@ -18,6 +18,31 @@ const routeNames = {
 };
 const currencies = ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
 
+async function checkG8FirstRead(page,label){
+  const ranking=page.locator('#orient-ranking');
+  const rows=ranking.locator('button.orient-rank-row[data-cs-country]');
+  if(await rows.count()!==8)throw Error(label+' G8 ranking should have exactly eight selectable currencies');
+  if(await page.locator('.orient-first-read > div').count()!==3)
+    throw Error(label+' G8 first read must have exactly three short explanations');
+  await ranking.locator('[data-cs-country="JPY"]').click();
+  await page.waitForFunction(()=>document.querySelector('.orient-rank-row.selected')?.getAttribute('data-cs-country')==='JPY',
+    null,{timeout:15000});
+  if(!await page.locator('.orient-first-read').isVisible())
+    throw Error(label+' selected JPY reading not visible');
+  const thesis=page.locator('details.orient-thesis-details');
+  await thesis.locator(':scope > summary').click();
+  if(!await thesis.evaluate(el=>el.open))
+    throw Error(label+' full macro/rates/COT analysis did not expand');
+  const deeper=page.locator('details.orient-evidence-fold');
+  await deeper.locator(':scope > summary').click();
+  if(!await deeper.evaluate(el=>el.open))
+    throw Error(label+' G8 supporting evidence did not expand');
+  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth+2);
+  if(overflow)throw Error(label+' G8 first-read causes horizontal overflow');
+  await page.locator('#content').screenshot({
+    path:'visual-qa-evidence/'+label+'-currencies-first-read.png',timeout:20000
+  });
+}
 async function checkPairChartControls(page,label) {
   const selected=page.locator('#fx-ranking-desk button[data-pair="USDCAD"]').first();
   if (!(await selected.count())) throw Error(label + ' USD/CAD pair not found in ranking');
@@ -134,6 +159,7 @@ async function check(browser, label, viewport) {
         path:'visual-qa-evidence/' + label + '-' + route + '.png',
         timeout:20000
       });
+      if (route === 'currencies') await checkG8FirstRead(page,label);
       if (route === 'pairs') await checkPairChartControls(page,label);
     }
     if(errors.length) throw Error(label + ' page errors: ' + errors.slice(0,5).join(' | '));
