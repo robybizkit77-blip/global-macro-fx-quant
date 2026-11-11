@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-10",
-  "generated_at_utc": "2026-11-10T23:27:57.440355Z",
+  "generated_at_utc": "2026-11-11T03:07:55.763466Z",
   "items": [
     {
       "as_of": "2026-11-10",
@@ -43,6 +43,19 @@
       "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
       "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
       "title": "AUD/CAD: +0.37% fra due fixing BCE"
+    },
+    {
+      "as_of": "2026-11-09",
+      "category": "MARKET_EQUITY_CLOSE",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 7549.94; confronto con chiusura 2026-11-06. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "HIGH",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-06",
+      "source": "S&P Dow Jones Indices via FRED",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
+      "title": "S&P 500: +2.35% nella chiusura del 2026-11-09"
     },
     {
       "as_of": "2026-11-09",
@@ -117,6 +130,32 @@
     },
     {
       "as_of": "2026-11-09",
+      "category": "MARKET_CREDIT_OAS",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 3.34%; confronto con chiusura 2026-11-06. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "MEDIUM",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-06",
+      "source": "ICE Data Indices via FRED",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2",
+      "title": "Credito HY OAS: -8.0 pb nella chiusura del 2026-11-09"
+    },
+    {
+      "as_of": "2026-11-09",
+      "category": "MARKET_CREDIT_OAS",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 0.91%; confronto con chiusura 2026-11-06. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "MEDIUM",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-06",
+      "source": "ICE Data Indices via FRED",
+      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLC0A0CM",
+      "title": "Credito IG OAS: -2.0 pb nella chiusura del 2026-11-09"
+    },
+    {
+      "as_of": "2026-11-09",
       "category": "MARKET_GOVERNMENT_RATES",
       "ccy": "EUR",
       "confidence": "A",
@@ -149,48 +188,9 @@
       "quality": "OFFICIAL_CERTIFIED",
       "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
       "title": "AUD: repricing implicito da futures più hawkish (+0.5 bp 6M in 1D)"
-    },
-    {
-      "as_of": "2026-11-06",
-      "category": "MARKET_CREDIT_OAS",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 3.42%; confronto con chiusura 2026-11-05. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "MEDIUM",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-05",
-      "source": "ICE Data Indices via FRED",
-      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2",
-      "title": "Credito HY OAS: -6.0 pb nella chiusura del 2026-11-06"
-    },
-    {
-      "as_of": "2026-11-06",
-      "category": "MARKET_CREDIT_OAS",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 0.93%; confronto con chiusura 2026-11-05. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "MEDIUM",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-05",
-      "source": "ICE Data Indices via FRED",
-      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLC0A0CM",
-      "title": "Credito IG OAS: +0.0 pb nella chiusura del 2026-11-06"
-    },
-    {
-      "as_of": "2026-11-05",
-      "category": "MARKET_EQUITY_CLOSE",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 7353.73; confronto con chiusura 2026-11-04. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "HIGH",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-04",
-      "source": "S&P Dow Jones Indices via FRED",
-      "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
-      "title": "S&P 500: -4.36% nella chiusura del 2026-11-05"
     }
   ],
-  "last_checked_at_utc": "2026-11-10T23:27:57.440355Z",
+  "last_checked_at_utc": "2026-11-11T03:07:55.763466Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -379,6 +379,61 @@
   "official_releases": {
     "core_effect": "NONE",
     "headlines": [
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "JPY",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
+        "id": "BOJ_NEWS:https://www.boj.or.jp/en/statistics/money/ms/ms2610.pdf",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-10T23:50:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "6m_rate_pct": 1.606,
+            "date": "2026-11-09",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "OFFICIAL_CERTIFIED",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Tokyo Financial Exchange · Three-month TONA Futures",
+            "status": "DAILY_CONTEXT_ONLY"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-11-09",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-09",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 1.778
+          }
+        },
+        "source": "Bank of Japan",
+        "source_id": "BOJ_NEWS",
+        "title": "Money Stock (Oct.)",
+        "url": "https://www.boj.or.jp/en/statistics/money/ms/ms2610.pdf"
+      },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "EUR",
@@ -653,61 +708,6 @@
         "source_id": "BOJ_NEWS",
         "title": "Principal Figures of Financial Institutions (Oct.)",
         "url": "https://www.boj.or.jp/en/statistics/dl/depo/kashi/kasi2610.pdf"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "JPY",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "BOJ_NEWS:https://www.boj.or.jp/en/mopo/mpmsche_minu/opinion_2026/opi261030.pdf",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-09T23:50:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "6m_rate_pct": 1.606,
-            "date": "2026-11-09",
-            "event_window_proof": false,
-            "instrument": "FUTURES_IMPLIED",
-            "quality": "OFFICIAL_CERTIFIED",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "Tokyo Financial Exchange · Three-month TONA Futures",
-            "status": "DAILY_CONTEXT_ONLY"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-11-09",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-09",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 1.778
-          }
-        },
-        "source": "Bank of Japan",
-        "source_id": "BOJ_NEWS",
-        "title": "Summary of Opinions at the Monetary Policy Meeting on October 29 and 30, 2026",
-        "url": "https://www.boj.or.jp/en/mopo/mpmsche_minu/opinion_2026/opi261030.pdf"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
@@ -1162,7 +1162,7 @@
       }
     ],
     "last_attempt_day_rome": "2026-11-11",
-    "latest_published_at_utc": "2026-11-10T16:45:00Z",
+    "latest_published_at_utc": "2026-11-10T23:50:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -1206,10 +1206,10 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 19,
+        "accepted_items": 20,
         "ccy": "JPY",
         "entries_rejected": 26,
-        "feed_entries_seen": 45,
+        "feed_entries_seen": 46,
         "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
         "source": "Bank of Japan",
         "source_id": "BOJ_NEWS",
