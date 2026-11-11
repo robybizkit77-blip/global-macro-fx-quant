@@ -19,6 +19,7 @@ from check_snb_same_basis_candidate_v1 import inspect as inspect_snb, SOURCE as 
 
 SCHEMA = "GMFQ_FXV2_CHF_NZD_BENCHMARK_RESEARCH_V1"
 TARGET = ROOT / "site/fx-quant-v2/chf-nzd-benchmark-research.json"
+ARCHIVED_NZD_POSTROLL = ROOT / "site/fx-quant-v2/nzd-b2-postroll-web-research.json"
 DATA = ROOT / "live_data/sections"
 
 
@@ -254,6 +255,107 @@ def extend_nzd_with_live_public_table(base: dict, live: dict, today: dt.date) ->
     return new
 
 
+
+def extend_nzd_with_archived_manual_postroll(base: dict, archive: dict, today: dt.date) -> dict:
+    """Reconcile *already stored* publisher-viewed B2 research; no new RBNZ HTTP.
+
+    A previously checked dated research table should not be stranded in one
+    site feed while the benchmark dossier still shows an older observation.
+    This is **not** automatic primary-source collection or permission for FX
+    scoring, and it is not an independent XLSX approval.
+    """
+    demand(isinstance(base,dict) and base.get("status")=="RBNZ_GOVT_B2_WEB_RESEARCH_UNAPPROVED"
+           and base.get("cross_roll_change_allowed") is False
+           and base.get("eligible_for_core") is False
+           and base.get("independent_xlsx_reconciled") is False,
+           "base research provenance not certified")
+    demand(isinstance(archive,dict) and
+           archive.get("schema")=="GMFQ_NZD_RBNZ_B2_POSTROLL_WEB_RESEARCH_V1"
+           and archive.get("status")=="PUBLIC_OFFICIAL_WEB_RESEARCH_NOT_XLSX_RECONCILED"
+           and archive.get("currency")=="NZD"
+           and archive.get("source_url")==
+             "https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates"
+           and archive.get("source_capture_method")==
+             "PUBLIC_OFFICIAL_PAGE_MANUAL_RESEARCH_NOT_AUTOMATED_FETCH"
+           and archive.get("official_web_display_observed") is True
+           and archive.get("automated_access_authorized") is False
+           and archive.get("independent_xlsx_reconciled") is False
+           and archive.get("historical_benchmark_roll_continuity") is False
+           and archive.get("no_interpolation") is True
+           and archive.get("research_only") is True
+           and archive.get("eligible_for_core") is False
+           and archive.get("eligible_for_fx_pair_engine") is False
+           and archive.get("eligible_for_backtests") is False
+           and archive.get("eligible_for_automatic_promotion") is False
+           and archive.get("canonical_government_rates_untouched") is True,
+           "not a verified no-promotion manual source archive")
+    demand(archive.get("benchmark_roll_date")==base["roll_date"]=="2026-10-30"
+           and archive.get("benchmark_2Y")==base["new_benchmark"]["2Y"]=="April 2029"
+           and archive.get("benchmark_10Y")==base["new_benchmark"]["10Y"]=="April 2037"
+           and archive.get("before_roll_2Y")==base["old_benchmark"]["2Y"]=="May 2028"
+           and archive.get("before_roll_10Y")==base["old_benchmark"]["10Y"]=="May 2036",
+           "manual B2 benchmark roll identifiers differ")
+    released=date(archive["source_release_date"])
+    captured=date(archive["source_capture_date"])
+    demand(released<=captured<=today,"archive claimed future publisher/capture date")
+    rows=archive.get("daily_observations")
+    demand(isinstance(rows,list) and 2<=len(rows)<=25,
+           "manual research daily observation count invalid")
+    parsed=[]
+    for row in rows:
+        demand(isinstance(row,dict) and set(row)=={"date","2Y","10Y"},
+               "unrecognized research columns")
+        day=date(row["date"])
+        demand(base["roll_date"]<=day.isoformat()<=released.isoformat()
+               and day.weekday()<5
+               and (not parsed or day>date(parsed[-1]["date"])),
+               "out-of-order, synthetic, pre-roll or future research market date")
+        y2,y10=yield_rate(row["2Y"]),yield_rate(row["10Y"])
+        parsed.append({"date":day.isoformat(),"2Y":y2,"10Y":y10})
+    anchor=base["after_roll"][0]
+    demand(parsed[0]==anchor and parsed[0]["date"]==base["roll_date"],
+           "RBNZ new benchmark anchor disagrees with verified 30 Oct source")
+    previously={p["date"]:p for p in base["after_roll"]}
+    archived={p["date"]:p for p in parsed}
+    for day,known in previously.items():
+        if day in archived:
+            demand(archived[day]==known,
+                   "manual archive contradicts previously certified same-benchmark observation")
+    last=parsed[-1]
+    age=(today-date(last["date"])).days
+    if age>14 or last["date"]<=base["latest_date"]:
+        # A stored record is not continuously refreshed by running a job.
+        return base
+    out=dict(base)
+    out["latest_date"]=last["date"]
+    out["latest_2Y"]=last["2Y"]
+    out["latest_10Y"]=last["10Y"]
+    out["latest_curve_bp"]=round((last["10Y"]-last["2Y"])*100,1)
+    out["after_roll"]=parsed
+    out["same_benchmark_change_bp"]={
+        "2Y":round((last["2Y"]-anchor["2Y"])*100,1),
+        "10Y":round((last["10Y"]-anchor["10Y"])*100,1),
+        "start":anchor["date"],"end":last["date"]
+    }
+    out["source"]="Reserve Bank of New Zealand B2 · archived manual public-page research"
+    out["source_url"]=archive["source_url"]
+    out["source_release_date"]=released.isoformat()
+    out["source_release_date_quality"]="PUBLISHER_RELEASE_DATE_RECORDED_IN_MANUAL_ARCHIVE"
+    out["source_capture_method"]="ALREADY_STORED_MANUAL_WEB_RESEARCH_NOT_RUNNER_FETCH"
+    out["research_only_note"]=(
+        "RBNZ B2 daily NZFMA government benchmarks, previously captured by human page review; "
+        "now reconciled with the independent dated V2 research file. "
+        "NOT an automated fresh RBNZ read; no XLSX reconciliation, official OIS, Core, FX pair "
+        "signals or backtests; do not join yields across the 30 Oct benchmark roll.")
+    out["cross_roll_change_allowed"]=False
+    out["independent_xlsx_reconciled"]=False
+    out["eligible_for_core"]=False
+    out["eligible_for_pair_spreads"]=False
+    out["eligible_for_backtests"]=False
+    out["eligible_for_automatic_promotion"]=False
+    return out
+
+
 def create_report(chf, nzd, inspected_as_of, old=None):
     demand(chf is not None or nzd is not None,"No validated context available")
     prior=old or {}
@@ -300,6 +402,17 @@ def main():
             nzd=base
     except (ValueError,KeyError,TypeError) as exc:
         print("NZD_ARCHIVED_WEB_RESEARCH_NOT_ADVANCED "+str(exc))
+    if nzd and ARCHIVED_NZD_POSTROLL.is_file():
+        try:
+            local=json.loads(ARCHIVED_NZD_POSTROLL.read_text(encoding="utf-8"))
+            candidate=extend_nzd_with_archived_manual_postroll(nzd,local,today)
+            if candidate.get("latest_date")!=nzd.get("latest_date"):
+                print("NZD_ARCHIVED_MANUAL_B2_RESEARCH_RECONCILED",
+                      nzd["latest_date"],candidate["latest_date"],
+                      "NOT_NEW_AUTOMATED_SOURCE")
+            nzd=candidate
+        except (ValueError,KeyError,TypeError) as exc:
+            print("NZD_ARCHIVED_B2_RESEARCH_NOT_ADVANCED "+str(exc))
     if args.nzd_daily_candidate and args.nzd_daily_candidate.is_file() and nzd:
         try:
             daily=json.loads(args.nzd_daily_candidate.read_text(encoding="utf-8"))
