@@ -80,7 +80,7 @@ assert.equal(added.history.snapshots.at(-1).source_commit,'new-source');
 assert.equal(added.history.snapshots.at(-1).price_asof,next.price_asof);
 assert.equal(added.history.snapshots.length,Math.min(35,history.snapshots.length+1));
 assert.equal(validate(added.history),true);
-const older=structuredClone(canonical);older.price_asof='2026-01-02';
+const older=structuredClone(canonical);older.price_asof='2026-10-01';
 assert.throws(()=>update(older,history),/precedes newest history/);
 const invalid=structuredClone(canonical);delete invalid.pairs.AUDCAD;
 assert.throws(()=>snapshot(invalid),/exactly 28/);
