@@ -25,6 +25,25 @@ assert(x.official.find(y=>y.title.startsWith('Bank rate increased'))?.verify.inc
 assert(x.official.some(y=>y.kind==='Fondamentali energia'));
 assert(x.official.some(y=>y.kind==='Comunicazione banca centrale'));
 assert(x.pulse.some(y=>y.title.startsWith('AUD:')&&y.why.includes('non sono la stessa misura')));
+// A BLS CPI actual belongs to the release date, but is invisible until
+// the first observed source capture; the release clock must not leak hindsight.
+const observedCpi=structuredClone(feed);
+observedCpi.items.unshift({
+ category:'MACRO_OFFICIAL_ACTUAL',ccy:'USD',as_of:'2026-11-10',
+ title:'CPI USA ottobre · headline +0,4% e core +0,3% mensili',
+ detail:'BLS source-dated actuals. Annual readings were not published.',
+ source:'BLS CPI',source_url:'https://www.bls.gov/news.release/cpi.htm',
+ first_runner_observed_at_utc:'2026-11-11T08:48:15Z',
+ quality:'ISSUER_BLS_HTML_FIRST_RUNNER_OBSERVATION_NOT_PUBLISHER_PIT'
+});
+assert(!parse(observedCpi,'2026-11-10').pulse.some(y=>y.kind==='Macro · dato ufficiale BLS'),
+ 'No official CPI actual visible before first runner observation');
+const cpiToday=parse(observedCpi,'2026-11-11').pulse.find(
+ y=>y.kind==='Macro · dato ufficiale BLS');
+assert(cpiToday&&cpiToday.asof==='2026-11-10'&&cpiToday.url?.startsWith('https://www.bls.gov/'));
+assert(cpiToday.why.includes('Fed')&&cpiToday.verify.includes('USD/JPY'));
+assert(cpiToday.impact.includes('NON misurata'));
+assert(!cpiToday.macroSurprise&&!cpiToday.reactionProven);
 const past=parse(feed,'2026-11-06');
 assert.equal(past.official.some(y=>y.asof>'2026-11-06'),false,'No lookahead into later news');
 const empty=parse(null,today);
