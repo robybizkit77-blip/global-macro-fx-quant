@@ -282,6 +282,12 @@ class TestChfNzdResearch(unittest.TestCase):
  def test_nzd_manual_archive_rejects_spliced_stale_duplicate_or_future_rows(self):
   now=dt.date(2026,11,11)
   base=m.nzd_context(RBNZ_OLD,ROLL,NEW,now)
+  # The already-published V2 dossier contains a 4 Nov closing observation.
+  # A later archive may NOT silently revise it or the 30 Oct roll anchor.
+  base["latest_date"]="2026-11-04"
+  base["latest_2Y"]=3.83
+  base["latest_10Y"]=4.81
+  base["after_roll"].append({"date":"2026-11-04","2Y":3.83,"10Y":4.81})
   archive=json.loads((ROOT/"site/fx-quant-v2/nzd-b2-postroll-web-research.json").read_text())
   for mutate in (
     lambda a:a["daily_observations"][0].update({"2Y":4.30}),
