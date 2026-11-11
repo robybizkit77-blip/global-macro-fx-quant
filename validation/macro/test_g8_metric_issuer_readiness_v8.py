@@ -232,7 +232,7 @@ class G8MetricIssuerV8Tests(unittest.TestCase):
     def test_existing_countrybook_v7_still_has_exact_signed_two_historical_surprises(self):
         d=v7.build(now=NOW,inputs=copy.deepcopy(self.inputs))
         self.assertEqual(d["coverage"]["events_with_genuine_frozen_consensus_and_issuer_actual"],2)
-        self.assertEqual(d["coverage"]["metric_definitions_v8"],16)
+        self.assertEqual(d["coverage"]["metric_definitions_v8"],17)
         self.assertEqual(d["coverage"]["metric_contract_releases_v8"],12)
         self.assertEqual(d["coverage"]["verified_metric_specific_surprises_v8"],0)
         usd=next(x for x in d["priority_queue"] if x["ccy"]=="USD")
