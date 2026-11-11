@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-10",
-  "generated_at_utc": "2026-11-11T09:10:22.904402Z",
+  "generated_at_utc": "2026-11-11T09:43:08.729686Z",
   "items": [
     {
       "as_of": "2026-11-10",
@@ -8,6 +8,8 @@
       "ccy": "USD",
       "confidence": "A",
       "detail": "Comunicato BLS 10/11/2026: headline mensile +0,4%, core mensile +0,3%. Il BLS non ha pubblicato headline/core annuali per ottobre 2026: manca la base di confronto ottobre 2025. Rispetto a forecast secondari osservati prima del rilascio, headline +0,1 e core +0,1 punti percentuali; NON sono sorprese contro un consenso survey certificato, Potenziale pressione sulle attese Fed, ma nessuna variazione OIS o risposta del dollaro è attribuita causalmente al CPI: mancano quotazioni sincronizzate prima/dopo l'evento. Prima osservazione del nostro runner: 2026-11-11T08:48:15Z.",
+      "event_key": "USD|2026-11-10|INFLATION|Consumer Price Index",
+      "event_type": "INFLATION",
       "first_runner_observed_at_utc": "2026-11-11T08:48:15Z",
       "importance": "HIGH",
       "quality": "ISSUER_BLS_HTML_FIRST_RUNNER_OBSERVATION_NOT_PUBLISHER_PIT",
@@ -203,7 +205,7 @@
       "title": "AUD: repricing implicito da futures più hawkish (+0.5 bp 6M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-11T09:10:22.904402Z",
+  "last_checked_at_utc": "2026-11-11T09:43:08.729686Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
