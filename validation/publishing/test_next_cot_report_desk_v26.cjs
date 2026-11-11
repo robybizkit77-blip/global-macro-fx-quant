@@ -49,7 +49,8 @@ for(const ccy of names){
  assert(Number.isFinite(v.velocity),ccy+' OI-implied velocity');
  assert.equal(v.crowd,Math.abs(Number(a.netoi.at(-1).toFixed(1)))>=30);
  assert(v.level=== (v.rounded>=80?'EXTREME LONG':v.rounded<=20?'EXTREME SHORT':'NEUTRALE'));
- assert(reading(v).fact.includes('Δ long')&&reading(v).judgment.includes('timing'),ccy+' complete Serafini desk interpretation');
+ const story=reading(v);
+ assert(story&&story.fact.includes('Motore principale:')&&story.fact.includes('Variazione normalizzata:')&&story.judgment.length>80&&story.verify.includes('prezzo'),ccy+' complete Serafini desk interpretation');
  item.deskStats=v;reports.push(item);
 }
 assert.equal(reports.length,8);
