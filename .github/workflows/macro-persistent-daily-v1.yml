@@ -92,6 +92,9 @@ jobs:
       - name: Guard EUR JPY NZD official source-label identity and reject spoofing
         run: python -m unittest validation.macro.test_macro_official_source_label_contract_v1 -v
 
+      - name: Verify Macro safe persistence under independent concurrent Git writers
+        run: python -m unittest validation.macro.test_persist_macro_safe_v1 -v
+
       - name: Snapshot baseline and registry contract
         shell: bash
         run: |
@@ -330,7 +333,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python -m unittest validation.macro.test_persist_macro_safe_v1 -v
           python - <<'PY'
           import json
           from validation.macro.persist_calendar_news_safe_v12 import persist
