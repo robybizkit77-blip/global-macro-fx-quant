@@ -41,7 +41,7 @@ class MorningFXDeskTests(unittest.TestCase):
                                          "AFTERMATH_MONTHLY_ONLY_YOY_UNAVAILABLE"})
         self.assertIn("CPI",x["headline"])
         if x["event_status"]=="AFTERMATH_UNVERIFIED":
-            self.assertIn("provenienza",x["catalyst"]["text"])
+            self.assertIn("non sono ancora presenti misure BLS",x["catalyst"]["text"])
         elif x["event_status"]=="AFTERMATH_MONTHLY_ONLY_YOY_UNAVAILABLE":
             self.assertIn("non sono pubblicabili", x["catalyst"]["text"])
         else:
