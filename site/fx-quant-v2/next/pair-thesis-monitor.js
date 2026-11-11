@@ -9,8 +9,8 @@
  const text=x=>typeof x==='string'&&x.trim()?x:'Non classificato';
  const checks=[
   ['fav','Valuta strutturalmente favorita'],['quality','Qualità del dossier'],
-  ['price.state','Prezzo'],['timing.state','Timing'],
-  ['cot.text','Etichetta COT'],['liquidity.state','Liquidità']
+  ['price.text','Prezzo'],['timing.text','Timing'],
+  ['cot.text','Etichetta COT'],['liquidity.text','Liquidità']
  ];
  function field(item,key){
   return key.split('.').reduce((v,k)=>v&&typeof v==='object'?v[k]:null,item)??null;
@@ -36,6 +36,12 @@
   if(current.price_asof!==latest.price_asof||!day(previous.price_asof)||
    current.macro_baseline_asof!==latest.macro_baseline_asof)return null;
   if(Object.keys(current.pairs).some(k=>!latest.pairs[k]||!previous.pairs[k]))return null;
+  // Same-date model may be rebuilt with altered inputs; only compare if the
+  // current display really matches the snapshot that was persisted.
+  if(Object.keys(current.pairs).some(k=>{
+   const p=flatten(current.pairs[k]),a=latest.pairs[k];
+   return checks.some(([key])=>field(p,key)!==field(a,key));
+  }))return null;
   return {latest,previous};
  }
  function analyze(current,history,pair){
@@ -61,18 +67,18 @@
    const diffs=checks.filter(([key])=>field(left,key)!==field(right,key)).map(([key])=>key);
    if(diffs.length)summary.any++;else summary.unchanged++;
    if(diffs.includes('quality'))summary.quality++;
-   if(diffs.includes('price.state'))summary.price++;
-   if(diffs.includes('timing.state'))summary.timing++;
+   if(diffs.includes('price.text'))summary.price++;
+   if(diffs.includes('timing.text'))summary.timing++;
    if(diffs.includes('cot.text'))summary.cot++;
    if(diffs.includes('fav'))summary.fav++;
-   if(diffs.includes('liquidity.state'))summary.liquidity++;
+   if(diffs.includes('liquidity.text'))summary.liquidity++;
   }
   const macroSame=previous.macro_baseline_asof===latest.macro_baseline_asof;
   const observations=changed.length?changed.map(x=>x.name+': '+text(x.prev)+' → '+text(x.curr)+'.').join(' '):
    'Le classificazioni confrontate non sono cambiate tra le due osservazioni disponibili.';
   const judgement=!changed.length?'Nessun cambiamento nelle sei classificazioni confrontabili. Non equivale a tesi confermata.':
    changed.some(x=>x.key==='fav')?'È cambiata la gamba strutturalmente favorita dal modello: ricontrollare le fonti prima di attribuirlo a una svolta macro.':
-   changed.some(x=>x.key==='price.state')?'È cambiato il giudizio sintetico sul prezzo: da verificare rispetto al movimento osservato e al pricing dei tassi.':
+   changed.some(x=>x.key==='price.text')?'È cambiato il giudizio sintetico sul prezzo: da verificare rispetto al movimento osservato e al pricing dei tassi.':
    changed.some(x=>x.key==='quality')?'È cambiata la classificazione di qualità del dossier; non è automaticamente un miglioramento né un segnale di ingresso.':
    'Sono cambiati indicatori secondari del modello, mentre la direzione strutturale e lo stato sintetico del prezzo non hanno fornito una nuova conferma.';
   return {ready:true,asof:latest.price_asof,previousAsOf:previous.price_asof,
