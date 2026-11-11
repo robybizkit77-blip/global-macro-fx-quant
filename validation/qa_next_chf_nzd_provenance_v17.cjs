@@ -10,10 +10,16 @@ const chf=j('site/fx-quant-v2/chf-snb-paired-history.json');
 const nzd=j('site/fx-quant-v2/nzd-b2-postroll-web-research.json');
 const legacy=j('site/fx-quant-v2/chf-nzd-benchmark-research.json');
 const mod=require('../site/fx-quant-v2/next/fx-rates-bridge.js');
-// Preserve the reviewed 6 Nov fixture; the production FX fixing moves independently.
+// Preserve the archived 6 Nov FX fixture; assess the independent, later NZD
+// publisher archive at its actual capture date without leaking it into 6 Nov.
 const now='2026-11-08',asof='2026-11-06';
 const fixturePairs={...pairs,price_asof:asof};
-assert.equal(nzd.source_release_date,'2026-11-06');
+const researchDate=nzd.source_capture_date;
+const todayUTC=new Date().toISOString().slice(0,10);
+assert(/^\d{4}-\d{2}-\d{2}$/.test(researchDate) && researchDate>= '2026-11-11' &&
+       researchDate<=todayUTC,'RBNZ research capture must be dated and not in the future');
+assert(nzd.source_release_date>='2026-11-11' && nzd.source_release_date<=researchDate,
+       'RBNZ release must be dated before capture');
 assert.equal(nzd.source_capture_method,'PUBLIC_OFFICIAL_PAGE_MANUAL_RESEARCH_NOT_AUTOMATED_FETCH');
 assert.equal(nzd.automated_access_authorized,false);
 assert.equal(nzd.independent_xlsx_reconciled,false);
@@ -21,26 +27,29 @@ assert.equal(nzd.eligible_for_core,false);
 assert.equal(nzd.eligible_for_fx_pair_engine,false);
 assert.equal(nzd.eligible_for_backtests,false);
 assert.equal(nzd.benchmark_roll_date,'2026-10-30');
-assert.equal(nzd.daily_observations.length,5);
-assert.equal(nzd.daily_observations.at(-1).date,'2026-11-05');
-assert.equal(nzd.daily_observations.at(-1)['2Y'],3.78);
-assert.equal(nzd.daily_observations.at(-1)['10Y'],4.74);
-for(const rec of nzd.daily_observations.filter(x=>['2026-10-30','2026-11-03','2026-11-04'].includes(x.date))){
+assert(nzd.daily_observations.length>=8,'Latest official B2 archive must retain the eight confirmed post-roll dates');
+const nov10=nzd.daily_observations.find(x=>x.date==='2026-11-10');
+assert(nov10&&nov10['2Y']===3.77&&nov10['10Y']===4.71,'10 Nov official NZD 2Y/10Y rates changed unexpectedly');
+assert(nzd.daily_observations.at(-1).date>=nov10.date,'NZD archive regressed');
+for(const rec of nzd.daily_observations){
  const stored=legacy.NZD.after_roll.find(x=>x.date===rec.date);
- assert(stored&&stored['2Y']===rec['2Y']&&stored['10Y']===rec['10Y'],'NZD overlapping published research must reconcile '+rec.date);
+ if(stored)assert(stored['2Y']===rec['2Y']&&stored['10Y']===rec['10Y'],
+  'NZD overlapping published research must reconcile '+rec.date);
 }
 const chfContext=mod.researchedSources(rates,'EURCHF',asof,now,chf,nzd);
-const nzdContext=mod.researchedSources(rates,'NZDUSD',asof,now,chf,nzd);
-const crossContext=mod.researchedSources(rates,'CHFNZD',asof,now,chf,nzd);
+const nzdContext=mod.researchedSources(rates,'NZDUSD',researchDate,researchDate,chf,nzd);
+const crossContext=mod.researchedSources(rates,'CHFNZD',researchDate,researchDate,chf,nzd);
+assert.equal(mod.researchedSources(rates,'NZDUSD',asof,now,chf,nzd).length,0,
+ 'RBNZ archive published 11 Nov must never appear in an archived 6 Nov decision');
 assert.equal(chfContext.length,1);
 assert.equal(nzdContext.length,1);
 assert.equal(crossContext.length,2);
 assert.equal(chfContext[0].lastDate,'2026-10-30');
 assert.equal(chfContext[0].count,23);
-assert.equal(nzdContext[0].lastDate,'2026-11-05');
-assert.equal(nzdContext[0].count,5);
-assert.equal(nzdContext[0].intervals,4);
-assert.match(nzdContext[0].text,/Manca 1 intervallo/);
+assert.equal(nzdContext[0].lastDate,nzd.daily_observations.at(-1).date);
+assert.equal(nzdContext[0].count,nzd.daily_observations.length);
+assert.equal(nzdContext[0].intervals,nzd.daily_observations.length-1);
+assert.match(nzdContext[0].text,/Copertura temporale sufficiente/);
 assert.match(nzdContext[0].text,/riconciliazione XLSX/);
 assert.match(nzdContext[0].text,/Nessun collegamento/);
 assert(!mod.snapshot(rates,prices,'EURCHF',asof,now,aud,chf,nzd).ready);
@@ -70,7 +79,9 @@ assert.equal(JSON.stringify(rates),before,'Research must not mutate native rates
 const testAlter=(which,description,mutate)=>{
  const altered=JSON.parse(JSON.stringify(which==='CHF'?chf:nzd));
  mutate(altered);
- const context=mod.researchedSources(rates,which==='CHF'?'EURCHF':'NZDUSD',asof,now,which==='CHF'?altered:chf,which==='NZD'?altered:nzd);
+ const context=mod.researchedSources(rates,which==='CHF'?'EURCHF':'NZDUSD',
+  which==='CHF'?asof:researchDate,which==='CHF'?now:researchDate,
+  which==='CHF'?altered:chf,which==='NZD'?altered:nzd);
  assert.equal(context.length,0,'Invalid source must not show research claim: '+description);
 };
 [
@@ -83,9 +94,9 @@ const testAlter=(which,description,mutate)=>{
  ['wrong reported count',x=>x.observation_count=12]
 ].forEach(([label,f])=>testAlter('CHF',label,f));
 [
- ['wrong release',x=>x.source_release_date='2026-11-15'],
+ ['wrong release',x=>x.source_release_date='2099-11-15'],
  ['not permitted automatic download',x=>x.source_capture_method='AUTOMATED_RBNZ_SCRAPER'],
- ['future web capture',x=>x.source_capture_date='2026-11-15'],
+ ['future web capture',x=>x.source_capture_date='2099-11-15'],
  ['fake XLSX reconciliation',x=>x.independent_xlsx_reconciled=true],
  ['unreviewed production promotion',x=>x.eligible_for_fx_pair_engine=true],
  ['old-benchmark splicing',x=>x.daily_observations.unshift({date:'2026-10-29','2Y':3.77,'10Y':4.87})],
@@ -107,14 +118,22 @@ assert.match(html,/non certificato come quotazione corrente/);
 assert.doesNotMatch(html,/<svg/);
 state.pair='NZDUSD';
 html=mod.build(api).render();
-assert.match(html,/data-source-context="NZD"/);
-assert.match(html,/4\/5 intervalli/);
-assert.match(html,/riconciliazione XLSX/);
+assert.doesNotMatch(html,/data-source-context="NZD"/,'Do not backdate 11 Nov NZD research into 6 Nov');
 assert.doesNotMatch(html,/<svg/);
 state.pair='CHFNZD';
 html=mod.build(api).render();
-assert.match(html,/data-source-context="NZD"/);
+assert.doesNotMatch(html,/data-source-context="NZD"/,'Archived cross must exclude future NZD research');
 assert.match(html,/data-source-context="CHF"/);
+// The same source becomes visible on its verified publication/capture date,
+// as research context only; it cannot create a current FX/2Y trading signal.
+const researchPairs={...pairs,price_asof:researchDate};
+const researchGet=k=>({rates,pairs:researchPairs,currencyPrices:prices,audDailyResearch:aud,
+  chfResearch:chf,nzdPostroll:nzd})[k];
+state.pair='NZDUSD';
+const researchHtml=mod.build({...api,get:researchGet,dayNow:()=>researchDate}).render();
+assert.match(researchHtml,/data-source-context="NZD"/);
+assert.match(researchHtml,/riconciliazione XLSX/);
+assert.doesNotMatch(researchHtml,/<svg/,'Research context does not manufacture an FX rate chart');
 state.pair='EURUSD';
 html=mod.build({...api,plot:()=>'<svg></svg>'}).render();
 assert.doesNotMatch(html,/data-source-context=/,'Official fully current pair must not show irrelevant CHF/NZD source context');
