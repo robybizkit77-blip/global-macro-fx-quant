@@ -95,9 +95,9 @@ assert.equal(validatePrior(fake,archived,'USD'),null,'Future/no-overlap fails cl
 const page=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/index.html'),'utf8');
 const studio=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/cot-studio.js'),'utf8');
 const app=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/app.js'),'utf8');
-assert(page.indexOf('cot-evidence-reading.js?v=22')<page.indexOf('cot-report-reading-v26.js?v=26'));
-assert(page.indexOf('cot-report-reading-v26.js?v=26')<page.indexOf('cot-studio.js?v=26'));
-assert(page.includes('cot-studio.css?v=26'));
+assert(page.indexOf('cot-evidence-reading.js?v=22')<page.indexOf('cot-report-reading-v26.js?v=27'));
+assert(page.indexOf('cot-report-reading-v26.js?v=27')<page.indexOf('cot-studio.js?v=29'));
+assert(page.includes('cot-studio.css?v=29'));
 assert(app.includes("cotPriorReference:'../design-studio-cot-v1-data.json'"));
 assert(!app.includes("cotPrice:'../design-studio-cot-v1-data.json'"));
 assert(studio.includes("get('currencyPrices')"));
