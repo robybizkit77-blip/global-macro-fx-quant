@@ -34,8 +34,18 @@ class MorningPublicProofTests(unittest.TestCase):
         self.assertFalse(later["public_delivery_by_0800_proven"])
 
     def test_archived_is_not_today(self):
-        self.assertEqual(assess(self.source,at(6))["status"],"ARCHIVED_AWAITING_MORNING")
-        self.assertEqual(assess(self.source,at(10))["status"],"STALE_AFTER_0800")
+        # Derive an archived fixture independent of the mutable current edition.
+        # Yesterday's successful publication must not break tomorrow's CI.
+        archived=copy.deepcopy(self.edition)
+        archived["edition_date"]="2026-11-10"
+        archived["observation_cutoff_exclusive"]="2026-11-10"
+        for chart in archived["charts"]:
+            chart["as_of"]="2026-11-09"
+            for point in chart["points"]:
+                if point["date"]>="2026-11-10":
+                    point["date"]="2026-11-09"
+        self.assertEqual(assess(archived,at(6))["status"],"ARCHIVED_AWAITING_MORNING")
+        self.assertEqual(assess(archived,at(10))["status"],"STALE_AFTER_0800")
 
     def test_missing_and_future(self):
         self.assertEqual(assess(None,at(6))["status"],"PREDEADLINE_UNREACHABLE")
