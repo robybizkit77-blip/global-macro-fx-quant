@@ -30,7 +30,7 @@
     "source": "Reserve Bank of New Zealand B2 · archived manual public-page research",
     "source_url": "https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates",
     "roll_date": "2026-10-30",
-    "latest_date": "2026-11-05",
+    "latest_date": "2026-11-10",
     "old_benchmark": {
       "2Y": "May 2028",
       "10Y": "May 2036"
@@ -71,16 +71,31 @@
         "date": "2026-11-05",
         "2Y": 3.78,
         "10Y": 4.74
+      },
+      {
+        "date": "2026-11-06",
+        "2Y": 3.79,
+        "10Y": 4.76
+      },
+      {
+        "date": "2026-11-09",
+        "2Y": 3.8,
+        "10Y": 4.76
+      },
+      {
+        "date": "2026-11-10",
+        "2Y": 3.77,
+        "10Y": 4.71
       }
     ],
-    "latest_2Y": 3.78,
-    "latest_10Y": 4.74,
-    "latest_curve_bp": 96.0,
+    "latest_2Y": 3.77,
+    "latest_10Y": 4.71,
+    "latest_curve_bp": 94.0,
     "same_benchmark_change_bp": {
-      "2Y": -18.0,
-      "10Y": -16.0,
+      "2Y": -19.0,
+      "10Y": -19.0,
       "start": "2026-10-30",
-      "end": "2026-11-05"
+      "end": "2026-11-10"
     },
     "cross_roll_change_allowed": false,
     "research_only_note": "RBNZ B2 daily NZFMA government benchmarks, previously captured by human page review; now reconciled with the independent dated V2 research file. NOT an automated fresh RBNZ read; no XLSX reconciliation, official OIS, Core, FX pair signals or backtests; do not join yields across the 30 Oct benchmark roll.",
@@ -89,7 +104,7 @@
     "eligible_for_backtests": false,
     "eligible_for_automatic_promotion": false,
     "independent_xlsx_reconciled": false,
-    "source_release_date": "2026-11-06",
+    "source_release_date": "2026-11-11",
     "source_capture_method": "ALREADY_STORED_MANUAL_WEB_RESEARCH_NOT_RUNNER_FETCH",
     "source_release_date_quality": "PUBLISHER_RELEASE_DATE_RECORDED_IN_MANUAL_ARCHIVE"
   },

@@ -4,8 +4,8 @@
   "currency": "NZD",
   "source": "Reserve Bank of New Zealand · Wholesale Interest Rates B2 · NZFMA indicative government closing yields",
   "source_url": "https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates",
-  "source_release_date": "2026-11-06",
-  "source_capture_date": "2026-11-08",
+  "source_release_date": "2026-11-11",
+  "source_capture_date": "2026-11-11",
   "source_capture_method": "PUBLIC_OFFICIAL_PAGE_MANUAL_RESEARCH_NOT_AUTOMATED_FETCH",
   "observation_basis": "Government bond closing yields 2-year and 10-year, NOT overnight index swaps or bank bill yields",
   "benchmark_roll_date": "2026-10-30",
@@ -38,6 +38,21 @@
       "date": "2026-11-05",
       "2Y": 3.78,
       "10Y": 4.74
+    },
+    {
+      "date": "2026-11-06",
+      "2Y": 3.79,
+      "10Y": 4.76
+    },
+    {
+      "date": "2026-11-09",
+      "2Y": 3.8,
+      "10Y": 4.76
+    },
+    {
+      "date": "2026-11-10",
+      "2Y": 3.77,
+      "10Y": 4.71
     }
   ],
   "official_web_display_observed": true,
@@ -51,5 +66,5 @@
   "eligible_for_backtests": false,
   "eligible_for_automatic_promotion": false,
   "canonical_government_rates_untouched": true,
-  "note": "Manual research transcription of official RBNZ public B2 page as released 6 Nov 2026. Five post-roll market dates = four intervals; minimum five intervals for FX/2Y directional verdict not reached. No crossing 29-Oct/30-Oct benchmark rollover. Scheduled automation MUST NOT scrape RBNZ unless documented written permission exists."
+  "note": "Research transcription of the publicly displayed official RBNZ B2 page, publication dated 11 Nov 2026, observed 11 Nov (not a GitHub runner download). New NZFMA government benchmarks April 2029 / April 2037 since 30 Oct. Latest dated pair for 10 Nov: 2Y 3.77%, 10Y 4.71%, government curve 94 bp. The webpage's 2-10s column is SWAP spread (62 bp), not the government-bond curve. Data series not independently reconciled to source XLSX; no source-first publication PIT, automated collection entitlement, OIS, live Core, signal, or backtest; pre/post roll changes must not be joined. Official page: https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates"
 }
