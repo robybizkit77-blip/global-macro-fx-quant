@@ -78,27 +78,80 @@
  }
  // An independently timestamped post-release note may follow a frozen opening
  // edition. It must NEVER rewrite the morning article or claim event-price proof.
- function postRelease(feed,news,esc,dayNow){
+ function postRelease(feed,news,esc,dayNow,nowUtc){
   const validStamp=x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(x)&&Number.isFinite(Date.parse(x));
+  const validDay=x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x);
+  const ccyNames={
+   USD:['Fed','EUR/USD e USD/JPY'],EUR:['BCE','EUR/USD e EUR/GBP'],
+   GBP:['BoE','GBP/USD e EUR/GBP'],JPY:['BoJ','USD/JPY e EUR/JPY'],
+   CHF:['SNB','EUR/CHF e USD/CHF'],CAD:['BoC','USD/CAD e CAD/JPY'],
+   AUD:['RBA','AUD/USD e AUD/CAD'],NZD:['RBNZ','NZD/USD e NZD/JPY']
+  };
+  const topics={
+   INFLATION:'La composizione e la persistenza dei prezzi possono modificare le aspettative sui tassi.',
+   LABOUR:'Assunzioni, disoccupazione e salari aiutano a distinguere resilienza della domanda da un rallentamento.',
+   LABOUR_COST:'La dinamica del costo del lavoro può incidere sulla persistenza dell’inflazione dei servizi.',
+   GROWTH:'La tenuta della crescita conta per la capacità della banca centrale di mantenere la propria politica.',
+   CENTRAL_BANK_DECISION:'Conta la differenza fra decisione, comunicazione ufficiale e percorso già incorporato nei tassi.'
+  };
+  // Accept only issuer-validated categories; no scheduled-calendar-only events,
+  // official RSS headline-only narratives or generic unverified market items.
+  const sourceOK=x=>{
+   if(typeof x.source_url!=='string')return false;
+   let url;
+   try{url=new URL(x.source_url)}catch(e){return false}
+   if(url.protocol!=='https:'||url.username||url.password||url.port)return false;
+   if(x.quality==='ISSUER_BLS_HTML_FIRST_RUNNER_OBSERVATION_NOT_PUBLISHER_PIT')
+    return x.ccy==='USD'&&url.hostname==='www.bls.gov'&&url.pathname==='/news.release/cpi.htm';
+   if(x.quality==='OFFICIAL_PAGE_FIRST_OBSERVATION_NOT_FIRST_RELEASE_PIT')
+    return (x.ccy==='USD'&&url.hostname==='www.bls.gov'&&
+        /^\/news\.release\/eci(?:\.nr0)?\.htm$/.test(url.pathname))||
+     (x.ccy==='CAD'&&url.hostname==='www150.statcan.gc.ca'&&
+        /^\/n1\/daily-quotidien\/261030\/dq261030[a-h]-eng\.htm$/.test(url.pathname));
+   if(x.quality==='ISSUER_GDP_FIRST_RUNNER_OBSERVATION_NOT_PUBLISHER_PIT')
+    return (x.ccy==='GBP'&&url.hostname==='www.ons.gov.uk'&&
+       url.pathname==='/economy/grossdomesticproductgdp/bulletins/gdpfirstquarterlyestimateuk/julytoseptember2026')||
+     (x.ccy==='CHF'&&url.hostname==='www.seco.admin.ch'&&url.pathname==='/en/gdp-flash');
+   return false;
+  };
   if(!sound(feed)||feed.edition_date!==dayNow()||!validStamp(feed.created_at_utc)
    ||!Array.isArray(news?.items))return '';
-  const item=news.items.find(x=>x?.category==='MACRO_OFFICIAL_ACTUAL'
-   &&x.ccy==='USD'&&x.as_of==='2026-11-10'
-   &&x.quality==='ISSUER_BLS_HTML_FIRST_RUNNER_OBSERVATION_NOT_PUBLISHER_PIT'
-   &&typeof x.title==='string'&&typeof x.detail==='string'
-   &&x.source_url==='https://www.bls.gov/news.release/cpi.htm'
-   &&validStamp(x.first_runner_observed_at_utc)
-   &&Date.parse(x.first_runner_observed_at_utc)>Date.parse(feed.created_at_utc)
-   &&Date.parse(x.first_runner_observed_at_utc)<=Date.now()
-   &&x.first_runner_observed_at_utc.slice(0,10)<=dayNow());
-  if(!item)return '';
-  return '<aside class="morning-catalyst" data-postrelease="official-cpi" aria-label="Aggiornamento ufficiale dopo il briefing">'+
-   '<div class="morning-section-label">AGGIORNAMENTO DOPO IL BRIEFING · FONTE UFFICIALE</div>'+
-   '<h2>'+esc(item.title)+'</h2><p>'+esc(item.detail)+'</p>'+
-   '<p><strong>Per il Forex:</strong> il dato può influenzare le attese Fed, ma il differenziale monetario effettivamente riprezzato e la reazione relativa di EUR/USD e USD/JPY restano da verificare. Nessun segnale operativo automatico.</p>'+
-   '<p>Prima acquisizione del runner: '+esc(item.first_runner_observed_at_utc)+' (UTC). '+
-   '<a href="https://www.bls.gov/news.release/cpi.htm" rel="noopener noreferrer" target="_blank">Fonte BLS</a>. '+
-   'Il briefing di apertura rimane invariato.</p></aside>';
+  const now=nowUtc===undefined?Date.now():Date.parse(nowUtc);
+  if(!Number.isFinite(now))return '';
+  const editionClock=Date.parse(feed.created_at_utc);
+  const editionDay=Date.parse(feed.edition_date+'T00:00:00Z');
+  const entries=news.items.filter(x=>{
+   if(x?.category!=='MACRO_OFFICIAL_ACTUAL'||!Object.hasOwn(ccyNames,x.ccy)
+    ||!validDay(x.as_of)||!validStamp(x.first_runner_observed_at_utc)
+    ||typeof x.title!=='string'||!x.title||typeof x.detail!=='string'||!x.detail
+    ||!sourceOK(x))return false;
+   const eventClock=Date.parse(x.as_of+'T00:00:00Z');
+   const observed=Date.parse(x.first_runner_observed_at_utc);
+   const deltaDays=(editionDay-eventClock)/864e5;
+   if(deltaDays<0||deltaDays>2||observed>now)return false;
+   // An actual captured before a *late* briefing is still eligible if the
+   // issuer release is today; the frozen opening text stays unchanged.
+   if(x.as_of!==feed.edition_date&&observed<=editionClock)return false;
+   const kind=x.event_type||(x.quality==='ISSUER_BLS_HTML_FIRST_RUNNER_OBSERVATION_NOT_PUBLISHER_PIT'?'INFLATION':null);
+   return Object.hasOwn(topics,kind);
+  }).sort((a,b)=>b.first_runner_observed_at_utc.localeCompare(a.first_runner_observed_at_utc)).slice(0,3);
+  if(!entries.length)return '';
+  const parts=entries.map((x,i)=>{
+   const [bank,pairs]=ccyNames[x.ccy];
+   const kind=x.event_type||(x.quality==='ISSUER_BLS_HTML_FIRST_RUNNER_OBSERVATION_NOT_PUBLISHER_PIT'?'INFLATION':null);
+   const why=topics[kind];
+   const link=sourceOK(x)?'<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener noreferrer">Fonte ufficiale</a>':'';
+   return '<div class="morning-update-row" data-ccy="'+esc(x.ccy)+'" data-event-type="'+esc(kind)+'">'+
+    '<h2>'+esc(x.title)+'</h2><p>'+esc(x.detail)+'</p>'+
+    '<p><strong>Lettura Forex:</strong> '+esc(why)+' Per la '+esc(bank)+
+    ' va verificato se il nuovo dato modifica il pricing relativo, non il solo livello del tasso. '+
+    'Controllare '+esc(pairs)+' su date comparabili; non abbiamo una reazione intraday certificata, né un segnale automatico.</p>'+
+    '<p>Prima osservazione del runner (UTC): '+esc(x.first_runner_observed_at_utc)+
+    ' · '+link+' · Il briefing originale resta invariato.</p></div>';
+  });
+  return '<aside class="morning-catalyst" data-postrelease="official-g8-macro" aria-label="Aggiornamenti ufficiali dopo il briefing">'+
+   '<div class="morning-section-label">NUOVI DATI MACRO UFFICIALI · AGGIORNAMENTO DATATO</div>'+
+   parts.join('')+'</aside>';
  }
  window.FXQuantMorningDesk={sound,build,postRelease};
 })();
