@@ -1,7 +1,20 @@
 {
   "content_as_of": "2026-11-10",
-  "generated_at_utc": "2026-11-11T08:48:18.021479Z",
+  "generated_at_utc": "2026-11-11T09:10:22.904402Z",
   "items": [
+    {
+      "as_of": "2026-11-10",
+      "category": "MACRO_OFFICIAL_ACTUAL",
+      "ccy": "USD",
+      "confidence": "A",
+      "detail": "Comunicato BLS 10/11/2026: headline mensile +0,4%, core mensile +0,3%. Il BLS non ha pubblicato headline/core annuali per ottobre 2026: manca la base di confronto ottobre 2025. Rispetto a forecast secondari osservati prima del rilascio, headline +0,1 e core +0,1 punti percentuali; NON sono sorprese contro un consenso survey certificato, Potenziale pressione sulle attese Fed, ma nessuna variazione OIS o risposta del dollaro è attribuita causalmente al CPI: mancano quotazioni sincronizzate prima/dopo l'evento. Prima osservazione del nostro runner: 2026-11-11T08:48:15Z.",
+      "first_runner_observed_at_utc": "2026-11-11T08:48:15Z",
+      "importance": "HIGH",
+      "quality": "ISSUER_BLS_HTML_FIRST_RUNNER_OBSERVATION_NOT_PUBLISHER_PIT",
+      "source": "Bureau of Labor Statistics · CPI ottobre 2026",
+      "source_url": "https://www.bls.gov/news.release/cpi.htm",
+      "title": "CPI USA ottobre · headline +0,4% e core +0,3% mensili"
+    },
     {
       "as_of": "2026-11-10",
       "category": "MARKET_FX_ECB_FIXING",
@@ -190,7 +203,7 @@
       "title": "AUD: repricing implicito da futures più hawkish (+0.5 bp 6M in 1D)"
     }
   ],
-  "last_checked_at_utc": "2026-11-11T08:48:18.021479Z",
+  "last_checked_at_utc": "2026-11-11T09:10:22.904402Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -720,14 +733,7 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 4.475,
-            "date": "2026-11-10",
-            "event_window_proof": false,
-            "instrument": "FUTURES_IMPLIED",
-            "quality": "ESTIMATED_INFORMATIONAL",
-            "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
-            "status": "DAILY_CONTEXT_ONLY"
+            "status": "NOT_VALIDATED_DAILY_CONTEXT"
           },
           "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
           "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
@@ -925,14 +931,7 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "6m_rate_pct": 4.475,
-            "date": "2026-11-10",
-            "event_window_proof": false,
-            "instrument": "FUTURES_IMPLIED",
-            "quality": "ESTIMATED_INFORMATIONAL",
-            "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
-            "status": "DAILY_CONTEXT_ONLY"
+            "status": "NOT_VALIDATED_DAILY_CONTEXT"
           },
           "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
           "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
