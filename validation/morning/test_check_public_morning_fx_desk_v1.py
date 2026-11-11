@@ -20,6 +20,11 @@ class MorningPublicProofTests(unittest.TestCase):
         self.edition["observation_cutoff_exclusive"]="2026-11-11"
         self.edition["edition_status"]="MORNING_SNAPSHOT"
 
+    def test_public_audit_waits_for_editorial_writer(self):
+        workflow = (ROOT/".github/workflows/fxv2-morning-public-proof.yml").read_text(encoding="utf-8")
+        self.assertIn("needs: [contract, morning-editorial]", workflow)
+        self.assertIn("if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')", workflow)
+
     def test_not_invented_delivery_time(self):
         prior=assess(self.edition,at(6))
         self.assertEqual(prior["status"],"VERIFIED_ON_PUBLIC_SITE_BEFORE_0800")
