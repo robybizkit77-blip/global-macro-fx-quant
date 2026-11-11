@@ -73,4 +73,35 @@ rates_live=pulse.government_curve_items(load('live_data/sections/NATIVE_RATES_DA
 cross_live=pulse.cross_asset_items(load('site/fx-quant-v2/cross-asset-live-data.json'),current_day)
 for observation in fx_live+rates_live+cross_live:
     assert observation['_date']<=current_day and observation.get('source') and observation.get('quality')
+# Newly observed official CPI is distinct from daily FX/OIS evidence.
+# Historical rewinds cannot surface a future runner's first source observation.
+from datetime import datetime, timezone, timedelta
+from validation.macro import capture_us_cpi_exact_actuals_v10 as cpi
+from validation.macro.test_capture_us_cpi_exact_actuals_v10 import PARTIAL, AFTER, SEEN
+from validation.macro.freeze_exact_metric_forecasts_v9 import read_rows
+forecast_rows=read_rows(cpi.FORECAST_LEDGER)
+actual_rows,receipt=cpi.capture(
+    forecast_rows, [], AFTER,
+    fetch=lambda url,host: (PARTIAL,url),
+    observed_clock=lambda: SEEN)
+assert receipt['new_metrics_archived']==2
+assert pulse.official_cpi_items(forecast_rows,[],SEEN)==[]
+assert pulse.official_cpi_items(forecast_rows,actual_rows,AFTER)==[]
+new=pulse.official_cpi_items(forecast_rows,actual_rows,SEEN)
+assert len(new)==1 and new[0]['category']=='MACRO_OFFICIAL_ACTUAL'
+assert new[0]['as_of']=='2026-11-10'
+assert '+0,4%' in new[0]['detail'] and '+0,3%' in new[0]['detail']
+assert 'non ha pubblicato' in new[0]['detail']
+assert 'NON sono sorprese' in new[0]['detail']
+assert 'nessuna variazione OIS' in new[0]['detail']
+assert new[0]['source_url']=='https://www.bls.gov/news.release/cpi.htm'
+assert pulse.official_cpi_items(
+    forecast_rows,actual_rows,datetime(2026,11,19,12,tzinfo=timezone.utc))==[]
+tampered=copy.deepcopy(actual_rows)
+tampered[0]['actual_percent']=12
+try:
+    pulse.official_cpi_items(forecast_rows,tampered,SEEN)
+    raise AssertionError('Unsigned revised CPI was accepted')
+except ValueError: pass
+print('MARKET_PULSE_OFFICIAL_CPI_MONTHLY_ONLY_PASS: BLS source, first-observed clock, missing YoY, no fabricated surprise/market reaction')
 print('MARKET_PULSE_V25_REAL_SOURCE_PASS: frozen FX 3/3, government curves 3/3, cross-asset 5/5; as-of, missing, stale, future, unit and ECB quote guards; current source coverage FX={} rates={} cross={}.'.format(len(fx_live),len(rates_live),len(cross_live)))
