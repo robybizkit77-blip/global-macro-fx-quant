@@ -1,6 +1,7 @@
 """Hermetic safeguards for Morning Desk production recovery."""
 from datetime import datetime, timezone
 import unittest
+from pathlib import Path
 
 from validation.orchestration.trigger_morning_editorial_recovery_v1 import decide
 
@@ -42,6 +43,12 @@ class MorningRecoveryTests(unittest.TestCase):
             self.assertEqual(decide(now, None, [])["action"], "SKIP_OUTSIDE_MORNING_WINDOW")
         summer = datetime(2026, 7, 8, 5, 30, tzinfo=timezone.utc)
         self.assertEqual(decide(summer, None, [])["action"], "DISPATCH")
+
+    def test_workflow_passes_real_github_token_to_both_recovery_steps(self):
+        workflow = (Path(__file__).resolve().parents[2] /
+                    ".github/workflows/early-morning-recovery-v1.yml").read_text(encoding="utf-8")
+        self.assertEqual(workflow.count("GH_TOKEN: ${{ github.token }}"), 2)
+        self.assertNotIn("GH_TOKEN: ${", workflow.replace("GH_TOKEN: ${{ github.token }}", ""))
 
     def test_unrelated_branch_ignored(self):
         run = self.run_info(status="in_progress")

@@ -79,5 +79,5 @@ jobs:
       - name: Recover missing Morning FX public edition without new scheduler
         if: always()
         env:
-          GH_TOKEN: ${'${{ github.token }}'}
+          GH_TOKEN: ${{ github.token }}
         run: python -m validation.orchestration.trigger_morning_editorial_recovery_v1
