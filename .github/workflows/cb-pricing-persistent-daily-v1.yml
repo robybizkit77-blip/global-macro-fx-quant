@@ -242,6 +242,9 @@ jobs:
           PY
           echo "changed=$(cat /tmp/cb-pricing-persistent/changed.flag)" >> "$GITHUB_OUTPUT"
 
+      - name: Regression for bounded CB Pricing safe main persistence
+        run: python3 -m unittest validation.cb_pricing.test_cb_pricing_persistent_safe_commit_v1 -v
+
       - name: Validation branch restores runtime
         if: steps.gate.outputs.should_run == 'true' && steps.scope.outputs.changed == 'yes' && github.ref != 'refs/heads/main'
         shell: bash
@@ -259,7 +262,6 @@ jobs:
           # Reuse already-tested Calendar/News safe writer. A concurrent
           # unrelated main commit may advance; any overlap on pricing,
           # manifest or payload fails closed. No forced push or data merge.
-          python3 -m unittest validation.cb_pricing.test_cb_pricing_persistent_safe_commit_v1 -v
           python3 - <<'PY'
           import json
           from validation.macro.persist_calendar_news_safe_v12 import persist
