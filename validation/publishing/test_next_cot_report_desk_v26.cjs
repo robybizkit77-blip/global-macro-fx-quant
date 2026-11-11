@@ -49,15 +49,18 @@ for(const ccy of names){
  assert(Number.isFinite(v.velocity),ccy+' OI-implied velocity');
  assert.equal(v.crowd,Math.abs(Number(a.netoi.at(-1).toFixed(1)))>=30);
  assert(v.level=== (v.rounded>=80?'EXTREME LONG':v.rounded<=20?'EXTREME SHORT':'NEUTRALE'));
- assert(reading(v).fact.includes('Δ long')&&reading(v).judgment.includes('timing'),ccy+' complete Serafini desk interpretation');
+ const story=reading(v);
+ assert(story&&story.fact.includes('Motore principale:')&&story.fact.includes('Variazione normalizzata:')&&story.judgment.length>80&&story.verify.includes('prezzo'),ccy+' complete Serafini desk interpretation');
  item.deskStats=v;reports.push(item);
 }
 assert.equal(reports.length,8);
 const g=desk(reports);
 assert(g&&g.asof===source.USD.dates.at(-1));
 if(g.asof==='2026-11-03'){
- assert.equal(g.up.ccy,'CAD');
- assert.equal(g.down.ccy,'EUR');
+ // Rankings use normalized 1W/OI, not raw contract changes or a historic label.
+ const normalized=[...reports].map(x=>x.deskStats).sort((a,b)=>b.velocity-a.velocity);
+ assert.equal(g.up?.ccy,normalized.find(x=>x.velocity>0)?.ccy);
+ assert.equal(g.down?.ccy,[...normalized].reverse().find(x=>x.velocity<0)?.ccy);
  assert.equal(g.crowd[0].ccy,'NZD');
  assert.deepEqual(g.crowd.map(x=>x.ccy),['NZD','AUD']);
  assert(g.divergent.some(x=>x.ccy==='EUR'));
@@ -92,9 +95,9 @@ assert.equal(validatePrior(fake,archived,'USD'),null,'Future/no-overlap fails cl
 const page=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/index.html'),'utf8');
 const studio=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/cot-studio.js'),'utf8');
 const app=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/app.js'),'utf8');
-assert(page.indexOf('cot-evidence-reading.js?v=22')<page.indexOf('cot-report-reading-v26.js?v=26'));
-assert(page.indexOf('cot-report-reading-v26.js?v=26')<page.indexOf('cot-studio.js?v=26'));
-assert(page.includes('cot-studio.css?v=26'));
+assert(page.indexOf('cot-evidence-reading.js?v=22')<page.indexOf('cot-report-reading-v26.js?v=27'));
+assert(page.indexOf('cot-report-reading-v26.js?v=27')<page.indexOf('cot-studio.js?v=29'));
+assert(page.includes('cot-studio.css?v=29'));
 assert(app.includes("cotPriorReference:'../design-studio-cot-v1-data.json'"));
 assert(!app.includes("cotPrice:'../design-studio-cot-v1-data.json'"));
 assert(studio.includes("get('currencyPrices')"));
