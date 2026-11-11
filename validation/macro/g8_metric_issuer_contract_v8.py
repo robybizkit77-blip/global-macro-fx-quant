@@ -77,6 +77,11 @@ SPECS={
         ("AU_CPI_MONTHLY_INDICATOR_HEADLINE_YOY","Australia monthly CPI indicator (not quarterly trimmed mean)","PCT_YOY",
          ("monthly cpi indicator y y","monthly cpi y y"),"NO_CERTIFIED_ISSUER_ACTUAL_PARSER"),
       )),
+      ("2026-11-19","LABOUR","Labour Force, Australia",(
+        ("AU_UNEMP_RATE_SA","Australia seasonally adjusted unemployment rate (level)","PCT_LEVEL_SA",
+         ("unemployment rate","australia unemployment rate"),
+         "ISSUER_FIRST_OBSERVED_V12_NOT_PUBLISHER_PIT"),
+      )),
     ),
     "NZD":(
       ("2026-10-22","INFLATION","Consumers price index",(
@@ -112,7 +117,7 @@ def verify_contract(official):
             for ident,component,unit,labels,parser in metrics:
                 if ident in seen_ids or not labels or not component or not unit:
                     raise ValueError("METRIC_V8_REJECTED: invalid/duplicate metric "+ident)
-                if not re.fullmatch(r"PCT_(MOM|YOY|QOQ)(?:_(?:SA|NSA))?",unit):
+                if not re.fullmatch(r"PCT_(?:(?:MOM|YOY|QOQ)(?:_(?:SA|NSA))?|LEVEL_SA)",unit):
                     raise ValueError("METRIC_V8_REJECTED: unknown rate basis "+unit)
                 if not parser:
                     raise ValueError("METRIC_V8_REJECTED: omitted parser status "+ident)
