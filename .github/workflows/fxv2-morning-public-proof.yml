@@ -67,8 +67,10 @@ jobs:
           node validation/publishing/test_morning_desk_render_v1.cjs
 
   audit:
-    needs: contract
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    # Public verification must observe the production outcome, not race it.
+    # Still run if production fails, so absence is recorded rather than skipped.
+    needs: [contract, morning-editorial]
+    if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     steps:
