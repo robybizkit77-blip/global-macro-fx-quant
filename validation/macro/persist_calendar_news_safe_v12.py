@@ -46,7 +46,8 @@ def changed_files(repo: Path, *args: str):
     return set(filter(None, r.stdout.splitlines()))
 
 
-def persist(repo: Path = ROOT, *, managed=MANAGED, max_attempts=MAX_ATTEMPTS):
+def persist(repo: Path = ROOT, *, managed=MANAGED, max_attempts=MAX_ATTEMPTS,
+            commit_message="Refresh official release ledgers and operational Calendar/News"):
     repo = Path(repo).resolve()
     managed = tuple(managed)
     if not managed or any(not x or x.startswith("/") or ".." in Path(x).parts
@@ -54,6 +55,9 @@ def persist(repo: Path = ROOT, *, managed=MANAGED, max_attempts=MAX_ATTEMPTS):
         raise ValueError("invalid managed-file contract")
     if max_attempts < 1 or max_attempts > 10:
         raise ValueError("invalid retry budget")
+    if (not isinstance(commit_message, str) or not commit_message.strip()
+            or chr(10) in commit_message or chr(13) in commit_message):
+        raise ValueError("invalid commit message")
     before = git(repo, "rev-parse", "HEAD").stdout.strip()
     dirty = changed_files(repo)
     if not dirty:
@@ -68,8 +72,7 @@ def persist(repo: Path = ROOT, *, managed=MANAGED, max_attempts=MAX_ATTEMPTS):
     git(repo, "add", "--", *managed)
     if not git(repo, "diff", "--cached", "--quiet", check=False).returncode:
         return {"status": "NO_STAGED_CHANGE", "attempts": 0}
-    git(repo, "commit", "-m",
-        "Refresh official release ledgers and operational Calendar/News")
+    git(repo, "commit", "-m", commit_message)
     for attempt in range(1, max_attempts + 1):
         push = git(repo, "push", "origin", "HEAD:main", check=False)
         if push.returncode == 0:
