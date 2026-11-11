@@ -36,6 +36,8 @@ on:
       - 'validation/macro/fixtures/pre_release_oct28_usd_cad_fixture_v1.json'
       - 'validation/macro/MACRO_PRE_RELEASE_CONSENSUS_LEDGER_V1.jsonl'
       - 'validation/build_news_pulse_operational_v1.py'
+      - 'validation/macro/build_g8_official_news_items_v1.py'
+      - 'validation/macro/test_build_g8_official_news_items_v1.py'
       - 'validation/test_market_pulse_cross_asset_v25.py'
       - 'validation/fixtures/market_pulse_v25_observed_2026_11_10.json'
       - 'validation/news_reaction_evidence_v1.py'
@@ -89,6 +91,8 @@ on:
       - 'validation/macro/fixtures/pre_release_oct28_usd_cad_fixture_v1.json'
       - 'validation/macro/MACRO_PRE_RELEASE_CONSENSUS_LEDGER_V1.jsonl'
       - 'validation/build_news_pulse_operational_v1.py'
+      - 'validation/macro/build_g8_official_news_items_v1.py'
+      - 'validation/macro/test_build_g8_official_news_items_v1.py'
       - 'validation/test_market_pulse_cross_asset_v25.py'
       - 'validation/fixtures/market_pulse_v25_observed_2026_11_10.json'
       - 'validation/news_reaction_evidence_v1.py'
@@ -491,6 +495,8 @@ jobs:
 
       - name: Test source recheck distinct from content modification
         run: python validation/test_calendar_news_daily_recheck_v1.py
+      - name: Test G8 first-observed official macro actuals and publication clocks
+        run: python -m unittest validation.macro.test_build_g8_official_news_items_v1 -v
       - name: Validate FX, rates and cross-asset source-date contracts for Market Pulse
         run: python validation/test_market_pulse_cross_asset_v25.py
       - name: Build operational Calendar and News Pulse
