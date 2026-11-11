@@ -22,9 +22,9 @@ class G8MacroEventLifecycleV7Tests(unittest.TestCase):
         c=b["coverage"]
         self.assertEqual(b["schema"],m.SCHEMA)
         self.assertEqual(c["currencies_in_historical_calendar"],8)
-        self.assertEqual(c["issuer_calendar_events"],20)
+        self.assertEqual(c["issuer_calendar_events"],21)
         self.assertEqual(c["events_with_genuine_frozen_consensus_and_issuer_actual"],2)
-        self.assertEqual(c["unverified_intraday_event_reactions"],20)
+        self.assertEqual(c["unverified_intraday_event_reactions"],21)
         self.assertEqual(c["new_trading_signals"],0)
         self.assertFalse(b["ready_for_live_28_pair_signals"])
         self.assertFalse(b["ready_for_automatic_market_attribution"])
@@ -32,18 +32,18 @@ class G8MacroEventLifecycleV7Tests(unittest.TestCase):
         self.assertFalse(b["writes_market_model"])
         self.assertTrue(b["reuses_existing_calendar_news_schedule"])
         self.assertFalse(b["new_cron_added"])
-        self.assertEqual(len({x["event_key"] for x in b["events"]}),20)
+        self.assertEqual(len({x["event_key"] for x in b["events"]}),21)
 
     def test_upcoming_us_cpi_uk_gdp_ch_gdp_have_no_frozen_forecast(self):
         b=self.book
         q=b["priority_queue"]
-        self.assertEqual(len(q),3)
-        self.assertEqual([x["ccy"] for x in q],["USD","GBP","CHF"])
+        self.assertEqual(len(q),4)
+        self.assertEqual([x["ccy"] for x in q],["USD","GBP","CHF","AUD"])
         self.assertEqual([x["issuer_date"] for x in q],
-                         ["2026-11-10","2026-11-12","2026-11-16"])
+                         ["2026-11-10","2026-11-12","2026-11-16","2026-11-19"])
         self.assertEqual(b["coverage"]["upcoming_35d_with_frozen_consensus"],0)
         self.assertEqual(b["coverage"]["upcoming_35d_with_approved_actual_parser"],0)
-        self.assertEqual(b["coverage"]["currencies_with_upcoming_35d"],3)
+        self.assertEqual(b["coverage"]["currencies_with_upcoming_35d"],4)
         self.assertIn("NZD",b["coverage"]["countries_without_upcoming_35d"])
         self.assertIn("EUR",b["coverage"]["countries_without_upcoming_35d"])
         for e in q:
@@ -171,7 +171,7 @@ class G8MacroEventLifecycleV7Tests(unittest.TestCase):
 
     def test_separate_economic_event_from_28_pair_exposure(self):
         b=self.book
-        self.assertEqual(len(b["events"]),20)
+        self.assertEqual(len(b["events"]),21)
         for event in b["events"]:
             self.assertEqual(len(event["affected_pair_references"]),7)
             self.assertEqual(len(set(event["affected_pair_references"])),7)
