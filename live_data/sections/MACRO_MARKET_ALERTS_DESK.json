@@ -1,8 +1,51 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-10T23:27:33Z",
+  "generated_at_utc": "2026-11-11T06:34:44Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-0bc7f15a4320f42abc57",
+      "observed_at_utc": "2026-11-11T02:10:00Z",
+      "headline": "Oil rebounds as Hormuz shipping attacks blunt hopes for Iran truce",
+      "summary": "Reuters riporta: Oil rebounds as Hormuz shipping attacks blunt hopes for Iran truce. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxNUDdYdlFvTWpsUDJOZkVpN1RNYmM1RlIwZUxzSGhrazVnMTJ1el9lT2lpc08yc2VrUjdyR0tSWjJIRVRMdXh2cmJDam5yY2d1QURuUFdvQkh1ZWJDdHFXbmZCejViSHhTYnl6YU1uMmEtS1NIcFU1dmhPQVZpN2R5Ykc1OVBrUXVhemRVa01TblQ5THN6eDBlOXl3Nm5qTEtKRjNDeVVraW1hRjUwZjQyclBwd1hCTlZvNkdaVVdlUDc?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-5948d2269f6e1d052b84",
+      "observed_at_utc": "2026-11-11T02:05:00Z",
+      "headline": "Bonds reel as hot inflation fuels jumbo Fed hike fears",
+      "summary": "Reuters riporta: Bonds reel as hot inflation fuels jumbo Fed hike fears. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMikgFBVV95cUxON2pqenNYSWUzSVBxc3U2RlhRT29TZGNJWFVMRVVQa0NkaDd6STY3VzhiZTB1b0RPcXB4c0ZEM1RwaGdkZUpkZHp2Q0ZCenBZZF90eTZFMnJvT2F4elJlZlMzOFFiaTVfUmxxNVcxNFZLOVpRY1ZHTjFITVpqVlJHdDJ6UXVUNXU4Z2NoOGZrVjB0QQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-9f9b4308b33aaa92069b",
+      "observed_at_utc": "2026-11-11T00:54:00Z",
+      "headline": "Dollar gains traction as Fed speakers warn of risks from inflation",
+      "summary": "Reuters riporta: Dollar gains traction as Fed speakers warn of risks from inflation. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxOVUM1V3d2azVfSFlud1E3Z05veEpjMmxwYzhBWkc1NTgxRktLS25sQWVlbWVWUGxCdVBXR3dmbzMxeDNYUzFJVi1aTTZIcWQ0X3kteU55dWdKeEN0ZGhvNlBHc2cwMFY4a1Q3R2VxQS1BdUcwMkRMYlc4VFltaFZxekxGVHg3ZVhhRE92WXNwb3JkMXFKeExZUlppZ2dnaHVmcjJMLTVUM1BXLUVXSlNn?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-3b9bb44743bf1c1f6945",
       "observed_at_utc": "2026-11-10T02:23:00Z",
@@ -1367,47 +1410,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxOTk80ZVBzRVczc0hyRHU0RkJiTWx5ZDUwdnBHb0FWSmJyQWJzWHRYR0hZd0MzTW1INnFtSWRISVVRb1RncDltYW16eTYxRU9NcWJzanRqMmp4LWFXUVNTV2tzT3JCM0doS01hWDdGeUhNdHZ3WTdYXy14Q0luZTRmOWdQNlp2ZThtYlQ0cWhNSVk0c0ZkOUFyMExMUWRHMXRKamU2ZHRLa2pPMG9heUhzN2YwTnpCZw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-95da4b7e3c740a8a5afb",
-      "observed_at_utc": "2026-10-30T22:25:53Z",
-      "headline": "Wall St Week Ahead: Midterm US elections, earnings, jobs data loom for AI-wary stock market",
-      "summary": "Reuters riporta: Wall St Week Ahead: Midterm US elections, earnings, jobs data loom for AI-wary stock market. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxPMDJJM0JmU1Nreks0a1ViM1lWX2VRX043dHpXd2xjR091TTNJd1UyZjZ4a2kwMURZLXkwLTBHSWZaMG41VU5nbTE0VW1iNDdCbHNCTjc5RG5BZUx3QzM2d0IzUmJkWXB3VkNsMW5EMDVFUlQ1NmhvdDBVTy05RkpxaDZ4QW9xRExsY2QwVzFpMTJmRG52bW0tSWgwbkdCTlJlaFFnU2tUcEEyQml0cV9VRktaVTh4VDVFNkIwVjkyWmN6dFpTNE9FZkx4dw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-f0fb8d76cb68b7cd5519",
-      "observed_at_utc": "2026-10-30T16:24:47Z",
-      "headline": "Freight rates for Russian oil stay at record highs amid tanker shortage, Black Sea risks, sources say",
-      "summary": "Reuters riporta: Freight rates for Russian oil stay at record highs amid tanker shortage, Black Sea risks, sources say. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxPb3FtR2JUVEZGLVVwY0FJd0FSLWZHRnVFQzFENHNlbzczYkhZUy1RSExsdGotNF90S01qMlNqR3Jua2NRZ0dtZ1dnYkUzRDlCZ0h6UnZZMGVJVmU4dEU4RTdZWWR1R3pGUjhlVEVEU0lyc2d3SURKZ3lVdzQ3M1M4aFRrc2pVVUJ5ZlVIZmd0WVBvRnNQbVRqN2dJSXg2NGNSeDA2cGtmT2dGcUhTS2tyOHd5RWNuVTdFeG80UkpGX2ZyS19wUjZNRWtGMnU?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-c42157576914e2ff9069",
-      "observed_at_utc": "2026-10-30T15:32:06Z",
-      "headline": "Uganda's inflation rises to 3-year high after currency slump",
-      "summary": "Reuters riporta: Uganda's inflation rises to 3-year high after currency slump. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "MACRO",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxOWW5EWF9SS2oyYnhSVzl3VTN1OGRSbDZ0ZWFZQ3JSbHNkYmlsZExxdllwT3JYcG5sTGVjUUczaUZyZF9yN1BWdktUZDA3WTZOVUp4eGVrRDdINDViSWl2Z0k5c2ZQZ0ZxWnRqcGw0eGRINTJWMUU0ejZObnFJZmY5MEtHNEJZWlZZODZUZ2haVDltQUIyUFdCbjZVZWVmR2lrRmtLSVIwaVc?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
