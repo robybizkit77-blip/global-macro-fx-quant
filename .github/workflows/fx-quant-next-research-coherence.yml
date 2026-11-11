@@ -15,6 +15,7 @@ on:
       - 'validation/qa_next_research_coherence_v1.cjs'
       - 'live_data/sections/V250_COT_CHART_DATA.json'
       - 'live_data/sections/NEWS_PULSE_OPERATIONAL.json'
+      - 'live_data/sections/CALENDAR_OPERATIONAL_VIEW.json'
       - 'validation/qa_next_research_editorials_v7.cjs'
       - 'validation/qa_next_research_decision_v9.cjs'
       - 'validation/qa_next_fx_rates_bridge_v13.cjs'
@@ -22,6 +23,7 @@ on:
       - 'validation/qa_next_aud_f2_daily_research_v16.cjs'
       - 'validation/qa_next_chf_nzd_provenance_v17.cjs'
       - 'validation/qa_next_research_library_v1.cjs'
+      - 'validation/qa_next_macro_calendar_v1.cjs'
       - 'site/fx-quant-v2/chf-snb-paired-history.json'
       - 'site/fx-quant-v2/nzd-b2-postroll-web-research.json'
       - 'site/fx-quant-v2/aud-rba-f2-history-research.json'
@@ -64,3 +66,5 @@ jobs:
         run: node validation/qa_next_chf_nzd_provenance_v17.cjs
       - name: Verify Research Library public HTML reports, links, categories and dates
         run: node validation/qa_next_research_library_v1.cjs
+      - name: Verify operational G8 macro calendar with Rome times and missing-consensus safety
+        run: node validation/qa_next_macro_calendar_v1.cjs
