@@ -59,16 +59,43 @@ class NZDPublicResearch(unittest.TestCase):
             "OFFICIAL_WEB_PAGE_RESEARCH_CAPTURE_NOT_GITHUB_DOWNLOAD",
             "OFFICIAL_HTML_PUBLIC_TABLE_NOT_INDEPENDENT_XLSX",
             "EO_API_LICENSED_RBNZ_B2_REPUBLISHED_RESEARCH",
+            "ALREADY_STORED_MANUAL_WEB_RESEARCH_NOT_RUNNER_FETCH",
         })
         if method=="EO_API_LICENSED_RBNZ_B2_REPUBLISHED_RESEARCH":
             self.assertTrue(r["source_url"].startswith("https://eolas.fyi/"))
-            self.assertIsNone(r.get("source_release_date"))
+            self.assertIsNone(r.get("source_release_date"),
+                              "Vendor observation date is not publisher release date")
             self.assertEqual(r.get("source_release_date_quality"),
                              "NOT_VERIFIED_PROVIDER_AS_OF_ONLY")
         else:
-            self.assertTrue(r["source_url"].startswith("https://www.rbnz.govt.nz/"))
-            self.assertEqual(r.get("source_release_date_quality"),
-                             "OFFICIAL_RBNZ_PUBLIC_PAGE_DATE")
+            self.assertEqual(
+                r["source_url"],
+                "https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates")
+            if method=="ALREADY_STORED_MANUAL_WEB_RESEARCH_NOT_RUNNER_FETCH":
+                self.assertEqual(r.get("source_release_date_quality"),
+                    "PUBLISHER_RELEASE_DATE_RECORDED_IN_MANUAL_ARCHIVE")
+                archive=json.loads(
+                    (ROOT/"site/fx-quant-v2/nzd-b2-postroll-web-research.json").read_text())
+                self.assertEqual(archive["source_capture_method"],
+                    "PUBLIC_OFFICIAL_PAGE_MANUAL_RESEARCH_NOT_AUTOMATED_FETCH")
+                self.assertTrue(archive["official_web_display_observed"])
+                self.assertFalse(archive["automated_access_authorized"])
+                self.assertFalse(archive["independent_xlsx_reconciled"])
+                self.assertTrue(archive["research_only"])
+                self.assertEqual(r["source_release_date"],
+                                 archive["source_release_date"])
+                self.assertEqual(r["latest_date"],
+                                 archive["daily_observations"][-1]["date"])
+                self.assertEqual(
+                    (r["latest_2Y"],r["latest_10Y"]),
+                    (archive["daily_observations"][-1]["2Y"],
+                     archive["daily_observations"][-1]["10Y"]))
+                self.assertLessEqual(
+                    dt.date.fromisoformat(archive["source_capture_date"]),
+                    dt.date.fromisoformat(self.report["generated_on"]))
+            else:
+                self.assertEqual(r.get("source_release_date_quality"),
+                                 "OFFICIAL_RBNZ_PUBLIC_PAGE_DATE")
             self.assertGreaterEqual(dt.date.fromisoformat(r["source_release_date"]),
                                     dt.date.fromisoformat(r["latest_date"]))
         self.assertFalse(r["independent_xlsx_reconciled"])
