@@ -79,7 +79,7 @@
  // An independently timestamped post-release note may follow a frozen opening
  // edition. It must NEVER rewrite the morning article or claim event-price proof.
  function postRelease(feed,news,esc,dayNow){
-  const validStamp=x=>typeof x==='string'&&/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$/.test(x)&&Number.isFinite(Date.parse(x));
+  const validStamp=x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(x)&&Number.isFinite(Date.parse(x));
   if(!sound(feed)||feed.edition_date!==dayNow()||!validStamp(feed.created_at_utc)
    ||!Array.isArray(news?.items))return '';
   const item=news.items.find(x=>x?.category==='MACRO_OFFICIAL_ACTUAL'
