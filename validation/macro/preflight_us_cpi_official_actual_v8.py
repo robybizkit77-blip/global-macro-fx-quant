@@ -117,24 +117,44 @@ def parse(*,raw,month=MONTH,year=YEAR,release_label=RELEASE_LABEL):
     # BLS repeats the annual core rate in later narrative sections.
     # Match only the introductory summary BEFORE Table A; the source's
     # repeated prose must not create an artificial ambiguous annual actual.
-    core_year_matches=[]
-    for pat in core_y_patterns:
-        core_year_matches.extend(re.finditer(pat,lead_text,flags=re.I))
-    if len(core_year_matches)!=1:
-        raise Pending("CORE_YOY_NOT_SINGLE_UNAMBIGUOUS_VALUE")
-    core_yr=rate(core_year_matches[0].group("verb"),
-                 core_year_matches[0].groupdict().get("value"))
+    # BLS October 2026 officially says the October 2025 base was not
+    # collected during the appropriations lapse. Annual YoY is not a zero,
+    # not an estimate, and must NOT prevent capture of released MoM figures.
+    annual_unavailable=(
+        month=="October" and year==2026
+        and bool(re.search(r"BLS did not collect survey data for October 2025"
+                           r" because of a lapse in appropriations",lead_text,re.I))
+        and bool(re.search(r"BLS cannot publish 12-month percent changes",lead_text,re.I))
+    )
     metrics={
       "US_CPI_U_HEADLINE_MOM_SA":sole(lead,lead_text,"HEADLINE_MOM"),
-      "US_CPI_U_HEADLINE_YOY_NSA":sole(headline_yoy_pattern,lead_text,"HEADLINE_YOY"),
       "US_CPI_U_CORE_MOM_SA":sole(core_m,lead_text,"CORE_MOM"),
-      "US_CPI_U_CORE_YOY_NSA":core_yr,
     }
-    require(set(metrics)==set(KEYS),"lost BLS metric identity")
+    unavailable=[]
+    if annual_unavailable:
+        unavailable=["US_CPI_U_HEADLINE_YOY_NSA","US_CPI_U_CORE_YOY_NSA"]
+        # Ensure an observed annual measure is not silently discarded.
+        if re.search(headline_yoy_pattern,lead_text,re.I) or any(
+              re.search(pat,lead_text,re.I) for pat in core_y_patterns):
+            raise Pending("ANNUAL_VALUE_PRESENT_CONTRADICTS_SHUTDOWN_GAP")
+    else:
+        core_year_matches=[]
+        for pat in core_y_patterns:
+            core_year_matches.extend(re.finditer(pat,lead_text,flags=re.I))
+        if len(core_year_matches)!=1:
+            raise Pending("CORE_YOY_NOT_SINGLE_UNAMBIGUOUS_VALUE")
+        core_yr=rate(core_year_matches[0].group("verb"),
+                     core_year_matches[0].groupdict().get("value"))
+        metrics["US_CPI_U_HEADLINE_YOY_NSA"]=sole(
+            headline_yoy_pattern,lead_text,"HEADLINE_YOY")
+        metrics["US_CPI_U_CORE_YOY_NSA"]=core_yr
+    require(set(metrics)|set(unavailable)==set(KEYS),"lost BLS metric identity")
     return {
       "reference_period":f"{month} {year}",
       "issuer_release_label":release_label,
       "metric_actual_pct":metrics,
+      "unavailable_metric_ids":unavailable,
+      "unavailable_reason":("OCT_2025_BASE_NOT_COLLECTED" if unavailable else None),
       "surprise_vs_frozen_consensus_pp":None,
       "actual_is_first_publisher_delivery_PIT":False,
       "source_page_can_change_after_capture":True,
