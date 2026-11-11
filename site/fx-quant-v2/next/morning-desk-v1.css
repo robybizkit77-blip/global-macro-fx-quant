@@ -151,3 +151,51 @@
  .morning-dashboard .morning-evidence{margin-top:44px}
  .morning-dashboard .morning-edition-header{font-size:9px}
 }
+
+/* First-read editorial layer: preserve the approved DARK DESK design and sources. */
+.morning-dashboard .morning-lead{padding:clamp(20px,3vw,34px)}
+.morning-dashboard .morning-lead h1{font-size:clamp(29px,3.2vw,43px);margin:12px 0 15px}
+.morning-dashboard .morning-deck{font-size:clamp(14.5px,1.38vw,17px);line-height:1.67}
+.morning-dashboard .morning-edition-tags{margin-top:17px}
+.morning-dashboard .morning-first-read{margin:19px 0 0;padding:22px 23px 20px;
+ border:1px solid rgba(133,189,215,.26);border-radius:13px;background:#0e2434}
+.morning-dashboard .morning-first-read>.morning-section-label{margin-bottom:14px}
+.morning-dashboard .morning-first-read-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.morning-dashboard .morning-first-item{min-width:0;padding:3px 15px 4px 16px;border-left:2px solid #70cfb6}
+.morning-dashboard .morning-first-item:nth-child(2){border-color:#80c6e9}
+.morning-dashboard .morning-first-item:nth-child(3){border-color:#f0bd80}
+.morning-dashboard .morning-first-item>span{display:block;color:#b9d2df;font-size:10px;font-weight:800;letter-spacing:.07em;line-height:1.55}
+.morning-dashboard .morning-first-item p{margin:10px 0 0;color:#e2edf0;font-size:13.5px;line-height:1.65;overflow-wrap:anywhere}
+.morning-dashboard .morning-first-watch{border-top:1px solid rgba(139,190,210,.18);
+ margin:20px 0 0;padding-top:13px;color:#d7e5ea;font-size:12.5px;line-height:1.7}
+.morning-dashboard .morning-first-watch strong{color:#a9eed2}
+.morning-dashboard .morning-first-links{display:flex;flex-wrap:wrap;gap:9px;margin-top:13px}
+.morning-dashboard .morning-first-links a{display:inline-block;border:1px solid rgba(128,196,225,.4);border-radius:7px;
+ padding:7px 10px;font-size:11px;font-weight:750;color:#b4e1f2;background:rgba(59,124,155,.09)}
+.morning-dashboard .morning-first-links a:hover,
+.morning-dashboard .morning-first-links a:focus-visible{border-color:#7bcfac;color:#f4ffff}
+.morning-dashboard .morning-prose{max-width:none;margin:15px 0 0;padding:0;border:0}
+.morning-dashboard .morning-deep-reading{border:1px solid rgba(127,174,199,.24);border-radius:10px;
+ background:#102435;overflow:hidden}
+.morning-dashboard .morning-deep-reading>summary{display:flex;align-items:center;justify-content:space-between;
+ gap:15px;flex-wrap:wrap;cursor:pointer;list-style:none;padding:14px 17px;color:#d8e6ec;font-size:12.5px}
+.morning-dashboard .morning-deep-reading>summary::-webkit-details-marker{display:none}
+.morning-dashboard .morning-deep-reading>summary strong{font-size:13px;color:#bfeadf}
+.morning-dashboard .morning-deep-reading>summary span{font-size:11px;color:#a6becc}
+.morning-dashboard .morning-deep-reading>summary:focus-visible{outline:2px solid #80c6e9;outline-offset:-3px}
+.morning-dashboard .morning-deep-body{padding:17px 21px 8px;border-top:1px solid rgba(139,190,210,.2)}
+.morning-dashboard .morning-deep-body p{max-width:920px;font-size:14px;line-height:1.72;margin-bottom:16px}
+.morning-dashboard .morning-catalyst{margin-top:18px}
+.morning-dashboard .morning-evidence{margin-top:35px}
+@media(max-width:900px){
+ .morning-dashboard .morning-first-read-grid{grid-template-columns:1fr;gap:13px}
+ .morning-dashboard .morning-first-item{padding-bottom:9px}
+}
+@media(max-width:560px){
+ .morning-dashboard .morning-first-read{padding:18px 15px}
+ .morning-dashboard .morning-first-item p{font-size:13px}
+ .morning-dashboard .morning-first-watch{margin-top:12px}
+ .morning-dashboard .morning-deep-reading>summary{display:block}
+ .morning-dashboard .morning-deep-reading>summary span{display:block;margin-top:5px}
+ .morning-dashboard .morning-deep-body{padding:15px}
+}

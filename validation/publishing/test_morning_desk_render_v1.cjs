@@ -14,8 +14,22 @@ const args={feed,plot:()=>{chartN++;return draw();},esc:safe,date,dayNow:()=>fee
 assert.equal(sound(feed),true,'Approved macro briefing source must satisfy contract');
 const html=build(args);
 assert(html&&html.includes('MORNING MACRO & FX RESEARCH DESK'));
+assert(html.indexOf('class="morning-first-read"')<html.indexOf('class="morning-prose"'),
+ 'Home must explain the observed FX evidence before the full research narrative');
+assert(html.includes('class="morning-deep-reading"')&&html.includes('class="morning-deep-body"'),
+ 'Full four-paragraph research must remain available inside an expandable panel');
+assert(html.includes(safe(feed.watch)),'Next evidence to monitor must stay explicit');
+assert(html.includes('class="morning-first-links"')&&html.includes('Verifica Tassi &amp; OIS'),
+ 'First read must link FX interpretation to paired rates evidence');
+assert(html.indexOf('class="morning-first-read"')<html.indexOf('class="morning-evidence"'),
+ 'First read must come before supporting charts');
 assert(html.includes(safe(feed.headline)),'Rendered headline must match the dated editorial source');
 assert.equal(chartN,2,'Only two economically relevant charts must support the narrative');
+const badRelative={...feed,relative_evidence:{...feed.relative_evidence,aligned_to:feed.edition_date}};
+const badRelativeHtml=build({...args,feed:badRelative});
+assert(!badRelativeHtml.includes('Dal '+date(feed.relative_evidence.aligned_from)+
+ ' al '+date(feed.edition_date)),
+ 'Do not display a same-day or future pair/rates comparison as pre-opening evidence');
 assert(html.indexOf('class="morning-prose"')<html.indexOf('class="morning-evidence"'),
  'Narrative must come before charts');
 assert(html.indexOf('class="morning-evidence"')<html.indexOf('class="morning-outlook"'),
