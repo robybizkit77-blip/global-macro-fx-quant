@@ -13,7 +13,7 @@ new vm.Script(src,{filename:'research-library.js'});
 const L=require('../site/fx-quant-v2/next/research-library.js');
 assert.match(index,/href="#library" data-route="library"/);
 assert.match(index,/research-library\.css\?v=1/);
-assert.match(index,/research-library\.js\?v=5/);
+assert.match(index,/research-library\.js\?v=6/);
 assert.match(index,/9 sezioni/);
 assert.match(app,/library:'Research Library'/);
 assert.match(app,/library:\(\)=>window\.FXQuantResearchLibrary/);
@@ -28,13 +28,16 @@ assert.ok(!L.REPORTS.some(x=>x.type==='monitor'),'Discontinued Trade Thesis Moni
 assert.ok(!L.CATEGORIES.some(x=>x[0]==='monitor'),'Discontinued report filter must be absent');
 assert.ok(L.REPORTS.some(x=>x.type==='ois'&&x.file.includes('V7_CONFRONTO_31OTT_06NOV')));
 assert.equal(L.REPORTS.find(x=>x.type==='daily').date,'2026-11-11');
+assert.equal(L.REPORTS.find(x=>x.type==='cross').date,'2026-10-17');
+assert.equal(L.REPORTS.find(x=>x.type==='pairs').date,'2026-10-17');
+assert.ok(L.REPORTS.find(x=>x.type==='pairs').publicUrl.startsWith('./reports/'));
 const legacy=path.resolve(ROOT,'site/website-v1/reports');
 const next=path.resolve(ROOT,'site/fx-quant-v2/next/reports');
 for(const r of L.REPORTS){
  assert.match(r.date,/^2026-(10|11)-\d\d$/);
  assert.match(r.file,/\.html$/);
  const output=path.resolve(ROOT,'site/fx-quant-v2/next',L.url(r));
- const base=r.date>='2026-11-01'?next:legacy;
+ const base=r.publicUrl||r.date>='2026-11-01'?next:legacy;
  assert.ok(output.startsWith(base+path.sep),'Report must resolve within real published source');
  assert.ok(fs.existsSync(output),'Broken HTML link: '+r.file);
  const html=fs.readFileSync(output,'utf8');
