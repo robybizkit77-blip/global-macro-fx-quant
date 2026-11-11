@@ -13,9 +13,35 @@ const routeNames = {
   rates: 'Tassi & OIS',
   cot: 'COT',
   risk: 'Rischio',
-  news: 'Notizie'
+  news: 'Notizie',
+  library: 'Research Library'
 };
 const currencies = ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
+
+async function checkPairChartControls(page,label) {
+  const selected=page.locator('#fx-ranking-desk button[data-pair="USDCAD"]').first();
+  if (!(await selected.count())) throw Error(label + ' USD/CAD pair not found in ranking');
+  await selected.click();
+  const detail=page.locator('details.pairs-optional-chart');
+  await detail.locator('summary').first().click();
+  if (!(await detail.evaluate(el => el.open))) throw Error(label + ' pair chart did not open');
+  for (const days of [20,60,120]) {
+    const control=detail.locator('[data-v9-price-window="'+days+'"]');
+    await control.click();
+    if (!(await detail.evaluate(el => el.open))) throw Error(label + ' chart closed after '+days+' window');
+    if ((await detail.locator('[data-v9-price-window="'+days+'"]').getAttribute('aria-pressed')) !== 'true') {
+      throw Error(label + ' price chart failed to select '+days+' observations');
+    }
+  }
+  const ref=detail.locator('[data-v12-reference-toggle]');
+  if (!(await ref.count())) throw Error(label + ' chart reference control missing');
+  const before=await ref.getAttribute('aria-pressed');
+  await ref.click();
+  if (!(await detail.evaluate(el => el.open))) throw Error(label + ' chart closed when toggling references');
+  if ((await detail.locator('[data-v12-reference-toggle]').getAttribute('aria-pressed')) === before) {
+    throw Error(label + ' chart references did not toggle');
+  }
+}
 
 async function check(browser, label, viewport) {
   const page = await browser.newPage({ viewport });
@@ -64,8 +90,8 @@ async function check(browser, label, viewport) {
         !/^\d{4}-\d{2}-\d{2}$/.test(data.pairDate || '')) {
       throw Error(label + ' G8 / 28 pair source coverage: ' + JSON.stringify(data));
     }
-    if (await page.locator('#nav a[data-route]').count() !== 8) {
-      throw Error(label + ' expected exactly 8 current navigation routes');
+    if (await page.locator('#nav a[data-route]').count() !== Object.keys(routeNames).length) {
+      throw Error(label + ' navigation routes do not match the current sections');
     }
     if (label === 'mobile') {
       await page.locator('#menu-toggle').click();
@@ -108,6 +134,7 @@ async function check(browser, label, viewport) {
         path:'visual-qa-evidence/' + label + '-' + route + '.png',
         timeout:20000
       });
+      if (route === 'pairs') await checkPairChartControls(page,label);
     }
     if(errors.length) throw Error(label + ' page errors: ' + errors.slice(0,5).join(' | '));
     return receipt;
@@ -119,7 +146,7 @@ async function check(browser, label, viewport) {
   try {
     const desktop = await check(browser,'desktop',{width:1440,height:1100});
     const mobile = await check(browser,'mobile',{width:390,height:844});
-    const out = {status:'PASS', audited:'Control Room redirect and eight FX Quant Next sections',desktop,mobile};
+    const out = {status:'PASS', audited:'Control Room redirect and nine FX Quant Next sections, including pair chart controls',desktop,mobile};
     fs.writeFileSync('visual-qa-evidence/final-summary.json',JSON.stringify(out,null,2));
     console.log('FINAL_VISUAL_ACTIVE_ROUTES_PASS',JSON.stringify(out));
   } finally { await browser.close(); }

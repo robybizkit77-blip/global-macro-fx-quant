@@ -28,6 +28,7 @@ on:
       - 'validation/publishing/test_next_cot_report_desk_v26.cjs'
       - 'validation/publishing/test_next_risk_economic_v23.cjs'
       - 'validation/publishing/test_next_news_evidence_v24.cjs'
+      - 'validation/publishing/test_next_pair_chart_controls_v27.cjs'
       - 'validation/publishing/test_macro_us_households_hero_v1.cjs'
       - '.github/workflows/publish-fx-quant-v2.yml'
       - 'validation/publishing/test_fxv2_publisher_source_trigger_v1.py'
@@ -89,9 +90,11 @@ jobs:
           node validation/publishing/test_next_cot_report_desk_v26.cjs
           node --check site/fx-quant-v2/next/risk-evidence-reading.js
           node --check site/fx-quant-v2/next/app.js
+          node validation/publishing/test_next_pair_chart_controls_v27.cjs
           node validation/publishing/test_next_risk_economic_v23.cjs
           node --check site/fx-quant-v2/next/news-evidence-reading.js
           node --check site/fx-quant-v2/next/app.js
+          node validation/publishing/test_next_pair_chart_controls_v27.cjs
           node validation/publishing/test_next_news_evidence_v24.cjs
   sync-v2:
     if: >-
@@ -170,9 +173,11 @@ jobs:
           node validation/publishing/test_next_cot_report_desk_v26.cjs
           node --check site/fx-quant-v2/next/risk-evidence-reading.js
           node --check site/fx-quant-v2/next/app.js
+          node validation/publishing/test_next_pair_chart_controls_v27.cjs
           node validation/publishing/test_next_risk_economic_v23.cjs
           node --check site/fx-quant-v2/next/news-evidence-reading.js
           node --check site/fx-quant-v2/next/app.js
+          node validation/publishing/test_next_pair_chart_controls_v27.cjs
           node validation/publishing/test_next_news_evidence_v24.cjs
 
       - name: Publish only site/fx-quant-v2 without altering V10 or any other path
