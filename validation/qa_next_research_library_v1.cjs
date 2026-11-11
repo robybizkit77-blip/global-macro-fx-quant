@@ -27,13 +27,19 @@ assert.ok(L.REPORTS.some(x=>x.date==='2026-11-11' && x.type==='daily'));
 assert.equal(L.REPORTS.some(x=>x.type==='monitor' && x.date>'2026-10-15'),false,
  'Old Trade Thesis Monitor must not be presented as newly updated');
 const base=path.resolve(ROOT,'site/website-v1/reports');
+const nextBase=path.resolve(ROOT,'site/fx-quant-v2/next/reports');
 for(const r of L.REPORTS){
  assert.match(r.date,/^2026-(10|11)-\d{2}$/);
  assert.match(r.file,/\.html$/);
  const resolved=path.resolve(ROOT,'site/fx-quant-v2/next',L.url(r));
- assert.ok(resolved.startsWith(base+path.sep),'Library must link to actual report folder');
+ const expectedBase=r.date>='2026-11-01'?nextBase:base;
+ assert.ok(resolved.startsWith(expectedBase+path.sep),'Library must link inside its actual published folder');
  assert.ok(fs.existsSync(resolved),'Broken published report URL: '+r.file);
  const doc=fs.readFileSync(resolved,'utf8');
+ if(r.date>='2026-11-01'){
+  const original=fs.readFileSync(path.join(base,r.file),'utf8');
+  assert.equal(doc,original,'Public V2 report must reproduce original edition byte-for-byte');
+ }
  assert.ok(doc.length>1000,'Incomplete published file '+r.file);
  assert.ok(/<!doctype html>|<html lang=/i.test(doc),'Not HTML '+r.file);
  if(doc.includes('weekly-global-macro-2026-10-10.part1.txt')){
