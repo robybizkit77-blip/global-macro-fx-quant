@@ -29,6 +29,10 @@
   const pulse=(Array.isArray(feed.items)?feed.items:[]).flatMap((x,i)=>{
    if(!day(x?.as_of)||x.as_of>now||!x.title||!x.source)return [];
    const c=x.category||'';
+   // Published date is not first-observed date; prevent historical lookahead.
+   if(c==='MACRO_OFFICIAL_ACTUAL'&&
+      (!romeDate(x.first_runner_observed_at_utc)||
+       romeDate(x.first_runner_observed_at_utc).date>now))return [];
    const money=c==='OIS_REPRICING'||c==='OIS_PROXY_REPRICING'||c==='FUTURES_IMPLIED_REPRICING';
    const kinds={
     OIS_REPRICING:'OIS osservato',OIS_PROXY_REPRICING:'OIS stimato',
