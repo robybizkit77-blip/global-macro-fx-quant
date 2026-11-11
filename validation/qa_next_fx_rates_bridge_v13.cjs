@@ -113,7 +113,7 @@ const fxModel=pairModule.build({
  state:{pair:'EURUSD',pairPriceWindow:60,pairShowReferences:true}
 });
 const home=fxModel.overview(),dossier=fxModel.pair();
-assert.match(home,/data-rates-tone="mixed"/);
+assert.match(dossier,/data-rates-tone="mixed"/,'EUR/USD dossier must preserve mixed short/medium 2Y evidence even if not shortlisted');
 assert.match(home,/data-rates-tone="aligned"/);
 assert.match(home,/GOV 2Y, non OIS/);
 assert.match(home,/06\/11\/2026|2026-11-06/,'Rates brief must carry matched date');
