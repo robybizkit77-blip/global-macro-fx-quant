@@ -11,6 +11,7 @@
 .fx-rank-head h3{font:760 clamp(17px,1.65vw,21px)/1.25 Manrope,'DM Sans',sans-serif;letter-spacing:-.02em;margin:7px 0}
 .fx-rank-head>small{flex:none;max-width:100px;text-align:right;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.075em}
 .fx-rank-sub{margin:0 0 14px;font-size:11px;line-height:1.6;color:var(--muted)}
+.fx-rank-top-caution{margin:0 0 11px;padding:10px 11px;border:1px solid rgba(190,139,58,.28);border-radius:8px;color:#e6c28a;background:rgba(163,112,46,.11);font-size:10px;line-height:1.55}
 .fx-rank-source{font-size:10px;line-height:1.6;color:var(--muted);margin:13px 0 0;border-top:1px solid var(--line);padding-top:10px}
 .fx-rank-currency-list{display:grid;gap:8px}
 .fx-rank-currency{display:grid;grid-template-columns:19px 78px minmax(35px,1fr) 70px;gap:8px;align-items:center;min-height:28px}
