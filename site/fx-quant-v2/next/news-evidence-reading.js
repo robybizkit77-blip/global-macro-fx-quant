@@ -38,10 +38,13 @@
     MARKET_VOLATILITY_CLOSE:'Volatilità · VIX',
     MARKET_CREDIT_OAS:'Credito · spread OAS',
     MARKET_GOVERNMENT_RATES:'Government bond · 2Y/10Y',
-    MACRO_UPDATE:'Macro · pubblicazione datata'
+    MACRO_UPDATE:'Macro · pubblicazione datata',
+    MACRO_OFFICIAL_ACTUAL:'Macro · dato ufficiale BLS'
    };
    const type=kinds[c]||'Aggiornamento di mercato';
-   const why=c==='OIS_REPRICING'?'Può cambiare la lettura delle attese monetarie nella scadenza indicata; non equivale automaticamente a una sorpresa macro o al movimento FX.':
+   const why=c==='MACRO_OFFICIAL_ACTUAL'?
+    'I dati CPI possono modificare le aspettative Fed e il differenziale con altre banche centrali; la direzione USD resta da confermare nei prezzi.':
+    c==='OIS_REPRICING'?'Può cambiare la lettura delle attese monetarie nella scadenza indicata; non equivale automaticamente a una sorpresa macro o al movimento FX.':
     c==='OIS_PROXY_REPRICING'?'È una stima informativa, da tenere separata dalle curve OIS ufficiali e dalle variazioni effettive del mercato.':
     c==='FUTURES_IMPLIED_REPRICING'?'Futures e curve OIS non sono la stessa misura: il movimento del contratto può essere un indizio sulle aspettative, non una curva OIS certificata.':
     c==='MARKET_FX_ECB_FIXING'?'Il prezzo esprime forza relativa della coppia nella rilevazione BCE, non dimostra se siano cambiati i fondamentali di una valuta o dell’altra.':
@@ -50,7 +53,9 @@
     c==='MARKET_CREDIT_OAS'?'Lo spread OAS misura il premio sul credito, diverso dal rendimento governativo. L’allargamento può segnalare maggiore avversione al rischio.':
     c==='MARKET_GOVERNMENT_RATES'?'Il 2Y è sensibile anche al percorso monetario; il 10Y incorpora crescita, inflazione e premio a termine. Non sono curve OIS.':
     'Il dato va letto nel contesto macro e del prezzo, senza inferire causalità da un titolo.';
-   const verify=money?'Verificare tenor, data e qualità di OIS/futures, sorpresa rispetto al consenso e prezzo FX prima/dopo un evento.':
+   const verify=c==='MACRO_OFFICIAL_ACTUAL'?
+    'Confrontare attese pre-evento con provenienza nota, Fed OIS/futures su finestre comuni ed EUR/USD e USD/JPY. Le variazioni annuali non pubblicate non sono zero.':
+    money?'Verificare tenor, data e qualità di OIS/futures, sorpresa rispetto al consenso e prezzo FX prima/dopo un evento.':
     c==='MARKET_FX_ECB_FIXING'?'Confrontare differenziali di tasso, macro relative e sedute successive; il fixing BCE non è una quotazione intraday.':
     c==='MARKET_EQUITY_CLOSE'||c==='MARKET_VOLATILITY_CLOSE'||c==='MARKET_CREDIT_OAS'?
      'Confrontare i dati della stessa seduta su azioni, VIX e credito; per parlare di diffusione servono date comuni.':
@@ -58,7 +63,9 @@
     'Verificare fonte, consenso, eventuali revisioni e risposta del mercato con tempi comparabili.';
    return [{id:'pulse-'+i,title:String(x.title),source:String(x.source),ccy:String(x.ccy||''),
     kind:type,asof:x.as_of,time:null,body:String(x.detail||''),why,verify,
-    impact:money?'Variazione dello strumento monetario indicato; NON reazione provata a un evento.':
+    impact:c==='MACRO_OFFICIAL_ACTUAL'?
+     'Dato macro ufficiale osservato; reazione FX/OIS intraday NON misurata né attribuita causalmente.':
+     money?'Variazione dello strumento monetario indicato; NON reazione provata a un evento.':
      'Variazione osservata nella chiusura/fixing datato; NON reazione provata a un evento.',
     quality:String(x.quality||'non classificata'),url:link(x.source_url),
     macroSurprise:false,reactionProven:false}];
