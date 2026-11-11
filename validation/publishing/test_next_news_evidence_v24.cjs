@@ -26,7 +26,15 @@ if(summary)assert.match(summary.time||'',/^\\d{2}:\\d{2}$/);
 const bankRate=x.official.find(y=>y.title.startsWith('Bank rate increased'));
 if(bankRate)assert(bankRate.verify.includes('Consultare'));
 assert(x.official.some(y=>y.kind==='Fondamentali energia'));
-assert(x.official.some(y=>y.kind==='Comunicazione banca centrale'));
+const syntheticCB=structuredClone(feed);
+syntheticCB.official_releases.headlines.push({
+ ...feed.official_releases.headlines[0],title:'Test ufficiale banca centrale',
+ source:'Issuer',published_at_utc:'2026-11-10T11:00:00Z',
+ desk_context:{topic:'CB_COMMUNICATION',why_watch:'Official policy explanation for dated verification',
+  verify_next:'Consultare la decisione ufficiale e i differenziali.'}
+});
+assert(parse(syntheticCB,today).official.some(y=>y.kind==='Comunicazione banca centrale'),
+ 'CB official classification must work independently from today's rotating RSS feed');
 assert(x.pulse.some(y=>y.title.startsWith('AUD:')&&y.why.includes('non sono la stessa misura')));
 // A BLS CPI actual belongs to the release date, but is invisible until
 // the first observed source capture; the release clock must not leak hindsight.
