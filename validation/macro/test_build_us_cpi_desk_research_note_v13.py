@@ -90,7 +90,7 @@ class CPIDeskNoteV13(unittest.TestCase):
             self.assertIsNone(byid[mid]["actual_percent"])
             self.assertEqual(byid[mid]["officially_unavailable_reason"],
                              "OCT_2025_BASE_NOT_COLLECTED")
-        self.assertIn("non pubblicati", x["desk_observation"])
+        self.assertIn("non sono pubblicati", x["desk_observation"])
         self.assertIn("base 2025 mancante", v13.markdown(x))
         self.assertFalse(x["market_context"]["market_causality_established"])
         self.assertIsNone(x["FX_signal"])
