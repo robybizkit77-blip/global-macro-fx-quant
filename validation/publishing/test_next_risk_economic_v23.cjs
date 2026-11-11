@@ -3,7 +3,8 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const root=path.resolve(__dirname,'../..');
-const feed=JSON.parse(fs.readFileSync(path.join(root,'site/fx-quant-v2/cross-asset-live-data.json'),'utf8'));
+const feed=JSON.parse(fs.readFileSync(path.join(root,'validation/fixtures/market_pulse_v25_observed_2026_11_10.json'),'utf8')).cross_asset;
+// Archived five-asset snapshot; a rolling live source must not invalidate historical QA.
 const {read}=require(path.join(root,'site/fx-quant-v2/next/risk-evidence-reading.js'));
 const today='2026-11-10';
 const actual=read(feed.streams,today);
