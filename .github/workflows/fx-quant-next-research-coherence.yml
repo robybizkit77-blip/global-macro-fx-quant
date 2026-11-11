@@ -21,6 +21,7 @@ on:
       - 'validation/qa_next_pair_coverage_v15.cjs'
       - 'validation/qa_next_aud_f2_daily_research_v16.cjs'
       - 'validation/qa_next_chf_nzd_provenance_v17.cjs'
+      - 'validation/qa_next_research_library_v1.cjs'
       - 'site/fx-quant-v2/chf-snb-paired-history.json'
       - 'site/fx-quant-v2/nzd-b2-postroll-web-research.json'
       - 'site/fx-quant-v2/aud-rba-f2-history-research.json'
@@ -61,3 +62,5 @@ jobs:
         run: node validation/qa_next_aud_f2_daily_research_v16.cjs
       - name: Verify dated CHF SNB and NZD post-roll provenance without trading confirmation
         run: node validation/qa_next_chf_nzd_provenance_v17.cjs
+      - name: Verify Research Library public HTML reports, links, categories and dates
+        run: node validation/qa_next_research_library_v1.cjs

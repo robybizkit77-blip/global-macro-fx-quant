@@ -7,7 +7,7 @@
 const FX=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
 const FLAGS={USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',CHF:'🇨🇭',AUD:'🇦🇺',NZD:'🇳🇿',CAD:'🇨🇦'};
 const NAMES={USD:'Stati Uniti',EUR:'Area euro',GBP:'Regno Unito',JPY:'Giappone',CHF:'Svizzera',AUD:'Australia',NZD:'Nuova Zelanda',CAD:'Canada'};
-const ROUTES={overview:'Panoramica',currencies:'Valute G8',pairs:'Coppie FX',macro:'Scenario macro',rates:'Tassi & OIS',cot:'COT',risk:'Rischio',news:'Notizie'};
+const ROUTES={overview:'Panoramica',currencies:'Valute G8',pairs:'Coppie FX',macro:'Scenario macro',rates:'Tassi & OIS',cot:'COT',risk:'Rischio',news:'Notizie',library:'Research Library'};
 const SOURCES={
  rates:'../../../live_data/sections/NATIVE_RATES_DATA.json',
  audDailyResearch:'../aud-rba-f2-history-research.json',
@@ -904,8 +904,8 @@ function render(){
  // Presentation-only hook for route-scoped colors; no change to calculations or data.
  $('content').dataset.view=route;
  state.charts={};state.chartIndex=0;
- const views={overview,currencies,pairs,macro,rates,cot,risk,news};
- $('content').innerHTML=(route==='overview'||route==='pairs'||route==='cot'||route==='risk'||route==='news'?'':researchBridge(route))+views[route]();
+ const views={overview,currencies,pairs,macro,rates,cot,risk,news,library:()=>window.FXQuantResearchLibrary?.render()||'<section class="empty">Archivio report non disponibile: controlla il caricamento della pagina.</section>'};
+ $('content').innerHTML=(route==='overview'||route==='pairs'||route==='cot'||route==='risk'||route==='news'||route==='library'?'':researchBridge(route))+views[route]();
  $('crumb-page').textContent=ROUTES[route];
  document.querySelectorAll('#nav [data-route]').forEach(a=>{if(a.dataset.route===route)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
  const ok=Object.keys(state.data).length,missing=Object.keys(SOURCES).length-ok;
@@ -937,6 +937,11 @@ window.addEventListener('keydown',e=>{
 $('menu-toggle').addEventListener('click',()=>{const open=!$('app').classList.contains('menu-open');$('app').classList.toggle('menu-open',open);$('menu-toggle').setAttribute('aria-expanded',String(open))});
 $('mobile-overlay').addEventListener('click',()=>{$('app').classList.remove('menu-open');$('menu-toggle').setAttribute('aria-expanded','false')});
 document.addEventListener('click',e=>{
+ const libraryFilter=e.target.closest('[data-library-type]');
+ if(libraryFilter && state.route==='library' && window.FXQuantResearchLibrary){
+  window.FXQuantResearchLibrary.setCategory(libraryFilter.dataset.libraryType);
+  window.FXQuantResearchLibrary.sync();return;
+ }
  const pv12=e.target.closest('[data-v12-reference-toggle]');if(pv12){state.pairShowReferences=!state.pairShowReferences;render();return;}
  const pv9=e.target.closest('[data-v9-price-window]');if(pv9){state.pairPriceWindow=Number(pv9.dataset.v9PriceWindow);render();return;}
  const cs_ret=e.target.closest('[data-cs-returnwindow]');
@@ -998,7 +1003,12 @@ document.addEventListener('click',e=>{
  const rw=e.target.closest('[data-risk-window]');if(rw){state.riskWindow=Number(rw.dataset.riskWindow);render();return}
  const nn=e.target.closest('[data-news-mode]');if(nn){state.newsMode=nn.dataset.newsMode;render();return}
 });
-document.addEventListener('input',e=>{if(e.target.id==='pair-search'){state.pairSearch=e.target.value;const list=$('pair-results');if(!list)return;const keys=pairListKeys();list.innerHTML=keys.length?keys.map(k=>pairRow(k)).join(''):'<div class="empty"><strong>Nessuna coppia trovata</strong><p>Prova un nome o un filtro diverso.</p></div>';}})
+document.addEventListener('input',e=>{
+ if(e.target.id==='library-search'&&state.route==='library'&&window.FXQuantResearchLibrary){
+  window.FXQuantResearchLibrary.setQuery(e.target.value);
+  window.FXQuantResearchLibrary.sync();return;
+ }
+ if(e.target.id==='pair-search'){state.pairSearch=e.target.value;const list=$('pair-results');if(!list)return;const keys=pairListKeys();list.innerHTML=keys.length?keys.map(k=>pairRow(k)).join(''):'<div class="empty"><strong>Nessuna coppia trovata</strong><p>Prova un nome o un filtro diverso.</p></div>';}})
 document.addEventListener('toggle',e=>{
  if(e.target?.matches?.('details.macro-advanced'))state.msAdvanced=e.target.open;
  if(e.target?.matches?.('details[data-home-evidence]'))state.homeEvidenceOpen=e.target.open;
