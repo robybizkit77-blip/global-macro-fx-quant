@@ -12,8 +12,8 @@
     "source": "Swiss National Bank · CHF Confederation daily spot 2J/10J",
     "source_url": "https://data.snb.ch/api/cube/rendeiduebd/data/json/en",
     "separate_10y": {
-      "as_of": "2026-11-09",
-      "10Y": 0.459,
+      "as_of": "2026-11-10",
+      "10Y": 0.47,
       "source_url": "https://www.snb.ch/en/the-snb/mandates-goals/statistics/statistics-pub/current_interest_exchange_rates",
       "not_joinable_with_paired_2y": true
     },
