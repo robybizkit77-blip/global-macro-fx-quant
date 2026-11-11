@@ -34,6 +34,8 @@ SCHEMA = "GMFQ_BLS_CPI_EXACT_METRIC_ACTUAL_FIRST_OBSERVATION_V10"
 KEY = "USD|2026-11-10|INFLATION|Consumer Price Index"
 MAX_LAG = timedelta(days=7)
 METRICS = tuple(bls.KEYS)
+MONTHLY = ("US_CPI_U_HEADLINE_MOM_SA", "US_CPI_U_CORE_MOM_SA")
+ANNUAL = ("US_CPI_U_HEADLINE_YOY_NSA", "US_CPI_U_CORE_YOY_NSA")
 QUALITY = "ISSUER_BLS_HTML_FIRST_RUNNER_OBSERVATION_NOT_PUBLISHER_PIT"
 # Independent BLS-owned summary URL protects against a temporarily stale
 # or unavailable primary page; both still require the exact dated issuer issue.
@@ -72,8 +74,9 @@ def validate_actual_log(rows, forecasts):
     link = forecasts_by_metric(forecasts)
     units = contract_by_metric()
     release = expected_release()
-    need(len(rows) in (0, len(METRICS)),
-         "CPI actual release must be captured as atomic four-metric snapshot")
+    need(len(rows) in (0, len(MONTHLY), len(METRICS)),
+         "CPI actual release must be an atomic issuer-supported snapshot")
+    expected_metrics = (MONTHLY if len(rows) == len(MONTHLY) else METRICS)
     previous = "GENESIS"
     captures = set()
     source_hashes = set()
@@ -84,7 +87,7 @@ def validate_actual_log(rows, forecasts):
         need(row.get("record_sha256") == digest(content) and
              row.get("previous_record_sha256") == previous,
              "actual archive signature/chain mismatch")
-        metric_id = METRICS[i]
+        metric_id = expected_metrics[i]
         need(row.get("event_key") == KEY and row.get("metric_id") == metric_id and
              row.get("metric_component") == units[metric_id]["component"] and
              row.get("metric_unit") == units[metric_id]["unit"],
@@ -99,6 +102,11 @@ def validate_actual_log(rows, forecasts):
              isinstance(row.get("source_html_sha256"), str) and
              re.fullmatch("[0-9a-f]{64}", row["source_html_sha256"]),
              "unverified issuer URL or source fingerprint")
+        partial = len(rows) == len(MONTHLY)
+        need(row.get("unavailable_annual_metric_ids", []) == (list(ANNUAL) if partial else [])
+             and row.get("unavailable_annual_reason") == (
+                 "OCT_2025_BASE_NOT_COLLECTED" if partial else None),
+             "partial release must retain exact official annual gap")
         actual = row.get("actual_percent")
         need(type(actual) in (float, int) and
              math.isfinite(actual) and abs(actual) < 40,
@@ -173,7 +181,14 @@ def capture(forecasts, existing, now, fetch=retrieve, observed_clock=None):
             "source_status": "ISSUER_NOT_AVAILABLE_OR_EXACT_RELEASE_NOT_PARSABLE",
             "failure_types": failure_types}
     actuals = parsed["metric_actual_pct"]
-    need(set(actuals) == set(METRICS), "not all four CPI metrics were parsed")
+    missing = parsed.get("unavailable_metric_ids", [])
+    partial = set(actuals) == set(MONTHLY)
+    need(set(actuals) in (set(METRICS), set(MONTHLY)),
+         "issuer CPI metrics are incomplete or mismatched")
+    need((partial and missing == list(ANNUAL)
+          and parsed.get("unavailable_reason") == "OCT_2025_BASE_NOT_COLLECTED")
+         or (not partial and missing == []),
+         "partial CPI must have explicit official annual gap reason")
     observed = observed_clock()
     need(isinstance(observed, datetime) and observed.tzinfo is not None
          and observed.utcoffset() is not None,
@@ -186,7 +201,7 @@ def capture(forecasts, existing, now, fetch=retrieve, observed_clock=None):
     source_hash = hashlib.sha256(raw).hexdigest()
     previous = "GENESIS"
     added = []
-    for metric_id in METRICS:
+    for metric_id in (MONTHLY if partial else METRICS):
         actual = actuals[metric_id]
         f = link.get(metric_id)
         candidate = f["forecast_value_percent"] if f else None
@@ -202,6 +217,9 @@ def capture(forecasts, existing, now, fetch=retrieve, observed_clock=None):
             "source_url": url,
             "source_html_sha256": source_hash,
             "actual_percent": actual,
+            "unavailable_annual_metric_ids": list(ANNUAL) if partial else [],
+            "unavailable_annual_reason": (
+                "OCT_2025_BASE_NOT_COLLECTED" if partial else None),
             "v9_provider_observation_sha256": f["record_sha256"] if f else None,
             "v9_provider_observation_percent": candidate,
             "actual_minus_v9_provider_observation_pp":
@@ -223,7 +241,9 @@ def capture(forecasts, existing, now, fetch=retrieve, observed_clock=None):
     validate_actual_log(result, forecasts)
     return result, {
         **base,
-        "source_status": "OFFICIAL_CPI_FOUR_METRICS_OBSERVED_AND_ARCHIVED_NOT_PIT",
+        "source_status": ("OFFICIAL_CPI_MONTHLY_ONLY_ANNUAL_GAP_NOT_PIT" if partial else
+                          "OFFICIAL_CPI_FOUR_METRICS_OBSERVED_AND_ARCHIVED_NOT_PIT"),
+        "unavailable_metric_ids": list(ANNUAL) if partial else [],
         "metric_actuals_archived": len(result),
         "new_metrics_archived": len(added),
         "provider_observation_links": sum(
