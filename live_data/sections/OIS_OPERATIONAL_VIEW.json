@@ -67,12 +67,12 @@
       "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)"
     },
     "CHF": {
-      "as_of": "2026-11-10",
+      "as_of": "2026-11-11",
       "backtest_eligible_as_official": false,
       "change_1d_available": false,
       "change_1w_available": false,
       "confidence": "B",
-      "direction_vs_policy": null,
+      "direction_vs_policy": "WITHHELD",
       "horizons": {
         "12m": {
           "accrual_start": "2027-12-15",
@@ -89,29 +89,29 @@
           "quote_as_of": "2026-11-11",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": null,
+          "rate": 0.505,
           "raw_level_gap_not_policy_repricing": true,
           "raw_level_minus_spot_policy_bp": 50.5,
           "symbol": "ICEEUR:SA3Z2027"
         },
         "3m": {
           "accrual_start": "2027-03-17",
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "SA3H2027",
           "contract_description": "ICE quarter 2027-03 (calendar-derived identity)",
           "expiration": "2027-06-15",
-          "futures_price": 99.875,
+          "futures_price": 99.85,
           "mapping": "nearest ICE SARON accrual start to today+90d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-10T14:20:34Z",
-          "quote_as_of": "2026-11-10",
+          "price_valid_until": "2026-11-11T14:21:06Z",
+          "quote_as_of": "2026-11-11",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": null,
+          "rate": 0.15,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 12.5,
+          "raw_level_minus_spot_policy_bp": 15.0,
           "roster_quality": "ICE_LISTED_QUARTER_CALENDAR_DERIVED_UNQUOTED",
           "symbol": "ICEEUR:SA3H2027"
         },
@@ -130,7 +130,7 @@
           "quote_as_of": "2026-11-11",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": null,
+          "rate": 0.32,
           "raw_level_gap_not_policy_repricing": true,
           "raw_level_minus_spot_policy_bp": 32.0,
           "symbol": "ICEEUR:SA3M2027"
@@ -140,7 +140,7 @@
       "market_direction_proxy": null,
       "method_id": "TRADINGVIEW_DATED_FUTURES_SSR_V2",
       "official_status": "WITHHELD",
-      "operational_status": "WITHHELD",
+      "operational_status": "GREEN_ESTIMATED",
       "policy_rate": 0.0,
       "policy_repricing_inference_allowed": false,
       "quality": "ESTIMATED_INFORMATIONAL",
@@ -154,39 +154,7 @@
         "weekly_min_age_days": 5,
         "weekly_reference_captured_at_utc": null
       },
-      "secondary_quote_context": {
-        "backtest_eligible_as_official": false,
-        "cross_date_join_allowed": false,
-        "date_mismatch": true,
-        "full_curve_usable": false,
-        "horizons": {
-          "12m": {
-            "contract": "SA3Z2027",
-            "quote_as_of": "2026-11-11",
-            "rate_indicative": 0.505,
-            "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
-          },
-          "3m": {
-            "contract": "SA3H2027",
-            "quote_as_of": "2026-11-10",
-            "rate_indicative": 0.125,
-            "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
-          },
-          "6m": {
-            "contract": "SA3M2027",
-            "quote_as_of": "2026-11-11",
-            "rate_indicative": 0.32,
-            "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
-          }
-        },
-        "method_id": "TRADINGVIEW_DATED_FUTURES_SSR_V2",
-        "policy_delta_allowed": false,
-        "repricing_signal_allowed": false,
-        "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
-        "status": "INDICATIVE_OBSERVATIONS_NON_OIS"
-      },
-      "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
-      "withheld_reason": "STALE_OR_INCOMPLETE_PRICING"
+      "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures"
     },
     "EUR": {
       "as_of": "2026-11-09",
@@ -600,9 +568,9 @@
   "status": "PARTIAL_WITHHELD",
   "summary": {
     "g8_total": 8,
-    "green_estimated": 0,
+    "green_estimated": 1,
     "green_official": 4,
-    "operational_green": 4,
-    "operational_withheld": 4
+    "operational_green": 5,
+    "operational_withheld": 3
   }
 }
