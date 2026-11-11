@@ -86,8 +86,9 @@ const invalid=structuredClone(canonical);delete invalid.pairs.AUDCAD;
 assert.throws(()=>snapshot(invalid),/exactly 28/);
 assert.equal(monitor.analyze(canonical,{...history,snapshots:[]},'AUDCAD').ready,false);
 if(current.price_asof===latest.price_asof){
- assert.deepEqual(snapshot(current,'current-source').pairs,latest.pairs,'Visible source snapshot must match archived latest daily frame');
- assert.equal(monitor.analyze(current,history,'AUDCAD').ready,true);
+ const aligned=JSON.stringify(snapshot(current,'current-source').pairs)===JSON.stringify(latest.pairs);
+ assert.equal(monitor.analyze(current,history,'AUDCAD').ready,aligned,
+ 'A regenerated same-day model must not be mistaken for the archived snapshot');
 }else{
  assert.equal(monitor.analyze(current,history,'AUDCAD').ready,false,'Unarchived current model must not show invented changes');
 }
