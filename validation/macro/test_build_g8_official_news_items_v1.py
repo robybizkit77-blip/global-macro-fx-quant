@@ -7,6 +7,8 @@ import unittest
 
 from validation.macro.build_g8_official_news_items_v1 import build
 from validation.macro import capture_aud_labour_official_firstseen_v12 as aud
+from validation.macro import capture_jpy_national_cpi_firstseen_v14 as jp
+from validation.macro.test_capture_jpy_national_cpi_firstseen_v14 import AFTER as JP_AFTER, SEEN as JP_SEEN, fetch as jp_fetch
 from validation.macro.test_capture_aud_labour_firstseen_v12 import (
     AFTER as AUD_AFTER, SEEN as AUD_SEEN, fetch as aud_fetch,
 )
@@ -82,6 +84,25 @@ class G8OfficialNewsTests(unittest.TestCase):
         changed[0]["survey_consensus_percent"]=4.7
         with self.assertRaises(ValueError):
             build(AUD_SEEN+timedelta(minutes=1),v12_aud_actuals=changed)
+
+    def test_japan_national_oct_cpi_core_not_us_style_core_or_tokyo(self):
+        records,_=jp.capture([],JP_AFTER,jp_fetch,observed_clock=lambda:JP_SEEN)
+        self.assertEqual(build(JP_AFTER,v14_jpy_actuals=records),[],
+                         "no news before first actual source observation")
+        feed=build(JP_SEEN+timedelta(minutes=1),v14_jpy_actuals=records)
+        jpnews=next(x for x in feed if x["ccy"]=="JPY")
+        self.assertEqual(jpnews["metric_id"],"JP_CPI_OCT26_CORE_EX_FRESH_FOOD_YOY_NSA")
+        self.assertEqual(jpnews["as_of"],"2026-11-20")
+        self.assertIn("+2,3%",jpnews["title"])
+        self.assertIn("headline +2,1%",jpnews["detail"])
+        self.assertIn("esclusi freschi ed energia +2,6%",jpnews["detail"])
+        self.assertIn("NON CPI preliminare di Tokyo",jpnews["detail"])
+        self.assertIn("Non attribuiamo causalmente",jpnews["detail"])
+        self.assertFalse(jpnews.get("FX_signal"))
+        changed=copy.deepcopy(records)
+        changed[0]["metrics_percent"]["JP_CPI_OCT26_HEADLINE_YOY_NSA"]=8.0
+        with self.assertRaises(ValueError):
+            build(JP_SEEN+timedelta(minutes=1),v14_jpy_actuals=changed)
 
     def test_unsupported_g8_calendar_alone_does_not_create_actuals(self):
         rows=build(datetime(2026,11,11,9,tzinfo=UTC))
