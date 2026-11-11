@@ -40,7 +40,7 @@ class G8MacroEventLifecycleV7Tests(unittest.TestCase):
         self.assertEqual(len(q),4)
         self.assertEqual([x["ccy"] for x in q],["USD","GBP","CHF","AUD"])
         self.assertEqual([x["issuer_date"] for x in q],
-                         ["2026-11-10","2026-11-12","2026-11-16","2026-11-19"])
+                         ["2026-11-10","2026-11-12","2026-11-16","2026-11-19","2026-11-20"])
         self.assertEqual(b["coverage"]["upcoming_35d_with_frozen_consensus"],0)
         self.assertEqual(b["coverage"]["upcoming_35d_with_approved_actual_parser"],0)
         self.assertEqual(b["coverage"]["currencies_with_upcoming_35d"],4)
