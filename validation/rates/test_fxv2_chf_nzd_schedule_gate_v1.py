@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prove DST slot, delay tolerance and one daily vendor eligibility."""
+"""Prove DST, daily source refresh and quota-aware eolas vendor eligibility."""
 from __future__ import annotations
 import datetime as dt
 import unittest
@@ -11,7 +11,7 @@ def utc(y, m, d, hh, mm):
 class SourceScheduleGate(unittest.TestCase):
     def test_summer_valid_0630_only(self):
         self.assertEqual(gate("schedule",MORNING_CEST,utc(2026,10,19,4,30)),
-                         (True,True,"ROME_0630_PREOPEN_SOURCE_REFRESH"))
+                         (True,False,"ROME_0630_PREOPEN_SOURCE_REFRESH"))
         self.assertEqual(gate("schedule",MORNING_CET,utc(2026,10,19,5,30)),
                          (False,False,"DUPLICATE_DST_SLOT"))
 
@@ -39,6 +39,8 @@ class SourceScheduleGate(unittest.TestCase):
         self.assertEqual(gate("schedule",MORNING_CET,utc(2026,11,7,5,30)),
                          (False,False,"NOT_A_ROMAN_WORKDAY"))
         self.assertEqual(gate("workflow_dispatch","",utc(2026,11,7,5,30)),
+                         (True,False,"EVENT_OR_MANUAL_SOURCE_REFRESH"))
+        self.assertEqual(gate("workflow_dispatch","",utc(2026,11,7,5,30),eolas_pro=True),
                          (True,True,"EVENT_OR_MANUAL_SOURCE_REFRESH"))
         self.assertEqual(gate("pull_request","",utc(2026,11,7,5,30)),
                          (True,False,"EVENT_OR_MANUAL_SOURCE_REFRESH"))
@@ -47,6 +49,36 @@ class SourceScheduleGate(unittest.TestCase):
         self.assertEqual(gate("schedule","0 0 * * 1-5",utc(2026,11,5,7,30)),
                          (False,False,"UNKNOWN_SCHEDULE_SLOT"))
 
+
+    def test_free_eolas_budget_still_runs_official_sources_daily(self):
+        import calendar
+        for year in (2026,2027,2028):
+            for month in range(1,13):
+                eligible=0
+                for day in range(1,calendar.monthrange(year,month)[1]+1):
+                    local=dt.date(year,month,day)
+                    if local.weekday()>=5: continue
+                    # Check source refresh daily and only Tue/Thu vendor.
+                    is_cest = 4 <= month <= 9
+                    if month in (3,10): continue  # DST-specific tests below
+                    hour=4 if is_cest else 5
+                    cron=MORNING_CEST if is_cest else MORNING_CET
+                    refresh,vendor,_=gate("schedule",cron,utc(year,month,day,hour,30))
+                    self.assertTrue(refresh)
+                    self.assertEqual(vendor,local.weekday() in (1,3))
+                    eligible+=int(vendor)
+                self.assertLessEqual(eligible,10)
+
+    def test_eolas_paid_plan_daily_opt_in(self):
+        self.assertEqual(gate("schedule",MORNING_CEST,utc(2026,10,19,4,30),eolas_pro=True),
+                         (True,True,"ROME_0630_PREOPEN_SOURCE_REFRESH"))
+        self.assertEqual(gate("schedule",MORNING_CET,utc(2026,10,19,5,30),eolas_pro=True),
+                         (False,False,"DUPLICATE_DST_SLOT"))
+        self.assertEqual(gate("schedule",MORNING_CET,utc(2026,11,6,5,30),eolas_pro=True),
+                         (True,True,"ROME_0630_PREOPEN_SOURCE_REFRESH"))
+        for cron in LATER_SOURCE_SLOTS:
+            self.assertFalse(gate("schedule",cron,utc(2026,11,6,19,0),eolas_pro=True)[1])
+
     def test_workflow_preopen_contract_and_vendor_limit(self):
         from pathlib import Path
         root = Path(__file__).resolve().parents[2]
@@ -54,6 +86,7 @@ class SourceScheduleGate(unittest.TestCase):
         for name in (MORNING_CEST, MORNING_CET):
             self.assertIn("cron: '" + name + "'", workflow)
         self.assertIn("id: gate", workflow)
+        self.assertIn("EOLAS_PRO_ENABLED:",workflow)
         self.assertIn("steps.gate.outputs.should_run == 'true'", workflow)
         self.assertIn("VENDOR_SLOT: ${{ steps.gate.outputs.vendor_slot }}", workflow)
         self.assertIn('if [ "$VENDOR_SLOT" != "true" ]; then', workflow)
