@@ -50,15 +50,34 @@ const todayFeed={...feed,edition_date:'2026-11-11',observation_cutoff_exclusive:
  sources:{...feed.sources,fx_fixing:'2026-11-10',rates:'2026-11-09'},
  charts:feed.charts.map(c=>({...c,as_of:'2026-11-09',
  points:c.points.filter(p=>p.date<'2026-11-11')}))};
-const post=api.window.FXQuantMorningDesk.postRelease(todayFeed,{items:[official]},safe,()=> '2026-11-11');
-assert(post.includes('AGGIORNAMENTO DOPO IL BRIEFING')&&post.includes('Fonte BLS'));
+const asOf='2026-11-11T10:15:00Z';
+const getPost=(edition,items,date,now=asOf)=>
+ api.window.FXQuantMorningDesk.postRelease(edition,{items},safe,()=>date,now);
+const post=getPost(todayFeed,[official],'2026-11-11');
+assert(post.includes('NUOVI DATI MACRO UFFICIALI')&&post.includes('Fonte ufficiale'));
 assert(post.includes('EUR/USD')&&post.includes('USD/JPY'));
-assert.equal(api.window.FXQuantMorningDesk.postRelease(todayFeed,
- {items:[{...official,first_runner_observed_at_utc:'2026-11-11T08:20:15Z'}]},safe,()=> '2026-11-11'),'');
-assert.equal(api.window.FXQuantMorningDesk.postRelease(todayFeed,
- {items:[{...official,quality:'UNVERIFIED'}]},safe,()=> '2026-11-11'),'');
-assert.equal(api.window.FXQuantMorningDesk.postRelease(todayFeed,
- {items:[official]},safe,()=> '2026-11-12'),'');
-assert.equal(api.window.FXQuantMorningDesk.postRelease(todayFeed,
- {items:[{...official,source_url:'https://example.org/forged'}]},safe,()=> '2026-11-11'),'');
+assert(post.includes('Il briefing originale resta invariato'));
+assert.equal(getPost(todayFeed,[{...official,first_runner_observed_at_utc:'2026-11-11T08:20:15Z'}],'2026-11-11'),'');
+assert.equal(getPost(todayFeed,[{...official,quality:'UNVERIFIED'}],'2026-11-11'),'');
+assert.equal(getPost(todayFeed,[official],'2026-11-12'),'');
+assert.equal(getPost(todayFeed,[{...official,source_url:'https://example.org/forged'}],'2026-11-11'),'');
+assert.equal(getPost(todayFeed,[{...official,as_of:'2026-11-12'}],'2026-11-11'),'');
+assert.equal(getPost(todayFeed,[{...official,event_type:'SYNTHETIC_TRADE'}],'2026-11-11'),'');
+const ukFeed={...todayFeed,edition_date:'2026-11-12',observation_cutoff_exclusive:'2026-11-12',
+ created_at_utc:'2026-11-12T06:50:00Z'};
+const ukActual={...official,ccy:'GBP',as_of:'2026-11-12',event_type:'GROWTH',
+ quality:'ISSUER_GDP_FIRST_RUNNER_OBSERVATION_NOT_PUBLISHER_PIT',
+ title:'Regno Unito · PIL preliminare: +0,5%',
+ source_url:'https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/gdpfirstquarterlyestimateuk/julytoseptember2026',
+ first_runner_observed_at_utc:'2026-11-12T07:05:00Z'};
+const gdp=getPost(ukFeed,[ukActual],'2026-11-12','2026-11-12T07:06:00Z');
+assert(gdp.includes('BoE')&&gdp.includes('GBP/USD')&&gdp.includes('EUR/GBP'),'UK policy/FX relative lens');
+assert.equal(getPost(ukFeed,[ukActual],'2026-11-12','2026-11-12T07:02:00Z'),'',
+ 'future runner observation must not leak into the past');
+const late={...ukFeed,created_at_utc:'2026-11-12T08:29:00Z'};
+assert(getPost(late,[ukActual],'2026-11-12','2026-11-12T09:00:00Z').includes('PIL preliminare'),
+ 'same-day result must survive a delayed frozen morning edition');
+const invalidCB={...ukActual,ccy:'NZD',event_type:'CENTRAL_BANK_DECISION'};
+assert.equal(getPost(ukFeed,[invalidCB],'2026-11-12','2026-11-12T09:00:00Z'),'',
+ 'CB headlines without a structured validated issuer actual must not be promoted');
 console.log('MORNING_FX_DESK_RENDER_V1_PASS: narrative-before-charts, 2 dated plots, archives and no lookahead');
