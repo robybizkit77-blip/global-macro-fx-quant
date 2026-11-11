@@ -158,6 +158,45 @@ jobs:
       - name: Confirm public site exposes the same revision as approved main
         if: github.event_name != 'pull_request'
         run: python3 -m validation.publishing.wait_fxv2_public_revision_v1
+      - name: Verify published CHF/NZD research JSON matches approved main (public HTTPS)
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,os
+          from pathlib import Path
+          from validation.publishing.verify_pages_http_delivery_v1 import BASE_URL,verify
+          root=Path('.')
+          paths=(
+              'site/fx-quant-v2/chf-nzd-benchmark-research.json',
+              'site/fx-quant-v2/chf-snb-paired-history.json',
+              'site/fx-quant-v2/nzd-b2-postroll-web-research.json',
+          )
+          proof=verify(root,BASE_URL,paths,budget_seconds=180,interval_seconds=10,timeout_seconds=12)
+          Path('/tmp/fxv2-chf-nzd-public-http-proof.json').write_text(
+              json.dumps(proof,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as summary:
+              summary.write('\n### CHF/NZD dated research — public HTTP byte parity\n')
+              for item in proof['checks']:
+                  summary.write('- '+item['path']+': **'+
+                      ('MATCH' if item['http_200_and_sha256_match'] else 'NOT VERIFIED')+
+                      '**; HTTP '+str(item['http_status'])+'\n')
+          if proof['status']!='PASS':
+              raise SystemExit('CHF_NZD_RESEARCH_PUBLIC_HTTP_NOT_SAME_AS_MAIN')
+          research=json.loads((root/paths[0]).read_text(encoding='utf-8'))
+          chf=json.loads((root/paths[1]).read_text(encoding='utf-8'))
+          nzd=json.loads((root/paths[2]).read_text(encoding='utf-8'))
+          expected=research['NZD']
+          latest=nzd['daily_observations'][-1]
+          assert expected['latest_date']==latest['date']
+          assert expected['latest_2Y']==latest['2Y'] and expected['latest_10Y']==latest['10Y']
+          assert research['CHF']['paired_date']==chf['last_observation_date']
+          assert research['eligible_for_fx_pair_engine'] is False
+          assert nzd['eligible_for_core'] is False and nzd['eligible_for_fx_pair_engine'] is False
+          assert chf['eligible_for_core'] is False
+          print('CHF_NZD_RESEARCH_PUBLIC_HTTP_200_SHA256_AND_DATED_SOURCES_MATCH')
+          PY
       - name: Audit desktop 1440px and mobile 390px across all 12 sections
         shell: bash
         run: |
