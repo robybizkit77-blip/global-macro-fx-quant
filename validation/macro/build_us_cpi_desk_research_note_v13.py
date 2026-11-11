@@ -99,7 +99,8 @@ def build(forecasts, actuals, *, rates=None, fx=None, ois=None, now=None):
     found = {r["metric_id"]: r for r in forecasts if r["event_key"] == KEY}
     observed = {r["metric_id"]: r for r in actuals}
     release = expected_release()
-    stage = ("FOUR_OFFICIAL_METRICS_VALIDATED_RESEARCH_ONLY" if actuals else
+    stage = ("FOUR_OFFICIAL_METRICS_VALIDATED_RESEARCH_ONLY" if len(actuals)==4 else
+             "TWO_OFFICIAL_MONTHLY_METRICS_ANNUAL_UNAVAILABLE" if len(actuals)==2 else
              "AWAITING_BLS_RELEASE_NO_ACTUAL" if now < release else
              "AWAITING_VALIDATED_V10_ACTUAL_OR_ARCHIVE")
     metrics = []
@@ -110,6 +111,9 @@ def build(forecasts, actuals, *, rates=None, fx=None, ois=None, now=None):
             "metric_id": mid, "label": METRIC_LABELS[mid],
             "reference_period": "October 2026",
             "actual_percent": a["actual_percent"] if a else None,
+            "officially_unavailable_reason": (
+                "OCT_2025_BASE_NOT_COLLECTED"
+                if len(actuals)==2 and mid.endswith("_YOY_NSA") else None),
             "secondary_forecast_percent": f["forecast_value_percent"] if f else None,
             "delta_vs_secondary_forecast_pp":
                 a["actual_minus_v9_provider_observation_pp"] if a else None,
@@ -118,7 +122,7 @@ def build(forecasts, actuals, *, rates=None, fx=None, ois=None, now=None):
             "delta_is_market_surprise_certified": False,
         })
     if not actuals:
-        observation = "Il CPI di ottobre non risulta ancora acquisito come quattro actual ufficiali V10."
+        observation = "Il CPI di ottobre non risulta ancora acquisito in un registro BLS ufficiale validato."
         implication = ("Non attribuire una sorpresa d'inflazione né una reazione dei mercati "
                        "in assenza del comunicato e di osservazioni sincronizzate.")
     else:
@@ -127,8 +131,11 @@ def build(forecasts, actuals, *, rates=None, fx=None, ois=None, now=None):
         hd = observed["US_CPI_U_HEADLINE_MOM_SA"]["actual_minus_v9_provider_observation_pp"]
         cd = observed["US_CPI_U_CORE_MOM_SA"]["actual_minus_v9_provider_observation_pp"]
         observation = (f"Headline mensile {pct(hm)}, core mensile {pct(cm)}. "
-                       "I tassi annuali sono riportati separatamente: non confrontarli "
-                       "con forecast mensili.")
+                       + ("I tassi annuali di ottobre 2026 non sono pubblicati dal BLS: "
+                          "la base di ottobre 2025 manca per la sospensione della raccolta dati. "
+                          if len(actuals)==2 else
+                          "I tassi annuali sono riportati separatamente e non sono confrontabili "
+                          "con i forecast mensili. "))
         if hd is None or cd is None:
             implication = ("Il confronto con forecast mensili secondari è incompleto; "
                            "nessuna sorpresa certificata.")
@@ -191,7 +198,7 @@ def markdown(note):
     for m in note["metrics"]:
         lines.append(
             f"| {m['label']} | "
-            f"{pct(m['actual_percent']) if m['actual_percent'] is not None else 'non osservato'} | "
+            f"{pct(m['actual_percent']) if m['actual_percent'] is not None else ('non pubblicato (base 2025 mancante)' if m.get('officially_unavailable_reason') else 'non osservato')} | "
             f"{pct(m['secondary_forecast_percent']) if m['secondary_forecast_percent'] is not None else 'non disponibile'} | "
             f"{pp(m['delta_vs_secondary_forecast_pp']) if m['delta_vs_secondary_forecast_pp'] is not None else '—'} |"
         )
