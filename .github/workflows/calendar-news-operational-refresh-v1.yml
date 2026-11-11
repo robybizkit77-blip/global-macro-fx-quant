@@ -411,13 +411,14 @@ jobs:
           assert x['certified_consensus_surprises']==0 and x['fx_signals']==0
           assert x['writes_live_data'] is False
           assert x['legacy_archives_modified'] is False
-          assert x['metric_actuals_archived'] in (0,4)
+          assert x['metric_actuals_archived'] in (0,2,4)
           assert x['source_status'] in {
             'FOUR_METRICS_ALREADY_ARCHIVED_NO_HTTP',
             'BEFORE_RELEASE_NO_HTTP',
             'OUTSIDE_OBSERVATION_WINDOW_NO_HTTP',
             'ISSUER_NOT_AVAILABLE_OR_EXACT_RELEASE_NOT_PARSABLE',
-            'OFFICIAL_CPI_FOUR_METRICS_OBSERVED_AND_ARCHIVED_NOT_PIT'
+            'OFFICIAL_CPI_FOUR_METRICS_OBSERVED_AND_ARCHIVED_NOT_PIT',
+            'OFFICIAL_CPI_MONTHLY_ONLY_ANNUAL_GAP_NOT_PIT'
           }, x
           with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as fp:
               fp.write('### Official BLS CPI actuals V10 (four distinct measures)\n')
@@ -440,7 +441,7 @@ jobs:
           import json
           x=json.load(open('/tmp/g8-us-cpi-desk-v13.json'))
           assert x['schema']=='GMFQ_US_CPI_DESK_RESEARCH_READOUT_V13'
-          assert x['metric_count'] in (0,4)
+          assert x['metric_count'] in (0,2,4)
           assert x['market_context']['synchronized_release_window_quotes_verified']==0
           assert x['market_context']['market_causality_established'] is False
           assert x['FX_signal'] is None and x['eligible_for_Core_Beta_Forward'] is False

@@ -12,6 +12,7 @@ from validation.macro import capture_us_cpi_exact_actuals_v10 as v10
 from validation.macro import preflight_us_cpi_official_actual_v8 as bls
 from validation.macro.freeze_exact_metric_forecasts_v9 import read_rows
 from validation.macro.test_g8_metric_issuer_readiness_v8 import mock_bls
+from validation.macro.test_capture_us_cpi_exact_actuals_v10 import PARTIAL
 
 BEFORE = datetime(2026, 11, 9, 19, 5, tzinfo=timezone.utc)
 AFTER = datetime(2026, 11, 10, 13, 34, tzinfo=timezone.utc)
@@ -72,6 +73,27 @@ class CPIDeskNoteV13(unittest.TestCase):
         self.assertEqual(x["status"], "AWAITING_VALIDATED_V10_ACTUAL_OR_ARCHIVE")
         self.assertIn("non risulta ancora acquisito", v13.markdown(x))
         self.assertEqual(x["metric_count"], 0)
+
+    def test_shutdown_gap_has_two_real_monthly_and_explicit_absent_annual(self):
+        rows, receipt = v10.capture(
+            self.forecasts, [], AFTER,
+            fetch=lambda url, host: (PARTIAL, url),
+            observed_clock=lambda: SEEN)
+        self.assertEqual(receipt["new_metrics_archived"], 2)
+        x = self.note(rows)
+        self.assertEqual(x["status"], "TWO_OFFICIAL_MONTHLY_METRICS_ANNUAL_UNAVAILABLE")
+        self.assertEqual(x["metric_count"], 2)
+        byid = {m["metric_id"]: m for m in x["metrics"]}
+        self.assertAlmostEqual(byid["US_CPI_U_HEADLINE_MOM_SA"]["actual_percent"], 0.4)
+        self.assertAlmostEqual(byid["US_CPI_U_CORE_MOM_SA"]["actual_percent"], 0.3)
+        for mid in v10.ANNUAL:
+            self.assertIsNone(byid[mid]["actual_percent"])
+            self.assertEqual(byid[mid]["officially_unavailable_reason"],
+                             "OCT_2025_BASE_NOT_COLLECTED")
+        self.assertIn("non sono pubblicati", x["desk_observation"])
+        self.assertIn("base 2025 mancante", v13.markdown(x))
+        self.assertFalse(x["market_context"]["market_causality_established"])
+        self.assertIsNone(x["FX_signal"])
 
     def test_four_official_metrics_and_secondary_forecast_deltas_only(self):
         x = self.note(self.official())

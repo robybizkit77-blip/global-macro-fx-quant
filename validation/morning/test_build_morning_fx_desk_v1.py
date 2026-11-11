@@ -5,6 +5,12 @@ import json
 from datetime import date, datetime, timezone
 from pathlib import Path
 import unittest
+import tempfile
+from unittest.mock import patch
+from validation.morning import build_morning_fx_desk_v1 as desk
+from validation.macro import capture_us_cpi_exact_actuals_v10 as v10
+from validation.macro.test_capture_us_cpi_exact_actuals_v10 import PARTIAL, AFTER, SEEN
+from validation.macro.freeze_exact_metric_forecasts_v9 import read_rows
 
 from validation.morning.build_morning_fx_desk_v1 import (
     ROOT, build, validate, choose_event, fmt, signed, get_pair_price, to_date, skipped_market_sessions
@@ -31,14 +37,38 @@ class MorningFXDeskTests(unittest.TestCase):
 
     def test_day_after_cpi_without_certified_actual(self):
         x=build(ROOT,date(2026,11,11),datetime(2026,11,11,7,15,tzinfo=timezone.utc))
-        self.assertIn(x["event_status"],{"AFTERMATH_UNVERIFIED","AFTERMATH_TO_VERIFY"})
+        self.assertIn(x["event_status"],{"AFTERMATH_UNVERIFIED","AFTERMATH_TO_VERIFY",
+                                         "AFTERMATH_MONTHLY_ONLY_YOY_UNAVAILABLE"})
         self.assertIn("CPI",x["headline"])
         if x["event_status"]=="AFTERMATH_UNVERIFIED":
-            self.assertIn("provenienza",x["catalyst"]["text"])
+            self.assertIn("non sono ancora presenti misure BLS",x["catalyst"]["text"])
+        elif x["event_status"]=="AFTERMATH_MONTHLY_ONLY_YOY_UNAVAILABLE":
+            self.assertIn("non sono pubblicabili", x["catalyst"]["text"])
         else:
-            self.assertIn("registro contiene",x["catalyst"]["text"])
+            self.assertIn("registro conserva quattro",x["catalyst"]["text"])
         self.assertEqual(x["edition_status"],"MORNING_SNAPSHOT")
         self.assertLess(x["sources"]["fx_fixing"],"2026-11-11")
+
+    def test_real_monthly_cpi_post_release_can_be_used_without_yoy_fabrication(self):
+        forecasts = read_rows(v10.FORECAST_LEDGER)
+        rows, receipt = v10.capture(
+            forecasts, [], AFTER, fetch=lambda url, host: (PARTIAL,url),
+            observed_clock=lambda: SEEN)
+        self.assertEqual(len(rows),2)
+        with tempfile.TemporaryDirectory() as tmp:
+            actual_path = Path(tmp)/"first_observed.jsonl"
+            actual_path.write_text(
+                "".join(json.dumps(r,ensure_ascii=False)+"\n" for r in rows),
+                encoding="utf-8")
+            with patch.dict(desk.FILES,{"actual":str(actual_path)}):
+                report = build(ROOT,date(2026,11,11),
+                               datetime(2026,11,11,7,15,tzinfo=timezone.utc))
+        self.assertEqual(report["event_status"],
+                         "AFTERMATH_MONTHLY_ONLY_YOY_UNAVAILABLE")
+        self.assertIn("+0,4%",report["paragraphs"][2])
+        self.assertIn("+0,3%",report["paragraphs"][2])
+        self.assertIn("non sono pubblicabili",report["paragraphs"][2])
+        self.assertFalse(report["eligible_for_fx_signal"])
 
     def test_upcoming_uk_growth(self):
         x=build(ROOT,date(2026,11,12),datetime(2026,11,12,7,10,tzinfo=timezone.utc))
