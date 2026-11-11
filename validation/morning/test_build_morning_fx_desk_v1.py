@@ -58,7 +58,7 @@ class MorningFXDeskTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             actual_path = Path(tmp)/"first_observed.jsonl"
             actual_path.write_text(
-                "".join(json.dumps(r,ensure_ascii=False)+"\\n" for r in rows),
+                "".join(json.dumps(r,ensure_ascii=False)+"\n" for r in rows),
                 encoding="utf-8")
             with patch.dict(desk.FILES,{"actual":str(actual_path)}):
                 report = build(ROOT,date(2026,11,11),
