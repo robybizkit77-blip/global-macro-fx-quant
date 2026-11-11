@@ -800,17 +800,51 @@ function currencies(){
  return pageHero('FX G8 / COUNTRY RESEARCH','Country Research Studio non disponibile','Il modulo Valute G8 non è stato caricato. Verifica i feed e lo script.');
 }
 function pairs(){
- const all=eurPairs(),keys=pairListKeys(),s=all[state.pair]?.setup,fr=all[state.pair]?.decision_frame||s?.structural||{},price=s?.price,qual=pQuality(s);
- const d=all[state.pair]?.relative_dynamics||{};
- const watchLabel=state.watch.has(state.pair)?'★ Nella watchlist':'☆ Salva per dopo';
- return pageHero('FX / PAIR EXPLORER','28 coppie. <em>Una tesi alla volta.</em>','Qui non cerchiamo soltanto chi è forte. Leggiamo vantaggio macro, pricing, COT, prezzo e soprattutto cosa potrebbe smentire la tesi.')
- +(window.FXQuantThesisMonitor?.render?.(get('pairs'),get('thesisHistory'),state.pair)||'<section class="panel"><p>Monitor storico FX da verificare.</p></section>')
- +(typeof window!=='undefined'&&window.FXQuantDecisionJourney?.build?window.FXQuantDecisionJourney.build({get,state,plot,fmt,sign,date,dayNow,esc}).pair():'<div class="empty">Lettura prezzo FX non disponibile. Non presentiamo livelli operativi.</div>')
- +'<div class="grid tilted"><section class="panel"><div class="panel-head"><div><span class="mini-overline">ESPLORA E FILTRA</span><h2>Il tuo universo FX</h2><p>Prezzi ECB: '+date(get('pairs')?.price_asof)+' · '+Object.keys(all).length+' coppie</p>'+pairCoverageIntro()+'</div></div><div class="filters"><input id="pair-search" class="input" type="search" placeholder="Cerca EUR/USD, AUDCAD..." autocomplete="off" value="'+esc(state.pairSearch)+'" aria-label="Cerca coppia FX"><div class="filter-group" id="pair-filters">'+choose('',pairFilterOptions(),state.pairFilter,'data-pfilter')+'</div></div><div class="pair-list" id="pair-results">'+(keys.length?keys.map(k=>pairRow(k)).join(''):'<div class="empty"><strong>Nessuna coppia</strong><p>Prova a cambiare filtro o ricerca.</p></div>')+'</div><p class="source-caption">“Pulito”, “Con rischi”, “Da confermare” e “Non valutabile” sono stati del motore, non raccomandazioni operative.</p></section>'
- +'<div class="grid"><section class="panel glow"><div class="focus-row"><span class="mini-overline">PAIR DEEP DIVE</span>'+qBadge(qual)+'</div><h2 class="focus-headline">'+(s?esc(s.pair||getPairName(state.pair)):'Seleziona una coppia')+'</h2><p class="focus-subtitle">'+esc(s?.structural?.relation||fr?.relation||'Scegli una coppia per leggere la relazione tra macro e prezzi.')+'</p><div style="display:flex;gap:8px;flex-wrap:wrap;margin:17px 0"><button class="watch-btn '+(state.watch.has(state.pair)?'saved':'')+'" type="button" data-watch="'+state.pair+'">'+watchLabel+'</button><span class="badge info">Prezzo '+date(get('pairs')?.price_asof)+'</span></div>'
- +'<div class="lens-grid"><div class="lens"><label>Struttura</label><strong>'+esc(s?.structuralFav?'Vantaggio: '+s.structuralFav:'Non definita')+'</strong><p>'+esc(concise(fr.quality||'Da confermare',130))+'</p></div><div class="lens"><label>Prezzo</label><strong>'+esc(price?.text||'Non classificato')+'</strong><p>'+esc(concise(fr.priceNote||'',120))+'</p></div><div class="lens"><label>Timing</label><strong>'+esc(concise(s?.timing?.text,70))+'</strong></div><div class="lens"><label>COT</label><strong>'+esc(concise(s?.cot?.text,145))+'</strong></div></div></section>'
- +'<section class="panel"><div class="panel-head"><div><span class="mini-overline">DALLA TESI ALLA DECISIONE</span><h2>Cosa deve succedere adesso?</h2></div></div><div class="flow-track"><div class="flow-item"><label>Confermerebbe</label><p>'+esc(fr.priceNote||s?.price?.text||'Prezzo e pricing da verificare')+'</p></div><div class="flow-item"><label>Invalida / frena</label><p>'+esc(fr.missing||'Mancano conferme da macro, tassi e prezzo.')+'</p></div><div class="flow-item"><label>Monitorare</label><p>'+esc(fr.watch||s?.structural?.watch||'Aspettare una conferma osservabile, non dedurre ingressi automatici.')+'</p></div></div></section></div></div>'
- +'<div class="data-status"><span class="live-dot"></span><div>La watchlist è salvata esclusivamente in questo browser. Nessuna coppia rappresenta un ordine, un segnale di ingresso o una stima di rendimento futuro.</div></div>';
+ const all=eurPairs(),keys=Object.keys(all).sort(),p=all[state.pair],s=p?.setup||{},fr=p?.decision_frame||s.structural||{};
+ const monitor=window.FXQuantThesisMonitor?.analyze?.(get('pairs'),get('thesisHistory'),state.pair)||{ready:false};
+ const fav=s.structuralFav||null,quality=pQuality(s);
+ const choice='<label class="pair-sel-control" for="pair-primary-select"><span>COPPIA DA ANALIZZARE</span><select id="pair-primary-select" aria-label="Seleziona una delle 28 coppie">'+
+  keys.map(k=>'<option value="'+esc(k)+'"'+(k===state.pair?' selected':'')+'>'+esc(getPairName(k))+'</option>').join('')+'</select></label>';
+ const report=monitor.ready?monitor.changed.length?
+   'Dal '+date(monitor.previousAsOf)+' al '+date(monitor.asof)+': '+monitor.changed.length+' classificazioni cambiate. '+monitor.judgement:
+   'Nessuna delle classificazioni monitorate è cambiata rispetto al '+date(monitor.previousAsOf)+'. Non significa che il mercato sia immobile.'
+  :'Confronto fra sedute non disponibile: attendiamo uno storico allineato al modello.';
+ const favMeaning=fav?'Il modello favorisce '+fav+' rispetto a '+(fav===state.pair.slice(0,3)?state.pair.slice(3):state.pair.slice(0,3))+'.':'Nessuna valuta favorita in modo verificabile.';
+ const headline=fr.relation||s.structural?.relation||'Il modello non dispone di una tesi relativa abbastanza solida.';
+ const priceText=s.price?.text||'Da verificare';
+ const missing=fr.missing||'Mancano prove sufficienti per confermare la tesi.';
+ const next=fr.watch||s.structural?.watch||'Verificare prezzo e pricing su date comparabili.';
+ const context='Prezzo BCE '+date(get('pairs')?.price_asof)+' · baseline macro '+date(get('pairs')?.macro_baseline_asof)+
+   ' · ultimo confronto '+(monitor.ready?date(monitor.previousAsOf)+' → '+date(monitor.asof):'non disponibile');
+ const watchLabel=state.watch.has(state.pair)?'★ Nella watchlist':'☆ Salva nella watchlist';
+ const main='<section class="panel pairs-reading-compact" aria-label="Sintesi operativa della coppia selezionata">'+
+  '<div class="pairs-reading-head"><div><span class="mini-overline">IL GIUDIZIO FX · '+esc(getPairName(state.pair))+'</span><h2>'+esc(favMeaning)+'</h2></div>'+
+  '<span class="badge info">'+esc(quality)+'</span></div>'+
+  '<p class="pairs-primary-story">'+esc(headline)+'</p>'+
+  '<div class="pairs-three-answers">'+
+   '<div><span>PREZZO</span><strong>'+esc(priceText)+'</strong></div>'+
+   '<div><span>CAMBIAMENTO</span><strong>'+esc(monitor.ready?monitor.changed.length+' classificazioni':'Da verificare')+'</strong></div>'+
+   '<div><span>PRIMA DI VALUTARE</span><strong>'+esc(missing)+'</strong></div></div>'+
+  '<p class="pairs-next-action"><strong>Cosa controllare adesso.</strong> '+esc(next)+'</p>'+
+  '<p class="pairs-vintage">'+esc(context)+'. La baseline macro non viene aggiornata automaticamente quando cambia il prezzo.</p></section>';
+ const historyDetail='<details class="pairs-optional-panel"><summary><span><strong>Come è cambiata la tesi?</strong><small>'+esc(report)+'</small></span><span class="pairs-open-icon">+</span></summary>'+
+  (window.FXQuantThesisMonitor?.render?.(get('pairs'),get('thesisHistory'),state.pair)||'<p>Monitor storico non disponibile.</p>')+'</details>';
+ const originalDecision=typeof window!=='undefined'&&window.FXQuantDecisionJourney?.build?
+  window.FXQuantDecisionJourney.build({get,state,plot,fmt,sign,date,dayNow,esc}).pair():
+  '<div class="empty">Grafico e lettura del prezzo non disponibili.</div>';
+ const detail='<details class="pairs-optional-panel pairs-optional-chart"><summary><span><strong>Apri grafico, pricing e analisi completa</strong><small>Fixing BCE, 5/20 sedute, tassi differenziali, rischi e livelli di riferimento</small></span><span class="pairs-open-icon">+</span></summary>'+
+  '<div class="pairs-details-body">'+originalDecision+'</div></details>';
+ const chooser='<section class="pairs-chooser"><div class="pairs-chooser-top">'+choice+
+  '<button class="watch-btn '+(state.watch.has(state.pair)?'saved':'')+'" type="button" data-watch="'+state.pair+'">'+watchLabel+'</button></div>'+
+  '<p>28 coppie G8, una sola tesi alla volta. Parti dal giudizio; approfondisci soltanto ciò che conta.</p></section>';
+ const browse='<details class="pairs-optional-panel pairs-browse"><summary><span><strong>Confronta e filtra le 28 coppie</strong><small>Ricerca, qualità del dossier, copertura dei dati e watchlist</small></span><span class="pairs-open-icon">+</span></summary>'+
+  '<div class="pairs-browse-inside"><div class="filters"><input id="pair-search" class="input" type="search" placeholder="Cerca EUR/USD, AUDCAD..." autocomplete="off" value="'+esc(state.pairSearch)+'" aria-label="Cerca coppia FX"><div class="filter-group" id="pair-filters">'+choose('',pairFilterOptions(),state.pairFilter,'data-pfilter')+'</div></div>'+
+  '<div class="pair-list" id="pair-results">'+(pairListKeys().length?pairListKeys().map(k=>pairRow(k)).join(''):'<div class="empty">Nessuna coppia corrispondente.</div>')+'</div>'+
+  pairCoverageIntro()+'</div></details>';
+ return pageHero('FX / PAIR EXPLORER','28 coppie. <em>Una tesi alla volta.</em>',
+  'Scegli una coppia, leggi il giudizio e scopri cosa può confermarlo o smentirlo. Grafici e confronti restano disponibili senza appesantire la lettura.')
+  +chooser+main+historyDetail+detail+browse+
+  '<p class="pairs-compact-footer">Stati descrittivi del modello, non segnali o ordini. I fixing BCE sono giornalieri, non prezzi intraday; COT e macro hanno frequenze differenti.</p>';
 }
 function macro(){
  if(window.FXQuantMacro?.render)return window.FXQuantMacro.render({get,FX,FLAGS,NAMES,state,plot,pageHero,esc,fmt,sign,date,finite,validDay,dayNow});
@@ -1022,6 +1056,7 @@ document.addEventListener('toggle',e=>{
  if(e.target?.matches?.('details[data-home-dossier]'))state.homeDossierOpen=e.target.open;
 },true);
 document.addEventListener('change',e=>{
+ if(e.target.id==='pair-primary-select'){const k=e.target.value;if(eurPairs()[k]){state.pair=k;render()}return;}
  if(e.target.id==='cs-other'){state.csOther=e.target.value;render();return;}
  if(e.target.id==='ms-series'){state.msSeriesId=e.target.value;render();return;}
  if(e.target.id==='ms-primary'){state.ccy=e.target.value;state.msSeriesId=null;if(state.msOther===state.ccy)state.msOther=FX.find(k=>k!==state.ccy);render();return;}
