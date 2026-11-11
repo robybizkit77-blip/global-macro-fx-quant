@@ -100,6 +100,7 @@ jobs:
           UPSTREAM_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
           UPSTREAM_EVENT: ${{ github.event.workflow_run.event }}
           UPSTREAM_STARTED_AT: ${{ github.event.workflow_run.run_started_at }}
+          EOLAS_PRO_ENABLED: ${{ secrets.EOLAS_PRO_ENABLED }}
         run: |
           set -euo pipefail
           python3 validation/rates/fxv2_chf_nzd_schedule_gate_v1.py \
@@ -132,6 +133,9 @@ jobs:
             echo 'FXV2_RBNZ_B2_AUTHORIZED_SOURCE_UNAVAILABLE: previous dated NZD context retained'
             rm -f /tmp/fxv2-rbnz-b2-daily-source.json
           fi
+      # Free eolas: Tue/Thu 06:30 Rome, max 10 scheduled requests/month.
+      # Set EOLAS_PRO_ENABLED=true ONLY with a confirmed paid Pro entitlement.
+      # Other RBNZ/CHF research refreshes continue daily without this key.
       - name: Use authorized eolas API only when the quota-safe slot is permitted
         if: steps.gate.outputs.should_run == 'true' && github.event_name != 'pull_request'
         shell: bash
