@@ -23,7 +23,7 @@ async function checkPairChartControls(page,label) {
   if (!(await selected.count())) throw Error(label + ' USD/CAD pair not found in ranking');
   await selected.click();
   const detail=page.locator('details.pairs-optional-chart');
-  await detail.locator('summary').click();
+  await detail.locator('summary').first().click();
   if (!(await detail.evaluate(el => el.open))) throw Error(label + ' pair chart did not open');
   for (const days of [20,60,120]) {
     const control=detail.locator('[data-v9-price-window="'+days+'"]');
