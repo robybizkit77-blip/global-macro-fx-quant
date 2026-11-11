@@ -76,5 +76,29 @@
    '<p>Edizione '+text(feed.edition_status)+' · Lettura basata su regole ed evidenze datate, non un giudizio editoriale umano verificato. Nessun segnale o variazione del motore delle 28 coppie.</p></footer>'+
    '</article>';
  }
- window.FXQuantMorningDesk={sound,build};
+ // An independently timestamped post-release note may follow a frozen opening
+ // edition. It must NEVER rewrite the morning article or claim event-price proof.
+ function postRelease(feed,news,esc,dayNow){
+  const validStamp=x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(x)&&Number.isFinite(Date.parse(x));
+  if(!sound(feed)||feed.edition_date!==dayNow()||!validStamp(feed.created_at_utc)
+   ||!Array.isArray(news?.items))return '';
+  const item=news.items.find(x=>x?.category==='MACRO_OFFICIAL_ACTUAL'
+   &&x.ccy==='USD'&&x.as_of==='2026-11-10'
+   &&x.quality==='ISSUER_BLS_HTML_FIRST_RUNNER_OBSERVATION_NOT_PUBLISHER_PIT'
+   &&typeof x.title==='string'&&typeof x.detail==='string'
+   &&x.source_url==='https://www.bls.gov/news.release/cpi.htm'
+   &&validStamp(x.first_runner_observed_at_utc)
+   &&Date.parse(x.first_runner_observed_at_utc)>Date.parse(feed.created_at_utc)
+   &&Date.parse(x.first_runner_observed_at_utc)<=Date.now()
+   &&x.first_runner_observed_at_utc.slice(0,10)<=dayNow());
+  if(!item)return '';
+  return '<aside class="morning-catalyst" data-postrelease="official-cpi" aria-label="Aggiornamento ufficiale dopo il briefing">'+
+   '<div class="morning-section-label">AGGIORNAMENTO DOPO IL BRIEFING · FONTE UFFICIALE</div>'+
+   '<h2>'+esc(item.title)+'</h2><p>'+esc(item.detail)+'</p>'+
+   '<p><strong>Per il Forex:</strong> il dato può influenzare le attese Fed, ma il differenziale monetario effettivamente riprezzato e la reazione relativa di EUR/USD e USD/JPY restano da verificare. Nessun segnale operativo automatico.</p>'+
+   '<p>Prima acquisizione del runner: '+esc(item.first_runner_observed_at_utc)+' (UTC). '+
+   '<a href="https://www.bls.gov/news.release/cpi.htm" rel="noopener noreferrer" target="_blank">Fonte BLS</a>. '+
+   'Il briefing di apertura rimane invariato.</p></aside>';
+ }
+ window.FXQuantMorningDesk={sound,build,postRelease};
 })();
