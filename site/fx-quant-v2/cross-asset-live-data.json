@@ -19,16 +19,12 @@
   "source_errors": {},
   "streams": {
     "SP500": {
-      "date": "2026-11-09",
-      "previous_date": "2026-11-06",
-      "value": 7549.94,
-      "previous": 7376.86,
-      "change_1d_pct": 2.3463,
+      "date": "2026-11-10",
+      "previous_date": "2026-11-09",
+      "value": 7520.93,
+      "previous": 7549.94,
+      "change_1d_pct": -0.3842,
       "history": [
-        [
-          "2026-06-18",
-          7500.58
-        ],
         [
           "2026-06-22",
           7472.79
@@ -424,6 +420,10 @@
         [
           "2026-11-09",
           7549.94
+        ],
+        [
+          "2026-11-10",
+          7520.93
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -432,21 +432,17 @@
       "kind": "INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 2,
+      "source_age_calendar_days": 1,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
     "NASDAQCOM": {
-      "date": "2026-11-09",
-      "previous_date": "2026-11-06",
-      "value": 25253.14,
-      "previous": 24579.42,
-      "change_1d_pct": 2.741,
+      "date": "2026-11-10",
+      "previous_date": "2026-11-09",
+      "value": 25065.87,
+      "previous": 25253.14,
+      "change_1d_pct": -0.7416,
       "history": [
-        [
-          "2026-06-18",
-          26517.93
-        ],
         [
           "2026-06-22",
           26166.6
@@ -842,6 +838,10 @@
         [
           "2026-11-09",
           25253.14
+        ],
+        [
+          "2026-11-10",
+          25065.87
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -850,7 +850,7 @@
       "kind": "INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 2,
+      "source_age_calendar_days": 1,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
@@ -1691,16 +1691,12 @@
       "no_core_or_backtest_effect": true
     },
     "VIX": {
-      "date": "2026-11-09",
-      "previous_date": "2026-11-06",
-      "value": 19.92,
-      "previous": 25.64,
-      "change_1d_pct": -22.3089,
+      "date": "2026-11-10",
+      "previous_date": "2026-11-09",
+      "value": 19.46,
+      "previous": 19.92,
+      "change_1d_pct": -2.3092,
       "history": [
-        [
-          "2026-06-23",
-          19.49
-        ],
         [
           "2026-06-24",
           18.63
@@ -2096,6 +2092,10 @@
         [
           "2026-11-09",
           19.92
+        ],
+        [
+          "2026-11-10",
+          19.46
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -2104,7 +2104,7 @@
       "kind": "VOLATILITY_INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 2,
+      "source_age_calendar_days": 1,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     }
