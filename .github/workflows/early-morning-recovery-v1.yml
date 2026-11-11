@@ -20,12 +20,16 @@ on:
       - '.github/workflows/early-morning-recovery-v1.yml'
       - 'validation/orchestration/trigger_early_morning_recovery_v1.py'
       - 'validation/orchestration/test_trigger_early_morning_recovery_v1.py'
+      - 'validation/orchestration/trigger_morning_editorial_recovery_v1.py'
+      - 'validation/orchestration/test_trigger_morning_editorial_recovery_v1.py'
   push:
     branches: [main]
     paths:
       - '.github/workflows/early-morning-recovery-v1.yml'
       - 'validation/orchestration/trigger_early_morning_recovery_v1.py'
       - 'validation/orchestration/test_trigger_early_morning_recovery_v1.py'
+      - 'validation/orchestration/trigger_morning_editorial_recovery_v1.py'
+      - 'validation/orchestration/test_trigger_morning_editorial_recovery_v1.py'
 
 permissions:
   contents: read
@@ -46,6 +50,8 @@ jobs:
           python-version: '3.12'
       - name: Validate fail-safe recovery planner
         run: python -m unittest validation.orchestration.test_trigger_early_morning_recovery_v1 -v
+      - name: Test dated Morning Macro/FX editorial recovery bounds
+        run: python -m unittest validation.orchestration.test_trigger_morning_editorial_recovery_v1 -v
 
   recover:
     needs: tests
@@ -70,3 +76,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: python -m validation.orchestration.trigger_early_morning_recovery_v1
+      - name: Recover missing Morning FX public edition without new scheduler
+        if: always()
+        env:
+          GH_TOKEN: ${'${{ github.token }}'}
+        run: python -m validation.orchestration.trigger_morning_editorial_recovery_v1
