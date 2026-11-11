@@ -175,13 +175,13 @@ jobs:
           )
           proof=verify(root,BASE_URL,paths,budget_seconds=180,interval_seconds=10,timeout_seconds=12)
           Path('/tmp/fxv2-chf-nzd-public-http-proof.json').write_text(
-              json.dumps(proof,ensure_ascii=False,indent=2)+'\\n',encoding='utf-8')
+              json.dumps(proof,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
           with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as summary:
-              summary.write('\\n### CHF/NZD dated research — public HTTP byte parity\\n')
+              summary.write('\n### CHF/NZD dated research — public HTTP byte parity\n')
               for item in proof['checks']:
                   summary.write('- '+item['path']+': **'+
                       ('MATCH' if item['http_200_and_sha256_match'] else 'NOT VERIFIED')+
-                      '**; HTTP '+str(item['http_status'])+'\\n')
+                      '**; HTTP '+str(item['http_status'])+'\n')
           if proof['status']!='PASS':
               raise SystemExit('CHF_NZD_RESEARCH_PUBLIC_HTTP_NOT_SAME_AS_MAIN')
           research=json.loads((root/paths[0]).read_text(encoding='utf-8'))
