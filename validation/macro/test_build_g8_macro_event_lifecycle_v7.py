@@ -17,14 +17,14 @@ class G8MacroEventLifecycleV7Tests(unittest.TestCase):
         cls.sources,_=m.load()
         cls.book=m.build(now=NOW,inputs=copy.deepcopy(cls.sources))
 
-    def test_20_g8_official_seed_events_not_20_false_surprises(self):
+    def test_22_g8_official_seed_events_not_22_false_surprises(self):
         b=self.book
         c=b["coverage"]
         self.assertEqual(b["schema"],m.SCHEMA)
         self.assertEqual(c["currencies_in_historical_calendar"],8)
-        self.assertEqual(c["issuer_calendar_events"],21)
+        self.assertEqual(c["issuer_calendar_events"],22)
         self.assertEqual(c["events_with_genuine_frozen_consensus_and_issuer_actual"],2)
-        self.assertEqual(c["unverified_intraday_event_reactions"],21)
+        self.assertEqual(c["unverified_intraday_event_reactions"],22)
         self.assertEqual(c["new_trading_signals"],0)
         self.assertFalse(b["ready_for_live_28_pair_signals"])
         self.assertFalse(b["ready_for_automatic_market_attribution"])
@@ -32,18 +32,18 @@ class G8MacroEventLifecycleV7Tests(unittest.TestCase):
         self.assertFalse(b["writes_market_model"])
         self.assertTrue(b["reuses_existing_calendar_news_schedule"])
         self.assertFalse(b["new_cron_added"])
-        self.assertEqual(len({x["event_key"] for x in b["events"]}),21)
+        self.assertEqual(len({x["event_key"] for x in b["events"]}),22)
 
     def test_upcoming_us_cpi_uk_gdp_ch_gdp_have_no_frozen_forecast(self):
         b=self.book
         q=b["priority_queue"]
-        self.assertEqual(len(q),4)
-        self.assertEqual([x["ccy"] for x in q],["USD","GBP","CHF","AUD"])
+        self.assertEqual(len(q),5)
+        self.assertEqual([x["ccy"] for x in q],["USD","GBP","CHF","AUD","JPY"])
         self.assertEqual([x["issuer_date"] for x in q],
                          ["2026-11-10","2026-11-12","2026-11-16","2026-11-19","2026-11-20"])
         self.assertEqual(b["coverage"]["upcoming_35d_with_frozen_consensus"],0)
         self.assertEqual(b["coverage"]["upcoming_35d_with_approved_actual_parser"],0)
-        self.assertEqual(b["coverage"]["currencies_with_upcoming_35d"],4)
+        self.assertEqual(b["coverage"]["currencies_with_upcoming_35d"],5)
         self.assertIn("NZD",b["coverage"]["countries_without_upcoming_35d"])
         self.assertIn("EUR",b["coverage"]["countries_without_upcoming_35d"])
         for e in q:
@@ -59,6 +59,7 @@ class G8MacroEventLifecycleV7Tests(unittest.TestCase):
         self.assertEqual(q[0]["scheduled_release_utc"],"2026-11-10T13:30:00Z")
         self.assertEqual(q[1]["scheduled_release_utc"],"2026-11-12T07:00:00Z")
         self.assertEqual(q[2]["scheduled_release_utc"],"2026-11-16T08:00:00Z")
+        self.assertEqual(q[4]["scheduled_release_utc"],"2026-11-19T23:30:00Z")
 
     def test_frozen_real_30_oct_receipts_are_0_and_minus_02_pp(self):
         b=self.book
