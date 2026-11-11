@@ -14,6 +14,7 @@ ROOT=Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0,str(ROOT))
 from validation.macro.build_macro_event_market_context_v1 import run as macro_event_market_context_run
+from validation.macro.build_g8_official_news_items_v1 import build as g8_issuer_items
 from validation.macro.capture_us_cpi_exact_actuals_v10 import (
     OUT as BLS_CPI_LEDGER, validate_actual_log as validate_bls_cpi)
 from validation.macro.freeze_exact_metric_forecasts_v9 import (
@@ -143,6 +144,8 @@ def official_cpi_items(forecasts, actuals, now):
             headline["observed_at_utc"]+".")
     return [{
         "category":"MACRO_OFFICIAL_ACTUAL", "ccy":"USD",
+        "event_type":"INFLATION",
+        "event_key":"USD|2026-11-10|INFLATION|Consumer Price Index",
         "as_of": released.isoformat(),
         "title":f"CPI USA ottobre · headline {fmt(h)} e core {fmt(c)} mensili",
         "detail":detail, "source":"Bureau of Labor Statistics · CPI ottobre 2026",
@@ -410,6 +413,9 @@ def main():
     items+=cross_asset_items(load_market_input(CROSS_ASSET),today)
     items+=official_cpi_items(read_signed_rows(BLS_FORECAST_LEDGER),
                               read_signed_rows(BLS_CPI_LEDGER),now)
+    # Reuse signed first-observed issuer archives for labor, growth and
+    # future UK/Swiss GDP. No guesswork for G8 countries without actuals.
+    items+=g8_issuer_items(now)
     items.sort(key=lambda x:(x['_date'] or date.min,x['importance']=='HIGH',-ORDER.index(x['ccy']) if x['ccy'] in ORDER else 0),reverse=True)
     for x in items:x.pop('_date',None)
     items=items[:20]
