@@ -1,0 +1,403 @@
+<!DOCTYPE html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Weekly Global Macro Strength & Cross-Asset — 17 ottobre 2026</title><style>
+:root{
+  --bg:#07100e;
+  --surface:#0a1512;
+  --surface-2:#0d1b17;
+  --surface-3:#10231d;
+  --line:rgba(171,205,190,.15);
+  --line-strong:rgba(171,205,190,.26);
+  --text:#f1f5f2;
+  --text-soft:#d8e3de;
+  --muted:#91a49b;
+  --green:#69d3a3;
+  --amber:#e0b66b;
+  --red:#df827b;
+  --violet:#b79bd3;
+  --cyan:#7dbac2;
+  --serif:"Iowan Old Style","Palatino Linotype","Book Antiqua",Palatino,Georgia,serif;
+  --sans:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --shadow:0 20px 55px rgba(0,0,0,.24);
+}
+*{box-sizing:border-box}
+html{
+  background:var(--bg);
+  color-scheme:dark;
+  -webkit-text-size-adjust:100%;
+  scroll-behavior:smooth;
+}
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at 88% -7%,rgba(105,211,163,.08),transparent 24rem),
+    radial-gradient(circle at 0% 16%,rgba(125,186,194,.035),transparent 22rem),
+    linear-gradient(180deg,#07100e 0%,#081411 100%);
+  color:var(--text);
+  font-family:var(--sans);
+  line-height:1.74;
+  letter-spacing:.002em;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+main{
+  width:min(100%,790px);
+  margin:0 auto;
+  padding:18px 18px 64px;
+}
+.hero{
+  position:relative;
+  padding:34px 4px 30px;
+  margin-bottom:8px;
+  background:transparent;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+}
+.hero:after{
+  content:"";
+  display:block;
+  width:100%;
+  height:1px;
+  margin-top:28px;
+  background:linear-gradient(90deg,var(--green),rgba(105,211,163,.22),transparent);
+}
+.kicker,.eyebrow{
+  font-size:10px;
+  letter-spacing:.17em;
+  text-transform:uppercase;
+  font-weight:800;
+}
+.kicker{color:var(--green)}
+.eyebrow{
+  color:#8db5a3;
+  margin-bottom:4px;
+}
+h1,h2,h3{
+  font-family:var(--serif);
+  font-weight:700;
+  letter-spacing:-.028em;
+  text-wrap:balance;
+}
+h1{
+  font-size:clamp(34px,9.2vw,55px);
+  line-height:1.01;
+  margin:11px 0 15px;
+  max-width:760px;
+}
+h2{
+  font-size:clamp(26px,7vw,34px);
+  line-height:1.16;
+  margin:6px 0 16px;
+}
+h3{
+  font-size:21px;
+  line-height:1.28;
+  margin:24px 0 10px;
+}
+.hero p{
+  max-width:720px;
+  font-family:var(--serif);
+  font-size:19px;
+  line-height:1.58;
+  color:#d8e4de;
+  margin:0;
+}
+.meta{
+  display:inline-block;
+  margin-top:17px;
+  padding-top:1px;
+  font-size:10px;
+  line-height:1.5;
+  letter-spacing:.04em;
+  color:#7f938a;
+}
+.section{
+  position:relative;
+  padding:30px 4px 32px;
+  margin:0;
+  background:transparent;
+  border:0;
+  border-bottom:1px solid var(--line);
+  border-radius:0;
+  box-shadow:none;
+}
+.section:last-of-type{border-bottom:0}
+.section > p,
+.section > .lead,
+.section > .quote,
+.section > .visual,
+.section > .softgrid,
+.section > .keynums,
+.section > .callout{
+  max-width:740px;
+}
+p{
+  font-size:16.8px;
+  margin:13px 0;
+  color:var(--text-soft);
+}
+.lead{
+  font-family:var(--serif);
+  font-size:21px;
+  line-height:1.6;
+  color:#f4f7f5;
+}
+.dropcap:first-letter{
+  float:left;
+  font-family:var(--serif);
+  font-size:59px;
+  line-height:.8;
+  padding:9px 9px 0 0;
+  color:#dbe8e1;
+}
+.rule{
+  width:50px;
+  height:1px;
+  margin:15px 0 19px;
+  background:var(--green);
+  opacity:.68;
+}
+.quote{
+  position:relative;
+  margin:22px 0;
+  padding:17px 19px 17px 20px;
+  background:linear-gradient(90deg,rgba(105,211,163,.075),rgba(105,211,163,.025));
+  border-left:2px solid var(--green);
+  border-radius:0 12px 12px 0;
+  font-family:var(--serif);
+  font-size:19px;
+  line-height:1.58;
+  color:#f2f6f3;
+}
+.visual{
+  margin:23px 0 22px;
+  padding:18px 17px 16px;
+  background:
+    linear-gradient(180deg,rgba(15,34,28,.96),rgba(11,25,21,.96));
+  border:1px solid var(--line-strong);
+  border-radius:15px;
+  box-shadow:0 12px 32px rgba(0,0,0,.15);
+}
+.vtitle{
+  font-family:var(--serif);
+  font-size:19px;
+  font-weight:700;
+  line-height:1.25;
+  color:#f0f5f2;
+  margin-bottom:4px;
+}
+.vsub{
+  font-size:10px;
+  line-height:1.45;
+  letter-spacing:.02em;
+  color:#82958c;
+  margin-bottom:14px;
+}
+.chart{display:grid;gap:10px}
+.row{
+  display:grid;
+  grid-template-columns:84px minmax(0,1fr) 64px;
+  gap:10px;
+  align-items:center;
+}
+.name{
+  font-size:11px;
+  font-weight:700;
+  color:#c5d2cc;
+  white-space:nowrap;
+}
+.track{
+  height:8px;
+  background:#162720;
+  border-radius:999px;
+  overflow:hidden;
+}
+.fill{
+  height:100%;
+  background:linear-gradient(90deg,#3f725e,#69d3a3);
+  border-radius:999px;
+}
+.fill.neg{background:linear-gradient(90deg,#794742,#df827b)}
+.fill.amb{background:linear-gradient(90deg,#756134,#e0b66b)}
+.fill.vio{background:linear-gradient(90deg,#615373,#b79bd3)}
+.val{
+  font-size:11px;
+  font-weight:800;
+  text-align:right;
+  white-space:nowrap;
+}
+.pills{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  margin:16px 0 4px;
+}
+.pill{
+  border:1px solid var(--line-strong);
+  background:rgba(13,31,25,.78);
+  border-radius:999px;
+  padding:6px 9px;
+  font-size:10px;
+  line-height:1;
+  font-weight:750;
+  letter-spacing:.015em;
+}
+.up{color:var(--green)}
+.warn{color:var(--amber)}
+.down{color:var(--red)}
+.violet{color:var(--violet)}
+.cyan{color:var(--cyan)}
+.softgrid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:9px;
+  margin:17px 0 12px;
+}
+.soft{
+  padding:14px 15px;
+  border:1px solid var(--line);
+  background:rgba(12,27,23,.7);
+  border-radius:12px;
+}
+.soft b{
+  display:block;
+  font-size:9px;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  color:#879a91;
+  margin-bottom:4px;
+}
+.soft span{
+  font-size:13.5px;
+  line-height:1.5;
+  color:#d6e1dc;
+}
+.figcaption{
+  font-size:10px;
+  line-height:1.55;
+  color:#82958c;
+  border-top:1px solid rgba(255,255,255,.055);
+  margin-top:12px;
+  padding-top:9px;
+}
+.callout{
+  font-family:var(--serif);
+  font-size:22px;
+  line-height:1.47;
+  color:#f2f6f3;
+  margin:19px 0 7px;
+}
+.keynums{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin:18px 0;
+}
+.kn{
+  border-top:1px solid var(--line-strong);
+  padding:12px 6px 3px 0;
+  background:transparent;
+}
+.kn strong{
+  display:block;
+  font-family:var(--serif);
+  font-size:23px;
+  line-height:1.05;
+  color:#f1f5f2;
+}
+.kn span{
+  display:block;
+  margin-top:5px;
+  font-size:9.5px;
+  line-height:1.35;
+  color:#82958c;
+}
+.small{font-size:11px;color:var(--muted)}
+.sourcebox{
+  margin-top:22px;
+  padding-top:13px;
+  border-top:1px solid var(--line);
+  font-size:10px;
+  line-height:1.6;
+  color:#81948b;
+}
+.sourcebox strong{color:#9fb1a8}
+.sourcebox a{
+  color:#a6cbb9;
+  text-decoration:none;
+  border-bottom:1px dotted #48685a;
+}
+.footer{
+  text-align:center;
+  color:#667b71;
+  font-size:9px;
+  letter-spacing:.08em;
+  padding:24px 3px 0;
+}
+@media(max-width:420px){
+  main{padding-left:16px;padding-right:16px}
+  .hero{padding-top:26px}
+  .hero p{font-size:18px}
+  p{font-size:16.2px}
+  .lead{font-size:20px}
+  .quote{font-size:18px;padding-left:16px}
+  .row{grid-template-columns:72px minmax(0,1fr) 60px;gap:8px}
+  .name,.val{font-size:10.5px}
+  .keynums{gap:6px}
+  .kn strong{font-size:21px}
+}
+@media(min-width:720px){
+  main{padding:34px 28px 80px}
+  .hero{padding-top:42px}
+  .section{padding:36px 5px 38px}
+  .softgrid{grid-template-columns:1fr 1fr}
+  p{font-size:17.4px}
+  .hero p{font-size:20px}
+  .lead{font-size:22px}
+}
+
+.newlayer{border-left:3px solid var(--violet);padding-left:14px;margin:16px 0 6px}.newtag{display:inline-block;font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--violet);border:1px solid rgba(185,154,221,.35);border-radius:999px;padding:4px 8px;margin-bottom:7px}.auditgrid{display:grid;grid-template-columns:1fr;gap:9px;margin-top:14px}.audit{border-top:1px solid rgba(255,255,255,.08);padding:12px 0}.audit:first-child{border-top:0}.audit b{display:block;color:#f4f7f5;margin-bottom:4px}.status-ok{color:var(--green);font-weight:800}.status-warn{color:var(--amber);font-weight:800}.status-bad{color:var(--red);font-weight:800}.microtable{width:100%;border-collapse:collapse;margin:14px 0 6px;font-size:13px}.microtable th,.microtable td{padding:9px 7px;border-bottom:1px solid rgba(255,255,255,.07);text-align:left;vertical-align:top}.microtable th{color:var(--muted);font-size:10px;letter-spacing:.08em;text-transform:uppercase}.microtable td strong{color:#f2f6f3}.caution{font-size:12px;color:var(--muted);border-left:2px solid var(--amber);padding-left:10px;margin-top:10px}.trialnote{margin:0 0 12px;padding:10px 12px;border:1px dashed rgba(185,154,221,.45);border-radius:12px;color:#d9c9ee;font-size:12px;background:rgba(185,154,221,.05)}
+</style><style>.chart-card{margin:18px 0 22px;padding:18px;border:1px solid rgba(255,255,255,.08);border-radius:16px;background:rgba(255,255,255,.025)}.chart-card h3{margin:0 0 5px;font-size:18px}.chart-card .sub{color:#9aa9b7;font-size:12px;margin-bottom:16px}.barrow{display:grid;grid-template-columns:92px 1fr 58px;gap:10px;align-items:center;margin:9px 0;font-size:12px}.bartrack{height:10px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden}.barfill{height:100%;border-radius:999px}.barfill.neg{background:linear-gradient(90deg,#b25b75,#7e4e8e)}.barfill.pos{background:linear-gradient(90deg,#5f9f86,#84c7aa)}.val{text-align:right;font-weight:800}.yieldgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.yieldbox{padding:15px;border-radius:14px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07)}.yieldbox b{font-size:11px;color:#9eb3c5;text-transform:uppercase;letter-spacing:.06em}.yieldbox strong{display:block;font-size:27px;margin:5px 0}.arrow{font-size:13px;color:#8fc7b2}.chartnote{margin-top:12px;font-size:11px;color:#8e9aa8}@media(max-width:700px){.barrow{grid-template-columns:78px 1fr 50px}.yieldgrid{grid-template-columns:1fr}}</style>
+<style>
+/* CLEAN RESEARCH DESK TYPOGRAPHY / ALIGNMENT PASS */
+:root{--sans-clean:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--serif-clean:Georgia,"Times New Roman",serif}
+body{font-family:var(--sans-clean)!important;line-height:1.58!important;letter-spacing:0!important}
+main{width:min(100%,860px)!important;padding:18px 20px 64px!important}
+.hero{padding:30px 4px 26px!important;margin-bottom:4px!important}
+.hero h1{font-family:var(--serif-clean)!important;font-size:clamp(31px,6.8vw,46px)!important;line-height:1.06!important;font-weight:700!important;letter-spacing:-.024em!important;margin:9px 0 13px!important;max-width:790px!important}
+.hero p{font-family:var(--sans-clean)!important;font-size:17px!important;line-height:1.58!important;color:#d6e0db!important;max-width:760px!important}
+.kicker,.eyebrow{font-family:var(--sans-clean)!important;font-size:9.5px!important;letter-spacing:.12em!important;font-weight:850!important}
+.meta{font-family:var(--sans-clean)!important;font-size:9.5px!important;line-height:1.4!important;margin-top:14px!important}
+.section{padding:24px 2px 26px!important}
+.section h2{font-family:var(--sans-clean)!important;font-size:clamp(22px,4.8vw,29px)!important;line-height:1.18!important;font-weight:800!important;letter-spacing:-.018em!important;margin:5px 0 13px!important}
+.section h3,.chart-card h3{font-family:var(--sans-clean)!important;font-size:17px!important;line-height:1.25!important;font-weight:800!important;letter-spacing:-.01em!important;margin:18px 0 8px!important}
+p{font-family:var(--sans-clean)!important;font-size:15.6px!important;line-height:1.62!important;margin:10px 0!important;color:#d8e2dd!important}
+.lead{font-family:var(--sans-clean)!important;font-size:17px!important;line-height:1.58!important;font-weight:600!important}
+.callout{font-family:var(--sans-clean)!important;font-size:16.5px!important;line-height:1.55!important;font-weight:500!important;margin:16px 0 8px!important;padding:13px 15px!important;background:rgba(105,211,163,.055)!important;border-left:3px solid var(--green)!important;border-radius:0 10px 10px 0!important}
+.quote{font-family:var(--sans-clean)!important;font-size:16px!important;line-height:1.55!important;padding:14px 16px!important;margin:17px 0!important}
+.softgrid{gap:8px!important;margin:14px 0 9px!important}.soft{padding:12px 13px!important;border-radius:11px!important}.soft b{font-family:var(--sans-clean)!important;font-size:9px!important;letter-spacing:.10em!important;margin-bottom:3px!important}.soft span{font-family:var(--sans-clean)!important;font-size:12.8px!important;line-height:1.45!important}
+.keynums{gap:10px!important;margin:15px 0!important}.kn{padding:10px 5px 2px 0!important}.kn strong{font-family:var(--sans-clean)!important;font-size:20px!important;font-weight:850!important}.kn span{font-family:var(--sans-clean)!important;font-size:9px!important;line-height:1.3!important}
+.microtable{font-family:var(--sans-clean)!important;font-size:12px!important;line-height:1.4!important;margin:12px 0 5px!important}.microtable th,.microtable td{padding:8px 7px!important}.microtable th{font-size:9px!important;letter-spacing:.07em!important;font-weight:850!important}
+.visual,.chart-card{margin:18px 0 20px!important;padding:15px 15px 14px!important;border-radius:13px!important;box-shadow:none!important}.chart-card h3{margin:0 0 4px!important}.chart-card .sub,.vsub,.figcaption,.chartnote{font-family:var(--sans-clean)!important;font-size:10.5px!important;line-height:1.45!important}
+.yieldgrid{gap:8px!important}.yieldbox{padding:12px 13px!important;border-radius:11px!important}.yieldbox b{font-family:var(--sans-clean)!important;font-size:9px!important;letter-spacing:.08em!important}.yieldbox strong{font-family:var(--sans-clean)!important;font-size:23px!important;font-weight:850!important;margin:4px 0!important}
+.barrow{grid-template-columns:86px 1fr 55px!important;gap:8px!important;margin:7px 0!important;font-size:11px!important}.name,.val{font-family:var(--sans-clean)!important}.val{font-size:10.5px!important}.track,.bartrack{height:8px!important}
+.caution{font-family:var(--sans-clean)!important;font-size:11px!important;line-height:1.5!important;padding-left:9px!important;margin-top:9px!important}.sourcebox,.footer{font-family:var(--sans-clean)!important}
+@media(max-width:520px){main{padding:14px 15px 48px!important}.hero{padding-top:23px!important}.hero h1{font-size:31px!important}.hero p{font-size:16px!important}.section{padding:21px 0 23px!important}.section h2{font-size:23px!important}p{font-size:15.2px!important}.soft span{font-size:12.6px!important}.barrow{grid-template-columns:74px 1fr 50px!important}}
+</style>
+</head><body><main>
+<header class="hero"><div class="kicker">Weekly Global Macro Strength & Cross-Asset</div><h1>Il costo del capitale ha finalmente iniziato a rompere il trade AI.</h1><p>Inflazione USA ancora calda, ma questa volta i Treasury hanno funzionato da rifugio mentre equity e credito AI si sono indeboliti. Il dollaro ha perso terreno, l’Europa ha sovraperformato e il petrolio è tornato a imporre un premio inflazionistico.</p><div class="meta">17 ottobre 2026 · settimana chiusa il 16 ottobre · DARK EDITORIAL PRO</div></header>
+<section class="section"><div class="eyebrow">Settimana in 30 secondi</div><h2>Quattro cose contano davvero.</h2><div class="softgrid"><div class="soft"><b>USA</b><span>CPI e PPI accelerano, ma il 10Y scende verso 5,10% durante il sell-off AI: per la prima volta da settimane il mercato tratta i Treasury come hedge alla crescita, non solo come vittima dell’inflazione.</span></div><div class="soft"><b>Equity / AI</b><span>Nasdaq in calo di oltre il 4% nella settimana; CoreWeave circa −25%, bond oltre 15–16% di yield. Il dubbio ora è economico: i flussi futuri giustificheranno davvero il costo del capitale e il debito accumulato?</span></div><div class="soft"><b>FX</b><span>Il DXY interrompe la serie positiva e chiude in calo settimanale nonostante dati inflattivi forti. EUR e JPY recuperano; GBP sovraperforma EUR. La vecchia equazione “inflazione ↑ = USD ↑” non ha funzionato in modo lineare.</span></div><div class="soft"><b>Cross-asset</b><span>Brent +3,7% circa venerdì e seconda settimana positiva; Gold −0,7% settimanale; Europa +2% circa mentre Wall Street corregge. Non è risk-off uniforme: è rotazione da growth/debt-sensitive verso duration sovrana, energia e qualità.</span></div></div></section>
+<section class="section"><div class="eyebrow">The Big Picture</div><h2>Non è recessione. È una rivalutazione del prezzo del capitale.</h2><p>Il dato più importante della settimana non è che l’inflazione USA sia rimasta troppo alta. Lo sapevamo già. La novità è che <strong>il mercato ha reagito in modo diverso</strong>: dopo CPI e PPI forti, i Treasury non hanno continuato a vendere. Durante il crollo dei titoli AI, il 10Y è sceso fino a circa 5,10%, il livello più basso in tre settimane.</p><p>Questa è una rottura narrativa importante. Fino a pochi giorni fa, inflazione forte significava quasi automaticamente rendimenti più alti, USD più forte e pressione sugli asset di duration. Questa settimana invece il rischio dominante è diventato: <strong>cosa succede agli investimenti AI se il costo del capitale resta elevato abbastanza a lungo?</strong></p><div class="callout"><b>La lettura corretta:</b> non stiamo osservando un collasso della crescita aggregata. Stiamo vedendo il mercato iniziare a discriminare tra attività capaci di generare cash flow rapidamente e attività che richiedono ancora molto debito, capex e tempo prima di produrre ritorni sufficienti.</div><p>La prova più visibile è il credito AI: CoreWeave ha visto il rendimento del bond 2031 superare temporaneamente il 16%, mentre la sua equity perdeva circa un quarto del valore settimanale. Questo non dimostra che il tema AI sia “finito”; dimostra che il mercato non è più disposto a trattare allo stesso modo crescita, leverage e qualità del funding.</p></section>
+<div class="chart-card"><h3>Grafico 1 · Il 10Y torna a fare da hedge</h3><div class="sub">US Treasury 10Y: fine settimana 9 ottobre vs minimo durante il sell-off AI del 15–16 ottobre.</div><div class="yieldgrid"><div class="yieldbox"><b>9 ottobre</b><strong>5,24%</strong><span>Long-end ancora vicino ai massimi pluridecennali</span></div><div class="yieldbox"><b>15–16 ottobre</b><strong>≈5,10%</strong><span class="arrow">↓ circa 14 pb</span><span> · flight-to-quality nonostante CPI/PPI forti</span></div></div><div class="chartnote">Lettura: non è un segnale dovish puro. Il calo del rendimento è arrivato mentre aumentavano i timori su AI/credito, quindi la duration sovrana ha recuperato funzione difensiva.</div></div><section class="section"><div class="eyebrow">Rates — front-end vs long-end</div><h2>Il 10Y è sceso per paura della crescita finanziaria, non perché l’inflazione sia sparita.</h2><p><strong>Front-end USA:</strong> CPI e PPI hanno mantenuto vivo il rischio di ulteriori rialzi Fed, ma il mercato continua a vedere una pausa a fine ottobre come scenario più probabile. Il repricing hawkish resta quindi presente, ma meno urgente.</p><p><strong>Long-end USA:</strong> il 10Y è sceso durante il sell-off AI. Questo è il passaggio chiave: la domanda di Treasury come safe haven ha temporaneamente dominato term premium, supply e inflazione. Il mercato non sta dicendo che il problema fiscale è risolto; sta dicendo che, quando il rischio azionario/credito aumenta abbastanza, la duration sovrana torna utile.</p><table class="microtable"><tr><th>Layer</th><th>Lettura</th><th>Cosa significa</th></tr><tr><td><strong>2Y / Fed</strong></td><td>restrittivo ma non in accelerazione</td><td>inflazione mantiene aperto l’hike, ma ottobre non è un meeting “obbligato”</td></tr><tr><td><strong>10Y</strong></td><td>rientra dai picchi</td><td>flight-to-quality e downgrade delle aspettative sul ritorno del capex AI</td></tr><tr><td><strong>Curve</strong></td><td>più ambigua</td><td>il long-end non è più solo term premium; incorpora anche protezione contro shock di rischio</td></tr><tr><td><strong>Europa</strong></td><td>condizioni finanziarie più strette</td><td>Lagarde riconosce che il sell-off bond sta già facendo parte del lavoro restrittivo</td></tr></table><p class="caution">Errore da evitare: leggere il calo del 10Y come segnale dovish puro. È soprattutto una reazione a rischio e crescita del settore più levered, non una scomparsa delle pressioni inflazionistiche.</p></section>
+<section class="section"><div class="eyebrow">USA — Macro Strength</div><h2>Crescita ancora resistente, inflazione ancora troppo alta, qualità del mercato in peggioramento.</h2><p><strong>Livello:</strong> l’economia USA resta forte in termini aggregati. <strong>Direzione:</strong> l’inflazione ha riaccelerato, mentre alcuni indicatori regionali mostrano attività più irregolare. <strong>Velocità:</strong> i prezzi stanno peggiorando più rapidamente del previsto; il deterioramento di alcuni segmenti finanziari è però diventato più veloce della macro reale. <strong>Turning point:</strong> non nella crescita aggregata, ma nella disponibilità degli investitori a finanziare capex ad alto leverage senza un ritorno immediato.</p><p>Il sondaggio servizi della NY Fed ha mostrato forti pressioni sui prezzi ma business activity a −20,7, il dato più debole da marzo. È una combinazione scomoda: inflazione alta e attività locale debole. Non è stagflazione nazionale, ma è esattamente il tipo di divergenza che rende la Fed meno libera.</p><div class="callout"><b>Macro strength USA:</b> ancora positiva. <b>Marginale:</b> peggiora, perché il mix sta diventando meno pulito: inflazione alta + costo del capitale alto + stress più visibile nel credito growth.</div></section>
+<section class="section"><div class="eyebrow">Europa</div><h2>L’economia sorprende meglio, ma il rischio passa dalla crescita al finanziamento.</h2><p>L’Eurozona entra nella settimana con PMI di settembre ai massimi da oltre tre anni, quindi il ciclo reale è migliore di quanto il sentiment sui mercati sovrani potrebbe far pensare. Allo stesso tempo, l’inflazione resta elevata e la BCE non può dichiarare vittoria.</p><p>La novità è il canale finanziario. Lagarde ha esplicitamente riconosciuto che il recente sell-off obbligazionario sta stringendo le condizioni finanziarie più di quanto ipotizzato nelle proiezioni BCE. Questo crea un equilibrio delicato: <strong>macro più resistente, ma spread e costo del debito già restrittivi</strong>.</p><p>Per l’euro è quindi una storia meno bearish della settimana scorsa: non perché i problemi fiscali siano spariti, ma perché il differenziale di crescita e la stabilizzazione del USD hanno ridotto l’asimmetria negativa.</p></section>
+<section class="section"><div class="eyebrow">UK</div><h2>La sterlina beneficia di una combinazione rara: crescita discreta e fiducia fiscale meno fragile.</h2><p>GBP ha chiuso la terza settimana consecutiva di rialzo contro EUR e ha raggiunto i massimi di tre settimane contro USD. I dati di agosto hanno mostrato crescita migliore delle attese, mentre il mercato continua a considerare plausibile un rialzo BoE a novembre.</p><p>Quello che cambia è la qualità relativa: l’UK non è improvvisamente “forte”, ma rispetto all’Europa continentale mostra al momento una combinazione migliore tra crescita, pricing BoE e percezione fiscale. Il rischio resta il long-end: se i gilt salissero per ragioni di supply/fiscal credibility invece che per crescita, la lettura cambierebbe rapidamente.</p></section>
+<section class="section"><div class="eyebrow">Giappone</div><h2>JPY migliora perché il carry USA perde forza e la BoJ resta in normalizzazione.</h2><p>Lo yen ha beneficiato del calo dei Treasury e di un tono marginalmente più hawkish nel dibattito BoJ. La relazione resta meccanicamente semplice solo a metà: meno rendimento USA aiuta JPY, ma serve anche che il mercato creda davvero che Tokyo non resterà troppo prudente.</p><p>Il macro regime giapponese resta migliore rispetto agli anni di stagnazione: salari reali positivi e inflazione ancora abbastanza persistente consentono alla BoJ di mantenere aperto il percorso di normalizzazione. Il vero rischio per JPY resta il timing, non la direzione strutturale.</p></section>
+<section class="section"><div class="eyebrow">Canada · Australia · Nuova Zelanda · Svizzera</div><h2>Il blocco commodity non si muove più insieme.</h2><div class="softgrid"><div class="soft"><b>Canada</b><span>Il deterioramento del lavoro resta il principale freno. Energia più forte aiuta il CAD, ma il front-end continua a offrire un supporto meno convincente rispetto ad AUD e NZD.</span></div><div class="soft"><b>Australia</b><span>RBA ancora la banca centrale più linearmente hawkish. Il problema dell’AUD questa settimana è stato il risk-off globale, non un indebolimento della policy domestica.</span></div><div class="soft"><b>Nuova Zelanda</b><span>RBNZ torna marginalmente più hawkish; il 2Y si rialza. NZD migliora se il mercato sposta in avanti il prossimo hike senza un deterioramento marcato della crescita.</span></div><div class="soft"><b>Svizzera</b><span>CHF si rafforza come safe haven pur con SNB neutrale. È una divergenza sana: prezzo forte per domanda difensiva, non perché la policy svizzera sia diventata restrittiva.</span></div></div></section>
+<section class="section"><div class="eyebrow">FX — quadro generale G8</div><h2>Il dollaro perde il monopolio del “macro forte”.</h2><p>La settimana scorsa la narrativa era semplice: rendimenti USA alti, USD forte, Europa fragile. Questa settimana il prezzo ha contestato quella lettura. Il DXY ha chiuso la prima settimana negativa in oltre un mese nonostante CPI e PPI più forti delle attese.</p><table class="microtable"><tr><th>Valuta</th><th>Macro / Rates</th><th>Prezzo</th><th>Lettura</th></tr><tr><td><strong>USD</strong></td><td>macro forte, inflazione alta</td><td>debole settimanale</td><td>divergenza: il mercato non remunera più automaticamente il dato hawkish</td></tr><tr><td><strong>EUR</strong></td><td>crescita migliore, rischio fiscale</td><td>recupera</td><td>meno debole, ma ancora conflittuale</td></tr><tr><td><strong>GBP</strong></td><td>BoE hawkish + crescita discreta</td><td>sovraperforma</td><td>migliore combinazione relativa europea</td></tr><tr><td><strong>JPY</strong></td><td>BoJ normalizza + UST giù</td><td>recupera</td><td>conferma del driver rates</td></tr><tr><td><strong>AUD</strong></td><td>RBA hawkish</td><td>frenato dal risk-off</td><td>macro buono, prezzo ancora non pienamente confermante</td></tr><tr><td><strong>CAD</strong></td><td>lavoro debole, oil forte</td><td>misto</td><td>driver in conflitto</td></tr><tr><td><strong>NZD</strong></td><td>RBNZ migliora</td><td>da confermare</td><td>early shift potenziale</td></tr><tr><td><strong>CHF</strong></td><td>SNB neutrale</td><td>forte risk-off</td><td>safe haven domina policy</td></tr></table></section>
+<section class="section"><div class="eyebrow">Equity</div><h2>Il vero segnale non è “tech giù”. È che il credito sta mettendo un prezzo al rischio AI.</h2><p>Il Nasdaq ha perso oltre il 4% nella settimana e il Philadelphia Semiconductor Index ha inanellato otto sedute negative. Ma il dato più importante non è il prezzo delle azioni: è il costo del funding.</p><p>CoreWeave ha visto il rendimento del proprio bond salire oltre il 15–16% e il CDS oltre 1.000 pb. Quando il credito inizia a dubitare della capacità di un business di finanziare il capex, l’equity perde il supporto della narrativa “crescita a qualsiasi costo”.</p><div class="callout"><b>Non è ancora una bocciatura dell’AI.</b> È una separazione tra AI profittevole / cash-rich e AI capital-intensive / debt-funded. Goldman Prime segnala che i long-short funds hanno venduto AI per sei sedute consecutive: parte del movimento è anche unwind di positioning affollato.</div><p>Il contrasto con l’Europa è importante: STOXX 600 oltre +2% nella settimana, miglior performance da giugno. La partecipazione del mercato si sta quindi allargando geograficamente proprio mentre la leadership USA si restringe.</p></section>
+<section class="section"><div class="eyebrow">Commodities</div><h2>Oil torna inflazionistico; Gold non riesce ancora a sfruttare pienamente il risk-off.</h2><p><strong>Oil:</strong> Brent è salito di circa il 3,7% venerdì e ha chiuso la seconda settimana positiva, sostenuto dai timori sull’offerta mediorientale. Il canale macro è doppio: peggiora il reddito reale dei consumatori e rende più difficile per le banche centrali guardare attraverso l’inflazione energetica.</p><p><strong>Gold:</strong> circa −0,7% nella settimana. È interessante perché il risk-off avrebbe dovuto aiutarlo, ma l’aspettativa di tassi Fed più alti continua a rappresentare un costo opportunità elevato. Il metallo quindi non sta ancora dando un segnale puro di stress sistemico.</p></section>
+<section class="section"><div class="eyebrow">Bitcoin & Liquidity</div><h2>BTC resta più vicino al growth trade che al safe haven.</h2><p>Durante una settimana in cui Treasury e CHF hanno beneficiato della domanda difensiva, Bitcoin non ha mostrato una funzione di hedge altrettanto pulita. Questo conferma che, nel regime attuale, BTC continua a comportarsi soprattutto come asset sensibile a liquidità, duration e propensione al rischio.</p><p>Per il framework è importante: finché un vero flight-to-quality porta denaro verso Treasury/CHF ma non verso BTC, non dobbiamo trattare Bitcoin come equivalente digitale dell’oro nel breve termine.</p></section>
+<div class="chart-card"><h3>Grafico 2 · Performance cross-asset della settimana</h3><div class="sub">Movimenti settimanali verificati/arrotondati al 16 ottobre 2026. La dispersione mostra una rotazione, non un risk-off uniforme.</div><div class="barrow"><span>Brent</span><div class="bartrack"><div class="barfill pos" style="width:74%"></div></div><span class="val">+3,72%</span></div><div class="barrow"><span>STOXX 600</span><div class="bartrack"><div class="barfill pos" style="width:42%"></div></div><span class="val">&gt;+2%</span></div><div class="barrow"><span>GBP/USD</span><div class="bartrack"><div class="barfill pos" style="width:18%"></div></div><span class="val">+0,63%</span></div><div class="barrow"><span>CHF vs USD</span><div class="bartrack"><div class="barfill pos" style="width:19%"></div></div><span class="val">+0,67%</span></div><div class="barrow"><span>DXY</span><div class="bartrack"><div class="barfill neg" style="width:12%"></div></div><span class="val">−0,35%</span></div><div class="barrow"><span>Gold</span><div class="bartrack"><div class="barfill neg" style="width:20%"></div></div><span class="val">−0,70%</span></div><div class="barrow"><span>Nasdaq</span><div class="bartrack"><div class="barfill neg" style="width:82%"></div></div><span class="val">&lt;−4%</span></div><div class="chartnote">Lettura: Europa ed energia hanno retto/sovraperformato mentre tech USA e asset più sensibili al costo del capitale hanno sofferto. USD in calo nonostante inflazione forte = divergenza da monitorare.</div></div><section class="section"><div class="eyebrow">Cross-Asset Map</div><h2>Il mercato sta separando inflazione, crescita e qualità del funding.</h2><table class="microtable"><tr><th>Segnale</th><th>Messaggio</th><th>Regime</th></tr><tr><td><strong>UST ↑ mentre CPI sorprende ↑</strong></td><td>growth/credit fear domina il dato inflattivo</td><td>nuovo</td></tr><tr><td><strong>Nasdaq ↓ / STOXX ↑</strong></td><td>rotazione geografica e riduzione della concentrazione USA</td><td>in sviluppo</td></tr><tr><td><strong>Oil ↑ / Gold ↓</strong></td><td>shock energetico più inflazionistico che sistemico</td><td>coerente</td></tr><tr><td><strong>USD ↓ con inflazione USA ↑</strong></td><td>il differenziale rates non basta più da solo</td><td>divergenza</td></tr><tr><td><strong>CHF ↑ senza SNB hawkish</strong></td><td>safe haven domina policy</td><td>conferma risk-off</td></tr></table></section>
+<section class="section"><div class="eyebrow">Cosa guardare</div><h2>La domanda della prossima settimana non è “l’AI rimbalza?”.</h2><p><strong>1. Treasury:</strong> se il 10Y continua a scendere anche con dati forti, la funzione di hedge dei bond è davvero tornata. Se invece torna rapidamente sopra i massimi, il sollievo era solo positioning.</p><p><strong>2. Credit AI:</strong> CoreWeave e gli spread del credito sono più informativi del Nasdaq. Se il credito si stabilizza, il drawdown equity può restare tattico. Se continua a deteriorare, il problema diventa finanziario.</p><p><strong>3. USD:</strong> la mancata reazione a CPI/PPI è un warning. Per recuperare leadership, il dollaro deve tornare a salire insieme al front-end, non solo in risk-off.</p><p><strong>4. Oil:</strong> una nuova gamba rialzista cambierebbe di nuovo il trade-off delle banche centrali: meno crescita ma meno spazio per tagliare o fermarsi.</p><p><strong>5. Europa:</strong> la sovraperformance STOXX va confermata senza un nuovo allargamento degli spread sovrani. Se equity regge ma OAT/Bund peggiora, la divergenza torna fragile.</p><div class="callout"><b>Bottom line:</b> la settimana segna un possibile turning point cross-asset: il mercato ha iniziato a premiare la qualità del bilancio e a penalizzare il leverage. Finché Treasury funzionano da hedge e il credito AI resta sotto pressione, il tema dominante non è recessione ma <strong>disciplina del capitale</strong>.</div></section>
+<section class="section"><div class="eyebrow">Fonti & metodo</div><p class="caution">Fonti pubbliche principali: Reuters, Federal Reserve / Fed regional data, ECB e market data citati nelle fonti. I valori intraday sono usati come contesto; le conclusioni di regime si basano sulla combinazione Macro → Rates → Market Pricing → Price → Cross-Asset. Nessuna relazione narrativa viene trattata come dimostrata quantitativamente senza test storico dedicato.</p></section>
+</main></body></html>
