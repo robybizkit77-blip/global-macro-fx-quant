@@ -1,0 +1,59 @@
+'use strict';
+/* Calendar in News: source dates, Rome conversion, no fabricated surprises. */
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const root=path.resolve(__dirname,'..');
+const read=p=>fs.readFileSync(path.join(root,p),'utf8');
+const lib=read('site/fx-quant-v2/next/calendar-operational-reading.js');
+const html=read('site/fx-quant-v2/next/index.html');
+const app=read('site/fx-quant-v2/next/app.js');
+const css=read('site/fx-quant-v2/next/calendar-operational-reading.css');
+new vm.Script(lib,{filename:'calendar-operational-reading.js'});
+new vm.Script(app,{filename:'app.js'});
+const {parse,render,toRome,verifiedValue}=require('../site/fx-quant-v2/next/calendar-operational-reading.js');
+assert.match(html,/calendar-operational-reading\.js\?v=1/);
+assert.match(html,/calendar-operational-reading\.css\?v=1/);
+assert.match(app,/calendar:'\.\.\/\.\.\/\.\.\/live_data\/sections\/CALENDAR_OPERATIONAL_VIEW\.json'/);
+assert.match(app,/FXQuantMacroCalendar\?\.render/);
+assert.match(app,/operationalCalendar/);
+assert.match(css,/max-width:860px/);
+const data=JSON.parse(read('live_data/sections/CALENDAR_OPERATIONAL_VIEW.json'));
+const now='2026-11-11', result=parse(data,now);
+assert(Array.isArray(result.events));
+assert(result.events.every(x=>x.date>=now),'Do not show a past appointment as upcoming');
+assert(result.events.every(x=>x.ccy&&x.why&&x.verify&&x.pairs));
+assert(result.events.every(x=>x.consensus===null),'Existing 0-consensus official feed cannot invent consensus values');
+assert.equal(result.consensusReady,0);
+assert.equal(result.events.filter(x=>x.kind==='Pubblicazione macro').length,result.macro);
+assert.equal(result.events.filter(x=>x.kind==='Riunione banca centrale').length,result.meetings);
+assert.deepEqual(toRome('2026-11-12','07:00','Europe/London'),{
+ date:'2026-11-12',time:'08:00',timestamp:Date.parse('2026-11-12T07:00:00Z')});
+assert.equal(toRome('2026-11-16','09:00','Europe/Zurich').time,'09:00');
+assert.equal(toRome('2026-11-19','11:30','Australia/Sydney').time,'01:30');
+assert.equal(toRome('2026-11-20','08:30','Asia/Tokyo').time,'00:30');
+assert.equal(toRome('2026-07-10','08:00','America/New_York').time,'14:00');
+assert.equal(toRome('2026-11-16',null,'Europe/Zurich'),null);
+assert.equal(toRome('2026-03-29','02:30','Europe/Rome'),null,'Nonexistent DST local hour is not invented');
+const uk=result.events.find(e=>e.ccy==='GBP'&&e.title.includes('GDP'));
+if(uk)assert.equal(uk.romeTime,'08:00');
+const nz=result.events.find(e=>e.ccy==='NZD'&&e.title.includes('Gross domestic product'));
+if(nz)assert.equal(nz.romeTime,null,'An official event without local release hour must not get an invented hour');
+assert.equal(verifiedValue({consensus:0.4,consensus_status:'NOT_PRESENT'},'consensus'),null);
+assert.equal(verifiedValue({consensus:0.4,consensus_status:'VERIFIED',consensus_source:'Reuters'},'consensus'),null,
+ 'No point-in-time consensus without pre-release vintage');
+assert.equal(verifiedValue({actual:0.4,status:'UPCOMING',actual_status:'OFFICIAL_VERIFIED',
+ actual_first_observed_at_utc:'2026-11-11T08:00:00Z'},'actual'),null);
+const malicious=structuredClone(data);
+malicious.events.unshift({ccy:'GBP',date:'2026-11-12',time_local:'07:00',timezone:'Europe/London',
+ event_type:'GROWTH',status:'UPCOMING',title:'<img src=x onerror=alert(1)>',
+ consensus_status:'NOT_PRESENT',consensus:99});
+const safe=render(malicious,now);
+assert(safe.includes('&lt;img src=x onerror=alert(1)&gt;'));
+assert(!safe.includes('<img src=x'));
+assert(safe.includes('Consenso: non certificato'));
+assert(safe.includes('Effettivo: non ancora pubblicato/verificato'));
+assert(safe.includes('Quali dati potrebbero cambiare le tesi FX?'));
+assert.match(safe,/Altri \d+ eventi del calendario/);
+const empty=parse(null,now);assert.equal(empty.total,0);
+assert(render(null,now).includes('Calendario non disponibile'));
+assert.equal(parse(data,'2027-01-01').total,0);
+console.log('NEXT_MACRO_CALENDAR_OFFICIAL_G8_DATES_ROME_GUARDED_CONSENSUS_FX_PASS');
