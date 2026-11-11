@@ -23,6 +23,9 @@ on:
       - 'validation/macro/capture_aud_labour_official_firstseen_v12.py'
       - 'validation/macro/test_capture_aud_labour_firstseen_v12.py'
       - 'validation/macro/MACRO_AUD_LABOUR_OFFICIAL_FIRST_SEEN_V12.jsonl'
+      - 'validation/macro/capture_jpy_national_cpi_firstseen_v14.py'
+      - 'validation/macro/test_capture_jpy_national_cpi_firstseen_v14.py'
+      - 'validation/macro/MACRO_JPY_NATIONAL_CPI_FIRST_SEEN_V14.jsonl'
       - 'validation/macro/g8_metric_issuer_contract_v8.py'
       - 'live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json'
       - 'validation/macro/test_capture_us_cpi_exact_actuals_v10.py'
@@ -534,6 +537,23 @@ jobs:
               f.write('### Australia ABS SA unemployment first-seen\n')
               f.write('- Actual status: '+d['state']+'; archived: '+str(d['total_actuals'])+'\n')
               f.write('- 19 Nov 11:30 AEDT; no forecast survey, no FX model promotion.\n')
+          PY
+      - name: Capture Japan October 2026 national CPI official three measures (V14, research only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest validation.macro.test_capture_jpy_national_cpi_firstseen_v14 -v
+          python -m validation.macro.capture_jpy_national_cpi_firstseen_v14 \
+            | tee /tmp/g8-jpy-cpi-national-firstseen-v14-receipt.json
+          python - <<'PY'
+          import json,os
+          d=json.load(open('/tmp/g8-jpy-cpi-national-firstseen-v14-receipt.json'))
+          assert d['status']=='JPY_NATIONAL_CPI_ISSUER_FIRST_OBSERVED_V14'
+          assert d['new_actuals'] in (0,1) and d['total_actuals'] in (0,1)
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as f:
+              f.write('### Japan October 2026 national CPI: issuer firstseen V14\\n')
+              f.write('- Status **'+d['state']+'**, archived '+str(d['total_actuals'])+'.\\n')
+              f.write('- Publication 20 Nov 08:30 Tokyo. Headline, ex-fresh-food core, ex-fresh-food-and-energy; no Tokyo preliminary or FX signal.\\n')
           PY
       - name: Test source recheck distinct from content modification
         run: python validation/test_calendar_news_daily_recheck_v1.py
