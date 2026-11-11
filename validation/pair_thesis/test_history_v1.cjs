@@ -1,5 +1,5 @@
 'use strict';
-/* Real Nov-6/Nov-10 source-committed FX Pair snapshots, no look-ahead. */
+/* Time-safe FX thesis tests. Never require the newest source to remain on Nov 10. */
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'../..');
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
@@ -18,59 +18,77 @@ assert.match(app,/thesisHistory:'\.\/pair-thesis-history\.json'/);
 assert.match(app,/FXQuantThesisMonitor\?\.render/);
 assert.match(css,/max-width:560px/);
 assert.equal(validate(history),true);
-assert.equal(history.snapshots.length,2);
-assert.deepEqual(history.dates_available,['2026-11-06','2026-11-10']);
-assert.deepEqual(history.snapshots.map(x=>x.macro_baseline_asof),['2026-09-25','2026-09-25']);
-assert.equal(history.snapshots[0].source_commit,'57c67d394f64bb0e7473c39faf7e36114edfae09');
-assert.equal(history.snapshots[1].source_commit,'24b5d3c1e474393f7bd1da34bb3511d409234fd8');
-assert.equal(snapshot(current,'test-source').price_asof,current.price_asof);
-assert.deepEqual(snapshot(current,'test-source').pairs,history.snapshots[1].pairs,
- 'Snapshot must use exact same stable field extraction as seed; no invented history');
-const keys=Object.keys(current.pairs).sort();
-assert.equal(keys.length,28);
-for(const k of keys){
- const r=monitor.analyze(current,history,k);
- assert.equal(r.ready,true,'All 28 pairs need dated comparable snapshots: '+k);
- assert.equal(r.summary.any,17);
- assert.equal(r.summary.quality,2);
- assert.equal(r.summary.price,0);
- assert.equal(r.summary.fav,0);
- assert.equal(r.summary.timing,8);
- assert.equal(r.summary.cot,14);
- assert.equal(r.previousAsOf,'2026-11-06');
- assert.equal(r.asof,'2026-11-10');
- assert.equal(r.baseline,'2026-09-25');
- assert.equal(r.macroSame,true);
+assert(history.snapshots.length>=2&&history.snapshots.length<=35);
+assert.deepEqual(history.dates_available,history.snapshots.map(x=>x.price_asof));
+assert(history.snapshots.every(x=>x.pair_count===28));
+const latest=history.snapshots.at(-1),previous=history.snapshots.at(-2);
+assert(latest.price_asof>previous.price_asof);
+function modelFromSnapshot(s){
+ const pairs=Object.fromEntries(Object.entries(s.pairs).map(([k,p])=>[k,{
+  setup:{structuralFav:p.fav,quality:p.quality,price:p.price,timing:p.timing,cot:p.cot,liquidity:p.liquidity},
+  decision_frame:p.structural
+ }]));
+ return {price_asof:s.price_asof,macro_baseline_asof:s.macro_baseline_asof,pairs};
 }
-const aud=monitor.analyze(current,history,'AUDCAD');
-assert.deepEqual(aud.changed.map(x=>x.key),['quality','cot.text']);
-assert.equal(monitor.analyze(current,history,'EURUSD').ready,true);
-assert.match(monitor.render(current,history,'AUDCAD'),/17\/28/);
-assert.match(monitor.render(current,history,'AUDCAD'),/Baseline macro 25\/09\/2026/);
-assert.match(monitor.render(current,history,'AUDCAD'),/non flussi istituzionali osservati/);
-assert(!monitor.render(current,history,'AUDCAD').includes('segnale di ingresso'));
-const noHistory=monitor.analyze(current,null,'AUDCAD');
-assert.equal(noHistory.ready,false);
-assert.match(monitor.render(current,null,'AUDCAD'),/non verificabile/);
-const otherDay=structuredClone(current);otherDay.price_asof='2026-11-11';
-assert.equal(monitor.analyze(otherDay,history,'AUDCAD').ready,false,'No comparison across mismatched latest dates');
-const sameDateDrift=structuredClone(current);
-sameDateDrift.pairs.AUDCAD.setup.cot.text='Nuova etichetta non persistita';
-assert.equal(monitor.analyze(sameDateDrift,history,'AUDCAD').ready,false,'No same-day source drift falsely presented as historical change');
-const rejected=structuredClone(history);rejected.snapshots.push({...rejected.snapshots[1]});
+const canonical=modelFromSnapshot(latest);
+assert.deepEqual(snapshot(canonical,'source-test').pairs,latest.pairs);
+assert.equal(Object.keys(canonical.pairs).length,28);
+for(const key of Object.keys(canonical.pairs)){
+ const res=monitor.analyze(canonical,history,key);
+ assert.equal(res.ready,true,'Every dated historical cross should be comparable: '+key);
+ assert(res.summary.any>=0&&res.summary.any<=28);
+ assert.equal(res.previousAsOf,previous.price_asof);
+ assert.equal(res.asof,latest.price_asof);
+ assert.equal(res.baseline,latest.macro_baseline_asof);
+}
+assert.match(monitor.render(canonical,history,'AUDCAD'),/Baseline macro/);
+assert.match(monitor.render(canonical,history,'AUDCAD'),/non flussi istituzionali osservati/);
+assert(!monitor.render(canonical,history,'AUDCAD').includes('segnale di ingresso'));
+const seed6=history.snapshots.find(x=>x.price_asof==='2026-11-06');
+const seed10=history.snapshots.find(x=>x.price_asof==='2026-11-10');
+if(seed6&&seed10){
+ assert.equal(seed6.source_commit,'57c67d394f64bb0e7473c39faf7e36114edfae09');
+ assert.equal(seed10.source_commit,'24b5d3c1e474393f7bd1da34bb3511d409234fd8');
+ assert.deepEqual([seed6.macro_baseline_asof,seed10.macro_baseline_asof],['2026-09-25','2026-09-25']);
+ const pair6to10={...history,snapshots:[seed6,seed10]};
+ const report=monitor.analyze(modelFromSnapshot(seed10),pair6to10,'AUDCAD');
+ assert.equal(report.ready,true);
+ assert.equal(report.summary.any,17);
+ assert.equal(report.summary.quality,2);
+ assert.equal(report.summary.price,0);
+ assert.equal(report.summary.fav,0);
+ assert.equal(report.summary.timing,8);
+ assert.equal(report.summary.cot,14);
+ assert.deepEqual(report.changed.map(x=>x.key),['quality','cot.text']);
+ assert.match(monitor.render(modelFromSnapshot(seed10),pair6to10,'AUDCAD'),/17\/28/);
+}
+assert.equal(monitor.analyze(canonical,null,'AUDCAD').ready,false);
+assert.match(monitor.render(canonical,null,'AUDCAD'),/non verificabile/);
+const outOfSync=structuredClone(canonical);outOfSync.price_asof='2099-01-01';
+assert.equal(monitor.analyze(outOfSync,history,'AUDCAD').ready,false,'No comparison of future model with old history');
+const sameDayDrift=structuredClone(canonical);
+sameDayDrift.pairs.AUDCAD.setup.cot.text='Unpersisted intraday label';
+assert.equal(monitor.analyze(sameDayDrift,history,'AUDCAD').ready,false,'Reject mismatched same-date model fields');
+const rejected=structuredClone(history);rejected.snapshots.push({...latest});
 assert.throws(()=>validate(rejected),/sorted unique/);
-assert.equal(update(current,history,'abcdef').changed,false,'No duplicate date stored for multiple daily runs');
-const tomorrow=structuredClone(current);tomorrow.price_asof='2026-11-11';
-const added=update(tomorrow,history,'abcdef');
+assert.equal(update(canonical,history,'new-source').changed,false,'No duplicate snapshots for same as-of');
+const next=structuredClone(canonical);
+next.price_asof=new Date(Date.parse(latest.price_asof+'T12:00:00Z')+864e5).toISOString().slice(0,10);
+const added=update(next,history,'new-source');
 assert.equal(added.changed,true);
-assert.equal(added.history.snapshots.length,3);
-assert.equal(added.history.snapshots[2].source_commit,'abcdef');
-assert.equal(added.history.snapshots[2].price_asof,'2026-11-11');
+assert.equal(added.history.snapshots.at(-1).source_commit,'new-source');
+assert.equal(added.history.snapshots.at(-1).price_asof,next.price_asof);
+assert.equal(added.history.snapshots.length,Math.min(35,history.snapshots.length+1));
 assert.equal(validate(added.history),true);
-const stale=structuredClone(current);stale.price_asof='2026-11-05';
-assert.throws(()=>update(stale,history),/precedes newest history/);
-const invalid=structuredClone(current);delete invalid.pairs.AUDCAD;
+const older=structuredClone(canonical);older.price_asof='2026-01-02';
+assert.throws(()=>update(older,history),/precedes newest history/);
+const invalid=structuredClone(canonical);delete invalid.pairs.AUDCAD;
 assert.throws(()=>snapshot(invalid),/exactly 28/);
-const empty={...history,snapshots:[]};
-assert.equal(monitor.analyze(current,empty,'AUDCAD').ready,false);
-console.log('PAIR_THESIS_MONITOR_28_REAL_06NOV_10NOV_17_CHANGED_NO_FAKE_MACRO_OR_SIGNAL_PASS');
+assert.equal(monitor.analyze(canonical,{...history,snapshots:[]},'AUDCAD').ready,false);
+if(current.price_asof===latest.price_asof){
+ assert.deepEqual(snapshot(current,'current-source').pairs,latest.pairs,'Visible source snapshot must match archived latest daily frame');
+ assert.equal(monitor.analyze(current,history,'AUDCAD').ready,true);
+}else{
+ assert.equal(monitor.analyze(current,history,'AUDCAD').ready,false,'Unarchived current model must not show invented changes');
+}
+console.log('PAIR_THESIS_MONITOR_28_DATED_HISTORY_ROLLING_SAFE_NO_FAKE_MACRO_OR_SIGNAL_PASS');
