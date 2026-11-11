@@ -127,6 +127,9 @@ x=evaluate(relief,'2026-11-10');
 assert.equal(x.context.kind,'relief');
 assert.match(x.article,/La distensione sarebbe fragile/);
 const bond=clone(initial);
+// Isolate this rates-only scenario from moving real cross-asset fixtures.
+// A live NASDAQ/VIX/HY 'relief' day must not pre-empt the synthetic bond case.
+for(const k of ['NASDAQCOM','VIX','HY_OAS'])bond.risk.streams[k].date='2026-11-03';
 bond.rates.USD.date='2026-11-12';bond.rates.USD.chg2_bp=12;bond.rates.USD.chg10_bp=8;
 bond.dxy.as_of='2026-11-12';bond.pairs.price_asof='2026-11-12';
 x=evaluate(bond,'2026-11-12');
