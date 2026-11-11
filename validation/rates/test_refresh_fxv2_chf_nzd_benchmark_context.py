@@ -234,22 +234,23 @@ class TestChfNzdResearch(unittest.TestCase):
   self.assertFalse(x["eligible_for_backtests"])
   self.assertTrue(x["canonical_government_rates_untouched"])
 
- def test_existing_nzd_manual_postroll_history_reaches_5_nov_research_only(self):
+ def test_existing_nzd_manual_postroll_history_reaches_10_nov_research_only(self):
   now=dt.date(2026,11,11)
   base=m.nzd_context(RBNZ_OLD,ROLL,NEW,now)
   archive=json.loads((ROOT/"site/fx-quant-v2/nzd-b2-postroll-web-research.json").read_text())
   copy_before=copy.deepcopy(base)
   out=m.extend_nzd_with_archived_manual_postroll(base,archive,now)
-  self.assertEqual(out["latest_date"],"2026-11-05")
-  self.assertEqual(out["latest_2Y"],3.78)
-  self.assertEqual(out["latest_10Y"],4.74)
-  self.assertEqual(out["latest_curve_bp"],96)
+  self.assertEqual(out["latest_date"],"2026-11-10")
+  self.assertEqual(out["latest_2Y"],3.77)
+  self.assertEqual(out["latest_10Y"],4.71)
+  self.assertEqual(out["latest_curve_bp"],94)
   self.assertEqual(out["same_benchmark_change_bp"],
-                   {"2Y":-18.0,"10Y":-16.0,"start":"2026-10-30","end":"2026-11-05"})
+                   {"2Y":-19.0,"10Y":-19.0,"start":"2026-10-30","end":"2026-11-10"})
   self.assertEqual([r["date"] for r in out["after_roll"]],
-                   ["2026-10-30","2026-11-02","2026-11-03","2026-11-04","2026-11-05"])
+                   ["2026-10-30","2026-11-02","2026-11-03","2026-11-04",
+                    "2026-11-05","2026-11-06","2026-11-09","2026-11-10"])
   self.assertEqual(base,copy_before)
-  self.assertEqual(out["source_release_date"],"2026-11-06")
+  self.assertEqual(out["source_release_date"],"2026-11-11")
   self.assertEqual(out["source_capture_method"],
                    "ALREADY_STORED_MANUAL_WEB_RESEARCH_NOT_RUNNER_FETCH")
   self.assertFalse(out["cross_roll_change_allowed"])
