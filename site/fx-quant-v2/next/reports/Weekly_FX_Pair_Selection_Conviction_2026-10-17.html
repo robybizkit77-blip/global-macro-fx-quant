@@ -1,0 +1,232 @@
+<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark"><title>Weekly FX Pair Selection & Conviction · 17 ottobre 2026</title><style>
+:root{
+  --bg:#06101b;--bg2:#081522;--card:#0d1a2a;--card2:#102136;
+  --line:#20364f;--line2:#2a4867;--text:#edf4fb;--soft:#c8d5e5;--muted:#8fa4bc;
+  --blue:#69b9ff;--cyan:#76d3e7;--green:#67dda5;--amber:#f2c567;--red:#ff818d;--violet:#b9a0ec;
+}
+*{box-sizing:border-box}
+html,body{margin:0;max-width:100%;overflow-x:hidden}
+body{
+  background:
+    radial-gradient(circle at 90% -5%,rgba(83,154,230,.16),transparent 28rem),
+    linear-gradient(180deg,#05101b,#081522 36%,#06101b);
+  color:var(--text);
+  font:14px/1.55 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+.wrap{width:min(100%,980px);margin:auto;padding:12px 10px 48px}
+.hero{
+  position:relative;overflow:hidden;
+  padding:25px 20px;border:1px solid rgba(105,185,255,.26);border-radius:24px;
+  background:
+    radial-gradient(circle at 92% 0,rgba(105,185,255,.20),transparent 32%),
+    linear-gradient(140deg,#102741,#0b182a 70%);
+  box-shadow:0 18px 45px rgba(0,0,0,.25)
+}
+.eyebrow,.sec,.label,.mini-label{font-weight:900;text-transform:uppercase;letter-spacing:.12em}
+.eyebrow{font-size:10px;color:#8bc8ff}
+.hero h1{font-size:32px;line-height:1.04;margin:7px 0 10px;letter-spacing:-.03em}
+.hero p{font-size:13px;color:#c5d4e7;margin:0;max-width:780px}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:13px}
+.tag{padding:5px 8px;border-radius:999px;background:rgba(255,255,255,.055);color:#b8c8da;font-size:10px;font-weight:800}
+.sec{font-size:11px;color:#8bc8ff;margin:24px 3px 9px}
+.card{
+  background:linear-gradient(160deg,var(--card2),var(--card));
+  border:1px solid var(--line);border-radius:18px;padding:15px;margin:8px 0;
+  box-shadow:0 10px 26px rgba(0,0,0,.14)
+}
+.grid{display:grid;grid-template-columns:1fr;gap:9px}
+h2,h3{margin:0 0 8px;letter-spacing:-.015em}
+h2{font-size:20px} h3{font-size:15px}
+p{margin:7px 0;color:#d5e1ee}
+.muted{color:var(--muted);font-size:11.5px}
+.lead{font-size:15px;color:#e7eef7}
+.snapshot .card{min-height:130px}
+.k{font-size:9.5px;color:#90a6c0;text-transform:uppercase;letter-spacing:.09em;font-weight:900}
+.big{font-size:25px;line-height:1.05;font-weight:900;margin:6px 0}
+.good{border-left:4px solid var(--green)}
+.warn{border-left:4px solid var(--amber)}
+.bad{border-left:4px solid var(--red)}
+.info{border-left:4px solid var(--blue)}
+.violet{border-left:4px solid var(--violet)}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:900}
+.pg{background:rgba(103,221,165,.12);color:#86efba}
+.pa{background:rgba(242,197,103,.12);color:#ffd27d}
+.pr{background:rgba(255,129,141,.12);color:#ff99a3}
+.pb{background:rgba(105,185,255,.12);color:#8ccaff}
+.pv{background:rgba(185,160,236,.12);color:#d2c0ff}
+.rank{
+  display:grid;grid-template-columns:48px 1fr auto;gap:10px;align-items:center;
+  padding:12px;border:1px solid rgba(255,255,255,.065);background:#0a1727;border-radius:14px;margin:8px 0
+}
+.rankno{font-size:25px;font-weight:900;color:#7fc3ff;text-align:center}
+.rankpair strong{font-size:19px;display:block}
+.rankpair span{font-size:11px;color:#aebed1}
+.score{font-size:19px;font-weight:900;white-space:nowrap}
+.score small{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#8195ac;text-align:right}
+.layergrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:11px 0}
+.layer{
+  border:1px solid rgba(255,255,255,.065);background:#0a1625;border-radius:11px;padding:9px;
+  min-width:0
+}
+.layer b{display:block;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#91a8c3;margin-bottom:3px}
+.layer span{font-size:11.5px;color:#d8e4f1}
+.layer .pos{color:#7fe9b4}.layer .neg{color:#ff949f}.layer .mix{color:#ffd17b}
+.split{display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px}
+.box{padding:11px 12px;border-radius:13px;background:#091625;border:1px solid #1d334b}
+.box b{display:block;font-size:9px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.confirm b{color:#7fe9b4}.trigger b{color:#8fcaff}.invalidate b{color:#ff919c}.conflict b{color:#ffd17b}
+.matrix{overflow:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;min-width:720px;border-collapse:collapse;font-size:11.5px}
+th,td{padding:9px 8px;border-bottom:1px solid rgba(255,255,255,.075);text-align:center;vertical-align:middle}
+th{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:#91afd0;background:#0a1625}
+td:first-child,th:first-child{text-align:left;font-weight:800}
+.g{color:#74e5ad}.a{color:#ffd074}.r{color:#ff909a}.b{color:#8dcaff}.v{color:#cfbbff}
+.note{padding:12px;border:1px dashed #35536f;border-radius:13px;background:rgba(105,185,255,.045);color:#b8c8db;font-size:11.5px}
+.monday{counter-reset:item}
+.mrow{display:grid;grid-template-columns:34px 1fr;gap:9px;align-items:flex-start;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.mrow:last-child{border-bottom:0}
+.mnum{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#10253d;color:#88c9ff;font-weight:900}
+.mrow strong{display:block;margin-bottom:2px}
+.avoid{background:linear-gradient(145deg,rgba(255,129,141,.055),#0d1827)}
+.foot{text-align:center;color:#6f849c;font-size:10px;margin-top:24px;letter-spacing:.05em}
+@media(min-width:760px){
+  .wrap{padding:20px 16px 58px}.hero{padding:30px 28px}.hero h1{font-size:41px}
+  .grid.two{grid-template-columns:1fr 1fr}.grid.three{grid-template-columns:repeat(3,1fr)}
+  .grid.four{grid-template-columns:repeat(4,1fr)}.split{grid-template-columns:1fr 1fr}
+  .card{padding:17px}.snapshot .card{min-height:145px}
+}
+@media(max-width:540px){
+  .hero h1{font-size:28px}.rank{grid-template-columns:38px 1fr}.rank .score{grid-column:2;text-align:left}
+  .rank .score small{text-align:left}.layergrid{grid-template-columns:1fr 1fr}.big{font-size:23px}
+}
+</style></head><body><main class="wrap">
+<header class="hero">
+  <div class="eyebrow">GLOBAL MACRO FX QUANT · WEEKLY DECISION LAYER</div>
+  <h1>FX Pair Selection<br>&amp; Conviction</h1>
+  <p>Il livello finale del weekend: integra Global Macro Strength &amp; Cross-Asset → Central Banks → Bank Research → COT → Price e filtra tutte le 28 pair G8 per la settimana 19–23 ottobre 2026.</p>
+  <div class="meta"><span class="tag">As of: 17 ottobre 2026</span><span class="tag">4 report sorgente + COT</span><span class="tag">8 valute · 28 pair</span><span class="tag">VIEW → SETUP, non VIEW → TRADE</span></div>
+</header>
+
+<div class="sec">01 · Riepilogo dei report di oggi</div>
+<div class="grid four snapshot">
+  <section class="card info"><div class="k">GLOBAL MACRO</div><div class="big">USD perde qualità</div><p>Macro USA ancora forte, ma CPI/PPI caldi non hanno prodotto nuova estensione di 2Y e USD. Treasury tornano hedge durante il sell-off AI.</p></section>
+  <section class="card good"><div class="k">CENTRAL BANKS</div><div class="big">RBA · RBNZ · BoJ ↑</div><p>RBA resta la stance più lineare; RBNZ e BoJ migliorano marginalmente. BoC resta il supporto policy più fragile.</p></section>
+  <section class="card warn"><div class="k">BANK FX</div><div class="big">Long-USD meno pulito</div><p>I desk non invalidano USD, ma la mancata conferma del prezzo riduce l'asimmetria. CHF torna rilevante come safe haven; NZD è un catalizzatore da seguire.</p></section>
+  <section class="card violet"><div class="k">COT · 13 OTT</div><div class="big">Crowding estremo</div><p>GBP/EUR/AUD allo 0° percentile; NZD accelera short con prezzo quasi fermo. CHF migliora via short covering. Non inseguire gli estremi.</p></section>
+</div>
+
+<div class="sec">02 · La settimana in 30 secondi</div>
+<section class="card info">
+  <h2>Il cambio decisivo rispetto a una settimana fa: non voglio più usare USD come gamba long automatica.</h2>
+  <p class="lead">La scorsa settimana il ranking era dominato da USD contro CAD/EUR/NZD. Oggi il quadro è diverso: USD conserva fondamentali solidi, ma prezzo e rates non confermano più in modo lineare. Le migliori divergenze relative sono invece <b>GBP/AUD/JPY contro CAD</b>, dove il Canada resta il blocco più fragile tra macro, BoC e positioning.</p>
+  <p>La seconda informazione è l'asimmetria: GBP e AUD sono estremamente short nel COT, ma il prezzo recente non ha confermato una nuova gamba ribassista. Questo rende più interessante cercare <b>squeeze + fondamentali relativi</b> invece di inseguire nuovi short. NZD ha un setup simile, ma con un'accelerazione short ancora più violenta e quindi richiede più conferma.</p>
+</section>
+
+<div class="grid four snapshot">
+  <section class="card good"><div class="k">PAIR #1</div><div class="big">GBPCAD ↑</div><span class="pill pg">ALTA CONVICTION</span><p>BoE hawkish + GBP forte vs BoC fragile + lavoro canadese debole.</p></section>
+  <section class="card good"><div class="k">PAIR #2</div><div class="big">AUDCAD ↑</div><span class="pill pg">MEDIA-ALTA</span><p>RBA più lineare del G8; COT AUD estremo ma prezzo resiliente.</p></section>
+  <section class="card info"><div class="k">PAIR #3</div><div class="big">CADJPY ↓</div><span class="pill pb">MEDIA+</span><p>JPY migliora con BoJ + Treasury più bassi; CAD resta vulnerabile.</p></section>
+  <section class="card violet"><div class="k">SETUP IN ATTESA</div><div class="big">NZDCAD ↑</div><span class="pill pv">SOLO CONFERMA</span><p>RBNZ migliora, ma COT NZD è in accelerazione short estrema.</p></section>
+</div>
+
+<div class="sec">03 · Ranking relativo delle 8 valute</div>
+<section class="card matrix"><table><thead><tr><th>Valuta</th><th>Macro</th><th>Rates / CB</th><th>Bank view</th><th>COT</th><th>Price</th><th>Lettura desk</th></tr></thead><tbody>
+<tr><td>GBP</td><td class="g">Migliora relativo</td><td class="g">BoE hawkish</td><td class="g">Supportata</td><td class="r">0° pct · -39.8% Net/OI</td><td class="g">Sovraperforma</td><td class="g">Long preferita, ma via squeeze</td></tr>
+<tr><td>JPY</td><td class="g">Costruttivo</td><td class="g">BoJ → hawkish</td><td class="a">Timing ancora incerto</td><td class="a">Net long in erosione</td><td class="g">Recupera</td><td class="g">Buona gamba long risk-off/rates</td></tr>
+<tr><td>AUD</td><td class="a">Misto</td><td class="g">RBA più lineare</td><td class="g">Costruttiva</td><td class="r">0° pct · -34.6% Net/OI</td><td class="a">Resiliente</td><td class="g">Asimmetria long interessante</td></tr>
+<tr><td>CHF</td><td class="a">Difensivo</td><td class="a">SNB neutrale</td><td class="g">Safe haven rilevante</td><td class="g">Short covering</td><td class="g">Forte risk-off</td><td class="a">Buono hedge, meno pulito come trend</td></tr>
+<tr><td>EUR</td><td class="a">Migliora</td><td class="a">ECB hawkish/conflitto</td><td class="a">Meno bearish</td><td class="r">0° pct · estremo short</td><td class="g">Recupera</td><td class="a">Squeeze possibile, rischio fiscale</td></tr>
+<tr><td>NZD</td><td class="a">Misto</td><td class="g">RBNZ migliora</td><td class="g">Catalizzatore positivo</td><td class="r">-37.6% Net/OI · velocity -14.1%</td><td class="a">Non conferma short</td><td class="v">Potenziale squeeze, serve trigger</td></tr>
+<tr><td>USD</td><td class="g">Macro ancora forte</td><td class="a">Fed hawkish meno efficace</td><td class="a">Supporto in calo</td><td class="g">+12.9k · 79.8°</td><td class="r">Settimana debole</td><td class="a">Non più gamba long automatica</td></tr>
+<tr><td>CAD</td><td class="r">Lavoro debole</td><td class="r">BoC fragile</td><td class="r">Tra i più deboli</td><td class="r">-94.8k · peggiora</td><td class="a">Misto / oil aiuta</td><td class="r">Gamba short preferita</td></tr>
+</tbody></table></section>
+
+<div class="sec">04 · Scan delle 28 pair</div>
+<section class="card">
+  <p><b>Filtro applicato:</b> prima forza relativa per valuta, poi tutte le 28 combinazioni. Penalizzo pair che duplicano lo stesso fattore e quelle dove il COT rende l'entry asimmetrica senza conferma del prezzo.</p>
+  <div class="grid two">
+    <div class="box confirm"><b>PRIMA FASCIA</b>GBPCAD long · AUDCAD long · CADJPY short</div>
+    <div class="box trigger"><b>SECONDA FASCIA</b>NZDCAD long · EURCAD long · GBPJPY long</div>
+    <div class="box conflict"><b>REGIME-DIPENDENTI</b>EURCHF · GBPCHF · AUDJPY · NZDJPY</div>
+    <div class="box invalidate"><b>DA NON FORZARE</b>EURUSD short · GBPUSD short · AUDUSD short · NZDUSD short: crowding o USD non confermante.</div>
+  </div>
+</section>
+
+<div class="sec">05 · Pair #1 · GBPCAD long</div>
+<section class="card good">
+  <h2>La miglior combinazione tra policy relativa, prezzo e asimmetria COT.</h2>
+  <div class="layergrid">
+    <div class="layer"><b>Macro</b><span class="pos">UK relativo migliore · Canada ancora fragile</span></div>
+    <div class="layer"><b>Rates</b><span class="pos">BoE hike ancora credibile · BoC limitata dal lavoro</span></div>
+    <div class="layer"><b>Central Banks</b><span class="pos">BoE hawkish vs BoC supporto debole</span></div>
+    <div class="layer"><b>Bank Research</b><span class="pos">GBP migliora · CAD resta conflittuale/debole</span></div>
+    <div class="layer"><b>COT</b><span class="mix">GBP estremamente short = squeeze fuel; CAD già net short</span></div>
+    <div class="layer"><b>Price</b><span class="pos">GBP ha sovraperformato; CAD non riceve piena spinta dall'oil</span></div>
+  </div>
+  <p><b>Tesi.</b> La sterlina combina una BoE ancora restrittiva con dati domestici discreti e una migliore tenuta relativa del prezzo. Il COT è estremamente short GBP: normalmente sarebbe un rischio per uno short, ma in un long diventa potenziale carburante se partono ricoperture. Il Canada resta frenato dal mercato del lavoro e da una BoC meno libera di stringere.</p>
+  <div class="split"><div class="box trigger"><b>Trigger</b>GBP continua a tenere/salire mentre CAD resta debole anche con petrolio stabile o forte. Meglio se il front-end UK non perde terreno contro Canada.</div><div class="box invalidate"><b>Invalidazione</b>Nuovo stress fiscale UK / Gilt long-end disordinato oppure forte repricing BoC hawkish accompagnato da recupero CAD.</div></div>
+  <div class="box conflict"><b>Rischio</b>Il petrolio in rialzo può sostenere CAD; inoltre un squeeze GBP già partito riduce l'entry quality se il prezzo apre troppo esteso.</div>
+</section>
+
+<div class="sec">06 · Pair #2 · AUDCAD long</div>
+<section class="card good">
+  <h2>La divergenza policy più pulita, con positioning AUD che può trasformarsi da rischio a catalizzatore.</h2>
+  <div class="layergrid">
+    <div class="layer"><b>Macro</b><span class="mix">Australia non perfetta · Canada più debole</span></div>
+    <div class="layer"><b>Rates</b><span class="pos">RBA/2Y più solidi rispetto al Canada</span></div>
+    <div class="layer"><b>Central Banks</b><span class="pos">RBA hawkish lineare vs BoC fragile</span></div>
+    <div class="layer"><b>Bank Research</b><span class="pos">AUD costruttivo · CAD più debole</span></div>
+    <div class="layer"><b>COT</b><span class="mix">AUD 0° pct e -34.6% Net/OI, ma prezzo resiliente</span></div>
+    <div class="layer"><b>Price</b><span class="mix">Serve conferma relativa AUD/CAD</span></div>
+  </div>
+  <p><b>Tesi.</b> Il punto non è che AUD abbia macro perfetta; è che la RBA offre la stance più lineare del G8 mentre la BoC è frenata dal lavoro. Il COT AUD è estremamente bearish ma il prezzo non ha ceduto in proporzione: questa mancata conferma rende il long relativo più interessante se inizia short covering.</p>
+  <div class="split"><div class="box trigger"><b>Trigger</b>AUDCAD rompe/resiste al rialzo mentre AUD non reagisce negativamente a nuovi flussi risk-off moderati e lo spread AU–CA resta favorevole.</div><div class="box invalidate"><b>Invalidazione</b>Risk-off/Cina domina e AUD cede nettamente, oppure il front-end australiano scarica rapidamente il caso hawkish RBA.</div></div>
+</section>
+
+<div class="sec">07 · Pair #3 · CADJPY short</div>
+<section class="card info">
+  <h2>Il pair più interessante se il regime resta difensivo e i Treasury continuano a fare da hedge.</h2>
+  <div class="layergrid">
+    <div class="layer"><b>Macro</b><span class="pos">Giappone migliore relativo · Canada fragile</span></div>
+    <div class="layer"><b>Rates</b><span class="pos">UST più bassi aiutano JPY</span></div>
+    <div class="layer"><b>Central Banks</b><span class="pos">BoJ marginalmente più hawkish · BoC meno lineare</span></div>
+    <div class="layer"><b>Bank Research</b><span class="mix">JPY timing incerto · CAD debole</span></div>
+    <div class="layer"><b>COT</b><span class="mix">JPY net long erode · CAD net short peggiora</span></div>
+    <div class="layer"><b>Price</b><span class="pos">JPY recupera con flight-to-quality</span></div>
+  </div>
+  <p><b>Tesi.</b> È il cross che esprime meglio il nuovo regime cross-asset: se il 10Y USA continua a scendere nei momenti di stress, JPY riceve supporto meccanico e difensivo. Sul lato CAD, lavoro e BoC restano punti deboli. A differenza di GBP/AUD, qui il COT non dà un vantaggio pulito: per questo la conviction è più bassa.</p>
+  <div class="split"><div class="box trigger"><b>Trigger</b>CADJPY rompe al ribasso con Treasury stabili/in calo e JPY forte anche senza shock estremo di risk-off.</div><div class="box invalidate"><b>Invalidazione</b>10Y USA torna rapidamente sui massimi, BoJ torna più prudente o oil/CAD riprendono leadership.</div></div>
+</section>
+
+<div class="sec">08 · Watchlist · NZDCAD long solo con conferma</div>
+<section class="card violet">
+  <h2>Il setup con la maggiore potenzialità di squeeze, ma anche il più facile da anticipare male.</h2>
+  <p>RBNZ è marginalmente più hawkish e il front-end NZ ha recuperato, mentre BoC resta debole. Ma il COT NZD mostra <b>velocity -14.1% OI</b> e <b>-37.6% Net/OI</b>: gli short sono enormi e stanno crescendo rapidamente, mentre il prezzo nella finestra COT era quasi fermo. Questo può diventare un potente squeeze long, oppure essere semplicemente positioning che anticipa una rottura futura.</p>
+  <div class="box trigger"><b>Trigger</b>NZD smette chiaramente di sottoperformare e NZDCAD rompe al rialzo dopo dati/RBNZ coerenti. Prima: watchlist, non trade.</div>
+</section>
+
+<div class="sec">09 · No trade / da non forzare</div>
+<div class="grid two">
+  <section class="card avoid bad"><h2>Short EUR / GBP / AUD contro USD</h2><p>Il COT è già estremamente short su EUR, GBP e AUD, mentre USD ha perso la conferma di prezzo nonostante inflazione forte. La tesi macro può ancora essere plausibile, ma l'asimmetria non è più favorevole.</p><span class="pill pr">CROWDING + USD DIVERGENCE</span></section>
+  <section class="card avoid warn"><h2>CHF direzionale puro</h2><p>CHF sta funzionando come safe haven mentre SNB resta neutrale. È utile come gamba di hedge/regime, ma meno pulito per un trade strutturale se il risk sentiment normalizza.</p><span class="pill pa">REGIME-DIPENDENTE</span></section>
+</div>
+
+<div class="sec">10 · Cosa deve succedere lunedì</div>
+<section class="card monday">
+  <div class="mrow"><div class="mnum">1</div><div><strong>GBPCAD</strong><span class="muted">Test principale:</span> GBP mantiene la leadership relativa senza nuovo stress Gilt? CAD resta debole anche con petrolio forte?</div></div>
+  <div class="mrow"><div class="mnum">2</div><div><strong>AUDCAD</strong><span class="muted">Test di squeeze:</span> AUD continua a resistere nonostante COT estremo e risk sentiment fragile? Se sì, il positioning bearish perde efficacia.</div></div>
+  <div class="mrow"><div class="mnum">3</div><div><strong>CADJPY</strong><span class="muted">Regime:</span> Treasury continuano a fare da hedge e JPY conserva la forza? Se il 10Y rimbalza forte, la tesi perde qualità.</div></div>
+  <div class="mrow"><div class="mnum">4</div><div><strong>NZDCAD</strong><span class="muted">Niente anticipi:</span> serve che il prezzo confermi la divergenza RBNZ/COT con vera forza relativa NZD.</div></div>
+</section>
+
+<div class="sec">11 · Event risk e regola di gestione</div>
+<section class="card warn">
+  <h2>Questa settimana il rischio maggiore è confondere un cambiamento di regime con un rimbalzo di positioning.</h2>
+  <p>Il nodo è verificare se la nuova relazione — Treasury forti durante risk-off, USD meno reattivo ai dati hawkish, squeeze sulle valute già estremamente short — persiste anche nei primi due giorni della settimana.</p>
+  <div class="note"><b>Regola:</b> Thesis Strength e Trade Attractiveness restano separate. Un pair può avere una tesi forte ma un'entry pessima se il prezzo apre esteso. Il Trade Thesis Monitor serale dovrà verificare Macro → Rates/Pricing → Positioning → Price e soprattutto se il mercato ha reagito come doveva.</div>
+</section>
+
+<div class="sec">12 · Metodo</div>
+<section class="card info"><h2>VIEW → SETUP, non VIEW → TRADE.</h2><p>Il ranking deriva da una lettura relativa delle 8 valute e dallo scan di tutte le 28 pair. Non è una probabilità statistica calibrata. Il COT è usato come contesto di crowding, flusso e asimmetria, non come segnale isolato.</p><p class="muted">Fonti interne: Weekly Global Macro Strength &amp; Cross-Asset 17/10; Weekly Bank FX Report 17/10; Weekly CB Sentiment 17/10; COT FX G8 as-of 13/10, release 16/10. I segnali di prezzo sono usati come conferma/invalidation layer.</p></section>
+<div class="foot">GLOBAL MACRO FX QUANT · WEEKLY FX PAIR SELECTION &amp; CONVICTION · 17 OCT 2026</div>
+</main></body></html>
