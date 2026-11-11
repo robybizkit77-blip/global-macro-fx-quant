@@ -14,6 +14,8 @@ on:
       - 'validation/macro/test_reconcile_us_real_households_countrybook_v2.py'
       - 'validation/macro/test_collect_us_nz_household_firm_sources_v1.py'
       - 'validation/macro/test_macro_official_source_label_contract_v1.py'
+      - 'validation/macro/persist_calendar_news_safe_v12.py'
+      - 'validation/macro/test_persist_macro_safe_v1.py'
       - 'validation/sources/cad_statcan_core.py'
       - 'validation/test_cad_statcan_transport.py'
       - 'validation/macro_pit_anchor_contract.py'
@@ -36,6 +38,8 @@ on:
       - 'validation/macro/test_reconcile_us_real_households_countrybook_v2.py'
       - 'validation/macro/test_collect_us_nz_household_firm_sources_v1.py'
       - 'validation/macro/test_macro_official_source_label_contract_v1.py'
+      - 'validation/macro/persist_calendar_news_safe_v12.py'
+      - 'validation/macro/test_persist_macro_safe_v1.py'
   workflow_dispatch:
   # Early source-watch -> Calendar/News -> Macro. Serial dependency
   # avoids simultaneous main-branch writes by Calendar and Macro when an
@@ -321,20 +325,27 @@ jobs:
           git restore --source=HEAD --worktree -- live_data payload
           git diff --exit-code -- live_data payload
 
-      - name: Commit validated Macro update to main with remote-head lease
+      - name: Persist validated Macro update safely across independent main changes
         if: github.ref == 'refs/heads/main' && steps.refresh.outputs.updated != '0'
         shell: bash
         run: |
           set -euo pipefail
-          BASE="$(cat /tmp/macro-persistent/base-sha)"
-          git fetch origin main --no-tags
-          test "$(git rev-parse origin/main)" = "$BASE" || { echo 'main moved during Macro refresh' >&2; exit 1; }
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- live_data/sections/MACRO_SERIES.json live_data/sections/MACRO_THERMOMETER_DATA.json live_data/manifest.v2.json payload/part-00.txt payload/part-01.txt
-          git diff --cached --quiet && { echo 'No Macro update to commit'; exit 0; }
-          git commit -m 'Refresh daily Macro runtime from official sources'
-          git push --force-with-lease=refs/heads/main:$BASE origin HEAD:main
+          python -m unittest validation.macro.test_persist_macro_safe_v1 -v
+          python - <<'PY'
+          import json
+          from validation.macro.persist_calendar_news_safe_v12 import persist
+          managed=(
+              'live_data/sections/MACRO_SERIES.json',
+              'live_data/sections/MACRO_THERMOMETER_DATA.json',
+              'live_data/manifest.v2.json',
+              'payload/part-00.txt',
+              'payload/part-01.txt',
+          )
+          receipt=persist(managed=managed, max_attempts=4,
+                          commit_message='Refresh daily Macro runtime from official sources')
+          assert receipt['status']=='PERSISTED', receipt
+          print(json.dumps(receipt,sort_keys=True))
+          PY
 
       - name: Confirm no-change case
         if: steps.refresh.outputs.updated == '0'
