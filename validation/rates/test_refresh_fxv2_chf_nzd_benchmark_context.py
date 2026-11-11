@@ -233,5 +233,82 @@ class TestChfNzdResearch(unittest.TestCase):
   self.assertFalse(x["eligible_for_fx_pair_engine"])
   self.assertFalse(x["eligible_for_backtests"])
   self.assertTrue(x["canonical_government_rates_untouched"])
+
+ def test_existing_nzd_manual_postroll_history_reaches_5_nov_research_only(self):
+  now=dt.date(2026,11,11)
+  base=m.nzd_context(RBNZ_OLD,ROLL,NEW,now)
+  archive=json.loads((ROOT/"site/fx-quant-v2/nzd-b2-postroll-web-research.json").read_text())
+  copy_before=copy.deepcopy(base)
+  out=m.extend_nzd_with_archived_manual_postroll(base,archive,now)
+  self.assertEqual(out["latest_date"],"2026-11-05")
+  self.assertEqual(out["latest_2Y"],3.78)
+  self.assertEqual(out["latest_10Y"],4.74)
+  self.assertEqual(out["latest_curve_bp"],96)
+  self.assertEqual(out["same_benchmark_change_bp"],
+                   {"2Y":-18.0,"10Y":-16.0,"start":"2026-10-30","end":"2026-11-05"})
+  self.assertEqual([r["date"] for r in out["after_roll"]],
+                   ["2026-10-30","2026-11-02","2026-11-03","2026-11-04","2026-11-05"])
+  self.assertEqual(base,copy_before)
+  self.assertEqual(out["source_release_date"],"2026-11-06")
+  self.assertEqual(out["source_capture_method"],
+                   "ALREADY_STORED_MANUAL_WEB_RESEARCH_NOT_RUNNER_FETCH")
+  self.assertFalse(out["cross_roll_change_allowed"])
+  self.assertFalse(out["eligible_for_core"])
+  self.assertFalse(out["eligible_for_automatic_promotion"])
+  self.assertFalse(out["independent_xlsx_reconciled"])
+  self.assertFalse(out["eligible_for_backtests"])
+  self.assertEqual(m.extend_nzd_with_archived_manual_postroll(out,archive,now),out)
+
+ def test_nzd_manual_archive_rejects_unsafe_claims_and_benchmark_drift(self):
+  now=dt.date(2026,11,11)
+  base=m.nzd_context(RBNZ_OLD,ROLL,NEW,now)
+  archive=json.loads((ROOT/"site/fx-quant-v2/nzd-b2-postroll-web-research.json").read_text())
+  for key,val in (("automated_access_authorized",True),
+                  ("independent_xlsx_reconciled",True),
+                  ("eligible_for_fx_pair_engine",True),
+                  ("eligible_for_core",True),
+                  ("source_release_date","2026-11-12"),
+                  ("source_capture_date","2026-11-12"),
+                  ("benchmark_2Y","May 2028"),
+                  ("benchmark_10Y","May 2036"),
+                  ("benchmark_roll_date","2026-10-29"),
+                  ("no_interpolation",False),
+                  ("source_capture_method","AUTOMATIC_RBNZ_SCRAPE"),
+                  ("source_url","https://third-party.example/data")):
+   bad=copy.deepcopy(archive);bad[key]=val
+   with self.subTest(key=key),self.assertRaises(ValueError):
+    m.extend_nzd_with_archived_manual_postroll(base,bad,now)
+
+ def test_nzd_manual_archive_rejects_spliced_stale_duplicate_or_future_rows(self):
+  now=dt.date(2026,11,11)
+  base=m.nzd_context(RBNZ_OLD,ROLL,NEW,now)
+  # The already-published V2 dossier contains a 4 Nov closing observation.
+  # A later archive may NOT silently revise it or the 30 Oct roll anchor.
+  base["latest_date"]="2026-11-04"
+  base["latest_2Y"]=3.83
+  base["latest_10Y"]=4.81
+  base["after_roll"].append({"date":"2026-11-04","2Y":3.83,"10Y":4.81})
+  archive=json.loads((ROOT/"site/fx-quant-v2/nzd-b2-postroll-web-research.json").read_text())
+  for mutate in (
+    lambda a:a["daily_observations"][0].update({"2Y":4.30}),
+    lambda a:a["daily_observations"][3].update({"10Y":4.99}),
+    lambda a:a["daily_observations"].append(copy.deepcopy(a["daily_observations"][-1])),
+    lambda a:a["daily_observations"].reverse(),
+    lambda a:a["daily_observations"][0].update({"date":"2026-10-29"}),
+    lambda a:a["daily_observations"][-1].update({"date":"2026-11-12"}),
+    lambda a:a["daily_observations"][-1].update({"2Y":35.0}),
+   ):
+   bad=copy.deepcopy(archive);mutate(bad)
+   with self.subTest(mutate=str(mutate)),self.assertRaises(ValueError):
+    m.extend_nzd_with_archived_manual_postroll(base,bad,now)
+  self.assertIs(m.extend_nzd_with_archived_manual_postroll(base,archive,
+                 dt.date(2026,11,30)),base,"old archive is not refreshed market data")
+  newer=copy.deepcopy(base)
+  newer["latest_date"]="2026-11-10"
+  newer["latest_2Y"]=3.77
+  newer["latest_10Y"]=4.71
+  self.assertIs(m.extend_nzd_with_archived_manual_postroll(newer,archive,now),
+                newer,"older research never overwrites a more recent provider snapshot")
+
 if __name__=="__main__":
  unittest.main()
