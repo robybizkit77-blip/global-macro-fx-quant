@@ -81,6 +81,14 @@
   const view=analyze({model:get('pairs'),prices:get('currencyPrices'),now,FX,profileFn});
   const cur=view.currencies,pr=view.pairs,top=pr.items.slice(0,5);
   const worst=cur?Math.max(...cur.items.map(x=>Math.abs(x.percent)),0.0001):1;
+  const overlap=FX.map(ccy=>({ccy,n:top.filter(x=>x.key.includes(ccy)).length}))
+   .sort((a,b)=>b.n-a.n)[0];
+  const topCaution=!pr.items.some(x=>x.tier===1)?
+   'Nessuna coppia ha tutte le conferme: questa è una lista di studio, non di ingressi. ':'';
+  const exposureCaution=overlap?.n>=3?
+   overlap.n+' delle prime '+top.length+' coppie coinvolgono '+overlap.ccy+
+   ': attenzione alla concentrazione dello stesso rischio. ':'';
+  const topNote=topCaution+exposureCaution;
   const tag=x=>'<span class="fx-rank-pill tier-'+x.tier+'">'+esc(x.stage)+'</span>';
   const risk=x=>x.risk?'<span class="fx-rank-risk">CON RISCHI</span>':x.quality!=='NON VALUTABILE'?
    '<span class="fx-rank-minor">'+esc(x.quality)+'</span>':'';
@@ -121,6 +129,7 @@
    currencyBody+'<p class="fx-rank-source">'+esc(currencyDate)+'</p></section>'+
    '<section class="fx-rank-box" aria-label="Top cinque coppie da approfondire"><div class="fx-rank-head"><div><span>02 / SELEZIONE FX</span><h3>Le prime 5 da studiare</h3></div><small>NON SEGNALI</small></div>'+
    '<p class="fx-rank-sub">Ordine basato su tesi del modello, conferma daily e timing. I rischi non vengono nascosti.</p>'+
+   (topNote?'<p class="fx-rank-top-caution">'+esc(topNote)+'</p>':'')+
    (top.length?'<div class="fx-rank-featured">'+top.map((x,i)=>row(x,i,true)).join('')+'</div>':
    '<p class="fx-rank-unavailable">Nessuna coppia caricata dal motore.</p>')+'</section></div>'+
    '<section class="fx-rank-box fx-rank-all" aria-label="Classifica completa delle ventotto coppie">'+
