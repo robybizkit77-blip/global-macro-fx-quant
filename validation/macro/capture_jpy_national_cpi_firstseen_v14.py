@@ -62,7 +62,7 @@ def parse_japan(raw):
         segment=tail[start:stop]
         if expected not in segment[:160]:
             raise Pending("JAPAN_NATIONAL_COMPONENT_WRONG_OR_MISSING_"+metric)
-        hits=re.findall(r"前年同月比は\s*([0-9]+(?:\.[0-9]+)?)\s*%\s*の\s*(上昇|下落|低下)",segment)
+        hits=re.findall(re.escape(expected)+r".{0,145}?前年同月比は\s*([0-9]+(?:\.[0-9]+)?)\s*%\s*の\s*(上昇|下落|低下)",segment)
         if len(hits)!=1:
             raise Pending("JAPAN_NATIONAL_COMPONENT_RATE_AMBIGUOUS_"+metric)
         number,sign=hits[0]
