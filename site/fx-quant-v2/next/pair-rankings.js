@@ -38,18 +38,25 @@
    try{price=typeof profileFn==='function'?profileFn(key,model,prices,now):null;}catch(e){price=null;}
    const priceReady=Boolean(price?.fresh&&price?.closes?.length>=22&&price?.asof===model.price_asof);
    const priceGood=priceReady&&price.price==='GOOD';
-   const priceBad=priceReady&&(price.price==='BAD'||price.horizonConflict);
-   const momentumGood=priceReady&&price.fiveState==='COERENTE'&&price.twentyState==='COERENTE';
+   const bothGood=priceReady&&price.fiveState==='COERENTE'&&price.twentyState==='COERENTE';
+   const shortRecovery=priceReady&&price.fiveState==='COERENTE'&&price.twentyState==='CONTRARIO';
+   const longOnly=priceReady&&price.fiveState==='CONTRARIO'&&price.twentyState==='COERENTE';
+   const bothBad=priceReady&&price.fiveState==='CONTRARIO'&&price.twentyState==='CONTRARIO';
    const timingGood=priceReady&&price.timing==='ALIGNED';
    const valid=Boolean(modelCurrent&&priceReady&&favored&&quality!=='NON VALUTABILE');
    let tier=4,stage='Non valutabile';
    if(!modelCurrent||!priceReady){stage='Aggiornamento necessario';}
    else if(!favored||quality==='NON VALUTABILE'){stage='Vantaggio non definito';}
-   else if(priceBad){tier=3;stage='Prezzo in contrasto';}
-   else if(priceGood&&momentumGood&&timingGood){tier=1;stage='Coerenza da studiare';}
-   else{tier=2;stage='Conferme incomplete';}
+   else if(bothGood&&priceGood&&timingGood){tier=1;stage='Coerenza da studiare';}
+   else if(shortRecovery){tier=2;stage='Recupero da verificare';}
+   else if(bothGood){tier=2;stage='Timing da confermare';}
+   else if(longOnly){tier=3;stage='Breve termine contrario';}
+   else if(bothBad){tier=3;stage='Prezzo ancora contrario';}
+   else{tier=3;stage='Divergenza da chiarire';}
    const bias=!favored?'NESSUNO':favored===key.slice(0,3)?'LONG':'SHORT';
-   const support=Number(priceGood)+Number(momentumGood)+Number(timingGood);
+   const support=Number(priceGood)*3+Number(timingGood)*2+
+    Number(priceReady&&price.fiveState==='COERENTE')+
+    Number(priceReady&&price.twentyState==='COERENTE');
    const qualityOrder=quality==='PULITO'?3:quality==='DA CONFERMARE'||quality==='DA MONITORARE'?2:quality==='CON RISCHI'?1:0;
    const story=safe(frame.relation||setup.structural?.relation||'Nessuna tesi relativa verificabile.',190);
    const missing=safe(frame.missing||setup.structural?.missing||'Servono conferme indipendenti.',150);
