@@ -30,7 +30,7 @@ const SOURCES={
  calendar:'../../../live_data/sections/CALENDAR_OPERATIONAL_VIEW.json',
  themes:'../../../live_data/sections/TOP_THEMES.json'
 };
-const state={data:{},errors:{},route:'overview',ccy:'USD',against:'EUR',pair:'EURUSD',pairFilter:'all',pairSearch:'',pairPriceWindow:60,pairShowReferences:true,watch:new Set(),window:20,rateMode:'both',riskStream:'VIX',riskWindow:20,macroMetric:'inflation',newsMode:'pulse',chartIndex:0,charts:{},atlasLens:'rates',homeChart:null,homeWindow:20,homeEvidenceOpen:false,homeDossierOpen:false,spotPair:'EURUSD',cotWindow:26,cotMode:'net',cotFilter:'all',cotSort:'percentile',cotSortAsc:false,rsWindow:60,rsGovMode:'both',rsDiffMode:'2y',msCategory:'Inflazione',msSeriesId:null,msView:'level',msWindow:24,msHeat:'inflation',msHeatSort:'ccy',msHeatAsc:true,msOther:'EUR',msCompareMetric:'inflation',msAdvanced:false,csOther:'EUR',csPriceWindow:60,csRatesMode:'spread',csRatesWindow:60,csMacroMode:'inflation',csMacroWindow:36,csCotWindow:26,csSort:'currency',csReturnWindow:20};
+const state={data:{},errors:{},route:'overview',ccy:'USD',against:'EUR',pair:'EURUSD',pairOpen:false,pairFilter:'all',pairSearch:'',pairPriceWindow:60,pairShowReferences:true,watch:new Set(),window:20,rateMode:'both',riskStream:'VIX',riskWindow:20,macroMetric:'inflation',newsMode:'pulse',chartIndex:0,charts:{},atlasLens:'rates',homeChart:null,homeWindow:20,homeEvidenceOpen:false,homeDossierOpen:false,spotPair:'EURUSD',cotWindow:26,cotMode:'net',cotFilter:'all',cotSort:'percentile',cotSortAsc:false,rsWindow:60,rsGovMode:'both',rsDiffMode:'2y',msCategory:'Inflazione',msSeriesId:null,msView:'level',msWindow:24,msHeat:'inflation',msHeatSort:'ccy',msHeatAsc:true,msOther:'EUR',msCompareMetric:'inflation',msAdvanced:false,csOther:'EUR',csPriceWindow:60,csRatesMode:'spread',csRatesWindow:60,csMacroMode:'inflation',csMacroWindow:36,csCotWindow:26,csSort:'currency',csReturnWindow:20};
 try{const w=JSON.parse(localStorage.getItem('fxquant-next-watch')||'[]');if(Array.isArray(w))state.watch=new Set(w.filter(s=>typeof s==='string'))}catch(e){}
 const $=id=>document.getElementById(id);
 const esc=x=>String(x===undefined||x===null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -800,6 +800,9 @@ function currencies(){
  return pageHero('FX G8 / COUNTRY RESEARCH','Country Research Studio non disponibile','Il modulo Valute G8 non è stato caricato. Verifica i feed e lo script.');
 }
 function pairs(){
+ const ranking=window.FXQuantFXSelection?.render?.({get,FX,FLAGS,esc,fmt,sign,date,dayNow});
+ if(!state.pairOpen&&ranking)return pageHero('FX / SELECTION DESK','Prima la classifica. <em>Poi il dossier.</em>',
+  'Ranking G8, selezione delle coppie più interessanti da studiare e confronto completo delle 28. Ogni giudizio resta legato a dati datati e a verifiche di rischio.')+ranking;
  const all=eurPairs(),keys=Object.keys(all).sort(),p=all[state.pair],s=p?.setup||{},fr=p?.decision_frame||s.structural||{};
  const monitor=window.FXQuantThesisMonitor?.analyze?.(get('pairs'),get('thesisHistory'),state.pair)||{ready:false};
  const fav=s.structuralFav||null,quality=pQuality(s);
@@ -841,7 +844,7 @@ function pairs(){
   '<div class="pairs-browse-inside"><div class="filters"><input id="pair-search" class="input" type="search" placeholder="Cerca EUR/USD, AUDCAD..." autocomplete="off" value="'+esc(state.pairSearch)+'" aria-label="Cerca coppia FX"><div class="filter-group" id="pair-filters">'+choose('',pairFilterOptions(),state.pairFilter,'data-pfilter')+'</div></div>'+
   '<div class="pair-list" id="pair-results">'+(pairListKeys().length?pairListKeys().map(k=>pairRow(k)).join(''):'<div class="empty">Nessuna coppia corrispondente.</div>')+'</div>'+
   pairCoverageIntro()+'</div></details>';
- return pageHero('FX / PAIR EXPLORER','28 coppie. <em>Una tesi alla volta.</em>',
+ return '<button type="button" class="pairs-ranking-back" data-pair-back="1">← Torna alla classifica delle 28 coppie</button>'+pageHero('FX / PAIR EXPLORER','28 coppie. <em>Una tesi alla volta.</em>',
   'Scegli una coppia, leggi il giudizio e scopri cosa può confermarlo o smentirlo. Grafici e confronti restano disponibili senza appesantire la lettura.')
   +chooser+main+historyDetail+detail+browse+
   '<p class="pairs-compact-footer">Stati descrittivi del modello, non segnali o ordini. I fixing BCE sono giornalieri, non prezzi intraday; COT e macro hanno frequenze differenti.</p>';
@@ -983,6 +986,7 @@ document.addEventListener('click',e=>{
   window.FXQuantResearchLibrary.setCategory(libraryFilter.dataset.libraryType);
   window.FXQuantResearchLibrary.sync();return;
  }
+ const pairBack=e.target.closest('[data-pair-back]');if(pairBack){state.pairOpen=false;render();return;}
  const pv12=e.target.closest('[data-v12-reference-toggle]');if(pv12){state.pairShowReferences=!state.pairShowReferences;render();return;}
  const pv9=e.target.closest('[data-v9-price-window]');if(pv9){state.pairPriceWindow=Number(pv9.dataset.v9PriceWindow);render();return;}
  const cs_ret=e.target.closest('[data-cs-returnwindow]');
@@ -999,7 +1003,7 @@ document.addEventListener('click',e=>{
  const cs_op=e.target.closest('[data-cs-openpair]');if(cs_op){
   const key=cs_op.dataset.csOpenpair;
   state.pair=(get('pairs')?.pairs?.[key]?key:key.slice(3)+key.slice(0,3));
-  state.spotPair=state.pair;
+  state.spotPair=state.pair;state.pairOpen=true;
   state.route='pairs';location.hash='#pairs';render();return;
  }
  const mcc=e.target.closest('[data-ms-country]');if(mcc){state.ccy=mcc.dataset.msCountry;state.msSeriesId=null;if(state.msOther===state.ccy)state.msOther=FX.find(k=>k!==state.ccy);render();return;}
@@ -1025,7 +1029,7 @@ document.addEventListener('click',e=>{
  if(pick){
    const [kind,value]=String(pick.dataset.command||'').split(':');
    if(kind==='ccy'){state.ccy=value;state.route='currencies';location.hash='#currencies';}
-   else if(kind==='pair'){state.pair=value;state.spotPair=value;state.route='pairs';location.hash='#pairs';}
+   else if(kind==='pair'){state.pair=value;state.spotPair=value;state.pairOpen=true;state.route='pairs';location.hash='#pairs';}
    else if(kind==='route'&&ROUTES[value]){state.route=value;location.hash='#'+value;}
    setQuick(false);render();return;
  }
@@ -1034,7 +1038,7 @@ document.addEventListener('click',e=>{
  const hw=e.target.closest('[data-hwindow]');if(hw){state.homeWindow=Number(hw.dataset.hwindow);render();return}
  const hp=e.target.closest('[data-home-pair]');if(hp){state.spotPair=hp.dataset.homePair;state.pair=state.spotPair;render();return}
  const c=e.target.closest('[data-ccy]');if(c){state.ccy=c.dataset.ccy;if(state.against===state.ccy)state.against=FX.find(k=>k!==state.ccy);render();return}
- const p=e.target.closest('[data-pair]');if(p){state.pair=p.dataset.pair;if(state.route==='overview')location.hash='#pairs';else render();return}
+ const p=e.target.closest('[data-pair]');if(p){state.pair=p.dataset.pair;state.pairOpen=true;if(state.route==='overview')location.hash='#pairs';else render();return}
  const f=e.target.closest('[data-pfilter]');if(f){state.pairFilter=f.dataset.pfilter;render();return}
  const w=e.target.closest('[data-watch]');if(w){state.watch.has(w.dataset.watch)?state.watch.delete(w.dataset.watch):state.watch.add(w.dataset.watch);saveWatch();render();return}
  const a=e.target.closest('[data-window]');if(a){state.window=Number(a.dataset.window);render();return}
@@ -1056,7 +1060,7 @@ document.addEventListener('toggle',e=>{
  if(e.target?.matches?.('details[data-home-dossier]'))state.homeDossierOpen=e.target.open;
 },true);
 document.addEventListener('change',e=>{
- if(e.target.id==='pair-primary-select'){const k=e.target.value;if(eurPairs()[k]){state.pair=k;render()}return;}
+ if(e.target.id==='pair-primary-select'){const k=e.target.value;if(eurPairs()[k]){state.pair=k;state.pairOpen=true;render()}return;}
  if(e.target.id==='cs-other'){state.csOther=e.target.value;render();return;}
  if(e.target.id==='ms-series'){state.msSeriesId=e.target.value;render();return;}
  if(e.target.id==='ms-primary'){state.ccy=e.target.value;state.msSeriesId=null;if(state.msOther===state.ccy)state.msOther=FX.find(k=>k!==state.ccy);render();return;}
