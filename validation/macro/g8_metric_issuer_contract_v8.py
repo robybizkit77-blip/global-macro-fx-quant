@@ -55,6 +55,16 @@ SPECS={
         ("JP_CPI_HEADLINE_YOY","Japan national headline","PCT_YOY_NSA",
          ("national cpi y y","japan cpi y y"),"NO_CERTIFIED_ISSUER_ACTUAL_PARSER"),
       )),
+      ("2026-11-20","INFLATION","Japan Consumer Price Index",(
+        ("JP_CPI_OCT26_HEADLINE_YOY_NSA","Japan national all-items YoY; 2025-base","PCT_YOY_NSA",
+         ("japan national cpi october 2026 y y",),"EXACT_2026_OCT_NATIONAL_ISSUER_CAPTURE_V14"),
+        ("JP_CPI_OCT26_CORE_EX_FRESH_FOOD_YOY_NSA",
+         "Japan national all-items ex fresh food (ENERGY INCLUDED), YoY; 2025-base","PCT_YOY_NSA",
+         ("japan national core cpi october 2026 y y",),"EXACT_2026_OCT_NATIONAL_ISSUER_CAPTURE_V14"),
+        ("JP_CPI_OCT26_EX_FRESH_ENERGY_YOY_NSA",
+         "Japan national all-items ex fresh food and energy YoY; 2025-base","PCT_YOY_NSA",
+         ("japan national ex fresh energy cpi october 2026 y y",),"EXACT_2026_OCT_NATIONAL_ISSUER_CAPTURE_V14"),
+      )),
     ),
     "CHF":(
       ("2026-11-16","GROWTH","Swiss GDP flash",(
