@@ -14,6 +14,10 @@ ROOT=Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0,str(ROOT))
 from validation.macro.build_macro_event_market_context_v1 import run as macro_event_market_context_run
+from validation.macro.capture_us_cpi_exact_actuals_v10 import (
+    OUT as BLS_CPI_LEDGER, validate_actual_log as validate_bls_cpi)
+from validation.macro.freeze_exact_metric_forecasts_v9 import (
+    LEDGER as BLS_FORECAST_LEDGER, read_rows as read_signed_rows)
 OIS=ROOT/'live_data/sections/OIS_OPERATIONAL_VIEW.json'
 MACRO=ROOT/'live_data/sections/MACRO_THERMOMETER_DATA.json'
 OUT=ROOT/'live_data/sections/NEWS_PULSE_OPERATIONAL.json'
@@ -95,6 +99,58 @@ def ois_items(data, today=None):
             '_date': vintage,
         })
     return out
+
+
+def official_cpi_items(forecasts, actuals, now):
+    """One exact issuer actual event; never an invented YoY or a trading signal."""
+    if not actuals:
+        return []
+    if not isinstance(now, datetime) or now.tzinfo is None:
+        raise ValueError("CPI source observation requires timezone-aware clock")
+    validate_bls_cpi(actuals, forecasts)
+    month = {x["metric_id"]: x for x in actuals}
+    headline = month.get("US_CPI_U_HEADLINE_MOM_SA")
+    core = month.get("US_CPI_U_CORE_MOM_SA")
+    if not headline or not core:
+        return []
+    observed = datetime.fromisoformat(headline["observed_at_utc"].replace("Z","+00:00"))
+    local_date = now.astimezone(ZoneInfo("Europe/Rome")).date()
+    released = date(2026,11,10)
+    if (observed > now or released > local_date or
+            (local_date-released).days > 7):
+        return []
+    h = headline["actual_percent"]
+    c = core["actual_percent"]
+    fmt = lambda v: f"{v:+.1f}".replace(".",",")+"%"
+    unavailable = (len(actuals)==2)
+    annual = ("Il BLS non ha pubblicato headline/core annuali per ottobre 2026: "
+              "manca la base di confronto ottobre 2025. "
+              if unavailable else "Le letture annuali restano separate dalle mensili. ")
+    h_delta = headline.get("actual_minus_v9_provider_observation_pp")
+    c_delta = core.get("actual_minus_v9_provider_observation_pp")
+    compare = ("Rispetto a forecast secondari osservati prima del rilascio, "
+               "headline {:+.1f} e core {:+.1f} punti percentuali; "
+               "NON sono sorprese contro un consenso survey certificato. ".format(
+                   h_delta,c_delta).replace(".",",")
+               if finite_number(h_delta) and finite_number(c_delta)
+               else "Consenso survey verificato non disponibile. ")
+    detail=(f"Comunicato BLS 10/11/2026: headline mensile {fmt(h)}, "
+            f"core mensile {fmt(c)}. "+annual+compare+
+            "Potenziale pressione sulle attese Fed, ma nessuna variazione OIS "
+            "o risposta del dollaro è attribuita causalmente al CPI: mancano "
+            "quotazioni sincronizzate prima/dopo l'evento. "
+            "Prima osservazione del nostro runner: "+
+            headline["observed_at_utc"]+".")
+    return [{
+        "category":"MACRO_OFFICIAL_ACTUAL", "ccy":"USD",
+        "as_of": released.isoformat(),
+        "title":f"CPI USA ottobre · headline {fmt(h)} e core {fmt(c)} mensili",
+        "detail":detail, "source":"Bureau of Labor Statistics · CPI ottobre 2026",
+        "source_url":headline["source_url"],
+        "first_runner_observed_at_utc":headline["observed_at_utc"],
+        "quality":headline["quality"],
+        "confidence":"A", "importance":"HIGH", "_date":released
+    }]
 
 
 def macro_items(data, today=None):
@@ -352,6 +408,8 @@ def main():
     items+=fx_fixing_items(load_market_input(FX_HISTORY),today)
     items+=government_curve_items(load_market_input(SOVEREIGN),today)
     items+=cross_asset_items(load_market_input(CROSS_ASSET),today)
+    items+=official_cpi_items(read_signed_rows(BLS_FORECAST_LEDGER),
+                              read_signed_rows(BLS_CPI_LEDGER),now)
     items.sort(key=lambda x:(x['_date'] or date.min,x['importance']=='HIGH',-ORDER.index(x['ccy']) if x['ccy'] in ORDER else 0),reverse=True)
     for x in items:x.pop('_date',None)
     items=items[:20]
