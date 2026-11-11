@@ -85,14 +85,14 @@ function render(){
   '<p>Una lettura per ciascun report: Briefing Forex, Macro, banche centrali, curve OIS, posizionamento e selezione delle coppie.</p>'+
   '<div class="rl-head-note"><strong>Ogni report conserva la propria frequenza.</strong> Il Daily si aggiorna nei feriali e i Weekly quando escono nuove edizioni. Le date mostrate sono date di riferimento del report, non quotazioni intraday.</div>'+
   '</div><div class="rl-stats"><div><small>REPORT CORRENTI VISIBILI</small><strong>'+latest.length+'</strong></div>'+
-  '<div><small>ULTIMA EDIZIONE DISPONIBILE</small><strong>'+(latest[0]?datestr(latest[0].date):'—')+'</strong></div>'+
+  '<div><small>ULTIMA EDIZIONE DISPONIBILE</small><strong id="library-latest-date">'+(latest[0]?datestr(latest[0].date):'—')+'</strong></div>'+
   '<div><small>TIPOLOGIE</small><strong>'+(CATEGORIES.length-1)+'</strong></div></div></section>'+
   '<section class="rl-controls" aria-label="Filtri e ricerca"><div id="library-filterbar" class="rl-filters">'+filters()+'</div>'+
   '<label class="rl-search" for="library-search"><span>Cerca fra gli ultimi report</span><input id="library-search" type="search" autocomplete="off" placeholder="Es. OIS, COT, Fed, macro..." value="'+esc(query)+'"></label></section>'+
   '<section aria-label="Ultimi report pubblicati"><div class="rl-result-head"><h2>Ultime edizioni</h2><span id="library-match-count">'+filterReports().length+' di '+latest.length+' report · uno per categoria</span></div>'+
   '<div id="library-grid" class="rl-grid">'+rows()+'</div></section>'+
   '<section class="rl-disclaimer"><h2>Come avviene l’aggiornamento</h2>'+
-  '<p>La Library seleziona automaticamente l’ultima edizione approvata presente sul sito. Quando è accessibile il repository pubblico, controlla anche nuove pubblicazioni HTML e mostra solo quelle già raggiungibili su GitHub Pages. La creazione e il trasferimento automatico dei report da ChatGPT restano processi distinti: una nuova edizione compare solo se è stata realmente pubblicata. Trade Thesis Monitor è escluso.</p>'+
+  '<p>La Library seleziona automaticamente l’ultima edizione approvata presente sul sito. Quando è accessibile il repository pubblico, controlla anche nuove pubblicazioni HTML e mostra solo quelle già raggiungibili su GitHub Pages. La creazione e il trasferimento automatico dei report da ChatGPT restano processi distinti: una nuova edizione compare solo se è stata realmente pubblicata.</p>'+
   '<div class="rl-next"><span>APPROFONDIMENTI</span><a href="#overview">Panoramica FX ↗</a><a href="#news">Calendario macro ↗</a><a href="#pairs">Monitor tesi FX ↗</a></div></section>';
 }
 function setCategory(value){category=CATEGORIES.some(x=>x[0]===value)?value:'all';}
@@ -103,6 +103,8 @@ function sync(){
  if(grid)grid.innerHTML=rows();
  if(count)count.textContent=filterReports().length+' di '+latestPerType([...REPORTS,...remoteReports]).length+' report · uno per categoria';
  if(bar)bar.innerHTML=filters();
+ const dateEl=root.document.getElementById('library-latest-date');
+ if(dateEl){const top=latestPerType([...REPORTS,...remoteReports])[0];dateEl.textContent=top?datestr(top.date):'—';}
 }
 async function refresh(){
  if(typeof root.fetch!=='function')return;
