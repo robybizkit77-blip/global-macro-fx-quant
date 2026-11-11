@@ -1,7 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 const root=path.resolve(__dirname,'../..');
-const api={window:{}};
+const api={window:{},URL}; // URL is a browser global used by strict issuer-source validation
 vm.runInNewContext(fs.readFileSync(path.join(root,'site/fx-quant-v2/next/morning-desk-v1.js'),'utf8'),api,
  {filename:'morning-desk-v1.js',timeout:5000});
 const {sound,build}=api.window.FXQuantMorningDesk;
