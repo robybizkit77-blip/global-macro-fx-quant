@@ -2,14 +2,16 @@
 """Run CHF/NZD informational source refresh before Rome 08:00, DST-safe.
 
 The later original UTC slots remain for source updates during the day.
-The pre-open optional paid-vendor retry can run once at the selected morning
-slot only (unless explicitly dispatched); never at both DST duplicate slots.
+eolas Free: vendor calls only Tue/Thu at 06:30 Rome (at most 10 scheduled
+slots/month). Pro entitlement explicitly opts in to weekday and manual calls.
+Official source checks remain daily regardless of vendor plan.
 """
 from __future__ import annotations
 
 import argparse
 import datetime as dt
 import json
+import os
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -23,7 +25,7 @@ RATES_PARENT = "Rates Persistent Daily V1"
 def gate(event: str, cron: str, now: dt.datetime, *,
          upstream_name: str = "", upstream_branch: str = "",
          upstream_conclusion: str = "", upstream_event: str = "",
-         upstream_started_at: str = "") -> tuple[bool, bool, str]:
+         upstream_started_at: str = "", eolas_pro: bool = False) -> tuple[bool, bool, str]:
     """(refresh, paid-vendor-eligible, reason). No live market API calls."""
     if now.tzinfo is None:
         raise ValueError("UTC-aware clock required")
@@ -49,7 +51,7 @@ def gate(event: str, cron: str, now: dt.datetime, *,
             return False, False, "BEFORE_MORNING_LOCAL_SLOT"
         return True, False, "INDEPENDENT_SUCCESSFUL_MAIN_RATES_RECOVERY"
     if event != "schedule":
-        return True, event == "workflow_dispatch", "EVENT_OR_MANUAL_SOURCE_REFRESH"
+        return True, event == "workflow_dispatch" and eolas_pro, "EVENT_OR_MANUAL_SOURCE_REFRESH"
     local = now.astimezone(ROME)
     if local.weekday() >= 5:
         return False, False, "NOT_A_ROMAN_WORKDAY"
@@ -59,7 +61,7 @@ def gate(event: str, cron: str, now: dt.datetime, *,
             return False, False, "DUPLICATE_DST_SLOT"
         if local.time() < dt.time(6, 30):
             return False, False, "BEFORE_MORNING_LOCAL_SLOT"
-        return True, True, "ROME_0630_PREOPEN_SOURCE_REFRESH"
+        return True, eolas_pro or local.weekday() in (1, 3), "ROME_0630_PREOPEN_SOURCE_REFRESH"
     if cron in LATER_SOURCE_SLOTS:
         return True, False, "LATER_OFFICIAL_SOURCE_RETRY"
     return False, False, "UNKNOWN_SCHEDULE_SLOT"
@@ -84,12 +86,14 @@ def main() -> None:
         upstream_branch=args.upstream_branch,
         upstream_conclusion=args.upstream_conclusion,
         upstream_event=args.upstream_event,
-        upstream_started_at=args.upstream_started_at)
+        upstream_started_at=args.upstream_started_at,
+        eolas_pro=os.environ.get("EOLAS_PRO_ENABLED", "").strip().lower() == "true")
     result = {
         "source_refresh": "RUN" if refresh else "SKIP_INTENTIONALLY",
         "authorized_optional_vendor_retry_eligible": vendor,
         "reason": reason,
         "checked_at_rome": now.astimezone(ROME).isoformat(),
+        "vendor_plan": "PRO_DAILY" if os.environ.get("EOLAS_PRO_ENABLED", "").strip().lower() == "true" else "FREE_TUE_THU",
         "observations_updated": None,
         "source_freshness_not_certified_by_schedule": True,
     }
