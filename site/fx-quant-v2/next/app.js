@@ -980,14 +980,25 @@ window.addEventListener('keydown',e=>{
 });
 $('menu-toggle').addEventListener('click',()=>{const open=!$('app').classList.contains('menu-open');$('app').classList.toggle('menu-open',open);$('menu-toggle').setAttribute('aria-expanded',String(open))});
 $('mobile-overlay').addEventListener('click',()=>{$('app').classList.remove('menu-open');$('menu-toggle').setAttribute('aria-expanded','false')});
+// Keep the pair's open analysis panel mounted when its own chart controls change.
+// Replacing #content would recreate <details> closed and jump back to the rankings.
+function refreshPairPriceChart(focusSelector){
+ const body=document.querySelector('#content details.pairs-optional-chart .pairs-details-body');
+ if(state.route!=='pairs'||!state.pairDetailOpen||!body||!window.FXQuantDecisionJourney?.build){render();return;}
+ const scrollTop=window.scrollY;
+ state.charts={};state.chartIndex=0;
+ body.innerHTML=window.FXQuantDecisionJourney.build({get,state,plot,fmt,sign,date,dayNow,esc}).pair();
+ body.querySelector(focusSelector)?.focus({preventScroll:true});
+ window.scrollTo({top:scrollTop,behavior:'instant'});
+}
 document.addEventListener('click',e=>{
  const libraryFilter=e.target.closest('[data-library-type]');
  if(libraryFilter && state.route==='library' && window.FXQuantResearchLibrary){
   window.FXQuantResearchLibrary.setCategory(libraryFilter.dataset.libraryType);
   window.FXQuantResearchLibrary.sync();return;
  }
- const pv12=e.target.closest('[data-v12-reference-toggle]');if(pv12){state.pairShowReferences=!state.pairShowReferences;render();return;}
- const pv9=e.target.closest('[data-v9-price-window]');if(pv9){state.pairPriceWindow=Number(pv9.dataset.v9PriceWindow);render();return;}
+ const pv12=e.target.closest('[data-v12-reference-toggle]');if(pv12){state.pairShowReferences=!state.pairShowReferences;refreshPairPriceChart('[data-v12-reference-toggle]');return;}
+ const pv9=e.target.closest('[data-v9-price-window]');if(pv9){const windowSize=Number(pv9.dataset.v9PriceWindow);if(![20,60,120].includes(windowSize))return;state.pairPriceWindow=windowSize;refreshPairPriceChart('[data-v9-price-window="'+windowSize+'"]');return;}
  const cs_ret=e.target.closest('[data-cs-returnwindow]');
  if(cs_ret){state.csReturnWindow=Number(cs_ret.dataset.csReturnwindow);render();return;}
  const cs_country=e.target.closest('[data-cs-country]');if(cs_country){state.ccy=cs_country.dataset.csCountry;if(state.csOther===state.ccy)state.csOther=FX.find(k=>k!==state.ccy);render();return;}
