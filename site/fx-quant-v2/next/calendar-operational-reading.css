@@ -1,0 +1,21 @@
+/* Operational macro calendar: aligned with existing FX Quant Next DARK DESK */
+.cal-panel{margin-bottom:21px}
+.cal-panel .panel-head{margin-bottom:12px}
+.cal-intro{margin:0 0 17px;color:var(--soft);font-size:12px;line-height:1.7}
+.cal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.cal-event{min-width:0;border:1px solid var(--line2);border-radius:12px;background:linear-gradient(145deg,rgba(13,30,46,.97),rgba(17,40,57,.8));padding:17px;display:flex;flex-direction:column;gap:9px}
+.cal-event-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;color:var(--blue);font-size:10px;font-weight:800;letter-spacing:.02em}
+.cal-event-head time{color:var(--text);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.cal-event h3{font:750 15px/1.37 Manrope,'DM Sans',sans-serif;margin:0;letter-spacing:-.02em}
+.cal-event p{margin:0;color:var(--soft);font-size:12px;line-height:1.62}
+.cal-event p strong{color:var(--text)}
+.cal-event .cal-source{color:var(--muted);font-size:10px}
+.cal-event .cal-verify{padding-top:9px;border-top:1px solid var(--line);margin-top:auto}
+.cal-missing{font-size:10px;color:var(--amber);border-radius:7px;background:rgba(237,189,125,.065);padding:9px 10px;line-height:1.55}
+.cal-more{margin-top:13px}
+.cal-more summary{list-style:disclosure-closed;cursor:pointer;color:var(--blue);font-weight:750;font-size:12px;padding:11px 13px;background:var(--layer);border:1px solid var(--line2);border-radius:9px}
+.cal-more[open] summary{margin-bottom:13px}
+.cal-coverage{border-left:2px solid var(--amber);padding:11px 13px;margin-top:16px;color:var(--soft);font-size:11px;line-height:1.65;background:rgba(237,189,125,.055);border-radius:6px}
+.cal-coverage strong{color:var(--text)}
+@media(max-width:860px){.cal-grid{grid-template-columns:1fr}}
+@media(max-width:430px){.cal-event-head{flex-direction:column;gap:4px}.cal-event-head time{text-align:left}.cal-event{padding:14px}.cal-coverage{font-size:10.5px}}
