@@ -20,6 +20,8 @@ on:
       - 'validation/cb_pricing/test_cb_pricing_schedule_gate_v1.py'
       - 'validation/cb_pricing/check_cb_pricing_recovery_v1.py'
       - 'validation/cb_pricing/test_check_cb_pricing_recovery_v1.py'
+      - 'validation/cb_pricing/test_cb_pricing_persistent_safe_commit_v1.py'
+      - 'validation/macro/persist_calendar_news_safe_v12.py'
   pull_request:
     paths:
       - '.github/workflows/cb-pricing-persistent-daily-v1.yml'
@@ -36,6 +38,8 @@ on:
       - 'validation/cb_pricing/test_cb_pricing_schedule_gate_v1.py'
       - 'validation/cb_pricing/check_cb_pricing_recovery_v1.py'
       - 'validation/cb_pricing/test_check_cb_pricing_recovery_v1.py'
+      - 'validation/cb_pricing/test_cb_pricing_persistent_safe_commit_v1.py'
+      - 'validation/macro/persist_calendar_news_safe_v12.py'
   workflow_run:
     # Independent existing hourly/rates and operational observation workflows
     # can recover dropped CB cron. The observation cadences are already active
@@ -247,23 +251,29 @@ jobs:
           git diff --exit-code -- live_data payload
           echo CB_PRICING_PERSISTENT_VALIDATION_ONLY_PASS
 
-      - name: Commit validated CB Pricing update to main with remote-head lease
+      - name: Commit validated CB Pricing update with bounded no-overwrite rebase
         if: steps.gate.outputs.should_run == 'true' && steps.scope.outputs.changed == 'yes' && github.ref == 'refs/heads/main'
         shell: bash
-        env:
-          TARGET_BRANCH: main
         run: |
           set -euo pipefail
-          REMOTE_SHA="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
-          test "$REMOTE_SHA" = "$GITHUB_SHA"
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add live_data/sections/OIS_DATA.json live_data/sections/NATIVE_CB_DATA.json live_data/manifest.v2.json payload/part-00.txt
-          git diff --cached --quiet && { echo 'No CB Pricing changes to persist'; exit 0; }
-          git commit -m 'Refresh daily CB pricing runtime from official market sources'
-          REMOTE_SHA_2="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
-          test "$REMOTE_SHA_2" = "$GITHUB_SHA"
-          git push origin "HEAD:$TARGET_BRANCH"
+          # Reuse already-tested Calendar/News safe writer. A concurrent
+          # unrelated main commit may advance; any overlap on pricing,
+          # manifest or payload fails closed. No forced push or data merge.
+          python3 -m unittest validation.cb_pricing.test_cb_pricing_persistent_safe_commit_v1 -v
+          python3 - <<'PY'
+          import json
+          from validation.macro.persist_calendar_news_safe_v12 import persist
+          scope=(
+              'live_data/sections/OIS_DATA.json',
+              'live_data/sections/NATIVE_CB_DATA.json',
+              'live_data/manifest.v2.json',
+              'payload/part-00.txt',
+          )
+          result=persist(managed=scope,max_attempts=6)
+          print('CB_PRICING_SAFE_MAIN_PERSIST',json.dumps(result,sort_keys=True))
+          if result['status'] not in ('PERSISTED','NO_TRACKED_CHANGES','NO_STAGED_CHANGE'):
+              raise SystemExit('CB pricing persistence not certified')
+          PY
           echo CB_PRICING_PERSISTENT_MAIN_UPDATE_PUSHED
 
       - name: Confirm clean no-change case
