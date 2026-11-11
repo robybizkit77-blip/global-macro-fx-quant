@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-11",
-  "generated_at_utc": "2026-11-11T22:02:04.904698Z",
+  "generated_at_utc": "2026-11-11T23:33:05.949847Z",
   "items": [
     {
       "as_of": "2026-11-11",
@@ -205,7 +205,7 @@
       "title": "Credito IG OAS: -2.0 pb nella chiusura del 2026-11-09"
     }
   ],
-  "last_checked_at_utc": "2026-11-11T22:02:04.904698Z",
+  "last_checked_at_utc": "2026-11-11T23:33:05.949847Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -1176,7 +1176,7 @@
         "url": "https://www.rbnz.govt.nz/news-and-events/news/2026/11/reserve-bank-files-dcs-disclosure-charge-against-westpac-new-zealand-limited"
       }
     ],
-    "last_attempt_day_rome": "2026-11-11",
+    "last_attempt_day_rome": "2026-11-12",
     "latest_published_at_utc": "2026-11-11T11:00:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
