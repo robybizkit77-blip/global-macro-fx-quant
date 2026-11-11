@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_CHATGPT_MARKET_CONTEXT_V1",
-  "generated_at_utc": "2026-11-11T05:57:36Z",
+  "generated_at_utc": "2026-11-11T14:03:58Z",
   "evaluation_date_europe_rome": "2026-11-11",
   "reference_only": true,
   "policy": {
@@ -25,53 +25,53 @@
       },
       "GBP": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-11-09",
+        "as_of": "2026-11-10",
         "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
         "policy_rate_pct": 4.0,
         "horizons": {
           "3m": {
-            "rate_pct": 4.2184,
-            "delta_vs_policy_bp": 21.8,
-            "change_1d_bp": 0.7,
-            "change_1w_bp": 6.2
+            "rate_pct": 4.2752,
+            "delta_vs_policy_bp": 27.5,
+            "change_1d_bp": 5.7,
+            "change_1w_bp": 10.8
           },
           "6m": {
-            "rate_pct": 4.4643,
-            "delta_vs_policy_bp": 46.4,
-            "change_1d_bp": 0.3,
-            "change_1w_bp": 1.6
+            "rate_pct": 4.5708,
+            "delta_vs_policy_bp": 57.1,
+            "change_1d_bp": 10.6,
+            "change_1w_bp": 9.0
           },
           "12m": {
-            "rate_pct": 4.6804,
-            "delta_vs_policy_bp": 68.0,
-            "change_1d_bp": -3.9,
-            "change_1w_bp": -4.9
+            "rate_pct": 4.8396,
+            "delta_vs_policy_bp": 84.0,
+            "change_1d_bp": 15.9,
+            "change_1w_bp": 4.7
           }
         }
       },
       "JPY": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-11-09",
+        "as_of": "2026-11-11",
         "source": "Tokyo Financial Exchange · Three-month TONA Futures",
         "policy_rate_pct": 1.25,
         "horizons": {
           "3m": {
-            "rate_pct": 1.437,
-            "delta_vs_policy_bp": 18.7,
-            "change_1d_bp": -1.8,
-            "change_1w_bp": -1.8
+            "rate_pct": 1.44,
+            "delta_vs_policy_bp": 19.0,
+            "change_1d_bp": 0.3,
+            "change_1w_bp": -1.5
           },
           "6m": {
-            "rate_pct": 1.606,
-            "delta_vs_policy_bp": 35.6,
-            "change_1d_bp": -5.6,
-            "change_1w_bp": -6.6
+            "rate_pct": 1.59,
+            "delta_vs_policy_bp": 34.0,
+            "change_1d_bp": -1.6,
+            "change_1w_bp": -7.2
           },
           "12m": {
-            "rate_pct": 1.879,
-            "delta_vs_policy_bp": 62.9,
-            "change_1d_bp": -5.6,
-            "change_1w_bp": -7.6
+            "rate_pct": 1.863,
+            "delta_vs_policy_bp": 61.3,
+            "change_1d_bp": -1.6,
+            "change_1w_bp": -7.2
           }
         }
       },
@@ -82,33 +82,33 @@
       },
       "CAD": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-11-09",
+        "as_of": "2026-11-10",
         "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
         "policy_rate_pct": 2.5,
         "horizons": {
           "3m": {
-            "rate_pct": 2.685,
-            "delta_vs_policy_bp": 18.5,
-            "change_1d_bp": 0.5,
-            "change_1w_bp": -4.0
+            "rate_pct": 2.735,
+            "delta_vs_policy_bp": 23.5,
+            "change_1d_bp": 5.0,
+            "change_1w_bp": -0.5
           },
           "6m": {
-            "rate_pct": 2.85,
-            "delta_vs_policy_bp": 35.0,
-            "change_1d_bp": 2.0,
-            "change_1w_bp": -10.0
+            "rate_pct": 2.965,
+            "delta_vs_policy_bp": 46.5,
+            "change_1d_bp": 11.5,
+            "change_1w_bp": 0.5
           },
           "12m": {
-            "rate_pct": 3.055,
-            "delta_vs_policy_bp": 55.5,
-            "change_1d_bp": 1.0,
-            "change_1w_bp": -16.5
+            "rate_pct": 3.205,
+            "delta_vs_policy_bp": 70.5,
+            "change_1d_bp": 15.0,
+            "change_1w_bp": -2.0
           }
         }
       },
       "AUD": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-11-09",
+        "as_of": "2026-11-10",
         "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
         "policy_rate_pct": 4.85,
         "horizons": {
@@ -116,19 +116,19 @@
             "rate_pct": 4.85,
             "delta_vs_policy_bp": 0.0,
             "change_1d_bp": 0.0,
-            "change_1w_bp": 1.5
+            "change_1w_bp": 0.0
           },
           "6m": {
             "rate_pct": 4.885,
             "delta_vs_policy_bp": 3.5,
-            "change_1d_bp": 0.5,
-            "change_1w_bp": -5.0
+            "change_1d_bp": 0.0,
+            "change_1w_bp": -3.0
           },
           "12m": {
-            "rate_pct": 4.71,
-            "delta_vs_policy_bp": -14.0,
-            "change_1d_bp": 0.5,
-            "change_1w_bp": -15.5
+            "rate_pct": 4.705,
+            "delta_vs_policy_bp": -14.5,
+            "change_1d_bp": -0.5,
+            "change_1w_bp": -9.5
           }
         }
       },
@@ -141,43 +141,43 @@
     "government_rates": {
       "USD": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-11-09",
-        "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-09",
-        "government_2y_pct": 4.56,
-        "government_10y_pct": 4.88,
-        "10y_minus_2y_bp": 32.0,
-        "change_2y_bp": -3.0,
-        "change_10y_bp": -3.0
+        "as_of": "2026-11-10",
+        "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-10",
+        "government_2y_pct": 4.73,
+        "government_10y_pct": 4.98,
+        "10y_minus_2y_bp": 25.0,
+        "change_2y_bp": 12.0,
+        "change_10y_bp": 3.0
       },
       "EUR": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-11-09",
-        "source": "European Central Bank · AAA Svensson spot curve · 2026-11-09",
-        "government_2y_pct": 2.9391,
-        "government_10y_pct": 3.272,
-        "10y_minus_2y_bp": 33.3,
-        "change_2y_bp": -5.4,
-        "change_10y_bp": -5.5
+        "as_of": "2026-11-10",
+        "source": "European Central Bank · AAA Svensson spot curve · 2026-11-10",
+        "government_2y_pct": 3.0186,
+        "government_10y_pct": 3.3309,
+        "10y_minus_2y_bp": 31.2,
+        "change_2y_bp": 3.2,
+        "change_10y_bp": -1.6
       },
       "GBP": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-11-09",
-        "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-11-09",
-        "government_2y_pct": 4.5569,
-        "government_10y_pct": 5.1268,
-        "10y_minus_2y_bp": 57.0,
-        "change_2y_bp": -5.9,
-        "change_10y_bp": -5.5
+        "as_of": "2026-11-10",
+        "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-11-10",
+        "government_2y_pct": 4.6624,
+        "government_10y_pct": 5.1896,
+        "10y_minus_2y_bp": 52.7,
+        "change_2y_bp": 1.9,
+        "change_10y_bp": -4.2
       },
       "JPY": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-11-09",
-        "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-09",
-        "government_2y_pct": 1.778,
-        "government_10y_pct": 2.724,
-        "10y_minus_2y_bp": 94.6,
-        "change_2y_bp": -10.2,
-        "change_10y_bp": -9.3
+        "as_of": "2026-11-10",
+        "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-10",
+        "government_2y_pct": 1.784,
+        "government_10y_pct": 2.748,
+        "10y_minus_2y_bp": 96.4,
+        "change_2y_bp": -9.6,
+        "change_10y_bp": -6.9
       },
       "CHF": {
         "state": "STALE",
