@@ -1,7 +1,7 @@
 {
   "currencies": {
     "AUD": {
-      "as_of": "2026-11-09",
+      "as_of": "2026-11-10",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
@@ -9,20 +9,20 @@
       "direction_vs_policy": "MIXED",
       "horizons": {
         "12m": {
-          "change_1d_bp": 0.5,
-          "change_1w_bp": -15.5,
-          "policy_delta_bp": -14.0,
-          "rate": 4.71
+          "change_1d_bp": -0.5,
+          "change_1w_bp": -9.5,
+          "policy_delta_bp": -14.5,
+          "rate": 4.705
         },
         "3m": {
           "change_1d_bp": 0.0,
-          "change_1w_bp": 1.5,
+          "change_1w_bp": 0.0,
           "policy_delta_bp": 0.0,
           "rate": 4.85
         },
         "6m": {
-          "change_1d_bp": 0.5,
-          "change_1w_bp": -5.0,
+          "change_1d_bp": 0.0,
+          "change_1w_bp": -3.0,
           "policy_delta_bp": 3.5,
           "rate": 4.885
         }
@@ -34,7 +34,7 @@
       "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)"
     },
     "CAD": {
-      "as_of": "2026-11-09",
+      "as_of": "2026-11-10",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
@@ -42,22 +42,22 @@
       "direction_vs_policy": "UP",
       "horizons": {
         "12m": {
-          "change_1d_bp": 1.0,
-          "change_1w_bp": -16.5,
-          "policy_delta_bp": 55.5,
-          "rate": 3.055
+          "change_1d_bp": 15.0,
+          "change_1w_bp": -2.0,
+          "policy_delta_bp": 70.5,
+          "rate": 3.205
         },
         "3m": {
-          "change_1d_bp": 0.5,
-          "change_1w_bp": -4.0,
-          "policy_delta_bp": 18.5,
-          "rate": 2.685
+          "change_1d_bp": 5.0,
+          "change_1w_bp": -0.5,
+          "policy_delta_bp": 23.5,
+          "rate": 2.735
         },
         "6m": {
-          "change_1d_bp": 2.0,
-          "change_1w_bp": -10.0,
-          "policy_delta_bp": 35.0,
-          "rate": 2.85
+          "change_1d_bp": 11.5,
+          "change_1w_bp": 0.5,
+          "policy_delta_bp": 46.5,
+          "rate": 2.965
         }
       },
       "official_status": "ACTIVE",
@@ -343,7 +343,7 @@
       "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive"
     },
     "JPY": {
-      "as_of": "2026-11-09",
+      "as_of": "2026-11-10",
       "backtest_eligible_as_official": true,
       "change_1d_available": true,
       "change_1w_available": true,
@@ -351,20 +351,20 @@
       "direction_vs_policy": "UP",
       "horizons": {
         "12m": {
-          "change_1d_bp": -5.6,
-          "change_1w_bp": -7.6,
+          "change_1d_bp": 0.0,
+          "change_1w_bp": -5.6,
           "policy_delta_bp": 62.9,
           "rate": 1.879
         },
         "3m": {
-          "change_1d_bp": -1.8,
+          "change_1d_bp": 0.0,
           "change_1w_bp": -1.8,
           "policy_delta_bp": 18.7,
           "rate": 1.437
         },
         "6m": {
-          "change_1d_bp": -5.6,
-          "change_1w_bp": -6.6,
+          "change_1d_bp": 0.0,
+          "change_1w_bp": -5.6,
           "policy_delta_bp": 35.6,
           "rate": 1.606
         }
