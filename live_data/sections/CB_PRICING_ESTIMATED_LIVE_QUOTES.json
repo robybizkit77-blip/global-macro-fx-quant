@@ -115,22 +115,22 @@
       "status": "LIVE_SECONDARY_READY"
     },
     "USD": {
-      "as_of": "2026-11-10",
+      "as_of": "2026-11-11",
       "confidence_grade": "B",
       "freshness_status": "LIVE_OR_RECENT_SESSION",
       "horizons": {
         "12m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "ZQV2027",
           "contract_description": "Oct 2027",
           "expiration": "2027-11-01",
-          "futures_price": 95.38,
+          "futures_price": 95.32,
           "mapping": "nearest dated listed contract expiry to today+365d; no interpolation",
-          "price_valid_until": "2026-11-10T21:07:39Z",
-          "quote_as_of": "2026-11-10",
+          "price_valid_until": "2026-11-11T21:06:01Z",
+          "quote_as_of": "2026-11-11",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 4.62,
+          "rate": 4.68,
           "symbol": "CBOT:ZQV2027"
         },
         "3m": {
@@ -148,17 +148,17 @@
           "symbol": "CBOT:ZQG2027"
         },
         "6m": {
-          "business_day_lag": 1,
+          "business_day_lag": 0,
           "contract": "ZQJ2027",
           "contract_description": "Apr 2027",
           "expiration": "2027-05-03",
-          "futures_price": 95.525,
+          "futures_price": 95.5,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
-          "price_valid_until": "2026-11-10T19:24:15Z",
-          "quote_as_of": "2026-11-10",
+          "price_valid_until": "2026-11-11T19:25:23Z",
+          "quote_as_of": "2026-11-11",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
-          "rate": 4.475,
+          "rate": 4.5,
           "symbol": "CBOT:ZQJ2027"
         }
       },
@@ -170,7 +170,7 @@
       "status": "LIVE_SECONDARY_READY"
     }
   },
-  "generated_at_utc": "2026-11-11T16:07:05.941131Z",
+  "generated_at_utc": "2026-11-11T21:24:24.142073Z",
   "governance": {
     "backtest_eligible_as_official_ois": false,
     "bias_effect": "NONE",
