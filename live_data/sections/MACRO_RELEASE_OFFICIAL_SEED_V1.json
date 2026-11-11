@@ -126,6 +126,18 @@
     },
     {
       "ccy": "JPY",
+      "date": "2026-11-20",
+      "time_local": "08:30",
+      "timezone": "Asia/Tokyo",
+      "event_type": "INFLATION",
+      "title": "Japan Consumer Price Index",
+      "reference_period": "October 2026",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CONFIRMED",
+      "source_family": "Statistics Bureau of Japan"
+    },
+    {
+      "ccy": "JPY",
       "date": "2026-10-30",
       "time_local": "08:30",
       "timezone": "Asia/Tokyo",

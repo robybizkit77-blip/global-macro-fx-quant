@@ -29,6 +29,11 @@ from validation.macro.capture_aud_labour_official_firstseen_v12 import (
     validate as validate_aud_labour,
 )
 
+from validation.macro.capture_jpy_national_cpi_firstseen_v14 import (
+    OUT as JPY_CPI_V14, QUALITY as QUALITY_JPY_V14,
+    validate as validate_jpy_cpi,
+)
+
 ROME = ZoneInfo("Europe/Rome")
 QUALITY_V1 = "OFFICIAL_PAGE_FIRST_OBSERVATION_NOT_FIRST_RELEASE_PIT"
 QUALITY_V11 = "ISSUER_GDP_FIRST_RUNNER_OBSERVATION_NOT_PUBLISHER_PIT"
@@ -70,7 +75,7 @@ def event_info(key):
 
 def build(now, *, v1_forecasts=None, v1_actuals=None,
           v9_forecasts=None, v11_actuals=None, official_seed=None,
-          v12_aud_actuals=None):
+          v12_aud_actuals=None, v14_jpy_actuals=None):
     if not isinstance(now, datetime) or now.tzinfo is None or now.utcoffset() is None:
         raise ValueError("Offset-aware publication clock required")
     now=now.astimezone(timezone.utc)
@@ -80,12 +85,14 @@ def build(now, *, v1_forecasts=None, v1_actuals=None,
     metric = read_rows(METRIC_FORECAST_V9) if v9_forecasts is None else v9_forecasts
     gdp = read_existing(GDP_V11) if v11_actuals is None else v11_actuals
     aud = read_existing(AUD_LABOUR_V12) if v12_aud_actuals is None else v12_aud_actuals
+    jp = read_existing(JPY_CPI_V14) if v14_jpy_actuals is None else v14_jpy_actuals
     seed = json.loads(OFFICIAL_SEED.read_text(encoding="utf-8")) if official_seed is None else official_seed
     # Fail closed on a broken SHA chain, wrong event, wrong metric, forged
     # timestamp or wrong issuer URL, before considering any output.
     validate_actual_log(old, frozen)
     validate_actuals(gdp, seed, metric)
     validate_aud_labour(aud)
+    validate_jpy_cpi(jp)
     items=[]
     def append(row, observed_raw, label, comparison, quality, metric_id=None,
                is_level=False):
@@ -141,4 +148,23 @@ def build(now, *, v1_forecasts=None, v1_actuals=None,
         append(row, row["observed_at_utc"],
                LABELS[row["metric_id"]], None, QUALITY_AUD_V12,
                metric_id=row["metric_id"], is_level=True)
+    for row in jp:
+        # One research item, three distinct publisher measures. Japan's
+        # 'core' excludes FRESH FOOD, NOT all food and energy as in US CPI.
+        key="JP_CPI_OCT26_CORE_EX_FRESH_FOOD_YOY_NSA"
+        core=row["metrics_percent"][key]
+        head=row["metrics_percent"]["JP_CPI_OCT26_HEADLINE_YOY_NSA"]
+        ex_energy=row["metrics_percent"]["JP_CPI_OCT26_EX_FRESH_ENERGY_YOY_NSA"]
+        before=len(items)
+        append({**row,"actual_percent":core},
+               row["observed_at_utc"],
+               "Giappone · CPI nazionale core (senza freschi, energia inclusa), a/a",
+               None, QUALITY_JPY_V14, metric_id=key)
+        if len(items)>before:
+            pct=lambda v: f"{v:+.1f}".replace(".",",")+"%"
+            items[-1]["detail"] += (
+                " Composizione della stessa pubblicazione nazionale: headline "
+                + pct(head) + "; core esclusi freschi " + pct(core)
+                + "; esclusi freschi ed energia " + pct(ex_energy)
+                + ". Base indice 2025, variazioni annue NSA; NON CPI preliminare di Tokyo.")
     return sorted(items,key=lambda x:(x["as_of"],x["first_runner_observed_at_utc"]),reverse=True)
