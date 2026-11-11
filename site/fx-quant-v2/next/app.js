@@ -481,7 +481,10 @@ function overview(){
  const morning=get('morningDesk');
  if(typeof window!=='undefined' && window.FXQuantMorningDesk?.build && morning){
   const edition=window.FXQuantMorningDesk.build({feed:morning,plot,esc,date,dayNow});
-  if(edition)return edition;
+  if(edition){
+   const post=window.FXQuantMorningDesk.postRelease?.(morning,get('news'),esc,dayNow)||'';
+   return post ? edition.replace('<section class="morning-prose"',post+'<section class="morning-prose"') : edition;
+  }
  }
  const context=researchCase();
  const fxDesk=fxHomeDesk();

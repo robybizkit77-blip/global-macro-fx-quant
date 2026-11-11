@@ -35,4 +35,30 @@ const corrupt={...feed,charts:feed.charts.map((c,i)=>i?c:{...c,points:c.points.c
 assert.equal(sound(corrupt),false,'No event-day or future observations in frozen morning');
 const signal={...feed,eligible_for_fx_signal:true};
 assert.equal(sound(signal),false);
+// A newly observed issuer release appears AFTER the frozen opening article,
+// while older observations, unverified provenance and unrelated items are rejected.
+const official={
+ category:'MACRO_OFFICIAL_ACTUAL',ccy:'USD',as_of:'2026-11-10',
+ quality:'ISSUER_BLS_HTML_FIRST_RUNNER_OBSERVATION_NOT_PUBLISHER_PIT',
+ title:'CPI USA ottobre · headline +0,4% e core +0,3% mensili',
+ detail:'Dati BLS osservati. Nessun repricing o risposta FX intraday verificata.',
+ source_url:'https://www.bls.gov/news.release/cpi.htm',
+ first_runner_observed_at_utc:'2026-11-11T08:48:15Z'
+};
+const todayFeed={...feed,edition_date:'2026-11-11',observation_cutoff_exclusive:'2026-11-11',
+ created_at_utc:'2026-11-11T08:29:40Z',edition_status:'LATE_MORNING_SNAPSHOT',
+ sources:{...feed.sources,fx_fixing:'2026-11-10',rates:'2026-11-09'},
+ charts:feed.charts.map(c=>({...c,as_of:'2026-11-09',
+ points:c.points.filter(p=>p.date<'2026-11-11')}))};
+const post=api.window.FXQuantMorningDesk.postRelease(todayFeed,{items:[official]},safe,()=> '2026-11-11');
+assert(post.includes('AGGIORNAMENTO DOPO IL BRIEFING')&&post.includes('Fonte BLS'));
+assert(post.includes('EUR/USD')&&post.includes('USD/JPY'));
+assert.equal(api.window.FXQuantMorningDesk.postRelease(todayFeed,
+ {items:[{...official,first_runner_observed_at_utc:'2026-11-11T08:20:15Z'}]},safe,()=> '2026-11-11'),'');
+assert.equal(api.window.FXQuantMorningDesk.postRelease(todayFeed,
+ {items:[{...official,quality:'UNVERIFIED'}]},safe,()=> '2026-11-11'),'');
+assert.equal(api.window.FXQuantMorningDesk.postRelease(todayFeed,
+ {items:[official]},safe,()=> '2026-11-12'),'');
+assert.equal(api.window.FXQuantMorningDesk.postRelease(todayFeed,
+ {items:[{...official,source_url:'https://example.org/forged'}]},safe,()=> '2026-11-11'),'');
 console.log('MORNING_FX_DESK_RENDER_V1_PASS: narrative-before-charts, 2 dated plots, archives and no lookahead');
