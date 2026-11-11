@@ -63,7 +63,7 @@ assert.equal(romeDate('2026-11-09T21:00:00Z').date,'2026-11-09');
 assert.equal(romeDate('invalid'),null);
 const html=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/index.html'),'utf8');
 const app=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/app.js'),'utf8');
-assert(html.indexOf('news-evidence-reading.js?v=25')<html.indexOf('app.js?v=18.'),'News source interpreter must load before current Next app');
+assert(html.indexOf('news-evidence-reading.js?v=26')<html.indexOf('app.js?v=18.'),'News source interpreter must load before current Next app');
 for(const field of ['x.title','x.body','x.why','x.verify','x.impact','x.source','x.url']){
  assert(app.includes('esc('+field+')'),'News output is not escaped: '+field);
 }
