@@ -49,22 +49,22 @@ def parse_abs(raw):
     p.feed(raw.decode("utf-8", errors="replace"))
     text = p.value()
     # Published issue AND reference period, not a future-release calendar stub.
-    if not re.search(r"Reference period\\s+October\\s+2026\\b", text, re.I):
+    if not re.search(r"Reference period\s+October\s+2026\b", text, re.I):
         raise Pending("ABS_WRONG_OR_UNPUBLISHED_REFERENCE_MONTH")
-    if not re.search(r"Released\\s+19/11/2026\\b", text, re.I):
+    if not re.search(r"Released\s+19/11/2026\b", text, re.I):
         raise Pending("ABS_TARGET_ISSUE_RELEASE_DATE_NOT_PRESENT")
-    m = re.search(r"In seasonally adjusted terms,?\\s+in October 2026\\s*:", text, re.I)
+    m = re.search(r"In seasonally adjusted terms,?\s+in October 2026\s*:", text, re.I)
     if m is None:
         raise Pending("ABS_SEASONALLY_ADJUSTED_MAIN_STATISTICS_NOT_PRESENT")
     # Only the release's leading SA Key Statistics block. Never reach the
     # trend block, historical table, a graph or a prior period.
     first = text[m.end():]
-    stop = re.search(r"\\bIn trend terms\\b|\\bMain features\\b", first, re.I)
+    stop = re.search(r"\bIn trend terms\b|\bMain features\b", first, re.I)
     section = first[:min(stop.start() if stop else len(first), 1600)]
     rates = re.findall(
-        r"\\bthe unemployment rate\\s+(?:increased|decreased|rose|fell|"
-        r"remained unchanged|was unchanged|remained)\\b"
-        r"[^.;]{0,90}?\\b(?:to|at)\\s+(\\d+(?:\\.\\d+)?)\\s*%",
+        r"\bthe unemployment rate\s+(?:increased|decreased|rose|fell|"
+        r"remained unchanged|was unchanged|remained)\b"
+        r"[^.;]{0,90}?\b(?:to|at)\s+(\d+(?:\.\d+)?)\s*%",
         section, re.I)
     if len(rates) != 1:
         raise Pending("ABS_SA_UNEMPLOYMENT_OCT_VALUE_NOT_UNIQUE")
@@ -183,7 +183,7 @@ def run(actual_path=OUT, now=None, fetch=retrieve, observed_clock=None):
         with Path(actual_path).open("a", encoding="utf-8") as out:
             for r in records[len(existing):]:
                 out.write(json.dumps(r, ensure_ascii=False, sort_keys=True,
-                                     separators=(",",":")) + "\\n")
+                                     separators=(",",":")) + "\n")
     return report
 
 
