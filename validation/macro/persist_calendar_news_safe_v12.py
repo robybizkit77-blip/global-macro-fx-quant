@@ -46,7 +46,8 @@ def changed_files(repo: Path, *args: str):
     return set(filter(None, r.stdout.splitlines()))
 
 
-def persist(repo: Path = ROOT, *, managed=MANAGED, max_attempts=MAX_ATTEMPTS,\n            commit_message="Refresh official release ledgers and operational Calendar/News"):
+def persist(repo: Path = ROOT, *, managed=MANAGED, max_attempts=MAX_ATTEMPTS,
+            commit_message="Refresh official release ledgers and operational Calendar/News"):
     repo = Path(repo).resolve()
     managed = tuple(managed)
     if not managed or any(not x or x.startswith("/") or ".." in Path(x).parts
@@ -54,7 +55,8 @@ def persist(repo: Path = ROOT, *, managed=MANAGED, max_attempts=MAX_ATTEMPTS,\n 
         raise ValueError("invalid managed-file contract")
     if max_attempts < 1 or max_attempts > 10:
         raise ValueError("invalid retry budget")
-    if not isinstance(commit_message, str) or not commit_message.strip() or '\\n' in commit_message or '\\r' in commit_message:
+    if (not isinstance(commit_message, str) or not commit_message.strip()
+            or chr(10) in commit_message or chr(13) in commit_message):
         raise ValueError("invalid commit message")
     before = git(repo, "rev-parse", "HEAD").stdout.strip()
     dirty = changed_files(repo)
