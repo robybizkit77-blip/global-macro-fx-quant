@@ -13,7 +13,7 @@ new vm.Script(src,{filename:'research-library.js'});
 const L=require('../site/fx-quant-v2/next/research-library.js');
 assert.match(index,/href="#library" data-route="library"/);
 assert.match(index,/research-library\.css\?v=1/);
-assert.match(index,/research-library\.js\?v=4/);
+assert.match(index,/research-library\.js\?v=5/);
 assert.match(index,/9 sezioni/);
 assert.match(app,/library:'Research Library'/);
 assert.match(app,/library:\(\)=>window\.FXQuantResearchLibrary/);
@@ -61,6 +61,8 @@ assert.equal(L.remoteReport('Trade_Thesis_Monitor_2026-11-11_DARK.html'),null);
 assert.equal(L.latestPerType([...L.REPORTS,{...L.REPORTS[0],file:'Briefing_Forex_Commodities_2026-11-11_V4_DEFINITIVO.html'}]).length,8);
 assert.equal(L.latestPerType([...L.REPORTS,{...L.REPORTS[0],file:'Briefing_Forex_Commodities_2026-11-11_V4_DEFINITIVO.html'}])[0].file,
  'Briefing_Forex_Commodities_2026-11-11_V4_DEFINITIVO.html','Higher approved revision wins on identical dates');
+assert.equal(L.latestPerType([...L.REPORTS,{...L.REPORTS[0],file:'Briefing_Forex_Commodities_2026-11-11_V4.html'}])[0].file,
+ 'Briefing_Forex_Commodities_2026-11-11_V4.html','V4 must supersede corrected V3 on identical dates');
 L.setCategory('ois');
 assert.equal(L.filterReports().length,1);
 L.setQuery('GBP');
