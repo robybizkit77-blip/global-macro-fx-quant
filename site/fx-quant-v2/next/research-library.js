@@ -1,61 +1,99 @@
 (function(root){
 'use strict';
-/* Historical public report index. Never infer that a private Library report is public. */
+/* Research Library: one approved, published edition per report type.
+   The public GitHub index discovers newer HTML; source creation is separate.
+   Historical files are retained, never presented as current editions. */
 const BASE='../../website-v1/reports/';
+const ROOT='./reports/';
+const PUBLIC_API='https://api.github.com/repos/robybizkit77-blip/global-macro-fx-quant/contents/site/fx-quant-v2/next/reports?ref=main';
 const REPORTS=Object.freeze([
- {date:'2026-11-11',type:'daily',title:'Briefing Forex & Commodities',file:'Briefing_Forex_Commodities_2026-11-11_V3_HEADER_CORRETTO.html',desc:'Lettura mattutina Forex G8 e commodities: quadro dopo il CPI USA, rischi e cosa monitorare. Edizione con intestazione corretta.'},
- {date:'2026-11-09',type:'daily',title:'Briefing Forex & Commodities',file:'Briefing_Forex_Commodities_2026-11-09_V2_FONT_COMPATTO.html',desc:'Briefing del 9 novembre con analisi G8, driver macro e valutazione relativa delle valute.'},
- {date:'2026-11-06',type:'macro',title:'Weekly Global Macro Report',file:'Weekly_Global_Macro_Report_2026-11-06_COUNTRY_BOOK_NARRATIVO_V4_CORRETTA.html',desc:'Edizione canonica settimanale Country Book: lettura narrativa di crescita, tassi, rischio e valute.'},
- {date:'2026-11-06',type:'bank',title:'Weekly Bank FX Report',file:'Weekly_Bank_FX_Report_2026-11-06_DARK_DESK_NARRATIVO_V5.html',desc:'Le view bancarie G8 e il giudizio indipendente del desk, con fonti e consenso datati.'},
- {date:'2026-11-06',type:'cb',title:'Weekly Central Bank Sentiment',file:'Weekly_CB_Sentiment_Report_2026-11-06_DARK_RESEARCH_DESK_WANT_CAN_V4_PALETTE.html',desc:'Approccio WANT/CAN alle banche centrali G8: tono, vincoli e implicazioni FX distinte.'},
- {date:'2026-11-03',type:'cot',title:'COT FX G8',file:'COT_FX_G8_03_NOV_2026_DARK_QUANT_DESK_v10_DEFINITIVO_LETTURA_INTEGRATA.html',desc:'Posizionamento CFTC riferito al 3 novembre, pubblicato il 6: flussi, concentrazione e confronto con il prezzo.'},
- {date:'2026-10-15',type:'monitor',title:'Trade Thesis Monitor',file:'Trade_Thesis_Monitor_2026-10-15_DARK_DESK_CLEAN.html',desc:'Verifica delle tesi FX: contesto macro, pricing, posizionamento e reazione del prezzo.'},
- {date:'2026-10-14',type:'monitor',title:'Trade Thesis Monitor',file:'Trade_Thesis_Monitor_2026-10-14_DARK_DESK_CLEAN.html',desc:'Come si sono evolute le tesi FX e quali conferme sono arrivate dal mercato.'},
- {date:'2026-10-13',type:'monitor',title:'Trade Thesis Monitor',file:'Trade_Thesis_Monitor_2026-10-13_DARK_DESK.html',desc:'Forza della tesi distinta dall’attrattiva del trade, con rischi e condizioni di conferma.'},
- {date:'2026-10-11',type:'cb',title:'Weekly Central Bank Sentiment',file:'Weekly_CB_Sentiment_Report_2026-10-11_DARK_RESEARCH_DESK_v23_TERMINOLOGY_HAWKISH.html',desc:'Tono e priorità delle banche centrali G8: contesto storico, non il pricing di oggi.'},
- {date:'2026-10-10',type:'bank',title:'Weekly Bank FX Report',file:'Weekly_Bank_FX_Report_2026-10-10_DARK_RESEARCH_DESK_v9_COMPLETE_LIGHT.html',desc:'Le view bancarie sul Forex, separate dall’interpretazione autonoma del desk.'},
- {date:'2026-10-10',type:'cross',title:'Weekly Macro & Cross-Asset',file:'Weekly_Global_Macro_Strength_Cross_Asset_2026-10-10_DARK_EDITORIAL_PRO_BTC.html',desc:'Collegamenti storici tra rischio, azioni, bond, commodities e valute.'},
- {date:'2026-10-10',type:'macro',title:'Weekly Global Macro Report',file:'Weekly_Global_Macro_Report_2026-10-10_DARK_DESK_DEFINITIVO.html',desc:'Macro Strength: confronto tra economie, crescita, inflazione e condizioni finanziarie.'},
- {date:'2026-10-10',type:'pairs',title:'Weekly FX Pair Selection',file:'Weekly_FX_Pair_Selection_Conviction_2026-10-10.html',desc:'Selezione storica delle coppie e confronto relativo tra valute G8.'},
- {date:'2026-10-06',type:'cot',title:'COT FX G8',file:'COT_FX_G8_06_OTT_2026_DARK_QUANT_DESK_v6_ORDINATO_FINAL.html',desc:'Posizionamento CFTC della settimana di riferimento: variazioni e concentrazione dei fondi.'}
+ {type:'daily',date:'2026-11-11',title:'Briefing Forex & Commodities',file:'Briefing_Forex_Commodities_2026-11-11_V3_HEADER_CORRETTO.html',desc:'Il quadro Forex G8, il contesto macro e i catalizzatori da seguire nella seduta.'},
+ {type:'macro',date:'2026-11-06',title:'Weekly Global Macro Report',file:'Weekly_Global_Macro_Report_2026-11-06_COUNTRY_BOOK_NARRATIVO_V4_CORRETTA.html',desc:'Country Book: crescita, inflazione, lavoro, tassi, rischio e forza relativa delle valute.'},
+ {type:'bank',date:'2026-11-06',title:'Weekly Bank FX Report',file:'Weekly_Bank_FX_Report_2026-11-06_DARK_DESK_NARRATIVO_V5.html',desc:'View bancarie G8 e giudizio indipendente, con fonti e consenso datati.'},
+ {type:'cb',date:'2026-11-06',title:'Weekly Central Bank Sentiment',file:'Weekly_CB_Sentiment_Report_2026-11-06_DARK_RESEARCH_DESK_WANT_CAN_V4_PALETTE.html',desc:'WANT/CAN: intenzioni e vincoli delle banche centrali, separati dal bias Forex.'},
+ {type:'ois',date:'2026-11-06',title:'Weekly Central Bank Pricing G8 · Curve OIS',file:'Weekly_CB_Pricing_G8_2026-11-06_V7_CONFRONTO_31OTT_06NOV.html',desc:'Curve monetarie, repricing G8 e confronto delle attese al 31 ottobre e 6 novembre, con lettura FX.'},
+ {type:'cot',date:'2026-11-03',title:'COT FX G8',file:'COT_FX_G8_03_NOV_2026_DARK_QUANT_DESK_v10_DEFINITIVO_LETTURA_INTEGRATA.html',desc:'Posizioni CFTC riferite al 3 novembre, pubblicate il 6: variazioni, concentrazione e prezzo.'},
+ {type:'cross',date:'2026-10-10',title:'Weekly Macro & Cross-Asset',file:'Weekly_Global_Macro_Strength_Cross_Asset_2026-10-10_DARK_EDITORIAL_PRO_BTC.html',desc:'Relazioni tra azioni, credito, bond, commodities e valute.'},
+ {type:'pairs',date:'2026-10-10',title:'Weekly FX Pair Selection',file:'Weekly_FX_Pair_Selection_Conviction_2026-10-10.html',desc:'Selezione delle coppie Forex e confronto relativo delle valute G8.'}
 ]);
-const CATEGORIES=Object.freeze([['all','Tutti'],['daily','Daily Forex'],['macro','Global Macro'],['cross','Cross-Asset'],['bank','Banche FX'],['cb','Banche centrali'],['cot','COT'],['pairs','Coppie FX'],['monitor','Trade Monitor']]);
-let category='all',query='';
-function esc(x){return String(x===null||x===undefined?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));}
-function norm(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('it-IT').trim();}
-function label(type){return (CATEGORIES.find(x=>x[0]===type)||['','Archivio'])[1];}
-function datestr(s){return s.slice(8,10)+'/'+s.slice(5,7)+'/'+s.slice(0,4);}
-function filterReports(type=category,search=query){
- const term=norm(search);
- return REPORTS.filter(r=>(type==='all'||r.type===type)&&(!term||norm([r.title,r.type,label(r.type),r.desc,r.date,r.file].join(' ')).includes(term)))
-   .sort((a,b)=>b.date.localeCompare(a.date)||a.title.localeCompare(b.title));
+const CATEGORIES=Object.freeze([['all','Tutti'],['daily','Daily Forex'],['macro','Global Macro'],['bank','Banche FX'],['cb','Banche centrali'],['ois','Curve OIS'],['cot','COT'],['cross','Cross-Asset'],['pairs','Coppie FX']]);
+const MONTHS=Object.freeze({GEN:1,FEB:2,MAR:3,APR:4,MAG:5,GIU:6,LUG:7,AGO:8,SET:9,OTT:10,NOV:11,DIC:12});
+const BLOCKED=/(_PROVA|_TEST|_BOZZA|_DRAFT|_BACKUP|_ANTEPRIMA|_PREVIEW|_LEGACY|_OLD)(_|\.|$)/i;
+let category='all',query='',remoteReports=[],lookupDone=false,lookupStatus='NON VERIFICATO';
+const esc=x=>String(x==null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+const norm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('it-IT').trim();
+const label=x=>(CATEGORIES.find(c=>c[0]===x)||['','Report'])[1];
+const datestr=s=>s.slice(8,10)+'/'+s.slice(5,7)+'/'+s.slice(0,4);
+function reportType(file){
+ if(file.startsWith('Briefing_Forex_Commodities_'))return 'daily';
+ if(file.startsWith('Weekly_Global_Macro_Report_'))return 'macro';
+ if(file.startsWith('Weekly_Bank_FX_Report_'))return 'bank';
+ if(file.startsWith('Weekly_CB_Sentiment_Report_'))return 'cb';
+ if(file.startsWith('Weekly_CB_Pricing_G8_'))return 'ois';
+ if(file.startsWith('COT_FX_G8_'))return 'cot';
+ if(file.startsWith('Weekly_Global_Macro_Strength_Cross_Asset_'))return 'cross';
+ if(file.startsWith('Weekly_FX_Pair_Selection_'))return 'pairs';
+ return null;
 }
-function url(r){return (r.date>='2026-11-01'?'./reports/':BASE)+encodeURIComponent(r.file);}
+function reportDate(file){
+ const iso=file.match(/(?:^|_)(20\d{2}-\d{2}-\d{2})(?:_|\.|$)/);
+ if(iso)return iso[1];
+ const cot=file.match(/^COT_FX_G8_(\d{2})_([A-Z]{3})_(20\d{2})_/i);
+ if(cot&&MONTHS[cot[2].toUpperCase()])return cot[3]+'-'+String(MONTHS[cot[2].toUpperCase()]).padStart(2,'0')+'-'+cot[1];
+ return null;
+}
+function revisionScore(file){
+ const versions=[...file.matchAll(/(?:^|_)V(\d+)(?:_|\.|$)/gi)].map(m=>+m[1]);
+ return Math.max(0,...versions)+(/(DEFINITIV|CORRETT|FINAL|APPROVAT)/i.test(file)?1000:0);
+}
+function remoteReport(file){
+ if(typeof file!=='string'||!file.endsWith('.html')||BLOCKED.test(file))return null;
+ const type=reportType(file),date=reportDate(file),canonical=REPORTS.find(r=>r.type===type);
+ if(!type||!date||!canonical)return null;
+ const today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+ if(date>today)return null;
+ return {...canonical,date,file,publicUrl:ROOT+encodeURIComponent(file)};
+}
+function latestPerType(items){
+ const selected=new Map();
+ for(const item of items){
+  const prior=selected.get(item.type);
+  if(!prior||item.date>prior.date||(item.date===prior.date&&revisionScore(item.file)>revisionScore(prior.file)))selected.set(item.type,item);
+ }
+ return [...selected.values()].sort((a,b)=>b.date.localeCompare(a.date)||a.title.localeCompare(b.title));
+}
+function filterReports(type=category,search=query){
+ const q=norm(search);
+ return latestPerType([...REPORTS,...remoteReports]).filter(r=>(type==='all'||type===r.type)
+  &&(!q||norm([r.title,label(r.type),r.desc,r.date,r.file].join(' ')).includes(q)));
+}
+function url(r){return r.publicUrl||(r.date>='2026-11-01'?ROOT:BASE)+encodeURIComponent(r.file);}
 function rows(){
  const list=filterReports();
- return list.length?list.map(r=>
-  '<article class="rl-card"><div class="rl-card-meta"><span class="rl-tag">'+esc(label(r.type))+'</span><time datetime="'+esc(r.date)+'">'+datestr(r.date)+'</time></div>'+
+ return list.length?list.map(r=>'<article class="rl-card"><div class="rl-card-meta"><span class="rl-tag">'+esc(label(r.type))+'</span><time datetime="'+esc(r.date)+'">'+datestr(r.date)+'</time></div>'+
   '<h3>'+esc(r.title)+'</h3><p>'+esc(r.desc)+'</p>'+
-  '<div class="rl-card-bottom"><span class="rl-status">'+(r.type==='monitor'?'Trade Monitor storico · non aggiornato':r.type==='daily'?'Briefing quotidiano · HTML originale':'Report datato · HTML originale')+'</span>'+
-  '<a href="'+esc(url(r))+'" target="_blank" rel="noopener noreferrer" aria-label="Apri '+esc(r.title)+' del '+datestr(r.date)+'">Apri report ↗</a></div></article>'
- ).join(''):'<div class="rl-empty">Nessun report corrisponde alla ricerca. Cambia categoria o parola chiave.</div>';
+  '<div class="rl-card-bottom"><span class="rl-status">Ultima edizione pubblicata · '+(r.type==='daily'?'Daily Forex':'Report datato')+'</span>'+
+  '<a href="'+esc(url(r))+'" target="_blank" rel="noopener noreferrer" aria-label="Apri '+esc(r.title)+' del '+datestr(r.date)+'">Apri report ↗</a></div></article>').join('')
+  :'<div class="rl-empty">Nessun report corrisponde alla ricerca. Cambia categoria o parola chiave.</div>';
 }
-function filters(){return CATEGORIES.map(([id,text])=>'<button type="button" data-library-type="'+id+'" aria-pressed="'+String(id===category)+'">'+esc(text)+'</button>').join('');}
+function filters(){return CATEGORIES.map(([id,name])=>'<button type="button" data-library-type="'+id+'" aria-pressed="'+String(id===category)+'">'+esc(name)+'</button>').join('');}
 function render(){
+ if(root.document&&!lookupDone){lookupDone=true;Promise.resolve().then(refresh);}
+ const latest=latestPerType([...REPORTS,...remoteReports]);
  return '<section class="rl-head"><div><span class="rl-eyebrow">FX QUANT / RESEARCH LIBRARY</span>'+
-  '<h1>La ricerca che resta.</h1>'+
-  '<p>Un unico posto per ritrovare le tesi dei report pubblicati e confrontare come leggevamo il mercato nelle settimane precedenti.</p>'+
-  '<div class="rl-head-note"><strong>Edizioni datate, non feed intraday.</strong> I report conservano contenuti e giudizi originali. Il Briefing HTML più recente pubblicato è dell’11 novembre 2026. Per la lettura Forex aggiornata usa Panoramica e Coppie FX.</div>'+
-  '</div><div class="rl-stats"><div><small>REPORT PUBBLICATI</small><strong>'+REPORTS.length+'</strong></div>'+
-  '<div><small>ULTIMA EDIZIONE ONLINE</small><strong>'+datestr(filterReports('all','')[0].date)+'</strong></div>'+
+  '<h1>Solo l’ultima edizione.</h1>'+
+  '<p>Una lettura per ciascun report: Briefing Forex, Macro, banche centrali, curve OIS, posizionamento e selezione delle coppie.</p>'+
+  '<div class="rl-head-note"><strong>Ogni report conserva la propria frequenza.</strong> Il Daily si aggiorna nei feriali e i Weekly quando escono nuove edizioni. Le date mostrate sono date di riferimento del report, non quotazioni intraday.</div>'+
+  '</div><div class="rl-stats"><div><small>REPORT CORRENTI VISIBILI</small><strong>'+latest.length+'</strong></div>'+
+  '<div><small>ULTIMA EDIZIONE DISPONIBILE</small><strong id="library-latest-date">'+(latest[0]?datestr(latest[0].date):'—')+'</strong></div>'+
   '<div><small>TIPOLOGIE</small><strong>'+(CATEGORIES.length-1)+'</strong></div></div></section>'+
-  '<section class="rl-controls" aria-label="Ricerca e categorie report"><div id="library-filterbar" class="rl-filters">'+filters()+'</div>'+
-  '<label class="rl-search" for="library-search"><span>Ricerca nei titoli e nelle descrizioni</span><input id="library-search" type="search" autocomplete="off" placeholder="Es. COT, banche, EUR, macro..." value="'+esc(query)+'"></label></section>'+
-  '<section aria-label="Report pubblicati"><div class="rl-result-head"><h2>Archivio dei report</h2><span id="library-match-count">'+filterReports().length+' di '+REPORTS.length+' report · più recenti prima</span></div>'+
+  '<section class="rl-controls" aria-label="Filtri e ricerca"><div id="library-filterbar" class="rl-filters">'+filters()+'</div>'+
+  '<label class="rl-search" for="library-search"><span>Cerca fra gli ultimi report</span><input id="library-search" type="search" autocomplete="off" placeholder="Es. OIS, COT, Fed, macro..." value="'+esc(query)+'"></label></section>'+
+  '<section aria-label="Ultimi report pubblicati"><div class="rl-result-head"><h2>Ultime edizioni</h2><span id="library-match-count">'+filterReports().length+' di '+latest.length+' report · uno per categoria</span></div>'+
   '<div id="library-grid" class="rl-grid">'+rows()+'</div></section>'+
-  '<section class="rl-disclaimer"><h2>Cosa è incluso, e cosa no</h2>'+
-  '<p>I Daily e i Weekly qui elencati sono copie di report reali, pubblicate con data e contenuti originali. La sincronizzazione automatica da ChatGPT Library a GitHub non è ancora attiva: nuovi report prodotti non compariranno qui finché non vengono pubblicati. I tre Trade Thesis Monitor disponibili si fermano al 15 ottobre; restano consultabili soltanto come storico.</p>'+
-  '<div class="rl-next"><span>LETTURA AGGIORNATA NEL SITO</span><a href="#overview">Panoramica FX ↗</a><a href="#news">Calendario macro ↗</a><a href="#pairs">Monitor tesi FX ↗</a></div></section>';
+  '<section class="rl-disclaimer"><h2>Come avviene l’aggiornamento</h2>'+
+  '<p>La Library seleziona automaticamente l’ultima edizione approvata presente sul sito. Quando è accessibile il repository pubblico, controlla anche nuove pubblicazioni HTML e mostra solo quelle già raggiungibili su GitHub Pages. La creazione e il trasferimento automatico dei report da ChatGPT restano processi distinti: una nuova edizione compare solo se è stata realmente pubblicata.</p>'+
+  '<div class="rl-next"><span>APPROFONDIMENTI</span><a href="#overview">Panoramica FX ↗</a><a href="#news">Calendario macro ↗</a><a href="#pairs">Monitor tesi FX ↗</a></div></section>';
 }
 function setCategory(value){category=CATEGORIES.some(x=>x[0]===value)?value:'all';}
 function setQuery(value){query=String(value||'').slice(0,120);}
@@ -63,10 +101,29 @@ function sync(){
  if(!root.document)return;
  const grid=root.document.getElementById('library-grid'),count=root.document.getElementById('library-match-count'),bar=root.document.getElementById('library-filterbar');
  if(grid)grid.innerHTML=rows();
- if(count)count.textContent=filterReports().length+' di '+REPORTS.length+' report · più recenti prima';
+ if(count)count.textContent=filterReports().length+' di '+latestPerType([...REPORTS,...remoteReports]).length+' report · uno per categoria';
  if(bar)bar.innerHTML=filters();
+ const dateEl=root.document.getElementById('library-latest-date');
+ if(dateEl){const top=latestPerType([...REPORTS,...remoteReports])[0];dateEl.textContent=top?datestr(top.date):'—';}
 }
-const api={REPORTS,CATEGORIES,filterReports,render,rows,setCategory,setQuery,sync,url};
+async function refresh(){
+ if(typeof root.fetch!=='function')return;
+ try{
+  const response=await root.fetch(PUBLIC_API,{headers:{Accept:'application/vnd.github+json'},cache:'no-store'});
+  if(!response.ok)throw Error('Repo API '+response.status);
+  const entries=await response.json();
+  if(!Array.isArray(entries))throw Error('Invalid catalog');
+  const found=latestPerType(entries.filter(e=>e&&e.type==='file'&&typeof e.name==='string').map(e=>remoteReport(e.name)).filter(Boolean));
+  const published=await Promise.all(found.map(async r=>{
+   try{const h=await root.fetch(r.publicUrl,{method:'HEAD',cache:'no-store'});return h.ok?r:null;}
+   catch(_){return null;}
+  }));
+  remoteReports=published.filter(Boolean);
+  lookupStatus='VERIFICATO';  
+ }catch(_){lookupStatus='CATALOGO LOCALE';}
+ if(root.document?.getElementById('library-grid'))sync();
+}
+const api={REPORTS,CATEGORIES,filterReports,reportType,reportDate,remoteReport,latestPerType,render,rows,setCategory,setQuery,sync,url,refresh};
 root.FXQuantResearchLibrary=api;
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
