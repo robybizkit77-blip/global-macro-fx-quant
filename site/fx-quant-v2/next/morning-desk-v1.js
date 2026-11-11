@@ -30,6 +30,41 @@
    feed.edition_status==='RECONSTRUCTION_NOT_POINT_IN_TIME'?
     'Anteprima ricostruita dalle osservazioni disponibili prima della data, non certificata come fotografia point-in-time delle 08:00.':
     'Edizione mattutina congelata: gli eventi pubblicati dopo l’apertura non modificano questo testo.';
+  // First-read uses only the frozen edition's source-dated evidence.
+  // Do not infer a new daily FX move or a monetary-policy surprise.
+  const relative=feed.relative_evidence||{};
+  const comparable=safePair==='EURUSD'&&goodDay(relative.aligned_from)
+   &&goodDay(relative.aligned_to)&&relative.aligned_from<=relative.aligned_to
+   &&relative.aligned_to<feed.edition_date
+   &&finite(relative.spread_change_aligned_bp)&&finite(relative.pair_change_aligned_pct);
+  const signed=(n,d,unit)=>(n>0?'+':n<0?'−':'')+
+   Math.abs(n).toLocaleString('it-IT',{minimumFractionDigits:d,maximumFractionDigits:d})+unit;
+  const alignedEvidence=comparable?
+   'Dal '+date(relative.aligned_from)+' al '+date(relative.aligned_to)+
+   ' il differenziale dei rendimenti a 2 anni USA–Eurozona è cambiato di '+
+   signed(relative.spread_change_aligned_bp,1,' punti base')+
+   ' ed EUR/USD di '+signed(relative.pair_change_aligned_pct,2,'%')+'.':
+   'Il briefing distingue dati macro, aspettative sui tassi e risposta delle coppie Forex. Le osservazioni disponibili non vanno trattate come un unico movimento intraday.';
+  const usdCompatible=comparable&&relative.alignment==='COERENTE'
+   &&relative.spread_change_aligned_bp>0&&relative.pair_change_aligned_pct<0;
+  const fxMeaning=usdCompatible?
+   'In quel periodo tassi relativi e cambio sono andati nella direzione compatibile con un USD più sostenuto contro EUR. Non dimostra chi abbia mosso il prezzo e non certifica la seduta di oggi.':
+   comparable&&relative.alignment==='COERENTE'?
+    'I due movimenti sono coerenti nell’intervallo confrontato, ma la coincidenza non dimostra una causa e non è un segnale operativo.':
+    'Non abbiamo una conferma univoca tra tassi relativi e prezzo: la tesi Forex resta da verificare, senza forzare una direzione.';
+  const missing=feed.event_status==='AFTERMATH_UNVERIFIED'?
+   'L’effetto dell’evento macro non è ancora verificato: servono dati ufficiali, sorpresa rispetto alle attese, variazioni OIS/futures confrontabili e reazione FX sulle stesse date.':
+   'Prima di confermare la tesi servono dati e prezzi confrontabili nel tempo, soprattutto le aspettative sui tassi e la risposta delle singole coppie.';
+  const firstRead='<section class="morning-first-read" aria-label="Lettura immediata del mercato">'+
+   '<div class="morning-section-label">IL QUADRO IN BREVE · PRIMA IL SIGNIFICATO</div>'+
+   '<div class="morning-first-read-grid">'+
+   '<div class="morning-first-item"><span>01 / COSA È CAMBIATO</span><p>'+text(alignedEvidence)+'</p></div>'+
+   '<div class="morning-first-item"><span>02 / CHE COSA SIGNIFICA PER IL FOREX</span><p>'+text(fxMeaning)+'</p></div>'+
+   '<div class="morning-first-item"><span>03 / COSA MANCA PER CONFERMARE</span><p>'+text(missing)+'</p></div>'+
+   '</div><p class="morning-first-watch"><strong>Da controllare.</strong> '+
+   text(feed.watch)+'</p>'+
+   '<div class="morning-first-links"><a href="#pairs">Apri le 28 coppie FX</a><a href="#rates">Verifica Tassi &amp; OIS</a></div>'+
+   '</section>';
   const renderChart=(c,i)=>{
    const color=i===0?'#71e0bd':'#77caff';
    const show=plot({lines:[{name:c.label,color,values:c.points.map(p=>({label:p.date,value:p.value}))}],
@@ -53,9 +88,13 @@
    '<h1>'+title+'</h1><p class="morning-deck">'+text(feed.lead)+'</p>'+
    '<div class="morning-edition-tags"><span>Macro → aspettative → Forex</span><span>Eventi datati</span>'+
    '<span>Osservazioni pre-apertura</span></div></header>'+
-   '<section class="morning-prose" aria-label="La lettura del desk">'+
+   firstRead+
+   '<section class="morning-prose" aria-label="Ragionamento macro completo">'+
+   '<details class="morning-deep-reading"><summary><strong>Leggi il ragionamento completo</strong>'+
+   '<span>Contesto macro, tassi, prezzo e limiti delle evidenze</span></summary>'+
+   '<div class="morning-deep-body">'+
    '<div class="morning-section-label">DA DOVE ARRIVIAMO · COSA PUÒ CAMBIARE OGGI</div>'+
-   paragraphs+'</section>'+
+   paragraphs+'</div></details></section>'+
    '<aside class="morning-catalyst"><div class="morning-section-label">IL CATALIZZATORE</div>'+
    '<h2>'+text(feed.catalyst?.title)+'</h2><p>'+text(feed.watch)+'</p></aside>'+
    '<p class="morning-time-note">Il briefing non viene riscritto retroattivamente dopo la pubblicazione dei dati. Eventuali aggiornamenti post-evento devono avere un orario e fonti propri.</p>'+
