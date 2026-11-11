@@ -21,6 +21,21 @@ RAW = mock_bls("October", "Tuesday, November 10, 2026",
                hmo="increased 0.4", hyo="increased 3.4",
                cmo="rose 0.3", cyo="rose 2.7")
 ISSUER = (bls.SOURCE, "www.bls.gov")
+PARTIAL = b"""<html><body><h1>Consumer Price Index News Release</h1>
+Transmission of material in this release is embargoed until
+8:30 a.m. (ET) Tuesday, November 10, 2026 USDL-26-1685
+<h2>CONSUMER PRICE INDEX - OCTOBER 2026</h2>
+The Consumer Price Index for All Urban Consumers (CPI-U) increased 0.4 percent
+on a seasonally adjusted basis in October after rising 0.6 percent in September.
+The index for all items less food and energy rose 0.3 percent in October,
+as it did in September and August.
+October 2026 12-Month Percent Changes
+BLS did not collect survey data for October 2025 because of a lapse in appropriations.
+For most CPI series, BLS could not publish October 2025 indexes.
+As a result, BLS cannot publish 12-month percent changes for October 2026
+for indexes where October 2025 data are unavailable.
+<h3>Table A. Percent changes in CPI</h3>
+</body></html>"""
 
 
 def sample_fetch(url, host):
@@ -33,6 +48,42 @@ class BLSActualV10Tests(unittest.TestCase):
     def setUpClass(cls):
         cls.forecasts = read_rows(V9_LEDGER)
         assert len(cls.forecasts) >= 3
+
+    def test_october_shutdown_gap_captures_only_official_monthly_measures(self):
+        result = bls.parse(raw=PARTIAL)
+        self.assertEqual(result["metric_actual_pct"], {
+            "US_CPI_U_HEADLINE_MOM_SA": 0.4,
+            "US_CPI_U_CORE_MOM_SA": 0.3,
+        })
+        self.assertEqual(result["unavailable_reason"], "OCT_2025_BASE_NOT_COLLECTED")
+        self.assertEqual(result["unavailable_metric_ids"], list(v10.ANNUAL))
+        rows, receipt = v10.capture(
+            self.forecasts, [], AFTER,
+            fetch=lambda url, host: (PARTIAL, url),
+            observed_clock=lambda: SEEN)
+        self.assertEqual(receipt["new_metrics_archived"], 2)
+        self.assertEqual(receipt["source_status"],
+                         "OFFICIAL_CPI_MONTHLY_ONLY_ANNUAL_GAP_NOT_PIT")
+        self.assertEqual([r["metric_id"] for r in rows], list(v10.MONTHLY))
+        self.assertEqual(receipt["unavailable_metric_ids"], list(v10.ANNUAL))
+        v10.validate_actual_log(rows, self.forecasts)
+        # No altered or unproven annual estimate is ever accepted.
+        tampered = copy.deepcopy(rows)
+        tampered[1]["unavailable_annual_metric_ids"] = []
+        with self.assertRaises(ValueError):
+            v10.validate_actual_log(tampered, self.forecasts)
+
+    def test_missing_annual_without_official_gap_statement_fails_closed(self):
+        stripped = PARTIAL.replace(
+            b"BLS did not collect survey data for October 2025 because of a lapse in appropriations.",
+            b"Annual data temporarily unavailable.")
+        rows, receipt = v10.capture(self.forecasts, [], AFTER,
+            fetch=lambda url, host: (stripped, url),
+            observed_clock=lambda: SEEN)
+        self.assertEqual(rows, [])
+        self.assertEqual(receipt["new_metrics_archived"], 0)
+        self.assertEqual(receipt["source_status"],
+                         "ISSUER_NOT_AVAILABLE_OR_EXACT_RELEASE_NOT_PARSABLE")
 
     def test_bls_official_secondary_summary_fallback_only_after_release(self):
         called = []
