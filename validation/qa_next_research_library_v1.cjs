@@ -20,13 +20,15 @@ assert.match(app,/library:\(\)=>window\.FXQuantResearchLibrary/);
 assert.match(app,/libraryFilter/);
 assert.match(app,/e\.target\.id==='library-search'/);
 assert.ok(css.includes('max-width:700px'),'Missing mobile design');
-assert.equal(L.REPORTS.length,9);
+assert.equal(L.REPORTS.length,15);
 assert.equal(new Set(L.REPORTS.map(x=>x.file)).size,L.REPORTS.length);
-assert.equal(L.REPORTS.some(x=>x.date==='2026-11-06'),false,
- 'Do not claim that private recent reports are publicly published');
+assert.equal(L.filterReports('daily').length,2);
+assert.ok(L.REPORTS.some(x=>x.date==='2026-11-11' && x.type==='daily'));
+assert.equal(L.REPORTS.some(x=>x.type==='monitor' && x.date>'2026-10-15'),false,
+ 'Old Trade Thesis Monitor must not be presented as newly updated');
 const base=path.resolve(ROOT,'site/website-v1/reports');
 for(const r of L.REPORTS){
- assert.match(r.date,/^2026-10-\d{2}$/);
+ assert.match(r.date,/^2026-(10|11)-\d{2}$/);
  assert.match(r.file,/\.html$/);
  const resolved=path.resolve(ROOT,'site/fx-quant-v2/next',L.url(r));
  assert.ok(resolved.startsWith(base+path.sep),'Library must link to actual report folder');
@@ -44,21 +46,21 @@ for(const r of L.REPORTS){
   }
  }
 }
-assert.equal(L.REPORTS.find(x=>x.type==='cot').date,'2026-10-06',
- 'COT report date must be its actual file edition, not the date of the old index');
-assert.equal(L.filterReports().length,9);
+assert.deepEqual(L.REPORTS.filter(x=>x.type==='cot').map(x=>x.date).sort(),['2026-10-06','2026-11-03'],
+ 'COT report dates must reflect the source reference Tuesday');
+assert.equal(L.filterReports().length,15);
 assert.equal(L.filterReports('monitor').length,3);
-assert.equal(L.filterReports('cot').length,1);
-assert.equal(L.filterReports('all','banche').length,2);
+assert.equal(L.filterReports('cot').length,2);
+assert.equal(L.filterReports('all','banche').length,4);
 assert.equal(L.filterReports('all','nessun-report-immaginario').length,0);
-assert.equal(L.filterReports()[0].date,'2026-10-15');
-L.setCategory('cot');assert.equal(L.filterReports().length,1);
+assert.equal(L.filterReports()[0].date,'2026-11-11');
+L.setCategory('cot');assert.equal(L.filterReports().length,2);
 L.setQuery('GBP');assert.equal(L.filterReports().length,0);
 assert.match(L.rows(),/Nessun report/);
-L.setCategory('all');L.setQuery('');assert.equal(L.filterReports().length,9);
-assert.match(L.render(),/Archivio storico, non quadro di mercato attuale/);
-assert.match(L.render(),/Library privata/);
+L.setCategory('all');L.setQuery('');assert.equal(L.filterReports().length,15);
+assert.match(L.render(),/Edizioni datate, non feed intraday/);
+assert.match(L.render(),/sincronizzazione automatica/);
 assert.match(L.render(),/id="library-grid"/);
 assert.match(L.render(),/id="library-search"/);
 assert.match(L.render(),/data-library-type="cot"/);
-console.log('NEXT_RESEARCH_LIBRARY_9_REAL_PUBLIC_REPORTS_DATED_LINKED_FILTERED_MOBILE_SAFE');
+console.log('NEXT_RESEARCH_LIBRARY_15_PUBLIC_REPORTS_DAILY_WEEKLY_MONITOR_HISTORICAL_LINKED_SAFE');
