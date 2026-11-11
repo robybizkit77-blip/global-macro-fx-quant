@@ -260,9 +260,13 @@ def build(root,day,now,*,event_seed=None):
     reference=forecast_reference(load(root,"forecast"),event,day)
     clock=event_clock(event) if event else None
     actual=load(root,"actual")
+    # Explicitly validate signed, atomic issuer snapshots before narrative use.
+    from validation.macro.capture_us_cpi_exact_actuals_v10 import validate_actual_log
+    validate_actual_log(actual, load(root,"forecast"))
     # Even a future research replay cannot show an actual that was first
     # observed after this edition's opening; checked archive ≠ publisher PIT.
     observed_metrics=set()
+    observed_values={}
     for entry in actual:
         if entry.get("event_key")!="USD|2026-11-10|INFLATION|Consumer Price Index":
             continue
@@ -270,9 +274,12 @@ def build(root,day,now,*,event_seed=None):
             observed=datetime.fromisoformat(entry["observed_at_utc"].replace("Z","+00:00"))
             if observed.tzinfo and observed<=now and observed.astimezone(ROME).date()<day:
                 observed_metrics.add(entry.get("metric_id"))
+                observed_values[entry.get("metric_id")] = entry.get("actual_percent")
         except (ValueError,KeyError,TypeError):
             continue
     certified_actuals=len(observed_metrics)==4
+    official_monthly=(observed_metrics >= {
+        "US_CPI_U_HEADLINE_MOM_SA","US_CPI_U_CORE_MOM_SA"})
     pair_label=f"{pair[:3]}/{pair[3:]}"
     if stage=="TODAY":
         if ccy=="USD" and event["event_type"]=="INFLATION":
@@ -339,16 +346,32 @@ def build(root,day,now,*,event_seed=None):
               "ripetere la narrativa pre-CPI: dobbiamo distinguere ciò che sappiamo "
               "dal comunicato, ciò che è cambiato nelle attese Fed e la risposta "
               "effettiva del dollaro nelle varie coppie.")
+        if official_monthly and not certified_actuals:
+            actual_context=(
+                "Il BLS ha pubblicato headline mensile "+
+                signed(observed_values["US_CPI_U_HEADLINE_MOM_SA"],1,"%")+
+                " e core mensile "+
+                signed(observed_values["US_CPI_U_CORE_MOM_SA"],1,"%")+
+                ". I tassi annuali ottobre 2026 non sono pubblicabili: "
+                "manca la base di ottobre 2025. Il registro conserva "
+                "il primo rilevamento del runner, non l'orario di prima pubblicazione. ")
+        elif certified_actuals:
+            actual_context=(
+                "Il registro conserva quattro misure ufficiali, distinte "
+                "per componente e base temporale. ")
+        else:
+            actual_context=(
+                "Nel registro del progetto non sono ancora presenti misure "
+                "BLS validate e datate. Non attribuiamo una sorpresa o un "
+                "nuovo percorso Fed a dati che il motore non ha acquisito. ")
         catalyst=("Il CPI era atteso ieri alle 14:30 italiane. "+
-                  ("Il nostro registro contiene quattro misure da confrontare per componente, non un singolo numero. " if certified_actuals else
-                   "Nel registro ufficiale del progetto non sono ancora presenti "
-                   "misure pubblicate con provenienza e timestamp certificati. "
-                   "Non attribuiamo quindi una sorpresa né un nuovo percorso Fed sulla base "
-                   "di dati assenti; alcuni confronti annuali potrebbero non essere disponibili. ")+
-                   "Un'interpretazione post-evento richiede scarto dalle attese disponibili, "
-                   "revisione delle componenti persistenti, OIS/futures e risposte delle valute "
-                   "nelle medesime finestre temporali.")
-        status="AFTERMATH_UNVERIFIED" if not certified_actuals else "AFTERMATH_TO_VERIFY"
+                  actual_context+
+                  "Un'interpretazione post-evento richiede attese disponibili "
+                  "con qualità dichiarata, composizione, OIS/futures e risposta "
+                  "relativa delle valute nelle medesime finestre temporali.")
+        status=("AFTERMATH_TO_VERIFY" if certified_actuals else
+                "AFTERMATH_MONTHLY_ONLY_YOY_UNAVAILABLE" if official_monthly else
+                "AFTERMATH_UNVERIFIED")
         title="Dopo il CPI · cosa sappiamo e cosa manca"
         scenario_main={"title":"Repricing monetario USA verificato",
           "text":"Se le misure ufficiali confermano pressione core e il front-end USA si rafforza relativamente, rivalutare la tesi USD con EUR/USD e USD/JPY."}
