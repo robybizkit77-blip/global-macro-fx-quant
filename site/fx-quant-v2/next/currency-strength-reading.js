@@ -13,7 +13,9 @@
  const period=x=>typeof x==='string'&&/^\d{4}-\d{2}(?:-\d{2})?$/.test(x);
  const age=(d,now)=>day(d)&&day(now)?(Date.parse(now+'T00:00:00Z')-Date.parse(d+'T00:00:00Z'))/864e5:null;
  const goodAge=(d,now,max)=>{const n=age(d,now);return n!==null&&n>=0&&n<=max;};
- const validPeriod=(d,now)=>period(d)&&day(now)&&d.slice(0,7)<=now.slice(0,7);
+ const validPeriod=(d,now)=>{if(!period(d)||!day(now))return false;
+  const [y,m]=d.slice(0,7).split('-').map(Number),[ny,nm]=now.slice(0,7).split('-').map(Number);
+  const months=(ny-y)*12+(nm-m);return m>=1&&m<=12&&months>=0&&months<=4;};
  const dir=x=>x==='SALE'?'sale':x==='SCENDE'?'scende':x==='STABILE'?'stabile':'non verificata';
  const signed=(x,n=1,unit='')=>!num(x)?'—':(x>0?'+':x<0?'−':'')+Math.abs(x).toLocaleString('it-IT',{minimumFractionDigits:n,maximumFractionDigits:n})+unit;
  function macroAxis(m,now){
