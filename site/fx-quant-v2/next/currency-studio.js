@@ -134,45 +134,52 @@ function build(api){
  function strengthBoard(){
   const result=strengthView();
   const rankDate=result.priceRanking?
-   'BCE '+date(result.priceRanking.from)+' → '+date(result.priceRanking.asof):
-   'Mancano i fixing BCE comuni per una classifica completa';
+   '20 fixing BCE · '+date(result.priceRanking.from)+' → '+date(result.priceRanking.asof):
+   'Fixing BCE comuni insufficienti: classifica non verificabile';
   const rows=(result.rows||[]).map(x=>{
-   const tone=x.reading.tone,rank=x.price.position?'#'+x.price.position:'—';
-   const split=x.macro.text.split(' · ');
-   const growth=x.context?.growth;
-   const proxy=x.context?.pricingProxy;
-   const ratesContext=x.context?.ratesResearch;
-   const estRate=G8RATESHADOW?.currencies?.[x.ccy];
-   const estimated2Y=!x.rates.ok&&isShadowRate(estRate);
-   const research2Y=!x.rates.ok&&['STORICO_UFFICIALE_NON_OPERATIVO','RICERCA_MANUALE_NON_CERTIFICATA'].includes(ratesContext?.status);
-   const twoLabel=estimated2Y?fmt(estRate.estimate2Y,3)+'% · STIMA':research2Y?ratesContext.label:x.rates.label;
-   const twoMeta=estimated2Y?('Scenario · '+date(estRate.asof)+' · non osservato'):research2Y?'Ricerca · '+date(ratesContext.asof):x.rates.asof?date(x.rates.asof):'Base non recente';
-   const twoHeading=estimated2Y?'2Y · stima (non quotazione)':research2Y?'2Y · contesto datato':'2Y · variazione 1W';
-   const proxyReady=!x.pricing.ok&&proxy?.status==='PROXY_INFORMATIVO';
-   const sixLabel=x.pricing.ok?x.pricing.label:proxyReady?proxy.label:x.pricing.label;
-   const sixDate=x.pricing.ok?date(x.pricing.asof):proxyReady?'Indicativo · '+date(proxy.asof):'Non certificato';
-   const growLabel=growth?.status==='STORICO_DESCRITTIVO'?growth.label:split[0];
-   const gap=G8MACROGAP?.currencies?.[x.ccy];
-   const growthDetail=macroGapReady(gap)?
-     'SCENARIO '+gap.targetPeriod+' · '+sign(gap.deltaFromObserved,2,gap.deltaUnit==='%'?'%':' p.p.')+
-     ' vs '+gap.sourcePeriod+' · '+(gap.pseudoOOSQualified?'test retrospettivo favorevole':'non validato'):
-     (growth?.status==='STORICO_DESCRITTIVO'?split[0]+' · '+(split[1]||''):split[1]||'');
-   return '<button class="strength-row '+(x.ccy===country?'selected ':'')+tone+'" type="button" data-cs-country="'+x.ccy+'" aria-pressed="'+String(x.ccy===country)+'" aria-label="Seleziona '+x.ccy+' per approfondire">'+
+   const desk=root.FXQuantG8Transmission?.one?.({row:x,ois:OIS[x.ccy],
+    growth:G8MACROGAP?.currencies?.[x.ccy],
+    labour:G8INFLAB?.currencies?.[x.ccy],now:dayNow()})||null;
+   const rank=x.price.position?'#'+x.price.position:'—';
+   const m=desk?.macro||{},p=desk?.market||{},comparison=desk?.comparison||{};
+   const label=m.title||'Lettura macro da completare';
+   const directions=m.inflation&&m.labour?
+    'Inflazione '+(m.inflation==='SALE'?'↑':m.inflation==='SCENDE'?'↓':'→')+
+    ' · disoccupazione '+(m.labour==='SALE'?'↑':m.labour==='SCENDE'?'↓':'→'):
+    'Quadro macro parziale: nessuna direzione monetaria automatica';
+   const marketLabel=p.tier==='VERIFICATO'?
+    '6M '+(p.side==='SALE'?'in rialzo':p.side==='SCENDE'?'in calo':'quasi stabile'):
+    p.tier==='PROXY'?'6M NZD: proxy '+(p.side==='SALE'?'in rialzo':p.side==='SCENDE'?'in calo':'stabile'):
+    'Attese 6M da verificare';
+   const marketDetail=p.tier==='NON_VERIFICATO'?'Un livello futures non è un repricing':
+    p.tier==='PROXY'?'Bank bill, non OIS RBNZ':
+    comparison.state==='SEGNI_COMPATIBILI'?'Segni compatibili, non causalità':
+    comparison.state==='DIVERGENZA_DA_STUDIARE'?'Direzioni in contrasto da spiegare':
+    'Macro non univoca o movimento contenuto';
+   const tone=x.price.ok?
+    (x.price.change>0?'fxpositive':x.price.change<0?'fxnegative':''):
+    'unverified';
+   return '<button class="strength-row '+(x.ccy===country?'selected ':'')+
+    (x.reading.tone||'unknown')+'" type="button" data-cs-country="'+x.ccy+
+    '" aria-pressed="'+String(x.ccy===country)+'" aria-label="Seleziona '+
+    x.ccy+' per leggere la tesi valutaria">'+
     '<span class="strength-name"><b>'+rank+'</b><strong>'+FLAGS[x.ccy]+' '+x.ccy+'</strong></span>'+
-    '<span class="strength-axis"><small>Macro · storico / stime</small><strong>'+esc(growLabel)+'</strong><em>'+esc(ilShort(x.ccy)||growthDetail)+'</em></span>'+
-    '<span class="strength-axis '+(x.rates.ok?'':'unverified')+'"><small>'+esc(twoHeading)+'</small><strong>'+esc(twoLabel)+'</strong><em>'+esc(twoMeta)+'</em></span>'+
-    '<span class="strength-axis '+(x.pricing.ok?'':'unverified')+(proxyReady?' context-proxy':'')+'"><small>'+ (x.pricing.ok?'Attese 6M · Δ 1W':'Futures 6M · contesto')+'</small><strong>'+esc(sixLabel)+'</strong><em>'+esc(sixDate)+'</em></span>'+
-    '<span class="strength-axis '+(x.price.change>0?'fxpositive':x.price.change<0?'fxnegative':'')+'"><small>Prezzo · 20 fixing</small><strong>'+esc(x.price.label)+'</strong><em>vs le altre G8</em></span>'+
-    '<span class="strength-reading '+tone+'"><strong>'+esc(x.reading.label)+'</strong><small>Apri '+x.ccy+' ›</small></span></button>';
+    '<span class="strength-brief"><strong>'+esc(label)+'</strong><small>'+esc(directions)+'</small></span>'+
+    '<span class="strength-market-brief '+(comparison.state==='DIVERGENZA_DA_STUDIARE'?'divergent':'')+
+     '"><strong>'+esc(marketLabel)+'</strong><small>'+esc(marketDetail)+'</small></span>'+
+    '<span class="strength-price-brief '+tone+'"><strong>'+esc(x.price.label)+
+    '</strong><small>Forza FX · 20 fixing</small></span>'+
+    '<span class="strength-reading"><strong>'+ (x.ccy===country?'In lettura':'Leggi')+
+    ' ›</strong></span></button>';
   }).join('');
-  return '<section class="strength-board" id="orient-strength-board" aria-label="Mappa G8 Macro Tassi Aspettative Prezzo">'+
-   '<div class="strength-board-head"><div><span class="chapter-kicker">01 / MACRO → TASSI → ATTESE → PREZZO</span>'+
-   '<h2>Quali valute hanno <em>più sostegno verificabile?</em></h2>'+
-   '<p>Macro, rendimenti, aspettative monetarie e prezzo: osservazioni datate, <strong>proxy e stime dichiarate</strong> dove mancano fonti aggiornate. Il numero ordina soltanto il prezzo.</p></div>'+
+  return '<section class="strength-board" id="orient-strength-board" aria-label="Classifica valutaria G8 e lettura macro sintetica">'+
+   '<div class="strength-board-head"><div><span class="chapter-kicker">01 / CHI SI MUOVE E PERCHÉ</span>'+
+   '<h2>Otto valute. <em>La lettura in un colpo d’occhio.</em></h2>'+
+   '<p>La posizione ordina soltanto il <strong>prezzo relativo</strong>. Accanto trovi il quadro macro e ciò che sappiamo dei tassi a sei mesi: sono prove distinte, non un punteggio inventato.</p></div>'+
    '<small>'+esc(rankDate)+'</small></div>'+
-   '<div class="strength-columns" aria-hidden="true"><span>VALUTA</span><span>MACRO</span><span>2Y</span><span>ATTESE 6M</span><span>PREZZO</span><span>GIUDIZIO</span></div>'+
+   '<div class="strength-columns" aria-hidden="true"><span>VALUTA</span><span>IL CONTESTO MACRO</span><span>COSA DICONO I 6M</span><span>PREZZO</span><span></span></div>'+
    '<div class="strength-rows">'+rows+'</div>'+
-   '<p class="strength-note">Macro: il valore principale descrive una serie osservata; la riga secondaria mostra <strong>CPI headline e disoccupazione</strong>, indicando dato o STIMA per il rispettivo periodo. Quando il modello non batte il benchmark la stima centrale resta il dato invariato. Le date sono periodi economici, non rilascio verificato. 2Y CHF/NZD e futures 6M restano proxy distinti. Ranking di sola forza-prezzo: nessuna stima aggiunge conferme, segnali o punteggi FX.</p></section>';
+   '<p class="strength-note">Seleziona una valuta per leggere il ragionamento completo. Stime, periodi, numeri e fonti sono nell’approfondimento: non incidono sulla classifica né creano segnali.</p></section>';
  }
  function shadowResearch(){
   const t=G8SHADOW?.currencies?.[country];
@@ -244,7 +251,7 @@ function build(api){
   const estimated2Y=!x.rates.ok&&isShadowRate(estRate);
   const dated2Y=!x.rates.ok&&['STORICO_UFFICIALE_NON_OPERATIVO','RICERCA_MANUALE_NON_CERTIFICATA'].includes(ratesContext?.status);
   const rateEstimateText=estimated2Y?
-   ' STIMA '+fmt(estRate.estimate2Y,3)+'% al '+date(estRate.asof)+
+   ' 2Y · stima (non quotazione): '+fmt(estRate.estimate2Y,3)+'% · STIMA al '+date(estRate.asof)+
    ' (intervallo di sensibilità/errore indicativo '+fmt(estRate.lower2Y,3)+'–'+fmt(estRate.upper2Y,3)+'%). '+
    estRate.note+(estRate.currency==='CHF'?
     ' Test retrospettivo: '+estRate.pseudoOOSCount+' previsioni, errore medio '+fmt(estRate.modelMAEBp,2)+
@@ -273,16 +280,49 @@ function build(api){
   const cbText=validDay(cb.last_date)&&cb.last_date<=dayNow()?
    '<p><strong>Ultima decisione '+esc(cb.bank||country)+':</strong> '+esc(cb.action||'n.d.')+' · '+date(cb.last_date)+'. Non coincide necessariamente con ciò che il mercato prezza adesso.</p>':'';
   const cotText=x.cot?'<p><strong>COT settimanale:</strong> net '+sign(x.cot.net,0)+' contratti, variazione '+sign(x.cot.delta,0)+' al '+date(x.cot.asof)+'. Non sono flussi spot.</p>':'';
-  return '<section class="strength-focus" id="orient-strength-focus"><div class="strength-focus-head"><div>'+
-   '<span class="chapter-kicker">02 / DOSSIER VALUTA · '+FLAGS[country]+' '+country+'</span>'+
-   '<h2>'+FLAGS[country]+' '+country+': '+esc(x.reading.label.toLowerCase())+'</h2>'+
-   '<p>'+esc(desk?desk.headline+' '+desk.comparison.text:x.reading.text)+'</p></div><div class="strength-coverage">Prove disponibili '+x.evidenceCount+'/4'+
-   '<small>Solo fonti verificate · contesto storico/proxy separato</small></div></div>'+
-   '<div class="strength-cards">'+cards.map(([label,main,note],i)=>'<article class="strength-card"><span>0'+(i+1)+' / '+esc(label)+'</span><p>'+esc(main)+'</p><small>'+esc(note)+'</small></article>').join('')+'</div>'+
-   '<div class="strength-additional">'+
-    (desk?'<p><strong>Da monitorare:</strong> '+esc(desk.watch)+'</p>':'')+
+  const priceSummary=x.price.ok?
+   'Nei 20 fixing BCE comuni '+country+' registra '+sign(x.price.change,2,'%')+
+   ' in media contro le altre sette valute (posizione '+x.price.position+'/8). '+
+   'Questo mostra la forza relativa, non chi abbia provocato il movimento.':
+   'La forza relativa del prezzo non è verificabile con fixing comuni sufficienti.';
+  const policySummary=desk?.market?.tier==='VERIFICATO'?
+   'Il riferimento '+desk.market.kind+' a sei mesi '+(desk.market.side==='SALE'?'sale':
+     desk.market.side==='SCENDE'?'scende':'varia poco')+' di '+
+   sign(desk.market.bp,1,' pb')+' nell’ultima settimana. '+desk.comparison.text:
+   desk?.market?.tier==='PROXY'?
+   'Il futures bank bill NZD a sei mesi si muove di '+sign(desk.market.bp,1,' pb')+
+   ' nella settimana. È soltanto un proxy con componente di credito, non un OIS. '+
+   desk.comparison.text:
+   'Non abbiamo una variazione settimanale verificata del riferimento monetario a sei mesi: '+
+   'i livelli futures disponibili non dimostrano un cambiamento delle aspettative.';
+  const watchSummary=desk?.market?.tier==='NON_VERIFICATO'?
+   'Prima serve una variazione 6M confrontabile. Poi confronteremo i dati con il consenso e la reazione relativa della valuta nello stesso intervallo.':
+   'Confronta le prossime sorprese su inflazione, lavoro e crescita con il consenso, poi verifica tassi 6M e Forex nella stessa finestra temporale.';
+  return '<section class="strength-focus" id="orient-strength-focus">'+
+   '<div class="strength-focus-head"><div>'+
+   '<span class="chapter-kicker">02 / LA LETTURA DEL DESK · '+FLAGS[country]+' '+country+'</span>'+
+   '<h2>Che cosa sta succedendo a '+country+'?</h2>'+
+   '<p class="strength-focus-subtitle">Dalla macro al mercato, senza confondere ipotesi, prezzi e conferme.</p>'+
+   '</div></div>'+
+   '<div class="strength-first-reading">'+
+   '<p><strong>Il quadro economico.</strong> '+esc(desk?.macro?.why||x.reading.text)+'</p>'+
+   '<p><strong>Che cosa stanno facendo i tassi?</strong> '+esc(policySummary)+'</p>'+
+   '<p><strong>La risposta del Forex.</strong> '+esc(priceSummary)+'</p>'+
+   '</div>'+
+   '<p class="strength-first-watch"><strong>Che cosa monitorare.</strong> '+esc(watchSummary)+'</p>'+
+   '<details class="strength-evidence-fold"><summary><strong>Apri numeri, date, stime e fonti di '+country+'</strong>'+
+   '<span>Quattro pilastri · Macro / 2Y / attese 6M / prezzo · ricerca Quant separata</span></summary>'+
+   '<div class="strength-evidence-body"><div class="strength-cards">'+
+    cards.map(([label,main,note],i)=>'<article class="strength-card"><span>0'+(i+1)+
+     ' / '+esc(label)+'</span><p>'+esc(main)+'</p><small>'+esc(note)+'</small></article>').join('')+
+   '</div><div class="strength-additional">'+
+    (desk?'<p><strong>Verifica operativa completa:</strong> '+esc(desk.watch)+'</p>':'')+
+    '<p><strong>Prove verificate:</strong> '+x.evidenceCount+
+     '/4. Proxy e stime non aggiungono prove né punteggi operativi.</p>'+
     cbText+cotText+'</div>'+
-   '<nav class="strength-links"><a href="#macro">Macro completa</a><a href="#rates">Tassi &amp; OIS</a><a href="#cot">COT</a><a href="#pairs">Coppie FX</a></nav>'+shadowResearch()+'</section>';
+   '<nav class="strength-links"><a href="#macro">Macro completa</a><a href="#rates">Tassi &amp; OIS</a>'+
+   '<a href="#cot">COT</a><a href="#pairs">Coppie FX</a></nav>'+shadowResearch()+
+   '</div></details></section>';
  }
  function ranking(){
   // Same G8/20-common-fixing methodology used by the 28-pair page.
@@ -438,13 +478,13 @@ function build(api){
    +'<div class="orient-route-links"><a href="#macro">Macro Lab ↗</a><a href="#rates">Tassi & OIS ↗</a><a href="#cot">COT ↗</a><a href="#pairs">Coppie FX ↗</a></div></section>';
  }
  function render(){
-  return pageHero('FX G8 / VALUTE','Otto valute, <em>quattro prove.</em>','Prima economia, rendimenti, aspettative prezzate e conferma del prezzo. Poi approfondisci solo ciò che merita attenzione.')
+  return pageHero('FX G8 / VALUTE','La forza delle valute, <em>e le ragioni.</em>','Prima la classifica e il giudizio economico. Numeri, fonti e modelli restano disponibili se vuoi approfondire.')
    +strengthBoard()+strengthFocus()
    +'<details class="strength-pair-fold"><summary><strong>Confronta '+country+' con una seconda valuta</strong><span>La tesi bilaterale, il grafico delle sette controparti e le verifiche specifiche</span></summary>'
    +story()+peers()+'</details>'
    +'<details class="strength-method-fold"><summary><strong>Verifica la classifica di prezzo e tutte le fonti</strong><span>Graduatoria BCE, storico macro, tassi, COT e limiti temporali</span></summary>'
    +ranking()+evidence()+checkpoint()+'</details>'
-   +'<p class="source-caption">Contesto: Macro Thermometer; NATIVE_RATES_DATA; NATIVE_CB_DATA; CFTC Legacy V250; pricing OIS/futures/proxy con fonte per valuta. Performance FX calcolata da ECB_G8_PRICE_HISTORY (EUR cross). Ogni dato è datato. La V2 operativa e i suoi segnali rimangono invariati.</p>';
+   +'';
  }
  return render();
 }
