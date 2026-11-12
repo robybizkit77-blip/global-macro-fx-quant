@@ -67,12 +67,44 @@ function filterReports(type=category,search=query){
  return latestPerType([...REPORTS,...remoteReports]).filter(r=>(type==='all'||type===r.type)
   &&(!q||norm([r.title,label(r.type),r.desc,r.date,r.file].join(' ')).includes(q)));
 }
+// "Latest published" is a publication fact, not a freshness guarantee.
+// For COT, the filename date is the Tuesday POSITION snapshot, not release.
+function romeDay(){
+ return new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',
+  month:'2-digit',day:'2-digit'}).format(new Date());
+}
+function dayAge(then,today){
+ const pat=/^20\d{2}-(0[1-9]|1[0-2])-([0-2]\d|3[01])$/;
+ if(!pat.test(then||'')||!pat.test(today||'')||then>today)return null;
+ const a=Date.parse(then+'T12:00:00Z'),b=Date.parse(today+'T12:00:00Z');
+ return Number.isFinite(a)&&Number.isFinite(b)?Math.round((b-a)/86400000):null;
+}
+function expectedLastWeekday(today){
+ if(dayAge(today,today)===null)return null;
+ const d=new Date(today+'T12:00:00Z');
+ while(d.getUTCDay()===0||d.getUTCDay()===6)d.setUTCDate(d.getUTCDate()-1);
+ return d.toISOString().slice(0,10);
+}
+function editionStatus(r,today=romeDay()){
+ const days=dayAge(r?.date,today);
+ if(days===null)return {state:'unverified',text:'Data del report non confrontabile con oggi'};
+ if(r.type==='daily'){
+  if(r.date===today)return {state:'today',text:'Briefing pubblicato per la seduta odierna'};
+  if(r.date===expectedLastWeekday(today))return {state:'latest-business',text:'Ultimo briefing feriale disponibile'};
+  return {state:'previous',text:'Ultimo briefing pubblicato · non copre l’ultima seduta feriale'};
+ }
+ if(r.type==='cot')return {state:days<=10?'weekly':'previous',
+  text:(days<=10?'Ultimo COT pubblicato':'Edizione COT precedente')+
+   ' · posizioni al '+datestr(r.date)+' (martedì)'};
+ return {state:days<=8?'weekly':'previous',
+  text:days<=8?'Ultimo report settimanale pubblicato':'Edizione storica · non aggiornata questa settimana'};
+}
 function url(r){return r.publicUrl||(r.date>='2026-11-01'?ROOT:BASE)+encodeURIComponent(r.file);}
-function rows(){
+function rows(today=romeDay()){
  const list=filterReports();
  return list.length?list.map(r=>'<article class="rl-card"><div class="rl-card-meta"><span class="rl-tag">'+esc(label(r.type))+'</span><time datetime="'+esc(r.date)+'">'+datestr(r.date)+'</time></div>'+
   '<h3>'+esc(r.title)+'</h3><p>'+esc(r.desc)+'</p>'+
-  '<div class="rl-card-bottom"><span class="rl-status">Ultima edizione pubblicata · '+(r.type==='daily'?'Daily Forex':'Report datato')+'</span>'+
+  '<div class="rl-card-bottom"><span class="rl-status">'+esc(editionStatus(r,today).text)+'</span>'+
   '<a href="'+esc(url(r))+'" target="_blank" rel="noopener noreferrer" aria-label="Apri '+esc(r.title)+' del '+datestr(r.date)+'">Apri report ↗</a></div></article>').join('')
   :'<div class="rl-empty">Nessun report corrisponde alla ricerca. Cambia categoria o parola chiave.</div>';
 }
@@ -83,8 +115,8 @@ function render(){
  return '<section class="rl-head"><div><span class="rl-eyebrow">FX QUANT / RESEARCH LIBRARY</span>'+
   '<h1>Solo l’ultima edizione.</h1>'+
   '<p>Una lettura per ciascun report: Briefing Forex, Macro, banche centrali, curve OIS, posizionamento e selezione delle coppie.</p>'+
-  '<div class="rl-head-note"><strong>Ogni report conserva la propria frequenza.</strong> Il Daily si aggiorna nei feriali e i Weekly quando escono nuove edizioni. Le date mostrate sono date di riferimento del report, non quotazioni intraday.</div>'+
-  '</div><div class="rl-stats"><div><small>REPORT CORRENTI VISIBILI</small><strong>'+latest.length+'</strong></div>'+
+  '<div class="rl-head-note"><strong>Ogni report conserva la propria frequenza.</strong> La pagina segnala se l’ultima edizione pubblicata è ancora recente. Le date sono riferimenti editoriali, non quotazioni intraday: produzione e trasferimento dei report sono processi separati.</div>'+
+  '</div><div class="rl-stats"><div><small>ULTIME EDIZIONI PUBBLICATE</small><strong>'+latest.length+'</strong></div>'+
   '<div><small>ULTIMA EDIZIONE DISPONIBILE</small><strong id="library-latest-date">'+(latest[0]?datestr(latest[0].date):'—')+'</strong></div>'+
   '<div><small>TIPOLOGIE</small><strong>'+(CATEGORIES.length-1)+'</strong></div></div></section>'+
   '<section class="rl-controls" aria-label="Filtri e ricerca"><div id="library-filterbar" class="rl-filters">'+filters()+'</div>'+
@@ -124,7 +156,7 @@ async function refresh(){
  finally{refreshInFlight=false;}
  if(root.document?.getElementById('library-grid'))sync();
 }
-const api={REPORTS,CATEGORIES,filterReports,reportType,reportDate,remoteReport,latestPerType,render,rows,setCategory,setQuery,sync,url,refresh};
+const api={REPORTS,CATEGORIES,filterReports,reportType,reportDate,remoteReport,latestPerType,editionStatus,render,rows,setCategory,setQuery,sync,url,refresh};
 root.FXQuantResearchLibrary=api;
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
