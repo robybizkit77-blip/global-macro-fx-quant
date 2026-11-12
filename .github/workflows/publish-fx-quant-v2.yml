@@ -130,6 +130,7 @@ jobs:
           node validation/publishing/test_next_pair_chart_controls_v27.cjs
           node validation/publishing/test_morning_desk_render_v1.cjs
           node validation/publishing/test_next_news_evidence_v24.cjs
+          node validation/qa_next_macro_calendar_v1.cjs
   sync-v2:
     if: >-
       github.event_name != 'pull_request' &&
@@ -229,6 +230,7 @@ jobs:
           node validation/publishing/test_next_pair_chart_controls_v27.cjs
           node validation/publishing/test_morning_desk_render_v1.cjs
           node validation/publishing/test_next_news_evidence_v24.cjs
+          node validation/qa_next_macro_calendar_v1.cjs
 
       - name: Publish only site/fx-quant-v2 without altering V10 or any other path
         if: steps.v2-tree.outputs.publish_needed == 'true'
