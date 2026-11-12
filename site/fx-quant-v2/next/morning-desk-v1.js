@@ -119,17 +119,19 @@
    x&&/^[A-Z]{6}$/.test(x.key)&&
    (x.favored===x.base||x.favored===x.quote)&&
    typeof x.thesisStrength==='string'&&typeof x.tradeAttractiveness==='string');
-  const lead='Nel ranking combinato G8 emergono queste differenze. '+
+  const lead='La stima G8 mette in luce un contrasto. '+
    currencyDriver(ranking[0],'top')+' '+currencyDriver(ranking.at(-1),'bottom')+
-   ' Le due posizioni riflettono un indice euristico di macro, variazioni dei tassi e prezzo; non sono una prova di flussi o una previsione. Per le coppie la tesi fondamentale esclude il prezzo, che entra soltanto nel timing.';
+   ' Il confronto combina macro, variazioni dei tassi e fixing: spiega l’ordine del modello, non dimostra chi sta comprando o vendendo.';
   const catalyst=catalystReading(calendar,selected,today,date);
   const showPair=x=>{
    const key=x.key,label=key.slice(0,3)+'/'+key.slice(3);
    const gate=typeof watchForPair==='function'?watchForPair(x):null;
    const improve=gate&&typeof gate.improve==='string'?gate.improve:
     'Servono un nuovo confronto economico/monetario datato e una conferma daily.';
-   const reasoning=typeof x.thesisReason==='string'?x.thesisReason:
-    'Il vantaggio è soltanto una stima da approfondire.';
+   // One explanation per overview card; full constraints remain in the dossier.
+   const firstSentence=x.thesisReason?.split('. ')[0];
+   const reasoning=typeof firstSentence==='string'&&firstSentence.trim()?firstSentence:
+    'La tesi fondamentale è una stima da approfondire.';
    return '<button type="button" class="morning-fx-case" data-pair="'+text(key)+'"'+
     ' aria-label="Apri dossier '+text(label)+'">'+
     '<span class="morning-fx-case-top"><strong>'+text(label)+'</strong>'+
@@ -147,11 +149,11 @@
    (catalyst?'<p class="morning-fx-pulse-catalyst"><strong>Prossime verifiche macro.</strong> '+
     text(catalyst)+'</p>':'')+
    (selected.length?
-    '<p class="morning-fx-pulse-explain">Dalla Top 5 diversificata emergono questi '+selected.length+
-    ' dossier da approfondire. Ogni condizione riguarda nuove evidenze, non un ingresso automatico.</p>'+
+    '<p class="morning-fx-pulse-explain">Dalla Top 5 diversificata, '+selected.length+
+    ' coppie meritano un controllo più attento. Il dossier spiega anche ciò che potrebbe smentirle.</p>'+
     '<div class="morning-fx-pulse-cases">'+selected.map(showPair).join('')+'</div>':
     '<p class="morning-fx-pulse-empty">Nessuna coppia supera il filtro di ricerca: non selezioniamo trade per riempire tre posti.</p>')+
-   '<p class="morning-fx-pulse-notice">Questa è una fotografia di ricerca distinta dal briefing mattutino congelato e può includere dati usciti dopo la sua apertura. Le etichette sono euristiche; nessun trigger H4, probabilità o trade validato.</p>'+
+   '<p class="morning-fx-pulse-notice">Ricerca stimata e datata, distinta dal briefing mattutino congelato: può includere osservazioni successive alla sua apertura. Nessun segnale d’ingresso o conferma H4.</p>'+
    '<nav class="morning-fx-pulse-links"><a href="#currencies">Classifica G8</a>'+
    '<a href="#pairs">Tutte le 28 coppie</a><a href="#news">Notizie e calendario</a></nav>'+
    '</section>';
