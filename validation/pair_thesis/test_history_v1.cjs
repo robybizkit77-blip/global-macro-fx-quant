@@ -12,8 +12,8 @@ new vm.Script(read('site/fx-quant-v2/next/app.js'),{filename:'app.js'});
 const html=read('site/fx-quant-v2/next/index.html');
 const css=read('site/fx-quant-v2/next/pair-thesis-monitor.css');
 const app=read('site/fx-quant-v2/next/app.js');
-assert.match(html,/pair-thesis-monitor\.js\?v=1/);
-assert.match(html,/pair-thesis-monitor\.css\?v=1/);
+assert.match(html,/pair-thesis-monitor\.js\?v=2/);
+assert.match(html,/pair-thesis-monitor\.css\?v=2/);
 assert.match(app,/thesisHistory:'\.\/pair-thesis-history\.json'/);
 assert.match(app,/FXQuantThesisMonitor\?\.render/);
 assert.match(css,/max-width:560px/);
@@ -44,6 +44,29 @@ for(const key of Object.keys(canonical.pairs)){
 assert.match(monitor.render(canonical,history,'AUDCAD'),/Baseline macro/);
 assert.match(monitor.render(canonical,history,'AUDCAD'),/non flussi istituzionali osservati/);
 assert.match(monitor.render(canonical,history,'AUDCAD'),/non sono flussi istituzionali osservati|non flussi istituzionali osservati/);
+assert.match(app,/FXQuantThesisMonitor\?\.renderPulse/);
+const dailyPulse=monitor.overview(canonical,history);
+assert.equal(dailyPulse.ready,true);
+assert.equal(dailyPulse.total,28);
+assert.equal(dailyPulse.previousAsOf,previous.price_asof);
+assert.equal(dailyPulse.asof,latest.price_asof);
+assert.equal(dailyPulse.baseline,latest.macro_baseline_asof);
+assert.equal(dailyPulse.changedCount,dailyPulse.changes.length);
+assert.match(monitor.renderPulse(canonical,history),/Riferimento macro/);
+assert.match(monitor.renderPulse(canonical,history),/Non significa|non prove|non sono|Sono cambiamenti|non dimostra/i);
+const synthetic=structuredClone(history);
+const alternative=synthetic.snapshots.at(-1).pairs.AUDCAD.quality==='PULITO'?'CON RISCHI':'PULITO';
+synthetic.snapshots.at(-2).pairs.AUDCAD.quality=alternative;
+const withChange=monitor.overview(canonical,synthetic);
+assert.equal(withChange.ready,true);
+assert(withChange.changedCount>=1);
+assert(withChange.changes.some(x=>x.pair==='AUDCAD'&&x.keys.includes('quality')));
+assert.match(monitor.renderPulse(canonical,synthetic),/AUD\/CAD/);
+assert.match(monitor.renderPulse(canonical,synthetic),/Quali coppie richiedono una nuova verifica/);
+assert.equal(monitor.overview({...canonical,price_asof:'2099-01-01'},history).ready,false,
+ 'Future or unsynchronized pair snapshots must never show daily changes');
+assert.match(monitor.renderPulse({...canonical,price_asof:'2099-01-01'},history),/non verificabile/);
+
 const seed6=history.snapshots.find(x=>x.price_asof==='2026-11-06');
 const seed10=history.snapshots.find(x=>x.price_asof==='2026-11-10');
 if(seed6&&seed10){
