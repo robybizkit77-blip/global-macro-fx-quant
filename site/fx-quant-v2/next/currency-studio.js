@@ -1,7 +1,7 @@
 'use strict';
 /**
  * FX Quant NEXT — G8 Currency Orientation Desk.
- * One section, one job: country context + cross-currency relative movement.
+ * Narrative-first G8: price-ranked choice, economic judgment, optional source audit.
  * Full charts, historical series, OIS tenors and COT audits belong in their
  * respective specialized studios, not repeated here.
  *
