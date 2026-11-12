@@ -127,7 +127,7 @@
       ' coppie hanno etichette diverse dallo storico archiviato. Non sono cambiamenti tra giorni e non vanno spacciati per nuovi segnali.'};
   }
   return {ready:false,drift:0,
-   reason:'Storico e modello non ancora allineati: nessun cambiamento giornaliero verificabile.'};
+   reason:'Confronto giornaliero non verificabile: storico e modello non ancora allineati. Nessuna variazione viene inventata.'};
  }
  function overview(current,history){
   const pairKeys=Object.keys(current?.pairs||{}).sort();
