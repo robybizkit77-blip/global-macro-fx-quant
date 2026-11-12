@@ -43,7 +43,7 @@ for(const ccy of FX){
   const rows=[...html.matchAll(/class="orient-rank-row[^"]*" data-cs-country="([A-Z]{3})"/g)].map(x=>x[1]);
   assert.deepEqual(rows,canonical.items.map(x=>x.ccy),'Same ranking as Pair Explorer: '+ccy);
    const estimateRows=[...html.matchAll(/class="strength-name"><b>#[1-8]<\/b><strong>[^<]* ([A-Z]{3})<\/strong>/g)].map(m=>m[1]);
-   assert.deepEqual(estimateRows,estimate.currencies.map(x=>x.ccy),'Estimated operational G8 order');
+   assert.deepEqual(estimateRows,Array.from(estimate.currencies,x=>x.ccy),'Estimated operational G8 order');
   assert(html.includes('class="orient-rank-row selected '),'Selected currency highlighted: '+ccy);
   assert(html.includes('class="orient-thesis-details"'),'Macro/rates/COT details still available: '+ccy);
   assert(html.includes('class="strength-method-fold"')&&
