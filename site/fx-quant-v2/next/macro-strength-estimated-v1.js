@@ -38,21 +38,26 @@
     doc.summary?.currencies!==8||doc.summary?.pairs!==28||
     !within(doc.generated_europe_rome_day,now,7)||
     !within(doc.fx_price_as_of,now,5)||
-    doc.fx_price_as_of!==price?.last_as_of||
+    !within(price?.last_as_of,now,5)||
+    !within(doc.fx_price_as_of,price?.last_as_of,3)||
     price?.source!=='ECB euro foreign exchange reference rates'||
     !Array.isArray(price.rows)||!FX.every(c=>doc.countries?.[c]?.FX_strength===null&&
       doc.countries?.[c]?.macro_score===null&&
       doc.countries?.[c]?.not_a_trade_or_policy_signal===true))
     return false;
-  const expected=new Set();
-  for(let i=0;i<FX.length;i++)for(let j=i+1;j<FX.length;j++)
-   expected.add([FX[i],FX[j]].sort().join('/'));
-  return Object.keys(doc.pair_context||{}).length===28&&
-    [...expected].every(k=>{
-      const p=doc.pair_context[k];
-      return p?.base===k.slice(0,3)&&p?.quote===k.slice(4)&&
-       p.recalculated_structural_thesis===false&&p.pair_trade_bias===null;
-    });
+  // V3 keeps canonical pair ORIENTATION (USD/JPY, not JPY/USD).
+  // Validate the complete unordered set but never reverse its trading code.
+  const keys=Object.keys(doc.pair_context||{});
+  const seen=new Set();
+  return keys.length===28&&keys.every(k=>{
+    const p=doc.pair_context[k],a=k.slice(0,3),b=k.slice(4);
+    const unordered=[a,b].sort().join('/');
+    if(!/^[A-Z]{3}\/[A-Z]{3}$/.test(k)||a===b||
+       !FX.includes(a)||!FX.includes(b)||seen.has(unordered)||
+       p?.base!==a||p?.quote!==b||
+       p.recalculated_structural_thesis!==false||p.pair_trade_bias!==null)return false;
+    seen.add(unordered);return true;
+  })&&seen.size===28;
  }
  function inputCountry(v,now){
   if(!v||!v.growth||!v.labour||!v.inflation)return null;
