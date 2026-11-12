@@ -187,6 +187,7 @@
    const deskStory=typeof window!=='undefined'&&window.FXQuantPairDesk?.render?
      window.FXQuantPairDesk.render({
        key:item.key,model:market,macro:get('macro')?.currencies,
+       observedMacro:get('macroObserved'),
        ois:get('ois'),cot:get('cotHistory'),profile:item,ratesView:rateSnapshot,
        now,esc
      }):'';

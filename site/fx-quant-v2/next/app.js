@@ -21,6 +21,7 @@ const SOURCES={
  pairs:'../../../live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json',
  thesisHistory:'./pair-thesis-history.json',
  macro:'../../../live_data/sections/MACRO_THERMOMETER_DATA.json',
+ macroObserved:'../../control-room-preview/macro-v3-current-evidence.json',
  macroSeries:'../../../live_data/sections/MACRO_SERIES.json',
  cbEstimated:'../../../live_data/sections/CB_PRICING_ESTIMATED.json',
  cb:'../../../live_data/sections/NATIVE_CB_DATA.json',
