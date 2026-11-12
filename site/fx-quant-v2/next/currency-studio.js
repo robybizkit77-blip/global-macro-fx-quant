@@ -16,6 +16,7 @@ function build(api){
  const against=FX.includes(state.csOther)&&state.csOther!==country?state.csOther:FX.find(k=>k!==country);
  const FXDATA=get('currencyPrices'),GOV=get('rates')||{},CB=get('cb')||{};
  const OIS=get('ois')?.currencies||{},M=get('macro')?.currencies||{},COT=get('cotHistory')||{},PAIRS=get('pairs')?.pairs||{};
+ const G8CONTEXT=root.FXQuantCurrencyFallback?.evaluate?.({macroSeries:get('macroSeries'),estimated:get('cbEstimated'),now:dayNow()})||null;
  const w=state.csReturnWindow===5?5:state.csReturnWindow===60?60:20;
  const number=x=>finite(x)?fmt(x,2):'—';
  const period=x=>String(x||'n.d.');
@@ -57,7 +58,7 @@ function build(api){
  function strengthView(){
   return root.FXQuantCurrencyStrength?.analyze?.({
    prices:FXDATA,macro:M,rates:GOV,ois:OIS,cot:COT,now:dayNow(),
-   rankingFn:root.FXQuantPairRankings?.currencyRanking
+   rankingFn:root.FXQuantPairRankings?.currencyRanking,fallback:G8CONTEXT
   })||{rows:[],priceRanking:null,asof:null};
  }
  function strengthBoard(){
@@ -68,31 +69,44 @@ function build(api){
   const rows=(result.rows||[]).map(x=>{
    const tone=x.reading.tone,rank=x.price.position?'#'+x.price.position:'—';
    const split=x.macro.text.split(' · ');
+   const growth=x.context?.growth;
+   const proxy=x.context?.pricingProxy;
+   const proxyReady=!x.pricing.ok&&proxy?.status==='PROXY_INFORMATIVO';
+   const sixLabel=x.pricing.ok?x.pricing.label:proxyReady?proxy.label:x.pricing.label;
+   const sixDate=x.pricing.ok?date(x.pricing.asof):proxyReady?'Indicativo · '+date(proxy.asof):'Non certificato';
+   const growLabel=growth?.status==='STORICO_DESCRITTIVO'?growth.label:split[0];
    return '<button class="strength-row '+(x.ccy===country?'selected ':'')+tone+'" type="button" data-cs-country="'+x.ccy+'" aria-pressed="'+String(x.ccy===country)+'" aria-label="Seleziona '+x.ccy+' per approfondire">'+
     '<span class="strength-name"><b>'+rank+'</b><strong>'+FLAGS[x.ccy]+' '+x.ccy+'</strong></span>'+
-    '<span class="strength-axis"><small>Macro · parziale</small><strong>'+esc(split[0])+'</strong><em>'+esc(split[1]||'')+'</em></span>'+
+    '<span class="strength-axis"><small>Crescita · dato storico</small><strong>'+esc(growLabel)+'</strong><em>'+esc(growth?.status==='STORICO_DESCRITTIVO'?split[0]+' · '+(split[1]||''):split[1]||'')+'</em></span>'+
     '<span class="strength-axis '+(x.rates.ok?'':'unverified')+'"><small>2Y · variazione 1W</small><strong>'+esc(x.rates.label)+'</strong><em>'+esc(x.rates.asof?date(x.rates.asof):'Base non recente')+'</em></span>'+
-    '<span class="strength-axis '+(x.pricing.ok?'':'unverified')+'"><small>Attese 6M · variazione 1W</small><strong>'+esc(x.pricing.label)+'</strong><em>'+esc(x.pricing.asof?date(x.pricing.asof):'Non certificato')+'</em></span>'+
+    '<span class="strength-axis '+(x.pricing.ok?'':'unverified')+(proxyReady?' context-proxy':'')+'"><small>'+ (x.pricing.ok?'Attese 6M · Δ 1W':'Futures 6M · contesto')+'</small><strong>'+esc(sixLabel)+'</strong><em>'+esc(sixDate)+'</em></span>'+
     '<span class="strength-axis '+(x.price.change>0?'fxpositive':x.price.change<0?'fxnegative':'')+'"><small>Prezzo · 20 fixing</small><strong>'+esc(x.price.label)+'</strong><em>vs le altre G8</em></span>'+
     '<span class="strength-reading '+tone+'"><strong>'+esc(x.reading.label)+'</strong><small>Apri '+x.ccy+' ›</small></span></button>';
   }).join('');
   return '<section class="strength-board" id="orient-strength-board" aria-label="Mappa G8 Macro Tassi Aspettative Prezzo">'+
    '<div class="strength-board-head"><div><span class="chapter-kicker">01 / MACRO → TASSI → ATTESE → PREZZO</span>'+
    '<h2>Quali valute hanno <em>più sostegno verificabile?</em></h2>'+
-   '<p>Quattro letture separate, senza un voto inventato. La posizione numerica ordina <strong>solo il prezzo</strong>, non la forza economica. Clicca una valuta per capire la sua situazione.</p></div>'+
+   '<p>Macro, rendimenti, aspettative monetarie e prezzo: osservazioni datate, con <strong>proxy riconoscibili</strong> quando mancano fonti ufficiali. Il numero ordina soltanto il prezzo.</p></div>'+
    '<small>'+esc(rankDate)+'</small></div>'+
    '<div class="strength-columns" aria-hidden="true"><span>VALUTA</span><span>MACRO</span><span>2Y</span><span>ATTESE 6M</span><span>PREZZO</span><span>GIUDIZIO</span></div>'+
    '<div class="strength-rows">'+rows+'</div>'+
-   '<p class="strength-note">Macro: direzione di disoccupazione e inflazione, non crescita complessiva. 2Y: variazione governativa, non OIS. Attese 6M: solo variazioni settimanali recenti da fonte ufficiale; proxy e quotazioni indicative restano non verificati. Le diverse finestre temporali non dimostrano una causa comune.</p></section>';
+   '<p class="strength-note">Crescita: ultime osservazioni storiche, non PIL stimato né sorpresa macro. 2Y: rendimento governativo settimanale, non OIS. 6M: variazione ufficiale quando verificata; altrimenti contratto futures indicativo con data, mai un repricing certificato. Il ranking resta esclusivamente di prezzo e nessun proxy entra nel punteggio.</p></section>';
  }
  function strengthFocus(){
   const x=strengthView().rows.find(r=>r.ccy===country);
   if(!x)return '<p>La lettura G8 non è disponibile finché mancano dati verificabili.</p>';
   const cb=CB[country]||{};
+  const growth=x.context?.growth;
+  const proxy=x.context?.pricingProxy;
+  const growthText=growth?.status==='STORICO_DESCRITTIVO'?growth.description:
+   'Non ci sono osservazioni recenti sufficienti per un confronto con il ciclo.';
+  const pricingText=x.pricing.ok?x.pricing.text:
+   proxy?.status==='PROXY_INFORMATIVO'?x.pricing.text+' '+proxy.description:x.pricing.text;
   const cards=[
-   ['MACRO',x.macro.text,'Inflazione e disoccupazione non bastano a valutare crescita e sorprese.'],
+   ['MACRO · CRESCITA / LAVORO / PREZZI',growthText+' '+x.macro.text,
+    'Serie storiche con periodo di osservazione, non nowcast, sorprese macro o pubblicazioni odierne.'],
    ['TASSI 2Y',x.rates.text,'Movimento di mercato, non prova di decisioni future.'],
-   ['ASPETTATIVE 6M',x.pricing.text,'Per un repricing servono strumenti, date e qualità omogenei.'],
+   ['ASPETTATIVE 6M',pricingText,'I proxy sono informativi e non sostituiscono l’OIS ufficiale né i suoi cambiamenti.'],
    ['PREZZO',x.price.text+' '+x.price.label+(x.price.position?' · posizione '+x.price.position+'/8.':''),'La forza osservata non identifica il driver.']
   ];
   const cbText=validDay(cb.last_date)&&cb.last_date<=dayNow()?
@@ -102,7 +116,7 @@ function build(api){
    '<span class="chapter-kicker">02 / DOSSIER VALUTA · '+FLAGS[country]+' '+country+'</span>'+
    '<h2>'+FLAGS[country]+' '+country+': '+esc(x.reading.label.toLowerCase())+'</h2>'+
    '<p>'+esc(x.reading.text)+'</p></div><div class="strength-coverage">Prove disponibili '+x.evidenceCount+'/4'+
-   '<small>Non è un voto di forza</small></div></div>'+
+   '<small>Solo fonti verificate · contesto storico/proxy separato</small></div></div>'+
    '<div class="strength-cards">'+cards.map(([label,main,note],i)=>'<article class="strength-card"><span>0'+(i+1)+' / '+esc(label)+'</span><p>'+esc(main)+'</p><small>'+esc(note)+'</small></article>').join('')+'</div>'+
    '<div class="strength-additional">'+cbText+cotText+'</div>'+
    '<nav class="strength-links"><a href="#macro">Macro completa</a><a href="#rates">Tassi &amp; OIS</a><a href="#cot">COT</a><a href="#pairs">Coppie FX</a></nav></section>';

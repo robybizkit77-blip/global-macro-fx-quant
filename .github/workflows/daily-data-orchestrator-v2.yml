@@ -10,6 +10,8 @@ on:
       - 'validation/orchestration/check_morning_readiness_v1.py'
       - 'validation/orchestration/test_check_morning_readiness_v1.py'
       - 'validation/orchestration/test_morning_source_drift_contract_v1.py'
+      - 'validation/orchestration/audit_g8_source_coverage_v1.py'
+      - 'validation/orchestration/test_audit_g8_source_coverage_v1.py'
       - 'validation/orchestration/test_prebrief_offhour_dst_schedule_v1.py'
       - 'validation/orchestration/check_morning_delivery_sla_v1.py'
       - 'validation/orchestration/test_check_morning_delivery_sla_v1.py'
@@ -30,6 +32,8 @@ on:
       - 'validation/orchestration/check_morning_readiness_v1.py'
       - 'validation/orchestration/test_check_morning_readiness_v1.py'
       - 'validation/orchestration/test_morning_source_drift_contract_v1.py'
+      - 'validation/orchestration/audit_g8_source_coverage_v1.py'
+      - 'validation/orchestration/test_audit_g8_source_coverage_v1.py'
       - 'validation/orchestration/test_prebrief_offhour_dst_schedule_v1.py'
       - 'validation/orchestration/check_morning_delivery_sla_v1.py'
       - 'validation/orchestration/test_check_morning_delivery_sla_v1.py'
@@ -107,6 +111,8 @@ jobs:
         run: python validation/orchestration/check_daily_data_orchestrator_v2.py
       - name: Test morning freshness and DST-aware source windows
         run: python validation/orchestration/test_check_morning_readiness_v1.py
+      - name: Test G8 source-change receipts without data promotion
+        run: python -m unittest validation.orchestration.test_audit_g8_source_coverage_v1 -v
       - name: Test live-vintage and source-backed calendar guards for 08:00
         run: python -m unittest validation.orchestration.test_morning_source_drift_contract_v1 -v
       - name: Test 04:43 Rome off-hour DST prebrief schedule
@@ -184,6 +190,10 @@ jobs:
         with:
           ref: main
           fetch-depth: 1
+
+      - name: Snapshot G8 source dates and hashes before child collectors
+        if: ${{ steps.phase.outputs.phase != 'skip' }}
+        run: python3 validation/orchestration/audit_g8_source_coverage_v1.py --output /tmp/g8-source-before.json
 
       - name: Run serialized refresh sequence
         id: refresh
@@ -526,12 +536,31 @@ jobs:
 
       # Re-check the LATEST main commit after the dispatched child workflows
       # have updated it; the orchestration runner itself did not mutate data.
-      - name: Checkout refreshed production sources for 08:00 audit
-        if: ${{ always() && (steps.phase.outputs.phase == 'prebrief' || steps.phase.outputs.phase == 'premorning') }}
+      - name: Checkout refreshed production sources for G8 audit and 08:00 readiness
+        if: ${{ always() && steps.phase.outputs.phase != 'skip' }}
         uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 1
+
+      - name: Compare G8 source hashes after child collectors
+        if: ${{ always() && steps.phase.outputs.phase != 'skip' }}
+        run: |
+          python3 validation/orchestration/audit_g8_source_coverage_v1.py \
+            --before /tmp/g8-source-before.json \
+            --output /tmp/g8-source-after.json \
+            --summary
+
+      - name: Retain G8 before/after source-change receipts
+        if: ${{ always() && steps.phase.outputs.phase != 'skip' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: g8-source-changes-${{ github.run_id }}
+          path: |
+            /tmp/g8-source-before.json
+            /tmp/g8-source-after.json
+          if-no-files-found: warn
+          retention-days: 21
 
       - name: Audit true source dates for the morning study
         if: ${{ always() && (steps.phase.outputs.phase == 'prebrief' || steps.phase.outputs.phase == 'premorning') }}
