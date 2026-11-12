@@ -25,7 +25,8 @@ RATES_PARENT = "Rates Persistent Daily V1"
 def gate(event: str, cron: str, now: dt.datetime, *,
          upstream_name: str = "", upstream_branch: str = "",
          upstream_conclusion: str = "", upstream_event: str = "",
-         upstream_started_at: str = "", eolas_pro: bool = False) -> tuple[bool, bool, str]:
+         upstream_started_at: str = "", upstream_source_verified: bool = False,
+         eolas_pro: bool = False) -> tuple[bool, bool, str]:
     """(refresh, paid-vendor-eligible, reason). No live market API calls."""
     if now.tzinfo is None:
         raise ValueError("UTC-aware clock required")
@@ -49,6 +50,10 @@ def gate(event: str, cron: str, now: dt.datetime, *,
             return False, False, "NOT_A_ROMAN_WORKDAY"
         if local.time() < dt.time(6, 30):
             return False, False, "BEFORE_MORNING_LOCAL_SLOT"
+        # A green Rates workflow may have skipped every market-source step
+        # under its own time gate. A separate jobs API proof is mandatory.
+        if upstream_source_verified is not True:
+            return False, False, "PARENT_RATES_SOURCE_NOT_EXECUTED"
         return True, False, "INDEPENDENT_SUCCESSFUL_MAIN_RATES_RECOVERY"
     if event != "schedule":
         return True, event == "workflow_dispatch" and eolas_pro, "EVENT_OR_MANUAL_SOURCE_REFRESH"
@@ -76,6 +81,7 @@ def main() -> None:
     p.add_argument("--upstream-conclusion", default="")
     p.add_argument("--upstream-event", default="")
     p.add_argument("--upstream-started-at", default="")
+    p.add_argument("--upstream-source-verified", default="false")
     p.add_argument("--output", type=Path)
     p.add_argument("--summary", type=Path)
     args = p.parse_args()
@@ -87,6 +93,7 @@ def main() -> None:
         upstream_conclusion=args.upstream_conclusion,
         upstream_event=args.upstream_event,
         upstream_started_at=args.upstream_started_at,
+        upstream_source_verified=args.upstream_source_verified.strip().lower()=="true",
         eolas_pro=os.environ.get("EOLAS_PRO_ENABLED", "").strip().lower() == "true")
     result = {
         "source_refresh": "RUN" if refresh else "SKIP_INTENTIONALLY",
