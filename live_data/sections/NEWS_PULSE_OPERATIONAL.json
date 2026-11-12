@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-11",
-  "generated_at_utc": "2026-11-12T03:05:41.651268Z",
+  "generated_at_utc": "2026-11-12T04:23:08.196356Z",
   "items": [
     {
       "as_of": "2026-11-11",
@@ -15,6 +15,19 @@
       "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
       "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
       "title": "USD/JPY: +0.67% fra due fixing BCE"
+    },
+    {
+      "as_of": "2026-11-11",
+      "category": "MARKET_VOLATILITY_CLOSE",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 17.49; confronto con chiusura 2026-11-10. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "MEDIUM",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-10",
+      "source": "Cboe Global Markets, VIX daily close",
+      "source_url": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+      "title": "VIX: -1.97 punti nella chiusura del 2026-11-11"
     },
     {
       "as_of": "2026-11-11",
@@ -132,19 +145,6 @@
     },
     {
       "as_of": "2026-11-10",
-      "category": "MARKET_VOLATILITY_CLOSE",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 19.46; confronto con chiusura 2026-11-09. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "MEDIUM",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-09",
-      "source": "Cboe Global Markets, VIX daily close",
-      "source_url": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
-      "title": "VIX: -0.46 punti nella chiusura del 2026-11-10"
-    },
-    {
-      "as_of": "2026-11-10",
       "category": "MARKET_GOVERNMENT_RATES",
       "ccy": "EUR",
       "confidence": "A",
@@ -205,7 +205,7 @@
       "title": "Credito IG OAS: -2.0 pb nella chiusura del 2026-11-09"
     }
   ],
-  "last_checked_at_utc": "2026-11-12T03:05:41.651268Z",
+  "last_checked_at_utc": "2026-11-12T04:23:08.196356Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -1221,9 +1221,9 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 23,
+        "accepted_items": 22,
         "ccy": "JPY",
-        "entries_rejected": 26,
+        "entries_rejected": 27,
         "feed_entries_seen": 49,
         "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
         "source": "Bank of Japan",
