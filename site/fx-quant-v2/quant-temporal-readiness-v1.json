@@ -1,11 +1,11 @@
 {
   "schema": "GMFQ_FXV2_RATE_FX_TEMPORAL_READINESS_V1",
-  "report_as_of_evidence_date": "2026-11-11",
+  "report_as_of_evidence_date": "2026-11-12",
   "latest_fx_reference_fixing": "2026-11-11",
   "first_fx_reference_fixing": "2024-09-02",
   "source_hashes_sha256": {
     "ecb_fx_history": "f8a9c5ad09cdf38b31f6bf4ce70ea74fc9fa2aa8a5e90fe09238757aa77592c8",
-    "same_contract_futures_history": "075fc986b077746cf86996b226b40d58808cf37857bcef9670bf88bd19a4e7aa",
+    "same_contract_futures_history": "4cd3a27b0e2c3502748d0f7664fd5e180011a7c0d175b5da3262b4b1859893f1",
     "macro_candidate_pair_universe": "e110ea68916d4cc586c9f8598dbb730a1f468243cb0078dc06cfb59e3d44fe04"
   },
   "method": "SAME_LISTED_FUTURES_CONTRACT_TWO_CONSECUTIVE_ECB_SESSIONS",
@@ -29,7 +29,7 @@
   "summary": {
     "fx_reference_rows": 561,
     "fx_pairs": 28,
-    "archived_same_contract_quotes": 165,
+    "archived_same_contract_quotes": 168,
     "contract_currencies": 3,
     "strict_currency_rate_moves": 140,
     "strict_relative_pair_moves": 122,
