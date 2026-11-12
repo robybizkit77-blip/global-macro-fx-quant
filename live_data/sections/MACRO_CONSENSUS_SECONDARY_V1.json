@@ -1,26 +1,7 @@
 {
   "events": [],
-  "generated_at_utc": "2026-11-12T04:53:08.761477Z",
-  "metric_candidates_research_v8": [
-    {
-      "ccy": "GBP",
-      "component": "UK chain-volume GDP first estimate",
-      "eligible_for_existing_v1_freeze": false,
-      "eligible_for_fx_signals": false,
-      "eligible_for_macro_surprise": false,
-      "event_key": "GBP|2026-11-12|GROWTH|GDP first quarterly estimate, UK",
-      "forecast": "0.7%",
-      "forecast_status": "LABEL_MATCHED_UNFROZEN_SECONDARY_NOT_ACCEPTED",
-      "issuer_actual_parser_status": "NO_CERTIFIED_ISSUER_ACTUAL_PARSER",
-      "metric_id": "UK_REAL_GDP_PRELIM_QOQ_SA",
-      "official_date": "2026-11-12",
-      "official_release_utc": "2026-11-12T07:00:00Z",
-      "provider_date": "2026-11-12",
-      "provider_event": "Prelim GDP q/q",
-      "provider_semantic_status": "EXACT_LABEL_NOT_SOURCE_SERIES_CERTIFICATION",
-      "unit": "PCT_QOQ_SA"
-    }
-  ],
+  "generated_at_utc": "2026-11-12T07:29:47.279926Z",
+  "metric_candidates_research_v8": [],
   "provider": "FOREX_FACTORY_FAIR_ECONOMY_WEEKLY",
   "provider_endpoint": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
   "provider_field": "forecast",
