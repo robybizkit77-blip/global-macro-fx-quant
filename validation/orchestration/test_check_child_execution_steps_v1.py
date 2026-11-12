@@ -53,6 +53,38 @@ for workflow, names in REQUIRED_STEPS.items():
     duplicate["jobs"][0]["steps"].append(duplicate["jobs"][0]["steps"][0])
     assert inspect(workflow, duplicate)["status"] == "FAIL_SKIPPED_OR_INCOMPLETE"
 
+
+# Actual 12 Nov night incident: GitHub successfully verified a mirror no-op
+# and exact public HTTP bytes (43/43), but the write-only branch check was
+# intentionally skipped. That is NOT a failed child execution. Conversely,
+# an HTTP skipped/failure is never accepted merely because branches match.
+pages="publish-dashboard-pages-v1.yml"
+required=REQUIRED_STEPS[pages]
+assert "Refresh main and gh-pages to detect unchanged published content" in required
+assert "Verify published files against validated main" not in required
+noop={
+ "jobs":[{
+  "name":"publish-pages","status":"completed","conclusion":"success",
+  "steps":[
+   {"name":name,"status":"completed","conclusion":"success"}
+   for name in required
+  ]+[
+   {"name":"Verify published files against validated main",
+    "status":"completed","conclusion":"skipped"},
+   {"name":"Publish dashboard runtime and operational assets to gh-pages with lease",
+    "status":"completed","conclusion":"skipped"},
+  ]
+ }]
+}
+assert inspect(pages,noop)["status"]=="PASS_EXECUTED", "Verified already-current pages must not cause false orchestrator failure"
+for critical in required:
+ broken=json.loads(json.dumps(noop))
+ step=next(x for x in broken["jobs"][0]["steps"] if x["name"]==critical)
+ step["conclusion"]="skipped"
+ finding=inspect(pages,broken)
+ assert finding["status"]=="FAIL_SKIPPED_OR_INCOMPLETE", (critical,finding)
+ assert "REQUIRED_STEP_NOT_EXECUTED:"+critical in finding["problems"]
+
 try:
     inspect("unapproved-producer.yml", {"jobs": []})
 except ValueError:
