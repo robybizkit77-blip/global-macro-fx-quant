@@ -32,11 +32,36 @@ for(const ccy of FX){
  assert.equal(g.forecastValue,null,'No fabricated nowcast: '+ccy);
 }
 for(const ccy of ['USD','EUR','CHF']){
+ const raw=estimated.currencies[ccy],quote=raw.horizons['6m'];
  const p=context.currencies[ccy].pricingProxy;
- assert.equal(p.status,'PROXY_INFORMATIVO',ccy+' secondary futures available');
- assert(p.label.includes('proxy'));
- assert(!p.label.startsWith('+')&&!p.label.startsWith('−'),'Rate levels do not show change sign');
- assert.match(p.description,/non fornisce un repricing settimanale verificato/);
+ // The live overlay refreshes per contract. If the 6M quote belongs to a
+ // different day than as_of, the model correctly WITHHOLDS the proxy.
+ // Never make CI demand an invented same-day snapshot.
+ if(raw.as_of!==quote.quote_as_of){
+  assert.equal(p.status,'NON_DISPONIBILE',ccy+' mismatched 6M snapshot must be withheld');
+  assert.equal(p.asof,null);
+ }
+ if(p.status==='PROXY_INFORMATIVO'){
+  assert.equal(raw.as_of,quote.quote_as_of,ccy+' quote date must match the snapshot');
+  assert.equal(quote.quote_timestamp_verified,true);
+  assert(p.label.includes('proxy'));
+  assert(!p.label.startsWith('+')&&!p.label.startsWith('−'),'Rate levels do not show change sign');
+  assert.match(p.description,/non fornisce un repricing settimanale verificato/);
+ }else{
+  assert.equal(p.status,'NON_DISPONIBILE',ccy+' must never fabricate a proxy');
+ }
+ // A deterministic, source-qualified and same-day fixture must still pass.
+ // Its deliberately mismatched twin must fail: this tests the strict gate
+ // independently of whichever live contract refreshed most recently.
+ const fixture=structuredClone(estimated);
+ fixture.currencies[ccy]={...raw,as_of:'2026-11-11',horizons:{...raw.horizons,
+  '6m':{...quote,quote_as_of:'2026-11-11'}}};
+ const matched=F.pricingProxy(fixture,ccy,now);
+ assert.equal(matched.status,'PROXY_INFORMATIVO',ccy+' valid dated 6M fixture should be usable');
+ assert.match(matched.description,/non fornisce un repricing settimanale verificato/);
+ fixture.currencies[ccy].horizons['6m'].quote_as_of='2026-11-10';
+ assert.equal(F.pricingProxy(fixture,ccy,now).status,'NON_DISPONIBILE',
+  ccy+' mismatched fixture must be withheld');
 }
 assert.equal(context.currencies.NZD.pricingProxy.status,'NON_DISPONIBILE');
 // CHF/NZD research is visible but never a valid live 2Y weekly confirmation.
