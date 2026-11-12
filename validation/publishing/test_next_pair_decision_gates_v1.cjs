@@ -65,6 +65,6 @@ assert(!pairs.includes("const next=activePair?.missing"),'No duplicated generic 
 assert(pairs.includes("esc(gate.improve)")&&pairs.includes("esc(gate.weaken)"),
  'Every gate must be HTML-escaped');
 assert(html.includes('./pair-rankings.js?v=5'));
-assert(html.includes('./app.js?v=18.43-gates1'));
+assert(html.includes('./app.js?v=18.43-pulse1'));
 assert.equal(typeof ranking.selectResearchPairs,'function','Current Top5 remains available');
 console.log('NEXT_PAIR_DECISION_GATES_V1_PASS: directional levels, passed/stale guards, first-read clarity, no fake H4 entries');
