@@ -112,7 +112,7 @@
   return {score:0,kind:'MANCANTE',asof:null,changeBp:null,quality:'ASSENTE',
     description:'Variazione 6M ufficiale e 2Y comparabile non disponibili: contributo omesso'};
  }
- function evaluate({observed,prices,ois,rates,now,rankingFn}){
+ function evaluate({observed,prices,ois,rates,model,now,rankingFn}){
   if(!day(now)||!sourceOK(observed,prices,now))return fails('Fotografia economica o fixing non aggiornati, incoerenti o non verificabili.');
   const rank=typeof rankingFn==='function'?rankingFn(prices,now,FX):null;
   if(!rank||rank.asof!==prices.last_as_of||rank.items?.length!==8)
@@ -141,10 +141,14 @@
   const row=prices.rows.find(x=>x.Date===rank.asof);
   const first=prices.rows.find(x=>x.Date===rank.from);
   if(!row||!first)return fails('Punti di prezzo necessari al confronto assenti.');
+  const keys=Object.keys(model?.pairs||{}).sort();
+  if(keys.length!==28||new Set(keys).size!==28||
+    !keys.every(k=>/^[A-Z]{6}$/.test(k)&&by[k.slice(0,3)]&&by[k.slice(3)]&&k.slice(0,3)!==k.slice(3)))
+   return fails('Catalogo canonico 28 coppie assente; nessun ranking stimato pubblicabile.');
   const pairs=[];
-  for(let i=0;i<FX.length;i++)for(let j=i+1;j<FX.length;j++){
-   const a=FX[i],b=FX[j],base=by[a],quote=by[b];
-   const key=a+b,delta=base.score-quote.score;
+  for(const key of keys){
+   const a=key.slice(0,3),b=key.slice(3),base=by[a],quote=by[b];
+   const delta=base.score-quote.score;
    const favored=Math.abs(delta)>=0.22?(delta>0?a:b):null;
    const baseMove=100*((row[b]/row[a])/(first[b]/first[a])-1);
    if(!finite(baseMove))return fails('Confronto FX non finito '+key);
