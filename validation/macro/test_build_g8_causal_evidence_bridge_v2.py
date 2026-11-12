@@ -139,8 +139,17 @@ class EvidenceBridgeV2Tests(unittest.TestCase):
         self.assertEqual(byid["US_BEA_SEP2026_REAL_DPI_MOM"]["value"],-0.3)
         self.assertIn("NOMINALE",row["economic_transmission_narrative_it"][4])
         self.assertIn("REALE",row["economic_transmission_narrative_it"][4])
-        self.assertEqual(row["economic_transmission_observations"]["households"][0]
-                         ["observation_period"],"2026-07-01")
+        # The historical macro series can advance while this archived BEA
+        # publisher note stays static. Validate against the source's actual
+        # observation period, not a hard-coded July 2026 vintage.
+        source=m.json.loads((m.v1.ROOT/m.MACRO_SERIES).read_text())
+        first_id=m.SELECTORS["USD"]["households"][0]
+        canonical=next(x for x in source["USD"] if x["id"]==first_id)
+        household=row["economic_transmission_observations"]["households"][0]
+        self.assertEqual(household["id"],first_id)
+        self.assertEqual(household["observation_period"],canonical["last_date"])
+        self.assertIsNone(household["publisher_release_timestamp"])
+        self.assertFalse(household["real_consumption_change_certified"])
         self.assertFalse(row["safe_for_site"])
         self.assertFalse(row["safe_for_reports"])
 
