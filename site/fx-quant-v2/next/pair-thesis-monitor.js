@@ -110,7 +110,69 @@
    '<p><strong>Controllare.</strong> '+esc(x.current.watch)+'</p></aside></div>'+
    '<p class="thesis-footer">Monitor descrittivo: variazioni di etichette del motore, non flussi istituzionali osservati o edge quantitativo. Il COT qui segnala soltanto una diversa lettura del posizionamento nel modello; non prova che un operatore abbia aperto o chiuso posizioni. La frequenza dipende dal fixing BCE, non dalla frequenza di aggiornamento della pagina.</p></section>';
  }
- const api={flatten,validated,analyze,render};
+ // Daily 28-pair pulse: never equate changes of classification with new
+ // macro evidence, price momentum, flows or trade attractiveness.
+ function overview(current,history){
+  const pairKeys=Object.keys(current?.pairs||{}).sort();
+  const snapshots=validated(history,current);
+  if(!snapshots)return {ready:false,
+   reason:'Confronto quotidiano non verificabile. Prezzi, modello e storico non hanno ancora uno snapshot allineato: non attribuiamo cambiamenti alle tesi.'};
+  const {latest,previous}=snapshots;
+  const score={'fav':6,'quality':5,'price.text':4,'timing.text':3,
+   'cot.text':2,'liquidity.text':1};
+  const changes=[];
+  const dimensions=Object.fromEntries(checks.map(([key])=>[key,0]));
+  for(const pair of pairKeys){
+   const previousPair=previous.pairs[pair],now=flatten(current.pairs[pair]);
+   const diffs=checks.filter(([key])=>field(previousPair,key)!==field(now,key));
+   if(!diffs.length)continue;
+   for(const [key] of diffs)dimensions[key]++;
+   changes.push({
+    pair,labels:diffs.map(([,name])=>name),
+    keys:diffs.map(([key])=>key),
+    weight:Math.max(...diffs.map(([key])=>score[key]||0))
+   });
+  }
+  changes.sort((a,b)=>b.weight-a.weight||b.keys.length-a.keys.length||
+    a.pair.localeCompare(b.pair));
+  const coreChanges=changes.filter(x=>x.keys.includes('fav')||x.keys.includes('quality'));
+  const priceChanges=changes.filter(x=>x.keys.includes('price.text'));
+  const secondary=changes.filter(x=>!x.keys.includes('fav')&&
+   !x.keys.includes('quality')&&!x.keys.includes('price.text'));
+  return {ready:true,asof:latest.price_asof,previousAsOf:previous.price_asof,
+   baseline:latest.macro_baseline_asof,macroSame:previous.macro_baseline_asof===latest.macro_baseline_asof,
+   total:pairKeys.length,changedCount:changes.length,coreCount:coreChanges.length,
+   priceCount:priceChanges.length,secondaryCount:secondary.length,
+   changes,dimensions};
+ }
+ function renderPulse(current,history){
+  const x=overview(current,history);
+  const opening='<section class="pairs-thesis-pulse" aria-label="Monitor sintetico delle tesi delle 28 coppie">'+
+   '<span class="mini-overline">MONITOR TESI FX / COSA È CAMBIATO</span>';
+  if(!x.ready)return opening+'<p class="pairs-thesis-pulse-unavailable">'+esc(x.reason)+
+   '</p></section>';
+  const first=x.changedCount===0?
+   'Tra i due fixing confrontabili, nessuna delle sei classificazioni monitorate è cambiata nelle 28 coppie.':
+   'Tra i due fixing confrontabili, '+x.changedCount+' delle 28 coppie mostrano almeno una classificazione diversa.';
+  const meaning=x.changedCount===0?
+   ' Non significa che i prezzi siano rimasti fermi, né che le tesi siano state confermate.':
+   ' Sono cambiamenti del dossier, non prove di nuovi flussi o segnali di ingresso.';
+  const main=opening+
+   '<p class="pairs-thesis-pulse-story"><strong>'+esc(first)+'</strong>'+esc(meaning)+'</p>'+
+   '<p class="pairs-thesis-pulse-dates">Fixing BCE '+fmt(x.previousAsOf)+' → '+fmt(x.asof)+
+   ' · Riferimento macro '+fmt(x.baseline)+
+   (x.macroSame?' (non aggiornato tra i due snapshot)':' (riferimento cambiato: verificare le fonti)')+
+   ' · Nessun dato intraday</p>';
+  if(!x.changedCount)return main+'</section>';
+  const named=x.changes.slice(0,5);
+  const extra=x.changedCount>5?' · altre '+(x.changedCount-5)+' coppie con differenze':'';
+  return main+'<details class="pairs-thesis-pulse-details"><summary>Quali coppie richiedono una nuova verifica?'+extra+'</summary>'+
+   '<div class="pairs-thesis-pulse-rows">'+named.map(item=>
+    '<div class="pairs-thesis-pulse-row"><strong>'+esc(item.pair.slice(0,3)+'/'+item.pair.slice(3))+
+    '</strong><span>'+esc(item.labels.join(' · '))+'</span></div>').join('')+
+   '</div><p>Le coppie sono ordinate per rilevanza delle classificazioni variate; non per rendimento atteso o qualità del trade. Apri la singola coppia per la tesi e le invalidazioni.</p></details></section>';
+ }
+ const api={flatten,validated,analyze,render,overview,renderPulse};
  root.FXQuantThesisMonitor=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
