@@ -137,6 +137,35 @@ async function checkG8FirstRead(page,label){
   const evidence=methods.locator('.orient-evidence-item');
   if(await evidence.count()!==4||!await evidence.first().isVisible())
     throw Error(label+' four source cards not visible inside expanded research detail');
+  // Regression: the inner price ranking lives inside a collapsed-by-default
+  // methodology panel. Selecting another G8 currency must NOT close it.
+  // Nor may the change collapse the already open pair thesis or Quant audit.
+  const insideRank=methods.locator('.orient-rank-row[data-cs-country="GBP"]');
+  await insideRank.scrollIntoViewIfNeeded();
+  const beforeY=await insideRank.evaluate(el=>el.getBoundingClientRect().top);
+  await insideRank.click();
+  await page.waitForFunction(() =>
+    document.querySelector('.strength-row.selected')?.dataset.csCountry==='GBP' &&
+    document.querySelector('#orient-strength-focus h2')?.textContent?.includes('GBP'),
+    null,{timeout:15000});
+  for(const [name,openPanel] of [
+    ['methods',methods],['pair',pair],['pair-thesis',thesis],['numeric-audit',audit]
+  ]){
+    if(!await openPanel.evaluate(el=>el.open))
+      throw Error(label+' G8 selection collapsed already open '+name);
+  }
+  const afterY=await methods.locator('.orient-rank-row[data-cs-country="GBP"]')
+    .evaluate(el=>el.getBoundingClientRect().top);
+  if(Math.abs(afterY-beforeY)>85)
+    throw Error(label+' switching G8 currency jumped reader position: '+beforeY+' -> '+afterY);
+  if(!(await methods.locator('.orient-rank-row[data-cs-country="GBP"]')
+    .evaluate(el=>document.activeElement===el)))
+    throw Error(label+' changed G8 selection lost keyboard focus');
+
+  // Other controls in the expanded dossier must not close the outer panel.
+  await pair.locator('[data-cs-sort="return"]').click();
+  if(!await pair.evaluate(el=>el.open)||!await methods.evaluate(el=>el.open))
+    throw Error(label+' changing G8 peer sorting collapsed analysis panels');
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth+2);
   if(overflow)throw Error(label+' G8 first-read caused horizontal overflow');
   await page.locator('#content').screenshot({
