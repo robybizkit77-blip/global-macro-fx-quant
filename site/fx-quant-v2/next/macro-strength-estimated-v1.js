@@ -117,6 +117,56 @@
   return {score:0,kind:'MANCANTE',asof:null,changeBp:null,quality:'ASSENTE',
     description:'Variazione 6M ufficiale e 2Y comparabile non disponibili: contributo omesso'};
  }
+ // An economic thesis is NOT a price trend. Only the daily-timing lens uses price.
+ // Categorical research rules are heuristic, not fitted, predictive or tradable.
+ function assessThesisTrade({favored,base,quote,macroGap,policyGap,aligned,opposite,move5}){
+  const direction=favored===base?.ccy?1:favored===quote?.ccy?-1:0;
+  const relativeMacro=macroGap*direction;
+  const relativePolicy=policyGap*direction;
+  const rateReady=base?.rate?.quality!=='ASSENTE'&&quote?.rate?.quality!=='ASSENTE'&&
+    Boolean(base?.rate?.quality&&quote?.rate?.quality);
+  const macroState=!direction?'NON DISTINTA':relativeMacro>=0.12?'FAVOREVOLE':
+    relativeMacro<=-0.12?'CONTRARIA':'NON DECISIVA';
+  const policyState=!direction?'NON DISTINTA':!rateReady?'ASSENTE':
+    relativePolicy>=0.10?'FAVOREVOLE':relativePolicy<=-0.10?'CONTRARIA':'NON DECISIVA';
+  const bothSupported=macroState==='FAVOREVOLE'&&policyState==='FAVOREVOLE';
+  const anyAgainst=macroState==='CONTRARIA'||policyState==='CONTRARIA';
+  const anySupport=macroState==='FAVOREVOLE'||policyState==='FAVOREVOLE';
+  const complete=bothSupported&&!base.partial&&!quote.partial&&
+    base.rate.quality==='UFFICIALE'&&quote.rate.quality==='UFFICIALE';
+  const thesisStrength=!direction?'NON DISTINTA':anyAgainst?'CONTRASTATA':
+    complete?'COERENTE':anySupport?'PARZIALE':'NON DISTINTA';
+  const relative5=move5*direction;
+  const fiveState=!direction||!finite(move5)||Math.abs(move5)<0.05?'INDECISO':
+    relative5>0?'COERENTE':'CONTRARIO';
+  const tradeAttractiveness=!direction||thesisStrength==='NON DISTINTA'?'NON VALUTABILE':
+    thesisStrength==='CONTRASTATA'?'NON SUPPORTATA':
+    opposite||fiveState==='CONTRARIO'?'BASSA ORA':
+    aligned&&fiveState==='COERENTE'?'DA VALIDARE':'IN ATTESA';
+  const macroText=macroState==='FAVOREVOLE'?'il momentum economico sostiene la direzione':
+    macroState==='CONTRARIA'?'il momentum economico è contrario':
+    'il momentum economico non distingue le due valute';
+  const rateText=policyState==='ASSENTE'?'il confronto delle variazioni monetarie è incompleto':
+    policyState==='FAVOREVOLE'?'le variazioni dei riferimenti monetari sostengono la direzione':
+    policyState==='CONTRARIA'?'le variazioni monetarie sono contrarie':
+    'le variazioni monetarie non aggiungono una direzione netta';
+  const sourceNote=base?.partial||quote?.partial?
+    ' Copertura parziale: dati macro mancanti o tassi governativi usati come proxy.':'';
+  const thesisReason=direction?macroText+'; '+rateText+'.'+sourceNote:
+    'Macro e variazioni monetarie non mostrano un vantaggio fondamentale sufficientemente distinto.';
+  const tradeReason=tradeAttractiveness==='NON VALUTABILE'?
+    'Non emerge una direzione fondamentale da valutare come possibile trade.':
+    tradeAttractiveness==='NON SUPPORTATA'?
+    'Una delle componenti fondamentali contraddice la direzione stimata: il prezzo non basta a risolvere il conflitto.':
+    tradeAttractiveness==='BASSA ORA'?
+    'Il prezzo su 20 oppure sulle ultime 5 sedute BCE è contrario alla tesi: il timing daily è sfavorevole.':
+    tradeAttractiveness==='DA VALIDARE'?
+    'I movimenti su 5 e 20 fixing BCE sono coerenti, ma mancano trigger, struttura H4 e rischio/rendimento verificati.':
+    'La coerenza del prezzo daily non è ancora uniforme: monitorare, senza anticipare un ingresso.';
+  return {thesisStrength,tradeAttractiveness,macroState,policyState,fiveState,
+    thesisReason,tradeReason,rateReady,entryValidated:false,thesisValidatedOOS:false};
+ }
+
  function evaluate({observed,prices,ois,rates,model,now,rankingFn}){
   if(!day(now)||!sourceOK(observed,prices,now))return fails('Fotografia economica o fixing non aggiornati, incoerenti o non verificabili.');
   const rank=typeof rankingFn==='function'?rankingFn(prices,now,FX):null;
@@ -145,7 +195,11 @@
   const by=Object.fromEntries(currencies.map(x=>[x.ccy,x]));
   const row=prices.rows.find(x=>x.Date===rank.asof);
   const first=prices.rows.find(x=>x.Date===rank.from);
-  if(!row||!first)return fails('Punti di prezzo necessari al confronto assenti.');
+  const common=prices.rows.filter(r=>day(r?.Date)&&r.Date<=now&&
+   FX.every(c=>finite(r[c])&&r[c]>0)).sort((a,b)=>a.Date.localeCompare(b.Date));
+  const fifth=common.at(-6);
+  if(!row||!first||!fifth||common.at(-1)?.Date!==rank.asof)
+   return fails('Punti di prezzo a 5/20 fixing necessari al confronto assenti.');
   const keys=Object.keys(model?.pairs||{}).sort();
   if(keys.length!==28||new Set(keys).size!==28||
     !keys.every(k=>/^[A-Z]{6}$/.test(k)&&by[k.slice(0,3)]&&by[k.slice(3)]&&k.slice(0,3)!==k.slice(3)))
@@ -153,18 +207,31 @@
   const pairs=[];
   for(const key of keys){
    const a=key.slice(0,3),b=key.slice(3),base=by[a],quote=by[b];
-   const delta=base.score-quote.score;
-   const favored=Math.abs(delta)>=0.22?(delta>0?a:b):null;
+   const delta=base.score-quote.score; // Mixed currency ranking, includes price; audit only.
+   const core=base.macroScore-quote.macroScore;
+   const ratesUsable=base.rate.quality!=='ASSENTE'&&quote.rate.quality!=='ASSENTE';
+   const rateGap=ratesUsable?base.policyScore-quote.policyScore:0;
+   // The pair's favored side is formed without price: economic momentum + 
+   // within-instrument weekly rate changes. No 20-day price circularity.
+   const thesisGap=0.5*core+0.3*rateGap;
+   const favored=Math.abs(thesisGap)>=0.22?(thesisGap>0?a:b):null;
    const baseMove=100*((row[b]/row[a])/(first[b]/first[a])-1);
-   if(!finite(baseMove))return fails('Confronto FX non finito '+key);
+   const move5=100*((row[b]/row[a])/(fifth[b]/fifth[a])-1);
+   if(!finite(baseMove)||!finite(move5))return fails('Confronto FX non finito '+key);
    const priceSide=Math.abs(baseMove)>=0.15?(baseMove>0?a:b):null;
    const aligned=Boolean(favored&&priceSide===favored);
    const opposite=Boolean(favored&&priceSide&&priceSide!==favored);
-   const core=base.macroScore-quote.macroScore;
-   const rateGap=base.policyScore-quote.policyScore;
-   const tier=!favored?4:opposite?3:aligned?1:2;
-   const stage=!favored?'Vantaggio stimato non distinto':opposite?'Prezzo contrario alla stima':
+   const assessment=assessThesisTrade({
+    favored,base,quote,macroGap:core,policyGap:rateGap,aligned,opposite,move5
+   });
+   let tier=!favored?4:opposite?3:aligned?1:2;
+   let stage=!favored?'Vantaggio fondamentale non distinto':opposite?'Prezzo contrario alla tesi':
     aligned?'Allineamento da verificare':'Prezzo non conferma ancora';
+   if(assessment.thesisStrength==='NON DISTINTA'){tier=4;stage='Tesi fondamentale non distinta';}
+   else if(assessment.thesisStrength==='CONTRASTATA'){tier=Math.max(tier,3);stage='Tesi fondamentale contrastata';}
+   else if(assessment.tradeAttractiveness==='BASSA ORA'){
+    tier=Math.max(tier,3);stage='Timing daily sfavorevole';
+   }
    const story=!favored?
     'Momentum economico, contributo tassi e prezzo non separano abbastanza '+a+' da '+b+'.':
     'La stima relativa favorisce '+favored+'; '+(core>0?'macro più favorevole per '+a:
@@ -175,11 +242,12 @@
    pairs.push({key,name:a+'/'+b,base:a,quote:b,favored,bias:favored?(favored===a?'LONG':'SHORT'):'NESSUNO',
      tier,stage,story,missing:'Verificare sorprese macro relative, pricing comparabile e reazione del prezzo prima di valutare un ingresso.',
      priceText:'20 fixing BCE · '+(baseMove>0?'+':'')+baseMove.toFixed(2)+'% '+a+'/'+b,
-     pricePercent:baseMove,priceSide,aligned,opposite,scoreGap:delta,macroGap:core,
-     policyGap:rateGap,quality:'STIMA '+(base.partial||quote.partial?'PARZIALE':'COMPLETA'),
+     pricePercent:baseMove,move5Percent:move5,priceSide,aligned,opposite,scoreGap:delta,
+     thesisGap,macroGap:core,policyGap:rateGap,...assessment,
+     quality:'STIMA '+(base.partial||quote.partial?'PARZIALE':'COMPLETA'),
      risk:base.partial||quote.partial,valid:false,source:'STIMA_ESPLICITA_V1'});
   }
-  pairs.sort((a,b)=>a.tier-b.tier||Math.abs(b.scoreGap)-Math.abs(a.scoreGap)||a.key.localeCompare(b.key));
+  pairs.sort((a,b)=>a.tier-b.tier||Math.abs(b.thesisGap)-Math.abs(a.thesisGap)||a.key.localeCompare(b.key));
   return {status:'STIMA_OPERATIVA_NON_VALIDATA',schema:'GMFQ_MACRO_STRENGTH_ESTIMATED_V1',
    asof:observed.generated_europe_rome_day,priceAsOf:rank.asof,priceFrom:rank.from,
    legacyMacroAsOf:observed.canonical_D_macro_baseline_as_of,
@@ -188,9 +256,9 @@
     official6M:currencies.filter(x=>x.rate.quality==='UFFICIALE').length},
    method:{economic:0.5,policy:0.3,price:0.2,gdpAcceleration:0.45,gdpLevel:0.2,labour:0.35,
     fixedHeuristic:true,validatedOutOfSample:false,entrySignals:false},
-   warning:'Stima interpretativa, non backtest né vantaggio statistico. Serie macro riviste, crescita non comparabile per livelli, strumenti OIS/Futures/2Y non omogenei. Ranking e bias stimati non sono segnali di ingresso.'};
+   warning:'Stima interpretativa, non backtest né vantaggio statistico. La direzione della tesi FX usa macro e variazioni monetarie, non il prezzo. Il fixing BCE a 5/20 sedute riguarda solo il timing osservato. Serie macro riviste e tassi OIS/Futures/2Y non omogenei. Nessun trade è validato senza trigger, livelli e rischio/rendimento.'};
  }
- const api={evaluate,sourceOK,inputCountry,repricing};
+ const api={evaluate,sourceOK,inputCountry,repricing,assessThesisTrade};
  root.FXQuantMacroEstimated=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

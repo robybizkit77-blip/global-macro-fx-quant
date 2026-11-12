@@ -263,38 +263,36 @@
   const estCountryA=estimatedMacro?.by?.[a],estCountryB=estimatedMacro?.by?.[b];
   if(currentEstimate&&estCountryA&&estCountryB){
    const preferred=currentEstimate.favored;
-   const economics=currentEstimate.macroGap>0.12?
-    'Il momentum economico stimato è più favorevole a '+a+' rispetto a '+b+'.':
-    currentEstimate.macroGap< -0.12?
-    'Il momentum economico stimato è più favorevole a '+b+' rispetto a '+a+'.':
-    'Il momentum economico stimato non separa nettamente le due economie.';
-   const partial=(estCountryA.partial||estCountryB.partial)?
-    ' Copertura parziale: accelerazione del PIL o repricing monetario non verificati per entrambe le valute.':'';
    const rateA=estCountryA.rate,rateB=estCountryB.rate;
    const market=currentEstimate.opposite?
-    'Il prezzo su 20 fixing BCE ha viaggiato in direzione opposta al vantaggio stimato: il timing non conferma.':
+    'Il prezzo su 20 fixing BCE ha viaggiato in direzione opposta alla tesi fondamentale.':
     currentEstimate.aligned?
-    'Il prezzo sui 20 fixing BCE si è mosso nella direzione stimata. È una conferma del movimento già avvenuto, non una previsione.':
-    'Il prezzo su 20 fixing BCE non offre una conferma direzionale sufficiente.';
+    'Il prezzo sui 20 fixing BCE è coerente con la tesi, ma descrive solo il movimento passato.':
+    'Il prezzo su 20 fixing BCE non offre una direzione sufficiente.';
+   const shortMarket=currentEstimate.fiveState==='CONTRARIO'?
+    ' Le ultime 5 sedute BCE sono contrarie: il momentum recente indebolisce il timing.':
+    currentEstimate.fiveState==='COERENTE'?
+    ' Anche le ultime 5 sedute BCE vanno nella stessa direzione.':
+    ' Le ultime 5 sedute BCE non mostrano un segno deciso.';
    const rates='La componente monetaria usa '+a+' '+rateA.kind+' ('+rateA.quality+
     ') e '+b+' '+rateB.kind+' ('+rateB.quality+
     '). Non confrontiamo livelli di strumenti diversi come uno spread OIS certificato.';
    const head=preferred?
-    'La stima macro/rates/prezzo favorisce '+preferred+'; '+currentEstimate.stage.toLowerCase()+'.':
-    'Nessun vantaggio relativo abbastanza distinto nella nuova stima '+a+'/'+b+'.';
-   const decision=preferred?
-    'Tesi stimata da monitorare; Trade Attractiveness non dimostrata. '+(currentEstimate.opposite?
-     'Conferma del prezzo contraria: non anticipare l’ingresso.':
-     'Serve una nuova sorpresa relativa e una conferma del prezzo prima di considerare il timing.'):
-    'La stima non distingue una valuta favorita con sufficiente chiarezza: nessun trade suggerito.';
+    'Tesi fondamentale stimata a favore di '+preferred+'. '+currentEstimate.stage+'.':
+    'Nessuna direzione fondamentale sufficientemente distinta per '+a+'/'+b+'.';
+   const decision='Trade Attractiveness: '+currentEstimate.tradeAttractiveness+
+    '. '+currentEstimate.tradeReason+
+    ' Il giudizio riguarda solo la priorità di ricerca, non un ingresso né un rendimento atteso.';
    return {available:true,key,headline:head,structural,macro:macroReading,pricing,relation,
     positioning,price:'Fixing BCE '+estimatedMacro.priceFrom+' → '+estimatedMacro.priceAsOf+
-    '. Variazione '+a+'/'+b+' '+signed(currentEstimate.pricePercent,2,'%')+
-    '. '+market+' Il vecchio orientamento prezzo del modello D è soltanto archivio.',
-    economicPoint:economics+partial,
+    '. Variazione su 20 fixing '+a+'/'+b+' '+signed(currentEstimate.pricePercent,2,'%')+
+    '; su 5 fixing '+signed(currentEstimate.move5Percent,2,'%')+
+    '. '+market+shortMarket+' Il vecchio orientamento prezzo del modello D è soltanto archivio.',
+    economicPoint:'Thesis Strength: '+currentEstimate.thesisStrength+
+     '. '+currentEstimate.thesisReason,
     baselineCaveat:'Nuova stima al '+estimatedMacro.asof+
      '; il punteggio strutturale del '+macroDate+' non contribuisce alla nuova classifica.',
-    currentMacro,marketPoint:market,monetaryCaveat:rates,
+    currentMacro,marketPoint:market+shortMarket,monetaryCaveat:rates,
     crowding:' Il COT resta una prova separata e non è stato convertito in un voto automatico.',
     invalidation:preferred?
      'Dati su crescita o disoccupazione che invertano il momentum relativo, un repricing verificato contrario, oppure prezzi persistenti contro '+preferred+

@@ -82,6 +82,8 @@
   const eligible=items.filter(x=>x&&/^[A-Z]{6}$/.test(x.key||'')&&
    x.base===x.key.slice(0,3)&&x.quote===x.key.slice(3)&&
    (x.favored===x.base||x.favored===x.quote)&&
+   (x.thesisStrength==='COERENTE'||x.thesisStrength==='PARZIALE')&&
+   (x.tradeAttractiveness==='DA VALIDARE'||x.tradeAttractiveness==='IN ATTESA')&&
    (x.tier===1||x.tier===2));
   const chosen=[],exposure=Object.create(null),direction=Object.create(null);
   const byOriginalRank=(a,b)=>eligible.indexOf(a)-eligible.indexOf(b);
@@ -121,16 +123,14 @@
   const shortlistNote=top.length<5?
    'Oggi solo '+top.length+' coppie rispettano il filtro: non inseriamo casi senza vantaggio netto o con prezzo contrario per raggiungere quota cinque.':
    'Cinque casi di ricerca selezionati cercando di limitare l’esposizione ripetuta alle stesse valute.';
-  const rankLabel=x=>x.tier===1?'Conferma da studiare':x.tier===2?'Attesa prezzo':
-    x.tier===3?'Prezzo contrario':'Vantaggio non distinto';
   const shortReading=x=>{
    const fav=x.favored===x.base?1:-1;
    const component=(n,threshold)=>!Number.isFinite(n)||Math.abs(n)<threshold?
     'non decisiva':n>0?'a favore':'contraria';
    const macro=component(x.macroGap*fav,0.10);
    const policy=component(x.policyGap*fav,0.10);
-   const price=x.aligned?'coerente con il movimento stimato':'non ancora decisivo';
-   return 'Stima '+x.favored+': macro '+macro+'; componente tassi '+policy+
+   const price=x.opposite?'contrario':x.aligned?'coerente sui 20 fixing':'non ancora decisivo';
+   return 'Tesi '+x.favored+': macro '+macro+'; variazioni tassi '+policy+
     ' (fonti anche proxy); prezzo '+price+'.';
   };
   const row=(x,i,featured=false)=>'<button class="fx-rank-pair '+
@@ -142,8 +142,8 @@
    '<span class="fx-rank-pair-copy"><strong>'+esc(featured?shortReading(x):x.story)+'</strong>'+
    '<small>'+esc((featured&&x.risk?'Fonti parziali · ':'')+x.priceText)+'</small></span>'+
    '<span class="fx-rank-pair-badges"><span class="fx-rank-pill tier-'+x.tier+'">'+
-   esc(rankLabel(x))+'</span><span class="fx-rank-minor">'+
-   esc(x.quality)+'</span></span>'+
+   'TESI · '+esc(x.thesisStrength)+'</span><span class="fx-rank-minor">'+
+   'TRADE · '+esc(x.tradeAttractiveness)+'</span></span>'+
    '<span class="fx-rank-open">Apri tesi ›</span></button>';
   const worst=active?Math.max(...est.currencies.map(x=>Math.abs(x.score)),.0001):1;
   const currencyBody=active?'<div class="fx-rank-currency-list">'+est.currencies.map((x,i)=>{
@@ -163,7 +163,7 @@
   return '<div class="fx-ranking-desk" id="fx-ranking-desk">'+
    '<div class="fx-rank-intro"><div><span class="mini-overline">FX / STIMA OPERATIVA V1</span>'+
    '<h2>Chi mostra più forza relativa? <em>Quali coppie meritano verifica?</em></h2>'+
-   '<p>La classifica operativa utilizza il nuovo motore stimato su economia, variazioni dei tassi e prezzo. Il vecchio modello del 25 settembre rimane archivio, non decide queste posizioni.</p></div></div>'+
+   '<p>La graduatoria G8 riassume macro, tassi e prezzo; nelle coppie la tesi direzionale nasce soltanto da macro e variazioni monetarie. Il prezzo viene valutato a parte per il timing. Il vecchio modello del 25 settembre rimane archivio, non decide queste posizioni.</p></div></div>'+
    '<div class="fx-rank-two">'+
    '<section class="fx-rank-box" aria-label="Classifica stimata G8"><div class="fx-rank-head"><div><span>01 / VALUTE G8</span>'+
    '<h3>Stima relativa · otto valute</h3></div><small>NON SEGNALE</small></div>'+
@@ -175,7 +175,7 @@
    '<section class="fx-rank-box" aria-label="Cinque coppie FX stimate da studiare">'+
    '<div class="fx-rank-head"><div><span>02 / SELEZIONE FX</span><h3>Fino a 5 coppie da studiare</h3></div>'+
    '<small>STIMA, NON INGRESSO</small></div>'+
-   '<p class="fx-rank-sub">Selezione dalla classifica stimata: solo vantaggi relativi distinguibili, senza prezzo contrario. Priorità a tesi diverse, non a cinque ingressi.</p>'+
+   '<p class="fx-rank-sub">Solo tesi con almeno un sostegno fondamentale e senza controprova daily immediata. Thesis Strength e Trade Attractiveness non sono la stessa cosa: nessuna delle due è un segnale di ingresso.</p>'+
    (active?'<p class="fx-rank-source">'+esc(shortlistNote)+'</p>':'')+
    (caution?'<p class="fx-rank-top-caution">'+esc(caution)+'</p>':'')+
    (top.length?'<div class="fx-rank-featured">'+top.map((x,i)=>row(x,i,true)).join('')+'</div>':
@@ -183,14 +183,14 @@
    '<section class="fx-rank-box fx-rank-all" aria-label="Classifica completa delle ventotto coppie">'+
    '<div class="fx-rank-head"><div><span>03 / CROSS G8</span>'+
    '<h3>Classifica completa · '+items.length+' coppie</h3></div><small>STIMA DI RICERCA</small></div>'+
-   '<p class="fx-rank-sub">Le prime posizioni indicano coerenza da esaminare, non un trade. Nessun bias deriva dai vecchi score D.json.</p>'+
+   '<p class="fx-rank-sub">TESI = coerenza macro e variazioni monetarie; TRADE = valutazione preliminare del timing sui 5 e 20 fixing. Senza struttura H4, trigger e rischio/rendimento, l’attrattività di ingresso non è certificata.</p>'+
    (items.length?'<div class="fx-rank-all-list">'+items.map((x,i)=>row(x,i)).join('')+'</div>':
     '<p class="fx-rank-unavailable">Ranking sospeso per fonti non aggiornate o incoerenti.</p>')+
    '<p class="fx-rank-source">'+esc(active?('Stima '+date(est.asof)+
     ' · fixing BCE '+date(est.priceFrom)+' → '+date(est.priceAsOf)):
     'Motore stimato non disponibile')+'. '+esc(noTrade)+'</p>'+
    '<details class="fx-rank-method"><summary>Come è costruita la stima e cosa manca</summary>'+
-   '<p>Indice euristico: 50% momentum economico nazionale (45% accelerazione PIL, 20% segno del PIL, 35% variazione disoccupazione), 30% direzione del riferimento monetario settimanale, 20% forza del prezzo sui 20 fixing BCE comuni. Non si confrontano direttamente livelli di PIL fra paesi. Contributi mancanti: omessi, non stimati zero come osservazione; qualità parziale dichiarata. Dove manca OIS/futures ufficiale, il 2Y governativo è un proxy attenuato, non una misura di aspettative Fed/ECB. L’inflazione è un contesto di pressione, non un voto meccanico a favore della valuta. Nessuna calibrazione statistica né backtest validato.</p>'+
+   '<p>Per il ranking delle valute: indice euristico con 50% momentum economico nazionale (45% accelerazione PIL, 20% segno del PIL, 35% variazione disoccupazione), 30% direzione del riferimento monetario settimanale, 20% forza del prezzo sui 20 fixing BCE comuni. Per la tesi delle coppie il prezzo è escluso; la componente fondamentale usa 50% economia e 30% variazioni monetarie, con soglia descrittiva fissa. Il timing considera separatamente i movimenti a 5 e 20 fixing. Non si confrontano direttamente livelli di PIL fra paesi. Contributi mancanti: omessi, non stimati zero come osservazione; qualità parziale dichiarata. Dove manca OIS/futures ufficiale, il 2Y governativo è un proxy attenuato, non una misura di aspettative Fed/ECB. L’inflazione è un contesto di pressione, non un voto meccanico a favore della valuta. Nessuna calibrazione statistica né backtest validato.</p>'+
    '<p>'+esc(est?.warning||'Le osservazioni non consentono oggi una valutazione affidabile.')+'</p>'+
    '</details></section></div>';
  }
