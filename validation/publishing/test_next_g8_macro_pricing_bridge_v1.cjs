@@ -68,7 +68,7 @@ for(const ccy of ['USD','EUR','CHF']){
 assert.equal(d.currencies.NZD.market.tier,'PROXY');
 assert.equal(d.currencies.NZD.market.bp,3);
 assert.match(d.currencies.NZD.market.text,/NON misura un OIS RBNZ/);
-assert.equal(d.currencies.NZD.market.asof,'2026-11-11');
+assert.equal(d.currencies.NZD.market.asof,data.ois.currencies.NZD.as_of,'Live NZD pricing proxy must use its actual dated source, not a hard-coded prior session');
 assert.equal(d.currencies.GBP.macro.pressure,'RESTRITTIVA_CONDIZIONALE');
 assert.equal(d.currencies.JPY.macro.pressure,'RESTRITTIVA_CONDIZIONALE');
 // This is a LIVE weekly change, not an eternally falling 6M reference.

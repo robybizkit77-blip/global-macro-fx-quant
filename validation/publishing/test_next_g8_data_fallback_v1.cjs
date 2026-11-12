@@ -80,10 +80,34 @@ assert.equal(shadow.currencies.CHF.status,'STIMA_MODELLO_RICERCA',JSON.stringify
 assert(shadow.currencies.CHF.estimate2Y>0.18&&shadow.currencies.CHF.estimate2Y<0.25);
 assert(shadow.currencies.CHF.pseudoOOSCount>=10);
 assert(shadow.currencies.CHF.modelMAEBp<shadow.currencies.CHF.flatBaselineMAEBp);
-assert.equal(shadow.currencies.NZD.status,'STIMA_SCENARIO_NON_CALIBRATA',JSON.stringify(shadow.currencies.NZD));
-assert.equal(shadow.currencies.NZD.estimate2Y,3.80);
-assert.equal(shadow.currencies.NZD.lower2Y,3.77);
-assert.equal(shadow.currencies.NZD.upper2Y,3.83);
+// A current ASX observation two trading days after the RBNZ anchor is NOT
+// an admissible one-day pass-through. This is a valid absence, not a failing model.
+const nzdLive=shadow.currencies.NZD;
+assert(['NON_DISPONIBILE','STIMA_SCENARIO_NON_CALIBRATA'].includes(nzdLive.status));
+if(nzdLive.status==='NON_DISPONIBILE'){
+ assert.match(nzdLive.reason,/NZD: non c’è un movimento futures omogeneo del giorno successivo/);
+ assert.equal(nzdLive.eligibleForCore,false);
+ assert.equal(nzdLive.eligibleForBacktests,false);
+}else{
+ assert.equal(nzdLive.estimate2Y,3.80);
+ assert.equal(nzdLive.lower2Y,3.77);
+ assert.equal(nzdLive.upper2Y,3.83);
+}
+// Deterministic SAME-NEXT-DAY synthetic fixture keeps the sensitivity
+// calculation covered, without turning any actual Nov 12 futures quote into
+// a fictitious Nov 11 market observation.
+const nzdNextDay=structuredClone(nzdDirectionalProxy);
+nzdNextDay.as_of='2026-11-11';
+nzdNextDay.source_url='https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261111ZFT.htm';
+const syntheticNZD=ctx.window.FXQuantG8RatesShadow.analyze({
+ research:context,chfHistory:chfResearch,nzdResearch,spot:chfSpot,
+ nzdMarket:nzdNextDay,now
+}).currencies.NZD;
+assert.equal(syntheticNZD.status,'STIMA_SCENARIO_NON_CALIBRATA',JSON.stringify(syntheticNZD));
+const nzdAnchor=nzdResearch.daily_observations.at(-1)['2Y'];
+assert.equal(syntheticNZD.estimate2Y,Math.round((nzdAnchor-0.015)*1000)/1000);
+assert.equal(syntheticNZD.lower2Y,Math.round((nzdAnchor-0.03)*1000)/1000);
+assert.equal(syntheticNZD.upper2Y,nzdAnchor);
 assert.equal(shadow.currencies.CHF.eligibleForCore,false);
 assert.equal(shadow.currencies.NZD.eligibleForCore,false);
 const badSpot=structuredClone(chfSpot);badSpot.as_of='2026-11-13';
@@ -159,13 +183,19 @@ const makeHtml=ccy=>ctx.window.FXQuantCurrencies.render({
 });
 const chfHtml=makeHtml('CHF'),nzdHtml=makeHtml('NZD');
 assert(chfHtml.includes('0.210% · STIMA')||chfHtml.includes('0,210% · STIMA'), 'CHF shadow estimate in G8 board');
-assert(nzdHtml.includes('3.800% · STIMA')||nzdHtml.includes('3,800% · STIMA'), 'NZD explicit scenario in G8 board');
+if(nzdLive.status==='STIMA_SCENARIO_NON_CALIBRATA')
+ assert(nzdHtml.includes('3.800% · STIMA')||nzdHtml.includes('3,800% · STIMA'), 'NZD explicit scenario in G8 board');
+else
+ assert(!nzdHtml.includes('3.800% · STIMA')&&!nzdHtml.includes('3,800% · STIMA'),
+  'Expired NZD sensitivity must not remain on the G8 board');
 assert(chfHtml.includes('2Y · stima (non quotazione)'));
-assert(nzdHtml.includes('2Y · stima (non quotazione)'));
+if(nzdLive.status==='STIMA_SCENARIO_NON_CALIBRATA')
+ assert(nzdHtml.includes('2Y · stima (non quotazione)'));
 assert(chfHtml.includes('NON è un rendimento live'));
 assert(nzdHtml.includes('manca la riconciliazione XLSX'));
 assert(chfHtml.includes('intervallo di sensibilità/errore indicativo'), 'Uncertainty shown for CHF');
-assert(nzdHtml.includes('SCENARIO')||nzdHtml.includes('Scenario'), 'NZD uncalibrated sensitivity must be labelled');
+if(nzdLive.status==='STIMA_SCENARIO_NON_CALIBRATA')
+ assert(nzdHtml.includes('SCENARIO')||nzdHtml.includes('Scenario'), 'NZD uncalibrated sensitivity must be labelled');
 assert(!chfHtml.includes('0,238% · +'), 'CHF 2Y level is not rate change');
 assert(html.includes('proxy'), 'Indicative quote reaches G8 UI');
 assert(html.includes('4,50%')||html.includes('4.50%'), 'Indicative USD 6M quote is dated and displayed');
