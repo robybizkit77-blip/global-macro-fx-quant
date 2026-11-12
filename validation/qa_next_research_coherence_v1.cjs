@@ -53,9 +53,22 @@ assert.match(baseline.article,/class="letter-evidence"/);
 assert.match(baseline.article,/class="dashboard-kpi-grid"/);
 assert.match(baseline.article,/class="dashboard-analysis"/);
 assert.match(baseline.article,/LA LETTURA FX DEL DESK/);
-assert.match(baseline.article,/NZD/);
-assert.match(baseline.article,/CHF/);
-assert.match(baseline.article,/AUD/);
+// This historical synthetic test is anchored on 10 November. The real
+// repository now contains ECB/model snapshots dated 12 November. The
+// older first read MUST withhold a current G8 ranking, not hallucinate
+// strength for arbitrary currencies when a source comes from the future.
+const historicalDay='2026-11-10';
+const sourceAhead=[initial.currencyPrices.last_as_of,initial.pairs.price_asof]
+ .some(d=>validDay(d)&&d>historicalDay);
+if(sourceAhead){
+ assert.match(baseline.article,/non sono allineati|manca ancora una lettura relativa verificabile/i,
+  'Unsynchronized/future snapshots must suspend current FX relative claims');
+ assert.match(baseline.article,/nessuna selezione automatica/i,
+  'Missing same-date evidence cannot generate a Forex shortlist');
+}else{
+ assert.match(baseline.article,/NZD|CHF|AUD/,
+  'With aligned inputs the G8 currency narratives must remain accessible');
+}
 assert.match(baseline.article,/FORZA RELATIVA G8/);
 assert.match(baseline.article,/class="dashboard-reading-story"/);
 assert.match(baseline.article,/dashboard-reading-source-links/,'Narrative must link to the underlying research');
@@ -92,8 +105,12 @@ stress.risk.streams.HY_OAS.previous=3.1;stress.risk.streams.HY_OAS.value=3.45;
 stress.pairs.price_asof=initial.currencyPrices.last_as_of;
 let x=evaluate(stress,'2026-11-10');
 assert.equal(x.context.kind,'stress');
-assert.match(x.article,/NZD/,'A risk shock cannot replace G8 currency analysis');
-assert.match(x.article,/CHF/);
+assert.match(x.article,/FX G8/,
+ 'A risk shock cannot replace the Forex-first thesis with an equity-only narrative');
+assert.match(x.article,/dashboard-reading-source-links/,
+ 'Even in a risk shock the user must reach G8 currencies and paired FX research');
+if(sourceAhead)assert.match(x.article,/non sono allineati|nessuna selezione automatica/i,
+ 'Risk-off must not bypass missing or future-dated Forex snapshots');
 assert.equal(x.context.focus,'nasdaq');
 assert.match(x.article,/data-research-kind="stress"/);
 assert.match(x.article,/Il mio giudizio\./,'The Home needs an explicit market verdict');
