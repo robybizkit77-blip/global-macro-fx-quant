@@ -16,6 +16,16 @@ The persisted receipt includes UTC/Europe-Rome capture time, exact main commit, 
 - A forecast is for the **next change of the selected indicator**, not aggregate GDP, policy, spot FX, risk, or position sizing.
 - There are **no** operational forecast signals and no effects on FX G8 rankings, the 28-pair engine, historical backtests, or daily macro data.
 
+## First-seen outcome scoring (automatic)
+After a daily capture, the same existing Macro workflow scans archived first-seen research receipts and **creates** a new immutable file under `outcomes/CCY-YYYY-MM.json` only when a later snapshot first contains the previously unobserved target period.
+
+The scorer uses the **earliest** registered qualified forecast for each currency and target (not a later, more accurate fit) and the **first subsequent snapshot** with that target period (not its revised value months later). It records:
+- frozen predicted change, later first-seen change, the no-change benchmark, both absolute errors, and direction agreement;
+- the change in the prior-period baseline between prediction and observation, so source revisions are visible;
+- source commits/hashes and capture timestamps for both ends.
+
+An outcome is **not** an issuer first-release PIT assessment: the issuer may have published the value before FX Quant captured it. This caveat persists in every outcome, even once subsequent data arrive. The scorer never changes any prediction or trading engine.
+
 ## Future validation
 Once a newly observed target period appears in a **subsequent** immutable capture, measure its first-seen error against the earlier frozen forecast and a frozen no-change baseline. Do not replace the earlier prediction with the newest fit, and track subsequent revised outcomes separately. A genuine issuer first-release PIT test still requires timestamped release-vintage acquisition, verified release calendars, and adequate genuine prospective samples.
 
