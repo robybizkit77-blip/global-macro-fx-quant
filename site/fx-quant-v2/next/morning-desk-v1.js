@@ -39,14 +39,10 @@
   const ranking=estimated.currencies.slice().sort((a,b)=>a.rank-b.rank);
   const topCcy=ranking[0]?.ccy,lastCcy=ranking.at(-1)?.ccy;
   if(!/^[A-Z]{3}$/.test(topCcy||'')||!/^[A-Z]{3}$/.test(lastCcy||''))return '';
-  const chosen=selectResearchPairs(estimated.pairs,5).slice(0,3).filter(x=>
+  const selected=selectResearchPairs(estimated.pairs,5).slice(0,3).filter(x=>
    x&&/^[A-Z]{6}$/.test(x.key)&&
-   x.favored===x.base||false);
-  // Re-run a strict source/identity gate without requiring an entry signal.
-  const selected=chosen.filter(x=>x&&x.thesisStrength&&x.tradeAttractiveness)
-   .concat(selectResearchPairs(estimated.pairs,5).slice(0,3).filter(x=>
-    x&&/^[A-Z]{6}$/.test(x.key)&&x.favored===x.quote&&
-    !chosen.some(y=>y.key===x.key))).slice(0,3);
+   (x.favored===x.base||x.favored===x.quote)&&
+   typeof x.thesisStrength==='string'&&typeof x.tradeAttractiveness==='string');
   const lead='Nel ranking combinato G8 la stima colloca '+topCcy+
    ' nella posizione più forte e '+lastCcy+' in quella più debole. Non è una prova di flussi o una previsione: per le coppie la direzione fondamentale nasce da macro e variazioni monetarie, mentre il prezzo serve solo a valutare il timing.';
   const showPair=x=>{
