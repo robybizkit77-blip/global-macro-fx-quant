@@ -1,6 +1,14 @@
 name: FX Quant NEXT isolated design and interaction QA
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'site/fx-quant-v2/next/**'
+      - 'validation/qa_fxquant_next.cjs'
+      - 'validation/qa_next_research_coherence_v1.cjs'
+      - '.github/workflows/fxquant-next-preview-qa.yml'
+      - '.github/workflows/fx-quant-next-research-coherence.yml'
   push:
     branches: [main]
     paths:
@@ -14,7 +22,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: fxquant-next-preview-qa
+  group: ${{ github.event_name == 'pull_request' && format('fxquant-next-preview-qa-pr-{0}', github.event.pull_request.number) || 'fxquant-next-preview-qa-main' }}
   cancel-in-progress: true
 
 jobs:
@@ -40,7 +48,7 @@ jobs:
             sleep 1
           done
           exit 1
-      - name: QA eight research sections, live data wiring and interactive controls on desktop/mobile
+      - name: QA nine research routes and click-to-open FX dossiers on desktop/mobile
         run: node validation/qa_fxquant_next.cjs
       - name: Package the real site as one offline-review HTML
         run: python3 validation/build_fxquant_next_offline.py
@@ -52,7 +60,7 @@ jobs:
           path: fxquant-next-offline/FX_Quant_NEXT_Anteprima_Offline.html
           if-no-files-found: warn
           retention-days: 14
-      - name: Retain 16 screenshots and functional proof
+      - name: Retain current pair-journey screenshots and functional receipt
         if: always()
         uses: actions/upload-artifact@v4
         with:

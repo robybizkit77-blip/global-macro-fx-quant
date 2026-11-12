@@ -53,9 +53,22 @@ assert.match(baseline.article,/class="letter-evidence"/);
 assert.match(baseline.article,/class="dashboard-kpi-grid"/);
 assert.match(baseline.article,/class="dashboard-analysis"/);
 assert.match(baseline.article,/LA LETTURA FX DEL DESK/);
-assert.match(baseline.article,/NZD/);
-assert.match(baseline.article,/CHF/);
-assert.match(baseline.article,/AUD/);
+// This historical synthetic test is anchored on 10 November. The real
+// repository now contains ECB/model snapshots dated 12 November. The
+// older first read MUST withhold a current G8 ranking, not hallucinate
+// strength for arbitrary currencies when a source comes from the future.
+const historicalDay='2026-11-10';
+const sourceAhead=[initial.currencyPrices.last_as_of,initial.pairs.price_asof]
+ .some(d=>validDay(d)&&d>historicalDay);
+if(sourceAhead){
+ assert.match(baseline.article,/non sono allineati|manca ancora una lettura relativa verificabile/i,
+  'Unsynchronized/future snapshots must suspend current FX relative claims');
+ assert.match(baseline.article,/nessuna selezione automatica/i,
+  'Missing same-date evidence cannot generate a Forex shortlist');
+}else{
+ assert.match(baseline.article,/NZD|CHF|AUD/,
+  'With aligned inputs the G8 currency narratives must remain accessible');
+}
 assert.match(baseline.article,/FORZA RELATIVA G8/);
 assert.match(baseline.article,/class="dashboard-reading-story"/);
 assert.match(baseline.article,/dashboard-reading-source-links/,'Narrative must link to the underlying research');
@@ -68,11 +81,13 @@ assert.doesNotMatch(firstReading,/Il 2Y reagisce più direttamente|Se il front-e
 assert.match(baseline.article,/data-home-evidence/);
 assert.match(baseline.article,/FORZA RELATIVA G8/);
 assert.match(baseline.article,/28 coppie/);
-assert.match(baseline.article,/USD\/JPY/);
+if(sourceAhead)assert.match(baseline.article,/28 coppie/,'A suspended first read must still link the FX universe');
+else assert.match(baseline.article,/USD\/JPY/,'With synchronized data validate the pair-specific comparison');
 const forexOpening=baseline.article.split('<details class="dashboard-technical"')[0];
-assert(forexOpening.includes('FX G8'),'Fallback Home must remain oriented toward currencies');
+const fxPosition=forexOpening.search(/(?:FX|FOREX) G8/i);
+assert(fxPosition>=0,'Fallback Home must remain explicitly oriented toward G8 Forex');
 if(forexOpening.includes('VIX'))
- assert(forexOpening.indexOf('FX G8')<forexOpening.indexOf('VIX'),'Fallback Home cannot lead with VIX');
+ assert(fxPosition<forexOpening.indexOf('VIX'),'Fallback Home cannot lead with VIX');
 
 assert.doesNotMatch(baseline.article,/data-home-evidence open/,'Quantitative layer must start collapsed');
 assert(baseline.article.indexOf('dashboard-reading-story') <
@@ -92,14 +107,22 @@ stress.risk.streams.HY_OAS.previous=3.1;stress.risk.streams.HY_OAS.value=3.45;
 stress.pairs.price_asof=initial.currencyPrices.last_as_of;
 let x=evaluate(stress,'2026-11-10');
 assert.equal(x.context.kind,'stress');
-assert.match(x.article,/NZD/,'A risk shock cannot replace G8 currency analysis');
-assert.match(x.article,/CHF/);
+assert.match(x.article,/href="#currencies"/,
+ 'Even during an equity-led shock the user must reach the currency evidence');
+assert.match(x.article,/href="#pairs"/,
+ 'Equity stress cannot remove the direct 28-pair research path');
+assert.match(x.article,/dashboard-reading-source-links/,
+ 'Even in a risk shock the user must reach G8 currencies and paired FX research');
+if(sourceAhead)assert.match(x.article,/non sono allineati|nessuna selezione automatica/i,
+ 'Risk-off must not bypass missing or future-dated Forex snapshots');
 assert.equal(x.context.focus,'nasdaq');
 assert.match(x.article,/data-research-kind="stress"/);
 assert.match(x.article,/Il mio giudizio\./,'The Home needs an explicit market verdict');
 assert.match(x.article,/disoccupazione/,'The Home must connect macro to the market narrative');
 assert.match(x.article,/EUR\/USD/,'The Home must connect FX pairs to the market narrative');
-assert.match(x.article,/USD\/JPY/,'The Home must surface price-vs-thesis divergence');
+if(!sourceAhead)assert.match(x.article,/USD\/JPY/,'Aligned data should surface price-versus-thesis divergence');
+else assert.match(x.article,/nessuna selezione automatica/i,
+ 'Unaligned future FX snapshot cannot be promoted during a historical risk shock');
 assert.match(x.article,/Credito High Yield/);
 assert.match(x.article,/Fixing FX 10\/11\/2026/);
 const mismatchedPricing=clone(stress);

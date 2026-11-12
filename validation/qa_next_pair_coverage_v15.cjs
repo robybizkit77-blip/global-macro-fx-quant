@@ -64,6 +64,16 @@ vm.createContext(stale);new vm.Script(source.slice(start,end)).runInContext(stal
 assert(Object.values(stale.pairCoverage('EURUSD')).every(v=>!v),'Old data must not claim daily coverage');
 const page=fs.readFileSync('site/fx-quant-v2/next/index.html','utf8');
 assert(page.includes('app.js?v=18')&&page.includes('editorial-v4.css?v=18'));
-assert(source.includes("pairCoverageIntro()+'</div></details>'")&&source.includes('pairs-browse-inside'),
- 'All 28 source-derived coverage counters must remain accessible in the optional Compare/Filter panel');
+// The old Compare/Filter panel was removed by the approved first-read
+// redesign. Its source-derived four-state coverage logic is still audited
+// for all 28 pairs above; the visible UI now uses a 28-row ranking and
+// collapsed source methodology, with dossiers opened only on selection.
+const rankSrc=fs.readFileSync('site/fx-quant-v2/next/pair-rankings.js','utf8');
+assert(source.includes('window.FXQuantPairRankings.render({get,FX,FLAGS,state,esc,sign,date,dayNow})')&&
+ source.includes('pairs-compact-footer')&&
+ rankSrc.includes('fx-rank-all-list')&&rankSrc.includes('fx-rank-method'),
+ 'The current 28-pair ranking and transparent source-methodology audit must remain accessible');
+assert(rankSrc.includes('Le fonti anche proxy sono dichiarate')&&
+ rankSrc.includes('fx-rank-pair'),
+ 'Partial or proxy rate coverage cannot be hidden by the simplified pair list');
 console.log('NEXT_V15_COVERAGE_PASS',JSON.stringify(totals), 'of',keys.length,'G8 FX pairs');

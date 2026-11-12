@@ -112,8 +112,19 @@ assert.equal(cadWatch.direction,1,'Favoured USD is USDCAD base');
 assert.equal(cadWatch.watch.favorable,cadWatch.breakHigh);
 assert.equal(cadWatch.watch.adverse,cadWatch.breakLow);
 assert.equal(cadWatch.watch.favorableDirection,'Sopra');
-assert(eurWatch.watch.favorableDistancePct>0&&eurWatch.watch.adverseDistancePct>0,'EURUSD inside reference range');
-assert(cadWatch.watch.favorableDistancePct>0&&cadWatch.watch.adverseDistancePct>0,'USDCAD inside reference range');
+// A breakout can already be underway. Today's fixing is NOT required to
+// remain inside the preceding 20-fixing range. The distance sign must agree
+// with the passed/not-passed state and use only previous observations.
+for(const item of [eurWatch,cadWatch]){
+ const watch=item.watch;
+ assert(watch.ready,item.key+' must retain source-dated reference levels');
+ assert(Number.isFinite(watch.favorableDistancePct)&&Number.isFinite(watch.adverseDistancePct),
+  item.key+' distance from both prior 20-fixing references must be numeric');
+ assert.equal(watch.favorablePassed,watch.favorableDistancePct<0,
+  item.key+' favorable breakout status must agree with signed distance');
+ assert.equal(watch.adversePassed,watch.adverseDistancePct<0,
+  item.key+' adverse breakout status must agree with signed distance');
+}
 const currentDailyRow=prices.rows.find(x=>x.Date===doc.price_asof);
 assert(currentDailyRow,'Current daily fixing row missing');
 function revisedToday(mutator){
@@ -197,7 +208,9 @@ assert.equal(plotOpts.referenceLines.length,0,'Stale history must not create fre
 
 const index=fs.readFileSync('site/fx-quant-v2/next/index.html','utf8');
 const app=fs.readFileSync('site/fx-quant-v2/next/app.js','utf8');
-assert(index.includes('decision-journey.js?v=18')&&index.indexOf('decision-journey.js')<index.indexOf('app.js?v=18'));
+assert(/decision-journey\.js\?v=[\w.-]+/.test(index)&&
+ index.indexOf('decision-journey.js')<index.indexOf('app.js'),
+ 'Decision engine must be versioned and load before the main Next app');
 assert(index.includes('editorial-v4.css?v=18'));
 assert(app.includes('window.FXQuantDecisionJourney?.build'));
 assert(app.includes('[data-v9-price-window]'));
