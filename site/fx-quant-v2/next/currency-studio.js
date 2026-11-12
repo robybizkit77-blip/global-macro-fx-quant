@@ -132,26 +132,39 @@ function build(api){
   })||{rows:[],priceRanking:null,asof:null};
  }
  function strengthBoard(){
-  const result=strengthView();
-  const rankDate=result.priceRanking?
-   '20 fixing BCE · '+date(result.priceRanking.from)+' → '+date(result.priceRanking.asof):
-   'Fixing BCE comuni insufficienti: classifica non verificabile';
-  const rows=(result.rows||[]).map(x=>{
+  const result=strengthView(),estimate=get('estimatedMacro');
+  const estimated=estimate?.status==='STIMA_OPERATIVA_NON_VALIDATA';
+  const rankDate=estimated?
+   'STIMA · Macro '+date(estimate.asof)+' · BCE '+date(estimate.priceAsOf):
+   'Stima sospesa: prezzo BCE mostrato separatamente';
+  const rows=(estimated?[...result.rows].sort((a,b)=>
+   (estimate.by[a.ccy]?.rank??99)-(estimate.by[b.ccy]?.rank??99)):
+   result.rows||[]).map(x=>{
+   const current=estimated?estimate.by[x.ccy]:null;
    const desk=root.FXQuantG8Transmission?.one?.({row:x,ois:OIS[x.ccy],
     growth:G8MACROGAP?.currencies?.[x.ccy],
     labour:G8INFLAB?.currencies?.[x.ccy],now:dayNow()})||null;
-   const rank=x.price.position?'#'+x.price.position:'—';
+   const rank=current?'#'+current.rank:(x.price.position?'P#'+x.price.position:'—');
    const m=desk?.macro||{},p=desk?.market||{},comparison=desk?.comparison||{};
-   const label=m.title||'Lettura macro da completare';
-   const directions=m.inflation&&m.labour?
-    'Inflazione '+(m.inflation==='SALE'?'↑':m.inflation==='SCENDE'?'↓':'→')+
-    ' · disoccupazione '+(m.labour==='SALE'?'↑':m.labour==='SCENDE'?'↓':'→'):
-    'Quadro macro parziale: nessuna direzione monetaria automatica';
-   const marketLabel=p.tier==='VERIFICATO'?
+   const label=current?(current.macroScore>=.25?'Momentum economico positivo':
+    current.macroScore<=-.25?'Momentum economico debole':'Momentum economico misto'):
+    m.title||'Stima non disponibile';
+   const directions=current?
+    (current.growthTrend===1?'PIL accelera':current.growthTrend===-1?'PIL rallenta':
+      'PIL: accelerazione non verificata')+
+    ' · disoccupazione '+(current.labourDirection===1?'↓':
+      current.labourDirection===-1?'↑':'→'):
+    'Componenti non sincronizzate: nessun segnale macro';
+   const marketLabel=current?(current.rate.quality==='UFFICIALE'?current.rate.kind+' 6M':
+     current.rate.quality==='PROXY'?'2Y governativo · proxy':'Attese: variazione non disponibile'):
+    p.tier==='VERIFICATO'?
     '6M '+(p.side==='SALE'?'in rialzo':p.side==='SCENDE'?'in calo':'quasi stabile'):
     p.tier==='PROXY'?'6M NZD: proxy '+(p.side==='SALE'?'in rialzo':p.side==='SCENDE'?'in calo':'stabile'):
     'Attese 6M da verificare';
-   const marketDetail=p.tier==='NON_VERIFICATO'?'Un livello futures non è un repricing':
+   const marketDetail=current?(current.rate.score>0?'Movimento restrittivo nel proxy':
+     current.rate.score<0?'Movimento distensivo nel proxy':
+     current.rate.quality==='ASSENTE'?'Contributo omesso':'Variazione contenuta / mista'):
+    p.tier==='NON_VERIFICATO'?'Un livello futures non è un repricing':
     p.tier==='PROXY'?'Bank bill, non OIS RBNZ':
     comparison.state==='SEGNI_COMPATIBILI'?'Segni compatibili, non causalità':
     comparison.state==='DIVERGENZA_DA_STUDIARE'?'Direzioni in contrasto da spiegare':
@@ -175,11 +188,11 @@ function build(api){
   return '<section class="strength-board" id="orient-strength-board" aria-label="Classifica valutaria G8 e lettura macro sintetica">'+
    '<div class="strength-board-head"><div><span class="chapter-kicker">01 / CHI SI MUOVE E PERCHÉ</span>'+
    '<h2>Otto valute. <em>La lettura in un colpo d’occhio.</em></h2>'+
-   '<p>La posizione ordina soltanto il <strong>prezzo relativo</strong>. Accanto trovi il quadro macro e ciò che sappiamo dei tassi a sei mesi: sono prove distinte, non un punteggio inventato.</p></div>'+
+   '<p>'+(estimated?'Ordine stimato da <strong>economia, movimento dei tassi e prezzo</strong>. Fonti mancanti riducono la copertura, non diventano dati inventati.':'Stima non disponibile: la graduatoria visibile resta soltanto il prezzo, non un nuovo modello.')+'</p></div>'+
    '<small>'+esc(rankDate)+'</small></div>'+
-   '<div class="strength-columns" aria-hidden="true"><span>VALUTA</span><span>IL CONTESTO MACRO</span><span>COSA DICONO I 6M</span><span>PREZZO</span><span></span></div>'+
+   '<div class="strength-columns" aria-hidden="true"><span>VALUTA</span><span>MOMENTUM ECONOMICO</span><span>POLICY / PROXY</span><span>PREZZO</span><span></span></div>'+
    '<div class="strength-rows">'+rows+'</div>'+
-   '<p class="strength-note">Seleziona una valuta per leggere il ragionamento completo. Stime, periodi, numeri e fonti sono nell’approfondimento: non incidono sulla classifica né creano segnali.</p></section>';
+   '<p class="strength-note">Stima euristica V1, non previsione statistica né segnale. I fixing BCE sono osservati; OIS, futures e 2Y non sono strumenti equivalenti. Il modello strutturale storico del 25 settembre non è usato per questa classifica.</p></section>';
  }
  function shadowResearch(){
   const t=G8SHADOW?.currencies?.[country];
@@ -229,6 +242,8 @@ function build(api){
  }
  function strengthFocus(){
   const x=strengthView().rows.find(r=>r.ccy===country);
+  const estimated=get('estimatedMacro');
+  const cur=estimated?.status==='STIMA_OPERATIVA_NON_VALIDATA'?estimated.by?.[country]:null;
   if(!x)return '<p>La lettura G8 non è disponibile finché mancano dati verificabili.</p>';
   const cb=CB[country]||{};
   const desk=root.FXQuantG8Transmission?.one?.({row:x,ois:OIS[country],
@@ -294,6 +309,26 @@ function build(api){
    desk.comparison.text:
    'Non abbiamo una variazione settimanale verificata del riferimento monetario a sei mesi: '+
    'i livelli futures disponibili non dimostrano un cambiamento delle aspettative.';
+  const estimatedEconomic=cur?
+   'La stima economica per '+country+' è '+(cur.macroScore>=.25?'favorevole':
+    cur.macroScore<=-.25?'debole':'mista')+'. '+
+   (cur.growthTrend===1?'Il PIL accelera rispetto al trimestre precedente. ':
+    cur.growthTrend===-1?'Il PIL rallenta rispetto al trimestre precedente. ':
+    'Non abbiamo due trimestri utilizzabili per misurare l’accelerazione del PIL. ')+
+   (cur.labourDirection===-1?'La disoccupazione aumenta. ':
+    cur.labourDirection===1?'La disoccupazione diminuisce. ':
+    'La variazione della disoccupazione è contenuta. ')+
+    'È una lettura di serie osservate, non un consenso o una sorpresa di mercato.':
+   desk?.macro?.why||x.reading.text;
+  const estimatedPolicy=cur?
+   (cur.rate.quality==='UFFICIALE'?
+    'Il riferimento '+cur.rate.kind+' a sei mesi registra una variazione settimanale '+
+    (cur.rate.score>0?'al rialzo':cur.rate.score<0?'al ribasso':'contenuta')+
+    '. Non è un differenziale simultaneo fra paesi e non dimostra la causa del prezzo.':
+   cur.rate.quality==='PROXY'?
+    'Usiamo soltanto il movimento del 2Y governativo come proxy attenuato: non equivale alle attese OIS della banca centrale.':
+    'Non abbiamo un movimento di tassi recente utilizzabile: la componente monetaria è omessa dalla stima.'):
+   policySummary;
   const watchSummary=desk?.market?.tier==='NON_VERIFICATO'?
    'Prima serve una variazione 6M confrontabile. Poi confronteremo i dati con il consenso e la reazione relativa della valuta nello stesso intervallo.':
    'Confronta le prossime sorprese su inflazione, lavoro e crescita con il consenso, poi verifica tassi 6M e Forex nella stessa finestra temporale.';
@@ -304,8 +339,8 @@ function build(api){
    '<p class="strength-focus-subtitle">Dalla macro al mercato, senza confondere ipotesi, prezzi e conferme.</p>'+
    '</div></div>'+
    '<div class="strength-first-reading">'+
-   '<p><strong>Il quadro economico.</strong> '+esc(desk?.macro?.why||x.reading.text)+'</p>'+
-   '<p><strong>Che cosa stanno facendo i tassi?</strong> '+esc(policySummary)+'</p>'+
+   '<p><strong>Il quadro economico.</strong> '+esc(estimatedEconomic)+'</p>'+
+   '<p><strong>Che cosa stanno facendo i tassi?</strong> '+esc(estimatedPolicy)+'</p>'+
    '<p><strong>La risposta del Forex.</strong> '+esc(priceSummary)+'</p>'+
    '</div>'+
    '<p class="strength-first-watch"><strong>Che cosa monitorare.</strong> '+esc(watchSummary)+'</p>'+
@@ -316,8 +351,7 @@ function build(api){
      ' / '+esc(label)+'</span><p>'+esc(main)+'</p><small>'+esc(note)+'</small></article>').join('')+
    '</div><div class="strength-additional">'+
     (desk?'<p><strong>Da monitorare:</strong> '+esc(desk.watch)+'</p>':'')+
-    '<p><strong>Prove verificate:</strong> '+x.evidenceCount+
-     '/4. Proxy e stime non aggiungono prove né punteggi operativi.</p>'+
+    '<p><strong>Copertura della stima:</strong> '+(cur?'fonti macro '+cur.gdpPeriod+' / '+cur.labourPeriod+'; '+cur.rate.quality+' '+date(cur.rate.asof):'non disponibile')+'. I contributi mancanti non sono dati zero osservati. Il punteggio non è testato out-of-sample.</p>'+
     cbText+cotText+'</div>'+
    '<nav class="strength-links"><a href="#macro">Macro completa</a><a href="#rates">Tassi &amp; OIS</a>'+
    '<a href="#cot">COT</a><a href="#pairs">Coppie FX</a></nav>'+shadowResearch()+
