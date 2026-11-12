@@ -166,7 +166,7 @@ assert.equal(withoutSource.currentMacro,null,'Missing observed source fails clos
 const index=fs.readFileSync(path.join(root,next+'index.html'),'utf8');
 const app=fs.readFileSync(path.join(root,next+'app.js'),'utf8');
 const journey=fs.readFileSync(path.join(root,next+'decision-journey.js'),'utf8');
-assert.match(index,/pair-desk-narrative\.js\?v=21/);
+assert.match(index,/pair-desk-narrative\.js\?v=22/);
 assert.ok(index.indexOf('pair-desk-narrative.js')<index.indexOf('decision-journey.js'));
 assert.match(journey,/FXQuantPairDesk\.render/);
 assert(journey.includes("estimatedMacro:get('estimatedMacro')"),'Estimate must reach 28 pair dossiers');
