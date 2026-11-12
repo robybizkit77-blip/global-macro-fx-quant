@@ -18,7 +18,70 @@
    &&Array.isArray(c.points)&&c.points.length>=8
    &&c.points.every(p=>goodDay(p.date)&&p.date<f.edition_date&&finite(p.value)));
  }
- function build({feed,plot,esc,date,dayNow}){
+ // Independently dated FX research update. NEVER part of the frozen morning
+ // edition, and NEVER represented as pre-opening or as an event reaction.
+ function fxResearchPulse({estimated,selectResearchPairs,watchForPair,esc,date,dayNow}={}){
+  if(!estimated)return '';
+  const text=x=>esc(String(x??''));
+  const today=dayNow();
+  const valid=estimated.status==='STIMA_OPERATIVA_NON_VALIDATA'&&
+   goodDay(today)&&goodDay(estimated.asof)&&goodDay(estimated.priceAsOf)&&
+   estimated.asof<=today&&estimated.priceAsOf<=today&&
+   Array.isArray(estimated.currencies)&&estimated.currencies.length===8&&
+   Array.isArray(estimated.pairs)&&estimated.pairs.length===28&&
+   typeof selectResearchPairs==='function';
+  if(!valid)return '<section class="morning-fx-pulse unavailable" data-fx-pulse="unavailable"'+
+   ' aria-label="Selezione Forex aggiornata non disponibile">'+
+   '<div class="morning-section-label">COLLEGAMENTO FX · RICERCA INDIPENDENTE</div>'+
+   '<h2>La selezione corrente è sospesa</h2>'+
+   '<p>Non abbiamo una graduatoria aggiornata verificabile delle 28 coppie. Il briefing riportato sotto resta un’edizione storica; non trasformiamo dati incompleti in opportunità.</p>'+
+   '<a href="#pairs">Verifica le fonti e le 28 coppie</a></section>';
+  const ranking=estimated.currencies.slice().sort((a,b)=>a.rank-b.rank);
+  const topCcy=ranking[0]?.ccy,lastCcy=ranking.at(-1)?.ccy;
+  if(!/^[A-Z]{3}$/.test(topCcy||'')||!/^[A-Z]{3}$/.test(lastCcy||''))return '';
+  const chosen=selectResearchPairs(estimated.pairs,5).slice(0,3).filter(x=>
+   x&&/^[A-Z]{6}$/.test(x.key)&&
+   x.favored===x.base||false);
+  // Re-run a strict source/identity gate without requiring an entry signal.
+  const selected=chosen.filter(x=>x&&x.thesisStrength&&x.tradeAttractiveness)
+   .concat(selectResearchPairs(estimated.pairs,5).slice(0,3).filter(x=>
+    x&&/^[A-Z]{6}$/.test(x.key)&&x.favored===x.quote&&
+    !chosen.some(y=>y.key===x.key))).slice(0,3);
+  const lead='Nel ranking combinato G8 la stima colloca '+topCcy+
+   ' nella posizione più forte e '+lastCcy+' in quella più debole. Non è una prova di flussi o una previsione: per le coppie la direzione fondamentale nasce da macro e variazioni monetarie, mentre il prezzo serve solo a valutare il timing.';
+  const showPair=x=>{
+   const key=x.key,label=key.slice(0,3)+'/'+key.slice(3);
+   const gate=typeof watchForPair==='function'?watchForPair(x):null;
+   const improve=gate&&typeof gate.improve==='string'?gate.improve:
+    'Servono un nuovo confronto economico/monetario datato e una conferma daily.';
+   const reasoning=typeof x.thesisReason==='string'?x.thesisReason:
+    'Il vantaggio è soltanto una stima da approfondire.';
+   return '<button type="button" class="morning-fx-case" data-pair="'+text(key)+'"'+
+    ' aria-label="Apri dossier '+text(label)+'">'+
+    '<span class="morning-fx-case-top"><strong>'+text(label)+'</strong>'+
+    '<small>TESI '+text(x.thesisStrength)+' · TRADE '+text(x.tradeAttractiveness)+'</small></span>'+
+    '<span class="morning-fx-case-reason">'+text(reasoning)+'</span>'+
+    '<span class="morning-fx-case-watch"><b>Per migliorare:</b> '+text(improve)+'</span>'+
+    '<span class="morning-fx-case-open">Apri il dossier →</span></button>';
+  };
+  return '<section class="morning-fx-pulse" data-fx-pulse="current"'+
+   ' aria-label="Collegamento corrente Macro G8 e selezione Forex">'+
+   '<div class="morning-fx-pulse-heading"><div><span class="morning-section-label">FX RESEARCH · AGGIORNAMENTO SEPARATO</span>'+
+   '<h2>Dal quadro macro alle coppie da verificare</h2></div>'+
+   '<small>Ricerca '+text(date(estimated.asof))+' · fixing BCE '+text(date(estimated.priceAsOf))+'</small></div>'+
+   '<p class="morning-fx-pulse-intro">'+text(lead)+'</p>'+
+   (selected.length?
+    '<p class="morning-fx-pulse-explain">Dalla Top 5 diversificata emergono questi '+selected.length+
+    ' dossier da approfondire. Ogni condizione riguarda nuove evidenze, non un ingresso automatico.</p>'+
+    '<div class="morning-fx-pulse-cases">'+selected.map(showPair).join('')+'</div>':
+    '<p class="morning-fx-pulse-empty">Nessuna coppia supera il filtro di ricerca: non selezioniamo trade per riempire tre posti.</p>')+
+   '<p class="morning-fx-pulse-notice">Questa è una fotografia di ricerca distinta dal briefing mattutino congelato e può includere dati usciti dopo la sua apertura. Le etichette sono euristiche; nessun trigger H4, probabilità o trade validato.</p>'+
+   '<nav class="morning-fx-pulse-links"><a href="#currencies">Classifica G8</a>'+
+   '<a href="#pairs">Tutte le 28 coppie</a><a href="#news">Notizie e calendario</a></nav>'+
+   '</section>';
+ }
+
+ function build({feed,plot,esc,date,dayNow,currentResearch}){
   if(!sound(feed)||feed.edition_date>dayNow())return null;
   const current=feed.edition_date===dayNow();
   const title=esc(feed.headline);
@@ -84,6 +147,7 @@
    '<span>Edizione '+date(feed.edition_date)+' · Fixing '+date(sources.fx_fixing)+
    ' · Tassi '+date(sources.rates)+'</span></div>'+
    '<div class="morning-archive-note'+(current?' current':'')+'">'+text(note)+'</div>'+
+   (currentResearch?fxResearchPulse({...currentResearch,esc,date,dayNow}):'')+
    '<header class="morning-lead"><span class="morning-kicker">IL TEMA MACRO DELLA GIORNATA</span>'+
    '<h1>'+title+'</h1><p class="morning-deck">'+text(feed.lead)+'</p>'+
    '<div class="morning-edition-tags"><span>Macro → aspettative → Forex</span><span>Eventi datati</span>'+
@@ -192,5 +256,5 @@
    '<div class="morning-section-label">NUOVI DATI MACRO UFFICIALI · AGGIORNAMENTO DATATO</div>'+
    parts.join('')+'</aside>';
  }
- window.FXQuantMorningDesk={sound,build,postRelease};
+ window.FXQuantMorningDesk={sound,build,postRelease,fxResearchPulse};
 })();
