@@ -5,7 +5,7 @@ const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const load=p=>JSON.parse(read(p));
 const dir='site/fx-quant-v2/next/';
 const ctx={window:{}};
-for(const file of ['pair-rankings.js','currency-relative-reading.js','currency-studio.js']){
+for(const file of ['pair-rankings.js','currency-relative-reading.js','currency-strength-reading.js','currency-studio.js']){
   vm.runInNewContext(read(dir+file),ctx,{filename:file,timeout:5000});
 }
 const FX=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
@@ -40,8 +40,12 @@ for(const ccy of FX){
   assert(html.includes('class="orient-rank-row selected '),'Selected currency highlighted: '+ccy);
   assert(html.includes('class="orient-thesis-details"'),'Macro/rates/COT details still available: '+ccy);
   assert(html.includes('class="orient-evidence-fold"'),'Four supporting facts accessible: '+ccy);
-  assert(html.indexOf('class="orient-ranking"')<html.indexOf('class="orient-lead '),
-    'Ranking precedes full individual analysis: '+ccy);
+  assert(html.indexOf('id="orient-strength-board"')<html.indexOf('id="orient-strength-focus"'),
+    'Macro/rates/pricing/price board precedes country analysis: '+ccy);
+  assert.equal((html.match(/class="strength-row /g)||[]).length,8,'Eight evidence rows: '+ccy);
+  assert.equal((html.match(/class="strength-card"/g)||[]).length,4,'Four source-qualified dimensions: '+ccy);
+  assert(html.includes('class="strength-pair-fold"')&&html.includes('class="strength-method-fold"'),
+    'Legacy bilateral deep-dive and details remain accessible');
   for(const label of ['COSA VEDIAMO','COSA DICONO I TASSI','COSA CONTROLLARE']){
     assert(html.includes(label),'Missing concise action question '+label);
   }
@@ -53,7 +57,9 @@ assert(fallback.includes('orient-ranking-unavailable'),'Do not rank absent commo
 assert(fallback.includes('class="country-orient-list"'),'Keep currency selection even without rank data');
 assert(!fallback.includes('class="orient-rank-row '),'Do not fabricate ranking rows');
 const page=read(dir+'index.html');
-assert(page.includes('currency-studio.js?v=4')&&page.includes('currency-studio.css?v=3'));
+assert(page.includes('currency-studio.js?v=5')&&page.includes('currency-studio.css?v=4'));
+assert(page.includes('currency-strength-reading.js?v=1'));
+assert(page.indexOf('currency-strength-reading.js')<page.indexOf('currency-studio.js'));
 assert(page.indexOf('pair-rankings.js')<page.indexOf('app.js'),
  'Shared currency rank must be available before route render');
 console.log('NEXT_CURRENCY_FIRST_READ_PASS: 8 G8 currencies, canonical price rank, compact FX reading and missing-data fallback');
