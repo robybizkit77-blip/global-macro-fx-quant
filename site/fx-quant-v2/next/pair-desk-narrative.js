@@ -53,7 +53,15 @@
  const dayGap=(a,b)=>isDay(a)&&isDay(b)?
   Math.round((Date.parse(b+'T12:00:00Z')-Date.parse(a+'T12:00:00Z'))/864e5):null;
  const changeWord=x=>x==='UP'?'aumenta':x==='DOWN'?'diminuisce':x==='FLAT'?'è stabile':null;
- const labourWord=x=>x==='UP'?'si allenta':x==='DOWN'?'migliora':x==='FLAT'?'resta stabile':null;
+
+ const periodMonth=x=>{
+  if(typeof x!=='string')return null;
+  if(/^\d{4}Q[1-4]$/.test(x))return x.slice(0,4)+'-'+String((Number(x[5])-1)*3+1).padStart(2,'0');
+  if(/^\d{4}-(0[1-9]|1[0-2])(?:-\d{2})?$/.test(x))return x.slice(0,7);
+  return null;
+ };
+
+ const labourWord=x=>x==='UP'?'aumenta':x==='DOWN'?'diminuisce':x==='FLAT'?'resta stabile':null;
  function growthChange(row,now){
   const g=row?.growth,prior=g?.prior_documented_quarter;
   if(!g||!prior||!isDay(g.publisher_release_day)||g.publisher_release_day>now||
@@ -94,8 +102,8 @@
   for(const row of [A,B]){
    for(const pillar of ['inflation','labour']){
     const x=row[pillar];
-    if(!x||!finite(x.observation_value)||!isPeriod(x.observation_period)||
-       x.observation_period.slice(0,7)>now.slice(0,7)||
+    if(!x||!finite(x.observation_value)||!periodMonth(x.observation_period)||
+       periodMonth(x.observation_period)>now.slice(0,7)||
        !['UP','DOWN','FLAT'].includes(x.change_direction)||
        x.observed_history_revised_not_historic_PIT!==true||
        x.observation_period_is_not_release_instant!==true)return null;
@@ -113,7 +121,7 @@
   }
   const labourA=A.labour.change_direction,labourB=B.labour.change_direction;
   if(labourA!==labourB){
-   sentences.push('Sul lavoro, la pressione della disoccupazione '+labourWord(labourA)+
+   sentences.push('Sul lavoro, la disoccupazione '+labourWord(labourA)+
     ' in '+names[a]+' e '+labourWord(labourB)+' in '+names[b]+'.');
   }else{
    sentences.push('La disoccupazione '+labourWord(labourA)+
