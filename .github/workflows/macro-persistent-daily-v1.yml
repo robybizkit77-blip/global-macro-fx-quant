@@ -18,6 +18,8 @@ on:
       - 'validation/macro/test_persist_macro_safe_v1.py'
       - 'validation/macro/capture_g8_prospective_v1.py'
       - 'validation/macro/test_capture_g8_prospective_v1.py'
+      - 'validation/macro/score_g8_prospective_v1.py'
+      - 'validation/macro/test_score_g8_prospective_v1.py'
       - 'validation/sources/cad_statcan_core.py'
       - 'validation/test_cad_statcan_transport.py'
       - 'validation/macro_pit_anchor_contract.py'
@@ -44,6 +46,8 @@ on:
       - 'validation/macro/test_persist_macro_safe_v1.py'
       - 'validation/macro/capture_g8_prospective_v1.py'
       - 'validation/macro/test_capture_g8_prospective_v1.py'
+      - 'validation/macro/score_g8_prospective_v1.py'
+      - 'validation/macro/test_score_g8_prospective_v1.py'
   workflow_dispatch:
   # Early source-watch -> Calendar/News -> Macro. Serial dependency
   # avoids simultaneous main-branch writes by Calendar and Macro when an
@@ -106,6 +110,7 @@ jobs:
         run: |
           node --check site/fx-quant-v2/next/g8-growth-shadow.js
           python -m unittest validation.macro.test_capture_g8_prospective_v1 -v
+          python -m unittest validation.macro.test_score_g8_prospective_v1 -v
 
       - name: Snapshot baseline and registry contract
         shell: bash
@@ -532,6 +537,21 @@ jobs:
           python -m validation.macro.capture_g8_prospective_v1 \
             --revision origin/main \
             --output /tmp/macro-persistent/g8-prospective-capture.json \
+            --publish
+
+      # Compare only earliest frozen forecasts with first subsequently
+      # recorded observations. Outputs are append-only; no hindsight refits.
+      - name: Certify prospective first-seen errors without issuer PIT claims
+        if: github.ref == 'refs/heads/main' && success()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main
+          python -m validation.macro.score_g8_prospective_v1 \
+            --revision origin/main \
+            --output /tmp/macro-persistent/g8-first-seen-outcomes.json \
             --publish
 
       - uses: actions/upload-artifact@v4
