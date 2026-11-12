@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-12",
-  "generated_at_utc": "2026-11-12T16:50:42.543385Z",
+  "generated_at_utc": "2026-11-12T20:00:51.348442Z",
   "items": [
     {
       "as_of": "2026-11-12",
@@ -12,6 +12,48 @@
       "quality": "OFFICIAL_CERTIFIED",
       "source": "Tokyo Financial Exchange · Three-month TONA Futures",
       "title": "JPY: repricing implicito da futures più hawkish (+5.2 bp 6M in 1D)"
+    },
+    {
+      "as_of": "2026-11-12",
+      "category": "MARKET_FX_ECB_FIXING",
+      "ccy": "USD",
+      "confidence": "A",
+      "detail": "1 USD = 159.69678 JPY al fixing 2026-11-12; variazione vs 2026-11-11. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
+      "importance": "MEDIUM",
+      "pair": "USDJPY",
+      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
+      "reference_previous_date": "2026-11-11",
+      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
+      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+      "title": "USD/JPY: +0.29% fra due fixing BCE"
+    },
+    {
+      "as_of": "2026-11-12",
+      "category": "MARKET_FX_ECB_FIXING",
+      "ccy": "EUR",
+      "confidence": "A",
+      "detail": "1 EUR = 1.10810 USD al fixing 2026-11-12; variazione vs 2026-11-11. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
+      "importance": "MEDIUM",
+      "pair": "EURUSD",
+      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
+      "reference_previous_date": "2026-11-11",
+      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
+      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+      "title": "EUR/USD: -0.41% fra due fixing BCE"
+    },
+    {
+      "as_of": "2026-11-12",
+      "category": "MARKET_FX_ECB_FIXING",
+      "ccy": "AUD",
+      "confidence": "A",
+      "detail": "1 AUD = 0.97187 CAD al fixing 2026-11-12; variazione vs 2026-11-11. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
+      "importance": "MEDIUM",
+      "pair": "AUDCAD",
+      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
+      "reference_previous_date": "2026-11-11",
+      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
+      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
+      "title": "AUD/CAD: -0.46% fra due fixing BCE"
     },
     {
       "as_of": "2026-11-11",
@@ -47,20 +89,6 @@
       "quality": "OFFICIAL_CERTIFIED",
       "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
       "title": "AUD: repricing implicito da futures più hawkish (+4.5 bp 12M in 1D)"
-    },
-    {
-      "as_of": "2026-11-11",
-      "category": "MARKET_FX_ECB_FIXING",
-      "ccy": "USD",
-      "confidence": "A",
-      "detail": "1 USD = 159.23429 JPY al fixing 2026-11-11; variazione vs 2026-11-10. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
-      "importance": "MEDIUM",
-      "pair": "USDJPY",
-      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
-      "reference_previous_date": "2026-11-10",
-      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
-      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "title": "USD/JPY: +0.67% fra due fixing BCE"
     },
     {
       "as_of": "2026-11-11",
@@ -116,20 +144,6 @@
     },
     {
       "as_of": "2026-11-11",
-      "category": "MARKET_FX_ECB_FIXING",
-      "ccy": "EUR",
-      "confidence": "A",
-      "detail": "1 EUR = 1.11270 USD al fixing 2026-11-11; variazione vs 2026-11-10. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
-      "importance": "MEDIUM",
-      "pair": "EURUSD",
-      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
-      "reference_previous_date": "2026-11-10",
-      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
-      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "title": "EUR/USD: -0.78% fra due fixing BCE"
-    },
-    {
-      "as_of": "2026-11-11",
       "category": "MARKET_GOVERNMENT_RATES",
       "ccy": "EUR",
       "confidence": "A",
@@ -164,20 +178,6 @@
       "title": "CAD: repricing implicito da futures invariato (+0.0 bp 6M in 1D)"
     },
     {
-      "as_of": "2026-11-11",
-      "category": "MARKET_FX_ECB_FIXING",
-      "ccy": "AUD",
-      "confidence": "A",
-      "detail": "1 AUD = 0.97639 CAD al fixing 2026-11-11; variazione vs 2026-11-10. Non è una quotazione intraday e non prova quale economia o flusso abbia causato il movimento.",
-      "importance": "MEDIUM",
-      "pair": "AUDCAD",
-      "quality": "OFFICIAL_ECB_REFERENCE_FIXING",
-      "reference_previous_date": "2026-11-10",
-      "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
-      "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
-      "title": "AUD/CAD: +0.05% fra due fixing BCE"
-    },
-    {
       "as_of": "2026-11-10",
       "category": "MACRO_OFFICIAL_ACTUAL",
       "ccy": "USD",
@@ -205,7 +205,7 @@
       "title": "USD: governativo 2Y +17.0 pb, 10Y +10.0 pb"
     }
   ],
-  "last_checked_at_utc": "2026-11-12T16:50:42.543385Z",
+  "last_checked_at_utc": "2026-11-12T20:00:51.348442Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -406,9 +406,9 @@
           "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
           "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
         },
-        "id": "FED_PRESS:https://www.federalreserve.gov/newsevents/pressreleases/enforcement20261112a.htm",
+        "id": "FED_PRESS:https://www.federalreserve.gov/newsevents/pressreleases/other20261112a.htm",
         "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-12T16:00:00Z",
+        "published_at_utc": "2026-11-12T18:30:00Z",
         "quality": "OFFICIAL_RSS_DATED_LINK",
         "reaction_evidence": {
           "causal_attribution": "NOT_ESTABLISHED",
@@ -439,8 +439,56 @@
         },
         "source": "Federal Reserve Board",
         "source_id": "FED_PRESS",
-        "title": "Federal Reserve Board issues enforcement action with former employee of United Community Bank",
-        "url": "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20261112a.htm"
+        "title": "Federal Reserve Board announces pricing, effective January 1, 2027, for payment services the Federal Reserve Banks provide to banks and credit unions, and changes to streamline and adjust th",
+        "url": "https://www.federalreserve.gov/newsevents/pressreleases/other20261112a.htm"
+      },
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "USD",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
+        "id": "FED_PRESS:https://www.federalreserve.gov/newsevents/pressreleases/monetary20261112a.htm",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-12T17:45:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "status": "NOT_VALIDATED_DAILY_CONTEXT"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-11-10",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "PRIOR_CALENDAR_DATE",
+            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-10",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 4.73
+          }
+        },
+        "source": "Federal Reserve Board",
+        "source_id": "FED_PRESS",
+        "title": "Federal Reserve announces revised tentative schedule of Federal Open Market Committee meetings in 2027",
+        "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261112a.htm"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
@@ -848,54 +896,6 @@
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "USD",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "FED_PRESS:https://www.federalreserve.gov/newsevents/pressreleases/orders20261109a.htm",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-09T21:00:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-11-10",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-10",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.73
-          }
-        },
-        "source": "Federal Reserve Board",
-        "source_id": "FED_PRESS",
-        "title": "Federal Reserve Board announces approval of two applications by Mutual Federal Bancorp, MHC, and MFB Bancorp, Inc.",
-        "url": "https://www.federalreserve.gov/newsevents/pressreleases/orders20261109a.htm"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "ENERGY",
         "desk_context": {
           "analysis_basis": "SOURCE_HEADLINE_ONLY",
@@ -1149,7 +1149,7 @@
       }
     ],
     "last_attempt_day_rome": "2026-11-12",
-    "latest_published_at_utc": "2026-11-12T16:00:00Z",
+    "latest_published_at_utc": "2026-11-12T18:30:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -1163,9 +1163,9 @@
     "source_failures": 0,
     "sources": [
       {
-        "accepted_items": 3,
+        "accepted_items": 5,
         "ccy": "USD",
-        "entries_rejected": 17,
+        "entries_rejected": 15,
         "feed_entries_seen": 20,
         "feed_url": "https://www.federalreserve.gov/feeds/press_all.xml",
         "source": "Federal Reserve Board",
