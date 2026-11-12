@@ -104,7 +104,52 @@
     :'Thesis Strength ancora da confermare. Il modello da solo non dimostra un vantaggio operativo.';
   const watch=!fav?'Aspettiamo un vantaggio relativo fondato su macro e aspettative, poi la risposta del prezzo.'
     :'La tesi su '+fav+' si indebolirebbe se i driver macro/monetari relativi cambiassero verso oppure il fixing continuasse contro la direzione favorita. Prima di un trade servono nuove pubblicazioni, un vero repricing comparabile e una conferma H4/Daily.';
+  // First reading: grounded in model flags, synchronized daily price, and
+  // limitations of the quote feeds. Detailed observations remain below.
+  const opposite=fav===a?b:fav===b?a:null;
+  const economicPoint=!fav?
+   'Il confronto economico e monetario non individua ancora una valuta chiaramente favorita. Forzare una direzione sarebbe prematuro.':
+   frame.macroSide===fav&&frame.policySide!==fav?
+    'La lettura macro del modello favorisce '+fav+' rispetto a '+opposite+
+    ', ma le aspettative monetarie non offrono ancora una conferma relativa altrettanto solida. È un vantaggio parziale.':
+   frame.policySide===fav&&frame.macroSide!==fav?
+    'Le condizioni monetarie del modello favoriscono '+fav+', ma la macro relativa non ha ancora confermato un vantaggio altrettanto solido.':
+   frame.macroSide===fav&&frame.policySide===fav?
+    'Macro e politica monetaria del modello convergono a favore di '+fav+' rispetto a '+opposite+
+    '. Resta comunque da verificare se questa lettura sia già riflessa nei prezzi.':
+   'Il modello preferisce '+fav+' rispetto a '+opposite+
+   ', ma non tutti i driver strutturali sono concordi. La preferenza è una tesi, non una nuova sorpresa.';
+  const baselineCaveat='La base macro del motore è datata '+macroDate+
+    ': non possiamo chiamarla accelerazione recente senza un nuovo confronto di dati e revisioni.';
+  const marketPoint=!fav?
+   'Senza un vantaggio relativo affidabile non attribuiamo alcuna direzione di prezzo alle aspettative monetarie.':
+   !aligned?'Manca un confronto giornaliero sufficientemente allineato per stabilire se il prezzo stia confermando la tesi.':
+   profile.alignment==='COERENTE SU 5 E 20 SEDUTE'?
+    'Il prezzo ha già seguito il verso favorevole a '+fav+' su entrambi gli orizzonti giornalieri osservati. È una conferma del movimento passato: non dimostra che rimanga altro spazio.':
+   profile.horizonConflict?
+    'La risposta del prezzo non è uniforme fra i due orizzonti osservati. Il mercato non offre ancora una conferma stabile della direzione favorevole a '+fav+'.':
+   'La risposta del prezzo resta inconcludente: la preferenza del modello non basta per chiamare confermata la tesi.';
+  const monetaryCaveat=x&&y&&x.sourceType===y.sourceType&&x.asof===y.asof?
+   'Le due indicazioni a sei mesi sono disponibili, ma senza una serie di variazioni confrontabili non attribuiamo un nuovo repricing relativo.':
+   'Le osservazioni a sei mesi non sono omogenee per strumento e/o data: non abbiamo prova di un repricing relativo che possa spiegare il cambio.';
+  const crowding=/estrem/i.test(setup.cot?.text||'')?
+   ' Il COT del modello segnala esposizioni estreme: possibile vulnerabilità della tesi se il prezzo perde forza, non prova di acquisti o vendite spot.':
+   '';
+  const invalidation=!fav?
+   'Servono dati macro e aspettative di tasso confrontabili fra le due valute, seguiti da una conferma del prezzo.':
+   'La tesi a favore di '+fav+' si indebolirebbe con sorprese macro relative a vantaggio di '+opposite+
+   ', un repricing monetario comparabile in direzione contraria, oppure una perdita persistente di coerenza del prezzo giornaliero.';
+  const decisionPoint=!fav?
+   'Non emerge oggi una direzione FX sufficientemente motivata. Meglio attendere una nuova prova.':
+   quality==='NON VALUTABILE'?
+    'La qualità del dossier non permette una conclusione operativa, anche se alcune letture puntano verso '+fav+'.':
+   quality==='CON RISCHI'?
+    'La tesi è interessante da monitorare ma non ancora un trade convincente: il vantaggio è parziale e il rischio di comprare una narrativa già riflessa nel prezzo resta aperto.':
+   aligned&&profile.horizonConflict?
+    'Il contrasto fra gli orizzonti di prezzo rende poco convincente il timing. Serve una conferma nuova, non la sola direzione preferita del modello.':
+   'La preferenza di fondo è coerente con il modello, ma un ingresso richiede timing e rischio favorevoli, non la semplice conferma del prezzo.';
   return {available:true,key,headline,structural,macro:macroReading,pricing,relation,positioning,price,
+    economicPoint,baselineCaveat,marketPoint,monetaryCaveat,crowding,invalidation,decisionPoint,
     judgment,watch,asof:model.price_asof,macroDate,fav,quality,rateVerified:Boolean(ratesView?.ready),
     cotAsOf:[ca?.asof,cb?.asof].filter(Boolean).join(' / ')||'n.d.'};
  }
@@ -115,13 +160,19 @@
   return '<div class="decision-desk-story" data-serafini-pair="'+esc(item.key)+'">'+
    '<span class="decision-desk-kicker">LA LETTURA DEL DESK · '+esc(item.key.slice(0,3)+'/'+item.key.slice(3))+'</span>'+
    '<h3>'+esc(item.headline)+'</h3>'+
-   para('Il punto di partenza.',item.structural)+
-   para('Che cosa cambia nell’economia.',item.macro)+
-   para('Cosa prezza e cosa conferma il mercato.',item.pricing+' '+item.relation)+
-   para('Cosa stanno facendo prezzo e operatori.',item.price+' '+item.positioning)+
-   para('Giudizio e prossima verifica.',item.judgment+' '+item.watch)+
+   para('Che cosa sostiene la tesi.',item.economicPoint+' '+item.baselineCaveat)+
+   para('Che cosa sta confermando il mercato.',item.marketPoint+' '+item.monetaryCaveat+item.crowding)+
+   para('Giudizio operativo.',item.decisionPoint)+
+   '<p class="decision-desk-watch"><strong>Cosa può cambiare il giudizio.</strong> '+esc(item.invalidation)+'</p>'+
+   '<details class="decision-desk-evidence"><summary>Verifica dati, date e passaggi del ragionamento</summary>'+
+   '<div class="decision-desk-evidence-body">'+
+   para('Macro — osservazioni per valuta.',item.macro)+
+   para('Pricing — strumenti e date.',item.pricing+' '+item.relation)+
+   para('Prezzo — fixing verificati.',item.price)+
+   para('COT — esposizioni dichiarate.',item.positioning)+
    '<small>Snapshot coppia '+esc(item.asof)+' · baseline macro del modello '+esc(item.macroDate)+
-   '. Osservazioni macro aggiornabili separatamente; nessun consenso/sorpresa macro pubblicato nel feed, nessuna causalità o probabilità di trade inferita.</small></div>';
+   '. Questi dati sono verifiche del giudizio, non consenso/sorprese confermati, causalità o rendimento atteso.</small>'+
+   '</div></details></div>';
  }
  if(typeof window!=='undefined')window.FXQuantPairDesk={interpret,render,countryMacro,pricingObs,cotObs};
  if(typeof module!=='undefined'&&module.exports)module.exports={interpret,render,countryMacro,pricingObs,cotObs};
