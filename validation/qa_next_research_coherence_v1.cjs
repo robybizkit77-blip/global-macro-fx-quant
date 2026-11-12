@@ -81,7 +81,8 @@ assert.doesNotMatch(firstReading,/Il 2Y reagisce più direttamente|Se il front-e
 assert.match(baseline.article,/data-home-evidence/);
 assert.match(baseline.article,/FORZA RELATIVA G8/);
 assert.match(baseline.article,/28 coppie/);
-assert.match(baseline.article,/USD\/JPY/);
+if(sourceAhead)assert.match(baseline.article,/28 coppie/,'A suspended first read must still link the FX universe');
+else assert.match(baseline.article,/USD\/JPY/,'With synchronized data validate the pair-specific comparison');
 const forexOpening=baseline.article.split('<details class="dashboard-technical"')[0];
 assert(forexOpening.includes('FX G8'),'Fallback Home must remain oriented toward currencies');
 if(forexOpening.includes('VIX'))
@@ -116,7 +117,9 @@ assert.match(x.article,/data-research-kind="stress"/);
 assert.match(x.article,/Il mio giudizio\./,'The Home needs an explicit market verdict');
 assert.match(x.article,/disoccupazione/,'The Home must connect macro to the market narrative');
 assert.match(x.article,/EUR\/USD/,'The Home must connect FX pairs to the market narrative');
-assert.match(x.article,/USD\/JPY/,'The Home must surface price-vs-thesis divergence');
+if(!sourceAhead)assert.match(x.article,/USD\/JPY/,'Aligned data should surface price-versus-thesis divergence');
+else assert.match(x.article,/nessuna selezione automatica/i,
+ 'Unaligned future FX snapshot cannot be promoted during a historical risk shock');
 assert.match(x.article,/Credito High Yield/);
 assert.match(x.article,/Fixing FX 10\/11\/2026/);
 const mismatchedPricing=clone(stress);
