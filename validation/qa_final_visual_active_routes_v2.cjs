@@ -19,26 +19,36 @@ const routeNames = {
 const currencies = ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
 
 async function checkG8FirstRead(page,label){
-  const ranking=page.locator('#orient-ranking');
-  const rows=ranking.locator('button.orient-rank-row[data-cs-country]');
-  if(await rows.count()!==8)throw Error(label+' G8 ranking should have exactly eight selectable currencies');
-  if(await page.locator('.orient-first-read > div').count()!==3)
-    throw Error(label+' G8 first read must have exactly three short explanations');
-  await ranking.locator('[data-cs-country="JPY"]').click();
-  await page.waitForFunction(()=>document.querySelector('.orient-rank-row.selected')?.getAttribute('data-cs-country')==='JPY',
+  const board=page.locator('#orient-strength-board');
+  const rows=board.locator('button.strength-row[data-cs-country]');
+  if(await rows.count()!==8)throw Error(label+' G8 requires eight macro/rates/expectations/price rows');
+  const order=await rows.locator('.strength-name b').allTextContents();
+  if(order.length!==8||order[0]!=='#1'||order[7]!=='#8')
+    throw Error(label+' price-only ordinal ranking missing');
+  if(await page.locator('.strength-card').count()!==4)
+    throw Error(label+' expected 4 source-qualified evidence blocks');
+  await board.locator('[data-cs-country="JPY"]').click();
+  await page.waitForFunction(()=>document.querySelector('.strength-row.selected')?.getAttribute('data-cs-country')==='JPY',
     null,{timeout:15000});
-  if(!await page.locator('.orient-first-read').isVisible())
-    throw Error(label+' selected JPY reading not visible');
+  if(!await page.locator('#orient-strength-focus').isVisible())
+    throw Error(label+' selected JPY country-first analysis not visible');
+  const pair=page.locator('details.strength-pair-fold');
+  await pair.locator(':scope > summary').click();
+  if(!await pair.evaluate(el=>el.open))
+    throw Error(label+' bilateral FX comparison did not expand');
   const thesis=page.locator('details.orient-thesis-details');
   await thesis.locator(':scope > summary').click();
   if(!await thesis.evaluate(el=>el.open))
-    throw Error(label+' full macro/rates/COT analysis did not expand');
-  const deeper=page.locator('details.orient-evidence-fold');
-  await deeper.locator(':scope > summary').click();
-  if(!await deeper.evaluate(el=>el.open))
-    throw Error(label+' G8 supporting evidence did not expand');
+    throw Error(label+' full macro/rates/COT pair dossier did not expand');
+  const methods=page.locator('details.strength-method-fold');
+  await methods.locator(':scope > summary').click();
+  if(!await methods.evaluate(el=>el.open))
+    throw Error(label+' G8 source/research detail did not expand');
+  const evidence=methods.locator('.orient-evidence-item');
+  if(await evidence.count()!==4||!await evidence.first().isVisible())
+    throw Error(label+' four source cards not visible inside expanded research detail');
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth+2);
-  if(overflow)throw Error(label+' G8 first-read causes horizontal overflow');
+  if(overflow)throw Error(label+' G8 first-read caused horizontal overflow');
   await page.locator('#content').screenshot({
     path:'visual-qa-evidence/'+label+'-currencies-first-read.png',timeout:20000
   });

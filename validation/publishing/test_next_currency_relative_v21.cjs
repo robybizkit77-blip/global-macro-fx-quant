@@ -55,7 +55,7 @@ assert.match(missing.verdict,/non offrono una direzione relativa/);
 const page=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/index.html'),'utf8');
 const studio=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/currency-studio.js'),'utf8');
 assert(page.includes('currency-relative-reading.js?v=21'));
-assert(page.includes('currency-studio.js?v=4'));
+assert(page.includes('currency-studio.js?v=5'));
 assert(page.indexOf('currency-relative-reading.js')<page.indexOf('currency-studio.js'));
 assert(studio.includes('root.FXQuantCurrencyRelative?.read?.'));
 for(const k of ['macroText','ratesText','cotText','judgement'])assert(studio.includes('esc('+k+')'),'Escaping in live Country Desk');
