@@ -34,14 +34,14 @@ fake.observations=dates.map((date,i)=>({
 }));
 fake.observations.at(-1)['2Y']=rates.AUD['2Y'];
 fake.observations.at(-1)['10Y']=rates.AUD['10Y'];
-const before=JSON.stringify(rates);
+const before=structuredClone(rates); // Preserves signed zero; JSON stringify normalizes -0 to 0.
 const improved=mod.snapshot(rates,price,'AUDCAD',base,now,fake);
 assert(improved.ready&&improved.short&&improved.medium,'70 synthetic QA fixture dates must validate both horizons');
 assert(improved.researchOnly&&improved.kind.includes('RBA F2 RICERCA'));
 assert.equal(improved.latest.date,audDate);
 assert.equal(improved.lag,2);
 assert.equal(improved.rows.at(-1).date,audDate);
-assert.deepEqual(rates,JSON.parse(before),'Canonical rates must remain unchanged after research overlay');
+assert.deepEqual(rates,before,'Canonical rates must remain unchanged after research overlay');
 assert.match(mod.brief(improved).label,/RBA F2 ricerca/);
 for(const [label,mutation] of [
  ['wrong source',x=>x.source_url='https://example.invalid'],
