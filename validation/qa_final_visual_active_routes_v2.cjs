@@ -27,6 +27,15 @@ async function checkG8FirstRead(page,label){
     throw Error(label+' price-only ordinal ranking missing');
   if(await page.locator('.strength-card').count()!==4)
     throw Error(label+' expected 4 source-qualified evidence blocks');
+  const research=page.locator('details.strength-shadow-fold');
+  if(await research.count()!==1)
+    throw Error(label+' optional G8 shadow model detail missing');
+  await research.locator(':scope > summary').click();
+  if(!(await research.evaluate(el=>el.open)))
+    throw Error(label+' G8 shadow research explanation did not expand');
+  if(!(await research.locator('.strength-shadow-body').innerText()).includes('NON POINT-IN-TIME'))
+    throw Error(label+' G8 shadow backtest lacks PIT warning');
+  await research.locator(':scope > summary').click();
   await board.locator('[data-cs-country="JPY"]').click();
   await page.waitForFunction(()=>document.querySelector('.strength-row.selected')?.getAttribute('data-cs-country')==='JPY',
     null,{timeout:15000});
