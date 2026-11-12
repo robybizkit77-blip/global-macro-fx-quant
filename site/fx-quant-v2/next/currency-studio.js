@@ -19,6 +19,12 @@ function build(api){
  const G8CONTEXT=root.FXQuantCurrencyFallback?.evaluate?.({macroSeries:get('macroSeries'),estimated:get('cbEstimated'),
    rates:GOV,chfResearch:get('chfResearch'),nzdResearch:get('nzdPostroll'),now:dayNow()})||null;
  const G8SHADOW=root.FXQuantGrowthShadow?.analyze?.({macroSeries:get('macroSeries'),now:dayNow()})||null;
+ const G8RATESHADOW=root.FXQuantG8RatesShadow?.analyze?.({research:G8CONTEXT,
+  chfHistory:get('chfResearch'),spot:get('chfSpot'),
+  nzdResearch:get('nzdPostroll'),nzdMarket:get('nzdDirectionalProxy'),
+  now:dayNow()})||null;
+ const isShadowRate=e=>e&&['STIMA_MODELLO_RICERCA','STIMA_SCENARIO_NON_CALIBRATA'].includes(e.status)&&
+    e.eligibleForCore===false&&finite(e.estimate2Y);
  const w=state.csReturnWindow===5?5:state.csReturnWindow===60?60:20;
  const number=x=>finite(x)?fmt(x,2):'—';
  const period=x=>String(x||'n.d.');
@@ -74,10 +80,12 @@ function build(api){
    const growth=x.context?.growth;
    const proxy=x.context?.pricingProxy;
    const ratesContext=x.context?.ratesResearch;
+   const estRate=G8RATESHADOW?.currencies?.[x.ccy];
+   const estimated2Y=!x.rates.ok&&isShadowRate(estRate);
    const research2Y=!x.rates.ok&&['STORICO_UFFICIALE_NON_OPERATIVO','RICERCA_MANUALE_NON_CERTIFICATA'].includes(ratesContext?.status);
-   const twoLabel=research2Y?ratesContext.label:x.rates.label;
-   const twoMeta=research2Y?'Ricerca · '+date(ratesContext.asof):x.rates.asof?date(x.rates.asof):'Base non recente';
-   const twoHeading=research2Y?'2Y · contesto datato':'2Y · variazione 1W';
+   const twoLabel=estimated2Y?fmt(estRate.estimate2Y,3)+'% · STIMA':research2Y?ratesContext.label:x.rates.label;
+   const twoMeta=estimated2Y?('Scenario · '+date(estRate.asof)+' · non osservato'):research2Y?'Ricerca · '+date(ratesContext.asof):x.rates.asof?date(x.rates.asof):'Base non recente';
+   const twoHeading=estimated2Y?'2Y · stima (non quotazione)':research2Y?'2Y · contesto datato':'2Y · variazione 1W';
    const proxyReady=!x.pricing.ok&&proxy?.status==='PROXY_INFORMATIVO';
    const sixLabel=x.pricing.ok?x.pricing.label:proxyReady?proxy.label:x.pricing.label;
    const sixDate=x.pricing.ok?date(x.pricing.asof):proxyReady?'Indicativo · '+date(proxy.asof):'Non certificato';
@@ -93,11 +101,11 @@ function build(api){
   return '<section class="strength-board" id="orient-strength-board" aria-label="Mappa G8 Macro Tassi Aspettative Prezzo">'+
    '<div class="strength-board-head"><div><span class="chapter-kicker">01 / MACRO → TASSI → ATTESE → PREZZO</span>'+
    '<h2>Quali valute hanno <em>più sostegno verificabile?</em></h2>'+
-   '<p>Macro, rendimenti, aspettative monetarie e prezzo: osservazioni datate, con <strong>proxy riconoscibili</strong> quando mancano fonti ufficiali. Il numero ordina soltanto il prezzo.</p></div>'+
+   '<p>Macro, rendimenti, aspettative monetarie e prezzo: osservazioni datate, <strong>proxy e stime dichiarate</strong> dove mancano fonti aggiornate. Il numero ordina soltanto il prezzo.</p></div>'+
    '<small>'+esc(rankDate)+'</small></div>'+
    '<div class="strength-columns" aria-hidden="true"><span>VALUTA</span><span>MACRO</span><span>2Y</span><span>ATTESE 6M</span><span>PREZZO</span><span>GIUDIZIO</span></div>'+
    '<div class="strength-rows">'+rows+'</div>'+
-   '<p class="strength-note">Crescita: ultime osservazioni storiche, non PIL stimato né sorpresa macro. 2Y: movimento settimanale solo quando verificato; CHF/NZD possono mostrare dati storici o manuali di ricerca, mai promossi a conferme operative. 6M: variazione ufficiale quando verificata; altrimenti contratto futures indicativo con data, mai un repricing certificato. Il ranking resta esclusivamente di prezzo e nessun proxy entra nel punteggio.</p></section>';
+   '<p class="strength-note">Crescita: osservazioni storiche, non PIL stimato. 2Y: variazione settimanale solo se verificata; le stime CHF/NZD sono <strong>scenari di ricerca, non rendimenti osservati</strong> e non entrano nei segnali. 6M: variazione ufficiale se verificata, altrimenti futures indicativi datati, non repricing monetario certificato. Il ranking resta esclusivamente di prezzo; proxy e stime non aumentano le prove operative.</p></section>';
  }
  function shadowResearch(){
   const t=G8SHADOW?.currencies?.[country];
@@ -134,7 +142,16 @@ function build(api){
   const growth=x.context?.growth;
   const proxy=x.context?.pricingProxy;
   const ratesContext=x.context?.ratesResearch;
+  const estRate=G8RATESHADOW?.currencies?.[country];
+  const estimated2Y=!x.rates.ok&&isShadowRate(estRate);
   const dated2Y=!x.rates.ok&&['STORICO_UFFICIALE_NON_OPERATIVO','RICERCA_MANUALE_NON_CERTIFICATA'].includes(ratesContext?.status);
+  const rateEstimateText=estimated2Y?
+   ' STIMA '+fmt(estRate.estimate2Y,3)+'% al '+date(estRate.asof)+
+   ' (intervallo di sensibilità/errore indicativo '+fmt(estRate.lower2Y,3)+'–'+fmt(estRate.upper2Y,3)+'%). '+
+   estRate.note+(estRate.currency==='CHF'?
+    ' Test retrospettivo: '+estRate.pseudoOOSCount+' previsioni, errore medio '+fmt(estRate.modelMAEBp,2)+
+    ' pb contro '+fmt(estRate.flatBaselineMAEBp,2)+' pb mantenendo il 2Y invariato.': '')+
+   ' Non è una nuova quotazione 2Y, né un segnale FX.':'';
   const growthText=growth?.status==='STORICO_DESCRITTIVO'?growth.description:
    'Non ci sono osservazioni recenti sufficienti per un confronto con il ciclo.';
   const pricingText=x.pricing.ok?x.pricing.text:
@@ -142,8 +159,8 @@ function build(api){
   const cards=[
    ['MACRO · CRESCITA / LAVORO / PREZZI',growthText+' '+x.macro.text,
     'Serie storiche con periodo di osservazione, non nowcast, sorprese macro o pubblicazioni odierne.'],
-   ['TASSI 2Y',x.rates.text+(dated2Y?' '+ratesContext.description:''),
-    dated2Y?'Storico/lettura manuale non è un tasso live e non aumenta le prove disponibili.':'Movimento di mercato, non prova di decisioni future.'],
+   ['TASSI 2Y',x.rates.text+(dated2Y?' '+ratesContext.description:'')+rateEstimateText,
+    estimated2Y?'STIMA NON OSSERVATA. La banda non è un intervallo di confidenza e non influenza le 4 conferme operative.':dated2Y?'Storico/lettura manuale non è un tasso live e non aumenta le prove disponibili.':'Movimento di mercato, non prova di decisioni future.'],
    ['ASPETTATIVE 6M',pricingText,'I proxy sono informativi e non sostituiscono l’OIS ufficiale né i suoi cambiamenti.'],
    ['PREZZO',x.price.text+' '+x.price.label+(x.price.position?' · posizione '+x.price.position+'/8.':''),'La forza osservata non identifica il driver.']
   ];
