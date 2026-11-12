@@ -18,7 +18,70 @@ const routeNames = {
 };
 const currencies = ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD'];
 
+async function assertG8LayoutMatrix(page,label) {
+  const initial=page.viewportSize();
+  try {
+    // The old screenshot gate used only desktop/mobile and missed intermediate
+    // clipping and non-vertical ranked cards; evaluate actual element geometry.
+    for(const width of [360,390,768,1024,1280,1440]) {
+      await page.setViewportSize({width,height:initial.height});
+      const faults=await page.evaluate(() => {
+        const issues=[];
+        const board=document.querySelector('#orient-strength-board');
+        const focus=document.querySelector('#orient-strength-focus');
+        if(!board||!focus)return ['G8 sections missing'];
+        const bounds=el=>el.getBoundingClientRect();
+        const br=bounds(board),fr=bounds(focus);
+        if(br.left < -2 || br.right > window.innerWidth+2)
+          issues.push('board outside viewport');
+        if(fr.left < -2 || fr.right > window.innerWidth+2)
+          issues.push('focus outside viewport');
+        const rows=[...board.querySelectorAll('.strength-row')];
+        if(rows.length!==8)issues.push('expected eight rows');
+        const children=['.strength-name','.strength-brief',
+          '.strength-market-brief','.strength-price-brief','.strength-reading'];
+        let previousBottom=-Infinity;
+        for(const [i,row] of rows.entries()) {
+          const r=bounds(row);
+          if(r.top < previousBottom-1)issues.push('ranking no longer vertical at '+i);
+          previousBottom=r.bottom;
+          if(r.left < br.left-2 || r.right > br.right+2)
+            issues.push('row outside board at '+i);
+          const rects=[];
+          for(const selector of children) {
+            const el=row.querySelector(selector);
+            if(!el){issues.push('missing '+selector+' in row '+i);continue;}
+            const b=bounds(el);
+            if(b.left < r.left-2 || b.right > r.right+2 ||
+               b.top < r.top-2 || b.bottom > r.bottom+2)
+              issues.push('clipped grid child '+selector+' row '+i);
+            if(el.scrollWidth > el.clientWidth+3)
+              issues.push('text overflows '+selector+' row '+i);
+            rects.push({selector,b});
+          }
+          for(let a=0;a<rects.length;a++)
+            for(let b=a+1;b<rects.length;b++) {
+              const x=Math.min(rects[a].b.right,rects[b].b.right)-
+                Math.max(rects[a].b.left,rects[b].b.left);
+              const y=Math.min(rects[a].b.bottom,rects[b].b.bottom)-
+                Math.max(rects[a].b.top,rects[b].b.top);
+              if(x>2 && y>2)issues.push('overlapping columns row '+i+
+                ': '+rects[a].selector+' / '+rects[b].selector);
+            }
+        }
+        if(document.documentElement.scrollWidth > window.innerWidth+2)
+          issues.push('horizontal document overflow');
+        return issues;
+      });
+      if(faults.length)throw Error(label+' G8 layout '+width+'px: '+faults.join('; '));
+    }
+  } finally {
+    await page.setViewportSize(initial);
+  }
+}
+
 async function checkG8FirstRead(page,label){
+  await assertG8LayoutMatrix(page,label);
   const board=page.locator('#orient-strength-board');
   const rows=board.locator('button.strength-row[data-cs-country]');
   if(await rows.count()!==8)throw Error(label+' G8 requires eight macro/rates/expectations/price rows');
@@ -56,6 +119,13 @@ async function checkG8FirstRead(page,label){
   await pair.locator(':scope > summary').click();
   if(!await pair.evaluate(el=>el.open))
     throw Error(label+' bilateral FX comparison did not expand');
+  const pairGrid=await page.locator('.strength-pair-fold > .orient-lead.orient-voice')
+    .evaluate(el=>({columns:getComputedStyle(el).gridTemplateColumns,
+      width:el.getBoundingClientRect().width,
+      children:[...el.children].map(ch=>ch.getBoundingClientRect().width)}));
+  if(page.viewportSize().width<=950 && pairGrid.columns.trim().split(/\s+/).length!==1)
+    throw Error(label+' bilateral FX desk retained broken two-column layout: '+
+      JSON.stringify(pairGrid));
   const thesis=page.locator('details.orient-thesis-details');
   await thesis.locator(':scope > summary').click();
   if(!await thesis.evaluate(el=>el.open))

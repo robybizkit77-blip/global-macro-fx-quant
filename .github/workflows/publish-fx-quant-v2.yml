@@ -13,6 +13,7 @@ on:
     paths:
       - 'site/fx-quant-v2/next/macro-studio.js'
       - 'site/fx-quant-v2/next/index.html'
+      - 'site/fx-quant-v2/next/currency-studio.css'
       - 'site/fx-quant-v2/next/pair-desk-narrative.js'
       - 'site/fx-quant-v2/next/decision-journey.js'
       - 'site/fx-quant-v2/next/app.js'

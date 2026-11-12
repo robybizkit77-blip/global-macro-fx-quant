@@ -88,9 +88,13 @@ for(const country of FX){
  assert.deepEqual(selected,[country],'Selected currency must remain navigable');
 }
 const idx=read(base+'index.html');
-assert(idx.includes('currency-studio.js?v=12')&&idx.includes('currency-studio.css?v=6'));
+assert(idx.includes('currency-studio.js?v=12')&&idx.includes('currency-studio.css?v=7'));
 assert(idx.indexOf('g8-macro-pricing-bridge.js')<idx.indexOf('currency-studio.js'));
 const css=read(base+'currency-studio.css');
 assert(css.includes('.strength-first-reading')&&css.includes('.strength-evidence-fold>summary'));
-assert(css.includes('@media(max-width:680px)'));
+assert(css.includes('@media(max-width:700px)'));
+assert(css.includes('@media(max-width:950px)'));
+assert(css.includes('.strength-pair-fold>.orient-lead.orient-voice'));
+assert(css.includes('grid-template-columns:minmax(0,1fr);gap:8px'),
+  'Ranked G8 rows must stay a single vertical list instead of broken 2x4 cards');
 console.log('G8_EDITORIAL_FIRST_READ_PASS: 8×8 narrative choices, three coherent paragraphs, complete collapsed evidence, unchanged price ranking and mobile CSS');
