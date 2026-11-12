@@ -87,7 +87,7 @@ class RbaF2StrictXlsxFallback(unittest.TestCase):
                 (datetime(2026,11,3),4.7,4.9)]),
             dict(observations=[
                 (datetime(2026,11,3),4.6,4.8),
-                (datetime(2026,11,4),float("inf"),4.9)]),
+                (datetime(2026,11,4),"Infinity",4.9)]),
         ]
         for kw in cases:
             with self.subTest(kw=kw):
