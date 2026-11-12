@@ -181,8 +181,14 @@ class USHouseholdRevisedResearchTests(unittest.TestCase):
         self.assertFalse(country["countrybook_revised_household_context"]["PIT_certified"])
         self.assertFalse(country["countrybook_revised_household_context"]
                          ["historical_series_replaced"])
-        self.assertEqual(country["economic_transmission_observations"]
-                         ["households"][0]["observation_period"],"2026-07-01")
+        from validation.macro import build_g8_causal_evidence_bridge_v2 as evidence
+        catalogue=json.loads((evidence.v1.ROOT/evidence.MACRO_SERIES).read_text())
+        first_id=evidence.SELECTORS["USD"]["households"][0]
+        original=next(x for x in catalogue["USD"] if x["id"]==first_id)
+        observation=country["economic_transmission_observations"]["households"][0]
+        self.assertEqual(observation["id"],first_id)
+        self.assertEqual(observation["observation_period"],original["last_date"])
+        self.assertIsNone(observation["publisher_release_timestamp"])
         self.assertIn("spesa nominale",country["economic_transmission_narrative_it"][4])
 
     def test_archive_note_is_plain_readonly_and_explicit_about_revision(self):
