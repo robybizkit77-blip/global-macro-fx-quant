@@ -3,11 +3,14 @@ from __future__ import annotations
 
 import copy
 import csv
+import json
 from datetime import date,datetime,timezone
 from io import StringIO
+from pathlib import Path
 import unittest
 
 from validation.macro import reconcile_us_real_households_countrybook_v2 as m
+from validation.macro import build_g8_causal_countrybook_pilot_v1 as g8_pilot
 from validation.macro import collect_us_nz_household_firm_sources_v1 as old
 
 NOW=datetime(2026,11,9,20,15,tzinfo=timezone.utc)
@@ -160,15 +163,32 @@ class USHouseholdRevisedResearchTests(unittest.TestCase):
 
     def test_countrybook_research_overlay_is_separate_from_original_observations(self):
         result=self.reconciled()
-        book=m.research_countrybook_snapshot(result,today=date(2026,11,9))
+        # This unit checks editorial separation against CURRENT research sources,
+        # not a historical 9-Nov replay. Newer macro source snapshots must not
+        # be treated as available on the old date; that guard stays active.
+        meta=json.loads((g8_pilot.ROOT/g8_pilot.PATHS["macro"]).read_text(encoding="utf-8"))
+        snapshot_date=date.fromisoformat(meta["as_of_research"])
+        today=date.today()
+        self.assertLessEqual(snapshot_date,today,
+                             "Current source future-dated relative to actual test day")
+        if snapshot_date > date(2026,11,9):
+            with self.assertRaisesRegex(ValueError,"future macro snapshot"):
+                m.research_countrybook_snapshot(result,today=date(2026,11,9))
+        book=m.research_countrybook_snapshot(result,today=today)
         country=book["countries"]["USD"]
         self.assertFalse(country["safe_for_site"])
         self.assertFalse(country["safe_for_reports"])
         self.assertFalse(country["countrybook_revised_household_context"]["PIT_certified"])
         self.assertFalse(country["countrybook_revised_household_context"]
                          ["historical_series_replaced"])
-        self.assertEqual(country["economic_transmission_observations"]
-                         ["households"][0]["observation_period"],"2026-07-01")
+        from validation.macro import build_g8_causal_evidence_bridge_v2 as evidence
+        catalogue=json.loads((evidence.v1.ROOT/evidence.MACRO_SERIES).read_text())
+        first_id=evidence.SELECTORS["USD"]["households"][0]
+        original=next(x for x in catalogue["USD"] if x["id"]==first_id)
+        observation=country["economic_transmission_observations"]["households"][0]
+        self.assertEqual(observation["id"],first_id)
+        self.assertEqual(observation["observation_period"],original["last_date"])
+        self.assertIsNone(observation["publisher_release_timestamp"])
         self.assertIn("spesa nominale",country["economic_transmission_narrative_it"][4])
 
     def test_archive_note_is_plain_readonly_and_explicit_about_revision(self):

@@ -82,23 +82,42 @@ class RelativeG8PairsV5Tests(unittest.TestCase):
         self.assertNotEqual(book["pairs"]["AUD/CAD"]["price_ecb_reference"]["five_observation_change_pct"],None)
 
     def test_full_market_6m_official_is_not_homogeneous_ois(self):
+        # The availability of matching official instruments changes as
+        # individual issuers refresh. Do not freeze the expected 6/28 list,
+        # and never call asynchronous, stale or mixed instruments OIS spreads.
         b=self.book
-        for p,x in b["pairs"].items():
+        ois=m.json.loads((m.ROOT/m.OIS_FILE).read_text())["currencies"]
+        eligible=0
+        for pair,x in b["pairs"].items():
             self.assertFalse(x["money_market_6m"]["comparable_equivalent_policy_6m"])
             self.assertIsNone(x["money_market_6m"]["implied_policy_move_difference_bp"])
             self.assertIsNone(x["money_market_6m"]["event_repricing_bp"])
-            if (x["base"] in ("USD","EUR","CHF","NZD") or
-                x["quote"] in ("USD","EUR","CHF","NZD")):
-                self.assertIsNone(x["money_market_6m"]["six_month_arithmetic_reference_spread_bp"])
-        for pair in ("AUD/CAD","GBP/AUD","AUD/JPY","GBP/CAD","CAD/JPY","GBP/JPY"):
-            self.assertEqual(
-                b["pairs"][pair]["money_market_6m"]["status"],
-                "OFFICIAL_SAME_DAY_HETEROGENEOUS_REFERENCE_NOT_POLICY_SPREAD"
+            base,quote=x["base"],x["quote"]
+            a,c=ois[base],ois[quote]
+            official=all(
+                z["operational_status"]=="GREEN_OFFICIAL"
+                and z.get("quality")=="OFFICIAL_CERTIFIED"
+                and m.isnum(z.get("horizons",{}).get("6m",{}).get("rate"))
+                for z in (a,c)
             )
-            self.assertIsNotNone(
-                b["pairs"][pair]["money_market_6m"]["six_month_arithmetic_reference_spread_bp"]
-            )
-        self.assertEqual(b["scope"]["official_same_day_heterogeneous_6m_pairs"],6)
+            same_date=a["as_of"]==c["as_of"]
+            fresh=all(0<=(self.today-date.fromisoformat(z["as_of"])).days<=7
+                      for z in (a,c))
+            admissible=official and same_date and fresh
+            expected_status=("OFFICIAL_SAME_DAY_HETEROGENEOUS_REFERENCE_NOT_POLICY_SPREAD"
+                             if admissible else "PARTIAL_OR_ASYNCHRONOUS_REFERENCE")
+            row=x["money_market_6m"]
+            self.assertEqual(row["status"],expected_status,pair)
+            self.assertEqual(row["six_month_arithmetic_reference_spread_bp"] is not None,
+                             admissible,pair)
+            if admissible:
+                eligible+=1
+                self.assertAlmostEqual(row["six_month_arithmetic_reference_spread_bp"],
+                    round((a["horizons"]["6m"]["rate"]-
+                           c["horizons"]["6m"]["rate"])*100,2),places=2)
+        self.assertEqual(b["scope"]["official_same_day_heterogeneous_6m_pairs"],
+                         eligible)
+        self.assertEqual(b["scope"]["validated_policy_repricing"],0)
 
     def test_same_date_two_year_spreads_but_not_asynchronous_inferences(self):
         b=self.book
