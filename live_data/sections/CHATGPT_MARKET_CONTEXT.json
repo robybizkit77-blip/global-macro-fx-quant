@@ -1,6 +1,6 @@
 {
   "schema": "GMFQ_CHATGPT_MARKET_CONTEXT_V1",
-  "generated_at_utc": "2026-11-12T02:51:29Z",
+  "generated_at_utc": "2026-11-12T10:54:40Z",
   "evaluation_date_europe_rome": "2026-11-12",
   "reference_only": true,
   "policy": {
@@ -82,53 +82,53 @@
       },
       "CAD": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-11-10",
+        "as_of": "2026-11-11",
         "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
         "policy_rate_pct": 2.5,
         "horizons": {
           "3m": {
             "rate_pct": 2.735,
             "delta_vs_policy_bp": 23.5,
-            "change_1d_bp": 5.0,
-            "change_1w_bp": -0.5
+            "change_1d_bp": 0.0,
+            "change_1w_bp": 0.5
           },
           "6m": {
             "rate_pct": 2.965,
             "delta_vs_policy_bp": 46.5,
-            "change_1d_bp": 11.5,
-            "change_1w_bp": 0.5
+            "change_1d_bp": 0.0,
+            "change_1w_bp": 3.0
           },
           "12m": {
             "rate_pct": 3.205,
             "delta_vs_policy_bp": 70.5,
-            "change_1d_bp": 15.0,
-            "change_1w_bp": -2.0
+            "change_1d_bp": 0.0,
+            "change_1w_bp": 2.5
           }
         }
       },
       "AUD": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-11-10",
+        "as_of": "2026-11-11",
         "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
         "policy_rate_pct": 4.85,
         "horizons": {
           "3m": {
-            "rate_pct": 4.85,
-            "delta_vs_policy_bp": 0.0,
-            "change_1d_bp": 0.0,
-            "change_1w_bp": 0.0
+            "rate_pct": 4.855,
+            "delta_vs_policy_bp": 0.5,
+            "change_1d_bp": 0.5,
+            "change_1w_bp": -0.5
           },
           "6m": {
-            "rate_pct": 4.885,
-            "delta_vs_policy_bp": 3.5,
-            "change_1d_bp": 0.0,
-            "change_1w_bp": -3.0
+            "rate_pct": 4.91,
+            "delta_vs_policy_bp": 6.0,
+            "change_1d_bp": 2.5,
+            "change_1w_bp": -1.5
           },
           "12m": {
-            "rate_pct": 4.705,
-            "delta_vs_policy_bp": -14.5,
-            "change_1d_bp": -0.5,
-            "change_1w_bp": -9.5
+            "rate_pct": 4.75,
+            "delta_vs_policy_bp": -10.0,
+            "change_1d_bp": 4.5,
+            "change_1w_bp": -4.5
           }
         }
       },
@@ -171,13 +171,13 @@
       },
       "JPY": {
         "state": "AVAILABLE_CERTIFIED",
-        "as_of": "2026-11-10",
-        "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-10",
-        "government_2y_pct": 1.784,
-        "government_10y_pct": 2.748,
-        "10y_minus_2y_bp": 96.4,
-        "change_2y_bp": -9.6,
-        "change_10y_bp": -6.9
+        "as_of": "2026-11-11",
+        "source": "Japan Ministry of Finance · JGB Interest Rate · 2026-11-11",
+        "government_2y_pct": 1.861,
+        "government_10y_pct": 2.84,
+        "10y_minus_2y_bp": 97.9,
+        "change_2y_bp": -3.0,
+        "change_10y_bp": -1.5
       },
       "CHF": {
         "state": "STALE",
