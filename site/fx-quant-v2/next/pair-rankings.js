@@ -164,6 +164,58 @@
    'Mancano riferimenti daily omogenei per questa tesi: nessun livello di prezzo inventato.'};
 }
 
+
+ // These are separate directional rate observations, NOT a bilateral OIS spread.
+ // Do not call a government 2Y proxy an official money-market confirmation.
+ function pairRateEvidence(pair,by){
+  const a=by?.[pair?.base]?.rate,b=by?.[pair?.quote]?.rate;
+  if(!a||!b||a.quality==='ASSENTE'||b.quality==='ASSENTE')
+   return {quality:'INCOMPLETO',description:'Manca una variazione monetaria recente per almeno una delle due valute.'};
+  if(a.quality==='PROXY'||b.quality==='PROXY')
+   return {quality:'PROXY_2Y',description:'Almeno un movimento è un 2Y governativo usato come proxy: non equivale a un repricing OIS comparabile.'};
+  if(a.quality==='UFFICIALE'&&b.quality==='UFFICIALE'&&
+     (a.kind!==b.kind||a.asof!==b.asof))
+   return {quality:'6M_NON_OMOGENEO',description:'Le variazioni 6M sono da fonti ufficiali ma strumenti o date differiscono: non sono uno spread OIS.'};
+  if(a.quality==='UFFICIALE'&&b.quality==='UFFICIALE')
+   return {quality:'6M_ALLINEATO',description:'Due variazioni 6M ufficiali dello stesso tipo e data: solo direzioni osservate, non uno spread né una sorpresa.'};
+  return {quality:'NON_COMPARABILE',description:'Le basi monetarie non sono direttamente confrontabili.'};
+ }
+ // A scheduled release is a catalyst, never its result or an FX reaction.
+ // Same-day UPCOMING is treated as an unverified past/ongoing release.
+ function pairCatalyst(pair,calendar,now,date=x=>x){
+  const validDay=s=>typeof s==='string'&&/^\\d{4}-\\d{2}-\\d{2}$/.test(s)&&
+   !Number.isNaN(Date.parse(s+'T00:00:00Z'));
+  if(!pair||!/^([A-Z]{3}){2}$/.test(pair.key||'')||
+     pair.base===pair.quote||!validDay(now)||
+     calendar?.schema!=='GMFQ_CALENDAR_OPERATIONAL_VIEW_V3'||
+     !Array.isArray(calendar.events))return null;
+  const checked=String(calendar.last_checked_at_utc||'').slice(0,10);
+  const age=validDay(checked)?
+   (Date.parse(now+'T00:00:00Z')-Date.parse(checked+'T00:00:00Z'))/864e5:null;
+  if(age===null||age<0||age>7)return null;
+  const types=['GROWTH','LABOUR','INFLATION','CENTRAL_BANK_DECISION'];
+  const events=calendar.events.filter(e=>e&&
+   [pair.base,pair.quote].includes(e.ccy)&&types.includes(e.event_type)&&
+   e.importance==='HIGH'&&e.status==='UPCOMING'&&
+   typeof e.quality==='string'&&e.quality.startsWith('OFFICIAL')&&
+   validDay(e.date)&&e.date>=now&&typeof e.title==='string'&&e.title.length>0)
+   .sort((a,b)=>a.date.localeCompare(b.date)||a.ccy.localeCompare(b.ccy));
+  const event=events[0];
+  if(!event)return null;
+  const day=event.date===now,suffix=event.quality==='OFFICIAL_PROVISIONAL'?
+   ' (data provvisoria)':'';
+  const other=event.ccy===pair.base?pair.quote:pair.base;
+  const label=event.ccy+' · '+event.title+' · '+date(event.date)+suffix;
+  const text=day?
+   'Nel calendario era previsto oggi '+label+
+   '. Questo feed non ne certifica il risultato: servono dato effettivo, consenso e reazione relativa '+pair.base+'/'+pair.quote+'.':
+   'Prossima verifica per '+pair.base+'/'+pair.quote+': '+label+
+   '. Può cambiare le aspettative su '+event.ccy+' rispetto a '+other+
+   ' solo se porta informazioni nuove rispetto al consenso e al percorso dei tassi già prezzato. Verificare poi il Forex.';
+  return {ccy:event.ccy,asof:checked,date:event.date,status:day?'ESITO_NON_VERIFICATO':'FUTURO',
+   text};
+ }
+
  function render(api){
   const {get,FLAGS,state,esc,sign,date}=api;
   const est=get('estimatedMacro');
@@ -182,27 +234,39 @@
   const shortlistNote=top.length<5?
    'Oggi solo '+top.length+' coppie rispettano il filtro: non inseriamo casi senza vantaggio netto o con prezzo contrario per raggiungere quota cinque.':
    'Cinque casi di ricerca selezionati cercando di limitare l’esposizione ripetuta alle stesse valute.';
-  // One economic sentence per row. The dated price sits on the NEXT line;
-  // repeating it as a narrative claim makes the first-read less clear.
+  // The ranking is intentionally concise; underlying GDP and labour
+  // evidence is in G8, while source precision belongs in the pair dossier.
   const shortReading=x=>{
    if(!x.favored)return 'Macro e tassi non distinguono una direzione abbastanza solida.';
-   const fav=x.favored,direction=fav===x.base?1:-1;
-   const macro=x.macroState||(!Number.isFinite(x.macroGap)?'NON DISTINTA':
-    x.macroGap*direction>=.12?'FAVOREVOLE':
-    x.macroGap*direction<=-.12?'CONTRARIA':'NON DECISIVA');
-   const rates=x.policyState||(!Number.isFinite(x.policyGap)?'ASSENTE':
-    x.policyGap*direction>=.10?'FAVOREVOLE':
-    x.policyGap*direction<=-.10?'CONTRARIA':'NON DECISIVA');
-   if(macro==='CONTRARIA'&&rates==='FAVOREVOLE')
-    return 'I tassi favoriscono '+fav+', ma la macro relativa lo contraddice.';
-   if(macro==='FAVOREVOLE'&&rates==='CONTRARIA')
-    return 'La macro favorisce '+fav+', ma il movimento dei tassi è contrario.';
-   if(macro==='FAVOREVOLE'&&rates==='FAVOREVOLE')
+   const fav=x.favored;
+   const macro=x.macroState,policy=x.policyState;
+   const source=pairRateEvidence(x,est?.by).quality;
+   if(macro==='CONTRARIA'&&policy==='FAVOREVOLE')
+    return source==='PROXY_2Y'?
+     'Il 2Y proxy punta a '+fav+', ma la macro relativa lo contraddice.':
+     'I tassi favoriscono '+fav+', ma la macro relativa lo contraddice.';
+   if(macro==='FAVOREVOLE'&&policy==='CONTRARIA')
+    return source==='PROXY_2Y'?
+     'La macro favorisce '+fav+'; il 2Y proxy è contrario, non è un OIS.':
+     'La macro favorisce '+fav+', ma il movimento dei tassi è contrario.';
+   if(macro==='FAVOREVOLE'&&policy==='FAVOREVOLE'){
+    if(source==='PROXY_2Y')
+     return 'Macro a favore di '+fav+'; il 2Y proxy concorda, senza conferma OIS.';
+    if(source==='6M_NON_OMOGENEO')
+     return 'Macro e 6M ufficiali puntano a '+fav+', ma fonti o date differiscono.';
     return 'Macro e movimento monetario convergono su '+fav+'.';
+   }
    if(macro==='FAVOREVOLE')
-    return 'Macro a favore di '+fav+'; dai tassi manca una conferma chiara.';
-   if(rates==='FAVOREVOLE')
+    return source==='INCOMPLETO'?
+     'Macro a favore di '+fav+'; confronto monetario bilaterale incompleto.':
+     'Macro a favore di '+fav+'; il segnale sui tassi non è decisivo.';
+   if(policy==='FAVOREVOLE'){
+    if(source==='PROXY_2Y')
+     return '2Y proxy favorevole a '+fav+'; la macro non conferma ancora.';
+    if(source==='6M_NON_OMOGENEO')
+     return '6M ufficiali orientano verso '+fav+' su date o strumenti diversi.';
     return 'Tassi a favore di '+fav+'; la macro non conferma ancora.';
+   }
    return 'Vantaggio stimato per '+fav+', ma i driver fondamentali restano poco distinti.';
   };
   const row=(x,i,featured=false)=>'<button class="fx-rank-pair '+
@@ -266,7 +330,7 @@
    '<p>'+esc(est?.warning||'Le osservazioni non consentono oggi una valutazione affidabile.')+'</p>'+
    '</details></section></div>';
  }
- const api={currencyRanking,pairRanking,analyze,selectResearchPairs,pairDecisionWatch,render};
+ const api={currencyRanking,pairRanking,analyze,selectResearchPairs,pairDecisionWatch,pairRateEvidence,pairCatalyst,render};
  root.FXQuantPairRankings=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
