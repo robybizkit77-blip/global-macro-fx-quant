@@ -25,6 +25,9 @@ class G8CoverageReceiptTests(unittest.TestCase):
         self.assertEqual(report["rows"]["NZD"]["pricing_6m"]["status"], "WITHHELD")
         self.assertIsNone(report["rows"]["USD"]["pricing_6m"]["weekly_change_bp"])
         self.assertGreater(report["rows"]["USD"]["macro_series"]["observed_with_value"], 10)
+        self.assertGreater(report["rows"]["USD"]["macro_series"]["within_5_months"], 10)
+        self.assertGreater(report["rows"]["EUR"]["macro_series"]["within_5_months"], 5)
+        self.assertGreater(report["rows"]["CAD"]["macro_series"]["within_5_months"], 5)
 
     def test_cli_readonly_exact_main_root_matches_default_receipt(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -59,7 +62,11 @@ class G8CoverageReceiptTests(unittest.TestCase):
         self.assertEqual(row[0]["value"], 2.0)
         self.assertIsNone(age_days("2026-11-13", "not-a-date"))
         self.assertLess(age_days("2026-11-13", "2026-11-12"), 0)
-        self.assertGreater(age_months("2026-12", "2026-11-12"), -2)
+        self.assertEqual(age_months("2026-11-01", "2026-11-12"), 0)
+        self.assertEqual(age_months("2026-10", "2026-11-12"), 1)
+        self.assertEqual(age_months("2026-09-01", "2026-11-12"), 2)
+        self.assertEqual(age_months("2025-11-01", "2026-11-12"), 12)
+        self.assertEqual(age_months("2026-12", "2026-11-12"), -1)
 
 if __name__ == "__main__":
     unittest.main()
