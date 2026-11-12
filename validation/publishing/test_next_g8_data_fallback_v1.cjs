@@ -120,8 +120,8 @@ assert(html.includes('4,50%')||html.includes('4.50%'), 'Indicative USD 6M quote 
 assert(!/\bNaN\b|\bundefined\b|\[object Object\]/.test(html));
 const idx=read(base+'index.html');
 const app=read(base+'app.js');
-assert(idx.includes('currency-data-fallback.js?v=1'));
+assert(idx.includes('currency-data-fallback.js?v=2'));
 assert(idx.indexOf('currency-data-fallback.js')<idx.indexOf('currency-studio.js'));
-assert(idx.includes('currency-studio.js?v=7')&&idx.includes('app.js?v=18.38'));
+assert(idx.includes('currency-studio.js?v=8')&&idx.includes('app.js?v=18.38'));
 assert(app.includes("cbEstimated:'../../../live_data/sections/CB_PRICING_ESTIMATED.json'"));
 console.log('G8_DATA_FALLBACK_V1_PASS: observed growth, indicative 6M proxy, no official promotion, stale/future guard, unchanged rankings');
