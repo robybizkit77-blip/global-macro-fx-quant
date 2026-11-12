@@ -49,7 +49,7 @@ const missing=analyze({prices:{},macro:{},rates:{},ois:{},cot:{},now,rankingFn:c
 assert.equal(missing.rows.length,8);
 assert(missing.rows.every(x=>!x.price.ok&&!x.macro.ok&&!x.rates.ok&&!x.pricing.ok&&x.evidenceCount===0));
 const html=read('site/fx-quant-v2/next/index.html');
-assert(html.includes('currency-strength-reading.js?v=1')&&html.includes('currency-studio.js?v=9'));
+assert(html.includes('currency-strength-reading.js?v=1')&&html.includes('currency-studio.js?v=10'));
 assert(html.indexOf('currency-strength-reading.js')<html.indexOf('currency-studio.js'));
 const studio=read('site/fx-quant-v2/next/currency-studio.js');
 for(const label of ['strengthBoard()+strengthFocus()','MACRO → TASSI → ATTESE → PREZZO','strength-pair-fold','strength-method-fold']){
