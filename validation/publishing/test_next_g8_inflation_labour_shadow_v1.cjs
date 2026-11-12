@@ -58,7 +58,7 @@ for(const c of FX){
    assert(x.horizonSteps>=1&&x.horizonSteps<=3,key+' bounded missing horizon');
    assert(x.backtest.count>=24,key+' historical pseudo-OOS examples');
    assert(x.uncertainty.low<=x.forecast&&x.forecast<=x.uncertainty.high);
-   assert.match(x.uncertainty.interpretation,/NOT_CONFIDENCE_INTERVAL/);
+   assert.match(x.uncertainty.interpretation,/NON_INTERVALLO_DI_CONFIDENZA/);
    assert.equal(x.skillValidatedPIT,false);
    if(key==='CHF_labour'){
     assert.equal(x.status,'MODELLO_RETROSPETTIVO_PROMETTENTE');
