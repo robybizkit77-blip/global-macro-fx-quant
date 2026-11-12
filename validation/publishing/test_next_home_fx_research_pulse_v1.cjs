@@ -82,8 +82,8 @@ if(target){
 }
 const app=read(next+'app.js'),idx=read(next+'index.html'),css=read(next+'morning-desk-v1.css');
 assert(app.includes('currentResearch')&&app.includes('watchForPair:x=>'));
-assert(app.includes("window.FXQuantMorningDesk.build({")===false,
- 'App must use the extended build call with research evidence');
+assert(app.includes('feed:morning,plot,esc,date,dayNow,currentResearch'),
+ 'App must pass current dated research to the morning presentation');
 assert(app.includes("e.target.closest('[data-pair]')"),'Pair buttons must navigate to selected dossier');
 assert(idx.includes('morning-desk-v1.js?v=3'));
 assert(idx.includes('morning-desk-v1.css?v=3'));
