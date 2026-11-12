@@ -39,7 +39,7 @@ assert.equal(pick(entries,3).length,3,'Honor explicit cap');
 
 const src=fs.readFileSync(path.join(root,rel,'pair-rankings.js'),'utf8');
 const index=fs.readFileSync(path.join(root,rel,'index.html'),'utf8');
-assert(index.includes('./pair-rankings.js?v=6'),'New cache version required');
+assert(index.includes('./pair-rankings.js?v=7'),'New cache version required');
 assert(src.includes('Fino a 5 coppie da studiare'));
 assert(src.includes('non inseriamo casi senza vantaggio netto'));
 assert(src.includes('fonti anche proxy'));
