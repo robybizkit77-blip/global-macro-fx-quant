@@ -138,6 +138,7 @@ jobs:
           node validation/publishing/test_morning_desk_render_v1.cjs
           node --check site/fx-quant-v2/next/morning-desk-v1.js
           node validation/publishing/test_next_home_fx_research_pulse_v1.cjs
+          node validation/publishing/test_next_home_fx_catalyst_v1.cjs
           node validation/publishing/test_next_risk_economic_v23.cjs
           node --check site/fx-quant-v2/next/news-evidence-reading.js
           node --check site/fx-quant-v2/next/app.js
@@ -249,6 +250,7 @@ jobs:
           node validation/publishing/test_morning_desk_render_v1.cjs
           node --check site/fx-quant-v2/next/morning-desk-v1.js
           node validation/publishing/test_next_home_fx_research_pulse_v1.cjs
+          node validation/publishing/test_next_home_fx_catalyst_v1.cjs
           node validation/publishing/test_next_risk_economic_v23.cjs
           node --check site/fx-quant-v2/next/news-evidence-reading.js
           node --check site/fx-quant-v2/next/app.js

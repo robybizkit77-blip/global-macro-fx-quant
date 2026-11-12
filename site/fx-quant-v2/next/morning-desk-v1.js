@@ -18,9 +18,85 @@
    &&Array.isArray(c.points)&&c.points.length>=8
    &&c.points.every(p=>goodDay(p.date)&&p.date<f.edition_date&&finite(p.value)));
  }
+
+ // Explain what's driving the ranking instead of repeating rank numbers.
+ // The currency rank combines macro, rates, and 20 ECB fixings; components
+ // must not be mistaken for independent FX trade evidence.
+ function currencyDriver(x,position){
+  if(!x||!/^[A-Z]{3}$/.test(x.ccy||''))return '';
+  const sign=position==='top'?1:-1;
+  const parts=[];
+  if(finite(x.macroScore)&&x.macroScore*sign>0.12)
+   parts.push(sign>0?'momentum interno di crescita e lavoro favorevole':
+    'momentum interno di crescita e lavoro sfavorevole');
+  if(finite(x.policyScore)&&x.policyScore*sign>0.10){
+   const kind=x.rate?.quality==='UFFICIALE'?'variazioni 6M di OIS/futures ufficiali':
+    x.rate?.quality==='PROXY'?'movimento del governativo 2Y usato come proxy':'';
+   if(kind)parts.push(kind+(sign>0?' nella direzione restrittiva':' nella direzione meno restrittiva'));
+  }
+  if(finite(x.priceScore)&&x.priceScore*sign>0.1)
+   parts.push(sign>0?'forza FX relativa nei 20 fixing BCE':
+    'debolezza FX relativa nei 20 fixing BCE');
+  const place=position==='top'?'in cima':'in fondo';
+  const reasons=parts.length?' incidono '+parts.slice(0,2).join(' e '):
+   ' nessuna singola componente offre una prova decisiva';
+  return x.ccy+' '+place+' alla graduatoria stimata:'+reasons+
+   (x.partial?'. Copertura macro/tassi parziale.':'.');
+ }
+ // A scheduled item on today's date may already have been released.
+ // No clock-time guess: treat it as a result to verify, NEVER as future.
+ function nextFxCatalysts(calendar,selected,now){
+  const empty={today:null,next:null,relevant:null,sourceAsOf:null,reason:'CALENDARIO_NON_VERIFICABILE'};
+  if(!goodDay(now)||calendar?.schema!=='GMFQ_CALENDAR_OPERATIONAL_VIEW_V3'||
+     !Array.isArray(calendar.events))return empty;
+  const checked=String(calendar.last_checked_at_utc||'').slice(0,10);
+  const age=(Date.parse(now+'T00:00:00Z')-Date.parse(checked+'T00:00:00Z'))/864e5;
+  if(!goodDay(checked)||!finite(age)||age<0||age>7)return empty;
+  const eligible=calendar.events.filter(x=>x&&x.status==='UPCOMING'&&
+   x.importance==='HIGH'&&typeof x.ccy==='string'&&
+   /^[A-Z]{3}$/.test(x.ccy)&&goodDay(x.date)&&
+   x.date>=now&&typeof x.quality==='string'&&x.quality.startsWith('OFFICIAL')&&
+   ['GROWTH','LABOUR','INFLATION','CENTRAL_BANK_DECISION'].includes(x.event_type)&&
+   typeof x.title==='string'&&x.title.length>0).sort((a,b)=>
+   a.date.localeCompare(b.date)||a.ccy.localeCompare(b.ccy));
+  const picked=Array.isArray(selected)?selected.slice(0,3):[];
+  const currencies=new Set(picked.flatMap(x=>[x?.base,x?.quote]).filter(x=>
+   typeof x==='string'&&/^[A-Z]{3}$/.test(x)));
+  const today=eligible.find(x=>x.date===now)||null;
+  const future=eligible.filter(x=>x.date>now);
+  const next=future[0]||null;
+  const relevant=future.find(x=>currencies.has(x.ccy))||null;
+  return {today,next,relevant,sourceAsOf:checked,reason:'SEED_SENZA_CONSENSO_VALIDATO'};
+ }
+ function catalystReading(calendar,selected,now,date){
+  const events=nextFxCatalysts(calendar,selected,now);
+  if(!events.sourceAsOf)return 'Calendario G8 non aggiornato o non verificabile: non attribuiamo alcun evento futuro senza una fonte datata.';
+  const name=x=>x.ccy+' · '+x.title+' ('+date(x.date)+')'+
+   (x.quality==='OFFICIAL_PROVISIONAL'?' · data provvisoria':'');
+  const consequence=x=>x.event_type==='GROWTH'?
+   'Il dato sulla crescita può modificare le aspettative relative sulla banca centrale, non il prezzo in modo automatico.':
+   x.event_type==='LABOUR'?
+   'Dinamica di occupazione e disoccupazione: conta la sorpresa rispetto alle attese e il conseguente repricing.':
+   x.event_type==='INFLATION'?
+   'Composizione e persistenza dei prezzi possono cambiare il pricing monetario, se sorprendono le attese.':
+   'Decisione e comunicazione vanno confrontate con il percorso di tassi già prezzato.';
+  const lines=[];
+  if(events.today)
+   lines.push('Nel calendario era previsto oggi '+name(events.today)+
+    '. L’esito non è confermato da questo feed: prima di interpretare l’evento servono dato effettivo, consenso e risposta del mercato.');
+  if(events.next)
+   lines.push('Il prossimo evento G8 programmato è '+name(events.next)+'. '+consequence(events.next));
+  if(events.relevant&&events.relevant!==events.next)
+   lines.push('Per le coppie selezionate, il prossimo catalizzatore diretto è '+
+    name(events.relevant)+'.');
+  if(!lines.length)return '';
+  return lines.join(' ')+' Ultima verifica del calendario '+date(events.sourceAsOf)+
+   '; consenso non disponibile: nessuna sorpresa o reazione FX attribuita in anticipo.';
+ }
+
  // Independently dated FX research update. NEVER part of the frozen morning
  // edition, and NEVER represented as pre-opening or as an event reaction.
- function fxResearchPulse({estimated,selectResearchPairs,watchForPair,esc,date,dayNow}={}){
+ function fxResearchPulse({estimated,calendar,selectResearchPairs,watchForPair,esc,date,dayNow}={}){
   if(!estimated)return '';
   const text=x=>esc(String(x??''));
   const today=dayNow();
@@ -43,8 +119,10 @@
    x&&/^[A-Z]{6}$/.test(x.key)&&
    (x.favored===x.base||x.favored===x.quote)&&
    typeof x.thesisStrength==='string'&&typeof x.tradeAttractiveness==='string');
-  const lead='Nel ranking combinato G8 la stima colloca '+topCcy+
-   ' nella posizione più forte e '+lastCcy+' in quella più debole. Non è una prova di flussi o una previsione: per le coppie la direzione fondamentale nasce da macro e variazioni monetarie, mentre il prezzo serve solo a valutare il timing.';
+  const lead='Nel ranking combinato G8 emergono queste differenze. '+
+   currencyDriver(ranking[0],'top')+' '+currencyDriver(ranking.at(-1),'bottom')+
+   ' Le due posizioni riflettono un indice euristico di macro, variazioni dei tassi e prezzo; non sono una prova di flussi o una previsione. Per le coppie la tesi fondamentale esclude il prezzo, che entra soltanto nel timing.';
+  const catalyst=catalystReading(calendar,selected,today,date);
   const showPair=x=>{
    const key=x.key,label=key.slice(0,3)+'/'+key.slice(3);
    const gate=typeof watchForPair==='function'?watchForPair(x):null;
@@ -66,6 +144,8 @@
    '<h2>Dal quadro macro alle coppie da verificare</h2></div>'+
    '<small>Ricerca '+text(date(estimated.asof))+' · fixing BCE '+text(date(estimated.priceAsOf))+'</small></div>'+
    '<p class="morning-fx-pulse-intro">'+text(lead)+'</p>'+
+   (catalyst?'<p class="morning-fx-pulse-catalyst"><strong>Prossime verifiche macro.</strong> '+
+    text(catalyst)+'</p>':'')+
    (selected.length?
     '<p class="morning-fx-pulse-explain">Dalla Top 5 diversificata emergono questi '+selected.length+
     ' dossier da approfondire. Ogni condizione riguarda nuove evidenze, non un ingresso automatico.</p>'+
@@ -252,5 +332,5 @@
    '<div class="morning-section-label">NUOVI DATI MACRO UFFICIALI · AGGIORNAMENTO DATATO</div>'+
    parts.join('')+'</aside>';
  }
- window.FXQuantMorningDesk={sound,build,postRelease,fxResearchPulse};
+ window.FXQuantMorningDesk={sound,build,postRelease,fxResearchPulse,currencyDriver,nextFxCatalysts,catalystReading};
 })();

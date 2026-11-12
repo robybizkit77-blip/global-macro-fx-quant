@@ -252,3 +252,11 @@
  .morning-dashboard .morning-fx-pulse{padding:16px 14px}
  .morning-dashboard .morning-fx-pulse-heading h2{font-size:22px}
 }
+
+/* Editorial catalyst inside the existing Home FX pulse: no new dashboard block. */
+.morning-dashboard .morning-fx-pulse-catalyst{
+ margin:11px 0 15px;padding:11px 13px;border-left:2px solid #d7aa64;
+ background:rgba(159,117,63,.085);border-radius:0 7px 7px 0;
+ color:#d9e5e8;font-size:12px;line-height:1.72;overflow-wrap:anywhere
+}
+.morning-dashboard .morning-fx-pulse-catalyst strong{color:#efd09a}
