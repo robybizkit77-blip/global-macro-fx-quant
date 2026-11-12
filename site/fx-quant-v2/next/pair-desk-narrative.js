@@ -46,7 +46,99 @@
   return {ccy,asof:d[n-1],net:x.net[n-1],change:x.net[n-1]-x.net[n-2],
    long:x.long[n-1]-x.long[n-2],short:x.short[n-1]-x.short[n-2]};
  }
- function interpret({key,model,macro,ois,cot,profile,ratesView,now}){
+
+ const names={USD:'Stati Uniti',EUR:'area euro',GBP:'Regno Unito',JPY:'Giappone',
+  CHF:'Svizzera',CAD:'Canada',AUD:'Australia',NZD:'Nuova Zelanda'};
+ const observedSchema='GMFQ_MACRO_V3_G8_28PAIR_PUBLIC_OBSERVED_CONTEXT_V1';
+ const dayGap=(a,b)=>isDay(a)&&isDay(b)?
+  Math.round((Date.parse(b+'T12:00:00Z')-Date.parse(a+'T12:00:00Z'))/864e5):null;
+ const changeWord=x=>x==='UP'?'aumenta':x==='DOWN'?'diminuisce':x==='FLAT'?'è stabile':null;
+ const labourWord=x=>x==='UP'?'si allenta':x==='DOWN'?'migliora':x==='FLAT'?'resta stabile':null;
+ function growthChange(row,now){
+  const g=row?.growth,prior=g?.prior_documented_quarter;
+  if(!g||!prior||!isDay(g.publisher_release_day)||g.publisher_release_day>now||
+     !isDay(prior.publisher_release_day)||prior.publisher_release_day>now||
+     typeof g.reference_quarter!=='string'||typeof prior.reference_quarter!=='string'||
+     !/^20\d{2}Q[1-4]$/.test(g.reference_quarter)||
+     !/^20\d{2}Q[1-4]$/.test(prior.reference_quarter)||
+     g.reference_quarter<=prior.reference_quarter||
+     !finite(g.nonannualized_qoq_descriptive_pct)||
+     !finite(prior.nonannualized_qoq_descriptive_pct)||
+     g.later_revisions_not_identical_to_first_release!==true)return null;
+  const difference=g.nonannualized_qoq_descriptive_pct-prior.nonannualized_qoq_descriptive_pct;
+  return {period:g.reference_quarter,
+   trend:difference>0.10?'accelera':difference< -0.10?'rallenta':'è sostanzialmente stabile'};
+ }
+ function observedContext(doc,key,model,now){
+  const pair=key.slice(0,3)+'/'+key.slice(3),a=key.slice(0,3),b=key.slice(3);
+  const age=dayGap(doc?.generated_europe_rome_day,now);
+  const priceLag=dayGap(doc?.fx_price_as_of,model?.price_asof);
+  if(!doc||doc.schema!==observedSchema||
+     doc.status!=='OBSERVED_ECONOMIC_CONTEXT_NOT_FX_SIGNAL'||
+     doc.safe_to_republish_D!==false||
+     doc.safe_to_recompute_structural_pair_theses!==false||
+     doc.eligible_for_trading_or_forward_backtest!==false||
+     doc.historic_PIT_OOS_not_certified!==true||
+     doc.source_value_quality!=='OBSERVED_REVISED_SERIES_AND_PUBLISHER_WEB_GDP'||
+     doc.canonical_D_macro_baseline_as_of!==model?.macro_baseline_asof||
+     !Number.isInteger(age)||age<0||age>7||
+     !Number.isInteger(priceLag)||priceLag<0||priceLag>7||
+     doc.pair_context?.[pair]?.base!==a||doc.pair_context?.[pair]?.quote!==b||
+     doc.pair_context[pair].pair_trade_bias!==null||
+     doc.pair_context[pair].recalculated_structural_thesis!==false||
+     doc.countries?.[a]?.FX_strength!==null||doc.countries?.[b]?.FX_strength!==null||
+     doc.countries[a]?.macro_score!==null||doc.countries[b]?.macro_score!==null||
+     doc.countries[a]?.not_a_trade_or_policy_signal!==true||
+     doc.countries[b]?.not_a_trade_or_policy_signal!==true)return null;
+  const A=doc.countries[a],B=doc.countries[b];
+  for(const row of [A,B]){
+   for(const pillar of ['inflation','labour']){
+    const x=row[pillar];
+    if(!x||!finite(x.observation_value)||!isPeriod(x.observation_period)||
+       x.observation_period.slice(0,7)>now.slice(0,7)||
+       !['UP','DOWN','FLAT'].includes(x.change_direction)||
+       x.observed_history_revised_not_historic_PIT!==true||
+       x.observation_period_is_not_release_instant!==true)return null;
+   }
+  }
+  const sentences=[];
+  const growthA=growthChange(A,now),growthB=growthChange(B,now);
+  if(growthA&&growthB&&growthA.period===growthB.period){
+   sentences.push('Sul PIL, '+names[a]+' '+growthA.trend+' e '+names[b]+' '+growthB.trend+
+    ' nello stesso trimestre osservato.');
+  }else if(growthA||growthB){
+   const winner=growthA?a:b,loser=growthA?b:a,g=growthA||growthB;
+   sentences.push('La crescita di '+names[winner]+' '+g.trend+
+    ', ma per '+names[loser]+' non abbiamo un confronto trimestrale altrettanto recente.');
+  }
+  const labourA=A.labour.change_direction,labourB=B.labour.change_direction;
+  if(labourA!==labourB){
+   sentences.push('Sul lavoro, la pressione della disoccupazione '+labourWord(labourA)+
+    ' in '+names[a]+' e '+labourWord(labourB)+' in '+names[b]+'.');
+  }else{
+   sentences.push('La disoccupazione '+labourWord(labourA)+
+    ' in entrambe le economie: da sola non separa le due valute.');
+  }
+  if(A.inflation.change_direction!==B.inflation.change_direction){
+   sentences.push('L’inflazione annua '+changeWord(A.inflation.change_direction)+
+    ' in '+names[a]+' e '+changeWord(B.inflation.change_direction)+
+    ' in '+names[b]+', senza implicare automaticamente una risposta dei tassi.');
+  }
+  const summary=sentences.join(' ')+
+   ' Sono dinamiche nazionali osservate, non sorprese rispetto al consenso né una nuova valutazione della forza FX.';
+  const evidence='Fotografia elaborata il '+doc.generated_europe_rome_day+
+   ' da serie macro riviste e comunicazioni sul PIL. Periodi: '+
+   a+' PIL '+(A.growth?.reference_quarter||'n.d.')+
+   ', inflazione '+A.inflation.observation_period+
+   ', lavoro '+A.labour.observation_period+'; '+
+   b+' PIL '+(B.growth?.reference_quarter||'n.d.')+
+   ', inflazione '+B.inflation.observation_period+
+   ', lavoro '+B.labour.observation_period+
+   '. Le release possono avere ritardi e definizioni diverse; non è uno storico point-in-time per backtest.';
+  return {asof:doc.generated_europe_rome_day,summary,evidence};
+ }
+
+ function interpret({key,model,macro,ois,cot,profile,ratesView,observedMacro,now}){
   const p=model?.pairs?.[key],valid=typeof key==='string'&&/^[A-Z]{6}$/.test(key)&&
     key.substring(0,3)!==key.substring(3,6)&&p&&isDay(now);
   if(!valid)return {available:false,headline:'Confronto non verificabile',judgement:'Nessuna tesi ricostruita senza uno snapshot valido.'};
@@ -129,6 +221,7 @@
    profile.horizonConflict?
     'La risposta del prezzo non è uniforme fra i due orizzonti osservati. Il mercato non offre ancora una conferma stabile della direzione favorevole a '+fav+'.':
    'La risposta del prezzo resta inconcludente: la preferenza del modello non basta per chiamare confermata la tesi.';
+  const currentMacro=observedContext(observedMacro,key,model,now);
   const monetaryCaveat=x&&y&&x.sourceType===y.sourceType&&x.asof===y.asof?
    'Le due indicazioni a sei mesi sono disponibili, ma senza una serie di variazioni confrontabili non attribuiamo un nuovo repricing relativo.':
    'Le osservazioni a sei mesi non sono omogenee per strumento e/o data: non abbiamo prova di un repricing relativo che possa spiegare il cambio.';
@@ -149,7 +242,7 @@
     'Il contrasto fra gli orizzonti di prezzo rende poco convincente il timing. Serve una conferma nuova, non la sola direzione preferita del modello.':
    'La preferenza di fondo è coerente con il modello, ma un ingresso richiede timing e rischio favorevoli, non la semplice conferma del prezzo.';
   return {available:true,key,headline,structural,macro:macroReading,pricing,relation,positioning,price,
-    economicPoint,baselineCaveat,marketPoint,monetaryCaveat,crowding,invalidation,decisionPoint,
+    economicPoint,baselineCaveat,currentMacro,marketPoint,monetaryCaveat,crowding,invalidation,decisionPoint,
     judgment,watch,asof:model.price_asof,macroDate,fav,quality,rateVerified:Boolean(ratesView?.ready),
     cotAsOf:[ca?.asof,cb?.asof].filter(Boolean).join(' / ')||'n.d.'};
  }
@@ -160,12 +253,16 @@
   return '<div class="decision-desk-story" data-serafini-pair="'+esc(item.key)+'">'+
    '<span class="decision-desk-kicker">LA LETTURA DEL DESK · '+esc(item.key.slice(0,3)+'/'+item.key.slice(3))+'</span>'+
    '<h3>'+esc(item.headline)+'</h3>'+
+   (item.currentMacro?
+    '<p class="decision-desk-current-macro"><strong>Che cosa cambia nei dati osservati.</strong> '+
+    esc(item.currentMacro.summary)+'</p>':'')+
    para('Che cosa sostiene la tesi.',item.economicPoint+' '+item.baselineCaveat)+
    para('Che cosa sta confermando il mercato.',item.marketPoint+' '+item.monetaryCaveat+item.crowding)+
    para('Giudizio operativo.',item.decisionPoint)+
    '<p class="decision-desk-watch"><strong>Cosa può cambiare il giudizio.</strong> '+esc(item.invalidation)+'</p>'+
    '<details class="decision-desk-evidence"><summary>Verifica dati, date e passaggi del ragionamento</summary>'+
    '<div class="decision-desk-evidence-body">'+
+   (item.currentMacro?para('Macro osservata V3 — provenienza.',item.currentMacro.evidence):'')+
    para('Macro — osservazioni per valuta.',item.macro)+
    para('Pricing — strumenti e date.',item.pricing+' '+item.relation)+
    para('Prezzo — fixing verificati.',item.price)+
@@ -174,6 +271,6 @@
    '. Questi dati sono verifiche del giudizio, non consenso/sorprese confermati, causalità o rendimento atteso.</small>'+
    '</div></details></div>';
  }
- if(typeof window!=='undefined')window.FXQuantPairDesk={interpret,render,countryMacro,pricingObs,cotObs};
- if(typeof module!=='undefined'&&module.exports)module.exports={interpret,render,countryMacro,pricingObs,cotObs};
+ if(typeof window!=='undefined')window.FXQuantPairDesk={interpret,render,countryMacro,pricingObs,cotObs,observedContext,growthChange};
+ if(typeof module!=='undefined'&&module.exports)module.exports={interpret,render,countryMacro,pricingObs,cotObs,observedContext,growthChange};
 })();
