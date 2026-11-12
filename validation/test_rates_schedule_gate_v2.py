@@ -53,8 +53,10 @@ def run():
     check("schedule", "0 8 * * 1-5", "2026-10-26T09:01:00Z", True, ok, "09:00")
     check("schedule", "0 7 * * 1-5", "2026-10-24T07:00:00Z", False, "NOT_BUSINESS_DAY")
     check("schedule", "20 9 * * 1-5", "2026-10-19T09:20:00Z", False, "UNKNOWN_CRON_FAIL_CLOSED")
-    for event in ("workflow_dispatch", "push", "pull_request"):
+    for event in ("workflow_dispatch", "push"):
         check(event, "", "2026-10-19T09:25:00Z", True, "EXPLICIT_EVENT")
+    check("pull_request", "", "2026-10-19T09:25:00Z",
+          False, "PULL_REQUEST_CONTRACT_ONLY")
     # Evening official-source recovery, launched ONLY by the existing hourly
     # schedule. CET/CEST gate uses wall-clock Europe/Rome, not hardcoded UTC.
     trusted={"upstream_name":"Hourly Certified Alert Readiness V1",
