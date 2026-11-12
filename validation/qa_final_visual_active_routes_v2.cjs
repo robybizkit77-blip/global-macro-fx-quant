@@ -25,8 +25,19 @@ async function checkG8FirstRead(page,label){
   const order=await rows.locator('.strength-name b').allTextContents();
   if(order.length!==8||order[0]!=='#1'||order[7]!=='#8')
     throw Error(label+' price-only ordinal ranking missing');
-  if(await page.locator('.strength-card').count()!==4)
-    throw Error(label+' expected 4 source-qualified evidence blocks');
+  if(await board.locator('.strength-brief').count()!==8 ||
+     await board.locator('.strength-axis').count()!==0)
+    throw Error(label+' dense numeric grid should be replaced by eight editorial summaries');
+  if(await page.locator('.strength-first-reading > p').count()!==3)
+    throw Error(label+' selected currency must lead with three narrative paragraphs');
+  const audit=page.locator('details.strength-evidence-fold');
+  if(await audit.count()!==1 || await audit.evaluate(el=>el.open))
+    throw Error(label+' quantitative evidence must exist, collapsed on first read');
+  await audit.locator(':scope > summary').click();
+  if(!(await audit.evaluate(el=>el.open)))
+    throw Error(label+' detailed source/estimate panel did not expand');
+  if(await audit.locator('.strength-card').count()!==4)
+    throw Error(label+' four source-qualified dimensions lost inside expanded audit');
   const research=page.locator('details.strength-shadow-fold');
   if(await research.count()!==1)
     throw Error(label+' optional G8 shadow model detail missing');
