@@ -2,19 +2,19 @@
   "schema": "GMFQ_PAIR_SETUP_OPERATIONAL_VIEW_V1",
   "status": "CURRENT_CANONICAL_ENGINE",
   "pair_count": 28,
-  "price_asof": "2026-11-11",
+  "price_asof": "2026-11-12",
   "macro_baseline_asof": "2026-09-25",
   "price_source": "ECB euro foreign exchange reference rates",
   "price_audit": {
     "status": "PASS",
-    "as_of": "2026-11-11",
+    "as_of": "2026-11-12",
     "source": "ECB euro foreign exchange reference rates",
     "current_row_source": "official history snapshot",
     "overlay_asof": "2026-11-11",
     "history_status": "CURRENT_OFFICIAL_HISTORY",
-    "history_asof": "2026-11-11",
+    "history_asof": "2026-11-12",
     "history_rows": 561,
-    "first_asof": "2024-09-02",
+    "first_asof": "2024-09-03",
     "pair_count": 28,
     "complete_pair_count": 28,
     "complete_return_values": 140,
@@ -48,9 +48,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 5.009276437847866,
-          "move1m": -1.8344043436080204,
-          "text": "Estensione non elevata · 1M -1.8% · P5 storico"
+          "pct": 2.968460111317254,
+          "move1m": -2.2030271118921863,
+          "text": "Estensione non elevata · 1M -2.2% · P3 storico"
         },
         "timing": {
           "state": "ADVERSE",
@@ -200,9 +200,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 12.801484230055658,
-          "move1m": -1.9990670681409028,
-          "text": "Estensione non elevata · 1M -2.0% · P13 storico"
+          "pct": 10.575139146567718,
+          "move1m": -2.1589348136660136,
+          "text": "Estensione non elevata · 1M -2.2% · P11 storico"
         },
         "timing": {
           "state": "ADVERSE",
@@ -351,8 +351,8 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 22.07792207792208,
-          "move1m": -1.2548462406892447,
+          "pct": 21.70686456400742,
+          "move1m": -1.2831995559093423,
           "text": "Estensione non elevata · 1M -1.3% · P22 storico"
         },
         "timing": {
@@ -502,9 +502,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 7.421150278293135,
-          "move1m": -1.3692231821932355,
-          "text": "Estensione non elevata · 1M -1.4% · P7 storico"
+          "pct": 8.905380333951763,
+          "move1m": -1.2566251511825222,
+          "text": "Estensione non elevata · 1M -1.3% · P9 storico"
         },
         "timing": {
           "state": "ADVERSE",
@@ -770,9 +770,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 47.30983302411874,
-          "move1m": -0.16773974978896433,
-          "text": "Estensione non elevata · 1M -0.2% · P47 storico"
+          "pct": 55.10204081632653,
+          "move1m": 0.0450855450062182,
+          "text": "Estensione non elevata · 1M +0.0% · P55 storico"
         },
         "timing": {
           "state": "PARTIAL",
@@ -1041,9 +1041,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 47.49536178107606,
-          "move1m": -0.7594017783168372,
-          "text": "Estensione non elevata · 1M -0.8% · P47 storico"
+          "pct": 44.526901669758814,
+          "move1m": -0.8950589980688317,
+          "text": "Estensione non elevata · 1M -0.9% · P45 storico"
         },
         "timing": {
           "state": "UNCERTAIN",
@@ -1192,9 +1192,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 21.150278293135436,
-          "move1m": -1.1851297405189642,
-          "text": "Estensione non elevata · 1M -1.2% · P21 storico"
+          "pct": 18.181818181818183,
+          "move1m": -1.3285099482317708,
+          "text": "Estensione non elevata · 1M -1.3% · P18 storico"
         },
         "timing": {
           "state": "ADVERSE",
@@ -1464,9 +1464,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 23.562152133580707,
-          "move1m": -0.8376288659793896,
-          "text": "Estensione non elevata · 1M -0.8% · P24 storico"
+          "pct": 22.448979591836736,
+          "move1m": -0.8591065292096189,
+          "text": "Estensione non elevata · 1M -0.9% · P22 storico"
         },
         "timing": {
           "state": "UNCERTAIN",
@@ -1971,9 +1971,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 57.69944341372913,
-          "move1m": 0.48296216796351876,
-          "text": "Estensione non elevata · 1M +0.5% · P58 storico"
+          "pct": 66.04823747680891,
+          "move1m": 0.9563818376832289,
+          "text": "Estensione non elevata · 1M +1.0% · P66 storico"
         },
         "timing": {
           "state": "PARTIAL",
@@ -2123,9 +2123,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 8.348794063079778,
-          "move1m": -2.2258053316219106,
-          "text": "Estensione non elevata · 1M -2.2% · P8 storico"
+          "pct": 7.050092764378479,
+          "move1m": -2.377007598871428,
+          "text": "Estensione non elevata · 1M -2.4% · P7 storico"
         },
         "timing": {
           "state": "ADVERSE",
@@ -2391,8 +2391,8 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 48.97959183673469,
-          "move1m": 0.1822429220956101,
+          "pct": 48.608534322820034,
+          "move1m": 0.16675474062988194,
           "text": "Estensione non elevata · 1M +0.2% · P49 storico"
         },
         "timing": {
@@ -2774,9 +2774,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 43.59925788497217,
-          "move1m": -0.5405573198925762,
-          "text": "Estensione non elevata · 1M -0.5% · P44 storico"
+          "pct": 51.57699443413729,
+          "move1m": -0.06847287504367916,
+          "text": "Estensione non elevata · 1M -0.1% · P52 storico"
         },
         "timing": {
           "state": "MIXED",
@@ -3042,9 +3042,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 47.86641929499072,
-          "move1m": -0.6385875750640424,
-          "text": "Estensione non elevata · 1M -0.6% · P48 storico"
+          "pct": 41.37291280148423,
+          "move1m": -0.9137926102535721,
+          "text": "Estensione non elevata · 1M -0.9% · P41 storico"
         },
         "timing": {
           "state": "UNCERTAIN",
@@ -3309,9 +3309,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 47.86641929499072,
-          "move1m": 0.2832089808257443,
-          "text": "Estensione non elevata · 1M +0.3% · P48 storico"
+          "pct": 61.59554730983302,
+          "move1m": 1.011014261702159,
+          "text": "Estensione non elevata · 1M +1.0% · P62 storico"
         },
         "timing": {
           "state": "PARTIAL",
@@ -3459,9 +3459,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 41.001855287569576,
-          "move1m": -0.18896513668383852,
-          "text": "Estensione non elevata · 1M -0.2% · P41 storico"
+          "pct": 46.753246753246756,
+          "move1m": 0.053105127473118685,
+          "text": "Estensione non elevata · 1M +0.1% · P47 storico"
         },
         "timing": {
           "state": "MIXED",
@@ -3611,9 +3611,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 40.44526901669759,
-          "move1m": -0.3563879168253181,
-          "text": "Estensione non elevata · 1M -0.4% · P40 storico"
+          "pct": 49.16512059369202,
+          "move1m": 0.09821461521546393,
+          "text": "Estensione non elevata · 1M +0.1% · P49 storico"
         },
         "timing": {
           "state": "PARTIAL",
@@ -3762,9 +3762,9 @@
         },
         "extension": {
           "state": "NORMAL",
-          "pct": 48.05194805194805,
-          "move1m": 0.4003074453134525,
-          "text": "Estensione non elevata · 1M +0.4% · P48 storico"
+          "pct": 58.25602968460111,
+          "move1m": 0.9941526920351773,
+          "text": "Estensione non elevata · 1M +1.0% · P58 storico"
         },
         "timing": {
           "state": "PARTIAL",
