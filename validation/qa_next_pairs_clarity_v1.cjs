@@ -7,7 +7,7 @@ const html=read('site/fx-quant-v2/next/index.html');
 const css=read('site/fx-quant-v2/next/pairs-clarity.css');
 new vm.Script(app);
 assert(html.includes('./pairs-clarity.css?v=3'));
-assert(html.includes('./app.js?v=18.42'));
+assert(html.includes('./app.js?v=18.43'));
 assert(css.includes('.pairs-reading-compact'));
 assert(css.includes('@media(max-width:560px)'));
 const begin=app.indexOf('function pairs(){'),end=app.indexOf('\nfunction macro(){',begin);
