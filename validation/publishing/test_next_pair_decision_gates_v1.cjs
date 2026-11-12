@@ -7,8 +7,8 @@ const path=require('node:path');
 const root=path.resolve(__dirname,'../..');
 const next='site/fx-quant-v2/next/';
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
-const module=require(path.join(root,next,'pair-rankings.js'));
-const observe=module.pairDecisionWatch;
+const ranking=require(path.join(root,next,'pair-rankings.js'));
+const observe=ranking.pairDecisionWatch;
 
 const p={key:'EURUSD',base:'EUR',quote:'USD',favored:'USD',
  macroState:'FAVOREVOLE',policyState:'FAVOREVOLE',fiveState:'COERENTE',
@@ -66,5 +66,5 @@ assert(pairs.includes("esc(gate.improve)")&&pairs.includes("esc(gate.weaken)"),
  'Every gate must be HTML-escaped');
 assert(html.includes('./pair-rankings.js?v=5'));
 assert(html.includes('./app.js?v=18.43-gates1'));
-assert.equal(typeof module.selectResearchPairs,'function','Current Top5 remains available');
+assert.equal(typeof ranking.selectResearchPairs,'function','Current Top5 remains available');
 console.log('NEXT_PAIR_DECISION_GATES_V1_PASS: directional levels, passed/stale guards, first-read clarity, no fake H4 entries');
