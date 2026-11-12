@@ -99,12 +99,78 @@ const future=desk.interpret({...pairArgs,ois:alignedOis});
 assert.match(future.pricing,/AUD senza 6M verificabile/);
 assert.doesNotMatch(future.pricing,/AUD futures\/proxy 6M/,
  'Future-dated monetary inputs must never enter a current pair narrative');
+// The separate observed V3 context is newer than the frozen D baseline.
+const macroObserved=read('site/control-room-preview/macro-v3-current-evidence.json');
+const observedAsOf=macroObserved.generated_europe_rome_day;
+assert.equal(macroObserved.summary.currencies,8);
+assert.equal(macroObserved.summary.pairs,28);
+assert.equal(macroObserved.safe_to_recompute_structural_pair_theses,false);
+assert.equal(macroObserved.safe_to_republish_D,false);
+const noteByPair={};
+for(const key of keys){
+ const observed=desk.observedContext(macroObserved,key,model,observedAsOf);
+ assert(observed&&observed.summary.includes('non sorprese rispetto al consenso'),
+  key+' source-dated observed update must stay informational');
+ assert(!/NaN|undefined/.test(observed.summary),key+' no leaked unverified macro value');
+ const args={
+  key,model,macro,ois,cot,
+  profile:engine.profile(key,model,prices,observedAsOf),
+  ratesView:rates.snapshot(gov,prices,key,model.price_asof,observedAsOf,aud,chf,nzd),
+  observedMacro:macroObserved,now:observedAsOf,esc
+ };
+ const result=desk.interpret(args);
+ assert.equal(result.currentMacro.asof,observedAsOf,key+' must not rebadge the frozen baseline');
+ const html=desk.render(args);
+ assert(html.includes('Che cosa cambia nei dati osservati.'),key+' fresh economic observations visible');
+ assert(html.includes('Macro osservata V3 — provenienza.'),key+' period and provenance available');
+ assert(html.indexOf('Che cosa cambia nei dati osservati.')<
+  html.indexOf('Che cosa sostiene la tesi.'),key+' new observations precede historical structural model');
+ assert(html.indexOf('Macro osservata V3 — provenienza.')>
+  html.indexOf('<details class="decision-desk-evidence">'),key+' numeric vintage is behind closed audit');
+ assert(html.includes('baseline macro del modello'),key+' do not silently rebase the old model');
+ noteByPair[key]=observed.summary;
+}
+assert.notEqual(noteByPair.EURUSD,noteByPair.AUDCAD,
+ 'V3 economic reading must use each pair, not generic EURUSD prose');
+assert.match(noteByPair.EURUSD,/Stati Uniti.*accelera/);
+assert.match(noteByPair.EURUSD,/area euro.*rallenta/);
+function plusDays(iso,d){
+ return new Date(Date.parse(iso+'T12:00:00Z')+d*864e5).toISOString().slice(0,10);
+}
+const check=(doc,now=observedAsOf,m=model)=>desk.observedContext(doc,'EURUSD',m,now);
+assert.equal(check(macroObserved,plusDays(observedAsOf,8)),null,'Stale V3 source withheld');
+assert.equal(check(macroObserved,plusDays(observedAsOf,-1)),null,'Future V3 source withheld');
+const rebased=structuredClone(model);
+rebased.macro_baseline_asof='2099-01-01';
+assert.equal(check(macroObserved,observedAsOf,rebased),null,'D baseline mismatch withheld');
+const fakeSignal=structuredClone(macroObserved);
+fakeSignal.pair_context['EUR/USD'].pair_trade_bias='BUY';
+assert.equal(check(fakeSignal),null,'V3 pseudo-trade signal rejected');
+const futureGDP=structuredClone(macroObserved);
+futureGDP.countries.USD.growth.publisher_release_day='2099-01-01';
+assert.equal(check(futureGDP),null,'Unreleased economic fact withheld');
+const futureQuarter=structuredClone(macroObserved);
+futureQuarter.countries.EUR.labour.observation_period='2026Q4';
+assert.equal(check(futureQuarter),null,'Incomplete future-quarter labour withheld');
+const unsyncedPrices=structuredClone(model);
+unsyncedPrices.price_asof='2026-11-25';
+assert.equal(check(macroObserved,observedAsOf,unsyncedPrices),null,
+ 'Price/model snapshot too far ahead of macro context withheld');
+const withoutSource=desk.interpret({
+ key:'EURUSD',model,macro,ois,cot,
+ profile:engine.profile('EURUSD',model,prices,observedAsOf),
+ ratesView:null,observedMacro:null,now:observedAsOf
+});
+assert.equal(withoutSource.currentMacro,null,'Missing observed source fails closed without changing legacy thesis');
+
 const index=fs.readFileSync(path.join(root,next+'index.html'),'utf8');
 const app=fs.readFileSync(path.join(root,next+'app.js'),'utf8');
 const journey=fs.readFileSync(path.join(root,next+'decision-journey.js'),'utf8');
-assert.match(index,/pair-desk-narrative\.js\?v=19/);
+assert.match(index,/pair-desk-narrative\.js\?v=20/);
 assert.ok(index.indexOf('pair-desk-narrative.js')<index.indexOf('decision-journey.js'));
 assert.match(journey,/FXQuantPairDesk\.render/);
+assert(journey.includes("observedMacro:get('macroObserved')"), 'all FX pair detail views must receive observed source');
+assert(app.includes("macroObserved:'../../control-room-preview/macro-v3-current-evidence.json'"), 'site must load audited macro overlay');
 assert.ok(app.includes("route==='overview'||route==='pairs'"),
  'do not duplicate the generic pair essay before the new narrative');
 console.log('NEXT_PAIR_DESK_V18_PASS: 28/28 source-dated pairs, no future macro/COT, no false OIS spread, no duplicated pair essay.');

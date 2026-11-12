@@ -189,6 +189,23 @@ async function checkPairChartControls(page,label) {
   await selected.click();
   const detail=page.locator('details.pairs-optional-chart');
   await detail.locator('summary').first().click();
+  const deskStory=detail.locator('.decision-desk-story');
+  if(await deskStory.count()!==1)
+    throw Error(label+' per-pair economic narrative missing');
+  const audit=deskStory.locator('details.decision-desk-evidence');
+  if(await audit.count()!==1||await audit.evaluate(el=>el.open))
+    throw Error(label+' dated evidence not collapsed by default');
+  const macroNote=deskStory.locator('.decision-desk-current-macro');
+  if(await macroNote.count()){
+   const economic=await macroNote.innerText();
+   if(!economic.includes('Che cosa cambia nei dati osservati.')||
+      !economic.includes('non sorprese rispetto al consenso'))
+    throw Error(label+' observation must be grounded and not a surprise claim');
+   const r=await macroNote.boundingBox();
+   if(!r||r.x< -2||r.x+r.width>page.viewportSize().width+2)
+    throw Error(label+' observed macro note clipped');
+  }
+
   if (!(await detail.evaluate(el => el.open))) throw Error(label + ' pair chart did not open');
   for (const days of [20,60,120]) {
     const control=detail.locator('[data-v9-price-window="'+days+'"]');

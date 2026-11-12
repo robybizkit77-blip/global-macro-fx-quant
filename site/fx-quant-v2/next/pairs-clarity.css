@@ -65,3 +65,16 @@
  .decision-desk-evidence>summary{padding:12px}
  .decision-desk-evidence-body{padding:12px}
 }
+
+/* The observed economic update precedes the older structural thesis.
+   No score or signal is assigned to revised macro observations. */
+.decision-desk-current-macro{
+ max-width:920px;margin:15px 0 16px;padding:12px 15px;
+ border-left:3px solid var(--blue);border-radius:6px;
+ background:rgba(68,127,146,.10);color:var(--soft);
+ font-size:13px;line-height:1.75;overflow-wrap:anywhere
+}
+.decision-desk-current-macro>strong{color:var(--blue);font-weight:780}
+@media(max-width:560px){
+ .decision-desk-current-macro{padding:11px 12px;font-size:12px;line-height:1.7}
+}
