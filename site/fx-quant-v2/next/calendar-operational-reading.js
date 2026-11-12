@@ -74,57 +74,85 @@
   return 'Dopo l’evento: verificare '+pricing+' · prezzo '+(pairMap[code]||'FX G8')+
    ' · reazione su una finestra comparabile. Nessuna direzione è implicita prima dei dati.';
  }
- function parse(feed,today=romeNow()){
-  const empty={events:[],total:0,macro:0,meetings:0,asof:null,consensusReady:0,status:'NON DISPONIBILE'};
+ function parse(feed,today=romeNow(),nowMs=Date.now()){
+  const empty={events:[],needsReview:[],total:0,macro:0,meetings:0,asof:null,
+   consensusReady:0,status:'NON DISPONIBILE'};
   if(!validDate(today)||!feed||typeof feed!=='object'||!Array.isArray(feed.events))return empty;
-  const events=feed.events.flatMap((e,i)=>{
+  const current=number(nowMs)?nowMs:Date.now();
+  const future=[],needsReview=[];
+  for(const [i,e] of feed.events.entries()){
    if(!e||e.status!=='UPCOMING'||!validDate(e.date)||e.date<today||!G8.has(e.ccy)||
-      typeof e.title!=='string'||!e.title.trim())return [];
+      typeof e.title!=='string'||!e.title.trim())continue;
    const it=toRome(e.date,e.time_local,e.timezone);
    const consensus=verifiedValue(e,'consensus'),actual=verifiedValue(e,'actual');
    const result={id:i,ccy:e.ccy,country:country[e.ccy],title:e.title,date:e.date,
-     day:it?.date||e.date,romeTime:it?.time||null,sourceTime:validTime(e.time_local)?e.time_local:null,
+     day:it?.date||e.date,romeTime:it?.time||null,
+     sourceTime:validTime(e.time_local)?e.time_local:null,
      timezone:e.timezone||null,importance:e.importance||'NON CLASSIFICATA',
      kind:e.event_type==='CENTRAL_BANK_DECISION'?'Riunione banca centrale':'Pubblicazione macro',
      source:e.source_family||e.bank||e.source_layer||'Fonte non specificata',
      quality:e.quality||'non classificata',consensus,actual,reference:e.reference_period||null,
      why:why(e),verify:verify(e),pairs:pairMap[e.ccy]||'',timestamp:it?.timestamp||null};
-   // No surprise calculation without a verified common vintage/unit.
-   return [result];
-  });
-  events.sort((a,b)=>a.day.localeCompare(b.day)||
-    (a.romeTime||'99:99').localeCompare(b.romeTime||'99:99')||
-    a.title.localeCompare(b.title));
-  return {events,total:events.length,macro:events.filter(x=>x.kind==='Pubblicazione macro').length,
-   meetings:events.filter(x=>x.kind==='Riunione banca centrale').length,
+   // An upstream UPCOMING flag may lag the announced publication time.
+   // Never imply an already-scheduled release is still in the future or
+   // pretend the result exists without a verified source and vintage.
+   if(result.day===today&&result.timestamp===null){
+    result.reviewReason='ORARIO_NON_VERIFICATO';needsReview.push(result);
+   }else if(result.day<today||(result.timestamp!==null&&result.timestamp<=current)){
+    result.reviewReason='ORARIO_PROGRAMMATO_TRASCORSO';needsReview.push(result);
+   }else future.push(result);
+  }
+  const sort=(a,b)=>a.day.localeCompare(b.day)||
+   (a.romeTime||'99:99').localeCompare(b.romeTime||'99:99')||
+    a.title.localeCompare(b.title);
+  future.sort(sort);needsReview.sort(sort);
+  const all=[...future,...needsReview];
+  return {events:future,needsReview,total:all.length,
+   macro:all.filter(x=>x.kind==='Pubblicazione macro').length,
+   meetings:all.filter(x=>x.kind==='Riunione banca centrale').length,
    asof:typeof feed.last_checked_at_utc==='string'?feed.last_checked_at_utc:null,
-   consensusReady:events.filter(x=>x.consensus!==null).length,
-   status:events.length?'AGENDA UFFICIALE · CONSENSO NON CERTIFICATO':'NESSUN EVENTO FUTURO VERIFICATO'};
+   consensusReady:all.filter(x=>x.consensus!==null).length,
+   status:all.length?'AGENDA UFFICIALE · DATI DA VERIFICARE':'NESSUN EVENTO FUTURO VERIFICATO'};
  }
- function card(e){
-  return '<article class="cal-event"><div class="cal-event-head"><span>'+
-   esc(e.ccy)+' · '+esc(e.kind)+'</span><time datetime="'+esc(e.day)+'">'+fmtDay(e.day)+
-   (e.romeTime?' · '+esc(e.romeTime)+' IT':' · ora non disponibile')+'</time></div>'+
+ function card(e,review=false){
+  const timeText=e.romeTime?' · '+esc(e.romeTime)+' IT':' · ora non disponibile';
+  const waiting=review?(e.reviewReason==='ORARIO_NON_VERIFICATO'?
+   'Data odierna; ora non verificata. Controllare la fonte prima di considerare il dato pubblicato.':
+   'Orario programmato trascorso. Il feed non ha ancora verificato il risultato: non è una sorpresa macro osservata.'):'';
+  return '<article class="cal-event'+(review?' cal-event-review':'')+'"><div class="cal-event-head"><span>'+
+   esc(e.ccy)+' · '+esc(e.kind)+'</span><time datetime="'+esc(e.day)+'">'+fmtDay(e.day)+timeText+'</time></div>'+
    '<h3>'+esc(e.title)+'</h3>'+
+   (review?'<p class="cal-review-state"><strong>Da verificare.</strong> '+esc(waiting)+'</p>':'')+
    '<p class="cal-source">Fonte: '+esc(e.source)+' · '+esc(e.quality)+
    (e.reference?' · Periodo '+esc(e.reference):'')+'</p>'+
    '<p><strong>Perché conta per '+esc(e.ccy)+'.</strong> '+esc(e.why)+'</p>'+
    '<p class="cal-verify"><strong>Cosa controllare.</strong> '+esc(e.verify)+'</p>'+
    '<div class="cal-missing">Consenso: '+(e.consensus===null?'non certificato':esc(e.consensus))+
-   ' · Effettivo: '+(e.actual===null?'non ancora pubblicato/verificato':esc(e.actual))+'</div></article>';
+   ' · Effettivo: '+(e.actual===null?(review?'non verificato dal feed':'non ancora pubblicato/verificato'):esc(e.actual))+'</div></article>';
  }
- function render(feed,today=romeNow()){
-  const p=parse(feed,today);
+ function render(feed,today=romeNow(),nowMs=Date.now()){
+  const p=parse(feed,today,nowMs);
   const head='<section class="panel cal-panel" id="macro-calendar"><div class="panel-head"><div>'+
    '<span class="mini-overline">AGENDA OPERATIVA / EVENTI G8</span><h2>Quali dati potrebbero cambiare le tesi FX?</h2>'+
-   '<p>Eventi ufficiali in arrivo · '+p.macro+' macro · '+p.meetings+' decisioni monetarie'+
-   (p.asof?' · controllo fonti '+esc(p.asof.slice(0,10)):'')+'</p></div></div>';
-  if(!p.events.length)return head+
+   '<p>'+p.events.length+' eventi futuri · '+p.needsReview.length+' eventi odierni da verificare'+
+   (p.asof?' · ultimo controllo '+esc(p.asof.slice(0,10)):'')+'</p></div></div>';
+  if(!p.total)return head+
    '<div class="empty"><strong>Calendario non disponibile o senza eventi futuri verificati.</strong><p>Non mostriamo date e orari presunti.</p></div></section>';
+  const currentCheck=p.asof&&validDate(p.asof.slice(0,10))&&p.asof.slice(0,10)<today?
+   '<p class="cal-feed-warning"><strong>Feed non ricontrollato oggi.</strong> Ultima verifica '+
+   esc(p.asof.slice(0,10))+'. Le pubblicazioni e i risultati odierni richiedono un riscontro alla fonte.</p>':'';
+  const reviews=p.needsReview.length?
+   '<section class="cal-review-group"><h3>Oggi · risultato ancora da verificare</h3>'+
+   '<p>È trascorso l’orario programmato oppure manca un’ora attendibile. Non lo trattiamo come evento futuro, né come dato già verificato.</p>'+
+   '<div class="cal-grid">'+p.needsReview.map(e=>card(e,true)).join('')+'</div></section>':'';
   const first=p.events.slice(0,4),more=p.events.slice(4);
-  return head+'<p class="cal-intro">Per ogni evento: cosa potrebbe cambiare nelle aspettative sui tassi, quali coppie osservare e quali conferme mancano. <strong>Non sono segnali anticipati.</strong></p>'+
-   '<div class="cal-grid">'+first.map(card).join('')+'</div>'+
-   (more.length?'<details class="cal-more"><summary>Altri '+more.length+' eventi del calendario</summary><div class="cal-grid">'+more.map(card).join('')+'</div></details>':'')+
+  const upcoming=p.events.length?
+   '<section class="cal-upcoming-group"><h3>Prossimi eventi</h3>'+
+   '<div class="cal-grid">'+first.map(e=>card(e)).join('')+'</div>'+
+   (more.length?'<details class="cal-more"><summary>Altri '+more.length+' eventi del calendario</summary><div class="cal-grid">'+more.map(e=>card(e)).join('')+'</div></details>':'')+
+   '</section>':'';
+  return head+'<p class="cal-intro">Prima di un evento: cosa potrebbe modificare le aspettative sui tassi. Dopo l’orario previsto: cerchiamo il dato verificato e la reazione effettiva, senza inventare sorprese o segnali.</p>'+
+   currentCheck+reviews+upcoming+
    '<div class="cal-coverage"><strong>Limite dei dati:</strong> consenso numerico certificato per '+p.consensusReady+
    ' eventi su '+p.total+'. Senza confronto pre-release/effettivo non calcoliamo sorprese e non attribuiamo movimenti del Forex. L’orario italiano è mostrato solo dove la fonte indica un’ora convertibile.</div></section>';
  }
