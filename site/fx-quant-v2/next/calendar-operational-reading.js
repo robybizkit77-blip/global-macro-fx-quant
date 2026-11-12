@@ -41,6 +41,16 @@
   }catch(_){return null;}
  }
  const number=x=>typeof x==='number'&&Number.isFinite(x);
+ const checkedRome=x=>{
+  const ms=typeof x==='string'?Date.parse(x):NaN;
+  if(!Number.isFinite(ms))return null;
+  const dt=new Date(ms),day=new Intl.DateTimeFormat('sv-SE',{
+   timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(dt);
+  const time=new Intl.DateTimeFormat('it-IT',{
+   timeZone:'Europe/Rome',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(dt);
+  return {day,time};
+ };
+
  function verifiedValue(e,key){
   // Upstream must explicitly attest vintage and provenance; mere raw values
   // from an unversioned calendar are never treated as observed/consensus.
@@ -132,15 +142,16 @@
  }
  function render(feed,today=romeNow(),nowMs=Date.now()){
   const p=parse(feed,today,nowMs);
+  const last=checkedRome(p.asof);
   const head='<section class="panel cal-panel" id="macro-calendar"><div class="panel-head"><div>'+
    '<span class="mini-overline">AGENDA OPERATIVA / EVENTI G8</span><h2>Quali dati potrebbero cambiare le tesi FX?</h2>'+
    '<p>'+p.events.length+' eventi futuri · '+p.needsReview.length+' eventi odierni da verificare'+
-   (p.asof?' · ultimo controllo '+esc(p.asof.slice(0,10)):'')+'</p></div></div>';
+   (last?' · controllo '+esc(fmtDay(last.day))+' '+esc(last.time)+' IT':'')+'</p></div></div>';
   if(!p.total)return head+
    '<div class="empty"><strong>Calendario non disponibile o senza eventi futuri verificati.</strong><p>Non mostriamo date e orari presunti.</p></div></section>';
-  const currentCheck=p.asof&&validDate(p.asof.slice(0,10))&&p.asof.slice(0,10)<today?
+  const currentCheck=last&&last.day<today?
    '<p class="cal-feed-warning"><strong>Feed non ricontrollato oggi.</strong> Ultima verifica '+
-   esc(p.asof.slice(0,10))+'. Le pubblicazioni e i risultati odierni richiedono un riscontro alla fonte.</p>':'';
+   esc(fmtDay(last.day))+' '+esc(last.time)+' IT. Le pubblicazioni e i risultati odierni richiedono un riscontro alla fonte.</p>':'';
   const reviews=p.needsReview.length?
    '<section class="cal-review-group"><h3>Oggi · risultato ancora da verificare</h3>'+
    '<p>È trascorso l’orario programmato oppure manca un’ora attendibile. Non lo trattiamo come evento futuro, né come dato già verificato.</p>'+
