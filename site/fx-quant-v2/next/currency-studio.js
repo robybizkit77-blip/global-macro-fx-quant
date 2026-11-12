@@ -20,6 +20,65 @@ function build(api){
    rates:GOV,chfResearch:get('chfResearch'),nzdResearch:get('nzdPostroll'),now:dayNow()})||null;
  const G8SHADOW=root.FXQuantGrowthShadow?.analyze?.({macroSeries:get('macroSeries'),now:dayNow()})||null;
  const G8MACROGAP=root.FXQuantG8MacroGap?.analyze?.({macroSeries:get('macroSeries'),now:dayNow()})||null;
+ const G8INFLAB=root.FXQuantInflationLabourShadow?.analyze?.({macroSeries:get('macroSeries'),now:dayNow()})||null;
+ function ilShort(ccy){
+  const pair=G8INFLAB?.currencies?.[ccy];
+  if(!pair)return null;
+  const axis=(x,label)=>{
+   if(x?.status==='GIA_OSSERVATO'&&finite(x.observedValue))
+    return label+' '+fmt(x.observedValue,1)+'% dato '+x.sourcePeriod;
+   if(finite(x?.forecast)&&x.eligibleForCore===false)
+    return label+' ≈'+fmt(x.forecast,1)+'% STIMA '+x.targetPeriod;
+   return label+' non disponibile';
+  };
+  return axis(pair.inflation,'CPI')+' · '+axis(pair.labour,'Disocc.');
+ }
+ function ilNarrative(ccy){
+  const pair=G8INFLAB?.currencies?.[ccy];
+  if(!pair)return '';
+  const describe=(x,label)=>{
+   if(x?.status==='GIA_OSSERVATO')
+    return label+' '+fmt(x.observedValue,2)+'% osservato nel dataset, '+x.sourcePeriod+
+     ': non serve stimare questo periodo.';
+   if(finite(x?.forecast)&&x.eligibleForCore===false)
+    return label+' '+fmt(x.forecast,2)+'% STIMA per '+x.targetPeriod+
+     ' (ultimo dato '+fmt(x.observedValue,2)+'% in '+x.sourcePeriod+'). '+
+     (x.pseudoOOSQualified?'Trend storico promettente, non validato in tempo reale.':
+     'Scenario prudente a tasso invariato; il trend non supera il benchmark.');
+   return label+' non stimabile per fonte o periodo.';
+  };
+  return ' '+describe(pair.inflation,'Inflazione headline')+' '+
+    describe(pair.labour,'Disoccupazione')+
+   ' Queste stime colmano lacune del nostro archivio, non provano sorprese macro o una direzione FX.';
+ }
+ function ilResearch(ccy){
+  const pair=G8INFLAB?.currencies?.[ccy];
+  if(!pair)return '';
+  const part=(x,label)=>{
+   if(x?.status==='GIA_OSSERVATO')
+    return '<p><strong>'+label+': dato osservato '+esc(fmt(x.observedValue,2))+
+     '% ('+esc(x.sourcePeriod)+').</strong> Nessuna stima del periodo. Fonte: '+
+     esc(x.source)+'.</p>';
+   if(!finite(x?.forecast)||x.eligibleForCore!==false)
+    return '<p><strong>'+label+':</strong> stima non disponibile ('+esc(x?.reason||'fonte assente')+').</p>';
+   return '<p><strong>'+label+' · STIMA '+esc(x.targetPeriod)+': '+esc(fmt(x.forecast,2))+
+    '%</strong> · ultimo dato '+esc(fmt(x.observedValue,2))+'% ('+esc(x.sourcePeriod)+
+    '). '+(x.pseudoOOSQualified?'Trend con test retrospettivo favorevole.':
+      'Baseline senza variazione; trend alternativo '+esc(fmt(x.driftScenario,2))+'%.')+
+    ' Fascia di errore storica indicativa '+esc(fmt(x.uncertainty.low,2))+'–'+
+     esc(fmt(x.uncertainty.high,2))+'% (NON intervallo di confidenza). '+
+    'Test sullo stesso orizzonte: '+x.backtest.count+' esempi; MAE trend '+
+     esc(fmt(x.backtest.modelMAEPp,2))+' p.p., MAE benchmark '+
+     esc(fmt(x.backtest.flatMAEPp,2))+' p.p.; miglioramento '+
+     esc(sign(x.backtest.gainPct,1,'%'))+'. Fonte '+esc(x.source)+
+     '. Le osservazioni storiche possono essere revisionate e non abbiamo i vintage di prima pubblicazione.</p>';
+  };
+  return '<p><strong>Inflazione e lavoro · completamento quantitativo G8.</strong> Le stime si riferiscono ai periodi economici non ancora presenti nei nostri file, non necessariamente a pubblicazioni future.</p>'+
+    part(pair.inflation,'Inflazione headline YoY')+
+    part(pair.labour,'Disoccupazione')+
+    (pair.inflation?.sourceQuality==='CPI_INDEX_YOY_DERIVED_FROM_HISTORICAL_INDEX'?
+      '<p>USA: il CPI annuale è ricavato matematicamente dall’indice CPI disponibile nel repository; non è un nuovo YoY ufficiale scaricato.</p>':'');
+ }
  const macroGapReady=m=>m&&['MODELLO_RETROSPETTIVO_PROMETTENTE','SCENARIO_NON_VALIDATO'].includes(m.status)&&
   m.eligibleForCore===false&&finite(m.scenarioValue)&&finite(m.deltaFromObserved);
  const G8RATESHADOW=root.FXQuantG8RatesShadow?.analyze?.({research:G8CONTEXT,
@@ -100,7 +159,7 @@ function build(api){
      (growth?.status==='STORICO_DESCRITTIVO'?split[0]+' · '+(split[1]||''):split[1]||'');
    return '<button class="strength-row '+(x.ccy===country?'selected ':'')+tone+'" type="button" data-cs-country="'+x.ccy+'" aria-pressed="'+String(x.ccy===country)+'" aria-label="Seleziona '+x.ccy+' per approfondire">'+
     '<span class="strength-name"><b>'+rank+'</b><strong>'+FLAGS[x.ccy]+' '+x.ccy+'</strong></span>'+
-    '<span class="strength-axis"><small>Crescita · storico / scenario</small><strong>'+esc(growLabel)+'</strong><em>'+esc(growthDetail)+'</em></span>'+
+    '<span class="strength-axis"><small>Macro · storico / stime</small><strong>'+esc(growLabel)+'</strong><em>'+esc(ilShort(x.ccy)||growthDetail)+'</em></span>'+
     '<span class="strength-axis '+(x.rates.ok?'':'unverified')+'"><small>'+esc(twoHeading)+'</small><strong>'+esc(twoLabel)+'</strong><em>'+esc(twoMeta)+'</em></span>'+
     '<span class="strength-axis '+(x.pricing.ok?'':'unverified')+(proxyReady?' context-proxy':'')+'"><small>'+ (x.pricing.ok?'Attese 6M · Δ 1W':'Futures 6M · contesto')+'</small><strong>'+esc(sixLabel)+'</strong><em>'+esc(sixDate)+'</em></span>'+
     '<span class="strength-axis '+(x.price.change>0?'fxpositive':x.price.change<0?'fxnegative':'')+'"><small>Prezzo · 20 fixing</small><strong>'+esc(x.price.label)+'</strong><em>vs le altre G8</em></span>'+
@@ -113,7 +172,7 @@ function build(api){
    '<small>'+esc(rankDate)+'</small></div>'+
    '<div class="strength-columns" aria-hidden="true"><span>VALUTA</span><span>MACRO</span><span>2Y</span><span>ATTESE 6M</span><span>PREZZO</span><span>GIUDIZIO</span></div>'+
    '<div class="strength-rows">'+rows+'</div>'+
-   '<p class="strength-note">Crescita: il dato grande è osservato e datato; lo scenario copre l’ultimo periodo economico completato, ma resta una <strong>stima su serie storiche revisionabili, non PIL generale o sorpresa macro</strong>. Il modello indica quando non batte il benchmark. 2Y CHF/NZD: scenari, non rendimenti osservati né nuovi segnali. 6M: futures indicativi non equivalgono a repricing OIS. Il ranking resta esclusivamente di prezzo; proxy e stime non aumentano le prove operative.</p></section>';
+   '<p class="strength-note">Macro: il valore principale descrive una serie osservata; la riga secondaria mostra <strong>CPI headline e disoccupazione</strong>, indicando dato o STIMA per il rispettivo periodo. Quando il modello non batte il benchmark la stima centrale resta il dato invariato. Le date sono periodi economici, non rilascio verificato. 2Y CHF/NZD e futures 6M restano proxy distinti. Ranking di sola forza-prezzo: nessuna stima aggiunge conferme, segnali o punteggi FX.</p></section>';
  }
  function shadowResearch(){
   const t=G8SHADOW?.currencies?.[country];
@@ -156,7 +215,7 @@ function build(api){
   return '<details class="strength-shadow-fold"><summary><strong>Ricerca Quant · stima sperimentale</strong>'+
    '<span>'+(gapReady?(g.pseudoOOSQualified?'Scenario con test retrospettivo favorevole':'Scenario non validato'):esc(label))+' · nessun effetto sul ranking FX</span></summary>'+
    '<div class="strength-shadow-body"><p class="strength-shadow-kicker">SCENARIO MACRO · NON POINT-IN-TIME · NON OPERATIVO</p>'+
-   gapText+'<p>Modello selettivo precedente sulla prossima singola osservazione: <strong>'+esc(t?.label||country)+'</strong>. Basato sulla media delle ultime sei variazioni, confrontata con una previsione senza variazione.</p>'+
+   gapText+ilResearch(country)+'<p>Modello selettivo precedente sulla prossima singola osservazione: <strong>'+esc(t?.label||country)+'</strong>. Basato sulla media delle ultime sei variazioni, confrontata con una previsione senza variazione.</p>'+
    forecast+(skill?'<p>'+esc(skill)+'</p>':'')+
    '<p class="strength-shadow-caveat">I dati storici possono essere revisionati e mancano le date di prima pubblicazione. Il test walk-forward è retrospettivo e non dimostra un vantaggio in tempo reale. Non genera segnali, probabilità di banca centrale o punteggi G8.</p>'+
    '</div></details>';
@@ -193,7 +252,7 @@ function build(api){
   const pricingText=x.pricing.ok?x.pricing.text:
    proxy?.status==='PROXY_INFORMATIVO'?x.pricing.text+' '+proxy.description:x.pricing.text;
   const cards=[
-   ['MACRO · CRESCITA / LAVORO / PREZZI',growthText+gapNote+' '+x.macro.text,
+   ['MACRO · CRESCITA / LAVORO / PREZZI',growthText+gapNote+' '+x.macro.text+ilNarrative(country),
     'Serie storiche con periodo di osservazione, non nowcast, sorprese macro o pubblicazioni odierne.'],
    ['TASSI 2Y',x.rates.text+(dated2Y?' '+ratesContext.description:'')+rateEstimateText,
     estimated2Y?'STIMA NON OSSERVATA. La banda non è un intervallo di confidenza e non influenza le 4 conferme operative.':dated2Y?'Storico/lettura manuale non è un tasso live e non aumenta le prove disponibili.':'Movimento di mercato, non prova di decisioni future.'],
