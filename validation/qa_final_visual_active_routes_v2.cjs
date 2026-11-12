@@ -177,9 +177,13 @@ async function checkG8FirstRead(page,label){
 }
 async function checkPairChartControls(page,label) {
   const ranking=page.locator('#fx-ranking-desk');
-  if(!(await ranking.innerText()).includes('STIMA OPERATIVA V1')||
-     !(await ranking.innerText()).includes('vecchio modello del 25 settembre'))
-    throw Error(label+' 28-pair ranking still relying on historical core');
+  // The archival disclaimer belongs in the collapsed methodology, not
+  // the first visible reading. textContent includes its accessible source
+  // evidence without forcing duplicate paragraphs into the ranking.
+  const rankAudit=await ranking.textContent();
+  if(!rankAudit.includes('STIMA OPERATIVA V1')||
+     !rankAudit.includes('vecchio modello del 25 settembre'))
+    throw Error(label+' 28-pair ranking provenance missing from method audit');
   if(await page.locator('section.pairs-thesis-pulse').count()!==0)
     throw Error(label+' archived September thesis pulse must not appear in operational ranking');
   if(await ranking.locator('button.fx-rank-pair').count()!==33)
