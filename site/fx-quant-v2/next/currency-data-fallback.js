@@ -91,15 +91,99 @@
     '), quotazione indicativa '+h.rate.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2})+'% al '+asof+
     '. Non è OIS ufficiale, non misura direttamente il tasso atteso della banca centrale e non fornisce un repricing settimanale verificato.'};
  }
- function evaluate({macroSeries,estimated,now}){
+
+ // Dated CHF/NZD historical observations may explain missing 2Y rows, but
+ // are NEVER a certified weekly delta, OIS, or a substitute for live Core.
+ const withheld=()=>({status:'NON_DISPONIBILE',label:'Non verificato',asof:null,
+   description:'Nessun confronto 2Y di ricerca sufficientemente documentato.',
+   eligibleForCore:false});
+ const pctLevel=v=>num(v)?v.toLocaleString('it-IT',{minimumFractionDigits:3,maximumFractionDigits:3})+'%':'—';
+  function researchRatesAxis(ccy,chf,nzd,rates,now){
+  if(!day(now))return withheld();
+  const permitted=s=>s?.eligible_for_core===false&&
+    s?.eligible_for_backtests===false&&s?.eligible_for_automatic_promotion===false&&
+    s?.canonical_government_rates_untouched===true;
+  if(ccy==='CHF'){
+   const s=chf,observations=s?.observations;
+   if(s?.schema!=='GMFQ_FXV2_CHF_SNB_PAIRED_HISTORY_V1'||
+      s?.quality!=='SNB_OFFICIAL_OBSERVED_HISTORICAL_RESEARCH'||
+      s?.source_url!=='https://data.snb.ch/api/cube/rendeiduebd/data/json/en'||
+      s?.source_latest_vintage_not_point_in_time!==true||
+      s?.current_session_government_rates_certified!==false||
+      s?.eligible_for_fx_engine!==false||!permitted(s)||
+      !Array.isArray(observations)||observations.length<2||
+      s.observation_count!==observations.length||
+      !day(s.anchor_date)||s.anchor_date!==observations[0]?.date||
+      !day(s.last_observation_date)||s.last_observation_date!==observations.at(-1)?.date||
+      !/^[a-f0-9]{64}$/.test(s.source_response_sha256||''))return withheld();
+   const anchor=observations[0],latest=observations.at(-1),canonical=rates?.CHF;
+   if(!canonical||canonical.date!==anchor.date||
+      !num(canonical['2Y'])||!num(canonical['10Y'])||
+      Math.abs(canonical['2Y']-anchor['2Y'])>.001||
+      Math.abs(canonical['10Y']-anchor['10Y'])>.001||
+      !goodResearchRows(observations,now)||!num(latest['2Y'])||
+      !num(latest['10Y'])||!num(latest.curve_bp)||
+      Math.abs((latest['10Y']-latest['2Y'])*100-latest.curve_bp)>.11||
+      !(days(latest.date,now)>=0&&days(latest.date,now)<=45))return withheld();
+   return {status:'STORICO_UFFICIALE_NON_OPERATIVO',
+     label:latest['2Y'].toLocaleString('it-IT',{minimumFractionDigits:3,maximumFractionDigits:3})+'% · storico',
+     asof:latest.date,quality:'SNB_SERIE_STORICA',
+     description:'SNB: 2Y '+pctLevel(latest['2Y'])+' e 10Y '+
+       pctLevel(latest['10Y'])+' osservati entrambi al '+latest.date+
+       '. Serie spot ufficiale, ma l’ultima osservazione risale a '+days(latest.date,now)+
+       ' giorni fa: NON è un rendimento live né una variazione settimanale recente. Non contribuisce alle conferme Forex.',
+     eligibleForCore:false};
+  }
+  if(ccy==='NZD'){
+   const s=nzd,observations=s?.daily_observations;
+   if(s?.schema!=='GMFQ_NZD_RBNZ_B2_POSTROLL_WEB_RESEARCH_V1'||
+      s?.status!=='PUBLIC_OFFICIAL_WEB_RESEARCH_NOT_XLSX_RECONCILED'||
+      s?.source_url!=='https://www.rbnz.govt.nz/statistics/series/exchange-and-interest-rates/wholesale-interest-rates'||
+      s?.source_capture_method!=='PUBLIC_OFFICIAL_PAGE_MANUAL_RESEARCH_NOT_AUTOMATED_FETCH'||
+      s?.official_web_display_observed!==true||
+      s?.independent_xlsx_reconciled!==false||
+      s?.automated_access_authorized!==false||
+      s?.historical_benchmark_roll_continuity!==false||
+      s?.no_interpolation!==true||s?.research_only!==true||
+      s?.eligible_for_fx_pair_engine!==false||!permitted(s)||
+      !Array.isArray(observations)||observations.length<2||
+      s?.benchmark_roll_date!=='2026-10-30'||
+      s?.benchmark_2Y!=='April 2029'||s?.benchmark_10Y!=='April 2037'||
+      s?.before_roll_2Y==='April 2029'||s?.before_roll_10Y==='April 2037'||
+      observations[0]?.date!==s.benchmark_roll_date||
+      !goodResearchRows(observations,now))return withheld();
+   const latest=observations.at(-1),canonical=rates?.NZD;
+   if(!canonical||!day(canonical.date)||canonical.date>=s.benchmark_roll_date||
+      !day(s.source_release_date)||!day(s.source_capture_date)||
+      s.source_release_date<latest.date||s.source_capture_date<latest.date||
+      s.source_release_date>now||s.source_capture_date>now||
+      !(days(latest.date,now)>=0&&days(latest.date,now)<=10))return withheld();
+   return {status:'RICERCA_MANUALE_NON_CERTIFICATA',
+     label:latest['2Y'].toLocaleString('it-IT',{minimumFractionDigits:3,maximumFractionDigits:3})+'% · ricerca',
+     asof:latest.date,quality:'RBNZ_B2_WEB_NON_RICONCILIATO',
+     description:'RBNZ B2: 2Y '+signed(latest['2Y'],3,'%')+' e 10Y '+
+       signed(latest['10Y'],3,'%')+' al '+latest.date+
+       ', titoli di riferimento April 2029/2037 dopo il cambio del 30 ottobre. Trascrizione manuale dalla pagina ufficiale; manca la riconciliazione XLSX. NON è un dato acquisito oggi, non è OIS e non prova un repricing monetario.',
+     eligibleForCore:false};
+  }
+  return withheld();
+ }
+ function goodResearchRows(rows,now){
+  return rows.every((r,i)=>day(r?.date)&&r.date<=now&&
+    (i===0||r.date>rows[i-1].date)&&
+    num(r['2Y'])&&num(r['10Y'])&&
+    r['2Y']>=-5&&r['2Y']<=25&&r['10Y']>=-5&&r['10Y']<=25);
+ }
+  function evaluate({macroSeries,estimated,rates,chfResearch,nzdResearch,now}){
   if(!day(now))return {currencies:{},status:'DATA_NON_VALIDA',asof:now};
   const currencies=Object.fromEntries(FX.map(ccy=>[ccy,{
-   growth:growthAxis(macroSeries,ccy,now),pricingProxy:pricingProxy(estimated,ccy,now)
+   growth:growthAxis(macroSeries,ccy,now),pricingProxy:pricingProxy(estimated,ccy,now),
+   ratesResearch:researchRatesAxis(ccy,chfResearch,nzdResearch,rates,now)
   }]));
   return {currencies,status:'CONTESTO_INFORMATIVO',asof:now,
    policy:'Non modificare le serie ufficiali, le view operative, gli score o i backtest'};
  }
- const api={evaluate,growthAxis,pricingProxy};
+ const api={evaluate,growthAxis,pricingProxy,researchRatesAxis};
  root.FXQuantCurrencyFallback=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

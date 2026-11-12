@@ -16,7 +16,8 @@ function build(api){
  const against=FX.includes(state.csOther)&&state.csOther!==country?state.csOther:FX.find(k=>k!==country);
  const FXDATA=get('currencyPrices'),GOV=get('rates')||{},CB=get('cb')||{};
  const OIS=get('ois')?.currencies||{},M=get('macro')?.currencies||{},COT=get('cotHistory')||{},PAIRS=get('pairs')?.pairs||{};
- const G8CONTEXT=root.FXQuantCurrencyFallback?.evaluate?.({macroSeries:get('macroSeries'),estimated:get('cbEstimated'),now:dayNow()})||null;
+ const G8CONTEXT=root.FXQuantCurrencyFallback?.evaluate?.({macroSeries:get('macroSeries'),estimated:get('cbEstimated'),
+   rates:GOV,chfResearch:get('chfResearch'),nzdResearch:get('nzdPostroll'),now:dayNow()})||null;
  const G8SHADOW=root.FXQuantGrowthShadow?.analyze?.({macroSeries:get('macroSeries'),now:dayNow()})||null;
  const w=state.csReturnWindow===5?5:state.csReturnWindow===60?60:20;
  const number=x=>finite(x)?fmt(x,2):'—';
@@ -72,6 +73,11 @@ function build(api){
    const split=x.macro.text.split(' · ');
    const growth=x.context?.growth;
    const proxy=x.context?.pricingProxy;
+   const ratesContext=x.context?.ratesResearch;
+   const research2Y=!x.rates.ok&&['STORICO_UFFICIALE_NON_OPERATIVO','RICERCA_MANUALE_NON_CERTIFICATA'].includes(ratesContext?.status);
+   const twoLabel=research2Y?ratesContext.label:x.rates.label;
+   const twoMeta=research2Y?'Ricerca · '+date(ratesContext.asof):x.rates.asof?date(x.rates.asof):'Base non recente';
+   const twoHeading=research2Y?'2Y · contesto datato':'2Y · variazione 1W';
    const proxyReady=!x.pricing.ok&&proxy?.status==='PROXY_INFORMATIVO';
    const sixLabel=x.pricing.ok?x.pricing.label:proxyReady?proxy.label:x.pricing.label;
    const sixDate=x.pricing.ok?date(x.pricing.asof):proxyReady?'Indicativo · '+date(proxy.asof):'Non certificato';
@@ -79,7 +85,7 @@ function build(api){
    return '<button class="strength-row '+(x.ccy===country?'selected ':'')+tone+'" type="button" data-cs-country="'+x.ccy+'" aria-pressed="'+String(x.ccy===country)+'" aria-label="Seleziona '+x.ccy+' per approfondire">'+
     '<span class="strength-name"><b>'+rank+'</b><strong>'+FLAGS[x.ccy]+' '+x.ccy+'</strong></span>'+
     '<span class="strength-axis"><small>Crescita · dato storico</small><strong>'+esc(growLabel)+'</strong><em>'+esc(growth?.status==='STORICO_DESCRITTIVO'?split[0]+' · '+(split[1]||''):split[1]||'')+'</em></span>'+
-    '<span class="strength-axis '+(x.rates.ok?'':'unverified')+'"><small>2Y · variazione 1W</small><strong>'+esc(x.rates.label)+'</strong><em>'+esc(x.rates.asof?date(x.rates.asof):'Base non recente')+'</em></span>'+
+    '<span class="strength-axis '+(x.rates.ok?'':'unverified')+'"><small>'+esc(twoHeading)+'</small><strong>'+esc(twoLabel)+'</strong><em>'+esc(twoMeta)+'</em></span>'+
     '<span class="strength-axis '+(x.pricing.ok?'':'unverified')+(proxyReady?' context-proxy':'')+'"><small>'+ (x.pricing.ok?'Attese 6M · Δ 1W':'Futures 6M · contesto')+'</small><strong>'+esc(sixLabel)+'</strong><em>'+esc(sixDate)+'</em></span>'+
     '<span class="strength-axis '+(x.price.change>0?'fxpositive':x.price.change<0?'fxnegative':'')+'"><small>Prezzo · 20 fixing</small><strong>'+esc(x.price.label)+'</strong><em>vs le altre G8</em></span>'+
     '<span class="strength-reading '+tone+'"><strong>'+esc(x.reading.label)+'</strong><small>Apri '+x.ccy+' ›</small></span></button>';
@@ -91,7 +97,7 @@ function build(api){
    '<small>'+esc(rankDate)+'</small></div>'+
    '<div class="strength-columns" aria-hidden="true"><span>VALUTA</span><span>MACRO</span><span>2Y</span><span>ATTESE 6M</span><span>PREZZO</span><span>GIUDIZIO</span></div>'+
    '<div class="strength-rows">'+rows+'</div>'+
-   '<p class="strength-note">Crescita: ultime osservazioni storiche, non PIL stimato né sorpresa macro. 2Y: rendimento governativo settimanale, non OIS. 6M: variazione ufficiale quando verificata; altrimenti contratto futures indicativo con data, mai un repricing certificato. Il ranking resta esclusivamente di prezzo e nessun proxy entra nel punteggio.</p></section>';
+   '<p class="strength-note">Crescita: ultime osservazioni storiche, non PIL stimato né sorpresa macro. 2Y: movimento settimanale solo quando verificato; CHF/NZD possono mostrare dati storici o manuali di ricerca, mai promossi a conferme operative. 6M: variazione ufficiale quando verificata; altrimenti contratto futures indicativo con data, mai un repricing certificato. Il ranking resta esclusivamente di prezzo e nessun proxy entra nel punteggio.</p></section>';
  }
  function shadowResearch(){
   const t=G8SHADOW?.currencies?.[country];
@@ -127,6 +133,8 @@ function build(api){
   const cb=CB[country]||{};
   const growth=x.context?.growth;
   const proxy=x.context?.pricingProxy;
+  const ratesContext=x.context?.ratesResearch;
+  const dated2Y=!x.rates.ok&&['STORICO_UFFICIALE_NON_OPERATIVO','RICERCA_MANUALE_NON_CERTIFICATA'].includes(ratesContext?.status);
   const growthText=growth?.status==='STORICO_DESCRITTIVO'?growth.description:
    'Non ci sono osservazioni recenti sufficienti per un confronto con il ciclo.';
   const pricingText=x.pricing.ok?x.pricing.text:
@@ -134,7 +142,8 @@ function build(api){
   const cards=[
    ['MACRO · CRESCITA / LAVORO / PREZZI',growthText+' '+x.macro.text,
     'Serie storiche con periodo di osservazione, non nowcast, sorprese macro o pubblicazioni odierne.'],
-   ['TASSI 2Y',x.rates.text,'Movimento di mercato, non prova di decisioni future.'],
+   ['TASSI 2Y',x.rates.text+(dated2Y?' '+ratesContext.description:''),
+    dated2Y?'Storico/lettura manuale non è un tasso live e non aumenta le prove disponibili.':'Movimento di mercato, non prova di decisioni future.'],
    ['ASPETTATIVE 6M',pricingText,'I proxy sono informativi e non sostituiscono l’OIS ufficiale né i suoi cambiamenti.'],
    ['PREZZO',x.price.text+' '+x.price.label+(x.price.position?' · posizione '+x.price.position+'/8.':''),'La forza osservata non identifica il driver.']
   ];
