@@ -46,8 +46,8 @@ for(const r of L.REPORTS){
  if(fs.existsSync(original)){
   assert.equal(html,fs.readFileSync(original,'utf8'),'Original mirrored report must remain byte-identical');
  }else{
-  assert.ok(r.publicUrl&&r.publicUrl.startsWith('./reports/'),
-   'New approved Next-only report must resolve from the published Next tree');
+  assert.ok(output.startsWith(next+path.sep),
+   'Next-only report must resolve to the verified published Next tree: '+r.file);
  }
 }
 assert.equal(L.filterReports().length,8);
