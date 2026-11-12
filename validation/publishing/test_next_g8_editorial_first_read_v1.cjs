@@ -127,7 +127,7 @@ for(const country of FX){
  assert.deepEqual(selected,[country],'Selected currency must remain navigable');
 }
 const idx=read(base+'index.html');
-assert(idx.includes('currency-studio.js?v=14')&&idx.includes('currency-studio.css?v=7'));
+assert(idx.includes('currency-studio.js?v=15')&&idx.includes('currency-studio.css?v=7'));
 assert(idx.indexOf('g8-macro-pricing-bridge.js')<idx.indexOf('currency-studio.js'));
 const css=read(base+'currency-studio.css');
 assert(css.includes('.strength-first-reading')&&css.includes('.strength-evidence-fold>summary'));
