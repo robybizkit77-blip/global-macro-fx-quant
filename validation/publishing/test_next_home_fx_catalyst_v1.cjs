@@ -93,7 +93,7 @@ assert(app.includes("estimated,calendar:get('calendar')"));
 const index=read(next+'index.html');
 assert(index.includes('./morning-desk-v1.js?v=5'));
 assert(index.includes('./morning-desk-v1.css?v=4'));
-assert(index.includes('./app.js?v=18.43-pulse2'));
+assert(index.includes('./app.js?v=18.43-pair-catalyst1'));
 const css=read(next+'morning-desk-v1.css');
 assert(css.includes('.morning-fx-pulse-catalyst'));
 console.log('NEXT_HOME_FX_CATALYST_V1_PASS: G8 economic drivers, past-vs-future official calendar, no fabricated surprises and immutable frozen briefing');
