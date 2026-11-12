@@ -24,7 +24,8 @@ const data={macroSeries:json('live_data/sections/MACRO_SERIES.json'),
  nzdPostroll:json('site/fx-quant-v2/nzd-b2-postroll-web-research.json'),
  chfSpot:json('live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json'),
  nzdDirectionalProxy:json('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),
-  macroObserved:json('site/control-room-preview/macro-v3-current-evidence.json')
+  macroObserved:json('site/control-room-preview/macro-v3-current-evidence.json'),
+  calendar:json('live_data/sections/CALENDAR_OPERATIONAL_VIEW.json')
 };
 const FX=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'],now='2026-11-12';
 const fmt=(x,n=2)=>typeof x==='number'&&Number.isFinite(x)?
@@ -68,7 +69,39 @@ for(const country of FX){
  assert.equal((story.match(/<p><strong>/g)||[]).length,3,
    'Exactly three connected narrative paragraphs, not a metric gallery');
  for(const phrase of ['Il quadro economico.','Che cosa stanno facendo i tassi?',
-  'La risposta del Forex.','Che cosa monitorare.'])assert(story.includes(phrase),phrase+' missing');
+  'Che cosa mostra il Forex.','Che cosa monitorare.'])assert(story.includes(phrase),phrase+' missing');
+ assert(!story.includes('La risposta del Forex.'),'Observed 20-day price is not proven a macro response');
+ if(country==='GBP'){
+  assert(story.includes('calendario riporta un dato sul PIL del 2026-11-12'),
+   'UK today GDP event requires release-vintage caution');
+  assert(story.includes('stima utilizza ancora 2026Q2'),
+   'The current model must not silently present Q2 GDP as new Q3 growth');
+  assert(story.includes('risultato non è verificato'),
+   'No release actual/consensus inferred from a schedule');
+  const staleCalendar={...data.calendar,last_checked_at_utc:'2026-10-01T00:00:00Z'};
+  const staleHtml=win.FXQuantCurrencies.render({...args,state:{ccy:'GBP',csOther:'EUR',csReturnWindow:20},
+   get:key=>key==='estimatedMacro'?est:key==='calendar'?staleCalendar:data[key]});
+  assert(!staleHtml.includes('calendario riporta un dato sul PIL'),
+   'Never use an old calendar as proof of a new event');
+  const newer=JSON.parse(JSON.stringify(est));
+  newer.by.GBP.macro.gdpRelease='2026-11-12';
+  const newerHtml=win.FXQuantCurrencies.render({...args,state:{ccy:'GBP',csOther:'EUR',csReturnWindow:20},
+   get:key=>key==='estimatedMacro'?newer:data[key]});
+  assert(!newerHtml.includes('calendario riporta un dato sul PIL'),
+   'Once a GDP source is integrated the missing-release caution must disappear');
+ }
+ if(country==='CHF'||country==='NZD'){
+  assert(story.includes('Non abbiamo una variazione monetaria recente confrontabile'),
+   country+' no comparable OIS or 2Y must be explicit');
+  assert(!story.includes('Prima recuperare una variazione'),
+   country+' lack of OIS must not suspend otherwise usable macro and FX evidence');
+  if(country==='NZD')assert(story.includes('La disoccupazione osservata sale'),
+   'NZD labor deterioration is observed even without fresh rates');
+  if(country==='CHF')assert(story.includes('La disoccupazione osservata è poco mossa'),
+   'CHF labor trend is not fabricated from rate absence');
+ }
+ assert(!story.includes('La macro rallenta ma il riferimento dei tassi sale'),
+  'A low economic level cannot be sold as proven GDP deceleration');
  assert(!story.includes('class="strength-card"'),'First read must contain no detail cards');
  assert(!story.includes('Prove disponibili '),'Evidence counts belong in audit details');
  const evidence=html.slice(evidenceStart,methodStart);
