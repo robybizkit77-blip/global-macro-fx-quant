@@ -151,7 +151,7 @@ assert(idx.includes('currency-data-fallback.js?v=2'));
 assert(idx.indexOf('currency-data-fallback.js')<idx.indexOf('currency-studio.js'));
 assert(idx.includes('g8-rates-shadow.js?v=1'));
 assert(idx.indexOf('g8-rates-shadow.js')<idx.indexOf('currency-studio.js'));
-assert(idx.includes('currency-studio.js?v=8')&&idx.includes('app.js?v=18.38'));
+assert(idx.includes('currency-studio.js?v=9')&&idx.includes('app.js?v=18.38'));
 assert(app.includes("cbEstimated:'../../../live_data/sections/CB_PRICING_ESTIMATED.json'"));
 assert(app.includes("chfSpot:'../../../live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json'"));
 assert(app.includes("nzdDirectionalProxy:'../../../live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json'"));
