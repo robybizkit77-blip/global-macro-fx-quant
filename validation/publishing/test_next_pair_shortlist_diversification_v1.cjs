@@ -14,7 +14,7 @@ const entries=[
  ['AUDCAD','AUD',2],['EURGBP','EUR',2],['NZDJPY','NZD',2],
  ['CADCHF','CAD',2],['GBPNZD','GBP',3],['EURCHF',null,4]
 ].map(([key,favored,tier])=>({key,base:key.slice(0,3),quote:key.slice(3),
- favored,tier,macroGap:0.4,policyGap:0.5,scoreGap:0.6,
+ favored,tier,thesisStrength:'PARZIALE',tradeAttractiveness:'DA VALIDARE',macroGap:0.4,policyGap:0.5,scoreGap:0.6,
  aligned:tier===1,opposite:tier===3,source:'STIMA_ESPLICITA_V1'}));
 const original=entries.map(x=>x.key);
 const chosen=pick(entries);
@@ -39,7 +39,7 @@ assert.equal(pick(entries,3).length,3,'Honor explicit cap');
 
 const src=fs.readFileSync(path.join(root,rel,'pair-rankings.js'),'utf8');
 const index=fs.readFileSync(path.join(root,rel,'index.html'),'utf8');
-assert(index.includes('./pair-rankings.js?v=3'),'New cache version required');
+assert(index.includes('./pair-rankings.js?v=4'),'New cache version required');
 assert(src.includes('Fino a 5 coppie da studiare'));
 assert(src.includes('non inseriamo casi senza vantaggio netto'));
 assert(src.includes('fonti anche proxy'));

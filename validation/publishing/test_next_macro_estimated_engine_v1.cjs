@@ -98,7 +98,7 @@ const pair=fs.readFileSync(path.join(ROOT,next,'pair-rankings.js'),'utf8');
 const currency=fs.readFileSync(path.join(ROOT,next,'currency-studio.js'),'utf8');
 const narrative=fs.readFileSync(path.join(ROOT,next,'pair-desk-narrative.js'),'utf8');
 const journey=fs.readFileSync(path.join(ROOT,next,'decision-journey.js'),'utf8');
-assert(index.includes('macro-strength-estimated-v1.js?v=1'));
+assert(index.includes('macro-strength-estimated-v1.js?v=2'));
 assert(index.indexOf('pair-rankings.js')<index.indexOf('macro-strength-estimated-v1.js'));
 assert(index.indexOf('macro-strength-estimated-v1.js')<index.indexOf('app.js'));
 assert(app.includes("get('estimatedMacro')")&&app.includes('function estimatedMacro()'));
