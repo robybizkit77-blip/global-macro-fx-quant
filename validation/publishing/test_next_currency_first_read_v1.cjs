@@ -39,7 +39,9 @@ for(const ccy of FX){
   assert.deepEqual(rows,canonical.items.map(x=>x.ccy),'Same ranking as Pair Explorer: '+ccy);
   assert(html.includes('class="orient-rank-row selected '),'Selected currency highlighted: '+ccy);
   assert(html.includes('class="orient-thesis-details"'),'Macro/rates/COT details still available: '+ccy);
-  assert(html.includes('class="orient-evidence-fold"'),'Four supporting facts accessible: '+ccy);
+  assert(html.includes('class="strength-method-fold"')&&
+    (html.match(/class="orient-evidence-item"/g)||[]).length===4,
+    'Four supporting facts accessible: '+ccy);
   assert(html.indexOf('id="orient-strength-board"')<html.indexOf('id="orient-strength-focus"'),
     'Macro/rates/pricing/price board precedes country analysis: '+ccy);
   assert.equal((html.match(/class="strength-row /g)||[]).length,8,'Eight evidence rows: '+ccy);
