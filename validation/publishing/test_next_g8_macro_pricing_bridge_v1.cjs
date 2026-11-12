@@ -152,5 +152,5 @@ assert.deepEqual(after.rows.map(x=>x.evidenceCount),original.rows.map(x=>x.evide
 const index=read(base+'index.html');
 assert(index.includes('g8-macro-pricing-bridge.js?v=1'));
 assert(index.indexOf('g8-macro-pricing-bridge.js')<index.indexOf('currency-studio.js'));
-assert(index.includes('currency-studio.js?v=13'));
+assert(index.includes('currency-studio.js?v=14'));
 console.log('G8_MACRO_PRICING_BRIDGE_V1_PASS: 8 narratives, official vs NZD proxy vs withheld, divergent JPY, aligned GBP, no FX rank promotion');
