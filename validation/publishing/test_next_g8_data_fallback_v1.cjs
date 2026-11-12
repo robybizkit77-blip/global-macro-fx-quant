@@ -14,12 +14,14 @@ const macroSeries=load('live_data/sections/MACRO_SERIES.json');
 const estimated=load('live_data/sections/CB_PRICING_ESTIMATED.json');
 const macro=load('live_data/sections/MACRO_THERMOMETER_DATA.json');
 const rates=load('live_data/sections/NATIVE_RATES_DATA.json');
+const chfResearch=load('site/fx-quant-v2/chf-snb-paired-history.json');
+const nzdResearch=load('site/fx-quant-v2/nzd-b2-postroll-web-research.json');
 const ois=load('site/fx-quant-v2/ois-pricing-snapshot.json');
 const cot=load('live_data/sections/V250_COT_CHART_DATA.json');
 const cb=load('live_data/sections/NATIVE_CB_DATA.json');
 const pairs=load('live_data/sections/PAIR_SETUP_OPERATIONAL_VIEW.json');
 const now='2026-11-12';
-const context=F.evaluate({macroSeries,estimated,now});
+const context=F.evaluate({macroSeries,estimated,rates,chfResearch,nzdResearch,now});
 assert.equal(Object.keys(context.currencies).length,8);
 for(const ccy of FX){
  const g=context.currencies[ccy].growth;
@@ -35,6 +37,42 @@ for(const ccy of ['USD','EUR','CHF']){
  assert.match(p.description,/non fornisce un repricing settimanale verificato/);
 }
 assert.equal(context.currencies.NZD.pricingProxy.status,'NON_DISPONIBILE');
+// CHF/NZD research is visible but never a valid live 2Y weekly confirmation.
+assert.equal(context.currencies.CHF.ratesResearch.status,'STORICO_UFFICIALE_NON_OPERATIVO');
+assert.equal(context.currencies.NZD.ratesResearch.status,'RICERCA_MANUALE_NON_CERTIFICATA');
+assert.equal(context.currencies.CHF.ratesResearch.asof,'2026-10-30');
+assert.equal(context.currencies.NZD.ratesResearch.asof,'2026-11-10');
+assert.match(context.currencies.CHF.ratesResearch.description,/NON è un rendimento live/);
+assert.match(context.currencies.NZD.ratesResearch.description,/manca la riconciliazione XLSX/);
+assert.equal(context.currencies.USD.ratesResearch.status,'NON_DISPONIBILE');
+const history=(ccy,chf=chfResearch,nzd=nzdResearch,gov=rates,asof=now)=>
+ F.researchRatesAxis(ccy,chf,nzd,gov,asof);
+const chfWrongSource=structuredClone(chfResearch);
+chfWrongSource.source_url='https://example.com/fake';
+assert.equal(history('CHF',chfWrongSource).status,'NON_DISPONIBILE');
+const chfAnchor=structuredClone(chfResearch);
+chfAnchor.observations[0]['2Y']+=.2;
+assert.equal(history('CHF',chfAnchor).status,'NON_DISPONIBILE');
+const chfFuture=structuredClone(chfResearch);
+chfFuture.observations.at(-1).date='2026-11-13';
+chfFuture.last_observation_date='2026-11-13';
+assert.equal(history('CHF',chfFuture).status,'NON_DISPONIBILE');
+assert.equal(history('CHF',chfResearch,nzdResearch,rates,'2026-12-20').status,'NON_DISPONIBILE');
+const nzdWrong=structuredClone(nzdResearch);
+nzdWrong.independent_xlsx_reconciled=true;
+assert.equal(history('NZD',chfResearch,nzdWrong).status,'NON_DISPONIBILE');
+const nzdRoll=structuredClone(nzdResearch);
+nzdRoll.benchmark_2Y='May 2028';
+assert.equal(history('NZD',chfResearch,nzdRoll).status,'NON_DISPONIBILE');
+const nzdFuture=structuredClone(nzdResearch);
+nzdFuture.daily_observations.at(-1).date='2026-11-13';
+assert.equal(history('NZD',chfResearch,nzdFuture).status,'NON_DISPONIBILE');
+assert.equal(history('NZD',chfResearch,nzdResearch,rates,'2026-11-09').status,'NON_DISPONIBILE');
+assert.equal(history('NZD',chfResearch,nzdResearch,rates,'2026-11-25').status,'NON_DISPONIBILE');
+const nzdUntrustedSource=structuredClone(nzdResearch);
+nzdUntrustedSource.source_capture_method='AUTOMATED_UNAUTHORIZED_DOWNLOAD';
+assert.equal(history('NZD',chfResearch,nzdUntrustedSource).status,'NON_DISPONIBILE');
+
 const fake={...estimated,currencies:{...estimated.currencies,
  USD:{...estimated.currencies.USD,governance:{...estimated.currencies.USD.governance,pair_engine_effect:'ACTIVE'}}}};
 assert.equal(F.pricingProxy(fake,'USD',now).status,'NON_DISPONIBILE','Any impact on pair engine forbids informational quote');
@@ -52,7 +90,7 @@ assert.deepEqual(enriched.rows.map(x=>x.evidenceCount),original.rows.map(x=>x.ev
  'Proxy cannot certify official evidence');
 assert.deepEqual(enriched.rows.map(x=>x.pricing.ok),original.rows.map(x=>x.pricing.ok),
  'Proxy cannot promote 6M OIS/futures weekly repricing');
-const data={currencyPrices:prices,macroSeries,cbEstimated:estimated,macro,rates,ois,cotHistory:cot,cb,pairs};
+const data={currencyPrices:prices,macroSeries,cbEstimated:estimated,macro,rates,ois,cotHistory:cot,cb,pairs,chfResearch,nzdPostroll:nzdResearch};
 const esc=x=>String(x??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const finite=x=>typeof x==='number'&&Number.isFinite(x);
 const fmt=(x,n=2)=>finite(x)?x.toFixed(n):'—';
@@ -64,6 +102,19 @@ const html=ctx.window.FXQuantCurrencies.render({
  state:{ccy:'USD',csOther:'EUR',csReturnWindow:20}
 });
 assert(html.includes('Consumi reali'), 'Observed growth reaches G8 UI');
+const makeHtml=ccy=>ctx.window.FXQuantCurrencies.render({
+ get:k=>data[k],FX,FLAGS:flags,NAMES:flags,pageHero:()=>'<header>G8</header>',
+ esc,fmt,sign,date:x=>x||'n.d.',finite,validDay:x=>/^\d{4}-\d\d-\d\d$/.test(x||''),dayNow:()=>now,
+ state:{ccy,csOther:ccy==='CHF'?'EUR':'USD',csReturnWindow:20}
+});
+const chfHtml=makeHtml('CHF'),nzdHtml=makeHtml('NZD');
+assert(chfHtml.includes('0,238% · storico'), 'Swiss dated 2Y in G8 evidence row');
+assert(nzdHtml.includes('3,770% · ricerca'), 'NZD manual post-roll 2Y in G8 evidence row');
+assert(chfHtml.includes('2Y · contesto datato'));
+assert(nzdHtml.includes('2Y · contesto datato'));
+assert(chfHtml.includes('NON è un rendimento live'));
+assert(nzdHtml.includes('manca la riconciliazione XLSX'));
+assert(!chfHtml.includes('0,238% · +'), 'CHF 2Y level is not rate change');
 assert(html.includes('proxy'), 'Indicative quote reaches G8 UI');
 assert(html.includes('4,50%')||html.includes('4.50%'), 'Indicative USD 6M quote is dated and displayed');
 assert(!/\bNaN\b|\bundefined\b|\[object Object\]/.test(html));
