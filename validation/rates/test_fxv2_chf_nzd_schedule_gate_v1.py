@@ -89,6 +89,10 @@ class SourceScheduleGate(unittest.TestCase):
         self.assertIn("EOLAS_PRO_ENABLED:",workflow)
         self.assertIn("steps.gate.outputs.should_run == 'true'", workflow)
         self.assertIn("VENDOR_SLOT: ${{ steps.gate.outputs.vendor_slot }}", workflow)
+        self.assertIn("--upstream-source-verified",workflow)
+        self.assertIn("steps.parent_rates.outputs.source_verified",workflow)
+        self.assertIn("actions: read",workflow)
+        self.assertIn("certify_rates_parent_source_execution_v1.py",workflow)
         self.assertIn('if [ "$VENDOR_SLOT" != "true" ]; then', workflow)
         self.assertIn("report_fxv2_chf_nzd_freshness_v1.py", workflow)
         self.assertIn("fxv2-chf-nzd-freshness-receipt.json", workflow)
@@ -100,6 +104,7 @@ class SourceScheduleGate(unittest.TestCase):
             "upstream_conclusion": "success",
             "upstream_event": "workflow_run",
             "upstream_started_at": "2026-11-05T07:10:21Z",
+            "upstream_source_verified": True,
         }
         self.assertEqual(
             gate("workflow_run", "", utc(2026,11,5,8,32), **parent),
@@ -113,6 +118,23 @@ class SourceScheduleGate(unittest.TestCase):
                 parent, upstream_started_at="2026-07-02T05:01:00Z")),
             (True, False, "INDEPENDENT_SUCCESSFUL_MAIN_RATES_RECOVERY"))
 
+    def test_green_rates_without_real_source_steps_is_never_recovery(self):
+        parent = {
+            "upstream_name": "Rates Persistent Daily V1",
+            "upstream_branch": "main",
+            "upstream_conclusion": "success",
+            "upstream_event": "workflow_run",
+            "upstream_started_at": "2026-11-12T10:54:54Z",
+        }
+        self.assertEqual(gate("workflow_run", "", utc(2026,11,12,10,55),**parent),
+                         (False,False,"PARENT_RATES_SOURCE_NOT_EXECUTED"))
+        self.assertEqual(gate("workflow_run","",utc(2026,11,12,10,55),
+                              **dict(parent,upstream_source_verified=False)),
+                         (False,False,"PARENT_RATES_SOURCE_NOT_EXECUTED"))
+        self.assertEqual(gate("workflow_run","",utc(2026,11,12,10,55),
+                              **dict(parent,upstream_source_verified=True)),
+                         (True,False,"INDEPENDENT_SUCCESSFUL_MAIN_RATES_RECOVERY"))
+
     def test_recovery_rejects_failure_pr_stale_weekend_and_future(self):
         parent = {
             "upstream_name": "Rates Persistent Daily V1",
@@ -120,6 +142,7 @@ class SourceScheduleGate(unittest.TestCase):
             "upstream_conclusion": "success",
             "upstream_event": "schedule",
             "upstream_started_at": "2026-11-05T07:10:21Z",
+            "upstream_source_verified": True,
         }
         for field, value in (
             ("upstream_name","Other workflow"),
