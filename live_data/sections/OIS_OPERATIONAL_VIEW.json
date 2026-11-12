@@ -157,7 +157,7 @@
       "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures"
     },
     "EUR": {
-      "as_of": "2026-11-10",
+      "as_of": "2026-11-11",
       "backtest_eligible_as_official": false,
       "change_1d_available": false,
       "change_1w_available": false,
@@ -203,22 +203,22 @@
           "symbol": "EUREX:FST3X2026"
         },
         "6m": {
-          "business_day_lag": 2,
+          "business_day_lag": 1,
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "FST3G2027",
           "contract_description": "Feb 2027",
           "expiration": "2027-05-19",
-          "futures_price": 97.17,
+          "futures_price": 97.145,
           "mapping": "nearest dated listed contract expiry to today+180d; no interpolation",
           "policy_delta_bp": null,
-          "price_valid_until": "2026-11-10T22:05:23Z",
-          "quote_as_of": "2026-11-10",
+          "price_valid_until": "2026-11-11T22:05:17Z",
+          "quote_as_of": "2026-11-11",
           "quote_timestamp_source": "SSR_DAILY_BAR_DATA_UPDATE_TIME",
           "quote_timestamp_verified": true,
           "rate": null,
           "raw_level_gap_not_policy_repricing": true,
-          "raw_level_minus_spot_policy_bp": 33.0,
+          "raw_level_minus_spot_policy_bp": 35.5,
           "symbol": "EUREX:FST3G2027"
         }
       },
@@ -260,8 +260,8 @@
           },
           "6m": {
             "contract": "FST3G2027",
-            "quote_as_of": "2026-11-10",
-            "rate_indicative": 2.83,
+            "quote_as_of": "2026-11-11",
+            "rate_indicative": 2.855,
             "source_quality": "SECONDARY_VERIFIED_DAILY_BAR"
           }
         },
