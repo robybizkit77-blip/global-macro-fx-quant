@@ -1,8 +1,47 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-12T03:05:16Z",
+  "generated_at_utc": "2026-11-12T11:23:34Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-7341ec0e67fa0ba67293",
+      "observed_at_utc": "2026-11-12T08:17:48Z",
+      "headline": "Two oil tankers 'disabled' by explosions in Strait of Hormuz, IRGC says",
+      "summary": "Reuters riporta: Two oil tankers 'disabled' by explosions in Strait of Hormuz, IRGC says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxQcDQ2cWxyeTFpazFaX1ZNM2RoS0t2ZVpEa0JpMElTZVFMUElROEF5c20tMlU0dEszWFlEdkhfR2VOb3hEQmo3MjRtdVlSaEhkZnpKXzExbE5QcXItQ3Z6REoyY1Fpak9IUUplYWp6NTQ2UjBiNVk1WDN0MmJjaFRkOHNLdDYxMU9xOWhuMnVaTlNiVXJNTlhLYV9EZEpnd1oxYmF0cG82b2VkMURkYnkzZkZBX0hhWHM?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-22867397ecf2d8674f08",
+      "observed_at_utc": "2026-11-11T16:12:11Z",
+      "headline": "NEWSLETTER: Hormuz traffic is up. So are the attacks",
+      "summary": "Reuters riporta: NEWSLETTER: Hormuz traffic is up. So are the attacks. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxPYjlBX041WVNOU3VBZEk1UVBkeDJQZ2tmNDFiTExBWUtNMldua215TURPWTU3aTFEbGhlcGRiSnFrX191UVpONXpMSjc5dlVhNVpDZzJWM25lNEtoSE4wSFZpTmtKX1BMWnpkSUdoNk9OeTd0SzFUa2NqdlVxcGpRQ2ZSZEcyTlN3MnRzbTlUZm9tVlU?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-2bc8b05423a1a6c2369a",
+      "observed_at_utc": "2026-11-12T11:01:37Z",
+      "headline": "India's October retail inflation at 6.09% on-year",
+      "summary": "Reuters riporta: India's October retail inflation at 6.09% on-year. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxPREdNUGJpdVdzdFc0aWVJQ2dFU21LNTdob0R6QXFwS1I0amswSzdzZC1TbWJrRm95ZFFMU3k2STdocmxMWHJETUpXSU1QeWtwY05mR2p3eFlRTkJUYjloTlN3QlYzWDhCWElxci1rU2FwNldyUG9jSkc3OWtnWjRJUjhyLVR5YTJnNkJROFlQZjZiNG52a0FzdWhMYlE?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-6906b95d6018148ecaf3",
       "observed_at_utc": "2026-11-12T00:14:00Z",
@@ -1377,45 +1416,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxPbUowSGs1Q0hadWZXNFhieVFtSERoVm1uZHBNaDZYeVFoS2FXaVIxMVhnckRuMVY0NkJPQTNXZFdNeUtJQ2hYREZGZDM3UnhzcUE5bkJSMXhDTXpYRUltclJka2pJZS0yNGY0TGg2dDBkbTh3MnhQTjZxM0pKaWViT21HNmE0ajlHS0xGLVdkZmxMOHhzUndVU1Z4YXVPZElpZkJuQTRZSlZPcV9zRmJfQnRVWjRadw?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-39639b8102f3fb9dc0d1",
-      "observed_at_utc": "2026-11-02T03:52:00Z",
-      "headline": "India's auto stocks rise as strong October sales signal resilient festive demand",
-      "summary": "Reuters riporta: India's auto stocks rise as strong October sales signal resilient festive demand. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxQSk1WX2FrREhQbTBpSzZBem9GeGlqdmlTOFlZYV9pemNvMGdOYl9qWlFwXzE3cUhkOC1FZkRjY0k1MzYwcG9JSnM5VFg4WmZEVGxYWVNpczFoN3dubG1sOWQtaVkzYVdibzAyN1BZR1dXVDZwTk40WTlxcmFrSkZmbXcweTA2b3ZvNVUtLVlzZFhrREswSW9wWWN5azRLQWhhMVdSYzV5ZzVwZmp6T1NtemplWjA0SmJWM1VjQlltY2ctUQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-2688d5ad53b4bc9eb603",
-      "observed_at_utc": "2026-11-02T00:41:00Z",
-      "headline": "European stocks flat, oil drops as midterm caution prevails",
-      "summary": "Reuters riporta: European stocks flat, oil drops as midterm caution prevails. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxPbXpaWVRrQUkzYThuc1E5TnFCUXBTSTV2bHNaR1FhUmdEYnhjSHVneFdpbGhjeENwWlE2WVE1c3FCUV9qeGZzRGNoNFEzdERMblBDb005a2NBV3B2YzdfNF95dGtrVmxiNlJrNFU3UC1BTnZHcVh4a3hna25vdEFkSEtMUQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-6a6c93e111790084bdb7",
-      "observed_at_utc": "2026-11-02T05:29:00Z",
-      "headline": "Asian shares mostly advance but tech stocks remain volatile, while oil sinks 3.3%",
-      "summary": "AP News riporta: Asian shares mostly advance but tech stocks remain volatile, while oil sinks 3.3%. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "AP News · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxQdndJTkZzZVB3bUs3SWZPMjZXZ3JzbnlHbWJoak5WWlJWTnQwZFpJNWZpd0tQb3RYanMyckQxMmVjWm5nQnk2Tzl6QjVCOVFmN21RNks4Q2tsM2tUODBSMldsdVQ3eDBoX3UyZDZMM3JybmZVRVhxT2lReGVMMEJuMTNvLTNUbmR0TmVqeXRXV1FZSVdUV1ZtcWVhQQ?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
