@@ -39,7 +39,7 @@
   }return n;
  };
  function chf({research,chfHistory,spot,now}){
-  if(research?.CHF?.ratesResearch?.status!=='STORICO_UFFICIALE_NON_OPERATIVO')
+  if(research?.currencies?.CHF?.ratesResearch?.status!=='STORICO_UFFICIALE_NON_OPERATIVO')
    return unavailable('CHF: storico ufficiale 2Y/10Y non verificato dal bridge');
   const h=chfHistory,rows=h?.observations;
   if(h?.schema!=='GMFQ_FXV2_CHF_SNB_PAIRED_HISTORY_V1'||
@@ -49,7 +49,7 @@
      h?.eligible_for_backtests!==false||
      h?.source_latest_vintage_not_point_in_time!==true||
      !Array.isArray(rows)||rows.length<20||
-     h.last_observation_date!==research.CHF.ratesResearch.asof||
+     h.last_observation_date!==research.currencies.CHF.ratesResearch.asof||
      h.last_observation_date!==rows.at(-1)?.date||
      spot?.schema!=='GMFQ_CHF_SNB_10Y_SPOT_CONTEXT_V1'||
      spot?.status!=='OFFICIAL_PUBLISHED_10Y_INFORMATIONAL'||
@@ -122,9 +122,9 @@
     checks.length+' previsioni, e non valida il salto multi-giorno. Banda euristica non probabilistica.'};
  }
  function nzd({research,nzdMarket,now}){
-  if(research?.NZD?.ratesResearch?.status!=='RICERCA_MANUALE_NON_CERTIFICATA')
+  if(research?.currencies?.NZD?.ratesResearch?.status!=='RICERCA_MANUALE_NON_CERTIFICATA')
    return unavailable('NZD: riferimento RBNZ B2 non verificato dal bridge');
-  const m=nzdMarket,h=m?.horizons?.['6m'],r=research.NZD.ratesResearch;
+  const m=nzdMarket,h=m?.horizons?.['6m'],r=research.currencies.NZD.ratesResearch;
   // Only a one-trading-day change may be passed through the earlier 2Y anchor:
   // never use a weekly ASX move as a daily government 2Y observation.
   if(m?.schema!=='GMFQ_NZD_CB_PRICING_DIRECTIONAL_PROXY_V1'||
@@ -156,7 +156,7 @@
   const raw=nzd(args);
   if(raw.status!=='NZD_PENDING_NUMERIC_ANCHOR')return raw;
   const r=args.nzdResearch;
-  const last=r?.daily_observations?.at(-1),check=args.research.NZD.ratesResearch;
+  const last=r?.daily_observations?.at(-1),check=args.research.currencies.NZD.ratesResearch;
   if(r?.schema!=='GMFQ_NZD_RBNZ_B2_POSTROLL_WEB_RESEARCH_V1'||
      r?.source_capture_method!=='PUBLIC_OFFICIAL_PAGE_MANUAL_RESEARCH_NOT_AUTOMATED_FETCH'||
      r?.historical_benchmark_roll_continuity!==false||
