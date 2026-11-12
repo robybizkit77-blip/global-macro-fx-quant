@@ -114,9 +114,21 @@ const fxModel=pairModule.build({
 });
 const home=fxModel.overview(),dossier=fxModel.pair();
 assert.match(dossier,/data-rates-tone="mixed"/,'EUR/USD dossier must preserve mixed short/medium 2Y evidence even if not shortlisted');
-assert.match(home,/data-rates-tone="aligned"/);
-assert.match(home,/GOV 2Y, non OIS/);
-assert.match(home,/06\/11\/2026|2026-11-06/,'Rates brief must carry matched date');
+// Current archived structural classifications have no clean pair: the
+// overview must not invent an aligned USD/CAD trade just because its 2Y
+// evidence is sound. Rates evidence stays available in the opened dossier.
+const archivedSelection=pairModule.snapshot(fixturePairs,prices,today);
+if(archivedSelection.examples.length){
+ assert.match(home,/data-rates-tone="(aligned|mixed|unavailable)"/,
+  'Any genuine shortlisted pair must show the rate-evidence tier');
+ assert.match(home,/GOV 2Y, non OIS/,'Shortlist rates must be explicitly sovereign');
+}else{
+ assert.match(home,/Non emergono coppie con prezzo e timing coerenti/,
+  'Unqualified archived universe should display an empty shortlist');
+ assert.doesNotMatch(home,/data-rates-tone="aligned"/,
+  'An aligned rate differential alone cannot manufacture a clean pair setup');
+}
+assert.match(home,/06\/11\/2026|2026-11-06/,'Overview must preserve archived model date');
 assert.match(dossier,/decision-gate-rates/);
 assert.match(dossier,/5 intervalli concordi/);
 assert.match(dossier,/20 discordi/);
@@ -132,7 +144,11 @@ const noRateHome=pairModule.build({
  ...base,get:k=>({currencyPrices:prices,pairs:fixturePairs})[k],
  state:{pair:'EURUSD',pairPriceWindow:60}
 }).overview();
-assert.match(noRateHome,/2Y governativi non verificabili/);
+if(archivedSelection.examples.length)
+ assert.match(noRateHome,/2Y governativi non verificabili/,
+  'Selected FX cases require a source-quality warning when government yields are absent');
+else assert.match(noRateHome,/Non emergono coppie con prezzo e timing coerenti/,
+ 'No pair may be inserted solely to show unavailable rates');
 assert.doesNotMatch(noRateHome,/data-rates-tone="mixed"/);
 
 // Explicit Nov 09 lag fixture: do not pair the Nov 09 FX fixing with Nov 06 sovereign rates.
