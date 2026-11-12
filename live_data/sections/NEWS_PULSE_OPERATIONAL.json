@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-11",
-  "generated_at_utc": "2026-11-12T07:29:51.832170Z",
+  "generated_at_utc": "2026-11-12T08:06:15.197445Z",
   "items": [
     {
       "as_of": "2026-11-11",
@@ -205,7 +205,7 @@
       "title": "Credito IG OAS: -2.0 pb nella chiusura del 2026-11-09"
     }
   ],
-  "last_checked_at_utc": "2026-11-12T07:29:51.832170Z",
+  "last_checked_at_utc": "2026-11-12T08:06:15.197445Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -401,14 +401,14 @@
           "analysis_basis": "SOURCE_HEADLINE_ONLY",
           "market_direction": "NOT_DETERMINED",
           "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "REVIEW",
-          "topic": "CB_COMMUNICATION",
-          "verify_next": "Esaminare il testo integrale; identificare eventuali novità rispetto alla posizione precedente e verificare la reazione del mercato.",
-          "why_watch": "Intervento di una banca centrale: il solo titolo non permette di classificare il tono hawkish o dovish."
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
         },
-        "id": "BOJ_NEWS:https://www.boj.or.jp/en/about/press/koen_2026/ko261112a.htm",
+        "id": "BOJ_NEWS:https://www.boj.or.jp/en/statistics/boj/other/mei/release/2026/mei261110.xlsx",
         "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-12T01:30:00Z",
+        "published_at_utc": "2026-11-12T08:00:00Z",
         "quality": "OFFICIAL_RSS_DATED_LINK",
         "reaction_evidence": {
           "causal_attribution": "NOT_ESTABLISHED",
@@ -446,8 +446,8 @@
         },
         "source": "Bank of Japan",
         "source_id": "BOJ_NEWS",
-        "title": "Speech by Board Member ASADA in Nagasaki (Economic Activity, Prices, and Monetary Policy in Japan)",
-        "url": "https://www.boj.or.jp/en/about/press/koen_2026/ko261112a.htm"
+        "title": "Japanese Government Bonds Held by the Bank of Japan",
+        "url": "https://www.boj.or.jp/en/statistics/boj/other/mei/release/2026/mei261110.xlsx"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
@@ -461,9 +461,9 @@
           "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
           "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
         },
-        "id": "BOJ_NEWS:https://www.boj.or.jp/en/statistics/boj/other/acmai/release/2026/ac261110.htm",
+        "id": "BOJ_NEWS:https://www.boj.or.jp/en/statistics/set/bffail/sjgb2610.pdf",
         "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-12T01:00:00Z",
+        "published_at_utc": "2026-11-12T07:30:00Z",
         "quality": "OFFICIAL_RSS_DATED_LINK",
         "reaction_evidence": {
           "causal_attribution": "NOT_ESTABLISHED",
@@ -501,8 +501,8 @@
         },
         "source": "Bank of Japan",
         "source_id": "BOJ_NEWS",
-        "title": "Bank of Japan Accounts (November 10)",
-        "url": "https://www.boj.or.jp/en/statistics/boj/other/acmai/release/2026/ac261110.htm"
+        "title": "Basic Figures on Fails (Oct.)",
+        "url": "https://www.boj.or.jp/en/statistics/set/bffail/sjgb2610.pdf"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
@@ -1177,7 +1177,7 @@
       }
     ],
     "last_attempt_day_rome": "2026-11-12",
-    "latest_published_at_utc": "2026-11-12T01:30:00Z",
+    "latest_published_at_utc": "2026-11-12T08:00:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -1221,10 +1221,10 @@
         "status": "OK_RECENT_ITEMS"
       },
       {
-        "accepted_items": 21,
+        "accepted_items": 23,
         "ccy": "JPY",
         "entries_rejected": 28,
-        "feed_entries_seen": 49,
+        "feed_entries_seen": 51,
         "feed_url": "https://www.boj.or.jp/en/rss/whatsnew.xml",
         "source": "Bank of Japan",
         "source_id": "BOJ_NEWS",
