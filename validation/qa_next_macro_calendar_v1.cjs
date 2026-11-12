@@ -68,7 +68,15 @@ const postHtml=render(data,'2026-11-12',Date.parse('2026-11-12T13:00:00Z'));
 assert(postHtml.includes('Oggi · risultato ancora da verificare'));
 assert(postHtml.includes('Orario programmato trascorso'));
 assert(postHtml.includes('Effettivo: non verificato dal feed'));
-assert(postHtml.includes('Feed non ricontrollato oggi'));
+// UTC 23:33 on 11 November is already 00:33 on 12 November in Rome.
+assert(!postHtml.includes('Feed non ricontrollato oggi'),
+ 'UTC day must not create a false Rome-local staleness warning');
+assert(postHtml.includes('12/11/2026')&&postHtml.includes('00:33'));
+const oldFeed=structuredClone(data);
+oldFeed.last_checked_at_utc='2026-11-11T12:00:00Z';
+assert(render(oldFeed,'2026-11-12',Date.parse('2026-11-12T13:00:00Z'))
+ .includes('Feed non ricontrollato oggi'),
+ 'Truly prior-day Rome feed must be disclosed as stale');
 assert(postHtml.includes('Prossimi eventi'));
 const missingTime=structuredClone(data);
 missingTime.events.unshift({ccy:'USD',date:'2026-11-12',title:'FOMC press briefing',
