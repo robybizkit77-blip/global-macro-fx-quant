@@ -16,6 +16,8 @@ on:
       - 'validation/macro/test_macro_official_source_label_contract_v1.py'
       - 'validation/macro/persist_calendar_news_safe_v12.py'
       - 'validation/macro/test_persist_macro_safe_v1.py'
+      - 'validation/macro/capture_g8_prospective_v1.py'
+      - 'validation/macro/test_capture_g8_prospective_v1.py'
       - 'validation/sources/cad_statcan_core.py'
       - 'validation/test_cad_statcan_transport.py'
       - 'validation/macro_pit_anchor_contract.py'
@@ -40,6 +42,8 @@ on:
       - 'validation/macro/test_macro_official_source_label_contract_v1.py'
       - 'validation/macro/persist_calendar_news_safe_v12.py'
       - 'validation/macro/test_persist_macro_safe_v1.py'
+      - 'validation/macro/capture_g8_prospective_v1.py'
+      - 'validation/macro/test_capture_g8_prospective_v1.py'
   workflow_dispatch:
   # Early source-watch -> Calendar/News -> Macro. Serial dependency
   # avoids simultaneous main-branch writes by Calendar and Macro when an
@@ -79,6 +83,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
 
       - name: Install adapter dependencies
         run: python -m pip install --disable-pip-version-check requests pandas openpyxl beautifulsoup4 lxml
@@ -94,6 +101,11 @@ jobs:
 
       - name: Verify Macro safe persistence under independent concurrent Git writers
         run: python -m unittest validation.macro.test_persist_macro_safe_v1 -v
+
+      - name: Verify first-seen G8 forecast freeze and append-only safeguards
+        run: |
+          node --check site/fx-quant-v2/next/g8-growth-shadow.js
+          python -m unittest validation.macro.test_capture_g8_prospective_v1 -v
 
       - name: Snapshot baseline and registry contract
         shell: bash
@@ -504,6 +516,23 @@ jobs:
           )
           print(json.dumps(persist(managed=managed),sort_keys=True))
           PY
+
+      # Existing Macro refresh cadence only. Freeze a single first-seen
+      # prospective model vintage per Rome date, even on no-new-source days.
+      # Commits an append-only research file with GitHub Contents create-only;
+      # never mutates historical receipts, official datasets or FX signals.
+      - name: Persist research-only G8 shadow vintage from refreshed main
+        if: github.ref == 'refs/heads/main' && success()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main
+          python -m validation.macro.capture_g8_prospective_v1 \
+            --revision origin/main \
+            --output /tmp/macro-persistent/g8-prospective-capture.json \
+            --publish
 
       - uses: actions/upload-artifact@v4
         if: always()
