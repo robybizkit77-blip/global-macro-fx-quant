@@ -20,6 +20,7 @@ const SOURCES={
  thesisHistory:'./pair-thesis-history.json',
  macro:'../../../live_data/sections/MACRO_THERMOMETER_DATA.json',
  macroSeries:'../../../live_data/sections/MACRO_SERIES.json',
+ cbEstimated:'../../../live_data/sections/CB_PRICING_ESTIMATED.json',
  cb:'../../../live_data/sections/NATIVE_CB_DATA.json',
  cot:'../../../live_data/sections/V247_COT_STORIES.json',
  cotHistory:'../../../live_data/sections/V250_COT_CHART_DATA.json',
