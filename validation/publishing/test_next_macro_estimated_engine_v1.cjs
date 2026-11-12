@@ -53,6 +53,20 @@ assert.equal(result.by.USD.rate.kind,'GOV_2Y_PROXY');
 assert.equal(result.by.GBP.rate.kind,'OIS');
 assert.equal(result.by.JPY.rate.kind,'FUTURES');
 assert(result.warning.includes('non backtest'));
+const journey=require(path.join(ROOT,next,'decision-journey.js'));
+for(const key of ['EURUSD','AUDCAD','GBPJPY']){
+ const updated=journey.profile(key,model,prices,now,result);
+ const frozen=journey.profile(key,model,prices,now);
+ const estimatedPair=result.pairs.find(x=>x.key===key);
+ assert.equal(updated.source,'STIMA_ESPLICITA_V1',key+' current price thesis is estimated');
+ assert.equal(updated.asof,result.priceAsOf,key+' uses the latest fixing, not legacy model price');
+ assert.equal(updated.fav,estimatedPair.favored,key+' follows estimated relative preference');
+ assert.equal(updated.quality,estimatedPair.quality,key+' displays estimated source quality');
+ assert(updated.closes.length>=22,key+' retains actual ECB daily series');
+ assert.equal(updated.research,false,key+' daily price is not a validated trade');
+ assert.equal(frozen.source,'STORICO_D',key+' archived model remains auditable');
+}
+
 const frozen=structuredClone(model);
 for(const item of Object.values(frozen.pairs)) {
  item.setup.structuralFav='XYZ';
