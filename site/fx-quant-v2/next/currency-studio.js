@@ -113,7 +113,7 @@ function build(api){
    '<small>'+esc(rankDate)+'</small></div>'+
    '<div class="strength-columns" aria-hidden="true"><span>VALUTA</span><span>MACRO</span><span>2Y</span><span>ATTESE 6M</span><span>PREZZO</span><span>GIUDIZIO</span></div>'+
    '<div class="strength-rows">'+rows+'</div>'+
-   '<p class="strength-note">Crescita: il dato grande è osservato e datato; lo scenario copre l'ultimo periodo economico completato, ma resta una <strong>stima su serie storiche revisionabili, non PIL generale o sorpresa macro</strong>. Il modello indica quando non batte il benchmark. 2Y CHF/NZD: scenari, non rendimenti osservati né nuovi segnali. 6M: futures indicativi non equivalgono a repricing OIS. Il ranking resta esclusivamente di prezzo; proxy e stime non aumentano le prove operative.</p></section>';
+   '<p class="strength-note">Crescita: il dato grande è osservato e datato; lo scenario copre l’ultimo periodo economico completato, ma resta una <strong>stima su serie storiche revisionabili, non PIL generale o sorpresa macro</strong>. Il modello indica quando non batte il benchmark. 2Y CHF/NZD: scenari, non rendimenti osservati né nuovi segnali. 6M: futures indicativi non equivalgono a repricing OIS. Il ranking resta esclusivamente di prezzo; proxy e stime non aumentano le prove operative.</p></section>';
  }
  function shadowResearch(){
   const t=G8SHADOW?.currencies?.[country];
