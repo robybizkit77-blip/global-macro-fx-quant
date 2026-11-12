@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'validation/rates/refresh_fxv2_chf_nzd_benchmark_context.py'
+      - 'validation/rates/certify_rates_parent_source_execution_v1.py'
+      - 'validation/rates/test_certify_rates_parent_source_execution_v1.py'
       - 'validation/rates/fxv2_chf_nzd_schedule_gate_v1.py'
       - 'validation/rates/test_fxv2_chf_nzd_schedule_gate_v1.py'
       - 'validation/rates/report_fxv2_chf_nzd_freshness_v1.py'
@@ -27,6 +29,8 @@ on:
     branches: [main]
     paths:
       - 'validation/rates/refresh_fxv2_chf_nzd_benchmark_context.py'
+      - 'validation/rates/certify_rates_parent_source_execution_v1.py'
+      - 'validation/rates/test_certify_rates_parent_source_execution_v1.py'
       - 'validation/rates/fxv2_chf_nzd_schedule_gate_v1.py'
       - 'validation/rates/test_fxv2_chf_nzd_schedule_gate_v1.py'
       - 'validation/rates/report_fxv2_chf_nzd_freshness_v1.py'
@@ -56,12 +60,13 @@ on:
   workflow_dispatch:
   workflow_run:
     # Independent recovery if GitHub misses or delays CHF/NZD source cron.
-    # Only successful same-Rome-day Rates/main runs pass the gate.
+    # Only Rates/main runs with *executed source steps* pass the gate.
     workflows: ['Rates Persistent Daily V1']
     types: [completed]
 
 permissions:
   contents: write
+  actions: read
 
 concurrency:
   group: fxv2-chf-nzd-benchmark-research
@@ -83,12 +88,37 @@ jobs:
         run: |
           python3 validation/rates/test_refresh_fxv2_chf_nzd_benchmark_context.py
           python3 validation/rates/test_fxv2_chf_nzd_schedule_gate_v1.py
+          python3 validation/rates/test_certify_rates_parent_source_execution_v1.py
           python3 validation/rates/test_report_fxv2_chf_nzd_freshness_v1.py
           python3 validation/rates/test_collect_rbnz_b2_daily_web_v1.py
           python3 validation/rates/test_fxv2_nzd_manual_public_source_v1.py
           python3 validation/rates/test_collect_fxv2_nzd_eolas_api_v1.py
           python3 validation/rates/test_recover_chf_snb_paired_history_v1.py
           python3 validation/rates/test_build_fxv2_chf_snb_history_feed_v1.py
+      - name: Prove upstream Rates actually executed dated market-source audit
+        id: parent_rates
+        if: github.event_name == 'workflow_run'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PARENT_RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          set -euo pipefail
+          # The event status alone is insufficient: schedule-gated green runs
+          # can skip every acquisition step and must NOT trigger source recovery.
+          if [[ ! "${PARENT_RUN_ID:-}" =~ ^[0-9]+$ ]]; then
+            echo 'source_verified=false' >> "$GITHUB_OUTPUT"
+            echo 'Rates parent job ID absent: no dependent refresh' >> "$GITHUB_STEP_SUMMARY"
+          elif gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${PARENT_RUN_ID}/jobs?per_page=100" \
+               > /tmp/fxv2-rates-parent-jobs.json; then
+            python3 validation/rates/certify_rates_parent_source_execution_v1.py \
+              --jobs-file /tmp/fxv2-rates-parent-jobs.json \
+              --output "$GITHUB_OUTPUT" --summary "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'source_verified=false' >> "$GITHUB_OUTPUT"
+            echo 'Rates parent jobs API unavailable: fail closed, no dependent refresh' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Rome 06:30 DST-safe source collection gate
         id: gate
         shell: bash
@@ -100,6 +130,7 @@ jobs:
           UPSTREAM_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
           UPSTREAM_EVENT: ${{ github.event.workflow_run.event }}
           UPSTREAM_STARTED_AT: ${{ github.event.workflow_run.run_started_at }}
+          PARENT_RATES_SOURCE_VERIFIED: ${{ steps.parent_rates.outputs.source_verified }}
           EOLAS_PRO_ENABLED: ${{ secrets.EOLAS_PRO_ENABLED }}
         run: |
           set -euo pipefail
@@ -110,6 +141,7 @@ jobs:
             --upstream-conclusion "$UPSTREAM_CONCLUSION" \
             --upstream-event "$UPSTREAM_EVENT" \
             --upstream-started-at "$UPSTREAM_STARTED_AT" \
+            --upstream-source-verified "$PARENT_RATES_SOURCE_VERIFIED" \
             --output "$GITHUB_OUTPUT" --summary "$GITHUB_STEP_SUMMARY"
 
       - name: Read RBNZ B2 official HTML only with the owner's prior written permission
