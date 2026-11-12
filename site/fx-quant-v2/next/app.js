@@ -946,13 +946,33 @@ function researchRibbon(route){
  const parts=[['macro','Macro'],['rates','Rates'],['currencies','FX G8'],['pairs','Coppie'],['cot','COT'],['risk','Risk']];
  return '<div class="research-ribbon"><div class="ribbon-meta"><span class="ribbon-signal">◉</span> RESEARCH JOURNEY <span class="ribbon-current">'+FLAGS[state.ccy]+' '+state.ccy+' · '+esc(getPairName(state.pair))+'</span></div><div class="ribbon-path">'+parts.map((p,i)=>'<a href="#'+p[0]+'"'+(route===p[0]?' class="current"':'')+'>'+(i?'<small>›</small>':'')+p[1]+'</a>').join('')+'</div></div>';
 }
+// A G8 selection re-renders the country dossier. Keep the reader's open
+// disclosures (including nested research) instead of collapsing the whole page.
+// These are visual states only: data, ranking and FX reasoning remain untouched.
+const G8_DISCLOSURES=[
+ 'details.strength-evidence-fold',
+ 'details.strength-shadow-fold',
+ 'details.strength-pair-fold',
+ 'details.orient-thesis-details',
+ 'details.strength-method-fold'
+];
+function g8OpenDisclosures(root){
+ return G8_DISCLOSURES.filter(selector=>root.querySelector(selector)?.open);
+}
 function render(){
  const route=ROUTES[state.route]?state.route:'overview';
+ const openG8=route==='currencies'?g8OpenDisclosures($('content')):[];
  // Presentation-only hook for route-scoped colors; no change to calculations or data.
  $('content').dataset.view=route;
  state.charts={};state.chartIndex=0;
  const views={overview,currencies,pairs,macro,rates,cot,risk,news,library:()=>window.FXQuantResearchLibrary?.render()||'<section class="empty">Archivio report non disponibile: controlla il caricamento della pagina.</section>'};
  $('content').innerHTML=(route==='overview'||route==='pairs'||route==='cot'||route==='risk'||route==='news'||route==='library'?'':researchBridge(route))+views[route]();
+ // Restore after replacing the DOM; nested details must not close when the
+ // user changes currency, comparison, return window or research sorting.
+ for(const selector of openG8){
+  const panel=$('content').querySelector(selector);
+  if(panel)panel.open=true;
+ }
  $('crumb-page').textContent=ROUTES[route];
  document.querySelectorAll('#nav [data-route]').forEach(a=>{if(a.dataset.route===route)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
  const ok=Object.keys(state.data).length,missing=Object.keys(SOURCES).length-ok;
@@ -985,6 +1005,27 @@ $('menu-toggle').addEventListener('click',()=>{const open=!$('app').classList.co
 $('mobile-overlay').addEventListener('click',()=>{$('app').classList.remove('menu-open');$('menu-toggle').setAttribute('aria-expanded','false')});
 // Keep the pair's open analysis panel mounted when its own chart controls change.
 // Replacing #content would recreate <details> closed and jump back to the rankings.
+function selectG8Country(trigger){
+ const ccy=trigger.dataset.csCountry;
+ if(!FX.includes(ccy))return;
+ // Keep the clicked row at the same visual position and restore keyboard
+ // focus to the equivalent row in the freshly rendered currency dossier.
+ const sourceClass=trigger.classList.contains('orient-rank-row')?'orient-rank-row':
+  trigger.classList.contains('orient-country')?'orient-country':'strength-row';
+ const selector='.'+sourceClass+'[data-cs-country="'+ccy+'"]';
+ const oldTop=trigger.getBoundingClientRect().top;
+ const oldScroll=window.scrollY;
+ state.ccy=ccy;
+ if(state.csOther===ccy)state.csOther=FX.find(k=>k!==ccy);
+ render();
+ const replacement=$('content').querySelector(selector);
+ if(replacement){
+  replacement.focus({preventScroll:true});
+  window.scrollTo({top:Math.max(0,oldScroll+replacement.getBoundingClientRect().top-oldTop),behavior:'instant'});
+ }else{
+  window.scrollTo({top:oldScroll,behavior:'instant'});
+ }
+}
 function refreshPairPriceChart(focusSelector){
  const body=document.querySelector('#content details.pairs-optional-chart .pairs-details-body');
  if(state.route!=='pairs'||!state.pairDetailOpen||!body||!window.FXQuantDecisionJourney?.build){render();return;}
@@ -1004,7 +1045,7 @@ document.addEventListener('click',e=>{
  const pv9=e.target.closest('[data-v9-price-window]');if(pv9){const windowSize=Number(pv9.dataset.v9PriceWindow);if(![20,60,120].includes(windowSize))return;state.pairPriceWindow=windowSize;refreshPairPriceChart('[data-v9-price-window="'+windowSize+'"]');return;}
  const cs_ret=e.target.closest('[data-cs-returnwindow]');
  if(cs_ret){state.csReturnWindow=Number(cs_ret.dataset.csReturnwindow);render();return;}
- const cs_country=e.target.closest('[data-cs-country]');if(cs_country){state.ccy=cs_country.dataset.csCountry;if(state.csOther===state.ccy)state.csOther=FX.find(k=>k!==state.ccy);render();return;}
+ const cs_country=e.target.closest('[data-cs-country]');if(cs_country){selectG8Country(cs_country);return;}
  const cs_other=e.target.closest('[data-cs-other]');if(cs_other){state.csOther=cs_other.dataset.csOther;render();return;}
  const cs_pw=e.target.closest('[data-cs-pricewindow]');if(cs_pw){state.csPriceWindow=Number(cs_pw.dataset.csPricewindow);render();return;}
  const cs_rm=e.target.closest('[data-cs-ratesmode]');if(cs_rm){state.csRatesMode=cs_rm.dataset.csRatesmode;render();return;}
