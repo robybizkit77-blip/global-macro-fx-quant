@@ -45,7 +45,7 @@ def age_months(s, asof):
         return None
     y, m = map(int, s[:7].split("-"))
     ay, am = map(int, asof[:7].split("-"))
-    return (ay - y) * 12 + am
+    return (ay - y) * 12 + am - m
 
 
 def digest(obj):
