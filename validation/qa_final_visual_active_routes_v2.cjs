@@ -44,10 +44,9 @@ async function checkG8FirstRead(page,label){
   await methods.locator(':scope > summary').click();
   if(!await methods.evaluate(el=>el.open))
     throw Error(label+' G8 source/research detail did not expand');
-  const evidence=page.locator('details.orient-evidence-fold');
-  await evidence.locator(':scope > summary').click();
-  if(!await evidence.evaluate(el=>el.open))
-    throw Error(label+' supporting source cards did not expand');
+  const evidence=methods.locator('.orient-evidence-item');
+  if(await evidence.count()!==4||!await evidence.first().isVisible())
+    throw Error(label+' four source cards not visible inside expanded research detail');
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth+2);
   if(overflow)throw Error(label+' G8 first-read caused horizontal overflow');
   await page.locator('#content').screenshot({
