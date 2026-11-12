@@ -31,7 +31,8 @@
  };
  const num=x=>typeof x==='number'&&Number.isFinite(x);
  const period=x=>typeof x==='string'&&/^\d{4}-(0[1-9]|1[0-2])(?:-\d{2})?$/.test(x)?
-  (x.length===10&&new Date(x+'T00:00:00Z').toISOString().slice(0,10)!==x?null:x.slice(0,7)):null;
+  (x.length===10&&(!Number.isFinite(Date.parse(x+'T00:00:00Z'))||
+    new Date(x+'T00:00:00Z').toISOString().slice(0,10)!==x)?null:x.slice(0,7)):null;
  const index=x=>{const p=period(x);return p?Number(p.slice(0,4))*12+Number(p.slice(5,7))-1:null;};
  const toPeriod=i=>Math.floor(i/12)+'-'+String(i%12+1).padStart(2,'0');
  const sign=x=>x>0?'aumento':x<0?'diminuzione':'stabile';
