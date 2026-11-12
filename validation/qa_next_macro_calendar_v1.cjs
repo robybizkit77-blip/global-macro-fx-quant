@@ -10,14 +10,15 @@ const css=read('site/fx-quant-v2/next/calendar-operational-reading.css');
 new vm.Script(lib,{filename:'calendar-operational-reading.js'});
 new vm.Script(app,{filename:'app.js'});
 const {parse,render,toRome,verifiedValue}=require('../site/fx-quant-v2/next/calendar-operational-reading.js');
-assert.match(html,/calendar-operational-reading\.js\?v=1/);
-assert.match(html,/calendar-operational-reading\.css\?v=1/);
+assert.match(html,/calendar-operational-reading\.js\?v=2/);
+assert.match(html,/calendar-operational-reading\.css\?v=2/);
 assert.match(app,/calendar:'\.\.\/\.\.\/\.\.\/live_data\/sections\/CALENDAR_OPERATIONAL_VIEW\.json'/);
 assert.match(app,/FXQuantMacroCalendar\?\.render/);
 assert.match(app,/operationalCalendar/);
 assert.match(css,/max-width:860px/);
 const data=JSON.parse(read('live_data/sections/CALENDAR_OPERATIONAL_VIEW.json'));
-const now='2026-11-11', result=parse(data,now);
+const now='2026-11-11', testNowMs=Date.parse('2026-11-11T12:00:00Z');
+const result=parse(data,now,testNowMs);
 assert(Array.isArray(result.events));
 assert(result.events.every(x=>x.date>=now),'Do not show a past appointment as upcoming');
 assert(result.events.every(x=>x.ccy&&x.why&&x.verify&&x.pairs));
@@ -46,14 +47,48 @@ const malicious=structuredClone(data);
 malicious.events.unshift({ccy:'GBP',date:'2026-11-12',time_local:'07:00',timezone:'Europe/London',
  event_type:'GROWTH',status:'UPCOMING',title:'<img src=x onerror=alert(1)>',
  consensus_status:'NOT_PRESENT',consensus:99});
-const safe=render(malicious,now);
+const safe=render(malicious,now,testNowMs);
 assert(safe.includes('&lt;img src=x onerror=alert(1)&gt;'));
 assert(!safe.includes('<img src=x'));
 assert(safe.includes('Consenso: non certificato'));
 assert(safe.includes('Effettivo: non ancora pubblicato/verificato'));
 assert(safe.includes('Quali dati potrebbero cambiare le tesi FX?'));
 assert.match(safe,/Altri \d+ eventi del calendario/);
+// Real clock regression: UK GDP scheduled at 08:00 Rome on 12 November.
+// If the official feed still says UPCOMING at 14:00 Rome, it must no longer
+// appear among future releases and it must not be described as verified.
+const before=parse(data,'2026-11-12',Date.parse('2026-11-12T06:30:00Z'));
+assert(before.events.some(e=>e.ccy==='GBP'&&e.title.includes('GDP')));
+assert(!before.needsReview.some(e=>e.ccy==='GBP'));
+const after=parse(data,'2026-11-12',Date.parse('2026-11-12T13:00:00Z'));
+assert(!after.events.some(e=>e.ccy==='GBP'&&e.title.includes('GDP')),
+ 'Elapsed UK release must not remain in next-up list');
+assert(after.needsReview.some(e=>e.ccy==='GBP'&&e.reviewReason==='ORARIO_PROGRAMMATO_TRASCORSO'));
+const postHtml=render(data,'2026-11-12',Date.parse('2026-11-12T13:00:00Z'));
+assert(postHtml.includes('Oggi · risultato ancora da verificare'));
+assert(postHtml.includes('Orario programmato trascorso'));
+assert(postHtml.includes('Effettivo: non verificato dal feed'));
+// UTC 23:33 on 11 November is already 00:33 on 12 November in Rome.
+assert(!postHtml.includes('Feed non ricontrollato oggi'),
+ 'UTC day must not create a false Rome-local staleness warning');
+assert(postHtml.includes('12/11/2026')&&postHtml.includes('00:33'));
+const oldFeed=structuredClone(data);
+oldFeed.last_checked_at_utc='2026-11-11T12:00:00Z';
+assert(render(oldFeed,'2026-11-12',Date.parse('2026-11-12T13:00:00Z'))
+ .includes('Feed non ricontrollato oggi'),
+ 'Truly prior-day Rome feed must be disclosed as stale');
+assert(postHtml.includes('Prossimi eventi'));
+const missingTime=structuredClone(data);
+missingTime.events.unshift({ccy:'USD',date:'2026-11-12',title:'FOMC press briefing',
+ event_type:'CENTRAL_BANK_DECISION',status:'UPCOMING'});
+const noClock=parse(missingTime,'2026-11-12',Date.parse('2026-11-12T13:00:00Z'));
+assert(noClock.needsReview.some(e=>e.title==='FOMC press briefing'&&
+ e.reviewReason==='ORARIO_NON_VERIFICATO'),
+ 'Same-day item without trusted hour must not be asserted future');
+const nextDay=parse(data,'2026-11-13',Date.parse('2026-11-13T12:00:00Z'));
+assert(!nextDay.needsReview.some(e=>e.ccy==='GBP'),'Do not keep stale prior-day event indefinitely');
+
 const empty=parse(null,now);assert.equal(empty.total,0);
 assert(render(null,now).includes('Calendario non disponibile'));
 assert.equal(parse(data,'2027-01-01').total,0);
-console.log('NEXT_MACRO_CALENDAR_OFFICIAL_G8_DATES_ROME_GUARDED_CONSENSUS_FX_PASS');
+console.log('NEXT_MACRO_CALENDAR_G8_LIFECYCLE_TODAY_POSTEVENT_NO_FAKE_ACTUAL_PASS');
