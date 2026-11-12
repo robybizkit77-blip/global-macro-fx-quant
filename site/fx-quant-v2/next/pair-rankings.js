@@ -182,15 +182,28 @@
   const shortlistNote=top.length<5?
    'Oggi solo '+top.length+' coppie rispettano il filtro: non inseriamo casi senza vantaggio netto o con prezzo contrario per raggiungere quota cinque.':
    'Cinque casi di ricerca selezionati cercando di limitare l’esposizione ripetuta alle stesse valute.';
+  // One economic sentence per row. The dated price sits on the NEXT line;
+  // repeating it as a narrative claim makes the first-read less clear.
   const shortReading=x=>{
-   const fav=x.favored===x.base?1:-1;
-   const component=(n,threshold)=>!Number.isFinite(n)||Math.abs(n)<threshold?
-    'non decisiva':n>0?'a favore':'contraria';
-   const macro=component(x.macroGap*fav,0.10);
-   const policy=component(x.policyGap*fav,0.10);
-   const price=x.opposite?'contrario':x.aligned?'coerente sui 20 fixing':'non ancora decisivo';
-   return 'Tesi '+x.favored+': macro '+macro+'; variazioni tassi '+policy+
-    ' (fonti anche proxy); prezzo '+price+'.';
+   if(!x.favored)return 'Macro e tassi non distinguono una direzione abbastanza solida.';
+   const fav=x.favored,direction=fav===x.base?1:-1;
+   const macro=x.macroState||(!Number.isFinite(x.macroGap)?'NON DISTINTA':
+    x.macroGap*direction>=.12?'FAVOREVOLE':
+    x.macroGap*direction<=-.12?'CONTRARIA':'NON DECISIVA');
+   const rates=x.policyState||(!Number.isFinite(x.policyGap)?'ASSENTE':
+    x.policyGap*direction>=.10?'FAVOREVOLE':
+    x.policyGap*direction<=-.10?'CONTRARIA':'NON DECISIVA');
+   if(macro==='CONTRARIA'&&rates==='FAVOREVOLE')
+    return 'I tassi favoriscono '+fav+', ma la macro relativa lo contraddice.';
+   if(macro==='FAVOREVOLE'&&rates==='CONTRARIA')
+    return 'La macro favorisce '+fav+', ma il movimento dei tassi è contrario.';
+   if(macro==='FAVOREVOLE'&&rates==='FAVOREVOLE')
+    return 'Macro e movimento monetario convergono su '+fav+'.';
+   if(macro==='FAVOREVOLE')
+    return 'Macro a favore di '+fav+'; dai tassi manca una conferma chiara.';
+   if(rates==='FAVOREVOLE')
+    return 'Tassi a favore di '+fav+'; la macro non conferma ancora.';
+   return 'Vantaggio stimato per '+fav+', ma i driver fondamentali restano poco distinti.';
   };
   const row=(x,i,featured=false)=>'<button class="fx-rank-pair '+
    (featured?'featured ':'')+(state.pair===x.key&&state.pairDetailOpen?'selected ':'')+
@@ -198,8 +211,8 @@
    '<span class="fx-rank-number">'+(i+1)+'</span>'+
    '<span class="fx-rank-pair-id"><strong>'+esc(x.name)+'</strong><small>'+
    (x.bias==='NESSUNO'?'NESSUN BIAS':'STIMA '+esc(x.bias))+'</small></span>'+
-   '<span class="fx-rank-pair-copy"><strong>'+esc(featured?shortReading(x):x.story)+'</strong>'+
-   '<small>'+esc((featured&&x.risk?'Fonti parziali · ':'')+x.priceText)+'</small></span>'+
+   '<span class="fx-rank-pair-copy"><strong>'+esc(shortReading(x))+'</strong>'+
+   '<small>'+esc((x.risk?'Fonti parziali · ':'')+x.priceText)+'</small></span>'+
    '<span class="fx-rank-pair-badges"><span class="fx-rank-pill tier-'+x.tier+'">'+
    'TESI · '+esc(x.thesisStrength)+'</span><span class="fx-rank-minor">'+
    'TRADE · '+esc(x.tradeAttractiveness)+'</span></span>'+
@@ -222,7 +235,7 @@
   return '<div class="fx-ranking-desk" id="fx-ranking-desk">'+
    '<div class="fx-rank-intro"><div><span class="mini-overline">FX / STIMA OPERATIVA V1</span>'+
    '<h2>Chi mostra più forza relativa? <em>Quali coppie meritano verifica?</em></h2>'+
-   '<p>La graduatoria G8 riassume macro, tassi e prezzo; nelle coppie la tesi direzionale nasce soltanto da macro e variazioni monetarie. Il prezzo viene valutato a parte per il timing. Il vecchio modello del 25 settembre rimane archivio, non decide queste posizioni.</p></div></div>'+
+   '<p>Prima confronta le valute; poi scegli una coppia. La direzione della tesi dipende da macro e variazioni monetarie, mentre il prezzo serve per valutare il momento, non per inventare una spiegazione.</p></div></div>'+
    '<div class="fx-rank-two">'+
    '<section class="fx-rank-box" aria-label="Classifica stimata G8"><div class="fx-rank-head"><div><span>01 / VALUTE G8</span>'+
    '<h3>Stima relativa · otto valute</h3></div><small>NON SEGNALE</small></div>'+
@@ -234,7 +247,7 @@
    '<section class="fx-rank-box" aria-label="Cinque coppie FX stimate da studiare">'+
    '<div class="fx-rank-head"><div><span>02 / SELEZIONE FX</span><h3>Fino a 5 coppie da studiare</h3></div>'+
    '<small>STIMA, NON INGRESSO</small></div>'+
-   '<p class="fx-rank-sub">Solo tesi con almeno un sostegno fondamentale e senza controprova daily immediata. Thesis Strength e Trade Attractiveness non sono la stessa cosa: nessuna delle due è un segnale di ingresso.</p>'+
+   '<p class="fx-rank-sub">Thesis Strength e Trade Attractiveness restano separate: una buona tesi può avere un timing sfavorevole. Nessuna selezione è un ingresso.</p>'+
    (active?'<p class="fx-rank-source">'+esc(shortlistNote)+'</p>':'')+
    (caution?'<p class="fx-rank-top-caution">'+esc(caution)+'</p>':'')+
    (top.length?'<div class="fx-rank-featured">'+top.map((x,i)=>row(x,i,true)).join('')+'</div>':
@@ -242,7 +255,7 @@
    '<section class="fx-rank-box fx-rank-all" aria-label="Classifica completa delle ventotto coppie">'+
    '<div class="fx-rank-head"><div><span>03 / CROSS G8</span>'+
    '<h3>Classifica completa · '+items.length+' coppie</h3></div><small>STIMA DI RICERCA</small></div>'+
-   '<p class="fx-rank-sub">TESI = coerenza macro e variazioni monetarie; TRADE = valutazione preliminare del timing sui 5 e 20 fixing. Senza struttura H4, trigger e rischio/rendimento, l’attrattività di ingresso non è certificata.</p>'+
+   '<p class="fx-rank-sub">28 confronti relativi, ordinati per priorità di ricerca. Leggi prima il contrasto fra macro e tassi; apri la coppia per verificare prezzo, conferme e invalidazioni.</p>'+
    (items.length?'<div class="fx-rank-all-list">'+items.map((x,i)=>row(x,i)).join('')+'</div>':
     '<p class="fx-rank-unavailable">Ranking sospeso per fonti non aggiornate o incoerenti.</p>')+
    '<p class="fx-rank-source">'+esc(active?('Stima '+date(est.asof)+
