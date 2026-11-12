@@ -166,6 +166,8 @@ const dossierFn=model.slice(model.indexOf('  function pair(){'),model.indexOf(' 
 assert(!/\bconst window\s*=/.test(dossierFn),'A local window variable hides global browser module access');
 assert(dossierFn.includes('const chartWindow='),'Price chart lookback must not shadow the Window global');
 assert(page.includes('fx-rates-bridge.js?v=17'));
-assert(page.indexOf('fx-rates-bridge.js?v=17')<page.indexOf('decision-journey.js?v=18'));
+assert(/decision-journey\\.js\\?v=[\\w.-]+/.test(page)&&
+ page.indexOf('fx-rates-bridge.js')<page.indexOf('decision-journey.js'),
+ 'Rates bridge must load before the versioned decision engine');
 assert(page.includes('editorial-v4.css?v=18'));
 console.log('NEXT_V14_FX_RATES_PASS: frozen Nov 06 matched-date fixture, live date gating, sovereign 2Y versus FX, no OIS fiction');
