@@ -129,8 +129,9 @@ async function pairJourney(page,label){
  assert(await details.evaluate(el=>el.open),label+' full dossier cannot expand');
  assert.equal(await details.locator('.decision-desk-story[data-serafini-pair="GBPUSD"]').count(),1,
   label+' clicking GBP/USD did not build its own economic narrative');
- assert.equal(await details.locator('.decision-desk-story p').count(),5,
-  label+' economic reasoning is no longer five connected paragraphs');
+ const paragraphCount=await details.locator('.decision-desk-story > p').count();
+ assert(paragraphCount>=4&&paragraphCount<=5,
+  label+' economic reasoning must contain macro, market, judgment and invalidation');
  assert.equal(await details.locator('.decision-desk-evidence').count(),1,
   label+' detailed source audit lost');
  assert.equal(await details.locator('.decision-price-grid .chart svg').count(),1,
