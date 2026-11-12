@@ -17,7 +17,8 @@ assert.match(app,/FXQuantMacroCalendar\?\.render/);
 assert.match(app,/operationalCalendar/);
 assert.match(css,/max-width:860px/);
 const data=JSON.parse(read('live_data/sections/CALENDAR_OPERATIONAL_VIEW.json'));
-const now='2026-11-11', result=parse(data,now);
+const now='2026-11-11', testNowMs=Date.parse('2026-11-11T12:00:00Z');
+const result=parse(data,now,testNowMs);
 assert(Array.isArray(result.events));
 assert(result.events.every(x=>x.date>=now),'Do not show a past appointment as upcoming');
 assert(result.events.every(x=>x.ccy&&x.why&&x.verify&&x.pairs));
@@ -46,7 +47,7 @@ const malicious=structuredClone(data);
 malicious.events.unshift({ccy:'GBP',date:'2026-11-12',time_local:'07:00',timezone:'Europe/London',
  event_type:'GROWTH',status:'UPCOMING',title:'<img src=x onerror=alert(1)>',
  consensus_status:'NOT_PRESENT',consensus:99});
-const safe=render(malicious,now);
+const safe=render(malicious,now,testNowMs);
 assert(safe.includes('&lt;img src=x onerror=alert(1)&gt;'));
 assert(!safe.includes('<img src=x'));
 assert(safe.includes('Consenso: non certificato'));
