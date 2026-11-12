@@ -161,9 +161,10 @@ function build(api){
     '6M '+(p.side==='SALE'?'in rialzo':p.side==='SCENDE'?'in calo':'quasi stabile'):
     p.tier==='PROXY'?'6M NZD: proxy '+(p.side==='SALE'?'in rialzo':p.side==='SCENDE'?'in calo':'stabile'):
     'Attese 6M da verificare';
-   const marketDetail=current?(current.rate.score>0?'Movimento restrittivo nel proxy':
-     current.rate.score<0?'Movimento distensivo nel proxy':
-     current.rate.quality==='ASSENTE'?'Contributo omesso':'Variazione contenuta / mista'):
+   const marketDetail=current?(current.rate.quality==='ASSENTE'?'Variazione non verificata':
+     current.rate.score>0?(current.rate.quality==='UFFICIALE'?'Riferimento monetario in rialzo':'2Y governativo in rialzo · proxy'):
+     current.rate.score<0?(current.rate.quality==='UFFICIALE'?'Riferimento monetario in calo':'2Y governativo in calo · proxy'):
+     'Movimento limitato o non decisivo'):
     p.tier==='NON_VERIFICATO'?'Un livello futures non è un repricing':
     p.tier==='PROXY'?'Bank bill, non OIS RBNZ':
     comparison.state==='SEGNI_COMPATIBILI'?'Segni compatibili, non causalità':
@@ -310,28 +311,47 @@ function build(api){
    'Non abbiamo una variazione settimanale verificata del riferimento monetario a sei mesi: '+
    'i livelli futures disponibili non dimostrano un cambiamento delle aspettative.';
   const estimatedEconomic=cur?
-   'La stima economica per '+country+' è '+(cur.macroScore>=.25?'favorevole':
-    cur.macroScore<=-.25?'debole':'mista')+'. '+
-   (cur.growthTrend===1?'Il PIL accelera rispetto al trimestre precedente. ':
-    cur.growthTrend===-1?'Il PIL rallenta rispetto al trimestre precedente. ':
-    'Non abbiamo due trimestri utilizzabili per misurare l’accelerazione del PIL. ')+
-   (cur.labourDirection===-1?'La disoccupazione aumenta. ':
-    cur.labourDirection===1?'La disoccupazione diminuisce. ':
-    'La variazione della disoccupazione è contenuta. ')+
-    'È una lettura di serie osservate, non un consenso o una sorpresa di mercato.':
+   'Il quadro interno è '+(cur.macroScore>=.25?'in miglioramento':
+    cur.macroScore<=-.25?'in indebolimento':'misto')+': '+
+   (cur.growthTrend===1?'il PIL accelera':
+    cur.growthTrend===-1?'il PIL rallenta':
+    'l’accelerazione del PIL non è verificabile')+
+   (cur.labourDirection===-1?', mentre la disoccupazione aumenta.':
+    cur.labourDirection===1?', mentre la disoccupazione scende.':
+    ', con disoccupazione quasi invariata.')+
+   ' Sono condizioni economiche osservate, non sorprese rispetto al consenso.':
    desk?.macro?.why||x.reading.text;
   const estimatedPolicy=cur?
    (cur.rate.quality==='UFFICIALE'?
-    'Il riferimento '+cur.rate.kind+' a sei mesi registra una variazione settimanale '+
-    (cur.rate.score>0?'al rialzo':cur.rate.score<0?'al ribasso':'contenuta')+
-    '. Non è un differenziale simultaneo fra paesi e non dimostra la causa del prezzo.':
+    'Nel riferimento '+cur.rate.kind+' a sei mesi ('+date(cur.rate.asof)+
+    ') la variazione settimanale è '+(cur.rate.score>0?'al rialzo':
+     cur.rate.score<0?'al ribasso':'limitata')+
+    '. Indica il segno del movimento, non che la banca centrale abbia causato il prezzo.':
    cur.rate.quality==='PROXY'?
-    'Usiamo soltanto il movimento del 2Y governativo come proxy attenuato: non equivale alle attese OIS della banca centrale.':
-    'Non abbiamo un movimento di tassi recente utilizzabile: la componente monetaria è omessa dalla stima.'):
+    'Il 2Y governativo ('+date(cur.rate.asof)+') si è mosso '+
+    (cur.rate.score>0?'al rialzo':cur.rate.score<0?'al ribasso':'in modo limitato')+
+    ': è soltanto un proxy, non un OIS né una decisione già prezzata.':
+    'Non abbiamo una variazione monetaria recente verificata. La stima non la inventa.'):
    policySummary;
-  const watchSummary=desk?.market?.tier==='NON_VERIFICATO'?
-   'Prima serve una variazione 6M confrontabile. Poi confronteremo i dati con il consenso e la reazione relativa della valuta nello stesso intervallo.':
-   'Confronta le prossime sorprese su inflazione, lavoro e crescita con il consenso, poi verifica tassi 6M e Forex nella stessa finestra temporale.';
+  // Monitoring is conditional on this currency's actual evidence, not the
+  // same generic instruction recycled eight times.
+  const watchSummary=cur?.rate.quality==='ASSENTE'?
+   'Prima recuperare una variazione OIS/futures verificata e datata. Solo dopo confrontarla con crescita, lavoro e risposta FX: oggi il contributo monetario manca.':
+   cur&&cur.macroScore>.2&&cur.policyScore<-.1?
+   'La macro sostiene '+country+' ma il riferimento dei tassi scende: verificare se il prossimo dato sorprende al ribasso e se il Forex segue davvero il repricing.':
+   cur&&cur.macroScore<-.2&&cur.policyScore>.1?
+   'La macro rallenta ma il riferimento dei tassi sale: controllare se prevalgono pressioni sui prezzi o altri fattori, poi verificare la reazione FX.':
+   cur&&cur.macroScore>.2&&cur.priceScore<-.1?
+   'Il quadro interno migliora ma '+country+' perde terreno nei fixing BCE. Monitorare quali aspettative stanno cambiando prima di attribuire il movimento alla macro.':
+   cur&&cur.macroScore<-.2&&cur.priceScore>.1?
+   'Il quadro interno si indebolisce ma '+country+' recupera nei fixing BCE. Verificare se il movimento nasce da attese monetarie o dalla debolezza delle altre valute.':
+   cur?.rate.quality==='PROXY'?
+   'Cercare un confronto OIS/futures ufficiale e le prossime sorprese macro: la variazione del 2Y governativo non basta a confermare una tesi FX.':
+   cur?
+   'Verificare se il prossimo dato sorprende le attese e muove insieme il riferimento monetario e il Forex; finché non accade, il quadro resta una tesi.':
+   desk?.market?.tier==='NON_VERIFICATO'?
+   'Prima serve una variazione 6M confrontabile, poi un dato macro e una risposta FX sullo stesso intervallo.':
+   'Confrontare la prossima pubblicazione con il consenso e poi con i tassi e il Forex, senza inferire causalità.';
   return '<section class="strength-focus" id="orient-strength-focus">'+
    '<div class="strength-focus-head"><div>'+
    '<span class="chapter-kicker">02 / LA LETTURA DEL DESK · '+FLAGS[country]+' '+country+'</span>'+
