@@ -281,3 +281,17 @@
  .strength-pair-fold>.orient-lead,.strength-pair-fold>.orient-chapter,
  .strength-method-fold>.orient-ranking,.strength-method-fold>.orient-chapter,.strength-method-fold>.orient-checkpoint{margin:10px}
 }
+
+/* Research-only G8 shadow projection, explicitly outside FX score and signal. */
+.strength-shadow-fold{border:1px solid rgba(146,188,210,.3);border-radius:9px;margin:18px 0 0;background:#0b2736}
+.strength-shadow-fold>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 17px}
+.strength-shadow-fold>summary::-webkit-details-marker{display:none}
+.strength-shadow-fold>summary strong{color:#d1e8ed;font-size:12px}
+.strength-shadow-fold>summary span{color:#e2c28d;font-size:10.5px}
+.strength-shadow-fold>summary:focus-visible{outline:2px solid #86ccdf;outline-offset:2px}
+.strength-shadow-body{padding:15px 18px 17px;border-top:1px solid rgba(143,183,199,.22)}
+.strength-shadow-body>p{font-size:12px;color:#c7dce5;line-height:1.7;max-width:870px;margin:8px 0}
+.strength-shadow-kicker{font-size:10px!important;font-weight:850;letter-spacing:.055em;color:#dfc18d!important}
+.strength-shadow-projection{color:#e1f2f3!important}
+.strength-shadow-caveat{padding-top:11px;border-top:1px solid rgba(155,189,205,.19);color:#a9c4d1!important}
+@media(max-width:640px){.strength-shadow-fold>summary{display:block}.strength-shadow-fold>summary span{display:block;margin-top:6px}.strength-shadow-body{padding:14px}}

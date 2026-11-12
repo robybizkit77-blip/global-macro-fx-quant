@@ -17,6 +17,7 @@ function build(api){
  const FXDATA=get('currencyPrices'),GOV=get('rates')||{},CB=get('cb')||{};
  const OIS=get('ois')?.currencies||{},M=get('macro')?.currencies||{},COT=get('cotHistory')||{},PAIRS=get('pairs')?.pairs||{};
  const G8CONTEXT=root.FXQuantCurrencyFallback?.evaluate?.({macroSeries:get('macroSeries'),estimated:get('cbEstimated'),now:dayNow()})||null;
+ const G8SHADOW=root.FXQuantGrowthShadow?.analyze?.({macroSeries:get('macroSeries'),now:dayNow()})||null;
  const w=state.csReturnWindow===5?5:state.csReturnWindow===60?60:20;
  const number=x=>finite(x)?fmt(x,2):'—';
  const period=x=>String(x||'n.d.');
@@ -92,6 +93,34 @@ function build(api){
    '<div class="strength-rows">'+rows+'</div>'+
    '<p class="strength-note">Crescita: ultime osservazioni storiche, non PIL stimato né sorpresa macro. 2Y: rendimento governativo settimanale, non OIS. 6M: variazione ufficiale quando verificata; altrimenti contratto futures indicativo con data, mai un repricing certificato. Il ranking resta esclusivamente di prezzo e nessun proxy entra nel punteggio.</p></section>';
  }
+ function shadowResearch(){
+  const t=G8SHADOW?.currencies?.[country];
+  if(!t)return '';
+  const label=t.status==='RESEARCH_CANDIDATE'?'Modello promettente, non ancora operativo':
+   t.status==='NO_BENCHMARK_EDGE'?'Nessun vantaggio storico sufficiente':
+   t.status==='INSUFFICIENT_SAMPLE'?'Campione di test insufficiente':
+   t.status==='STALE_INPUT'?'Dati troppo datati':'Proiezione non disponibile';
+  const metrics=t.backtest;
+  const skill=metrics&&Number.isFinite(metrics.improvementPct)?
+    'Test su '+metrics.testObservations+' previsioni storiche successive: errore medio del modello '+
+    fmt(metrics.meanAbsoluteError,3)+' '+(t.changeUnit||'')+
+    ', benchmark senza variazione '+fmt(metrics.baselineMAE,3)+' '+(t.changeUnit||'')+
+    ', miglioramento '+sign(metrics.improvementPct,1,'%')+
+    ', direzioni corrette '+fmt(metrics.directionalAgreementPct,1)+'%.':'';
+  const forecast=t.candidate&&t.forecast?
+    '<p class="strength-shadow-projection">Proiezione della <strong>prossima variazione della serie</strong> ('+
+     esc(t.nextObservationPeriod)+'): <strong>'+esc(sign(t.forecast.nextChange,2,t.forecast.unit))+
+    '</strong>. Ultima osservazione disponibile: '+esc(t.latestPeriod)+'. Non è una stima del PIL complessivo né una notizia di oggi.</p>':
+    '<p class="strength-shadow-projection">La previsione resta <strong>non pubblicata</strong>: '+
+     esc(label.toLowerCase())+'.</p>';
+  return '<details class="strength-shadow-fold"><summary><strong>Ricerca Quant · stima sperimentale</strong>'+
+   '<span>'+esc(label)+' · nessun effetto sul ranking FX</span></summary>'+
+   '<div class="strength-shadow-body"><p class="strength-shadow-kicker">MODELLO SHADOW · NON POINT-IN-TIME · NON OPERATIVO</p>'+
+   '<p>Serie: <strong>'+esc(t.label||country)+'</strong>. Stimiamo un solo passo avanti usando la media fissa delle ultime sei variazioni; il confronto è con una previsione di variazione zero.</p>'+
+   forecast+(skill?'<p>'+esc(skill)+'</p>':'')+
+   '<p class="strength-shadow-caveat">I dati storici possono essere revisionati e mancano le date di prima pubblicazione. Il test walk-forward è retrospettivo e non dimostra un vantaggio in tempo reale. Non genera segnali, probabilità di banca centrale o punteggi G8.</p>'+
+   '</div></details>';
+ }
  function strengthFocus(){
   const x=strengthView().rows.find(r=>r.ccy===country);
   if(!x)return '<p>La lettura G8 non è disponibile finché mancano dati verificabili.</p>';
@@ -119,7 +148,7 @@ function build(api){
    '<small>Solo fonti verificate · contesto storico/proxy separato</small></div></div>'+
    '<div class="strength-cards">'+cards.map(([label,main,note],i)=>'<article class="strength-card"><span>0'+(i+1)+' / '+esc(label)+'</span><p>'+esc(main)+'</p><small>'+esc(note)+'</small></article>').join('')+'</div>'+
    '<div class="strength-additional">'+cbText+cotText+'</div>'+
-   '<nav class="strength-links"><a href="#macro">Macro completa</a><a href="#rates">Tassi &amp; OIS</a><a href="#cot">COT</a><a href="#pairs">Coppie FX</a></nav></section>';
+   '<nav class="strength-links"><a href="#macro">Macro completa</a><a href="#rates">Tassi &amp; OIS</a><a href="#cot">COT</a><a href="#pairs">Coppie FX</a></nav>'+shadowResearch()+'</section>';
  }
  function ranking(){
   // Same G8/20-common-fixing methodology used by the 28-pair page.
