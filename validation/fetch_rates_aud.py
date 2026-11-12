@@ -5,7 +5,7 @@ import io
 import urllib.request
 import urllib.error
 import math
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 
 URL='https://www.rba.gov.au/statistics/tables/csv/f2-data.csv'
 XLSX_URL='https://www.rba.gov.au/statistics/tables/xls/f02d.xlsx'
@@ -108,7 +108,7 @@ def fetch_xlsx(url:str=XLSX_URL)->bytes:
 def parse_xlsx(raw:bytes, *, asof:date|None=None)->dict:
     """Fail closed if F2 series IDs, tenor, units, publisher or dates differ."""
     from openpyxl import load_workbook
-    asof=asof or datetime.utcnow().date()
+    asof=asof or datetime.now(timezone.utc).date()
     workbook=load_workbook(io.BytesIO(raw),read_only=True,data_only=True)
     candidates=[]
     try:
