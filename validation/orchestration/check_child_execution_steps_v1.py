@@ -36,8 +36,14 @@ REQUIRED_STEPS: dict[str, tuple[str, ...]] = {
         "Verify receipt and official zero-mutation",
     ),
     "publish-dashboard-pages-v1.yml": (
+        # A proven no-op skips the write-only branch comparison: requiring
+        # that conditional step incorrectly marks a fully verified
+        # publish-as-already-current workflow as failed. This guard is
+        # unconditional for dispatches and validates main/gh-pages parity.
+        "Refresh main and gh-pages to detect unchanged published content",
         "Block incomplete morning sources before any Pages write",
-        "Verify published files against validated main",
+        # Mandatory EVEN after a no-op: exact public bytes, not just SHA
+        # equality between branches. A mismatch keeps the child non-green.
         "Verify public Pages HTTP delivery after bounded CDN propagation",
     ),
     "liquidity-jpy-m3-persistent-daily-v1.yml": (
