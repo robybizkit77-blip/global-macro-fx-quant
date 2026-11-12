@@ -103,6 +103,8 @@ jobs:
           node validation/publishing/test_next_pair_shortlist_diversification_v1.cjs
           node --check site/fx-quant-v2/next/pair-desk-narrative.js
           node validation/publishing/test_next_thesis_vs_trade_v1.cjs
+          node --check site/fx-quant-v2/next/app.js
+          node validation/publishing/test_next_pair_decision_gates_v1.cjs
           node validation/publishing/test_next_macro_estimated_engine_v1.cjs
           node validation/publishing/test_next_pair_desk_narrative_v18.cjs
           node validation/publishing/test_next_macro_economic_reading_v19.cjs
@@ -210,6 +212,8 @@ jobs:
           node validation/publishing/test_next_pair_shortlist_diversification_v1.cjs
           node --check site/fx-quant-v2/next/pair-desk-narrative.js
           node validation/publishing/test_next_thesis_vs_trade_v1.cjs
+          node --check site/fx-quant-v2/next/app.js
+          node validation/publishing/test_next_pair_decision_gates_v1.cjs
           node validation/publishing/test_next_macro_estimated_engine_v1.cjs
           node validation/publishing/test_next_pair_desk_narrative_v18.cjs
           node validation/publishing/test_next_macro_economic_reading_v19.cjs

@@ -85,7 +85,7 @@ assert(thesis.decisionPoint.includes('Trade Attractiveness:'));
 assert(thesis.price.includes('5 fixing')&&thesis.price.includes('20 fixing'));
 assert(thesis.decisionPoint.includes('non un ingresso'));
 const index=fs.readFileSync(path.join(ROOT,web,'index.html'),'utf8');
-assert(index.includes('pair-rankings.js?v=4'));
+assert(index.includes('pair-rankings.js?v=5'));
 assert(index.includes('macro-strength-estimated-v1.js?v=2'));
 assert(index.includes('pair-desk-narrative.js?v=22'));
 console.log('NEXT_THESIS_VS_TRADE_V1_PASS: 28 relative macro/rates theses distinct from 5/20d price, shortlist and no fake entry');
