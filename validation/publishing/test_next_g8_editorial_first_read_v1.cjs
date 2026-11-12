@@ -9,7 +9,7 @@ const json=p=>JSON.parse(read(p));
 const win={},ctx={window:win};
 for(const file of ['pair-rankings.js','currency-data-fallback.js','g8-growth-shadow.js',
  'g8-macro-gap-scenarios.js','g8-inflation-labour-shadow.js','g8-rates-shadow.js',
- 'currency-strength-reading.js','g8-macro-pricing-bridge.js','currency-studio.js'])
+ 'currency-strength-reading.js','g8-macro-pricing-bridge.js','macro-strength-estimated-v1.js','currency-studio.js'])
  vm.runInNewContext(read(base+file),ctx,{filename:file,timeout:5000});
 const data={macroSeries:json('live_data/sections/MACRO_SERIES.json'),
  currencyPrices:json('live_data/sections/ECB_G8_PRICE_HISTORY.json'),
@@ -23,7 +23,8 @@ const data={macroSeries:json('live_data/sections/MACRO_SERIES.json'),
  chfResearch:json('site/fx-quant-v2/chf-snb-paired-history.json'),
  nzdPostroll:json('site/fx-quant-v2/nzd-b2-postroll-web-research.json'),
  chfSpot:json('live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json'),
- nzdDirectionalProxy:json('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json')
+ nzdDirectionalProxy:json('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json'),
+  macroObserved:json('site/control-room-preview/macro-v3-current-evidence.json')
 };
 const FX=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'],now='2026-11-12';
 const fmt=(x,n=2)=>typeof x==='number'&&Number.isFinite(x)?
@@ -33,7 +34,11 @@ const sign=(x,n=2,u='')=>typeof x==='number'&&Number.isFinite(x)?
 const esc=x=>String(x??'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
  .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const flags=Object.fromEntries(FX.map(x=>[x,x]));
-const args={get:key=>data[key],FX,FLAGS:flags,NAMES:flags,
+const est=win.FXQuantMacroEstimated.evaluate({
+ observed:data.macroObserved,prices:data.currencyPrices,ois:data.ois,rates:data.rates,
+ model:data.pairs,now,rankingFn:win.FXQuantPairRankings.currencyRanking});
+assert.equal(est.status,'STIMA_OPERATIVA_NON_VALIDATA',est.reason);
+const args={get:key=>key==='estimatedMacro'?est:data[key],FX,FLAGS:flags,NAMES:flags,
  pageHero:()=>'<header>Valute G8</header>',esc,fmt,sign,date:x=>x,
  finite:x=>typeof x==='number'&&Number.isFinite(x),
  validDay:x=>/^\d{4}-\d{2}-\d{2}$/.test(x||''),dayNow:()=>now};
@@ -57,8 +62,8 @@ for(const country of FX){
  assert.equal((board.match(/class="strength-price-brief /g)||[]).length,8,'Actual FX price strength per currency');
  assert(!board.includes('class="strength-axis'),'Dense 2Y/6M/CPI numeric grid cannot be in first glance');
  assert(!board.includes('class="strength-card"'),'Source cards must be inside disclosure');
- assert(board.includes('prezzo relativo')&&board.includes('non un punteggio inventato'));
- assert(board.includes('20 fixing BCE')&&board.includes('proxy'), 'Do not hide price/sources limitations');
+ assert(board.includes('economia, movimento dei tassi e prezzo'),'Estimated score dimensions explicit');
+ assert(board.includes('fixing BCE')&&board.includes('proxy'), 'Do not hide price/sources limitations');
  assert(story.includes('class="strength-first-reading"'),'Economics-first story required');
  assert.equal((story.match(/<p><strong>/g)||[]).length,3,
    'Exactly three connected narrative paragraphs, not a metric gallery');
@@ -76,19 +81,20 @@ for(const country of FX){
  assert(evidence.includes('class="strength-shadow-fold"')&&evidence.includes('NON POINT-IN-TIME'));
  assert(evidence.includes('COT settimanale')||evidence.includes('COT'));
  assert(evidence.includes('Da monitorare:')&&evidence.includes('consenso'));
- assert(evidence.includes('Prove verificate:'));
+ assert(evidence.includes('Copertura della stima:'));
+  assert(evidence.includes('non è testato out-of-sample'));
  assert(html.includes('class="strength-pair-fold"')&&html.includes('class="strength-method-fold"'),
   'Prior bilateral research and complete ranking accessible');
  assert.equal((html.match(/class="orient-rank-row /g)||[]).length,8,
   'Source-auditable ranking still available in method disclosure');
  assert(!/\bNaN\b|\bundefined\b|\[object Object\]/.test(html));
  const actualOrder=[...board.matchAll(/class="strength-name"><b>#[1-8]<\/b><strong>[^<]* ([A-Z]{3})<\/strong>/g)].map(m=>m[1]);
- assert.deepEqual(actualOrder,positions,'Editorial view cannot re-rank by synthetic macro data');
+ assert.deepEqual(actualOrder,est.currencies.map(x=>x.ccy),'Estimated current ordering must lead first read');
  const selected=[...board.matchAll(/class="strength-row selected [^"]+"[^>]*data-cs-country="([A-Z]{3})"/g)].map(m=>m[1]);
  assert.deepEqual(selected,[country],'Selected currency must remain navigable');
 }
 const idx=read(base+'index.html');
-assert(idx.includes('currency-studio.js?v=12')&&idx.includes('currency-studio.css?v=7'));
+assert(idx.includes('currency-studio.js?v=13')&&idx.includes('currency-studio.css?v=7'));
 assert(idx.indexOf('g8-macro-pricing-bridge.js')<idx.indexOf('currency-studio.js'));
 const css=read(base+'currency-studio.css');
 assert(css.includes('.strength-first-reading')&&css.includes('.strength-evidence-fold>summary'));
@@ -97,4 +103,4 @@ assert(css.includes('@media(max-width:950px)'));
 assert(css.includes('.strength-pair-fold>.orient-lead.orient-voice'));
 assert(css.includes('grid-template-columns:minmax(0,1fr);gap:8px'),
   'Ranked G8 rows must stay a single vertical list instead of broken 2x4 cards');
-console.log('G8_EDITORIAL_FIRST_READ_PASS: 8×8 narrative choices, three coherent paragraphs, complete collapsed evidence, unchanged price ranking and mobile CSS');
+console.log('G8_EDITORIAL_FIRST_READ_PASS: 8×8 narrative choices, three coherent paragraphs, complete collapsed evidence, estimated current rank, archived price methodology, mobile CSS');
