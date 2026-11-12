@@ -123,7 +123,7 @@
      return !old||checks.some(([key])=>field(flatten(current.pairs[k]),key)!==field(old,key));
     });
     if(drift.length)return {ready:false,drift:drift.length,
-     reason:'Il modello è stato ricalcolato sulla stessa seduta: '+drift.length+
+     reason:'Confronto giornaliero non verificabile: il modello è stato ricalcolato sulla stessa seduta. '+drift.length+
       ' coppie hanno etichette diverse dallo storico archiviato. Non sono cambiamenti tra giorni e non vanno spacciati per nuovi segnali.'};
   }
   return {ready:false,drift:0,
