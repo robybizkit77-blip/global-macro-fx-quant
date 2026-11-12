@@ -91,6 +91,11 @@ def resolve(event: str, cron: str, now: dt.datetime, *,
     if event not in ("schedule", "workflow_dispatch", "push", "pull_request"):
         out["reason"] = "UNKNOWN_EVENT_FAIL_CLOSED"
         return out
+    # PR contract CI must not fetch/promote official market data or try to
+    # write the operational main branch. Production push/dispatch still run.
+    if event == "pull_request":
+        out["reason"] = "PULL_REQUEST_CONTRACT_ONLY"
+        return out
     if event != "schedule":
         out.update(should_run=True, reason="EXPLICIT_EVENT")
         return out
