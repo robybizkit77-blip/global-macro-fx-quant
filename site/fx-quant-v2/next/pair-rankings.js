@@ -148,6 +148,66 @@
 
  // Pair-specific evidence gates for the FIRST reading, NOT predictive triggers.
  // Daily thresholds come only from the previous 20 ECB fixings, never from H4/OHLC.
+ // Pair first read should distinguish a stronger CURRENCY from a weaker
+ // COUNTERPART. These are relative heuristic MACRO SCORES, not observed
+ // economic strength, a causal FX attribution or calibrated forecasts.
+ // No ratings, ranking, sources or trade decisions are changed here.
+ function pairDriverReading(pair,estimate){
+  if(estimate?.status!=='STIMA_OPERATIVA_NON_VALIDATA'||
+     pair?.source!=='STIMA_ESPLICITA_V1'||
+     typeof pair?.key!=='string'||!/^[A-Z]{6}$/.test(pair.key)||
+     pair.base!==pair.key.slice(0,3)||pair.quote!==pair.key.slice(3)||
+     !estimate?.by)return null;
+  const a=estimate.by[pair.base],b=estimate.by[pair.quote];
+  if(!a||!b||!Number.isFinite(a.macroScore)||!Number.isFinite(b.macroScore)||
+     !a.rate||!b.rate||!['UFFICIALE','PROXY','ASSENTE'].includes(a.rate.quality)||
+     !['UFFICIALE','PROXY','ASSENTE'].includes(b.rate.quality))return null;
+  const fav=pair.favored,other=fav===pair.base?pair.quote:pair.base;
+  if(fav!==pair.base&&fav!==pair.quote){
+   const gap=a.macroScore-b.macroScore;
+   const macro=Math.abs(gap)>=.12?'La macro stimata favorisce '+(gap>0?pair.base:pair.quote)+
+    ' rispetto a '+(gap>0?pair.quote:pair.base)+', ma non basta a definire una tesi complessiva.':
+    'La macro stimata non distingue sufficientemente le due valute.';
+   return macro+' Il modello non assegna una direzione fondamentale: il prezzo da solo non la crea.';
+  }
+  const mf=estimate.by[fav].macroScore,mo=estimate.by[other].macroScore;
+  let macro='';
+  if(pair.macroState==='CONTRARIA')
+   macro='La macro stimata favorisce '+other+', non '+fav+': la preferenza complessiva è contrastata.';
+  else if(pair.macroState!=='FAVOREVOLE')
+   macro='La macro stimata non separa chiaramente '+fav+' da '+other+'.';
+  else if(mf<-.12&&mo<-.12)
+   macro='Entrambi i punteggi macro stimati sono deboli: '+fav+' è meno debole di '+other+', non necessariamente forte.';
+  else if(mf>.12&&mo>.12)
+   macro='Entrambi i punteggi macro stimati sono favorevoli: '+fav+' prevale solo relativamente su '+other+'.';
+  else if(mf>.12&&mo<-.12)
+   macro='La stima macro contrappone '+fav+' con punteggio favorevole e '+other+' con punteggio debole.';
+  else if(mf<=.12&&mo<-.12)
+   macro='Il vantaggio macro nasce soprattutto dal punteggio debole di '+other+', non da una forza marcata di '+fav+'.';
+  else
+   macro='La componente macro della stima favorisce '+fav+' rispetto a '+other+', non dimostra forza assoluta.';
+  const qa=estimate.by[pair.base].rate.quality,qb=estimate.by[pair.quote].rate.quality;
+  const partial=qa==='PROXY'||qb==='PROXY';
+  let monetary='';
+  if(qa==='ASSENTE'||qb==='ASSENTE'||pair.policyState==='ASSENTE')
+   monetary='Sui tassi manca una variazione settimanale utilizzabile per entrambe le valute.';
+  else if(pair.policyState==='CONTRARIA')
+   monetary='I riferimenti monetari indicano '+other+' in senso contrario'+
+    (partial?' (almeno un 2Y è solo un proxy).':'.');
+  else if(pair.policyState==='FAVOREVOLE')
+   monetary='I riferimenti monetari sostengono '+fav+' nella stima'+
+    (partial?', ma il 2Y governativo non è una conferma OIS.':', senza provare causalità sul cambio.');
+  else
+   monetary='I riferimenti monetari non distinguono abbastanza le valute'+
+    (partial?' e includono un 2Y governativo usato come proxy.':'.');
+  let price='';
+  if(pair.aligned===true&&pair.fiveState==='CONTRARIO')
+   price='Prezzo: 20 fixing BCE coerenti, ultimi 5 contrari; timing da verificare.';
+  else if(pair.opposite===true&&pair.fiveState==='COERENTE')
+   price='Prezzo: 20 fixing BCE contrari, ultimi 5 coerenti; possibile recupero, non inversione dimostrata.';
+  return [macro,monetary,price].filter(Boolean).join(' ');
+ }
+
  function pairDecisionWatch(pair,profile){
   const fallback={improve:'Servono nuovi dati macro e monetari relativi, poi una verifica del prezzo sulle stesse date.',
    weaken:'Dati relativi in direzione contraria e prezzo coerentemente opposto indebolirebbero il quadro.',
@@ -306,7 +366,7 @@
    '<p>'+esc(est?.warning||'Le osservazioni non consentono oggi una valutazione affidabile.')+'</p>'+
    '</details></section></div>';
  }
- const api={currencyRanking,pairRanking,analyze,selectResearchPairs,pairDecisionWatch,pairCatalystWatch,render};
+ const api={currencyRanking,pairRanking,analyze,selectResearchPairs,pairDecisionWatch,pairDriverReading,pairCatalystWatch,render};
  root.FXQuantPairRankings=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
