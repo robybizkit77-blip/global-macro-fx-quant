@@ -208,7 +208,7 @@ assert.equal(plotOpts.referenceLines.length,0,'Stale history must not create fre
 
 const index=fs.readFileSync('site/fx-quant-v2/next/index.html','utf8');
 const app=fs.readFileSync('site/fx-quant-v2/next/app.js','utf8');
-assert(/decision-journey\\.js\\?v=[\\w.-]+/.test(index)&&
+assert(/decision-journey\.js\?v=[\w.-]+/.test(index)&&
  index.indexOf('decision-journey.js')<index.indexOf('app.js'),
  'Decision engine must be versioned and load before the main Next app');
 assert(index.includes('editorial-v4.css?v=18'));
