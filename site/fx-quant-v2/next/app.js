@@ -840,7 +840,8 @@ function pairs(){
    'Nessuna delle classificazioni monitorate è cambiata rispetto al '+date(monitor.previousAsOf)+'. Non significa che il mercato sia immobile.'
   :'Confronto fra sedute non disponibile: attendiamo uno storico allineato al modello.';
  const favMeaning=fav?'La tesi fondamentale favorisce '+fav+' rispetto a '+(fav===state.pair.slice(0,3)?state.pair.slice(3):state.pair.slice(0,3))+'.':'Nessuna direzione fondamentale sufficientemente distinta.';
- const headline=activePair?.thesisReason||estimate?.reason||'Le fonti non consentono una tesi corrente: non riproponiamo quella storica.';
+ const driverReading=window.FXQuantPairRankings?.pairDriverReading?.(activePair,estimate)||null;
+ const headline=driverReading||activePair?.thesisReason||estimate?.reason||'Le fonti non consentono una tesi corrente: non riproponiamo quella storica.';
  const tradeText=activePair?.tradeReason||'Senza una tesi corrente non valutiamo il timing di ingresso.';
  const pairProfile=activePair&&window.FXQuantDecisionJourney?.profile?
   window.FXQuantDecisionJourney.profile(state.pair,get('pairs'),get('currencyPrices'),dayNow(),estimate):null;

@@ -57,6 +57,6 @@ const app=read(next+'app.js'),index=read(next+'index.html');
 assert(app.includes("pairCatalystWatch?.("));
 assert(app.includes("activePair,get('calendar'),dayNow()"));
 assert(app.includes('pairs-event-watch'));
-assert(index.includes('pair-rankings.js?v=7'));
-assert(index.includes('app.js?v=18.43-paircalendar1'));
+assert(index.includes('pair-rankings.js?v=8'));
+assert(index.includes('app.js?v=18.43-drivers1'));
 console.log('NEXT_PAIR_CALENDAR_WATCH_V1_PASS: GBP Q3 today unverified, CHF provisional, AUD labor, JPY inflation, Fed path; source-date guards');
