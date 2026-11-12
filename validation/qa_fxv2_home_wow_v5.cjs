@@ -72,7 +72,9 @@ fs.mkdirSync(output,{recursive:true});
         (result.verdict.includes('dollaro')&&result.verdict.includes('Treasury 2Y'))||
         (/tesi non validata/i.test(result.verdict)&&
          /bias direzionale/i.test(result.verdict)&&
-         /tassi|rates|pricing/i.test(result.verdict))
+         /tassi|rates|pricing/i.test(result.verdict))||
+        (result.verdict.includes('non ancora una spiegazione economica certa')&&
+         result.verdict.includes('repricing di crescita o inflazione'))
       ))||
       !result.macro||!/data di rilascio/i.test(result.macro)||
       !/non|manca|verificabil|archiviat/i.test(result.macro)||
