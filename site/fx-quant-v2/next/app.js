@@ -826,12 +826,16 @@ function pairs(){
   '<p class="pairs-primary-story">'+esc(headline)+'</p>'+
   '<div class="pairs-three-answers">'+
    '<div><span>PREZZO</span><strong>'+esc(priceText)+'</strong></div>'+
-   '<div><span>CAMBIAMENTO</span><strong>'+esc(monitor.ready?monitor.changed.length+' classificazioni':'Da verificare')+'</strong></div>'+
+   '<div><span>STATO DELLA TESI</span><strong>'+esc(fr.priceNote||'La conferma del prezzo resta da verificare.')+'</strong></div>'+
    '<div><span>PRIMA DI VALUTARE</span><strong>'+esc(missing)+'</strong></div></div>'+
   '<p class="pairs-next-action"><strong>Cosa controllare adesso.</strong> '+esc(next)+'</p>'+
   '<p class="pairs-vintage">'+esc(context)+'. La baseline macro non viene aggiornata automaticamente quando cambia il prezzo.</p></section>';
- const historyDetail='<details class="pairs-optional-panel"><summary><span><strong>Come è cambiata la tesi?</strong><small>'+esc(report)+'</small></span><span class="pairs-open-icon">+</span></summary>'+
-  (window.FXQuantThesisMonitor?.render?.(get('pairs'),get('thesisHistory'),state.pair)||'<p>Monitor storico non disponibile.</p>')+'</details>';
+ // Do not show a large empty historical panel when same-day model labels
+ // were revised after the archived snapshot. The single compact pulse above
+ // already explains the missing comparison, without inventing a new session.
+ const historyDetail=monitor.ready?
+  '<details class="pairs-optional-panel"><summary><span><strong>Come è cambiata la tesi?</strong><small>'+esc(report)+'</small></span><span class="pairs-open-icon">+</span></summary>'+
+  (window.FXQuantThesisMonitor?.render?.(get('pairs'),get('thesisHistory'),state.pair)||'')+'</details>':'';
  const originalDecision=typeof window!=='undefined'&&window.FXQuantDecisionJourney?.build?
   window.FXQuantDecisionJourney.build({get,state,plot,fmt,sign,date,dayNow,esc}).pair():
   '<div class="empty">Grafico e lettura del prezzo non disponibili.</div>';
