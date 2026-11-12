@@ -13,7 +13,7 @@ new vm.Script(src,{filename:'research-library.js'});
 const L=require('../site/fx-quant-v2/next/research-library.js');
 assert.match(index,/href="#library" data-route="library"/);
 assert.match(index,/research-library\.css\?v=1/);
-assert.match(index,/research-library\.js\?v=7/);
+assert.match(index,/research-library\.js\?v=8/);
 assert.match(index,/9 sezioni/);
 assert.match(app,/library:'Research Library'/);
 assert.match(app,/library:\(\)=>window\.FXQuantResearchLibrary/);
@@ -68,6 +68,41 @@ assert.equal(L.latestPerType([...L.REPORTS,{...L.REPORTS[0],file:'Briefing_Forex
  'Briefing_Forex_Commodities_2026-11-12_V4_DEFINITIVO.html','Higher approved revision wins on identical dates');
 assert.equal(L.latestPerType([...L.REPORTS,{...L.REPORTS[0],file:'Briefing_Forex_Commodities_2026-11-12_V4.html'}])[0].file,
  'Briefing_Forex_Commodities_2026-11-12_V4.html','V4 must supersede corrected V3 on identical dates');
+// Publication freshness belongs to the REPORT cadence, never market prices.
+// Weekly publication dates must not be confused with daily source freshness,
+// and Tuesday COT observation must not be labelled as a Friday release.
+const today='2026-11-12';
+const daily=L.REPORTS.find(r=>r.type==='daily');
+const cot=L.REPORTS.find(r=>r.type==='cot');
+const ois=L.REPORTS.find(r=>r.type==='ois');
+const cross=L.REPORTS.find(r=>r.type==='cross');
+const pairs=L.REPORTS.find(r=>r.type==='pairs');
+assert.equal(L.editionStatus(daily,today).state,'today');
+assert.match(L.editionStatus(daily,today).text,/seduta odierna/);
+assert.equal(L.editionStatus(daily,'2026-11-13').state,'previous',
+ 'A previous daily report cannot masquerade as the next session report');
+assert.equal(L.editionStatus(daily,'2026-11-14').state,'previous',
+ 'Weekend cannot hide a missing Friday daily edition');
+assert.equal(L.editionStatus({...daily,date:'2026-11-13'},'2026-11-14').state,'latest-business');
+assert.equal(L.editionStatus(ois,today).state,'weekly',
+ 'Six-day-old OIS weekly is last published, not automatically stale');
+assert.equal(L.editionStatus(cross,today).state,'previous');
+assert.equal(L.editionStatus(pairs,today).state,'previous');
+assert.equal(L.editionStatus(cot,today).state,'weekly',
+ 'Tuesday 03 Nov observation is still last published on Thu 12 Nov');
+assert.match(L.editionStatus(cot,today).text,/posizioni al 03\/11\/2026 \(martedì\)/);
+assert.equal(L.editionStatus(cot,'2026-11-16').state,'previous');
+assert.equal(L.editionStatus({...daily,date:'2026-11-20'},today).state,'unverified',
+ 'A future edition cannot be labelled as published today');
+const fixedRows=L.rows(today);
+assert.match(fixedRows,/Briefing pubblicato per la seduta odierna/);
+assert.match(fixedRows,/Edizione storica · non aggiornata questa settimana/);
+assert.match(fixedRows,/Ultimo COT pubblicato · posizioni al 03\/11\/2026 \(martedì\)/);
+assert.doesNotMatch(L.render(),/REPORT CORRENTI VISIBILI/,
+ 'The number of available categories is NOT the count of current editions');
+assert.match(L.render(),/ULTIME EDIZIONI PUBBLICATE/);
+assert.match(L.render(),/produzione e trasferimento dei report sono processi separati/);
+
 L.setCategory('ois');
 assert.equal(L.filterReports().length,1);
 L.setQuery('GBP');
