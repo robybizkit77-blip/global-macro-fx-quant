@@ -92,10 +92,16 @@ jobs:
           fetch-depth: 2
           persist-credentials: true
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       - name: Test transient ECB/BoE official transport retry and fail-closed access
         run: python3 -m unittest validation.test_fetch_rates_eur_gbp_retry_v1 -v
       - name: Test official RBA F2 XLSX fallback, date and source guards (offline)
-        run: python3 -m unittest validation.test_fetch_rates_aud_xlsx_fallback_v1 -v
+        run: |
+          python3 -m pip install --disable-pip-version-check --no-input openpyxl
+          python3 -m unittest validation.test_fetch_rates_aud_xlsx_fallback_v1 -v
 
       - name: Test delayed DST-safe Rates schedule gate
         run: python3 validation/test_rates_schedule_gate_v2.py
@@ -130,11 +136,6 @@ jobs:
             --upstream-head-branch "$RATES_UPSTREAM_BRANCH" \
             --output "$GITHUB_OUTPUT" \
             --summary "$GITHUB_STEP_SUMMARY"
-
-      - uses: actions/setup-python@v5
-        if: steps.gate.outputs.should_run == 'true'
-        with:
-          python-version: '3.12'
 
       - name: Install parser dependencies
         if: steps.gate.outputs.should_run == 'true'
