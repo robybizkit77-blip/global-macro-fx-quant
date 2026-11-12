@@ -83,7 +83,7 @@
      new Date(now+'T00:00:00Z').toISOString().slice(0,10)!==now)
    return unavailable(ccy,axis,'Data di valutazione non valida');
   const month=monthIndex(now),lastCompleted=month-1;
-  const target=spec.freq==='Q'?lastCompleted-(lastCompleted%3):lastCompleted;
+  const target=spec.freq==='Q'?lastCompleted-((lastCompleted+1)%3):lastCompleted;
   const chosen=(Array.isArray(series?.[ccy])?series[ccy]:[]).filter(s=>s?.id===spec.id);
   if(chosen.length!==1)return unavailable(ccy,axis,'Serie storica mancante o ambigua');
   const s=chosen[0];
