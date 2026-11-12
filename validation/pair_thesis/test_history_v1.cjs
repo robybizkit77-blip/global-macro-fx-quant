@@ -44,7 +44,8 @@ for(const key of Object.keys(canonical.pairs)){
 assert.match(monitor.render(canonical,history,'AUDCAD'),/Baseline macro/);
 assert.match(monitor.render(canonical,history,'AUDCAD'),/non flussi istituzionali osservati/);
 assert.match(monitor.render(canonical,history,'AUDCAD'),/non sono flussi istituzionali osservati|non flussi istituzionali osservati/);
-assert.match(app,/FXQuantThesisMonitor\?\.renderPulse/);
+assert(!app.includes("+ranking+(window.FXQuantThesisMonitor?.renderPulse"),
+ 'Legacy same-session changes must not be shown in new live ranking');
 const dailyPulse=monitor.overview(canonical,history);
 assert.equal(dailyPulse.ready,true);
 assert.equal(dailyPulse.total,28);
