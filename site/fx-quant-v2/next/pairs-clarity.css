@@ -36,3 +36,32 @@
 .pairs-compact-footer{font-size:10px;line-height:1.6;color:var(--muted);margin:16px 0}
 @media(max-width:900px){.pairs-three-answers{grid-template-columns:repeat(2,minmax(0,1fr))}.pairs-three-answers>div:last-child{grid-column:1/-1}}
 @media(max-width:560px){.pairs-reading-compact{padding:16px}.pairs-reading-head{flex-direction:column;gap:7px}.pairs-three-answers{grid-template-columns:1fr}.pairs-three-answers>div:last-child{grid-column:auto}.pairs-chooser{padding:14px}.pair-sel-control{width:100%}.pairs-optional-panel>summary{padding:13px}.pairs-details-body{padding:5px}.pairs-optional-panel .thesis-monitor{margin:5px}.pairs-browse-inside{padding:10px}}
+
+/* Editorial first-read: economic judgement before the audit trail. */
+.decision-desk-story{min-width:0}
+.decision-desk-story>p{max-width:920px;line-height:1.8;overflow-wrap:anywhere}
+.decision-desk-story>p strong{color:#c3e8dc}
+.decision-desk-story .decision-desk-watch{
+ margin-top:14px;padding:13px 15px;background:rgba(12,47,54,.45);
+ border-left:3px solid var(--green);border-radius:5px;
+}
+.decision-desk-evidence{
+ max-width:100%;min-width:0;margin-top:18px;
+ border:1px solid rgba(138,182,196,.3);border-radius:10px;
+ background:rgba(7,22,35,.5)
+}
+.decision-desk-evidence>summary{
+ cursor:pointer;padding:14px 17px;list-style:disclosure-closed;
+ font-size:12px;font-weight:750;line-height:1.5;color:var(--blue);
+ overflow-wrap:anywhere
+}
+.decision-desk-evidence>summary:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.decision-desk-evidence[open]>summary{border-bottom:1px solid var(--line2)}
+.decision-desk-evidence-body{padding:17px;display:grid;gap:4px}
+.decision-desk-evidence-body p{font-size:12px;line-height:1.75;overflow-wrap:anywhere}
+.decision-desk-evidence-body small{font-size:10.5px;line-height:1.65;color:var(--muted)}
+@media(max-width:560px){
+ .decision-desk-story .decision-desk-watch{padding:11px 12px}
+ .decision-desk-evidence>summary{padding:12px}
+ .decision-desk-evidence-body{padding:12px}
+}
