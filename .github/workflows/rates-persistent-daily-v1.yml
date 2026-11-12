@@ -57,7 +57,8 @@ on:
   workflow_dispatch:
   workflow_run:
     # Reuse existing independent producers; no new cron/workflow.
-    # Morning: only independently recovered Macro after News.
+    # Morning: successful scheduled Macro OR independently recovered Macro after News.
+    # Both are source-executed on main; reject push/PR/manual Macro events.
     # Evening: scheduled hourly alert after US/Canada official releases.
     workflows: ['Hourly Certified Alert Readiness V1', 'Macro Persistent Daily V1']
     types: [completed]
