@@ -92,6 +92,8 @@
      s.source_file!==expectedFiles[spec.id])
    return unavailable(ccy,axis,'Identità, frequenza o fonte non verificata');
   const points=[];
+  const freqStep=spec.freq==='Q'?3:1;
+  let equivalentDuplicates=0,missingHistoricalPeriods=0;
   for(let i=0;i<s.dates.length;i++){
    const p=monthIndex(s.dates[i]);
    if(p===null)return unavailable(ccy,axis,'Periodo storico malformato');
@@ -102,23 +104,35 @@
       v > (spec.kind==='CPI_INDEX_DERIVED_YOY'?1000:100))
     return unavailable(ccy,axis,'Dato storico non valido');
    if(points.length){
-    const old=points.at(-1);
-    if(p-old.m!==(spec.freq==='Q'?3:1))
-     return unavailable(ccy,axis,'Gap o data duplicata nello storico');
+    const old=points.at(-1),delta=p-old.m;
+    if(delta===0){
+     // Actual US unemployment archive carries same-month YYYY-MM and
+     // YYYY-MM-DD rows. Dedupe only if their numeric facts are IDENTICAL.
+     if(Math.abs(v-old.v)>1e-10)
+      return unavailable(ccy,axis,'Duplicato con valori discordanti');
+     equivalentDuplicates++;
+     continue;
+    }
+    if(delta<0||delta%freqStep!==0)
+     return unavailable(ccy,axis,'Periodi fuori ordine o frequenze diverse');
+    // Gaps such as missing US CPI October 2025 are NEVER interpolated.
+    // Only calendar-contiguous historical windows become eligible for OOS.
+    missingHistoricalPeriods+=delta/freqStep-1;
    }
    points.push({m:p,v});
   }
   if(points.length<35)return unavailable(ccy,axis,'Campione insufficiente');
   const derived=spec.kind==='CPI_INDEX_DERIVED_YOY';
-  // USD headline CPI is an INDEX, not an observed official YoY rate in this
-  // feed. Use exact same-month index twelve observations earlier, with no
-  // external releases or revisions inferred.
-  const rates=derived?points.slice(12).map((p,i)=>({
-    m:p.m,v:100*(p.v/points[i].v-1)})):points;
+  const byIndex=new Map(points.map(p=>[p.m,p.v]));
+  // An actual CPI YoY needs a twelve-month calendar-aligned index, not
+  // a row twelve observations back (which breaks around missing months).
+  const rates=derived?points.filter(p=>byIndex.has(p.m-12)).map(p=>({
+    m:p.m,v:100*(p.v/byIndex.get(p.m-12)-1)})):points;
   if(rates.length<23)return unavailable(ccy,axis,'Campione trasformato insufficiente');
   if(rates.some(p=>!number(p.v)||p.v< -30||p.v>100))
    return unavailable(ccy,axis,'Tasso percentuale derivato non valido');
-  const last=rates.at(-1),step=spec.freq==='Q'?3:1,gap=target-last.m;
+  const byRate=new Map(rates.map(p=>[p.m,p.v]));
+  const last=rates.at(-1),step=freqStep,gap=target-last.m;
   if(gap<0||gap%step!==0)return unavailable(ccy,axis,'Periodo più recente non allineato');
   const info={
    ccy,axis,label:describe(axis),unit:'%',source:s.source_file,
@@ -127,6 +141,10 @@
    sourceQuality:derived?'CPI_INDEX_YOY_DERIVED_FROM_HISTORICAL_INDEX':
     'REPORTED_HISTORICAL_RATE',
    historicalVintage:'LATEST_REVISED_HISTORY_NO_RELEASE_TIMESTAMP',
+   sourceQualityAudit:{
+    missingHistoricalPeriods,identicalMonthRowsDeduplicated:equivalentDuplicates,
+    imputedHistoricalMonths:0,calendarAlignedYoY:derived
+   },
    eligibleForCore:false,eligibleForTrading:false,
   };
   if(gap===0)return {...info,status:'GIA_OSSERVATO',forecast:null,
@@ -136,19 +154,28 @@
   if(horizon>(spec.freq==='Q'?2:3))
    return {...unavailable(ccy,axis,'Gap troppo esteso: niente estrapolazione'),...info,
     targetPeriod:isoMonth(target),status:'FONTE_TROPPO_VECCHIA'};
-  const differences=[];
-  for(let i=1;i<rates.length;i++)differences.push(rates[i].v-rates[i-1].v);
+  const sixChanges=m=>{
+   const changes=[];
+   for(let j=0;j<6;j++){
+    const cur=byRate.get(m-j*step),prev=byRate.get(m-(j+1)*step);
+    if(!number(cur)||!number(prev))return null;
+    changes.push(cur-prev);
+   }
+   return mean(changes);
+  };
   const warm=spec.freq==='Q'?12:25,checks=[];
-  for(let i=warm;i<rates.length-horizon;i++){
-   const avg=mean(differences.slice(i-6,i)); // six changes strictly <= i
-   const drift=rates[i].v+avg*horizon,flat=rates[i].v,actual=rates[i+horizon].v;
+  for(let i=warm;i<rates.length;i++){
+   const origin=rates[i],actual=byRate.get(origin.m+horizon*step);
+   const avg=sixChanges(origin.m);
+   if(!number(actual)||!number(avg))continue; // never bridge missing history
+   const drift=origin.v+avg*horizon,flat=origin.v;
    if(![drift,flat,actual].every(number))
     return unavailable(ccy,axis,'Calcolo non finito');
    checks.push({model:Math.abs(actual-drift),flat:Math.abs(actual-flat),
     direction:Math.sign(drift-flat)===Math.sign(actual-flat)});
   }
   if(checks.length<(spec.freq==='Q'?16:24))
-   return {...unavailable(ccy,axis,'Esempi pseudo-OOS insufficienti'),...info};
+   return {...unavailable(ccy,axis,'Esempi pseudo-OOS sufficienti non disponibili'),...info};
   const metrics=xs=>{
    if(!xs.length)return null;
    const b=mean(xs.map(x=>x.flat));
@@ -160,7 +187,10 @@
   const hit=100*checks.filter(x=>x.direction).length/checks.length;
   const qualifies=gain!==null&&gain>=10&&gain1!==null&&gain1>=0&&
     gain2!==null&&gain2>=0&&hit>=60;
-  const past=mean(differences.slice(-6)),trend=last.v+past*horizon;
+  const past=sixChanges(last.m);
+  if(!number(past))return {...unavailable(ccy,axis,
+    'Ultime sei variazioni non consecutive: impossibile stimare'),...info};
+  const trend=last.v+past*horizon;
   if(!number(trend)||Math.abs(trend-last.v)>12)
    return unavailable(ccy,axis,'Scenario di trend fuori dai limiti');
   // Fallback is an estimate too, but it is only the constant-rate baseline;
