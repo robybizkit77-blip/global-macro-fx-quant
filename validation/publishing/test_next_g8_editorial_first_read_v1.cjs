@@ -89,7 +89,7 @@ for(const country of FX){
   'Source-auditable ranking still available in method disclosure');
  assert(!/\bNaN\b|\bundefined\b|\[object Object\]/.test(html));
  const actualOrder=[...board.matchAll(/class="strength-name"><b>#[1-8]<\/b><strong>[^<]* ([A-Z]{3})<\/strong>/g)].map(m=>m[1]);
- assert.deepEqual(actualOrder,est.currencies.map(x=>x.ccy),'Estimated current ordering must lead first read');
+ assert.deepEqual(actualOrder,Array.from(est.currencies,x=>x.ccy),'Estimated current ordering must lead first read');
  const selected=[...board.matchAll(/class="strength-row selected [^"]+"[^>]*data-cs-country="([A-Z]{3})"/g)].map(m=>m[1]);
  assert.deepEqual(selected,[country],'Selected currency must remain navigable');
 }
