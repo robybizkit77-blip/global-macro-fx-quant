@@ -21,11 +21,11 @@
  const age=(d,now)=>day(d)&&day(now)?
   (Date.parse(now+'T00:00:00Z')-Date.parse(d+'T00:00:00Z'))/864e5:null;
  const fresh=(d,now,max)=>{const n=age(d,now);return n!==null&&n>=0&&n<=max;};
- const isPeriod=(s,now)=>{
+ const isPeriod=(s,now,maxAge=4)=>{
   const m=typeof s==='string'&&/^\d{4}-(?:0[1-9]|1[0-2])(?:-\d{2})?$/.test(s)?s.slice(0,7):null;
   const p=day(now)?now.slice(0,7):null;
   return m&&p&&m<=p&&(Number(p.slice(0,4))-Number(m.slice(0,4)))*12+
-    Number(p.slice(5,7))-Number(m.slice(5,7))<=4;
+    Number(p.slice(5,7))-Number(m.slice(5,7))<=maxAge;
  };
  const fmt=x=>number(x)?x.toLocaleString('it-IT',{maximumFractionDigits:1,minimumFractionDigits:1}):'—';
  const signed=x=>number(x)?(x>0?'+':x<0?'−':'')+fmt(Math.abs(x)):'—';
@@ -108,7 +108,7 @@
      growth.skillValidatedPIT===false&&
      growth.quality==='REVISED_HISTORY_NOT_POINT_IN_TIME'&&
      ['MODELLO_RETROSPETTIVO_PROMETTENTE'].includes(growth.status)&&
-     typeof growth.sourcePeriod==='string'&&isPeriod(growth.sourcePeriod,now)&&
+     typeof growth.sourcePeriod==='string'&&isPeriod(growth.sourcePeriod,now,6)&&
      number(growth.deltaFromObserved)){
    const unit=growth.reportedRate?' punti percentuali':'%';
    messages.push('Scenario '+growth.label+' '+growth.targetPeriod+': '+
