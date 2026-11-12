@@ -43,12 +43,17 @@
    favorableStatus:favorablePassed?'OLTRE IL RIFERIMENTO':'DA VERIFICARE',
    adverseStatus:adversePassed?'CONTRASTO GIÀ OSSERVATO':'DA MONITORARE'};
  }
- function profile(key,doc,prices,now){
+ function profile(key,doc,prices,now,estimated){
   const obj=doc?.pairs?.[key],s=obj?.setup||{},f=obj?.decision_frame||{};
-  const asof=doc?.price_asof;
-  const price=s.price||{},timing=s.timing||{};
-  const fav=s.structuralFav||f.fav||null;
-  const q=s.quality||'NON VALUTABILE';
+  const current=estimated?.status==='STIMA_OPERATIVA_NON_VALIDATA'?
+   estimated.pairs?.find(x=>x.key===key):null;
+  const asof=current?estimated.priceAsOf:doc?.price_asof;
+  const price=current?{state:current.aligned?'GOOD':current.opposite?'BAD':'NEUTRAL',
+    text:current.priceText}:s.price||{};
+  const timing=current?{state:'UNVALIDATED',
+    text:'Timing H4 e ingresso non valutati: questa stima usa solo fixing BCE daily.'}:s.timing||{};
+  const fav=current?current.favored:s.structuralFav||f.fav||null;
+  const q=current?current.quality:s.quality||'NON VALUTABILE';
   const age=isoDays(asof,now),fresh=age!==null&&age>=0&&age<=5;
   const closes=series(prices,key,asof,now);
   const usable=fresh&&closes.length>=22;
@@ -97,11 +102,11 @@
     :timing.state==='ADVERSE'?'Attendere un miglioramento verificabile del timing, senza anticiparlo dal solo livello di prezzo.'
     :research?'Verificare struttura H4 e Daily, eventuale breakout seguito da retest e volatilità prima di considerare un ingresso.'
     :'Attendere maggiore coerenza tra vantaggio macro/pricing, prezzo e cambiamenti del timing.';
-  return {key,asof,age,fresh,eligible,research,fav,direction,fiveState,twentyState,alignment,horizonConflict,quality:q,price:price.state||'UNKNOWN',
+  return {key,asof,age,fresh,eligible,research,fav,direction,fiveState,twentyState,alignment,horizonConflict,quality:q,source:current?'STIMA_ESPLICITA_V1':'STORICO_D',price:price.state||'UNKNOWN',
     priceText:price.text||'Non disponibile',timing:timing.state||'UNKNOWN',timingText:timing.text||'Non disponibile',
     why,next,caution,structure,closes,latest:latest?.value??null,m1,m5,m20,prior5,change5,breakHigh,breakLow,watch,
-    relation:f.relation||s.structural?.relation||'Nessuna tesi verificabile',
-    missing:f.missing||'La conferma indipendente è ancora aperta',
+    relation:current?current.story:f.relation||s.structural?.relation||'Nessuna tesi verificabile',
+    missing:current?current.missing:f.missing||'La conferma indipendente è ancora aperta',
     cot:s.cot?.text||'Dato COT non classificato',
     liquidity:s.liquidity?.text||'Liquidità non classificata',
     bar:s.extension?.text||'Estensione non calcolata'};
@@ -151,7 +156,7 @@
      +'<div class="decision-cases">'+(examples||'<div class="empty"><strong>Non emergono coppie con prezzo e timing coerenti.</strong><p>La selezione resta vuota anziché produrre suggerimenti artificiali.</p></div>')+'</div></div></section>';
   }
   function pair(){
-   const item=profile(state.pair||'EURUSD',market,history,now),isFull=item.closes.length>=22;
+   const item=profile(state.pair||'EURUSD',market,history,now,get('estimatedMacro')),isFull=item.closes.length>=22;
    const chartWindow=[20,60,120].includes(Number(state.pairPriceWindow))?Number(state.pairPriceWindow):60;
    const selected=item.closes.slice(-chartWindow);
    const watch=item.watch||{ready:false};
@@ -165,7 +170,8 @@
    const gain=Number.isFinite(item.m20)?sign(item.m20,2,'%'):'—';
    const lastDay=Number.isFinite(item.m1)?sign(item.m1,2,'%'):'—';
    const move=Number.isFinite(item.m5)?sign(item.m5,2,'%'):'—';
-   const attractive=item.horizonConflict&&item.research?'OSSERVAZIONE · MOMENTUM DAILY DISCORDANTE':
+   const attractive=item.source==='STIMA_ESPLICITA_V1'?'STIMA DA VERIFICARE · NESSUN SEGNALE':
+    item.horizonConflict&&item.research?'OSSERVAZIONE · MOMENTUM DAILY DISCORDANTE':
      item.eligible?'STRUTTURA PULITA · TIMING DA VALIDARE':item.research?'SOLO OSSERVAZIONE · RISCHI APERTI':'ATTENDERE · CONFERME INSUFFICIENTI';
    const side=item.direction>0?'rialzo di '+pairName(item.key):item.direction<0?'ribasso di '+pairName(item.key):'direzione relativa non validata';
    const pulse=item.direction&&Number.isFinite(item.change5)?
@@ -188,6 +194,7 @@
      window.FXQuantPairDesk.render({
        key:item.key,model:market,macro:get('macro')?.currencies,
        observedMacro:get('macroObserved'),
+       estimatedMacro:get('estimatedMacro'),
        ois:get('ois'),cot:get('cotHistory'),profile:item,ratesView:rateSnapshot,
        now,esc
      }):'';
@@ -221,7 +228,7 @@
      +'<div class="decision-dossier-head"><span>RESEARCH → PRICING → PREZZO → DECISIONE</span><h2>'+pairName(item.key)+' · Che cosa sappiamo, che cosa aspettiamo?</h2>'
      +'<p>Il motore può segnalare una direzione favorevole senza che esista un ingresso interessante. Separiamo le due cose.</p></div>'
      +deskStory
-     +'<div class="decision-gates"><div><span>THESIS STRENGTH</span><strong>'+esc(item.fav?'Vantaggio '+item.fav+' · '+item.quality:'Nessun vantaggio verificato')+'</strong><small>'+esc(item.relation)+'</small></div>'
+     +'<div class="decision-gates"><div><span>THESIS STRENGTH · '+esc(item.source==='STIMA_ESPLICITA_V1'?'STIMA CORRENTE':'ARCHIVIO STORICO')+'</span><strong>'+esc(item.fav?'Vantaggio '+item.fav+' · '+item.quality:'Nessun vantaggio verificato')+'</strong><small>'+esc(item.relation)+'</small></div>'
      +'<div><span>TRADE ATTRACTIVENESS</span><strong>'+esc(attractive)+'</strong><small>'+esc(item.why)+'</small><small class="decision-gate-rates" data-rates-tone="'+esc(rateView.tone)+'">GOV 2Y (non OIS): '+esc(rateView.label)+(rateView.ready?' · '+date(rateView.asof):'')+'</small></div>'
      +'<div><span>LA PROSSIMA VERIFICA</span><strong>Che cosa aspettiamo?</strong><small>'+esc(gateNext)+'</small></div></div>'
      +'<div class="decision-price-grid"><div class="decision-price-chart"><div class="decision-price-head"><div><span>PREZZO REALE · ECB DAILY</span><h3>'+pairName(item.key)+' · '+quote+'</h3><small>Fixing BCE '+date(item.asof)+' · ultima seduta '+lastDay+' · 5 sedute '+move+' · 20 sedute '+gain+'</small></div>'

@@ -166,9 +166,10 @@ assert.equal(withoutSource.currentMacro,null,'Missing observed source fails clos
 const index=fs.readFileSync(path.join(root,next+'index.html'),'utf8');
 const app=fs.readFileSync(path.join(root,next+'app.js'),'utf8');
 const journey=fs.readFileSync(path.join(root,next+'decision-journey.js'),'utf8');
-assert.match(index,/pair-desk-narrative\.js\?v=20/);
+assert.match(index,/pair-desk-narrative\.js\?v=21/);
 assert.ok(index.indexOf('pair-desk-narrative.js')<index.indexOf('decision-journey.js'));
 assert.match(journey,/FXQuantPairDesk\.render/);
+assert(journey.includes("estimatedMacro:get('estimatedMacro')"),'Estimate must reach 28 pair dossiers');
 assert(journey.includes("observedMacro:get('macroObserved')"), 'all FX pair detail views must receive observed source');
 assert(app.includes("macroObserved:'../../control-room-preview/macro-v3-current-evidence.json'"), 'site must load audited macro overlay');
 assert.ok(app.includes("route==='overview'||route==='pairs'"),

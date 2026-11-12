@@ -48,7 +48,15 @@ const fresh=(d,days=5)=>validDay(d)&&d<=dayNow()&&(Date.parse(dayNow()+'T12:00:0
 const qBadge=(quality)=>{const q=String(quality||'NON CLASSIFICATO');let c='neutral';if(/CON RISCHI|ESTREMO|EXTREME|NON VALUTABILE|STALE/i.test(q))c=/NON VALUTABILE|STALE/i.test(q)?'warning':'danger';else if(/CONFERMARE|STIMA|INDICATIV|DA VERIFICARE/i.test(q))c='warning';else if(/PULITO|UFFICIALE|VALIDAT/i.test(q))c='good';return '<span class="badge '+c+'">'+esc(q)+'</span>'};
 const arrow=(n)=>finite(n)?n>0?'↑':n<0?'↓':'→':'—';
 function routeLink(route,label,cls='ghost-btn small'){return '<a class="'+cls+'" href="#'+route+'">'+esc(label)+'</a>'}
-const get=k=>state.data[k]||null;
+const get=k=>k==='estimatedMacro'?estimatedMacro():(state.data[k]||null);
+function estimatedMacro(){
+ if(!window.FXQuantMacroEstimated?.evaluate)return {status:'STIMA_SOSPESA',reason:'Modulo stimato non caricato'};
+ return window.FXQuantMacroEstimated.evaluate({
+  observed:state.data.macroObserved,prices:state.data.currencyPrices,
+  ois:state.data.ois,rates:state.data.rates,model:state.data.pairs,
+  now:dayNow(),rankingFn:window.FXQuantPairRankings?.currencyRanking
+ });
+}
 const choose=(id,options,selected,attr='data-select')=>options.map(v=>'<button type="button" class="pill '+(String(v.value)===String(selected)?'active':'')+'" '+attr+'="'+esc(v.value)+'" aria-pressed="'+String(String(v.value)===String(selected))+'">'+esc(v.label)+'</button>').join('');
 const timeWindows=[{label:'5 sedute',value:5},{label:'20 sedute',value:20},{label:'60 sedute',value:60},{label:'Tutto',value:9999}];
 const eurPairs=()=>get('pairs')?.pairs||{};
@@ -804,22 +812,25 @@ function currencies(){
  return pageHero('FX G8 / COUNTRY RESEARCH','Country Research Studio non disponibile','Il modulo Valute G8 non è stato caricato. Verifica i feed e lo script.');
 }
 function pairs(){
+ const estimate=get('estimatedMacro');
+ const estimateActive=estimate?.status==='STIMA_OPERATIVA_NON_VALIDATA';
+ const activePair=estimateActive?estimate.pairs.find(x=>x.key===state.pair):null;
  const all=eurPairs(),keys=Object.keys(all).sort(),p=all[state.pair],s=p?.setup||{},fr=p?.decision_frame||s.structural||{};
  const monitor=window.FXQuantThesisMonitor?.analyze?.(get('pairs'),get('thesisHistory'),state.pair)||{ready:false};
- const fav=s.structuralFav||null,quality=pQuality(s);
+ const fav=activePair?.favored||null,quality=activePair?.quality||'STIMA NON DISPONIBILE';
  const choice='<label class="pair-sel-control" for="pair-primary-select"><span>COPPIA DA ANALIZZARE</span><select id="pair-primary-select" aria-label="Seleziona una delle 28 coppie">'+
   keys.map(k=>'<option value="'+esc(k)+'"'+(k===state.pair?' selected':'')+'>'+esc(getPairName(k))+'</option>').join('')+'</select></label>';
  const report=monitor.ready?monitor.changed.length?
    'Dal '+date(monitor.previousAsOf)+' al '+date(monitor.asof)+': '+monitor.changed.length+' classificazioni cambiate. '+monitor.judgement:
    'Nessuna delle classificazioni monitorate è cambiata rispetto al '+date(monitor.previousAsOf)+'. Non significa che il mercato sia immobile.'
   :'Confronto fra sedute non disponibile: attendiamo uno storico allineato al modello.';
- const favMeaning=fav?'Il modello favorisce '+fav+' rispetto a '+(fav===state.pair.slice(0,3)?state.pair.slice(3):state.pair.slice(0,3))+'.':'Nessuna valuta favorita in modo verificabile.';
- const headline=fr.relation||s.structural?.relation||'Il modello non dispone di una tesi relativa abbastanza solida.';
- const priceText=s.price?.text||'Da verificare';
- const missing=fr.missing||'Mancano prove sufficienti per confermare la tesi.';
- const next=fr.watch||s.structural?.watch||'Verificare prezzo e pricing su date comparabili.';
- const context='Prezzo BCE '+date(get('pairs')?.price_asof)+' · baseline macro '+date(get('pairs')?.macro_baseline_asof)+
-   ' · ultimo confronto '+(monitor.ready?date(monitor.previousAsOf)+' → '+date(monitor.asof):'non disponibile');
+ const favMeaning=fav?'La stima aggiornata favorisce '+fav+' rispetto a '+(fav===state.pair.slice(0,3)?state.pair.slice(3):state.pair.slice(0,3))+'.':'La stima aggiornata non distingue una valuta favorita.';
+ const headline=activePair?.story||estimate?.reason||'Dati stimati non disponibili: la tesi storica non alimenta il ranking operativo.';
+ const priceText=activePair?.priceText||'Da verificare';
+ const missing=activePair?.missing||'Attendere input macro recenti e comparabili.';
+ const next=activePair?.missing||'Verificare prezzo e pricing su date comparabili.';
+ const context='Stima operativa Macro Strength '+date(estimate?.asof)+' · fixing BCE '+date(estimate?.priceAsOf)+
+   ' · vecchio motore del '+date(get('pairs')?.macro_baseline_asof)+' archiviato, non utilizzato per il giudizio corrente';
  const watchLabel=state.watch.has(state.pair)?'★ Nella watchlist':'☆ Salva nella watchlist';
  const main='<section class="panel pairs-reading-compact" aria-label="Sintesi operativa della coppia selezionata">'+
   '<div class="pairs-reading-head"><div><span class="mini-overline">IL GIUDIZIO FX · '+esc(getPairName(state.pair))+'</span><h2>'+esc(favMeaning)+'</h2></div>'+
@@ -827,15 +838,15 @@ function pairs(){
   '<p class="pairs-primary-story">'+esc(headline)+'</p>'+
   '<div class="pairs-three-answers">'+
    '<div><span>PREZZO</span><strong>'+esc(priceText)+'</strong></div>'+
-   '<div><span>STATO DELLA TESI</span><strong>'+esc(fr.priceNote||'La conferma del prezzo resta da verificare.')+'</strong></div>'+
+   '<div><span>STATO DELLA TESI</span><strong>'+esc(activePair?.stage||'Stima sospesa')+'</strong></div>'+
    '<div><span>PRIMA DI VALUTARE</span><strong>'+esc(missing)+'</strong></div></div>'+
   '<p class="pairs-next-action"><strong>Cosa controllare adesso.</strong> '+esc(next)+'</p>'+
   '<p class="pairs-vintage">'+esc(context)+'. La baseline macro non viene aggiornata automaticamente quando cambia il prezzo.</p></section>';
  // Do not show a large empty historical panel when same-day model labels
- // were revised after the archived snapshot. The single compact pulse above
- // already explains the missing comparison, without inventing a new session.
+ // were revised after the archived snapshot. Current estimated rankings do not
+ // reuse those archived categorical changes as operational signals.
  const historyDetail=monitor.ready?
-  '<details class="pairs-optional-panel"><summary><span><strong>Come è cambiata la tesi?</strong><small>'+esc(report)+'</small></span><span class="pairs-open-icon">+</span></summary>'+
+  '<details class="pairs-optional-panel"><summary><span><strong>Archivio storico · Come è cambiata la tesi?</strong><small>'+esc(report)+'</small></span><span class="pairs-open-icon">+</span></summary>'+
   (window.FXQuantThesisMonitor?.render?.(get('pairs'),get('thesisHistory'),state.pair)||'')+'</details>':'';
  const originalDecision=typeof window!=='undefined'&&window.FXQuantDecisionJourney?.build?
   window.FXQuantDecisionJourney.build({get,state,plot,fmt,sign,date,dayNow,esc}).pair():
@@ -854,7 +865,7 @@ function pairs(){
   chooser+main+historyDetail+detail:'';
  return pageHero('FX / PAIR EXPLORER','Dal G8 alle <em>coppie da approfondire.</em>',
   'Prima la classifica visiva delle valute e delle 28 coppie; poi, scegliendo una coppia, trovi il ragionamento completo su macro, pricing, COT e prezzo.')
-  +ranking+(window.FXQuantThesisMonitor?.renderPulse?.(get('pairs'),get('thesisHistory'))||'')+drill+
+  +ranking+drill+
   '<p class="pairs-compact-footer">Classifiche descrittive, non segnali di trading: forza relativa BCE e priorità di ricerca non sono un backtest. Ogni fonte conserva la propria data.</p>';
 }
 function macro(){
