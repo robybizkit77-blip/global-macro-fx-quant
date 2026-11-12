@@ -53,8 +53,10 @@ def run():
     check("schedule", "0 8 * * 1-5", "2026-10-26T09:01:00Z", True, ok, "09:00")
     check("schedule", "0 7 * * 1-5", "2026-10-24T07:00:00Z", False, "NOT_BUSINESS_DAY")
     check("schedule", "20 9 * * 1-5", "2026-10-19T09:20:00Z", False, "UNKNOWN_CRON_FAIL_CLOSED")
-    for event in ("workflow_dispatch", "push", "pull_request"):
+    for event in ("workflow_dispatch", "push"):
         check(event, "", "2026-10-19T09:25:00Z", True, "EXPLICIT_EVENT")
+    check("pull_request", "", "2026-10-19T09:25:00Z",
+          False, "PULL_REQUEST_CONTRACT_ONLY")
     # Evening official-source recovery, launched ONLY by the existing hourly
     # schedule. CET/CEST gate uses wall-clock Europe/Rome, not hardcoded UTC.
     trusted={"upstream_name":"Hourly Certified Alert Readiness V1",
@@ -100,9 +102,23 @@ def run():
     ]:
         r=resolve("workflow_run","",iso(stamp),**macro)
         assert not r["should_run"] and r["reason"]==reason,r
+    # Scheduled main-branch Macro completion is independently trusted:
+    # this fills morning Rates gaps when GitHub misses one of its own crons.
+    scheduled={**macro,"upstream_event":"schedule"}
+    for stamp in ("2026-11-02T04:00:00Z","2026-11-02T06:45:00Z",
+                  "2026-11-02T08:59:00Z"):
+        r=resolve("workflow_run","",iso(stamp),**scheduled)
+        assert r["should_run"] and r["reason"]=="TRUSTED_SERIAL_MACRO_MORNING_RATES_RECOVERY",r
+    for stamp, reason in [
+        ("2026-11-02T03:59:00Z","OUTSIDE_MORNING_MACRO_RECOVERY_WINDOW"),
+        ("2026-11-02T09:00:00Z","OUTSIDE_MORNING_MACRO_RECOVERY_WINDOW"),
+        ("2026-11-01T07:00:00Z","MORNING_RECOVERY_WEEKEND"),
+    ]:
+        r=resolve("workflow_run","",iso(stamp),**scheduled)
+        assert r["should_run"] is False and r["reason"]==reason,r
     for change in (
         {"upstream_name":"Calendar News Operational Refresh V1"},
-        {"upstream_event":"push"},{"upstream_event":"schedule"},
+        {"upstream_event":"push"},
         {"upstream_event":"workflow_dispatch"},{"upstream_event":"pull_request"},
         {"upstream_conclusion":"failure"},{"upstream_head_branch":"feature/test"},
     ):
