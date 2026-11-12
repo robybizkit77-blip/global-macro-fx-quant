@@ -48,6 +48,10 @@ for(const key of keys){
    result.positioning.includes('non conferma'),key+' COT provenance');
  assert.ok(html.includes('data-serafini-pair="'+key+'"'),key+' render');
  assert.ok(html.includes('baseline macro del modello'),key+' baseline provenance');
+ assert.ok(html.includes('Che cosa sostiene la tesi.')&&html.includes('Che cosa sta confermando il mercato.')&&html.includes('Giudizio operativo.'),key+' causal first reading');
+ assert.ok(html.includes('<details class="decision-desk-evidence">'),key+' dated data stays optional');
+ assert.ok(html.indexOf('Giudizio operativo.')<html.indexOf('<details class="decision-desk-evidence">'),key+' judgement before data');
+ assert.ok(!html.includes('<details class="decision-desk-evidence" open'),key+' audit closed by default');
  assert.ok(!/undefined|NaN|Infinity/.test(html),key+' no fabricated numeric output');
  seen.add(key);
 }
@@ -98,7 +102,7 @@ assert.doesNotMatch(future.pricing,/AUD futures\/proxy 6M/,
 const index=fs.readFileSync(path.join(root,next+'index.html'),'utf8');
 const app=fs.readFileSync(path.join(root,next+'app.js'),'utf8');
 const journey=fs.readFileSync(path.join(root,next+'decision-journey.js'),'utf8');
-assert.match(index,/pair-desk-narrative\.js\?v=18/);
+assert.match(index,/pair-desk-narrative\.js\?v=19/);
 assert.ok(index.indexOf('pair-desk-narrative.js')<index.indexOf('decision-journey.js'));
 assert.match(journey,/FXQuantPairDesk\.render/);
 assert.ok(app.includes("route==='overview'||route==='pairs'"),
