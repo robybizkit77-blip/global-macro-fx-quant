@@ -75,28 +75,71 @@
   return {currencies:currencyRanking(prices,now,FX),pairs:pairRanking(model,prices,now,profileFn)};
  }
 
+ // Research shortlist, not a trade portfolio. Prefer distinct relative themes
+ // instead of filling five places with the same currency risk.
+ function selectResearchPairs(items,limit=5){
+  if(!Array.isArray(items)||!Number.isInteger(limit)||limit<1)return [];
+  const eligible=items.filter(x=>x&&/^[A-Z]{6}$/.test(x.key||'')&&
+   x.base===x.key.slice(0,3)&&x.quote===x.key.slice(3)&&
+   (x.favored===x.base||x.favored===x.quote)&&
+   (x.tier===1||x.tier===2));
+  const chosen=[],exposure=Object.create(null),direction=Object.create(null);
+  // Up to two appearances per currency first; relax to three only if needed.
+  // At most two selections can express the same favored currency.
+  for(const maxExposure of [2,3]){
+   for(const x of eligible){
+    if(chosen.length===limit)return chosen;
+    if(chosen.some(y=>y.key===x.key)||
+       (exposure[x.base]||0)>=maxExposure||
+       (exposure[x.quote]||0)>=maxExposure||
+       (direction[x.favored]||0)>=2)continue;
+    chosen.push(x);
+    exposure[x.base]=(exposure[x.base]||0)+1;
+    exposure[x.quote]=(exposure[x.quote]||0)+1;
+    direction[x.favored]=(direction[x.favored]||0)+1;
+   }
+  }
+  return chosen;
+ }
+
  function render(api){
   const {get,FLAGS,state,esc,sign,date}=api;
   const est=get('estimatedMacro');
   const active=est?.status==='STIMA_OPERATIVA_NON_VALIDATA'&&
     est.currencies?.length===8&&est.pairs?.length===28;
-  const items=active?est.pairs:[],top=items.slice(0,5);
-  const topNote=active&&top.length&&
-    top.filter(x=>x.favored).reduce((m,x)=>{m[x.favored]=(m[x.favored]||0)+1;return m},{});
-  const exposure=topNote?Object.entries(topNote).sort((a,b)=>b[1]-a[1])[0]:null;
-  const caution=exposure?.[1]>=3?
-    exposure[1]+' delle prime '+top.length+' coppie favoriscono '+exposure[0]+
-    ': rischio comune, non cinque opportunità indipendenti.':'';
+  const items=active?est.pairs:[],top=selectResearchPairs(items,5);
+  const exposures=top.reduce((m,x)=>{
+   m[x.base]=(m[x.base]||0)+1;
+   m[x.quote]=(m[x.quote]||0)+1;
+   return m;
+  },{});
+  const concentrated=Object.entries(exposures).filter(([,n])=>n>=3);
+  const caution=concentrated.length?
+   'Esposizione condivisa a '+concentrated.map(([c,n])=>c+' ('+n+' coppie)').join(', ')+
+   ': i casi restano correlabili e non rappresentano trade indipendenti.':'';
+  const shortlistNote=top.length<5?
+   'Oggi solo '+top.length+' coppie rispettano il filtro: non inseriamo casi senza vantaggio netto o con prezzo contrario per raggiungere quota cinque.':
+   'Cinque casi di ricerca selezionati cercando di limitare l’esposizione ripetuta alle stesse valute.';
   const rankLabel=x=>x.tier===1?'Conferma da studiare':x.tier===2?'Attesa prezzo':
     x.tier===3?'Prezzo contrario':'Vantaggio non distinto';
+  const shortReading=x=>{
+   const fav=x.favored===x.base?1:-1;
+   const component=(n,threshold)=>!Number.isFinite(n)||Math.abs(n)<threshold?
+    'non decisiva':n>0?'a favore':'contraria';
+   const macro=component(x.macroGap*fav,0.10);
+   const policy=component(x.policyGap*fav,0.10);
+   const price=x.aligned?'coerente con il movimento stimato':'non ancora decisivo';
+   return 'Stima '+x.favored+': macro '+macro+'; componente tassi '+policy+
+    ' (fonti anche proxy); prezzo '+price+'.';
+  };
   const row=(x,i,featured=false)=>'<button class="fx-rank-pair '+
    (featured?'featured ':'')+(state.pair===x.key&&state.pairDetailOpen?'selected ':'')+
    'tier-'+x.tier+'" type="button" data-pair="'+esc(x.key)+'" aria-label="Apri tesi '+esc(x.name)+'">'+
    '<span class="fx-rank-number">'+(i+1)+'</span>'+
    '<span class="fx-rank-pair-id"><strong>'+esc(x.name)+'</strong><small>'+
    (x.bias==='NESSUNO'?'NESSUN BIAS':'STIMA '+esc(x.bias))+'</small></span>'+
-   '<span class="fx-rank-pair-copy"><strong>'+esc(x.story)+'</strong>'+
-   '<small>'+esc(x.priceText)+'</small></span>'+
+   '<span class="fx-rank-pair-copy"><strong>'+esc(featured?shortReading(x):x.story)+'</strong>'+
+   '<small>'+esc((featured&&x.risk?'Fonti parziali · ':'')+x.priceText)+'</small></span>'+
    '<span class="fx-rank-pair-badges"><span class="fx-rank-pill tier-'+x.tier+'">'+
    esc(rankLabel(x))+'</span><span class="fx-rank-minor">'+
    esc(x.quality)+'</span></span>'+
@@ -113,7 +156,7 @@
    }).join('')+'</div>':
    '<p class="fx-rank-unavailable">Stima corrente sospesa: '+esc(est?.reason||
     'mancano fonti e prezzi sincronizzati')+'. Il vecchio punteggio di settembre non viene usato al suo posto.</p>';
-  const noTrade=items.some(x=>x.tier===1)?
+  const noTrade=top.some(x=>x.tier===1)?
     'La categoria più alta identifica solo un allineamento da studiare, non un ingresso.':
     'Nessuna coppia ha tutte le conferme: questa è una selezione di ricerca, non una lista di trade.';
   return '<div class="fx-ranking-desk" id="fx-ranking-desk">'+
@@ -129,9 +172,10 @@
    ' · GDP in accelerazione verificabile per '+est.coverage.withGDPAcceleration+
    '/8 economie; 6M ufficiale per '+est.coverage.official6M+'/8.</p>':'')+'</section>'+
    '<section class="fx-rank-box" aria-label="Cinque coppie FX stimate da studiare">'+
-   '<div class="fx-rank-head"><div><span>02 / SELEZIONE FX</span><h3>Le prime 5 da verificare</h3></div>'+
+   '<div class="fx-rank-head"><div><span>02 / SELEZIONE FX</span><h3>Fino a 5 coppie da studiare</h3></div>'+
    '<small>STIMA, NON INGRESSO</small></div>'+
-   '<p class="fx-rank-sub">Ordine euristico: vantaggio macro/rates relativo e comportamento del prezzo, non un payoff atteso.</p>'+
+   '<p class="fx-rank-sub">Selezione dalla classifica stimata: solo vantaggi relativi distinguibili, senza prezzo contrario. Priorità a tesi diverse, non a cinque ingressi.</p>'+
+   (active?'<p class="fx-rank-source">'+esc(shortlistNote)+'</p>':'')+
    (caution?'<p class="fx-rank-top-caution">'+esc(caution)+'</p>':'')+
    (top.length?'<div class="fx-rank-featured">'+top.map((x,i)=>row(x,i,true)).join('')+'</div>':
     '<p class="fx-rank-unavailable">Le tesi stimate non sono verificabili finché gli input non coincidono.</p>')+'</section></div>'+
@@ -149,7 +193,7 @@
    '<p>'+esc(est?.warning||'Le osservazioni non consentono oggi una valutazione affidabile.')+'</p>'+
    '</details></section></div>';
  }
- const api={currencyRanking,pairRanking,analyze,render};
+ const api={currencyRanking,pairRanking,analyze,selectResearchPairs,render};
  root.FXQuantPairRankings=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
