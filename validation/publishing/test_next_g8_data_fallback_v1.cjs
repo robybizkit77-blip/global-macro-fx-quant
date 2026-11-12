@@ -5,7 +5,7 @@ const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const load=p=>JSON.parse(read(p));
 const base='site/fx-quant-v2/next/';
 const ctx={window:{}};
-for(const p of ['pair-rankings.js','currency-data-fallback.js','currency-strength-reading.js','currency-studio.js'])
+for(const p of ['pair-rankings.js','currency-data-fallback.js','g8-rates-shadow.js','currency-strength-reading.js','currency-studio.js'])
  vm.runInNewContext(read(base+p),ctx,{filename:p,timeout:5000});
 const F=ctx.window.FXQuantCurrencyFallback,Strength=ctx.window.FXQuantCurrencyStrength;
 const FX=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
@@ -16,6 +16,8 @@ const macro=load('live_data/sections/MACRO_THERMOMETER_DATA.json');
 const rates=load('live_data/sections/NATIVE_RATES_DATA.json');
 const chfResearch=load('site/fx-quant-v2/chf-snb-paired-history.json');
 const nzdResearch=load('site/fx-quant-v2/nzd-b2-postroll-web-research.json');
+const chfSpot=load('live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json');
+const nzdDirectionalProxy=load('live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json');
 const ois=load('site/fx-quant-v2/ois-pricing-snapshot.json');
 const cot=load('live_data/sections/V250_COT_CHART_DATA.json');
 const cb=load('live_data/sections/NATIVE_CB_DATA.json');
@@ -45,6 +47,29 @@ assert.equal(context.currencies.NZD.ratesResearch.asof,'2026-11-10');
 assert.match(context.currencies.CHF.ratesResearch.description,/NON è un rendimento live/);
 assert.match(context.currencies.NZD.ratesResearch.description,/manca la riconciliazione XLSX/);
 assert.equal(context.currencies.USD.ratesResearch.status,'NON_DISPONIBILE');
+const shadow=ctx.window.FXQuantG8RatesShadow.analyze({
+ research:context,chfHistory:chfResearch,nzdResearch,spot:chfSpot,
+ nzdMarket:nzdDirectionalProxy,now});
+assert.equal(shadow.schema,'GMFQ_G8_RATES_SHADOW_V1');
+assert.equal(shadow.currencies.CHF.status,'STIMA_MODELLO_RICERCA',JSON.stringify(shadow.currencies.CHF));
+assert(shadow.currencies.CHF.estimate2Y>0.18&&shadow.currencies.CHF.estimate2Y<0.25);
+assert(shadow.currencies.CHF.pseudoOOSCount>=10);
+assert(shadow.currencies.CHF.modelMAEBp<shadow.currencies.CHF.flatBaselineMAEBp);
+assert.equal(shadow.currencies.NZD.status,'STIMA_SCENARIO_NON_CALIBRATA',JSON.stringify(shadow.currencies.NZD));
+assert.equal(shadow.currencies.NZD.estimate2Y,3.80);
+assert.equal(shadow.currencies.NZD.lower2Y,3.77);
+assert.equal(shadow.currencies.NZD.upper2Y,3.83);
+assert.equal(shadow.currencies.CHF.eligibleForCore,false);
+assert.equal(shadow.currencies.NZD.eligibleForCore,false);
+const badSpot=structuredClone(chfSpot);badSpot.as_of='2026-11-13';
+assert.equal(ctx.window.FXQuantG8RatesShadow.chf({research:context,chfHistory:chfResearch,spot:badSpot,now}).status,'NON_DISPONIBILE');
+const badASX=structuredClone(nzdDirectionalProxy);badASX.as_of='2026-11-12';
+assert.equal(ctx.window.FXQuantG8RatesShadow.nzd({research:context,nzdResearch,nzdMarket:badASX,now}).status,'NON_DISPONIBILE');
+const badASXProvenance=structuredClone(nzdDirectionalProxy);badASXProvenance.governance.core_score_effect='ACTIVE';
+assert.equal(ctx.window.FXQuantG8RatesShadow.nzd({research:context,nzdResearch,nzdMarket:badASXProvenance,now}).status,'NON_DISPONIBILE');
+assert.equal(ctx.window.FXQuantG8RatesShadow.analyze({
+ research:context,chfHistory:chfResearch,nzdResearch,spot:chfSpot,
+ nzdMarket:nzdDirectionalProxy,now:'2026-12-10'}).currencies.CHF.status,'NON_DISPONIBILE');
 const history=(ccy,chf=chfResearch,nzd=nzdResearch,gov=rates,asof=now)=>
  F.researchRatesAxis(ccy,chf,nzd,gov,asof);
 const chfWrongSource=structuredClone(chfResearch);
@@ -90,7 +115,7 @@ assert.deepEqual(enriched.rows.map(x=>x.evidenceCount),original.rows.map(x=>x.ev
  'Proxy cannot certify official evidence');
 assert.deepEqual(enriched.rows.map(x=>x.pricing.ok),original.rows.map(x=>x.pricing.ok),
  'Proxy cannot promote 6M OIS/futures weekly repricing');
-const data={currencyPrices:prices,macroSeries,cbEstimated:estimated,macro,rates,ois,cotHistory:cot,cb,pairs,chfResearch,nzdPostroll:nzdResearch};
+const data={currencyPrices:prices,macroSeries,cbEstimated:estimated,macro,rates,ois,cotHistory:cot,cb,pairs,chfResearch,nzdPostroll:nzdResearch,chfSpot,nzdDirectionalProxy};
 const esc=x=>String(x??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const finite=x=>typeof x==='number'&&Number.isFinite(x);
 const fmt=(x,n=2)=>finite(x)?x.toFixed(n):'—';
@@ -108,12 +133,14 @@ const makeHtml=ccy=>ctx.window.FXQuantCurrencies.render({
  state:{ccy,csOther:ccy==='CHF'?'EUR':'USD',csReturnWindow:20}
 });
 const chfHtml=makeHtml('CHF'),nzdHtml=makeHtml('NZD');
-assert(chfHtml.includes('0,238% · storico'), 'Swiss dated 2Y in G8 evidence row');
-assert(nzdHtml.includes('3,770% · ricerca'), 'NZD manual post-roll 2Y in G8 evidence row');
-assert(chfHtml.includes('2Y · contesto datato'));
-assert(nzdHtml.includes('2Y · contesto datato'));
+assert(chfHtml.includes('0.210% · STIMA')||chfHtml.includes('0,210% · STIMA'), 'CHF shadow estimate in G8 board');
+assert(nzdHtml.includes('3.800% · STIMA')||nzdHtml.includes('3,800% · STIMA'), 'NZD explicit scenario in G8 board');
+assert(chfHtml.includes('2Y · stima (non quotazione)'));
+assert(nzdHtml.includes('2Y · stima (non quotazione)'));
 assert(chfHtml.includes('NON è un rendimento live'));
 assert(nzdHtml.includes('manca la riconciliazione XLSX'));
+assert(chfHtml.includes('intervallo di sensibilità/errore indicativo'), 'Uncertainty shown for CHF');
+assert(nzdHtml.includes('SCENARIO')||nzdHtml.includes('Scenario'), 'NZD uncalibrated sensitivity must be labelled');
 assert(!chfHtml.includes('0,238% · +'), 'CHF 2Y level is not rate change');
 assert(html.includes('proxy'), 'Indicative quote reaches G8 UI');
 assert(html.includes('4,50%')||html.includes('4.50%'), 'Indicative USD 6M quote is dated and displayed');
@@ -122,6 +149,10 @@ const idx=read(base+'index.html');
 const app=read(base+'app.js');
 assert(idx.includes('currency-data-fallback.js?v=2'));
 assert(idx.indexOf('currency-data-fallback.js')<idx.indexOf('currency-studio.js'));
+assert(idx.includes('g8-rates-shadow.js?v=1'));
+assert(idx.indexOf('g8-rates-shadow.js')<idx.indexOf('currency-studio.js'));
 assert(idx.includes('currency-studio.js?v=8')&&idx.includes('app.js?v=18.38'));
 assert(app.includes("cbEstimated:'../../../live_data/sections/CB_PRICING_ESTIMATED.json'"));
+assert(app.includes("chfSpot:'../../../live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json'"));
+assert(app.includes("nzdDirectionalProxy:'../../../live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json'"));
 console.log('G8_DATA_FALLBACK_V1_PASS: observed growth, indicative 6M proxy, no official promotion, stale/future guard, unchanged rankings');
