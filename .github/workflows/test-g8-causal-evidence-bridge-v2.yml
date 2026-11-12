@@ -88,6 +88,30 @@ jobs:
             --research-note /tmp/g8-us-households-revised-live-reconciliation-v2.json \
             --candidate-out /tmp/g8-us-households-revised-canonical-candidate-v1.json \
             --report-out /tmp/g8-us-households-revised-canonical-preflight-v1.json
+          # The revised canonical source can already be fully current.
+          # A create/apply-only rehearsal must not fail merely because there
+          # is no change left to apply; never relax the research/PIT gates.
+          preflight_status="$(python - <<'PY'
+          import json
+          p='/tmp/g8-us-households-revised-canonical-preflight-v1.json'
+          r=json.load(open(p))
+          assert r['first_release_pit_eligible'] is False
+          assert r['g8_unchanged_other_than_two_us_household_series'] is True
+          print(r['status'])
+          PY
+          )"
+          case "$preflight_status" in
+            NO_CHANGE_VERIFIED_REVISED_VINTAGE)
+              echo 'BEA_FRED_CANONICAL_ALREADY_CURRENT_NO_PAYLOAD_MUTATION'
+              echo '- BEA/FRED revised US household series already current; no payload write and no new data claimed' >> "$GITHUB_STEP_SUMMARY"
+              git diff --exit-code -- live_data payload
+              exit 0 ;;
+            REVISED_US_HOUSEHOLDS_READY_FOR_CANONICAL_APPLY)
+              echo 'BEA_FRED_REVISED_CANONICAL_PR_ISOLATED_APPLY_TEST' ;;
+            *)
+              echo "Unsupported BEA/FRED preflight state: $preflight_status" >&2
+              exit 1 ;;
+          esac
           python validation/update_live_direct_section.py \
             --section MACRO_SERIES \
             --replacement /tmp/g8-us-households-revised-canonical-candidate-v1.json \
