@@ -8,7 +8,7 @@ const feed=JSON.parse(fs.readFileSync(path.join(root,'live_data/sections/NEWS_PU
 // Validate against the source-content vintage, not yesterday's hardcoded clock.
 // The production parser still refuses dates after its explicit as-of cutoff.
 const today=feed.content_as_of;
-assert.match(today,/^20\\d{2}-\\d{2}-\\d{2}$/);
+assert.match(today,/^20\d{2}-\d{2}-\d{2}$/);
 const x=parse(feed,today);
 assert(x.pulse.length>=4,'Keep all four dated monetary-pricing observations, plus any certified cross-asset evidence');
 assert(x.official.length>=8,'Keep dated institutional releases as the official feed rolls forward');
