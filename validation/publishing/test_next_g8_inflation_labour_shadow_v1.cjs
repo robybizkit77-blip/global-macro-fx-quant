@@ -73,6 +73,11 @@ for(const c of FX){
  }
 }
 assert.equal(m.currencies.USD.inflation.sourceQuality,'CPI_INDEX_YOY_DERIVED_FROM_HISTORICAL_INDEX');
+assert(m.currencies.USD.inflation.sourceQualityAudit.missingHistoricalPeriods>=1,
+ 'Missing October 2025 CPI source month must be documented, not interpolated');
+assert.equal(m.currencies.USD.inflation.sourceQualityAudit.imputedHistoricalMonths,0);
+assert(m.currencies.USD.labour.sourceQualityAudit.identicalMonthRowsDeduplicated>=4,
+ 'Same-month duplicate US unemployment observations are only exact-value deduplicated');
 assert(m.currencies.USD.inflation.observedValue>3.5&&m.currencies.USD.inflation.observedValue<4.5);
 assert(m.currencies.CHF.labour.forecast>3&&m.currencies.CHF.labour.forecast<3.4);
 assert.equal(m.currencies.GBP.labour.horizonSteps,2);
@@ -84,7 +89,12 @@ assert.equal(check(bad,'CHF','labour').status,'NON_DISPONIBILE','Wrong source fi
 const dup=structuredClone(data.macroSeries);
 const arr=dup.CHF.find(x=>x.id==='CH_UNEMP_RATE_history_value');
 arr.dates.push(arr.dates.at(-1));arr.values.push(arr.values.at(-1));
-assert.equal(check(dup,'CHF','labour').status,'NON_DISPONIBILE','Duplicate month rejected');
+assert.equal(check(dup,'CHF','labour').forecast,m.currencies.CHF.labour.forecast,
+ 'Identical duplicate month is deduplicated without changing estimate');
+assert.equal(check(dup,'CHF','labour').sourceQualityAudit.identicalMonthRowsDeduplicated,1);
+arr.values[arr.values.length-1]+=0.5;
+assert.equal(check(dup,'CHF','labour').status,'NON_DISPONIBILE',
+ 'Conflicting duplicate month must be rejected');
 const future=structuredClone(data.macroSeries);
 const usd=future.USD.find(x=>x.id==='US_CPIAUCSL_history_value');
 usd.dates.push('2027-01-01');usd.values.push(999);
