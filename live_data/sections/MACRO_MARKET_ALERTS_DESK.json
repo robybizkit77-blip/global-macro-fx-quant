@@ -1,8 +1,47 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-12T11:23:34Z",
+  "generated_at_utc": "2026-11-12T19:59:41Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-4f3fbaf16fb5b8a3f1c1",
+      "observed_at_utc": "2026-11-12T16:45:39Z",
+      "headline": "Oil tanker struck off UAE's Ras Al-Khaimah, all crew reported safe",
+      "summary": "Reuters riporta: Oil tanker struck off UAE's Ras Al-Khaimah, all crew reported safe. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxOeDlHRUduYXpITEh6ZXlxdm9Zc3hiVXlhZXhzbzUySkFvNkMyQ1pFYWlxbnZKUmR4T0tieF9rZHhWYnFzUXI2a0J4M2VOLUZPcGt3ckxrUzNrSFFfeXpXNDJjRzVIS2p6OWI5d1BhMHVzVVY4TktOaWJQYTJpenFZOXpISzBiUDZ5ZG5vVGE2U0U5RnFjQmlaRmNnUDk0YV9DRnl6UVRkOEtGR1RJdUF2VmxNRmVpN1lDeXRINVdYQ0xabGJkMTMwazNR?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-76297b3ba175d343dfd2",
+      "observed_at_utc": "2026-11-12T16:27:35Z",
+      "headline": "Four tankers struck by explosions in Strait of Hormuz, Iran says",
+      "summary": "Reuters riporta: Four tankers struck by explosions in Strait of Hormuz, Iran says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxQcDQ2cWxyeTFpazFaX1ZNM2RoS0t2ZVpEa0JpMElTZVFMUElROEF5c20tMlU0dEszWFlEdkhfR2VOb3hEQmo3MjRtdVlSaEhkZnpKXzExbE5QcXItQ3Z6REoyY1Fpak9IUUplYWp6NTQ2UjBiNVk1WDN0MmJjaFRkOHNLdDYxMU9xOWhuMnVaTlNiVXJNTlhLYV9EZEpnd1oxYmF0cG82b2VkMURkYnkzZkZBX0hhWHM?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-b0555a3fa4c4cbb2b4eb",
+      "observed_at_utc": "2026-11-12T13:00:09Z",
+      "headline": "Oman monitors handling of oil tanker run aground off its coast",
+      "summary": "Reuters riporta: Oman monitors handling of oil tanker run aground off its coast. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "GEOPOLITICS",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxOajlqak9wTzJCY2RvLTg2YTV6MFZDX3hSMUMxVUVEM3BDQXBVWG10dDM3SDJ0S2pzWmd5NU1BNTZYbTFPVHluME43UTZ0QTVTcllRcDhUdTJienpEcFZ4MmZucnlYRHFCWlMtVG5EUGU1N2pwZl9DTWl1M2lDZFBwRFNwWUtBbVJyWWc3LWZsYlNuYWk3WFRnR1M4cDVVTWZXRnZhMjVrT2h3TXl2d2FPNlR0UQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-7341ec0e67fa0ba67293",
       "observed_at_utc": "2026-11-12T08:17:48Z",
@@ -1377,45 +1416,6 @@
       "related_pairs": [],
       "source_label": "Reuters · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxPR2JfRjRkMmxQTTR6ZWkydWV2ZmVfcHRNa3RKUzJpSXE2MDEySWZaLUpqVWNYRkotRTA0WTd1R0R6OHhFT24yN195bm1BLU9Sa3RPWDcyM3hPYVVUUWkyYkVGdHBWNzF5VmlXT2NSdkdmbHBqczhLSHNMWndDaFJaYU1ULU4zSDZkblNMZ193UFg5SUN0dFFadUVJM0VhZGlNNXJSbzJ5OA?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-c635480afbc82d07d5c4",
-      "observed_at_utc": "2026-11-02T14:16:39Z",
-      "headline": "Global oil supply down nearly 1 bln barrels since Hormuz disruption, warns ADNOC CEO",
-      "summary": "Reuters riporta: Global oil supply down nearly 1 bln barrels since Hormuz disruption, warns ADNOC CEO. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiekFVX3lxTE11TDJqaHRucVRiS1E5a19KNkpneGhTNlIybkZreGNOeWdFSlgyNDJCY0hUVzJBTy1zZlhMZHRGNDBxTFRFMUg4LVNiVHBEaG9qMk8zZU1xM3hOWllzbXhQVFE2X09oTG5ubUhZLVpqbVF1YkdtSVdkOWZR?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-5e4b9c2051c2d9674c1e",
-      "observed_at_utc": "2026-11-02T16:05:19Z",
-      "headline": "Freed from OPEC quotas, UAE says oil exports have risen as it hosts industry event",
-      "summary": "Reuters riporta: Freed from OPEC quotas, UAE says oil exports have risen as it hosts industry event. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "COMMODITIES",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxQcnd0cjROV01YdUV5VG9tVnV6NVpybjJpa1E1TnFOV3g2V2xhMmpmcGJQdXctakdyMVVmZk9hbTZvYnZ6aDJ2RDhoSU12Z2NoYlBRekRWNmlrSWdlblpJa0tKelN5VjFVVUhDWV85enFsam91QXFRWVdUUzNEYmZSTDhaWVBRUFE2MTBVRFY5XzhvR2NDZXVXeXZROVoxdkJQcm91cnZqQUJEWmJLNkJ6R0UwLWJvYU5MQ21sNXZpeEN3S3c?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-dee32f792ef9d463b465",
-      "observed_at_utc": "2026-11-02T14:49:12Z",
-      "headline": "China rolls out support measures to aid struggling stocks",
-      "summary": "Reuters riporta: China rolls out support measures to aid struggling stocks. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxPbUowSGs1Q0hadWZXNFhieVFtSERoVm1uZHBNaDZYeVFoS2FXaVIxMVhnckRuMVY0NkJPQTNXZFdNeUtJQ2hYREZGZDM3UnhzcUE5bkJSMXhDTXpYRUltclJka2pJZS0yNGY0TGg2dDBkbTh3MnhQTjZxM0pKaWViT21HNmE0ajlHS0xGLVdkZmxMOHhzUndVU1Z4YXVPZElpZkJuQTRZSlZPcV9zRmJfQnRVWjRadw?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
