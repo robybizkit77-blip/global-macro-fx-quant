@@ -64,14 +64,14 @@ assert.equal(L.reportType('Weekly_CB_Pricing_G8_2026-11-06_V7.html'),'ois');
 assert.equal(L.reportType('Weekly_Central_Bank_Pricing_G8_2026-11-07_DARK_DESK_DATI_PARZIALI.html'),'ois',
  'The actual scheduled weekly report producer must resolve to OIS category');
 assert.equal(L.reportDate('Weekly_Central_Bank_Pricing_G8_2026-11-07_DARK_DESK_DATI_PARZIALI.html'),'2026-11-07');
-const aliasApproved='Weekly_Central_Bank_Pricing_G8_2026-11-14_V8_DEFINITIVO.html';
+const aliasApproved='Weekly_Central_Bank_Pricing_G8_2026-11-07_V8_DEFINITIVO.html';
 const aliasCandidate=L.remoteReport(aliasApproved);
 assert(aliasCandidate&&aliasCandidate.type==='ois','A dated, explicitly approved alias must be discoverable');
-assert.equal(aliasCandidate.date,'2026-11-14');
-assert.equal(L.remoteReport('Weekly_Central_Bank_Pricing_G8_2026-11-14_V8_PROVA.html'),null,
+assert.equal(aliasCandidate.date,'2026-11-07');
+assert.equal(L.remoteReport('Weekly_Central_Bank_Pricing_G8_2026-11-07_V8_PROVA.html'),null,
  'A draft alias must stay excluded');
-assert.equal(L.remoteReport('Weekly_Central_Bank_Pricing_G8_2026-11-14_V8_BACKUP.html'),null);
-assert.equal(L.reportType('Weekly_Central_Bank_Unknown_G8_2026-11-14_V8_DEFINITIVO.html'),null,
+assert.equal(L.remoteReport('Weekly_Central_Bank_Pricing_G8_2026-11-07_V8_BACKUP.html'),null);
+assert.equal(L.reportType('Weekly_Central_Bank_Unknown_G8_2026-11-07_V8_DEFINITIVO.html'),null,
  'The public scanner must remain limited to existing eight report types');
 
 assert.equal(L.remoteReport('Weekly_CB_Pricing_G8_2026-11-06_V8_PROVA.html'),null);
@@ -94,9 +94,9 @@ assert.equal(L.editionStatus(daily,today).state,'today');
 assert.match(L.editionStatus(daily,today).text,/seduta odierna/);
 assert.equal(L.editionStatus(daily,'2026-11-13').state,'previous',
  'A previous daily report cannot masquerade as the next session report');
-assert.equal(L.editionStatus(daily,'2026-11-14').state,'previous',
+assert.equal(L.editionStatus(daily,'2026-11-07').state,'previous',
  'Weekend cannot hide a missing Friday daily edition');
-assert.equal(L.editionStatus({...daily,date:'2026-11-13'},'2026-11-14').state,'latest-business');
+assert.equal(L.editionStatus({...daily,date:'2026-11-13'},'2026-11-07').state,'latest-business');
 assert.equal(L.editionStatus(ois,today).state,'weekly',
  'Six-day-old OIS weekly is last published, not automatically stale');
 assert.equal(L.editionStatus(cross,today).state,'previous');
