@@ -51,11 +51,11 @@ const shadow=ctx.window.FXQuantG8RatesShadow.analyze({
  research:context,chfHistory:chfResearch,nzdResearch,spot:chfSpot,
  nzdMarket:nzdDirectionalProxy,now});
 assert.equal(shadow.schema,'GMFQ_G8_RATES_SHADOW_V1');
-assert.equal(shadow.currencies.CHF.status,'STIMA_MODELLO_RICERCA');
+assert.equal(shadow.currencies.CHF.status,'STIMA_MODELLO_RICERCA',JSON.stringify(shadow.currencies.CHF));
 assert(shadow.currencies.CHF.estimate2Y>0.18&&shadow.currencies.CHF.estimate2Y<0.25);
 assert(shadow.currencies.CHF.pseudoOOSCount>=10);
 assert(shadow.currencies.CHF.modelMAEBp<shadow.currencies.CHF.flatBaselineMAEBp);
-assert.equal(shadow.currencies.NZD.status,'STIMA_SCENARIO_NON_CALIBRATA');
+assert.equal(shadow.currencies.NZD.status,'STIMA_SCENARIO_NON_CALIBRATA',JSON.stringify(shadow.currencies.NZD));
 assert.equal(shadow.currencies.NZD.estimate2Y,3.80);
 assert.equal(shadow.currencies.NZD.lower2Y,3.77);
 assert.equal(shadow.currencies.NZD.upper2Y,3.83);
