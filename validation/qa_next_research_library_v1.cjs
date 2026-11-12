@@ -13,7 +13,7 @@ new vm.Script(src,{filename:'research-library.js'});
 const L=require('../site/fx-quant-v2/next/research-library.js');
 assert.match(index,/href="#library" data-route="library"/);
 assert.match(index,/research-library\.css\?v=1/);
-assert.match(index,/research-library\.js\?v=6/);
+assert.match(index,/research-library\.js\?v=7/);
 assert.match(index,/9 sezioni/);
 assert.match(app,/library:'Research Library'/);
 assert.match(app,/library:\(\)=>window\.FXQuantResearchLibrary/);
@@ -27,7 +27,7 @@ assert.equal(L.CATEGORIES.length,9); // 'Tutti' plus eight canonical types
 assert.ok(!L.REPORTS.some(x=>x.type==='monitor'),'Discontinued Trade Thesis Monitor must be absent');
 assert.ok(!L.CATEGORIES.some(x=>x[0]==='monitor'),'Discontinued report filter must be absent');
 assert.ok(L.REPORTS.some(x=>x.type==='ois'&&x.file.includes('V7_CONFRONTO_31OTT_06NOV')));
-assert.equal(L.REPORTS.find(x=>x.type==='daily').date,'2026-11-11');
+assert.equal(L.REPORTS.find(x=>x.type==='daily').date,'2026-11-12');
 assert.equal(L.REPORTS.find(x=>x.type==='cross').date,'2026-10-17');
 assert.equal(L.REPORTS.find(x=>x.type==='pairs').date,'2026-10-17');
 assert.ok(L.REPORTS.find(x=>x.type==='pairs').publicUrl.startsWith('./reports/'));
@@ -43,9 +43,11 @@ for(const r of L.REPORTS){
  const html=fs.readFileSync(output,'utf8');
  assert.ok(html.length>1000&&/<html|<!doctype/i.test(html),'Invalid public HTML '+r.file);
  const original=path.join(legacy,r.file);
- if(r.type!=='ois'&&r.date>='2026-11-01'){
-  assert.ok(fs.existsSync(original),'Original approved report must remain versioned');
-  assert.equal(html,fs.readFileSync(original,'utf8'),'Website report must exactly match approved original');
+ if(fs.existsSync(original)){
+  assert.equal(html,fs.readFileSync(original,'utf8'),'Original mirrored report must remain byte-identical');
+ }else{
+  assert.ok(r.publicUrl&&r.publicUrl.startsWith('./reports/'),
+   'New approved Next-only report must resolve from the published Next tree');
  }
 }
 assert.equal(L.filterReports().length,8);
@@ -55,17 +57,17 @@ assert.equal(L.filterReports('ois').length,1);
 assert.equal(L.filterReports('monitor').length,0);
 assert.equal(L.filterReports('all','banche').length,2);
 assert.equal(L.filterReports('all','inesistente').length,0);
-assert.equal(L.filterReports()[0].date,'2026-11-11');
+assert.equal(L.filterReports()[0].date,'2026-11-12');
 assert.equal(L.reportDate('COT_FX_G8_03_NOV_2026_V10.html'),'2026-11-03');
 assert.equal(L.reportDate('Weekly_CB_Pricing_G8_2026-11-06_V7.html'),'2026-11-06');
 assert.equal(L.reportType('Weekly_CB_Pricing_G8_2026-11-06_V7.html'),'ois');
 assert.equal(L.remoteReport('Weekly_CB_Pricing_G8_2026-11-06_V8_PROVA.html'),null);
 assert.equal(L.remoteReport('Trade_Thesis_Monitor_2026-11-11_DARK.html'),null);
-assert.equal(L.latestPerType([...L.REPORTS,{...L.REPORTS[0],file:'Briefing_Forex_Commodities_2026-11-11_V4_DEFINITIVO.html'}]).length,8);
-assert.equal(L.latestPerType([...L.REPORTS,{...L.REPORTS[0],file:'Briefing_Forex_Commodities_2026-11-11_V4_DEFINITIVO.html'}])[0].file,
- 'Briefing_Forex_Commodities_2026-11-11_V4_DEFINITIVO.html','Higher approved revision wins on identical dates');
-assert.equal(L.latestPerType([...L.REPORTS,{...L.REPORTS[0],file:'Briefing_Forex_Commodities_2026-11-11_V4.html'}])[0].file,
- 'Briefing_Forex_Commodities_2026-11-11_V4.html','V4 must supersede corrected V3 on identical dates');
+assert.equal(L.latestPerType([...L.REPORTS,{...L.REPORTS[0],file:'Briefing_Forex_Commodities_2026-11-12_V4_DEFINITIVO.html'}]).length,8);
+assert.equal(L.latestPerType([...L.REPORTS,{...L.REPORTS[0],file:'Briefing_Forex_Commodities_2026-11-12_V4_DEFINITIVO.html'}])[0].file,
+ 'Briefing_Forex_Commodities_2026-11-12_V4_DEFINITIVO.html','Higher approved revision wins on identical dates');
+assert.equal(L.latestPerType([...L.REPORTS,{...L.REPORTS[0],file:'Briefing_Forex_Commodities_2026-11-12_V4.html'}])[0].file,
+ 'Briefing_Forex_Commodities_2026-11-12_V4.html','V4 must supersede corrected V3 on identical dates');
 L.setCategory('ois');
 assert.equal(L.filterReports().length,1);
 L.setQuery('GBP');
@@ -81,7 +83,7 @@ assert.match(L.render(),/data-library-type="ois"/);
 (async()=>{
  const initialFetch=globalThis.fetch;
  try{
-  const remoteName='Briefing_Forex_Commodities_2026-11-11_V4_DEFINITIVO.html';
+  const remoteName='Briefing_Forex_Commodities_2026-11-12_V4_DEFINITIVO.html';
   globalThis.fetch=async(url,opts)=>{
    if(String(url).includes('api.github.com'))return {ok:true,json:async()=>[
     {name:remoteName,type:'file'},
