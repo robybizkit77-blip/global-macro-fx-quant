@@ -91,7 +91,7 @@ assert.equal(strip,article,'Frozen morning editorial remains byte-for-byte uncha
 const app=read(next+'app.js');
 assert(app.includes("estimated,calendar:get('calendar')"));
 const index=read(next+'index.html');
-assert(index.includes('./morning-desk-v1.js?v=4'));
+assert(index.includes('./morning-desk-v1.js?v=5'));
 assert(index.includes('./morning-desk-v1.css?v=4'));
 assert(index.includes('./app.js?v=18.43-pulse2'));
 const css=read(next+'morning-desk-v1.css');
