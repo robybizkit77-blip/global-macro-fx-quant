@@ -286,8 +286,7 @@ function build(api){
    'Questo mostra la forza relativa, non chi abbia provocato il movimento.':
    'La forza relativa del prezzo non è verificabile con fixing comuni sufficienti.';
   const policySummary=desk?.market?.tier==='VERIFICATO'?
-   'Il riferimento '+desk.market.kind+' a sei mesi '+(desk.market.side==='SALE'?'sale':
-     desk.market.side==='SCENDE'?'scende':'varia poco')+' di '+
+   'Il riferimento '+desk.market.kind+' a sei mesi ha registrato '+
    sign(desk.market.bp,1,' pb')+' nell’ultima settimana. '+desk.comparison.text:
    desk?.market?.tier==='PROXY'?
    'Il futures bank bill NZD a sei mesi si muove di '+sign(desk.market.bp,1,' pb')+
@@ -316,7 +315,7 @@ function build(api){
     cards.map(([label,main,note],i)=>'<article class="strength-card"><span>0'+(i+1)+
      ' / '+esc(label)+'</span><p>'+esc(main)+'</p><small>'+esc(note)+'</small></article>').join('')+
    '</div><div class="strength-additional">'+
-    (desk?'<p><strong>Verifica operativa completa:</strong> '+esc(desk.watch)+'</p>':'')+
+    (desk?'<p><strong>Da monitorare:</strong> '+esc(desk.watch)+'</p>':'')+
     '<p><strong>Prove verificate:</strong> '+x.evidenceCount+
      '/4. Proxy e stime non aggiungono prove né punteggi operativi.</p>'+
     cbText+cotText+'</div>'+
@@ -483,8 +482,7 @@ function build(api){
    +'<details class="strength-pair-fold"><summary><strong>Confronta '+country+' con una seconda valuta</strong><span>La tesi bilaterale, il grafico delle sette controparti e le verifiche specifiche</span></summary>'
    +story()+peers()+'</details>'
    +'<details class="strength-method-fold"><summary><strong>Verifica la classifica di prezzo e tutte le fonti</strong><span>Graduatoria BCE, storico macro, tassi, COT e limiti temporali</span></summary>'
-   +ranking()+evidence()+checkpoint()+'</details>'
-   +'';
+   +ranking()+evidence()+checkpoint()+'</details>';
  }
  return render();
 }
