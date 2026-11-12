@@ -7,8 +7,12 @@ Europe/Rome offset rather than the runner's current minute. Do not conflate
 the CET/CEST duplicate cron expressions. A bounded 4-hour delay window
 prevents a queued job from running against the wrong local session.
 
-Evening recovery reuses completed, successful, MAIN-branch *scheduled* runs of
-the pre-existing Hourly Certified Alert Readiness workflow. No new cron.
+Morning recovery accepts successful MAIN-branch Macro scheduled runs as
+well as the existing serialized Source-Watch -> News -> Macro workflow_run.
+This covers a dropped independent Rates cron without trusting Macro push/PR
+or manual dispatch. Evening recovery reuses completed, successful MAIN-branch
+*scheduled* runs of the pre-existing Hourly Certified Alert Readiness workflow.
+No new cron or workflow.
 Reject mismatched upstream identities, PR/push/manual events and weekends.
 This gives late official North American rates a second real read before the
 next day's morning pipeline; it NEVER advances unavailable source observations.
@@ -54,10 +58,12 @@ def resolve(event: str, cron: str, now: dt.datetime, *,
         out["upstream_event"] = upstream_event
         out["upstream_conclusion"] = upstream_conclusion
         out["upstream_head_branch"] = upstream_head_branch
-        # A safe serial fallback must not fire on Macro push, PR,
-        # manual dispatch, or its independent scheduled refresh.
+        # Accept only trusted scheduled Macro or serialized Source-Watch
+        # recovery. A scheduled Macro completion supplies a safety-net when
+        # the independent Rates cron is delayed or dropped by GitHub.
+        # Never respond to Macro push/PR/manual jobs as market-source evidence.
         morning = (upstream_name == "Macro Persistent Daily V1"
-                   and upstream_event == "workflow_run")
+                   and upstream_event in ("workflow_run", "schedule"))
         evening = (upstream_name == "Hourly Certified Alert Readiness V1"
                    and upstream_event == "schedule")
         if (not (morning or evening)
