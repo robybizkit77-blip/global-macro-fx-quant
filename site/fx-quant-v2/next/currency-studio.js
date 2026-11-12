@@ -224,6 +224,9 @@ function build(api){
   const x=strengthView().rows.find(r=>r.ccy===country);
   if(!x)return '<p>La lettura G8 non è disponibile finché mancano dati verificabili.</p>';
   const cb=CB[country]||{};
+  const desk=root.FXQuantG8Transmission?.one?.({row:x,ois:OIS[country],
+   growth:G8MACROGAP?.currencies?.[country],
+   labour:G8INFLAB?.currencies?.[country],now:dayNow()})||null;
   const growth=x.context?.growth;
   const gap=G8MACROGAP?.currencies?.[country];
   const gapReady=macroGapReady(gap);
@@ -252,12 +255,20 @@ function build(api){
   const pricingText=x.pricing.ok?x.pricing.text:
    proxy?.status==='PROXY_INFORMATIVO'?x.pricing.text+' '+proxy.description:x.pricing.text;
   const cards=[
-   ['MACRO · CRESCITA / LAVORO / PREZZI',growthText+gapNote+' '+x.macro.text+ilNarrative(country),
+   ['MACRO · CRESCITA / LAVORO / PREZZI',
+    growthText+gapNote+' '+x.macro.text+ilNarrative(country)+
+    (desk?' '+desk.macro.observed+' '+desk.macro.why+
+     (desk.scenarioNotes.length?' '+desk.scenarioNotes.join(' '):''):''),
     'Serie storiche con periodo di osservazione, non nowcast, sorprese macro o pubblicazioni odierne.'],
    ['TASSI 2Y',x.rates.text+(dated2Y?' '+ratesContext.description:'')+rateEstimateText,
     estimated2Y?'STIMA NON OSSERVATA. La banda non è un intervallo di confidenza e non influenza le 4 conferme operative.':dated2Y?'Storico/lettura manuale non è un tasso live e non aumenta le prove disponibili.':'Movimento di mercato, non prova di decisioni future.'],
-   ['ASPETTATIVE 6M',pricingText,'I proxy sono informativi e non sostituiscono l’OIS ufficiale né i suoi cambiamenti.'],
-   ['PREZZO',x.price.text+' '+x.price.label+(x.price.position?' · posizione '+x.price.position+'/8.':''),'La forza osservata non identifica il driver.']
+   ['ASPETTATIVE 6M',desk?
+    (desk.market.tier==='NON_VERIFICATO'?pricingText+' ':'')+
+     desk.market.text+' '+desk.comparison.text:pricingText,
+    'OIS e futures ufficiali sono osservazioni di strumento; il proxy ASX NZD incorpora basis. Un movimento del 6M non dimostra da solo la reazione della banca centrale.'],
+   ['PREZZO',desk?desk.price.text:
+    x.price.text+' '+x.price.label+(x.price.position?' · posizione '+x.price.position+'/8.':''),
+    '20 fixing BCE sono una finestra diversa dalla settimana dei futures: correlazione o segno concorde non dimostrano causa.']
   ];
   const cbText=validDay(cb.last_date)&&cb.last_date<=dayNow()?
    '<p><strong>Ultima decisione '+esc(cb.bank||country)+':</strong> '+esc(cb.action||'n.d.')+' · '+date(cb.last_date)+'. Non coincide necessariamente con ciò che il mercato prezza adesso.</p>':'';
@@ -265,10 +276,12 @@ function build(api){
   return '<section class="strength-focus" id="orient-strength-focus"><div class="strength-focus-head"><div>'+
    '<span class="chapter-kicker">02 / DOSSIER VALUTA · '+FLAGS[country]+' '+country+'</span>'+
    '<h2>'+FLAGS[country]+' '+country+': '+esc(x.reading.label.toLowerCase())+'</h2>'+
-   '<p>'+esc(x.reading.text)+'</p></div><div class="strength-coverage">Prove disponibili '+x.evidenceCount+'/4'+
+   '<p>'+esc(desk?desk.headline+' '+desk.comparison.text:x.reading.text)+'</p></div><div class="strength-coverage">Prove disponibili '+x.evidenceCount+'/4'+
    '<small>Solo fonti verificate · contesto storico/proxy separato</small></div></div>'+
    '<div class="strength-cards">'+cards.map(([label,main,note],i)=>'<article class="strength-card"><span>0'+(i+1)+' / '+esc(label)+'</span><p>'+esc(main)+'</p><small>'+esc(note)+'</small></article>').join('')+'</div>'+
-   '<div class="strength-additional">'+cbText+cotText+'</div>'+
+   '<div class="strength-additional">'+
+    (desk?'<p><strong>Da monitorare:</strong> '+esc(desk.watch)+'</p>':'')+
+    cbText+cotText+'</div>'+
    '<nav class="strength-links"><a href="#macro">Macro completa</a><a href="#rates">Tassi &amp; OIS</a><a href="#cot">COT</a><a href="#pairs">Coppie FX</a></nav>'+shadowResearch()+'</section>';
  }
  function ranking(){
