@@ -349,6 +349,7 @@ function build(api){
     e.importance==='HIGH'&&e.status==='UPCOMING'&&
     typeof e.quality==='string'&&e.quality.startsWith('OFFICIAL')&&
     validDay(e.date)&&e.date<=today&&
+    validDay(cur.macro?.gdpRelease)&&cur.macro.gdpRelease<e.date&&
     (Date.parse(today+'T12:00:00Z')-Date.parse(e.date+'T12:00:00Z'))/864e5<=3):
    null;
   const missingRatesCue=cur?.labourDirection===-1?
