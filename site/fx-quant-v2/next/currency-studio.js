@@ -19,6 +19,9 @@ function build(api){
  const G8CONTEXT=root.FXQuantCurrencyFallback?.evaluate?.({macroSeries:get('macroSeries'),estimated:get('cbEstimated'),
    rates:GOV,chfResearch:get('chfResearch'),nzdResearch:get('nzdPostroll'),now:dayNow()})||null;
  const G8SHADOW=root.FXQuantGrowthShadow?.analyze?.({macroSeries:get('macroSeries'),now:dayNow()})||null;
+ const G8MACROGAP=root.FXQuantG8MacroGap?.analyze?.({macroSeries:get('macroSeries'),now:dayNow()})||null;
+ const macroGapReady=m=>m&&['MODELLO_RETROSPETTIVO_PROMETTENTE','SCENARIO_NON_VALIDATO'].includes(m.status)&&
+  m.eligibleForCore===false&&finite(m.scenarioValue)&&finite(m.deltaFromObserved);
  const G8RATESHADOW=root.FXQuantG8RatesShadow?.analyze?.({research:G8CONTEXT,
   chfHistory:get('chfResearch'),spot:get('chfSpot'),
   nzdResearch:get('nzdPostroll'),nzdMarket:get('nzdDirectionalProxy'),
@@ -90,9 +93,14 @@ function build(api){
    const sixLabel=x.pricing.ok?x.pricing.label:proxyReady?proxy.label:x.pricing.label;
    const sixDate=x.pricing.ok?date(x.pricing.asof):proxyReady?'Indicativo · '+date(proxy.asof):'Non certificato';
    const growLabel=growth?.status==='STORICO_DESCRITTIVO'?growth.label:split[0];
+   const gap=G8MACROGAP?.currencies?.[x.ccy];
+   const growthDetail=macroGapReady(gap)?
+     'SCENARIO '+gap.targetPeriod+' · '+sign(gap.deltaFromObserved,2,gap.deltaUnit==='%'?'%':' p.p.')+
+     ' vs '+gap.sourcePeriod+' · '+(gap.pseudoOOSQualified?'test retrospettivo favorevole':'non validato'):
+     (growth?.status==='STORICO_DESCRITTIVO'?split[0]+' · '+(split[1]||''):split[1]||'');
    return '<button class="strength-row '+(x.ccy===country?'selected ':'')+tone+'" type="button" data-cs-country="'+x.ccy+'" aria-pressed="'+String(x.ccy===country)+'" aria-label="Seleziona '+x.ccy+' per approfondire">'+
     '<span class="strength-name"><b>'+rank+'</b><strong>'+FLAGS[x.ccy]+' '+x.ccy+'</strong></span>'+
-    '<span class="strength-axis"><small>Crescita · dato storico</small><strong>'+esc(growLabel)+'</strong><em>'+esc(growth?.status==='STORICO_DESCRITTIVO'?split[0]+' · '+(split[1]||''):split[1]||'')+'</em></span>'+
+    '<span class="strength-axis"><small>Crescita · storico / scenario</small><strong>'+esc(growLabel)+'</strong><em>'+esc(growthDetail)+'</em></span>'+
     '<span class="strength-axis '+(x.rates.ok?'':'unverified')+'"><small>'+esc(twoHeading)+'</small><strong>'+esc(twoLabel)+'</strong><em>'+esc(twoMeta)+'</em></span>'+
     '<span class="strength-axis '+(x.pricing.ok?'':'unverified')+(proxyReady?' context-proxy':'')+'"><small>'+ (x.pricing.ok?'Attese 6M · Δ 1W':'Futures 6M · contesto')+'</small><strong>'+esc(sixLabel)+'</strong><em>'+esc(sixDate)+'</em></span>'+
     '<span class="strength-axis '+(x.price.change>0?'fxpositive':x.price.change<0?'fxnegative':'')+'"><small>Prezzo · 20 fixing</small><strong>'+esc(x.price.label)+'</strong><em>vs le altre G8</em></span>'+
@@ -105,11 +113,29 @@ function build(api){
    '<small>'+esc(rankDate)+'</small></div>'+
    '<div class="strength-columns" aria-hidden="true"><span>VALUTA</span><span>MACRO</span><span>2Y</span><span>ATTESE 6M</span><span>PREZZO</span><span>GIUDIZIO</span></div>'+
    '<div class="strength-rows">'+rows+'</div>'+
-   '<p class="strength-note">Crescita: osservazioni storiche, non PIL stimato. 2Y: variazione settimanale solo se verificata; le stime CHF/NZD sono <strong>scenari di ricerca, non rendimenti osservati</strong> e non entrano nei segnali. 6M: variazione ufficiale se verificata, altrimenti futures indicativi datati, non repricing monetario certificato. Il ranking resta esclusivamente di prezzo; proxy e stime non aumentano le prove operative.</p></section>';
+   '<p class="strength-note">Crescita: il dato grande è osservato e datato; lo scenario copre l'ultimo periodo economico completato, ma resta una <strong>stima su serie storiche revisionabili, non PIL generale o sorpresa macro</strong>. Il modello indica quando non batte il benchmark. 2Y CHF/NZD: scenari, non rendimenti osservati né nuovi segnali. 6M: futures indicativi non equivalgono a repricing OIS. Il ranking resta esclusivamente di prezzo; proxy e stime non aumentano le prove operative.</p></section>';
  }
  function shadowResearch(){
   const t=G8SHADOW?.currencies?.[country];
-  if(!t)return '';
+  const g=G8MACROGAP?.currencies?.[country];
+  if(!t&&!g)return '';
+  const gapReady=macroGapReady(g);
+  const gapUnit=g?.reportedRate?'p.p.':'%';
+  const gapText=gapReady?
+   '<p class="strength-shadow-projection">SCENARIO '+esc(g.targetPeriod)+' · <strong>'+esc(g.label)+
+   '</strong>: '+esc(fmt(g.scenarioValue,3))+
+   ' ('+esc(sign(g.deltaFromObserved,2,gapUnit))+ ' rispetto a '+esc(g.sourcePeriod)+
+   '). Ultimo valore osservato '+esc(fmt(g.observedValue,3))+
+   '. Fascia indicativa basata su errori storici: '+esc(fmt(g.rangeLow,3))+
+   ' – '+esc(fmt(g.rangeHigh,3))+
+   ' (non intervallo di confidenza).</p><p>'+esc(g.interpretation)+
+   ' Test retrospettivo sullo stesso orizzonte ('+g.horizonSteps+' periodi): '+
+   g.backtest.points+' verifiche; errore medio '+fmt(g.backtest.modelMAE,3)+
+   ' contro '+fmt(g.backtest.baselineMAE,3)+' del benchmark (unità: '+
+   esc(g.historicalErrorUnit)+'), miglioramento '+esc(sign(g.backtest.improvementPct,1,'%'))+
+   '. Fonte storica: '+esc(g.source)+'. Data economica di riferimento '+esc(g.sourcePeriod)+
+   '; la data di rilascio originario non è certificata.</p>':
+   '<p>Scenario per il periodo economico non disponibile: '+esc(g?.reason||'dati insufficienti')+'.</p>';
   const label=t.status==='RESEARCH_CANDIDATE'?'Modello promettente, non ancora operativo':
    t.status==='NO_BENCHMARK_EDGE'?'Nessun vantaggio storico sufficiente':
    t.status==='INSUFFICIENT_SAMPLE'?'Campione di test insufficiente':
@@ -128,9 +154,9 @@ function build(api){
     '<p class="strength-shadow-projection">La previsione resta <strong>non pubblicata</strong>: '+
      esc(label.toLowerCase())+'.</p>';
   return '<details class="strength-shadow-fold"><summary><strong>Ricerca Quant · stima sperimentale</strong>'+
-   '<span>'+esc(label)+' · nessun effetto sul ranking FX</span></summary>'+
-   '<div class="strength-shadow-body"><p class="strength-shadow-kicker">MODELLO SHADOW · NON POINT-IN-TIME · NON OPERATIVO</p>'+
-   '<p>Serie: <strong>'+esc(t.label||country)+'</strong>. Stimiamo un solo passo avanti usando la media fissa delle ultime sei variazioni; il confronto è con una previsione di variazione zero.</p>'+
+   '<span>'+(gapReady?(g.pseudoOOSQualified?'Scenario con test retrospettivo favorevole':'Scenario non validato'):esc(label))+' · nessun effetto sul ranking FX</span></summary>'+
+   '<div class="strength-shadow-body"><p class="strength-shadow-kicker">SCENARIO MACRO · NON POINT-IN-TIME · NON OPERATIVO</p>'+
+   gapText+'<p>Modello selettivo precedente sulla prossima singola osservazione: <strong>'+esc(t?.label||country)+'</strong>. Basato sulla media delle ultime sei variazioni, confrontata con una previsione senza variazione.</p>'+
    forecast+(skill?'<p>'+esc(skill)+'</p>':'')+
    '<p class="strength-shadow-caveat">I dati storici possono essere revisionati e mancano le date di prima pubblicazione. Il test walk-forward è retrospettivo e non dimostra un vantaggio in tempo reale. Non genera segnali, probabilità di banca centrale o punteggi G8.</p>'+
    '</div></details>';
@@ -140,6 +166,16 @@ function build(api){
   if(!x)return '<p>La lettura G8 non è disponibile finché mancano dati verificabili.</p>';
   const cb=CB[country]||{};
   const growth=x.context?.growth;
+  const gap=G8MACROGAP?.currencies?.[country];
+  const gapReady=macroGapReady(gap);
+  const gapNote=gapReady?
+   ' Scenario economico per '+gap.targetPeriod+' su '+gap.label+': '+fmt(gap.scenarioValue,3)+
+   ' ('+sign(gap.deltaFromObserved,2,gap.reportedRate?' p.p.':'%')+
+   ' vs '+gap.sourcePeriod+'). '+(gap.pseudoOOSQualified?
+    'Test retrospettivo favorevole contro benchmark senza variazione.':
+    'Semplice estrapolazione senza vantaggio storico dimostrato.')+
+   ' Non è un dato pubblicato, né una stima del PIL complessivo se la serie rappresenta consumi/retail.':
+   '';
   const proxy=x.context?.pricingProxy;
   const ratesContext=x.context?.ratesResearch;
   const estRate=G8RATESHADOW?.currencies?.[country];
@@ -157,7 +193,7 @@ function build(api){
   const pricingText=x.pricing.ok?x.pricing.text:
    proxy?.status==='PROXY_INFORMATIVO'?x.pricing.text+' '+proxy.description:x.pricing.text;
   const cards=[
-   ['MACRO · CRESCITA / LAVORO / PREZZI',growthText+' '+x.macro.text,
+   ['MACRO · CRESCITA / LAVORO / PREZZI',growthText+gapNote+' '+x.macro.text,
     'Serie storiche con periodo di osservazione, non nowcast, sorprese macro o pubblicazioni odierne.'],
    ['TASSI 2Y',x.rates.text+(dated2Y?' '+ratesContext.description:'')+rateEstimateText,
     estimated2Y?'STIMA NON OSSERVATA. La banda non è un intervallo di confidenza e non influenza le 4 conferme operative.':dated2Y?'Storico/lettura manuale non è un tasso live e non aumenta le prove disponibili.':'Movimento di mercato, non prova di decisioni future.'],
