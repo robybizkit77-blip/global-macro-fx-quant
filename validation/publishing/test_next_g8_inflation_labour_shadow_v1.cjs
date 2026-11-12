@@ -139,5 +139,5 @@ assert.deepEqual(after.rows.map(x=>x.evidenceCount),ref.rows.map(x=>x.evidenceCo
 const idx=read(dir+'index.html');
 assert(idx.includes('g8-inflation-labour-shadow.js?v=1'));
 assert(idx.indexOf('g8-inflation-labour-shadow.js')<idx.indexOf('currency-studio.js'));
-assert(idx.includes('currency-studio.js?v=11'));
+assert(idx.includes('currency-studio.js?v=12'));
 console.log('G8_INFLATION_LABOUR_SHADOW_V1_PASS: 10 dated estimates, 6 observed unchanged, CHF unemployment only candidate; dates/vintage/benchmark/ranking guards');
