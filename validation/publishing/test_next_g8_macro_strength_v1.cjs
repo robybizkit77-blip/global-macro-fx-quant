@@ -52,7 +52,7 @@ const html=read('site/fx-quant-v2/next/index.html');
 assert(html.includes('currency-strength-reading.js?v=1')&&html.includes('currency-studio.js?v=12'));
 assert(html.indexOf('currency-strength-reading.js')<html.indexOf('currency-studio.js'));
 const studio=read('site/fx-quant-v2/next/currency-studio.js');
-for(const label of ['strengthBoard()+strengthFocus()','MACRO → TASSI → ATTESE → PREZZO','strength-pair-fold','strength-method-fold']){
+for(const label of ['strengthBoard()+strengthFocus()','CHI SI MUOVE E PERCHÉ','strength-pair-fold','strength-method-fold']){
  assert(studio.includes(label),'G8 Country Desk must retain '+label);
 }
 console.log('G8_MACRO_RATES_PRICING_PRICE_V1_PASS: 8 currencies, 20-day price rank only, 6M quality filter, stale/missing and no lookahead');
