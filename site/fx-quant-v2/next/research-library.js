@@ -29,7 +29,7 @@ function reportType(file){
  if(file.startsWith('Weekly_Global_Macro_Report_'))return 'macro';
  if(file.startsWith('Weekly_Bank_FX_Report_'))return 'bank';
  if(file.startsWith('Weekly_CB_Sentiment_Report_'))return 'cb';
- if(file.startsWith('Weekly_CB_Pricing_G8_'))return 'ois';
+ if(file.startsWith('Weekly_CB_Pricing_G8_')||file.startsWith('Weekly_Central_Bank_Pricing_G8_'))return 'ois';
  if(file.startsWith('COT_FX_G8_'))return 'cot';
  if(file.startsWith('Weekly_Global_Macro_Strength_Cross_Asset_'))return 'cross';
  if(file.startsWith('Weekly_FX_Pair_Selection_'))return 'pairs';

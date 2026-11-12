@@ -13,7 +13,7 @@ new vm.Script(src,{filename:'research-library.js'});
 const L=require('../site/fx-quant-v2/next/research-library.js');
 assert.match(index,/href="#library" data-route="library"/);
 assert.match(index,/research-library\.css\?v=1/);
-assert.match(index,/research-library\.js\?v=8/);
+assert.match(index,/research-library\.js\?v=9/);
 assert.match(index,/9 sezioni/);
 assert.match(app,/library:'Research Library'/);
 assert.match(app,/library:\(\)=>window\.FXQuantResearchLibrary/);
@@ -61,6 +61,19 @@ assert.equal(L.filterReports()[0].date,'2026-11-12');
 assert.equal(L.reportDate('COT_FX_G8_03_NOV_2026_V10.html'),'2026-11-03');
 assert.equal(L.reportDate('Weekly_CB_Pricing_G8_2026-11-06_V7.html'),'2026-11-06');
 assert.equal(L.reportType('Weekly_CB_Pricing_G8_2026-11-06_V7.html'),'ois');
+assert.equal(L.reportType('Weekly_Central_Bank_Pricing_G8_2026-11-07_DARK_DESK_DATI_PARZIALI.html'),'ois',
+ 'The actual scheduled weekly report producer must resolve to OIS category');
+assert.equal(L.reportDate('Weekly_Central_Bank_Pricing_G8_2026-11-07_DARK_DESK_DATI_PARZIALI.html'),'2026-11-07');
+const aliasApproved='Weekly_Central_Bank_Pricing_G8_2026-11-07_V8_DEFINITIVO.html';
+const aliasCandidate=L.remoteReport(aliasApproved);
+assert(aliasCandidate&&aliasCandidate.type==='ois','A dated, explicitly approved alias must be discoverable');
+assert.equal(aliasCandidate.date,'2026-11-07');
+assert.equal(L.remoteReport('Weekly_Central_Bank_Pricing_G8_2026-11-07_V8_PROVA.html'),null,
+ 'A draft alias must stay excluded');
+assert.equal(L.remoteReport('Weekly_Central_Bank_Pricing_G8_2026-11-07_V8_BACKUP.html'),null);
+assert.equal(L.reportType('Weekly_Central_Bank_Unknown_G8_2026-11-07_V8_DEFINITIVO.html'),null,
+ 'The public scanner must remain limited to existing eight report types');
+
 assert.equal(L.remoteReport('Weekly_CB_Pricing_G8_2026-11-06_V8_PROVA.html'),null);
 assert.equal(L.remoteReport('Trade_Thesis_Monitor_2026-11-11_DARK.html'),null);
 assert.equal(L.latestPerType([...L.REPORTS,{...L.REPORTS[0],file:'Briefing_Forex_Commodities_2026-11-12_V4_DEFINITIVO.html'}]).length,8);
