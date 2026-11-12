@@ -79,6 +79,6 @@ const next=B.analyze({prices:data.currencyPrices,macro:data.macro.currencies,
 assert.deepEqual(next.rows.map(x=>x.ccy),original.rows.map(x=>x.ccy));
 assert.deepEqual(next.rows.map(x=>x.evidenceCount),original.rows.map(x=>x.evidenceCount));
 const html=read(dir+'index.html');
-assert(html.indexOf('g8-growth-shadow.js?v=1')<html.indexOf('currency-studio.js?v=9'));
+assert(html.indexOf('g8-growth-shadow.js?v=1')<html.indexOf('currency-studio.js?v=10'));
 assert(html.includes('currency-studio.css?v=5'));
 console.log('G8_SHADOW_V1_PASS: US-only research candidate, eight benchmark evaluations, stale/future/PIT guards, unchanged FX rankings');
