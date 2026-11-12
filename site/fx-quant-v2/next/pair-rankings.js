@@ -84,11 +84,12 @@
    (x.favored===x.base||x.favored===x.quote)&&
    (x.tier===1||x.tier===2));
   const chosen=[],exposure=Object.create(null),direction=Object.create(null);
+  const byOriginalRank=(a,b)=>eligible.indexOf(a)-eligible.indexOf(b);
   // Up to two appearances per currency first; relax to three only if needed.
   // At most two selections can express the same favored currency.
   for(const maxExposure of [2,3]){
    for(const x of eligible){
-    if(chosen.length===limit)return chosen;
+    if(chosen.length===limit)return chosen.sort(byOriginalRank);
     if(chosen.some(y=>y.key===x.key)||
        (exposure[x.base]||0)>=maxExposure||
        (exposure[x.quote]||0)>=maxExposure||
@@ -99,7 +100,7 @@
     direction[x.favored]=(direction[x.favored]||0)+1;
    }
   }
-  return chosen;
+  return chosen.sort(byOriginalRank);
  }
 
  function render(api){
