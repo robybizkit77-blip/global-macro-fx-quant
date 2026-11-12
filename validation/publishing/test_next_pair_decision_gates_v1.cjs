@@ -64,7 +64,7 @@ for(const required of [
 assert(!pairs.includes("const next=activePair?.missing"),'No duplicated generic watch paragraph');
 assert(pairs.includes("esc(gate.improve)")&&pairs.includes("esc(gate.weaken)"),
  'Every gate must be HTML-escaped');
-assert(html.includes('./pair-rankings.js?v=6'));
-assert(html.includes('./app.js?v=18.43-pulse2'));
+assert(html.includes('./pair-rankings.js?v=7'));
+assert(html.includes('./app.js?v=18.43-paircalendar1'));
 assert.equal(typeof ranking.selectResearchPairs,'function','Current Top5 remains available');
 console.log('NEXT_PAIR_DECISION_GATES_V1_PASS: directional levels, passed/stale guards, first-read clarity, no fake H4 entries');
