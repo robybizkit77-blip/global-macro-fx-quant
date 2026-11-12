@@ -76,69 +76,78 @@
  }
 
  function render(api){
-  const {get,FX,FLAGS,state,esc,sign,date,dayNow}=api,now=dayNow();
-  const profileFn=root.FXQuantDecisionJourney?.profile;
-  const view=analyze({model:get('pairs'),prices:get('currencyPrices'),now,FX,profileFn});
-  const cur=view.currencies,pr=view.pairs,top=pr.items.slice(0,5);
-  const worst=cur?Math.max(...cur.items.map(x=>Math.abs(x.percent)),0.0001):1;
-  const overlap=FX.map(ccy=>({ccy,n:top.filter(x=>x.key.includes(ccy)).length}))
-   .sort((a,b)=>b.n-a.n)[0];
-  const topCaution=!pr.items.some(x=>x.tier===1)?
-   'Nessuna coppia ha tutte le conferme: questa è una lista di studio, non di ingressi. ':'';
-  const exposureCaution=overlap?.n>=3?
-   overlap.n+' delle prime '+top.length+' coppie coinvolgono '+overlap.ccy+
-   ': attenzione alla concentrazione dello stesso rischio. ':'';
-  const topNote=topCaution+exposureCaution;
-  const tag=x=>'<span class="fx-rank-pill tier-'+x.tier+'">'+esc(x.stage)+'</span>';
-  const risk=x=>x.risk?'<span class="fx-rank-risk">CON RISCHI</span>':x.quality!=='NON VALUTABILE'?
-   '<span class="fx-rank-minor">'+esc(x.quality)+'</span>':'';
-  const row=(x,i,featured=false)=>'<button class="fx-rank-pair '+(featured?'featured ':'')+
-   (state.pair===x.key&&state.pairDetailOpen?'selected ':'')+'tier-'+x.tier+
-   '" type="button" data-pair="'+esc(x.key)+'" aria-label="Apri tesi '+esc(x.name)+'">'+
+  const {get,FLAGS,state,esc,sign,date}=api;
+  const est=get('estimatedMacro');
+  const active=est?.status==='STIMA_OPERATIVA_NON_VALIDATA'&&
+    est.currencies?.length===8&&est.pairs?.length===28;
+  const items=active?est.pairs:[],top=items.slice(0,5);
+  const topNote=active&&top.length&&
+    top.filter(x=>x.favored).reduce((m,x)=>{m[x.favored]=(m[x.favored]||0)+1;return m},{});
+  const exposure=topNote?Object.entries(topNote).sort((a,b)=>b[1]-a[1])[0]:null;
+  const caution=exposure?.[1]>=3?
+    exposure[1]+' delle prime '+top.length+' coppie favoriscono '+exposure[0]+
+    ': rischio comune, non cinque opportunità indipendenti.':'';
+  const rankLabel=x=>x.tier===1?'Conferma da studiare':x.tier===2?'Attesa prezzo':
+    x.tier===3?'Prezzo contrario':'Vantaggio non distinto';
+  const row=(x,i,featured=false)=>'<button class="fx-rank-pair '+
+   (featured?'featured ':'')+(state.pair===x.key&&state.pairDetailOpen?'selected ':'')+
+   'tier-'+x.tier+'" type="button" data-pair="'+esc(x.key)+'" aria-label="Apri tesi '+esc(x.name)+'">'+
    '<span class="fx-rank-number">'+(i+1)+'</span>'+
    '<span class="fx-rank-pair-id"><strong>'+esc(x.name)+'</strong><small>'+
-   (x.bias==='NESSUNO'?'NESSUN BIAS':'BIAS '+esc(x.bias))+'</small></span>'+
+   (x.bias==='NESSUNO'?'NESSUN BIAS':'STIMA '+esc(x.bias))+'</small></span>'+
    '<span class="fx-rank-pair-copy"><strong>'+esc(x.story)+'</strong>'+
    '<small>'+esc(x.priceText)+'</small></span>'+
-   '<span class="fx-rank-pair-badges">'+tag(x)+risk(x)+'</span>'+
+   '<span class="fx-rank-pair-badges"><span class="fx-rank-pill tier-'+x.tier+'">'+
+   esc(rankLabel(x))+'</span><span class="fx-rank-minor">'+
+   esc(x.quality)+'</span></span>'+
    '<span class="fx-rank-open">Apri tesi ›</span></button>';
-  const currencyBody=cur?'<div class="fx-rank-currency-list">'+cur.items.map((x,i)=>{
-   const tone=x.percent>0.00001?'positive':x.percent<-.00001?'negative':'neutral';
-   return '<div class="fx-rank-currency" aria-label="'+esc(x.ccy)+' posizione '+(i+1)+'">'+
-    '<span class="fx-rank-number">'+(i+1)+'</span><strong>'+esc(FLAGS[x.ccy]||'')+' '+x.ccy+'</strong>'+
-    '<div class="fx-rank-track"><span class="'+tone+'" style="width:'+Math.max(3,Math.abs(x.percent)/worst*100).toFixed(1)+'%"></span></div>'+
-    '<span class="fx-rank-return '+tone+'">'+esc(sign(x.percent,2,'%'))+'</span></div>';
-  }).join('')+'</div>':
-   '<p class="fx-rank-unavailable">Mancano almeno 21 fixing BCE comuni verificabili per tutte le valute. Classifica di forza sospesa.</p>';
-  const currencyDate=cur?'20 intervalli comuni · '+date(cur.from)+' → '+date(cur.asof):
-   'Periodo non verificabile';
-  const pairDates='Snapshot coppie '+date(pr.asof)+' · baseline macro del motore '+date(pr.macroAsOf);
-  const warnings=[];
-  if(pr.count!==28)warnings.push('Copertura coppie incompleta: '+pr.count+'/28.');
-  if(!pr.modelCurrent)warnings.push('Snapshot delle tesi non recente: le priorità non sono attuali.');
-  if(pr.macroAsOf&&age(pr.macroAsOf,now)>30)warnings.push('Baseline macro storica: richiede nuova verifica prima di una decisione.');
-  if(!pr.items.some(x=>x.tier===1))warnings.push('Nessuna coppia raggiunge la massima coerenza del filtro: la Top 5 non equivale a cinque trade pronti.');
-  const warningText=warnings.length?'<p class="fx-rank-warning">'+esc(warnings.join(' '))+'</p>':'';
+  const worst=active?Math.max(...est.currencies.map(x=>Math.abs(x.score)),.0001):1;
+  const currencyBody=active?'<div class="fx-rank-currency-list">'+est.currencies.map((x,i)=>{
+    const tone=x.score>.04?'positive':x.score<-.04?'negative':'neutral';
+    return '<div class="fx-rank-currency" aria-label="'+esc(x.ccy)+' stima '+(i+1)+'">'+
+      '<span class="fx-rank-number">'+(i+1)+'</span>'+
+      '<strong>'+esc(FLAGS[x.ccy]||'')+' '+x.ccy+'</strong>'+
+      '<div class="fx-rank-track"><span class="'+tone+'" style="width:'+
+      Math.max(3,Math.abs(x.score)/worst*100).toFixed(1)+'%"></span></div>'+
+      '<span class="fx-rank-return '+tone+'">'+esc(x.label)+'</span></div>';
+   }).join('')+'</div>':
+   '<p class="fx-rank-unavailable">Stima corrente sospesa: '+esc(est?.reason||
+    'mancano fonti e prezzi sincronizzati')+'. Il vecchio punteggio di settembre non viene usato al suo posto.</p>';
+  const noTrade=items.some(x=>x.tier===1)?
+    'La categoria più alta identifica solo un allineamento da studiare, non un ingresso.':
+    'Nessuna coppia ha tutte le conferme: questa è una selezione di ricerca, non una lista di trade.';
   return '<div class="fx-ranking-desk" id="fx-ranking-desk">'+
-   '<div class="fx-rank-intro"><div><span class="mini-overline">FX / GERARCHIA DI RICERCA</span>'+
-   '<h2>Chi è più forte? <em>Quale coppia vale un approfondimento?</em></h2>'+
-   '<p>Due graduatorie diverse: forza di prezzo osservata delle otto valute e priorità di studio delle 28 tesi. Nessuna classifica è un segnale di ingresso.</p></div></div>'+
+   '<div class="fx-rank-intro"><div><span class="mini-overline">FX / STIMA OPERATIVA V1</span>'+
+   '<h2>Chi mostra più forza relativa? <em>Quali coppie meritano verifica?</em></h2>'+
+   '<p>La classifica operativa utilizza il nuovo motore stimato su economia, variazioni dei tassi e prezzo. Il vecchio modello del 25 settembre rimane archivio, non decide queste posizioni.</p></div></div>'+
    '<div class="fx-rank-two">'+
-   '<section class="fx-rank-box" aria-label="Forza relativa delle otto valute"><div class="fx-rank-head"><div><span>01 / VALUTE G8</span><h3>Dalla più forte alla più debole</h3></div><small>PREZZO RELATIVO</small></div>'+
-   '<p class="fx-rank-sub">Media geometrica della performance contro le altre sette, da fixing BCE. Non misura la qualità macro.</p>'+
-   currencyBody+'<p class="fx-rank-source">'+esc(currencyDate)+'</p></section>'+
-   '<section class="fx-rank-box" aria-label="Top cinque coppie da approfondire"><div class="fx-rank-head"><div><span>02 / SELEZIONE FX</span><h3>Le prime 5 da studiare</h3></div><small>NON SEGNALI</small></div>'+
-   '<p class="fx-rank-sub">Ordine basato su tesi del modello, conferma daily e timing. I rischi non vengono nascosti.</p>'+
-   (topNote?'<p class="fx-rank-top-caution">'+esc(topNote)+'</p>':'')+
+   '<section class="fx-rank-box" aria-label="Classifica stimata G8"><div class="fx-rank-head"><div><span>01 / VALUTE G8</span>'+
+   '<h3>Stima relativa · otto valute</h3></div><small>NON SEGNALE</small></div>'+
+   '<p class="fx-rank-sub">Un giudizio sintetico aggiornato, con fonti incomplete dichiarate. Il prezzo è solo una delle componenti.</p>'+
+   currencyBody+(active?'<p class="fx-rank-source">Ricerca macro '+esc(date(est.asof))+
+   ' · prezzi BCE '+esc(date(est.priceAsOf))+
+   ' · GDP in accelerazione verificabile per '+est.coverage.withGDPAcceleration+
+   '/8 economie; 6M ufficiale per '+est.coverage.official6M+'/8.</p>':'')+'</section>'+
+   '<section class="fx-rank-box" aria-label="Cinque coppie FX stimate da studiare">'+
+   '<div class="fx-rank-head"><div><span>02 / SELEZIONE FX</span><h3>Le prime 5 da verificare</h3></div>'+
+   '<small>STIMA, NON INGRESSO</small></div>'+
+   '<p class="fx-rank-sub">Ordine euristico: vantaggio macro/rates relativo e comportamento del prezzo, non un payoff atteso.</p>'+
+   (caution?'<p class="fx-rank-top-caution">'+esc(caution)+'</p>':'')+
    (top.length?'<div class="fx-rank-featured">'+top.map((x,i)=>row(x,i,true)).join('')+'</div>':
-   '<p class="fx-rank-unavailable">Nessuna coppia caricata dal motore.</p>')+'</section></div>'+
+    '<p class="fx-rank-unavailable">Le tesi stimate non sono verificabili finché gli input non coincidono.</p>')+'</section></div>'+
    '<section class="fx-rank-box fx-rank-all" aria-label="Classifica completa delle ventotto coppie">'+
-   '<div class="fx-rank-head"><div><span>03 / TUTTO IL G8</span><h3>Classifica completa · '+pr.count+' coppie</h3></div><small>PRIORITÀ DI RICERCA</small></div>'+
-   '<p class="fx-rank-sub">Dall’evidenza più coerente ai dossier non valutabili. Il posto in classifica non è un punteggio statistico né una probabilità di successo. Seleziona una coppia per la tesi completa.</p>'+
-   (pr.items.length?'<div class="fx-rank-all-list">'+pr.items.map((x,i)=>row(x,i)).join('')+'</div>':
-   '<p class="fx-rank-unavailable">Il feed delle 28 coppie non è disponibile.</p>')+
-   '<p class="fx-rank-source">'+esc(pairDates)+'. Le priorità vengono ricalcolate dai feed disponibili; Macro, COT e prezzi possono avere date diverse.</p>'+
-   warningText+'</section></div>';
+   '<div class="fx-rank-head"><div><span>03 / CROSS G8</span>'+
+   '<h3>Classifica completa · '+items.length+' coppie</h3></div><small>STIMA DI RICERCA</small></div>'+
+   '<p class="fx-rank-sub">Le prime posizioni indicano coerenza da esaminare, non un trade. Nessun bias deriva dai vecchi score D.json.</p>'+
+   (items.length?'<div class="fx-rank-all-list">'+items.map((x,i)=>row(x,i)).join('')+'</div>':
+    '<p class="fx-rank-unavailable">Ranking sospeso per fonti non aggiornate o incoerenti.</p>')+
+   '<p class="fx-rank-source">'+esc(active?('Stima '+date(est.asof)+
+    ' · fixing BCE '+date(est.priceFrom)+' → '+date(est.priceAsOf)):
+    'Motore stimato non disponibile')+'. '+esc(noTrade)+'</p>'+
+   '<details class="fx-rank-method"><summary>Come è costruita la stima e cosa manca</summary>'+
+   '<p>Indice euristico: 50% momentum economico nazionale (45% accelerazione PIL, 20% segno del PIL, 35% variazione disoccupazione), 30% direzione del riferimento monetario settimanale, 20% forza del prezzo sui 20 fixing BCE comuni. Non si confrontano direttamente livelli di PIL fra paesi. Contributi mancanti: omessi, non stimati zero come osservazione; qualità parziale dichiarata. Dove manca OIS/futures ufficiale, il 2Y governativo è un proxy attenuato, non una misura di aspettative Fed/ECB. L’inflazione è un contesto di pressione, non un voto meccanico a favore della valuta. Nessuna calibrazione statistica né backtest validato.</p>'+
+   '<p>'+esc(est?.warning||'Le osservazioni non consentono oggi una valutazione affidabile.')+'</p>'+
+   '</details></section></div>';
  }
  const api={currencyRanking,pairRanking,analyze,render};
  root.FXQuantPairRankings=api;
