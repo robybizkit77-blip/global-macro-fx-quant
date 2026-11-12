@@ -98,13 +98,14 @@
   }
   return {tone,label,text:base+' '+macroNote+' '+spreadNote};
  }
- function analyze({prices,macro,rates,ois,cot,now,rankingFn}){
+ function analyze({prices,macro,rates,ois,cot,now,rankingFn,fallback}){
   if(!day(now))return {rows:[],priceRanking:null,asof:null,limitations:['Data della seduta non valida']};
   const rank=typeof rankingFn==='function'?rankingFn(prices,now,FX):null;
   const map=new Map(rank?.items?.map((x,i)=>[x.ccy,{...x,position:i+1}])||[]);
   const rows=FX.map(ccy=>{
    const row={ccy,macro:macroAxis(macro?.[ccy],now),rates:ratesAxis(rates?.[ccy],now),
     pricing:pricingAxis(ois?.[ccy],now),price:priceAxis(map.get(ccy))};
+   row.context=fallback?.currencies?.[ccy]||null;
    row.reading=reading(row);
    const c=cot?.[ccy];
    const i=c?.dates?.length-1;
@@ -120,7 +121,8 @@
     'La posizione numerica ordina esclusivamente i prezzi BCE; non è un punteggio macro/monetario.',
     'Lavoro e inflazione sono solo due componenti del quadro macro: servono crescita, salari, PMI, credito e sorprese.',
     'Le variazioni del 2Y e degli strumenti 6M non sono necessariamente sullo stesso intervallo delle 20 sedute FX.',
-    'Dati insufficienti o fonti indicative restano non verificati: nessun punteggio viene inventato.'
+    'Dati insufficienti o fonti indicative restano non verificati: nessun punteggio viene inventato.',
+    'Le quotazioni futures secondarie e gli indicatori storici di crescita sono solo un contesto, mai promossi a OIS o nowcast ufficiali.'
   ]};
  }
  const api={analyze,macroAxis,ratesAxis,pricingAxis,priceAxis,reading};
