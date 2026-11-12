@@ -40,7 +40,7 @@ const args={get:key=>data[key],FX,FLAGS:flags,NAMES:flags,
 const origin=win.FXQuantCurrencyStrength.analyze({prices:data.currencyPrices,
  macro:data.macro.currencies,rates:data.rates,ois:data.ois.currencies,
  cot:data.cotHistory,now,rankingFn:win.FXQuantPairRankings.currencyRanking});
-const positions=origin.rows.map(x=>x.ccy);
+const positions=Array.from(origin.rows,x=>x.ccy); // host-realm array; data model runs inside vm
 for(const country of FX){
  const html=win.FXQuantCurrencies.render({...args,state:{ccy:country,csOther:country==='EUR'?'USD':'EUR',csReturnWindow:20}});
  const boardStart=html.indexOf('id="orient-strength-board"');
