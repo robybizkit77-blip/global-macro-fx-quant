@@ -105,6 +105,65 @@
   return chosen.sort(byOriginalRank);
  }
 
+
+ // Pair-specific evidence gates for the FIRST reading, NOT predictive triggers.
+ // Daily thresholds come only from the previous 20 ECB fixings, never from H4/OHLC.
+ function pairDecisionWatch(pair,profile){
+  const fallback={improve:'Servono nuovi dati macro e monetari relativi, poi una verifica del prezzo sulle stesse date.',
+   weaken:'Dati relativi in direzione contraria e prezzo coerentemente opposto indebolirebbero il quadro.',
+   note:'Nessuna soglia operativa o conferma H4 disponibile.'};
+  if(!pair||typeof pair.key!=='string'||!/^[A-Z]{6}$/.test(pair.key))
+   return fallback;
+  const favored=pair.favored;
+  if(!favored||![pair.base,pair.quote].includes(favored))
+   return {...fallback,improve:'Occorre prima una divergenza economica o monetaria che distingua le due valute. Il solo prezzo non crea una tesi.',
+    weaken:'Senza un verso fondamentale definito non c’è una tesi direzionale da invalidare.'};
+  const opposite=favored===pair.base?pair.quote:pair.base;
+  const hasWatch=profile?.key===pair.key&&profile?.source==='STIMA_ESPLICITA_V1'&&
+   profile?.fresh===true&&profile?.watch?.ready===true&&
+   profile.watch.asof===profile.asof&&Number.isFinite(profile.watch.favorable)&&
+   Number.isFinite(profile.watch.adverse);
+  const digits=pair.key.endsWith('JPY')?3:5;
+  const fmt=v=>v.toLocaleString('it-IT',{minimumFractionDigits:digits,maximumFractionDigits:digits});
+  let improve='',weaken='';
+  if(pair.macroState==='CONTRARIA')
+   improve='Il momentum economico relativo dovrebbe smettere di favorire '+opposite+
+    ' e tornare a sostenere '+favored+'.';
+  else if(pair.policyState==='CONTRARIA')
+   improve='Le variazioni monetarie dovrebbero smettere di favorire '+opposite+
+    ' e convergere con la lettura macro su '+favored+'.';
+  else if(pair.policyState==='ASSENTE')
+   improve='Serve una variazione monetaria confrontabile e datata per entrambe le valute: un proxy non può essere chiamato conferma OIS.';
+  else if(hasWatch){
+   const w=profile.watch;
+   improve=w.favorablePassed?
+    'Il fixing BCE ha già superato il riferimento '+w.favorableDirection.toLowerCase()+' '+fmt(w.favorable)+
+    '; servirebbe tenuta nei prossimi fixing, senza inseguire il movimento già avvenuto.':
+    'Un futuro fixing BCE '+w.favorableDirection.toLowerCase()+' '+fmt(w.favorable)+
+    ' darebbe una nuova conferma daily da valutare, non un segnale di ingresso.';
+  }else if(pair.fiveState==='CONTRARIO')
+   improve='Le ultime cinque sedute BCE dovrebbero tornare coerenti con '+favored+
+    ', mantenendo distinta la tesi economica dal timing.';
+  else
+   improve='Servono una conferma di prezzo successiva alla tesi e la verifica indipendente della struttura Daily/H4.';
+  if(hasWatch){
+   const w=profile.watch;
+   weaken=w.adversePassed?
+    'Il fixing è già oltre il riferimento contrario '+w.adverseDirection.toLowerCase()+' '+fmt(w.adverse)+
+    ': il prezzo sta già mettendo sotto pressione la tesi.':
+    'Un fixing BCE '+w.adverseDirection.toLowerCase()+' '+fmt(w.adverse)+
+    ' indebolirebbe la conferma di prezzo per '+favored+'.';
+  }else
+   weaken='Un ritorno persistente dei fixing a 5 e 20 sedute contro '+favored+
+    ' indebolirebbe il timing.';
+  weaken+=' Nuovi dati di crescita/lavoro o un repricing monetario verificato a vantaggio di '+
+   opposite+' indebolirebbero invece la tesi fondamentale.';
+  return {improve,weaken,note:hasWatch?
+   'Riferimenti ricavati dai 20 fixing BCE precedenti al '+profile.asof+
+   ': non sono massimi/minimi intraday, supporti H4, livelli di ingresso o stop.':
+   'Mancano riferimenti daily omogenei per questa tesi: nessun livello di prezzo inventato.'};
+}
+
  function render(api){
   const {get,FLAGS,state,esc,sign,date}=api;
   const est=get('estimatedMacro');
@@ -194,7 +253,7 @@
    '<p>'+esc(est?.warning||'Le osservazioni non consentono oggi una valutazione affidabile.')+'</p>'+
    '</details></section></div>';
  }
- const api={currencyRanking,pairRanking,analyze,selectResearchPairs,render};
+ const api={currencyRanking,pairRanking,analyze,selectResearchPairs,pairDecisionWatch,render};
  root.FXQuantPairRankings=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

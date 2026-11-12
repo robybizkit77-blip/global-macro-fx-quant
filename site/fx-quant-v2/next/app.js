@@ -824,11 +824,16 @@ function pairs(){
    'Dal '+date(monitor.previousAsOf)+' al '+date(monitor.asof)+': '+monitor.changed.length+' classificazioni cambiate. '+monitor.judgement:
    'Nessuna delle classificazioni monitorate è cambiata rispetto al '+date(monitor.previousAsOf)+'. Non significa che il mercato sia immobile.'
   :'Confronto fra sedute non disponibile: attendiamo uno storico allineato al modello.';
- const favMeaning=fav?'La stima aggiornata favorisce '+fav+' rispetto a '+(fav===state.pair.slice(0,3)?state.pair.slice(3):state.pair.slice(0,3))+'.':'La stima aggiornata non distingue una valuta favorita.';
- const headline=activePair?.story||estimate?.reason||'Dati stimati non disponibili: la tesi storica non alimenta il ranking operativo.';
- const priceText=activePair?.priceText||'Da verificare';
- const missing=activePair?.missing||'Attendere input macro recenti e comparabili.';
- const next=activePair?.missing||'Verificare prezzo e pricing su date comparabili.';
+ const favMeaning=fav?'La tesi fondamentale favorisce '+fav+' rispetto a '+(fav===state.pair.slice(0,3)?state.pair.slice(3):state.pair.slice(0,3))+'.':'Nessuna direzione fondamentale sufficientemente distinta.';
+ const headline=activePair?.thesisReason||estimate?.reason||'Le fonti non consentono una tesi corrente: non riproponiamo quella storica.';
+ const tradeText=activePair?.tradeReason||'Senza una tesi corrente non valutiamo il timing di ingresso.';
+ const pairProfile=activePair&&window.FXQuantDecisionJourney?.profile?
+  window.FXQuantDecisionJourney.profile(state.pair,get('pairs'),get('currencyPrices'),dayNow(),estimate):null;
+ const gate=window.FXQuantPairRankings?.pairDecisionWatch?.(activePair,pairProfile)||{
+  improve:'Servono nuove evidenze macro/tassi e un prezzo datato.',
+  weaken:'Il giudizio corrente è sospeso: non emerge una tesi direzionale da invalidare.',
+  note:'Nessun riferimento di ingresso H4 disponibile.'
+ };
  const context='Stima operativa Macro Strength '+date(estimate?.asof)+' · fixing BCE '+date(estimate?.priceAsOf)+
    ' · vecchio motore del '+date(get('pairs')?.macro_baseline_asof)+' archiviato, non utilizzato per il giudizio corrente';
  const watchLabel=state.watch.has(state.pair)?'★ Nella watchlist':'☆ Salva nella watchlist';
@@ -837,11 +842,13 @@ function pairs(){
   '<span class="badge info">'+esc(quality)+'</span></div>'+
   '<p class="pairs-primary-story">'+esc(headline)+'</p>'+
   '<div class="pairs-three-answers">'+
-   '<div><span>PREZZO</span><strong>'+esc(priceText)+'</strong></div>'+
-   '<div><span>STATO DELLA TESI</span><strong>'+esc(activePair?.stage||'Stima sospesa')+'</strong></div>'+
-   '<div><span>PRIMA DI VALUTARE</span><strong>'+esc(missing)+'</strong></div></div>'+
-  '<p class="pairs-next-action"><strong>Cosa controllare adesso.</strong> '+esc(next)+'</p>'+
-  '<p class="pairs-vintage">'+esc(context)+'. La baseline macro non viene aggiornata automaticamente quando cambia il prezzo.</p></section>';
+   '<div><span>TESI FONDAMENTALE</span><strong>'+esc(activePair?.thesisStrength||'NON VALUTABILE')+'</strong></div>'+
+   '<div><span>TRADE ATTRACTIVENESS</span><strong>'+esc(activePair?.tradeAttractiveness||'NON VALUTABILE')+'</strong></div>'+
+   '<div><span>PERCHÉ NON È UN INGRESSO</span><strong>'+esc(tradeText)+'</strong></div></div>'+
+  '<p class="pairs-next-action"><strong>Rafforzerebbe il quadro.</strong> '+esc(gate.improve)+
+  ' <strong>Lo indebolirebbe.</strong> '+esc(gate.weaken)+'</p>'+
+  '<p class="pairs-vintage">'+esc(context)+'. '+esc(gate.note)+
+  ' La baseline macro non viene aggiornata automaticamente quando cambia il prezzo.</p></section>';
  // Do not show a large empty historical panel when same-day model labels
  // were revised after the archived snapshot. Current estimated rankings do not
  // reuse those archived categorical changes as operational signals.
