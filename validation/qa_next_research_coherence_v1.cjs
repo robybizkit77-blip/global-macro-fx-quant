@@ -107,8 +107,10 @@ stress.risk.streams.HY_OAS.previous=3.1;stress.risk.streams.HY_OAS.value=3.45;
 stress.pairs.price_asof=initial.currencyPrices.last_as_of;
 let x=evaluate(stress,'2026-11-10');
 assert.equal(x.context.kind,'stress');
-assert.match(x.article,/FX G8/,
- 'A risk shock cannot replace the Forex-first thesis with an equity-only narrative');
+assert.match(x.article,/href="#currencies"/,
+ 'Even during an equity-led shock the user must reach the currency evidence');
+assert.match(x.article,/href="#pairs"/,
+ 'Equity stress cannot remove the direct 28-pair research path');
 assert.match(x.article,/dashboard-reading-source-links/,
  'Even in a risk shock the user must reach G8 currencies and paired FX research');
 if(sourceAhead)assert.match(x.article,/non sono allineati|nessuna selezione automatica/i,
