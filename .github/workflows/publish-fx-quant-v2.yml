@@ -37,6 +37,7 @@ on:
       - 'validation/publishing/test_next_g8_inflation_labour_shadow_v1.cjs'
       - 'site/fx-quant-v2/next/g8-macro-pricing-bridge.js'
       - 'validation/publishing/test_next_g8_macro_pricing_bridge_v1.cjs'
+      - 'validation/publishing/test_next_g8_editorial_first_read_v1.cjs'
       - 'validation/publishing/test_next_cot_evidence_v22.cjs'
       - 'validation/publishing/test_next_cot_report_desk_v26.cjs'
       - 'validation/publishing/test_next_risk_economic_v23.cjs'
@@ -111,6 +112,7 @@ jobs:
           node validation/publishing/test_next_g8_inflation_labour_shadow_v1.cjs
           node --check site/fx-quant-v2/next/g8-macro-pricing-bridge.js
           node validation/publishing/test_next_g8_macro_pricing_bridge_v1.cjs
+          node validation/publishing/test_next_g8_editorial_first_read_v1.cjs
           node --check site/fx-quant-v2/next/cot-evidence-reading.js
           node --check site/fx-quant-v2/next/cot-studio.js
           node validation/publishing/test_next_cot_evidence_v22.cjs
@@ -209,6 +211,7 @@ jobs:
           node validation/publishing/test_next_g8_inflation_labour_shadow_v1.cjs
           node --check site/fx-quant-v2/next/g8-macro-pricing-bridge.js
           node validation/publishing/test_next_g8_macro_pricing_bridge_v1.cjs
+          node validation/publishing/test_next_g8_editorial_first_read_v1.cjs
           node --check site/fx-quant-v2/next/cot-evidence-reading.js
           node --check site/fx-quant-v2/next/cot-studio.js
           node validation/publishing/test_next_cot_evidence_v22.cjs
