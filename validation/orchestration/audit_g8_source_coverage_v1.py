@@ -148,11 +148,12 @@ def compare(before, after):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--output", required=True)
+    ap.add_argument("--root", default=str(ROOT), help="Read-only root of a single verified source snapshot")
     ap.add_argument("--before", default="")
     ap.add_argument("--as-of", default="")
     ap.add_argument("--summary", action="store_true")
     args = ap.parse_args()
-    after = coverage(asof=args.as_of or None)
+    after = coverage(root=Path(args.root), asof=args.as_of or None)
     if args.before:
         old = json.loads(Path(args.before).read_text(encoding="utf-8"))
         after["since_before_phase"] = compare(old, after)
