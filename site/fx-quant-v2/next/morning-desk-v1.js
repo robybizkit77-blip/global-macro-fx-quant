@@ -55,7 +55,7 @@
   const eligible=calendar.events.filter(x=>x&&x.status==='UPCOMING'&&
    x.importance==='HIGH'&&typeof x.ccy==='string'&&
    /^[A-Z]{3}$/.test(x.ccy)&&goodDay(x.date)&&
-   x.date>=now&&x.quality?.startsWith('OFFICIAL')&&
+   x.date>=now&&typeof x.quality==='string'&&x.quality.startsWith('OFFICIAL')&&
    ['GROWTH','LABOUR','INFLATION','CENTRAL_BANK_DECISION'].includes(x.event_type)&&
    typeof x.title==='string'&&x.title.length>0).sort((a,b)=>
    a.date.localeCompare(b.date)||a.ccy.localeCompare(b.ccy));
@@ -70,8 +70,9 @@
  }
  function catalystReading(calendar,selected,now,date){
   const events=nextFxCatalysts(calendar,selected,now);
-  if(!events.sourceAsOf)return '';
-  const name=x=>x.ccy+' · '+x.title+' ('+date(x.date)+')';
+  if(!events.sourceAsOf)return 'Calendario G8 non aggiornato o non verificabile: non attribuiamo alcun evento futuro senza una fonte datata.';
+  const name=x=>x.ccy+' · '+x.title+' ('+date(x.date)+')'+
+   (x.quality==='OFFICIAL_PROVISIONAL'?' · data provvisoria':'');
   const consequence=x=>x.event_type==='GROWTH'?
    'Il dato sulla crescita può modificare le aspettative relative sulla banca centrale, non il prezzo in modo automatico.':
    x.event_type==='LABOUR'?
