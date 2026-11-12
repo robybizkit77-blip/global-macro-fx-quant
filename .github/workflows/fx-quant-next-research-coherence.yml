@@ -1,6 +1,14 @@
 name: FX Quant Next Research Coherence QA
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'site/fx-quant-v2/next/**'
+      - 'validation/qa_fxquant_next.cjs'
+      - 'validation/qa_next_research_coherence_v1.cjs'
+      - '.github/workflows/fxquant-next-preview-qa.yml'
+      - '.github/workflows/fx-quant-next-research-coherence.yml'
   push:
     branches: [main]
     paths:
@@ -41,7 +49,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: fx-quant-next-research-coherence
+  group: ${{ github.event_name == 'pull_request' && format('fx-quant-next-research-coherence-pr-{0}', github.event.pull_request.number) || 'fx-quant-next-research-coherence-main' }}
   cancel-in-progress: true
 
 jobs:
