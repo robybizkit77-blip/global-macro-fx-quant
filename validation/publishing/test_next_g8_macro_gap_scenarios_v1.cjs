@@ -98,5 +98,5 @@ assert.equal(new Set(positions).size,1,'Each selected country sees the same pric
 const idx=read(base+'index.html');
 assert(idx.includes('g8-macro-gap-scenarios.js?v=1'));
 assert(idx.indexOf('g8-macro-gap-scenarios.js')<idx.indexOf('currency-studio.js'));
-assert(idx.includes('currency-studio.js?v=14'));
+assert(idx.includes('currency-studio.js?v=15'));
 console.log('G8_MACRO_GAP_SCENARIOS_V1_PASS: 8/8 dated scenarios, USD/CAD only qualified, pseudo-OOS & source/vintage guards, unchanged FX ranking');
