@@ -13,6 +13,8 @@ on:
     paths:
       - 'site/fx-quant-v2/next/macro-studio.js'
       - 'site/fx-quant-v2/next/index.html'
+      - 'site/fx-quant-v2/next/research-library.js'
+      - 'site/fx-quant-v2/next/reports/**'
       - 'site/fx-quant-v2/next/currency-studio.css'
       - 'site/fx-quant-v2/next/pair-desk-narrative.js'
       - 'site/fx-quant-v2/next/decision-journey.js'
@@ -131,6 +133,7 @@ jobs:
           node validation/publishing/test_morning_desk_render_v1.cjs
           node validation/publishing/test_next_news_evidence_v24.cjs
           node validation/qa_next_macro_calendar_v1.cjs
+          node validation/qa_next_research_library_v1.cjs
   sync-v2:
     if: >-
       github.event_name != 'pull_request' &&
@@ -231,6 +234,7 @@ jobs:
           node validation/publishing/test_morning_desk_render_v1.cjs
           node validation/publishing/test_next_news_evidence_v24.cjs
           node validation/qa_next_macro_calendar_v1.cjs
+          node validation/qa_next_research_library_v1.cjs
 
       - name: Publish only site/fx-quant-v2 without altering V10 or any other path
         if: steps.v2-tree.outputs.publish_needed == 'true'
