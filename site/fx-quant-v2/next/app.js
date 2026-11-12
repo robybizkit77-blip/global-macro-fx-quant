@@ -849,6 +849,8 @@ function pairs(){
   weaken:'Il giudizio corrente è sospeso: non emerge una tesi direzionale da invalidare.',
   note:'Nessun riferimento di ingresso H4 disponibile.'
  };
+ const pairCatalyst=window.FXQuantPairRankings?.pairCatalystWatch?.(
+  activePair,get('calendar'),dayNow())||null;
  const context='Stima operativa Macro Strength '+date(estimate?.asof)+' · fixing BCE '+date(estimate?.priceAsOf)+
    ' · vecchio motore del '+date(get('pairs')?.macro_baseline_asof)+' archiviato, non utilizzato per il giudizio corrente';
  const watchLabel=state.watch.has(state.pair)?'★ Nella watchlist':'☆ Salva nella watchlist';
@@ -862,6 +864,8 @@ function pairs(){
    '<div><span>PERCHÉ NON È UN INGRESSO</span><strong>'+esc(tradeText)+'</strong></div></div>'+
   '<p class="pairs-next-action"><strong>Rafforzerebbe il quadro.</strong> '+esc(gate.improve)+
   ' <strong>Lo indebolirebbe.</strong> '+esc(gate.weaken)+'</p>'+
+  (pairCatalyst?.text?'<p class="pairs-next-action pairs-event-watch"><strong>Evento da monitorare.</strong> '+
+   esc(pairCatalyst.text)+'</p>':'')+
   '<p class="pairs-vintage">'+esc(context)+'. '+esc(gate.note)+
   ' La baseline macro non viene aggiornata automaticamente quando cambia il prezzo.</p></section>';
  // Do not show a large empty historical panel when same-day model labels

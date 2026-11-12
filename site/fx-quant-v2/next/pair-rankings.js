@@ -106,6 +106,46 @@
  }
 
 
+ // Calendar is a source-dated official schedule, NEVER proof of an actual release,
+ // surprise or post-release market response. Date alone cannot establish whether
+ // today's release has already happened.
+ function pairCatalystWatch(pair,calendar,now){
+  const unavailable={status:'UNAVAILABLE',text:'Calendario non aggiornato: nessun catalizzatore attribuito a questa coppia.'};
+  if(!pair||typeof pair.key!=='string'||!/^[A-Z]{6}$/.test(pair.key)||
+     pair.base!==pair.key.slice(0,3)||pair.quote!==pair.key.slice(3)||
+     !validDay(now)||calendar?.schema!=='GMFQ_CALENDAR_OPERATIONAL_VIEW_V3'||
+     !Array.isArray(calendar.events))return unavailable;
+  const checked=String(calendar.last_checked_at_utc||'').slice(0,10);
+  const elapsed=age(checked,now);
+  if(elapsed===null||elapsed<0||elapsed>7)return unavailable;
+  const eligible=calendar.events.filter(e=>e&&
+   [pair.base,pair.quote].includes(e.ccy)&&e.status==='UPCOMING'&&
+   e.importance==='HIGH'&&typeof e.quality==='string'&&
+   e.quality.startsWith('OFFICIAL')&&validDay(e.date)&&e.date>=now&&
+   ['GROWTH','LABOUR','INFLATION','CENTRAL_BANK_DECISION'].includes(e.event_type)&&
+   typeof e.title==='string'&&e.title.trim().length>0)
+   .sort((a,b)=>a.date.localeCompare(b.date)||a.ccy.localeCompare(b.ccy));
+  const selected=eligible[0];
+  if(!selected)return {status:'NONE',
+   text:'Nessun evento ufficiale futuro verificato per le due valute nel calendario disponibile.'};
+  const today=selected.date===now;
+  const provisional=selected.quality==='OFFICIAL_PROVISIONAL'?' (data provvisoria)':'';
+  const direction=selected.event_type==='GROWTH'?
+   'Una sorpresa sulla crescita potrebbe cambiare le attese sui tassi relativi.':
+   selected.event_type==='LABOUR'?
+   'La dinamica di occupazione e disoccupazione potrebbe cambiare il quadro di crescita e le attese monetarie.':
+   selected.event_type==='INFLATION'?
+   'Composizione e persistenza dell’inflazione potrebbero modificare il pricing monetario.':
+   'Conta la distanza tra decisione/comunicazione e percorso dei tassi già prezzato.';
+  const title=selected.ccy+' · '+selected.title+' · '+selected.date+provisional;
+  return {status:today?'TODAY_UNVERIFIED':'FUTURE',ccy:selected.ccy,
+   date:selected.date,sourceAsOf:checked,title,
+   text:(today?'Era in calendario oggi ':'Prossimo evento pertinente: ')+title+'. '+
+    (today?'L’esito non è verificato da questo feed. ':'')+
+    direction+' Prima di attribuire un movimento a '+symbol(pair.key)+
+    ' servono dato effettivo, consenso e reazione di tassi e cambio nella stessa finestra.'};
+ }
+
  // Pair-specific evidence gates for the FIRST reading, NOT predictive triggers.
  // Daily thresholds come only from the previous 20 ECB fixings, never from H4/OHLC.
  function pairDecisionWatch(pair,profile){
@@ -266,7 +306,7 @@
    '<p>'+esc(est?.warning||'Le osservazioni non consentono oggi una valutazione affidabile.')+'</p>'+
    '</details></section></div>';
  }
- const api={currencyRanking,pairRanking,analyze,selectResearchPairs,pairDecisionWatch,render};
+ const api={currencyRanking,pairRanking,analyze,selectResearchPairs,pairDecisionWatch,pairCatalystWatch,render};
  root.FXQuantPairRankings=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
