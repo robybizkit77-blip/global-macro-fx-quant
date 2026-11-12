@@ -7,7 +7,7 @@ const BASE='../../website-v1/reports/';
 const ROOT='./reports/';
 const PUBLIC_API='https://api.github.com/repos/robybizkit77-blip/global-macro-fx-quant/contents/site/fx-quant-v2/next/reports?ref=main';
 const REPORTS=Object.freeze([
- {type:'daily',date:'2026-11-11',title:'Briefing Forex & Commodities',file:'Briefing_Forex_Commodities_2026-11-11_V3_HEADER_CORRETTO.html',desc:'Il quadro Forex G8, il contesto macro e i catalizzatori da seguire nella seduta.'},
+ {type:'daily',date:'2026-11-12',title:'Briefing Forex & Commodities',file:'Briefing_Forex_Commodities_2026-11-12_V3_RECUPERO_VERIFICATO.html',desc:'Edizione di recupero post-evento: quadro Forex G8, PIL UK, lavoro USA e driver delle commodities.',publicUrl:'./reports/Briefing_Forex_Commodities_2026-11-12_V3_RECUPERO_VERIFICATO.html'},
  {type:'macro',date:'2026-11-06',title:'Weekly Global Macro Report',file:'Weekly_Global_Macro_Report_2026-11-06_COUNTRY_BOOK_NARRATIVO_V4_CORRETTA.html',desc:'Country Book: crescita, inflazione, lavoro, tassi, rischio e forza relativa delle valute.'},
  {type:'bank',date:'2026-11-06',title:'Weekly Bank FX Report',file:'Weekly_Bank_FX_Report_2026-11-06_DARK_DESK_NARRATIVO_V5.html',desc:'View bancarie G8 e giudizio indipendente, con fonti e consenso datati.'},
  {type:'cb',date:'2026-11-06',title:'Weekly Central Bank Sentiment',file:'Weekly_CB_Sentiment_Report_2026-11-06_DARK_RESEARCH_DESK_WANT_CAN_V4_PALETTE.html',desc:'WANT/CAN: intenzioni e vincoli delle banche centrali, separati dal bias Forex.'},
