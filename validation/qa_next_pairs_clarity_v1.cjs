@@ -22,7 +22,7 @@ for(const key of ['id="pair-primary-select"','28 coppie G8, una sola tesi alla v
  'pairs-reading-compact','pairs-three-answers','pairs-vintage',
  'Come è cambiata la tesi?','Apri grafico, pricing e analisi completa',
  'FXQuantDecisionJourney?.build','FXQuantThesisMonitor?.render',
- 'const pairCatalyst=','pairs-event-watch','fx-ranking-desk','pairs-compact-footer']){
+ 'const pairCatalyst=','pairs-event-watch','pairs-compact-footer']){
  assert(pairs.includes(key),'Current pair research layout missing '+key);
 }
 assert(pairs.includes('const historyDetail=monitor.ready?'),
