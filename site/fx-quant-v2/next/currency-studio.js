@@ -333,25 +333,51 @@ function build(api){
     ': è soltanto un proxy, non un OIS né una decisione già prezzata.':
     'Non abbiamo una variazione monetaria recente verificata. La stima non la inventa.'):
    policySummary;
-  // Monitoring is conditional on this currency's actual evidence, not the
-  // same generic instruction recycled eight times.
-  const watchSummary=cur?.rate.quality==='ASSENTE'?
-   'Prima recuperare una variazione OIS/futures verificata e datata. Solo dopo confrontarla con crescita, lavoro e risposta FX: oggi il contributo monetario manca.':
+  // Actual economic LEVEL and acceleration are distinct: a favorable
+  // heuristic is not proof of a new economic acceleration or an FX reaction.
+  // If a dated official growth release is on the calendar but not in this
+  // observation snapshot, make that missing catalyst explicit before the score.
+  const calendar=get('calendar'),today=dayNow();
+  const calendarDay=typeof calendar?.last_checked_at_utc==='string'?
+   calendar.last_checked_at_utc.slice(0,10):null;
+  const calendarAge=validDay(today)&&validDay(calendarDay)?
+   (Date.parse(today+'T12:00:00Z')-Date.parse(calendarDay+'T12:00:00Z'))/864e5:null;
+  const sourceRelease=cur&&calendar?.schema==='GMFQ_CALENDAR_OPERATIONAL_VIEW_V3'&&
+   calendarAge!==null&&calendarAge>=0&&calendarAge<=7&&
+   Array.isArray(calendar.events)?
+   calendar.events.find(e=>e?.ccy===country&&e.event_type==='GROWTH'&&
+    e.importance==='HIGH'&&e.status==='UPCOMING'&&
+    typeof e.quality==='string'&&e.quality.startsWith('OFFICIAL')&&
+    validDay(e.date)&&e.date<=today&&
+    (Date.parse(today+'T12:00:00Z')-Date.parse(e.date+'T12:00:00Z'))/864e5<=3):
+   null;
+  const missingRatesCue=cur?.labourDirection===-1?
+   'La disoccupazione osservata sale':
+   cur?.labourDirection===1?
+   'La disoccupazione osservata scende':
+   'La disoccupazione osservata è poco mossa';
+  const watchSummary=sourceRelease?
+   'Per '+country+' il calendario riporta un dato sul PIL del '+date(sourceRelease.date)+
+   ', ma la stima utilizza ancora '+cur.gdpPeriod+'. Il risultato non è verificato in questo quadro: confrontare dato e consenso, poi tassi e Forex dopo la pubblicazione.':
+   cur?.rate.quality==='ASSENTE'?
+   'Non abbiamo una variazione monetaria recente confrontabile. '+missingRatesCue+
+   ': seguire la prossima sorpresa su crescita e lavoro e il prezzo relativo di '+country+
+   ', senza attribuire il movimento alla banca centrale.':
    cur&&cur.macroScore>.2&&cur.policyScore<-.1?
-   'La macro sostiene '+country+' ma il riferimento dei tassi scende: verificare se il prossimo dato sorprende al ribasso e se il Forex segue davvero il repricing.':
+   'Il quadro economico è favorevole ma il riferimento monetario scende. Verificare se nuovi dati cambiano le aspettative e se '+country+' segue il movimento dei tassi.':
    cur&&cur.macroScore<-.2&&cur.policyScore>.1?
-   'La macro rallenta ma il riferimento dei tassi sale: controllare se prevalgono pressioni sui prezzi o altri fattori, poi verificare la reazione FX.':
+   'Il quadro economico è debole ma il riferimento monetario sale. Verificare se contano inflazione, offerta di titoli o altre forze, prima di attribuire il movimento alla banca centrale.':
    cur&&cur.macroScore>.2&&cur.priceScore<-.1?
-   'Il quadro interno migliora ma '+country+' perde terreno nei fixing BCE. Monitorare quali aspettative stanno cambiando prima di attribuire il movimento alla macro.':
+   'Il quadro economico è favorevole ma '+country+' perde terreno nei fixing BCE. Quali aspettative stanno cambiando? Verificare dati, tassi e andamento relativo delle altre valute.':
    cur&&cur.macroScore<-.2&&cur.priceScore>.1?
-   'Il quadro interno si indebolisce ma '+country+' recupera nei fixing BCE. Verificare se il movimento nasce da attese monetarie o dalla debolezza delle altre valute.':
+   'Il quadro economico è debole ma '+country+' recupera nei fixing BCE. Verificare se riflette attese monetarie o debolezza delle altre valute.':
    cur?.rate.quality==='PROXY'?
-   'Cercare un confronto OIS/futures ufficiale e le prossime sorprese macro: la variazione del 2Y governativo non basta a confermare una tesi FX.':
+   'Il 2Y è solo un proxy. Verificare il prossimo dato rispetto al consenso e la risposta relativa del Forex, senza scambiare il rendimento per una stima OIS.':
    cur?
-   'Verificare se il prossimo dato sorprende le attese e muove insieme il riferimento monetario e il Forex; finché non accade, il quadro resta una tesi.':
+   'Verificare se la prossima pubblicazione sorprende il consenso e se si muovono le aspettative monetarie e il Forex: la sola correlazione non basta.':
    desk?.market?.tier==='NON_VERIFICATO'?
-   'Prima serve una variazione 6M confrontabile, poi un dato macro e una risposta FX sullo stesso intervallo.':
-   'Confrontare la prossima pubblicazione con il consenso e poi con i tassi e il Forex, senza inferire causalità.';
+   'La variazione monetaria non è verificata. Monitorare nuovi dati e prezzo relativo senza attribuire un segnale ai tassi.':
+   'Confrontare le prossime pubblicazioni con consenso, prezzi e tassi, senza inferire causalità.';
   return '<section class="strength-focus" id="orient-strength-focus">'+
    '<div class="strength-focus-head"><div>'+
    '<span class="chapter-kicker">02 / LA LETTURA DEL DESK · '+FLAGS[country]+' '+country+'</span>'+
@@ -361,7 +387,7 @@ function build(api){
    '<div class="strength-first-reading">'+
    '<p><strong>Il quadro economico.</strong> '+esc(estimatedEconomic)+'</p>'+
    '<p><strong>Che cosa stanno facendo i tassi?</strong> '+esc(estimatedPolicy)+'</p>'+
-   '<p><strong>La risposta del Forex.</strong> '+esc(priceSummary)+'</p>'+
+   '<p><strong>Che cosa mostra il Forex.</strong> '+esc(priceSummary)+'</p>'+
    '</div>'+
    '<p class="strength-first-watch"><strong>Che cosa monitorare.</strong> '+esc(watchSummary)+'</p>'+
    '<details class="strength-evidence-fold"><summary><strong>Apri numeri, date, stime e fonti di '+country+'</strong>'+
