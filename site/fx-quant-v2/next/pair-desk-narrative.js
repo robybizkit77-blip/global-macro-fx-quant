@@ -56,7 +56,7 @@
 
  const periodMonth=x=>{
   if(typeof x!=='string')return null;
-  if(/^\d{4}Q[1-4]$/.test(x))return x.slice(0,4)+'-'+String((Number(x[5])-1)*3+1).padStart(2,'0');
+  if(/^\d{4}Q[1-4]$/.test(x))return x.slice(0,4)+'-'+String(Number(x[5])*3).padStart(2,'0');
   if(/^\d{4}-(0[1-9]|1[0-2])(?:-\d{2})?$/.test(x))return x.slice(0,7);
   return null;
  };
@@ -100,6 +100,12 @@
      doc.countries[b]?.not_a_trade_or_policy_signal!==true)return null;
   const A=doc.countries[a],B=doc.countries[b];
   for(const row of [A,B]){
+   const g=row.growth;
+   if(!g||!isDay(g.publisher_release_day)||g.publisher_release_day>now||
+      !/^20\d{2}Q[1-4]$/.test(g.reference_quarter||'')||
+      periodMonth(g.reference_quarter)>now.slice(0,7)||
+      !finite(g.nonannualized_qoq_descriptive_pct)||
+      g.is_growth_strength_score!==false)return null;
    for(const pillar of ['inflation','labour']){
     const x=row[pillar];
     if(!x||!finite(x.observation_value)||!periodMonth(x.observation_period)||
