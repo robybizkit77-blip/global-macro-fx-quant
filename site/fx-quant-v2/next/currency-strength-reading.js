@@ -29,7 +29,8 @@
   // No positive "macro currency score": inflation up may signal demand,
   // supply constraints, weaker real income or hawkish repricing.
   return {ok:inflOK&&labourOK,label:labourOK?'Disocc. '+(l.direction==='SALE'?'↑':l.direction==='SCENDE'?'↓':'→'):'Non verificato',
-   text,inflationPeriod:inflOK?i.as_of:null,labourPeriod:labourOK?l.as_of:null};
+   text,inflationDirection:inflOK?i.direction:null,labourDirection:labourOK?l.direction:null,
+   inflationPeriod:inflOK?i.as_of:null,labourPeriod:labourOK?l.as_of:null};
  }
  function ratesAxis(r,now){
   const w=r?.weekly2_validation;
@@ -63,20 +64,39 @@
    text:'Media geometrica del movimento FX contro le altre sette valute su 20 fixing BCE comuni.'};
  }
  function reading(x){
-  const p=x.price,pr=x.pricing,ra=x.rates;
-  if(!p.ok)return {tone:'unknown',label:'Da completare',text:'Senza prezzi comuni non attribuiamo una posizione di forza.'};
-  if(!pr.ok)return {tone:'incomplete',label:'Conferme incomplete',
-   text:'Il prezzo '+(p.change>0?'è positivo':p.change<0?'è negativo':'è pressoché fermo')+
-   ' nel confronto G8, ma manca un dato comparabile sul cambiamento delle aspettative a 6 mesi.'};
-  const moving=Math.abs(pr.change)>=1&&Math.abs(p.change)>=.1;
-  const matched=moving&&Math.sign(pr.change)===Math.sign(p.change);
-  const diverged=moving&&Math.sign(pr.change)!==Math.sign(p.change);
-  if(diverged)return {tone:'divergent',label:'Divergenza da studiare',
-   text:'Prezzo su 20 fixing e aspettative 6M nell’ultima settimana hanno segno opposto. Finestre diverse: è una domanda di ricerca, non un trade.'};
-  if(matched)return {tone:'aligned',label:'Direzioni compatibili',
-   text:'Prezzo su 20 fixing e aspettative 6M nell’ultima settimana hanno lo stesso segno. Finestre diverse: non è una conferma causale né un segnale.'};
-  return {tone:'mixed',label:'Quadro non risolto',
-   text:'Prezzo e variazione settimanale delle aspettative non danno una direzione univoca o abbastanza ampia. Servono dati nuovi.'};
+  const p=x.price,pr=x.pricing,ra=x.rates,m=x.macro;
+  const macroNote=!m.ok?
+   'Il quadro macro è incompleto: non deduciamo una direzione del ciclo.':
+   m.labourDirection==='SALE'&&m.inflationDirection==='SALE'?
+    'Disoccupazione e inflazione salgono insieme: possibile tensione fra crescita e vincolo sui prezzi, non una valuta automaticamente debole o forte.':
+   m.labourDirection==='SCENDE'&&m.inflationDirection==='SALE'?
+    'Disoccupazione in calo e inflazione in salita: resilienza e pressione sui prezzi sono entrambe da verificare nella reazione della banca centrale.':
+   m.labourDirection==='SALE'?
+    'Disoccupazione in aumento: cercare conferma di rallentamento in salari, assunzioni e attività, non dedurlo da una sola serie.':
+    'Le due serie macro non identificano da sole la fase del ciclo o una sorpresa per il mercato.';
+  const spreadNote=ra.ok&&pr.ok&&Math.abs(ra.change)>=1&&Math.abs(pr.change)>=1?
+    Math.sign(ra.change)===Math.sign(pr.change)?
+    'Il 2Y governativo e il riferimento 6M hanno un segno simile, ma misurano strumenti e periodi differenti: non basta per attribuire una causa.':
+    'Il 2Y governativo e il riferimento 6M si muovono in direzioni diverse: occorre distinguere duration, composizione dei rendimenti e aspettative monetarie.':
+    'Sui rendimenti e sul 6M manca un confronto omogeneo sufficientemente informativo.';
+  let tone='unknown',label='Da completare',base='Senza prezzi comuni non attribuiamo una posizione di forza.';
+  if(p.ok){
+   if(!pr.ok){tone='incomplete';label='Conferme incomplete';
+    base='Il prezzo '+(p.change>0?'è positivo':p.change<0?'è negativo':'è pressoché fermo')+
+    ' nel confronto G8, ma non disponiamo di una variazione 6M verificata.';}
+   else{
+    const moving=Math.abs(pr.change)>=1&&Math.abs(p.change)>=.1;
+    const matched=moving&&Math.sign(pr.change)===Math.sign(p.change);
+    const diverged=moving&&Math.sign(pr.change)!==Math.sign(p.change);
+    if(diverged){tone='divergent';label='Divergenza da studiare';
+     base='Prezzo su 20 fixing e aspettative 6M nell’ultima settimana hanno segno opposto. Finestre diverse: possibile divergenza da approfondire, non un trade.';}
+    else if(matched){tone='aligned';label='Direzioni compatibili';
+     base='Prezzo su 20 fixing e aspettative 6M nell’ultima settimana hanno lo stesso segno. Finestre diverse: non è una conferma causale né un segnale.';}
+    else{tone='mixed';label='Quadro non risolto';
+     base='Prezzo e variazione settimanale delle aspettative non danno una direzione univoca o sufficientemente ampia.';}
+   }
+  }
+  return {tone,label,text:base+' '+macroNote+' '+spreadNote};
  }
  function analyze({prices,macro,rates,ois,cot,now,rankingFn}){
   if(!day(now))return {rows:[],priceRanking:null,asof:null,limitations:['Data della seduta non valida']};
