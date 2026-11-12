@@ -843,10 +843,10 @@ function pairs(){
   '<p class="pairs-next-action"><strong>Cosa controllare adesso.</strong> '+esc(next)+'</p>'+
   '<p class="pairs-vintage">'+esc(context)+'. La baseline macro non viene aggiornata automaticamente quando cambia il prezzo.</p></section>';
  // Do not show a large empty historical panel when same-day model labels
- // were revised after the archived snapshot. The single compact pulse above
- // already explains the missing comparison, without inventing a new session.
+ // were revised after the archived snapshot. Current estimated rankings do not
+ // reuse those archived categorical changes as operational signals.
  const historyDetail=monitor.ready?
-  '<details class="pairs-optional-panel"><summary><span><strong>Come è cambiata la tesi?</strong><small>'+esc(report)+'</small></span><span class="pairs-open-icon">+</span></summary>'+
+  '<details class="pairs-optional-panel"><summary><span><strong>Archivio storico · Come è cambiata la tesi?</strong><small>'+esc(report)+'</small></span><span class="pairs-open-icon">+</span></summary>'+
   (window.FXQuantThesisMonitor?.render?.(get('pairs'),get('thesisHistory'),state.pair)||'')+'</details>':'';
  const originalDecision=typeof window!=='undefined'&&window.FXQuantDecisionJourney?.build?
   window.FXQuantDecisionJourney.build({get,state,plot,fmt,sign,date,dayNow,esc}).pair():
@@ -865,7 +865,7 @@ function pairs(){
   chooser+main+historyDetail+detail:'';
  return pageHero('FX / PAIR EXPLORER','Dal G8 alle <em>coppie da approfondire.</em>',
   'Prima la classifica visiva delle valute e delle 28 coppie; poi, scegliendo una coppia, trovi il ragionamento completo su macro, pricing, COT e prezzo.')
-  +ranking+(window.FXQuantThesisMonitor?.renderPulse?.(get('pairs'),get('thesisHistory'))||'')+drill+
+  +ranking+drill+
   '<p class="pairs-compact-footer">Classifiche descrittive, non segnali di trading: forza relativa BCE e priorità di ricerca non sono un backtest. Ogni fonte conserva la propria data.</p>';
 }
 function macro(){
