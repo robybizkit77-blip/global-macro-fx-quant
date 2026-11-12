@@ -183,10 +183,10 @@
  // A scheduled release is a catalyst, never its result or an FX reaction.
  // Same-day UPCOMING is treated as an unverified past/ongoing release.
  function pairCatalyst(pair,calendar,now,date=x=>x){
-  const validDay=s=>typeof s==='string'&&/^\\d{4}-\\d{2}-\\d{2}$/.test(s)&&
+  const validDay=s=>typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&
    !Number.isNaN(Date.parse(s+'T00:00:00Z'));
   if(!pair||!/^([A-Z]{3}){2}$/.test(pair.key||'')||
-     pair.base===pair.quote||!validDay(now)||
+     pair.key!==pair.base+pair.quote||pair.base===pair.quote||!validDay(now)||
      calendar?.schema!=='GMFQ_CALENDAR_OPERATIONAL_VIEW_V3'||
      !Array.isArray(calendar.events))return null;
   const checked=String(calendar.last_checked_at_utc||'').slice(0,10);
