@@ -39,6 +39,24 @@
   NZD:{inflation:{id:'NZ_CPI_HEADLINE_YOY_history_value',freq:'Q'},
        labour:{id:'NZ_UNEMP_RATE_history_value',freq:'Q'}}
  };
+ const expectedFiles={
+  US_CPIAUCSL_history_value:'US_CPIAUCSL_history.csv',
+  US_UNRATE_history_value:'US_UNRATE_history.csv',
+  EA_HICP_HEADLINE_YOY_history_value:'EA_HICP_HEADLINE_YOY_history.csv',
+  EA_UNEMP_history_value:'EA_UNEMP_history.csv',
+  UK_CPI_HEADLINE_YOY_history_value:'UK_CPI_HEADLINE_YOY_history.csv',
+  UK_UNEMP_RATE_history_value:'UK_UNEMP_RATE_history.csv',
+  JP_CPI_HEADLINE_YOY_history_value:'JP_CPI_HEADLINE_YOY_history.csv',
+  JP_UNEMP_RATE_history_value:'JP_UNEMP_RATE_history.csv',
+  CH_CPI_HEADLINE_YOY_history_value:'CH_CPI_HEADLINE_YOY_history.csv',
+  CH_UNEMP_RATE_history_value:'CH_UNEMP_RATE_history.csv',
+  CA_CPI_HEADLINE_YOY_history_value:'CA_CPI_HEADLINE_YOY_history.csv',
+  CA_UNEMP_RATE_history_value:'CA_UNEMP_RATE_history.csv',
+  AU_CPI_HEADLINE_Q_YOY_history_value:'AU_CPI_HEADLINE_Q_YOY_history.csv',
+  AU_UNEMP_RATE_history_value:'AU_UNEMP_RATE_history.csv',
+  NZ_CPI_HEADLINE_YOY_history_value:'NZ_CPI_HEADLINE_YOY_history.csv',
+  NZ_UNEMP_RATE_history_value:'NZ_UNEMP_RATE_history.csv'
+ };
  const number=x=>typeof x==='number'&&Number.isFinite(x);
  const monthIndex=s=>{
   if(typeof s!=='string'||!/^\d{4}-(?:0[1-9]|1[0-2])(?:-\d{2})?$/.test(s))return null;
@@ -71,7 +89,7 @@
   const s=chosen[0];
   if(s.frequency!==spec.freq||!Array.isArray(s.values)||
      !Array.isArray(s.dates)||s.values.length!==s.dates.length||
-     typeof s.source_file!=='string'||s.source_file.length<5)
+     s.source_file!==expectedFiles[spec.id])
    return unavailable(ccy,axis,'Identità, frequenza o fonte non verificata');
   const points=[];
   for(let i=0;i<s.dates.length;i++){
