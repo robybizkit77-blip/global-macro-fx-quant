@@ -13,6 +13,8 @@ const SOURCES={
  audDailyResearch:'../aud-rba-f2-history-research.json',
  chfResearch:'../chf-snb-paired-history.json',
  nzdPostroll:'../nzd-b2-postroll-web-research.json',
+ chfSpot:'../../../live_data/sections/CHF_SNB_10Y_SPOT_CONTEXT.json',
+ nzdDirectionalProxy:'../../../live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json',
  dxy:'../../../live_data/sections/DXY_SYNTHETIC_ECB.json',
  morningDesk:'./morning-desk-current.json',
  currencyPrices:'../../../live_data/sections/ECB_G8_PRICE_HISTORY.json',
