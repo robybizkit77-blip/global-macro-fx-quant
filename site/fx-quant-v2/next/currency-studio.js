@@ -311,8 +311,8 @@ function build(api){
    'Non abbiamo una variazione settimanale verificata del riferimento monetario a sei mesi: '+
    'i livelli futures disponibili non dimostrano un cambiamento delle aspettative.';
   const estimatedEconomic=cur?
-   'Il quadro interno è '+(cur.macroScore>=.25?'in miglioramento':
-    cur.macroScore<=-.25?'in indebolimento':'misto')+': '+
+   'Il quadro interno risulta '+(cur.macroScore>=.25?'favorevole':
+    cur.macroScore<=-.25?'debole':'misto')+': '+
    (cur.growthTrend===1?'il PIL accelera':
     cur.growthTrend===-1?'il PIL rallenta':
     'l’accelerazione del PIL non è verificabile')+
