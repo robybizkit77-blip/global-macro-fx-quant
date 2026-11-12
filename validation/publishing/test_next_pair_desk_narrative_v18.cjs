@@ -76,7 +76,7 @@ const pairArgs={key:goodPair,model,macro,ois,cot,now,
 const x=desk.interpret(pairArgs);
 for(const ccy of ['AUD','CAD']){
  const usable=desk.pricingObs(ccy,ois,now);
- assert.match(x.pricing,usable?new RegExp(ccy+' futures\\/proxy 6M'):
+ assert.match(x.pricing,usable?new RegExp(ccy+' futures/proxy 6M'):
   new RegExp(ccy+' senza 6M verificabile'),
   ccy+' live quote must obey its point-in-time observation date');
 }
@@ -87,13 +87,13 @@ for(const ccy of ['AUD','CAD']){
   as_of:now,horizons:{'6m':{as_of:now,rate:3.25,change_1d_bp:1.5}}};
 }
 const aligned=desk.interpret({...pairArgs,ois:alignedOis});
-assert.match(aligned.pricing,/AUD futures\\/proxy 6M/);
-assert.match(aligned.pricing,/CAD futures\\/proxy 6M/);
+assert.match(aligned.pricing,/AUD futures\/proxy 6M/);
+assert.match(aligned.pricing,/CAD futures\/proxy 6M/);
 assert.match(aligned.pricing,/Non calcoliamo uno spread monetario/);
 alignedOis.currencies.AUD.horizons['6m'].as_of='2099-01-01';
 const future=desk.interpret({...pairArgs,ois:alignedOis});
 assert.match(future.pricing,/AUD senza 6M verificabile/);
-assert.doesNotMatch(future.pricing,/AUD futures\\/proxy 6M/,
+assert.doesNotMatch(future.pricing,/AUD futures\/proxy 6M/,
  'Future-dated monetary inputs must never enter a current pair narrative');
 const index=fs.readFileSync(path.join(root,next+'index.html'),'utf8');
 const app=fs.readFileSync(path.join(root,next+'app.js'),'utf8');
