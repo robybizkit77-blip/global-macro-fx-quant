@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """Read-only coverage audit contract: success is not the same as fresh data."""
 import json
+import subprocess
+import sys
+import tempfile
 import unittest
 from pathlib import Path
 from validation.orchestration.audit_g8_source_coverage_v1 import (
-    FX, age_days, age_months, compare, coverage, latest_periods,
+    FX, ROOT, age_days, age_months, compare, coverage, latest_periods,
 )
 
 class G8CoverageReceiptTests(unittest.TestCase):
@@ -22,6 +25,20 @@ class G8CoverageReceiptTests(unittest.TestCase):
         self.assertEqual(report["rows"]["NZD"]["pricing_6m"]["status"], "WITHHELD")
         self.assertIsNone(report["rows"]["USD"]["pricing_6m"]["weekly_change_bp"])
         self.assertGreater(report["rows"]["USD"]["macro_series"]["observed_with_value"], 10)
+
+    def test_cli_readonly_exact_main_root_matches_default_receipt(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output=Path(tmp)/"receipt.json"
+            subprocess.run([sys.executable,
+                str(ROOT/"validation/orchestration/audit_g8_source_coverage_v1.py"),
+                "--root",str(ROOT),"--as-of","2026-11-12",
+                "--output",str(output)],check=True,capture_output=True,text=True)
+            receipt=json.loads(output.read_text(encoding="utf-8"))
+        standard=coverage(root=ROOT,asof="2026-11-12")
+        self.assertEqual(receipt["schema"],standard["schema"])
+        self.assertEqual(receipt["fingerprints"],standard["fingerprints"])
+        self.assertEqual(receipt["rows"],standard["rows"])
+        self.assertNotIn("since_before_phase",receipt)
 
     def test_content_change_must_be_detected_separately_from_success(self):
         old = {"fingerprints": {"rates": {"USD": "digest-a"}, "macro_series": {"USD": "digest-m"}}}

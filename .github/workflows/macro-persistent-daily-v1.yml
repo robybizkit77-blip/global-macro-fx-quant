@@ -12,6 +12,8 @@ on:
       - 'validation/macro/prepare_us_revised_household_canonical_v1.py'
       - 'validation/macro/test_prepare_us_revised_household_canonical_v1.py'
       - 'validation/macro/test_reconcile_us_real_households_countrybook_v2.py'
+      - 'validation/orchestration/audit_g8_source_coverage_v1.py'
+      - 'validation/orchestration/test_audit_g8_source_coverage_v1.py'
       - 'validation/macro/test_collect_us_nz_household_firm_sources_v1.py'
       - 'validation/macro/test_macro_official_source_label_contract_v1.py'
       - 'validation/macro/persist_calendar_news_safe_v12.py'
@@ -40,6 +42,8 @@ on:
       - 'validation/macro/prepare_us_revised_household_canonical_v1.py'
       - 'validation/macro/test_prepare_us_revised_household_canonical_v1.py'
       - 'validation/macro/test_reconcile_us_real_households_countrybook_v2.py'
+      - 'validation/orchestration/audit_g8_source_coverage_v1.py'
+      - 'validation/orchestration/test_audit_g8_source_coverage_v1.py'
       - 'validation/macro/test_collect_us_nz_household_firm_sources_v1.py'
       - 'validation/macro/test_macro_official_source_label_contract_v1.py'
       - 'validation/macro/persist_calendar_news_safe_v12.py'
@@ -111,6 +115,15 @@ jobs:
           node --check site/fx-quant-v2/next/g8-growth-shadow.js
           python -m unittest validation.macro.test_capture_g8_prospective_v1 -v
           python -m unittest validation.macro.test_score_g8_prospective_v1 -v
+
+      # Read-only baseline before issuer collection, including rates and
+      # expected-policy source quality; not evidence of a new release.
+      - name: Snapshot G8 data before official Macro refresh
+        shell: bash
+        run: |
+          set -euo pipefail
+          python validation/orchestration/audit_g8_source_coverage_v1.py \
+            --output /tmp/macro-persistent/g8-source-before.json
 
       - name: Snapshot baseline and registry contract
         shell: bash
@@ -553,6 +566,45 @@ jobs:
             --revision origin/main \
             --output /tmp/macro-persistent/g8-first-seen-outcomes.json \
             --publish
+
+      # Read the exact versioned main commit *after* existing collectors
+      # and safe persistence. Compare against this job's pre-collector
+      # sources, not only workflow success or a modified local workspace.
+      - name: G8 persisted-source audit of refreshed main (read-only)
+        if: ${{ always() && github.ref == 'refs/heads/main' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          baseline=/tmp/macro-persistent/g8-source-before.json
+          if [[ ! -s "$baseline" ]]; then
+            echo 'G8_SOURCE_AUDIT_WITHHELD_NO_BEFORE_SNAPSHOT' >&2
+            exit 1
+          fi
+          git fetch --no-tags origin main
+          source_sha="$(git rev-parse origin/main)"
+          export G8_SOURCE_SHA="$source_sha"
+          python3 - <<'PY'
+          import os
+          import subprocess
+          from pathlib import Path
+          from validation.orchestration.audit_g8_source_coverage_v1 import FILES
+          sha=os.environ['G8_SOURCE_SHA']
+          root=Path('/tmp/macro-persistent/g8-source-persisted-main')
+          for rel in FILES.values():
+              data=subprocess.check_output(['git','show',f'{sha}:{rel}'])
+              target=root/rel
+              target.parent.mkdir(parents=True,exist_ok=True)
+              target.write_bytes(data)
+          (root/'source-main-commit.txt').write_text(sha+'\n',encoding='utf-8')
+          print('G8_MAIN_SOURCE_SNAPSHOT_SHA',sha)
+          PY
+          python validation/orchestration/audit_g8_source_coverage_v1.py \
+            --root /tmp/macro-persistent/g8-source-persisted-main \
+            --before "$baseline" \
+            --output /tmp/macro-persistent/g8-source-after.json \
+            --summary
+          echo "- Source receipt after **persisted main** commit: \`$source_sha\`" >> "$GITHUB_STEP_SUMMARY"
+          echo '- A workflow can succeed without new source observations; this receipt is not an issuer release timestamp.' >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@v4
         if: always()
