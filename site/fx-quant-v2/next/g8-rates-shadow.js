@@ -94,9 +94,8 @@
   if(!finite(change10bp)||Math.abs(change10bp)>50)
    return unavailable('CHF: variazione 10Y fuori controllo, niente estrapolazione');
   const estimate=latest['2Y']+b*change10bp/100;
-  const observedGap=weekdays(latest.date,spot.as_of);
-  // weekday() deliberately caps at seven days; for longer gaps,
-  // the uncertainty multiplier must be computed on the entire period.
+  // A multi-day forecast has less empirical support than the one-day test;
+  // scale its uncertainty transparently rather than hiding that mismatch.
   let workdays=0;
   for(let i=1;i<=age(latest.date,spot.as_of);i++){
    const wd=new Date(Date.parse(latest.date+'T00:00:00Z')+i*86400000).getUTCDay();
@@ -149,10 +148,9 @@
    return unavailable('NZD: non c’è un movimento futures omogeneo del giorno successivo');
   // This is 50% passthrough SENSITIVITY, not an estimated empirical beta.
   // The [0%,100%] response is a range of assumptions, not a confidence band.
-  const anchor=3.77;
-  // The research bridge contains the display label, but the numeric input
-  // must be taken explicitly from a reviewed RBNZ row, not from parsed text.
-  return {status:'NZD_PENDING_NUMERIC_ANCHOR',anchor,move:h.change_1d_bp};
+  // The numeric RBNZ anchor is read from the independently reviewed
+  // post-roll research row below, never hard-coded or parsed from a label.
+  return {status:'NZD_PENDING_NUMERIC_ANCHOR',move:h.change_1d_bp};
  }
  function nzWithAnchor(args){
   const raw=nzd(args);
