@@ -56,7 +56,7 @@
   const direction=lead?
    lead.change>.03?'↑':lead.change<-.03?'↓':'→':'—';
   return {status:lead?'STORICO_DESCRITTIVO':'NON_DISPONIBILE',
-   label:lead?(lead.label+' '+direction):'Crescita da verificare',
+   label:lead?(lead.label+' '+direction+' · '+lead.asof):'Crescita da verificare',
    description:lead?lead.labelChange+
       (alt?' · '+alt.labelChange:'')+
       '. Queste sono variazioni delle ultime osservazioni disponibili, non PIL stimato, sorprese di mercato o dati pubblicati oggi.':
@@ -84,11 +84,11 @@
   if(!valid)return {status:'NON_DISPONIBILE',quality:'NON_DISPONIBILE',
    label:'Proxy non utilizzabile',asof:null,
    description:'Manca una quotazione alternativa a sei mesi con contratto, data e qualità verificabili. Non sostituiamo il dato con una previsione arbitraria.'};
-  return {status:'PROXY_INFORMATIVO',quality:'PROXY',label:signed(h.rate,2,'%')+' · proxy',
+  return {status:'PROXY_INFORMATIVO',quality:'PROXY',label:Math.abs(h.rate).toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2})+'% · proxy',
    value:h.rate,asof,contract:h.contract,instrument:e.instrument||'futures datato',
    source:e.source||'quotazione secondaria',confidence:e.confidence_grade||null,
    description:'Contratto '+h.contract+' ('+(e.instrument||'futures datato')+
-    '), quotazione indicativa '+signed(h.rate,2,'%')+' al '+asof+
+    '), quotazione indicativa '+h.rate.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2})+'% al '+asof+
     '. Non è OIS ufficiale, non misura direttamente il tasso atteso della banca centrale e non fornisce un repricing settimanale verificato.'};
  }
  function evaluate({macroSeries,estimated,now}){
