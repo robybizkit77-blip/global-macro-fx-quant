@@ -112,8 +112,19 @@ assert.equal(cadWatch.direction,1,'Favoured USD is USDCAD base');
 assert.equal(cadWatch.watch.favorable,cadWatch.breakHigh);
 assert.equal(cadWatch.watch.adverse,cadWatch.breakLow);
 assert.equal(cadWatch.watch.favorableDirection,'Sopra');
-assert(eurWatch.watch.favorableDistancePct>0&&eurWatch.watch.adverseDistancePct>0,'EURUSD inside reference range');
-assert(cadWatch.watch.favorableDistancePct>0&&cadWatch.watch.adverseDistancePct>0,'USDCAD inside reference range');
+// A breakout can already be underway. Today's fixing is NOT required to
+// remain inside the preceding 20-fixing range. The distance sign must agree
+// with the passed/not-passed state and use only previous observations.
+for(const item of [eurWatch,cadWatch]){
+ const watch=item.watch;
+ assert(watch.ready,item.key+' must retain source-dated reference levels');
+ assert(Number.isFinite(watch.favorableDistancePct)&&Number.isFinite(watch.adverseDistancePct),
+  item.key+' distance from both prior 20-fixing references must be numeric');
+ assert.equal(watch.favorablePassed,watch.favorableDistancePct<0,
+  item.key+' favorable breakout status must agree with signed distance');
+ assert.equal(watch.adversePassed,watch.adverseDistancePct<0,
+  item.key+' adverse breakout status must agree with signed distance');
+}
 const currentDailyRow=prices.rows.find(x=>x.Date===doc.price_asof);
 assert(currentDailyRow,'Current daily fixing row missing');
 function revisedToday(mutator){
