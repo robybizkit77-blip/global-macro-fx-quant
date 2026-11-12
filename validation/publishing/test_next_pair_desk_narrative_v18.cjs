@@ -20,7 +20,10 @@ const gov=read('live_data/sections/NATIVE_RATES_DATA.json');
 const aud=read('site/fx-quant-v2/aud-rba-f2-history-research.json');
 const chf=read('site/fx-quant-v2/chf-snb-paired-history.json');
 const nzd=read('site/fx-quant-v2/nzd-b2-postroll-web-research.json');
-const now='2026-11-10';
+// Keep source dates point-in-time: live monetary quotes must not be rejected
+// solely because the regression test froze a previous trading session.
+const now=prices.last_as_of;
+assert.match(now,/^\d{4}-\d{2}-\d{2}$/,'Use the dated canonical FX snapshot');
 const esc=x=>String(x).replace(/[&<>"']/g,c=>({
  '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
 })[c]);
@@ -67,12 +70,31 @@ const mismatch=desk.interpret({
 assert.match(mismatch.price,/sospendiamo la conferma/);
 assert.match(mismatch.relation,/non è disponibile/);
 const goodPair='AUDCAD';
-const x=desk.interpret({key:goodPair,model,macro,ois,cot,now,
+const pairArgs={key:goodPair,model,macro,ois,cot,now,
  profile:engine.profile(goodPair,model,prices,now),
- ratesView:rates.snapshot(gov,prices,goodPair,model.price_asof,now,aud,chf,nzd)});
-assert.match(x.pricing,/AUD futures\/proxy 6M/);
-assert.match(x.pricing,/CAD futures\/proxy 6M/);
-assert.match(x.pricing,/Non calcoliamo uno spread monetario/);
+ ratesView:rates.snapshot(gov,prices,goodPair,model.price_asof,now,aud,chf,nzd)};
+const x=desk.interpret(pairArgs);
+for(const ccy of ['AUD','CAD']){
+ const usable=desk.pricingObs(ccy,ois,now);
+ assert.match(x.pricing,usable?new RegExp(ccy+' futures\\/proxy 6M'):
+  new RegExp(ccy+' senza 6M verificabile'),
+  ccy+' live quote must obey its point-in-time observation date');
+}
+// Synthetic fixture tests presentation independently from the live quote clock.
+const alignedOis=structuredClone(ois);
+for(const ccy of ['AUD','CAD']){
+ alignedOis.currencies[ccy]={kind:'FUTURES',quality:'FONTE UFFICIALE',
+  as_of:now,horizons:{'6m':{as_of:now,rate:3.25,change_1d_bp:1.5}}};
+}
+const aligned=desk.interpret({...pairArgs,ois:alignedOis});
+assert.match(aligned.pricing,/AUD futures\\/proxy 6M/);
+assert.match(aligned.pricing,/CAD futures\\/proxy 6M/);
+assert.match(aligned.pricing,/Non calcoliamo uno spread monetario/);
+alignedOis.currencies.AUD.horizons['6m'].as_of='2099-01-01';
+const future=desk.interpret({...pairArgs,ois:alignedOis});
+assert.match(future.pricing,/AUD senza 6M verificabile/);
+assert.doesNotMatch(future.pricing,/AUD futures\\/proxy 6M/,
+ 'Future-dated monetary inputs must never enter a current pair narrative');
 const index=fs.readFileSync(path.join(root,next+'index.html'),'utf8');
 const app=fs.readFileSync(path.join(root,next+'app.js'),'utf8');
 const journey=fs.readFileSync(path.join(root,next+'decision-journey.js'),'utf8');
