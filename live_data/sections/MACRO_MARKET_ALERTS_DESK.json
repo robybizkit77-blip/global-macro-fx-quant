@@ -1,8 +1,51 @@
 {
   "schema": "GMFQ_DESK_MACRO_MARKET_ALERTS_V1",
-  "generated_at_utc": "2026-11-11T22:01:38Z",
+  "generated_at_utc": "2026-11-12T03:05:16Z",
   "state": "ACTIVE",
   "history": [
+    {
+      "event_id": "SRC-6906b95d6018148ecaf3",
+      "observed_at_utc": "2026-11-12T00:14:00Z",
+      "headline": "Japan wholesale inflation accelerates, keeps alive rate hike view",
+      "summary": "Reuters riporta: Japan wholesale inflation accelerates, keeps alive rate hike view. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [
+        "JPY"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxPcS10SkFkNjF0eGRPdkJTYU9aVVR4YzB4ZzNQZ0dfbzVOZ0g3Y2xwQkN2NHF4SmdGdjhIRE02el91WUdSYlFPV0lMcjNQbXdrZVFoWGdVb2RZb0Vwd19HN1V1dWN1MnBzaVJRRzNjU3Z5ZHQ2MTctbmhPZjRXcGVaZVVaZ0szd05xZEoxZEtHOWxkMXZOcm9CMHQtbUl0UEt5aFNNLVUzSDJvQkxibmdMS1VmWTZBUVJYWGVQNEhKR00?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-dd56d187ded8dcb1ee6c",
+      "observed_at_utc": "2026-11-11T03:39:00Z",
+      "headline": "Gold falls as hot inflation figures, higher dollar weigh",
+      "summary": "Reuters riporta: Gold falls as hot inflation figures, higher dollar weigh. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "MACRO",
+      "currencies": [
+        "USD"
+      ],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxPUkZNV2RySHI5TXJ4YTBhNlNpTllnVXUyRk9CNzBrLXBLWFc3OTlOM0Y1MUVDcGRhS1pQU1oxR3hveVE5VWRfVGF1aTR4Z0lhcWJjbGV4Ym93cDdqb09JQlpFdC10cW9FUkVBX0NPVFFyOTdxSV81Z0RWUEx4UkdITjNwUnRHUmdDbmg5a0F5QmZXRzdjWGZzeXJsdUNUbDRKM3NvU0VGVGQ?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
+    {
+      "event_id": "SRC-1ce09cdf4eb2556832e6",
+      "observed_at_utc": "2026-11-11T00:18:36Z",
+      "headline": "Wall St ends lower as hot inflation data fuels interest rate worries",
+      "summary": "Reuters riporta: Wall St ends lower as hot inflation data fuels interest rate worries. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
+      "category": "CENTRAL_BANK",
+      "currencies": [],
+      "related_pairs": [],
+      "source_label": "Reuters · notizia attribuita",
+      "source_url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE9MZmtLTUlISU03SjJHMGNHSllrSFVla2ZRb09OcGItZnU1RmJ4dGZud05SR3FZV3JGSjhQWnhtZVVYdzV1NzROQ1JXOU9NcFZ3TkphSnEyZmNIY2taV054emJJUG1yZw?oc=5",
+      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
+      "independently_confirmed": false
+    },
     {
       "event_id": "SRC-cee1939a50341d654b3c",
       "observed_at_utc": "2026-11-10T19:14:00Z",
@@ -1373,47 +1416,6 @@
       "related_pairs": [],
       "source_label": "AP News · notizia attribuita",
       "source_url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxQdndJTkZzZVB3bUs3SWZPMjZXZ3JzbnlHbWJoak5WWlJWTnQwZFpJNWZpd0tQb3RYanMyckQxMmVjWm5nQnk2Tzl6QjVCOVFmN21RNks4Q2tsM2tUODBSMldsdVQ3eDBoX3UyZDZMM3JybmZVRVhxT2lReGVMMEJuMTNvLTNUbmR0TmVqeXRXV1FZSVdUV1ZtcWVhQQ?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-b19dbce512954ac3a7c8",
-      "observed_at_utc": "2026-11-02T01:34:00Z",
-      "headline": "FUNDVIEW Indian stocks may recover on steady growth and earnings, Axis AMC says",
-      "summary": "Reuters riporta: FUNDVIEW Indian stocks may recover on steady growth and earnings, Axis AMC says. È una dichiarazione o segnalazione attribuita alla fonte: il fatto sottostante non è confermato indipendentemente da questo feed. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxONjliWTZBa2JoY2lIVm5QYVVjUmVWVXcyRS1JV3htNFprNHFmS3ZYUmdYTlczQktVUGgtOFo2d1p5NGFfajRIeGxHZ19DZXhSWmgtSG1RVzhfRWJ2Z0RQZkFhVmhxd2cyNHczMnVEUFY5NWpGdHZmbjlmTUZtN3c4WThkSEp2T1EtZFZHX3M1SklnVjdMWEpxeGRoZXg4VG1qb1YtcjRqMlBiM2dvQ19OeXdTSGs0OG9YdVRF?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-1af8743c25006a689dab",
-      "observed_at_utc": "2026-11-01T07:22:41Z",
-      "headline": "FT Vest Nasdaq-100 Conservative Buffer ETF - July (QCJL.N) | Stock Price & Latest News",
-      "summary": "Reuters riporta: FT Vest Nasdaq-100 Conservative Buffer ETF - July (QCJL.N) | Stock Price & Latest News. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "EQUITY",
-      "currencies": [
-        "USD"
-      ],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE1YY0VIVWZxdldkamd3Y05Rd2NtQWlUS1o5VGdDdkdqZTRzSHpjMDNIMEJQVEhCWGEwU3RMQUM5U0Nkb0xjbHVSS190a1BMbGR1aGV2NXNieVA?oc=5",
-      "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
-      "independently_confirmed": false
-    },
-    {
-      "event_id": "SRC-a2f227b29eccbc0eb07b",
-      "observed_at_utc": "2026-11-02T00:16:42Z",
-      "headline": "COMMENTARY: Asia's crude oil imports back to pre-war levels but refined fuels lag",
-      "summary": "Reuters riporta: COMMENTARY: Asia's crude oil imports back to pre-war levels but refined fuels lag. È una notizia attribuita alla testata, non una verifica autonoma dell'evento. Non sono disponibili da questo feed conferme di reazione OIS, 2Y o FX; nessun setup operativo viene dedotto dal titolo.",
-      "category": "GEOPOLITICS",
-      "currencies": [],
-      "related_pairs": [],
-      "source_label": "Reuters · notizia attribuita",
-      "source_url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxNUjRWdTdnRzAwR2xkSU04ZHlmbHh0eXg5Wm8xS1k5Q2hLYWRWbWdOVzd4ckZHcjZkYktZVHEyV29yQ25XNE9Ga0Y3TG5Dc3Awd054Y2o3MU5rLTNZNmRRTkZXVjdyZWJNYnM4bVczRU1RRmlqOW5JOVZCVWpJSXFDazBHWm5hUXhGb2FGS2xUN3Q5cFFQelVqazAxYXNDamdDZ0pINE5mQUE3VGhFdDcxZkZ4cUdSOFVQTWRsdXl6LXdMTUpIWnFLQ0VB?oc=5",
       "verification_level": "PUBLISHER_ATTRIBUTED_ONLY",
       "independently_confirmed": false
     }
