@@ -180,17 +180,10 @@ async function checkPairChartControls(page,label) {
   if(!(await ranking.innerText()).includes('STIMA OPERATIVA V1')||
      !(await ranking.innerText()).includes('vecchio modello del 25 settembre'))
     throw Error(label+' 28-pair ranking still relying on historical core');
-  const pulse=page.locator('section.pairs-thesis-pulse');
-  if(await pulse.count()!==1)throw Error(label+' 28-pair thesis pulse missing');
-  const story=await pulse.innerText();
-  if(!story.includes('MONITOR TESI FX') ||
-     (!story.includes('Fixing BCE') && !story.includes('non verificabile')))
-    throw Error(label+' thesis pulse lacks date status/fail-closed warning');
-  const pulseBox=await pulse.boundingBox();
-  if(!pulseBox || pulseBox.x < -2 || pulseBox.x+pulseBox.width>page.viewportSize().width+2)
-    throw Error(label+' thesis pulse extends outside viewport');
-  if(!await page.locator('#fx-ranking-desk').count())
-    throw Error(label+' FX ranking removed by thesis pulse');
+  if(await page.locator('section.pairs-thesis-pulse').count()!==0)
+    throw Error(label+' archived September thesis pulse must not appear in operational ranking');
+  if(await ranking.locator('button.fx-rank-pair').count()!==33)
+    throw Error(label+' estimated ranking must show 5 priority + 28 canonical crosses');
   const selected=page.locator('#fx-ranking-desk button[data-pair="USDCAD"]').first();
   if (!(await selected.count())) throw Error(label + ' USD/CAD pair not found in ranking');
   await selected.click();
