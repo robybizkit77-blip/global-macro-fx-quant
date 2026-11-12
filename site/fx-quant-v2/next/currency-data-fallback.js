@@ -97,7 +97,8 @@
  const withheld=()=>({status:'NON_DISPONIBILE',label:'Non verificato',asof:null,
    description:'Nessun confronto 2Y di ricerca sufficientemente documentato.',
    eligibleForCore:false});
- function researchRatesAxis(ccy,chf,nzd,rates,now){
+ const pctLevel=v=>num(v)?v.toLocaleString('it-IT',{minimumFractionDigits:3,maximumFractionDigits:3})+'%':'—';
+  function researchRatesAxis(ccy,chf,nzd,rates,now){
   if(!day(now))return withheld();
   const permitted=s=>s?.eligible_for_core===false&&
     s?.eligible_for_backtests===false&&s?.eligible_for_automatic_promotion===false&&
@@ -127,8 +128,8 @@
    return {status:'STORICO_UFFICIALE_NON_OPERATIVO',
      label:latest['2Y'].toLocaleString('it-IT',{minimumFractionDigits:3,maximumFractionDigits:3})+'% · storico',
      asof:latest.date,quality:'SNB_SERIE_STORICA',
-     description:'SNB: 2Y '+signed(latest['2Y'],3,'%')+' e 10Y '+
-       signed(latest['10Y'],3,'%')+' osservati entrambi al '+latest.date+
+     description:'SNB: 2Y '+pctLevel(latest['2Y'])+' e 10Y '+
+       pctLevel(latest['10Y'])+' osservati entrambi al '+latest.date+
        '. Serie spot ufficiale, ma l’ultima osservazione risale a '+days(latest.date,now)+
        ' giorni fa: NON è un rendimento live né una variazione settimanale recente. Non contribuisce alle conferme Forex.',
      eligibleForCore:false};
