@@ -71,8 +71,24 @@ assert.match(d.currencies.NZD.market.text,/NON misura un OIS RBNZ/);
 assert.equal(d.currencies.NZD.market.asof,'2026-11-11');
 assert.equal(d.currencies.GBP.macro.pressure,'RESTRITTIVA_CONDIZIONALE');
 assert.equal(d.currencies.JPY.macro.pressure,'RESTRITTIVA_CONDIZIONALE');
-assert.equal(d.currencies.JPY.market.side,'SCENDE');
-assert.equal(d.currencies.JPY.comparison.state,'DIVERGENZA_DA_STUDIARE');
+// This is a LIVE weekly change, not an eternally falling 6M reference.
+// At exactly -2 bp the model deliberately classifies the move as limited.
+const jpyBp=data.ois.currencies.JPY.horizons['6m'].change_1w_bp;
+const jpySide=jpyBp>2?'SALE':jpyBp< -2?'SCENDE':'POCO_VARIATO';
+assert.equal(d.currencies.JPY.market.bp,jpyBp);
+assert.equal(d.currencies.JPY.market.side,jpySide);
+assert.equal(d.currencies.JPY.comparison.state,
+ jpySide==='SCENDE'?'DIVERGENZA_DA_STUDIARE':
+ jpySide==='SALE'?'SEGNI_COMPATIBILI':'POCO_MOVIMENTO');
+// Preserve an independent negative-shock scenario even if today's move is flat.
+const jpyShockRow=structuredClone(original.rows.find(x=>x.ccy==='JPY'));
+const jpyShockOis=structuredClone(data.ois.currencies.JPY);
+jpyShockRow.pricing.change=-3;
+jpyShockOis.horizons['6m'].change_1w_bp=-3;
+const jpyShock=F.one({row:jpyShockRow,ois:jpyShockOis,
+ growth:growth.currencies.JPY,labour:labour.currencies.JPY,now});
+assert.equal(jpyShock.market.side,'SCENDE');
+assert.equal(jpyShock.comparison.state,'DIVERGENZA_DA_STUDIARE');
 assert.equal(d.currencies.GBP.comparison.state,'SEGNI_COMPATIBILI');
 assert.equal(d.currencies.CAD.macro.pressure,'TENSIONE_CRESCITA_PREZZI');
 assert.equal(d.currencies.CAD.comparison.state,'NON_UNIVOCO');
