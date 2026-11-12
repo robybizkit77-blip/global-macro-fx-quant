@@ -849,7 +849,7 @@ function pairs(){
   chooser+main+historyDetail+detail:'';
  return pageHero('FX / PAIR EXPLORER','Dal G8 alle <em>coppie da approfondire.</em>',
   'Prima la classifica visiva delle valute e delle 28 coppie; poi, scegliendo una coppia, trovi il ragionamento completo su macro, pricing, COT e prezzo.')
-  +ranking+drill+
+  +ranking+(window.FXQuantThesisMonitor?.renderPulse?.(get('pairs'),get('thesisHistory'))||'')+drill+
   '<p class="pairs-compact-footer">Classifiche descrittive, non segnali di trading: forza relativa BCE e priorità di ricerca non sono un backtest. Ogni fonte conserva la propria data.</p>';
 }
 function macro(){
