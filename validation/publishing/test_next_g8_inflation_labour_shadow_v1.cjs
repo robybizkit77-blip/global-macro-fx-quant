@@ -123,7 +123,7 @@ const firstRanks=[];
 for(const c of FX){
  const html=C.render({...params,state:{ccy:c,csOther:c==='EUR'?'USD':'EUR',csReturnWindow:20}});
  assert(html.includes('CPI'),'CPI G8 shown for '+c);
- assert(html.includes('Disocc.'),'Unemployment G8 shown for '+c);
+ assert(html.includes('disoccupazione')&&html.includes('Disoccupazione'),'Unemployment described in narrative and audited source detail for '+c);
  assert(html.includes('Inflazione headline YoY'),'Inflation provenance in research '+c);
  assert(html.includes('Disoccupazione'),'Labour provenance in dossier '+c);
  assert(html.includes('SCENARIO MACRO · NON POINT-IN-TIME'),'No release-vintage certification claim');
