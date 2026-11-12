@@ -71,6 +71,6 @@ const idx=read(base+'index.html');
 const app=read(base+'app.js');
 assert(idx.includes('currency-data-fallback.js?v=1'));
 assert(idx.indexOf('currency-data-fallback.js')<idx.indexOf('currency-studio.js'));
-assert(idx.includes('currency-studio.js?v=6')&&idx.includes('app.js?v=19'));
+assert(idx.includes('currency-studio.js?v=6')&&idx.includes('app.js?v=18.38'));
 assert(app.includes("cbEstimated:'../../../live_data/sections/CB_PRICING_ESTIMATED.json'"));
 console.log('G8_DATA_FALLBACK_V1_PASS: observed growth, indicative 6M proxy, no official promotion, stale/future guard, unchanged rankings');
