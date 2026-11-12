@@ -94,9 +94,9 @@ assert.equal(L.editionStatus(daily,today).state,'today');
 assert.match(L.editionStatus(daily,today).text,/seduta odierna/);
 assert.equal(L.editionStatus(daily,'2026-11-13').state,'previous',
  'A previous daily report cannot masquerade as the next session report');
-assert.equal(L.editionStatus(daily,'2026-11-07').state,'previous',
+assert.equal(L.editionStatus(daily,'2026-11-14').state,'previous',
  'Weekend cannot hide a missing Friday daily edition');
-assert.equal(L.editionStatus({...daily,date:'2026-11-13'},'2026-11-07').state,'latest-business');
+assert.equal(L.editionStatus({...daily,date:'2026-11-13'},'2026-11-14').state,'latest-business');
 assert.equal(L.editionStatus(ois,today).state,'weekly',
  'Six-day-old OIS weekly is last published, not automatically stale');
 assert.equal(L.editionStatus(cross,today).state,'previous');
