@@ -53,10 +53,10 @@ assert.equal(result.by.USD.rate.kind,'GOV_2Y_PROXY');
 assert.equal(result.by.GBP.rate.kind,'OIS');
 assert.equal(result.by.JPY.rate.kind,'FUTURES');
 assert(result.warning.includes('non backtest'));
-const journey=require(path.join(ROOT,next,'decision-journey.js'));
+const journeyModule=require(path.join(ROOT,next,'decision-journey.js'));
 for(const key of ['EURUSD','AUDCAD','GBPJPY']){
- const updated=journey.profile(key,model,prices,now,result);
- const frozen=journey.profile(key,model,prices,now);
+ const updated=journeyModule.profile(key,model,prices,now,result);
+ const frozen=journeyModule.profile(key,model,prices,now);
  const estimatedPair=result.pairs.find(x=>x.key===key);
  assert.equal(updated.source,'STIMA_ESPLICITA_V1',key+' current price thesis is estimated');
  assert.equal(updated.asof,result.priceAsOf,key+' uses the latest fixing, not legacy model price');
