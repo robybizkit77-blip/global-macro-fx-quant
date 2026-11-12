@@ -46,7 +46,7 @@
  }
  function analyze(current,history,pair){
   const snapshots=validated(history,current);
-  if(!snapshots)return {ready:false,reason:'Confronto tra due sedute non verificabile: manca uno storico allineato al modello attuale. Nessuna variazione viene inventata.'};
+  if(!snapshots)return readiness(current,history);
   const {latest,previous}=snapshots,keys=Object.keys(current.pairs).sort();
   const now=flatten(current.pairs[pair]),before=previous.pairs[pair];
   if(!before||!latest.pairs[pair])return {ready:false,reason:'Coppia non presente in entrambi gli snapshot ufficiali.'};
@@ -112,11 +112,27 @@
  }
  // Daily 28-pair pulse: never equate changes of classification with new
  // macro evidence, price momentum, flows or trade attractiveness.
+ function readiness(current,history){
+  const latest=history?.snapshots?.at(-1);
+  if(history?.schema==='GMFQ_PAIR_THESIS_HISTORY_V1'&&
+     current?.price_asof&&latest?.price_asof===current.price_asof &&
+     current.macro_baseline_asof===latest.macro_baseline_asof &&
+     Object.keys(current.pairs||{}).length===28){
+    const drift=Object.keys(current.pairs).filter(k=>{
+     const old=latest.pairs?.[k];
+     return !old||checks.some(([key])=>field(flatten(current.pairs[k]),key)!==field(old,key));
+    });
+    if(drift.length)return {ready:false,drift:drift.length,
+     reason:'Confronto giornaliero non verificabile: il modello è stato ricalcolato sulla stessa seduta. '+drift.length+
+      ' coppie hanno etichette diverse dallo storico archiviato. Non sono cambiamenti tra giorni e non vanno spacciati per nuovi segnali.'};
+  }
+  return {ready:false,drift:0,
+   reason:'Confronto giornaliero non verificabile: storico e modello non ancora allineati. Nessuna variazione viene inventata.'};
+ }
  function overview(current,history){
   const pairKeys=Object.keys(current?.pairs||{}).sort();
   const snapshots=validated(history,current);
-  if(!snapshots)return {ready:false,
-   reason:'Confronto quotidiano non verificabile. Prezzi, modello e storico non hanno ancora uno snapshot allineato: non attribuiamo cambiamenti alle tesi.'};
+  if(!snapshots)return readiness(current,history);
   const {latest,previous}=snapshots;
   const score={'fav':6,'quality':5,'price.text':4,'timing.text':3,
    'cot.text':2,'liquidity.text':1};
@@ -172,7 +188,7 @@
     '</strong><span>'+esc(item.labels.join(' · '))+'</span></div>').join('')+
    '</div><p>Le coppie sono ordinate per rilevanza delle classificazioni variate; non per rendimento atteso o qualità del trade. Apri la singola coppia per la tesi e le invalidazioni.</p></details></section>';
  }
- const api={flatten,validated,analyze,render,overview,renderPulse};
+ const api={flatten,validated,analyze,render,overview,renderPulse,readiness};
  root.FXQuantThesisMonitor=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
