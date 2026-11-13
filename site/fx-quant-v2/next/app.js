@@ -1099,6 +1099,17 @@ function refreshPairPriceChart(focusSelector){
  window.scrollTo({top:scrollTop,behavior:'instant'});
 }
 document.addEventListener('click',e=>{
+ const ratesOpenPair=e.target.closest('[data-rates-openpair]');
+ if(ratesOpenPair&&state.route==='rates'){
+  const pair=ratesOpenPair.dataset.ratesOpenpair;
+  if(!get('pairs')?.pairs?.[pair])return;
+  e.preventDefault();
+  state.pair=pair;state.spotPair=pair;state.pairDetailOpen=true;
+  state.route='pairs';
+  if(location.hash!=='#pairs')location.hash='#pairs';
+  else render();
+  return;
+ }
  const calendarResearch=e.target.closest('[data-cal-research]');
  if(calendarResearch&&state.route==='news'){
   const mode=calendarResearch.dataset.calResearch;
