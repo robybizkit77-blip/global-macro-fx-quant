@@ -191,7 +191,7 @@ function make(api){
    const o=dataO(c),rows=TERMS.map(k=>({k,h:rpRate(c,k)}));
    const any=rows.some(x=>finite(x.h?.change_1d_bp)||finite(x.h?.change_1w_bp));
    const header='<div class="rates-graph-head"><div><span class="micro-over">MARKET REPRICING · '+c+'</span><h3>Quanto sono cambiate le aspettative?</h3></div><span class="badge '+(any?'info':'warning')+'">'+(any?'VARIAZIONI DATATE':'VARIAZIONI ASSENTI')+'</span></div>';
-   if(!any)return '<div class="rates-reprice">'+header+'<div class="rates-missing">Questo feed contiene livelli dei tenori, ma <strong>non le variazioni storiche 1D/1W</strong>. Non deduciamo il repricing confrontando i livelli 3M e 12M: quel confronto descrive una forma a termine, non il cambiamento avvenuto oggi.</div></div>';
+   if(!any)return '<div class="rates-reprice">'+header+'<div class="rates-missing">Il feed principale contiene solo livelli e <strong>non variazioni 1D/1W</strong>. Il confronto temporale mostrato sopra può utilizzare un archivio separato di <strong>medesimi contratti futures</strong>, esclusivamente come ricerca; non sono OIS ufficiali né segnali di politica monetaria.</div></div>';
    return '<div class="rates-reprice">'+header+'<div class="rates-repricing-cards">'+rows.map(x=>
      '<div><span>'+x.k.toUpperCase()+' · '+date(x.h?.as_of)+'</span><strong>'+sign(x.h?.change_1d_bp,1,' pb')+'</strong><small>1 seduta</small>'
      +'<strong>'+sign(x.h?.change_1w_bp,1,' pb')+'</strong><small>1 settimana</small></div>').join('')+'</div>'
@@ -268,6 +268,12 @@ function make(api){
     +'<div class="rates-hero-side"><div class="rates-hero-orbit"><span>CURVE SLOPE</span><strong>'+sign(r?(r['10Y']-r['2Y'])*100:null,1)+'</strong><small>punti base · '+date(r?.date)+'</small></div></div></section>'
     +govCard(c)
     +fxRelativeEvidence(c,other)
+    +(root.FXQuantPricingMoves?.render?.({
+       currency:c,window:state.rsPricingWindow||'1d',plot,esc,fmt,sign,date,
+       snapshot:get('ois'),operational:get('oisOperational'),
+       research:get('oisSameContract'),nzd:get('nzdDirectionalProxy'),
+       today:dayNow()
+     })||'<section class="rates-pricing-moves"><p class="rates-missing">Confronto monetario giornaliero non disponibile: dati da verificare.</p></section>')
     +'<section class="rates-chapter"><div class="rates-section-head"><div><span class="chapter-kicker">02 / SOVEREIGN CURVE LAB</span><h2>Quali scadenze <em>stanno cambiando?</em></h2></div><p>Ogni grafico nasce dalle osservazioni 2Y e 10Y comuni. Cambia periodo e misura la pendenza, senza confondere la forma con il driver economico.</p></div>'
     +'<div class="rates-research-grid"><div class="rates-primary-plot">'+govPlot(c)+'</div>'+historicalSovereign(c)+'</div></section>'
     +'<section class="rates-chapter"><div class="rates-section-head"><div><span class="chapter-kicker">03 / CENTRAL BANK PRICING</span><h2>Le aspettative non sono <em>il tasso ufficiale.</em></h2></div><p>Confronta i livelli 3M, 6M e 12M senza mescolare OIS e futures. Guarda quali scadenze hanno una variazione 1D/1W verificabile.</p></div>'

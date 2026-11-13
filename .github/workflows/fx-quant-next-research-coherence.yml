@@ -28,6 +28,7 @@ on:
       - 'validation/qa_next_research_editorials_v7.cjs'
       - 'validation/qa_next_research_decision_v9.cjs'
       - 'validation/qa_next_fx_rates_bridge_v13.cjs'
+      - 'validation/publishing/test_next_rates_pricing_moves_v1.cjs'
       - 'validation/qa_next_pair_coverage_v15.cjs'
       - 'validation/qa_next_aud_f2_daily_research_v16.cjs'
       - 'validation/qa_next_chf_nzd_provenance_v17.cjs'
@@ -70,6 +71,8 @@ jobs:
         run: node validation/qa_next_research_decision_v9.cjs
       - name: Verify source-aligned FX and government 2Y evidence, without OIS fiction
         run: node validation/qa_next_fx_rates_bridge_v13.cjs
+      - name: Verify source-dated 1D/1W OIS/futures research, missing dates and rollover
+        run: node validation/publishing/test_next_rates_pricing_moves_v1.cjs
       - name: Verify per-pair status across all 28 G8 crosses and missing-data guardrails
         run: node validation/qa_next_pair_coverage_v15.cjs
       - name: Verify quarantined RBA F2 daily research source and no Core promotion

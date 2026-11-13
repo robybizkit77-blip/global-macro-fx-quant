@@ -125,7 +125,7 @@ assert(app.includes("estimated,rates:get('rates'),calendar:get('calendar')"));
 const index=read(next+'index.html');
 assert(index.includes('./morning-desk-v1.js?v=7'));
 assert(index.includes('./morning-desk-v1.css?v=5'));
-assert(index.includes('./app.js?v=18.53-rates-fx-context'));
+assert(index.includes('./app.js?v=18.54-ois-daily-moves'));
 assert(index.includes('./hourly-desk-ui-v1.js?v=8'));
 assert(index.includes('./hourly-desk-ui-v1.css?v=4'));
 assert(app.includes("get('hourlyDesk')"),'Optional free market narrative must not block frozen morning');
