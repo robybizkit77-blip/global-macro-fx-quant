@@ -42,7 +42,7 @@ assert(out.includes('class="hourly-fx-spotlight"'),'Forex consequences must be p
 assert(out.includes('class="hourly-decision-grid"'),'Three-part decision map must be visible');
 assert(out.includes('class="hourly-navigation-grid"'),'Direct research tools navigation must be present');
 assert(out.includes('class="hourly-evidence-peek"'),'At-a-glance headlines must show evidence');
-assert(out.includes('Dentro il quadro macro'),'Long-form economic context must remain accessible');
+assert(out.includes('Le connessioni tra i mercati'),'Long-form economic context must remain accessible');
 assert(out.includes(sample.desk_judgment),'The full canonical market judgment must be visible when no lead repetition exists');
 const consecutive=structuredClone(sample);
 consecutive.desk_judgment=sample.lead+' La persistenza dipende dai nuovi dati e dalla conferma delle coppie FX.';
