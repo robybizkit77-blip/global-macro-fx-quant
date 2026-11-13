@@ -36,19 +36,23 @@
   if(current.price_asof!==latest.price_asof||!day(previous.price_asof)||
    current.macro_baseline_asof!==latest.macro_baseline_asof)return null;
   if(Object.keys(current.pairs).some(k=>!latest.pairs[k]||!previous.pairs[k]))return null;
-  // Same-date model may be rebuilt with altered inputs; only compare if the
-  // current display really matches the snapshot that was persisted.
-  if(Object.keys(current.pairs).some(k=>{
+  // A same-date rebuild is NOT a day-to-day change. Preserve the genuine
+  // two archived daily snapshots even if the displayed model was recomputed.
+  // In that case the archive is NEVER labelled as the current live dossier.
+  const recalculatedPairs=Object.keys(current.pairs).filter(k=>{
    const p=flatten(current.pairs[k]),a=latest.pairs[k];
    return checks.some(([key])=>field(p,key)!==field(a,key));
-  }))return null;
-  return {latest,previous};
+  }).sort();
+  return {latest,previous,archivedOnly:recalculatedPairs.length>0,
+   recalculatedPairs};
  }
  function analyze(current,history,pair){
   const snapshots=validated(history,current);
   if(!snapshots)return readiness(current,history);
-  const {latest,previous}=snapshots,keys=Object.keys(current.pairs).sort();
-  const now=flatten(current.pairs[pair]),before=previous.pairs[pair];
+  const {latest,previous,archivedOnly,recalculatedPairs}=snapshots,
+   keys=Object.keys(current.pairs).sort();
+  const now=archivedOnly?latest.pairs[pair]:flatten(current.pairs[pair]),
+   before=previous.pairs[pair];
   if(!before||!latest.pairs[pair])return {ready:false,reason:'Coppia non presente in entrambi gli snapshot ufficiali.'};
   const details=checks.map(([key,name])=>({
    key,name,prev:field(before,key),curr:field(now,key),
@@ -63,7 +67,8 @@
   const summary={total:keys.length,quality:0,price:0,timing:0,cot:0,fav:0,liquidity:0,
    any:0,unchanged:0};
   for(const k of keys){
-   const left=previous.pairs[k],right=flatten(current.pairs[k]);
+   const left=previous.pairs[k],
+    right=archivedOnly?latest.pairs[k]:flatten(current.pairs[k]);
    const diffs=checks.filter(([key])=>field(left,key)!==field(right,key)).map(([key])=>key);
    if(diffs.length)summary.any++;else summary.unchanged++;
    if(diffs.includes('quality'))summary.quality++;
@@ -83,7 +88,7 @@
    'Sono cambiati indicatori secondari del modello, mentre la direzione strutturale e lo stato sintetico del prezzo non hanno fornito una nuova conferma.';
   return {ready:true,asof:latest.price_asof,previousAsOf:previous.price_asof,
    baseline:latest.macro_baseline_asof,macroSame,summary,details,changed,observations,
-   judgement,current:currentEvidence,pair};
+   judgement,current:currentEvidence,pair,archivedOnly,recalculatedPairs};
  }
  function render(current,history,pair){
   const x=analyze(current,history,pair);
@@ -92,9 +97,14 @@
   const delta=x.changed.length?x.changed.map(c=>'<div class="thesis-change"><span>'+esc(c.name)+'</span><strong>'+esc(text(c.prev))+'</strong><span class="thesis-arrow" aria-label="diventa">→</span><strong>'+esc(text(c.curr))+'</strong></div>').join(''):
    '<p class="thesis-same">Nessun cambiamento nelle classificazioni confrontate: non significa che macro, prezzi e rischi siano rimasti identici in ogni dettaglio.</p>';
   const s=x.summary;
+  const archiveNote=x.archivedOnly?
+   '<p class="thesis-frozen"><strong>Solo confronto storico archiviato, non dossier corrente.</strong> '+
+   x.recalculatedPairs.length+' coppie sono state ricalcolate sulla stessa data di fixing ('+
+   esc(x.recalculatedPairs.map(k=>k.slice(0,3)+'/'+k.slice(3)).join(', '))+
+   '). Le nuove etichette non rappresentano movimenti fra sedute. Per la lettura corrente usa il dossier della coppia.</p>':'';
   return '<section class="panel thesis-monitor" id="fx-thesis-monitor"><div class="panel-head"><div><span class="mini-overline">MONITOR TESI FX · 28 COPPIE</span>'+
    '<h2>Che cosa è cambiato davvero?</h2><p>Confronto tra snapshot di prezzo '+fmt(x.previousAsOf)+' → '+fmt(x.asof)+
-   '. Non è una lettura intraday e non sovrappone sedute differenti.</p></div></div>'+
+   '. Non è una lettura intraday e non sovrappone sedute differenti.</p></div></div>'+archiveNote+
    '<div class="thesis-summary"><span><b>'+s.any+'/28</b> coppie con almeno una variazione</span>'+
    '<span><b>'+s.fav+'</b> vantaggio strutturale</span><span><b>'+s.price+'</b> prezzo</span>'+
    '<span><b>'+s.quality+'</b> qualità</span><span><b>'+s.timing+'</b> timing</span><span><b>'+s.cot+'</b> COT</span></div>'+
@@ -105,7 +115,7 @@
     (x.macroSame?'Nessun aggiornamento della baseline macro fra i due snapshot: i cambiamenti osservati non dimostrano nuove sorprese economiche.':
     'La baseline riportata è cambiata: serve verificare i rilasci e la data di acquisizione, non inferire automaticamente una sorpresa.')+'</p></div>'+
    '<aside class="thesis-next"><span class="mini-overline">COSA VERIFICARE ADESSO</span><h3>La tesi resta diversa dal timing.</h3>'+
-   '<p><strong>Struttura attuale.</strong> '+esc(x.current.structural)+'</p>'+
+   '<p><strong>'+(x.archivedOnly?'Struttura nello snapshot archiviato.':'Struttura attuale.')+'</strong> '+esc(x.current.structural)+'</p>'+
    '<p><strong>Conferme mancanti.</strong> '+esc(x.current.missing)+'</p>'+
    '<p><strong>Controllare.</strong> '+esc(x.current.watch)+'</p></aside></div>'+
    '<p class="thesis-footer">Monitor descrittivo: variazioni di etichette del motore, non flussi istituzionali osservati o edge quantitativo. Il COT qui segnala soltanto una diversa lettura del posizionamento nel modello; non prova che un operatore abbia aperto o chiuso posizioni. La frequenza dipende dal fixing BCE, non dalla frequenza di aggiornamento della pagina.</p></section>';
@@ -133,13 +143,14 @@
   const pairKeys=Object.keys(current?.pairs||{}).sort();
   const snapshots=validated(history,current);
   if(!snapshots)return readiness(current,history);
-  const {latest,previous}=snapshots;
+  const {latest,previous,archivedOnly,recalculatedPairs}=snapshots;
   const score={'fav':6,'quality':5,'price.text':4,'timing.text':3,
    'cot.text':2,'liquidity.text':1};
   const changes=[];
   const dimensions=Object.fromEntries(checks.map(([key])=>[key,0]));
   for(const pair of pairKeys){
-   const previousPair=previous.pairs[pair],now=flatten(current.pairs[pair]);
+   const previousPair=previous.pairs[pair],
+    now=archivedOnly?latest.pairs[pair]:flatten(current.pairs[pair]);
    const diffs=checks.filter(([key])=>field(previousPair,key)!==field(now,key));
    if(!diffs.length)continue;
    for(const [key] of diffs)dimensions[key]++;
@@ -159,7 +170,7 @@
    baseline:latest.macro_baseline_asof,macroSame:previous.macro_baseline_asof===latest.macro_baseline_asof,
    total:pairKeys.length,changedCount:changes.length,coreCount:coreChanges.length,
    priceCount:priceChanges.length,secondaryCount:secondary.length,
-   changes,dimensions};
+   changes,dimensions,archivedOnly,recalculatedPairs};
  }
  function renderPulse(current,history){
   const x=overview(current,history);
@@ -173,7 +184,10 @@
   const meaning=x.changedCount===0?
    ' Non significa che i prezzi siano rimasti fermi, né che le tesi siano state confermate.':
    ' Sono cambiamenti del dossier, non prove di nuovi flussi o segnali di ingresso.';
-  const main=opening+
+  const archiveNote=x.archivedOnly?
+   '<p class="pairs-thesis-pulse-unavailable">Solo storico archiviato: '+
+   x.recalculatedPairs.length+' coppie ricalcolate sulla stessa seduta. Nessuna differenza di versione è trattata come movimento giornaliero.</p>':'';
+  const main=opening+archiveNote+
    '<p class="pairs-thesis-pulse-story"><strong>'+esc(first)+'</strong>'+esc(meaning)+'</p>'+
    '<p class="pairs-thesis-pulse-dates">Fixing BCE '+fmt(x.previousAsOf)+' → '+fmt(x.asof)+
    ' · Riferimento macro '+fmt(x.baseline)+

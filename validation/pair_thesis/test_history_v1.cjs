@@ -93,13 +93,26 @@ assert.equal(monitor.analyze(outOfSync,history,'AUDCAD').ready,false,'No compari
 const syntheticDrift=structuredClone(canonical);
 syntheticDrift.pairs.AUDCAD.setup.timing.text='Etichetta aggiornata con la stessa data';
 const explanation=monitor.overview(syntheticDrift,history);
-assert.equal(explanation.ready,false);
-assert.equal(explanation.drift,1,'Same-day rebuild is not a daily movement');
-assert.match(explanation.reason,/ricalcolato/);
-assert.match(monitor.renderPulse(syntheticDrift,history),/stessa seduta/);
+assert.equal(explanation.ready,true,'The verified archived daily comparisons must remain readable');
+assert.equal(explanation.archivedOnly,true,'A same-fixing revision is not the displayed current dossier');
+assert.deepEqual(explanation.recalculatedPairs,['AUDCAD']);
+assert.deepEqual(explanation.changes,dailyPulse.changes,
+ 'Recomputed timing labels must NOT be counted as new day-to-day changes');
+assert.equal(monitor.readiness(syntheticDrift,history).ready,false,
+ 'Unreconciled current model remains correctly withheld as LIVE evidence');
+assert.match(monitor.renderPulse(syntheticDrift,history),/Solo storico archiviato/);
+assert.match(monitor.render(syntheticDrift,history,'AUDCAD'),/Solo confronto storico archiviato/);
+assert.doesNotMatch(monitor.render(syntheticDrift,history,'AUDCAD'),
+ /Etichetta aggiornata con la stessa data/,
+ 'Unarchived same-day timing text must never appear as historical evidence');
 const sameDayDrift=structuredClone(canonical);
 sameDayDrift.pairs.AUDCAD.setup.cot.text='Unpersisted intraday label';
-assert.equal(monitor.analyze(sameDayDrift,history,'AUDCAD').ready,false,'Reject mismatched same-date model fields');
+const archival=monitor.analyze(sameDayDrift,history,'AUDCAD');
+assert.equal(archival.ready,true,'Archive can still be read when one current label has drifted');
+assert.equal(archival.archivedOnly,true);
+assert.deepEqual(archival.recalculatedPairs,['AUDCAD']);
+assert.equal(archival.current.cotText,latest.pairs.AUDCAD.cot.text,
+ 'Archive comparison must NEVER use same-session unarchived COT or timing changes');
 const rejected=structuredClone(history);rejected.snapshots.push({...latest});
 assert.throws(()=>validate(rejected),/sorted unique/);
 assert.equal(update(canonical,history,'new-source').changed,false,'No duplicate snapshots for same as-of');
@@ -116,11 +129,18 @@ assert.throws(()=>update(older,history),/precedes newest history/);
 const invalid=structuredClone(canonical);delete invalid.pairs.AUDCAD;
 assert.throws(()=>snapshot(invalid),/exactly 28/);
 assert.equal(monitor.analyze(canonical,{...history,snapshots:[]},'AUDCAD').ready,false);
-if(current.price_asof===latest.price_asof){
- const aligned=JSON.stringify(snapshot(current,'current-source').pairs)===JSON.stringify(latest.pairs);
- assert.equal(monitor.analyze(current,history,'AUDCAD').ready,aligned,
- 'A regenerated same-day model must not be mistaken for the archived snapshot');
+if(current.price_asof===latest.price_asof&&
+   current.macro_baseline_asof===latest.macro_baseline_asof){
+ const currentAudit=monitor.overview(current,history);
+ assert.equal(currentAudit.ready,true,'Historical snapshot remains readable at matching source date');
+ if(currentAudit.archivedOnly){
+  assert(currentAudit.recalculatedPairs.length>0);
+  assert.deepEqual(currentAudit.changes,dailyPulse.changes,
+   'Live same-date rebuild must not contaminate two dated archived snapshots');
+  assert.match(monitor.render(current,history,'AUDCAD'),/Solo confronto storico archiviato/);
+ }else assert.deepEqual(currentAudit.recalculatedPairs,[]);
 }else{
- assert.equal(monitor.analyze(current,history,'AUDCAD').ready,false,'Unarchived current model must not show invented changes');
+ assert.equal(monitor.analyze(current,history,'AUDCAD').ready,false,
+  'Unarchived different-date model must not show invented changes');
 }
 console.log('PAIR_THESIS_MONITOR_28_DATED_HISTORY_ROLLING_SAFE_NO_FAKE_MACRO_OR_SIGNAL_PASS');
