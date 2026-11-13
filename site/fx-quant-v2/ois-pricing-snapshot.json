@@ -42,7 +42,7 @@
       "horizons": {
         "3m": {
           "rate": 2.6025,
-          "as_of": "2026-11-11",
+          "as_of": "2026-11-12",
           "change_1d_bp": null,
           "change_1w_bp": null,
           "contract": "FST3X2026"
@@ -67,27 +67,27 @@
       "kind": "OIS",
       "quality": "FONTE UFFICIALE",
       "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
-      "as_of": "2026-11-11",
+      "as_of": "2026-11-12",
       "horizons": {
         "3m": {
-          "rate": 4.2947,
-          "as_of": "2026-11-11",
-          "change_1d_bp": 1.9,
-          "change_1w_bp": 15.8,
+          "rate": 4.3124,
+          "as_of": "2026-11-12",
+          "change_1d_bp": 1.8,
+          "change_1w_bp": 10.3,
           "contract": null
         },
         "6m": {
-          "rate": 4.6098,
-          "as_of": "2026-11-11",
-          "change_1d_bp": 3.9,
-          "change_1w_bp": 20.5,
+          "rate": 4.6326,
+          "as_of": "2026-11-12",
+          "change_1d_bp": 2.3,
+          "change_1w_bp": 18.0,
           "contract": null
         },
         "12m": {
-          "rate": 4.9065,
-          "as_of": "2026-11-11",
-          "change_1d_bp": 6.7,
-          "change_1w_bp": 22.6,
+          "rate": 4.9636,
+          "as_of": "2026-11-12",
+          "change_1d_bp": 5.7,
+          "change_1w_bp": 26.8,
           "contract": null
         }
       }
@@ -96,26 +96,26 @@
       "kind": "FUTURES",
       "quality": "FONTE UFFICIALE",
       "source": "Tokyo Financial Exchange · Three-month TONA Futures",
-      "as_of": "2026-11-12",
+      "as_of": "2026-11-13",
       "horizons": {
         "3m": {
           "rate": 1.44,
-          "as_of": "2026-11-12",
+          "as_of": "2026-11-13",
           "change_1d_bp": 0.0,
           "change_1w_bp": -1.5,
           "contract": null
         },
         "6m": {
           "rate": 1.642,
-          "as_of": "2026-11-12",
-          "change_1d_bp": 5.2,
+          "as_of": "2026-11-13",
+          "change_1d_bp": 0.0,
           "change_1w_bp": -2.0,
           "contract": null
         },
         "12m": {
           "rate": 1.882,
-          "as_of": "2026-11-12",
-          "change_1d_bp": 1.9,
+          "as_of": "2026-11-13",
+          "change_1d_bp": 0.0,
           "change_1w_bp": -5.3,
           "contract": null
         }
