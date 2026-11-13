@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-12",
-  "generated_at_utc": "2026-11-13T10:49:53.347158Z",
+  "generated_at_utc": "2026-11-13T11:39:18.641547Z",
   "items": [
     {
       "as_of": "2026-11-12",
@@ -76,6 +76,18 @@
       "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
       "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
       "title": "EUR/USD: -0.41% fra due fixing BCE"
+    },
+    {
+      "as_of": "2026-11-12",
+      "category": "MARKET_GOVERNMENT_RATES",
+      "ccy": "EUR",
+      "confidence": "A",
+      "detail": "Fra 2026-11-11 e 2026-11-12; 2Y 3.075%, 10Y 3.367%. Rendimenti governativi: non è una curva OIS e non prova di per sé un repricing della banca centrale.",
+      "importance": "MEDIUM",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "reference_previous_date": "2026-11-11",
+      "source": "European Central Bank · AAA Svensson spot curve · 2026-11-12",
+      "title": "EUR: governativo 2Y +3.0 pb, 10Y +2.7 pb"
     },
     {
       "as_of": "2026-11-12",
@@ -178,18 +190,6 @@
       "title": "Credito IG OAS: -1.0 pb nella chiusura del 2026-11-11"
     },
     {
-      "as_of": "2026-11-11",
-      "category": "MARKET_GOVERNMENT_RATES",
-      "ccy": "EUR",
-      "confidence": "A",
-      "detail": "Fra 2026-11-10 e 2026-11-11; 2Y 3.045%, 10Y 3.340%. Rendimenti governativi: non è una curva OIS e non prova di per sé un repricing della banca centrale.",
-      "importance": "MEDIUM",
-      "quality": "FULL_CURRENT_OFFICIAL",
-      "reference_previous_date": "2026-11-10",
-      "source": "European Central Bank · AAA Svensson spot curve · 2026-11-11",
-      "title": "EUR: governativo 2Y +2.7 pb, 10Y +0.9 pb"
-    },
-    {
       "as_of": "2026-11-10",
       "category": "MACRO_OFFICIAL_ACTUAL",
       "ccy": "USD",
@@ -205,7 +205,7 @@
       "title": "CPI USA ottobre · headline +0,4% e core +0,3% mensili"
     }
   ],
-  "last_checked_at_utc": "2026-11-13T10:49:53.347158Z",
+  "last_checked_at_utc": "2026-11-13T11:39:18.641547Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -435,13 +435,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-11",
+            "date": "2026-11-12",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-11-11",
+            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-11-12",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.711339118565667
+            "yield_2y_pct": 4.73947235881754
           }
         },
         "source": "Bank of England",
@@ -483,13 +483,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-11",
+            "date": "2026-11-12",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "PRIOR_CALENDAR_DATE",
-            "source": "European Central Bank · AAA Svensson spot curve · 2026-11-11",
+            "source": "European Central Bank · AAA Svensson spot curve · 2026-11-12",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.0452493418
+            "yield_2y_pct": 3.0751415729
           }
         },
         "source": "Banca centrale europea",
@@ -825,13 +825,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-11",
+            "date": "2026-11-12",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "European Central Bank · AAA Svensson spot curve · 2026-11-11",
+            "source": "European Central Bank · AAA Svensson spot curve · 2026-11-12",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.0452493418
+            "yield_2y_pct": 3.0751415729
           }
         },
         "source": "Banca centrale europea",
@@ -935,13 +935,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-11",
+            "date": "2026-11-12",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-11-11",
+            "source": "Bank of England · UK nominal government zero-coupon spot curve · 2026-11-12",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.711339118565667
+            "yield_2y_pct": 4.73947235881754
           }
         },
         "source": "Bank of England",
@@ -1213,9 +1213,9 @@
         "status": "NO_VERIFIED_RECENT_ITEMS"
       },
       {
-        "accepted_items": 6,
+        "accepted_items": 4,
         "ccy": "CAD",
-        "entries_rejected": 4,
+        "entries_rejected": 6,
         "feed_entries_seen": 10,
         "feed_url": "https://www.bankofcanada.ca/content_type/press/feed/",
         "source": "Bank of Canada",
