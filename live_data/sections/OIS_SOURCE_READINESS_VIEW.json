@@ -35,7 +35,7 @@
       "dates_joinable": false,
       "indicative_quote_dates": {
         "12m": "2026-11-13",
-        "3m": "2026-11-11",
+        "3m": "2026-11-12",
         "6m": "2026-11-11"
       },
       "obstacle": "Eurex FST3: settlement ufficiali non accessibili con il percorso privato richiesto; contratti secondari su date diverse, non curva OIS.",
@@ -50,7 +50,7 @@
         "policy_delta_allowed": false,
         "quote_dates": {
           "12m": "2026-11-13",
-          "3m": "2026-11-11",
+          "3m": "2026-11-12",
           "6m": "2026-11-11"
         },
         "rates_embedded": false,
