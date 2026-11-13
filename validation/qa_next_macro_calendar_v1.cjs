@@ -10,12 +10,14 @@ const css=read('site/fx-quant-v2/next/calendar-operational-reading.css');
 new vm.Script(lib,{filename:'calendar-operational-reading.js'});
 new vm.Script(app,{filename:'app.js'});
 const {parse,render,toRome,verifiedValue}=require('../site/fx-quant-v2/next/calendar-operational-reading.js');
-assert.match(html,/calendar-operational-reading\.js\?v=2/);
-assert.match(html,/calendar-operational-reading\.css\?v=2/);
+assert.match(html,/calendar-operational-reading\.js\?v=3/);
+assert.match(html,/calendar-operational-reading\.css\?v=3/);
 assert.match(app,/calendar:'\.\.\/\.\.\/\.\.\/live_data\/sections\/CALENDAR_OPERATIONAL_VIEW\.json'/);
 assert.match(app,/FXQuantMacroCalendar\?\.render/);
 assert.match(app,/operationalCalendar/);
 assert.match(css,/max-width:860px/);
+assert.match(css,/cal-event-actions/);
+assert.match(css,/focus-visible/);
 const data=JSON.parse(read('live_data/sections/CALENDAR_OPERATIONAL_VIEW.json'));
 const now='2026-11-11', testNowMs=Date.parse('2026-11-11T12:00:00Z');
 const result=parse(data,now,testNowMs);
@@ -53,6 +55,20 @@ assert(!safe.includes('<img src=x'));
 assert(safe.includes('Consenso: non certificato'));
 assert(safe.includes('Effettivo: non ancora pubblicato/verificato'));
 assert(safe.includes('Quali dati potrebbero cambiare le tesi FX?'));
+for(const route of ['rates','currencies','pairs']){
+ assert(safe.includes('data-cal-research="'+route+'"'),
+  'Every macro event should offer a direct research route: '+route);
+}
+assert(safe.includes('data-cal-currency="GBP"')&&safe.includes('data-cal-pair="EURGBP"'),
+ 'UK GDP research path must select GBP and a canonical EUR/GBP example');
+assert(safe.includes('cal-event-evidence')&&safe.includes('Fonte, consenso e verifiche dopo l’evento'),
+ 'Source, consensus, quality and post-event controls must remain accessible');
+assert(safe.includes('Svizzera · PIL flash')&&safe.includes('Titolo originale: Swiss GDP flash'),
+ 'Italian first-read titles must preserve exact original event name in evidence');
+assert(app.includes("e.target.closest('[data-cal-research]')")&&
+ app.includes("state.pair=resolved;state.spotPair=resolved;state.pairDetailOpen=true;")&&
+ app.includes("if(location.hash==='#'+mode)render();"),
+ 'Click handler must open verified FX research with no duplicate route painting');
 assert.match(safe,/Altri \d+ eventi del calendario/);
 // Historical date-sensitive regression needs its own immutable event fixture:
 // the production calendar rightly removes 12 Nov GDP after its release.
@@ -90,6 +106,10 @@ assert(render(oldFeed,'2026-11-12',Date.parse('2026-11-12T13:00:00Z'))
  .includes('Feed non ricontrollato oggi'),
  'Truly prior-day Rome feed must be disclosed as stale');
 assert(postHtml.includes('Prossimi eventi'));
+assert(postHtml.includes('data-cal-pair="EURGBP"'),
+ 'A past scheduled UK release remains research-accessible without a fabricated actual');
+assert(!postHtml.includes('BUY GBP')&&!postHtml.includes('LONG EURGBP'),
+ 'Calendar must not generate long/short instructions');
 const missingTime=structuredClone(data);
 missingTime.events.unshift({ccy:'USD',date:'2026-11-12',title:'FOMC press briefing',
  event_type:'CENTRAL_BANK_DECISION',status:'UPCOMING'});
