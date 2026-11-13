@@ -10,7 +10,7 @@
  const age=(a,b)=>(Date.parse(b+'T12:00:00Z')-Date.parse(a+'T12:00:00Z'))/86400000;
  const fmt=(x,d=2)=>Math.abs(x).toLocaleString('it-IT',{minimumFractionDigits:d,maximumFractionDigits:d});
  const signed=(x,d=2,u='')=>(x>0?'+':x<0?'−':'')+fmt(x,d)+u;
- function render({feed,risk,esc,date,dayNow}={}){
+ function render({feed,risk,currencyPrices,esc,date,dayNow}={}){
   if(!feed||!risk||typeof esc!=='function'||typeof dayNow!=='function'||typeof date!=='function')return '';
   const today=dayNow(),safe=x=>esc(String(x??'')),items=[];
   const recent=x=>day(x)&&x<=today&&age(x,today)>=0&&age(x,today)<=7;
@@ -36,13 +36,32 @@
     '<div class="hourly-pulse-tile-bottom"><span>'+safe(label)+'</span><b>'+safe(delta)+'</b></div>'+
     (note?'<small>'+safe(note)+'</small>':'')+'</a>');
   };
-  const evidence=Array.isArray(feed.news)?feed.news:[];
-  const sourced=n=>Array.isArray(n?.sources)&&n.sources.some(u=>link(u)&&
-   feed.provenance?.web_source_urls?.includes(u));
-  const fx=evidence.find(n=>n?.market_area==='FOREX'&&recent(n.published_date)&&
-   sourced(n)&&/Forza del dollaro sui cross EUR\/USD e USD\/JPY/i.test(n.headline));
-  if(fx)add('currencies','FORZA FX RELATIVA','USD contro EUR e JPY','USD ↑',
-   'Fixing BCE',fx.published_date,'fx','', 'Direzione osservata');
+  // One-fixing ECB G8 comparison: the USD arrow is determined by TWO numeric
+  // cross-rate changes, never by a headline or a narrative phrase.
+  // ECB quotes units of foreign currency per 1 EUR.
+  const official=currencyPrices?.schema==='GMFQ_ECB_G8_PRICE_HISTORY_V1'&&
+   currencyPrices.status==='CURRENT_OFFICIAL_HISTORY'&&
+   currencyPrices.base==='EUR'&&
+   currencyPrices.source_url==='https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml';
+  const rows=Array.isArray(currencyPrices?.rows)?currencyPrices.rows:[];
+  const prev=rows.at(-2),last=rows.at(-1);
+  const validFixing=r=>r&&day(r.Date)&&num(r.USD)&&r.USD>0&&num(r.JPY)&&r.JPY>0;
+  if(official&&validFixing(prev)&&validFixing(last)&&prev.Date<last.Date&&
+     currencyPrices.last_as_of===last.Date&&recent(last.Date)&&
+     prev.Date<=today){
+   // USD/EUR strength is reciprocal to EUR/USD. USD/JPY is derived from two
+   // EUR-based ECB fixes on exactly the same dates (JPY per USD).
+   const eur=(prev.USD/last.USD-1)*100;
+   const jpy=((last.JPY/last.USD)/(prev.JPY/prev.USD)-1)*100;
+   const eps=.005; // Below half the 0.01% display precision: no directional claim.
+   const bothUp=eur>eps&&jpy>eps,bothDown=eur < -eps&&jpy < -eps;
+   const flat=Math.abs(eur)<=eps&&Math.abs(jpy)<=eps;
+   const value=bothUp?'USD ↑':bothDown?'USD ↓':flat?'USD stabile':'USD misto';
+   const tone=bothUp?'fx':bothDown?'adverse':'neutral';
+   add('currencies','FORZA FX RELATIVA','USD vs EUR / JPY',value,
+    'EUR '+signed(eur,2,'%')+' · JPY '+signed(jpy,2,'%'),
+    last.Date,tone,'','BCE · 2 confronti, non indice USD');
+  }
   const s=risk.streams||{},sp=s.SP500,vix=s.VIX,hy=s.HY_OAS;
   if(isSourced(sp)&&sp.previous!==0){
    const n=(sp.value-sp.previous)/Math.abs(sp.previous)*100;
@@ -59,13 +78,8 @@
    add('risk','CREDITO','Spread HY',fmt(hy.value)+'%',signed(bp,0,' pb'),hy.date,
     bp>0?'caution':bp<0?'constructive':'neutral',chart(hy),'OAS: spread, non rendimento');
   }
-  const commod=evidence.find(n=>n?.market_area==='COMMODITIES'&&recent(n.published_date)&&
-   sourced(n)&&/Oro e petrolio/i.test(n.headline));
-  if(commod&&/Oro in rialzo e petrolio in calo/i.test(feed.desk_judgment||'')&&
-    /oro e WTI/i.test(commod.analysis||'')){
-   add('risk','MATERIE PRIME','Oro / WTI','Oro ↑ · WTI ↓','Futures, proxy',
-    commod.published_date,'mixed','','Fonti secondarie');
-  }
+  // Omit commodities until matched, source-dated numerical gold and WTI
+  // observations are present. Narrative headlines alone cannot prove direction.
   if(items.length<2)return '';
   return '<section class="hourly-market-pulse" aria-label="Osservazioni di mercato pubblicate, non dati in tempo reale">'+
    '<div class="hourly-market-pulse-head"><div><span class="morning-section-label">IL MERCATO IN UN COLPO D’OCCHIO</span>'+
