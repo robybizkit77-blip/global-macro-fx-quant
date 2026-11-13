@@ -25,8 +25,8 @@ ragionamento contestuale degli alert ChatGPT. Non presentarlo come AI.
 - Prima una narrativa multi-asset in italiano chiaro, poi il collegamento al
   Forex. Rilevazioni, stime/proxy, fonti, date e prove contrarie distinte.
 - Feed pubblico **solo di lettura**:
-  `site/fx-quant-v2/next/hourly-market-desk-current.json` su `gh-pages`.
-  Lo storico di edizioni mantiene un digest dei dati effettivamente cambiati.
+  `market-desk/hourly-market-desk-current.json` su `gh-pages`.
+  Lo storico di edizioni mantiene un digest dei dati effettivamente cambiati. Il feed è volutamente al di fuori di `site/fx-quant-v2/` perché il publisher di V2 usa `rsync --delete` sull'intera cartella. Questo impedisce che la sincronizzazione del sito cancelli le edizioni orarie.
   Stessi dati → nessuna nuova edizione artificiale e timestamp invariato.
 - Panoramica usa la versione gratuita solo quando una edizione valida è
   stata pubblicata; altrimenti resta il Morning Desk esistente. DARK DESK

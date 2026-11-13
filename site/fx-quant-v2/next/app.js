@@ -1204,7 +1204,7 @@ async function loadAll(){
  jobs.push((async()=>{
   const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),10000);
   try{
-   const r=await fetch('./hourly-market-desk-current.json',{cache:'no-store',signal:ctl.signal});
+   const r=await fetch('../../../market-desk/hourly-market-desk-current.json',{cache:'no-store',signal:ctl.signal});
    if(!r.ok)return;
    const d=await r.json();
    if(d?.schema==='GMFQ_NEXT_FREE_HOURLY_DESK_V1'&&d.status==='ACTIVE'&&

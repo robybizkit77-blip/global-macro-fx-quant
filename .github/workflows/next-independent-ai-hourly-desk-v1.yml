@@ -63,7 +63,7 @@ jobs:
         run: |
           set -euo pipefail
           git fetch origin gh-pages --depth=1 --no-tags
-          if git show origin/gh-pages:site/fx-quant-v2/next/hourly-market-desk-current.json \
+          if git show origin/gh-pages:market-desk/hourly-market-desk-current.json \
             > "$RUNNER_TEMP/previous-hourly-desk.json" 2>/dev/null; then
             echo 'Prior edition found; publish only if the source digest changes.' >> "$GITHUB_STEP_SUMMARY"
           else
@@ -85,11 +85,11 @@ jobs:
             git fetch origin gh-pages --no-tags
             dir="$RUNNER_TEMP/free-hourly-pages-$attempt"
             git worktree add --detach "$dir" origin/gh-pages
-            mkdir -p "$dir/site/fx-quant-v2/next"
-            cp "$RUNNER_TEMP/hourly-market-desk-current.json" "$dir/site/fx-quant-v2/next/hourly-market-desk-current.json"
+            mkdir -p "$dir/market-desk"
+            cp "$RUNNER_TEMP/hourly-market-desk-current.json" "$dir/market-desk/hourly-market-desk-current.json"
             (
               cd "$dir"
-              git add -- site/fx-quant-v2/next/hourly-market-desk-current.json
+              git add -- market-desk/hourly-market-desk-current.json
               if git diff --cached --quiet; then
                 echo 'FREE_MARKET_DESK_UNCHANGED: preserving original edition timestamp'
                 exit 0
