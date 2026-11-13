@@ -498,7 +498,7 @@ function overview(){
   // morning narrative or be mistaken for a pre-release trading signal.
   const estimated=get('estimatedMacro');
   const currentResearch={
-   estimated,calendar:get('calendar'),
+   estimated,rates:get('rates'),calendar:get('calendar'),
    selectResearchPairs:window.FXQuantPairRankings?.selectResearchPairs,
    watchForPair:x=>{
     if(!window.FXQuantPairRankings?.pairDecisionWatch)return null;
