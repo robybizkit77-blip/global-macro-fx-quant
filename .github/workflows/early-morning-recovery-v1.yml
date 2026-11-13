@@ -1,7 +1,10 @@
 name: Early Morning Recovery V1
 
-# Independent event path: VIX source success can wake the guard even if
-# the Daily Data Orchestrator's own schedule event is lost or badly delayed.
+# Independent event path: VIX / Calendar source success can wake the guard
+# even if the Daily Data Orchestrator's schedule event is lost or delayed.
+# Source producer runs may be workflow_run-triggered or explicitly dispatched
+# by the existing overnight phase; the recovery planner still checks real
+# orchestration child steps, main branch, time window and retry caps.
 on:
   schedule:
     # Rome 05:19 and 06:19, with CET/CEST counterparts.
@@ -62,7 +65,9 @@ jobs:
       (github.event_name == 'workflow_run' &&
        github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.head_branch == 'main' &&
-       github.event.workflow_run.event == 'schedule')
+       (github.event.workflow_run.event == 'schedule' ||
+        github.event.workflow_run.event == 'workflow_dispatch' ||
+        github.event.workflow_run.event == 'workflow_run'))
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:

@@ -19,6 +19,25 @@ def job(success=True):
 class RecoveryTest(unittest.TestCase):
     def test_missing_source_triggers_prebrief(self):
         self.assertEqual(choose(at(5,22), [], {})["phase"], "prebrief")
+
+    def test_0504_rome_source_event_can_recover_missed_prebrief(self):
+        self.assertEqual(choose(at(5, 4), [], {})["action"], "DISPATCH")
+        self.assertEqual(choose(at(5, 4), [], {})["phase"], "prebrief")
+        self.assertEqual(choose(at(4, 59), [], {})["action"], "SKIP_OUTSIDE_RECOVERY_WINDOW")
+
+    def test_pre_0515_retries_count_toward_same_two_attempt_limit(self):
+        rr = [run(1, "workflow_dispatch", conclusion="failure", time="05:04"),
+              run(2, "workflow_dispatch", conclusion="failure", time="05:20")]
+        self.assertEqual(choose(at(6, 0), rr, {})["action"], "SKIP_RECOVERY_LIMIT_REACHED")
+
+    def test_workflow_run_chain_source_can_trigger_safe_recovery(self):
+        from pathlib import Path
+        workflow = (Path(__file__).resolve().parents[2] /
+                    ".github/workflows/early-morning-recovery-v1.yml").read_text(encoding="utf-8")
+        self.assertIn("github.event.workflow_run.event == 'workflow_run'", workflow)
+        self.assertIn("github.event.workflow_run.event == 'workflow_dispatch'", workflow)
+        self.assertIn("github.event.workflow_run.head_branch == 'main'", workflow)
+        self.assertIn("github.event.workflow_run.conclusion == 'success'", workflow)
     def test_missing_source_late_triggers_premorning(self):
         self.assertEqual(choose(at(7,0), [], {})["phase"], "premorning")
     def test_out_of_window_never_dispatches(self):
