@@ -90,15 +90,20 @@ for(const country of FX){
   assert(!newerHtml.includes('calendario riporta un dato sul PIL'),
    'Once a GDP source is integrated the missing-release caution must disappear');
  }
- if(country==='CHF'||country==='NZD'){
+ if(country==='CHF'){
   assert(story.includes('Non abbiamo una variazione monetaria recente confrontabile'),
-   country+' no comparable OIS or 2Y must be explicit');
-  assert(!story.includes('Prima recuperare una variazione'),
-   country+' lack of OIS must not suspend otherwise usable macro and FX evidence');
-  if(country==='NZD')assert(story.includes('La disoccupazione osservata sale'),
-   'NZD labor deterioration is observed even without fresh rates');
-  if(country==='CHF')assert(story.includes('La disoccupazione osservata è poco mossa'),
+   'CHF lacks a recent comparable 2Y/6M weekly proxy; do not invent a policy surprise');
+  assert(story.includes('La disoccupazione osservata è poco mossa'),
    'CHF labor trend is not fabricated from rate absence');
+ }
+ if(country==='NZD'){
+  assert(story.includes('Il futures ASX bank-bill a sei mesi') &&
+    story.includes('proxy direzionale'),
+   'NZD current ASX 6M proxy must reach the first-read, not be mistaken for missing OIS');
+  assert(story.includes('disoccupazione aumenta'),
+   'NZD observed labor deterioration must remain in the macro narrative');
+  assert(story.includes('NZD/USD')&&story.includes('AUD/NZD'),
+   'NZD policy proxy must translate into relative FX pairs to watch');
  }
  assert(!story.includes('La macro rallenta ma il riferimento dei tassi sale'),
   'A low economic level cannot be sold as proven GDP deceleration');
@@ -127,7 +132,7 @@ for(const country of FX){
  assert.deepEqual(selected,[country],'Selected currency must remain navigable');
 }
 const idx=read(base+'index.html');
-assert(idx.includes('currency-studio.js?v=15')&&idx.includes('currency-studio.css?v=7'));
+assert(idx.includes('currency-studio.js?v=16')&&idx.includes('currency-studio.css?v=7'));
 assert(idx.indexOf('g8-macro-pricing-bridge.js')<idx.indexOf('currency-studio.js'));
 const css=read(base+'currency-studio.css');
 assert(css.includes('.strength-first-reading')&&css.includes('.strength-evidence-fold>summary'));
