@@ -6,7 +6,8 @@
     "2026-11-06",
     "2026-11-10",
     "2026-11-11",
-    "2026-11-12"
+    "2026-11-12",
+    "2026-11-13"
   ],
   "snapshots": [
     {
@@ -2824,6 +2825,714 @@
           "timing": {
             "state": "PARTIAL",
             "text": "Timing da monitorare · USD sta migliorando · JPY è in possibile svolta"
+          },
+          "cot": {
+            "state": "HIGH",
+            "text": "USD: COT estremo · P84 · già allineato al trade"
+          },
+          "liquidity": {
+            "state": "GOOD",
+            "text": "Liquidità favorisce USD"
+          },
+          "structural": {
+            "relation": "La Macro favorisce USD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
+            "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
+            "watch": "La struttura Macro + Tassi/CB favorisce USD, ma il Prezzo favorisce JPY. Il Prezzo resta solo una verifica, non modifica la struttura."
+          }
+        }
+      }
+    },
+    {
+      "price_asof": "2026-11-13",
+      "macro_baseline_asof": "2026-09-25",
+      "source_commit": "948dc9925810a578d46fc0b3da3fa22e9a92f2fe",
+      "pair_count": 28,
+      "pairs": {
+        "AUDCAD": {
+          "fav": "AUD",
+          "quality": "CON RISCHI",
+          "price": {
+            "state": "NEUTRAL",
+            "text": "Prezzo non conferma ancora"
+          },
+          "timing": {
+            "state": "ADVERSE",
+            "text": "Timing contrario · AUD sta peggiorando · CAD sta migliorando"
+          },
+          "cot": {
+            "state": "HIGH",
+            "text": "CAD: COT estremo · P84 · già allineato al trade"
+          },
+          "liquidity": {
+            "state": "BAD",
+            "text": "Liquidità favorisce CAD"
+          },
+          "structural": {
+            "relation": "Tassi/CB favoriscono AUD, mentre la Macro non separa le due valute: vantaggio presente ma incompleto.",
+            "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
+            "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB."
+          }
+        },
+        "AUDCHF": {
+          "fav": "AUD",
+          "quality": "CON RISCHI",
+          "price": {
+            "state": "GOOD",
+            "text": "Prezzo conferma"
+          },
+          "timing": {
+            "state": "ADVERSE",
+            "text": "Timing contrario · AUD sta peggiorando"
+          },
+          "cot": {
+            "state": "HIGH",
+            "text": "CHF: COT estremo · P100 · già allineato al trade"
+          },
+          "liquidity": {
+            "state": "GOOD",
+            "text": "Liquidità favorisce AUD"
+          },
+          "structural": {
+            "relation": "Macro e Tassi/CB favoriscono entrambi AUD: contrasto strutturale pieno.",
+            "missing": "Macro e Tassi/CB sono allineati sulla stessa valuta.",
+            "watch": "Il Prezzo è già dalla parte di AUD. È conferma descrittiva, non prova di ulteriore continuazione. Evitare di confondere conferma con nuovo vantaggio strutturale."
+          }
+        },
+        "AUDJPY": {
+          "fav": "AUD",
+          "quality": "DA CONFERMARE",
+          "price": {
+            "state": "BAD",
+            "text": "Prezzo diverge"
+          },
+          "timing": {
+            "state": "ADVERSE",
+            "text": "Timing contrario · AUD sta peggiorando · JPY sta migliorando"
+          },
+          "cot": {
+            "state": "DIVERGENT",
+            "text": "AUD: COT affollato · Net/OI -39.4% · posizionamento contro il trade"
+          },
+          "liquidity": {
+            "state": "GOOD",
+            "text": "Liquidità favorisce AUD"
+          },
+          "structural": {
+            "relation": "La Macro favorisce AUD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
+            "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
+            "watch": "La struttura Macro + Tassi/CB favorisce AUD, ma il Prezzo favorisce JPY. Il Prezzo resta solo una verifica, non modifica la struttura."
+          }
+        },
+        "AUDNZD": {
+          "fav": "AUD",
+          "quality": "CON RISCHI",
+          "price": {
+            "state": "GOOD",
+            "text": "Prezzo conferma"
+          },
+          "timing": {
+            "state": "ADVERSE",
+            "text": "Timing contrario · AUD sta peggiorando"
+          },
+          "cot": {
+            "state": "HIGH",
+            "text": "NZD: COT affollato · Net/OI -45.3% · già allineato al trade"
+          },
+          "liquidity": {
+            "state": "GOOD",
+            "text": "Liquidità favorisce AUD"
+          },
+          "structural": {
+            "relation": "La Macro favorisce AUD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
+            "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
+            "watch": "Il Prezzo è già dalla parte di AUD. È conferma descrittiva, non prova di ulteriore continuazione. Evitare di confondere conferma con nuovo vantaggio strutturale."
+          }
+        },
+        "AUDUSD": {
+          "fav": null,
+          "quality": "NON VALUTABILE",
+          "price": {
+            "state": "NEUTRAL",
+            "text": "Nessun vantaggio strutturale"
+          },
+          "timing": {
+            "state": null,
+            "text": null
+          },
+          "cot": {
+            "state": "CONTEXT",
+            "text": "COT solo contesto"
+          },
+          "liquidity": {
+            "state": "CONTEXT",
+            "text": "Liquidità solo contesto"
+          },
+          "structural": {
+            "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+            "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+            "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB."
+          }
+        },
+        "CADCHF": {
+          "fav": "CAD",
+          "quality": "CON RISCHI",
+          "price": {
+            "state": "GOOD",
+            "text": "Prezzo conferma"
+          },
+          "timing": {
+            "state": "PARTIAL",
+            "text": "Timing da monitorare · CAD sta migliorando · CHF è in possibile svolta"
+          },
+          "cot": {
+            "state": "HIGH",
+            "text": "CHF: COT estremo · P100 · già allineato al trade"
+          },
+          "liquidity": {
+            "state": "GOOD",
+            "text": "Liquidità favorisce CAD"
+          },
+          "structural": {
+            "relation": "La Macro favorisce CAD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
+            "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
+            "watch": "Il Prezzo è già dalla parte di CAD. È conferma descrittiva, non prova di ulteriore continuazione. Evitare di confondere conferma con nuovo vantaggio strutturale."
+          }
+        },
+        "CADJPY": {
+          "fav": null,
+          "quality": "NON VALUTABILE",
+          "price": {
+            "state": "NEUTRAL",
+            "text": "Nessun vantaggio strutturale"
+          },
+          "timing": {
+            "state": null,
+            "text": null
+          },
+          "cot": {
+            "state": "CONTEXT",
+            "text": "COT solo contesto"
+          },
+          "liquidity": {
+            "state": "CONTEXT",
+            "text": "Liquidità solo contesto"
+          },
+          "structural": {
+            "relation": "Macro e Tassi/CB favoriscono valute opposte: nessun vantaggio strutturale pulito.",
+            "missing": "Macro e Tassi/CB sono in conflitto: serve convergenza prima di promuovere il pair.",
+            "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB."
+          }
+        },
+        "CHFJPY": {
+          "fav": "JPY",
+          "quality": "CON RISCHI",
+          "price": {
+            "state": "GOOD",
+            "text": "Prezzo conferma"
+          },
+          "timing": {
+            "state": "PARTIAL",
+            "text": "Timing da monitorare · JPY sta migliorando · CHF è in possibile svolta"
+          },
+          "cot": {
+            "state": "HIGH",
+            "text": "CHF: COT estremo · P100 · già allineato al trade"
+          },
+          "liquidity": {
+            "state": "NEUTRAL",
+            "text": "Liquidità neutra / simile"
+          },
+          "structural": {
+            "relation": "Tassi/CB favoriscono JPY, mentre la Macro non separa le due valute: vantaggio presente ma incompleto.",
+            "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
+            "watch": "Il Prezzo è già dalla parte di JPY. È conferma descrittiva, non prova di ulteriore continuazione. Evitare di confondere conferma con nuovo vantaggio strutturale."
+          }
+        },
+        "EURAUD": {
+          "fav": "AUD",
+          "quality": "CON RISCHI",
+          "price": {
+            "state": "GOOD",
+            "text": "Prezzo conferma"
+          },
+          "timing": {
+            "state": "ADVERSE",
+            "text": "Timing contrario · AUD sta peggiorando"
+          },
+          "cot": {
+            "state": "HIGH",
+            "text": "EUR: COT estremo · P1 · già allineato al trade"
+          },
+          "liquidity": {
+            "state": "NEUTRAL",
+            "text": "Liquidità neutra / simile"
+          },
+          "structural": {
+            "relation": "La Macro favorisce AUD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
+            "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
+            "watch": "Il Prezzo è già dalla parte di AUD. È conferma descrittiva, non prova di ulteriore continuazione. Evitare di confondere conferma con nuovo vantaggio strutturale."
+          }
+        },
+        "EURCAD": {
+          "fav": null,
+          "quality": "NON VALUTABILE",
+          "price": {
+            "state": "NEUTRAL",
+            "text": "Nessun vantaggio strutturale"
+          },
+          "timing": {
+            "state": null,
+            "text": null
+          },
+          "cot": {
+            "state": "CONTEXT",
+            "text": "COT solo contesto"
+          },
+          "liquidity": {
+            "state": "CONTEXT",
+            "text": "Liquidità solo contesto"
+          },
+          "structural": {
+            "relation": "Macro e Tassi/CB favoriscono valute opposte: nessun vantaggio strutturale pulito.",
+            "missing": "Macro e Tassi/CB sono in conflitto: serve convergenza prima di promuovere il pair.",
+            "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB."
+          }
+        },
+        "EURCHF": {
+          "fav": "EUR",
+          "quality": "CON RISCHI",
+          "price": {
+            "state": "BAD",
+            "text": "Prezzo diverge"
+          },
+          "timing": {
+            "state": "UNCERTAIN",
+            "text": "Timing da monitorare · EUR è in possibile svolta · CHF è in possibile svolta"
+          },
+          "cot": {
+            "state": "HIGH",
+            "text": "CHF: COT estremo · P100 · già allineato al trade"
+          },
+          "liquidity": {
+            "state": "GOOD",
+            "text": "Liquidità favorisce EUR"
+          },
+          "structural": {
+            "relation": "Tassi/CB favoriscono EUR, mentre la Macro non separa le due valute: vantaggio presente ma incompleto.",
+            "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
+            "watch": "La struttura Macro + Tassi/CB favorisce EUR, ma il Prezzo favorisce CHF. Il Prezzo resta solo una verifica, non modifica la struttura."
+          }
+        },
+        "EURGBP": {
+          "fav": null,
+          "quality": "NON VALUTABILE",
+          "price": {
+            "state": "NEUTRAL",
+            "text": "Nessun vantaggio strutturale"
+          },
+          "timing": {
+            "state": null,
+            "text": null
+          },
+          "cot": {
+            "state": "CONTEXT",
+            "text": "COT solo contesto"
+          },
+          "liquidity": {
+            "state": "CONTEXT",
+            "text": "Liquidità solo contesto"
+          },
+          "structural": {
+            "relation": "Il differenziale 2Y osservato è -154 pb verso GBP. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+            "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+            "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB."
+          }
+        },
+        "EURJPY": {
+          "fav": null,
+          "quality": "NON VALUTABILE",
+          "price": {
+            "state": "NEUTRAL",
+            "text": "Nessun vantaggio strutturale"
+          },
+          "timing": {
+            "state": null,
+            "text": null
+          },
+          "cot": {
+            "state": "CONTEXT",
+            "text": "COT solo contesto"
+          },
+          "liquidity": {
+            "state": "CONTEXT",
+            "text": "Liquidità solo contesto"
+          },
+          "structural": {
+            "relation": "Il differenziale 2Y osservato è +122 pb verso EUR. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+            "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+            "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB."
+          }
+        },
+        "EURNZD": {
+          "fav": null,
+          "quality": "NON VALUTABILE",
+          "price": {
+            "state": "NEUTRAL",
+            "text": "Nessun vantaggio strutturale"
+          },
+          "timing": {
+            "state": null,
+            "text": null
+          },
+          "cot": {
+            "state": "CONTEXT",
+            "text": "COT solo contesto"
+          },
+          "liquidity": {
+            "state": "CONTEXT",
+            "text": "Liquidità solo contesto"
+          },
+          "structural": {
+            "relation": "Il differenziale 2Y osservato è -81 pb verso NZD. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+            "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+            "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB."
+          }
+        },
+        "EURUSD": {
+          "fav": "USD",
+          "quality": "CON RISCHI",
+          "price": {
+            "state": "GOOD",
+            "text": "Prezzo conferma"
+          },
+          "timing": {
+            "state": "PARTIAL",
+            "text": "Timing da monitorare · USD sta migliorando · EUR è in possibile svolta"
+          },
+          "cot": {
+            "state": "HIGH",
+            "text": "USD: COT estremo · P84 · già allineato al trade · EUR: COT estremo · P1 · già allineato al trade"
+          },
+          "liquidity": {
+            "state": "GOOD",
+            "text": "Liquidità favorisce USD"
+          },
+          "structural": {
+            "relation": "La Macro favorisce USD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
+            "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
+            "watch": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione. Evitare di confondere conferma con nuovo vantaggio strutturale."
+          }
+        },
+        "GBPAUD": {
+          "fav": "AUD",
+          "quality": "DA MONITORARE",
+          "price": {
+            "state": "GOOD",
+            "text": "Prezzo conferma"
+          },
+          "timing": {
+            "state": "ADVERSE",
+            "text": "Timing contrario · AUD sta peggiorando · GBP sta migliorando"
+          },
+          "cot": {
+            "state": "DIVERGENT",
+            "text": "AUD: COT affollato · Net/OI -39.4% · posizionamento contro il trade"
+          },
+          "liquidity": {
+            "state": "NEUTRAL",
+            "text": "Liquidità neutra / simile"
+          },
+          "structural": {
+            "relation": "La Macro favorisce AUD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
+            "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
+            "watch": "Il Prezzo è già dalla parte di AUD. È conferma descrittiva, non prova di ulteriore continuazione. Evitare di confondere conferma con nuovo vantaggio strutturale."
+          }
+        },
+        "GBPCAD": {
+          "fav": null,
+          "quality": "NON VALUTABILE",
+          "price": {
+            "state": "NEUTRAL",
+            "text": "Nessun vantaggio strutturale"
+          },
+          "timing": {
+            "state": null,
+            "text": null
+          },
+          "cot": {
+            "state": "CONTEXT",
+            "text": "COT solo contesto"
+          },
+          "liquidity": {
+            "state": "CONTEXT",
+            "text": "Liquidità solo contesto"
+          },
+          "structural": {
+            "relation": "Macro e Tassi/CB favoriscono valute opposte: nessun vantaggio strutturale pulito.",
+            "missing": "Macro e Tassi/CB sono in conflitto: serve convergenza prima di promuovere il pair.",
+            "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB."
+          }
+        },
+        "GBPCHF": {
+          "fav": "GBP",
+          "quality": "CON RISCHI",
+          "price": {
+            "state": "BAD",
+            "text": "Prezzo diverge"
+          },
+          "timing": {
+            "state": "PARTIAL",
+            "text": "Timing da monitorare · GBP sta migliorando · CHF è in possibile svolta"
+          },
+          "cot": {
+            "state": "HIGH",
+            "text": "CHF: COT estremo · P100 · già allineato al trade"
+          },
+          "liquidity": {
+            "state": "GOOD",
+            "text": "Liquidità favorisce GBP"
+          },
+          "structural": {
+            "relation": "Tassi/CB favoriscono GBP, mentre la Macro non separa le due valute: vantaggio presente ma incompleto.",
+            "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
+            "watch": "La struttura Macro + Tassi/CB favorisce GBP, ma il Prezzo favorisce CHF. Il Prezzo resta solo una verifica, non modifica la struttura."
+          }
+        },
+        "GBPJPY": {
+          "fav": null,
+          "quality": "NON VALUTABILE",
+          "price": {
+            "state": "NEUTRAL",
+            "text": "Nessun vantaggio strutturale"
+          },
+          "timing": {
+            "state": null,
+            "text": null
+          },
+          "cot": {
+            "state": "CONTEXT",
+            "text": "COT solo contesto"
+          },
+          "liquidity": {
+            "state": "CONTEXT",
+            "text": "Liquidità solo contesto"
+          },
+          "structural": {
+            "relation": "Il differenziale 2Y osservato è +276 pb verso GBP. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+            "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+            "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB."
+          }
+        },
+        "GBPNZD": {
+          "fav": null,
+          "quality": "NON VALUTABILE",
+          "price": {
+            "state": "NEUTRAL",
+            "text": "Nessun vantaggio strutturale"
+          },
+          "timing": {
+            "state": null,
+            "text": null
+          },
+          "cot": {
+            "state": "CONTEXT",
+            "text": "COT solo contesto"
+          },
+          "liquidity": {
+            "state": "CONTEXT",
+            "text": "Liquidità solo contesto"
+          },
+          "structural": {
+            "relation": "Macro e Tassi/CB non separano abbastanza le due valute.",
+            "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+            "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB."
+          }
+        },
+        "GBPUSD": {
+          "fav": "USD",
+          "quality": "CON RISCHI",
+          "price": {
+            "state": "GOOD",
+            "text": "Prezzo conferma"
+          },
+          "timing": {
+            "state": "MIXED",
+            "text": "Timing misto · USD sta migliorando · GBP sta migliorando"
+          },
+          "cot": {
+            "state": "HIGH",
+            "text": "USD: COT estremo · P84 · già allineato al trade"
+          },
+          "liquidity": {
+            "state": "GOOD",
+            "text": "Liquidità favorisce USD"
+          },
+          "structural": {
+            "relation": "La Macro favorisce USD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
+            "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
+            "watch": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione. Evitare di confondere conferma con nuovo vantaggio strutturale."
+          }
+        },
+        "NZDCAD": {
+          "fav": null,
+          "quality": "NON VALUTABILE",
+          "price": {
+            "state": "NEUTRAL",
+            "text": "Nessun vantaggio strutturale"
+          },
+          "timing": {
+            "state": null,
+            "text": null
+          },
+          "cot": {
+            "state": "CONTEXT",
+            "text": "COT solo contesto"
+          },
+          "liquidity": {
+            "state": "CONTEXT",
+            "text": "Liquidità solo contesto"
+          },
+          "structural": {
+            "relation": "Macro e Tassi/CB favoriscono valute opposte: nessun vantaggio strutturale pulito.",
+            "missing": "Macro e Tassi/CB sono in conflitto: serve convergenza prima di promuovere il pair.",
+            "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB."
+          }
+        },
+        "NZDCHF": {
+          "fav": "NZD",
+          "quality": "CON RISCHI",
+          "price": {
+            "state": "BAD",
+            "text": "Prezzo diverge"
+          },
+          "timing": {
+            "state": "UNCERTAIN",
+            "text": "Timing da monitorare · NZD è in possibile svolta · CHF è in possibile svolta"
+          },
+          "cot": {
+            "state": "HIGH",
+            "text": "CHF: COT estremo · P100 · già allineato al trade"
+          },
+          "liquidity": {
+            "state": "NEUTRAL",
+            "text": "Liquidità neutra / simile"
+          },
+          "structural": {
+            "relation": "Tassi/CB favoriscono NZD, mentre la Macro non separa le due valute: vantaggio presente ma incompleto.",
+            "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
+            "watch": "La struttura Macro + Tassi/CB favorisce NZD, ma il Prezzo favorisce CHF. Il Prezzo resta solo una verifica, non modifica la struttura."
+          }
+        },
+        "NZDJPY": {
+          "fav": null,
+          "quality": "NON VALUTABILE",
+          "price": {
+            "state": "NEUTRAL",
+            "text": "Nessun vantaggio strutturale"
+          },
+          "timing": {
+            "state": null,
+            "text": null
+          },
+          "cot": {
+            "state": "CONTEXT",
+            "text": "COT solo contesto"
+          },
+          "liquidity": {
+            "state": "CONTEXT",
+            "text": "Liquidità solo contesto"
+          },
+          "structural": {
+            "relation": "Il differenziale 2Y osservato è +203 pb verso NZD. È contesto di livello sui Rates, ma Macro e Tassi/CB canonici non assegnano un vantaggio direzionale.",
+            "missing": "Serve maggiore differenziazione strutturale tra le due valute.",
+            "watch": "Il Prezzo non aggiunge una lettura relativa abbastanza chiara. Priorità alla struttura Macro + Tassi/CB."
+          }
+        },
+        "NZDUSD": {
+          "fav": "USD",
+          "quality": "CON RISCHI",
+          "price": {
+            "state": "GOOD",
+            "text": "Prezzo conferma"
+          },
+          "timing": {
+            "state": "PARTIAL",
+            "text": "Timing da monitorare · USD sta migliorando · NZD è in possibile svolta"
+          },
+          "cot": {
+            "state": "HIGH",
+            "text": "USD: COT estremo · P84 · già allineato al trade · NZD: COT affollato · Net/OI -45.3% · già allineato al trade"
+          },
+          "liquidity": {
+            "state": "GOOD",
+            "text": "Liquidità favorisce USD"
+          },
+          "structural": {
+            "relation": "La Macro favorisce USD, mentre Tassi/CB non separano le due valute: vantaggio presente ma incompleto.",
+            "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
+            "watch": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione. Evitare di confondere conferma con nuovo vantaggio strutturale."
+          }
+        },
+        "USDCAD": {
+          "fav": "USD",
+          "quality": "CON RISCHI",
+          "price": {
+            "state": "GOOD",
+            "text": "Prezzo conferma"
+          },
+          "timing": {
+            "state": "MIXED",
+            "text": "Timing misto · USD sta migliorando · CAD sta migliorando"
+          },
+          "cot": {
+            "state": "HIGH",
+            "text": "USD: COT estremo · P84 · già allineato al trade · CAD: COT estremo · P84 · già allineato al trade"
+          },
+          "liquidity": {
+            "state": "NEUTRAL",
+            "text": "Liquidità neutra / simile"
+          },
+          "structural": {
+            "relation": "Tassi/CB favoriscono USD, mentre la Macro non separa le due valute: vantaggio presente ma incompleto.",
+            "missing": "Solo uno dei due pilastri strutturali separa chiaramente le valute.",
+            "watch": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione. Evitare di confondere conferma con nuovo vantaggio strutturale."
+          }
+        },
+        "USDCHF": {
+          "fav": "USD",
+          "quality": "CON RISCHI",
+          "price": {
+            "state": "GOOD",
+            "text": "Prezzo conferma"
+          },
+          "timing": {
+            "state": "PARTIAL",
+            "text": "Timing da monitorare · USD sta migliorando · CHF è in possibile svolta"
+          },
+          "cot": {
+            "state": "HIGH",
+            "text": "USD: COT estremo · P84 · già allineato al trade · CHF: COT estremo · P100 · già allineato al trade"
+          },
+          "liquidity": {
+            "state": "GOOD",
+            "text": "Liquidità favorisce USD"
+          },
+          "structural": {
+            "relation": "Macro e Tassi/CB favoriscono entrambi USD: contrasto strutturale pieno.",
+            "missing": "Macro e Tassi/CB sono allineati sulla stessa valuta.",
+            "watch": "Il Prezzo è già dalla parte di USD. È conferma descrittiva, non prova di ulteriore continuazione. Evitare di confondere conferma con nuovo vantaggio strutturale."
+          }
+        },
+        "USDJPY": {
+          "fav": "USD",
+          "quality": "CON RISCHI",
+          "price": {
+            "state": "BAD",
+            "text": "Prezzo diverge"
+          },
+          "timing": {
+            "state": "MIXED",
+            "text": "Timing misto · USD sta migliorando · JPY sta migliorando"
           },
           "cot": {
             "state": "HIGH",
