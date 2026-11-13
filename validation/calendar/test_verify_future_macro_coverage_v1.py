@@ -147,6 +147,46 @@ class PublishedFutureCalendarContractTests(unittest.TestCase):
         instant=datetime.fromisoformat("2026-10-28T23:45:00+00:00")
         self.assertEqual(verify(self.cal,self.seed,self.cb_source,instant)["future_macro_currency_coverage"],7)
 
+    def test_bls_13_nov_producer_prices_and_17_nov_import_export_not_omitted(self):
+        """A source-parity check alone cannot catch a missing issuer event.
+
+        Guard BLS releases in the current near-term publication window;
+        future seed rotation after these days remains legitimate.
+        """
+        from datetime import date, datetime, timezone
+        from pathlib import Path
+        import json
+
+        rome_today=datetime.now(timezone.utc).astimezone(
+            __import__("zoneinfo").ZoneInfo("Europe/Rome")).date()
+        if rome_today > date(2026, 11, 17):
+            self.skipTest("BLS November 2026 release window completed")
+        base=Path(__file__).resolve().parents[2]
+        seed=json.loads((base/"live_data/sections/MACRO_RELEASE_OFFICIAL_SEED_V1.json")
+                        .read_text(encoding="utf-8"))
+        expected={
+            "2026-11-13": ("Producer Price Index", "INFLATION", "October 2026"),
+            "2026-11-17": ("U.S. Import and Export Price Indexes", "INFLATION",
+                           "October 2026"),
+        }
+        for d,(title,category,period) in expected.items():
+            with self.subTest(release=d):
+                matched=[e for e in seed["events"] if e.get("ccy")=="USD"
+                         and e.get("date")==d and e.get("title")==title]
+                self.assertEqual(len(matched),1,
+                    "Verified BLS release missing from calendar source seed")
+                e=matched[0]
+                for k,v in {"event_type":category,"reference_period":period,
+                            "timezone":"America/New_York","time_local":"08:30",
+                            "source_family":"BLS","quality":"OFFICIAL_CONFIRMED"}.items():
+                    self.assertEqual(e.get(k),v)
+                self.assertEqual(e.get("source_url"),
+                    "https://www.bls.gov/schedule/2026/11_sched_list.htm")
+                self.assertNotIn("actual",e,
+                    "The planned event is not a certified result")
+                self.assertNotIn("consensus",e,
+                    "The issuer schedule does not provide a market forecast")
+
 
 if __name__=="__main__":
     unittest.main()
