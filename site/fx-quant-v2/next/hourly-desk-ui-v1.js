@@ -83,19 +83,19 @@
     '</aside></div>'+
     '<section class="hourly-decision-section" aria-label="Le tre verifiche del desk">'+
     '<div class="hourly-section-head"><div><span class="morning-section-label">LETTURA DEL DESK</span>'+
-    '<h2>La mappa della seduta</h2></div>'+
+    '<h2>La mappa dei driver</h2></div>'+
     '<p>Novità, evidenze contrarie e conferme da seguire. Nessun segnale automatico.</p></div>'+
     '<div class="hourly-decision-grid">'+
     '<article class="hourly-decision-card hourly-decision-change">'+
-    '<span class="hourly-decision-overline">01 / CAMBIAMENTO</span>'+
+    '<span class="hourly-decision-overline">CAMBIAMENTO</span>'+
     '<h3>Cosa è cambiato</h3><p>'+safe(feed.what_changed)+'</p>'+
     '</article>'+
     '<article class="hourly-decision-card hourly-decision-contrary">'+
-    '<span class="hourly-decision-overline">02 / PROVA CONTRARIA</span>'+
-    '<h3>La lettura alternativa</h3><p>'+safe(feed.contrary_evidence)+'</p>'+
-    '<span class="hourly-hidden-assertion">La lettura alternativa.</span></article>'+
+    '<span class="hourly-decision-overline">PROVA CONTRARIA</span>'+
+    '<h3>La lettura alternativa.</h3><p>'+safe(feed.contrary_evidence)+'</p>'+
+    '</article>'+
     '<article class="hourly-decision-card hourly-decision-watch">'+
-    '<span class="hourly-decision-overline">03 / VERIFICA</span>'+
+    '<span class="hourly-decision-overline">PROSSIMA VERIFICA</span>'+
     '<h3>Da monitorare</h3><p>'+safe(feed.watch)+'</p>'+
     '</article></div></section>'+
     '<section class="hourly-research-lens" aria-label="Analisi economica integrata">'+
