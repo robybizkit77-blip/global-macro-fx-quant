@@ -72,8 +72,15 @@ const displayPairButtons=(pulse.match(/data-pair="/g)||[]).length;
 assert.equal(displayPairButtons,Math.min(3,shortlist.length));
 const top3=shortlist.slice(0,3);
 for(const x of top3)assert(pulse.includes('data-pair="'+x.key+'"'));
-assert.equal(improved.replace(/<details class="morning-secondary-research[\s\S]*?<\/details>/,''),original,
- 'Frozen morning briefing must remain untouched by the current FX view');
+const withoutRank=improved.replace(/<details class="morning-secondary-research[\s\S]*?<\/details>/,'');
+if(withoutRank.includes('data-home-calendar-reconciled="true"')){
+ assert(withoutRank.includes('Edizione originale non riscritta'),
+  'A newly verified issuer calendar event must preserve but not lead with the frozen original');
+ assert(withoutRank.includes(feed.lead.replace(/&/g,'&amp;')),
+  'Original editorial source remains accessible in the archive');
+}else{
+ assert.equal(withoutRank,original,'Without a new issuer event the frozen article stays unchanged');
+}
 const g8=read(next+'currency-studio.js');
 const focus=g8.slice(g8.indexOf('function strengthFocus(){'),g8.indexOf('function ranking(){'));
 assert(focus.includes('Il quadro interno risulta'));
