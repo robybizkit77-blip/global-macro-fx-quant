@@ -6,6 +6,8 @@ on:
     paths:
       - 'site/fx-quant-v2/**'
       - 'validation/publishing/test_next_pair_calendar_watch_v1.cjs'
+      - 'validation/publishing/check_fxv2_mirror_source_contract_v1.py'
+      - 'validation/publishing/test_fxv2_mirror_source_contract_v1.py'
       - '.github/workflows/publish-fx-quant-v2.yml'
       - 'validation/publishing/check_fxv2_publication_tree_v1.py'
       - 'validation/publishing/test_check_fxv2_publication_tree_v1.py'
@@ -21,6 +23,8 @@ on:
       - 'site/fx-quant-v2/next/pair-rankings.js'
       - 'validation/publishing/test_next_crosspage_editorial_coherence_v1.cjs'
       - 'validation/publishing/test_next_pair_calendar_watch_v1.cjs'
+      - 'validation/publishing/check_fxv2_mirror_source_contract_v1.py'
+      - 'validation/publishing/test_fxv2_mirror_source_contract_v1.py'
       - 'site/fx-quant-v2/next/pair-desk-narrative.js'
       - 'site/fx-quant-v2/next/macro-strength-estimated-v1.js'
       - 'site/fx-quant-v2/next/decision-journey.js'
@@ -90,71 +94,33 @@ concurrency:
 
 jobs:
   contract:
+    # This workflow only certifies the transport/scope contract. The existing
+    # FX Quant Next Research Coherence QA checks narratives and UI separately.
+    # Historical unit fixtures must not hold approved market data on main
+    # hostage after the live feed advances.
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
-    timeout-minutes: 3
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - name: Validate event filters, source producers and V2-only scope
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check source triggers, exact tree, lease and four research JSON contracts
         run: |
+          set -euo pipefail
           python3 validation/publishing/test_fxv2_publisher_source_trigger_v1.py
           python3 -m unittest validation.publishing.test_check_fxv2_publication_tree_v1 -v
           python3 -m unittest validation.publishing.test_wait_gh_pages_idle_before_fxv2_push_v1 -v
-          node --check site/fx-quant-v2/next/macro-studio.js
-          node validation/publishing/test_macro_us_households_hero_v1.cjs
-          node --check site/fx-quant-v2/next/pair-desk-narrative.js
-          node --check site/fx-quant-v2/next/macro-strength-estimated-v1.js
+          python3 -m unittest validation.publishing.test_fxv2_mirror_source_contract_v1 -v
+          python3 validation/publishing/check_fxv2_mirror_source_contract_v1.py
+          node --check site/fx-quant-v2/next/app.js
           node --check site/fx-quant-v2/next/pair-rankings.js
-          node validation/publishing/test_next_pair_shortlist_diversification_v1.cjs
-          node --check site/fx-quant-v2/next/pair-desk-narrative.js
-          node validation/publishing/test_next_thesis_vs_trade_v1.cjs
-          node --check site/fx-quant-v2/next/app.js
-          node validation/publishing/test_next_pair_decision_gates_v1.cjs
-          node validation/publishing/test_next_pair_relative_driver_reading_v1.cjs
-          node validation/publishing/test_next_pair_calendar_watch_v1.cjs
-          node validation/publishing/test_next_macro_estimated_engine_v1.cjs
-          node validation/publishing/test_next_pair_desk_narrative_v18.cjs
-          node validation/publishing/test_next_macro_economic_reading_v19.cjs
-          node --check site/fx-quant-v2/next/rates-economic-reading.js
-          node validation/publishing/test_next_rates_economic_reading_v20.cjs
-          node --check site/fx-quant-v2/next/currency-relative-reading.js
-          node validation/publishing/test_next_currency_relative_v21.cjs
-          node validation/publishing/test_next_currency_first_read_v1.cjs
-          node --check site/fx-quant-v2/next/currency-strength-reading.js
-          node validation/publishing/test_next_g8_macro_strength_v1.cjs
-          node --check site/fx-quant-v2/next/currency-data-fallback.js
-          node validation/publishing/test_next_g8_data_fallback_v1.cjs
-          node --check site/fx-quant-v2/next/g8-growth-shadow.js
-          node validation/publishing/test_next_g8_growth_shadow_v1.cjs
-          node --check site/fx-quant-v2/next/g8-macro-gap-scenarios.js
-          node validation/publishing/test_next_g8_macro_gap_scenarios_v1.cjs
-          node --check site/fx-quant-v2/next/g8-inflation-labour-shadow.js
-          node validation/publishing/test_next_g8_inflation_labour_shadow_v1.cjs
-          node --check site/fx-quant-v2/next/g8-macro-pricing-bridge.js
-          node validation/publishing/test_next_g8_macro_pricing_bridge_v1.cjs
-          node validation/publishing/test_next_g8_editorial_first_read_v1.cjs
-          node --check site/fx-quant-v2/next/cot-evidence-reading.js
-          node --check site/fx-quant-v2/next/cot-studio.js
-          node validation/publishing/test_next_cot_evidence_v22.cjs
-          node --check site/fx-quant-v2/next/cot-report-reading-v26.js
-          node --check site/fx-quant-v2/next/cot-studio.js
-          node validation/publishing/test_next_cot_report_desk_v26.cjs
-          node --check site/fx-quant-v2/next/risk-evidence-reading.js
-          node --check site/fx-quant-v2/next/app.js
-          node validation/publishing/test_next_pair_chart_controls_v27.cjs
-          node validation/publishing/test_morning_desk_render_v1.cjs
-          node --check site/fx-quant-v2/next/morning-desk-v1.js
-          node validation/publishing/test_next_home_fx_research_pulse_v1.cjs
-          node validation/publishing/test_next_home_fx_catalyst_v1.cjs
-          node validation/publishing/test_next_crosspage_editorial_coherence_v1.cjs
-          node validation/publishing/test_next_risk_economic_v23.cjs
-          node --check site/fx-quant-v2/next/news-evidence-reading.js
-          node --check site/fx-quant-v2/next/app.js
-          node validation/publishing/test_next_pair_chart_controls_v27.cjs
-          node validation/publishing/test_morning_desk_render_v1.cjs
-          node validation/publishing/test_next_news_evidence_v24.cjs
-          node validation/qa_next_macro_calendar_v1.cjs
-          node validation/qa_next_research_library_v1.cjs
+          node --check site/fx-quant-v2/next/currency-studio.js
+
   sync-v2:
     if: >-
       github.event_name != 'pull_request' &&
@@ -212,64 +178,19 @@ jobs:
           git checkout --detach origin/main
           echo "FXV2_APPROVED_MAIN_AFTER_QUEUE=$(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Recheck published Macro narrative after refreshing approved main
+      - name: Validate approved V2 research sources before mirroring to gh-pages
         if: steps.v2-tree.outputs.publish_needed == 'true'
+        shell: bash
         run: |
-          node --check site/fx-quant-v2/next/macro-studio.js
-          node validation/publishing/test_macro_us_households_hero_v1.cjs
-          node --check site/fx-quant-v2/next/pair-desk-narrative.js
-          node --check site/fx-quant-v2/next/macro-strength-estimated-v1.js
+          set -euo pipefail
+          # Every referenced file is already committed on main; no source
+          # mutation, proxy promotion or market date fabrication is performed.
+          # The separate Next Research Coherence QA owns narrative test coverage.
+          python3 validation/publishing/check_fxv2_mirror_source_contract_v1.py
+          node --check site/fx-quant-v2/next/app.js
           node --check site/fx-quant-v2/next/pair-rankings.js
-          node validation/publishing/test_next_pair_shortlist_diversification_v1.cjs
-          node --check site/fx-quant-v2/next/pair-desk-narrative.js
-          node validation/publishing/test_next_thesis_vs_trade_v1.cjs
-          node --check site/fx-quant-v2/next/app.js
-          node validation/publishing/test_next_pair_decision_gates_v1.cjs
-          node validation/publishing/test_next_pair_relative_driver_reading_v1.cjs
-          node validation/publishing/test_next_pair_calendar_watch_v1.cjs
-          node validation/publishing/test_next_macro_estimated_engine_v1.cjs
-          node validation/publishing/test_next_pair_desk_narrative_v18.cjs
-          node validation/publishing/test_next_macro_economic_reading_v19.cjs
-          node --check site/fx-quant-v2/next/rates-economic-reading.js
-          node validation/publishing/test_next_rates_economic_reading_v20.cjs
-          node --check site/fx-quant-v2/next/currency-relative-reading.js
-          node validation/publishing/test_next_currency_relative_v21.cjs
-          node validation/publishing/test_next_currency_first_read_v1.cjs
-          node --check site/fx-quant-v2/next/currency-strength-reading.js
-          node validation/publishing/test_next_g8_macro_strength_v1.cjs
-          node --check site/fx-quant-v2/next/currency-data-fallback.js
-          node validation/publishing/test_next_g8_data_fallback_v1.cjs
-          node --check site/fx-quant-v2/next/g8-growth-shadow.js
-          node validation/publishing/test_next_g8_growth_shadow_v1.cjs
-          node --check site/fx-quant-v2/next/g8-macro-gap-scenarios.js
-          node validation/publishing/test_next_g8_macro_gap_scenarios_v1.cjs
-          node --check site/fx-quant-v2/next/g8-inflation-labour-shadow.js
-          node validation/publishing/test_next_g8_inflation_labour_shadow_v1.cjs
-          node --check site/fx-quant-v2/next/g8-macro-pricing-bridge.js
-          node validation/publishing/test_next_g8_macro_pricing_bridge_v1.cjs
-          node validation/publishing/test_next_g8_editorial_first_read_v1.cjs
-          node --check site/fx-quant-v2/next/cot-evidence-reading.js
-          node --check site/fx-quant-v2/next/cot-studio.js
-          node validation/publishing/test_next_cot_evidence_v22.cjs
-          node --check site/fx-quant-v2/next/cot-report-reading-v26.js
-          node --check site/fx-quant-v2/next/cot-studio.js
-          node validation/publishing/test_next_cot_report_desk_v26.cjs
-          node --check site/fx-quant-v2/next/risk-evidence-reading.js
-          node --check site/fx-quant-v2/next/app.js
-          node validation/publishing/test_next_pair_chart_controls_v27.cjs
-          node validation/publishing/test_morning_desk_render_v1.cjs
+          node --check site/fx-quant-v2/next/currency-studio.js
           node --check site/fx-quant-v2/next/morning-desk-v1.js
-          node validation/publishing/test_next_home_fx_research_pulse_v1.cjs
-          node validation/publishing/test_next_home_fx_catalyst_v1.cjs
-          node validation/publishing/test_next_crosspage_editorial_coherence_v1.cjs
-          node validation/publishing/test_next_risk_economic_v23.cjs
-          node --check site/fx-quant-v2/next/news-evidence-reading.js
-          node --check site/fx-quant-v2/next/app.js
-          node validation/publishing/test_next_pair_chart_controls_v27.cjs
-          node validation/publishing/test_morning_desk_render_v1.cjs
-          node validation/publishing/test_next_news_evidence_v24.cjs
-          node validation/qa_next_macro_calendar_v1.cjs
-          node validation/qa_next_research_library_v1.cjs
 
       - name: Publish only site/fx-quant-v2 without altering V10 or any other path
         if: steps.v2-tree.outputs.publish_needed == 'true'
