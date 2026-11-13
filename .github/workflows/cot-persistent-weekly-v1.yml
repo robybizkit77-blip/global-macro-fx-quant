@@ -12,6 +12,12 @@ on:
       - '.github/workflows/cot-persistent-weekly-v1.yml'
   workflow_dispatch:
   schedule:
+    # Existing Saturday retry cadence. Add *same-workflow* Monday 22:20
+    # Europe/Rome recovery for CFTC Friday releases delayed to Monday by
+    # US holidays (2026-11-16, 2026-11-30). Duplicate UTC clocks are DST
+    # alternatives, admitted by the guarded planner, not new workflows.
+    - cron: '20 20 * * 1'
+    - cron: '20 21 * * 1'
     # Europe/Rome Saturday retry cadence: 00:00, 02:00, 05:00, 08:00.
     - cron: '0 22 * * 5'
     - cron: '0 23 * * 5'
@@ -39,20 +45,15 @@ jobs:
           fetch-depth: 2
           persist-credentials: true
 
-      - name: Rome schedule gate
+      - name: DST-safe Saturday and delayed CFTC Monday release gate
         id: gate
         shell: bash
+        env:
+          CRON_SLOT: ${{ github.event.schedule }}
         run: |
           set -euo pipefail
-          hh="$(TZ=Europe/Rome date +'%H')"
-          dow="$(TZ=Europe/Rome date +'%u')"
-          allowed='00 02 05 08'
-          if [[ "${{ github.event_name }}" != "schedule" || ( "$dow" == "6" && " $allowed " == *" $hh "* ) ]]; then
-            echo 'should_run=true' >> "$GITHUB_OUTPUT"
-          else
-            echo 'should_run=false' >> "$GITHUB_OUTPUT"
-          fi
-          echo "event=${{ github.event_name }} rome_hour=$hh dow=$dow"
+          python3 -m unittest validation.orchestration.test_plan_cot_release_window_v1 -v
+          python3 -m validation.orchestration.plan_cot_release_window_v1
 
       - uses: actions/setup-python@v5
         if: steps.gate.outputs.should_run == 'true'
