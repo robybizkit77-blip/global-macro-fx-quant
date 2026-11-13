@@ -156,14 +156,14 @@ function build(api){
       current.labourDirection===-1?'↑':'→'):
     'Componenti non sincronizzate: nessun segnale macro';
    const marketLabel=current?(current.rate.quality==='UFFICIALE'?current.rate.kind+' 6M':
-     current.rate.quality==='PROXY'?'2Y governativo · proxy':'Attese: variazione non disponibile'):
+     current.rate.quality==='PROXY'?(current.rate.kind==='BANK_BILL_6M_DIRECTIONAL_PROXY'?'Bank-bill 6M · proxy ASX':'2Y governativo · proxy'):'Tassi · ipotesi neutrale'):
     p.tier==='VERIFICATO'?
     '6M '+(p.side==='SALE'?'in rialzo':p.side==='SCENDE'?'in calo':'quasi stabile'):
     p.tier==='PROXY'?'6M NZD: proxy '+(p.side==='SALE'?'in rialzo':p.side==='SCENDE'?'in calo':'stabile'):
     'Attese 6M da verificare';
-   const marketDetail=current?(current.rate.quality==='ASSENTE'?'Variazione non verificata':
-     current.rate.score>0?(current.rate.quality==='UFFICIALE'?'Riferimento monetario in rialzo':'2Y governativo in rialzo · proxy'):
-     current.rate.score<0?(current.rate.quality==='UFFICIALE'?'Riferimento monetario in calo':'2Y governativo in calo · proxy'):
+   const marketDetail=current?(current.rate.quality==='ASSENTE'?'Contributo monetario neutro per assunzione':
+     current.rate.score>0?(current.rate.quality==='UFFICIALE'?'Riferimento monetario in rialzo':current.rate.kind==='BANK_BILL_6M_DIRECTIONAL_PROXY'?'Bank-bill 6M in rialzo · proxy':'2Y governativo in rialzo · proxy'):
+     current.rate.score<0?(current.rate.quality==='UFFICIALE'?'Riferimento monetario in calo':current.rate.kind==='BANK_BILL_6M_DIRECTIONAL_PROXY'?'Bank-bill 6M in calo · proxy':'2Y governativo in calo · proxy'):
      'Movimento limitato o non decisivo'):
     p.tier==='NON_VERIFICATO'?'Un livello futures non è un repricing':
     p.tier==='PROXY'?'Bank bill, non OIS RBNZ':
@@ -315,7 +315,9 @@ function build(api){
     cur.macroScore<=-.25?'debole':'misto')+': '+
    (cur.growthTrend===1?'il PIL accelera':
     cur.growthTrend===-1?'il PIL rallenta':
-    'l’accelerazione del PIL non è verificabile')+
+    (cur.macro?.gLevel>0?'l’ultima crescita trimestrale osservata è positiva':
+     cur.macro?.gLevel<0?'l’ultima crescita trimestrale osservata è negativa':
+     'la crescita trimestrale osservata è moderata'))+
    (cur.labourDirection===-1?', mentre la disoccupazione aumenta.':
     cur.labourDirection===1?', mentre la disoccupazione scende.':
     ', con disoccupazione quasi invariata.')+
@@ -327,11 +329,14 @@ function build(api){
     ') la variazione settimanale è '+(cur.rate.score>0?'al rialzo':
      cur.rate.score<0?'al ribasso':'limitata')+
     '. Indica il segno del movimento, non che la banca centrale abbia causato il prezzo.':
+   cur.rate.kind==='BANK_BILL_6M_DIRECTIONAL_PROXY'?
+    'Il futures ASX bank-bill a sei mesi ('+date(cur.rate.asof)+') varia di '+sign(cur.rate.changeBp,1,' pb')+
+    ' nella settimana: movimento contenuto. È un proxy direzionale di mercato con premio di credito, non un OIS né un percorso OCR.' :
    cur.rate.quality==='PROXY'?
     'Il 2Y governativo ('+date(cur.rate.asof)+') si è mosso '+
     (cur.rate.score>0?'al rialzo':cur.rate.score<0?'al ribasso':'in modo limitato')+
     ': è soltanto un proxy, non un OIS né una decisione già prezzata.':
-    'Non abbiamo una variazione monetaria recente verificata. La stima non la inventa.'):
+    'Per i tassi il modello utilizza un contributo neutro per assunzione prudenziale. Il giudizio su '+country+' resta guidato da macro osservata e forza relativa Forex; il nuovo dato sui tassi potrà modificarlo.'):
    policySummary;
   // Actual economic LEVEL and acceleration are distinct: a favorable
   // heuristic is not proof of a new economic acceleration or an FX reaction.
@@ -361,9 +366,8 @@ function build(api){
    'Per '+country+' il calendario riporta un dato sul PIL del '+date(sourceRelease.date)+
    ', ma la stima utilizza ancora '+cur.gdpPeriod+'. Il risultato non è verificato in questo quadro: confrontare dato e consenso, poi tassi e Forex dopo la pubblicazione.':
    cur?.rate.quality==='ASSENTE'?
-   'Non abbiamo una variazione monetaria recente confrontabile. '+missingRatesCue+
-   ': seguire la prossima sorpresa su crescita e lavoro e il prezzo relativo di '+country+
-   ', senza attribuire il movimento alla banca centrale.':
+   missingRatesCue+'. Il contributo dei tassi è neutro per assunzione: osserviamo se i prossimi dati macro e la forza relativa di '+country+
+   ' giustificano una revisione della stima, distinguendo prezzi e aspettative di politica monetaria.':
    cur&&cur.macroScore>.2&&cur.policyScore<-.1?
    'Il quadro economico è favorevole ma il riferimento monetario scende. Verificare se nuovi dati cambiano le aspettative e se '+country+' segue il movimento dei tassi.':
    cur&&cur.macroScore<-.2&&cur.policyScore>.1?
@@ -372,8 +376,11 @@ function build(api){
    'Il quadro economico è favorevole ma '+country+' perde terreno nei fixing BCE. Quali aspettative stanno cambiando? Verificare dati, tassi e andamento relativo delle altre valute.':
    cur&&cur.macroScore<-.2&&cur.priceScore>.1?
    'Il quadro economico è debole ma '+country+' recupera nei fixing BCE. Verificare se riflette attese monetarie o debolezza delle altre valute.':
+   cur?.rate.kind==='BANK_BILL_6M_DIRECTIONAL_PROXY'?
+   'Il proxy ASX bank-bill a sei mesi mostra una variazione settimanale di '+sign(cur.rate.changeBp,1,' pb')+
+   '. Segui se il prossimo dato macro cambia la lettura RBNZ e se NZD/USD e AUD/NZD reagiscono in modo coerente.':
    cur?.rate.quality==='PROXY'?
-   'Il 2Y è solo un proxy. Verificare il prossimo dato rispetto al consenso e la risposta relativa del Forex, senza scambiare il rendimento per una stima OIS.':
+   'Il 2Y è un proxy. Il prossimo dato e la risposta relativa del Forex chiariranno se il movimento si rafforza.':
    cur?
    'Verificare se la prossima pubblicazione sorprende il consenso e se si muovono le aspettative monetarie e il Forex: la sola correlazione non basta.':
    desk?.market?.tier==='NON_VERIFICATO'?

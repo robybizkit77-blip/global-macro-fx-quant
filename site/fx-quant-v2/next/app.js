@@ -498,7 +498,7 @@ function overview(){
   // morning narrative or be mistaken for a pre-release trading signal.
   const estimated=get('estimatedMacro');
   const currentResearch={
-   estimated,calendar:get('calendar'),
+   estimated,rates:get('rates'),calendar:get('calendar'),
    selectResearchPairs:window.FXQuantPairRankings?.selectResearchPairs,
    watchForPair:x=>{
     if(!window.FXQuantPairRankings?.pairDecisionWatch)return null;
@@ -838,11 +838,11 @@ function pairs(){
  const report=monitor.ready?monitor.changed.length?
    'Dal '+date(monitor.previousAsOf)+' al '+date(monitor.asof)+': '+monitor.changed.length+' classificazioni cambiate. '+monitor.judgement:
    'Nessuna delle classificazioni monitorate è cambiata rispetto al '+date(monitor.previousAsOf)+'. Non significa che il mercato sia immobile.'
-  :'Confronto fra sedute non disponibile: attendiamo uno storico allineato al modello.';
- const favMeaning=fav?'La tesi fondamentale favorisce '+fav+' rispetto a '+(fav===state.pair.slice(0,3)?state.pair.slice(3):state.pair.slice(0,3))+'.':'Nessuna direzione fondamentale sufficientemente distinta.';
+  :'La lettura corrente usa il modello stimato. La cronologia delle variazioni di tesi resta in consolidamento.';
+ const favMeaning=fav?'La tesi fondamentale favorisce '+fav+' rispetto a '+(fav===state.pair.slice(0,3)?state.pair.slice(3):state.pair.slice(0,3))+'.':'La stima fondamentale è equilibrata tra le due valute: monitoriamo quale driver cambia per primo.';
  const driverReading=window.FXQuantPairRankings?.pairDriverReading?.(activePair,estimate)||null;
- const headline=driverReading||activePair?.thesisReason||estimate?.reason||'Le fonti non consentono una tesi corrente: non riproponiamo quella storica.';
- const tradeText=activePair?.tradeReason||'Senza una tesi corrente non valutiamo il timing di ingresso.';
+ const headline=driverReading||activePair?.thesisReason||estimate?.reason||'La lettura corrente si fonda sulle componenti macro e di forza relativa disponibili, con i limiti esposti nel dossier.';
+ const tradeText=activePair?.tradeReason||'Il timing dipenderà da un movimento relativo coerente fra macro, tassi e prezzo.';
  const pairProfile=activePair&&window.FXQuantDecisionJourney?.profile?
   window.FXQuantDecisionJourney.profile(state.pair,get('pairs'),get('currencyPrices'),dayNow(),estimate):null;
  const gate=window.FXQuantPairRankings?.pairDecisionWatch?.(activePair,pairProfile)||{
@@ -862,7 +862,7 @@ function pairs(){
   '<div class="pairs-three-answers">'+
    '<div><span>TESI FONDAMENTALE</span><strong>'+esc(activePair?.thesisStrength||'NON VALUTABILE')+'</strong></div>'+
    '<div><span>TRADE ATTRACTIVENESS</span><strong>'+esc(activePair?.tradeAttractiveness||'NON VALUTABILE')+'</strong></div>'+
-   '<div><span>PERCHÉ NON È UN INGRESSO</span><strong>'+esc(tradeText)+'</strong></div></div>'+
+   '<div><span>TIMING · COSA OSSERVARE</span><strong>'+esc(tradeText)+'</strong></div></div>'+
   '<p class="pairs-next-action"><strong>Rafforzerebbe il quadro.</strong> '+esc(gate.improve)+
   ' <strong>Lo indebolirebbe.</strong> '+esc(gate.weaken)+'</p>'+
   (pairCatalyst?.text?'<p class="pairs-next-action pairs-event-watch"><strong>Evento da monitorare.</strong> '+
