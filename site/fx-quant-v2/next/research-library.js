@@ -7,7 +7,7 @@ const BASE='../../website-v1/reports/';
 const ROOT='./reports/';
 const PUBLIC_API='https://api.github.com/repos/robybizkit77-blip/global-macro-fx-quant/contents/site/fx-quant-v2/next/reports?ref=main';
 const REPORTS=Object.freeze([
- {type:'daily',date:'2026-11-12',title:'Briefing Forex & Commodities',file:'Briefing_Forex_Commodities_2026-11-12_V3_RECUPERO_VERIFICATO.html',desc:'Edizione di recupero post-evento: quadro Forex G8, PIL UK, lavoro USA e driver delle commodities.',publicUrl:'./reports/Briefing_Forex_Commodities_2026-11-12_V3_RECUPERO_VERIFICATO.html'},
+ {type:'daily',date:'2026-11-13',title:'Briefing Forex & Commodities',file:'Briefing_Forex_Commodities_2026-11-13_V3_MORNING_RESEARCH_DESK.html',desc:'Morning Research Desk V3: repricing Fed, catalizzatore PPI USA, USD/JPY e driver delle commodities.',publicUrl:'./reports/Briefing_Forex_Commodities_2026-11-13_V3_MORNING_RESEARCH_DESK.html'},
  {type:'macro',date:'2026-11-06',title:'Weekly Global Macro Report',file:'Weekly_Global_Macro_Report_2026-11-06_COUNTRY_BOOK_NARRATIVO_V4_CORRETTA.html',desc:'Country Book: crescita, inflazione, lavoro, tassi, rischio e forza relativa delle valute.'},
  {type:'bank',date:'2026-11-06',title:'Weekly Bank FX Report',file:'Weekly_Bank_FX_Report_2026-11-06_DARK_DESK_NARRATIVO_V5.html',desc:'View bancarie G8 e giudizio indipendente, con fonti e consenso datati.'},
  {type:'cb',date:'2026-11-06',title:'Weekly Central Bank Sentiment',file:'Weekly_CB_Sentiment_Report_2026-11-06_DARK_RESEARCH_DESK_WANT_CAN_V4_PALETTE.html',desc:'WANT/CAN: intenzioni e vincoli delle banche centrali, separati dal bias Forex.'},
@@ -18,7 +18,7 @@ const REPORTS=Object.freeze([
 ]);
 const CATEGORIES=Object.freeze([['all','Tutti'],['daily','Daily Forex'],['macro','Global Macro'],['bank','Banche FX'],['cb','Banche centrali'],['ois','Curve OIS'],['cot','COT'],['cross','Cross-Asset'],['pairs','Coppie FX']]);
 const MONTHS=Object.freeze({GEN:1,FEB:2,MAR:3,APR:4,MAG:5,GIU:6,LUG:7,AGO:8,SET:9,OTT:10,NOV:11,DIC:12});
-const BLOCKED=/(_PROVA|_TEST|_BOZZA|_DRAFT|_BACKUP|_ANTEPRIMA|_PREVIEW|_LEGACY|_OLD)(_|\.|$)/i;
+const BLOCKED=/(_PROVA|_TEST|_BOZZA|_DRAFT|_BACKUP|_ANTEPRIMA|_PREVIEW|_LEGACY|_OLD|_DATI_PARZIALI)(_|\.|$)/i;
 let category='all',query='',remoteReports=[],lastLookupAt=0,refreshInFlight=false;
 const esc=x=>String(x==null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
 const norm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('it-IT').trim();
