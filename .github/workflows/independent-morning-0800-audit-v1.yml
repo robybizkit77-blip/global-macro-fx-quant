@@ -9,6 +9,12 @@ on:
     - cron: '08 6 * * 1-5'
     - cron: '08 7 * * 1-5'
   workflow_dispatch:
+  # Backup audit signal if GitHub misses/delays the independent 08:08 cron.
+  # The publisher event cannot certify its own success: all evidence remains
+  # checked by the independent read-only verifier.
+  workflow_run:
+    workflows: ['Publish Dashboard Pages V1']
+    types: [completed]
   push:
     branches: [main]
     paths:
@@ -32,6 +38,13 @@ concurrency:
 
 jobs:
   regression:
+    # Only UTC 06/07 can contain Rome 08:00 in CEST/CET. Other publisher
+    # completions must not waste runner minutes on hourly data updates.
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.head_branch == 'main' &&
+       (contains(github.event.workflow_run.updated_at, 'T06:') ||
+        contains(github.event.workflow_run.updated_at, 'T07:')))
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -46,16 +59,43 @@ jobs:
 
   audit:
     needs: regression
-    if: ${{ github.event_name != 'pull_request' }}
+    if: >-
+      github.event_name != 'pull_request' &&
+      (github.event_name != 'workflow_run' ||
+       github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     steps:
+      - name: Admit publisher fallback only for Rome 08:00-08:59
+        id: admission
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PUBLISH_COMPLETED_AT: ${{ github.event.workflow_run.updated_at }}
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" != workflow_run ]]; then
+            echo "audit=true" >> "$GITHUB_OUTPUT"
+          else
+            event_day=$(TZ=Europe/Rome date -d "$PUBLISH_COMPLETED_AT" +%F)
+            event_hour=$(TZ=Europe/Rome date -d "$PUBLISH_COMPLETED_AT" +%H)
+            today=$(TZ=Europe/Rome date +%F)
+            if [[ "$event_day" == "$today" && "$event_hour" == "08" ]]; then
+              echo "audit=true" >> "$GITHUB_OUTPUT"
+              echo "Publisher fallback: independent 08:00 audit required" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "audit=false" >> "$GITHUB_OUTPUT"
+              echo "Outside Rome 08:00 audit window; no certification claimed." >> "$GITHUB_STEP_SUMMARY"
+            fi
+          fi
       - uses: actions/checkout@v4
+        if: steps.admission.outputs.audit == 'true'
         with:
           ref: main
           fetch-depth: 1
 
       - name: Read latest canonical source and published branches
+        if: steps.admission.outputs.audit == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -65,10 +105,12 @@ jobs:
           git checkout --detach origin/main
 
       - uses: actions/setup-python@v5
+        if: steps.admission.outputs.audit == 'true'
         with:
           python-version: '3.12'
 
       - name: Evaluate actual 08:00 production completion and public HTTP bytes
+        if: steps.admission.outputs.audit == 'true'
         shell: bash
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -80,7 +122,7 @@ jobs:
             --schedule "$AUDIT_CRON" --output "$RUNNER_TEMP/independent-0800-audit.json"
 
       - name: Retain independent evidence even when certification fails
-        if: always()
+        if: always() && steps.admission.outputs.audit == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: independent-0800-audit-${{ github.run_id }}
