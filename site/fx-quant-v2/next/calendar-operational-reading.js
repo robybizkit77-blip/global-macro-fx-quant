@@ -9,6 +9,13 @@
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
  const fmtDay=x=>validDate(x)?x.slice(8,10)+'/'+x.slice(5,7)+'/'+x.slice(0,4):'n.d.';
  const romeNow=()=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+ const italianTitles={'Producer Price Index':'USA · prezzi alla produzione (PPI)',
+  'Swiss GDP flash':'Svizzera · PIL flash',
+  'U.S. Import and Export Price Indexes':'USA · prezzi import/export',
+  'Labour Force, Australia':'Australia · mercato del lavoro',
+  'Japan Consumer Price Index':'Giappone · indice dei prezzi al consumo',
+  'Gross domestic product':'Prodotto interno lordo (PIL)'};
+ const displayTitle=t=>italianTitles[t]||t;
  const pairMap={USD:'EUR/USD · USD/JPY',EUR:'EUR/USD · EUR/GBP',GBP:'EUR/GBP · GBP/USD',
  JPY:'USD/JPY · EUR/JPY',CHF:'EUR/CHF · USD/CHF',CAD:'USD/CAD · CAD/JPY',
  AUD:'AUD/USD · AUD/NZD',NZD:'NZD/USD · AUD/NZD'};
@@ -129,16 +136,29 @@
   const waiting=review?(e.reviewReason==='ORARIO_NON_VERIFICATO'?
    'Data odierna; ora non verificata. Controllare la fonte prima di considerare il dato pubblicato.':
    'Orario programmato trascorso. Il feed non ha ancora verificato il risultato: non è una sorpresa macro osservata.'):'';
+  // The first pair is one research example, not a recommended FX trade.
+  const pair=String(e.pairs||'').split(' · ')[0];
+  const pairCode=pair.replace('/','');
   return '<article class="cal-event'+(review?' cal-event-review':'')+'"><div class="cal-event-head"><span>'+
    esc(e.ccy)+' · '+esc(e.kind)+'</span><time datetime="'+esc(e.day)+'">'+fmtDay(e.day)+timeText+'</time></div>'+
-   '<h3>'+esc(e.title)+'</h3>'+
+   '<h3>'+esc(displayTitle(e.title))+'</h3>'+
    (review?'<p class="cal-review-state"><strong>Da verificare.</strong> '+esc(waiting)+'</p>':'')+
+   '<p class="cal-driver-reading"><strong>Perché conta.</strong> '+esc(e.why)+'</p>'+
+   '<div class="cal-event-path" aria-label="Percorso di ricerca: aspettative, valuta e coppia">'+
+   '<span class="cal-event-path-label">DALL’EVENTO ALLA VERIFICA FX</span>'+
+   '<div class="cal-event-actions">'+
+   '<a href="#rates" data-cal-research="rates" data-cal-currency="'+esc(e.ccy)+'" aria-label="Controlla tassi e OIS per '+esc(e.ccy)+'">Tassi &amp; OIS <span aria-hidden="true">↗</span></a>'+
+   '<a href="#currencies" data-cal-research="currencies" data-cal-currency="'+esc(e.ccy)+'" aria-label="Analizza la valuta '+esc(e.ccy)+'">Valuta '+esc(e.ccy)+' <span aria-hidden="true">↗</span></a>'+
+   '<a href="#pairs" data-cal-research="pairs" data-cal-currency="'+esc(e.ccy)+'" data-cal-pair="'+esc(pairCode)+'" aria-label="Analizza la coppia '+esc(pair)+' senza segnale di ingresso">'+esc(pair)+' <span aria-hidden="true">↗</span></a>'+
+   '</div></div>'+
+   '<details class="cal-event-evidence"><summary>Fonte, consenso e verifiche dopo l’evento</summary><div class="cal-event-evidence-body">'+
    '<p class="cal-source">Fonte: '+esc(e.source)+' · '+esc(e.quality)+
    (e.reference?' · Periodo '+esc(e.reference):'')+'</p>'+
-   '<p><strong>Perché conta per '+esc(e.ccy)+'.</strong> '+esc(e.why)+'</p>'+
+   (displayTitle(e.title)!==e.title?'<p class="cal-source">Titolo originale: '+esc(e.title)+'</p>':'')+
    '<p class="cal-verify"><strong>Cosa controllare.</strong> '+esc(e.verify)+'</p>'+
    '<div class="cal-missing">Consenso: '+(e.consensus===null?'non certificato':esc(e.consensus))+
-   ' · Effettivo: '+(e.actual===null?(review?'non verificato dal feed':'non ancora pubblicato/verificato'):esc(e.actual))+'</div></article>';
+   ' · Effettivo: '+(e.actual===null?(review?'non verificato dal feed':'non ancora pubblicato/verificato'):esc(e.actual))+'</div>'+
+   '</div></details></article>';
  }
  function render(feed,today=romeNow(),nowMs=Date.now()){
   const p=parse(feed,today,nowMs);
@@ -162,7 +182,7 @@
    '<div class="cal-grid">'+first.map(e=>card(e)).join('')+'</div>'+
    (more.length?'<details class="cal-more"><summary>Altri '+more.length+' eventi del calendario</summary><div class="cal-grid">'+more.map(e=>card(e)).join('')+'</div></details>':'')+
    '</section>':'';
-  return head+'<p class="cal-intro">Prima di un evento: cosa potrebbe modificare le aspettative sui tassi. Dopo l’orario previsto: cerchiamo il dato verificato e la reazione effettiva, senza inventare sorprese o segnali.</p>'+
+  return head+'<p class="cal-intro">Ogni evento è un possibile catalizzatore, non un segnale: apri pricing, valuta e coppia per cercare conferme. Dopo l’orario previsto, esito e reazione restano da verificare.</p>'+
    currentCheck+reviews+upcoming+
    '<div class="cal-coverage"><strong>Limite dei dati:</strong> consenso numerico certificato per '+p.consensusReady+
    ' eventi su '+p.total+'. Senza confronto pre-release/effettivo non calcoliamo sorprese e non attribuiamo movimenti del Forex. L’orario italiano è mostrato solo dove la fonte indica un’ora convertibile.</div></section>';
