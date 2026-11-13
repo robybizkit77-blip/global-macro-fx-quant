@@ -92,6 +92,9 @@ jobs:
         needs.morning-editorial.outputs.admitted == 'true'))
     runs-on: ubuntu-24.04
     timeout-minutes: 8
+    permissions:
+      contents: read
+      actions: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -223,6 +226,7 @@ jobs:
       actions: read
     concurrency:
       group: fxv2-morning-macro-editorial-production
+      queue: max
       cancel-in-progress: false
     outputs:
       admitted: ${{ steps.editorial-slot.outputs.active }}
