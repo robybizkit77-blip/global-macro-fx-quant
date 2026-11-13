@@ -238,7 +238,7 @@
     'Anteprima ricostruita dalle osservazioni disponibili prima della data, non certificata come fotografia point-in-time delle 08:00.':
     'Edizione mattutina congelata: gli eventi pubblicati dopo l’apertura non modificano questo testo.';
   const note=correction?'Calendario ufficiale aggiornato al '+date(correction.sourceAsOf)+
-   ': la prima edizione non riportava un evento odierno confermato. La lettura sopra è corretta; il testo originario resta consultabile sotto.':noteBase;
+   ': la prima edizione non riportava un evento odierno confermato. Il quadro principale qui sotto incorpora la correzione; il testo originario resta consultabile negli approfondimenti.':noteBase;
   // First-read uses only the frozen edition's source-dated evidence.
   // Do not infer a new daily FX move or a monetary-policy surprise.
   const relative=feed.relative_evidence||{};
