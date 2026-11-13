@@ -54,17 +54,29 @@ assert(safe.includes('Consenso: non certificato'));
 assert(safe.includes('Effettivo: non ancora pubblicato/verificato'));
 assert(safe.includes('Quali dati potrebbero cambiare le tesi FX?'));
 assert.match(safe,/Altri \d+ eventi del calendario/);
+// Historical date-sensitive regression needs its own immutable event fixture:
+// the production calendar rightly removes 12 Nov GDP after its release.
+// The real live feed above is still checked for schema, XSS and missing values.
+const historicalData={...structuredClone(data),
+ last_checked_at_utc:'2026-11-11T23:33:00Z',
+ events:[...data.events,{
+  ccy:'GBP',date:'2026-11-12',time_local:'07:00',
+  timezone:'Europe/London',event_type:'GROWTH',
+  status:'UPCOMING',importance:'HIGH',quality:'OFFICIAL_CONFIRMED',
+  title:'UK GDP first quarterly estimate',source_family:'ONS',
+  consensus_status:'NOT_PRESENT',actual_status:'NOT_PRESENT'
+ }]
+};
 // Real clock regression: UK GDP scheduled at 08:00 Rome on 12 November.
-// If the official feed still says UPCOMING at 14:00 Rome, it must no longer
-// appear among future releases and it must not be described as verified.
-const before=parse(data,'2026-11-12',Date.parse('2026-11-12T06:30:00Z'));
+// After the release window it must move to "review", NOT become an actual.
+const before=parse(historicalData,'2026-11-12',Date.parse('2026-11-12T06:30:00Z'));
 assert(before.events.some(e=>e.ccy==='GBP'&&e.title.includes('GDP')));
 assert(!before.needsReview.some(e=>e.ccy==='GBP'));
-const after=parse(data,'2026-11-12',Date.parse('2026-11-12T13:00:00Z'));
+const after=parse(historicalData,'2026-11-12',Date.parse('2026-11-12T13:00:00Z'));
 assert(!after.events.some(e=>e.ccy==='GBP'&&e.title.includes('GDP')),
  'Elapsed UK release must not remain in next-up list');
 assert(after.needsReview.some(e=>e.ccy==='GBP'&&e.reviewReason==='ORARIO_PROGRAMMATO_TRASCORSO'));
-const postHtml=render(data,'2026-11-12',Date.parse('2026-11-12T13:00:00Z'));
+const postHtml=render(historicalData,'2026-11-12',Date.parse('2026-11-12T13:00:00Z'));
 assert(postHtml.includes('Oggi · risultato ancora da verificare'));
 assert(postHtml.includes('Orario programmato trascorso'));
 assert(postHtml.includes('Effettivo: non verificato dal feed'));
@@ -72,7 +84,7 @@ assert(postHtml.includes('Effettivo: non verificato dal feed'));
 assert(!postHtml.includes('Feed non ricontrollato oggi'),
  'UTC day must not create a false Rome-local staleness warning');
 assert(postHtml.includes('12/11/2026')&&postHtml.includes('00:33'));
-const oldFeed=structuredClone(data);
+const oldFeed=structuredClone(historicalData);
 oldFeed.last_checked_at_utc='2026-11-11T12:00:00Z';
 assert(render(oldFeed,'2026-11-12',Date.parse('2026-11-12T13:00:00Z'))
  .includes('Feed non ricontrollato oggi'),
@@ -85,7 +97,7 @@ const noClock=parse(missingTime,'2026-11-12',Date.parse('2026-11-12T13:00:00Z'))
 assert(noClock.needsReview.some(e=>e.title==='FOMC press briefing'&&
  e.reviewReason==='ORARIO_NON_VERIFICATO'),
  'Same-day item without trusted hour must not be asserted future');
-const nextDay=parse(data,'2026-11-13',Date.parse('2026-11-13T12:00:00Z'));
+const nextDay=parse(historicalData,'2026-11-13',Date.parse('2026-11-13T12:00:00Z'));
 assert(!nextDay.needsReview.some(e=>e.ccy==='GBP'),'Do not keep stale prior-day event indefinitely');
 
 const empty=parse(null,now);assert.equal(empty.total,0);
