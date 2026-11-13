@@ -52,9 +52,10 @@ assert(pulse.includes('Notizie e calendario'));
 const plot=()=>'<div class="chart"><svg></svg></div>';
 const before=api.build({feed,plot,...params});
 const after=api.build({feed,plot,...params,currentResearch});
-assert(after.indexOf('data-fx-pulse="current"')<after.indexOf('class="morning-lead"'));
-assert(after.includes('edizione archiviata'),'Historical morning must stay visibly archival');
-assert.equal(after.replace(/<section class="morning-fx-pulse"[\s\S]*?<\/section>/,''),before,
+assert(after.indexOf('data-fx-pulse="current"')>after.indexOf('class="morning-lead"'),
+ 'Main market narrative must precede the estimated FX research');
+if(today!==feed.edition_date)assert(after.includes('edizione archiviata'),'Historical morning must stay visibly archival');
+assert.equal(after.replace(/<details class="morning-secondary-research[\s\S]*?<\/details>/,''),before,
  'The independently dated FX research must NOT rewrite any frozen article content');
 const noData=api.fxResearchPulse({...params,estimated:null});
 assert.equal(noData,'');
@@ -85,8 +86,8 @@ assert(app.includes('currentResearch')&&app.includes('watchForPair:x=>'));
 assert(app.includes('feed:morning,plot,esc,date,dayNow,currentResearch'),
  'App must pass current dated research to the morning presentation');
 assert(app.includes("e.target.closest('[data-pair]')"),'Pair buttons must navigate to selected dossier');
-assert(idx.includes('morning-desk-v1.js?v=5'));
-assert(idx.includes('morning-desk-v1.css?v=4'));
+assert(idx.includes('morning-desk-v1.js?v=6'));
+assert(idx.includes('morning-desk-v1.css?v=5'));
 assert(idx.includes('app.js?v=18.43-drivers1'));
 assert(css.includes('morning-fx-pulse-cases'));
 console.log('NEXT_HOME_FX_PULSE_V1_PASS: frozen morning unchanged; current G8 + <=3 diversified FX pair gates; dated, safe and routable');
