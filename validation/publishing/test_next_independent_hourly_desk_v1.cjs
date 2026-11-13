@@ -72,7 +72,7 @@ assert(render(xss).includes('&lt;script&gt;alert(1)&lt;/script&gt;'));
 const app=fs.readFileSync(path.join(ROOT,next,'app.js'),'utf8');
 const index=fs.readFileSync(path.join(ROOT,next,'index.html'),'utf8');
 assert(app.includes("get('hourlyDesk')"),'Home is wired to optional independent free research');
-assert(app.includes("fetch('./hourly-market-desk-current.json'"),'Optional fetch endpoint missing');
+assert(app.includes("fetch('../../../market-desk/hourly-market-desk-current.json'"),'Optional fetch endpoint missing');
 assert(!app.includes("hourlyDesk:'"),'New research must not become a mandatory operational feed');
 assert(index.includes('hourly-desk-ui-v1.js?v=3'));
 assert(index.includes('hourly-desk-ui-v1.css?v=2'));
@@ -92,5 +92,10 @@ assert(workflow.includes("build_free_hourly_desk_v1.py"));
 assert(!workflow.includes("api.openai.com"));
 assert(!/Automations__update|automations\.update|CHATGPT_AUTOMATION_ID/.test(workflow));
 assert(workflow.includes("github.event_name != 'pull_request'"));
-assert(workflow.includes('site/fx-quant-v2/next/hourly-market-desk-current.json'));
+assert(workflow.includes('market-desk/hourly-market-desk-current.json'));
+assert(!workflow.includes('site/fx-quant-v2/next/hourly-market-desk-current.json'),
+ 'The FX V2 exact-tree rsync --delete would otherwise erase the independent feed');
+assert(workflow.includes('mkdir -p "$dir/market-desk"'),
+ 'Hourly publishing must create a root-owned folder outside FX V2 mirroring');
+
 console.log('NEXT_FREE_DESK_PREMIUM_UI_PASS: macro depth preserved, visual workbench, source links, responsive, ChatGPT untouched');
