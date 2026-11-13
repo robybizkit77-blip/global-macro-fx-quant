@@ -1,0 +1,134 @@
+/* FX Quant Next · market pulse + research card hierarchy.
+   All styles scoped to Home; no global/other-route restyling. */
+.hourly-market-desk .hourly-market-pulse{margin-top:25px}
+.hourly-market-desk .hourly-market-pulse-head{
+ display:flex;align-items:end;justify-content:space-between;
+ flex-wrap:wrap;gap:7px 20px;margin:0 0 13px;
+}
+.hourly-market-desk .hourly-market-pulse-head h2{
+ font-family:Inter,'Segoe UI',system-ui,sans-serif;
+ font-size:clamp(20px,2.05vw,26px);font-weight:690;
+ letter-spacing:-.035em;color:#eff8fc;line-height:1.3;margin:5px 0 0;
+}
+.hourly-market-desk .hourly-market-pulse-head p{
+ font-size:10px;color:#9cbac8;line-height:1.6;margin:0 0 2px;
+}
+.hourly-market-desk .hourly-pulse-track{
+ display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+ gap:10px;
+}
+.hourly-market-desk .hourly-pulse-tile{
+ --pulse-hue:#92c5df;
+ --pulse-shade:rgba(61,123,163,.10);
+ min-width:0;min-height:131px;position:relative;
+ display:flex;flex-direction:column;gap:9px;
+ padding:15px 15px 13px;
+ border:1px solid rgba(126,189,212,.20);
+ border-radius:12px;
+ background:
+  radial-gradient(ellipse at 100% 0%,var(--pulse-shade),transparent 75%),
+  linear-gradient(155deg,#112c3e,#0b1f31);
+ color:#dcecf4;text-decoration:none;
+ transition:border-color .16s ease,background .16s ease,transform .16s ease;
+}
+.hourly-market-desk .hourly-pulse-fx{--pulse-hue:#a4d7ef;--pulse-shade:rgba(52,138,194,.13)}
+.hourly-market-desk .hourly-pulse-constructive{--pulse-hue:#83dfbb;--pulse-shade:rgba(72,161,133,.12)}
+.hourly-market-desk .hourly-pulse-adverse{--pulse-hue:#f29c9d;--pulse-shade:rgba(187,65,72,.11)}
+.hourly-market-desk .hourly-pulse-caution{--pulse-hue:#ebbc84;--pulse-shade:rgba(199,134,67,.13)}
+.hourly-market-desk .hourly-pulse-mixed{--pulse-hue:#e7bf88;--pulse-shade:rgba(167,123,85,.12)}
+.hourly-market-desk .hourly-pulse-tile::before{
+ content:"";position:absolute;top:0;left:13px;right:13px;height:2px;
+ background:linear-gradient(90deg,var(--pulse-hue),transparent);
+ opacity:.77;
+}
+.hourly-market-desk .hourly-pulse-tile:hover,
+.hourly-market-desk .hourly-pulse-tile:focus-visible{
+ border-color:var(--pulse-hue);background-color:#133246;
+ transform:translateY(-2px);
+}
+.hourly-market-desk .hourly-pulse-tile:focus-visible{outline:2px solid #9ed8ed;outline-offset:2px}
+.hourly-market-desk .hourly-pulse-tile-top{
+ display:flex;justify-content:space-between;align-items:start;gap:6px;
+ color:#9bbaca;font-size:9px;font-weight:800;letter-spacing:.07em;line-height:1.45;
+}
+.hourly-market-desk .hourly-pulse-tile-top time{
+ white-space:nowrap;letter-spacing:0;font-size:9px;font-weight:650;color:#8baab9;
+}
+.hourly-market-desk .hourly-pulse-tile-middle{
+ display:flex;align-items:center;justify-content:space-between;gap:5px;
+ min-height:34px;color:var(--pulse-hue);
+}
+.hourly-market-desk .hourly-pulse-tile-middle strong{
+ font-size:clamp(17px,1.5vw,23px);
+ font-weight:730;line-height:1.1;letter-spacing:-.025em;
+ font-variant-numeric:tabular-nums;
+}
+.hourly-market-desk .hourly-pulse-spark{
+ flex:0 0 70px;width:70px;height:35px;
+ opacity:.86;max-width:42%;
+}
+.hourly-market-desk .hourly-pulse-tile-bottom{
+ display:flex;justify-content:space-between;gap:6px;
+ flex-wrap:wrap;align-items:baseline;
+ font-size:11px;line-height:1.4;
+}
+.hourly-market-desk .hourly-pulse-tile-bottom span{font-weight:750;color:#e2eff3}
+.hourly-market-desk .hourly-pulse-tile-bottom b{font-size:10px;font-weight:690;color:var(--pulse-hue)}
+.hourly-market-desk .hourly-pulse-tile small{
+ color:#90adbe;font-size:9px;line-height:1.4;margin-top:auto;
+}
+/* The primary theme leads visually; disagreement and next verification
+   remain equally available, rather than presented as three uniform boxes. */
+.hourly-market-desk .hourly-decision-section{margin-top:29px}
+.hourly-market-desk .hourly-decision-grid{
+ grid-template-columns:minmax(0,1.30fr) minmax(0,.96fr) minmax(0,.96fr);
+ gap:13px;
+}
+.hourly-market-desk .hourly-decision-card{min-height:220px;padding:23px 21px 21px}
+.hourly-market-desk .hourly-decision-change{
+ border-color:rgba(106,219,178,.34);
+ background:
+  radial-gradient(ellipse at 93% 3%,rgba(74,164,137,.16),transparent 74%),
+  linear-gradient(142deg,#153b40,#0e2937 70%,#0b2131);
+ box-shadow:0 11px 28px rgba(0,15,19,.20),inset 0 1px 0 rgba(153,242,206,.08);
+}
+.hourly-market-desk .hourly-decision-change::before{width:4px;background:#82e1b9}
+.hourly-market-desk .hourly-decision-change h3{font-size:20px;color:#effbf4}
+.hourly-market-desk .hourly-decision-change p{font-size:13.5px;color:#d4e9e3;line-height:1.77}
+.hourly-market-desk .hourly-decision-contrary{
+ border-color:rgba(216,159,99,.32);
+ background:linear-gradient(155deg,#342b27,#182930 66%,#0d2230);
+}
+.hourly-market-desk .hourly-decision-contrary h3{color:#f2dfc3}
+.hourly-market-desk .hourly-decision-watch{
+ background:linear-gradient(145deg,#15364a,#0b2235 70%);
+ border-color:rgba(111,185,228,.33);
+}
+.hourly-market-desk .hourly-decision-watch h3{color:#d7efff}
+@media(max-width:1130px){
+ .hourly-market-desk .hourly-pulse-track{
+  display:flex;overflow-x:auto;overscroll-behavior-x:contain;
+  scroll-snap-type:x proximity;
+  padding:2px 2px 9px;
+  scrollbar-width:thin;scrollbar-color:rgba(124,187,213,.40) transparent;
+ }
+ .hourly-market-desk .hourly-pulse-tile{flex:0 0 clamp(190px,24vw,240px);scroll-snap-align:start}
+}
+@media(max-width:860px){
+ .hourly-market-desk .hourly-decision-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .hourly-market-desk .hourly-decision-watch{grid-column:1/-1}
+ .hourly-market-desk .hourly-decision-card{min-height:initial}
+}
+@media(max-width:630px){
+ .hourly-market-desk .hourly-market-pulse{margin-top:21px}
+ .hourly-market-desk .hourly-market-pulse-head p{font-size:10px}
+ .hourly-market-desk .hourly-pulse-tile{flex-basis:205px}
+ .hourly-market-desk .hourly-decision-grid{grid-template-columns:1fr}
+ .hourly-market-desk .hourly-decision-watch{grid-column:auto}
+ .hourly-market-desk .hourly-decision-card{padding:20px 18px;min-height:initial}
+ .hourly-market-desk .hourly-decision-change h3{font-size:19px}
+}
+@media(prefers-reduced-motion:reduce){
+ .hourly-market-desk .hourly-pulse-tile{transition:none}
+ .hourly-market-desk .hourly-pulse-tile:hover{transform:none}
+}

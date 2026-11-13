@@ -495,7 +495,7 @@ function overview(){
  // Independent FREE GitHub desk replaces the historical morning when—and only when—
  // a source-validated edition actually exists. A missing feed cannot blank Home.
  const hourly=typeof window==='undefined'?null:
-  window.FXQuantHourlyDesk?.render?.({feed:get('hourlyDesk'),esc,date,dayNow});
+  window.FXQuantHourlyDesk?.render?.({feed:get('hourlyDesk'),risk:get('risk'),esc,date,dayNow});
  if(hourly)return hourly;
  const morning=get('morningDesk');
  if(typeof window!=='undefined' && window.FXQuantMorningDesk?.build && morning){
