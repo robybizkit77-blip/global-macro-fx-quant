@@ -50,9 +50,12 @@ assert(result.by.USD.macroScore>result.by.EUR.macroScore);
 assert.equal(result.by.CHF.rate.quality,'ASSENTE');
 assert.equal(result.by.NZD.rate.quality,'PROXY');
 assert.equal(result.by.NZD.rate.kind,'BANK_BILL_6M_DIRECTIONAL_PROXY');
-assert.equal(result.by.NZD.rate.changeBp,3);
-assert.equal(result.by.NZD.rate.asof,'2026-11-12');
-assert.equal(result.by.NZD.rate.score,0,'Small weekly change is neutral, not fabricated hawkish repricing');
+const nzdProxy=ois.currencies.NZD.horizons['6m'];
+assert.equal(result.by.NZD.rate.changeBp,nzdProxy.change_1w_bp);
+assert.equal(result.by.NZD.rate.asof,nzdProxy.as_of);
+assert.equal(result.by.NZD.rate.score,
+ nzdProxy.change_1w_bp>=5?0.35:nzdProxy.change_1w_bp<=-5?-0.35:0,
+ 'The 6M bank-bill weekly move is used directionally at discounted weight, never as a policy/OIS estimate');
 assert.equal(result.by.NZD.rate.quality==='UFFICIALE',false,'Bank-bill proxy must never count as official OIS');
 const missingNZProxy=structuredClone(ois);
 missingNZProxy.currencies.NZD.horizons['6m'].change_1w_bp=null;
