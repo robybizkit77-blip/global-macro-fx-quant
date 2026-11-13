@@ -614,3 +614,59 @@
  .hourly-hero-sources-button{flex:1;justify-content:center}
  .hourly-hero-actions>a{flex:1;justify-content:center}
 }
+
+/* Research evidence cards: the preview is a real navigational control,
+   not decorative text. All changes remain scoped to the Home desk. */
+.hourly-market-desk button.hourly-evidence-peek-item{
+ appearance:none;display:flex;flex-direction:column;align-items:stretch;
+ width:100%;min-height:164px;text-align:left;cursor:pointer;
+ font:inherit;position:relative;
+ background:linear-gradient(151deg,#102d3e,#0b2233 82%);
+ border-color:rgba(121,185,208,.31);
+ transition:border-color .18s ease,background-color .18s ease,transform .18s ease;
+}
+.hourly-market-desk button.hourly-evidence-peek-item::before{
+ content:"";position:absolute;top:0;left:16px;right:16px;height:2px;
+ background:linear-gradient(90deg,#80dabc,rgba(116,188,223,.3),transparent);
+}
+.hourly-market-desk button.hourly-evidence-peek-item:hover,
+.hourly-market-desk button.hourly-evidence-peek-item:focus-visible{
+ border-color:#86dbc3;background-color:#15394a;transform:translateY(-2px);
+}
+.hourly-market-desk button.hourly-evidence-peek-item:focus-visible{
+ outline:2px solid #9cdef0;outline-offset:3px;
+}
+.hourly-market-desk .hourly-evidence-peek-item>strong{
+ font-size:13px;line-height:1.48;color:#eff8fb;letter-spacing:-.012em;
+}
+.hourly-market-desk .hourly-evidence-peek-item>small{
+ display:flex;justify-content:space-between;align-items:center;
+ gap:8px;margin-top:auto;padding-top:14px;
+ border-top:1px solid rgba(138,190,212,.15);
+ color:#94ddc5;font-size:10.5px;font-weight:760;line-height:1.4;
+}
+.hourly-market-desk .hourly-evidence-peek-item>small em{
+ font-style:normal;font-size:17px;line-height:1;
+}
+.hourly-market-desk .hourly-desk-story[data-hourly-article]:focus{
+ outline:2px solid #9cdef0;outline-offset:-4px;
+ border-color:rgba(153,225,205,.67);
+}
+.hourly-market-desk .hourly-desk-citations a{
+ display:inline-flex;align-items:center;gap:5px;
+ padding:4px 8px;margin:2px 3px 2px 0;
+ border:1px solid rgba(133,200,221,.28);
+ border-radius:6px;background:rgba(37,95,125,.22);
+ color:#a9e2f2;text-decoration:none;overflow-wrap:anywhere;
+}
+.hourly-market-desk .hourly-desk-citations a:hover,
+.hourly-market-desk .hourly-desk-citations a:focus-visible{
+ color:#e1faff;border-color:#94d8ef;
+}
+@media(max-width:630px){
+ .hourly-market-desk button.hourly-evidence-peek-item{min-height:135px}
+}
+@media(prefers-reduced-motion:reduce){
+ .hourly-market-desk button.hourly-evidence-peek-item{transition:none}
+ .hourly-market-desk button.hourly-evidence-peek-item:hover{transform:none}
+}
