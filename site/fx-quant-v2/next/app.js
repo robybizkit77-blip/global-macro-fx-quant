@@ -1099,6 +1099,32 @@ function refreshPairPriceChart(focusSelector){
  window.scrollTo({top:scrollTop,behavior:'instant'});
 }
 document.addEventListener('click',e=>{
+ const calendarResearch=e.target.closest('[data-cal-research]');
+ if(calendarResearch&&state.route==='news'){
+  const mode=calendarResearch.dataset.calResearch;
+  const ccy=calendarResearch.dataset.calCurrency;
+  if(!FX.includes(ccy)||!['rates','currencies','pairs'].includes(mode))return;
+  e.preventDefault();
+  state.ccy=ccy;
+  if(state.against===ccy)state.against=FX.find(x=>x!==ccy);
+  if(mode==='pairs'){
+   const requested=calendarResearch.dataset.calPair||'';
+   const reverse=requested.slice(3)+requested.slice(0,3);
+   const available=get('pairs')?.pairs||{};
+   const resolved=available[requested]?requested:available[reverse]?reverse:null;
+   if(resolved){
+    state.pair=resolved;state.spotPair=resolved;state.pairDetailOpen=true;
+   }else{
+    // The pair source is missing. Open the explorer without a fictitious setup.
+    state.pairDetailOpen=false;
+   }
+  }
+  state.route=mode;
+  // Hashchange owns cross-route rendering, avoiding double-paint.
+  if(location.hash==='#'+mode)render();
+  else location.hash='#'+mode;
+  return;
+ }
  const libraryFilter=e.target.closest('[data-library-type]');
  if(libraryFilter && state.route==='library' && window.FXQuantResearchLibrary){
   window.FXQuantResearchLibrary.setCategory(libraryFilter.dataset.libraryType);
