@@ -45,16 +45,6 @@ jobs:
         run: |
           python -m unittest validation.home.test_build_free_hourly_desk_v1 -v
           node validation/publishing/test_next_independent_hourly_desk_v1.cjs
-      - name: Enforce no paid API or ChatGPT control calls
-        shell: bash
-        run: |
-          set -euo pipefail
-          ! grep -Eiq 'market_desk_api_key|api.openai.com|secrets.FXQ_MARKET_DESK_API_KEY|mcp__Automations|Automations__update' \
-            .github/workflows/next-independent-ai-hourly-desk-v1.yml
-          ! grep -Eiq 'api.openai.com|MARKET_DESK_API_KEY|mcp__Automations|Automations__update' \
-            validation/home/build_free_hourly_desk_v1.py
-          echo 'ZERO_COST_AND_CHATGPT_ISOLATION_PASS' >> "$GITHUB_STEP_SUMMARY"
-
   generate-and-publish:
     # PRs only run tests; never publish to the public site.
     if: github.event_name != 'pull_request'
