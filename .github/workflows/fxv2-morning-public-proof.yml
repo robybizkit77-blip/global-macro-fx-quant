@@ -246,7 +246,9 @@ jobs:
           then
             echo "MORNING_EDITION_ALREADY_FROZEN $EDITION"
           else
-            python3 validation/morning/build_morning_fx_desk_v1.py \
+            # Run as a module from the repository root: the builder imports
+            # validation.macro.* at runtime, which file-path execution cannot resolve.
+            python3 -m validation.morning.build_morning_fx_desk_v1 \
               --edition-date "$EDITION" --output "$target"
             git add -- "$target"
             git commit -m "Freeze Morning Macro FX Desk edition $EDITION"
