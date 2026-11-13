@@ -29,6 +29,19 @@ if(summary)assert.match(summary.time||'',/^\d{2}:\d{2}$/);
 const bankRate=x.official.find(y=>y.title.startsWith('Bank rate increased'));
 if(bankRate)assert(bankRate.verify.includes('Consultare'));
 assert(x.official.some(y=>y.kind==='Fondamentali energia'));
+assert(x.official.every(y=>y.displayTitle&&typeof y.displayTitle==='string'),
+ 'Every original release must have a safe Italian first-read label');
+const translated=x.official.filter(y=>y.displayTitle!==y.title);
+assert(translated.length>=8,'Known English institutional headlines require Italian first-read translations');
+const energy=x.official.find(y=>/Hydropower generation in the Southwest/i.test(y.title));
+if(energy)assert(energy.displayTitle.includes('produzione idroelettrica'));
+const meridian=x.official.find(y=>/Project Meridian FX APAC/i.test(y.title));
+if(meridian)assert(meridian.displayTitle.includes('collaborazione'));
+const fomc=x.official.find(y=>/revised tentative schedule.*Federal Open Market Committee/i.test(y.title));
+if(fomc)assert(fomc.displayTitle.includes('calendario provvisorio'));
+assert(x.official.every(y=>!y.displayTitle.includes('<script>')),
+ 'Italian view must never introduce unescaped HTML');
+
 const syntheticCB=structuredClone(feed);
 syntheticCB.official_releases.headlines.push({
  ...feed.official_releases.headlines[0],title:'Test ufficiale banca centrale',
@@ -77,11 +90,28 @@ assert.equal(romeDate('2026-11-09T21:00:00Z').date,'2026-11-09');
 assert.equal(romeDate('invalid'),null);
 const html=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/index.html'),'utf8');
 const app=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/app.js'),'utf8');
-assert(html.indexOf('news-evidence-reading.js?v=26')<html.indexOf('app.js?v=18.'),'News source interpreter must load before current Next app');
+assert(html.indexOf('news-evidence-reading.js?v=27')<html.indexOf('app.js?v=18.'),'News source interpreter must load before current Next app');
 for(const field of ['x.title','x.body','x.why','x.verify','x.impact','x.source','x.url']){
  assert(app.includes('esc('+field+')'),'News output is not escaped: '+field);
 }
 assert(app.includes('evidence.official.length')&&app.includes('evidence.pulse.length'));
+assert(app.includes('esc(x.displayTitle||x.title)'),'Use first-read Italian source-anchored titles');
+assert(app.includes('news-evidence-details')&&app.includes('news-evidence-citation'),
+ 'Keep evidence, quality, original title and link accessible without repeating the whole template');
+assert(app.includes('Verifiche e limiti dell’evidenza')&&app.includes('esc(x.title)'),
+ 'Original institutional title and all evidence caveats must remain expandable');
+assert(app.includes('Movimenti di mercato (')&&app.includes('NOTIZIE / EVENTI'),
+ 'Top level News navigation must use Italian labels');
+assert(app.includes('href="#rates"')&&app.includes('href="#currencies"')&&app.includes('href="#pairs"'),
+ 'Decision aid must navigate to pricing and FX research');
+assert(html.includes('news-firstread-v1.css?v=1'),'News first-read visual layer must load');
+const firstReadCss=fs.readFileSync(path.join(root,'site/fx-quant-v2/next/news-firstread-v1.css'),'utf8');
+assert(firstReadCss.includes('#content[data-view="news"]')&&firstReadCss.includes('max-width:630px')&&
+ firstReadCss.includes('prefers-reduced-motion:reduce')&&firstReadCss.includes(':focus-visible'),
+ 'News design must remain scoped, mobile-friendly and keyboard accessible');
+assert(!firstReadCss.includes('.sidebar')&&!firstReadCss.includes('.pair-studio'),
+ 'Do not restyle previously approved site sections');
+
 assert(app.includes("route==='overview'||route==='pairs'||route==='cot'||route==='risk'||route==='news'"),
  'Generic news essay must not duplicate source-specific reading');
 console.log('NEXT_NEWS_V24_PASS: at least 4 dated pricing items, 15/15 official releases, UTC->Rome, no false surprise/reaction, safe source URLs and no duplicate essay.');
