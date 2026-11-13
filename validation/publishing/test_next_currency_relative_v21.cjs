@@ -51,7 +51,7 @@ assert.equal(total,56);
 assert(matched2Y>0&&blocked2Y>0,'Both genuine and rejected bilateral spread cases');
 // Separately exercise actual live yields with their own *actual* source dates,
 // never the fixed 10 Nov fixture date, and require the same-date safeguard.
-const activeDays=ccys.map(c=>observedGov[c].date).filter(x=>/^\\d{4}-\\d{2}-\\d{2}$/.test(x)).sort();
+const activeDays=ccys.map(c=>observedGov[c].date).filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x)).sort();
 const observedNow=activeDays.at(-1);
 const observed=read({base:'USD',quote:'JPY',macro,gov:observedGov,ois,cot,
  now:observedNow,price20:null,priceAsOf:null});
