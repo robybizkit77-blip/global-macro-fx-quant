@@ -50,11 +50,19 @@ def main() -> None:
     css = css.replace("@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;450;500;550;600;650;700;750;800&family=Manrope:wght@400;500;600;650;700;800&display=swap');", "")
     contents = contents.replace('<link rel="stylesheet" href="./theme.css?v=3">', "<style>"+css+"</style>")
     contents = contents.replace('<link rel="stylesheet" href="./cot-studio.css?v=1">', "<style>"+cot_css+"</style>")
-    contents = contents.replace('<link rel="stylesheet" href="./rates-studio.css?v=1">', "<style>"+rates_css+"</style>")
+    # Follow the current asset revision instead of hard-coding a retired v1 link.
+    # This keeps the existing offline evidence package in sync with the live site.
+    rates_css_links = [x for x in contents.splitlines()
+                       if '<link rel="stylesheet" href="./rates-studio.css?v=' in x]
+    assert len(rates_css_links) == 1, "Exactly one versioned Rates stylesheet expected"
+    contents = contents.replace(rates_css_links[0], "<style>"+rates_css+"</style>")
     contents = contents.replace('<link rel="stylesheet" href="./macro-studio.css?v=2">', "<style>"+macro_css+"</style>")
     contents = contents.replace('<link rel="stylesheet" href="./currency-studio.css?v=2">', "<style>"+currency_css+"</style>")
     contents = contents.replace('<script src="./cot-studio.js?v=1" defer></script>', "<script>"+cot_js+"</script>")
-    contents = contents.replace('<script src="./rates-studio.js?v=1" defer></script>', "<script>"+rates_js+"</script>")
+    rates_js_links = [x for x in contents.splitlines()
+                      if '<script src="./rates-studio.js?v=' in x]
+    assert len(rates_js_links) == 1, "Exactly one versioned Rates script expected"
+    contents = contents.replace(rates_js_links[0], "<script>"+rates_js+"</script>")
     contents = contents.replace('<script src="./macro-studio.js?v=2" defer></script>', "<script>"+macro_js+"</script>")
     contents = contents.replace('<script src="./currency-studio.js?v=2" defer></script>', "<script>"+currency_js+"</script>")
     contents = contents.replace('<script src="./app.js?v=3" defer></script>', "")
