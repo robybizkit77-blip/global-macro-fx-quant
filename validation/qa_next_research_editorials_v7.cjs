@@ -55,9 +55,25 @@ assert.match(view('pairs',current,{...baseState,pair:'CADJPY'}),/CAD\/JPY/);
 assert.notEqual(view('pairs'),view('pairs',current,{...baseState,pair:'CADJPY'}),'Pair thesis must change when pair changes');
 const reversed=view('currencies',current,{...baseState,ccy:'EUR',csOther:'EUR'});
 assert.match(reversed,/EUR\/USD/,'Never compare one currency with itself');
+// This is a positive same-date regression: use the actual source observation
+// date, not a permanently fixed historical day that becomes older than feeds.
+const sourceDate=current.rates?.USD?.date;
+assert(validDay(sourceDate),'Official USD government source date must be present');
+assert(finite(current.rates.USD['2Y'])&&finite(current.rates.USD['10Y'])&&
+ finite(current.rates.USD.chg2_bp)&&finite(current.rates.USD.chg10_bp),
+ 'A valid dated USD 2Y/10Y observation is required for this test');
 const changed=clone(current);
-changed.rates.USD.chg2_bp=15;
-assert.notEqual(view('rates',current,baseState,'stress','2026-11-10'),view('rates',changed,baseState,'stress','2026-11-10'),'Rates editorial did not change with a valid same-date rates feed');
+changed.rates.USD.chg2_bp=(current.rates.USD.chg2_bp||0)+15;
+assert.notEqual(view('rates',current,baseState,'stress',sourceDate),
+ view('rates',changed,baseState,'stress',sourceDate),
+ 'Rates editorial must respond to a changed 2Y move on the observed source date');
+// The safety guard still rejects a feed unavailable on an earlier day.
+const historicalDay='2026-11-10';
+if(sourceDate>historicalDay){
+ assert.equal(view('rates',current,baseState,'stress',historicalDay),
+              view('rates',changed,baseState,'stress',historicalDay),
+  'Rates editorial must not show future-dated 2Y/10Y observations');
+}
 const empty={};
 for(const route of routes)assert.match(view(route,empty),/research-essay/,'Missing feed crashes '+route);
 const attack=clone(current);
