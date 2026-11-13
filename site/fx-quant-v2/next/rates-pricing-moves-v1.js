@@ -31,7 +31,7 @@
    Math.abs(h.change_bp-reported)>.011)return null;
   if(window==='1w'&&age(h.to_date,h.from_date)!==7)return null;
   if(window==='1d'&&age(h.to_date,h.from_date)>4)return null;
-  return {bp,from:h.from_date,until:h.to_date,levelPrev:h.reference_rate_pct,
+  return {bp:reported,from:h.from_date,until:h.to_date,levelPrev:h.reference_rate_pct,
    method:'CONTRATTO IDENTICO · RICERCA SECONDARIA'};
  }
  function readCurrency(c,snapshot,operational,research,nzd,today){
