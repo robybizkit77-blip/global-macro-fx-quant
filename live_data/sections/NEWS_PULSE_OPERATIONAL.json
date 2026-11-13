@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-13",
-  "generated_at_utc": "2026-11-13T16:29:56.651050Z",
+  "generated_at_utc": "2026-11-13T22:42:08.589372Z",
   "items": [
     {
       "as_of": "2026-11-13",
@@ -15,6 +15,18 @@
       "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
       "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
       "title": "USD/JPY: +0.19% fra due fixing BCE"
+    },
+    {
+      "as_of": "2026-11-13",
+      "category": "MARKET_GOVERNMENT_RATES",
+      "ccy": "USD",
+      "confidence": "A",
+      "detail": "Fra 2026-11-12 e 2026-11-13; 2Y 4.880%, 10Y 5.150%. Rendimenti governativi: non è una curva OIS e non prova di per sé un repricing della banca centrale.",
+      "importance": "MEDIUM",
+      "quality": "FULL_CURRENT_OFFICIAL",
+      "reference_previous_date": "2026-11-12",
+      "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-13",
+      "title": "USD: governativo 2Y +2.0 pb, 10Y +5.0 pb"
     },
     {
       "as_of": "2026-11-13",
@@ -76,18 +88,6 @@
       "quality": "OFFICIAL_CERTIFIED",
       "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
       "title": "CAD: repricing implicito da futures più hawkish (+9.0 bp 12M in 1D)"
-    },
-    {
-      "as_of": "2026-11-12",
-      "category": "MARKET_GOVERNMENT_RATES",
-      "ccy": "USD",
-      "confidence": "A",
-      "detail": "Fra 2026-11-10 e 2026-11-12; 2Y 4.860%, 10Y 5.100%. Rendimenti governativi: non è una curva OIS e non prova di per sé un repricing della banca centrale.",
-      "importance": "MEDIUM",
-      "quality": "FULL_CURRENT_OFFICIAL",
-      "reference_previous_date": "2026-11-10",
-      "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-12",
-      "title": "USD: governativo 2Y +13.0 pb, 10Y +12.0 pb"
     },
     {
       "as_of": "2026-11-12",
@@ -205,7 +205,7 @@
       "title": "CPI USA ottobre · headline +0,4% e core +0,3% mensili"
     }
   ],
-  "last_checked_at_utc": "2026-11-13T16:29:56.651050Z",
+  "last_checked_at_utc": "2026-11-13T22:42:08.589372Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
@@ -396,6 +396,61 @@
     "headlines": [
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
+        "ccy": "USD",
+        "desk_context": {
+          "analysis_basis": "SOURCE_HEADLINE_ONLY",
+          "market_direction": "NOT_DETERMINED",
+          "market_reaction": "NOT_MEASURED",
+          "operational_relevance": "CONTEXT",
+          "topic": "INSTITUTIONAL",
+          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
+          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
+        },
+        "id": "FED_PRESS:https://www.federalreserve.gov/newsevents/pressreleases/bcreg20261113a.htm",
+        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
+        "published_at_utc": "2026-11-13T21:15:00Z",
+        "quality": "OFFICIAL_RSS_DATED_LINK",
+        "reaction_evidence": {
+          "causal_attribution": "NOT_ESTABLISHED",
+          "direction": "NOT_DETERMINED",
+          "fx": {
+            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
+            "status": "NO_CERTIFIED_EVENT_WINDOW"
+          },
+          "market_reaction": "NOT_MEASURED",
+          "ois_or_futures": {
+            "6m_rate_pct": 4.515,
+            "date": "2026-11-13",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "ESTIMATED_INFORMATIONAL",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+            "status": "DAILY_CONTEXT_ONLY"
+          },
+          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
+          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
+          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
+          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
+          "status": "NOT_VERIFIABLE_INTRADAY",
+          "valid_release_timestamp": true,
+          "yield_2y": {
+            "date": "2026-11-13",
+            "event_window_proof": false,
+            "quality": "FULL_CURRENT_OFFICIAL",
+            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
+            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-13",
+            "status": "DAILY_CONTEXT_ONLY",
+            "yield_2y_pct": 4.88
+          }
+        },
+        "source": "Federal Reserve Board",
+        "source_id": "FED_PRESS",
+        "title": "Agencies extend comment period for proposed third-party risk management guidance",
+        "url": "https://www.federalreserve.gov/newsevents/pressreleases/bcreg20261113a.htm"
+      },
+      {
+        "category": "OFFICIAL_INSTITUTION_RELEASE",
         "ccy": "ENERGY",
         "desk_context": {
           "analysis_basis": "SOURCE_HEADLINE_ONLY",
@@ -562,7 +617,14 @@
           },
           "market_reaction": "NOT_MEASURED",
           "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
+            "6m_rate_pct": 4.515,
+            "date": "2026-11-13",
+            "event_window_proof": false,
+            "instrument": "FUTURES_IMPLIED",
+            "quality": "ESTIMATED_INFORMATIONAL",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
+            "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+            "status": "DAILY_CONTEXT_ONLY"
           },
           "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
           "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
@@ -571,67 +633,19 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-12",
+            "date": "2026-11-13",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-12",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
+            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-13",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.86
+            "yield_2y_pct": 4.88
           }
         },
         "source": "Federal Reserve Board",
         "source_id": "FED_PRESS",
         "title": "Federal Reserve Board announces pricing, effective January 1, 2027, for payment services the Federal Reserve Banks provide to banks and credit unions, and changes to streamline and adjust th",
         "url": "https://www.federalreserve.gov/newsevents/pressreleases/other20261112a.htm"
-      },
-      {
-        "category": "OFFICIAL_INSTITUTION_RELEASE",
-        "ccy": "USD",
-        "desk_context": {
-          "analysis_basis": "SOURCE_HEADLINE_ONLY",
-          "market_direction": "NOT_DETERMINED",
-          "market_reaction": "NOT_MEASURED",
-          "operational_relevance": "CONTEXT",
-          "topic": "INSTITUTIONAL",
-          "verify_next": "Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-          "why_watch": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo."
-        },
-        "id": "FED_PRESS:https://www.federalreserve.gov/newsevents/pressreleases/monetary20261112a.htm",
-        "interpretation": "NON_VERIFIED_NO_MARKET_IMPACT_CLAIM",
-        "published_at_utc": "2026-11-12T17:45:00Z",
-        "quality": "OFFICIAL_RSS_DATED_LINK",
-        "reaction_evidence": {
-          "causal_attribution": "NOT_ESTABLISHED",
-          "direction": "NOT_DETERMINED",
-          "fx": {
-            "reason": "Assenti prezzi FX pre/post su finestra intraday verificata.",
-            "status": "NO_CERTIFIED_EVENT_WINDOW"
-          },
-          "market_reaction": "NOT_MEASURED",
-          "ois_or_futures": {
-            "status": "NOT_VALIDATED_DAILY_CONTEXT"
-          },
-          "reason": "OIS/futures e 2Y disponibili al più come chiusure giornaliere; mancano prezzi FX e confronti allineati prima/dopo la notizia.",
-          "required_proof": "TIMESTAMPED_SAME_INSTRUMENT_PRE_AND_POST_RELEASE",
-          "schema": "GMFQ_NEWS_REACTION_PROOF_GATE_V1",
-          "scope": "INFORMATION_ONLY_NO_SCORE_OR_TRADING_SIGNAL",
-          "status": "NOT_VERIFIABLE_INTRADAY",
-          "valid_release_timestamp": true,
-          "yield_2y": {
-            "date": "2026-11-12",
-            "event_window_proof": false,
-            "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "U.S. Department of the Treasury · Daily Par Yield Curve · 2026-11-12",
-            "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 4.86
-          }
-        },
-        "source": "Federal Reserve Board",
-        "source_id": "FED_PRESS",
-        "title": "Federal Reserve announces revised tentative schedule of Federal Open Market Committee meetings in 2027",
-        "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261112a.htm"
       },
       {
         "category": "OFFICIAL_INSTITUTION_RELEASE",
@@ -920,13 +934,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-10",
+            "date": "2026-11-12",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
-            "relative_to_release_day": "SAME_CALENDAR_DATE_DAILY_ONLY",
-            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-10",
+            "relative_to_release_day": "LATER_CALENDAR_DATE",
+            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-12",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.25
+            "yield_2y_pct": 3.33
           }
         },
         "source": "Bank of Canada",
@@ -1085,13 +1099,13 @@
           "status": "NOT_VERIFIABLE_INTRADAY",
           "valid_release_timestamp": true,
           "yield_2y": {
-            "date": "2026-11-10",
+            "date": "2026-11-12",
             "event_window_proof": false,
             "quality": "FULL_CURRENT_OFFICIAL",
             "relative_to_release_day": "LATER_CALENDAR_DATE",
-            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-10",
+            "source": "Bank of Canada · benchmark Government of Canada bond yields · 2026-11-12",
             "status": "DAILY_CONTEXT_ONLY",
-            "yield_2y_pct": 3.25
+            "yield_2y_pct": 3.33
           }
         },
         "source": "Bank of Canada",
@@ -1149,7 +1163,7 @@
       }
     ],
     "last_attempt_day_rome": "2026-11-13",
-    "latest_published_at_utc": "2026-11-13T14:00:00Z",
+    "latest_published_at_utc": "2026-11-13T21:15:00Z",
     "reaction_proof_contract": {
       "daily_rates_are_not_event_window_proof": true,
       "method": "FAIL_CLOSED_NO_PRE_POST_INTRADAY_SNAPSHOTS",
@@ -1163,9 +1177,9 @@
     "source_failures": 0,
     "sources": [
       {
-        "accepted_items": 5,
+        "accepted_items": 6,
         "ccy": "USD",
-        "entries_rejected": 15,
+        "entries_rejected": 14,
         "feed_entries_seen": 20,
         "feed_url": "https://www.federalreserve.gov/feeds/press_all.xml",
         "source": "Federal Reserve Board",
