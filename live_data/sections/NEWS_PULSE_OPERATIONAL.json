@@ -1,6 +1,6 @@
 {
   "content_as_of": "2026-11-12",
-  "generated_at_utc": "2026-11-13T01:09:12.644170Z",
+  "generated_at_utc": "2026-11-13T03:40:33.163374Z",
   "items": [
     {
       "as_of": "2026-11-12",
@@ -26,6 +26,19 @@
       "source": "BCE · cambi di riferimento euro (cross derivato da due fixing)",
       "source_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml",
       "title": "USD/JPY: +0.29% fra due fixing BCE"
+    },
+    {
+      "as_of": "2026-11-12",
+      "category": "MARKET_VOLATILITY_CLOSE",
+      "ccy": "",
+      "confidence": "B",
+      "detail": "Livello 18.70; confronto con chiusura 2026-11-11. Dato di mercato storico, non prova di un evento causale o di flussi.",
+      "importance": "MEDIUM",
+      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
+      "reference_previous_date": "2026-11-11",
+      "source": "Cboe Global Markets, VIX daily close",
+      "source_url": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+      "title": "VIX: +1.21 punti nella chiusura del 2026-11-12"
     },
     {
       "as_of": "2026-11-12",
@@ -102,19 +115,6 @@
       "source": "S&P Dow Jones Indices via FRED",
       "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
       "title": "S&P 500: +1.31% nella chiusura del 2026-11-11"
-    },
-    {
-      "as_of": "2026-11-11",
-      "category": "MARKET_VOLATILITY_CLOSE",
-      "ccy": "",
-      "confidence": "B",
-      "detail": "Livello 17.49; confronto con chiusura 2026-11-10. Dato di mercato storico, non prova di un evento causale o di flussi.",
-      "importance": "MEDIUM",
-      "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
-      "reference_previous_date": "2026-11-10",
-      "source": "Cboe Global Markets, VIX daily close",
-      "source_url": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
-      "title": "VIX: -1.97 punti nella chiusura del 2026-11-11"
     },
     {
       "as_of": "2026-11-11",
@@ -205,7 +205,7 @@
       "title": "USD: governativo 2Y +17.0 pb, 10Y +10.0 pb"
     }
   ],
-  "last_checked_at_utc": "2026-11-13T01:09:12.644170Z",
+  "last_checked_at_utc": "2026-11-13T03:40:33.163374Z",
   "macro_event_market_context": {
     "does_not_write_D_or_change_28_pairs": true,
     "events": [
