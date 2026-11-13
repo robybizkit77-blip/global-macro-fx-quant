@@ -144,6 +144,12 @@ assert.equal(win.FXQuantHomePulse.render({feed:pulseFeed,risk:null,esc,date,dayN
 assert(out.includes('class="hourly-hero-grid"'),'Hero has an FX research spotlight, not a one-column newspaper');
 assert(out.includes('class="hourly-fx-spotlight"'),'Forex consequences must be prominent at first glance');
 assert(out.includes('class="hourly-decision-grid"'),'Three-part decision map must be visible');
+assert(out.includes('href="#macro">Esamina i dati macro')&&
+ out.includes('href="#currencies">Confronta le valute')&&
+ out.includes('href="#news">Notizie e calendario'),
+ 'Every evidence card must lead to an existing research page, not an inert display');
+assert((out.match(/class="hourly-driver-action"/g)||[]).length===3,
+ 'The action design must remain exactly one useful link per decision card');
 assert(out.includes('class="hourly-navigation-grid"'),'Direct research tools navigation must be present');
 assert(out.includes('class="hourly-evidence-peek"'),'At-a-glance headlines must show evidence');
 assert(out.includes('Le connessioni tra i mercati'),'Long-form economic context must remain accessible');
@@ -178,11 +184,11 @@ const index=fs.readFileSync(path.join(ROOT,next,'index.html'),'utf8');
 assert(app.includes("get('hourlyDesk')"),'Home is wired to optional independent free research');
 assert(app.includes("fetch('../../../market-desk/hourly-market-desk-current.json'"),'Optional fetch endpoint missing');
 assert(!app.includes("hourlyDesk:'"),'New research must not become a mandatory operational feed');
-assert(index.includes('hourly-desk-ui-v1.js?v=6'));
+assert(index.includes('hourly-desk-ui-v1.js?v=7'));
 assert(index.includes('hourly-desk-ui-v1.css?v=4'));
-assert(index.includes('home-market-pulse-v1.js?v=1')&&index.includes('home-market-pulse-v1.css?v=1'),
+assert(index.includes('home-market-pulse-v1.js?v=1')&&index.includes('home-market-pulse-v1.css?v=2'),
  'The source-based data visualization must load before the editorial Home UI');
-assert(index.indexOf('home-market-pulse-v1.js?v=1')<index.indexOf('hourly-desk-ui-v1.js?v=6'),
+assert(index.indexOf('home-market-pulse-v1.js?v=1')<index.indexOf('hourly-desk-ui-v1.js?v=7'),
  'Rendering order must preserve the optional pulse addon');
 assert(index.includes('app.js?v=18.48-visual-pulse'));
 const css=fs.readFileSync(path.join(ROOT,next,'hourly-desk-ui-v1.css'),'utf8');
@@ -198,6 +204,8 @@ assert(!css.includes('.sidebar')&&!css.includes('.currency-studio')&&!css.includ
 const pulseCss=fs.readFileSync(path.join(ROOT,next,'home-market-pulse-v1.css'),'utf8');
 assert(pulseCss.includes('.hourly-pulse-track')&&pulseCss.includes('.hourly-decision-change'),
  'Premium hierarchy must emphasize primary driver and source-dated market observations');
+assert(pulseCss.includes('a.hourly-driver-action')&&pulseCss.includes(':focus-visible'),
+ 'Decision cards need unmistakable, keyboard-accessible links to the actual research');
 assert(pulseCss.includes('max-width:630px')&&pulseCss.includes('prefers-reduced-motion'),
  'Market pulse must be mobile-friendly and reduce motion');
 assert(!pulseCss.includes('.sidebar')&&!pulseCss.includes('.pair-studio'),
