@@ -1,7 +1,7 @@
 {
   "schema": "GMFQ_MACRO_RELEASE_OFFICIAL_SEED_V1",
   "status": "ACTIVE_VERIFIED_SEED",
-  "as_of": "2026-11-11",
+  "as_of": "2026-11-13",
   "consensus": "NOT_INCLUDED",
   "events": [
     {
@@ -51,6 +51,32 @@
       "importance": "HIGH",
       "quality": "OFFICIAL_CONFIRMED",
       "source_family": "BLS"
+    },
+    {
+      "ccy": "USD",
+      "time_local": "08:30",
+      "timezone": "America/New_York",
+      "importance": "HIGH",
+      "quality": "OFFICIAL_CONFIRMED",
+      "source_family": "BLS",
+      "source_url": "https://www.bls.gov/schedule/2026/11_sched_list.htm",
+      "date": "2026-11-13",
+      "event_type": "INFLATION",
+      "title": "Producer Price Index",
+      "reference_period": "October 2026"
+    },
+    {
+      "ccy": "USD",
+      "time_local": "08:30",
+      "timezone": "America/New_York",
+      "importance": "MEDIUM",
+      "quality": "OFFICIAL_CONFIRMED",
+      "source_family": "BLS",
+      "source_url": "https://www.bls.gov/schedule/2026/11_sched_list.htm",
+      "date": "2026-11-17",
+      "event_type": "INFLATION",
+      "title": "U.S. Import and Export Price Indexes",
+      "reference_period": "October 2026"
     },
     {
       "ccy": "EUR",
