@@ -98,5 +98,5 @@ assert(g8.includes("current.rate.quality==='UFFICIALE'?'Riferimento monetario in
  'A real 6M reference is never labelled as if it were a 2Y proxy');
 const index=read(next+'index.html');
 for(const name of ['currency-studio.js?v=15','pair-rankings.js?v=8',
- 'morning-desk-v1.js?v=6'])assert(index.includes(name),'Cache revision missing '+name);
+ 'morning-desk-v1.js?v=7'])assert(index.includes(name),'Cache revision missing '+name);
 console.log('NEXT_CROSSPAGE_EDITORIAL_V1_PASS: home = catalysts, G8 = level versus momentum, 28 FX pairs = relative thesis plus separate price; archive unchanged');
