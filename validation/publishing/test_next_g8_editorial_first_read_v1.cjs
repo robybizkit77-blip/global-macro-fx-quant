@@ -91,10 +91,12 @@ for(const country of FX){
    'Once a GDP source is integrated the missing-release caution must disappear');
  }
  if(country==='CHF'){
-  assert(story.includes('Non abbiamo una variazione monetaria recente confrontabile'),
-   'CHF lacks a recent comparable 2Y/6M weekly proxy; do not invent a policy surprise');
+  assert(story.includes('contributo neutro per assunzione prudenziale'),
+   'CHF must show the explicit neutral model assumption, not invent a monetary-rate trend');
   assert(story.includes('La disoccupazione osservata è poco mossa'),
    'CHF labor trend is not fabricated from rate absence');
+  assert(!story.includes('Non abbiamo una variazione monetaria recente'),
+   'Source gap belongs in audit; first read gives an economically grounded model view');
  }
  if(country==='NZD'){
   assert(story.includes('Il futures ASX bank-bill a sei mesi') &&
