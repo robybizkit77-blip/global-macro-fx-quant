@@ -10,10 +10,20 @@
 
  // Source titles remain unchanged in JSON; this display-only Italian label
  // never claims to translate an unseen article or infer a policy decision.
- const englishTitle=s=>/\b(the|and|this|summer|fell|record lows|hydropower|generation|electricity|published|releases?|released|energy study|outlook for|business outlook|survey of|monetary policy|financial stability|project meridian|oil production|crude oil|natural gas|supply outlook|energy consumption)\b/i.test(String(s||''));
+ const englishTitle=s=>{
+  const title=String(s||'');
+  if(/\b(the|and|this|summer|fell|record lows|hydropower|generation|electricity|published|releases?|released|energy study|outlook for|business outlook|survey of|monetary policy|financial stability|project meridian|oil production|crude oil|natural gas|supply outlook|energy consumption)\b/i.test(title))return true;
+  const words=title.toLowerCase().match(/[a-z]+/g)||[];
+  const english=new Set(['bank','of','reports','report','news','minutes','new','latest','consumer','consumers','spending','survey','financial','markets','market','oil','gas','energy','demand','supply','low','lows','record','higher','lower','prices','growth','increase','increased','decrease','decreased','rose','rising','falls','falling','today','for','from','with','released','launches','announces','outlook','production','electricity','electric','economic','activity']);
+  const italian=new Set(['la','il','lo','gli','le','della','delle','del','dei','su','sul','sui','per','con','tra','cresce','scende','sale','aumenta','diminuisce','produzione','prezzi','tassi','mercati','indagine','rilevazione','banca','dollaro','energia','riserva']);
+  const en=words.filter(w=>english.has(w)).length,it=words.filter(w=>italian.has(w)).length;
+  return en>=2&&en>it;
+ };
  const titleItaliano=n=>{
   const original=String(n?.headline||'').trim();
-  if(!englishTitle(original))return original;
+  const isRss=['ENERGIA','BANCHE CENTRALI'].includes(String(n?.market_area||'').toUpperCase());
+  const clearlyItalian=/\b(il|lo|la|gli|le|della|delle|del|dei|sul|sui|per|con|tra|banca|produzione|prezzi|tassi|indagine|decisione|mercato|scorte|energia|crescita|dollaro)\b/i.test(original);
+  if(!englishTitle(original)&&(!isRss||clearlyItalian))return original;
   if(/hydropower generation/i.test(original)&&/southwest/i.test(original)&&/record lows/i.test(original))
    return 'Produzione idroelettrica nel Sud-Ovest USA scesa ai minimi storici durante l’estate';
   if(/project meridian fx apac/i.test(original))
