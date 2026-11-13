@@ -19,16 +19,12 @@
   "source_errors": {},
   "streams": {
     "SP500": {
-      "date": "2026-11-11",
-      "previous_date": "2026-11-10",
-      "value": 7619.38,
-      "previous": 7520.93,
-      "change_1d_pct": 1.309,
+      "date": "2026-11-12",
+      "previous_date": "2026-11-11",
+      "value": 7592.4,
+      "previous": 7619.38,
+      "change_1d_pct": -0.3541,
       "history": [
-        [
-          "2026-06-23",
-          7365.46
-        ],
         [
           "2026-06-24",
           7358.22
@@ -424,6 +420,10 @@
         [
           "2026-11-11",
           7619.38
+        ],
+        [
+          "2026-11-12",
+          7592.4
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -432,21 +432,17 @@
       "kind": "INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 2,
+      "source_age_calendar_days": 1,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
     "NASDAQCOM": {
-      "date": "2026-11-11",
-      "previous_date": "2026-11-10",
-      "value": 25466.19,
-      "previous": 25065.87,
-      "change_1d_pct": 1.5971,
+      "date": "2026-11-12",
+      "previous_date": "2026-11-11",
+      "value": 25366.09,
+      "previous": 25466.19,
+      "change_1d_pct": -0.3931,
       "history": [
-        [
-          "2026-06-23",
-          25587.04
-        ],
         [
           "2026-06-24",
           25476.64
@@ -842,6 +838,10 @@
         [
           "2026-11-11",
           25466.19
+        ],
+        [
+          "2026-11-12",
+          25366.09
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -850,21 +850,17 @@
       "kind": "INDEX",
       "unit": "index",
       "max_source_age_days": 6,
-      "source_age_calendar_days": 2,
+      "source_age_calendar_days": 1,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
     "IG_OAS": {
-      "date": "2026-11-11",
-      "previous_date": "2026-11-09",
-      "value": 0.9,
-      "previous": 0.91,
-      "change_1d_pct": -1.0989,
+      "date": "2026-11-12",
+      "previous_date": "2026-11-11",
+      "value": 0.89,
+      "previous": 0.9,
+      "change_1d_pct": -1.1111,
       "history": [
-        [
-          "2026-06-24",
-          0.75
-        ],
         [
           "2026-06-25",
           0.76
@@ -1260,6 +1256,10 @@
         [
           "2026-11-11",
           0.9
+        ],
+        [
+          "2026-11-12",
+          0.89
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -1268,21 +1268,17 @@
       "kind": "CREDIT_OAS",
       "unit": "percent",
       "max_source_age_days": 7,
-      "source_age_calendar_days": 2,
+      "source_age_calendar_days": 1,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
     "HY_OAS": {
-      "date": "2026-11-11",
-      "previous_date": "2026-11-09",
-      "value": 3.3,
-      "previous": 3.34,
-      "change_1d_pct": -1.1976,
+      "date": "2026-11-12",
+      "previous_date": "2026-11-11",
+      "value": 3.2,
+      "previous": 3.3,
+      "change_1d_pct": -3.0303,
       "history": [
-        [
-          "2026-06-24",
-          2.76
-        ],
         [
           "2026-06-25",
           2.78
@@ -1678,6 +1674,10 @@
         [
           "2026-11-11",
           3.3
+        ],
+        [
+          "2026-11-12",
+          3.2
         ]
       ],
       "quality": "PUBLISHED_SOURCE_RESEARCH_ONLY",
@@ -1686,7 +1686,7 @@
       "kind": "CREDIT_OAS",
       "unit": "percent",
       "max_source_age_days": 7,
-      "source_age_calendar_days": 2,
+      "source_age_calendar_days": 1,
       "not_intraday": true,
       "no_core_or_backtest_effect": true
     },
