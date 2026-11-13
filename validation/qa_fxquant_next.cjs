@@ -157,6 +157,26 @@ async function pairJourney(page,label){
  assert.equal(await locator(page,'.fx-rank-all-list button.fx-rank-pair').count(),28,
   label+' full ranking lost after closing dossier');
 }
+async function calendarResearchJourney(page,label){
+ await route(page,'news');
+ const event=locator(page,'#macro-calendar .cal-event').first();
+ assert(await event.count(),label+' no calendar macro event');
+ for(const mode of ['rates','currencies','pairs']){
+  assert(await event.locator('[data-cal-research="'+mode+'"]').count(),
+   label+' event missing '+mode+' link');
+ }
+ await event.locator('[data-cal-research="rates"]').click();
+ await page.waitForFunction(()=>document.querySelector('#content')?.dataset.view==='rates');
+ await route(page,'news');
+ await locator(page,'#macro-calendar [data-cal-research="currencies"]').first().click();
+ await page.waitForFunction(()=>document.querySelector('#content')?.dataset.view==='currencies');
+ await route(page,'news');
+ await locator(page,'#macro-calendar [data-cal-research="pairs"]').first().click();
+ await page.waitForFunction(()=>document.querySelector('#content')?.dataset.view==='pairs'&&
+  document.querySelector('.pairs-reading-compact'));
+ assert.equal(await locator(page,'.pairs-reading-compact').count(),1,
+  label+' macro-event pair link did not open a real FX dossier');
+}
 (async()=>{
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  try{
@@ -188,6 +208,7 @@ async function pairJourney(page,label){
     for(const key of Object.keys(routes))inspected.push(await inspectRoute(page,label,key));
     await g8Choice(page,label);
     await pairJourney(page,label);
+    await calendarResearchJourney(page,label);
     assert.equal(errors.length,0,label+' browser errors: '+errors.slice(0,4).join(' | '));
     await locator(page,'#content').screenshot({path:evidence+'/'+label+'-pair-journey.png'});
     reports.push({label,sourceCount:Number(count[1]),routes:inspected,interaction:'PASS'});
