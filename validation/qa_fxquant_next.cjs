@@ -73,6 +73,11 @@ async function inspectRoute(page,label,key){
   assert.equal(await bridge.count(),1,label+' rates-to-FX evidence missing');
   const proof=await bridge.getAttribute('data-fx-proof');
   assert(['ready','unavailable'].includes(proof),label+' unclassified relative rates proof');
+  const oisDesk=locator(page,'#rates-pricing-moves');
+  assert.equal(await oisDesk.count(),1,label+' source-dated monetary changes missing');
+  assert.equal(await oisDesk.locator('.ois-bp-row').count(),3,label+' needs 3M/6M/12M comparison');
+  assert.equal(await oisDesk.locator('.ois-g8-row').count(),8,label+' needs all eight G8 monetary references');
+  assert.equal(await oisDesk.getAttribute('data-pricing-window'),'1d',label+' must start with previous session');
   assert((await bridge.innerText()).includes('NON OIS'),
    label+' government yield comparison is incorrectly labeled as OIS');
  }else if(key==='cot'){
@@ -164,6 +169,27 @@ async function pairJourney(page,label){
  assert.equal(await locator(page,'.fx-rank-all-list button.fx-rank-pair').count(),28,
   label+' full ranking lost after closing dossier');
 }
+async function pricingWindowJourney(page,label){
+ await route(page,'rates');
+ const desk=locator(page,'#rates-pricing-moves');
+ const one=desk.locator('[data-rs-pricing-window="1d"]');
+ const week=desk.locator('[data-rs-pricing-window="1w"]');
+ assert(await one.count()&&await week.count(),label+' 1D/1W controls missing');
+ await week.click();
+ assert.equal(await locator(page,'#rates-pricing-moves').getAttribute('data-pricing-window'),
+  '1w',label+' weekly changes not displayed');
+ await locator(page,'#rates-pricing-moves [data-rs-pricing-window="1d"]').click();
+ assert.equal(await locator(page,'#rates-pricing-moves').getAttribute('data-pricing-window'),
+  '1d',label+' daily changes not restored');
+ await locator(page,'#rs-country').selectOption('EUR');
+ assert.equal(await locator(page,'#rates-pricing-moves').getAttribute('data-pricing-kind'),
+  'FUTURES SECONDARI',label+' EUR futures mislabeled OIS');
+ assert((await locator(page,'#rates-pricing-moves').innerText()).includes('Nessuna curva artificiale'),
+  label+' staggered EUR quotes cannot be connected');
+ await locator(page,'#rs-country').selectOption('GBP');
+ assert.equal(await locator(page,'#rates-pricing-moves').getAttribute('data-pricing-kind'),
+  'OIS',label+' GBP official OIS lost');
+}
 async function calendarResearchJourney(page,label){
  await route(page,'news');
  const event=locator(page,'#macro-calendar .cal-event').first();
@@ -216,6 +242,7 @@ async function calendarResearchJourney(page,label){
     await g8Choice(page,label);
     await pairJourney(page,label);
     await calendarResearchJourney(page,label);
+    await pricingWindowJourney(page,label);
     assert.equal(errors.length,0,label+' browser errors: '+errors.slice(0,4).join(' | '));
     await locator(page,'#content').screenshot({path:evidence+'/'+label+'-pair-journey.png'});
     reports.push({label,sourceCount:Number(count[1]),routes:inspected,interaction:'PASS'});
