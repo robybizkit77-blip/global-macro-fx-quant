@@ -13,7 +13,7 @@ new vm.Script(src,{filename:'research-library.js'});
 const L=require('../site/fx-quant-v2/next/research-library.js');
 assert.match(index,/href="#library" data-route="library"/);
 assert.match(index,/research-library\.css\?v=1/);
-assert.match(index,/research-library\.js\?v=9/);
+assert.match(index,/research-library\.js\?v=10/);
 assert.match(index,/9 sezioni/);
 assert.match(app,/library:'Research Library'/);
 assert.match(app,/library:\(\)=>window\.FXQuantResearchLibrary/);
@@ -27,7 +27,7 @@ assert.equal(L.CATEGORIES.length,9); // 'Tutti' plus eight canonical types
 assert.ok(!L.REPORTS.some(x=>x.type==='monitor'),'Discontinued Trade Thesis Monitor must be absent');
 assert.ok(!L.CATEGORIES.some(x=>x[0]==='monitor'),'Discontinued report filter must be absent');
 assert.ok(L.REPORTS.some(x=>x.type==='ois'&&x.file.includes('V7_CONFRONTO_31OTT_06NOV')));
-assert.equal(L.REPORTS.find(x=>x.type==='daily').date,'2026-11-12');
+assert.equal(L.REPORTS.find(x=>x.type==='daily').date,'2026-11-13');
 assert.equal(L.REPORTS.find(x=>x.type==='cross').date,'2026-10-17');
 assert.equal(L.REPORTS.find(x=>x.type==='pairs').date,'2026-10-17');
 assert.ok(L.REPORTS.find(x=>x.type==='pairs').publicUrl.startsWith('./reports/'));
@@ -57,7 +57,7 @@ assert.equal(L.filterReports('ois').length,1);
 assert.equal(L.filterReports('monitor').length,0);
 assert.equal(L.filterReports('all','banche').length,2);
 assert.equal(L.filterReports('all','inesistente').length,0);
-assert.equal(L.filterReports()[0].date,'2026-11-12');
+assert.equal(L.filterReports()[0].date,'2026-11-13');
 assert.equal(L.reportDate('COT_FX_G8_03_NOV_2026_V10.html'),'2026-11-03');
 assert.equal(L.reportDate('Weekly_CB_Pricing_G8_2026-11-06_V7.html'),'2026-11-06');
 assert.equal(L.reportType('Weekly_CB_Pricing_G8_2026-11-06_V7.html'),'ois');
@@ -75,16 +75,18 @@ assert.equal(L.reportType('Weekly_Central_Bank_Unknown_G8_2026-11-07_V8_DEFINITI
  'The public scanner must remain limited to existing eight report types');
 
 assert.equal(L.remoteReport('Weekly_CB_Pricing_G8_2026-11-06_V8_PROVA.html'),null);
+assert.equal(L.remoteReport('Weekly_Central_Bank_Pricing_G8_2026-11-12_V8_DATI_PARZIALI.html'),null,
+ 'Partially verified OIS reports are not automatically approved by a newer filename');
 assert.equal(L.remoteReport('Trade_Thesis_Monitor_2026-11-11_DARK.html'),null);
-assert.equal(L.latestPerType([...L.REPORTS,{...L.REPORTS[0],file:'Briefing_Forex_Commodities_2026-11-12_V4_DEFINITIVO.html'}]).length,8);
-assert.equal(L.latestPerType([...L.REPORTS,{...L.REPORTS[0],file:'Briefing_Forex_Commodities_2026-11-12_V4_DEFINITIVO.html'}])[0].file,
- 'Briefing_Forex_Commodities_2026-11-12_V4_DEFINITIVO.html','Higher approved revision wins on identical dates');
-assert.equal(L.latestPerType([...L.REPORTS,{...L.REPORTS[0],file:'Briefing_Forex_Commodities_2026-11-12_V4.html'}])[0].file,
- 'Briefing_Forex_Commodities_2026-11-12_V4.html','V4 must supersede corrected V3 on identical dates');
+assert.equal(L.latestPerType([...L.REPORTS,{...L.REPORTS[0],file:'Briefing_Forex_Commodities_2026-11-13_V4_DEFINITIVO.html'}]).length,8);
+assert.equal(L.latestPerType([...L.REPORTS,{...L.REPORTS[0],file:'Briefing_Forex_Commodities_2026-11-13_V4_DEFINITIVO.html'}])[0].file,
+ 'Briefing_Forex_Commodities_2026-11-13_V4_DEFINITIVO.html','Higher approved revision wins on identical dates');
+assert.equal(L.latestPerType([...L.REPORTS,{...L.REPORTS[0],file:'Briefing_Forex_Commodities_2026-11-13_V4.html'}])[0].file,
+ 'Briefing_Forex_Commodities_2026-11-13_V4.html','V4 must supersede corrected V3 on identical dates');
 // Publication freshness belongs to the REPORT cadence, never market prices.
 // Weekly publication dates must not be confused with daily source freshness,
 // and Tuesday COT observation must not be labelled as a Friday release.
-const today='2026-11-12';
+const today='2026-11-13';
 const daily=L.REPORTS.find(r=>r.type==='daily');
 const cot=L.REPORTS.find(r=>r.type==='cot');
 const ois=L.REPORTS.find(r=>r.type==='ois');
@@ -92,9 +94,9 @@ const cross=L.REPORTS.find(r=>r.type==='cross');
 const pairs=L.REPORTS.find(r=>r.type==='pairs');
 assert.equal(L.editionStatus(daily,today).state,'today');
 assert.match(L.editionStatus(daily,today).text,/seduta odierna/);
-assert.equal(L.editionStatus(daily,'2026-11-13').state,'previous',
+assert.equal(L.editionStatus({...daily,date:'2026-11-12'},'2026-11-13').state,'previous',
  'A previous daily report cannot masquerade as the next session report');
-assert.equal(L.editionStatus(daily,'2026-11-14').state,'previous',
+assert.equal(L.editionStatus({...daily,date:'2026-11-12'},'2026-11-14').state,'previous',
  'Weekend cannot hide a missing Friday daily edition');
 assert.equal(L.editionStatus({...daily,date:'2026-11-13'},'2026-11-14').state,'latest-business');
 assert.equal(L.editionStatus(ois,today).state,'weekly',
@@ -131,7 +133,7 @@ assert.match(L.render(),/data-library-type="ois"/);
 (async()=>{
  const initialFetch=globalThis.fetch;
  try{
-  const remoteName='Briefing_Forex_Commodities_2026-11-12_V4_DEFINITIVO.html';
+  const remoteName='Briefing_Forex_Commodities_2026-11-13_V4_DEFINITIVO.html';
   globalThis.fetch=async(url,opts)=>{
    if(String(url).includes('api.github.com'))return {ok:true,json:async()=>[
     {name:remoteName,type:'file'},

@@ -30,6 +30,8 @@ on:
       - 'validation/qa_fxv2_macro_rates_price_evidence_v1.cjs'
       - 'validation/publishing/wait_fxv2_public_revision_v1.py'
       - 'validation/publishing/test_wait_fxv2_public_revision_v1.py'
+      - 'validation/publishing/check_next_research_library_delivery_v1.py'
+      - 'validation/publishing/test_check_next_research_library_delivery_v1.py'
       - '.github/workflows/fx-quant-v2-browser-daily-qa.yml'
   push:
     branches: [main]
@@ -60,6 +62,8 @@ on:
       - 'validation/qa_fxv2_macro_rates_price_evidence_v1.cjs'
       - 'validation/publishing/wait_fxv2_public_revision_v1.py'
       - 'validation/publishing/test_wait_fxv2_public_revision_v1.py'
+      - 'validation/publishing/check_next_research_library_delivery_v1.py'
+      - 'validation/publishing/test_check_next_research_library_delivery_v1.py'
       - '.github/workflows/fx-quant-v2-browser-daily-qa.yml'
   schedule:
     - cron: '20 8 * * 1-5'
@@ -106,6 +110,7 @@ jobs:
           node validation/qa_fxv2_macro_dynamic_pair_research_v1.cjs
           node validation/qa_fxv2_macro_rates_price_evidence_v1.cjs
           python3 -m unittest validation.publishing.test_wait_fxv2_public_revision_v1 -v
+          python3 -m unittest validation.publishing.test_check_next_research_library_delivery_v1 -v
   v2-freshness-audit:
     if: >-
       github.event_name != 'workflow_run' ||
@@ -158,6 +163,22 @@ jobs:
       - name: Confirm public site exposes the same revision as approved main
         if: github.event_name != 'pull_request'
         run: python3 -m validation.publishing.wait_fxv2_public_revision_v1
+      - name: Certify latest eight Research Library editions by HTTP 200 and exact SHA-256
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m validation.publishing.check_next_research_library_delivery_v1 \
+            --http --output "$RUNNER_TEMP/next-research-library-delivery.json" \
+            --budget-seconds 180
+      - name: Preserve dated Research Library HTTP delivery receipt
+        if: always() && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: next-research-library-public-proof
+          path: ${{ runner.temp }}/next-research-library-delivery.json
+          if-no-files-found: warn
+          retention-days: 21
       - name: Verify published CHF/NZD research JSON matches approved main (public HTTPS)
         if: github.event_name != 'pull_request'
         shell: bash
