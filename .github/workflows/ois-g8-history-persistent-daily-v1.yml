@@ -6,6 +6,9 @@ on:
     paths:
       - '.github/workflows/ois-g8-history-persistent-daily-v1.yml'
       - 'validation/cb_pricing/ois_g8_history_snapshot_v1.py'
+      - 'validation/cb_pricing/build_next_g8_pricing_history_v1.py'
+      - 'validation/cb_pricing/test_build_next_g8_pricing_history_v1.py'
+      - 'site/fx-quant-v2/next/rates-pricing-history-v1.json'
       - 'validation/cb_pricing/build_fxv2_ois_fallback_v1.py'
       - 'validation/cb_pricing/test_build_fxv2_ois_fallback_v1.py'
       - 'validation/cb_pricing/build_fxv2_same_contract_repricing_v1.py'
@@ -42,6 +45,9 @@ on:
     paths:
       - '.github/workflows/ois-g8-history-persistent-daily-v1.yml'
       - 'validation/cb_pricing/ois_g8_history_snapshot_v1.py'
+      - 'validation/cb_pricing/build_next_g8_pricing_history_v1.py'
+      - 'validation/cb_pricing/test_build_next_g8_pricing_history_v1.py'
+      - 'site/fx-quant-v2/next/rates-pricing-history-v1.json'
       - 'validation/cb_pricing/build_fxv2_ois_fallback_v1.py'
       - 'validation/cb_pricing/test_build_fxv2_ois_fallback_v1.py'
       - 'validation/cb_pricing/build_fxv2_same_contract_repricing_v1.py'
@@ -101,6 +107,8 @@ jobs:
           python -m unittest validation.cb_pricing.test_build_fxv2_ois_fallback_v1 -v
           python validation/cb_pricing/build_fxv2_ois_fallback_v1.py --check
           git diff --exit-code -- site/fx-quant-v2 live_data/sections
+          python validation/cb_pricing/test_build_next_g8_pricing_history_v1.py
+          python validation/cb_pricing/build_next_g8_pricing_history_v1.py --check
 
       - name: Test FXV2 same-listed-futures research and forbidden OIS/policy promotions
         if: github.event_name == 'pull_request'
@@ -297,6 +305,15 @@ jobs:
         if: steps.gate.outputs.should_run == 'true'
         run: python validation/cb_pricing/ois_g8_history_snapshot_v1.py
 
+      - name: Refresh published Next G8 history from immutable pricing archives
+        if: steps.gate.outputs.should_run == 'true'
+        run: |
+          python validation/cb_pricing/test_build_next_g8_pricing_history_v1.py
+          python validation/cb_pricing/build_next_g8_pricing_history_v1.py
+          python validation/cb_pricing/build_next_g8_pricing_history_v1.py --check
+          # Derived charts are public RESEARCH ONLY, not official OIS or engine data.
+          git diff --exit-code -- live_data/sections/OIS_DATA.json live_data/sections/NATIVE_CB_DATA.json
+
       - name: Verify G8 coverage and lineage
         if: steps.gate.outputs.should_run == 'true'
         shell: bash
@@ -353,6 +370,7 @@ jobs:
             'live_data/sections/CB_PRICING_ESTIMATED_LIVE_QUOTES.json',
             'site/fx-quant-v2/ois-pricing-snapshot.json',
             'site/fx-quant-v2/ois-same-contract-repricing-research.json',
+            'site/fx-quant-v2/next/rates-pricing-history-v1.json',
             'live_data/sections/NZD_CB_PRICING_DIRECTIONAL_PROXY.json',
             'live_data/sections/CB_PRICING_ESTIMATED.json',
             'live_data/sections/OIS_OPERATIONAL_VIEW.json',
