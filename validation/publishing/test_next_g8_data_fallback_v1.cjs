@@ -198,7 +198,16 @@ if(nzdLive.status==='STIMA_SCENARIO_NON_CALIBRATA')
  assert(nzdHtml.includes('SCENARIO')||nzdHtml.includes('Scenario'), 'NZD uncalibrated sensitivity must be labelled');
 assert(!chfHtml.includes('0,238% · +'), 'CHF 2Y level is not rate change');
 assert(html.includes('proxy'), 'Indicative quote reaches G8 UI');
-assert(html.includes('4,50%')||html.includes('4.50%'), 'Indicative USD 6M quote is dated and displayed');
+// Never hardcode a 6M *market* level in a live-feed regression: the
+// contract refresh changes the quote without changing source governance.
+const usd6m=context.currencies.USD.pricingProxy;
+if(usd6m.status==='PROXY_INFORMATIVO'){
+ const displayed=usd6m.value.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2})+'%';
+ assert(html.includes(displayed)&&html.includes(usd6m.asof),
+  'Eligible indicative USD 6M quote and its actual date are displayed');
+} else {
+ assert.equal(usd6m.status,'NON_DISPONIBILE','Invalid 6M must not be promoted');
+}
 assert(!/\bNaN\b|\bundefined\b|\[object Object\]/.test(html));
 const idx=read(base+'index.html');
 const app=read(base+'app.js');

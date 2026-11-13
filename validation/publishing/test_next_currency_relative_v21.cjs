@@ -6,11 +6,21 @@ const root=path.resolve(__dirname,'../..');
 const load=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const {read,macroAxis,money,flow}=require(path.join(root,'site/fx-quant-v2/next/currency-relative-reading.js'));
 const macro=load('live_data/sections/MACRO_THERMOMETER_DATA.json').currencies;
-const gov=load('live_data/sections/NATIVE_RATES_DATA.json');
+const observedGov=load('live_data/sections/NATIVE_RATES_DATA.json');
 const ois=load('site/fx-quant-v2/ois-pricing-snapshot.json');
 const cot=load('live_data/sections/V250_COT_CHART_DATA.json');
 const fx=load('live_data/sections/ECB_G8_PRICE_HISTORY.json');
 const ccys=['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
+// The 10 Nov historical comparison MUST use a frozen synthetic rate fixture.
+// Feeding live government yields (which advance after 10 Nov) into the
+// historical assertion yields zero same-date pairs and blocks site publication.
+// Numbers are explicitly TEST ONLY, never economic observations or quotes.
+const gov=Object.fromEntries(ccys.map((ccy,i)=>[ccy,{
+  date:i<2?'2026-11-09':'2026-11-08',
+  '2Y':2.0+i*0.125,quality:'SYNTHETIC_TEST_FIXTURE'
+}]));
+assert(ccys.every(c=>observedGov[c]&&Number.isFinite(observedGov[c]['2Y'])),
+ 'Live G8 sovereign inputs retain all eight published yield observations');
 const now='2026-11-10',rows=fx.rows.filter(r=>r.Date<=now);
 const quote=(a,b,n=20)=>{
  const aligned=rows.filter(r=>Number.isFinite(r[a])&&r[a]>0&&Number.isFinite(r[b])&&r[b]>0);
@@ -39,6 +49,16 @@ for(const a of ccys)for(const b of ccys){
 }
 assert.equal(total,56);
 assert(matched2Y>0&&blocked2Y>0,'Both genuine and rejected bilateral spread cases');
+// Separately exercise actual live yields with their own *actual* source dates,
+// never the fixed 10 Nov fixture date, and require the same-date safeguard.
+const activeDays=ccys.map(c=>observedGov[c].date).filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x)).sort();
+const observedNow=activeDays.at(-1);
+const observed=read({base:'USD',quote:'JPY',macro,gov:observedGov,ois,cot,
+ now:observedNow,price20:null,priceAsOf:null});
+const actualComparable=observedGov.USD.date===observedGov.JPY.date&&
+ observedGov.USD.date<=observedNow;
+assert.equal(observed.spreadComparable,actualComparable,
+ 'Live 2Y spread admitted only for matching source dates');
 assert.match(read({base:'AUD',quote:'CAD',macro,gov,ois,cot,now,price20:2,priceAsOf:'2026-11-09'}).verdict,/AUD contro CAD/);
 assert.match(read({base:'AUD',quote:'CAD',macro,gov,ois,cot,now,price20:-2,priceAsOf:'2026-11-09'}).verdict,/CAD contro AUD/);
 assert.equal(money('USD',ois,'2026-11-01'),null,'Cannot import future money-market data');
