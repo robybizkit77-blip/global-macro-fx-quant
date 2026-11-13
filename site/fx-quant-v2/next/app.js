@@ -30,12 +30,14 @@ const SOURCES={
  cotPriorReference:'../design-studio-cot-v1-data.json',
  risk:'../cross-asset-live-data.json',
  ois:'../ois-pricing-snapshot.json',
+ oisOperational:'../../../live_data/sections/OIS_OPERATIONAL_VIEW.json',
+ oisSameContract:'../ois-same-contract-repricing-research.json',
  news:'../../../live_data/sections/NEWS_PULSE_OPERATIONAL.json',
  calendar:'../../../live_data/sections/CALENDAR_OPERATIONAL_VIEW.json',
  themes:'../../../live_data/sections/TOP_THEMES.json'
 };
 let firstResearchLoaded=false;
-const state={data:{},errors:{},route:'overview',ccy:'USD',against:'EUR',pair:'EURUSD',pairFilter:'all',pairSearch:'',pairDetailOpen:false,pairPriceWindow:60,pairShowReferences:true,watch:new Set(),window:20,rateMode:'both',riskStream:'VIX',riskWindow:20,macroMetric:'inflation',newsMode:'pulse',chartIndex:0,charts:{},atlasLens:'rates',homeChart:null,homeWindow:20,homeEvidenceOpen:false,homeDossierOpen:false,spotPair:'EURUSD',cotWindow:26,cotMode:'net',cotFilter:'all',cotSort:'percentile',cotSortAsc:false,rsWindow:60,rsGovMode:'both',rsDiffMode:'2y',msCategory:'Inflazione',msSeriesId:null,msView:'level',msWindow:24,msHeat:'inflation',msHeatSort:'ccy',msHeatAsc:true,msOther:'EUR',msCompareMetric:'inflation',msAdvanced:false,csOther:'EUR',csPriceWindow:60,csRatesMode:'spread',csRatesWindow:60,csMacroMode:'inflation',csMacroWindow:36,csCotWindow:26,csSort:'currency',csReturnWindow:20};
+const state={data:{},errors:{},route:'overview',ccy:'USD',against:'EUR',pair:'EURUSD',pairFilter:'all',pairSearch:'',pairDetailOpen:false,pairPriceWindow:60,pairShowReferences:true,watch:new Set(),window:20,rateMode:'both',riskStream:'VIX',riskWindow:20,macroMetric:'inflation',newsMode:'pulse',chartIndex:0,charts:{},atlasLens:'rates',homeChart:null,homeWindow:20,homeEvidenceOpen:false,homeDossierOpen:false,spotPair:'EURUSD',cotWindow:26,cotMode:'net',cotFilter:'all',cotSort:'percentile',cotSortAsc:false,rsWindow:60,rsGovMode:'both',rsDiffMode:'2y',rsPricingWindow:'1d',msCategory:'Inflazione',msSeriesId:null,msView:'level',msWindow:24,msHeat:'inflation',msHeatSort:'ccy',msHeatAsc:true,msOther:'EUR',msCompareMetric:'inflation',msAdvanced:false,csOther:'EUR',csPriceWindow:60,csRatesMode:'spread',csRatesWindow:60,csMacroMode:'inflation',csMacroWindow:36,csCotWindow:26,csSort:'currency',csReturnWindow:20};
 try{const w=JSON.parse(localStorage.getItem('fxquant-next-watch')||'[]');if(Array.isArray(w))state.watch=new Set(w.filter(s=>typeof s==='string'))}catch(e){}
 const $=id=>document.getElementById(id);
 const esc=x=>String(x===undefined||x===null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1099,6 +1101,13 @@ function refreshPairPriceChart(focusSelector){
  window.scrollTo({top:scrollTop,behavior:'instant'});
 }
 document.addEventListener('click',e=>{
+ const pricingWindow=e.target.closest('[data-rs-pricing-window]');
+ if(pricingWindow&&state.route==='rates'){
+  if(['1d','1w'].includes(pricingWindow.dataset.rsPricingWindow)){
+   state.rsPricingWindow=pricingWindow.dataset.rsPricingWindow;render();
+  }
+  return;
+ }
  const ratesOpenPair=e.target.closest('[data-rates-openpair]');
  if(ratesOpenPair&&state.route==='rates'){
   const pair=ratesOpenPair.dataset.ratesOpenpair;
