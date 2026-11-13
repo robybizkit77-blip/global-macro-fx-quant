@@ -22,6 +22,51 @@
    return parsed.href;
   }catch(e){return null;}
  };
+ // These labels translate only the subject explicitly stated in each
+ // official headline. They do NOT imply that the linked article was read
+ // or that its content/reaction was independently confirmed.
+ const officialTitleRules=[
+  [/^Hydropower generation in the Southwest fell to record lows this summer/i,
+   "USA, Sud-Ovest: produzione idroelettrica ai minimi storici nell’estate"],
+  [/Project Meridian FX APAC/i,
+   "Project Meridian FX APAC: collaborazione tra le autorità monetarie di Regno Unito, Singapore e Thailandia"],
+  [/^Isabel Schnabel: Made in Europe/i,
+   "Isabel Schnabel: «Made in Europe»"],
+  [/^Federal Reserve Board announces pricing, effective January 1, 2027, for payment services/i,
+   "Fed: nuove tariffe dei servizi di pagamento dal 1° gennaio 2027"],
+  [/^Federal Reserve announces revised tentative schedule of Federal Open Market Committee meetings in 2027/i,
+   "Fed: calendario provvisorio aggiornato delle riunioni FOMC del 2027"],
+  [/^EIA forecasts Alaskan crude oil production to grow 13% in 2027/i,
+   "EIA: produzione di greggio in Alaska prevista in aumento del 13% nel 2027"],
+  [/^Japanese Government Bonds Held by the Bank of Japan/i,
+   "BoJ: titoli di Stato giapponesi detenuti dalla banca centrale"],
+  [/^Basic Figures on Fails \(Oct\./i,
+   "BoJ: dati di ottobre sui mancati regolamenti dei titoli"],
+  [/^RBNZ Reverse Stress Test demonstrates resilience of insurers/i,
+   "RBNZ: stress test inverso sulla resilienza delle compagnie assicurative"],
+  [/^Philip R\. Lane: The science and practice of monetary policy communication/i,
+   "Philip R. Lane: la comunicazione di politica monetaria nell’esperienza BCE"],
+  [/^Release of the Bank of Canada.s summary of deliberations/i,
+   "Banca del Canada: pubblicato il riepilogo delle deliberazioni"],
+  [/^Exchange of letters between the Governor and the Chancellor on the Asset Purchase Facility/i,
+   "Banca d’Inghilterra: lettere sull’Asset Purchase Facility, novembre 2026"],
+  [/^Designation of Prosegur Australia Pty Ltd under the Cash Distribution Framework Act 2026/i,
+   "RBA: designazione di Prosegur Australia nel quadro normativo del contante del 2026"],
+  [/^Joint Statement of the Government of Canada and the Bank of Canada on the Renewal of the Monetary Policy Framework/i,
+   "Canada: dichiarazione congiunta sul rinnovo del quadro di politica monetaria"],
+  [/^Reserve Bank files DCS disclosure charge against Westpac New Zealand Limited/i,
+   "RBNZ: contestazione a Westpac NZ sugli obblighi informativi DCS"]
+ ];
+ const displayOfficialTitle=x=>{
+  const title=String(x?.title||'').trim();
+  for(const [pattern,translated] of officialTitleRules){
+   if(pattern.test(title))return translated;
+  }
+  // Safeguard for new, unsupported headlines: no imaginary translation.
+  if(/\b(il|la|gli|della|delle|governo|banca|produzione|prezzi|pubblicazione|mercati|politica monetaria)\b/i.test(title))return title;
+  return 'Nuova comunicazione di '+String(x?.source||'fonte istituzionale')+
+   ' · titolo originale nei dettagli';
+ };
  function parse(feed,now){
   const empty={pulse:[],official:[],pulseAsOf:null,officialAsOf:null,latest:null,
    gap:'Il feed non contiene una finestra pre/post degli strumenti di mercato; non possiamo attribuire reazioni causali.',quality:'NON VALIDATO'};
@@ -41,7 +86,7 @@
     MARKET_EQUITY_CLOSE:'Azionario · chiusura',
     MARKET_VOLATILITY_CLOSE:'Volatilità · VIX',
     MARKET_CREDIT_OAS:'Credito · spread OAS',
-    MARKET_GOVERNMENT_RATES:'Government bond · 2Y/10Y',
+    MARKET_GOVERNMENT_RATES:'Titoli governativi · 2Y/10Y',
     MACRO_UPDATE:'Macro · pubblicazione datata',
     MACRO_OFFICIAL_ACTUAL:'Macro · dato ufficiale BLS'
    };
@@ -87,7 +132,7 @@
       proof.causal_attribution==='ESTABLISHED'&&proof.fx?.status==='CERTIFIED_EVENT_WINDOW';
     const impact=certifiedReaction?'Esiste una prova di finestra FX certificata: consultare i dettagli dell’evento e dello strumento.':
       'Reazione FX/OIS NON verificata su finestra intraday; i rendimenti giornalieri, se presenti, sono solo contesto.';
-    return [{id:'official-'+i,title:String(x.title),source:String(x.source),ccy:String(x.ccy||''),
+    return [{id:'official-'+i,title:String(x.title),displayTitle:displayOfficialTitle(x),source:String(x.source),ccy:String(x.ccy||''),
       kind:ec.topic==='CB_COMMUNICATION'?'Comunicazione banca centrale':
        ec.topic==='ENERGY_FUNDAMENTALS'?'Fondamentali energia':'Comunicazione istituzionale',
       asof:t.date,time:t.time,body:'Pubblicazione ufficiale: titolo e fonte verificati nel feed. Il contenuto integrale va letto prima di attribuirgli un significato operativo.',
@@ -96,7 +141,7 @@
    }).sort((a,b)=>(b.asof+'T'+(b.time||'')).localeCompare(a.asof+'T'+(a.time||'')));
   const pulseAsOf=day(feed.content_as_of)&&feed.content_as_of<=now?feed.content_as_of:null;
   const latest=[pulse[0]?.asof,official[0]?.asof].filter(Boolean).sort().at(-1)||null;
-  const gap='Market Pulse: '+(pulseAsOf||'data assente')+' · Comunicazioni ufficiali: '+
+  const gap='Movimenti di mercato: '+(pulseAsOf||'data assente')+' · Comunicazioni ufficiali: '+
    (official[0]?.asof||'data assente')+'. Le due sezioni hanno orologi diversi: nessuna pubblicazione equivale automaticamente a sorpresa o a reazione del mercato.';
   return {pulse,official,pulseAsOf,officialAsOf:official[0]?.asof||null,latest,gap,
    quality:pulse.length||official.length?'FATTI DATATI; IMPATTO DA VERIFICARE':'NON VALIDATO'};
