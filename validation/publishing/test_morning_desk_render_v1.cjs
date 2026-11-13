@@ -40,7 +40,7 @@ if(feed.edition_status==='RECONSTRUCTION_NOT_POINT_IN_TIME')
 if(feed.edition_status==='LATE_MORNING_SNAPSHOT')
  assert(html.includes('ritardo non viene nascosto'));
 assert(html.includes(feed.pair.slice(0,3)+'/'+feed.pair.slice(3)),'Narrative must name the active FX pair');
-assert(html.includes('Tassi & OIS')&&html.includes('28 coppie FX'));
+assert(html.includes('Tassi &amp; OIS')&&html.includes('28 coppie FX'));
 const addDays=(iso,n)=>{const d=new Date(iso+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)};
 const stale=build({...args,dayNow:()=>addDays(feed.edition_date,1)});
 assert(stale.includes('edizione archiviata'),'Old edition must be visibly historical');

@@ -72,8 +72,15 @@ const displayPairButtons=(pulse.match(/data-pair="/g)||[]).length;
 assert.equal(displayPairButtons,Math.min(3,shortlist.length));
 const top3=shortlist.slice(0,3);
 for(const x of top3)assert(pulse.includes('data-pair="'+x.key+'"'));
-assert.equal(improved.replace(/<section class="morning-fx-pulse"[\s\S]*?<\/section>/,''),original,
- 'Frozen morning briefing must remain untouched by the current FX view');
+const withoutRank=improved.replace(/<details class="morning-secondary-research[\s\S]*?<\/details>/,'');
+if(withoutRank.includes('data-home-calendar-reconciled="true"')){
+ assert(withoutRank.includes('Edizione originale non riscritta'),
+  'A newly verified issuer calendar event must preserve but not lead with the frozen original');
+ assert(withoutRank.includes(feed.lead.replace(/&/g,'&amp;')),
+  'Original editorial source remains accessible in the archive');
+}else{
+ assert.equal(withoutRank,original,'Without a new issuer event the frozen article stays unchanged');
+}
 const g8=read(next+'currency-studio.js');
 const focus=g8.slice(g8.indexOf('function strengthFocus(){'),g8.indexOf('function ranking(){'));
 assert(focus.includes('Il quadro interno risulta'));
@@ -91,5 +98,5 @@ assert(g8.includes("current.rate.quality==='UFFICIALE'?'Riferimento monetario in
  'A real 6M reference is never labelled as if it were a 2Y proxy');
 const index=read(next+'index.html');
 for(const name of ['currency-studio.js?v=15','pair-rankings.js?v=8',
- 'morning-desk-v1.js?v=5'])assert(index.includes(name),'Cache revision missing '+name);
+ 'morning-desk-v1.js?v=6'])assert(index.includes(name),'Cache revision missing '+name);
 console.log('NEXT_CROSSPAGE_EDITORIAL_V1_PASS: home = catalysts, G8 = level versus momentum, 28 FX pairs = relative thesis plus separate price; archive unchanged');
