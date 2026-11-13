@@ -6,7 +6,9 @@ const vm=require('node:vm');
 const ROOT=path.resolve(__dirname,'../..');
 const next='site/fx-quant-v2/next/';
 const src=fs.readFileSync(path.join(ROOT,next,'hourly-desk-ui-v1.js'),'utf8');
+const pulseSrc=fs.readFileSync(path.join(ROOT,next,'home-market-pulse-v1.js'),'utf8');
 const win={};const ctx={window:win};
+vm.runInNewContext(pulseSrc,ctx,{filename:'home-market-pulse-v1.js',timeout:2500});
 vm.runInNewContext(src,ctx,{filename:'hourly-desk-ui-v1.js',timeout:2500});
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const date=s=>s;
@@ -86,6 +88,51 @@ assert(win.FXQuantHourlyDesk.openSources(mockButton),
 assert(dossier.open&&dossier.scrolled&&dossier.focused&&attrs['aria-expanded']==='true',
  'The dossier must expand, scroll into view and receive keyboard focus');
 
+
+const pulseFeed=structuredClone(sample);
+pulseFeed.news=[
+ {headline:'Forza del dollaro sui cross EUR/USD e USD/JPY',analysis:'Negli ultimi fixing BCE il dollaro è più forte contro EUR e JPY.',kind:'FOLLOW_UP',
+  market_area:'FOREX',published_date:'2026-11-12',event_date:'2026-11-12',
+  sources:['https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml']},
+ {headline:'Oro e petrolio divergono nelle rilevazioni dei futures',analysis:'I prezzi futures mostrano oro e WTI con direzioni diverse.',kind:'FOLLOW_UP',
+  market_area:'COMMODITIES',published_date:'2026-11-13',event_date:'2026-11-13',
+  sources:['https://query1.finance.yahoo.com/v8/finance/chart/GC=F']}
+];
+pulseFeed.provenance.web_source_urls=pulseFeed.news.map(x=>x.sources[0]);
+pulseFeed.desk_judgment+=' Oro in rialzo e petrolio in calo nelle ultime rilevazioni pubblicate.';
+const stream=(date,value,previous,history)=>({
+ date,value,previous,history,not_intraday:true,
+ quality:'PUBLISHED_SOURCE_RESEARCH_ONLY',
+ source_url:'https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500'
+});
+const research={streams:{
+ SP500:stream('2026-11-12',101,100,[['2026-11-09',98],['2026-11-10',100],['2026-11-12',101]]),
+ VIX:stream('2026-11-12',18.7,17.49,[['2026-11-09',19.5],['2026-11-10',17.49],['2026-11-12',18.7]]),
+ HY_OAS:stream('2026-11-12',3.2,3.3,[['2026-11-09',3.5],['2026-11-10',3.3],['2026-11-12',3.2]])
+}};
+const pulseHTML=win.FXQuantHourlyDesk.render({feed:pulseFeed,risk:research,esc,date,dayNow:today});
+assert(pulseHTML.includes('IL MERCATO IN UN COLPO D’OCCHIO'),'Visual pulse must remain narrative-first and dated');
+assert((pulseHTML.match(/class="hourly-pulse-tile /g)||[]).length===5,'FX + S&P + VIX + HY + commodities, no unsupported extra tile');
+assert(pulseHTML.includes('USD ↑')&&pulseHTML.includes('Oro ↑ · WTI ↓'),'Directional claims must follow cited text');
+assert(pulseHTML.includes('Indice VIX')&&pulseHTML.includes('Spread HY'),'Real measured market breadth shown');
+assert(pulseHTML.includes('+1,00%')&&pulseHTML.includes('18,70')&&pulseHTML.includes('−10 pb'),
+ 'Numbers must derive from observed value/previous, preserving units');
+assert((pulseHTML.match(/class="hourly-pulse-spark"/g)||[]).length===3,
+ 'Mini-charts must be derived from 3 actual historical streams, not drawn decoratively');
+assert(pulseHTML.includes('12/11/2026')&&pulseHTML.includes('13/11/2026'),'Every observation must retain its source date');
+assert(pulseHTML.includes('Non intraday')&&!pulseHTML.includes('tempo reale</p>'),
+ 'The Home must explicitly separate delayed closes from live data');
+assert(pulseHTML.includes('class="hourly-decision-grid"')&&pulseHTML.includes(sample.what_changed),
+ 'The original substantive desk interpretation survives the visual hierarchy');
+const unsupported=structuredClone(research);
+unsupported.streams.VIX.quality='ESTIMATED';
+unsupported.streams.HY_OAS.date='2026-10-01';
+const filtered=win.FXQuantHomePulse.render({feed:pulseFeed,risk:unsupported,esc,date,dayNow:today});
+assert(!filtered.includes('Indice VIX')&&!filtered.includes('Spread HY'),
+ 'No estimate or stale record can be promoted into a market pulse');
+assert.equal(win.FXQuantHomePulse.render({feed:pulseFeed,risk:null,esc,date,dayNow:today}),'',
+ 'No market source means no market pulse; the existing research stays intact');
+
 assert(out.includes('class="hourly-hero-grid"'),'Hero has an FX research spotlight, not a one-column newspaper');
 assert(out.includes('class="hourly-fx-spotlight"'),'Forex consequences must be prominent at first glance');
 assert(out.includes('class="hourly-decision-grid"'),'Three-part decision map must be visible');
@@ -123,9 +170,13 @@ const index=fs.readFileSync(path.join(ROOT,next,'index.html'),'utf8');
 assert(app.includes("get('hourlyDesk')"),'Home is wired to optional independent free research');
 assert(app.includes("fetch('../../../market-desk/hourly-market-desk-current.json'"),'Optional fetch endpoint missing');
 assert(!app.includes("hourlyDesk:'"),'New research must not become a mandatory operational feed');
-assert(index.includes('hourly-desk-ui-v1.js?v=4'));
+assert(index.includes('hourly-desk-ui-v1.js?v=5'));
 assert(index.includes('hourly-desk-ui-v1.css?v=3'));
-assert(index.includes('app.js?v=18.47-free-desk-persist'));
+assert(index.includes('home-market-pulse-v1.js?v=1')&&index.includes('home-market-pulse-v1.css?v=1'),
+ 'The source-based data visualization must load before the editorial Home UI');
+assert(index.indexOf('home-market-pulse-v1.js?v=1')<index.indexOf('hourly-desk-ui-v1.js?v=5'),
+ 'Rendering order must preserve the optional pulse addon');
+assert(index.includes('app.js?v=18.48-visual-pulse'));
 const css=fs.readFileSync(path.join(ROOT,next,'hourly-desk-ui-v1.css'),'utf8');
 assert(css.includes('.hourly-hero-grid')&&css.includes('.hourly-navigation-grid')&&css.includes('.hourly-desk-news-body'),
  'The new workbench CSS must style every major hierarchy layer');
@@ -134,6 +185,13 @@ assert(css.includes('@media(max-width:630px)')&&css.includes('@media(max-width:8
 assert(css.includes('prefers-reduced-motion'),'Hover effects must respect reduced-motion accessibility');
 assert(!css.includes('.sidebar')&&!css.includes('.currency-studio')&&!css.includes('.pair-studio'),
  'No unapproved restyling of other dashboard sections');
+const pulseCss=fs.readFileSync(path.join(ROOT,next,'home-market-pulse-v1.css'),'utf8');
+assert(pulseCss.includes('.hourly-pulse-track')&&pulseCss.includes('.hourly-decision-change'),
+ 'Premium hierarchy must emphasize primary driver and source-dated market observations');
+assert(pulseCss.includes('max-width:630px')&&pulseCss.includes('prefers-reduced-motion'),
+ 'Market pulse must be mobile-friendly and reduce motion');
+assert(!pulseCss.includes('.sidebar')&&!pulseCss.includes('.pair-studio'),
+ 'No unrelated route restyling');
 const workflow=fs.readFileSync(path.join(ROOT,'.github/workflows/next-independent-ai-hourly-desk-v1.yml'),'utf8');
 assert(workflow.includes("cron: '17 * * * *'"));
 assert(!workflow.includes("secrets.FXQ_MARKET_DESK_API_KEY"));
