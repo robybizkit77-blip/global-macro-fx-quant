@@ -50,6 +50,14 @@ class MorningRecoveryTests(unittest.TestCase):
         self.assertEqual(workflow.count("GH_TOKEN: ${{ github.token }}"), 2)
         self.assertNotIn("GH_TOKEN: ${", workflow.replace("GH_TOKEN: ${{ github.token }}", ""))
 
+    def test_morning_workflow_hotfix_wakes_existing_bounded_recovery(self):
+        # A fixed Morning FX builder should re-evaluate a stale public edition
+        # without requiring a new cron or bypassing the two-retry budget.
+        workflow = (Path(__file__).resolve().parents[2] /
+                    ".github/workflows/early-morning-recovery-v1.yml").read_text(encoding="utf-8")
+        self.assertIn("      - '.github/workflows/fxv2-morning-public-proof.yml'", workflow)
+        self.assertEqual(workflow.count("      - '.github/workflows/fxv2-morning-public-proof.yml'"), 2)
+
     def test_unrelated_branch_ignored(self):
         run = self.run_info(status="in_progress")
         run["head_branch"] = "feature"
