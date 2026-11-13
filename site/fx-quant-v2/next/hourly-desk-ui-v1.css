@@ -124,7 +124,7 @@
   border-radius:50%;
   background:#65adbd;
 }
-.hourly-hero-bottom>a{
+.hourly-hero-actions>a{
   display:inline-flex;
   align-items:center;
   gap:13px;
@@ -136,8 +136,8 @@
   font-size:11.5px;
   color:#c5f4e8;
 }
-.hourly-hero-bottom>a:hover,
-.hourly-hero-bottom>a:focus-visible{
+.hourly-hero-actions>a:hover,
+.hourly-hero-actions>a:focus-visible{
   border-color:#77dfbd;
   background:rgba(77,173,148,.22);
 }
@@ -549,4 +549,68 @@
 @media(prefers-reduced-motion:reduce){
  .hourly-navigation-grid a.hourly-route{transition:none}
  .hourly-navigation-grid a.hourly-route:hover{transform:none}
+}
+
+/* The market-picture surface is a direct, accessible path to primary sources. */
+.hourly-market-desk .hourly-hero[data-hourly-hero-to-sources]{cursor:pointer}
+.hourly-market-desk .hourly-hero[data-hourly-hero-to-sources]:hover{
+ border-color:rgba(119,220,189,.59);
+}
+.hourly-kicker-sources{
+ appearance:none;
+ border:0;
+ padding:0;
+ background:none;
+ color:var(--morning-teal);
+ display:inline-flex;
+ align-items:center;
+ gap:9px;
+ cursor:pointer;
+ font:inherit;
+ font-size:10px;
+ font-weight:850;
+ letter-spacing:.14em;
+ line-height:1.7;
+ text-align:left;
+}
+.hourly-kicker-sources span{color:#98d9e8;font-size:15px}
+.hourly-kicker-sources:hover,.hourly-kicker-sources:focus-visible{color:#d4f8ec}
+.hourly-hero-actions{
+ display:flex;
+ flex-wrap:wrap;
+ align-items:center;
+ gap:8px;
+}
+.hourly-hero-sources-button{
+ display:inline-flex;
+ align-items:center;
+ gap:10px;
+ border:1px solid rgba(128,201,232,.45);
+ background:rgba(58,135,179,.17);
+ border-radius:8px;
+ padding:10px 12px;
+ font:inherit;
+ font-weight:750;
+ font-size:11.5px;
+ line-height:1.4;
+ color:#c3eafa;
+ cursor:pointer;
+}
+.hourly-hero-sources-button:hover,
+.hourly-hero-sources-button:focus-visible,
+.hourly-hero-sources-button[aria-expanded="true"]{
+ border-color:#85c9ee;
+ background:rgba(55,133,184,.29);
+}
+.hourly-market-desk .hourly-desk-news{scroll-margin-top:90px}
+.hourly-desk-language-note{
+ margin:13px 17px 0;
+ font-size:10.5px;
+ line-height:1.65;
+ color:#a3c1d1;
+}
+@media(max-width:630px){
+ .hourly-hero-actions{width:100%}
+ .hourly-hero-sources-button{flex:1;justify-content:center}
+ .hourly-hero-actions>a{flex:1;justify-content:center}
 }

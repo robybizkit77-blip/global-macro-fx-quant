@@ -7,6 +7,76 @@
  const SCHEMA='GMFQ_NEXT_FREE_HOURLY_DESK_V1';
  const goodDay=s=>typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s);
  const uri=x=>typeof x==='string'&&/^https:\/\/[^/\s@]+\.[^/\s@]+(?:\/[^\s]*)?$/.test(x);
+
+ // Source titles remain unchanged in JSON; this display-only Italian label
+ // never claims to translate an unseen article or infer a policy decision.
+ const englishTitle=s=>{
+  const title=String(s||'');
+  if(/\b(the|and|this|summer|fell|record lows|hydropower|generation|electricity|published|releases?|released|energy study|outlook for|business outlook|survey of|monetary policy|financial stability|project meridian|oil production|crude oil|natural gas|supply outlook|energy consumption)\b/i.test(title))return true;
+  const words=title.toLowerCase().match(/[a-z]+/g)||[];
+  const english=new Set(['bank','of','reports','report','news','minutes','new','latest','consumer','consumers','spending','survey','financial','markets','market','oil','gas','energy','demand','supply','low','lows','record','higher','lower','prices','growth','increase','increased','decrease','decreased','rose','rising','falls','falling','today','for','from','with','released','launches','announces','outlook','production','electricity','electric','economic','activity']);
+  const italian=new Set(['la','il','lo','gli','le','della','delle','del','dei','su','sul','sui','per','con','tra','cresce','scende','sale','aumenta','diminuisce','produzione','prezzi','tassi','mercati','indagine','rilevazione','banca','dollaro','energia','riserva']);
+  const en=words.filter(w=>english.has(w)).length,it=words.filter(w=>italian.has(w)).length;
+  return en>=2&&en>it;
+ };
+ const titleItaliano=n=>{
+  const original=String(n?.headline||'').trim();
+  const isRss=['ENERGIA','BANCHE CENTRALI'].includes(String(n?.market_area||'').toUpperCase());
+  const clearlyItalian=/\b(il|lo|la|gli|le|della|delle|del|dei|sul|sui|per|con|tra|banca|produzione|prezzi|tassi|indagine|decisione|mercato|scorte|energia|crescita|dollaro)\b/i.test(original);
+  if(!englishTitle(original)&&(!isRss||clearlyItalian))return original;
+  if(/hydropower generation/i.test(original)&&/southwest/i.test(original)&&/record lows/i.test(original))
+   return 'Produzione idroelettrica nel Sud-Ovest USA scesa ai minimi storici durante l’estate';
+  if(/project meridian fx apac/i.test(original))
+   return 'Progetto Meridian FX APAC: collaborazione tra le autorità monetarie di Regno Unito, Singapore e Thailandia';
+  const source=(n.sources||[]).find(uri)||'';
+  const institute=/eia\.gov/i.test(source)?'EIA':
+   /bankofengland\.co\.uk/i.test(source)?'Banca d’Inghilterra':
+   /federalreserve\.gov/i.test(source)?'Federal Reserve':
+   /ecb\.europa\.eu/i.test(source)?'BCE':
+   /bankofcanada\.ca/i.test(source)?'Banca del Canada':
+   /boj\.or\.jp/i.test(source)?'Banca del Giappone':
+   /rba\.gov\.au/i.test(source)?'Banca centrale australiana':
+   /rbnz\.govt\.nz/i.test(source)?'Banca centrale neozelandese':
+   /snb\.ch/i.test(source)?'Banca nazionale svizzera':'Fonte ufficiale';
+  const area=String(n.market_area||'').toUpperCase();
+  const topic=/hydropower|electricity|power generation|wind power|solar power/i.test(original)?
+   'produzione di energia elettrica':
+   /crude oil|petroleum|refining|gasoline|diesel|oil inventories/i.test(original)?
+   'petrolio, raffinazione e scorte':
+   /natural gas/i.test(original)?'mercato del gas naturale':
+   /inflation|consumer prices/i.test(original)?'inflazione e prezzi':
+   /monetary policy|policy rate|interest rates?|bank rate/i.test(original)?
+   'politica monetaria':
+   /financial stability/i.test(original)?'stabilità finanziaria':
+   /outlook|forecast|projections/i.test(original)?'prospettive economiche':
+   /survey|confidence/i.test(original)?'indagini e aspettative':
+   area==='ENERGIA'?'mercato energetico':
+   area==='BANCHE CENTRALI'?'attività della banca centrale':
+   'mercati e politica economica';
+  return institute+': pubblicazione su '+topic;
+ };
+ const areaIt=s=>({'COMMODITIES':'MATERIE PRIME','ENERGY':'ENERGIA','EQUITIES':'AZIONI','FOLLOW_UP':'APPROFONDIMENTO'}[String(s||'').toUpperCase()]||String(s||''));
+ // Event delegation also works after the SPA re-renders the Home.
+ function openSources(target){
+  const desk=target?.closest?.('.hourly-market-desk');
+  const dossier=desk?.querySelector?.('details#hourly-desk-news');
+  if(!dossier)return false;
+  dossier.open=true;
+  desk.querySelectorAll?.('[data-hourly-open-sources]')?.forEach?.(b=>b.setAttribute('aria-expanded','true'));
+  dossier.scrollIntoView?.({behavior:root.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?'auto':'smooth',block:'start'});
+  dossier.querySelector?.('summary')?.focus?.({preventScroll:true});
+  return true;
+ }
+ if(root.document?.addEventListener){
+  root.document.addEventListener('click',e=>{
+   const target=e.target;
+   const button=target?.closest?.('[data-hourly-open-sources]');
+   if(button){openSources(button);return;}
+   const hero=target?.closest?.('.hourly-hero[data-hourly-hero-to-sources]');
+   if(hero&&!target?.closest?.('a,button,summary'))openSources(hero);
+  });
+ }
+
  function render({feed,esc,date,dayNow}={}){
   if(feed?.schema!==SCHEMA||feed.status!=='ACTIVE'||typeof esc!=='function'||
      !goodDay(feed.generated_at_utc?.slice(0,10))||!goodDay(dayNow?.())||
@@ -28,17 +98,18 @@
       !Array.isArray(n.sources))return null;
    const links=n.sources.filter(x=>uri(x)&&sources.includes(x)).slice(0,3);
    if(!links.length)return null;
-   const label=n.kind==='PREVIEW'?'Anteprima':n.kind==='FOLLOW_UP'?'Contesto / follow-up':'Notizia';
+   const label=n.kind==='PREVIEW'?'Anteprima':n.kind==='FOLLOW_UP'?'Approfondimento':'Notizia';
+   const headlineIt=titleItaliano(n),area=areaIt(n.market_area);
    const article='<article class="hourly-desk-story"><div class="hourly-story-top">'+
-    '<span class="hourly-story-category">'+safe(n.market_area)+'</span>'+
+    '<span class="hourly-story-category">'+safe(area)+'</span>'+
     '<span class="hourly-story-date">'+safe(date(n.published_date))+'</span></div>'+
     '<span class="hourly-story-kind">'+label+'</span>'+
-    '<h3>'+safe(n.headline)+'</h3><p>'+safe(n.analysis)+'</p>'+
+    '<h3>'+safe(headlineIt)+'</h3><p>'+safe(n.analysis)+'</p>'+
     '<div class="hourly-desk-citations">Fonti: '+links.map((u,j)=>
       '<a href="'+safe(u)+'" target="_blank" rel="noopener noreferrer">Fonte '+(j+1)+'</a>'
     ).join(' · ')+'</div></article>';
-   const preview='<div class="hourly-evidence-peek-item"><span>'+safe(n.market_area)+
-    ' · '+safe(date(n.published_date))+'</span><strong>'+safe(n.headline)+'</strong></div>';
+   const preview='<div class="hourly-evidence-peek-item"><span>'+safe(area)+
+    ' · '+safe(date(n.published_date))+'</span><strong>'+safe(headlineIt)+'</strong></div>';
    return {article,preview};
   }).filter(Boolean);
   if(!news.length)return null;
@@ -50,11 +121,11 @@
   const followThrough=isContinuation?judgment.slice(lead.length).trim():judgment;
   const research=[
    ['currencies','Valute G8','Confronta le forze relative','G8'],
-   ['pairs','Coppie FX','Dalla tesi al timing','FX'],
+   ['pairs','Coppie FX','Dalla tesi al momento d’ingresso','FX'],
    ['rates','Tassi & OIS','Leggi cosa prezza il mercato','OIS'],
    ['macro','Scenario macro','Crescita, inflazione e lavoro','MACRO'],
-   ['risk','Rischio','Credito, volatilità e cross-asset','RISK'],
-   ['news','Calendario e news','Catalizzatori e pubblicazioni','NEWS']
+   ['risk','Rischio','Credito, volatilità e mercati','RIS'],
+   ['news','Notizie e calendario','Catalizzatori e pubblicazioni','FONTI']
   ].map(([hash,label,desc,mark])=>
     '<a class="hourly-route" href="#'+hash+'"><span class="hourly-route-mark">'+mark+'</span>'+
     '<span class="hourly-route-copy"><strong>'+label+'</strong><small>'+desc+'</small></span>'+
@@ -65,13 +136,14 @@
     '<span><span class="hourly-brand-mark" aria-hidden="true"></span> FX QUANT / GLOBAL MACRO DESK</span>'+
     '<span>'+safe(vintage)+' · '+safe(feed.edition_time_rome)+' Europe/Rome</span></div>'+
     '<div class="hourly-hero-grid">'+
-    '<header class="morning-lead hourly-hero" aria-label="Il quadro generale dei mercati">'+
-    '<div class="hourly-hero-upper"><span class="morning-kicker">IL QUADRO GENERALE DEI MERCATI</span>'+
+    '<header class="morning-lead hourly-hero" data-hourly-hero-to-sources="true" aria-label="Il quadro generale dei mercati: clicca per aprire notizie e fonti">'+
+    '<div class="hourly-hero-upper"><button type="button" class="morning-kicker hourly-kicker-sources" data-hourly-open-sources aria-controls="hourly-desk-news" aria-expanded="false">IL QUADRO GENERALE DEI MERCATI <span aria-hidden="true">↘</span></button>'+
     '<span class="hourly-research-tag">QUADRO &amp; INTERPRETAZIONE</span></div>'+
     '<h1>'+safe(feed.headline)+'</h1>'+
     '<p class="morning-deck">'+safe(feed.lead)+'</p>'+
     '<div class="hourly-hero-bottom"><span>Macro <i></i> Tassi <i></i> Mercati <i></i> Forex</span>'+
-    '<a href="#currencies">Esplora le valute <span aria-hidden="true">↗</span></a></div>'+
+    '<div class="hourly-hero-actions"><button type="button" class="hourly-hero-sources-button" data-hourly-open-sources aria-controls="hourly-desk-news" aria-expanded="false">Notizie e fonti <span aria-hidden="true">↘</span></button>'+
+    '<a href="#currencies">Esplora le valute <span aria-hidden="true">↗</span></a></div></div>'+
     '</header>'+
     '<aside class="hourly-fx-spotlight" aria-label="Implicazioni Forex">'+
     '<div class="hourly-spotlight-top"><span class="morning-section-label">LE CONSEGUENZE PER IL FOREX</span>'+
@@ -118,11 +190,12 @@
     '<details class="morning-deep-reading hourly-desk-news" id="hourly-desk-news">'+
     '<summary><strong>Notizie e fonti di questa edizione</strong>'+
     '<span>'+news.length+' approfondimenti · apri il dossier <span aria-hidden="true">⌄</span></span></summary>'+
+    '<p class="hourly-desk-language-note">Titoli delle fonti estere sintetizzati in italiano. Per il testo originale, consulta il collegamento alla fonte.</p>'+
     '<div class="hourly-desk-news-body">'+news.map(x=>x.article).join('')+'</div></details></section>'+
     '<footer class="morning-source-notes hourly-method-note"><p>Ultima analisi pubblicata: '+
     safe(feed.edition_time_rome)+' (Europe/Rome). Metodo: confronto di dati datati, fonti ufficiali e proxy dichiarati. '+
     'I dati storici non sono movimenti intraday e l’interpretazione non costituisce un segnale di ingresso.</p>'+
     '</footer></article>';
  }
- root.FXQuantHourlyDesk={render,SCHEMA};
+ root.FXQuantHourlyDesk={render,SCHEMA,titleItaliano,openSources};
 })(typeof window!=='undefined'?window:globalThis);
