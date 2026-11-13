@@ -1,10 +1,10 @@
 'use strict';
-/* FX Quant Next — editorial display of an INDEPENDENT GitHub AI market desk.
+/* FX Quant Next — editorial display of an FREE GitHub source-based market desk.
  * Never generates alerts, never talks to ChatGPT Automations.
  * If the source is absent/invalid the canonical existing Panoramica remains.
  */
 (function(root){
- const SCHEMA='GMFQ_NEXT_INDEPENDENT_HOURLY_AI_DESK_V1';
+ const SCHEMA='GMFQ_NEXT_FREE_HOURLY_DESK_V1';
  const goodDay=s=>typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s);
  const uri=x=>typeof x==='string'&&/^https:\/\/[^/\s@]+\.[^/\s@]+(?:\/[^\s]*)?$/.test(x);
  function render({feed,esc,date,dayNow}={}){
@@ -44,7 +44,7 @@
     '<header class="morning-lead"><span class="morning-kicker">IL QUADRO GENERALE DEI MERCATI</span>'+
     '<h1>'+safe(feed.headline)+'</h1><p class="morning-deck">'+safe(feed.lead)+'</p>'+
     '<div class="morning-edition-tags"><span>Macro · FX · Cross-Asset</span>'+
-    '<span>Ricerca AI · fonti collegate</span><span>Edizione effettiva '+safe(feed.edition_time_rome)+'</span></div>'+
+    '<span>Fonti pubbliche · analisi quantitativa</span><span>Ultima revisione '+safe(feed.edition_time_rome)+'</span></div>'+
     '</header>'+
     '<section class="morning-first-read" aria-label="Giudizio del desk sui mercati">'+
     '<div class="morning-section-label">COSA STA SUCCEDENDO E PERCHÉ CONTA</div>'+
