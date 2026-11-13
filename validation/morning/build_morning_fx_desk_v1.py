@@ -282,7 +282,7 @@ def build(root,day,now,*,event_seed=None):
         "US_CPI_U_HEADLINE_MOM_SA","US_CPI_U_CORE_MOM_SA"})
     pair_label=f"{pair[:3]}/{pair[3:]}"
     if stage=="TODAY":
-        if ccy=="USD" and event["event_type"]=="INFLATION":
+        if ccy=="USD" and event.get("title")=="Consumer Price Index":
             headline=("Il CPI mette alla prova la prudenza della Fed: "
                       "il dollaro ha bisogno di una conferma dai differenziali.")
             lead=(f"Dopo la Fed del 28 ottobre arriviamo al CPI con un differenziale "
@@ -301,6 +301,28 @@ def build(root,day,now,*,event_seed=None):
               "text":"La tesi USD si rafforza soltanto se il front-end USA sale rispetto all'Eurozona e il dollaro è confermato da più cambi, non da EUR/USD isolato."}
             scenario_alt={"title":"CPI più debole e disinflazione convincente",
               "text":"Il mercato potrebbe ridurre il rischio Fed restrittivo; cerchiamo calo relativo del front-end USD e prezzo FX coerente, separando effetto tassi e risk-off."}
+        elif ccy=="USD" and event.get("title")=="Producer Price Index":
+            headline=("PPI USA: il test per il dollaro è il repricing Fed, "
+                      "non il solo dato sui prezzi alla produzione.")
+            lead=("Il PPI di ottobre misura i prezzi alla produzione, "
+                  "non l'inflazione al consumo. Per il dollaro conta se "
+                  "la pubblicazione modifica le aspettative sul percorso "
+                  "della Fed rispetto alle altre banche centrali. "
+                  "Non possiamo conoscere in anticipo sorpresa, composizione "
+                  "o reazione del Forex.")
+            catalyst=(f"Alle {clock} italiane è previsto il Producer Price Index "
+                      f"USA ({event.get('reference_period','periodo da verificare')}). "
+                      f"{reference}"
+                      "Prezzi alla produzione più persistenti possono alimentare "
+                      "l'attenzione sui costi, ma il passaggio al CPI non è "
+                      "automatico. Per interpretare il dato servono "
+                      "consenso pre-pubblicazione, composizione e revisioni; "
+                      "poi variazioni OIS/futures e risposte osservate "
+                      "su EUR/USD e USD/JPY.")
+            scenario_main={"title":"PPI sopra attese con pricing Fed più restrittivo",
+              "text":"Una reazione USD più convincente richiede il rialzo relativo del front-end USA e conferma dei cambi. Il PPI non prova da solo inflazione persistente al consumo."}
+            scenario_alt={"title":"PPI debole oppure risposta dei tassi assente",
+              "text":"Una lettura più morbida può pesare sul dollaro soltanto se modifica il pricing monetario relativo. Prezzo e tassi in divergenza riducono la tesi."}
         elif ccy=="GBP" and event["event_type"]=="GROWTH":
             headline=("Dopo il rialzo della BoE, il PIL britannico mette alla prova "
                       "la tenuta della sterlina.")
