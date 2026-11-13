@@ -37,6 +37,55 @@ assert(out.includes('data-standalone-market-desk="active"'));
 assert(out.indexOf('IL QUADRO GENERALE DEI MERCATI')<out.indexOf('Notizie e fonti di questa edizione'),
  'Overall narrative must come before article drilldown');
 assert(out.includes('LE CONSEGUENZE PER IL FOREX'));
+assert(out.includes('data-hourly-hero-to-sources="true"'),
+ 'The market-picture hero must lead to source evidence');
+assert(out.includes('data-hourly-open-sources'),
+ 'The source dossier must have keyboard-accessible native buttons');
+assert(out.includes('aria-controls="hourly-desk-news"'),
+ 'The source action must identify the exact expandable dossier');
+assert(out.includes('Notizie e fonti'),
+ 'The click destination should be understandable in Italian');
+const englishNews=structuredClone(sample);
+englishNews.news=[
+ {headline:'Hydropower generation in the Southwest fell to record lows this summer',
+  analysis:'Approfondimento sulla produzione elettrica, non prova di una variazione del WTI.',
+  kind:'NEWS',published_date:'2026-11-13',event_date:'2026-11-13',
+  market_area:'ENERGIA',sources:['https://www.eia.gov/todayinenergy/detail.php?id=68445']},
+ {headline:'The Bank of England, the Monetary Authority of Singapore, and the Bank of Thailand: Project Meridian FX APAC',
+  analysis:'Comunicazione delle autorità monetarie sul progetto di collaborazione.',
+  kind:'FOLLOW_UP',published_date:'2026-11-13',event_date:'2026-11-13',
+  market_area:'BANCHE CENTRALI',sources:['https://www.bankofengland.co.uk/news/2026/november/the-boe-monetary-authority-of-singapore-and-bank-of-thailand-media-release']}
+];
+englishNews.provenance.web_source_urls=englishNews.news.map(x=>x.sources[0]);
+const italian=render(englishNews);
+assert(italian.includes('Produzione idroelettrica nel Sud-Ovest USA'),
+ 'EIA English headline should be accurately labelled in Italian');
+assert(italian.includes('Progetto Meridian FX APAC: collaborazione'),
+ 'Bank of England collaboration should be labelled in Italian');
+assert(!italian.includes('Hydropower generation')&&!italian.includes('The Bank of England'),
+ 'Do not show untranslated foreign RSS headlines on Home');
+assert(!italian.includes('follow-up'),'News category labels must be Italian');
+assert(italian.includes('https://www.eia.gov/todayinenergy/detail.php?id=68445')&&
+ italian.includes('https://www.bankofengland.co.uk/news/2026/november/'),
+ 'Italian display labels must retain the original authoritative citations');
+assert(win.FXQuantHourlyDesk.titleItaliano({headline:'New energy study released',
+ market_area:'ENERGIA',sources:['https://www.eia.gov/todayinenergy/detail.php?id=68445']}).startsWith('EIA: pubblicazione su'),
+ 'Unknown foreign RSS title must use a conservative Italian synopsis, not invented translation');
+assert(win.FXQuantHourlyDesk.titleItaliano({headline:'Forza del dollaro contro euro',
+ market_area:'FOREX',sources:[]})==='Forza del dollaro contro euro',
+ 'Existing Italian analysis must remain unchanged');
+const dossier={open:false,scrolled:false,focused:false,
+ scrollIntoView(){this.scrolled=true;},
+ querySelector(name){return name==='summary'?{focus:()=>{this.focused=true}}:null}};
+let attrs={};
+const mockDesk={querySelector:sel=>sel==='details#hourly-desk-news'?dossier:null,
+ querySelectorAll:sel=>sel==='[data-hourly-open-sources]'?[{setAttribute:(k,v)=>attrs[k]=v}]:[]};
+const mockButton={closest:sel=>sel==='.hourly-market-desk'?mockDesk:null};
+assert(win.FXQuantHourlyDesk.openSources(mockButton),
+ 'Button click must open the correct source dossier');
+assert(dossier.open&&dossier.scrolled&&dossier.focused&&attrs['aria-expanded']==='true',
+ 'The dossier must expand, scroll into view and receive keyboard focus');
+
 assert(out.includes('class="hourly-hero-grid"'),'Hero has an FX research spotlight, not a one-column newspaper');
 assert(out.includes('class="hourly-fx-spotlight"'),'Forex consequences must be prominent at first glance');
 assert(out.includes('class="hourly-decision-grid"'),'Three-part decision map must be visible');
@@ -74,8 +123,8 @@ const index=fs.readFileSync(path.join(ROOT,next,'index.html'),'utf8');
 assert(app.includes("get('hourlyDesk')"),'Home is wired to optional independent free research');
 assert(app.includes("fetch('../../../market-desk/hourly-market-desk-current.json'"),'Optional fetch endpoint missing');
 assert(!app.includes("hourlyDesk:'"),'New research must not become a mandatory operational feed');
-assert(index.includes('hourly-desk-ui-v1.js?v=3'));
-assert(index.includes('hourly-desk-ui-v1.css?v=2'));
+assert(index.includes('hourly-desk-ui-v1.js?v=4'));
+assert(index.includes('hourly-desk-ui-v1.css?v=3'));
 assert(index.includes('app.js?v=18.47-free-desk-persist'));
 const css=fs.readFileSync(path.join(ROOT,next,'hourly-desk-ui-v1.css'),'utf8');
 assert(css.includes('.hourly-hero-grid')&&css.includes('.hourly-navigation-grid')&&css.includes('.hourly-desk-news-body'),
