@@ -333,7 +333,7 @@ function build(api){
     'Il futures ASX bank-bill a sei mesi ('+date(cur.rate.asof)+') varia di '+sign(cur.rate.changeBp,1,' pb')+
     ' nella settimana: movimento contenuto. È un proxy direzionale di mercato con premio di credito, non un OIS né un percorso OCR.' :
    cur.rate.quality==='PROXY'?
-    'Il 2Y governativo ('+date(cur.rate.asof)+') si è mosso '
+    'Il 2Y governativo ('+date(cur.rate.asof)+') si è mosso '+
     (cur.rate.score>0?'al rialzo':cur.rate.score<0?'al ribasso':'in modo limitato')+
     ': è soltanto un proxy, non un OIS né una decisione già prezzata.':
     'Per i tassi il modello utilizza un contributo neutro per assunzione prudenziale. Il giudizio su '+country+' resta guidato da macro osservata e forza relativa Forex; il nuovo dato sui tassi potrà modificarlo.'):
