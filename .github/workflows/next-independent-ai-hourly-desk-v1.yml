@@ -1,5 +1,6 @@
 name: FX Quant Next Independent FREE Hourly Desk
 
+# This writer owns ONLY gh-pages:/market-desk/; V2 rsync --delete cannot erase it.
 # Standalone research feed for the WEBSITE only. No external paid AI/API,
 # no ChatGPT Automations interactions, no modifications to existing alerts.
 on:
