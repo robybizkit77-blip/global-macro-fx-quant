@@ -1,35 +1,33 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-13T15:09:02.310310Z",
-  "edition_time_rome": "2026-11-13 16:09",
-  "material_digest": "2fd5977e478b2aaa37aaa6bc95e9bd3222a3d3ecce1adbe46aac067ce165107c",
+  "generated_at_utc": "2026-11-13T18:53:05.550247Z",
+  "edition_time_rome": "2026-11-13 19:53",
+  "material_digest": "f9b5d9c4ec2f460fd432586dd586b794aedd745fc7d648183766afe05b47f45a",
   "editorial_contract": "V3_ECONOMIC_METHOD_ADAPTED_WITHOUT_LLM",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Il dollaro trova sostegno nei tassi relativi, mentre il rischio globale resta misto",
-  "lead": "I rendimenti governativi a breve scadenza salgono più rapidamente negli Stati Uniti che nell'area euro: il differenziale si è mosso a favore del dollaro. Azionario e credito mostrano un recupero nella chiusura precedente, ma la volatilità è aumentata in una rilevazione successiva. La propensione al rischio resta disomogenea.",
+  "lead": "I rendimenti governativi a breve scadenza salgono più rapidamente negli Stati Uniti che nell'area euro: il differenziale si è mosso a favore del dollaro. L'aumento della volatilità merita attenzione accanto ai mercati del credito: può segnalare una protezione più costosa senza dimostrare vendite forzate.",
   "news": [
     {
       "headline": "Forza del dollaro sui cross EUR/USD e USD/JPY",
       "analysis": "Due fixing BCE consecutivi indicano un USD più forte contro euro e yen. Il canale dei tassi USA–Eurozona può contribuire, mentre la BoJ e il rischio globale restano determinanti per il confronto con lo yen.",
       "kind": "FOLLOW_UP",
-      "published_date": "2026-11-12",
-      "event_date": "2026-11-12",
+      "published_date": "2026-11-13",
+      "event_date": "2026-11-13",
       "market_area": "FOREX",
       "sources": [
         "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml"
       ]
     },
     {
-      "headline": "Azionario e credito recuperano, ma la volatilità richiede prudenza",
-      "analysis": "S&P 500 e Nasdaq avanzano nell'ultima chiusura comune; gli spread HY e IG si restringono nella medesima seduta. Il VIX più recente cresce: un miglioramento del credito non equivale da solo a risk-on stabile.",
+      "headline": "VIX: +1.21 punti nella chiusura del 2026-11-12",
+      "analysis": "La volatilità azionaria aumenta, mentre una lettura completa dello stress richiede il confronto con credito e valute cicliche. Nessun flusso o acquisto di protezione specifico è deducibile da questo solo livello.",
       "kind": "FOLLOW_UP",
-      "published_date": "2026-11-11",
-      "event_date": "2026-11-11",
-      "market_area": "AZIONI / CREDITO",
+      "published_date": "2026-11-12",
+      "event_date": "2026-11-12",
+      "market_area": "RISCHIO",
       "sources": [
-        "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
-        "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2",
         "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
       ]
     },
@@ -59,7 +57,7 @@
     {
       "headline": "Hydropower generation in the Southwest fell to record lows this summer",
       "analysis": "Approfondimento energetico o strutturale: dal titolo non emerge un nuovo segnale sul prezzo del petrolio. Leggere la pubblicazione originale; valutare soltanto dopo l'eventuale rilevanza per domanda, offerta e prezzi.",
-      "kind": "NEWS",
+      "kind": "FOLLOW_UP",
       "published_date": "2026-11-13",
       "event_date": "2026-11-13",
       "market_area": "ENERGIA",
@@ -70,7 +68,7 @@
     {
       "headline": "The Bank of England, the Monetary Authority of Singapore, and the Bank of Thailand: Project Meridian FX APAC",
       "analysis": "Comunicazione ufficiale non classificabile come catalizzatore macro/FX usando soltanto il titolo. Consultare la fonte per chiarire la rilevanza; non dedurre un movimento di mercato.",
-      "kind": "NEWS",
+      "kind": "FOLLOW_UP",
       "published_date": "2026-11-13",
       "event_date": "2026-11-13",
       "market_area": "BANCHE CENTRALI",
@@ -79,16 +77,14 @@
       ]
     }
   ],
-  "desk_judgment": "I rendimenti governativi a breve scadenza salgono più rapidamente negli Stati Uniti che nell'area euro: il differenziale si è mosso a favore del dollaro. Azionario e credito mostrano un recupero nella chiusura precedente, ma la volatilità è aumentata in una rilevazione successiva. La propensione al rischio resta disomogenea. Oro in rialzo e petrolio in calo negli ultimi futures rilevati offrono due segnali differenti: ricerca di protezione e domanda energetica sono ipotesi da verificare, non flussi già dimostrati.",
+  "desk_judgment": "I rendimenti governativi a breve scadenza salgono più rapidamente negli Stati Uniti che nell'area euro: il differenziale si è mosso a favore del dollaro. L'aumento della volatilità merita attenzione accanto ai mercati del credito: può segnalare una protezione più costosa senza dimostrare vendite forzate. Oro in rialzo e petrolio in calo negli ultimi futures rilevati offrono due segnali differenti: ricerca di protezione e domanda energetica sono ipotesi da verificare, non flussi già dimostrati.",
   "fx_implications": "Negli ultimi fixing BCE il dollaro si è rafforzato sia contro euro sia contro yen. Il movimento contro l'euro è coerente con il differenziale dei 2Y USA–Eurozona, ma questa coincidenza non dimostra causalità. Per USD/JPY conta anche la traiettoria attesa della BoJ; per EUR/USD la differenza fra Fed e BCE.",
-  "what_changed": "Prima sintesi del motore indipendente: le osservazioni provengono da sedute e fonti diverse, perciò il giudizio distingue quadro di fondo da novità effettive.",
+  "what_changed": "Sono entrate nuove osservazioni o pubblicazioni rispetto alla precedente edizione. La direzione relativa di tassi, Forex, credito e materie prime viene ricomposta in un solo quadro economico, senza attribuire automaticamente causalità.",
   "contrary_evidence": "La prova contraria a un dollaro sostenuto dai tassi sarebbe un indebolimento dei cross USD mentre il differenziale governativo resta favorevole. I diversi orari di rilevazione fra azioni, credito e VIX impediscono di trattarli come una sola reazione intraday.",
   "watch": "Il prossimo catalizzatore sul calendario è Swiss GDP flash (CHF, 2026-11-16): conteranno sorpresa rispetto alle attese, composizione e risposta dei tassi relativi. Il confronto con credito, volatilità e fixing successivi aiuterà a distinguere un movimento persistente da uno temporaneo.",
   "provenance": {
     "web_source_urls": [
       "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
-      "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2",
-      "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
       "https://query1.finance.yahoo.com/v8/finance/chart/CL=F",
       "https://query1.finance.yahoo.com/v8/finance/chart/GC=F",
       "https://www.bankofengland.co.uk/news/2026/november/the-boe-monetary-authority-of-singapore-and-bank-of-thailand-media-release",
@@ -99,12 +95,18 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-13",
-      "rss_checked_at_utc": "2026-11-13T15:09:02.310310Z",
+      "rss_checked_at_utc": "2026-11-13T18:53:05.550247Z",
       "commodities": "2026-11-13"
     },
     "no_paid_api": true,
     "no_ai_model": true,
     "chatgpt_automation_unchanged": true
   },
-  "history": []
+  "history": [
+    {
+      "generated_at_utc": "2026-11-13T15:09:02.310310Z",
+      "headline": "Il dollaro trova sostegno nei tassi relativi, mentre il rischio globale resta misto",
+      "material_digest": "2fd5977e478b2aaa37aaa6bc95e9bd3222a3d3ecce1adbe46aac067ce165107c"
+    }
+  ]
 }
