@@ -68,6 +68,13 @@ async function inspectRoute(page,label,key){
    'Dossier should start collapsed until the user chooses a cross');
   assert.equal(await locator(page,'.decision-desk-story').count(),0,
    'Old permanently expanded pair dossier must not displace the ranking');
+ }else if(key==='rates'){
+  const bridge=locator(page,'.rates-fx-handoff');
+  assert.equal(await bridge.count(),1,label+' rates-to-FX evidence missing');
+  const proof=await bridge.getAttribute('data-fx-proof');
+  assert(['ready','unavailable'].includes(proof),label+' unclassified relative rates proof');
+  assert((await bridge.innerText()).includes('NON OIS'),
+   label+' government yield comparison is incorrectly labeled as OIS');
  }else if(key==='cot'){
   assert.equal(await locator(page,'.cot-desk-overview').count(),1,'COT G8 overview missing');
   assert.equal(await locator(page,'.cot-desk-card').count(),4,'COT evidence cards missing');
