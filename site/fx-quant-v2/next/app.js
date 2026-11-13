@@ -492,6 +492,10 @@ function fxHomeDesk(){
 }
 
 function overview(){
+ // Independent GitHub AI desk replaces the historical morning when—and only when—
+ // a source-validated edition actually exists. A missing feed cannot blank Home.
+ const hourly=window.FXQuantHourlyDesk?.render?.({feed:get('hourlyDesk'),esc,date,dayNow});
+ if(hourly)return hourly;
  const morning=get('morningDesk');
  if(typeof window!=='undefined' && window.FXQuantMorningDesk?.build && morning){
   // A new, independently dated FX snapshot must never rewrite the archived
@@ -1193,6 +1197,23 @@ async function loadAll(){
   }catch(e){nextErrors[key]=String(e.message||e);}
   finally{clearTimeout(timer)}
  });
+ // This source is OPTIONAL: it lives exclusively on gh-pages, outside the
+ // certified operational-data contract. HTTP 404/invalid AI output never
+ // changes the existing dashboard or its source-count/readiness receipts.
+ jobs.push((async()=>{
+  const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),10000);
+  try{
+   const r=await fetch('./hourly-market-desk-current.json',{cache:'no-store',signal:ctl.signal});
+   if(!r.ok)return;
+   const d=await r.json();
+   if(d?.schema==='GMFQ_NEXT_INDEPENDENT_HOURLY_AI_DESK_V1'&&d.status==='ACTIVE'&&
+      Array.isArray(d.news)&&d.news.length>0&&d.news.length<=6&&
+      validDay(d.generated_at_utc?.slice(0,10))&&
+      d.generated_at_utc.slice(0,10)<=dayNow())nextData.hourlyDesk=d;
+  }catch(e){
+   // The independent editorial feed is not a required operational source.
+  }finally{clearTimeout(timer)}
+ })());
  try{
   await Promise.allSettled(jobs);
   // Rebuild the entire research from the same fetch cycle. A failed source is
