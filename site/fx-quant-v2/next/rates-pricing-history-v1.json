@@ -1,0 +1,3029 @@
+{
+  "schema": "GMFQ_NEXT_G8_PRICING_HISTORY_V1",
+  "as_of": "2026-11-13",
+  "eligible_for_fx_engine": false,
+  "eligible_for_backtests_as_official_ois": false,
+  "official_ois_created": false,
+  "date_gaps_interpolated": false,
+  "excluded_conflicted_contract_days": 10,
+  "note": "Archive quotes have source dates but may be collected later. Official published 3M/6M/12M futures tenor series can rotate contracts. Secondary rates always retain their listed contract identity; NZD past references are derived from ASX proxy deltas, not independent observations. No meeting probabilities or signals.",
+  "currencies": {
+    "USD": {
+      "kind": "FUTURES SECONDARI",
+      "quality": "STIMA INDICATIVA",
+      "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+      "tenors": {
+        "3m": [
+          {
+            "date": "2026-10-16",
+            "rate": 4.07,
+            "contract": "ZQZ2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-19T13:43:55.077599Z"
+          },
+          {
+            "date": "2026-10-19",
+            "rate": 4.08,
+            "contract": "ZQZ2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-20T04:22:28.406195Z"
+          },
+          {
+            "date": "2026-10-20",
+            "rate": 4.07,
+            "contract": "ZQZ2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-21T06:57:19.726633Z"
+          },
+          {
+            "date": "2026-10-21",
+            "rate": 4.075,
+            "contract": "ZQZ2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-21T14:49:57.453274Z"
+          },
+          {
+            "date": "2026-10-22",
+            "rate": 4.045,
+            "contract": "ZQZ2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-23T04:24:33.730043Z"
+          },
+          {
+            "date": "2026-10-23",
+            "rate": 4.035,
+            "contract": "ZQZ2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-26T12:23:54.310391Z"
+          },
+          {
+            "date": "2026-10-26",
+            "rate": 4.05,
+            "contract": "ZQZ2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-26T16:22:01.924125Z"
+          },
+          {
+            "date": "2026-10-27",
+            "rate": 4.05,
+            "contract": "ZQZ2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-27T15:36:20.846170Z"
+          },
+          {
+            "date": "2026-10-29",
+            "rate": 4.03,
+            "contract": "ZQZ2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-29T09:36:12.331382Z"
+          },
+          {
+            "date": "2026-11-02",
+            "rate": 4.01,
+            "contract": "ZQZ2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-02T10:54:45.247616Z"
+          },
+          {
+            "date": "2026-11-03",
+            "rate": 4.02,
+            "contract": "ZQZ2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-03T15:12:34.331156Z"
+          },
+          {
+            "date": "2026-11-04",
+            "rate": 4.14,
+            "contract": "ZQG2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-04T08:17:03.019159Z"
+          },
+          {
+            "date": "2026-11-05",
+            "rate": 4.135,
+            "contract": "ZQG2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-05T08:03:03.808395Z"
+          },
+          {
+            "date": "2026-11-09",
+            "rate": 4.135,
+            "contract": "ZQG2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-09T12:11:13.520049Z"
+          },
+          {
+            "date": "2026-11-10",
+            "rate": 4.145,
+            "contract": "ZQG2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-10T09:39:39.610863Z"
+          },
+          {
+            "date": "2026-11-11",
+            "rate": 4.315,
+            "contract": "ZQG2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-11T08:48:05.279730Z"
+          },
+          {
+            "date": "2026-11-12",
+            "rate": 4.305,
+            "contract": "ZQG2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-12T08:58:28.664155Z"
+          },
+          {
+            "date": "2026-11-13",
+            "rate": 4.335,
+            "contract": "ZQG2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-13T10:48:19.723620Z"
+          }
+        ],
+        "6m": [
+          {
+            "date": "2026-10-20",
+            "rate": 4.44,
+            "contract": "ZQJ2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-21T06:57:19.726633Z"
+          },
+          {
+            "date": "2026-10-21",
+            "rate": 4.435,
+            "contract": "ZQJ2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-22T09:03:22.448709Z"
+          },
+          {
+            "date": "2026-10-22",
+            "rate": 4.29,
+            "contract": "ZQJ2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-23T04:24:33.730043Z"
+          },
+          {
+            "date": "2026-10-23",
+            "rate": 4.33,
+            "contract": "ZQJ2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-26T12:23:54.310391Z"
+          },
+          {
+            "date": "2026-10-26",
+            "rate": 4.365,
+            "contract": "ZQJ2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-27T04:26:04.878142Z"
+          },
+          {
+            "date": "2026-10-27",
+            "rate": 4.38,
+            "contract": "ZQJ2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-28T04:25:00.789514Z"
+          },
+          {
+            "date": "2026-10-28",
+            "rate": 4.395,
+            "contract": "ZQJ2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-29T09:36:12.331382Z"
+          },
+          {
+            "date": "2026-10-29",
+            "rate": 4.32,
+            "contract": "ZQJ2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-29T19:25:13.473447Z"
+          },
+          {
+            "date": "2026-11-02",
+            "rate": 4.28,
+            "contract": "ZQJ2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-03T15:12:34.331156Z"
+          },
+          {
+            "date": "2026-11-03",
+            "rate": 4.295,
+            "contract": "ZQJ2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-03T23:57:20.501574Z"
+          },
+          {
+            "date": "2026-11-04",
+            "rate": 4.29,
+            "contract": "ZQJ2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-04T20:31:19.985046Z"
+          },
+          {
+            "date": "2026-11-05",
+            "rate": 4.195,
+            "contract": "ZQJ2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-05T20:53:26.417214Z"
+          },
+          {
+            "date": "2026-11-09",
+            "rate": 4.27,
+            "contract": "ZQJ2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-09T19:37:13.968530Z"
+          },
+          {
+            "date": "2026-11-10",
+            "rate": 4.475,
+            "contract": "ZQJ2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-10T20:33:44.338187Z"
+          },
+          {
+            "date": "2026-11-11",
+            "rate": 4.5,
+            "contract": "ZQJ2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-11T21:23:59.489838Z"
+          },
+          {
+            "date": "2026-11-12",
+            "rate": 4.535,
+            "contract": "ZQJ2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-13T00:11:06.953301Z"
+          }
+        ],
+        "12m": [
+          {
+            "date": "2026-10-16",
+            "rate": 4.59,
+            "contract": "ZQV2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-19T13:43:55.077599Z"
+          },
+          {
+            "date": "2026-10-19",
+            "rate": 4.66,
+            "contract": "ZQV2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-20T04:22:28.406195Z"
+          },
+          {
+            "date": "2026-10-20",
+            "rate": 4.685,
+            "contract": "ZQV2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-21T06:57:19.726633Z"
+          },
+          {
+            "date": "2026-10-21",
+            "rate": 4.68,
+            "contract": "ZQV2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-22T09:03:22.448709Z"
+          },
+          {
+            "date": "2026-10-22",
+            "rate": 4.48,
+            "contract": "ZQV2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-23T04:24:33.730043Z"
+          },
+          {
+            "date": "2026-10-23",
+            "rate": 4.56,
+            "contract": "ZQV2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-26T12:23:54.310391Z"
+          },
+          {
+            "date": "2026-10-26",
+            "rate": 4.595,
+            "contract": "ZQV2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-27T04:26:04.878142Z"
+          },
+          {
+            "date": "2026-10-27",
+            "rate": 4.62,
+            "contract": "ZQV2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-28T04:25:00.789514Z"
+          },
+          {
+            "date": "2026-10-28",
+            "rate": 4.68,
+            "contract": "ZQV2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-29T09:36:12.331382Z"
+          },
+          {
+            "date": "2026-10-29",
+            "rate": 4.53,
+            "contract": "ZQV2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-29T19:25:13.473447Z"
+          },
+          {
+            "date": "2026-11-02",
+            "rate": 4.455,
+            "contract": "ZQV2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-03T15:12:34.331156Z"
+          },
+          {
+            "date": "2026-11-03",
+            "rate": 4.48,
+            "contract": "ZQV2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-03T23:57:20.501574Z"
+          },
+          {
+            "date": "2026-11-04",
+            "rate": 4.445,
+            "contract": "ZQV2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-04T20:31:19.985046Z"
+          },
+          {
+            "date": "2026-11-05",
+            "rate": 4.29,
+            "contract": "ZQV2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-05T20:53:51.068108Z"
+          },
+          {
+            "date": "2026-11-09",
+            "rate": 4.395,
+            "contract": "ZQV2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-10T01:59:44.741441Z"
+          },
+          {
+            "date": "2026-11-10",
+            "rate": 4.62,
+            "contract": "ZQV2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-10T23:10:40.150897Z"
+          },
+          {
+            "date": "2026-11-11",
+            "rate": 4.68,
+            "contract": "ZQV2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-11T21:23:59.489838Z"
+          },
+          {
+            "date": "2026-11-12",
+            "rate": 4.795,
+            "contract": "ZQV2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-13T00:11:06.953301Z"
+          }
+        ]
+      },
+      "latest_date": "2026-11-13",
+      "observed_dates": 19,
+      "derived_reference_points": 0
+    },
+    "EUR": {
+      "kind": "FUTURES SECONDARI",
+      "quality": "STIMA INDICATIVA",
+      "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+      "tenors": {
+        "3m": [
+          {
+            "date": "2026-10-16",
+            "rate": 2.5325,
+            "contract": "FST3V2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-19T13:43:55.077599Z"
+          },
+          {
+            "date": "2026-10-19",
+            "rate": 2.535,
+            "contract": "FST3V2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-21T06:57:19.726633Z"
+          },
+          {
+            "date": "2026-10-20",
+            "rate": 2.5275,
+            "contract": "FST3V2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-21T14:49:57.453274Z"
+          },
+          {
+            "date": "2026-10-21",
+            "rate": 2.5225,
+            "contract": "FST3V2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-23T04:24:33.730043Z"
+          },
+          {
+            "date": "2026-10-23",
+            "rate": 2.51,
+            "contract": "FST3V2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-26T12:23:54.310391Z"
+          },
+          {
+            "date": "2026-10-26",
+            "rate": 2.52,
+            "contract": "FST3V2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-27T04:26:04.878142Z"
+          },
+          {
+            "date": "2026-10-27",
+            "rate": 2.515,
+            "contract": "FST3V2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-28T04:33:36.907261Z"
+          },
+          {
+            "date": "2026-10-28",
+            "rate": 2.5175,
+            "contract": "FST3V2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-29T09:36:12.331382Z"
+          },
+          {
+            "date": "2026-10-29",
+            "rate": 2.5125,
+            "contract": "FST3V2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-30T10:44:18.566168Z"
+          },
+          {
+            "date": "2026-10-30",
+            "rate": 2.5125,
+            "contract": "FST3V2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-31T21:00:09.773695Z"
+          },
+          {
+            "date": "2026-11-02",
+            "rate": 2.515,
+            "contract": "FST3V2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-03T15:12:34.331156Z"
+          },
+          {
+            "date": "2026-11-03",
+            "rate": 2.515,
+            "contract": "FST3V2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-04T13:58:43.471890Z"
+          },
+          {
+            "date": "2026-11-05",
+            "rate": 2.575,
+            "contract": "FST3X2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-06T06:33:24.237573Z"
+          },
+          {
+            "date": "2026-11-06",
+            "rate": 2.5775,
+            "contract": "FST3X2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-07T07:01:40.277446Z"
+          },
+          {
+            "date": "2026-11-09",
+            "rate": 2.585,
+            "contract": "FST3X2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-10T12:44:37.247656Z"
+          },
+          {
+            "date": "2026-11-10",
+            "rate": 2.6,
+            "contract": "FST3X2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-11T12:44:43.767989Z"
+          },
+          {
+            "date": "2026-11-11",
+            "rate": 2.6025,
+            "contract": "FST3X2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-12T13:00:14.870160Z"
+          },
+          {
+            "date": "2026-11-12",
+            "rate": 2.6025,
+            "contract": "FST3X2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-13T13:04:31.202434Z"
+          }
+        ],
+        "6m": [
+          {
+            "date": "2026-10-19",
+            "rate": 2.895,
+            "contract": "FST3G2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-21T06:57:19.726633Z"
+          },
+          {
+            "date": "2026-10-20",
+            "rate": 2.8675,
+            "contract": "FST3G2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-21T14:49:57.453274Z"
+          },
+          {
+            "date": "2026-10-21",
+            "rate": 2.8425,
+            "contract": "FST3G2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-23T04:24:33.730043Z"
+          },
+          {
+            "date": "2026-10-23",
+            "rate": 2.8525,
+            "contract": "FST3G2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-26T12:23:54.310391Z"
+          },
+          {
+            "date": "2026-10-26",
+            "rate": 2.8525,
+            "contract": "FST3G2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-27T04:26:04.878142Z"
+          },
+          {
+            "date": "2026-10-27",
+            "rate": 2.8225,
+            "contract": "FST3G2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-28T04:25:00.789514Z"
+          },
+          {
+            "date": "2026-10-28",
+            "rate": 2.835,
+            "contract": "FST3G2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-29T09:36:12.331382Z"
+          },
+          {
+            "date": "2026-10-29",
+            "rate": 2.835,
+            "contract": "FST3G2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-30T07:19:25.316537Z"
+          },
+          {
+            "date": "2026-10-30",
+            "rate": 2.8325,
+            "contract": "FST3G2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-31T09:30:49.778787Z"
+          },
+          {
+            "date": "2026-11-02",
+            "rate": 2.8375,
+            "contract": "FST3G2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-03T15:12:34.331156Z"
+          },
+          {
+            "date": "2026-11-03",
+            "rate": 2.8375,
+            "contract": "FST3G2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-04T12:05:48.549893Z"
+          },
+          {
+            "date": "2026-11-04",
+            "rate": 2.8275,
+            "contract": "FST3G2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-05T12:16:22.887033Z"
+          },
+          {
+            "date": "2026-11-05",
+            "rate": 2.7725,
+            "contract": "FST3G2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-06T12:26:25.936783Z"
+          },
+          {
+            "date": "2026-11-06",
+            "rate": 2.775,
+            "contract": "FST3G2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-08T21:04:10.152767Z"
+          },
+          {
+            "date": "2026-11-09",
+            "rate": 2.8,
+            "contract": "FST3G2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-10T15:24:06.746123Z"
+          },
+          {
+            "date": "2026-11-10",
+            "rate": 2.83,
+            "contract": "FST3G2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-11T15:58:46.803243Z"
+          },
+          {
+            "date": "2026-11-11",
+            "rate": 2.855,
+            "contract": "FST3G2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-12T16:42:37.711242Z"
+          }
+        ],
+        "12m": [
+          {
+            "date": "2026-10-19",
+            "rate": 3.11,
+            "contract": "FST3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-19T13:43:55.077599Z"
+          },
+          {
+            "date": "2026-10-20",
+            "rate": 3.1,
+            "contract": "FST3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-21T06:57:19.726633Z"
+          },
+          {
+            "date": "2026-10-21",
+            "rate": 3.0925,
+            "contract": "FST3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-21T14:49:57.453274Z"
+          },
+          {
+            "date": "2026-10-22",
+            "rate": 3.03,
+            "contract": "FST3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-23T04:24:33.730043Z"
+          },
+          {
+            "date": "2026-10-23",
+            "rate": 3.0425,
+            "contract": "FST3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-26T12:23:54.310391Z"
+          },
+          {
+            "date": "2026-10-26",
+            "rate": 3.105,
+            "contract": "FST3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-27T04:26:04.878142Z"
+          },
+          {
+            "date": "2026-10-27",
+            "rate": 3.08,
+            "contract": "FST3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-28T04:25:00.789514Z"
+          },
+          {
+            "date": "2026-10-29",
+            "rate": 3.0675,
+            "contract": "FST3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-29T09:36:12.331382Z"
+          },
+          {
+            "date": "2026-10-30",
+            "rate": 3.0475,
+            "contract": "FST3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-30T10:44:18.566168Z"
+          },
+          {
+            "date": "2026-11-02",
+            "rate": 3.0975,
+            "contract": "FST3U2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-02T16:29:59.793553Z"
+          },
+          {
+            "date": "2026-11-03",
+            "rate": 3.095,
+            "contract": "FST3U2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-03T18:23:17.129435Z"
+          },
+          {
+            "date": "2026-11-04",
+            "rate": 3.0025,
+            "contract": "FST3U2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-04T20:31:19.985046Z"
+          },
+          {
+            "date": "2026-11-05",
+            "rate": 3.01,
+            "contract": "FST3U2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-05T20:53:51.068108Z"
+          },
+          {
+            "date": "2026-11-06",
+            "rate": 2.98,
+            "contract": "FST3U2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-07T00:52:09.761179Z"
+          },
+          {
+            "date": "2026-11-09",
+            "rate": 3.0025,
+            "contract": "FST3U2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-10T01:59:44.741441Z"
+          },
+          {
+            "date": "2026-11-10",
+            "rate": 3.1225,
+            "contract": "FST3U2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-11T08:47:32.697782Z"
+          },
+          {
+            "date": "2026-11-12",
+            "rate": 3.1275,
+            "contract": "FST3U2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-12T08:58:28.664155Z"
+          },
+          {
+            "date": "2026-11-13",
+            "rate": 3.1725,
+            "contract": "FST3U2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-13T10:48:19.723620Z"
+          }
+        ]
+      },
+      "latest_date": "2026-11-13",
+      "observed_dates": 21,
+      "derived_reference_points": 0
+    },
+    "GBP": {
+      "kind": "OIS",
+      "quality": "FONTE UFFICIALE",
+      "source": "Bank of England · estimated sterling OIS yield curves · daily OIS archive",
+      "tenors": {
+        "3m": [
+          {
+            "date": "2026-10-14",
+            "rate": 4.1294,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-15",
+            "rate": 4.1267,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-19",
+            "rate": 4.142,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-20",
+            "rate": 4.1586,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-21",
+            "rate": 4.1415,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-23",
+            "rate": 4.1517,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-26",
+            "rate": 4.1718,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-28",
+            "rate": 4.1804,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-29",
+            "rate": 4.1614,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-30",
+            "rate": 4.1504,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-02",
+            "rate": 4.1568,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-03",
+            "rate": 4.1676,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-04",
+            "rate": 4.137,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-06",
+            "rate": 4.2119,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-09",
+            "rate": 4.2184,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-10",
+            "rate": 4.2752,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-11",
+            "rate": 4.2947,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-12",
+            "rate": 4.3124,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          }
+        ],
+        "6m": [
+          {
+            "date": "2026-10-14",
+            "rate": 4.4628,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-15",
+            "rate": 4.4465,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-19",
+            "rate": 4.4874,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-20",
+            "rate": 4.5217,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-21",
+            "rate": 4.4857,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-23",
+            "rate": 4.4932,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-26",
+            "rate": 4.5223,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-28",
+            "rate": 4.5447,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-29",
+            "rate": 4.5077,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-30",
+            "rate": 4.4784,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-02",
+            "rate": 4.4483,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-03",
+            "rate": 4.4804,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-04",
+            "rate": 4.4049,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-06",
+            "rate": 4.4615,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-09",
+            "rate": 4.4643,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-10",
+            "rate": 4.5708,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-11",
+            "rate": 4.6098,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-12",
+            "rate": 4.6326,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          }
+        ],
+        "12m": [
+          {
+            "date": "2026-10-14",
+            "rate": 4.8476,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-15",
+            "rate": 4.8093,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-19",
+            "rate": 4.8714,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-20",
+            "rate": 4.9384,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-21",
+            "rate": 4.8868,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-23",
+            "rate": 4.8853,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-26",
+            "rate": 4.9177,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-28",
+            "rate": 4.949,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-29",
+            "rate": 4.8963,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-30",
+            "rate": 4.8292,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-02",
+            "rate": 4.7295,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-03",
+            "rate": 4.7921,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-04",
+            "rate": 4.6805,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-06",
+            "rate": 4.7192,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-09",
+            "rate": 4.6804,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-10",
+            "rate": 4.8396,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-11",
+            "rate": 4.9065,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-12",
+            "rate": 4.9636,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          }
+        ]
+      },
+      "latest_date": "2026-11-12",
+      "observed_dates": 18,
+      "derived_reference_points": 0
+    },
+    "JPY": {
+      "kind": "FUTURES",
+      "quality": "FONTE UFFICIALE",
+      "source": "Tokyo Financial Exchange · Three-month TONA Futures",
+      "tenors": {
+        "3m": [
+          {
+            "date": "2026-10-15",
+            "rate": 1.475,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-16",
+            "rate": 1.475,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-20",
+            "rate": 1.475,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-21",
+            "rate": 1.475,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-22",
+            "rate": 1.475,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-26",
+            "rate": 1.465,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-27",
+            "rate": 1.468,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-29",
+            "rate": 1.468,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-30",
+            "rate": 1.467,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-02",
+            "rate": 1.46,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-04",
+            "rate": 1.455,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-05",
+            "rate": 1.455,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-06",
+            "rate": 1.455,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-09",
+            "rate": 1.437,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-10",
+            "rate": 1.437,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-11",
+            "rate": 1.44,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-12",
+            "rate": 1.44,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-13",
+            "rate": 1.44,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          }
+        ],
+        "6m": [
+          {
+            "date": "2026-10-15",
+            "rate": 1.712,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-16",
+            "rate": 1.712,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-20",
+            "rate": 1.712,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-21",
+            "rate": 1.712,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-22",
+            "rate": 1.712,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-26",
+            "rate": 1.702,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-27",
+            "rate": 1.705,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-29",
+            "rate": 1.705,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-30",
+            "rate": 1.704,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-02",
+            "rate": 1.697,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-04",
+            "rate": 1.672,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-05",
+            "rate": 1.662,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-06",
+            "rate": 1.662,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-09",
+            "rate": 1.606,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-10",
+            "rate": 1.606,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-11",
+            "rate": 1.59,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-12",
+            "rate": 1.642,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-13",
+            "rate": 1.642,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          }
+        ],
+        "12m": [
+          {
+            "date": "2026-10-15",
+            "rate": 2.018,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-16",
+            "rate": 2.039,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-20",
+            "rate": 2.009,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-21",
+            "rate": 2.025,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-22",
+            "rate": 2.019,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-26",
+            "rate": 1.979,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-27",
+            "rate": 1.982,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-29",
+            "rate": 1.999,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-30",
+            "rate": 1.998,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-02",
+            "rate": 1.991,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-04",
+            "rate": 1.955,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-05",
+            "rate": 1.935,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-06",
+            "rate": 1.935,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-09",
+            "rate": 1.879,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-10",
+            "rate": 1.879,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-11",
+            "rate": 1.863,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-12",
+            "rate": 1.882,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-13",
+            "rate": 1.882,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          }
+        ]
+      },
+      "latest_date": "2026-11-13",
+      "observed_dates": 18,
+      "derived_reference_points": 0
+    },
+    "CHF": {
+      "kind": "FUTURES SECONDARI",
+      "quality": "STIMA INDICATIVA",
+      "source": "TradingView public server-rendered contract pages · exchange-labelled dated futures",
+      "tenors": {
+        "3m": [
+          {
+            "date": "2026-10-16",
+            "rate": -0.0475,
+            "contract": "SA3U2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-19T13:43:55.077599Z"
+          },
+          {
+            "date": "2026-10-19",
+            "rate": -0.05,
+            "contract": "SA3U2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-20T04:22:28.406195Z"
+          },
+          {
+            "date": "2026-10-20",
+            "rate": -0.0475,
+            "contract": "SA3U2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-21T06:57:19.726633Z"
+          },
+          {
+            "date": "2026-10-21",
+            "rate": -0.045,
+            "contract": "SA3U2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-22T09:03:22.448709Z"
+          },
+          {
+            "date": "2026-10-22",
+            "rate": -0.0475,
+            "contract": "SA3U2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-23T04:24:33.730043Z"
+          },
+          {
+            "date": "2026-10-23",
+            "rate": -0.0475,
+            "contract": "SA3U2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-26T12:23:54.310391Z"
+          },
+          {
+            "date": "2026-10-26",
+            "rate": -0.0475,
+            "contract": "SA3U2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-27T15:36:20.846170Z"
+          },
+          {
+            "date": "2026-10-28",
+            "rate": -0.0475,
+            "contract": "SA3U2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-28T08:01:38.450272Z"
+          },
+          {
+            "date": "2026-10-29",
+            "rate": -0.0475,
+            "contract": "SA3U2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-29T09:36:12.331382Z"
+          },
+          {
+            "date": "2026-11-02",
+            "rate": 0.11,
+            "contract": "SA3H2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-02T12:53:17.872347Z"
+          },
+          {
+            "date": "2026-11-03",
+            "rate": 0.13,
+            "contract": "SA3H2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-03T15:12:34.331156Z"
+          },
+          {
+            "date": "2026-11-04",
+            "rate": 0.115,
+            "contract": "SA3H2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-04T13:00:45.541594Z"
+          },
+          {
+            "date": "2026-11-05",
+            "rate": 0.105,
+            "contract": "SA3H2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-05T13:09:09.486973Z"
+          },
+          {
+            "date": "2026-11-09",
+            "rate": 0.085,
+            "contract": "SA3H2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-09T13:59:24.457003Z"
+          },
+          {
+            "date": "2026-11-10",
+            "rate": 0.125,
+            "contract": "SA3H2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-10T14:21:31.795338Z"
+          },
+          {
+            "date": "2026-11-11",
+            "rate": 0.15,
+            "contract": "SA3H2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-11T14:25:10.996388Z"
+          },
+          {
+            "date": "2026-11-12",
+            "rate": 0.15,
+            "contract": "SA3H2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-12T14:38:33.921676Z"
+          },
+          {
+            "date": "2026-11-13",
+            "rate": 0.16,
+            "contract": "SA3H2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-13T14:44:30.503850Z"
+          }
+        ],
+        "6m": [
+          {
+            "date": "2026-10-19",
+            "rate": 0.01,
+            "contract": "SA3Z2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-19T13:43:55.077599Z"
+          },
+          {
+            "date": "2026-10-20",
+            "rate": 0.01,
+            "contract": "SA3Z2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-21T06:57:19.726633Z"
+          },
+          {
+            "date": "2026-10-21",
+            "rate": 0.005,
+            "contract": "SA3Z2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-21T14:49:57.453274Z"
+          },
+          {
+            "date": "2026-10-22",
+            "rate": -0.01,
+            "contract": "SA3Z2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-23T04:24:33.730043Z"
+          },
+          {
+            "date": "2026-10-23",
+            "rate": -0.01,
+            "contract": "SA3Z2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-23T11:24:43.801879Z"
+          },
+          {
+            "date": "2026-10-26",
+            "rate": -0.015,
+            "contract": "SA3Z2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-27T04:26:04.878142Z"
+          },
+          {
+            "date": "2026-10-27",
+            "rate": -0.015,
+            "contract": "SA3Z2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-28T04:25:00.789514Z"
+          },
+          {
+            "date": "2026-10-28",
+            "rate": -0.005,
+            "contract": "SA3Z2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-29T09:36:12.331382Z"
+          },
+          {
+            "date": "2026-10-29",
+            "rate": -0.015,
+            "contract": "SA3Z2026",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-30T07:19:25.316537Z"
+          },
+          {
+            "date": "2026-11-02",
+            "rate": 0.25,
+            "contract": "SA3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-02T12:00:39.485196Z"
+          },
+          {
+            "date": "2026-11-03",
+            "rate": 0.3,
+            "contract": "SA3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-03T15:12:34.331156Z"
+          },
+          {
+            "date": "2026-11-04",
+            "rate": 0.275,
+            "contract": "SA3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-04T12:05:48.549893Z"
+          },
+          {
+            "date": "2026-11-05",
+            "rate": 0.235,
+            "contract": "SA3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-05T12:16:22.887033Z"
+          },
+          {
+            "date": "2026-11-09",
+            "rate": 0.2,
+            "contract": "SA3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-09T13:59:24.457003Z"
+          },
+          {
+            "date": "2026-11-10",
+            "rate": 0.255,
+            "contract": "SA3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-10T13:46:41.570650Z"
+          },
+          {
+            "date": "2026-11-11",
+            "rate": 0.32,
+            "contract": "SA3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-11T14:04:37.533668Z"
+          },
+          {
+            "date": "2026-11-12",
+            "rate": 0.32,
+            "contract": "SA3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-12T13:50:59.200715Z"
+          },
+          {
+            "date": "2026-11-13",
+            "rate": 0.33,
+            "contract": "SA3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-13T13:57:53.680856Z"
+          }
+        ],
+        "12m": [
+          {
+            "date": "2026-10-19",
+            "rate": 0.32,
+            "contract": "SA3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-19T13:43:55.077599Z"
+          },
+          {
+            "date": "2026-10-20",
+            "rate": 0.335,
+            "contract": "SA3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-21T06:57:19.726633Z"
+          },
+          {
+            "date": "2026-10-21",
+            "rate": 0.31,
+            "contract": "SA3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-21T14:49:57.453274Z"
+          },
+          {
+            "date": "2026-10-22",
+            "rate": 0.24,
+            "contract": "SA3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-23T04:24:33.730043Z"
+          },
+          {
+            "date": "2026-10-23",
+            "rate": 0.275,
+            "contract": "SA3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-26T12:23:54.310391Z"
+          },
+          {
+            "date": "2026-10-26",
+            "rate": 0.275,
+            "contract": "SA3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-27T04:26:04.878142Z"
+          },
+          {
+            "date": "2026-10-27",
+            "rate": 0.27,
+            "contract": "SA3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-28T04:25:00.789514Z"
+          },
+          {
+            "date": "2026-10-28",
+            "rate": 0.33,
+            "contract": "SA3M2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-29T09:36:12.331382Z"
+          },
+          {
+            "date": "2026-10-29",
+            "rate": 0.435,
+            "contract": "SA3U2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-10-30T07:19:25.316537Z"
+          },
+          {
+            "date": "2026-11-02",
+            "rate": 0.485,
+            "contract": "SA3Z2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-03T15:12:34.331156Z"
+          },
+          {
+            "date": "2026-11-03",
+            "rate": 0.505,
+            "contract": "SA3Z2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-04T08:17:03.019159Z"
+          },
+          {
+            "date": "2026-11-04",
+            "rate": 0.435,
+            "contract": "SA3Z2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-05T02:17:38.475933Z"
+          },
+          {
+            "date": "2026-11-05",
+            "rate": 0.42,
+            "contract": "SA3Z2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-06T06:33:24.237573Z"
+          },
+          {
+            "date": "2026-11-06",
+            "rate": 0.395,
+            "contract": "SA3Z2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-07T07:01:40.277446Z"
+          },
+          {
+            "date": "2026-11-10",
+            "rate": 0.425,
+            "contract": "SA3Z2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-10T09:39:39.610863Z"
+          },
+          {
+            "date": "2026-11-11",
+            "rate": 0.505,
+            "contract": "SA3Z2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-11T08:48:05.279730Z"
+          },
+          {
+            "date": "2026-11-12",
+            "rate": 0.525,
+            "contract": "SA3Z2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-12T08:58:28.664155Z"
+          },
+          {
+            "date": "2026-11-13",
+            "rate": 0.57,
+            "contract": "SA3Z2027",
+            "source_class": "SECONDARY_SAME_CONTRACT",
+            "derived": false,
+            "captured_at_utc": "2026-11-13T10:48:19.723620Z"
+          }
+        ]
+      },
+      "latest_date": "2026-11-13",
+      "observed_dates": 20,
+      "derived_reference_points": 0
+    },
+    "AUD": {
+      "kind": "FUTURES",
+      "quality": "FONTE UFFICIALE",
+      "source": "ASX Futures End of Day Data · 30 Day Interbank Cash Rate futures (IB)",
+      "tenors": {
+        "3m": [
+          {
+            "date": "2026-10-15",
+            "rate": 4.685,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-16",
+            "rate": 4.695,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-20",
+            "rate": 4.705,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-21",
+            "rate": 4.77,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-22",
+            "rate": 4.795,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-23",
+            "rate": 4.77,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-27",
+            "rate": 4.785,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-28",
+            "rate": 4.845,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-29",
+            "rate": 4.83,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-30",
+            "rate": 4.835,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-02",
+            "rate": 4.835,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-03",
+            "rate": 4.85,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-04",
+            "rate": 4.86,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-05",
+            "rate": 4.855,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-06",
+            "rate": 4.85,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-09",
+            "rate": 4.85,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-10",
+            "rate": 4.85,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-11",
+            "rate": 4.855,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-12",
+            "rate": 4.855,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          }
+        ],
+        "6m": [
+          {
+            "date": "2026-10-15",
+            "rate": 4.775,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-16",
+            "rate": 4.765,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-20",
+            "rate": 4.79,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-21",
+            "rate": 4.85,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-22",
+            "rate": 4.885,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-23",
+            "rate": 4.845,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-27",
+            "rate": 4.865,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-28",
+            "rate": 4.94,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-29",
+            "rate": 4.935,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-30",
+            "rate": 4.915,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-02",
+            "rate": 4.935,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-03",
+            "rate": 4.915,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-04",
+            "rate": 4.925,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-05",
+            "rate": 4.92,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-06",
+            "rate": 4.88,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-09",
+            "rate": 4.885,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-10",
+            "rate": 4.885,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-11",
+            "rate": 4.91,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-12",
+            "rate": 4.91,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          }
+        ],
+        "12m": [
+          {
+            "date": "2026-10-15",
+            "rate": 4.84,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-16",
+            "rate": 4.79,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-20",
+            "rate": 4.795,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-21",
+            "rate": 4.87,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-22",
+            "rate": 4.885,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-23",
+            "rate": 4.815,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-27",
+            "rate": 4.835,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-28",
+            "rate": 4.9,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-29",
+            "rate": 4.87,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-30",
+            "rate": 4.83,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-02",
+            "rate": 4.865,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-03",
+            "rate": 4.8,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-04",
+            "rate": 4.795,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-05",
+            "rate": 4.765,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-06",
+            "rate": 4.705,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-09",
+            "rate": 4.71,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-10",
+            "rate": 4.705,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-11",
+            "rate": 4.75,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-12",
+            "rate": 4.75,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          }
+        ]
+      },
+      "latest_date": "2026-11-12",
+      "observed_dates": 19,
+      "derived_reference_points": 0
+    },
+    "NZD": {
+      "kind": "PROXY FUTURES",
+      "quality": "PROXY DIREZIONALE",
+      "source": "ASX official NZ futures end-of-day total traded report",
+      "tenors": {
+        "3m": [
+          {
+            "date": "2026-11-05",
+            "rate": 3.45,
+            "contract": "Mar 2027",
+            "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
+            "derived": true
+          },
+          {
+            "date": "2026-11-11",
+            "rate": 3.53,
+            "contract": "Mar 2027",
+            "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
+            "derived": true
+          },
+          {
+            "date": "2026-11-12",
+            "rate": 3.51,
+            "contract": "Mar 2027",
+            "source_class": "BANK_BILL_PROXY",
+            "derived": false
+          }
+        ],
+        "6m": [
+          {
+            "date": "2026-11-05",
+            "rate": 3.67,
+            "contract": "Jun 2027",
+            "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
+            "derived": true
+          },
+          {
+            "date": "2026-11-11",
+            "rate": 3.73,
+            "contract": "Jun 2027",
+            "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
+            "derived": true
+          },
+          {
+            "date": "2026-11-12",
+            "rate": 3.7,
+            "contract": "Jun 2027",
+            "source_class": "BANK_BILL_PROXY",
+            "derived": false
+          }
+        ],
+        "12m": [
+          {
+            "date": "2026-11-05",
+            "rate": 3.89,
+            "contract": "Dec 2027",
+            "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
+            "derived": true
+          },
+          {
+            "date": "2026-11-11",
+            "rate": 3.92,
+            "contract": "Dec 2027",
+            "source_class": "BANK_BILL_PROXY_DELTA_REFERENCE",
+            "derived": true
+          },
+          {
+            "date": "2026-11-12",
+            "rate": 3.89,
+            "contract": "Dec 2027",
+            "source_class": "BANK_BILL_PROXY",
+            "derived": false
+          }
+        ]
+      },
+      "latest_date": "2026-11-12",
+      "observed_dates": 1,
+      "derived_reference_points": 6
+    },
+    "CAD": {
+      "kind": "FUTURES",
+      "quality": "FONTE UFFICIALE",
+      "source": "Montréal Exchange public Market Review · Three-Month CORRA Futures (CRA)",
+      "tenors": {
+        "3m": [
+          {
+            "date": "2026-10-15",
+            "rate": 2.615,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-16",
+            "rate": 2.625,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-20",
+            "rate": 2.73,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-21",
+            "rate": 2.745,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-22",
+            "rate": 2.695,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-23",
+            "rate": 2.72,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-27",
+            "rate": 2.715,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-28",
+            "rate": 2.76,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-29",
+            "rate": 2.76,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-30",
+            "rate": 2.735,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-02",
+            "rate": 2.725,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-03",
+            "rate": 2.74,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-04",
+            "rate": 2.73,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-05",
+            "rate": 2.71,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-06",
+            "rate": 2.68,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-09",
+            "rate": 2.685,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-10",
+            "rate": 2.735,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-11",
+            "rate": 2.735,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-12",
+            "rate": 2.775,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          }
+        ],
+        "6m": [
+          {
+            "date": "2026-10-15",
+            "rate": 2.915,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-16",
+            "rate": 2.91,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-20",
+            "rate": 3.02,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-21",
+            "rate": 3.025,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-22",
+            "rate": 2.95,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-23",
+            "rate": 2.985,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-27",
+            "rate": 2.995,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-28",
+            "rate": 3.04,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-29",
+            "rate": 3.02,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-30",
+            "rate": 2.97,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-02",
+            "rate": 2.95,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-03",
+            "rate": 2.96,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-04",
+            "rate": 2.935,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-05",
+            "rate": 2.885,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-06",
+            "rate": 2.83,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-09",
+            "rate": 2.85,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-10",
+            "rate": 2.965,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-11",
+            "rate": 2.965,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-12",
+            "rate": 3.015,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          }
+        ],
+        "12m": [
+          {
+            "date": "2026-10-15",
+            "rate": 3.275,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-16",
+            "rate": 3.27,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-20",
+            "rate": 3.385,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-21",
+            "rate": 3.385,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-22",
+            "rate": 3.27,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-23",
+            "rate": 3.325,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-27",
+            "rate": 3.36,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-28",
+            "rate": 3.42,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-29",
+            "rate": 3.36,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-10-30",
+            "rate": 3.26,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-02",
+            "rate": 3.22,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-03",
+            "rate": 3.225,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-04",
+            "rate": 3.18,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-05",
+            "rate": 3.115,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-06",
+            "rate": 3.045,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-09",
+            "rate": 3.055,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-10",
+            "rate": 3.205,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-11",
+            "rate": 3.205,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          },
+          {
+            "date": "2026-11-12",
+            "rate": 3.295,
+            "contract": null,
+            "source_class": "OFFICIAL_TENOR",
+            "derived": false
+          }
+        ]
+      },
+      "latest_date": "2026-11-12",
+      "observed_dates": 19,
+      "derived_reference_points": 0
+    }
+  }
+}

@@ -73,6 +73,13 @@ async function inspectRoute(page,label,key){
   assert.equal(await bridge.count(),1,label+' rates-to-FX evidence missing');
   const proof=await bridge.getAttribute('data-fx-proof');
   assert(['ready','unavailable'].includes(proof),label+' unclassified relative rates proof');
+  const historyDesk=locator(page,'#rates-pricing-history');
+  assert.equal(await historyDesk.count(),1,label+' historical G8 pricing chart not present');
+  assert.equal(await historyDesk.locator('.ois-history-currency').count(),8,
+   label+' historical G8 sparkline navigator incomplete');
+  assert(await historyDesk.locator('svg').count()>=6,label+' historical G8 charts missing');
+  assert.equal(await historyDesk.getAttribute('data-history-currency'),'USD',
+   label+' G8 historical pricing must start with selected currency');
   const oisDesk=locator(page,'#rates-pricing-moves');
   assert.equal(await oisDesk.count(),1,label+' source-dated monetary changes missing');
   assert.equal(await oisDesk.locator('.ois-bp-row').count(),3,label+' needs 3M/6M/12M comparison');
@@ -169,6 +176,27 @@ async function pairJourney(page,label){
  assert.equal(await locator(page,'.fx-rank-all-list button.fx-rank-pair').count(),28,
   label+' full ranking lost after closing dossier');
 }
+async function g8HistoryJourney(page,label){
+ await route(page,'rates');
+ const history=locator(page,'#rates-pricing-history');
+ await history.locator('[data-rs-history-window="14"]').click();
+ const selectedCountry=await locator(page,'#rs-country').inputValue();
+ assert.equal(await history.getAttribute('data-history-currency'),selectedCountry,
+  label+' history must follow the current selected currency, even after prior navigation');
+ assert.equal(await locator(page,'#rates-pricing-history [data-rs-history-window="14"]').getAttribute('aria-pressed'),
+  'true',label+' historical 14-day window not applied');
+ await locator(page,'#rates-pricing-history [data-rate-ccy="EUR"]').click();
+ assert.equal(await locator(page,'#rates-pricing-history').getAttribute('data-history-currency'),'EUR',
+  label+' EUR history not selected from G8 grid');
+ assert((await locator(page,'#rates-pricing-history').innerText()).includes('Futures secondari'),
+  label+' EUR historical pricing must retain actual source category');
+ await locator(page,'#rates-pricing-history [data-rs-history-window="30"]').click();
+ assert.equal(await locator(page,'#rates-pricing-history [data-rs-history-window="30"]').getAttribute('aria-pressed'),
+  'true');
+ await locator(page,'#rs-country').selectOption('NZD');
+ assert((await locator(page,'#rates-pricing-history').innerText()).includes('riferimenti 1D/1W ricostruiti'),
+  label+' NZD visual chart needs derived-reference disclosure');
+}
 async function pricingWindowJourney(page,label){
  await route(page,'rates');
  const desk=locator(page,'#rates-pricing-moves');
@@ -243,6 +271,7 @@ async function calendarResearchJourney(page,label){
     await pairJourney(page,label);
     await calendarResearchJourney(page,label);
     await pricingWindowJourney(page,label);
+    await g8HistoryJourney(page,label);
     assert.equal(errors.length,0,label+' browser errors: '+errors.slice(0,4).join(' | '));
     await locator(page,'#content').screenshot({path:evidence+'/'+label+'-pair-journey.png'});
     reports.push({label,sourceCount:Number(count[1]),routes:inspected,interaction:'PASS'});

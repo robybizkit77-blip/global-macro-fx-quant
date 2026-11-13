@@ -274,6 +274,10 @@ function make(api){
        research:get('oisSameContract'),nzd:get('nzdDirectionalProxy'),
        today:dayNow()
      })||'<section class="rates-pricing-moves"><p class="rates-missing">Confronto monetario giornaliero non disponibile: dati da verificare.</p></section>')
+    +(root.FXQuantPricingHistory?.render?.({
+        history:get('oisHistory'),ccy:c,other,
+        window:state.rsHistoryWindow||30
+      })||'<section class="rates-pricing-history"><div class="rates-missing">Storico 3M/6M/12M temporaneamente non disponibile.</div></section>')
     +'<section class="rates-chapter"><div class="rates-section-head"><div><span class="chapter-kicker">02 / SOVEREIGN CURVE LAB</span><h2>Quali scadenze <em>stanno cambiando?</em></h2></div><p>Ogni grafico nasce dalle osservazioni 2Y e 10Y comuni. Cambia periodo e misura la pendenza, senza confondere la forma con il driver economico.</p></div>'
     +'<div class="rates-research-grid"><div class="rates-primary-plot">'+govPlot(c)+'</div>'+historicalSovereign(c)+'</div></section>'
     +'<section class="rates-chapter"><div class="rates-section-head"><div><span class="chapter-kicker">03 / CENTRAL BANK PRICING</span><h2>Le aspettative non sono <em>il tasso ufficiale.</em></h2></div><p>Confronta i livelli 3M, 6M e 12M senza mescolare OIS e futures. Guarda quali scadenze hanno una variazione 1D/1W verificabile.</p></div>'
