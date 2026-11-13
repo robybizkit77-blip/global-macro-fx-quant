@@ -270,7 +270,7 @@
    '<p class="morning-key-watch"><strong>Da monitorare.</strong> '+
     text(correction?.watch||feed.watch)+'</p>'+
    '<div class="morning-first-links"><a href="#currencies">Forza G8</a>'+
-   '<a href="#pairs">Coppie FX</a><a href="#rates">Tassi &amp; OIS</a></div>'+
+   '<a href="#pairs">Coppie FX</a><a href="#rates">Verifica Tassi &amp; OIS</a></div>'+
    '</section>';
   const renderChart=(c,i)=>{
    const color=i===0?'#71e0bd':'#77caff';
