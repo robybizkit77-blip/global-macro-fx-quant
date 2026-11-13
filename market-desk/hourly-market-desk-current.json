@@ -1,9 +1,9 @@
 {
   "schema": "GMFQ_NEXT_FREE_HOURLY_DESK_V1",
   "status": "ACTIVE",
-  "generated_at_utc": "2026-11-13T18:53:05.550247Z",
-  "edition_time_rome": "2026-11-13 19:53",
-  "material_digest": "f9b5d9c4ec2f460fd432586dd586b794aedd745fc7d648183766afe05b47f45a",
+  "generated_at_utc": "2026-11-13T20:10:40.753724Z",
+  "edition_time_rome": "2026-11-13 21:10",
+  "material_digest": "1ae44c531c5a4aee5022166f2ce4bfc71080ed8b1073e7ddce2c8214021433e9",
   "editorial_contract": "V3_ECONOMIC_METHOD_ADAPTED_WITHOUT_LLM",
   "engine": "FREE_DETERMINISTIC_CROSS_ASSET_RESEARCH",
   "headline": "Il dollaro trova sostegno nei tassi relativi, mentre il rischio globale resta misto",
@@ -32,7 +32,7 @@
       ]
     },
     {
-      "headline": "Oro e petrolio divergono nelle rilevazioni dei futures",
+      "headline": "Oro e petrolio: segnali da distinguere nella lettura macro",
       "analysis": "I prezzi futures osservati offrono un confronto fra oro e WTI. Le differenze possono riflettere tassi reali, domanda energetica e rischio globale, ma non dimostrano quali operatori abbiano comprato o venduto. Serie di fonte secondaria, trattate come proxy direzionali.",
       "kind": "FOLLOW_UP",
       "published_date": "2026-11-13",
@@ -77,7 +77,7 @@
       ]
     }
   ],
-  "desk_judgment": "I rendimenti governativi a breve scadenza salgono più rapidamente negli Stati Uniti che nell'area euro: il differenziale si è mosso a favore del dollaro. L'aumento della volatilità merita attenzione accanto ai mercati del credito: può segnalare una protezione più costosa senza dimostrare vendite forzate. Oro in rialzo e petrolio in calo negli ultimi futures rilevati offrono due segnali differenti: ricerca di protezione e domanda energetica sono ipotesi da verificare, non flussi già dimostrati.",
+  "desk_judgment": "I rendimenti governativi a breve scadenza salgono più rapidamente negli Stati Uniti che nell'area euro: il differenziale si è mosso a favore del dollaro. L'aumento della volatilità merita attenzione accanto ai mercati del credito: può segnalare una protezione più costosa senza dimostrare vendite forzate. Oro e petrolio aggiungono due prospettive distinte sui tassi reali e sulla domanda globale.",
   "fx_implications": "Negli ultimi fixing BCE il dollaro si è rafforzato sia contro euro sia contro yen. Il movimento contro l'euro è coerente con il differenziale dei 2Y USA–Eurozona, ma questa coincidenza non dimostra causalità. Per USD/JPY conta anche la traiettoria attesa della BoJ; per EUR/USD la differenza fra Fed e BCE.",
   "what_changed": "Sono entrate nuove osservazioni o pubblicazioni rispetto alla precedente edizione. La direzione relativa di tassi, Forex, credito e materie prime viene ricomposta in un solo quadro economico, senza attribuire automaticamente causalità.",
   "contrary_evidence": "La prova contraria a un dollaro sostenuto dai tassi sarebbe un indebolimento dei cross USD mentre il differenziale governativo resta favorevole. I diversi orari di rilevazione fra azioni, credito e VIX impediscono di trattarli come una sola reazione intraday.",
@@ -95,7 +95,7 @@
     "method": "FREE_OFFICIAL_RSS_AND_SOURCE_DATED_MARKET_DATA",
     "source_vintages": {
       "news": "2026-11-13",
-      "rss_checked_at_utc": "2026-11-13T18:53:05.550247Z",
+      "rss_checked_at_utc": "2026-11-13T20:10:40.753724Z",
       "commodities": "2026-11-13"
     },
     "no_paid_api": true,
@@ -103,6 +103,11 @@
     "chatgpt_automation_unchanged": true
   },
   "history": [
+    {
+      "generated_at_utc": "2026-11-13T18:53:05.550247Z",
+      "headline": "Il dollaro trova sostegno nei tassi relativi, mentre il rischio globale resta misto",
+      "material_digest": "f9b5d9c4ec2f460fd432586dd586b794aedd745fc7d648183766afe05b47f45a"
+    },
     {
       "generated_at_utc": "2026-11-13T15:09:02.310310Z",
       "headline": "Il dollaro trova sostegno nei tassi relativi, mentre il rischio globale resta misto",
