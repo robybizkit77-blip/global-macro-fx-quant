@@ -15,26 +15,26 @@
       "available": true,
       "source_as_of_last_available_ecb_fixing": "2026-11-13",
       "currency_latest_market_date": {
-        "USD": "2026-11-12",
-        "EUR": "2026-11-11",
+        "USD": "2026-11-13",
+        "EUR": "2026-11-12",
         "CHF": "2026-11-13"
       },
       "pair_recent_same_contract_source": {
         "EUR/USD": {
           "has_recent_matched_same_contract_6m_quote_change": true,
-          "last_eligible_source_market_day": "2026-11-11",
+          "last_eligible_source_market_day": "2026-11-12",
           "not_a_frozen_hypothesis": true,
           "not_an_OIS_repricing_signal": true
         },
         "EUR/CHF": {
           "has_recent_matched_same_contract_6m_quote_change": true,
-          "last_eligible_source_market_day": "2026-11-11",
+          "last_eligible_source_market_day": "2026-11-12",
           "not_a_frozen_hypothesis": true,
           "not_an_OIS_repricing_signal": true
         },
         "USD/CHF": {
           "has_recent_matched_same_contract_6m_quote_change": true,
-          "last_eligible_source_market_day": "2026-11-12",
+          "last_eligible_source_market_day": "2026-11-13",
           "not_a_frozen_hypothesis": true,
           "not_an_OIS_repricing_signal": true
         }
