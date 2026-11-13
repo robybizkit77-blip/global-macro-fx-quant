@@ -118,10 +118,24 @@ const research={streams:{
  HY_OAS:stream('2026-11-12',3.2,3.3,[['2026-11-09',3.5],['2026-11-10',3.3],['2026-11-12',3.2]])
 }};
 const displayDate=s=>s.slice(8,10)+'/'+s.slice(5,7)+'/'+s.slice(0,4);
-const pulseHTML=win.FXQuantHourlyDesk.render({feed:pulseFeed,risk:research,esc,date:displayDate,dayNow:today});
+const officialFx={
+ schema:'GMFQ_ECB_G8_PRICE_HISTORY_V1',status:'CURRENT_OFFICIAL_HISTORY',base:'EUR',
+ source_url:'https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml',
+ last_as_of:'2026-11-13',
+ rows:[{Date:'2026-11-12',USD:1.1081,JPY:176.96},
+       {Date:'2026-11-13',USD:1.1052,JPY:176.83}]
+};
+const pulseHTML=win.FXQuantHourlyDesk.render({feed:pulseFeed,risk:research,
+ currencyPrices:officialFx,esc,date:displayDate,dayNow:today});
 assert(pulseHTML.includes('IL MERCATO IN UN COLPO D’OCCHIO'),'Visual pulse must remain narrative-first and dated');
-assert((pulseHTML.match(/class="hourly-pulse-tile /g)||[]).length===5,'FX + S&P + VIX + HY + commodities, no unsupported extra tile');
-assert(pulseHTML.includes('USD ↑')&&pulseHTML.includes('Oro ↑ · WTI ↓'),'Directional claims must follow cited text');
+assert((pulseHTML.match(/class="hourly-pulse-tile /g)||[]).length===4,
+ 'Only sourced numeric ECB FX, S&P, VIX and HY tiles may appear');
+assert(pulseHTML.includes('USD ↑')&&pulseHTML.includes('EUR +0,26% · JPY +0,19%'),
+ 'USD strength must be computed from aligned, current official EUR/USD and USD/JPY fixings');
+assert(pulseHTML.includes('BCE · 2 confronti, non indice USD'),
+ 'Two bilateral moves must never be misrepresented as broad dollar strength');
+assert(!pulseHTML.includes('Oro ↑ · WTI ↓'),
+ 'Commodity direction is not inferred from headlines without matched numeric evidence');
 assert(pulseHTML.includes('Indice VIX')&&pulseHTML.includes('Spread HY'),'Real measured market breadth shown');
 assert(pulseHTML.includes('+1,00%')&&pulseHTML.includes('18,70')&&pulseHTML.includes('−10 pb'),
  'Numbers must derive from observed value/previous, preserving units');
@@ -138,6 +152,23 @@ unsupported.streams.HY_OAS.date='2026-10-01';
 const filtered=win.FXQuantHomePulse.render({feed:pulseFeed,risk:unsupported,esc,date:displayDate,dayNow:today});
 assert(!filtered.includes('Indice VIX')&&!filtered.includes('Spread HY'),
  'No estimate or stale record can be promoted into a market pulse');
+const mixedFx=structuredClone(officialFx);
+mixedFx.rows[1].JPY=174.60;
+const mixedHTML=win.FXQuantHomePulse.render({feed:pulseFeed,risk:research,
+ currencyPrices:mixedFx,esc,date:displayDate,dayNow:today});
+assert(mixedHTML.includes('USD misto')&&!mixedHTML.includes('USD ↑'),
+ 'Contradictory cross movements must never be promoted to a uniform USD direction');
+const staleFx=structuredClone(officialFx);
+staleFx.last_as_of='2026-11-12';
+const staleHTML=win.FXQuantHomePulse.render({feed:pulseFeed,risk:research,
+ currencyPrices:staleFx,esc,date:displayDate,dayNow:today});
+assert(!staleHTML.includes('FORZA FX RELATIVA'),
+ 'A mismatched source vintage must suppress the FX claim, preserving other verified tiles');
+const unverifiedFx=structuredClone(officialFx);
+unverifiedFx.status='ESTIMATED';
+assert(!win.FXQuantHomePulse.render({feed:pulseFeed,risk:research,
+ currencyPrices:unverifiedFx,esc,date:displayDate,dayNow:today}).includes('FORZA FX RELATIVA'),
+ 'Estimates cannot masquerade as official fixing in the visual pulse');
 assert.equal(win.FXQuantHomePulse.render({feed:pulseFeed,risk:null,esc,date,dayNow:today}),'',
  'No market source means no market pulse; the existing research stays intact');
 
@@ -184,13 +215,14 @@ const index=fs.readFileSync(path.join(ROOT,next,'index.html'),'utf8');
 assert(app.includes("get('hourlyDesk')"),'Home is wired to optional independent free research');
 assert(app.includes("fetch('../../../market-desk/hourly-market-desk-current.json'"),'Optional fetch endpoint missing');
 assert(!app.includes("hourlyDesk:'"),'New research must not become a mandatory operational feed');
-assert(index.includes('hourly-desk-ui-v1.js?v=7'));
+assert(index.includes('hourly-desk-ui-v1.js?v=8'));
 assert(index.includes('hourly-desk-ui-v1.css?v=4'));
-assert(index.includes('home-market-pulse-v1.js?v=1')&&index.includes('home-market-pulse-v1.css?v=2'),
+assert(index.includes('home-market-pulse-v1.js?v=2')&&index.includes('home-market-pulse-v1.css?v=3'),
  'The source-based data visualization must load before the editorial Home UI');
-assert(index.indexOf('home-market-pulse-v1.js?v=1')<index.indexOf('hourly-desk-ui-v1.js?v=7'),
+assert(index.indexOf('home-market-pulse-v1.js?v=2')<index.indexOf('hourly-desk-ui-v1.js?v=8'),
  'Rendering order must preserve the optional pulse addon');
-assert(index.includes('app.js?v=18.48-visual-pulse'));
+assert(index.includes('app.js?v=18.49-observed-fx-pulse'));
+assert(app.includes("currencyPrices:get('currencyPrices')"),'Official ECB fixing history must feed FX observations');
 const css=fs.readFileSync(path.join(ROOT,next,'hourly-desk-ui-v1.css'),'utf8');
 assert(css.includes('.hourly-hero-grid')&&css.includes('.hourly-navigation-grid')&&css.includes('.hourly-desk-news-body'),
  'The new workbench CSS must style every major hierarchy layer');

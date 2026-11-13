@@ -83,7 +83,7 @@
   });
  }
 
- function render({feed,risk,esc,date,dayNow}={}){
+ function render({feed,risk,currencyPrices,esc,date,dayNow}={}){
   if(feed?.schema!==SCHEMA||feed.status!=='ACTIVE'||typeof esc!=='function'||
      !goodDay(feed.generated_at_utc?.slice(0,10))||!goodDay(dayNow?.())||
      feed.generated_at_utc.slice(0,10)>dayNow()||
@@ -162,7 +162,7 @@
     '<div class="hourly-spotlight-actions"><a href="#pairs">Approfondisci le coppie FX <span aria-hidden="true">↗</span></a>'+
     '<a href="#rates">Esamina i tassi</a></div>'+
     '</aside></div>'+ 
-    (root.FXQuantHomePulse?.render?.({feed,risk,esc,date,dayNow})||'')+
+    (root.FXQuantHomePulse?.render?.({feed,risk,currencyPrices,esc,date,dayNow})||'')+
     '<section class="hourly-decision-section" aria-label="Le tre verifiche del desk">'+
     '<div class="hourly-section-head"><div><span class="morning-section-label">LETTURA DEL DESK</span>'+
     '<h2>La mappa dei driver</h2></div>'+
