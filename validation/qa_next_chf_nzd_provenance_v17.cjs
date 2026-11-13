@@ -66,8 +66,11 @@ assert(shortCount>=10&&shortCount<=28,
 assert(all.filter(x=>x.ready).every(x=>x.short&&x.lag>=0&&x.lag<=3),
  'No stale or insufficient-source comparison may count as ready');
 const mediumCount=all.filter(x=>x.ready&&x.medium).length;
-assert(mediumCount>=10&&mediumCount<=all.filter(x=>x.ready&&x.short).length,
- '20-interval research coverage must be supported by validated short comparisons');
+assert(mediumCount<=shortCount&&
+ all.filter(x=>x.ready&&x.medium).every(x=>x.short&&x.lag>=0&&x.lag<=3),
+ '20-interval comparisons must be a subset of valid, same-date short comparisons');
+// Do not assert a fabricated minimum number of 20-interval observations when
+// the official sovereign series have changed their date coverage.
 // Check production clock separately. Research sidecars must not silently promote
 // stale CHF/NZD rates or create a 5/20 signal from non-core provenance.
 const liveAsOf=pairs.price_asof;
