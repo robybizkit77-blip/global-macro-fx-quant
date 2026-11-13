@@ -182,7 +182,7 @@ assert(index.includes('hourly-desk-ui-v1.js?v=6'));
 assert(index.includes('hourly-desk-ui-v1.css?v=4'));
 assert(index.includes('home-market-pulse-v1.js?v=1')&&index.includes('home-market-pulse-v1.css?v=1'),
  'The source-based data visualization must load before the editorial Home UI');
-assert(index.indexOf('home-market-pulse-v1.js?v=1')<index.indexOf('hourly-desk-ui-v1.js?v=5'),
+assert(index.indexOf('home-market-pulse-v1.js?v=1')<index.indexOf('hourly-desk-ui-v1.js?v=6'),
  'Rendering order must preserve the optional pulse addon');
 assert(index.includes('app.js?v=18.48-visual-pulse'));
 const css=fs.readFileSync(path.join(ROOT,next,'hourly-desk-ui-v1.css'),'utf8');
