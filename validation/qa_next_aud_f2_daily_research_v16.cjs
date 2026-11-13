@@ -9,6 +9,10 @@ const sidecar=json('site/fx-quant-v2/aud-rba-f2-history-research.json');
 const mod=require('../site/fx-quant-v2/next/fx-rates-bridge.js');
 // The 6 Nov 2026 research fixture must not inherit tomorrow's live FX fixing.
 const audDate=rates.AUD.date,now='2026-11-08',base='2026-11-06';
+const later=(day,n)=>new Date(Date.parse(day+'T12:00:00Z')+n*864e5).toISOString().slice(0,10);
+// A synthetic *test-only* daily F2 layer must follow the actual AUD source
+// date, rather than invent a 6 Nov publication for 11 Nov observations.
+const fixtureModelDay=later(audDate,2),fixtureNow=fixtureModelDay;
 assert(sidecar.schema==='GMFQ_AUD_RBA_F2_DAILY_HISTORY_RESEARCH_V1');
 assert(sidecar.eligible_for_core===false&&sidecar.eligible_for_fx_pair_engine===false);
 assert(sidecar.eligible_for_backtests===false);
@@ -22,7 +26,7 @@ fake.schema='GMFQ_AUD_RBA_F2_DAILY_HISTORY_RESEARCH_V1';
 fake.source_url='https://www.rba.gov.au/statistics/tables/csv/f2-data.csv';
 fake.series_2Y='FCMYGBAG2D';fake.series_10Y='FCMYGBAG10D';
 fake.source_response_sha256='a'.repeat(64);
-fake.publication_date='2026-11-06';
+fake.publication_date=audDate;
 fake.last_observation_date=audDate;
 fake.research_only=true;
 fake.no_interpolation=true;fake.same_date_same_source=true;
@@ -35,7 +39,7 @@ fake.observations=dates.map((date,i)=>({
 fake.observations.at(-1)['2Y']=rates.AUD['2Y'];
 fake.observations.at(-1)['10Y']=rates.AUD['10Y'];
 const before=structuredClone(rates); // Preserves signed zero; JSON stringify normalizes -0 to 0.
-const improved=mod.snapshot(rates,price,'AUDCAD',base,now,fake);
+const improved=mod.snapshot(rates,price,'AUDJPY',fixtureModelDay,fixtureNow,fake);
 assert(improved.ready&&improved.short&&improved.medium,'70 synthetic QA fixture dates must validate both horizons');
 assert(improved.researchOnly&&improved.kind.includes('RBA F2 RICERCA'));
 assert.equal(improved.latest.date,audDate);
@@ -55,15 +59,16 @@ for(const [label,mutation] of [
  ['broken history',x=>x.observations=x.observations.slice(0,10)],
  ['last yield mismatch',x=>x.observations.at(-1)['2Y']+=0.01],
  ['last 10y mismatch',x=>x.observations.at(-1)['10Y']+=0.01],
- ['future release',x=>x.publication_date='2026-11-12']
+ ['future release',x=>x.publication_date=later(fixtureNow,1)]
 ]){
  const changed=JSON.parse(JSON.stringify(fake));
  mutation(changed);
- assert(!mod.snapshot(rates,price,'AUDCAD',base,now,changed).ready,label+' must not produce false ready status');
+ assert(!mod.snapshot(rates,price,'AUDJPY',fixtureModelDay,fixtureNow,changed).ready,label+' must not produce false ready status');
 }
 assert(!mod.snapshot(rates,price,'EURCHF',base,now,fake).ready,'CHF remains separate and stale');
 assert(!mod.snapshot(rates,price,'NZDUSD',base,now,fake).ready,'NZD remains separate and stale');
-assert(!mod.snapshot(rates,price,'AUDCAD',base,'2026-12-01',fake).ready,'Old research cannot remain current');
+assert(!mod.snapshot(rates,price,'AUDJPY',fixtureModelDay,later(fixtureNow,30),fake).ready,
+ 'Old research cannot remain current');
 // Separately exercise the actual moving model date. A source that was valid
 // on 6 Nov must not be promoted when the FX snapshot has moved past its 3d lag.
 const liveAsOf=model.price_asof;
@@ -82,8 +87,15 @@ assert(dossier.includes("get('audDailyResearch')"));
 assert(code.includes("get('audDailyResearch')"));
 if(sidecar.status==='OFFICIAL_F2_DAILY_RESEARCH_ONLY_NOT_POINT_IN_TIME'){
  const actual=mod.snapshot(rates,price,'AUDCAD',base,now,sidecar);
- assert(actual.ready&&actual.researchOnly,'Official AUD F2 sidecar must validate independently');
- assert(actual.rows.length>30);
+ // The historical 6 Nov sidecar is only usable if the currently stored
+ // AUD source still matches its own vintage. A newer official yield must
+ // never be backfilled into this old source as if observed then.
+ if(actual.ready){
+  assert(actual.researchOnly,'Matching dated official RBA history is research-only');
+  assert(actual.rows.length>30);
+ } else {
+  assert(!actual.researchOnly,'Stale RBA F2 sidecar must not silently override current AUD yields');
+ }
  if(sidecar.last_observation_date==='2026-11-04'&&model.price_asof==='2026-11-06'){
   const all=Object.keys(model.pairs);
   const matched=all.map(key=>({key,info:mod.snapshot(rates,price,key,base,now,sidecar)}));
@@ -97,4 +109,5 @@ if(sidecar.status==='OFFICIAL_F2_DAILY_RESEARCH_ONLY_NOT_POINT_IN_TIME'){
  }
 }else assert.equal(sidecar.status,'AWAITING_OFFICIAL_F2_DAILY_HISTORY');
 console.log('NEXT_V16_AUD_F2_RESEARCH_PASS',JSON.stringify({
- sidecar:sidecar.status,syntheticTestOnly:true,officialReady:sidecar.status!=='AWAITING_OFFICIAL_F2_DAILY_HISTORY'}));
+ sidecar:sidecar.status,syntheticTestOnly:true,
+ officialReady:mod.snapshot(rates,price,'AUDCAD',base,now,sidecar).ready}));
