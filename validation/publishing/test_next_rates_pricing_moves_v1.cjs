@@ -62,7 +62,7 @@ const num=x=>typeof x==='number'&&Number.isFinite(x);
 const fmt=(n,p=2)=>num(n)?n.toFixed(p).replace('.',','):'—';
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const renderArgs={...args,currency:'GBP',window:'1d',
- plot:()=>'<div class="chart" data-curve="comparison"></div>',esc,fmt};
+ plot:()=>'<div class="chart" data-curve="comparison"></div>',esc,fmt,date:x=>x};
 const gbp=render(renderArgs);
 assert(gbp.includes('data-pricing-kind="OIS"')&&
  gbp.includes('data-curve="comparison"'),
