@@ -5,35 +5,10 @@
   "source_url": "https://www.rba.gov.au/statistics/tables/csv/f2-data.csv",
   "series_2Y": "FCMYGBAG2D",
   "series_10Y": "FCMYGBAG10D",
-  "publication_date": "2026-11-06",
-  "last_observation_date": "2026-11-04",
-  "source_response_sha256": "572c4ef1ae4ece40080fcc13bee6cc1fe81eec3ffa8cd5916ea3ef22cdb2dcf5",
+  "publication_date": "2026-11-13",
+  "last_observation_date": "2026-11-11",
+  "source_response_sha256": "ce557587cb80a8d5a2c288ae9bc0bcff15053e1b6caa08923dbc822c4eef8655",
   "observations": [
-    {
-      "date": "2026-04-07",
-      "2Y": 4.675,
-      "10Y": 4.985
-    },
-    {
-      "date": "2026-04-08",
-      "2Y": 4.583,
-      "10Y": 4.858
-    },
-    {
-      "date": "2026-04-09",
-      "2Y": 4.628,
-      "10Y": 4.911
-    },
-    {
-      "date": "2026-04-10",
-      "2Y": 4.673,
-      "10Y": 4.967
-    },
-    {
-      "date": "2026-04-13",
-      "2Y": 4.709,
-      "10Y": 5.018
-    },
     {
       "date": "2026-04-14",
       "2Y": 4.644,
@@ -758,6 +733,31 @@
       "date": "2026-11-04",
       "2Y": 4.826,
       "10Y": 5.082
+    },
+    {
+      "date": "2026-11-05",
+      "2Y": 4.785,
+      "10Y": 5.009
+    },
+    {
+      "date": "2026-11-06",
+      "2Y": 4.748,
+      "10Y": 4.984
+    },
+    {
+      "date": "2026-11-09",
+      "2Y": 4.757,
+      "10Y": 5.004
+    },
+    {
+      "date": "2026-11-10",
+      "2Y": 4.744,
+      "10Y": 4.989
+    },
+    {
+      "date": "2026-11-11",
+      "2Y": 4.808,
+      "10Y": 5.044
     }
   ],
   "research_only": true,
