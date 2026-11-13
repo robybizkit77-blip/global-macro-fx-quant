@@ -48,7 +48,19 @@ assert.equal(result.by.USD.growthTrend,1);
 assert.equal(result.by.EUR.growthTrend,-1);
 assert(result.by.USD.macroScore>result.by.EUR.macroScore);
 assert.equal(result.by.CHF.rate.quality,'ASSENTE');
-assert.equal(result.by.NZD.rate.quality,'ASSENTE');
+assert.equal(result.by.NZD.rate.quality,'PROXY');
+assert.equal(result.by.NZD.rate.kind,'BANK_BILL_6M_DIRECTIONAL_PROXY');
+const nzdProxy=ois.currencies.NZD.horizons['6m'];
+assert.equal(result.by.NZD.rate.changeBp,nzdProxy.change_1w_bp);
+assert.equal(result.by.NZD.rate.asof,nzdProxy.as_of);
+assert.equal(result.by.NZD.rate.score,
+ nzdProxy.change_1w_bp>=5?0.35:nzdProxy.change_1w_bp<=-5?-0.35:0,
+ 'The 6M bank-bill weekly move is used directionally at discounted weight, never as a policy/OIS estimate');
+assert.equal(result.by.NZD.rate.quality==='UFFICIALE',false,'Bank-bill proxy must never count as official OIS');
+const missingNZProxy=structuredClone(ois);
+missingNZProxy.currencies.NZD.horizons['6m'].change_1w_bp=null;
+assert.equal(run({ois:missingNZProxy}).by.NZD.rate.quality,'ASSENTE',
+ 'No 6M same-contract weekly move means no directional proxy');
 assert.equal(result.by.USD.rate.kind,'GOV_2Y_PROXY');
 assert.equal(result.by.GBP.rate.kind,'OIS');
 assert.equal(result.by.JPY.rate.kind,'FUTURES');
@@ -98,7 +110,7 @@ const pair=fs.readFileSync(path.join(ROOT,next,'pair-rankings.js'),'utf8');
 const currency=fs.readFileSync(path.join(ROOT,next,'currency-studio.js'),'utf8');
 const narrative=fs.readFileSync(path.join(ROOT,next,'pair-desk-narrative.js'),'utf8');
 const journey=fs.readFileSync(path.join(ROOT,next,'decision-journey.js'),'utf8');
-assert(index.includes('macro-strength-estimated-v1.js?v=2'));
+assert(index.includes('macro-strength-estimated-v1.js?v=3'));
 assert(index.indexOf('pair-rankings.js')<index.indexOf('macro-strength-estimated-v1.js'));
 assert(index.indexOf('macro-strength-estimated-v1.js')<index.indexOf('app.js'));
 assert(app.includes("get('estimatedMacro')")&&app.includes('function estimatedMacro()'));

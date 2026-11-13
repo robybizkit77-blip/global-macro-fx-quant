@@ -106,6 +106,17 @@
     return {score:direction,kind:o.kind,asof:h.as_of,changeBp:bp,quality:'UFFICIALE',
       description:'Variazione settimanale di strumento '+o.kind+' 6M; non livello OIS cross-country'};
   }
+  // Directional NZ rates proxy is an official ASX bank-bill future, not OIS.
+  // Its weekly move is for the SAME listed contract; it may guide only the
+  // economic-lens direction at a discounted weight, never the policy level.
+  if(ccy==='NZD'&&o?.quality==='PROXY DIREZIONALE'&&
+     o?.kind==='PROXY FUTURES'&&day(h?.as_of)&&within(h.as_of,now,7)&&
+     finite(h.change_1w_bp)){
+    const bp=h.change_1w_bp, direction=bp>=5?1:bp<=-5?-1:0;
+    return {score:0.35*direction,kind:'BANK_BILL_6M_DIRECTIONAL_PROXY',
+     asof:h.as_of,changeBp:bp,quality:'PROXY',
+     description:'ASX NZ bank-bill 6M: variazione settimanale di futures, proxy direzionale scontato; non OIS né stima del percorso OCR'};
+  }
   const r=rates?.[ccy],w=r?.weekly2_validation;
   if(finite(r?.['2Y'])&&finite(w?.change_bp)&&day(r.date)&&
      w.end_date===r.date&&day(w.start_date)&&w.start_date<w.end_date&&
@@ -238,7 +249,7 @@
       core<0?'macro più favorevole per '+b:'macro non discriminante')+
     ', '+(rateGap===0?'pricing senza divergenza netta verificabile':'pricing da leggere per strumenti e date')+
     '. '+(opposite?'Il prezzo si è mosso in senso opposto.':aligned?
-      'Il prezzo ha seguito la direzione stimata, senza provarne la causa.':'Manca conferma di prezzo.');
+      'Il prezzo ha seguito la direzione stimata, senza provarne la causa.':'Il prezzo è in fase di assestamento rispetto alla tesi.');
    pairs.push({key,name:a+'/'+b,base:a,quote:b,favored,bias:favored?(favored===a?'LONG':'SHORT'):'NESSUNO',
      tier,stage,story,missing:'Verificare sorprese macro relative, pricing comparabile e reazione del prezzo prima di valutare un ingresso.',
      priceText:'20 fixing BCE · '+(baseMove>0?'+':'')+baseMove.toFixed(2)+'% '+a+'/'+b,

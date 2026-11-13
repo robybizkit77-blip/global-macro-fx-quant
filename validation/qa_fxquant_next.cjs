@@ -92,8 +92,12 @@ async function g8Choice(page,label){
  const note=await locator(page,'#orient-strength-focus').innerText();
  assert(note.includes('NZD'),label+' NZD reading did not update');
  assert(note.includes('Che cosa mostra il Forex.'),label+' price mislabeled as causal response');
- assert(note.includes('Non abbiamo una variazione monetaria recente confrontabile'),
-  label+' missing NZD rates must remain explicit without suspending labor/FX');
+ assert(note.includes('Il futures ASX bank-bill a sei mesi') &&
+   note.includes('proxy direzionale'),
+  label+' NZD must explain dated 6M bank-bill proxy in the G8 first read');
+ assert(note.includes('Che cosa monitorare.') &&
+   note.includes('NZD/USD') && note.includes('AUD/NZD'),
+  label+' NZD macro/rates proxy must lead to two FX monitoring instruments');
 }
 async function chosenPair(page,key,label){
  const button=locator(page,'#fx-ranking-desk button.fx-rank-pair[data-pair="'+key+'"]').first();
