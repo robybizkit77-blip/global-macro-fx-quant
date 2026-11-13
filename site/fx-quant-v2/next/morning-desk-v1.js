@@ -185,7 +185,77 @@
    }).format(actual);
   }catch{return null}
  }
- function officialReconciliation(feed,calendar,today,date){
+
+ // Editorial FX lens: use the same CURRENT G8/28-pair estimate as the other
+ // sections, plus strictly matched weekly government-rate changes. The
+ // 2Y differential is a rates proxy, NEVER labelled an observed OIS repricing.
+ function estimatedFxReading(estimated,rates,ccy,today,date){
+  if(estimated?.status!=='STIMA_OPERATIVA_NON_VALIDATA'||
+     !goodDay(estimated.asof)||!goodDay(estimated.priceAsOf)||
+     estimated.asof>today||estimated.priceAsOf>today||
+     !Array.isArray(estimated.currencies)||estimated.currencies.length!==8||
+     !Array.isArray(estimated.pairs)||estimated.pairs.length!==28)return null;
+  const by=Object.fromEntries(estimated.currencies.map(x=>[x.ccy,x]));
+  const main=by[ccy];
+  if(!main||!Number.isInteger(main.rank)||main.rank<1||main.rank>8)return null;
+  const pairCodes=ccy==='USD'?['EURUSD','USDJPY']:
+   ccy==='EUR'?['EURUSD','EURGBP']:
+   ccy==='GBP'?['GBPUSD','EURGBP']:
+   ccy==='JPY'?['USDJPY','EURJPY']:
+   ccy==='CHF'?['EURCHF','USDCHF']:
+   ccy==='CAD'?['USDCAD','CADJPY']:
+   ccy==='AUD'?['AUDUSD','AUDJPY']:['NZDUSD','NZDJPY'];
+  const sample=pairCodes.map(key=>estimated.pairs.find(x=>x.key===key)).filter(Boolean);
+  const desc=p=>{
+   const label=p.name||p.key.slice(0,3)+'/'+p.key.slice(3);
+   const preferred=p.favored;
+   const direction=preferred===ccy?'vantaggio stimato per '+ccy:
+    preferred?'vantaggio stimato per '+preferred:'vantaggio fondamentale misto';
+   const price=Number.isFinite(p.move5Percent)?
+    (Math.abs(p.move5Percent)<0.05?'quasi stabile':
+     p.move5Percent>0?'in rialzo':'in calo')+
+     ' negli ultimi 5 fixing BCE':'in osservazione';
+   return label+': '+direction+', prezzo '+price;
+  };
+  const pairText=sample.length?sample.map(desc).join('; ')+'.':'';
+  let rateText='';
+  if(ccy==='USD'){
+   const a=rates?.USD?.weekly2_validation,b=rates?.EUR?.weekly2_validation;
+   if(a&&b&&Number.isFinite(a.change_bp)&&Number.isFinite(b.change_bp)&&
+      goodDay(a.start_date)&&a.start_date===b.start_date&&
+      goodDay(a.end_date)&&a.end_date===b.end_date&&a.end_date<=today){
+    const diff=a.change_bp-b.change_bp;
+    rateText='Tra '+date(a.start_date)+' e '+date(a.end_date)+
+     ' il Treasury 2Y è variato di '+a.change_bp.toLocaleString('it-IT')+
+     ' pb contro '+b.change_bp.toLocaleString('it-IT')+
+     ' pb del governativo Eurozona: il differenziale settimanale si è '+
+     (diff>=0?'allargato di ':'ristretto di ')+
+     Math.abs(diff).toLocaleString('it-IT',{maximumFractionDigits:1})+
+     ' pb '+(diff>0?'a favore del dollaro.':diff<0?
+      'a sfavore del dollaro.':'senza nuova direzione.')+
+     ' È una misura governativa, usata come proxy del canale monetario.';
+   }
+  }
+  const macro=main.macroScore;
+  const macroReading=Number.isFinite(macro)?
+   (macro>=0.2?'contributo macro domestico favorevole':
+    macro<=-0.2?'contributo macro domestico sfavorevole':
+    'momentum macro domestico misto'):'momentum macro in valutazione';
+  return {
+   meaning:'Nella stima quantitativa G8 '+ccy+' occupa la posizione '+
+    main.rank+' su 8, con '+macroReading+'. '+rateText+
+    (pairText?' Sul Forex: '+pairText:'')+
+    ' Il ranking combina macro, tassi e fixing: è una lettura relativa, non una previsione certa.',
+   watch:'Seguire se i prossimi aggiornamenti dei riferimenti monetari relativi e '+
+    (sample.length?sample.map(p=>p.name||p.key.slice(0,3)+'/'+p.key.slice(3)).join(' e '):
+     'le coppie di '+ccy)+
+    ' rafforzano oppure contraddicono questa lettura stimata. '+
+    'Le date del proxy e del fixing restano indicate nel dossier.',
+   kind:'STIMA_QUANT_FX_V1'
+  };
+ }
+
+ function officialReconciliation(feed,calendar,today,date,estimated,rates){
   if(feed?.edition_date!==today)return null;
   const latest=nextFxCatalysts(calendar,[],today);
   const event=latest.today;
@@ -204,22 +274,25 @@
    event.ccy==='JPY'?'USD/JPY ed EUR/JPY':
    'le coppie che comprendono '+event.ccy;
   const inflation=event.event_type==='INFLATION';
+  const estimate=estimatedFxReading(estimated,rates,event.ccy,today,date);
   return {
    headline:name+': la prova è nelle aspettative sui tassi e nel Forex',
    lead:'Il calendario ufficiale segnala '+name+' '+when+
     '. La prima edizione non includeva questo appuntamento: lo segnaliamo senza cancellarla. '+
     'Il punto non è anticipare il risultato, ma capire se i dati modificheranno '+
     'le aspettative monetarie già incorporate nei prezzi.',
-   meaning:(inflation?
-    'La lettura dei prezzi conta per il dollaro soltanto se cambia la traiettoria attesa della Fed rispetto alle altre banche centrali. ':
-    'Il dato può incidere sulla valuta soltanto attraverso le aspettative economiche e monetarie relative. ')+
-    'Senza variazioni OIS/futures confrontabili e conferma su '+pairs+
-    ' non abbiamo una reazione FX attribuibile all’evento.',
+   meaning:(estimate?.meaning||
+    (inflation?
+     'Il dato sui prezzi orienta la lettura del dollaro attraverso le attese Fed relative: una pressione maggiore tende a sostenere il canale tassi USD, una pressione minore può indebolirlo. ':
+     'Il catalizzatore può cambiare l’orientamento delle aspettative monetarie relative. ')+
+    'La reazione da seguire è sul differenziale dei rendimenti e su '+pairs+'.'),
    catalyst:'Nel calendario ufficiale: '+name+' '+when+
-    '. Non sono disponibili in questo feed consenso da survey, risultato certificato e repricing intraday comparabile. '+
-    'Eventuali sorprese e reazioni richiedono una verifica successiva con fonti e orari coerenti.',
-   watch:'Pubblicazione ufficiale e confronto con attese documentate, movimenti del front-end relativo e '+pairs+
-    '. Separare una reazione effettiva da un movimento precedente o dalla debolezza della controparte.',
+    '. In uno scenario di prezzi più persistenti, osserviamo il rischio di aspettative Fed più restrittive e USD sostenuto dal front-end; '+
+    'in uno scenario più debole, l’opposto. La direzione dipende dalla sorpresa rispetto alle attese, dalla composizione e da '+pairs+
+    '. Gli scenari sono condizionali e precedono la pubblicazione.',
+   watch:estimate?.watch||
+    'Pubblicazione e confronto con attese documentate; tassi relativi e '+pairs+
+    '. Separare forza valutaria dalla debolezza della controparte.',
    sourceAsOf:latest.sourceAsOf
   };
  }
@@ -227,7 +300,8 @@
  function build({feed,plot,esc,date,dayNow,currentResearch}){
   if(!sound(feed)||feed.edition_date>dayNow())return null;
   const current=feed.edition_date===dayNow();
-  const correction=officialReconciliation(feed,currentResearch?.calendar,dayNow(),date);
+  const correction=officialReconciliation(feed,currentResearch?.calendar,dayNow(),date,
+   currentResearch?.estimated,currentResearch?.rates);
   const title=esc(correction?.headline||feed.headline);
   const text=x=>esc(String(x||''));
   const safePair=typeof feed.pair==='string'&&/^[A-Z]{6}$/.test(feed.pair)?feed.pair:null;
@@ -238,7 +312,7 @@
     'Anteprima ricostruita dalle osservazioni disponibili prima della data, non certificata come fotografia point-in-time delle 08:00.':
     'Edizione mattutina congelata: gli eventi pubblicati dopo l’apertura non modificano questo testo.';
   const note=correction?'Calendario ufficiale aggiornato al '+date(correction.sourceAsOf)+
-   ': la prima edizione non riportava un evento odierno confermato. Il quadro principale qui sotto incorpora la correzione; il testo originario resta consultabile negli approfondimenti.':noteBase;
+   ': il catalizzatore odierno è stato integrato nella lettura. Edizione originale consultabile negli approfondimenti.':noteBase;
   // First-read uses only the frozen edition's source-dated evidence.
   // Do not infer a new daily FX move or a monetary-policy surprise.
   const relative=feed.relative_evidence||{};
@@ -256,19 +330,21 @@
    'Il briefing distingue dati macro, aspettative sui tassi e risposta delle coppie Forex. Le osservazioni disponibili non vanno trattate come un unico movimento intraday.';
   const usdCompatible=comparable&&relative.alignment==='COERENTE'
    &&relative.spread_change_aligned_bp>0&&relative.pair_change_aligned_pct<0;
+  const estimatedReading=estimatedFxReading(currentResearch?.estimated,currentResearch?.rates,
+   feed.catalyst?.currency||'USD',dayNow(),date);
   const fxMeaning=usdCompatible?
    'In quel periodo tassi relativi e cambio sono andati nella direzione compatibile con un USD più sostenuto contro EUR. Non dimostra chi abbia mosso il prezzo e non certifica la seduta di oggi.':
    comparable&&relative.alignment==='COERENTE'?
     'I due movimenti sono coerenti nell’intervallo confrontato, ma la coincidenza non dimostra una causa e non è un segnale operativo.':
-    'Non abbiamo una conferma univoca tra tassi relativi e prezzo: la tesi Forex resta da verificare, senza forzare una direzione.';
+    'Il quadro resta misto: il confronto tra rendimenti relativi e prezzo non offre ancora una direzione concorde. La forza delle singole valute va confrontata con le altre coppie.';
   const missing=feed.event_status==='AFTERMATH_UNVERIFIED'?
    'L’effetto dell’evento macro non è ancora verificato: servono dati ufficiali, sorpresa rispetto alle attese, variazioni OIS/futures confrontabili e reazione FX sulle stesse date.':
    'Prima di confermare la tesi servono dati e prezzi confrontabili nel tempo, soprattutto le aspettative sui tassi e la risposta delle singole coppie.';
   const firstRead='<section class="morning-first-read" aria-label="Implicazioni per il Forex">'+
    '<div class="morning-section-label">PERCHÉ CONTA PER IL FOREX</div>'+
-   '<p class="morning-key-meaning">'+text(correction?.meaning||fxMeaning)+'</p>'+
+   '<p class="morning-key-meaning">'+text(correction?.meaning||estimatedReading?.meaning||fxMeaning)+'</p>'+
    '<p class="morning-key-watch"><strong>Da monitorare.</strong> '+
-    text(correction?.watch||feed.watch)+'</p>'+
+    text(correction?.watch||estimatedReading?.watch||feed.watch)+'</p>'+
    '<div class="morning-first-links"><a href="#currencies">Forza G8</a>'+
    '<a href="#pairs">Coppie FX</a><a href="#rates">Verifica Tassi &amp; OIS</a></div>'+
    '</section>';
