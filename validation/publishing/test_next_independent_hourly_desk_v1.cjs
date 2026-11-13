@@ -121,7 +121,7 @@ assert(pulseHTML.includes('+1,00%')&&pulseHTML.includes('18,70')&&pulseHTML.incl
 assert((pulseHTML.match(/class="hourly-pulse-spark"/g)||[]).length===3,
  'Mini-charts must be derived from 3 actual historical streams, not drawn decoratively');
 assert(pulseHTML.includes('12/11/2026')&&pulseHTML.includes('13/11/2026'),'Every observation must retain its source date');
-assert(pulseHTML.includes('Non intraday')&&!pulseHTML.includes('tempo reale</p>'),
+assert(/non intraday/i.test(pulseHTML)&&!pulseHTML.includes('tempo reale</p>'),
  'The Home must explicitly separate delayed closes from live data');
 assert(pulseHTML.includes('class="hourly-decision-grid"')&&pulseHTML.includes(sample.what_changed),
  'The original substantive desk interpretation survives the visual hierarchy');
